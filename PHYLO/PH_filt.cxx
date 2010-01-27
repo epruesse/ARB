@@ -1,8 +1,16 @@
+// =============================================================== //
+//                                                                 //
+//   File      : PH_filt.cxx                                       //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
+
 #include "phylo.hxx"
 #include "phwin.hxx"
 
-#include <cstdlib>
-#include <cstring>
 #include <cctype>
 
 
@@ -448,6 +456,4 @@ AW_window *PH_create_filter_window(AW_root *aw_root)
 
     return (AW_window *)aws;
 }
-
-
 

@@ -1,14 +1,19 @@
-#include <arbdb.h>
+// =============================================================== //
+//                                                                 //
+//   File      : arb_gene_probe.cxx                                //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
+
 #include <arbdbt.h>
 #include <adGene.h>
 
 #include <map>
 #include <list>
 #include <set>
-
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
 
 #include <unistd.h>
 #include <sys/types.h>

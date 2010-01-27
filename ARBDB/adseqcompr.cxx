@@ -10,8 +10,6 @@
 
 #include <arbdbt.h>
 
-#include "gb_tune.h"
-#include "gb_main.h"
 #include "gb_data.h"
 #include "gb_key.h"
 

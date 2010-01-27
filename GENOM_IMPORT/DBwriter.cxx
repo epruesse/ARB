@@ -8,13 +8,14 @@
 //   http://www.arb-home.de/                                        //
 //                                                                  //
 // ================================================================ //
+
 #include "DBwriter.h"
 
 #define AW_RENAME_SKIP_GUI
+
 #include <algorithm>
 #include <AW_rename.hxx>
 #include <arbdbt.h>
-#include <adGene.h>
 #include <Translate.hxx>
 #include <aw_question.hxx>
 #include <GEN.hxx>

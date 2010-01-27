@@ -1,26 +1,26 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <memory.h>
-#include <string.h>
-#include <ctype.h>
-#include <iostream>
+// =============================================================== //
+//                                                                 //
+//   File      : SaiProbeVisualization.cxx                         //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
-#include <arbdb.h>
-#include <arbdbt.h>
-#include <aw_root.hxx>
-#include <aw_device.hxx>
-#include <aw_window.hxx>
+#include "SaiProbeVisualization.hxx"
+#include "probe_match_parser.hxx"
+
 #include <aw_awars.hxx>
 #include <awt_nds.hxx>
 #include <aw_preset.hxx>
 #include <awt.hxx>
 #include <awt_sel_boxes.hxx>
 
-#include <awt_canvas.hxx>
 #include <awt_config_manager.hxx>
 
-#include "SaiProbeVisualization.hxx"
-#include "probe_match_parser.hxx"
+#include <iostream>
+
 
 using namespace std;
 

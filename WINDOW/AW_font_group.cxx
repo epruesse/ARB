@@ -12,10 +12,6 @@
 // ==================================================================== //
 
 #include "aw_font_group.hxx"
-#include <cstring>
-
-// ____________________________________________________________
-// start of implementation of class AW_font_group:
 
 AW_font_group::AW_font_group() {
     unregisterAll();
@@ -54,10 +50,4 @@ void AW_font_group::registerFont(AW_device *device, int gc, const char *chars) {
     set_max(get_descent(gc), max_descent);
     set_max(get_height(gc), max_height);
 }
-
-
-// -end- of implementation of class AW_font_group.
-
-
-
 

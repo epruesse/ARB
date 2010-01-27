@@ -12,17 +12,11 @@
 //                                                                       //
 //  ==================================================================== //
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <arbdb.h>
-#include <arbdbt.h>
+#include "merge.hxx"
+
 #include <ad_config.h>
-#include <aw_root.hxx>
-#include <aw_device.hxx>
-#include <aw_window.hxx>
 #include <awt.hxx>
 #include <awt_sel_boxes.hxx>
-#include "merge.hxx"
 
 #define AWAR_CONFIG_NAME1 "tmp/merge1/config_name"
 #define AWAR_CONFIG_DEST1 "tmp/merge1/config_dest"

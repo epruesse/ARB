@@ -1,8 +1,3 @@
-#include <string.h>
-#include <stdlib.h>
-#include <aw_root.hxx>
-#include <aw_window.hxx>
-#include <aw_awars.hxx>
 #include <aw_global.hxx>
 #include <awt.hxx>
 #include <awt_sel_boxes.hxx>

@@ -13,19 +13,18 @@
 #define DUMP
 #endif // DEVEL_LOTHAR
 
-#include <stdlib.h>
-#include <stdlib.h>
+#include "nt_validNameParser.hxx"
+
+#include <arb_assert.h>
+
+#include <cstdlib>
+#include <cstdlib>
 #include <iostream>
 #include <fstream>
-#include <string>
-#include <list>
-#include <vector>
-#include <cassert>
-
-#include "nt_validNameParser.hxx"
 
 using namespace std;
 
+#define nt_assert(bed) arb_assert(bed)
 
 namespace validNames {
 
@@ -94,9 +93,9 @@ namespace validNames {
 
             else { // begin operators
                 if (*it == string("->")) {
-                    assert(!isHetero);
-                    assert(!isHomo);
-                    assert(isValid); // only one operator per line allowed
+                    nt_assert(!isHetero);
+                    nt_assert(!isHomo);
+                    nt_assert(isValid); // only one operator per line allowed
                     isRenamed = true;
                     isValid   = false;
 #if defined(DUMP)
@@ -105,9 +104,9 @@ namespace validNames {
                 }
                 else {
                     if (*it == string("=>")) {
-                        assert(!isRenamed);
-                        assert(!isHomo);
-                        assert(isValid);
+                        nt_assert(!isRenamed);
+                        nt_assert(!isHomo);
+                        nt_assert(isValid);
                         isHetero = true;
                         isValid = false;
 #if defined(DUMP)
@@ -116,9 +115,9 @@ namespace validNames {
                     }
                     else {
                         if (*it == string("=")) {
-                            assert(!isRenamed);
-                            assert(!isHetero);
-                            assert(isValid);
+                            nt_assert(!isRenamed);
+                            nt_assert(!isHetero);
+                            nt_assert(isValid);
                             isHomo = true;
                             isValid = false;
 #if defined(DUMP)

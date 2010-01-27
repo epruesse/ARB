@@ -12,6 +12,10 @@
 #ifndef FAST_ALIGNER_HXX
 #define FAST_ALIGNER_HXX
 
+#ifndef AW_ROOT_HXX
+#include <aw_root.hxx>
+#endif
+
 #define INTEGRATED_ALIGNERS_TITLE "Integrated Aligners"
 
 typedef char*   (*AWTC_get_consensus_func)(const char *species_name, int start_pos, int end_pos);

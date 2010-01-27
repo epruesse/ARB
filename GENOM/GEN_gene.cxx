@@ -9,20 +9,11 @@
 //                                                                 //
 // =============================================================== //
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <string>
-
-#include <arbdb.h>
-#include <arbdbt.h>
-#include <aw_root.hxx>
-#include <aw_device.hxx>
-
-#include "GEN.hxx"
 #include "GEN_gene.hxx"
 #include "GEN_local.hxx"
 #include "GEN_nds.hxx"
+
+#include <arbdbt.h>
 
 // Standard fields of a gb_gene entry:
 // -----------------------------------

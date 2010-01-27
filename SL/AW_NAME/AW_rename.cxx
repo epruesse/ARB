@@ -1,21 +1,25 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
-#include <time.h>
-// #include <malloc.h>
-#include <arbdb.h>
-#include <arbdbt.h>
-#include <aw_root.hxx>
-#include <aw_device.hxx>
-#include <aw_window.hxx>
-#include <aw_awars.hxx>
+// =============================================================== //
+//                                                                 //
+//   File      : AW_rename.cxx                                     //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
+
 #include "AW_rename.hxx"
-#include "inline.h"
+
+#include <arbdbt.h>
+#include <aw_awars.hxx>
+#include <aw_window.hxx>
+#include <inline.h>
 
 #include <names_client.h>
 #include <servercntrl.h>
 #include <client.h>
+
+#include <ctime>
 
 static const char *get_addid(GBDATA *gb_main) {
     GB_transaction ta(gb_main);

@@ -12,13 +12,9 @@
 #ifndef AW_WINDOW_XM_INTERFACE_HXX
 #define AW_WINDOW_XM_INTERFACE_HXX
 
-#ifndef AW_ROOT_HXX
-#include <aw_root.hxx>
-#endif
 #ifndef AW_DEVICE_HXX
 #include <aw_device.hxx>
 #endif
-
 #ifndef _Xm_h
 #include <Xm/Xm.h>
 #endif

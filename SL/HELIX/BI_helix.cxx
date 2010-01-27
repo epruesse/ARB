@@ -1,12 +1,18 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
-// #include <malloc.h>
-#include <arbdb.h>
-#include <arbdbt.h>
+// =============================================================== //
+//                                                                 //
+//   File      : BI_helix.cxx                                      //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
 #include "BI_helix.hxx"
+
+#include <arbdbt.h>
+
+#include <cctype>
 
 #define LEFT_HELIX "{[<("
 #define RIGHT_HELIX "}]>)"

@@ -15,8 +15,8 @@
 #ifndef FILEBUFFER_H
 #define FILEBUFFER_H
 
-#ifndef _STDIO_H
-#include <stdio.h>
+#ifndef _CPP_CSTDIO
+#include <cstdio>
 #endif
 
 // --------------------------------------------------------------------------------

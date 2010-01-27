@@ -1,6 +1,17 @@
-#include <stdio.h>
+// =============================================================== //
+//                                                                 //
+//   File      : probe_debug.cxx                                   //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
+
+#include <cstdio>
 #include <PT_com.h>
 #include <client.h>
+
 extern "C" {
     char *md2(void * object);
 }

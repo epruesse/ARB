@@ -15,14 +15,14 @@
 #ifndef AWT_HOTKEYS_HXX
 #define AWT_HOTKEYS_HXX
 
-#ifndef __STRING__
+#ifndef _CPP_STRING
 #include <string>
 #endif
 
 #if defined(DEBUG)
-# ifndef __STDIO_H__
-#  include <stdio.h>
-# endif
+#ifndef _CPP_CSTDIO
+#include <cstdio>
+#endif
 #endif // DEBUG
 
 //  --------------------------

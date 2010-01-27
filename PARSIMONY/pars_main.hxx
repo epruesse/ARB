@@ -16,6 +16,7 @@
 class AW_root;
 class AWT_graphic_tree;
 class WeightedFilter;
+class AP_tree_nlen;
 
 struct PARS_global {
     AW_root          *awr;

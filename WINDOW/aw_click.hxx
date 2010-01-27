@@ -1,5 +1,19 @@
+// =============================================================== //
+//                                                                 //
+//   File      : aw_click.hxx                                      //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
+
 #ifndef AW_CLICK_HXX
 #define AW_CLICK_HXX
+
+#ifndef AW_DEVICE_HXX
+#include "aw_device.hxx"
+#endif
 
 class AW_device_click : public AW_device {
 protected:
@@ -39,4 +53,4 @@ public:
 
 #else
 #error aw_click.hxx included twice
-#endif
+#endif // AW_CLICK_HXX

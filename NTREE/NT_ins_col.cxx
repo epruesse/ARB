@@ -1,9 +1,14 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <arbdb.h>
+// =============================================================== //
+//                                                                 //
+//   File      : NT_ins_col.cxx                                    //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
+
 #include <arbdbt.h>
-#include <aw_root.hxx>
-#include <aw_device.hxx>
 #include <aw_window.hxx>
 #include <aw_awars.hxx>
 

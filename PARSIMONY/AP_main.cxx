@@ -9,12 +9,9 @@
 // =============================================================== //
 
 #include "AP_error.hxx"
-#include "ap_main.hxx"
 #include "ap_tree_nlen.hxx"
 
 #include <TreeDisplay.hxx>
-
-#include <iostream>
 
 using namespace std;
 

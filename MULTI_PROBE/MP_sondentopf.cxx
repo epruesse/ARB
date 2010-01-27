@@ -1,10 +1,6 @@
 #include <MultiProbe.hxx>
-#include <stdlib.h>
-#include <string.h>
-#include <arbdbt.h>
-#include <aw_root.hxx>
 #include <AP_Tree.hxx> // needed for GCs
-#include <math.h>
+#include <cmath>
 
 ST_Container::ST_Container(int anz_sonden) {
     long laenge_markierte;

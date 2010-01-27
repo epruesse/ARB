@@ -1,17 +1,13 @@
-#include <arbdb.h>
 #include <arbdbt.h>
 
 #include <servercntrl.h>
 #include <PT_com.h>
 #include <client.h>
-#include <aw_root.hxx>
 #include <aw_window.hxx>
 
 #include <awtc_next_neighbours.hxx>
 
 #include <cstdio>
-#include <cstdlib>
-#include <cstring>
 #include <climits>
 
 

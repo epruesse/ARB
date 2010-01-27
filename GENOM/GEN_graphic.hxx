@@ -12,7 +12,12 @@
 #ifndef GEN_GRAPHIC_HXX
 #define GEN_GRAPHIC_HXX
 
+#ifndef AW_COLOR_GROUPS_HXX
 #include <aw_color_groups.hxx>
+#endif
+#ifndef AWT_CANVAS_HXX
+#include <awt_canvas.hxx>
+#endif
 
 enum {
     GEN_GC_DEFAULT    = 0,

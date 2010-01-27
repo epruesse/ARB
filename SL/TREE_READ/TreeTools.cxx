@@ -10,7 +10,7 @@
 
 #include "TreeRead.h"
 
-#include <time.h>
+#include <ctime>
 
 
 void TREE_scale(GBT_TREE *tree, double length_scale, double bootstrap_scale) {

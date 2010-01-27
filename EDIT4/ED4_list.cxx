@@ -1,15 +1,4 @@
-#include <stdio.h>
-#include <stdlib.h>
-
-#include <arbdb.h>
-#include <aw_root.hxx>
-#include <aw_window.hxx>
-
 #include "ed4_class.hxx"
-
-// -----------------
-//      ED4_list
-// -----------------
 
 ED4_returncode ED4_list::append_elem_backwards(void *elem)
 {

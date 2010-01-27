@@ -1,7 +1,14 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <arbdb.h>
+// =============================================================== //
+//                                                                 //
+//   File      : arb_notify.cxx                                    //
+//   Purpose   : report termination of external jobs to ARB        //
+//                                                                 //
+//   Coded by Ralf Westram (coder@reallysoft.de) in May 2007       //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
+
 #include <arbdbt.h>
 
 int main(int argc, char **argv)

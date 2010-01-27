@@ -1,15 +1,15 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <memory.h>
-// #include <malloc.h>
-#include <X11/X.h>
-#include <X11/Xlib.h>
+// =============================================================== //
+//                                                                 //
+//   File      : AW_click.cxx                                      //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
-#include <aw_root.hxx>
-#include "aw_device.hxx"
-#include "aw_commn.hxx"
 #include <aw_click.hxx>
+#include "aw_commn.hxx"
 
 using namespace AW;
 
@@ -272,6 +272,4 @@ bool AW_getBestClick(const AW::Position& click, AW_clicked_line *cl, AW_clicked_
 
     return bestClick;
 }
-
-
 

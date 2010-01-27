@@ -1,16 +1,15 @@
-#include <stdio.h>
-#include <stdlib.h>
-// #include <string.h>
+// =============================================================== //
+//                                                                 //
+//   File      : ps_make_sample_db.cxx                             //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Coded by Wolfram Foerster in October 2002                     //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
-#include <set>
-#ifndef PS_NODE_HXX
 #include "ps_node.hxx"
-#endif
-#ifndef PS_FILEBUFFER_HXX
-#include "ps_filebuffer.hxx"
-#endif
-
-
 
 //  ====================================================
 //  ====================================================

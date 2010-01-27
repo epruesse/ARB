@@ -22,9 +22,6 @@
 #ifndef _CPP_IOSTREAM
 # include <iostream>
 #endif
-#ifndef _MEMORY_H
-#include <memory.h>
-#endif
 
 #ifndef ARB_ASSERT_H
 # include <arb_assert.h>

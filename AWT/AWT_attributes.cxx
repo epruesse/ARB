@@ -11,7 +11,7 @@
 //                                                                       //
 //  ==================================================================== //
 
-#include <stdio.h>
+#include <cstdio>
 #include <arbdb.h>
 
 #include <aw_color_groups.hxx>

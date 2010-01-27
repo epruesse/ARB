@@ -1,24 +1,22 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <memory.h>
-// #include <malloc.h>
-#include <string.h>
-#include <ctype.h>
+// =============================================================== //
+//                                                                 //
+//   File      : probe_design.cxx                                  //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
-#include <arbdb.h>
-#include <arbdbt.h>
+#include "SaiProbeVisualization.hxx"
+#include "probe_match_parser.hxx"
 
-#include <aw_root.hxx>
-#include <aw_device.hxx>
-#include <aw_window.hxx>
 #include <aw_awars.hxx>
 #include <aw_preset.hxx>
 #include <awt.hxx>
 #include <awt_iupac.hxx>
 
-#include <awt_canvas.hxx>
 #include <awt_config_manager.hxx>
-#include <awt_canvas.hxx>
 #include <awt_sel_boxes.hxx>
 
 #include <PT_com.h>
@@ -27,9 +25,6 @@
 #include <probe_design.hxx>
 
 #include <GEN.hxx>
-#include "SaiProbeVisualization.hxx"
-#include "probe_match_parser.hxx"
-
 #include <TreeCallbacks.hxx>
 
 // general awars
@@ -2060,5 +2055,4 @@ AW_window *create_probe_group_result_window(AW_root *awr, AW_default cl_AW_canva
                                create_probe_group_groups_window,
                                0);
 }
-
 

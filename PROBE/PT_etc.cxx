@@ -1,13 +1,19 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-// #include <malloc.h>
-#include <memory.h>
-#include <PT_server.h>
-#include <PT_server_prototypes.h>
+// =============================================================== //
+//                                                                 //
+//   File      : PT_etc.cxx                                        //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
+
 #include "probe.h"
+
+#include <PT_server_prototypes.h>
 #include "pt_prototypes.h"
 #include <struct_man.h>
+
 
 void set_table_for_PT_N_mis()
 {

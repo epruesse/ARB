@@ -1,11 +1,20 @@
-#include <cstdio>
-#include <cstdlib>
-
-#include <sys/times.h>
+// =============================================================== //
+//                                                                 //
+//   File      : ps_convert_db.cxx                                 //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Coded by Wolfram Foerster in October 2002                     //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
 #include "ps_tools.hxx"
 #include "ps_database.hxx"
 #include "ps_pg_tree_functions.cxx"
+
+#include <sys/times.h>
+
 
 //  GLOBALS
 

@@ -1,15 +1,18 @@
-#include <stdio.h>
-#include <stdlib.h>
-// #include <malloc.h>
-#include <memory.h>
-#include <string.h>
-#include <stdint.h>
+// =============================================================== //
+//                                                                 //
+//   File      : PT_io.cxx                                         //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
-#include <PT_server.h>
+
 #include "probe.h"
+
 #include <arbdbt.h>
 #include <BI_helix.hxx>
-
 #include <inline.h>
 
 int compress_data(char *probestring) {
@@ -292,7 +295,7 @@ void PT_build_species_hash(void) {
     unsigned int    max_size;
     max_size = 0;
     for (i = 0; i < psg.data_count; i++) {  // get max sequence len 
-        max_size = max(max_size, (unsigned)(psg.data[i].size));
+        max_size = std::max(max_size, (unsigned)(psg.data[i].size));
         psg.char_count += psg.data[i].size;
     }
     psg.max_size = max_size;

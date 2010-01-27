@@ -12,10 +12,6 @@
 //                                                                 //
 // =============================================================== //
 
-#include <cstdio>
-#include <cstring>
-#include <cstdlib>
-
 #include <arbdb.h>
 
 static GB_ERROR create_n_write(GBDATA *gb_father, const char *field, const char *content) {

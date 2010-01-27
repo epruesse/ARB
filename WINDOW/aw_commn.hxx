@@ -1,6 +1,17 @@
 #ifndef AW_COMMN_HXX
 #define AW_COMMN_HXX
 
+#ifndef AW_DEVICE_HXX
+#include "aw_device.hxx"
+#endif
+
+#ifndef X_H
+#include <X11/X.h>
+#endif
+#ifndef _XLIB_H_
+#include <X11/Xlib.h>
+#endif
+
 #define AW_INT(x) (((x)>=0) ? (int) ((x)+.5) : (int)((x)-.5))
 
 class AW_GC_Xm {

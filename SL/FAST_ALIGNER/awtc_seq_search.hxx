@@ -12,19 +12,13 @@
 #ifndef AWTC_SEQ_SEARCH_HXX
 #define AWTC_SEQ_SEARCH_HXX
 
-#ifndef _CPP_CSTRING
-#include <cstring>
-#endif
-#ifndef _CPP_CSTDLIB
-#include <cstdlib>
-#endif
-
 #ifndef AW_ROOT_HXX
 #include <aw_root.hxx>
 #endif
-#ifndef ARB_ASSERT_H
-#include <arb_assert.h>
+#ifndef ARBDB_H
+#include <arbdb.h>
 #endif
+
 
 #define awtc_assert(bed) arb_assert(bed)
 

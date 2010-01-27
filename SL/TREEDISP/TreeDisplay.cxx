@@ -1,24 +1,23 @@
-#include <cstdio>
-#include <cstdlib>
-#include <cmath>
-#include <cstring>
+// =============================================================== //
+//                                                                 //
+//   File      : TreeDisplay.cxx                                   //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
-#include <iostream>
+#include "TreeDisplay.hxx"
 
-#include <arbdb.h>
-#include <arbdbt.h>
-#include <aw_root.hxx>
-#include <aw_device.hxx>
-#include <aw_keysym.hxx>
-#include <aw_window.hxx>
 #include <awt.hxx>
-#include <awt_canvas.hxx>
 #include <awt_nds.hxx>
 #include <aw_preset.hxx>
 #include <aw_awars.hxx>
 
-#include "awt_attributes.hxx"
-#include "TreeDisplay.hxx"
+#include <awt_attributes.hxx>
+
+#include <iostream>
 
 /*!*************************
       class AP_tree
@@ -2529,5 +2528,4 @@ void awt_create_dtree_awars(AW_root *aw_root, AW_default def)
 
     aw_root->awar_int(AWAR_DTREE_REFRESH, 0, def);
 }
-
 

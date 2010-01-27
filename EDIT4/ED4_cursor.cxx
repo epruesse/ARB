@@ -1,15 +1,8 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
-#include <limits.h>
+#include <cctype>
+#include <climits>
 
-#include <aw_keysym.hxx>
-#include <arbdb.h>
 #include <arbdbt.h>
-#include <aw_root.hxx>
 #include <aw_awars.hxx>
-#include <aw_window.hxx>
 #include <AW_helix.hxx>
 
 #include <ed4_extern.hxx>

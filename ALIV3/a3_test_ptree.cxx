@@ -2,8 +2,8 @@
 //  Include-Dateien
 // -----------------------------------------------------------------------------
 
-#include <iostream.h>
-#include <stdlib.h>
+#include <iostream>
+#include <cstdlib>
 
 #include "a3_ptree.hxx"
 

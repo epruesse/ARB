@@ -1,11 +1,18 @@
+// =============================================================== //
+//                                                                 //
+//   File      : MultiProbe.hxx                                    //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
 #ifndef MULTIPROBE_HXX
 #define MULTIPROBE_HXX
 
 #include <mpdefs.h>     //unsere Definitionen
 #include <MP_externs.hxx>
-#include <SoTl.hxx>
-#include <string.h>
 
 #ifndef AW_AWARS_HXX
 #include <aw_awars.hxx>
@@ -394,4 +401,4 @@ public:
 
 #else
 #error MultiProbe.hxx included twice
-#endif
+#endif // MULTIPROBE_HXX

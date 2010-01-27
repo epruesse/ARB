@@ -1,6 +1,6 @@
-#include <stdio.h>
-#include <string.h>
-#include <ctype.h>
+#include <cstdio>
+#include <cstring>
+#include <cctype>
 
 #include <arb_assert.h>
 #define awt_assert(bed) arb_assert(bed)

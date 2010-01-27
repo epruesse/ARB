@@ -1,9 +1,9 @@
-#include "simcfg.h"
 #include "readcfg.h"
+#include "rns.h"
+
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
-#include "rns.h"
 
 static struct S_cfgLine cfg_lines[];
 

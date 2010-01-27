@@ -9,24 +9,19 @@
 //                                                                 //
 // =============================================================== //
 
+#include "fast_aligner.hxx"
+#include "ClustalV.hxx"
+
 #include <island_hopping.h>
 
 #include <awtc_next_neighbours.hxx>
 #include <awtc_seq_search.hxx>
-#include "ClustalV.hxx"
-#include "fast_aligner.hxx"
 
-#include <arbdbt.h>
-#include <aw_window.hxx>
 #include <aw_awars.hxx>
 #include <awt.hxx>
 #include <awt_sel_boxes.hxx>
 
-#include <cstdio>
-#include <cstdlib>
 #include <cctype>
-#include <cmath>
-#include <cstring>
 #include <climits>
 
 // --------------------------------------------------------------------------------

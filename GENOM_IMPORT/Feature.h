@@ -11,9 +11,6 @@
 #ifndef FEATURE_H
 #define FEATURE_H
 
-#ifndef TYPES_H
-#include "types.h"
-#endif
 #ifndef LOCATION_H
 #include "Location.h"
 #endif

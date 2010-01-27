@@ -1,6 +1,5 @@
 #include <MultiProbe.hxx>
-#include <string.h>
-#include <math.h>
+#include <cmath>
 
 
 

@@ -11,9 +11,12 @@
 //                                                                       //
 //  ==================================================================== //
 
-
 #ifndef SEQ_QUALITY_H
 #define SEQ_QUALITY_H
+
+#ifndef AW_ROOT_HXX
+#include <aw_root.hxx>
+#endif
 
 void SQ_create_awars(AW_root * awr, AW_default aw_def);
 AW_window *SQ_create_seq_quality_window(AW_root * aw_root, AW_CL);

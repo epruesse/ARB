@@ -14,13 +14,13 @@
  * by Ralf Westram <ralf@arb-home.de>
  */
 
-#include <stddef.h>
-#include <stdlib.h>
-#include <assert.h>
+#include <cstddef>
+#include <cstdlib>
+#include <cassert>
 #include <unistd.h>
-#include <stdio.h>
-#include <ctype.h>
-#include <string.h>
+#include <cstdio>
+#include <cctype>
+#include <cstring>
 
 #ifndef EXIT_SUCCESS
 #define EXIT_SUCCESS  0

@@ -1,10 +1,14 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
+// =============================================================== //
+//                                                                 //
+//   File      : arb_export_rates.cxx                              //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
-#include <arbdb.h>
 #include <arbdbt.h>
-
 #include <aw_awars.hxx>
 
 /* Input: SAI name: argv[1]

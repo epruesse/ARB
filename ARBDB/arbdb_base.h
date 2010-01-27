@@ -13,11 +13,8 @@
 #ifndef ARBDB_BASE_H
 #define ARBDB_BASE_H
 
-#ifndef _STDIO_H
-#include <stdio.h>
-#endif
-#ifndef ATTRIBUTES_H
-#include <attributes.h>
+#ifndef _CPP_CSTDIO
+#include <cstdio>
 #endif
 
 #define NOT4PERL                                    // function definitions starting with NOT4PERL are not included into the ARB-perl-interface

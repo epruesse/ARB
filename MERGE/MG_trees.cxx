@@ -1,13 +1,17 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <arbdb.h>
-#include <arbdbt.h>
-#include <aw_root.hxx>
-#include <aw_device.hxx>
-#include <aw_window.hxx>
+// =============================================================== //
+//                                                                 //
+//   File      : MG_trees.cxx                                      //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
+
+#include "merge.hxx"
+
 #include <awt.hxx>
 #include <awt_sel_boxes.hxx>
-#include "merge.hxx"
 
 #define AWAR_TREE_NAME1 "tmp/merge1/tree_name"
 #define AWAR_TREE_DEST1 "tmp/merge1/tree_dest"

@@ -1,19 +1,21 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <arbdb.h>
-#include <arbdbt.h>
+// =============================================================== //
+//                                                                 //
+//   File      : MG_main.cxx                                       //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
-#include <aw_root.hxx>
-#include <aw_device.hxx>
-#include <aw_window.hxx>
+#include "merge.hxx"
+
+#include <arbdbt.h>
 #include <aw_preset.hxx>
 #include <aw_awars.hxx>
 #include <aw_global.hxx>
 #include <awt.hxx>
 #include <AW_rename.hxx>
-
-#include "merge.hxx"
 
 GBDATA *GLOBAL_gb_merge = NULL;
 GBDATA *GLOBAL_gb_dest  = NULL;

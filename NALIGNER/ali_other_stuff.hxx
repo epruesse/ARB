@@ -17,7 +17,6 @@ extern "C" {
 #include <server.h>
 }
 
-#include <arbdb.h>
 #include <arbdbt.h>
 #include <servercntrl.h>
 

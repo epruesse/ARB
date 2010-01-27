@@ -12,18 +12,11 @@
 #ifndef SEC_GRAPHIC_HXX
 #define SEC_GRAPHIC_HXX
 
-#ifndef _STRING_H
-#include "string.h"
+#ifndef _CPP_CCTYPE
+#include <cctype>
 #endif
-#ifndef _CTYPE_H
-#include "ctype.h"
-#endif
-
 #ifndef AWT_CANVAS_HXX
 #include <awt_canvas.hxx>
-#endif
-#ifndef AW_POSITION_HXX
-#include <aw_position.hxx>
 #endif
 
 using namespace AW;

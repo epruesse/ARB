@@ -1,3 +1,13 @@
+// =============================================================== //
+//                                                                 //
+//   File      : PH_main.cxx                                       //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
+
 #include "phylo.hxx"
 #include "phwin.hxx"
 #include "PH_display.hxx"
@@ -7,8 +17,6 @@
 
 #include <awt.hxx>
 
-#include <cstdlib>
-#include <cstring>
 #include <iostream>
 
 using namespace std;

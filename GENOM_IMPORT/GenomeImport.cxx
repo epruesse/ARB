@@ -9,13 +9,10 @@
 //                                                                  //
 // ================================================================ //
 
-#include "GenomeImport.h"
-#include "FileBuffer.h"
-#include "Importer.h"
 #include "tools.h"
 #include "DBwriter.h"
 
-#include <errno.h>
+#include <cerrno>
 #define AW_RENAME_SKIP_GUI
 #include <AW_rename.hxx>
 #include <aw_question.hxx>

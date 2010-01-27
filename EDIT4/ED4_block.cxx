@@ -1,15 +1,4 @@
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
-#include <climits>
-#include <cctype>
-#include <cmath>
-
-#include <arbdb.h>
 #include <arbdbt.h>
-#include <aw_root.hxx>
-#include <aw_keysym.hxx>
-#include <aw_window.hxx>
 #include <aw_awars.hxx>
 #include <fast_aligner.hxx>
 
@@ -18,6 +7,9 @@
 #include "ed4_tools.hxx"
 #include "ed4_block.hxx"
 #include "ed4_edit_string.hxx"
+
+#include <climits>
+#include <cctype>
 
 // --------------------------------------------------------------------------------
 

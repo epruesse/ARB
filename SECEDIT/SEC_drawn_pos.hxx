@@ -15,9 +15,6 @@
 #ifndef _CPP_MAP
 #include <map>
 #endif
-#ifndef ARBTOOLS_H
-#include <arbtools.h>
-#endif
 #ifndef AW_POSITION_HXX
 #include <aw_position.hxx>
 #endif

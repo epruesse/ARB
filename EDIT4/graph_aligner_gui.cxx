@@ -1,9 +1,21 @@
-#include <stdio.h>
-#include <arbdb.h>
-#include <arbdbt.h>
-#include <aw_root.hxx>
-#include <aw_device.hxx>
-#include <aw_window.hxx>
+// =============================================================== //
+//                                                                 //
+//   File      : graph_aligner_gui.cxx                             //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Coded by Elmar Pruesse in October 2008                        //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
+
+#include "graph_aligner_gui.hxx"
+
+#include "ed4_defs.hxx"
+
+// need to use AWTC_faligner_cd defined here to get selected species
+#include <fast_aligner.hxx>
+
 #include <aw_awars.hxx>
 #include <awt_sel_boxes.hxx>
 #include <servercntrl.h>
@@ -15,18 +27,11 @@
 
 #include <unistd.h>
 
-#include <stdlib.h>
 #include <string>
 #include <sstream>
 #include <iostream>
 #include <vector>
 
-#include <string.h>
-
-// need to use AWTC_faligner_cd defined here to get selected species
-#include <fast_aligner.hxx>
-#include "graph_aligner_gui.hxx"
-#include "ed4_defs.hxx"
 
 using std::cerr;
 using std::cout;

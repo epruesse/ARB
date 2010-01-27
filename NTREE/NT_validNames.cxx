@@ -1,16 +1,16 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <string>
-#include <list>
-#include <vector>
+// =============================================================== //
+//                                                                 //
+//   File      : NT_validNames.cxx                                 //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
+#include "nt_validNameParser.hxx"
 
-#include <arbdb.h>
 #include <arbdbt.h>
-#include <aw_root.hxx>
-#include <aw_device.hxx>
-#include <aw_window.hxx>
 #include <aw_awars.hxx>
 #include <awt.hxx>
 #include <awt_www.hxx>
@@ -19,13 +19,8 @@
 #include <iostream>
 #include <iterator>
 
-#include "nt_validNameParser.hxx"
-
 using namespace std;
 
-#ifndef ARB_ASSERT_H
-#include <arb_assert.h>
-#endif
 #define nt_assert(bed) arb_assert(bed)
 
 #if defined(DEVEL_LOTHAR)

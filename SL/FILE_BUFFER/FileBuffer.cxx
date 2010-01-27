@@ -1,19 +1,20 @@
-// ================================================================ //
-//                                                                  //
-//   File      : FileBuffer.cxx                                     //
-//   Purpose   :                                                    //
-//                                                                  //
-//   Coded by Ralf Westram (coder@reallysoft.de) in December 2006   //
-//   Institute of Microbiology (Technical University Munich)        //
-//   http://www.arb-home.de/                                        //
-//                                                                  //
-// ================================================================ //
+// --------------------------------------------------------------------------------
+// Copyright (C) 2000
+// Ralf Westram
+//
+// Permission to use, copy, modify, distribute and sell this software
+// and its documentation for any purpose is hereby granted without fee,
+// provided that the above copyright notice appear in all copies and
+// that both that copyright notice and this permission notice appear
+// in supporting documentation.  Ralf Westram makes no
+// representations about the suitability of this software for any
+// purpose.  It is provided "as is" without express or implied warranty.
+// --------------------------------------------------------------------------------
 
 #include "FileBuffer.h"
 #include <cstdlib>
 #include <cstring>
-#include <cstdio>
-#include <errno.h>
+#include <cerrno>
 
 using namespace std;
 

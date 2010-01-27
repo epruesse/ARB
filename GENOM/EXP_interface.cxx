@@ -22,7 +22,6 @@
 
 #include <awt_sel_boxes.hxx>
 #include <awt_item_sel_list.hxx>
-#include <awt.hxx>
 
 #include <aw_awars.hxx>
 

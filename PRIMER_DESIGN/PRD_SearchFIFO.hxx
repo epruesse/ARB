@@ -1,9 +1,17 @@
+// =============================================================== //
+//                                                                 //
+//   File      : PRD_SearchFIFO.hxx                                //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Coded by Wolfram Foerster in February 2001                    //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
+
 #ifndef PRD_SEARCHFIFO_HXX
 #define PRD_SEARCHFIFO_HXX
 
-#ifndef   PRD_GLOBALS_HXX
-#include "PRD_Globals.hxx"
-#endif
 #ifndef   PRD_NODE_HXX
 #include "PRD_Node.hxx"
 #endif

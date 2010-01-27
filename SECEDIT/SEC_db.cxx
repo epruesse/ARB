@@ -9,7 +9,6 @@
 //                                                                 //
 // =============================================================== //
 
-#include "SEC_db.hxx"
 #include "SEC_graphic.hxx"
 #include "SEC_root.hxx"
 #include "SEC_bonddef.hxx"

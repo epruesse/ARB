@@ -11,18 +11,14 @@
 //                                                                       //
 //  ==================================================================== //
 
-#include <cstring>
-#include <cstdlib>
-#include <cstdio>
+#include "probe_match_parser.hxx"
+
+#include <arbdbt.h>
+
 #include <cctype>
 #include <map>
 
-#include <arbdb.h>
-#include <arbdbt.h>
-
 #define pm_assert(cond) arb_assert(cond)
-
-#include "probe_match_parser.hxx"
 
 using namespace std;
 

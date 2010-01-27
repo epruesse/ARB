@@ -1,17 +1,26 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <unistd.h>
-#include <string.h>
-#include <sys/stat.h>
-#include <PT_server.h>
-#include <PT_server_prototypes.h>
+// =============================================================== //
+//                                                                 //
+//   File      : PT_main.cxx                                       //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
+
 #include "probe.h"
+#include <PT_server_prototypes.h>
 #include "pt_prototypes.h"
+
 #include <arbdbt.h>
 #include <servercntrl.h>
 #include <server.h>
 #include <client.h>
 #include <struct_man.h>
+
+#include <unistd.h>
+#include <sys/stat.h>
+
 #define MAX_TRY 10
 #define TIME_OUT 1000*60*60*24
 

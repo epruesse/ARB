@@ -1,5 +1,5 @@
 #include "GDE_extglob.h"
-#include <ctype.h>
+#include <cctype>
 
 static int getline(FILE *file, char *string)
 {

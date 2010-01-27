@@ -1,24 +1,14 @@
-#include <stdio.h>
-#include <stdlib.h>
-// #include <malloc.h>
-#include <memory.h>
-#include <string.h>
-#include <ctype.h>
-
-#include <arbdb.h>
 #include <arbdbt.h>
-#include <aw_keysym.hxx>
-#include <aw_root.hxx>
-#include <aw_window.hxx>
 #include <AW_helix.hxx>
 
 #include <fast_aligner.hxx>
 #include <awt_map_key.hxx>
 
-#include "ed4_defs.hxx"
 #include "ed4_edit_string.hxx"
 #include "ed4_class.hxx"
 #include "ed4_awars.hxx"
+
+#include <cctype>
 
 #define SAFE_EDITING        // undef this to remove sequence test code
 

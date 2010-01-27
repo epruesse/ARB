@@ -16,9 +16,6 @@
 #include "GEN.hxx"
 #endif
 
-#ifndef ARB_ASSERT_H
-#include <arb_assert.h>
-#endif
 #define gen_assert(bed) arb_assert(bed)
 
 // to create new genes:

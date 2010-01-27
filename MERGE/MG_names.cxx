@@ -1,13 +1,16 @@
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
+// =============================================================== //
+//                                                                 //
+//   File      : MG_names.cxx                                      //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
-#include <arbdb.h>
-#include <aw_root.hxx>
-#include <aw_device.hxx>
-#include <aw_window.hxx>
-#include <AW_rename.hxx>
 #include "merge.hxx"
+
+#include <AW_rename.hxx>
 
 // --------------------------------------------------------------------------------
 

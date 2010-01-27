@@ -1,10 +1,18 @@
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
-#include <sys/times.h>
+// =============================================================== //
+//                                                                 //
+//   File      : ps_merge_my_dbs.cxx                               //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Coded by Wolfram Foerster in October 2002                     //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
 #include "ps_tools.hxx"
 #include "ps_database.hxx"
+
+#include <sys/times.h>
 
 //  ====================================================
 

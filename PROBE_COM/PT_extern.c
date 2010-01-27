@@ -1,7 +1,6 @@
-#include <stdio.h>
-#include <stdlib.h>
-/* #include <malloc.h> */
-#include <string.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 #include "PT_server.h"
 #include "C/server.h"
 #include <aisc_server_proto.h>

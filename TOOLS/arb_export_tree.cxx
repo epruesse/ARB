@@ -1,6 +1,13 @@
-#include <stdio.h>
+// =============================================================== //
+//                                                                 //
+//   File      : arb_export_tree.cxx                               //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
-#include <arbdbt.h>
 #include <TreeWrite.h>
 
 /*      Input   Tree_name       argv[1]

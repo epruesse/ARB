@@ -1,8 +1,8 @@
-#include <stdlib.h>
+#include <cstdlib>
 #include <arbdb.h>
 #include <arbdbt.h>
-#include <string.h>
-#include <stdio.h>
+#include <cstring>
+#include <cstdio>
 #include <memory.h>
 // #include <malloc.h>
 #include <iostream.h>

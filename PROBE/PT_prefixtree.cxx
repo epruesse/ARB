@@ -1,14 +1,19 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <sys/types.h>
-#include <sys/mman.h>
-// #include <malloc.h>
-#include <memory.h>
-#include <limits.h>
+// =============================================================== //
+//                                                                 //
+//   File      : PT_prefixtree.cxx                                 //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
-#include <PT_server.h>
 #include "probe.h"
 #include "probe_tree.hxx"
+
+#include <sys/types.h>
+#include <sys/mman.h>
+#include <climits>
 
 struct PTM_struct PTM;
 char PT_count_bits[PT_B_MAX+1][256]; // returns how many bits are set
@@ -898,10 +903,4 @@ void PTD_read_leafs_from_disk(char *fname, PTM2 *ptmain, POS_TREE **pnode) {
     }
     
 }
-
-
-
-
-
-
 

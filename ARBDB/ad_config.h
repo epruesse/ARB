@@ -14,6 +14,10 @@
 #ifndef AD_CONFIG_H
 #define AD_CONFIG_H
 
+#ifndef ARBDB_H
+#include "arbdb.h"
+#endif
+
 #define AWAR_CONFIG_DATA "configuration_data"
 #define AWAR_CONFIG      "configuration"
 

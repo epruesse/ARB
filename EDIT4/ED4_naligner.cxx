@@ -1,15 +1,17 @@
-#include <stdio.h>
-#include <stdlib.h>     // system
-#include <arbdb.h>
-#include <arbdbt.h>
-#include <aw_root.hxx>
-#include <aw_device.hxx>
-#include <aw_window.hxx>
+// =============================================================== //
+//                                                                 //
+//   File      : ED4_naligner.cxx                                  //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
+
 #include <aw_awars.hxx>
 #include <awt.hxx>
 #include <awt_sel_boxes.hxx>
 #include <iostream>
-#include <string.h>
 
 extern GBDATA *GLOBAL_gb_main;
 

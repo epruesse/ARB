@@ -1,5 +1,5 @@
 #include <TreeRead.h>
-#include <time.h>
+#include <ctime>
 
 // add_bootstrap interprets the length of the branches as bootstrap value
 // (this is needed by Phylip DNAPARS/PROTPARS with bootstrapping)

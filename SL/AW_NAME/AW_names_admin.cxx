@@ -1,12 +1,17 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <arbdb.h>
-#include <aw_root.hxx>
-#include <aw_device.hxx>
-#include <aw_window.hxx>
+// =============================================================== //
+//                                                                 //
+//   File      : AW_names_admin.cxx                                //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
+
+#include "AW_rename.hxx"
+
 #include <awt.hxx>
 #include <awt_advice.hxx>
-#include "AW_rename.hxx"
 
 static char *namesFilename(AW_CL cl_gb_main) {
     const char *field    = AW_get_nameserver_addid((GBDATA*)cl_gb_main);

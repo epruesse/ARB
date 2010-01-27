@@ -5,9 +5,6 @@
 #include "RNA3D_Textures.hxx"
 #include "RNA3D_StructureData.hxx"
 
-#include <cmath>
-#include <cstdlib>
-
 #include <awt_canvas.hxx>
 #include <aw_window_Xm_interface.hxx>
 

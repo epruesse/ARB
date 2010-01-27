@@ -1,16 +1,18 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-
-#include <arbdb.h>
-#include <arbdbt.h>
-#include <ad_config.h>
-#include <aw_root.hxx>
-#include <aw_window.hxx>
+// =============================================================== //
+//                                                                 //
+//   File      : EDB_root_bact.cxx                                 //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
 #include <ed4_extern.hxx>
-
 #include "ed4_class.hxx"
+
+#include <arbdbt.h>
+#include <ad_config.h>
 
 #define NAME_BUFFERSIZE 100
 

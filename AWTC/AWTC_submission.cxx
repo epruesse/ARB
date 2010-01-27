@@ -1,7 +1,7 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <memory.h>
-#include <string.h>
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+
 #include <arbdb.h>
 #include <arbdbt.h>
 #include <aw_root.hxx>

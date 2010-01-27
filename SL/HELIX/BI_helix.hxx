@@ -1,24 +1,11 @@
 #ifndef BI_HELIX_HXX
 #define BI_HELIX_HXX
 
-#ifndef ARB_ASSERT_H
-#include <arb_assert.h>
-#endif
-#define bi_assert(bed) arb_assert(bed)
-
-#ifndef _CPP_CSTDLIB
-#include <cstdlib>
-#endif
-#ifndef _CPP_CSTDIO
-#include <cstdio>
-#endif
-#ifndef _CPP_CSTRING
-#include <cstring>
-#endif
-
 #ifndef ARBDB_H
 #include <arbdb.h>
 #endif
+
+#define bi_assert(bed) arb_assert(bed)
 
 typedef enum {
     HELIX_NONE,                                     // used in entries

@@ -1,12 +1,15 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <X11/X.h>
-#include <X11/Xlib.h>
+// =============================================================== //
+//                                                                 //
+//   File      : AW_size.cxx                                       //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
-#include <aw_root.hxx>
-#include "aw_device.hxx"
-#include "aw_commn.hxx"
 #include <aw_size.hxx>
+#include "aw_commn.hxx"
 
 #include <algorithm>
 

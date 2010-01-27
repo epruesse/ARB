@@ -1,6 +1,10 @@
 #ifndef AW_XKEY_HXX
 #define AW_XKEY_HXX
 
+#ifndef _Xm_h
+#include <Xm/Xm.h>
+#endif
+
 struct awXKeymap {
     int          xmod;
     int          xkey;

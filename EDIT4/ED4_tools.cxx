@@ -1,20 +1,25 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
-
-#include <arbdb.h>
-#include <arbdbt.h>
-#include <aw_root.hxx>
-#include <aw_awars.hxx>
-#include <aw_window.hxx>
-#include <fast_aligner.hxx>
-#include <awt_iupac.hxx>
+// =============================================================== //
+//                                                                 //
+//   File      : ED4_tools.cxx                                     //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Coded by Ralf Westram (coder@reallysoft.de) in January 2010   //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
 #include "ed4_class.hxx"
 #include "ed4_edit_string.hxx"
 #include "ed4_tools.hxx"
 #include "ed4_awars.hxx"
+
+#include <arbdbt.h>
+#include <aw_awars.hxx>
+#include <fast_aligner.hxx>
+#include <awt_iupac.hxx>
+
+#include <cctype>
 
 char ED4_encode_iupac(const char bases[], GB_alignment_type ali) {
     return AWT_encode_iupac(bases, ali);
@@ -48,4 +53,3 @@ void ED4_aws_init(AW_root *root, AW_window_simple *aws, GB_CSTR macro_format, GB
     aws->init(root, macro, window_buffer);
     delete macro;
 }
-

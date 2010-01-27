@@ -12,18 +12,13 @@
 //                                                                       //
 //  ==================================================================== //
 
-#ifndef ARB_ASSERT_H
-#include <arb_assert.h>
-#endif
-#define h2x_assert(bed) arb_assert(bed)
+#include <xml.hxx>
 
 #include <list>
 #include <set>
-#include <string>
 #include <iostream>
 #include <fstream>
 
-#include <cstdio>
 #include <cstdlib>
 #include <cstdarg>
 #include <cstring>
@@ -31,9 +26,9 @@
 
 #include <sys/stat.h>
 
-#include <xml.hxx>
-
 using namespace std;
+
+#define h2x_assert(bed) arb_assert(bed)
 
 #if defined(DEBUG)
 #define WARN_TODO

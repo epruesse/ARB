@@ -1,9 +1,6 @@
 #ifndef AW_WINDOW_HXX
 #define AW_WINDOW_HXX
 
-#ifndef AW_ROOT_HXX
-#include <aw_root.hxx>
-#endif
 #ifndef AW_DEVICE_HXX
 #include <aw_device.hxx>
 #endif

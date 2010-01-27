@@ -1,12 +1,18 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <time.h>
-#include <sys/time.h>
-#include <arbdb.h>
+// =============================================================== //
+//                                                                 //
+//   File      : arb_perf_test.cxx                                 //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
+
 #include <arbdbt.h>
 
-#include <limits.h>
-
+#include <climits>
+#include <ctime>
+#include <sys/time.h>
 
 // --------------------------------------------------------------------------------
 // data used for tests

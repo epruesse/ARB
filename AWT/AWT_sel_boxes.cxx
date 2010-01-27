@@ -1,10 +1,8 @@
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 #include <unistd.h>
-#include <time.h>
-#include <string.h>
-// #include <malloc.h>
-#include <memory.h>
+#include <ctime>
+#include <cstring>
 #include <sys/stat.h>
 
 #include <arbdb.h>

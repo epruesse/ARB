@@ -1,34 +1,28 @@
-/* ======================================================================================= */
-/*                                                                                       */
-/*    File       : ED4_visualizeSAI.cxx                                                  */
-/*    Purpose    : To Visualize the Sequence Associated Information (SAI) in the Editor  */
-/*    Author     : Yadhu Kumar (yadhu@mikro.biologie.tu-muenchen.de)                     */
-/*    web site   : http://www.arb-home.de/                                               */
-/*                                                                                       */
-/*        Copyright Department of Microbiology (Technical University Munich)             */
-/*                                                                                       */
-/* ======================================================================================= */
+// =============================================================== //
+//                                                                 //
+//   File      : ED4_visualizeSAI.cxx                              //
+//   Purpose   : Visualize sequence associated information (SAI)   //
+//               in the Editor                                     //
+//                                                                 //
+//   Coded by Yadhu Kumar (yadhu@mikro.biologie.tu-muenchen.de)    //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <iostream>
+#include <ed4_extern.hxx>
+#include "ed4_class.hxx"
+#include "ed4_visualizeSAI.hxx"
 
-#include <arbdb.h>
-#include <arbdbt.h>
-#include <aw_root.hxx>
-#include <aw_window.hxx>
 #include <aw_awars.hxx>
 #include <awt.hxx>
 #include <awt_canvas.hxx>
 #include <awt_sel_boxes.hxx>
 #include <aw_preset.hxx>
 
-#include <ed4_extern.hxx>
+#include <iostream>
 
-#include "ed4_class.hxx"
-#include "ed4_visualizeSAI.hxx"
-
-                   // --------------------------------------------------------------------------------
+// --------------------------------------------------------------------------------
 
 #define AWAR_SAI_CLR_TAB              "saicolors/"
 #define AWAR_SAI_SELECT               AWAR_SAI_CLR_TAB "select"         // current visualized SAI

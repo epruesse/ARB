@@ -32,7 +32,7 @@
   The User has only have to work with the List class.
 */
 
-#include <stdio.h>
+#include <cstdio>
 
 typedef char BOOL;
 typedef unsigned long positiontype;

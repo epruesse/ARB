@@ -1,30 +1,12 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <ctype.h>
-#include <memory.h>
-#include <string.h>
-
-#include <arbdb.h>
-#include <arbdbt.h>
-
-#include <aw_root.hxx>
-#include <aw_awars.hxx>
-#include <aw_window.hxx>
-#include <aw_preset.hxx>
-
-#include <awt.hxx>
-#include <awt_seq_colors.hxx>
-#include <awt_map_key.hxx>
-
-#include <fast_aligner.hxx>
-
-#include <arb_version.h>
-
-#include <AW_helix.hxx>
-#include <st_window.hxx>
-#include <gde.hxx>
-
-#include <ed4_extern.hxx>
+// =============================================================== //
+//                                                                 //
+//   File      : ED4_root.cxx                                      //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
 #include "ed4_class.hxx"
 #include "ed4_awars.hxx"
@@ -42,6 +24,25 @@
 #if defined(ARB_OPENGL)
 #include "ed4_RNA3D.hxx"
 #endif // ARB_OPENGL
+
+#include <aw_awars.hxx>
+#include <aw_preset.hxx>
+
+#include <awt.hxx>
+#include <awt_seq_colors.hxx>
+#include <awt_map_key.hxx>
+
+#include <fast_aligner.hxx>
+
+#include <arb_version.h>
+
+#include <AW_helix.hxx>
+#include <st_window.hxx>
+#include <gde.hxx>
+
+#include <ed4_extern.hxx>
+
+#include <cctype>
 
 AW_window *AWTC_create_island_hopping_window(AW_root *root, AW_CL);
 
@@ -1936,4 +1937,3 @@ ED4_root::~ED4_root()
     delete ecoli_ref;
     if (protstruct) free(protstruct);
 }
-

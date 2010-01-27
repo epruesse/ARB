@@ -1,6 +1,6 @@
 /* Hashtabelle fuer parts */
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 
 #include <arbdb.h>
 #include <arbdbt.h>

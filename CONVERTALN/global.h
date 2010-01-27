@@ -1,5 +1,22 @@
-#include <stdio.h>
+// =============================================================== //
+//                                                                 //
+//   File      : global.h                                          //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
+
+#ifndef GLOBAL_H
+#define GLOBAL_H
+
+#ifndef _CPP_CSTDIO
+#include <cstdio>
+#endif
+#ifndef PROTOTYPES_H
 #include "prototypes.h"
+#endif
 
 #define LINENUM         126
 #define LONGTEXT        5000
@@ -13,3 +30,7 @@
 #define SEPNODEFINED    0       /* no particular line separator is defined, use
                                    general rule to separate lines. */
 #define p_nonkey_start  5
+
+#else
+#error global.h included twice
+#endif // GLOBAL_H

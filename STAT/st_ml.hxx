@@ -11,16 +11,8 @@
 #ifndef ST_ML_HXX
 #define ST_ML_HXX
 
-#ifndef AP_SEQUENCE_HXX
-#include <AP_sequence.hxx>
-#endif
 #ifndef AP_TREE_HXX
 #include <AP_Tree.hxx>
-#endif
-
-
-#ifndef ARB_ASSERT_H
-#include <arb_assert.h>
 #endif
 
 #define st_assert(bed) arb_assert(bed)

@@ -1,11 +1,16 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-// #include <malloc.h>
+// =============================================================== //
+//                                                                 //
+//   File      : PT_findEx.cxx                                     //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
-#include <PT_server.h>
-#include <PT_server_prototypes.h>
+
 #include "probe.h"
+#include <PT_server_prototypes.h>
 #include "probe_tree.hxx"
 #include "pt_prototypes.h"
 

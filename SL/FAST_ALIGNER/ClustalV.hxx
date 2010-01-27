@@ -12,6 +12,10 @@
 #ifndef AWTC_CLUSTALV_HXX
 #define AWTC_CLUSTALV_HXX
 
+#ifndef ARB_ERROR_H
+#include <arb_error.h>
+#endif
+
 ARB_ERROR AWTC_ClustalV_align(int is_dna, int weighted,
                               const char *seq1, int length1, const char *seq2, int length2,
                               const int *gapsBefore1,

@@ -1,11 +1,17 @@
-#include <stdio.h>
-#include <stdlib.h>
+// =============================================================== //
+//                                                                 //
+//   File      : PARS_debug.cxx                                    //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
+
+#include "pars_debug.hxx"
 
 #include <arbdb.h>
-#include <aw_root.hxx>
-#include <aw_device.hxx>
 #include <aw_window.hxx>
-#include "pars_debug.hxx"
 
 void display_out(double * /* liste */, int /* anz */, double /* prev */, double /* pars_start */, int /* rek_deep */) {
     // dummy Funktion zum darstellen

@@ -1,7 +1,14 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <arbdb.h>
+// =============================================================== //
+//                                                                 //
+//   File      : arb_message.cxx                                   //
+//   Purpose   : raise aw_message from external scripts            //
+//                                                                 //
+//   Coded by Ralf Westram (coder@reallysoft.de) in November 2003  //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
+
 #include <arbdbt.h>
 
 int main(int argc, char **argv)

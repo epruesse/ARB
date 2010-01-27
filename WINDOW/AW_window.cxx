@@ -1,16 +1,30 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <memory.h>
-#include <stdarg.h>
-#include <ctype.h>
+// =============================================================== //
+//                                                                 //
+//   File      : AW_window.cxx                                     //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
-#include <sys/types.h>
-#include <sys/uio.h>
-#include <unistd.h>
+#include "aw_commn.hxx"
+#include "aw_at.hxx"
+#include "aw_window.hxx"
+#include "aw_awar.hxx"
+#include "aw_xfig.hxx"
+#include "aw_xfigfont.hxx"
+#include "aw_Xm.hxx"
+#include "aw_click.hxx"
+#include "aw_size.hxx"
+#include "aw_print.hxx"
+#include "aw_window_Xm.hxx"
+#include "aw_xkey.hxx"
+#include "aw_global.hxx"
 
-#include <Xm/Xm.h>
+#include <arbdbt.h>
+
 #include <X11/keysym.h>
-#include <X11/Xlib.h>
 #include <X11/Xutil.h>
 #include <X11/Shell.h>
 #include <X11/cursorfont.h>
@@ -28,28 +42,13 @@
 #include <Xm/ScrollBar.h>
 #include <Xm/MwmUtil.h>
 
-#include <arbdb.h>
-#include <arbdbt.h>
+#include <cstdlib>
+#include <cstdarg>
+#include <cctype>
 
-/* Eigene Klassendefinition */
-#include "aw_root.hxx"
-#include "aw_device.hxx"
-#include "aw_commn.hxx"
-#include "aw_keysym.hxx"
-#include "aw_at.hxx"
-#include "aw_window.hxx"
-#include "aw_awar.hxx"
-#include "aw_xfig.hxx"
-#include "aw_xfigfont.hxx"
-/* hier die Motif abhaengigen Teile */
-#include "aw_Xm.hxx"
-#include "aw_click.hxx"
-#include "aw_size.hxx"
-#include "aw_print.hxx"
-#include "aw_window_Xm.hxx"
-#include "aw_xkey.hxx"
-
-#include "aw_global.hxx"
+#include <sys/types.h>
+#include <sys/uio.h>
+#include <unistd.h>
 
 AW_root *AW_root::THIS = NULL;
 
@@ -3848,5 +3847,3 @@ void AW_window::TuneBackground(Widget w, int modStrength) {
     // otherwise some value overflowed
     set_background(hex_color, w);
 }
-
-

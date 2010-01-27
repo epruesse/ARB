@@ -1,9 +1,19 @@
+// =============================================================== //
+//                                                                 //
+//   File      : RNA3D_Main.cxx                                    //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Coded by Yadhukumar in December 2004                          //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
+
 #include "RNA3D_GlobalHeader.hxx"
 #include "RNA3D_Global.hxx"
 #include "RNA3D_Main.hxx"
 #include "RNA3D_Interface.hxx"
 
-#include <aw_root.hxx>
 #include <aw_window.hxx>
 #include <arbdb.h>
 

@@ -12,9 +12,6 @@
 #ifndef ED4_DOTS_HXX
 #define ED4_DOTS_HXX
 
-#ifndef AW_ROOT_HXX
-#include <aw_root.hxx>
-#endif
 #ifndef AW_WINDOW_HXX
 #include <aw_window.hxx>
 #endif

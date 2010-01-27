@@ -1,9 +1,17 @@
+// =============================================================== //
+//                                                                 //
+//   File      : AP_pro_a_nucs.cxx                                 //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
+
 #include "AP_pro_a_nucs.hxx"
 
 #include <AP_codon_table.hxx>
 #include <inline.h>
-
-#include <cctype>
 
 char *AP_create_dna_to_ap_bases() {
     int       i;

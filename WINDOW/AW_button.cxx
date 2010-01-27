@@ -1,8 +1,26 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <iostream>
-#include <memory.h>
-#include <Xm/Xm.h>
+// =============================================================== //
+//                                                                 //
+//   File      : AW_button.cxx                                     //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
+
+#include "aw_at.hxx"
+#include "aw_Xm.hxx"
+#include "aw_click.hxx"
+#include "aw_print.hxx"
+#include "aw_size.hxx"
+#include "aw_window.hxx"
+#include "aw_awar.hxx"
+#include "aw_window_Xm.hxx"
+
+#include <arbdbt.h>
+
+#include <inline.h>
+
 #include <Xm/Frame.h>
 #include <Xm/MenuShell.h>
 #include <Xm/RowColumn.h>
@@ -14,20 +32,7 @@
 #include <Xm/TextF.h>
 #include <Xm/ScrolledW.h>
 
-#include <arbdb.h>
-#include <arbdbt.h>
-#include "aw_root.hxx"
-#include "aw_at.hxx"
-#include "aw_device.hxx"
-#include "aw_Xm.hxx"
-#include "aw_click.hxx"
-#include "aw_print.hxx"
-#include "aw_size.hxx"
-#include "aw_window.hxx"
-#include "aw_awar.hxx"
-#include "aw_window_Xm.hxx"
-
-#include <inline.h>
+#include <iostream>
 
 #if defined(DEBUG)
 // #define DUMP_BUTTON_CREATION

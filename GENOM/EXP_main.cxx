@@ -12,7 +12,9 @@
 //                                                                       //
 //  ==================================================================== //
 
-#include <awt.hxx>
+#include "EXP_local.hxx"
+#include "EXP_interface.hxx"
+
 #include <awt_input_mask.hxx>
 #include <aw_awars.hxx>
 #include <arbdbt.h>
@@ -20,12 +22,6 @@
 
 class AWT_canvas;
 #include <../NTREE/nt_cb.hxx>
-
-#include "EXP.hxx"
-#include "EXP_local.hxx"
-#include "EXP_interface.hxx"
-
-#include <cstdlib>
 
 using namespace std;
 

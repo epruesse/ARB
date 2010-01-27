@@ -12,16 +12,8 @@
 #ifndef DI_FOUNDCLUSTERS_HXX
 #define DI_FOUNDCLUSTERS_HXX
 
-#ifndef ARBDBT_H
-#include <arbdbt.h>
-#endif
 #ifndef GUI_ALIVIEW_HXX
 #include <gui_aliview.hxx>
-#endif
-
-
-#ifndef SMARTPTR_H
-#include <smartptr.h>
 #endif
 
 #ifndef _CPP_SET

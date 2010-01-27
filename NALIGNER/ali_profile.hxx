@@ -17,12 +17,6 @@
 #ifndef ALI_PT_HXX
 #include "ali_pt.hxx"
 #endif
-#ifndef ALI_TLIST_HXX
-#include "ali_tlist.hxx"
-#endif
-#ifndef ALI_MISC_HXX
-#include "ali_misc.hxx"
-#endif
 
 #define ALI_PROFILE_BORDER_LEFT '['
 #define ALI_PROFILE_BORDER_RIGHT ']'

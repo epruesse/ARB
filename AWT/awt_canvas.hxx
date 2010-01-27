@@ -1,12 +1,6 @@
 #ifndef AWT_CANVAS_HXX
 #define AWT_CANVAS_HXX
 
-#ifndef AW_ROOT_HXX
-#include <aw_root.hxx>
-#endif
-#ifndef AW_POSITION_HXX
-#include <aw_position.hxx>
-#endif
 #ifndef AW_WINDOW_HXX
 #include <aw_window.hxx>
 #endif

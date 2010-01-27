@@ -1,25 +1,29 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <limits.h>
-#include <ctype.h>
-#include <errno.h>
+// =============================================================== //
+//                                                                 //
+//   File      : ED4_search.cxx                                    //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Coded by Ralf Westram (coder@reallysoft.de)                   //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
-#include <arbdb.h>
+#include <ed4_extern.hxx>
+#include "ed4_awars.hxx"
+#include "ed4_class.hxx"
+#include "ed4_tools.hxx"
+
 #include <arbdbt.h>
-#include <aw_root.hxx>
-#include <aw_keysym.hxx>
-#include <aw_window.hxx>
 #include <aw_awars.hxx>
 #include <aw_global.hxx>
 #include <fast_aligner.hxx>
 #include <awt.hxx>
 #include <awt_config_manager.hxx>
 
-#include <ed4_extern.hxx>
-#include "ed4_awars.hxx"
-#include "ed4_class.hxx"
-#include "ed4_tools.hxx"
+#include <climits>
+#include <cctype>
+#include <cerrno>
 
 static int result_counter      = 0;
 static int ignore_more_results = false;

@@ -3,8 +3,8 @@
 #define LOOPS 30
 /* wait 1 hour till kill myself */
 
-#include <stdio.h>
-#include <string.h>
+#include <cstdio>
+#include <cstring>
 #include <arbdb.h>
 #include <servercntrl.h>
 

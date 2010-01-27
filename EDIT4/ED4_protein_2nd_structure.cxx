@@ -1,14 +1,20 @@
+// =============================================================== //
+//                                                                 //
+//   File      : ED4_protein_2nd_structure.cxx                     //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
+
+
 /*! \file   ED4_protein_2nd_structure.cxx
  *  \brief  Implements the functions defined in ed4_protein_2nd_structure.hxx.
  *  \author Markus Urban
  *  \date   2008-02-08
  *  \sa     Refer to ed4_protein_2nd_structure.hxx for details, please.
 */
-
-#include <iostream>
-#if !defined(DARWIN)
-#include <malloc.h>
-#endif // DARWIN
 
 #include "arbdb.h"
 #include "arbdbt.h"
@@ -18,9 +24,8 @@
 
 #include <inline.h>
 
-#ifndef ARB_ASSERT_H
-#include <arb_assert.h>
-#endif
+#include <iostream>
+
 #define e4_assert(bed) arb_assert(bed)
 
 using namespace std;

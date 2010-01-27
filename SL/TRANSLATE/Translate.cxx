@@ -9,15 +9,10 @@
 //                                                                 //
 // =============================================================== //
 
-#include <cstdio>
-#include <cstdlib>
-#include <arbdb.h>
-#include <arbdbt.h>
+#include "Translate.hxx"
 
 #include <AP_pro_a_nucs.hxx>
 #include <AP_codon_table.hxx>
-
-#include "Translate.hxx"
 
 GB_ERROR AWT_saveTranslationInfo(GBDATA *gb_species, int arb_transl_table, int codon_start) {
     int embl_transl_table = AWT_arb_code_nr_2_embl_transl_table(arb_transl_table);

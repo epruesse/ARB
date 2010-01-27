@@ -1,10 +1,13 @@
-#include <stdio.h>
+// =============================================================== //
+//                                                                 //
+//   File      : ad_fields.cxx                                     //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
-#include <aw_root.hxx>
-#include <aw_device.hxx>
-#include <aw_window.hxx>
-
-#include <arbdb.h>
 #include <arbdbt.h>
 #include <awt.hxx>
 

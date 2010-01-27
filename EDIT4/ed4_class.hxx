@@ -1,9 +1,6 @@
 #ifndef ED4_CLASS_HXX
 #define ED4_CLASS_HXX
 
-#ifndef ARB_ASSERT_H
-#include <arb_assert.h>
-#endif
 #ifndef AW_FONT_GROUP_HXX
 #include <aw_font_group.hxx>
 #endif
@@ -24,9 +21,6 @@
 #endif
 #ifndef ED4_SEARCH_HXX
 #include "ed4_search.hxx"
-#endif
-#ifndef _CPP_CSTRING
-#include <cstring>
 #endif
 #ifndef _CPP_SET
 #include <set>

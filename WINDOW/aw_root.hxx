@@ -1,20 +1,6 @@
 #ifndef AW_ROOT_HXX
 #define AW_ROOT_HXX
 
-#ifndef _STDIO_H
-#include <stdio.h>
-#endif
-
-#ifndef ARB_ASSERT_H
-#include <arb_assert.h>
-#endif
-#ifndef aw_assert
-#define aw_assert(bed) arb_assert(bed)
-#endif
-
-#ifndef ATTRIBUTES_H
-#include <attributes.h>
-#endif
 #ifndef ARBDB_BASE_H
 #include <arbdb_base.h>
 #endif
@@ -24,6 +10,11 @@
 #ifndef ARB_ERROR_H
 #include <arb_error.h>
 #endif
+
+#ifndef aw_assert
+#define aw_assert(bed) arb_assert(bed)
+#endif
+
 
 #define AW_ROOT_DEFAULT (aw_main_root_default)
 class        AW_root;
@@ -90,9 +81,9 @@ typedef struct {
     int t, b, l, r;
 } AW_rectangle;
 
-typedef struct {
+struct AW_world {
     AW_pos t, b, l, r;
-} AW_world;
+};
 
 typedef char *AW_error;
 

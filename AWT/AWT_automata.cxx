@@ -1,4 +1,4 @@
-#include <stdio.h>
+#include <cstdio>
 #include <memory.h>
 #include "awt_automata.hxx"
 

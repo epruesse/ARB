@@ -1,8 +1,8 @@
 /* memory handling */
 
-#include <stdlib.h>
-#include <string.h>
-#include <stdio.h>
+#include <cstdlib>
+#include <cstring>
+#include <cstdio>
 
 void *getmem(size_t size)
 {

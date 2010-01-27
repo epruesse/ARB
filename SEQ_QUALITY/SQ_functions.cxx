@@ -12,25 +12,13 @@
 //                                                                       //
 //  ==================================================================== //
 
-
-#include <stdio.h>
-#include <stdlib.h>
-#include <string>
-#include <math.h>
-
-#include "arbdb.h"
-#include "arbdbt.h"
-#include <aw_root.hxx>
-#include <aw_device.hxx>
-#include <aw_window.hxx>
-#include <aw_preset.hxx>
-#include <awt.hxx>
-
-#include "SQ_GroupData.h"
 #include "SQ_ambiguities.h"
 #include "SQ_helix.h"
 #include "SQ_physical_layout.h"
 #include "SQ_functions.h"
+
+#include <aw_preset.hxx>
+#include <awt.hxx>
 
 using namespace std;
 

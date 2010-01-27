@@ -12,18 +12,12 @@
  * This software has been widely modified for usage inside ARB.
  */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <memory.h>
-#include <ctype.h>
-#include <X11/Xlib.h>
-
-#include <arbdb.h>
-#include <aw_root.hxx>
-#include "aw_device.hxx"
 #include "aw_commn.hxx"
 #include "aw_xfont.hxx"
+
+#include <arbdb.h>
+
+#include <cctype>
 
 // --------------------------------------------------------------------------------
 

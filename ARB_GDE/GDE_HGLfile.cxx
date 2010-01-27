@@ -1,5 +1,5 @@
 #include "GDE_extglob.h"
-#include <time.h>
+#include <ctime>
 
 /*
   Copyright (c) 1990,1991,1992 Steven Smith at the Harvard Genome Laboratory.

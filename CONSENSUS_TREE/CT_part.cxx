@@ -3,8 +3,8 @@
 /* the partitions are implemented as an array of longs */
 /* Each leaf in a GBT-Tree is represented as one Bit in the Partition */
 
-#include <stdio.h>
-#include <stdlib.h>
+#include <cstdio>
+#include <cstdlib>
 
 #include <arbdb.h>
 #include <arbdbt.h>

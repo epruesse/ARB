@@ -1,17 +1,14 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-// #include <malloc.h>
-
-#include <arbdb.h>
-#include <aw_root.hxx>
-#include <aw_window.hxx>
+// =============================================================== //
+//                                                                 //
+//   File      : ED4_members.cxx                                   //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
 #include "ed4_class.hxx"
-
-// --------------------
-//      ED4_members
-// --------------------
 
 ED4_returncode ED4_members::search_target_species(ED4_extension *location,   ED4_properties prop,  ED4_base **found_member, ED4_level return_level)
 {

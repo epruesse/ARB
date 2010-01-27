@@ -11,9 +11,6 @@
 #ifndef GENOMEIMPORT_H
 #define GENOMEIMPORT_H
 
-#ifndef _CPP_CSTDIO
-#include <cstdio>
-#endif
 #ifndef ARBDB_H
 #include <arbdb.h>
 #endif

@@ -1,13 +1,16 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <memory.h>
-// #include <malloc.h>
-#include <string.h>
-
-#include <PT_com.h>
-#include <client.h>
+// =============================================================== //
+//                                                                 //
+//   File      : arb_probe.cxx                                     //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
 #include <arbdb.h>
+#include <PT_com.h>
+#include <client.h>
 #include <servercntrl.h>
 
 struct apd_sequence {

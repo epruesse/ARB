@@ -12,6 +12,9 @@
 //                                                                       //
 //  ==================================================================== //
 
+#ifndef _CPP_CMATH
+#include <cmath>
+#endif
 
 #ifndef ARB_ASSERT_H
 #include <arb_assert.h>

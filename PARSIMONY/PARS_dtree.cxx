@@ -8,7 +8,6 @@
 //                                                                 //
 // =============================================================== //
 
-#include "ap_main.hxx"
 #include "pars_dtree.hxx"
 #include "pars_main.hxx"
 #include "pars_debug.hxx"

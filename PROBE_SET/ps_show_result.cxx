@@ -1,16 +1,16 @@
+// =============================================================== //
+//                                                                 //
+//   File      : ps_show_result.cxx                                //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Coded by Wolfram Foerster in October 2002                     //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
 
-#include <stdio.h>
-#include <stdlib.h>
-
-#ifndef PS_DEFS_HXX
 #include "ps_defs.hxx"
-#endif
-#ifndef PS_FILEBUFFER_HXX
-#include "ps_filebuffer.hxx"
-#endif
-#ifndef PS_BITMAP_HXX
 #include "ps_bitmap.hxx"
-#endif
 
 //  ====================================================
 //  ====================================================

@@ -1,6 +1,19 @@
+// =============================================================== //
+//                                                                 //
+//   File      : aw_print.hxx                                      //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
+
 #ifndef AW_PRINT_HXX
 #define AW_PRINT_HXX
 
+#ifndef AW_DEVICE_HXX
+#include "aw_device.hxx"
+#endif
 
 class AW_device_print : public AW_device {
     FILE       *out;
@@ -33,4 +46,4 @@ public:
 
 #else
 #error aw_print.hxx included twice
-#endif
+#endif // AW_PRINT_HXX
