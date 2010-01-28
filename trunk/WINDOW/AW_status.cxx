@@ -1800,6 +1800,9 @@ static char *aw_ref_to_title(char *ref) {
         if (strcmp(file, result)==0) freenull(result);
         free(file);
     }
+    else {
+        GB_clear_error();
+    }
 
     if (result==0) {
         result = strdup(ref);
