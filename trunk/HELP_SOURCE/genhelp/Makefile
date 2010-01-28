@@ -57,6 +57,8 @@ agde.hlp: $(GDE_HLP) agde.footer
 	@cp $(STD) $@
 	@echo "# BUILD FROM: $<" >>$@
 	@ls agde_*.hlp | grep -v 'agde_.*_sub'| sed -e 's/^/SUB /' >>$@
+	@echo "" >>$@
+	@echo "UP gde_menus.hlp" >>$@
 	@cat agde.footer >>$@
 
 clean:
