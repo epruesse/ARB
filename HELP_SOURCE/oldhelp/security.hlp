@@ -1,7 +1,7 @@
 #Please insert up references in the next lines (line starts with keyword UP)
 UP	arb.hlp
 UP	glossary.hlp
-UP	arb_edit.hlp
+UP	arb_edit4.hlp
 
 #Please insert subtopic references  (line starts with keyword SUB)
 SUB	set_protection.hlp
@@ -12,7 +12,7 @@ SUB	set_protection.hlp
 TITLE		Protection Level
 
 OCCURRENCE	ARB_NT/Protection
-		ARB_EDIT/EDIT/Set Protection Level ...
+		ARB_EDIT4/Edit/Set protection of current ...
 
 DESCRIPTION	An individual protection level (0 - 6) can be assigned to
 		all types of database entries (sequences and additional
@@ -23,7 +23,7 @@ DESCRIPTION	An individual protection level (0 - 6) can be assigned to
 
 		Default Protection Levels:
 
-			Sequence names:		5
+			Sequence names:         5
 
 		You can see the Protection level of fields in the species/gene
 		information window.

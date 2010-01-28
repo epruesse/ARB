@@ -1,7 +1,7 @@
 #Please insert up references in the next lines (line starts with keyword UP)
 UP	arb.hlp
 UP	glossary.hlp
-UP	arb_edit.hlp
+UP	arb_edit4.hlp
 
 #Please insert subtopic references  (line starts with keyword SUB)
 #SUB	subtopic.hlp
@@ -11,8 +11,7 @@ UP	arb_edit.hlp
 #************* Title of helpfile !! and start of real helpfile ********
 TITLE		Define Helix Symbols
 
-OCCURRENCE	ARB_EDIT/Props/Helix Symbols
-                ARB_EDIT4/Properties/Helix settings
+OCCURRENCE	ARB_EDIT4/Properties/Helix settings
 
 DESCRIPTION
 

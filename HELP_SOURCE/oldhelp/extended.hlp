@@ -20,7 +20,6 @@ DESCRIPTION	The main database divides all sequences into two groups:
 
 			- search SAI's
 			- select a subset of SAI's
-			- exclude SAI's from the ARB_EDITor
 
 
 SECTION         IMPLEMENTED SAI's
@@ -31,7 +30,7 @@ SECTION         IMPLEMENTED SAI's
                         the absolute alignment position into
                         an E.coli-based position and vice versa.
                         (Note: you may use any other sequence instead of ECOLI. The
-                        name displayed in the EDITOR can be modified using Properties/NDS)
+                        name displayed in ARB_EDIT4 can be modified under Properties/NDS)
 
 		HELIX_NR
 

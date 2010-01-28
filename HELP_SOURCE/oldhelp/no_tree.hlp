@@ -5,8 +5,6 @@ UP	mark.hlp
 
 #Please insert subtopic references  (line starts with keyword SUB)
 #SUB	nt_align_select.hlp
-SUB	arb_edit.hlp
-
 
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 

@@ -15,7 +15,7 @@ SUB	multiprobe.hlp
 TITLE		PT_SERVER: What Why and How
 
 OCCURRENCE	<ARB_NT/ETC/probe*>
-		<ARB_EDIT/EDIT/align_sequence ..>
+		<ARB_EDIT4/Edit/aligners>
 
 DESCRIPTION	Probe design, probe matching, and searching the nearest relatives require a
 		lot of database searching.

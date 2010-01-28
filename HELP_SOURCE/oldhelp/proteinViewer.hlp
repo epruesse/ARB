@@ -10,7 +10,7 @@ UP	glossary.hlp
 #************* Title of helpfile !! and start of real helpfile ********
 TITLE		Protein Viewer 
 
-OCCURRENCE	ARB_EDIT->View->ProteinViewer
+OCCURRENCE	ARB_EDIT4/View/Protein Viewer
 
 DESCRIPTION     Use this function to display AminoAcid sequence along with the DNA sequence.
                     
@@ -57,7 +57,7 @@ DESCRIPTION     Use this function to display AminoAcid sequence along with the D
                       you can save the translated (aminoacid) sequence to the database as
                       a new alignment.
 
-NOTES		None
+NOTES		This function is only visible if you are editing an DNA alignment
 
 EXAMPLES	None
 

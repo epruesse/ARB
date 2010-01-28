@@ -1,7 +1,7 @@
 #Please insert up references in the next lines (line starts with keyword UP)
 UP	arb.hlp
 UP	glossary.hlp
-UP	arb_edit.hlp
+UP	arb_edit4.hlp
 
 #Please insert subtopic references  (line starts with keyword SUB)
 #SUB	subtopic.hlp
@@ -11,12 +11,9 @@ UP	arb_edit.hlp
 #************* Title of helpfile !! and start of real helpfile ********
 TITLE		The integrated aligners
 
-OCCURRENCE	ARB_NT/ARB_EDIT/EDIT/Integrated Aligners
+OCCURRENCE	ARB_EDIT4/Edit/Integrated Aligners
 
-DESCRIPTION     Choose the 'Integrated aligners' item from the 'ARB_EDIT/Edit'
-                menu to display the 'Integrated aligners' window.
-
-                Currently there are two integrated aligners:
+DESCRIPTION     Currently there are two integrated aligners:
 
                           1. Fast Aligner
 

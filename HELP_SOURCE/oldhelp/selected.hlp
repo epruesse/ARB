@@ -10,7 +10,9 @@ UP	glossary.hlp
 #************* Title of helpfile !! and start of real helpfile ********
 TITLE		Selected Species and Cursor Position
 
-OCCURRENCE	ARB_NT ARB_EDIT ARB_PARS
+OCCURRENCE	ARB_NT
+                ARB_EDIT4
+                ARB_PARS
 
 DESCRIPTION	An individual species (not SAI) can be selected. That means:
 
@@ -21,22 +23,22 @@ DESCRIPTION	An individual species (not SAI) can be selected. That means:
 			existing tree.
 
 		3.	The sequence of the selected species can be aligned
-			<ARB_EDIT/EDIT/Align Sequence>.
+			<ARB_EDIT4/Edit/Integrated Aligners>.
 
 		4.	It can be used for filter generation.
 
-		The selected species is shown at
-			<ARB_NT/4th big button in top area>.
-
+		The selected species is shown in ARB_NT main window
+                on the species info button in the upper right area. 
 
 	There are several ways to select a species:
 
-		1.	Press <ARB_NT/Species/Search>
-			Search for species
-			Select a species
+		1. In ARB_NT
 
-		2.	Press <ARB_EDIT/ETC/Synchronize Cursor Position>
-			Select one species in the editor.
+                   Click on a species in the tree.
 
-		3.	Double click mouse at species name in the
-			arb sequence editor
+                   Search for species and select a species from the result list.
+
+		2. In ARB_EDIT4
+
+                   Select a species in the editor.
+

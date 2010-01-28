@@ -43,7 +43,7 @@ NOTES		Read PT_SERVER: What Why and How if you do not understand this
 		helptext.
 
 		The probe designing and matching tools ('ARB_PROBE') and the
-		aligner of the editor ('ARB_EDIT') rely on 'PT_SERVER'
+		aligner of the editor ('ARB_EDIT4') rely on 'PT_SERVER'
 		databases and servers.
 
                 Update (re-build) the 'PT_SERVER' database when new

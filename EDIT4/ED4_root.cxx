@@ -1425,9 +1425,9 @@ ED4_returncode ED4_root::generate_window(AW_device **device,    ED4_window **new
     awmm->insert_menu_topic("load_actual", "Load current species [GET]", "G", 0, AWM_ALL, ED4_get_and_jump_to_actual_from_menu, 0, 0);
     awmm->insert_menu_topic("load_marked", "Load marked species",        "m", 0, AWM_ALL, ED4_get_marked_from_menu,             0, 0);
     SEP________________________SEP;
-    awmm->insert_menu_topic("refresh_ecoli",       "Reload Ecoli sequence",        "E", 0, AWM_ALL, ED4_reload_ecoli_cb,     0, 0);
-    awmm->insert_menu_topic("refresh_helix",       "Reload Helix",                 "H", 0, AWM_ALL, ED4_reload_helix_cb,     0, 0);
-    awmm->insert_menu_topic("helix_jump_opposite", "Jump helix opposite [Ctrl-J]", "J", 0, AWM_ALL, ED4_helix_jump_opposite, 0, 0);
+    awmm->insert_menu_topic("refresh_ecoli",       "Reload Ecoli sequence",        "E", "ecoliref.hlp", AWM_ALL, ED4_reload_ecoli_cb,     0, 0);
+    awmm->insert_menu_topic("refresh_helix",       "Reload Helix",                 "H", "helix.hlp",    AWM_ALL, ED4_reload_helix_cb,     0, 0);
+    awmm->insert_menu_topic("helix_jump_opposite", "Jump helix opposite [Ctrl-J]", "J", 0,              AWM_ALL, ED4_helix_jump_opposite, 0, 0);
     SEP________________________SEP;
 
     awmm->insert_sub_menu("Set protection of current ", "p");
@@ -1438,7 +1438,7 @@ ED4_returncode ED4_root::generate_window(AW_device **device,    ED4_window **new
 
         for (char i='0'; i<='6'; i++) {
             macro[3] = topic[6] = hotkey[0] = i;
-            awmm->insert_menu_topic(macro, topic, hotkey, 0, AWM_ALL, ED4_set_protection, AW_CL(i-'0'), 0);
+            awmm->insert_menu_topic(macro, topic, hotkey, "security.hlp", AWM_ALL, ED4_set_protection, AW_CL(i-'0'), 0);
         }
     }
     awmm->close_sub_menu();
@@ -1574,7 +1574,7 @@ ED4_returncode ED4_root::generate_window(AW_device **device,    ED4_window **new
     else                            awmm->insert_menu_topic("props_helix_sym", "Helix Settings ",         "H", "helixsym.hlp",    AWM_ALL, AW_POPUP, (AW_CL)create_helix_props_window,     (AW_CL)expose_cb);
 
     awmm->insert_menu_topic("props_key_map", "Key Mappings ",              "K", "nekey_map.hlp", AWM_ALL, AW_POPUP, (AW_CL)create_key_map_window, 0);
-    awmm->insert_menu_topic("props_nds",     "Select visible info (NDS) ", "D", "e4_nds.hlp",    AWM_ALL, AW_POPUP, (AW_CL)ED4_create_nds_window, 0);
+    awmm->insert_menu_topic("props_nds",     "Select visible info (NDS) ", "D", "ed4_nds.hlp",   AWM_ALL, AW_POPUP, (AW_CL)ED4_create_nds_window, 0);
     SEP________________________SEP;
     awmm->insert_sub_menu("Save properties ...", "a");
     {
