@@ -3,12 +3,10 @@
 //    File      : arb_help2xml.cxx                                       //
 //    Purpose   : Converts old ARB help format to XML                    //
 //                                                                       //
-//                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in October 2001          //
 //  Copyright Department of Microbiology (Technical University Munich)   //
 //                                                                       //
 //  Visit our web site at: http://www.arb-home.de/                       //
-//                                                                       //
 //                                                                       //
 //  ==================================================================== //
 
@@ -208,7 +206,7 @@ public:
 
 
 #if defined(WARN_TODO)
-void check_TODO(const char *line, Reader& reader) {
+void check_TODO(const char *line, const Reader& reader) {
     if (strstr(line, "@@@") != NULL || strstr(line, "TODO") != NULL) {
         string warn = strf("TODO: %s", line);
         add_warning(warn.c_str(), reader.getLineNo());
@@ -359,6 +357,10 @@ static void parseSection(Section& sec, const char *line, int indentation, Reader
                 break;
             }
 
+#if defined(WARN_TODO)
+            check_TODO(line, reader);
+#endif // WARN_TODO
+        
             string Line = line;
             const char *first = firstChar(line);
             if (first[0] == '-') {
