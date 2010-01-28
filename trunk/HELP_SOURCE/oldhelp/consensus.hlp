@@ -1,7 +1,7 @@
 #Please insert up references in the next lines (line starts with keyword UP)
 UP	arb.hlp
 UP	glossary.hlp
-UP	arb_edit.hlp
+UP	arb_edit4.hlp
 UP	extended.hlp
 
 #Please insert subtopic references  (line starts with keyword SUB)
@@ -30,7 +30,7 @@ DESCRIPTION	Calculates consensus for marked or all sequences.
                    'Name of New SAI' field.
 
 NOTES		The consensus sequence is stored within the database as an 'SAI'
-		entry and automatically edited with 'ARB_EDIT'.
+		entry and automatically edited with 'ARB_EDIT4'.
 
 EXAMPLES	None
 

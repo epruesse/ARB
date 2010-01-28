@@ -1,7 +1,7 @@
 #Please insert up references in the next lines (line starts with keyword UP)
 UP	arb.hlp
 UP	glossary.hlp
-UP	arb_edit.hlp
+UP	arb_edit4.hlp
 
 #Please insert subtopic references  (line starts with keyword SUB)
 SUB	helixsym.hlp
@@ -11,7 +11,7 @@ SUB	helixsym.hlp
 #************* Title of helpfile !! and start of real helpfile ********
 TITLE		Helix
 
-OCCURRENCE	ARB_EDIT/ETC/Reload Helix
+OCCURRENCE	ARB_EDIT4/Edit/Reload Helix
 
 DESCRIPTION	The 'SAI' (see LINK{glossary.hlp}) entry 'HELIX_NR' contains
 		numbering of potential higher order structure elements. The
@@ -73,13 +73,12 @@ SECTION FORMAT OF HELIX/HELIX_NR:
 				23b 13-31 ...........+----------------+.....
 
 NOTES		After inserting or deleting gaps in the whole alignment (ARB_NT/
-		Sequence/Admin/INS/DEL CHAR) the helix information has to be:
+		Sequence/Insert delete columns) the helix information has to be:
 
 			1. Checked (inserting a '.' between '1' and '2'
                            destroys the original '12').
 
-			2. reloaded by choosing the 'Reload Helix' item
-                           of the 'ARB_EDIT/ETC' menu.
+			2. reloaded using 'Reload Helix'
 
 
 EXAMPLES	None

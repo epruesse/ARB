@@ -15,7 +15,7 @@ TITLE		Nearest relative search
 
 OCCURRENCE      ARB_NT/Search/More search/Search Next Relatives of SELECTED Species in PT Server
                 ARB_NT/Search/More search/Search Next Relatives of LISTED Species in PT Server
-                ARB_NT/ARB_EDIT/EDIT/Integrated Aligners
+                ARB_EDIT4/Edit/Integrated Aligners
 
 SECTION         ALGORITHM
 

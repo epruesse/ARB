@@ -19,7 +19,7 @@ DESCRIPTION     Searches for primer pairs
                        1. select a species (ARB_NT <INFO button>)
                        2. choose ARB_NT/Etc/Primer Design...
                        3. specify searchparameters
-                       4. mark a result, it will be displayed in ARB_EDIT
+                       4. mark a result, it will be displayed in ARB_EDIT4
 
                 INIT FROM SPECIES/GENE
 
