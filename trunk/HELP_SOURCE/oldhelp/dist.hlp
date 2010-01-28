@@ -37,9 +37,8 @@ DESCRIPTION	Reconstructs a tree for all or marked species by first
                    the 'NEIGHBOUR JOINING' window.
 
 		4. Display the 'Select Filter' window by pressing the button
-                   after the 'Filter' prompt and define an alignment-
-                   associated mask which defines alignment positions to
-                   include for treeing.
+                   after the 'Filter' prompt and define an alignment-associated
+                   mask which defines alignment positions to include for treeing.
 
 		5. Define Weights: !!! not implemented !!!
 

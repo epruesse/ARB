@@ -42,8 +42,8 @@ NOTES		Short descriptions of the 'MODE' and the functions assigned
 
 		The scale bar and its label can be moved by positioning the
 		cursor anywhere on the bar, keeping the left mouse button
-		pressed, moving the cursor to the desired position and sub-
-		sequently releasing the mouse button. The label of the bar
+		pressed, moving the cursor to the desired position and
+                subsequently releasing the mouse button. The label of the bar
 		can be moved independently.
 
 		The previous branch length can be restored using the 'RESET
