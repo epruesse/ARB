@@ -27,8 +27,8 @@ DESCRIPTION     Here's the list of keys recognized by ARB_NTREE:
 
                 If you press < SHIFT + Key > the function works on the opposite set:
 
-                   - Instead of the subtree, the rest of the tree is targetted.
-                   - Instead of the whole tree, all species NOT in tree are targetted.
+                   - Instead of the subtree, the rest of the tree is targeted.
+                   - Instead of the whole tree, all species NOT in tree are targeted.
 
                 If you press < CTRL + Key > the function works on ALL species (if it makes sense).
 

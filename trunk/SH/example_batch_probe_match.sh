@@ -6,7 +6,7 @@
 # Start a shell using 'ARB_NTREE/Tools/Start XTERM' and run this
 # script from there.
 #
-# Before running this script, start the targetted PT_Server from
+# Before running this script, start the targeted PT_Server from
 # inside ARB - otherwise this script will not terminate for a long time.
 
 
