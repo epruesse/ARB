@@ -1671,7 +1671,7 @@ static struct cached_taxonomy *get_cached_taxonomy(GBDATA *gb_main, const char *
             }
             else {
                 cached_taxonomy *ct            = (cached_taxonomy*)malloc(sizeof(*ct));
-                long             nodes         = GBT_count_nodes(tree);
+                long             nodes         = GBT_count_leafs(tree);
                 int              group_counter = 0;
 
                 ct->tree_name = strdup(tree_name);
