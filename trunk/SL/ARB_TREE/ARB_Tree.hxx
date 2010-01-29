@@ -213,6 +213,7 @@ public:
         else father->rightlen                   = newlen;
     }
 
+    const GBT_TREE *get_gbt_tree() const { return (const GBT_TREE*)this; }
     GBT_TREE *get_gbt_tree() { return (GBT_TREE*)this; }
 
     AP_sequence *get_seq() { return seq; }
