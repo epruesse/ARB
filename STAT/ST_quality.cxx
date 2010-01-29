@@ -214,7 +214,7 @@ GB_ERROR st_ml_check_sequence_quality(GBDATA * gb_main, const char *tree_name,
 
     if (!error) {
         GB_HASH *species_to_info_hash = GBS_create_dynaval_hash(GBT_get_species_count(gb_main), GB_IGNORE_CASE, destroy_st_cq_info);
-        GB_CSTR *snames               = GBT_get_species_names_of_tree(st_ml.tree_root->get_root_node()->get_gbt_tree());
+        GB_CSTR *snames               = GBT_get_names_of_species_in_tree(st_ml.tree_root->get_root_node()->get_gbt_tree());
 
         int pos;
         aw_openstatus("Sequence Quality Check");

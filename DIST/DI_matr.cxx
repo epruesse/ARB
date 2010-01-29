@@ -281,7 +281,7 @@ char *DI_MATRIX::load(LoadWhat what, GB_CSTR sort_tree_name, bool show_warnings,
         }
     }
     else {
-        species_in_sort_tree = GBT_get_species_names_of_tree(sort_tree);
+        species_in_sort_tree = GBT_get_names_of_species_in_tree(sort_tree);
 
         {
             GB_NUMHASH *shallLoad = 0;

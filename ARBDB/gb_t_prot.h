@@ -29,8 +29,6 @@ GBDATA *gbt_table_link_follower(GBDATA *gb_main, GBDATA *gb_link, const char *li
 
 /* adtree.cxx */
 GBT_TREE *gbt_read_tree_rek(char **data, long *startid, GBDATA **gb_tree_nodes, long structure_size, int size_of_tree, GB_ERROR *error);
-int gbt_sum_leafs(GBT_TREE *tree);
-GB_CSTR *gbt_fill_species_names(GB_CSTR *des, GBT_TREE *tree);
 
 #else
 #error gb_t_prot.h included twice

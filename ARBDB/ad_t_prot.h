@@ -149,7 +149,7 @@ GB_ERROR GBT_write_tree_rem(GBDATA *gb_main, const char *tree_name, const char *
 GBT_TREE *GBT_read_tree_and_size(GBDATA *gb_main, const char *tree_name, long structure_size, int *tree_size);
 GBT_TREE *GBT_read_tree(GBDATA *gb_main, const char *tree_name, long structure_size);
 GBT_TREE *GBT_read_plain_tree(GBDATA *gb_main, GBDATA *gb_ctree, long structure_size, GB_ERROR *error);
-long GBT_count_nodes(GBT_TREE *tree);
+size_t GBT_count_leafs(const GBT_TREE *tree);
 GB_ERROR GBT_link_tree_using_species_hash(GBT_TREE *tree, bool show_status, GB_HASH *species_hash, int *zombies, int *duplicates);
 GB_ERROR GBT_link_tree(GBT_TREE *tree, GBDATA *gb_main, bool show_status, int *zombies, int *duplicates);
 void GBT_unlink_tree(GBT_TREE *tree);
@@ -161,8 +161,8 @@ const char *GBT_tree_info_string(GBDATA *gb_main, const char *tree_name, int max
 GB_ERROR GBT_check_tree_name(const char *tree_name);
 char **GBT_get_tree_names_and_count(GBDATA *Main, int *countPtr);
 char **GBT_get_tree_names(GBDATA *Main);
-char *GBT_get_next_tree_name(GBDATA *gb_main, const char *tree_name);
-GB_CSTR *GBT_get_species_names_of_tree(GBT_TREE *tree);
+char *GBT_get_name_of_next_tree(GBDATA *gb_main, const char *tree_name);
+GB_CSTR *GBT_get_names_of_species_in_tree(const GBT_TREE *tree);
 char *GBT_existing_tree(GBDATA *gb_main, const char *tree_name);
 
 /* adali.cxx */

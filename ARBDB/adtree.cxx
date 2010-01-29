@@ -212,7 +212,7 @@ static GB_ERROR gbt_write_tree_nodes(GBDATA *gb_tree, GBT_TREE *node, long *star
     return error;
 }
 
-static char *gbt_write_tree_rek_new(GBT_TREE *node, char *dest, long mode) {
+static char *gbt_write_tree_rek_new(const GBT_TREE *node, char *dest, long mode) {
     char buffer[40];        // just real numbers
     char    *c1;
 
@@ -570,15 +570,11 @@ GBT_TREE *GBT_read_plain_tree(GBDATA *gb_main, GBDATA *gb_ctree, long structure_
     return t;
 }
 
-#if defined(DEVEL_RALF)
-#warning wrong name -> GBT_count_leafs
-#endif // DEVEL_RALF
-
-long GBT_count_nodes(GBT_TREE *tree) {
+size_t GBT_count_leafs(const GBT_TREE *tree) {
     if (tree->is_leaf) {
         return 1;
     }
-    return GBT_count_nodes(tree->leftson) + GBT_count_nodes(tree->rightson);
+    return GBT_count_leafs(tree->leftson) + GBT_count_leafs(tree->rightson);
 }
 
 // -------------------------------------------
@@ -626,7 +622,7 @@ GB_ERROR GBT_link_tree_using_species_hash(GBT_TREE *tree, bool show_status, GB_H
     long                  leafs = 0;
 
     if (duplicates || show_status) {
-        leafs = GBT_count_nodes(tree);
+        leafs = GBT_count_leafs(tree);
     }
 
     ltd.species_hash = species_hash;
@@ -826,7 +822,7 @@ char **GBT_get_tree_names(GBDATA *Main) {
     return GBT_get_tree_names_and_count(Main, &dummy);
 }
 
-char *GBT_get_next_tree_name(GBDATA *gb_main, const char *tree_name) {
+char *GBT_get_name_of_next_tree(GBDATA *gb_main, const char *tree_name) {
     /* returns a heap-copy of the name of the next tree behind 'tree_name'.
      * If 'tree_name' is NULL or points to the last tree, returns the first tree.
      * If no tree exists, returns NULL.
@@ -845,33 +841,26 @@ char *GBT_get_next_tree_name(GBDATA *gb_main, const char *tree_name) {
     return gb_tree ? GB_read_key(gb_tree) : NULL;
 }
 
-int gbt_sum_leafs(GBT_TREE *tree) {
+static GB_CSTR *fill_species_name_array(GB_CSTR *current, const GBT_TREE *tree) {
     if (tree->is_leaf) {
-        return 1;
+        current[0] = tree->name;
+        return current+1;
     }
-    return gbt_sum_leafs(tree->leftson) + gbt_sum_leafs(tree->rightson);
+    current = fill_species_name_array(current, tree->leftson);
+    current = fill_species_name_array(current, tree->rightson);
+    return current;
 }
 
-GB_CSTR *gbt_fill_species_names(GB_CSTR *des, GBT_TREE *tree) {
-    if (tree->is_leaf) {
-        des[0] = tree->name;
-        return des+1;
-    }
-    des = gbt_fill_species_names(des, tree->leftson);
-    des = gbt_fill_species_names(des, tree->rightson);
-    return des;
-}
-
-GB_CSTR *GBT_get_species_names_of_tree(GBT_TREE *tree) {
+GB_CSTR *GBT_get_names_of_species_in_tree(const GBT_TREE *tree) {
     /* creates an array of all species names in a tree,
      * The names are not allocated (so they may change as side effect of renaming species) */
 
-    int size = gbt_sum_leafs(tree);
+    size_t size = GBT_count_leafs(tree);
     GB_CSTR *result = (GB_CSTR *)GB_calloc(sizeof(char *), size + 1);
 #if defined(DEBUG)
     GB_CSTR *check =
 #endif // DEBUG
-        gbt_fill_species_names(result, tree);
+        fill_species_name_array(result, tree);
     gb_assert(check - size == result);
     return result;
 }

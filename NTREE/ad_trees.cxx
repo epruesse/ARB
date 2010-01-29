@@ -676,27 +676,27 @@ AW_window *create_tree_cmp_window(AW_root *root) {
     return aws;
 }
 void ad_tr_delete_cb(AW_window *aww) {
-    AW_awar  *awar_tree = aww->get_root()->awar(AWAR_TREE_NAME);
-    char     *source    = awar_tree->read_string();
+    AW_awar *awar_tree = aww->get_root()->awar(AWAR_TREE_NAME);
+    char    *name      = awar_tree->read_string();
 
     // 1. switch to next tree
     {
         GB_transaction ta(GLOBAL_gb_main);
-        char *newname = GBT_get_next_tree_name(GLOBAL_gb_main, source);
+        char *newname = GBT_get_name_of_next_tree(GLOBAL_gb_main, name);
 
-        awar_tree->write_string(!newname || (strcmp(newname, source) == 0) ? "" : newname);
+        awar_tree->write_string(!newname || (strcmp(newname, name) == 0) ? "" : newname);
         free(newname);
     }
 
     // 2. delete old tree
     {
         GB_ERROR  error   = GB_begin_transaction(GLOBAL_gb_main);
-        GBDATA   *gb_tree = GBT_get_tree(GLOBAL_gb_main, source);
+        GBDATA   *gb_tree = GBT_get_tree(GLOBAL_gb_main, name);
         if (gb_tree) {
-            char *newname = GBT_get_next_tree_name(GLOBAL_gb_main, source);
+            char *newname = GBT_get_name_of_next_tree(GLOBAL_gb_main, name);
             error = GB_delete(gb_tree);
             if (!error && newname) {
-                awar_tree->write_string(strcmp(newname, source) == 0 ? "" : newname);
+                awar_tree->write_string(strcmp(newname, name) == 0 ? "" : newname);
             }
             free(newname);
         }
@@ -707,11 +707,11 @@ void ad_tr_delete_cb(AW_window *aww) {
         error = GB_end_transaction(GLOBAL_gb_main, error);
         if (error) {
             aw_message(error);
-            awar_tree->write_string(source); // switch back to failed tree
+            awar_tree->write_string(name); // switch back to failed tree
         }
     }
 
-    free(source);
+    free(name);
 }
 
 static void create_tree_last_window(AW_window *aww) {
