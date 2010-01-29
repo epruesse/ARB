@@ -204,9 +204,11 @@ ED4_returncode EDB_root_bact::search_sequence_data_rek(ED4_multi_sequence_manage
                 ED4_text_terminal *text_terminal = 0;
 
                 bool is_seq_data = (strcmp(key_string, "data") == 0); // not quite correct since several SAIs also use data
-                bool is_aligned = is_seq_data
-                    || (strcmp(key_string, "data2") == 0) // used by SAIs with two entries (e.g. first and second digit of 2-digit-numbers)
-                    || (strcmp(key_string, "bits") == 0); // used by binary SAIs (e.g. MARKERLINE)
+
+                bool is_aligned                        = is_seq_data
+                    || (strcmp(key_string, "data2")   == 0) // used by SAIs with two entries (e.g. first and second digit of 2-digit-numbers)
+                    || (strcmp(key_string, "bits")    == 0) // used by binary SAIs (e.g. MARKERLINE)
+                    || (strcmp(key_string, "quality") == 0); // used by "quality" entry written by chimera check; see ../STAT/ST_quality.cxx@chimera_check_quality_string
 
                 if (is_aligned) {
                     ED4_sequence_terminal *seq_term;
