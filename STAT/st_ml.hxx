@@ -38,12 +38,9 @@ public:
 
 typedef unsigned char ST_ML_Color;
 
-const int ST_MAX_SEQ_PART = 256;
-// should be greater than the editor width
-// otherwise extrem performance penalties
-const int ST_BUCKET_SIZE = 16;
-// at minimum ST_BUCKET_SIZE characters are calculated per call
-const int LD_BUCKET_SIZE = 4; // log dualis of ST_BUCKET_SIZE
+const int ST_MAX_SEQ_PART = 256;                    // should be greater than the editor width otherwise extrem performance penalties
+const int ST_BUCKET_SIZE  = 16;                     // at minimum ST_BUCKET_SIZE characters are calculated per call
+const int LD_BUCKET_SIZE  = 4;                      // log dualis of ST_BUCKET_SIZE
 
 class ST_base_vector {
 public:

@@ -1126,7 +1126,7 @@ pgt:	$(PGT)
 xml:	XML/XML.dummy
 xmlin:  XML_IMPORT/XML_IMPORT.dummy# broken
 templ:	TEMPLATES/TEMPLATES.dummy
-stat:   STAT/STAT.a $(NTREE) $(EDIT4)
+stat:   STAT/STAT.dummy $(NTREE) $(EDIT4)
 
 #********************************************************************************
 

@@ -17,7 +17,7 @@
 #include <awt_csp.hxx>
 #include <awt_filter.hxx>
 
-void st_ok_cb(AW_window *aww, ST_ML *st_ml) {
+static void st_ok_cb(AW_window *aww, ST_ML *st_ml) {
     AW_root        *root           = aww->get_root();
     char           *alignment_name = root->awar_string(AWAR_DEFAULT_ALIGNMENT, "-none-", st_ml->gb_main)->read_string();
     char           *tree_name      = root->awar_string(AWAR_TREE, "tree_stat", st_ml->gb_main)->read_string();
@@ -104,11 +104,7 @@ AP_tree *st_ml_convert_species_name_to_node(ST_ML * st_ml,
     return node;
 }
 
-int st_is_inited(ST_ML * st_ml) {
-    return st_ml->is_inited;
-}
-
-void st_check_cb(AW_window * aww, GBDATA * gb_main, AWT_csp * awt_csp) {
+static void st_check_cb(AW_window * aww, GBDATA * gb_main, AWT_csp * awt_csp) {
     GB_transaction ta(gb_main);
 
     AW_root *r = aww->get_root();
@@ -133,69 +129,66 @@ void st_check_cb(AW_window * aww, GBDATA * gb_main, AWT_csp * awt_csp) {
 
 AW_window *st_create_quality_check_window(AW_root * root, GBDATA * gb_main) {
     static AW_window_simple *aws = 0;
-    if (aws)
-        return aws;
-    static AWT_csp *awt_csp;
-    aws = new AW_window_simple;
-    aws->init(root, "SEQUENCE_QUALITY_CHECK",
-            "CHECK QUALITY OF MARKED SEQUENCES");
+    if (!aws) {
+        aws = new AW_window_simple;
+        aws->init(root, "SEQUENCE_QUALITY_CHECK", "Check quality of marked sequences");
+        aws->load_xfig("check_quality.fig");
 
-    aws->load_xfig("check_quality.fig");
+        aws->callback(AW_POPDOWN);
+        aws->at("close");
+        aws->create_button("CLOSE", "CLOSE", "C");
 
-    aws->callback(AW_POPDOWN);
-    aws->at("close");
-    aws->create_button("CLOSE", "CLOSE", "C");
+        aws->callback(AW_POPUP_HELP, (AW_CL) "check_quality.hlp");
+        aws->at("help");
+        aws->create_button("HELP", "HELP", "H");
 
-    aws->callback(AW_POPUP_HELP, (AW_CL) "check_quality.hlp");
-    aws->at("help");
-    aws->create_button("HELP", "HELP", "H");
+        root->awar_string(ST_ML_AWAR_CSP, "");
+        root->awar_string(AWAR_DEFAULT_ALIGNMENT, "-none-", gb_main);
+        root->awar_int(ST_ML_AWAR_CQ_BUCKET_SIZE, 300);
+        root->awar_int(ST_ML_AWAR_CQ_MARKED_ONLY, 0);
+        root->awar_string(AWAR_TREE, "tree_main", gb_main);
+        root->awar_string(ST_ML_AWAR_CQ_DEST_FIELD, "tmp");
+        root->awar_int(ST_ML_AWAR_CQ_REPORT, 0);
 
-    root->awar_string(ST_ML_AWAR_CSP, "");
-    root->awar_string(AWAR_DEFAULT_ALIGNMENT, "-none-", gb_main);
-    root->awar_int(ST_ML_AWAR_CQ_BUCKET_SIZE, 300);
-    root->awar_int(ST_ML_AWAR_CQ_MARKED_ONLY, 0);
-    root->awar_string(AWAR_TREE, "tree_main", gb_main);
-    root->awar_string(ST_ML_AWAR_CQ_DEST_FIELD, "tmp");
-    root->awar_int(ST_ML_AWAR_CQ_REPORT, 0);
+        root->awar_string(ST_ML_AWAR_ALIGNMENT)->map(AWAR_DEFAULT_ALIGNMENT);
 
-    root->awar_string(ST_ML_AWAR_ALIGNMENT)->map(AWAR_DEFAULT_ALIGNMENT);
+        AWT_csp *awt_csp = new AWT_csp(gb_main, root, ST_ML_AWAR_CSP); // not freed
 
-    awt_csp = new AWT_csp(gb_main, root, ST_ML_AWAR_CSP);
+        aws->at("which");
+        {
+            aws->create_option_menu(ST_ML_AWAR_CQ_MARKED_ONLY);
+            aws->insert_option("All in tree", "t", 0);
+            aws->insert_option("Only marked and in tree", "m", 1);
+            aws->update_option_menu();
+        }
 
-    aws->at("which");
-    {
-        aws->create_option_menu(ST_ML_AWAR_CQ_MARKED_ONLY);
-        aws->insert_option("All in tree", "t", 0);
-        aws->insert_option("Only marked and in tree", "m", 1);
-        aws->update_option_menu();
+        aws->at("report");
+        {
+            aws->create_option_menu(ST_ML_AWAR_CQ_REPORT);
+            aws->insert_option("No report", "N", 0);
+            aws->insert_option("R. to temporary sequence", "t", 1);
+            aws->insert_option("R. to sequence", "s", 2);
+            aws->update_option_menu();
+        }
+
+        aws->at("awt_csp");
+        aws->callback(AW_POPUP, (AW_CL) create_csp_window, (AW_CL) awt_csp);
+        aws->create_button("SELECT_CSP", ST_ML_AWAR_CSP);
+
+        aws->at("sb");
+        aws->create_input_field(ST_ML_AWAR_CQ_BUCKET_SIZE);
+
+        awt_create_selection_list_on_scandb(gb_main, aws,
+                                            ST_ML_AWAR_CQ_DEST_FIELD,
+                                            1 << GB_STRING,
+                                            "dest",
+                                            0,
+                                            &AWT_species_selector,
+                                            20, 10);
+
+        aws->at("GO");
+        aws->callback((AW_CB) st_check_cb, (AW_CL) gb_main, (AW_CL) awt_csp);
+        aws->create_button("GO", "GO", "G");
     }
-
-    aws->at("report");
-    {
-        aws->create_option_menu(ST_ML_AWAR_CQ_REPORT);
-        aws->insert_option("No report", "N", 0);
-        aws->insert_option("R. to temporary sequence", "t", 1);
-        aws->insert_option("R. to sequence", "s", 2);
-        aws->update_option_menu();
-    }
-
-    aws->at("awt_csp");
-    aws->callback(AW_POPUP, (AW_CL) create_csp_window, (AW_CL) awt_csp);
-    aws->create_button("SELECT_CSP", ST_ML_AWAR_CSP);
-
-    aws->at("sb");
-    aws->create_input_field(ST_ML_AWAR_CQ_BUCKET_SIZE);
-
-    awt_create_selection_list_on_scandb(gb_main, aws,
-                                        ST_ML_AWAR_CQ_DEST_FIELD,
-                                        1 << GB_STRING,
-                                        "dest",
-                                        0,
-                                        &AWT_species_selector,
-                                        20, 10);
-
-    aws->at("GO");
-    aws->callback((AW_CB) st_check_cb, (AW_CL) gb_main, (AW_CL) awt_csp);
-    aws->create_button("GO", "GO", "G");
     return aws;
 }
