@@ -34,7 +34,6 @@ class AWT_csp;
 AW_window *st_create_main_window(AW_root * aw_root, ST_ML * st_ml,
                                  AW_CB0 refresh_func, AW_window * win);
 ST_ML *new_ST_ML(GBDATA * gb_main);
-int st_is_inited(ST_ML * st_ml);
 
 typedef unsigned char ST_ML_Color;
 enum st_report_enum {

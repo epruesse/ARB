@@ -21,12 +21,12 @@
 #include <cctype>
 
 st_cq_stat::st_cq_stat(int isize) {
-    size = isize;
+    size        = isize;
     likelihoods = new double[size];
     square_liks = new double[size];
-    n_elems = new int[size];
-    int i;
-    for (i = 0; i < size; i++) {
+    n_elems     = new int[size];
+    
+    for (int i = 0; i < size; i++) {
         n_elems[i] = 0;
         square_liks[i] = 0;
         likelihoods[i] = 0;
@@ -34,9 +34,9 @@ st_cq_stat::st_cq_stat(int isize) {
 }
 
 st_cq_stat::~st_cq_stat() {
-    delete[]square_liks;
-    delete[]likelihoods;
-    delete[]n_elems;
+    delete [] square_liks;
+    delete [] likelihoods;
+    delete [] n_elems;
 }
 
 void st_cq_stat::add(int pos, double lik) {
@@ -92,9 +92,9 @@ st_cq_info::~st_cq_info() {
     ;
 }
 
-void st_ml_add_sequence_part_to_stat(ST_ML * st_ml, AWT_csp * /* awt_csp */,
-                                     const char *species_name, int seq_len, int bucket_size,
-                                     GB_HASH * species_to_info_hash, int start, int end)
+static void st_ml_add_sequence_part_to_stat(ST_ML * st_ml, AWT_csp * /* awt_csp */,
+                                            const char *species_name, int seq_len, int bucket_size,
+                                            GB_HASH * species_to_info_hash, int start, int end)
 {
     AP_tree *node = st_ml_convert_species_name_to_node(st_ml, species_name);
     if (node) {
@@ -146,10 +146,10 @@ void st_ml_add_sequence_part_to_stat(ST_ML * st_ml, AWT_csp * /* awt_csp */,
     }
 }
 
-void st_ml_add_quality_string_to_species(GBDATA * gb_main,
-                                         const char *alignment_name, const char *species_name, int seq_len,
-                                         int bucket_size, GB_HASH * species_to_info_hash, st_report_enum report,
-                                         const char *dest_field)
+static void st_ml_add_quality_string_to_species(GBDATA * gb_main,
+                                                const char *alignment_name, const char *species_name, int seq_len,
+                                                int bucket_size, GB_HASH * species_to_info_hash, st_report_enum report,
+                                                const char *dest_field)
 {
     GBDATA *gb_species = GBT_find_species(gb_main, species_name);
     if (!gb_species) return;                        // invalid species
@@ -161,17 +161,22 @@ void st_ml_add_quality_string_to_species(GBDATA * gb_main,
     GB_ERROR  error     = 0;
     if (!gb_dest) error = GB_await_error();
     else {
-        char buffer[256];
-        char *s2 = info->ss2.generate_string();
-        char *s5 = info->ss5.generate_string();
         char *su = info->ssu.generate_string();
-        snprintf(buffer, 256, "a%s b%s c%s", s2, s5, su);
-        delete[]s2;
-        delete[]s5;
-        error = GB_write_string(gb_dest, buffer);
+        {
+            char  buffer[256];
+            char *s2 = info->ss2.generate_string();
+            char *s5 = info->ss5.generate_string();
+
+            snprintf(buffer, 256, "a%s b%s c%s", s2, s5, su);
+            error = GB_write_string(gb_dest, buffer);
+            
+            delete [] s2;
+            delete [] s5;
+        }
 
         if (!error && report) {
-            GBDATA *gb_report = GBT_add_data(gb_species, alignment_name, "quality", GB_STRING);
+            // name "quality" handled specially by ../EDIT4/EDB_root_bact.cxx@chimera_check_quality_string
+            GBDATA *gb_report     = GBT_add_data(gb_species, alignment_name, "quality", GB_STRING);
             if (!gb_report) error = GB_await_error();
             else {
                 char *rp = new char[seq_len + 1];
@@ -184,17 +189,19 @@ void st_ml_add_quality_string_to_species(GBDATA * gb_main,
                 if (report == ST_QUALITY_REPORT_TEMP) {
                     GB_set_temporary(gb_report);
                 }
-                delete rp;
+                delete [] rp;
             }
         }
-        delete[]su;
+        delete [] su;
     }
     if (error) {
         aw_message(error);
     }
-    delete info;
-    GBS_write_hash(species_to_info_hash, species_name, 0);
+}
 
+static void destroy_st_cq_info(long cl_info) {
+    st_cq_info *info = (st_cq_info*)cl_info;
+    delete info;
 }
 
 GB_ERROR st_ml_check_sequence_quality(GBDATA * gb_main, const char *tree_name,
@@ -206,7 +213,7 @@ GB_ERROR st_ml_check_sequence_quality(GBDATA * gb_main, const char *tree_name,
     GB_ERROR error   = st_ml.init(tree_name, alignment_name, 0, marked_only, awt_csp, true);
 
     if (!error) {
-        GB_HASH *species_to_info_hash = GBS_create_hash(GBT_get_species_count(gb_main), GB_IGNORE_CASE);
+        GB_HASH *species_to_info_hash = GBS_create_dynaval_hash(GBT_get_species_count(gb_main), GB_IGNORE_CASE, destroy_st_cq_info);
         GB_CSTR *snames               = GBT_get_species_names_of_tree(st_ml.tree_root->get_root_node()->get_gbt_tree());
 
         int pos;

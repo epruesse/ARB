@@ -2,7 +2,10 @@
 
 .SUFFIXES: .o .cxx .depend
 
-CPP_OBJECTS =   ST_quality.o ST_ml.o ST_window.o
+CPP_OBJECTS = \
+	ST_ml.o \
+	ST_window.o \
+	ST_quality.o \
 
 $(MAIN): $(CPP_OBJECTS)
 	$(LINK_STATIC_LIB) $(MAIN) $(CPP_OBJECTS)
