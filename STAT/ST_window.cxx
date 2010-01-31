@@ -10,6 +10,7 @@
 
 #include "st_window.hxx"
 #include "st_ml.hxx"
+#include "st_quality.hxx"
 
 #include <aw_awars.hxx>
 #include <awt.hxx>
@@ -19,22 +20,24 @@
 
 static void st_ok_cb(AW_window *aww, ST_ML *st_ml) {
     AW_root        *root           = aww->get_root();
-    char           *alignment_name = root->awar_string(AWAR_DEFAULT_ALIGNMENT, "-none-", st_ml->gb_main)->read_string();
-    char           *tree_name      = root->awar_string(AWAR_TREE, "tree_stat", st_ml->gb_main)->read_string();
+    char           *alignment_name = root->awar_string(AWAR_DEFAULT_ALIGNMENT, "-none-", st_ml->get_gb_main())->read_string();
+    char           *tree_name      = root->awar_string(AWAR_TREE, "tree_stat", st_ml->get_gb_main())->read_string();
     int             marked_only    = root->awar_int(ST_ML_AWAR_CQ_MARKED_ONLY)->read_int();
 
-    GB_ERROR error    = GB_push_transaction(st_ml->gb_main);
-    if (!error) error = st_ml->init(tree_name, alignment_name, NULL, marked_only, st_ml->awt_csp, true);
-    if (!error && st_ml->refresh_func) st_ml->refresh_func(st_ml->aw_window);
+    GB_ERROR error = GB_push_transaction(st_ml->get_gb_main());
+    if (!error) {
+        error = st_ml->init_st_ml(tree_name, alignment_name, NULL, marked_only, st_ml->get_column_statistic(), true);
+        if (!error) st_ml->do_refresh();
+    }
 
-    error = GB_end_transaction(st_ml->gb_main, error);
+    error = GB_end_transaction(st_ml->get_gb_main(), error);
     aww->hide_or_notify(error);
 
     free(tree_name);
     free(alignment_name);
 }
 
-AW_window *st_create_main_window(AW_root * root, ST_ML * st_ml, AW_CB0 refresh_func, AW_window * win) {
+AW_window *STAT_create_main_window(AW_root *root, ST_ML *st_ml, AW_CB0 refresh_func, AW_window *refreshed_win) {
     AW_window_simple *aws = new AW_window_simple;
     aws->init(root, "COLUMN_STATISTIC", "COLUMN STATISTIC");
 
@@ -51,27 +54,25 @@ AW_window *st_create_main_window(AW_root * root, ST_ML * st_ml, AW_CB0 refresh_f
     root->awar_string(ST_ML_AWAR_CSP, "");
     root->awar_int(ST_ML_AWAR_CQ_MARKED_ONLY, 1);
 
-    root->awar_string(AWAR_DEFAULT_ALIGNMENT, "-none-", st_ml->gb_main);
-    root->awar_string(AWAR_TREE, "tree_main", st_ml->gb_main);
+    root->awar_string(AWAR_DEFAULT_ALIGNMENT, "-none-", st_ml->get_gb_main());
+    root->awar_string(AWAR_TREE, "tree_main", st_ml->get_gb_main());
 
     root->awar_string(ST_ML_AWAR_ALIGNMENT)->map(AWAR_DEFAULT_ALIGNMENT);
-    st_ml->awt_csp = new AWT_csp(st_ml->gb_main, root, ST_ML_AWAR_CSP);
-    st_ml->refresh_func = refresh_func;
-    st_ml->aw_window = win;
+
+    st_ml->create_column_statistic(root, ST_ML_AWAR_CSP);
+    st_ml->set_refresh_callback(refresh_func, refreshed_win);
 
     aws->at("GO");
     aws->callback((AW_CB1) st_ok_cb, (AW_CL) st_ml);
     aws->create_button("GO", "GO", "G");
 
     aws->at("awt_csp");
-    aws->callback(AW_POPUP, (AW_CL) create_csp_window,
-    (AW_CL) st_ml->awt_csp);
+    aws->callback(AW_POPUP, (AW_CL)create_csp_window, (AW_CL)st_ml->get_column_statistic());
     aws->button_length(20);
     aws->create_button("SELECT_CSP", ST_ML_AWAR_CSP);
 
     aws->at("marked");
-    aws->create_toggle_field(ST_ML_AWAR_CQ_MARKED_ONLY, "Calculate for ..",
-    "");
+    aws->create_toggle_field(ST_ML_AWAR_CQ_MARKED_ONLY, "Calculate for ..", "");
     aws->insert_toggle("All species", "A", 0);
     aws->insert_toggle("Marked species", "M", 1);
     aws->update_toggle_field();
@@ -79,32 +80,23 @@ AW_window *st_create_main_window(AW_root * root, ST_ML * st_ml, AW_CB0 refresh_f
     return aws;
 }
 
-ST_ML *new_ST_ML(GBDATA * gb_main) {
+ST_ML *STAT_create_ST_ML(GBDATA *gb_main) {
     return new ST_ML(gb_main);
 }
 
-ST_ML_Color *st_ml_get_color_string(ST_ML * st_ml, char *species_name,
-        AP_tree * node, int start_ali_pos, int end_ali_pos) {
-    return st_ml->get_color_string(species_name, node, start_ali_pos,
-            end_ali_pos);
+ST_ML_Color *STAT_get_color_string(ST_ML *st_ml, char *species_name, AP_tree *node, int start_ali_pos, int end_ali_pos) {
+    return st_ml->get_color_string(species_name, node, start_ali_pos, end_ali_pos);
 }
 
-int st_ml_update_ml_likelihood(ST_ML * st_ml, char *result[4],
-        int *latest_update, char *species_name, AP_tree * node) {
-    return st_ml->update_ml_likelihood(result, latest_update, species_name,
-            node);
+int STAT_update_ml_likelihood(ST_ML *st_ml, char *result[4], int *latest_update, char *species_name, AP_tree *node) {
+    return st_ml->update_ml_likelihood(result, latest_update, species_name, node);
 }
 
-AP_tree *st_ml_convert_species_name_to_node(ST_ML * st_ml,
-        const char *species_name) {
-    AP_tree *node;
-    if (!st_ml->hash_2_ap_tree)
-        return 0;
-    node = (AP_tree *) GBS_read_hash(st_ml->hash_2_ap_tree, species_name);
-    return node;
+AP_tree *STAT_find_node_by_name(ST_ML *st_ml, const char *species_name) {
+    return st_ml->find_node_by_name(species_name);
 }
 
-static void st_check_cb(AW_window * aww, GBDATA * gb_main, AWT_csp * awt_csp) {
+static void st_check_cb(AW_window *aww, GBDATA *gb_main, AWT_csp *awt_csp) {
     GB_transaction ta(gb_main);
 
     AW_root *r = aww->get_root();
@@ -127,7 +119,7 @@ static void st_check_cb(AW_window * aww, GBDATA * gb_main, AWT_csp * awt_csp) {
     if (error) aw_message(error);
 }
 
-AW_window *st_create_quality_check_window(AW_root * root, GBDATA * gb_main) {
+AW_window *STAT_create_quality_check_window(AW_root *root, GBDATA *gb_main) {
     static AW_window_simple *aws = 0;
     if (!aws) {
         aws = new AW_window_simple;
@@ -152,7 +144,7 @@ AW_window *st_create_quality_check_window(AW_root * root, GBDATA * gb_main) {
 
         root->awar_string(ST_ML_AWAR_ALIGNMENT)->map(AWAR_DEFAULT_ALIGNMENT);
 
-        AWT_csp *awt_csp = new AWT_csp(gb_main, root, ST_ML_AWAR_CSP); // not freed
+        AWT_csp *awt_csp = new AWT_csp(gb_main, root, ST_ML_AWAR_CSP); // @@@ not freed
 
         aws->at("which");
         {

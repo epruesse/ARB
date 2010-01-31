@@ -1302,7 +1302,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone) {
             SEP________________________SEP();
 
             AWMIMT("seq_quality",   "Check Sequence Quality", "Q", "seq_quality.hlp",   AWM_EXP, AW_POPUP, (AW_CL)SQ_create_seq_quality_window,   0);
-            AWMIMT("chimera_check", "Chimera Check",          "m", "check_quality.hlp", AWM_EXP, AW_POPUP, (AW_CL)st_create_quality_check_window, (AW_CL)GLOBAL_gb_main);
+            AWMIMT("chimera_check", "Chimera Check",          "m", "check_quality.hlp", AWM_EXP, AW_POPUP, (AW_CL)STAT_create_quality_check_window, (AW_CL)GLOBAL_gb_main);
 
             SEP________________________SEP();
 

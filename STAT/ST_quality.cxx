@@ -10,7 +10,6 @@
 
 #include "st_quality.hxx"
 #include "st_ml.hxx"
-#include "st_window.hxx"
 
 #include <aw_awars.hxx>
 #include <BI_helix.hxx>
@@ -69,16 +68,14 @@ char *st_cq_stat::generate_string() {
             continue;
 
         double variance = mean_sigma / sqrt(n_elems[i]);
-        double diff = likelihoods[i] / n_elems[i] - mean_lik;
-        double val = .7 * diff / variance;
-        int ival = int (val + .5) + 5;
-        if (ival > 9)
-            ival = 9;
-        if (ival < 0)
-            ival = 0;
-        res[i] = '0' + ival;
-        if (res[i] == '5')
-            res[i] = '-';
+        double diff     = likelihoods[i] / n_elems[i] - mean_lik;
+        double val      = .7 * diff / variance;
+        int    ival     = int (val + .5) + 5;
+
+        if (ival > 9) ival = 9;
+        if (ival < 0) ival = 0;
+
+        res[i] = (ival == 5) ? '-' : '0'+ival;
     }
     return res;
 }
@@ -92,11 +89,11 @@ st_cq_info::~st_cq_info() {
     ;
 }
 
-static void st_ml_add_sequence_part_to_stat(ST_ML * st_ml, AWT_csp * /* awt_csp */,
+static void st_ml_add_sequence_part_to_stat(ST_ML *st_ml, AWT_csp */* awt_csp */,
                                             const char *species_name, int seq_len, int bucket_size,
-                                            GB_HASH * species_to_info_hash, int start, int end)
+                                            GB_HASH *species_to_info_hash, int start, int end)
 {
-    AP_tree *node = st_ml_convert_species_name_to_node(st_ml, species_name);
+    AP_tree *node = STAT_find_node_by_name(st_ml, species_name);
     if (node) {
         ST_sequence_ml *sml = st_ml->get_ml_vectors(0, node, start, end);
         if (sml) {
@@ -146,9 +143,9 @@ static void st_ml_add_sequence_part_to_stat(ST_ML * st_ml, AWT_csp * /* awt_csp 
     }
 }
 
-static void st_ml_add_quality_string_to_species(GBDATA * gb_main,
+static void st_ml_add_quality_string_to_species(GBDATA *gb_main,
                                                 const char *alignment_name, const char *species_name, int seq_len,
-                                                int bucket_size, GB_HASH * species_to_info_hash, st_report_enum report,
+                                                int bucket_size, GB_HASH *species_to_info_hash, st_report_enum report,
                                                 const char *dest_field)
 {
     GBDATA *gb_species = GBT_find_species(gb_main, species_name);
@@ -204,17 +201,17 @@ static void destroy_st_cq_info(long cl_info) {
     delete info;
 }
 
-GB_ERROR st_ml_check_sequence_quality(GBDATA * gb_main, const char *tree_name,
-                                      const char *alignment_name, AWT_csp * awt_csp, int bucket_size,
+GB_ERROR st_ml_check_sequence_quality(GBDATA *gb_main, const char *tree_name,
+                                      const char *alignment_name, AWT_csp *awt_csp, int bucket_size,
                                       int marked_only, st_report_enum report, const char *dest_field)
 {
     int      seq_len = GBT_get_alignment_len(gb_main, alignment_name);
     ST_ML    st_ml(gb_main);
-    GB_ERROR error   = st_ml.init(tree_name, alignment_name, 0, marked_only, awt_csp, true);
+    GB_ERROR error   = st_ml.init_st_ml(tree_name, alignment_name, 0, marked_only, awt_csp, true);
 
     if (!error) {
         GB_HASH *species_to_info_hash = GBS_create_dynaval_hash(GBT_get_species_count(gb_main), GB_IGNORE_CASE, destroy_st_cq_info);
-        GB_CSTR *snames               = GBT_get_names_of_species_in_tree(st_ml.tree_root->get_root_node()->get_gbt_tree());
+        GB_CSTR *snames               = GBT_get_names_of_species_in_tree(st_ml.get_gbt_tree());
 
         int pos;
         aw_openstatus("Sequence Quality Check");
