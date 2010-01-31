@@ -999,7 +999,7 @@ static void col_stat_activated(AW_window *)
 
 void ED4_activate_col_stat(AW_window *aww, AW_CL, AW_CL) {
     if (!ED4_ROOT->column_stat_initialized) {
-        AW_window *aww_st = st_create_main_window(ED4_ROOT->aw_root, ED4_ROOT->st_ml, (AW_CB0)col_stat_activated, (AW_window *)aww);
+        AW_window *aww_st = STAT_create_main_window(ED4_ROOT->aw_root, ED4_ROOT->st_ml, (AW_CB0)col_stat_activated, (AW_window *)aww);
         aww_st->show();
         return;
     }

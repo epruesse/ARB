@@ -88,6 +88,7 @@ ST_quality.o: $(ARBHOME)/INCLUDE/dupstr.h
 ST_quality.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 ST_window.o: st_ml.hxx
+ST_window.o: st_quality.hxx
 ST_window.o: st_window.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 ST_window.o: $(ARBHOME)/INCLUDE/ad_prot.h

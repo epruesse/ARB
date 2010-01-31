@@ -47,7 +47,7 @@ AWT_dna_table::AWT_dna_table() {
     }
 }
 
-void ST_base_vector::set(char base, ST_base_vector * inv_frequencies) {
+void ST_base_vector::setBase(char base, const ST_base_vector *inv_frequencies) {
     base = toupper(base);
     memset((char *) &b[0], 0, sizeof(b));
     const double k = 1.0 / ST_MAX_BASE;
@@ -98,7 +98,7 @@ void ST_rate_matrix::print() {
     }
 }
 
-inline void ST_base_vector::mult(ST_base_vector * other) {
+inline void ST_base_vector::mult(ST_base_vector *other) {
     float  *a  = &b[0];
     float  *c  = &other->b[0];
     double  a0 = a[0] * c[0];
@@ -116,9 +116,9 @@ inline void ST_base_vector::mult(ST_base_vector * other) {
     lik    *= other->lik;
 }
 
-inline void ST_rate_matrix::mult(ST_base_vector * in, ST_base_vector * out) {
-    int    i;
-    float *pm = &m[0][0];
+inline void ST_rate_matrix::mult(ST_base_vector *in, ST_base_vector *out) const {
+    int          i;
+    const float *pm = &m[0][0];
 
     for (i = ST_MAX_BASE - 1; i >= 0; i--) {        // calc revers
         double sum0 = pm[4] * in->b[0];
@@ -204,31 +204,34 @@ void ST_sequence_ml::unset() {
 void ST_sequence_ml::set_sequence() {
     /*! Transform the sequence from character to vector, from st_ml->base to 'to' */
 
-    int         i                   = st_ml->base;
     const char *source_sequence     = 0;
     int         source_sequence_len = 0;
 
     GBDATA *gb_data = get_bound_species_data();
     if (gb_data) {
         source_sequence_len = (int) GB_read_string_count(gb_data);
-        source_sequence = GB_read_char_pntr(gb_data);
+        source_sequence     = GB_read_char_pntr(gb_data);
     }
 
-    const char *s = source_sequence + st_ml->base;
-    ST_base_vector *dest = sequence;
-    ST_base_vector *freq = st_ml->inv_base_frequencies + st_ml->base;
-    if (st_ml->base < source_sequence_len) {
-        for (; i < st_ml->to; i++) {
+    const char           *s    = source_sequence + st_ml->get_first_pos();
+    ST_base_vector       *dest = sequence;
+    const ST_base_vector *freq = st_ml->get_inv_base_frequencies() + st_ml->get_first_pos();
+
+    int i = st_ml->get_first_pos();
+    if (st_ml->get_first_pos() < source_sequence_len) {
+        for (; i < st_ml->get_last_pos(); i++) {
             int c = *(s++);
-            if (!c)
-                break;                              // end of sequence
-            dest->set(toupper(c), freq);
+            if (!c) break;                          // end of sequence
+            
+            dest->setBase(toupper(c), freq);
             dest++;
             freq++;
         }
     }
-    for (; i < st_ml->to; i++) {
-        dest->set('.', freq);
+
+    // fill rest with dots
+    for (; i < st_ml->get_last_pos(); i++) {
+        dest->setBase('.', freq);
         dest++;
         freq++;
     }
@@ -275,37 +278,29 @@ void ST_sequence_ml::ungo() {
     last_updated = 0;
 }
 
-void ST_sequence_ml::go(const ST_sequence_ml * lefts, double leftl, const ST_sequence_ml * rights, double rightl) {
+void ST_sequence_ml::go(const ST_sequence_ml *lefts, double leftl, const ST_sequence_ml *rights, double rightl) {
     int             pos;
     ST_base_vector  hbv;
-    double          lc   = leftl / st_ml->step_size;
-    double          rc   = rightl / st_ml->step_size;
-    int             maxm = st_ml->max_matr - 1;
+    double          lc   = leftl / st_ml->get_step_size();
+    double          rc   = rightl / st_ml->get_step_size();
     ST_base_vector *lb   = lefts->sequence;
     ST_base_vector *rb   = rights->sequence;
     ST_base_vector *dest = sequence;
 
-    for (pos = st_ml->base; pos < st_ml->to; pos++) {
-        if (lb->lik != 1 || rb->lik != 1) {
-            printf("error\n");
-        }
-        int distl = (int) (st_ml->rates[pos] * lc);
-        int distr = (int) (st_ml->rates[pos] * rc);
-        if (distl < 0)
-            distl = -distl;
-        if (distl > maxm)
-            distl = maxm;
-        if (distr < 0)
-            distr = -distr;
-        if (distr > maxm)
-            distr = maxm;
-        st_ml->rate_matrices[distl].mult(lb, dest);
-        st_ml->rate_matrices[distr].mult(rb, &hbv);
+    for (pos = st_ml->get_first_pos(); pos < st_ml->get_last_pos(); pos++) {
+        st_assert(lb->lik == 1 && rb->lik == 1);
+
+        int distl = (int) (st_ml->get_rate_at(pos) * lc);
+        int distr = (int) (st_ml->get_rate_at(pos) * rc);
+
+        st_ml->get_matrix_for(distl).mult(lb, dest);
+        st_ml->get_matrix_for(distr).mult(rb, &hbv);
+        
         dest->mult(&hbv);
         dest->check_overflow();
-        if (dest->lik != 1) {
-            printf("error2\n");
-        }
+
+        st_assert(dest->lik == 1);
+
         dest++;
         lb++;
         rb++;
@@ -314,26 +309,21 @@ void ST_sequence_ml::go(const ST_sequence_ml * lefts, double leftl, const ST_seq
 
 ST_base_vector *ST_sequence_ml::tmp_out = 0;
 
-void ST_sequence_ml::calc_out(ST_sequence_ml * next_branch, double dist) {
+void ST_sequence_ml::calc_out(ST_sequence_ml *next_branch, double dist) {
     // result will be in tmp_out
 
     int             pos;
-    ST_base_vector *out   = tmp_out + st_ml->base;
-    double          lc    = dist / st_ml->step_size;
+    ST_base_vector *out   = tmp_out + st_ml->get_first_pos();
+    double          lc    = dist / st_ml->get_step_size();
     ST_base_vector *lefts = next_branch->sequence;
-    int             maxm  = st_ml->max_matr - 1;
 
-    for (pos = st_ml->base; pos < st_ml->to; pos++) {
-        int distl = (int) (st_ml->rates[pos] * lc);
-        if (distl < 0)
-            distl = -distl;
-        if (distl > maxm)
-            distl = maxm;
-        st_ml->rate_matrices[distl].mult(lefts, out);
+    for (pos = st_ml->get_first_pos(); pos < st_ml->get_last_pos(); pos++) {
+        int distl = (int) (st_ml->get_rate_at(pos) * lc);
+        st_ml->get_matrix_for(distl).mult(lefts, out);
 
         // correct frequencies
         for (int i = ST_A; i < ST_MAX_BASE; i++) {
-            out->b[i] *= st_ml->base_frequencies[pos].b[i];
+            out->b[i] *= st_ml->get_base_frequency_at(pos).b[i];
         }
         lefts++;
         out++;
@@ -353,7 +343,7 @@ AP_FLOAT ST_sequence_ml::count_weighted_bases() const {
     return -1.0;
 }
 
-ST_ML::ST_ML(GBDATA * gb_maini) {
+ST_ML::ST_ML(GBDATA *gb_maini) {
     memset((char *) this, 0, sizeof(*this));
     gb_main = gb_maini;
 }
@@ -366,8 +356,8 @@ ST_ML::~ST_ML() {
     delete [] base_frequencies;
     delete [] inv_base_frequencies;
     delete [] rate_matrices;
-    if (!awt_csp) {
-        // rates and ttratio have been allocated (see ST_ML::init)
+    if (!column_stat) {
+        // rates and ttratio have been allocated (see ST_ML::init_st_ml)
         delete [] rates;
         delete [] ttratio;
     }
@@ -382,7 +372,7 @@ void ST_ML::create_frequencies() {
     base_frequencies     = new ST_base_vector[alignment_len];
     inv_base_frequencies = new ST_base_vector[alignment_len];
 
-    if (!awt_csp) {
+    if (!column_stat) {
         for (int i = 0; i < alignment_len; i++) {
             for (int j = ST_A; j < ST_MAX_BASE; j++) {
                 base_frequencies[i].b[j]     = 1.0;
@@ -412,7 +402,7 @@ void ST_ML::create_frequencies() {
             };
 
             for (int j = 0; toCount[j].c; ++j) {
-                const float *freq = awt_csp->get_frequencies(toCount[j].c);
+                const float *freq = column_stat->get_frequencies(toCount[j].c);
                 if (freq) base_frequencies[i].b[toCount[j].b] += freq[i];
             }
 
@@ -442,7 +432,7 @@ void ST_ML::create_frequencies() {
     }
 }
 
-void ST_ML::insert_tree_into_hash_rek(AP_tree * node) {
+void ST_ML::insert_tree_into_hash_rek(AP_tree *node) {
     node->gr.gc = 0;
     if (node->is_leaf) {
         GBS_write_hash(hash_2_ap_tree, node->name, (long) node);
@@ -457,11 +447,11 @@ void ST_ML::create_matrices(double max_disti, int nmatrices) {
     delete [] rate_matrices;
     rate_matrices = new ST_rate_matrix[nmatrices];
 
-    max_dist  = max_disti;
-    max_matr  = nmatrices;
-    step_size = max_dist / max_matr;
-    
-    for (int i = 0; i < max_matr; i++) {
+    max_dist          = max_disti;
+    max_rate_matrices = nmatrices;
+    step_size         = max_dist / max_rate_matrices;
+
+    for (int i = 0; i < max_rate_matrices; i++) {
         rate_matrices[i].set((i + 1) * step_size, 0); // ttratio[i]
     }
 }
@@ -493,27 +483,26 @@ inline GB_ERROR tree_size_ok(AP_tree_root *tree_root) {
     return error;
 }
 
-GB_ERROR ST_ML::init(const char *tree_name, const char *alignment_namei,
-                     const char *species_names, int marked_only,
-                     AWT_csp *awt_cspi, bool show_status)
+GB_ERROR ST_ML::init_st_ml(const char *tree_name, const char *alignment_namei,
+                           const char *species_names, int marked_only,
+                           AWT_csp *awt_cspi, bool show_status)
 {
     /*! this is the real constructor, call only once */
 
     GB_ERROR error = 0;
 
-    if (is_inited) {
+    if (is_initialized) {
         error = "Column statistic can't be re-initialized";
     }
     else {
         GB_transaction ta(gb_main);
-        GB_ERROR       awt_csp_error = 0;
 
         if (show_status) aw_openstatus("Activating column statistic");
 
-        awt_csp       = awt_cspi;
-        awt_csp_error = awt_csp->go(NULL);
+        column_stat                = awt_cspi;
+        GB_ERROR column_stat_error = column_stat->go(NULL);
 
-        if (awt_csp_error) fprintf(stderr, "%s\n", awt_csp_error);
+        if (column_stat_error) fprintf(stderr, "Column statistic error: %s (using equal rates/tt-ratio for all columns)\n", column_stat_error);
 
         alignment_name = strdup(alignment_namei);
         alignment_len  = GBT_get_alignment_len(gb_main, alignment_name);
@@ -526,7 +515,7 @@ GB_ERROR ST_ML::init(const char *tree_name, const char *alignment_namei,
                 AP_filter       filter(alignment_len); // unfiltered
                 AP_weights      weights(&filter);
                 AliView        *aliview   = new AliView(gb_main, filter, weights, alignment_name);
-                ST_sequence_ml *seq_templ = new ST_sequence_ml(aliview, this);
+                ST_sequence_ml *seq_templ = new ST_sequence_ml(aliview, this); // @@@ error: never freed! (should be freed when freeing tree_root!)
 
                 tree_root = new AP_tree_root(aliview, AP_tree(0), seq_templ, false);
                 // do not delete 'aliview' or 'seq_templ' (they belong to 'tree_root' now)
@@ -574,9 +563,9 @@ GB_ERROR ST_ML::init(const char *tree_name, const char *alignment_namei,
 
                 if (show_status) aw_status("calculating frequencies");
 
-                if (!awt_csp_error) {
-                    rates   = awt_csp->get_rates();
-                    ttratio = awt_csp->get_ttratio();
+                if (!column_stat_error) {
+                    rates   = column_stat->get_rates();
+                    ttratio = column_stat->get_ttratio();
                 }
                 else {
                     float *alloc_rates   = new float[alignment_len];
@@ -589,14 +578,14 @@ GB_ERROR ST_ML::init(const char *tree_name, const char *alignment_namei,
                     rates   = alloc_rates;
                     ttratio = alloc_ttratio;
 
-                    awt_csp = 0;                    // mark rates and ttratio as "allocated" (see ST_ML::~ST_ML)
+                    column_stat = 0;                // mark rates and ttratio as "allocated" (see ST_ML::~ST_ML)
                 }
                 create_frequencies();
                 latest_modification = GB_read_clock(gb_main); // set update time
                 create_matrices(2.0, 1000);
 
-                ST_sequence_ml::tmp_out = new ST_base_vector[alignment_len];
-                is_inited = 1;
+                ST_sequence_ml::tmp_out = new ST_base_vector[alignment_len];  // @@@ error: never freed!
+                is_initialized = true;
             }
             if (error) {
                 delete tree_root;               tree_root      = NULL;
@@ -628,7 +617,7 @@ ST_sequence_ml *ST_ML::getOrCreate_seq(AP_tree *node) {
     return seq;
 }
 
-ST_sequence_ml *ST_ML::do_tree(AP_tree * node) {
+ST_sequence_ml *ST_ML::do_tree(AP_tree *node) {
     /*! go through the tree and calculate the ST_base_vector from bottom to top
      */
     ST_sequence_ml *seq = getOrCreate_seq(node);
@@ -654,7 +643,7 @@ void ST_ML::clear_all() {
     latest_modification = GB_read_clock(gb_main);
 }
 
-void ST_ML::undo_tree(AP_tree * node) {
+void ST_ML::undo_tree(AP_tree *node) {
     ST_sequence_ml *seq = getOrCreate_seq(node);
     seq->ungo();
     if (!node->is_leaf) {
@@ -665,7 +654,7 @@ void ST_ML::undo_tree(AP_tree * node) {
 
 #define GET_ML_VECTORS_BUG_WORKAROUND_INCREMENT (ST_MAX_SEQ_PART-1) // workaround bug in get_ml_vectors
 
-ST_sequence_ml *ST_ML::get_ml_vectors(char *species_name, AP_tree * node, int start_ali_pos, int end_ali_pos) {
+ST_sequence_ml *ST_ML::get_ml_vectors(char *species_name, AP_tree *node, int start_ali_pos, int end_ali_pos) {
     /* result will be in tmp_out
      *
      * assert end_ali_pos - start_ali_pos < ST_MAX_SEQ_PART
@@ -688,10 +677,10 @@ ST_sequence_ml *ST_ML::get_ml_vectors(char *species_name, AP_tree * node, int st
 
     ST_sequence_ml *seq = getOrCreate_seq(node);
 
-    if (start_ali_pos != base || end_ali_pos > to) {
+    if (start_ali_pos != first_pos || end_ali_pos > last_pos) {
         undo_tree(tree_root->get_root_node());      // undo everything
-        base = start_ali_pos;
-        to   = end_ali_pos;
+        first_pos = start_ali_pos;
+        last_pos  = end_ali_pos;
     }
 
     AP_tree *pntr;
@@ -710,7 +699,7 @@ ST_sequence_ml *ST_ML::get_ml_vectors(char *species_name, AP_tree * node, int st
     return seq;
 }
 
-int ST_ML::update_ml_likelihood(char *result[4], int *latest_update, char *species_name, AP_tree * node) {
+int ST_ML::update_ml_likelihood(char *result[4], int *latest_update, char *species_name, AP_tree *node) {
     // calculates values for 'Detailed column statistics' in ARB_EDIT4
 
     if (*latest_update >= latest_modification)
@@ -770,7 +759,7 @@ int ST_ML::update_ml_likelihood(char *result[4], int *latest_update, char *speci
     return 1;
 }
 
-ST_ML_Color *ST_ML::get_color_string(char *species_name, AP_tree * node,
+ST_ML_Color *ST_ML::get_color_string(char *species_name, AP_tree *node,
                                      int start_ali_pos, int end_ali_pos)
 {
     //  (Re-)Calculates the color string of a given node for sequence positions start_ali_pos..end_ali_pos
@@ -862,5 +851,9 @@ ST_ML_Color *ST_ML::get_color_string(char *species_name, AP_tree * node,
         seq->color_out_valid_till[pos >> LD_BUCKET_SIZE] = latest_modification;
     }
     return seq->color_out;
+}
+
+void ST_ML::create_column_statistic(AW_root *awr, const char *awarname) {
+    column_stat = new AWT_csp(get_gb_main(), awr, awarname);
 }
 

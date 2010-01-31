@@ -443,9 +443,9 @@ ED4_returncode ED4_sequence_terminal::draw(int /* only_text */)
 
         if (species_name &&
             ED4_ROOT->column_stat_activated &&
-            (st_ml_node || (st_ml_node = st_ml_convert_species_name_to_node(ED4_ROOT->st_ml, this->species_name))))
+            (st_ml_node || (st_ml_node = STAT_find_node_by_name(ED4_ROOT->st_ml, this->species_name))))
             {
-                colors = st_ml_get_color_string(ED4_ROOT->st_ml, 0, st_ml_node, seq_start, seq_end);
+                colors = STAT_get_color_string(ED4_ROOT->st_ml, 0, st_ml_node, seq_start, seq_end);
             }
 
         const char *saiColors = 0;

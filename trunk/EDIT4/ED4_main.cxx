@@ -549,7 +549,7 @@ int main(int argc, char **argv)
     ED4_ROOT->init_alignment();
     ed4_create_all_awars(ED4_ROOT->aw_root, config_name);
 
-    ED4_ROOT->st_ml = new_ST_ML(GLOBAL_gb_main);
+    ED4_ROOT->st_ml = STAT_create_ST_ML(GLOBAL_gb_main);
     ED4_ROOT->sequence_colors = new AWT_seq_colors((GBDATA *)ED4_ROOT->aw_root->application_database, (int)ED4_G_SEQUENCES, ED4_refresh_window, 0, 0);
 
     ED4_ROOT->edk = new ed_key;

@@ -11,6 +11,11 @@
 #ifndef ST_QUALITY_HXX
 #define ST_QUALITY_HXX
 
+#ifndef ST_WINDOW_HXX
+#include "st_window.hxx"
+#endif
+
+
 class st_cq_stat {
     double *likelihoods;
     double *square_liks;
@@ -38,6 +43,11 @@ public:
 
     ~st_cq_info();
 };
+
+GB_ERROR st_ml_check_sequence_quality(GBDATA *gb_main, const char *tree_name,
+                                      const char *alignment_name, AWT_csp *awt_csp, int bucket_size,
+                                      int marked_only, st_report_enum report, const char *dest_field);
+
 
 #else
 #error st_quality.hxx included twice

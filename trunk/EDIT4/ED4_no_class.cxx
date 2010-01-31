@@ -975,12 +975,12 @@ void ED4_show_detailed_column_stats(AW_window *aww, AW_CL, AW_CL)
     }
 
     ED4_sequence_terminal *seq_term = cursor_terminal->to_sequence_terminal();
-    if (!seq_term->st_ml_node && !(seq_term->st_ml_node=st_ml_convert_species_name_to_node(ED4_ROOT->st_ml, seq_term->species_name))) {
+    if (!seq_term->st_ml_node && !(seq_term->st_ml_node = STAT_find_node_by_name(ED4_ROOT->st_ml, seq_term->species_name))) {
         if (ED4_ROOT->column_stat_initialized) {
             aw_message("Cannot display column statistics for this species (internal error?)");
             return;
         }
-        AW_window *aww_st = st_create_main_window(ED4_ROOT->aw_root, ED4_ROOT->st_ml, (AW_CB0)show_detailed_column_stats_activated, (AW_window *)aww);
+        AW_window *aww_st = STAT_create_main_window(ED4_ROOT->aw_root, ED4_ROOT->st_ml, (AW_CB0)show_detailed_column_stats_activated, (AW_window *)aww);
         aww_st->show();
         return;
     }
