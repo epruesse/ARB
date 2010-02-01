@@ -1328,9 +1328,9 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone) {
 
             awm->insert_sub_menu("Other functions", "O");
             {
-                AWMIMT("pos_var_dist",          "Positional variability (distance method)",     "P", "pos_variability.ps", AWM_EXP, AW_POPUP,      (AW_CL)AP_open_cprofile_window,          0);
-                AWMIMT("count_different_chars", "Count different chars/column",                 "C", "count_chars.hlp",    AWM_EXP, NT_system_cb2, (AW_CL)"arb_count_chars",                0);
-                AWMIMT("export_pos_var",        "Export Column Statistic (GNUPLOT format)",     "E", "csp_2_gnuplot.hlp",  AWM_ALL, AW_POPUP,      (AW_CL)AP_open_csp_2_gnuplot_window,     0);
+                AWMIMT("pos_var_dist",          "Positional variability (distance method)",     "P", "pos_variability.ps", AWM_EXP, AW_POPUP,      (AW_CL)AP_open_cprofile_window,            0);
+                AWMIMT("count_different_chars", "Count different chars/column",                 "C", "count_chars.hlp",    AWM_EXP, NT_system_cb2, (AW_CL)"arb_count_chars",                  0);
+                AWMIMT("export_pos_var",        "Export Column Statistic (GNUPLOT format)",     "E", "csp_2_gnuplot.hlp",  AWM_ALL, AW_POPUP,      (AW_CL)NT_create_colstat_2_gnuplot_window, 0);
             }
             awm->close_sub_menu();
         }

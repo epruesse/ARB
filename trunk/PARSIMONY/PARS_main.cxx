@@ -17,7 +17,7 @@
 #include <aw_preset.hxx>
 
 #include <awt.hxx>
-#include <awt_csp.hxx>
+#include <ColumnStat.hxx>
 #include <awt_nds.hxx>
 #include <awt_sel_boxes.hxx>
 #include <awt_filter.hxx>
@@ -35,7 +35,9 @@ using namespace std;
 
 AW_HEADER_MAIN
 
-#define AWAR_CSP_NAME "tmp/pars/csp/name"
+#define AWAR_COLUMNSTAT_BASE "tmp/pars/colstat"
+#define AWAR_COLUMNSTAT_NAME AWAR_COLUMNSTAT_BASE "/name"
+#define AWAR_COLUMNSTAT_ALI  AWAR_COLUMNSTAT_BASE "/alignment"
 
 GBDATA *GLOBAL_gb_main;                             // global gb_main for arb_pars
 
@@ -1571,16 +1573,16 @@ static AW_window *create_pars_init_window(AW_root *awr, const PARS_commands *cmd
     aws->create_button("HELP", "HELP", "H");
 
     WeightedFilter *weighted_filter = // do NOT free (bound to callbacks)
-        new WeightedFilter(GLOBAL_gb_main, aws->get_root(), AWAR_FILTER_NAME, AWAR_CSP_NAME);
+        new WeightedFilter(GLOBAL_gb_main, aws->get_root(), AWAR_FILTER_NAME, AWAR_COLUMNSTAT_NAME);
 
     aws->at("filter");
     aws->callback(AW_POPUP, (AW_CL)awt_create_select_filter_win, (AW_CL)weighted_filter->get_adfiltercbstruct());
     aws->create_button("SELECT_FILTER", AWAR_FILTER_NAME);
 
     aws->at("weights");
-    aws->callback(AW_POPUP, (AW_CL)create_csp_window, (AW_CL)weighted_filter->get_csp());
+    aws->callback(AW_POPUP, (AW_CL)COLSTAT_create_selection_window, (AW_CL)weighted_filter->get_column_stat());
     aws->sens_mask(AWM_EXP);
-    aws->create_button("SELECT_CSP", AWAR_CSP_NAME);
+    aws->create_button("SELECT_CSP", AWAR_COLUMNSTAT_NAME);
     aws->sens_mask(AWM_ALL);
 
     aws->at("alignment");
@@ -1660,12 +1662,12 @@ static void pars_create_all_awars(AW_root *awr, AW_default aw_def)
 
     awt_set_awar_to_valid_filter_good_for_tree_methods(GLOBAL_gb_main, awr, AWAR_FILTER_NAME);
 
-    awr->awar_string(AWAR_FILTER_FILTER, "", GLOBAL_gb_main);
+    awr->awar_string(AWAR_FILTER_FILTER,    "", GLOBAL_gb_main);
     awr->awar_string(AWAR_FILTER_ALIGNMENT, "", aw_def);
-    awr->awar       (AWAR_FILTER_ALIGNMENT)                ->map(AWAR_ALIGNMENT);
+    awr->awar_string(AWAR_COLUMNSTAT_ALI,   0,  aw_def);
 
-    awr->awar_string("tmp/pars/csp/alignment", 0, aw_def);
-    awr->awar("tmp/pars/csp/alignment")->map(AWAR_ALIGNMENT);
+    awr->awar(AWAR_FILTER_ALIGNMENT)->map(AWAR_ALIGNMENT);
+    awr->awar(AWAR_COLUMNSTAT_ALI)->map(AWAR_ALIGNMENT);
 
     awr->awar_int(AWAR_PARS_TYPE, PARS_WAGNER, GLOBAL_gb_main);
 

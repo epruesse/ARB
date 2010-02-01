@@ -61,7 +61,7 @@ void AP_conservProfile2Gnuplot_callback(AW_window *aww) {
 }
 
 
-AW_window *AP_openConservationPorfileWindow(AW_root *root) {
+AW_window *AP_createConservationProfileWindow(AW_root *root) {
 
     AW_window_simple *aws = new AW_window_simple;
 

@@ -45,7 +45,7 @@ public:
 };
 
 GB_ERROR st_ml_check_sequence_quality(GBDATA *gb_main, const char *tree_name,
-                                      const char *alignment_name, AWT_csp *awt_csp, int bucket_size,
+                                      const char *alignment_name, ColumnStat *colstat, int bucket_size,
                                       int marked_only, st_report_enum report, const char *dest_field);
 
 

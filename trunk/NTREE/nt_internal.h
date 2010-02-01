@@ -39,14 +39,13 @@ AW_window *AP_open_max_freq_window(AW_root *aw_root);
 
 /* AP_conservProfile2Gnuplot.cxx */
 void AP_conservProfile2Gnuplot_callback(AW_window *aww);
-AW_window *AP_openConservationPorfileWindow(AW_root *root);
+AW_window *AP_createConservationProfileWindow(AW_root *root);
 
 /* AP_cprofile.cxx */
 AW_window *AP_open_cprofile_window(AW_root *aw_root);
 
-/* AP_csp_2_gnuplot.cxx */
-void AP_csp_2_gnuplot_cb(AW_window *aww, AW_CL cspcd, AW_CL cl_mode);
-AW_window *AP_open_csp_2_gnuplot_window(AW_root *root);
+/* ColumnStat_2_gnuplot.cxx */
+AW_window *NT_create_colstat_2_gnuplot_window(AW_root *root);
 
 /* AP_pos_var_pars.cxx */
 void AP_calc_pos_var_pars(AW_window *aww);

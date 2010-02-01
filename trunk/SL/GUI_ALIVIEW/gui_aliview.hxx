@@ -17,7 +17,7 @@
 #endif
 
 struct adfiltercbstruct;
-class  AWT_csp;
+class  ColumnStat;
 class  AW_root;
 class  AP_filter;
 class  AP_weights;
@@ -25,7 +25,7 @@ class  AliView;
 
 class WeightedFilter {
     adfiltercbstruct *adfilter;
-    AWT_csp          *csp;
+    ColumnStat       *column_stat;
 
 public:
     WeightedFilter(GBDATA *gb_main, AW_root *aw_root, const char *awar_filter_name, const char *awar_columnStat_name);
@@ -35,7 +35,7 @@ public:
     AW_root *get_aw_root() const;
 
     adfiltercbstruct *get_adfiltercbstruct() { return adfilter; }
-    AWT_csp *get_csp() { return csp; }
+    ColumnStat *get_column_stat() { return column_stat; }
 
     // factory functions
     AP_filter *create_filter() const;

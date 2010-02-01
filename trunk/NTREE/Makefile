@@ -8,7 +8,7 @@ CPP_OBJECTS = \
 	AP_consensus.o \
 	AP_conservProfile2Gnuplot.o \
 	AP_cprofile.o \
-	AP_csp_2_gnuplot.o \
+	ColumnStat_2_gnuplot.o \
 	AP_pos_var_pars.o \
 	NT_concatenate.o \
 	NT_dbrepair.o \
@@ -256,32 +256,6 @@ AP_cprofile.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 AP_cprofile.o: $(ARBHOME)/INCLUDE/dupstr.h
 AP_cprofile.o: $(ARBHOME)/INCLUDE/smartptr.h
 
-AP_csp_2_gnuplot.o: ap_csp_2_gnuplot.hxx
-AP_csp_2_gnuplot.o: nt_internal.h
-AP_csp_2_gnuplot.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
-AP_csp_2_gnuplot.o: $(ARBHOME)/INCLUDE/ad_prot.h
-AP_csp_2_gnuplot.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
-AP_csp_2_gnuplot.o: $(ARBHOME)/INCLUDE/AP_filter.hxx
-AP_csp_2_gnuplot.o: $(ARBHOME)/INCLUDE/arb_assert.h
-AP_csp_2_gnuplot.o: $(ARBHOME)/INCLUDE/arb_error.h
-AP_csp_2_gnuplot.o: $(ARBHOME)/INCLUDE/arbdb.h
-AP_csp_2_gnuplot.o: $(ARBHOME)/INCLUDE/arbdb_base.h
-AP_csp_2_gnuplot.o: $(ARBHOME)/INCLUDE/arbdbt.h
-AP_csp_2_gnuplot.o: $(ARBHOME)/INCLUDE/arbtools.h
-AP_csp_2_gnuplot.o: $(ARBHOME)/INCLUDE/attributes.h
-AP_csp_2_gnuplot.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
-AP_csp_2_gnuplot.o: $(ARBHOME)/INCLUDE/aw_device.hxx
-AP_csp_2_gnuplot.o: $(ARBHOME)/INCLUDE/aw_global.hxx
-AP_csp_2_gnuplot.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
-AP_csp_2_gnuplot.o: $(ARBHOME)/INCLUDE/aw_position.hxx
-AP_csp_2_gnuplot.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-AP_csp_2_gnuplot.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-AP_csp_2_gnuplot.o: $(ARBHOME)/INCLUDE/awt.hxx
-AP_csp_2_gnuplot.o: $(ARBHOME)/INCLUDE/awt_csp.hxx
-AP_csp_2_gnuplot.o: $(ARBHOME)/INCLUDE/awt_filter.hxx
-AP_csp_2_gnuplot.o: $(ARBHOME)/INCLUDE/dupstr.h
-AP_csp_2_gnuplot.o: $(ARBHOME)/INCLUDE/smartptr.h
-
 AP_pos_var_pars.o: ap_pos_var_pars.hxx
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/ad_prot.h
@@ -302,6 +276,31 @@ AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/dupstr.h
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/smartptr.h
+
+ColumnStat_2_gnuplot.o: nt_internal.h
+ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
+ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/ad_prot.h
+ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/AP_filter.hxx
+ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/arb_assert.h
+ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/arb_error.h
+ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/arbdb.h
+ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/arbdbt.h
+ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/arbtools.h
+ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/attributes.h
+ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
+ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/aw_global.hxx
+ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
+ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/aw_position.hxx
+ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/awt.hxx
+ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/awt_filter.hxx
+ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/ColumnStat.hxx
+ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/dupstr.h
+ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 NT_cb.o: ad_trees.hxx
 NT_cb.o: nt_cb.hxx

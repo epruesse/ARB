@@ -19,7 +19,7 @@
 #endif
 
 #define ST_ML_AWAR "tmp/st_ml/"
-#define ST_ML_AWAR_CSP                  ST_ML_AWAR "name"
+#define ST_ML_AWAR_COLUMN_STAT          ST_ML_AWAR "name"
 #define ST_ML_AWAR_ALIGNMENT            ST_ML_AWAR "alignment"
 #define ST_ML_AWAR_CQ_BUCKET_SIZE       ST_ML_AWAR "bucket_size"
 
@@ -29,7 +29,7 @@
 
 class ST_ML;
 class AP_tree;
-class AWT_csp;
+class ColumnStat;
 
 AW_window *STAT_create_main_window(AW_root *aw_root, ST_ML *st_ml, AW_CB0 refresh_func, AW_window *refreshed_win);
 ST_ML     *STAT_create_ST_ML(GBDATA *gb_main);

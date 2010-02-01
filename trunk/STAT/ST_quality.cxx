@@ -15,7 +15,7 @@
 #include <BI_helix.hxx>
 #include <AP_filter.hxx>
 
-#include <awt_csp.hxx>
+#include <ColumnStat.hxx>
 
 #include <cctype>
 
@@ -89,7 +89,7 @@ st_cq_info::~st_cq_info() {
     ;
 }
 
-static void st_ml_add_sequence_part_to_stat(ST_ML *st_ml, AWT_csp */* awt_csp */,
+static void st_ml_add_sequence_part_to_stat(ST_ML *st_ml, ColumnStat */* awt_csp */,
                                             const char *species_name, int seq_len, int bucket_size,
                                             GB_HASH *species_to_info_hash, int start, int end)
 {
@@ -202,12 +202,12 @@ static void destroy_st_cq_info(long cl_info) {
 }
 
 GB_ERROR st_ml_check_sequence_quality(GBDATA *gb_main, const char *tree_name,
-                                      const char *alignment_name, AWT_csp *awt_csp, int bucket_size,
+                                      const char *alignment_name, ColumnStat *colstat, int bucket_size,
                                       int marked_only, st_report_enum report, const char *dest_field)
 {
     int      seq_len = GBT_get_alignment_len(gb_main, alignment_name);
     ST_ML    st_ml(gb_main);
-    GB_ERROR error   = st_ml.init_st_ml(tree_name, alignment_name, 0, marked_only, awt_csp, true);
+    GB_ERROR error   = st_ml.init_st_ml(tree_name, alignment_name, 0, marked_only, colstat, true);
 
     if (!error) {
         GB_HASH *species_to_info_hash = GBS_create_dynaval_hash(GBT_get_species_count(gb_main), GB_IGNORE_CASE, destroy_st_cq_info);
@@ -224,7 +224,7 @@ GB_ERROR st_ml_check_sequence_quality(GBDATA *gb_main, const char *tree_name,
             }
             const char **pspecies_name;
             for (pspecies_name = snames; *pspecies_name; pspecies_name++) {
-                st_ml_add_sequence_part_to_stat(&st_ml, awt_csp, *pspecies_name,
+                st_ml_add_sequence_part_to_stat(&st_ml, colstat, *pspecies_name,
                                                 seq_len, bucket_size, species_to_info_hash, pos, end);
             }
         }

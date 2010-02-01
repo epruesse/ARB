@@ -24,7 +24,7 @@
 #include <awt.hxx>
 #include <awt_sel_boxes.hxx>
 #include <awt_filter.hxx>
-#include <awt_csp.hxx>
+#include <ColumnStat.hxx>
 #include <aw_preset.hxx>
 #include <aw_awars.hxx>
 #include <aw_global.hxx>
@@ -1537,7 +1537,7 @@ AW_window *DI_create_matrix_window(AW_root *aw_root) {
 
     aws->at("weights_select");
     aws->sens_mask(AWM_EXP);
-    aws->callback(AW_POPUP, (AW_CL)create_csp_window, (AW_CL)weighted_filter->get_csp());
+    aws->callback(AW_POPUP, (AW_CL)COLSTAT_create_selection_window, (AW_CL)weighted_filter->get_column_stat());
     aws->create_button("SELECT_COL_STAT", AWAR_DIST_COLUMN_STAT_NAME);
     aws->sens_mask(AWM_ALL);
 
