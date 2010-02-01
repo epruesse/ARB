@@ -194,11 +194,11 @@ DI_matr.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/awt.hxx
-DI_matr.o: $(ARBHOME)/INCLUDE/awt_csp.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/awt_filter.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/awt_macro.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
+DI_matr.o: $(ARBHOME)/INCLUDE/ColumnStat.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/CT_ctree.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/downcast.h
 DI_matr.o: $(ARBHOME)/INCLUDE/dupstr.h

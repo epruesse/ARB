@@ -10,7 +10,7 @@
 
 #include "st_ml.hxx"
 
-#include <awt_csp.hxx>
+#include <ColumnStat.hxx>
 #include <AP_filter.hxx>
 
 #include <cctype>
@@ -485,7 +485,7 @@ inline GB_ERROR tree_size_ok(AP_tree_root *tree_root) {
 
 GB_ERROR ST_ML::init_st_ml(const char *tree_name, const char *alignment_namei,
                            const char *species_names, int marked_only,
-                           AWT_csp *awt_cspi, bool show_status)
+                           ColumnStat *colstat, bool show_status)
 {
     /*! this is the real constructor, call only once */
 
@@ -499,8 +499,8 @@ GB_ERROR ST_ML::init_st_ml(const char *tree_name, const char *alignment_namei,
 
         if (show_status) aw_openstatus("Activating column statistic");
 
-        column_stat                = awt_cspi;
-        GB_ERROR column_stat_error = column_stat->go(NULL);
+        column_stat                = colstat;
+        GB_ERROR column_stat_error = column_stat->calculate(NULL);
 
         if (column_stat_error) fprintf(stderr, "Column statistic error: %s (using equal rates/tt-ratio for all columns)\n", column_stat_error);
 
@@ -854,6 +854,6 @@ ST_ML_Color *ST_ML::get_color_string(char *species_name, AP_tree *node,
 }
 
 void ST_ML::create_column_statistic(AW_root *awr, const char *awarname) {
-    column_stat = new AWT_csp(get_gb_main(), awr, awarname);
+    column_stat = new ColumnStat(get_gb_main(), awr, awarname);
 }
 

@@ -319,16 +319,11 @@ static void CPRO_maketables(char isamino, char countgaps)
         for (i=0; i<MAX_AMINOS; i++) CPRO.grouptable[i] = 0;
 
 #define SC(x, P) CPRO.grouptable[(unsigned char)P-(unsigned char)'A'+1+GAP] = x
-        SC(1, 'P'); SC(1, 'A'); SC(1, 'G'); SC(1, 'S'); SC(1, 'T');
-        /* PAGST */
-        SC(2, 'Q'); SC(2, 'N'); SC(2, 'E'); SC(2, 'D'); SC(2, 'B');
-        SC(2, 'Z');             /* QNEDBZ */
-        SC(3, 'H'); SC(3, 'K'); SC(3, 'R');
-        /* HKR */
-        SC(4, 'L'); SC(4, 'I'); SC(4, 'V'); SC(4, 'M');
-        /* LIVM */
-        SC(5, 'F'); SC(5, 'Y'); SC(5, 'W');
-        /* FYW */
+        SC(1, 'P'); SC(1, 'A'); SC(1, 'G'); SC(1, 'S'); SC(1, 'T'); /* PAGST */
+        SC(2, 'Q'); SC(2, 'N'); SC(2, 'E'); SC(2, 'D'); SC(2, 'B'); SC(2, 'Z'); /* QNEDBZ */
+        SC(3, 'H'); SC(3, 'K'); SC(3, 'R'); /* HKR */
+        SC(4, 'L'); SC(4, 'I'); SC(4, 'V'); SC(4, 'M'); /* LIVM */
+        SC(5, 'F'); SC(5, 'Y'); SC(5, 'W'); /* FYW */
 #undef SC
     }
 }

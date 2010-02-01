@@ -63,7 +63,7 @@ public:
 };
 
 class ST_ML;
-class AWT_csp;
+class ColumnStat;
 
 /* Note: Because we have only limited memory we split the
  * sequence into ST_MAX_SEQ_PART long parts
@@ -131,7 +131,7 @@ class ST_ML {
 
     GBDATA *gb_main;
 
-    AWT_csp *column_stat;
+    ColumnStat *column_stat;
     // if column_stat == 0 -> rates and ttratio are owned by ST_ML,
     // otherwise they belong to column_stat
     const float *rates;                             // column independent
@@ -172,13 +172,13 @@ public:
     ~ST_ML();
 
     void create_column_statistic(AW_root *awr, const char *awarname);
-    AWT_csp *get_column_statistic() { return column_stat; }
+    ColumnStat *get_column_statistic() { return column_stat; }
 
     GB_ERROR init_st_ml(const char *tree_name,
                         const char *alignment_name,
-                        const char *species_names,        // 0 -> all [marked] species (else species_names is a (char)1 separated list of species)
+                        const char *species_names,  // 0 -> all [marked] species (else species_names is a (char)1 separated list of species)
                         int         marked_only,
-                        AWT_csp    *awt_csp,
+                        ColumnStat *colstat,
                         bool        show_status) __ATTR__USERESULT;
 
     ST_rate_matrix& get_matrix_for(int distance) {

@@ -5,7 +5,7 @@
 C_OBJECTS = 
 CPP_OBJECTS = \
 	GUI_aliview.o \
-	AWT_csp.o \
+	ColumnStat.o \
 	AWT_filter.o \
 
 OBJECTS=$(C_OBJECTS) $(CPP_OBJECTS)
@@ -39,28 +39,6 @@ depend.init:
 # Do not add dependencies manually - use 'make depend' in $ARBHOME
 # For formatting issues see SOURCE_TOOLS/fix_depends.pl
 
-AWT_csp.o: awt_csp.hxx
-AWT_csp.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
-AWT_csp.o: $(ARBHOME)/INCLUDE/ad_prot.h
-AWT_csp.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
-AWT_csp.o: $(ARBHOME)/INCLUDE/AP_filter.hxx
-AWT_csp.o: $(ARBHOME)/INCLUDE/arb_assert.h
-AWT_csp.o: $(ARBHOME)/INCLUDE/arb_error.h
-AWT_csp.o: $(ARBHOME)/INCLUDE/arbdb.h
-AWT_csp.o: $(ARBHOME)/INCLUDE/arbdb_base.h
-AWT_csp.o: $(ARBHOME)/INCLUDE/arbdbt.h
-AWT_csp.o: $(ARBHOME)/INCLUDE/arbtools.h
-AWT_csp.o: $(ARBHOME)/INCLUDE/attributes.h
-AWT_csp.o: $(ARBHOME)/INCLUDE/aw_device.hxx
-AWT_csp.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
-AWT_csp.o: $(ARBHOME)/INCLUDE/aw_position.hxx
-AWT_csp.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-AWT_csp.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-AWT_csp.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
-AWT_csp.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
-AWT_csp.o: $(ARBHOME)/INCLUDE/dupstr.h
-AWT_csp.o: $(ARBHOME)/INCLUDE/smartptr.h
-
 AWT_filter.o: awt_filter.hxx
 AWT_filter.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 AWT_filter.o: $(ARBHOME)/INCLUDE/ad_prot.h
@@ -84,8 +62,30 @@ AWT_filter.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 AWT_filter.o: $(ARBHOME)/INCLUDE/dupstr.h
 AWT_filter.o: $(ARBHOME)/INCLUDE/smartptr.h
 
-GUI_aliview.o: awt_csp.hxx
+ColumnStat.o: ColumnStat.hxx
+ColumnStat.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
+ColumnStat.o: $(ARBHOME)/INCLUDE/ad_prot.h
+ColumnStat.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+ColumnStat.o: $(ARBHOME)/INCLUDE/AP_filter.hxx
+ColumnStat.o: $(ARBHOME)/INCLUDE/arb_assert.h
+ColumnStat.o: $(ARBHOME)/INCLUDE/arb_error.h
+ColumnStat.o: $(ARBHOME)/INCLUDE/arbdb.h
+ColumnStat.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+ColumnStat.o: $(ARBHOME)/INCLUDE/arbdbt.h
+ColumnStat.o: $(ARBHOME)/INCLUDE/arbtools.h
+ColumnStat.o: $(ARBHOME)/INCLUDE/attributes.h
+ColumnStat.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+ColumnStat.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
+ColumnStat.o: $(ARBHOME)/INCLUDE/aw_position.hxx
+ColumnStat.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+ColumnStat.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+ColumnStat.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
+ColumnStat.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
+ColumnStat.o: $(ARBHOME)/INCLUDE/dupstr.h
+ColumnStat.o: $(ARBHOME)/INCLUDE/smartptr.h
+
 GUI_aliview.o: awt_filter.hxx
+GUI_aliview.o: ColumnStat.hxx
 GUI_aliview.o: gui_aliview.hxx
 GUI_aliview.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 GUI_aliview.o: $(ARBHOME)/INCLUDE/ad_prot.h

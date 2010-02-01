@@ -11,18 +11,18 @@
 
 #include "gui_aliview.hxx"
 #include "awt_filter.hxx"
-#include "awt_csp.hxx"
+#include "ColumnStat.hxx"
 
 #include <AliView.hxx>
 #include <AP_filter.hxx>
 
 WeightedFilter::WeightedFilter(GBDATA *gb_main, AW_root *aw_root, const char *awar_filter_name, const char *awar_columnStat_name) {
-    adfilter = awt_create_select_filter(aw_root, gb_main, awar_filter_name);
-    csp      = awar_columnStat_name ? new AWT_csp(gb_main, aw_root, awar_columnStat_name) : NULL;
+    adfilter    = awt_create_select_filter(aw_root, gb_main, awar_filter_name);
+    column_stat = awar_columnStat_name ? new ColumnStat(gb_main, aw_root, awar_columnStat_name) : NULL;
 }
 
 WeightedFilter::~WeightedFilter() {
-    delete csp;
+    delete column_stat;
     // @@@ leak: adfilter (no destruction implemented)
 }
 
@@ -33,18 +33,18 @@ AP_filter *WeightedFilter::create_filter() const {
 AP_weights *WeightedFilter::create_weights(const AP_filter *filter) const {
     AP_weights *weights   = NULL;
     bool        haveRates = false;
-    if (csp) {
-        csp->go(0);
-        haveRates = csp->has_rates();
+    if (column_stat) {
+        column_stat->calculate(0);
+        haveRates = column_stat->has_rates();
     }
     if (haveRates) {
-        csp->weight_by_inverseRates();
-        weights = new AP_weights(csp->get_weights(), csp->get_length(), filter);
+        column_stat->weight_by_inverseRates();
+        weights = new AP_weights(column_stat->get_weights(), column_stat->get_length(), filter);
     }
     else {
         weights = new AP_weights(filter);
     }
-    if (csp) csp->exit();
+    if (column_stat) column_stat->forget();
 
     return weights;
 }

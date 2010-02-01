@@ -1,12 +1,26 @@
-#include "awt_csp.hxx"
+// =============================================================== //
+//                                                                 //
+//   File      : ColumnStat.cxx                                    //
+//   Purpose   :                                                   //
+//                                                                 //
+//   Institute of Microbiology (Technical University Munich)       //
+//   http://www.arb-home.de/                                       //
+//                                                                 //
+// =============================================================== //
+
+#include "ColumnStat.hxx"
 #include "awt_sel_boxes.hxx"
 
 #include <AP_filter.hxx>
 #include <BI_helix.hxx>
 #include <aw_window.hxx>
 
+#define AWAR_COLSTAT_NAME         "/name=/name"
+#define AWAR_COLSTAT_ALIGNMENT    "/name=/alignment"
+#define AWAR_COLSTAT_SMOOTH       "/name=/smooth"
+#define AWAR_COLSTAT_ENABLE_HELIX "/name=/enable_helix"
 
-void AWT_csp::refresh_sai_selection() {
+void ColumnStat::refresh_selection_list() {
     GB_transaction ta(gb_main);
 
     freeset(alignment_name, awr->awar(awar_alignment)->read_string());
@@ -17,38 +31,38 @@ void AWT_csp::refresh_sai_selection() {
     }
 }
 
-void awt_csp_rescan_sais(AW_root *, AW_CL cl_csp) {
-    AWT_csp *csp = (AWT_csp *)cl_csp;
-    csp->refresh_sai_selection();
+static void refresh_columnstat_selection(AW_root *, AW_CL cl_column_stat) {
+    ColumnStat *column_stat = (ColumnStat *)cl_column_stat;
+    column_stat->refresh_selection_list();
 }
 
-AWT_csp::AWT_csp(GBDATA *gb_maini, AW_root *awri, const char *awar_template) {
+ColumnStat::ColumnStat(GBDATA *gb_maini, AW_root *awri, const char *awar_template) {
     /* awar_template ==     ".../name"
      *  -> generated        ".../alignment"
      *                      ".../smooth"
      *                      ".../enable_helix"
      */
 
-    memset((char *)this, 0, sizeof(AWT_csp));
+    memset((char *)this, 0, sizeof(ColumnStat));
 
     gb_main = gb_maini;
     awr     = awri;
 
-    awar_name         = GBS_string_eval(awar_template, AWT_CSP_AWAR_CSP_NAME, 0);
-    awar_alignment    = GBS_string_eval(awar_template, AWT_CSP_AWAR_CSP_ALIGNMENT, 0);
-    awar_smooth       = GBS_string_eval(awar_template, AWT_CSP_AWAR_CSP_SMOOTH, 0);
-    awar_enable_helix = GBS_string_eval(awar_template, AWT_CSP_AWAR_CSP_ENABLE_HELIX, 0);
+    awar_name         = GBS_string_eval(awar_template, AWAR_COLSTAT_NAME, 0);
+    awar_alignment    = GBS_string_eval(awar_template, AWAR_COLSTAT_ALIGNMENT, 0);
+    awar_smooth       = GBS_string_eval(awar_template, AWAR_COLSTAT_SMOOTH, 0);
+    awar_enable_helix = GBS_string_eval(awar_template, AWAR_COLSTAT_ENABLE_HELIX, 0);
 
     awr->awar_string(awar_name, "NONE");
     awr->awar_string(awar_alignment);
     awr->awar_int(awar_smooth);
     awr->awar_int(awar_enable_helix, 1);
 
-    awr->awar(awar_alignment)->add_callback(awt_csp_rescan_sais, (AW_CL)this);
-    refresh_sai_selection();                        // same as awt_csp_rescan_sais(this)
+    awr->awar(awar_alignment)->add_callback(refresh_columnstat_selection, (AW_CL)this);
+    refresh_selection_list();                       // same as refresh_columnstat_selection(this)
 }
 
-void AWT_csp::exit() {
+void ColumnStat::forget() {
     delete [] weights;  weights  = NULL;
     delete [] rates;    rates    = NULL;
     delete [] ttratio;  ttratio  = NULL;
@@ -64,16 +78,16 @@ void AWT_csp::exit() {
     seq_len = 0; // mark invalid
 }
 
-AWT_csp::~AWT_csp() {
-    this->exit();
+ColumnStat::~ColumnStat() {
+    forget();
     delete awar_name;
     delete awar_alignment;
     delete awar_smooth;
     delete awar_enable_helix;
 }
 
-GB_ERROR AWT_csp::go(AP_filter *filter) {
-    exit(); // delete previously calculated stats
+GB_ERROR ColumnStat::calculate(AP_filter *filter) {
+    forget(); // delete previously calculated stats
 
     GB_transaction dummy(gb_main);
     GB_ERROR       error            = 0;
@@ -248,7 +262,7 @@ GB_ERROR AWT_csp::go(AP_filter *filter) {
     return error;
 }
 
-void AWT_csp::weight_by_inverseRates() const {
+void ColumnStat::weight_by_inverseRates() const {
     for (size_t i = 0; i<seq_len; ++i) {
         if (rates[i]>0.0000001) {
             weights[i] *= (int)(2.0 / rates[i]);
@@ -258,7 +272,7 @@ void AWT_csp::weight_by_inverseRates() const {
 
 
 
-void AWT_csp::print() {
+void ColumnStat::print() {
     unsigned int j;
     int wf;
     double sum_rates[2], sum_tt[2];
@@ -286,10 +300,11 @@ void AWT_csp::print() {
            sum_tt[1]/count[1], sum_tt[0]/count[0]);
 }
 
-char *awt_csp_sai_filter(GBDATA *gb_extended, AW_CL csp_cd) {
-    AWT_csp *csp     = (AWT_csp*)csp_cd;
-    GBDATA  *gb_type = GB_search(gb_extended, csp->get_type_path(), GB_FIND);
-    char    *result  = 0;
+static char *filter_columnstat_SAIs(GBDATA *gb_extended, AW_CL cl_column_stat) {
+    // return NULL for non-columnstat SAIs
+    ColumnStat *column_stat = (ColumnStat*)cl_column_stat;
+    GBDATA     *gb_type     = GB_search(gb_extended, column_stat->get_type_path(), GB_FIND);
+    char       *result      = NULL;
 
     if (gb_type) {
         const char *type = GB_read_char_pntr(gb_type);
@@ -308,17 +323,17 @@ char *awt_csp_sai_filter(GBDATA *gb_extended, AW_CL csp_cd) {
     return result;
 }
 
-void AWT_csp::create_sai_selection(AW_window *aww) {
+void ColumnStat::create_selection_list(AW_window *aww) {
     GB_transaction ta(gb_main);
-    sai_sel_box_id = awt_create_selection_list_on_extendeds(gb_main, aww, awar_name, awt_csp_sai_filter, (AW_CL)this);
+    sai_sel_box_id = awt_create_selection_list_on_extendeds(gb_main, aww, awar_name, filter_columnstat_SAIs, (AW_CL)this);
 }
 
-void create_selection_list_on_csp(AW_window *aws, AWT_csp *csp) {
-    csp->create_sai_selection(aws);
+void COLSTAT_create_selection_list(AW_window *aws, ColumnStat *column_stat) {
+    column_stat->create_selection_list(aws);
 }
 
-AW_window *create_csp_window(AW_root *aw_root, AWT_csp *csp) {
-    GB_transaction dummy(csp->get_gb_main());
+AW_window *COLSTAT_create_selection_window(AW_root *aw_root, ColumnStat *column_stat) {
+    GB_transaction ta(column_stat->get_gb_main());
     AW_window_simple *aws = new AW_window_simple;
     aws->init(aw_root, "SELECT_CSP", "Select Column Statistic");
     aws->load_xfig("awt/col_statistic.fig");
@@ -330,10 +345,10 @@ AW_window *create_csp_window(AW_root *aw_root, AWT_csp *csp) {
     aws->create_button("HELP", "HELP", "H");
 
     aws->at("box");
-    create_selection_list_on_csp(aws, csp);
+    COLSTAT_create_selection_list(aws, column_stat);
 
     aws->at("smooth");
-    aws->create_toggle_field(csp->get_awar_smooth());
+    aws->create_toggle_field(column_stat->get_awar_smooth());
     aws->insert_toggle("Calculate each column (nearly) independently", "D", 0);
     aws->insert_toggle("Smooth parameter estimates a little", "M", 1);
     aws->insert_toggle("Smooth parameter estimates across columns", "S", 2);
@@ -341,6 +356,6 @@ AW_window *create_csp_window(AW_root *aw_root, AWT_csp *csp) {
 
     aws->at("helix");
     aws->label("Use Helix Information (SAI 'HELIX')");
-    aws->create_toggle(csp->get_awar_enable_helix());
+    aws->create_toggle(column_stat->get_awar_enable_helix());
     return (AW_window *)aws;
 }

@@ -15,7 +15,7 @@
 #include <aw_awars.hxx>
 #include <awt.hxx>
 #include <awt_item_sel_list.hxx>
-#include <awt_csp.hxx>
+#include <ColumnStat.hxx>
 #include <awt_filter.hxx>
 
 static void st_ok_cb(AW_window *aww, ST_ML *st_ml) {
@@ -51,7 +51,7 @@ AW_window *STAT_create_main_window(AW_root *root, ST_ML *st_ml, AW_CB0 refresh_f
     aws->at("help");
     aws->create_button("HELP", "HELP", "H");
 
-    root->awar_string(ST_ML_AWAR_CSP, "");
+    root->awar_string(ST_ML_AWAR_COLUMN_STAT, "");
     root->awar_int(ST_ML_AWAR_CQ_MARKED_ONLY, 1);
 
     root->awar_string(AWAR_DEFAULT_ALIGNMENT, "-none-", st_ml->get_gb_main());
@@ -59,7 +59,7 @@ AW_window *STAT_create_main_window(AW_root *root, ST_ML *st_ml, AW_CB0 refresh_f
 
     root->awar_string(ST_ML_AWAR_ALIGNMENT)->map(AWAR_DEFAULT_ALIGNMENT);
 
-    st_ml->create_column_statistic(root, ST_ML_AWAR_CSP);
+    st_ml->create_column_statistic(root, ST_ML_AWAR_COLUMN_STAT);
     st_ml->set_refresh_callback(refresh_func, refreshed_win);
 
     aws->at("GO");
@@ -67,9 +67,9 @@ AW_window *STAT_create_main_window(AW_root *root, ST_ML *st_ml, AW_CB0 refresh_f
     aws->create_button("GO", "GO", "G");
 
     aws->at("awt_csp");
-    aws->callback(AW_POPUP, (AW_CL)create_csp_window, (AW_CL)st_ml->get_column_statistic());
+    aws->callback(AW_POPUP, (AW_CL)COLSTAT_create_selection_window, (AW_CL)st_ml->get_column_statistic());
     aws->button_length(20);
-    aws->create_button("SELECT_CSP", ST_ML_AWAR_CSP);
+    aws->create_button("SELECT_CSP", ST_ML_AWAR_COLUMN_STAT);
 
     aws->at("marked");
     aws->create_toggle_field(ST_ML_AWAR_CQ_MARKED_ONLY, "Calculate for ..", "");
@@ -96,7 +96,7 @@ AP_tree *STAT_find_node_by_name(ST_ML *st_ml, const char *species_name) {
     return st_ml->find_node_by_name(species_name);
 }
 
-static void st_check_cb(AW_window *aww, GBDATA *gb_main, AWT_csp *awt_csp) {
+static void st_check_cb(AW_window *aww, GBDATA *gb_main, ColumnStat *colstat) {
     GB_transaction ta(gb_main);
 
     AW_root *r = aww->get_root();
@@ -109,7 +109,7 @@ static void st_check_cb(AW_window *aww, GBDATA *gb_main, AWT_csp *awt_csp) {
 
     st_report_enum report = (st_report_enum) r->awar(ST_ML_AWAR_CQ_REPORT)->read_int();
     GB_ERROR       error  = st_ml_check_sequence_quality(gb_main, tree_name, alignment_name,
-                                                         awt_csp, bucket_size, marked_only,
+                                                         colstat, bucket_size, marked_only,
                                                          report, dest_field);
     free(dest_field);
     free(alignment_name);
@@ -134,7 +134,7 @@ AW_window *STAT_create_quality_check_window(AW_root *root, GBDATA *gb_main) {
         aws->at("help");
         aws->create_button("HELP", "HELP", "H");
 
-        root->awar_string(ST_ML_AWAR_CSP, "");
+        root->awar_string(ST_ML_AWAR_COLUMN_STAT, "");
         root->awar_string(AWAR_DEFAULT_ALIGNMENT, "-none-", gb_main);
         root->awar_int(ST_ML_AWAR_CQ_BUCKET_SIZE, 300);
         root->awar_int(ST_ML_AWAR_CQ_MARKED_ONLY, 0);
@@ -144,7 +144,7 @@ AW_window *STAT_create_quality_check_window(AW_root *root, GBDATA *gb_main) {
 
         root->awar_string(ST_ML_AWAR_ALIGNMENT)->map(AWAR_DEFAULT_ALIGNMENT);
 
-        AWT_csp *awt_csp = new AWT_csp(gb_main, root, ST_ML_AWAR_CSP); // @@@ not freed
+        ColumnStat *colstat = new ColumnStat(gb_main, root, ST_ML_AWAR_COLUMN_STAT); // @@@ not freed
 
         aws->at("which");
         {
@@ -164,8 +164,8 @@ AW_window *STAT_create_quality_check_window(AW_root *root, GBDATA *gb_main) {
         }
 
         aws->at("awt_csp");
-        aws->callback(AW_POPUP, (AW_CL) create_csp_window, (AW_CL) awt_csp);
-        aws->create_button("SELECT_CSP", ST_ML_AWAR_CSP);
+        aws->callback(AW_POPUP, (AW_CL)COLSTAT_create_selection_window, (AW_CL)colstat);
+        aws->create_button("SELECT_CSP", ST_ML_AWAR_COLUMN_STAT);
 
         aws->at("sb");
         aws->create_input_field(ST_ML_AWAR_CQ_BUCKET_SIZE);
@@ -179,7 +179,7 @@ AW_window *STAT_create_quality_check_window(AW_root *root, GBDATA *gb_main) {
                                             20, 10);
 
         aws->at("GO");
-        aws->callback((AW_CB) st_check_cb, (AW_CL) gb_main, (AW_CL) awt_csp);
+        aws->callback((AW_CB)st_check_cb, (AW_CL)gb_main, (AW_CL)colstat);
         aws->create_button("GO", "GO", "G");
     }
     return aws;

@@ -1,6 +1,6 @@
 // =============================================================== //
 //                                                                 //
-//   File      : AP_csp_2_gnuplot.cxx                              //
+//   File      : ColumnStat_2_gnuplot.cxx                          //
 //   Purpose   :                                                   //
 //                                                                 //
 //   Institute of Microbiology (Technical University Munich)       //
@@ -9,11 +9,10 @@
 // =============================================================== //
 
 #include "nt_internal.h"
-#include "ap_csp_2_gnuplot.hxx"
 
 #include <awt_filter.hxx>
 #include <awt.hxx>
-#include <awt_csp.hxx>
+#include <ColumnStat.hxx>
 #include <AP_filter.hxx>
 #include <aw_global.hxx>
 #include <aw_awars.hxx>
@@ -21,6 +20,21 @@
 #include <unistd.h>
 
 #define nt_assert(bed) arb_assert(bed)
+
+#define AWAR_CS2GP                         "tmp/ntree/colstat_2_gnuplot"
+#define AWAR_CS2GP_NAME                    AWAR_CS2GP "/name"
+#define AWAR_CS2GP_ALIGNMENT               AWAR_CS2GP "/alignment"
+#define AWAR_CS2GP_SUFFIX                  AWAR_CS2GP "/filter"
+#define AWAR_CS2GP_DIRECTORY               AWAR_CS2GP "/directory"
+#define AWAR_CS2GP_FILENAME                AWAR_CS2GP "/file_name"
+#define AWAR_CS2GP_SMOOTH                  AWAR_CS2GP "/smooth"
+#define AWAR_CS2GP_SMOOTH_GNUPLOT          AWAR_CS2GP "/smooth_gnuplot"
+#define AWAR_CS2GP_GNUPLOT_OVERLAY_PREFIX  AWAR_CS2GP "/gnuplot_overlay_prefix"
+#define AWAR_CS2GP_GNUPLOT_OVERLAY_POSTFIX AWAR_CS2GP "/gnuplot_overlay_postfix"
+#define AWAR_CS2GP_FILTER_NAME             AWAR_CS2GP "/ap_filter/name"
+#define AWAR_CS2GP_FILTER_ALIGNMENT        AWAR_CS2GP "/ap_filter/alignment"
+#define AWAR_CS2GP_FILTER_FILTER           AWAR_CS2GP "/ap_filter/filter"
+
 
 extern GBDATA *GLOBAL_gb_main;
 
@@ -64,8 +78,8 @@ static GB_ERROR split_stat_filename(const char *fname, char **dirPtr, char **nam
 static char * get_overlay_files(AW_root *awr, const char *fname, GB_ERROR& error) {
     nt_assert(!error);
 
-    bool overlay_prefix  = awr->awar(AP_AWAR_CSP_GNUPLOT_OVERLAY_PREFIX)->read_int();
-    bool overlay_postfix = awr->awar(AP_AWAR_CSP_GNUPLOT_OVERLAY_POSTFIX)->read_int();
+    bool overlay_prefix  = awr->awar(AWAR_CS2GP_GNUPLOT_OVERLAY_PREFIX)->read_int();
+    bool overlay_postfix = awr->awar(AWAR_CS2GP_GNUPLOT_OVERLAY_POSTFIX)->read_int();
 
     char *dir, *name_prefix, *name_postfix;
     error = split_stat_filename(fname, &dir, &name_prefix, &name_postfix);
@@ -218,7 +232,7 @@ class SortedFreq {
     float *freq[4];
 
 public:
-    SortedFreq(const AWT_csp *csp);
+    SortedFreq(const ColumnStat *column_stat);
     ~SortedFreq();
 
     float get(PlotType plot_type, size_t pos) const {
@@ -234,15 +248,15 @@ public:
     }
 };
 
-SortedFreq::SortedFreq(const AWT_csp *csp) {
-    size_t len = csp->get_length();
+SortedFreq::SortedFreq(const ColumnStat *column_stat) {
+    size_t len = column_stat->get_length();
     for (int i = 0; i<4; ++i) { // 4 best frequencies
         freq[i] = new float[len];
         for (size_t p = 0; p<len; ++p) freq[i][p] = 0.0; // clear
     }
 
     for (unsigned int c = 0; c<256; ++c) { // all character stats
-        const float *cfreq = csp->get_frequencies((unsigned char)c);
+        const float *cfreq = column_stat->get_frequencies((unsigned char)c);
         if (cfreq) {
             for (size_t p = 0; p<len; ++p) {            // all positions
                 if (freq[3][p] < cfreq[p]) {
@@ -272,22 +286,19 @@ SortedFreq::~SortedFreq() {
     for (int i = 0; i<4; ++i) delete [] freq[i];
 }
 
-// ----------------------------
-//      AP_csp_2_gnuplot_cb
-
-void AP_csp_2_gnuplot_cb(AW_window *aww, AW_CL cspcd, AW_CL cl_mode) {
+static void colstat_2_gnuplot_cb(AW_window *aww, AW_CL cl_column_stat, AW_CL cl_mode) {
     // cl_mode = 0 -> write file
     // cl_mode = 1 -> write file and run gnuplot
     // cl_mode = 2 -> delete all files with same prefix
 
     GB_transaction  dummy(GLOBAL_gb_main);
-    AWT_csp        *csp   = (AWT_csp *)cspcd;
-    GB_ERROR        error = 0;
-    int             mode  = int(cl_mode);
+    ColumnStat     *column_stat = (ColumnStat *)cl_column_stat;
+    GB_ERROR        error       = 0;
+    int             mode        = int(cl_mode);
 
     if (mode != 2) {
-        char *filterstring     = aww->get_root()->awar(AP_AWAR_FILTER_FILTER)->read_string();
-        char *alignment_name   = aww->get_root()->awar(AP_AWAR_FILTER_ALIGNMENT)->read_string();
+        char *filterstring     = aww->get_root()->awar(AWAR_CS2GP_FILTER_FILTER)->read_string();
+        char *alignment_name   = aww->get_root()->awar(AWAR_CS2GP_FILTER_ALIGNMENT)->read_string();
         long  alignment_length = GBT_get_alignment_len(GLOBAL_gb_main, alignment_name);
 
         AP_filter filter(filterstring, "0", alignment_length);
@@ -295,13 +306,13 @@ void AP_csp_2_gnuplot_cb(AW_window *aww, AW_CL cspcd, AW_CL cl_mode) {
         free(alignment_name);
         free(filterstring);
 
-        error = csp->go(&filter);
+        error = column_stat->calculate(&filter);
 
-        if (!error && !csp->get_length()) error = "Please select column statistic";
+        if (!error && !column_stat->get_length()) error = "Please select column statistic";
     }
 
     if (!error) {
-        char *fname = aww->get_root()->awar(AP_AWAR_CSP_FILENAME)->read_string();
+        char *fname = aww->get_root()->awar(AWAR_CS2GP_FILENAME)->read_string();
 
         if (!strchr(fname, '/')) freeset(fname, GBS_global_string_copy("./%s", fname));
         if (strlen(fname) < 1) error = "Please enter file name";
@@ -316,7 +327,7 @@ void AP_csp_2_gnuplot_cb(AW_window *aww, AW_CL cspcd, AW_CL cl_mode) {
                         if (unlink(name) != 0) printf("Can't delete '%s'\n", name);
                     }
                     free(found_files);
-                    aww->get_root()->awar(AP_AWAR_CSP_DIRECTORY)->touch(); // reload file selection box
+                    aww->get_root()->awar(AWAR_CS2GP_DIRECTORY)->touch(); // reload file selection box
                 }
             }
         }
@@ -330,9 +341,9 @@ void AP_csp_2_gnuplot_cb(AW_window *aww, AW_CL cspcd, AW_CL cl_mode) {
             nt_assert(out || error);
 
             if (!error) {
-                char   *type   = aww->get_root()->awar(AP_AWAR_CSP_SUFFIX)->read_string();
-                long    smooth = aww->get_root()->awar(AP_AWAR_CSP_SMOOTH)->read_int()+1;
-                size_t  csplen = csp->get_length();
+                char   *type    = aww->get_root()->awar(AWAR_CS2GP_SUFFIX)->read_string();
+                long    smooth  = aww->get_root()->awar(AWAR_CS2GP_SMOOTH)->read_int()+1;
+                size_t  columns = column_stat->get_length();
 
                 enum {
                     STAT_AMOUNT,
@@ -363,25 +374,25 @@ void AP_csp_2_gnuplot_cb(AW_window *aww, AW_CL cspcd, AW_CL cl_mode) {
                     case PT_BASE_TU: {
                         stat_type = STAT_AMOUNT;
 
-                        data.amount.A  = csp->get_frequencies('A');
-                        data.amount.C  = csp->get_frequencies('C');
-                        data.amount.G  = csp->get_frequencies('G');
-                        data.amount.TU = csp->get_frequencies('U');
+                        data.amount.A  = column_stat->get_frequencies('A');
+                        data.amount.C  = column_stat->get_frequencies('C');
+                        data.amount.G  = column_stat->get_frequencies('G');
+                        data.amount.TU = column_stat->get_frequencies('U');
                         break;
                     }
                     case PT_RATE:
                         stat_type = STAT_SIMPLE_FLOAT;
-                        data.floatVals = csp->get_rates();
+                        data.floatVals = column_stat->get_rates();
                         break;
 
                     case PT_TT_RATIO:
                         stat_type = STAT_SIMPLE_FLOAT;
-                        data.floatVals = csp->get_ttratio();
+                        data.floatVals = column_stat->get_ttratio();
                         break;
 
                     case PT_HELIX: {
                         stat_type = STAT_SIMPLE_BOOL;
-                        data.boolVals  = csp->get_is_helix();
+                        data.boolVals  = column_stat->get_is_helix();
                         break;
                     }
                     case PT_MOST_FREQUENT_BASE:
@@ -389,7 +400,7 @@ void AP_csp_2_gnuplot_cb(AW_window *aww, AW_CL cspcd, AW_CL cl_mode) {
                     case PT_THIRD_FREQUENT_BASE:
                     case PT_LEAST_FREQUENT_BASE: {
                         stat_type   = STAT_SORT;
-                        data.sorted = new SortedFreq(csp);
+                        data.sorted = new SortedFreq(column_stat);
                         break;
                     }
                     case PT_PLOT_TYPES:
@@ -398,10 +409,10 @@ void AP_csp_2_gnuplot_cb(AW_window *aww, AW_CL cspcd, AW_CL cl_mode) {
                         break;
                 }
 
-                const GB_UINT4 *weights = csp->get_weights();
+                const GB_UINT4 *weights = column_stat->get_weights();
 
                 if (!error) {
-                    for (size_t j=0; j<csplen; ++j) {
+                    for (size_t j=0; j<columns; ++j) {
                         if (!weights[j]) continue;
                         fprintf(out, "%zu ", j); // print X coordinate
 
@@ -446,7 +457,7 @@ void AP_csp_2_gnuplot_cb(AW_window *aww, AW_CL cspcd, AW_CL cl_mode) {
             }
 
             if (!error) {
-                aww->get_root()->awar(AP_AWAR_CSP_DIRECTORY)->touch(); // reload file selection box
+                aww->get_root()->awar(AWAR_CS2GP_DIRECTORY)->touch(); // reload file selection box
 
                 if (mode == 1) { // run gnuplot ?
                     char *command_file;
@@ -455,7 +466,7 @@ void AP_csp_2_gnuplot_cb(AW_window *aww, AW_CL cspcd, AW_CL cl_mode) {
                     out             = GB_fopen_tempfile(command_name, "wt", &command_file);
                     if (!out) error = GB_await_error();
                     else {
-                        char *smooth      = aww->get_root()->awar(AP_AWAR_CSP_SMOOTH_GNUPLOT)->read_string();
+                        char *smooth      = aww->get_root()->awar(AWAR_CS2GP_SMOOTH_GNUPLOT)->read_string();
                         char *found_files = get_overlay_files(aww->get_root(), fname, error);
 
                         fprintf(out, "set samples 1000\n");
@@ -500,31 +511,32 @@ void AP_csp_2_gnuplot_cb(AW_window *aww, AW_CL cspcd, AW_CL cl_mode) {
     if (error) aw_message(error);
 }
 
-AW_window *AP_open_csp_2_gnuplot_window(AW_root *root) {
+AW_window *NT_create_colstat_2_gnuplot_window(AW_root *root) {
 
-    GB_transaction dummy(GLOBAL_gb_main);
-    AWT_csp *csp = new AWT_csp(GLOBAL_gb_main, root, AP_AWAR_CSP_NAME);
-    AW_window_simple *aws = new AW_window_simple;
+    GB_transaction    ta(GLOBAL_gb_main);
+    ColumnStat       *column_stat = new ColumnStat(GLOBAL_gb_main, root, AWAR_CS2GP_NAME);
+    AW_window_simple *aws         = new AW_window_simple;
+    
     aws->init(root, "EXPORT_CSP_TO_GNUPLOT", "Export Column statistic to GnuPlot");
     aws->load_xfig("cpro/csp_2_gnuplot.fig");
 
     root->awar_string(AWAR_DEFAULT_ALIGNMENT, "", GLOBAL_gb_main);
 
-    root->awar_int(AP_AWAR_CSP_SMOOTH);
-    root->awar_int(AP_AWAR_CSP_GNUPLOT_OVERLAY_POSTFIX);
-    root->awar_int(AP_AWAR_CSP_GNUPLOT_OVERLAY_PREFIX);
-    root->awar_string(AP_AWAR_CSP_SMOOTH_GNUPLOT);
+    root->awar_int(AWAR_CS2GP_SMOOTH);
+    root->awar_int(AWAR_CS2GP_GNUPLOT_OVERLAY_POSTFIX);
+    root->awar_int(AWAR_CS2GP_GNUPLOT_OVERLAY_PREFIX);
+    root->awar_string(AWAR_CS2GP_SMOOTH_GNUPLOT);
 
-    root->awar_string(AP_AWAR_CSP_NAME);
-    root->awar_string(AP_AWAR_CSP_ALIGNMENT);
-    root->awar(AP_AWAR_CSP_ALIGNMENT)->map(AWAR_DEFAULT_ALIGNMENT); // csp of the correct al.
+    root->awar_string(AWAR_CS2GP_NAME);
+    root->awar_string(AWAR_CS2GP_ALIGNMENT);
+    root->awar(AWAR_CS2GP_ALIGNMENT)->map(AWAR_DEFAULT_ALIGNMENT); // use current alignment for column stat 
 
-    root->awar_string(AP_AWAR_FILTER_NAME);
-    root->awar_string(AP_AWAR_FILTER_FILTER);
-    root->awar_string(AP_AWAR_FILTER_ALIGNMENT);
-    root->awar(AP_AWAR_FILTER_ALIGNMENT)->map(AWAR_DEFAULT_ALIGNMENT);  // csp of the correct al.
+    root->awar_string(AWAR_CS2GP_FILTER_NAME);
+    root->awar_string(AWAR_CS2GP_FILTER_FILTER);
+    root->awar_string(AWAR_CS2GP_FILTER_ALIGNMENT);
+    root->awar(AWAR_CS2GP_FILTER_ALIGNMENT)->map(AWAR_DEFAULT_ALIGNMENT);  // use current alignment for filter
 
-    aw_create_selection_box_awars(root, AP_AWAR_CSP, "", ".gc_gnu", "noname.gc_gnu");
+    aw_create_selection_box_awars(root, AWAR_CS2GP, "", ".gc_gnu", "noname.gc_gnu");
 
     aws->at("close"); aws->callback((AW_CB0)AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
@@ -532,26 +544,26 @@ AW_window *AP_open_csp_2_gnuplot_window(AW_root *root) {
     aws->at("help"); aws->callback(AW_POPUP_HELP, (AW_CL)"csp_2_gnuplot.hlp");
     aws->create_button("HELP", "HELP", "H");
 
-    awt_create_selection_box(aws, AP_AWAR_CSP);
+    awt_create_selection_box(aws, AWAR_CS2GP);
 
     aws->at("csp");
-    create_selection_list_on_csp(aws, csp);
+    COLSTAT_create_selection_list(aws, column_stat);
 
     aws->at("what");
-    AW_selection_list* selid = aws->create_selection_list(AP_AWAR_CSP_SUFFIX);
+    AW_selection_list* selid = aws->create_selection_list(AWAR_CS2GP_SUFFIX);
     for (int pt = 0; pt<PT_PLOT_TYPES; ++pt) {
         aws->insert_selection(selid, plotTypeDescription[pt], plotTypeName[pt]);
     }
     aws->insert_default_selection(selid, "<select one>", "");
     aws->update_selection_list(selid);
 
-    adfiltercbstruct *filter = awt_create_select_filter(root, GLOBAL_gb_main, AP_AWAR_FILTER_NAME);
+    adfiltercbstruct *filter = awt_create_select_filter(root, GLOBAL_gb_main, AWAR_CS2GP_FILTER_NAME);
     aws->at("ap_filter");
     aws->callback(AW_POPUP, (AW_CL)awt_create_select_filter_win, (AW_CL)filter);
-    aws->create_button("SELECT_FILTER", AP_AWAR_FILTER_NAME);
+    aws->create_button("SELECT_FILTER", AWAR_CS2GP_FILTER_NAME);
 
     aws->at("smooth");
-    aws->create_option_menu(AP_AWAR_CSP_SMOOTH);
+    aws->create_option_menu(AWAR_CS2GP_SMOOTH);
     aws->insert_option("Don't smooth", "D", 0);
     aws->insert_option("Smooth 1", "1", 1);
     aws->insert_option("Smooth 2", "2", 2);
@@ -561,7 +573,7 @@ AW_window *AP_open_csp_2_gnuplot_window(AW_root *root) {
     aws->update_option_menu();
 
     aws->at("smooth2");
-    aws->create_toggle_field(AP_AWAR_CSP_SMOOTH_GNUPLOT, 1);
+    aws->create_toggle_field(AWAR_CS2GP_SMOOTH_GNUPLOT, 1);
     aws->insert_default_toggle("None", "N", "");
     aws->insert_toggle("Unique", "U", "smooth unique");
     aws->insert_toggle("CSpline", "S", "smooth cspline");
@@ -572,23 +584,23 @@ AW_window *AP_open_csp_2_gnuplot_window(AW_root *root) {
     aws->button_length(13);
 
     aws->at("save");
-    aws->callback(AP_csp_2_gnuplot_cb, (AW_CL)csp, (AW_CL)0);
+    aws->callback(colstat_2_gnuplot_cb, (AW_CL)column_stat, (AW_CL)0);
     aws->create_button("SAVE", "Save");
 
     aws->highlight();
-    aws->callback(AP_csp_2_gnuplot_cb, (AW_CL)csp, (AW_CL)1);
+    aws->callback(colstat_2_gnuplot_cb, (AW_CL)column_stat, (AW_CL)1);
     aws->create_button("SAVE_AND_VIEW", "Save & View");
 
     aws->at("overlay1");
     aws->label("Overlay statistics with same prefix?");
-    aws->create_toggle(AP_AWAR_CSP_GNUPLOT_OVERLAY_PREFIX);
+    aws->create_toggle(AWAR_CS2GP_GNUPLOT_OVERLAY_PREFIX);
 
     aws->at("overlay2");
     aws->label("Overlay statistics with same postfix?");
-    aws->create_toggle(AP_AWAR_CSP_GNUPLOT_OVERLAY_POSTFIX);
+    aws->create_toggle(AWAR_CS2GP_GNUPLOT_OVERLAY_POSTFIX);
 
     aws->at("del_overlays");
-    aws->callback(AP_csp_2_gnuplot_cb, (AW_CL)csp, (AW_CL)2);
+    aws->callback(colstat_2_gnuplot_cb, (AW_CL)column_stat, (AW_CL)2);
     aws->create_autosize_button("DEL_OVERLAYS", "Delete currently overlayed files", "D", 2);
 
     return (AW_window *)aws;

@@ -17,7 +17,7 @@
 #include <AP_seq_protein.hxx>
 #include <AP_filter.hxx>
 
-#include <awt_csp.hxx>
+#include <ColumnStat.hxx>
 #include <awt_sel_boxes.hxx>
 #include <awt_filter.hxx>
 
