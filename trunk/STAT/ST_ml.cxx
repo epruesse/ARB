@@ -16,9 +16,6 @@
 #include <cctype>
 #include <cmath>
 
-
-#define st_assert(bed) arb_assert(bed)
-
 AWT_dna_table awt_dna_table;
 
 AWT_dna_table::AWT_dna_table() {
@@ -525,10 +522,12 @@ GB_ERROR ST_ML::init_st_ml(const char *tree_name, const char *alignment_namei,
             tree_root->loadFromDB(tree_name);       // tree is not linked!
 
             if (show_status) aw_status("link tree");
-            hash_2_ap_tree = GBS_create_hash(1000, GB_MIND_CASE); // send species into hash table
+            {
+                size_t species_in_tree = count_species_in_tree();
+                hash_2_ap_tree         = GBS_create_hash(species_in_tree, GB_MIND_CASE); // send species into hash table
+            }
 
             // delete species from tree:
-
             if (species_names) {                    // keep names
                 tree_root->remove_leafs(AWT_REMOVE_DELETED);
 
@@ -550,8 +549,9 @@ GB_ERROR ST_ML::init_st_ml(const char *tree_name, const char *alignment_namei,
                     GBT_link_tree(tree_root->get_root_node()->get_gbt_tree(), gb_main, show_status, 0, 0);
                 }
             }
-            else {                                  // keep marked
+            else {                                  // keep marked/all
                 GBT_link_tree(tree_root->get_root_node()->get_gbt_tree(), gb_main, show_status, 0, 0);
+                aw_status("clean tree");
                 tree_root->remove_leafs((marked_only ? AWT_REMOVE_NOT_MARKED : 0)|AWT_REMOVE_DELETED);
 
                 error = tree_size_ok(tree_root);
