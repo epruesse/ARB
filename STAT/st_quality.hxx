@@ -15,33 +15,86 @@
 #include "st_window.hxx"
 #endif
 
+#define st_assert(cond) arb_assert(cond)
 
-class st_cq_stat {
-    double *likelihoods;
-    double *square_liks;
-    int    *n_elems;
+class SummarizedLikelihoods {
+    //! contains summarized likelihoods for several columns
+
+    double likelihood_sum;                          //!< sum of likelihoods
+    double likelihood2_sum;                         //!< sum of likelihood-squares
+    size_t count;                                   //!< number of likelihoods(=columns) added
+
 public:
-    int     size;
+    SummarizedLikelihoods()
+        : likelihood_sum(0.0)
+        , likelihood2_sum(0.0)
+        , count(0)
+    {}
 
-    st_cq_stat(int size);
-    ~st_cq_stat();
-    
-    void  add(int pos, double likelihood);
-    char *generate_string();
-    int   is_bad();                                 // 0 == ok, 1 strange, 2 bad, 3 very bad
+    void add(double likelihood) {
+        likelihood_sum  += likelihood;
+        likelihood2_sum += likelihood*likelihood;
+        count++;
+    }
+
+    void add(const SummarizedLikelihoods& other) {
+        likelihood_sum  += other.likelihood_sum;
+        likelihood2_sum += other.likelihood2_sum;
+        count           += other.count;
+    }
+
+    size_t get_count() const { return count; }
+
+    double get_mean_likelihood() const { return likelihood_sum / count; }
+    double get_mean_likelihood2() const { return likelihood2_sum / count; }
 };
 
-class st_cq_info {
-public:
-    st_cq_stat ss2;                                 // begin end statistic
-    st_cq_stat ss5;                                 // 5 pieces
-    st_cq_stat ssu;                                 // user defined bucket size
-    st_cq_stat sscon;                               // conserved / variable positions
+class LikelihoodRanges {
+    /*! The alignment is splitted into multiple, similar-sized column ranges.
+     * For each range the likelihoods get summarized
+     */
+    size_t                 ranges;
+    SummarizedLikelihoods *likelihood;
 
 public:
-    st_cq_info(int seq_len, int bucket_size);
 
-    ~st_cq_info();
+    LikelihoodRanges(size_t ranges);
+    ~LikelihoodRanges() { delete [] likelihood; }
+
+    size_t get_range_count() const { return ranges; }
+
+    void add(size_t range, double probability) {
+        st_assert(range < ranges);
+        likelihood[range].add(probability);
+    }
+    void add_relative(double seq_rel_pos, double probability) {
+        st_assert(seq_rel_pos>=0.0 && seq_rel_pos<1.0);
+        add(seq_rel_pos*ranges, probability);
+    }
+
+    SummarizedLikelihoods summarize_all_ranges();
+    char *generate_string();
+
+    // int is_bad();                                   // 0 == ok, 1 strange, 2 bad, 3 very bad
+};
+
+class ColumnQualityInfo {
+public:
+    LikelihoodRanges stat_half;                    // two ranges (one for each half)
+    LikelihoodRanges stat_five;                    // five ranges
+    LikelihoodRanges stat_user;                    // user defined range size
+    LikelihoodRanges stat_cons;                    // two ranges (conserved + variable positions) -- @@@ unused 
+
+public:
+    ColumnQualityInfo(int seq_len, int bucket_size);
+
+    size_t overall_range_count() {
+        return
+            stat_half.get_range_count() +
+            stat_five.get_range_count() +
+            stat_user.get_range_count() +
+            stat_cons.get_range_count();
+    }
 };
 
 GB_ERROR st_ml_check_sequence_quality(GBDATA *gb_main, const char *tree_name,
