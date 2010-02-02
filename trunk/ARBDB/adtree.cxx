@@ -593,8 +593,8 @@ static GB_ERROR gbt_link_tree_to_hash_rek(GBT_TREE *tree, struct link_tree_data 
     GB_ERROR error = 0;
     if (tree->is_leaf) {
         if (ltd->nodes) { // update status?
-            GB_status(ltd->counter/(double)ltd->nodes);
             ltd->counter++;
+            GB_status(ltd->counter/(double)ltd->nodes);
         }
 
         tree->gb_node = 0;
