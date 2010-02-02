@@ -15,7 +15,7 @@
 #include <AP_Tree.hxx>
 #endif
 
-#define st_assert(bed) arb_assert(bed)
+#define st_assert(cond) arb_assert(cond)
 
 enum AWT_dna_base {
     ST_A,
@@ -187,7 +187,12 @@ public:
 
     GBDATA *get_gb_main() const { return gb_main; }
     const GBT_TREE *get_gbt_tree() const { return tree_root->get_root_node()->get_gbt_tree(); }
-    
+    size_t count_species_in_tree() const {
+        ARB_tree_info info;
+        tree_root->get_root_node()->calcTreeInfo(info);
+        return info.leafs;
+    }
+
     AP_tree *find_node_by_name(const char *species_name) {
         AP_tree *node = NULL;
         if (hash_2_ap_tree) node = (AP_tree *)GBS_read_hash(hash_2_ap_tree, species_name);
