@@ -11,11 +11,29 @@
 #ifndef ST_ML_HXX
 #define ST_ML_HXX
 
-#ifndef AP_TREE_HXX
-#include <AP_Tree.hxx>
+#ifndef ARBDB_BASE_H
+#include <arbdb_base.h>
 #endif
 
+
 #define st_assert(cond) arb_assert(cond)
+
+
+class ColumnStat;
+class MostLikelySeq;
+
+class   AW_root;
+class   AW_window;
+typedef void (*AW_CB0)(AW_window*);
+
+class AP_tree;
+class AP_tree_root;
+class GBT_TREE;
+
+typedef unsigned char ST_ML_Color;
+
+typedef float ST_FLOAT;
+// typedef double ST_FLOAT; // careful, using double has quite an impact on the memory footprint
 
 enum AWT_dna_base {
     ST_A,
@@ -26,24 +44,6 @@ enum AWT_dna_base {
     ST_MAX_BASE,
     ST_UNKNOWN = -1
 };
-
-extern class AWT_dna_table {
-    char char_to_enum_table[256];
-public:
-    AWT_dna_base char_to_enum(char i) {
-        return (AWT_dna_base)char_to_enum_table[(unsigned char)i];
-    }
-    AWT_dna_table();
-} awt_dna_table;
-
-typedef unsigned char ST_ML_Color;
-
-const size_t ST_MAX_SEQ_PART = 256;                 // should be greater than the editor width (otherwise extrem performance penalties)
-const int    ST_BUCKET_SIZE  = 16;                  // at minimum ST_BUCKET_SIZE characters are calculated per call
-const int    LD_BUCKET_SIZE  = 4;                   // log dualis of ST_BUCKET_SIZE
-
-typedef float ST_FLOAT;
-// typedef double ST_FLOAT; // careful, using double has quite an impact on the memory footprint
 
 class ST_base_vector {
 public:
@@ -57,6 +57,7 @@ public:
     void        print();
 };
 
+
 class ST_rate_matrix {
     ST_FLOAT m[ST_MAX_BASE][ST_MAX_BASE];
 public:
@@ -65,64 +66,13 @@ public:
     void print();
 };
 
-class ST_ML;
-class ColumnStat;
-
-/* Note: Because we have only limited memory we split the
- * sequence into ST_MAX_SEQ_PART long parts
- */
-
-class MostLikelySeq : public AP_sequence {
-    /*! contains existing sequence or ancestor sequence
-     * as max. likelihood vectors
-     */
-public:
-    static ST_base_vector *tmp_out;                 // len = alignment length (@@@ could be member of ST_ML ? )
-
-private:
-    ST_ML          *st_ml;                     // link to a global ST object (@@@ could be static)
-    ST_base_vector *sequence;                       // A part of the sequence
-    bool            up_to_date;
-public:
-    // @@@ move the 2 following members into one new class and put one pointer here
-    ST_ML_Color    *color_out;
-    int            *color_out_valid_till;           // color_out is valid up to
-
-private:
-    AP_FLOAT count_weighted_bases() const;
-
-    void set(const char *sequence);
-    void unset();
-
-public:
-
-    MostLikelySeq(const AliView *aliview, ST_ML *st_ml_);
-    ~MostLikelySeq();
-
-    bool is_up_to_date() const { return up_to_date; }
-
-    AP_sequence *dup() const;
-    AP_FLOAT     combine(const AP_sequence* lefts, const AP_sequence *rights, char *mutation_per_site = 0);
-    void partial_match(const AP_sequence* part, long *overlap, long *penalty) const;
-
-    GB_ERROR bind_to_species(GBDATA *gb_species);
-    void     unbind_from_species(bool remove_callbacks);
-    GBDATA *get_bound_species_data() const { return AP_sequence::get_bound_species_data(); }
-
-    void sequence_change();                         // sequence has changed in db
-    void set_sequence();                            // start at st_ml->base
-
-    void calculate_ancestor(const MostLikelySeq *lefts, double leftl, const MostLikelySeq *rights, double rightl);
-    void forget_sequence() { up_to_date = false; }
-
-    void calc_out(const MostLikelySeq *sequence_of_brother, double dist);
-    void print();
-};
-
-class AW_window;
-typedef void (*AW_CB0)(AW_window*);
 
 class ST_ML {
+
+    /* Note: Because we have only limited memory we split the
+     * sequence into several ST_MAX_SEQ_PART-sized parts during stat-calculation
+     */
+
     char    *alignment_name;
     GB_HASH *hash_2_ap_tree;                        // hash table to get from name to tree_node
     GB_HASH *keep_species_hash;                     // temporary hash to find ??? 
@@ -195,18 +145,10 @@ public:
     }
 
     GBDATA *get_gb_main() const { return gb_main; }
-    const GBT_TREE *get_gbt_tree() const { return tree_root->get_root_node()->get_gbt_tree(); }
-    size_t count_species_in_tree() const {
-        ARB_tree_info info;
-        tree_root->get_root_node()->calcTreeInfo(info);
-        return info.leafs;
-    }
+    const GBT_TREE *get_gbt_tree() const;
+    size_t count_species_in_tree() const;
 
-    AP_tree *find_node_by_name(const char *species_name) {
-        AP_tree *node = NULL;
-        if (hash_2_ap_tree) node = (AP_tree *)GBS_read_hash(hash_2_ap_tree, species_name);
-        return node;
-    }
+    AP_tree *find_node_by_name(const char *species_name);
 
     void set_refresh_callback(AW_CB0 refresh_cb, AW_window *refreshed_win) {
         refresh_callback = refresh_cb;
