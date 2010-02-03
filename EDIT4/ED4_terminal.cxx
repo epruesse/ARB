@@ -1509,7 +1509,7 @@ ED4_returncode ED4_columnStat_terminal::draw(int /* only_text */)
 int ED4_columnStat_terminal::update_likelihood() {
     ED4_sequence_terminal *seq_term = corresponding_sequence_terminal();
 
-    return STAT_update_ml_likelihood(ED4_ROOT->st_ml, likelihood, &latest_update, 0, seq_term->st_ml_node);
+    return STAT_update_ml_likelihood(ED4_ROOT->st_ml, likelihood, latest_update, 0, seq_term->st_ml_node);
 }
 
 ED4_columnStat_terminal::ED4_columnStat_terminal(GB_CSTR temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent) :

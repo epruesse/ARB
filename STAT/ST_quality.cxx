@@ -92,7 +92,7 @@ static void st_ml_add_sequence_part_to_stat(ST_ML *st_ml, ColumnStat */* awt_csp
 {
     AP_tree *node = STAT_find_node_by_name(st_ml, species_name);
     if (node) {
-        ST_sequence_ml *sml = st_ml->get_ml_vectors(0, node, start, end);
+        MostLikelySeq *sml = st_ml->get_ml_vectors(0, node, start, end);
         if (sml) {
             ColumnQualityInfo *info;
             if (start > 0) {
