@@ -38,27 +38,30 @@ public:
 
 typedef unsigned char ST_ML_Color;
 
-const int ST_MAX_SEQ_PART = 256;                    // should be greater than the editor width otherwise extrem performance penalties
-const int ST_BUCKET_SIZE  = 16;                     // at minimum ST_BUCKET_SIZE characters are calculated per call
-const int LD_BUCKET_SIZE  = 4;                      // log dualis of ST_BUCKET_SIZE
+const size_t ST_MAX_SEQ_PART = 256;                 // should be greater than the editor width (otherwise extrem performance penalties)
+const int    ST_BUCKET_SIZE  = 16;                  // at minimum ST_BUCKET_SIZE characters are calculated per call
+const int    LD_BUCKET_SIZE  = 4;                   // log dualis of ST_BUCKET_SIZE
+
+typedef float ST_FLOAT;
+// typedef double ST_FLOAT; // careful, using double has quite an impact on the memory footprint
 
 class ST_base_vector {
 public:
-    float b[ST_MAX_BASE];                           // acgt-
-    int   ld_lik;
-    float lik;                                      // likelihood = 2^ld_lik * lik * (b[0] + b[1] + b[2] ..)
-    
-    void        setBase(char base, const ST_base_vector *frequencies);
+    ST_FLOAT b[ST_MAX_BASE];                        // acgt-
+    int      ld_lik;
+    ST_FLOAT lik;                                   // likelihood = 2^ld_lik * lik * (b[0] + b[1] + b[2] ..)
+
+    void        setBase(const ST_base_vector& frequencies, char base);
     inline void mult(ST_base_vector *other);
     void        check_overflow();
     void        print();
 };
 
 class ST_rate_matrix {
-    float m[ST_MAX_BASE][ST_MAX_BASE];
+    ST_FLOAT m[ST_MAX_BASE][ST_MAX_BASE];
 public:
     void set(double dist, double TT_ratio);
-    inline void mult(ST_base_vector *in, ST_base_vector *out) const;
+    inline void mult(const ST_base_vector *in, ST_base_vector *out) const;
     void print();
 };
 
@@ -69,30 +72,34 @@ class ColumnStat;
  * sequence into ST_MAX_SEQ_PART long parts
  */
 
-class ST_sequence_ml : public AP_sequence {
-    friend class ST_ML;
-
-    AP_FLOAT count_weighted_bases() const;
-
+class MostLikelySeq : public AP_sequence {
+    /*! contains existing sequence or ancestor sequence
+     * as max. likelihood vectors
+     */
 public:
+    static ST_base_vector *tmp_out;                 // len = alignment length (@@@ could be member of ST_ML ? )
 
-    static ST_base_vector *tmp_out; // len = alignment length
-
-protected:
-
-    ST_ML          *st_ml;                          // link to a global ST object
+private:
+    ST_ML          *st_ml;                     // link to a global ST object (@@@ could be static)
     ST_base_vector *sequence;                       // A part of the sequence
-    int             last_updated;
+    bool            up_to_date;
+public:
+    // @@@ move the 2 following members into one new class and put one pointer here
     ST_ML_Color    *color_out;
     int            *color_out_valid_till;           // color_out is valid up to
+
+private:
+    AP_FLOAT count_weighted_bases() const;
 
     void set(const char *sequence);
     void unset();
 
 public:
 
-    ST_sequence_ml(const AliView *aliview, ST_ML *st_ml_);
-    virtual ~ST_sequence_ml();
+    MostLikelySeq(const AliView *aliview, ST_ML *st_ml_);
+    ~MostLikelySeq();
+
+    bool is_up_to_date() const { return up_to_date; }
 
     AP_sequence *dup() const;
     AP_FLOAT     combine(const AP_sequence* lefts, const AP_sequence *rights, char *mutation_per_site = 0);
@@ -105,10 +112,10 @@ public:
     void sequence_change();                         // sequence has changed in db
     void set_sequence();                            // start at st_ml->base
 
-    void go(const ST_sequence_ml *lefts, double leftl, const ST_sequence_ml *rights, double rightl);
-    void ungo(); // undo go
+    void calculate_ancestor(const MostLikelySeq *lefts, double leftl, const MostLikelySeq *rights, double rightl);
+    void forget_sequence() { up_to_date = false; }
 
-    void calc_out(ST_sequence_ml *sequence_of_brother, double dist);
+    void calc_out(const MostLikelySeq *sequence_of_brother, double dist);
     void print();
 };
 
@@ -124,8 +131,8 @@ class ST_ML {
 
     AP_tree_root *tree_root;
     int           latest_modification;              // last mod
-    int           first_pos;                        // first..
-    int           last_pos;                         // .. and last alignment position of current slice
+    size_t        first_pos;                        // first..
+    size_t        last_pos;                         // .. and last alignment position of current slice
     AW_CB0        refresh_callback;
     AW_window    *refreshed_window;
 
@@ -146,8 +153,8 @@ class ST_ML {
     int             max_rate_matrices;              // number of rate_matrices
     ST_rate_matrix *rate_matrices;                  // one matrix for each distance
 
-    long alignment_len;
-    bool is_initialized;
+    size_t alignment_len;
+    bool   is_initialized;
 
     size_t distance_2_matrices_index(int distance) {
         if (distance<0) distance = -distance;       // same matrix for neg/pos distance
@@ -157,14 +164,16 @@ class ST_ML {
             : size_t(distance);
     }
 
-    ST_sequence_ml *getOrCreate_seq(AP_tree *node);
+    MostLikelySeq *getOrCreate_seq(AP_tree *node);
 
-    ST_sequence_ml *do_tree(AP_tree *node);
-    void            undo_tree(AP_tree *node);       // opposite of do_tree
-    void            insert_tree_into_hash_rek(AP_tree *node);
-    void            create_matrices(double max_disti, int nmatrices);
-    void            create_frequencies();
-    static long     delete_species(const char *key, long val, void *cd_st_ml);
+    const MostLikelySeq *get_mostlikely_sequence(AP_tree *node);
+    void                 undo_tree(AP_tree *node);  // opposite of get_mostlikely_sequence()
+
+    void insert_tree_into_hash_rek(AP_tree *node);
+    void create_matrices(double max_disti, int nmatrices);
+    void create_frequencies();
+    
+    static long delete_species(const char *key, long val, void *cd_st_ml);
 
 public:
 
@@ -205,8 +214,8 @@ public:
     }
     void do_refresh() { if (refresh_callback) refresh_callback(refreshed_window); }
 
-    int get_first_pos() const { return first_pos; }
-    int get_last_pos() const { return last_pos; }
+    size_t get_first_pos() const { return first_pos; }
+    size_t get_last_pos() const { return last_pos; }
 
     double get_step_size() const { return step_size; }
 
@@ -221,10 +230,10 @@ public:
 
     void clear_all();                               // delete all caches
 
-    ST_sequence_ml *get_ml_vectors(char *species_name, AP_tree *node, int start_ali_pos, int end_ali_pos);
-    ST_ML_Color *get_color_string(char *species_name, AP_tree *node, int start_ali_pos, int end_ali_pos);
+    MostLikelySeq *get_ml_vectors(const char *species_name, AP_tree *node, size_t start_ali_pos, size_t end_ali_pos);
+    ST_ML_Color *get_color_string(const char *species_name, AP_tree *node, size_t start_ali_pos, size_t end_ali_pos);
 
-    int update_ml_likelihood(char *result[4], int *latest_update, char *species_name, AP_tree *node);
+    bool update_ml_likelihood(char *result[4], int& latest_update, const char *species_name, AP_tree *node);
 
     int refresh_needed();
 };
