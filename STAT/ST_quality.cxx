@@ -10,6 +10,7 @@
 
 #include "st_quality.hxx"
 #include "st_ml.hxx"
+#include "MostLikelySeq.hxx"
 
 #include <aw_awars.hxx>
 #include <BI_helix.hxx>

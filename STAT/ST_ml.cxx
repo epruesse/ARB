@@ -9,9 +9,11 @@
 // =============================================================== //
 
 #include "st_ml.hxx"
+#include "MostLikelySeq.hxx"
 
 #include <ColumnStat.hxx>
 #include <AP_filter.hxx>
+#include <AP_Tree.hxx>
 
 #include <cctype>
 #include <cmath>
@@ -71,6 +73,54 @@ void ST_base_vector::setBase(const ST_base_vector& inv_frequencies, char base) {
     lik = 1.0;
 }
 
+inline void ST_base_vector::check_overflow()
+{
+    double sum = 0.0;
+    int    i;
+
+    for (i = 0; i < ST_MAX_BASE; i++) {
+        sum += b[i];
+    }
+    if (sum < .00001) {                             // what happend no data, extremely unlikely
+        for (i = 0; i < ST_MAX_BASE; i++) {
+            b[i] = .25;
+        }
+        ld_lik -= 5;                                // ???
+    }
+    else {
+        while (sum < 0.25) {
+            sum *= 4;
+            ld_lik -= 2;
+            for (i = 0; i < ST_MAX_BASE; i++) {
+                b[i] *= 4;
+            }
+        }
+    }
+    if (ld_lik> 10000) {
+        printf("overflow\n");
+    }
+}
+
+inline void ST_base_vector::mult(ST_base_vector *other) {
+    const ST_FLOAT *a = &b[0];
+    const ST_FLOAT *c = &other->b[0];
+
+    ST_FLOAT a0 = a[0] * c[0];
+    ST_FLOAT a1 = a[1] * c[1];
+    ST_FLOAT a2 = a[2] * c[2];
+    ST_FLOAT a3 = a[3] * c[3];
+    ST_FLOAT a4 = a[4] * c[4];
+
+    b[0] = a0;
+    b[1] = a1;
+    b[2] = a2;
+    b[3] = a3;
+    b[4] = a4;
+    
+    ld_lik += other->ld_lik;
+    lik    *= other->lik;
+}
+
 void ST_base_vector::print() {
     int i;
     for (i = 0; i < ST_MAX_BASE; i++) {
@@ -101,26 +151,6 @@ void ST_rate_matrix::print() {
         }
         printf("\n");
     }
-}
-
-inline void ST_base_vector::mult(ST_base_vector *other) {
-    const ST_FLOAT *a = &b[0];
-    const ST_FLOAT *c = &other->b[0];
-
-    ST_FLOAT a0 = a[0] * c[0];
-    ST_FLOAT a1 = a[1] * c[1];
-    ST_FLOAT a2 = a[2] * c[2];
-    ST_FLOAT a3 = a[3] * c[3];
-    ST_FLOAT a4 = a[4] * c[4];
-
-    b[0] = a0;
-    b[1] = a1;
-    b[2] = a2;
-    b[3] = a3;
-    b[4] = a4;
-    
-    ld_lik += other->ld_lik;
-    lik    *= other->lik;
 }
 
 inline void ST_rate_matrix::mult(const ST_base_vector *in, ST_base_vector *out) const {
@@ -241,34 +271,6 @@ AP_FLOAT MostLikelySeq::combine(const AP_sequence *, const AP_sequence *, char *
 
 void MostLikelySeq::partial_match(const AP_sequence *, long *, long *) const {
     st_assert(0);                                   // function is expected to be unused
-}
-
-inline void ST_base_vector::check_overflow()
-{
-    double sum = 0.0;
-    int    i;
-
-    for (i = 0; i < ST_MAX_BASE; i++) {
-        sum += b[i];
-    }
-    if (sum < .00001) {                             // what happend no data, extremely unlikely
-        for (i = 0; i < ST_MAX_BASE; i++) {
-            b[i] = .25;
-        }
-        ld_lik -= 5;                                // ???
-    }
-    else {
-        while (sum < 0.25) {
-            sum *= 4;
-            ld_lik -= 2;
-            for (i = 0; i < ST_MAX_BASE; i++) {
-                b[i] *= 4;
-            }
-        }
-    }
-    if (ld_lik> 10000) {
-        printf("overflow\n");
-    }
 }
 
 void MostLikelySeq::calculate_ancestor(const MostLikelySeq *lefts, double leftl, const MostLikelySeq *rights, double rightl) {
@@ -856,4 +858,21 @@ ST_ML_Color *ST_ML::get_color_string(const char *species_name, AP_tree *node, si
 void ST_ML::create_column_statistic(AW_root *awr, const char *awarname) {
     column_stat = new ColumnStat(get_gb_main(), awr, awarname);
 }
+
+const GBT_TREE *ST_ML::get_gbt_tree() const {
+    return tree_root->get_root_node()->get_gbt_tree();
+}
+
+size_t ST_ML::count_species_in_tree() const {
+    ARB_tree_info info;
+    tree_root->get_root_node()->calcTreeInfo(info);
+    return info.leafs;
+}
+
+AP_tree *ST_ML::find_node_by_name(const char *species_name) {
+    AP_tree *node = NULL;
+    if (hash_2_ap_tree) node = (AP_tree *)GBS_read_hash(hash_2_ap_tree, species_name);
+    return node;
+}
+
 
