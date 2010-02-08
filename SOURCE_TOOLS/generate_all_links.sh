@@ -109,10 +109,8 @@ makedir lib/help &&
 # Liblink
 
 symlink_maybe_no_target ../ARBDB/libARBDB.so LIBLINK/libARBDB.so &&
-symlink_maybe_no_target ../AWT/libAWT.a LIBLINK/libAWT.a &&
 symlink_maybe_no_target ../AWT/libAWT.so LIBLINK/libAWT.so &&
-symlink_maybe_no_target ../WINDOW/libAW.a LIBLINK/libAW.a &&
-symlink_maybe_no_target ../WINDOW/libAW.so LIBLINK/libAW.so &&
+symlink_maybe_no_target ../WINDOW/libWINDOW.so LIBLINK/libWINDOW.so &&
 
 # Motif stuff
 (test -z $MOTIF_LIBPATH || symlink_file $MOTIF_LIBPATH LIBLINK/libXm.so.3) &&
