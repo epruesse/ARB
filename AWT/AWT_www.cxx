@@ -40,48 +40,13 @@ void awt_create_aww_vars(AW_root *aw_root, AW_default aw_def) {
     awt_assert(ARB_global_awars_initialized());
 }
 
-GB_ERROR awt_openURL(AW_root *aw_root, GBDATA *gb_main, const char *url) {
-    // if gb_main == 0 -> normal system call is used
-
-    GB_ERROR  error   = 0;
-    GB_CSTR   ka;
-    char     *browser = aw_root->awar(AWAR_WWW_BROWSER)->read_string();
-
-    while ((ka = GBS_find_string(browser, "$(URL)", 0))) {
-        char *start       = GB_strpartdup(browser, ka-1);
-        char *new_browser = GBS_global_string_copy("%s%s%s", start, url, ka+6);
-
-        free(start);
-        free(browser);
-
-        browser = new_browser;
-    }
-
-    if (gb_main) {
-        if (GBCMC_system(gb_main, browser)) {
-            error = GB_await_error();
-        }
-    }
-    else {
-        char *command = GBS_global_string_copy("(%s)&", browser);
-        printf("Action: '%s'\n", command);
-        if (system(command)) aw_message(GBS_global_string("'%s' failed", command));
-        free(command);
-    }
-
-    free(browser);
-
-    return error;
-}
-
-
 GB_ERROR awt_open_ACISRT_URL_by_gbd(AW_root *aw_root, GBDATA *gb_main, GBDATA *gbd, const char *name, const char *url_srt) {
     GB_ERROR        error = 0;
     GB_transaction  tscope(gb_main);
     char           *url   = GB_command_interpreter(gb_main, name, url_srt, gbd, 0);
 
     if (!url) error = GB_await_error();
-    else error      = awt_openURL(aw_root, gb_main, url);
+    else AW_openURL(aw_root, url);
 
     free(url);
 

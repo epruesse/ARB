@@ -2,6 +2,7 @@
 
 OBJECTS = \
 		AW_position.o \
+		AW_help.o \
 		AW_edit.o \
 		AW_Xm.o \
 		AW_at.o \
@@ -198,6 +199,26 @@ AW_global_awars.o: $(ARBHOME)/INCLUDE/attributes.h
 AW_global_awars.o: $(ARBHOME)/INCLUDE/dupstr.h
 AW_global_awars.o: $(ARBHOME)/INCLUDE/smartptr.h
 
+AW_help.o: aw_device.hxx
+AW_help.o: aw_edit.hxx
+AW_help.o: aw_global_awars.hxx
+AW_help.o: aw_keysym.hxx
+AW_help.o: aw_position.hxx
+AW_help.o: aw_root.hxx
+AW_help.o: aw_window.hxx
+AW_help.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
+AW_help.o: $(ARBHOME)/INCLUDE/ad_prot.h
+AW_help.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+AW_help.o: $(ARBHOME)/INCLUDE/arb_assert.h
+AW_help.o: $(ARBHOME)/INCLUDE/arb_error.h
+AW_help.o: $(ARBHOME)/INCLUDE/arbdb.h
+AW_help.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+AW_help.o: $(ARBHOME)/INCLUDE/arbdbt.h
+AW_help.o: $(ARBHOME)/INCLUDE/arbtools.h
+AW_help.o: $(ARBHOME)/INCLUDE/attributes.h
+AW_help.o: $(ARBHOME)/INCLUDE/dupstr.h
+AW_help.o: $(ARBHOME)/INCLUDE/smartptr.h
+
 AW_nawar.o: aw_device.hxx
 AW_nawar.o: aw_keysym.hxx
 AW_nawar.o: aw_nawar.hxx
@@ -294,7 +315,6 @@ AW_size.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 AW_status.o: aw_awars.hxx
 AW_status.o: aw_device.hxx
-AW_status.o: aw_edit.hxx
 AW_status.o: aw_global.hxx
 AW_status.o: aw_keysym.hxx
 AW_status.o: aw_position.hxx
