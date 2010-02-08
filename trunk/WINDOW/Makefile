@@ -1,29 +1,30 @@
 .SUFFIXES: .o .c .cxx .depend
 
 OBJECTS = \
-		AW_position.o \
-		AW_help.o \
-		AW_edit.o \
 		AW_Xm.o \
 		AW_at.o \
 		AW_button.o \
 		AW_click.o \
 		AW_debug.o \
 		AW_device.o \
+		AW_edit.o \
 		AW_font_group.o \
 		AW_global_awars.o \
+		AW_help.o \
+		AW_modal.o \
 		AW_nawar.o \
+		AW_position.o \
 		AW_preset.o \
 		AW_print.o \
 		AW_question.o \
 		AW_size.o \
 		AW_status.o \
 		AW_window.o \
+		AW_window_Xm_interface.o \
 		AW_xfig.o \
 		AW_xfigfont.o \
 		AW_xfont.o \
 		AW_xkey.o \
-		AW_window_Xm_interface.o \
 
 
 $(MAIN): $(OBJECTS)
@@ -219,6 +220,27 @@ AW_help.o: $(ARBHOME)/INCLUDE/attributes.h
 AW_help.o: $(ARBHOME)/INCLUDE/dupstr.h
 AW_help.o: $(ARBHOME)/INCLUDE/smartptr.h
 
+AW_modal.o: aw_device.hxx
+AW_modal.o: aw_global.hxx
+AW_modal.o: aw_keysym.hxx
+AW_modal.o: aw_position.hxx
+AW_modal.o: aw_root.hxx
+AW_modal.o: aw_window.hxx
+AW_modal.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
+AW_modal.o: $(ARBHOME)/INCLUDE/ad_prot.h
+AW_modal.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+AW_modal.o: $(ARBHOME)/INCLUDE/arb_assert.h
+AW_modal.o: $(ARBHOME)/INCLUDE/arb_error.h
+AW_modal.o: $(ARBHOME)/INCLUDE/arbdb.h
+AW_modal.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+AW_modal.o: $(ARBHOME)/INCLUDE/arbdbt.h
+AW_modal.o: $(ARBHOME)/INCLUDE/arbtools.h
+AW_modal.o: $(ARBHOME)/INCLUDE/attributes.h
+AW_modal.o: $(ARBHOME)/INCLUDE/awt.hxx
+AW_modal.o: $(ARBHOME)/INCLUDE/awt_www.hxx
+AW_modal.o: $(ARBHOME)/INCLUDE/dupstr.h
+AW_modal.o: $(ARBHOME)/INCLUDE/smartptr.h
+
 AW_nawar.o: aw_device.hxx
 AW_nawar.o: aw_keysym.hxx
 AW_nawar.o: aw_nawar.hxx
@@ -315,7 +337,6 @@ AW_size.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 AW_status.o: aw_awars.hxx
 AW_status.o: aw_device.hxx
-AW_status.o: aw_global.hxx
 AW_status.o: aw_keysym.hxx
 AW_status.o: aw_position.hxx
 AW_status.o: aw_root.hxx
@@ -330,8 +351,6 @@ AW_status.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AW_status.o: $(ARBHOME)/INCLUDE/arbdbt.h
 AW_status.o: $(ARBHOME)/INCLUDE/arbtools.h
 AW_status.o: $(ARBHOME)/INCLUDE/attributes.h
-AW_status.o: $(ARBHOME)/INCLUDE/awt.hxx
-AW_status.o: $(ARBHOME)/INCLUDE/awt_www.hxx
 AW_status.o: $(ARBHOME)/INCLUDE/dupstr.h
 AW_status.o: $(ARBHOME)/INCLUDE/SigHandler.h
 AW_status.o: $(ARBHOME)/INCLUDE/smartptr.h

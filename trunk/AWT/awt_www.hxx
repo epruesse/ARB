@@ -11,6 +11,10 @@
 #ifndef AWT_WWW_HXX
 #define AWT_WWW_HXX
 
+#ifndef AW_ROOT_HXX
+#include <aw_root.hxx>
+#endif
+
 
 AW_window *AWT_open_www_window(AW_root *aw_root, AW_CL cgb_main);
 void       awt_openDefaultURL_on_species(AW_window *aww, GBDATA *gb_main);
