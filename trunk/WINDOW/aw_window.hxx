@@ -98,6 +98,7 @@ void AW_help_entry_pressed(AW_window *);
 void AW_clock_cursor(AW_root *);
 void AW_normal_cursor(AW_root *);
 
+void AW_openURL(AW_root *aw_root, const char *url);
 
 typedef void (*AW_cb_struct_guard)();
 
