@@ -530,7 +530,7 @@ checks: check_setup check_tabs
 ARBDB_LIB=-lARBDB
 
 LIBS = $(ARBDB_LIB) $(SYSLIBS)
-GUI_LIBS = $(LIBS) -lAW -lAWT $(XLIBS)
+GUI_LIBS = $(LIBS) -lWINDOW -lAWT $(XLIBS)
 
 LIBPATH = -L$(ARBHOME)/LIBLINK
 
@@ -622,7 +622,7 @@ ARCHS = \
 			TOOLS/TOOLS.a \
 			TREEGEN/TREEGEN.a \
 			WETC/WETC.a \
-			WINDOW/libAW.a \
+			WINDOW/libWINDOW.a \
 			XML/XML.a \
 
 # ----------------------- 
@@ -943,7 +943,7 @@ addlibs:
 	)
 
 libs:   lib/libARBDB.$(SHARED_LIB_SUFFIX) \
-	lib/libAW.$(SHARED_LIB_SUFFIX) \
+	lib/libWINDOW.$(SHARED_LIB_SUFFIX) \
 	lib/libAWT.$(SHARED_LIB_SUFFIX)
 
 lib/lib%.$(SHARED_LIB_SUFFIX): LIBLINK/lib%.$(SHARED_LIB_SUFFIX)
@@ -1084,7 +1084,7 @@ help:   HELP_SOURCE/HELP_SOURCE.dummy
 HELP_SOURCE/HELP_SOURCE.dummy: xml menus# need to create some files in GDE-subtree first
 
 db:	ARBDB/libARBDB.dummy
-aw:	WINDOW/libAW.dummy
+aw:	WINDOW/libWINDOW.dummy
 awt:	AWT/libAWT.dummy
 awtc:	AWTC/AWTC.dummy
 awti:	AWTI/AWTI.dummy
