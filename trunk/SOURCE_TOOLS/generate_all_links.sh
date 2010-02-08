@@ -181,7 +181,6 @@ symlink_file ../ARBDB/arbdb_base.h INCLUDE/arbdb_base.h &&
 symlink_file ../ARBDB/arbdbt.h INCLUDE/arbdbt.h &&
 symlink_file ../ARB_GDE/gde.hxx INCLUDE/gde.hxx &&
 symlink_file ../AWT/awt.hxx INCLUDE/awt.hxx &&
-symlink_file ../AWT/awt_advice.hxx INCLUDE/awt_advice.hxx &&
 symlink_file ../AWT/awt_asciiprint.hxx INCLUDE/awt_asciiprint.hxx &&
 symlink_file ../AWT/awt_attributes.hxx INCLUDE/awt_attributes.hxx &&
 symlink_file ../AWT/awt_canvas.hxx INCLUDE/awt_canvas.hxx &&
@@ -245,6 +244,7 @@ symlink_file ../SL/TREEDISP/TreeDisplay.hxx INCLUDE/TreeDisplay.hxx &&
 symlink_file ../SL/TREE_READ/TreeRead.h INCLUDE/TreeRead.h &&
 symlink_file ../SL/TREE_WRITE/TreeWrite.h INCLUDE/TreeWrite.h &&
 symlink_file ../STAT/st_window.hxx INCLUDE/st_window.hxx &&
+symlink_file ../WINDOW/aw_advice.hxx INCLUDE/aw_advice.hxx &&
 symlink_file ../WINDOW/aw_awars.hxx INCLUDE/aw_awars.hxx &&
 symlink_file ../WINDOW/aw_color_groups.hxx INCLUDE/aw_color_groups.hxx &&
 symlink_file ../WINDOW/aw_device.hxx INCLUDE/aw_device.hxx &&

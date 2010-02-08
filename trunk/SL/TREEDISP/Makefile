@@ -87,6 +87,7 @@ TreeCallbacks.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/arbdbt.h
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/arbtools.h
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/attributes.h
+TreeCallbacks.o: $(ARBHOME)/INCLUDE/aw_advice.hxx
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/aw_device.hxx
@@ -95,7 +96,6 @@ TreeCallbacks.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/awt.hxx
-TreeCallbacks.o: $(ARBHOME)/INCLUDE/awt_advice.hxx
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/downcast.h
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/dupstr.h

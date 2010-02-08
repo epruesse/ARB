@@ -1,6 +1,6 @@
 //  ==================================================================== //
 //                                                                       //
-//    File      : awt_advice.cpp                                         //
+//    File      : aw_advice.cpp                                          //
 //    Purpose   :                                                        //
 //                                                                       //
 //                                                                       //
@@ -15,7 +15,7 @@
 #include <cstdlib>
 #include <cstring>
 
-#include "awt_advice.hxx"
+#include "aw_advice.hxx"
 #include "awt.hxx"
 
 
@@ -89,12 +89,12 @@ static void advice_close_cb(AW_window *aww, AW_CL cl_id, AW_CL type) {
         const char *id = (const char *)cl_id;
 
         disable_advice(id);
-        if (type & AWT_ADVICE_TOGGLE) {
+        if (type & AW_ADVICE_TOGGLE) {
             static bool in_advice = false;
             if (!in_advice) {
                 in_advice = true;
-                AWT_advice("You have disabled an advice.\n"
-                           "In order to disable it PERMANENTLY, save properties.", AWT_ADVICE_TOGGLE);
+                AW_advice("You have disabled an advice.\n"
+                          "In order to disable it PERMANENTLY, save properties.", AW_ADVICE_TOGGLE);
                 in_advice = false;
             }
         }
@@ -129,7 +129,7 @@ void AWT_reactivate_all_advices() {
     awar_disabled->write_string("");
 }
 
-void AWT_advice(const char *message, int type, const char *title, const char *corresponding_help) {
+void AW_advice(const char *message, int type, const char *title, const char *corresponding_help) {
     awt_assert(initialized);
     size_t  message_len = strlen(message); awt_assert(message_len>0);
     long    crc32       = GB_checksum(message, message_len, true, " .,-!"); // checksum is used to test if advice was shown
@@ -141,9 +141,9 @@ void AWT_advice(const char *message, int type, const char *title, const char *co
         AW_awar *understood = advice_root->awar(AWAR_ADVICE_UNDERSTOOD);
         understood->write_int(0);
 
-        if (corresponding_help) type = AWT_Advice_Type(type|AWT_ADVICE_HELP);
+        if (corresponding_help) type = AW_Advice_Type(type|AW_ADVICE_HELP);
 #if defined(ASSERTION_USED)
-        else awt_assert((type & AWT_ADVICE_HELP) == 0);
+        else awt_assert((type & AW_ADVICE_HELP) == 0);
 #endif // ASSERTION_USED
 
         AW_window_simple *aws = new AW_window_simple; // do not delete (ARB will crash) -- maybe reuse window for all advices?
@@ -152,7 +152,7 @@ void AWT_advice(const char *message, int type, const char *title, const char *co
         aws->init(advice_root, "advice", GBS_global_string("ARB: %s", title));
         aws->load_xfig("awt/advice.fig");
 
-        bool has_help     = type & AWT_ADVICE_HELP;
+        bool has_help     = type & AW_ADVICE_HELP;
         bool help_pops_up = false;
 
         if (has_help) {
@@ -160,7 +160,7 @@ void AWT_advice(const char *message, int type, const char *title, const char *co
             aws->at("help");
             aws->create_button(0, "HELP", "H");
 
-            if (type & AWT_ADVICE_HELP_POPUP) help_pops_up = true;
+            if (type & AW_ADVICE_HELP_POPUP) help_pops_up = true;
         }
 
         aws->at("advice");
@@ -173,14 +173,14 @@ void AWT_advice(const char *message, int type, const char *title, const char *co
 
         if (help_pops_up) AW_POPUP_HELP(aws, (AW_CL)corresponding_help);
 
-        if (type & AWT_ADVICE_TOGGLE) {
+        if (type & AW_ADVICE_TOGGLE) {
             aws->label("Do not advice me again");
             aws->at("understood");
             aws->create_toggle(AWAR_ADVICE_UNDERSTOOD);
         }
 
         aws->at("ok");
-        if (type & AWT_ADVICE_TOGGLE) {
+        if (type & AW_ADVICE_TOGGLE) {
             aws->callback(advice_close_cb, (AW_CL)advice_id, type);
             aws->create_button(0, "OK", "O");
         }

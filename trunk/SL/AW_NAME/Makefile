@@ -47,6 +47,7 @@ AW_names_admin.o: $(ARBHOME)/INCLUDE/arbdb.h
 AW_names_admin.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AW_names_admin.o: $(ARBHOME)/INCLUDE/arbtools.h
 AW_names_admin.o: $(ARBHOME)/INCLUDE/attributes.h
+AW_names_admin.o: $(ARBHOME)/INCLUDE/aw_advice.hxx
 AW_names_admin.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 AW_names_admin.o: $(ARBHOME)/INCLUDE/aw_edit.hxx
 AW_names_admin.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
@@ -54,7 +55,6 @@ AW_names_admin.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AW_names_admin.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AW_names_admin.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AW_names_admin.o: $(ARBHOME)/INCLUDE/awt.hxx
-AW_names_admin.o: $(ARBHOME)/INCLUDE/awt_advice.hxx
 AW_names_admin.o: $(ARBHOME)/INCLUDE/dupstr.h
 AW_names_admin.o: $(ARBHOME)/INCLUDE/smartptr.h
 

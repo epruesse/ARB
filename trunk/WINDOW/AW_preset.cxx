@@ -15,7 +15,7 @@
 #include <aw_preset.hxx>
 
 #include <awt.hxx>
-#include <awt_advice.hxx>
+#include <aw_advice.hxx>
 #include <awt_canvas.hxx>
 
 #include <arbdbt.h>
@@ -425,9 +425,9 @@ char *AW_get_color_group_name(AW_root *awr, int color_group) {
 }
 
 void AW_color_group_name_changed_cb(AW_root *) {
-    AWT_advice("To activate the new names for color groups you have to\n"
-               "save properties and restart the program.",
-               AWT_ADVICE_TOGGLE, "Color group name has been changed", 0);
+    AW_advice("To activate the new names for color groups you have to\n"
+              "save properties and restart the program.",
+              AW_ADVICE_TOGGLE, "Color group name has been changed", 0);
 }
 void AW_color_group_usage_changed_cb(AW_root *awr, AW_CL /* cl_ntw */) {
     use_color_groups       = awr->awar(AWAR_COLOR_GROUPS_USE)->read_int();

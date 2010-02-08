@@ -69,6 +69,7 @@ AWTI_import.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AWTI_import.o: $(ARBHOME)/INCLUDE/arbdbt.h
 AWTI_import.o: $(ARBHOME)/INCLUDE/arbtools.h
 AWTI_import.o: $(ARBHOME)/INCLUDE/attributes.h
+AWTI_import.o: $(ARBHOME)/INCLUDE/aw_advice.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/aw_global.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
@@ -77,7 +78,6 @@ AWTI_import.o: $(ARBHOME)/INCLUDE/AW_rename.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/awt.hxx
-AWTI_import.o: $(ARBHOME)/INCLUDE/awt_advice.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/awt_item_sel_list.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/dupstr.h
