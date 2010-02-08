@@ -16,6 +16,7 @@
 
 #include <arbdbt.h>
 #include <awt_www.hxx>
+#include <aw_edit.hxx>
 
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -1003,7 +1004,7 @@ static void AWT_edit_input_mask(AW_window *, AW_CL cl_mask_name, AW_CL cl_local)
     const string *mask_name = (const string *)cl_mask_name;
     string        fullmask  = inputMaskFullname(*mask_name, (bool)cl_local);
 
-    AWT_edit(fullmask.c_str()); // @@@ add callback and automatically reload input mask
+    AW_edit(fullmask.c_str()); // @@@ add callback and automatically reload input mask
 }
 
 //  ---------------------------------

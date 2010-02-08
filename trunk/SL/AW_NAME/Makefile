@@ -48,6 +48,7 @@ AW_names_admin.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AW_names_admin.o: $(ARBHOME)/INCLUDE/arbtools.h
 AW_names_admin.o: $(ARBHOME)/INCLUDE/attributes.h
 AW_names_admin.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+AW_names_admin.o: $(ARBHOME)/INCLUDE/aw_edit.hxx
 AW_names_admin.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AW_names_admin.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AW_names_admin.o: $(ARBHOME)/INCLUDE/aw_root.hxx

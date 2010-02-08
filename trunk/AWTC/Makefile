@@ -62,6 +62,7 @@ AWTC_submission.o: $(ARBHOME)/INCLUDE/arbtools.h
 AWTC_submission.o: $(ARBHOME)/INCLUDE/attributes.h
 AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_edit.hxx
 AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_root.hxx

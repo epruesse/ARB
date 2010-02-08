@@ -203,9 +203,6 @@ AW_window *awt_create_item_colorizer(AW_root *aw_root, GBDATA *gb_main, const ad
 void awt_set_long(AW_window *aws, AW_CL varname, AW_CL value);      // set an awar
 void awt_set_string(AW_window *aws, AW_CL varname, AW_CL value);    // set an awar
 
-typedef void (*awt_fileChanged_cb)(const char *path, bool fileWasChanged, bool editorTerminated);
-void AWT_edit(const char *path, awt_fileChanged_cb callback = 0, AW_window *aww = 0, GBDATA *gb_main = 0); // call external editor
-
 void AWT_create_ascii_print_window(AW_root *awr, const char *text_to_print, const char *title=0);
 void AWT_write_file(const char *filename, const char *file);
 void AWT_show_file(AW_root *awr, const char *filename);

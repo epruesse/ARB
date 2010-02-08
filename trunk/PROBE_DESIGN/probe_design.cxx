@@ -13,6 +13,8 @@
 
 #include <aw_awars.hxx>
 #include <aw_preset.hxx>
+#include <aw_edit.hxx>
+
 #include <awt.hxx>
 #include <awt_iupac.hxx>
 
@@ -1775,7 +1777,7 @@ static void arb_tcp_dat_changed_cb(const char * /* path */, bool fileChanged, bo
 
 static void pd_edit_arb_tcp(AW_window *aww, AW_CL cl_gb_main) {
     GBDATA *gb_main = (GBDATA*)cl_gb_main;
-    AWT_edit("$(ARBHOME)/lib/arb_tcp.dat", arb_tcp_dat_changed_cb, aww, gb_main);
+    AW_edit("$(ARBHOME)/lib/arb_tcp.dat", arb_tcp_dat_changed_cb, aww, gb_main);
 }
 
 AW_window *create_probe_admin_window(AW_root *root, AW_CL cl_genome_db) {

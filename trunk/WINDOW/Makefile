@@ -2,6 +2,7 @@
 
 OBJECTS = \
 		AW_position.o \
+		AW_edit.o \
 		AW_Xm.o \
 		AW_at.o \
 		AW_button.o \
@@ -147,6 +148,25 @@ AW_device.o: $(ARBHOME)/INCLUDE/dupstr.h
 AW_device.o: $(ARBHOME)/INCLUDE/inline.h
 AW_device.o: $(ARBHOME)/INCLUDE/smartptr.h
 
+AW_edit.o: aw_device.hxx
+AW_edit.o: aw_edit.hxx
+AW_edit.o: aw_keysym.hxx
+AW_edit.o: aw_position.hxx
+AW_edit.o: aw_root.hxx
+AW_edit.o: aw_window.hxx
+AW_edit.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
+AW_edit.o: $(ARBHOME)/INCLUDE/ad_prot.h
+AW_edit.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+AW_edit.o: $(ARBHOME)/INCLUDE/arb_assert.h
+AW_edit.o: $(ARBHOME)/INCLUDE/arb_error.h
+AW_edit.o: $(ARBHOME)/INCLUDE/arbdb.h
+AW_edit.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+AW_edit.o: $(ARBHOME)/INCLUDE/arbdbt.h
+AW_edit.o: $(ARBHOME)/INCLUDE/arbtools.h
+AW_edit.o: $(ARBHOME)/INCLUDE/attributes.h
+AW_edit.o: $(ARBHOME)/INCLUDE/dupstr.h
+AW_edit.o: $(ARBHOME)/INCLUDE/smartptr.h
+
 AW_font_group.o: aw_device.hxx
 AW_font_group.o: aw_font_group.hxx
 AW_font_group.o: aw_position.hxx
@@ -274,6 +294,7 @@ AW_size.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 AW_status.o: aw_awars.hxx
 AW_status.o: aw_device.hxx
+AW_status.o: aw_edit.hxx
 AW_status.o: aw_global.hxx
 AW_status.o: aw_keysym.hxx
 AW_status.o: aw_position.hxx
