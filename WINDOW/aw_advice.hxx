@@ -1,6 +1,6 @@
 //  ==================================================================== //
 //                                                                       //
-//    File      : awt_advice.hxx                                         //
+//    File      : aw_advice.hxx                                          //
 //    Purpose   : general user advices                                   //
 //                                                                       //
 //                                                                       //
@@ -12,8 +12,8 @@
 //                                                                       //
 //  ==================================================================== //
 
-#ifndef AWT_ADVICE_HXX
-#define AWT_ADVICE_HXX
+#ifndef AW_ADVICE_HXX
+#define AW_ADVICE_HXX
 
 class AW_root;
 
@@ -22,16 +22,16 @@ class AW_root;
 #endif
 
 
-//! define type of @ref AWT_advice by or-ing values
-enum AWT_Advice_Type {
-    AWT_ADVICE_SIMPLE     = 0,  // nothing of the following
-    AWT_ADVICE_TOGGLE     = 1,  // visible toggle to switch off advice (otherwise advice appears only once)
-    AWT_ADVICE_HELP       = 2,  // advice has corresponding help file
-    AWT_ADVICE_HELP_POPUP = 4, // this helpfile should popup immediately
+//! define type of @ref AW_advice by or-ing values
+enum AW_Advice_Type {
+    AW_ADVICE_SIMPLE     = 0,                       // nothing of the following
+    AW_ADVICE_TOGGLE     = 1,                       // visible toggle to switch off advice (otherwise advice appears only once)
+    AW_ADVICE_HELP       = 2,                       // advice has corresponding help file
+    AW_ADVICE_HELP_POPUP = 4,                       // this helpfile should popup immediately
 
 };
 
-//! has to be called one time (before calling AWT_advice)
+//! has to be called one time (before calling AW_advice)
 void init_Advisor(AW_root *awr, AW_default def);
 
 /*! @brief Show a message box with an advice for the user
@@ -41,16 +41,16 @@ void init_Advisor(AW_root *awr, AW_default def);
     @param corresponding_help name of corresponding ARB-helpfile
     @see init_Advisor
 */
-void AWT_advice(const char *message,
-                int type = AWT_ADVICE_SIMPLE,
-                const char *title = 0,
-                const char *corresponding_help = 0);
+void AW_advice(const char *message,
+               int type = AW_ADVICE_SIMPLE,
+               const char *title = 0,
+               const char *corresponding_help = 0);
 
 //! reactivates all advices which were disabled by the user
 void AWT_reactivate_all_advices();
 
 
 #else
-#error awt_advice.hxx included twice
-#endif // AWT_ADVICE_HXX
+#error aw_advice.hxx included twice
+#endif // AW_ADVICE_HXX
 

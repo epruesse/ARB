@@ -11,7 +11,7 @@
 #include "AW_rename.hxx"
 
 #include <awt.hxx>
-#include <awt_advice.hxx>
+#include <aw_advice.hxx>
 #include <aw_edit.hxx>
 
 static char *namesFilename(AW_CL cl_gb_main) {
@@ -60,7 +60,7 @@ static void addid_changed_cb(AW_root *, AW_CL cl_gb_main) {
     GB_ERROR  error   = AW_test_nameserver(gb_main);
 
     if (error) aw_message(error);
-    else AWT_advice("Calling 'Species/Generate New Names' is highly recommended", AWT_ADVICE_TOGGLE|AWT_ADVICE_HELP, 0, "namesadmin.hlp");
+    else AW_advice("Calling 'Species/Generate New Names' is highly recommended", AW_ADVICE_TOGGLE|AW_ADVICE_HELP, 0, "namesadmin.hlp");
 }
 
 void AW_create_namesadmin_awars(AW_root *awr, GBDATA *gb_main) {

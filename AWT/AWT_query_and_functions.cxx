@@ -21,7 +21,7 @@
 #include "awt_config_manager.hxx"
 #include "awt_item_sel_list.hxx"
 #include "awt_sel_boxes.hxx"
-#include "awt_advice.hxx"
+#include "aw_advice.hxx"
 
 #include "GEN.hxx"
 
@@ -1289,13 +1289,13 @@ void awt_copy_selection_list_2_queried_species(struct adaqbsstruct *cbs, AW_sele
     }
 
     if (type != AWT_QUERY_MATCH || mode != AWT_QUERY_GENERATE) { // different behavior as in the past -> advice
-        AWT_advice("'Move to hitlist' now depends on the values selected for\n"
-                   " * 'Search/Add/Keep species' and\n"
-                   " * 'that match/don't match the query'\n"
-                   "in the search tool.",
-                   AWT_ADVICE_TOGGLE|AWT_ADVICE_HELP,
-                   "Behavior changed",
-                   "next_neighbours.hlp");
+        AW_advice("'Move to hitlist' now depends on the values selected for\n"
+                  " * 'Search/Add/Keep species' and\n"
+                  " * 'that match/don't match the query'\n"
+                  "in the search tool.",
+                  AW_ADVICE_TOGGLE|AW_ADVICE_HELP,
+                  "Behavior changed",
+                  "next_neighbours.hlp");
     }
 
     long inHitlist = GBS_hash_count_elems(list_hash);
@@ -1473,12 +1473,12 @@ void awt_search_equal_entries(AW_window *, struct adaqbsstruct *cbs, bool tokeni
         }
 
         if (type != AWT_QUERY_MATCH) {
-            AWT_advice("'Find equal entries' now depends on the values selected for\n"
-                       " * 'that match/don't match the query'\n"
-                       "in the search tool.",
-                       AWT_ADVICE_TOGGLE|AWT_ADVICE_HELP,
-                       "Behavior changed",
-                       "search_duplicates.hlp");
+            AW_advice("'Find equal entries' now depends on the values selected for\n"
+                      " * 'that match/don't match the query'\n"
+                      "in the search tool.",
+                      AW_ADVICE_TOGGLE|AW_ADVICE_HELP,
+                      "Behavior changed",
+                      "search_duplicates.hlp");
         }
     }
 

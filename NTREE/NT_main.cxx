@@ -14,7 +14,7 @@
 
 #include <mg_merge.hxx>
 #include <awti_import.hxx>
-#include <awt_advice.hxx>
+#include <aw_advice.hxx>
 #include <awt.hxx>
 #include <aw_global.hxx>
 #include <aw_question.hxx>

@@ -1,7 +1,7 @@
 #include <awti_imp_local.hxx>
 
 #include <awt.hxx>
-#include <awt_advice.hxx>
+#include <aw_advice.hxx>
 #include <awt_sel_boxes.hxx>
 #include <awt_item_sel_list.hxx>
 
@@ -384,21 +384,21 @@ void awtc_check_input_format(AW_window *aww) {
     const char *select = 0;
     switch (matched_count) {
         case 0:
-            AWT_advice("Not all formats can be auto-detected.\n"
-                       "Some need to be selected manually.",
-                       AWT_ADVICE_TOGGLE,
-                       "No format auto-detected",
-                       "arb_import.hlp");
+            AW_advice("Not all formats can be auto-detected.\n"
+                      "Some need to be selected manually.",
+                       AW_ADVICE_TOGGLE,
+                      "No format auto-detected",
+                      "arb_import.hlp");
 
             select = "unknown.ift";
             break;
 
         default:
-            AWT_advice("Several import filters matched during auto-detection.\n"
-                       "Click 'AUTO DETECT' again to select next matching import-filter.",
-                       AWT_ADVICE_TOGGLE,
-                       "Several formats detected",
-                       "arb_import.hlp");
+            AW_advice("Several import filters matched during auto-detection.\n"
+                      "Click 'AUTO DETECT' again to select next matching import-filter.",
+                      AW_ADVICE_TOGGLE,
+                      "Several formats detected",
+                      "arb_import.hlp");
 
             // fall-through
         case 1:

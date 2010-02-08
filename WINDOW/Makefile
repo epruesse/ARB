@@ -2,6 +2,7 @@
 
 OBJECTS = \
 		AW_Xm.o \
+		AW_advice.o \
 		AW_at.o \
 		AW_button.o \
 		AW_click.o \
@@ -55,6 +56,24 @@ depend.init:
 
 # Do not add dependencies manually - use 'make depend' in $ARBHOME
 # For formatting issues see SOURCE_TOOLS/fix_depends.pl
+
+AW_advice.o: aw_advice.hxx
+AW_advice.o: aw_device.hxx
+AW_advice.o: aw_keysym.hxx
+AW_advice.o: aw_position.hxx
+AW_advice.o: aw_root.hxx
+AW_advice.o: aw_window.hxx
+AW_advice.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
+AW_advice.o: $(ARBHOME)/INCLUDE/ad_prot.h
+AW_advice.o: $(ARBHOME)/INCLUDE/arb_assert.h
+AW_advice.o: $(ARBHOME)/INCLUDE/arb_error.h
+AW_advice.o: $(ARBHOME)/INCLUDE/arbdb.h
+AW_advice.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+AW_advice.o: $(ARBHOME)/INCLUDE/arbtools.h
+AW_advice.o: $(ARBHOME)/INCLUDE/attributes.h
+AW_advice.o: $(ARBHOME)/INCLUDE/awt.hxx
+AW_advice.o: $(ARBHOME)/INCLUDE/dupstr.h
+AW_advice.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 AW_at.o: aw_at.hxx
 AW_at.o: aw_device.hxx
@@ -270,6 +289,7 @@ AW_position.o: $(ARBHOME)/INCLUDE/attributes.h
 AW_position.o: $(ARBHOME)/INCLUDE/dupstr.h
 AW_position.o: $(ARBHOME)/INCLUDE/smartptr.h
 
+AW_preset.o: aw_advice.hxx
 AW_preset.o: aw_color_groups.hxx
 AW_preset.o: aw_def.hxx
 AW_preset.o: aw_device.hxx
@@ -289,7 +309,6 @@ AW_preset.o: $(ARBHOME)/INCLUDE/arbdbt.h
 AW_preset.o: $(ARBHOME)/INCLUDE/arbtools.h
 AW_preset.o: $(ARBHOME)/INCLUDE/attributes.h
 AW_preset.o: $(ARBHOME)/INCLUDE/awt.hxx
-AW_preset.o: $(ARBHOME)/INCLUDE/awt_advice.hxx
 AW_preset.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 AW_preset.o: $(ARBHOME)/INCLUDE/dupstr.h
 AW_preset.o: $(ARBHOME)/INCLUDE/smartptr.h

@@ -31,7 +31,7 @@
 
 #include <awt_preset.hxx>
 #include <awt_macro.hxx>
-#include <awt_advice.hxx>
+#include <aw_advice.hxx>
 #include <awt_config_manager.hxx>
 #include <awt_input_mask.hxx>
 #include <awt_sel_boxes.hxx>
@@ -1108,7 +1108,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone) {
             NT_reload_tree_event(awr, ntw); // load first tree
         }
         else {
-            AWT_advice("Your database contains no tree.", AWT_ADVICE_TOGGLE|AWT_ADVICE_HELP, 0, "no_tree.hlp");
+            AW_advice("Your database contains no tree.", AW_ADVICE_TOGGLE|AW_ADVICE_HELP, 0, "no_tree.hlp");
             GLOBAL_NT.tree->set_tree_type(AP_LIST_NDS); // no tree -> show NDS list
         }
 

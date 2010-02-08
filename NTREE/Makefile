@@ -423,6 +423,7 @@ NT_extern.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 NT_extern.o: $(ARBHOME)/INCLUDE/arbdbt.h
 NT_extern.o: $(ARBHOME)/INCLUDE/arbtools.h
 NT_extern.o: $(ARBHOME)/INCLUDE/attributes.h
+NT_extern.o: $(ARBHOME)/INCLUDE/aw_advice.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/aw_device.hxx
@@ -434,7 +435,6 @@ NT_extern.o: $(ARBHOME)/INCLUDE/AW_rename.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/awt.hxx
-NT_extern.o: $(ARBHOME)/INCLUDE/awt_advice.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/awt_config_manager.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/awt_input_mask.hxx
@@ -542,6 +542,7 @@ NT_main.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 NT_main.o: $(ARBHOME)/INCLUDE/arbdbt.h
 NT_main.o: $(ARBHOME)/INCLUDE/arbtools.h
 NT_main.o: $(ARBHOME)/INCLUDE/attributes.h
+NT_main.o: $(ARBHOME)/INCLUDE/aw_advice.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/aw_edit.hxx
@@ -552,7 +553,6 @@ NT_main.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/awt.hxx
-NT_main.o: $(ARBHOME)/INCLUDE/awt_advice.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/awti_import.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/dupstr.h
 NT_main.o: $(ARBHOME)/INCLUDE/mg_merge.hxx
