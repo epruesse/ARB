@@ -9,8 +9,7 @@
 // =============================================================== //
 
 #include "aw_nawar.hxx"
-#include "awt.hxx"
-
+#include <arbdb.h>
 #include <sys/stat.h>
 
 #define AWAR_EPS 0.00000001
@@ -636,9 +635,6 @@ AW_default AW_root::open_default(const char *default_name, bool create_if_missin
 
         GBDATA *gb_tmp = GB_search(gb_default, "tmp", GB_CREATE_CONTAINER);
         GB_set_temporary(gb_tmp);
-#if defined(DEBUG)
-        AWT_announce_db_to_browser(gb_default, GBS_global_string("Properties (%s)", default_name));
-#endif // DEBUG
     }
     else {
         GB_ERROR    error           = GB_await_error();

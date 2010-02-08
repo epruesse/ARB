@@ -341,6 +341,10 @@ void AWT_announce_db_to_browser(GBDATA *gb_main, const char *description) {
     get_the_browser()->add_db(gb_main, description);
 }
 
+void AWT_announce_properties_to_browser(GBDATA *gb_defaults, const char *defaults_name) {
+    AWT_announce_db_to_browser(gb_defaults, GBS_global_string("Properties (%s)", defaults_name));
+}
+
 void AWT_browser_forget_db(GBDATA *gb_main) {
     DB_browser *browser = get_the_browser(false);
     awt_assert(browser);
@@ -952,6 +956,15 @@ void AWT_create_debug_menu(AW_window *awmm) {
 }
 
 #endif // DEBUG
+
+AW_default AWT_open_properties(AW_root *aw_root, const char *default_name) {
+    AW_default aw_def = aw_root->open_default(default_name);
+#if defined(DEBUG)
+    if (aw_def) AWT_announce_properties_to_browser(aw_def, default_name);
+#endif // DEBUG
+    return aw_def;
+}
+
 
 // ------------------------
 //      callback guards

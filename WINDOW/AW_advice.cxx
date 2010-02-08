@@ -12,12 +12,13 @@
 //                                                                       //
 //  ==================================================================== //
 
+#include "aw_advice.hxx"
+#include "aw_window.hxx"
+
+#include <arbdb.h>
+
 #include <cstdlib>
 #include <cstring>
-
-#include "aw_advice.hxx"
-#include "awt.hxx"
-
 
 using namespace std;
 
@@ -40,7 +41,7 @@ static AW_default  advice_props = 0;
 
 void init_Advisor(AW_root *awr, AW_default def)
 {
-    awt_assert(!initialized);   // can't init twice
+    aw_assert(!initialized);   // can't init twice
 
     advice_root  = awr;
     advice_props = def;
@@ -115,7 +116,7 @@ void AWT_reactivate_all_advices() {
     int   entries  = strlen(disabled)-strlen(nosemi);
 
     if (entries>0) {
-        awt_assert(entries>1);
+        aw_assert(entries>1);
         entries--;
         aw_message(GBS_global_string("Enabled %i advices", entries));
     }
@@ -130,8 +131,8 @@ void AWT_reactivate_all_advices() {
 }
 
 void AW_advice(const char *message, int type, const char *title, const char *corresponding_help) {
-    awt_assert(initialized);
-    size_t  message_len = strlen(message); awt_assert(message_len>0);
+    aw_assert(initialized);
+    size_t  message_len = strlen(message); aw_assert(message_len>0);
     long    crc32       = GB_checksum(message, message_len, true, " .,-!"); // checksum is used to test if advice was shown
     char   *advice_id   = GBS_global_string_copy("%lx", crc32); // do not delete (bound to cbs)
 
@@ -143,7 +144,7 @@ void AW_advice(const char *message, int type, const char *title, const char *cor
 
         if (corresponding_help) type = AW_Advice_Type(type|AW_ADVICE_HELP);
 #if defined(ASSERTION_USED)
-        else awt_assert((type & AW_ADVICE_HELP) == 0);
+        else aw_assert((type & AW_ADVICE_HELP) == 0);
 #endif // ASSERTION_USED
 
         AW_window_simple *aws = new AW_window_simple; // do not delete (ARB will crash) -- maybe reuse window for all advices?

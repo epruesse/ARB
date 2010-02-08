@@ -250,10 +250,13 @@ const awt_input_mask_descriptor *AWT_look_input_mask(int id); // id starts with 
 // database browser :
 void AWT_create_db_browser_awars(AW_root *aw_root, AW_default aw_def);
 void AWT_announce_db_to_browser(GBDATA *gb_main, const char *description);
+void AWT_announce_properties_to_browser(GBDATA *gb_defaults, const char *defaults_name);
 void AWT_browser_forget_db(GBDATA *gb_main);
 
 void AWT_create_debug_menu(AW_window *awmm);
 #endif // DEBUG
+
+AW_default AWT_open_properties(AW_root *aw_root, const char *default_name);
 
 void AWT_install_cb_guards();
 

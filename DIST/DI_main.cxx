@@ -36,13 +36,7 @@ static void DI_timer(AW_root *aw_root, AW_CL cl_gbmain, AW_CL cd2) {
     aw_root->add_timed_callback(500, DI_timer, cl_gbmain, cd2);
 }
 
-int main(int argc, char **argv)
-{
-    AW_root     *aw_root;
-    AW_default   aw_default;
-    AW_window   *aww;
-    AWT_graphic *awd;
-
+int main(int argc, char **argv) {
     if (argc >= 2 && strcmp(argv[1], "--help") == 0) {
         fprintf(stderr,
                 "Usage: arb_dist\n"
@@ -52,8 +46,10 @@ int main(int argc, char **argv)
     }
 
     aw_initstatus();
-    aw_root    = new AW_root;
-    aw_default = aw_root->open_default(".arb_prop/dist.arb");
+
+    AW_root    *aw_root    = new AW_root;
+    AW_default  aw_default = AWT_open_properties(aw_root, ".arb_prop/dist.arb");
+
     aw_root->init_variables(aw_default);
     aw_root->init_root("ARB_DIST", false);
 
@@ -82,8 +78,8 @@ int main(int argc, char **argv)
 #endif
     ARB_init_global_awars(aw_root, aw_default, GLOBAL_gb_main);
 
-    awd = (AWT_graphic *)0;
-    aww = DI_create_matrix_window(aw_root);
+    AWT_graphic *awd = (AWT_graphic *)0;
+    AW_window   *aww = DI_create_matrix_window(aw_root);
     aww->show();
 
     AWT_install_cb_guards();

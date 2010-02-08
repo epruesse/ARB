@@ -1703,16 +1703,11 @@ void AD_map_viewer(GBDATA *gb_species, AD_MAP_VIEWER_TYPE vtype) {
     }
 }
 
-int main(int argc, char **argv)
-{
-    AW_root *aw_root;
-    AW_default aw_default;
-    AW_window *aww;
-
+int main(int argc, char **argv) {
     aw_initstatus();
 
-    aw_root = new AW_root;
-    aw_default = aw_root->open_default(".arb_prop/pars.arb");
+    AW_root    *aw_root    = new AW_root;
+    AW_default  aw_default = AWT_open_properties(aw_root, ".arb_prop/pars.arb");
     aw_root->init_variables(aw_default);
     aw_root->init_root("ARB_PARS", false);
 
@@ -1765,7 +1760,7 @@ int main(int argc, char **argv)
 
     pars_create_all_awars(aw_root, aw_default);
 
-    aww = create_pars_init_window(aw_root, &cmds);
+    AW_window *aww = create_pars_init_window(aw_root, &cmds);
     aww->show();
 
     AWT_install_cb_guards();
