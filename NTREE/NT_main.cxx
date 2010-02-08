@@ -19,6 +19,7 @@
 #include <aw_global.hxx>
 #include <aw_question.hxx>
 #include <aw_awars.hxx>
+#include <aw_edit.hxx>
 #include <adGene.h>
 #include <arb_version.h>
 
@@ -389,7 +390,7 @@ int main(int argc, char **argv)
     unsigned long mtime = GB_time_of_file("$(ARBHOME)/lib/message");
     unsigned long rtime = GB_time_of_file("$(HOME)/.arb_prop/msgtime");
     if (mtime > rtime) {
-        AWT_edit("${ARBHOME}/lib/message");
+        AW_edit("${ARBHOME}/lib/message");
         system("touch ${HOME}/.arb_prop/msgtime");
     }
     aw_initstatus();

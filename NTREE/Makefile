@@ -179,6 +179,7 @@ ad_trees.o: $(ARBHOME)/INCLUDE/arbtools.h
 ad_trees.o: $(ARBHOME)/INCLUDE/attributes.h
 ad_trees.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+ad_trees.o: $(ARBHOME)/INCLUDE/aw_edit.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/aw_global.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/aw_position.hxx
@@ -543,6 +544,7 @@ NT_main.o: $(ARBHOME)/INCLUDE/arbtools.h
 NT_main.o: $(ARBHOME)/INCLUDE/attributes.h
 NT_main.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+NT_main.o: $(ARBHOME)/INCLUDE/aw_edit.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/aw_global.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/aw_position.hxx

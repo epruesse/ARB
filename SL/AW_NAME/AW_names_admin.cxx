@@ -12,6 +12,7 @@
 
 #include <awt.hxx>
 #include <awt_advice.hxx>
+#include <aw_edit.hxx>
 
 static char *namesFilename(AW_CL cl_gb_main) {
     const char *field    = AW_get_nameserver_addid((GBDATA*)cl_gb_main);
@@ -33,7 +34,7 @@ static void awtc_delete_names_file(AW_window *aws, AW_CL cl_gb_main) {
 
 static void awtc_edit_names_file(AW_window * /* aws */, AW_CL cl_gb_main) {
     char *path = namesFilename(cl_gb_main);
-    AWT_edit(path);
+    AW_edit(path);
     free(path);
 }
 

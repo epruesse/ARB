@@ -249,6 +249,7 @@ AWT_input_mask.o: $(ARBHOME)/INCLUDE/arbdbt.h
 AWT_input_mask.o: $(ARBHOME)/INCLUDE/arbtools.h
 AWT_input_mask.o: $(ARBHOME)/INCLUDE/attributes.h
 AWT_input_mask.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+AWT_input_mask.o: $(ARBHOME)/INCLUDE/aw_edit.hxx
 AWT_input_mask.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AWT_input_mask.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AWT_input_mask.o: $(ARBHOME)/INCLUDE/aw_root.hxx
@@ -301,6 +302,7 @@ AWT_macro.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AWT_macro.o: $(ARBHOME)/INCLUDE/arbtools.h
 AWT_macro.o: $(ARBHOME)/INCLUDE/attributes.h
 AWT_macro.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+AWT_macro.o: $(ARBHOME)/INCLUDE/aw_edit.hxx
 AWT_macro.o: $(ARBHOME)/INCLUDE/aw_global.hxx
 AWT_macro.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AWT_macro.o: $(ARBHOME)/INCLUDE/aw_position.hxx

@@ -3,7 +3,6 @@
 //   File      : AW_status.cxx                                     //
 //   Purpose   :                                                   //
 //                                                                 //
-//   Coded by Ralf Westram (coder@reallysoft.de) in January 2010   //
 //   Institute of Microbiology (Technical University Munich)       //
 //   http://www.arb-home.de/                                       //
 //                                                                 //
@@ -14,6 +13,7 @@
 
 #include <awt_www.hxx>
 #include <awt.hxx>
+#include <aw_edit.hxx>
 #include <arbdbt.h>
 #include <SigHandler.h>
 
@@ -1775,7 +1775,7 @@ static void aw_help_edit_help(AW_window *aww) {
         system(copy_cmd);
     }
 
-    AWT_edit(helpfile);
+    AW_edit(helpfile);
 
     free(helpfile);
 }

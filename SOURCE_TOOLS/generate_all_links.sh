@@ -250,6 +250,7 @@ symlink_file ../STAT/st_window.hxx INCLUDE/st_window.hxx &&
 symlink_file ../WINDOW/aw_awars.hxx INCLUDE/aw_awars.hxx &&
 symlink_file ../WINDOW/aw_color_groups.hxx INCLUDE/aw_color_groups.hxx &&
 symlink_file ../WINDOW/aw_device.hxx INCLUDE/aw_device.hxx &&
+symlink_file ../WINDOW/aw_edit.hxx INCLUDE/aw_edit.hxx &&
 symlink_file ../WINDOW/aw_font_group.hxx INCLUDE/aw_font_group.hxx &&
 symlink_file ../WINDOW/aw_global.hxx INCLUDE/aw_global.hxx &&
 symlink_file ../WINDOW/aw_global_awars.hxx INCLUDE/aw_global_awars.hxx &&

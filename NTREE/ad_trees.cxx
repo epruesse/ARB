@@ -18,6 +18,7 @@
 #include <awt.hxx>
 #include <aw_awars.hxx>
 #include <aw_global.hxx>
+#include <aw_edit.hxx>
 
 #define nt_assert(bed) arb_assert(bed)
 
@@ -591,7 +592,7 @@ void ad_move_tree_info(AW_window *aww, AW_CL mode) {
 
         AWT_move_info(GLOBAL_gb_main, t1, t2, log_file, compare_node_info, delete_old_nodes, nodes_with_marked_only);
         if (log_file) {
-            AWT_edit(log_file);
+            AW_edit(log_file);
             GB_remove_on_exit(log_file);
         }
 

@@ -47,6 +47,7 @@ probe_design.o: $(ARBHOME)/INCLUDE/attributes.h
 probe_design.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+probe_design.o: $(ARBHOME)/INCLUDE/aw_edit.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_preset.hxx

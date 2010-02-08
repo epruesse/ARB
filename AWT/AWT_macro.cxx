@@ -18,6 +18,7 @@
 
 #include <aw_window.hxx>
 #include <aw_global.hxx>
+#include <aw_edit.hxx>
 
 #include "awt.hxx"
 #include "awt_macro.hxx"
@@ -78,7 +79,7 @@ static void awt_start_macro_cb(AW_window *aww, const char *application_name_for_
 
 static void awt_edit_macro_cb(AW_window *aww) {
     char *path = awt_get_selected_fullname(aww->get_root(), AWAR_MACRO_BASE);
-    AWT_edit(path);
+    AW_edit(path);
     free(path);
 }
 
