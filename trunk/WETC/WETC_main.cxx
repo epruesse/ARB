@@ -17,11 +17,10 @@ int main(int argc, char **argv) {
         exit(-1);
     }
 
-    const char *com  = argv[1];
-    AW_root *aw_root;
-    AW_default aw_default;
-    aw_root = new AW_root;
-    aw_default = aw_root->open_default(".arb_prop/ntree.arb");
+    const char *com        = argv[1];
+    AW_root    *aw_root    = new AW_root;
+    AW_default  aw_default = AWT_open_properties(aw_root, ".arb_prop/ntree.arb");
+    
     aw_root->init_variables(aw_default);
     aw_root->init_root("ARB_WETC", false);
 

@@ -11,7 +11,6 @@
 #include "aw_window.hxx"
 #include "aw_global.hxx"
 
-#include <awt_www.hxx>
 #include <awt.hxx>
 
 #include <arbdbt.h>

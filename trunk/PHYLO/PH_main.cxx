@@ -541,35 +541,28 @@ PH_display *PH_display::ph_display=0;
 PHDATA *PHDATA::ROOT = 0;
 
 
-int
-main(int argc, char **argv)
-{
+int main(int argc, char **argv) {
     if (argc > 2 || (argc == 2 && strcmp(argv[1], "--help") == 0)) {
         fprintf(stderr, "Usage: arb_phylo [database]\n");
         return EXIT_FAILURE;
     }
 
-    PH_root          *ph_root;
-    AW_root          *aw_root;
-    char            **alignment_names;
-    GB_ERROR          error     = 0;
-    AW_default        aw_default;
-    PH_used_windows  *puw       = new PH_used_windows;
-    PH_display       *phd       = new PH_display;
-    int               num_alignments;
-    const char       *db_server = (argc == 2 ? argv[1] : ":");
+    const char *db_server = (argc == 2 ? argv[1] : ":");
+
+    PH_used_windows *puw = new PH_used_windows;
+    PH_display      *phd = new PH_display;
 
     aw_initstatus();
-    aw_root = new AW_root;
-    aw_default = aw_root->open_default(".arb_prop/phylo.arb");
+
+    AW_root    *aw_root    = new AW_root;
+    AW_default  aw_default = AWT_open_properties(aw_root, ".arb_prop/phylo.arb");
     aw_root->init_variables(aw_default);
     aw_root->init_root("ARB_PHYLO", false);
 
-    if (argc == 2) {
-        db_server = argv[1];
-    }
-    ph_root = new PH_root;
-    if ((error = ph_root->open(db_server))) { // initializes global 'GLOBAL_gb_main'
+
+    PH_root  *ph_root = new PH_root;
+    GB_ERROR  error   = ph_root->open(db_server);
+    if (error) {
         aw_message(error);
         exit(-1);
     }
@@ -597,9 +590,11 @@ main(int argc, char **argv)
 
     // loading database
     GB_push_transaction(GLOBAL_gb_main);
-    alignment_names = GBT_get_alignment_names(GLOBAL_gb_main);
 
-    for (num_alignments = 0; alignment_names[num_alignments] != 0; num_alignments++) ;
+    char **alignment_names = GBT_get_alignment_names(GLOBAL_gb_main);
+    int    num_alignments;
+    for (num_alignments = 0; alignment_names[num_alignments] != 0; num_alignments++) {}
+
     if (num_alignments > 1) {
         AW_window *sel_ali_aww = create_select_alignment_window(aw_root, (AW_CL)puw->phylo_main_window);
         sel_ali_aww->show();

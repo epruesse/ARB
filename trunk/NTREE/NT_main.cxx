@@ -347,9 +347,6 @@ AW_window *nt_create_intro_window(AW_root *awr)
 
 void AD_set_default_root(AW_root *aw_root);
 
-//  ----------------------------------------------------------
-//      static void AWAR_DB_PATH_changed_cb(AW_root *awr)
-//  ----------------------------------------------------------
 static void AWAR_DB_PATH_changed_cb(AW_root *awr) {
     static int avoid_recursion = 0;
 
@@ -377,14 +374,7 @@ static void AWAR_DB_PATH_changed_cb(AW_root *awr) {
     }
 }
 
-//  ---------------------------------------
-//      int main(int argc, char **argv)
-//  ---------------------------------------
-int main(int argc, char **argv)
-{
-    AW_root *aw_root;
-    AW_default aw_default;
-
+int main(int argc, char **argv) {
     const char *db_server = ":";
 
     unsigned long mtime = GB_time_of_file("$(ARBHOME)/lib/message");
@@ -396,11 +386,11 @@ int main(int argc, char **argv)
     aw_initstatus();
     GB_set_verbose();
 
-    aw_root       = new AW_root;
-    GLOBAL_NT.awr = aw_root;
+    AW_root *aw_root = new AW_root;
+    GLOBAL_NT.awr    = aw_root;
     AD_set_default_root(aw_root);                   // set default for AD_map_viewer (as long as no info-box was opened)
 
-    aw_default = aw_root->open_default(".arb_prop/ntree.arb");
+    AW_default aw_default = AWT_open_properties(aw_root, ".arb_prop/ntree.arb");
     aw_root->init_variables(aw_default);
     aw_root->init_root("ARB_NT", false);
 

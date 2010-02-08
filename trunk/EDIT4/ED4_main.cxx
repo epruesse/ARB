@@ -486,7 +486,10 @@ static void openProperties() {
     }
 
     GB_informationf("Using properties from '%s'", ED4_ROOT->db_name);
-    ED4_ROOT->aw_root->init_variables(ED4_ROOT->db);  // pass defaults
+#if defined(DEBUG)
+    AWT_announce_properties_to_browser(ED4_ROOT->db, ED4_ROOT->db_name);
+#endif // DEBUG
+    ED4_ROOT->aw_root->init_variables(ED4_ROOT->db); // pass defaults
 }
 
 int main(int argc, char **argv)

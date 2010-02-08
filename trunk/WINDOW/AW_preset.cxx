@@ -13,11 +13,9 @@
 #include <aw_color_groups.hxx>
 #include <aw_def.hxx>
 #include <aw_preset.hxx>
+#include <aw_advice.hxx>
 
 #include <awt.hxx>
-#include <aw_advice.hxx>
-#include <awt_canvas.hxx>
-
 #include <arbdbt.h>
 
 #include <cstdarg>

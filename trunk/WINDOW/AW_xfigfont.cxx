@@ -46,8 +46,8 @@
 #include "aw_commn.hxx"
 #include "aw_xfig.hxx"
 #include "aw_xfigfont.hxx"
-#include "awt.hxx"
 
+#include <arbdb.h>
 #include <inline.h>
 
 #include <sys/types.h>

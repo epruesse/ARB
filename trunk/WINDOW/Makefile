@@ -71,7 +71,6 @@ AW_advice.o: $(ARBHOME)/INCLUDE/arbdb.h
 AW_advice.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AW_advice.o: $(ARBHOME)/INCLUDE/arbtools.h
 AW_advice.o: $(ARBHOME)/INCLUDE/attributes.h
-AW_advice.o: $(ARBHOME)/INCLUDE/awt.hxx
 AW_advice.o: $(ARBHOME)/INCLUDE/dupstr.h
 AW_advice.o: $(ARBHOME)/INCLUDE/smartptr.h
 
@@ -256,16 +255,11 @@ AW_modal.o: $(ARBHOME)/INCLUDE/arbdbt.h
 AW_modal.o: $(ARBHOME)/INCLUDE/arbtools.h
 AW_modal.o: $(ARBHOME)/INCLUDE/attributes.h
 AW_modal.o: $(ARBHOME)/INCLUDE/awt.hxx
-AW_modal.o: $(ARBHOME)/INCLUDE/awt_www.hxx
 AW_modal.o: $(ARBHOME)/INCLUDE/dupstr.h
 AW_modal.o: $(ARBHOME)/INCLUDE/smartptr.h
 
-AW_nawar.o: aw_device.hxx
-AW_nawar.o: aw_keysym.hxx
 AW_nawar.o: aw_nawar.hxx
-AW_nawar.o: aw_position.hxx
 AW_nawar.o: aw_root.hxx
-AW_nawar.o: aw_window.hxx
 AW_nawar.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 AW_nawar.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AW_nawar.o: $(ARBHOME)/INCLUDE/arb_assert.h
@@ -274,7 +268,6 @@ AW_nawar.o: $(ARBHOME)/INCLUDE/arbdb.h
 AW_nawar.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AW_nawar.o: $(ARBHOME)/INCLUDE/arbtools.h
 AW_nawar.o: $(ARBHOME)/INCLUDE/attributes.h
-AW_nawar.o: $(ARBHOME)/INCLUDE/awt.hxx
 AW_nawar.o: $(ARBHOME)/INCLUDE/dupstr.h
 AW_nawar.o: $(ARBHOME)/INCLUDE/smartptr.h
 
@@ -309,7 +302,6 @@ AW_preset.o: $(ARBHOME)/INCLUDE/arbdbt.h
 AW_preset.o: $(ARBHOME)/INCLUDE/arbtools.h
 AW_preset.o: $(ARBHOME)/INCLUDE/attributes.h
 AW_preset.o: $(ARBHOME)/INCLUDE/awt.hxx
-AW_preset.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 AW_preset.o: $(ARBHOME)/INCLUDE/dupstr.h
 AW_preset.o: $(ARBHOME)/INCLUDE/smartptr.h
 
@@ -438,10 +430,8 @@ AW_xfig.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 AW_xfigfont.o: aw_commn.hxx
 AW_xfigfont.o: aw_device.hxx
-AW_xfigfont.o: aw_keysym.hxx
 AW_xfigfont.o: aw_position.hxx
 AW_xfigfont.o: aw_root.hxx
-AW_xfigfont.o: aw_window.hxx
 AW_xfigfont.o: aw_xfig.hxx
 AW_xfigfont.o: aw_xfigfont.hxx
 AW_xfigfont.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
@@ -452,7 +442,6 @@ AW_xfigfont.o: $(ARBHOME)/INCLUDE/arbdb.h
 AW_xfigfont.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AW_xfigfont.o: $(ARBHOME)/INCLUDE/arbtools.h
 AW_xfigfont.o: $(ARBHOME)/INCLUDE/attributes.h
-AW_xfigfont.o: $(ARBHOME)/INCLUDE/awt.hxx
 AW_xfigfont.o: $(ARBHOME)/INCLUDE/dupstr.h
 AW_xfigfont.o: $(ARBHOME)/INCLUDE/inline.h
 AW_xfigfont.o: $(ARBHOME)/INCLUDE/smartptr.h
