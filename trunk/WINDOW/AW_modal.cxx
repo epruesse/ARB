@@ -682,11 +682,11 @@ char *aw_file_selection(const char *title, const char *dir, const char *def_name
         aw_msg->button_length(7);
 
         aw_msg->at("ok");
-        aw_msg->callback     (file_selection_cb, 0);
+        aw_msg->callback(file_selection_cb, 0);
         aw_msg->create_button("OK", "OK", "O");
 
         aw_msg->at("cancel");
-        aw_msg->callback     (file_selection_cb, -1);
+        aw_msg->callback(file_selection_cb, -1);
         aw_msg->create_button("CANCEL", "CANCEL", "C");
 
         aw_msg->window_fit();

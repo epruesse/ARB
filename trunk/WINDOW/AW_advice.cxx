@@ -151,7 +151,7 @@ void AW_advice(const char *message, int type, const char *title, const char *cor
 
         if (!title) title = "Please read carefully";
         aws->init(advice_root, "advice", GBS_global_string("ARB: %s", title));
-        aws->load_xfig("awt/advice.fig");
+        aws->load_xfig("window/advice.fig");
 
         bool has_help     = type & AW_ADVICE_HELP;
         bool help_pops_up = false;
