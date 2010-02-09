@@ -192,7 +192,6 @@ symlink_file ../AWT/awt_iupac.hxx INCLUDE/awt_iupac.hxx &&
 symlink_file ../AWT/awt_macro.hxx INCLUDE/awt_macro.hxx &&
 symlink_file ../AWT/awt_map_key.hxx INCLUDE/awt_map_key.hxx &&
 symlink_file ../AWT/awt_nds.hxx INCLUDE/awt_nds.hxx &&
-symlink_file ../AWT/awt_preset.hxx INCLUDE/awt_preset.hxx &&
 symlink_file ../AWT/awt_sel_boxes.hxx INCLUDE/awt_sel_boxes.hxx &&
 symlink_file ../AWT/awt_seq_colors.hxx INCLUDE/awt_seq_colors.hxx &&
 symlink_file ../AWT/awt_www.hxx INCLUDE/awt_www.hxx &&
@@ -266,9 +265,6 @@ symlink_file ../../GL/glpng/glpng.h INCLUDE/GL/glpng.h &&
 symlink_file ../../GL/glAW/aw_window_ogl.hxx INCLUDE/GL/aw_window_ogl.hxx &&
 
 # small dirs
-
-symlink_file ../WINDOW/AW_preset.cxx AWT/AWT_preset.cxx &&
-symlink_file ../WINDOW/aw_def.hxx AWT/aw_def.hxx &&
 
 symlink_maybe_no_target ../AISC/aisc             MAKEBIN/aisc &&
 symlink_maybe_no_target ../AISC_MKPTPS/aisc_mkpt MAKEBIN/aisc_mkpt &&

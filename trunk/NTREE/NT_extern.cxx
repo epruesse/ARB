@@ -29,7 +29,6 @@
 
 #include <awti_export.hxx>
 
-#include <awt_preset.hxx>
 #include <awt_macro.hxx>
 #include <aw_advice.hxx>
 #include <awt_config_manager.hxx>
@@ -1519,7 +1518,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone) {
         // -------------------
         awm->create_menu("Properties", "r", AWM_ALL);
         {
-            AWMIMT("props_menu",    "Frame settings", "F", "props_frame.hlp",     AWM_ALL, AW_POPUP, (AW_CL)AWT_preset_window, 0);
+            AWMIMT("props_menu",    "Frame settings", "F", "props_frame.hlp",     AWM_ALL, AW_POPUP, (AW_CL)AW_preset_window, 0);
             awm->insert_sub_menu("Tree settings",  "T");
             {
                 AWMIMT(awm->local_id("props_tree2"), "Tree options",        "o", "nt_tree_settings.hlp", AWM_ALL, AW_POPUP, (AW_CL)NT_create_tree_setting, (AW_CL)ntw);

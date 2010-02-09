@@ -18,7 +18,6 @@ OBJECTS =	\
 		AWT_macro.o \
 		AWT_map_key.o \
 		AWT_nds.o \
-		AWT_preset.o \
 		AWT_query_and_functions.o \
 		AWT_sel_boxes.o \
 		AWT_seq_colors.o \
@@ -329,30 +328,6 @@ AWT_nds.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWT_nds.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AWT_nds.o: $(ARBHOME)/INCLUDE/dupstr.h
 AWT_nds.o: $(ARBHOME)/INCLUDE/smartptr.h
-
-AWT_preset.o: aw_def.hxx
-AWT_preset.o: awt.hxx
-AWT_preset.o: awt_canvas.hxx
-AWT_preset.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
-AWT_preset.o: $(ARBHOME)/INCLUDE/ad_prot.h
-AWT_preset.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
-AWT_preset.o: $(ARBHOME)/INCLUDE/arb_assert.h
-AWT_preset.o: $(ARBHOME)/INCLUDE/arb_error.h
-AWT_preset.o: $(ARBHOME)/INCLUDE/arbdb.h
-AWT_preset.o: $(ARBHOME)/INCLUDE/arbdb_base.h
-AWT_preset.o: $(ARBHOME)/INCLUDE/arbdbt.h
-AWT_preset.o: $(ARBHOME)/INCLUDE/arbtools.h
-AWT_preset.o: $(ARBHOME)/INCLUDE/attributes.h
-AWT_preset.o: $(ARBHOME)/INCLUDE/aw_advice.hxx
-AWT_preset.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
-AWT_preset.o: $(ARBHOME)/INCLUDE/aw_device.hxx
-AWT_preset.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
-AWT_preset.o: $(ARBHOME)/INCLUDE/aw_position.hxx
-AWT_preset.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
-AWT_preset.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-AWT_preset.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-AWT_preset.o: $(ARBHOME)/INCLUDE/dupstr.h
-AWT_preset.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 AWT_query_and_functions.o: awt.hxx
 AWT_query_and_functions.o: awt_config_manager.hxx
