@@ -1,13 +1,15 @@
+// ================================================================ //
+//                                                                  //
+//   File      : AW_preset.cxx                                      //
+//   Purpose   :                                                    //
+//                                                                  //
+//   Institute of Microbiology (Technical University Munich)        //
+//   http://www.arb-home.de/                                        //
+//                                                                  //
+// ================================================================ //
 
-//  ----------------------------------------------------
-//      This file is located in WINDOW/AW_preset.cxx
-//      (AWT/AWT_preset.cxx is just a link)
-//  ----------------------------------------------------
-
-#ifndef IN_ARB_AWT
 #ifndef IN_ARB_WINDOW
 #error MODULE_... is not known
-#endif
 #endif
 
 #include <aw_color_groups.hxx>
@@ -19,8 +21,6 @@
 #include <arbdbt.h>
 
 #include <cstdarg>
-
-#ifdef IN_ARB_WINDOW
 
 void AW_save_defaults(AW_window *aw) {
     aw->get_root()->save_default("window/font");
@@ -1009,20 +1009,8 @@ AW_window *AW_create_gc_window(AW_root * aw_root, AW_gc_manager id_par)
 {
     return AW_create_gc_window_named(aw_root, id_par, "PROPS_GC", "Colors and Fonts");
 }
-#endif // IN_ARB_WINDOW
 
-
-#ifdef IN_ARB_AWT
-
-AW_window *AWT_preset_window(AW_root *root)
-
-#else // IN_ARB_WINDOW :
-
-    AW_window *AW_preset_window(AW_root *root)
-
-#endif // IN_ARB_WINDOW
-
-{
+AW_window *AW_preset_window(AW_root *root) {
     AW_window_simple *aws = new AW_window_simple;
     const int   tabstop = 400;
     aws->init(root, "PROPS_FRAME", "WINDOW_PROPERTIES");
