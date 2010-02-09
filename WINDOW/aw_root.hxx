@@ -169,7 +169,6 @@ void aw_error(const char *text, const char *text2);     // internal error: asks 
 class  AW_root_Motif;
 class  AW_awar;
 struct AW_var_callback;
-struct AW_xfig_vectorfont;
 
 typedef enum {
     NO_EVENT     = 0,
@@ -207,13 +206,6 @@ public:
     short       font_height;
     short       font_ascent;
     GB_HASH    *hash_for_windows;
-
-    /* PJ - vectorfont stuff */
-    float  vectorfont_userscale;                    // user scaling
-    char  *vectorfont_name;                         // name of font
-    int    vectorfont_zoomtext;                     // zoomtext calls: 0 = Xfont, 1 = vectorfont
-
-    AW_xfig_vectorfont *vectorfont_lines; // graphic data of the font
 
     // the real public section:
     AW_root();

@@ -581,8 +581,6 @@ bool AW_device::ready_to_draw(int gc) {
     return AW_GC_MAPABLE(common, gc);
 }
 
-// PJ: ::zoomtext is defined in AW_xfigfont.cxx
-
 int AW_device::generic_box(int gc, bool /* filled */, AW_pos x0, AW_pos y0, AW_pos width, AW_pos height, AW_bitset filteri, AW_CL cd1, AW_CL cd2)
 {
     int erg = 0;

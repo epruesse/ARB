@@ -13,7 +13,6 @@
 #include "aw_window.hxx"
 #include "aw_awar.hxx"
 #include "aw_xfig.hxx"
-#include "aw_xfigfont.hxx"
 #include "aw_Xm.hxx"
 #include "aw_click.hxx"
 #include "aw_size.hxx"
@@ -1283,7 +1282,6 @@ static const char *aw_awar_2_color[] = { "window/background",
         "window/color_3", 0 };
 
 void AW_root::init_variables(AW_default database) {
-
     application_database = database;
 
     hash_table_for_variables = GBS_create_hash(1000, GB_MIND_CASE);
@@ -1295,19 +1293,6 @@ void AW_root::init_variables(AW_default database) {
             break;
         awar_string(aw_fb[i].awar, aw_fb[i].init, application_database);
     }
-    // PJ temporary site for vectorfont stuff
-    vectorfont_lines = NULL; // font data not yet loaded
-
-    awar_float("vectorfont/userscale", 1.0, application_database); // ratio font point size to pixels
-    awar_string("vectorfont/name", "lib/pictures/fontgfx.vfont", application_database); // name for default font in lib/pictures
-    // from the filerequester
-    awar_int("vectorfont/active", 1, application_database); // zoomtext-calls: call text or use vectorfont (1)
-
-    // this MIGHT lead to inconsistencies, as the validated data is in /name ---> worst case: reset
-    aw_create_fileselection_awars(this, "vectorfont",
-                                  GB_path_in_ARBLIB("pictures", NULL),
-                                  ".vfont", vectorfont_name, application_database, true);
-    awar("vectorfont/file_name")->add_callback((AW_RCB0) aw_xfig_font_changefont_cb);
 }
 
 void *AW_root::get_aw_var_struct(char *awar_name) {

@@ -97,15 +97,6 @@ window			%% (%
 
 	%) /*window*/
 
-vectorfont		%% (%
-	userscale		%f 1
-	name			"lib/pictures/fontgfx.vfont"
-	active			%i 1
-	directory		"lib/pictures"
-	filter			".vfont"
-	file_name		""
-	%) /*vectorfont*/
-
 edit4			%% (%
 	helix_spacing		%i 6
 	title_mode		%i 1

@@ -522,11 +522,3 @@ awt	%% (%
 
 	%) /*awt*/
 
-vectorfont	%% (%
-	userscale	%f 1.000000
-	name		"lib/pictures/fontgfx.vfont"
-	active	%i 1
-	directory		"lib/pictures"
-	filter		".vfont"
-	file_name		"lib/pictures/fontgfx.vfont"
-	%) /*vectorfont*/
