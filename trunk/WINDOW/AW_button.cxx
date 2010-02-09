@@ -2562,7 +2562,7 @@ void AW_window::create_toggle_field(const char *var_name, int orientation) {
 static Widget _aw_create_toggle_entry(AW_window *aww, Widget toggle_field,
                                       const char *label, const char *mnemonic,
                                       AW_variable_update_struct *awus,
-                                      AW_toggle_struct *awts, bool default_toggle) {
+                                      AW_toggle_struct *toggle, bool default_toggle) {
     AW_root *root = aww->get_root();
 
     Widget          toggleButton;
@@ -2576,23 +2576,23 @@ static Widget _aw_create_toggle_entry(AW_window *aww, Widget toggle_field,
                                            XmNfontList, p_global->fontlist,
 
                                            NULL);
-    awts->toggle_widget = toggleButton;
+    toggle->toggle_widget = toggleButton;
     awus->widget = toggleButton;
     XtAddCallback(toggleButton, XmNvalueChangedCallback,
                   (XtCallbackProc) AW_variable_update_callback,
                   (XtPointer) awus);
     if (default_toggle) {
         delete p_global->last_toggle_field->default_toggle;
-        p_global->last_toggle_field->default_toggle = awts;
+        p_global->last_toggle_field->default_toggle = toggle;
     }
     else {
         if (p_global->last_toggle_field->first_toggle) {
-            p_global->last_toggle_field->last_toggle->next = awts;
-            p_global->last_toggle_field->last_toggle = awts;
+            p_global->last_toggle_field->last_toggle->next = toggle;
+            p_global->last_toggle_field->last_toggle = toggle;
         }
         else {
-            p_global->last_toggle_field->last_toggle = awts;
-            p_global->last_toggle_field->first_toggle = awts;
+            p_global->last_toggle_field->last_toggle = toggle;
+            p_global->last_toggle_field->first_toggle = toggle;
         }
     }
     root->make_sensitive(toggleButton, aww->_at->widget_mask);
