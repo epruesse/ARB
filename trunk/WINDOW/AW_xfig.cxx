@@ -88,7 +88,6 @@ AW_xfig::AW_xfig(const char *filename, int font_width, int font_height)
      * Returns:     graphical data or NULL or exit!
      *
      * Description: load xfig graphical data for construction of windows,
-     *              is also used to load line-data of vectorfont
      */
     if (!filename || !strlen(filename)) return;
 

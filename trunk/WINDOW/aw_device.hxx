@@ -376,10 +376,6 @@ public:
     virtual bool invisible(int gc, AW_pos x, AW_pos y, AW_bitset filteri, AW_CL cd1, AW_CL cd2); // returns true if x/y is outside viewport (or if it would now be drawn undrawn)
     virtual int cursor(int gc, AW_pos x0, AW_pos y0, AW_cursor_type type, AW_bitset filteri, AW_CL cd1, AW_CL cd2);
 
-    virtual int zoomtext(int gc, const char *string, AW_pos x, AW_pos y, AW_pos height, AW_pos alignment, AW_pos rotation, AW_bitset filteri, AW_CL cd1, AW_CL cd2);
-    virtual int zoomtext1(int gc, const char *string, AW_pos x, AW_pos y, AW_pos scale, AW_pos alignment, AW_pos rotation, AW_bitset filteri, AW_CL cd1, AW_CL cd2);
-    virtual int zoomtext4line(int gc, const char *string, AW_pos height, AW_pos lx0, AW_pos ly0, AW_pos lx1, AW_pos ly1, AW_pos alignmentx, AW_pos alignmenty, AW_bitset filteri, AW_CL cd1, AW_CL cd2);
-
 protected:
     int generic_box(int gc, bool filled, AW_pos x0, AW_pos y0, AW_pos width, AW_pos heigth, AW_bitset filteri, AW_CL cd1, AW_CL cd2);
     int generic_circle(int gc, bool filled, AW_pos x0, AW_pos y0, AW_pos width, AW_pos heigth, AW_bitset filteri, AW_CL cd1, AW_CL cd2);

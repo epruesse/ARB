@@ -212,18 +212,6 @@ void AW_preset_create_font_chooser(AW_window *aws, const char *awar, const char 
     aws->update_option_menu();
 }
 
-// PJ - vectorfont stuff - user may set a factor for global scaling
-void AW_preset_create_scale_chooser(AW_window *aws, char *awar, char *label)
-{
-    char buffer[2]; buffer[0] = label[0]; buffer[1] = 0;
-    aws->create_option_menu(awar, label, buffer);
-    aws->insert_option        ("0.5",    " ", (float) 0.5);
-    aws->insert_option        ("0.8",    "0", (float) 0.8);
-    aws->insert_option        ("1.0",    "1", (float) 1.0);
-    aws->insert_default_option("other", "o", (float) 1.0);
-    aws->update_option_menu();
-}
-
 struct AW_MGC_awar_cb_struct;
 
 class aw_gc_manager {
@@ -1026,39 +1014,13 @@ AW_window *AW_create_gc_window(AW_root * aw_root, AW_gc_manager id_par)
 
 #ifdef IN_ARB_AWT
 
-// callback to reset to default font
-void awt_xfig_font_resetfont_cb(AW_window *aws) {
-    AW_root *aw_root = aws->get_root();
-    aw_root->awar("vectorfont/file_name")->write_string("lib/pictures/fontgfx.vfont");
-}
-
-void awt_xfig_font_create_filerequest(AW_window *aw) {
-    static AW_window_simple *aws = 0;
-    AW_root *aw_root = aw->get_root();
-
-    if (!aws) {
-        // called *ONCE* to open the window
-        aws = new AW_window_simple;
-        aws->init(aw_root, "SELECT_VECTORFONT", "Select Xfig Vectorfont Resource");
-        aws->load_xfig("fontgfx_request.fig");
-        aws->at("close"); aws->callback((AW_CB0)AW_POPDOWN);
-        aws->create_button("CLOSE", "CLOSE", "C");
-        aws->at("reset"); aws->callback((AW_CB0)awt_xfig_font_resetfont_cb);
-        aws->create_button("RESET", "RESET", "R");
-        // AWT_sel_boxes.cxx
-        awt_create_fileselection((AW_window *)aws, "vectorfont", "", "ARBHOME");
-    }
-    aw_root->awar("vectorfont/file_name")->write_string(aw_root->vectorfont_name);
-    aws->activate();
-}
-
 AW_window *AWT_preset_window(AW_root *root)
 
 #else // IN_ARB_WINDOW :
 
     AW_window *AW_preset_window(AW_root *root)
 
-#endif
+#endif // IN_ARB_WINDOW
 
 {
     AW_window_simple *aws = new AW_window_simple;
@@ -1079,48 +1041,42 @@ AW_window *AWT_preset_window(AW_root *root)
 
     aws->at_newline();
 
-    // PJ vectorfont stuff
-    aws->label("Vectorfont Resource");
-#ifdef IN_ARB_AWT
-    aws->callback((AW_CB0) awt_xfig_font_create_filerequest);
-#endif // IN_ARB_AWT
-    aws->create_button("SELECT VECTORFONT", "Vectorfont Select", "V");
-    aws->at_x(tabstop);
-    aws->create_input_field("vectorfont/file_name", 20);
-    aws->at_newline();
-
     AW_preset_create_font_chooser(aws, "window/font", "Main Menu Font", 1);
     aws->at_x(tabstop);
     aws->create_input_field("window/font", 12);
+
     aws->at_newline();
 
     aws->button_length(10);
     AW_preset_create_color_chooser(aws, "window/background", "Application Background", true, true);
     aws->at_x(tabstop);
     aws->create_input_field("window/background", 12);
+
     aws->at_newline();
 
     AW_preset_create_color_chooser(aws, "window/foreground", "Application Foreground", true, true);
     aws->at_x(tabstop);
     aws->create_input_field("window/foreground", 12);
-    aws->at_newline();
 
+    aws->at_newline();
 
     AW_preset_create_color_chooser(aws, "window/color_1", "Color 1", true, true);
     aws->at_x(tabstop);
     aws->create_input_field("window/color_1", 12);
+
     aws->at_newline();
 
     AW_preset_create_color_chooser(aws, "window/color_2", "Color 2", true, true);
     aws->at_x(tabstop);
     aws->create_input_field("window/color_2", 12);
+
     aws->at_newline();
 
     AW_preset_create_color_chooser(aws, "window/color_3", "Color 3", true, true);
     aws->at_x(tabstop);
     aws->create_input_field("window/color_3", 12);
+    
     aws->at_newline();
-
 
     aws->window_fit();
     return (AW_window *)aws;

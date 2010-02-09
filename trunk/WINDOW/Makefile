@@ -23,7 +23,6 @@ OBJECTS = \
 		AW_window.o \
 		AW_window_Xm_interface.o \
 		AW_xfig.o \
-		AW_xfigfont.o \
 		AW_xfont.o \
 		AW_xkey.o \
 
@@ -380,7 +379,6 @@ AW_window.o: aw_size.hxx
 AW_window.o: aw_window.hxx
 AW_window.o: aw_window_Xm.hxx
 AW_window.o: aw_xfig.hxx
-AW_window.o: aw_xfigfont.hxx
 AW_window.o: aw_xkey.hxx
 AW_window.o: aw_Xm.hxx
 AW_window.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
@@ -427,24 +425,6 @@ AW_xfig.o: $(ARBHOME)/INCLUDE/arbtools.h
 AW_xfig.o: $(ARBHOME)/INCLUDE/attributes.h
 AW_xfig.o: $(ARBHOME)/INCLUDE/dupstr.h
 AW_xfig.o: $(ARBHOME)/INCLUDE/smartptr.h
-
-AW_xfigfont.o: aw_commn.hxx
-AW_xfigfont.o: aw_device.hxx
-AW_xfigfont.o: aw_position.hxx
-AW_xfigfont.o: aw_root.hxx
-AW_xfigfont.o: aw_xfig.hxx
-AW_xfigfont.o: aw_xfigfont.hxx
-AW_xfigfont.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
-AW_xfigfont.o: $(ARBHOME)/INCLUDE/ad_prot.h
-AW_xfigfont.o: $(ARBHOME)/INCLUDE/arb_assert.h
-AW_xfigfont.o: $(ARBHOME)/INCLUDE/arb_error.h
-AW_xfigfont.o: $(ARBHOME)/INCLUDE/arbdb.h
-AW_xfigfont.o: $(ARBHOME)/INCLUDE/arbdb_base.h
-AW_xfigfont.o: $(ARBHOME)/INCLUDE/arbtools.h
-AW_xfigfont.o: $(ARBHOME)/INCLUDE/attributes.h
-AW_xfigfont.o: $(ARBHOME)/INCLUDE/dupstr.h
-AW_xfigfont.o: $(ARBHOME)/INCLUDE/inline.h
-AW_xfigfont.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 AW_xfont.o: aw_commn.hxx
 AW_xfont.o: aw_def.hxx
