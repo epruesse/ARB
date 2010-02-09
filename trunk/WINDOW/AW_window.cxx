@@ -1304,7 +1304,7 @@ void AW_root::init_variables(AW_default database) {
     awar_int("vectorfont/active", 1, application_database); // zoomtext-calls: call text or use vectorfont (1)
 
     // this MIGHT lead to inconsistencies, as the validated data is in /name ---> worst case: reset
-    aw_create_selection_box_awars(this, "vectorfont",
+    aw_create_fileselection_awars(this, "vectorfont",
                                   GB_path_in_ARBLIB("pictures", NULL),
                                   ".vfont", vectorfont_name, application_database, true);
     awar("vectorfont/file_name")->add_callback((AW_RCB0) aw_xfig_font_changefont_cb);

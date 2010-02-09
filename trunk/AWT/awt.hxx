@@ -106,14 +106,14 @@ extern ad_item_selector AWT_organism_selector;
 // -----------------------------
 //      file selection boxes
 
-void awt_create_selection_box(AW_window *aws, const char *awar_prefix, const char *at_prefix = "", const char *pwd = "PWD", bool show_dir = true, bool allow_wildcards = false);
+void awt_create_fileselection(AW_window *aws, const char *awar_prefix, const char *at_prefix = "", const char *pwd = "PWD", bool show_dir = true, bool allow_wildcards = false);
 /* Create a file selection box, this box needs 3 AWARS:
 
 1. "$awar_prefix/filter"
 2. "$awar_prefix/directory"
 3. "$awar_prefix/file_name"
 
-(Note: The function aw_create_selection_box_awars can be used to create them)
+(Note: The function aw_create_fileselection_awars can be used to create them)
 */
 
 /* the "$awar_prefix/file_name" contains the full filename
@@ -133,7 +133,7 @@ pwd is a 'shell environment variable' which indicates the base directory
 
 char *awt_get_selected_fullname(AW_root *awr, const char *awar_prefix);
 
-void awt_refresh_selection_box(AW_root *awr, const char *awar_prefix);
+void awt_refresh_fileselection(AW_root *awr, const char *awar_prefix);
 
 // -------------------------------
 

@@ -301,7 +301,7 @@ static AW_window *mp_create_load_box_for_selection_lists(AW_root *aw_root, AW_CL
     char *var_id    = GBS_string_2_key(selection_list->variable_name);
     char *base_name = GBS_global_string_copy("tmp/load_box_sel_%s", var_id); // do not free (attached to cbs)
 
-    aw_create_selection_box_awars(aw_root, base_name, ".", ".list", "");
+    aw_create_fileselection_awars(aw_root, base_name, ".", ".list", "");
 
     AW_window_simple *aws       = new AW_window_simple;
     char             *window_id = GBS_global_string_copy("LOAD_%s", var_id);
@@ -317,7 +317,7 @@ static AW_window *mp_create_load_box_for_selection_lists(AW_root *aw_root, AW_CL
     aws->callback((AW_CB)mp_load_list, (AW_CL)selid, (AW_CL)base_name); // transfers ownership of base_name
     aws->create_button("LOAD", "LOAD", "L");
 
-    awt_create_selection_box(aws, base_name);
+    awt_create_fileselection(aws, base_name);
 
     free(window_id);
     free(var_id);

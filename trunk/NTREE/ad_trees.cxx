@@ -152,7 +152,7 @@ void create_trees_var(AW_root *aw_root, AW_default aw_def)
     aw_root->awar_int(AWAR_TREE_SECURITY,       0,  aw_def);
     aw_root->awar_string(AWAR_TREE_REM,         0,  aw_def);
 
-    aw_create_selection_box_awars(aw_root, AWAR_TREE_EXPORT, "", ".tree", "treefile", aw_def);
+    aw_create_fileselection_awars(aw_root, AWAR_TREE_EXPORT, "", ".tree", "treefile", aw_def);
     aw_root->awar_int(AWAR_TREE_EXPORT_FORMAT, AD_TREE_EXPORT_FORMAT_NEWICK, aw_def)-> add_callback(update_filter_cb);
     aw_root->awar_int(AWAR_TREE_EXPORT_NDS,  AD_TREE_EXPORT_NODE_SPECIES_NAME, aw_def)-> add_callback(update_filter_cb);
 
@@ -163,7 +163,7 @@ void create_trees_var(AW_root *aw_root, AW_default aw_def)
     aw_root->awar_int(AWAR_TREE_EXPORT_QUOTEMODE, TREE_SINGLE_QUOTES, aw_def); // old default behavior
     aw_root->awar_int(AWAR_TREE_EXPORT_REPLACE, 0, aw_def); // old default behavior
 
-    aw_create_selection_box_awars(aw_root, AWAR_TREE_IMPORT, "", ".tree", "treefile", aw_def);
+    aw_create_fileselection_awars(aw_root, AWAR_TREE_IMPORT, "", ".tree", "treefile", aw_def);
 
     aw_root->awar_string(AWAR_TREE_IMPORT "/tree_name", "tree_",    aw_def) ->set_srt(GBT_TREE_AWAR_SRT);
 
@@ -318,7 +318,7 @@ static void tree_save_cb(AW_window *aww) {
                 break;
         }
 
-        awt_refresh_selection_box(aw_root, AWAR_TREE_EXPORT);
+        awt_refresh_fileselection(aw_root, AWAR_TREE_EXPORT);
 
         delete node_gen;
         free(db_name);
@@ -350,7 +350,7 @@ AW_window *create_tree_export_window(AW_root *root)
     aws->insert_option("ARB_XML TREE FORMAT",                  "X", AD_TREE_EXPORT_FORMAT_XML);
     aws->update_option_menu();
 
-    awt_create_selection_box((AW_window *)aws, AWAR_TREE_EXPORT "");
+    awt_create_fileselection((AW_window *)aws, AWAR_TREE_EXPORT "");
 
     aws->at("user2");
     aws->auto_space(10, 10);
@@ -503,7 +503,7 @@ AW_window *create_tree_import_window(AW_root *root)
     aws->label("tree_name:");
     aws->create_input_field(AWAR_TREE_IMPORT "/tree_name", 15);
 
-    awt_create_selection_box(aws, AWAR_TREE_IMPORT "");
+    awt_create_fileselection(aws, AWAR_TREE_IMPORT "");
 
     aws->at("save2");
     aws->callback(tree_load_cb);

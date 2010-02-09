@@ -815,7 +815,7 @@ void ED4_create_search_awars(AW_root *root)
     // awars to save/load search parameters:
     {
         char *dir = GBS_global_string_copy("%s/.arb_prop/search_settings", GB_getenvHOME());
-        aw_create_selection_box_awars(root, ED4_SEARCH_SAVE_BASE, dir, ".asp", "noname.asp");
+        aw_create_fileselection_awars(root, ED4_SEARCH_SAVE_BASE, dir, ".asp", "noname.asp");
         root->awar(ED4_SEARCH_SAVE_BASE"/directory")->write_string(dir);
         free(dir);
     }
@@ -1670,7 +1670,7 @@ static AW_window *loadsave_search_parameters(AW_root *root, ED4_SearchPositionTy
     aws->at("help");
     aws->create_button("HELP", "HELP", "H");
 
-    awt_create_selection_box((AW_window *)aws, ED4_SEARCH_SAVE_BASE);
+    awt_create_fileselection((AW_window *)aws, ED4_SEARCH_SAVE_BASE);
 
     aws->callback((AW_CB0)AW_POPDOWN);
     aws->at("cancel");

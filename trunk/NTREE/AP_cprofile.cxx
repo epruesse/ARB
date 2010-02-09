@@ -741,8 +741,8 @@ void create_cprofile_var(AW_root *aw_root, AW_default aw_def)
     aw_root->awar_string("tmp/cpro/memfor1", "", aw_def);
     aw_root->awar_string("tmp/cpro/memfor2", "", aw_def);
 
-    aw_create_selection_box_awars(aw_root, "cpro/save", ".", ".cpr", "", aw_def);
-    aw_create_selection_box_awars(aw_root, "cpro/load", ".", ".cpr", "", aw_def);
+    aw_create_fileselection_awars(aw_root, "cpro/save", ".", ".cpr", "", aw_def);
+    aw_create_fileselection_awars(aw_root, "cpro/load", ".", ".cpr", "", aw_def);
     memset((char *)&CPRO, 0, sizeof(struct CPRO_struct));
 
 }
@@ -1217,7 +1217,7 @@ static AW_window *CPRO_savestatisticwindow_cb(AW_root *aw_root, AW_CL cl_which_s
         aws->at("cancel");
         aws->create_button("CANCEL", "CANCEL", "C");
 
-        awt_create_selection_box(aws, "cpro/save");
+        awt_create_fileselection(aws, "cpro/save");
 
         free(window_id);
 
@@ -1245,7 +1245,7 @@ static AW_window *CPRO_loadstatisticwindow_cb(AW_root *aw_root, AW_CL cl_which_s
         aws->at("save"); aws->callback(CPRO_loadstatistic_cb, which_statistic);
         aws->create_button("LOAD", "LOAD", "S");
 
-        awt_create_selection_box(aws, "cpro/load");
+        awt_create_fileselection(aws, "cpro/load");
 
         free(window_id);
 

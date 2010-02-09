@@ -591,7 +591,7 @@ void create_save_box_for_selection_lists_save(AW_window *aws, AW_CL selidcd, AW_
 
     GB_ERROR error = aws->save_selection_list(selid, filename, lineanz);
 
-    if (!error) awt_refresh_selection_box(aw_root, awar_prefix);
+    if (!error) awt_refresh_fileselection(aw_root, awar_prefix);
     aws->hide_or_notify(error);
     free(filename);
     free(bline_anz);
@@ -605,7 +605,7 @@ AW_window *create_save_box_for_selection_lists(AW_root *aw_root, AW_CL selid)
     char *awar_base_name = GBS_global_string_copy("tmp/save_box_sel_%s", var_id); // don't free (passed to callback)
     char *awar_line_anz  = GBS_global_string_copy("%s/line_anz", awar_base_name);
     {
-        aw_create_selection_box_awars(aw_root, awar_base_name, ".", GBS_global_string("noname.list"), "list");
+        aw_create_fileselection_awars(aw_root, awar_base_name, ".", GBS_global_string("noname.list"), "list");
         aw_root->awar_int(awar_line_anz, 0, AW_ROOT_DEFAULT);
     }
 
@@ -634,7 +634,7 @@ AW_window *create_save_box_for_selection_lists(AW_root *aw_root, AW_CL selid)
     aws->insert_option("10000", "a", 10000);
     aws->update_option_menu();
 
-    awt_create_selection_box(aws, awar_base_name);
+    awt_create_fileselection(aws, awar_base_name);
 
     free(window_id);
     free(awar_line_anz);
@@ -668,7 +668,7 @@ AW_window *create_load_box_for_selection_lists(AW_root *aw_root, AW_CL selid)
     char base_name[100];
     sprintf(base_name, "tmp/load_box_sel_%li", (long)selid);
 
-    aw_create_selection_box_awars(aw_root, base_name, ".", "list", "");
+    aw_create_fileselection_awars(aw_root, base_name, ".", "list", "");
 
     AW_window_simple *aws = new AW_window_simple;
     aws->init(aw_root, "LOAD_SELECTION_BOX", "Load box");
@@ -683,7 +683,7 @@ AW_window *create_load_box_for_selection_lists(AW_root *aw_root, AW_CL selid)
     aws->callback(AWT_load_list, selid, (AW_CL)strdup(base_name));
     aws->create_button("LOAD", "LOAD", "L");
 
-    awt_create_selection_box((AW_window *)aws, base_name);
+    awt_create_fileselection((AW_window *)aws, base_name);
 
     aws->recalc_pos_atShow(AW_REPOS_TO_MOUSE);
 
@@ -713,7 +713,7 @@ AW_window *awt_create_load_box(AW_root *aw_root, const char *load_what, const ch
 
     char *base_name = GBS_global_string_copy("tmp/load_box_%s", load_what);
 
-    aw_create_selection_box_awars(aw_root, base_name, ".", file_extension, "");
+    aw_create_fileselection_awars(aw_root, base_name, ".", file_extension, "");
 
     if (set_file_name_awar) {
         *set_file_name_awar = GBS_global_string_copy("%s/file_name", base_name);
@@ -749,7 +749,7 @@ AW_window *awt_create_load_box(AW_root *aw_root, const char *load_what, const ch
 
     aws->create_button("LOAD", "LOAD", "L");
 
-    awt_create_selection_box(aws, base_name);
+    awt_create_fileselection(aws, base_name);
     free(base_name);
     aws->recalc_pos_atShow(AW_REPOS_TO_MOUSE);
 

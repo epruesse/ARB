@@ -310,7 +310,7 @@ AW_window *nt_create_intro_window(AW_root *awr)
     aws->callback(AW_POPUP_HELP, (AW_CL)"arb_intro.hlp");
     aws->create_button("HELP", "HELP", "H");
 
-    awt_create_selection_box(aws, "tmp/nt/arbdb");
+    awt_create_fileselection(aws, "tmp/nt/arbdb");
 
     aws->button_length(0);
 
@@ -397,7 +397,7 @@ int main(int argc, char **argv) {
     // create some early awars
     // Note: normally you don't like to add your awar-init-function here, but into nt_create_all_awars()
 
-    aw_create_selection_box_awars(aw_root, AWAR_DB, "", ".arb", "noname.arb", aw_default);
+    aw_create_fileselection_awars(aw_root, AWAR_DB, "", ".arb", "noname.arb", aw_default);
     aw_root->awar_string(AWAR_DB"type", "b", aw_default);
 
     aw_root->awar_int(AWAR_EXPERT, 0, aw_default);

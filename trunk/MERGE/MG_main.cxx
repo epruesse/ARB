@@ -48,7 +48,7 @@ void MG_save_merge_cb(AW_window *aww)
     GB_commit_transaction(GLOBAL_gb_merge);
     GB_ERROR error = GB_save(GLOBAL_gb_merge, name, "b");
     if (error) aw_message(error);
-    else awt_refresh_selection_box(aww->get_root(), AWAR_MERGE_DB);
+    else awt_refresh_fileselection(aww->get_root(), AWAR_MERGE_DB);
     delete name;
 }
 
@@ -71,7 +71,7 @@ AW_window *MG_save_source_cb(AW_root *aw_root, char *base_name)
     aws->at("cancel");
     aws->create_button("CLOSE", "CANCEL", "C");
 
-    awt_create_selection_box((AW_window *)aws, base_name);
+    awt_create_fileselection((AW_window *)aws, base_name);
 
     return (AW_window *)aws;
 }
@@ -87,7 +87,7 @@ void MG_save_cb(AW_window *aww)
     GB_ERROR error = GB_save(GLOBAL_gb_dest, name, type);
     aw_closestatus();
     if (error) aw_message(error);
-    else    awt_refresh_selection_box(aww->get_root(), AWAR_MAIN_DB);
+    else awt_refresh_fileselection(aww->get_root(), AWAR_MAIN_DB);
     delete name;
     delete type;
 }
@@ -105,7 +105,7 @@ AW_window *MG_save_result_cb(AW_root *aw_root, char *base_name)
     aws->at("close"); aws->callback((AW_CB0)AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
-    awt_create_selection_box((AW_window *)aws, base_name);
+    awt_create_fileselection((AW_window *)aws, base_name);
 
     aws->at("user");
     aws->label("Type");
@@ -138,10 +138,8 @@ void MG_save_quick_result_cb(AW_window *aww) {
     GB_commit_transaction(GLOBAL_gb_dest);
     GB_ERROR error = GB_save_quick_as(GLOBAL_gb_dest, name);
     aw_closestatus();
-    if (error)
-        aw_message(error);
-    else
-        awt_refresh_selection_box(aww->get_root(), AWAR_MAIN_DB);
+    if (error) aw_message(error);
+    else awt_refresh_fileselection(aww->get_root(), AWAR_MAIN_DB);
     delete name;
     return;
 }
@@ -379,14 +377,14 @@ AW_window *create_merge_init_window(AW_root *awr)
     aws->at("help");
     aws->create_button("HELP", "HELP", "H");
 
-    awt_create_selection_box(aws, AWAR_MERGE_DB, "");
+    awt_create_fileselection(aws, AWAR_MERGE_DB, "");
     aws->at("type");
     aws->create_option_menu(AWAR_MERGE_DB"/filter");
     aws->insert_option("ARB", "A", "arb");
     aws->insert_default_option("OTHER", "O", "");
     aws->update_option_menu();
 
-    awt_create_selection_box(aws, AWAR_MAIN_DB, "m");
+    awt_create_fileselection(aws, AWAR_MAIN_DB, "m");
     aws->at("mtype");
     aws->create_option_menu(AWAR_MAIN_DB"/filter");
     aws->insert_option("ARB", "A", "arb");
@@ -405,10 +403,10 @@ AW_window *create_merge_init_window(AW_root *awr)
 
 void MG_create_all_awars(AW_root *awr, AW_default aw_def, const char *fname_one, const char *fname_two)
 {
-    aw_create_selection_box_awars(awr, AWAR_MAIN_DB, "", ".arb", fname_two, aw_def);
+    aw_create_fileselection_awars(awr, AWAR_MAIN_DB, "", ".arb", fname_two, aw_def);
     awr->awar_string(AWAR_MAIN_DB"/type", "b", aw_def);
 
-    aw_create_selection_box_awars(awr, AWAR_MERGE_DB, "", ".arb", fname_one, aw_def);
+    aw_create_fileselection_awars(awr, AWAR_MERGE_DB, "", ".arb", fname_one, aw_def);
 
     MG_create_trees_awar(awr, aw_def);
     MG_create_config_awar(awr, aw_def);

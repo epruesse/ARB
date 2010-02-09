@@ -93,7 +93,7 @@ void export_nds_cb(AW_window *aww, AW_CL print_flag) {
         buf = make_node_text_nds(GLOBAL_gb_main, gb_species, (tabbed ? 2 : 1), 0, tree_name);
         fprintf(out, "%s\n", buf);
     }
-    awt_refresh_selection_box(aw_root, AWAR_EXPORT_NDS);
+    awt_refresh_fileselection(aw_root, AWAR_EXPORT_NDS);
     fclose(out);
     if (print_flag) {
         GB_ERROR error = GB_textprint(name);
@@ -132,14 +132,14 @@ AW_window *create_nds_export_window(AW_root *root) {
     aws->label("Use TABs for columns");
     aws->create_toggle(AWAR_EXPORT_NDS"/tabbed");
 
-    awt_create_selection_box((AW_window *)aws, AWAR_EXPORT_NDS);
+    awt_create_fileselection((AW_window *)aws, AWAR_EXPORT_NDS);
 
     return (AW_window *)aws;
 }
 
 void create_export_nds_awars(AW_root *awr, AW_default def)
 {
-    aw_create_selection_box_awars(awr, AWAR_EXPORT_NDS, "", ".nds", "export.nds", def);
+    aw_create_fileselection_awars(awr, AWAR_EXPORT_NDS, "", ".nds", "export.nds", def);
     awr->awar_int(AWAR_EXPORT_NDS"/tabbed", 0, def);
 }
 
@@ -280,7 +280,7 @@ void NT_save_cb(AW_window *aww) {
     GB_ERROR error = GB_save(GLOBAL_gb_main, filename, "b");
     delete filename;
     if (error) aw_message(error);
-    else awt_refresh_selection_box(aww->get_root(), "tmp/nt/arbdb");
+    else awt_refresh_fileselection(aww->get_root(), "tmp/nt/arbdb");
 }
 
 
@@ -289,14 +289,14 @@ void NT_save_quick_cb(AW_window *aww) {
     GB_ERROR error = GB_save_quick(GLOBAL_gb_main, filename);
     free(filename);
     if (error) aw_message(error);
-    else awt_refresh_selection_box(aww->get_root(), "tmp/nt/arbdb");
+    else awt_refresh_fileselection(aww->get_root(), "tmp/nt/arbdb");
 }
 
 void NT_save_quick_as_cb(AW_window *aww) {
     char     *filename = aww->get_root()->awar(AWAR_DB_PATH)->read_string();
     GB_ERROR  error    = GB_save_quick_as(GLOBAL_gb_main, filename);
 
-    awt_refresh_selection_box(aww->get_root(), "tmp/nt/arbdb");
+    awt_refresh_fileselection(aww->get_root(), "tmp/nt/arbdb");
     aww->hide_or_notify(error);
 
     free(filename);
@@ -319,7 +319,7 @@ AW_window *NT_create_save_quick_as(AW_root *aw_root, char *base_name)
     aws->at("help");
     aws->create_button("HELP", "HELP", "H");
 
-    awt_create_selection_box((AW_window *)aws, base_name);
+    awt_create_fileselection((AW_window *)aws, base_name);
 
     aws->at("comment");
     aws->create_text_field(AWAR_DB_COMMENT);
@@ -402,7 +402,7 @@ void NT_save_as_cb(AW_window *aww) {
     char *filetype = aww->get_root()->awar(AWAR_DB"type")->read_string();
 
     GB_ERROR error = GB_save(GLOBAL_gb_main, filename, filetype);
-    awt_refresh_selection_box(aww->get_root(), "tmp/nt/arbdb");
+    awt_refresh_fileselection(aww->get_root(), "tmp/nt/arbdb");
 
     aww->hide_or_notify(error);
 
@@ -427,7 +427,7 @@ AW_window *NT_create_save_as(AW_root *aw_root, const char *base_name)
     aws->at("help");
     aws->create_button("HELP", "HELP", "H");
 
-    awt_create_selection_box((AW_window *)aws, base_name);
+    awt_create_fileselection((AW_window *)aws, base_name);
 
     aws->at("type");
     aws->label("Type ");
