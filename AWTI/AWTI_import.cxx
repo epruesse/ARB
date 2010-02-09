@@ -1288,8 +1288,8 @@ GBDATA *open_AWTC_import_window(AW_root *awr, const char *defname, bool do_exit,
 
     awtcig.doExit = do_exit; // change/set behavior of CLOSE button
 
-    aw_create_selection_box_awars(awr, AWAR_FILE_BASE, ".", "", defname);
-    aw_create_selection_box_awars(awr, AWAR_FORM, GB_path_in_ARBLIB("import", NULL), ".ift", "*");
+    aw_create_fileselection_awars(awr, AWAR_FILE_BASE, ".", "", defname);
+    aw_create_fileselection_awars(awr, AWAR_FORM, GB_path_in_ARBLIB("import", NULL), ".ift", "*");
 
     awr->awar_string(AWAR_ALI, "dummy"); // these defaults are never used
     awr->awar_string(AWAR_ALI_TYPE, "dummy"); // they are overwritten by AWTC_import_set_ali_and_type
@@ -1312,8 +1312,8 @@ GBDATA *open_AWTC_import_window(AW_root *awr, const char *defname, bool do_exit,
         aws->callback(AW_POPUP_HELP, (AW_CL)"arb_import.hlp");
         aws->create_button("HELP", "HELP", "H");
 
-        awt_create_selection_box(aws, AWAR_FILE_BASE, "imp_", "PWD", true, true); // select import filename
-        awt_create_selection_box(aws, AWAR_FORM, "", "ARBHOME", false, false); // select import filter
+        awt_create_fileselection(aws, AWAR_FILE_BASE, "imp_", "PWD", true, true); // select import filename
+        awt_create_fileselection(aws, AWAR_FORM, "", "ARBHOME", false, false); // select import filter
 
         aws->at("auto");
         aws->callback(awtc_check_input_format);

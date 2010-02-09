@@ -13,7 +13,7 @@
 
 
 struct adawcbstruct {
-    // @@@ FIXME: rethink design - maybe split into base class +
+    // @@@ FIXME: redesign: split into base class +
     // several derived classes for the different usages.
 
     AW_window              *aws;

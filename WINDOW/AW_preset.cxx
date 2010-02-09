@@ -1046,7 +1046,7 @@ void awt_xfig_font_create_filerequest(AW_window *aw) {
         aws->at("reset"); aws->callback((AW_CB0)awt_xfig_font_resetfont_cb);
         aws->create_button("RESET", "RESET", "R");
         // AWT_sel_boxes.cxx
-        awt_create_selection_box((AW_window *)aws, "vectorfont", "", "ARBHOME");
+        awt_create_fileselection((AW_window *)aws, "vectorfont", "", "ARBHOME");
     }
     aw_root->awar("vectorfont/file_name")->write_string(aw_root->vectorfont_name);
     aws->activate();

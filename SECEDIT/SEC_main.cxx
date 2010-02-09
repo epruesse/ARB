@@ -450,7 +450,7 @@ static AW_window *SEC_importExport(AW_root *root, int export_to_file, SEC_db_int
     aws->callback(AW_POPUP_HELP, (AW_CL)"sec_imexport.hlp");
     aws->create_button("HELP", "HELP", "H");
 
-    awt_create_selection_box((AW_window *)aws, AWAR_SECEDIT_SAVEDIR);
+    awt_create_fileselection((AW_window *)aws, AWAR_SECEDIT_SAVEDIR);
 
     aws->at("save");
     if (export_to_file) {

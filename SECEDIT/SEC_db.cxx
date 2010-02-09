@@ -378,7 +378,7 @@ static void create_awars(AW_root *aw_root, AW_default def) {
 
     {
         char *dir = GBS_global_string_copy("%s/.arb_prop/secondary_structure", GB_getenvHOME());
-        aw_create_selection_box_awars(aw_root, AWAR_SECEDIT_SAVEDIR, dir, ".ass", "noname.ass");
+        aw_create_fileselection_awars(aw_root, AWAR_SECEDIT_SAVEDIR, dir, ".ass", "noname.ass");
         free(dir);
     }
 

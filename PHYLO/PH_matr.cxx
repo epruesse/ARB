@@ -53,7 +53,7 @@ void PH_create_matrix_variables(AW_root *aw_root, AW_default def)
     aw_root->awar("phyl/filter/alignment")->map("phyl/alignment");
     aw_root->awar("phyl/weights/alignment")->map("phyl/alignment");
 
-    aw_create_selection_box_awars(aw_root, "tmp/phyl/save_matrix", ".", "", "infile", def);
+    aw_create_fileselection_awars(aw_root, "tmp/phyl/save_matrix", ".", "", "infile", def);
 
     aw_root->awar_string("phyl/tree/tree_name", "tree_temp", def);
 
@@ -145,7 +145,7 @@ AW_window *PH_create_save_matrix_window(AW_root *aw_root, char *base_name)
     aws->at("cancel");
     aws->create_button("CANCEL", "CANCEL", "C");
 
-    awt_create_selection_box((AW_window *)aws, base_name);
+    awt_create_fileselection((AW_window *)aws, base_name);
 
     return (AW_window *)aws;
 }

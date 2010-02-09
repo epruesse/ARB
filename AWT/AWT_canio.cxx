@@ -291,7 +291,7 @@ void AWT_popup_tree_export_window(AW_window *parent_win, AW_CL cl_canvas, AW_CL)
 
         aws->label_length(15);
 
-        awt_create_selection_box((AW_window *)aws, AWAR_PRINT_TREE_FILE_BASE);
+        awt_create_fileselection((AW_window *)aws, AWAR_PRINT_TREE_FILE_BASE);
 
         aws->at("what");
         aws->label("Clip at Screen");
@@ -339,7 +339,7 @@ void AWT_popup_sec_export_window(AW_window *parent_win, AW_CL cl_canvas, AW_CL) 
         aws->create_button("HELP", "HELP", "H");
 
         aws->label_length(15);
-        awt_create_selection_box((AW_window *)aws, AWAR_PRINT_TREE_FILE_BASE);
+        awt_create_fileselection((AW_window *)aws, AWAR_PRINT_TREE_FILE_BASE);
 
         aws->at("what");
         aws->label("Clip Options");

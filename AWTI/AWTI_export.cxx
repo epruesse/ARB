@@ -722,7 +722,7 @@ void AWTC_export_go_cb(AW_window *aww, AW_CL cl_gb_main, AW_CL res_from_awt_crea
 
     if (real_outname) awr->awar(AWAR_EXPORT_FILE"/file_name")->write_string(real_outname);
 
-    awt_refresh_selection_box(awr, AWAR_EXPORT_FILE);
+    awt_refresh_fileselection(awr, AWAR_EXPORT_FILE);
 
     free(real_outname);
     free(outname);
@@ -731,8 +731,8 @@ void AWTC_export_go_cb(AW_window *aww, AW_CL cl_gb_main, AW_CL res_from_awt_crea
 }
 
 void AWTC_create_export_awars(AW_root *awr, AW_default def) {
-    aw_create_selection_box_awars(awr, AWAR_EXPORT_FORM, GB_path_in_ARBLIB("export", NULL), ".eft", "*", AW_ROOT_DEFAULT, true);
-    aw_create_selection_box_awars(awr, AWAR_EXPORT_FILE, "", "", "noname");
+    aw_create_fileselection_awars(awr, AWAR_EXPORT_FORM, GB_path_in_ARBLIB("export", NULL), ".eft", "*", AW_ROOT_DEFAULT, true);
+    aw_create_fileselection_awars(awr, AWAR_EXPORT_FILE, "", "", "noname");
 
     awr->awar_string(AWAR_EXPORT_ALI, "16s", def);
     awr->awar_int(AWAR_EXPORT_MULTIPLE_FILES, 0, def);
@@ -835,9 +835,9 @@ AW_window *open_AWTC_export_window(AW_root *awr, GBDATA *gb_main)
     aws->callback(AW_POPUP_HELP, (AW_CL)"arb_export.hlp");
     aws->create_button("HELP", "HELP", "H");
 
-    awt_create_selection_box(aws, AWAR_EXPORT_FILE, "f");
+    awt_create_fileselection(aws, AWAR_EXPORT_FILE, "f");
 
-    awt_create_selection_box(aws, AWAR_EXPORT_FORM, "", "ARBHOME", false);
+    awt_create_fileselection(aws, AWAR_EXPORT_FORM, "", "ARBHOME", false);
 
     aws->get_root()->awar(AWAR_EXPORT_FORM"/file_name")->add_callback(export_form_changed_cb);
 
