@@ -258,6 +258,7 @@ void AW_awar::remove_all_callbacks() {
 
 bool AW_awar::unlink_from_DB(GBDATA *gb_main) {
     bool make_zombie = false;
+    
     if (gb_origin == gb_var) {                      // not mapped
         if (gb_var) {                               // no zombie awar
             if (GB_get_root(gb_var) == gb_main) {   // awar is in questionable DB
@@ -266,6 +267,8 @@ bool AW_awar::unlink_from_DB(GBDATA *gb_main) {
         }
     }
     else {
+        aw_assert(gb_var && gb_origin); // either both or none should be NULL
+        
         if (GB_get_root(gb_var) == gb_main) {
             if (GB_get_root(gb_origin) == gb_main) {
                 // mapped and origin in DB
@@ -289,8 +292,8 @@ bool AW_awar::unlink_from_DB(GBDATA *gb_main) {
     if (make_zombie) {
         remove_all_callbacks();
         remove_all_target_vars();
-        map(AW_default(NULL));                      // map to nothing
-        gb_origin = NULL;                           // make zombie awar (will not unmap)
+        gb_origin = NULL;                           // make zombie awar
+        unmap();                                    // unmap to nothing
     }
 
     return make_zombie;
@@ -414,18 +417,30 @@ AW_awar *AW_awar::set_srt(const char *srt)
 
 
 AW_awar *AW_awar::map(AW_default gbd) {
-    if (gbd) GB_push_transaction((GBDATA *)gbd);
-    if (gb_var) {               /* old map */
+    if (gb_var) {                                   // remove old mapping
         GB_remove_callback((GBDATA *)gb_var, GB_CB_CHANGED, (GB_CB)AW_var_gbdata_callback, (int *)this);
         GB_remove_callback((GBDATA *)gb_var, GB_CB_DELETE, (GB_CB)AW_var_gbdata_callback_delete, (int *)this);
+        gb_var = NULL;
     }
+
+    if (!gbd) {                                     // attempt to remap to NULL -> unmap
+        gbd = gb_origin;
+    }
+
     if (gbd) {
-        GB_add_callback((GBDATA *) gbd, GB_CB_CHANGED, (GB_CB)AW_var_gbdata_callback, (int *)this);
-        GB_add_callback((GBDATA *) gbd, GB_CB_DELETE, (GB_CB)AW_var_gbdata_callback_delete, (int *)this);
+        GB_transaction ta(gbd);
+
+        GB_ERROR error    = GB_add_callback((GBDATA *) gbd, GB_CB_CHANGED, (GB_CB)AW_var_gbdata_callback, (int *)this);
+        if (!error) error = GB_add_callback((GBDATA *) gbd, GB_CB_DELETE, (GB_CB)AW_var_gbdata_callback_delete, (int *)this);
+
+        if (error) aw_message(error);
+
+        gb_var = gbd;
+        update();
     }
-    gb_var = (GBDATA *)gbd;
-    this->update();
-    if (gbd) GB_pop_transaction((GBDATA *)gbd);
+    else {
+        update();
+    }
     return this;
 }
 
@@ -441,8 +456,7 @@ AW_VARIABLE_TYPE AW_awar::get_type() {
     return this->variable_type;
 }
 
-void AW_awar::update()
-{
+void AW_awar::update() {
     bool out_of_range = false;
     if (gb_var && ((pp.f.min != pp.f.max) || pp.srt)) {
         float fl;
