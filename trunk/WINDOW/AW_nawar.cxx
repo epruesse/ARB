@@ -38,9 +38,19 @@ void AW_var_callback::run_callback(AW_root *root) {
     this->value_changed_cb(root, this->value_changed_cb_cd1, this->value_changed_cb_cd2);
 }
 
-void AW_var_gbdata_callback_delete_intern(GBDATA *, int *cl) {
+void AW_var_gbdata_callback_delete_intern(GBDATA *gbd, int *cl) {
     AW_awar *awar = (AW_awar *)cl;
-    awar->gb_var = 0;
+
+    if (awar->gb_origin == gbd) {
+        // make awar zombie 
+        awar->gb_var    = NULL;
+        awar->gb_origin = NULL;
+    }
+    else {
+        aw_assert(awar->gb_var == gbd);             // forgot to remove a callback ?
+        awar->gb_var = awar->gb_origin;             // unmap
+    }
+
     awar->update();
 }
 
@@ -256,46 +266,40 @@ void AW_awar::remove_all_callbacks() {
 
 // --------------------------------------------------------------------------------
 
+inline bool member_of_DB(GBDATA *gbd, GBDATA *gb_main) {
+    return gbd && GB_get_root(gbd) == gb_main;;
+}
+
+void AW_awar::unlink() {
+    aw_assert(is_valid());
+    remove_all_callbacks();
+    remove_all_target_vars();
+    gb_origin = NULL;                               // make zombie awar
+    unmap();                                        // unmap to nothing
+    aw_assert(is_valid());
+}
+
 bool AW_awar::unlink_from_DB(GBDATA *gb_main) {
-    bool make_zombie = false;
+    bool make_zombie  = false;
+    bool mapped_to_DB = member_of_DB(gb_var, gb_main);
+    bool origin_in_DB = member_of_DB(gb_origin, gb_main);
+
+    aw_assert(is_valid());
     
-    if (gb_origin == gb_var) {                      // not mapped
-        if (gb_var) {                               // no zombie awar
-            if (GB_get_root(gb_var) == gb_main) {   // awar is in questionable DB
-                make_zombie = true;
-            }
-        }
+    if (mapped_to_DB) {
+        if (origin_in_DB) make_zombie = true;
+        else unmap();
     }
-    else {
-        aw_assert(gb_var && gb_origin); // either both or none should be NULL
-        
-        if (GB_get_root(gb_var) == gb_main) {
-            if (GB_get_root(gb_origin) == gb_main) {
-                // mapped and origin in DB
-                make_zombie = true;
-            }
-            else {
-                // origin is in other DB -> just unmap
-                unmap();
-            }
-        }
-        else {
-            if (GB_get_root(gb_origin) == gb_main) {
-                // origin is in DB, current mapping is not
-                // -> remap permanentely
-                gb_origin = gb_var;
-            }
-            // else both are in other DB -> nothing to do
-        }
+    else if (origin_in_DB) {
+        // origin is in DB, current mapping is not
+        // -> remap permanentely
+        gb_origin = gb_var;
     }
 
-    if (make_zombie) {
-        remove_all_callbacks();
-        remove_all_target_vars();
-        gb_origin = NULL;                           // make zombie awar
-        unmap();                                    // unmap to nothing
-    }
+    if (make_zombie) unlink();
 
+    aw_assert(is_valid());
+    
     return make_zombie;
 }
 
@@ -419,7 +423,9 @@ AW_awar *AW_awar::set_srt(const char *srt)
 AW_awar *AW_awar::map(AW_default gbd) {
     if (gb_var) {                                   // remove old mapping
         GB_remove_callback((GBDATA *)gb_var, GB_CB_CHANGED, (GB_CB)AW_var_gbdata_callback, (int *)this);
-        GB_remove_callback((GBDATA *)gb_var, GB_CB_DELETE, (GB_CB)AW_var_gbdata_callback_delete, (int *)this);
+        if (gb_var != gb_origin) {                  // keep callback if pointing to origin!
+            GB_remove_callback((GBDATA *)gb_var, GB_CB_DELETE, (GB_CB)AW_var_gbdata_callback_delete, (int *)this);
+        }
         gb_var = NULL;
     }
 
@@ -430,9 +436,10 @@ AW_awar *AW_awar::map(AW_default gbd) {
     if (gbd) {
         GB_transaction ta(gbd);
 
-        GB_ERROR error    = GB_add_callback((GBDATA *) gbd, GB_CB_CHANGED, (GB_CB)AW_var_gbdata_callback, (int *)this);
-        if (!error) error = GB_add_callback((GBDATA *) gbd, GB_CB_DELETE, (GB_CB)AW_var_gbdata_callback_delete, (int *)this);
-
+        GB_ERROR error = GB_add_callback((GBDATA *) gbd, GB_CB_CHANGED, (GB_CB)AW_var_gbdata_callback, (int *)this);
+        if (!error && gbd != gb_origin) {           // do not add delete callback if mapping to origin
+            error = GB_add_callback((GBDATA *) gbd, GB_CB_DELETE, (GB_CB)AW_var_gbdata_callback_delete, (int *)this);
+        }
         if (error) aw_message(error);
 
         gb_var = gbd;
@@ -441,6 +448,9 @@ AW_awar *AW_awar::map(AW_default gbd) {
     else {
         update();
     }
+
+    aw_assert(is_valid()); 
+
     return this;
 }
 
@@ -458,6 +468,9 @@ AW_VARIABLE_TYPE AW_awar::get_type() {
 
 void AW_awar::update() {
     bool out_of_range = false;
+
+    aw_assert(is_valid()); 
+    
     if (gb_var && ((pp.f.min != pp.f.max) || pp.srt)) {
         float fl;
         char *str;
@@ -477,7 +490,8 @@ void AW_awar::update() {
                 if (out_of_range) {
                     if (root) root->changer_of_variable = 0;
                     this->write_int(lo);
-                    return;             // returns update !!!!
+                    aw_assert(is_valid()); 
+                    return;
                 }
                 break;
             }
@@ -493,7 +507,8 @@ void AW_awar::update() {
                 }
                 if (out_of_range) {
                     if (root) root->changer_of_variable = 0;
-                    this->write_float(fl);              // returns update !!!!
+                    this->write_float(fl); 
+                    aw_assert(is_valid()); 
                     return;
                 }
                 break;
@@ -508,6 +523,7 @@ void AW_awar::update() {
                         this->write_string(n);
                         free(n);
                         free(str);
+                        aw_assert(is_valid()); 
                         return;
                     }
                     free(n);
@@ -520,6 +536,8 @@ void AW_awar::update() {
     }
     this->update_targets();
     this->run_callbacks();
+
+    aw_assert(is_valid()); 
 }
 
 void AW_awar::run_callbacks() {
@@ -614,9 +632,12 @@ AW_awar::AW_awar(AW_VARIABLE_TYPE var_type, const char *var_name, const char *va
                 break;
         }
     }
-    variable_type               = var_type;
+
+    variable_type   = var_type;
     this->gb_origin = gb_def;
     this->map(gb_def);
+
+    aw_assert(is_valid());
 }
 
 

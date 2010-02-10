@@ -320,6 +320,8 @@ public:
     AW_VARIABLE_TYPE  variable_type;                // type of the awar
     char             *awar_name;                    // name of the awar
 
+    void unlink();                                  // unconditionally unlink from DB
+
     void run_callbacks();
     void update_target(AW_var_target*pntr);
     void update_targets();
@@ -346,6 +348,10 @@ public:
     AW_awar *map(AW_default dest); /* map to new address */
     AW_awar *map(AW_awar *dest); /* map to new address */
     AW_awar *unmap();           /* map to original address */
+
+#if defined(DEBUG)
+    bool is_valid() const { return !!gb_var == !!gb_origin;; } // both or none NULL
+#endif // DEBUG
 
     void get(char **p_string)  { freeset(*p_string, read_string()); } /* deletes existing targets !!! */
     void get(long *p_int)      { *p_int = (long)read_int(); }
