@@ -500,7 +500,7 @@ GB_ERROR GBT_rename_alignment(GBDATA *gbMain, const char *source, const char *de
         GBDATA *gb_old_alignment = GBT_get_alignment(gbMain, source);
 
         if (!gb_old_alignment) {
-            error = GBS_global_string("source alignment '%s' not found", source);
+            error = GB_await_error();
         }
         else {
             if (copy) {
@@ -510,6 +510,7 @@ GB_ERROR GBT_rename_alignment(GBDATA *gbMain, const char *source, const char *de
                     is_case_error = (strcasecmp(source, dest) == 0); // test for case-only difference
                 }
                 else {
+                    GB_clear_error();
                     error = GBT_check_alignment_name(dest);
                     if (!error) {
                         GBDATA *gb_new_alignment = GB_create_container(gb_presets, "alignment");
