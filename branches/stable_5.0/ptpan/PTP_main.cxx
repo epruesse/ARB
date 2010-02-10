@@ -536,7 +536,8 @@ int main(int argc, char *argv[])
   }
   /****** all ok: main loop ********/
 
-  printf("ok, server is running.\n");
+  printf("ok, server is running.\n"); // do NOT change or remove! others depend on it
+  fflush(stdout);
 
   aisc_accept_calls(pg->pg_ComSocket);
   aisc_server_shutdown_and_exit(pg->pg_ComSocket, 0);
