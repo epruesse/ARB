@@ -372,7 +372,8 @@ int main(int argc, char **argv)
     PT_init_map();
 
     // all ok -> main "loop"
-    printf("ok, server is running.\n");
+    printf("ok, server is running.\n"); // do NOT change or remove! others depend on it 
+    fflush(stdout);
     aisc_accept_calls(so);
     aisc_server_shutdown_and_exit(so, EXIT_SUCCESS); // never returns
 }
