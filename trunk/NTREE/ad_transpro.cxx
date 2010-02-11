@@ -259,10 +259,10 @@ AW_window *NT_create_dna_2_pro_window(AW_root *root) {
     aws->create_button("HELP", "HELP", "H");
 
     aws->at("source");
-    awt_create_selection_list_on_ad(GLOBAL_gb_main, (AW_window *)aws, AWAR_TRANSPRO_SOURCE, "dna=:rna=");
+    awt_create_selection_list_on_alignments(GLOBAL_gb_main, (AW_window *)aws, AWAR_TRANSPRO_SOURCE, "dna=:rna=");
 
     aws->at("dest");
-    awt_create_selection_list_on_ad(GLOBAL_gb_main, (AW_window *)aws, AWAR_TRANSPRO_DEST, "pro=:ami=");
+    awt_create_selection_list_on_alignments(GLOBAL_gb_main, (AW_window *)aws, AWAR_TRANSPRO_DEST, "pro=:ami=");
 
     root->awar_int(AWAR_PROTEIN_TYPE, AWAR_PROTEIN_TYPE_bacterial_code_index, GLOBAL_gb_main);
     aws->at("table");
@@ -301,7 +301,7 @@ AW_window *NT_create_dna_2_pro_window(AW_root *root) {
 
     aws->window_fit();
 
-    return (AW_window *)aws;
+    return aws;
 }
 
 // Realign a dna alignment with a given protein source
@@ -720,16 +720,16 @@ AW_window *NT_create_realign_dna_window(AW_root *root) {
     aws->create_button("HELP", "HELP", "H");
 
     aws->at("source");
-    awt_create_selection_list_on_ad(GLOBAL_gb_main, (AW_window *)aws, AWAR_TRANSPRO_SOURCE, "dna=:rna=");
+    awt_create_selection_list_on_alignments(GLOBAL_gb_main, (AW_window *)aws, AWAR_TRANSPRO_SOURCE, "dna=:rna=");
     aws->at("dest");
-    awt_create_selection_list_on_ad(GLOBAL_gb_main, (AW_window *)aws, AWAR_TRANSPRO_DEST, "pro=:ami=");
+    awt_create_selection_list_on_alignments(GLOBAL_gb_main, (AW_window *)aws, AWAR_TRANSPRO_DEST, "pro=:ami=");
 
     aws->at("realign");
     aws->callback(transdna_event);
     aws->highlight();
     aws->create_button("REALIGN", "REALIGN", "T");
 
-    return (AW_window *)aws;
+    return aws;
 }
 
 

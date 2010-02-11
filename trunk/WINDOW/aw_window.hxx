@@ -159,30 +159,7 @@ typedef char *AW_pixmap;
 
 class  AW_window_Motif;
 struct AW_select_table_struct;
-
-class AW_selection_list {
-    AW_select_table_struct *loop_pntr;
-public:
-    AW_selection_list(const char *variable_namei, int variable_typei, Widget select_list_widgeti);
-
-    char             *variable_name;
-    AW_VARIABLE_TYPE  variable_type;
-    Widget            select_list_widget;
-    bool              value_equal_display; // set true to fix load/save of some selection lists
-
-    AW_select_table_struct *list_table;
-    AW_select_table_struct *last_of_list_table;
-    AW_select_table_struct *default_select;
-    AW_selection_list      *next;
-
-    // ******************** real public ***************
-    void selectAll();
-    void deselectAll();
-    const char *first_selected();
-    const char *first_element();
-    const char *next_element();
-};
-
+class  AW_selection_list;
 struct AW_option_menu_struct;
 struct aw_toggle_data;
 

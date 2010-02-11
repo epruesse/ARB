@@ -103,6 +103,7 @@ ST_window.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+ST_window.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/awt.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/awt_filter.hxx

@@ -1249,7 +1249,7 @@ static AW_window *create_group_species_by_field_window(AW_root *aw_root, AW_wind
     aws->callback((AW_CB0)AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
-    awt_create_selection_list_on_scandb(GLOBAL_gb_main, (AW_window*)aws, AWAR_FIELD_CHOSEN, -1, "source", 0, &AWT_species_selector, 20, 10);
+    awt_create_selection_list_on_itemfields(GLOBAL_gb_main, (AW_window*)aws, AWAR_FIELD_CHOSEN, -1, "source", 0, &AWT_species_selector, 20, 10);
 
     return aws;
 }

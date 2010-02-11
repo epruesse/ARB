@@ -11,7 +11,6 @@
 #ifndef AWTLOCAL_HXX
 #define AWTLOCAL_HXX
 
-
 struct adawcbstruct {
     // @@@ FIXME: redesign: split into base class +
     // several derived classes for the different usages.
@@ -22,7 +21,7 @@ struct adawcbstruct {
     GBDATA                 *gb_user;
     GBDATA                 *gb_edit;
     AW_selection_list      *id;
-    char                   *comm;
+    // char                   *comm;
     char                   *def_name;
     char                   *def_gbd;
     char                   *def_alignment;
@@ -39,25 +38,10 @@ struct adawcbstruct {
     char                    scannermode;
     char                   *def_dir;
     const ad_item_selector *selector;
-    bool                    add_pseudo_fields;      // true -> add pseudo-fields (used by 'awt_create_selection_list_on_scandb_cb')
-    bool                    include_hidden_fields;  // true -> show hidden fields in selection list
+    // bool                    add_pseudo_fields;      // true -> add pseudo-fields (used by 'awt_create_selection_list_on_scandb_cb')
+    // bool                    include_hidden_fields;  // true -> show hidden fields in selection list
 };
 
-struct awt_sel_list_for_tables {
-    AW_window         *aws;
-    GBDATA            *gb_main;
-    AW_selection_list *id;
-    const char        *table_name;
-};
-
-struct awt_sel_list_for_sai {
-    AW_window         *aws;
-    GBDATA            *gb_main;
-    AW_selection_list *id;
-    char *(*filter_poc)(GBDATA *gb_ext, AW_CL);
-    AW_CL              filter_cd;
-    bool               add_selected_species;
-};
 
 typedef enum {
     AWT_QUERY_GENERATE,
@@ -143,3 +127,5 @@ long awt_query_update_list(void *dummy, struct adaqbsstruct *cbs);
 #else
 #error awtlocal.hxx included twice
 #endif // AWTLOCAL_HXX
+
+

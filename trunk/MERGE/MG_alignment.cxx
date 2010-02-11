@@ -302,7 +302,7 @@ AW_window *MG_create_alignment_window(AW_root *root, AW_CL db_nr)
 
     aws->at("list");
     sprintf(buffer, "tmp/merge%li/alignment_name", db_nr);
-    awt_create_selection_list_on_ad(gbd, (AW_window *)aws, buffer, "*=");
+    awt_create_selection_list_on_alignments(gbd, (AW_window *)aws, buffer, "*=");
 
     aws->at("delete");
     aws->callback(MG_ad_al_delete_cb, db_nr);
@@ -355,8 +355,7 @@ AW_window *MG_create_alignment_window(AW_root *root, AW_CL db_nr)
     aws->insert_default_option("6", "6", 6);
     aws->update_option_menu();
 
-    return (AW_window *)aws;
-
+    return aws;
 }
 
 AW_window *MG_merge_alignment_cb(AW_root *awr) {
@@ -382,10 +381,10 @@ AW_window *MG_merge_alignment_cb(AW_root *awr) {
     aws->create_button("CHECK", "Check");
 
     aws->at("ali1");
-    awt_create_selection_list_on_ad(GLOBAL_gb_merge, (AW_window *)aws, AWAR_ALI1, "*=");
+    awt_create_selection_list_on_alignments(GLOBAL_gb_merge, (AW_window *)aws, AWAR_ALI1, "*=");
 
     aws->at("ali2");
-    awt_create_selection_list_on_ad(GLOBAL_gb_dest, (AW_window *)aws, AWAR_ALI2, "*=");
+    awt_create_selection_list_on_alignments(GLOBAL_gb_dest, (AW_window *)aws, AWAR_ALI2, "*=");
 
     aws->at("modify1");
     aws->callback(AW_POPUP, (AW_CL)MG_create_alignment_window, 1);
@@ -402,5 +401,5 @@ AW_window *MG_merge_alignment_cb(AW_root *awr) {
     aws->callback(AW_POPUP_HELP, (AW_CL)"mg_alignment.hlp");
     aws->create_button("HELP_MERGE", "#merge/icon.bitmap");
 
-    return (AW_window *)aws;
+    return aws;
 }

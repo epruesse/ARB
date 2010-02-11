@@ -41,7 +41,7 @@ void MG_config_rename_cb(AW_window *aww, GBDATA *gbd, int config_nr) {
     if (!error) {
         error = GB_begin_transaction(gbd);
         if (!error) {
-            GBDATA *gb_config_data     = GB_search(gbd, AWAR_CONFIG_DATA, GB_CREATE_CONTAINER);
+            GBDATA *gb_config_data     = GB_search(gbd, CONFIG_DATA_PATH, GB_CREATE_CONTAINER);
             if (!gb_config_data) error = GB_await_error();
             else {
                 GBDATA *gb_dest_name    = GB_find_string(gb_config_data, "name", dest, GB_IGNORE_CASE, SEARCH_GRANDCHILD);
@@ -114,7 +114,7 @@ void MG_config_delete_cb(AW_window *aww, GBDATA *gbd, long config_nr) {
     GB_ERROR    error = GB_begin_transaction(gbd);
 
     if (!error) {
-        GBDATA *gb_config_data = GB_search(gbd, AWAR_CONFIG_DATA, GB_CREATE_CONTAINER);
+        GBDATA *gb_config_data = GB_search(gbd, CONFIG_DATA_PATH, GB_CREATE_CONTAINER);
         GBDATA *gb_config_name = GB_find_string(gb_config_data, "name", config_name, GB_IGNORE_CASE, SEARCH_GRANDCHILD);
 
         if (gb_config_name) {
@@ -140,8 +140,8 @@ void MG_transfer_config(AW_window *aww) {
     if (!error) {
         error = GB_begin_transaction(GLOBAL_gb_merge);
         if (!error) {
-            GBDATA *gb_config_data1 = GB_search(GLOBAL_gb_merge, AWAR_CONFIG_DATA, GB_CREATE_CONTAINER);
-            GBDATA *gb_config_data2 = GB_search(GLOBAL_gb_dest,  AWAR_CONFIG_DATA, GB_CREATE_CONTAINER);
+            GBDATA *gb_config_data1 = GB_search(GLOBAL_gb_merge, CONFIG_DATA_PATH, GB_CREATE_CONTAINER);
+            GBDATA *gb_config_data2 = GB_search(GLOBAL_gb_dest,  CONFIG_DATA_PATH, GB_CREATE_CONTAINER);
             GBDATA *gb_cfgname_1    = GB_find_string(gb_config_data1, "name", source, GB_IGNORE_CASE, SEARCH_GRANDCHILD);
             GBDATA *gb_cfgname_2    = GB_find_string(gb_config_data2, "name", dest,   GB_IGNORE_CASE, SEARCH_GRANDCHILD);
 

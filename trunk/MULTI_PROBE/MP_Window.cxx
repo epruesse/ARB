@@ -1,4 +1,16 @@
+// ================================================================ //
+//                                                                  //
+//   File      : MP_Window.cxx                                      //
+//   Purpose   :                                                    //
+//                                                                  //
+//   Institute of Microbiology (Technical University Munich)        //
+//   http://www.arb-home.de/                                        //
+//                                                                  //
+// ================================================================ //
+
+
 #include <aw_global.hxx>
+#include <aw_select.hxx>
 #include <awt.hxx>
 #include <awt_sel_boxes.hxx>
 

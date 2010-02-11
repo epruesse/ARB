@@ -18,8 +18,8 @@
 #include "arbdb.h"
 #endif
 
-#define AWAR_CONFIG_DATA "configuration_data"
-#define AWAR_CONFIG      "configuration"
+#define CONFIG_DATA_PATH "configuration_data"
+#define CONFIG_ITEM      "configuration"
 
     GBDATA *GBT_find_configuration(GBDATA *gb_main, const char *name);
     GBDATA *GBT_create_configuration(GBDATA *gb_main, const char *name);

@@ -2231,7 +2231,7 @@ AW_window *create_awt_open_parser(AW_root *aw_root, struct adaqbsstruct *cbs)
 
     aws->at("double");  aws->create_toggle(cbs->awar_double_pars);
 
-    awt_create_selection_list_on_scandb(cbs->gb_main, aws, cbs->awar_parskey, AWT_PARS_FILTER, "field", 0, cbs->selector, 20, 10);
+    awt_create_selection_list_on_itemfields(cbs->gb_main, aws, cbs->awar_parskey, AWT_PARS_FILTER, "field", 0, cbs->selector, 20, 10);
 
     aws->at("go");
     aws->callback((AW_CB1)awt_do_pars_list, (AW_CL)cbs);
@@ -2366,7 +2366,7 @@ AW_window *create_awt_do_set_list(AW_root *aw_root, struct adaqbsstruct *cbs)
     aws->callback(AW_POPUP_HELP, (AW_CL)"write_field_list.hlp");
     aws->create_button("HELP", "HELP", "H");
 
-    awt_create_selection_list_on_scandb(cbs->gb_main, aws, cbs->awar_setkey, AWT_NDS_FILTER, "box", 0, cbs->selector, 20, 10);
+    awt_create_selection_list_on_itemfields(cbs->gb_main, aws, cbs->awar_setkey, AWT_NDS_FILTER, "box", 0, cbs->selector, 20, 10);
     aws->at("create");
     aws->callback((AW_CB)awt_do_set_list, (AW_CL)cbs, 0);
     aws->create_button("SET_SINGLE_FIELD_OF_LISTED", "WRITE");
@@ -2444,7 +2444,7 @@ AW_window *create_awt_set_protection(AW_root *aw_root, struct adaqbsstruct *cbs)
     aws->insert_toggle("5 ", "5", 5);
     aws->insert_toggle("6 the truth", "5", 6);
 
-    awt_create_selection_list_on_scandb(cbs->gb_main, aws, cbs->awar_setkey, AWT_NDS_FILTER, "list", 0, cbs->selector, 20, 10);
+    awt_create_selection_list_on_itemfields(cbs->gb_main, aws, cbs->awar_setkey, AWT_NDS_FILTER, "list", 0, cbs->selector, 20, 10);
 
     aws->at("go");
     aws->callback((AW_CB1)awt_do_set_protection, (AW_CL)cbs);
@@ -2711,9 +2711,9 @@ struct adaqbsstruct *awt_create_query_box(AW_window *aws, awt_query_struct *awtq
 
             {
                 char *button_id = GBS_global_string_copy("field_sel_%s_%i", query_id, key);
-                awt_create_selection_list_on_scandb(gb_main, aws, cbs->awar_keys[key], AWT_NDS_FILTER,
-                                                    0, awtqs->rescan_pos_fig,
-                                                    awtqs->selector, 22, 20, AWT_SF_PSEUDO, button_id);
+                awt_create_selection_list_on_itemfields(gb_main, aws, cbs->awar_keys[key], AWT_NDS_FILTER,
+                                                        0, awtqs->rescan_pos_fig,
+                                                        awtqs->selector, 22, 20, AWT_SF_PSEUDO, button_id);
                 free(button_id);
             }
 

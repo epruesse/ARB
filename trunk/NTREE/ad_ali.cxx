@@ -275,7 +275,7 @@ AW_window *NT_create_alignment_window(AW_root *root, AW_CL popmedown)
     aws->create_button("FORMAT", "FORMAT", "F");
 
     aws->at("list");
-    awt_create_selection_list_on_ad(GLOBAL_gb_main, (AW_window *)aws, "presets/use", "*=");
+    awt_create_selection_list_on_alignments(GLOBAL_gb_main, (AW_window *)aws, "presets/use", "*=");
 
     aws->at("aligned");
     aws->create_option_menu("presets/aligned");
@@ -327,5 +327,5 @@ AW_window *NT_create_alignment_window(AW_root *root, AW_CL popmedown)
     aws->at("rem");
     aws->create_text_field("presets/alignment_rem");
 
-    return (AW_window *)aws;
+    return aws;
 }

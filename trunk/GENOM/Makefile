@@ -66,6 +66,7 @@ EXP_interface.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 EXP_interface.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 EXP_interface.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 EXP_interface.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+EXP_interface.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 EXP_interface.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 EXP_interface.o: $(ARBHOME)/INCLUDE/awt.hxx
 EXP_interface.o: $(ARBHOME)/INCLUDE/awt_item_sel_list.hxx
@@ -172,6 +173,7 @@ GEN_interface.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 GEN_interface.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 GEN_interface.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 GEN_interface.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+GEN_interface.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 GEN_interface.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 GEN_interface.o: $(ARBHOME)/INCLUDE/awt.hxx
 GEN_interface.o: $(ARBHOME)/INCLUDE/awt_item_sel_list.hxx
@@ -233,6 +235,7 @@ GEN_nds.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 GEN_nds.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 GEN_nds.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 GEN_nds.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+GEN_nds.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 GEN_nds.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 GEN_nds.o: $(ARBHOME)/INCLUDE/awt.hxx
 GEN_nds.o: $(ARBHOME)/INCLUDE/awt_item_sel_list.hxx

@@ -19,6 +19,7 @@
 #include "aw_print.hxx"
 #include "aw_window_Xm.hxx"
 #include "aw_xkey.hxx"
+#include "aw_select.hxx"
 #include "aw_global.hxx"
 
 #include <arbdbt.h>

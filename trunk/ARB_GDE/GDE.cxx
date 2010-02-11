@@ -170,7 +170,7 @@ static AW_window *GDE_menuitem_cb(AW_root *aw_root, GmenuItem *gmenuitem) {
                     if (seqtype != '-') { // '-' means "skip sequence export"
                         aws->at("which_alignment");
                         const char *ali_filter = seqtype == 'A' ? "pro=:ami=" : (seqtype == 'N' ? "dna=:rna=" : "*=");
-                        awt_create_selection_list_on_ad(GLOBAL_gb_main, (AW_window *)aws, AWAR_GDE_ALIGNMENT, ali_filter);
+                        awt_create_selection_list_on_alignments(GLOBAL_gb_main, (AW_window *)aws, AWAR_GDE_ALIGNMENT, ali_filter);
 
                         aws->at("which_species");
                         aws->create_toggle_field(AWAR_GDE_SPECIES);

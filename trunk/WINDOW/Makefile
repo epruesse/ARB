@@ -1,6 +1,7 @@
 .SUFFIXES: .o .c .cxx .depend
 
 OBJECTS = \
+		AW_select.o \
 		AW_Xm.o \
 		AW_advice.o \
 		AW_at.o \
@@ -99,6 +100,7 @@ AW_button.o: aw_keysym.hxx
 AW_button.o: aw_position.hxx
 AW_button.o: aw_print.hxx
 AW_button.o: aw_root.hxx
+AW_button.o: aw_select.hxx
 AW_button.o: aw_size.hxx
 AW_button.o: aw_window.hxx
 AW_button.o: aw_window_Xm.hxx
@@ -331,6 +333,23 @@ AW_question.o: $(ARBHOME)/INCLUDE/attributes.h
 AW_question.o: $(ARBHOME)/INCLUDE/dupstr.h
 AW_question.o: $(ARBHOME)/INCLUDE/smartptr.h
 
+AW_select.o: aw_device.hxx
+AW_select.o: aw_keysym.hxx
+AW_select.o: aw_position.hxx
+AW_select.o: aw_root.hxx
+AW_select.o: aw_select.hxx
+AW_select.o: aw_window.hxx
+AW_select.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
+AW_select.o: $(ARBHOME)/INCLUDE/ad_prot.h
+AW_select.o: $(ARBHOME)/INCLUDE/arb_assert.h
+AW_select.o: $(ARBHOME)/INCLUDE/arb_error.h
+AW_select.o: $(ARBHOME)/INCLUDE/arbdb.h
+AW_select.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+AW_select.o: $(ARBHOME)/INCLUDE/arbtools.h
+AW_select.o: $(ARBHOME)/INCLUDE/attributes.h
+AW_select.o: $(ARBHOME)/INCLUDE/dupstr.h
+AW_select.o: $(ARBHOME)/INCLUDE/smartptr.h
+
 AW_size.o: aw_commn.hxx
 AW_size.o: aw_device.hxx
 AW_size.o: aw_position.hxx
@@ -375,6 +394,7 @@ AW_window.o: aw_keysym.hxx
 AW_window.o: aw_position.hxx
 AW_window.o: aw_print.hxx
 AW_window.o: aw_root.hxx
+AW_window.o: aw_select.hxx
 AW_window.o: aw_size.hxx
 AW_window.o: aw_window.hxx
 AW_window.o: aw_window_Xm.hxx

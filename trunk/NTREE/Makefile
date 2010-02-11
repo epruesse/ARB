@@ -127,6 +127,7 @@ ad_spec.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ad_spec.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 ad_spec.o: $(ARBHOME)/INCLUDE/AW_rename.hxx
 ad_spec.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+ad_spec.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 ad_spec.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ad_spec.o: $(ARBHOME)/INCLUDE/awt.hxx
 ad_spec.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
@@ -345,6 +346,7 @@ NT_concatenate.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 NT_concatenate.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 NT_concatenate.o: $(ARBHOME)/INCLUDE/AW_rename.hxx
 NT_concatenate.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+NT_concatenate.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 NT_concatenate.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 NT_concatenate.o: $(ARBHOME)/INCLUDE/awt.hxx
 NT_concatenate.o: $(ARBHOME)/INCLUDE/awt_item_sel_list.hxx
@@ -518,6 +520,7 @@ NT_join.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 NT_join.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 NT_join.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 NT_join.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+NT_join.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 NT_join.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 NT_join.o: $(ARBHOME)/INCLUDE/awt.hxx
 NT_join.o: $(ARBHOME)/INCLUDE/awt_item_sel_list.hxx
@@ -574,6 +577,7 @@ NT_sort.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 NT_sort.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 NT_sort.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 NT_sort.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+NT_sort.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 NT_sort.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 NT_sort.o: $(ARBHOME)/INCLUDE/awt.hxx
 NT_sort.o: $(ARBHOME)/INCLUDE/awt_item_sel_list.hxx

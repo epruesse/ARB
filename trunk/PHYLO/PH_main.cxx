@@ -524,8 +524,8 @@ AW_window *create_select_alignment_window(AW_root *aw_root, AW_CL cl_aww)
     aws->create_button("DONE", "DONE", "D");
 
     aws->at("which_alignment");
-    awt_create_selection_list_on_ad(GLOBAL_gb_main, (AW_window *)aws, "phyl/alignment", "*=");
-    return (AW_window *) aws;
+    awt_create_selection_list_on_alignments(GLOBAL_gb_main, (AW_window *)aws, "phyl/alignment", "*=");
+    return aws;
 }
 
 

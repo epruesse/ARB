@@ -18,132 +18,126 @@
 
 #include <ad_config.h>
 
+#include <list>
+
+using namespace std;
+
+
 // --------------------------------------
 //      selection boxes on alignments
 
-static void awt_create_selection_list_on_ad_cb(GBDATA *, struct adawcbstruct *cbs) {
-    cbs->aws->clear_selection_list(cbs->id);
+class AWT_alignment_selection : public AW_DB_selection {
+    char *ali_type_match;                           // filter for wanted alignments (GBS_string_eval command)
+public:
+    AWT_alignment_selection(AW_window *win_, AW_selection_list *sellist_, GBDATA *gb_presets, const char *ali_type_match_)
+        : AW_DB_selection(win_, sellist_, gb_presets)
+        , ali_type_match(nulldup(ali_type_match_))
+    {}
 
-    for (GBDATA * gb_alignment = GB_search(cbs->gb_main, "presets/alignment", GB_FIND);
-         gb_alignment;
-         gb_alignment = GB_nextEntry(gb_alignment))
-    {
-        char *alignment_type = GBT_read_string(gb_alignment, "alignment_type");
-        char *alignment_name = GBT_read_string(gb_alignment, "alignment_name");
-        char *str            = GBS_string_eval(alignment_type, cbs->comm, 0);
+    void fill() {
+        GBDATA         *gb_presets = get_gbd();
+        GB_transaction  ta(gb_presets);
 
-        if (!*str) {
-            cbs->aws->insert_selection(cbs->id, alignment_name, alignment_name);
+        for (GBDATA *gb_alignment = GB_entry(gb_presets, "alignment");
+             gb_alignment;
+             gb_alignment = GB_nextEntry(gb_alignment))
+        {
+            char *alignment_type = GBT_read_string(gb_alignment, "alignment_type");
+            char *alignment_name = GBT_read_string(gb_alignment, "alignment_name");
+            char *str            = GBS_string_eval(alignment_type, ali_type_match, 0);
+
+            if (!*str) insert_selection(alignment_name, alignment_name);
+            free(str);
+            free(alignment_type);
+            free(alignment_name);
         }
-        free(str);
-        free(alignment_type);
-        free(alignment_name);
+        insert_default_selection("????", "????");
     }
-    cbs->aws->insert_default_selection(cbs->id, "????", "????");
-    cbs->aws->update_selection_list(cbs->id);
-}
+};
 
-
-void awt_create_selection_list_on_ad(GBDATA *gb_main, AW_window *aws, const char *varname, const char *comm) {
+void awt_create_selection_list_on_alignments(GBDATA *gb_main, AW_window *aws, const char *varname, const char *comm) {
     // Create selection lists on alignments
     //
     // if comm is set, then only insert alignments,
     // where 'comm' GBS_string_eval's the alignment type
 
-    AW_selection_list *id;
-    GBDATA            *gb_presets;
-
-    GB_push_transaction(gb_main);
-
-    id  = aws->create_selection_list(varname, 0, "", 20, 3);
-    struct adawcbstruct *cbs = new adawcbstruct;
-    memset(cbs, 0, sizeof(*cbs));
-
-    cbs->aws     = aws;
-    cbs->awr     = aws->get_root();
-    cbs->gb_main = gb_main;
-    cbs->id      = id;
-    cbs->comm    = nulldup(comm);
-
-    awt_create_selection_list_on_ad_cb(0, cbs);
-
-    gb_presets = GB_search(gb_main, "presets", GB_CREATE_CONTAINER);
-    GB_add_callback(gb_presets, GB_CB_CHANGED, (GB_CB)awt_create_selection_list_on_ad_cb, (int *)cbs);
-
-    GB_pop_transaction(gb_main);
-}
-
-
-// ******************** selection boxes on trees ********************
-
-void awt_create_selection_list_on_trees_cb(GBDATA *dummy, struct adawcbstruct *cbs) {
-    AWUSE(dummy);
-
-    cbs->aws->clear_selection_list(cbs->id);
-    char **tree_names = GBT_get_tree_names(cbs->gb_main);
-    if (tree_names) {
-        int maxTreeNameLen = 0;
-        for (char **tree = tree_names; *tree; tree++) {
-            int len = strlen(*tree);
-            if (len>maxTreeNameLen) maxTreeNameLen = len;
-        }
-        for (char **tree = tree_names; *tree; tree++) {
-            const char *info = GBT_tree_info_string(cbs->gb_main, *tree, maxTreeNameLen);
-            if (info) {
-                cbs->aws->insert_selection(cbs->id, info, *tree);
-            }
-            else {
-                cbs->aws->insert_selection(cbs->id, *tree, *tree);
-            }
-        }
-        GBT_free_names(tree_names);
+    GBDATA *gb_presets;
+    {
+        GB_transaction ta(gb_main);
+        gb_presets = GB_search(gb_main, "presets", GB_CREATE_CONTAINER);
     }
-    cbs->aws->insert_default_selection(cbs->id, "????", "????");
-    cbs->aws->update_selection_list(cbs->id);
+    AW_selection_list *sellist = aws->create_selection_list(varname, 0, "", 20, 3);
+    (new AWT_alignment_selection(aws, sellist, gb_presets, comm))->refresh(); // belongs to window now
 }
 
-void awt_create_selection_list_on_trees(GBDATA *gb_main, AW_window *aws, const char *varname) {
-    /* Create selection list for trees */
 
-    AW_selection_list *id;
-    GBDATA            *gb_tree_data;
+// ---------------------------------
+//      selection boxes on trees
 
-    GB_push_transaction(gb_main);
+struct AWT_tree_selection: public AW_DB_selection {
+    AWT_tree_selection(AW_window *win_, AW_selection_list *sellist_, GBDATA *gb_tree_data)
+        : AW_DB_selection(win_, sellist_, gb_tree_data)
+    {}
 
-    id = aws->create_selection_list(varname, 0, "", 40, 4);
-    struct adawcbstruct *cbs = new adawcbstruct;
-    memset(cbs, 0, sizeof(*cbs));
+    void fill() {
+        GBDATA         *gb_main = get_gb_main();
+        GB_transaction  ta(gb_main);
 
-    cbs->aws     = aws;
-    cbs->awr     = aws->get_root();
-    cbs->gb_main = gb_main;
-    cbs->id      = id;
-
-    awt_create_selection_list_on_trees_cb(0, cbs);
-
-    gb_tree_data = GB_search(gb_main, "tree_data", GB_CREATE_CONTAINER);
-    GB_add_callback(gb_tree_data, GB_CB_CHANGED, (GB_CB)awt_create_selection_list_on_trees_cb, (int *)cbs);
-
-    GB_pop_transaction(gb_main);
-}
-
-// ******************** selection boxes on pt-servers ********************
-
-#define PT_SERVERNAME_LENGTH        23 // that's for buttons
-#define PT_SERVERNAME_SELLIST_WIDTH 30 // this for lists
-#define PT_SERVER_TRACKLOG_TIMER    10000 // every 10 seconds
-
-struct selection_list_handle {
-    AW_window                    *aws;
-    AW_selection_list            *sellst;
-    struct selection_list_handle *next;
+        char **tree_names = GBT_get_tree_names(gb_main);
+        if (tree_names) {
+            int maxTreeNameLen = 0;
+            for (char **tree = tree_names; *tree; tree++) {
+                int len = strlen(*tree);
+                if (len>maxTreeNameLen) maxTreeNameLen = len;
+            }
+            for (char **tree = tree_names; *tree; tree++) {
+                const char *info = GBT_tree_info_string(gb_main, *tree, maxTreeNameLen);
+                if (info) {
+                    insert_selection(info, *tree);
+                }
+                else {
+                    insert_selection(*tree, *tree);
+                }
+            }
+            GBT_free_names(tree_names);
+        }
+        insert_default_selection("????", "????");
+    }
 };
 
-static selection_list_handle *allPTserverSellists = 0; // all pt server selection lists
+void awt_create_selection_list_on_trees(GBDATA *gb_main, AW_window *aws, const char *varname) {
+    GBDATA *gb_tree_data;
+    {
+        GB_transaction ta(gb_main);
+        gb_tree_data = GB_search(gb_main, "tree_data", GB_CREATE_CONTAINER);
+    }
+    AW_selection_list *sellist = aws->create_selection_list(varname, 0, "", 40, 4);
+    (new AWT_tree_selection(aws, sellist, gb_tree_data))->refresh(); // belongs to window now
+}
 
-static void fill_pt_server_selection_list(AW_window *aws, AW_selection_list *id) {
-    aws->clear_selection_list(id);
 
+// --------------------------------------
+//      selection boxes on pt-servers
+
+#define PT_SERVERNAME_LENGTH        23              // that's for buttons
+#define PT_SERVERNAME_SELLIST_WIDTH 30              // this for lists
+#define PT_SERVER_TRACKLOG_TIMER    10000           // every 10 seconds
+
+class AWT_ptserver_selection : public AW_selection {
+    typedef list<AWT_ptserver_selection*> PTserverSelections;
+    
+    static PTserverSelections ptserver_selections;
+public:
+    AWT_ptserver_selection(AW_window *win_, AW_selection_list *sellist_);
+
+    void fill();
+
+    static void refresh_all();
+};
+
+AWT_ptserver_selection::PTserverSelections AWT_ptserver_selection::ptserver_selections;
+
+void AWT_ptserver_selection::fill() {
     const char * const *pt_servers = GBS_get_arb_tcp_entries("ARB_PT_SERVER*");
 
     int count = 0;
@@ -155,24 +149,22 @@ static void fill_pt_server_selection_list(AW_window *aws, AW_selection_list *id)
             aw_message(GB_await_error());
             break;
         }
-        aws->insert_selection(id, choice, (long)i);
+        insert_selection(choice, (long)i);
         free(choice);
     }
 
-    aws->insert_default_selection(id, "-undefined-", (long)-1);
-    aws->update_selection_list(id);
+    insert_default_selection("-undefined-", (long)-1);
 }
 
-void awt_refresh_all_pt_server_selection_lists() {
-    // refresh content of all PT_server selection lists
-    selection_list_handle *serverList = allPTserverSellists;
-
-    while (serverList) {
-        fill_pt_server_selection_list(serverList->aws, serverList->sellst);
-        serverList = serverList->next;
+void AWT_ptserver_selection::refresh_all() {
+    PTserverSelections::iterator end = ptserver_selections.end();
+    for (PTserverSelections::iterator pts_sel = ptserver_selections.begin(); pts_sel != end; ++pts_sel) {
+        (*pts_sel)->refresh();
     }
 }
-
+void awt_refresh_all_pt_server_selection_lists() {
+    AWT_ptserver_selection::refresh_all();
+}
 static void track_log_cb(AW_root *awr) {
     static long  last_ptserverlog_mod = 0;
     const char  *ptserverlog          = GBS_ptserver_logname();
@@ -182,36 +174,25 @@ static void track_log_cb(AW_root *awr) {
 #if defined(DEBUG)
         fprintf(stderr, "%s modified!\n", ptserverlog);
 #endif // DEBUG
-        awt_refresh_all_pt_server_selection_lists();
+        AWT_ptserver_selection::refresh_all();
         last_ptserverlog_mod = ptserverlog_mod;
     }
 
     awr->add_timed_callback(PT_SERVER_TRACKLOG_TIMER, track_log_cb);
 }
 
-static void announce_pt_server_selection_list(AW_window *aws, AW_selection_list *id) {
-#if defined(DEBUG)
-    selection_list_handle *serverList = allPTserverSellists;
-    while (serverList) {
-        awt_assert(aws != serverList->aws || id != serverList->sellst); // oops - added twice
-        serverList = serverList->next;
+AWT_ptserver_selection::AWT_ptserver_selection(AW_window *win_, AW_selection_list *sellist_)
+    : AW_selection(win_, sellist_)
+{
+    if (ptserver_selections.empty()) {
+        // first pt server selection list -> install log tracker
+        get_root()->add_timed_callback(PT_SERVER_TRACKLOG_TIMER, track_log_cb);
     }
-#endif // DEBUG
-
-    if (!allPTserverSellists) { // first pt server selection list -> install log tracker
-        aws->get_root()->add_timed_callback(PT_SERVER_TRACKLOG_TIMER, track_log_cb);
-    }
-
-    selection_list_handle *newServerList = (selection_list_handle *)malloc(sizeof(*newServerList));
-
-    newServerList->aws    = aws;
-    newServerList->sellst = id;
-    newServerList->next   = allPTserverSellists;
-
-    allPTserverSellists = newServerList;
+    ptserver_selections.push_back(this);
 }
 
-// --------------------------------------------------------------------------------
+
+
 
 static char *readable_pt_servername(int index, int maxlength) {
     char *fullname = GBS_ptserver_id_to_choice(index, 0);
@@ -246,7 +227,7 @@ static void update_ptserver_button(AW_root *aw_root, AW_CL cl_varname) {
     free(awar_buttontext_name);
 }
 
-AW_window *awt_popup_selection_list_on_pt_servers(AW_root *aw_root, const char *varname) {
+static AW_window *awt_popup_selection_list_on_pt_servers(AW_root *aw_root, const char *varname) {
     AW_window_simple *aw_popup = new AW_window_simple;
 
     aw_popup->init(aw_root, "SELECT_PT_SERVER", "Select a PT-Server");
@@ -254,7 +235,7 @@ AW_window *awt_popup_selection_list_on_pt_servers(AW_root *aw_root, const char *
 
     aw_popup->at_newline();
     aw_popup->callback((AW_CB0)AW_POPDOWN);
-    AW_selection_list *id = aw_popup->create_selection_list(varname, 0, "", PT_SERVERNAME_SELLIST_WIDTH, 20);
+    AW_selection_list *sellist = aw_popup->create_selection_list(varname, 0, "", PT_SERVERNAME_SELLIST_WIDTH, 20);
 
     aw_popup->at_newline();
     aw_popup->callback((AW_CB0)AW_POPDOWN);
@@ -263,15 +244,12 @@ AW_window *awt_popup_selection_list_on_pt_servers(AW_root *aw_root, const char *
     aw_popup->window_fit();
     aw_popup->recalc_pos_atShow(AW_REPOS_TO_MOUSE);
 
-    announce_pt_server_selection_list(aw_popup, id);
-    fill_pt_server_selection_list(aw_popup, id);
+    (new AWT_ptserver_selection(aw_popup, sellist))->refresh();
 
     return aw_popup;
 }
 
 void awt_create_selection_list_on_pt_servers(AW_window *aws, const char *varname, bool popup) {
-    /* Create selection list for pt-servers */
-
     if (popup) {
         AW_root *aw_root              = aws->get_root();
         char    *awar_buttontext_name = GBS_global_string_copy("/tmp/%s_BUTTON", varname);
@@ -282,9 +260,8 @@ void awt_create_selection_list_on_pt_servers(AW_window *aws, const char *varname
             aw_root->awar(varname)->write_int(ptserver_index);
         }
 
-        char *readable_name = readable_pt_servername(ptserver_index, PT_SERVERNAME_LENGTH);
-
-        AW_CL cl_varname = (AW_CL)strdup(varname); // make copy of awar_name for callbacks
+        char  *readable_name = readable_pt_servername(ptserver_index, PT_SERVERNAME_LENGTH);
+        AW_CL  cl_varname    = (AW_CL)strdup(varname); // make copy of awar_name for callbacks
 
         aw_root->awar_string(awar_buttontext_name, readable_name, AW_ROOT_DEFAULT);
         aw_root->awar(varname)->add_callback(update_ptserver_button, cl_varname);
@@ -301,14 +278,24 @@ void awt_create_selection_list_on_pt_servers(AW_window *aws, const char *varname
         free(awar_buttontext_name);
     }
     else {
-        AW_selection_list *id = aws->create_selection_list(varname);
-        announce_pt_server_selection_list(aws, id);
-        fill_pt_server_selection_list(aws, id);
+        (new AWT_ptserver_selection(aws, aws->create_selection_list(varname)))->refresh();
     }
 }
 
+// ----------------------------------
+//      selection boxes on tables
 
-// ******************** selection boxes on tables ********************
+
+#if defined(DEVEL_RALF)
+#warning derive awt_sel_list_for_tables from AW_DB_selection
+#endif // DEVEL_RALF
+
+struct awt_sel_list_for_tables {
+    AW_window         *aws;
+    GBDATA            *gb_main;
+    AW_selection_list *id;
+    const char        *table_name;
+};
 
 void awt_create_selection_list_on_tables_cb(GBDATA *dummy, struct awt_sel_list_for_tables *cbs) {
     AWUSE(dummy);
@@ -352,7 +339,6 @@ void awt_create_selection_list_on_tables(GBDATA *gb_main, AW_window *aws, const 
 
     GB_pop_transaction(gb_main);
 }
-// ******************** selection boxes on tables ********************
 
 void awt_create_selection_list_on_table_fields_cb(GBDATA *dummy, struct awt_sel_list_for_tables *cbs) {
     AWUSE(dummy);
@@ -400,48 +386,35 @@ void awt_create_selection_list_on_table_fields(GBDATA *gb_main, AW_window *aws, 
     GB_pop_transaction(gb_main);
 }
 
-// ******************** selection boxes on editor configurations ********************
+// -------------------------------------------------
+//      selection boxes on editor configurations
 
-void awt_create_selection_list_on_configurations_cb(GBDATA*, struct adawcbstruct *cbs) {
-    cbs->aws->clear_selection_list(cbs->id);
+class AWT_configuration_selection : public AW_DB_selection {
+public:
+    AWT_configuration_selection(AW_window *win_, AW_selection_list *sellist_, GBDATA *gb_configuration_data)
+        : AW_DB_selection(win_, sellist_, gb_configuration_data)
+    {}
 
-    int    config_count;
-    char **config = GBT_get_configuration_names_and_count(cbs->gb_main, &config_count);
+    void fill() {
+        int    config_count;
+        char **config = GBT_get_configuration_names_and_count(get_gb_main(), &config_count);
 
-    if (config) {
-        for (int c = 0; c<config_count; c++) {
-            cbs->aws->insert_selection(cbs->id, config[c], config[c]);
+        if (config) {
+            for (int c = 0; c<config_count; c++) insert_selection(config[c], config[c]);
+            GBT_free_names(config);
         }
-        GBT_free_names(config);
+        insert_default_selection("????", "????");
     }
+};
 
-    cbs->aws->insert_default_selection(cbs->id, "????", "????");
-    cbs->aws->update_selection_list(cbs->id);
-}
-
-void awt_create_selection_list_on_configurations(GBDATA *gb_main, AW_window *aws, const char *varname)
-{
-    AW_selection_list *id;
-    GBDATA  *gb_configuration_data;
-    GB_push_transaction(gb_main);
-
-    id = aws->create_selection_list(varname, 0, "", 40, 15);
-
-    struct adawcbstruct *cbs = new adawcbstruct;
-    memset(cbs, 0, sizeof(*cbs));
-
-    cbs->aws     = aws;
-    cbs->awr     = aws->get_root();
-    cbs->gb_main = gb_main;
-    cbs->id      = id;
-
-    awt_create_selection_list_on_configurations_cb(0, cbs);
-
-    gb_configuration_data = GB_search(gb_main, AWAR_CONFIG_DATA, GB_CREATE_CONTAINER);
-    GB_add_callback(gb_configuration_data, GB_CB_CHANGED,
-                    (GB_CB)awt_create_selection_list_on_configurations_cb, (int *)cbs);
-
-    GB_pop_transaction(gb_main);
+void awt_create_selection_list_on_configurations(GBDATA *gb_main, AW_window *aws, const char *varname) {
+    GBDATA *gb_configuration_data;
+    {
+        GB_transaction ta(gb_main);
+        gb_configuration_data = GB_search(gb_main, CONFIG_DATA_PATH, GB_CREATE_CONTAINER);
+    }
+    AW_selection_list *sellist = aws->create_selection_list(varname, 0, "", 40, 15);
+    (new AWT_configuration_selection(aws, sellist, gb_configuration_data))->refresh();
 }
 
 char *awt_create_string_on_configurations(GBDATA *gb_main) {
@@ -467,6 +440,24 @@ char *awt_create_string_on_configurations(GBDATA *gb_main) {
     GB_pop_transaction(gb_main);
     return result;
 }
+
+// ----------------------
+//      SAI selection
+
+
+#if defined(DEVEL_RALF)
+#warning derive awt_sel_list_for_sai from AW_DB_selection
+#endif // DEVEL_RALF
+
+
+struct awt_sel_list_for_sai {
+    AW_window         *aws;
+    GBDATA            *gb_main;
+    AW_selection_list *id;
+    char *(*filter_poc)(GBDATA *gb_ext, AW_CL);
+    AW_CL              filter_cd;
+    bool               add_selected_species;
+};
 
 void awt_create_selection_list_on_extendeds_update(GBDATA *dummy, void *cbsid) {
     /* update the selection box defined by awt_create_selection_list_on_extendeds
@@ -786,13 +777,14 @@ void AWT_popup_select_species_field_window(AW_window *aww, AW_CL cl_awar_name, A
         aws->at("close");
         aws->create_button("CLOSE", "CLOSE", "C");
 
-        awt_create_selection_list_on_scandb((GBDATA *)cl_gb_main,
-                                            aws,
-                                            "tmp/viewkeys/key_text_select",
-                                            AWT_NDS_FILTER,
-                                            "scandb", "rescandb", &AWT_species_selector, 20, 10);
+        awt_create_selection_list_on_itemfields((GBDATA *)cl_gb_main,
+                                                aws,
+                                                "tmp/viewkeys/key_text_select",
+                                                AWT_NDS_FILTER,
+                                                "scandb", "rescandb", &AWT_species_selector, 20, 10);
         aws->recalc_pos_atShow(AW_REPOS_TO_MOUSE);
     }
     aws->activate();
 }
+
 
