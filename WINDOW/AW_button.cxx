@@ -14,6 +14,7 @@
 #include "aw_print.hxx"
 #include "aw_size.hxx"
 #include "aw_window.hxx"
+#include "aw_select.hxx"
 #include "aw_awar.hxx"
 #include "aw_window_Xm.hxx"
 

@@ -760,8 +760,7 @@ AP_open_con_expert_window(AW_root *aw_root)
     aws->update_toggle_field();
 
     aws->at("which_alignment");
-    awt_create_selection_list_on_ad(GLOBAL_gb_main,
-                                    (AW_window *)aws, "tmp/con/alignment", "*=");
+    awt_create_selection_list_on_alignments(GLOBAL_gb_main, (AW_window *)aws, "tmp/con/alignment", "*=");
 
     aws->button_length(15);
 
@@ -805,7 +804,7 @@ AP_open_con_expert_window(AW_root *aw_root)
     aws->at("save_box");
     awt_create_selection_list_on_extendeds(GLOBAL_gb_main, aws, "tmp/con/name");
 
-    return (AW_window *)aws;
+    return aws;
 }
 
 
@@ -861,8 +860,7 @@ AP_open_consensus_window(AW_root *aw_root)
     aws->update_toggle_field();
 
     aws->at("which_alignment");
-    awt_create_selection_list_on_ad(GLOBAL_gb_main,
-                                    (AW_window *)aws, "tmp/con/alignment", "*=");
+    awt_create_selection_list_on_alignments(GLOBAL_gb_main, (AW_window *)aws, "tmp/con/alignment", "*=");
 
     aws->button_length(15);
 
@@ -887,7 +885,7 @@ AP_open_consensus_window(AW_root *aw_root)
 
     GB_pop_transaction(GLOBAL_gb_main);
 
-    return (AW_window *)aws;
+    return aws;
 }
 
 

@@ -99,7 +99,7 @@ AW_window *NT_open_select_alignment_window(AW_root *awr)
     aws->at("selection");
     aws->auto_space(0, 0);
     aws->callback((AW_CB0)AW_POPDOWN);
-    awt_create_selection_list_on_ad(GLOBAL_gb_main, (AW_window *)aws, AWAR_DEFAULT_ALIGNMENT, "*=");
+    awt_create_selection_list_on_alignments(GLOBAL_gb_main, (AW_window *)aws, AWAR_DEFAULT_ALIGNMENT, "*=");
 
     aws->at("close");
     aws->callback(AW_POPDOWN);
@@ -111,7 +111,7 @@ AW_window *NT_open_select_alignment_window(AW_root *awr)
     aws->create_button("MODIFY", "MODIFY", "M");
 
     aws->window_fit();
-    return (AW_window *)aws;
+    return aws;
 }
 
 void NT_system_cb(AW_window *aww, AW_CL command, AW_CL auto_help_file)

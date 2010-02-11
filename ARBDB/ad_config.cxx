@@ -27,11 +27,11 @@ char **GBT_get_configuration_names_and_count(GBDATA *gb_main, int *countPtr) {
 
     GB_push_transaction(gb_main);
 
-    gb_configuration_data = GB_search(gb_main, AWAR_CONFIG_DATA, GB_CREATE_CONTAINER);
+    gb_configuration_data = GB_search(gb_main, CONFIG_DATA_PATH, GB_CREATE_CONTAINER);
     if (gb_configuration_data) {
         GBDATA *gb_config;
 
-        for (gb_config = GB_entry(gb_configuration_data, AWAR_CONFIG);
+        for (gb_config = GB_entry(gb_configuration_data, CONFIG_ITEM);
              gb_config;
              gb_config = GB_nextEntry(gb_config))
         {
@@ -43,7 +43,7 @@ char **GBT_get_configuration_names_and_count(GBDATA *gb_main, int *countPtr) {
             count             = 0;
             int unnamed_count = 0;
 
-            for (gb_config = GB_entry(gb_configuration_data, AWAR_CONFIG);
+            for (gb_config = GB_entry(gb_configuration_data, CONFIG_ITEM);
                  gb_config;
                  gb_config = GB_nextEntry(gb_config))
             {
@@ -77,7 +77,7 @@ char **GBT_get_configuration_names(GBDATA *gb_main) {
 }
 
 GBDATA *GBT_find_configuration(GBDATA *gb_main, const char *name) {
-    GBDATA *gb_configuration_data = GB_search(gb_main, AWAR_CONFIG_DATA, GB_DB);
+    GBDATA *gb_configuration_data = GB_search(gb_main, CONFIG_DATA_PATH, GB_DB);
     GBDATA *gb_configuration_name = GB_find_string(gb_configuration_data, "name", name, GB_IGNORE_CASE, SEARCH_GRANDCHILD);
     return gb_configuration_name ? GB_get_father(gb_configuration_name) : 0;
 }
@@ -85,9 +85,9 @@ GBDATA *GBT_find_configuration(GBDATA *gb_main, const char *name) {
 GBDATA *GBT_create_configuration(GBDATA *gb_main, const char *name) {
     GBDATA *gb_configuration = GBT_find_configuration(gb_main, name);
     if (!gb_configuration) {
-        GBDATA *gb_configuration_data = GB_search(gb_main, AWAR_CONFIG_DATA, GB_DB);
+        GBDATA *gb_configuration_data = GB_search(gb_main, CONFIG_DATA_PATH, GB_DB);
 
-        gb_configuration = GB_create_container(gb_configuration_data, AWAR_CONFIG); // create new container
+        gb_configuration = GB_create_container(gb_configuration_data, CONFIG_ITEM); // create new container
         if (gb_configuration) {
             GB_ERROR error = GBT_write_string(gb_configuration, "name", name);
             if (error) GB_export_error(error);

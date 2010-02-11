@@ -761,10 +761,10 @@ AW_window *MG_transfer_fields(AW_root *aw_root)
     aws->at("append");
     aws->create_toggle(AWAR_APPEND);
 
-    awt_create_selection_list_on_scandb(GLOBAL_gb_merge,
-                                        (AW_window*)aws, AWAR_FIELD1,
-                                        AWT_NDS_FILTER,
-                                        "scandb", "rescandb", &AWT_species_selector, 20, 10);
+    awt_create_selection_list_on_itemfields(GLOBAL_gb_merge,
+                                            aws, AWAR_FIELD1,
+                                            AWT_NDS_FILTER,
+                                            "scandb", "rescandb", &AWT_species_selector, 20, 10);
 
     return (AW_window*)aws;
 }
@@ -870,10 +870,10 @@ AW_window *create_mg_move_fields(AW_root *aw_root)
     aws->create_button("HELP", "HELP");
 
 
-    awt_create_selection_list_on_scandb(GLOBAL_gb_merge,
-                                        (AW_window*)aws, AWAR_FIELD1,
-                                        AWT_NDS_FILTER,
-                                        "scandb", "rescandb", &AWT_species_selector, 20, 10);
+    awt_create_selection_list_on_itemfields(GLOBAL_gb_merge,
+                                            aws, AWAR_FIELD1,
+                                            AWT_NDS_FILTER,
+                                            "scandb", "rescandb", &AWT_species_selector, 20, 10);
 
     return (AW_window*)aws;
 }
@@ -968,8 +968,8 @@ AW_window *create_mg_merge_tagged_fields(AW_root *aw_root)
 
     aws->at("del1");    aws->create_input_field(AWAR_TAG_DEL1, 5);
 
-    awt_create_selection_list_on_scandb(GLOBAL_gb_merge, (AW_window*)aws, AWAR_FIELD1, AWT_NDS_FILTER, "fields1", 0, &AWT_species_selector, 20, 10);
-    awt_create_selection_list_on_scandb(GLOBAL_gb_dest, (AW_window*)aws, AWAR_FIELD2, AWT_NDS_FILTER, "fields2", 0, &AWT_species_selector, 20, 10);
+    awt_create_selection_list_on_itemfields(GLOBAL_gb_merge, aws, AWAR_FIELD1, AWT_NDS_FILTER, "fields1", 0, &AWT_species_selector, 20, 10);
+    awt_create_selection_list_on_itemfields(GLOBAL_gb_dest, aws, AWAR_FIELD2, AWT_NDS_FILTER, "fields2", 0, &AWT_species_selector, 20, 10);
 
     return (AW_window*)aws;
 }

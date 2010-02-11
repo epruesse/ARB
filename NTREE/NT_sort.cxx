@@ -173,20 +173,20 @@ AW_window *NT_build_resort_window(AW_root *awr) {
     aws->callback((AW_CB0)NT_resort_data_by_user_criteria);
     aws->create_button("GO", "GO", "G");
 
-    awt_create_selection_list_on_scandb(GLOBAL_gb_main,
-                                        (AW_window*)aws, "ad_tree/sort_1",
-                                        NT_RESORT_FILTER,
-                                        "key1", 0, &AWT_species_selector, 20, 10);
+    awt_create_selection_list_on_itemfields(GLOBAL_gb_main,
+                                            aws, "ad_tree/sort_1",
+                                            NT_RESORT_FILTER,
+                                            "key1", 0, &AWT_species_selector, 20, 10);
 
-    awt_create_selection_list_on_scandb(GLOBAL_gb_main,
-                                        (AW_window*)aws, "ad_tree/sort_2",
-                                        NT_RESORT_FILTER,
-                                        "key2", 0, &AWT_species_selector, 20, 10);
+    awt_create_selection_list_on_itemfields(GLOBAL_gb_main,
+                                            aws, "ad_tree/sort_2",
+                                            NT_RESORT_FILTER,
+                                            "key2", 0, &AWT_species_selector, 20, 10);
 
-    awt_create_selection_list_on_scandb(GLOBAL_gb_main,
-                                        (AW_window*)aws, "ad_tree/sort_3",
-                                        NT_RESORT_FILTER,
-                                        "key3", 0, &AWT_species_selector, 20, 10);
+    awt_create_selection_list_on_itemfields(GLOBAL_gb_main,
+                                            aws, "ad_tree/sort_3",
+                                            NT_RESORT_FILTER,
+                                            "key3", 0, &AWT_species_selector, 20, 10);
 
     return (AW_window *)aws;
 

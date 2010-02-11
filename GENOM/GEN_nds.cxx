@@ -299,10 +299,10 @@ void GEN_create_select_nds_window(AW_window *aww, char *key_text, AW_CL cgb_main
         aws->at("close");
         aws->create_button("CLOSE", "CLOSE", "C");
 
-        awt_create_selection_list_on_scandb((GBDATA *)cgb_main,
-                                            (AW_window*)aws, "tmp/gene_viewkey/key_text",
-                                            AWT_NDS_FILTER,
-                                            "scandb", "rescandb", &GEN_item_selector, 20, 10);
+        awt_create_selection_list_on_itemfields((GBDATA *)cgb_main,
+                                                aws, "tmp/gene_viewkey/key_text",
+                                                AWT_NDS_FILTER,
+                                                "scandb", "rescandb", &GEN_item_selector, 20, 10);
 
         win =  (AW_window*)aws;
     }

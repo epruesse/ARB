@@ -414,20 +414,23 @@ static int count_key_data_elements(GBDATA *gb_key_data) {
     return nitems;
 }
 
-static void ad_list_reorder_cb(AW_window *aws, AW_CL cl_cbs1, AW_CL cl_cbs2) {
+static void reorder_left_behind_right(AW_window *aws, AW_CL cl_selleft, AW_CL cl_selright) {
     GB_begin_transaction(GLOBAL_gb_main);
     char     *source  = aws->get_root()->awar(AWAR_FIELD_REORDER_SOURCE)->read_string();
     char     *dest    = aws->get_root()->awar(AWAR_FIELD_REORDER_DEST)->read_string();
     GB_ERROR  warning = 0;
 
-    const adawcbstruct     *cbs1      = (const adawcbstruct*)cl_cbs1;
-    const adawcbstruct     *cbs2      = (const adawcbstruct*)cl_cbs2;
-    const ad_item_selector *selector  = cbs1->selector;
-    GBDATA                 *gb_source = GBT_get_changekey(GLOBAL_gb_main, source, selector->change_key_path);
-    GBDATA                 *gb_dest   = GBT_get_changekey(GLOBAL_gb_main, dest, selector->change_key_path);
+    AWT_itemfield_selection *sel_left  = (AWT_itemfield_selection*)cl_selleft;
+    AWT_itemfield_selection *sel_right = (AWT_itemfield_selection*)cl_selright;
 
-    int left_index  = aws->get_index_of_current_element(cbs1->id, AWAR_FIELD_REORDER_SOURCE);
-    int right_index = aws->get_index_of_current_element(cbs2->id, AWAR_FIELD_REORDER_DEST);
+    const ad_item_selector *selector = sel_left->get_selector();
+    nt_assert(selector == sel_right->get_selector());
+
+    GBDATA *gb_source = GBT_get_changekey(GLOBAL_gb_main, source, selector->change_key_path);
+    GBDATA *gb_dest   = GBT_get_changekey(GLOBAL_gb_main, dest, selector->change_key_path);
+
+    int left_index  = aws->get_index_of_current_element(sel_left->get_sellist(), AWAR_FIELD_REORDER_SOURCE);
+    int right_index = aws->get_index_of_current_element(sel_right->get_sellist(), AWAR_FIELD_REORDER_DEST);
 
     if (!gb_source) {
         aw_message("Please select an item you want to move (left box)");
@@ -466,21 +469,19 @@ static void ad_list_reorder_cb(AW_window *aws, AW_CL cl_cbs1, AW_CL cl_cbs2) {
         aw_message(warning);
     }
     else {
-        aws->select_index(cbs1->id, AWAR_FIELD_REORDER_SOURCE, left_index);
-        aws->select_index(cbs2->id, AWAR_FIELD_REORDER_DEST, right_index);
+        aws->select_index(sel_left->get_sellist(), AWAR_FIELD_REORDER_SOURCE, left_index);
+        aws->select_index(sel_right->get_sellist(), AWAR_FIELD_REORDER_DEST, right_index);
     }
 }
 
-static void ad_list_reorder_cb2(AW_window *aws, AW_CL cl_cbs2, AW_CL cl_dir) {
+static void reorder_up_down(AW_window *aws, AW_CL cl_selector, AW_CL cl_dir) {
     GB_begin_transaction(GLOBAL_gb_main);
-    int                 dir  = (int)cl_dir;
-    const adawcbstruct *cbs2 = (const adawcbstruct*)cl_cbs2;
-
-    GB_ERROR warning = 0;
-
-    char                   *field_name = aws->get_root()->awar(AWAR_FIELD_REORDER_DEST)->read_string();
-    const ad_item_selector *selector   = cbs2->selector;
-    GBDATA                 *gb_field   = GBT_get_changekey(GLOBAL_gb_main, field_name, selector->change_key_path);
+    int                     dir      = (int)cl_dir;
+    const ad_item_selector *selector = (const ad_item_selector*)cl_selector;
+    
+    char     *field_name = aws->get_root()->awar(AWAR_FIELD_REORDER_DEST)->read_string(); // use the list on the right side
+    GBDATA   *gb_field   = GBT_get_changekey(GLOBAL_gb_main, field_name, selector->change_key_path);
+    GB_ERROR  warning    = 0;
 
     if (!gb_field) {
         warning = "Please select an item to move (right box)";
@@ -527,50 +528,50 @@ static void ad_list_reorder_cb2(AW_window *aws, AW_CL cl_cbs2, AW_CL cl_dir) {
 AW_window *NT_create_ad_list_reorder(AW_root *root, AW_CL cl_item_selector)
 {
     const ad_item_selector *selector = (const ad_item_selector*)cl_item_selector;
-
+    
     static AW_window_simple *awsa[AWT_QUERY_ITEM_TYPES];
-    if (awsa[selector->type]) return (AW_window *)awsa[selector->type];
+    if (!awsa[selector->type]) {
+        AW_window_simple *aws = new AW_window_simple;
+        awsa[selector->type]  = aws;
 
-    AW_window_simple *aws = new AW_window_simple;
-    awsa[selector->type]  = aws;
+        aws->init(root, "REORDER_FIELDS", "REORDER FIELDS");
+        aws->load_xfig("ad_kreo.fig");
 
-    aws->init(root, "REORDER_FIELDS", "REORDER FIELDS");
-    aws->load_xfig("ad_kreo.fig");
+        aws->callback((AW_CB0)AW_POPDOWN);
+        aws->at("close");
+        aws->create_button("CLOSE", "CLOSE", "C");
 
-    aws->callback((AW_CB0)AW_POPDOWN);
-    aws->at("close");
-    aws->create_button("CLOSE", "CLOSE", "C");
+        AWT_itemfield_selection *sel1 = awt_create_selection_list_on_itemfields(GLOBAL_gb_main, aws, AWAR_FIELD_REORDER_SOURCE, AWT_NDS_FILTER, "source", 0, selector, 20, 10);
+        AWT_itemfield_selection *sel2 = awt_create_selection_list_on_itemfields(GLOBAL_gb_main, aws, AWAR_FIELD_REORDER_DEST,   AWT_NDS_FILTER, "dest",   0, selector, 20, 10);
 
-    AW_CL cbs1 = awt_create_selection_list_on_scandb(GLOBAL_gb_main, (AW_window*)aws, AWAR_FIELD_REORDER_SOURCE, AWT_NDS_FILTER, "source", 0, selector, 20, 10);
-    AW_CL cbs2 = awt_create_selection_list_on_scandb(GLOBAL_gb_main, (AW_window*)aws, AWAR_FIELD_REORDER_DEST,   AWT_NDS_FILTER, "dest",   0, selector, 20, 10);
+        aws->button_length(0);
 
-    aws->button_length(0);
+        aws->at("doit");
+        aws->callback(reorder_left_behind_right, (AW_CL)sel1, (AW_CL)sel2);
+        aws->help_text("spaf_reorder.hlp");
+        aws->create_button("MOVE_LEFT_BEHIND_RIGHT", "MOVE LEFT\nBEHIND RIGHT", "L");
 
-    aws->at("doit");
-    aws->callback(ad_list_reorder_cb, cbs1, cbs2);
-    aws->help_text("spaf_reorder.hlp");
-    aws->create_button("MOVE_LEFT_BEHIND_RIGHT", "MOVE LEFT\nBEHIND RIGHT", "L");
+        aws->at("doit2");
+        aws->callback(reorder_up_down, (AW_CL)selector, -1);
+        aws->help_text("spaf_reorder.hlp");
+        aws->create_button("MOVE_UP_RIGHT", "MOVE RIGHT\nUP", "U");
 
-    aws->at("doit2");
-    aws->callback(ad_list_reorder_cb2, cbs2, -1);
-    aws->help_text("spaf_reorder.hlp");
-    aws->create_button("MOVE_UP_RIGHT", "MOVE RIGHT\nUP", "U");
-
-    aws->at("doit3");
-    aws->callback(ad_list_reorder_cb2, cbs2, 1);
-    aws->help_text("spaf_reorder.hlp");
-    aws->create_button("MOVE_DOWN_RIGHT", "MOVE RIGHT\nDOWN", "U");
-
-    return (AW_window *)aws;
+        aws->at("doit3");
+        aws->callback(reorder_up_down, (AW_CL)selector, 1);
+        aws->help_text("spaf_reorder.hlp");
+        aws->create_button("MOVE_DOWN_RIGHT", "MOVE RIGHT\nDOWN", "U");
+    }
+    
+    return awsa[selector->type];
 }
 
-static void ad_hide_field(AW_window *aws, AW_CL cl_cbs, AW_CL cl_hide) {
-    const adawcbstruct *cbs   = (const adawcbstruct *)cl_cbs;
-    GB_ERROR            error = GB_begin_transaction(GLOBAL_gb_main);
+static void ad_hide_field(AW_window *aws, AW_CL cl_sel, AW_CL cl_hide) {
+    AWT_itemfield_selection *item_sel = (AWT_itemfield_selection*)cl_sel;
+    GB_ERROR                 error    = GB_begin_transaction(GLOBAL_gb_main);
 
     if (!error) {
         char                   *source    = aws->get_root()->awar(AWAR_FIELD_DELETE)->read_string();
-        const ad_item_selector *selector  = cbs->selector;
+        const ad_item_selector *selector  = item_sel->get_selector();
         GBDATA                 *gb_source = GBT_get_changekey(GLOBAL_gb_main, source, selector->change_key_path);
 
         if (!gb_source) error = "Please select the field you want to (un)hide";
@@ -579,18 +580,19 @@ static void ad_hide_field(AW_window *aws, AW_CL cl_cbs, AW_CL cl_hide) {
         free(source);
     }
     GB_end_transaction_show_error(GLOBAL_gb_main, error, aw_message);
-    if (!error) aws->move_selection(cbs->id, AWAR_FIELD_DELETE, 1);
+    if (!error) aws->move_selection(item_sel->get_sellist(), AWAR_FIELD_DELETE, 1);
 }
 
-static void ad_field_delete(AW_window *aws, AW_CL cl_cbs) {
+static void ad_field_delete(AW_window *aws, AW_CL cl_sel) {
     GB_ERROR error = GB_begin_transaction(GLOBAL_gb_main);
 
     if (!error) {
-        char                   *source     = aws->get_root()->awar(AWAR_FIELD_DELETE)->read_string();
-        const adawcbstruct     *cbs        = (const adawcbstruct *)cl_cbs;
-        const ad_item_selector *selector   = cbs->selector;
-        int                     curr_index = aws->get_index_of_current_element(cbs->id, AWAR_FIELD_DELETE);
-        GBDATA                 *gb_source  = GBT_get_changekey(GLOBAL_gb_main, source, selector->change_key_path);
+        char                    *source     = aws->get_root()->awar(AWAR_FIELD_DELETE)->read_string();
+        AWT_itemfield_selection *item_sel   = (AWT_itemfield_selection*)cl_sel;
+        const ad_item_selector  *selector   = item_sel->get_selector();
+        AW_selection_list       *sellist    = item_sel->get_sellist();
+        int                      curr_index = aws->get_index_of_current_element(sellist, AWAR_FIELD_DELETE);
+        GBDATA                  *gb_source  = GBT_get_changekey(GLOBAL_gb_main, source, selector->change_key_path);
 
         if (!gb_source) error = "Please select the field you want to delete";
         else error            = GB_delete(gb_source);
@@ -609,7 +611,7 @@ static void ad_field_delete(AW_window *aws, AW_CL cl_cbs) {
                     error = GB_delete(gbd);
                     if (!error) {
                         // item has disappeared, this selects the next one:
-                        aws->select_index(cbs->id, AWAR_FIELD_DELETE, curr_index);
+                        aws->select_index(sellist, AWAR_FIELD_DELETE, curr_index);
                     }
                 }
             }
@@ -622,50 +624,49 @@ static void ad_field_delete(AW_window *aws, AW_CL cl_cbs) {
 }
 
 
-AW_window *NT_create_ad_field_delete(AW_root *root, AW_CL cl_item_selector)
-{
+AW_window *NT_create_ad_field_delete(AW_root *root, AW_CL cl_item_selector) {
     const ad_item_selector *selector = (const ad_item_selector*)cl_item_selector;
 
     static AW_window_simple *awsa[AWT_QUERY_ITEM_TYPES];
-    if (awsa[selector->type]) return (AW_window *)awsa[selector->type];
+    if (!awsa[selector->type]) {
+        AW_window_simple *aws = new AW_window_simple;
+        awsa[selector->type]  = aws;
 
-    AW_window_simple *aws = new AW_window_simple;
-    awsa[selector->type]  = aws;
+        aws->init(root, "DELETE_FIELD", "DELETE FIELD");
+        aws->load_xfig("ad_delof.fig");
+        aws->button_length(6);
 
-    aws = new AW_window_simple;
-    aws->init(root, "DELETE_FIELD", "DELETE FIELD");
-    aws->load_xfig("ad_delof.fig");
-    aws->button_length(6);
+        aws->at("close"); aws->callback(AW_POPDOWN);
+        aws->create_button("CLOSE", "CLOSE", "C");
 
-    aws->at("close"); aws->callback(AW_POPDOWN);
-    aws->create_button("CLOSE", "CLOSE", "C");
+        aws->at("help"); aws->callback(AW_POPUP_HELP, (AW_CL)"spaf_delete.hlp");
+        aws->create_button("HELP", "HELP", "H");
 
-    aws->at("help"); aws->callback(AW_POPUP_HELP, (AW_CL)"spaf_delete.hlp");
-    aws->create_button("HELP", "HELP", "H");
-
-    AW_CL cbs = awt_create_selection_list_on_scandb(GLOBAL_gb_main,
-                                                    (AW_window*)aws, AWAR_FIELD_DELETE,
+        AWT_itemfield_selection *item_sel =
+            awt_create_selection_list_on_itemfields(GLOBAL_gb_main,
+                                                    aws, AWAR_FIELD_DELETE,
                                                     -1,
                                                     "source", 0, selector, 20, 10,
                                                     AWT_SF_HIDDEN);
 
-    aws->button_length(13);
-    aws->at("hide");
-    aws->callback(ad_hide_field, cbs, (AW_CL)1);
-    aws->help_text("rm_field_only.hlp");
-    aws->create_button("HIDE_FIELD", "Hide field", "H");
+        aws->button_length(13);
+        aws->at("hide");
+        aws->callback(ad_hide_field, (AW_CL)item_sel, (AW_CL)1);
+        aws->help_text("rm_field_only.hlp");
+        aws->create_button("HIDE_FIELD", "Hide field", "H");
 
-    aws->at("unhide");
-    aws->callback(ad_hide_field, cbs, (AW_CL)0);
-    aws->help_text("rm_field_only.hlp");
-    aws->create_button("UNHIDE_FIELD", "Unhide field", "U");
+        aws->at("unhide");
+        aws->callback(ad_hide_field, (AW_CL)item_sel, (AW_CL)0);
+        aws->help_text("rm_field_only.hlp");
+        aws->create_button("UNHIDE_FIELD", "Unhide field", "U");
 
-    aws->at("delf");
-    aws->callback(ad_field_delete, cbs);
-    aws->help_text("rm_field_cmpt.hlp");
-    aws->create_button("DELETE_FIELD", "DELETE FIELD\n(DATA DELETED)", "C");
-
-    return (AW_window *)aws;
+        aws->at("delf");
+        aws->callback(ad_field_delete, (AW_CL)item_sel);
+        aws->help_text("rm_field_cmpt.hlp");
+        aws->create_button("DELETE_FIELD", "DELETE FIELD\n(DATA DELETED)", "C");
+    }
+    
+    return awsa[selector->type];
 }
 
 static void ad_field_create_cb(AW_window *aws, AW_CL cl_item_selector)
@@ -778,15 +779,15 @@ AW_window *NT_create_ad_field_convert(AW_root *root, AW_CL cl_item_selector) {
     aws->create_button("HELP", "HELP", "H");
 
     aws->callback(ad_field_convert_update_typesel_cb, cl_item_selector);
-    awt_create_selection_list_on_scandb(GLOBAL_gb_main,
-                                        aws,
-                                        AWAR_FIELD_CONVERT_SOURCE, // AWAR containing selection
-                                        -1,     // type filter
-                                        "source", // selector xfig position
-                                        0,      // rescan button xfig position
-                                        selector,
-                                        40, 20, // selector w,h
-                                        AWT_SF_HIDDEN);
+    awt_create_selection_list_on_itemfields(GLOBAL_gb_main,
+                                            aws,
+                                            AWAR_FIELD_CONVERT_SOURCE, // AWAR containing selection
+                                            -1,     // type filter
+                                            "source", // selector xfig position
+                                            0,      // rescan button xfig position
+                                            selector,
+                                            40, 20, // selector w,h
+                                            AWT_SF_HIDDEN);
 
     aws->at("typesel");
     aws->create_toggle_field(AWAR_FIELD_CONVERT_TYPE, NULL, "F");
@@ -1099,9 +1100,9 @@ static AW_window *ad_spec_next_neighbours_listed_create(AW_root *aw_root, AW_CL 
         aws->create_input_field(AWAR_NN_MIN_SCORE, 5);
 
         aws->at("field");
-        awt_create_selection_list_on_scandb(GLOBAL_gb_main, aws, AWAR_NN_DEST_FIELD,
-                                            (1<<GB_INT) | (1<<GB_STRING), "field", 0,
-                                            &AWT_species_selector, 20, 10);
+        awt_create_selection_list_on_itemfields(GLOBAL_gb_main, aws, AWAR_NN_DEST_FIELD,
+                                                (1<<GB_INT) | (1<<GB_STRING), "field", 0,
+                                                &AWT_species_selector, 20, 10);
 
         aws->at("go");
         aws->callback(awtc_nn_search_all_listed, cbs);

@@ -1548,7 +1548,7 @@ AW_window *CPRO_calculatewin_cb(AW_root *aw_root, AW_CL which_statistic)
     aws->create_input_field("cpro/transratio", 8);
 
     aws->at("which_alignment");
-    awt_create_selection_list_on_ad(GLOBAL_gb_main, (AW_window *)aws, "cpro/alignment", "*=");
+    awt_create_selection_list_on_alignments(GLOBAL_gb_main, (AW_window *)aws, "cpro/alignment", "*=");
 
     aws->button_length(10);
     aws->at("xpert"); aws->callback(AW_POPUP, (AW_CL)CPRO_xpert_cb, 0);
@@ -1576,9 +1576,9 @@ AW_window *CPRO_calculatewin_cb(AW_root *aw_root, AW_CL which_statistic)
     aws->at("memstatistic");
     aws->create_button(0, "tmp/cpro/memstatistic");
 
-    return (AW_window *)aws;
-
+    return aws;
 }
+
 /* -----------------------------------------------------------------
  * Function:                 AP_open_cprofile_window
  *

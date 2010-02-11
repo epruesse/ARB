@@ -26,7 +26,7 @@ struct adfiltercbstruct;
 // -----------------------------------------
 //      various database selection boxes
 
-void awt_create_selection_list_on_ad(GBDATA *gb_main, AW_window *aws, const char *varname, const char *comm);
+void awt_create_selection_list_on_alignments(GBDATA *gb_main, AW_window *aws, const char *varname, const char *comm);
 void awt_create_selection_list_on_trees(GBDATA *gb_main, AW_window *aws, const char *varname);
 
 void awt_create_selection_list_on_pt_servers(AW_window *aws, const char *varname, bool popup);

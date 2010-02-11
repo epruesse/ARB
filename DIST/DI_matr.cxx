@@ -1524,7 +1524,7 @@ AW_window *DI_create_matrix_window(AW_root *aw_root) {
     aws->update_option_menu();
 
     aws->at("which_alignment");
-    awt_create_selection_list_on_ad(GLOBAL_gb_main, (AW_window *)aws, AWAR_DIST_ALIGNMENT, "*=");
+    awt_create_selection_list_on_alignments(GLOBAL_gb_main, (AW_window *)aws, AWAR_DIST_ALIGNMENT, "*=");
 
     // filter & weights
 
@@ -1667,5 +1667,5 @@ AW_window *DI_create_matrix_window(AW_root *aw_root) {
     aws->create_input_field(AWAR_DIST_BOOTSTRAP_COUNT, 7);
 
     GB_pop_transaction(GLOBAL_gb_main);
-    return (AW_window *)aws;
+    return aws;
 }

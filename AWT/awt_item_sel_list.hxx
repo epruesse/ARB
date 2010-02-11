@@ -10,8 +10,13 @@
 // Visit our web site at: http://www.arb-home.de/                       //
 //                                                                      //
 // ==================================================================== //
+
 #ifndef AWT_ITEM_SEL_LIST_HXX
 #define AWT_ITEM_SEL_LIST_HXX
+
+#ifndef AW_SELECT_HXX
+#include <aw_select.hxx>
+#endif
 
 enum awt_selected_fields {
     AWT_SF_STANDARD = 0,
@@ -27,17 +32,38 @@ enum awt_selected_fields {
 
 struct ad_item_selector;
 
-AW_CL awt_create_selection_list_on_scandb(GBDATA                 *gb_main,
-                                          AW_window              *aws,
-                                          const char             *varname,
-                                          long                    type_filter,
-                                          const char             *scan_xfig_label,
-                                          const char             *rescan_xfig_label,
-                                          const ad_item_selector *selector,
-                                          size_t                  columns,
-                                          size_t                  visible_rows,
-                                          awt_selected_fields     field_filter       = AWT_SF_STANDARD,
-                                          const char             *popup_button_label = NULL);
+class AWT_itemfield_selection : public AW_DB_selection {
+    long                    type_filter;
+    awt_selected_fields     field_filter;
+    const ad_item_selector *selector;
+
+    bool shall_display_type(int key_type) { return type_filter & (1 << key_type); }
+
+public:
+    AWT_itemfield_selection(AW_window              *win_,
+                            AW_selection_list      *sellist_,
+                            GBDATA                 *gb_key_data,
+                            long                    type_filter_,
+                            awt_selected_fields     field_filter_,
+                            const ad_item_selector *selector_);
+
+    void fill();
+
+    const ad_item_selector *get_selector() const { return selector; }
+};
+
+AWT_itemfield_selection *awt_create_selection_list_on_itemfields(GBDATA                 *gb_main,
+                                                                 AW_window              *aws,
+                                                                 const char             *varname,
+                                                                 long                    type_filter,
+                                                                 const char             *scan_xfig_label,
+                                                                 const char             *rescan_xfig_label,
+                                                                 const ad_item_selector *selector,
+                                                                 size_t                  columns,
+                                                                 size_t                  visible_rows,
+                                                                 awt_selected_fields     field_filter       = AWT_SF_STANDARD,
+                                                                 const char             *popup_button_label = NULL);
+
 
 enum awt_rescan_mode {
     AWT_RS_SCAN_UNKNOWN_FIELDS  = 1, // scan database for unknown fields and add them

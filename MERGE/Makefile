@@ -69,6 +69,7 @@ MG_checkfield.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 MG_checkfield.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 MG_checkfield.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 MG_checkfield.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+MG_checkfield.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 MG_checkfield.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 MG_checkfield.o: $(ARBHOME)/INCLUDE/awt.hxx
 MG_checkfield.o: $(ARBHOME)/INCLUDE/awt_item_sel_list.hxx
@@ -233,6 +234,7 @@ MG_species.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 MG_species.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 MG_species.o: $(ARBHOME)/INCLUDE/AW_rename.hxx
 MG_species.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+MG_species.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 MG_species.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 MG_species.o: $(ARBHOME)/INCLUDE/awt.hxx
 MG_species.o: $(ARBHOME)/INCLUDE/awt_item_sel_list.hxx

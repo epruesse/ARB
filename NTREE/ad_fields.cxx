@@ -100,7 +100,7 @@ AW_window *create_fields_window(AW_root *root, AW_default aw_def)
     aws->create_button("FORMAT", "FORMAT", "F");
 
     aws->at("list");
-    awt_create_selection_list_on_ad(gb_main, (AW_window *)aws, "tmp/fields/use", "*=");
+    awt_create_selection_list_on_alignments(gb_main, (AW_window *)aws, "tmp/fields/use", "*=");
 
     aws->at("aligned");
     aws->create_option_menu("tmp/fields/aligned");
@@ -134,5 +134,5 @@ AW_window *create_fields_window(AW_root *root, AW_default aw_def)
     aws->create_text_field("tmp/fields/fields_rem");
 
 
-    return (AW_window *)aws;
+    return aws;
 }
