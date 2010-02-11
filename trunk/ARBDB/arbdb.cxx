@@ -1434,7 +1434,7 @@ GB_ERROR GB_delete(GBDATA *source) {
 
     GB_TEST_TRANSACTION(source);
     if (GB_GET_SECURITY_DELETE(source)>GB_MAIN(source)->security_level) {
-        return GB_export_errorf("Security error in GB_delete: %s", GB_read_key_pntr(source));
+        return GBS_global_string("Security error: deleting entry '%s' not permitted", GB_read_key_pntr(source));
     }
 
     gb_main = GB_get_root(source);
