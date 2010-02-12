@@ -13,7 +13,7 @@
 
 #include "ed4_defs.hxx"
 
-// need to use AWTC_faligner_cd defined here to get selected species
+// need to use AlignDataAccess defined here to get selected species
 #include <fast_aligner.hxx>
 
 #include <aw_awars.hxx>
@@ -124,7 +124,7 @@ AW_active sina_mask(AW_root *root) {
     return fail_reason ? AWM_DISABLED : AWM_ALL;
 }
 
-static void sina_start(AW_window *window, AW_CL cl_faligner_cd) {
+static void sina_start(AW_window *window, AW_CL cl_AlignDataAccess) {
     GB_ERROR gb_error;
     AW_root *root = window->get_root();
     cerr << "Starting SINA..." << endl;
@@ -190,11 +190,13 @@ static void sina_start(AW_window *window, AW_CL cl_faligner_cd) {
     break;
     case 1: // selected
     {
-        const AWTC_faligner_cd *cd = (const AWTC_faligner_cd *)cl_faligner_cd;
+        const AlignDataAccess *data_access = (const AlignDataAccess *)cl_AlignDataAccess;
         GB_begin_transaction(GLOBAL_gb_main);
         int num_selected = 0;
-        for (GBDATA *gb_spec = cd->get_first_selected_species(&num_selected);
-             gb_spec; gb_spec = cd->get_next_selected_species()) {
+        for (GBDATA *gb_spec = data_access->get_first_selected_species(&num_selected);
+             gb_spec;
+             gb_spec = data_access->get_next_selected_species())
+        {
             GBDATA *gbd_name = GB_find(gb_spec, "name", SEARCH_CHILD);
             if (gbd_name) {
                 const char *str = GB_read_char_pntr(gbd_name);
@@ -261,7 +263,7 @@ static void sina_start(AW_window *window, AW_CL cl_faligner_cd) {
 
 
 
-static char* filter_sai(GBDATA *gb_extended, AW_CL /* cd */) {
+static char* filter_sai(GBDATA *gb_extended, AW_CL) {
     char   *result = 0;
     GBDATA *gbd    = GB_search(gb_extended, "ali_16s/_TYPE", GB_FIND);
     if (gbd) {
@@ -297,7 +299,7 @@ static AW_window* create_select_sai_window(AW_root *root) {
     return (AW_window*) aws;
 }
 
-static AW_window_simple* new_sina_simple(AW_root *root, AW_CL cl_faligner_cd, bool adv) {
+static AW_window_simple* new_sina_simple(AW_root *root, AW_CL cl_AlignDataAccess, bool adv) {
     int closex, closey, startx, starty, winx, winy;
     const int hgap = 10;
     AW_window_simple *aws = new AW_window_simple;
@@ -313,7 +315,7 @@ static AW_window_simple* new_sina_simple(AW_root *root, AW_CL cl_faligner_cd, bo
     aws->get_at_position(&closex, &closey);
 
     aws->at_shift(10, 0);
-    aws->callback(show_sina_window, cl_faligner_cd, 0);
+    aws->callback(show_sina_window, cl_AlignDataAccess, 0);
     aws->label_length(0);
     aws->label("Show advanced options");
     aws->create_toggle(GA_AWAR_ADVANCED);
@@ -436,25 +438,25 @@ static AW_window_simple* new_sina_simple(AW_root *root, AW_CL cl_faligner_cd, bo
     aws->create_button("HELP", "HELP");
 
     aws->at(winx-closex+5, starty);
-    aws->callback(sina_start, cl_faligner_cd);
+    aws->callback(sina_start, cl_AlignDataAccess);
     aws->highlight();
     aws->create_button("Start", "Start", "S");
 
     return aws;
 }
 
-void show_sina_window(AW_window *aw, AW_CL cl_faligner_cd, AW_CL) {
+void show_sina_window(AW_window *aw, AW_CL cl_AlignDataAccess, AW_CL) {
     static AW_window_simple *ga_aws = 0;
     static AW_window_simple *ga_aws_adv = 0;
 
     AW_root *root = aw->get_root();
     if (root->awar(GA_AWAR_ADVANCED)->read_int()) {
-        if (!ga_aws_adv) ga_aws_adv = new_sina_simple(root, cl_faligner_cd, true);
+        if (!ga_aws_adv) ga_aws_adv = new_sina_simple(root, cl_AlignDataAccess, true);
         ga_aws_adv->show();
         if (ga_aws) ga_aws->hide();
     }
     else {
-        if (!ga_aws) ga_aws = new_sina_simple(root, cl_faligner_cd, false);
+        if (!ga_aws) ga_aws = new_sina_simple(root, cl_AlignDataAccess, false);
         ga_aws->show();
         if (ga_aws_adv) ga_aws_adv->hide();
     }

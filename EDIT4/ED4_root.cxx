@@ -893,7 +893,7 @@ static GBDATA *get_first_selected_species(int *total_no_of_selected_species)
     return get_next_selected_species();
 }
 
-struct AWTC_faligner_cd faligner_client_data = {
+struct AlignDataAccess dataAccess_4_aligner = {
     1,                                              // default is to do a refresh
     ED4_timer_refresh,                              // with this function
     get_group_consensus,                            // aligner fetches consensus of group of species via this function
@@ -904,7 +904,7 @@ struct AWTC_faligner_cd faligner_client_data = {
     NULL,                                           // gb_main
 };
 static ARB_ERROR ED4_delete_temp_entries(GBDATA *species, AW_CL cl_alignment_name) {
-    return AWTC_delete_temp_entries(species, (GB_CSTR)cl_alignment_name);
+    return FastAligner_delete_temp_entries(species, (GB_CSTR)cl_alignment_name);
 }
 
 void ED4_remove_faligner_entries(AW_window *, AW_CL, AW_CL) {
@@ -1256,12 +1256,12 @@ void ED4_no_dangerous_modes()
     }
 }
 
-void ED4_init_faligner_data(AWTC_faligner_cd *faligner_data) {
+void ED4_init_aligner_data_access(AlignDataAccess *data_access) {
     GB_ERROR  error          = GB_push_transaction(GLOBAL_gb_main);
     char     *alignment_name = GBT_get_default_alignment(GLOBAL_gb_main);
     long      alilen         = GBT_get_alignment_len(GLOBAL_gb_main, alignment_name);
 
-    faligner_data->gb_main = GLOBAL_gb_main;
+    data_access->gb_main = GLOBAL_gb_main;
 
     if (alilen<=0) error = GB_await_error();
     else {
@@ -1273,7 +1273,7 @@ void ED4_init_faligner_data(AWTC_faligner_cd *faligner_data) {
             if (gb_helix) helix_string = GB_read_string(gb_helix);
         }
         free(helix_name);
-        freeset(faligner_data->helix_string, helix_string);
+        freeset(data_access->helix_string, helix_string);
     }
 
     free(alignment_name);
@@ -1281,11 +1281,11 @@ void ED4_init_faligner_data(AWTC_faligner_cd *faligner_data) {
     if (error) aw_message(error);
 }
 
-static void ED4_create_faligner_window(AW_root *awr, AW_CL cl_faligner_cd) {
-    AWTC_faligner_cd *faligner_cd = (AWTC_faligner_cd*)cl_faligner_cd;
+static void ED4_create_faligner_window(AW_root *awr, AW_CL cl_AlignDataAccess) {
+    AlignDataAccess *data_access = (AlignDataAccess*)cl_AlignDataAccess;
 
-    ED4_init_faligner_data(faligner_cd);
-    AWTC_create_faligner_window(awr, faligner_cd);
+    ED4_init_aligner_data_access(data_access);
+    FastAligner_create_window(awr, data_access);
 }
 
 static void ED4_save_defaults(AW_window *aw, AW_CL cl_mode, AW_CL) {
@@ -1453,10 +1453,10 @@ ED4_returncode ED4_root::generate_window(AW_device **device,    ED4_window **new
     awmm->insert_menu_topic(0,               "Test (test split & merge)", "T", 0, AWM_ALL, ED4_testSplitNMerge, 1, 0);
 #endif
     SEP________________________SEP;
-    awmm->insert_menu_topic("fast_aligner",       INTEGRATED_ALIGNERS_TITLE " [Ctrl-A]", "I", "faligner.hlp",     AWM_ALL,            AW_POPUP,                               (AW_CL)ED4_create_faligner_window, (AW_CL)&faligner_client_data);
-    awmm->insert_menu_topic("fast_align_set_ref", "Set aligner reference [Ctrl-R]",      "R", "faligner.hlp",     AWM_ALL,            (AW_CB)AWTC_set_reference_species_name, (AW_CL)aw_root,                    0);
+    awmm->insert_menu_topic("fast_aligner",       INTEGRATED_ALIGNERS_TITLE " [Ctrl-A]", "I", "faligner.hlp",     AWM_ALL,            AW_POPUP,                               (AW_CL)ED4_create_faligner_window, (AW_CL)&dataAccess_4_aligner);
+    awmm->insert_menu_topic("fast_align_set_ref", "Set aligner reference [Ctrl-R]",      "R", "faligner.hlp",     AWM_ALL,            (AW_CB)FastAligner_set_reference_species, (AW_CL)aw_root,                    0);
     awmm->insert_menu_topic("align_sequence",     "Old aligner from ARB_EDIT",           "O", "ne_align_seq.hlp", AWM_EXP,            AW_POPUP,                               (AW_CL)create_naligner_window,     0);
-    awmm->insert_menu_topic("sina",               "SINA (SILVA Incremental Aligner)",    "S", "sina_main.hlp",    sina_mask(aw_root), show_sina_window,                       (AW_CL)&faligner_client_data,      0);
+    awmm->insert_menu_topic("sina",               "SINA (SILVA Incremental Aligner)",    "S", "sina_main.hlp",    sina_mask(aw_root), show_sina_window,                       (AW_CL)&dataAccess_4_aligner,      0);
     awmm->insert_menu_topic("del_ali_tmp",        "Remove all aligner Entries",          "v", 0,                  AWM_ALL,            ED4_remove_faligner_entries,            1,                                 0);
     SEP________________________SEP;
     awmm->insert_menu_topic("missing_bases", "Dot potentially missing bases", "D", "missbase.hlp", AWM_EXP, ED4_popup_dot_missing_bases_window, 0, 0);
@@ -1721,7 +1721,7 @@ ED4_returncode ED4_root::generate_window(AW_device **device,    ED4_window **new
     awmm->button_length(7);
 
     awmm->at("aligner");
-    awmm->callback(AW_POPUP, (AW_CL)ED4_create_faligner_window, (AW_CL)&faligner_client_data);
+    awmm->callback(AW_POPUP, (AW_CL)ED4_create_faligner_window, (AW_CL)&dataAccess_4_aligner);
     awmm->help_text("faligner.hlp");
     awmm->create_button("ALIGNER", "Aligner");
 
@@ -1857,7 +1857,7 @@ ED4_returncode ED4_root::generate_window(AW_device **device,    ED4_window **new
     awmm->create_mode("edit/kill.bitmap",  "kill.hlp",   AWM_ALL, (AW_CB)modes_cb, (AW_CL)1, (AW_CL)0);
     awmm->create_mode("edit/mark.bitmap",  "mark.hlp",   AWM_ALL, (AW_CB)modes_cb, (AW_CL)2, (AW_CL)0);
 
-    AWTC_create_faligner_variables(awmm->get_root(), db);
+    FastAligner_create_variables(awmm->get_root(), db);
 
     return (ED4_R_OK);
 }

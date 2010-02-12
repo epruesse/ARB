@@ -1831,8 +1831,8 @@ extern "C" {
     void    ED4_alignment_length_changed(GBDATA *gb_alignment_len, int *dummy, GB_CB_TYPE gbtype);
 }
 
-struct AWTC_faligner_cd;
-void ED4_init_faligner_data(AWTC_faligner_cd *faligner_data);
+struct AlignDataAccess;
+void ED4_init_aligner_data_access(AlignDataAccess *data_access);
 
 #else
 #error ed4_class included twice

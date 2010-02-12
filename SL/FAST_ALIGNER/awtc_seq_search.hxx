@@ -20,59 +20,59 @@
 #endif
 
 
-#define awtc_assert(bed) arb_assert(bed)
+#define fa_assert(bed) arb_assert(bed)
 
 #define SEQ_CHARS   26
 #define MAX_TRIPLES (SEQ_CHARS*SEQ_CHARS*SEQ_CHARS+1) // one faked triple for all non-char triples
 #define GAP_CHARS   ".-~?"      // Characters treated as gaps
 
-void AWTC_message(const char *format, ...) __ATTR__FORMAT(1);
+void messagef(const char *format, ...) __ATTR__FORMAT(1);
 
 static inline int max(int i1, int i2) { return i1>i2 ? i1 : i2; }
-static inline int AWTC_is_gap(int c)  { return strchr(GAP_CHARS, c)!=0; }
+static inline int is_gap(int c)  { return strchr(GAP_CHARS, c)!=0; }
 
-class AWTC_CompactedSubSequence;
+class CompactedSubSequence;
 
-class AWTC_Points               // here we store points ('.') which were deleted when compacting sequences
+class Points                                        // here we store points ('.') which were deleted when compacting sequences
 {
-    long BeforeBase;         // this position is the "compressed" position
-    AWTC_Points *Next;
+    long    BeforeBase;                             // this position is the "compressed" position
+    Points *Next;
 
 public:
 
-    AWTC_Points(long before_base) {
+    Points(long before_base) {
         BeforeBase = before_base;
         Next       = NULL;
     }
-    ~AWTC_Points() {
+    ~Points() {
         delete Next;
     }
 
-    void append(AWTC_Points *neu);
-    long beforeBase() const             { return BeforeBase; }
-    const AWTC_Points *next() const { return Next; }
+    void append(Points *neu);
+    long beforeBase() const { return BeforeBase; }
+    const Points *next() const { return Next; }
 };
 
-class AWTC_CompactedSequence    // compacts a string (gaps removed, all chars upper)
-// (private class - use AWTC_CompactedSubSequence)
+class CompactedSequence                             // compacts a string (gaps removed, all chars upper)
+// (private class - use CompactedSubSequence)
 {
     char *myText;
-    int   myLength;             // number of base positions
-    int   myStartOffset;        // expanded offsets of first and last position in 'text' (which is given to the c-tor)
+    int   myLength;                                 // number of base positions
+    int   myStartOffset;                            // expanded offsets of first and last position in 'text' (which is given to the c-tor)
     int   myEndOffset;
-    int  *expdPositionTab;      // this table contains all 'real' (=not compacted) positions of the bases (len = myLength+1)
+    int  *expdPositionTab;                          // this table contains all 'real' (=not compacted) positions of the bases (len = myLength+1)
 
-    int *gapsBeforePosition;    // gapsBeforePosition[ idx+1 ] = gaps _after_ position 'idx'
+    int *gapsBeforePosition;                        // gapsBeforePosition[ idx+1 ] = gaps _after_ position 'idx'
     int  referred;
 
-    char *myName;               // sequence name
+    char *myName;                                   // sequence name
 
-    AWTC_Points *points;        // Points which were deleted from the sequence are store here
+    Points *points;                                 // Points which were deleted from the sequence are store here
 
     // -----------------------------------------
 
-    AWTC_CompactedSequence(const char *text, int length, const char *name, int start_offset=0);
-    ~AWTC_CompactedSequence();
+    CompactedSequence(const char *text, int length, const char *name, int start_offset=0);
+    ~CompactedSequence();
 
     int length() const          { return myLength; }
     const char *text(int i=0) const     { return myText+i; }
@@ -80,7 +80,7 @@ class AWTC_CompactedSequence    // compacts a string (gaps removed, all chars up
     char operator[](int i) const        { if (i<0 || i>=length()) i = 0; else i = text()[i]; return i; } // HP compiler does not allow two returns
 
     int expdPosition(int cPos) const {
-        awtc_assert(cPos>=0 && cPos<=myLength); // allowed for all positions plus one following element
+        fa_assert(cPos>=0 && cPos<=myLength); // allowed for all positions plus one following element
         ;                                       // (which contains the total length of the original sequence)
         return expdPositionTab[cPos]+myStartOffset;
     }
@@ -108,32 +108,32 @@ class AWTC_CompactedSequence    // compacts a string (gaps removed, all chars up
     }
 
     void storePoints(int beforePos) {
-        if (points)     points->append(new AWTC_Points(beforePos));
-        else            points = new AWTC_Points(beforePos);
+        if (points)     points->append(new Points(beforePos));
+        else            points = new Points(beforePos);
     }
 
-    friend class AWTC_CompactedSubSequence;
+    friend class CompactedSubSequence;
 
 public:
 
-    const AWTC_Points *getPointlist() const { return points; }
+    const Points *getPointlist() const { return points; }
 };
 
-class AWTC_CompactedSubSequence // smart pointer and substring class for AWTC_CompactedSequence
+class CompactedSubSequence // smart pointer and substring class for CompactedSequence
 {
-    AWTC_CompactedSequence *mySequence;
-    int                     myPos;      // offset into mySequence->myText
-    int                     myLength;   // number of base positions
-    const char             *myText;     // only for speed-up
-    const AWTC_Points      *points;     // just a reference
+    CompactedSequence *mySequence;
+    int                myPos;                       // offset into mySequence->myText
+    int                myLength;                    // number of base positions
+    const char        *myText;                      // only for speed-up
+    const Points      *points;                      // just a reference
 
 public:
 
-    AWTC_CompactedSubSequence(const char *seq, int length, const char *name, int start_offset=0);                               // normal c-tor
-    AWTC_CompactedSubSequence(const AWTC_CompactedSubSequence& other);
-    AWTC_CompactedSubSequence(const AWTC_CompactedSubSequence& other, int rel_pos, int length);         // substr c-tor
-    ~AWTC_CompactedSubSequence();                                                               // d-tor
-    AWTC_CompactedSubSequence& operator=(const AWTC_CompactedSubSequence& other);               // =-c-tor
+    CompactedSubSequence(const char *seq, int length, const char *name, int start_offset=0);                               // normal c-tor
+    CompactedSubSequence(const CompactedSubSequence& other);
+    CompactedSubSequence(const CompactedSubSequence& other, int rel_pos, int length);         // substr c-tor
+    ~CompactedSubSequence();                                                               // d-tor
+    CompactedSubSequence& operator=(const CompactedSubSequence& other);               // =-c-tor
 
     int length() const                  { return myLength; }
 
@@ -150,7 +150,7 @@ public:
     int expdStartPosition() const               { return mySequence->expdPosition(myPos); }
     int expdPosition(int cPos) const
     {
-        awtc_assert(cPos>=0 && cPos<=myLength);                 // allowed for all positions plus follower
+        fa_assert(cPos>=0 && cPos<=myLength);                 // allowed for all positions plus follower
         return mySequence->expdPosition(myPos+cPos);
     }
     int compPosition(int xPos) const            { return mySequence->compPosition(xPos)-myPos; }
@@ -196,63 +196,63 @@ public:
     }
 };
 
-class AWTC_SequencePosition     // pointer to character position in AWTC_CompactedSubSequence
+class SequencePosition                              // pointer to character position in CompactedSubSequence
 {
-    const AWTC_CompactedSubSequence *mySequence;
+    const CompactedSubSequence *mySequence;
     long myPos;
     const char *myText;
 
-    int distanceTo(const AWTC_SequencePosition& other) const    { awtc_assert(mySequence==other.mySequence); return myPos-other.myPos; }
+    int distanceTo(const SequencePosition& other) const    { fa_assert(mySequence==other.mySequence); return myPos-other.myPos; }
 
 public:
 
-    AWTC_SequencePosition(const AWTC_CompactedSubSequence& seq, long pos=0)
+    SequencePosition(const CompactedSubSequence& seq, long pos=0)
         : mySequence(&seq),
           myPos(pos),
           myText(seq.text(pos)) {}
-    AWTC_SequencePosition(const AWTC_SequencePosition& pos, long offset=0)
+    SequencePosition(const SequencePosition& pos, long offset=0)
         : mySequence(pos.mySequence),
           myPos(pos.myPos+offset),
           myText(pos.myText+offset) {}
-    ~AWTC_SequencePosition() {}
+    ~SequencePosition() {}
 
-    const char *text() const                            { return myText; }
-    const AWTC_CompactedSubSequence& sequence() const   { return *mySequence; }
+    const char *text() const                     { return myText; }
+    const CompactedSubSequence& sequence() const { return *mySequence; }
 
-    long expdPosition() const                           { return sequence().expdPosition(myPos); }
-    long expdPosition(int offset)                       { return sequence().expdPosition(myPos+offset); }
+    long expdPosition() const     { return sequence().expdPosition(myPos); }
+    long expdPosition(int offset) { return sequence().expdPosition(myPos+offset); }
 
-    AWTC_SequencePosition& operator++()                 { myPos++; myText++; return *this; }
-    AWTC_SequencePosition& operator--()                 { myPos--; myText--; return *this; }
+    SequencePosition& operator++() { myPos++; myText++; return *this; }
+    SequencePosition& operator--() { myPos--; myText--; return *this; }
 
-    AWTC_SequencePosition& operator+=(long l)           { myPos += l; myText += l; return *this; }
-    AWTC_SequencePosition& operator-=(long l)           { myPos -= l; myText -= l; return *this; }
+    SequencePosition& operator+=(long l) { myPos += l; myText += l; return *this; }
+    SequencePosition& operator-=(long l) { myPos -= l; myText -= l; return *this; }
 
-    int operator<(const AWTC_SequencePosition& other) const { return distanceTo(other)<0; }
-    int operator>(const AWTC_SequencePosition& other) const { return distanceTo(other)>0; }
+    int operator<(const SequencePosition& other) const { return distanceTo(other)<0; }
+    int operator>(const SequencePosition& other) const { return distanceTo(other)>0; }
 
-    long leftOf() const                                 { return myPos; }
-    long rightOf() const                                { return mySequence->length()-myPos; }
+    long leftOf() const  { return myPos; }
+    long rightOf() const { return mySequence->length()-myPos; }
 };
 
-class AWTC_TripleOffset         // a list of offsets (used in AWTC_FastSearchSequence)
+class TripleOffset                                  // a list of offsets (used in FastSearchSequence)
 {
-    long               myOffset; // compacted offset
-    AWTC_TripleOffset *myNext;
+    long          myOffset;                         // compacted offset
+    TripleOffset *myNext;
 
-    void IV() const     { awtc_assert(myNext!=this); }
+    void IV() const     { fa_assert(myNext!=this); }
 
 public:
 
-    AWTC_TripleOffset(long Offset, AWTC_TripleOffset *next_toff) : myOffset(Offset), myNext(next_toff) { IV(); }
-    ~AWTC_TripleOffset();
+    TripleOffset(long Offset, TripleOffset *next_toff) : myOffset(Offset), myNext(next_toff) { IV(); }
+    ~TripleOffset();
 
-    AWTC_TripleOffset *next() const { IV(); return myNext; }
+    TripleOffset *next() const { IV(); return myNext; }
     long offset() const { IV(); return myOffset; }
 };
 
 
-class AWTC_alignBuffer                  // alignment result buffer
+class AlignBuffer                                   // alignment result buffer
 {
     char *myBuffer;
     char *myQuality;
@@ -270,7 +270,7 @@ class AWTC_alignBuffer                  // alignment result buffer
 
     void set_used(long newVal)
     {
-        awtc_assert(newVal<=mySize);
+        fa_assert(newVal<=mySize);
         used = newVal;
         GB_status(double(used)/double(mySize));
     }
@@ -293,7 +293,7 @@ class AWTC_alignBuffer                  // alignment result buffer
 
 public:
 
-    AWTC_alignBuffer(long size)
+    AlignBuffer(long size)
     {
         mySize = size;
         set_used(0);
@@ -302,14 +302,14 @@ public:
         myQuality = new char[size+1];
         myQuality[size] = 0;
     }
-    ~AWTC_alignBuffer()
+    ~AlignBuffer()
     {
         delete [] myBuffer;
         delete [] myQuality;
     }
 
-    const char *text() const            { awtc_assert(free()>=0); myBuffer[used]=0;  return myBuffer; }
-    const char *quality() const         { awtc_assert(free()>=0); myQuality[used]=0; return myQuality; }
+    const char *text() const            { fa_assert(free()>=0); myBuffer[used]=0;  return myBuffer; }
+    const char *quality() const         { fa_assert(free()>=0); myQuality[used]=0; return myQuality; }
     long length() const                 { return used; }
 
     long offset() const                 { return used; }
@@ -317,55 +317,55 @@ public:
 
     void copy(const char *s, char q, long len)
     {
-        awtc_assert(len<=free());
+        fa_assert(len<=free());
         memcpy(myBuffer+used, s, len);
         memset(myQuality+used, q, len);
         add_used(len);
     }
     void set(char c, char q)
     {
-        awtc_assert(free()>=1);
+        fa_assert(free()>=1);
         myBuffer[used] = c;
         myQuality[used] = q;
         add_used(1);
     }
     void set(char c, char q, long len)
     {
-        awtc_assert(len<=free());
+        fa_assert(len<=free());
         memset(myBuffer+used, c, len);
         memset(myQuality+used, q, len);
         add_used(len);
     }
     void reset(long newOffset=0)
     {
-        awtc_assert(newOffset>=0 && newOffset<mySize);
+        fa_assert(newOffset>=0 && newOffset<mySize);
         set_used(newOffset);
     }
 
     void correctUnalignedPositions();
 
-    void expandPoints(AWTC_CompactedSubSequence& slaveSequence);
+    void expandPoints(CompactedSubSequence& slaveSequence);
     void point_ends_of();
 };
 
 
-class AWTC_fast_align_insertion
+class FastAlignInsertion
 {
     long insert_at_offset;
     long inserted_gaps;
 
-    AWTC_fast_align_insertion *myNext;
+    FastAlignInsertion *myNext;
 
 public:
-    AWTC_fast_align_insertion(long Offset, long Gaps) {
+    FastAlignInsertion(long Offset, long Gaps) {
         insert_at_offset = Offset;
         inserted_gaps    = Gaps;
         myNext           = 0;
     }
-    ~AWTC_fast_align_insertion();
+    ~FastAlignInsertion();
 
-    AWTC_fast_align_insertion *append(long Offset, long Gaps) {
-        return myNext = new AWTC_fast_align_insertion(Offset, Gaps);
+    FastAlignInsertion *append(long Offset, long Gaps) {
+        return myNext = new FastAlignInsertion(Offset, Gaps);
     }
     void dump() const {
         printf(" offset=%5li gaps=%3li\n", insert_at_offset, inserted_gaps);
@@ -375,13 +375,13 @@ public:
         if (myNext) myNext->dumpAll();
     }
 
-    const AWTC_fast_align_insertion *next() const { return myNext; }
+    const FastAlignInsertion *next() const { return myNext; }
     long offset() const { return insert_at_offset; }
     long gaps() const { return inserted_gaps; }
 };
 
 
-class AWTC_fast_align_report    // alignment report
+class FastAlignReport    // alignment report
 {
     long  alignedBases;
     long  mismatchedBases;      // in aligned part
@@ -389,12 +389,12 @@ class AWTC_fast_align_report    // alignment report
     char *my_master_name;
     bool  showGapsMessages;     // display messages about missing gaps in master
 
-    AWTC_fast_align_insertion *first; // list of insertions (order is important)
-    AWTC_fast_align_insertion *last;
+    FastAlignInsertion *first; // list of insertions (order is important)
+    FastAlignInsertion *last;
 
 public:
 
-    AWTC_fast_align_report(const char *master_name, bool show_Gaps_Messages) {
+    FastAlignReport(const char *master_name, bool show_Gaps_Messages) {
         alignedBases     = 0;
         mismatchedBases  = 0;
         unalignedBases   = 0;
@@ -403,7 +403,7 @@ public:
         my_master_name   = strdup(master_name);
         showGapsMessages = show_Gaps_Messages;
     }
-    ~AWTC_fast_align_report() {
+    ~FastAlignReport() {
         if (first) delete first;
         free(my_master_name);
     }
@@ -414,7 +414,7 @@ public:
         }
         else {
             if (showGapsMessages) aw_message("---- gaps needed.");
-            first = last = new AWTC_fast_align_insertion(offset, gaps);
+            first = last = new FastAlignInsertion(offset, gaps);
         }
 
         if (showGapsMessages) {
@@ -426,7 +426,7 @@ public:
         }
     }
 
-    const AWTC_fast_align_insertion* insertion() const { return first; }
+    const FastAlignInsertion* insertion() const { return first; }
 
     void count_aligned_base(int mismatched)             { alignedBases++; if (mismatched) mismatchedBases++; }
     void count_unaligned_base(int no_of_bases)          { unalignedBases += no_of_bases; }
@@ -444,13 +444,13 @@ public:
     }
 };
 
-class AWTC_FastSearchSequence           // a sequence where search of character triples is very fast
+class FastSearchSequence           // a sequence where search of character triples is very fast
 {
-    const AWTC_CompactedSubSequence *mySequence;
-    AWTC_TripleOffset *myOffset[MAX_TRIPLES];
+    const CompactedSubSequence *mySequence;
+    TripleOffset *myOffset[MAX_TRIPLES];
 
-    AWTC_FastSearchSequence(const AWTC_FastSearchSequence&) {} // not allowed
-    AWTC_FastSearchSequence& operator=(const AWTC_FastSearchSequence&) { return *this; } // not allowed
+    FastSearchSequence(const FastSearchSequence&) {} // not allowed
+    FastSearchSequence& operator=(const FastSearchSequence&) { return *this; } // not allowed
 
     static int triple_index(const char *triple)
     {
@@ -464,51 +464,55 @@ class AWTC_FastSearchSequence           // a sequence where search of character 
 
 public:
 
-    AWTC_FastSearchSequence(const AWTC_CompactedSubSequence& seq);
-    ~AWTC_FastSearchSequence() {}
+    FastSearchSequence(const CompactedSubSequence& seq);
+    ~FastSearchSequence() {}
 
-    ARB_ERROR fast_align(const AWTC_CompactedSubSequence& align_to, AWTC_alignBuffer *alignBuffer,
+    ARB_ERROR fast_align(const CompactedSubSequence& align_to, AlignBuffer *alignBuffer,
                          int max_seq_length, int matchScore, int mismatchScore,
-                         AWTC_fast_align_report *report) const;
+                         FastAlignReport *report) const;
 
-    const AWTC_CompactedSubSequence& sequence() const { return *mySequence; }
-    const AWTC_TripleOffset *find(const char *triple) const { return myOffset[triple_index(triple)]; }
+    const CompactedSubSequence& sequence() const { return *mySequence; }
+    const TripleOffset *find(const char *triple) const { return myOffset[triple_index(triple)]; }
 };
 
 
-class AWTC_FastSearchOccurrence          // iterates through all occurrences of one character triple
+class FastSearchOccurrence                          // iterates through all occurrences of one character triple
 {
-    const AWTC_FastSearchSequence&      mySequence;
-    const AWTC_TripleOffset             *myOffset;
+    const FastSearchSequence&  mySequence;
+    const TripleOffset        *myOffset;
 
-    void IV() const { awtc_assert(!myOffset || myOffset!=myOffset->next()); }
+    void assertValid() const { fa_assert(!myOffset || myOffset!=myOffset->next()); }
 
 public:
 
-    AWTC_FastSearchOccurrence(const AWTC_FastSearchSequence& Sequence, const char *triple)
-        : mySequence(Sequence)                          { myOffset = mySequence.find(triple); IV(); }
-    ~AWTC_FastSearchOccurrence()                        { IV(); }
+    FastSearchOccurrence(const FastSearchSequence& Sequence, const char *triple)
+        : mySequence(Sequence)
+    {
+            myOffset = mySequence.find(triple);
+            assertValid();
+    }
+    ~FastSearchOccurrence() { assertValid(); }
 
-    int found() const                                   { IV(); return myOffset!=0; }
-    void gotoNext()                                     { awtc_assert(myOffset!=0); myOffset = myOffset->next(); IV(); }
+    int found() const { assertValid(); return myOffset!=0; }
+    void gotoNext() { fa_assert(myOffset!=0); myOffset = myOffset->next(); assertValid(); }
 
-    long offset() const                                 { IV(); return myOffset->offset(); }
-    const AWTC_CompactedSubSequence& sequence() const   { IV(); return mySequence.sequence(); }
+    long offset() const { assertValid(); return myOffset->offset(); }
+    const CompactedSubSequence& sequence() const   { assertValid(); return mySequence.sequence(); }
 };
 
 // -----------------------------
 //      INLINE-Functions:
 // -----------------------------
 
-inline AWTC_CompactedSubSequence::AWTC_CompactedSubSequence(const char *seq, int len, const char *Name, int start_offset) // normal c-tor
+inline CompactedSubSequence::CompactedSubSequence(const char *seq, int len, const char *Name, int start_offset) // normal c-tor
 {
-    mySequence = new AWTC_CompactedSequence(seq, len, Name, start_offset);
+    mySequence = new CompactedSequence(seq, len, Name, start_offset);
     myPos      = 0;
     myLength   = mySequence->length();
     myText     = mySequence->text()+myPos;
 }
 
-inline AWTC_CompactedSubSequence::AWTC_CompactedSubSequence(const AWTC_CompactedSubSequence& other)
+inline CompactedSubSequence::CompactedSubSequence(const CompactedSubSequence& other)
 {
     mySequence = other.mySequence;
     mySequence->referred++;
@@ -518,7 +522,7 @@ inline AWTC_CompactedSubSequence::AWTC_CompactedSubSequence(const AWTC_Compacted
     myText   = other.myText;
 }
 
-inline AWTC_CompactedSubSequence::AWTC_CompactedSubSequence(const AWTC_CompactedSubSequence& other, int rel_pos, int Length)
+inline CompactedSubSequence::CompactedSubSequence(const CompactedSubSequence& other, int rel_pos, int Length)
 {
     mySequence = other.mySequence;
     mySequence->referred++;
@@ -527,17 +531,17 @@ inline AWTC_CompactedSubSequence::AWTC_CompactedSubSequence(const AWTC_Compacted
     myLength = Length;
     myText   = mySequence->text()+myPos;
 
-    awtc_assert((rel_pos+Length)<=mySequence->length());
-    awtc_assert(rel_pos>=0);
+    fa_assert((rel_pos+Length)<=mySequence->length());
+    fa_assert(rel_pos>=0);
 }
 
-inline AWTC_CompactedSubSequence::~AWTC_CompactedSubSequence()
+inline CompactedSubSequence::~CompactedSubSequence()
 {
     if (mySequence->referred-- == 1) // last reference
         delete mySequence;
 }
 
-inline AWTC_CompactedSubSequence& AWTC_CompactedSubSequence::operator=(const AWTC_CompactedSubSequence& other) // =-c-tor
+inline CompactedSubSequence& CompactedSubSequence::operator=(const CompactedSubSequence& other) // =-c-tor
 {
     // d-tor part
 
