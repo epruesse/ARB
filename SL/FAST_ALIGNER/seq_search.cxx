@@ -1,6 +1,6 @@
 // =============================================================== //
 //                                                                 //
-//   File      : AWTC_seq_search.cxx                               //
+//   File      : seq_search.cxx                                    //
 //   Purpose   :                                                   //
 //                                                                 //
 //   Coded by Ralf Westram (coder@reallysoft.de)                   //
@@ -9,7 +9,7 @@
 //                                                                 //
 // =============================================================== //
 
-#include <awtc_seq_search.hxx>
+#include "seq_search.hxx"
 
 #include <cstdarg>
 #include <climits>

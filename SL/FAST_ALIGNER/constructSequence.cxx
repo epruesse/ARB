@@ -1,6 +1,6 @@
 // =============================================================== //
 //                                                                 //
-//   File      : AWTC_constructSequence.cxx                        //
+//   File      : constructSequence.cxx                             //
 //   Purpose   :                                                   //
 //                                                                 //
 //   Coded by Ralf Westram (coder@reallysoft.de) in 1998           //
@@ -11,8 +11,8 @@
 
 #warning unused
 
-#include "awtc_seq_search.hxx"
-#include "awtc_constructSequence.hxx"
+#include "seq_search.hxx"
+#include "constructSequence.hxx"
 
 #include <arbdbt.h>
 #include <aw_window.hxx>

@@ -1,6 +1,6 @@
 // =============================================================== //
 //                                                                 //
-//   File      : awtc_seq_search.hxx                               //
+//   File      : seq_search.hxx                                    //
 //   Purpose   : Fast sequence search for fast aligner             //
 //                                                                 //
 //   Coded by Ralf Westram (coder@reallysoft.de) in July 1998      //
@@ -9,8 +9,8 @@
 //                                                                 //
 // =============================================================== //
 
-#ifndef AWTC_SEQ_SEARCH_HXX
-#define AWTC_SEQ_SEARCH_HXX
+#ifndef SEQ_SEARCH_HXX
+#define SEQ_SEARCH_HXX
 
 #ifndef AW_ROOT_HXX
 #include <aw_root.hxx>
@@ -561,5 +561,5 @@ inline CompactedSubSequence& CompactedSubSequence::operator=(const CompactedSubS
 }
 
 #else
-#error awtc_seq_search.hxx included twice
-#endif // AWTC_SEQ_SEARCH_HXX
+#error seq_search.hxx included twice
+#endif // SEQ_SEARCH_HXX

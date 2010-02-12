@@ -11,16 +11,17 @@
 
 #include "fast_aligner.hxx"
 #include "ClustalV.hxx"
+#include "seq_search.hxx"
 
 #include <island_hopping.h>
 
 #include <awtc_next_neighbours.hxx>
-#include <awtc_seq_search.hxx>
 
 #include <awt_sel_boxes.hxx>
 
 #include <aw_window.hxx>
 #include <aw_awars.hxx>
+
 #include <arbdbt.h>
 
 #include <cctype>
@@ -2393,7 +2394,7 @@ static AW_window *create_island_hopping_window(AW_root *root, AW_CL) {
     AW_window_simple *aws = new AW_window_simple;
 
     aws->init(root, "ISLAND_HOPPING_PARA", "Parameters for Island Hopping");
-    aws->load_xfig("awtc/islandhopping.fig");
+    aws->load_xfig("faligner/islandhopping.fig");
 
     aws->at("close");
     aws->callback     ((AW_CB0)AW_POPDOWN);
@@ -2487,7 +2488,7 @@ static AW_window *create_family_settings_window(AW_root *root) {
         aws = new AW_window_simple;
 
         aws->init(root, "FAMILY_PARAMS", "Family search paramaters");
-        aws->load_xfig("awtc/family_settings.fig");
+        aws->load_xfig("faligner/family_settings.fig");
 
         aws->at("close");
         aws->callback     ((AW_CB0)AW_POPDOWN);
@@ -2507,7 +2508,7 @@ AW_window *FastAligner_create_window(AW_root *root, const AlignDataAccess *data_
     AW_window_simple *aws = new AW_window_simple;
 
     aws->init(root, "INTEGRATED_ALIGNERS", INTEGRATED_ALIGNERS_TITLE);
-    aws->load_xfig("awtc/faligner.fig");
+    aws->load_xfig("faligner/faligner.fig");
 
     aws->label_length(10);
     aws->button_length(10);
