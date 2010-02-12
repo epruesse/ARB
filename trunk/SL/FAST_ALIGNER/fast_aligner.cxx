@@ -117,8 +117,6 @@ struct SearchRelativeParams {
 
 // --------------------------------------------------------------------------------
 
-extern GBDATA *GLOBAL_gb_main;
-
 static IslandHopping *island_hopper = 0;
 static GB_alignment_type global_alignmentType = GB_AT_UNKNOWN; // type of actually aligned sequence
 
@@ -142,9 +140,10 @@ static ARB_ERROR reverseComplement(GBDATA *gb_species, GB_CSTR ali, int max_prot
         int my_protection = GB_read_security_write(gbd);
 
         if (my_protection<=max_protection) { // ok
-            char *seq = GB_read_string(gbd);
-            int length = GB_read_string_count(gbd);
-            GB_alignment_type ali_type = GBT_get_alignment_type(GLOBAL_gb_main, ali);
+            char              *seq      = GB_read_string(gbd);
+            int                length   = GB_read_string_count(gbd);
+            GBDATA            *gb_main  = GB_get_root(gb_species);
+            GB_alignment_type  ali_type = GBT_get_alignment_type(gb_main, ali);
 
             char T_or_U;
             error = GBT_determine_T_or_U(ali_type, &T_or_U, "reverse-complement");
@@ -162,12 +161,15 @@ static ARB_ERROR reverseComplement(GBDATA *gb_species, GB_CSTR ali, int max_prot
     return error;
 }
 
-void AWTC_build_reverse_complement(AW_window *aw, AW_CL cd2) {
-    GB_push_transaction(GLOBAL_gb_main);
+static void build_reverse_complement(AW_window *aw, AW_CL cl_faligner_cd) {
+    const AWTC_faligner_cd *cd      = (const AWTC_faligner_cd *)cl_faligner_cd;
+    GBDATA                 *gb_main = cd->gb_main;
+
+    GB_push_transaction(gb_main);
 
     AW_root        *root              = aw->get_root();
     FA_alignTarget  revComplWhat      = static_cast<FA_alignTarget>(root->awar(FA_AWAR_TO_ALIGN)->read_int());
-    char           *default_alignment = GBT_get_default_alignment(GLOBAL_gb_main);
+    char           *default_alignment = GBT_get_default_alignment(gb_main);
     GB_CSTR         alignment         = root->awar_string(AWAR_EDITOR_ALIGNMENT, default_alignment)->read_string();
     ARB_ERROR       error             = 0;
     int             max_protection    = root->awar(FA_AWAR_PROTECTION)->read_int();
@@ -175,13 +177,13 @@ void AWTC_build_reverse_complement(AW_window *aw, AW_CL cd2) {
     switch (revComplWhat) {
         case FA_CURRENT: { // current species
             GB_CSTR species_name = root->awar(AWAR_SPECIES_NAME)->read_string();
-            GBDATA *gb_species = GBT_find_species(GLOBAL_gb_main, species_name);
+            GBDATA *gb_species = GBT_find_species(gb_main, species_name);
             if (!gb_species) error = species_not_found(species_name);
             if (!error) error = reverseComplement(gb_species, alignment, max_protection);
             break;
         }
         case FA_MARKED: { // marked species
-            GBDATA *gb_species = GBT_first_marked_species(GLOBAL_gb_main);
+            GBDATA *gb_species = GBT_first_marked_species(gb_main);
 
             if (!gb_species) {
                 error = "There is no marked species";
@@ -193,13 +195,14 @@ void AWTC_build_reverse_complement(AW_window *aw, AW_CL cd2) {
             }
             break;
         }
-        case FA_SELECTED: { // selected species
-            static struct AWTC_faligner_cd *cd = (struct AWTC_faligner_cd *)cd2;
+        case FA_SELECTED: { // selected species (editor selection!)
+            
             AWTC_get_first_selected_species get_first_selected_species = cd->get_first_selected_species;
-            AWTC_get_next_selected_species  get_next_selected_species = cd->get_next_selected_species;
-            int count = 0;
-            GBDATA *gb_species = get_first_selected_species(&count);
+            AWTC_get_next_selected_species  get_next_selected_species  = cd->get_next_selected_species;
 
+            int     count      = 0;
+            GBDATA *gb_species = get_first_selected_species(&count);
+            
             if (!gb_species) {
                 error = "There is no selected species!";
             }
@@ -216,7 +219,7 @@ void AWTC_build_reverse_complement(AW_window *aw, AW_CL cd2) {
         }
     }
 
-    GB_end_transaction_show_error(GLOBAL_gb_main, error, aw_message);
+    GB_end_transaction_show_error(gb_main, error, aw_message);
 }
 
 // --------------------------------------------------------------------------------
@@ -1430,6 +1433,7 @@ static ARB_ERROR alignToNextRelative(const SearchRelativeParams&  relSearch,
     char      **nearestRelative = new char*[relativesToTest+1];
     int         next_relatives;
     int         i;
+    GBDATA     *gb_main         = GB_get_root(gb_toAlign);
 
     if (use_different_pt_server_alignment) {
         turnAllowed = FA_TURN_NEVER; // makes no sense if we're using a different alignment for the pt_server
@@ -1471,7 +1475,7 @@ static ARB_ERROR alignToNextRelative(const SearchRelativeParams&  relSearch,
 
         {
             // find relatives
-            AWTC_FIND_FAMILY family(GLOBAL_gb_main);
+            AWTC_FIND_FAMILY family(gb_main); 
             double           bestScore = 0;
 
             aw_status("Searching relatives");
@@ -1490,7 +1494,7 @@ static ARB_ERROR alignToNextRelative(const SearchRelativeParams&  relSearch,
 #endif // DEBUG
                 for (const AWTC_FIND_FAMILY_MEMBER *fl = family.getFamilyList(); fl; fl=fl->next) {
                     if (strcmp(toAlignSequence->name(), fl->name)!=0) {
-                        if (GBT_find_species(GLOBAL_gb_main, fl->name)) {
+                        if (GBT_find_species(gb_main, fl->name)) { // @@@
                             double thisScore = relSearch.fam_rel_matches ? fl->rel_matches : fl->matches;
 #if defined(DEBUG)
                             // check whether family list is sorted correctly
@@ -1537,7 +1541,7 @@ static ARB_ERROR alignToNextRelative(const SearchRelativeParams&  relSearch,
 #endif // DEBUG
                         if (thisScore >= bestMirroredScore) {
                             if (strcmp(toAlignSequence->name(), fl->name)!=0) {
-                                if (GBT_find_species(GLOBAL_gb_main, fl->name)) bestMirroredScore = thisScore;
+                                if (GBT_find_species(gb_main, fl->name)) bestMirroredScore = thisScore; // @@@
                             }
                         }
                     }
@@ -1595,7 +1599,7 @@ static ARB_ERROR alignToNextRelative(const SearchRelativeParams&  relSearch,
 
             {
                 for (i=0; i<relSearch.maxRelatives && i<next_relatives; i++) {
-                    GBDATA *gb_species = GBT_find_species(GLOBAL_gb_main, nearestRelative[i]);
+                    GBDATA *gb_species = GBT_find_species(gb_main, nearestRelative[i]);
                     if (!gb_species) { // pt-server seems not up to date!
                         error = species_not_found(nearestRelative[i]);
                         break;
@@ -1756,13 +1760,13 @@ static ARB_ERROR alignToNextRelative(const SearchRelativeParams&  relSearch,
 // ---------------------
 //      AWTC_aligner
 
-static ARB_ERROR AWTC_aligner(
+static ARB_ERROR AWTC_aligner(GBDATA                          *gb_main,
                               // define alignment target(s):
-                              FA_alignTarget                  alignWhat,
-                              GB_CSTR                         alignment, // name of alignment to use (==NULL -> use default)
-                              GB_CSTR                         toalign, // name of species to align (used if alignWhat == FA_CURRENT)
-                              AWTC_get_first_selected_species get_first_selected_species, // used if alignWhat == FA_SELECTED
-                              AWTC_get_next_selected_species  get_next_selected_species, // --- "" ---
+                              FA_alignTarget                   alignWhat,
+                              GB_CSTR                          alignment, // name of alignment to use (==NULL -> use default)
+                              GB_CSTR                          toalign, // name of species to align (used if alignWhat == FA_CURRENT)
+                              AWTC_get_first_selected_species  get_first_selected_species, // used if alignWhat == FA_SELECTED
+                              AWTC_get_next_selected_species   get_next_selected_species, // --- "" ---
 
                               // define reference sequence(s):
                               GB_CSTR                     reference,     // name of reference species
@@ -1776,7 +1780,7 @@ static ARB_ERROR AWTC_aligner(
 {
     // (reference == NULL && get_consensus==NULL -> use next relative for (each) sequence)
 
-    ARB_ERROR error                = GB_push_transaction(GLOBAL_gb_main);
+    ARB_ERROR error                = GB_push_transaction(gb_main); // @@@
     int       search_by_pt_server  = reference==NULL && get_consensus==NULL;
     int       err_count            = 0;
     int       wasNotAllowedToAlign = 0;             // incremented for every sequence which has higher protection level (and was not aligned)
@@ -1791,14 +1795,14 @@ static ARB_ERROR AWTC_aligner(
     }
 
     if (!error && !alignment) {
-        alignment = (GB_CSTR)GBT_get_default_alignment(GLOBAL_gb_main); // get default alignment
+        alignment = (GB_CSTR)GBT_get_default_alignment(gb_main); // get default alignment
         if (!alignment) error = "No default alignment";
     }
 
     if (!error && alignment) {
-        global_alignmentType = GBT_get_alignment_type(GLOBAL_gb_main, alignment);
+        global_alignmentType = GBT_get_alignment_type(gb_main, alignment);
         if (search_by_pt_server) {
-            GB_alignment_type pt_server_alignmentType = GBT_get_alignment_type(GLOBAL_gb_main, relSearch.pt_server_alignment);
+            GB_alignment_type pt_server_alignmentType = GBT_get_alignment_type(gb_main, relSearch.pt_server_alignment);
 
             if (pt_server_alignmentType != GB_AT_RNA &&
                 pt_server_alignmentType != GB_AT_DNA) {
@@ -1810,8 +1814,8 @@ static ARB_ERROR AWTC_aligner(
     }
 
     if (!error) {
-        GBDATA *gb_species_data = GB_search(GLOBAL_gb_main, "species_data", GB_CREATE_CONTAINER);
-        int max_seq_length = GBT_get_alignment_len(GLOBAL_gb_main, alignment);
+        GBDATA *gb_species_data = GB_search(gb_main, "species_data", GB_CREATE_CONTAINER);
+        int     max_seq_length  = GBT_get_alignment_len(gb_main, alignment);
 
         if (reference) { // align to reference sequence
             GBDATA *gb_reference = GBT_find_species_rel_species_data(gb_species_data, reference);
@@ -1858,7 +1862,7 @@ static ARB_ERROR AWTC_aligner(
                             break;
                         }
                         case FA_MARKED: { // align all marked sequences
-                            int count = GBT_count_marked_species(GLOBAL_gb_main);
+                            int count = GBT_count_marked_species(gb_main);
                             int done = 0;
                             GBDATA *gb_species = GBT_first_marked_species_rel_species_data(gb_species_data);
 
@@ -1876,13 +1880,13 @@ static ARB_ERROR AWTC_aligner(
                                 }
 
                                 if (error) err_count++;
-                                GB_end_transaction_show_error(GLOBAL_gb_main, error, aw_message);
+                                GB_end_transaction_show_error(gb_main, error, aw_message);
                                 error = NULL;
 
                                 done++;
                                 GB_status(double(done)/double(count));
 
-                                GB_push_transaction(GLOBAL_gb_main);
+                                GB_push_transaction(gb_main);
                                 gb_species = GBT_next_marked_species(gb_species);
                             }
                             break;
@@ -1911,13 +1915,13 @@ static ARB_ERROR AWTC_aligner(
                                 }
 
                                 if (error) err_count++;
-                                GB_end_transaction_show_error(GLOBAL_gb_main, error, aw_message);
+                                GB_end_transaction_show_error(gb_main, error, aw_message);
                                 error = NULL;
 
                                 done++;
                                 GB_status(double(done)/double(count));
 
-                                GB_push_transaction(GLOBAL_gb_main);
+                                GB_push_transaction(gb_main);
                                 gb_species = get_next_selected_species();
                             }
 
@@ -1954,7 +1958,7 @@ static ARB_ERROR AWTC_aligner(
                     break;
                 }
                 case FA_MARKED: { // align all marked sequences
-                    int count = GBT_count_marked_species(GLOBAL_gb_main);
+                    int count = GBT_count_marked_species(gb_main);
                     int done = 0;
                     GBDATA *gb_species = GBT_first_marked_species_rel_species_data(gb_species_data);
 
@@ -1973,13 +1977,13 @@ static ARB_ERROR AWTC_aligner(
                         }
 
                         if (error) err_count++;
-                        GB_end_transaction_show_error(GLOBAL_gb_main, error, aw_message);
+                        GB_end_transaction_show_error(gb_main, error, aw_message);
                         error = NULL;
 
                         done++;
                         GB_status(double(done)/double(count));
 
-                        GB_push_transaction(GLOBAL_gb_main);
+                        GB_push_transaction(gb_main);
                         gb_species = GBT_next_marked_species(gb_species);
                     }
                     break;
@@ -2007,13 +2011,13 @@ static ARB_ERROR AWTC_aligner(
                         }
 
                         if (error) err_count++;
-                        GB_end_transaction_show_error(GLOBAL_gb_main, error, aw_message);
+                        GB_end_transaction_show_error(gb_main, error, aw_message);
                         error = NULL;
 
                         done++;
                         GB_status(double(done)/double(count));
 
-                        GB_push_transaction(GLOBAL_gb_main);
+                        GB_push_transaction(gb_main);
                         gb_species = get_next_selected_species();
                     }
                     break;
@@ -2045,7 +2049,7 @@ static ARB_ERROR AWTC_aligner(
                     break;
                 }
                 case FA_MARKED: { // align all marked sequences
-                    int count = GBT_count_marked_species(GLOBAL_gb_main);
+                    int count = GBT_count_marked_species(gb_main);
                     int done = 0;
                     GBDATA *gb_species = GBT_first_marked_species_rel_species_data(gb_species_data);
 
@@ -2064,13 +2068,13 @@ static ARB_ERROR AWTC_aligner(
                         }
 
                         if (error) err_count++;
-                        GB_end_transaction_show_error(GLOBAL_gb_main, error, aw_message);
+                        GB_end_transaction_show_error(gb_main, error, aw_message);
                         error = NULL;
 
                         done++;
                         GB_status(double(done)/double(count));
 
-                        GB_push_transaction(GLOBAL_gb_main);
+                        GB_push_transaction(gb_main);
                         gb_species = GBT_next_marked_species(gb_species);
                     }
                     break;
@@ -2098,13 +2102,13 @@ static ARB_ERROR AWTC_aligner(
                         }
 
                         if (error) err_count++;
-                        GB_end_transaction_show_error(GLOBAL_gb_main, error, aw_message);
+                        GB_end_transaction_show_error(gb_main, error, aw_message);
                         error = NULL;
 
                         done++;
                         GB_status(double(done)/double(count));
 
-                        GB_push_transaction(GLOBAL_gb_main);
+                        GB_push_transaction(gb_main);
                         gb_species = get_next_selected_species();
                     }
                     break;
@@ -2116,7 +2120,7 @@ static ARB_ERROR AWTC_aligner(
     AWTC_ClustalV_align_exit();
     unaligned_bases.clear();
 
-    error = GB_end_transaction(GLOBAL_gb_main, error);
+    error = GB_end_transaction(gb_main, error);
 
     if (wasNotAllowedToAlign>0) {
         const char *mess = GBS_global_string("%i species were not aligned (because of protection level)", wasNotAllowedToAlign);
@@ -2135,14 +2139,14 @@ static ARB_ERROR AWTC_aligner(
 //  Parameter-Window for Fast-Aligner
 // --------------------------------------------------------------------------------
 
-void AWTC_start_faligning(AW_window *aw, AW_CL cd2) {
-    AW_root                        *root          = aw->get_root();
-    char                           *reference     = NULL; // align against next relatives
-    char                           *toalign       = NULL; // align marked species
-    ARB_ERROR                       error         = NULL;
-    static struct AWTC_faligner_cd *cd            = (struct AWTC_faligner_cd *)cd2;
-    int                             get_consensus = 0;
-    int                             pt_server_id  = -1;
+void AWTC_start_faligning(AW_window *aw, AW_CL cl_faligner_cd) {
+    AW_root                *root          = aw->get_root();
+    char                   *reference     = NULL;   // align against next relatives
+    char                   *toalign       = NULL;   // align marked species
+    ARB_ERROR               error         = NULL;
+    const AWTC_faligner_cd *cd            = (const AWTC_faligner_cd *)cl_faligner_cd;
+    int                     get_consensus = 0;
+    int                     pt_server_id  = -1;
 
     AWTC_get_first_selected_species get_first_selected_species = 0;
     AWTC_get_next_selected_species  get_next_selected_species  = 0;
@@ -2258,10 +2262,11 @@ void AWTC_start_faligning(AW_window *aw, AW_CL cd2) {
     }
 
     if (!error) {
-        char *editor_alignment = 0;
+        GBDATA *gb_main          = cd->gb_main;
+        char   *editor_alignment = 0;
         {
-            GB_transaction  dummy(GLOBAL_gb_main);
-            char           *default_alignment = GBT_get_default_alignment(GLOBAL_gb_main);
+            GB_transaction  dummy(gb_main);
+            char           *default_alignment = GBT_get_default_alignment(gb_main);
 
             editor_alignment = root->awar_string(AWAR_EDITOR_ALIGNMENT, default_alignment)->read_string();
             free(default_alignment);
@@ -2292,9 +2297,9 @@ void AWTC_start_faligning(AW_window *aw, AW_CL cd2) {
         };
 
         {
-            GB_transaction ta(GLOBAL_gb_main);
+            GB_transaction ta(gb_main);
             aw_openstatus("FastAligner");
-            error = AWTC_aligner(
+            error = AWTC_aligner(gb_main, 
                                  alignWhat,
                                  editor_alignment,
                                  toalign,
@@ -2511,8 +2516,7 @@ AW_window *AWTC_create_family_settings_window(AW_root *root) {
     return aws;
 }
 
-AW_window *AWTC_create_faligner_window(AW_root *root, AW_CL cd2)
-{
+AW_window *AWTC_create_faligner_window(AW_root *root, const AWTC_faligner_cd *faligner_cd) {
     AW_window_simple *aws = new AW_window_simple;
 
     aws->init(root, "INTEGRATED_ALIGNERS", INTEGRATED_ALIGNERS_TITLE);
@@ -2547,7 +2551,7 @@ AW_window *AWTC_create_faligner_window(AW_root *root, AW_CL cd2)
     aws->button_length(10);
 
     aws->at("rev_compl");
-    aws->callback(AWTC_build_reverse_complement, cd2);
+    aws->callback(build_reverse_complement, (AW_CL)faligner_cd);
     aws->create_button("reverse_complement", "Turn now!", "");
 
     aws->at("what");
@@ -2637,7 +2641,7 @@ AW_window *AWTC_create_faligner_window(AW_root *root, AW_CL cd2)
     aws->create_toggle(FA_AWAR_SHOW_GAPS_MESSAGES);
 
     aws->at("align");
-    aws->callback     (AWTC_start_faligning, cd2);
+    aws->callback(AWTC_start_faligning, (AW_CL)faligner_cd);
     aws->highlight();
     aws->create_button("GO", "GO", "G");
 

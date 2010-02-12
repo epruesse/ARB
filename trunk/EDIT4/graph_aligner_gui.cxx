@@ -124,7 +124,7 @@ AW_active sina_mask(AW_root *root) {
     return fail_reason ? AWM_DISABLED : AWM_ALL;
 }
 
-static void sina_start(AW_window *window, AW_CL cd2) {
+static void sina_start(AW_window *window, AW_CL cl_faligner_cd) {
     GB_ERROR gb_error;
     AW_root *root = window->get_root();
     cerr << "Starting SINA..." << endl;
@@ -190,7 +190,7 @@ static void sina_start(AW_window *window, AW_CL cd2) {
     break;
     case 1: // selected
     {
-        struct AWTC_faligner_cd *cd = (struct AWTC_faligner_cd *)cd2;
+        const AWTC_faligner_cd *cd = (const AWTC_faligner_cd *)cl_faligner_cd;
         GB_begin_transaction(GLOBAL_gb_main);
         int num_selected = 0;
         for (GBDATA *gb_spec = cd->get_first_selected_species(&num_selected);
@@ -297,8 +297,7 @@ static AW_window* create_select_sai_window(AW_root *root) {
     return (AW_window*) aws;
 }
 
-AW_window_simple*
-new_sina_simple(AW_root *root, AW_CL cd2, bool adv) {
+static AW_window_simple* new_sina_simple(AW_root *root, AW_CL cl_faligner_cd, bool adv) {
     int closex, closey, startx, starty, winx, winy;
     const int hgap = 10;
     AW_window_simple *aws = new AW_window_simple;
@@ -314,7 +313,7 @@ new_sina_simple(AW_root *root, AW_CL cd2, bool adv) {
     aws->get_at_position(&closex, &closey);
 
     aws->at_shift(10, 0);
-    aws->callback(show_sina_window, cd2, 0);
+    aws->callback(show_sina_window, cl_faligner_cd, 0);
     aws->label_length(0);
     aws->label("Show advanced options");
     aws->create_toggle(GA_AWAR_ADVANCED);
@@ -437,25 +436,25 @@ new_sina_simple(AW_root *root, AW_CL cd2, bool adv) {
     aws->create_button("HELP", "HELP");
 
     aws->at(winx-closex+5, starty);
-    aws->callback(sina_start, cd2);
+    aws->callback(sina_start, cl_faligner_cd);
     aws->highlight();
     aws->create_button("Start", "Start", "S");
 
     return aws;
 }
 
-void show_sina_window(AW_window *aw, AW_CL cd2, AW_CL) {
+void show_sina_window(AW_window *aw, AW_CL cl_faligner_cd, AW_CL) {
     static AW_window_simple *ga_aws = 0;
     static AW_window_simple *ga_aws_adv = 0;
 
     AW_root *root = aw->get_root();
     if (root->awar(GA_AWAR_ADVANCED)->read_int()) {
-        if (!ga_aws_adv) ga_aws_adv = new_sina_simple(root, cd2, true);
+        if (!ga_aws_adv) ga_aws_adv = new_sina_simple(root, cl_faligner_cd, true);
         ga_aws_adv->show();
         if (ga_aws) ga_aws->hide();
     }
     else {
-        if (!ga_aws) ga_aws = new_sina_simple(root, cd2, false);
+        if (!ga_aws) ga_aws = new_sina_simple(root, cl_faligner_cd, false);
         ga_aws->show();
         if (ga_aws_adv) ga_aws_adv->hide();
     }
