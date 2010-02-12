@@ -9,8 +9,8 @@
 //                                                                 //
 // =============================================================== //
 
-#ifndef AWTC_CLUSTALV_HXX
-#define AWTC_CLUSTALV_HXX
+#ifndef CLUSTALV_HXX
+#define CLUSTALV_HXX
 
 #ifndef ARB_ERROR_H
 #include <arb_error.h>
@@ -27,4 +27,4 @@ int baseMatch(char c1, char c2);
 
 #else
 #error ClustalV.hxx included twice
-#endif // AWTC_CLUSTALV_HXX
+#endif // CLUSTALV_HXX

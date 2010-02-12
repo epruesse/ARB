@@ -1,6 +1,6 @@
 // =============================================================== //
 //                                                                 //
-//   File      : awtc_constructSequence.hxx                        //
+//   File      : constructSequence.hxx                             //
 //   Purpose   : simple sequence assembler (unfinished)            //
 //                                                                 //
 //   Coded by Ralf Westram (coder@reallysoft.de) in 1998           //
@@ -9,8 +9,8 @@
 //                                                                 //
 // =============================================================== //
 
-#ifndef AWTC_CONSTRUCTSEQUENCE_HXX
-#define AWTC_CONSTRUCTSEQUENCE_HXX
+#ifndef CONSTRUCTSEQUENCE_HXX
+#define CONSTRUCTSEQUENCE_HXX
 
 
 char *constructSequence(int parts, const char **seqs, int minBasesMatching, char **refSeq);        // parameter list should be terminated by NULL
@@ -21,5 +21,5 @@ char *testConstructSequence(const char *testWithSequence);
 
 
 #else
-#error awtc_constructSequence.hxx included twice
-#endif // AWTC_CONSTRUCTSEQUENCE_HXX
+#error constructSequence.hxx included twice
+#endif // CONSTRUCTSEQUENCE_HXX

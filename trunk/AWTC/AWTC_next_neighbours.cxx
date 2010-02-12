@@ -194,7 +194,10 @@ void AWTC_create_common_next_neighbour_vars(AW_root *aw_root) {
 }
 
 void AWTC_create_common_next_neighbour_fields(AW_window *aws) {
-    // used in several figs: ad_spec_nn.fig ad_spec_nnm.fig awtc/family_settings.fig
+    // used in several figs:
+    // - ad_spec_nn.fig
+    // - ad_spec_nnm.fig
+    // - faligner/family_settings.fig
 
     aws->at("oligo_len");
     aws->create_input_field(AWAR_NN_OLIGO_LEN, 3);

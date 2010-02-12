@@ -10,7 +10,7 @@
 // =============================================================== //
 
 #include "ClustalV.hxx"
-#include "awtc_seq_search.hxx"
+#include "seq_search.hxx"
 
 #include <cctype>
 #include <climits>
