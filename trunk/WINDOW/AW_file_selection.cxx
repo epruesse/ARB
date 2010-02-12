@@ -1,17 +1,21 @@
-#include <cstdio>
-#include <cstdlib>
-#include <unistd.h>
-#include <ctime>
-#include <cstring>
+// ================================================================ //
+//                                                                  //
+//   File      : AW_file_selection.cxx                              //
+//   Purpose   :                                                    //
+//                                                                  //
+//   Institute of Microbiology (Technical University Munich)        //
+//   http://www.arb-home.de/                                        //
+//                                                                  //
+// ================================================================ //
 
-#include <arbdb.h>
-#include <arbdbt.h>
+
 #include <aw_root.hxx>
 #include <aw_device.hxx>
 #include <aw_window.hxx>
 #include <aw_awars.hxx>
-#include "awt.hxx"
-#include "awtlocal.hxx"
+#include <aw_file.hxx>
+
+#include <arbdbt.h>
 
 #include <dirent.h>
 #include <sys/types.h>
@@ -21,13 +25,41 @@
 #include <string>
 #include <set>
 
+#include <cstdio>
+#include <cstdlib>
+#include <unistd.h>
+#include <ctime>
+#include <cstring>
+
 #if defined(DEBUG)
 // #define TRACE_FILEBOX
 #endif // DEBUG
 
 using namespace std;
 
-static GB_CSTR awt_get_base_directory(const char *pwd_envar) {
+#if defined(DEVEL_RALF)
+#warning derive File_selection from AW_selection
+#endif // DEVEL_RALF
+
+struct File_selection {                            // for fileselection
+    AW_window         *aws;
+    AW_root           *awr;
+    AW_selection_list *id;
+
+    char *def_name;
+    char *def_dir;
+    char *def_filter;
+
+    char *pwd;
+    char *pwdx;                                     // additional directories
+
+    char *previous_filename;
+    
+    bool show_dir;
+    bool leave_wildcards;
+};
+
+static GB_CSTR get_base_directory(const char *pwd_envar) {
     GB_CSTR res;
 
     if (strcmp(pwd_envar, "PWD") == 0) {
@@ -94,52 +126,20 @@ static char *set_suffix(const char *name, const char *suffix) {
 }
 
 
-char *AWT_fold_path(char *path, const char *pwd_envar) {
-    char    *unfolded = AWT_unfold_path(path, pwd_envar);
-    GB_CSTR  prefix   = awt_get_base_directory(pwd_envar);
-    int      len      = strlen(prefix);
+char *AW_unfold_path(const char *path, const char *pwd_envar) {
+    //! create a full path
 
-    if (strncmp(unfolded, prefix, len) == 0) { // unfolded starts with pwd
-        if (unfolded[len] == '/') {
-            strcpy(unfolded, unfolded+len+1);
-        }
-        else if (unfolded[len] == 0) { // unfolded is equal to pwd
-            unfolded[0] = 0;
-        }
-    }
-
-    return unfolded;
-}
-
-/* create a full path */
-
-char *AWT_unfold_path(const char *path, const char *pwd_envar) {
     if (path[0] == '/' || path[0] == '~') return strdup(GB_get_full_path(path));
-    return strdup(GB_concat_full_path(awt_get_base_directory(pwd_envar), path));
+    return strdup(GB_concat_full_path(get_base_directory(pwd_envar), path));
 }
 
-const char *AWT_valid_path(const char *path) {
-    if (strlen(path)) return path;
-    return ".";
-}
+inline const char *valid_path(const char *path) { return path[0] ? path : "."; }
 
-int AWT_is_dir(const char *path) { // Warning : returns 1 for symbolic links to directories
-    struct stat stt;
-    if (stat(AWT_valid_path(path), &stt)) return 0;
-    return !!S_ISDIR(stt.st_mode);
-}
-int AWT_is_file(const char *path) { // Warning : returns 1 for symbolic links to files
-    struct stat stt;
-    if (stat(AWT_valid_path(path), &stt)) return 0;
-    return !!S_ISREG(stt.st_mode);
-}
-int AWT_is_link(const char *path) {
-    struct stat stt;
-    if (lstat(AWT_valid_path(path), &stt)) return 0;
-    return !!S_ISLNK(stt.st_mode);
-}
+inline bool AW_is_dir(const char *path) { return GB_is_directory(valid_path(path)); }
+inline bool AW_is_file(const char *path) { return GB_is_regularfile(valid_path(path)); }
+inline bool AW_is_link(const char *path) { return GB_is_link(valid_path(path)); }
 
-char *AWT_extract_directory(const char *path) {
+char *AW_extract_directory(const char *path) {
     const char *lslash = strrchr(path, '/');
     if (!lslash) return 0;
 
@@ -155,7 +155,7 @@ static int DIR_sort_order     = 0; // 0 = alpha; 1 = date; 2 = size;
 static int DIR_subdirs_hidden = 0; // 1 -> hide sub-directories (by user-request)
 static int DIR_show_hidden    = 0; // 1 -> show hidden (i.e. files/directories starting with '.')
 
-static void awt_execute_browser_command(const char *browser_command) {
+static void execute_browser_command(const char *browser_command) {
     if (strcmp(browser_command, "sort") == 0) {
         DIR_sort_order = (DIR_sort_order+1)%DIR_SORT_ORDERS;
     }
@@ -196,19 +196,19 @@ static void fill_fileselection_recursive(const char *fulldir, int skipleft, cons
         if (strlen(fulldir)) fullname = strdup(GB_concat_full_path(fulldir, entry));
         else fullname                 = strdup(GB_get_full_path(entry));
 
-        if (AWT_is_dir(fullname)) {
+        if (AW_is_dir(fullname)) {
             if (!(entry[0] == '.' && (!DIR_show_hidden || entry[1] == 0 || (entry[1] == '.' && entry[2] == 0)))) { // skip "." and ".." and dotdirs if requested
                 if (showdir) {
                     aws->insert_selection(selid, GBS_global_string("D %-18s(%s)", entry, fullname), fullname);
                 }
-                if (recurse && !AWT_is_link(nontruepath)) { // don't follow links
+                if (recurse && !AW_is_link(nontruepath)) { // don't follow links
                     fill_fileselection_recursive(nontruepath, skipleft, mask, recurse, showdir, show_dots, aws, selid);
                 }
             }
         }
         else {
             if (GBS_string_matches(entry, mask, GB_IGNORE_CASE)) { // entry matches mask
-                if ((entry[0] != '.' || DIR_show_hidden) && AWT_is_file(fullname)) { // regular existing file
+                if ((entry[0] != '.' || DIR_show_hidden) && AW_is_file(fullname)) { // regular existing file
                     struct stat stt;
 
                     stat(fullname, &stt);
@@ -218,7 +218,7 @@ static void fill_fileselection_recursive(const char *fulldir, int skipleft, cons
                     strftime(atime, 255, "%Y/%m/%d %k:%M", tms);
 
                     long ksize    = (stt.st_size+512)/1024;
-                    char typechar = AWT_is_link(nontruepath) ? 'L' : 'F';
+                    char typechar = AW_is_link(nontruepath) ? 'L' : 'F';
 
                     const char *sel_entry = 0;
                     switch (DIR_sort_order) {
@@ -261,7 +261,7 @@ static void show_soft_link(AW_window *aws, AW_selection_list *sel_id, const char
     // adds a soft link (e.g. ARBMACROHOME or ARB_WORKDIR) into file selection box
     // if content of 'envar' matches 'cwd' nothing is inserted
 
-    const char *expanded_dir = awt_get_base_directory(envar);
+    const char *expanded_dir = get_base_directory(envar);
     string      edir(expanded_dir);
 
     if (unDup.not_seen_yet(edir)) {
@@ -271,13 +271,13 @@ static void show_soft_link(AW_window *aws, AW_selection_list *sel_id, const char
     }
 }
 
-static void fill_fileselection_cb(void *dummy, struct adawcbstruct *cbs) {
+static void fill_fileselection_cb(void *dummy, File_selection *cbs) {
     AW_root             *aw_root = cbs->aws->get_root();
     AWUSE(dummy);
     cbs->aws->clear_selection_list(cbs->id);
 
     char *diru    = aw_root->awar(cbs->def_dir)->read_string();
-    char *fulldir = AWT_unfold_path(diru, cbs->pwd);
+    char *fulldir = AW_unfold_path(diru, cbs->pwd);
     char *filter  = aw_root->awar(cbs->def_filter)->read_string();
     char *name    = aw_root->awar(cbs->def_name)->read_string();
 
@@ -295,7 +295,7 @@ static void fill_fileselection_cb(void *dummy, struct adawcbstruct *cbs) {
         name_only   = slash ? slash+1 : name;
     }
 
-    if (name[0] == '/' && AWT_is_dir(name)) {
+    if (name[0] == '/' && AW_is_dir(name)) {
         freedup(fulldir, name);
         name_only = "";
     }
@@ -398,14 +398,14 @@ static void fill_fileselection_cb(void *dummy, struct adawcbstruct *cbs) {
 
 static bool filter_has_changed = false;
 
-static void fileselection_filter_changed_cb(void *, struct adawcbstruct *) {
+static void fileselection_filter_changed_cb(void *, File_selection *) {
     filter_has_changed = true;
 #if defined(TRACE_FILEBOX)
     printf("fileselection_filter_changed_cb: marked as changed\n");
 #endif // TRACE_FILEBOX
 }
 
-static void fileselection_filename_changed_cb(void *, struct adawcbstruct *cbs) {
+static void fileselection_filename_changed_cb(void *, File_selection *cbs) {
     AW_root *aw_root = cbs->aws->get_root();
     char    *fname   = aw_root->awar(cbs->def_name)->read_string();
 
@@ -432,7 +432,7 @@ static void fileselection_filename_changed_cb(void *, struct adawcbstruct *cbs) 
         }
         if (browser_command) {
             aw_root->awar(cbs->def_name)->write_string(fname); // re-write w/o browser_command
-            awt_execute_browser_command(browser_command);
+            execute_browser_command(browser_command);
             aw_root->awar(cbs->def_dir)->touch(); // force reinit
         }
 
@@ -450,7 +450,7 @@ static void fileselection_filename_changed_cb(void *, struct adawcbstruct *cbs) 
                 else {
                     char *fulldir = 0;
 
-                    if (dir[0] == '.') fulldir = AWT_unfold_path(dir, cbs->pwd);
+                    if (dir[0] == '.') fulldir = AW_unfold_path(dir, cbs->pwd);
                     else fulldir               = strdup(GB_get_full_path(dir));
 
                     newName = strdup(GB_concat_full_path(fulldir, fname));
@@ -463,7 +463,7 @@ static void fileselection_filename_changed_cb(void *, struct adawcbstruct *cbs) 
         }
 
         if (newName) {
-            if (AWT_is_dir(newName)) {
+            if (AW_is_dir(newName)) {
                 aw_root->awar(cbs->def_name)->write_string("");
                 aw_root->awar(cbs->def_dir)->write_string(newName);
                 if (cbs->previous_filename) {
@@ -471,7 +471,7 @@ static void fileselection_filename_changed_cb(void *, struct adawcbstruct *cbs) 
                     const char *name               = slash ? slash+1 : cbs->previous_filename;
                     const char *with_previous_name = GB_concat_full_path(newName, name);
 
-                    if (!AWT_is_dir(with_previous_name)) { // write as new name if not a directory
+                    if (!AW_is_dir(with_previous_name)) { // write as new name if not a directory
                         aw_root->awar(cbs->def_name)->write_string(with_previous_name);
                     }
                     else {
@@ -536,16 +536,16 @@ static void fileselection_filename_changed_cb(void *, struct adawcbstruct *cbs) 
     free(fname);
 }
 
-#define SELBOX_AUTOREFRESH_FREQUENCY 1000 // refresh once a second
+#define SELBOX_AUTOREFRESH_FREQUENCY 3000 // refresh once a second
 
 struct selbox_autorefresh_info {
     unsigned long            modtime;
-    adawcbstruct            *acbs;
+    File_selection          *acbs;
     selbox_autorefresh_info *next;
 };
 static selbox_autorefresh_info *autorefresh_info = 0;
 
-static GB_ULONG get_dir_modtime(adawcbstruct *acbs) {
+static GB_ULONG get_dir_modtime(File_selection *acbs) {
     char     *dir   = acbs->awr->awar(acbs->def_dir)->read_string();
     GB_ULONG  mtime = GB_time_of_file(dir);
     free(dir);
@@ -568,7 +568,7 @@ static void autorefresh_selboxes(AW_root *) {
     autorefresh_info->acbs->awr->add_timed_callback(SELBOX_AUTOREFRESH_FREQUENCY, autorefresh_selboxes);
 }
 
-static void awt_selbox_install_autorefresh(adawcbstruct *acbs) {
+static void selbox_install_autorefresh(File_selection *acbs) {
     if (!autorefresh_info) {    // when installing first selbox
         acbs->awr->add_timed_callback(SELBOX_AUTOREFRESH_FREQUENCY, autorefresh_selboxes);
     }
@@ -582,10 +582,33 @@ static void awt_selbox_install_autorefresh(adawcbstruct *acbs) {
     autorefresh_info = install;
 }
 
-void awt_create_fileselection(AW_window *aws, const char *awar_prefix, const char *at_prefix, const  char *pwd, bool show_dir, bool allow_wildcards)
-{
-    AW_root             *aw_root = aws->get_root();
-    struct adawcbstruct *acbs    = new adawcbstruct;
+void AW_create_fileselection(AW_window *aws, const char *awar_prefix, const char *at_prefix, const  char *pwd, bool show_dir, bool allow_wildcards) {
+    /*! Create a file selection box, this box needs 3 AWARS:
+     *
+     * 1. "$awar_prefix/filter"
+     * 2. "$awar_prefix/directory"
+     * 3. "$awar_prefix/file_name"
+     *
+     * (Note: The function AW_create_fileselection_awars() can be used to create them)
+     *
+     * the "$awar_prefix/file_name" contains the full filename
+     * Use AW_get_selected_fullname() to read it.
+     * 
+     * The items are placed at
+     * 
+     * 1. "$at_prefix""filter"
+     * 2. "$at_prefix""box"
+     * 3. "$at_prefix""file_name"
+     * 
+     * if show_dir== true, then show directories and files
+     * else only files
+     * 
+     * pwd is the name of a 'shell environment variable' which indicates the base directory
+     * (e.g. 'PWD' or 'ARBHOME')
+     */
+
+    AW_root        *aw_root = aws->get_root();
+    File_selection *acbs    = new File_selection;
     memset(acbs, 0, sizeof(*acbs));
 
     acbs->aws = (AW_window *)aws;
@@ -637,10 +660,10 @@ void awt_create_fileselection(AW_window *aws, const char *awar_prefix, const cha
     fill_fileselection_cb(0, acbs);
     fileselection_filename_changed_cb(0, acbs);    // this fixes the path name
 
-    awt_selbox_install_autorefresh(acbs);
+    selbox_install_autorefresh(acbs);
 }
 
-char *awt_get_selected_fullname(AW_root *awr, const char *awar_prefix) {
+char *AW_get_selected_fullname(AW_root *awr, const char *awar_prefix) {
     char *file = awr->awar(GBS_global_string("%s/file_name", awar_prefix))->read_string();
     if (file[0] != '/') {
         // if name w/o directory was entered by hand (or by default) then append the directory :
@@ -653,7 +676,7 @@ char *awt_get_selected_fullname(AW_root *awr, const char *awar_prefix) {
             awar_dir = awr->awar_string(awar_dir_name, GB_getcwd());
         }
 
-        awt_assert(awar_dir);
+        aw_assert(awar_dir);
 
         char *dir = awar_dir->read_string();
         if (!dir[0]) {          // empty -> fillin current dir
@@ -674,6 +697,9 @@ char *awt_get_selected_fullname(AW_root *awr, const char *awar_prefix) {
     return file;
 }
 
-void awt_refresh_fileselection(AW_root *awr, const char *awar_prefix) {
+void AW_refresh_fileselection(AW_root *awr, const char *awar_prefix) {
+    // call optionally to force instant refresh
+    // (automatic refresh is done every SELBOX_AUTOREFRESH_FREQUENCY)
+    
     awr->awar(GBS_global_string("%s/directory", awar_prefix))->touch();
 }

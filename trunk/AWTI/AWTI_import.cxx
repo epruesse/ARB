@@ -1,11 +1,11 @@
 #include <awti_imp_local.hxx>
 
 #include <awt.hxx>
-#include <aw_advice.hxx>
-#include <awt_sel_boxes.hxx>
 #include <awt_item_sel_list.hxx>
 
-#include <aw_global.hxx>
+#include <aw_advice.hxx>
+#include <aw_file.hxx>
+
 #include <AW_rename.hxx>
 
 #include <GenomeImport.h>
@@ -180,7 +180,7 @@ static GB_ERROR read_import_format(const char *fullfile, input_format_struct *if
             else if (GLOBAL_COMMAND("CREATE_ACC_FROM_SEQUENCE")) { ifo->autocreateacc  = 1; }
             else if (GLOBAL_COMMAND("DONT_GEN_NAMES"))           { ifo->noautonames    = 1; }
             else if (GLOBAL_COMMAND("INCLUDE")) {
-                char *dir         = AWT_extract_directory(fullfile);
+                char *dir         = AW_extract_directory(fullfile);
                 char *includeFile = GBS_global_string_copy("%s/%s", dir, s2);
 
                 error = read_import_format(includeFile, ifo, var_set, true);
@@ -249,7 +249,7 @@ static GB_ERROR read_import_format(const char *fullfile, input_format_struct *if
 }
 
 GB_ERROR awtc_read_import_format(const char *file) {
-    char *fullfile = AWT_unfold_path(file, "ARBHOME");
+    char *fullfile = AW_unfold_path(file, "ARBHOME");
 
     delete awtcig.ifo;
     awtcig.ifo = new input_format_struct;
@@ -1288,8 +1288,8 @@ GBDATA *open_AWTC_import_window(AW_root *awr, const char *defname, bool do_exit,
 
     awtcig.doExit = do_exit; // change/set behavior of CLOSE button
 
-    aw_create_fileselection_awars(awr, AWAR_FILE_BASE, ".", "", defname);
-    aw_create_fileselection_awars(awr, AWAR_FORM, GB_path_in_ARBLIB("import", NULL), ".ift", "*");
+    AW_create_fileselection_awars(awr, AWAR_FILE_BASE, ".", "", defname);
+    AW_create_fileselection_awars(awr, AWAR_FORM, GB_path_in_ARBLIB("import", NULL), ".ift", "*");
 
     awr->awar_string(AWAR_ALI, "dummy"); // these defaults are never used
     awr->awar_string(AWAR_ALI_TYPE, "dummy"); // they are overwritten by AWTC_import_set_ali_and_type
@@ -1312,8 +1312,8 @@ GBDATA *open_AWTC_import_window(AW_root *awr, const char *defname, bool do_exit,
         aws->callback(AW_POPUP_HELP, (AW_CL)"arb_import.hlp");
         aws->create_button("HELP", "HELP", "H");
 
-        awt_create_fileselection(aws, AWAR_FILE_BASE, "imp_", "PWD", true, true); // select import filename
-        awt_create_fileselection(aws, AWAR_FORM, "", "ARBHOME", false, false); // select import filter
+        AW_create_fileselection(aws, AWAR_FILE_BASE, "imp_", "PWD", true, true); // select import filename
+        AW_create_fileselection(aws, AWAR_FORM, "", "ARBHOME", false, false); // select import filter
 
         aws->at("auto");
         aws->callback(awtc_check_input_format);

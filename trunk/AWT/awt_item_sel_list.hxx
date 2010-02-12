@@ -18,6 +18,9 @@
 #include <aw_select.hxx>
 #endif
 
+#define PSEUDO_FIELD_ANY_FIELD  "[any field]"
+#define PSEUDO_FIELD_ALL_FIELDS "[all fields]"
+
 enum awt_selected_fields {
     AWT_SF_STANDARD = 0,
     AWT_SF_PSEUDO   = 1,

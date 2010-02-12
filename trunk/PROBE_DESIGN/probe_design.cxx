@@ -11,16 +11,6 @@
 #include "SaiProbeVisualization.hxx"
 #include "probe_match_parser.hxx"
 
-#include <aw_awars.hxx>
-#include <aw_preset.hxx>
-#include <aw_edit.hxx>
-
-#include <awt.hxx>
-#include <awt_iupac.hxx>
-
-#include <awt_config_manager.hxx>
-#include <awt_sel_boxes.hxx>
-
 #include <PT_com.h>
 #include <client.h>
 #include <servercntrl.h>
@@ -28,6 +18,14 @@
 
 #include <GEN.hxx>
 #include <TreeCallbacks.hxx>
+
+#include <awt_iupac.hxx>
+#include <awt_config_manager.hxx>
+#include <awt_sel_boxes.hxx>
+
+#include <aw_awars.hxx>
+#include <aw_preset.hxx>
+#include <aw_edit.hxx>
 
 // general awars
 

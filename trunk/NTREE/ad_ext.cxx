@@ -8,10 +8,11 @@
 //                                                                 //
 // =============================================================== //
 
+#include <db_scanner.hxx>
 #include <awt.hxx>
 #include <awt_sel_boxes.hxx>
 #include <aw_awars.hxx>
-#include <db_scanner.hxx>
+#include <arbdbt.h>
 
 #define nt_assert(bed) arb_assert(bed)
 
@@ -146,7 +147,7 @@ static void map_SAI_to_scanner(AW_root *aw_root, AW_CL scannerid) {
     char           *sai_name = aw_root->awar(AWAR_SAI_NAME)->read_string();
     GBDATA         *gb_sai   = GBT_find_SAI(GLOBAL_gb_main, sai_name);
 
-    awt_map_arbdb_scanner(scannerid, gb_sai, 0, CHANGE_KEY_PATH);
+    map_db_scanner(scannerid, gb_sai, CHANGE_KEY_PATH);
     free(sai_name);
 }
 
@@ -329,7 +330,7 @@ AW_window *NT_create_extendeds_window(AW_root *aw_root)
         aws->at("list");
         awt_create_selection_list_on_extendeds(GLOBAL_gb_main, (AW_window *)aws, AWAR_SAI_NAME);
 
-        AW_CL scannerid = awt_create_arbdb_scanner(GLOBAL_gb_main, aws, "info", 0, 0, 0, AWT_SCANNER, 0, 0, 0, &AWT_species_selector);
+        AW_CL scannerid = create_db_scanner(GLOBAL_gb_main, aws, "info", 0, 0, 0, DB_SCANNER, 0, 0, 0, &AWT_species_selector);
         aws->get_root()->awar(AWAR_SAI_NAME)->add_callback(map_SAI_to_scanner, scannerid);
     }
     aws->show();

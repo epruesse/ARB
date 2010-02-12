@@ -17,25 +17,21 @@
 #include <arbdb.h>
 
 #include <aw_window.hxx>
-#include <aw_global.hxx>
 #include <aw_edit.hxx>
-
-#include "awt.hxx"
-#include "awt_macro.hxx"
+#include <aw_file.hxx>
 
 // ---------------
 //      MACROS
-// ---------------
 
 #define AWAR_MACRO_BASE                 "tmp/macro"
 #define AWAR_MACRO_RECORDING_MACRO_TEXT AWAR_MACRO_BASE"/button_label"
 
 static void awt_delete_macro_cb(AW_window *aww) {
     AW_root *awr = aww->get_root();
-    char    *mn  = awt_get_selected_fullname(awr, AWAR_MACRO_BASE);
+    char    *mn  = AW_get_selected_fullname(awr, AWAR_MACRO_BASE);
 
     if (GB_unlink(mn)<0) aw_message(GB_await_error());
-    else awt_refresh_fileselection(awr, AWAR_MACRO_BASE);
+    else AW_refresh_fileselection(awr, AWAR_MACRO_BASE);
 
     free(mn);
 }
@@ -44,7 +40,7 @@ static void awt_delete_macro_cb(AW_window *aww) {
 
 static void awt_exec_macro_cb(AW_window *aww) {
     AW_root  *awr   = aww->get_root();
-    char     *mn    = awt_get_selected_fullname(awr, AWAR_MACRO_BASE);
+    char     *mn    = AW_get_selected_fullname(awr, AWAR_MACRO_BASE);
     GB_ERROR  error = awr->execute_macro(mn);
 
     if (error) aw_message(error);
@@ -59,7 +55,7 @@ static void awt_start_macro_cb(AW_window *aww, const char *application_name_for_
 
     if (!toggle) {
         char *sac = GBS_global_string_copy("%s/%s", aww->window_defaults_name, AWAR_MACRO_RECORDING_MACRO_TEXT);
-        char *mn  = awt_get_selected_fullname(awr, AWAR_MACRO_BASE);
+        char *mn  = AW_get_selected_fullname(awr, AWAR_MACRO_BASE);
         error     = awr->start_macro_recording(mn, application_name_for_macros, sac);
         free(mn);
         free(sac);
@@ -70,7 +66,7 @@ static void awt_start_macro_cb(AW_window *aww, const char *application_name_for_
     }
     else {
         error = awr->stop_macro_recording();
-        awt_refresh_fileselection(awr, AWAR_MACRO_BASE);
+        AW_refresh_fileselection(awr, AWAR_MACRO_BASE);
         awr->awar(AWAR_MACRO_RECORDING_MACRO_TEXT)->write_string("RECORD");
         toggle = 0;
     }
@@ -78,7 +74,7 @@ static void awt_start_macro_cb(AW_window *aww, const char *application_name_for_
 }
 
 static void awt_edit_macro_cb(AW_window *aww) {
-    char *path = awt_get_selected_fullname(aww->get_root(), AWAR_MACRO_BASE);
+    char *path = AW_get_selected_fullname(aww->get_root(), AWAR_MACRO_BASE);
     AW_edit(path);
     free(path);
 }
@@ -92,7 +88,7 @@ AW_window *awt_open_macro_window(AW_root *aw_root, const char *application_id) {
         aws->init(aw_root, "MACROS", "MACROS");
         aws->load_xfig("macro_select.fig");
 
-        aw_create_fileselection_awars(aw_root, AWAR_MACRO_BASE, ".", ".amc", "");
+        AW_create_fileselection_awars(aw_root, AWAR_MACRO_BASE, ".", ".amc", "");
 
         aw_root->awar_string(AWAR_MACRO_RECORDING_MACRO_TEXT, "RECORD");
 
@@ -114,7 +110,7 @@ AW_window *awt_open_macro_window(AW_root *aw_root, const char *application_id) {
         aws->at("exec"); aws->callback(awt_exec_macro_cb);
         aws->create_button("EXECUTE", "EXECUTE");
 
-        awt_create_fileselection((AW_window *)aws, AWAR_MACRO_BASE, "", "ARBMACROHOME^ARBMACRO");
+        AW_create_fileselection(aws, AWAR_MACRO_BASE, "", "ARBMACROHOME^ARBMACRO");
     }
     return aws;
 }

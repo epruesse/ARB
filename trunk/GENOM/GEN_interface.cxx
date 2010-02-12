@@ -544,7 +544,7 @@ void GEN_map_gene(AW_root *aw_root, AW_CL scannerid)
     GB_transaction  dummy(GLOBAL_gb_main);
     GBDATA         *gb_gene = GEN_get_current_gene(GLOBAL_gb_main, aw_root);
 
-    if (gb_gene) awt_map_arbdb_scanner(scannerid, gb_gene, 0, CHANGE_KEY_PATH_GENES);
+    if (gb_gene) map_db_scanner(scannerid, gb_gene, CHANGE_KEY_PATH_GENES);
 }
 
 void GEN_create_field_items(AW_window *aws) {
@@ -582,7 +582,7 @@ AW_window *GEN_create_gene_window(AW_root *aw_root) {
         aws->create_button("HELP", "HELP", "H");
 
 
-        AW_CL scannerid       = awt_create_arbdb_scanner(GLOBAL_gb_main, aws, "box", 0, "field", "enable", AWT_VIEWER, 0, "mark", AWT_NDS_FILTER, &GEN_item_selector);
+        AW_CL scannerid       = create_db_scanner(GLOBAL_gb_main, aws, "box", 0, "field", "enable", DB_VIEWER, 0, "mark", AWT_NDS_FILTER, &GEN_item_selector);
         ad_global_scannerid   = scannerid;
         ad_global_scannerroot = aws->get_root();
 

@@ -360,6 +360,7 @@ ED4_mini_classes.o: $(ARBHOME)/INCLUDE/awt_iupac.hxx
 ED4_mini_classes.o: $(ARBHOME)/INCLUDE/dupstr.h
 ED4_mini_classes.o: $(ARBHOME)/INCLUDE/smartptr.h
 
+ED4_naligner.o: ed4_naligner.hxx
 ED4_naligner.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 ED4_naligner.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ED4_naligner.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
@@ -588,13 +589,12 @@ ED4_search.o: $(ARBHOME)/INCLUDE/attributes.h
 ED4_search.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 ED4_search.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 ED4_search.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+ED4_search.o: $(ARBHOME)/INCLUDE/aw_file.hxx
 ED4_search.o: $(ARBHOME)/INCLUDE/aw_font_group.hxx
-ED4_search.o: $(ARBHOME)/INCLUDE/aw_global.hxx
 ED4_search.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ED4_search.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 ED4_search.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 ED4_search.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-ED4_search.o: $(ARBHOME)/INCLUDE/awt.hxx
 ED4_search.o: $(ARBHOME)/INCLUDE/awt_config_manager.hxx
 ED4_search.o: $(ARBHOME)/INCLUDE/dupstr.h
 ED4_search.o: $(ARBHOME)/INCLUDE/fast_aligner.hxx

@@ -47,7 +47,6 @@ MG_alignment.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 MG_alignment.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 MG_alignment.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 MG_alignment.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-MG_alignment.o: $(ARBHOME)/INCLUDE/awt.hxx
 MG_alignment.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 MG_alignment.o: $(ARBHOME)/INCLUDE/dupstr.h
 MG_alignment.o: $(ARBHOME)/INCLUDE/smartptr.h
@@ -82,12 +81,10 @@ MG_configs.o: mg_merge.hxx
 MG_configs.o: $(ARBHOME)/INCLUDE/ad_config.h
 MG_configs.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 MG_configs.o: $(ARBHOME)/INCLUDE/ad_prot.h
-MG_configs.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 MG_configs.o: $(ARBHOME)/INCLUDE/arb_assert.h
 MG_configs.o: $(ARBHOME)/INCLUDE/arb_error.h
 MG_configs.o: $(ARBHOME)/INCLUDE/arbdb.h
 MG_configs.o: $(ARBHOME)/INCLUDE/arbdb_base.h
-MG_configs.o: $(ARBHOME)/INCLUDE/arbdbt.h
 MG_configs.o: $(ARBHOME)/INCLUDE/arbtools.h
 MG_configs.o: $(ARBHOME)/INCLUDE/attributes.h
 MG_configs.o: $(ARBHOME)/INCLUDE/aw_device.hxx
@@ -163,7 +160,7 @@ MG_main.o: $(ARBHOME)/INCLUDE/arbtools.h
 MG_main.o: $(ARBHOME)/INCLUDE/attributes.h
 MG_main.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 MG_main.o: $(ARBHOME)/INCLUDE/aw_device.hxx
-MG_main.o: $(ARBHOME)/INCLUDE/aw_global.hxx
+MG_main.o: $(ARBHOME)/INCLUDE/aw_file.hxx
 MG_main.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 MG_main.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 MG_main.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
@@ -262,7 +259,6 @@ MG_trees.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 MG_trees.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 MG_trees.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 MG_trees.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-MG_trees.o: $(ARBHOME)/INCLUDE/awt.hxx
 MG_trees.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 MG_trees.o: $(ARBHOME)/INCLUDE/dupstr.h
 MG_trees.o: $(ARBHOME)/INCLUDE/smartptr.h

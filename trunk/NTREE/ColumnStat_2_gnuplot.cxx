@@ -10,12 +10,14 @@
 
 #include "nt_internal.h"
 
-#include <awt_filter.hxx>
-#include <awt.hxx>
 #include <ColumnStat.hxx>
 #include <AP_filter.hxx>
-#include <aw_global.hxx>
+
+#include <awt_filter.hxx>
+
+#include <aw_window.hxx>
 #include <aw_awars.hxx>
+#include <aw_file.hxx>
 
 #include <unistd.h>
 
@@ -536,7 +538,7 @@ AW_window *NT_create_colstat_2_gnuplot_window(AW_root *root) {
     root->awar_string(AWAR_CS2GP_FILTER_ALIGNMENT);
     root->awar(AWAR_CS2GP_FILTER_ALIGNMENT)->map(AWAR_DEFAULT_ALIGNMENT);  // use current alignment for filter
 
-    aw_create_fileselection_awars(root, AWAR_CS2GP, "", ".gc_gnu", "noname.gc_gnu");
+    AW_create_fileselection_awars(root, AWAR_CS2GP, "", ".gc_gnu", "noname.gc_gnu");
 
     aws->at("close"); aws->callback((AW_CB0)AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
@@ -544,7 +546,7 @@ AW_window *NT_create_colstat_2_gnuplot_window(AW_root *root) {
     aws->at("help"); aws->callback(AW_POPUP_HELP, (AW_CL)"csp_2_gnuplot.hlp");
     aws->create_button("HELP", "HELP", "H");
 
-    awt_create_fileselection(aws, AWAR_CS2GP);
+    AW_create_fileselection(aws, AWAR_CS2GP);
 
     aws->at("csp");
     COLSTAT_create_selection_list(aws, column_stat);

@@ -369,7 +369,7 @@ static void AD_map_species(AW_root *aw_root, AW_CL scannerid, AW_CL mapOrganism)
     char *source = aw_root->awar((bool)mapOrganism ? AWAR_ORGANISM_NAME : AWAR_SPECIES_NAME)->read_string();
     GBDATA *gb_species = GBT_find_species(GLOBAL_gb_main, source);
     if (gb_species) {
-        awt_map_arbdb_scanner(scannerid, gb_species, 0, CHANGE_KEY_PATH);
+        map_db_scanner(scannerid, gb_species, CHANGE_KEY_PATH);
     }
     GB_pop_transaction(GLOBAL_gb_main);
     free(source);
@@ -1214,8 +1214,8 @@ AW_window *create_speciesOrganismWindow(AW_root *aw_root, bool organismWindow)
     aws->callback(AW_POPUP_HELP, (AW_CL)"sp_info.hlp");
     aws->create_button("HELP", "HELP", "H");
 
-    AW_CL scannerid = awt_create_arbdb_scanner(GLOBAL_gb_main, aws, "box", 0, "field", "enable", AWT_VIEWER, 0, "mark", AWT_NDS_FILTER,
-                                               organismWindow ? &AWT_organism_selector : &AWT_species_selector);
+    AW_CL scannerid = create_db_scanner(GLOBAL_gb_main, aws, "box", 0, "field", "enable", DB_VIEWER, 0, "mark", AWT_NDS_FILTER,
+                                        organismWindow ? &AWT_organism_selector : &AWT_species_selector);
     ad_global_scannerid = scannerid;
     ad_global_scannerroot = aws->get_root();
 

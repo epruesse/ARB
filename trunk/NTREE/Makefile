@@ -81,7 +81,6 @@ ad_ali.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ad_ali.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 ad_ali.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 ad_ali.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-ad_ali.o: $(ARBHOME)/INCLUDE/awt.hxx
 ad_ali.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 ad_ali.o: $(ARBHOME)/INCLUDE/dupstr.h
 ad_ali.o: $(ARBHOME)/INCLUDE/smartptr.h
@@ -181,12 +180,11 @@ ad_trees.o: $(ARBHOME)/INCLUDE/attributes.h
 ad_trees.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/aw_edit.hxx
-ad_trees.o: $(ARBHOME)/INCLUDE/aw_global.hxx
+ad_trees.o: $(ARBHOME)/INCLUDE/aw_file.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-ad_trees.o: $(ARBHOME)/INCLUDE/awt.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/awt_nds.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -209,7 +207,6 @@ AP_consensus.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AP_consensus.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AP_consensus.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AP_consensus.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-AP_consensus.o: $(ARBHOME)/INCLUDE/awt.hxx
 AP_consensus.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 AP_consensus.o: $(ARBHOME)/INCLUDE/dupstr.h
 AP_consensus.o: $(ARBHOME)/INCLUDE/smartptr.h
@@ -227,12 +224,11 @@ AP_conservProfile2Gnuplot.o: $(ARBHOME)/INCLUDE/arbdbt.h
 AP_conservProfile2Gnuplot.o: $(ARBHOME)/INCLUDE/arbtools.h
 AP_conservProfile2Gnuplot.o: $(ARBHOME)/INCLUDE/attributes.h
 AP_conservProfile2Gnuplot.o: $(ARBHOME)/INCLUDE/aw_device.hxx
-AP_conservProfile2Gnuplot.o: $(ARBHOME)/INCLUDE/aw_global.hxx
+AP_conservProfile2Gnuplot.o: $(ARBHOME)/INCLUDE/aw_file.hxx
 AP_conservProfile2Gnuplot.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AP_conservProfile2Gnuplot.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AP_conservProfile2Gnuplot.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AP_conservProfile2Gnuplot.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-AP_conservProfile2Gnuplot.o: $(ARBHOME)/INCLUDE/awt.hxx
 AP_conservProfile2Gnuplot.o: $(ARBHOME)/INCLUDE/dupstr.h
 AP_conservProfile2Gnuplot.o: $(ARBHOME)/INCLUDE/smartptr.h
 
@@ -248,12 +244,11 @@ AP_cprofile.o: $(ARBHOME)/INCLUDE/arbtools.h
 AP_cprofile.o: $(ARBHOME)/INCLUDE/attributes.h
 AP_cprofile.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 AP_cprofile.o: $(ARBHOME)/INCLUDE/aw_device.hxx
-AP_cprofile.o: $(ARBHOME)/INCLUDE/aw_global.hxx
+AP_cprofile.o: $(ARBHOME)/INCLUDE/aw_file.hxx
 AP_cprofile.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AP_cprofile.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AP_cprofile.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AP_cprofile.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-AP_cprofile.o: $(ARBHOME)/INCLUDE/awt.hxx
 AP_cprofile.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 AP_cprofile.o: $(ARBHOME)/INCLUDE/dupstr.h
 AP_cprofile.o: $(ARBHOME)/INCLUDE/smartptr.h
@@ -293,12 +288,11 @@ ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/arbtools.h
 ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/attributes.h
 ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/aw_device.hxx
-ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/aw_global.hxx
+ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/aw_file.hxx
 ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/awt.hxx
 ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/awt_filter.hxx
 ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/ColumnStat.hxx
 ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -429,7 +423,7 @@ NT_extern.o: $(ARBHOME)/INCLUDE/aw_advice.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/aw_device.hxx
-NT_extern.o: $(ARBHOME)/INCLUDE/aw_global.hxx
+NT_extern.o: $(ARBHOME)/INCLUDE/aw_file.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
@@ -548,7 +542,7 @@ NT_main.o: $(ARBHOME)/INCLUDE/aw_advice.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/aw_edit.hxx
-NT_main.o: $(ARBHOME)/INCLUDE/aw_global.hxx
+NT_main.o: $(ARBHOME)/INCLUDE/aw_file.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/aw_question.hxx

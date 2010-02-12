@@ -17,7 +17,6 @@
 #include <aw_preset.hxx>
 #include <aw_advice.hxx>
 
-#include <awt.hxx>
 #include <arbdbt.h>
 
 #include <cstdarg>
@@ -42,9 +41,6 @@ static void aw_set_color(AW_window *aww, AW_CL cl_color_name) {
     aww->get_root()->awar(aw_glob_font_awar_name)->write_string(color_name);
 }
 
-// --------------------------------------------------------------------------------
-//     static int hex2dez(char c)
-// --------------------------------------------------------------------------------
 static int hex2dez(char c) {
     if (c>='0' && c<='9') return c-'0';
     if (c>='A' && c<='F') return c-'A'+10;
@@ -52,9 +48,6 @@ static int hex2dez(char c) {
     return -1;
 }
 
-// --------------------------------------------------------------------------------
-//     void aw_incdec_color(AW_window *aww,const char *action)
-// --------------------------------------------------------------------------------
 void aw_incdec_color(AW_window *aww, const char *action) {
     // action is sth like "r+" "b-" "g++" "r--"
     AW_awar *awar  = aww->get_root()->awar(aw_glob_font_awar_name);

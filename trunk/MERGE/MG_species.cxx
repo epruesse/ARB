@@ -10,15 +10,19 @@
 
 #include "merge.hxx"
 
-#include <aw_awars.hxx>
 #include <AW_rename.hxx>
+#include <GEN.hxx>
+#include <db_scanner.hxx>
+
 #include <awt.hxx>
 #include <awt_item_sel_list.hxx>
 #include <awt_sel_boxes.hxx>
-#include <db_scanner.hxx>
-#include <inline.h>
-#include <GEN.hxx>
 
+#include <aw_awars.hxx>
+
+#include <arbdbt.h>
+
+#include <inline.h>
 
 #define AWAR1 "tmp/merge1/"
 #define AWAR2 "tmp/merge2/"
@@ -279,7 +283,7 @@ void AD_map_species1(AW_root *aw_root)
     char   *source     = aw_root->awar(AWAR_SPECIES1)->read_string();
     GBDATA *gb_species = GBT_find_species(GLOBAL_gb_merge, source);
 
-    if (gb_species) awt_map_arbdb_scanner(ad_global_scannerid1, gb_species, 0, CHANGE_KEY_PATH);
+    if (gb_species) map_db_scanner(ad_global_scannerid1, gb_species, CHANGE_KEY_PATH);
     GB_pop_transaction(GLOBAL_gb_merge);
     delete source;
 }
@@ -290,7 +294,7 @@ void AD_map_species2(AW_root *aw_root)
     GB_push_transaction(GLOBAL_gb_dest);
     GBDATA *gb_species = GBT_find_species(GLOBAL_gb_dest, source);
     if (gb_species) {
-        awt_map_arbdb_scanner(ad_global_scannerid2, gb_species, 0, CHANGE_KEY_PATH);
+        map_db_scanner(ad_global_scannerid2, gb_species, CHANGE_KEY_PATH);
     }
     GB_pop_transaction(GLOBAL_gb_dest);
     delete source;
@@ -1298,7 +1302,7 @@ AW_window *MG_merge_species_cb(AW_root *awr) {
 
     awt_create_query_box(aws, &awtqs, "db1");
 
-    AW_CL scannerid      = awt_create_arbdb_scanner(GLOBAL_gb_merge, aws, "box1", 0, 0, 0, AWT_SCANNER, 0, 0, AWT_NDS_FILTER, awtqs.selector);
+    AW_CL scannerid      = create_db_scanner(GLOBAL_gb_merge, aws, "box1", 0, 0, 0, DB_SCANNER, 0, 0, AWT_NDS_FILTER, awtqs.selector);
     ad_global_scannerid1 = scannerid;
     aws->get_root()->awar(AWAR_SPECIES1)->add_callback(AD_map_species1);
 
@@ -1330,7 +1334,7 @@ AW_window *MG_merge_species_cb(AW_root *awr) {
 
     awt_create_query_box(aws, &awtqs, "db2");
 
-    scannerid            = awt_create_arbdb_scanner(GLOBAL_gb_dest, aws, "box2", 0, 0, 0, AWT_SCANNER, 0, 0, AWT_NDS_FILTER, awtqs.selector);
+    scannerid            = create_db_scanner(GLOBAL_gb_dest, aws, "box2", 0, 0, 0, DB_SCANNER, 0, 0, AWT_NDS_FILTER, awtqs.selector);
     ad_global_scannerid2 = scannerid;
     aws->get_root()->awar(AWAR_SPECIES2)->add_callback(AD_map_species2);
 

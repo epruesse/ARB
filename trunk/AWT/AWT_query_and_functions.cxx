@@ -22,6 +22,7 @@
 #include "awt_item_sel_list.hxx"
 #include "awt_sel_boxes.hxx"
 #include "aw_advice.hxx"
+#include "aw_file.hxx"
 
 #include "GEN.hxx"
 
@@ -2246,13 +2247,13 @@ AW_window *create_awt_open_parser(AW_root *aw_root, struct adaqbsstruct *cbs)
     char *filename = 0;
     switch (cbs->selector->type) {
     case AWT_QUERY_ITEM_SPECIES:
-        filename = AWT_unfold_path("lib/sellists/mod_fields*.sellst", "ARBHOME");
+        filename = AW_unfold_path("lib/sellists/mod_fields*.sellst", "ARBHOME");
         break;
     case AWT_QUERY_ITEM_GENES:
-        filename = AWT_unfold_path("lib/sellists/mod_gene_fields*.sellst", "ARBHOME");
+        filename = AW_unfold_path("lib/sellists/mod_gene_fields*.sellst", "ARBHOME");
         break;
     case AWT_QUERY_ITEM_EXPERIMENTS:
-        filename = AWT_unfold_path("lib/sellists/mod_experiment_fields*.sellst", "ARBHOME");
+        filename = AW_unfold_path("lib/sellists/mod_experiment_fields*.sellst", "ARBHOME");
         break;
     default:
         awt_assert(0);

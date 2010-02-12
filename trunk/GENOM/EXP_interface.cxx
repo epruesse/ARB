@@ -438,7 +438,7 @@ void EXP_map_experiment(AW_root *aw_root, AW_CL scannerid)
     GB_transaction  dummy(GLOBAL_gb_main);
     GBDATA         *gb_experiment = EXP_get_current_experiment(GLOBAL_gb_main, aw_root);
 
-    if (gb_experiment) awt_map_arbdb_scanner(scannerid, gb_experiment, 0, CHANGE_KEY_PATH_EXPERIMENTS);
+    if (gb_experiment) map_db_scanner(scannerid, gb_experiment, CHANGE_KEY_PATH_EXPERIMENTS);
 }
 
 void EXP_create_field_items(AW_window *aws) {
@@ -476,7 +476,7 @@ AW_window *EXP_create_experiment_window(AW_root *aw_root) {
     aws->create_button("HELP", "HELP", "H");
 
 
-    AW_CL scannerid       = awt_create_arbdb_scanner(GLOBAL_gb_main, aws, "box", 0, "field", "enable", AWT_VIEWER, 0, "mark", AWT_NDS_FILTER, &EXP_item_selector);
+    AW_CL scannerid       = create_db_scanner(GLOBAL_gb_main, aws, "box", 0, "field", "enable", DB_VIEWER, 0, "mark", AWT_NDS_FILTER, &EXP_item_selector);
     ad_global_scannerid   = scannerid;
     ad_global_scannerroot = aws->get_root();
 

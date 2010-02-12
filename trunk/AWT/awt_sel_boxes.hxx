@@ -13,8 +13,8 @@
 #ifndef AWT_SEL_BOXES_HXX
 #define AWT_SEL_BOXES_HXX
 
-#ifndef ARBDBT_H
-#include <arbdbt.h>
+#ifndef ARBDB_H
+#include <arbdb.h>
 #endif
 #ifndef AW_ROOT_HXX
 #include <aw_root.hxx>
@@ -48,6 +48,12 @@ AW_window *awt_create_load_box(AW_root *aw_root, const char *load_what, const ch
                                void (*callback)(AW_window*), AW_window* (*create_popup)(AW_root *, AW_default));
 
 void AWT_popup_select_species_field_window(AW_window *aww, AW_CL cl_awar_name, AW_CL cl_gb_main);
+
+// -------------------------------
+
+AW_window *create_save_box_for_selection_lists(AW_root *aw_root, AW_CL selid);
+AW_window *create_load_box_for_selection_lists(AW_root *aw_root, AW_CL selid);
+void create_print_box_for_selection_lists(AW_window *aw_window, AW_CL selid);
 
 #else
 #error awt_sel_boxes.hxx included twice

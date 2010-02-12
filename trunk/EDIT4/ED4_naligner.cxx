@@ -8,9 +8,13 @@
 //                                                                 //
 // =============================================================== //
 
+#include "ed4_naligner.hxx"
+
 #include <aw_awars.hxx>
 #include <awt.hxx>
 #include <awt_sel_boxes.hxx>
+#include <arbdbt.h>
+
 #include <iostream>
 
 extern GBDATA *GLOBAL_gb_main;

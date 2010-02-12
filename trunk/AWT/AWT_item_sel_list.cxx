@@ -16,7 +16,6 @@
 #include <aw_awars.hxx>
 
 #include "awt.hxx"
-#include "awtlocal.hxx"
 #include "awt_item_sel_list.hxx"
 
 #include <arbdbt.h>
