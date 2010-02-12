@@ -900,7 +900,8 @@ struct AWTC_faligner_cd faligner_client_data = {
     get_selected_range,                             // aligner fetches column range of selection via this function
     get_first_selected_species,                     // aligner fetches first and..
     get_next_selected_species,                      // .. following selected species via this functions
-    0                                               // AW_helix (needed for island_hopping)
+    0,                                              // AW_helix (needed for island_hopping)
+    NULL,                                           // gb_main
 };
 static ARB_ERROR ED4_delete_temp_entries(GBDATA *species, AW_CL cl_alignment_name) {
     return AWTC_delete_temp_entries(species, (GB_CSTR)cl_alignment_name);
@@ -1260,6 +1261,8 @@ void ED4_init_faligner_data(AWTC_faligner_cd *faligner_data) {
     char     *alignment_name = GBT_get_default_alignment(GLOBAL_gb_main);
     long      alilen         = GBT_get_alignment_len(GLOBAL_gb_main, alignment_name);
 
+    faligner_data->gb_main = GLOBAL_gb_main;
+
     if (alilen<=0) error = GB_await_error();
     else {
         char   *helix_string = 0;
@@ -1278,9 +1281,11 @@ void ED4_init_faligner_data(AWTC_faligner_cd *faligner_data) {
     if (error) aw_message(error);
 }
 
-static void ED4_create_faligner_window(AW_root *awr, AW_CL cd) {
-    ED4_init_faligner_data((AWTC_faligner_cd*)cd);
-    AWTC_create_faligner_window(awr, cd);
+static void ED4_create_faligner_window(AW_root *awr, AW_CL cl_faligner_cd) {
+    AWTC_faligner_cd *faligner_cd = (AWTC_faligner_cd*)cl_faligner_cd;
+
+    ED4_init_faligner_data(faligner_cd);
+    AWTC_create_faligner_window(awr, faligner_cd);
 }
 
 static void ED4_save_defaults(AW_window *aw, AW_CL cl_mode, AW_CL) {
