@@ -319,7 +319,7 @@ long ED4_Edit_String::get_next_visible_pos(long position, int direction)
     return pos<0 || pos>=seq_len ? -1 : pos;
 }
 
-extern AWTC_faligner_cd faligner_client_data;
+extern AlignDataAccess dataAccess_4_aligner;
 
 unsigned char ED4_Edit_String::get_gap_type(long pos, int direction)
 {
@@ -663,7 +663,7 @@ GB_ERROR ED4_Edit_String::command(AW_key_mod keymod, AW_key_code keycode, char k
                         case 'R': {  // CTRL-R = set aligner reference species
                             if (is_consensus) { cannot_handle = 1; return 0; };
 
-                            AWTC_set_reference_species_name(0, (AW_CL)ED4_ROOT->aw_root);
+                            FastAligner_set_reference_species(0, (AW_CL)ED4_ROOT->aw_root);
                             break;
                         }
                         case 'A': { // CTRL-A = Start Fast-Aligner
@@ -671,16 +671,16 @@ GB_ERROR ED4_Edit_String::command(AW_key_mod keymod, AW_key_code keycode, char k
                             if (is_consensus) { cannot_handle = 1; return 0; };
                             if (mode==AD_NOWRITE) { write_fault = 1; return 0; }
 
-                            int old_refresh                 = faligner_client_data.do_refresh;
-                            faligner_client_data.do_refresh = 0;
+                            int old_refresh                 = dataAccess_4_aligner.do_refresh;
+                            dataAccess_4_aligner.do_refresh = 0;
 
-                            ED4_init_faligner_data(&faligner_client_data);
+                            ED4_init_aligner_data_access(&dataAccess_4_aligner);
 
-                            AWTC_awar_set_current_sequence(ED4_ROOT->aw_root, ED4_ROOT->db);
+                            FastAligner_set_align_current(ED4_ROOT->aw_root, ED4_ROOT->db);
                             AW_clock_cursor(ED4_ROOT->aw_root);
-                            AWTC_start_faligning(aw_tmp, (AW_CL)&faligner_client_data);
+                            FastAligner_start(aw_tmp, (AW_CL)&dataAccess_4_aligner);
                             AW_normal_cursor(ED4_ROOT->aw_root);
-                            faligner_client_data.do_refresh = old_refresh;
+                            dataAccess_4_aligner.do_refresh = old_refresh;
 
                             int basesLeftOf = 0;
                             int pos;

@@ -42,7 +42,7 @@
 
 #if (MAXN==2)
 #define MAXN_2(xxx)             xxx
-#define MAXN_2_assert(xxx)      awtc_assert(xxx)
+#define MAXN_2_assert(xxx)      fa_assert(xxx)
 #else
 #define MAXN_2(xxx)
 #define MAXN_2_assert(xxx)
@@ -234,7 +234,7 @@ static int baseCmp(unsigned char c1, unsigned char c2)    // c1,c2 == 1=A,2=C (=
 
     if (c2<=COMPARABLE_BASES)
     {
-        awtc_assert(c1<=COMPARABLE_BASES);
+        fa_assert(c1<=COMPARABLE_BASES);
 
         switch (c1)
         {
@@ -245,7 +245,7 @@ static int baseCmp(unsigned char c1, unsigned char c2)    // c1,c2 == 1=A,2=C (=
             case 4: if (c2==5) return 0;                        // T->U
             case 5: if (c2==4) return 0;                        // U->T
                 return cheap_if(c2==2);                         // T/U->C
-            default: awtc_assert(0);
+            default: fa_assert(0);
         }
     }
 
@@ -275,12 +275,12 @@ static int baseCmp(unsigned char c1, unsigned char c2)    // c1,c2 == 1=A,2=C (=
         }
     }
 
-    awtc_assert(bestMatch>=0 && bestMatch<=2);
+    fa_assert(bestMatch>=0 && bestMatch<=2);
     return bestMatch;
 }
 #undef cheap_if
 
-int AWTC_baseMatch(char c1, char c2)    // c1,c2 == ACGUTRS...
+int baseMatch(char c1, char c2)    // c1,c2 == ACGUTRS...
 // returns  0 for equal
 //          1 for probably mutations
 //          2 for improbably mutations
@@ -289,8 +289,8 @@ int AWTC_baseMatch(char c1, char c2)    // c1,c2 == ACGUTRS...
     const char *p1 = strchr(nucleic_acid_order, c1);
     const char *p2 = strchr(nucleic_acid_order, c2);
 
-    awtc_assert(c1);
-    awtc_assert(c2);
+    fa_assert(c1);
+    fa_assert(c2);
 
     if (p1 && p2) return baseCmp(p1-nucleic_acid_order, p2-nucleic_acid_order);
     return -1;
@@ -341,7 +341,7 @@ static void p_decode(const unsigned char *naseq, unsigned char *seq, int l) {
 
     for (int i=1; i<=l && naseq[i]; i++)
     {
-        awtc_assert(naseq[i]<len);
+        fa_assert(naseq[i]<len);
         seq[i] = amino_acid_order[naseq[i]];
     }
 }
@@ -351,14 +351,14 @@ static void n_decode(const unsigned char *naseq, unsigned char *seq, int l) {
 
     for (int i=1; i<=l && naseq[i]; i++)
     {
-        awtc_assert(naseq[i]<len);
+        fa_assert(naseq[i]<len);
         seq[i] = nucleic_acid_order[naseq[i]];
     }
 }
 #endif
 
 static inline ARB_ERROR MAXLENtooSmall() {
-    return "AWTC_ClustalV-aligner: MAXLEN is dimensioned to small for this sequence";
+    return "ClustalV-aligner: MAXLEN is dimensioned to small for this sequence";
 }
 
 static inline void *ckalloc(size_t bytes, ARB_ERROR& error) {
@@ -484,12 +484,12 @@ void exit_show_pair()
 }
 
 inline int set_displ(int offset, int value) {
-    awtc_assert(offset >= 0 && offset<int(displ_size));
+    fa_assert(offset >= 0 && offset<int(displ_size));
     displ[offset] = value;
     return displ[offset];
 }
 inline int decr_displ(int offset, int value) {
-    awtc_assert(offset >= 0 && offset<int(displ_size));
+    fa_assert(offset >= 0 && offset<int(displ_size));
     displ[offset] -= value;
     return displ[offset];
 }
@@ -509,7 +509,7 @@ static inline void add(int v)           // insert 'v' gaps into master ???
 static MAXN_2(inline) int calc_weight(int iat, int jat, int v1, int v2)
 {
 #if (MAXN==2)
-    awtc_assert(pos1==1 && pos2==1);
+    fa_assert(pos1==1 && pos2==1);
     unsigned char j = seq_array[alist[1]][v2+jat-1];
     return j<128 ? naas[j][v1+iat-1] : 0;
 #else
@@ -621,15 +621,15 @@ static int diff(int v1, int v2, int v3, int v4, int st, int en)
 # ifdef MATRIX_DUMP
     int display_matrix = 0;
 
-    awtc_assert(v3<=(DISPLAY_MATRIX_SIZE+2));   // width
-    awtc_assert(v4<=(DISPLAY_MATRIX_SIZE));             // height
+    fa_assert(v3<=(DISPLAY_MATRIX_SIZE+2));         // width
+    fa_assert(v4<=(DISPLAY_MATRIX_SIZE));           // height
 
 # define DISPLAY_MATRIX_ELEMENTS ((DISPLAY_MATRIX_SIZE+2)*(DISPLAY_MATRIX_SIZE+2))
 
-    memset(vertical, -1, DISPLAY_MATRIX_ELEMENTS*sizeof(int));
-    memset(verticalOpen, -1, DISPLAY_MATRIX_ELEMENTS*sizeof(int));
-    memset(diagonal, -1, DISPLAY_MATRIX_ELEMENTS*sizeof(int));
-    memset(horizontal, -1, DISPLAY_MATRIX_ELEMENTS*sizeof(int));
+    memset(vertical,       -1, DISPLAY_MATRIX_ELEMENTS*sizeof(int));
+    memset(verticalOpen,   -1, DISPLAY_MATRIX_ELEMENTS*sizeof(int));
+    memset(diagonal,       -1, DISPLAY_MATRIX_ELEMENTS*sizeof(int));
+    memset(horizontal,     -1, DISPLAY_MATRIX_ELEMENTS*sizeof(int));
     memset(horizontalOpen, -1, DISPLAY_MATRIX_ELEMENTS*sizeof(int));
 
 # endif
@@ -677,7 +677,7 @@ static int diff(int v1, int v2, int v3, int v4, int st, int en)
             return slave_gapAt(v2, v4);
         }
 
-        awtc_assert(v3==1);
+        fa_assert(v3==1);
         // if master length == 1
 
         if (v4==1)
@@ -716,7 +716,7 @@ static int diff(int v1, int v2, int v3, int v4, int st, int en)
         }
     }
 
-    awtc_assert(v3>=1 && v4>=1);
+    fa_assert(v3>=1 && v4>=1);
 
     // slave length  >= 1
     // master length >= 1
@@ -860,7 +860,7 @@ static int diff(int v1, int v2, int v3, int v4, int st, int en)
         }
     }
 
-    awtc_assert(flag>=1 && flag<=2);
+    fa_assert(flag>=1 && flag<=2);
 
 #undef MHO
 
@@ -1055,7 +1055,7 @@ static void p_encode(const unsigned char *seq, unsigned char *naseq, int l) /* c
             }
         }
 
-        awtc_assert(c>0 || c == -2);
+        fa_assert(c>0 || c == -2);
         naseq[i] = c;
     }
 }
@@ -1078,23 +1078,23 @@ static void n_encode(const unsigned char *seq, unsigned char *naseq, int l)
             c = res_index(nucleic_acid_order, 'N');
         }
 
-        awtc_assert(c>0);
+        fa_assert(c>0);
         naseq[i] = c;
     }
 }
 
-ARB_ERROR AWTC_ClustalV_align(int          is_dna,
-                              int          weighted,
-                              const char  *seq1,
-                              int          length1,
-                              const char  *seq2,
-                              int          length2,
-                              const int   *gapsBefore1,
-                              int          max_seq_length,
-                              char       **resultPtr1,
-                              char       **resultPtr2,
-                              int         *resLengthPtr,
-                              int *score)
+ARB_ERROR ClustalV_align(int          is_dna,
+                         int          weighted,
+                         const char  *seq1,
+                         int          length1,
+                         const char  *seq2,
+                         int          length2,
+                         const int   *gapsBefore1,
+                         int          max_seq_length,
+                         char       **resultPtr1,
+                         char       **resultPtr2,
+                         int         *resLengthPtr,
+                         int         *score)
 {
     ARB_ERROR error;
     gapsBeforePosition = gapsBefore1;
@@ -1118,7 +1118,7 @@ ARB_ERROR AWTC_ClustalV_align(int          is_dna,
     }
     else {
         if (dnaflag!=is_dna || is_weight!=weighted) {
-            error = "Please call AWTC_ClustalV_align_exit() between calls that differ in\n"
+            error = "Please call ClustalV_exit() between calls that differ in\n"
                 "one of the following parameters:\n"
                 "       is_dna, weighted";
         }
@@ -1156,7 +1156,7 @@ ARB_ERROR AWTC_ClustalV_align(int          is_dna,
     return error;
 }
 
-void AWTC_ClustalV_align_exit()
+void ClustalV_exit()
 {
     if (module_initialized) {
         module_initialized = false;

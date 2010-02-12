@@ -16,41 +16,36 @@
 #include <aw_root.hxx>
 #endif
 
-#if defined(DEVEL_RALF)
-#warning change external names to FastAligner_...
-#endif // DEVEL_RALF
-
-
 #define INTEGRATED_ALIGNERS_TITLE "Integrated Aligners"
 
-typedef char*   (*AWTC_get_consensus_func)(const char *species_name, int start_pos, int end_pos);
-typedef int     (*AWTC_get_selected_range)(int *firstColumn, int *lastColumn);
-typedef GBDATA* (*AWTC_get_first_selected_species)(int *total_no_of_selected_species);
-typedef GBDATA* (*AWTC_get_next_selected_species)(void);
+typedef char*   (*Aligner_get_consensus_func)(const char *species_name, int start_pos, int end_pos);
+typedef int     (*Aligner_get_selected_range)(int *firstColumn, int *lastColumn);
+typedef GBDATA* (*Aligner_get_first_selected_species)(int *total_no_of_selected_species);
+typedef GBDATA* (*Aligner_get_next_selected_species)(void);
 
-struct AWTC_faligner_cd {
-    int do_refresh;                                 // if do_refresh == TRUE then AWTC_start_faligning() does a refresh
+struct AlignDataAccess {
+    int do_refresh;                                 // if do_refresh == TRUE then FastAligner_start() does a refresh
     void (*refresh_display)();                      // via calling refresh_display()
 
-    AWTC_get_consensus_func         get_group_consensus;
-    AWTC_get_selected_range         get_selected_range;
-    AWTC_get_first_selected_species get_first_selected_species;
-    AWTC_get_next_selected_species  get_next_selected_species;
+    Aligner_get_consensus_func         get_group_consensus;
+    Aligner_get_selected_range         get_selected_range;
+    Aligner_get_first_selected_species get_first_selected_species;
+    Aligner_get_next_selected_species  get_next_selected_species;
 
     char   *helix_string;                           // currently only used for island hopping
-    GBDATA *gb_main;
+    GBDATA *gb_main;                                // used by faligner
 };
 
 // --------------------------------------------------------------------------------
 
-AW_window *AWTC_create_faligner_window(AW_root *awr, const AWTC_faligner_cd *faligner_cd);
+AW_window *FastAligner_create_window(AW_root *awr, const AlignDataAccess *data_access);
 
-void AWTC_create_faligner_variables(AW_root *root, AW_default db1);
-void AWTC_awar_set_current_sequence(AW_root *root, AW_default db1);
-void AWTC_set_reference_species_name(AW_window * /* aww */, AW_CL cl_AW_root);
+void FastAligner_create_variables(AW_root *root, AW_default db1);
+void FastAligner_set_align_current(AW_root *root, AW_default db1);
+void FastAligner_set_reference_species(AW_window *, AW_CL cl_AW_root);
 
-void      AWTC_start_faligning(AW_window *aw, AW_CL cd2);
-ARB_ERROR AWTC_delete_temp_entries(GBDATA *gb_main, GB_CSTR alignment);
+void      FastAligner_start(AW_window *aw, AW_CL cl_AlignDataAccess);
+ARB_ERROR FastAligner_delete_temp_entries(GBDATA *gb_main, GB_CSTR alignment);
 
 // --------------------------------------------------------------------------------
 

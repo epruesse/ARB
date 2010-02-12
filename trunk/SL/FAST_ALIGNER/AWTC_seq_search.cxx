@@ -15,12 +15,12 @@
 #include <climits>
 #include <cctype>
 
-#define AWTC_MESSAGE_BUFFERSIZE 300
+#define MESSAGE_BUFFERSIZE 300
 
-void AWTC_message(const char *format, ...)
+void messagef(const char *format, ...)
 {
     va_list argp;
-    char buffer[AWTC_MESSAGE_BUFFERSIZE];
+    char buffer[MESSAGE_BUFFERSIZE];
 
     va_start(argp, format);
 
@@ -28,18 +28,18 @@ void AWTC_message(const char *format, ...)
     int chars =
 #endif // ASSERTION_USED
         vsprintf(buffer, format, argp);
-    awtc_assert(chars<AWTC_MESSAGE_BUFFERSIZE);
+    fa_assert(chars<MESSAGE_BUFFERSIZE);
 
     va_end(argp);
     aw_message(buffer);
 }
 
-void AWTC_Points::append(AWTC_Points *neu) {
+void Points::append(Points *neu) {
     if (Next) Next->append(neu);
     else Next = neu;
 }
 
-AWTC_CompactedSequence::AWTC_CompactedSequence(const char *Text, int Length, const char *name, int start_offset)
+CompactedSequence::CompactedSequence(const char *Text, int Length, const char *name, int start_offset)
 {
     long cPos;
     long xPos;
@@ -50,7 +50,7 @@ AWTC_CompactedSequence::AWTC_CompactedSequence(const char *Text, int Length, con
     myStartOffset = start_offset;
     myEndOffset = start_offset+Length-1;
 
-    awtc_assert(name);
+    fa_assert(name);
 
     points = NULL;
     myName = strdup(name);
@@ -60,7 +60,7 @@ AWTC_CompactedSequence::AWTC_CompactedSequence(const char *Text, int Length, con
 
     for (xPos=0; xPos<Length; xPos++) {         // convert point gaps at beginning to dash gaps
         char c = Text[xPos];
-        if (!AWTC_is_gap(c)) {
+        if (!is_gap(c)) {
             firstBase = xPos;
             break;
         }
@@ -69,7 +69,7 @@ AWTC_CompactedSequence::AWTC_CompactedSequence(const char *Text, int Length, con
     for (xPos=Length-1; xPos>=0; xPos--)        // same for end of sequence
     {
         char c = Text[xPos];
-        if (!AWTC_is_gap(c)) {
+        if (!is_gap(c)) {
             lastBase = xPos;
             break;
         }
@@ -78,13 +78,13 @@ AWTC_CompactedSequence::AWTC_CompactedSequence(const char *Text, int Length, con
     for (xPos=0; xPos<Length; xPos++) {
         char c = toupper(Text[xPos]);
 
-        if (AWTC_is_gap(c)) {
+        if (is_gap(c)) {
             if (c=='-' || xPos<firstBase || xPos>lastBase) {
                 compPositionTab[xPos] = -1;                     // a illegal index
                 lastWasPoint = 0;
             }
             else {
-                awtc_assert(c=='.');
+                fa_assert(c=='.');
 
                 if (!lastWasPoint) {
                     lastWasPoint = 1;
@@ -111,7 +111,7 @@ AWTC_CompactedSequence::AWTC_CompactedSequence(const char *Text, int Length, con
 
     for (xPos=0; xPos<Length; xPos++) {
         cPos = compPositionTab[xPos];
-        awtc_assert(cPos<myLength);
+        fa_assert(cPos<myLength);
 
         if (cPos>=0) {
             myText[cPos] = toupper(Text[xPos]);
@@ -132,9 +132,9 @@ AWTC_CompactedSequence::AWTC_CompactedSequence(const char *Text, int Length, con
     delete [] compPositionTab;
 }
 
-AWTC_CompactedSequence::~AWTC_CompactedSequence()
+CompactedSequence::~CompactedSequence()
 {
-    awtc_assert(referred==0);
+    fa_assert(referred==0);
 
     delete[] expdPositionTab;
     if (points) delete points;
@@ -142,7 +142,7 @@ AWTC_CompactedSequence::~AWTC_CompactedSequence()
     free(myName);
 }
 
-int AWTC_CompactedSequence::compPosition(int xPos) const
+int CompactedSequence::compPosition(int xPos) const
 {
     int l = 0,
         h = length();
@@ -163,33 +163,33 @@ int AWTC_CompactedSequence::compPosition(int xPos) const
         }
     }
 
-    awtc_assert(l==h);
+    fa_assert(l==h);
     return l;
 }
 
-AWTC_fast_align_insertion::~AWTC_fast_align_insertion()
+FastAlignInsertion::~FastAlignInsertion()
 {
     if (myNext) delete myNext;
 }
 
-AWTC_FastSearchSequence::AWTC_FastSearchSequence(const AWTC_CompactedSubSequence& seq)
+FastSearchSequence::FastSearchSequence(const CompactedSubSequence& seq)
 {
     memset((char*)myOffset, 0, MAX_TRIPLES*sizeof(*myOffset));
-    AWTC_SequencePosition triple(seq);
+    SequencePosition triple(seq);
 
     mySequence = &seq;
 
     while (triple.rightOf()>=3) // enough text for triple?
     {
         int tidx = triple_index(triple.text());
-        AWTC_TripleOffset *top = new AWTC_TripleOffset(triple.leftOf(), myOffset[tidx]);
+        TripleOffset *top = new TripleOffset(triple.leftOf(), myOffset[tidx]);
 
         myOffset[tidx] = top;
         ++triple;
     }
 }
 
-void AWTC_alignBuffer::correctUnalignedPositions()
+void AlignBuffer::correctUnalignedPositions()
 {
     long off = 0;
     long rest = used;
@@ -236,7 +236,7 @@ void AWTC_alignBuffer::correctUnalignedPositions()
     }
 }
 
-void AWTC_alignBuffer::expandPoints(AWTC_CompactedSubSequence& slaveSequence)
+void AlignBuffer::expandPoints(CompactedSubSequence& slaveSequence)
 {
     long rest = used;
     long off = 0;               // real position in sequence
@@ -255,8 +255,8 @@ void AWTC_alignBuffer::expandPoints(AWTC_CompactedSubSequence& slaveSequence)
         {
             count++;
             if (nextPoint==count) {
-                AWTC_message("Couldn't insert point-gap at offset %li of '%s' (gap removed by aligner)",
-                             off, slaveSequence.name());
+                messagef("Couldn't insert point-gap at offset %li of '%s' (gap removed by aligner)",
+                         off, slaveSequence.name());
             }
             if (nextPoint<count) {
                 nextPoint = slaveSequence.nextPointPosition();
@@ -268,7 +268,7 @@ void AWTC_alignBuffer::expandPoints(AWTC_CompactedSubSequence& slaveSequence)
     }
 }
 
-void AWTC_alignBuffer::point_ends_of()
+void AlignBuffer::point_ends_of()
 {
     int i;
 

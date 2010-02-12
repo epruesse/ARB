@@ -40,7 +40,7 @@ static inline int inversBasesMatch(char c1, char c2)
         case 'T':
         case 'U': return c2=='A';
         case 'N': return 1;
-        default: awtc_assert(0);
+        default: fa_assert(0);
     }
 
     return c1==c2;
@@ -61,7 +61,7 @@ static inline const char *lstr(const char *s, int len) {
     return lstr_ss;
 }
 #ifdef DEBUG
-static inline void dumpPart(int num, const AWTC_CompactedSubSequence *comp)
+static inline void dumpPart(int num, const CompactedSubSequence *comp)
 {
     printf("[%02i] ", num);
 
@@ -70,7 +70,7 @@ static inline void dumpPart(int num, const AWTC_CompactedSubSequence *comp)
     const char *text = comp->text();
     int len = comp->length();
 
-    awtc_assert(len);
+    fa_assert(len);
 
     if (len<=SHOWLEN)
     {
@@ -83,7 +83,7 @@ static inline void dumpPart(int num, const AWTC_CompactedSubSequence *comp)
     }
 }
 #else
-static inline void dumpPart(int, const AWTC_CompactedSubSequence *) {}
+static inline void dumpPart(int, const CompactedSubSequence *) {}
 #endif
 
 
@@ -140,7 +140,7 @@ public:
     }
 
     void add(int partNum, int reverse, int Score) {
-        awtc_assert(my_length<my_maxlength);
+        fa_assert(my_length<my_maxlength);
         partNum++;  // recode cause partNum==0 cannot be negative
         my_way[my_length++] = reverse ? -partNum : partNum;
         my_score += Score;
@@ -214,8 +214,8 @@ public:
     void set(int off, int theOverlap, int theScore)
     {
 #ifdef TEST_UNIQUE_SET
-        awtc_assert(ol[off]==UNIQUE_VALUE);
-        awtc_assert(sc[off]==UNIQUE_VALUE);
+        fa_assert(ol[off]==UNIQUE_VALUE);
+        fa_assert(sc[off]==UNIQUE_VALUE);
 #endif
         ol[off] = theOverlap;
         sc[off] = theScore;
@@ -325,7 +325,7 @@ static inline int calcScore(int overlap, int mismatches)
 {
     return overlap-2*mismatches;
 }
-void overlappingBases(AWTC_CompactedSubSequence *comp1, int reverse1, AWTC_CompactedSubSequence *comp2, int reverse2, int& bestOverlap, int& bestScore)
+void overlappingBases(CompactedSubSequence *comp1, int reverse1, CompactedSubSequence *comp2, int reverse2, int& bestOverlap, int& bestScore)
 {
     int len = 1;
     int maxcmp = min(comp1->length(), comp2->length());
@@ -442,18 +442,18 @@ void overlappingBases(AWTC_CompactedSubSequence *comp1, int reverse1, AWTC_Compa
     }
 }
 
-typedef AWTC_CompactedSubSequence *AWTC_CompactedSubSequencePointer;
+typedef CompactedSubSequence *CompactedSubSequencePointer;
 
-char *AWTC_constructSequence(int parts, const char **seqs, int minMatchingBases, char **refSeq)
+char *constructSequence(int parts, const char **seqs, int minMatchingBases, char **refSeq)
 {
     Overlap lap(parts);
-    AWTC_CompactedSubSequencePointer *comp = new AWTC_CompactedSubSequencePointer[parts];
+    CompactedSubSequencePointer *comp = new CompactedSubSequencePointer[parts];
 
     int s;
     for (s=0; s<parts; s++) {
-        comp[s] = new AWTC_CompactedSubSequence(seqs[s], strlen(seqs[s]), "constructed by AWTC_constructSequence()");
+        comp[s] = new CompactedSubSequence(seqs[s], strlen(seqs[s]), "constructed by constructSequence()");
         if (comp[s]->length()==0) {
-            printf("AWTC_constructSequence called with empty sequence (seq #%i)\n", s);
+            printf("constructSequence called with empty sequence (seq #%i)\n", s);
             return NULL;
         }
     }
@@ -462,10 +462,10 @@ char *AWTC_constructSequence(int parts, const char **seqs, int minMatchingBases,
         dumpPart(s, comp[s]);
         lap.setall(s, s, SAME_SEQUENCE); // set diagonal entries to SAME_SEQUENCE (= "a sequence can't overlap with itself")
         for (int s2=s+1; s2<parts; s2++) {
-            awtc_assert(s!=s2);
+            fa_assert(s!=s2);
             for (int sR=0; sR<2; sR++) {
                 for (int s2R=0; s2R<2; s2R++) {
-                    awtc_assert(s!=s2);
+                    fa_assert(s!=s2);
                     int overlap;
                     int score;
 
@@ -548,21 +548,21 @@ char *AWTC_constructSequence(int parts, const char **seqs, int minMatchingBases,
 
 static inline int startOf(int len, int partNum)
 {
-    awtc_assert(len>0);
-    awtc_assert(partNum>0);
+    fa_assert(len>0);
+    fa_assert(partNum>0);
     int s = (len/PARTS)*partNum - GB_random(OVERLAPPING_BASES);
     return s>0 ? (s<len ? s : len-1) : 0;
 }
 
 static inline int lengthOf(int start, int len)
 {
-    awtc_assert(len>0);
-    awtc_assert(start>=0);
+    fa_assert(len>0);
+    fa_assert(start>=0);
     int s = len/PARTS + GB_random(2*OVERLAPPING_BASES);
     return s>0 ? ((start+s)<=len ? s : len-start) : 1;
 }
 
-char *AWTC_testConstructSequence(const char *testWithSequence)
+char *testConstructSequence(const char *testWithSequence)
 {
     int basesInSeq = 0;
     char *compressed = strdup(testWithSequence);
@@ -583,7 +583,7 @@ char *AWTC_testConstructSequence(const char *testWithSequence)
     char **part  = new char*[PARTS];
     int    p;
 
-    printf("AWTC_testConstructSequence: len(=no of bases) = %5i\n", basesInSeq);
+    printf("testConstructSequence: len(=no of bases) = %5i\n", basesInSeq);
 
     int last_end = -1;
 
@@ -598,10 +598,10 @@ char *AWTC_testConstructSequence(const char *testWithSequence)
         if (start+llen > basesInSeq) llen = basesInSeq-start;
 
         int end = start+llen-1;
-        awtc_assert(end<basesInSeq);
+        fa_assert(end<basesInSeq);
 
         int overlap = last_end-start+1;
-        awtc_assert(overlap>0 || p==0);
+        fa_assert(overlap>0 || p==0);
 
         int count = 0;
         int l;
@@ -613,7 +613,7 @@ char *AWTC_testConstructSequence(const char *testWithSequence)
 
         printf("[%02i] start=%-5i llen=%-5i end=%-5i overlap=%-5i basesInOverlap=%-5i", p, start, llen, end, overlap, count);
         last_end = end;
-        awtc_assert(start+llen<=basesInSeq);
+        fa_assert(start+llen<=basesInSeq);
         part[p] = strndup(compressed+start, llen);
         if (GB_random(2)) {
             char      T_or_U;
@@ -673,12 +673,12 @@ char *AWTC_testConstructSequence(const char *testWithSequence)
         printf("[%02i] base-errors = %i\n", p, changes);
     }
 
-    char *neu = AWTC_constructSequence(parts, (const char**)part, 10, NULL);
+    char *neu = constructSequence(parts, (const char**)part, 10, NULL);
 
     for (p=0; p<parts; p++) delete [] part[p];
     delete [] part;
 
-    if (!neu) printf("AWTC_constructSequence() returned NULL\n");
+    if (!neu) printf("constructSequence() returned NULL\n");
 
     return neu;
 }

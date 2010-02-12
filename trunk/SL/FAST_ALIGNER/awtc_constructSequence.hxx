@@ -13,10 +13,10 @@
 #define AWTC_CONSTRUCTSEQUENCE_HXX
 
 
-char *AWTC_constructSequence(int parts, const char **seqs, int minBasesMatching, char **refSeq);        // parameter list should be terminated by NULL
+char *constructSequence(int parts, const char **seqs, int minBasesMatching, char **refSeq);        // parameter list should be terminated by NULL
 
 #ifdef DEBUG
-char *AWTC_testConstructSequence(const char *testWithSequence);
+char *testConstructSequence(const char *testWithSequence);
 #endif
 
 
