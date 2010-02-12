@@ -14,12 +14,16 @@
 #include "SEC_drawn_pos.hxx"
 #include "SEC_toggle.hxx"
 
-#include <arbdbt.h>
-#include <aw_awars.hxx>
-#include <aw_preset.hxx>
-#include <awt.hxx>
 #include <ed4_extern.hxx>
 #include <FileBuffer.h>
+
+#include <awt.hxx>
+
+#include <aw_awars.hxx>
+#include <aw_preset.hxx>
+#include <aw_file.hxx>
+
+#include <arbdbt.h>
 
 #ifndef sec_assert // happens in NDEBUG mode
 #define sec_assert(cond) arb_assert(cond)
@@ -450,7 +454,7 @@ static AW_window *SEC_importExport(AW_root *root, int export_to_file, SEC_db_int
     aws->callback(AW_POPUP_HELP, (AW_CL)"sec_imexport.hlp");
     aws->create_button("HELP", "HELP", "H");
 
-    awt_create_fileselection((AW_window *)aws, AWAR_SECEDIT_SAVEDIR);
+    AW_create_fileselection(aws, AWAR_SECEDIT_SAVEDIR);
 
     aws->at("save");
     if (export_to_file) {

@@ -101,7 +101,6 @@ fast_aligner.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-fast_aligner.o: $(ARBHOME)/INCLUDE/awt.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/awtc_next_neighbours.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/dupstr.h

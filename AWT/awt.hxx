@@ -21,18 +21,6 @@
 #define awt_assert(bed) arb_assert(bed)
 
 // ------------------------------------------------------------
-// filename related functions:
-
-char       *AWT_fold_path(char *path, const char *pwd = "PWD");
-char       *AWT_unfold_path(const char *path, const char *pwd = "PWD");
-const char *AWT_valid_path(const char *path);
-
-int   AWT_is_dir(const char *path);
-int   AWT_is_file(const char *path);
-int   AWT_is_link(const char *path);
-char *AWT_extract_directory(const char *path);
-
-// ------------------------------------------------------------
 
 // holds all stuff needed to make ad_.. functions work with species _and_ genes (and more..)
 
@@ -102,46 +90,6 @@ GBDATA *AWT_get_item_with_id(GBDATA *gb_main, const ad_item_selector *sel, const
 
 extern ad_item_selector AWT_species_selector;
 extern ad_item_selector AWT_organism_selector;
-
-// -----------------------------
-//      file selection boxes
-
-void awt_create_fileselection(AW_window *aws, const char *awar_prefix, const char *at_prefix = "", const char *pwd = "PWD", bool show_dir = true, bool allow_wildcards = false);
-/* Create a file selection box, this box needs 3 AWARS:
-
-1. "$awar_prefix/filter"
-2. "$awar_prefix/directory"
-3. "$awar_prefix/file_name"
-
-(Note: The function aw_create_fileselection_awars can be used to create them)
-*/
-
-/* the "$awar_prefix/file_name" contains the full filename
-   Use awt_get_selected_fullname() to read it.
-
-The items are placed at
-
-1. "$at_prefix""filter"
-2. "$at_prefix""box"
-3. "$at_prefix""file_name"
-
-if show_dir== true, then show directories and files
-else only files
-
-pwd is a 'shell environment variable' which indicates the base directory
-( mainly PWD or ARBHOME ) */
-
-char *awt_get_selected_fullname(AW_root *awr, const char *awar_prefix);
-
-void awt_refresh_fileselection(AW_root *awr, const char *awar_prefix);
-
-// -------------------------------
-
-AW_window *create_save_box_for_selection_lists(AW_root *aw_root, AW_CL selid);
-AW_window *create_load_box_for_selection_lists(AW_root *aw_root, AW_CL selid);
-void create_print_box_for_selection_lists(AW_window *aw_window, AW_CL selid);
-/* Create a file selection box to save a selection list */
-
 
 // ------------------
 //      query box

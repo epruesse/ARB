@@ -13,11 +13,14 @@
 #include "PRD_Design.hxx"
 #include "PRD_SequenceIterator.hxx"
 
-#include <arbdbt.h>
-#include <aw_awars.hxx>
-#include <awt.hxx>
 #include <GEN.hxx>
+
+#include <awt_sel_boxes.hxx>
 #include <awt_config_manager.hxx>
+
+#include <aw_awars.hxx>
+
+#include <arbdbt.h>
 
 #include <string>
 

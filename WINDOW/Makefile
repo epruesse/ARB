@@ -2,6 +2,7 @@
 
 OBJECTS = \
 		AW_select.o \
+		AW_file_selection.o \
 		AW_Xm.o \
 		AW_advice.o \
 		AW_at.o \
@@ -188,6 +189,26 @@ AW_edit.o: $(ARBHOME)/INCLUDE/attributes.h
 AW_edit.o: $(ARBHOME)/INCLUDE/dupstr.h
 AW_edit.o: $(ARBHOME)/INCLUDE/smartptr.h
 
+AW_file_selection.o: aw_awars.hxx
+AW_file_selection.o: aw_device.hxx
+AW_file_selection.o: aw_file.hxx
+AW_file_selection.o: aw_keysym.hxx
+AW_file_selection.o: aw_position.hxx
+AW_file_selection.o: aw_root.hxx
+AW_file_selection.o: aw_window.hxx
+AW_file_selection.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
+AW_file_selection.o: $(ARBHOME)/INCLUDE/ad_prot.h
+AW_file_selection.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+AW_file_selection.o: $(ARBHOME)/INCLUDE/arb_assert.h
+AW_file_selection.o: $(ARBHOME)/INCLUDE/arb_error.h
+AW_file_selection.o: $(ARBHOME)/INCLUDE/arbdb.h
+AW_file_selection.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+AW_file_selection.o: $(ARBHOME)/INCLUDE/arbdbt.h
+AW_file_selection.o: $(ARBHOME)/INCLUDE/arbtools.h
+AW_file_selection.o: $(ARBHOME)/INCLUDE/attributes.h
+AW_file_selection.o: $(ARBHOME)/INCLUDE/dupstr.h
+AW_file_selection.o: $(ARBHOME)/INCLUDE/smartptr.h
+
 AW_font_group.o: aw_device.hxx
 AW_font_group.o: aw_font_group.hxx
 AW_font_group.o: aw_position.hxx
@@ -240,6 +261,7 @@ AW_help.o: $(ARBHOME)/INCLUDE/dupstr.h
 AW_help.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 AW_modal.o: aw_device.hxx
+AW_modal.o: aw_file.hxx
 AW_modal.o: aw_global.hxx
 AW_modal.o: aw_keysym.hxx
 AW_modal.o: aw_position.hxx
@@ -255,7 +277,6 @@ AW_modal.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AW_modal.o: $(ARBHOME)/INCLUDE/arbdbt.h
 AW_modal.o: $(ARBHOME)/INCLUDE/arbtools.h
 AW_modal.o: $(ARBHOME)/INCLUDE/attributes.h
-AW_modal.o: $(ARBHOME)/INCLUDE/awt.hxx
 AW_modal.o: $(ARBHOME)/INCLUDE/dupstr.h
 AW_modal.o: $(ARBHOME)/INCLUDE/smartptr.h
 
@@ -302,7 +323,6 @@ AW_preset.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AW_preset.o: $(ARBHOME)/INCLUDE/arbdbt.h
 AW_preset.o: $(ARBHOME)/INCLUDE/arbtools.h
 AW_preset.o: $(ARBHOME)/INCLUDE/attributes.h
-AW_preset.o: $(ARBHOME)/INCLUDE/awt.hxx
 AW_preset.o: $(ARBHOME)/INCLUDE/dupstr.h
 AW_preset.o: $(ARBHOME)/INCLUDE/smartptr.h
 

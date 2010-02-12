@@ -8,11 +8,11 @@
 //                                                                 //
 // =============================================================== //
 
-
-#include <aw_awars.hxx>
 #include <awt.hxx>
 #include <awt_item_sel_list.hxx>
 #include <awt_sel_boxes.hxx>
+#include <aw_awars.hxx>
+#include <arbdbt.h>
 
 #define nt_assert(bed) arb_assert(bed)
 

@@ -765,7 +765,7 @@ void Awar_Callback_Info::init(AW_root *awr_, const char *awar_name_, Awar_CB2 ca
     org_awar_name = strdup(awar_name_);
 }
 
-void aw_create_fileselection_awars(AW_root *awr, const char *awar_base,
+void AW_create_fileselection_awars(AW_root *awr, const char *awar_base,
                                    const char *directory, const char *filter, const char *file_name,
                                    AW_default default_file, bool resetValues)
 {

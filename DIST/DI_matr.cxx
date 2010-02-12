@@ -20,14 +20,16 @@
 #include <AP_filter.hxx>
 #include <BI_helix.hxx>
 #include <CT_ctree.hxx>
-#include <awt_macro.hxx>
+#include <ColumnStat.hxx>
+
 #include <awt.hxx>
 #include <awt_sel_boxes.hxx>
 #include <awt_filter.hxx>
-#include <ColumnStat.hxx>
+#include <awt_macro.hxx>
+
 #include <aw_preset.hxx>
 #include <aw_awars.hxx>
-#include <aw_global.hxx>
+#include <aw_file.hxx>
 
 #include <gui_aliview.hxx>
 
@@ -134,7 +136,7 @@ void DI_create_matrix_variables(AW_root *aw_root, AW_default def, AW_default db)
     aw_root->awar(AWAR_DIST_FILTER_ALIGNMENT)     ->map(AWAR_DIST_ALIGNMENT);
     aw_root->awar(AWAR_DIST_COLUMN_STAT_ALIGNMENT)->map(AWAR_DIST_ALIGNMENT);
 
-    aw_create_fileselection_awars(aw_root, AWAR_DIST_SAVE_MATRIX_BASE, ".", "", "infile", def);
+    AW_create_fileselection_awars(aw_root, AWAR_DIST_SAVE_MATRIX_BASE, ".", "", "infile", def);
     aw_root->awar_int(AWAR_DIST_SAVE_MATRIX_TYPE, 0, def);
 
     aw_root->awar_string(AWAR_DIST_TREE_STD_NAME,  "tree_nj", def);
@@ -1092,7 +1094,7 @@ static void di_save_matrix_cb(AW_window *aww, AW_CL cl_weightedFilter) {
         DI_MATRIX::ROOT->save(filename, type);
         free(filename);
     }
-    awt_refresh_fileselection(aww->get_root(), AWAR_DIST_SAVE_MATRIX_BASE);
+    AW_refresh_fileselection(aww->get_root(), AWAR_DIST_SAVE_MATRIX_BASE);
     aww->hide_or_notify(error);
 }
 
@@ -1117,7 +1119,7 @@ AW_window *DI_create_save_matrix_window(AW_root *aw_root, save_matrix_params *sa
         aws->insert_option("Tabbed (using NDS)", "R", DI_SAVE_TABBED);
         aws->update_option_menu();
 
-        awt_create_fileselection((AW_window *)aws, save_params->awar_base);
+        AW_create_fileselection(aws, save_params->awar_base);
 
         aws->at("save2");
         aws->callback(di_save_matrix_cb, (AW_CL)save_params->weighted_filter);

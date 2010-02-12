@@ -9,11 +9,11 @@
 // =============================================================== //
 
 #include "merge.hxx"
-
+#include <db_scanner.hxx>
 #include <awt.hxx>
 #include <awt_sel_boxes.hxx>
 #include <aw_awars.hxx>
-#include <db_scanner.hxx>
+#include <arbdbt.h>
 
 #define AWAR_EX_NAME1 "tmp/merge1/extended_name"
 #define AWAR_EX_DEST1 "tmp/merge1/extended_dest"
@@ -159,7 +159,7 @@ void MG_map_extended1(AW_root *aw_root, AW_CL scannerid)
     char *source = aw_root->awar(AWAR_EX_NAME1)->read_string();
     GB_push_transaction(GLOBAL_gb_merge);
     GBDATA *gb_sai = GBT_find_SAI(GLOBAL_gb_merge, source);
-    awt_map_arbdb_scanner(scannerid, gb_sai, 0, CHANGE_KEY_PATH);
+    map_db_scanner(scannerid, gb_sai, CHANGE_KEY_PATH);
     GB_pop_transaction(GLOBAL_gb_merge);
     free(source);
 }
@@ -168,7 +168,7 @@ void MG_map_extended2(AW_root *aw_root, AW_CL scannerid)
     char *source = aw_root->awar(AWAR_EX_NAME2)->read_string();
     GB_push_transaction(GLOBAL_gb_dest);
     GBDATA *gb_sai = GBT_find_SAI(GLOBAL_gb_dest, source);
-    awt_map_arbdb_scanner(scannerid, gb_sai, 0, CHANGE_KEY_PATH);
+    map_db_scanner(scannerid, gb_sai, CHANGE_KEY_PATH);
     GB_pop_transaction(GLOBAL_gb_dest);
     free(source);
 }
@@ -191,12 +191,12 @@ AW_window *MG_merge_extendeds_cb(AW_root *awr) {
 
     aws->at("ex1");
     awt_create_selection_list_on_extendeds(GLOBAL_gb_merge, (AW_window *)aws, AWAR_EX_NAME1);
-    AW_CL scannerid = awt_create_arbdb_scanner(GLOBAL_gb_merge, aws, "info1", 0, 0, 0, AWT_SCANNER, 0, 0, 0, &AWT_species_selector);
+    AW_CL scannerid = create_db_scanner(GLOBAL_gb_merge, aws, "info1", 0, 0, 0, DB_SCANNER, 0, 0, 0, &AWT_species_selector);
     aws->get_root()->awar(AWAR_EX_NAME1)->add_callback(MG_map_extended1, scannerid);
 
     aws->at("ex2");
     awt_create_selection_list_on_extendeds(GLOBAL_gb_dest, (AW_window *)aws, AWAR_EX_NAME2);
-    scannerid = awt_create_arbdb_scanner(GLOBAL_gb_dest, aws, "info2", 0, 0, 0, AWT_SCANNER, 0, 0, 0, &AWT_species_selector);
+    scannerid = create_db_scanner(GLOBAL_gb_dest, aws, "info2", 0, 0, 0, DB_SCANNER, 0, 0, 0, &AWT_species_selector);
     aws->get_root()->awar(AWAR_EX_NAME2)->add_callback(MG_map_extended2, scannerid);
 
     aws->button_length(20);

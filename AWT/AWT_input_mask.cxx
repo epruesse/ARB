@@ -17,6 +17,7 @@
 #include <arbdbt.h>
 #include <awt_www.hxx>
 #include <aw_edit.hxx>
+#include <aw_file.hxx>
 
 #include <sys/stat.h>
 #include <sys/types.h>
@@ -924,12 +925,12 @@ static string scan_identifier(const string& line, size_t& scan_pos, GB_ERROR& er
 inline const char *inputMaskDir(bool local) {
     if (local) {
         static char *local_mask_dir;
-        if (!local_mask_dir) local_mask_dir = AWT_unfold_path(".arb_prop/inputMasks", "HOME");
+        if (!local_mask_dir) local_mask_dir = AW_unfold_path(".arb_prop/inputMasks", "HOME");
         return local_mask_dir;
     }
 
     static char *global_mask_dir;
-    if (!global_mask_dir) global_mask_dir = AWT_unfold_path("lib/inputMasks", "ARBHOME");
+    if (!global_mask_dir) global_mask_dir = AW_unfold_path("lib/inputMasks", "ARBHOME");
     return global_mask_dir;
 }
 

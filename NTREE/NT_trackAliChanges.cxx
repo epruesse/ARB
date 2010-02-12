@@ -13,6 +13,7 @@
 
 #include <awt_sel_boxes.hxx>
 #include <aw_window.hxx>
+#include <arbdbt.h>
 #include <ctime>
 
 extern GBDATA *GLOBAL_gb_main;

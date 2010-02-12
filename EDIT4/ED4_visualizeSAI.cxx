@@ -19,6 +19,7 @@
 #include <awt_canvas.hxx>
 #include <awt_sel_boxes.hxx>
 #include <aw_preset.hxx>
+#include <arbdbt.h>
 
 #include <iostream>
 

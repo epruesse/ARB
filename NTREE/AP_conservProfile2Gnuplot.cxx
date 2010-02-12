@@ -9,11 +9,10 @@
 // =============================================================== //
 
 #include "nt_internal.h"
-
-#include <awt.hxx>
 #include "ap_conservProfile2Gnuplot.hxx"
 
-#include <aw_global.hxx>
+#include <aw_window.hxx>
+#include <aw_file.hxx>
 
 extern GBDATA *GLOBAL_gb_main;
 
@@ -71,7 +70,7 @@ AW_window *AP_createConservationProfileWindow(AW_root *root) {
     root->awar_string(AP_AWAR_CONSPRO_SMOOTH_GNUPLOT);
     root->awar_string(AP_AWAR_BASE_FREQ_FILTER_NAME);
 
-    aw_create_fileselection_awars(root, AP_AWAR_CONSPRO, "", ".gnu", "noname.gnu");
+    AW_create_fileselection_awars(root, AP_AWAR_CONSPRO, "", ".gnu", "noname.gnu");
 
     root->awar_string(AP_AWAR_CONSPRO_GNUPLOT_LEGEND);
     root->awar_int(AP_AWAR_CONSPRO_GNUPLOT_DISP_POS);
@@ -86,7 +85,7 @@ AW_window *AP_createConservationProfileWindow(AW_root *root) {
     aws->at("help"); aws->callback(AW_POPUP_HELP, (AW_CL)"conservProfile2Gnuplot.hlp");
     aws->create_button("HELP", "HELP", "H");
 
-    awt_create_fileselection(aws, AP_AWAR_CONSPRO);
+    AW_create_fileselection(aws, AP_AWAR_CONSPRO);
 
     aws->at("baseFreqFlt");
     aws->create_button("SELECT_FILTER", AP_AWAR_BASE_FREQ_FILTER_NAME);

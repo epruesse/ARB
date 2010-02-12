@@ -8,10 +8,9 @@
 //                                                                  //
 // ================================================================ //
 
-#include "aw_window.hxx"
-#include "aw_global.hxx"
-
-#include <awt.hxx>
+#include <aw_window.hxx>
+#include <aw_global.hxx>
+#include <aw_file.hxx>
 
 #include <arbdbt.h>
 
@@ -677,7 +676,7 @@ char *aw_file_selection(const char *title, const char *dir, const char *def_name
         aw_msg->at("title");
         aw_msg->create_button(0, AW_FILE_SELECT_TITLE_AWAR);
 
-        awt_create_fileselection(aw_msg, AW_FILE_SELECT_BASE);
+        AW_create_fileselection(aw_msg, AW_FILE_SELECT_BASE);
 
         aw_msg->button_length(7);
 

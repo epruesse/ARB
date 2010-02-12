@@ -21,6 +21,7 @@
 #include <servercntrl.h>
 #include <PT_com.h>
 #include <client.h>
+#include <arbdbt.h>
 
 #include <sys/types.h>
 #include <sys/wait.h>

@@ -91,8 +91,8 @@ SEC_db.o: $(ARBHOME)/INCLUDE/attributes.h
 SEC_db.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 SEC_db.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 SEC_db.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+SEC_db.o: $(ARBHOME)/INCLUDE/aw_file.hxx
 SEC_db.o: $(ARBHOME)/INCLUDE/aw_font_group.hxx
-SEC_db.o: $(ARBHOME)/INCLUDE/aw_global.hxx
 SEC_db.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 SEC_db.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 SEC_db.o: $(ARBHOME)/INCLUDE/aw_root.hxx
@@ -225,6 +225,7 @@ SEC_main.o: $(ARBHOME)/INCLUDE/attributes.h
 SEC_main.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+SEC_main.o: $(ARBHOME)/INCLUDE/aw_file.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/aw_font_group.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/aw_position.hxx

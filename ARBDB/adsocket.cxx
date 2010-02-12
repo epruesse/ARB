@@ -439,8 +439,14 @@ long GB_mode_of_link(const char *path)
 }
 
 bool GB_is_regularfile(const char *path) {
+    // Warning : returns true for symbolic links to files (use GB_is_link() to test)
     struct stat stt;
     return stat(path, &stt) == 0 && S_ISREG(stt.st_mode);
+}
+
+bool GB_is_link(const char *path) {
+    struct stat stt;
+    return lstat(path, &stt) == 0 && S_ISLNK(stt.st_mode);
 }
 
 bool GB_is_executablefile(const char *path) {
@@ -499,6 +505,7 @@ bool GB_is_readablefile(const char *filename) {
 }
 
 bool GB_is_directory(const char *path) {
+    // Warning : returns true for symbolic links to directories (use GB_is_link())
     struct stat stt;
     return stat(path, &stt) == 0 && S_ISDIR(stt.st_mode);
 }

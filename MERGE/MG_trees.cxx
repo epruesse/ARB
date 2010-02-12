@@ -9,9 +9,8 @@
 // =============================================================== //
 
 #include "merge.hxx"
-
-#include <awt.hxx>
 #include <awt_sel_boxes.hxx>
+#include <arbdbt.h>
 
 #define AWAR_TREE_NAME1 "tmp/merge1/tree_name"
 #define AWAR_TREE_DEST1 "tmp/merge1/tree_dest"

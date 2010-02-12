@@ -257,6 +257,7 @@ symlink_file ../WINDOW/aw_preset.hxx INCLUDE/aw_preset.hxx &&
 symlink_file ../WINDOW/aw_question.hxx INCLUDE/aw_question.hxx &&
 symlink_file ../WINDOW/aw_root.hxx INCLUDE/aw_root.hxx &&
 symlink_file ../WINDOW/aw_select.hxx INCLUDE/aw_select.hxx &&
+symlink_file ../WINDOW/aw_file.hxx INCLUDE/aw_file.hxx &&
 symlink_file ../WINDOW/aw_window.hxx INCLUDE/aw_window.hxx &&
 symlink_file ../WINDOW/aw_window_Xm_interface.hxx INCLUDE/aw_window_Xm_interface.hxx &&
 symlink_file ../XML/xml.hxx INCLUDE/xml.hxx &&

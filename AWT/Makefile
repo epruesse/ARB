@@ -10,7 +10,6 @@ OBJECTS =	\
 		AWT_changekey.o \
 		AWT_config_manager.o \
 		AWT_db_browser.o \
-		AWT_file_selection.o \
 		AWT_hotkeys.o \
 		AWT_input_mask.o \
 		AWT_item_sel_list.o \
@@ -85,7 +84,6 @@ AWT_attributes.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWT_attributes.o: $(ARBHOME)/INCLUDE/dupstr.h
 AWT_attributes.o: $(ARBHOME)/INCLUDE/smartptr.h
 
-AWT_canio.o: awt.hxx
 AWT_canio.o: awt_canvas.hxx
 AWT_canio.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 AWT_canio.o: $(ARBHOME)/INCLUDE/ad_prot.h
@@ -98,6 +96,7 @@ AWT_canio.o: $(ARBHOME)/INCLUDE/arbdbt.h
 AWT_canio.o: $(ARBHOME)/INCLUDE/arbtools.h
 AWT_canio.o: $(ARBHOME)/INCLUDE/attributes.h
 AWT_canio.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+AWT_canio.o: $(ARBHOME)/INCLUDE/aw_file.hxx
 AWT_canio.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AWT_canio.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AWT_canio.o: $(ARBHOME)/INCLUDE/aw_root.hxx
@@ -191,27 +190,6 @@ AWT_db_browser.o: $(ARBHOME)/INCLUDE/dupstr.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/inline.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/smartptr.h
 
-AWT_file_selection.o: awt.hxx
-AWT_file_selection.o: awtlocal.hxx
-AWT_file_selection.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
-AWT_file_selection.o: $(ARBHOME)/INCLUDE/ad_prot.h
-AWT_file_selection.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
-AWT_file_selection.o: $(ARBHOME)/INCLUDE/arb_assert.h
-AWT_file_selection.o: $(ARBHOME)/INCLUDE/arb_error.h
-AWT_file_selection.o: $(ARBHOME)/INCLUDE/arbdb.h
-AWT_file_selection.o: $(ARBHOME)/INCLUDE/arbdb_base.h
-AWT_file_selection.o: $(ARBHOME)/INCLUDE/arbdbt.h
-AWT_file_selection.o: $(ARBHOME)/INCLUDE/arbtools.h
-AWT_file_selection.o: $(ARBHOME)/INCLUDE/attributes.h
-AWT_file_selection.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
-AWT_file_selection.o: $(ARBHOME)/INCLUDE/aw_device.hxx
-AWT_file_selection.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
-AWT_file_selection.o: $(ARBHOME)/INCLUDE/aw_position.hxx
-AWT_file_selection.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-AWT_file_selection.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-AWT_file_selection.o: $(ARBHOME)/INCLUDE/dupstr.h
-AWT_file_selection.o: $(ARBHOME)/INCLUDE/smartptr.h
-
 AWT_hotkeys.o: awt_hotkeys.hxx
 
 AWT_input_mask.o: awt.hxx
@@ -231,6 +209,7 @@ AWT_input_mask.o: $(ARBHOME)/INCLUDE/arbtools.h
 AWT_input_mask.o: $(ARBHOME)/INCLUDE/attributes.h
 AWT_input_mask.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 AWT_input_mask.o: $(ARBHOME)/INCLUDE/aw_edit.hxx
+AWT_input_mask.o: $(ARBHOME)/INCLUDE/aw_file.hxx
 AWT_input_mask.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AWT_input_mask.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AWT_input_mask.o: $(ARBHOME)/INCLUDE/aw_root.hxx
@@ -240,7 +219,6 @@ AWT_input_mask.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 AWT_item_sel_list.o: awt.hxx
 AWT_item_sel_list.o: awt_item_sel_list.hxx
-AWT_item_sel_list.o: awtlocal.hxx
 AWT_item_sel_list.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 AWT_item_sel_list.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AWT_item_sel_list.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
@@ -273,8 +251,6 @@ AWT_iupac.o: $(ARBHOME)/INCLUDE/attributes.h
 AWT_iupac.o: $(ARBHOME)/INCLUDE/dupstr.h
 AWT_iupac.o: $(ARBHOME)/INCLUDE/smartptr.h
 
-AWT_macro.o: awt.hxx
-AWT_macro.o: awt_macro.hxx
 AWT_macro.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 AWT_macro.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AWT_macro.o: $(ARBHOME)/INCLUDE/arb_assert.h
@@ -285,7 +261,7 @@ AWT_macro.o: $(ARBHOME)/INCLUDE/arbtools.h
 AWT_macro.o: $(ARBHOME)/INCLUDE/attributes.h
 AWT_macro.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 AWT_macro.o: $(ARBHOME)/INCLUDE/aw_edit.hxx
-AWT_macro.o: $(ARBHOME)/INCLUDE/aw_global.hxx
+AWT_macro.o: $(ARBHOME)/INCLUDE/aw_file.hxx
 AWT_macro.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AWT_macro.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AWT_macro.o: $(ARBHOME)/INCLUDE/aw_root.hxx
@@ -324,6 +300,7 @@ AWT_nds.o: $(ARBHOME)/INCLUDE/arbtools.h
 AWT_nds.o: $(ARBHOME)/INCLUDE/attributes.h
 AWT_nds.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 AWT_nds.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+AWT_nds.o: $(ARBHOME)/INCLUDE/aw_file.hxx
 AWT_nds.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AWT_nds.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AWT_nds.o: $(ARBHOME)/INCLUDE/aw_root.hxx
@@ -351,6 +328,7 @@ AWT_query_and_functions.o: $(ARBHOME)/INCLUDE/aw_advice.hxx
 AWT_query_and_functions.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 AWT_query_and_functions.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 AWT_query_and_functions.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+AWT_query_and_functions.o: $(ARBHOME)/INCLUDE/aw_file.hxx
 AWT_query_and_functions.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AWT_query_and_functions.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AWT_query_and_functions.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
@@ -364,7 +342,6 @@ AWT_query_and_functions.o: $(ARBHOME)/INCLUDE/smartptr.h
 AWT_sel_boxes.o: awt.hxx
 AWT_sel_boxes.o: awt_item_sel_list.hxx
 AWT_sel_boxes.o: awt_sel_boxes.hxx
-AWT_sel_boxes.o: awtlocal.hxx
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/ad_config.h
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/ad_prot.h
@@ -378,7 +355,7 @@ AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/arbtools.h
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/attributes.h
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/aw_device.hxx
-AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/aw_global.hxx
+AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/aw_file.hxx
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/aw_root.hxx
@@ -422,7 +399,7 @@ AWT_tables.o: $(ARBHOME)/INCLUDE/arbtools.h
 AWT_tables.o: $(ARBHOME)/INCLUDE/attributes.h
 AWT_tables.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 AWT_tables.o: $(ARBHOME)/INCLUDE/aw_device.hxx
-AWT_tables.o: $(ARBHOME)/INCLUDE/aw_global.hxx
+AWT_tables.o: $(ARBHOME)/INCLUDE/aw_file.hxx
 AWT_tables.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AWT_tables.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AWT_tables.o: $(ARBHOME)/INCLUDE/aw_root.hxx

@@ -8,8 +8,11 @@
 #include <aw_root.hxx>
 #include <aw_device.hxx>
 #include <aw_window.hxx>
+#include <aw_file.hxx>
+
 #include "awt_canvas.hxx"
-#include "awt.hxx"
+
+#define awt_assert(cond) arb_assert(cond)
 
 // --------------------------------------------------------------------------------
 
@@ -201,7 +204,7 @@ const char *AWT_print_tree_to_file(AW_window *aww, AWT_canvas * ntw) {
     GB_transaction ta(ntw->gb_main);
 
     AW_root  *awr   = aww->get_root();
-    char     *dest  = awt_get_selected_fullname(awr, AWAR_PRINT_TREE_FILE_BASE);
+    char     *dest  = AW_get_selected_fullname(awr, AWAR_PRINT_TREE_FILE_BASE);
     GB_ERROR  error = 0;
 
     if (dest[0] == 0) {
@@ -265,7 +268,7 @@ void AWT_print_tree_to_file_xfig(AW_window *aww, AW_CL cl_ntw) {
     AW_root *awr = aww->get_root();
     const char *error = AWT_print_tree_to_file(aww, ntw);
     if (!error) {
-        char *dest = awt_get_selected_fullname(awr, AWAR_PRINT_TREE_FILE_BASE);
+        char *dest = AW_get_selected_fullname(awr, AWAR_PRINT_TREE_FILE_BASE);
         system(GBS_global_string("xfig %s &", dest));
         free(dest);
     }
@@ -291,7 +294,7 @@ void AWT_popup_tree_export_window(AW_window *parent_win, AW_CL cl_canvas, AW_CL)
 
         aws->label_length(15);
 
-        awt_create_fileselection((AW_window *)aws, AWAR_PRINT_TREE_FILE_BASE);
+        AW_create_fileselection(aws, AWAR_PRINT_TREE_FILE_BASE);
 
         aws->at("what");
         aws->label("Clip at Screen");
@@ -339,7 +342,7 @@ void AWT_popup_sec_export_window(AW_window *parent_win, AW_CL cl_canvas, AW_CL) 
         aws->create_button("HELP", "HELP", "H");
 
         aws->label_length(15);
-        awt_create_fileselection((AW_window *)aws, AWAR_PRINT_TREE_FILE_BASE);
+        AW_create_fileselection(aws, AWAR_PRINT_TREE_FILE_BASE);
 
         aws->at("what");
         aws->label("Clip Options");
@@ -376,7 +379,7 @@ void AWT_print_tree_to_printer(AW_window *aww, AW_CL cl_ntw) {
 
     switch (printdest) {
         case PDEST_POSTSCRIPT: {
-            dest = awt_get_selected_fullname(awr, AWAR_PRINT_TREE_FILE_BASE);
+            dest = AW_get_selected_fullname(awr, AWAR_PRINT_TREE_FILE_BASE);
             FILE *out = fopen(dest, "w");
             if (!out) error = GB_export_IO_error("writing", dest);
             else fclose(out);

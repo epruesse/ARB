@@ -13,8 +13,8 @@
 #ifndef DB_SCANNER_HXX
 #define DB_SCANNER_HXX
 
-#ifndef AWT_HXX
-#include <awt.hxx>
+#ifndef AW_ROOT_HXX
+#include <aw_root.hxx>
 #endif
 
 /* Database scanner boxes
@@ -22,9 +22,9 @@
  * A scanner show all (recursive) information of a database entry.
  *
  * This information can be organized in two different ways:
- * 1. AWT_SCANNER: Show exact all (filtered) information stored in the DB
- * 2. AWT_VIEWER:  Create a list of all database fields (see FIELD INFORMATION)
- *                 and if any information is stored under a field append it.
+ * 1. DB_SCANNER: Show exact all (filtered) information stored in the DB
+ * 2. DB_VIEWER:  Create a list of all database fields (see FIELD INFORMATION)
+ *                and if any information is stored under a field append it.
  *
  *    example:
  *      fields:
@@ -43,23 +43,25 @@
  */
 
 typedef enum {
-    AWT_SCANNER,
-    AWT_VIEWER
-} AWT_SCANNERMODE;
+    DB_SCANNER,
+    DB_VIEWER
+} DB_SCANNERMODE;
 
+struct ad_item_selector;
 
-AW_CL awt_create_arbdb_scanner(GBDATA                 *gb_main, AW_window *aws,
-                               const char             *box_pos_fig, /* the position for the box in the xfig file */
-                               const char             *delete_pos_fig,
-                               const char             *edit_pos_fig,
-                               const char             *edit_enable_pos_fig,
-                               AWT_SCANNERMODE         scannermode,
-                               const char             *rescan_pos_fig, // AWT_VIEWER
-                               const char             *mark_pos_fig,
-                               long                    type_filter,
-                               const ad_item_selector *selector);
+AW_CL create_db_scanner(GBDATA                 *gb_main,
+                        AW_window              *aws,
+                        const char             *box_pos_fig, /* the position for the box in the xfig file */
+                        const char             *delete_pos_fig,
+                        const char             *edit_pos_fig,
+                        const char             *edit_enable_pos_fig,
+                        DB_SCANNERMODE          scannermode,
+                        const char             *rescan_pos_fig, // DB_VIEWER
+                        const char             *mark_pos_fig,
+                        long                    type_filter,
+                        const ad_item_selector *selector);
 
-void awt_map_arbdb_scanner(AW_CL arbdb_scanid, GBDATA *gb_pntr, int show_only_marked_flag, const char *key_path);
+void map_db_scanner(AW_CL arbdb_scanid, GBDATA *gb_pntr, const char *key_path);
 
 #else
 #error db_scanner.hxx included twice

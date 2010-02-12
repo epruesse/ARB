@@ -11,38 +11,6 @@
 #ifndef AWTLOCAL_HXX
 #define AWTLOCAL_HXX
 
-struct adawcbstruct {
-    // @@@ FIXME: redesign: split into base class +
-    // several derived classes for the different usages.
-
-    AW_window              *aws;
-    AW_root                *awr;
-    GBDATA                 *gb_main;
-    GBDATA                 *gb_user;
-    GBDATA                 *gb_edit;
-    AW_selection_list      *id;
-    // char                   *comm;
-    char                   *def_name;
-    char                   *def_gbd;
-    char                   *def_alignment;
-    char                   *def_source;
-    char                   *def_dest;
-    char                   *def_filter;
-    char                   *previous_filename;
-    char                   *pwd;
-    char                   *pwdx;                   // additional directories
-    bool                    show_dir;
-    bool                    leave_wildcards;
-    char                    may_be_an_error;
-    char                    show_only_marked;
-    char                    scannermode;
-    char                   *def_dir;
-    const ad_item_selector *selector;
-    // bool                    add_pseudo_fields;      // true -> add pseudo-fields (used by 'awt_create_selection_list_on_scandb_cb')
-    // bool                    include_hidden_fields;  // true -> show hidden fields in selection list
-};
-
-
 typedef enum {
     AWT_QUERY_GENERATE,
     AWT_QUERY_ENLARGE,
@@ -117,9 +85,6 @@ struct awt_table {
 #define AWAR_TABLE_REM    "tmp/ad_table/table_rem"
 #define AWAR_TABLE_EXPORT "tmp/ad_table/export_table"
 #define AWAR_TABLE_IMPORT "tmp/ad_table/import_table"
-
-#define PSEUDO_FIELD_ANY_FIELD  "[any field]"
-#define PSEUDO_FIELD_ALL_FIELDS "[all fields]"
 
 long awt_query_update_list(void *dummy, struct adaqbsstruct *cbs);
 

@@ -2,9 +2,11 @@
 #include "awti_exp_local.hxx"
 
 #include <aw_awars.hxx>
-#include <aw_global.hxx>
-#include <awt.hxx>
+#include <aw_file.hxx>
+#include <aw_window.hxx>
+
 #include <awt_filter.hxx>
+
 #include <AP_filter.hxx>
 #include <xml.hxx>
 #include <inline.h>
@@ -72,7 +74,7 @@ static GB_ERROR awtc_read_export_format(export_format *efo, const char *file, bo
         error = "No export format selected";
     }
     else {
-        char *fullfile = AWT_unfold_path(file, "ARBHOME");
+        char *fullfile = AW_unfold_path(file, "ARBHOME");
         FILE *in       = fopen(fullfile, "r");
 
         if (!in) error = GB_export_IO_error("reading export form", fullfile);
@@ -577,7 +579,7 @@ static GB_ERROR AWTI_export_format(AW_root *aw_root, const char *formname, const
                     }
                     xml->add_attribute("export_date", GB_date_string());
                     {
-                        char *fulldtd = AWT_unfold_path("lib/dtd", "ARBHOME");
+                        char *fulldtd = AW_unfold_path("lib/dtd", "ARBHOME");
                         XML_Comment rem(GBS_global_string("There's a basic version of ARB_seq_export.dtd in %s\n"
                                                           "but you might need to expand it by yourself,\n"
                                                           "because the ARB-database may contain any kind of fields.",
@@ -722,7 +724,7 @@ void AWTC_export_go_cb(AW_window *aww, AW_CL cl_gb_main, AW_CL res_from_awt_crea
 
     if (real_outname) awr->awar(AWAR_EXPORT_FILE"/file_name")->write_string(real_outname);
 
-    awt_refresh_fileselection(awr, AWAR_EXPORT_FILE);
+    AW_refresh_fileselection(awr, AWAR_EXPORT_FILE);
 
     free(real_outname);
     free(outname);
@@ -731,8 +733,8 @@ void AWTC_export_go_cb(AW_window *aww, AW_CL cl_gb_main, AW_CL res_from_awt_crea
 }
 
 void AWTC_create_export_awars(AW_root *awr, AW_default def) {
-    aw_create_fileselection_awars(awr, AWAR_EXPORT_FORM, GB_path_in_ARBLIB("export", NULL), ".eft", "*", AW_ROOT_DEFAULT, true);
-    aw_create_fileselection_awars(awr, AWAR_EXPORT_FILE, "", "", "noname");
+    AW_create_fileselection_awars(awr, AWAR_EXPORT_FORM, GB_path_in_ARBLIB("export", NULL), ".eft", "*", AW_ROOT_DEFAULT, true);
+    AW_create_fileselection_awars(awr, AWAR_EXPORT_FILE, "", "", "noname");
 
     awr->awar_string(AWAR_EXPORT_ALI, "16s", def);
     awr->awar_int(AWAR_EXPORT_MULTIPLE_FILES, 0, def);
@@ -835,9 +837,9 @@ AW_window *open_AWTC_export_window(AW_root *awr, GBDATA *gb_main)
     aws->callback(AW_POPUP_HELP, (AW_CL)"arb_export.hlp");
     aws->create_button("HELP", "HELP", "H");
 
-    awt_create_fileselection(aws, AWAR_EXPORT_FILE, "f");
+    AW_create_fileselection(aws, AWAR_EXPORT_FILE, "f");
 
-    awt_create_fileselection(aws, AWAR_EXPORT_FORM, "", "ARBHOME", false);
+    AW_create_fileselection(aws, AWAR_EXPORT_FORM, "", "ARBHOME", false);
 
     aws->get_root()->awar(AWAR_EXPORT_FORM"/file_name")->add_callback(export_form_changed_cb);
 

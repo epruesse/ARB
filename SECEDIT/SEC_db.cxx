@@ -15,7 +15,7 @@
 #include "SEC_toggle.hxx"
 
 #include <aw_awars.hxx>
-#include <aw_global.hxx>
+#include <aw_file.hxx>
 #include <arbdbt.h>
 #include <ed4_extern.hxx>
 
@@ -378,7 +378,7 @@ static void create_awars(AW_root *aw_root, AW_default def) {
 
     {
         char *dir = GBS_global_string_copy("%s/.arb_prop/secondary_structure", GB_getenvHOME());
-        aw_create_fileselection_awars(aw_root, AWAR_SECEDIT_SAVEDIR, dir, ".ass", "noname.ass");
+        AW_create_fileselection_awars(aw_root, AWAR_SECEDIT_SAVEDIR, dir, ".ass", "noname.ass");
         free(dir);
     }
 

@@ -138,12 +138,11 @@ PH_matr.o: $(ARBHOME)/INCLUDE/arbdbt.h
 PH_matr.o: $(ARBHOME)/INCLUDE/arbtools.h
 PH_matr.o: $(ARBHOME)/INCLUDE/attributes.h
 PH_matr.o: $(ARBHOME)/INCLUDE/aw_device.hxx
-PH_matr.o: $(ARBHOME)/INCLUDE/aw_global.hxx
+PH_matr.o: $(ARBHOME)/INCLUDE/aw_file.hxx
 PH_matr.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 PH_matr.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 PH_matr.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 PH_matr.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-PH_matr.o: $(ARBHOME)/INCLUDE/awt.hxx
 PH_matr.o: $(ARBHOME)/INCLUDE/dupstr.h
 PH_matr.o: $(ARBHOME)/INCLUDE/smartptr.h
 

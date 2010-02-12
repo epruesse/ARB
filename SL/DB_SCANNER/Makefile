@@ -52,9 +52,9 @@ db_scanner.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 db_scanner.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 db_scanner.o: $(ARBHOME)/INCLUDE/AW_rename.hxx
 db_scanner.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+db_scanner.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 db_scanner.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 db_scanner.o: $(ARBHOME)/INCLUDE/awt.hxx
-db_scanner.o: $(ARBHOME)/INCLUDE/awtlocal.hxx
 db_scanner.o: $(ARBHOME)/INCLUDE/dupstr.h
 db_scanner.o: $(ARBHOME)/INCLUDE/inline.h
 db_scanner.o: $(ARBHOME)/INCLUDE/smartptr.h

@@ -14,12 +14,15 @@
 
 #include <mg_merge.hxx>
 #include <awti_import.hxx>
-#include <aw_advice.hxx>
+
 #include <awt.hxx>
-#include <aw_global.hxx>
+
+#include <aw_advice.hxx>
 #include <aw_question.hxx>
 #include <aw_awars.hxx>
 #include <aw_edit.hxx>
+#include <aw_file.hxx>
+
 #include <adGene.h>
 #include <arb_version.h>
 
@@ -310,7 +313,7 @@ AW_window *nt_create_intro_window(AW_root *awr)
     aws->callback(AW_POPUP_HELP, (AW_CL)"arb_intro.hlp");
     aws->create_button("HELP", "HELP", "H");
 
-    awt_create_fileselection(aws, "tmp/nt/arbdb");
+    AW_create_fileselection(aws, "tmp/nt/arbdb");
 
     aws->button_length(0);
 
@@ -342,7 +345,7 @@ AW_window *nt_create_intro_window(AW_root *awr)
     aws->at("expert");
     aws->create_toggle(AWAR_EXPERT);
 
-    return (AW_window *)aws;
+    return aws;
 }
 
 void AD_set_default_root(AW_root *aw_root);
@@ -397,7 +400,7 @@ int main(int argc, char **argv) {
     // create some early awars
     // Note: normally you don't like to add your awar-init-function here, but into nt_create_all_awars()
 
-    aw_create_fileselection_awars(aw_root, AWAR_DB, "", ".arb", "noname.arb", aw_default);
+    AW_create_fileselection_awars(aw_root, AWAR_DB, "", ".arb", "noname.arb", aw_default);
     aw_root->awar_string(AWAR_DB"type", "b", aw_default);
 
     aw_root->awar_int(AWAR_EXPERT, 0, aw_default);
@@ -482,14 +485,14 @@ int main(int argc, char **argv) {
 
         if (load_file_err) {
             int   answer    = -1;
-            char *full_path = AWT_unfold_path(db_server);
+            char *full_path = AW_unfold_path(db_server);
 
             printf("load_file_err='%s'\n", load_file_err);
 
-            if (AWT_is_dir(full_path)) answer = 2; // autoselect browser
+            if (GB_is_directory(full_path)) answer = 2; // autoselect browser
 
             if (answer == -1) {
-                if (!AWT_is_file(full_path)) {
+                if (!GB_is_regularfile(full_path)) {
                     const char *msg = GBS_global_string("'%s' is neither a known option nor a legal file- or directory-name.\n(Error: %s)",
                                                         full_path, load_file_err);
                     answer          = aw_question(msg, "Browser,Exit");
@@ -516,10 +519,10 @@ int main(int argc, char **argv) {
                 }
                 case 2: {        // Browse
                     char *dir = nulldup(full_path);
-                    while (dir && !AWT_is_dir(dir)) freeset(dir, AWT_extract_directory(dir));
+                    while (dir && !GB_is_directory(dir)) freeset(dir, AW_extract_directory(dir));
 
                     if (dir) {
-                        nt_assert(AWT_is_dir(dir));
+                        nt_assert(GB_is_directory(dir));
                         reassign(browser_startdir, dir);
                         start_db_browser = true;
                     }

@@ -17,9 +17,11 @@
 #include <awtc_next_neighbours.hxx>
 #include <awtc_seq_search.hxx>
 
-#include <aw_awars.hxx>
-#include <awt.hxx>
 #include <awt_sel_boxes.hxx>
+
+#include <aw_window.hxx>
+#include <aw_awars.hxx>
+#include <arbdbt.h>
 
 #include <cctype>
 #include <climits>

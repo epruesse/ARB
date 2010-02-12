@@ -1,20 +1,21 @@
-#include <cstdio>
-#include <cstdlib>
-#include <unistd.h>
-#include <ctime>
-#include <cstring>
+// ================================================================ //
+//                                                                  //
+//   File      : AWT_tables.cxx                                     //
+//   Purpose   :                                                    //
+//                                                                  //
+//   Institute of Microbiology (Technical University Munich)        //
+//   http://www.arb-home.de/                                        //
+//                                                                  //
+// ================================================================ //
 
-#include <arbdb.h>
-#include <arbdbt.h>
-#include <aw_root.hxx>
-#include <aw_device.hxx>
-#include <aw_window.hxx>
-#include <aw_awars.hxx>
-#include <aw_global.hxx>
 #include "awt.hxx"
 #include "awtlocal.hxx"
 #include "awt_sel_boxes.hxx"
 
+#include <aw_awars.hxx>
+#include <aw_file.hxx>
+
+#include <arbdbt.h>
 
 void ad_table_field_reorder_cb(AW_window *aws, awt_table *awtt) {
     GB_begin_transaction(awtt->gb_main);
@@ -491,9 +492,9 @@ void create_tables_var(GBDATA *gb_main, AW_root *aw_root) {
     aw_root->awar_string(AWAR_TABLE_DEST);
     aw_root->awar_string(AWAR_TABLE_REM, "no rem");
 
-    aw_create_fileselection_awars(aw_root, AWAR_TABLE_EXPORT, "", "table", "tablefile");
+    AW_create_fileselection_awars(aw_root, AWAR_TABLE_EXPORT, "", "table", "tablefile");
 
-    aw_create_fileselection_awars(aw_root, AWAR_TABLE_IMPORT, "", "table", "tablefile");
+    AW_create_fileselection_awars(aw_root, AWAR_TABLE_IMPORT, "", "table", "tablefile");
     aw_root->awar_string(AWAR_TABLE_IMPORT "/table_name", "table_");
 
     aw_root->awar(AWAR_TABLE_NAME)->add_callback((AW_RCB1)table_vars_callback, (AW_CL)gb_main);

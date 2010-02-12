@@ -10,8 +10,8 @@
 
 #include "merge.hxx"
 
-#include <awt.hxx>
 #include <awt_sel_boxes.hxx>
+#include <arbdbt.h>
 
 #include <unistd.h>
 
