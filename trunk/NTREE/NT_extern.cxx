@@ -1245,11 +1245,11 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone) {
 
             SEP________________________SEP();
 
-            AWMIMT("species_submission", "Submit Species", "b",   "submission.hlp",   AWM_EXP, AW_POPUP,   (AW_CL)AWTC_create_submission_window,   0);
+            AWMIMT("species_submission", "Submit Species", "b", "submission.hlp", AWM_EXP, AW_POPUP, (AW_CL)AWTC_create_submission_window, (AW_CL)GLOBAL_gb_main);
 
             SEP________________________SEP();
 
-            AWMIMT("new_names",     "Generate New Names",   "e", "sp_rename.hlp",   AWM_ALL, AW_POPUP,   (AW_CL)AWTC_create_rename_window,      (AW_CL)GLOBAL_gb_main);
+            AWMIMT("new_names", "Generate New Names", "e", "sp_rename.hlp", AWM_ALL, AW_POPUP, (AW_CL)AWTC_create_rename_window, (AW_CL)GLOBAL_gb_main);
 
             awm->insert_sub_menu("Valid Names ...", "V", AWM_EXP);
             {
