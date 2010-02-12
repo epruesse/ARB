@@ -80,13 +80,13 @@ static void ed_submit_info_event_rm(char *string)
     }
 }
 
-extern GBDATA *GLOBAL_gb_main;
-
-static void ed_submit_info_event(AW_window *aww) {
-    AW_root        *aw_root      = aww->get_root();
-    GB_transaction  dummy(GLOBAL_gb_main);
+static void ed_submit_info_event(AW_window *aww, AW_CL cl_gbmain) {
+    GBDATA  *gb_main = (GBDATA*)cl_gbmain;
+    AW_root *aw_root = aww->get_root();
+    
+    GB_transaction  dummy(gb_main);  
     char           *species_name = aw_root->awar(AWAR_SPECIES_NAME)->read_string();
-    GBDATA         *gb_species   = GBT_find_species(GLOBAL_gb_main, species_name);
+    GBDATA         *gb_species   = GBT_find_species(gb_main, species_name);
     GBS_strstruct  *strstruct    = GBS_stropen(1000);
 
     if (gb_species) {
@@ -217,11 +217,9 @@ static void ed_submit_gen_event(AW_window *aww)
 }
 
 
-AW_window *AWTC_create_submission_window(AW_root *root)
-{
-    AWUSE(root);
-
-    AW_window_simple *aws = new AW_window_simple;
+AW_window *AWTC_create_submission_window(AW_root *root, AW_CL cl_gbmain) {
+    GBDATA           *gb_main = (GBDATA*)cl_gbmain;
+    AW_window_simple *aws     = new AW_window_simple;
     aws->init(root, "SUBMISSION", "SUBMISSION");
 
     aws->load_xfig("submiss.fig");
@@ -274,7 +272,7 @@ AW_window *AWTC_create_submission_window(AW_root *root)
     aws->create_input_field("submission/file", 30);
 
     aws->at("info");
-    aws->callback(ed_submit_info_event);
+    aws->callback(ed_submit_info_event, (AW_CL)gb_main);
     aws->create_button("READ_INFO", "READ INFO", "R");
 
     aws->at("parse");
