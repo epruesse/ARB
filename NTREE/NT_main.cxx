@@ -8,6 +8,7 @@
 //                                                                 //
 // =============================================================== //
 
+#include "map_viewer.hxx"
 #include "nt_internal.h"
 #include "ntree.hxx"
 #include "nt_cb.hxx"
@@ -348,8 +349,6 @@ AW_window *nt_create_intro_window(AW_root *awr)
     return aws;
 }
 
-void AD_set_default_root(AW_root *aw_root);
-
 static void AWAR_DB_PATH_changed_cb(AW_root *awr) {
     static int avoid_recursion = 0;
 
@@ -391,7 +390,7 @@ int main(int argc, char **argv) {
 
     AW_root *aw_root = new AW_root;
     GLOBAL_NT.awr    = aw_root;
-    AD_set_default_root(aw_root);                   // set default for AD_map_viewer (as long as no info-box was opened)
+    MapViewer_set_default_root(aw_root);            // set default for launch_MapViewer_cb (as long as no info-box was opened)
 
     AW_default aw_default = AWT_open_properties(aw_root, ".arb_prop/ntree.arb");
     aw_root->init_variables(aw_default);

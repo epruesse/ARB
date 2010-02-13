@@ -108,19 +108,25 @@ ad_ext.o: $(ARBHOME)/INCLUDE/dupstr.h
 ad_ext.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 ad_spec.o: ad_spec.hxx
+ad_spec.o: map_viewer.hxx
 ad_spec.o: nt_internal.h
 ad_spec.o: ntree.hxx
 ad_spec.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 ad_spec.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ad_spec.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+ad_spec.o: $(ARBHOME)/INCLUDE/AliView.hxx
+ad_spec.o: $(ARBHOME)/INCLUDE/AP_sequence.hxx
+ad_spec.o: $(ARBHOME)/INCLUDE/AP_Tree.hxx
 ad_spec.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ad_spec.o: $(ARBHOME)/INCLUDE/arb_error.h
+ad_spec.o: $(ARBHOME)/INCLUDE/ARB_Tree.hxx
 ad_spec.o: $(ARBHOME)/INCLUDE/arbdb.h
 ad_spec.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 ad_spec.o: $(ARBHOME)/INCLUDE/arbdbt.h
 ad_spec.o: $(ARBHOME)/INCLUDE/arbtools.h
 ad_spec.o: $(ARBHOME)/INCLUDE/attributes.h
 ad_spec.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
+ad_spec.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 ad_spec.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 ad_spec.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ad_spec.o: $(ARBHOME)/INCLUDE/aw_position.hxx
@@ -136,9 +142,11 @@ ad_spec.o: $(ARBHOME)/INCLUDE/awt_www.hxx
 ad_spec.o: $(ARBHOME)/INCLUDE/awtc_next_neighbours.hxx
 ad_spec.o: $(ARBHOME)/INCLUDE/awtlocal.hxx
 ad_spec.o: $(ARBHOME)/INCLUDE/db_scanner.hxx
+ad_spec.o: $(ARBHOME)/INCLUDE/downcast.h
 ad_spec.o: $(ARBHOME)/INCLUDE/dupstr.h
 ad_spec.o: $(ARBHOME)/INCLUDE/probe_design.hxx
 ad_spec.o: $(ARBHOME)/INCLUDE/smartptr.h
+ad_spec.o: $(ARBHOME)/INCLUDE/TreeDisplay.hxx
 
 ad_transpro.o: nt_internal.h
 ad_transpro.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
@@ -399,6 +407,7 @@ NT_edconf.o: $(ARBHOME)/INCLUDE/smartptr.h
 NT_extern.o: ad_spec.hxx
 NT_extern.o: ad_trees.hxx
 NT_extern.o: ap_consensus.hxx
+NT_extern.o: map_viewer.hxx
 NT_extern.o: nt_internal.h
 NT_extern.o: nt_join.hxx
 NT_extern.o: ntree.hxx
@@ -522,6 +531,7 @@ NT_join.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 NT_join.o: $(ARBHOME)/INCLUDE/dupstr.h
 NT_join.o: $(ARBHOME)/INCLUDE/smartptr.h
 
+NT_main.o: map_viewer.hxx
 NT_main.o: nt_cb.hxx
 NT_main.o: nt_internal.h
 NT_main.o: ntree.hxx
@@ -529,9 +539,13 @@ NT_main.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 NT_main.o: $(ARBHOME)/INCLUDE/ad_prot.h
 NT_main.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 NT_main.o: $(ARBHOME)/INCLUDE/adGene.h
+NT_main.o: $(ARBHOME)/INCLUDE/AliView.hxx
+NT_main.o: $(ARBHOME)/INCLUDE/AP_sequence.hxx
+NT_main.o: $(ARBHOME)/INCLUDE/AP_Tree.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/arb_assert.h
 NT_main.o: $(ARBHOME)/INCLUDE/arb_build.h
 NT_main.o: $(ARBHOME)/INCLUDE/arb_error.h
+NT_main.o: $(ARBHOME)/INCLUDE/ARB_Tree.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/arb_version.h
 NT_main.o: $(ARBHOME)/INCLUDE/arbdb.h
 NT_main.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -540,6 +554,7 @@ NT_main.o: $(ARBHOME)/INCLUDE/arbtools.h
 NT_main.o: $(ARBHOME)/INCLUDE/attributes.h
 NT_main.o: $(ARBHOME)/INCLUDE/aw_advice.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
+NT_main.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/aw_edit.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/aw_file.hxx
@@ -549,11 +564,14 @@ NT_main.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/awt.hxx
+NT_main.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/awti_import.hxx
+NT_main.o: $(ARBHOME)/INCLUDE/downcast.h
 NT_main.o: $(ARBHOME)/INCLUDE/dupstr.h
 NT_main.o: $(ARBHOME)/INCLUDE/mg_merge.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/smartptr.h
 NT_main.o: $(ARBHOME)/INCLUDE/svn_revision.h
+NT_main.o: $(ARBHOME)/INCLUDE/TreeDisplay.hxx
 
 NT_sort.o: nt_cb.hxx
 NT_sort.o: ntree.hxx
