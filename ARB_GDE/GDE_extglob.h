@@ -25,16 +25,15 @@ class AP_filter;
 #include "GDE_proto.h"
 #endif
 
-extern Gmenu   menu[GDEMAXMENU];
-extern int     num_menus;
-extern GBDATA *GLOBAL_gb_main;
-extern int     DataType;
-extern int     FileFormat, first_select;
-extern int     DisplayAttr, OVERWRITE;
-extern int     SCALE;
-extern int     BlockInput;
-extern char    FileName[80];
-extern char    current_dir[1024];
+extern Gmenu menu[GDEMAXMENU];
+extern int   num_menus;
+extern int   DataType;
+extern int   FileFormat, first_select;
+extern int   DisplayAttr, OVERWRITE;
+extern int   SCALE;
+extern int   BlockInput;
+extern char  FileName[80];
+extern char  current_dir[1024];
 
 #ifdef SeeAlloc
 int TotalCalloc  = 0;

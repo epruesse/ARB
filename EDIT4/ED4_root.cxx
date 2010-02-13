@@ -1857,7 +1857,7 @@ ED4_returncode ED4_root::generate_window(AW_device **device,    ED4_window **new
     awmm->create_mode("edit/kill.bitmap",  "kill.hlp",   AWM_ALL, (AW_CB)modes_cb, (AW_CL)1, (AW_CL)0);
     awmm->create_mode("edit/mark.bitmap",  "mark.hlp",   AWM_ALL, (AW_CB)modes_cb, (AW_CL)2, (AW_CL)0);
 
-    FastAligner_create_variables(awmm->get_root(), db);
+    FastAligner_create_variables(awmm->get_root(), props_db);
 
     return (ED4_R_OK);
 }

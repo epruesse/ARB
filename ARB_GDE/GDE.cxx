@@ -128,22 +128,16 @@ static AW_window *GDE_menuitem_cb(AW_root *aw_root, GmenuItem *gmenuitem) {
         AW_window_simple *aws = new AW_window_simple;
         aws->init(aw_root, bf, bf);
 
-        switch (gde_cgss.wt) {
-            case CGSS_WT_DEFAULT: {
+        switch (db_access.window_type) {
+            case GDE_WINDOWTYPE_DEFAULT: {
                 if (seqtype == '-') aws->load_xfig("gdeitem_simple.fig");
                 else                aws->load_xfig("gdeitem.fig");
                 break;
             }
-            case CGSS_WT_EDIT:
-                gde_assert(seqtype != '-');
-                aws->load_xfig("gde2item.fig");
-                break;
-            case CGSS_WT_EDIT4:
+            case GDE_WINDOWTYPE_EDIT4:
                 gde_assert(seqtype != '-');
                 aws->load_xfig("gde3item.fig");
                 break;
-            default:
-                gde_assert(0);
         }
 
         aws->set_window_size(1000, 2000);
@@ -165,12 +159,12 @@ static AW_window *GDE_menuitem_cb(AW_root *aw_root, GmenuItem *gmenuitem) {
 
 
         if (gmenuitem->numinputs>0) {
-            switch (gde_cgss.wt) {
-                case CGSS_WT_DEFAULT: {
+            switch (db_access.window_type) {
+                case GDE_WINDOWTYPE_DEFAULT: {
                     if (seqtype != '-') { // '-' means "skip sequence export"
                         aws->at("which_alignment");
                         const char *ali_filter = seqtype == 'A' ? "pro=:ami=" : (seqtype == 'N' ? "dna=:rna=" : "*=");
-                        awt_create_selection_list_on_alignments(GLOBAL_gb_main, (AW_window *)aws, AWAR_GDE_ALIGNMENT, ali_filter);
+                        awt_create_selection_list_on_alignments(db_access.gb_main, (AW_window *)aws, AWAR_GDE_ALIGNMENT, ali_filter);
 
                         aws->at("which_species");
                         aws->create_toggle_field(AWAR_GDE_SPECIES);
@@ -186,18 +180,11 @@ static AW_window *GDE_menuitem_cb(AW_root *aw_root, GmenuItem *gmenuitem) {
                     }
                     break;
                 }
-                case CGSS_WT_EDIT:
-                    aws->at("bottom"); aws->create_toggle("gde/bottom_area");
-                    aws->at("bottomsai"); aws->create_toggle("gde/bottom_area_sai");
-                    aws->at("bottomh"); aws->create_toggle("gde/bottom_area_helix");
-                    goto both_edits;
-                case CGSS_WT_EDIT4:
+                case GDE_WINDOWTYPE_EDIT4:
                     aws->at("topk"); aws->create_toggle("gde/top_area_kons");
                     aws->at("middlek"); aws->create_toggle("gde/middle_area_kons");
                     aws->at("topr"); aws->create_toggle("gde/top_area_remark");
                     aws->at("middler"); aws->create_toggle("gde/middle_area_remark");
-                    goto both_edits;
-                both_edits :
                     aws->at("top"); aws->create_toggle("gde/top_area");
                     aws->at("topsai"); aws->create_toggle("gde/top_area_sai");
                     aws->at("toph"); aws->create_toggle("gde/top_area_helix");
@@ -219,7 +206,7 @@ static AW_window *GDE_menuitem_cb(AW_root *aw_root, GmenuItem *gmenuitem) {
                 aws->button_length(12);
                 aws->at("filtername");
                 if (!agde_filtercd) { // create only one filter - used for all GDE calls
-                    agde_filtercd = awt_create_select_filter(aws->get_root(), GLOBAL_gb_main, AWAR_GDE_FILTER_NAME);
+                    agde_filtercd = awt_create_select_filter(aws->get_root(), db_access.gb_main, AWAR_GDE_FILTER_NAME);
                 }
                 aws->callback((AW_CB2)AW_POPUP, (AW_CL)awt_create_select_filter_win, (AW_CL)agde_filtercd);
                 aws->create_button("SELECT_FILTER", AWAR_GDE_FILTER_NAME);
@@ -341,7 +328,7 @@ static AW_window *GDE_menuitem_cb(AW_root *aw_root, GmenuItem *gmenuitem) {
                 char *newawar=GDE_makeawarname(gmenuitem, i);
                 aw_root->awar_string(newawar, defopt, AW_ROOT_DEFAULT);
                 aws->label(gmenuitem->arg[i].label);
-                awt_create_selection_list_on_trees(GLOBAL_gb_main, aws, newawar);
+                awt_create_selection_list_on_trees(db_access.gb_main, aws, newawar);
                 free(newawar);
             }
             else if (itemarg.type==CHOICE_SAI) {
@@ -349,7 +336,7 @@ static AW_window *GDE_menuitem_cb(AW_root *aw_root, GmenuItem *gmenuitem) {
                 char *newawar=GDE_makeawarname(gmenuitem, i);
                 aw_root->awar_string(newawar, defopt, AW_ROOT_DEFAULT);
                 aws->label(gmenuitem->arg[i].label);
-                awt_create_selection_list_on_extendeds(GLOBAL_gb_main, aws, newawar);
+                awt_create_selection_list_on_extendeds(db_access.gb_main, aws, newawar);
                 free(newawar);
             }
             else if (itemarg.type==CHOICE_WEIGHTS) {
@@ -357,7 +344,7 @@ static AW_window *GDE_menuitem_cb(AW_root *aw_root, GmenuItem *gmenuitem) {
                 char *newawar=GDE_makeawarname(gmenuitem, i);
                 aw_root->awar_string(newawar, defopt, AW_ROOT_DEFAULT);
                 aws->label(gmenuitem->arg[i].label);
-                void *id = awt_create_selection_list_on_extendeds(GLOBAL_gb_main, aws, newawar, gde_filter_weights);
+                void *id = awt_create_selection_list_on_extendeds(db_access.gb_main, aws, newawar, gde_filter_weights);
                 free(newawar);
                 aw_root->awar(AWAR_GDE_ALIGNMENT)->add_callback((AW_RCB1)awt_create_selection_list_on_extendeds_update, (AW_CL)id);
             }
@@ -385,6 +372,8 @@ void GDE_load_menu(AW_window *awm, AW_active mask, const char *menulabel, const 
     // If 'menuitemlabel' == NULL -> load complete menu(s)
     // Else                       -> load only specific menu topic
 
+    gde_assert(db_access.gb_main); // forgot to call GDE_create_var() ?
+    
     char       buffer[1024];
     char      *help;
     long       nitem, num_items;
@@ -445,45 +434,44 @@ void GDE_load_menu(AW_window *awm, AW_active mask, const char *menulabel, const 
     }
 }
 
-struct choose_get_sequence_struct gde_cgss = { 0, CGSS_WT_DEFAULT, 0 };
+struct gde_database_access db_access = { NULL, GDE_WINDOWTYPE_DEFAULT, 0, NULL};
 
-void create_gde_var(AW_root  *aw_root, AW_default aw_def,
-                    char *(*get_sequences)(void *THIS, GBDATA **&the_species,
-                                           uchar **&the_names,
-                                           uchar **&the_sequences,
-                                           long &numberspecies, long &maxalignlen),
-                    gde_cgss_window_type wt,
-                    void *THIS)
+void GDE_create_var(AW_root              *aw_root,
+                    AW_default            aw_def,
+                    GBDATA               *gb_main,
+                    GDE_get_sequences_cb  get_sequences,
+                    gde_window_type       window_type,
+                    AW_CL                 client_data)
 {
-    gde_cgss.get_sequences = get_sequences;
-    gde_cgss.wt = wt;
-    gde_cgss.THIS = THIS;
+    db_access.get_sequences = get_sequences;
+    db_access.window_type   = window_type;
+    db_access.client_data   = client_data;
+    db_access.gb_main       = gb_main;
 
     aw_root->awar_string(AWAR_GDE_ALIGNMENT, "", aw_def);
 
-    switch (gde_cgss.wt)
-    {
-        case CGSS_WT_EDIT4:
-            aw_root->awar_int("gde/top_area_kons", 1, aw_def);
-            aw_root->awar_int("gde/top_area_remark", 1, aw_def);
-            aw_root->awar_int("gde/middle_area_kons", 1, aw_def);
+    switch (db_access.window_type) {
+        case GDE_WINDOWTYPE_EDIT4:
+            aw_root->awar_int("gde/top_area_kons",      1, aw_def);
+            aw_root->awar_int("gde/top_area_remark",    1, aw_def);
+            aw_root->awar_int("gde/middle_area_kons",   1, aw_def);
             aw_root->awar_int("gde/middle_area_remark", 1, aw_def);
-        case CGSS_WT_EDIT:
-            aw_root->awar_int("gde/top_area", 1, aw_def);
-            aw_root->awar_int("gde/top_area_sai", 1, aw_def);
-            aw_root->awar_int("gde/top_area_helix", 1, aw_def);
-            aw_root->awar_int("gde/middle_area", 1, aw_def);
-            aw_root->awar_int("gde/middle_area_sai", 1, aw_def);
-            aw_root->awar_int("gde/middle_area_helix", 1, aw_def);
-            aw_root->awar_int("gde/bottom_area", 1, aw_def);
-            aw_root->awar_int("gde/bottom_area_sai", 1, aw_def);
-            aw_root->awar_int("gde/bottom_area_helix", 1, aw_def);
-        default:
+            aw_root->awar_int("gde/top_area",           1, aw_def);
+            aw_root->awar_int("gde/top_area_sai",       1, aw_def);
+            aw_root->awar_int("gde/top_area_helix",     1, aw_def);
+            aw_root->awar_int("gde/middle_area",        1, aw_def);
+            aw_root->awar_int("gde/middle_area_sai",    1, aw_def);
+            aw_root->awar_int("gde/middle_area_helix",  1, aw_def);
+            aw_root->awar_int("gde/bottom_area",        1, aw_def);
+            aw_root->awar_int("gde/bottom_area_sai",    1, aw_def);
+            aw_root->awar_int("gde/bottom_area_helix",  1, aw_def);
+            break;
+        case GDE_WINDOWTYPE_DEFAULT:
             break;
     }
 
-    aw_root->awar_string("presets/use",             "", GLOBAL_gb_main);
-
+    aw_root->awar_string("presets/use",             "", db_access.gb_main);
+    
     aw_root->awar_string(AWAR_GDE_FILTER_NAME,      "", aw_def);
     aw_root->awar_string(AWAR_GDE_FILTER_FILTER,    "", aw_def);
     aw_root->awar_string(AWAR_GDE_FILTER_ALIGNMENT, "", aw_def);
