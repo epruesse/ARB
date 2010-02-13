@@ -48,5 +48,4 @@ TreeWrite.o: $(ARBHOME)/INCLUDE/arbtools.h
 TreeWrite.o: $(ARBHOME)/INCLUDE/attributes.h
 TreeWrite.o: $(ARBHOME)/INCLUDE/dupstr.h
 TreeWrite.o: $(ARBHOME)/INCLUDE/smartptr.h
-TreeWrite.o: $(ARBHOME)/INCLUDE/TreeRead.h
 TreeWrite.o: $(ARBHOME)/INCLUDE/xml.hxx

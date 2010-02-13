@@ -11,7 +11,6 @@
 
 #include <TreeWrite.h>
 #include <xml.hxx>
-#include <TreeRead.h>
 
 using namespace std;
 
@@ -330,7 +329,7 @@ GB_ERROR TREE_write_Newick(GBDATA *gb_main, char *tree_name, const TREE_node_tex
                 }
                 {
                     const char *saved_to = GBS_global_string("%s saved to %s", tree_name, path);
-                    freeset(remark, TREE_log_action_to_tree_comment(remark, saved_to));
+                    freeset(remark, GBS_log_dated_action_to(remark, saved_to));
                 }
 
                 if (remark) {

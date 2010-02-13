@@ -21,7 +21,6 @@
 
 GBT_TREE *TREE_load(const char *path, int structuresize, char **commentPtr, int allow_length_scaling, char **warningPtr);
 void      TREE_scale(GBT_TREE *tree, double length_scale, double bootstrap_scale);
-char     *TREE_log_action_to_tree_comment(const char *comment, const char *action);
 
 #else
 #error TreeRead.h included twice
