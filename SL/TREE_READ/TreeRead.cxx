@@ -462,7 +462,7 @@ GBT_TREE *TREE_load(const char *path, int structuresize, char **commentPtr, int 
                 char *comment = getTreeComment(reader);
 
                 const char *loaded_from = GBS_global_string("Loaded from %s", path);
-                freeset(comment, TREE_log_action_to_tree_comment(comment, loaded_from));
+                freeset(comment, GBS_log_dated_action_to(comment, loaded_from));
 
                 tree_assert(*commentPtr == 0);
                 *commentPtr = comment;

@@ -8,18 +8,17 @@
 //                                                                 //
 // =============================================================== //
 
+#include "gb_key.h"
+
+#include <SigHandler.h>
+
 #include <execinfo.h>
 
 #include <cstdarg>
 #include <cctype>
 #include <cerrno>
-#include <csignal>
+#include <ctime>
 #include <setjmp.h>
-
-#include <SigHandler.h>
-
-#include "gb_key.h"
-
 
 #define GBS_GLOBAL_STRING_SIZE 64000
 
@@ -1841,3 +1840,43 @@ char *GBS_trim(const char *str) {
 
     return GB_strpartdup(str, end);
 }
+
+static char *dated_info(const char *info) {
+    char *dated_info = 0;
+    time_t      date;
+    if (time(&date) != -1) {
+        char *dstr = ctime(&date);
+        char *nl   = strchr(dstr, '\n');
+
+        if (nl) nl[0] = 0; // cut off LF
+
+        dated_info = GBS_global_string_copy("%s: %s", dstr, info);
+    }
+    else {
+        dated_info = strdup(info);
+    }
+    return dated_info;
+}
+
+char *GBS_log_dated_action_to(const char *comment, const char *action) {
+    /*! appends 'action' prefixed by current timestamp to 'comment'
+     */
+    size_t clen = comment ? strlen(comment) : 0;
+    size_t alen = strlen(action);
+
+    GBS_strstruct *new_comment = GBS_stropen(clen+alen+100);
+
+    if (comment) {
+        GBS_strcat(new_comment, comment);
+        if (comment[clen-1] != '\n') GBS_chrcat(new_comment, '\n');
+    }
+
+    char *dated_action = dated_info(action);
+    GBS_strcat(new_comment, dated_action);
+    GBS_chrcat(new_comment, '\n');
+
+    free(dated_action);
+
+    return GBS_strclose(new_comment);
+}
+
