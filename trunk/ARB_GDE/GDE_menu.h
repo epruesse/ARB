@@ -87,11 +87,12 @@ typedef struct Gmenutype
 
 typedef unsigned char uchar;
 
-extern struct choose_get_sequence_struct {
-    char *(*get_sequences)(void *THIS, GBDATA **&the_species, uchar **&the_names, uchar **&the_sequences, long &numberspecies, long &maxalignlen);
-    gde_cgss_window_type wt;
-    void *THIS;
-} gde_cgss;
+extern struct gde_database_access {
+    GDE_get_sequences_cb  get_sequences;
+    gde_window_type       window_type;
+    AW_CL                 client_data;
+    GBDATA               *gb_main;
+} db_access;
 
 
 #else

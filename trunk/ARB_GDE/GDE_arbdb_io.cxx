@@ -176,9 +176,9 @@ static int InsertDatainGDE(NA_Alignment *dataset, GBDATA **the_species, unsigned
     }
 
     {
-        GB_transaction  dummy(GLOBAL_gb_main);
+        GB_transaction  dummy(db_access.gb_main);
         char           *str   = filter->to_string();
-        GB_ERROR        error = GBT_write_string(GLOBAL_gb_main, AWAR_GDE_EXPORT_FILTER, str);
+        GB_ERROR        error = GBT_write_string(db_access.gb_main, AWAR_GDE_EXPORT_FILTER, str);
         delete [] str;
 
         if (error) aw_message(error);
@@ -302,16 +302,16 @@ void ReadArbdb_plain(char *filename, NA_Alignment *dataset, int type) {
 }
 
 int ReadArbdb2(NA_Alignment *dataset, AP_filter *filter, GapCompression compress, bool cutoff_stop_codon) {
-    dataset->gb_main = GLOBAL_gb_main;
+    dataset->gb_main = db_access.gb_main;
 
     GBDATA **the_species;
     long     maxalignlen;
     long     numberspecies = 0;
     uchar  **the_sequences;
     uchar  **the_names;
-    char    *error         = gde_cgss.get_sequences(gde_cgss.THIS,
-                                                    the_species, the_names, the_sequences,
-                                                    numberspecies, maxalignlen);
+    char    *error         = db_access.get_sequences(db_access.client_data,
+                                                     the_species, the_names, the_sequences,
+                                                     numberspecies, maxalignlen);
 
     gde_assert((the_species==0) != (the_names==0));
 
@@ -339,14 +339,14 @@ int ReadArbdb(NA_Alignment *dataset, bool marked, AP_filter *filter, GapCompress
     GBDATA *gb_species;
 
     /* ARB_NT END */
-    dataset->gb_main = GLOBAL_gb_main;
+    dataset->gb_main = db_access.gb_main;
 
     /* Alignment choosen ? */
 
     gb_species_data = GB_entry(dataset->gb_main, "species_data");
     ErrorOut5(gb_species_data!=0, "species_data not found");
 
-    long     maxalignlen   = GBT_get_alignment_len(GLOBAL_gb_main, dataset->alignment_name);
+    long     maxalignlen   = GBT_get_alignment_len(db_access.gb_main, dataset->alignment_name);
     GBDATA **the_species;
     long     numberspecies = 0;
     long     missingdata   = 0;
@@ -382,7 +382,7 @@ int ReadArbdb(NA_Alignment *dataset, bool marked, AP_filter *filter, GapCompress
         else gb_species        = GBT_next_species(gb_species);
     }
 
-    maxalignlen = GBT_get_alignment_len(GLOBAL_gb_main, dataset->alignment_name);
+    maxalignlen = GBT_get_alignment_len(db_access.gb_main, dataset->alignment_name);
 
     char **the_sequences = (char**)calloc((unsigned int)numberspecies+1, sizeof(char*));
 

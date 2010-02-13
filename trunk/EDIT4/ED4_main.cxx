@@ -265,14 +265,13 @@ static char *add_area_for_gde(ED4_area_manager *area_man, uchar **&the_names, uc
     return 0;
 }
 
-char *ED4_create_sequences_for_gde(void*, GBDATA **&the_species, uchar **&the_names, uchar **&the_sequences, long &numberspecies, long &maxalign)
-{
-    int top = ED4_ROOT->aw_root->awar("gde/top_area")->read_int();
-    int tops = ED4_ROOT->aw_root->awar("gde/top_area_sai")->read_int();
-    int toph = ED4_ROOT->aw_root->awar("gde/top_area_helix")->read_int();
-    int topk = ED4_ROOT->aw_root->awar("gde/top_area_kons")->read_int();
-    int topr = ED4_ROOT->aw_root->awar("gde/top_area_remark")->read_int();
-    int middle = ED4_ROOT->aw_root->awar("gde/middle_area")->read_int();
+char *ED4_create_sequences_for_gde(AW_CL, GBDATA **&the_species, uchar **&the_names, uchar **&the_sequences, long &numberspecies, long &maxalign) {
+    int top     = ED4_ROOT->aw_root->awar("gde/top_area")->read_int();
+    int tops    = ED4_ROOT->aw_root->awar("gde/top_area_sai")->read_int();
+    int toph    = ED4_ROOT->aw_root->awar("gde/top_area_helix")->read_int();
+    int topk    = ED4_ROOT->aw_root->awar("gde/top_area_kons")->read_int();
+    int topr    = ED4_ROOT->aw_root->awar("gde/top_area_remark")->read_int();
+    int middle  = ED4_ROOT->aw_root->awar("gde/middle_area")->read_int();
     int middles = ED4_ROOT->aw_root->awar("gde/middle_area_sai")->read_int();
     int middleh = ED4_ROOT->aw_root->awar("gde/middle_area_helix")->read_int();
     int middlek = ED4_ROOT->aw_root->awar("gde/middle_area_kons")->read_int();
@@ -407,7 +406,7 @@ static void ed4_create_all_awars(AW_root *root, const char *config_name) {
     ED4_gap_chars_changed(root);
     root->awar_int(ED4_AWAR_ANNOUNCE_CHECKSUM_CHANGES, 0);
 
-    create_gde_var(ED4_ROOT->aw_root, ED4_ROOT->db, ED4_create_sequences_for_gde, CGSS_WT_EDIT4, 0);
+    GDE_create_var(ED4_ROOT->aw_root, ED4_ROOT->props_db, GLOBAL_gb_main, ED4_create_sequences_for_gde, GDE_WINDOWTYPE_EDIT4, 0);
 
     root->awar_string(ED4_AWAR_CREATE_FROM_CONS_REPL_EQUAL, "-");
     root->awar_string(ED4_AWAR_CREATE_FROM_CONS_REPL_POINT, "?");
@@ -479,17 +478,17 @@ static void openProperties() {
         AW_default  found = ED4_ROOT->aw_root->open_default(name, mode == 2); // if mode == 2 -> create if missing
 
         if (found) {
-            ED4_ROOT->db      = found;
-            ED4_ROOT->db_name = strdup(name);
+            ED4_ROOT->props_db = found;
+            ED4_ROOT->db_name  = strdup(name);
             break;
         }
     }
 
     GB_informationf("Using properties from '%s'", ED4_ROOT->db_name);
 #if defined(DEBUG)
-    AWT_announce_properties_to_browser(ED4_ROOT->db, ED4_ROOT->db_name);
+    AWT_announce_properties_to_browser(ED4_ROOT->props_db, ED4_ROOT->db_name);
 #endif // DEBUG
-    ED4_ROOT->aw_root->init_variables(ED4_ROOT->db); // pass defaults
+    ED4_ROOT->aw_root->init_variables(ED4_ROOT->props_db); // pass defaults
 }
 
 int main(int argc, char **argv)

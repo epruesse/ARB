@@ -198,7 +198,7 @@ void nt_create_all_awars(AW_root *awr, AW_default def) {
     create_trees_var(awr, def);
     create_species_var(awr, def);
     create_consensus_var(awr, def);
-    create_gde_var(awr, def);
+    GDE_create_var(awr, def, GLOBAL_gb_main);
     create_cprofile_var(awr, def);
     NT_create_transpro_variables(awr, def);
     NT_build_resort_awars(awr, def);

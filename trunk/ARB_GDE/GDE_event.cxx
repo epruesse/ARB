@@ -225,23 +225,24 @@ static void GDE_freeali(NA_Alignment *dataset) {
 }
 
 static void GDE_export(NA_Alignment *dataset, char *align, long oldnumelements) {
-    GB_ERROR error = GB_begin_transaction(GLOBAL_gb_main);
+    GBDATA   *gb_main = db_access.gb_main;
+    GB_ERROR  error   = GB_begin_transaction(gb_main);
 
-    long maxalignlen    = GBT_get_alignment_len(GLOBAL_gb_main, align);
+    long maxalignlen    = GBT_get_alignment_len(gb_main, align);
     long isdefaultalign = 0;
 
     if (maxalignlen <= 0 && !error) {
-        align             = GBT_get_default_alignment(GLOBAL_gb_main);
+        align             = GBT_get_default_alignment(gb_main);
         if (!align) error = GB_await_error();
         else {
             isdefaultalign = 1;
-            maxalignlen    = GBT_get_alignment_len(GLOBAL_gb_main, align);
+            maxalignlen    = GBT_get_alignment_len(gb_main, align);
         }
     }
 
     long lotyp = 0;
     if (!error) {
-        GB_alignment_type at = GBT_get_alignment_type(GLOBAL_gb_main, align);
+        GB_alignment_type at = GBT_get_alignment_type(gb_main, align);
 
         switch (at) {
             case GB_AT_DNA:     lotyp = DNA;     break;
@@ -277,7 +278,7 @@ static void GDE_export(NA_Alignment *dataset, char *align, long oldnumelements) 
         sequ->gb_species = 0;
 
         if (!issame) {          /* save as extended */
-            GBDATA *gb_extended = GBT_find_or_create_SAI(GLOBAL_gb_main, savename);
+            GBDATA *gb_extended = GBT_find_or_create_SAI(db_access.gb_main, savename);
 
             if (!gb_extended) error = GB_await_error();
             else {
@@ -288,12 +289,12 @@ static void GDE_export(NA_Alignment *dataset, char *align, long oldnumelements) 
             }
         }
         else {                  /* save as sequence */
-            GBDATA *gb_species_data     = GB_search(GLOBAL_gb_main, "species_data", GB_CREATE_CONTAINER);
+            GBDATA *gb_species_data     = GB_search(db_access.gb_main, "species_data", GB_CREATE_CONTAINER);
             if (!gb_species_data) error = GB_await_error();
             else {
                 GBDATA *gb_species = GBT_find_species_rel_species_data(gb_species_data, savename);
 
-                GB_push_my_security(GLOBAL_gb_main);
+                GB_push_my_security(db_access.gb_main);
 
                 if (gb_species) {   /* new element that already exists !!!! */
                     int select_mode;
@@ -362,7 +363,7 @@ static void GDE_export(NA_Alignment *dataset, char *align, long oldnumelements) 
                         error = GBT_write_sequence(gb_data, align, maxalignlen, (char *)sequ->sequence);
                     }
                 }
-                GB_pop_my_security(GLOBAL_gb_main);
+                GB_pop_my_security(db_access.gb_main);
             }
         }
         free(savename);
@@ -402,7 +403,7 @@ static void GDE_export(NA_Alignment *dataset, char *align, long oldnumelements) 
         for (k = 0; k < dataset->cmask_len; k++)               *resstring++ = (char)dataset->cmask[k];
         *resstring = '\0';
 
-        GBDATA *gb_extended     = GBT_find_or_create_SAI(GLOBAL_gb_main, "COLMASK");
+        GBDATA *gb_extended     = GBT_find_or_create_SAI(db_access.gb_main, "COLMASK");
         if (!gb_extended) error = GB_await_error();
         else {
             GBDATA *gb_color     = GBT_add_data(gb_extended, align, "colmask", GB_BYTES);
@@ -413,7 +414,7 @@ static void GDE_export(NA_Alignment *dataset, char *align, long oldnumelements) 
         free(dummy);
     }
 
-    GB_end_transaction_show_error(GLOBAL_gb_main, error, aw_message);
+    GB_end_transaction_show_error(db_access.gb_main, error, aw_message);
     if (isdefaultalign) free(align);
 }
 
@@ -454,13 +455,13 @@ void GDE_startaction_cb(AW_window *aw, GmenuItem *gmenuitem, AW_CL cd)
     int        stop        = 0;
 
     if (current_item->numinputs>0) {
-        DataSet->gb_main = GLOBAL_gb_main;
+        DataSet->gb_main = db_access.gb_main;
         GB_begin_transaction(DataSet->gb_main);
         freeset(DataSet->alignment_name, GBT_get_default_alignment(DataSet->gb_main));
         freedup(alignment_name, DataSet->alignment_name);
 
         aw_status("reading database");
-        if (gde_cgss.get_sequences) {
+        if (db_access.get_sequences) {
             stop = ReadArbdb2(DataSet, filter2, compress, cutoff_stop_codon);
         }
         else {

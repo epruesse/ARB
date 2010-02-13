@@ -660,6 +660,7 @@ ARCHS_AP_TREE = \
 #***********************************	arb_ntree **************************************
 NTREE = bin/arb_ntree
 ARCHS_NTREE = \
+		NTREE/NTREE.a \
 		$(ARCHS_CLIENT_PROBE) \
 		$(ARCHS_AP_TREE) \
 		ARB_GDE/ARB_GDE.a \
@@ -669,7 +670,6 @@ ARCHS_NTREE = \
 		GENOM_IMPORT/GENOM_IMPORT.a \
 		MERGE/MERGE.a \
 		MULTI_PROBE/MULTI_PROBE.a \
-		NTREE/NTREE.a \
 		PRIMER_DESIGN/PRIMER_DESIGN.a \
 		PROBE_DESIGN/PROBE_DESIGN.a \
 		SEQ_QUALITY/SEQ_QUALITY.a \
@@ -707,10 +707,10 @@ $(RNA3D): $(ARCHS_RNA3D:.a=.dummy) shared_libs
 EDIT4 = bin/arb_edit4
 
 ARCHS_EDIT4 := \
+		EDIT4/EDIT4.a \
 		$(ARCHS_AP_TREE) \
 		ARB_GDE/ARB_GDE.a \
 		AWTC/AWTC.a \
-		EDIT4/EDIT4.a \
 		ISLAND_HOPPING/ISLAND_HOPPING.a \
 		NAMES_COM/client.a \
 		SECEDIT/SECEDIT.a \

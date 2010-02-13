@@ -19,7 +19,7 @@
 
 char *GDE_makeawarname(GmenuItem *gmenuitem, long i);
 void GDE_load_menu(AW_window *awm, AW_active mask, const char *menulabel, const char *menuitemlabel);
-void create_gde_var(AW_root *aw_root, AW_default aw_def, char *(*get_sequences)(void *THIS, GBDATA **&the_species, uchar **&the_names, uchar **&the_sequences, long &numberspecies, long &maxalignlen), gde_cgss_window_type wt, void *THIS);
+void GDE_create_var(AW_root *aw_root, AW_default aw_def, GBDATA *gb_main, GDE_get_sequences_cb get_sequences, gde_window_type window_type, AW_CL client_data);
 
 /* GDE_FileIO.cxx */
 int MAX(int a, int b);

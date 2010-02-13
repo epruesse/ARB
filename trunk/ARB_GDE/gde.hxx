@@ -16,15 +16,24 @@
 #endif
 
 typedef unsigned char uchar;
-typedef enum { CGSS_WT_DEFAULT, CGSS_WT_EDIT, CGSS_WT_EDIT4 } gde_cgss_window_type;
+enum gde_window_type {
+    GDE_WINDOWTYPE_DEFAULT,
+    GDE_WINDOWTYPE_EDIT4, 
+};
 
-void create_gde_var(AW_root *aw_root, AW_default aw_def,
-                    char *(*get_sequences)(void *THIS, GBDATA **&the_species,
-                                           uchar **&the_names,
-                                           uchar **&the_sequences,
-                                           long &numberspecies, long &maxalignlen)=0,
-                    gde_cgss_window_type wt=CGSS_WT_DEFAULT,
-                    void *THIS = 0);
+typedef char *(*GDE_get_sequences_cb)(AW_CL     cd,
+                                      GBDATA **&the_species,
+                                      uchar  **&the_names,
+                                      uchar  **&the_sequences,
+                                      long     &numberspecies,
+                                      long     &maxalignlen);
+
+void GDE_create_var(AW_root              *aw_root,
+                    AW_default            aw_def,
+                    GBDATA               *gb_main,
+                    GDE_get_sequences_cb  get_sequences = 0,
+                    gde_window_type       wt            = GDE_WINDOWTYPE_DEFAULT,
+                    AW_CL                 client_data   = 0);
 
 void GDE_load_menu(AW_window *awm, AW_active, const char *menulabel=0, const char *menuitemlabel=0);
 
