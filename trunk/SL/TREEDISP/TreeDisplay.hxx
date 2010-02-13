@@ -68,6 +68,14 @@ struct AWT_scaled_font_limits {
     }
 };
 
+enum AD_MAP_VIEWER_TYPE {
+    ADMVT_INFO,
+    ADMVT_WWW,
+    ADMVT_SELECT
+};
+
+typedef void (*AD_map_viewer_cb)(GBDATA *gbd, AD_MAP_VIEWER_TYPE type);
+
 
 class AWT_graphic_tree : public AWT_graphic {
     char  *species_name;
@@ -109,6 +117,8 @@ class AWT_graphic_tree : public AWT_graphic {
     int       treemode;
     bool      nds_show_all;
 
+    AD_map_viewer_cb map_viewer_cb;
+    
     void scale_text_koordinaten(AW_device *device, int gc, double& x, double& y, double orientation, int flag);
 
     // functions to compute displayinformation
@@ -156,7 +166,7 @@ public:
 
     // *********** public section
 
-    AWT_graphic_tree(AW_root *aw_root, GBDATA *gb_main);
+    AWT_graphic_tree(AW_root *aw_root, GBDATA *gb_main, AD_map_viewer_cb map_viewer_cb);
     virtual ~AWT_graphic_tree();
 
     AP_tree *get_root_node() { return tree_static ? tree_static->get_root_node() : NULL; }
@@ -204,7 +214,7 @@ public:
     void get_zombies_and_duplicates(int& zomb, int& dups) const { zomb = zombies; dups = duplicates; }
 };
 
-AWT_graphic_tree *NT_generate_tree(AW_root *root, GBDATA *gb_main);
+AWT_graphic_tree *NT_generate_tree(AW_root *root, GBDATA *gb_main, AD_map_viewer_cb map_viewer_cb);
 bool              AWT_show_remark_branch(AW_device *device, const char *remark_branch, bool is_leaf, AW_pos x, AW_pos y, AW_pos alignment, AW_bitset filteri, AW_CL cd1, AW_CL cd2);
 
 #else

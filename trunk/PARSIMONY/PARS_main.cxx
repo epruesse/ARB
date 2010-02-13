@@ -1697,7 +1697,7 @@ static void pars_create_all_awars(AW_root *awr, AW_default aw_def)
 
 static AW_root *AD_map_viewer_aw_root = 0;
 
-void AD_map_viewer(GBDATA *gb_species, AD_MAP_VIEWER_TYPE vtype) {
+void PARS_map_viewer(GBDATA *gb_species, AD_MAP_VIEWER_TYPE vtype) {
     if (vtype == ADMVT_SELECT && AD_map_viewer_aw_root && gb_species) {
         AD_map_viewer_aw_root->awar(AWAR_SPECIES_NAME)->write_string(GBT_read_name(gb_species));
     }

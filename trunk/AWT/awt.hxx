@@ -155,13 +155,6 @@ void AWT_create_ascii_print_window(AW_root *awr, const char *text_to_print, cons
 void AWT_write_file(const char *filename, const char *file);
 void AWT_show_file(AW_root *awr, const char *filename);
 
-enum AD_MAP_VIEWER_TYPE {
-    ADMVT_INFO,
-    ADMVT_WWW,
-    ADMVT_SELECT
-};
-void AD_map_viewer(GBDATA *gbd, AD_MAP_VIEWER_TYPE type = ADMVT_INFO);
-
 // open database viewer using input-mask-file
 class awt_item_type_selector;
 GB_ERROR AWT_initialize_input_mask(AW_root *root, GBDATA *gb_main, const awt_item_type_selector *sel, const char* mask_name, bool localMask);

@@ -1,11 +1,14 @@
-#include <cstdlib>
-#include <cstdio>
-#include <cstring>
-#include <arbdb.h>
-#include <aw_root.hxx>
-#include <aw_window.hxx>
-#include <awt.hxx>
+// ================================================================ //
+//                                                                  //
+//   File      : WETC_main.cxx                                      //
+//   Purpose   :                                                    //
+//                                                                  //
+//   Institute of Microbiology (Technical University Munich)        //
+//   http://www.arb-home.de/                                        //
+//                                                                  //
+// ================================================================ //
 
+#include <awt.hxx>
 
 AW_HEADER_MAIN
 
@@ -38,7 +41,3 @@ int main(int argc, char **argv) {
     return 0;
 }
 
-void AD_map_viewer(GBDATA *, AD_MAP_VIEWER_TYPE)
-{
-    ;
-}

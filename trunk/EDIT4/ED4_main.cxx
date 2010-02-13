@@ -646,7 +646,3 @@ int main(int argc, char **argv)
     ED4_ROOT->aw_root->main_loop(); // enter main-loop
 }
 
-void AD_map_viewer(GBDATA *, AD_MAP_VIEWER_TYPE)
-{
-}
-

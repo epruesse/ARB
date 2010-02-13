@@ -29,7 +29,7 @@ class AWT_graphic_parsimony : public AWT_graphic_tree {
                          AW_event_type type, AW_pos x, AW_pos y,
                          AW_clicked_line *cl, AW_clicked_text *ct);
 public:
-    AWT_graphic_parsimony(AW_root *root, GBDATA *gb_main);
+    AWT_graphic_parsimony(AW_root *root, GBDATA *gb_main, AD_map_viewer_cb map_viewer_cb);
 
 };
 

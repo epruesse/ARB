@@ -956,7 +956,7 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
             }
         }
 
-        if (select && type == AW_Mouse_Press) AD_map_viewer(gbd);
+        if (select && type == AW_Mouse_Press) map_viewer_cb(gbd, ADMVT_INFO);
         if (refresh) this->exports.refresh = 1;
 
         return;
@@ -1600,7 +1600,7 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
                 if (!at) break;
 
                 this->exports.refresh = 1;        // No refresh needed !! AD_map_viewer will do the refresh (needed by arb_pars)
-                AD_map_viewer(at->gb_node, ADMVT_SELECT);
+                map_viewer_cb(at->gb_node, ADMVT_SELECT);
 
                 if (button == AWT_M_LEFT) goto act_like_group; // now do the same like in AWT_MODE_GROUP
             }
@@ -1611,7 +1611,7 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
                 GB_transaction ta(tree_static->get_gb_main());
                 at = (AP_tree *)(cl->exists ? cl->client_data1 : ct->client_data1);
                 if (!at) break;
-                AD_map_viewer(at->gb_node, ADMVT_INFO);
+                map_viewer_cb(at->gb_node, ADMVT_INFO);
             }
             break;
         case AWT_MODE_WWW:
@@ -1619,7 +1619,7 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
                 GB_transaction ta(tree_static->get_gb_main());
                 at = (AP_tree *)(cl->exists ? cl->client_data1 : ct->client_data1);
                 if (!at) break;
-                AD_map_viewer(at->gb_node, ADMVT_WWW);
+                map_viewer_cb(at->gb_node, ADMVT_WWW);
             }
             break;
         default:
@@ -1686,7 +1686,9 @@ void AWT_graphic_tree::set_tree_type(AP_tree_sort type)
     }
 }
 
-AWT_graphic_tree::AWT_graphic_tree(AW_root *aw_rooti, GBDATA *gb_maini) : AWT_graphic() {
+AWT_graphic_tree::AWT_graphic_tree(AW_root *aw_root_, GBDATA *gb_main_, AD_map_viewer_cb map_viewer_cb_)
+    : AWT_graphic()
+{
     line_filter       = AW_SCREEN|AW_CLICK|AW_CLICK_DRAG|AW_SIZE|AW_PRINTER;
     vert_line_filter  = AW_SCREEN|AW_PRINTER;
     text_filter       = AW_SCREEN|AW_CLICK|AW_PRINTER;
@@ -1701,11 +1703,12 @@ AWT_graphic_tree::AWT_graphic_tree(AW_root *aw_rooti, GBDATA *gb_maini) : AWT_gr
     tree_static       = 0;
     baselinewidth     = 0;
     species_name      = 0;
-    this->aw_root     = aw_rooti;
-    this->gb_main     = gb_maini;
+    aw_root           = aw_root_;
+    gb_main           = gb_main_;
     rot_ct.exists     = false;
     rot_cl.exists     = false;
     nds_show_all      = true;
+    map_viewer_cb     = map_viewer_cb_;
 }
 
 AWT_graphic_tree::~AWT_graphic_tree() {
@@ -2507,8 +2510,8 @@ void AWT_graphic_tree::info(AW_device *device, AW_pos x, AW_pos y,
 
 }
 
-AWT_graphic_tree *NT_generate_tree(AW_root *root, GBDATA *gb_main) {
-    AWT_graphic_tree *apdt    = new AWT_graphic_tree(root, gb_main);
+AWT_graphic_tree *NT_generate_tree(AW_root *root, GBDATA *gb_main, AD_map_viewer_cb map_viewer_cb) {
+    AWT_graphic_tree *apdt    = new AWT_graphic_tree(root, gb_main, map_viewer_cb);
     apdt->init(AP_tree(0), new AliView(gb_main), NULL, true, false); // tree w/o sequence data
     return apdt;
 }

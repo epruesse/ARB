@@ -215,8 +215,8 @@ void PARS_optimizer_cb(AP_tree *tree) {
     aw_closestatus();
 }
 
-AWT_graphic_parsimony::AWT_graphic_parsimony(AW_root *root, GBDATA *gb_maini)
-    : AWT_graphic_tree(root, gb_maini)
+AWT_graphic_parsimony::AWT_graphic_parsimony(AW_root *root, GBDATA *gb_main_, AD_map_viewer_cb map_viewer_cb_)
+    : AWT_graphic_tree(root, gb_main_, map_viewer_cb_)
 {}
 
 AWT_graphic_tree *PARS_generate_tree(AW_root *root, WeightedFilter *pars_weighted_filter) {
@@ -232,7 +232,7 @@ AWT_graphic_tree *PARS_generate_tree(AW_root *root, WeightedFilter *pars_weighte
         else seq_templ       = new AP_sequence_parsimony(aliview);
     }
 
-    AWT_graphic_parsimony *apdt = new AWT_graphic_parsimony(root, aliview->get_gb_main());
+    AWT_graphic_parsimony *apdt = new AWT_graphic_parsimony(root, aliview->get_gb_main(), PARS_map_viewer);
 
     apdt->init(AP_tree_nlen(0), aliview, seq_templ, true, false);
 
@@ -240,9 +240,7 @@ AWT_graphic_tree *PARS_generate_tree(AW_root *root, WeightedFilter *pars_weighte
     return apdt;
 }
 
-AW_gc_manager
-AWT_graphic_parsimony::init_devices(AW_window *aww, AW_device *device, AWT_canvas* ntw, AW_CL cd2)
-{
+AW_gc_manager AWT_graphic_parsimony::init_devices(AW_window *aww, AW_device *device, AWT_canvas* ntw, AW_CL cd2) {
     AW_init_color_group_defaults("arb_pars");
 
     AW_gc_manager preset_window =

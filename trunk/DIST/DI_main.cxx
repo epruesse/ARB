@@ -88,7 +88,3 @@ int main(int argc, char **argv) {
     aw_root->main_loop();
 }
 
-void AD_map_viewer(GBDATA *dummy, AD_MAP_VIEWER_TYPE)
-    {
-    AWUSE(dummy);
-}

@@ -8,6 +8,7 @@
 //                                                                 //
 // =============================================================== //
 
+#include "map_viewer.hxx"
 #include "ad_spec.hxx"
 #include "nt_internal.h"
 #include "ntree.hxx"
@@ -359,7 +360,7 @@ static AW_CL    ad_global_scannerid      = 0;
 static AW_root *ad_global_scannerroot    = 0;
 static AW_root *ad_global_default_awroot = 0;
 
-void AD_set_default_root(AW_root *aw_root) {
+void MapViewer_set_default_root(AW_root *aw_root) {
     ad_global_default_awroot = aw_root;
 }
 
@@ -374,7 +375,8 @@ static void AD_map_species(AW_root *aw_root, AW_CL scannerid, AW_CL mapOrganism)
     GB_pop_transaction(GLOBAL_gb_main);
     free(source);
 }
-void AD_map_viewer(GBDATA *gbd, AD_MAP_VIEWER_TYPE type) {
+
+void launch_MapViewer_cb(GBDATA *gbd, AD_MAP_VIEWER_TYPE type) {
     GB_ERROR error = GB_push_transaction(GLOBAL_gb_main);
 
     if (!error) {

@@ -8,6 +8,7 @@
 //                                                                 //
 // =============================================================== //
 
+#include "map_viewer.hxx"
 #include "nt_internal.h"
 #include "ntree.hxx"
 #include "ad_spec.hxx"
@@ -1086,7 +1087,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone) {
 
     if (!clone) AW_init_color_group_defaults("arb_ntree");
 
-    GLOBAL_NT.tree = NT_generate_tree(awr, GLOBAL_gb_main);
+    GLOBAL_NT.tree = NT_generate_tree(awr, GLOBAL_gb_main, launch_MapViewer_cb);
 
     AWT_canvas *ntw;
     {
