@@ -1778,7 +1778,7 @@ ED4_returncode ED4_root::generate_window(AW_device **device,    ED4_window **new
 
 #if defined(ARB_OPENGL)
         awmm->at("rna3d");
-        awmm->callback(ED4_RNA3D_Start, 0, 0);
+        awmm->callback(ED4_RNA3D_Start, (AW_CL)GLOBAL_gb_main, 0);
         awmm->help_text("rna3d_general.hlp");
         awmm->create_button("RNA3D", "#edit/rna3d.xpm");
 #endif // ARB_OPENGL

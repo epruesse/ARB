@@ -68,7 +68,7 @@ static void  CreateRNA3DAwars(AW_root *root) {
     root->awar_int(AWAR_3D_23S_RRNA_MOL, 3, AW_ROOT_DEFAULT);
 }
 
-void RNA3D_StartApplication(AW_root *awr) {
+void RNA3D_StartApplication(AW_root *awr, GBDATA *gb_main) {
 
     CreateRNA3DAwars(awr);
 
@@ -78,7 +78,7 @@ void RNA3D_StartApplication(AW_root *awr) {
         static AW_window *aw_3D = 0;
 
         if (!aw_3D) { // do not open window twice
-            aw_3D = CreateRNA3DMainWindow(awr);
+            aw_3D = CreateRNA3DMainWindow(awr, gb_main);
             if (!aw_3D) {
                 GB_ERROR err = GB_get_error();
                 aw_message(GBS_global_string("Couldn't start Ribosomal RNA 3D Structure Tool.\nReason: %s", err));
