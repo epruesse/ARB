@@ -238,11 +238,11 @@ string awt_script::get_value() const
     string                        result;
     AW_root                      *root     = mask_global()->get_root();
     const awt_item_type_selector *selector = mask_global()->get_selector();
-    GBDATA                       *gbd      = selector->current(root);
+    GBDATA                       *gb_main  = mask_global()->get_gb_main();
+    GBDATA                       *gbd      = selector->current(root, gb_main);
 
     if (gbd) {
         char           *species_name    = root->awar(selector->get_self_awar())->read_string();
-        GBDATA         *gb_main = mask_global()->get_gb_main();
         GB_transaction  tscope(gb_main);
 
         char *val = GB_command_interpreter(gb_main, species_name, script.c_str(), gbd, 0);
@@ -1145,14 +1145,15 @@ static void AWT_input_mask_browse_url(AW_window *aww, AW_CL cl_url_srt, AW_CL cl
     const awt_input_mask         *mask     = (const awt_input_mask *)cl_mask_ptr;
     const awt_input_mask_global  *global   = mask->mask_global();
     const awt_item_type_selector *selector = global->get_selector();
-    GBDATA                       *gbd      = selector->current(root);
+    GBDATA                       *gb_main  = global->get_gb_main();
+    GBDATA                       *gbd      = selector->current(root, gb_main);
 
     if (!gbd) {
         aw_message(GBS_global_string("You have to select a %s first", awt_itemtype_names[selector->get_item_type()]));
     }
     else {
         char     *name  = root->awar(selector->get_self_awar())->read_string();
-        GB_ERROR  error = awt_open_ACISRT_URL_by_gbd(root, global->get_gb_main(), gbd, name, url_srt->c_str());
+        GB_ERROR  error = awt_open_ACISRT_URL_by_gbd(root, gb_main, gbd, name, url_srt->c_str());
         if (error) aw_message(error);
         free(name);
     }
@@ -1339,7 +1340,7 @@ public:
     virtual ~awt_marked_checkbox() {}
 
     virtual GB_ERROR link_to(GBDATA *gb_new_item); // link to a new item
-    virtual GB_ERROR relink() { return link_to(mask_global()->get_selector()->current(mask_global()->get_root())); }
+    virtual GB_ERROR relink() { return link_to(mask_global()->get_selected_item()); }
     virtual void awar_changed();
     virtual void db_changed();
     virtual void general_item_change() { db_changed(); } // called if item was changed (somehow)
@@ -2037,11 +2038,10 @@ awt_input_mask::~awt_input_mask() {
 
 void awt_input_mask::relink(bool unlink) {
     // this functions links/unlinks all registered item handlers to/from the database
-    const awt_item_type_selector *sel     = global.get_selector();
-    GBDATA                       *gb_item = unlink ? 0 : sel->current(global.get_root());
+    GBDATA *gb_item = unlink ? 0 : global.get_selected_item();
 
     for (awt_mask_item_list::iterator h = handlers.begin(); h != handlers.end(); ++h) {
-         if ((*h)->is_linked_item()) (*h)->to_linked_item()->link_to(gb_item);
+        if ((*h)->is_linked_item()) (*h)->to_linked_item()->link_to(gb_item);
     }
 }
 

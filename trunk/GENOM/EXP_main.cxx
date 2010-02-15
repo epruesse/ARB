@@ -77,14 +77,14 @@ public:
     virtual void remove_awar_callbacks(AW_root *root, void (*f)(AW_root*, AW_CL), AW_CL cl_mask) const { // add callbacks to awars
         root->awar(get_self_awar())->remove_callback(f, cl_mask);
     }
-    virtual GBDATA *current(AW_root *root) const { // give the current item
+    virtual GBDATA *current(AW_root *root, GBDATA *gb_main) const { // give the current item
         char   *species_name    = root->awar(AWAR_ORGANISM_NAME)->read_string();
         char   *experiment_name = root->awar(AWAR_EXPERIMENT_NAME)->read_string();
         GBDATA *gb_experiment   = 0;
 
         if (species_name[0] && experiment_name[0]) {
-            GB_transaction dummy(GLOBAL_gb_main);
-            GBDATA *gb_species = GBT_find_species(GLOBAL_gb_main, species_name);
+            GB_transaction dummy(gb_main);
+            GBDATA *gb_species = GBT_find_species(gb_main, species_name);
             if (gb_species) {
                 gb_experiment = EXP_find_experiment(gb_species, experiment_name);
             }

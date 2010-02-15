@@ -58,7 +58,7 @@ public:
     virtual void remove_awar_callbacks(AW_root *root, void (*f)(AW_root*, AW_CL), AW_CL cl_mask) const = 0;
 
     // returns the current item
-    virtual GBDATA *current(AW_root *root) const = 0;
+    virtual GBDATA *current(AW_root *root, GBDATA *gb_main) const = 0;
 
     // returns the keypath for items
     virtual const char *getKeyPath() const = 0;

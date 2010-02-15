@@ -1350,14 +1350,14 @@ public:
     virtual void remove_awar_callbacks(AW_root *root, void (*f)(AW_root*, AW_CL), AW_CL cl_mask) const {
         root->awar(get_self_awar())->remove_callback(f, cl_mask);
     }
-    virtual GBDATA *current(AW_root *root) const { // give the current item
+    virtual GBDATA *current(AW_root *root, GBDATA *gb_main) const { // give the current item
         char   *species_name = root->awar(AWAR_ORGANISM_NAME)->read_string();
         char   *gene_name   = root->awar(AWAR_GENE_NAME)->read_string();
         GBDATA *gb_gene      = 0;
 
         if (species_name[0] && gene_name[0]) {
-            GB_transaction dummy(GLOBAL_gb_main);
-            GBDATA *gb_species = GBT_find_species(GLOBAL_gb_main, species_name);
+            GB_transaction dummy(gb_main);
+            GBDATA *gb_species = GBT_find_species(gb_main, species_name);
             if (gb_species) {
                 gb_gene = GEN_find_gene(gb_species, gene_name);
             }
