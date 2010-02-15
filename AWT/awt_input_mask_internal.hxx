@@ -113,6 +113,8 @@ public:
     const awt_item_type_selector *get_selector() const { awt_assert(sel); return sel; }
     const char* hotkey(const std::string& label)  { return hotkeys.hotkey(label); }
 
+    GBDATA *get_selected_item() const { return get_selector()->current(get_root(), get_gb_main()); }
+
     bool has_local_id(const std::string& name) const { return ids.lookup(name); }
     bool has_global_id(const std::string& name) const { return global_ids.lookup(name); }
 
@@ -338,7 +340,7 @@ public:
     virtual ~awt_script_viewport();
 
     virtual GB_ERROR link_to(GBDATA *gb_new_item); // link to a new item
-    virtual GB_ERROR relink() { return link_to(mask_global()->get_selector()->current(mask_global()->get_root())); }
+    virtual GB_ERROR relink() { return link_to(mask_global()->get_selected_item()); }
 
     virtual void build_widget(AW_window *aws); // builds the widget at the current position
     virtual void awar_changed();
@@ -373,7 +375,7 @@ public:
     virtual ~awt_input_handler();
 
     virtual GB_ERROR link_to(GBDATA *gb_new_item); // link to a new item
-    virtual GB_ERROR relink() { return link_to(mask_global()->get_selector()->current(mask_global()->get_root())); }
+    virtual GB_ERROR relink() { return link_to(mask_global()->get_selected_item()); }
 
     GBDATA *data() { return gbd; }
 
