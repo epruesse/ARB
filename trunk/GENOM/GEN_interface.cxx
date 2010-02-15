@@ -14,7 +14,11 @@ using namespace std;
 
 // --------------------------------------------------------------------------------
 
-#define AD_F_ALL (AW_active)(-1)
+#if defined(DEVEL_RALF)
+#warning replace all occurrances of AD_F_ALL by AWM_ALL
+#endif // DEVEL_RALF
+
+#define AD_F_ALL AWM_ALL
 
 // --------------------------------------------------------------------------------
 
