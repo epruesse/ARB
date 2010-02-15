@@ -2165,22 +2165,22 @@ awt_item_type AWT_getItemType(const string& itemtype_name) {
 //      Registered Itemtypes
 // -----------------------------
 
-typedef void (*AWT_OpenMaskWindowCallback)(AW_window* aww, AW_CL cl_id, AW_CL);
-
 //  --------------------------------------
 //      class AWT_registered_itemtype
 //  --------------------------------------
 // stores information about so-far-used item types
 class AWT_registered_itemtype {
 private:
-    AW_window_menu_modes       *awm; // the main window responsible for opening windows
-    AWT_OpenMaskWindowCallback  open_window_cb; // callback to open the window
+    AW_window_menu_modes       *awm;                // the main window responsible for opening windows
+    AWT_OpenMaskWindowCallback  open_window_cb;     // callback to open the window
+    AW_CL                       cl_user;
 
 public:
-    AWT_registered_itemtype() : awm(0), open_window_cb(0) {}
-    AWT_registered_itemtype(AW_window_menu_modes *awm_, AWT_OpenMaskWindowCallback open_window_cb_)
+    AWT_registered_itemtype() : awm(0), open_window_cb(0), cl_user(0) {}
+    AWT_registered_itemtype(AW_window_menu_modes *awm_, AWT_OpenMaskWindowCallback open_window_cb_, AW_CL cl_user_)
         : awm(awm_)
         , open_window_cb(open_window_cb_)
+        , cl_user(cl_user_)
     {}
     virtual ~AWT_registered_itemtype() {}
 
@@ -2188,11 +2188,14 @@ public:
     AWT_OpenMaskWindowCallback getOpenCb() const { return open_window_cb; }
 };
 
-static map<awt_item_type, AWT_registered_itemtype> registeredTypes;
+typedef map<awt_item_type, AWT_registered_itemtype> TypeRegistry;
+typedef TypeRegistry::const_iterator                TypeRegistryIter;
+
+static TypeRegistry registeredTypes;
 
 static GB_ERROR openMaskWindowByType(int mask_id, awt_item_type type) {
-    map<awt_item_type, AWT_registered_itemtype>::const_iterator registered = registeredTypes.find(type);
-    GB_ERROR                                                    error      = 0;
+    TypeRegistryIter registered = registeredTypes.find(type);
+    GB_ERROR         error      = 0;
 
     if (registered == registeredTypes.end()) error = GBS_global_string("Type '%s' not registered (yet)", awt_itemtype_names[type]);
     else registered->second.getOpenCb()(registered->second.getWindow(), (AW_CL)mask_id, (AW_CL)0);
@@ -2200,10 +2203,10 @@ static GB_ERROR openMaskWindowByType(int mask_id, awt_item_type type) {
     return error;
 }
 
-static void registerType(awt_item_type type, AW_window_menu_modes *awm, AWT_OpenMaskWindowCallback open_window_cb) {
-    map<awt_item_type, AWT_registered_itemtype>::const_iterator alreadyRegistered = registeredTypes.find(type);
+static void registerType(awt_item_type type, AW_window_menu_modes *awm, AWT_OpenMaskWindowCallback open_window_cb, AW_CL cl_user) {
+    TypeRegistryIter alreadyRegistered = registeredTypes.find(type);
     if (alreadyRegistered == registeredTypes.end()) {
-        registeredTypes[type] = AWT_registered_itemtype(awm, open_window_cb);
+        registeredTypes[type] = AWT_registered_itemtype(awm, open_window_cb, cl_user);
     }
 #if defined(DEBUG)
     else {
@@ -2351,7 +2354,7 @@ static void create_new_input_mask(AW_window *aww, AW_CL cl_item_type, AW_CL) { /
 //      Create User-Mask-Submenu for any application
 // -----------------------------------------------------
 
-void AWT_create_mask_submenu(AW_window_menu_modes *awm, awt_item_type wanted_item_type, void (*open_window_cb)(AW_window* aww, AW_CL cl_id, AW_CL)) {
+void AWT_create_mask_submenu(AW_window_menu_modes *awm, awt_item_type wanted_item_type, AWT_OpenMaskWindowCallback open_mask_window_cb, AW_CL cl_user) {
     // add a user mask submenu at current position
     AW_root *awr = awm->get_root();
 
@@ -2377,10 +2380,10 @@ void AWT_create_mask_submenu(AW_window_menu_modes *awm, awt_item_type wanted_ite
 #if defined(DEBUG) && 0
                     printf("added user-mask '%s' with id=%i\n", descriptor->get_maskname(), id);
 #endif // DEBUG
-                    awm->insert_menu_topic(macroname2key, descriptor->get_title(), "", "input_mask.hlp", AWM_ALL, open_window_cb, (AW_CL)id, (AW_CL)0);
+                    awm->insert_menu_topic(macroname2key, descriptor->get_title(), "", "input_mask.hlp", AWM_ALL, open_mask_window_cb, (AW_CL)id, (AW_CL)cl_user);
                     free(macroname2key);
                 }
-                registerType(item_type, awm, open_window_cb);
+                registerType(item_type, awm, open_mask_window_cb, cl_user);
             }
             else if (item_type == AWT_IT_UNKNOWN) {
                 aw_message(GBS_global_string("Unknown @ITEMTYPE '%s' in '%s'", descriptor->get_itemtypename(), descriptor->get_internal_maskname()));

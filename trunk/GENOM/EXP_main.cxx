@@ -116,7 +116,7 @@ static void EXP_open_mask_window(AW_window *aww, AW_CL cl_id, AW_CL) {
 //      static void GEN_create_mask_submenu(AW_window_menu_modes *awm)
 //  -----------------------------------------------------------------------
 static void EXP_create_mask_submenu(AW_window_menu_modes *awm) {
-    AWT_create_mask_submenu(awm, AWT_IT_EXPERIMENT, EXP_open_mask_window);
+    AWT_create_mask_submenu(awm, AWT_IT_EXPERIMENT, EXP_open_mask_window, 0);
 }
 
 static AW_window *EXP_create_experiment_colorize_window(AW_root *aw_root) {

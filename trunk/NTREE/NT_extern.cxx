@@ -960,7 +960,7 @@ static void NT_open_mask_window(AW_window *aww, AW_CL cl_id, AW_CL) {
 }
 
 static void NT_create_mask_submenu(AW_window_menu_modes *awm) {
-    AWT_create_mask_submenu(awm, AWT_IT_SPECIES, NT_open_mask_window);
+    AWT_create_mask_submenu(awm, AWT_IT_SPECIES, NT_open_mask_window, 0);
 }
 static AW_window *NT_create_species_colorize_window(AW_root *aw_root) {
     return awt_create_item_colorizer(aw_root, GLOBAL_gb_main, &AWT_species_selector);
