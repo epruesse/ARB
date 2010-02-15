@@ -19,7 +19,7 @@
 #endif
 
 void SQ_create_awars(AW_root * awr, AW_default aw_def);
-AW_window *SQ_create_seq_quality_window(AW_root * aw_root, AW_CL);
+AW_window *SQ_create_seq_quality_window(AW_root * aw_root, AW_CL cl_gb_main);
 
 #else
 #error seq_quality.h included twice

@@ -20,8 +20,6 @@
 #include <awt_sel_boxes.hxx>
 #include <aw_awars.hxx>
 
-extern GBDATA *GLOBAL_gb_main;
-
 // --------------------------------------------------------------------------------
 
 #define AWAR_SQ_PERM "seq_quality/"     // saved in properties
@@ -63,7 +61,8 @@ void SQ_create_awars(AW_root * aw_root, AW_default aw_def) {
 // --------------------------------------------------------------------------------
 
 
-static void sq_calc_seq_quality_cb(AW_window * aww, AW_CL res_from_awt_create_select_filter) {
+static void sq_calc_seq_quality_cb(AW_window * aww, AW_CL res_from_awt_create_select_filter, AW_CL cl_gb_main) {
+    GBDATA   *gb_main     = (GBDATA*)cl_gb_main;
     AW_root  *aw_root     = aww->get_root();
     GB_ERROR  error       = 0;
     GBT_TREE *tree        = 0;
@@ -73,13 +72,13 @@ static void sq_calc_seq_quality_cb(AW_window * aww, AW_CL res_from_awt_create_se
         char *treename = aw_root->awar(AWAR_TREE)->read_string(); // contains "tree_????" if no tree is selected
 
         if (treename && strcmp(treename, "tree_????") != 0) {
-            error = GB_push_transaction(GLOBAL_gb_main);
+            error = GB_push_transaction(gb_main);
 
             if (!error) {
-                tree = GBT_read_tree(GLOBAL_gb_main, treename, sizeof(*tree));
+                tree = GBT_read_tree(gb_main, treename, sizeof(*tree));
                 if (!tree) error = GB_await_error();
                 else {
-                    error = GBT_link_tree(tree, GLOBAL_gb_main, false, NULL, NULL);
+                    error = GBT_link_tree(tree, gb_main, false, NULL, NULL);
                     if (!error) {
                         GBT_TREE_REMOVE_TYPE mode = GBT_REMOVE_DELETED;
                         if (marked_only) mode     = GBT_TREE_REMOVE_TYPE(mode|GBT_REMOVE_NOT_MARKED);
@@ -93,7 +92,7 @@ static void sq_calc_seq_quality_cb(AW_window * aww, AW_CL res_from_awt_create_se
                 }
             }
 
-            error = GB_end_transaction(GLOBAL_gb_main, error);
+            error = GB_end_transaction(gb_main, error);
         }
         free(treename);
     }
@@ -129,22 +128,22 @@ static void sq_calc_seq_quality_cb(AW_window * aww, AW_CL res_from_awt_create_se
         if (tree == 0) {
             if (reevaluate) {
                 aw_openstatus("Marking Sequences...");
-                SQ_mark_species(GLOBAL_gb_main, mark_below, marked_only);
+                SQ_mark_species(gb_main, mark_below, marked_only);
                 aw_closestatus();
             }
             else {
                 SQ_GroupData *globalData = new SQ_GroupData_RNA;
-                SQ_count_nr_of_species(GLOBAL_gb_main);
+                SQ_count_nr_of_species(gb_main);
                 aw_openstatus("Calculating pass 1 of 2 ...");
-                SQ_pass1_no_tree(globalData, GLOBAL_gb_main, filter);
+                SQ_pass1_no_tree(globalData, gb_main, filter);
                 aw_closestatus();
                 aw_openstatus("Calculating pass 2 of 2 ...");
-                SQ_pass2_no_tree(globalData, GLOBAL_gb_main, filter);
-                SQ_evaluate(GLOBAL_gb_main, weights, marked_only);
+                SQ_pass2_no_tree(globalData, gb_main, filter);
+                SQ_evaluate(gb_main, weights, marked_only);
                 aw_closestatus();
                 if (mark_flag) {
                     aw_openstatus("Marking Sequences...");
-                    SQ_mark_species(GLOBAL_gb_main, mark_below, marked_only);
+                    SQ_mark_species(gb_main, mark_below, marked_only);
                     aw_closestatus();
                 }
                 delete globalData;
@@ -172,26 +171,26 @@ static void sq_calc_seq_quality_cb(AW_window * aww, AW_CL res_from_awt_create_se
 
             if (reevaluate) {
                 aw_openstatus("Marking Sequences...");
-                SQ_count_nr_of_species(GLOBAL_gb_main);
-                SQ_mark_species(GLOBAL_gb_main, mark_below, marked_only);
+                SQ_count_nr_of_species(gb_main);
+                SQ_mark_species(gb_main, mark_below, marked_only);
                 aw_closestatus();
             }
             else {
                 aw_openstatus("Calculating pass 1 of 2...");
                 SQ_reset_counters(tree);
                 SQ_GroupData *globalData = new SQ_GroupData_RNA;
-                SQ_calc_and_apply_group_data(tree, GLOBAL_gb_main, globalData, filter);
+                SQ_calc_and_apply_group_data(tree, gb_main, globalData, filter);
                 aw_closestatus();
                 SQ_reset_counters(tree);
                 aw_openstatus("Calculating pass 2 of 2...");
-                SQ_calc_and_apply_group_data2(tree, GLOBAL_gb_main, globalData, filter);
-                SQ_evaluate(GLOBAL_gb_main, weights, marked_only);
+                SQ_calc_and_apply_group_data2(tree, gb_main, globalData, filter);
+                SQ_evaluate(gb_main, weights, marked_only);
                 aw_closestatus();
                 SQ_reset_counters(tree);
                 if (mark_flag) {
                     aw_openstatus("Marking Sequences...");
-                    SQ_count_nr_of_species(GLOBAL_gb_main);
-                    SQ_mark_species(GLOBAL_gb_main, mark_below, marked_only);
+                    SQ_count_nr_of_species(gb_main);
+                    SQ_mark_species(gb_main, mark_below, marked_only);
                     aw_closestatus();
                 }
                 delete globalData;
@@ -207,13 +206,16 @@ static void sq_calc_seq_quality_cb(AW_window * aww, AW_CL res_from_awt_create_se
     if (tree) GBT_delete_tree(tree);
 }
 
-static void sq_remove_quality_entries_cb(AW_window * /* aww */) {
-    SQ_remove_quality_entries(GLOBAL_gb_main);
+static void sq_remove_quality_entries_cb(AW_window *, AW_CL cl_gb_main) {
+    GBDATA *gb_main = (GBDATA*)cl_gb_main;
+    SQ_remove_quality_entries(gb_main);
 }
 
-// create window for sequence quality calculation (called only once)
-AW_window *SQ_create_seq_quality_window(AW_root * aw_root, AW_CL) {
-    AW_window_simple *aws = new AW_window_simple;
+AW_window *SQ_create_seq_quality_window(AW_root * aw_root, AW_CL cl_gb_main) {
+    // create window for sequence quality calculation (called only once)
+    
+    GBDATA           *gb_main = (GBDATA*)cl_gb_main;
+    AW_window_simple *aws     = new AW_window_simple;
 
     aws->init(aw_root, "CALC_SEQ_QUALITY", "CALCULATE SEQUENCE QUALITY");
     aws->load_xfig("seq_quality.fig");
@@ -254,20 +256,20 @@ AW_window *SQ_create_seq_quality_window(AW_root * aw_root, AW_CL) {
     aws->create_input_field(AWAR_SQ_MARK_BELOW, 3);
 
     aws->at("tree");
-    awt_create_selection_list_on_trees(GLOBAL_gb_main, (AW_window *) aws, AWAR_TREE);
+    awt_create_selection_list_on_trees(gb_main, (AW_window *) aws, AWAR_TREE);
 
     aws->at("filter");
-    adfiltercbstruct *filtercd = awt_create_select_filter(aws->get_root(), GLOBAL_gb_main, AWAR_FILTER_NAME);
+    adfiltercbstruct *filtercd = awt_create_select_filter(aws->get_root(), gb_main, AWAR_FILTER_NAME);
     aws->callback(AW_POPUP, (AW_CL) awt_create_select_filter_win, (AW_CL)filtercd);
     aws->create_button("SELECT_FILTER", AWAR_FILTER_NAME);
 
     aws->at("go");
-    aws->callback(sq_calc_seq_quality_cb, (AW_CL)filtercd);
+    aws->callback(sq_calc_seq_quality_cb, (AW_CL)filtercd, (AW_CL)gb_main);
     aws->highlight();
     aws->create_button("GO", "GO", "G");
 
     aws->at("remove");
-    aws->callback(sq_remove_quality_entries_cb);
+    aws->callback(sq_remove_quality_entries_cb, (AW_CL)gb_main);
     aws->create_button("Remove", "Remove", "R");
 
     aws->at("reevaluate");
