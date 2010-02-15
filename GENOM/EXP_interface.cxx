@@ -32,7 +32,7 @@ using namespace std;
 
 extern GBDATA *GLOBAL_gb_main;
 
-#define AD_F_ALL (AW_active)(-1)
+#define AD_F_ALL AWM_ALL
 
 GBDATA* EXP_get_current_experiment_data(GBDATA *gb_main, AW_root *aw_root) {
     GBDATA *gb_species         = GEN_get_current_organism(gb_main, aw_root);
