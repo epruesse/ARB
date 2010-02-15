@@ -1,3 +1,16 @@
+// ================================================================ //
+//                                                                  //
+//   File      : RNA3D_Interface.hxx                                //
+//   Purpose   :                                                    //
+//                                                                  //
+//   Institute of Microbiology (Technical University Munich)        //
+//   http://www.arb-home.de/                                        //
+//                                                                  //
+// ================================================================ //
+
+#ifndef RNA3D_INTERFACE_HXX
+#define RNA3D_INTERFACE_HXX
+
 #define WINDOW_WIDTH   950
 #define WINDOW_HEIGHT  650
 
@@ -21,4 +34,8 @@ void RefreshOpenGLDisplay();
 
 class AW_root;
 class AW_window;
-AW_window *CreateRNA3DMainWindow(AW_root *awr); // Creates RNA3D Application Main Window
+AW_window *CreateRNA3DMainWindow(AW_root *awr, GBDATA *gb_main);
+
+#else
+#error RNA3D_Interface.hxx included twice
+#endif // RNA3D_INTERFACE_HXX

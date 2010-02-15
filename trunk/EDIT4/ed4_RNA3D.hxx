@@ -15,7 +15,7 @@
 #include <aw_window.hxx>
 #endif
 
-void ED4_RNA3D_Start(AW_window *aw, AW_CL, AW_CL);
+void ED4_RNA3D_Start(AW_window *aw, AW_CL cl_gb_main, AW_CL);
 
 #else
 #error ed4_RNA3D.hxx included twice
