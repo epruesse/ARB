@@ -141,17 +141,16 @@ static void enable_auto_match_cb(AW_root *root, AW_window *aww, AW_CL cl_sel_id)
     auto_match_changed(root);
 }
 
-static void popup_match_window_cb(AW_window *aww) {
+static void popup_match_window_cb(AW_window *aww, AW_CL cl_gb_main) {
     AW_root   *root         = aww->get_root();
-    AW_window *match_window = create_probe_match_window(root, 0);
+    AW_window *match_window = create_probe_match_window(root, cl_gb_main);
     match_window->activate();
     root->awar(AWAR_TARGET_STRING)->touch(); // force re-match
 }
 
 // --------------------------------------------------------------------------------
 
-static void popup_probe_design_result_window(AW_window *aww)
-{
+static void popup_probe_design_result_window(AW_window *aww, AW_CL cl_gb_main) {
     if (!pd_gl.pd_design) {
         AW_root *root = aww->get_root();
 
@@ -189,7 +188,7 @@ static void popup_probe_design_result_window(AW_window *aww)
         pd_gl.pd_design->create_button("PRINT", "PRINT", "P");
 
         pd_gl.pd_design->at("match");
-        pd_gl.pd_design->callback(popup_match_window_cb);
+        pd_gl.pd_design->callback(popup_match_window_cb, cl_gb_main);
         pd_gl.pd_design->create_button("MATCH", "MATCH", "M");
     }
     pd_gl.pd_design->activate();
@@ -358,8 +357,7 @@ int probe_design_send_data(AW_root *root, T_PT_PDC  pdc)
     return 0;
 }
 
-void probe_design_event(AW_window *aww)
-{
+void probe_design_event(AW_window *aww, AW_CL cl_gb_main) {
     AW_root     *root  = aww->get_root();
     T_PT_PDC     pdc;
     T_PT_TPROBE  tprobe;
@@ -527,7 +525,7 @@ void probe_design_event(AW_window *aww)
                   PDC_TPROBE, &tprobe,
                   NULL);
 
-        popup_probe_design_result_window(aww);
+        popup_probe_design_result_window(aww, cl_gb_main);
         pd_gl.pd_design->clear_selection_list(pd_gl.pd_design_id);
 
         if (tprobe) {
@@ -1210,10 +1208,14 @@ void probe_design_save_default(AW_window *aw, AW_default aw_def)
 }
 
 
-AW_window *create_probe_design_window(AW_root *root, AW_CL cl_genome_db) {
-    AW_window_simple *aws         = new AW_window_simple;
-    int               is_genom_db = (int)cl_genome_db;
-
+AW_window *create_probe_design_window(AW_root *root, AW_CL cl_gb_main) {
+    AW_window_simple *aws     = new AW_window_simple;
+    GBDATA           *gb_main = (GBDATA*)cl_gb_main;
+    bool              is_genom_db;
+    {
+        GB_transaction ta(gb_main);
+        is_genom_db = GEN_is_genome_db(gb_main, -1);
+    }
     aws->init(root, "PROBE_DESIGN", "PROBE DESIGN");
 
     aws->load_xfig("pd_main.fig");
@@ -1226,12 +1228,12 @@ AW_window *create_probe_design_window(AW_root *root, AW_CL cl_genome_db) {
     aws->callback(AW_POPUP_HELP, (AW_CL)"probedesign.hlp");
     aws->create_button("HELP", "HELP", "H");
 
-    aws->callback(probe_design_event);
+    aws->callback(probe_design_event, cl_gb_main);
     aws->at("design");
     aws->highlight();
     aws->create_button("GO", "GO", "G");
 
-    aws->callback(popup_probe_design_result_window);
+    aws->callback(popup_probe_design_result_window, (AW_CL)gb_main);
     aws->at("result");
     aws->create_button("RESULT", "RESULT", "S");
 
@@ -1486,104 +1488,103 @@ AW_window *create_IUPAC_resolve_window(AW_root *root) {
     return aws;
 }
 
-static void popupSaiProbeMatchWindow(AW_window *aw) {
+static void popupSaiProbeMatchWindow(AW_window *aw, AW_CL cl_gb_main) {
     static AW_window *aw_saiProbeMatch = 0;
 
-    if (!aw_saiProbeMatch) aw_saiProbeMatch = createSaiProbeMatchWindow(aw->get_root());
+    if (!aw_saiProbeMatch) aw_saiProbeMatch = createSaiProbeMatchWindow(aw->get_root(), (GBDATA*)cl_gb_main);
     if (g_spd) transferProbeData(g_spd); // transferring probe data to saiProbeMatch function
 
     aw_saiProbeMatch->activate();
 }
 
-AW_window *create_probe_match_window(AW_root *root, AW_default) {
+AW_window *create_probe_match_window(AW_root *root, AW_CL cl_gb_main) {
     static AW_window_simple *aws = 0; // the one and only probe match window
-    if (aws) return aws;
+    if (!aws) {
+        aws = new AW_window_simple;
 
-    aws = new AW_window_simple;
+        aws->init(root, "PROBE_MATCH", "PROBE MATCH");
 
-    aws->init(root, "PROBE_MATCH", "PROBE MATCH");
+        aws->load_xfig("pd_match.fig");
 
-    aws->load_xfig("pd_match.fig");
+        aws->callback((AW_CB0)AW_POPDOWN);
+        aws->at("close");
+        aws->create_button("CLOSE", "CLOSE", "C");
 
-    aws->callback((AW_CB0)AW_POPDOWN);
-    aws->at("close");
-    aws->create_button("CLOSE", "CLOSE", "C");
+        aws->callback(AW_POPUP_HELP, (AW_CL)"probematch.hlp");
+        aws->at("help");
+        aws->create_button("HELP", "HELP", "H");
 
-    aws->callback(AW_POPUP_HELP, (AW_CL)"probematch.hlp");
-    aws->at("help");
-    aws->create_button("HELP", "HELP", "H");
+        aws->at("string");
+        aws->create_input_field(AWAR_TARGET_STRING, 32);
 
-    aws->at("string");
-    aws->create_input_field(AWAR_TARGET_STRING, 32);
+        AW_selection_list *selection_id;
+        aws->at("result");
+        selection_id = aws->create_selection_list(AWAR_PD_SELECTED_MATCH, NULL, "", 110, 15);
+        aws->insert_default_selection(selection_id, "****** No results yet *******", "");  // if list is empty -> crashed if new species was selected in ARB_EDIT4
 
-    AW_selection_list *selection_id;
-    aws->at("result");
-    selection_id = aws->create_selection_list(AWAR_PD_SELECTED_MATCH, NULL, "", 110, 15);
-    aws->insert_default_selection(selection_id, "****** No results yet *******", "");  // if list is empty -> crashed if new species was selected in ARB_EDIT4
+        aws->callback(create_print_box_for_selection_lists, (AW_CL)selection_id);
+        aws->at("print");
+        aws->create_button("PRINT", "PRINT", "P");
 
-    aws->callback(create_print_box_for_selection_lists, (AW_CL)selection_id);
-    aws->at("print");
-    aws->create_button("PRINT", "PRINT", "P");
+        aws->at("matchSai");
+        aws->callback(popupSaiProbeMatchWindow, cl_gb_main);
+        aws->create_button("MATCH_SAI", "Match SAI", "S");
 
-    aws->at("matchSai");
-    aws->callback(popupSaiProbeMatchWindow);
-    aws->create_button("MATCH_SAI", "Match SAI", "S");
+        aws->callback((AW_CB1)AW_POPUP, (AW_CL)create_probe_design_expert_window);
+        aws->at("expert");
+        aws->create_button("EXPERT", "EXPERT", "X");
 
-    aws->callback((AW_CB1)AW_POPUP, (AW_CL)create_probe_design_expert_window);
-    aws->at("expert");
-    aws->create_button("EXPERT", "EXPERT", "X");
+        aws->at("pt_server");
+        awt_create_selection_list_on_pt_servers(aws, AWAR_PT_SERVER, true);
 
-    aws->at("pt_server");
-    awt_create_selection_list_on_pt_servers(aws, AWAR_PT_SERVER, true);
+        aws->at("complement");
+        aws->create_toggle(AWAR_PD_MATCH_COMPLEMENT);
 
-    aws->at("complement");
-    aws->create_toggle(AWAR_PD_MATCH_COMPLEMENT);
+        aws->at("mark");
+        aws->create_toggle(AWAR_PD_MATCH_MARKHITS);
 
-    aws->at("mark");
-    aws->create_toggle(AWAR_PD_MATCH_MARKHITS);
+        aws->at("weighted");
+        aws->create_toggle(AWAR_PD_MATCH_SORTBY);
 
-    aws->at("weighted");
-    aws->create_toggle(AWAR_PD_MATCH_SORTBY);
+        aws->at("mismatches");
+        aws->create_option_menu(AWAR_MAX_MISMATCHES, NULL,  "");
+        aws->insert_default_option("Search up to zero mismatches", "", 0);
+        for (int mm = 1; mm <= 20; ++mm) {
+            aws->insert_option(GBS_global_string("Search up to %i mismatches", mm), "", mm);
+        }
+        aws->update_option_menu();
 
-    aws->at("mismatches");
-    aws->create_option_menu(AWAR_MAX_MISMATCHES, NULL,  "");
-    aws->insert_default_option("Search up to zero mismatches", "", 0);
-    for (int mm = 1; mm <= 20; ++mm) {
-        aws->insert_option(GBS_global_string("Search up to %i mismatches", mm), "", mm);
+        aws->at("tmp");
+        aws->create_toggle(AWAR_PD_MATCH_WRITE2TMP);
+
+        aws->at("nhits");
+        aws->create_button(0, AWAR_PD_MATCH_NHITS);
+
+        aws->callback(probe_match_event, (AW_CL)selection_id, (AW_CL)0);
+        aws->at("match");
+        aws->create_button("MATCH", "MATCH", "D");
+
+        aws->at("auto");
+        aws->label("Auto");
+        aws->create_toggle(AWAR_PD_MATCH_AUTOMATCH);
+        enable_auto_match_cb(root, aws, (AW_CL)selection_id);
+
+        aws->callback(modify_target_string, (AW_CL)TS_MOD_CLEAR);
+        aws->at("clear");
+        aws->create_button("CLEAR", "Clear", "0");
+
+        aws->callback(modify_target_string, (AW_CL)TS_MOD_REV_COMPL);
+        aws->at("revcompl");
+        aws->create_button("REVCOMPL", "RevCompl", "R");
+
+        aws->callback(modify_target_string, (AW_CL)TS_MOD_COMPL);
+        aws->at("compl");
+        aws->create_button("COMPL", "Compl", "C");
+
+        aws->callback((AW_CB1)AW_POPUP, (AW_CL)create_IUPAC_resolve_window);
+        aws->at("iupac");
+        aws->create_button("IUPAC", "IUPAC", "I");
     }
-    aws->update_option_menu();
-
-    aws->at("tmp");
-    aws->create_toggle(AWAR_PD_MATCH_WRITE2TMP);
-
-    aws->at("nhits");
-    aws->create_button(0, AWAR_PD_MATCH_NHITS);
-
-    aws->callback(probe_match_event, (AW_CL)selection_id, (AW_CL)0);
-    aws->at("match");
-    aws->create_button("MATCH", "MATCH", "D");
-
-    aws->at("auto");
-    aws->label("Auto");
-    aws->create_toggle(AWAR_PD_MATCH_AUTOMATCH);
-    enable_auto_match_cb(root, aws, (AW_CL)selection_id);
-
-    aws->callback(modify_target_string, (AW_CL)TS_MOD_CLEAR);
-    aws->at("clear");
-    aws->create_button("CLEAR", "Clear", "0");
-
-    aws->callback(modify_target_string, (AW_CL)TS_MOD_REV_COMPL);
-    aws->at("revcompl");
-    aws->create_button("REVCOMPL", "RevCompl", "R");
-
-    aws->callback(modify_target_string, (AW_CL)TS_MOD_COMPL);
-    aws->at("compl");
-    aws->create_button("COMPL", "Compl", "C");
-
-    aws->callback((AW_CB1)AW_POPUP, (AW_CL)create_IUPAC_resolve_window);
-    aws->at("iupac");
-    aws->create_button("IUPAC", "IUPAC", "I");
-
     return aws;
 }
 

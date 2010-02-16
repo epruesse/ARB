@@ -105,7 +105,7 @@ public:
 
 };
 
-AW_window *createSaiProbeMatchWindow(AW_root *awr);
+AW_window *createSaiProbeMatchWindow(AW_root *awr, GBDATA *gb_main);
 void transferProbeData(struct saiProbeData *spd);
 
 #else

@@ -27,10 +27,9 @@ using namespace std;
 #define PROBE_PREFIX_LENGTH 9
 #define PROBE_SUFFIX_LENGTH 9
 
-extern GBDATA *GLOBAL_gb_main;
-saiProbeData  *g_pbdata                    = 0;
-static char   *saiValues                   = 0;
-static bool    in_colorDefChanged_callback = false; // used to avoid colorDef correction
+saiProbeData *g_pbdata                    = 0;
+static char  *saiValues                   = 0;
+static bool   in_colorDefChanged_callback = false;  // used to avoid colorDef correction
 
 #define BUFSIZE 100
 static const char *getAwarName(int awarNo) {
@@ -180,7 +179,7 @@ static void addCallBacks(AW_root *awr, AWT_canvas *ntw) {
     awr->awar(AWAR_SPV_ACI_COMMAND)   ->add_callback(refreshCanvas, (AW_CL)ntw);
 }
 
-static const char *translateSAItoColors(AW_root *awr, int start, int end, int speciesNo) {
+static const char *translateSAItoColors(AW_root *awr, GBDATA *gb_main, int start, int end, int speciesNo) {
     // translating SAIs to color strings
     static int   seqBufferSize = 0;
     static char *saiColors     = 0;
@@ -201,9 +200,9 @@ static const char *translateSAItoColors(AW_root *awr, int start, int end, int sp
 
     char *saiSelected = awr->awar(AWAR_SPV_SAI_2_PROBE)->read_string();
 
-    GB_push_transaction(GLOBAL_gb_main);
-    char   *alignment_name = GBT_get_default_alignment(GLOBAL_gb_main);
-    GBDATA *gb_extended    = GBT_find_SAI(GLOBAL_gb_main, saiSelected);
+    GB_push_transaction(gb_main);
+    char   *alignment_name = GBT_get_default_alignment(gb_main);
+    GBDATA *gb_extended    = GBT_find_SAI(gb_main, saiSelected);
     int     positions      = 0;
 
     if (gb_extended) {
@@ -227,7 +226,7 @@ static const char *translateSAItoColors(AW_root *awr, int start, int end, int sp
                 }
 
                 const char *species_name = g_pbdata->probeSpecies[speciesNo];
-                GBDATA *gb_species       = GBT_find_species(GLOBAL_gb_main, species_name);
+                GBDATA *gb_species       = GBT_find_species(gb_main, species_name);
                 GBDATA *gb_seq_data      = GBT_read_sequence(gb_species, alignment_name);
                 if (gb_seq_data) seqData = GB_read_char_pntr(gb_seq_data);
             }
@@ -274,12 +273,12 @@ static const char *translateSAItoColors(AW_root *awr, int start, int end, int sp
 
     free(alignment_name);
     free(saiSelected);
-    GB_pop_transaction(GLOBAL_gb_main);
+    GB_pop_transaction(gb_main);
 
     return saiColors;
 }
 
-static int calculateEndPosition(int startPos, int speciesNo, int mode, int probeLen, GB_ERROR *err) {
+static int calculateEndPosition(GBDATA *gb_main, int startPos, int speciesNo, int mode, int probeLen, GB_ERROR *err) {
     // returns -2 in case of error
     // Note: if mode == 'PROBE_PREFIX' the result is 1 in front of last base (and so may be -1)
 
@@ -288,10 +287,10 @@ static int calculateEndPosition(int startPos, int speciesNo, int mode, int probe
     endPos = -2;
     *err   = 0;
 
-    GB_push_transaction(GLOBAL_gb_main);
-    char       *alignment_name = GBT_get_default_alignment(GLOBAL_gb_main);
+    GB_push_transaction(gb_main);
+    char       *alignment_name = GBT_get_default_alignment(gb_main);
     const char *species_name   = g_pbdata->probeSpecies[speciesNo];
-    GBDATA     *gb_species     = GBT_find_species(GLOBAL_gb_main, species_name);
+    GBDATA     *gb_species     = GBT_find_species(gb_main, species_name);
     if (gb_species) {
         GBDATA *gb_seq_data      = GBT_read_sequence(gb_species, alignment_name);
         if (gb_seq_data) {
@@ -332,7 +331,7 @@ static int calculateEndPosition(int startPos, int speciesNo, int mode, int probe
         *err = "species not found";
     }
     free(alignment_name);
-    GB_pop_transaction(GLOBAL_gb_main);
+    GB_pop_transaction(gb_main);
 
     return endPos;
 }
@@ -375,12 +374,12 @@ static void paintProbeInfo(AW_device *device, const char *probe_info, AW_pos x, 
     }
 }
 
-static char *GetDisplayInfo(AW_root *root, const char *speciesName, size_t displayWidth, const char *default_tree_name)
+static char *GetDisplayInfo(AW_root *root, GBDATA *gb_main, const char *speciesName, size_t displayWidth, const char *default_tree_name)
 {
     GB_ERROR        error       = 0;
     char           *displayInfo = 0;
-    GB_transaction  ta(GLOBAL_gb_main);
-    GBDATA         *gb_Species  = GBT_expect_species(GLOBAL_gb_main, speciesName);
+    GB_transaction  ta(gb_main);
+    GBDATA         *gb_Species  = GBT_expect_species(gb_main, speciesName);
 
     if (!gb_Species) error = GB_await_error();
     else {
@@ -400,7 +399,7 @@ static char *GetDisplayInfo(AW_root *root, const char *speciesName, size_t displ
 
         if (!error) {
             char *aciCommand        = root->awar_string(AWAR_SPV_ACI_COMMAND)->read_string();
-            displayInfo             = GB_command_interpreter(GLOBAL_gb_main, field_content, aciCommand, gb_Species, default_tree_name);
+            displayInfo             = GB_command_interpreter(gb_main, field_content, aciCommand, gb_Species, default_tree_name);
             if (!displayInfo) error = GB_await_error();
             free(aciCommand);
         }
@@ -468,7 +467,7 @@ void SAI_graphic::paint(AW_device *device) {
 
             for (size_t j = 0; j < g_pbdata->probeSpecies.size(); ++j) {
                 const char *name        = g_pbdata->probeSpecies[j];
-                char       *displayInfo = GetDisplayInfo(aw_root, name, displayWidth, default_tree);
+                char       *displayInfo = GetDisplayInfo(aw_root, gb_main, name, displayWidth, default_tree);
 
                 if (strcmp(selectedProbe, name) == 0) {
                     device->box(SAI_GC_FOREGROUND, true, fgX, (fgY - (yStep * 0.9)), (displayWidth * xStep_info), yStep, -1, 0, 0);
@@ -537,7 +536,7 @@ void SAI_graphic::paint(AW_device *device) {
                         }
                         else {
                             const char *endErr;
-                            endPos = calculateEndPosition(startPos-1, i, PROBE_PREFIX, probeLen, &endErr);
+                            endPos = calculateEndPosition(gb_main, startPos-1, i, PROBE_PREFIX, probeLen, &endErr);
                             if (endPos == -2) {
                                 err = GBS_global_string("Can't handle '%s' (%s)", g_pbdata->probeSpecies[i], endErr);
                             }
@@ -545,7 +544,7 @@ void SAI_graphic::paint(AW_device *device) {
                                 sai_assert(!endErr);
                                 sai_assert(endPos >= -1); // note: -1 gets fixed in the next line
                                 endPos++; // calculateEndPosition returns 'one position in front of start'
-                                saiCols = translateSAItoColors(aw_root, endPos, startPos-1, i);
+                                saiCols = translateSAItoColors(aw_root, gb_main, endPos, startPos-1, i);
                                 if (saiCols) {
                                     int positions = strlen(saiCols);
                                     int skipLeft  = PROBE_PREFIX_LENGTH-positions;
@@ -556,10 +555,10 @@ void SAI_graphic::paint(AW_device *device) {
 
                                 // --------------------
                                 // probe region
-                                endPos  = calculateEndPosition(startPos, i, PROBE, probeLen, &endErr);
+                                endPos  = calculateEndPosition(gb_main, startPos, i, PROBE, probeLen, &endErr);
                                 sai_assert(endPos >= startPos);
                                 sai_assert(!endErr);
-                                saiCols = translateSAItoColors(aw_root, startPos, endPos, i);
+                                saiCols = translateSAItoColors(aw_root, gb_main, startPos, endPos, i);
 
                                 paintBackgroundAndSAI(device, strlen(tok_infix), pbX, pbY, xStep_target, yStep, saiCols, dispSai);
                                 paintProbeInfo(device, tok_infix, pbX, pbY, xStep_target, yStep, maxDescent, (AW_CL)i, SAI_GC_PROBE);
@@ -567,11 +566,11 @@ void SAI_graphic::paint(AW_device *device) {
                                 // post-probe region - 9 bases
                                 size_t post_start_pos = endPos;
 
-                                endPos = calculateEndPosition(post_start_pos, i, PROBE_SUFFIX, probeLen, &endErr);
+                                endPos = calculateEndPosition(gb_main, post_start_pos, i, PROBE_SUFFIX, probeLen, &endErr);
                                 sai_assert(endPos >= int(post_start_pos));
                                 sai_assert(!endErr);
 
-                                saiCols = translateSAItoColors(aw_root, post_start_pos, endPos, i);
+                                saiCols = translateSAItoColors(aw_root, gb_main, post_start_pos, endPos, i);
                                 if (saiCols) paintBackgroundAndSAI(device, strlen(tok_suffix), pbRgX2, pbY, xStep_border, yStep, saiCols, dispSai);
                                 paintProbeInfo(device, tok_suffix, pbRgX2, pbY, xStep_border, yStep, maxDescent, (AW_CL)i, SAI_GC_PROBE);
                             }
@@ -632,107 +631,106 @@ static void saiColorDefs_restore_config(AW_window *aww, const char *stored_strin
 static AW_window *create_colorTranslationTable_window(AW_root *aw_root) { // creates color translation table window
     // window to define color translations of selected SAI
     static AW_window_simple *aws = 0;
-    if (aws) return (AW_window *)aws;
+    if (!aws) {
+        aws = new AW_window_simple;
+        aws->init(aw_root, "SAI_CTT", "Color Translation Table");
+        aws->load_xfig("probeSaiColors.fig");
 
-    aws = new AW_window_simple;
-    aws->init(aw_root, "SAI_CTT", "Color Translation Table");
-    aws->load_xfig("probeSaiColors.fig");
+        char at_name[] = "rangex";
+        char *dig      = strchr(at_name, 0)-1;
 
-    char at_name[] = "rangex";
-    char *dig      = strchr(at_name, 0)-1;
+        for (int i = 0; i<SAI_CLR_COUNT; ++i) {
+            dig[0] = '0'+i;
+            aws->at(at_name);
+            aws->create_input_field(getAwarName(i), 15);
+        }
 
-    for (int i = 0; i<SAI_CLR_COUNT; ++i) {
-        dig[0] = '0'+i;
-        aws->at(at_name);
-        aws->create_input_field(getAwarName(i), 15);
+        aws->at("config");
+        AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, "saveSaiColorDefs", saiColorDefs_store_config, saiColorDefs_restore_config, 0, 0);
+
+        aws->at("dispSai");
+        aws->create_toggle(AWAR_SPV_DISP_SAI);
+
+        aws->at("close");
+        aws->callback(AW_POPDOWN);
+        aws->create_button("CLOSE", "CLOSE", "C");
     }
-
-    aws->at("config");
-    AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, "saveSaiColorDefs", saiColorDefs_store_config, saiColorDefs_restore_config, 0, 0);
-
-    aws->at("dispSai");
-    aws->create_toggle(AWAR_SPV_DISP_SAI);
-
-    aws->at("close");
-    aws->callback(AW_POPDOWN);
-    aws->create_button("CLOSE", "CLOSE", "C");
-
-    return (AW_window *)aws;
+    return aws;
 }
 
-static AW_window *createSelectSAI_window(AW_root *aw_root) {
+static AW_window *createSelectSAI_window(AW_root *aw_root, AW_CL cl_gb_main) {
     // window to select SAI from the existing SAIs in the database
     static AW_window_simple *aws = 0;
-    if (aws) return (AW_window *)aws;
+    if (!aws) {
+        aws = new AW_window_simple;
+        aws->init(aw_root, "SELECT_SAI", "SELECT SAI");
+        aws->load_xfig("selectSAI.fig");
 
-    aws = new AW_window_simple;
-    aws->init(aw_root, "SELECT_SAI", "SELECT SAI");
-    aws->load_xfig("selectSAI.fig");
+        aws->at("selection");
+        aws->callback((AW_CB0)AW_POPDOWN);
+        awt_create_selection_list_on_extendeds((GBDATA*)cl_gb_main, (AW_window *)aws, AWAR_SPV_SAI_2_PROBE);
 
-    aws->at("selection");
-    aws->callback((AW_CB0)AW_POPDOWN);
-    awt_create_selection_list_on_extendeds(GLOBAL_gb_main, (AW_window *)aws, AWAR_SPV_SAI_2_PROBE);
+        aws->at("close");
+        aws->callback(AW_POPDOWN);
+        aws->create_button("CLOSE", "CLOSE", "C");
 
-    aws->at("close");
-    aws->callback(AW_POPDOWN);
-    aws->create_button("CLOSE", "CLOSE", "C");
-
-    aws->window_fit();
-    return (AW_window *)aws;
+        aws->window_fit();
+    }
+    return aws;
 }
 
-static AW_window *createDisplayField_window(AW_root *aw_root) {
+static AW_window *createDisplayField_window(AW_root *aw_root, AW_CL cl_gb_main) {
     // window to select SAI from the existing SAIs in the database
     static AW_window_simple *aws = 0;
-    if (aws) return (AW_window *)aws;
+    if (!aws) {
+        aws = new AW_window_simple;
+        aws->init(aw_root, "SELECT_DISPLAY_FIELD", "SELECT DISPLAY FIELD");
+        aws->load_xfig("displayField.fig");
 
-    aws = new AW_window_simple;
-    aws->init(aw_root, "SELECT_DISPLAY_FIELD", "SELECT DISPLAY FIELD");
-    aws->load_xfig("displayField.fig");
+        aws->at("dbField");
+        aws->button_length(20);
+        aws->callback(AWT_popup_select_species_field_window, (AW_CL)AWAR_SPV_DB_FIELD_NAME, cl_gb_main);
+        aws->create_button("SELECT_DB_FIELD", AWAR_SPV_DB_FIELD_NAME);
 
-    aws->at("dbField");
-    aws->button_length(20);
-    aws->callback(AWT_popup_select_species_field_window, (AW_CL) AWAR_SPV_DB_FIELD_NAME,  (AW_CL) GLOBAL_gb_main);
-    aws->create_button("SELECT_DB_FIELD", AWAR_SPV_DB_FIELD_NAME);
+        aws->at("aciSelect");
+        aws->button_length(12);
+        aws->callback(AWT_create_select_srtaci_window, (AW_CL) AWAR_SPV_ACI_COMMAND, 0);
+        aws->create_button("SELECT_ACI", "Select ACI");
 
-    aws->at("aciSelect");
-    aws->button_length(12);
-    aws->callback(AWT_create_select_srtaci_window, (AW_CL) AWAR_SPV_ACI_COMMAND, 0);
-    aws->create_button("SELECT_ACI", "Select ACI");
+        aws->at("aciCmd");
+        aws->button_length(20);
+        aws->create_input_field(AWAR_SPV_ACI_COMMAND, 40);
 
-    aws->at("aciCmd");
-    aws->button_length(20);
-    aws->create_input_field(AWAR_SPV_ACI_COMMAND, 40);
+        aws->at("width");
+        aws->button_length(5);
+        aws->create_input_field(AWAR_SPV_DB_FIELD_WIDTH, 4);
 
-    aws->at("width");
-    aws->button_length(5);
-    aws->create_input_field(AWAR_SPV_DB_FIELD_WIDTH, 4);
+        aws->at("close");
+        aws->button_length(10);
+        aws->callback(AW_POPDOWN);
+        aws->create_button("CLOSE", "CLOSE", "C");
 
-    aws->at("close");
-    aws->button_length(10);
-    aws->callback(AW_POPDOWN);
-    aws->create_button("CLOSE", "CLOSE", "C");
-
-    aws->window_fit();
-    return (AW_window *)aws;
+        aws->window_fit();
+    }
+    return aws;
 }
 
 static AW_window *createSaiColorWindow(AW_root *aw_root, AW_CL cl_gc_manager) {
     return AW_create_gc_window_named(aw_root, (AW_gc_manager*)cl_gc_manager, "GC_PROPS_SAI", "Probe/SAI Colors and Fonts");
 }
 
-AW_window *createSaiProbeMatchWindow(AW_root *awr) {
+AW_window *createSaiProbeMatchWindow(AW_root *awr, GBDATA *gb_main) {
     // Main Window - Canvas on which the actual painting is done
-    GB_transaction dummy(GLOBAL_gb_main);
+    GB_transaction dummy(gb_main);
 
     createSaiProbeAwars(awr); // creating awars for colors ( 0 to 9)
 
     AW_window_menu *awm = new AW_window_menu();
     awm->init(awr, "MATCH_SAI", "PROBE AND SAI", 200, 300);
     AW_gc_manager aw_gc_manager;
-    SAI_graphic *saiProbeGraphic = new SAI_graphic(awr, GLOBAL_gb_main);
+    SAI_graphic *saiProbeGraphic = new SAI_graphic(awr, gb_main);
 
-    AWT_canvas *ntw = new AWT_canvas(GLOBAL_gb_main, awm, saiProbeGraphic, aw_gc_manager, AWAR_TARGET_STRING);
+    AWT_canvas *ntw = new AWT_canvas(gb_main, awm, saiProbeGraphic, aw_gc_manager, AWAR_TARGET_STRING);
     ntw->recalc_size();
 
     awm->insert_help_topic("How to Visualize SAI`s ?", "H", "saiProbeHelp.hlp", AWM_ALL, (AW_CB)AW_POPUP_HELP, (AW_CL)"saiProbeHelp.hlp", 0);
@@ -741,8 +739,8 @@ AW_window *createSaiProbeMatchWindow(AW_root *awr) {
     awm->insert_menu_topic("close", "Close", "C", "quit.hlp", AWM_ALL, (AW_CB)AW_POPDOWN, 0, 0);
 
     awm->create_menu("Properties", "P", AWM_ALL);
-    awm->insert_menu_topic("selectDispField", "Select Display Field",      "F", "displayField.hlp", AWM_ALL, AW_POPUP, (AW_CL)createDisplayField_window,           (AW_CL)0);
-    awm->insert_menu_topic("selectSAI",       "Select SAI",                "S", "selectSai.hlp",    AWM_ALL, AW_POPUP, (AW_CL)createSelectSAI_window,              (AW_CL)0);
+    awm->insert_menu_topic("selectDispField", "Select Display Field",      "F", "displayField.hlp", AWM_ALL, AW_POPUP, (AW_CL)createDisplayField_window,           (AW_CL)gb_main);
+    awm->insert_menu_topic("selectSAI",       "Select SAI",                "S", "selectSai.hlp",    AWM_ALL, AW_POPUP, (AW_CL)createSelectSAI_window,              (AW_CL)gb_main);
     awm->insert_menu_topic("clrTransTable",   "Define Color Translations", "D", "selectSai.hlp",    AWM_ALL, AW_POPUP, (AW_CL)create_colorTranslationTable_window, (AW_CL)0);
     awm->insert_menu_topic("SetColors",       "Set Colors and Fonts",      "t", "setColors.hlp",    AWM_ALL, AW_POPUP, (AW_CL)createSaiColorWindow,                (AW_CL)aw_gc_manager);
 
