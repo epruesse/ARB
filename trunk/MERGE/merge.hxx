@@ -44,7 +44,7 @@ void MG_create_db_dependent_rename_awars(AW_root *aw_root, GBDATA *gb_merge, GBD
 void     MG_set_renamed(bool renamed, AW_root *aw_root, const char *reason);
 GB_ERROR MG_expect_renamed();
 
-int MG_check_alignment(AW_window *aww, int fast = 0);
+int MG_copy_and_check_alignments(AW_window *aww, int show_status);
 
 // export of gene-species:
 
