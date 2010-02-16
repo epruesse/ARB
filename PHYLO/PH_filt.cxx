@@ -13,6 +13,10 @@
 
 #include <cctype>
 
+static long PH_timer() {
+    static long time = 0;
+    return ++time;
+}
 
 extern char **filter_text;
 
@@ -49,7 +53,7 @@ char *PH_filter::init(char *ifilter, char *zerobases, long size)
             }
         }
     }
-    update = AP_timer();
+    update = PH_timer();
     return 0;
 }
 
@@ -62,7 +66,7 @@ char *PH_filter::init(long size)
     for (i = 0; i < size; i++) {
         filter[i] = 1;
     }
-    update = AP_timer();
+    update = PH_timer();
     return 0;
 }
 
