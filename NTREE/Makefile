@@ -454,6 +454,7 @@ NT_extern.o: $(ARBHOME)/INCLUDE/dupstr.h
 NT_extern.o: $(ARBHOME)/INCLUDE/EXP.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/gde.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/GEN.hxx
+NT_extern.o: $(ARBHOME)/INCLUDE/multi_probe.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/primer_design.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/probe_design.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/seq_quality.h

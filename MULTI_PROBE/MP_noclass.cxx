@@ -313,17 +313,18 @@ void init_system3_tab()
 
 }
 
-void MP_compute(AW_window *aww)
-{
-    AW_root         *aw_root    = mp_main->get_aw_root();
-    AW_window           *aww2;
-    int             i       = 0;
+void MP_compute(AW_window *aww, AW_CL cl_gb_main) {
+    AW_root         *aw_root = mp_main->get_aw_root();
+    AW_window       *aww2;
+    int              i       = 0;
     int             *bew_array;
     char            *ptr, *ptr2, *qual;
-    char            **probe_field;
+    char           **probe_field;
     int             *single_mismatch;
-    ProbeValuation      *p_eval = NULL;
+    ProbeValuation  *p_eval  = NULL;
+    GBDATA          *gb_main = (GBDATA*)cl_gb_main;
 
+    MO_Liste::set_gb_main(gb_main);
 
     if (aww->get_no_of_entries(selected_list)-1 < mp_gl_awars.no_of_probes)
     {

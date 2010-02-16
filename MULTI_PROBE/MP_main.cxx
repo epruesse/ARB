@@ -1,10 +1,23 @@
-#include <aw_window.hxx>
+// ================================================================ //
+//                                                                  //
+//   File      : MP_main.cxx                                        //
+//   Purpose   :                                                    //
+//                                                                  //
+//   Institute of Microbiology (Technical University Munich)        //
+//   http://www.arb-home.de/                                        //
+//                                                                  //
+// ================================================================ //
+
+#include <multi_probe.hxx>
+
 #include "MultiProbe.hxx"
 #include "mp_proto.hxx"
 
+#include <awt_canvas.hxx>
+
 awar_vars  mp_gl_awars;
 MP_Main   *mp_main             = NULL;
-char       MP_probe_tab[256];   // zum checken, ob ein eingegebener Sondenstring ok ist
+char       MP_probe_tab[256];                       // zum checken, ob ein eingegebener Sondenstring ok ist
 int        remembered_mismatches;
 int        anz_elem_marked     = 0;
 int        anz_elem_unmarked   = 0;
@@ -17,13 +30,12 @@ double SUMMARKEDFACTOR = 1.0;
 double SUMUNMARKEDFACTOR = 1.0;
 
 
-MP_Main::MP_Main(AW_root *awr, AWT_canvas *ntwt)
-{
+MP_Main::MP_Main(AW_root *awr, AWT_canvas *canvas) {
     aw_root = awr;
-    ntw     = ntwt;
+    ntw     = canvas;
     stc     = NULL;
     create_awars();
-    mp_window   = new MP_Window(aw_root);
+    mp_window   = new MP_Window(aw_root, canvas->gb_main);
     p_eval  = NULL;
 }
 
@@ -93,10 +105,10 @@ void create_tables()
     }
 }
 
-AW_window *MP_main(AW_root *root, AW_default def) {
+AW_window *create_multiprobe_window(AW_root *root, AW_CL cl_ntw) {
     if (!mp_main) {
         create_tables();
-        mp_main = new MP_Main(root, (AWT_canvas *)def);
+        mp_main = new MP_Main(root, (AWT_canvas *)cl_ntw);
     }
 
     AW_window *aw = mp_main->get_mp_window()->get_window();
@@ -104,6 +116,4 @@ AW_window *MP_main(AW_root *root, AW_default def) {
 
     return aw;
 }
-
-
 

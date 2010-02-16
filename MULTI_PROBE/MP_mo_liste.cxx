@@ -5,9 +5,11 @@
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~Methoden MO_Liste
 
+GBDATA *MO_Liste::gb_main = NULL;
 
-MO_Liste::MO_Liste()
-{
+MO_Liste::MO_Liste() {
+    mp_assert(gb_main);
+    
     laenge   = 0;
     mo_liste = NULL;
     current  = 0;
@@ -27,8 +29,7 @@ MO_Liste::~MO_Liste()
 }
 
 
-void MO_Liste::get_all_species()
-{
+void MO_Liste::get_all_species() {
     const char *servername = NULL;
     char       *match_name = NULL;
     char        toksep[2];
@@ -97,11 +98,11 @@ void MO_Liste::get_all_species()
     {
 
         match_name = strtok(bs.data, toksep);
-        GB_push_transaction(GLOBAL_gb_main);
+        GB_push_transaction(gb_main);
         while (match_name)
         {
             i++;
-            if (!GBT_find_species(GLOBAL_gb_main, match_name))
+            if (!GBT_find_species(gb_main, match_name))
             {                               // Testen, ob Bakterium auch im Baum existiert, um
                 pt_server_different = TRUE;
                 return;
@@ -109,7 +110,7 @@ void MO_Liste::get_all_species()
             put_entry(match_name);
             match_name = strtok(0, toksep);
         }
-        GB_pop_transaction(GLOBAL_gb_main);
+        GB_pop_transaction(gb_main);
     }
     else
         aw_message("DB-query produced no species.\n");
@@ -129,8 +130,8 @@ positiontype MO_Liste::fill_marked_bakts()
     GBDATA *gb_species;
 
 
-    GB_push_transaction(GLOBAL_gb_main);
-    laenge = GBT_count_marked_species(GLOBAL_gb_main);     // laenge ist immer zuviel oder gleich der Anzahl wirklick markierter. weil pT-Server nur
+    GB_push_transaction(gb_main);
+    laenge = GBT_count_marked_species(gb_main);     // laenge ist immer zuviel oder gleich der Anzahl wirklick markierter. weil pT-Server nur
     // die Bakterien mit Sequenz zurueckliefert.
 
     if (!laenge) {
@@ -149,14 +150,14 @@ positiontype MO_Liste::fill_marked_bakts()
     hashptr = GBS_create_hash(laenge, GB_IGNORE_CASE);
 
 
-    for (gb_species = GBT_first_marked_species(GLOBAL_gb_main);
+    for (gb_species = GBT_first_marked_species(gb_main);
           gb_species;
           gb_species = GBT_next_marked_species(gb_species))
     {
         put_entry(GBT_read_name(gb_species));
     }
 
-    GB_pop_transaction(GLOBAL_gb_main);
+    GB_pop_transaction(gb_main);
 
     anz_elem_marked = laenge;
 

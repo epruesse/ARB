@@ -17,6 +17,7 @@
 #include "seq_quality.h"
 #include "nt_join.hxx"
 
+#include <multi_probe.hxx>
 #include <st_window.hxx>
 #include <GEN.hxx>
 #include <EXP.hxx>
@@ -53,8 +54,6 @@ void create_insertchar_variables(AW_root *root, AW_default db1);
 AW_window *create_insertchar_window(AW_root *root, AW_default def);
 
 AW_window *AP_open_cprofile_window(AW_root *root);
-
-extern AW_window    *MP_main(AW_root *root, AW_default def);
 
 AW_window *create_tree_window(AW_root *aw_root, AWT_graphic *awd);
 
@@ -1342,7 +1341,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone) {
         awm->create_menu("Probes", "P", AWM_ALL);
         {
             AWMIMT("probe_design", "Design Probes",          "D", "probedesign.hlp", AWM_ALL, AW_POPUP, (AW_CL)create_probe_design_window, (AW_CL)GLOBAL_gb_main);
-            AWMIMT("probe_multi",  "Calculate Multi-Probes", "u", "multiprobe.hlp",  AWM_ALL, AW_POPUP, (AW_CL)MP_main,                    (AW_CL)ntw);
+            AWMIMT("probe_multi",  "Calculate Multi-Probes", "u", "multiprobe.hlp",  AWM_ALL, AW_POPUP, (AW_CL)create_multiprobe_window,   (AW_CL)ntw);
             AWMIMT("probe_match",  "Match Probes",           "M", "probematch.hlp",  AWM_ALL, AW_POPUP, (AW_CL)create_probe_match_window,  (AW_CL)GLOBAL_gb_main);
             SEP________________________SEP();
             AWMIMT("primer_design_new", "Design Primers",            "P", "primer_new.hlp", AWM_EXP, AW_POPUP,(AW_CL)create_primer_design_window, (AW_CL)GLOBAL_gb_main);

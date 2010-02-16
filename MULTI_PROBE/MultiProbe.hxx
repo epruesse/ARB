@@ -124,9 +124,8 @@ extern int      get_random(int min, int max);       // gibt eine Zufallszahl x m
 
 // ********************************************************
 
-extern GBDATA    *GLOBAL_gb_main; // global gb_main
 extern MP_Main   *mp_main;
-extern awar_vars  mp_gl_awars;  // globale Variable, die manuell eingegebene Sequenz enthaelt
+extern awar_vars  mp_gl_awars;                      // globale Variable, die manuell eingegebene Sequenz enthaelt
 
 // ********************************************************
 
@@ -156,7 +155,7 @@ public:
     ProbeValuation  *new_probe_eval(char **field, int size, int* array, int *mismatches);
     void        destroy_probe_eval();
 
-    MP_Main(AW_root *awr, AWT_canvas *ntwt);
+    MP_Main(AW_root *awr, AWT_canvas *canvas);
     ~MP_Main();
 };
 
@@ -178,7 +177,7 @@ public:
 
     AW_window_simple *create_result_window(AW_root *aw_root);
 
-    MP_Window(AW_root *aw_root);
+    MP_Window(AW_root *aw_root, GBDATA *gb_main);
     ~MP_Window();
 };
 
@@ -187,7 +186,7 @@ public:
 // *****************************************************
 // Globale Klassenlose Funktionen
 // *****************************************************
-void    MP_compute(AW_window *);
+void MP_compute(AW_window *, AW_CL cl_gb_main);
 
 class MP_list
 // class which implements a general purpose linked list of void*
@@ -350,23 +349,30 @@ public:
 
 class MO_Liste
 {
-private:
-    Bakt_Info**  mo_liste;
-    long    laenge;
-    long    current;        // zeigt auf den ersten freien eintrag
+    Bakt_Info** mo_liste;
+    long        laenge;
+    long        current;                            // zeigt auf den ersten freien eintrag
     GB_HASH*    hashptr;
 
+    static GBDATA *gb_main;
 
 public:
-    positiontype    fill_marked_bakts();
-    void        get_all_species();
-    long        debug_get_current();
-    long        get_laenge();
-    long        put_entry(const char* name);
-    char*       get_entry_by_index(long index);
-    long        get_index_by_entry(const char* key);
-    Bakt_Info*      get_bakt_info_by_index(long index);
-    Bakt_Info**     get_mo_liste() { return mo_liste; }
+    positiontype fill_marked_bakts();
+    void         get_all_species();
+    long         debug_get_current();
+    long         get_laenge();
+    long         put_entry(const char* name);
+    char*        get_entry_by_index(long index);
+    long         get_index_by_entry(const char* key);
+    Bakt_Info*   get_bakt_info_by_index(long index);
+
+    Bakt_Info** get_mo_liste() { return mo_liste; }
+
+    static void set_gb_main(GBDATA *gb_main_) {
+        mp_assert(!gb_main || gb_main == gb_main_);
+        gb_main = gb_main_;
+    }
+
     MO_Liste();
     ~MO_Liste();
 };
