@@ -117,10 +117,6 @@ public:
 };
 
 
-
-
-long AP_timer();
-
 struct elem;
 
 class PHDATA {
