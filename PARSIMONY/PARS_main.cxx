@@ -28,7 +28,7 @@
 #include <list>
 
 #if defined(DEBUG)
-# define TEST_FUNCTIONS
+# define TESTMENU
 #endif // DEBUG
 
 using namespace std;
@@ -976,10 +976,10 @@ static void NT_quick_add(AW_window * aww, AWT_canvas *ntw, AddWhat what) { nt_ad
 
 // test versions :
 
-#if defined(TEST_FUNCTIONS)
-static void NT_add_test      (AW_window * aww, AWT_canvas *ntw, AddWhat what) { nt_add(aww, ntw, what, false, 1); }
-static void NT_quick_add_test(AW_window * aww, AWT_canvas *ntw, AddWhat what) { nt_add(aww, ntw, what, true, 1); }
-#endif // TEST_FUNCTIONS
+#if defined(TESTMENU)
+static void TESTMENU_add      (AW_window * aww, AWT_canvas *ntw, AddWhat what) { nt_add(aww, ntw, what, false, 1); }
+static void TESTMENU_quick_add(AW_window * aww, AWT_canvas *ntw, AddWhat what) { nt_add(aww, ntw, what, true, 1); }
+#endif // TESTMENU
 
 // -----------------------------------------
 //      remove and add marked / selected
@@ -1007,10 +1007,10 @@ static void NT_rquick_add(AW_window * aww, AWT_canvas *ntw, AddWhat what) { NT_r
 
 // test versions :
 
-#if defined(TEST_FUNCTIONS)
-static void NT_radd_test      (AW_window * aww, AWT_canvas *ntw, AddWhat what) { NT_radd_internal(aww, ntw, what, false, 1); }
-static void NT_rquick_add_test(AW_window * aww, AWT_canvas *ntw, AddWhat what) { NT_radd_internal(aww, ntw, what, true, 1); }
-#endif // TEST_FUNCTIONS
+#if defined(TESTMENU)
+static void TESTMENU_radd           (AW_window * aww, AWT_canvas *ntw, AddWhat what) { NT_radd_internal(aww, ntw, what, false, 1); }
+static void TESTMENU_rquick_add_test(AW_window * aww, AWT_canvas *ntw, AddWhat what) { NT_radd_internal(aww, ntw, what, true, 1); }
+#endif // TESTMENU
 
 // --------------------------------------------------------------------------------
 // Add Partial sequences
@@ -1133,7 +1133,7 @@ static void PA_focus_cb(AW_window *, GBDATA *gb_main_par)
 // -----------------------
 //      test functions
 
-#if defined(TEST_FUNCTIONS)
+#if defined(TESTMENU)
 static void refreshTree(AWT_canvas *ntw) {
     GB_transaction gb_dummy(ntw->gb_main);
 
@@ -1143,7 +1143,7 @@ static void refreshTree(AWT_canvas *ntw) {
     ntw->zoom_reset();
     ntw->refresh();
 }
-#endif // TEST_FUNCTIONS
+#endif // TESTMENU
 
 static void setBranchlens(AP_tree_nlen *node, double newLen)
 {
@@ -1155,8 +1155,8 @@ static void setBranchlens(AP_tree_nlen *node, double newLen)
         setBranchlens(node->get_rightson(), newLen);
     }
 }
-#if defined(TEST_FUNCTIONS)
-static void TEST_setBranchlen(AW_window *, AWT_canvas *ntw)
+#if defined(TESTMENU)
+static void TESTMENU_setBranchlen(AW_window *, AWT_canvas *ntw)
 {
     AP_tree_nlen *root = rootNode();
 
@@ -1164,7 +1164,7 @@ static void TEST_setBranchlen(AW_window *, AWT_canvas *ntw)
     refreshTree(ntw);
 }
 
-static void TEST_treeStats(AW_window *, AWT_canvas *) {
+static void TESTMENU_treeStats(AW_window *, AWT_canvas *) {
     ARB_tree_info tinfo;
     AP_tree_nlen *root = rootNode();
 
@@ -1184,13 +1184,13 @@ static void TEST_treeStats(AW_window *, AWT_canvas *) {
     printf("   marked  =%6zu\n", tinfo.marked);
 }
 
-static void TEST_mixTree(AW_window *, AWT_canvas *ntw)
+static void TESTMENU_mixTree(AW_window *, AWT_canvas *ntw)
 {
     rootEdge()->mixTree(100);
     refreshTree(ntw);
 }
 
-static void TEST_sortTreeByName(AW_window *, AWT_canvas *ntw)
+static void TESTMENU_sortTreeByName(AW_window *, AWT_canvas *ntw)
 {
     AP_tree_nlen *root = rootNode();
 
@@ -1198,7 +1198,7 @@ static void TEST_sortTreeByName(AW_window *, AWT_canvas *ntw)
     refreshTree(ntw);
 }
 
-static void TEST_buildAndDumpChain(AW_window *, AWT_canvas *)
+static void TESTMENU_buildAndDumpChain(AW_window *, AWT_canvas *)
 {
     AP_tree_nlen *root = rootNode();
 
@@ -1219,21 +1219,21 @@ static void init_TEST_menu(AW_window_menu_modes *awm, AWT_canvas *ntw)
 {
     awm->create_menu("Test[debug]", "T", AWM_ALL);
 
-    awm->insert_menu_topic(0, "Mix tree",           "M", "", AWM_ALL, (AW_CB)TEST_mixTree,           (AW_CL)ntw, 0);
-    awm->insert_menu_topic(0, "Tree statistics",    "s", "", AWM_ALL, (AW_CB)TEST_treeStats,         (AW_CL)ntw, 0);
-    awm->insert_menu_topic(0, "Set branchlens",     "b", "", AWM_ALL, (AW_CB)TEST_setBranchlen,      (AW_CL)ntw, 0);
-    awm->insert_menu_topic(0, "Sort tree by name",  "o", "", AWM_ALL, (AW_CB)TEST_sortTreeByName,    (AW_CL)ntw, 0);
-    awm->insert_menu_topic(0, "Build & dump chain", "c", "", AWM_ALL, (AW_CB)TEST_buildAndDumpChain, (AW_CL)ntw, 0);
+    awm->insert_menu_topic(0, "Mix tree",           "M", "", AWM_ALL, (AW_CB)TESTMENU_mixTree,           (AW_CL)ntw, 0);
+    awm->insert_menu_topic(0, "Tree statistics",    "s", "", AWM_ALL, (AW_CB)TESTMENU_treeStats,         (AW_CL)ntw, 0);
+    awm->insert_menu_topic(0, "Set branchlens",     "b", "", AWM_ALL, (AW_CB)TESTMENU_setBranchlen,      (AW_CL)ntw, 0);
+    awm->insert_menu_topic(0, "Sort tree by name",  "o", "", AWM_ALL, (AW_CB)TESTMENU_sortTreeByName,    (AW_CL)ntw, 0);
+    awm->insert_menu_topic(0, "Build & dump chain", "c", "", AWM_ALL, (AW_CB)TESTMENU_buildAndDumpChain, (AW_CL)ntw, 0);
     awm->insert_separator();
-    awm->insert_menu_topic(0, "Add marked species",          "A", "pa_quick.hlp", AWM_ALL, (AW_CB)NT_quick_add_test,  (AW_CL)ntw, NT_ADD_MARKED);
-    awm->insert_menu_topic(0, "Add marked species + NNI",    "N", "pa_add.hlp",   AWM_ALL, (AW_CB)NT_add_test,        (AW_CL)ntw, NT_ADD_MARKED);
-    awm->insert_menu_topic(0, "Remove & add marked species", "o", "pa_add.hlp",   AWM_ALL, (AW_CB)NT_rquick_add_test, (AW_CL)ntw, NT_ADD_MARKED);
-    awm->insert_menu_topic(0, "Remove & add marked + NNI",   "v", "pa_add.hlp",   AWM_ALL, (AW_CB)NT_radd_test,       (AW_CL)ntw, NT_ADD_MARKED);
+    awm->insert_menu_topic(0, "Add marked species",          "A", "pa_quick.hlp", AWM_ALL, (AW_CB)TESTMENU_quick_add,       (AW_CL)ntw, NT_ADD_MARKED);
+    awm->insert_menu_topic(0, "Add marked species + NNI",    "N", "pa_add.hlp",   AWM_ALL, (AW_CB)TESTMENU_add,             (AW_CL)ntw, NT_ADD_MARKED);
+    awm->insert_menu_topic(0, "Remove & add marked species", "o", "pa_add.hlp",   AWM_ALL, (AW_CB)TESTMENU_rquick_add_test, (AW_CL)ntw, NT_ADD_MARKED);
+    awm->insert_menu_topic(0, "Remove & add marked + NNI",   "v", "pa_add.hlp",   AWM_ALL, (AW_CB)TESTMENU_radd,            (AW_CL)ntw, NT_ADD_MARKED);
     awm->insert_separator();
-    awm->insert_menu_topic(0, "Add selected species",       "l", "pa_quick_sel.hlp", AWM_ALL, (AW_CB)NT_quick_add_test, (AW_CL)ntw, NT_ADD_SELECTED);
-    awm->insert_menu_topic(0, "Add selected species + NNI", "I", "pa_add_sel.hlp",   AWM_ALL, (AW_CB)NT_add_test,       (AW_CL)ntw, NT_ADD_SELECTED);
+    awm->insert_menu_topic(0, "Add selected species",       "l", "pa_quick_sel.hlp", AWM_ALL, (AW_CB)TESTMENU_quick_add, (AW_CL)ntw, NT_ADD_SELECTED);
+    awm->insert_menu_topic(0, "Add selected species + NNI", "I", "pa_add_sel.hlp",   AWM_ALL, (AW_CB)TESTMENU_add,       (AW_CL)ntw, NT_ADD_SELECTED);
 }
-#endif // TEST_FUNCTIONS
+#endif // TESTMENU
 
 static GB_ERROR pars_check_size(AW_root *awr) {
     char *tree_name = awr->awar(AWAR_TREE)->read_string();
@@ -1423,9 +1423,9 @@ static void pars_start_cb(AW_window *aw_parent, AW_CL cd_weightedFilter, AW_CL c
         awm->insert_menu_topic("tree_remove_remark",         "Remove Bootstrap Values",                           "V", "trm_boot.hlp",     AWM_ALL, (AW_CB)NT_remove_bootstrap, (AW_CL)ntw, 0);
     }
 
-#if defined(TEST_FUNCTIONS)
+#if defined(TESTMENU)
     init_TEST_menu(awm, ntw);
-#endif // TEST_FUNCTIONS
+#endif // TESTMENU
 
     awm->create_menu("Properties", "r", AWM_ALL);
     {
