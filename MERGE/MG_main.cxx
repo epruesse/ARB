@@ -25,20 +25,15 @@ GBDATA *GLOBAL_gb_dest  = NULL;
 
 void MG_exit(AW_window *aww, AW_CL cl_reload_db2, AW_CL) {
     int reload_db2 = (int)cl_reload_db2;
-    if (GLOBAL_gb_main) { // running inside normal ARB (aka import)
-        mg_assert(reload_db2 == 0);
-        aww->hide();
+
+    if (reload_db2) {
+        char       *db2_name = aww->get_root()->awar(AWAR_MAIN_DB"/file_name")->read_string();
+        const char *cmd      = GBS_global_string("arb_ntree '%s' &", db2_name);
+        int         result   = system(cmd);
+        if (result != 0) fprintf(stderr, "Error running '%s'\n", cmd);
+        free(db2_name);
     }
-    else {
-        if (reload_db2) {
-            char       *db2_name = aww->get_root()->awar(AWAR_MAIN_DB"/file_name")->read_string();
-            const char *cmd      = GBS_global_string("arb_ntree '%s' &", db2_name);
-            int         result   = system(cmd);
-            if (result != 0) fprintf(stderr, "Error running '%s'\n", cmd);
-            free(db2_name);
-        }
-        exit (0);
-    }
+    exit(EXIT_SUCCESS);
 }
 
 bool mg_save_enabled = true;
