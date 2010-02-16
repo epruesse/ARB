@@ -81,6 +81,7 @@ MP_main.o: MP_externs.hxx
 MP_main.o: MP_probe.hxx
 MP_main.o: mp_proto.hxx
 MP_main.o: mpdefs.h
+MP_main.o: multi_probe.hxx
 MP_main.o: MultiProbe.hxx
 MP_main.o: SoTl.hxx
 MP_main.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
@@ -97,6 +98,7 @@ MP_main.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 MP_main.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 MP_main.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 MP_main.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+MP_main.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 MP_main.o: $(ARBHOME)/INCLUDE/client.h
 MP_main.o: $(ARBHOME)/INCLUDE/dupstr.h
 MP_main.o: $(ARBHOME)/INCLUDE/PT_com.h

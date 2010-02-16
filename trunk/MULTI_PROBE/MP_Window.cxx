@@ -361,10 +361,9 @@ void MP_Window::build_pt_server_list()
     aws->update_option_menu();
 }
 
-MP_Window::MP_Window(AW_root *aw_root)
-{
-    int max_seq_col = 35,
-        max_seq_hgt = 15;
+MP_Window::MP_Window(AW_root *aw_root, GBDATA *gb_main) {
+    int max_seq_col = 35;
+    int max_seq_hgt = 15;
 
     result_window = NULL;
 
@@ -391,7 +390,7 @@ MP_Window::MP_Window(AW_root *aw_root)
 
     aws->button_length(10);
     aws->at("Compute");
-    aws->callback(MP_compute);
+    aws->callback(MP_compute, (AW_CL)gb_main);
     aws->highlight();
     aws->help_text("Compute possible Solutions");
     aws->create_button("GO", "GO");
