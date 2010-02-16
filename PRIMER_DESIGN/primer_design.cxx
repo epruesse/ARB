@@ -488,48 +488,76 @@ AW_window *create_primer_design_window(AW_root *root, AW_default def)
 
     aws->load_xfig("prd_main.fig");
 
-    aws->callback((AW_CB0)AW_POPDOWN);                       aws->at("close");     aws->create_button("CLOSE", "CLOSE", "C");
-    aws->callback(AW_POPUP_HELP, (AW_CL)"primer_new.hlp");   aws->at("help");      aws->create_button("HELP", "HELP", "H");
-    aws->callback(primer_design_event_init, (AW_CL)0);       aws->at("init1");     aws->create_button("INIT_FROM_SPECIES", "Species", "I");
+    aws->at("close");
+    aws->callback((AW_CB0)AW_POPDOWN);
+    aws->create_button("CLOSE", "CLOSE", "C");
+
+    aws->at("help");
+    aws->callback(AW_POPUP_HELP, (AW_CL)"primer_new.hlp");
+    aws->create_button("HELP", "HELP", "H");
+
+    aws->at("init1");
+    aws->callback(primer_design_event_init, 0);
+    aws->create_button("INIT_FROM_SPECIES", "Species", "I");
+    
     if (is_genome_db) {
-        aws->callback(primer_design_event_init, (AW_CL)1); aws->at("init2"); aws->create_button("INIT_FROM_GENE", "Gene", "I");
+        aws->at("init2");
+        aws->callback(primer_design_event_init, 1);
+        aws->create_button("INIT_FROM_GENE", "Gene", "I");
     }
 
-    aws->callback(primer_design_event_go);                   aws->at("design");    aws->create_button("GO", "GO", "G");
+    aws->at("design");
+    aws->callback(primer_design_event_go);
+    aws->create_button("GO", "GO", "G");
     aws->highlight();
 
-    aws->at("minleft");     aws->create_input_field(AWAR_PRIMER_DESIGN_LEFT_POS,     7);
+    aws->at("minleft");
+    aws->create_input_field(AWAR_PRIMER_DESIGN_LEFT_POS, 7);
+    
+    aws->at("maxleft");
     aws->callback(primer_design_event_update_memory);
-    aws->at("maxleft");           aws->create_input_field(AWAR_PRIMER_DESIGN_LEFT_LENGTH, 9);
+    aws->create_input_field(AWAR_PRIMER_DESIGN_LEFT_LENGTH, 9);
 
-    aws->at("minright");    aws->create_input_field(AWAR_PRIMER_DESIGN_RIGHT_POS,     7);
+    aws->at("minright");
+    aws->create_input_field(AWAR_PRIMER_DESIGN_RIGHT_POS, 7);
+    
+    aws->at("maxright");
     aws->callback(primer_design_event_update_memory);
-    aws->at("maxright");    aws->create_input_field(AWAR_PRIMER_DESIGN_RIGHT_LENGTH, 9);
+    aws->create_input_field(AWAR_PRIMER_DESIGN_RIGHT_LENGTH, 9);
 
-    aws->callback(primer_design_event_check_primer_length, (AW_CL)0);
-    aws->at("minlen");      aws->create_input_field(AWAR_PRIMER_DESIGN_LENGTH_MIN, 7);
-    aws->callback(primer_design_event_check_primer_length, (AW_CL)1);
-    aws->at("maxlen");      aws->create_input_field(AWAR_PRIMER_DESIGN_LENGTH_MAX, 7);
+    aws->at("minlen");
+    aws->callback(primer_design_event_check_primer_length, 0);
+    aws->create_input_field(AWAR_PRIMER_DESIGN_LENGTH_MIN, 7);
+    
+    aws->at("maxlen");
+    aws->callback(primer_design_event_check_primer_length, 1);
+    aws->create_input_field(AWAR_PRIMER_DESIGN_LENGTH_MAX, 7);
 
-    aws->at("mindist");     aws->create_input_field(AWAR_PRIMER_DESIGN_DIST_MIN, 7);
-    aws->at("maxdist");     aws->create_input_field(AWAR_PRIMER_DESIGN_DIST_MAX, 7);
-    aws->at("mingc");       aws->create_input_field(AWAR_PRIMER_DESIGN_GCRATIO_MIN, 7);
-    aws->at("maxgc");       aws->create_input_field(AWAR_PRIMER_DESIGN_GCRATIO_MAX, 7);
-    aws->at("mintemp");     aws->create_input_field(AWAR_PRIMER_DESIGN_TEMPERATURE_MIN, 7);
-    aws->at("maxtemp");     aws->create_input_field(AWAR_PRIMER_DESIGN_TEMPERATURE_MAX, 7);
+    aws->at("mindist");       aws->create_input_field(AWAR_PRIMER_DESIGN_DIST_MIN,               7);
+    aws->at("maxdist");       aws->create_input_field(AWAR_PRIMER_DESIGN_DIST_MAX,               7);
+    aws->at("mingc");         aws->create_input_field(AWAR_PRIMER_DESIGN_GCRATIO_MIN,            7);
+    aws->at("maxgc");         aws->create_input_field(AWAR_PRIMER_DESIGN_GCRATIO_MAX,            7);
+    aws->at("mintemp");       aws->create_input_field(AWAR_PRIMER_DESIGN_TEMPERATURE_MIN,        7);
+    aws->at("maxtemp");       aws->create_input_field(AWAR_PRIMER_DESIGN_TEMPERATURE_MAX,        7);
+    aws->at("allowed_match"); aws->create_input_field(AWAR_PRIMER_DESIGN_ALLOWED_MATCH_MIN_DIST, 7);
+    aws->at("max_pairs");     aws->create_input_field(AWAR_PRIMER_DESIGN_MAX_PAIRS,              7);
+    
+    aws->at("expand_IUPAC");
+    aws->create_toggle(AWAR_PRIMER_DESIGN_EXPAND_IUPAC);
 
-    aws->at("allowed_match");    aws->create_input_field(AWAR_PRIMER_DESIGN_ALLOWED_MATCH_MIN_DIST, 7);
-    aws->at("expand_IUPAC");     aws->create_toggle(AWAR_PRIMER_DESIGN_EXPAND_IUPAC);
-    aws->at("max_pairs");        aws->create_input_field(AWAR_PRIMER_DESIGN_MAX_PAIRS, 7);
+    aws->at("GC_factor");
     aws->callback(primer_design_event_check_gc_factor);
-    aws->at("GC_factor");        aws->create_input_field(AWAR_PRIMER_DESIGN_GC_FACTOR, 7);
+    aws->create_input_field(AWAR_PRIMER_DESIGN_GC_FACTOR, 7);
+    
+    aws->at("temp_factor");
     aws->callback(primer_design_event_check_temp_factor);
-    aws->at("temp_factor");      aws->create_input_field(AWAR_PRIMER_DESIGN_TEMP_FACTOR, 7);
+    aws->create_input_field(AWAR_PRIMER_DESIGN_TEMP_FACTOR, 7);
 
     aws->at("config");
     AWT_insert_config_manager(aws, AW_ROOT_DEFAULT, "pcr_primer_design", primer_design_store_config, primer_design_restore_config, 0, 0);
 
-    aws->at("aprox_mem");        aws->create_input_field(AWAR_PRIMER_DESIGN_APROX_MEM, 11);
+    aws->at("aprox_mem");
+    aws->create_input_field(AWAR_PRIMER_DESIGN_APROX_MEM, 11);
 
     return aws;
 }
