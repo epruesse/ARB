@@ -24,8 +24,6 @@
 
 #include <string>
 
-extern GBDATA *GLOBAL_gb_main;
-
 using std::string;
 
 static AW_window_simple  *pdrw    = 0;
@@ -38,7 +36,7 @@ static double get_estimated_memory(AW_root *root) {
     return mem;
 }
 
-void primer_design_event_update_memory(AW_window *aww) {
+static void primer_design_event_update_memory(AW_window *aww) {
     AW_root *root = aww->get_root();
     double   mem  = get_estimated_memory(root);
 
@@ -89,7 +87,7 @@ inline int prd_aw_status(const char *s) { return aw_status(s); }
 inline int prd_aw_status(double d) { return aw_status(d); }
 
 
-void primer_design_event_go(AW_window *aww) {
+static void primer_design_event_go(AW_window *aww, AW_CL cl_gb_main) {
     AW_root  *root     = aww->get_root();
     GB_ERROR  error    = 0;
     char     *sequence = 0;
@@ -102,15 +100,16 @@ void primer_design_event_go(AW_window *aww) {
     }
 
     {
-        GB_transaction  dummy(GLOBAL_gb_main);
+        GBDATA         *gb_main          = (GBDATA*)cl_gb_main;
+        GB_transaction  dummy(gb_main);
         char           *selected_species = root->awar(AWAR_SPECIES_NAME)->read_string();
-        GBDATA         *gb_species       = GBT_find_species(GLOBAL_gb_main, selected_species);
+        GBDATA         *gb_species       = GBT_find_species(gb_main, selected_species);
 
         if (!gb_species) {
             error = "you have to select a species!";
         }
         else {
-            const char *alignment = GBT_get_default_alignment(GLOBAL_gb_main);
+            const char *alignment = GBT_get_default_alignment(gb_main);
             GBDATA     *gb_seq    = GBT_read_sequence(gb_species, alignment);
 
             if (!gb_seq) {
@@ -207,7 +206,7 @@ void primer_design_event_go(AW_window *aww) {
 }
 
 
-void primer_design_event_check_temp_factor(AW_window *aww) {
+static void primer_design_event_check_temp_factor(AW_window *aww) {
     AW_root *root = aww->get_root();
 
     int temp = root->awar(AWAR_PRIMER_DESIGN_TEMP_FACTOR)->read_int();
@@ -217,7 +216,7 @@ void primer_design_event_check_temp_factor(AW_window *aww) {
     root->awar(AWAR_PRIMER_DESIGN_GC_FACTOR)->write_int(100-temp);
 }
 
-void primer_design_event_check_gc_factor(AW_window *aww) {
+static void primer_design_event_check_gc_factor(AW_window *aww) {
     AW_root *root = aww->get_root();
 
     int gc = root->awar(AWAR_PRIMER_DESIGN_GC_FACTOR)->read_int();
@@ -227,7 +226,7 @@ void primer_design_event_check_gc_factor(AW_window *aww) {
     root->awar(AWAR_PRIMER_DESIGN_TEMP_FACTOR)->write_int(100-gc);
 }
 
-void primer_design_event_check_primer_length(AW_window *aww, AW_CL cl_max_changed) {
+static void primer_design_event_check_primer_length(AW_window *aww, AW_CL cl_max_changed) {
     AW_root *root        = aww->get_root();
     int      max_changed = int(cl_max_changed);
     int      min_length  = root->awar(AWAR_PRIMER_DESIGN_LENGTH_MIN)->read_int();
@@ -249,20 +248,19 @@ void primer_design_event_check_primer_length(AW_window *aww, AW_CL cl_max_change
     primer_design_event_update_memory(aww);
 }
 
-void primer_design_event_init(AW_window *aww, AW_CL cl_from_gene) {
-    bool      from_gene = bool(cl_from_gene);
-    AW_root  *root      = aww->get_root();
-    GB_ERROR  error     = 0;
-
-
-    GB_transaction  dummy(GLOBAL_gb_main);
+static void primer_design_event_init(AW_window *aww, AW_CL cl_gb_main, AW_CL cl_from_gene) {
+    bool            from_gene        = bool(cl_from_gene);
+    AW_root        *root             = aww->get_root();
+    GB_ERROR        error            = 0;
+    GBDATA         *gb_main          = (GBDATA*)cl_gb_main;
+    GB_transaction  dummy(gb_main);
     char           *selected_species = 0;
     char           *selected_gene    = 0;
     GBDATA         *gb_species       = 0;
     GBDATA         *gb_gene          = 0;
     GEN_position   *genPos           = 0;
     GBDATA         *gb_seq           = 0;
-    bool            is_genom_db      = GEN_is_genome_db(GLOBAL_gb_main, -1);
+    bool            is_genom_db      = GEN_is_genome_db(gb_main, -1);
 
     if (is_genom_db && from_gene) {
         selected_species = root->awar(AWAR_ORGANISM_NAME)->read_string();
@@ -274,13 +272,13 @@ void primer_design_event_init(AW_window *aww, AW_CL cl_from_gene) {
         selected_species = root->awar(AWAR_SPECIES_NAME)->read_string();
     }
 
-    gb_species = GBT_find_species(GLOBAL_gb_main, selected_species);
+    gb_species = GBT_find_species(gb_main, selected_species);
 
     if (!gb_species) {
         error = "You have to select a species!";
     }
     else {
-        const char *alignment = GBT_get_default_alignment(GLOBAL_gb_main);
+        const char *alignment = GBT_get_default_alignment(gb_main);
         gb_seq                = GBT_read_sequence(gb_species, alignment);
         if (!gb_seq) {
             error = GB_export_errorf("Species '%s' has no data in alignment '%s'", selected_species, alignment);
@@ -465,24 +463,23 @@ static void primer_design_restore_config(AW_window *aww, const char *stored_stri
     primer_design_event_update_memory(aww);
 }
 
-AW_window *create_primer_design_window(AW_root *root, AW_default def)
-{
-    GB_ERROR error       = 0;
-    bool     is_genome_db;
+AW_window *create_primer_design_window(AW_root *root, AW_CL cl_gb_main) {
+    GB_ERROR  error   = 0;
+    GBDATA   *gb_main = (GBDATA*)cl_gb_main;
+    bool      is_genome_db;
     {
-        GB_transaction  dummy(GLOBAL_gb_main);
+        GB_transaction  dummy(gb_main);
         char           *selected_species = root->awar(AWAR_SPECIES_NAME)->read_string();
-        GBDATA         *gb_species       = GBT_find_species(GLOBAL_gb_main, selected_species);
+        GBDATA         *gb_species       = GBT_find_species(gb_main, selected_species);
 
         if (!gb_species) {
             error = "You have to select a species!";
             aw_message(error);
         }
 
-        is_genome_db = GEN_is_genome_db(GLOBAL_gb_main, -1);
+        is_genome_db = GEN_is_genome_db(gb_main, -1);
     }
 
-    AWUSE(def);
     AW_window_simple *aws = new AW_window_simple;
     aws->init(root, "PRIMER_DESIGN", "PRIMER DESIGN");
 
@@ -497,17 +494,17 @@ AW_window *create_primer_design_window(AW_root *root, AW_default def)
     aws->create_button("HELP", "HELP", "H");
 
     aws->at("init1");
-    aws->callback(primer_design_event_init, 0);
+    aws->callback(primer_design_event_init, (AW_CL)gb_main, 0);
     aws->create_button("INIT_FROM_SPECIES", "Species", "I");
     
     if (is_genome_db) {
         aws->at("init2");
-        aws->callback(primer_design_event_init, 1);
+        aws->callback(primer_design_event_init, (AW_CL)gb_main, 1);
         aws->create_button("INIT_FROM_GENE", "Gene", "I");
     }
 
     aws->at("design");
-    aws->callback(primer_design_event_go);
+    aws->callback(primer_design_event_go, (AW_CL)gb_main);
     aws->create_button("GO", "GO", "G");
     aws->highlight();
 
