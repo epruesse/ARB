@@ -540,7 +540,7 @@ static GB_ERROR MG_transfer_one_species(AW_root *aw_root, MG_remaps& remap,
 
 
 void MG_transfer_selected_species(AW_window *aww) {
-    if (MG_check_alignment(aww, 1)) return;
+    if (MG_copy_and_check_alignments(aww, 0) != 0) return;
 
     AW_root  *aw_root = aww->get_root();
     char     *source  = aw_root->awar(AWAR_SPECIES1)->read_string();
@@ -587,7 +587,7 @@ void MG_transfer_selected_species(AW_window *aww) {
 #define IS_QUERIED(gb_species) (1 & GB_read_usr_private(gb_species))
 
 void MG_transfer_species_list(AW_window *aww) {
-    if (MG_check_alignment(aww, 1)) return;
+    if (MG_copy_and_check_alignments(aww, 0) != 0) return;
 
     GB_ERROR error = NULL;
     aw_openstatus("Transferring species");
@@ -638,9 +638,7 @@ void MG_transfer_species_list(AW_window *aww) {
 }
 
 void MG_transfer_fields_cb(AW_window *aww) {
-    if (MG_check_alignment(aww, 1)) {
-        return;
-    }
+    if (MG_copy_and_check_alignments(aww, 0) != 0) return;
 
     char     *field  = aww->get_root()->awar(AWAR_FIELD1)->read_string();
     long      append = aww->get_root()->awar(AWAR_APPEND)->read_int();
@@ -774,9 +772,7 @@ AW_window *MG_transfer_fields(AW_root *aw_root)
 }
 
 void MG_move_field_cb(AW_window *aww) {
-    if (MG_check_alignment(aww, 1)) {
-        return;
-    }
+    if (MG_copy_and_check_alignments(aww, 0) != 0) return;
 
     AW_root  *aw_root = aww->get_root();
     char     *field   = aww->get_root()->awar(AWAR_FIELD1)->read_string();
