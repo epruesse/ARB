@@ -32,10 +32,9 @@
 
 
 void       create_species_var(AW_root *aw_root, AW_default aw_def);
-AW_window *NT_create_species_window(AW_root *aw_root);
-AW_window *NT_create_organism_window(AW_root *aw_root);
+AW_window *NT_create_species_window(AW_root *aw_root, AW_CL cl_gb_main);
+AW_window *NT_create_organism_window(AW_root *aw_root, AW_CL cl_gb_main);
 AW_window *ad_create_query_window(AW_root *aw_root);
-AW_window *create_speciesOrganismWindow(AW_root *aw_root, bool organismWindow);
 void       ad_unquery_all();
 void       ad_query_update_list();
 void       ad_spec_create_field_items(AW_window *aws);

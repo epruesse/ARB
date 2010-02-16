@@ -28,16 +28,16 @@ class AW_window_menu_modes;
 #define AWAR_PROTEOM_NAME    "tmp/exp/proteom_name"
 #define AWAR_PROTEIN_NAME    "tmp/exp/protein_name"
 
-void EXP_create_awars(AW_root *aw_root, AW_default aw_def);
+void EXP_create_awars(AW_root *aw_root, AW_default aw_def, GBDATA *gb_main);
 GBDATA *EXP_get_current_experiment(GBDATA *gb_main, AW_root *aw_root); // get AWAR_EXPERIMENT_NAME experiment
 
 // --------------------------------------------------------------------------------
 // submenu:
-void EXP_create_experiments_submenu(AW_window_menu_modes *awm, bool submenu);
+void EXP_create_experiments_submenu(AW_window_menu_modes *awm, GBDATA *gb_main, bool submenu);
 
 // --------------------------------------------------------------------------------
 // windows:
-AW_window *EXP_create_experiment_query_window(AW_root *aw_root);
+AW_window *EXP_create_experiment_query_window(AW_root *aw_root, AW_CL cl_gb_main);
 
 struct ad_item_selector;
 ad_item_selector *EXP_get_selector(); // return EXP_item_selector

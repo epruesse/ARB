@@ -31,17 +31,17 @@ class AWT_canvas;
 
 #define AWAR_GENE_NAME  "tmp/gene/name"
 
-void GEN_create_awars(AW_root *aw_root, AW_default aw_def);
+void GEN_create_awars(AW_root *aw_root, AW_default aw_def, GBDATA *gb_main);
 
 // --------------------------------------------------------------------------------
 // windows/menus:
 
-AW_window *GEN_create_gene_window(AW_root *aw_root);
-void       GEN_popup_gene_window(AW_window *aww, AW_CL, AW_CL); // preferred over GEN_create_gene_window
-AW_window *GEN_create_gene_query_window(AW_root *aw_root);
-AW_window *GEN_map_first(AW_root *aw_root);
+AW_window *GEN_create_gene_window(AW_root *aw_root, AW_CL cl_gb_main);
+// void       GEN_popup_gene_window(AW_window *aww, AW_CL, AW_CL); // preferred over GEN_create_gene_window
+AW_window *GEN_create_gene_query_window(AW_root *aw_root, AW_CL cl_gb_main);
+AW_window *GEN_create_first_map(AW_root *aw_root, AW_CL cl_gb_main);
 
-void       GEN_create_genes_submenu(AW_window_menu_modes *awm, bool for_ARB_NTREE);
+void GEN_create_genes_submenu(AW_window_menu_modes *awm, GBDATA *gb_main, bool for_ARB_NTREE);
 
 // --------------------------------------------------------------------------------
 // genes:

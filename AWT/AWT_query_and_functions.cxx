@@ -2750,7 +2750,7 @@ struct adaqbsstruct *awt_create_query_box(AW_window *aws, awt_query_struct *awtq
     if (awtqs->result_pos_fig) {
         aws->at(awtqs->result_pos_fig);
         if (awtqs->create_view_window) {
-            aws->callback(query_box_popup_view_window, (AW_CL)awtqs->create_view_window, 0);
+            aws->callback(query_box_popup_view_window, (AW_CL)awtqs->create_view_window, (AW_CL)cbs->gb_main);
         }
         aws->d_callback((AW_CB1)awt_toggle_flag, (AW_CL)cbs);
 

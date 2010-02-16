@@ -94,6 +94,8 @@ extern ad_item_selector AWT_organism_selector;
 // ------------------
 //      query box
 
+typedef AW_window *(*awt_create_viewer_window_cb)(AW_root *aw_root, AW_CL cl_gb_main);
+
 #define IS_QUERIED(gb_species, cbs)   (cbs->select_bit & GB_read_usr_private(gb_species))
 class awt_query_struct {
 public:
@@ -131,7 +133,8 @@ public:
     const char *do_set_pos_fig;                     // multi set a key
     const char *open_parser_pos_fig;
     const char *do_refresh_pos_fig;
-    AW_CL       create_view_window;                 // AW_window *(*create_view_window)(AW_root *aw_root)
+
+    awt_create_viewer_window_cb create_view_window;
 
     const char *info_box_pos_fig;
 

@@ -92,7 +92,7 @@ void NT_justify_branch_lenghs(AW_window *, AW_CL cl_ntw, AW_CL dummy_1x);
 void NT_fix_database(AW_window *);
 void NT_pseudo_species_to_organism(AW_window *, AW_CL ntwcl);
 void NT_update_marked_counter(AW_window *aww, long count);
-void NT_popup_species_window(AW_window *aww, AW_CL dummy_1x, AW_CL dummy_2x);
+void NT_popup_species_window(AW_window *aww, AW_CL cl_gb_main, AW_CL dummy_1x);
 void NT_alltree_remove_leafs(AW_window *, AW_CL cl_mode, AW_CL cl_gb_main);
 
 /* NT_import.cxx */
@@ -134,8 +134,8 @@ AW_window *NT_create_ad_field_delete(AW_root *root, AW_CL cl_item_selector);
 AW_window *NT_create_ad_field_create(AW_root *root, AW_CL cl_item_selector);
 AW_window *NT_create_ad_field_convert(AW_root *root, AW_CL cl_item_selector);
 void NT_detach_information_window(AW_window *aww, AW_CL cl_pointer_to_aww, AW_CL cl_AW_detach_information);
-AW_window *NT_create_species_window(AW_root *aw_root);
-AW_window *NT_create_organism_window(AW_root *aw_root);
+AW_window *NT_create_species_window(AW_root *aw_root, AW_CL cl_gb_main);
+AW_window *NT_create_organism_window(AW_root *aw_root, AW_CL cl_gb_main);
 
 /* ad_transpro.cxx */
 AW_window *NT_create_dna_2_pro_window(AW_root *root);

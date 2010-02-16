@@ -69,7 +69,14 @@
 // --------------------------------------------------------------------------------
 
 const char *GEN_window_local_awar_name(const char *awar_name, int window_nr);
-AW_window  *GEN_map(AW_root *aw_root, int window_number);
+
+struct GEN_create_map_param {
+    GBDATA *gb_main;
+    int     window_nr;
+    GEN_create_map_param(GBDATA *gb_main_, int window_nr_) : gb_main(gb_main_) , window_nr(window_nr_) { }
+};
+
+AW_window *GEN_create_map(AW_root *aw_root, AW_CL cl_GEN_create_map_param);
 
 // --------------------------------------------------------------------------------
 
