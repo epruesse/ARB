@@ -1341,12 +1341,12 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone) {
         // ---------------
         awm->create_menu("Probes", "P", AWM_ALL);
         {
-            AWMIMT("probe_design",      "Design Probes",             "D", "probedesign.hlp", AWM_ALL, AW_POPUP, (AW_CL)create_probe_design_window, (AW_CL)GLOBAL_gb_main);
-            AWMIMT("probe_multi",       "Calculate Multi-Probes",    "u", "multiprobe.hlp",  AWM_ALL, AW_POPUP, (AW_CL)MP_main, (AW_CL)ntw);
-            AWMIMT("probe_match",       "Match Probes",              "M", "probematch.hlp",  AWM_ALL, AW_POPUP, (AW_CL)create_probe_match_window, (AW_CL)GLOBAL_gb_main);
+            AWMIMT("probe_design", "Design Probes",          "D", "probedesign.hlp", AWM_ALL, AW_POPUP, (AW_CL)create_probe_design_window, (AW_CL)GLOBAL_gb_main);
+            AWMIMT("probe_multi",  "Calculate Multi-Probes", "u", "multiprobe.hlp",  AWM_ALL, AW_POPUP, (AW_CL)MP_main,                    (AW_CL)ntw);
+            AWMIMT("probe_match",  "Match Probes",           "M", "probematch.hlp",  AWM_ALL, AW_POPUP, (AW_CL)create_probe_match_window,  (AW_CL)GLOBAL_gb_main);
             SEP________________________SEP();
-            AWMIMT("primer_design_new", "Design Primers",            "P", "primer_new.hlp",  AWM_EXP, AW_POPUP, (AW_CL)create_primer_design_window, 0);
-            AWMIMT("primer_design",     "Design Sequencing Primers", "S", "primer.hlp",      AWM_EXP, (AW_CB)NT_primer_cb, 0, 0);
+            AWMIMT("primer_design_new", "Design Primers",            "P", "primer_new.hlp", AWM_EXP, AW_POPUP,(AW_CL)create_primer_design_window, (AW_CL)GLOBAL_gb_main);
+            AWMIMT("primer_design",     "Design Sequencing Primers", "S", "primer.hlp",     AWM_EXP, (AW_CB)NT_primer_cb, 0, 0);
             SEP________________________SEP();
             AWMIMT("pt_server_admin",   "PT_SERVER Admin",           "A", "probeadmin.hlp",  AWM_ALL, AW_POPUP, (AW_CL)create_probe_admin_window, (AW_CL)GLOBAL_gb_main);
         }

@@ -38,7 +38,7 @@ class AW_window;
 
 void       create_primer_design_variables(AW_root *aw_root, AW_default aw_def, AW_default global);
 void       create_primer_design_result_window(AW_window *aww);
-AW_window *create_primer_design_window(AW_root *root, AW_default def);
+AW_window *create_primer_design_window(AW_root *root, AW_CL cl_gb_main);
 
 #else
 #error primer_design.hxx included twice
