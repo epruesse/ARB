@@ -3591,7 +3591,7 @@ void AW_root::define_remote_command(AW_cb_struct *cbs) {
         if (!old_cbs->is_equal(*cbs)) {                  // existing remote command replaced by different callback
 #if defined(DEBUG)
             fputs(GBS_global_string("Warning: reused callback id '%s' for different callback\n", old_cbs->id), stderr);
-#if defined(DEVEL_RALF)
+#if defined(DEVEL_RALF) && 0
             aw_assert(0);
 #endif // DEVEL_RALF
 #endif // DEBUG

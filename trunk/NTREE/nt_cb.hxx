@@ -64,7 +64,7 @@ void NT_justify_branch_lenghs(AW_window *, AW_CL cl_ntw, AW_CL dummy_1x);
 void NT_fix_database(AW_window *);
 void NT_pseudo_species_to_organism(AW_window *, AW_CL ntwcl);
 void NT_update_marked_counter(AW_window *aww, long count);
-void NT_popup_species_window(AW_window *aww, AW_CL dummy_1x, AW_CL dummy_2x);
+void NT_popup_species_window(AW_window *aww, AW_CL cl_gb_main, AW_CL dummy_1x);
 void NT_alltree_remove_leafs(AW_window *, AW_CL cl_mode, AW_CL cl_gb_main);
 GBT_TREE *nt_get_current_tree_root(void);
 AW_window *create_nt_main_window(AW_root *awr, AW_CL clone);

@@ -121,7 +121,7 @@ void GEN_graphic::command(AW_device *device, AWT_COMMAND_MODE cmd, int button, A
                         aw_root->awar(AWAR_LOCAL_GENE_NAME(window_nr))->write_string(gene->Name().c_str());
 
                         if (cmd == AWT_MODE_EDIT) {
-                            GEN_create_gene_window(aw_root)->activate();
+                            GEN_create_gene_window(aw_root, (AW_CL)gb_main)->activate();
                         }
                     }
                 }

@@ -1186,79 +1186,76 @@ void NT_detach_information_window(AW_window *aww, AW_CL cl_pointer_to_aww, AW_CL
     free(curr_species);
 }
 
-AW_window *create_speciesOrganismWindow(AW_root *aw_root, bool organismWindow)
-{
+static AW_window *create_speciesOrganismWindow(AW_root *aw_root, GBDATA *gb_main, bool organismWindow) {
     int windowIdx = (int)organismWindow;
 
     static AW_window_simple_menu *AWS[2] = { 0, 0 };
-    if (AWS[windowIdx]) {
-        return (AW_window *)AWS[windowIdx]; // already created (and not detached)
+    if (!AWS[windowIdx]) {
+        AW_window_simple_menu *& aws = AWS[windowIdx];
+
+        aws = new AW_window_simple_menu;
+        if (organismWindow) aws->init(aw_root, "ORGANISM_INFORMATION", "ORGANISM INFORMATION");
+        else                aws->init(aw_root, "SPECIES_INFORMATION", "SPECIES INFORMATION");
+        aws->load_xfig("ad_spec.fig");
+
+        aws->button_length(8);
+
+        aws->at("close");
+        aws->callback((AW_CB0)AW_POPDOWN);
+        aws->create_button("CLOSE", "CLOSE", "C");
+
+        aws->at("search");
+        aws->callback(AW_POPUP, (AW_CL)ad_create_query_window, 0);
+        aws->create_button("SEARCH", "SEARCH", "S");
+
+        aws->at("help");
+        aws->callback(AW_POPUP_HELP, (AW_CL)"sp_info.hlp");
+        aws->create_button("HELP", "HELP", "H");
+
+        AW_CL scannerid = create_db_scanner(gb_main, aws, "box", 0, "field", "enable", DB_VIEWER, 0, "mark", AWT_NDS_FILTER,
+                                            organismWindow ? &AWT_organism_selector : &AWT_species_selector);
+        ad_global_scannerid = scannerid;
+        ad_global_scannerroot = aws->get_root();
+
+        if (organismWindow) aws->create_menu("ORGANISM",    "O", AWM_ALL);
+        else                aws->create_menu("SPECIES",     "S", AWM_ALL);
+
+        aws->insert_menu_topic("species_delete",        "Delete",         "D", "spa_delete.hlp",  AWM_ALL, ad_species_delete_cb,            0,                                   0);
+        aws->insert_menu_topic("species_rename",        "Rename",         "R", "spa_rename.hlp",  AWM_ALL, ad_species_rename_cb,            0,                                   0);
+        aws->insert_menu_topic("species_copy",          "Copy",           "y", "spa_copy.hlp",    AWM_ALL, ad_species_copy_cb,              0,                                   0);
+        aws->insert_menu_topic("species_create",        "Create",         "C", "spa_create.hlp",  AWM_ALL, AW_POPUP,                        (AW_CL)create_species_create_window, 0);
+        aws->insert_menu_topic("species_convert_2_sai", "Convert to SAI", "S", "sp_sp_2_ext.hlp", AWM_ALL, (AW_CB)move_species_to_extended, 0,                                   0);
+        aws->insert_separator();
+
+        aws->create_menu("FIELDS", "F", AWM_ALL);
+        ad_spec_create_field_items(aws);
+
+        {
+            const char         *awar_name = (bool)organismWindow ? AWAR_ORGANISM_NAME : AWAR_SPECIES_NAME;
+            AW_root            *awr       = aws->get_root();
+            Awar_Callback_Info *cb_info   = new Awar_Callback_Info(awr, awar_name, AD_map_species, (AW_CL)scannerid, (AW_CL)organismWindow); // do not delete!
+            cb_info->add_callback();
+
+            AW_detach_information *detach_info = new AW_detach_information(cb_info); // do not delete!
+
+            aws->at("detach");
+            aws->callback(NT_detach_information_window, (AW_CL)&aws, (AW_CL)detach_info);
+            aws->create_button("DETACH", "DETACH", "D");
+
+            detach_info->set_detach_button(aws->get_last_widget());
+        }
+
+        aws->show();
+        AD_map_species(aws->get_root(), scannerid, (AW_CL)organismWindow);
     }
-
-    AW_window_simple_menu *& aws = AWS[windowIdx];
-
-    aws = new AW_window_simple_menu;
-    if (organismWindow) aws->init(aw_root, "ORGANISM_INFORMATION", "ORGANISM INFORMATION");
-    else                aws->init(aw_root, "SPECIES_INFORMATION", "SPECIES INFORMATION");
-    aws->load_xfig("ad_spec.fig");
-
-    aws->button_length(8);
-
-    aws->at("close");
-    aws->callback((AW_CB0)AW_POPDOWN);
-    aws->create_button("CLOSE", "CLOSE", "C");
-
-    aws->at("search");
-    aws->callback(AW_POPUP, (AW_CL)ad_create_query_window, 0);
-    aws->create_button("SEARCH", "SEARCH", "S");
-
-    aws->at("help");
-    aws->callback(AW_POPUP_HELP, (AW_CL)"sp_info.hlp");
-    aws->create_button("HELP", "HELP", "H");
-
-    AW_CL scannerid = create_db_scanner(GLOBAL_gb_main, aws, "box", 0, "field", "enable", DB_VIEWER, 0, "mark", AWT_NDS_FILTER,
-                                        organismWindow ? &AWT_organism_selector : &AWT_species_selector);
-    ad_global_scannerid = scannerid;
-    ad_global_scannerroot = aws->get_root();
-
-    if (organismWindow) aws->create_menu("ORGANISM",    "O", AWM_ALL);
-    else                aws->create_menu("SPECIES",     "S", AWM_ALL);
-
-    aws->insert_menu_topic("species_delete",        "Delete",         "D", "spa_delete.hlp",  AWM_ALL, ad_species_delete_cb,            0,                                   0);
-    aws->insert_menu_topic("species_rename",        "Rename",         "R", "spa_rename.hlp",  AWM_ALL, ad_species_rename_cb,            0,                                   0);
-    aws->insert_menu_topic("species_copy",          "Copy",           "y", "spa_copy.hlp",    AWM_ALL, ad_species_copy_cb,              0,                                   0);
-    aws->insert_menu_topic("species_create",        "Create",         "C", "spa_create.hlp",  AWM_ALL, AW_POPUP,                        (AW_CL)create_species_create_window, 0);
-    aws->insert_menu_topic("species_convert_2_sai", "Convert to SAI", "S", "sp_sp_2_ext.hlp", AWM_ALL, (AW_CB)move_species_to_extended, 0,                                   0);
-    aws->insert_separator();
-
-    aws->create_menu("FIELDS", "F", AWM_ALL);
-    ad_spec_create_field_items(aws);
-
-    {
-        const char         *awar_name = (bool)organismWindow ? AWAR_ORGANISM_NAME : AWAR_SPECIES_NAME;
-        AW_root            *awr       = aws->get_root();
-        Awar_Callback_Info *cb_info   = new Awar_Callback_Info(awr, awar_name, AD_map_species, (AW_CL)scannerid, (AW_CL)organismWindow); // do not delete!
-        cb_info->add_callback();
-
-        AW_detach_information *detach_info = new AW_detach_information(cb_info); // do not delete!
-
-        aws->at("detach");
-        aws->callback(NT_detach_information_window, (AW_CL)&aws, (AW_CL)detach_info);
-        aws->create_button("DETACH", "DETACH", "D");
-
-        detach_info->set_detach_button(aws->get_last_widget());
-    }
-
-    aws->show();
-    AD_map_species(aws->get_root(), scannerid, (AW_CL)organismWindow);
-    return (AW_window *)aws;
+    return AWS[windowIdx]; // already created (and not detached)
 }
 
-AW_window *NT_create_species_window(AW_root *aw_root) {
-    return create_speciesOrganismWindow(aw_root, false);
+AW_window *NT_create_species_window(AW_root *aw_root, AW_CL cl_gb_main) {
+    return create_speciesOrganismWindow(aw_root, (GBDATA*)cl_gb_main, false);
 }
-AW_window *NT_create_organism_window(AW_root *aw_root) {
-    return create_speciesOrganismWindow(aw_root, true);
+AW_window *NT_create_organism_window(AW_root *aw_root, AW_CL cl_gb_main) {
+    return create_speciesOrganismWindow(aw_root, (GBDATA*)cl_gb_main, true);
 }
 
 AW_CL ad_query_global_cbs = 0;
@@ -1306,7 +1303,7 @@ AW_window *ad_create_query_window(AW_root *aw_root)
     awtqs.do_set_pos_fig      = "doset";
     awtqs.do_refresh_pos_fig  = "dorefresh";
     awtqs.open_parser_pos_fig = "openparser";
-    awtqs.create_view_window  = (AW_CL)NT_create_species_window;
+    awtqs.create_view_window  = NT_create_species_window;
     awtqs.selector            = &AWT_species_selector;
 
     AW_CL cbs           = (AW_CL)awt_create_query_box(aws, &awtqs, "spec");

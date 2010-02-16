@@ -179,8 +179,8 @@ void nt_create_all_awars(AW_root *awr, AW_default def) {
 
     awr->awar_string(AWAR_SAI_COLOR_STR, "", GLOBAL_gb_main); // sai visualization in probe match
 
-    GEN_create_awars(awr, def);
-    EXP_create_awars(awr, def);
+    GEN_create_awars(awr, def, GLOBAL_gb_main);
+    EXP_create_awars(awr, def, GLOBAL_gb_main);
 #if defined(DEBUG)
     AWT_create_db_browser_awars(awr, def);
 #endif // DEBUG
@@ -779,9 +779,10 @@ void NT_focus_cb(AW_window *aww)
 
 void NT_modify_cb(AW_window *aww, AW_CL cd1, AW_CL cd2)
 {
-    AW_window *aws = NT_create_species_window(aww->get_root());
+    AWT_canvas *canvas = (AWT_canvas*)cd1;
+    AW_window  *aws    = NT_create_species_window(aww->get_root(), (AW_CL)canvas->gb_main);
     aws->activate();
-    nt_mode_event(aww, (AWT_canvas*)cd1, (AWT_COMMAND_MODE)cd2);
+    nt_mode_event(aww, canvas, (AWT_COMMAND_MODE)cd2);
 }
 
 void NT_primer_cb() {
@@ -980,9 +981,9 @@ static void nt_auto_count_marked_species(GBDATA*, int* cl_aww, GB_CB_TYPE) {
     nt_count_marked((AW_window*)cl_aww);
 }
 
-void NT_popup_species_window(AW_window *aww, AW_CL, AW_CL) {
+void NT_popup_species_window(AW_window *aww, AW_CL cl_gb_main, AW_CL) {
     // used to avoid that the species info window is stored in a menu (or with a button)
-    NT_create_species_window(aww->get_root())->activate();
+    NT_create_species_window(aww->get_root(), cl_gb_main)->activate();
 }
 
 // --------------------------------------------------------------------------------------------------
@@ -1211,7 +1212,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone) {
         awm->create_menu("Species", "c", AWM_ALL);
         {
             AWMIMT("species_search", "Search and query",    "q", "sp_search.hlp", AWM_ALL, AW_POPUP,                (AW_CL)ad_create_query_window, 0);
-            AWMIMT("species_info",   "Species information", "i", "sp_info.hlp",   AWM_ALL, NT_popup_species_window, 0,                             0);
+            AWMIMT("species_info",   "Species information", "i", "sp_info.hlp",   AWM_ALL, NT_popup_species_window, (AW_CL)GLOBAL_gb_main,         0);
 
             SEP________________________SEP();
 
@@ -1265,7 +1266,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone) {
         //      Genes + Experiment
         //  --------------------------
 
-        if (is_genome_db) GEN_create_genes_submenu(awm, true);
+        if (is_genome_db) GEN_create_genes_submenu(awm, GLOBAL_gb_main, true);
 
         // -----------------
         //      Sequence
@@ -1706,7 +1707,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone) {
 
     if (is_genome_db) {
         awm->at_set_to(false, false, EDIT_XSIZE, EDIT_YSIZE);
-        awm->callback((AW_CB)AW_POPUP, (AW_CL)GEN_map_first, 0); // initial gene map
+        awm->callback((AW_CB)AW_POPUP, (AW_CL)GEN_create_first_map, (AW_CL)GLOBAL_gb_main); // initial gene map
         awm->help_text("gene_map.hlp");
         awm->create_button("OPEN_GENE_MAP", "#gen_map.xpm");
     }
@@ -1750,7 +1751,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone) {
 
     awm->at(db_infox, first_liney);
     awm->button_length(13);
-    awm->callback(NT_popup_species_window, 0, 0);
+    awm->callback(NT_popup_species_window, (AW_CL)GLOBAL_gb_main, 0);
     awm->help_text("sp_search.hlp");
     awm->create_button("INFO",  AWAR_INFO_BUTTON_TEXT);
 
