@@ -83,19 +83,39 @@ struct gl_struct {
     AW_selection_list *pd_design_id;
 } pd_gl;
 
-struct probe_match_event_para {
-    AW_window *aww;
-    AW_CL      sel_id;
-    bool       disable;
+struct ProbeMatchEventParam {
+    GBDATA            *gb_main;
+    AW_selection_list *selection_id;                // may be NULL
+    int               *counter;                     // may be NULL
+
+    ProbeMatchEventParam(GBDATA *gb_main_, int *counter_)         : gb_main(gb_main_), selection_id(NULL), counter(counter_) {}
+    ProbeMatchEventParam(GBDATA *gb_main_, AW_selection_list *id) : gb_main(gb_main_), selection_id(id),   counter(NULL)     {}
 };
-static probe_match_event_para auto_match_cb_settings = { 0, 0, true };
-void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr); // prototype
+
+struct AutoMatchSettings {
+    AW_window            *aww;
+    ProbeMatchEventParam *event_param; // not owned!
+    bool                  disable;
+
+    AutoMatchSettings(AW_window *aww_, ProbeMatchEventParam *event_param_, bool disable_)
+        : aww(aww_) , event_param(event_param_) , disable(disable_)
+    {}
+    AutoMatchSettings()
+        : aww(NULL), event_param(NULL) , disable(true)
+    {}
+
+    bool initialized() const { return aww != NULL; }
+};
+
+static AutoMatchSettings auto_match_cb_settings;
+
+void probe_match_event(AW_window *aww, AW_CL cl_ProbeMatchEventParam); // prototype
 
 static void auto_match_cb(AW_root *root) {
     if (!auto_match_cb_settings.disable) {
         char *ts = root->awar(AWAR_TARGET_STRING)->read_string();
         if (strlen(ts) > 0) {
-            probe_match_event(auto_match_cb_settings.aww, auto_match_cb_settings.sel_id, 0);
+            probe_match_event(auto_match_cb_settings.aww, (AW_CL)auto_match_cb_settings.event_param);
         }
         free(ts);
     }
@@ -131,13 +151,14 @@ static void auto_match_changed(AW_root *root) {
     callback_active = bool(autoMatch);
 }
 
-static void enable_auto_match_cb(AW_root *root, AW_window *aww, AW_CL cl_sel_id) {
-    if (cl_sel_id == 0 && // small enable (w/o selection list)
-        auto_match_cb_settings.aww != 0) return; // is only done when not enabled yet
+static void enable_auto_match_cb(AW_root *root, AW_window *aww, ProbeMatchEventParam *event_param) {
+    if (event_param == NULL && auto_match_cb_settings.initialized()) {
+        // "partially" enable (w/o ProbeMatchEventParam) is only done
+        // if not already "fully enabled"
+        return;
+    }
 
-    auto_match_cb_settings.aww     = aww;
-    auto_match_cb_settings.sel_id  = cl_sel_id;
-    auto_match_cb_settings.disable = false;
+    auto_match_cb_settings = AutoMatchSettings(aww, event_param, false);
     auto_match_changed(root);
 }
 
@@ -207,7 +228,7 @@ int init_local_com_struct()
     return 0;
 }
 
-static const char *PD_probe_pt_look_for_server(AW_root *root, GB_ERROR& error) {
+static const char *PD_probe_pt_look_for_server(AW_root *root, GBDATA *gb_main, GB_ERROR& error) {
     // return PT server info string (see GBS_read_arb_tcp for details)
     // or NULL (in this case 'error' is set)
 
@@ -215,7 +236,7 @@ static const char *PD_probe_pt_look_for_server(AW_root *root, GB_ERROR& error) {
     char        choice[256];
 
     sprintf(choice, "ARB_PT_SERVER%li", root->awar(AWAR_PT_SERVER)->read_int());
-    error = arb_look_and_start_server(AISC_MAGIC_NUMBER, choice, GLOBAL_gb_main);
+    error = arb_look_and_start_server(AISC_MAGIC_NUMBER, choice, gb_main);
     if (!error) {
         result             = GBS_read_arb_tcp(choice);
         if (!result) error = GB_await_error();
@@ -234,16 +255,16 @@ static GB_ERROR gene_requires(GBDATA *gb_gene, const char *whats_required) {
     return GBS_global_string("Gene '%s' of organism '%s' needs %s", GBT_read_name(gb_gene), GBT_read_name(gb_species), whats_required);
 }
 
-GB_ERROR pd_get_the_names(bytestring &bs, bytestring &checksum) {
+GB_ERROR pd_get_the_names(GBDATA *gb_main, bytestring &bs, bytestring &checksum) {
     GBS_strstruct *names     = GBS_stropen(1024);
     GBS_strstruct *checksums = GBS_stropen(1024);
     GB_ERROR       error     = 0;
 
-    GB_begin_transaction(GLOBAL_gb_main);
+    GB_begin_transaction(gb_main);
 
-    char *use = GBT_get_default_alignment(GLOBAL_gb_main);
+    char *use = GBT_get_default_alignment(gb_main);
 
-    for (GBDATA *gb_species = GBT_first_marked_species(GLOBAL_gb_main); gb_species; gb_species = GBT_next_marked_species(gb_species)) {
+    for (GBDATA *gb_species = GBT_first_marked_species(gb_main); gb_species; gb_species = GBT_next_marked_species(gb_species)) {
         GBDATA *gb_name = GB_entry(gb_species, "name");
         if (!gb_name) { error = species_requires(gb_species, "name"); break; }
 
@@ -267,20 +288,20 @@ GB_ERROR pd_get_the_names(bytestring &bs, bytestring &checksum) {
     checksum.data = GBS_strclose(checksums);
     checksum.size = strlen(checksum.data)+1;
 
-    GB_commit_transaction(GLOBAL_gb_main);
+    GB_commit_transaction(gb_main);
 
     return error;
 }
 
-GB_ERROR pd_get_the_gene_names(bytestring &bs, bytestring &checksum) {
+GB_ERROR pd_get_the_gene_names(GBDATA *gb_main, bytestring &bs, bytestring &checksum) {
     GBS_strstruct *names     = GBS_stropen(1024);
     GBS_strstruct *checksums = GBS_stropen(1024);
     GB_ERROR       error     = 0;
 
-    GB_begin_transaction(GLOBAL_gb_main);
+    GB_begin_transaction(gb_main);
     const char *use = GENOM_ALIGNMENT; // gene pt server is always build on 'ali_genom'
 
-    for (GBDATA *gb_species = GEN_first_organism(GLOBAL_gb_main); gb_species && !error; gb_species = GEN_next_organism(gb_species)) {
+    for (GBDATA *gb_species = GEN_first_organism(gb_main); gb_species && !error; gb_species = GEN_next_organism(gb_species)) {
         const char *sequence     = 0;
         const char *species_name = 0;
         {
@@ -333,7 +354,7 @@ GB_ERROR pd_get_the_gene_names(bytestring &bs, bytestring &checksum) {
         checksum.size = GBS_memoffset(checksums)+1;
         checksum.data = GBS_strclose(checksums);
     }
-    error = GB_end_transaction(GLOBAL_gb_main, error);
+    error = GB_end_transaction(gb_main, error);
     return error;
 }
 
@@ -358,19 +379,20 @@ int probe_design_send_data(AW_root *root, T_PT_PDC  pdc)
 }
 
 void probe_design_event(AW_window *aww, AW_CL cl_gb_main) {
-    AW_root     *root  = aww->get_root();
+    AW_root     *root    = aww->get_root();
     T_PT_PDC     pdc;
     T_PT_TPROBE  tprobe;
     bytestring   bs;
     bytestring   check;
     char        *match_info;
-    GB_ERROR     error = 0;
+    GB_ERROR     error   = 0;
+    GBDATA      *gb_main = (GBDATA*)cl_gb_main;
 
     aw_openstatus("Probe Design");
     aw_status("Search a free running server");
 
     {
-        const char *servername = PD_probe_pt_look_for_server(root, error);
+        const char *servername = PD_probe_pt_look_for_server(root, gb_main, error);
         if (servername) {
             pd_gl.link = (aisc_com *)aisc_open(servername, &pd_gl.com, AISC_MAGIC_NUMBER);
             if (!pd_gl.link) error = "can't contact PT server";
@@ -383,16 +405,16 @@ void probe_design_event(AW_window *aww, AW_CL cl_gb_main) {
 
     bool design_gene_probes = root->awar(AWAR_PD_DESIGN_GENE)->read_int();
     if (design_gene_probes) {
-        GB_transaction ta(GLOBAL_gb_main);
-        if (!GEN_is_genome_db(GLOBAL_gb_main, -1)) design_gene_probes = false;
+        GB_transaction ta(gb_main);
+        if (!GEN_is_genome_db(gb_main, -1)) design_gene_probes = false;
     }
 
     if (!error) {
         if (design_gene_probes) { // design probes for genes
-            error = pd_get_the_gene_names(bs, check);
+            error = pd_get_the_gene_names(gb_main, bs, check);
         }
         else {
-            error = pd_get_the_names(bs, check);
+            error = pd_get_the_names(gb_main, bs, check);
         }
     }
 
@@ -466,12 +488,12 @@ void probe_design_event(AW_window *aww, AW_CL cl_gb_main) {
             GB_transaction dummy(GLOBAL_gb_main);
 
             char *h;
-            char *ali_name = GBT_get_default_alignment(GLOBAL_gb_main);
+            char *ali_name = GBT_get_default_alignment(gb_main);
 
             for (; unames && !abort; unames = h) {
                 h = strchr(unames, '#');
                 if (h) *(h++) = 0;
-                GBDATA *gb_species = GBT_find_species(GLOBAL_gb_main, unames);
+                GBDATA *gb_species = GBT_find_species(gb_main, unames);
                 if (!gb_species) {
                     aw_message(GBS_global_string("Species '%s' not found", unames));
                     abort = true;
@@ -619,23 +641,23 @@ void probe_design_event(AW_window *aww, AW_CL cl_gb_main) {
 
 static bool allow_probe_match_event = true;
 
-void probe_match_event(AW_window *aww, AW_CL cl_selection_id, AW_CL cl_count_ptr)
-{
+void probe_match_event(AW_window *aww, AW_CL cl_ProbeMatchEventParam) {
     if (allow_probe_match_event) {
-        AW_selection_list *selection_id = (AW_selection_list*)cl_selection_id;
-        int               *counter      = (int*)cl_count_ptr;
-        AW_root           *root         = aww->get_root();
-        T_PT_PDC           pdc;
-        int                show_status  = 0;
-        int                extras       = 1; // mark species and write to temp fields,
-        GB_ERROR           error        = 0;
+        ProbeMatchEventParam *event_param  = (ProbeMatchEventParam*)cl_ProbeMatchEventParam;
+        AW_selection_list    *selection_id = event_param ? event_param->selection_id : NULL;
+        int                  *counter      = event_param ? event_param->counter : NULL;
+        AW_root              *root         = aww->get_root();
+        T_PT_PDC              pdc;
+        int                   show_status  = 0;
+        int                   extras       = 1;     // mark species and write to temp fields
+        GB_ERROR              error        = 0;
 
         if (!GLOBAL_gb_main) {
             error = "No database";
         }
 
         if (!error) {
-            const char *servername = PD_probe_pt_look_for_server(root, error);
+            const char *servername = PD_probe_pt_look_for_server(root, GLOBAL_gb_main, error);
 
             if (!error) {
                 if (selection_id) {
@@ -1007,7 +1029,8 @@ void probe_match_all_event(AW_window *aww, AW_CL cl_iselection_id) {
 
         root->awar(AWAR_TARGET_STRING)->write_string(entry); // probe match
         int counter = -1;
-        probe_match_event(aww, AW_CL(0), AW_CL(&counter));
+        ProbeMatchEventParam match_event(GLOBAL_gb_main, &counter);
+        probe_match_event(aww, (AW_CL)&match_event);
         if (counter==-1) break;
 
         char *buffer = new char[strlen(entry)+10]; // write # of matched to list entries
@@ -1560,14 +1583,15 @@ AW_window *create_probe_match_window(AW_root *root, AW_CL cl_gb_main) {
         aws->at("nhits");
         aws->create_button(0, AWAR_PD_MATCH_NHITS);
 
-        aws->callback(probe_match_event, (AW_CL)selection_id, (AW_CL)0);
+        ProbeMatchEventParam *event_param = new ProbeMatchEventParam(GLOBAL_gb_main, selection_id);
+        aws->callback(probe_match_event, (AW_CL)event_param);
         aws->at("match");
         aws->create_button("MATCH", "MATCH", "D");
 
         aws->at("auto");
         aws->label("Auto");
         aws->create_toggle(AWAR_PD_MATCH_AUTOMATCH);
-        enable_auto_match_cb(root, aws, (AW_CL)selection_id);
+        enable_auto_match_cb(root, aws, event_param);
 
         aws->callback(modify_target_string, (AW_CL)TS_MOD_CLEAR);
         aws->at("clear");
