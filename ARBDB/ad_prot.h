@@ -57,7 +57,7 @@ GB_HASH *GBS_create_dynaval_hash(long user_size, GB_CASE case_sens, void (*freef
 void GBS_dynaval_free(long val);
 void GBS_optimize_hash(GB_HASH *hs);
 char *GBS_hashtab_2_string(GB_HASH *hash);
-char *GBS_string_2_hashtab(GB_HASH *hash, char *data);
+void GBS_string_2_hashtab(GB_HASH *hash, char *data);
 long GBS_read_hash(const GB_HASH *hs, const char *key);
 long GBS_write_hash(GB_HASH *hs, const char *key, long val);
 long GBS_write_hash_no_strdup(GB_HASH *hs, char *key, long val);
