@@ -1,0 +1,6 @@
+# libraries needed to link against SERVERCNTRL/SERVERCNTRL.a
+
+ARBDB/libARBDB.so
+
+
+

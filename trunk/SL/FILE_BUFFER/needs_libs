@@ -1,0 +1,4 @@
+# libraries needed to link against SL/FILE_BUFFER/FILE_BUFFER.a
+
+ARBDB/libARBDB.so
+
