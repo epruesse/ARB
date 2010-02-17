@@ -346,14 +346,13 @@ char *GBS_hashtab_2_string(GB_HASH *hash) {
 }
 
 
-char *GBS_string_2_hashtab(GB_HASH *hash, char *data) { // destroys data
+void GBS_string_2_hashtab(GB_HASH *hash, char *data) { // modifies data
     char *p, *d, *dp;
-    int c;
+    int   c;
     char *nextp;
-    char *error = 0;
     char *str;
-    int strlen;
-    long val;
+    int   strlen;
+    long  val;
 
     for (p = data; p;   p = nextp) {
         strlen = 0;
@@ -386,8 +385,6 @@ char *GBS_string_2_hashtab(GB_HASH *hash, char *data) { // destroys data
         val = atoi(dp+1);
         GBS_write_hash_no_strdup(hash, str, val);
     }
-
-    return error;
 }
 
 static struct gbs_hash_entry *find_hash_entry(const GB_HASH *hs, const char *key, size_t *index) {
