@@ -1,0 +1,6 @@
+# libraries needed to link against MULTI_PROBE/MULTI_PROBE.a
+
+PROBE_COM/client.a
+SL/TREEDISP/TREEDISP.a
+
+
