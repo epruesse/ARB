@@ -63,7 +63,7 @@ long GBS_write_hash(GB_HASH *hs, const char *key, long val);
 long GBS_write_hash_no_strdup(GB_HASH *hs, char *key, long val);
 long GBS_incr_hash(GB_HASH *hs, const char *key);
 double GBS_hash_mean_access_costs(GB_HASH *hs);
-void GBS_free_hash_entries(GB_HASH *hs);
+void GBS_erase_hash(GB_HASH *hs);
 void GBS_free_hash(GB_HASH *hs);
 void GBS_clear_hash_statistic_summary(const char *id);
 void GBS_print_hash_statistic_summary(const char *id);
@@ -77,6 +77,8 @@ int GBS_HCF_sortedByKey(const char *k0, long v0, const char *k1, long v1);
 GB_NUMHASH *GBS_create_numhash(long user_size);
 long GBS_read_numhash(GB_NUMHASH *hs, long key);
 long GBS_write_numhash(GB_NUMHASH *hs, long key, long val);
+long GBS_numhash_count_elems(GB_NUMHASH *hs);
+void GBS_erase_numhash(GB_NUMHASH *hs);
 void GBS_free_numhash(GB_NUMHASH *hs);
 
 /* adcache.cxx */

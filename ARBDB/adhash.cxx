@@ -19,12 +19,13 @@
 
 struct gbs_hash_entry {
     char *key;
-    long val;
+    long  val;
+
     struct gbs_hash_entry *next;
 };
 struct GB_HASH {
-    size_t  size;
-    size_t  nelem;
+    size_t  size;                                   // size of hashtable
+    size_t  nelem;                                  // number of elements inserted
     GB_CASE case_sens;
 
     struct gbs_hash_entry **entries; // the hash table (has 'size' entries)
@@ -40,7 +41,8 @@ struct numhash_entry {
 };
 
 struct GB_NUMHASH {
-    long            size;
+    long            size;                           // size of hashtable
+    size_t          nelem;                          // number of elements inserted
     numhash_entry **entries;
 };
 
@@ -532,7 +534,7 @@ double GBS_hash_mean_access_costs(GB_HASH *hs) {
 }
 #endif // DEBUG
 
-void GBS_free_hash_entries(GB_HASH *hs)
+void GBS_erase_hash(GB_HASH *hs)
 {
     long i;
     long e2;
@@ -571,12 +573,12 @@ void GBS_free_hash_entries(GB_HASH *hs)
         }
         hs->entries[i] = 0;
     }
+    hs->nelem = 0;
 }
 
-void GBS_free_hash(GB_HASH *hs)
-{
-    if (!hs) return;
-    GBS_free_hash_entries(hs);
+void GBS_free_hash(GB_HASH *hs) {
+    gb_assert(hs);
+    GBS_erase_hash(hs);
     free(hs->entries);
     free(hs);
 }
@@ -815,6 +817,7 @@ GB_NUMHASH *GBS_create_numhash(long user_size) {
     GB_NUMHASH *hs   = (GB_NUMHASH *)GB_calloc(sizeof(*hs), 1);
 
     hs->size    = size;
+    hs->nelem   = 0;
     hs->entries = (numhash_entry **)GB_calloc(sizeof(*(hs->entries)), (size_t)size);
 
     return hs;
@@ -848,6 +851,7 @@ long GBS_write_numhash(GB_NUMHASH *hs, long key, long val) {
                     hs->entries[i] = e->next;
                 }
                 gbm_free_mem((char *) e, sizeof(*e), GBM_HASH_INDEX);
+                hs->nelem--;
                 return 0;
             }
             oe = e;
@@ -867,11 +871,16 @@ long GBS_write_numhash(GB_NUMHASH *hs, long key, long val) {
     e->next = hs->entries[i];
     e->key = key;
     e->val = val;
+    hs->nelem++;
     hs->entries[i] = e;
     return 0;
 }
 
-void GBS_free_numhash(GB_NUMHASH *hs) {
+long GBS_numhash_count_elems(GB_NUMHASH *hs) {
+    return hs->nelem;
+}
+
+void GBS_erase_numhash(GB_NUMHASH *hs) {
     long e2 = hs->size;
 
     for (long i=0; i<e2; i++) {
@@ -882,6 +891,11 @@ void GBS_free_numhash(GB_NUMHASH *hs) {
         }
     }
 
+    hs->nelem = 0;
+}
+
+void GBS_free_numhash(GB_NUMHASH *hs) {
+    GBS_erase_numhash(hs);
     free(hs->entries);
     free(hs);
 }
@@ -889,6 +903,8 @@ void GBS_free_numhash(GB_NUMHASH *hs) {
 // --------------------------------------------------------------------------------
 
 #if (UNIT_TESTS == 1)
+
+#include <test_unit.h>
 
 static long insert_into_hash(const char *key, long val, void *cl_toHash) {
     GB_HASH *toHash = (GB_HASH*)cl_toHash;
@@ -903,7 +919,7 @@ static long erase_from_hash(const char *key, long val, void *cl_fromHash) {
         GBS_write_hash(fromHash, key, 0);
     }
     else {
-        printf("value mismatch in hashes_are_equal(): %li != %li\n", val2, val);
+        printf("value mismatch in hashes_are_equal(): key='%s' val: %li != %li\n", key, val2, val);
     }
     return val;
 }
@@ -925,76 +941,140 @@ static bool hashes_are_equal(GB_HASH *h1, GB_HASH *h2) {
     return equal;
 }
 
-void TEST_GB_HASH() {
-    GB_HASH *mind   = GBS_create_hash(100, GB_MIND_CASE);
-    GB_HASH *ignore = GBS_create_hash(100, GB_IGNORE_CASE);
+class TestData : public Noncopyable {
+public:
+    GB_HASH    *mind;
+    GB_HASH    *ignore;
+    GB_NUMHASH *num;
 
-    GBS_write_hash(mind, "foo", 1);
-    GBS_write_hash(mind, "FOO", 2);
-
-    GBS_write_hash(ignore, "foo", 1);
-    GBS_write_hash(ignore, "FOO", 2);
-
-    gb_assert(GBS_read_hash(mind, "foo") == 1);
-    gb_assert(GBS_read_hash(mind, "FOO") == 2);
-    gb_assert(GBS_read_hash(mind, "Foo") == 0);
-
-    gb_assert(GBS_read_hash(ignore, "foo") == 2);
-    gb_assert(GBS_read_hash(ignore, "FOO") == 2);
-    gb_assert(GBS_read_hash(ignore, "Foo") == 2);
-
-    gb_assert(GBS_hash_count_elems(mind) == 2);
-    gb_assert(GBS_hash_count_elems(ignore) == 1);
-
-    
-    GBS_incr_hash(mind, "bar");
-    GBS_incr_hash(mind, "BAR");
-
-    GBS_incr_hash(ignore, "bar");
-    GBS_incr_hash(ignore, "BAR");
-
-    gb_assert(GBS_read_hash(mind, "bar") == 1);
-    gb_assert(GBS_read_hash(mind, "BAR") == 1);
-
-    gb_assert(GBS_read_hash(ignore, "bar") == 2);
-    gb_assert(GBS_read_hash(ignore, "BAR") == 2);
-
-
-    gb_assert(GBS_hash_count_elems(mind)   == 4);
-    gb_assert(GBS_hash_count_elems(ignore) == 2);
-
-    gb_assert(GBS_hash_count_value(mind, 1)   == 3);
-    gb_assert(GBS_hash_count_value(mind, 2)   == 1);
-    gb_assert(GBS_hash_count_value(ignore, 2) == 2);
-
-    gb_assert(hashes_are_equal(mind, mind));
-    gb_assert(hashes_are_equal(ignore, ignore));
-
-    {
-        char *mind_str   = GBS_hashtab_2_string(mind);
-        char *ignore_str = GBS_hashtab_2_string(ignore);
-
-        gb_assert(mind_str);
-        gb_assert(ignore_str);
-
-        GB_HASH *mind2   = GBS_create_hash(10, GB_MIND_CASE);
-        GB_HASH *ignore2 = GBS_create_hash(10, GB_IGNORE_CASE);
-
-        GBS_string_2_hashtab(mind2, mind_str);
-        GBS_string_2_hashtab(ignore2, ignore_str);
-
-        gb_assert(hashes_are_equal(mind, mind2));
-        gb_assert(hashes_are_equal(ignore, ignore2));
-
-        GBS_free_hash(ignore2);
-        GBS_free_hash(mind2);
-
-        free(ignore_str);
-        free(mind_str);
+    TestData() {
+        mind   = GBS_create_hash(100, GB_MIND_CASE);
+        ignore = GBS_create_hash(100, GB_IGNORE_CASE);
+        num    = GBS_create_numhash(100);
+    }
+    ~TestData() {
+        GBS_free_numhash(num);
+        GBS_free_hash(ignore);
+        GBS_free_hash(mind);
     }
 
-    GBS_free_hash(ignore);
-    GBS_free_hash(mind);
+    void reset() {
+        GBS_erase_hash(mind);
+        GBS_erase_hash(ignore);
+        GBS_erase_numhash(num);
+    }
+
+    GB_HASH *get_hash(bool case_sens) {
+        return case_sens ? mind : ignore;
+    }
+};
+
+static TestData TEST;
+
+void TEST_GBS_write_hash() {
+    TEST.reset();
+
+    for (int case_sens = 0; case_sens <= 1; ++case_sens) {
+        GB_HASH *hash = TEST.get_hash(case_sens);
+
+        GBS_write_hash(hash, "foo", 1);
+        TEST_ASSERT(GBS_hash_count_elems(hash) == 1);
+        TEST_ASSERT(GBS_read_hash(hash, "foo") == 1);
+
+        GBS_write_hash(hash, "foo", 2);
+        TEST_ASSERT(GBS_hash_count_elems(hash) == 1);
+        TEST_ASSERT(GBS_read_hash(hash, "foo") == 2);
+        
+        GBS_write_hash(hash, "foo", 0);
+        TEST_ASSERT(GBS_hash_count_elems(hash) == 0);
+        TEST_ASSERT(GBS_read_hash(hash, "foo") == 0);
+
+        GBS_write_hash(hash, "foo", 1);
+        GBS_write_hash(hash, "FOO", 2);
+
+        if (case_sens) {
+            TEST_ASSERT(GBS_hash_count_elems(hash) == 2);
+            TEST_ASSERT(GBS_read_hash(hash, "foo") == 1);
+            TEST_ASSERT(GBS_read_hash(hash, "FOO") == 2);
+            TEST_ASSERT(GBS_read_hash(hash, "Foo") == 0);
+        }
+        else {
+            TEST_ASSERT(GBS_hash_count_elems(hash) == 1);
+            TEST_ASSERT(GBS_read_hash(hash, "foo") == 2);
+            TEST_ASSERT(GBS_read_hash(hash, "FOO") == 2);
+            TEST_ASSERT(GBS_read_hash(hash, "Foo") == 2);
+        }
+    }
+}
+
+void TEST_GBS_incr_hash() {
+    TEST.reset();
+
+    for (int case_sens = 0; case_sens <= 1; ++case_sens) {
+        GB_HASH *hash = TEST.get_hash(case_sens);
+
+        GBS_incr_hash(hash, "foo");
+        TEST_ASSERT(GBS_read_hash(hash, "foo") == 1);
+
+        GBS_incr_hash(hash, "foo");
+        TEST_ASSERT(GBS_read_hash(hash, "foo") == 2);
+
+        GBS_incr_hash(hash, "FOO");
+        if (case_sens) {
+            TEST_ASSERT(GBS_read_hash(hash, "foo") == 2);
+            TEST_ASSERT(GBS_read_hash(hash, "FOO") == 1);
+        }
+        else {
+            TEST_ASSERT(GBS_read_hash(hash, "foo") == 3);
+            TEST_ASSERT(GBS_read_hash(hash, "FOO") == 3);
+        }
+    }
+}
+
+void TEST_GBS_hashtab_2_string() {
+    TEST.reset();
+
+    for (int case_sens = 0; case_sens <= 1; ++case_sens) {
+        GB_HASH *hash = TEST.get_hash(case_sens);
+
+        GBS_write_hash(hash, "foo", 1);
+        GBS_write_hash(hash, "bar", 2);
+        GBS_write_hash(hash, "FOO", 3);
+        GBS_write_hash(hash, "BAR", 4);
+    }
+    for (int case_sens = 0; case_sens <= 1; ++case_sens) {
+        GB_HASH *hash = TEST.get_hash(case_sens);
+        
+        char *as_string = GBS_hashtab_2_string(hash);
+        TEST_ASSERT(as_string);
+
+        GB_HASH *hash2 = GBS_create_hash(1000, case_sens ? GB_MIND_CASE : GB_IGNORE_CASE);
+        GBS_string_2_hashtab(hash2, as_string); 
+        TEST_ASSERT(hashes_are_equal(hash, hash2));
+        TEST_ASSERT(hashes_are_equal(hash, hash2));
+
+        free(as_string);
+        GBS_free_hash(hash2);
+    }
+
+    {
+        GB_HASH *hash      = TEST.get_hash(true);
+        char    *as_string = GBS_hashtab_2_string(hash);
+
+        printf("as_string='%s'\n", as_string);
+
+        GB_HASH *hash2 = GBS_create_hash(21, GB_MIND_CASE);
+        GBS_hash_do_sorted_loop(hash, insert_into_hash, GBS_HCF_sortedByKey, hash2);
+        
+        GB_HASH *hash3 = GBS_create_hash(100, GB_MIND_CASE);
+        GBS_hash_do_sorted_loop(hash, insert_into_hash, GBS_HCF_sortedByKey, hash3);
+
+        char *as_string2 = GBS_hashtab_2_string(hash2); printf("as_string2='%s'\n", as_string2);
+        char *as_string3 = GBS_hashtab_2_string(hash3); printf("as_string3='%s'\n", as_string3);
+
+        TEST_ASSERT_BROKEN(strcmp(as_string, as_string2) == 0);
+        TEST_ASSERT(strcmp(as_string, as_string3) == 0);
+    }
 }
 
 inline long key2val(long key, int pass) {
@@ -1007,7 +1087,7 @@ inline long key2val(long key, int pass) {
             val = key*17461;
             break;
         default :
-            gb_assert(0);
+            TEST_ASSERT(0);
     }
     return val;
 }
@@ -1020,20 +1100,27 @@ void TEST_numhash() {
     const long STEP = 17;
 
     for (int pass = 1; pass <= 2; ++pass) {
+        size_t added = 0;
         for (long key = LOW; key <= HIGH; key += STEP) {
             long val = key2val(key, pass);
             GBS_write_numhash(numhash, key, val);
+            added++;
         }
+
+        TEST_ASSERT(GBS_numhash_count_elems(numhash) == added);
+
         for (long key = LOW; key <= HIGH; key += STEP) {
             long expected_val = key2val(key, pass);
             long val          = GBS_read_numhash(numhash, key);
-            gb_assert(expected_val == val);
+            TEST_ASSERT(expected_val == val);
         }
     }
     GBS_free_numhash(numhash);
 
-    // gb_assert(0); // test failure
+    // TEST_ASSERT(0); // test failure
     // malloc(100);
+
+    // MISSING_TEST(bla bla);
 }
 
 #endif
