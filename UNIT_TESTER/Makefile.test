@@ -1,0 +1,107 @@
+# ----------------------------------------------------------
+#   _  _  __ _  __  ____    ____  ____  ____  ____  ____
+#  / )( \(  ( \(  )(_  _)  (_  _)(  __)/ ___)(_  _)/ ___)
+#  ) \/ (/    / )(   )(      )(   ) _) \___ \  )(  \___ \
+#  \____/\_)__)(__) (__)    (__) (____)(____/ (__) (____/
+#
+# ----------------------------------------------------------
+
+
+.SUFFIXES: .cxx .o .sym
+
+dummy:
+	false
+
+VALGRIND=1# run valgrind after sucessful test
+
+RELUNITDIR=../$(UNITDIR)
+FULLUNITDIR=$(ARBHOME)/$(UNITDIR)
+
+SHAREDLIBS=\
+	ARBDB \
+	AWT \
+	WINDOW \
+
+ISSHAREDLIB=$(findstring $(UNITDIR),$(SHAREDLIBS))
+
+ifeq ($(ISSHAREDLIB),)
+	UNITLIB=$(UNITLIBNAME).a
+else
+	UNITLIB=lib$(UNITLIBNAME).so
+endif
+
+UNIQUE_NAME=test_$(subst /,_,$(subst .,_,$(UNITDIR)_$(UNITLIB)))
+
+FULLLIB=$(FULLUNITDIR)/$(UNITLIB)
+
+DESTDIR=tests
+RUNDIR=run
+RUN2HERE=..# prefix from RUNDIR to here (UNIT_TESTER)
+
+SYMLIST=$(DESTDIR)/$(UNIQUE_NAME).sym
+TEST_CODE=$(DESTDIR)/$(UNIQUE_NAME).cxx
+TEST_OBJ=$(DESTDIR)/$(UNIQUE_NAME).o
+TEST_EXE=$(DESTDIR)/$(UNIQUE_NAME)
+
+SYM2TESTCODE=./sym2testcode.pl
+
+INCDIR=../INCLUDE
+
+INCLUDES= \
+	UnitTester.hxx \
+	$(INCDIR)/arb_assert.h \
+
+UNIT_TESTER_LIB=./UNIT_TESTER.a
+
+LINKLIST=$(shell ../SOURCE_TOOLS/needed_libs.pl -S -A .. -l $(FULLLIB))
+LINKDEPS=$(shell ../SOURCE_TOOLS/needed_libs.pl -S -A .. -F $(FULLLIB))
+
+# --------------------------------------------------------------------------------
+
+$(DESTDIR):
+	test -d $(DESTDIR) || mkdir $(DESTDIR)
+
+$(RUNDIR):
+	test -d $(RUNDIR) || mkdir $(RUNDIR)
+
+makedirs: $(DESTDIR) $(RUNDIR)
+
+$(SYMLIST) : $(FULLLIB) Makefile makedirs
+	nm -C -l $< > $@
+
+$(TEST_CODE) : $(SYMLIST) $(SYM2TESTCODE) 
+	$(SYM2TESTCODE) $(UNITLIB) $< $@
+
+$(TEST_OBJ) : $(TEST_CODE) $(INCLUDES)
+	$(CPP) $(cflags) -c $< -o $@ -I. 
+
+$(TEST_EXE) : $(TEST_OBJ) $(UNIT_TESTER_LIB) $(LINKDEPS)
+	$(LINK_EXECUTABLE) $@ $< $(UNIT_TESTER_LIB) -L../LIBLINK $(LINKLIST)
+
+dump:
+	@echo "$(SEP) dump $(UNITLIBNAME)"
+	@echo "UNITDIR        ='$(UNITDIR)'"
+	@echo "UNITLIBNAME    ='$(UNITLIBNAME)'"
+	@echo "FULLUNITDIR    ='$(FULLUNITDIR)'"
+	@echo "ISSHAREDLIB    ='$(ISSHAREDLIB)'"
+	@echo "UNITLIB        ='$(UNITLIB)'"
+	@echo "FULLLIB        ='$(FULLLIB)'"
+	@echo "UNIQUE_NAME    ='$(UNIQUE_NAME)'"
+	@echo "SYMLIST        ='$(SYMLIST)'"
+	@echo "TEST_CODE      ='$(TEST_CODE)'"
+	@echo "TEST_OBJ       ='$(TEST_OBJ)'"
+	@echo "TEST_EXE       ='$(TEST_EXE)'"
+	@echo "INCLUDES       ='$(INCLUDES)'"
+	@echo "LINKLIST       ='$(LINKLIST)'"
+	@echo "LINKDEPS       ='$(LINKDEPS)'"
+
+
+perform_test: $(TEST_EXE)
+	cd $(RUNDIR);$(RUN2HERE)/$(TEST_EXE)
+ifeq ($(VALGRIND),1)
+	cd $(RUNDIR);arb_valgrind -l -c 15 $(RUN2HERE)/$(TEST_EXE)
+endif
+
+runtest: perform_test
+
+#runtest: dump
