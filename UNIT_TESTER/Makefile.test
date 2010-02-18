@@ -12,7 +12,8 @@
 dummy:
 	false
 
-VALGRIND=1# run valgrind after sucessful test
+#VALGRIND=1# run valgrind after sucessful test
+VALGRIND=0# only test
 
 RELUNITDIR=../$(UNITDIR)
 FULLUNITDIR=$(ARBHOME)/$(UNITDIR)
@@ -97,10 +98,12 @@ dump:
 
 
 perform_test: $(TEST_EXE)
+	@echo "fake[3]: Entering directory \`$(FULLUNITDIR)'"
 	cd $(RUNDIR);$(RUN2HERE)/$(TEST_EXE)
 ifeq ($(VALGRIND),1)
-	cd $(RUNDIR);arb_valgrind -l -c 15 $(RUN2HERE)/$(TEST_EXE)
+	cd $(RUNDIR);$(ARBHOME)/SOURCE_TOOLS/arb_valgrind -l -c 15 $(RUN2HERE)/$(TEST_EXE)
 endif
+	@echo "fake[3]: Leaving directory \`$(FULLUNITDIR)'"
 
 runtest: perform_test
 
