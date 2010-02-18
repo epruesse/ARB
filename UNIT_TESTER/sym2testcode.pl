@@ -37,7 +37,7 @@ sub parse($) {
     while (defined ($line = <IN>)) {
       $lineNr++;
       if ($line =~ /^(([0-9a-f]|\s)+) (.) (.*)\n/o) {
-        my ($type,$rest) = ($1,$2);
+        my ($type,$rest) = ($3,$4);
         my $symbol;
         if ($rest =~ /\t/o) {
           my $location;
