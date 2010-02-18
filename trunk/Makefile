@@ -1329,6 +1329,7 @@ clean2: $(ARCHS:.a=.clean) \
 		GDEHELP/GDEHELP.clean \
 		HELP_SOURCE/HELP_SOURCE.clean \
 		SOURCE_TOOLS/SOURCE_TOOLS.clean \
+		UNIT_TESTER/UNIT_TESTER.clean \
 		bin/bin.clean \
 		perl_clean
 	rm -f *.last_gcc

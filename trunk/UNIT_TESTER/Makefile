@@ -11,7 +11,8 @@ $(MAIN): $(CPP_OBJECTS)
 	$(CPP) $(cflags) -c $<  $(CPPINCLUDES)
 
 clean:
-	rm -f $(CPP_OBJECTS) *.a
+	rm -f $(CPP_OBJECTS) 
+	$(MAKE) -f Makefile.test clean
 
 DEPENDS = $(CPP_OBJECTS:.o=.depend)
 depends: $(DEPENDS)

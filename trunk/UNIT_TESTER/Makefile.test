@@ -54,8 +54,18 @@ INCLUDES= \
 
 UNIT_TESTER_LIB=./UNIT_TESTER.a
 
+ifeq ($(UNITLIB),.a)
+LINKLIST=
+LINKDEPS=
+else
 LINKLIST=$(shell ../SOURCE_TOOLS/needed_libs.pl -S -A .. -l $(FULLLIB))
 LINKDEPS=$(shell ../SOURCE_TOOLS/needed_libs.pl -S -A .. -F $(FULLLIB))
+endif
+
+# --------------------------------------------------------------------------------
+
+clean:
+	rm -f $(DESTDIR)/*
 
 # --------------------------------------------------------------------------------
 
@@ -108,3 +118,4 @@ endif
 runtest: perform_test
 
 #runtest: dump
+
