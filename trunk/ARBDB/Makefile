@@ -380,6 +380,7 @@ adhash.o: $(ARBHOME)/INCLUDE/arbtools.h
 adhash.o: $(ARBHOME)/INCLUDE/attributes.h
 adhash.o: $(ARBHOME)/INCLUDE/dupstr.h
 adhash.o: $(ARBHOME)/INCLUDE/smartptr.h
+adhash.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 adhashtools.o: ad_k_prot.h
 adhashtools.o: ad_prot.h
