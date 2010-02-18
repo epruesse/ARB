@@ -842,7 +842,7 @@ ED4_tree_terminal::ED4_tree_terminal(const char *temp_id, AW_pos x, AW_pos y, AW
     spec = &(tree_terminal_spec);
 }
 
-ED4_returncode ED4_tree_terminal::Show(int IF_DEBUG(refresh_all), int is_cleared)
+ED4_returncode ED4_tree_terminal::Show(int IF_ASSERTION_USED(refresh_all), int is_cleared)
 {
     e4_assert(update_info.refresh || refresh_all);
     ED4_ROOT->get_device()->push_clip_scale();
@@ -888,7 +888,7 @@ ED4_bracket_terminal::ED4_bracket_terminal(const char *temp_id, AW_pos x, AW_pos
     spec = &(bracket_terminal_spec);
 }
 
-ED4_returncode ED4_bracket_terminal::Show(int IF_DEBUG(refresh_all), int is_cleared)
+ED4_returncode ED4_bracket_terminal::Show(int IF_ASSERTION_USED(refresh_all), int is_cleared)
 {
     e4_assert(update_info.refresh || refresh_all);
     ED4_ROOT->get_device()->push_clip_scale();
@@ -1261,7 +1261,7 @@ ED4_line_terminal::~ED4_line_terminal()
 //  ED4_columnStat_terminal
 // --------------------------------------------------------------------------------
 
-ED4_returncode ED4_columnStat_terminal::Show(int IF_DEBUG(refresh_all), int is_cleared)
+ED4_returncode ED4_columnStat_terminal::Show(int IF_ASSERTION_USED(refresh_all), int is_cleared)
 {
     e4_assert(update_info.refresh || refresh_all);
     ED4_ROOT->get_device()->push_clip_scale();

@@ -83,15 +83,8 @@ NOT4PERL GB_ERROR GB_safe_atof(const char *str, double *res) {
 
 double GB_atof(const char *str) {
     // convert ASCII to double
-
-    double res     = 0;
-#if defined(DEBUG)
-    GB_ERROR error =
-#endif // DEBUG
-        GB_safe_atof(str, &res);
-
-    gb_assert(!error); // expected double in 'str' - better use GB_safe_atof()
-
+    double res = 0;
+    ASSERT_NO_ERROR(GB_safe_atof(str, &res)); // expected double in 'str'- better use GB_safe_atof()
     return res;
 }
 
@@ -378,11 +371,11 @@ struct gb_close_callback_struct {
     void              *client_data;
 };
 
-#if defined(DEBUG)
+#if defined(ASSERTION_USED)
 static bool atclose_cb_exists(struct gb_close_callback_struct *gccs, gb_close_callback cb) {
     return gccs && (gccs->cb == cb || atclose_cb_exists(gccs->next, cb));
 }
-#endif // DEBUG
+#endif // ASSERTION_USED
 
 void GB_atclose(GBDATA *gbd, void (*fun)(GBDATA *gb_main, void *client_data), void *client_data) {
     /*! Add a callback, which gets called directly before GB_close destroys all data.

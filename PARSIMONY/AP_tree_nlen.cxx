@@ -369,9 +369,9 @@ void AP_tree_nlen::remove() {
 
             edgeTo(oldBrother)->unlink();           // LOST_EDGE
 
-#if defined(DEBUG)
+#if defined(ASSERTION_USED)
             AP_tree_root *troot = get_tree_root();
-#endif // DEBUG
+#endif // ASSERTION_USED
             AP_tree::remove();
             ap_assert(!troot->get_root_node()); // tree should have been removed
         }

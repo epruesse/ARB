@@ -507,10 +507,7 @@ static long writeGbdByKey(GB_MAIN_TYPE *Main, gbdByKey *gbk, FILE *out, GB_MAIN_
     {
         for (idx2=0; idx2<gbk[idx].cnt; idx2++)
         {
-#if defined(ASSERTION_USED)
-            long gboffset =
-#endif // ASSERTION_USED
-                write_GBDATA(Main, gbk[idx].gbdoff[idx2].gbd, idx, out, &offset, main_idx);
+            IF_ASSERTION_USED(long gboffset =) write_GBDATA(Main, gbk[idx].gbdoff[idx2].gbd, idx, out, &offset, main_idx);
             gb_assert(gboffset == gbk[idx].gbdoff[idx2].offset);
         }
     }

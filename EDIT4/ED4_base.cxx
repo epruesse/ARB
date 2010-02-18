@@ -399,7 +399,7 @@ inline bool ranges_overlap(AW_pos p1, AW_pos p2, int r1, int r2) {
     return !((r2 <= p1) || (p2 <= r1)); // "exactly adjacent" means "not overlapping"
 }
 
-bool ED4_base::is_visible(AW_pos x1, AW_pos y1, AW_pos x2, AW_pos y2, ED4_direction IF_DEBUG(direction))
+bool ED4_base::is_visible(AW_pos x1, AW_pos y1, AW_pos x2, AW_pos y2, ED4_direction IF_ASSERTION_USED(direction))
 // optimized case of function above (to avoid the need to call it 4 times)
 {
     e4_assert(direction == ED4_D_ALL_DIRECTION);

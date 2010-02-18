@@ -81,9 +81,9 @@ static int             snd_list[MAXN+1];
 static int nseqs;               // # of sequences
 static int weights[MAX_BASETYPES][MAX_BASETYPES];     // weights[b1][b2] : penalty for mutation from base 'b1' to base 'b2'
 
-#if defined(DEBUG)
+#if defined(ASSERTION_USED)
 size_t displ_size = 0;
-#endif // DEBUG
+#endif // ASSERTION_USED
 
 static int *displ;                                  // displ == 0 -> base in both , displ<0 -> displ gaps in slave, displ>0 -> displ gaps in master
 static int *zza;                                    // column (left->right) of align matrix (minimum of all paths to this matrix element)
@@ -455,9 +455,9 @@ static void exit_myers() {
 static ARB_ERROR init_show_pair(long max_seq_length) {
     ARB_ERROR error;
 
-#if defined(DEBUG)
+#if defined(ASSERTION_USED)
     displ_size = (2*max_seq_length + 1);
-#endif // DEBUG
+#endif // ASSERTION_USED
 
     displ      = (int *) ckalloc((2*max_seq_length + 1) * sizeof (int), error);
     last_print = 0;
@@ -478,9 +478,9 @@ void exit_show_pair()
     freenull(zzb);
     freenull(zza);
     freenull(displ);
-#if defined(DEBUG)
+#if defined(ASSERTION_USED)
     displ_size = 0;
-#endif // DEBUG
+#endif // ASSERTION_USED
 }
 
 inline int set_displ(int offset, int value) {
