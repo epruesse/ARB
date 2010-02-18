@@ -244,6 +244,7 @@ symlink_file ../SL/TREEDISP/TreeDisplay.hxx INCLUDE/TreeDisplay.hxx &&
 symlink_file ../SL/TREE_READ/TreeRead.h INCLUDE/TreeRead.h &&
 symlink_file ../SL/TREE_WRITE/TreeWrite.h INCLUDE/TreeWrite.h &&
 symlink_file ../STAT/st_window.hxx INCLUDE/st_window.hxx &&
+symlink_file ../UNIT_TESTER/test_unit.h INCLUDE/test_unit.h &&
 symlink_file ../WINDOW/aw_advice.hxx INCLUDE/aw_advice.hxx &&
 symlink_file ../WINDOW/aw_awars.hxx INCLUDE/aw_awars.hxx &&
 symlink_file ../WINDOW/aw_color_groups.hxx INCLUDE/aw_color_groups.hxx &&
