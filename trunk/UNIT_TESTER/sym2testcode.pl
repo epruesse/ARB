@@ -42,12 +42,12 @@ sub parse($) {
         if ($rest =~ /\t/o) {
           my $location;
           ($symbol,$location) = ($`,$');
-          if ($symbol =~ /\(/o) { $symbol = $`; } # skip prototype
           $location{$symbol} = $location;
         }
         else { # symbol w/o location
           $symbol = $rest;
         }
+        if ($symbol =~ /\(/o) { $symbol = $`; } # skip prototype
 
         my $is_unit_test = undef;
         if ($symbol =~ /^TEST_/o) { $is_unit_test = 1; }
@@ -103,7 +103,11 @@ sub generate_table($$\%\&) {
   # table
   $code .= 'static '.$type.' '.$name.'[] = {'."\n";
   foreach (@tests) {
-    $code .= '    { '.$_.', "'.$_.'", "'.$location{$_}.'" },'."\n";
+    my $loc = $location{$_};
+    if (defined $loc)  { $loc = '"'.$loc.'"'; }
+    else { $loc = 'NULL'; }
+
+    $code .= '    { '.$_.', "'.$_.'", '.$loc.' },'."\n";
   }
   $code .= '    { NULL, NULL, NULL },'."\n";
   $code .= '};'."\n";
