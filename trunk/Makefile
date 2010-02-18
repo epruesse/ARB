@@ -21,6 +21,7 @@
 # DEBUG                 compiles the DEBUG sections
 # DEBUG_GRAPHICS        all X-graphics are flushed immediately (for debugging)
 # ARB_64=0/1            1=>compile 64 bit version
+# UNIT_TESTS=0/1        1=>compile in unit tests and call them after build
 #
 # -----------------------------------------------------
 # The ARB source code is aware of the following defines:
@@ -181,6 +182,18 @@ ifeq ('$(CROSS_LIB)','')
 	endif
 endif
 
+#---------------------- unit tests
+
+ifndef UNIT_TESTS
+	UNIT_TESTS=0#default is "no tests"
+endif
+ifeq ($(UNIT_TESTS),1)
+	dflags += -DUNIT_TESTS
+	UNIT_TESTER_LIB=UNIT_TESTER/UNIT_TESTER.a
+else
+	UNIT_TESTER_LIB=
+endif
+
 #---------------------- other flags
 
 dflags += -D$(MACH) # define machine
@@ -218,13 +231,15 @@ endif
 ifeq ($(OPENGL),1) 
 	cflags += -DARB_OPENGL # activate OPENGL code
 	GL     := gl # this is the name of the OPENGL base target
-	GL_LIB := -lGL -L$(ARBHOME)/GL/glAW -lglAW -lGLU
+	GL_LIB_SYS := -lGL -lGLU
+	GL_LIB_ARB := -L$(ARBHOME)/GL/glAW -lglAW
 
  ifdef DEBIAN
-	GL_LIB += -lpthread
+	GL_LIB_SYS += -lpthread
  endif
 
-GL_PNGLIBS := -L$(ARBHOME)/GL/glpng -lglpng_arb -lpng
+GL_PNGLIBS_ARB := -L$(ARBHOME)/GL/glpng -lglpng_arb
+GL_PNGLIBS_SYS := -lpng
 
  ifdef DARWIN
 	GLEWLIB := -L/usr/lib -lGLEW -L$(OSX_SDK)/usr/X11/lib -lGLw
@@ -234,17 +249,19 @@ GL_PNGLIBS := -L$(ARBHOME)/GL/glpng -lglpng_arb -lpng
 	GLUTLIB := -lglut
  endif
 
-GL_LIBS := $(GL_LIB) $(GLEWLIB) $(GLUTLIB) $(GL_PNGLIBS)
-
-#XLIBS += $(GL_LIB)
+GL_LIBS_SYS := $(GL_LIB_SYS) $(GL_PNGLIBS_SYS) $(GLEWLIB) $(GLUTLIB)
+GL_LIBS_ARB := $(GL_LIB_ARB) $(GL_PNGLIBS_ARB)
 
 else
 # OPENGL=0
 
-GL_LIBS:=# no opengl -> no libs
+GL_LIBS_ARB:=# no opengl -> no libs
+GL_LIBS_SYS:=# no opengl -> no libs
 GL:=# don't build ARB openGL libs
 
 endif
+
+GL_LIBS:=$(GL_LIBS_ARB) $(GL_LIBS_SYS)
 
 #---------------------- tiff lib:
 
@@ -529,7 +546,7 @@ checks: check_setup check_tabs
 
 ARBDB_LIB=-lARBDB
 
-LIBS = $(ARBDB_LIB) $(SYSLIBS)
+LIBS = $(ARBDB_LIB) $(SYSLIBS) $(UNIT_TESTER_LIB) 
 GUI_LIBS = $(LIBS) -lWINDOW -lAWT $(XLIBS)
 
 LIBPATH = -L$(ARBHOME)/LIBLINK
@@ -621,6 +638,7 @@ ARCHS = \
 			STAT/STAT.a \
 			TOOLS/TOOLS.a \
 			TREEGEN/TREEGEN.a \
+			UNIT_TESTER/UNIT_TESTER.a \
 			WETC/WETC.a \
 			WINDOW/libWINDOW.a \
 			XML/XML.a \
@@ -712,7 +730,7 @@ ARCHS_EDIT4 := \
 		ARB_GDE/ARB_GDE.a \
 		AWTC/AWTC.a \
 		ISLAND_HOPPING/ISLAND_HOPPING.a \
-		NAMES_COM/client.a \
+		$(ARCHS_CLIENT_NAMES) \
 		SECEDIT/SECEDIT.a \
 		SERVERCNTRL/SERVERCNTRL.a \
 		SL/AW_HELIX/AW_HELIX.a \
@@ -794,7 +812,7 @@ $(DIST): $(ARCHS_DIST:.a=.dummy) shared_libs
 PARSIMONY = bin/arb_pars
 ARCHS_PARSIMONY = \
 		$(ARCHS_AP_TREE) \
-		NAMES_COM/client.a \
+		$(ARCHS_CLIENT_NAMES) \
 		PARSIMONY/PARSIMONY.a \
 		SERVERCNTRL/SERVERCNTRL.a \
 		SL/AW_NAME/AW_NAME.a \
@@ -1412,6 +1430,108 @@ tryxtras:
 arb: arbbasic
 	$(MAKE) shared_libs arbapplications help
 
+# --------------------------------------------------------------------------------
+
+TESTED_UNITS_AUTO = $(ARCHS:.a=.test)
+
+UNITS_WORKING = \
+	ISLAND_HOPPING/ISLAND_HOPPING.test \
+	WINDOW/WINDOW.test \
+	AWTC/AWTC.test \
+	AWT/AWT.test \
+	SL/ALIVIEW/ALIVIEW.test \
+	SL/AP_TREE/AP_TREE.test \
+	SL/ARB_TREE/ARB_TREE.test \
+	SL/AW_HELIX/AW_HELIX.test \
+	SL/AW_NAME/AW_NAME.test \
+	SL/DB_SCANNER/DB_SCANNER.test \
+	SL/FAST_ALIGNER/FAST_ALIGNER.test \
+	SL/FILE_BUFFER/FILE_BUFFER.test \
+	SL/FILTER/FILTER.test \
+	SL/GUI_ALIVIEW/GUI_ALIVIEW.test \
+	ARB_GDE/ARB_GDE.test \
+	SL/HELIX/HELIX.test \
+	SL/MATRIX/MATRIX.test \
+	SL/NEIGHBOURJOIN/NEIGHBOURJOIN.test \
+	SL/PRONUC/PRONUC.test \
+	SL/REGEXPR/REGEXPR.test \
+	SL/SEQUENCE/SEQUENCE.test \
+	SL/TRANSLATE/TRANSLATE.test \
+	SL/TREEDISP/TREEDISP.test \
+	SL/TREE_READ/TREE_READ.test \
+	XML/XML.test \
+	SL/TREE_WRITE/TREE_WRITE.test \
+	ALIV3/ALIV3.test \
+	CONSENSUS_TREE/CONSENSUS_TREE.test \
+	EISPACK/EISPACK.test \
+	DIST/DIST.test \
+	NALIGNER/NALIGNER.test \
+	GL/glAW/libglAW.test \
+	GL/glpng/libglpng_arb.test \
+	SEQ_QUALITY/SEQ_QUALITY.test \
+	STAT/STAT.test \
+	WETC/WETC.test \
+	ptpan/PROBE.test \
+	PHYLO/PHYLO.test \
+	PROBE_DESIGN/PROBE_DESIGN.test \
+	MULTI_PROBE/MULTI_PROBE.test \
+	PRIMER_DESIGN/PRIMER_DESIGN.test \
+	MERGE/MERGE.test \
+	PGT/PGT.test \
+	PARSIMONY/PARSIMONY.test \
+	TREEGEN/TREEGEN.test \
+	EDIT4/EDIT4.test \
+	NTREE/NTREE.test \
+	NAMES/NAMES.test \
+	PROBE/PROBE.test \
+	DBSERVER/DBSERVER.test \
+
+UNITS_UNTESTED = \
+	ARBDB/ARBDB.test \
+
+UNITS_UNTESTABLE_ATM = \
+	SERVERCNTRL/SERVERCNTRL.test \
+	PROBE_SET/PROBE_SET.test \
+	XML_IMPORT/XML_IMPORT.test \
+
+UNITS_NEED_FIX = \
+	GENOM_IMPORT/GENOM_IMPORT.test \
+	GENOM/GENOM.test \
+	AWTI/AWTI.test \
+	SECEDIT/SECEDIT.test \
+	RNA3D/RNA3D.test \
+
+
+TESTED_UNITS_MANUAL = \
+	$(UNITS_UNTESTED) \
+
+#	$(UNITS_WORKING)
+
+#TESTED_UNITS = $(TESTED_UNITS_AUTO)
+TESTED_UNITS = $(TESTED_UNITS_MANUAL)
+
+%.test:
+	@( export ID=$$$$; \
+	(( \
+	    $(MAKE) -C UNIT_TESTER -f Makefile.test -r \
+		"UNITDIR=$(@D)" \
+		"UNITLIBNAME=$(@F:.test=)" \
+		"cflags=$(cflags)" \
+		runtest \
+	) >$(@D).$$ID.log 2>&1 && (cat $(@D).$$ID.log;rm $(@D).$$ID.log)) || (cat $(@D).$$ID.log;rm $(@D).$$ID.log;false))
+
+
+test_base: $(UNIT_TESTER_LIB:.a=.dummy)
+
+unit_tests: 
+	@echo $(SEP)
+	$(MAKE) test_base
+	@echo "$(SEP) Running unit tests"
+	$(MAKE) $(TESTED_UNITS)
+	@echo "All unit tests passed" 
+
+# --------------------------------------------------------------------------------
+
 all: checks
 	$(MAKE) links
 	$(MAKE) com
@@ -1427,4 +1547,6 @@ endif
 	@echo $(SEP)
 	@echo "made 'all' with success."
 	@echo "to start arb enter 'arb'"
-
+ifeq ($(UNIT_TESTS),1)
+	$(MAKE) unit_tests
+endif
