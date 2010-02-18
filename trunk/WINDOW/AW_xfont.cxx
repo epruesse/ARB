@@ -533,12 +533,7 @@ static int get_available_fontsizes(Display *tool_d, int f, int *available_sizes)
         int      found_size;
         PIX_FONT fontst;
 
-#if defined(DEBUG)
-        bool     was_found =
-#endif // DEBUG
-            lookfont(tool_d, f, size, found_size, false, true, &fontst);
-
-        aw_assert(was_found); // because lookfont does fallback
+        ASSERT_TRUE(lookfont(tool_d, f, size, found_size, false, true, &fontst)); // lookfont should do fallback 
 
         if (found_size<size) size = found_size;
         if (found_size == size) available_sizes[size_count++] = size;
@@ -718,12 +713,7 @@ void AW_GC_Xm::set_font(AW_font font_nr, int size, int *found_size)
 
     {
         int  found_font_size;
-#if defined(DEBUG)
-        bool was_found =
-#endif // DEBUG
-            lookfont(common->display, font_nr, size, found_font_size, true, false, &xfs);
-        aw_assert(was_found); // because lookfont does fallback
-
+        ASSERT_TRUE(lookfont(common->display, font_nr, size, found_font_size, true, false, &xfs)); // lookfont should do fallback
         if (found_size) *found_size = found_font_size;
     }
     XSetFont(common->display, gc, xfs->fid);

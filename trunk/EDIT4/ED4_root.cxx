@@ -362,7 +362,7 @@ static ARB_ERROR change_char_table_length(ED4_base *base, AW_CL new_length) {
     return NULL;
 }
 
-void ED4_alignment_length_changed(GBDATA *gb_alignment_len, int * /* cl */, GB_CB_TYPE IF_DEBUG(gbtype)) // callback from database
+void ED4_alignment_length_changed(GBDATA *gb_alignment_len, int * /* cl */, GB_CB_TYPE IF_ASSERTION_USED(gbtype)) // callback from database
 {
     e4_assert(gbtype==GB_CB_CHANGED);
     int new_length = GB_read_int(gb_alignment_len);
@@ -706,7 +706,7 @@ ED4_returncode ED4_root::get_area_rectangle(AW_rectangle *rect, AW_pos x, AW_pos
     return ED4_R_IMPOSSIBLE; // no area contains x/y :-(
 }
 
-ED4_returncode ED4_root::world_to_win_coords(AW_window *IF_DEBUG(aww), AW_pos *xPtr, AW_pos *yPtr)  // calculates transformation from world to window
+ED4_returncode ED4_root::world_to_win_coords(AW_window *IF_ASSERTION_USED(aww), AW_pos *xPtr, AW_pos *yPtr)  // calculates transformation from world to window
 {                                               // coordinates in a given window
     ED4_window      *current_window;
     ED4_folding_line    *current_fl;

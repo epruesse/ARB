@@ -50,9 +50,9 @@ typedef struct _WidgetRec *Widget;
 // If your warning is about a variable, the variable is superfluous and should most likely be removed.
 
 
-#if defined(DEBUG)
+#if defined(ASSERTION_USED)
 #define legal_mask(m) (((m)&AWM_ALL) == (m))
-#endif // DEBUG
+#endif // ASSERTION_USED
 
 typedef enum {
     AW_NONE    = 0,
@@ -349,9 +349,9 @@ public:
     AW_awar *map(AW_awar *dest); /* map to new address */
     AW_awar *unmap();           /* map to original address */
 
-#if defined(DEBUG)
+#if defined(ASSERTION_USED)
     bool is_valid() const { return !!gb_var == !!gb_origin;; } // both or none NULL
-#endif // DEBUG
+#endif // ASSERTION_USED
 
     void get(char **p_string)  { freeset(*p_string, read_string()); } /* deletes existing targets !!! */
     void get(long *p_int)      { *p_int = (long)read_int(); }

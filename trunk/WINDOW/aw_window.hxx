@@ -130,10 +130,10 @@ public:
     bool contains(AW_CB g);                         // test if contained in list
     bool is_equal(const AW_cb_struct& other) const;
 
-#if defined(DEBUG)
+#if defined(ASSERTION_USED)
     AW_CL get_cd1() const { return cd1; }
     AW_CL get_cd2() const { return cd2; }
-#endif // DEBUG
+#endif // ASSERTION_USED
 
     static void set_AW_cb_guards(AW_cb_struct_guard before, AW_cb_struct_guard after) {
         guard_before = before;

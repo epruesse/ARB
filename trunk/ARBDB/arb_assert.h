@@ -64,8 +64,38 @@
 
 #endif
 
-/* -------------------------------------------------------------------------------
- * Provoke a SIGSEGV (which will stop the debugger or terminated the application)
+// ------------------------------------------------------------
+
+// use ASSERTION_USED for code needed for assertions
+#define ASSERTION_USED
+
+// ------------------------------------------------------------
+
+#if defined(SIMPLE_ARB_ASSERT)
+
+// code here is independent from ARBDB!
+
+#define ARB_SIGSEGV(backtrace) do {                             \
+        *(int *)0 = 0;                                          \
+    } while (0)
+
+#ifndef ASSERT_NONE
+# define arb_assert(cond)                                               \
+    do {                                                                \
+        if (!(cond)) {                                                  \
+            fprintf(stderr, "Assertion '%s' failed in '%s' #%i\n",      \
+                    #cond, __FILE__, __LINE__);                         \
+            *(int *)0 = 0;                                              \
+        }                                                               \
+    } while (0)
+#endif
+
+
+// ------------------------------------------------------------
+
+#else
+
+/* Provoke a SIGSEGV (which will stop the debugger or terminated the application)
  * Do backtrace manually here and uninstall SIGSEGV-handler
  * (done because automatic backtrace on SIGSEGV lacks name of current function)
  */
@@ -76,38 +106,13 @@
         *(int *)0 = 0;                                          \
     } while (0)
 
-// ------------------------------------------------------------
 
-// use ASSERTION_USED for code needed for assertions
-#define ASSERTION_USED
-
-// ------------------------------------------------------------
-
-#if defined(SIMPLE_ARB_ASSERT)
-
-#ifndef ASSERT_NONE
-# define arb_assert(cond)                                               \
-    do {                                                                \
-        if (!(cond)) {                                                  \
-                fprintf(stderr, "Assertion '%s' failed in '%s' #%i\n",  \
-                        #cond, __FILE__, __LINE__);                     \
-            *(int *)0 = 0;                                              \
-        }                                                               \
-    } while (0)
-#endif
-
-// ------------------------------------------------------------
-#else
-
-#ifdef ASSERT_CRASH
-# define arb_assert(cond)                       \
+# define arb_assert_crash(cond)                 \
     do {                                        \
         if (!(cond)) ARB_SIGSEGV(0);            \
     } while (0)
-#endif
 
-#ifdef ASSERT_BACKTRACE_AND_CRASH
-# define arb_assert(cond)                                               \
+# define arb_assert_backtrace_and_crash(cond)                           \
     do {                                                                \
         if (!(cond)) {                                                  \
             fputs(GBK_assert_msg(#cond, __FILE__, __LINE__), stderr);   \
@@ -115,6 +120,13 @@
             ARB_SIGSEGV(1);                                             \
         }                                                               \
     } while (0)
+
+#ifdef ASSERT_CRASH
+# define arb_assert(cond) arb_assert_crash(cond)
+#endif
+
+#ifdef ASSERT_BACKTRACE_AND_CRASH
+# define arb_assert(cond) arb_assert_backtrace_and_crash(cond)
 #endif
 
 #ifdef ASSERT_ERROR
@@ -131,6 +143,8 @@
 #endif
 
 #endif // SIMPLE_ARB_ASSERT
+
+// ------------------------------------------------------------
 
 #ifdef ASSERT_NONE
 # undef ASSERTION_USED
@@ -157,6 +171,28 @@
 #endif // SIMPLE_ARB_ASSERT
 
 // ------------------------------------------------------------
+
+#if (UNIT_TESTS == 1)
+# if defined(DEVEL_RELEASE)
+#  error Unit testing not allowed in release
+# else
+
+#  undef arb_assert
+#  define ASSERTION_USED
+
+#  define arb_assert(cond)                                              \
+    do {                                                                \
+        if (!(cond)) {                                                  \
+            fprintf(stderr, "%s:%i: Assertion '%s' failed\n",           \
+                    __FILE__, __LINE__, #cond);                         \
+            ARB_SIGSEGV(0);                                             \
+        }                                                               \
+    } while(0)
+
+# endif
+#endif
+
+// ------------------------------------------------------------
 // use the following macros for parameters etc. only appearing in one version
 
 #ifdef DEBUG
@@ -167,17 +203,36 @@
 # define IF_NDEBUG(x) x
 #endif
 
-// ------------------------------------------------------------
-// assert specific result (DEBUG only) and silence __ATTR__USERESULT warnings
+#ifdef ASSERTION_USED
+# define IF_ASSERTION_USED(x) x
+#else
+# define IF_ASSERTION_USED(x)
+#endif
 
-#define ASSERT_RESULT(Type, Expected, Expr) do {        \
-        Type value = (Expr);                            \
-        arb_assert(value == (Expected));                \
-        value             = value;                      \
+// ------------------------------------------------------------
+// Assert specific result (DEBUG only) and silence __ATTR__USERESULT warnings.
+// The given 'Expr' is evaluated under all conditions! 
+
+#ifdef ASSERTION_USED
+
+# define ASSERT_RESULT(Type, Expected, Expr) do {        \
+        Type value = (Expr);                             \
+        arb_assert(value == (Expected));                 \
     } while (0)
 
+#else
+
+# define ASSERT_RESULT(Type, Expected, Expr) do {       \
+        (void)Expr;                                     \
+    } while(0)
+
+#endif
+
 #define ASSERT_NULL_RESULT(ptrExpr) ASSERT_RESULT(const void*, NULL, ptrExpr)
-#define ASSERT_NO_ERROR(error)      ASSERT_RESULT(GB_ERROR, NULL, error)
+#define ASSERT_NO_ERROR(errorExpr)  ASSERT_RESULT(GB_ERROR, NULL, errorExpr)
+
+#define ASSERT_TRUE(boolExpr)  ASSERT_RESULT(bool, true, boolExpr)
+#define ASSERT_FALSE(boolExpr) ASSERT_RESULT(bool, false, boolExpr)
 
 // ------------------------------------------------------------
 

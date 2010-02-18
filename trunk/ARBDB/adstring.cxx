@@ -636,9 +636,9 @@ char *GBS_unescape_string(const char *str, const char *escaped_chars, char escap
     int   j      = 0;
     int   i;
 
-#if defined(DEBUG)
+#if defined(ASSERTION_USED)
     int escaped_chars_len = strlen(escaped_chars);
-#endif // DEBUG
+#endif // ASSERTION_USED
 
     gb_assert(strlen(escaped_chars)              <= 26);
     gb_assert(strchr(escaped_chars, escape_char) == 0); // escape_char may not be included in chars_to_escape

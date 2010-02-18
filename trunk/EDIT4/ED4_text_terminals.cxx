@@ -625,7 +625,7 @@ ED4_returncode ED4_sequence_info_terminal::draw(int /* only_text */)
 //  ED4_text_terminal
 // --------------------------------------------------------------------------------
 
-ED4_returncode ED4_text_terminal::Show(int IF_DEBUG(refresh_all), int is_cleared)
+ED4_returncode ED4_text_terminal::Show(int IF_ASSERTION_USED(refresh_all), int is_cleared)
 {
     e4_assert(update_info.refresh || refresh_all);
     ED4_ROOT->get_device()->push_clip_scale();

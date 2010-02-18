@@ -1032,7 +1032,7 @@ void TEST_numhash() {
     }
     GBS_free_numhash(numhash);
 
-    // gb_assert(0);
+    // gb_assert(0); // test failure
     // malloc(100);
 }
 

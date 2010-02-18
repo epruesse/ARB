@@ -69,9 +69,9 @@ private:
     int baseCount;             // number of real bases (-1 = uninitialized)
 
     int * abspos_array;
-#if defined(DEBUG)
+#if defined(ASSERTION_USED)
     int   abspos_array_size;
-#endif                          // DEBUG
+#endif // ASSERTION_USED
 
     void create_abspos_array(const int *static_array);
 

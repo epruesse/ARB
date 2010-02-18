@@ -69,10 +69,7 @@ static const char *getClrDefAwar(const char *awarName) {
     e4_assert(awarName);
     e4_assert(awarName[0]); // empty awar is bad
 
-#ifdef DEBUG
-    int size =
-#endif
-    sprintf(buf, AWAR_SAI_CLR_DEF "%s", awarName);
+    IF_ASSERTION_USED(int size =) sprintf(buf, AWAR_SAI_CLR_DEF "%s", awarName);
     e4_assert(size<BUFSIZE);
     return buf;
 }

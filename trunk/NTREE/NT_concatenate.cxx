@@ -114,7 +114,7 @@ static void createSelectionList_callBack_gb(GBDATA*, int *cl_cas, GB_CB_TYPE cbt
     }
 }
 
-static void createSelectionList_callBack_awar(AW_root *IF_DEBUG(aw_root), AW_CL cl_cas) {
+static void createSelectionList_callBack_awar(AW_root *IF_ASSERTION_USED(aw_root), AW_CL cl_cas) {
     struct conAlignStruct *cas = (struct conAlignStruct*)cl_cas;
     nt_assert(aw_root==cas->aws->get_root());
     createSelectionList_callBack(cas);

@@ -82,9 +82,9 @@ static GB_NUMHASH *awxkeymap_xkey_2_key_hash;
 
 const int KEYMAX = 100; // size for hashes
 
-#if defined(DEBUG)
+#if defined(ASSERTION_USED)
 static int mappedKeys = 0;
-#endif
+#endif // ASSERTION_USED
 
 static void map_awXKey(Display *display, const awXKeymap *awxk) {
     if (awxk->xstr) {
@@ -101,9 +101,9 @@ static void map_awXKey(Display *display, const awXKeymap *awxk) {
     }
     GBS_write_numhash(awxkeymap_xkey_2_key_hash, awxk->xkey, (long)awxk);
 
-#if defined(DEBUG)
+#if defined(ASSERTION_USED)
     ++mappedKeys;
-#endif // DEBUG
+#endif // ASSERTION_USED
 }
 
 void aw_install_xkeys(Display *display) {

@@ -249,9 +249,9 @@ GEN_position *Location::create_GEN_position() const {
     GEN_position *pos = GEN_new_position(count(), getJoinType() == LJT_JOIN);
     GEN_use_uncertainties(pos);
 
-#if defined(DEBUG)
+#if defined(ASSERTION_USED)
     int org_parts = pos->parts;
-#endif // DEBUG
+#endif // ASSERTION_USED
 
     pos->parts = 0;             // misuse 'parts' as index for filling 'pos'
     save(pos, false);

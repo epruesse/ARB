@@ -857,10 +857,7 @@ GB_CSTR *GBT_get_names_of_species_in_tree(const GBT_TREE *tree) {
 
     size_t size = GBT_count_leafs(tree);
     GB_CSTR *result = (GB_CSTR *)GB_calloc(sizeof(char *), size + 1);
-#if defined(DEBUG)
-    GB_CSTR *check =
-#endif // DEBUG
-        fill_species_name_array(result, tree);
+    IF_ASSERTION_USED(GB_CSTR *check =) fill_species_name_array(result, tree);
     gb_assert(check - size == result);
     return result;
 }

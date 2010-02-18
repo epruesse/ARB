@@ -28,12 +28,16 @@ using namespace std;
 //      Debugging
 // ------------------
 
-#if defined(DEBUG)
-// #define PAINT_REGION_INDEX // // paint region-internal index next to base
+#if defined(ASSERTION_USED)
 
 static bool valid_cb_params(AW_CL cd1, AW_CL cd2) {
     return cd1 == 0 || cd2 != -1;
 }
+
+#endif
+
+#if defined(DEBUG)
+// #define PAINT_REGION_INDEX // // paint region-internal index next to base
 
 static void paintDebugInfo(AW_device *device, int color, const Position& pos, const char *txt, AW_CL cd1, AW_CL cd2) {
     sec_assert(valid_cb_params(cd1, cd2));

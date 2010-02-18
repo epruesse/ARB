@@ -24,10 +24,7 @@ void messagef(const char *format, ...)
 
     va_start(argp, format);
 
-#if defined(ASSERTION_USED)
-    int chars =
-#endif // ASSERTION_USED
-        vsprintf(buffer, format, argp);
+    IF_ASSERTION_USED(int chars =) vsprintf(buffer, format, argp);
     fa_assert(chars<MESSAGE_BUFFERSIZE);
 
     va_end(argp);
