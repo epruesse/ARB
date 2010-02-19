@@ -506,7 +506,7 @@ void awt_delete_species_in_list(void *dummy, struct adaqbsstruct *cbs)
 static GB_HASH *awt_create_ref_hash(const struct adaqbsstruct *cbs, const char *key, bool split_words) {
     GBDATA  *gb_ref       = cbs->gb_ref;
     bool     queried_only = cbs->expect_hit_in_ref_list;
-    GB_HASH *hash         = GBS_create_hash(GBT_get_species_hash_size(gb_ref), GB_IGNORE_CASE);
+    GB_HASH *hash         = GBS_create_hash(GBT_get_species_count(gb_ref), GB_IGNORE_CASE);
 
     for (GBDATA  *gb_species = GBT_first_species(gb_ref);
          gb_species;
@@ -2597,7 +2597,7 @@ struct adaqbsstruct *awt_create_query_box(AW_window *aws, awt_query_struct *awtq
     cbs->species_name           = strdup(awtqs->species_name);
     cbs->tree_name              = awtqs->tree_name ? aw_root->awar(awtqs->tree_name)->read_string() : 0;
     cbs->selector               = awtqs->selector;
-    cbs->hit_description        = GBS_create_hash(2*awt_count_items(cbs, AWT_QUERY_ALL_SPECIES), GB_IGNORE_CASE);
+    cbs->hit_description        = GBS_create_hash(awt_count_items(cbs, AWT_QUERY_ALL_SPECIES), GB_IGNORE_CASE);
 
     GB_push_transaction(gb_main);
 

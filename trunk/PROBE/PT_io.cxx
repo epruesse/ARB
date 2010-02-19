@@ -288,7 +288,7 @@ void probe_read_alignments() {
 
 void PT_build_species_hash() {
     long i;
-    psg.namehash = GBS_create_hash(PT_NAME_HASH_SIZE, GB_MIND_CASE);
+    psg.namehash = GBS_create_hash(psg.data_count, GB_MIND_CASE);
     for (i=0; i<psg.data_count; i++) {
         GBS_write_hash(psg.namehash, psg.data[i].name, i+1);
     }

@@ -21,7 +21,7 @@ void ctree_init(int node_count, char **names)
 {
     int i;
 
-    Name_hash = GBS_create_hash((long) node_count, GB_MIND_CASE);
+    Name_hash = GBS_create_hash(node_count, GB_MIND_CASE);
 
     for (i=0; i< node_count; i++) {
         GBS_write_hash(Name_hash, names[i], (long) i);

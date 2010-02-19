@@ -120,7 +120,7 @@ static GB_HASH *an_get_prefix_hash() {
         size_t     elems     = an_shorts_elems(sin);
         if (elems<100) elems = 100;
 
-        GB_HASH *hash = GBS_create_hash(2*elems, GB_IGNORE_CASE);
+        GB_HASH *hash = GBS_create_hash(elems, GB_IGNORE_CASE);
 
         while (sin) {
             GBS_write_hash_no_strdup(hash, GB_strndup(sin->shrt, PREFIXLEN), (long)sin);

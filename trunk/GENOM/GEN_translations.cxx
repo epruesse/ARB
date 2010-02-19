@@ -166,7 +166,8 @@ GB_ERROR GEN_testAndRemoveTranslations(GBDATA *gb_gene_data, void (*warn)(AW_CL 
     int      note_added        = 0; // count gene for which a note has been added
     GB_ERROR error             = 0;
 
-    GB_HASH  *wrongStartCodons = GBS_create_hash(50, GB_IGNORE_CASE);
+    const int  possibleCodons   = 4*4*4;
+    GB_HASH   *wrongStartCodons = GBS_create_hash(possibleCodons, GB_IGNORE_CASE);
 
     for (GBDATA *gb_gene = GB_entry(gb_gene_data, "gene"); gb_gene && !error; gb_gene = GB_nextEntry(gb_gene)) {
         int retry = 0;

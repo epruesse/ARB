@@ -72,7 +72,7 @@ GB_ERROR gbcm_login(GBCONTAINER *gb_main, const char *user);
 long gbcmc_close(struct gbcmc_comm *link);
 
 /* adhash.cxx */
-long gbs_get_a_prime(long above_or_equal_this);
+size_t gbs_get_a_prime(size_t above_or_equal_this);
 
 /* adcache.cxx */
 void gb_init_cache(GB_MAIN_TYPE *Main);
@@ -216,7 +216,7 @@ GBDATA *gb_find_by_nr(GBDATA *father, int index);
 void gb_init_ctype_table(void);
 GBDATA *gb_search(GBDATA *gbd, const char *str, GB_TYPES create, int internflag);
 GBDATA *gb_search_marked(GBCONTAINER *gbc, GBQUARK key_quark, int firstindex);
-void gb_install_command_table(GBDATA *gb_main, struct GBL_command_table *table);
+void gb_install_command_table(GBDATA *gb_main, struct GBL_command_table *table, size_t table_size);
 char *gbs_search_second_x(const char *str);
 char *gbs_search_second_bracket(const char *source);
 char *gbs_search_next_separator(const char *source, const char *seps);

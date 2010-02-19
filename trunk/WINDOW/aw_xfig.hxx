@@ -59,7 +59,7 @@ public:
     struct AW_xfig_text *text;
     struct AW_xfig_line *line[MAX_LINE_WIDTH];
 
-    GB_HASH *hash;                  // hash table for buttons
+    GB_HASH *at_pos_hash;                         // hash table for named positions
 
     int minx, miny;
     int maxx, maxy;

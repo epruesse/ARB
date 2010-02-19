@@ -34,7 +34,7 @@ static GB_HASH *alreadyCalledHash = 0;
 
 static void forgetCalledCallbacks() {
     if (alreadyCalledHash) GBS_free_hash(alreadyCalledHash);
-    alreadyCalledHash = GBS_create_hash(5000, GB_MIND_CASE);
+    alreadyCalledHash = GBS_create_hash(2500, GB_MIND_CASE);
 }
 
 static long auto_dontcall1(const char *key, long value, void *cl_hash) {
@@ -51,7 +51,7 @@ static long auto_dontcall2(const char *key, long value, void *) {
 
 static void build_dontCallHash() {
     aw_assert(!dontCallHash);
-    dontCallHash = GBS_create_hash(30, GB_MIND_CASE);
+    dontCallHash = GBS_create_hash(100, GB_MIND_CASE);
     forgetCalledCallbacks();
 
     GBS_write_hash(dontCallHash, "ARB_NT/QUIT",    1);
@@ -125,7 +125,7 @@ static void build_dontCallHash() {
     GBS_write_hash(dontCallHash, "del_marked",                                           5);
 #endif
 
-    GB_HASH *autodontCallHash = GBS_create_hash(30, GB_MIND_CASE);
+    GB_HASH *autodontCallHash = GBS_create_hash(100, GB_MIND_CASE);
     GBS_hash_do_loop(dontCallHash, auto_dontcall1, autodontCallHash);
     GBS_hash_do_loop(autodontCallHash, auto_dontcall2, dontCallHash);
     GBS_free_hash(autodontCallHash);

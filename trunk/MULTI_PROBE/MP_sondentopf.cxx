@@ -86,7 +86,7 @@ Sonde* ST_Container::get_cached_sonde(char* name)
 Sondentopf::Sondentopf(MO_Liste *BL, MO_Liste *AL)
 {
     Listenliste = new List<void*>;
-    color_hash  = GBS_create_hash((long)(BL->get_laenge()/0.8)+1, GB_IGNORE_CASE);
+    color_hash  = GBS_create_hash(BL->get_laenge()*1.25+1, GB_IGNORE_CASE);
     if (!BL)
     {
         aw_message("List of species is empty. Terminating program");

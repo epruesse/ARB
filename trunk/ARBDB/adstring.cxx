@@ -1492,7 +1492,7 @@ static long g_bs_read_final_hash(const char *tag, long value, void *cd_merge_res
 
 static char *g_bs_get_string_of_tag_hash(GB_HASH *tag_hash) {
     struct GBS_strstruct *merge_result      = GBS_stropen(256);
-    GB_HASH              *collect_tags_hash = GBS_create_dynaval_hash(1024, GB_IGNORE_CASE, GBS_dynaval_free);
+    GB_HASH              *collect_tags_hash = GBS_create_dynaval_hash(512, GB_IGNORE_CASE, GBS_dynaval_free);
 
     GBS_hash_do_sorted_loop(tag_hash, g_bs_read_tagged_hash, GBS_HCF_sortedByKey, collect_tags_hash);     // move everything into collect_tags_hash
     GBS_hash_do_sorted_loop(collect_tags_hash, g_bs_read_final_hash, GBS_HCF_sortedByKey, merge_result);

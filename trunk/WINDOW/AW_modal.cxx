@@ -521,7 +521,7 @@ char *aw_string_selection(const char *title, const char *prompt, const char *def
 
     static GB_HASH *str_sels = 0; // for each 'buttons' store window + selection list
 
-    if (!str_sels) str_sels = GBS_create_hash(20, GB_MIND_CASE);
+    if (!str_sels) str_sels = GBS_create_hash(100, GB_MIND_CASE);
 
     struct str_sel_data {
         AW_window_message *aw_msg;

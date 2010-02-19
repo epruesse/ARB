@@ -77,10 +77,35 @@ static awXKeymap awxkeymap[] = {
     { 0, 0, (char*)1, AW_KEYMODE_NONE, AW_KEY_NONE, 0 }
 };
 
+struct awModDef {
+    int         xmod;
+    const char *xstr_prefix;
+    AW_key_mod  awmod;
+};
+
+static awModDef moddef[] = {
+    { XK_Shift_L,   "Shift",   AW_KEYMODE_SHIFT },
+    { XK_Shift_R,   "Shift",   AW_KEYMODE_SHIFT },
+    { XK_Meta_L,    "Meta",    AW_KEYMODE_ALT },     // handle Meta as Alt
+    { XK_Meta_R,    "Meta",    AW_KEYMODE_ALT },
+    { XK_Alt_L,     "Alt",     AW_KEYMODE_ALT },
+    { XK_Alt_R,     "Alt",     AW_KEYMODE_ALT },
+    { XK_Control_L, "Control", AW_KEYMODE_CONTROL },
+    { XK_Control_R, "Control", AW_KEYMODE_CONTROL },
+    { 0,            0,         AW_KEYMODE_NONE },   // "no modifier" (this is NO array terminator!)
+};
+
+#define ARRAY_ELEMS(array)            (sizeof(array)/sizeof(array[0]))
+#define TERMINATED_ARRAY_ELEMS(array) (ARRAY_ELEMS(array)-1)
+
+const int FIXEDMOD = TERMINATED_ARRAY_ELEMS(awxkeymap);
+const int MODFREE  = TERMINATED_ARRAY_ELEMS(awxkeymap_modfree);
+const int MODS     = ARRAY_ELEMS(moddef);
+
 static GB_HASH    *awxkeymap_string_2_key_hash;
 static GB_NUMHASH *awxkeymap_xkey_2_key_hash;
 
-const int KEYMAX = 100; // size for hashes
+const int MAPPED_KEYS = MODFREE*MODS+FIXEDMOD;
 
 #if defined(ASSERTION_USED)
 static int mappedKeys = 0;
@@ -109,32 +134,13 @@ static void map_awXKey(Display *display, const awXKeymap *awxk) {
 void aw_install_xkeys(Display *display) {
     int i;
 
-    awxkeymap_string_2_key_hash = GBS_create_hash(KEYMAX, GB_MIND_CASE);
-    awxkeymap_xkey_2_key_hash   = GBS_create_numhash(KEYMAX);
+    awxkeymap_string_2_key_hash = GBS_create_hash(MAPPED_KEYS, GB_MIND_CASE);
+    awxkeymap_xkey_2_key_hash   = GBS_create_numhash(MAPPED_KEYS);
 
     // auto-generate all key/modifier combinations for keys in awxkeymap_modfree
     for (i=0; ; ++i) {
         if (awxkeymap_modfree[i].xstr_suffix == 0) break;
     }
-
-    const int MODS = 9;         // (2*SHIFT, 2*ALT, 2*META, 2*CTRL, 1 unMODified)
-
-    struct awModDef {
-        int         xmod;
-        const char *xstr_prefix;
-        AW_key_mod  awmod;
-    }
-    moddef[MODS] = {
-        { XK_Shift_L,   "Shift",   AW_KEYMODE_SHIFT },
-        { XK_Shift_R,   "Shift",   AW_KEYMODE_SHIFT },
-        { XK_Meta_L,    "Meta",    AW_KEYMODE_ALT },     // handle Meta as Alt
-        { XK_Meta_R,    "Meta",    AW_KEYMODE_ALT },
-        { XK_Alt_L,     "Alt",     AW_KEYMODE_ALT },
-        { XK_Alt_R,     "Alt",     AW_KEYMODE_ALT },
-        { XK_Control_L, "Control", AW_KEYMODE_CONTROL },
-        { XK_Control_R, "Control", AW_KEYMODE_CONTROL },
-        { 0,            0,         AW_KEYMODE_NONE },
-    };
 
     int modfree = i;
     int gensize = modfree*MODS;
@@ -167,7 +173,7 @@ void aw_install_xkeys(Display *display) {
         map_awXKey(display, awxkeymap+i);
     }
 
-    aw_assert(mappedKeys<KEYMAX);
+    aw_assert(mappedKeys == MAPPED_KEYS);
 }
 
 #if defined(DEBUG)

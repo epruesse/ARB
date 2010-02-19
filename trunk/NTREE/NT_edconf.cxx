@@ -275,54 +275,53 @@ void nt_build_sai_string(GBS_strstruct *topfile, GBS_strstruct *middlefile) {
     /*! collect all Sais, place some SAI in top area, rest in middle */
 
     GBDATA *gb_sai_data = GBT_get_SAI_data(GLOBAL_gb_main);
-    if (!gb_sai_data) return;
+    if (gb_sai_data) {
+        GB_HASH *hash = GBS_create_hash(GB_number_of_subentries(gb_sai_data), GB_IGNORE_CASE);
 
-    GB_HASH *hash = GBS_create_hash(100, GB_IGNORE_CASE);
-    GBDATA  *gb_sai;
+        for (GBDATA *gb_sai = GBT_first_SAI_rel_SAI_data(gb_sai_data); gb_sai; gb_sai = GBT_next_SAI(gb_sai)) {
+            GBDATA *gb_name = GB_search(gb_sai, "name", GB_FIND);
+            if (gb_name) {
+                char *name = GB_read_string(gb_name);
 
-    for (gb_sai = GBT_first_SAI_rel_SAI_data(gb_sai_data); gb_sai; gb_sai = GBT_next_SAI(gb_sai)) {
-        GBDATA *gb_name = GB_search(gb_sai, "name", GB_FIND);
-        if (!gb_name) continue;
+                if (strcmp(name,  "HELIX") == 0  || strcmp(name,  "HELIX_NR") == 0 || strcmp(name,  "ECOLI") == 0) {
+                    GBS_chrcat(topfile, 1);             // Separated by 1
+                    GBS_strcat(topfile, "S");
+                    GBS_strcat(topfile, name);
+                }
+                else {
+                    GBDATA *gb_gn = GB_search(gb_sai, "sai_group", GB_FIND);
+                    char   *gn;
 
-        char *name = GB_read_string(gb_name);
+                    if (gb_gn)  gn = GB_read_string(gb_gn);
+                    else        gn = strdup("SAI's");
 
-        if (strcmp(name,  "HELIX") == 0  || strcmp(name,  "HELIX_NR") == 0 || strcmp(name,  "ECOLI") == 0) {
-            GBS_chrcat(topfile, 1);             // Separated by 1
-            GBS_strcat(topfile, "S");
-            GBS_strcat(topfile, name);
+                    char *cn = new char[strlen(gn) + strlen(name) + 2];
+                    sprintf(cn, "%s%c%s", gn, 1, name);
+                    GBS_write_hash(hash, cn, 1);
+                    delete [] cn;
+                    free(gn);
+                }
+                free(name);
+            }
         }
-        else {
-            GBDATA *gb_gn = GB_search(gb_sai, "sai_group", GB_FIND);
-            char   *gn;
 
-            if (gb_gn)  gn = GB_read_string(gb_gn);
-            else        gn = strdup("SAI's");
+        // open surrounding SAI-group:
+        GBS_chrcat(middlefile, 1);
+        GBS_strcat(middlefile, "GSAI-Maingroup");
 
-            char *cn = new char[strlen(gn) + strlen(name) + 2];
-            sprintf(cn, "%s%c%s", gn, 1, name);
-            GBS_write_hash(hash, cn, 1);
-            delete [] cn;
-            free(gn);
+        struct SAI_string_builder sai_builder = { middlefile, 0 };
+        GBS_hash_do_sorted_loop(hash, nt_build_sai_string_by_hash, GBS_HCF_sortedByKey, &sai_builder);
+        if (sai_builder.last_group_name) {
+            GBS_chrcat(middlefile, 1);              // Separated by 1
+            GBS_chrcat(middlefile, 'E');             // End of old group
         }
-        free(name);
+
+        // close surrounding SAI-group:
+        GBS_chrcat(middlefile, 1);
+        GBS_chrcat(middlefile, 'E');
+
+        GBS_free_hash(hash);
     }
-
-    // open surrounding SAI-group:
-    GBS_chrcat(middlefile, 1);
-    GBS_strcat(middlefile, "GSAI-Maingroup");
-
-    struct SAI_string_builder sai_builder = { middlefile, 0 };
-    GBS_hash_do_sorted_loop(hash, nt_build_sai_string_by_hash, GBS_HCF_sortedByKey, &sai_builder);
-    if (sai_builder.last_group_name) {
-        GBS_chrcat(middlefile, 1);              // Separated by 1
-        GBS_chrcat(middlefile, 'E');             // End of old group
-    }
-
-    // close surrounding SAI-group:
-    GBS_chrcat(middlefile, 1);
-    GBS_chrcat(middlefile, 'E');
-
-    GBS_free_hash(hash);
 }
 
 void nt_build_conf_marked(GB_HASH *used, GBS_strstruct *file) {
@@ -414,7 +413,7 @@ void nt_extract_configuration(AW_window *aww, AW_CL cl_extractType) {
                     break;
                 case CONF_COMBINE: {
                     // store all marked species in hash and unmark them
-                    was_marked = GBS_create_hash(GBT_get_species_hash_size(GLOBAL_gb_main), GB_IGNORE_CASE);
+                    was_marked = GBS_create_hash(GBT_get_species_count(GLOBAL_gb_main), GB_IGNORE_CASE);
                     for (GBDATA *gbd = GBT_first_marked_species(GLOBAL_gb_main); gbd; gbd = GBT_next_marked_species(gbd)) {
                         int marked = GB_read_flag(gbd);
                         if (marked) {
@@ -509,7 +508,7 @@ GB_ERROR NT_create_configuration(AW_window *, GBT_TREE *tree, const char *conf_n
     }
 
     GB_transaction  dummy2(GLOBAL_gb_main); // open close transaction
-    GB_HASH        *used    = GBS_create_hash(GBT_get_species_hash_size(GLOBAL_gb_main), GB_MIND_CASE);
+    GB_HASH        *used    = GBS_create_hash(GBT_get_species_count(GLOBAL_gb_main), GB_MIND_CASE);
     GBS_strstruct  *topfile = GBS_stropen(1000);
     GBS_strstruct  *topmid  = GBS_stropen(10000);
     {

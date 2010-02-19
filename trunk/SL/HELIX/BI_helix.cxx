@@ -123,10 +123,11 @@ const char *BI_helix::initFromData(const char *helix_nr_in, const char *helix_in
     clear_error();
 
     GB_HASH *hash = GBS_create_hash(256, GB_IGNORE_CASE);
-    size_t pos;
-    char c;
-    char ident[256];
-    char *sident;
+    size_t   pos;
+    char     c;
+    char     ident[256];
+    char    *sident;
+    
     struct helix_stack *laststack = 0, *stack;
 
     Size = sizei;

@@ -258,7 +258,7 @@ GB_MAIN_TYPE *gb_make_gb_main_type(const char *path) {
 
     Main = (GB_MAIN_TYPE *)gbm_get_mem(sizeof(*Main), 0);
     if (path) Main->path = strdup((char*)path);
-    Main->key_2_index_hash = GBS_create_hash(20000, GB_MIND_CASE);
+    Main->key_2_index_hash = GBS_create_hash(ALLOWED_KEYS, GB_MIND_CASE);
     Main->compression_mask = -1;        // allow all compressions
     gb_init_cache(Main);
     gb_init_undo_stack(Main);
@@ -721,6 +721,7 @@ long gb_create_key(GB_MAIN_TYPE *Main, const char *s, bool create_gb_key) {
     if (s) {
         Main->keys[index].key = strdup(s);
         GBS_write_hash(Main->key_2_index_hash, s, index);
+        gb_assert(GBS_hash_count_elems(Main->key_2_index_hash) <= ALLOWED_KEYS);
         if (Main->gb_key_data && create_gb_key) {
             gb_load_single_key_data((GBDATA *)Main->data, (GBQUARK)index);
             // Warning: starts a big recursion

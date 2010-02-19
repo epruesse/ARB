@@ -126,11 +126,11 @@ void species_rename_join(AW_window *aww) {
 
             GBDATA *gb_field = GB_entry(gb_species, field);
             if (gb_field) {
-                const char *fv     = GB_read_char_pntr(gb_field);
-                GBDATA     *gb_old = (GBDATA *)GBS_read_hash(hash, fv);
+                const char *field_value = GB_read_char_pntr(gb_field);
+                GBDATA     *gb_old      = (GBDATA *)GBS_read_hash(hash, field_value);
 
                 if (!gb_old) {
-                    GBS_write_hash(hash, fv, (long)gb_species);
+                    GBS_write_hash(hash, field_value, (long)gb_species);
                 }
                 else {
                     error = nt_species_join(gb_old, gb_species, 0, sep, sep2);

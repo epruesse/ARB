@@ -591,7 +591,7 @@ void GEN_add_pseudo_species_to_hash(GBDATA *gb_pseudo, GB_HASH *pseudo_hash) {
 }
 
 GB_HASH *GEN_create_pseudo_species_hash(GBDATA *gb_main, int additionalSize) {
-    GB_HASH *pseudo_hash = GBS_create_hash(GBT_get_species_hash_size(gb_main)+2*additionalSize, GB_IGNORE_CASE);
+    GB_HASH *pseudo_hash = GBS_create_hash(GBT_get_species_count(gb_main)+additionalSize, GB_IGNORE_CASE);
     GBDATA  *gb_pseudo;
 
     for (gb_pseudo = GEN_first_pseudo_species(gb_main);
