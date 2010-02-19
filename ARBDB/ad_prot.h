@@ -52,8 +52,8 @@ GB_ERROR GB_install_pid(int mode);
 const char *GB_date_string(void);
 
 /* adhash.cxx */
-GB_HASH *GBS_create_hash(long user_size, GB_CASE case_sens);
-GB_HASH *GBS_create_dynaval_hash(long user_size, GB_CASE case_sens, void (*freefun)(long));
+GB_HASH *GBS_create_hash(long estimated_elements, GB_CASE case_sens);
+GB_HASH *GBS_create_dynaval_hash(long estimated_elements, GB_CASE case_sens, void (*freefun)(long));
 void GBS_dynaval_free(long val);
 void GBS_optimize_hash(GB_HASH *hs);
 char *GBS_hashtab_2_string(GB_HASH *hash);
@@ -69,12 +69,12 @@ void GBS_clear_hash_statistic_summary(const char *id);
 void GBS_print_hash_statistic_summary(const char *id);
 void GBS_calc_hash_statistic(GB_HASH *hs, const char *id, int print);
 void GBS_hash_do_loop(GB_HASH *hs, gb_hash_loop_type func, void *client_data);
-long GBS_hash_count_elems(GB_HASH *hs);
-long GBS_hash_count_value(GB_HASH *hs, long val);
+size_t GBS_hash_count_elems(GB_HASH *hs);
+size_t GBS_hash_count_value(GB_HASH *hs, long val);
 const char *GBS_hash_next_element_that(GB_HASH *hs, const char *last_key, bool (*condition)(const char *key, long val, void *cd), void *cd);
 void GBS_hash_do_sorted_loop(GB_HASH *hs, gb_hash_loop_type func, gbs_hash_compare_function sorter, void *client_data);
 int GBS_HCF_sortedByKey(const char *k0, long v0, const char *k1, long v1);
-GB_NUMHASH *GBS_create_numhash(long user_size);
+GB_NUMHASH *GBS_create_numhash(size_t estimated_elements);
 long GBS_read_numhash(GB_NUMHASH *hs, long key);
 long GBS_write_numhash(GB_NUMHASH *hs, long key, long val);
 long GBS_numhash_count_elems(GB_NUMHASH *hs);
@@ -85,10 +85,9 @@ void GBS_free_numhash(GB_NUMHASH *hs);
 char *GB_set_cache_size(GBDATA *gbd, long size);
 
 /* adhashtools.cxx */
-long GBT_get_species_hash_size(GBDATA *gb_main);
 void GBT_add_item_to_hash(GBDATA *gb_item, GB_HASH *item_hash);
-GB_HASH *GBT_create_species_hash(GBDATA *gb_main);
 GB_HASH *GBT_create_species_hash_sized(GBDATA *gb_main, long species_count);
+GB_HASH *GBT_create_species_hash(GBDATA *gb_main);
 GB_HASH *GBT_create_marked_species_hash(GBDATA *gb_main);
 GB_HASH *GBT_create_SAI_hash(GBDATA *gb_main);
 GB_HASH *GBT_create_organism_hash(GBDATA *gb_main);

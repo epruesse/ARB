@@ -68,6 +68,8 @@ struct gb_cache_struct {
 // --------------------------------------------------------------------------------
 //      root structure (one for each database)
 
+#define ALLOWED_KEYS 15000
+
 struct GB_MAIN_TYPE {
     int transaction;
     int aborted_transaction;

@@ -207,7 +207,7 @@ static char *getExistingSAIgroups() {
     // scan SAIs for existing groups.
     // return a string of ';'-separated group names (or NULL)
 
-    GB_HASH       *groups = GBS_create_hash(30, GB_MIND_CASE);
+    GB_HASH       *groups = GBS_create_hash(GBT_get_SAI_count(GLOBAL_gb_main), GB_MIND_CASE);
     GBS_strstruct *out    = GBS_stropen(1000);
     int            count  = 0;
     GB_transaction ta(GLOBAL_gb_main);

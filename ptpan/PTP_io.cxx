@@ -1180,18 +1180,19 @@ BOOL LoadIndexHeader(struct PTPanGlobal *pg)
   pg->pg_SpeciesBinTree = BuildBinTree(&pg->pg_Species);
 
   /* build a species name hash to mark species in groups */
-  pg->pg_SpeciesNameHash = GBS_create_hash(SPECIESNAMEHASHSIZE, GB_IGNORE_CASE);    // TODO: JB: check if GB_IGNORE_CASE
-                                                                                    //           is right (was 0)
+  pg->pg_SpeciesNameHash = GBS_create_hash(SPECIESNAMEHASHSIZE, GB_IGNORE_CASE); // FIXME: don't use hardcoded limit, use number of species
   ps = (struct PTPanSpecies *) pg->pg_Species.lh_Head;
   while(ps->ps_Node.ln_Succ)
   {
-    GBS_write_hash(pg->pg_SpeciesNameHash, ps->ps_Name, ps->ps_Num + 1);
-    ps = (struct PTPanSpecies *) ps->ps_Node.ln_Succ;
+      GBS_write_hash(pg->pg_SpeciesNameHash, ps->ps_Name, ps->ps_Num + 1);
+      ps = (struct PTPanSpecies *) ps->ps_Node.ln_Succ;
   }
 
+  arb_assert(GBS_hash_count_elems(pg->pg_SpeciesNameHash) <= SPECIESNAMEHASHSIZE); 
+
   printf("\n\nDatabase contains %ld valid species (%ld ignored).\n"
-    "%lld bytes alignment data (%lld bases).\n",
-    pg->pg_NumSpecies, ignorecount, pg->pg_TotalSeqSize, pg->pg_TotalRawSize);
+         "%lld bytes alignment data (%lld bases).\n",
+         pg->pg_NumSpecies, ignorecount, pg->pg_TotalSeqSize, pg->pg_TotalRawSize);
   printf("Compressed sequence data (with dots and hyphens): %llu byte (%llu kb, %llu mb)\n",
     pg->pg_TotalSeqCompressedSize, pg->pg_TotalSeqCompressedSize >> 10, pg->pg_TotalSeqCompressedSize >> 20);
 

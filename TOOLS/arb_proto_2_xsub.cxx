@@ -626,7 +626,7 @@ public:
         : prefix(prefix_)
         , name(name_)
     {
-        generated_code               = GBS_stropen(100000);
+        generated_code    = GBS_stropen(100000);
         functions_to_skip = GBS_create_hash(1000, GB_MIND_CASE);
     }
     ~Package() {

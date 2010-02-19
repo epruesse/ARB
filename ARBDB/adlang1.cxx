@@ -1675,7 +1675,7 @@ static struct cached_taxonomy *get_cached_taxonomy(GBDATA *gb_main, const char *
                 int              group_counter = 0;
 
                 ct->tree_name = strdup(tree_name);
-                ct->taxonomy  = GBS_create_dynaval_hash((int)(nodes*2), GB_IGNORE_CASE, GBS_dynaval_free);
+                ct->taxonomy  = GBS_create_dynaval_hash(int(nodes), GB_IGNORE_CASE, GBS_dynaval_free);
                 ct->groups    = 0; // counted below
 
                 build_taxonomy_rek(tree, ct->taxonomy, "<root>", &group_counter);
@@ -2678,5 +2678,5 @@ static struct GBL_command_table gbl_command_table[] = {
 
 void gbl_install_standard_commands(GBDATA *gb_main)
 {
-    gb_install_command_table(gb_main, gbl_command_table);
+    gb_install_command_table(gb_main, gbl_command_table, sizeof(gbl_command_table)/sizeof(gbl_command_table[0]));
 }

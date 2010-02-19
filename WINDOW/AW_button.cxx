@@ -1925,7 +1925,7 @@ GB_HASH *AW_window::selection_list_to_hash(AW_selection_list *sel_list, bool cas
         counter ++;
     }
 
-    GB_HASH *hash = GBS_create_hash(2*counter, case_sens ? GB_MIND_CASE : GB_IGNORE_CASE);
+    GB_HASH *hash = GBS_create_hash(counter, case_sens ? GB_MIND_CASE : GB_IGNORE_CASE);
 
     for (list_table = sel_list->list_table; list_table; list_table = list_table->next) {
         GBS_write_hash(hash, list_table->char_value, (long)list_table->displayed);

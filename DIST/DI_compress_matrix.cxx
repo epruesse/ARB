@@ -45,7 +45,7 @@ int DI_MATRIX::search_group(GBT_TREE *node, GB_HASH *hash, long *groupcnt, char 
 }
 
 char *DI_MATRIX::compress(GBT_TREE *tree) {
-    GB_HASH *hash = GBS_create_hash(nentries*2, GB_IGNORE_CASE);
+    GB_HASH *hash = GBS_create_hash(nentries, GB_IGNORE_CASE);
     int i, j;           // create a hash table of species
     char *error = 0;
     for (i=0; i<nentries; i++) {

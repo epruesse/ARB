@@ -904,25 +904,23 @@ static void ptnd_build_tprobes(PT_pdc *pdc, int group_count) {
         pt_assert(used_idx == group_count);
     }
 
-    unsigned long outer_hash_size;
-    int           partsize = 0; // no partitions
+    int           partsize = 0;                     // no partitions
+    unsigned long estimated_no_of_tprobes;
     {
         const unsigned long max_allowed_hash_size = 1000000; // approx.
         const unsigned long max_allowed_tprobes   = (unsigned long)(max_allowed_hash_size*0.66); // results in 66% fill rate for hash (which is much!)
 
         // tests found about 5-8% tprobes (in relation to datasize) -> we use 10% here
-        unsigned long estimated_no_of_tprobes = (unsigned long)((datasize-pdc->probelen+1)*0.10+0.5);
+        estimated_no_of_tprobes = (unsigned long)((datasize-pdc->probelen+1)*0.10+0.5);
 
         while (estimated_no_of_tprobes > max_allowed_tprobes) {
             partsize++;
             estimated_no_of_tprobes /= 4; // 4 different bases
         }
 
-        outer_hash_size = (unsigned long)(estimated_no_of_tprobes*1.5);
-
 #if defined(DEBUG)
-        printf("marked=%i datasize=%lu partsize=%i estimated_no_of_tprobes=%lu outer_hash_size=%lu\n",
-               group_count, datasize, partsize, estimated_no_of_tprobes, outer_hash_size);
+        printf("marked=%i datasize=%lu partsize=%i estimated_no_of_tprobes=%lu\n",
+               group_count, datasize, partsize, estimated_no_of_tprobes);
 #endif // DEBUG
     }
 
@@ -930,7 +928,7 @@ static void ptnd_build_tprobes(PT_pdc *pdc, int group_count) {
     GBS_clear_hash_statistic_summary("outer");
 #endif // DEBUG
 
-    const int hash_multiply = 4; // hash fill ratio is 1/hash_multiply
+    const int hash_multiply = 2; // resulting hash fill ratio is 1/(2*hash_multiply)
 
     char partstring[256];
     PT_init_base_string_counter(partstring, PT_A, partsize);
@@ -943,7 +941,7 @@ static void ptnd_build_tprobes(PT_pdc *pdc, int group_count) {
         fputs("'\n", stdout);
 #endif // DEBUG
 
-        GB_HASH *hash_outer = GBS_create_hash(outer_hash_size, GB_MIND_CASE); // count in how many groups/sequences the tprobe occurs (key = tprobe, value = counter)
+        GB_HASH *hash_outer = GBS_create_hash(estimated_no_of_tprobes, GB_MIND_CASE); // count in how many groups/sequences the tprobe occurs (key = tprobe, value = counter)
 
 #if defined(DEBUG)
         GBS_clear_hash_statistic_summary("inner");

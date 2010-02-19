@@ -177,18 +177,21 @@ void AW_window::at(const char *at_id) {
     AW_xfig *xfig = (AW_xfig *)xfig_data;
     AW_xfig_pos *pos;
 
-    pos = (AW_xfig_pos*)GBS_read_hash(xfig->hash, at_id);
+    pos = (AW_xfig_pos*)GBS_read_hash(xfig->at_pos_hash, at_id);
 
     if (!pos) {
-        sprintf(to_position, "X:%s", at_id); pos = (AW_xfig_pos*)GBS_read_hash(xfig->hash, to_position);
+        sprintf(to_position, "X:%s", at_id);
+        pos = (AW_xfig_pos*)GBS_read_hash(xfig->at_pos_hash, to_position);
         if (pos) _at->attach_any = _at->attach_lx = true;
     }
     if (!pos) {
-        sprintf(to_position, "Y:%s", at_id); pos = (AW_xfig_pos*)GBS_read_hash(xfig->hash, to_position);
+        sprintf(to_position, "Y:%s", at_id);
+        pos = (AW_xfig_pos*)GBS_read_hash(xfig->at_pos_hash, to_position);
         if (pos) _at->attach_any = _at->attach_ly = true;
     }
     if (!pos) {
-        sprintf(to_position, "XY:%s", at_id);      pos = (AW_xfig_pos*)GBS_read_hash(xfig->hash, to_position);
+        sprintf(to_position, "XY:%s", at_id);
+        pos = (AW_xfig_pos*)GBS_read_hash(xfig->at_pos_hash, to_position);
         if (pos) _at->attach_any = _at->attach_lx = _at->attach_ly = true;
     }
     if (!pos) {
@@ -199,18 +202,22 @@ void AW_window::at(const char *at_id) {
     at((pos->x - xfig->minx), (pos->y - xfig->miny - this->get_root()->font_height - 9));
     _at->correct_for_at_center = pos->center;
 
-    sprintf(to_position, "to:%s", at_id); pos = (AW_xfig_pos*)GBS_read_hash(xfig->hash, to_position);
+    sprintf(to_position, "to:%s", at_id);
+    pos = (AW_xfig_pos*)GBS_read_hash(xfig->at_pos_hash, to_position);
 
     if (!pos) {
-        sprintf(to_position, "to:X:%s", at_id);    pos = (AW_xfig_pos*)GBS_read_hash(xfig->hash, to_position);
+        sprintf(to_position, "to:X:%s", at_id);
+        pos = (AW_xfig_pos*)GBS_read_hash(xfig->at_pos_hash, to_position);
         if (pos) _at->attach_any = _at->attach_x = true;
     }
     if (!pos) {
-        sprintf(to_position, "to:Y:%s", at_id);    pos = (AW_xfig_pos*)GBS_read_hash(xfig->hash, to_position);
+        sprintf(to_position, "to:Y:%s", at_id);
+        pos = (AW_xfig_pos*)GBS_read_hash(xfig->at_pos_hash, to_position);
         if (pos) _at->attach_any = _at->attach_y = true;
     }
     if (!pos) {
-        sprintf(to_position, "to:XY:%s", at_id); pos = (AW_xfig_pos*)GBS_read_hash(xfig->hash, to_position);
+        sprintf(to_position, "to:XY:%s", at_id);
+        pos = (AW_xfig_pos*)GBS_read_hash(xfig->at_pos_hash, to_position);
         if (pos) _at->attach_any = _at->attach_x = _at->attach_y = true;
     }
 
@@ -271,11 +278,11 @@ bool AW_window::at_ifdef(const  char *at_id) {
     aw_assert(printed<100);
 #endif // DEBUG
 
-    if (GBS_read_hash(xfig->hash, buffer+3)) return true; // "tag"
-    if (GBS_read_hash(xfig->hash, buffer+1)) return true; // "Y:tag"
-    if (GBS_read_hash(xfig->hash, buffer)) return true; // "XY:tag"
+    if (GBS_read_hash(xfig->at_pos_hash, buffer+3)) return true; // "tag"
+    if (GBS_read_hash(xfig->at_pos_hash, buffer+1)) return true; // "Y:tag"
+    if (GBS_read_hash(xfig->at_pos_hash, buffer)) return true; // "XY:tag"
     buffer[1] = 'X';
-    if (GBS_read_hash(xfig->hash, buffer+1)) return true; // "X:tag"
+    if (GBS_read_hash(xfig->at_pos_hash, buffer+1)) return true; // "X:tag"
 
     return false;
 }

@@ -49,25 +49,24 @@ struct GB_NUMHASH {
 // prime numbers
 
 #define KNOWN_PRIMES 279
-static long sorted_primes[KNOWN_PRIMES] = {
-    3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 47, 53, 59, 67, 71, 79, 89, 97, 103, 109, 127, 137, 149, 157, 167, 179, 191, 211,
-    223, 239, 257, 271, 293, 311, 331, 349, 373, 397, 419, 443, 467, 499, 541, 571, 607, 641, 677, 719, 757, 797, 839, 887, 937,
-    991, 1049, 1109, 1171, 1237, 1303, 1373, 1447, 1531, 1613, 1699, 1789, 1889, 1993, 2099, 2213, 2333, 2459, 2591, 2729, 2879,
-    3037, 3203, 3373, 3557, 3761, 3967, 4177, 4397, 4637, 4889, 5147, 5419, 5711, 6029, 6353, 6689, 7043, 7417, 7817, 8231, 8669,
-    9127, 9613, 10133, 10667, 11239, 11831, 12457, 13121, 13829, 14557, 15329, 16139, 16993, 17891, 18839, 19841, 20887, 21991, 23159,
-    24379, 25667, 27031, 28463, 29983, 31567, 33247, 35023, 36871, 38821, 40867, 43019, 45289, 47681, 50207, 52859, 55661, 58601,
-    61687, 64937, 68371, 71971, 75767, 79757, 83969, 88397, 93053, 97961, 103123, 108553, 114269, 120293, 126631, 133303, 140321,
-    147709, 155501, 163697, 172313, 181387, 190979, 201031, 211619, 222773, 234499, 246889, 259907, 273601, 288007, 303187, 319147,
-    335953, 353641, 372263, 391861, 412487, 434201, 457057, 481123, 506449, 533111, 561173, 590713, 621821, 654553, 689021, 725293,
-    763471, 803659, 845969, 890501, 937373, 986717, 1038671, 1093357, 1150909, 1211489, 1275269, 1342403, 1413077, 1487459, 1565747,
-    1648181, 1734937, 1826257, 1922383, 2023577, 2130101, 2242213, 2360243, 2484473, 2615243, 2752889, 2897789, 3050321, 3210871,
-    3379877, 3557773, 3745051, 3942209, 4149703, 4368113, 4598063, 4840103, 5094853, 5363011, 5645279, 5942399, 6255157, 6584377,
-    6930929, 7295719, 7679713, 8083919, 8509433, 8957309, 9428759, 9925021, 10447391, 10997279, 11576087, 12185359, 12826699, 13501819,
-    14212447, 14960471, 15747869, 16576727, 17449207, 18367597, 19334317, 20351927, 21423107, 22550639, 23737523, 24986867, 26301967,
-    27686291, 29143493, 30677363, 32291971, 33991597, 35780639, 37663841, 39646153, 41732809, 43929307, 46241389, 48675167, 51237019,
-    53933713, 56772371, 59760391, 62905681, 66216511, 69701591, 73370107, 77231711, 81296543, 85575313, 90079313, 94820347, 99810899
+static size_t sorted_primes[KNOWN_PRIMES] = {
+    3, 5, 7, 11, 13, 17, 19, 23, 29, 31, 37, 41, 47, 53, 59, 67, 71, 79, 89, 97, 103, 109, 127, 137, 149, 157, 167, 179, 191, 211, 
+    223, 239, 257, 271, 293, 311, 331, 349, 373, 397, 419, 443, 467, 499, 541, 571, 607, 641, 677, 719, 757, 797, 839, 887, 937, 
+    991, 1049, 1109, 1171, 1237, 1303, 1373, 1447, 1531, 1613, 1699, 1789, 1889, 1993, 2099, 2213, 2333, 2459, 2591, 2729, 2879, 
+    3037, 3203, 3373, 3557, 3761, 3967, 4177, 4397, 4637, 4889, 5147, 5419, 5711, 6029, 6353, 6689, 7043, 7417, 7817, 8231, 8669, 
+    9127, 9613, 10133, 10667, 11239, 11831, 12457, 13121, 13829, 14557, 15329, 16139, 16993, 17891, 18839, 19841, 20887, 21991, 23159, 
+    24379, 25667, 27031, 28463, 29983, 31567, 33247, 35023, 36871, 38821, 40867, 43019, 45289, 47681, 50207, 52859, 55661, 58601, 
+    61687, 64937, 68371, 71971, 75767, 79757, 83969, 88397, 93053, 97961, 103123, 108553, 114269, 120293, 126631, 133303, 140321, 
+    147709, 155501, 163697, 172313, 181387, 190979, 201031, 211619, 222773, 234499, 246889, 259907, 273601, 288007, 303187, 319147, 
+    335953, 353641, 372263, 391861, 412487, 434201, 457057, 481123, 506449, 533111, 561173, 590713, 621821, 654553, 689021, 725293, 
+    763471, 803659, 845969, 890501, 937373, 986717, 1038671, 1093357, 1150909, 1211489, 1275269, 1342403, 1413077, 1487459, 1565747, 
+    1648181, 1734937, 1826257, 1922383, 2023577, 2130101, 2242213, 2360243, 2484473, 2615243, 2752889, 2897789, 3050321, 3210871, 
+    3379877, 3557773, 3745051, 3942209, 4149703, 4368113, 4598063, 4840103, 5094853, 5363011, 5645279, 5942399, 6255157, 6584377, 
+    6930929, 7295719, 7679713, 8083919, 8509433, 8957309, 9428759, 9925021, 10447391, 10997279, 11576087, 12185359, 12826699, 13501819, 
+    14212447, 14960471, 15747869, 16576727, 17449207, 18367597, 19334317, 20351927, 21423107, 22550639, 23737523, 24986867, 26301967, 
+    27686291, 29143493, 30677363, 32291971, 33991597, 35780639, 37663841, 39646153, 41732809, 43929307, 46241389, 48675167, 51237019, 
+    53933713, 56772371, 59760391, 62905681, 66216511, 69701591, 73370107, 77231711, 81296543, 85575313, 90079313, 94820347, 99810899 
 };
-
 
 // define CALC_PRIMES only to expand the above table
 #if defined(DEBUG)
@@ -76,8 +75,8 @@ static long sorted_primes[KNOWN_PRIMES] = {
 
 #ifdef CALC_PRIMES
 
-#define CALC_PRIMES_UP_TO 100000000L
-#define PRIME_UNDENSITY   20L   // the higher, the less primes are stored
+#define CALC_PRIMES_UP_TO 100000000U
+#define PRIME_UNDENSITY   20U   // the higher, the less primes are stored
 
 #warning "please don't define CALC_PRIMES permanently"
 
@@ -118,13 +117,14 @@ static void set_bit_value(unsigned char *eratosthenes, long num, int val) {
 
 static void calculate_primes_upto() {
     {
-        long           bits_needed  = CALC_PRIMES_UP_TO/2+1; // only need bits for odd numbers
-        long           bytes_needed = (bits_needed/8)+1;
-        unsigned char *eratosthenes = GB_calloc(bytes_needed, 1); // bit = 1 means "is not a prime"
-        long           prime_count  = 0;
-        long           num;
+        size_t         bits_needed  = CALC_PRIMES_UP_TO/2+1; // only need bits for odd numbers
+        size_t         bytes_needed = (bits_needed/8)+1;
+        unsigned char *eratosthenes = (unsigned char *)GB_calloc(bytes_needed, 1); // bit = 1 means "is not a prime"
+        size_t         prime_count  = 0;
+        size_t         num;
 
-        printf("eratosthenes' size = %li\n", bytes_needed);
+        printf("eratosthenes' size = %zu\n", bytes_needed);
+        GBK_dump_backtrace(stderr, "calculate_primes_upto");
 
         if (!eratosthenes) {
             GB_internal_error("out of memory");
@@ -133,7 +133,7 @@ static void calculate_primes_upto() {
 
         for (num = 3; num <= CALC_PRIMES_UP_TO; num += 2) {
             if (bit_value(eratosthenes, num) == 0) { // is a prime number
-                long num2;
+                size_t num2;
                 prime_count++;
                 for (num2 = num*2; num2 <= CALC_PRIMES_UP_TO; num2 += num) { // with all multiples
                     if ((num2&1) == 1) { // skip even numbers
@@ -146,14 +146,14 @@ static void calculate_primes_upto() {
 
         // thin out prime numbers (we don't need all of them)
         {
-            long prime_count2 = 0;
-            long last_prime   = -1000;
-            int  index;
-            int  printed      = 0;
+            size_t prime_count2 = 0;
+            size_t last_prime   = 1;
+            size_t index;
+            size_t printed      = 0;
 
             for (num = 3; num <= CALC_PRIMES_UP_TO; num += 2) {
                 if (bit_value(eratosthenes, num) == 0) { // is a prime number
-                    long diff = num-last_prime;
+                    size_t diff = num-last_prime;
                     if ((diff*PRIME_UNDENSITY)<num) {
                         set_bit_value(eratosthenes, num, 1); // delete unneeded prime
                     }
@@ -164,9 +164,9 @@ static void calculate_primes_upto() {
                 }
             }
 
-            printf("\nUsing %li prime numbers up to %li:\n\n", prime_count2, CALC_PRIMES_UP_TO);
-            printf("#define KNOWN_PRIMES %li\n", prime_count2);
-            printf("static long sorted_primes[KNOWN_PRIMES] = {\n    ");
+            printf("\nUsing %zu prime numbers up to %zu:\n\n", prime_count2, CALC_PRIMES_UP_TO);
+            printf("#define KNOWN_PRIMES %zu\n", prime_count2);
+            printf("static size_t sorted_primes[KNOWN_PRIMES] = {\n    ");
             printed = 4;
 
             index = 0;
@@ -176,11 +176,12 @@ static void calculate_primes_upto() {
                         printf("\n    ");
                         printed = 4;
                     }
+
                     if (num>INT_MAX) {
-                        printed += printf("%liL, ", num);
+                        printed += printf("%zuU, ", num);
                     }
                     else {
-                        printed += printf("%li, ", num);
+                        printed += printf("%zu, ", num);
                     }
                 }
             }
@@ -195,12 +196,12 @@ static void calculate_primes_upto() {
 
 #endif // CALC_PRIMES
 
-long gbs_get_a_prime(long above_or_equal_this) {
+size_t gbs_get_a_prime(size_t above_or_equal_this) {
     // return a prime number above_or_equal_this
     // NOTE: it is not necessarily the next prime number, because we don't calculate all prime numbers!
 
 #if defined(CALC_PRIMES)
-    calculate_primes_upto(above_or_equal_this);
+    calculate_primes_upto();
 #endif // CALC_PRIMES
 
     if (sorted_primes[KNOWN_PRIMES-1] >= above_or_equal_this) {
@@ -238,7 +239,7 @@ long gbs_get_a_prime(long above_or_equal_this) {
         return sorted_primes[l];
     }
 
-    fprintf(stderr, "Warning: gbs_get_a_prime failed for value %li (performance bleed)\n", above_or_equal_this);
+    fprintf(stderr, "Warning: gbs_get_a_prime failed for value %zu (performance bleed)\n", above_or_equal_this);
     gb_assert(0); // add more primes to sorted_primes[]
 
     return above_or_equal_this;
@@ -247,14 +248,21 @@ long gbs_get_a_prime(long above_or_equal_this) {
 // -----------------------------------------------
 //      Some Hash Procedures for [string,long]
 
-GB_HASH *GBS_create_hash(long user_size, GB_CASE case_sens) {
-    /* Create a hash of size size, this hash is using linked list to avoid collisions,
-     *  ignore_case == 0 -> 'a != A'
-     *  ignore_case != 0 -> 'a == A'
-     */
+inline size_t hash_size(size_t estimated_elements) {
+    size_t min_hash_size = 2*estimated_elements;    // -> fill rate ~ 50% -> collisions unlikely
+    size_t next_prime    = gbs_get_a_prime(min_hash_size); // use next prime number
 
+    return next_prime;
+}
+
+
+GB_HASH *GBS_create_hash(long estimated_elements, GB_CASE case_sens) {
+    /*! Create a hash
+     * @param estimated_elements estimated number of elements added to hash (if you add more elements, hash will still work, but get slow)
+     * Uses linked lists to avoid collisions,
+     */
     GB_HASH *hs;
-    long     size = gbs_get_a_prime(user_size);     // use next prime number for hash size
+    long     size = hash_size(estimated_elements);
 
     hs            = (GB_HASH*)GB_calloc(sizeof(*hs), 1);
     hs->size      = size;
@@ -266,10 +274,9 @@ GB_HASH *GBS_create_hash(long user_size, GB_CASE case_sens) {
     return hs;
 }
 
-GB_HASH *GBS_create_dynaval_hash(long user_size, GB_CASE case_sens, void (*freefun)(long)) {
-    // like GBS_create_hash, but values stored in hash get freed using 'freefun'
-
-    GB_HASH *hs = GBS_create_hash(user_size, case_sens);
+GB_HASH *GBS_create_dynaval_hash(long estimated_elements, GB_CASE case_sens, void (*freefun)(long)) {
+    //! like GBS_create_hash, but values stored in hash get freed using 'freefun' when hash gets destroyed
+    GB_HASH *hs = GBS_create_hash(estimated_elements, case_sens);
     hs->freefun = freefun;
     return hs;
 }
@@ -287,7 +294,7 @@ static void dump_access(const char *title, GB_HASH *hs, double mean_access) {
 #endif // DEBUG
 
 void GBS_optimize_hash(GB_HASH *hs) {
-    if (hs->nelem > hs->size) {                     // hash is overfilled (even full is bad)
+    if (hs->nelem > hs->size) {                     // hash is overfilled (Note: even 50% fillrate is slow)
         size_t new_size = gbs_get_a_prime(hs->nelem*3);
 
 #if defined(DEBUG)
@@ -534,26 +541,22 @@ double GBS_hash_mean_access_costs(GB_HASH *hs) {
 }
 #endif // DEBUG
 
-void GBS_erase_hash(GB_HASH *hs)
-{
-    long i;
-    long e2;
-    struct gbs_hash_entry *e, *ee;
-
-    e2 = hs->size;
+void GBS_erase_hash(GB_HASH *hs) {
+    size_t hsize = hs->size;
 
 #if defined(DUMP_HASH_ENTRIES)
-    for (i = 0; i < e2; i++) {
+    for (size_t i = 0; i < hsize; i++) {
         printf("hash[%li] =", i);
-        for (e = hs->entries[i]; e; e = e->next) {
+        for (gbs_hash_entry *e = hs->entries[i]; e; e = e->next) {
             printf(" '%s'", e->key);
         }
         printf("\n");
     }
 #endif // DUMP_HASH_ENTRIES
 
+    // check hash size
+    if (hsize >= 10) { // ignore small hashes
 #if defined(DEBUG)
-    if (e2 >= 30) { // ignore small hashes
         double mean_access = GBS_hash_mean_access_costs(hs);
         if (mean_access > 1.5) { // every 2nd access is a collision - increase hash size?
             dump_access("hash-size-warning", hs, mean_access);
@@ -561,15 +564,22 @@ void GBS_erase_hash(GB_HASH *hs)
             gb_assert(mean_access<2.0); // hash with 50% speed or less
 #endif // DEVEL_RALF
         }
-    }
+#else
+        if (hs->nelem >= (2*hsize)) {
+            GB_warningf("Performance leak - very slow hash detected (elems=%li, size=%li)\n", hs->nelem, hs->size);
+            GBK_dump_backtrace(stderr, "detected performance leak");
+        }
 #endif // DEBUG
+    }
 
-    for (i = 0; i < e2; i++) {
-        for (e = hs->entries[i]; e; e = ee) {
+    for (size_t i = 0; i < hsize; i++) {
+        for (gbs_hash_entry *e = hs->entries[i]; e; ) {
             free(e->key);
             if (hs->freefun) hs->freefun(e->val);
-            ee              = e->next;
+
+            gbs_hash_entry *next = e->next;
             gbm_free_mem((char *)e, sizeof(struct gbs_hash_entry), GBM_HASH_INDEX);
+            e = next;
         }
         hs->entries[i] = 0;
     }
@@ -614,7 +624,7 @@ static gbs_hash_statistic_summary *get_stat_summary(const char *id) {
     if (!found) {
         gbs_hash_statistic_summary *stat = (gbs_hash_statistic_summary*)GB_calloc(1, sizeof(*stat));
         init_hash_statistic_summary(stat);
-        found                            = (long)stat;
+        found = (long)stat;
         GBS_write_hash(stat_hash, id, found);
     }
 
@@ -641,7 +651,7 @@ static void addto_hash_statistic_summary(gbs_hash_statistic_summary *stat, long 
 
     stat->sum_size         += size;
     stat->sum_nelem        += nelem;
-    stat->sum_collisions       += collisions;
+    stat->sum_collisions   += collisions;
     stat->sum_fill_ratio   += fill_ratio;
     stat->sum_hash_quality += hash_quality;
 }
@@ -662,13 +672,12 @@ void GBS_print_hash_statistic_summary(const char *id) {
 }
 
 void GBS_calc_hash_statistic(GB_HASH *hs, const char *id, int print) {
-    size_t i;
     long   queues     = 0;
     long   collisions;
     double fill_ratio = (double)hs->nelem/hs->size;
     double hash_quality;
 
-    for (i = 0; i < hs->size; i++) {
+    for (size_t i = 0; i < hs->size; i++) {
         if (hs->entries[i]) queues++;
     }
     collisions = hs->nelem - queues;
@@ -685,49 +694,51 @@ void GBS_calc_hash_statistic(GB_HASH *hs, const char *id, int print) {
     addto_hash_statistic_summary(get_stat_summary(id), hs->size, hs->nelem, collisions, fill_ratio, hash_quality);
 }
 
-void GBS_hash_do_loop(GB_HASH *hs, gb_hash_loop_type func, void *client_data)
-{
-    long i, e2;
-    struct gbs_hash_entry *e, *next;
-    e2 = hs->size;
-    for (i=0; i<e2; i++) {
-        for (e = hs->entries[i]; e; e = next) {
-            next = e->next;
+void GBS_hash_do_loop(GB_HASH *hs, gb_hash_loop_type func, void *client_data) {
+    size_t hsize = hs->size;
+    for (size_t i=0; i<hsize; i++) {
+        for (gbs_hash_entry *e = hs->entries[i]; e; ) {
+            gbs_hash_entry *next = e->next;
             if (e->val) {
                 e->val = func(e->key, e->val, client_data);
                 if (!e->val) delete_from_list(hs, i, e);
             }
+            e = next;
         }
     }
 }
 
-long GBS_hash_count_elems(GB_HASH *hs) {
-    long e2    = hs->size;
-    long count = 0;
-    long i;
-    struct gbs_hash_entry *e;
+#if defined(DEVEL_RALF)
+#warning rename GBS_hash_count_elems -> GBS_hash_elements
+#endif // DEVEL_RALF
 
-    for (i = 0; i<e2; ++i) {
+size_t GBS_hash_count_elems(GB_HASH *hs) {
+#if defined(DEBUG)
+    size_t count = 0;
+    size_t hsize    = hs->size;
+    for (size_t i = 0; i<hsize; ++i) {
+        struct gbs_hash_entry *e;
         for (e=hs->entries[i]; e; e=e->next) {
-            if (e->val) {
-                ++count;
-            }
+            if (e->val) ++count;
         }
     }
+
+    gb_assert(count == hs->nelem);
+#else    
+    size_t count = hs->nelem;
+#endif // DEBUG
 
     return count;
 }
 
-long GBS_hash_count_value(GB_HASH *hs, long val) {
-    long e2    = hs->size;
-    long count = 0;
-    long i;
-    struct gbs_hash_entry *e;
+size_t GBS_hash_count_value(GB_HASH *hs, long val) {
+    size_t hsize    = hs->size;
+    size_t count = 0;
 
     gb_assert(val != 0); // counting zero values makes no sense (cause these are not stored in the hash)
 
-    for (i = 0; i<e2; ++i) {
-        for (e=hs->entries[i]; e; e=e->next) {
+    for (size_t i = 0; i<hsize; ++i) {
+        for (gbs_hash_entry *e=hs->entries[i]; e; e=e->next) {
             if (e->val == val) {
                 ++count;
             }
@@ -743,9 +754,9 @@ const char *GBS_hash_next_element_that(GB_HASH *hs, const char *last_key, bool (
      * Returns NULL if no (more) elements match the 'condition'.
      */
 
-    size_t                 size = hs->size;
-    size_t                 i    = 0;
-    struct gbs_hash_entry *e    = 0;
+    size_t          size = hs->size;
+    size_t          i    = 0;
+    gbs_hash_entry *e    = 0;
 
     if (last_key) {
         e = find_hash_entry(hs, last_key, &i);
@@ -776,22 +787,25 @@ static int wrap_hashCompare4gb_sort(const void *v0, const void *v1, void *sorter
 }
 
 void GBS_hash_do_sorted_loop(GB_HASH *hs, gb_hash_loop_type func, gbs_hash_compare_function sorter, void *client_data) {
-    long   i, j, e2;
-    struct gbs_hash_entry *e, **mtab;
-    e2 = hs->size;
-    mtab = (struct gbs_hash_entry **)GB_calloc(sizeof(void *), hs->nelem);
-    for (j = 0, i = 0; i < e2; i++) {
-        for (e = hs->entries[i]; e; e = e->next) {
+    size_t           hsize = hs->size;
+    gbs_hash_entry **mtab  = (gbs_hash_entry **)GB_calloc(sizeof(void *), hs->nelem);
+    
+    size_t j = 0;
+    for (size_t i = 0; i < hsize; i++) {
+        for (gbs_hash_entry *e = hs->entries[i]; e; e = e->next) {
             if (e->val) {
                 mtab[j++] = e;
             }
         }
     }
-    GB_sort((void **) mtab, 0, j, wrap_hashCompare4gb_sort, (void*)sorter);
-    for (i = 0; i < j; i++) {
+
+    GB_sort((void**)mtab, 0, j, wrap_hashCompare4gb_sort, (void*)sorter);
+    
+    for (size_t i = 0; i < j; i++) {
         long new_val = func(mtab[i]->key, mtab[i]->val, client_data);
         if (new_val != mtab[i]->val) GBS_write_hash(hs, mtab[i]->key, new_val);
     }
+    
     free(mtab);
 }
 
@@ -812,8 +826,8 @@ inline long gbs_numhash_index(long key, long size) {
 }
 
 
-GB_NUMHASH *GBS_create_numhash(long user_size) {
-    long        size = gbs_get_a_prime(user_size);  // use next prime number for hash size
+GB_NUMHASH *GBS_create_numhash(size_t estimated_elements) {
+    size_t      size = hash_size(estimated_elements);
     GB_NUMHASH *hs   = (GB_NUMHASH *)GB_calloc(sizeof(*hs), 1);
 
     hs->size    = size;
@@ -823,57 +837,52 @@ GB_NUMHASH *GBS_create_numhash(long user_size) {
     return hs;
 }
 
-
 long GBS_read_numhash(GB_NUMHASH *hs, long key) {
-    numhash_entry *e;
-    long           i = gbs_numhash_index(key, hs->size);
-
-    for (e = hs->entries[i]; e; e = e->next) {
+    size_t i = gbs_numhash_index(key, hs->size);
+    for (numhash_entry *e = hs->entries[i]; e; e = e->next) {
         if (e->key==key) return e->val;
     }
     return 0;
 }
 
 long GBS_write_numhash(GB_NUMHASH *hs, long key, long val) {
-    numhash_entry *e;
-    long           i2;
-    long           i = gbs_numhash_index(key, hs->size);
+    size_t i      = gbs_numhash_index(key, hs->size);
+    long   oldval = 0;
 
-    if (!val) {
-        numhash_entry *oe;
-        oe = 0;
-        for (e = hs->entries[i]; e; e = e->next) {
+    if (val == 0) { // erase
+        numhash_entry **nextPtr = &(hs->entries[i]);
+
+        for (numhash_entry *e = hs->entries[i]; e; e = e->next) {
             if (e->key == key) {
-                if (oe) {
-                    oe->next = e->next;
-                }
-                else {
-                    hs->entries[i] = e->next;
-                }
+                *nextPtr = e->next;                  // unlink entry
                 gbm_free_mem((char *) e, sizeof(*e), GBM_HASH_INDEX);
                 hs->nelem--;
                 return 0;
             }
-            oe = e;
-        }
-        printf("free %lx not found\n", (long)e);
-        return 0;
-    }
-    for (e=hs->entries[i]; e; e=e->next)
-    {
-        if (e->key==key) {
-            i2 = e->val;
-            e->val = val;
-            return i2;
+            nextPtr = &(e->next);
         }
     }
-    e = (numhash_entry *)gbm_get_mem(sizeof(*e), GBM_HASH_INDEX);
-    e->next = hs->entries[i];
-    e->key = key;
-    e->val = val;
-    hs->nelem++;
-    hs->entries[i] = e;
-    return 0;
+    else {
+        for (numhash_entry *e=hs->entries[i]; e; e=e->next) {
+            if (e->key==key) {
+                oldval = e->val; gb_assert(oldval);
+                e->val = val;
+                break;
+            }
+        }
+
+        if (!oldval) {
+            numhash_entry *e = (numhash_entry *)gbm_get_mem(sizeof(*e), GBM_HASH_INDEX);
+
+            e->next = hs->entries[i];
+            e->key  = key;
+            e->val  = val;
+
+            hs->nelem++;
+            hs->entries[i] = e;
+        }
+    }
+    return oldval;
 }
 
 long GBS_numhash_count_elems(GB_NUMHASH *hs) {
@@ -881,13 +890,14 @@ long GBS_numhash_count_elems(GB_NUMHASH *hs) {
 }
 
 void GBS_erase_numhash(GB_NUMHASH *hs) {
-    long e2 = hs->size;
+    size_t hsize = hs->size;
 
-    for (long i=0; i<e2; i++) {
-        numhash_entry *ee;
-        for (numhash_entry *e = hs->entries[i]; e; e=ee) {
-            ee = e->next;
+    for (size_t i=0; i<hsize; i++) {
+        for (numhash_entry *e = hs->entries[i]; e; ) {
+            numhash_entry *next = e->next;
+            
             gbm_free_mem((char *)e, sizeof(*e), GBM_HASH_INDEX);
+            e = next;
         }
     }
 

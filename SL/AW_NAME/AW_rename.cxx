@@ -479,7 +479,7 @@ GB_ERROR AWTC_pars_names(GBDATA *gb_main, int update_status, bool *isWarningPtr)
         err = GBT_begin_rename_session(gb_main, 1);
         if (!err) {
             char     *ali_name = GBT_get_default_alignment(gb_main);
-            GB_HASH  *hash     = GBS_create_hash(GBT_get_species_hash_size(gb_main), GB_IGNORE_CASE);
+            GB_HASH  *hash     = GBS_create_hash(GBT_get_species_count(gb_main), GB_IGNORE_CASE);
             GB_ERROR  warning  = 0;
             long      spcount  = 0;
             long      count    = 0;
@@ -610,7 +610,7 @@ void AWTC_create_rename_awars(AW_root *root, AW_default db1) {
 }
 
 UniqueNameDetector::UniqueNameDetector(GBDATA *gb_item_data, int additionalEntries) {
-    hash = GBS_create_hash(2*(GB_number_of_subentries(gb_item_data)+additionalEntries), GB_IGNORE_CASE);
+    hash = GBS_create_hash(GB_number_of_subentries(gb_item_data)+additionalEntries, GB_IGNORE_CASE);
 
     for (GBDATA *gb_item = GB_child(gb_item_data); gb_item; gb_item = GB_nextChild(gb_item)) {
         GBDATA *gb_name = GB_entry(gb_item, "name");

@@ -28,6 +28,10 @@ struct gbt_rename_struct {
     int all_flag;
 } gbtrst;
 
+#if defined(DEVEL_RALF)
+#warning change all_flag into estimated number of renames ( == 0 shall mean all)
+#endif // DEVEL_RALF
+
 GB_ERROR GBT_begin_rename_session(GBDATA *gb_main, int all_flag) {
     /* Starts a rename session (to rename one or many species)
      * all_flag == 1 -> rename all species in DB
@@ -40,15 +44,13 @@ GB_ERROR GBT_begin_rename_session(GBDATA *gb_main, int all_flag) {
         gbtrst.gb_species_data = GB_search(gb_main, "species_data", GB_CREATE_CONTAINER);
 
         if (!all_flag) { // this is meant to be used for single or few species
-            int hash_size = 256;
+            int hash_size = 128;
 
             gbtrst.renamed_hash     = GBS_create_dynaval_hash(hash_size, GB_MIND_CASE, GBS_dynaval_free);
             gbtrst.old_species_hash = 0;
         }
         else {
-            int hash_size = GBT_get_species_hash_size(gb_main);
-
-            gbtrst.renamed_hash     = GBS_create_dynaval_hash(hash_size, GB_MIND_CASE, GBS_dynaval_free);
+            gbtrst.renamed_hash     = GBS_create_dynaval_hash(GBT_get_species_count(gb_main), GB_MIND_CASE, GBS_dynaval_free);
             gbtrst.old_species_hash = GBT_create_species_hash(gb_main);
         }
         gbtrst.all_flag = all_flag;

@@ -540,7 +540,7 @@ static void nt_add(AW_window *, AWT_canvas *ntw, AddWhat what, bool quick, int t
                 if (name && strlen(name)) {
                     GBDATA *gb_species = GBT_find_species(GLOBAL_gb_main, name);
                     if (gb_species) {
-                        hash = GBS_create_hash(10, GB_MIND_CASE);
+                        hash = GBS_create_hash(1, GB_MIND_CASE);
                         GBS_write_hash(hash, name, (long)gb_species);
                     }
                     else error = GBS_global_string("Selected Species (%s) not found", name);
@@ -791,7 +791,7 @@ static void nt_add_partial(AW_window * /* aww */, AWT_canvas *ntw) {
     {
         list<PartialSequence> partial;
         {
-            GB_HASH *partial_hash = GBS_create_hash(GBT_get_species_hash_size(GLOBAL_gb_main), GB_MIND_CASE);
+            GB_HASH *partial_hash = GBS_create_hash(GBT_get_species_count(GLOBAL_gb_main), GB_MIND_CASE);
             int      marked_found = 0;
 
             for (GBDATA *gb_marked = GBT_first_marked_species(GLOBAL_gb_main);

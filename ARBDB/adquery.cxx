@@ -716,14 +716,16 @@ GBDATA *GB_next_marked(GBDATA *gbd, const char *keystring)
 // ----------------------------
 //      Command interpreter
 
-void gb_install_command_table(GBDATA *gb_main, struct GBL_command_table *table)
+void gb_install_command_table(GBDATA *gb_main, struct GBL_command_table *table, size_t table_size)
 {
     GB_MAIN_TYPE *Main = GB_MAIN(gb_main);
-    if (!Main->command_hash) Main->command_hash = GBS_create_hash(1024, GB_IGNORE_CASE);
+    if (!Main->command_hash) Main->command_hash = GBS_create_hash(table_size, GB_IGNORE_CASE);
 
     for (; table->command_identifier; table++) {
         GBS_write_hash(Main->command_hash, table->command_identifier, (long)table->function);
     }
+
+    gb_assert((GBS_hash_count_elems(Main->command_hash)+1) == table_size);
 }
 
 char *gbs_search_second_x(const char *str)

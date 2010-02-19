@@ -626,7 +626,7 @@ GB_ERROR GBT_link_tree_using_species_hash(GBT_TREE *tree, bool show_status, GB_H
     }
 
     ltd.species_hash = species_hash;
-    ltd.seen_species = leafs ? GBS_create_hash(2*leafs, GB_IGNORE_CASE) : 0;
+    ltd.seen_species = leafs ? GBS_create_hash(leafs, GB_IGNORE_CASE) : 0;
     ltd.zombies      = 0;
     ltd.duplicates   = 0;
     ltd.counter      = 0;

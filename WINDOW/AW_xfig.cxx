@@ -173,7 +173,8 @@ AW_xfig::AW_xfig(const char *filename, int font_width, int font_height)
             }
 
             if (!error) {
-                hash = GBS_create_hash(100, GB_MIND_CASE);
+                at_pos_hash = GBS_create_hash(100, GB_MIND_CASE);
+
                 maxx = maxy = 0;
                 minx = miny = INT_MAX;
 
@@ -360,15 +361,18 @@ AW_xfig::AW_xfig(const char *filename, int font_width, int font_height)
 
                             if (*p=='$') {      // text starts with a '$'
                                 // place a button
-                                if (!strcmp(p, "$$")) {
+                                if (strcmp(p, "$$") == 0) {
                                     this->centerx = x;
                                     this->centery = y;
                                 }
                                 else {
                                     struct AW_xfig_pos *xpos = new AW_xfig_pos;
+
                                     xpos->center = align;
-                                    xpos->x = x; xpos->y = y;
-                                    GBS_write_hash(hash, p+1, (long)xpos);
+                                    xpos->x      = x;
+                                    xpos->y      = y;
+
+                                    GBS_write_hash(at_pos_hash, p+1, (long)xpos);
                                 }
                             }
                             else {
@@ -438,9 +442,9 @@ AW_xfig::~AW_xfig()
 {
     int i;
 
-    if (hash) {
-        GBS_hash_do_loop(hash, aw_xfig_hash_free_loop, NULL);
-        GBS_free_hash(hash);
+    if (at_pos_hash) {
+        GBS_hash_do_loop(at_pos_hash, aw_xfig_hash_free_loop, NULL);
+        GBS_free_hash(at_pos_hash);
     }
     struct AW_xfig_text *xtext;
     while (text) {

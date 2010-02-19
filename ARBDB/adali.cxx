@@ -66,7 +66,7 @@ GB_ERROR GBT_check_data(GBDATA *Main, const char *alignment_name) {
         // if all alignments are checked -> use species_name_hash to detect duplicated species and species w/o data
         GBDATA *gb_species;
         long    duplicates = 0;
-        species_name_hash  = GBS_create_hash(GBT_get_species_hash_size(Main), GB_IGNORE_CASE);
+        species_name_hash  = GBS_create_hash(GBT_get_species_count(Main), GB_IGNORE_CASE);
 
         if (!error) {
             for (gb_species = GBT_first_species_rel_species_data(gb_sd);
