@@ -1297,7 +1297,10 @@ perl_clean:
 # ----------------------------------------
 
 wc:
-	wc `find . -type f \( -name '*.[ch]' -o -name '*.[ch]xx' \) -print`
+	wc `find . -type f \( -name '*.[ch]' -o -name '*.[ch][xp][xp]' \) -print`
+
+cloc: 
+	cloc-1.08.pl --no3 --quiet --progress-rate=0 --read-lang-def=$(ARBHOME)/SOURCE_TOOLS/arb.cloc.def .
 
 # ---------------------------------------- check ressources
 
