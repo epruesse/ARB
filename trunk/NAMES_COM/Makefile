@@ -26,7 +26,7 @@ server.a: $(MAIN_SOURCE) $(PRIVATE_SERVER_OBJECTS:.o=.c) $(PUBLIC_SOURCES) $(AIS
 	@$(MAKE) -r -f AISC/Makefile
 
 depends:
-	@rm .depends
+	@rm -f .depends
 	@$(MAKE) -r -f AISC/Makefile pregenerate
 
 clean:
