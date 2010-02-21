@@ -19,9 +19,9 @@
 #include <cmath>
 #include <algorithm>
 
-AWT_dna_table awt_dna_table;
+DNA_Table dna_table;
 
-AWT_dna_table::AWT_dna_table() {
+DNA_Table::DNA_Table() {
     int i;
     for (i = 0; i < 256; i++) {
         switch (toupper(i)) {
@@ -52,9 +52,11 @@ AWT_dna_table::AWT_dna_table() {
 
 void ST_base_vector::setBase(const ST_base_vector& inv_frequencies, char base) {
     base = toupper(base);
+    
     memset((char *) &b[0], 0, sizeof(b));
-    const double k = 1.0 / ST_MAX_BASE;
-    AWT_dna_base ub = awt_dna_table.char_to_enum(base);
+    const double k  = 1.0 / ST_MAX_BASE;
+    DNA_Base     ub = dna_table.char_to_enum(base);
+
     if (ub != ST_UNKNOWN) {
         b[ub] = 1.0;
     }
@@ -390,7 +392,7 @@ void ST_ML::create_frequencies() {
 
             static struct {
                 unsigned char c;
-                AWT_dna_base  b;
+                DNA_Base      b;
             } toCount[] = {
                 { 'A', ST_A }, { 'a', ST_A },
                 { 'C', ST_C }, { 'c', ST_C },
@@ -727,8 +729,8 @@ bool ST_ML::update_ml_likelihood(char *result[4], int& latest_update, const char
             if (!node) return false;
         }
 
-        AWT_dna_base adb[4];
-        int i;
+        DNA_Base adb[4];
+        int      i;
 
         if (!result[0]) {                           // allocate Array-elements for result
             for (i = 0; i < 4; i++) {
@@ -737,7 +739,7 @@ bool ST_ML::update_ml_likelihood(char *result[4], int& latest_update, const char
         }
 
         for (i = 0; i < 4; i++) {
-            adb[i] = awt_dna_table.char_to_enum("ACGU"[i]);
+            adb[i] = dna_table.char_to_enum("ACGU"[i]);
         }
 
         for (size_t seq_start = 0; seq_start < alignment_len; seq_start += GET_ML_VECTORS_BUG_WORKAROUND_INCREMENT) {
@@ -836,8 +838,8 @@ ST_ML_Color *ST_ML::get_color_string(const char *species_name, AP_tree *node, si
         }
 
         {
-            AWT_dna_base b = awt_dna_table.char_to_enum(*source); // convert seq-character to enum AWT_dna_base
-            *outs          = 0;
+            DNA_Base b = dna_table.char_to_enum(*source); // convert seq-character to enum DNA_Base
+            *outs      = 0;
 
             if (b != ST_UNKNOWN) {
                 val = max / (0.0001 + vec->b[b]);   // calc ratio of max/real base-char
