@@ -15,14 +15,14 @@
 #include <AP_sequence.hxx>
 #endif
 
-extern class AWT_dna_table {
+extern class DNA_Table {
     char char_to_enum_table[256];
 public:
-    AWT_dna_base char_to_enum(char i) {
-        return (AWT_dna_base)char_to_enum_table[(unsigned char)i];
+    DNA_Base char_to_enum(char i) {
+        return (DNA_Base)char_to_enum_table[(unsigned char)i];
     }
-    AWT_dna_table();
-} awt_dna_table;
+    DNA_Table();
+} dna_table;
 
 const size_t ST_MAX_SEQ_PART = 256;                 // should be greater than the editor width (otherwise extrem performance penalties)
 const int    ST_BUCKET_SIZE  = 16;                  // at minimum ST_BUCKET_SIZE characters are calculated per call

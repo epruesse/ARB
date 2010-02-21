@@ -35,7 +35,7 @@ typedef unsigned char ST_ML_Color;
 typedef float ST_FLOAT;
 // typedef double ST_FLOAT; // careful, using double has quite an impact on the memory footprint
 
-enum AWT_dna_base {
+enum DNA_Base {
     ST_A,
     ST_C,
     ST_G,

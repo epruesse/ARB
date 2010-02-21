@@ -125,7 +125,7 @@ static void st_ml_add_sequence_part_to_stat(ST_ML *st_ml, ColumnStat */* awt_csp
                     v = vec->b[b];
                     if (v > max) max = v;
                 }
-                AWT_dna_base base = awt_dna_table.char_to_enum(source_sequence[pos]);
+                DNA_Base base = dna_table.char_to_enum(source_sequence[pos]);
                 if (base != ST_UNKNOWN && base != ST_GAP) { // don't count gaps
                     double val         = max / (0.0001 + vec->b[base]);
                     double log_val     = log(val);
