@@ -66,12 +66,6 @@ Fortran 95
     extension F95
     extension f95
     3rd_gen_scale 1.13
-HTML
-    filter remove_html_comments
-    filter call_regexp_common HTML
-    extension htm
-    extension html
-    3rd_gen_scale 1.90
 Haskell
     filter remove_haskell_comments >filename<
     extension hs
@@ -176,10 +170,6 @@ AISC
     extension pa
     extension aisc
     3rd_gen_scale 0.77
-ARB-Help
-    filter remove_matches ^\s*#
-    extension hlp
-    3rd_gen_scale 1.00
 GDE-Menu
     filter remove_matches ^\s*#
     extension menu

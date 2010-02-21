@@ -1296,11 +1296,23 @@ perl_clean:
 
 # ----------------------------------------
 
-wc:
-	wc `find . -type f \( -name '*.[ch]' -o -name '*.[ch][xp][xp]' \) -print`
+CLOC=cloc-1.08.pl
+CLOCFLAGS=--no3 --quiet --progress-rate=0
+CLOCARB=--exclude-dir=GDE .
+CLOCEXT=GDE
+CLOCCODE=--read-lang-def=$(ARBHOME)/SOURCE_TOOLS/arb.cloc.code.def
+CLOCREST=--read-lang-def=$(ARBHOME)/SOURCE_TOOLS/arb.cloc.rest.def
+CLOCFILT=tail --lines=+4
 
-cloc: 
-	cloc-1.08.pl --no3 --quiet --progress-rate=0 --read-lang-def=$(ARBHOME)/SOURCE_TOOLS/arb.cloc.def .
+cloc:
+	@echo 'Arb code:'
+	@$(CLOC) $(CLOCFLAGS) $(CLOCCODE) $(CLOCARB) | $(CLOCFILT)
+	@echo 'Arb rest:'
+	@$(CLOC) $(CLOCFLAGS) $(CLOCREST) $(CLOCARB) | $(CLOCFILT)
+	@echo 'External code:'
+	@$(CLOC) $(CLOCFLAGS) $(CLOCCODE) $(CLOCEXT) | $(CLOCFILT)
+	@echo 'External rest:'
+	@$(CLOC) $(CLOCFLAGS) $(CLOCREST) $(CLOCEXT) | $(CLOCFILT)
 
 # ---------------------------------------- check ressources
 
