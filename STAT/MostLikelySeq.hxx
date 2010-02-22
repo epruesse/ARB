@@ -24,9 +24,12 @@ public:
     DNA_Table();
 } dna_table;
 
-const size_t ST_MAX_SEQ_PART = 256;                 // should be greater than the editor width (otherwise extrem performance penalties)
-const int    ST_BUCKET_SIZE  = 16;                  // at minimum ST_BUCKET_SIZE characters are calculated per call
-const int    LD_BUCKET_SIZE  = 4;                   // log dualis of ST_BUCKET_SIZE
+const size_t ST_MAX_SEQ_PART = 256;                 /* should be greater than the editor width (otherwise extrem performance penalties)
+                                                     * (Please note: this value has as well a small influence on the calculated results)
+                                                     */
+
+const int ST_BUCKET_SIZE = 16;                      // at minimum ST_BUCKET_SIZE characters are calculated per call
+const int LD_BUCKET_SIZE = 4;                       // log dualis of ST_BUCKET_SIZE
 
 class ST_ML;
 

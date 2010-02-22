@@ -43,12 +43,14 @@ char *LikelihoodRanges::generate_string() {
     if (allRange.get_count()) {
         double all_mean_likelihood  = allRange.get_mean_likelihood();
         double all_mean_likelihood2 = allRange.get_mean_likelihood2();
-        double mean_sigma           = sqrt(all_mean_likelihood2 - all_mean_likelihood*all_mean_likelihood);
+
+        double all_variance      = all_mean_likelihood2 - all_mean_likelihood*all_mean_likelihood;
+        double all_std_deviation = sqrt(all_variance);
 
         for (size_t range = 0; range<ranges; ++range) {
             size_t count = likelihood[range].get_count();
             if (count>1) {
-                double variance = mean_sigma / sqrt(count);
+                double variance = all_std_deviation / sqrt(count); // wieso sqrt(count) ? 
                 double diff     = likelihood[range].get_mean_likelihood() - all_mean_likelihood;
                 
                 double val  = 0.7 * diff / variance;
@@ -117,17 +119,11 @@ static void st_ml_add_sequence_part_to_stat(ST_ML *st_ml, ColumnStat */* awt_csp
 
             ST_base_vector *vec = sml->tmp_out + start;
             for (pos = start; pos < end; vec++, pos++) {
-                double max = 0;
-                double v;
-                int    b;
-
-                for (b = ST_A; b < ST_MAX_BASE; b++) {
-                    v = vec->b[b];
-                    if (v > max) max = v;
-                }
                 DNA_Base base = dna_table.char_to_enum(source_sequence[pos]);
                 if (base != ST_UNKNOWN && base != ST_GAP) { // don't count gaps
-                    double val         = max / (0.0001 + vec->b[base]);
+                    ST_FLOAT max = vec->max_frequency();
+
+                    double val         = max / (0.0001 + vec->b[base]); 
                     double log_val     = log(val);
                     double seq_rel_pos = double(pos)/seq_len;
 

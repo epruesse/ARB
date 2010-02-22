@@ -14,7 +14,9 @@
 #ifndef ARBDB_BASE_H
 #include <arbdb_base.h>
 #endif
-
+#ifndef _CPP_ALGORITHM
+#include <algorithm>
+#endif
 
 #define st_assert(cond) arb_assert(cond)
 
@@ -41,31 +43,59 @@ enum DNA_Base {
     ST_G,
     ST_T,
     ST_GAP,
-    ST_MAX_BASE,
+    ST_MAX_BASE,                                    // [can't be changed w/o recoding several parts]
     ST_UNKNOWN = -1
 };
 
-class ST_base_vector {
-public:
+struct ST_base_vector {
     ST_FLOAT b[ST_MAX_BASE];                        // acgt-
     int      ld_lik;
     ST_FLOAT lik;                                   // likelihood = 2^ld_lik * lik * (b[0] + b[1] + b[2] ..)
 
-    void        setBase(const ST_base_vector& frequencies, char base);
-    inline void mult(ST_base_vector *other);
-    void        check_overflow();
-    void        print();
-};
+    void setTo(ST_FLOAT freq) {
+        for (int base = ST_A; base<ST_MAX_BASE; ++base) {
+            b[base] = freq;
+        }
+    }
+    void multiplyWith(ST_FLOAT factor) {
+        for (int base = ST_A; base<ST_MAX_BASE; ++base) {
+            b[base] *= factor;
+        }
+    }
+    void increaseBy(ST_FLOAT inc) {
+        for (int base = ST_A; base<ST_MAX_BASE; ++base) {
+            b[base] += inc;
+        }
+    }
+    void makeInverseOf(const ST_base_vector& other, ST_FLOAT other_min_freq) {
+        for (int base = ST_A; base<ST_MAX_BASE; ++base) {
+            b[base] = other_min_freq / other.b[base];
+        }
+    }
 
+    void setBase(const ST_base_vector& frequencies, char base);
+
+    void check_overflow();
+    void print();
+
+    ST_FLOAT summarize() const { return b[ST_A] + b[ST_C] + b[ST_G] + b[ST_T] + b[ST_GAP]; }
+    ST_FLOAT min_frequency() { return std::min(std::min(std::min(b[ST_A], b[ST_C]), std::min(b[ST_G], b[ST_T])), b[ST_GAP]); }
+    ST_FLOAT max_frequency() { return std::max(std::max(std::max(b[ST_A], b[ST_C]), std::max(b[ST_G], b[ST_T])), b[ST_GAP]); }
+
+    inline ST_base_vector& operator *= (const ST_base_vector& other);
+};
 
 class ST_rate_matrix {
-    ST_FLOAT m[ST_MAX_BASE][ST_MAX_BASE];
+    // symmetric matrix containing only two different values
+
+    ST_FLOAT diag;                                  // value for indices [0][0], [1][1]...
+    ST_FLOAT rest;                                  // other indices
+    
 public:
     void set(double dist, double TT_ratio);
-    inline void mult(const ST_base_vector *in, ST_base_vector *out) const;
+    inline void transform(const ST_base_vector& in, ST_base_vector& out) const;
     void print();
 };
-
 
 class ST_ML {
 
@@ -167,8 +197,6 @@ public:
 
     void set_modified(int *what = 0);
     void set_refresh();                             // set flag for refresh
-
-    void print();
 
     void clear_all();                               // delete all caches
 
