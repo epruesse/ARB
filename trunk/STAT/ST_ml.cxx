@@ -54,73 +54,55 @@ void ST_base_vector::setBase(const ST_base_vector& inv_frequencies, char base) {
     base = toupper(base);
     
     memset((char *) &b[0], 0, sizeof(b));
-    const double k  = 1.0 / ST_MAX_BASE;
     DNA_Base     ub = dna_table.char_to_enum(base);
 
     if (ub != ST_UNKNOWN) {
-        b[ub] = 1.0;
+        b[ub] = 1.0;                                // ill. access ?
     }
     else {
-        b[ST_A] = k;
-        b[ST_C] = k;
-        b[ST_G] = k;
-        b[ST_T] = k;
+        const double k = 1.0 / ST_MAX_BASE;
+        b[ST_A]   = k;
+        b[ST_C]   = k;
+        b[ST_G]   = k;
+        b[ST_T]   = k;
         b[ST_GAP] = k;
     }
-    int i;
-    for (i = 0; i < ST_MAX_BASE; i++) {
+    for (int i = 0; i < ST_MAX_BASE; i++) {
         b[i] *= inv_frequencies.b[i];
     }
-    ld_lik = 0;
+    ld_lik = 0; // ? why not 1.0 ? 
     lik = 1.0;
 }
 
-inline void ST_base_vector::check_overflow()
-{
-    double sum = 0.0;
-    int    i;
+inline void ST_base_vector::check_overflow() {
+    ST_FLOAT sum = summarize();
 
-    for (i = 0; i < ST_MAX_BASE; i++) {
-        sum += b[i];
-    }
     if (sum < .00001) {                             // what happend no data, extremely unlikely
-        for (i = 0; i < ST_MAX_BASE; i++) {
-            b[i] = .25;
-        }
+        setTo(0.25);                                // strange! shouldn't this be 1.0/ST_MAX_BASE ?
         ld_lik -= 5;                                // ???
     }
     else {
         while (sum < 0.25) {
-            sum *= 4;
+            sum    *= 4;
             ld_lik -= 2;
-            for (i = 0; i < ST_MAX_BASE; i++) {
-                b[i] *= 4;
-            }
+            multiplyWith(4);
         }
     }
-    if (ld_lik> 10000) {
-        printf("overflow\n");
-    }
+
+    if (ld_lik> 10000) printf("overflow\n");
 }
 
-inline void ST_base_vector::mult(ST_base_vector *other) {
-    const ST_FLOAT *a = &b[0];
-    const ST_FLOAT *c = &other->b[0];
-
-    ST_FLOAT a0 = a[0] * c[0];
-    ST_FLOAT a1 = a[1] * c[1];
-    ST_FLOAT a2 = a[2] * c[2];
-    ST_FLOAT a3 = a[3] * c[3];
-    ST_FLOAT a4 = a[4] * c[4];
-
-    b[0] = a0;
-    b[1] = a1;
-    b[2] = a2;
-    b[3] = a3;
-    b[4] = a4;
+inline ST_base_vector& ST_base_vector::operator*=(const ST_base_vector& other) {
+    b[ST_A]   *= other.b[ST_A];
+    b[ST_C]   *= other.b[ST_C];
+    b[ST_G]   *= other.b[ST_G];
+    b[ST_T]   *= other.b[ST_T];
+    b[ST_GAP] *= other.b[ST_GAP];
     
-    ld_lik += other->ld_lik;
-    lik    *= other->lik;
+    ld_lik += other.ld_lik; // @@@ correct to use 'plus' here ? why ? 
+    lik    *= other.lik;
+
+    return *this;
 }
 
 void ST_base_vector::print() {
@@ -130,48 +112,45 @@ void ST_base_vector::print() {
     }
 }
 
-
 // -----------------------
 //      ST_rate_matrix
 
 void ST_rate_matrix::set(double dist, double /* TT_ratio */) {
-    int i, j;
-    double k = 1.0 / ST_MAX_BASE;
-    for (i = 0; i < ST_MAX_BASE; i++) {
-        m[i][i] = k + (1.0 - k) * exp(-dist);
-        for (j = 0; j < i; j++) {
-            m[j][i] = m[i][j] = k - k * exp(-dist);
-        }
-    }
+    const double k = 1.0 / ST_MAX_BASE;
+    ST_FLOAT exp_dist = exp(-dist);
+
+    diag = k + (1.0 - k) * exp_dist;
+    rest = k - k * exp_dist;
 }
 
 void ST_rate_matrix::print() {
-    int i, j;
-    for (i = 0; i < ST_MAX_BASE; i++) {
-        for (j = 0; j < ST_MAX_BASE; j++) {
-            printf("%.3G ", m[i][j]);
+    for (int i = 0; i < ST_MAX_BASE; i++) {
+        for (int j = 0; j < ST_MAX_BASE; j++) {
+            printf("%.3G ", i == j ? diag : rest);
         }
         printf("\n");
     }
 }
 
-inline void ST_rate_matrix::mult(const ST_base_vector *in, ST_base_vector *out) const {
-    const ST_FLOAT *pm = &m[0][0];
 
-    for (int i = ST_MAX_BASE - 1; i >= 0; i--) {        // calc revers
-        ST_FLOAT sum0 = pm[4] * in->b[0];
-        ST_FLOAT sum1 = pm[3] * in->b[1];
-        ST_FLOAT sum2 = pm[2] * in->b[2];
-        ST_FLOAT sum3 = pm[1] * in->b[3];
-        ST_FLOAT sum4 = pm[0] * in->b[4];
+inline void ST_rate_matrix::transform(const ST_base_vector& in, ST_base_vector& out) const {
+    // optimized matrix/vector multiplication
+    // original version: http://bugs.arb-home.de/browser/trunk/STAT/ST_ml.cxx?rev=6403#L155
 
-        pm        += ST_MAX_BASE;
-        out->b[i]  = (sum0 + sum1) + sum4 + (sum2 + sum3);
-    }
-    
-    out->ld_lik = in->ld_lik;
-    out->lik    = in->lik;
+    ST_FLOAT sum            = in.summarize();
+    ST_FLOAT diag_rest_diff = diag-rest;
+    ST_FLOAT sum_rest_prod  = sum*rest;
+
+    out.b[ST_A]   = in.b[ST_A]*diag_rest_diff + sum_rest_prod;
+    out.b[ST_C]   = in.b[ST_C]*diag_rest_diff + sum_rest_prod;
+    out.b[ST_G]   = in.b[ST_G]*diag_rest_diff + sum_rest_prod;
+    out.b[ST_T]   = in.b[ST_T]*diag_rest_diff + sum_rest_prod;
+    out.b[ST_GAP] = in.b[ST_GAP]*diag_rest_diff + sum_rest_prod;
+
+    out.ld_lik = in.ld_lik;
+    out.lik    = in.lik;
 }
+
 
 // -----------------------
 //      MostLikelySeq
@@ -291,10 +270,10 @@ void MostLikelySeq::calculate_ancestor(const MostLikelySeq *lefts, double leftl,
         int distl = (int) (st_ml->get_rate_at(pos) * lc);
         int distr = (int) (st_ml->get_rate_at(pos) * rc);
 
-        st_ml->get_matrix_for(distl).mult(lb, dest);
-        st_ml->get_matrix_for(distr).mult(rb, &hbv);
-        
-        dest->mult(&hbv);
+        st_ml->get_matrix_for(distl).transform(*lb, *dest);
+        st_ml->get_matrix_for(distr).transform(*rb, hbv);
+
+        *dest *= hbv;
         dest->check_overflow();
 
         st_assert(dest->lik == 1);
@@ -318,12 +297,16 @@ void MostLikelySeq::calc_out(const MostLikelySeq *next_branch, double dist) {
 
     for (size_t pos = st_ml->get_first_pos(); pos < st_ml->get_last_pos(); pos++) {
         int distl = (int) (st_ml->get_rate_at(pos) * lc);
-        st_ml->get_matrix_for(distl).mult(lefts, out);
+        st_ml->get_matrix_for(distl).transform(*lefts, *out);
 
         // correct frequencies
+#if defined(DEVEL_RALF)
+#warning check if st_ml->get_base_frequency_at(pos).lik is 1 - if so, use vec-mult here
+#endif // DEVEL_RALF
         for (int i = ST_A; i < ST_MAX_BASE; i++) {
             out->b[i] *= st_ml->get_base_frequency_at(pos).b[i];
         }
+
         lefts++;
         out++;
     }
@@ -365,8 +348,6 @@ ST_ML::~ST_ML() {
     }
 }
 
-void ST_ML::print() {
-}
 
 void ST_ML::create_frequencies() {
     //! Translate characters to base frequencies
@@ -376,19 +357,19 @@ void ST_ML::create_frequencies() {
 
     if (!column_stat) {
         for (size_t i = 0; i < alignment_len; i++) {
-            for (int j = ST_A; j < ST_MAX_BASE; j++) {
-                base_frequencies[i].b[j]     = 1.0;
-                inv_base_frequencies[i].b[j] = 1.0;
-            }
-            base_frequencies[i].lik     = 1.0;
+            base_frequencies[i].setTo(1.0);
+            base_frequencies[i].lik = 1.0;
+
+            inv_base_frequencies[i].setTo(1.0);
             inv_base_frequencies[i].lik = 1.0;
         }
     }
     else {
         for (size_t i = 0; i < alignment_len; i++) {
-            for (int j = ST_A; j < ST_MAX_BASE; j++) {
-                base_frequencies[i].b[j] = 0.01;    // minimal frequency
-            }
+            const ST_FLOAT  NO_FREQ   = 0.01;
+            ST_base_vector& base_freq = base_frequencies[i];
+
+            base_freq.setTo(NO_FREQ);
 
             static struct {
                 unsigned char c;
@@ -405,30 +386,30 @@ void ST_ML::create_frequencies() {
 
             for (int j = 0; toCount[j].c; ++j) {
                 const float *freq = column_stat->get_frequencies(toCount[j].c);
-                if (freq) base_frequencies[i].b[toCount[j].b] += freq[i];
+                if (freq) base_freq.b[toCount[j].b] += freq[i];
             }
 
-            double sum = 0.0;
+            ST_FLOAT sum    = base_freq.summarize();
+            ST_FLOAT smooth = sum*0.01;             // smooth by %1 to avoid "crazy values"
+            base_freq.increaseBy(smooth);
 
-            for (int j = ST_A; j < ST_MAX_BASE; j++) sum                      += base_frequencies[i].b[j];
-            for (int j = ST_A; j < ST_MAX_BASE; j++) base_frequencies[i].b[j] += sum * .01; // smoothen frequencies to avoid crazy values
+            sum += smooth*ST_MAX_BASE; // correct sum
 
-            double min = base_frequencies[i].b[ST_A];
-            sum        = 0.0;
-            for (int j = ST_A; j < ST_MAX_BASE; j++) {
-                sum += base_frequencies[i].b[j];
-                if (base_frequencies[i].b[j] < min) min = base_frequencies[i].b[j];
+            ST_FLOAT min = base_freq.min_frequency();
+            
+            // @@@ if min == 0.0 all inv_base_frequencies will be set to inf ? correct ?
+            // maybe min should be better calculated after next if-else-clause ? 
+
+            if (sum>NO_FREQ) {
+                base_freq.multiplyWith(ST_MAX_BASE/sum);
             }
-            for (int j = ST_A; j < ST_MAX_BASE; j++) {
-                if (sum > 0.01) {                   // valid column ??
-                    base_frequencies[i].b[j] *= ST_MAX_BASE / sum;
-                }
-                else {
-                    base_frequencies[i].b[j] = 1.0; // no
-                }
-                inv_base_frequencies[i].b[j] = min / base_frequencies[i].b[j];
+            else {
+                base_freq.setTo(1.0); // columns w/o data
             }
-            base_frequencies[i].lik     = 1.0;
+
+            base_freq.lik = 1.0;
+            
+            inv_base_frequencies[i].makeInverseOf(base_freq, min);
             inv_base_frequencies[i].lik = 1.0;
         }
     }
@@ -750,8 +731,8 @@ bool ST_ML::update_ml_likelihood(char *result[4], int& latest_update, const char
         MostLikelySeq *seq = getOrCreate_seq(node);
 
         for (size_t pos = 0; pos < alignment_len; pos++) {
-            ST_base_vector & vec = seq->tmp_out[pos];
-            double           sum = vec.b[ST_A] + vec.b[ST_C] + vec.b[ST_G] + vec.b[ST_T] + vec.b[ST_GAP];
+            ST_base_vector& vec = seq->tmp_out[pos];
+            double          sum = vec.summarize();
 
             if (sum == 0) {
                 for (i = 0; i < 4; i++) {
@@ -825,24 +806,14 @@ ST_ML_Color *ST_ML::get_color_string(const char *species_name, AP_tree *node, si
     const char     *source = source_sequence + start_ali_pos;
 
     for (pos = start_ali_pos; pos <= end_ali_pos; pos++) {
-        // search max vec for pos:
-
-        double max = 0;
-        double v;
-        {
-            int b;
-            for (b = ST_A; b < ST_MAX_BASE; b++) {
-                v = vec->b[b];
-                if (v > max) max = v;
-            }
-        }
-
         {
             DNA_Base b = dna_table.char_to_enum(*source); // convert seq-character to enum DNA_Base
             *outs      = 0;
 
             if (b != ST_UNKNOWN) {
-                val = max / (0.0001 + vec->b[b]);   // calc ratio of max/real base-char
+                ST_FLOAT max = vec->max_frequency();
+                val          = max / (0.0001 + vec->b[b]); // calc ratio of max/real base-char
+
                 if (val > 1.0) {                    // if real base-char is NOT the max-likely base-char
                     *outs = (int) (log(val));       // => insert color
                 }
@@ -876,5 +847,4 @@ AP_tree *ST_ML::find_node_by_name(const char *species_name) {
     if (hash_2_ap_tree) node = (AP_tree *)GBS_read_hash(hash_2_ap_tree, species_name);
     return node;
 }
-
 

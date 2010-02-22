@@ -17,8 +17,15 @@
 
 #define st_assert(cond) arb_assert(cond)
 
+#if defined(DEVEL_RALF)
+#warning rename SummarizedLikelihoods into RapidStandardDeviation       \
+    (plus rename methods and put calculation of standard deviation inside the class )
+#endif // DEVEL_RALF
+
 class SummarizedLikelihoods {
     //! contains summarized likelihoods for several columns
+
+    // see http://en.wikipedia.org/wiki/Standard_deviation#Rapid_calculation_methods
 
     double likelihood_sum;                          //!< sum of likelihoods
     double likelihood2_sum;                         //!< sum of likelihood-squares
