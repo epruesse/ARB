@@ -25,36 +25,52 @@
 
 LikelihoodRanges::LikelihoodRanges(size_t no_of_ranges) {
     ranges     = no_of_ranges;
-    likelihood = new SummarizedLikelihoods[ranges];
+    likelihood = new VarianceSampler[ranges];
 }
 
-SummarizedLikelihoods LikelihoodRanges::summarize_all_ranges() {
-    SummarizedLikelihoods allRange;
+VarianceSampler LikelihoodRanges::summarize_all_ranges() {
+    VarianceSampler allRange;
     for (size_t range = 0; range<ranges; ++range) {
         allRange.add(likelihood[range]);
     }
     return allRange;
 }
 
-char *LikelihoodRanges::generate_string() {
-    SummarizedLikelihoods  allRange = summarize_all_ranges();
-    char                  *report   = new char[ranges+1];
+char *LikelihoodRanges::generate_string(Sampler& t_values) {
+    VarianceSampler  allRange = summarize_all_ranges();
+    char            *report   = new char[ranges+1];
 
-    if (allRange.get_count()) {
-        double all_mean_likelihood  = allRange.get_mean_likelihood();
-        double all_mean_likelihood2 = allRange.get_mean_likelihood2();
-
-        double all_variance      = all_mean_likelihood2 - all_mean_likelihood*all_mean_likelihood;
+    if (allRange.get_count()>1) {
+        double all_median        = allRange.get_median();
+        double all_variance      = allRange.get_variance(all_median);
         double all_std_deviation = sqrt(all_variance);
 
         for (size_t range = 0; range<ranges; ++range) {
             size_t count = likelihood[range].get_count();
             if (count>1) {
-                double variance = all_std_deviation / sqrt(count); // wieso sqrt(count) ? 
-                double diff     = likelihood[range].get_mean_likelihood() - all_mean_likelihood;
-                
-                double val  = 0.7 * diff / variance;
-                int    ival = int (val + .5) + 5;
+                // perform students-t-test
+            
+                double standard_error = all_std_deviation / sqrt(count); // standard error of mean
+                double median_diff    = likelihood[range].get_median() - all_median;
+                double t_value        = median_diff / standard_error; // predictand of t_value is 0.0
+
+                t_values.add(fabs(t_value)); // sample t_values
+
+                double val = 0.7 * t_value;
+
+                // val outside [-0.5 .. +0.5] -> "t-test fails"
+                //
+                // 0.7 * t_value = approx. t_value / 1.428;
+                // 
+                // 1.428 scheint ein fest-kodiertes quantil zu sein
+                // (bzw. dessen Haelfte, da ja nur der Range [-0.5 .. +0.5] getestet wird)
+                // Das eigentliche Quantil ist also ca. 2.856
+                //
+                // Eigentlich haengt das Quantil von der Stichprobengroesse (hier "count",
+                // d.h. "Anzahl der Basen im aktuellen Range") ab.
+                // (vgl. http://de.wikipedia.org/wiki/T-Verteilung#Ausgew.C3.A4hlte_Quantile_der_t-Verteilung )
+
+                int ival = int (val + .5) + 5;
 
                 if (ival > 9) ival = 9;
                 if (ival < 0) ival = 0;
@@ -152,12 +168,16 @@ static GB_ERROR st_ml_add_quality_string_to_species(GBDATA *gb_main,
             GBDATA *gb_dest     = GB_search(gb_species, dest_field, GB_STRING);
             if (!gb_dest) error = GB_await_error();
             else {
-                char *user_str = info->stat_user.generate_string();
+                Sampler  t_values; // sample t-values here
+                char    *user_str = info->stat_user.generate_string(t_values);
                 {
-                    char *half_str = info->stat_half.generate_string();
-                    char *five_str = info->stat_five.generate_string();
+                    char *half_str = info->stat_half.generate_string(t_values);
+                    char *five_str = info->stat_five.generate_string(t_values);
 
-                    GBS_strstruct *buffer = GBS_stropen(info->overall_range_count()+10);
+                    GBS_strstruct *buffer = GBS_stropen(2*9 + 3*2 + (2+5+info->overall_range_count()));
+
+                    GBS_strcat(buffer, GBS_global_string("%8.3f ", t_values.get_median()));
+                    GBS_strcat(buffer, GBS_global_string("%8.3f ", t_values.get_sum()));
 
                     GBS_chrcat(buffer, 'a'); GBS_strcat(buffer, half_str); GBS_chrcat(buffer, ' ');
                     GBS_chrcat(buffer, 'b'); GBS_strcat(buffer, five_str); GBS_chrcat(buffer, ' ');

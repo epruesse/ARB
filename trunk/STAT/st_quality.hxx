@@ -17,51 +17,58 @@
 
 #define st_assert(cond) arb_assert(cond)
 
-#if defined(DEVEL_RALF)
-#warning rename SummarizedLikelihoods into RapidStandardDeviation       \
-    (plus rename methods and put calculation of standard deviation inside the class )
-#endif // DEVEL_RALF
-
-class SummarizedLikelihoods {
-    //! contains summarized likelihoods for several columns
-
-    // see http://en.wikipedia.org/wiki/Standard_deviation#Rapid_calculation_methods
-
-    double likelihood_sum;                          //!< sum of likelihoods
-    double likelihood2_sum;                         //!< sum of likelihood-squares
-    size_t count;                                   //!< number of likelihoods(=columns) added
-
+class Sampler {
+    double sum;                                     //!< sum of added values
+    size_t count;                                   //!< number of values added
 public:
-    SummarizedLikelihoods()
-        : likelihood_sum(0.0)
-        , likelihood2_sum(0.0)
-        , count(0)
-    {}
+    Sampler() : sum(0.0) , count(0) {}
 
-    void add(double likelihood) {
-        likelihood_sum  += likelihood;
-        likelihood2_sum += likelihood*likelihood;
+    void add(double val) {
+        sum += val;
         count++;
     }
-
-    void add(const SummarizedLikelihoods& other) {
-        likelihood_sum  += other.likelihood_sum;
-        likelihood2_sum += other.likelihood2_sum;
-        count           += other.count;
+    void add(const Sampler& other) {
+        sum   += other.sum;
+        count += other.count;
     }
 
     size_t get_count() const { return count; }
+    double get_sum() const { return sum; }
+    double get_median() const { return sum / count; }
+};
 
-    double get_mean_likelihood() const { return likelihood_sum / count; }
-    double get_mean_likelihood2() const { return likelihood2_sum / count; }
+class VarianceSampler : public Sampler {
+    /*! stores values such that variance can quickly be calculated
+     * for algorithm see
+     * http://de.wikipedia.org/wiki/Standardabweichung#Berechnung_f.C3.BCr_auflaufende_Messwerte or
+     * http://en.wikipedia.org/wiki/Standard_deviation#Rapid_calculation_methods
+     */
+
+    double square_sum;                              //!< sum of squares of added values
+
+public:
+    VarianceSampler() : square_sum(0.0) {}
+
+    void add(double val) {
+        Sampler::add(val);
+        square_sum += val*val;
+    }
+
+    void add(const VarianceSampler& other) {
+        Sampler::add(other);
+        square_sum += other.square_sum;
+    }
+
+    double get_variance(double median) const { return square_sum/get_count() - median*median; }
+    double get_variance() const { return get_variance(get_median()); }
 };
 
 class LikelihoodRanges {
     /*! The alignment is splitted into multiple, similar-sized column ranges.
      * For each range the likelihoods get summarized
      */
-    size_t                 ranges;
-    SummarizedLikelihoods *likelihood;
+    size_t           ranges;
+    VarianceSampler *likelihood;
 
 public:
 
@@ -79,8 +86,8 @@ public:
         add(seq_rel_pos*ranges, probability);
     }
 
-    SummarizedLikelihoods summarize_all_ranges();
-    char *generate_string();
+    VarianceSampler summarize_all_ranges();
+    char *generate_string(Sampler& t_values);
 
     // int is_bad();                                   // 0 == ok, 1 strange, 2 bad, 3 very bad
 };
