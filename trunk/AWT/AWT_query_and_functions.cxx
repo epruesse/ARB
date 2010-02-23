@@ -2568,11 +2568,9 @@ static void query_box_restore_config(AW_window *aww, const char *stored, AW_CL c
 }
 
 
-typedef AW_window *(*window_generator)(AW_root *);
-
-static void query_box_popup_view_window(AW_window *aww, AW_CL cl_create_window, AW_CL) {
-    window_generator  create_window = (window_generator)cl_create_window;
-    AW_window        *aw_viewer     = create_window(aww->get_root());
+static void query_box_popup_view_window(AW_window *aww, AW_CL cl_create_window, AW_CL cl_gb_main) {
+    awt_create_viewer_window_cb  create_window = (awt_create_viewer_window_cb)cl_create_window;
+    AW_window                   *aw_viewer     = create_window(aww->get_root(), cl_gb_main);
     aw_viewer->show();
 }
 
