@@ -177,7 +177,7 @@ AP_weights::AP_weights(const GB_UINT4 *w, size_t wlen, const AP_filter *fil)
     af_assert(wlen == fil->get_length());
 
     size_t i, j;
-    for (j=i=0; i<wlen; ++j) {
+    for (j=i=0; j<wlen; ++j) {
         if (fil->use_position(j)) {
             weights[i++] = w[j];
         }
