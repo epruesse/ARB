@@ -556,7 +556,7 @@ DEST_BIN = bin
 
 AINCLUDES := -I. -I$(ARBHOME)/INCLUDE $(XINCLUDES)
 CPPINCLUDES := -I. -I$(ARBHOME)/INCLUDE $(XINCLUDES)
-MAKEDEPENDFLAGS := -- $(cflags) -- -DARB_OPENGL -I. -Y$(ARBHOME)/INCLUDE
+MAKEDEPENDFLAGS := -- $(cflags) -- -DARB_OPENGL -DUNIT_TESTS=1 -I. -Y$(ARBHOME)/INCLUDE
 
 ifeq ($(VTABLE_INFRONTOF_CLASS),1)
 # Some code in ARB depends on the location of the vtable pointer
@@ -978,7 +978,7 @@ include SOURCE_TOOLS/export2sub
 	@$(MAKE) -C $(@D) -r \
 		"AUTODEPENDS=1" \
 		"MAIN=nothing" \
-		"cflags=noCflags" \
+		"cflags=noCflagsHere_use_MAKEDEPENDFLAGS" \
 		depends;
 	@grep "^# DO NOT DELETE" $(@D)/Makefile >/dev/null
 	@cat $(@D)/Makefile \
