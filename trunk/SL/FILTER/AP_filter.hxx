@@ -81,7 +81,9 @@ public:
     void enable_bootstrap();
     const size_t *get_bootstrap() const { return bootstrap; }
 
-    char *to_string() const;                              // convert to 0/1 string
+    char *to_string() const;                        // convert to 0/1 string
+
+    char *blowup_string(char *filtered_string, char insert) const;
 };
 
 
