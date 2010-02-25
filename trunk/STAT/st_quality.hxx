@@ -111,10 +111,11 @@ public:
     }
 };
 
-GB_ERROR st_ml_check_sequence_quality(GBDATA *gb_main, const char *tree_name,
-                                      const char *alignment_name, ColumnStat *colstat, int bucket_size,
-                                      int marked_only, st_report_enum report, const char *dest_field);
+class WeightedFilter;
 
+GB_ERROR st_ml_check_sequence_quality(GBDATA *gb_main, const char *tree_name,
+                                      const char *alignment_name, ColumnStat *colstat, const WeightedFilter *weighted_filter, int bucket_size,
+                                      int marked_only, st_report_enum report, const char *dest_field); 
 
 #else
 #error st_quality.hxx included twice

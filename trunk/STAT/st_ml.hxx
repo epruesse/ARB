@@ -32,6 +32,8 @@ typedef void (*AW_CB0)(AW_window*);
 class AP_tree;
 class AP_tree_root;
 class GBT_TREE;
+class AP_filter;
+class WeightedFilter;
 
 typedef unsigned char ST_ML_Color;
 
@@ -134,8 +136,7 @@ class ST_ML {
     int             max_rate_matrices;              // number of rate_matrices
     ST_rate_matrix *rate_matrices;                  // one matrix for each distance
 
-    size_t alignment_len;
-    bool   is_initialized;
+    bool is_initialized;
 
     size_t distance_2_matrices_index(int distance) {
         if (distance<0) distance = -distance;       // same matrix for neg/pos distance
@@ -164,12 +165,17 @@ public:
     void create_column_statistic(AW_root *awr, const char *awarname, AW_awar *awar_default_alignment);
     ColumnStat *get_column_statistic() { return column_stat; }
 
-    GB_ERROR init_st_ml(const char *tree_name,
-                        const char *alignment_name,
-                        const char *species_names,  // 0 -> all [marked] species (else species_names is a (char)1 separated list of species)
-                        int         marked_only,
-                        ColumnStat *colstat,
-                        bool        show_status) __ATTR__USERESULT;
+    GB_ERROR init_st_ml(const char           *tree_name,
+                        const char           *alignment_name,
+                        const char           *species_names, // 0 -> all [marked] species (else species_names is a (char)1 separated list of species)
+                        int                   marked_only,
+                        ColumnStat           *colstat,
+                        bool                  show_status,
+                        const WeightedFilter *weighted_filter) __ATTR__USERESULT;
+
+    const AP_filter *get_filter() const;
+    size_t get_filtered_length() const;
+    size_t get_alignment_length() const;
 
     ST_rate_matrix& get_matrix_for(int distance) {
         return rate_matrices[distance_2_matrices_index(distance)];

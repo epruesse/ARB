@@ -14,6 +14,7 @@
 #include <ColumnStat.hxx>
 #include <AP_filter.hxx>
 #include <AP_Tree.hxx>
+#include <gui_aliview.hxx>
 
 #include <cctype>
 #include <cmath>
@@ -352,11 +353,12 @@ ST_ML::~ST_ML() {
 void ST_ML::create_frequencies() {
     //! Translate characters to base frequencies
 
-    base_frequencies     = new ST_base_vector[alignment_len];
-    inv_base_frequencies = new ST_base_vector[alignment_len];
+    size_t filtered_length = get_filtered_length();
+    base_frequencies       = new ST_base_vector[filtered_length];
+    inv_base_frequencies   = new ST_base_vector[filtered_length];
 
     if (!column_stat) {
-        for (size_t i = 0; i < alignment_len; i++) {
+        for (size_t i = 0; i < filtered_length; i++) {
             base_frequencies[i].setTo(1.0);
             base_frequencies[i].lik = 1.0;
 
@@ -365,7 +367,7 @@ void ST_ML::create_frequencies() {
         }
     }
     else {
-        for (size_t i = 0; i < alignment_len; i++) {
+        for (size_t i = 0; i < filtered_length; i++) {
             const ST_FLOAT  NO_FREQ   = 0.01;
             ST_base_vector& base_freq = base_frequencies[i];
 
@@ -468,7 +470,7 @@ inline GB_ERROR tree_size_ok(AP_tree_root *tree_root) {
 
 GB_ERROR ST_ML::init_st_ml(const char *tree_name, const char *alignment_namei,
                            const char *species_names, int marked_only,
-                           ColumnStat *colstat, bool show_status)
+                           ColumnStat *colstat, bool show_status, const WeightedFilter *weighted_filter)
 {
     /*! this is the real constructor, call only once */
 
@@ -488,7 +490,7 @@ GB_ERROR ST_ML::init_st_ml(const char *tree_name, const char *alignment_namei,
         if (column_stat_error) fprintf(stderr, "Column statistic error: %s (using equal rates/tt-ratio for all columns)\n", column_stat_error);
 
         alignment_name = strdup(alignment_namei);
-        long ali_len  = GBT_get_alignment_len(gb_main, alignment_name);
+        long ali_len   = GBT_get_alignment_len(gb_main, alignment_name);
 
         if (ali_len<0) {
             error = GB_await_error();
@@ -497,11 +499,16 @@ GB_ERROR ST_ML::init_st_ml(const char *tree_name, const char *alignment_namei,
             error = "alignment too short";
         }
         else {
-            alignment_len = ali_len;
             {
-                AP_filter      filter(alignment_len); // unfiltered
-                AP_weights     weights(&filter);
-                AliView       *aliview   = new AliView(gb_main, filter, weights, alignment_name);
+                AliView *aliview;
+                if (weighted_filter) {
+                    aliview = weighted_filter->create_aliview(alignment_name);
+                }
+                else {
+                    AP_filter  filter(ali_len);     // unfiltered
+                    AP_weights weights(&filter);
+                    aliview = new AliView(gb_main, filter, weights, alignment_name);
+                }
                 MostLikelySeq *seq_templ = new MostLikelySeq(aliview, this); // @@@ error: never freed! (should be freed when freeing tree_root!)
 
                 tree_root = new AP_tree_root(aliview, AP_tree(0), seq_templ, false);
@@ -553,15 +560,16 @@ GB_ERROR ST_ML::init_st_ml(const char *tree_name, const char *alignment_namei,
 
                 if (show_status) aw_status("calculating frequencies");
 
+                size_t filtered_length = get_filtered_length();
                 if (!column_stat_error) {
                     rates   = column_stat->get_rates();
                     ttratio = column_stat->get_ttratio();
                 }
                 else {
-                    float *alloc_rates   = new float[alignment_len];
-                    float *alloc_ttratio = new float[alignment_len];
+                    float *alloc_rates   = new float[filtered_length];
+                    float *alloc_ttratio = new float[filtered_length];
 
-                    for (size_t i = 0; i < alignment_len; i++) {
+                    for (size_t i = 0; i < filtered_length; i++) {
                         alloc_rates[i]   = 1.0;
                         alloc_ttratio[i] = 2.0;
                     }
@@ -574,10 +582,10 @@ GB_ERROR ST_ML::init_st_ml(const char *tree_name, const char *alignment_namei,
                 latest_modification = GB_read_clock(gb_main); // set update time
                 create_matrices(2.0, 1000);
 
-                MostLikelySeq::tmp_out = new ST_base_vector[alignment_len];  // @@@ error: never freed!
-                is_initialized = true;
+                MostLikelySeq::tmp_out = new ST_base_vector[filtered_length]; // @@@ error: never freed!
+                is_initialized         = true;
             }
-            
+
             if (error) {
                 delete tree_root;               tree_root      = NULL;
                 GBS_free_hash(hash_2_ap_tree);  hash_2_ap_tree = NULL;
@@ -585,7 +593,7 @@ GB_ERROR ST_ML::init_st_ml(const char *tree_name, const char *alignment_namei,
         }
 
         if (error) {
-            free(alignment_name);
+            freenull(alignment_name);
             error = ta.close(error);
         }
 
@@ -713,9 +721,12 @@ bool ST_ML::update_ml_likelihood(char *result[4], int& latest_update, const char
         DNA_Base adb[4];
         int      i;
 
+        size_t ali_len = get_alignment_length();
+        st_assert(get_filtered_length() == ali_len); // assume column stat was calculated w/o filters
+
         if (!result[0]) {                           // allocate Array-elements for result
             for (i = 0; i < 4; i++) {
-                result[i] = (char *) GB_calloc(1, alignment_len + 1); // [0 .. alignment_len[ + zerobyte 
+                result[i] = (char *) GB_calloc(1, ali_len + 1); // [0 .. alignment_len[ + zerobyte
             }
         }
 
@@ -723,14 +734,14 @@ bool ST_ML::update_ml_likelihood(char *result[4], int& latest_update, const char
             adb[i] = dna_table.char_to_enum("ACGU"[i]);
         }
 
-        for (size_t seq_start = 0; seq_start < alignment_len; seq_start += GET_ML_VECTORS_BUG_WORKAROUND_INCREMENT) {
-            size_t seq_end = std::min(alignment_len, seq_start+GET_ML_VECTORS_BUG_WORKAROUND_INCREMENT);
+        for (size_t seq_start = 0; seq_start < ali_len; seq_start += GET_ML_VECTORS_BUG_WORKAROUND_INCREMENT) {
+            size_t seq_end = std::min(ali_len, seq_start+GET_ML_VECTORS_BUG_WORKAROUND_INCREMENT);
             get_ml_vectors(0, node, seq_start, seq_end);
         }
 
         MostLikelySeq *seq = getOrCreate_seq(node);
 
-        for (size_t pos = 0; pos < alignment_len; pos++) {
+        for (size_t pos = 0; pos < ali_len; pos++) {
             ST_base_vector& vec = seq->tmp_out[pos];
             double          sum = vec.summarize();
 
@@ -768,15 +779,18 @@ ST_ML_Color *ST_ML::get_color_string(const char *species_name, AP_tree *node, si
     start_ali_pos &= ~(ST_BUCKET_SIZE - 1);
     end_ali_pos    = (end_ali_pos & ~(ST_BUCKET_SIZE - 1)) + ST_BUCKET_SIZE - 1;
 
-    if (end_ali_pos > alignment_len) end_ali_pos = alignment_len;
+    size_t ali_len = get_alignment_length();
+    if (end_ali_pos > ali_len) {
+        end_ali_pos = ali_len;
+    }
 
     double         val;
     MostLikelySeq *seq = getOrCreate_seq(node);
     size_t         pos;
 
     if (!seq->color_out) {                          // allocate mem for color_out if we not already have it
-        seq->color_out = (ST_ML_Color *) GB_calloc(sizeof(ST_ML_Color), alignment_len);
-        seq->color_out_valid_till = (int *) GB_calloc(sizeof(int), (alignment_len >> LD_BUCKET_SIZE) + ST_BUCKET_SIZE);
+        seq->color_out = (ST_ML_Color *) GB_calloc(sizeof(ST_ML_Color), ali_len);
+        seq->color_out_valid_till = (int *) GB_calloc(sizeof(int), (ali_len >> LD_BUCKET_SIZE) + ST_BUCKET_SIZE);
     }
     // search for first out-dated position:
     for (pos = start_ali_pos; pos <= end_ali_pos; pos += ST_BUCKET_SIZE) {
@@ -847,4 +861,9 @@ AP_tree *ST_ML::find_node_by_name(const char *species_name) {
     if (hash_2_ap_tree) node = (AP_tree *)GBS_read_hash(hash_2_ap_tree, species_name);
     return node;
 }
+
+const AP_filter *ST_ML::get_filter() const { return tree_root->get_filter(); }
+size_t ST_ML::get_filtered_length() const { return get_filter()->get_filtered_length(); }
+size_t ST_ML::get_alignment_length() const { return get_filter()->get_length(); }
+
 

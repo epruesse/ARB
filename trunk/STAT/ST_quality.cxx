@@ -152,14 +152,13 @@ static void st_ml_add_sequence_part_to_stat(ST_ML *st_ml, ColumnStat */* awt_csp
     }
 }
 
-static GB_ERROR st_ml_add_quality_string_to_species(GBDATA *gb_main,
-                                                    const char *alignment_name, const char *species_name, size_t seq_len,
+static GB_ERROR st_ml_add_quality_string_to_species(GBDATA *gb_main, const AP_filter *filter, 
+                                                    const char *alignment_name, const char *species_name, 
                                                     size_t bucket_size, GB_HASH *species_to_info_hash, st_report_enum report,
                                                     const char *dest_field)
 {
-    GB_ERROR error = 0;
-    
-    GBDATA *gb_species     = GBT_find_species(gb_main, species_name);
+    GB_ERROR  error        = 0;
+    GBDATA   *gb_species   = GBT_find_species(gb_main, species_name);
     if (!gb_species) error = GBS_global_string("Unknown species '%s'", species_name);
     else {
         ColumnQualityInfo *info = (ColumnQualityInfo *) GBS_read_hash(species_to_info_hash, species_name);
@@ -176,8 +175,12 @@ static GB_ERROR st_ml_add_quality_string_to_species(GBDATA *gb_main,
 
                     GBS_strstruct *buffer = GBS_stropen(2*9 + 3*2 + (2+5+info->overall_range_count()));
 
+#if 1
                     GBS_strcat(buffer, GBS_global_string("%8.3f ", t_values.get_median()));
                     GBS_strcat(buffer, GBS_global_string("%8.3f ", t_values.get_sum()));
+#else
+#warning t-value summary disabled for test-purposes
+#endif
 
                     GBS_chrcat(buffer, 'a'); GBS_strcat(buffer, half_str); GBS_chrcat(buffer, ' ');
                     GBS_chrcat(buffer, 'b'); GBS_strcat(buffer, five_str); GBS_chrcat(buffer, ' ');
@@ -196,12 +199,25 @@ static GB_ERROR st_ml_add_quality_string_to_species(GBDATA *gb_main,
 
                     if (!gb_report) error = GB_await_error();
                     else {
-                        char *rp = new char[seq_len + 1];
-                        rp[seq_len] = 0;
-                        for (size_t i = 0; i < seq_len; i++) rp[i] = user_str[i / bucket_size];
-                        error = GB_write_string(gb_report, rp);
+                        char *report_str;
+                        {
+                            size_t  filtered_len = filter->get_filtered_length();
+                            report_str   = new char[filtered_len + 1];
+
+                            for (size_t i = 0; i < filtered_len; i++) {
+                                report_str[i] = user_str[i / bucket_size];
+                            }
+                            report_str[filtered_len] = 0;
+                        }
+
+                        {
+                            char *blownUp_report = filter->blowup_string(report_str, ' ');
+                            error                = GB_write_string(gb_report, blownUp_report);
+                            free(blownUp_report);
+                        }
                         if (report == ST_QUALITY_REPORT_TEMP) GB_set_temporary(gb_report);
-                        delete [] rp;
+
+                        delete [] report_str;
                     }
                 }
                 delete [] user_str;
@@ -217,13 +233,15 @@ static void destroy_ColumnQualityInfo(long cl_info) {
     delete info;
 }
 
-GB_ERROR st_ml_check_sequence_quality(GBDATA *gb_main, const char *tree_name,
-                                      const char *alignment_name, ColumnStat *colstat, int bucket_size,
-                                      int marked_only, st_report_enum report, const char *dest_field)
+GB_ERROR st_ml_check_sequence_quality(GBDATA     *gb_main, const char *tree_name,
+                                      const char *alignment_name, ColumnStat *colstat, const WeightedFilter *weighted_filter, int bucket_size,
+                                      int         marked_only, st_report_enum report, const char *dest_field)
 {
-    int      seq_len = GBT_get_alignment_len(gb_main, alignment_name); // @@@ filter -> use filter len
+#if defined(DEVEL_RALF)
+#warning parameter 'alignment_name' can be retrieved from WeightedFilter (as soon as automatic mapping works for filters)    
+#endif // DEVEL_RALF
     ST_ML    st_ml(gb_main);
-    GB_ERROR error   = st_ml.init_st_ml(tree_name, alignment_name, 0, marked_only, colstat, true);
+    GB_ERROR error = st_ml.init_st_ml(tree_name, alignment_name, 0, marked_only, colstat, true, weighted_filter);
 
     if (!error) {
         GB_HASH *species_to_info_hash = GBS_create_dynaval_hash(GBT_get_species_count(gb_main), GB_IGNORE_CASE, destroy_ColumnQualityInfo);
@@ -232,6 +250,7 @@ GB_ERROR st_ml_check_sequence_quality(GBDATA *gb_main, const char *tree_name,
         aw_openstatus("Sequence Quality Check");
         aw_status(0.0);
 
+        int    seq_len       = st_ml.get_filtered_length();
         size_t parts         = (seq_len-1)/ST_MAX_SEQ_PART+1;
         size_t species_count = 0;
         while (snames[species_count]) ++species_count;
@@ -251,8 +270,9 @@ GB_ERROR st_ml_check_sequence_quality(GBDATA *gb_main, const char *tree_name,
         if (!error && !progress.aborted_by_user()) {
             aw_status("Generating Result String");
             progress.restart(species_count);
+            const AP_filter *filter = st_ml.get_filter();
             for (GB_CSTR *pspecies_name = snames; *pspecies_name && !error && !progress.aborted_by_user(); pspecies_name++) {
-                error = st_ml_add_quality_string_to_species(gb_main, alignment_name, *pspecies_name, seq_len, bucket_size, species_to_info_hash, report, dest_field);
+                error = st_ml_add_quality_string_to_species(gb_main, filter, alignment_name, *pspecies_name, bucket_size, species_to_info_hash, report, dest_field);
                 progress.inc();
             }
         }
