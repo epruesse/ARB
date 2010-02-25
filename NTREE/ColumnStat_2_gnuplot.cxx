@@ -515,23 +515,19 @@ static void colstat_2_gnuplot_cb(AW_window *aww, AW_CL cl_column_stat, AW_CL cl_
 
 AW_window *NT_create_colstat_2_gnuplot_window(AW_root *root) {
 
-    GB_transaction    ta(GLOBAL_gb_main);
-    ColumnStat       *column_stat = new ColumnStat(GLOBAL_gb_main, root, AWAR_CS2GP_NAME);
-    AW_window_simple *aws         = new AW_window_simple;
-    
+    GB_transaction ta(GLOBAL_gb_main);
+
+    AW_awar          *awar_default_alignment = root->awar_string(AWAR_DEFAULT_ALIGNMENT, "", GLOBAL_gb_main);
+    ColumnStat       *column_stat            = new ColumnStat(GLOBAL_gb_main, root, AWAR_CS2GP_NAME, awar_default_alignment);
+    AW_window_simple *aws                    = new AW_window_simple;
+
     aws->init(root, "EXPORT_CSP_TO_GNUPLOT", "Export Column statistic to GnuPlot");
     aws->load_xfig("cpro/csp_2_gnuplot.fig");
-
-    root->awar_string(AWAR_DEFAULT_ALIGNMENT, "", GLOBAL_gb_main);
 
     root->awar_int(AWAR_CS2GP_SMOOTH);
     root->awar_int(AWAR_CS2GP_GNUPLOT_OVERLAY_POSTFIX);
     root->awar_int(AWAR_CS2GP_GNUPLOT_OVERLAY_PREFIX);
     root->awar_string(AWAR_CS2GP_SMOOTH_GNUPLOT);
-
-    root->awar_string(AWAR_CS2GP_NAME);
-    root->awar_string(AWAR_CS2GP_ALIGNMENT);
-    root->awar(AWAR_CS2GP_ALIGNMENT)->map(AWAR_DEFAULT_ALIGNMENT); // use current alignment for column stat 
 
     root->awar_string(AWAR_CS2GP_FILTER_NAME);
     root->awar_string(AWAR_CS2GP_FILTER_FILTER);
