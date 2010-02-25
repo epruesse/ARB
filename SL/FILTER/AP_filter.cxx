@@ -159,6 +159,21 @@ void AP_filter::enable_bootstrap() {
     }
 }
 
+char *AP_filter::blowup_string(char *filtered_string, char fillChar) const {
+    /*! blow up 'filtered_string' to unfiltered length
+     * by inserting 'fillChar' at filtered positions
+     */
+
+    char   *blownup = (char*)malloc(filter_len+1);
+    size_t  f       = 0;
+
+    for (size_t i = 0; i<filter_len; ++i) {
+        blownup[i] = use_position(i) ? filtered_string[f++] : fillChar;
+    }
+
+    return blownup;
+}
+
 
 // -------------------
 //      AP_weights
