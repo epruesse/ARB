@@ -20,6 +20,8 @@
 #define AWAR_COLSTAT_SMOOTH       "/name=/smooth"
 #define AWAR_COLSTAT_ENABLE_HELIX "/name=/enable_helix"
 
+#define cs_assert(cond) arb_assert(cond)
+
 void ColumnStat::refresh_selection_list() {
     GB_transaction ta(gb_main);
 
@@ -52,6 +54,8 @@ ColumnStat::ColumnStat(GBDATA *gb_maini, AW_root *awri, const char *awar_templat
     awar_alignment    = GBS_string_eval(awar_template, AWAR_COLSTAT_ALIGNMENT, 0);
     awar_smooth       = GBS_string_eval(awar_template, AWAR_COLSTAT_SMOOTH, 0);
     awar_enable_helix = GBS_string_eval(awar_template, AWAR_COLSTAT_ENABLE_HELIX, 0);
+
+    cs_assert(strcmp(awar_name, awar_alignment) != 0); // awar_template must end with (or contain) "/name"
 
     awr->awar_string(awar_name, "NONE");
     awr->awar_string(awar_alignment)->map(awar_used_alignment);
