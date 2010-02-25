@@ -36,7 +36,7 @@ static void refresh_columnstat_selection(AW_root *, AW_CL cl_column_stat) {
     column_stat->refresh_selection_list();
 }
 
-ColumnStat::ColumnStat(GBDATA *gb_maini, AW_root *awri, const char *awar_template) {
+ColumnStat::ColumnStat(GBDATA *gb_maini, AW_root *awri, const char *awar_template, AW_awar *awar_used_alignment) {
     /* awar_template ==     ".../name"
      *  -> generated        ".../alignment"
      *                      ".../smooth"
@@ -54,7 +54,7 @@ ColumnStat::ColumnStat(GBDATA *gb_maini, AW_root *awri, const char *awar_templat
     awar_enable_helix = GBS_string_eval(awar_template, AWAR_COLSTAT_ENABLE_HELIX, 0);
 
     awr->awar_string(awar_name, "NONE");
-    awr->awar_string(awar_alignment);
+    awr->awar_string(awar_alignment)->map(awar_used_alignment);
     awr->awar_int(awar_smooth);
     awr->awar_int(awar_enable_helix, 1);
 

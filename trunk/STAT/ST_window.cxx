@@ -54,12 +54,12 @@ AW_window *STAT_create_main_window(AW_root *root, ST_ML *st_ml, AW_CB0 refresh_f
     root->awar_string(ST_ML_AWAR_COLUMN_STAT, "");
     root->awar_int(ST_ML_AWAR_CQ_MARKED_ONLY, 1);
 
-    root->awar_string(AWAR_DEFAULT_ALIGNMENT, "-none-", st_ml->get_gb_main());
+    AW_awar *awar_default_alignment = root->awar_string(AWAR_DEFAULT_ALIGNMENT, "-none-", st_ml->get_gb_main());
     root->awar_string(AWAR_TREE, "tree_main", st_ml->get_gb_main());
 
     root->awar_string(ST_ML_AWAR_ALIGNMENT)->map(AWAR_DEFAULT_ALIGNMENT);
 
-    st_ml->create_column_statistic(root, ST_ML_AWAR_COLUMN_STAT);
+    st_ml->create_column_statistic(root, ST_ML_AWAR_COLUMN_STAT, awar_default_alignment);
     st_ml->set_refresh_callback(refresh_func, refreshed_win);
 
     aws->at("GO");
@@ -135,17 +135,14 @@ AW_window *STAT_create_quality_check_window(AW_root *root, GBDATA *gb_main) {
         aws->at("help");
         aws->create_button("HELP", "HELP", "H");
 
-        root->awar_string(ST_ML_AWAR_COLUMN_STAT, "");
-        root->awar_string(AWAR_DEFAULT_ALIGNMENT, "-none-", gb_main);
+        AW_awar *awar_default_alignment = root->awar_string(AWAR_DEFAULT_ALIGNMENT, "-none-", gb_main);
         root->awar_int(ST_ML_AWAR_CQ_BUCKET_SIZE, 300);
         root->awar_int(ST_ML_AWAR_CQ_MARKED_ONLY, 0);
         root->awar_string(AWAR_TREE, "tree_main", gb_main);
         root->awar_string(ST_ML_AWAR_CQ_DEST_FIELD, "tmp");
         root->awar_int(ST_ML_AWAR_CQ_REPORT, 0);
 
-        root->awar_string(ST_ML_AWAR_ALIGNMENT)->map(AWAR_DEFAULT_ALIGNMENT);
-
-        ColumnStat *colstat = new ColumnStat(gb_main, root, ST_ML_AWAR_COLUMN_STAT); // @@@ not freed
+        ColumnStat *colstat = new ColumnStat(gb_main, root, ST_ML_AWAR_COLUMN_STAT, awar_default_alignment); // @@@ not freed
 
         aws->at("which");
         {

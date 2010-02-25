@@ -28,6 +28,7 @@
 class AW_root;
 class AW_window;
 class AP_filter;
+class AW_awar;
 
 #define DIST_MIN_SEQ(seq_anz) (seq_anz / 10)
 
@@ -60,7 +61,7 @@ class ColumnStat {
     float    *frequency[256];
 
 public:
-    ColumnStat(GBDATA *gb_main, AW_root *awr, const char *awar_template);
+    ColumnStat(GBDATA *gb_main, AW_root *awr, const char *awar_template, AW_awar *awar_used_alignment);
     ~ColumnStat();
 
     GB_ERROR calculate(AP_filter *filter);

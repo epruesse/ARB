@@ -25,6 +25,7 @@ class ColumnStat;
 class MostLikelySeq;
 
 class   AW_root;
+class   AW_awar;
 class   AW_window;
 typedef void (*AW_CB0)(AW_window*);
 
@@ -160,7 +161,7 @@ public:
     ST_ML(GBDATA *gb_main);
     ~ST_ML();
 
-    void create_column_statistic(AW_root *awr, const char *awarname);
+    void create_column_statistic(AW_root *awr, const char *awarname, AW_awar *awar_default_alignment);
     ColumnStat *get_column_statistic() { return column_stat; }
 
     GB_ERROR init_st_ml(const char *tree_name,

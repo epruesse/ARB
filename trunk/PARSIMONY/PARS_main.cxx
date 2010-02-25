@@ -37,11 +37,8 @@ AW_HEADER_MAIN
 
 #define AWAR_COLUMNSTAT_BASE "tmp/pars/colstat"
 #define AWAR_COLUMNSTAT_NAME AWAR_COLUMNSTAT_BASE "/name"
-#define AWAR_COLUMNSTAT_ALI  AWAR_COLUMNSTAT_BASE "/alignment"
 
 GBDATA *GLOBAL_gb_main;                             // global gb_main for arb_pars
-
-
 
 #if defined(DEVEL_RALF)
 #warning make GLOBAL_PARS static!
@@ -1573,7 +1570,7 @@ static AW_window *create_pars_init_window(AW_root *awr, const PARS_commands *cmd
     aws->create_button("HELP", "HELP", "H");
 
     WeightedFilter *weighted_filter = // do NOT free (bound to callbacks)
-        new WeightedFilter(GLOBAL_gb_main, aws->get_root(), AWAR_FILTER_NAME, AWAR_COLUMNSTAT_NAME);
+        new WeightedFilter(GLOBAL_gb_main, aws->get_root(), AWAR_FILTER_NAME, AWAR_COLUMNSTAT_NAME, aws->get_root()->awar_string(AWAR_ALIGNMENT));
 
     aws->at("filter");
     aws->callback(AW_POPUP, (AW_CL)awt_create_select_filter_win, (AW_CL)weighted_filter->get_adfiltercbstruct());
@@ -1664,10 +1661,8 @@ static void pars_create_all_awars(AW_root *awr, AW_default aw_def)
 
     awr->awar_string(AWAR_FILTER_FILTER,    "", GLOBAL_gb_main);
     awr->awar_string(AWAR_FILTER_ALIGNMENT, "", aw_def);
-    awr->awar_string(AWAR_COLUMNSTAT_ALI,   0,  aw_def);
 
     awr->awar(AWAR_FILTER_ALIGNMENT)->map(AWAR_ALIGNMENT);
-    awr->awar(AWAR_COLUMNSTAT_ALI)->map(AWAR_ALIGNMENT);
 
     awr->awar_int(AWAR_PARS_TYPE, PARS_WAGNER, GLOBAL_gb_main);
 

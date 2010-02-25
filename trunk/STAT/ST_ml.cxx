@@ -828,8 +828,8 @@ ST_ML_Color *ST_ML::get_color_string(const char *species_name, AP_tree *node, si
     return seq->color_out;
 }
 
-void ST_ML::create_column_statistic(AW_root *awr, const char *awarname) {
-    column_stat = new ColumnStat(get_gb_main(), awr, awarname);
+void ST_ML::create_column_statistic(AW_root *awr, const char *awarname, AW_awar *awar_default_alignment) {
+    column_stat = new ColumnStat(get_gb_main(), awr, awarname, awar_default_alignment);
 }
 
 const GBT_TREE *ST_ML::get_gbt_tree() const {

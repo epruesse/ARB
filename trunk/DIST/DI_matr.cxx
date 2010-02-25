@@ -43,8 +43,7 @@
 #define AWAR_DIST_BOOTSTRAP_COUNT AWAR_DIST_PREFIX "bootstrap/count"
 #define AWAR_DIST_CANCEL_CHARS    AWAR_DIST_PREFIX "cancel/chars"
 
-#define AWAR_DIST_COLUMN_STAT_ALIGNMENT AWAR_DIST_COLUMN_STAT_PREFIX "alignment"
-#define AWAR_DIST_COLUMN_STAT_NAME      AWAR_DIST_COLUMN_STAT_PREFIX "name"
+#define AWAR_DIST_COLUMN_STAT_NAME AWAR_DIST_COLUMN_STAT_PREFIX "name"
 
 #define AWAR_DIST_TREE_SORT_NAME "tmp/" AWAR_DIST_TREE_PREFIX "sort_tree_name"
 #define AWAR_DIST_TREE_COMP_NAME "tmp/" AWAR_DIST_TREE_PREFIX "compr_tree_name"
@@ -127,14 +126,10 @@ void DI_create_matrix_variables(AW_root *aw_root, AW_default def, AW_default db)
     aw_root->awar_string(AWAR_DIST_FILTER_FILTER,    "",     def)->add_callback(delete_matrix_cb);
     aw_root->awar_int   (AWAR_DIST_FILTER_SIMPLIFY,  0,      def)->add_callback(delete_matrix_cb);
 
-    aw_root->awar_string(AWAR_DIST_COLUMN_STAT_NAME,      "none", def);
-    aw_root->awar_string(AWAR_DIST_COLUMN_STAT_ALIGNMENT, "none", def);
-
     aw_root->awar_string(AWAR_DIST_CANCEL_CHARS, ".", def)->add_callback(delete_matrix_cb);
     aw_root->awar_int(AWAR_DIST_CORR_TRANS, (int)DI_TRANSFORMATION_SIMILARITY, def)->add_callback(delete_matrix_cb);
 
-    aw_root->awar(AWAR_DIST_FILTER_ALIGNMENT)     ->map(AWAR_DIST_ALIGNMENT);
-    aw_root->awar(AWAR_DIST_COLUMN_STAT_ALIGNMENT)->map(AWAR_DIST_ALIGNMENT);
+    aw_root->awar(AWAR_DIST_FILTER_ALIGNMENT)->map(AWAR_DIST_ALIGNMENT);
 
     AW_create_fileselection_awars(aw_root, AWAR_DIST_SAVE_MATRIX_BASE, ".", "", "infile", def);
     aw_root->awar_int(AWAR_DIST_SAVE_MATRIX_TYPE, 0, def);
@@ -1530,8 +1525,9 @@ AW_window *DI_create_matrix_window(AW_root *aw_root) {
 
     // filter & weights
 
-    WeightedFilter *weighted_filter = // do NOT free (bound to callbacks)
-        new WeightedFilter(GLOBAL_gb_main, aws->get_root(), AWAR_DIST_FILTER_NAME, AWAR_DIST_COLUMN_STAT_NAME);
+    AW_awar *awar_dist_alignment = aws->get_root()->awar_string(AWAR_DIST_ALIGNMENT);
+    WeightedFilter *weighted_filter =               // do NOT free (bound to callbacks)
+        new WeightedFilter(GLOBAL_gb_main, aws->get_root(), AWAR_DIST_FILTER_NAME, AWAR_DIST_COLUMN_STAT_NAME, awar_dist_alignment);
 
     aws->at("filter_select");
     aws->callback(AW_POPUP, (AW_CL)awt_create_select_filter_win, (AW_CL)(weighted_filter->get_adfiltercbstruct()));

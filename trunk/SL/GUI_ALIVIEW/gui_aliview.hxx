@@ -19,6 +19,7 @@
 struct adfiltercbstruct;
 class  ColumnStat;
 class  AW_root;
+class  AW_awar;
 class  AP_filter;
 class  AP_weights;
 class  AliView;
@@ -28,7 +29,7 @@ class WeightedFilter {
     ColumnStat       *column_stat;
 
 public:
-    WeightedFilter(GBDATA *gb_main, AW_root *aw_root, const char *awar_filter_name, const char *awar_columnStat_name);
+    WeightedFilter(GBDATA *gb_main, AW_root *aw_root, const char *awar_filter_name, const char *awar_columnStat_name, AW_awar *awar_default_alignment);
     ~WeightedFilter();
 
     GBDATA *get_gb_main() const;
