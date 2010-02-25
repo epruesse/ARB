@@ -18,15 +18,6 @@
 #include <aw_window.hxx>
 #endif
 
-#define ST_ML_AWAR "tmp/st_ml/"
-#define ST_ML_AWAR_COLUMN_STAT          ST_ML_AWAR "name"
-#define ST_ML_AWAR_ALIGNMENT            ST_ML_AWAR "alignment"
-#define ST_ML_AWAR_CQ_BUCKET_SIZE       ST_ML_AWAR "bucket_size"
-
-#define ST_ML_AWAR_CQ_MARKED_ONLY       ST_ML_AWAR "marked_only"
-#define ST_ML_AWAR_CQ_DEST_FIELD        ST_ML_AWAR "dest_field"
-#define ST_ML_AWAR_CQ_REPORT            ST_ML_AWAR "report"
-
 class ST_ML;
 class AP_tree;
 class ColumnStat;
