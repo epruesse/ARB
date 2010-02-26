@@ -116,13 +116,14 @@ typedef LeafRelations::const_iterator    LeafRelationCIter;
 class ClusterTree : public ARB_countedTree {
     ClusterState state;
 
-    size_t leaf_count;                              // number of leafs in subtree
-    size_t clus_count;                              // number of clusters at and in subtree
-    size_t depth;                                   // depth of node ( 1 == root )
+    size_t   leaf_count;                            // number of leafs in subtree
+    size_t   clus_count;                            // number of clusters at and in subtree
+    size_t   depth;                                 // depth of node ( 1 == root )
+    AP_FLOAT min_bases;                             // min. bases used for comparing two members
 
-    NodeValues *branchDepths;                       // leaf-depths (distance from this each leaf)
-    LeafRelations *branchDists;                        // distance (branch) between two leafs
-    LeafRelations *sequenceDists;                      // real distance between sequences of two leafs
+    NodeValues    *branchDepths;                    // leaf-depths (distance from this each leaf)
+    LeafRelations *branchDists;                     // distance (branch) between two leafs
+    LeafRelations *sequenceDists;                   // real distance between sequences of two leafs
 
     TwoLeafs *worstKnownDistance;
 
@@ -136,6 +137,7 @@ public:
         , leaf_count(0)
         , clus_count(0)
         , depth(0)
+        , min_bases(-1.0)
         , branchDepths(NULL)
         , branchDists(NULL)
         , sequenceDists(NULL)
@@ -184,6 +186,8 @@ public:
     AP_FLOAT get_seqDist(const TwoLeafs& pair);
     const AP_FLOAT *has_seqDist(const TwoLeafs& pair) const;
     const ClusterTree *commonFatherWith(const ClusterTree *other) const;
+
+    AP_FLOAT get_min_bases() const { return min_bases; }
 
     void oblivion(bool forgetDistances); // forget unneeded data
 };

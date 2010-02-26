@@ -509,7 +509,7 @@ void GroupBuilder::update_group(ClusterPtr cluster) {
                     switch (notfound) {
                         case NOTFOUND_WARN:
                         case NOTFOUND_ABORT: {
-                            const char *msg = GBS_global_string("Could not find matching subtree for cluster '%s'", cluster->description());
+                            const char *msg = GBS_global_string("Could not find matching subtree for cluster '%s'", cluster->description(NULL));
                             if (notfound == NOTFOUND_ABORT) error = msg;
                             else aw_message(msg);
                             break;

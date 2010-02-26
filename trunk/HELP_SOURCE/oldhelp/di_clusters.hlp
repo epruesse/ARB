@@ -37,6 +37,7 @@ DESCRIPTION     Cluster detection searches for subtrees of the tree selected
 
                      - number of species in cluster
                      - mean distance [min. - max.distance]
+                     - minimal bases used for distance calculation (weighted)
                      - a generated cluster description
 
                 Each cluster contains one so called 'representative'.
@@ -125,6 +126,15 @@ EXAMPLES        One use case is to reduce a given tree by removing clones or ver
                         in found clusters and for the minimum cluster size, the found
                         clusters might be good candidates to create groups.
 
-WARNINGS	None
+WARNINGS        Be careful when the minimum distance reported for a cluster is zero.
+                This may have 2 reasons:
+                     - two sequences are identical (in filtered region)
+                     - one sequence is empty (in filtered region)
+                In the second case, the results are meaningless and the empty sequence
+                will be used as representative (which makes no sense).
+
+                As a second indicator the min. number of base positions used for distance
+                calculation is listed for each cluster. When this gets low or zero the result
+                get more and more random.
 
 BUGS		No bugs known
