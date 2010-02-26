@@ -86,6 +86,7 @@ Cluster::Cluster(ClusterTree *ct)
 
     }
 
+    min_bases = ct->get_min_bases();
     mean_dist /= distances->size();
     cl_assert(representative);
     generate_name(ct);
@@ -97,7 +98,7 @@ static string *get_downgroups(const ARB_countedTree *ct, size_t& group_members) 
         group_members = 0;
     }
     else {
-        if (ct->gb_node) {
+        if (ct->gb_node && ct->name) {
             group_members = ct->get_leaf_count();
             result        = new string(ct->name);
         }
@@ -122,9 +123,9 @@ static string *get_downgroups(const ARB_countedTree *ct, size_t& group_members) 
 }
 static const char *get_upgroup(const ARB_countedTree *ct, const ARB_countedTree*& upgroupPtr) {
     const char *name = NULL;
-    if (ct->gb_node) {
+    if (ct->gb_node && ct->name) {
         upgroupPtr = ct;
-        name    = ct->name;
+        name       = ct->name;
     }
     else {
         const ARB_countedTree *father = ct->get_father();
@@ -144,7 +145,7 @@ static const char *get_upgroup(const ARB_countedTree *ct, const ARB_countedTree*
 void Cluster::generate_name(const ARB_countedTree *ct) {
     cl_assert(!ct->is_leaf);
 
-    if (ct->gb_node) {                              // cluster root is a group
+    if (ct->gb_node && ct->name) {                  // cluster root is a group
         name = ct->name;
     }
     else {
@@ -179,7 +180,7 @@ string Cluster::build_group_name(const ARB_countedTree *ct) {
     string group_name;
 
     cl_assert(!ct->is_leaf);
-    if (ct->gb_node) {                              // cluster root is a group
+    if (ct->gb_node && ct->name) {                  // cluster root is a group
         group_name = ct->name;
     }
     else {
@@ -196,12 +197,81 @@ string Cluster::build_group_name(const ARB_countedTree *ct) {
     return group_name;
 }
 
-const char *Cluster::description() const {
-    return GBS_global_string("%3zu  dist: %5.3f [%5.3f - %5.3f]  %s",
+// --------------------------
+//      DescriptionFormat
+
+class DescriptionFormat {
+    size_t   max_count;
+    AP_FLOAT max_dist;
+    AP_FLOAT max_minBases;
+
+    mutable char *format_string;
+
+    static char *make_format(size_t val) {
+        long digits = log10((long)val)+1;
+        return GBS_global_string_copy("%%%lizu", digits);
+    }
+    static char *make_format(AP_FLOAT val) {
+        long digits   = log10((long)val)+1;
+        long afterdot = digits <=3 ? 5-digits-1 : 0;
+        return GBS_global_string_copy("%%%li.%lif", digits, afterdot);
+    }
+
+public:
+
+    DescriptionFormat()
+        : max_count(0)
+        , max_dist(0.0)
+        , max_minBases(0.0)
+        , format_string(NULL)
+    {}
+
+    void announce(size_t count, AP_FLOAT maxDist, AP_FLOAT minBases) {
+        max_count    = std::max(max_count, count);
+        max_dist     = std::max(max_dist, maxDist);
+        max_minBases = std::max(max_minBases, minBases);
+
+        freenull(format_string);
+    }
+
+    const char *get_format() const {
+        if (!format_string) {
+            // create format string for description
+            char *count_part = make_format(max_count);
+            char *dist_part  = make_format(max_dist);
+            char *bases_part = make_format(max_minBases);
+
+            format_string = GBS_global_string_copy("%s  %s [%s-%s]  %s  %%s",
+                                                   count_part,
+                                                   dist_part, dist_part, dist_part,
+                                                   bases_part);
+
+            free(bases_part);
+            free(dist_part);
+            free(count_part);
+        }
+        return format_string;
+    }
+};
+
+
+
+void Cluster::scan_description_widths(DescriptionFormat& format) const {
+    AP_FLOAT max_of_all_dists = std::max(max_dist, std::max(min_dist, mean_dist));
+    format.announce(get_member_count(), max_of_all_dists*100.0, min_bases);
+}
+
+const char *Cluster::description(const DescriptionFormat *format) const {
+    const char *format_string;
+    if (format) format_string = format->get_format();
+    else        format_string = "%zu  %.3f [%.3f-%.3f]  %.1f  %s";
+
+    return GBS_global_string(format_string,
                              get_member_count(),
                              mean_dist*100.0,
                              min_dist*100.0,
                              max_dist*100.0,
+                             min_bases,
                              name.c_str());
 }
 
@@ -290,14 +360,21 @@ void ClustersData::update_selection_list(AW_window *aww) {
             sort(shown.begin(), shown.end(), sortBy);
         }
         {
-            ClusterIDsIter cl     = shown.begin();
-            ClusterIDsIter cl_end = shown.end();
+            ClusterIDsIter    cl_end = shown.end();
+            DescriptionFormat format;
 
-            for (; cl != cl_end; ++cl) {
-                ID         id      = *cl;
-                ClusterPtr cluster = clusterWithID(id);
+            for (int pass = 1; pass <= 2; ++pass) {
+                for (ClusterIDsIter cl = shown.begin(); cl != cl_end; ++cl) {
+                    ID         id      = *cl;
+                    ClusterPtr cluster = clusterWithID(id);
 
-                aww->insert_selection(clusterList, cluster->description(), cluster->get_ID());
+                    if (pass == 1) {
+                        cluster->scan_description_widths(format);
+                    }
+                    else {
+                        aww->insert_selection(clusterList, cluster->description(&format), cluster->get_ID());
+                    }
+                }
             }
             aww->insert_default_selection(clusterList, "<select no cluster>", ID(0));
         }

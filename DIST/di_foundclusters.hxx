@@ -49,10 +49,14 @@ typedef long ID;
 
 enum ClusterOrder { SORT_BY_MEANDIST };
 
+class DescriptionFormat;
+
 class Cluster {
     double min_dist;                                // min. distance between species inside Cluster
     double max_dist;                                // dito, but max.
     double mean_dist;                               // dito, but mean
+
+    double min_bases;                               // min bases used for sequence distance
 
     GBDATA     *representative;                     // cluster member with lowest mean distance
     SpeciesSet  members;                            // all members (including representative)
@@ -76,7 +80,8 @@ public:
     }
 
     size_t get_member_count() const { return members.size(); }
-    const char *description() const;
+    void scan_description_widths(DescriptionFormat& format) const;
+    const char *description(const DescriptionFormat *format) const;
 
     const SpeciesSet& get_members() const { return members; }
 

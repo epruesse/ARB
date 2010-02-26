@@ -12,7 +12,10 @@
 #include "di_clustertree.hxx"
 #include <aw_root.hxx>
 #include <set>
+#include <cmath>
+#include <limits>
 
+using namespace std;
 
 typedef std::set<LeafRelation> SortedPairValues; // iterator runs from small to big values
 
@@ -153,6 +156,7 @@ void ClusterTree::init_tree() {
         else {
             state      = CS_MAYBE_CLUSTER;
             clus_count = lson->get_cluster_count() + rson->get_cluster_count() + 1;
+            min_bases  = numeric_limits<AP_FLOAT>::infinity();
         }
     }
     cl_assert(state != CS_UNKNOWN);
@@ -351,7 +355,16 @@ AP_FLOAT ClusterTree::get_seqDist(const TwoLeafs& pair) {
             AP_FLOAT     wbc1         = seq1->weighted_base_count();
             AP_FLOAT     wbc2         = seq2->weighted_base_count();
             AP_FLOAT     minBaseCount = wbc1 < wbc2 ? wbc1 : wbc2;
-            AP_FLOAT     dist         = mutations / minBaseCount;
+            AP_FLOAT     dist;
+
+            if (minBaseCount>0) {
+                dist = mutations / minBaseCount;
+                if (minBaseCount < min_bases) min_bases = minBaseCount;
+            }
+            else { // got at least one empty sequence -> no distance
+                dist      = 0.0;
+                min_bases = minBaseCount;
+            }
 
 #if defined(DEBUG) && 0
             const char *name1 = pair.first()->name;
@@ -360,6 +373,8 @@ AP_FLOAT ClusterTree::get_seqDist(const TwoLeafs& pair) {
                    name1, name2, mutations, wbc1, wbc2, minBaseCount, dist);
 #endif // DEBUG
 
+            cl_assert(!isnan(dist));
+            
             (*sequenceDists)[pair] = dist;
             delete ancestor;
         }
