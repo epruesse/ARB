@@ -207,12 +207,23 @@ class DescriptionFormat {
 
     mutable char *format_string;
 
+    static long calc_digits(long val) {
+        long digits;
+        if (val>0) digits      = log10(val)+1;
+        else if (val<0) digits = calc_digits(-val);
+        else digits            = 1;
+
+        cl_assert(digits>0);
+        
+        return digits;
+    }
+
     static char *make_format(size_t val) {
-        long digits = log10((long)val)+1;
+        long digits = calc_digits(val);
         return GBS_global_string_copy("%%%lizu", digits);
     }
     static char *make_format(AP_FLOAT val) {
-        long digits   = log10((long)val)+1;
+        long digits   = calc_digits(long(val));
         long afterdot = digits <=3 ? 5-digits-1 : 0;
         return GBS_global_string_copy("%%%li.%lif", digits, afterdot);
     }
