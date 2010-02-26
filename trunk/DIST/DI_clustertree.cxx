@@ -97,10 +97,24 @@ GB_ERROR ClusterTreeRoot::find_clusters() {
 #if defined(DEBUG)
         ClusterStats stats;
         collectStats(root, &stats);
-        printf("Found clusters:    %zu\n", stats.clusters);
-        printf("Found subclusters: %zu\n", stats.subclusters);
-        printf("Loaded sequences:: %zu (%5.2f%%)\n", stats.loadedSequences, 100.0*stats.loadedSequences/root->get_leaf_count());
-#endif // DEBUG
+
+        printf("Found clusters:::::::: %zu\n", stats.clusters);
+        printf("Found subclusters::::: %zu\n", stats.subclusters);
+        printf("Loaded sequences:::::: %zu (%5.2f%%)\n",
+               stats.loadedSequences,
+               (100.0*stats.loadedSequences)/root->get_leaf_count());
+
+#if defined(TRACE_DIST_CALC)
+        size_t distances         = root->get_calculated_distances();
+        size_t leafs             = root->get_leaf_count();
+        size_t existingDistances = (leafs*leafs)/2-1;
+
+        printf("Calculated distances:: %zu (%5.2f%%)\n",
+               distances,
+               (100.0*distances)/existingDistances);
+#endif                                              // TRACE_DIST_CALC
+
+#endif                                              // DEBUG
     }
 
     aw_closestatus();
@@ -125,6 +139,10 @@ ClusterTree *ClusterTree::get_cluster(size_t num) {
 
 void ClusterTree::init_tree() {
     cl_assert(state == CS_UNKNOWN);
+
+#if defined(TRACE_DIST_CALC)
+    calculatedDistances = 0;
+#endif // TRACE_DIST_CALC
 
     if (get_father()) {
         depth = get_father()->get_depth()+1;
@@ -159,6 +177,7 @@ void ClusterTree::init_tree() {
             min_bases  = numeric_limits<AP_FLOAT>::infinity();
         }
     }
+    
     cl_assert(state != CS_UNKNOWN);
 }
 
@@ -171,6 +190,11 @@ void ClusterTree::detect_clusters(aw_status_counter& progress) {
 
         lson->detect_clusters(progress);
         rson->detect_clusters(progress);
+
+#if defined(TRACE_DIST_CALC)
+        calculatedDistances += get_leftson()->calculatedDistances;
+        calculatedDistances += get_rightson()->calculatedDistances;
+#endif // TRACE_DIST_CALC
 
         if (lson->get_state() == CS_NO_CLUSTER || rson->get_state() == CS_NO_CLUSTER) {
             // one son is no cluster -> can't be cluster myself
@@ -220,9 +244,14 @@ void ClusterTree::detect_clusters(aw_status_counter& progress) {
                 }
             }
 
+#if defined(TRACE_DIST_CALC)
+            calculatedDistances += sequenceDists->size();
+            printf("calculatedDistances=%zu\n", calculatedDistances);
+#endif // TRACE_DIST_CALC
+
             if (state == CS_IS_CLUSTER) {
 #if defined(DEBUG)
-                // ensure all distances were calculated
+                // test whether all distances have been calculated
                 cl_assert(!is_leaf);
                 size_t knownDistances = sequenceDists->size() +
                     get_leftson()->known_seqDists() +
