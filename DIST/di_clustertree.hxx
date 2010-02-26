@@ -113,6 +113,10 @@ typedef LeafRelations::const_iterator    LeafRelationCIter;
 //      ClusterTree
 
 
+#if defined(DEBUG)
+#define TRACE_DIST_CALC
+#endif // DEBUG
+
 class ClusterTree : public ARB_countedTree {
     ClusterState state;
 
@@ -129,6 +133,10 @@ class ClusterTree : public ARB_countedTree {
 
     void calc_branch_depths();
     void calc_branch_dists();
+
+#if defined(TRACE_DIST_CALC)
+    size_t calculatedDistances;
+#endif // TRACE_DIST_CALC
 
 public:
     ClusterTree(ClusterTreeRoot *tree_root_)
@@ -159,6 +167,10 @@ public:
     size_t get_cluster_count() const { return clus_count; }
     size_t get_leaf_count() const { return leaf_count; }
     size_t get_depth() const { return depth; }
+
+#if defined(TRACE_DIST_CALC)
+    size_t get_calculated_distances() const { return calculatedDistances; }
+#endif // TRACE_DIST_CALC
 
     bool knows_seqDists() const { return state & (CS_IS_CLUSTER|CS_SUB_CLUSTER); }
 
