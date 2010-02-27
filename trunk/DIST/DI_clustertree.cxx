@@ -246,7 +246,6 @@ void ClusterTree::detect_clusters(aw_status_counter& progress) {
 
 #if defined(TRACE_DIST_CALC)
             calculatedDistances += sequenceDists->size();
-            printf("calculatedDistances=%zu\n", calculatedDistances);
 #endif // TRACE_DIST_CALC
 
             if (state == CS_IS_CLUSTER) {

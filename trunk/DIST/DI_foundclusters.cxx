@@ -86,7 +86,18 @@ Cluster::Cluster(ClusterTree *ct)
 
     }
 
+    cl_assert(members.size() == ct->get_leaf_count());
+
     min_bases = ct->get_min_bases();
+    {
+        ClusterTree *root    = ct->get_root_node();
+        size_t       allSize = root->get_leaf_count();
+        size_t       size    = ct->get_leaf_count();
+        size_t       first   = ct->relative_position_in(root);
+        size_t       last    = first+size-1;
+
+        rel_tree_pos = ((double(first)+last)/2) / allSize;
+    }
     mean_dist /= distances->size();
     cl_assert(representative);
     generate_name(ct);
@@ -341,11 +352,13 @@ void ClustersData::swap_all() {
 
 class SortClusterIDsBy {
     const KnownClusters& known;
-    ClusterOrder         order;
+    ClusterOrder         primary_order;
+    ClusterOrder         secondary_order;
 public:
-    SortClusterIDsBy(const KnownClusters& known_, ClusterOrder order_)
+    SortClusterIDsBy(const KnownClusters& known_, ClusterOrder primary, ClusterOrder secondary)
         : known(known_)
-        , order(order_)
+        , primary_order(primary)
+        , secondary_order(secondary)
     {}
 
      bool operator()(ID id1, ID id2) const {
@@ -354,7 +367,14 @@ public:
 
          cl_assert(!cl1.isNull() && !cl2.isNull());
 
-         return cl1->lessByOrder(*cl2, order);
+         bool less = cl1->lessByOrder(*cl2, primary_order);
+         if (!less) {
+             bool equal = !cl2->lessByOrder(*cl1, primary_order);
+             if (equal) {
+                 less = cl1->lessByOrder(*cl2, secondary_order);
+             }
+         }
+         return less;
      }
 };
 
@@ -367,7 +387,7 @@ void ClustersData::update_selection_list(AW_window *aww) {
     }
     else {
         {
-            SortClusterIDsBy sortBy(known_clusters, order);
+            SortClusterIDsBy sortBy(known_clusters, criteria[0], criteria[1]);
             sort(shown.begin(), shown.end(), sortBy);
         }
         {

@@ -41,6 +41,7 @@ using namespace std;
 #define AWAR_CLUSTER_AUTOMARK  AWAR_CLUSTER_PREFIX "automark"
 #define AWAR_CLUSTER_MARKREP   AWAR_CLUSTER_PREFIX "markrep"
 #define AWAR_CLUSTER_SELECTREP AWAR_CLUSTER_PREFIX "selrep"
+#define AWAR_CLUSTER_ORDER     AWAR_CLUSTER_PREFIX "order"
 
 #define AWAR_CLUSTER_GRP_PREFIX         AWAR_CLUSTER_PREFIX "group/"
 #define AWAR_CLUSTER_GROUP_WHAT         AWAR_CLUSTER_GRP_PREFIX "all"
@@ -78,20 +79,21 @@ enum Group_Existing {
 
 
 void DI_create_cluster_awars(AW_root *aw_root, AW_default def, AW_default db) {
-    aw_root->awar_float(AWAR_CLUSTER_MAXDIST, 3.0, def)->set_minmax(0.0, 100.0);
-    aw_root->awar_int(AWAR_CLUSTER_MINSIZE, 7, def)->set_minmax(2, INT_MAX);
-    aw_root->awar_int(AWAR_CLUSTER_AUTOMARK, 1, def);
-    aw_root->awar_int(AWAR_CLUSTER_MARKREP, 0, def);
-    aw_root->awar_int(AWAR_CLUSTER_SELECTREP, 1, def);
-    aw_root->awar_int(AWAR_CLUSTER_SELECTED, 0, def);
-    aw_root->awar_string(AWAR_CLUSTER_RESTORE_LABEL, "None stored", def);
+    aw_root->awar_float (AWAR_CLUSTER_MAXDIST,       3.0,              def)->set_minmax(0.0, 100.0);
+    aw_root->awar_int   (AWAR_CLUSTER_MINSIZE,       7,                def)->set_minmax(2, INT_MAX);
+    aw_root->awar_int   (AWAR_CLUSTER_AUTOMARK,      1,                def);
+    aw_root->awar_int   (AWAR_CLUSTER_MARKREP,       0,                def);
+    aw_root->awar_int   (AWAR_CLUSTER_SELECTREP,     1,                def);
+    aw_root->awar_int   (AWAR_CLUSTER_ORDER,         SORT_BY_MEANDIST, def);
+    aw_root->awar_int   (AWAR_CLUSTER_SELECTED,      0,                def);
+    aw_root->awar_string(AWAR_CLUSTER_RESTORE_LABEL, "None stored",    def);
 
-    aw_root->awar_int(AWAR_CLUSTER_GROUP_WHAT, GROUP_LISTED, def);
-    aw_root->awar_int(AWAR_CLUSTER_GROUP_EXISTING, EXISTING_GROUP_ABORT, def);
-    aw_root->awar_int(AWAR_CLUSTER_GROUP_NOTFOUND, NOTFOUND_ABORT, def);
-    aw_root->awar_int(AWAR_CLUSTER_GROUP_IDENTITY, 100, def)->set_minmax(1, 100);
-    aw_root->awar_string(AWAR_CLUSTER_GROUP_PREFIX, "cluster", def);
-    aw_root->awar_int(AWAR_CLUSTER_GROUP_PREFIX_MATCH, 1, def);
+    aw_root->awar_int   (AWAR_CLUSTER_GROUP_WHAT,         GROUP_LISTED,         def);
+    aw_root->awar_int   (AWAR_CLUSTER_GROUP_EXISTING,     EXISTING_GROUP_ABORT, def);
+    aw_root->awar_int   (AWAR_CLUSTER_GROUP_NOTFOUND,     NOTFOUND_ABORT,       def);
+    aw_root->awar_int   (AWAR_CLUSTER_GROUP_IDENTITY,     100,                  def)->set_minmax(1, 100);
+    aw_root->awar_string(AWAR_CLUSTER_GROUP_PREFIX,       "cluster",            def);
+    aw_root->awar_int   (AWAR_CLUSTER_GROUP_PREFIX_MATCH, 1,                    def);
 
     aw_root->awar_int(AWAR_TREE_REFRESH, 0, db);
 }
@@ -283,10 +285,19 @@ static void select_cluster_cb(AW_root *aw_root) {
     if (auto_mark) mark_clusters(NULL, SEL_CLUSTER, false);
 }
 
-
-
 static void select_cluster(ID id) {
     global_data->get_aw_root()->awar(AWAR_CLUSTER_SELECTED)->write_int(id);
+}
+
+
+// -------------------
+//      Sort order
+
+
+static void sort_order_changed_cb(AW_root *aw_root, AW_CL cl_aww) {
+    ClusterOrder order = (ClusterOrder)aw_root->awar(AWAR_CLUSTER_ORDER)->read_int();
+    global_data->changeSortOrder(order);
+    update_cluster_sellist((AW_window*)cl_aww);
 }
 
 // --------------
@@ -858,6 +869,17 @@ AW_window *DI_create_cluster_detection_window(AW_root *aw_root, AW_CL cl_weighte
 
         aws->at("group"); aws->callback(popup_group_clusters_window); aws->create_button("GROUP", "Cluster groups..");
 
+        aws->at("sort");
+        aws->create_option_menu(AWAR_CLUSTER_ORDER);
+        aws->insert_default_option("by mean distance",  "d", SORT_BY_MEANDIST);
+        aws->insert_option        ("by min bases used", "b", SORT_BY_MIN_BASES);
+        aws->insert_option        ("by size",           "s", SORT_BY_CLUSTERSIZE);
+        aws->insert_option        ("by tree position",  "p", SORT_BY_TREEPOSITION);
+        aws->insert_option        ("by min distance",   "i", SORT_BY_MIN_DIST);
+        aws->insert_option        ("by max distance",   "x", SORT_BY_MAX_DIST);
+        aws->insert_option        ("reverse",           "r", SORT_REVERSE);
+        aws->update_option_menu();
+
         // store/restore
 
         aws->at("store_all"); aws->callback(store_clusters,  ALL_CLUSTERS); aws->create_button("STOREALL", "Store all");
@@ -883,6 +905,8 @@ AW_window *DI_create_cluster_detection_window(AW_root *aw_root, AW_CL cl_weighte
         update_cluster_sellist(aws);
 
         aw_root->awar(AWAR_CLUSTER_SELECTED)->add_callback(select_cluster_cb);
+        aw_root->awar(AWAR_CLUSTER_ORDER)->add_callback(sort_order_changed_cb, (AW_CL)aws);
+        sort_order_changed_cb(aw_root, (AW_CL)aws);
     }
 
     return aws;
