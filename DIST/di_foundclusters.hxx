@@ -47,7 +47,17 @@ typedef SpeciesSet::const_iterator SpeciesSetIter;
 
 typedef long ID;
 
-enum ClusterOrder { SORT_BY_MEANDIST };
+enum ClusterOrder {
+    UNSORTED             = 0, 
+    SORT_BY_MEANDIST     = 1,
+    SORT_BY_MIN_BASES    = 2,
+    SORT_BY_CLUSTERSIZE  = 3,
+    SORT_BY_TREEPOSITION = 4,
+    SORT_BY_MIN_DIST     = 5,
+    SORT_BY_MAX_DIST     = 6,
+
+    SORT_REVERSE = 1<<3,                              // bitflag!
+};
 
 class DescriptionFormat;
 
@@ -57,6 +67,7 @@ class Cluster {
     double mean_dist;                               // dito, but mean
 
     double min_bases;                               // min bases used for sequence distance
+    double rel_tree_pos;                            // relative position in tree [0.0 .. 1.0]
 
     GBDATA     *representative;                     // cluster member with lowest mean distance
     SpeciesSet  members;                            // all members (including representative)
@@ -73,11 +84,6 @@ public:
     ~Cluster() { delete next_name; }
 
     ID get_ID() const { return id; }
-
-    bool lessByOrder(const Cluster& other, ClusterOrder sortBy) {
-        cl_assert(sortBy == SORT_BY_MEANDIST); // no other order impl. atm
-        return mean_dist < other.mean_dist;
-    }
 
     size_t get_member_count() const { return members.size(); }
     void scan_description_widths(DescriptionFormat& format) const;
@@ -101,6 +107,37 @@ public:
         delete next_name;
         next_name = NULL;
     }
+    
+private:
+    bool lessByOrder_forward(const Cluster& other, ClusterOrder sortBy) const {
+        bool less;
+        switch (sortBy) {
+            case UNSORTED:              less = false; break;
+            case SORT_BY_MEANDIST:      less = mean_dist < other.mean_dist; break;
+            case SORT_BY_MIN_BASES:     less = min_bases < other.min_bases; break;
+            case SORT_BY_CLUSTERSIZE:   less = members.size() < other.members.size(); break;
+            case SORT_BY_TREEPOSITION:  less = rel_tree_pos < other.rel_tree_pos;  break;
+            case SORT_BY_MIN_DIST:      less = min_dist < other.min_dist; break;
+            case SORT_BY_MAX_DIST:      less = max_dist < other.max_dist; break;
+                
+            case SORT_REVERSE:
+                cl_assert(0);
+                break;
+        }
+        return less;
+    }
+public:
+    bool lessByOrder(const Cluster& other, ClusterOrder sortBy) const {
+        bool less;
+        if (sortBy&SORT_REVERSE) {
+            less = other.lessByOrder_forward(*this, ClusterOrder(sortBy^SORT_REVERSE));
+        }
+        else {
+            less = lessByOrder_forward(other, sortBy);
+        }
+        return less;
+    }
+
 };
 
 typedef SmartPtr<Cluster>             ClusterPtr;
@@ -123,7 +160,7 @@ struct ClustersData {
     KnownClusters      known_clusters;              // contains all known clusters
     ClusterIDs         shown;                       // clusters shown in selection list
     ClusterIDs         stored;                      // stored clusters
-    ClusterOrder       order;                       // order of 'shown'
+    ClusterOrder       criteria[2];                 // order of 'shown'
     bool               sort_needed;                 // need to sort 'shown'
 
     ClusterIDs& get_subset(ClusterSubset subset) {
@@ -143,15 +180,21 @@ public:
     ClustersData(WeightedFilter& weighted_filter_)
         : weighted_filter(weighted_filter_)
         , clusterList(0)
-        , order(SORT_BY_MEANDIST)
         , sort_needed(true)
-    {}
+    {
+        criteria[0] = SORT_BY_MEANDIST;
+        criteria[1] = UNSORTED;
+    }
 
     void changeSortOrder(ClusterOrder newOrder) {
-        if (order != newOrder) {
-            order       = newOrder;
-            sort_needed = true;
+        if (newOrder == SORT_REVERSE) { // toggle reverse
+            criteria[0] = ClusterOrder(criteria[0]^SORT_REVERSE);
         }
+        else if (newOrder != criteria[0]) {
+            criteria[1] = criteria[0];
+            criteria[0] = newOrder;
+        }
+        sort_needed  = true;
     }
 
     ClusterPtr clusterWithID(ID id) const {
