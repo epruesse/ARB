@@ -187,12 +187,12 @@ public:
     bool is_upper_son(const ARB_tree *of_father) const { return is_leftson(of_father); }
     bool is_lower_son(const ARB_tree *of_father) const { return is_rightson(of_father); }
 
-    ARB_tree *get_root_node() { return const_cast<ARB_tree*>(get_root_node()); }
     const ARB_tree *get_root_node() const {
         const ARB_tree *root = get_tree_root()->get_root_node();
         at_assert(is_inside(root)); // this is not in tree - behavior of get_root_node() changed!
         return root;
     }
+    ARB_tree *get_root_node() { return const_cast<ARB_tree*>(const_cast<const ARB_tree*>(this)->get_root_node()); }
 
     bool is_root_node() const { return get_root_node() == this; }
 
