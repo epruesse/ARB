@@ -1,15 +1,21 @@
-// -----------------------------------------------------------------------------
-//  Include-Dateien
-// -----------------------------------------------------------------------------
-
-#include <iostream>
-#include <fstream>
-#include <cstdlib>
+// ================================================================ //
+//                                                                  //
+//   File      : a3_ptree2.cxx                                      //
+//   Purpose   :                                                    //
+//                                                                  //
+//   Institute of Microbiology (Technical University Munich)        //
+//   http://www.arb-home.de/                                        //
+//                                                                  //
+// ================================================================ //
 
 #include "a3_basen.h"
 #include "a3_ptree.hxx"
 
 #include <inline.h>
+
+#include <iostream>
+#include <fstream>
+#include <cstdlib>
 
 using std::cout;
 

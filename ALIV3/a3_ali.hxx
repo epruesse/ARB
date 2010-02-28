@@ -1,18 +1,22 @@
-// -----------------------------------------------------------------------------
+// ================================================================ //
+//                                                                  //
+//   File      : a3_ali.hxx                                         //
+//   Purpose   :                                                    //
+//                                                                  //
+//   Institute of Microbiology (Technical University Munich)        //
+//   http://www.arb-home.de/                                        //
+//                                                                  //
+// ================================================================ //
 
-#ifndef _A3_ALI_HXX
-#define _A3_ALI_HXX
+#ifndef A3_ALI_HXX
+#define A3_ALI_HXX
 
-// -----------------------------------------------------------------------------
-//  Include-Dateien
-// -----------------------------------------------------------------------------
-
+#ifndef A3_PTREE_HXX
 #include "a3_ptree.hxx"
+#endif
+#ifndef A3_HELIX_HXX
 #include "a3_helix.hxx"
-
-// -----------------------------------------------------------------------------
-//  Datentypen
-// -----------------------------------------------------------------------------
+#endif
 
 struct PSolution    // Loesung des Prealigners
 {
@@ -54,17 +58,9 @@ class Aligner       // Sekundaerstrukturalignment einer Sequenz
     void        Dump    ( void );
 };
 
-// -----------------------------------------------------------------------------
-//  Funktionen
-// -----------------------------------------------------------------------------
+extern int  psolcmp(const void *a, const void *b);
+extern void psoldump(vp val);
 
-extern  int     psolcmp     ( const void *a,
-                              const void *b );
-
-extern  void    psoldump    ( vp    val );
-
-// -----------------------------------------------------------------------------
-
-#endif
-
-// -----------------------------------------------------------------------------
+#else
+#error a3_ali.hxx included twice
+#endif // A3_ALI_HXX

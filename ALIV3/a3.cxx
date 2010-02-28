@@ -1,16 +1,20 @@
-// -----------------------------------------------------------------------------
-//  Include-Dateien
-// -----------------------------------------------------------------------------
+// ================================================================ //
+//                                                                  //
+//   File      : a3.cxx                                             //
+//   Purpose   :                                                    //
+//                                                                  //
+//   Institute of Microbiology (Technical University Munich)        //
+//   http://www.arb-home.de/                                        //
+//                                                                  //
+// ================================================================ //
+
+#include "a3_arbdb.hxx"
+#include "a3_ali.hxx"
+
+#include <BI_helix.hxx>
 
 #include <iostream>
 #include <fstream>
-#include <cstdio>
-#include <cstdlib>
-
-#include "a3_arbdb.hxx"
-#include <BI_helix.hxx>
-// #include "a3_bihelix.hxx"
-#include "a3_ali.hxx"
 
 using std::cout;
 using std::ifstream;

@@ -1,14 +1,18 @@
-// -----------------------------------------------------------------------------
-//  Include-Dateien
-// -----------------------------------------------------------------------------
+// ================================================================ //
+//                                                                  //
+//   File      : a3_helix.cxx                                       //
+//   Purpose   :                                                    //
+//                                                                  //
+//   Institute of Microbiology (Technical University Munich)        //
+//   http://www.arb-home.de/                                        //
+//                                                                  //
+// ================================================================ //
+
+#include "a3_ali.hxx"
+#include "a3_matrix.hxx"
 
 #include <iostream>
 #include <fstream>
-#include <cstring>
-
-#include "a3_helix.hxx"
-#include "a3_ali.hxx"
-#include "a3_matrix.hxx"
 
 using std::cout;
 
