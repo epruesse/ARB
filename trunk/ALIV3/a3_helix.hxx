@@ -1,18 +1,22 @@
-// -----------------------------------------------------------------------------
+// ================================================================ //
+//                                                                  //
+//   File      : a3_helix.hxx                                       //
+//   Purpose   :                                                    //
+//                                                                  //
+//   Institute of Microbiology (Technical University Munich)        //
+//   http://www.arb-home.de/                                        //
+//                                                                  //
+// ================================================================ //
 
-#ifndef _A3_HELIX_HXX
-#define _A3_HELIX_HXX
+#ifndef A3_HELIX_HXX
+#define A3_HELIX_HXX
 
-// -----------------------------------------------------------------------------
-//  Include-Dateien
-// -----------------------------------------------------------------------------
-
+#ifndef A3_TYPES_H
 #include "a3_types.h"
+#endif
+#ifndef A3_DARRAY_HXX
 #include "a3_darray.hxx"
-
-// -----------------------------------------------------------------------------
-//  Datentypen
-// -----------------------------------------------------------------------------
+#endif
 
 struct HMatch       // Ubereinstimmender Bereich von Sequenz und Helixstruktur
 {
@@ -67,20 +71,10 @@ class A3Helix
     void     Dump       ( int        all );
 };
 
-// -----------------------------------------------------------------------------
-//  Funktionen
-// -----------------------------------------------------------------------------
+extern  int  intcmp      ( const void *a, const void *b );
+extern  int  hmatchcmp   ( const void *a, const void *b );
+extern  void hmatchdump  ( vp val );
 
-extern  int     intcmp      ( const void    *a,
-                              const void    *b);
-
-extern  int     hmatchcmp   ( const void    *a,
-                              const void    *b);
-
-extern  void    hmatchdump  ( vp    val );
-
-// -----------------------------------------------------------------------------
-
-#endif
-
-// -----------------------------------------------------------------------------
+#else
+#error a3_helix.hxx included twice
+#endif // A3_HELIX_HXX

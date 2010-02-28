@@ -1,12 +1,18 @@
-// -----------------------------------------------------------------------------
-//  Include-Dateien
-// -----------------------------------------------------------------------------
+// ================================================================ //
+//                                                                  //
+//   File      : a3_matrix.cxx                                      //
+//   Purpose   :                                                    //
+//                                                                  //
+//   Institute of Microbiology (Technical University Munich)        //
+//   http://www.arb-home.de/                                        //
+//                                                                  //
+// ================================================================ //
+
+#include "a3_matrix.hxx"
 
 #include <cstring>
 #include <fstream>
 #include <iostream>
-
-#include "a3_matrix.hxx"
 
 using std::cout;
 

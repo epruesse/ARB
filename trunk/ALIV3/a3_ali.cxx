@@ -1,12 +1,17 @@
-// -----------------------------------------------------------------------------
-//  Include-Dateien
-// -----------------------------------------------------------------------------
-
-#include <cstring>
-#include <fstream>
-#include <iostream>
+// ================================================================ //
+//                                                                  //
+//   File      : a3_ali.cxx                                         //
+//   Purpose   :                                                    //
+//                                                                  //
+//   Institute of Microbiology (Technical University Munich)        //
+//   http://www.arb-home.de/                                        //
+//                                                                  //
+// ================================================================ //
 
 #include "a3_ali.hxx"
+
+#include <fstream>
+#include <iostream>
 
 using std::cout;
 

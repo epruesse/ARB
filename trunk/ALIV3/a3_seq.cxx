@@ -1,18 +1,22 @@
-// -----------------------------------------------------------------------------
-//  Include-Dateien
-// -----------------------------------------------------------------------------
-
-#include <iostream>
-#include <fstream>
-#include <cstdlib>
-#include <ctime>
-
-#include <arbdb.h>
+// ================================================================ //
+//                                                                  //
+//   File      : a3_seq.cxx                                         //
+//   Purpose   :                                                    //
+//                                                                  //
+//   Institute of Microbiology (Technical University Munich)        //
+//   http://www.arb-home.de/                                        //
+//                                                                  //
+// ================================================================ //
 
 #include "a3_basen.h"
 #include "a3_seq.hxx"
 
+#include <arbdb.h>
 #include <inline.h>
+
+#include <iostream>
+#include <fstream>
+#include <ctime>
 
 using std::ifstream;
 using std::cout;
