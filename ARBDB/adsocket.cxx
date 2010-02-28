@@ -175,7 +175,7 @@ static GB_ERROR gbcm_get_m_id(const char *path, char **m_name, long *id) {
                     *id     = -1;
                 }
                 else {
-                    char *mn = GB_strpartdup(path, p);
+                    char *mn = GB_strpartdup(path, p-1);
 
                     int i = atoi(p + 1);
                     if ((i < 1) || (i > 4096)) {
