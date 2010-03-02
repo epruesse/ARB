@@ -44,6 +44,11 @@ DESCRIPTION     Arb is aware of several environment variables:
 
                             your username (normally set by shell).
 
+                    PRINTER
+
+                            if PRINTER is defined, it may contain the name of your printer. ARB will
+                            then automatically use it in the printer command.
+
                     ARB_PID
 
                             internal PID for communication (set by the 'arb' script)
