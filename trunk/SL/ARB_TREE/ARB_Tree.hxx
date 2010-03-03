@@ -15,6 +15,9 @@
 #ifndef ALIVIEW_HXX
 #include <AliView.hxx>
 #endif
+#ifndef ARBDBT_H
+#include <arbdbt.h>
+#endif
 #ifndef DOWNCAST_H
 #include <downcast.h>
 #endif

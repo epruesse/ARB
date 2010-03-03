@@ -12,8 +12,8 @@
 #ifndef GUI_ALIVIEW_HXX
 #define GUI_ALIVIEW_HXX
 
-#ifndef ARBDBT_H
-#include <arbdbt.h>
+#ifndef ARBDB_BASE_H
+#include <arbdb_base.h>
 #endif
 
 struct adfiltercbstruct;

@@ -11,8 +11,8 @@
 #ifndef TREEWRITE_H
 #define TREEWRITE_H
 
-#ifndef ARBDBT_H
-#include <arbdbt.h>
+#ifndef ARBDB_BASE_H
+#include <arbdb_base.h>
 #endif
 
 typedef void        (*TREE_make_node_text_init)(GBDATA *gb_main);

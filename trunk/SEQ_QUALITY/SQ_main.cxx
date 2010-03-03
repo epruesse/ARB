@@ -19,6 +19,7 @@
 #include <awt_filter.hxx>
 #include <awt_sel_boxes.hxx>
 #include <aw_awars.hxx>
+#include <arbdbt.h>
 
 // --------------------------------------------------------------------------------
 

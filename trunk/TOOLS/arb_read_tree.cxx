@@ -1,4 +1,15 @@
+// ============================================================= //
+//                                                               //
+//   File      : arb_read_tree.cxx                               //
+//   Purpose   :                                                 //
+//                                                               //
+//   Institute of Microbiology (Technical University Munich)     //
+//   http://www.arb-home.de/                                     //
+//                                                               //
+// ============================================================= //
+
 #include <TreeRead.h>
+#include <arbdbt.h>
 #include <ctime>
 
 // add_bootstrap interprets the length of the branches as bootstrap value

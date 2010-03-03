@@ -1,8 +1,16 @@
-#include "phylo.hxx"
-#include "phwin.hxx"
+// ============================================================= //
+//                                                               //
+//   File      : PH_data.cxx                                     //
+//   Purpose   :                                                 //
+//                                                               //
+//   Institute of Microbiology (Technical University Munich)     //
+//   http://www.arb-home.de/                                     //
+//                                                               //
+// ============================================================= //
 
-#include <cstdlib>
-#include <cstring>
+#include "phwin.hxx"
+#include "phylo.hxx"
+#include <arbdbt.h>
 
 PHDATA::PHDATA(AW_root *awr) {
     memset((char *)this, 0, sizeof(PHDATA));

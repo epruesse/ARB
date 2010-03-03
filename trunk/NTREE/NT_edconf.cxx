@@ -15,6 +15,7 @@
 #include <aw_window.hxx>
 #include <aw_awars.hxx>
 #include <ad_config.h>
+#include <arbdbt.h>
 
 #define nt_assert(bed) arb_assert(bed)
 

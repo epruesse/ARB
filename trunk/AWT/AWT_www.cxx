@@ -1,17 +1,19 @@
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
-
-#include <aw_root.hxx>
-#include "aw_global_awars.hxx"
-#include <aw_device.hxx>
-#include <aw_window.hxx>
-#include <aw_awars.hxx>
-
-#include <arbdbt.h>
-#include <awt.hxx>
+// ================================================================ //
+//                                                                  //
+//   File      : AWT_www.cxx                                        //
+//   Purpose   :                                                    //
+//                                                                  //
+//   Institute of Microbiology (Technical University Munich)        //
+//   http://www.arb-home.de/                                        //
+//                                                                  //
+// ================================================================ //
 
 #include "awt_config_manager.hxx"
+#include "awt.hxx"
+
+#include <aw_global_awars.hxx>
+#include <aw_awars.hxx>
+#include <arbdbt.h>
 
 #define WWW_COUNT                10
 // #define AWAR_WWW_BROWSER "www/browser" // now defined by ARB_init_global_awars()

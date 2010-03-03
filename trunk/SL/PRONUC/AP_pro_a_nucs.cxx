@@ -11,7 +11,10 @@
 #include "AP_pro_a_nucs.hxx"
 
 #include <AP_codon_table.hxx>
+#include <arbdbt.h>
 #include <inline.h>
+
+#define pn_assert(cond) arb_assert(cond)
 
 char *AP_create_dna_to_ap_bases() {
     int       i;
@@ -223,7 +226,7 @@ AWT_translator::AWT_translator(int arb_protein_code_nr) :
     build_table('.', "???", "???");
     build_table('X', "NNN", "NNN");
 
-    awt_assert(GBS_hash_count_elems(t2i_hash) == T2I_ENTRIES);
+    pn_assert(GBS_hash_count_elems(t2i_hash) == T2I_ENTRIES);
 
     pro_2_bitset = create_pro_to_bits();
 }
@@ -434,7 +437,7 @@ AWT_translator *AWT_get_translator(int code_nr) {
         }
     }
 
-    awt_assert(cached[0]->CodeNr() == code_nr);
+    pn_assert(cached[0]->CodeNr() == code_nr);
     return cached[0];
 }
 
@@ -442,7 +445,7 @@ int AWT_default_protein_type(GBDATA *gb_main) {
     // returns protein code selected in AWAR_PROTEIN_TYPE
 
     if (current_user_code_nr == -1) { // user protein code in AWAR_PROTEIN_TYPE not traced yet
-        awt_assert(gb_main != 0); // either pass gb_main here or call once with valid gb_main at program startup
+        pn_assert(gb_main != 0); // either pass gb_main here or call once with valid gb_main at program startup
 
         {
             GB_transaction ta(gb_main);
@@ -451,7 +454,7 @@ int AWT_default_protein_type(GBDATA *gb_main) {
             user_code_nr_changed_cb(awar, 0, GB_CB_CHANGED);
         }
 
-        awt_assert(current_user_code_nr != -1);
+        pn_assert(current_user_code_nr != -1);
     }
 
     return current_user_code_nr;

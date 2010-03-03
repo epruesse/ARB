@@ -14,8 +14,8 @@
 
 #include <awt_sel_boxes.hxx>
 #include <aw_preset.hxx>
-
 #include <awt.hxx>
+#include <arbdbt.h>
 
 #include <iostream>
 

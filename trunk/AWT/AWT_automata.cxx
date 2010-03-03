@@ -1,6 +1,17 @@
-#include <cstdio>
-#include <memory.h>
+// ================================================================ //
+//                                                                  //
+//   File      : AWT_automata.cxx                                   //
+//   Purpose   :                                                    //
+//                                                                  //
+//   Institute of Microbiology (Technical University Munich)        //
+//   http://www.arb-home.de/                                        //
+//                                                                  //
+// ================================================================ //
+
 #include "awt_automata.hxx"
+
+#include <cstdio>
+#include <cmemory>
 
 AWT_automata::AWT_automata(bool free_value) {
     memset((char *)this, 0, sizefof(*this));
@@ -30,12 +41,8 @@ void AWT_automata::get_fwd(char *str, int pos) {
 }
 
 char *AWT_automata::insert(char *str, AW_CL value) {
-
-
-
-
-
-
-
-
+#if defined(DEVEL_RALF)
+#warning missing implementation
+#endif // DEVEL_RALF
 };
+

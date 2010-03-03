@@ -12,8 +12,8 @@
 #ifndef ADGENE_H
 #define ADGENE_H
 
-#ifndef ARBDB_H
-#include "arbdb.h"
+#ifndef _CPP_CSTDLIB
+#include <cstdlib>
 #endif
 
 #define GENOM_ALIGNMENT "ali_genom"
@@ -53,10 +53,6 @@ struct GEN_position {
     unsigned char *start_uncertain;
     unsigned char *stop_uncertain;
 };
-
-#ifndef ARBDB_H
-#include "arbdb.h"
-#endif
 
 #else
 #error adGene.h included twice

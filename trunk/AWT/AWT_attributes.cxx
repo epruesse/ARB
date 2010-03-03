@@ -11,11 +11,10 @@
 //                                                                       //
 //  ==================================================================== //
 
-#include <cstdio>
-#include <arbdb.h>
-
-#include <aw_color_groups.hxx>
 #include "awt_attributes.hxx"
+
+#include <arbdb.h>
+#include <aw_color_groups.hxx>
 
 using namespace std;
 

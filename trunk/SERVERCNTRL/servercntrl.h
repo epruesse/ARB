@@ -5,12 +5,12 @@
 #ifndef SERVERCNTRL_H
 #define SERVERCNTRL_H
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 
 /* servercntrl.cxx */
+
+#ifndef ARBDB_BASE_H
+#include <arbdb_base.h>
+#endif
 
 struct arb_params {
     char *species_name;
@@ -37,10 +37,6 @@ GB_ERROR arb_look_and_kill_server(int magic_number, const char *arb_tcp_env);
 void arb_print_server_params(void);
 struct arb_params *arb_trace_argv(int *argc, char **argv);
 void free_arb_params(struct arb_params *params);
-
-#ifdef __cplusplus
-}
-#endif
 
 #else
 #error servercntrl.h included twice

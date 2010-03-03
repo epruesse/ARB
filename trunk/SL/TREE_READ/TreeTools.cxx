@@ -10,6 +10,8 @@
 
 #include "TreeRead.h"
 
+#include <arbdbt.h>
+
 void TREE_scale(GBT_TREE *tree, double length_scale, double bootstrap_scale) {
     if (tree->leftson) {
         if (tree->leftlen <= TREE_DEFLEN_MARKER) tree->leftlen  = TREE_DEFLEN;

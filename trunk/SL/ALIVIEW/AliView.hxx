@@ -12,8 +12,8 @@
 #ifndef ALIVIEW_HXX
 #define ALIVIEW_HXX
 
-#ifndef ARBDBT_H
-#include <arbdbt.h>
+#ifndef ARBDB_BASE_H
+#include <arbdb_base.h>
 #endif
 
 class AP_filter;

@@ -18,7 +18,6 @@
 
 #include <cctype>
 #include <cmath>
-#include <algorithm>
 
 DNA_Table dna_table;
 

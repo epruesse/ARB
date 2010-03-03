@@ -13,14 +13,14 @@
 // Extended by Daniel Koitzsch & Christian Becker 19-05-04
 
 #ifndef ARB_OPENGL
-#error nono
+#error only compiles in ARB_OPENGL mode
 #endif // ARB_OPENGL
 
 #define GLX_GLXEXT_PROTOTYPES
 
+#include <aw_window_Xm.hxx>
 #include <arbdb.h>
 
-#include <Xm/Xm.h>
 #include <Xm/Frame.h>
 #include <Xm/RowColumn.h>
 #include <Xm/DrawingA.h>
@@ -30,8 +30,6 @@
 #include <Xm/CascadeB.h>
 #include <Xm/MenuShell.h>
 #include <Xm/ScrollBar.h>
-
-#include <aw_window_Xm.hxx>
 
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>

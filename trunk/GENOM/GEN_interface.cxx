@@ -1,14 +1,25 @@
-#include "GEN_local.hxx"
+// =============================================================  //
+//                                                                //
+//   File      : GEN_interface.cxx                                //
+//   Purpose   :                                                  //
+//                                                                //
+//   Coded by Ralf Westram (coder@reallysoft.de) in February 2001 //
+//   Institute of Microbiology (Technical University Munich)      //
+//   http://www.arb-home.de/                                      //
+//                                                                //
+// ============================================================== //
 
-#include <awt_item_sel_list.hxx>
-#include <awt_sel_boxes.hxx>
-#include <aw_awars.hxx>
-#include <db_scanner.hxx>
+#include "GEN_local.hxx"
 
 #include <ntree.hxx>
 #include <../NTREE/ad_spec.hxx>
 #include <../NTREE/nt_internal.h>
 
+#include <db_scanner.hxx>
+#include <awt_item_sel_list.hxx>
+#include <awt_sel_boxes.hxx>
+#include <aw_awars.hxx>
+#include <arbdbt.h>
 
 using namespace std;
 
@@ -689,5 +700,3 @@ AW_window *GEN_create_gene_query_window(AW_root *aw_root, AW_CL cl_gb_main) {
 
     return aws;
 }
-
-

@@ -16,7 +16,6 @@
 #include <arbdbt.h>
 #include <aw_awars.hxx>
 #include <aw_preset.hxx>
-#include <awt_canvas.hxx>
 #include <awt_attributes.hxx>
 #include <awt.hxx>
 

@@ -14,19 +14,16 @@
 
 #include "EXP_local.hxx"
 #include "EXP_interface.hxx"
-
 #include "GEN_local.hxx"
 #include "GEN_interface.hxx"
-
-#include <db_scanner.hxx>
-
-#include <awt_sel_boxes.hxx>
-#include <awt_item_sel_list.hxx>
-
-#include <aw_awars.hxx>
-
 #include "../NTREE/ad_spec.hxx"
 #include <../NTREE/nt_internal.h>
+
+#include <db_scanner.hxx>
+#include <awt_sel_boxes.hxx>
+#include <awt_item_sel_list.hxx>
+#include <aw_awars.hxx>
+#include <arbdbt.h>
 
 using namespace std;
 

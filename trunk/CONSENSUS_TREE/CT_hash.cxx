@@ -1,14 +1,20 @@
-/* Hashtabelle fuer parts */
-#include <cstdio>
-#include <cstdlib>
+// ============================================================= //
+//                                                               //
+//   File      : CT_hash.cxx                                     //
+//   Purpose   :                                                 //
+//                                                               //
+//   Institute of Microbiology (Technical University Munich)     //
+//   http://www.arb-home.de/                                     //
+//                                                               //
+// ============================================================= //
 
-#include <arbdb.h>
-#include <arbdbt.h>
-
-#include "CT_mem.hxx"
-#include "CT_part.hxx"
 #include "CT_hash.hxx"
 #include "CT_ntree.hxx"
+#include "CT_mem.hxx"
+
+#include <arbdbt.h>
+
+/* Hashtabelle fuer parts */
 
 int Hash_max_count=0;
 HNODE *Hashlist[HASH_MAX];

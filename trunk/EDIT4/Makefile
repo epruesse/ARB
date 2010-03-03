@@ -224,10 +224,8 @@ ED4_list.o: ed4_class.hxx
 ED4_list.o: ed4_defs.hxx
 ED4_list.o: ed4_search.hxx
 ED4_list.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
-ED4_list.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ED4_list.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ED4_list.o: $(ARBHOME)/INCLUDE/arb_error.h
-ED4_list.o: $(ARBHOME)/INCLUDE/arbdb.h
 ED4_list.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 ED4_list.o: $(ARBHOME)/INCLUDE/arbtools.h
 ED4_list.o: $(ARBHOME)/INCLUDE/attributes.h
@@ -342,10 +340,8 @@ ED4_mini_classes.o: ed4_edit_string.hxx
 ED4_mini_classes.o: ed4_search.hxx
 ED4_mini_classes.o: ed4_tools.hxx
 ED4_mini_classes.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
-ED4_mini_classes.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ED4_mini_classes.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ED4_mini_classes.o: $(ARBHOME)/INCLUDE/arb_error.h
-ED4_mini_classes.o: $(ARBHOME)/INCLUDE/arbdb.h
 ED4_mini_classes.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 ED4_mini_classes.o: $(ARBHOME)/INCLUDE/arbtools.h
 ED4_mini_classes.o: $(ARBHOME)/INCLUDE/attributes.h
@@ -498,7 +494,6 @@ ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/awt.hxx
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/awt_seq_colors.hxx
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/dupstr.h
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/smartptr.h
@@ -630,12 +625,10 @@ ED4_terminal.o: ed4_ProteinViewer.hxx
 ED4_terminal.o: ed4_search.hxx
 ED4_terminal.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 ED4_terminal.o: $(ARBHOME)/INCLUDE/ad_prot.h
-ED4_terminal.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 ED4_terminal.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ED4_terminal.o: $(ARBHOME)/INCLUDE/arb_error.h
 ED4_terminal.o: $(ARBHOME)/INCLUDE/arbdb.h
 ED4_terminal.o: $(ARBHOME)/INCLUDE/arbdb_base.h
-ED4_terminal.o: $(ARBHOME)/INCLUDE/arbdbt.h
 ED4_terminal.o: $(ARBHOME)/INCLUDE/arbtools.h
 ED4_terminal.o: $(ARBHOME)/INCLUDE/attributes.h
 ED4_terminal.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
@@ -664,12 +657,10 @@ ED4_text_terminals.o: ed4_search.hxx
 ED4_text_terminals.o: ed4_visualizeSAI.hxx
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/ad_prot.h
-ED4_text_terminals.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/arb_error.h
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/arbdb.h
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/arbdb_base.h
-ED4_text_terminals.o: $(ARBHOME)/INCLUDE/arbdbt.h
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/arbtools.h
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/attributes.h
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
@@ -754,10 +745,8 @@ ED4_window.o: ed4_extern.hxx
 ED4_window.o: ed4_search.hxx
 ED4_window.o: ed4_tools.hxx
 ED4_window.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
-ED4_window.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ED4_window.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ED4_window.o: $(ARBHOME)/INCLUDE/arb_error.h
-ED4_window.o: $(ARBHOME)/INCLUDE/arbdb.h
 ED4_window.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 ED4_window.o: $(ARBHOME)/INCLUDE/arbtools.h
 ED4_window.o: $(ARBHOME)/INCLUDE/attributes.h

@@ -167,7 +167,6 @@ ad_transpro.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ad_transpro.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 ad_transpro.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 ad_transpro.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-ad_transpro.o: $(ARBHOME)/INCLUDE/awt.hxx
 ad_transpro.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 ad_transpro.o: $(ARBHOME)/INCLUDE/dupstr.h
 ad_transpro.o: $(ARBHOME)/INCLUDE/smartptr.h

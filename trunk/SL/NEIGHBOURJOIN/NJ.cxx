@@ -10,6 +10,7 @@
 
 #include "NJ.hxx"
 #include <neighbourjoin.hxx>
+#include <arbdbt.h>
 
 #define CHECK_NAN(x) if ((!(x>=0.0)) && (!(x<0.0))) *(int *)0 = 0;
 

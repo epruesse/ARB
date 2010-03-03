@@ -16,12 +16,11 @@
  *  \sa     Refer to ed4_protein_2nd_structure.hxx for details, please.
 */
 
-#include "arbdb.h"
-#include "arbdbt.h"
+#include "ed4_protein_2nd_structure.hxx"
 #include "ed4_class.hxx"
 #include "ed4_awars.hxx"
-#include "ed4_protein_2nd_structure.hxx"
 
+#include "arbdbt.h"
 #include <inline.h>
 
 #include <iostream>

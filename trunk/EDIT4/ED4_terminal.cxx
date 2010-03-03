@@ -19,6 +19,7 @@
 #include <aw_preset.hxx>
 #include <awt_seq_colors.hxx>
 #include <st_window.hxx>
+#include <arbdb.h>
 
 // -----------------------------------
 //      static terminal properties

@@ -11,10 +11,9 @@
 #ifndef COLUMNSTAT_HXX
 #define COLUMNSTAT_HXX
 
-#ifndef ARBDBT_H
-#include <arbdbt.h>
+#ifndef ARBDB_BASE_H
+#include <arbdb_base.h>
 #endif
-
 
 /* Create a window, that allows you to select a column statistic and 
  * get the weights from the selected SAI

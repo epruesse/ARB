@@ -4,6 +4,7 @@
 
 #include <aw_awars.hxx>
 #include <AP_filter.hxx>
+#include <arbdbt.h>
 
 /*! recalc filter */
 void awt_create_select_filter_window_aw_cb(void *dummy, struct adfiltercbstruct *cbs)

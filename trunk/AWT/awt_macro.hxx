@@ -13,6 +13,9 @@
 #ifndef AWT_MACRO_HXX
 #define AWT_MACRO_HXX
 
+class AW_window;
+class AW_root;
+
 AW_window *awt_open_macro_window(AW_root *aw_root, const char *application_id);
 
 #else

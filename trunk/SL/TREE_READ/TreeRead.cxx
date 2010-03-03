@@ -10,6 +10,9 @@
 
 #include "TreeRead.h"
 
+#include <arbdbt.h>
+
+
 #define tree_assert(cond) arb_assert(cond)
 
 /*!******************************************************************************************

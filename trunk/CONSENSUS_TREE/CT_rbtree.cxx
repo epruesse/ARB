@@ -1,23 +1,24 @@
-/* Reconstruct GBT-tree from Ntree */
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
+// ============================================================= //
+//                                                               //
+//   File      : CT_rbtree.cxx                                   //
+//   Purpose   :                                                 //
+//                                                               //
+//   Institute of Microbiology (Technical University Munich)     //
+//   http://www.arb-home.de/                                     //
+//                                                               //
+// ============================================================= //
 
-#include <arbdb.h>
+/* Reconstruct GBT-tree from Ntree */
+
+#include "CT_rbtree.hxx"
+#include "CT_mem.hxx"
+
 #include <arbdbt.h>
 
-#include "CT_mem.hxx"
-#include "CT_part.hxx"
-#include "CT_ntree.hxx"
-#include "CT_rbtree.hxx"
 
 #define RMSTRLEN 81
 
 char **name_tbl = NULL;
-
-
-
-
 
 
 /* Initialize the module */

@@ -11,14 +11,7 @@
 #ifndef MPDEFS_H
 #define MPDEFS_H
 
-#ifndef ARBDB_H
-#include <arbdb.h>
-#endif
-
 #include <PT_com.h>
-#include <client.h>
-
-#include <servercntrl.h>
 
 #define TRUE      1
 #define FALSE     0

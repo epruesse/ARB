@@ -14,6 +14,10 @@
 #ifndef AWT_ATTRIBUTES_HXX
 #define AWT_ATTRIBUTES_HXX
 
+#ifndef ARBDB_BASE_H
+#include <arbdb_base.h>
+#endif
+
 // find the color of the most dominant attribute of a gene/species
 // returns 0 if no such color exists (or if display of attributes is disabled)
 // returns 1..n otherwise

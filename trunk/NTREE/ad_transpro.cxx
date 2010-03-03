@@ -15,6 +15,8 @@
 #include <AP_codon_table.hxx>
 #include <AP_pro_a_nucs.hxx>
 #include <aw_awars.hxx>
+#include <aw_window.hxx>
+#include <arbdbt.h>
 #include <cctype>
 
 #define nt_assert(bed) arb_assert(bed)

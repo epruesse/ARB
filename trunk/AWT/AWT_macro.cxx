@@ -11,8 +11,7 @@
 //                                                                      //
 // ==================================================================== //
 
-#include <cstdlib>
-#include <cstdio>
+#include "awt_macro.hxx"
 
 #include <arbdb.h>
 

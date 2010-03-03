@@ -11,8 +11,8 @@
 #ifndef GENOMEIMPORT_H
 #define GENOMEIMPORT_H
 
-#ifndef ARBDB_H
-#include <arbdb.h>
+#ifndef ARBDB_BASE_H
+#include <arbdb_base.h>
 #endif
 
 class UniqueNameDetector;

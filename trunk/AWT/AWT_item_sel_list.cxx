@@ -11,13 +11,10 @@
 //                                                                      //
 // ==================================================================== //
 
-#include <cstring>
+#include "awt_item_sel_list.hxx"
+#include "awt.hxx"
 
 #include <aw_awars.hxx>
-
-#include "awt.hxx"
-#include "awt_item_sel_list.hxx"
-
 #include <arbdbt.h>
 
 static AW_window *awt_existing_window(AW_window *, AW_CL cl1, AW_CL) {

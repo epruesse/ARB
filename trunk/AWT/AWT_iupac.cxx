@@ -1,11 +1,18 @@
-#include <cstdio>
-#include <cstring>
-#include <cctype>
-
-#include <arb_assert.h>
-#define awt_assert(bed) arb_assert(bed)
+// ================================================================ //
+//                                                                  //
+//   File      : AWT_iupac.cxx                                      //
+//   Purpose   :                                                    //
+//                                                                  //
+//   Institute of Microbiology (Technical University Munich)        //
+//   http://www.arb-home.de/                                        //
+//                                                                  //
+// ================================================================ //
 
 #include "awt_iupac.hxx"
+#include <arb_assert.h>
+#include <cctype>
+
+#define awt_assert(bed) arb_assert(bed)
 
 #define IUPAC_EMPTY "" // changed from " " to "" (2009-03-19 -- ralf)
 #define ILL_CODE char(26)

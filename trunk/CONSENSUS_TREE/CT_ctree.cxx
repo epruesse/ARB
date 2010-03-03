@@ -1,16 +1,19 @@
-/* CTREE -> consensus tree */
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
+// ============================================================= //
+//                                                               //
+//   File      : CT_ctree.cxx                                    //
+//   Purpose   : consensus tree                                  //
+//                                                               //
+//   Institute of Microbiology (Technical University Munich)     //
+//   http://www.arb-home.de/                                     //
+//                                                               //
+// ============================================================= //
 
-#include <arbdb.h>
-#include <arbdbt.h>
-
-#include "CT_part.hxx"
+#include "CT_ctree.hxx"
 #include "CT_hash.hxx"
-#include "CT_ntree.hxx"
 #include "CT_rbtree.hxx"
 #include "CT_dtree.hxx"
+
+#include <arbdbt.h>
 
 int Tree_count;
 GB_HASH *Name_hash;

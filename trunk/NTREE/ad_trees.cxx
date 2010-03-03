@@ -13,14 +13,13 @@
 
 #include <TreeRead.h>
 #include <TreeWrite.h>
-
 #include <awt_sel_boxes.hxx>
 #include <awt_nds.hxx>
-
 #include <aw_window.hxx>
 #include <aw_awars.hxx>
 #include <aw_edit.hxx>
 #include <aw_file.hxx>
+#include <arbdbt.h>
 
 #define nt_assert(bed) arb_assert(bed)
 

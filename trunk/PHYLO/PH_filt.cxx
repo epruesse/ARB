@@ -10,7 +10,7 @@
 
 #include "phylo.hxx"
 #include "phwin.hxx"
-
+#include <arbdbt.h>
 #include <cctype>
 
 static long PH_timer() {

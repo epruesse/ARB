@@ -11,8 +11,8 @@
 #ifndef CT_HASH_HXX
 #define CT_HASH_HXX
 
-#ifndef ARBDB_H
-#include <arbdb.h>
+#ifndef CT_PART_HXX
+#include "CT_part.hxx"
 #endif
 
 typedef struct hnode {

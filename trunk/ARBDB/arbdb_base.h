@@ -27,12 +27,31 @@ typedef const char *GB_CBUFFER;                     // points to a piece of mem 
 struct GBDATA;
 struct GB_HASH;
 
+typedef int GBQUARK;
+
+typedef float GBT_LEN;
+struct        GBT_TREE;
+
+typedef unsigned int       GB_UINT4;                // 4 byte! @@@ use uint32_t ?
+typedef const unsigned int GB_CUINT4;
+
+typedef unsigned long GB_ULONG;
+typedef const float   GB_CFLOAT;
+
+
 enum GB_CB_TYPE {
     GB_CB_NONE        = 0,
     GB_CB_DELETE      = 1,
     GB_CB_CHANGED     = 2, // element or son of element changed
     GB_CB_SON_CREATED = 4, // new son created
     GB_CB_ALL         = 7
+};
+
+enum GB_alignment_type {
+    GB_AT_UNKNOWN,
+    GB_AT_RNA,      // Nucleotide sequence (U)
+    GB_AT_DNA,      // Nucleotide sequence (T)
+    GB_AT_AA,       // AminoAcid
 };
 
 #ifndef DUPSTR_H

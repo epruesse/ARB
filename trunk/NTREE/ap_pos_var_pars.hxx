@@ -11,8 +11,8 @@
 #ifndef AP_POS_VAR_PARS_HXX
 #define AP_POS_VAR_PARS_HXX
 
-#ifndef ARBDBT_H
-#include <arbdbt.h>
+#ifndef ARBDB_BASE_H
+#include <arbdb_base.h>
 #endif
 
 class AW_window;

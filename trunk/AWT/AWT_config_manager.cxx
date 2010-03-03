@@ -12,13 +12,12 @@
 //                                                                       //
 //  ==================================================================== //
 
-#include "awt.hxx"
 #include "awt_config_manager.hxx"
+#include "awt.hxx"
+#include <arbdb.h>
 
 #include <map>
 #include <string>
-#include <cstdlib>
-#include <cstring>
 
 using namespace std;
 

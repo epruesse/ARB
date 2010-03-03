@@ -11,8 +11,10 @@
 #ifndef AWT_MAP_KEY_HXX
 #define AWT_MAP_KEY_HXX
 
-
 #define MAX_MAPPED_KEYS 20
+
+class AW_root;
+class AW_window;
 
 class ed_key {
     char map[256];

@@ -12,10 +12,6 @@
 #ifndef AP_CODON_TABLE_HXX
 #define AP_CODON_TABLE_HXX
 
-#ifndef AWT_HXX
-#include <awt.hxx>
-#endif
-
 // --------------------------------------------------------------------------------
 
 struct AWT_Codon_Code_Definition {

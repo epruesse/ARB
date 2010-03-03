@@ -1,8 +1,8 @@
 #ifndef AWT_IUPAC
 #define AWT_IUPAC
 
-#ifndef ARBDB_H
-#include <arbdb.h>
+#ifndef ARBDB_BASE_H
+#include <arbdb_base.h>
 #endif
 
 struct AWT_IUPAC_descriptor {

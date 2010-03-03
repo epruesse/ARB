@@ -1,4 +1,15 @@
-#include <MultiProbe.hxx>
+// ============================================================= //
+//                                                               //
+//   File      : MP_GenerationDuplicates.cxx                     //
+//   Purpose   :                                                 //
+//                                                               //
+//   Institute of Microbiology (Technical University Munich)     //
+//   http://www.arb-home.de/                                     //
+//                                                               //
+// ============================================================= //
+
+#include "MP_probe.hxx"
+#include "MultiProbe.hxx"
 
 BOOL GenerationDuplicates::insert(probe_combi_statistic *sondenkombi, BOOL &result, int depth)          // initial muss result TRUE sein
 {

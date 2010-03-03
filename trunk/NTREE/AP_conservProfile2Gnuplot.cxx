@@ -13,6 +13,7 @@
 
 #include <aw_window.hxx>
 #include <aw_file.hxx>
+#include <arbdbt.h>
 
 extern GBDATA *GLOBAL_gb_main;
 

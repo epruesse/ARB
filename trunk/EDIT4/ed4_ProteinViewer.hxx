@@ -12,8 +12,8 @@
 #ifndef ED4_PROTEINVIEWER_HXX
 #define ED4_PROTEINVIEWER_HXX
 
-#ifndef ARBDB_H
-#include <arbdb.h>
+#ifndef ARBDB_BASE_H
+#include <arbdb_base.h>
 #endif
 #ifndef AW_ROOT_HXX
 #include <aw_root.hxx>
@@ -21,16 +21,16 @@
 
 
 // Define Awars
-#define AWAR_PROTVIEW                                           "protView/"
-#define AWAR_PV_DISPLAY_ALL                        AWAR_PROTVIEW "display_all"
-#define AWAR_PROTVIEW_FORWARD_STRAND_1             AWAR_PROTVIEW "forward_strand_1"
-#define AWAR_PROTVIEW_FORWARD_STRAND_2             AWAR_PROTVIEW "forward_strand_2"
-#define AWAR_PROTVIEW_FORWARD_STRAND_3             AWAR_PROTVIEW "forward_strand_3"
-#define AWAR_PROTVIEW_COMPLEMENTARY_STRAND_1   AWAR_PROTVIEW "complementary_strand_1"
-#define AWAR_PROTVIEW_COMPLEMENTARY_STRAND_2   AWAR_PROTVIEW "complementary_strand_2"
-#define AWAR_PROTVIEW_COMPLEMENTARY_STRAND_3   AWAR_PROTVIEW "complementary_strand_3"
-#define AWAR_PROTVIEW_DEFINED_FIELDS                   AWAR_PROTVIEW "defined_fields"
-#define AWAR_PROTVIEW_DISPLAY_OPTIONS                AWAR_PROTVIEW "display_options"
+#define AWAR_PROTVIEW                        "protView/"
+#define AWAR_PV_DISPLAY_ALL                  AWAR_PROTVIEW "display_all"
+#define AWAR_PROTVIEW_FORWARD_STRAND_1       AWAR_PROTVIEW "forward_strand_1"
+#define AWAR_PROTVIEW_FORWARD_STRAND_2       AWAR_PROTVIEW "forward_strand_2"
+#define AWAR_PROTVIEW_FORWARD_STRAND_3       AWAR_PROTVIEW "forward_strand_3"
+#define AWAR_PROTVIEW_COMPLEMENTARY_STRAND_1 AWAR_PROTVIEW "complementary_strand_1"
+#define AWAR_PROTVIEW_COMPLEMENTARY_STRAND_2 AWAR_PROTVIEW "complementary_strand_2"
+#define AWAR_PROTVIEW_COMPLEMENTARY_STRAND_3 AWAR_PROTVIEW "complementary_strand_3"
+#define AWAR_PROTVIEW_DEFINED_FIELDS         AWAR_PROTVIEW "defined_fields"
+#define AWAR_PROTVIEW_DISPLAY_OPTIONS        AWAR_PROTVIEW "display_options"
 
 // Awars for different display configurations
 #define AWAR_PV_SELECTED         AWAR_PROTVIEW "selected"

@@ -11,8 +11,11 @@
 #ifndef AP_FILTER_HXX
 #define AP_FILTER_HXX
 
-#ifndef ARBDBT_H
-#include <arbdbt.h>
+#ifndef ARBDB_BASE_H
+#include <arbdb_base.h>
+#endif
+#ifndef ARB_ASSERT_H
+#include <arb_assert.h>
 #endif
 
 #define af_assert(cond) arb_assert(cond)

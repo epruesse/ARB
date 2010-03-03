@@ -1,19 +1,19 @@
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
-#include <cctype>
-
-#include <arbdb.h>
-#include <arbdbt.h>
-
-
-#include <aw_root.hxx>
-#include <aw_device.hxx>
-#include <aw_window.hxx>
+// ================================================================ //
+//                                                                  //
+//   File      : AWT_seq_colors.cxx                                 //
+//   Purpose   :                                                    //
+//                                                                  //
+//   Institute of Microbiology (Technical University Munich)        //
+//   http://www.arb-home.de/                                        //
+//                                                                  //
+// ================================================================ //
 
 #include "awt_seq_colors.hxx"
 #include "awt.hxx"
 
+#include <arbdbt.h>
+
+#include <cctype>
 
 static int default_NUC_set = 0;     // number of default nucleotide set
 static int default_AMI_set = 3;     // number of default amino acid set

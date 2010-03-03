@@ -17,9 +17,6 @@
 
 #include <arbdb.h>
 
-#include <cstdlib>
-#include <cstring>
-
 using namespace std;
 
 #define AWAR_ADVICE_TMP "/tmp/advices/"

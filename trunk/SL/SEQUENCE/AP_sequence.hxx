@@ -14,7 +14,12 @@
 #ifndef ALIVIEW_HXX
 #include <AliView.hxx>
 #endif
-
+#ifndef ARBTOOLS_H
+#include <arbtools.h>
+#endif
+#ifndef ARB_ASSERT_H
+#include <arb_assert.h>
+#endif
 
 #define ap_assert(cond) arb_assert(cond)
 

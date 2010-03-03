@@ -12,8 +12,8 @@
 #ifndef TREEREAD_H
 #define TREEREAD_H
 
-#ifndef ARBDBT_H
-#include <arbdbt.h>
+#ifndef ARBDB_BASE_H
+#include <arbdb_base.h>
 #endif
 
 #define TREE_DEFLEN        0.1 /* default length of tree-edge w/o given length */

@@ -15,6 +15,10 @@
 #ifndef GUI_ALIVIEW_HXX
 #include <gui_aliview.hxx>
 #endif
+#ifndef SMARTPTR_H
+#include <smartptr.h>
+#endif
+
 
 #ifndef _CPP_SET
 #include <set>

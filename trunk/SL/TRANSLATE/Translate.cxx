@@ -13,12 +13,15 @@
 
 #include <AP_pro_a_nucs.hxx>
 #include <AP_codon_table.hxx>
+#include <arbdbt.h>
+
+#define tl_assert(cond) arb_assert(cond)
 
 GB_ERROR AWT_saveTranslationInfo(GBDATA *gb_species, int arb_transl_table, int codon_start) {
     int embl_transl_table = AWT_arb_code_nr_2_embl_transl_table(arb_transl_table);
 
-    awt_assert(codon_start >= 0 && codon_start<3); // codon_start has to be 0..2
-    awt_assert(embl_transl_table >= 0);
+    tl_assert(codon_start >= 0 && codon_start<3); // codon_start has to be 0..2
+    tl_assert(embl_transl_table >= 0);
 
     GB_ERROR error    = GBT_write_string(gb_species, "transl_table", GBS_global_string("%i", embl_transl_table));
     if (!error) error = GBT_write_string(gb_species, "codon_start",  GBS_global_string("%i", codon_start+1));

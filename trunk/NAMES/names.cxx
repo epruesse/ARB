@@ -1,12 +1,17 @@
-#include <cstdio>
-#include <cstring>
-#include <cstdlib>
-#include <unistd.h>
-#include <cctype>
+// ============================================================= //
+//                                                               //
+//   File      : names.cxx                                       //
+//   Purpose   :                                                 //
+//                                                               //
+//   Institute of Microbiology (Technical University Munich)     //
+//   http://www.arb-home.de/                                     //
+//                                                               //
+// ============================================================= //
 
 #include <names_server.h>
 #include <names_client.h>
 #include "names.h"
+
 #include <arbdb.h>
 #include <names_prototypes.h>
 #include <server.h>
@@ -14,6 +19,8 @@
 #include <servercntrl.h>
 #include <struct_man.h>
 
+#include <unistd.h>
+#include <cctype>
 #include <list>
 #include <string>
 

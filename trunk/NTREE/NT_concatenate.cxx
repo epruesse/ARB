@@ -17,6 +17,7 @@
 #include <awt_sel_boxes.hxx>
 #include <AW_rename.hxx>
 #include <aw_question.hxx>
+#include <arbdbt.h>
 
 #define nt_assert(bed) arb_assert(bed)
 

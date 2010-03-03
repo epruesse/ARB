@@ -47,12 +47,6 @@ AP_codon_table.o: $(ARBHOME)/INCLUDE/arbdb.h
 AP_codon_table.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AP_codon_table.o: $(ARBHOME)/INCLUDE/arbtools.h
 AP_codon_table.o: $(ARBHOME)/INCLUDE/attributes.h
-AP_codon_table.o: $(ARBHOME)/INCLUDE/aw_device.hxx
-AP_codon_table.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
-AP_codon_table.o: $(ARBHOME)/INCLUDE/aw_position.hxx
-AP_codon_table.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-AP_codon_table.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-AP_codon_table.o: $(ARBHOME)/INCLUDE/awt.hxx
 AP_codon_table.o: $(ARBHOME)/INCLUDE/awt_iupac.hxx
 AP_codon_table.o: $(ARBHOME)/INCLUDE/dupstr.h
 AP_codon_table.o: $(ARBHOME)/INCLUDE/smartptr.h
@@ -69,12 +63,6 @@ AP_pro_a_nucs.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AP_pro_a_nucs.o: $(ARBHOME)/INCLUDE/arbdbt.h
 AP_pro_a_nucs.o: $(ARBHOME)/INCLUDE/arbtools.h
 AP_pro_a_nucs.o: $(ARBHOME)/INCLUDE/attributes.h
-AP_pro_a_nucs.o: $(ARBHOME)/INCLUDE/aw_device.hxx
-AP_pro_a_nucs.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
-AP_pro_a_nucs.o: $(ARBHOME)/INCLUDE/aw_position.hxx
-AP_pro_a_nucs.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-AP_pro_a_nucs.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-AP_pro_a_nucs.o: $(ARBHOME)/INCLUDE/awt.hxx
 AP_pro_a_nucs.o: $(ARBHOME)/INCLUDE/dupstr.h
 AP_pro_a_nucs.o: $(ARBHOME)/INCLUDE/inline.h
 AP_pro_a_nucs.o: $(ARBHOME)/INCLUDE/smartptr.h

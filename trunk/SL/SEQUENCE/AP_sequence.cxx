@@ -9,6 +9,7 @@
 // =============================================================== //
 
 #include "AP_sequence.hxx"
+#include <arbdbt.h>
 
 long AP_sequence::global_combineCount;
 

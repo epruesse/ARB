@@ -1,10 +1,15 @@
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
-#include <aw_root.hxx>
-#include <aw_device.hxx>
-#include <aw_window.hxx>
+// ================================================================ //
+//                                                                  //
+//   File      : AWT_map_key.cxx                                    //
+//   Purpose   :                                                    //
+//                                                                  //
+//   Institute of Microbiology (Technical University Munich)        //
+//   http://www.arb-home.de/                                        //
+//                                                                  //
+// ================================================================ //
+
 #include "awt_map_key.hxx"
+#include <aw_window.hxx>
 
 ed_key::ed_key()
 {

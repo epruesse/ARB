@@ -11,16 +11,11 @@
 //                                                                      //
 // ==================================================================== //
 
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
+#include "awt_item_sel_list.hxx"
+#include "awt.hxx"
 
 #include <aw_awars.hxx>
-#include <arbdb.h>
 #include <arbdbt.h>
-
-#include "awt.hxx"
-#include "awt_item_sel_list.hxx"
 
 static const char GENE_DATA_PATH[]       = "gene_data/gene/";
 static const char EXPERIMENT_DATA_PATH[] = "experiment_data/experiment/";

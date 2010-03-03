@@ -1,15 +1,17 @@
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
+// ================================================================ //
+//                                                                  //
+//   File      : AWT_asciiprint.cxx                                 //
+//   Purpose   :                                                    //
+//                                                                  //
+//   Institute of Microbiology (Technical University Munich)        //
+//   http://www.arb-home.de/                                        //
+//                                                                  //
+// ================================================================ //
 
-#include <arbdb.h>
-#include <arbdbt.h>
-
-#include <aw_root.hxx>
-#include <aw_device.hxx>
-#include <aw_window.hxx>
-#include "awt.hxx"
 #include "awt_asciiprint.hxx"
+#include "awt.hxx"
+
+#include <arbdbt.h>
 
 double awt_aps_get_xy_ratio(AW_root *awr) {
     AWT_asciiprint_paper_size psize = (AWT_asciiprint_paper_size)awr->awar(AWAR_APRINT_PAPER_SIZE)->read_int();

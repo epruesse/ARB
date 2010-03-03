@@ -223,12 +223,10 @@ GEN_map.o: $(ARBHOME)/INCLUDE/smartptr.h
 GEN_nds.o: GEN_interface.hxx
 GEN_nds.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 GEN_nds.o: $(ARBHOME)/INCLUDE/ad_prot.h
-GEN_nds.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 GEN_nds.o: $(ARBHOME)/INCLUDE/arb_assert.h
 GEN_nds.o: $(ARBHOME)/INCLUDE/arb_error.h
 GEN_nds.o: $(ARBHOME)/INCLUDE/arbdb.h
 GEN_nds.o: $(ARBHOME)/INCLUDE/arbdb_base.h
-GEN_nds.o: $(ARBHOME)/INCLUDE/arbdbt.h
 GEN_nds.o: $(ARBHOME)/INCLUDE/arbtools.h
 GEN_nds.o: $(ARBHOME)/INCLUDE/attributes.h
 GEN_nds.o: $(ARBHOME)/INCLUDE/aw_device.hxx
@@ -264,7 +262,6 @@ GEN_translations.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 GEN_translations.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 GEN_translations.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 GEN_translations.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-GEN_translations.o: $(ARBHOME)/INCLUDE/awt.hxx
 GEN_translations.o: $(ARBHOME)/INCLUDE/dupstr.h
 GEN_translations.o: $(ARBHOME)/INCLUDE/smartptr.h
 GEN_translations.o: $(ARBHOME)/INCLUDE/Translate.hxx

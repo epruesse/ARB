@@ -17,6 +17,7 @@
 #include <ad_config.h>
 #include <awt.hxx>
 #include <awt_sel_boxes.hxx>
+#include <arbdb.h>
 
 #define AWAR_CONFIG_NAME1 "tmp/merge1/config_name"
 #define AWAR_CONFIG_DEST1 "tmp/merge1/config_dest"

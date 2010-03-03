@@ -11,6 +11,7 @@
 
 #include "tools.h"
 #include "DBwriter.h"
+#include <arbdb.h>
 
 using namespace std;
 

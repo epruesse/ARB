@@ -23,9 +23,6 @@
 #include <aw_window.hxx>
 #include <aw_awars.hxx>
 
-#include <climits>
-
-
 using namespace std;
 
 #define di_assert(cond) arb_assert(cond)

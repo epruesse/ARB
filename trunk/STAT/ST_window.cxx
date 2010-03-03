@@ -8,7 +8,6 @@
 //                                                                  //
 // ================================================================ //
 
-#include "st_window.hxx"
 #include "st_ml.hxx"
 #include "st_quality.hxx"
 

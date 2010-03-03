@@ -20,27 +20,22 @@
 #include "ed4_ProteinViewer.hxx"
 #include "ed4_protein_2nd_structure.hxx"
 #include "graph_aligner_gui.hxx"
-
 #if defined(ARB_OPENGL)
 #include "ed4_RNA3D.hxx"
 #endif // ARB_OPENGL
 
-#include <aw_awars.hxx>
-#include <aw_preset.hxx>
-
-#include <awt.hxx>
-#include <awt_seq_colors.hxx>
-#include <awt_map_key.hxx>
-
+#include <ed4_extern.hxx>
 #include <fast_aligner.hxx>
-
-#include <arb_version.h>
-
 #include <AW_helix.hxx>
 #include <st_window.hxx>
 #include <gde.hxx>
-
-#include <ed4_extern.hxx>
+#include <awt.hxx>
+#include <awt_seq_colors.hxx>
+#include <awt_map_key.hxx>
+#include <aw_awars.hxx>
+#include <aw_preset.hxx>
+#include <arb_version.h>
+#include <arbdbt.h>
 
 #include <cctype>
 

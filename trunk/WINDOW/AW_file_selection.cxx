@@ -8,9 +8,6 @@
 //                                                                  //
 // ================================================================ //
 
-
-#include <aw_root.hxx>
-#include <aw_device.hxx>
 #include <aw_window.hxx>
 #include <aw_awars.hxx>
 #include <aw_file.hxx>
@@ -25,11 +22,8 @@
 #include <string>
 #include <set>
 
-#include <cstdio>
-#include <cstdlib>
 #include <unistd.h>
 #include <ctime>
-#include <cstring>
 
 #if defined(DEBUG)
 // #define TRACE_FILEBOX

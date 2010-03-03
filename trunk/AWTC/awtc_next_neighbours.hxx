@@ -11,10 +11,9 @@
 #ifndef AWTC_NEXT_NEIGHBOURS_HXX
 #define AWTC_NEXT_NEIGHBOURS_HXX
 
-#ifndef ARBDB_H
-#include <arbdb.h>
+#ifndef ARBDB_BASE_H
+#include <arbdb_base.h>
 #endif
-
 
 class AWTC_FIND_FAMILY_MEMBER {
     // list is sorted either by 'matches' or 'rel_matches' (descending)

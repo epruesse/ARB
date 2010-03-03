@@ -11,9 +11,10 @@
 #ifndef DIST_HXX
 #define DIST_HXX
 
-#ifndef ARBDBT_H
-#include <arbdbt.h>
+#ifndef ARBDB_BASE_H
+#include <arbdb_base.h>
 #endif
+
 
 #define di_assert(cond) arb_assert(cond)
 

@@ -11,8 +11,8 @@
 #ifndef NT_TREE_CMP_HXX
 #define NT_TREE_CMP_HXX
 
-#ifndef ARBDBT_H
-#include <arbdbt.h>
+#ifndef ARBDB_BASE_H
+#include <arbdb_base.h>
 #endif
 
 class AP_tree;

@@ -1,10 +1,22 @@
-#include <MultiProbe.hxx>
+// ============================================================= //
+//                                                               //
+//   File      : MP_sonde.cxx                                    //
+//   Purpose   :                                                 //
+//                                                               //
+//   Institute of Microbiology (Technical University Munich)     //
+//   http://www.arb-home.de/                                     //
+//                                                               //
+// ============================================================= //
+
+#include "MP_externs.hxx"
+#include "MultiProbe.hxx"
+
 #include <arbdbt.h>
-#include <aw_root.hxx>
+#include <client.h>
+
 #include <cmath>
 
 extern int MP_probe_design_send_data(T_PT_PDC  pdc);
-
 
 
 // ###########################################################################

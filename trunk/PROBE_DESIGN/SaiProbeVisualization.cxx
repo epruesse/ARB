@@ -18,6 +18,7 @@
 #include <awt_sel_boxes.hxx>
 
 #include <awt_config_manager.hxx>
+#include <arbdbt.h>
 
 #include <iostream>
 

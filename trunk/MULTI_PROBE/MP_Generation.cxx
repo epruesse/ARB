@@ -1,6 +1,15 @@
-#include <MultiProbe.hxx>
+// ============================================================= //
+//                                                               //
+//   File      : MP_Generation.cxx                               //
+//   Purpose   :                                                 //
+//                                                               //
+//   Institute of Microbiology (Technical University Munich)     //
+//   http://www.arb-home.de/                                     //
+//                                                               //
+// ============================================================= //
 
-#include <cmath>
+#include "MP_probe.hxx"
+#include "MultiProbe.hxx"
 
 extern BOOL check_status(int gen_cnt, double avg_fit, double min_fit, double max_fit);
 BOOL    Stop_evaluation = FALSE;

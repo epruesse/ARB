@@ -15,6 +15,12 @@
 #ifndef AWT_INPUT_MASK_HXX
 #include <awt_input_mask.hxx>
 #endif
+#ifndef AWT_HOTKEYS_HXX
+#include <awt_hotkeys.hxx>
+#endif
+#ifndef ARBDB_H
+#include <arbdb.h>
+#endif
 
 #ifndef _CPP_MAP
 #include <map>
@@ -26,9 +32,6 @@
 #include <vector>
 #endif
 
-#ifndef AWT_HOTKEYS_HXX
-#include <awt_hotkeys.hxx>
-#endif
 
 // ---------------------------
 //      forward references

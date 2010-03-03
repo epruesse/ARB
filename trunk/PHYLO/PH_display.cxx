@@ -11,6 +11,7 @@
 #include "phylo.hxx"
 #include "phwin.hxx"
 #include "PH_display.hxx"
+#include <arbdb.h>
 
 extern void display_status(AW_window *, AW_CL, AW_CL);
 GB_ERROR    ph_check_initialized();

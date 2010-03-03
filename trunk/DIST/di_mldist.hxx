@@ -11,11 +11,6 @@
 #ifndef DI_MLDIST_HXX
 #define DI_MLDIST_HXX
 
-#ifndef ARBDBT_H
-#include <arbdbt.h>
-#endif
-
-
 const int DI_ML_RESOLUTION   = 1000; // max res
 const int DI_ML_MAX_DIST     = 10; // max dist
 const int DI_ML_MAX_MAT_SIZE = 16;
