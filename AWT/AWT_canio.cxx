@@ -1,16 +1,17 @@
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
-
-#include <arbdb.h>
-#include <arbdbt.h>
-
-#include <aw_root.hxx>
-#include <aw_device.hxx>
-#include <aw_window.hxx>
-#include <aw_file.hxx>
+// ================================================================ //
+//                                                                  //
+//   File      : AWT_canio.cxx                                      //
+//   Purpose   :                                                    //
+//                                                                  //
+//   Institute of Microbiology (Technical University Munich)        //
+//   http://www.arb-home.de/                                        //
+//                                                                  //
+// ================================================================ //
 
 #include "awt_canvas.hxx"
+
+#include <aw_file.hxx>
+#include <arbdbt.h>
 
 #define awt_assert(cond) arb_assert(cond)
 

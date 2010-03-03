@@ -14,8 +14,8 @@
 #ifndef AD_CONFIG_H
 #define AD_CONFIG_H
 
-#ifndef ARBDB_H
-#include "arbdb.h"
+#ifndef ARBDB_BASE_H
+#include "arbdb_base.h"
 #endif
 
 #define CONFIG_DATA_PATH "configuration_data"
@@ -63,7 +63,7 @@
     void               GBT_free_config_parser(GBT_config_parser *parser);
 
     GB_ERROR         GBT_parse_next_config_item(GBT_config_parser *parser, GBT_config_item *item);
-    void             GBT_append_to_config_string(const GBT_config_item *item, GBS_strstruct *strstruct);
+    void             GBT_append_to_config_string(const GBT_config_item *item, struct GBS_strstruct *strstruct);
 
     GBT_config_item *GBT_create_config_item();
     void             GBT_free_config_item(GBT_config_item *item);

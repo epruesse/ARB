@@ -1,16 +1,13 @@
-#include <ad_config.h>
+// ============================================================= //
+//                                                               //
+//   File      : ED4_main.cxx                                    //
+//   Purpose   :                                                 //
+//                                                               //
+//   Institute of Microbiology (Technical University Munich)     //
+//   http://www.arb-home.de/                                     //
+//                                                               //
+// ============================================================= //
 
-#include <aw_preset.hxx>
-#include <aw_awars.hxx>
-#include <awt_seq_colors.hxx>
-#include <awt_map_key.hxx>
-#include <awt.hxx>
-#include <AW_helix.hxx>
-#include <st_window.hxx>
-#include <gde.hxx>
-#include <AP_pro_a_nucs.hxx>
-
-#include <ed4_extern.hxx>
 
 #include "ed4_class.hxx"
 #include "ed4_awars.hxx"
@@ -21,8 +18,20 @@
 #include "ed4_protein_2nd_structure.hxx"
 #include "ed4_dots.hxx"
 #include "ed4_naligner.hxx"
-
 #include "graph_aligner_gui.hxx"
+#include <ed4_extern.hxx>
+
+#include <st_window.hxx>
+#include <gde.hxx>
+#include <AW_helix.hxx>
+#include <AP_pro_a_nucs.hxx>
+#include <ad_config.h>
+#include <awt_seq_colors.hxx>
+#include <awt_map_key.hxx>
+#include <awt.hxx>
+#include <aw_preset.hxx>
+#include <aw_awars.hxx>
+#include <arbdbt.h>
 
 AW_HEADER_MAIN
 

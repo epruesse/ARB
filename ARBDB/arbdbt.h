@@ -10,8 +10,6 @@
 
 #define GB_GROUP_NAME_MAX 256
 
-typedef float GBT_LEN;
-
 #define GBT_TREE_ELEMENTS(type)                 \
     bool     is_leaf;                           \
     bool     tree_is_one_piece_of_memory;       \

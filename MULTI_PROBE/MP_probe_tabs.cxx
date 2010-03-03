@@ -1,7 +1,17 @@
-#include <MultiProbe.hxx>
+// ============================================================= //
+//                                                               //
+//   File      : MP_probe_tabs.cxx                               //
+//   Purpose   :                                                 //
+//                                                               //
+//   Institute of Microbiology (Technical University Munich)     //
+//   http://www.arb-home.de/                                     //
+//                                                               //
+// ============================================================= //
+
+#include "MP_probe.hxx"
+#include "MultiProbe.hxx"
+
 #include <cmath>
-
-
 
 // **************************************************************
 void probe_tabs::print()

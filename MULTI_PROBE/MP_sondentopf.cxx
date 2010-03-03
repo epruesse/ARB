@@ -1,5 +1,18 @@
-#include <MultiProbe.hxx>
-#include <AP_Tree.hxx> // needed for GCs
+// ============================================================= //
+//                                                               //
+//   File      : MP_sondentopf.cxx                               //
+//   Purpose   :                                                 //
+//                                                               //
+//   Institute of Microbiology (Technical University Munich)     //
+//   http://www.arb-home.de/                                     //
+//                                                               //
+// ============================================================= //
+
+#include "MultiProbe.hxx"
+#include "MP_probe.hxx"
+
+#include <AP_Tree.hxx>                              // needed for GCs
+
 #include <cmath>
 
 ST_Container::ST_Container(int anz_sonden) {
@@ -403,5 +416,4 @@ void Sondentopf::gen_color_hash(positiontype anz_sonden)
     delete [] AllowedMismatchFeld;
     delete [] rgb;
 }
-
 

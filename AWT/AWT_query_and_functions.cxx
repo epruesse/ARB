@@ -1,30 +1,27 @@
-#include <cstdio>
-#include <cstdlib>
-#include <unistd.h>
-#include <ctime>
-#include <cstring>
-#include <cctype>
+// ================================================================ //
+//                                                                  //
+//   File      : AWT_query_and_functions.cxx                        //
+//   Purpose   :                                                    //
+//                                                                  //
+//   Institute of Microbiology (Technical University Munich)        //
+//   http://www.arb-home.de/                                        //
+//                                                                  //
+// ================================================================ //
+
+#include "awt.hxx"
+#include "awtlocal.hxx"
+#include "awt_item_sel_list.hxx"
+#include "awt_config_manager.hxx"
+
+#include <aw_advice.hxx>
+#include <aw_color_groups.hxx>
+#include <aw_file.hxx>
+#include <aw_awars.hxx>
+
+#include <arbdbt.h>
 
 #include <list>
 #include <string>
-
-#include <arbdb.h>
-#include <arbdbt.h>
-#include <aw_root.hxx>
-#include <aw_device.hxx>
-#include <aw_window.hxx>
-#include <aw_awars.hxx>
-#include <aw_preset.hxx>
-#include <aw_color_groups.hxx>
-#include "awt.hxx"
-#include "awtlocal.hxx"
-#include "awt_config_manager.hxx"
-#include "awt_item_sel_list.hxx"
-#include "awt_sel_boxes.hxx"
-#include "aw_advice.hxx"
-#include "aw_file.hxx"
-
-#include "GEN.hxx"
 
 using namespace std;
 

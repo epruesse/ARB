@@ -7,14 +7,13 @@
 #ifndef AW_WINDOW_HXX
 #include <aw_window.hxx>
 #endif
-#ifndef ARBDB_H
-#include <arbdb.h>
+#ifndef ARBDB_BASE_H
+#include <arbdb_base.h>
 #endif
 
-
-// needed prototype classes
-class ED4_root;
-class ED4_database;
+class  ED4_root;
+class  ED4_database;
+struct GBS_strstruct;
 
 typedef int ED4_COORDINATE;
 

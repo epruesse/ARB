@@ -1,4 +1,6 @@
 #include "phylo.hxx"
+#include <arbdb.h>
+
 
 extern AW_window *preset_window(AW_root *root);
 

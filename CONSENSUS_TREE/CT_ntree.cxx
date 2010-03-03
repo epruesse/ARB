@@ -1,14 +1,18 @@
-/* Einen Binaerbaum erzeugen ueber einen Multitree */
+// ============================================================= //
+//                                                               //
+//   File      : CT_ntree.cxx                                    //
+//   Purpose   :                                                 //
+//                                                               //
+//   Institute of Microbiology (Technical University Munich)     //
+//   http://www.arb-home.de/                                     //
+//                                                               //
+// ============================================================= //
 
-#include <cstdio>
-#include <cstdlib>
-
-#include <arbdb.h>
+#include "CT_ntree.hxx"
+#include "CT_mem.hxx"
 #include <arbdbt.h>
 
-#include "CT_mem.hxx"
-#include "CT_part.hxx"
-#include "CT_ntree.hxx"
+/* Einen Binaerbaum erzeugen ueber einen Multitree */
 
 NT_NODE *ntree = NULL;
 int ntree_count=0;

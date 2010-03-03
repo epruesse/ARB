@@ -11,8 +11,8 @@
 #ifndef PHYLO_HXX
 #define PHYLO_HXX
 
-#ifndef ARBDBT_H
-#include <arbdbt.h>
+#ifndef ARBDB_BASE_H
+#include <arbdb_base.h>
 #endif
 #ifndef AW_ROOT_HXX
 #include <aw_root.hxx>

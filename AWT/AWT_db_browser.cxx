@@ -13,7 +13,6 @@
 
 #include "awt.hxx"
 
-#include <arbdbt.h>
 #include <inline.h>
 #include <AP_Tree.hxx>
 
@@ -21,8 +20,6 @@
 #include <vector>
 #include <map>
 #include <algorithm>
-
-#include <cstring>
 
 // do includes above (otherwise depends depend on DEBUG)
 #if defined(DEBUG)

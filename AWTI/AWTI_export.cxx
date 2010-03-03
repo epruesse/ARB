@@ -1,13 +1,12 @@
 #include "awti_export.hxx"
 #include "awti_exp_local.hxx"
 
+#include <awt_filter.hxx>
+#include <AP_filter.hxx>
 #include <aw_awars.hxx>
 #include <aw_file.hxx>
 #include <aw_window.hxx>
-
-#include <awt_filter.hxx>
-
-#include <AP_filter.hxx>
+#include <arbdbt.h>
 #include <xml.hxx>
 #include <inline.h>
 

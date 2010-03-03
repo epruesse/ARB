@@ -9,6 +9,7 @@
 // =============================================================== //
 
 #include <TreeWrite.h>
+#include <arbdbt.h>
 
 /*      Input   Tree_name       argv[1]
  *      Output(stdout)  one line tree

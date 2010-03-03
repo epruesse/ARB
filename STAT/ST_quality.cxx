@@ -12,11 +12,11 @@
 #include "st_ml.hxx"
 #include "MostLikelySeq.hxx"
 
-#include <aw_awars.hxx>
+#include <ColumnStat.hxx>
 #include <BI_helix.hxx>
 #include <AP_filter.hxx>
-
-#include <ColumnStat.hxx>
+#include <aw_awars.hxx>
+#include <arbdbt.h>
 
 #include <cctype>
 

@@ -14,6 +14,7 @@
 #include <AP_filter.hxx>
 #include <BI_helix.hxx>
 #include <aw_window.hxx>
+#include <arbdbt.h>
 
 #define AWAR_COLSTAT_NAME         "/name=/name"
 #define AWAR_COLSTAT_ALIGNMENT    "/name=/alignment"

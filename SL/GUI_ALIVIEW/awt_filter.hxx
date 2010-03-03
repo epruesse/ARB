@@ -11,8 +11,8 @@
 #ifndef AWT_FILTER_HXX
 #define AWT_FILTER_HXX
 
-#ifndef ARBDBT_H
-#include <arbdbt.h>
+#ifndef ARBDB_BASE_H
+#include <arbdb_base.h>
 #endif
 
 class AW_window;

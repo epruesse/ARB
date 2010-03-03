@@ -10,7 +10,6 @@
 
 #include "aw_commn.hxx"
 #include "aw_at.hxx"
-#include "aw_window.hxx"
 #include "aw_awar.hxx"
 #include "aw_xfig.hxx"
 #include "aw_Xm.hxx"

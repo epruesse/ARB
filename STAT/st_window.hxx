@@ -11,9 +11,6 @@
 #ifndef ST_WINDOW_HXX
 #define ST_WINDOW_HXX
 
-#ifndef ARBDBT_H
-#include <arbdbt.h>
-#endif
 #ifndef AW_WINDOW_HXX
 #include <aw_window.hxx>
 #endif

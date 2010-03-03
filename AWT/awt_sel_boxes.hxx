@@ -13,8 +13,8 @@
 #ifndef AWT_SEL_BOXES_HXX
 #define AWT_SEL_BOXES_HXX
 
-#ifndef ARBDB_H
-#include <arbdb.h>
+#ifndef ARBDB_BASE_H
+#include <arbdb_base.h>
 #endif
 #ifndef AW_ROOT_HXX
 #include <aw_root.hxx>

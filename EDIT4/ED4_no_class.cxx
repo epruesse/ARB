@@ -17,16 +17,15 @@
 #include "ed4_nds.hxx"
 
 #include <ad_config.h>
-
-#include <aw_awars.hxx>
+#include <st_window.hxx>
 #include <AW_helix.hxx>
+#include <AW_rename.hxx>
 #include <awt.hxx>
 #include <awt_item_sel_list.hxx>
 #include <awt_sel_boxes.hxx>
 #include <awt_seq_colors.hxx>
-#include <AW_rename.hxx>
-
-#include <st_window.hxx>
+#include <aw_awars.hxx>
+#include <arbdbt.h>
 
 #include <cctype>
 

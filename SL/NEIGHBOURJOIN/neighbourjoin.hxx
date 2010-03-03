@@ -11,8 +11,8 @@
 #ifndef NEIGHBOURJOIN_HXX
 #define NEIGHBOURJOIN_HXX
 
-#ifndef ARBDBT_H
-#include <arbdbt.h>
+#ifndef ARBDB_BASE_H
+#include <arbdb_base.h>
 #endif
 
 GBT_TREE *neighbourjoining(char **names, AP_FLOAT **m, long size, size_t structure_size);

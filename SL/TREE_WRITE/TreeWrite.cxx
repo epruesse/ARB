@@ -10,6 +10,7 @@
 
 
 #include <TreeWrite.h>
+#include <arbdbt.h>
 #include <xml.hxx>
 
 using namespace std;

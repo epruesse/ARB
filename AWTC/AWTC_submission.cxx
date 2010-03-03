@@ -1,19 +1,20 @@
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
+// ================================================================ //
+//                                                                  //
+//   File      : AWTC_submission.cxx                                //
+//   Purpose   :                                                    //
+//                                                                  //
+//   Institute of Microbiology (Technical University Munich)        //
+//   http://www.arb-home.de/                                        //
+//                                                                  //
+// ================================================================ //
 
-#include <arbdb.h>
-#include <arbdbt.h>
-#include <aw_root.hxx>
-#include <aw_device.hxx>
-#include <aw_window.hxx>
-#include <aw_awars.hxx>
-#include <aw_edit.hxx>
 #include <awt.hxx>
 
-#ifndef ARB_ASSERT_H
-#include <arb_assert.h>
-#endif
+#include <aw_awars.hxx>
+#include <aw_edit.hxx>
+
+#include <arbdbt.h>
+
 #define awtc_assert(bed) arb_assert(bed)
 
 

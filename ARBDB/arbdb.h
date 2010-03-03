@@ -27,13 +27,6 @@
 // ---------------------
 //      simple types
 
-// 4 Bytes
-typedef unsigned int       GB_UINT4;                // @@@ use uint32_t ?
-typedef const unsigned int GB_CUINT4;
-typedef unsigned long      GB_ULONG;
-typedef const float        GB_CFLOAT;
-
-typedef int GBQUARK;
 typedef int GB_COMPRESSION_MASK;
 
 // ------------------------------
@@ -96,14 +89,6 @@ enum GB_UNDO_TYPE {
     GB_UNDO_REDO,                                   // moves to UNDO_REDO
     GB_UNDO_UNDO_REDO                               // internal makes undo redoable
 };
-
-enum GB_alignment_type {
-    GB_AT_UNKNOWN,
-    GB_AT_RNA,      // Nucleotide sequence (U)
-    GB_AT_DNA,      // Nucleotide sequence (T)
-    GB_AT_AA,       // AminoAcid
-};
-
 
 
 // -----------------------

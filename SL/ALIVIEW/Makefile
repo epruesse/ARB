@@ -37,15 +37,8 @@ depend.init:
 
 AliView.o: AliView.hxx
 AliView.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
-AliView.o: $(ARBHOME)/INCLUDE/ad_prot.h
-AliView.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AliView.o: $(ARBHOME)/INCLUDE/AP_filter.hxx
 AliView.o: $(ARBHOME)/INCLUDE/arb_assert.h
-AliView.o: $(ARBHOME)/INCLUDE/arb_error.h
-AliView.o: $(ARBHOME)/INCLUDE/arbdb.h
 AliView.o: $(ARBHOME)/INCLUDE/arbdb_base.h
-AliView.o: $(ARBHOME)/INCLUDE/arbdbt.h
-AliView.o: $(ARBHOME)/INCLUDE/arbtools.h
 AliView.o: $(ARBHOME)/INCLUDE/attributes.h
 AliView.o: $(ARBHOME)/INCLUDE/dupstr.h
-AliView.o: $(ARBHOME)/INCLUDE/smartptr.h

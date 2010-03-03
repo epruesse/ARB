@@ -19,7 +19,6 @@
 #include <awt_item_sel_list.hxx>
 #include <awtlocal.hxx>
 #include <awt_www.hxx>
-#include <awt_canvas.hxx>
 #include <awt_sel_boxes.hxx>
 #include <aw_awars.hxx>
 

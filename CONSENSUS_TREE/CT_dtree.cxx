@@ -1,15 +1,20 @@
+// ============================================================= //
+//                                                               //
+//   File      : CT_dtree.cxx                                    //
+//   Purpose   :                                                 //
+//                                                               //
+//   Institute of Microbiology (Technical University Munich)     //
+//   http://www.arb-home.de/                                     //
+//                                                               //
+// ============================================================= //
+
+#include "CT_dtree.hxx"
+#include "CT_hash.hxx"
+#include <arbdbt.h>
+
 /* destruct gbt-tree and build parts */
 /* insert afterwards in Hashtable */
 
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
-
-#include <arbdb.h>
-#include <arbdbt.h>
-
-#include "CT_part.hxx"
-#include "CT_hash.hxx"
 
 void destree_init(GB_HASH *hash)
 {

@@ -1,16 +1,22 @@
-/* This module is desined to organize the data structure partitions
+// ============================================================= //
+//                                                               //
+//   File      : CT_part.cxx                                     //
+//   Purpose   :                                                 //
+//                                                               //
+//   Institute of Microbiology (Technical University Munich)     //
+//   http://www.arb-home.de/                                     //
+//                                                               //
+// ============================================================= //
+
+/* This module is designed to organize the data structure partitions
    partitions represent the edges of a tree */
 /* the partitions are implemented as an array of longs */
 /* Each leaf in a GBT-Tree is represented as one Bit in the Partition */
 
-#include <cstdio>
-#include <cstdlib>
-
-#include <arbdb.h>
-#include <arbdbt.h>
-
-#include "CT_mem.hxx"
 #include "CT_part.hxx"
+#include "CT_mem.hxx"
+
+#include <arbdbt.h>
 
 PELEM cutmask;                                      // this mask is necessary to cut the not needed bits from the last long
 int   longs = 0;                                    // number of longs per part
@@ -239,25 +245,4 @@ int calc_index(PART *p) {
     }
     return pos-1;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

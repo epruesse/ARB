@@ -19,6 +19,7 @@
 
 #include <aw_preset.hxx>
 #include <awt.hxx>
+#include <arbdbt.h>
 
 using namespace std;
 

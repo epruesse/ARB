@@ -11,12 +11,20 @@
 #ifndef MULTIPROBE_HXX
 #define MULTIPROBE_HXX
 
-#include <mpdefs.h>     //unsere Definitionen
-#include <MP_externs.hxx>
+#ifndef SOTL_HXX
+#include "SoTl.hxx"
+#endif
+#ifndef MPDEFS_H
+#include "mpdefs.h"
+#endif
 
 #ifndef AW_AWARS_HXX
 #include <aw_awars.hxx>
 #endif
+#ifndef AW_ROOT_HXX
+#include <aw_root.hxx>
+#endif
+
 #define mp_assert(x) arb_assert(x)
 
 class MP_Main;
@@ -31,29 +39,25 @@ class ST_Container;
 class Bitvector;
 class Sonde;
 
-#ifndef MP_PROBE_HXX
-#include "MP_probe.hxx"
-#endif
-
 #define MP_AWAR_SEQUENZEINGABE      "mp/sequenzeingabe"
 #define MP_AWAR_SELECTEDPROBES      "mp/selectedprobes"
-#define MP_AWAR_PROBELIST       "mp/probelist"
+#define MP_AWAR_PROBELIST           "mp/probelist"
 #define MP_AWAR_WEIGHTEDMISMATCHES  "mp/weightedmismatches"
-#define MP_AWAR_COMPLEMENT      "mp/complement"
-#define MP_AWAR_MISMATCHES      "mp/mismatches"
-#define MP_AWAR_PTSERVER        AWAR_PT_SERVER
-#define MP_AWAR_LOADLIST        "mp/loadlist"
+#define MP_AWAR_COMPLEMENT          "mp/complement"
+#define MP_AWAR_MISMATCHES          "mp/mismatches"
+#define MP_AWAR_PTSERVER            AWAR_PT_SERVER
+#define MP_AWAR_LOADLIST            "mp/loadlist"
 #define MP_AWAR_RESULTPROBES        "mp/resultprobes"
 #define MP_AWAR_RESULTPROBESCOMMENT "mp/resultprobescomment"
-#define MP_AWAR_NOOFPROBES      "mp/noofprobes"
-#define MP_AWAR_QUALITY         "mp/quality"
-#define MP_AWAR_SINGLEMISMATCHES        "mp/singlemismatches"
+#define MP_AWAR_NOOFPROBES          "mp/noofprobes"
+#define MP_AWAR_QUALITY             "mp/quality"
+#define MP_AWAR_SINGLEMISMATCHES    "mp/singlemismatches"
 #define MP_AWAR_OUTSIDEMISMATCHES   "mp/outsidemismatches"
 #define MP_AWAR_QUALITYBORDER1      "mp/qualityborder1"
-#define MP_AWAR_GREYZONE        "mp/greyzone"
-#define MP_AWAR_EMPHASIS        "mp/emphasis"
-#define MP_AWAR_ECOLIPOS        "mp/ecolipos"
-#define MP_AWAR_AUTOADVANCE     "mp/auto_advance"
+#define MP_AWAR_GREYZONE            "mp/greyzone"
+#define MP_AWAR_EMPHASIS            "mp/emphasis"
+#define MP_AWAR_ECOLIPOS            "mp/ecolipos"
+#define MP_AWAR_AUTOADVANCE         "mp/auto_advance"
 
 #define MINQUALITY  1.0     // schlechteste Qualitaet einer Sonde
 #define MAXQUALITY  5.0     // beste Qualitaet einer Sonde

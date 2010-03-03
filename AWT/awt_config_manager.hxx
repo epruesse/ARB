@@ -16,6 +16,15 @@
 #ifndef AWT_CONFIG_MANAGER_HXX
 #define AWT_CONFIG_MANAGER_HXX
 
+#ifndef ARBDB_BASE_H
+#include <arbdb_base.h>
+#endif
+#ifndef AW_ROOT_HXX
+#include <aw_root.hxx>
+#endif
+
+class AW_window;
+
 struct AWT_config_mapping;
 
 struct AWT_config_mapping_def {

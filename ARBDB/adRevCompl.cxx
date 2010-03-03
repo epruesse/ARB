@@ -9,11 +9,8 @@
 //                                                                 //
 // =============================================================== //
 
-#include <cstdio>
-#include <cstdlib>
-#include <cctype>
-
 #include "arbdbt.h"
+#include <cctype>
 
 char GBT_complementNucleotide(char c, char T_or_U)
 {

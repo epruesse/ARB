@@ -1,7 +1,11 @@
 # INCLUDE und GLOBALS MAIN CC cflags werden von aussen uebergeben
 .SUFFIXES: .o .cxx .depend
 
-CPP_OBJECTS = SQ_main.o SQ_functions.o SQ_GroupData.o
+CPP_OBJECTS = \
+	SQ_GroupData.o \
+	SQ_ambiguities.o \
+	SQ_functions.o \
+	SQ_main.o \
 
 $(MAIN): $(CPP_OBJECTS)
 	$(LINK_STATIC_LIB) $(MAIN) $(CPP_OBJECTS)
@@ -29,6 +33,18 @@ depend.init:
 # Do not add dependencies manually - use 'make depend' in $ARBHOME
 # For formatting issues see SOURCE_TOOLS/fix_depends.pl
 
+SQ_ambiguities.o: SQ_ambiguities.h
+SQ_ambiguities.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
+SQ_ambiguities.o: $(ARBHOME)/INCLUDE/ad_prot.h
+SQ_ambiguities.o: $(ARBHOME)/INCLUDE/arb_assert.h
+SQ_ambiguities.o: $(ARBHOME)/INCLUDE/arb_error.h
+SQ_ambiguities.o: $(ARBHOME)/INCLUDE/arbdb.h
+SQ_ambiguities.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+SQ_ambiguities.o: $(ARBHOME)/INCLUDE/arbtools.h
+SQ_ambiguities.o: $(ARBHOME)/INCLUDE/attributes.h
+SQ_ambiguities.o: $(ARBHOME)/INCLUDE/dupstr.h
+SQ_ambiguities.o: $(ARBHOME)/INCLUDE/smartptr.h
+
 SQ_functions.o: SQ_ambiguities.h
 SQ_functions.o: SQ_functions.h
 SQ_functions.o: SQ_GroupData.h
@@ -52,7 +68,6 @@ SQ_functions.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
 SQ_functions.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 SQ_functions.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 SQ_functions.o: $(ARBHOME)/INCLUDE/awt.hxx
-SQ_functions.o: $(ARBHOME)/INCLUDE/awt_iupac.hxx
 SQ_functions.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 SQ_functions.o: $(ARBHOME)/INCLUDE/dupstr.h
 SQ_functions.o: $(ARBHOME)/INCLUDE/smartptr.h

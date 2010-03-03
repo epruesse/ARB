@@ -241,16 +241,12 @@ AWT_item_sel_list.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 AWT_iupac.o: awt_iupac.hxx
 AWT_iupac.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
-AWT_iupac.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AWT_iupac.o: $(ARBHOME)/INCLUDE/arb_assert.h
-AWT_iupac.o: $(ARBHOME)/INCLUDE/arb_error.h
-AWT_iupac.o: $(ARBHOME)/INCLUDE/arbdb.h
 AWT_iupac.o: $(ARBHOME)/INCLUDE/arbdb_base.h
-AWT_iupac.o: $(ARBHOME)/INCLUDE/arbtools.h
 AWT_iupac.o: $(ARBHOME)/INCLUDE/attributes.h
 AWT_iupac.o: $(ARBHOME)/INCLUDE/dupstr.h
-AWT_iupac.o: $(ARBHOME)/INCLUDE/smartptr.h
 
+AWT_macro.o: awt_macro.hxx
 AWT_macro.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 AWT_macro.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AWT_macro.o: $(ARBHOME)/INCLUDE/arb_assert.h
@@ -311,12 +307,10 @@ AWT_nds.o: $(ARBHOME)/INCLUDE/smartptr.h
 AWT_query_and_functions.o: awt.hxx
 AWT_query_and_functions.o: awt_config_manager.hxx
 AWT_query_and_functions.o: awt_item_sel_list.hxx
-AWT_query_and_functions.o: awt_sel_boxes.hxx
 AWT_query_and_functions.o: awtlocal.hxx
 AWT_query_and_functions.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 AWT_query_and_functions.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AWT_query_and_functions.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
-AWT_query_and_functions.o: $(ARBHOME)/INCLUDE/adGene.h
 AWT_query_and_functions.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWT_query_and_functions.o: $(ARBHOME)/INCLUDE/arb_error.h
 AWT_query_and_functions.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -331,12 +325,10 @@ AWT_query_and_functions.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 AWT_query_and_functions.o: $(ARBHOME)/INCLUDE/aw_file.hxx
 AWT_query_and_functions.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AWT_query_and_functions.o: $(ARBHOME)/INCLUDE/aw_position.hxx
-AWT_query_and_functions.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
 AWT_query_and_functions.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWT_query_and_functions.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 AWT_query_and_functions.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AWT_query_and_functions.o: $(ARBHOME)/INCLUDE/dupstr.h
-AWT_query_and_functions.o: $(ARBHOME)/INCLUDE/GEN.hxx
 AWT_query_and_functions.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 AWT_sel_boxes.o: awt.hxx

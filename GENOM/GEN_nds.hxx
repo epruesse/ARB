@@ -12,6 +12,10 @@
 #ifndef GEN_NDS_HXX
 #define GEN_NDS_HXX
 
+#ifndef ARBDB_H
+#include <arbdb.h>
+#endif
+
 void       GEN_create_nds_vars(AW_root *aw_root, AW_default awdef, GBDATA *gb_main, GB_CB NDS_changed_callback);
 AW_window *GEN_open_nds_window(AW_root *aw_root, AW_CL cgb_main);
 void       GEN_make_node_text_init(GBDATA *gb_main);

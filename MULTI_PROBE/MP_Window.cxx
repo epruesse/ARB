@@ -8,19 +8,17 @@
 //                                                                  //
 // ================================================================ //
 
+#include "MP_externs.hxx"
+#include "MultiProbe.hxx"
+#include "mp_proto.hxx"
 
+#include <awt_sel_boxes.hxx>
 #include <aw_select.hxx>
 #include <aw_file.hxx>
 
-#include <awt_sel_boxes.hxx>
-
-#include "MultiProbe.hxx"
-#include <mp_proto.hxx>
-
-struct mp_gl_struct mp_pd_gl;
-
-
 // **************************************************************************
+
+struct mp_gl_struct mp_pd_gl; // global link
 
 AW_selection_list *selected_list;   // globale id's fuer
 AW_selection_list *probelist;       // Identifizierung der Listen

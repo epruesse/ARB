@@ -13,6 +13,7 @@
 //  ==================================================================== //
 
 #include "ed4_class.hxx"
+#include <arbdb.h>
 
 #ifdef IMPLEMENT_DUMP
 

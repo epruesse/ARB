@@ -1,13 +1,21 @@
-#include <arbdbt.h>
+// ================================================================ //
+//                                                                  //
+//   File      : AWTC_next_neighbours.cxx                           //
+//   Purpose   :                                                    //
+//                                                                  //
+//   Institute of Microbiology (Technical University Munich)        //
+//   http://www.arb-home.de/                                        //
+//                                                                  //
+// ================================================================ //
 
+#include "awtc_next_neighbours.hxx"
+
+#include <arbdbt.h>
 #include <servercntrl.h>
 #include <PT_com.h>
 #include <client.h>
 #include <aw_window.hxx>
 
-#include <awtc_next_neighbours.hxx>
-
-#include <cstdio>
 #include <climits>
 
 

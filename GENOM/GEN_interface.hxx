@@ -12,10 +12,9 @@
 #ifndef GEN_INTERFACE_HXX
 #define GEN_INTERFACE_HXX
 
-#ifndef ARBDBT_H
-#include <arbdbt.h>
+#ifndef ARBDB_BASE_H
+#include <arbdb_base.h>
 #endif
-
 
 extern struct ad_item_selector GEN_item_selector;
 

@@ -1,18 +1,21 @@
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
+// ================================================================ //
+//                                                                  //
+//   File      : AWT_nds.cxx                                        //
+//   Purpose   :                                                    //
+//                                                                  //
+//   Institute of Microbiology (Technical University Munich)        //
+//   http://www.arb-home.de/                                        //
+//                                                                  //
+// ================================================================ //
 
-#include <aw_root.hxx>
-#include <aw_device.hxx>
-#include <aw_window.hxx>
-#include <aw_awars.hxx>
-#include <aw_file.hxx>
-
-#include <arbdbt.h>
-#include <awt.hxx>
 #include "awt_nds.hxx"
 #include "awt_config_manager.hxx"
 #include "awt_sel_boxes.hxx"
+#include "awt.hxx"
+
+#include <aw_awars.hxx>
+#include <aw_file.hxx>
+#include <arbdbt.h>
 
 #define NDS_PER_PAGE 10         // number of NDS definitions on each config-page
 #define NDS_PAGES     6         // how many config-pages (each has NDS_PER_PAGE definitions)

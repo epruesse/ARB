@@ -11,9 +11,10 @@
 #ifndef AP_PRO_A_NUCS_HXX
 #define AP_PRO_A_NUCS_HXX
 
-#ifndef ARBDBT_H
-#include <arbdbt.h>
+#ifndef ARBDB_BASE_H
+#include <arbdb_base.h>
 #endif
+
 
 enum AP_BASES {
     AP_A   = 1,

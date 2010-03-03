@@ -1,18 +1,30 @@
-#include <cstdio>
-#include <cstdlib>
-#include <unistd.h>
-#include <cstring>
-#include <cctype>
+// ============================================================= //
+//                                                               //
+//   File      : servercntrl.cxx                                 //
+//   Purpose   :                                                 //
+//                                                               //
+//   Institute of Microbiology (Technical University Munich)     //
+//   http://www.arb-home.de/                                     //
+//                                                               //
+// ============================================================= //
+
+#include <servercntrl.h>
+
 #include <client_privat.h>
 #include <client.h>
 #include <arbdb.h>
-#include <servercntrl.h>
+
+#include <unistd.h>
 
 /* The following lines go to servercntrl.h
  * edit here, not there!!
  * call 'make proto' to update
  */
 
+/* AISC_MKPT_PROMOTE:#ifndef ARBDB_BASE_H */
+/* AISC_MKPT_PROMOTE:#include <arbdb_base.h> */
+/* AISC_MKPT_PROMOTE:#endif */
+/* AISC_MKPT_PROMOTE: */
 /* AISC_MKPT_PROMOTE:struct arb_params { */
 /* AISC_MKPT_PROMOTE:    char *species_name; */
 /* AISC_MKPT_PROMOTE:    char *extended_name; */

@@ -8,13 +8,14 @@
 //                                                                 //
 // =============================================================== //
 
+#include "nt_internal.h"
+#include "ad_spec.hxx"
+
+#include <GEN.hxx>
 #include <awti_import.hxx>
 #include <awt_canvas.hxx>
 #include <mg_merge.hxx>
-
-#include "nt_internal.h"
-#include "ad_spec.hxx"
-#include "GEN.hxx"
+#include <arbdbt.h>
 
 #define nt_assert(bed) arb_assert(bed)
 

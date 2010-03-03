@@ -1,14 +1,17 @@
-#include <cstdio>
-#include <cstring>
+// ================================================================ //
+//                                                                  //
+//   File      : AWT_canvas.cxx                                     //
+//   Purpose   :                                                    //
+//                                                                  //
+//   Institute of Microbiology (Technical University Munich)        //
+//   http://www.arb-home.de/                                        //
+//                                                                  //
+// ================================================================ //
 
-#include <arbdb.h>
+#include "awt_canvas.hxx"
+#include "awt.hxx"
+
 #include <arbdbt.h>
-
-#include <aw_root.hxx>
-#include <aw_device.hxx>
-#include <aw_window.hxx>
-#include <awt_canvas.hxx>
-#include <awt.hxx>
 
 #include <algorithm>
 
@@ -831,5 +834,4 @@ void AWT_nonDB_graphic::update(GBDATA *) {
     printf("AWT_nonDB_graphic can't be updated\n");
 #endif // DEBUG
 }
-
 

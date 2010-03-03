@@ -91,12 +91,10 @@ ST_window.o: st_quality.hxx
 ST_window.o: st_window.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 ST_window.o: $(ARBHOME)/INCLUDE/ad_prot.h
-ST_window.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 ST_window.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ST_window.o: $(ARBHOME)/INCLUDE/arb_error.h
 ST_window.o: $(ARBHOME)/INCLUDE/arbdb.h
 ST_window.o: $(ARBHOME)/INCLUDE/arbdb_base.h
-ST_window.o: $(ARBHOME)/INCLUDE/arbdbt.h
 ST_window.o: $(ARBHOME)/INCLUDE/arbtools.h
 ST_window.o: $(ARBHOME)/INCLUDE/attributes.h
 ST_window.o: $(ARBHOME)/INCLUDE/aw_awars.hxx

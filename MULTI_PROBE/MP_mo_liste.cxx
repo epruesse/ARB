@@ -1,7 +1,18 @@
-#include <MultiProbe.hxx>
-#include <arbdbt.h>
-#include <aw_root.hxx>
+// ============================================================= //
+//                                                               //
+//   File      : MP_mo_liste.cxx                                 //
+//   Purpose   :                                                 //
+//                                                               //
+//   Institute of Microbiology (Technical University Munich)     //
+//   http://www.arb-home.de/                                     //
+//                                                               //
+// ============================================================= //
 
+#include "MP_externs.hxx"
+#include "MultiProbe.hxx"
+
+#include <arbdbt.h>
+#include <client.h>
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~Methoden MO_Liste
 

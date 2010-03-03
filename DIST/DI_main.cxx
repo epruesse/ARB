@@ -1,19 +1,22 @@
+// ============================================================= //
+//                                                               //
+//   File      : DI_main.cxx                                     //
+//   Purpose   :                                                 //
+//                                                               //
+//   Institute of Microbiology (Technical University Munich)     //
+//   http://www.arb-home.de/                                     //
+//                                                               //
+// ============================================================= //
+
 // #define FINDCORR
 
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
-
-#include <arbdb.h>
-
 #include <servercntrl.h>
-#include <aw_root.hxx>
-#include <aw_device.hxx>
-#include <aw_window.hxx>
 #include <awt.hxx>
 #include <awt_canvas.hxx>
 
 #include <aw_preset.hxx>
+#include <arbdb.h>
+
 
 AW_HEADER_MAIN
 

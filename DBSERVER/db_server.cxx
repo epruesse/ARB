@@ -1,12 +1,18 @@
-#define TIMEOUT 1000*60*2
-/* every 2 minutes save */
-#define LOOPS 30
-/* wait 1 hour till kill myself */
+// ============================================================= //
+//                                                               //
+//   File      : db_server.cxx                                   //
+//   Purpose   :                                                 //
+//                                                               //
+//   Institute of Microbiology (Technical University Munich)     //
+//   http://www.arb-home.de/                                     //
+//                                                               //
+// ============================================================= //
 
-#include <cstdio>
-#include <cstring>
 #include <arbdb.h>
 #include <servercntrl.h>
+
+#define TIMEOUT 1000*60*2       /* save every 2 minutes */
+#define LOOPS   30              /* wait 30*TIMEOUT (1 hour) till shutdown */
 
 int main(int argc, char **argv)
 {

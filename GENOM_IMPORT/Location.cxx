@@ -8,10 +8,12 @@
 //   http://www.arb-home.de/                                        //
 //                                                                  //
 // ================================================================ //
+
 #include "Location.h"
 #include "tools.h"
 
 #include <adGene.h>
+#include <arbdb.h>
 
 #include <cctype>
 #include <string>

@@ -1,6 +1,18 @@
-#include <MultiProbe.hxx>
+// ============================================================= //
+//                                                               //
+//   File      : MP_probe.cxx                                    //
+//   Purpose   :                                                 //
+//                                                               //
+//   Institute of Microbiology (Technical University Munich)     //
+//   http://www.arb-home.de/                                     //
+//                                                               //
+// ============================================================= //
+
+#include "MP_probe.hxx"
+#include "MultiProbe.hxx"
 
 #include <aw_window.hxx>
+
 #include <ctime>
 
 extern BOOL check_status(int gen_cnt, double avg_fit, double min_fit, double max_fit);

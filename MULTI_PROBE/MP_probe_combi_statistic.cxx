@@ -1,6 +1,15 @@
-#include <MultiProbe.hxx>
+// ============================================================= //
+//                                                               //
+//   File      : MP_probe_combi_statistic.cxx                    //
+//   Purpose   :                                                 //
+//                                                               //
+//   Institute of Microbiology (Technical University Munich)     //
+//   http://www.arb-home.de/                                     //
+//                                                               //
+// ============================================================= //
 
-#include <cmath>
+#include "MP_probe.hxx"
+#include "MultiProbe.hxx"
 
 extern double MAXMARKEDFACTOR;
 extern double MINUNMARKEDFACTOR;

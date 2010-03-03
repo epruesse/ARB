@@ -11,6 +11,9 @@
 #ifndef AWT_SEQ_COLORS_HXX
 #define AWT_SEQ_COLORS_HXX
 
+#ifndef AW_WINDOW_HXX
+#include <aw_window.hxx>
+#endif
 
 #define AWAR_SEQ_PATH                  "awt/seq_colors/"
 #define AWAR_SEQ_NAME_STRINGS_TEMPLATE AWAR_SEQ_PATH  "strings/elem_%i"

@@ -34,6 +34,8 @@
 #include <cstdlib>
 #endif
 
+#ifdef __cplusplus
+
 template<typename T>
 inline void freenull(T *& var) {
     free(var);
@@ -56,6 +58,8 @@ inline void reassign(char *& dstvar, char *& srcvar) {
     freeset(dstvar, srcvar);
     srcvar = NULL;
 }
+
+#endif // __cplusplus
 
 #else
 #error dupstr.h included twice

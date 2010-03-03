@@ -15,10 +15,6 @@
 #include "GDE_def.h"
 #endif
 
-#ifndef ARB_ASSERT_H
-#include <arb_assert.h>
-#endif
-
 #define gde_assert(bed) arb_assert(bed)
 
 typedef struct GargChoicetype

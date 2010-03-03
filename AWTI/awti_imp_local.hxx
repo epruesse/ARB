@@ -18,10 +18,6 @@
 #ifndef ARBDBT_H
 #include <arbdbt.h>
 #endif
-#ifndef AW_ROOT_HXX
-#include <aw_root.hxx>
-#endif
-
 #ifndef AWTI_IMPORT_HXX
 #include <awti_import.hxx>
 #endif

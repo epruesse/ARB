@@ -23,6 +23,7 @@
 #include <aw_question.hxx>
 #include <AW_rename.hxx>
 #include <awt_input_mask.hxx>
+#include <arbdbt.h>
 
 #include <map>
 

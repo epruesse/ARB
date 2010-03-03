@@ -8,13 +8,17 @@
 //                                                                 //
 // =============================================================== //
 
-#include <ctime>
+#include "MultiProbe.hxx"
+#include "mp_proto.hxx"
+#include "MP_externs.hxx"
+#include "MP_probe.hxx"
 
 #include <awt.hxx>
 #include <TreeCallbacks.hxx>
+#include <client.h>
+#include <servercntrl.h>
 
-#include "MultiProbe.hxx"
-#include "mp_proto.hxx"
+#include <ctime>
 
 BOOL MP_is_probe(char *seq);
 int  get_random(int min, int max); // gibt eine Zufallszahl x mit der Eigenschaft : min <= x <= max

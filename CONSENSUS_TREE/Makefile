@@ -27,6 +27,7 @@ depend.init:
 # Do not add dependencies manually - use 'make depend' in $ARBHOME
 # For formatting issues see SOURCE_TOOLS/fix_depends.pl
 
+CT_ctree.o: CT_ctree.hxx
 CT_ctree.o: CT_dtree.hxx
 CT_ctree.o: CT_hash.hxx
 CT_ctree.o: CT_ntree.hxx
@@ -45,6 +46,7 @@ CT_ctree.o: $(ARBHOME)/INCLUDE/attributes.h
 CT_ctree.o: $(ARBHOME)/INCLUDE/dupstr.h
 CT_ctree.o: $(ARBHOME)/INCLUDE/smartptr.h
 
+CT_dtree.o: CT_dtree.hxx
 CT_dtree.o: CT_hash.hxx
 CT_dtree.o: CT_part.hxx
 CT_dtree.o: $(ARBHOME)/INCLUDE/ad_k_prot.h

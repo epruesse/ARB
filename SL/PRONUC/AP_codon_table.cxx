@@ -10,9 +10,13 @@
 // =============================================================== //
 
 #include "awt_iupac.hxx"
+
 #include "AP_codon_table.hxx"
+#include <arbdb.h>
 
 #include <cctype>
+
+#define pn_assert(cond) arb_assert(cond)
 
 #define EMBL_BACTERIAL_TABLE_INDEX 11
 
@@ -156,8 +160,8 @@ int AWT_embl_transl_table_2_arb_code_nr(int embl_code_nr) {
         }
         // should be index of 'Bacterial and Plant Plastid code'
         // (otherwise maybe AWAR_PROTEIN_TYPE_bacterial_code_index  is wrong)
-        awt_assert(arb_code_nr_table[EMBL_BACTERIAL_TABLE_INDEX] == AWAR_PROTEIN_TYPE_bacterial_code_index);
-        awt_assert(arb_code_nr_table[1] == 0); // Standard code has to be on index zero!
+        pn_assert(arb_code_nr_table[EMBL_BACTERIAL_TABLE_INDEX] == AWAR_PROTEIN_TYPE_bacterial_code_index);
+        pn_assert(arb_code_nr_table[1] == 0); // Standard code has to be on index zero!
 
         initialized = true;
     }
@@ -167,15 +171,15 @@ int AWT_embl_transl_table_2_arb_code_nr(int embl_code_nr) {
     int arb_code_nr = arb_code_nr_table[embl_code_nr];
 #ifdef DEBUG
     if (arb_code_nr != -1) {
-        awt_assert(arb_code_nr >= 0 && arb_code_nr < AWT_CODON_TABLES);
-        awt_assert(AWT_arb_code_nr_2_embl_transl_table(arb_code_nr) == embl_code_nr);
+        pn_assert(arb_code_nr >= 0 && arb_code_nr < AWT_CODON_TABLES);
+        pn_assert(AWT_arb_code_nr_2_embl_transl_table(arb_code_nr) == embl_code_nr);
     }
 #endif
     return arb_code_nr;
 }
 
 int AWT_arb_code_nr_2_embl_transl_table(int arb_code_nr) {
-    awt_assert(arb_code_nr >= 0 && arb_code_nr<AWT_CODON_TABLES);
+    pn_assert(arb_code_nr >= 0 && arb_code_nr<AWT_CODON_TABLES);
     return AWT_codon_def[arb_code_nr].embl_feature_transl_table;
 }
 
@@ -194,10 +198,10 @@ void AP_initialize_codon_tables() {
         ambiguous_codons[codon_nr] = 0;
     }
 
-    awt_assert(AWT_CODON_TABLES>=1);
+    pn_assert(AWT_CODON_TABLES>=1);
     memcpy(definite_translation, AWT_codon_def[0].aa, AWT_MAX_CODONS); // only one translation is really definite
 
-    awt_assert(AWT_codon_def[AWT_CODON_TABLES].aa==NULL); // Error in AWT_codon_def or AWT_CODON_CODES
+    pn_assert(AWT_codon_def[AWT_CODON_TABLES].aa==NULL); // Error in AWT_codon_def or AWT_CODON_CODES
 
     for (code_nr=1; code_nr<AWT_CODON_TABLES; code_nr++) {
         const char *translation = AWT_codon_def[code_nr].aa;
@@ -246,7 +250,7 @@ inline int dna2idx(char c) {
 }
 
 inline char idx2dna(int idx) {
-    awt_assert(idx>=0 && idx<4);
+    pn_assert(idx>=0 && idx<4);
     return "TCAG"[idx];
 }
 
@@ -258,12 +262,12 @@ inline int calc_codon_nr(const char *dna) {
     if (i1==4||i2==4||i3==4) return AWT_MAX_CODONS; // is not a codon
 
     int codon_nr = i1*16 + i2*4 + i3;
-    awt_assert(codon_nr>=0 && codon_nr<=AWT_MAX_CODONS);
+    pn_assert(codon_nr>=0 && codon_nr<=AWT_MAX_CODONS);
     return codon_nr;
 }
 
 inline void build_codon(int codon_nr, char *to_buffer) {
-    awt_assert(codon_nr>=0 && codon_nr<AWT_MAX_CODONS);
+    pn_assert(codon_nr>=0 && codon_nr<AWT_MAX_CODONS);
 
     to_buffer[0] = idx2dna((codon_nr>>4)&3);
     to_buffer[1] = idx2dna((codon_nr>>2)&3);
@@ -271,7 +275,7 @@ inline void build_codon(int codon_nr, char *to_buffer) {
 }
 
 const char* AWT_get_codon_code_name(int code) {
-    awt_assert(code>=0 && code<AWT_CODON_TABLES);
+    pn_assert(code>=0 && code<AWT_CODON_TABLES);
     return AWT_codon_def[code].name;
 }
 
@@ -309,8 +313,8 @@ const char *AP_get_protein_name(char protein) {
     if (protein=='*') return "End";
     if (protein=='-') return "---";
 
-    awt_assert(protein>='A' && protein<='Z');
-    awt_assert(protein_name[protein-'A']!=0);
+    pn_assert(protein>='A' && protein<='Z');
+    pn_assert(protein_name[protein-'A']!=0);
     return protein_name[protein-'A'];
 }
 
@@ -322,7 +326,7 @@ inline char nextBase(char c) {
         case 'C': return 'A';
         case 'A': return 'G';
         case 'G': return 0;
-        default: awt_assert(0);
+        default: pn_assert(0);
     }
     return 0;
 }
@@ -379,7 +383,7 @@ char AWT_is_start_codon(const char *dna, int arb_code_nr) {
     char is_start_codon = 0;
     int  codon_nr       = calc_codon_nr(dna);
 
-    awt_assert(arb_code_nr >= 0 && arb_code_nr<AWT_CODON_TABLES);
+    pn_assert(arb_code_nr >= 0 && arb_code_nr<AWT_CODON_TABLES);
 
     if (codon_nr != AWT_MAX_CODONS) { // dna is a clean codon (it contains no iupac-codes)
         const char *starts = AWT_codon_def[arb_code_nr].starts;
@@ -397,7 +401,7 @@ bool AWT_is_codon(char protein, const char *dna, const AWT_allowedCode& allowed_
     // allowed_code contains 1 for each allowed code and 0 otherwise
     // allowed_code_left contains a copy of allowed_codes with all impossible codes set to zero
 
-    awt_assert(codon_tables_initialized);
+    pn_assert(codon_tables_initialized);
 
     const char *fail_reason = 0;
     bool        is_codon    = false;
@@ -408,7 +412,7 @@ bool AWT_is_codon(char protein, const char *dna, const AWT_allowedCode& allowed_
     if (protein=='B') {         // B is a shortcut for Asp(=D) or Asn(=N)
         is_codon = AWT_is_codon('D', dna, allowed_code, allowed_code_left, &fail_reason);
         if (!is_codon) {
-            awt_assert(fail_reason != 0); // if failed there should always be a failure-reason
+            pn_assert(fail_reason != 0); // if failed there should always be a failure-reason
             char *fail1 = strdup(fail_reason);
             is_codon    = AWT_is_codon('N', dna, allowed_code, allowed_code_left, &fail_reason);
             if (!is_codon) {
@@ -422,7 +426,7 @@ bool AWT_is_codon(char protein, const char *dna, const AWT_allowedCode& allowed_
     else if (protein=='Z') {    // Z is a shortcut for Glu(=E) or Gln(=Q)
         is_codon = AWT_is_codon('E', dna, allowed_code, allowed_code_left, &fail_reason);
         if (!is_codon) {
-            awt_assert(fail_reason != 0); // if failed there should always be a failure-reason
+            pn_assert(fail_reason != 0); // if failed there should always be a failure-reason
             char *fail1 = strdup(fail_reason);
             is_codon    = AWT_is_codon('Q', dna, allowed_code, allowed_code_left, &fail_reason);
             if (!is_codon) {
@@ -456,7 +460,7 @@ bool AWT_is_codon(char protein, const char *dna, const AWT_allowedCode& allowed_
                 fail_reason = GBS_global_string("Not enough nucleotides (got '%s')", dna);
             }
             else {
-                awt_assert(error_positions);
+                pn_assert(error_positions);
                 if (error_positions==3) { // don't accept codons with 3 errors
                     fail_reason = GBS_global_string("Three consecutive IUPAC codes '%c%c%c'", dna[0], dna[1], dna[2]);
                 }
@@ -541,7 +545,7 @@ bool AWT_is_codon(char protein, const char *dna, const AWT_allowedCode& allowed_
             }
 
             if (!is_codon) {
-                awt_assert(correct_disallowed_translation); // should be true because otherwise we shouldn't run into this else-branch
+                pn_assert(correct_disallowed_translation); // should be true because otherwise we shouldn't run into this else-branch
                 char  left_tables[AWT_CODON_TABLES*3+1];
                 char *ltp   = left_tables;
                 bool  first = true;
@@ -559,7 +563,7 @@ bool AWT_is_codon(char protein, const char *dna, const AWT_allowedCode& allowed_
     }
 
     if (!is_codon) {
-        awt_assert(fail_reason);
+        pn_assert(fail_reason);
         if (fail_reason_ptr) *fail_reason_ptr = fail_reason; // set failure-reason if requested
     }
     return is_codon;
@@ -581,8 +585,8 @@ public:
 
 Codon_Group::Codon_Group(char protein, int code_nr) {
     protein = toupper(protein);
-    awt_assert(protein=='*' || isalpha(protein));
-    awt_assert(code_nr>=0 && code_nr<AWT_CODON_TABLES);
+    pn_assert(protein=='*' || isalpha(protein));
+    pn_assert(code_nr>=0 && code_nr<AWT_CODON_TABLES);
 
     const char *amino_table = AWT_codon_def[code_nr].aa;
     for (int i=0; i<AWT_MAX_CODONS; i++) {
@@ -616,7 +620,7 @@ inline const char *buildMixedCodon(const char *con1, const char *con2) {
     }
 
     if (mismatches==1) { // exactly one position differs between codons
-        awt_assert(mismatch_index!=-1);
+        pn_assert(mismatch_index!=-1);
         buf[mismatch_index] = AWT_iupac_add(con1[mismatch_index], con2[mismatch_index], GB_AT_DNA);
         buf[3] = 0;
         return buf;
@@ -686,7 +690,7 @@ int Codon_Group::expand(char *to_buffer) const {
 #endif
     }
 
-    awt_assert(count==(int(to_buffer-org_to_buffer)/3));
+    pn_assert(count==(int(to_buffer-org_to_buffer)/3));
 
     return count;
 }
@@ -694,10 +698,10 @@ int Codon_Group::expand(char *to_buffer) const {
 // --------------------------------------------------------------------------------
 
 static Codon_Group *get_Codon_Group(char protein, int code_nr) {
-    awt_assert(code_nr>=0 && code_nr<AWT_CODON_TABLES);
+    pn_assert(code_nr>=0 && code_nr<AWT_CODON_TABLES);
     protein = toupper(protein);
-    awt_assert(isalpha(protein) || protein=='*');
-    awt_assert(codon_tables_initialized);
+    pn_assert(isalpha(protein) || protein=='*');
+    pn_assert(codon_tables_initialized);
 
     Codon_Group *cgroup = 0;
 
@@ -715,7 +719,7 @@ static Codon_Group *get_Codon_Group(char protein, int code_nr) {
         cgroup = new Codon_Group(protein, code_nr);
     }
 
-    awt_assert(cgroup);
+    pn_assert(cgroup);
 
     return cgroup;
 }
@@ -729,7 +733,7 @@ const char *AP_get_codons(char protein, int code_nr) {
 
     static char buffer[MAX_CODON_LIST_LENGTH+1];
     int offset = 3*cgroup->expand(buffer);
-    awt_assert(offset<MAX_CODON_LIST_LENGTH);
+    pn_assert(offset<MAX_CODON_LIST_LENGTH);
     buffer[offset] = 0;
 
     delete cgroup;
@@ -747,7 +751,7 @@ const char *AWT_get_protein_iupac(char protein, int code_nr) {
     const char *codons  = AP_get_codons(protein, code_nr);
     static char result[] = "xxx";
 
-    awt_assert(codons && strlen(codons) >= 3);
+    pn_assert(codons && strlen(codons) >= 3);
     memcpy(result, codons, 3);
     for (int off = 3; codons[off]; off += 3) {
         for (int base = 0; base<3; ++base) {
