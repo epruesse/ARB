@@ -1371,3 +1371,79 @@ void GB_split_full_path(const char *fullpath, char **res_dir, char **res_fullnam
         if (res_suffix)    *res_suffix    = NULL;
     }
 }
+
+
+// --------------------------------------------------------------------------------
+
+#if (UNIT_TESTS == 1)
+
+#include <test_unit.h>
+
+static const char *ANY_NAME = "ANY_NAME";
+
+struct gbcm_get_m_id_TESTER {
+    const char *path;
+    GB_ERROR    error;
+    char       *name;
+    long        id;
+
+    gbcm_get_m_id_TESTER(const char *path_)
+        : path(path_)
+        , name(NULL)
+    {
+        error = gbcm_get_m_id(path, &name, &id);
+    }
+    ~gbcm_get_m_id_TESTER() {
+        TEST_ASSERT(!error || !name);               // if error occurs no name should exist!
+        TEST_ASSERT(error || name);                 // either error or result
+        free(name);
+    }
+
+    bool no_error() {
+        if (error) {
+            fprintf(stderr, "Unexpected error for path '%s': %s\n", path, error);
+            TEST_ASSERT(!name);
+        }
+        else if (!name) fprintf(stderr, "Neither error nor name for path '%s'\n", path);
+        return !error;
+    }
+    bool parsed_name(const char *expected_name) {
+        bool ok = no_error();
+        if (ok && strcmp(expected_name, name) != 0) {
+            if (expected_name != ANY_NAME) {
+                fprintf(stderr, "path '%s' produces unexpected name '%s' (expected '%s')\n", path, name, expected_name);
+                ok = false;
+            }
+        }
+        return ok;
+    }
+    bool parsed_id(long expected_id) {
+        bool ok = no_error();
+        if (ok && id != expected_id) {
+            fprintf(stderr, "path '%s' produces unexpected id '%li' (expected '%li')\n", path, id, expected_id);
+            ok = false;
+        }
+        return ok;
+    }
+
+    bool parsed(const char *expected_name, long expected_id) { return parsed_name(expected_name) && parsed_id(expected_id); }
+};
+
+void TEST_gbcm_get_m_id() {
+    TEST_ASSERT(gbcm_get_m_id_TESTER(NULL).error);
+    TEST_ASSERT(gbcm_get_m_id_TESTER("").error);
+    TEST_ASSERT(gbcm_get_m_id_TESTER(":").parsed(ANY_NAME, -1));
+
+    TEST_ASSERT(gbcm_get_m_id_TESTER("localhost:71").parsed("localhost", 71)); // fixed with [6486]
+    TEST_ASSERT(gbcm_get_m_id_TESTER("localhost:0").error);
+    TEST_ASSERT(gbcm_get_m_id_TESTER("localhost:4096").error == NULL);
+    TEST_ASSERT(gbcm_get_m_id_TESTER("localhost:4097").error);
+
+    TEST_ASSERT(gbcm_get_m_id_TESTER(":/tmp/arb_pt_ralf1").parsed("/tmp/arb_pt_ralf1", -1));
+
+    // @@@ no idea what "*" is used for, so the following tests are only descriptive!
+    TEST_ASSERT(gbcm_get_m_id_TESTER("*whatever:bar").parsed("bar", -1));
+    TEST_ASSERT(gbcm_get_m_id_TESTER("*:bar").parsed("bar", -1));
+}
+
+#endif
