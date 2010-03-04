@@ -39,15 +39,16 @@ sub parse($) {
       if ($line =~ /^(([0-9a-f]|\s)+) (.) (.*)\n/o) {
         my ($type,$rest) = ($3,$4);
         my $symbol;
+        my $location = undef;
         if ($rest =~ /\t/o) {
-          my $location;
           ($symbol,$location) = ($`,$');
-          $location{$symbol} = $location;
         }
         else { # symbol w/o location
           $symbol = $rest;
         }
+
         if ($symbol =~ /\(/o) { $symbol = $`; } # skip prototype
+        if (defined $location) { $location{$symbol} = $location; }
 
         my $is_unit_test = undef;
         if ($symbol =~ /^TEST_/o) { $is_unit_test = 1; }
