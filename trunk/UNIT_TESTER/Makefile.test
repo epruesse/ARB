@@ -12,6 +12,7 @@
 dummy:
 	false
 
+#VALGRIND=2# run valgrind before test (useful if test traps w/o any helpful information)
 #VALGRIND=1# run valgrind after sucessful test
 VALGRIND=0# only test
 
@@ -109,6 +110,9 @@ dump:
 
 perform_test: $(TEST_EXE)
 	@echo "fake[3]: Entering directory \`$(FULLUNITDIR)'"
+ifeq ($(VALGRIND),2)
+	cd $(RUNDIR);$(ARBHOME)/SOURCE_TOOLS/arb_valgrind -l -c 15 $(RUN2HERE)/$(TEST_EXE)
+endif
 	cd $(RUNDIR);$(RUN2HERE)/$(TEST_EXE)
 ifeq ($(VALGRIND),1)
 	cd $(RUNDIR);$(ARBHOME)/SOURCE_TOOLS/arb_valgrind -l -c 15 $(RUN2HERE)/$(TEST_EXE)
