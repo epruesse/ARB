@@ -55,60 +55,7 @@ const char *formatted(const char *format, ...) {
 }
 #undef ERRBUFSIZE
 
-#if defined(DEVEL_RALF)
-#warning replace memcopy by memmove
-#endif /* DEVEL_RALF */
-
-static void memcopy(char *dest, const char *source, int len)
-{
-    int         i;
-    const char *s;
-    char       *d;
-
-    i = len;
-    s = source;
-    d = dest;
-    if (s < d) {
-        s += i;
-        d += i;
-        while (i--) {
-            *(--d) = *(--s);
-        }
-    }
-    else {
-        while (i--) {
-            *(d++) = *(s++);
-        }
-    }
-}
-
-#if defined(DEVEL_RALF)
-#warning replace find_string by strstr
-#endif /* DEVEL_RALF */
-
-static char *find_string(const char *str, const char *key)
-{
-    const char *p1, *p2;
-    for (p1=str, p2=key; *p1;) {
-        if (!*p2) {
-            return (char*)(str);
-        }
-        else {
-            if (*p2==*p1) {
-                p1 ++; p2++;
-            }
-            else {
-                p2 = key;
-                p1 = (++str);
-            }
-        }
-    }
-    if (!*p2) return (char*)(str);
-    return 0;
-}
-
-static char *calc_rest_line( /* const */ char *str, int size, int presize)
-{
+static char *calc_rest_line( /* const */ char *str, int size, int presize) {
     /* wertet einen Puffer str aus , str[-1] muss existieren !!! */
     char *ld;
     char *p;
@@ -119,7 +66,7 @@ static char *calc_rest_line( /* const */ char *str, int size, int presize)
     char *lastbr;
     char c;
 
-    ld = find_string(&str[2], "$(");
+    ld = strstr(&str[2], "$(");
     fi = 0;
     if (ld) {
         lastbr = calc_rest_line(ld, size - (ld - str), presize+2);
@@ -222,10 +169,10 @@ static char *calc_rest_line( /* const */ char *str, int size, int presize)
             free(fi);
             return 0;
         }
-        memcopy(str + lenf, br, len + 1);
+        memmove(str + lenf, br, len + 1);
         memcpy(str, fi, lenf);
         free(fi);
-        ld = find_string(str, "$(");
+        ld = strstr(str, "$(");
         if (ld) {
             lastbr = calc_rest_line(ld, size - (ld - str), presize+(ld-str));
             if (!lastbr)
@@ -250,7 +197,7 @@ static int calc_line(char *str, char *buf)
     if (len > gl->bufsize)
         len = gl->bufsize;
     memcpy(buf, str, len + 1);
-    ld = find_string(buf, "$(");
+    ld = strstr(buf, "$(");
     if (!ld)
         return 0;
     contains_tabs = 0;
@@ -269,9 +216,9 @@ static int calc_line2(char *str, char *buf) {
     char *ld = buf;
     SKIP_SPACE_LF(ld);
     
-    ld = find_string(ld, "$(");
+    ld = strstr(ld, "$(");
     if (ld && strncmp(ld, "$(", 2) == 0) {
-        ld = find_string(ld + 2, "$(");
+        ld = strstr(ld + 2, "$(");
         contains_tabs = 0;
         if (ld) {
             char *lb = calc_rest_line(ld, gl->bufsize - (ld - buf), 2);
@@ -621,7 +568,7 @@ static int do_com_moveto(char *str)
     char        *co;
     char        *p;
 
-    st = find_string(str, "$(");
+    st = strstr(str, "$(");
     if (!st) {
         print_error("no $( found");
         return 1;
@@ -656,7 +603,7 @@ static int do_com_set(char *str)
     char           *def;
     struct hash_struct *hs;
 
-    st = find_string(str, "$(");
+    st = strstr(str, "$(");
     if (!st) {
         print_error("no $( found");
         return 1;
@@ -687,7 +634,7 @@ static int do_com_create(char *str)
     char           *st;
     char           *co;
     char           *def;
-    st = find_string(str, "$(");
+    st = strstr(str, "$(");
     if (!st) {
         print_error("no $( found");
         return 1;
@@ -749,8 +696,8 @@ static int do_com_if(char *str)
         switch (op) {
             case 0:     if (!strcmp(str, equ)) return 0; break;
             case 8:     if (strcmp(str, equ)) return 0; break;
-            case 1:     if (find_string(str, equ)) return 0; break;
-            case 9:     if (!find_string(str, equ)) return 0; break;
+            case 1:     if (strstr(str, equ)) return 0; break;
+            case 9:     if (!strstr(str, equ)) return 0; break;
             default:
                 printf_error("Unhandled operator (op=%i)", op);
                 return 1;
@@ -922,7 +869,7 @@ static int do_com_exit(char *) {
 
 static int do_com_for(char *str) {
     int   result = 1;
-    char *st     = find_string(str, "$(");
+    char *st     = strstr(str, "$(");
     if (!st) print_error("no input");
     else {
         st += 2;
@@ -938,7 +885,7 @@ static int do_com_for(char *str) {
                 *(eq++) = 0;
                 SKIP_SPACE_LF(eq);
                 
-                char *to = find_string(eq, "TO");
+                char *to = strstr(eq, "TO");
                 if (!to) print_error("TO not found in FOR :( FOR $(i) = a TO b )");
                 else {
                     *to  = 0;
