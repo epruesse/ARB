@@ -260,11 +260,7 @@ static void write_aisc(const TokenListBlock *block, FILE *out, int indentation) 
     }
 }
 
-#if defined(DEVEL_RALF)
-#warning fix result_type of do_xxx functions (could be bool)
-#endif /* DEVEL_RALF */
-
-static int do_com_dumpdata(const char *filename) {
+ATTRIBUTED(__ATTR__USERESULT, static int do_com_dumpdata(const char *filename)) {
     if (!gl->root) {
         print_error("DUMPDATA can only be used after DATA");
         return 1;
@@ -286,8 +282,7 @@ static int do_com_dumpdata(const char *filename) {
     return 0;
 }
 
-static int do_com_data(char *str)
-{
+ATTRIBUTED(__ATTR__USERESULT, static int do_com_data(char *str)) {
     if (strlen(str) < 2) {
         printf_error("no parameter '%s'", gl->pc->str);
         return 1;
@@ -310,8 +305,7 @@ static int do_com_data(char *str)
     return 0;
 }
 
-static int do_com_write(FILE * out, char *str)
-{
+ATTRIBUTED(__ATTR__USERESULT, static int do_com_write(FILE * out, char *str)) {
     char *p;
     char  c;
     int   no_nl = 0;
@@ -396,19 +390,10 @@ static int do_com_write(FILE * out, char *str)
     return 0;
 }
 
-static int do_com_print(char *str)
-{
-    do_com_write(gl->out, str);
-    return 0;
-}
-static int do_com_print2(char *str)
-{
-    do_com_write(stdout, str);
-    return 0;
-}
+ATTRIBUTED(__ATTR__USERESULT, inline int do_com_print(char *str)) { return do_com_write(gl->out, str); }
+ATTRIBUTED(__ATTR__USERESULT, inline int do_com_print2(char *str)) { return do_com_write(stdout, str); }
 
-static int do_com_tabstop(char *str)
-{
+ATTRIBUTED(__ATTR__USERESULT, static int do_com_tabstop(char *str)) {
     int             ts, i;
     ts = atoi(str);
     if ((ts < 1) || (ts > 1024)) {
@@ -421,8 +406,7 @@ static int do_com_tabstop(char *str)
     return 0;
 }
 
-static int do_com_tab(char *str)
-{
+ATTRIBUTED(__ATTR__USERESULT, static int do_com_tab(char *str)) {
     char *s1 = strtok(str, " \t,;");
     if (!s1) print_error("empty input");
     else {
@@ -444,14 +428,12 @@ static int do_com_tab(char *str)
     return 1;
 }
 
-static int do_com_error(char *str)
-{
+ATTRIBUTED(__ATTR__USERESULT, static int do_com_error(char *str)) {
     print_error(str);
     return 1;
 }
 
-static int do_com_open(char *str)
-{
+ATTRIBUTED(__ATTR__USERESULT, static int do_com_open(char *str)) {
     FILE           *file;
     int             i;
     char           *fn;
@@ -512,7 +494,7 @@ void aisc_remove_files() {
     }
 }
 
-static int do_com_close(char *str) {
+ATTRIBUTED(__ATTR__USERESULT, static int do_com_close(char *str)) {
     int i;
     SKIP_SPACE_LF(str);
     str = strtok(str, " \t,;\n");
@@ -540,8 +522,7 @@ static int do_com_close(char *str) {
     return 0;
 }
 
-static int do_com_out(char *str)
-{
+ATTRIBUTED(__ATTR__USERESULT, static int do_com_out(char *str)) {
     int             i;
     SKIP_SPACE_LF(str);
     str = strtok(str, " \t,;\n");
@@ -561,8 +542,7 @@ static int do_com_out(char *str)
     return 1;
 }
 
-static int do_com_moveto(char *str)
-{
+ATTRIBUTED(__ATTR__USERESULT, static int do_com_moveto(char *str)) {
     const Token *fo;
     char        *st;
     char        *co;
@@ -596,8 +576,7 @@ static int do_com_moveto(char *str)
     return 0;
 }
 
-static int do_com_set(char *str)
-{
+ATTRIBUTED(__ATTR__USERESULT, static int do_com_set(char *str)) {
     char           *st;
     char           *co;
     char           *def;
@@ -629,8 +608,7 @@ static int do_com_set(char *str)
     return 0;
 }
 
-static int do_com_create(char *str)
-{
+ATTRIBUTED(__ATTR__USERESULT, static int do_com_create(char *str)) {
     char           *st;
     char           *co;
     char           *def;
@@ -660,8 +638,7 @@ static int do_com_create(char *str)
     return 0;
 }
 
-static int do_com_if(char *str)
-{
+ATTRIBUTED(__ATTR__USERESULT, static int do_com_if(char *str)) {
     char           *equ;
     char           *kom;
     char           *la;
@@ -710,27 +687,22 @@ static int do_com_if(char *str)
     return 0;
 }
 
-static int do_com_for_add(CL *co)
-{
+static void do_com_for_add(CL *co) {
     struct for_data_struct *fd;
     fd = (struct for_data_struct *)calloc(sizeof(struct for_data_struct), 1);
     fd->next = co->fd;
     co->fd = fd;
-    return 0;
 }
 
-static int do_com_for_sub(CL *co)
-{
+static void do_com_for_sub(CL *co) {
     struct for_data_struct *fd;
     fd = co->fd;
-    if (fd->forstr)
-        free(fd->forstr);
+    if (fd->forstr) free(fd->forstr);
     co->fd = fd->next;
     free((char *)fd);
-    return 0;
 }
 
-int do_com_push(const char *) {
+ATTRIBUTED(__ATTR__USERESULT, int do_com_push(const char *)) {
     if (gl->sp++ >= STACKSIZE) {
         print_error("Stack size exceeded");
         return 1;
@@ -766,7 +738,7 @@ void free_stack() {
     }
 }
 
-static int do_com_pop(const char *) {
+ATTRIBUTED(__ATTR__USERESULT, static int do_com_pop(const char *)) {
     if (gl->sp<2) {
         print_error("Nothing to Pop");
         return 1;
@@ -775,7 +747,7 @@ static int do_com_pop(const char *) {
     return 0;
 }
 
-static int do_com_gosub(char *str) {
+ATTRIBUTED(__ATTR__USERESULT, static int do_com_gosub(char *str)) {
     int result = 1;
     if (do_com_push("") == 0) {
         char *s;
@@ -848,7 +820,7 @@ static int do_com_gosub(char *str) {
     return result;
 }
 
-static int do_com_goto(char *str) {
+ATTRIBUTED(__ATTR__USERESULT, static int do_com_goto(char *str)) {
     char *fn = read_hash(gl->fns, str);
     if (!fn) {
         printf_error("Function '%s' not found", str);
@@ -858,16 +830,16 @@ static int do_com_goto(char *str) {
     return 0;
 }
 
-static int do_com_return(char *) {
+ATTRIBUTED(__ATTR__USERESULT, static int do_com_return(char *)) {
     gl->nextpc = gl->st->pc->next;
     return do_com_pop("");
 }
 
-static int do_com_exit(char *) {
+ATTRIBUTED(__ATTR__USERESULT, static int do_com_exit(char *)) {
     return 1;
 }
 
-static int do_com_for(char *str) {
+ATTRIBUTED(__ATTR__USERESULT, static int do_com_for(char *str)) {
     int   result = 1;
     char *st     = strstr(str, "$(");
     if (!st) print_error("no input");
@@ -892,27 +864,27 @@ static int do_com_for(char *str) {
                     to  += 2;
                     SKIP_SPACE_LF(to);
 
-                    if (do_com_for_add(gl->pc) == 0) {
-                        gl->pc->fd->forval = atol(eq);
-                        gl->pc->fd->forend = atol(to);
+                    do_com_for_add(gl->pc);
+                    gl->pc->fd->forval = atol(eq);
+                    gl->pc->fd->forend = atol(to);
 
-                        if (gl->pc->fd->forval > gl->pc->fd->forend) {
-                            gl->nextpc = gl->pc->NEXT->next;
-                            result     = do_com_for_sub(gl->pc);
+                    if (gl->pc->fd->forval > gl->pc->fd->forend) {
+                        gl->nextpc = gl->pc->NEXT->next;
+                        do_com_for_sub(gl->pc);
+                        result = 0;
+                    }
+                    else {
+                        struct hash_struct *hs;
+                        char *p = (char *) read_hash_local(st, &hs);
+                        if (!p) {
+                            printf_error("Undefined Ident '%s' in FOR (use CREATE first)", st);
                         }
                         else {
-                            struct hash_struct *hs;
-                            char *p = (char *) read_hash_local(st, &hs);
-                            if (!p) {
-                                printf_error("Undefined Ident '%s' in FOR (use CREATE first)", st);
-                            }
-                            else {
-                                sprintf(string_buf, "%li", gl->pc->fd->forval);
-                                write_hash(hs, st, string_buf);
-                                gl->pc->fd->forstr = strdup(st);
+                            sprintf(string_buf, "%li", gl->pc->fd->forval);
+                            write_hash(hs, st, string_buf);
+                            gl->pc->fd->forstr = strdup(st);
 
-                                result = 0;
-                            }
+                            result = 0;
                         }
                     }
                 }
@@ -939,7 +911,7 @@ static int do_com_for(char *str) {
 }
 
 
-static int do_com_next(const char *) {
+ATTRIBUTED(__ATTR__USERESULT, static int do_com_next(const char *)) {
     if (gl->pc->FOR->fd->forcursor) {
         const Token *fo = aisc_find_var(gl->cursor, gl->pc->FOR->fd->forstr, LOOKUP_BLOCK_REST);
         if (!fo) {
