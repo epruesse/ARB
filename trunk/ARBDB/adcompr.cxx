@@ -48,7 +48,7 @@
         } }
 
 
-ATTRIBUTED(__ATTR__USERESULT, static GB_ERROR gb_check_huffmann_tree(struct gb_compress_tree *t)) {
+STATIC_ATTRIBUTED(__ATTR__USERESULT, GB_ERROR gb_check_huffmann_tree(struct gb_compress_tree *t)) {
     if (t->leave)
         return 0;
     if (!t->son[0])

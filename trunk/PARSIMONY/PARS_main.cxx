@@ -63,7 +63,7 @@ static void pars_export_tree() {
     if (error) aw_message(error);
 }
 
-ATTRIBUTED(__ATTR__NORETURN, static void pars_exit(AW_window *aww)) {
+STATIC_ATTRIBUTED(__ATTR__NORETURN, void pars_exit(AW_window *aww)) {
     aww->get_root()->unlink_awars_from_DB(GLOBAL_gb_main);
 #if defined(DEBUG)
     AWT_browser_forget_db(GLOBAL_gb_main);
