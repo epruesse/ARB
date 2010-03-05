@@ -673,6 +673,7 @@ adsocket.o: $(ARBHOME)/INCLUDE/attributes.h
 adsocket.o: $(ARBHOME)/INCLUDE/dupstr.h
 adsocket.o: $(ARBHOME)/INCLUDE/SigHandler.h
 adsocket.o: $(ARBHOME)/INCLUDE/smartptr.h
+adsocket.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 adsort.o: ad_k_prot.h
 adsort.o: ad_prot.h
