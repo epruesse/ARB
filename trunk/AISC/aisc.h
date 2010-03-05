@@ -283,18 +283,20 @@ extern char                  string_buf[256];
 #define END_STR2 ')'
 
 inline bool is_SPACE(char c) { return c == ' ' || c == '\t'; }
-inline bool is_SEP(char c) { return c == ',' || c == ';'; }
-inline bool is_LF(char c) { return c == '\n'; }
-inline bool is_EOS(char c) { return c == EOSTR; }
+inline bool is_SEP(char c)   { return c == ',' || c == ';'; }
+inline bool is_LF(char c)    { return c == '\n'; }
+inline bool is_EOS(char c)   { return c == EOSTR; }
 
-inline bool is_SPACE_LF(char c) { return is_SPACE(c) || is_LF(c); }
-inline bool is_SPACE_LF_EOS(char c) { return is_SPACE(c) || is_LF(c) || is_EOS(c); }
-inline bool is_SPACE_SEP_LF_EOS(char c) { return is_SEP(c) || is_SPACE_LF_EOS(c); }
-inline bool is_SEP_LF_EOS(char c) { return is_SEP(c) || is_LF(c) || is_EOS(c); }
-inline bool is_LF_EOS(char c) { return is_LF(c) || is_EOS(c); }
+inline bool is_SPACE_LF(char c)         { return is_SPACE(c) || is_LF(c); }
+inline bool is_SPACE_LF_EOS(char c)     { return is_SPACE_LF(c) || is_EOS(c); }
+inline bool is_SPACE_SEP_LF_EOS(char c) { return is_SPACE_LF_EOS(c) || is_SEP(c); }
+inline bool is_LF_EOS(char c)           { return is_LF(c) || is_EOS(c); }
+inline bool is_SEP_LF_EOS(char c)       { return is_SEP(c) || is_LF_EOS(c); }
 
-inline void SKIP_SPACE_LF(char *& var) { while (is_SPACE_LF(*var)) ++var; }
-inline void SKIP_SPACE_LF_BACKWARD(char *& var) { while (is_SPACE_LF(*var)) --var; }
+inline void SKIP_SPACE_LF         (const char *& var) { while (is_SPACE_LF(*var)) ++var; }
+inline void SKIP_SPACE_LF         (char *& var)       { while (is_SPACE_LF(*var)) ++var; }
+inline void SKIP_SPACE_LF_BACKWARD(const char *& var) { while (is_SPACE_LF(*var)) --var; }
+inline void SKIP_SPACE_LF_BACKWARD(char *& var)       { while (is_SPACE_LF(*var)) --var; }
 
 enum LookupScope {
     LOOKUP_LIST,

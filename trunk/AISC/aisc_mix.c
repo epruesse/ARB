@@ -311,34 +311,26 @@ char *read_hash(struct hash_struct *hs, char *key)
     return 0;
 }
 
-char *write_hash(struct hash_struct *hs, const char *key, const char *val)
-{
-    struct hash_entry *e;
-    char *str2;
-    int i;
-    i = hash_index(key, hs->size);
-    for (e=hs->entries[i]; e; e=e->next)
-    {
-        if (!strcmp(e->key, key)) {
-            str2 = e->val;
-            if (e->val) free(e->val);
-            if (val) {
-                e->val = strdup(val);
-            }
-            else {
-                e->val = 0;
-            }
+void write_hash(struct hash_struct *hs, const char *key, const char *val) {
+    int         i = hash_index(key, hs->size);
+    hash_entry *e;
 
-            return str2;
+    for (e = hs->entries[i]; e; e=e->next) {
+        if (strcmp(e->key, key) == 0) {
+            free(e->val);
+            e->val = val ? strdup(val) : 0;
+            break;
         }
     }
-    e = (struct hash_entry *)calloc(sizeof(struct hash_entry), 1);
-    e->next = hs->entries[i];
-    e->key = strdup(key);
-    if (val)    e->val = strdup(val);
-    hs->entries[i] = e;
 
-    return 0;
+    if (!e) {
+        e       = (struct hash_entry *)calloc(sizeof(struct hash_entry), 1);
+        e->next = hs->entries[i];
+        e->key  = strdup(key);
+        e->val  = val ? strdup(val) : 0;
+        
+        hs->entries[i] = e;
+    }
 }
 
 int free_hash(struct hash_struct *hs) {

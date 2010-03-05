@@ -26,7 +26,7 @@ void print_error_internal(const char *err, const char *launcher_file, int launch
 void print_warning_internal(const char *err, const char *launcher_file, int launcher_line);
 const char *formatted(const char *format, ...) __ATTR__FORMAT(1);
 void aisc_remove_files(void);
-int do_com_push(const char *str);
+int do_com_push(const char *);
 void free_stack(void);
 int run_prg(void);
 
@@ -36,7 +36,7 @@ int aisc_calc_special_commands(void);
 struct hash_struct *create_hash(int size);
 char *read_hash_local(char *key, struct hash_struct **hs);
 char *read_hash(struct hash_struct *hs, char *key);
-char *write_hash(struct hash_struct *hs, const char *key, const char *val);
+void write_hash(struct hash_struct *hs, const char *key, const char *val);
 int free_hash(struct hash_struct *hs);
 
 /* aisc_var_ref.c */
