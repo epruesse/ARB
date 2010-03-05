@@ -1180,8 +1180,12 @@ static void getdecl(FILE *f, const char *header) {
         if (oktoprint && !doinline && strcmp(buf, "inline")==0) {
             oktoprint = 0;
         }
+        if (oktoprint && search__ATTR__ && strcmp(buf, "ATTRIBUTED") == 0) {
+            oktoprint = 0;
+        }
 
-        if (strcmp(buf, ";")      == 0) goto again;
+
+        if (strcmp(buf, ";") == 0) goto again;
 
         // A left parenthesis *might* indicate a function definition
         if (strcmp(buf, "(")==0) {
@@ -1253,6 +1257,7 @@ static void Usage() {
           "\n"
           "\n   -g               search for GNU extension __attribute__ in comment behind function header"
           "\n   -G               search for ARB macro     __ATTR__      in comment behind function header"
+          "                      and detect and ignore ATTRIBUTED() declarations\n"
           "\n"
           "\n   -P               promote /*AISC_MKPT_PROMOTE:forHeader*/ to header"
           "\n"
