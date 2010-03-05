@@ -702,7 +702,8 @@ static void do_com_for_sub(CL *co) {
     free((char *)fd);
 }
 
-ATTRIBUTED(__ATTR__USERESULT, int do_com_push(const char *)) {
+int do_com_push(const char *) {
+    /* goes to header:  __ATTR__USERESULT */
     if (gl->sp++ >= STACKSIZE) {
         print_error("Stack size exceeded");
         return 1;

@@ -26,6 +26,7 @@ void print_error_internal(const char *err, const char *launcher_file, int launch
 void print_warning_internal(const char *err, const char *launcher_file, int launcher_line);
 const char *formatted(const char *format, ...) __ATTR__FORMAT(1);
 void aisc_remove_files(void);
+int do_com_push(const char *) __ATTR__USERESULT;
 void free_stack(void);
 int run_prg(void);
 
