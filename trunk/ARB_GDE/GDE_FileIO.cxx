@@ -180,6 +180,7 @@ static void ReadNA_Flat(char *filename, char *dataset, int type)
             AppendNA((NA_Base*)buffer, jj, &(data->element[curelem]));
         }
     }
+    fclose(file);
 
     for (j=0; j<data->numelements; j++)
         data->maxlen = MAX(data->maxlen, data->element[j].seqlen +
@@ -258,57 +259,55 @@ static int FindType(char *name, int *dtype, int *ftype)
     *dtype=0;
     *ftype=0;
 
-    if (file == NULL)
-        return (1);
+    int result = 1;
+    if (file) {
+        /*   Is this a flat file?
+         *   Get the first non blank line, see if a type marker shows up.
+         */
+        if (fgets(in_line, GBUFSIZ, file)) {
+            for (; strlen(in_line)<2 && fgets(in_line, GBUFSIZ, file) != NULL;) ;
 
-    /*   Is this a flat file?
-     *   Get the first non blank line, see if a type marker shows up.
-     */
-    if (fgets(in_line, GBUFSIZ, file) == 0) {
-        return 1;
-    }
-    for (; strlen(in_line)<2 && fgets(in_line, GBUFSIZ, file) != NULL;) ;
-
-    if (in_line[0] == '#' || in_line[0] == '%' ||
-       in_line[0]  == '"' || in_line[0] == '@')
-    {
-        *dtype=NASEQ_ALIGN;
-        *ftype=NA_FLAT;
-    }
-    else { // try genbank
-        fclose(file);
-        file = fopen(name, "r");
-        *dtype=0;
-        *ftype=0;
-
-        if (file == NULL)
-            return (1);
-
-        for (; fgets(in_line, GBUFSIZ, file) != NULL;)
-            if (Find(in_line, "LOCUS"))
+            if (in_line[0] == '#' || in_line[0] == '%' ||
+                in_line[0]  == '"' || in_line[0] == '@')
             {
                 *dtype=NASEQ_ALIGN;
-                *ftype=GENBANK;
-                fclose(file);
-                return (0);
+                *ftype=NA_FLAT;
+                result = 0;
             }
-            else if (Find(in_line, "sequence")) { // try GDE
-                *dtype = NASEQ_ALIGN;
-                *ftype = GDE;
+            else { // try genbank
                 fclose(file);
-                return (0);
+                file = fopen(name, "r");
+                *dtype=0;
+                *ftype=0;
+
+                if (file) {
+                    for (; fgets(in_line, GBUFSIZ, file) != NULL;) {
+                        if (Find(in_line, "LOCUS"))
+                        {
+                            *dtype = NASEQ_ALIGN;
+                            *ftype = GENBANK;
+                            break;
+                        }
+                        else if (Find(in_line, "sequence")) { // try GDE
+                            *dtype = NASEQ_ALIGN;
+                            *ftype = GDE;
+                            break;
+                        }
+                        else if (Find(in_line, "start:"))
+                        {
+                            *dtype = NASEQ_ALIGN;
+                            *ftype = COLORMASK;
+                            break;
+                        }
+                    }
+                    result = 0;
+                }
             }
-            else if (Find(in_line, "start:"))
-            {
-                *dtype = NASEQ_ALIGN;
-                *ftype = COLORMASK;
-                fclose(file);
-                return (0);
-            }
+        }
     }
 
     fclose(file);
-    return (0);
+    return result;
 }
 
 void LoadData(char *filen) {
@@ -791,6 +790,7 @@ void ReadCMask(const char *filename)
         }
 
     }
+    fclose(file);
     return;
 }
 
@@ -805,6 +805,7 @@ int WriteStatus(NA_Alignment *aln, char *filename, int method)
     if (DataSet == NULL)
         return (1);
 
+    gde_assert(filename != NULL);
     file = fopen(filename, "w");
     if (file == NULL)
     {
@@ -814,8 +815,7 @@ int WriteStatus(NA_Alignment *aln, char *filename, int method)
     fprintf(file, "File_format: %s\n", FileFormat==GENBANK ? "genbank" : "flat");
 
     this_seq = &(aln->element[1]); /* Nadd->cursor !? */
-    if (this_seq->id != NULL)
-        fprintf(file, "sequence-ID %s\n", this_seq->id);
+    if (this_seq->id[0]) fprintf(file, "sequence-ID %s\n", this_seq->id);
     fprintf(file, "Column: %d\nPos:%d\n", 1, 1); /* NAdd->cursor_x,NAdd->position */
     switch (this_seq->elementtype)
     {

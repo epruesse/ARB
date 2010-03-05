@@ -69,23 +69,19 @@ static void GDE_slide_awar_float_cb(AW_window *aws, AW_CL cl_awar_name, AW_CL cd
     awar->write_float(new_val);
 }
 
-static void GDE_create_infieldwithpm(AW_window *aws, char *newawar, long width)
-{
-    char *awar=strdup(newawar);
+static void GDE_create_infieldwithpm(AW_window *aws, char *newawar, long width) {
     aws->create_input_field(newawar, (int)width);
     if (aws->get_root()->awar(newawar)->get_type() == AW_INT) {
         aws->button_length(3);
-        aws->callback(GDE_slide_awar_int_cb, (AW_CL)awar, -1);
-        aws->create_button(0, "-", "-");
-        aws->callback(GDE_slide_awar_int_cb, (AW_CL)awar, + 1);
-        aws->create_button(0, "+", "+");
+        char *awar = strdup(newawar);
+        aws->callback(GDE_slide_awar_int_cb, (AW_CL)awar, -1); aws->create_button(0, "-", "-");
+        aws->callback(GDE_slide_awar_int_cb, (AW_CL)awar, + 1); aws->create_button(0, "+", "+");
     }
     else if (aws->get_root()->awar(newawar)->get_type() == AW_FLOAT) {
         aws->button_length(3);
-        aws->callback(GDE_slide_awar_float_cb, (AW_CL)awar, (AW_CL)new double(-0.1));
-        aws->create_button(0, "-", "-");
-        aws->callback(GDE_slide_awar_float_cb, (AW_CL)awar, (AW_CL)new double(+0.1));
-        aws->create_button(0, "+", "+");
+        char *awar = strdup(newawar);
+        aws->callback(GDE_slide_awar_float_cb, (AW_CL)awar, (AW_CL)new double(-0.1)); aws->create_button(0, "-", "-");
+        aws->callback(GDE_slide_awar_float_cb, (AW_CL)awar, (AW_CL)new double(+0.1)); aws->create_button(0, "+", "+");
     }
 }
 
