@@ -168,15 +168,13 @@ void ReadGen(char *filename, NA_Alignment *dataset, int type)
                     if (buflen == 0)
                     {
                         buflen = GBUFSIZ;
-                        buffer = Calloc(sizeof(char),
-                                        buflen);
+                        buffer = Calloc(sizeof(char), buflen);
                     }
 
                     else if (len+strlen(in_line) >= buflen)
                     {
                         buflen += GBUFSIZ;
-                        buffer = Realloc((char*)buffer,
-                                         sizeof(char)*buflen);
+                        buffer = Realloc((char*)buffer, sizeof(char)*buflen);
                         for (j=buflen-GBUFSIZ
                                 ; j<buflen; j++)
                             buffer[j] = '\0';
@@ -251,8 +249,7 @@ void ReadGen(char *filename, NA_Alignment *dataset, int type)
             else
             {
                 genclen += strlen(in_line)+1;
-                gencomments = Realloc((char*)gencomments, genclen *
-                                      sizeof(char));
+                gencomments = Realloc((char*)gencomments, genclen * sizeof(char));
                 strncat(gencomments, in_line, GBUFSIZ);
                 strncat(gencomments, "\n", GBUFSIZ);
             }

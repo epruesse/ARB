@@ -182,10 +182,9 @@ void ParseMenu()
             curarg=thisitem->numargs++;
             if (curarg == 0) resize = (char*)calloc(1, sizeof(GmenuItemArg));
             else resize = (char *)realloc((char *)thisitem->arg, thisitem->numargs*sizeof(GmenuItemArg));
-            memset((char *)resize + (thisitem->numargs-1)*sizeof(GmenuItemArg), 0, sizeof(GmenuItemArg));
-
 
             if (resize == NULL) Error("arg: Realloc");
+            memset((char *)resize + (thisitem->numargs-1)*sizeof(GmenuItemArg), 0, sizeof(GmenuItemArg));
 
             (thisitem->arg) = (GmenuItemArg*)resize;
             thisarg         = &(thisitem->arg[curarg]);
@@ -320,8 +319,10 @@ void ParseMenu()
             }
         }
         // argoptional: Flag specifying that an argument is optional
-        else if (Find(in_line, "argoptional:"))
+        else if (Find(in_line, "argoptional:")) {
+            gde_assert(thisarg);
             thisarg->optional = TRUE;
+        }
         // in: Input file description
         else if (Find(in_line, "in:"))
         {
@@ -345,6 +346,7 @@ void ParseMenu()
         else if (Find(in_line, "out:"))
         {
             crop(in_line, head, temp);
+            gde_assert(thisitem);
             curoutput = (thisitem->numoutputs)++;
 
             if (curoutput == 0) resize = (char*)calloc(1, sizeof(GfileFormat));
