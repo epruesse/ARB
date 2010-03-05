@@ -144,31 +144,21 @@ const Token *aisc_find_var_hier(const Token *cursor, char *str, LookupScope scop
 
 char *get_var_string(char *var) {
     /* Calculates result for an expression like '$(IDENT:fdg|"sdfg")' */
-
-    char  *doppelpunkt;
-    char  *bar;
-    char  *nextdp;
-    char  *finds;
-    int    len;
-    int    findl;
-    int    replacel;
-    int    offset;
-    int    use_path;
-    char  *in, *buf1, *buf2;
+    ;
+    ;
 
     SKIP_SPACE_LF(var);
-    use_path = 0;
+    int use_path = 0;
     while (var[0] == '&') {
         use_path++;
         var++;
         SKIP_SPACE_LF(var);
     }
 
-    doppelpunkt = strchr(var, ':'); if (doppelpunkt) *(doppelpunkt++) = 0;
-    bar         = strchr(var, '|'); if (bar) *(bar++) = 0;
+    char *doppelpunkt = strchr(var, ':'); if (doppelpunkt) *(doppelpunkt++) = 0;
+    char *bar         = strchr(var, '|'); if (bar) *(bar++) = 0;
 
-    in = read_hash_local(var, 0);
-
+    char *in = read_hash_local(var, 0);
     if (in) {
         in = strdup(in);
     }
@@ -186,19 +176,18 @@ char *get_var_string(char *var) {
         }
         if (use_path) {
             in = strdup(cur->get_key());
-            if (use_path == 1) {
-            }
-            else {
+            if (use_path>1) {
                 while (1) {
                     const Token *up = cur->parent_block_token();
                     if (!up) break;
 
-                    cur  = up;
-                    len  = strlen(in) + strlen(cur->get_key());
-                    buf1 = (char *) calloc(sizeof(char), len + 2);
+                    cur        = up;
+                    int   len  = strlen(in) + strlen(cur->get_key());
+                    char *buf1 = (char *) calloc(sizeof(char), len + 2);
                     sprintf(buf1, "%s/%s", cur->get_key(), in);
+                    
                     free(in);
-                    in   = buf1;
+                    in = buf1;
                 }
 
             }
@@ -213,41 +202,56 @@ char *get_var_string(char *var) {
             }
         }
     }
-    if (!doppelpunkt)
-        return in;
-    len = strlen(in);
-    while (doppelpunkt) {
-        nextdp = strchr(doppelpunkt, ':');
-        if (nextdp)
-            *(nextdp++) = 0;
-        if (!doppelpunkt[0]) {
-            print_error("Ident replacement is missing an '='");
-            return 0;
-        }
 
-        bar = strchr(doppelpunkt+1, '=');
-        if (bar) {
-            *(bar++) = 0;
+    aisc_assert(in); // 'in' has to point to a heap copy
+
+    if (doppelpunkt) {
+        int  len = strlen(in);
+        bool err = false;
+        while (doppelpunkt && !err) {
+            char *nextdp            = strchr(doppelpunkt, ':');
+            if (nextdp) *(nextdp++) = 0;
+            if (!doppelpunkt[0]) {
+                print_error("Ident replacement is missing an ':'");
+                err = true;
+            }
+            else {
+                bar = strchr(doppelpunkt+1, '=');
+                if (!bar) {
+                    print_error("Ident replacement is missing an '='");
+                    err = true;
+                }
+                else {
+                    *(bar++)     = 0;
+                    int findl    = strlen(doppelpunkt);
+                    int replacel = strlen(bar);
+
+                    char *buf2;
+                    for (char *finds = strstr(in, doppelpunkt); finds; finds = strstr(buf2, doppelpunkt)) {
+                        len += replacel - findl;
+
+                        char *buf1   = (char *) calloc(sizeof(char), len + 1);
+                        int   offset = finds - in;
+                        
+                        memcpy(buf1, in, offset);
+                        memcpy(buf1 + offset, bar, replacel);
+
+                        buf2 = buf1 + offset + replacel;
+                        memcpy(buf2, in + offset + findl, len - replacel - offset);
+
+                        free(in);
+                        in = buf1;
+                        
+                        buf2 = in + offset + replacel;
+                    }
+                    doppelpunkt = nextdp;
+                }
+            }
         }
-        else {
-            print_error("Ident replacement is missing an '='");
-            return 0;
-        }
-        findl = strlen(doppelpunkt);
-        replacel = strlen(bar);
-        for (finds = strstr(in, doppelpunkt); finds; finds = strstr(buf2, doppelpunkt)) {
-            len += replacel - findl;
-            buf1 = (char *) calloc(sizeof(char), len + 1);
-            offset = finds - in;
-            memcpy(buf1, in, offset);
-            memcpy(buf1 + offset, bar, replacel);
-            buf2 = buf1 + offset + replacel;
-            memcpy(buf2, in + offset + findl, len - replacel - offset);
+        if (err) {
             free(in);
-            in = buf1;
-            buf2 = in + offset + replacel;
+            in = NULL;
         }
-        doppelpunkt = nextdp;
     }
     return in;
 }
