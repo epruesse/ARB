@@ -514,8 +514,8 @@ bool GBS_string_matches_regexp(const char *str, const GBS_string_matcher *expr) 
 
 int GBS_reference_not_found;
 
-ATTRIBUTED(__ATTR__USERESULT,
-           static GB_ERROR gbs_build_replace_string(GBS_strstruct *strstruct,
+STATIC_ATTRIBUTED(__ATTR__USERESULT,
+                  GB_ERROR gbs_build_replace_string(GBS_strstruct *strstruct,
                                                     char *bar, char *wildcards, long max_wildcard,
                                                     char **mwildcards, long max_mwildcard, GBDATA *gb_container))
 {

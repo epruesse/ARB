@@ -44,7 +44,7 @@ void add_bootstrap(GBT_TREE *node, double hundred) {
     add_bootstrap(node->rightson, hundred);
 }
 
-ATTRIBUTED(__ATTR__NORETURN, static void abort_with_usage(GBDATA *gb_main, const char *error)) {
+STATIC_ATTRIBUTED(__ATTR__NORETURN, void abort_with_usage(GBDATA *gb_main, const char *error)) {
     printf("Usage: arb_read_tree [-scale factor] [-consense #ofTrees] tree_name treefile [comment] [-commentFromFile file]\n");
     if (error) {
         printf("Error: %s\n", error);
