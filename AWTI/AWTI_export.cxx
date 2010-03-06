@@ -78,38 +78,40 @@ static GB_ERROR awtc_read_export_format(export_format *efo, const char *file, bo
 
         if (!in) error = GB_export_IO_error("reading export form", fullfile);
         else {
-            char   *s1, *s2;
-            size_t  linenumber = 0;
-
             efo->export_mode = AWTI_EXPORT_USING_FORM; // default mode
+            {
+                bool    seen_BEGIN = false;
+                char   *s1, *s2;
+                size_t  linenumber = 0;
 
-            while (!error && awtc_read_string_pair(in, s1, s2, linenumber)) {
-                if      (!strcmp(s1, "SYSTEM"))     { reassign(efo->system,     s2); }
-                else if (!strcmp(s1, "PRE_FORMAT")) { reassign(efo->new_format, s2); }
-                else if (!strcmp(s1, "SUFFIX"))     { reassign(efo->suffix,     s2); }
-                else if (!strcmp(s1, "INTERNAL")) {
-                    efo->export_mode = check_internal(s2);
-                    if (efo->export_mode == AWTI_EXPORT_INVALID) {
-                        error = GBS_global_string("Unknown INTERNAL command '%s'", s2);
+                while (!error && !seen_BEGIN && awtc_read_string_pair(in, s1, s2, linenumber)) {
+                    if      (!strcmp(s1, "SYSTEM"))     { reassign(efo->system,     s2); }
+                    else if (!strcmp(s1, "PRE_FORMAT")) { reassign(efo->new_format, s2); }
+                    else if (!strcmp(s1, "SUFFIX"))     { reassign(efo->suffix,     s2); }
+                    else if (!strcmp(s1, "INTERNAL")) {
+                        efo->export_mode = check_internal(s2);
+                        if (efo->export_mode == AWTI_EXPORT_INVALID) {
+                            error = GBS_global_string("Unknown INTERNAL command '%s'", s2);
+                        }
                     }
-                }
-                else if (!strcmp(s1, "BEGIN")) {
-                    if (efo->export_mode != AWTI_EXPORT_USING_FORM) {
-                        error = "'BEGIN' not allowed when 'INTERNAL' is used";
+                    else if (!strcmp(s1, "BEGIN")) {
+                        if (efo->export_mode != AWTI_EXPORT_USING_FORM) {
+                            error = "'BEGIN' not allowed when 'INTERNAL' is used";
+                        }
+                        else {
+                            seen_BEGIN = true;
+                        }
                     }
                     else {
-                        break;
+                        error = GBS_global_string("Unknown command '%s'", s1);
                     }
-                }
-                else {
-                    error = GBS_global_string("Unknown command '%s'", s1);
-                }
 
-                // add error location
-                if (error) error = GBS_global_string("%s in line #%zu", error, linenumber);
+                    // add error location
+                    if (error) error = GBS_global_string("%s in line #%zu", error, linenumber);
 
-                free(s2);
-                free(s1);
+                    free(s2);
+                    free(s1);
+                }
             }
 
             if (!error && load_complete_form && efo->export_mode == AWTI_EXPORT_USING_FORM) {
@@ -526,12 +528,18 @@ static GB_ERROR AWTI_export_format(AW_root *aw_root, const char *formname, const
     GB_ERROR      error = awtc_read_export_format(&efo, formname, true);
 
     if (!error) {
-        if (!outname) { // if no 'outname' is given -> export to temporary file
-            *resulting_outname = GB_create_tempfile(GB_unique_filename("exported", efo.suffix));
+        if (!outname) {                             // if no 'outname' is given -> export to temporary file
+            char *unique_outname = GB_unique_filename("exported", efo.suffix);
+            *resulting_outname   = GB_create_tempfile(unique_outname);
+            free(unique_outname);
+
             if (!*resulting_outname) error = GB_await_error();
         }
         else *resulting_outname = strdup(outname);
     }
+
+    awti_assert(error || *resulting_outname);
+
     if (!error) {
         if (efo.new_format) {
             // Export data using format 'new_format'.
@@ -678,6 +686,10 @@ static GB_ERROR AWTI_export_format_multiple(AW_root *aw_root, const char *formna
                 free(oname);
             }
         }
+
+        free(suffix);
+        free(name);
+        free(path);
     }
     else {
         error = AWTI_export_format(aw_root, formname, outname, resulting_outname);
@@ -751,9 +763,7 @@ void AWTC_create_export_awars(AW_root *awr, AW_default def) {
 static char *get_format_default_suffix(const char *formname, GB_ERROR& error) {
     export_format efs;
     error = awtc_read_export_format(&efs, formname, false);
-
-    if (!error && efs.suffix) return strdup(efs.suffix);
-    return NULL;
+    return (!error && efs.suffix) ? strdup(efs.suffix) : NULL;
 }
 
 static void export_form_changed_cb(AW_root *aw_root) {
