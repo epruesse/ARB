@@ -18,45 +18,52 @@
 #include <arbdbt.h>
 
 void ad_table_field_reorder_cb(AW_window *aws, awt_table *awtt) {
-    GB_begin_transaction(awtt->gb_main);
     char *source = aws->get_root()->awar(awtt->awar_field_reorder_source)->read_string();
-    char *dest =   aws->get_root()->awar(awtt->awar_field_reorder_dest)  ->read_string();
-    GB_ERROR warning = 0;
-    GBDATA *gb_table = GBT_open_table(awtt->gb_main, awtt->table_name, true);
-    if (!gb_table) {
-        aw_message(GBS_global_string("Table '%s' does not exist", awtt->table_name));
-        return;
-    }
-    GBDATA *gb_source = GBT_find_table_field(gb_table, source);
-    GBDATA *gb_dest = GBT_find_table_field(gb_table, dest);
-    if (!gb_source || !gb_dest) {
-        aw_message("Please select two valid fields");
-    }
-    else if (gb_source && gb_dest && (gb_dest != gb_source)) {
-        GBDATA *gb_fields = GB_get_father(gb_source);
-        int     nitems    = 0;
-        GBDATA *gb_cnt;
+    char *dest   = aws->get_root()->awar(awtt->awar_field_reorder_dest)  ->read_string();
 
-        for (gb_cnt  = GB_child(gb_fields); gb_cnt; gb_cnt = GB_nextChild(gb_cnt)) {
-            nitems++;
-        }
+    GB_ERROR  error    = GB_begin_transaction(awtt->gb_main);
+    GBDATA   *gb_table = NULL;
+    
+    if (!error) {
+        gb_table = GBT_open_table(awtt->gb_main, awtt->table_name, true);
+        if (!gb_table) error = GBS_global_string("Table '%s' does not exist", awtt->table_name);
+    }
 
-        GBDATA **new_order = new GBDATA *[nitems];
-        nitems             = 0;
-        for (gb_cnt  = GB_child(gb_fields); gb_cnt; gb_cnt = GB_nextChild(gb_cnt)) {
-            if (gb_cnt == gb_source) continue;
-            new_order[nitems++] = gb_cnt;
-            if (gb_cnt == gb_dest) {
-                new_order[nitems++] = gb_source;
+    if (!error) {
+        GBDATA *gb_source = GBT_find_table_field(gb_table, source);
+        GBDATA *gb_dest   = GBT_find_table_field(gb_table, dest);
+
+        if (!gb_source || !gb_dest) error    = "Please select two valid fields";
+        else if (gb_dest == gb_source) error = "Please select two different fields";
+        else {
+            GBDATA *gb_fields = GB_get_father(gb_source);
+            int     nitems    = 0;
+
+            for (GBDATA *gb_cnt=GB_child(gb_fields); gb_cnt; gb_cnt = GB_nextChild(gb_cnt)) {
+                nitems++;
             }
+
+            GBDATA **new_order = new GBDATA *[nitems];
+            nitems             = 0;
+            for (GBDATA *gb_cnt=GB_child(gb_fields); gb_cnt; gb_cnt = GB_nextChild(gb_cnt)) {
+                if (gb_cnt != gb_source) {
+                    new_order[nitems++] = gb_cnt;
+                    if (gb_cnt == gb_dest) {
+                        new_order[nitems++] = gb_source;
+                    }
+                }
+            }
+            GB_ERROR warning = GB_resort_data_base(awtt->gb_main, new_order, nitems);
+            if (warning) aw_message(warning);
+
+            delete [] new_order;
         }
-        warning = GB_resort_data_base(awtt->gb_main, new_order, nitems);
-        delete [] new_order;
     }
 
-    delete source;
-    delete dest;
-    GB_commit_transaction(awtt->gb_main);
+    GB_end_transaction_show_error(awtt->gb_main, error, aw_message);
+
+    free(dest);
+    free(source);
 }
 
 AW_window *create_ad_table_field_reorder_window(AW_root *root, awt_table *awtt)

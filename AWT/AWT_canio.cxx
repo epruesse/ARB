@@ -502,8 +502,10 @@ void AWT_print_tree_to_printer(AW_window *aww, AW_CL cl_ntw) {
             }
         }
         aw_closestatus();
-        GB_unlink_or_warn(xfig, &error);
-        free(xfig);
+        if (xfig) {
+            GB_unlink_or_warn(xfig, &error);
+            free(xfig);
+        }
     }
 
     free(dest);

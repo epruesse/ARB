@@ -181,6 +181,12 @@ void AWT_canvas::zoom(AW_device *device, bool zoomIn, const Rectangle& wanted_pa
 
     init_device(device);
 
+    if (!tree_disp) {
+        awt_assert(0); // we have no display - does this occur?
+                       // if yes, pls inform devel@arb-home.de about circumstances
+        return;
+    }
+
     AW_pos width  = worldinfo.r-worldinfo.l;
     AW_pos height = worldinfo.b-worldinfo.t;
 
@@ -190,13 +196,11 @@ void AWT_canvas::zoom(AW_device *device, bool zoomIn, const Rectangle& wanted_pa
     bool takex = true;
     bool takey = true;
 
-    if (tree_disp) {
-        if (tree_disp->exports.dont_fit_y) takey = false;
-        if (tree_disp->exports.dont_fit_x) takex = false;
-        if (tree_disp->exports.dont_fit_larger) {
-            if (width>height)   takey = false;
-            else                takex = false;
-        }
+    if (tree_disp->exports.dont_fit_y) takey = false;
+    if (tree_disp->exports.dont_fit_x) takex = false;
+    if (tree_disp->exports.dont_fit_larger) {
+        if (width>height)   takey = false;
+        else                takex = false;
     }
 
     if (!takex && !takey) {

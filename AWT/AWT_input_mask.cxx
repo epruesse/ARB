@@ -2222,7 +2222,7 @@ static void registerType(awt_item_type type, AW_window_menu_modes *awm, AWT_Open
 static void create_new_mask_cb(AW_window *aww) {
     AW_root *awr = aww->get_root();
 
-    string maskname = awr->awar(AWAR_INPUT_MASK_NAME)->read_string();
+    string maskname = awr->awar(AWAR_INPUT_MASK_NAME)->read_char_pntr();
     {
         size_t ext = maskname.find(".mask");
 
@@ -2233,7 +2233,7 @@ static void create_new_mask_cb(AW_window *aww) {
     }
 
 
-    string       itemname     = awr->awar(AWAR_INPUT_MASK_ITEM)->read_string();
+    string       itemname     = awr->awar(AWAR_INPUT_MASK_ITEM)->read_char_pntr();
     int          scope        = awr->awar(AWAR_INPUT_MASK_SCOPE)->read_int();
     int          hidden       = awr->awar(AWAR_INPUT_MASK_HIDDEN)->read_int();
     bool         local        = scope == AWT_SCOPE_LOCAL;
