@@ -538,7 +538,7 @@ static GB_ERROR AWTI_export_format(AW_root *aw_root, const char *formname, const
         else *resulting_outname = strdup(outname);
     }
 
-    awti_assert(error || *resulting_outname);
+    awte_assert(error || *resulting_outname);
 
     if (!error) {
         if (efo.new_format) {
