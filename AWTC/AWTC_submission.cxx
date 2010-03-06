@@ -145,14 +145,20 @@ static void ed_submit_info_event(AW_window *aww, AW_CL cl_gbmain) {
     free(species_name);
 }
 
-static void ed_save_var_to_file(AW_window *aww, char *data_var, char *file_var)
-{
-    AW_root *aw_root = aww->get_root();
-    char * data = aw_root->awar(data_var)->read_string();
-    char *file_name = aw_root->awar(file_var)->read_string();
-    FILE *out = fopen(file_name, "w");
-    if (out) fprintf(out, "%s", data);
-    fclose(out);
+static void ed_save_var_to_file(AW_window *aww, char *data_var, char *file_var) {
+    AW_root *aw_root   = aww->get_root();
+    char    *data      = aw_root->awar(data_var)->read_string();
+    char    *file_name = aw_root->awar(file_var)->read_string();
+    FILE    *out       = fopen(file_name, "w");
+    
+    if (out) {
+        fprintf(out, "%s", data);
+        fclose(out);
+    }
+    else {
+        GB_export_IO_error("saving info", file_name);
+        aw_message(GB_await_error());
+    }
     free(file_name);
     free(data);
 }

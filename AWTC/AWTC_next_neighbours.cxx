@@ -93,66 +93,73 @@ AWTC_FIND_FAMILY::~AWTC_FIND_FAMILY()
 }
 
 GB_ERROR AWTC_FIND_FAMILY::retrieve_family(char *sequence, int oligo_len, int mismatches, bool fast_flag, bool rel_matches, FF_complement compl_mode, int max_results) {
-    T_PT_FAMILYLIST f_list;
-    char *compressed_sequence = GB_command_interpreter(gb_main, sequence, "|keep(acgtunACGTUN)", 0, 0);
-
-    bytestring bs;
-    bs.data = compressed_sequence;
-    bs.size = strlen(bs.data)+1;
-
     delete_family_list();
-    /* Start find_family() at the PT_SERVER
-     *
-     * Here we have to make a loop, until the match count of the
-     * first member is big enough
-     */
 
-    if (aisc_put(link, PT_LOCS, locs,
-                 LOCS_FF_PROBE_LEN,             oligo_len,        // oligo length (12 hardcoded till July 2008)
-                 LOCS_FF_MISMATCH_NUMBER,       mismatches,       // number of mismatches (0 hardcoded till July 2008)
-                 LOCS_FF_FIND_TYPE,             int(fast_flag),   // 0: complete search, 1: quick search (only search oligos starting with 'A')
-                 LOCS_FF_SORT_TYPE,             int(rel_matches), // 0: matches, 1: relative matches (0 hardcoded till July 2008)
-                 LOCS_FF_SORT_MAX,              max_results,      // speed up family sorting (only sort retrieved results)
-                 LOCS_FF_COMPLEMENT,            compl_mode,       // any combination of: 1 = forward, 2 = reverse, 4 = reverse-complement, 8 = complement (1 hardcoded in PT-Server till July 2008)
-                 LOCS_FF_FIND_FAMILY,           &bs,
-                 NULL))
-    {
-        return GB_export_error  ("Communication Error (2)");
+    char     *compressed_sequence = GB_command_interpreter(gb_main, sequence, "|keep(acgtunACGTUN)", 0, 0);
+    GB_ERROR  error               = NULL;
+
+    if (!compressed_sequence) {
+        error = GB_await_error();
     }
+    else {
+        bytestring bs;
+        bs.data = compressed_sequence;
+        bs.size = strlen(bs.data)+1;
 
-    // Read family list
-    aisc_get(link, PT_LOCS, locs,
-             LOCS_FF_FAMILY_LIST, &f_list,
-             LOCS_FF_FAMILY_LIST_SIZE, &real_hits,
-             NULL);
+        /* Start find_family() at the PT_SERVER
+         *
+         * Here we have to make a loop, until the match count of the
+         * first member is big enough
+         */
 
-    hits_truncated = false;
-    if (max_results<1) max_results = INT_MAX;
-
-    AWTC_FIND_FAMILY_MEMBER *tail = NULL;
-    while (f_list) {
-        if (max_results == 0) {
-            hits_truncated = true;
-            break;
+        if (aisc_put(link, PT_LOCS, locs,
+                     LOCS_FF_PROBE_LEN,       oligo_len,        // oligo length (12 hardcoded till July 2008)
+                     LOCS_FF_MISMATCH_NUMBER, mismatches,       // number of mismatches (0 hardcoded till July 2008)
+                     LOCS_FF_FIND_TYPE,       int(fast_flag),   // 0: complete search, 1: quick search (only search oligos starting with 'A')
+                     LOCS_FF_SORT_TYPE,       int(rel_matches), // 0: matches, 1: relative matches (0 hardcoded till July 2008)
+                     LOCS_FF_SORT_MAX,        max_results,      // speed up family sorting (only sort retrieved results)
+                     LOCS_FF_COMPLEMENT,      compl_mode,       // any combination of: 1 = forward, 2 = reverse, 4 = reverse-complement, 8 = complement (1 hardcoded in PT-Server till July 2008)
+                     LOCS_FF_FIND_FAMILY,     &bs,
+                     NULL))
+        {
+            error = "Communication error with PT server ('retrieve_family')";
         }
-        max_results--;
+        else {
+            // Read family list
+            T_PT_FAMILYLIST f_list;
+            aisc_get(link, PT_LOCS, locs,
+                     LOCS_FF_FAMILY_LIST,      &f_list,
+                     LOCS_FF_FAMILY_LIST_SIZE, &real_hits,
+                     NULL);
 
-        AWTC_FIND_FAMILY_MEMBER *fl = new AWTC_FIND_FAMILY_MEMBER();
+            hits_truncated = false;
+            if (max_results<1) max_results = INT_MAX;
 
-        (tail ? tail->next : family_list) = fl;
-        tail                              = fl;
-        fl->next                          = NULL;
+            AWTC_FIND_FAMILY_MEMBER *tail = NULL;
+            while (f_list) {
+                if (max_results == 0) {
+                    hits_truncated = true;
+                    break;
+                }
+                max_results--;
 
-        aisc_get(link, PT_FAMILYLIST, f_list,
-                 FAMILYLIST_NAME,        &fl->name,
-                 FAMILYLIST_MATCHES,     &fl->matches,
-                 FAMILYLIST_REL_MATCHES, &fl->rel_matches,
-                 FAMILYLIST_NEXT,        &f_list,
-                 NULL);
+                AWTC_FIND_FAMILY_MEMBER *fl = new AWTC_FIND_FAMILY_MEMBER();
+
+                (tail ? tail->next : family_list) = fl;
+                tail                              = fl;
+                fl->next                          = NULL;
+
+                aisc_get(link, PT_FAMILYLIST, f_list,
+                         FAMILYLIST_NAME,        &fl->name,
+                         FAMILYLIST_MATCHES,     &fl->matches,
+                         FAMILYLIST_REL_MATCHES, &fl->rel_matches,
+                         FAMILYLIST_NEXT,        &f_list,
+                         NULL);
+            }
+        }
+        free(compressed_sequence);
     }
-
-    free(compressed_sequence);
-    return 0;
+    return error;
 }
 
 void AWTC_FIND_FAMILY::print() {
