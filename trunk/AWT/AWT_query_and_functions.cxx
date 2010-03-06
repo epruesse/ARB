@@ -1493,6 +1493,7 @@ void awt_do_pars_list(void *dummy, struct adaqbsstruct *cbs)
     char     *key   = cbs->aws->get_root()->awar(cbs->awar_parskey)->read_string();
 
     if (!strcmp(key, "name")) {
+        bool abort = false;
         switch (cbs->selector->type) {
             case AWT_QUERY_ITEM_SPECIES: {
                 if (aw_question("WARNING WARNING WARNING!!! You now try to rename the species\n"
@@ -1500,7 +1501,7 @@ void awt_do_pars_list(void *dummy, struct adaqbsstruct *cbs)
                                 "    ->  ALL TREES WILL BE LOST\n"
                                 "    ->  The new name MUST be UNIQUE"
                                 "        if not you will corrupt the database!",
-                                "Let's Go,Cancel")) return;
+                                "Let's Go,Cancel")) abort = true;
                 break;
             }
             case AWT_QUERY_ITEM_GENES: {
@@ -1508,25 +1509,25 @@ void awt_do_pars_list(void *dummy, struct adaqbsstruct *cbs)
                                 "    ->  Pseudo-species will loose their link to the gene"
                                 "    ->  The new name MUST be UNIQUE"
                                 "        if not you will corrupt the database!",
-                                "Let's Go,Cancel")) return;
+                                "Let's Go,Cancel")) abort = true;
                 break;
             }
             case AWT_QUERY_ITEM_EXPERIMENTS: {
                 if (aw_question("WARNING! You now try to rename the experiment\n"
                                 "    ->  The new name MUST be UNIQUE"
                                 "        if not you will corrupt the database!",
-                                "Let's Go,Cancel")) return;
+                                "Let's Go,Cancel")) abort = true;
                 break;
             }
             default: {
                 awt_assert(0);
-                return;
+                abort = true;
+                break;
             }
         }
+        if (abort) error = "aborted by user";
     }
-
-
-    if (!strlen(key)) error = "Please select a valid key";
+    else if (!strlen(key)) error = "Please select a valid key";
 
     char *command = cbs->aws->get_root()->awar(cbs->awar_parsvalue)->read_string();
     if (!error && !strlen(command)) {
@@ -1854,9 +1855,9 @@ static char *create_colorset_representation(const color_save_data *csd, GB_ERROR
             res += (*ci) + ';';
         }
 
-        result               = (char*)malloc(res.length());
-        memcpy(result, res.c_str(), res.length()-1); // skip trailing ';'
-        result[res.length()] = 0;
+        size_t len = res.length();
+        if (len>0) --len;                           // skip trailing ';'
+        result     = GB_strduplen(res.c_str(), len);
     }
     return result;
 }
@@ -1955,6 +1956,8 @@ static void awt_loadsave_colorset(AW_window *aws, AW_CL cl_csd, AW_CL cl_mode) {
                 if (!gb_colorset) error = GB_await_error();
                 else error              = GBT_write_string(gb_colorset, "name", name);
             }
+            awt_assert(gb_colorset || error);
+
             if (!error) {
                 char *colorset = create_colorset_representation(csd, error);
                 if (colorset) {
@@ -2296,6 +2299,7 @@ void awt_do_set_list(void *, struct adaqbsstruct *cbs, long append) {
             }
         }
     }
+    awt_assert(gb_key_type || error);
 
     for (GBDATA *gb_item_container = cbs->selector->get_first_item_container(cbs->gb_main, cbs->aws->get_root(), AWT_QUERY_ALL_SPECIES);
          !error && gb_item_container;
@@ -2404,9 +2408,10 @@ void awt_do_set_protection(void *, struct adaqbsstruct *cbs) {
             {
                 if (IS_QUERIED(gb_item, cbs)) {
                     GBDATA *gb_new = GB_search(gb_item, key, GB_FIND);
-                    if (!gb_new) continue;
-                    error = GB_write_security_delete(gb_new, level);
-                    error = GB_write_security_write(gb_new, level);
+                    if (gb_new) {
+                        error             = GB_write_security_delete(gb_new, level);
+                        if (!error) error = GB_write_security_write(gb_new, level);
+                    }
                 }
             }
         }
