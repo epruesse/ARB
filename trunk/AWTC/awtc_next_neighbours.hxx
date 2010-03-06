@@ -49,7 +49,7 @@ class AWTC_FIND_FAMILY {
     void     delete_family_list();
     GB_ERROR init_communication();
     GB_ERROR open(char *servername);
-    GB_ERROR retrieve_family(char *sequence, int oligo_len, int mismatches, bool fast_flag, bool rel_matches, FF_complement compl_mode, int max_results);
+    GB_ERROR retrieve_family(char *sequence, int oligo_len, int mismatches, bool fast_flag, bool rel_matches, FF_complement compl_mode, int max_results) __ATTR__USERESULT;
     void     close();
 
     // valid after calling retrieve_family():
