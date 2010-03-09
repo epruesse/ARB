@@ -476,6 +476,8 @@ static int awtc_next_file() {
                 if (!dest_file_name) error = GB_await_error();
             }
 
+            awti_assert(dest_file_name || error);
+
             if (!error) {
                 char *srt = GBS_global_string_copy("$<=%s:$>=%s", origin_file_name, dest_file_name);
                 char *sys = GBS_string_eval(awtcig.ifo->system, srt, 0);
