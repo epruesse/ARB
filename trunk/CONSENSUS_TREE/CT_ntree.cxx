@@ -12,6 +12,10 @@
 #include "CT_mem.hxx"
 #include <arbdbt.h>
 
+#if defined(DEBUG)
+// #define NTREE_DEBUG_FUNCTIONS
+#endif // DEBUG
+
 /* Einen Binaerbaum erzeugen ueber einen Multitree */
 
 NT_NODE *ntree = NULL;
@@ -25,6 +29,7 @@ NT_NODE *ntree_get()
 }
 
 
+#if defined(NTREE_DEBUG_FUNCTIONS)
 /* testfunction to print a NTree */
 void print_ntree(NT_NODE *tree)
 {
@@ -50,9 +55,7 @@ void print_ntree(NT_NODE *tree)
 void print_ntindex(NT_NODE *tree)
 {
     NSONS *nsonp;
-    PART *p;
-
-    p = part_new();
+    PART  *p = part_new();
 
     /* print father */
     printf("(");
@@ -67,11 +70,13 @@ void print_ntindex(NT_NODE *tree)
     }
 
     printf(")");
-}
 
+    part_free(p);
+}
+#endif
 
 /* build a new node and store the partition p in it */
-NT_NODE *new_ntnode(PART *p)
+static NT_NODE *new_ntnode(PART *p)
 {
     NT_NODE *n;
 
@@ -83,7 +88,7 @@ NT_NODE *new_ntnode(PART *p)
 
 
 /* delete the tree */
-void del_tree(NT_NODE *tree)
+static void del_tree(NT_NODE *tree)
 {
     NSONS *nsonp, *nson_help;
 
@@ -119,13 +124,13 @@ void ntree_init()
     ntree_count = 0;
 }
 
-
+#if 0
 /* test if the tree is already complete (all necessary partitions are inserted) */
-int ntree_cont(int len)
+static int ntree_cont(int len)
 {
     return (ntree_count<len);
 }
-
+#endif
 
 /* Move son from parent-sonlist to new sonlist */
 /* nson is pointer on element in parent-sonlist */

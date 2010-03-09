@@ -29,15 +29,10 @@ typedef struct nsons {
 } NSONS;
 
 
+void ntree_init();
+void insert_ntree(PART *part);
 
-NT_NODE *new_ntnode(PART *p);
-void     del_tree(NT_NODE *tree);
-void     ntree_init();
-int      ntree_cont(int len);
-void     insert_ntree(PART *part);
 NT_NODE *ntree_get();
-void     print_ntindex(NT_NODE *tree);
-void     print_ntree(NT_NODE *tree);
 
 #else
 #error CT_ntree.hxx included twice
