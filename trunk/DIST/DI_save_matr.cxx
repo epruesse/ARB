@@ -149,6 +149,9 @@ const char *DI_MATRIX::save(char *filename, enum DI_SAVE_TYPE type)
                 fprintf(out, "Minimum:\t%f\n", min);
                 fprintf(out, "Maximum:\t%f\n", max);
                 fprintf(out, "Average:\t%f\n", sum/(nentries*nentries));
+
+                for (col=0; col<size_t(nentries); col++) free(nds_results[col]);
+                free(nds_results);
             }
             break;
         default:

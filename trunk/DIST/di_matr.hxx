@@ -126,9 +126,9 @@ public:
     GB_ERROR calculate_rates(DI_MUT_MATR &hrates, DI_MUT_MATR &nrates, DI_MUT_MATR &pairs, long *filter);
     GB_ERROR haeschoe(const char *path);
     double  corr(double dist, double b, double & sigma);
-    GB_ERROR calculate(AW_root *awr, char *cancel, double alpha, DI_TRANSFORMATION transformation);
+    GB_ERROR calculate(AW_root *awr, char *cancel, double alpha, DI_TRANSFORMATION transformation, bool *aborted_flag);
     char *calculate_overall_freqs(double rel_frequencies[AP_MAX], char *cancel_columns);
-    GB_ERROR calculate_pro(DI_TRANSFORMATION transformation);
+    GB_ERROR calculate_pro(DI_TRANSFORMATION transformation, bool *aborted_flag);
     void analyse();
 
     int search_group(GBT_TREE *node, GB_HASH *hash, long *groupcnt, char *groupname, DI_ENTRY **groups);     // @@ OLIVER
