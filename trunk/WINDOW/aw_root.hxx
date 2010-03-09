@@ -97,7 +97,9 @@ extern char AW_ERROR_BUFFER[1024];
 
 void aw_set_local_message();                        // no message window, AWAR_ERROR_MESSAGES instead
 void aw_message(const char *msg);
-inline void aw_message_if(ARB_ERROR& error) { GB_ERROR err = error.deliver(); if (err) aw_message(err); }
+
+inline void aw_message_if(GB_ERROR error) { if (error) aw_message(error); }
+inline void aw_message_if(ARB_ERROR& error) { aw_message_if(error.deliver()); }
 
 void aw_message();                                  // prints AW_ERROR_BUFFER
 void aw_macro_message(const char *temp, ...) __ATTR__FORMAT(1); // gives control to the user
