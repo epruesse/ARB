@@ -75,7 +75,7 @@ public:
     di_mldist(long nentries, DI_ENTRY **entries, long seq_len, AP_smatrix *matrixi);
     ~di_mldist();
 
-    const char *makedists();    // calculate the distance matrix
+    const char *makedists(bool *aborted_flag);    // calculate the distance matrix
 };
 
 #else

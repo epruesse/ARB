@@ -17,7 +17,7 @@
 
 #define epsilon 0.000001        /* a small number */
 
-double   di_protdist::pameigs[20] = {
+double di_protdist::pameigs[20] = {
     -0.022091252, -0.019297602, 0.000004760, -0.017477817,
     -0.016575549, -0.015504543, -0.002112213, -0.002685727,
     -0.002976402, -0.013440755, -0.012926992, -0.004293227,
@@ -25,7 +25,7 @@ double   di_protdist::pameigs[20] = {
     -0.007142318, -0.007381851, -0.007806557, -0.008127024
 };
 
-double   di_protdist::pamprobs[20][20] = {
+double di_protdist::pamprobs[20][20] = {
     {
         -0.01522976, -0.00746819, -0.13934468, 0.11755315, -0.00212101,
         0.01558456, -0.07408235, -0.00322387, 0.01375826, 0.00448826,
@@ -534,7 +534,7 @@ void di_protdist::predict(double /* tt */, long nb1, long  nb2)
     }
 }
 
-void            di_protdist::build_predikt_table(int pos) {
+void di_protdist::build_predikt_table(int pos) {
     int             b1, b2;
     double tt = pos_2_tt(pos);
     build_exptteig(tt);
@@ -641,7 +641,7 @@ double di_protdist::pos_2_tt(int pos) {
     return tt+epsilon;
 }
 
-void            di_protdist::build_akt_predikt(double tt)
+void di_protdist::build_akt_predikt(double tt)
 {
     /* take an actual slope from the hash table, else calculate a new one */
     int             pos = tt_2_pos(tt);
@@ -655,9 +655,10 @@ void            di_protdist::build_akt_predikt(double tt)
 
 }
 
-const char *di_protdist::makedists()
-{
-    /* compute the distances */
+const char *di_protdist::makedists(bool *aborted_flag) {
+    /* compute the distances.
+     * sets 'aborted_flag' to true, if it is non-NULL and user aborts the calculation
+     */
     long            i, j, k, m, n, iterations;
     double          delta, slope, curv;
     int             b1=0, b2=0;
@@ -668,7 +669,10 @@ const char *di_protdist::makedists()
         matrix->set(i, i, 0.0);
         {
             double gauge = (double)i/(double)spp;
-            if (aw_status(gauge*gauge)) return "Aborted";
+            if (aw_status(gauge*gauge)) {
+                if (aborted_flag) *aborted_flag = true;
+                return "Aborted by user";
+            }
         }
         {
             /* move all unknown characters to del */
@@ -789,13 +793,10 @@ const char *di_protdist::makedists()
 
 
 void di_protdist::clean_slopes() {
-    int i;
-    if (slopes) {
-        for (i=0; i<di_resolution*di_max_dist; i++) {
-            delete slopes[i]; slopes[i] = 0;
-            delete curves[i]; curves[i] = 0;
-            delete infs[i]; infs[i] = 0;
-        }
+    for (int i=0; i<di_resolution*di_max_dist; i++) {
+        freenull(slopes[i]);
+        freenull(curves[i]);
+        freenull(infs[i]);
     }
     akt_slopes = 0;
     akt_curves = 0;

@@ -149,7 +149,7 @@ void di_mldist::predict(double /* tt */, long nb1, long  nb2)
     }
 }
 
-void            di_mldist::build_predikt_table(int pos) {
+void di_mldist::build_predikt_table(int pos) {
     int             b1, b2;
     double tt = pos_2_tt(pos);
     build_exptteig(tt);
@@ -195,7 +195,7 @@ double di_mldist::pos_2_tt(int pos) {
     return tt+epsilon;
 }
 
-void            di_mldist::build_akt_predikt(double tt)
+void di_mldist::build_akt_predikt(double tt)
 {
     /* take an actual slope from the hash table, else calculate a new one */
     int             pos = tt_2_pos(tt);
@@ -209,7 +209,7 @@ void            di_mldist::build_akt_predikt(double tt)
 
 }
 
-const char *di_mldist::makedists()
+const char *di_mldist::makedists(bool *aborted_flag)
 {
     /* compute the distances */
     long            i, j, k, iterations;
@@ -222,7 +222,10 @@ const char *di_mldist::makedists()
         matrix->set(i, i, 0.0);
         {
             double gauge = (double)i/(double)spp;
-            if (aw_status(gauge*gauge)) return "Aborted";
+            if (aw_status(gauge*gauge)) {
+                if (aborted_flag) *aborted_flag = true;
+                return "Aborted by user";
+            }
         }
         {
             /* move all unknown characters to del */
@@ -295,13 +298,10 @@ const char *di_mldist::makedists()
 
 
 void di_mldist::clean_slopes() {
-    int i;
-    if (slopes) {
-        for (i=0; i<DI_ML_RESOLUTION*DI_ML_MAX_DIST; i++) {
-            delete slopes[i]; slopes[i] = 0;
-            delete curves[i]; curves[i] = 0;
-            delete infs[i]; infs[i] = 0;
-        }
+    for (int i=0; i<DI_ML_RESOLUTION*DI_ML_MAX_DIST; i++) {
+        freenull(slopes[i]);
+        freenull(curves[i]);
+        freenull(infs[i]);
     }
     akt_slopes = 0;
     akt_curves = 0;
@@ -312,7 +312,7 @@ di_mldist::~di_mldist() {
     clean_slopes();
 }
 
-di_mldist::di_mldist(long nentries, DI_ENTRY     **entriesi, long seq_len, AP_smatrix *matrixi) {
+di_mldist::di_mldist(long nentries, DI_ENTRY **entriesi, long seq_len, AP_smatrix *matrixi) {
     memset((char *)this, 0, sizeof(di_mldist));
     entries = entriesi;
     matrix = matrixi;
@@ -320,5 +320,5 @@ di_mldist::di_mldist(long nentries, DI_ENTRY     **entriesi, long seq_len, AP_sm
     spp = nentries;
     chars = seq_len;
 
-    qreigen(prob, 20L);
+    qreigen(prob, 20L); // @@@ reported buffer overflow (ignore for now, since this module is not used atm)
 }
