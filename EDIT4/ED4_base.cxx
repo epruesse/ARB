@@ -132,6 +132,7 @@ void ED4_terminal::changed_by_database()
             int data_len = GB_read_old_size();
 
             if (data) {
+                e4_assert(data_len >= 0);
                 char *dup_data = new char[data_len+1];
 
                 memcpy(dup_data, data, data_len);
@@ -601,8 +602,9 @@ ED4_returncode ED4_base::generate_configuration_string(char **generated_string)
                 }
             }
 
+            e4_assert(consensus_manager);
             multi_species_manager->children->delete_member(consensus_manager);
-            old_pos = consensus_manager->extension.position[Y_POS];
+            old_pos                                      = consensus_manager->extension.position[Y_POS];
             consensus_manager->extension.position[Y_POS] = SPACERHEIGHT;
             ED4_base::touch_world_cache();
             multi_species_manager->children->append_member(consensus_manager);

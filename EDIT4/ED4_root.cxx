@@ -447,9 +447,10 @@ ED4_returncode ED4_root::create_hierarchy(char *area_string_middle, char *area_s
 
     // [former position of ali-init-code]
 
-    main_manager = new ED4_main_manager  ("Main_Manager",    0, 0, 0, 0, NULL);            // build a test hierarchy
-    root_group_man = new ED4_root_group_manager ("Root_Group_Manager", 0, 0, 0, 0,   main_manager);
-    main_manager->children->append_member (root_group_man);
+    main_manager   = new ED4_main_manager("Main_Manager", 0, 0, 0, 0, NULL); // build a test hierarchy
+    root_group_man = new ED4_root_group_manager("Root_Group_Manager", 0, 0, 0, 0, main_manager);
+    
+    main_manager->children->append_member(root_group_man);
 
     ED4_device_manager *device_manager = new ED4_device_manager("Device_Manager", 0, 0, 0, 0, root_group_man);
     root_group_man->children->append_member(device_manager);
@@ -625,20 +626,16 @@ ED4_returncode ED4_root::create_hierarchy(char *area_string_middle, char *area_s
 
     resize_all();
 
-    x_link = y_link = NULL;
-    if (main_manager)
-    {
-        x_link = scroll_links.link_for_hor_slider;
-        y_link = scroll_links.link_for_ver_slider;
-    }
+    e4_assert(main_manager);
+    x_link = scroll_links.link_for_hor_slider;
+    y_link = scroll_links.link_for_ver_slider;
 
     width_link  = x_link;
     height_link = y_link;
 
     new_window = first_window;
 
-    while (new_window)
-    {
+    while (new_window) {
         new_window->set_scrolled_rectangle(0, 0, 0, 0, x_link, y_link, width_link, height_link);
         new_window->aww->show();
         new_window->update_scrolled_rectangle();

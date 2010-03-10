@@ -245,6 +245,7 @@ static char *add_area_for_gde(ED4_area_manager *area_man, uchar **&the_names, uc
                     if (show_helix && !is_SAI && ED4_ROOT->helix->size()) {
                         char *helix = ED4_ROOT->helix->seq_2_helix(seq, '.');
                         set_and_realloc_gde_array(the_names, the_sequences, allocated, numberspecies, maxalign, name, name_len, helix, seq_len);
+                        free(helix);
                     }
                     if (show_remark && !is_consensus) {
                         ED4_multi_sequence_manager *ms_man = sequence_terminal->get_parent(ED4_L_MULTI_SEQUENCE)->to_multi_sequence_manager();
