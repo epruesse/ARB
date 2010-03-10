@@ -1531,6 +1531,7 @@ class ED4_AA_sequence_terminal : public ED4_sequence_terminal_basic {
     //       handled by the standard "ED4_sequence_terminal" class.
 
     char *aaSequence;
+    char *aaColor;
     int   aaStartPos;
     int   aaStrandType;
 
@@ -1544,6 +1545,7 @@ public:
 
     void SET_aaSeqFlags (int startPos, int strandType) { aaStartPos = startPos; aaStrandType = strandType; }
     void SET_aaSequence(const char *aaSeq) { freedup(aaSequence, aaSeq); }
+    void SET_aaColor(const char *aaSeq) { freedup(aaColor, aaSeq); }
     
     int GET_aaStartPos () { return aaStartPos; }
     int GET_aaStrandType () { return aaStrandType; }

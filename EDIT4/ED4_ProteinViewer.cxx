@@ -610,32 +610,43 @@ static void TranslateGeneToAminoAcidSequence(AW_root * /* root */, ED4_AA_sequen
                     if (!error) {
                         AWT_pro_a_nucs_convert(translationTable, str_SeqData, len, startPos4Translation, false, true, false, 0); // translate
 
-                        char *s            = new char[len+1];
-                        int   iDisplayMode = ED4_ROOT->aw_root->awar(AWAR_PROTVIEW_DISPLAY_OPTIONS)->read_int();
-                        int   i, j;
+                        char *s = new char[len+1];
+                        int iDisplayMode = ED4_ROOT->aw_root->awar(AWAR_PROTVIEW_DISPLAY_OPTIONS)->read_int();
+                        int i, j;
 
                         if (iDisplayMode == PV_AA_NAME) {
+                            char *gc = new char[len+1];
+
                             for (i=0, j=0; i<len && j<len;) {
                                 // start from the start pos of aa sequence
-                                for (; i<startPos4Translation;) s[i++] = ' ';
-                                char base = str_SeqData[j++];
+                                for (; i<startPos4Translation; ++i) {
+                                    s[i]  = ' ';
+                                    gc[i] = ' ';
+                                }
+
+                                char        base   = str_SeqData[j++];
                                 const char *AAname = 0;
-                                if (base>='A' && base<='Z') {
-                                    AAname = AP_get_protein_name(base);
-                                }
-                                else if (base=='*') {
-                                    AAname = "End";
-                                }
+                                
+                                if (base>='A' && base<='Z') AAname = AP_get_protein_name(base);
+                                else if (base=='*')         AAname = "End";
                                 else {
-                                    for (int m = 0; m<3 && i<len; m++)
-                                        s[i++]=base;
+                                    for (int m = 0; m<3 && i<len; m++,i++) {
+                                        s[i] = base;
+                                        gc[i] = base;
+                                    }
                                 }
                                 if (AAname) {
-                                    for (unsigned int n = 0; n<strlen(AAname) && i<len; n++) {
-                                        s[i++]=AAname[n];
+                                    unsigned nlen = strlen(AAname);
+                                    for (unsigned int n = 0; n<nlen && i<len; n++,i++) {
+                                        s[i]  = AAname[n];
+                                        gc[i] = base;
                                     }
                                 }
                             }
+
+                            gc[i] = '\0';
+                            seqTerm->SET_aaColor(gc);
+                            delete [] gc;
                         }
                         else {
                             int k = startPos4Translation+1;
@@ -646,11 +657,12 @@ static void TranslateGeneToAminoAcidSequence(AW_root * /* root */, ED4_AA_sequen
                                 }
                                 else s[i] = ' ';
                             }
+                            seqTerm->SET_aaColor(NULL);
                         }
                         s[i] = '\0';
                         
                         seqTerm->SET_aaSequence(s);
-                        delete s;
+                        delete [] s;
                     }
                     free(str_SeqData);
                 }
