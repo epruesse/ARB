@@ -372,7 +372,8 @@ int APIENTRY pngLoadF(FILE *fp, int mipmap, int trans, pngInfo *pinfo) {
     png_structp png;
     png_infop   info;
     png_infop   endinfo;
-    png_bytep   data, data2;
+    png_bytep   data;
+    ;
     png_bytep  *row_p;
     double       fileGamma;
 
@@ -467,7 +468,7 @@ int APIENTRY pngLoadF(FILE *fp, int mipmap, int trans, pngInfo *pinfo) {
     if (rw != width || rh != height) {
         const int channels = png_get_rowbytes(png, info)/width;
 
-        data2 = (png_bytep) malloc(rw*rh*channels);
+        png_bytep data2 = (png_bytep) malloc(rw*rh*channels);
 
         /* Doesn't work on certain sizes */
         /*              if (gluScaleImage(glformat, width, height, GL_UNSIGNED_BYTE, data, rw, rh, GL_UNSIGNED_BYTE, data2) != 0)
@@ -477,7 +478,7 @@ int APIENTRY pngLoadF(FILE *fp, int mipmap, int trans, pngInfo *pinfo) {
 
         width = rw, height = rh;
         free(data);
-        data = data2;
+        data  = data2;
     }
 
     { /* OpenGL stuff */
@@ -542,7 +543,7 @@ int APIENTRY pngLoadF(FILE *fp, int mipmap, int trans, pngInfo *pinfo) {
                     glTexImage2D(GL_TEXTURE_2D, mipmap, glcomponent, width, height, 0, glformat, GL_UNSIGNED_BYTE, data);
             }
             else {
-                png_bytep p, endp, q;
+                png_bytep p, endp, q, data2;
                 int r, g, b, a;
 
                 p = data, endp = p+width*height*3;
