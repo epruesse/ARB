@@ -224,9 +224,10 @@ void updateTrnsprob(double ***PP,double *F,double *X,short M) {
     S[T]=ST; S[C]=SC; S[A]=SA; S[G]=SG;
 
     switch(M) {
-        case REV:   a=X[0]; b=X[1]; c=X[2]; d=X[3]; e=X[4]; f=1.0-(a+b+c+d+e); break;
-        case TN93:  a=X[0]; b=c=d=e=X[1]; f=1.0-(a+b+c+d+e); break;
-        case HKY85: a=f=X[0]; b=c=d=e=0.25*(1.0-(a+f)); break;
+        case REV:   a = X[0]; b=X[1]; c=X[2]; d=X[3]; e=X[4]; f=1.0-(a+b+c+d+e); break;
+        case TN93:  a = X[0]; b=c=d=e=X[1]; f=1.0-(a+b+c+d+e); break;
+        case HKY85: a = f=X[0]; b=c=d=e=0.25*(1.0-(a+f)); break;
+        default : ih_assert(0); break;
     }
 
     s=0.5/(a*F[T]*F[C]+b*F[T]*F[A]+c*F[T]*F[G]+d*F[C]*F[A]+e*F[C]*F[G]+f*F[A]*F[G]);
