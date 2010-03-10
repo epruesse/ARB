@@ -1144,6 +1144,7 @@ ED4_AA_sequence_terminal::ED4_AA_sequence_terminal(const char *temp_id, AW_pos x
 {
     spec = &(sequence_terminal_spec);
     aaSequence   = 0;
+    aaColor   = 0;
     aaStartPos   = 0;
     aaStrandType = 0;
 }
@@ -1156,6 +1157,7 @@ GB_alignment_type ED4_AA_sequence_terminal::GetAliType()
 ED4_AA_sequence_terminal::~ED4_AA_sequence_terminal()
 {
     free(aaSequence);
+    free(aaColor);
 }
 
 ED4_sequence_terminal::ED4_sequence_terminal(const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent)
