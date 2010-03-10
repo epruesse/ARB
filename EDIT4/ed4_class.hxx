@@ -1530,21 +1530,23 @@ class ED4_AA_sequence_terminal : public ED4_sequence_terminal_basic {
     //       used for drawing aminoacid sequence alone as in protein alignment. Aminoacid sequences are
     //       handled by the standard "ED4_sequence_terminal" class.
 
+    char *aaSequence;
+    int   aaStartPos;
+    int   aaStrandType;
+
     virtual ED4_returncode  draw(int only_text = 0);
     ED4_AA_sequence_terminal(const ED4_AA_sequence_terminal&);
 public:
     ED4_AA_sequence_terminal(const char *id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *parent);
     virtual ~ED4_AA_sequence_terminal();
 
-    char *aaSequence;
-    int aaStartPos;
-    int aaStrandType;
-
     virtual GB_alignment_type GetAliType();
+
     void SET_aaSeqFlags (int startPos, int strandType) { aaStartPos = startPos; aaStrandType = strandType; }
+    void SET_aaSequence(const char *aaSeq) { freedup(aaSequence, aaSeq); }
+    
     int GET_aaStartPos () { return aaStartPos; }
     int GET_aaStrandType () { return aaStrandType; }
-    void SET_aaSequence_pointer(char *aaSeq) { aaSequence = new char[strlen(aaSeq)]; aaSequence = aaSeq; }
 };
 
 class ED4_sequence_terminal : public ED4_sequence_terminal_basic

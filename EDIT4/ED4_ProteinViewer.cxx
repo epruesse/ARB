@@ -35,12 +35,6 @@ using namespace std;
 #define COMPLEMENTARY_STRANDS  3
 #define DB_FIELD_STRANDS       1
 
-// typedefs
-typedef enum {
-    PV_FAILED = 0,
-    PV_SUCCESS
-} PV_ERROR;
-
 enum {
     PV_MARKED = 0,
     PV_SELECTED,
@@ -406,105 +400,101 @@ void PV_RefreshWindow(AW_root *root) {
      ED4_ROOT->refresh_all_windows(0);
 }
 
-PV_ERROR PV_ComplementarySequence(char *sequence)
-{
-    char T_or_U;
-    GB_ERROR error  = GBT_determine_T_or_U(ED4_ROOT->alignment_type, &T_or_U, "complement");
-    if (error) {
-        cout<<error<<endl;
-        return PV_FAILED;
-    }
+static GB_ERROR PV_ComplementarySequence(char *sequence) {
+    char     T_or_U;
+    GB_ERROR error = GBT_determine_T_or_U(ED4_ROOT->alignment_type, &T_or_U, "complement");
+    if (!error) {
+        int   seqLen           = strlen(sequence);
+        char *complementarySeq = GBT_complementNucSequence((const char*) sequence, seqLen, T_or_U);
 
-    int seqLen = strlen(sequence);
-    char *complementarySeq  = GBT_complementNucSequence((const char*) sequence, seqLen, T_or_U);
-    strcpy(sequence, complementarySeq);
-    return PV_SUCCESS;
+        strcpy(sequence, complementarySeq);
+        free(complementarySeq);
+    }
+    return error;
 }
 
 static void PV_WriteTranslatedSequenceToDB(ED4_AA_sequence_terminal *aaSeqTerm, char *spName) {
-    GB_begin_transaction(GLOBAL_gb_main);  // open database for transaction
-
-    GB_ERROR error = 0;
-    GBDATA    *gb_species = GBT_find_species(GLOBAL_gb_main, spName);
-    char *defaultAlignment = GBT_get_default_alignment(GLOBAL_gb_main);
-    GBDATA  *gb_SeqData = GBT_read_sequence(gb_species, defaultAlignment);
-
-    char *str_SeqData = 0;
-    int len = 0;
-    if (gb_SeqData) {
-        str_SeqData = GB_read_string(gb_SeqData);
-        len = GB_read_string_count(gb_SeqData);
-    }
-    else error = "error in reading sequence from database!";
-
-    if (!error) {
-        GBDATA *gb_ProSeqData = 0;
-        char newAlignmentName[100];
-        int aaStrandType = int(aaSeqTerm->GET_aaStrandType());
-        { // If strandType is complementary strand then Get complementary sequence
-            if (aaStrandType == COMPLEMENTARY_STRAND) {
-                PV_ERROR pvError =  PV_ComplementarySequence(str_SeqData);
-                if (pvError == PV_FAILED) {
-                    error = "Getting complementary strand failed!!";
-                }
-            }
-        }
-
-        if (!error) {
-            int   aaStartPos = int(aaSeqTerm->GET_aaStartPos());
-            switch (aaStrandType) {
-            case FORWARD_STRAND:
-                sprintf(newAlignmentName, "ali_pro_ProtView_forward_start_pos_%ld", (long int) aaStartPos); break;
-            case COMPLEMENTARY_STRAND:
-                sprintf(newAlignmentName, "ali_pro_ProtView_complementary_start_pos_%ld", (long int) aaStartPos); break;
-            case DB_FIELD_STRAND:
-                sprintf(newAlignmentName, "ali_pro_ProtView_database_field_start_pos_%ld", (long int) aaStartPos); break;
-            }
-
-            AWT_pro_a_nucs_convert(AWT_default_protein_type(), str_SeqData, len, aaStartPos-1, false, true, false, 0);
-
-            // Create alignment data to store the translated sequence
-            GBDATA *gb_presets          = GB_search(GLOBAL_gb_main, "presets", GB_CREATE_CONTAINER);
-            GBDATA *gb_alignment_exists = GB_find_string(gb_presets, "alignment_name", newAlignmentName, GB_IGNORE_CASE, SEARCH_GRANDCHILD);
-            GBDATA *gb_new_alignment    = 0;
-
-            if (gb_alignment_exists) {
-                int     skip_sp     = 0;
-                char   *question    = 0;
-                GBDATA *gb_seq_data = GBT_read_sequence(gb_species, newAlignmentName);
-                if (gb_seq_data) {
-                    e4_assert(ASKtoOverWriteData);
-                    question = GBS_global_string_copy("\"%s\" contain data in the alignment \"%s\"!", spName, newAlignmentName);
-                    skip_sp        = ASKtoOverWriteData->get_answer(question, "Overwrite, Skip Species", "all", false);
-                }
-                if (skip_sp) {
-                    error = GBS_global_string_copy("%s You chose to skip this Species!", question);
-                }
-                else {
-                    gb_new_alignment             = GBT_get_alignment(GLOBAL_gb_main, newAlignmentName);
-                    if (!gb_new_alignment) error = GB_await_error();
-                }
-                free(question);
+    GB_ERROR  error      = GB_begin_transaction(GLOBAL_gb_main);
+    GBDATA   *gb_species = GBT_find_species(GLOBAL_gb_main, spName);
+    if (!gb_species) error = GBS_global_string("Species '%s' does not exist", spName);
+    else {
+        char *defaultAlignment = GBT_get_default_alignment(GLOBAL_gb_main);
+        if (!defaultAlignment) error = GB_await_error();
+        else {
+            GBDATA *gb_SeqData = GBT_read_sequence(gb_species, defaultAlignment);
+            if (!gb_SeqData) {
+                error = GB_get_error();
+                if (!error) error = GBS_global_string("Species '%s' has no data in alignment '%s'", spName, defaultAlignment);
             }
             else {
-                long aliLen      = GBT_get_alignment_len(GLOBAL_gb_main, defaultAlignment);
-                gb_new_alignment = GBT_create_alignment(GLOBAL_gb_main, newAlignmentName, aliLen/3+1, 0, 1, "ami");
+                char *str_SeqData       = GB_read_string(gb_SeqData);
+                if (!str_SeqData) error = GB_await_error();
+                else {
+                    int aaStrandType = int(aaSeqTerm->GET_aaStrandType());
+                    if (aaStrandType == COMPLEMENTARY_STRAND) {
+                        GB_ERROR compl_err =  PV_ComplementarySequence(str_SeqData);
+                        if (compl_err) error = GBS_global_string("Failed to calc complementary strand (Reason: %s)", compl_err);
+                    }
 
-                if (!gb_new_alignment) error = GB_await_error();
-                else giNewAlignments++;
-            }
+                    if (!error) {
+                        char newAlignmentName[100];
+                        int  aaStartPos = int(aaSeqTerm->GET_aaStartPos());
 
-            if (!error) {
-                gb_ProSeqData            = GBT_add_data(gb_species, newAlignmentName, "data", GB_STRING);
-                if (gb_ProSeqData) error = GB_write_string(gb_ProSeqData, str_SeqData);
-                else error               = GB_await_error();
+                        switch (aaStrandType) {
+                            case FORWARD_STRAND:       sprintf(newAlignmentName, "ali_pro_ProtView_forward_start_pos_%ld",        (long)aaStartPos); break;
+                            case COMPLEMENTARY_STRAND: sprintf(newAlignmentName, "ali_pro_ProtView_complementary_start_pos_%ld",  (long)aaStartPos); break;
+                            case DB_FIELD_STRAND:      sprintf(newAlignmentName, "ali_pro_ProtView_database_field_start_pos_%ld", (long)aaStartPos); break;
+                        }
+
+                        int len = GB_read_string_count(gb_SeqData);
+                        AWT_pro_a_nucs_convert(AWT_default_protein_type(), str_SeqData, len, aaStartPos-1, false, true, false, 0);
+
+                        // Create alignment data to store the translated sequence
+                        GBDATA *gb_presets          = GB_search(GLOBAL_gb_main, "presets", GB_CREATE_CONTAINER);
+                        GBDATA *gb_alignment_exists = GB_find_string(gb_presets, "alignment_name", newAlignmentName, GB_IGNORE_CASE, SEARCH_GRANDCHILD);
+                        GBDATA *gb_new_alignment    = 0;
+
+                        if (gb_alignment_exists) {
+                            int     skip_sp     = 0;
+                            char   *question    = 0;
+                            GBDATA *gb_seq_data = GBT_read_sequence(gb_species, newAlignmentName);
+                            if (gb_seq_data) {
+                                e4_assert(ASKtoOverWriteData);
+                                question = GBS_global_string_copy("\"%s\" contain data in the alignment \"%s\"!", spName, newAlignmentName);
+                                skip_sp  = ASKtoOverWriteData->get_answer(question, "Overwrite, Skip Species", "all", false);
+                            }
+                            if (skip_sp) {
+                                error = GBS_global_string_copy("%s You chose to skip this Species!", question);
+                            }
+                            else {
+                                gb_new_alignment             = GBT_get_alignment(GLOBAL_gb_main, newAlignmentName);
+                                if (!gb_new_alignment) error = GB_await_error();
+                            }
+                            free(question);
+                        }
+                        else {
+                            long aliLen      = GBT_get_alignment_len(GLOBAL_gb_main, defaultAlignment);
+                            gb_new_alignment = GBT_create_alignment(GLOBAL_gb_main, newAlignmentName, aliLen/3+1, 0, 1, "ami");
+
+                            if (!gb_new_alignment) error = GB_await_error();
+                            else giNewAlignments++;
+                        }
+
+                        if (!error) {
+                            GBDATA *gb_ProSeqData     = GBT_add_data(gb_species, newAlignmentName, "data", GB_STRING);
+                            if (!gb_ProSeqData) error = GB_await_error();
+                            else    error             = GB_write_string(gb_ProSeqData, str_SeqData);
+                        }
+
+                        if (!error) error = GBT_check_data(GLOBAL_gb_main, 0);
+                    }
+
+                    free(str_SeqData);
+                }
             }
+            free(defaultAlignment);
         }
-        free(str_SeqData);
     }
-
-    if (!error) error = GBT_check_data(GLOBAL_gb_main, 0);
-
     GB_end_transaction_show_error(GLOBAL_gb_main, error, aw_message);
 }
 
@@ -559,115 +549,115 @@ void PV_SaveData(AW_window *aww) {
     AWUSE(aww);
 }
 
-// This function translates gene sequence to aminoacid sequence and stores into the respective AA_Sequence_terminal
 static void TranslateGeneToAminoAcidSequence(AW_root * /* root */, ED4_AA_sequence_terminal *seqTerm, char *speciesName, int startPos4Translation, int translationMode) {
-    GBDATA *gb_species       = GBT_find_species(GLOBAL_gb_main, speciesName);
-    char   *defaultAlignment = GBT_get_default_alignment(GLOBAL_gb_main);
-    GBDATA *gb_SeqData       = GBT_read_sequence(gb_species, defaultAlignment);
-
-    e4_assert(startPos4Translation>=0 && startPos4Translation<=2);
-
-    char *str_SeqData = 0;
-    int len = 0;
-    if (gb_SeqData) {
-        str_SeqData = GB_read_string(gb_SeqData);
-        len = GB_read_string_count(gb_SeqData);
-    }
-
-    GB_ERROR error = 0;
-    PV_ERROR pvError;
-
-    int translationTable = AWT_default_protein_type(GLOBAL_gb_main);
-
-    switch (translationMode) {
-        case FORWARD_STRAND:
-            break;
-        case COMPLEMENTARY_STRAND:
-            // for complementary strand - get the complementary sequence and then perform translation
-            pvError =  PV_ComplementarySequence(str_SeqData);
-            if (pvError == PV_FAILED) {
-                error = "Could not get complementary strand";
-            }
-            break;
-        case DB_FIELD_STRAND:
-            // for use database field options - fetch codon start and translation table from the respective species data
-            GBDATA *gb_translTable = GB_entry(gb_species, "transl_table");
-            if (gb_translTable) {
-                int sp_embl_table = atoi(GB_read_char_pntr(gb_translTable));
-                translationTable  = AWT_embl_transl_table_2_arb_code_nr(sp_embl_table);
-            }
-            else {   // use selected translation table as default (if 'transl_table' field is missing)
-                gMissingTransTable++;
-            }
-            GBDATA *gb_codonStart = GB_entry(gb_species, "codon_start");
-            if (gb_codonStart) {
-                startPos4Translation = atoi(GB_read_char_pntr(gb_codonStart))-1;
-                if (startPos4Translation<0 || startPos4Translation>2) {
-                    error = GB_export_errorf("'%s' has invalid codon_start entry %i (allowed: 1..3)",
-                                             speciesName, startPos4Translation+1);
-                    break;
-                }
+    // This function translates gene sequence to aminoacid sequence and stores translation into the respective AA_Sequence_terminal
+    GB_ERROR  error        = NULL;
+    GBDATA   *gb_species   = GBT_find_species(GLOBAL_gb_main, speciesName);
+    if (!gb_species) error = GBS_global_string("Species '%s' does not exist", speciesName);
+    else {
+        char *defaultAlignment = GBT_get_default_alignment(GLOBAL_gb_main);
+        if (!defaultAlignment) error = GB_await_error();
+        else {
+            GBDATA *gb_SeqData = GBT_read_sequence(gb_species, defaultAlignment);
+            if (!gb_SeqData) {
+                error = GB_get_error();
+                if (!error) error = GBS_global_string("Species '%s' has no data in alignment '%s'", speciesName, defaultAlignment);
             }
             else {
-                gMissingCodonStart++;
-                startPos4Translation = 0;
-            }
-            break;
-    }
+                e4_assert(startPos4Translation>=0 && startPos4Translation<=2);
 
-    if (!error) {
-        // do the translation:
-        AWT_pro_a_nucs_convert(translationTable, str_SeqData, len, startPos4Translation, false, true, false, 0);
+                char *str_SeqData = GB_read_string(gb_SeqData);
+                if (!str_SeqData) error = GB_await_error();
+                else {
+                    int len              = GB_read_string_count(gb_SeqData);
+                    int translationTable = AWT_default_protein_type(GLOBAL_gb_main);
 
-        char *s = new char[len+1];
-        int i, j;
-        char spChar = ' ';
-        {
-            int iDisplayMode = ED4_ROOT->aw_root->awar(AWAR_PROTVIEW_DISPLAY_OPTIONS)->read_int();
-            if (iDisplayMode == PV_AA_NAME)
-            {
-                for (i=0, j=0; i<len && j<len;) {
-                    // start from the start pos of aa sequence
-                    for (; i<startPos4Translation;) s[i++] = spChar;
-                    char base = str_SeqData[j++];
-                    const char *AAname = 0;
-                    if (base>='A' && base<='Z') {
-                        AAname = AP_get_protein_name(base);
-                    }
-                    else if (base=='*') {
-                        AAname = "End";
-                    }
-                    else {
-                        for (int m = 0; m<3 && i<len; m++)
-                            s[i++]=base;
-                    }
-                    if (AAname) {
-                        for (unsigned int n = 0; n<strlen(AAname) && i<len; n++) {
-                            s[i++]=AAname[n];
+                    switch (translationMode) {
+                        case FORWARD_STRAND:
+                            break;
+                            
+                        case COMPLEMENTARY_STRAND: {
+                            // convert sequence to the complementary sequence
+                            GB_ERROR compl_err =  PV_ComplementarySequence(str_SeqData);
+                            if (compl_err) error = GBS_global_string("Failed to calc complementary strand for '%s' (Reason: %s)", speciesName, compl_err);
+                            break;
+                        }
+                        case DB_FIELD_STRAND: {
+                            // for use database field options - fetch codon start and translation table from the respective species data
+                            GBDATA *gb_translTable = GB_entry(gb_species, "transl_table");
+                            if (gb_translTable) {
+                                int sp_embl_table = atoi(GB_read_char_pntr(gb_translTable));
+                                translationTable  = AWT_embl_transl_table_2_arb_code_nr(sp_embl_table);
+                            }
+                            else {   // use selected translation table as default (if 'transl_table' field is missing)
+                                gMissingTransTable++;
+                            }
+                            GBDATA *gb_codonStart = GB_entry(gb_species, "codon_start");
+                            if (gb_codonStart) {
+                                startPos4Translation = atoi(GB_read_char_pntr(gb_codonStart))-1;
+                                if (startPos4Translation<0 || startPos4Translation>2) {
+                                    error = GB_export_errorf("'%s' has invalid codon_start entry %i (allowed: 1..3)", speciesName, startPos4Translation+1);
+                                }
+                            }
+                            else {
+                                gMissingCodonStart++;
+                                startPos4Translation = 0;
+                            }
+                            break;
                         }
                     }
-                }
-            }
-            else
-            {
-                int k = startPos4Translation+1;
-                for (i=0, j=0; i<len; i++) {
-                    if ((k==i) && (j<len)) {
-                        s[i]=str_SeqData[j++];
-                        k+=3;
+
+                    if (!error) {
+                        AWT_pro_a_nucs_convert(translationTable, str_SeqData, len, startPos4Translation, false, true, false, 0); // translate
+
+                        char *s            = new char[len+1];
+                        int   iDisplayMode = ED4_ROOT->aw_root->awar(AWAR_PROTVIEW_DISPLAY_OPTIONS)->read_int();
+                        int   i, j;
+
+                        if (iDisplayMode == PV_AA_NAME) {
+                            for (i=0, j=0; i<len && j<len;) {
+                                // start from the start pos of aa sequence
+                                for (; i<startPos4Translation;) s[i++] = ' ';
+                                char base = str_SeqData[j++];
+                                const char *AAname = 0;
+                                if (base>='A' && base<='Z') {
+                                    AAname = AP_get_protein_name(base);
+                                }
+                                else if (base=='*') {
+                                    AAname = "End";
+                                }
+                                else {
+                                    for (int m = 0; m<3 && i<len; m++)
+                                        s[i++]=base;
+                                }
+                                if (AAname) {
+                                    for (unsigned int n = 0; n<strlen(AAname) && i<len; n++) {
+                                        s[i++]=AAname[n];
+                                    }
+                                }
+                            }
+                        }
+                        else {
+                            int k = startPos4Translation+1;
+                            for (i=0, j=0; i<len; i++) {
+                                if ((k==i) && (j<len)) {
+                                    s[i]  = str_SeqData[j++];
+                                    k    += 3;
+                                }
+                                else s[i] = ' ';
+                            }
+                        }
+                        s[i] = '\0';
+                        
+                        seqTerm->SET_aaSequence(s);
+                        delete s;
                     }
-                    else
-                        s[i] = spChar;
+                    free(str_SeqData);
                 }
             }
-            s[i]='\0'; // close the string
         }
-
-        seqTerm->SET_aaSequence_pointer(strdup(s));
-
-        delete s;
+        free(defaultAlignment);
     }
-    free(str_SeqData);
 
     if (error) aw_message(GBS_global_string("Error: %s", error));
 }
