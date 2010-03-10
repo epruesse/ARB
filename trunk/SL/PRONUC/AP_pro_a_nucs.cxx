@@ -155,7 +155,7 @@ static int codon_defined_in(const char *codon, const char *codons) {
 // must be compatible with DIST/PH_protdist.cxx !!
 // except that this table has an 's' insertion !!!
 
-#define T2I_ENTRIES 181
+#define T2I_ENTRIES_MAX 190
 
 AWT_translator::AWT_translator(int arb_protein_code_nr) :
     distance_meter(0),
@@ -168,7 +168,7 @@ AWT_translator::AWT_translator(int arb_protein_code_nr) :
     memset(index_2_spro, 0, sizeof(index_2_spro));
 
     nuc_2_bitset = AP_create_dna_to_ap_bases();
-    t2i_hash     = GBS_create_hash(T2I_ENTRIES, GB_IGNORE_CASE); // case insensitive
+    t2i_hash     = GBS_create_hash(T2I_ENTRIES_MAX, GB_IGNORE_CASE); // case insensitive
 
     AP_initialize_codon_tables();
 
@@ -226,7 +226,7 @@ AWT_translator::AWT_translator(int arb_protein_code_nr) :
     build_table('.', "???", "???");
     build_table('X', "NNN", "NNN");
 
-    pn_assert(GBS_hash_count_elems(t2i_hash) == T2I_ENTRIES);
+    pn_assert(GBS_hash_count_elems(t2i_hash) <= T2I_ENTRIES_MAX);
 
     pro_2_bitset = create_pro_to_bits();
 }
