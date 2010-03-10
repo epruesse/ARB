@@ -124,141 +124,145 @@ AW_active sina_mask(AW_root *root) {
     return fail_reason ? AWM_DISABLED : AWM_ALL;
 }
 
+inline const char *stream2static(const std::stringstream& str) {
+    return GBS_global_string("%s", str.str().c_str());
+}
+
 static void sina_start(AW_window *window, AW_CL cl_AlignDataAccess) {
-    GB_ERROR gb_error;
-    AW_root *root = window->get_root();
     cerr << "Starting SINA..." << endl;
 
     // make string from pt server selection
-    int pt = root->awar(AWAR_PT_SERVER)->read_int();
-    const char *pt_server;
+    AW_root *root = window->get_root();
+    int      pt   = root->awar(AWAR_PT_SERVER)->read_int();
+
     std::stringstream ptnam;
     ptnam << "ARB_PT_SERVER" << pt;
-    pt_server = GBS_read_arb_tcp(ptnam.str().c_str());
-    if (!pt_server) {
-        aw_message("Unable to find definition for chosen PT-server");
-        return;
-    }
-    const char *pt_db = pt_server + strlen(pt_server) + 1;
-    pt_db += strlen(pt_db)+3;
 
-    // start pt server if necessary
-    gb_error = arb_look_and_start_server(AISC_MAGIC_NUMBER, ptnam.str().c_str(),
-                                         GLOBAL_gb_main);
-    if (gb_error) {
-        std::stringstream tmp;
-        tmp << "Cannot contact PT server. Aborting" << endl
-            << " ID: \"" << tmp.str().c_str()
-            << "\" PORT: \"" << pt_server
-            << "\" DB: \"" << pt_db  << endl
-            << "\" GBERROR: \"" << gb_error << "\"" << endl;
-        aw_message(tmp.str().c_str());
-        return;
-    }
+    const char *pt_server = GBS_read_arb_tcp(ptnam.str().c_str());
+    GB_ERROR    gb_error  = NULL;
 
-    // create temporary file
-    char* tmpfile;
-    FILE* tmpfile_F;
-    {
-        char* tmpfile_tpl = GB_unique_filename("sina_select", "tmp");
-        tmpfile_F         = GB_fopen_tempfile(tmpfile_tpl, "w", &tmpfile);
-        free(tmpfile_tpl);
-    }
+    if (!pt_server) gb_error = "Unable to find definition for chosen PT-server";
+    else {
+        const char *pt_db = pt_server + strlen(pt_server) + 1;
+        pt_db += strlen(pt_db)+3;
 
-    if (!tmpfile_F) {
-        std::stringstream tmp;
-        tmp << "Error: Unable to create temporary file \"" << tmpfile << "\"!";
-        aw_message(tmp.str().c_str());
-        return;
-    }
-    GB_remove_on_exit(tmpfile);
-
-    std::vector<std::string> spec_names;
-    switch (root->awar(GA_AWAR_TGT)->read_int()) {
-    case 0: // current
-    {
-        char *spec_name = root->awar(AWAR_SPECIES_NAME)->read_string();
-        if (spec_name) {
-            fwrite(spec_name, strlen(spec_name), 1, tmpfile_F);
-            fwrite("\n", 1, 1, tmpfile_F);
+        // start pt server if necessary
+        gb_error = arb_look_and_start_server(AISC_MAGIC_NUMBER, ptnam.str().c_str(), GLOBAL_gb_main);
+        if (gb_error) {
+            std::stringstream tmp;
+            tmp << "Cannot contact PT server. Aborting" << endl
+                << " ID: \"" << tmp.str().c_str()
+                << "\" PORT: \"" << pt_server
+                << "\" DB: \"" << pt_db  << endl
+                << "\" GBERROR: \"" << gb_error << "\"" << endl;
+            gb_error = stream2static(tmp);
         }
         else {
-            aw_message("Unable to get name of currently active species");
-            return;
-        }
-    }
-    break;
-    case 1: // selected
-    {
-        const AlignDataAccess *data_access = (const AlignDataAccess *)cl_AlignDataAccess;
-        GB_begin_transaction(GLOBAL_gb_main);
-        int num_selected = 0;
-        for (GBDATA *gb_spec = data_access->get_first_selected_species(&num_selected);
-             gb_spec;
-             gb_spec = data_access->get_next_selected_species())
-        {
-            GBDATA *gbd_name = GB_find(gb_spec, "name", SEARCH_CHILD);
-            if (gbd_name) {
-                const char *str = GB_read_char_pntr(gbd_name);
-                fwrite(str, strlen(str), 1, tmpfile_F);
-                fwrite("\n", 1, 1, tmpfile_F);
+            // create temporary file
+            char* tmpfile;
+            FILE* tmpfile_F;
+            {
+                char* tmpfile_tpl = GB_unique_filename("sina_select", "tmp");
+                tmpfile_F         = GB_fopen_tempfile(tmpfile_tpl, "w", &tmpfile);
+                free(tmpfile_tpl);
             }
-        }
-        GB_commit_transaction(GLOBAL_gb_main);
-    }
-    break;
-    case 2: // marked
-    {
-        GB_begin_transaction(GLOBAL_gb_main);
-        for (GBDATA *gb_spec = GBT_first_marked_species(GLOBAL_gb_main);
-             gb_spec; gb_spec = GBT_next_marked_species(gb_spec)) {
-            GBDATA *gbd_name = GB_find(gb_spec, "name", SEARCH_CHILD);
-            if (gbd_name) {
-                const char *str = GB_read_char_pntr(gbd_name);
-                fwrite(str, strlen(str), 1, tmpfile_F);
-                fwrite("\n", 1, 1, tmpfile_F);
+
+            if (!tmpfile_F) {
+                std::stringstream tmp;
+                tmp << "Error: Unable to create temporary file \"" << tmpfile << "\"!";
+                gb_error = stream2static(tmp);
             }
+            else {
+                GB_remove_on_exit(tmpfile);
+
+                std::vector<std::string> spec_names;
+                switch (root->awar(GA_AWAR_TGT)->read_int()) {
+                    case 0: { // current
+                        char *spec_name = root->awar(AWAR_SPECIES_NAME)->read_string();
+                        if (spec_name) {
+                            fwrite(spec_name, strlen(spec_name), 1, tmpfile_F);
+                            fwrite("\n", 1, 1, tmpfile_F);
+                        }
+                        else {
+                            gb_error = "Unable to get name of currently active species";
+                        }
+                        free(spec_name);
+                        break;
+                    }
+                    case 1: { // selected
+                        const AlignDataAccess *data_access = (const AlignDataAccess *)cl_AlignDataAccess;
+                        GB_begin_transaction(GLOBAL_gb_main);
+                        int num_selected = 0;
+                        for (GBDATA *gb_spec = data_access->get_first_selected_species(&num_selected);
+                             gb_spec;
+                             gb_spec = data_access->get_next_selected_species())
+                        {
+                            GBDATA *gbd_name = GB_find(gb_spec, "name", SEARCH_CHILD);
+                            if (gbd_name) {
+                                const char *str = GB_read_char_pntr(gbd_name);
+                                fwrite(str, strlen(str), 1, tmpfile_F);
+                                fwrite("\n", 1, 1, tmpfile_F);
+                            }
+                        }
+                        GB_commit_transaction(GLOBAL_gb_main);
+                        break;
+                    }
+                    case 2: { // marked
+                        GB_begin_transaction(GLOBAL_gb_main);
+                        for (GBDATA *gb_spec = GBT_first_marked_species(GLOBAL_gb_main);
+                             gb_spec; gb_spec = GBT_next_marked_species(gb_spec)) {
+                            GBDATA *gbd_name = GB_find(gb_spec, "name", SEARCH_CHILD);
+                            if (gbd_name) {
+                                const char *str = GB_read_char_pntr(gbd_name);
+                                fwrite(str, strlen(str), 1, tmpfile_F);
+                                fwrite("\n", 1, 1, tmpfile_F);
+                            }
+                        }
+                        GB_commit_transaction(GLOBAL_gb_main);
+                        break;
+                    }
+                }
+                fclose(tmpfile_F);
+
+                if (!gb_error) {
+                    // build command line
+                    GBS_strstruct *cl = GBS_stropen(2000);
+
+                    GBS_strcat(cl, root->awar(GA_AWAR_CMD)->read_char_pntr());
+                    GBS_strcat(cl, " -i :");
+                    GBS_strcat(cl, " --queue-size ");  GBS_intcat(cl,   root->awar(GA_AWAR_QSIZE)->read_int());
+                    GBS_strcat(cl, " --ncpu ");        GBS_intcat(cl,   root->awar(GA_AWAR_THREADS)->read_int());
+                    GBS_strcat(cl, " --verbosity ");   GBS_strcat(cl,   root->awar(GA_AWAR_LOGLEVEL)->read_char_pntr());
+                    GBS_strcat(cl, " --ptdb ");        GBS_strcat(cl,   root->awar(GA_AWAR_PTLOAD)->read_int() ? pt_db : ":");
+                    GBS_strcat(cl, " --ptport ");      GBS_strcat(cl,   pt_server);
+                    GBS_strcat(cl, " --turn ");        GBS_strcat(cl,   root->awar(GA_AWAR_TURN_CHECK)->read_int() ? "all" : "none");
+                    GBS_strcat(cl, " --overhang ");    GBS_strcat(cl,   root->awar(GA_AWAR_OVERHANG)->read_char_pntr());
+                    GBS_strcat(cl, " --filter ");      GBS_strcat(cl,   root->awar(GA_AWAR_SAI)->read_char_pntr());
+                    GBS_strcat(cl, " --fs-min ");      GBS_intcat(cl,   root->awar(GA_AWAR_FS_MIN)->read_int());
+                    GBS_strcat(cl, " --fs-msc ");      GBS_floatcat(cl, root->awar(GA_AWAR_FS_MSC)->read_float());
+                    GBS_strcat(cl, " --fs-max ");      GBS_intcat(cl,   root->awar(GA_AWAR_FS_MAX)->read_int());
+                    GBS_strcat(cl, " --fs-req 1");
+                    GBS_strcat(cl, " --fs-req-full "); GBS_intcat(cl,   root->awar(GA_AWAR_MIN_FULL)->read_int());
+                    GBS_strcat(cl, " --fs-full-len "); GBS_intcat(cl,   root->awar(GA_AWAR_FULL_MINLEN)->read_int());
+                    GBS_strcat(cl, " --pen-gap ");     GBS_floatcat(cl, root->awar(GA_AWAR_GAP_PEN)->read_float());
+                    GBS_strcat(cl, " --pen-gapext ");  GBS_floatcat(cl, root->awar(GA_AWAR_GAP_EXT)->read_float());
+                    GBS_strcat(cl, " --prot-level ");  GBS_intcat(cl,   root->awar(GA_AWAR_PROTECTION)->read_int());
+                    GBS_strcat(cl, " --select-file "); GBS_strcat(cl,   tmpfile);
+
+                    if (root->awar(GA_AWAR_REALIGN)->read_int())     GBS_strcat(cl, " --realign");
+                    if (root->awar(GA_AWAR_COPYMARKREF)->read_int()) GBS_strcat(cl, " --markcopy");
+
+                    gb_error = GB_xcmd(GBS_mempntr(cl), true, false);
+                    GBS_strforget(cl);
+                }
+
+                if (!gb_error) aw_message("SINA finished aligning.");
+            }
+            free(tmpfile);
         }
-        GB_commit_transaction(GLOBAL_gb_main);
     }
-    break;
-    }
-    fclose(tmpfile_F);
-
-    // build command line
-    {
-        GBS_strstruct *cl = GBS_stropen(2000);
-
-        GBS_strcat(cl, root->awar(GA_AWAR_CMD)->read_char_pntr());
-        GBS_strcat(cl, " -i :");
-        GBS_strcat(cl, " --queue-size ");  GBS_intcat(cl,   root->awar(GA_AWAR_QSIZE)->read_int());
-        GBS_strcat(cl, " --ncpu ");        GBS_intcat(cl,   root->awar(GA_AWAR_THREADS)->read_int());
-        GBS_strcat(cl, " --verbosity ");   GBS_strcat(cl,   root->awar(GA_AWAR_LOGLEVEL)->read_char_pntr());
-        GBS_strcat(cl, " --ptdb ");        GBS_strcat(cl,   root->awar(GA_AWAR_PTLOAD)->read_int() ? pt_db : ":");
-        GBS_strcat(cl, " --ptport ");      GBS_strcat(cl,   pt_server);
-        GBS_strcat(cl, " --turn ");        GBS_strcat(cl,   root->awar(GA_AWAR_TURN_CHECK)->read_int() ? "all" : "none");
-        GBS_strcat(cl, " --overhang ");    GBS_strcat(cl,   root->awar(GA_AWAR_OVERHANG)->read_char_pntr());
-        GBS_strcat(cl, " --filter ");      GBS_strcat(cl,   root->awar(GA_AWAR_SAI)->read_char_pntr());
-        GBS_strcat(cl, " --fs-min ");      GBS_intcat(cl,   root->awar(GA_AWAR_FS_MIN)->read_int());
-        GBS_strcat(cl, " --fs-msc ");      GBS_floatcat(cl, root->awar(GA_AWAR_FS_MSC)->read_float());
-        GBS_strcat(cl, " --fs-max ");      GBS_intcat(cl,   root->awar(GA_AWAR_FS_MAX)->read_int());
-        GBS_strcat(cl, " --fs-req 1");
-        GBS_strcat(cl, " --fs-req-full "); GBS_intcat(cl,   root->awar(GA_AWAR_MIN_FULL)->read_int());
-        GBS_strcat(cl, " --fs-full-len "); GBS_intcat(cl,   root->awar(GA_AWAR_FULL_MINLEN)->read_int());
-        GBS_strcat(cl, " --pen-gap ");     GBS_floatcat(cl, root->awar(GA_AWAR_GAP_PEN)->read_float());
-        GBS_strcat(cl, " --pen-gapext ");  GBS_floatcat(cl, root->awar(GA_AWAR_GAP_EXT)->read_float());
-        GBS_strcat(cl, " --prot-level ");  GBS_intcat(cl,   root->awar(GA_AWAR_PROTECTION)->read_int());
-        GBS_strcat(cl, " --select-file "); GBS_strcat(cl,   tmpfile);
-
-        if (root->awar(GA_AWAR_REALIGN)->read_int())     GBS_strcat(cl, " --realign");
-        if (root->awar(GA_AWAR_COPYMARKREF)->read_int()) GBS_strcat(cl, " --markcopy");
-
-        gb_error = GB_xcmd(GBS_mempntr(cl), true, false);
-        GBS_strforget(cl);
-    }
-    free(tmpfile);
-
-    aw_message("SINA finished aligning.");
+    
+    aw_message_if(gb_error);
 }
 
 

@@ -103,81 +103,70 @@ void ED4_window::update_window_coords()
 
 
 
-ED4_folding_line* ED4_window::insert_folding_line(AW_pos world_x,
-                                                   AW_pos world_y,
-                                                   AW_pos length,
-                                                   AW_pos dimension,
-                                                   ED4_base *link,
-                                                   ED4_properties prop)
-{
-    ED4_folding_line  *fl, *current_fl, *previous_fl = NULL;
-    AW_pos             x, y;
-    int                rel_pos;
+ED4_folding_line* ED4_window::insert_folding_line(AW_pos world_x, AW_pos world_y, AW_pos length, AW_pos dimension, ED4_base *link, ED4_properties prop) {
+    ED4_folding_line *fl = NULL;
 
-    fl = new ED4_folding_line;
-    fl->link = link;
+    if (prop == ED4_P_VERTICAL || prop == ED4_P_HORIZONTAL) {
+        fl = new ED4_folding_line;
+        fl->link = link;
 
-    if (link != NULL) {
-        link->update_info.linked_to_folding_line = 1;
-        link->calc_world_coords(&x, &y);
-        fl->world_pos[X_POS] = x;
-        fl->world_pos[Y_POS] = y;
+        if (link != NULL) {
+            link->update_info.linked_to_folding_line = 1;
+
+            AW_pos x, y;
+            link->calc_world_coords(&x, &y);
+
+            fl->world_pos[X_POS] = x;
+            fl->world_pos[Y_POS] = y;
+            fl->length           = link->extension.size[(prop == ED4_P_VERTICAL) ? HEIGHT : WIDTH];
+        }
+        else
+        {
+            fl->world_pos[X_POS] = world_x;
+            fl->world_pos[Y_POS] = world_y;
+            fl->length           = length;
+        }
+
+        fl->dimension = dimension;
+
+        ED4_folding_line *current_fl = NULL;
+        int               rel_pos;
 
         if (prop == ED4_P_VERTICAL) {
-            fl->length = link->extension.size[HEIGHT];
+            fl->window_pos[X_POS] = fl->world_pos[X_POS] - dimension;
+            fl->window_pos[Y_POS] = fl->world_pos[Y_POS];
+
+            if (!vertical_fl) vertical_fl = fl;
+            else {
+                current_fl = vertical_fl;
+                rel_pos    = X_POS;
+            }
         }
         else {
-            fl->length = link->extension.size[WIDTH];
-        }
-    }
-    else
-    {
-        fl->world_pos[X_POS] = world_x;
-        fl->world_pos[Y_POS] = world_y;
-        fl->length = length;
-    }
-
-    fl->dimension = dimension;
-
-    if (prop == ED4_P_VERTICAL) {
-        fl->window_pos[X_POS] = fl->world_pos[X_POS] - dimension;
-        fl->window_pos[Y_POS] = fl->world_pos[Y_POS];
-
-        if ((current_fl = vertical_fl) == NULL) {
-            vertical_fl = fl;
-            return (fl);
-        }
-
-        rel_pos = X_POS;
-    }
-    else {
-        if (prop == ED4_P_HORIZONTAL) {
+            e4_assert(prop == ED4_P_HORIZONTAL);
             fl->window_pos[Y_POS] = fl->world_pos[Y_POS] - dimension;
             fl->window_pos[X_POS] = fl->world_pos[X_POS];
 
-            if ((current_fl = horizontal_fl) == NULL) {
-                horizontal_fl = fl;
-                return (fl);
+            if (!horizontal_fl) horizontal_fl = fl;
+            else {
+                current_fl = horizontal_fl;
+                rel_pos    = Y_POS;
+            }
+        }
+
+        if (current_fl) {
+            ED4_folding_line *previous_fl = NULL;
+
+            while ((current_fl != NULL) && (current_fl->world_pos[rel_pos] <= fl->world_pos[rel_pos])) {
+                previous_fl = current_fl;
+                current_fl  = current_fl->next;
             }
 
-            rel_pos = Y_POS;
-        }
-        else {
-            return (NULL);
+            if (previous_fl) previous_fl->next = fl;
+            fl->next = current_fl;
         }
     }
-
-    while ((current_fl != NULL) && (current_fl->world_pos[rel_pos] <= fl->world_pos[rel_pos])) {
-        previous_fl = current_fl;
-        current_fl  = current_fl->next;
-    }
-
-    if (previous_fl) {
-        previous_fl->next = fl;
-    }
-    fl->next = current_fl;
-
-    return (fl);
+    return fl;
 }
 
 ED4_window *ED4_window::get_matching_ed4w(AW_window *aw) {

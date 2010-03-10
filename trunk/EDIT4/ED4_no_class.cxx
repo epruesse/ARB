@@ -238,134 +238,132 @@ static ARB_ERROR call_edit(ED4_base *object, AW_CL cl_work_info) {
 }
 
 static void executeKeystroke(AW_window *aww, AW_event *event, int repeatCount) {
-    ED4_work_info *work_info = new ED4_work_info;
-    ED4_cursor *cursor = &ED4_ROOT->get_ed4w()->cursor;
-
-    if (event->keycode==AW_KEY_NONE) return;
-
     e4_assert(repeatCount>0);
 
-    if (!cursor->owner_of_cursor || cursor->owner_of_cursor->flag.hidden) {
-        return;
-    }
-
-    if (event->keycode == AW_KEY_UP || event->keycode == AW_KEY_DOWN ||
-        ((event->keymodifier & AW_KEYMODE_CONTROL) &&
-         (event->keycode == AW_KEY_HOME || event->keycode == AW_KEY_END)))
-    {
-        GB_transaction dummy(GLOBAL_gb_main);
-        while (repeatCount--) {
-            cursor->move_cursor(event);
-        }
-        return;
-    }
-
-    work_info->cannot_handle    = false;
-    work_info->event            = *event;
-    work_info->char_position    = cursor->get_screen_pos();
-    work_info->out_seq_position = cursor->get_sequence_pos();
-    work_info->refresh_needed   = false;
-    work_info->cursor_jump      = ED4_JUMP_KEEP_VISIBLE;
-    work_info->out_string       = NULL;             // nur falls new malloc
-    work_info->repeat_count     = repeatCount;
-
-    ED4_terminal *terminal = cursor->owner_of_cursor->to_terminal();
-    e4_assert(terminal->is_text_terminal());
-
-    work_info->working_terminal = terminal;
-
-    if (terminal->is_sequence_terminal()) {
-        work_info->mode        = awar_edit_mode;
-        work_info->direction   = awar_edit_direction;
-        work_info->is_sequence = 1;
-    }
-    else {
-        work_info->direction   = 1;
-        work_info->is_sequence = 0;
-
-        if (terminal->is_pure_text_terminal()) {
-            work_info->mode = awar_edit_mode;
-        }
-        else if (terminal->is_columnStat_terminal()) {
-            work_info->mode = AD_NOWRITE;
-        }
-        else {
-            e4_assert(0);
-        }
-    }
-
-    work_info->string  = NULL;
-    work_info->gb_data = NULL;
-
-    if (terminal->get_species_pointer()) {
-        work_info->gb_data = terminal->get_species_pointer();
-    }
-    else if (terminal->is_columnStat_terminal()) {
-        work_info->gb_data = terminal->to_columnStat_terminal()->corresponding_sequence_terminal()->get_species_pointer();
-    }
-    else {
-        work_info->string = terminal->id;
-    }
-
-    ED4_Edit_String     *edit_string     = new ED4_Edit_String;
-    ED4_species_manager *species_manager = terminal->get_parent(ED4_L_SPECIES)->to_species_manager();
-    ARB_ERROR            error           = NULL;
-
-    GB_push_transaction(GLOBAL_gb_main);
-
-    if (species_manager->flag.is_consensus) {
-        ED4_group_manager *group_manager = terminal->get_parent(ED4_L_GROUP)->to_group_manager();
-
-        work_info->string = terminal->id = group_manager->table().build_consensus_string();
-
-        error = edit_string->edit(work_info);
-
-        cursor->jump_sequence_pos(aww, work_info->out_seq_position, ED4_JUMP_KEEP_VISIBLE);
-
-        work_info->string = 0;
-
-        if (work_info->cannot_handle) {
-            e4_assert(!error); // see ED4_Edit_String::edit()
-            move_cursor = 1;
-            if (!ED4_ROOT->edit_string) {
-                ED4_ROOT->edit_string = new ED4_Edit_String();
+    if (event->keycode!=AW_KEY_NONE) {
+        ED4_cursor *cursor = &ED4_ROOT->get_ed4w()->cursor;
+        if (cursor->owner_of_cursor && !cursor->owner_of_cursor->flag.hidden) {
+            if (event->keycode == AW_KEY_UP || event->keycode == AW_KEY_DOWN ||
+                ((event->keymodifier & AW_KEYMODE_CONTROL) &&
+                 (event->keycode == AW_KEY_HOME || event->keycode == AW_KEY_END)))
+            {
+                GB_transaction dummy(GLOBAL_gb_main);
+                while (repeatCount--) {
+                    cursor->move_cursor(event);
+                }
             }
-            error = group_manager->route_down_hierarchy(call_edit, (AW_CL)work_info);
-            group_manager->rebuild_consensi(group_manager, ED4_U_UP_DOWN);
+            else {
+                ED4_work_info *work_info = new ED4_work_info;
+        
+                work_info->cannot_handle    = false;
+                work_info->event            = *event;
+                work_info->char_position    = cursor->get_screen_pos();
+                work_info->out_seq_position = cursor->get_sequence_pos();
+                work_info->refresh_needed   = false;
+                work_info->cursor_jump      = ED4_JUMP_KEEP_VISIBLE;
+                work_info->out_string       = NULL;         // nur falls new malloc
+                work_info->repeat_count     = repeatCount;
+
+                ED4_terminal *terminal = cursor->owner_of_cursor->to_terminal();
+                e4_assert(terminal->is_text_terminal());
+
+                work_info->working_terminal = terminal;
+
+                if (terminal->is_sequence_terminal()) {
+                    work_info->mode        = awar_edit_mode;
+                    work_info->direction   = awar_edit_direction;
+                    work_info->is_sequence = 1;
+                }
+                else {
+                    work_info->direction   = 1;
+                    work_info->is_sequence = 0;
+
+                    if (terminal->is_pure_text_terminal()) {
+                        work_info->mode = awar_edit_mode;
+                    }
+                    else if (terminal->is_columnStat_terminal()) {
+                        work_info->mode = AD_NOWRITE;
+                    }
+                    else {
+                        e4_assert(0);
+                    }
+                }
+
+                work_info->string  = NULL;
+                work_info->gb_data = NULL;
+
+                if (terminal->get_species_pointer()) {
+                    work_info->gb_data = terminal->get_species_pointer();
+                }
+                else if (terminal->is_columnStat_terminal()) {
+                    work_info->gb_data = terminal->to_columnStat_terminal()->corresponding_sequence_terminal()->get_species_pointer();
+                }
+                else {
+                    work_info->string = terminal->id;
+                }
+
+                ED4_Edit_String     *edit_string     = new ED4_Edit_String;
+                ED4_species_manager *species_manager = terminal->get_parent(ED4_L_SPECIES)->to_species_manager();
+                ARB_ERROR            error           = NULL;
+
+                GB_push_transaction(GLOBAL_gb_main);
+
+                if (species_manager->flag.is_consensus) {
+                    ED4_group_manager *group_manager = terminal->get_parent(ED4_L_GROUP)->to_group_manager();
+
+                    work_info->string = terminal->id = group_manager->table().build_consensus_string();
+
+                    error = edit_string->edit(work_info);
+
+                    cursor->jump_sequence_pos(aww, work_info->out_seq_position, ED4_JUMP_KEEP_VISIBLE);
+
+                    work_info->string = 0;
+
+                    if (work_info->cannot_handle) {
+                        e4_assert(!error); // see ED4_Edit_String::edit()
+                        move_cursor = 1;
+                        if (!ED4_ROOT->edit_string) {
+                            ED4_ROOT->edit_string = new ED4_Edit_String();
+                        }
+                        error = group_manager->route_down_hierarchy(call_edit, (AW_CL)work_info);
+                        group_manager->rebuild_consensi(group_manager, ED4_U_UP_DOWN);
+                    }
+
+                    delete terminal->id;
+                    terminal->id = 0;
+                }
+                else {
+                    error = edit_string->edit(work_info);
+
+                    ED4_ROOT->main_manager->Show(1, 0);         // @@@ temporary fix for worst-refresh problems
+                    // ED4_ROOT->main_manager->Show(); // original version
+
+                    cursor->jump_sequence_pos(aww, work_info->out_seq_position, work_info->cursor_jump);
+                }
+
+                edit_string->finish_edit();
+
+                if (error) work_info->refresh_needed = true;
+
+                GB_end_transaction_show_error(GLOBAL_gb_main, error, aw_message);
+
+                if (work_info->refresh_needed) {
+                    GB_transaction dummy(GLOBAL_gb_main);
+
+                    terminal->set_refresh();
+                    terminal->parent->refresh_requested_by_child();
+                    if (terminal->is_sequence_terminal()) {
+                        ED4_sequence_terminal *seq_term = terminal->to_sequence_terminal();
+                        seq_term->results().searchAgain();
+                    }
+                    ED4_ROOT->refresh_all_windows(0);
+                }
+
+                delete edit_string;
+                delete work_info;
+            }
         }
-
-        delete terminal->id;
-        terminal->id = 0;
     }
-    else {
-        error = edit_string->edit(work_info);
-
-        ED4_ROOT->main_manager->Show(1, 0);         // @@@ temporary fix for worst-refresh problems
-        // ED4_ROOT->main_manager->Show(); // original version
-
-        cursor->jump_sequence_pos(aww, work_info->out_seq_position, work_info->cursor_jump);
-    }
-
-    edit_string->finish_edit();
-
-    if (error) work_info->refresh_needed = true;
-
-    GB_end_transaction_show_error(GLOBAL_gb_main, error, aw_message);
-
-    if (work_info->refresh_needed) {
-        GB_transaction dummy(GLOBAL_gb_main);
-
-        terminal->set_refresh();
-        terminal->parent->refresh_requested_by_child();
-        if (terminal->is_sequence_terminal()) {
-            ED4_sequence_terminal *seq_term = terminal->to_sequence_terminal();
-            seq_term->results().searchAgain();
-        }
-        ED4_ROOT->refresh_all_windows(0);
-    }
-
-    delete edit_string;
-    delete work_info;
 }
 
 void ED4_remote_event(AW_event *faked_event) { // keystrokes forwarded from SECEDIT
@@ -727,9 +725,9 @@ void ED4_set_helixnr(AW_window *aww, char *awar_name, bool /* callback_flag */)
     ED4_cursor *cursor = &ED4_ROOT->get_ed4w()->cursor;
 
     if (cursor->owner_of_cursor) {
-        AW_root    *root     = aww->get_root();
-        const char *helix_nr = root->awar(awar_name)->read_string();
-        BI_helix   *helix    = ED4_ROOT->helix;
+        AW_root  *root     = aww->get_root();
+        char     *helix_nr = root->awar(awar_name)->read_string();
+        BI_helix *helix    = ED4_ROOT->helix;
 
         if (helix->has_entries()) {
             long pos = helix->first_position(helix_nr);
@@ -744,6 +742,7 @@ void ED4_set_helixnr(AW_window *aww, char *awar_name, bool /* callback_flag */)
         else {
             aw_message("Got no helix information");
         }
+        free(helix_nr);
     }
 }
 
@@ -765,11 +764,13 @@ void ED4_set_iupac(AW_window * /* aww */, char *awar_name, bool /* callback_flag
         e4_assert(seq);
 
         if (seq_pos<len) {
-            const char *iupac = ED4_ROOT->aw_root->awar(awar_name)->read_string();
-            char new_char = ED4_encode_iupac(iupac, ED4_ROOT->alignment_type);
+            char *iupac    = ED4_ROOT->aw_root->awar(awar_name)->read_string();
+            char  new_char = ED4_encode_iupac(iupac, ED4_ROOT->alignment_type);
 
             seq[seq_pos] = new_char;
             cursor->owner_of_cursor->write_sequence(seq, len);
+
+            free(iupac);
         }
 
         free(seq);
@@ -1157,9 +1158,9 @@ static void group_species(int use_field, AW_window *use_as_main_window) {
         }
     }
     else {
-        const char *field_name   = ED4_ROOT->aw_root->awar(AWAR_FIELD_CHOSEN)->read_string();
-        char       *doneContents = strdup(";");
-        size_t      doneLen      = 1;
+        char   *field_name   = ED4_ROOT->aw_root->awar(AWAR_FIELD_CHOSEN)->read_string();
+        char   *doneContents = strdup(";");
+        size_t  doneLen      = 1;
 
         int tryAgain     = 1;
         int foundField   = 0;
@@ -1173,10 +1174,11 @@ static void group_species(int use_field, AW_window *use_as_main_window) {
                 object = object->get_parent(ED4_L_SPECIES);
                 if (!object->flag.is_consensus) {
                     GBDATA *gb_species = object->get_species_pointer();
-                    GBDATA *gb_field = GB_search(gb_species, field_name, GB_FIND);
+                    GBDATA *gb_field   = NULL;
 
                     if (gb_species) {
                         foundSpecies = 1;
+                        gb_field     = GB_search(gb_species, field_name, GB_FIND);
                     }
 
                     if (gb_field) {
@@ -1222,6 +1224,9 @@ static void group_species(int use_field, AW_window *use_as_main_window) {
         else if (!foundField) {
             error = GB_export_errorf("Field not found: '%s'", field_name);
         }
+
+        free(doneContents);
+        free(field_name);
     }
 
     GB_end_transaction_show_error(GLOBAL_gb_main, error, aw_message);
@@ -1312,10 +1317,19 @@ void ED4_load_new_config(char *string)
     {
         GB_push_transaction(GLOBAL_gb_main);
         GBDATA *gb_configuration = GBT_find_configuration(GLOBAL_gb_main, string);
-        GBDATA *gb_middle_area = GB_search(gb_configuration, "middle_area", GB_FIND);
-        GBDATA *gb_top_area = GB_search(gb_configuration, "top_area", GB_FIND);
-        config_data_middle = GB_read_as_string(gb_middle_area);
-        config_data_top = GB_read_as_string(gb_top_area);
+        if (!gb_configuration) {
+            GB_ERROR error = GB_await_error();
+            aw_message(error);
+
+            config_data_middle = strdup("");
+            config_data_top    = strdup("");
+        }
+        else {
+            GBDATA *gb_middle_area = GB_search(gb_configuration, "middle_area", GB_FIND);
+            GBDATA *gb_top_area    = GB_search(gb_configuration, "top_area", GB_FIND);
+            config_data_middle     = GB_read_as_string(gb_middle_area);
+            config_data_top        = GB_read_as_string(gb_top_area);
+        }
         GB_pop_transaction(GLOBAL_gb_main);
     }
 
@@ -1820,8 +1834,9 @@ static void create_new_species(AW_window * /* aww */, AW_CL cl_creation_mode) {
     //                  2 -> copy current species
 
     enum e_creation_mode { CREATE_NEW_SPECIES, CREATE_FROM_CONSENSUS, COPY_SPECIES } creation_mode = (enum e_creation_mode)(cl_creation_mode);
-    GB_CSTR   new_species_full_name = ED4_ROOT->aw_root->awar(ED4_AWAR_SPECIES_TO_CREATE)->read_string(); // this contains the full_name now!
-    ARB_ERROR error                 = 0;
+
+    char      *new_species_full_name = ED4_ROOT->aw_root->awar(ED4_AWAR_SPECIES_TO_CREATE)->read_string(); // this contains the full_name now!
+    ARB_ERROR  error                 = 0;
 
     e4_assert(creation_mode>=0 && creation_mode<=2);
 
@@ -1861,12 +1876,15 @@ static void create_new_species(AW_window * /* aww */, AW_CL cl_creation_mode) {
                     const char                *source_name = spec_name->resolve_pointer_to_char_pntr();
                     GBDATA                    *gb_source   = GBT_find_species_rel_species_data(gb_species_data, source_name);
 
-                    GBDATA *gb_acc  = GB_search(gb_source, "acc", GB_FIND);
-                    if (gb_acc) acc = GB_read_string(gb_acc); // if has accession
+                    if (!gb_source) error = GBS_global_string("No such species: '%s'", source_name);
+                    else {
+                        GBDATA *gb_acc  = GB_search(gb_source, "acc", GB_FIND);
+                        if (gb_acc) acc = GB_read_string(gb_acc); // if has accession
 
-                    const char *add_field = AW_get_nameserver_addid(GLOBAL_gb_main);
-                    GBDATA     *gb_addid  = add_field[0] ? GB_search(gb_source, add_field, GB_FIND) : 0;
-                    if (gb_addid) addid   = GB_read_as_string(gb_addid);
+                        const char *add_field = AW_get_nameserver_addid(GLOBAL_gb_main);
+                        GBDATA     *gb_addid  = add_field[0] ? GB_search(gb_source, add_field, GB_FIND) : 0;
+                        if (gb_addid) addid   = GB_read_as_string(gb_addid);
+                    }
                 }
                 else {
                     error = "Please place cursor on a species";
@@ -2172,29 +2190,24 @@ static void create_new_species(AW_window * /* aww */, AW_CL cl_creation_mode) {
     }
 
     aw_message_if(error);
+    free(new_species_full_name);
 }
 
-AW_window *ED4_create_new_seq_window(AW_root *root, AW_CL cl_creation_mode)
-// creation_mode ==     0 -> create new species
-//                      1 -> create new species from group konsensus
-    //                      2 -> copy current species
-{
-    AW_window_simple *aws = new AW_window_simple;
+AW_window *ED4_create_new_seq_window(AW_root *root, AW_CL cl_creation_mode) {
+    // creation_mode == 0 -> create new species
+    //                  1 -> create new species from group konsensus
+    //                  2 -> copy current species
+
     int creation_mode = int(cl_creation_mode);
+    e4_assert(creation_mode >= 0 && creation_mode <= 2);
+
+    AW_window_simple *aws = new AW_window_simple;
     switch (creation_mode) {
-        case 0:
-            aws->init(root, "create_species", "Create species");
-            break;
-        case 1:
-            aws->init(root, "create_species_from_consensus", "Create species from consensus");
-            break;
-        case 2:
-            aws->init(root, "copy_species", "Copy current species");
-            break;
-        default:
-            e4_assert(0);
-            return 0;
+        case 0: aws->init(root, "create_species",                "Create species"); break;
+        case 1: aws->init(root, "create_species_from_consensus", "Create species from consensus"); break;
+        case 2: aws->init(root, "copy_species",                  "Copy current species"); break;
     }
+    
     if (creation_mode==1) { // create from consensus
         aws->load_xfig("edit4/create_seq_fc.fig");
     }

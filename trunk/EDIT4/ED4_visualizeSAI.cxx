@@ -435,7 +435,7 @@ static void createCopyClrTransTable(AW_window *aws, AW_CL cl_mode) {
 
     switch (mode) {
     case ED4_VIS_CREATE:
-        newClrTransTabName = GBS_string_2_key(aw_root->awar(AWAR_SAI_CLR_TRANS_TAB_NEW_NAME)->read_string());
+        newClrTransTabName = GBS_string_2_key(aw_root->awar(AWAR_SAI_CLR_TRANS_TAB_NEW_NAME)->read_char_pntr());
 
         if (strcmp(newClrTransTabName, "__") == 0) { // user entered nothing
             aw_message("Please enter a translation table name");
@@ -449,7 +449,7 @@ static void createCopyClrTransTable(AW_window *aws, AW_CL cl_mode) {
         break;
 
     case ED4_VIS_COPY:
-        newClrTransTabName = GBS_string_2_key(aw_root->awar(AWAR_SAI_CLR_TRANS_TAB_NEW_NAME)->read_string());
+        newClrTransTabName = GBS_string_2_key(aw_root->awar(AWAR_SAI_CLR_TRANS_TAB_NEW_NAME)->read_char_pntr());
         clrTabSourceName   = aw_root->awar(AWAR_SAI_CLR_TRANS_TABLE)->read_string();
 
         if (!clrTabSourceName[0]) {

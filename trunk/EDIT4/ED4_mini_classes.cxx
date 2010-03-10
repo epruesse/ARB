@@ -564,8 +564,10 @@ char *ED4_char_table::build_consensus_string(int left_idx, int right_idx, char *
                     }
                 }
                 else {
-                    e4_assert(max_base); // expect at least one base to occur
-                    kchar = index_to_upperChar(max_j);
+                    e4_assert(max_base);            // expect at least one base to occur
+                    e4_assert(max_j >= 0);
+
+                    kchar  = index_to_upperChar(max_j);
                     kcount = max_base;
                 }
 

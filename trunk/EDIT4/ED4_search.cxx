@@ -1536,121 +1536,132 @@ static void str2pattern(char *s) { // works on string
 #undef ESC
 
 static void save_search_paras_to_file(AW_window *aw, AW_CL cl_type) {
-    AW_root *root = ED4_ROOT->aw_root;
-    ED4_SearchPositionType type = ED4_SearchPositionType(cl_type);
-    char *filename = root->awar(ED4_SEARCH_SAVE_BASE"/file_name")->read_string();
-    FILE *in = fopen(filename, "rt");
+    GB_ERROR  error    = NULL;
+    AW_root  *root     = ED4_ROOT->aw_root;
+    char     *filename = root->awar(ED4_SEARCH_SAVE_BASE"/file_name")->read_string();
 
-    if (in) {
-        fclose(in);
-        GB_CSTR error = GBS_global_string("'%s' already exists", filename);
-        int answer = aw_question(error, "Overwrite,Cancel");
-        if (answer!=0) {
-            return;
-        }
-    }
+    {
+        FILE *in = fopen(filename, "rt");
+        if (in) {
+            fclose(in);
 
-    FILE *out = fopen(filename, "wt");
-
-    if (!out) {
-        GB_CSTR error = GBS_global_string("Can't write file '%s' (%s)", filename, strerror(errno));
-        aw_popup_ok(error);
-    }
-    else {
-        SearchSettings *s = settings[type];
-
-        char *fpat = pattern2str(s->get_pattern());
-
-        fprintf(out,
-                "pattern=%s\n"
-                "minmis=%i\n"
-                "maxmis=%i\n"
-                "case=%i\n"
-                "tu=%i\n"
-                "patgaps=%i\n"
-                "seqgaps=%i\n"
-                "openfolded=%i\n"
-                "autojump=%i\n"
-                "reverse=%i\n"
-                "complement=%i\n"
-                "exact=%i\n",
-                fpat,
-                s->get_min_mismatches(),
-                s->get_max_mismatches(),
-                s->get_case_sensitive(),
-                s->get_tu(),
-                s->get_pat_gaps(),
-                s->get_seq_gaps(),
-                s->get_open_folded(),
-                s->get_autoJump(),
-                s->get_reverse(),
-                s->get_complement(),
-                s->get_exact());
-
-        free(fpat);
-        fclose(out);
-    }
-    AW_POPDOWN(aw);
-}
-
-static void load_search_paras_from_file(AW_window *aw, AW_CL cl_type) {
-    AW_root *root = ED4_ROOT->aw_root;
-    ED4_SearchPositionType type = ED4_SearchPositionType(cl_type);
-    char *filename = root->awar(ED4_SEARCH_SAVE_BASE"/file_name")->read_string();
-    FILE *in = fopen(filename, "rt");
-
-    if (!in) {
-        GB_CSTR error = GBS_global_string("File '%s' not found", filename);
-        aw_popup_ok(error);
-        return;
-    }
-
-#define BUFFERSIZE 10000
-
-    SearchAwarList al = &awar_list[type];
-    while (1) {
-        char buffer[BUFFERSIZE];
-
-        buffer[0] = 0;
-        fgets(buffer, BUFFERSIZE, in);
-        if (!buffer[0]) {
-            break;
-        }
-        char *content = strchr(buffer, '=');
-        if (!content) {
-            aw_message(GBS_global_string("Format error in '%s' - ignored!", filename));
-            continue;
-        }
-        *content++ = 0;
-
-        if (strcmp(buffer, "pattern")==0) {
-            str2pattern(content);
-            root->awar(al->pattern)->write_string(content);
-        }
-        else {
-            int value = atoi(content);
-
-            if (strcmp(buffer, "minmis")==0)            root->awar(al->min_mismatches)->write_int(value);
-            else if (strcmp(buffer, "maxmis")==0)       root->awar(al->max_mismatches)->write_int(value);
-            else if (strcmp(buffer, "case")==0)         root->awar(al->case_sensitive)->write_int(value);
-            else if (strcmp(buffer, "tu")==0)           root->awar(al->tu)->write_int(value);
-            else if (strcmp(buffer, "patgaps")==0)      root->awar(al->pat_gaps)->write_int(value);
-            else if (strcmp(buffer, "seqgaps")==0)      root->awar(al->seq_gaps)->write_int(value);
-            else if (strcmp(buffer, "openfolded")==0)   root->awar(al->openFolded)->write_int(value);
-            else if (strcmp(buffer, "autojump")==0)     root->awar(al->autoJump)->write_int(value);
-            else if (strcmp(buffer, "reverse")==0)      root->awar(al->reverse)->write_int(value);
-            else if (strcmp(buffer, "complement")==0)   root->awar(al->complement)->write_int(value);
-            else if (strcmp(buffer, "exact")==0)        root->awar(al->exact)->write_int(value);
-            else {
-                aw_message(GBS_global_string("Unknown tag '%s' in '%s' - ignored!", buffer, filename));
+            char *question = GBS_global_string_copy("'%s' already exists", filename);
+            if (aw_question(question, "Overwrite,Cancel") != 0) {
+                error = "Wont overwrite existing file";
             }
         }
     }
 
-#undef BUFFERSIZE
+    if (!error) {
+        FILE *out = fopen(filename, "wt");
 
-    fclose(in);
-    AW_POPDOWN(aw);
+        if (!out) {
+            error = GBS_global_string("Can't write file '%s' (%s)", filename, strerror(errno));
+        }
+        else {
+            ED4_SearchPositionType  type = ED4_SearchPositionType(cl_type);
+            SearchSettings         *s    = settings[type];
+
+            char *fpat = pattern2str(s->get_pattern());
+
+            fprintf(out,
+                    "pattern=%s\n"
+                    "minmis=%i\n"
+                    "maxmis=%i\n"
+                    "case=%i\n"
+                    "tu=%i\n"
+                    "patgaps=%i\n"
+                    "seqgaps=%i\n"
+                    "openfolded=%i\n"
+                    "autojump=%i\n"
+                    "reverse=%i\n"
+                    "complement=%i\n"
+                    "exact=%i\n",
+                    fpat,
+                    s->get_min_mismatches(),
+                    s->get_max_mismatches(),
+                    s->get_case_sensitive(),
+                    s->get_tu(),
+                    s->get_pat_gaps(),
+                    s->get_seq_gaps(),
+                    s->get_open_folded(),
+                    s->get_autoJump(),
+                    s->get_reverse(),
+                    s->get_complement(),
+                    s->get_exact());
+
+            free(fpat);
+            fclose(out);
+        }
+    }
+
+    if (error) aw_popup_ok(error);
+    else AW_POPDOWN(aw);
+
+    free(filename);
+}
+
+static void load_search_paras_from_file(AW_window *aw, AW_CL cl_type) {
+    GB_CSTR  error    = NULL;
+    AW_root *root     = ED4_ROOT->aw_root;
+    char    *filename = root->awar(ED4_SEARCH_SAVE_BASE"/file_name")->read_string();
+    FILE    *in       = fopen(filename, "rt");
+
+    if (!in) {
+        error = GBS_global_string("File '%s' not found", filename);
+    }
+    else {
+        ED4_SearchPositionType type = ED4_SearchPositionType(cl_type);
+        SearchAwarList         al   = &awar_list[type];
+
+        while (1) {
+            const int BUFFERSIZE = 10000;
+            char buffer[BUFFERSIZE];
+
+            buffer[0] = 0;
+            fgets(buffer, BUFFERSIZE, in);
+            if (!buffer[0]) {
+                break;
+            }
+            char *content = strchr(buffer, '=');
+            if (!content) {
+                aw_message(GBS_global_string("Format error in '%s' - ignored!", filename));
+            }
+            else {
+                *content++ = 0;
+
+                if (strcmp(buffer, "pattern")==0) {
+                    str2pattern(content);
+                    root->awar(al->pattern)->write_string(content);
+                }
+                else {
+                    int value = atoi(content);
+
+                    if (strcmp(buffer, "minmis")==0)            root->awar(al->min_mismatches)->write_int(value);
+                    else if (strcmp(buffer, "maxmis")==0)       root->awar(al->max_mismatches)->write_int(value);
+                    else if (strcmp(buffer, "case")==0)         root->awar(al->case_sensitive)->write_int(value);
+                    else if (strcmp(buffer, "tu")==0)           root->awar(al->tu)->write_int(value);
+                    else if (strcmp(buffer, "patgaps")==0)      root->awar(al->pat_gaps)->write_int(value);
+                    else if (strcmp(buffer, "seqgaps")==0)      root->awar(al->seq_gaps)->write_int(value);
+                    else if (strcmp(buffer, "openfolded")==0)   root->awar(al->openFolded)->write_int(value);
+                    else if (strcmp(buffer, "autojump")==0)     root->awar(al->autoJump)->write_int(value);
+                    else if (strcmp(buffer, "reverse")==0)      root->awar(al->reverse)->write_int(value);
+                    else if (strcmp(buffer, "complement")==0)   root->awar(al->complement)->write_int(value);
+                    else if (strcmp(buffer, "exact")==0)        root->awar(al->exact)->write_int(value);
+                    else {
+                        aw_message(GBS_global_string("Unknown tag '%s' in '%s' - ignored!", buffer, filename));
+                    }
+                }
+            }
+        }
+
+        fclose(in);
+    }
+
+    if (error) aw_popup_ok(error);
+    else AW_POPDOWN(aw);
+    
+    free(filename);
 }
 
 static AW_window *loadsave_search_parameters(AW_root *root, ED4_SearchPositionType type, int load) {

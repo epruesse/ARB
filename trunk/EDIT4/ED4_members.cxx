@@ -115,7 +115,7 @@ ED4_returncode ED4_members::search_target_species(ED4_extension *location,   ED4
 
         if (current_member) { // handle folding groups
             old_index = current_index;
-            while (current_member->flag.hidden && current_index!=no_of_members) {
+            while (current_member && current_member->flag.hidden && current_index!=no_of_members) {
                 current_index ++;
                 current_member = member(current_index);
             }

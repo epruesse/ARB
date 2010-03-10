@@ -503,6 +503,7 @@ void ED4_setColumnblockCorner(AW_event *event, ED4_sequence_terminal *seq_term) 
                     else {
                         fix_name_term = min_term;
                     }
+                    e4_assert(fix_name_term);
                     fix_term = fix_name_term->corresponding_sequence_terminal();
                 }
 

@@ -698,16 +698,18 @@ GB_ERROR ED4_pfold_calculate_secstruct_match(const unsigned char *structure_sai,
     };
 
     // init awars
-    char *gap_chars = ED4_ROOT->aw_root->awar(ED4_AWAR_GAP_CHARS)->read_string();
+    AW_root *awr       = ED4_ROOT->aw_root;
+    char    *gap_chars = awr->awar(ED4_AWAR_GAP_CHARS)->read_string();
     char *pairs[PFOLD_MATCH_TYPE_COUNT] = { 0 };
     char *pair_chars[PFOLD_MATCH_TYPE_COUNT] = { 0 };
-    char *pair_chars_2 = ED4_ROOT->aw_root->awar(PFOLD_AWAR_SYMBOL_TEMPLATE_2)->read_string();
-    char awar[256];
+    char *pair_chars_2 = awr->awar(PFOLD_AWAR_SYMBOL_TEMPLATE_2)->read_string();
+    char  awar[256];
+
     for (int i = 0; pfold_match_type_awars[i].name; i++) {
         sprintf(awar, PFOLD_AWAR_PAIR_TEMPLATE, pfold_match_type_awars[i].name);
-        pairs[i] = strdup(ED4_ROOT->aw_root->awar(awar)->read_string());
+        pairs[i] = awr->awar(awar)->read_string();
         sprintf(awar, PFOLD_AWAR_SYMBOL_TEMPLATE, pfold_match_type_awars[i].name);
-        pair_chars[i] = strdup(ED4_ROOT->aw_root->awar(awar)->read_string());
+        pair_chars[i] = awr->awar(awar)->read_string();
     }
 
     int struct_start = start;
@@ -869,18 +871,19 @@ GB_ERROR ED4_pfold_calculate_secstruct_match(const unsigned char *structure_sai,
         case SECSTRUCT_SEQUENCE_PREDICT:
             // predict structures from structure_cmp and compare with structure_sai
             char *structures[4];
-            for (int i = 0; i < 4; i++) {
+            for (int i = 0; i < 4 && !error; i++) {
                 structures[i] = new char [length + 1];
                 if (!structures[i]) {
-                    error = GB_export_error("Out of memory.");
-                    return error;
+                    error = "Out of memory";
                 }
-                for (size_t j = 0; j < length; j++) {
-                    structures[i][j] = ' ';
+                else {
+                    for (size_t j = 0; j < length; j++) {
+                        structures[i][j] = ' ';
+                    }
+                    structures[i][length] = '\0';
                 }
-                structures[i][length] = '\0';
             }
-            error = ED4_pfold_predict_structure(structure_cmp, structures, length);
+            if (!error) error = ED4_pfold_predict_structure(structure_cmp, structures, length);
             if (!error) {
                 for (count = 0; count < match_end; count++) {
                     result_buffer[count] = *pair_chars[STRUCT_UNKNOWN];

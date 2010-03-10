@@ -181,7 +181,11 @@ static int ED4_show_protein_match_on_device(AW_device *device, int gc, const cha
                                                     buffer,
                                                     (PFOLD_MATCH_METHOD)ED4_ROOT->aw_root->awar(PFOLD_AWAR_MATCH_METHOD)->read_int());
     }
-    if (error) aw_message(error);
+    if (error) {
+        aw_message(error);
+        return 0;
+    }
+    
     buffer[size] = 0;
     return device->text(gc, buffer, x, y, 0.0, (AW_bitset)-1, 0, cd2);
 }
