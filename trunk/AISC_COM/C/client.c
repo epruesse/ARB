@@ -23,6 +23,8 @@
 
 #include "trace.h"
 
+#define aisc_assert(cond) arb_assert(cond)
+
 #define AISC_MAGIC_NUMBER_FILTER 0xffffff00
 
 static const char *err_connection_problems = "CONNECTION PROBLEMS";
@@ -631,12 +633,26 @@ long    *aisc_debug_info(aisc_com *link, int o_type, long object, int attribute)
 }
 
 
-static int      aisc_collect_sets(aisc_com *link,
-                                  int       mes_cnt,
-                                  va_list   parg,
-                                  int o_type,
-                                  int count)
-{
+inline char *part_of(const char *str, size_t max_len, size_t str_len) {
+    aisc_assert(strlen(str) == str_len);
+    char *part;
+    if (str_len <= max_len) {
+        part = strdup(str);
+    }
+    else {
+        const int DOTS = 3;
+        int       copy = max_len-DOTS;
+
+        part = (char*)malloc(max_len+1);
+        memcpy(part, str, copy);
+        memset(part+copy, '.', DOTS);
+        
+        part[max_len] = 0;
+    }
+    return part;
+}
+
+static int aisc_collect_sets(aisc_com *link, int mes_cnt, va_list parg, int o_type, int count) {
     double dummy;
     int type, o_t;
     int attribute, code;
@@ -688,10 +704,14 @@ static int      aisc_collect_sets(aisc_com *link,
                 AISC_DUMP(aisc_collect_sets, charPtr, str);
                 len = strlen(str)+1;
                 if (len > AISC_MAX_STRING_LEN) {
-                    sprintf(errbuf, "ARG %i: STRING \'%s\' TOO LONG", count+2, str);
+                    char *strpart = part_of(str, AISC_MAX_STRING_LEN-40, len-1);
+                    sprintf(errbuf, "ARG %i: STRING \'%s\' TOO LONG", count+2, strpart);
+                    free(strpart);
+
                     link->error = errbuf;
                     PRTERR("AISC_SET_ERROR");
                     CORE();
+
                     return 0;
                 }
                 ilen = (len)/sizeof(long) + 1;
