@@ -1118,8 +1118,11 @@ GB_ERROR GB_save_quick_as(GBDATA *gb_main, char *path)
         return GB_export_error("Please specify a file name");
     }
 
-    if (!strcmp(path,Main->path)) return GB_save_quick(gb_main,path);   /* No rename */
-    if (gb_check_quick_save(gb_main)) return GB_get_error();
+    if (!strcmp(path,Main->path)) return GB_save_quick(gb_main,path); /* No rename */
+    {
+        GB_ERROR error = gb_check_quick_save(gb_main);
+        if (error) return error;
+    }
     if (gb_check_saveable(gb_main,path,"bn")) return GB_get_error();
 
     fmaster = fopen( Main->path, "r" ); /* old master !!!! */
@@ -1203,7 +1206,10 @@ GB_ERROR GB_save_quick(GBDATA *gb, char *refpath)
     GB_MAIN_TYPE *Main = GB_MAIN(gb);
 
     gb = (GBDATA *)Main->data;
-    if (gb_check_quick_save(gb)) return GB_get_error();
+    {
+        GB_ERROR error = gb_check_quick_save(gb);
+        if (error) return error;
+    }
     if (gb_check_saveable(gb,refpath,"q")) return GB_get_error();
 
     if (refpath && strcmp(refpath, Main->path) )
