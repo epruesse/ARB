@@ -821,6 +821,14 @@ void GBS_chrcat(struct GBS_strstruct *strstr, char ch) {
     strstr->GBS_strcat_data[strstr->GBS_strcat_pos] = 0;
 }
 
+void GBS_chrncat(struct GBS_strstruct *strstr, char ch, size_t n) {
+    gbs_strensure_mem(strstr, n);
+    memset(strstr->GBS_strcat_data+strstr->GBS_strcat_pos, ch, n);
+
+    strstr->GBS_strcat_pos                          += n;
+    strstr->GBS_strcat_data[strstr->GBS_strcat_pos]  = 0;
+}
+
 void GBS_intcat(struct GBS_strstruct *strstr, long val) {
     char buffer[200];
     long len = sprintf(buffer, "%li", val);
