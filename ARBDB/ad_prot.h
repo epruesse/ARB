@@ -171,6 +171,7 @@ void GBS_strncat(struct GBS_strstruct *strstr, const char *ptr, size_t len);
 void GBS_strcat(struct GBS_strstruct *strstr, const char *ptr);
 void GBS_strnprintf(struct GBS_strstruct *strstr, long len, const char *templat, ...) __ATTR__FORMAT(3);
 void GBS_chrcat(struct GBS_strstruct *strstr, char ch);
+void GBS_chrncat(struct GBS_strstruct *strstr, char ch, size_t n);
 void GBS_intcat(struct GBS_strstruct *strstr, long val);
 void GBS_floatcat(struct GBS_strstruct *strstr, double val);
 char *GBS_eval_env(GB_CSTR p);
