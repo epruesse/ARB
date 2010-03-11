@@ -1,6 +1,15 @@
-#define BORLAND
-/* #define MICROSOFT */
-/* #define LINUX */
+// ============================================================= //
+//                                                               //
+//   File      : i-hopper.h                                      //
+//   Purpose   :                                                 //
+//                                                               //
+//   Institute of Microbiology (Technical University Munich)     //
+//   http://www.arb-home.de/                                     //
+//                                                               //
+// ============================================================= //
+
+#ifndef I_HOPPER_H
+#define I_HOPPER_H
 
 #ifdef EXTERN
 #define EXT extern
@@ -21,4 +30,6 @@ void Align(
 
 #undef EXT
 
-
+#else
+#error i-hopper.h included twice
+#endif // I_HOPPER_H

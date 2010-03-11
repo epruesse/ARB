@@ -1,11 +1,22 @@
-#include <stdlib.h>
-#include <math.h>
+/* ============================================================= */
+/*                                                               */
+/*   File      : trnsprob.c                                      */
+/*   Purpose   :                                                 */
+/*                                                               */
+/*   Institute of Microbiology (Technical University Munich)     */
+/*   http://www.arb-home.de/                                     */
+/*                                                               */
+/* ============================================================= */
+
+#include "trnsprob.h"
+#include "defs.h"
+#include "mem.h"
+
+#define SIMPLE_ARB_ASSERT
+#include <arb_assert.h>
 #include <stdio.h>
 
-#include "defs.h"
-#include "memory.h"
-#include "trnsprob.h"
-
+#define ih_assert(bed) arb_assert(bed)
 #define EPS 0.00001
 
 /*============================================================================*/
@@ -396,5 +407,4 @@ void updateTrnsprob(double ***PP,double *F,double *X,short M) {
     dot(PP[ 31 + 96 ],PP[ 16 + 96 ],PP[ 15 + 96 ]);
 
 }
-
 

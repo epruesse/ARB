@@ -1,5 +1,15 @@
+/* ============================================================= */
+/*                                                               */
+/*   File      : mem.c                                           */
+/*   Purpose   :                                                 */
+/*                                                               */
+/*   Institute of Microbiology (Technical University Munich)     */
+/*   http://www.arb-home.de/                                     */
+/*                                                               */
+/* ============================================================= */
+
+#include "mem.h"
 #include <stdio.h>
-#include <stdlib.h>
 
 #define MINSIZE 72 /* >= sizeof(Node) */
 
@@ -48,7 +58,7 @@ void *newBlock(size_t s) {
 
 /*........*/
 
-void freeBlock(void **vv) {
+void freeBlock_(void **vv) {
     void *v; size_t s;
 
     v=(void *)(((void **)(*vv))-3);
@@ -85,7 +95,7 @@ void **newMatrix(size_t nrow,size_t ncol,size_t s) {
 
 /*........*/
 
-void freeMatrix(void ***mm) {
+void freeMatrix_(void ***mm) {
     void **m; size_t i,rows;
 
     m=*mm;

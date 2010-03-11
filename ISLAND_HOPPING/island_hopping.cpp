@@ -1,13 +1,19 @@
-#include "island_hopping.h"
+// ============================================================= //
+//                                                               //
+//   File      : island_hopping.cpp                              //
+//   Purpose   :                                                 //
+//                                                               //
+//   Institute of Microbiology (Technical University Munich)     //
+//   http://www.arb-home.de/                                     //
+//                                                               //
+// ============================================================= //
 
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
+#include "island_hopping.h"
 
 #define EXTERN
 extern "C" {
 #include "i-hopper.h"
-#include "memory.h"
+#include "mem.h"
 }
 
 #ifndef ARB_ASSERT_H

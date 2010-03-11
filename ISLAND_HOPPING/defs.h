@@ -1,3 +1,16 @@
+// ============================================================= //
+//                                                               //
+//   File      : defs.h                                          //
+//   Purpose   :                                                 //
+//                                                               //
+//   Institute of Microbiology (Technical University Munich)     //
+//   http://www.arb-home.de/                                     //
+//                                                               //
+// ============================================================= //
+
+#ifndef DEFS_H
+#define DEFS_H
+
 #define BUFFERLENGTH 200000
 
 #ifndef TRUE
@@ -41,4 +54,6 @@
 #define Has1Arg(x)               ((x)->l&&!(x)->l->n)
 #define Has2Args(x)              ((x)->l&&(x)->l->n&&!(x)->l->n->n)
 
-
+#else
+#error defs.h included twice
+#endif // DEFS_H
