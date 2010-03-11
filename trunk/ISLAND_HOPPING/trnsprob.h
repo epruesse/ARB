@@ -1,3 +1,17 @@
+// ============================================================= //
+//                                                               //
+//   File      : trnsprob.h                                      //
+//   Purpose   :                                                 //
+//                                                               //
+//   Institute of Microbiology (Technical University Munich)     //
+//   http://www.arb-home.de/                                     //
+//                                                               //
+// ============================================================= //
+
+#ifndef TRNSPROB_H
+#define TRNSPROB_H
+
+
 #define MAXEDGE 1.2
 
 #define ATOLPARAM 0.0001
@@ -20,3 +34,6 @@ void getTrnsprob(double **P,double ***PP,double d);
 void updateTrnsprob(double ***PP,double *F,double *X,short M);
 
 
+#else
+#error trnsprob.h included twice
+#endif // TRNSPROB_H

@@ -1,12 +1,29 @@
+// ============================================================= //
+//                                                               //
+//   File      : mem.h                                           //
+//   Purpose   :                                                 //
+//                                                               //
+//   Institute of Microbiology (Technical University Munich)     //
+//   http://www.arb-home.de/                                     //
+//                                                               //
+// ============================================================= //
+
+#ifndef MEM_H
+#define MEM_H
+
+#ifndef _STDLIB_H
+#include <stdlib.h>
+#endif
+
 void     clearUp(void);
 void    *newBlock(size_t s);
-void     freeBlock(void **v);
+void     freeBlock_(void **v);
 void   **newMatrix(size_t nrow,size_t ncol,size_t s);
-void     freeMatrix(void ***m);
+void     freeMatrix_(void ***m);
 
 #define newVector(n,s) newBlock((n)*(s))
 
-#define freeBlock(v) freeBlock((void **)(v))
+#define freeBlock(v) freeBlock_((void **)(v))
 
 #define newDoubleVector(n) (double *)(newVector((size_t)(n),sizeof(double)))
 #define newFloatVector(n)  (float *)(newVector((size_t)(n),sizeof(float)))
@@ -21,6 +38,8 @@ void     freeMatrix(void ***m);
 #define newLongMatrix(r,c) (long **)(newMatrix((size_t)(r),(size_t)(c),sizeof(long)))
 #define newIntMatrix(r,c) (int **)(newMatrix((size_t)(r),(size_t)(c),sizeof(int)))
 #define newCharMatrix(r,c) (char **)(newMatrix((size_t)(r),(size_t)(c),sizeof(char)))
-#define freeMatrix(m) freeMatrix((void ***)(m))
+#define freeMatrix(m) freeMatrix_((void ***)(m))
 
-
+#else
+#error mem.h included twice
+#endif // MEM_H

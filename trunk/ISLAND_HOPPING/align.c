@@ -1,13 +1,21 @@
-#include <stdlib.h>
-#include <stdio.h>
-#include <math.h>
-#include <string.h>
+/* ============================================================= */
+/*                                                               */
+/*   File      : align.c                                         */
+/*   Purpose   :                                                 */
+/*                                                               */
+/*   Institute of Microbiology (Technical University Munich)     */
+/*   http://www.arb-home.de/                                     */
+/*                                                               */
+/* ============================================================= */
 
-#include "memory.h"
+#include "mem.h"
 #include "trnsprob.h"
 
 #define EXTERN
 #include "i-hopper.h"
+
+#include <stdio.h>
+#include <math.h>
 
 #define MSIZE          512
 #define ESIZE          36
@@ -869,5 +877,3 @@ void Align(
     for(i=0;i<nY;i++) Y[i]=decodeBase(Y[i]);
 
 }
-
-

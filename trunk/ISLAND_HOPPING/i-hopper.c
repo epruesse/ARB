@@ -1,11 +1,17 @@
-#include <stdlib.h>
-#include <stdio.h>
-#include <string.h>
+/* ============================================================= */
+/*                                                               */
+/*   File      : i-hopper.c                                      */
+/*   Purpose   :                                                 */
+/*                                                               */
+/*   Institute of Microbiology (Technical University Munich)     */
+/*   http://www.arb-home.de/                                     */
+/*                                                               */
+/* ============================================================= */
 
-#include "memory.h"
 #include "i-hopper.h"
+#include "mem.h"
 
-/*============================================================================*/
+/* ============================================================================ */
 
 #ifndef ARB
 int main(void) {
