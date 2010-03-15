@@ -509,7 +509,7 @@ void gb_delete_main_entry(GBDATA **gbd_ptr) {
             for (index = 0; index < gbc->d.nheader; index++) {
                 if ((gbd2 = GBCONTAINER_ELEM(gbc, index)) != NULL) {
                     if (pass == 2 || GB_KEY_QUARK(gbd2) != sys_quark) { // delay deletion of system folder to pass 2
-#if defined(DEBUG)
+#if defined(DEBUG) && 0
                         fprintf(stderr, "Deleting root node '%s'\n", GB_get_db_path(gbd2));
 #endif // DEBUG
                         gb_delete_entry(&gbd2);
