@@ -50,6 +50,7 @@ PT_buildtree.o: $(ARBHOME)/INCLUDE/attributes.h
 PT_buildtree.o: $(ARBHOME)/INCLUDE/PT_com.h
 PT_buildtree.o: $(ARBHOME)/INCLUDE/PT_server.h
 PT_buildtree.o: $(ARBHOME)/INCLUDE/PT_server_prototypes.h
+PT_buildtree.o: $(ARBHOME)/INCLUDE/static_assert.h
 
 PT_etc.o: probe.h
 PT_etc.o: pt_prototypes.h
@@ -78,6 +79,7 @@ PT_family.o: $(ARBHOME)/INCLUDE/attributes.h
 PT_family.o: $(ARBHOME)/INCLUDE/PT_com.h
 PT_family.o: $(ARBHOME)/INCLUDE/PT_server.h
 PT_family.o: $(ARBHOME)/INCLUDE/PT_server_prototypes.h
+PT_family.o: $(ARBHOME)/INCLUDE/static_assert.h
 PT_family.o: $(ARBHOME)/INCLUDE/struct_man.h
 
 PT_findEx.o: probe.h
@@ -92,6 +94,7 @@ PT_findEx.o: $(ARBHOME)/INCLUDE/attributes.h
 PT_findEx.o: $(ARBHOME)/INCLUDE/PT_com.h
 PT_findEx.o: $(ARBHOME)/INCLUDE/PT_server.h
 PT_findEx.o: $(ARBHOME)/INCLUDE/PT_server_prototypes.h
+PT_findEx.o: $(ARBHOME)/INCLUDE/static_assert.h
 
 PT_io.o: probe.h
 PT_io.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
@@ -140,6 +143,7 @@ PT_match.o: $(ARBHOME)/INCLUDE/attributes.h
 PT_match.o: $(ARBHOME)/INCLUDE/PT_com.h
 PT_match.o: $(ARBHOME)/INCLUDE/PT_server.h
 PT_match.o: $(ARBHOME)/INCLUDE/PT_server_prototypes.h
+PT_match.o: $(ARBHOME)/INCLUDE/static_assert.h
 PT_match.o: $(ARBHOME)/INCLUDE/struct_man.h
 
 PT_new_design.o: probe.h
@@ -157,6 +161,7 @@ PT_new_design.o: $(ARBHOME)/INCLUDE/inline.h
 PT_new_design.o: $(ARBHOME)/INCLUDE/PT_com.h
 PT_new_design.o: $(ARBHOME)/INCLUDE/PT_server.h
 PT_new_design.o: $(ARBHOME)/INCLUDE/PT_server_prototypes.h
+PT_new_design.o: $(ARBHOME)/INCLUDE/static_assert.h
 PT_new_design.o: $(ARBHOME)/INCLUDE/struct_man.h
 
 PT_prefixtree.o: probe.h
@@ -169,6 +174,7 @@ PT_prefixtree.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 PT_prefixtree.o: $(ARBHOME)/INCLUDE/attributes.h
 PT_prefixtree.o: $(ARBHOME)/INCLUDE/PT_com.h
 PT_prefixtree.o: $(ARBHOME)/INCLUDE/PT_server.h
+PT_prefixtree.o: $(ARBHOME)/INCLUDE/static_assert.h
 
 PT_secundaer.o: probe.h
 PT_secundaer.o: pt_prototypes.h

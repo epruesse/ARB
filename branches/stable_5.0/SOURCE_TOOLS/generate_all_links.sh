@@ -123,6 +123,7 @@ symlink ../TEMPLATES/inline.h INCLUDE/inline.h &&
 symlink ../TEMPLATES/output.h INCLUDE/output.h &&
 symlink ../TEMPLATES/perf_timer.h INCLUDE/perf_timer.h &&
 symlink ../TEMPLATES/smartptr.h INCLUDE/smartptr.h &&
+symlink ../TEMPLATES/static_assert.h INCLUDE/static_assert.h &&
 
 symlink_maybe_no_target ../TEMPLATES/arb_build.h INCLUDE/arb_build.h &&
 symlink_maybe_no_target ../TEMPLATES/svn_revision.h INCLUDE/svn_revision.h &&
