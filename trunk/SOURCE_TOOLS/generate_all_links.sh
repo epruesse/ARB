@@ -149,6 +149,7 @@ symlink_file ../TEMPLATES/inline.h INCLUDE/inline.h &&
 symlink_file ../TEMPLATES/output.h INCLUDE/output.h &&
 symlink_file ../TEMPLATES/perf_timer.h INCLUDE/perf_timer.h &&
 symlink_file ../TEMPLATES/smartptr.h INCLUDE/smartptr.h &&
+symlink_file ../TEMPLATES/static_assert.h INCLUDE/static_assert.h &&
 
 symlink_maybe_no_target ../TEMPLATES/arb_build.h INCLUDE/arb_build.h &&
 symlink_maybe_no_target ../TEMPLATES/svn_revision.h INCLUDE/svn_revision.h &&

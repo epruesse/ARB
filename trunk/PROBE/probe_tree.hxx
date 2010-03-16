@@ -4,6 +4,10 @@
 #include <bits/wordsize.h>
 #endif // DARWIN
 
+#ifndef STATIC_ASSERT_H
+#include <static_assert.h>
+#endif
+
 #define PTM_magic             0xf4
 #define PTM_TABLE_SIZE        (1024*256)
 #define PTM_ALIGNED           1
@@ -226,6 +230,8 @@ static inline unsigned long long bswap_64(unsigned long long x) {
 
 #ifdef ARB_64
 
+COMPILE_ASSERT(sizeof(void*) == sizeof(unsigned long));
+
 # define PT_READ_PNTR(ptr, my_int_i)                                    \
     do {                                                                \
         pt_assert(sizeof(my_int_i)==8);                                 \
@@ -240,6 +246,8 @@ static inline unsigned long long bswap_64(unsigned long long x) {
 
 #else
 // not ARB_64
+
+COMPILE_ASSERT(sizeof(void*) == sizeof(unsigned int));
 
 # define PT_READ_PNTR(ptr, my_int_i) PT_READ_INT(ptr, my_int_i)
 # define PT_WRITE_PNTR(ptr, my_int_i) PT_WRITE_INT(ptr, my_int_i)
