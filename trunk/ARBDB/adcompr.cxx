@@ -16,6 +16,7 @@
 #include "gb_compress.h"
 #include "gb_localdata.h"
 
+#include <static_assert.h>
 
 #if defined(DEBUG)
 // #define TEST_HUFFMAN_CODE
@@ -787,7 +788,7 @@ GB_BUFFER gb_uncompress_longs_old(GB_CBUFFER source, long size, long *new_size)
         gb_assert(*new_size == size);
         res = p = GB_give_other_buffer(data, size);
 
-        gb_assert(sizeof(GB_UINT4) == 4);
+        COMPILE_ASSERT(sizeof(GB_UINT4) == 4);
 
         mi = (GB_UINT4)(size / 4);
         s0 = data + 0 * mi;
@@ -815,7 +816,7 @@ static GB_BUFFER gb_uncompress_longs(GB_CBUFFER data, long size, long *new_size)
 
     res = p = GB_give_other_buffer(data, size);
 
-    gb_assert(sizeof(GB_UINT4) == 4);
+    COMPILE_ASSERT(sizeof(GB_UINT4) == 4);
 
     mi = size / 4;
     s0 = data + 0 * mi;

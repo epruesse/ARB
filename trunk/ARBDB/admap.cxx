@@ -12,6 +12,8 @@
 #include "gb_storage.h"
 #include "gb_index.h"
 
+#include <static_assert.h>
+
 #define ADMAP_BYTE_ORDER    0x01020304
 #define GB_MAX_MAPPED_FILES 10
 
@@ -265,7 +267,7 @@ static long write_IFS(struct gb_index_files_struct *ifs, FILE *out, long *offset
         size_t       iesize = ALIGN((size_t)(ifs->hash_table_size)*sizeof(*ie));
         int          idx;
 
-        gb_assert(ALIGN(sizeof(*ie))==sizeof(*ie));
+        COMPILE_ASSERT(ALIGN(sizeof(*ie))==sizeof(*ie));
 
         iecopy = (GB_REL_IFES *)malloc(iesize);
         memcpy(iecopy, ie, iesize);
@@ -357,15 +359,17 @@ static long write_GBDATA(GB_MAIN_TYPE *Main, GBDATA *gbd, GBQUARK quark, FILE *o
             int item, nitems = gbc->d.nheader;
 
             headeroffset = *offset;
-            header = GB_DATA_LIST_HEADER(gbc->d);
-            gb_assert(PTR_DIFF(&(header[1]), &(header[0]))==sizeof(*header));   // @@@@
+            header       = GB_DATA_LIST_HEADER(gbc->d);
+
+            gb_assert(PTR_DIFF(&(header[1]), &(header[0])) == sizeof(*header)); // @@@@
 
             if (headermemsize) {     // if container is non-empty
 
                 if (out) {
-                    int valid=0;    // no of non-temporary items
+                    int valid  = 0;                 // no of non-temporary items
                     headercopy = (struct gb_header_list_struct*) malloc(headermemsize);
-                    gb_assert(sizeof(*headercopy)==ALIGN(sizeof(*headercopy)));
+
+                    COMPILE_ASSERT(sizeof(*headercopy) == ALIGN(sizeof(*headercopy)));
                     memset(headercopy, 0x0, headermemsize);
 
                     for (item=0; item<nitems; item++)

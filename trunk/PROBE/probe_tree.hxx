@@ -411,8 +411,8 @@ inline POS_TREE *PT_read_son(PTM2 *ptmain, POS_TREE *node, PT_BASES base)
                 printf("Warning: A search tree of this size is not tested.\n");
                 printf("         (sec & LONG_SON) == true\n");
                 offset = 4 * i;
-                if ((1<<base) & sec) {                              // long
-                    pt_assert(sizeof(PT_PNTR) == 8);               // 64-bit necessary
+                if ((1<<base) & sec) {              // long
+                    COMPILE_ASSERT(sizeof(PT_PNTR) == 8); // 64-bit necessary
                     PT_READ_PNTR((&node->data+1)+offset, i);
                 }
                 else {                                              // int
