@@ -677,6 +677,7 @@ ED4_text_terminals.o: $(ARBHOME)/INCLUDE/awt_attributes.hxx
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/awt_seq_colors.hxx
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/dupstr.h
+ED4_text_terminals.o: $(ARBHOME)/INCLUDE/inline.h
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/smartptr.h
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/st_window.hxx
 
