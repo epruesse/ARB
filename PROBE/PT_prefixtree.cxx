@@ -400,7 +400,7 @@ void PTD_clear_fathers(PTM2 *ptmain, POS_TREE * node)       // stage 1
 void PTD_put_longlong(FILE * out, ULONG i)
 {
     pt_assert(i == (unsigned long) i);
-    pt_assert(sizeof(PT_PNTR) == 8);       // this function only work and only get called at 64-bit
+    COMPILE_ASSERT(sizeof(PT_PNTR) == 8);       // this function only work and only get called at 64-bit
     int io;
     static unsigned char buf[8];
     PT_WRITE_PNTR(buf, i);
@@ -840,7 +840,7 @@ void PTD_read_leafs_from_disk(char *fname, PTM2 *ptmain, POS_TREE **pnode) {
 #ifdef ARB_64
         if (i == 0xffffffff) {                      // 0xffffffff signalizes that "last_obj" is stored
             main                      -= 8;         // in the previous 8 byte (in a long long)
-            pt_assert(sizeof(PT_PNTR) == 8);        // 0xffffffff is used as a signal to be compatible with older pt-servers
+            COMPILE_ASSERT(sizeof(PT_PNTR) == 8);        // 0xffffffff is used as a signal to be compatible with older pt-servers
             PT_READ_PNTR(main, i);                  // this search tree can only be loaded at 64 Bit
 
             big_db = true;

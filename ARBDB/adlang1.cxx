@@ -17,6 +17,8 @@
 #include "gb_key.h"
 #include "gb_localdata.h"
 
+#include <static_assert.h>
+
 #define AWAR_TREE_REFRESH "tmp/focus/tree_refresh" // touch this awar to refresh the tree display
 
 // hook for 'export_sequence'
@@ -161,7 +163,7 @@ static GB_ERROR trace_params(int argc, const GBL *argv, struct gbl_param *ppara,
                         break;
 
                     case GB_INT:
-                        gb_assert(sizeof(int) == sizeof(uint)); // assumed by GBL_PARAM_UINT
+                        COMPILE_ASSERT(sizeof(int) == sizeof(uint)); // assumed by GBL_PARAM_UINT
                         *(int *)para->varaddr = atoi(value);
                         break;
 
