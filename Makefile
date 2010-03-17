@@ -1557,7 +1557,7 @@ TESTED_UNITS = $(TESTED_UNITS_MANUAL)
 test_base: $(UNIT_TESTER_LIB:.a=.dummy)
 
 clean_coverage_results:
-	find . \( -name "*.gcda" -o -name "*.gcov" \) -exec rm {} \;
+	find . \( -name "*.gcda" -o -name "*.gcov" -o -name "*.cov" \) -exec rm {} \;
 
 clean_coverage: clean_coverage_results
 	find . \( -name "*.gcno" \) -exec rm {} \;
