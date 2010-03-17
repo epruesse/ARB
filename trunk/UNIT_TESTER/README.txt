@@ -69,6 +69,14 @@ How to use ARB unit testing
    Valgrind errors/warnings will not raise an error or abort testing.
 
 
+4. Check test-coverage
+
+   set 'COVERAGE=1' in config.makefile and 'make rebuild'
+
+   - prints out uncovered code to compile log
+   - leaves info for partly covered code files in yourcode.cxx.cov
+
+   call 'make clean_coverage_results' to get rid of .cov files
 
 
 
