@@ -8,7 +8,7 @@ BINARY = aisc_mkpt
 $(MAIN): $(BINARY)
 
 $(BINARY): $(OBJECTS)
-	$(LINK_EXECUTABLE) $@ $(OBJECTS)
+	$(LINK_EXECUTABLE) $@ $(OBJECTS) $(EXECLIBS)
 
 .cxx.o:
 	$(CPP) $(cflags) -c $< $(POST_COMPILE)
