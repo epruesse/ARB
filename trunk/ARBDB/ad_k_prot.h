@@ -16,6 +16,7 @@
 /* adstring.cxx */
 void GBK_dump_backtrace(FILE *out, GB_ERROR error);
 void GBK_install_SIGSEGV_handler(bool dump_backtrace);
+bool GBK_raises_SIGSEGV(void (*cb)(void));
 void GBK_terminate(const char *error);
 void GBK_terminatef(const char *templat, ...) __ATTR__FORMAT(1);
 GB_ERROR GBK_assert_msg(const char *assertion, const char *file, int linenr);
