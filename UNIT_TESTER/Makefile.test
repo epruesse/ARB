@@ -88,7 +88,7 @@ $(TEST_OBJ) : $(TEST_CODE) $(INCLUDES)
 	$(CPP) $(cflags) -c $< -o $@ -I. 
 
 $(TEST_EXE) : $(TEST_OBJ) $(UNIT_TESTER_LIB) $(LINKDEPS)
-	$(LINK_EXECUTABLE) $@ $< $(UNIT_TESTER_LIB) -L../LIBLINK $(LINKLIST)
+	$(LINK_EXECUTABLE) $@ $< $(UNIT_TESTER_LIB) -L../LIBLINK $(LINKLIST) $(EXECLIBS)
 
 dump:
 	@echo "$(SEP) dump $(UNITLIBNAME)"
@@ -114,6 +114,9 @@ ifeq ($(VALGRIND),2)
 	cd $(RUNDIR);$(ARBHOME)/SOURCE_TOOLS/arb_valgrind -l -c 15 $(RUN2HERE)/$(TEST_EXE)
 endif
 	cd $(RUNDIR);$(RUN2HERE)/$(TEST_EXE)
+ifeq ($(COVERAGE),1)
+	./gcov2msg.pl $(FULLUNITDIR)
+endif
 ifeq ($(VALGRIND),1)
 	cd $(RUNDIR);$(ARBHOME)/SOURCE_TOOLS/arb_valgrind -l -c 15 $(RUN2HERE)/$(TEST_EXE)
 endif

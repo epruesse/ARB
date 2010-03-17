@@ -16,7 +16,7 @@ $(MAIN): $(CPP_OBJECTS)
 	$(LINK_STATIC_LIB) $(MAIN) $(CPP_OBJECTS)
 
 ./prd_test: $(MAIN) PRD_main.o
-	$(LINK_EXECUTABLE) $@ PRD_main.o $(MAIN)
+	$(LINK_EXECUTABLE) $@ PRD_main.o $(MAIN) $(EXECLIBS)
 
 .cxx.o:
 	$(CPP) $(cflags) -c $< $(CPPINCLUDES)

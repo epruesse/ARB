@@ -22,6 +22,7 @@
 # DEBUG_GRAPHICS        all X-graphics are flushed immediately (for debugging)
 # ARB_64=0/1            1=>compile 64 bit version
 # UNIT_TESTS=0/1        1=>compile in unit tests and call them after build
+# COVERAGE=0/1          1=>compile in gcov support (useful together with UNIT_TESTS=1)
 #
 # -----------------------------------------------------
 # The ARB source code is aware of the following defines:
@@ -194,6 +195,20 @@ else
 	UNIT_TESTER_LIB=
 endif
 
+#---------------------- use gcov
+
+ifndef COVERAGE
+	COVERAGE=0#default is "no"
+endif
+ifeq ($(COVERAGE),1)
+	GCOVFLAGS=-ftest-coverage -fprofile-arcs
+	cflags += $(GCOVFLAGS)
+	EXECLIBS=-lgcov
+else
+	GCOVFLAGS=
+	EXECLIBS=
+endif
+
 #---------------------- other flags
 
 dflags += -D$(MACH) # define machine
@@ -329,7 +344,7 @@ SHARED_LIB_SUFFIX = a# static lib suffix
 LINK_SHARED_LIB := $(LINK_STATIC_LIB)
 else
 SHARED_LIB_SUFFIX = so# shared lib suffix
-LINK_SHARED_LIB := $(GPP) $(lflags) -shared -o# link shared lib
+LINK_SHARED_LIB := $(GPP) $(lflags) -shared $(GCOVFLAGS) -o# link shared lib
 endif
 
 # other used tools
@@ -708,8 +723,8 @@ ARCHS_NTREE = \
 $(NTREE): $(ARCHS_NTREE:.a=.dummy) NAMES_COM/server.dummy shared_libs
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_NTREE) $(GUI_LIBS) || ( \
 		echo Link $@ ; \
-		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_NTREE) $(GUI_LIBS)" ; \
-		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_NTREE) $(GUI_LIBS)  \
+		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_NTREE) $(GUI_LIBS) $(EXECLIBS)" ; \
+		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_NTREE) $(GUI_LIBS) $(EXECLIBS)  \
 		)
 
 #*********************************** arb_rna3d **************************************
@@ -751,8 +766,8 @@ LIBS_EDIT4 := $(GL_LIBS)
 $(EDIT4): $(ARCHS_EDIT4:.a=.dummy) shared_libs $(GL)
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_EDIT4) $(GUI_LIBS) || ( \
 		echo Link $@ ; \
-		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_EDIT4) $(GUI_LIBS) $(LIBS_EDIT4)" ; \
-		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_EDIT4) $(GUI_LIBS) $(LIBS_EDIT4) \
+		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_EDIT4) $(GUI_LIBS) $(LIBS_EDIT4) $(EXECLIBS)" ; \
+		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_EDIT4) $(GUI_LIBS) $(LIBS_EDIT4) $(EXECLIBS) \
 		)
 
 #***********************************	arb_pgt **************************************
@@ -766,8 +781,8 @@ PGT_SYS_LIBS=$(XLIBS) $(TIFFLIBS) $(LIBS)
 $(PGT) : $(ARCHS_PGT:.a=.dummy) shared_libs
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_PGT) || ( \
 		echo Link $@ ; \
-		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_PGT) $(PGT_SYS_LIBS)"; \
-		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_PGT) $(PGT_SYS_LIBS); \
+		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_PGT) $(PGT_SYS_LIBS) $(EXECLIBS)"; \
+		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_PGT) $(PGT_SYS_LIBS) $(EXECLIBS); \
 		)
 
 
@@ -782,8 +797,8 @@ ARCHS_WETC = \
 $(WETC): $(ARCHS_WETC:.a=.dummy) shared_libs
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_WETC) $(GUI_LIBS) || ( \
 		echo Link $@ ; \
-		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_WETC) $(GUI_LIBS)" ; \
-		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_WETC) $(GUI_LIBS) ; \
+		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_WETC) $(GUI_LIBS) $(EXECLIBS)" ; \
+		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_WETC) $(GUI_LIBS) $(EXECLIBS) ; \
 		)
 
 #***********************************	arb_dist **************************************
@@ -804,8 +819,8 @@ ARCHS_DIST = \
 $(DIST): $(ARCHS_DIST:.a=.dummy) shared_libs
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_DIST) $(GUI_LIBS) || ( \
 		echo Link $@ ; \
-		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_DIST) $(GUI_LIBS)" ; \
-		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_DIST) $(GUI_LIBS) ; \
+		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_DIST) $(GUI_LIBS) $(EXECLIBS)" ; \
+		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_DIST) $(GUI_LIBS) $(EXECLIBS) ; \
 		)
 
 #***********************************	arb_pars **************************************
@@ -825,8 +840,8 @@ ARCHS_PARSIMONY = \
 $(PARSIMONY): $(ARCHS_PARSIMONY:.a=.dummy) shared_libs
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_PARSIMONY) $(GUI_LIBS) || ( \
 		echo Link $@ ; \
-		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_PARSIMONY) $(GUI_LIBS)" ; \
-		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_PARSIMONY) $(GUI_LIBS) ; \
+		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_PARSIMONY) $(GUI_LIBS) $(EXECLIBS)" ; \
+		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_PARSIMONY) $(GUI_LIBS) $(EXECLIBS) ; \
 		)
 
 #*********************************** arb_treegen **************************************
@@ -837,8 +852,8 @@ ARCHS_TREEGEN =	\
 $(TREEGEN) :  $(ARCHS_TREEGEN:.a=.dummy)
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_TREEGEN) || ( \
 		echo Link $@ ; \
-		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_TREEGEN)" ; \
-		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_TREEGEN) ; \
+		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_TREEGEN) $(EXECLIBS)" ; \
+		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_TREEGEN) $(EXECLIBS) ; \
 		)
 
 #***********************************	arb_naligner **************************************
@@ -852,8 +867,8 @@ ARCHS_NALIGNER = \
 $(NALIGNER): $(ARCHS_NALIGNER:.a=.dummy) shared_libs
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_NALIGNER) || ( \
 		echo Link $@ ; \
-		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_NALIGNER) $(LIBS)" ; \
-		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_NALIGNER) $(LIBS) \
+		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_NALIGNER) $(LIBS) $(EXECLIBS)" ; \
+		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_NALIGNER) $(LIBS) $(EXECLIBS) \
 		)
 
 #***********************************	arb_secedit **************************************
@@ -879,8 +894,8 @@ ARCHS_PHYLO = \
 $(PHYLO): $(ARCHS_PHYLO:.a=.dummy) shared_libs
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_PHYLO) $(GUI_LIBS) || ( \
 		echo Link $@ ; \
-		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_PHYLO) $(GUI_LIBS)" ; \
-		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_PHYLO) $(GUI_LIBS) ; \
+		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_PHYLO) $(GUI_LIBS) $(EXECLIBS)" ; \
+		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_PHYLO) $(GUI_LIBS) $(EXECLIBS) ; \
 		)
 
 #***************************************************************************************
@@ -896,8 +911,8 @@ ARCHS_DBSERVER = \
 $(DBSERVER): $(ARCHS_DBSERVER:.a=.dummy) shared_libs
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_DBSERVER) $(ARBDB_LIB) || ( \
 		echo Link $@ ; \
-		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_DBSERVER) $(ARBDB_LIB) $(SYSLIBS)" ; \
-		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_DBSERVER) $(ARBDB_LIB) $(SYSLIBS) ; \
+		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_DBSERVER) $(ARBDB_LIB) $(SYSLIBS) $(EXECLIBS)" ; \
+		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_DBSERVER) $(ARBDB_LIB) $(SYSLIBS) $(EXECLIBS) ; \
 		)
 
 #***********************************	arb_pt_server **************************************
@@ -918,8 +933,8 @@ ARCHS_PROBE_DEPEND = \
 $(PROBE): $(ARCHS_PROBE_DEPEND:.a=.dummy) shared_libs 
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_PROBE_LINK) $(ARBDB_LIB) $(ARCHS_CLIENT_PROBE) || ( \
 		echo Link $@ ; \
-		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_PROBE_LINK) $(ARBDB_LIB) $(ARCHS_CLIENT_PROBE) $(SYSLIBS)" ; \
-		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_PROBE_LINK) $(ARBDB_LIB) $(ARCHS_CLIENT_PROBE) $(SYSLIBS) ; \
+		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_PROBE_LINK) $(ARBDB_LIB) $(ARCHS_CLIENT_PROBE) $(SYSLIBS) $(EXECLIBS)" ; \
+		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_PROBE_LINK) $(ARBDB_LIB) $(ARCHS_CLIENT_PROBE) $(SYSLIBS) $(EXECLIBS) ; \
 		)
 
 #***********************************	arb_name_server **************************************
@@ -932,8 +947,8 @@ ARCHS_NAMES = \
 $(NAMES): $(ARCHS_NAMES:.a=.dummy) shared_libs
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_NAMES) $(ARBDB_LIB) $(ARCHS_CLIENT_NAMES) || ( \
 		echo Link $@ ; \
-		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_NAMES) $(ARBDB_LIB) $(ARCHS_CLIENT_NAMES) $(SYSLIBS)" ; \
-		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_NAMES) $(ARBDB_LIB) $(ARCHS_CLIENT_NAMES) $(SYSLIBS) ; \
+		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_NAMES) $(ARBDB_LIB) $(ARCHS_CLIENT_NAMES) $(SYSLIBS) $(EXECLIBS)" ; \
+		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_NAMES) $(ARBDB_LIB) $(ARCHS_CLIENT_NAMES) $(SYSLIBS) $(EXECLIBS) ; \
 		)
 
 #***********************************	OTHER EXECUTABLES   ********************************************
@@ -945,7 +960,7 @@ ARCHS_ALIV3 = \
 
 $(ALIV3): $(ARCHS_ALIV3:.a=.dummy) shared_libs
 	@echo $(SEP) Link $@
-	$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_ALIV3) $(ARBDB_LIB) $(SYSLIBS)
+	$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_ALIV3) $(ARBDB_LIB) $(SYSLIBS) $(EXECLIBS)
 
 #***********************************	SHARED LIBRARIES SECTION  **************************************
 
@@ -1352,6 +1367,7 @@ clean2: $(ARCHS:.a=.clean) \
 # links are needed for cleanup
 clean: redo_links
 	$(MAKE) clean2
+	$(MAKE) clean_coverage
 
 # 'relocated' is about 50% faster than 'rebuild'
 reloc_clean: links
@@ -1532,6 +1548,7 @@ TESTED_UNITS = $(TESTED_UNITS_MANUAL)
 	    $(MAKE) -C UNIT_TESTER -f Makefile.test -r \
 		"UNITDIR=$(@D)" \
 		"UNITLIBNAME=$(@F:.test=)" \
+		"COVERAGE=$(COVERAGE)" \
 		"cflags=$(cflags)" \
 		runtest \
 	) >$(@D).$$ID.log 2>&1 && (cat $(@D).$$ID.log;rm $(@D).$$ID.log)) || (cat $(@D).$$ID.log;rm $(@D).$$ID.log;false))
@@ -1539,9 +1556,14 @@ TESTED_UNITS = $(TESTED_UNITS_MANUAL)
 
 test_base: $(UNIT_TESTER_LIB:.a=.dummy)
 
-unit_tests: 
-	@echo $(SEP)
-	$(MAKE) test_base
+clean_coverage_results:
+	find . \( -name "*.gcda" -o -name "*.gcov" \) -exec rm {} \;
+
+clean_coverage: clean_coverage_results
+	find . \( -name "*.gcno" \) -exec rm {} \;
+
+
+unit_tests: test_base clean_coverage_results
 	@echo "$(SEP) Running unit tests"
 	$(MAKE) $(TESTED_UNITS)
 	@echo "All unit tests passed" 

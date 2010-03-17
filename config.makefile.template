@@ -24,6 +24,7 @@ ARB_64 := 0# compile 64bit ARB version
 #BUILDHOST_64 := 1# whether build host is 64bit (value defaults to ARB_64). Needed for cross-compile
 
 UNIT_TESTS := 0# include and perform unit tests
+COVERAGE := 0# gcov support
 
 # --------------------------------------------------------------------------------
 # target machine section
