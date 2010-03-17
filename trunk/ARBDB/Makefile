@@ -317,6 +317,7 @@ adcompr.o: $(ARBHOME)/INCLUDE/arbtools.h
 adcompr.o: $(ARBHOME)/INCLUDE/attributes.h
 adcompr.o: $(ARBHOME)/INCLUDE/dupstr.h
 adcompr.o: $(ARBHOME)/INCLUDE/smartptr.h
+adcompr.o: $(ARBHOME)/INCLUDE/static_assert.h
 
 adExperiment.o: ad_k_prot.h
 adExperiment.o: ad_prot.h
@@ -459,6 +460,7 @@ adlang1.o: $(ARBHOME)/INCLUDE/arbtools.h
 adlang1.o: $(ARBHOME)/INCLUDE/attributes.h
 adlang1.o: $(ARBHOME)/INCLUDE/dupstr.h
 adlang1.o: $(ARBHOME)/INCLUDE/smartptr.h
+adlang1.o: $(ARBHOME)/INCLUDE/static_assert.h
 
 adlink.o: ad_k_prot.h
 adlink.o: ad_prot.h
@@ -517,6 +519,7 @@ admap.o: $(ARBHOME)/INCLUDE/arbtools.h
 admap.o: $(ARBHOME)/INCLUDE/attributes.h
 admap.o: $(ARBHOME)/INCLUDE/dupstr.h
 admap.o: $(ARBHOME)/INCLUDE/smartptr.h
+admap.o: $(ARBHOME)/INCLUDE/static_assert.h
 
 admatch.o: ad_k_prot.h
 admatch.o: ad_prot.h
