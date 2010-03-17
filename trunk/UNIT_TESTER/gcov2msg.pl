@@ -77,6 +77,11 @@ sub collect_gcov_data($$) {
   $cov =~ s/\.gcov$/\.cov/g;
   if ($cov eq $gcov) { die "Invalid gcov name '$gcov'"; }
 
+  if (not -f $gcov) {
+    print "No such file '$gcov' (assuming it belongs to a standard header)\n";
+    return;
+  }
+  
   my @covered_lines = ();
   my ($lines,$covered) = parseCoveredLines($gcov,@covered_lines);
   my $size = scalar(@covered_lines);
@@ -192,12 +197,15 @@ sub main() {
           if ($percent>0 and $lines>0) {
             my $fullsource = $dir.'/'.$source;
             if (-f $fullsource) { $source = $fullsource; }
-            collect_gcov_data($source,$gcov);
+
+            if ($source =~ /^\/usr\/include/o) {
+              print "Skipping '$gcov'\n";
+            }
+            else {
+              collect_gcov_data($source,$gcov);
+            }
           }
-          else {
-            # print "Completely untested: $source\n";
-            unlink($gcov);
-          }
+          if (-f $gcov) { unlink($gcov); }
 
           ($file,$percent,$lines,$source,$gcov) = (undef,undef,undef,undef,undef);
         }
