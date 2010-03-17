@@ -1162,11 +1162,11 @@ GB_ERROR gbcm_test_address(long *address, long key) {
         found_key = *address;
     }
     else {
-        gb_assert(trapped == 667);
         segv_occurred = true;
     }
 
     suppress_sigsegv = false;
+    gb_assert(!trapped || trapped == 667);
 
     GB_ERROR error = NULL;
     if (segv_occurred) {
@@ -1184,6 +1184,51 @@ GB_ERROR gbcm_test_address(long *address, long key) {
 
     return error;
 }
+
+class SuppressOutput {
+    // temporarily redirect stdout and stderr to /dev/null
+    FILE *suppress;
+    FILE *org_stdout;
+    FILE *org_stderr;
+public:
+    SuppressOutput()
+        : suppress(fopen("/dev/null", "w"))
+        , org_stdout(stdout)
+        , org_stderr(stderr)
+    {
+        stdout = suppress;
+        stderr = suppress;
+    }
+    ~SuppressOutput() {
+        fclose(suppress);
+        stdout = org_stdout;
+        stderr = org_stderr;
+    }
+};
+
+bool GBK_raises_SIGSEGV(void (*cb)(void)) {
+    // test whether 'cb' aborts with SIGSEGV
+
+    bool           segv_occurred = false;
+    SuppressOutput toConsole;
+    SigHandler     old_handler   = signal(SIGSEGV, sigsegv_handler);
+    int            trapped       = setjmp(return_after_segv);
+
+    suppress_sigsegv = true;
+    if (!trapped) {                                 // normal execution
+        cb();
+    }
+    else {
+        segv_occurred = true; 
+    }
+
+    suppress_sigsegv = false;
+    gb_assert(!trapped || trapped == 667);
+    signal(SIGSEGV, old_handler);
+
+    return segv_occurred;
+}
+
 
 // -------------------------------------------
 //      Error/notification functions
