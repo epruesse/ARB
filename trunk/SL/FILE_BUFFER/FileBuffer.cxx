@@ -102,16 +102,16 @@ string FileBuffer::lineError(const string& msg) const {
     }
 
     if (showFilename) {
-#if defined(DEBUG)
+#if defined(ASSERTION_USED)
         int printed =
-#endif // DEBUG
+#endif // ASSERTION_USED
             sprintf(buffer, "%s:%zu: %s", filename.c_str(), lineNumber, msg.c_str());
         fb_assert((size_t)printed < allocated);
     }
     else {
-#if defined(DEBUG)
+#if defined(ASSERTION_USED)
         int printed =
-#endif // DEBUG
+#endif // ASSERTION_USED
             sprintf(buffer, "while reading line #%zu:\n%s", lineNumber, msg.c_str());
         fb_assert((size_t)printed < allocated);
     }
