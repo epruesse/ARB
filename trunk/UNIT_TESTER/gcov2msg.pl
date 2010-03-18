@@ -9,10 +9,52 @@ my $verbose = 0;
 
 # --------------------------------------------------------------------------------
 
+my %code = (); # key=lineno, value=code (valid for recently parsed lines with type '#')
+
+# --------------------------------------------------------------------------------
+
+my ($loclen,$msglen) = (0,0);
+
+sub reset_trim() {
+  ($loclen,$msglen) = (0,0);
+}
+
+sub trim($\$) {
+  my ($str, $len_r) = @_;
+  my $len = length($str);
+  if ($len > $$len_r) { $$len_r = $len; }
+  else {
+    $str = sprintf("%-*s", $$len_r, $str);
+  }
+  return $str;
+}
+
+sub print_trimmed($$$$) {
+  my ($source,$lineno,$msg,$code) = @_;
+
+  my $loc = $source.':'.$lineno.':';
+  $loc .= ' ' if ($lineno<1000);
+  $loc .= ' ' if ($lineno<100);
+
+  $loc = trim($loc, $loclen);
+  $msg = trim($msg, $msglen);
+
+  $code =~ s/^\s*//go;
+
+  print $loc.' '.$msg.' | '.$code."\n";
+}
+
+sub print_annotated_message($$$) {
+  my ($source,$lineno,$msg) = @_;
+  print_trimmed($source, $lineno, $msg, $code{$lineno});
+}
+
+# --------------------------------------------------------------------------------
+
 sub parseCoveredLines($\@) {
   my ($gcov, $covered_lines_r) = @_;
 
-  my ($lines,$covered) = (0,0);
+  my ($lines,$covered,$tests_seen) = (0,0,0);
   open(GCOV,'<'.$gcov) || die "can't read '$gcov' (Reason: $!)";
   my $line;
   while (defined ($line = <GCOV>)) {
@@ -23,8 +65,14 @@ sub parseCoveredLines($\@) {
         $$covered_lines_r[$lineno] = '-';
       }
       elsif ($counter eq '#####') {
-        $lines++;
-        $$covered_lines_r[$lineno] = '#';
+        if ($code =~ /NEED_NO_COV/) { # handle like there was no code here
+          $$covered_lines_r[$lineno] = '-';
+        }
+        else {
+          $lines++;
+          $$covered_lines_r[$lineno] = '#';
+          $code{$lineno} = $code;
+        }
       }
       else {
         if ($counter =~ /^[0-9]+$/) {
@@ -36,10 +84,15 @@ sub parseCoveredLines($\@) {
           die "Invalid counter '$counter' (expected number)";
         }
       }
+
+      if ($code =~ /^void\s+TEST_.*()/g) {
+        $tests_seen++;
+      }
     }
   }
   close(GCOV);
-  return ($lines,$covered);
+
+  return ($lines,$covered,$tests_seen);
 }
 
 sub next_uncovered_section_after(\@$$) {
@@ -73,6 +126,8 @@ sub next_uncovered_section_after(\@$$) {
 sub collect_gcov_data($$) {
   my ($source,$gcov) = @_;
 
+  reset_trim();
+
   my $cov = $gcov;
   $cov =~ s/\.gcov$/\.cov/g;
   if ($cov eq $gcov) { die "Invalid gcov name '$gcov'"; }
@@ -81,42 +136,47 @@ sub collect_gcov_data($$) {
     print "No such file '$gcov' (assuming it belongs to a standard header)\n";
     return;
   }
-  
+
   my @covered_lines = ();
-  my ($lines,$covered) = parseCoveredLines($gcov,@covered_lines);
+  my ($lines,$covered,$tests_seen) = parseCoveredLines($gcov,@covered_lines);
   my $size = scalar(@covered_lines);
 
   my $percent = 100*$covered/$lines;
   $percent = int($percent*10)/10;
 
-  # $verbose==0 ||
-  print "collect_gcov_data($gcov): lines=$lines covered=$covered (coverage=$percent%)\n";
+  my $source_name = $source;
+  if ($source =~ /\/([^\/]+)$/) { $source_name = $1; }
 
   if ($covered==$lines) {
-    print "Full test-coverage for $source\n";
+    print "Full test-coverage for $source_name\n";
     unlink($gcov);
   }
   else {
+    # $verbose==0 ||
+    print "collect_gcov_data($gcov): lines=$lines covered=$covered (coverage=$percent%)\n";
     $covered>0 || die "Argh.. collected data for completely uncovered file '$source'";
 
-    my $line = 0;
-  SECTION: while (1) {
-      my ($first,$last,$loc) = next_uncovered_section_after(@covered_lines, $size, $line);
-      if (not defined $first) { last SECTION; }
-
-      if ($first==$last) {
-        print "$source:$first: Uncovered line\n";
-      }
-      else {
-        # print "$source:$first: Uncovered section [start] ($loc lines of code)\n";
-        # print "$source:$last:                    [end]\n";
-        print "$source:$first: [start] $loc lines of uncovered code\n";
-        print "$source:$last: [end]\n";
-      }
-      $line = $last;
+    if ($tests_seen==0) {
+      print "$source_name defines no tests. lines=$lines covered=$covered (coverage=$percent%)\n";
     }
+    else {
+      my $line = 0;
+    SECTION: while (1) {
+        my ($first,$last,$loc) = next_uncovered_section_after(@covered_lines, $size, $line);
+        if (not defined $first) { last SECTION; }
 
-    rename($gcov,$cov) || die "Failed to rename '$gcov' -> '$cov' (Reason: $!)";
+        if ($first==$last) {
+          print_annotated_message($source, $first, 'Uncovered line');
+        }
+        else {
+          print_annotated_message($source, $first, "[start] $loc uncovered lines");
+          print_annotated_message($source, $last, '[end]');
+        }
+        $line = $last;
+      }
+
+      rename($gcov,$cov) || die "Failed to rename '$gcov' -> '$cov' (Reason: $!)";
+    }
   }
 }
 

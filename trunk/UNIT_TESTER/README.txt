@@ -76,6 +76,10 @@ How to use ARB unit testing
    - prints out uncovered code to compile log
    - leaves info for partly covered code files in yourcode.cxx.cov
 
+   Note:
+        You can silence lines which are never reached while testing
+        with a comment containing 'NEED_NO_COV'.
+
    call 'make clean_coverage_results' to get rid of .cov files
 
 
