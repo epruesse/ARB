@@ -21,6 +21,27 @@
  * Only place define's or inline functions here.
  */
 
+namespace arb_test {
+    inline bool strnullequal(const char *s1, const char *s2) {
+        return (s1 == s2) || (s1 && s2 && strcmp(s1, s2) == 0);
+    }
+
+    inline bool str_equal(const char *s1, const char *s2) {
+        bool equal = strnullequal(s1, s2);
+        if (!equal) {
+            fprintf(stderr, "str_equal('%s', '%s') returns false\n", s1, s2);
+        }
+        return equal;
+    }
+    inline bool str_different(const char *s1, const char *s2) {
+        bool different = !strnullequal(s1, s2);
+        if (!different) {
+            fprintf(stderr, "str_different('%s', '%s') returns false\n", s1, s2);
+        }
+        return different;
+    }
+};
+
 // --------------------------------------------------------------------------------
 
 #define TEST_MSG(format, strarg)                                        \
@@ -36,7 +57,7 @@
     } while(0)
 
 // --------------------------------------------------------------------------------
-    
+
 #define TEST_ASSERT(cond) arb_assert(cond)
 
 #define TEST_ASSERT_BROKEN(cond)                                        \
@@ -48,6 +69,11 @@
 
 #define MISSING_TEST(description)                       \
     TEST_WARNING("Missing test '%s'", #description)
+
+
+#define TEST_ASSERT_SEGFAULT(cb) TEST_ASSERT(GBK_raises_SIGSEGV(cb))
+
+#define TEST_ASSERT_STRINGRESULT(s1, s2) TEST_ASSERT(arb_test::str_equal(s1, s2))
 
 #else
 #error test_unit.h included twice
