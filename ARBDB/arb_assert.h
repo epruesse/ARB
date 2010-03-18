@@ -177,10 +177,7 @@
 #  error Unit testing not allowed in release
 # else
 
-#  undef arb_assert
-#  define ASSERTION_USED
-
-#  define arb_assert(cond)                                              \
+#  define test_assert(cond)                                             \
     do {                                                                \
         if (!(cond)) {                                                  \
             fprintf(stderr, "%s:%i: Assertion '%s' failed\n",           \
@@ -188,6 +185,11 @@
             ARB_SIGSEGV(0);                                             \
         }                                                               \
     } while(0)
+
+#  if defined(ASSERTION_USED)
+#   undef arb_assert
+#   define arb_assert(cond) test_assert(cond)
+#  endif
 
 # endif
 #endif

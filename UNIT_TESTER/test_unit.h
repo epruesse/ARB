@@ -58,7 +58,7 @@ namespace arb_test {
 
 // --------------------------------------------------------------------------------
 
-#define TEST_ASSERT(cond) arb_assert(cond)
+#define TEST_ASSERT(cond) test_assert(cond)
 
 #define TEST_ASSERT_BROKEN(cond)                                        \
     do {                                                                \
