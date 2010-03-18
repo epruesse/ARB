@@ -1281,7 +1281,7 @@ void TEST_GBS_hash_next_element_that() {
     }
 }
 
-const size_t MAX_PRIME = sorted_primes[KNOWN_PRIMES-1];
+const size_t MAX_PRIME  = sorted_primes[KNOWN_PRIMES-1];
 
 static size_t get_overflown_prime() { return gbs_get_a_prime(MAX_PRIME+1); }
 #if defined(ASSERTION_USED)
@@ -1289,6 +1289,8 @@ static void detect_prime_overflow() { get_overflown_prime(); }
 #endif // ASSERTION_USED
 
 void TEST_hash_specials() {
+    const size_t SOME_PRIME = 434201;
+    TEST_ASSERT(gbs_get_a_prime(SOME_PRIME) == SOME_PRIME);
     TEST_ASSERT(gbs_get_a_prime(MAX_PRIME) == MAX_PRIME);
 
 #if defined(ASSERTION_USED)
