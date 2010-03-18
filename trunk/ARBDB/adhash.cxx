@@ -1281,11 +1281,21 @@ void TEST_GBS_hash_next_element_that() {
     }
 }
 
-static void detect_prime_overflow() { gbs_get_a_prime(sorted_primes[KNOWN_PRIMES-1]+1); }
+const size_t MAX_PRIME = sorted_primes[KNOWN_PRIMES-1];
+
+static size_t get_overflown_prime() { return gbs_get_a_prime(MAX_PRIME+1); }
+#if defined(ASSERTION_USED)
+static void detect_prime_overflow() { get_overflown_prime(); }
+#endif // ASSERTION_USED
 
 void TEST_hash_specials() {
-    TEST_ASSERT(gbs_get_a_prime(986717) == 986717);
+    TEST_ASSERT(gbs_get_a_prime(MAX_PRIME) == MAX_PRIME);
+
+#if defined(ASSERTION_USED)
     TEST_ASSERT_SEGFAULT(detect_prime_overflow);
+#else
+    TEST_ASSERT(get_overflown_prime() == MAX_PRIME+1);
+#endif // ASSERTION_USED
 }
 
 #endif
