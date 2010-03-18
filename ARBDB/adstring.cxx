@@ -1200,9 +1200,9 @@ public:
         stderr = suppress;
     }
     ~SuppressOutput() {
-        fclose(suppress);
         stdout = org_stdout;
         stderr = org_stderr;
+        fclose(suppress);
     }
 };
 
