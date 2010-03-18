@@ -242,7 +242,7 @@ size_t gbs_get_a_prime(size_t above_or_equal_this) {
     fprintf(stderr, "Warning: gbs_get_a_prime failed for value %zu (performance bleed)\n", above_or_equal_this);
     gb_assert(0); // add more primes to sorted_primes[]
 
-    return above_or_equal_this;
+    return above_or_equal_this; // NEED_NO_COV
 }
 
 // -----------------------------------------------
@@ -433,7 +433,7 @@ static void delete_from_list(GB_HASH *hs, size_t i, struct gbs_hash_entry *e) {
             ee->next = e->next;
         }
         else {
-            GB_internal_error("Database may be corrupt, hash tables error");
+            GB_internal_error("Database may be corrupt, hash tables error"); // NEED_NO_COV
         }
     }
     free(e->key);
@@ -560,8 +560,8 @@ void GBS_erase_hash(GB_HASH *hs) {
         double mean_access = GBS_hash_mean_access_costs(hs);
         if (mean_access > 1.5) { // every 2nd access is a collision - increase hash size?
             dump_access("hash-size-warning", hs, mean_access);
-#if defined(DEVEL_RALF)
-            gb_assert(mean_access<2.0); // hash with 50% speed or less
+#if defined(DEVEL_RALF) && !(UNIT_TESTS == 1)
+            gb_assert(mean_access<2.0);             // hash with 50% speed or less
 #endif // DEVEL_RALF
         }
 #else
@@ -929,7 +929,7 @@ static long erase_from_hash(const char *key, long val, void *cl_fromHash) {
         GBS_write_hash(fromHash, key, 0);
     }
     else {
-        printf("value mismatch in hashes_are_equal(): key='%s' val: %li != %li\n", key, val2, val);
+        printf("value mismatch in hashes_are_equal(): key='%s' val: %li != %li\n", key, val2, val); // NEED_NO_COV
     }
     return val;
 }
@@ -1001,18 +1001,38 @@ void TEST_GBS_write_hash() {
 
         GBS_write_hash(hash, "foo", 1);
         GBS_write_hash(hash, "FOO", 2);
+        GBS_write_hash(hash, "BAR", 1);
+        GBS_write_hash(hash, "bar", 2);
 
         if (case_sens) {
-            TEST_ASSERT(GBS_hash_count_elems(hash) == 2);
+            TEST_ASSERT(GBS_hash_count_elems(hash) == 4);
+
             TEST_ASSERT(GBS_read_hash(hash, "foo") == 1);
             TEST_ASSERT(GBS_read_hash(hash, "FOO") == 2);
             TEST_ASSERT(GBS_read_hash(hash, "Foo") == 0);
+            
+            TEST_ASSERT(GBS_hash_count_value(hash, 1) == 2);
+            TEST_ASSERT(GBS_hash_count_value(hash, 2) == 2);
         }
         else {
-            TEST_ASSERT(GBS_hash_count_elems(hash) == 1);
+            TEST_ASSERT(GBS_hash_count_elems(hash) == 2);
+
             TEST_ASSERT(GBS_read_hash(hash, "foo") == 2);
             TEST_ASSERT(GBS_read_hash(hash, "FOO") == 2);
             TEST_ASSERT(GBS_read_hash(hash, "Foo") == 2);
+
+            TEST_ASSERT(GBS_hash_count_value(hash, 1) == 0);
+            TEST_ASSERT(GBS_hash_count_value(hash, 2) == 2);
+        }
+
+        if (case_sens) {
+            TEST_ASSERT(GBS_read_hash(hash, "foobar") == 0);
+            GBS_write_hash_no_strdup(hash, strdup("foobar"), 0);
+            TEST_ASSERT(GBS_read_hash(hash, "foobar") == 0);
+            GBS_write_hash_no_strdup(hash, strdup("foobar"), 3);
+            TEST_ASSERT(GBS_read_hash(hash, "foobar") == 3);
+            GBS_write_hash_no_strdup(hash, strdup("foobar"), 0);
+            TEST_ASSERT(GBS_read_hash(hash, "foobar") == 0);
         }
     }
 }
@@ -1051,6 +1071,8 @@ void TEST_GBS_hashtab_2_string() {
         GBS_write_hash(hash, "bar", 2);
         GBS_write_hash(hash, "FOO", 3);
         GBS_write_hash(hash, "BAR", 4);
+        GBS_write_hash(hash, "foo:bar", 3);
+        GBS_write_hash(hash, "FOO:bar", 4);
     }
     for (int case_sens = 0; case_sens <= 1; ++case_sens) {
         GB_HASH *hash = TEST.get_hash(case_sens);
@@ -1083,7 +1105,14 @@ void TEST_GBS_hashtab_2_string() {
         char *as_string3 = GBS_hashtab_2_string(hash3); printf("as_string3='%s'\n", as_string3);
 
         TEST_ASSERT_BROKEN(strcmp(as_string, as_string2) == 0);
-        TEST_ASSERT(strcmp(as_string, as_string3) == 0);
+        TEST_ASSERT(strcmp(as_string, as_string3)        == 0);
+
+        GBS_free_hash(hash3);
+        GBS_free_hash(hash2);
+
+        free(as_string3);
+        free(as_string2);
+        free(as_string);
     }
 }
 
@@ -1097,20 +1126,22 @@ inline long key2val(long key, int pass) {
             val = key*17461;
             break;
         default :
-            TEST_ASSERT(0);
+            TEST_ASSERT(0); // NEED_NO_COV
     }
     return val;
 }
 
 void TEST_numhash() {
-    GB_NUMHASH *numhash = GBS_create_numhash(10);
+    GB_NUMHASH *numhash  = GBS_create_numhash(10);
+    GB_NUMHASH *numhash2 = GBS_create_numhash(10);
 
     const long LOW  = -200;
     const long HIGH = 200;
     const long STEP = 17;
 
+    long added = 0;
     for (int pass = 1; pass <= 2; ++pass) {
-        size_t added = 0;
+        added = 0;
         for (long key = LOW; key <= HIGH; key += STEP) {
             long val = key2val(key, pass);
             GBS_write_numhash(numhash, key, val);
@@ -1125,12 +1156,136 @@ void TEST_numhash() {
             TEST_ASSERT(expected_val == val);
         }
     }
-    GBS_free_numhash(numhash);
 
-    // TEST_ASSERT(0); // test failure
-    // malloc(100);
+    TEST_ASSERT(GBS_read_numhash(numhash, -4711) == 0); // not-existing entry
 
-    // MISSING_TEST(bla bla);
+    // erase by overwrite:
+    for (long key = LOW; key <= HIGH; key += STEP) {
+        GBS_write_numhash(numhash2, key, GBS_read_numhash(numhash, key)); // copy numhash->numhash2
+        GBS_write_numhash(numhash, key, NULL);
+    }
+    TEST_ASSERT(GBS_numhash_count_elems(numhash2) == added);
+    TEST_ASSERT(GBS_numhash_count_elems(numhash) == 0);
+
+    GBS_free_numhash(numhash2);                     // free filled hash
+    GBS_free_numhash(numhash);                      // free empty hash
+}
+
+
+static int freeCounter;
+static void freeDynamicHashElem(long cl_ptr) {
+    GBS_dynaval_free(cl_ptr);
+    freeCounter++;
+}
+
+void TEST_GBS_dynaval_hash() {
+    const int SIZE  = 10;
+    const int ELEMS = 30;
+
+    GB_HASH *dynahash = GBS_create_dynaval_hash(SIZE, GB_MIND_CASE, freeDynamicHashElem);
+
+    for (int pass = 1; pass <= 2; ++pass) {
+        freeCounter = 0;
+
+        for (int i = 0; i<ELEMS; ++i) {
+            char *val    = GBS_global_string_copy("value %i", i);
+            char *oldval = (char*)GBS_write_hash(dynahash, GBS_global_string("key %i", i), (long)val);
+            free(oldval);
+        }
+
+        TEST_ASSERT(freeCounter == 0); // overwriting values shall not automatically free them
+    }
+
+    freeCounter = 0;
+    GBS_free_hash(dynahash);
+    TEST_ASSERT(freeCounter == ELEMS);
+}
+
+void TEST_GBS_optimize_hash_and_stats() {
+    const int SIZE = 10;
+    const int FILL = 70;
+
+    GBS_clear_hash_statistic_summary("test");
+    for (int pass = 1; pass <= 3; ++pass) {
+        GB_HASH *hash = GBS_create_hash(SIZE, GB_MIND_CASE);
+
+        for (int i = 1; i <= FILL; ++i) {
+            const char *key =  GBS_global_string("%i", i);
+            GBS_write_hash(hash, key, i);
+        }
+        TEST_ASSERT(hash->nelem > hash->size); // ensure hash is overfilled!
+
+        switch (pass) {
+            case 1:                                 // nothing, only free overfilled hash below
+                break;
+            case 2:                                 // test overwrite overfilled hash
+                for (int i = 1; i <= FILL; ++i) {
+                    const char *key = GBS_global_string("%i", i);
+                    
+                    TEST_ASSERT(GBS_read_hash(hash, key) == i);
+                    GBS_write_hash(hash, key, 0);
+                    TEST_ASSERT(GBS_read_hash(hash, key) == 0);
+                }
+                break;
+            case 3:                                 // test optimize
+                GBS_optimize_hash(hash);
+                TEST_ASSERT(hash->nelem <= hash->size);
+                break;
+            default :
+                TEST_ASSERT(0);                     // NEED_NO_COV
+                break;
+        }
+
+        GBS_calc_hash_statistic(hash, "test", 1);
+        GBS_free_hash(hash);
+    }
+
+    GBS_print_hash_statistic_summary("test");
+}
+
+static bool has_value(const char *, long val, void *cd) { return val == (long)cd; }
+static bool has_value_greater(const char *, long val, void *cd) { return val > (long)cd; }
+
+void TEST_GBS_hash_next_element_that() {
+    TEST.reset();
+
+    for (int case_sens = 0; case_sens <= 1; ++case_sens) {
+        GB_HASH *hash = TEST.get_hash(case_sens);
+
+        GBS_write_hash(hash, "foo", 0);
+        GBS_write_hash(hash, "bar", 1);
+        GBS_write_hash(hash, "foobar", 2);
+        GBS_write_hash(hash, "barfoo", 3);
+
+#define READ_REVERSE(value) GBS_hash_next_element_that(hash, NULL, has_value, (void*)value)
+#define ASSERT_READ_REVERSE_RETURNS(value, expected) TEST_ASSERT_STRINGRESULT(expected, READ_REVERSE(value));
+
+        ASSERT_READ_REVERSE_RETURNS(0, NULL);
+        ASSERT_READ_REVERSE_RETURNS(1, "bar");
+        ASSERT_READ_REVERSE_RETURNS(2, "foobar");
+        ASSERT_READ_REVERSE_RETURNS(3, "barfoo");
+        ASSERT_READ_REVERSE_RETURNS(4, NULL);
+
+        const char *key = NULL;
+        long        sum = 0;
+
+        for (int iter = 1; iter <= 3; ++iter) {
+            key = GBS_hash_next_element_that(hash, key, has_value_greater, (void*)1);
+            if (iter == 3) TEST_ASSERT(!key);
+            else {
+                TEST_ASSERT(key);
+                sum += GBS_read_hash(hash, key);
+            }
+        }
+        TEST_ASSERT(sum == 5); // sum of all values > 1
+    }
+}
+
+static void detect_prime_overflow() { gbs_get_a_prime(sorted_primes[KNOWN_PRIMES-1]+1); }
+
+void TEST_hash_specials() {
+    TEST_ASSERT(gbs_get_a_prime(986717) == 986717);
+    TEST_ASSERT_SEGFAULT(detect_prime_overflow);
 }
 
 #endif
