@@ -255,9 +255,6 @@ sub main() {
           ($source,$gcov) = ($1,$2);
 
           if ($percent>0 and $lines>0) {
-            my $fullsource = $dir.'/'.$source;
-            if (-f $fullsource) { $source = $fullsource; }
-
             if ($source =~ /^\/usr\/include/o) {
               print "Skipping '$gcov'\n";
             }
