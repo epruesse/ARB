@@ -867,12 +867,9 @@ extern "C" int server_save(AN_main *main, int dummy)
                 error = save_AN_main(main, file);
                 fclose(file);
                 if (!error) {
-                    if (GB_rename_file(sec_name, main->server_file)) {
-                        GB_print_error();
-                    }
-                    else {
-                        main->touched = 0;
-                    }
+                    GB_ERROR mv_error = GB_rename_file(sec_name, main->server_file);
+                    if (mv_error) GB_warning(mv_error);
+                    else main->touched = 0;
                 }
             }
             free(sec_name);

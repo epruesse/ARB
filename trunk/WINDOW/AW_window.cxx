@@ -3541,22 +3541,24 @@ GB_ERROR AW_root::start_macro_recording(const char *file,
 }
 
 GB_ERROR AW_root::stop_macro_recording() {
+    GB_ERROR error = NULL;
     if (!prvt->recording_macro_file) {
-        return GB_export_error("Not recording macro");
+        error = "Not recording macro";
     }
-    fprintf(prvt->recording_macro_file, "ARB::close($gb_main);");
-    fclose(prvt->recording_macro_file);
+    else {
+        fprintf(prvt->recording_macro_file, "ARB::close($gb_main);");
+        fclose(prvt->recording_macro_file);
 
-    long mode = GB_mode_of_file(prvt->recording_macro_path);
+        long mode = GB_mode_of_file(prvt->recording_macro_path);
+        error     = GB_set_mode_of_file(prvt->recording_macro_path, mode | ((mode >> 2)& 0111));
 
-    GB_set_mode_of_file(prvt->recording_macro_path, mode | ((mode >> 2)& 0111));
-    prvt->recording_macro_file = 0;
+        prvt->recording_macro_file = 0;
 
-    freenull(prvt->recording_macro_path);
-    freenull(prvt->stop_action_name);
-    freenull(prvt->application_name_for_macros);
-
-    return 0;
+        freenull(prvt->recording_macro_path);
+        freenull(prvt->stop_action_name);
+        freenull(prvt->application_name_for_macros);
+    }
+    return error;
 }
 
 GB_ERROR AW_root::execute_macro(const char *file) {
