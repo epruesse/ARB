@@ -86,7 +86,7 @@ inline const char *field_awar(const char *field_name, const char *subfield) {
 
     char *end = strcpydest(strcpydest(buffer, AWAR_MERGE_GENE_SPECIES_BASE"def_"), field_name);
     *end++ = '/';
-    end       = strcpydest(end, subfield);
+    IF_DEBUG(end=) strcpydest(end, subfield);
 
     mg_assert((end-buffer)<BUFSIZE);
 
@@ -279,6 +279,7 @@ static void MG_update_example(AW_root *aw_root) {
     aw_root->awar(AWAR_MERGE_GENE_SPECIES_EXAMPLE)->write_string(result);
 
     free(result);
+    free(curr_species);
 }
 
 static void check_and_correct_current_field(char*& cur_field) {
