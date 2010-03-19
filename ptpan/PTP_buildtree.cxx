@@ -50,7 +50,11 @@ BOOL BuildStdSuffixTree(struct PTPanGlobal *pg)
     free(newtreename);
     return(FALSE);
   }
-  GB_set_mode_of_file(newtreename, 0666);
+
+  {
+      GB_ERROR warning = GB_set_mode_of_file(newtreename, 0666);
+      if (warning) GB_warning(warning);
+  }
 
   //GB_begin_transaction(pg->pg_MainDB);
 
@@ -96,16 +100,18 @@ BOOL BuildStdSuffixTree(struct PTPanGlobal *pg)
   /* return some memory not used anymore */
   freenull(pp->pp_StdSfxNodes);
 
-  if(GB_rename_file(newtreename, pg->pg_IndexName))
-  {
-    GB_print_error();
+  GB_ERROR error = GB_rename_file(newtreename, pg->pg_IndexName);
+  if (!error) {
+      GB_ERROR warning = GB_set_mode_of_file(pg->pg_IndexName, 0666);
+      if (warning) GB_warning(warning);
   }
 
-  if(GB_set_mode_of_file(pg->pg_IndexName, 0666))
-  {
-    GB_print_error();
-  }
   free(newtreename);
+
+  if (error) {
+      fprintf(stderr, "%s\n", error);
+      return FALSE;
+  }
   return(TRUE);
 }
 /* \\\ */
@@ -552,7 +558,11 @@ BOOL BuildPTPanIndex(struct PTPanGlobal *pg)
     free(newtreename);
     return(FALSE);
   }
-  GB_set_mode_of_file(newtreename, 0666);
+
+  {
+      GB_ERROR warning = GB_set_mode_of_file(newtreename, 0666);
+      if (warning) GB_warning(warning);
+  }
 
   //GB_begin_transaction(pg->pg_MainDB);
 
@@ -579,17 +589,19 @@ BOOL BuildPTPanIndex(struct PTPanGlobal *pg)
 
   //GB_commit_transaction(pg->pg_MainDB);
 
-  //if(GB_rename_file(newtreename, pg->pg_IndexName)) *** FIXME ***
-  if(GB_rename_file(newtreename, pg->pg_IndexName))
-  {
-    GB_print_error();
+  GB_ERROR error = GB_rename_file(newtreename, pg->pg_IndexName);
+  if (!error) {
+      GB_ERROR warning = GB_set_mode_of_file(pg->pg_IndexName, 0666);
+      if (warning) GB_warning(warning);
   }
 
-  if(GB_set_mode_of_file(pg->pg_IndexName, 0666))
-  {
-    GB_print_error();
-  }
   free(newtreename);
+
+  if (error) {
+      GB_warning(error);
+      return FALSE;
+  }
+
   return(TRUE);
 }
 /* \\\ */
