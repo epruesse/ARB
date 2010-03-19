@@ -517,14 +517,18 @@ long GB_getuid_of_file(const char *path) {
 }
 
 int GB_unlink(const char *path)
-{   /* returns
-       0    success
-       1    File does not exist
-       -1   Error
-    */
-    if (unlink(path)) {
-        if (errno == ENOENT) return 1;
-        GB_export_IO_error("removing", path);
+{   /*! unlink a file
+     * @return
+     *  0   success
+     *  1   File did not exist
+     * -1   Error (use GB_await_error() to retrieve message)
+     */
+
+    if (unlink(path) != 0) {
+        if (errno == ENOENT) {
+            return 1;
+        }
+        GB_export_error(GB_IO_error("removing", path));
         return -1;
     }
     return 0;
@@ -567,30 +571,32 @@ char *GB_follow_unix_link(const char *path) {   // returns the real path of a fi
     return res;
 }
 
-GB_ERROR GB_symlink(const char *name1, const char *name2) { // name1 is the existing file !!!
-    if (symlink(name1, name2)<0) {
-        return GB_export_errorf("Cannot create symlink '%s' to file '%s'", name2, name1);
+GB_ERROR GB_symlink(const char *target, const char *link) {
+    if (symlink(target, link)<0) {
+        return GBS_global_string("Cannot create symlink '%s' to file '%s'", link, target);
     }
     return 0;
 }
 
-GB_ERROR GB_set_mode_of_file(const char *path, long mode)
-{
-    if (chmod(path, (int)mode)) return GB_export_errorf("Cannot change mode of '%s'", path);
+GB_ERROR GB_set_mode_of_file(const char *path, long mode) {
+    if (chmod(path, (int)mode)) return GBS_global_string("Cannot change mode of '%s'", path);
     return 0;
 }
 
 GB_ERROR GB_rename_file(const char *oldpath, const char *newpath) {
-    long old_mod = GB_mode_of_file(newpath);
+    long old_mod               = GB_mode_of_file(newpath); // keep filemode for existing files
     if (old_mod == -1) old_mod = GB_mode_of_file(oldpath);
-    if (rename(oldpath, newpath)) {
-        return GB_export_IO_error("renaming", GBS_global_string("%s into %s", oldpath, newpath));
+
+    GB_ERROR error = NULL;
+    if (rename(oldpath, newpath) != 0) {
+        error = GB_IO_error("renaming", GBS_global_string("%s into %s", oldpath, newpath));
     }
-    if (GB_set_mode_of_file(newpath, old_mod)) {
-        return GB_export_IO_error("setting mode", newpath);
+    else {
+        error = GB_set_mode_of_file(newpath, old_mod);
     }
-    sync();
-    return 0;
+    
+    sync();                                         // why ?
+    return error;
 }
 
 char *GB_read_fp(FILE *in) {
@@ -614,7 +620,7 @@ char *GB_read_file(const char *path) {
      *
      * if path is '-', read from STDIN
      *
-     * @return NULL in case of error (which is exported then)
+     * @return NULL in case of error (use GB_await_error() to get the message)
      */
     char *result = 0;
 
@@ -627,7 +633,7 @@ char *GB_read_file(const char *path) {
         if (epath) {
             FILE *in = fopen(epath, "rt");
 
-            if (!in) GB_export_IO_error("reading", epath);
+            if (!in) GB_export_error(GB_IO_error("reading", epath));
             else {
                 long data_size = GB_size_of_file(epath);
 
@@ -955,7 +961,7 @@ static GB_CSTR getenv_autodirectory(const char *envvar, const char *defaultDirec
             dir = GBS_eval_env(defaultDirectory);
             if (!GB_is_directory(dir)) {
                 GB_ERROR error = GB_create_directory(dir);
-                if (error) GB_warningf("Failed to create directory '%s' (Reason: %s)", dir, error);
+                if (error) GB_warning(error);
             }
         }
     }
@@ -1272,11 +1278,11 @@ FILE *GB_fopen_tempfile(const char *filename, const char *fmode, char **res_full
     if (fp) {
         // make file private
         if (fchmod(fileno(fp), S_IRUSR|S_IWUSR) != 0) {
-            error = GB_export_IO_error("changing permissions of", file);
+            error = GB_IO_error("changing permissions of", file);
         }
     }
     else {
-        error = GB_export_IO_error(GBS_global_string("opening(%s) tempfile", write ? "write" : "read"), file);
+        error = GB_IO_error(GBS_global_string("opening(%s) tempfile", write ? "write" : "read"), file);
     }
 
     if (res_fullname) {
@@ -1317,11 +1323,9 @@ char *GB_unique_filename(const char *name_prefix, const char *suffix) {
 }
 
 static GB_HASH *files_to_remove_on_exit = 0;
-static long exit_remove_file(const char *key, long val, void *unused) {
-    // GBUSE(val);
-    // GBUSE(unused);
-    if (unlink(key) != 0) {
-        fprintf(stderr, "Warning: %s\n", GB_export_IO_error("removing", key));
+static long exit_remove_file(const char *file, long, void *) {
+    if (unlink(file) != 0) {
+        fprintf(stderr, "Warning: %s\n", GB_IO_error("removing", file));
     }
     return 0;
 }

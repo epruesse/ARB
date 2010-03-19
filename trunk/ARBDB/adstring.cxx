@@ -90,39 +90,45 @@ GB_ERROR GB_export_errorf(const char *templat, ...) {
     return GB_error_buffer;
 }
 
-GB_ERROR GB_export_IO_error(const char *action, const char *filename) {
-    /* like GB_export_error() - creates error message from current 'errno'
-       action may be NULL (otherwise it should contain sth like "writing" or "deleting")
-       filename may be NULL (otherwise it should contain the filename, the IO-Error occurred for)
-    */
+#if defined(DEVEL_RALF)
+#warning replace GB_export_IO_error() by GB_IO_error() and then export it if really needed 
+#endif // DEVEL_RALF
 
-    const char *error_message;
+GB_ERROR GB_IO_error(const char *action, const char *filename) {
+    /*! creates error message from current 'errno'
+     * @param action may be NULL (otherwise it should contain sth like "writing" or "deleting")
+     * @param filename may be NULL (otherwise it should contain the filename, the IO-Error occurred for)
+     * @return error message (in static buffer)
+     */
+
+    GB_ERROR io_error;
     if (errno) {
-        error_message = strerror(errno);
+        io_error = strerror(errno);
     }
     else {
         gb_assert(0);           // unhandled error (which is NOT an IO-Error)
-        error_message =
+        io_error =
             "Some unhandled error occurred, but it was not an IO-Error. "
             "Please send detailed information about how the error occurred to devel@arb-home.de "
             "or ignore this error (if possible).";
     }
 
-    {
-        char buffer[GBS_GLOBAL_STRING_SIZE];
-
-        if (action) {
-            if (filename) sprintf(buffer, "ARB ERROR: While %s '%s': %s", action, filename, error_message);
-            else sprintf(buffer, "ARB ERROR: While %s <unknown file>: %s", action, error_message);
-        }
-        else {
-            if (filename) sprintf(buffer, "ARB ERROR: Concerning '%s': %s", filename, error_message);
-            else sprintf(buffer, "ARB ERROR: %s", error_message);
-        }
-
-        freedup(GB_error_buffer, buffer);
+    GB_ERROR error;
+    if (action) {
+        if (filename) error = GBS_global_string("While %s '%s': %s", action, filename, io_error);
+        else error          = GBS_global_string("While %s <unknown file>: %s", action, io_error);
     }
-    return GB_error_buffer;
+    else {
+        if (filename) error = GBS_global_string("Concerning '%s': %s", filename, io_error);
+        else error          = io_error; 
+    }
+
+    return error;
+}
+
+GB_ERROR GB_export_IO_error(const char *action, const char *filename) {
+    // goes to header: __ATTR__DEPRECATED
+    return GB_export_error(GB_IO_error(action, filename));
 }
 
 #if defined(DEVEL_RALF)
