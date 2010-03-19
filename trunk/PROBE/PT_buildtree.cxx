@@ -206,7 +206,12 @@ void enter_stage_1_build_tree(PT_main * main, char *tname) {
         fprintf(stderr, "Cannot open %s\n", t2name);
         exit(EXIT_FAILURE);
     }
-    GB_set_mode_of_file(t2name, 0666);
+    {
+        GB_ERROR sm_error = GB_set_mode_of_file(t2name, 0666);
+        if (sm_error) {
+            GB_warningf("%s\nOther users might get problems when they try to access this file.", sm_error);
+        }
+    }
 
     putc(0, out);       // disable zero father
     pos = 1;
@@ -327,13 +332,16 @@ void enter_stage_1_build_tree(PT_main * main, char *tname) {
 
     GB_commit_transaction(psg.gb_main);
     fclose(out);
-    if (GB_rename_file(t2name, tname)) {
-        GB_print_error();
+
+    GB_ERROR mv_error = GB_rename_file(t2name, tname);
+    if (mv_error) {
+        fprintf(stderr, "PT_SERVER: %s\n", mv_error);
+        exit(EXIT_FAILURE);
     }
 
-    if (GB_set_mode_of_file(tname, 00666)) {
-        GB_print_error();
-    }
+    GB_ERROR sm_error = GB_set_mode_of_file(tname, 00666);
+    if (sm_error) GB_warning(sm_error);
+
     psg.pt = pt;
 }
 
