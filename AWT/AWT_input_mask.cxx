@@ -2104,7 +2104,7 @@ static void scan_existing_input_masks() {
         if (!GB_is_directory(dirname)) {
             if (scope == AWT_SCOPE_LOCAL) {         // in local scope
                 GB_ERROR warning = GB_create_directory(dirname); // try to create directory
-                if (warning) fprintf(stderr, "Warning: %s\n", warning);
+                if (warning) GB_warning(warning);
             }
         }
 

@@ -167,8 +167,6 @@ static void MG_popup_if_renamed(AW_window *aww, AW_CL cl_create_window) {
 
 // uses gb_dest and gb_merge
 void MG_start_cb2(AW_window *aww, AW_root *aw_root, bool save_enabled, bool dest_is_new) {
-    GB_ERROR error = 0;
-
     mg_save_enabled = save_enabled;
 
     {
@@ -194,12 +192,13 @@ void MG_start_cb2(AW_window *aww, AW_root *aw_root, bool save_enabled, bool dest
         GEN_is_genome_db(GLOBAL_gb_dest, dest_genome); // does not change anything if type is already defined
     }
 
-    if (!error) {
+    GB_ERROR error = 0;
+    {
         GB_transaction ta_merge(GLOBAL_gb_merge);
         GB_transaction ta_dest(GLOBAL_gb_dest);
 
-        GB_change_my_security(GLOBAL_gb_dest, 6, "passwd");
-        GB_change_my_security(GLOBAL_gb_merge, 6, "passwd");
+        error             = GB_change_my_security(GLOBAL_gb_dest, 6, "passwd");
+        if (!error) error = GB_change_my_security(GLOBAL_gb_merge, 6, "passwd");
         if (aww) aww->hide();
 
         MG_create_db_dependent_awars(aw_root, GLOBAL_gb_merge, GLOBAL_gb_dest);
