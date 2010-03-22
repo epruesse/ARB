@@ -1104,8 +1104,8 @@ void TEST_GBS_hashtab_2_string() {
         char *as_string2 = GBS_hashtab_2_string(hash2); printf("as_string2='%s'\n", as_string2);
         char *as_string3 = GBS_hashtab_2_string(hash3); printf("as_string3='%s'\n", as_string3);
 
-        TEST_ASSERT_BROKEN(strcmp(as_string, as_string2) == 0);
-        TEST_ASSERT(strcmp(as_string, as_string3)        == 0);
+        TEST_ASSERT__BROKEN(strcmp(as_string, as_string2) == 0);
+        TEST_ASSERT        (strcmp(as_string, as_string3) == 0);
 
         GBS_free_hash(hash3);
         GBS_free_hash(hash2);
