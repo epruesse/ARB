@@ -83,7 +83,11 @@ How to use ARB unit testing
    call 'make clean_coverage_results' to get rid of .cov files
 
 
+5. Running only some tests
 
+   Set 'RESTRICT=expr' to '.' to run all tests.
 
+   Set it to sth else to run only tests for matching source files.
+   This is helpful if you'd like to check test-coverage. 
 
 
