@@ -1463,6 +1463,13 @@ arb: arbbasic
 	$(MAKE) shared_libs arbapplications help
 
 # --------------------------------------------------------------------------------
+# unit testing 
+# @@@ work in progress
+#
+# goal is to automatically test all libraries/executables using TESTED_UNITS_AUTO
+#
+# currently not all test executables link w/o error
+# (see UNITS_WORKING, UNITS_UNTESTABLE_ATM and UNITS_NEED_FIX)
 
 TESTED_UNITS_AUTO = $(ARCHS:.a=.test)
 
@@ -1508,7 +1515,6 @@ UNITS_WORKING = \
 	PROBE_DESIGN/PROBE_DESIGN.test \
 	MULTI_PROBE/MULTI_PROBE.test \
 	PRIMER_DESIGN/PRIMER_DESIGN.test \
-	MERGE/MERGE.test \
 	PGT/PGT.test \
 	PARSIMONY/PARSIMONY.test \
 	TREEGEN/TREEGEN.test \
@@ -1517,9 +1523,6 @@ UNITS_WORKING = \
 	NAMES/NAMES.test \
 	PROBE/PROBE.test \
 	DBSERVER/DBSERVER.test \
-
-UNITS_UNTESTED = \
-	ARBDB/ARBDB.test \
 
 UNITS_UNTESTABLE_ATM = \
 	SERVERCNTRL/SERVERCNTRL.test \
@@ -1533,9 +1536,13 @@ UNITS_NEED_FIX = \
 	SECEDIT/SECEDIT.test \
 	RNA3D/RNA3D.test \
 
+# for the moment, put all units containing tests into UNITS_TESTED:
+UNITS_TESTED = \
+	ARBDB/ARBDB.test \
+	MERGE/MERGE.test \
 
 TESTED_UNITS_MANUAL = \
-	$(UNITS_UNTESTED) \
+	$(UNITS_TESTED) \
 
 #	$(UNITS_WORKING)
 

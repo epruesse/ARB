@@ -241,6 +241,7 @@ MG_species.o: $(ARBHOME)/INCLUDE/dupstr.h
 MG_species.o: $(ARBHOME)/INCLUDE/GEN.hxx
 MG_species.o: $(ARBHOME)/INCLUDE/inline.h
 MG_species.o: $(ARBHOME)/INCLUDE/smartptr.h
+MG_species.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 MG_trees.o: merge.hxx
 MG_trees.o: mg_merge.hxx

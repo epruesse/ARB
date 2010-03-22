@@ -24,29 +24,6 @@
 
 #include <inline.h>
 
-#define AWAR1 "tmp/merge1/"
-#define AWAR2 "tmp/merge2/"
-#define AWAR_SPECIES1 AWAR1"name"
-#define AWAR_SPECIES2 AWAR2"name"
-
-#define AWAR_SPECIES1_DEST AWAR1"dest"
-#define AWAR_SPECIES2_DEST AWAR2"dest"
-#define AWAR_FIELD1 AWAR1"field"
-#define AWAR_FIELD2 AWAR2"field"
-
-#define AWAR_TAG1 AWAR1"tag"
-#define AWAR_TAG2 AWAR2"tag"
-
-#define AWAR_TAG_DEL1 AWAR1"tagdel"
-
-#define AWAR_APPEND AWAR2"append"
-
-static AW_CL ad_global_scannerid1 = 0;
-static AW_CL ad_global_scannerid2 = 0;
-
-const char *MG_left_AWAR_SPECIES_NAME() { return AWAR_SPECIES1; }
-const char *MG_right_AWAR_SPECIES_NAME() { return AWAR_SPECIES2; }
-
 MG_remap::MG_remap() {
     in_length = 0;
     out_length = 0;
@@ -153,7 +130,7 @@ GB_ERROR MG_remap::set(const char *in_reference, const char *out_reference) {
             }
         }
     }
-    delete nremap_tab;
+    delete [] nremap_tab;
     return NULL;
 }
 
@@ -265,6 +242,31 @@ char *MG_remap::remap(const char *sequence) {
     }
     return GBS_strclose(outs);
 }
+
+// --------------------------------------------------------------------------------
+
+#define AWAR1 "tmp/merge1/"
+#define AWAR2 "tmp/merge2/"
+#define AWAR_SPECIES1 AWAR1"name"
+#define AWAR_SPECIES2 AWAR2"name"
+
+#define AWAR_SPECIES1_DEST AWAR1"dest"
+#define AWAR_SPECIES2_DEST AWAR2"dest"
+#define AWAR_FIELD1 AWAR1"field"
+#define AWAR_FIELD2 AWAR2"field"
+
+#define AWAR_TAG1 AWAR1"tag"
+#define AWAR_TAG2 AWAR2"tag"
+
+#define AWAR_TAG_DEL1 AWAR1"tagdel"
+
+#define AWAR_APPEND AWAR2"append"
+
+static AW_CL ad_global_scannerid1 = 0;
+static AW_CL ad_global_scannerid2 = 0;
+
+const char *MG_left_AWAR_SPECIES_NAME() { return AWAR_SPECIES1; }
+const char *MG_right_AWAR_SPECIES_NAME() { return AWAR_SPECIES2; }
 
 void MG_create_species_awars(AW_root *aw_root, AW_default aw_def)
 {
@@ -1388,3 +1390,194 @@ AW_window *MG_merge_species_cb(AW_root *awr) {
 
     return (AW_window *)aws;
 }
+
+// --------------------------------------------------------------------------------
+
+#if (UNIT_TESTS == 1)
+
+#include <test_unit.h>
+
+#define REMAP_VERBOOSE
+
+#if defined(REMAP_VERBOOSE)
+#define DUMP_REMAP(id, comment, from, to) fprintf(stderr, "%s %s '%s' -> '%s'\n", id, comment, from, to)
+#define DUMP_REMAP_STR(str)               fputs(str, stderr)
+#else
+#define DUMP_REMAP(comment, from, to)
+#define DUMP_REMAP_STR(str)
+#endif
+
+#define TEST_REMAP(id, remapper, ASS_EQ, seqold, expected)      \
+    char *calculated = remapper.remap(seqold);                  \
+    DUMP_REMAP(id, "want", seqold, expected);                   \
+    DUMP_REMAP(id, "calc", seqold, calculated);                 \
+    ASS_EQ(expected, calculated);                               \
+    DUMP_REMAP_STR("\n");                                       \
+    free(calculated);
+
+#define TEST_REMAP1REF_INT(id, ASS_EQ, refold, refnew, seqold, expected) \
+    do {                                                                \
+        MG_remap  remapper;                                             \
+        remapper.set(refold, refnew);                                   \
+        TEST_ASSERT(remapper.compile() == NULL);                        \
+        DUMP_REMAP(id, "ref ", refold, refnew);                         \
+        TEST_REMAP(id, remapper, ASS_EQ, seqold, expected);             \
+    } while(0)
+
+#define TEST_REMAP2REFS_INT(id, ASS_EQ, refold1, refnew1, refold2, refnew2, seqold, expected) \
+    do {                                                                \
+        MG_remap  remapper;                                             \
+        remapper.set(refold1, refnew1);                                 \
+        remapper.set(refold2, refnew2);                                 \
+        TEST_ASSERT(remapper.compile() == NULL);                        \
+        DUMP_REMAP(id, "ref1", refold1, refnew1);                       \
+        DUMP_REMAP(id, "ref2", refold2, refnew2);                       \
+        TEST_REMAP(id, remapper, ASS_EQ, seqold, expected);             \
+    } while(0)
+
+
+#define TEST_REMAP1REF(id, ro, rn, seqold, expected)                    \
+    TEST_REMAP1REF_INT(id, TEST_ASSERT_STRINGRESULT, ro, rn, seqold, expected)
+
+#define TEST_REMAP1REF__BROKEN(id, ro, rn, seqold, expected)            \
+    TEST_REMAP1REF_INT(id, TEST_ASSERT_STRINGRESULT__BROKEN, ro, rn, seqold, expected)
+
+#define TEST_REMAP2REFS(id, ro1, rn1, ro2, rn2, seqold, expected)       \
+    TEST_REMAP2REFS_INT(id, TEST_ASSERT_STRINGRESULT, ro1, rn1, ro2, rn2, seqold, expected)
+
+#define TEST_REMAP2REFS__BROKEN(id, ro1, rn1, ro2, rn2, seqold, expected) \
+    TEST_REMAP2REFS_INT(id, TEST_ASSERT_STRINGRESULT__BROKEN, ro1, rn1, ro2, rn2, seqold, expected)
+
+#define TEST_REMAP1REF_FWDREV(id, ro, rn, so, sn)       \
+    TEST_REMAP1REF(id "(fwd)", ro, rn, so, sn);         \
+    TEST_REMAP1REF(id "(rev)", rn, ro, sn, so)
+    
+#define TEST_REMAP1REF_ALLDIR(id, ro, rn, so, sn)               \
+    TEST_REMAP1REF_FWDREV(id "/ref=ref", ro, rn, so, sn);       \
+    TEST_REMAP1REF_FWDREV(id "/ref=src", so, sn, ro, rn)
+
+#define TEST_REMAP2REFS_FWDREV(id, ro1, rn1, ro2, rn2, so, sn)  \
+    TEST_REMAP2REFS(id "(fwd)", ro1, rn1, ro2, rn2, so, sn);    \
+    TEST_REMAP2REFS(id "(rev)", rn1, ro1, rn2, ro2, sn, so)
+
+#define TEST_REMAP2REFS_ALLDIR(id, ro1, rn1, ro2, rn2, so, sn)          \
+    TEST_REMAP2REFS_FWDREV(id "/ref=r1+r2 ", ro1, rn1, ro2, rn2, so, sn); \
+    TEST_REMAP2REFS_FWDREV(id "/ref=r1+src", ro1, rn1, so, sn, ro2, rn2); \
+    TEST_REMAP2REFS_FWDREV(id "/ref=r2+src", ro2, rn2, so, sn, ro1, rn1)
+
+
+void TEST_remapping() {
+    // ----------------------------------------
+    // remap with 1 reference
+
+    TEST_REMAP1REF_ALLDIR("simple gap",
+                          "ACGT", "AC--GT",
+                          "TGCA", "TG--CA");
+
+    TEST_REMAP1REF_FWDREV("dotgap",
+                          "ACGT", "AC..GT",              // dots in reference do not get propagated
+                          "TGCA", "TG--CA");
+
+    TEST_REMAP1REF__BROKEN("should expand full-dot-gaps",
+                           "AC-GT", "AC--GT",
+                           "TG.CA", "TG..CA");    /* if gap was present and only contained dots
+                                                   * -> new gap should only contain dots as well
+                                                   * (corresponding code in MG_remap::remap is never reached!)
+                                                   */
+    
+    TEST_REMAP1REF__BROKEN("should keep 'missing bases'",
+                           "AC---GT", "AC---GT",
+                           "TG-.-CA", "TG-.-CA"); // missing bases should not be deleted if possible
+
+    // ----------------------------------------
+    // remap with 2 references
+    TEST_REMAP2REFS_ALLDIR("simple 3-way",
+                           "A-CA-C-T", "AC-A---CT",
+                           "A---GC-T", "A----G-CT",
+                           "T-GAC--A", "TG-A-C--A");
+
+    TEST_REMAP2REFS("undefpos-nogap(2U)",
+                    "---A", "------A",
+                    "C---", "C------",
+                    "GUUG", "GU---UG");
+    
+    TEST_REMAP2REFS("undefpos-nogap(3U)",
+                    "C----",  "C------", 
+                    "----A", "------A",
+                    "GUUUG", "GU--UUG");
+
+    TEST_REMAP2REFS("undefpos-nogap(4U)",
+                    "-----A", "------A",
+                    "C-----", "C------",
+                    "GUUUUG", "GU-UUUG");
+
+    TEST_REMAP2REFS("undefpos1-gapleft",
+                    "----A", "------A",
+                    "C----", "C------",
+                    "G-UUG", "G---UUG");
+    
+    TEST_REMAP2REFS__BROKEN("undefpos1-gapright",
+                            "----A", "------A",
+                            "C----", "C------",
+                            "GUU-G", "GUU---G");
+
+    TEST_REMAP2REFS("impossible references",
+                    "AC-TA", "A---CT--A",           // impossible references
+                    "A-GTA", "AG---T--A",
+                    "TGCAT", "T---GCA-T");          // solve by insertion (partial misalignment)
+
+
+    // test non-full sequences
+    TEST_REMAP2REFS__BROKEN("missing ali-pos (ref1-source)",
+                            "C",  "C--",                    // in-seq missing 1 ali pos
+                            "-A", "--A",
+                            "GG", "G-G");
+    TEST_REMAP2REFS__BROKEN("missing ali-pos (ref2-source)",
+                            "-A", "--A",
+                            "C",  "C--",                    // in-seq missing 1 ali pos
+                            "GG", "G-G");
+
+
+    TEST_REMAP2REFS("missing ali-pos (ref1-target)",
+                    "C-", "C",                      // out-seq missing 2 ali pos
+                    "-A", "--A",
+                    "GG", "G-G");
+    TEST_REMAP2REFS("missing ali-pos (ref2-target)",
+                    "-A", "--A",
+                    "C-", "C",                      // out-seq missing 2 ali pos
+                    "GG", "G-G");
+
+    TEST_REMAP2REFS("missing ali-pos (seq-source)",
+                    "C--", "C--",
+                    "-A-", "--A",
+                    "GG",  "G-G");                       // in-seq missing 1 ali pos
+
+    // --------------------
+
+    TEST_REMAP1REF("gap gets too small (1)",
+                   "A---T---A", "A--T--A",
+                   "AGGGT---A", "AGGGT-A");
+
+    TEST_REMAP1REF("gap gets too small (2)",
+                   "A---T---A", "A--T--A",
+                   "AGGGT--GA", "AGGGTGA");
+    
+    TEST_REMAP1REF__BROKEN("gap gets too small (3)",
+                           "A---T---A", "A--T--A",
+                           "AGGGT-G-A", "AGGGTGA");
+
+    TEST_REMAP1REF("gap gets too small (4)",
+                   "A---T---A", "A--T--A",
+                   "AGGGTG--A", "AGGGTGA");
+                   
+    TEST_REMAP1REF("gap tightens to fit (1)",
+                   "A---T---A", "A--T--A",
+                   "AGG-T---A", "AGGT--A");
+    
+    TEST_REMAP1REF__BROKEN("gap tightens to fit (2)",
+                           "A---T---A", "A--T--A",
+                           "A-GGT---A", "AGGT--A");
+
+}
+
+#endif
