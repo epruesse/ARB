@@ -1484,10 +1484,16 @@ void TEST_remapping() {
                                                    * -> new gap should only contain dots as well
                                                    * (corresponding code in MG_remap::remap is never reached!)
                                                    */
+    TEST_REMAP1REF("should expand full-dot-gaps (wrong old behavior)",
+                   "AC-GT", "AC--GT",
+                   "TG.CA", "TG--CA");
     
     TEST_REMAP1REF__BROKEN("should keep 'missing bases'",
                            "AC---GT", "AC---GT",
                            "TG-.-CA", "TG-.-CA"); // missing bases should not be deleted if possible
+    TEST_REMAP1REF("should keep 'missing bases' (wrong old behavior)",
+                   "AC---GT", "AC---GT",
+                   "TG-.-CA", "TG---CA"); 
 
     // ----------------------------------------
     // remap with 2 references
@@ -1520,6 +1526,10 @@ void TEST_remapping() {
                             "----A", "------A",
                             "C----", "C------",
                             "GUU-G", "GUU---G");
+    TEST_REMAP2REFS("undefpos1-gapright (wrong old behavior)",
+                    "----A", "------A",
+                    "C----", "C------",
+                    "GUU-G", "GU--U-G");
 
     TEST_REMAP2REFS("impossible references",
                     "AC-TA", "A---CT--A",           // impossible references
@@ -1529,13 +1539,22 @@ void TEST_remapping() {
 
     // test non-full sequences
     TEST_REMAP2REFS__BROKEN("missing ali-pos (ref1-source)",
-                            "C",  "C--",                    // in-seq missing 1 ali pos
+                            "C",  "C--",            // in-seq missing 1 ali pos
                             "-A", "--A",
                             "GG", "G-G");
+    TEST_REMAP2REFS("missing ali-pos (ref1-source) (wrong old behavior)",
+                    "C",  "C--",
+                    "-A", "--A",
+                    "GG", "GG");
+    
     TEST_REMAP2REFS__BROKEN("missing ali-pos (ref2-source)",
                             "-A", "--A",
-                            "C",  "C--",                    // in-seq missing 1 ali pos
+                            "C",  "C--",            // in-seq missing 1 ali pos
                             "GG", "G-G");
+    TEST_REMAP2REFS("missing ali-pos (ref2-source) (wrong old behavior)",
+                    "-A", "--A",
+                    "C",  "C--",            // in-seq missing 1 ali pos
+                    "GG", "GG");
 
 
     TEST_REMAP2REFS("missing ali-pos (ref1-target)",
@@ -1565,6 +1584,9 @@ void TEST_remapping() {
     TEST_REMAP1REF__BROKEN("gap gets too small (3)",
                            "A---T---A", "A--T--A",
                            "AGGGT-G-A", "AGGGTGA");
+    TEST_REMAP1REF("gap gets too small (3) (wrong old behavior)",
+                   "A---T---A", "A--T--A",
+                   "AGGGT-G-A", "AGGGT-GA");
 
     TEST_REMAP1REF("gap gets too small (4)",
                    "A---T---A", "A--T--A",
@@ -1577,6 +1599,9 @@ void TEST_remapping() {
     TEST_REMAP1REF__BROKEN("gap tightens to fit (2)",
                            "A---T---A", "A--T--A",
                            "A-GGT---A", "AGGT--A");
+    TEST_REMAP1REF("gap tightens to fit (2) (wrong old behavior)",
+                   "A---T---A", "A--T--A",
+                   "A-GGT---A", "A-GGT-A");
 
 }
 
