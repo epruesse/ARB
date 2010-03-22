@@ -12,9 +12,20 @@
 dummy:
 	false
 
-#VALGRIND=2# run valgrind before test (useful if test traps w/o any helpful information)
-#VALGRIND=1# run valgrind after sucessful test
+# ----------------------------------------------------------
+
 VALGRIND=0# only test
+#VALGRIND=1# run valgrind after sucessful test
+#VALGRIND=2# run valgrind before test (useful if test traps w/o any helpful information)
+
+# ----------------------------------------------------------
+
+# restrict tests to modules matching regexpr 'RESTRICT': 
+RESTRICT='.'
+#RESTRICT='adhash\.cxx'
+#RESTRICT='/ARBDB/'
+
+# ----------------------------------------------------------
 
 RELUNITDIR=../$(UNITDIR)
 FULLUNITDIR=$(ARBHOME)/$(UNITDIR)
@@ -82,7 +93,7 @@ $(SYMLIST) : $(FULLLIB) Makefile makedirs
 	nm -C -l $< > $@
 
 $(TEST_CODE) : $(SYMLIST) $(SYM2TESTCODE) 
-	$(SYM2TESTCODE) $(UNITLIB) $< $@
+	$(SYM2TESTCODE) $(UNITLIB) $(RESTRICT) $< $@
 
 $(TEST_OBJ) : $(TEST_CODE) $(INCLUDES)
 	$(CPP) $(cflags) -c $< -o $@ -I. 

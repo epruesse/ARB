@@ -80,6 +80,38 @@ sub parse($) {
 
 # --------------------------------------------------------------------------------
 
+sub filter($) {
+  my ($expr) = @_;
+  my $regexpr = qr/$expr/;
+
+  my %del = ();
+  foreach my $symbol (keys %location) {
+    my $loc = $location{$symbol};
+    if (not $loc =~ $regexpr) { $del{$symbol} = 1; }
+    else { $del{$symbol} = 0; }
+  }
+
+  {
+    my $warn = 0;
+    foreach (sort keys %simple_test) {
+      if ($del{$_}==1) {
+        if ($warn==0) {
+          print "Skipped tests (restriction set to '$expr'):\n";
+          $warn = 1;
+        }
+        print '* '.$_."\n";
+      }
+    }
+  }
+
+  %simple_test = map {
+    if ($del{$_}==0) { $_ => $simple_test{$_}; }
+    else { ; }
+  } keys %simple_test;
+}
+
+# --------------------------------------------------------------------------------
+
 sub UT_type($) { my ($name) = @_; return 'UnitTest_'.$name; }
 sub UT_name($) { my ($name) = @_; return 'unitTest_'.$name; }
 
@@ -154,16 +186,18 @@ HEAD
 
 sub main() {
   my $args = scalar(@ARGV);
-  if ($args != 3) {
-    die "Usage: sym2testcode.pl libname nm-output gen-cxx\n".
-      "Error: Expected 2 arguments\n";
+  if ($args != 4) {
+    die "Usage: sym2testcode.pl libname restrict-expr nm-output gen-cxx\n".
+      "Error: Expected 4 arguments\n";
   }
 
   my $libname   = $ARGV[0];
-  my $nm_output = $ARGV[1];
-  my $gen_cxx   = $ARGV[2];
+  my $restrict  = $ARGV[1];
+  my $nm_output = $ARGV[2];
+  my $gen_cxx   = $ARGV[3];
 
   parse($nm_output);
+  filter($restrict);
   eval {
     create($libname,$gen_cxx);
   };
