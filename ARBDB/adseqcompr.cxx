@@ -437,8 +437,8 @@ static GB_ERROR compress_sequence_tree(GBDATA *gb_main, CompressionTree *tree, c
             int max_compSteps = 0; // in one branch
             int seqcount      = 0;
 
-            GB_status2("Create master sequences");
-            GB_status(0);
+            GB_status("Create master sequences");
+            GB_status(0.0);
 
             init_indices_and_count_sons(tree, &seqcount, ali_name);
             if (!seqcount) {
@@ -529,7 +529,7 @@ static GB_ERROR compress_sequence_tree(GBDATA *gb_main, CompressionTree *tree, c
                     {
                         int builtMasters = 0;
                         int aborted      = 0;
-                        GB_status2("Building %i master sequences", mastercount);
+                        GB_status(GBS_global_string("Building %i master sequences", mastercount));
                         g_b_create_master(tree, seqs, masters, mastercount, &builtMasters, -1, ali_name, ali_len, &aborted);
                         if (aborted) error = "User abort";
                     }
@@ -537,8 +537,8 @@ static GB_ERROR compress_sequence_tree(GBDATA *gb_main, CompressionTree *tree, c
 
                 // Compress sequences in tree
                 if (!error) {
-                    GB_status2("Compressing %i sequences in tree", seqcount);
-                    GB_status(0);
+                    GB_status(GBS_global_string("Compressing %i sequences in tree", seqcount));
+                    GB_status(0.0);
 
                     for (si=0; si<seqcount; si++) {
                         int             mi     = seqs[si].master;
@@ -580,8 +580,8 @@ static GB_ERROR compress_sequence_tree(GBDATA *gb_main, CompressionTree *tree, c
                     int pass; // pass 1 : count species to compress, pass 2 : compress species
                     int speciesNotInTree = 0;
 
-                    GB_status2("Compressing sequences NOT in tree");
-                    GB_status(0);
+                    GB_status("Compressing sequences NOT in tree");
+                    GB_status(0.0);
 
                     for (pass = 1; pass <= 2; ++pass) {
                         GBDATA *gb_species_data = GB_search(gb_main, "species_data", GB_CREATE_CONTAINER);
@@ -620,7 +620,7 @@ static GB_ERROR compress_sequence_tree(GBDATA *gb_main, CompressionTree *tree, c
                         }
                         if (pass == 1) {
                             speciesNotInTree = count;
-                            if (GB_status2("Compressing %i sequences NOT in tree", speciesNotInTree)) {
+                            if (GB_status(GBS_global_string("Compressing %i sequences NOT in tree", speciesNotInTree))) {
                                 error = "User abort";
                                 break;
                             }
@@ -629,8 +629,8 @@ static GB_ERROR compress_sequence_tree(GBDATA *gb_main, CompressionTree *tree, c
                 }
 
                 if (!error) {
-                    GB_status2("Compressing %i master-sequences", mastercount);
-                    GB_status(0);
+                    GB_status(GBS_global_string("Compressing %i master-sequences", mastercount));
+                    GB_status(0.0);
 
                     // Compress all masters
                     for (si=0; si<mastercount; si++) {

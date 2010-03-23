@@ -22,10 +22,10 @@
 
 #define GBS_GLOBAL_STRING_SIZE 64000
 
-gb_warning_func_type     gb_warning_func;
-gb_information_func_type gb_information_func;
-gb_status_func_type      gb_status_func;
-gb_status_func2_type     gb_status_func2;
+static gb_warning_func_type      gb_warning_func;
+static gb_information_func_type  gb_information_func;
+static gb_status_gauge_func_type gb_status_gauge_func;
+static gb_status_msg_func_type   gb_status_msg_func;
 
 // -----------------------
 //      error handling
@@ -1384,8 +1384,8 @@ int GB_status(double val) {
      * return value : 0 = ok, 1 = userAbort
      */
 
-    if (gb_status_func) {
-        result = gb_status_func(val);
+    if (gb_status_gauge_func) {
+        result = gb_status_gauge_func(val);
     }
     else {
         char buffer[100];
@@ -1402,36 +1402,23 @@ int GB_status(double val) {
     return result;
 }
 
-NOT4PERL void GB_install_status(gb_status_func_type func) {
-    gb_status_func = func;
-}
+int GB_status(const char *message) {
+    int result = 0;
 
-
-int GB_status2(const char *templat, ...) {
-    // goes to header: __ATTR__FORMAT(1)
-
-    // return value : 0 = ok, 1 = userAbort
-
-    va_list parg;
-
-    if (gb_status_func2) {
-        char buffer[4000];
-        memset(&buffer[0], 0, 4000);
-        va_start(parg, templat);
-        vsprintf(buffer, templat, parg);
-
-        return gb_status_func2(buffer);
+    if (gb_status_msg_func) {
+        result = gb_status_msg_func(message);
+    }
+    else {
+        fputs(message, stdout);
+        fputc('\n', stdout);
     }
 
-    va_start(parg, templat);
-    vfprintf(stdout, templat, parg);
-    fprintf(stdout, "\n");
-
-    return 0;
+    return result;
 }
 
-NOT4PERL void GB_install_status2(gb_status_func2_type func2) {
-    gb_status_func2 = func2;
+NOT4PERL void GB_install_status(gb_status_gauge_func_type gauge_fun, gb_status_msg_func_type msg_fun) {
+    gb_status_gauge_func = gauge_fun;
+    gb_status_msg_func   = msg_fun;
 }
 
 // -------------------------------------------

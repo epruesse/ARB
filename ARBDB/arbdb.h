@@ -108,8 +108,8 @@ typedef int (*gb_compare_function)(const void *p0, const void *p1, void *client_
 typedef void (*gb_error_handler_type)(const char *msg);
 typedef void (*gb_warning_func_type)(const char *msg);
 typedef void (*gb_information_func_type)(const char *msg);
-typedef int (*gb_status_func_type)(double val);
-typedef int (*gb_status_func2_type)(const char *val);
+typedef int (*gb_status_gauge_func_type)(double val);
+typedef int (*gb_status_msg_func_type)(const char *val);
 
 // -----------------------
 //      GB_transaction

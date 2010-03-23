@@ -632,7 +632,7 @@ GB_ERROR GBT_link_tree_using_species_hash(GBT_TREE *tree, bool show_status, GB_H
     ltd.counter      = 0;
 
     if (show_status) {
-        GB_status2("Relinking tree to database");
+        GB_status("Relinking tree to database");
         ltd.nodes = leafs;
     }
     else {

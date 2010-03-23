@@ -1351,47 +1351,31 @@ static void aw_root_create_color_map(AW_root *root) {
 
 }
 
-static void aw_message_forwarder(const char *msg) {
-    aw_message(msg);
-}
-static void aw_message_forwarder_verbose(const char *msg) {
+static void aw_message_dump_stderr(const char *msg) {
     fprintf(stderr, "ARB: %s\n", msg); // print to console as well
     aw_message(msg);
 }
 
-static int aw_status_dummy(double val) {
-    return aw_status(val);
-}
-
-static int aw_status_dummy2(const char *val) {
-    return aw_status(val);
-}
-
 void AW_root::init_root(const char *programname, bool no_exit) {
-    // Initialisiert eine gesamte X-Anwendung
-    int a = 0;
-    int i;
+    // initialize ARB X application
+    int          a = 0;
     XFontStruct *fontstruct;
-    char buffer[256];
-    char *fallback_resources[100];
+    char        *fallback_resources[100];
 
     p_r-> no_exit = no_exit;
     program_name  = strdup(programname);
 
-    for (i=0; i<1000; i++) {
-        if (aw_fb[i].fb == 0)
-            break;
-        sprintf(buffer, "*%s: %s", aw_fb[i].fb, GB_read_char_pntr(GB_search(
-                (GBDATA*)application_database, aw_fb[i].awar, GB_FIND)));
-        fallback_resources[i] = strdup(buffer);
+    int i;
+    for (i=0; i<1000 && aw_fb[i].fb; i++) {
+        GBDATA *gb_awar       = GB_search((GBDATA*)application_database, aw_fb[i].awar, GB_FIND);
+        fallback_resources[i] = GBS_global_string_copy("*%s: %s", aw_fb[i].fb, GB_read_char_pntr(gb_awar));
     }
     fallback_resources[i] = 0;
-    GB_install_error_handler((gb_warning_func_type)aw_message_forwarder_verbose);
-    GB_install_warning((gb_warning_func_type)aw_message_forwarder);
-    GB_install_information((gb_information_func_type)0); // 0 means -> write to stdout only
 
-    GB_install_status((gb_status_func_type)aw_status_dummy);
-    GB_install_status2((gb_status_func2_type)aw_status_dummy2);
+    GB_install_error_handler(aw_message_dump_stderr);
+    GB_install_warning(aw_message);
+    GB_install_information(NULL);                   // NULL means -> write to stdout only
+    GB_install_status(aw_status, aw_status);
 
     // @@@ FIXME: the next line hangs if program runs inside debugger
     p_r->toplevel_widget = XtOpenApplication(&(p_r->context), programname,
