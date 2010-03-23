@@ -60,31 +60,6 @@ GB_ERROR   MG_export_fields(AW_root *aw_root, GBDATA *gb_source, GBDATA *gb_dest
 const char *MG_left_AWAR_SPECIES_NAME();
 const char *MG_right_AWAR_SPECIES_NAME();
 
-class MG_remap {
-    int in_length;
-    int out_length;
-    int *remap_tab;
-    int *soft_remap_tab;
-    int compiled;
-public:
-    MG_remap();
-    ~MG_remap();
-    GB_ERROR set(const char *in_reference, const char *out_reference); // returns only warnings
-    GB_ERROR compile();         // after last set
-    char *remap(const char *sequence); // returns 0 on error, else copy of sequence
-};
-
-class AW_root;
-
-class MG_remaps {
-public:
-    int n_remaps;
-    char **alignment_names;
-    MG_remap **remaps;
-    MG_remaps(GBDATA *gb_left, GBDATA *gb_right, AW_root *awr);
-    ~MG_remaps();
-};
-
 #ifndef MG_MERGE_HXX
 #include "mg_merge.hxx"
 #endif
