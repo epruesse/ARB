@@ -1,11 +1,13 @@
 # INCLUDE und GLOBALS MAIN CC cflags werden von aussen uebergeben
 .SUFFIXES: .o .cxx .depend
 
-CPP_OBJECTS = AWTI_import.o \
-		      AWTI_export.o \
+CPP_OBJECTS = \
+	AWTI_import.o \
+	AWTI_export.o \
 
 $(MAIN): $(CPP_OBJECTS)
 	$(LINK_STATIC_LIB) $(MAIN) $(CPP_OBJECTS)
+
 .cxx.o:
 	$(CPP) $(cflags) -c $<  $(CPPINCLUDES)
 
@@ -29,7 +31,6 @@ depend.init:
 # Do not add dependencies manually - use 'make depend' in $ARBHOME
 # For formatting issues see SOURCE_TOOLS/fix_depends.pl
 
-AWTI_export.o: awti_exp_local.hxx
 AWTI_export.o: awti_export.hxx
 AWTI_export.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 AWTI_export.o: $(ARBHOME)/INCLUDE/ad_prot.h
@@ -52,8 +53,8 @@ AWTI_export.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AWTI_export.o: $(ARBHOME)/INCLUDE/awt_filter.hxx
 AWTI_export.o: $(ARBHOME)/INCLUDE/dupstr.h
 AWTI_export.o: $(ARBHOME)/INCLUDE/inline.h
+AWTI_export.o: $(ARBHOME)/INCLUDE/seqio.hxx
 AWTI_export.o: $(ARBHOME)/INCLUDE/smartptr.h
-AWTI_export.o: $(ARBHOME)/INCLUDE/xml.hxx
 
 AWTI_import.o: awti_imp_local.hxx
 AWTI_import.o: awti_import.hxx
@@ -82,4 +83,5 @@ AWTI_import.o: $(ARBHOME)/INCLUDE/awt_item_sel_list.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/dupstr.h
 AWTI_import.o: $(ARBHOME)/INCLUDE/GEN.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/GenomeImport.h
+AWTI_import.o: $(ARBHOME)/INCLUDE/seqio.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/smartptr.h
