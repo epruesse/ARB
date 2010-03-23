@@ -1,13 +1,21 @@
-#include <awti_imp_local.hxx>
+// ============================================================= //
+//                                                               //
+//   File      : AWTI_import.cxx                                 //
+//   Purpose   :                                                 //
+//                                                               //
+//   Institute of Microbiology (Technical University Munich)     //
+//   http://www.arb-home.de/                                     //
+//                                                               //
+// ============================================================= //
 
+#include "awti_imp_local.hxx"
+
+#include <seqio.hxx>
 #include <awt.hxx>
 #include <awt_item_sel_list.hxx>
-
 #include <aw_advice.hxx>
 #include <aw_file.hxx>
-
 #include <AW_rename.hxx>
-
 #include <GenomeImport.h>
 #include <GEN.hxx>
 
@@ -23,83 +31,6 @@ inline const char *name_only(const char *fullpath) {
     return lslash ? lslash+1 : fullpath;
 }
 
-static char *awtc_fgets(char *s, int size, FILE *stream) {
-    // same as fgets but also works with file in MacOS format
-    int i;
-    for (i = 0; i<(size-1); ++i) {
-        int byte = fgetc(stream);
-        if (byte == EOF) {
-            if (i == 0) return 0;
-            break;
-        }
-
-        s[i] = byte;
-        if (byte == '\n' || byte == '\r') break;
-    }
-    s[i] = 0;
-
-    return s;
-}
-
-bool awtc_read_string_pair(FILE *in, char *&s1, char *&s2, size_t& lineNr) {
-    // helper function to read import/export filters.
-    // returns true if successfully read
-    //
-    // 's1' is set to a heap-copy of the first token on line
-    // 's2' is set to a heap-copy of the rest of the line (or NULL if only one token is present)
-    // 'lineNr' is incremented with each line read
-
-    s1 = 0;
-    s2 = 0;
-
-    const int  BUFSIZE = 8000;
-    char       buffer[BUFSIZE];
-    char      *res;
-
-    do {
-        res = awtc_fgets(&buffer[0], BUFSIZE-1, in);
-        if (res) {
-            char *p = buffer;
-
-            lineNr++;
-
-            while (*p == ' ' || *p == '\t') p++;
-            if (*p != '#') {
-                int len = strlen(p)-1;
-                while  (len >= 0 && strchr("\t \n\r", p[len])) {
-                    p[len--] = 0;
-                }
-
-                if (*p) {
-                    char *e = strpbrk(p, " \t");
-
-                    if (e) {
-                        *(e++) = 0;
-                        s1     = strdup(p);
-
-                        e += strspn(e, " \t"); // skip whitespace
-
-                        if (*e == '"') {
-                            char *k = strrchr(e, '"');
-                            if (k!=e) {
-                                e++;
-                                *k=0;
-                            }
-                        }
-                        s2 = strdup(e);
-                    }
-                    else {
-                        s1 = strdup(p);
-                    }
-                }
-            }
-        }
-    } while (res && !s1);                           // read until EOF or something found
-
-    awti_assert(!res == !s1);
-
-    return res;
-}
 
 static GB_ERROR not_in_match_error(const char *cmd) {
     return GBS_global_string("Command '%s' may only appear after 'MATCH'", cmd);
@@ -128,7 +59,7 @@ static GB_ERROR read_import_format(const char *fullfile, input_format_struct *if
         size_t  lineNumber    = 0;
         bool    include_error = false;
 
-        while (!error && awtc_read_string_pair(in, s1, s2, lineNumber)) {
+        while (!error && SEQIO_read_string_pair(in, s1, s2, lineNumber)) {
 
 #define GLOBAL_COMMAND(cmd) (!error && strcmp(s1, cmd) == 0)
 #define MATCH_COMMAND(cmd)  (!error && strcmp(s1, cmd) == 0 && (pl || !(error = not_in_match_error(cmd))))
@@ -554,7 +485,7 @@ char *awtc_read_line(int tab, char *sequencestart, char *sequenceend) {
             in_queue = 0;
             return s;
         }
-        p = awtc_fgets(ifo->b1, BUFSIZE-3, awtcig.in);
+        p = SEQIO_fgets(ifo->b1, BUFSIZE-3, awtcig.in);
         if (!p) {
             sprintf(ifo->b1, "%s", sequenceend);
             if (awtcig.in) fclose(awtcig.in); awtcig.in = 0;
@@ -579,7 +510,7 @@ char *awtc_read_line(int tab, char *sequencestart, char *sequenceend) {
         if (GBS_string_matches(ifo->b2, sequencestart, GB_MIND_CASE)) return ifo->b2;
     }
     while (1) {
-        p = awtc_fgets(ifo->b1, BUFSIZE-3, awtcig.in);
+        p = SEQIO_fgets(ifo->b1, BUFSIZE-3, awtcig.in);
         if (!p) {
             if (awtcig.in) fclose(awtcig.in); awtcig.in = 0;
             break;
