@@ -74,18 +74,18 @@ GB_ERROR MG_remap::set(const char *in_reference, const char *out_reference) {
         }
     }
     else {
-        int inl = strlen (in_reference);
+        int inl = strlen(in_reference);
         if (inl > in_length) {
             int *new_remap = new int[inl];
-            int i;
-            for (i=0; i<in_length; i++) {
-                new_remap[i] = remap_tab[i];
-            }
-            for (; i<inl; i++) {
-                new_remap[i] = -1;
-            }
+            int  i;
+            
+            for (i=0; i<in_length; i++) new_remap[i] = remap_tab[i];
+            for (; i<inl; i++) new_remap[i]          = -1;
+
+            delete [] remap_tab;
+            remap_tab = new_remap;
+            in_length = inl;
         }
-        in_length = inl;
     }
     {
         int nol = strlen(out_reference);
@@ -1572,24 +1572,15 @@ void TEST_remapping() {
 
 
     // test non-full sequences
-    TEST_REMAP2REFS__BROKEN("missing ali-pos (ref1-source)",
-                            "C",  "C--",            // in-seq missing 1 ali pos
-                            "-A", "--A",
-                            "GG", "G-G");
-    TEST_REMAP2REFS("missing ali-pos (ref1-source) (wrong old behavior)",
-                    "C",  "C--",
+    TEST_REMAP2REFS("missing ali-pos (ref1-source)",
+                    "C",  "C--",                    // in-seq missing 1 ali pos
                     "-A", "--A",
-                    "GG", "GG");
+                    "GG", "G-G");
     
-    TEST_REMAP2REFS__BROKEN("missing ali-pos (ref2-source)",
-                            "-A", "--A",
-                            "C",  "C--",            // in-seq missing 1 ali pos
-                            "GG", "G-G");
-    TEST_REMAP2REFS("missing ali-pos (ref2-source) (wrong old behavior)",
+    TEST_REMAP2REFS("missing ali-pos (ref2-source)",
                     "-A", "--A",
                     "C",  "C--",            // in-seq missing 1 ali pos
-                    "GG", "GG");
-
+                    "GG", "G-G");
 
     TEST_REMAP2REFS("missing ali-pos (ref1-target)",
                     "C-", "C",                      // out-seq missing 2 ali pos
