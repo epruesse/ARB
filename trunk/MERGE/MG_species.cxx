@@ -1527,8 +1527,15 @@ void TEST_remapping() {
                            "TG-.-CA", "TG-.-CA"); // missing bases should not be deleted if possible
     TEST_REMAP1REF("should keep 'missing bases' (wrong old behavior)",
                    "AC---GT", "AC---GT",
-                   "TG-.-CA", "TG---CA"); 
+                   "TG-.-CA", "TG---CA");
 
+    TEST_REMAP1REF__BROKEN("should keep only 'missing bases' (2)",
+                           "AC-D-GT", "AC-D-GT",
+                           "TG-.-CA", "TG-.-CA"); // missing bases should not be deleted if possible
+    TEST_REMAP1REF("should keep only 'missing bases' (2) (wrong old behavior)",
+                           "AC-D-GT", "AC-D-GT",
+                           "TG-.-CA", "TG---CA");
+    
     // ----------------------------------------
     // remap with 2 references
     TEST_REMAP2REFS_ALLDIR("simple 3-way",
@@ -1546,7 +1553,11 @@ void TEST_remapping() {
                     "----A", "------A",
                     "GUUUG", "GU--UUG");
 
-    TEST_REMAP2REFS("undefpos-nogap(4U)",
+    TEST_REMAP2REFS__BROKEN("undefpos-nogap(4U)",
+                            "-----A", "------A",
+                            "C-----", "C------",
+                            "GUUUUG", "GUU-UUG");
+    TEST_REMAP2REFS("undefpos-nogap(4U) (wrong old behavior)",
                     "-----A", "------A",
                     "C-----", "C------",
                     "GUUUUG", "GU-UUUG");
@@ -1565,21 +1576,15 @@ void TEST_remapping() {
                     "C----", "C------",
                     "GUU-G", "GU--U-G");
 
-    TEST_REMAP2REFS("impossible references",
-                    "AC-TA", "A---CT--A",           // impossible references
-                    "A-GTA", "AG---T--A",
-                    "TGCAT", "T---GCA-T");          // solve by insertion (partial misalignment)
-
-
     // test non-full sequences
     TEST_REMAP2REFS("missing ali-pos (ref1-source)",
                     "C",  "C--",                    // in-seq missing 1 ali pos
                     "-A", "--A",
                     "GG", "G-G");
-    
+
     TEST_REMAP2REFS("missing ali-pos (ref2-source)",
                     "-A", "--A",
-                    "C",  "C--",            // in-seq missing 1 ali pos
+                    "C",  "C--",                    // in-seq missing 1 ali pos
                     "GG", "G-G");
 
     TEST_REMAP2REFS("missing ali-pos (ref1-target)",
@@ -1594,7 +1599,7 @@ void TEST_remapping() {
     TEST_REMAP2REFS("missing ali-pos (seq-source)",
                     "C--", "C--",
                     "-A-", "--A",
-                    "GG",  "G-G");                       // in-seq missing 1 ali pos
+                    "GG",  "G-G");                  // in-seq missing 1 ali pos
 
     // --------------------
 
@@ -1628,6 +1633,12 @@ void TEST_remapping() {
                    "A---T---A", "A--T--A",
                    "A-GGT---A", "A-GGT-A");
 
+    // --------------------
+    
+    TEST_REMAP2REFS("impossible references",
+                    "AC-TA", "A---CT--A",           // impossible references
+                    "A-GTA", "AG---T--A",
+                    "TGCAT", "T---GCA-T");          // solve by insertion (partial misalignment)
 }
 
 #endif
