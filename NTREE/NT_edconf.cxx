@@ -347,42 +347,6 @@ void nt_build_conf_marked(GB_HASH *used, GBS_strstruct *file) {
     GBS_chrcat(file, 'E');   // Group end indicated by 'E'
 }
 
-#define CONFNAME "default_configuration"
-
-void nt_start_editor_on_configuration(AW_window *aww) {
-    aww->hide();
-    char *cn = aww->get_root()->awar(AWAR_CONFIGURATION)->read_string();
-    char *com = (char *)GBS_global_string("arb_edit4 -c '%s' &", cn);
-    GBCMC_system(GLOBAL_gb_main, com);
-    delete cn;
-}
-
-AW_window *NT_start_editor_on_old_configuration(AW_root *awr) {
-    static AW_window_simple *aws = 0;
-    if (aws) return (AW_window *)aws;
-    awr->awar_string(AWAR_CONFIGURATION, "default_configuration", GLOBAL_gb_main);
-    aws = new AW_window_simple;
-    aws->init(awr, "SELECT_CONFIGURATION", "SELECT A CONFIGURATION");
-    aws->at(10, 10);
-    aws->auto_space(0, 0);
-    awt_create_selection_list_on_configurations(GLOBAL_gb_main, (AW_window *)aws, AWAR_CONFIGURATION);
-    aws->at_newline();
-
-    aws->callback((AW_CB0)nt_start_editor_on_configuration);
-    aws->create_button("START", "START");
-
-    aws->callback(AW_POPDOWN);
-    aws->create_button("CLOSE", "CLOSE", "C");
-
-    aws->window_fit();
-    return (AW_window *)aws;
-}
-
-void NT_start_editor_on_tree(AW_window *, AW_CL cl_use_species_aside, AW_CL) {
-    GB_ERROR error = NT_create_configuration(0, nt_get_current_tree_root(), CONFNAME, (int)cl_use_species_aside);
-    if (!error) GBCMC_system(GLOBAL_gb_main, "arb_edit4 -c "CONFNAME" &");
-}
-
 enum extractType {
     CONF_EXTRACT,
     CONF_MARK,
@@ -392,9 +356,11 @@ enum extractType {
 };
 
 void nt_extract_configuration(AW_window *aww, AW_CL cl_extractType) {
-    GB_transaction  dummy2(GLOBAL_gb_main); // open close transaction
-    char           *cn               = aww->get_root()->awar(AWAR_CONFIGURATION)->read_string();
-    GBDATA         *gb_configuration = GBT_find_configuration(GLOBAL_gb_main, cn);
+    GB_transaction  dummy2(GLOBAL_gb_main);         // open close transaction
+    AW_root        *aw_root = aww->get_root();
+    char           *cn      = aw_root->awar(AWAR_CONFIGURATION)->read_string();
+    
+    GBDATA *gb_configuration = GBT_find_configuration(GLOBAL_gb_main, cn);
     if (!gb_configuration) {
         aw_message(GBS_global_string("Configuration '%s' not found in the database", cn));
     }
@@ -402,15 +368,17 @@ void nt_extract_configuration(AW_window *aww, AW_CL cl_extractType) {
         GBDATA *gb_middle_area  = GB_search(gb_configuration, "middle_area", GB_STRING);
         char   *md              = 0;
         size_t  unknown_species = 0;
+        bool    refresh         = false;
 
         if (gb_middle_area) {
             extractType ext_type = extractType(cl_extractType);
 
-            GB_HASH *was_marked = 0; // only used for CONF_COMBINE
+            GB_HASH *was_marked = NULL;             // only used for CONF_COMBINE
 
             switch (ext_type) {
                 case CONF_EXTRACT:
                     GBT_mark_all(GLOBAL_gb_main, 0); // unmark all for extract
+                    refresh = true;
                     break;
                 case CONF_COMBINE: {
                     // store all marked species in hash and unmark them
@@ -423,6 +391,7 @@ void nt_extract_configuration(AW_window *aww, AW_CL cl_extractType) {
                         }
                     }
 
+                    refresh = refresh || GBS_hash_count_elems(was_marked);
                     break;
                 }
                 default:
@@ -436,36 +405,45 @@ void nt_extract_configuration(AW_window *aww, AW_CL cl_extractType) {
                 tokens[0] = 1;
                 tokens[1] = 0;
                 for (p = strtok(md, tokens); p; p = strtok(NULL, tokens)) {
-                    if (p[0] != 'L') continue;
-                    GBDATA *gb_species = GBT_find_species(GLOBAL_gb_main, p+1);
-                    if (gb_species) {
-                        int mark = GB_read_flag(gb_species);
-                        switch (ext_type) {
-                            case CONF_EXTRACT:
-                            case CONF_MARK:     mark = 1; break;
-                            case CONF_UNMARK:   mark = 0; break;
-                            case CONF_INVERT:   mark = 1-mark; break;
-                            case CONF_COMBINE: {
-                                nt_assert(mark == 0); // should have been unmarked above
-                                mark = GBS_read_hash(was_marked, p+1); // mark if was_marked
-                                break;
+                    if (p[0] == 'L') {
+                        const char *species_name = p+1;
+                        GBDATA     *gb_species   = GBT_find_species(GLOBAL_gb_main, species_name);
+
+                        if (gb_species) {
+                            int oldmark = GB_read_flag(gb_species);
+                            int newmark = oldmark;
+                            switch (ext_type) {
+                                case CONF_EXTRACT:
+                                case CONF_MARK:     newmark = 1; break;
+                                case CONF_UNMARK:   newmark = 0; break;
+                                case CONF_INVERT:   newmark = !oldmark; break;
+                                case CONF_COMBINE: {
+                                    nt_assert(!oldmark); // should have been unmarked above
+                                    newmark = GBS_read_hash(was_marked, species_name); // mark if was_marked
+                                    break;
+                                }
+                                default: nt_assert(0); break;
                             }
-                            default: nt_assert(0); break;
+                            if (newmark != oldmark) {
+                                GB_write_flag(gb_species, newmark);
+                                refresh = true;
+                            }
                         }
-                        GB_write_flag(gb_species, mark);
-                    }
-                    else {
-                        unknown_species++;
+                        else {
+                            unknown_species++;
+                        }
                     }
                 }
             }
 
-            GBS_free_hash(was_marked);
+            if (was_marked) GBS_free_hash(was_marked);
         }
 
         if (unknown_species>0) {
             aw_message(GBS_global_string("configuration '%s' contains %zu unknown species", cn, unknown_species));
         }
+
+        if (refresh) aw_root->awar(AWAR_TREE_REFRESH)->touch();
 
         free(md);
     }
@@ -484,82 +462,86 @@ void nt_delete_configuration(AW_window *aww) {
 }
 
 
-GB_ERROR NT_create_configuration(AW_window *, GBT_TREE *tree, const char *conf_name, int use_species_aside) {
-    char *to_free = 0;
+static GB_ERROR nt_create_configuration(AW_window *, GBT_TREE *tree, const char *conf_name, int use_species_aside) {
+    char     *to_free = NULL;
+    GB_ERROR  error   = NULL;
 
     if (!conf_name) {
         char *existing_configs = awt_create_string_on_configurations(GLOBAL_gb_main);
         conf_name              = to_free = aw_string_selection2awar("CREATE CONFIGURATION", "Enter name of configuration:", AWAR_CONFIGURATION, existing_configs, 0, 0);
         free(existing_configs);
     }
-    if (!conf_name) return GB_export_error("no config name");
 
-    if (use_species_aside==-1) {
-        static int last_used_species_aside = 3;
-        {
-            const char *val                    = GBS_global_string("%i", last_used_species_aside);
-            char       *use_species            = aw_input("How many extra species to view aside marked:", val);
-            if (use_species) use_species_aside = atoi(use_species);
-            free(use_species);
-        }
-
-        if (use_species_aside<1) return GB_export_error("illegal # of species aside");
-
-        last_used_species_aside = use_species_aside; // remember for next time
-    }
-
-    GB_transaction  dummy2(GLOBAL_gb_main); // open close transaction
-    GB_HASH        *used    = GBS_create_hash(GBT_get_species_count(GLOBAL_gb_main), GB_MIND_CASE);
-    GBS_strstruct  *topfile = GBS_stropen(1000);
-    GBS_strstruct  *topmid  = GBS_stropen(10000);
-    {
-        GBS_strstruct *middlefile = GBS_stropen(10000);
-        nt_build_sai_string(topfile, topmid);
-
-        if (use_species_aside) {
-            Store_species *extra_marked_species = 0;
-            int auto_mark = 0;
-            int marked_at_right;
-            nt_build_conf_string_rek(used, tree, middlefile, &extra_marked_species, use_species_aside, &auto_mark, use_species_aside, &marked_at_right);
-            if (extra_marked_species) {
-                extra_marked_species->call(unmark_species);
-                delete extra_marked_species;
-            }
-        }
-        else {
-            int dummy_1=0, dummy_2;
-            nt_build_conf_string_rek(used, tree, middlefile, 0, 0, &dummy_1, 0, &dummy_2);
-        }
-        nt_build_conf_marked(used, topmid);
-        char *mid = GBS_strclose(middlefile);
-        GBS_strcat(topmid, mid);
-        free(mid);
-    }
-
-    char *middle = GBS_strclose(topmid);
-    char *top    = GBS_strclose(topfile);
-
-    GBDATA   *gb_configuration = GBT_create_configuration(GLOBAL_gb_main, conf_name);
-    GB_ERROR  error            = 0;
-
-    if (!gb_configuration) error = GB_await_error();
+    if (!conf_name) error = "no config name";
     else {
-        error             = GBT_write_string(gb_configuration, "top_area", top);
-        if (!error) error = GBT_write_string(gb_configuration, "middle_area", middle);
+        if (use_species_aside==-1) {
+            static int last_used_species_aside = 3;
+            {
+                const char *val                    = GBS_global_string("%i", last_used_species_aside);
+                char       *use_species            = aw_input("How many extra species to view aside marked:", val);
+                if (use_species) use_species_aside = atoi(use_species);
+                free(use_species);
+            }
+
+            if (use_species_aside<1) error = "illegal number of 'species aside'";
+            else last_used_species_aside = use_species_aside; // remember for next time
+        }
+
+        if (!error) {
+            GB_transaction  ta(GLOBAL_gb_main); // open close transaction
+            GB_HASH        *used    = GBS_create_hash(GBT_get_species_count(GLOBAL_gb_main), GB_MIND_CASE);
+            GBS_strstruct  *topfile = GBS_stropen(1000);
+            GBS_strstruct  *topmid  = GBS_stropen(10000);
+            {
+                GBS_strstruct *middlefile = GBS_stropen(10000);
+                nt_build_sai_string(topfile, topmid);
+
+                if (use_species_aside) {
+                    Store_species *extra_marked_species = 0;
+                    int            auto_mark            = 0;
+                    int            marked_at_right;
+                    
+                    nt_build_conf_string_rek(used, tree, middlefile, &extra_marked_species, use_species_aside, &auto_mark, use_species_aside, &marked_at_right);
+                    if (extra_marked_species) {
+                        extra_marked_species->call(unmark_species);
+                        delete extra_marked_species;
+                    }
+                }
+                else {
+                    int dummy_1=0, dummy_2;
+                    nt_build_conf_string_rek(used, tree, middlefile, 0, 0, &dummy_1, 0, &dummy_2);
+                }
+                nt_build_conf_marked(used, topmid);
+                char *mid = GBS_strclose(middlefile);
+                GBS_strcat(topmid, mid);
+                free(mid);
+            }
+
+            {
+                char   *middle    = GBS_strclose(topmid);
+                char   *top       = GBS_strclose(topfile);
+                GBDATA *gb_config = GBT_create_configuration(GLOBAL_gb_main, conf_name);
+
+                if (!gb_config) error = GB_await_error();
+                else {
+                    error             = GBT_write_string(gb_config, "top_area", top);
+                    if (!error) error = GBT_write_string(gb_config, "middle_area", middle);
+                }
+
+                free(middle);
+                free(top);
+            }
+            GBS_free_hash(used);
+        }
     }
-
+    
     free(to_free);
-    free(middle);
-    free(top);
-    GBS_free_hash(used);
-
-    if (error) aw_message(error);
     return error;
 }
 
 static void nt_store_configuration(AW_window *) {
-    GB_ERROR err = NT_create_configuration(0, nt_get_current_tree_root(), 0, 0);
-    if (err) aw_message(err);
+    GB_ERROR err = nt_create_configuration(0, nt_get_current_tree_root(), 0, 0);
+    aw_message_if(err);
 }
 
 void nt_rename_configuration(AW_window *aww) {
@@ -651,4 +633,48 @@ void NT_popup_configuration_admin(AW_window *aw_main, AW_CL, AW_CL) {
     AW_window *aww = create_configuration_admin_window(aw_main->get_root());
     aww->activate();
 }
+
+// -----------------------------------------
+//      various ways to start the editor
+
+#define CONFNAME "default_configuration"
+
+void nt_start_editor_on_configuration(AW_window *aww) {
+    aww->hide();
+    char *cn = aww->get_root()->awar(AWAR_CONFIGURATION)->read_string();
+    char *com = (char *)GBS_global_string("arb_edit4 -c '%s' &", cn);
+    GBCMC_system(GLOBAL_gb_main, com);
+    delete cn;
+}
+
+AW_window *NT_start_editor_on_old_configuration(AW_root *awr) {
+    static AW_window_simple *aws = 0;
+    if (aws) return (AW_window *)aws;
+    awr->awar_string(AWAR_CONFIGURATION, "default_configuration", GLOBAL_gb_main);
+    aws = new AW_window_simple;
+    aws->init(awr, "SELECT_CONFIGURATION", "SELECT A CONFIGURATION");
+    aws->at(10, 10);
+    aws->auto_space(0, 0);
+    awt_create_selection_list_on_configurations(GLOBAL_gb_main, (AW_window *)aws, AWAR_CONFIGURATION);
+    aws->at_newline();
+
+    aws->callback((AW_CB0)nt_start_editor_on_configuration);
+    aws->create_button("START", "START");
+
+    aws->callback(AW_POPDOWN);
+    aws->create_button("CLOSE", "CLOSE", "C");
+
+    aws->window_fit();
+    return (AW_window *)aws;
+}
+
+void NT_start_editor_on_tree(AW_window *, AW_CL cl_use_species_aside, AW_CL) {
+    GB_ERROR error = nt_create_configuration(0, nt_get_current_tree_root(), CONFNAME, (int)cl_use_species_aside);
+    if (!error) {
+        int res = GBCMC_system(GLOBAL_gb_main, "arb_edit4 -c "CONFNAME" &");
+        if (res != 0) error = GB_await_error();
+    }
+    aw_message_if(error);
+}
+
 
