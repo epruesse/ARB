@@ -1873,11 +1873,15 @@ long gbcmc_key_alloc(GBDATA *gbd, const char *key) {
     return gb_result[0];
 }
 
-int GBCMC_system(GBDATA *gbd, const char *ss) {
+#if defined(DEVEL_RALF)
+#warning GBCMC_system should return GB_ERROR!
+#endif // DEVEL_RALF
 
-    int socket;
-    long    gb_result[2];
+int GBCMC_system(GBDATA *gbd, const char *ss) { // goes to header: __ATTR__USERESULT
+    int           socket;
+    long          gb_result[2];
     GB_MAIN_TYPE *Main = GB_MAIN(gbd);
+
     if (Main->local_mode) {
         GB_ERROR error = GB_system(ss);
         if (error) GB_export_error(error);
