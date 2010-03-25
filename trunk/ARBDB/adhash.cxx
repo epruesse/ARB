@@ -714,8 +714,9 @@ void GBS_hash_do_loop(GB_HASH *hs, gb_hash_loop_type func, void *client_data) {
 
 size_t GBS_hash_count_elems(GB_HASH *hs) {
 #if defined(DEBUG)
+    // @@@ old code, just left here to ensure hs->nelem is correct --ralf Mar/2010
     size_t count = 0;
-    size_t hsize    = hs->size;
+    size_t hsize = hs->size;
     for (size_t i = 0; i<hsize; ++i) {
         struct gbs_hash_entry *e;
         for (e=hs->entries[i]; e; e=e->next) {
