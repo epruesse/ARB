@@ -1509,8 +1509,22 @@ void TEST_remapping() {
                           "TGCA", "TG--CA");
 
     TEST_REMAP1REF_FWDREV("dotgap",
-                          "ACGT", "AC..GT",              // dots in reference do not get propagated
+                          "ACGT", "AC..GT",         // dots in reference do not get propagated
                           "TGCA", "TG--CA");
+
+    TEST_REMAP1REF("enforce leading dots",
+                   "--A-T", "------A--T",
+                   "--T-A", "......T--A");          // leading gaps shall always be dots
+    TEST_REMAP1REF("enforce leading dots",
+                   "---A-T", "------A--T",
+                   "-.-T-A", "......T--A");          // leading gaps shall always be dots
+    TEST_REMAP1REF("enforce leading dots",
+                   "-..--A-T", "--.---A--T",
+                   "-.-.-T-A", "......T--A");          // leading gaps shall always be dots
+    
+    TEST_REMAP1REF("no trailing gaps",
+                   "A-T", "A--T---",
+                   "T-A", "T--A");
 
     TEST_REMAP1REF__BROKEN("should expand full-dot-gaps",
                            "AC-GT", "AC--GT",
@@ -1633,6 +1647,16 @@ void TEST_remapping() {
                    "A---T---A", "A--T--A",
                    "A-GGT---A", "A-GGT-A");
 
+    TEST_REMAP1REF("drop missing bases to avoid misalignment",
+                   "A---T", "A--T",
+                   "AG.GT", "AGGT"); 
+    TEST_REMAP1REF("dont drop missing bases if fixed map",
+                   "A-C-T", "A-CT",
+                   "AG.GT", "AG.GT"); 
+    TEST_REMAP1REF__BROKEN("drop gaps if fixed map",
+                   "A-C-T", "A-CT",
+                   "AG-GT", "AGGT"); 
+    
     // --------------------
     
     TEST_REMAP2REFS("impossible references",
