@@ -271,6 +271,9 @@ sub main() {
         }
       }
       close(CMD);
+
+      -f $_ || die "No such file '$_'";
+      unlink($_);
     }
   };
   if ($@) {
