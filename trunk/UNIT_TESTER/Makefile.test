@@ -20,10 +20,13 @@ VALGRIND=0# only test
 
 # ----------------------------------------------------------
 
-# restrict tests to modules matching regexpr 'RESTRICT': 
-RESTRICT='.'
-#RESTRICT='adhash\.cxx'
-#RESTRICT='/ARBDB/'
+# restrict tests to modules matching regexpr 'RESTRICT_MODULE': 
+RESTRICT_MODULE='.'
+#RESTRICT_MODULE='MG_species\.cxx'
+
+# restrict tests to library with basename
+RESTRICT_LIB=# run all tests
+#RESTRICT_LIB=MERGE# test only this library
 
 # ----------------------------------------------------------
 
@@ -93,7 +96,7 @@ $(SYMLIST) : $(FULLLIB) Makefile makedirs
 	nm -C -l $< > $@
 
 $(TEST_CODE) : $(SYMLIST) $(SYM2TESTCODE) 
-	$(SYM2TESTCODE) $(UNITLIB) $(RESTRICT) $< $@
+	$(SYM2TESTCODE) $(UNITLIB) $(RESTRICT_MODULE) $< $@
 
 $(TEST_OBJ) : $(TEST_CODE) $(INCLUDES)
 	$(CPP) $(cflags) -c $< -o $@ -I. 
@@ -119,6 +122,7 @@ dump:
 	@echo "LINKDEPS       ='$(LINKDEPS)'"
 
 
+
 perform_test: $(TEST_EXE)
 	@echo "fake[3]: Entering directory \`$(FULLUNITDIR)'"
 ifeq ($(VALGRIND),2)
@@ -134,7 +138,20 @@ ifeq ($(VALGRIND),1)
 endif
 	@echo "fake[3]: Leaving directory \`$(FULLUNITDIR)'"
 
-runtest: perform_test
+skip_test:
+	@echo "unit-tests completely skipped for '$(UNITLIBNAME)' (RESTRICT_LIB='$(RESTRICT_LIB)')"
+
+# --------------------
+
+RUN:=perform_test
+
+ifneq ('$(RESTRICT_LIB)','')
+ifneq ($(UNITLIBNAME),$(RESTRICT_LIB))
+	RUN:=skip_test
+endif
+endif
+
+runtest: $(RUN)
 
 #runtest: dump
 
