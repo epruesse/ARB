@@ -395,6 +395,9 @@ first_target:
 		@echo ' rmbak        - remove all "*%" and cores'
 		@echo ' show         - show available shortcuts (AKA subtargets)'
 		@echo ' up           - shortcut for depends+proto+tags'
+ifeq ($(UNIT_TESTS),1)
+		@echo ' unit_tests   - only run tests
+endif
 		@echo ' modified     - rebuild files modified in svn checkout (touches files!)'
 		@echo ''
 		@echo 'Internal maintenance:'
@@ -1576,6 +1579,8 @@ unit_tests: test_base clean_coverage_results
 	@echo "$(SEP) Running unit tests"
 	$(MAKE) $(TESTED_UNITS)
 	@echo "All unit tests passed" 
+
+ut: unit_tests
 
 # --------------------------------------------------------------------------------
 
