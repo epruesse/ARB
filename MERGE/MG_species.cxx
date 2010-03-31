@@ -53,6 +53,7 @@ struct softbase {
     operator char () const { return base; }
 };
 
+typedef std::list<int>               positionlist;
 typedef std::list<softbase>          softbaselist;
 typedef softbaselist::iterator       softbaseiter;
 typedef softbaselist::const_iterator const_softbaseiter;
@@ -63,7 +64,9 @@ class MG_remap {
     int *remap_tab;                                 // fixed mapping (targetPosition or NO_POSITION)
 
     // soft-mapping:
-    int *soft_remap_tab;                             // soft-mapping (NO_POSITION, targetPosition, LEFT_BORDER or RIGHT_BORDER)
+    int *soft_remap_tab;                            // soft-mapping (NO_POSITION, targetPosition, LEFT_BORDER or RIGHT_BORDER)
+
+    positionlist inconsistent;                      // inconsistent positions are logged here by add_reference() and remap()
 
     char *calc_softmapping(softbaselist& softbases, int start, int end, int &outlen);
     int   softmap_to(softbaselist& softbases, int start, int end, GBS_strstruct *outs);
@@ -93,6 +96,8 @@ public:
 
     void  add_reference(const char *in_reference, const char *out_reference); // returns only warnings
     char *remap(const char *sequence);              // returns 0 on error, else copy of sequence
+
+    char *readable_inconsistent_positions();
 
 #if defined(DUMP_MAPPING)
     static void dump(const int *data, int len, const char *comment, int dontShow) {
@@ -157,7 +162,10 @@ void MG_remap::merge_mapping(MG_remap &other) {
         int max_target_pos = 0;
         for (int pos = 0; pos<mixlen; ++pos) {
             max_target_pos = std::max(max_target_pos, primary[pos]);
-            if (secondary[pos]<max_target_pos) secondary[pos] = NO_POSITION; // consistency error -> ignore position
+            if (secondary[pos]<max_target_pos) {
+                secondary[pos] = NO_POSITION;       // consistency error -> ignore position
+                inconsistent.push_back(pos);
+            }
         }
     }
     // (backward)
@@ -165,7 +173,10 @@ void MG_remap::merge_mapping(MG_remap &other) {
         int min_target_pos = out_length-1;
         for (int pos = mixlen-1; pos >= 0; --pos) {
             if (primary[pos] >= 0 && primary[pos]<min_target_pos) min_target_pos = pos;
-            if (secondary[pos] > min_target_pos) secondary[pos] = NO_POSITION; // consistency error -> ignore position
+            if (secondary[pos] > min_target_pos) {
+                secondary[pos] = NO_POSITION;       // consistency error -> ignore position
+                inconsistent.push_back(pos);
+            }
         }
     }
 
@@ -181,6 +192,8 @@ void MG_remap::merge_mapping(MG_remap &other) {
 
 void MG_remap::add_reference(const char *in_reference, const char *out_reference) {
     if (have_softmapping()) forget_softmapping();
+
+    inconsistent.clear();
 
     if (!remap_tab) {
         in_length  = strlen(in_reference);
@@ -447,6 +460,7 @@ char *MG_remap::remap(const char *sequence) {
 
     if (!have_softmapping()) create_softmapping();
 
+    inconsistent.clear();
 
     // remap left border
     for (pos = 0; pos<in_length && soft_remap_tab[pos] == LEFT_BORDER; ++pos) {
@@ -502,6 +516,9 @@ char *MG_remap::remap(const char *sequence) {
                 GBS_chrncat(outs, last_gapchar, target_pos-written);
                 written = target_pos;
             }
+            else if (written>target_pos) {
+                inconsistent.push_back(written);
+            }
 
             if (c == '-') {
                 if (!last_gapchar) last_gapchar = '-';
@@ -544,6 +561,26 @@ char *MG_remap::remap(const char *sequence) {
     }
 
     return GBS_strclose(outs);
+}
+
+char *MG_remap::readable_inconsistent_positions() {
+    // returns inconsistent positions as human-readable string or NULL
+    char *result = NULL;
+    if (!inconsistent.empty()) {
+        inconsistent.sort();
+
+        int            count = inconsistent.size();
+        int            c     = 1;
+        GBS_strstruct *outs  = GBS_stropen(count*7);
+
+        for (positionlist::const_iterator pos = inconsistent.begin(); pos != inconsistent.end(); ++pos, ++c) {
+            if (count>1) GBS_strcat(outs, c == count ? " and " : ", ");
+            GBS_intcat(outs, *pos);
+        }
+
+        result = GBS_strclose(outs);
+    }
+    return result;
 }
 
 // --------------------------------------------------------------------------------
@@ -636,9 +673,10 @@ static GB_ERROR MG_transfer_fields_info(char *fieldname = NULL) {
 }
 
 MG_remap *MG_create_remap(GBDATA *gb_left, GBDATA *gb_right, const char *reference_species_names, const char *alignment_name) {
+    MG_remap *rem      = new MG_remap();
+    char     *ref_list = strdup(reference_species_names);
+
     char *tok;
-    MG_remap *rem = new MG_remap();
-    char *ref_list = strdup(reference_species_names);
     for (tok = strtok(ref_list, " \n,;"); tok; tok = strtok(NULL, " \n,;")) {
         bool    is_SAI           = strncmp(tok, "SAI:", 4) == 0;
         GBDATA *gb_species_left  = 0;
@@ -685,8 +723,21 @@ MG_remap *MG_create_remap(GBDATA *gb_left, GBDATA *gb_right, const char *referen
             free(sleft);
             free(sright);
         }
+
+        {
+            char *inconsistent = rem->readable_inconsistent_positions();
+            if (inconsistent) {
+                GBS_strstruct *msg = GBS_stropen(strlen(inconsistent)+100);
+                GBS_strcat(msg, GBS_global_string("Warning: Inconsistent alignment adaption caused by '%s' at pos ", tok));
+                GBS_strcat(msg, inconsistent);
+                aw_message(GBS_mempntr(msg));
+                GBS_strforget(msg);
+                free(inconsistent);
+            }
+        }
     }
-    delete ref_list;
+    free(ref_list);
+    
     return rem;
 }
 
@@ -731,7 +782,7 @@ MG_remaps::~MG_remaps() {
 
 GB_ERROR MG_transfer_sequence(MG_remap *remap, GBDATA *source_species, GBDATA *destination_species, const char *alignment_name) {
     // align sequence after copy
-    GB_ERROR error = 0;
+    GB_ERROR error = NULL;
 
     if (remap) {                                    // shall remap?
         GBDATA *gb_seq_left  = GBT_read_sequence(source_species,      alignment_name);
@@ -750,8 +801,24 @@ GB_ERROR MG_transfer_sequence(MG_remap *remap, GBDATA *source_species, GBDATA *d
                     long old_check = GBS_checksum(ls, 0, ".- ");
                     long new_check = GBS_checksum(rs, 0, ".- ");
 
-                    if (old_check == new_check) error = GB_write_string(gb_seq_right, rs);
-                    else error                        = GB_export_error("Error in aligning sequences (checksum changed)");
+                    if (old_check == new_check) {
+                        error = GB_write_string(gb_seq_right, rs);
+                    }
+                    else {
+                        error = GBS_global_string("Failed to adapt alignment of '%s' (checksum changed)", GBT_read_name(source_species));
+                    }
+
+                    if (!error) {
+                        char *inconsistent = remap->readable_inconsistent_positions();
+                        if (inconsistent) {
+                            GBS_strstruct *msg = GBS_stropen(strlen(inconsistent)+100);
+                            GBS_strcat(msg, GBS_global_string("Warning: Out of sync while adapting alignment of '%s' at pos ", GBT_read_name(source_species)));
+                            GBS_strcat(msg, inconsistent);
+                            aw_message(GBS_mempntr(msg));
+                            GBS_strforget(msg);
+                            free(inconsistent);
+                        }
+                    }
                 }
             }
             free(rs);
