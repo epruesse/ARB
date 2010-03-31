@@ -13,254 +13,536 @@
 #include <AW_rename.hxx>
 #include <GEN.hxx>
 #include <db_scanner.hxx>
-
 #include <awt.hxx>
 #include <awt_item_sel_list.hxx>
 #include <awt_sel_boxes.hxx>
-
 #include <aw_awars.hxx>
-
 #include <arbdbt.h>
-
 #include <inline.h>
+
+#include <algorithm>
+#include <list>
+
+#if defined(DEBUG)
+// #define DUMP_MAPPING
+// #define DUMP_SOFTMAPPING
+#endif // DEBUG
 
 // -----------------
 //      MG_remap
 
+const int NO_POSITION  = -1;
+const int LEFT_BORDER  = -2;
+const int RIGHT_BORDER = -3;
+
+struct softbase {
+    char base;
+    int  origin;                                    // position in source alignment
+    char last_gapchar;                              // last gap seen before base
+    int  targetpos;                                 // target position
+
+    softbase(char base_, int origin_, char last_gapchar_)
+        : base(base_)
+        , origin(origin_)
+        , last_gapchar(last_gapchar_)
+        , targetpos(NO_POSITION)
+    {
+        mg_assert(last_gapchar);
+    }
+
+    operator char () const { return base; }
+};
+
+typedef std::list<softbase>          softbaselist;
+typedef softbaselist::iterator       softbaseiter;
+typedef softbaselist::const_iterator const_softbaseiter;
+
 class MG_remap {
     int  in_length;
     int  out_length;
-    int *remap_tab;
-    int *soft_remap_tab;
-    int  compiled;
+    int *remap_tab;                                 // fixed mapping (targetPosition or NO_POSITION)
+
+    // soft-mapping:
+    int *soft_remap_tab;                             // soft-mapping (NO_POSITION, targetPosition, LEFT_BORDER or RIGHT_BORDER)
+
+    char *calc_softmapping(softbaselist& softbases, int start, int end, int &outlen);
+    int   softmap_to(softbaselist& softbases, int start, int end, GBS_strstruct *outs);
+
+    bool have_softmapping() const { return soft_remap_tab; }
+    void create_softmapping();
+    void forget_softmapping() {
+        delete [] soft_remap_tab;
+        soft_remap_tab = NULL;
+    }
+    
+    static int *build_initial_mapping(const char *iref, int ilen, const char *oref, int olen);
+    void merge_mapping(MG_remap &other);
 
 public:
 
-    MG_remap();
-    ~MG_remap();
-    
-    GB_ERROR  set(const char *in_reference, const char *out_reference); // returns only warnings
-    GB_ERROR  compile();                            // after last set
-    char     *remap(const char *sequence);          // returns 0 on error, else copy of sequence
+    MG_remap()
+        : in_length(0)
+        , out_length(0)
+        , remap_tab(NULL)
+        , soft_remap_tab(NULL)
+    {}
+    ~MG_remap() {
+        forget_softmapping();
+        delete [] remap_tab;
+    }
+
+    void  add_reference(const char *in_reference, const char *out_reference); // returns only warnings
+    char *remap(const char *sequence);              // returns 0 on error, else copy of sequence
+
+#if defined(DUMP_MAPPING)
+    static void dump(const int *data, int len, const char *comment, int dontShow) {
+        fflush(stdout);
+        fflush(stderr);
+        fputc('>', stdout);
+        int digits = log10(len)+2;
+        for (int pos = 0; pos<len; ++pos) {
+            if (data[pos] == dontShow) {
+                fprintf(stdout, "%*s", digits, "_");
+            }
+            else {
+                fprintf(stdout, "%*i", digits, data[pos]);
+            }
+        }
+        fprintf(stdout, "      (%s)\n", comment);
+        fflush(stdout);
+    }
+    void dump_remap(const char *comment) { dump(remap_tab, in_length, comment, NO_POSITION); }
+#endif // DUMP_MAPPING
 };
 
+int *MG_remap::build_initial_mapping(const char *iref, int ilen, const char *oref, int olen) {
+    int *remap = new int[ilen];
 
-MG_remap::MG_remap() {
-    in_length = 0;
-    out_length = 0;
-    remap_tab = 0;
-    soft_remap_tab = 0;
-    compiled = 0;
-}
+    const char *spacers = "-. n";
+    
+    int ipos = 0;
+    int opos = 0;
 
-MG_remap::~MG_remap() {
-    delete [] remap_tab;
-    delete [] soft_remap_tab;
-}
+    while (ipos<ilen && opos<olen) {
+        size_t ispaces = strspn(iref+ipos, spacers);
+        size_t ospaces = strspn(oref+opos, spacers);
 
-GB_ERROR MG_remap::set(const char *in_reference, const char *out_reference) {
-    if (compiled) {
-        GB_internal_error("Cannot set remap structure after being compiled");
-        return 0;
+        while (ispaces && ipos<ilen) {
+            remap[ipos++] = NO_POSITION;
+            ispaces--;
+        }
+        opos += ospaces;
+        if (ipos<ilen && opos<olen) remap[ipos++] = opos++;
     }
+    while (ipos<ilen) remap[ipos++] = NO_POSITION;
+
+    return remap;
+}
+
+void MG_remap::merge_mapping(MG_remap &other) {
+    const int *primary   = remap_tab;
+    int       *secondary = other.remap_tab;
+
+    if (other.in_length>in_length) {
+        // re-use memory of bigger map
+        std::swap(other.in_length, in_length);
+        std::swap(other.remap_tab, remap_tab);
+    }
+    out_length = std::max(out_length, other.out_length); // remember biggest output length
+
+    int mixlen = std::min(in_length, other.in_length);
+
+    // eliminate inconsistant positions from secondary mapping (forward)
+    {
+        int max_target_pos = 0;
+        for (int pos = 0; pos<mixlen; ++pos) {
+            max_target_pos = std::max(max_target_pos, primary[pos]);
+            if (secondary[pos]<max_target_pos) secondary[pos] = NO_POSITION; // consistency error -> ignore position
+        }
+    }
+    // (backward)
+    {
+        int min_target_pos = out_length-1;
+        for (int pos = mixlen-1; pos >= 0; --pos) {
+            if (primary[pos] >= 0 && primary[pos]<min_target_pos) min_target_pos = pos;
+            if (secondary[pos] > min_target_pos) secondary[pos] = NO_POSITION; // consistency error -> ignore position
+        }
+    }
+
+    // merge mappings
+    for (int pos = 0; pos < mixlen; ++pos) {
+        remap_tab[pos] = primary[pos] == NO_POSITION ? secondary[pos] : primary[pos];
+        mg_assert(remap_tab[pos]<out_length);
+    }
+
+    // Note: copying the rest from larger mapping is not necessary
+    // (it's already there, because of memory-reuse)
+}
+
+void MG_remap::add_reference(const char *in_reference, const char *out_reference) {
+    if (have_softmapping()) forget_softmapping();
 
     if (!remap_tab) {
-        in_length = strlen(in_reference);
+        in_length  = strlen(in_reference);
         out_length = strlen(out_reference);
-        remap_tab = new int[in_length];
-        int i;
-        for (i=0; i<in_length; i++) {
-            remap_tab[i] = -1;
-        }
+        remap_tab  = build_initial_mapping(in_reference, in_length, out_reference, out_length);
+#if defined(DUMP_MAPPING)
+        dump_remap("initial");
+#endif // DUMP_MAPPING
     }
     else {
-        int inl = strlen(in_reference);
-        if (inl > in_length) {
-            int *new_remap = new int[inl];
-            int  i;
-            
-            for (i=0; i<in_length; i++) new_remap[i] = remap_tab[i];
-            for (; i<inl; i++) new_remap[i]          = -1;
-
-            delete [] remap_tab;
-            remap_tab = new_remap;
-            in_length = inl;
-        }
+        MG_remap tmp;
+        tmp.add_reference(in_reference, out_reference);
+        merge_mapping(tmp);
+#if defined(DUMP_MAPPING)
+        dump_remap("merged");
+#endif // DUMP_MAPPING
     }
-    {
-        int nol = strlen(out_reference);
-        if (nol> out_length) {
-            out_length = nol;
-        }
-    }
-    int *nremap_tab = new int[in_length];
-    {
-        for (int i = 0; i< in_length; i++) {
-            nremap_tab[i] = -1;
-        }
-    }
-    {               // write new map to undefined positions
-        const char *spacers = "-. n";
-        int ipos = 0;
-        int opos = 0;
-        while (ipos < in_length && opos < out_length) {
-            while (strchr(spacers, in_reference[ipos])) {
-                ipos++; // search next in base
-                if (ipos >= in_length) goto end_of_new_map;
-            }
-            while (strchr(spacers, out_reference[opos])) {
-                opos++; // search next in base
-                if (opos >= out_length) goto end_of_new_map;
-            }
-            nremap_tab[ipos] = opos;
-            ipos++;
-            opos++; // jump to next base
-        }
-    end_of_new_map :;
-    }
-    {               // check forward consistency of new map
-        int ipos = 0;
-        int opos = 0;
-        for (ipos=0; ipos < in_length; ipos++) {
-            if (remap_tab[ipos] > opos) {
-                opos = remap_tab[ipos];
-            }
-            if (nremap_tab[ipos] >= 0 && nremap_tab[ipos] < opos) { // consistency error
-                nremap_tab[ipos] = -1; // sorry, not useable
-            }
-        }
-    }
-    {               // check backward consistency of new map
-        int ipos;
-        int opos = out_length-1;
-        for (ipos = in_length-1; ipos>=0; ipos--) {
-            if (remap_tab[ipos] >= 0 && remap_tab[ipos] < opos) {
-                opos = remap_tab[ipos];
-            }
-            if (nremap_tab[ipos] > opos) {
-                nremap_tab[ipos] = -1;
-            }
-        }
-    }
-    {               // merge maps
-        for (int pos=0; pos<in_length; pos++) {
-            if (remap_tab[pos] == -1) {
-                if (nremap_tab[pos] >= 0) {
-                    remap_tab[pos] = nremap_tab[pos];
-                }
-            }
-        }
-    }
-    delete [] nremap_tab;
-    return NULL;
 }
 
-GB_ERROR MG_remap::compile() {
-    if (compiled) {
-        return 0;
-    }
-    compiled = 1;
-    int in_pos;
+void MG_remap::create_softmapping() {
     soft_remap_tab = new int[in_length];
 
-    int last_mapped_position_source = 0;
-    int last_mapped_position_dest = 0;
-    for (in_pos=0; in_pos<in_length; in_pos++) {
-        soft_remap_tab[in_pos] = -1;
+    int last_fixed_position = NO_POSITION;
+    int pos;
+    for (pos = 0; pos<in_length && last_fixed_position == NO_POSITION; ++pos) {
+        if (remap_tab[pos] == NO_POSITION) {
+            soft_remap_tab[pos] = LEFT_BORDER;
+        }
+        else {
+            soft_remap_tab[pos] = NO_POSITION;
+            last_fixed_position = pos;
+        }
+    }
+    if (last_fixed_position != NO_POSITION) {
+        for ( ; pos<in_length; ++pos) {
+            if (remap_tab[pos] != NO_POSITION) {
+                int softstart = last_fixed_position+1;
+                int softsize  = pos-softstart;
+
+                if (softsize>0) {
+                    int target_softstart = remap_tab[last_fixed_position]+1;
+                    int target_softsize  = remap_tab[pos]-target_softstart;
+
+                    double target_step;
+                    if (softsize>1 && target_softsize>1) {
+                        target_step = double(target_softsize-1)/(softsize-1);
+                    }
+                    else {
+                        target_step = 0.0;
+                    }
+
+                    if (target_step >= 1.0 && target_softsize>softsize) {
+                        // target range > source range -> split softmapping in the middle
+                        int halfsoftsize   = softsize/2;
+                        int target_softpos = softstart;
+                        int off;
+                        for (off = 0; off<halfsoftsize; ++off) {
+                            soft_remap_tab[softstart+off] = target_softpos++;
+                        }
+                        target_softpos += target_softsize-softsize;
+                        for (; off<softsize; ++off) {
+                            soft_remap_tab[softstart+off] = target_softpos++;
+                        }
+                    }
+                    else {
+                        double target_softpos = target_softstart;
+                        for (int off = 0; off<softsize; ++off) {
+                            soft_remap_tab[softstart+off]  = int(target_softpos+0.5);
+                            target_softpos                += target_step;
+                        }
+                    }
+                }
+                last_fixed_position = pos;
+                soft_remap_tab[pos] = NO_POSITION;
+            }
+        }
+
+        for (--pos; pos>last_fixed_position; --pos) {
+            soft_remap_tab[pos] = RIGHT_BORDER;
+        }
     }
 
-    for (in_pos=0; in_pos<in_length; in_pos++) {
-        int new_dest;
+#if defined(DUMP_MAPPING)
+    dump(soft_remap_tab, in_length, "softmap", -1);
+#endif // DUMP_MAPPING
+}
 
-        if ((new_dest = remap_tab[in_pos]) <0) {
-            continue;
-        }
-        {   // fill areas between
-            int source;
-            int dest;
-            int dsource = in_pos - last_mapped_position_source;
-            int ddest = new_dest - last_mapped_position_dest;
+static void drop_dots(softbaselist& softbases, int excessive_positions) {
+    // drop consecutive dots
+    bool         justseendot = false;
+    bool         keptgaps    = false;
+    softbaseiter next        = softbases.begin();
 
-            for (source = last_mapped_position_source, dest = last_mapped_position_dest;
-                 source <= last_mapped_position_source + (dsource>1) &&
-                     dest <= last_mapped_position_dest + (ddest>1);
-                 source++, dest++) {
-                soft_remap_tab[source] = dest;
-            }
-            for (source = in_pos, dest = new_dest;
-                 source > last_mapped_position_source + (dsource>1) &&
-                     dest > last_mapped_position_dest + (ddest>1);
-                 source--, dest--) {
-                soft_remap_tab[source] = dest;
-            }
+    while (excessive_positions && next != softbases.end()) {
+        bool isdot = (next->base == '.');
+        if (isdot && justseendot) {
+            excessive_positions--;
+            next = softbases.erase(next);
         }
-        last_mapped_position_source = in_pos;
-        last_mapped_position_dest = new_dest;
+        else {
+            keptgaps    = keptgaps || isdot;
+            justseendot = isdot;
+            ++next;
+        }
     }
-    return 0;
+
+    if (excessive_positions) {
+        // drop single dots
+        next = softbases.begin();
+        while (excessive_positions && next != softbases.end()) {
+            if (next->base == '.') {
+                next = softbases.erase(next);
+            }
+            else {
+                ++next;
+            }
+        }
+    }
+}
+
+#if defined(DUMP_SOFTMAPPING)
+static char *softbaselist_2_string(const softbaselist& softbases) {
+    GBS_strstruct *out = GBS_stropen(softbases.size()*100);
+
+    for (const_softbaseiter base = softbases.begin(); base != softbases.end(); ++base) {
+        const char *info = GBS_global_string(" %c'%c' %i->",
+                                             base->last_gapchar ? base->last_gapchar :  ' ',
+                                             base->base,
+                                             base->origin);
+        GBS_strcat(out, info);
+        if (base->targetpos == NO_POSITION) {
+            GBS_strcat(out, "NP");
+        }
+        else {
+            GBS_intcat(out, base->targetpos);
+        }
+    }
+
+    return GBS_strclose(out);
+}
+#endif // DUMP_SOFTMAPPING
+
+char *MG_remap::calc_softmapping(softbaselist& softbases, int start, int end, int& outlen) {
+    //! tries to map all bases(+dots) in 'softbases' into range [start, end]
+    //! @return heap-copy of range-content (may be oversized, if too many bases in list)
+
+    int wanted_size = end-start+1;
+    int listsize    = softbases.size();
+
+#if defined(DUMP_SOFTMAPPING)
+    char *sbl_initial = softbaselist_2_string(softbases);
+    char *sbl_exdots  = NULL;
+    char *sbl_target  = NULL;
+    char *sbl_exclash = NULL;
+#endif // DUMP_SOFTMAPPING
+
+    if (listsize>wanted_size) {
+        int excessive_positions = listsize-wanted_size;
+        drop_dots(softbases, excessive_positions);
+        listsize                = softbases.size();
+
+#if defined(DUMP_SOFTMAPPING)
+        sbl_exdots = softbaselist_2_string(softbases);
+#endif // DUMP_SOFTMAPPING
+    }
+
+    char *result = NULL;
+    if (listsize >= wanted_size) {                  // not or just enough space -> plain copy
+        result = (char*)malloc(listsize+1);
+        *std::copy(softbases.begin(), softbases.end(), result) = 0;
+        outlen = listsize;
+    }
+    else {                                          // otherwise do soft-mapping
+        result = (char*)malloc(wanted_size+1);
+        mg_assert(listsize < wanted_size);
+
+        // calculate target positions and detect mapping conflicts
+        bool conflicts = false;
+        {
+            int lasttargetpos = NO_POSITION;
+            for (softbaseiter base = softbases.begin(); base != softbases.end(); ++base) {
+                // // int targetpos = calc_softpos(base->origin);
+                int targetpos = soft_remap_tab[base->origin];
+                if (targetpos == lasttargetpos) {
+                    mg_assert(targetpos != NO_POSITION);
+                    conflicts = true;
+                }
+                base->targetpos = lasttargetpos = targetpos;
+            }
+        }
+
+#if defined(DUMP_SOFTMAPPING)
+        sbl_target = softbaselist_2_string(softbases);
+#endif // // DUMP_SOFTMAPPING
+      
+        if (conflicts) {
+            int nextpos = end+1;
+            for (softbaselist::reverse_iterator base = softbases.rbegin(); base != softbases.rend(); ++base) {
+                if (base->targetpos >= nextpos) {
+                    base->targetpos = nextpos-1;
+                }
+                nextpos = base->targetpos;
+                mg_assert(base->targetpos >= start);
+                mg_assert(base->targetpos <= end);
+            }
+            mg_assert(nextpos >= start);
+          
+#if defined(DUMP_SOFTMAPPING)
+            sbl_exclash = softbaselist_2_string(softbases);
+#endif // // DUMP_SOFTMAPPING
+         }
+
+        int idx = 0;
+        for (softbaseiter base = softbases.begin(); base != softbases.end(); ++base) {
+            int pos = base->targetpos - start;
+
+            if (idx<pos) {
+                char gapchar = base->last_gapchar;
+                while (idx<pos) result[idx++] = gapchar;
+            }
+            result[idx++] = base->base;
+        }
+        result[idx] = 0;
+        outlen      = idx;
+        mg_assert(idx <= wanted_size);
+    }
+
+#if defined(DUMP_SOFTMAPPING)
+    fflush(stdout);
+    fflush(stderr);
+    printf("initial:%s\n", sbl_initial);
+    if (sbl_exdots) printf("exdots :%s\n", sbl_exdots);
+    if (sbl_target) printf("target :%s\n", sbl_target);
+    if (sbl_exclash) printf("exclash:%s\n", sbl_exclash);
+    printf("calc_softmapping(%i, %i) -> \"%s\"\n", start, end, result);
+    fflush(stdout);
+    free(sbl_exclash);
+    free(sbl_target);
+    free(sbl_exdots);
+    free(sbl_initial);
+#endif // DUMP_SOFTMAPPING
+
+    return result;
+}
+
+int MG_remap::softmap_to(softbaselist& softbases, int start, int end, GBS_strstruct *outs) {
+    int   mappedlen;
+    char *softmapped = calc_softmapping(softbases, start, end, mappedlen);
+
+    GBS_strcat(outs, softmapped);
+    free(softmapped);
+    softbases.clear();
+
+    return mappedlen;
 }
 
 char *MG_remap::remap(const char *sequence) {
-    const char *gap_chars = "- .";
-    int slen = strlen(sequence);
-    int len = slen;
-    GBS_strstruct *outs = GBS_stropen(slen- in_length + out_length + 100);
+    int            slen    = strlen(sequence);
+    int            minlen  = std::min(slen, in_length);
+    GBS_strstruct *outs    = GBS_stropen(out_length+1);
+    int            written = 0;
+    softbaselist   softbases;
+    int            pos;
 
-    if (in_length < len) {
-        len = in_length;
+    if (!have_softmapping()) create_softmapping();
+
+
+    // remap left border
+    for (pos = 0; pos<in_length && soft_remap_tab[pos] == LEFT_BORDER; ++pos) {
+        char c = pos<slen ? sequence[pos] : '-';
+        if (c != '-' && c != '.') {
+            softbases.push_back(softbase(c, pos, '.'));
+        }
     }
-    int lastposset = 0;     // last position written
-    int lastposread = 0;    // last position that is read and written
-    int skippedgaps = 0;    // number of gaps not written
-    int skippedchar = '.';  // last gap character not written
+    char last_gapchar = 0;
+    {
+        int bases = softbases.size();
+        if (bases) {
+            int fixed = remap_tab[pos];
+            mg_assert(fixed != NO_POSITION);
 
-    bool within_sequence = false;
-    int i;
-    for (i=0; i<len; i++) {
-        int c = sequence[i];
-        if (c == '.' || c == '-') { // don't write gaps, maybe we have to compress the alignment
-            skippedchar = c;
-            skippedgaps ++;
-            continue;
-        }
-        lastposread = i;
-        int new_pos = this->remap_tab[i];
-        if (new_pos<0) {    // no remap, try soft remap
-            new_pos = soft_remap_tab[i];
-        }
-        if (new_pos >= 0) { // if found a map then force map
-            while (lastposset < new_pos) { // insert gaps
-                if (within_sequence) {
-                    GBS_chrcat(outs, '-');
-                }
-                else {
-                    GBS_chrcat(outs, '.');
-                }
-                lastposset ++;
+            int bases_start = fixed-bases;
+            if (written<bases_start) {
+                GBS_chrncat(outs, '.', bases_start-written);
+                written = bases_start;
             }
-        }
-        else {          // insert not written gaps
-            while (skippedgaps>0) {
-                GBS_chrcat(outs, skippedchar);
-                lastposset ++;
-                skippedgaps--;
-            }
-        }
-        skippedgaps = 0;
-        if (c != '.') {
-            within_sequence = true;
+
+            written += softmap_to(softbases, written, fixed-1, outs);
         }
         else {
-            within_sequence = false;
+            last_gapchar = '.';
         }
-        GBS_chrcat(outs, c);
-        lastposset++;
     }
-    for (i = lastposread+1; i < slen; i++) { // fill overlength rest of sequence
+
+
+    // remap center (fixed mapping and softmapping inbetween)
+    for (; pos<in_length; ++pos) {
+        char c          = pos<slen ? sequence[pos] : '-';
+        int  target_pos = remap_tab[pos];
+
+        if (target_pos == NO_POSITION) {            // softmap
+            if (c == '-') {
+                if (!last_gapchar) last_gapchar = '-';
+            }
+            else {
+                if (!last_gapchar) last_gapchar = c == '.' ? '.' : '-';
+
+                softbases.push_back(softbase(c, pos, last_gapchar)); // remember bases for softmapping
+                if (c != '.') last_gapchar = 0;
+            }
+        }
+        else {                                      // fixed mapping
+            if (!softbases.empty()) {
+                written += softmap_to(softbases, written, target_pos-1, outs);
+            }
+            if (written<target_pos) {
+                if (!last_gapchar) last_gapchar = c == '.' ? '.' : '-';
+
+                GBS_chrncat(outs, last_gapchar, target_pos-written);
+                written = target_pos;
+            }
+
+            if (c == '-') {
+                if (!last_gapchar) last_gapchar = '-';
+                GBS_chrcat(outs, last_gapchar); written++;
+            }
+            else {
+                GBS_chrcat(outs, c); written++;
+                if (c != '.') last_gapchar = 0;
+            }
+        }
+    }
+
+    // Spool leftover softbases.
+    // Happens when
+    //  - sequence ends before last fixed position
+    //  - sequence starts after last fixed position
+
+    if (!softbases.empty()) {
+        // softmap_to(softbases, written, written+softbases.size()-1, outs);
+        softmap_to(softbases, written, written, outs);
+    }
+    mg_assert(softbases.empty());
+
+    // copy overlength rest of sequence:
+    const char *gap_chars = "- .";
+    for (int i = minlen; i < slen; i++) {
         int c = sequence[i];
-        if (strchr(gap_chars, c)) continue; // don't fill with gaps
-        GBS_chrcat(outs, c);
+        if (!strchr(gap_chars, c)) GBS_chrcat(outs, c); // don't fill with gaps
     }
+
+    // convert end of seq ('-' -> '.')
+    {
+        char *out = GBS_mempntr(outs);
+        int  end = GBS_memoffset(outs);
+
+        for (int off = end-1; off >= 0; --off) {
+            if (out[off] == '-') out[off] = '.';
+            else if (out[off] != '.') break;
+        }
+    }
+
     return GBS_strclose(outs);
 }
 
@@ -394,17 +676,16 @@ MG_remap *MG_create_remap(GBDATA *gb_left, GBDATA *gb_right, const char *referen
         }
 
         if (type_right == GB_STRING) {
-            rem->set(GB_read_char_pntr(gb_seq_left), GB_read_char_pntr(gb_seq_right));
+            rem->add_reference(GB_read_char_pntr(gb_seq_left), GB_read_char_pntr(gb_seq_right));
         }
         else {
             char *sleft  = GB_read_as_string(gb_seq_left);
             char *sright = GB_read_as_string(gb_seq_right);
-            rem->set(sleft, sright);
+            rem->add_reference(sleft, sright);
             free(sleft);
             free(sright);
         }
     }
-    rem->compile();
     delete ref_list;
     return rem;
 }
@@ -1422,7 +1703,7 @@ AW_window *MG_merge_species_cb(AW_root *awr) {
     aws->insert_menu_topic("def_gene_species_field_xfer", "Define field transfer for gene-species", "g", "gene_species_field_transfer.hlp",
                            AWM_ALL, AW_POPUP, (AW_CL)MG_gene_species_create_field_transfer_def_window, 0);
 
-    return (AW_window *)aws;
+    return aws;
 }
 
 // --------------------------------------------------------------------------------
@@ -1431,13 +1712,13 @@ AW_window *MG_merge_species_cb(AW_root *awr) {
 
 #include <test_unit.h>
 
-#define REMAP_VERBOOSE
+// #define VERBOOSE_REMAP_TESTS
 
-#if defined(REMAP_VERBOOSE)
+#if defined(VERBOOSE_REMAP_TESTS)
 #define DUMP_REMAP(id, comment, from, to) fprintf(stderr, "%s %s '%s' -> '%s'\n", id, comment, from, to)
 #define DUMP_REMAP_STR(str)               fputs(str, stderr)
 #else
-#define DUMP_REMAP(comment, from, to)
+#define DUMP_REMAP(id, comment, from, to)
 #define DUMP_REMAP_STR(str)
 #endif
 
@@ -1452,20 +1733,18 @@ AW_window *MG_merge_species_cb(AW_root *awr) {
 #define TEST_REMAP1REF_INT(id, ASS_EQ, refold, refnew, seqold, expected) \
     do {                                                                \
         MG_remap  remapper;                                             \
-        remapper.set(refold, refnew);                                   \
-        TEST_ASSERT(remapper.compile() == NULL);                        \
         DUMP_REMAP(id, "ref ", refold, refnew);                         \
+        remapper.add_reference(refold, refnew);                         \
         TEST_REMAP(id, remapper, ASS_EQ, seqold, expected);             \
     } while(0)
 
 #define TEST_REMAP2REFS_INT(id, ASS_EQ, refold1, refnew1, refold2, refnew2, seqold, expected) \
     do {                                                                \
-        MG_remap  remapper;                                             \
-        remapper.set(refold1, refnew1);                                 \
-        remapper.set(refold2, refnew2);                                 \
-        TEST_ASSERT(remapper.compile() == NULL);                        \
+        MG_remap remapper;                                              \
         DUMP_REMAP(id, "ref1", refold1, refnew1);                       \
         DUMP_REMAP(id, "ref2", refold2, refnew2);                       \
+        remapper.add_reference(refold1, refnew1);                       \
+        remapper.add_reference(refold2, refnew2);                       \
         TEST_REMAP(id, remapper, ASS_EQ, seqold, expected);             \
     } while(0)
 
@@ -1512,44 +1791,65 @@ void TEST_remapping() {
                           "ACGT", "AC..GT",         // dots in reference do not get propagated
                           "TGCA", "TG--CA");
 
-    TEST_REMAP1REF("enforce leading dots",
+    TEST_REMAP1REF("unused position (1)",
+                   "A-C-G-T", "A--C--G--T",
+                   "A---G-T", "A-----G--T");
+    TEST_REMAP1REF("unused position (2)",
+                   "A-C-G-T", "A--C--G--T",
+                   "Az-z-zT", "Az--z--z-T");
+                          
+    TEST_REMAP1REF("empty (1)",
+                   "A-C-G", "A--C--G",
+                   "",      ".......");
+    TEST_REMAP1REF("empty (2)",
+                   "...A-C-G...", "...A--C--G...",
+                   "",            "..........");
+
+    TEST_REMAP1REF("leadonly",
+                   "...A-C-G...", "...A--C--G...",
+                   "XX",          ".XX.......");
+    TEST_REMAP1REF("trailonly",
+                   "...A-C-G...", "...A--C--G...",
+                   ".........XX", "..........XX");
+
+    TEST_REMAP1REF("enforce leading dots (1)",
                    "--A-T", "------A--T",
                    "--T-A", "......T--A");          // leading gaps shall always be dots
-    TEST_REMAP1REF("enforce leading dots",
+    TEST_REMAP1REF("enforce leading dots (2)",
                    "---A-T", "------A--T",
-                   "-.-T-A", "......T--A");          // leading gaps shall always be dots
-    TEST_REMAP1REF("enforce leading dots",
+                   "-.-T-A", "......T--A");         // leading gaps shall always be dots
+    TEST_REMAP1REF("enforce leading dots (3)",
+                   "---A-T", "------A--T",
+                   "...T-A", "......T--A");         // leading gaps shall always be dots
+    TEST_REMAP1REF("enforce leading dots (4)",
                    "-..--A-T", "--.---A--T",
-                   "-.-.-T-A", "......T--A");          // leading gaps shall always be dots
-    
+                   "-.-.-T-A", "......T--A");       // leading gaps shall always be dots
+    TEST_REMAP1REF("enforce leading dots (5)",
+                   "---A-T-", "---A----T",
+                   "-----A-", "........A");       // leading gaps shall always be dots
+    TEST_REMAP1REF("enforce leading dots (6)",
+                   "---A-T-", "---A----T",
+                   ".....A-", "........A");       // leading gaps shall always be dots
+
     TEST_REMAP1REF("no trailing gaps",
                    "A-T", "A--T---",
                    "T-A", "T--A");
 
-    TEST_REMAP1REF__BROKEN("should expand full-dot-gaps",
-                           "AC-GT", "AC--GT",
-                           "TG.CA", "TG..CA");    /* if gap was present and only contained dots
-                                                   * -> new gap should only contain dots as well
-                                                   * (corresponding code in MG_remap::remap is never reached!)
-                                                   */
-    TEST_REMAP1REF("should expand full-dot-gaps (wrong old behavior)",
+    TEST_REMAP1REF("should expand full-dot-gaps (1)",
                    "AC-GT", "AC--GT",
-                   "TG.CA", "TG--CA");
-    
-    TEST_REMAP1REF__BROKEN("should keep 'missing bases'",
-                           "AC---GT", "AC---GT",
-                           "TG-.-CA", "TG-.-CA"); // missing bases should not be deleted if possible
-    TEST_REMAP1REF("should keep 'missing bases' (wrong old behavior)",
-                   "AC---GT", "AC---GT",
-                   "TG-.-CA", "TG---CA");
+                   "TG.CA", "TG..CA");              // if gap was present and only contained dots -> new gap should only contain dots as well
+    TEST_REMAP1REF("should expand full-dot-gaps (2)",
+                   "AC--GT", "AC----GT",
+                   "TG..CA", "TG....CA");           // if gap was present and only contained dots -> new gap should only contain dots as well
 
-    TEST_REMAP1REF__BROKEN("should keep only 'missing bases' (2)",
-                           "AC-D-GT", "AC-D-GT",
-                           "TG-.-CA", "TG-.-CA"); // missing bases should not be deleted if possible
-    TEST_REMAP1REF("should keep only 'missing bases' (2) (wrong old behavior)",
-                           "AC-D-GT", "AC-D-GT",
-                           "TG-.-CA", "TG---CA");
-    
+    TEST_REMAP1REF("keep 'missing bases' (1)",
+                   "AC---GT", "AC---GT",
+                   "TG-.-CA", "TG-.-CA"); // missing bases should not be deleted
+
+    TEST_REMAP1REF("keep 'missing bases' (2)",
+                   "AC-D-GT", "AC-D-GT",
+                   "TG-.-CA", "TG-.-CA"); // missing bases should not be deleted
+
     // ----------------------------------------
     // remap with 2 references
     TEST_REMAP2REFS_ALLDIR("simple 3-way",
@@ -1561,34 +1861,27 @@ void TEST_remapping() {
                     "---A", "------A",
                     "C---", "C------",
                     "GUUG", "GU---UG");
-    
     TEST_REMAP2REFS("undefpos-nogap(3U)",
-                    "C----",  "C------", 
+                    "C----", "C------",
                     "----A", "------A",
                     "GUUUG", "GU--UUG");
-
-    TEST_REMAP2REFS__BROKEN("undefpos-nogap(4U)",
-                            "-----A", "------A",
-                            "C-----", "C------",
-                            "GUUUUG", "GUU-UUG");
-    TEST_REMAP2REFS("undefpos-nogap(4U) (wrong old behavior)",
+    TEST_REMAP2REFS("undefpos-nogap(4U)",
                     "-----A", "------A",
                     "C-----", "C------",
-                    "GUUUUG", "GU-UUUG");
+                    "GUUUUG", "GUU-UUG");
+    TEST_REMAP2REFS("undefpos-nogap(4U2)",
+                    "-----A", "-------A",
+                    "C-----", "C-------",
+                    "GUUUUG", "GUU--UUG");
 
     TEST_REMAP2REFS("undefpos1-gapleft",
                     "----A", "------A",
                     "C----", "C------",
                     "G-UUG", "G---UUG");
-    
-    TEST_REMAP2REFS__BROKEN("undefpos1-gapright",
-                            "----A", "------A",
-                            "C----", "C------",
-                            "GUU-G", "GUU---G");
-    TEST_REMAP2REFS("undefpos1-gapright (wrong old behavior)",
+    TEST_REMAP2REFS("undefpos1-gapright",
                     "----A", "------A",
                     "C----", "C------",
-                    "GUU-G", "GU--U-G");
+                    "GUU-G", "GU--U-G");            // behavior changed (prior: "GUU---G")
 
     // test non-full sequences
     TEST_REMAP2REFS("missing ali-pos (ref1-source)",
@@ -1616,6 +1909,7 @@ void TEST_remapping() {
                     "GG",  "G-G");                  // in-seq missing 1 ali pos
 
     // --------------------
+    // test (too) small gaps
 
     TEST_REMAP1REF("gap gets too small (1)",
                    "A---T---A", "A--T--A",
@@ -1624,13 +1918,10 @@ void TEST_remapping() {
     TEST_REMAP1REF("gap gets too small (2)",
                    "A---T---A", "A--T--A",
                    "AGGGT--GA", "AGGGTGA");
-    
-    TEST_REMAP1REF__BROKEN("gap gets too small (3)",
-                           "A---T---A", "A--T--A",
-                           "AGGGT-G-A", "AGGGTGA");
-    TEST_REMAP1REF("gap gets too small (3) (wrong old behavior)",
+
+    TEST_REMAP1REF("gap gets too small (3)",
                    "A---T---A", "A--T--A",
-                   "AGGGT-G-A", "AGGGT-GA");
+                   "AGGGT-G-A", "AGGGTGA");
 
     TEST_REMAP1REF("gap gets too small (4)",
                    "A---T---A", "A--T--A",
@@ -1639,30 +1930,72 @@ void TEST_remapping() {
     TEST_REMAP1REF("gap tightens to fit (1)",
                    "A---T---A", "A--T--A",
                    "AGG-T---A", "AGGT--A");
-    
-    TEST_REMAP1REF__BROKEN("gap tightens to fit (2)",
-                           "A---T---A", "A--T--A",
-                           "A-GGT---A", "AGGT--A");
-    TEST_REMAP1REF("gap tightens to fit (2) (wrong old behavior)",
-                   "A---T---A", "A--T--A",
-                   "A-GGT---A", "A-GGT-A");
 
-    TEST_REMAP1REF("drop missing bases to avoid misalignment",
+    TEST_REMAP1REF("gap tightens to fit (2)",
+                   "A---T---A", "A--T--A",
+                   "AGC-T---A", "AGCT--A");
+    TEST_REMAP1REF("gap tightens to fit (2)",
+                   "A---T---A", "A--T--A",
+                   "A-CGT---A", "ACGT--A");
+
+    TEST_REMAP1REF("gap with softmapping conflict (1)",
+                   "A-------A", "A----A",
+                   "A-CGT---A", "ACGT-A");
+    TEST_REMAP1REF("gap with softmapping conflict (2)",
+                   "A-------A", "A----A",
+                   "A--CGT--A", "ACGT-A");
+    TEST_REMAP1REF("gap with softmapping conflict (3)",
+                   "A-------A", "A----A",
+                   "A---CGT-A", "A-CGTA");
+    TEST_REMAP1REF("gap with softmapping conflict (4)",
+                   "A-------A", "A----A",
+                   "A----CGTA", "A-CGTA");
+    TEST_REMAP1REF("gap with softmapping conflict (5)",
+                   "A-------A", "A----A",
+                   "AC----GTA", "AC-GTA");
+                   
+    TEST_REMAP1REF("drop missing bases to avoid misalignment (1)",
                    "A---T", "A--T",
-                   "AG.GT", "AGGT"); 
+                   "AG.GT", "AGGT");
+    TEST_REMAP1REF("drop missing bases to avoid misalignment (2)",
+                   "A----T", "A--T",
+                   "AG..GT", "AGGT");
     TEST_REMAP1REF("dont drop missing bases if fixed map",
                    "A-C-T", "A-CT",
-                   "AG.GT", "AG.GT"); 
-    TEST_REMAP1REF__BROKEN("drop gaps if fixed map",
+                   "AG.GT", "AG.GT");
+    TEST_REMAP1REF("dont drop gaps if fixed map",
                    "A-C-T", "A-CT",
-                   "AG-GT", "AGGT"); 
-    
+                   "AG-GT", "AG-GT");
+
     // --------------------
-    
+
+    TEST_REMAP1REF("append rest of seq (1)",
+                   "AT"            , "A--T",
+                   "AGG---T...A...", "A--GGTA");
+    TEST_REMAP1REF("append rest of seq (2)",
+                   "AT."           , "A--T--.",
+                   "AGG---T...A...", "A--GGTA");
+    TEST_REMAP1REF("append rest of seq (3)",
+                   "AT--"          , "A--T---",
+                   "AGG---T...A...", "A--GGTA");
+    TEST_REMAP1REF("append rest of seq (4)",
+                   "ATC"           , "A--T--C",
+                   "AGG---T...A...", "A--G--GTA");
+    TEST_REMAP1REF("append rest of seq (4)",
+                   "AT-C"          , "A--T--C",
+                   "AGG---T...A...", "A--GG--TA");
+
+    // --------------------
+
     TEST_REMAP2REFS("impossible references",
                     "AC-TA", "A---CT--A",           // impossible references
                     "A-GTA", "AG---T--A",
                     "TGCAT", "T---GCA-T");          // solve by insertion (partial misalignment)
+
+    TEST_REMAP2REFS("impossible references",
+                    "AC-TA", "A--C-T--A",           // impossible references
+                    "A-GTA", "AG---T--A",
+                    "TGCAT", "T--GCA--T");          // solve by insertion (partial misalignment)
 }
 
 #endif
