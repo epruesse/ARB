@@ -808,19 +808,6 @@ GB_ERROR MG_transfer_sequence(MG_remap *remap, GBDATA *source_species, GBDATA *d
                     else {
                         error = GBS_global_string("Failed to adapt alignment of '%s' (checksum changed)", GBT_read_name(source_species));
                     }
-
-                    if (!error) {
-                        char *inconsistent = remap->readable_inconsistent_positions();
-                        if (inconsistent) {
-                            GBS_strstruct *msg = GBS_stropen(strlen(inconsistent)+100);
-                            GBS_strcat(msg, GBS_global_string("Warning: Out of sync while adapting alignment of '%s' at pos ", GBT_read_name(source_species)));
-                            GBS_strcat(msg, inconsistent);
-                            // aw_message(GBS_mempntr(msg));
-                            fprintf(stderr, "%s\n", GBS_mempntr(msg));
-                            GBS_strforget(msg);
-                            free(inconsistent);
-                        }
-                    }
                 }
             }
             free(rs);
