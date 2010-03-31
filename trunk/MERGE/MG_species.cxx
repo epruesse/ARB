@@ -163,8 +163,8 @@ void MG_remap::merge_mapping(MG_remap &other) {
         for (int pos = 0; pos<mixlen; ++pos) {
             max_target_pos = std::max(max_target_pos, primary[pos]);
             if (secondary[pos]<max_target_pos) {
+                if (secondary[pos] != NO_POSITION) inconsistent.push_back(pos);
                 secondary[pos] = NO_POSITION;       // consistency error -> ignore position
-                inconsistent.push_back(pos);
             }
         }
     }
@@ -174,8 +174,8 @@ void MG_remap::merge_mapping(MG_remap &other) {
         for (int pos = mixlen-1; pos >= 0; --pos) {
             if (primary[pos] >= 0 && primary[pos]<min_target_pos) min_target_pos = pos;
             if (secondary[pos] > min_target_pos) {
-                secondary[pos] = NO_POSITION;       // consistency error -> ignore position
                 inconsistent.push_back(pos);
+                secondary[pos] = NO_POSITION;       // consistency error -> ignore position
             }
         }
     }
