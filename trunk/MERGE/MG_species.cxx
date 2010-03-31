@@ -66,8 +66,6 @@ class MG_remap {
     // soft-mapping:
     int *soft_remap_tab;                            // soft-mapping (NO_POSITION, targetPosition, LEFT_BORDER or RIGHT_BORDER)
 
-    positionlist inconsistent;                      // inconsistent positions are logged here by add_reference() and remap()
-
     char *calc_softmapping(softbaselist& softbases, int start, int end, int &outlen);
     int   softmap_to(softbaselist& softbases, int start, int end, GBS_strstruct *outs);
 
@@ -79,7 +77,7 @@ class MG_remap {
     }
     
     static int *build_initial_mapping(const char *iref, int ilen, const char *oref, int olen);
-    void merge_mapping(MG_remap &other);
+    void merge_mapping(MG_remap &other, int& inconsistent, int& added);
 
 public:
 
@@ -94,8 +92,8 @@ public:
         delete [] remap_tab;
     }
 
-    void  add_reference(const char *in_reference, const char *out_reference); // returns only warnings
-    char *remap(const char *sequence);              // returns 0 on error, else copy of sequence
+    const char *add_reference(const char *in_reference, const char *out_reference); // returns only warnings
+    char       *remap(const char *sequence);        // returns 0 on error, else copy of sequence
 
     char *readable_inconsistent_positions();
 
@@ -144,26 +142,41 @@ int *MG_remap::build_initial_mapping(const char *iref, int ilen, const char *ore
     return remap;
 }
 
-void MG_remap::merge_mapping(MG_remap &other) {
-    const int *primary   = remap_tab;
-    int       *secondary = other.remap_tab;
+#if defined(DEBUG)
+// #define DUMP_INCONSISTENCIES
+#endif // DEBUG
+
+
+void MG_remap::merge_mapping(MG_remap &other, int& inconsistent, int& added) {
+    const int *primary       = remap_tab;
+    int       *secondary     = other.remap_tab;
+    bool       increased_len = false;
 
     if (other.in_length>in_length) {
         // re-use memory of bigger map
         std::swap(other.in_length, in_length);
         std::swap(other.remap_tab, remap_tab);
+
+        increased_len = true;
     }
     out_length = std::max(out_length, other.out_length); // remember biggest output length
 
     int mixlen = std::min(in_length, other.in_length);
 
     // eliminate inconsistant positions from secondary mapping (forward)
+    inconsistent = 0;
     {
         int max_target_pos = 0;
         for (int pos = 0; pos<mixlen; ++pos) {
             max_target_pos = std::max(max_target_pos, primary[pos]);
             if (secondary[pos]<max_target_pos) {
-                if (secondary[pos] != NO_POSITION) inconsistent.push_back(pos);
+                if (secondary[pos] != NO_POSITION) {
+#if defined(DUMP_INCONSISTENCIES) 
+                    fprintf(stderr, "merge-inconsistency: pos=%i primary[]=%i secondary[]=%i max_target_pos=%i\n",
+                            pos, primary[pos], secondary[pos], max_target_pos);
+#endif // DUMP_INCONSISTENCIES
+                    inconsistent++;
+                }
                 secondary[pos] = NO_POSITION;       // consistency error -> ignore position
             }
         }
@@ -172,28 +185,47 @@ void MG_remap::merge_mapping(MG_remap &other) {
     {
         int min_target_pos = out_length-1;
         for (int pos = mixlen-1; pos >= 0; --pos) {
-            if (primary[pos] >= 0 && primary[pos]<min_target_pos) min_target_pos = pos;
+            if (primary[pos] >= 0 && primary[pos]<min_target_pos) min_target_pos = primary[pos];
             if (secondary[pos] > min_target_pos) {
-                inconsistent.push_back(pos);
+#if defined(DUMP_INCONSISTENCIES)
+                fprintf(stderr, "merge-inconsistency: pos=%i primary[]=%i secondary[]=%i min_target_pos=%i\n",
+                        pos, primary[pos], secondary[pos], min_target_pos);
+#endif // DUMP_INCONSISTENCIES
+                inconsistent++;
                 secondary[pos] = NO_POSITION;       // consistency error -> ignore position
             }
         }
     }
 
     // merge mappings
+    added = 0;
     for (int pos = 0; pos < mixlen; ++pos) {
-        remap_tab[pos] = primary[pos] == NO_POSITION ? secondary[pos] : primary[pos];
+        if (primary[pos] == NO_POSITION) {
+            remap_tab[pos]  = secondary[pos];
+            added          += (remap_tab[pos] != NO_POSITION);
+        }
+        else {
+            remap_tab[pos] = primary[pos];
+        }
+        // remap_tab[pos] = primary[pos] == NO_POSITION ? secondary[pos] : primary[pos];
         mg_assert(remap_tab[pos]<out_length);
+    }
+
+    if (increased_len) { // count positions appended at end of sequence
+        for (int pos = other.in_length; pos<in_length; ++pos) {
+            added += (remap_tab[pos] != NO_POSITION);
+        }
     }
 
     // Note: copying the rest from larger mapping is not necessary
     // (it's already there, because of memory-reuse)
 }
 
-void MG_remap::add_reference(const char *in_reference, const char *out_reference) {
-    if (have_softmapping()) forget_softmapping();
+const char *MG_remap::add_reference(const char *in_reference, const char *out_reference) {
+    // returns warning about inconsistencies/useless reference
+    const char *warning = NULL;
 
-    inconsistent.clear();
+    if (have_softmapping()) forget_softmapping();
 
     if (!remap_tab) {
         in_length  = strlen(in_reference);
@@ -206,11 +238,23 @@ void MG_remap::add_reference(const char *in_reference, const char *out_reference
     else {
         MG_remap tmp;
         tmp.add_reference(in_reference, out_reference);
-        merge_mapping(tmp);
+
+        int inconsistent, added;
+        merge_mapping(tmp, inconsistent, added);
+
+        if (inconsistent>0) warning = GBS_global_string("contains %i inconsistent positions", inconsistent);
+        if (added<1) {
+            const char *useless_warning = "doesn't add useful information";
+            if (warning) warning        = GBS_global_string("%s and %s", warning, useless_warning);
+            else        warning         = useless_warning;
+        }
+
 #if defined(DUMP_MAPPING)
         dump_remap("merged");
 #endif // DUMP_MAPPING
     }
+
+    return warning;
 }
 
 void MG_remap::create_softmapping() {
@@ -460,8 +504,6 @@ char *MG_remap::remap(const char *sequence) {
 
     if (!have_softmapping()) create_softmapping();
 
-    inconsistent.clear();
-
     // remap left border
     for (pos = 0; pos<in_length && soft_remap_tab[pos] == LEFT_BORDER; ++pos) {
         char c = pos<slen ? sequence[pos] : '-';
@@ -516,9 +558,6 @@ char *MG_remap::remap(const char *sequence) {
                 GBS_chrncat(outs, last_gapchar, target_pos-written);
                 written = target_pos;
             }
-            else if (written>target_pos) {
-                inconsistent.push_back(written);
-            }
 
             if (c == '-') {
                 if (!last_gapchar) last_gapchar = '-';
@@ -561,26 +600,6 @@ char *MG_remap::remap(const char *sequence) {
     }
 
     return GBS_strclose(outs);
-}
-
-char *MG_remap::readable_inconsistent_positions() {
-    // returns inconsistent positions as human-readable string or NULL
-    char *result = NULL;
-    if (!inconsistent.empty()) {
-        inconsistent.sort();
-
-        int            count = inconsistent.size();
-        int            c     = 1;
-        GBS_strstruct *outs  = GBS_stropen(count*7);
-
-        for (positionlist::const_iterator pos = inconsistent.begin(); pos != inconsistent.end(); ++pos, ++c) {
-            if (count>1) GBS_strcat(outs, c == count ? " and " : ", ");
-            GBS_intcat(outs, *pos);
-        }
-
-        result = GBS_strclose(outs);
-    }
-    return result;
 }
 
 // --------------------------------------------------------------------------------
@@ -713,32 +732,26 @@ MG_remap *MG_create_remap(GBDATA *gb_left, GBDATA *gb_right, const char *referen
             continue;
         }
 
+        const char *warning;
         if (type_right == GB_STRING) {
-            rem->add_reference(GB_read_char_pntr(gb_seq_left), GB_read_char_pntr(gb_seq_right));
+            warning = rem->add_reference(GB_read_char_pntr(gb_seq_left), GB_read_char_pntr(gb_seq_right));
         }
         else {
             char *sleft  = GB_read_as_string(gb_seq_left);
             char *sright = GB_read_as_string(gb_seq_right);
-            rem->add_reference(sleft, sright);
+
+            warning = rem->add_reference(sleft, sright);
+
             free(sleft);
             free(sright);
         }
 
-        {
-            char *inconsistent = rem->readable_inconsistent_positions();
-            if (inconsistent) {
-                GBS_strstruct *msg = GBS_stropen(strlen(inconsistent)+100);
-                GBS_strcat(msg, GBS_global_string("Warning: Inconsistent alignment adaption caused by '%s' at pos ", tok));
-                GBS_strcat(msg, inconsistent);
-                // aw_message(GBS_mempntr(msg)); // @@@ overflow
-                fprintf(stderr, "%s\n", GBS_mempntr(msg));
-                GBS_strforget(msg);
-                free(inconsistent);
-            }
+        if (warning) {
+            aw_message(GBS_global_string("Warning: '%s' %s", tok, warning));
         }
     }
     free(ref_list);
-    
+
     return rem;
 }
 
@@ -1768,7 +1781,7 @@ AW_window *MG_merge_species_cb(AW_root *awr) {
 
 #include <test_unit.h>
 
-// #define VERBOOSE_REMAP_TESTS
+#define VERBOOSE_REMAP_TESTS
 
 #if defined(VERBOOSE_REMAP_TESTS)
 #define DUMP_REMAP(id, comment, from, to) fprintf(stderr, "%s %s '%s' -> '%s'\n", id, comment, from, to)
