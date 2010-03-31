@@ -730,7 +730,8 @@ MG_remap *MG_create_remap(GBDATA *gb_left, GBDATA *gb_right, const char *referen
                 GBS_strstruct *msg = GBS_stropen(strlen(inconsistent)+100);
                 GBS_strcat(msg, GBS_global_string("Warning: Inconsistent alignment adaption caused by '%s' at pos ", tok));
                 GBS_strcat(msg, inconsistent);
-                aw_message(GBS_mempntr(msg));
+                // aw_message(GBS_mempntr(msg)); // @@@ overflow
+                fprintf(stderr, "%s\n", GBS_mempntr(msg));
                 GBS_strforget(msg);
                 free(inconsistent);
             }
@@ -814,7 +815,8 @@ GB_ERROR MG_transfer_sequence(MG_remap *remap, GBDATA *source_species, GBDATA *d
                             GBS_strstruct *msg = GBS_stropen(strlen(inconsistent)+100);
                             GBS_strcat(msg, GBS_global_string("Warning: Out of sync while adapting alignment of '%s' at pos ", GBT_read_name(source_species)));
                             GBS_strcat(msg, inconsistent);
-                            aw_message(GBS_mempntr(msg));
+                            // aw_message(GBS_mempntr(msg));
+                            fprintf(stderr, "%s\n", GBS_mempntr(msg));
                             GBS_strforget(msg);
                             free(inconsistent);
                         }
@@ -1878,6 +1880,9 @@ void TEST_remapping() {
     TEST_REMAP1REF("trailonly",
                    "...A-C-G...", "...A--C--G...",
                    ".........XX", "..........XX");
+    TEST_REMAP1REF__BROKEN("lead+trail",
+                           "...A-C-G...", "...A--C--G...",
+                           "XX.......XX", ".XX-------XX");
 
     TEST_REMAP1REF("enforce leading dots (1)",
                    "--A-T", "------A--T",
