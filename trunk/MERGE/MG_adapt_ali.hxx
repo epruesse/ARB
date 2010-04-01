@@ -1,0 +1,36 @@
+// ============================================================= //
+//                                                               //
+//   File      : MG_adapt_ali.hxx                                //
+//   Purpose   :                                                 //
+//                                                               //
+//   Institute of Microbiology (Technical University Munich)     //
+//   http://www.arb-home.de/                                     //
+//                                                               //
+// ============================================================= //
+
+#ifndef MG_ADAPT_ALI_HXX
+#define MG_ADAPT_ALI_HXX
+
+#ifndef ARBDB_BASE_H
+#include <arbdb_base.h>
+#endif
+
+class MG_remap;
+class AW_root;
+
+struct MG_remaps {
+    int        n_remaps;
+    char     **alignment_names;
+    MG_remap **remaps;
+    
+    MG_remaps(GBDATA *gb_left, GBDATA *gb_right, AW_root *awr);
+    // MG_remaps(GBDATA *gb_left, GBDATA *gb_right, const char *reference_species_names);
+    ~MG_remaps();
+};
+
+
+GB_ERROR MG_transfer_all_alignments(MG_remaps *remaps, GBDATA *source_species, GBDATA *destination_species);
+
+#else
+#error mg_adapt_ali.hxx included twice
+#endif // MG_ADAPT_ALI_HXX

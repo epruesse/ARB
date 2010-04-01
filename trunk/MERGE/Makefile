@@ -1,8 +1,18 @@
 # INCLUDE und GLOBALS MAIN CC cflags werden von aussen uebergeben
 .SUFFIXES: .o .cxx .depend
-CPP_OBJECTS =   MG_checkfield.o MG_main.o MG_trees.o MG_alignment.o \
-	MG_species.o MG_extendeds.o MG_names.o MG_gene_species.o \
-	MG_configs.o MG_preserves.o
+CPP_OBJECTS = \
+	MG_adapt_ali.o \
+	MG_alignment.o \
+	MG_checkfield.o \
+	MG_configs.o \
+	MG_extendeds.o \
+	MG_gene_species.o \
+	MG_main.o \
+	MG_names.o \
+	MG_preserves.o \
+	MG_species.o \
+	MG_trees.o \
+
 
 $(MAIN): $(CPP_OBJECTS)
 	$(LINK_STATIC_LIB) $(MAIN) $(CPP_OBJECTS)
@@ -29,6 +39,28 @@ depend.init:
 
 # Do not add dependencies manually - use 'make depend' in $ARBHOME
 # For formatting issues see SOURCE_TOOLS/fix_depends.pl
+
+MG_adapt_ali.o: merge.hxx
+MG_adapt_ali.o: MG_adapt_ali.hxx
+MG_adapt_ali.o: mg_merge.hxx
+MG_adapt_ali.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
+MG_adapt_ali.o: $(ARBHOME)/INCLUDE/ad_prot.h
+MG_adapt_ali.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+MG_adapt_ali.o: $(ARBHOME)/INCLUDE/arb_assert.h
+MG_adapt_ali.o: $(ARBHOME)/INCLUDE/arb_error.h
+MG_adapt_ali.o: $(ARBHOME)/INCLUDE/arbdb.h
+MG_adapt_ali.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+MG_adapt_ali.o: $(ARBHOME)/INCLUDE/arbdbt.h
+MG_adapt_ali.o: $(ARBHOME)/INCLUDE/arbtools.h
+MG_adapt_ali.o: $(ARBHOME)/INCLUDE/attributes.h
+MG_adapt_ali.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+MG_adapt_ali.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
+MG_adapt_ali.o: $(ARBHOME)/INCLUDE/aw_position.hxx
+MG_adapt_ali.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+MG_adapt_ali.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+MG_adapt_ali.o: $(ARBHOME)/INCLUDE/dupstr.h
+MG_adapt_ali.o: $(ARBHOME)/INCLUDE/smartptr.h
+MG_adapt_ali.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 MG_alignment.o: merge.hxx
 MG_alignment.o: mg_merge.hxx
@@ -213,11 +245,11 @@ MG_preserves.o: $(ARBHOME)/INCLUDE/dupstr.h
 MG_preserves.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 MG_species.o: merge.hxx
+MG_species.o: MG_adapt_ali.hxx
 MG_species.o: mg_merge.hxx
 MG_species.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 MG_species.o: $(ARBHOME)/INCLUDE/ad_prot.h
 MG_species.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
-MG_species.o: $(ARBHOME)/INCLUDE/adGene.h
 MG_species.o: $(ARBHOME)/INCLUDE/arb_assert.h
 MG_species.o: $(ARBHOME)/INCLUDE/arb_error.h
 MG_species.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -235,13 +267,10 @@ MG_species.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 MG_species.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 MG_species.o: $(ARBHOME)/INCLUDE/awt.hxx
 MG_species.o: $(ARBHOME)/INCLUDE/awt_item_sel_list.hxx
-MG_species.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 MG_species.o: $(ARBHOME)/INCLUDE/db_scanner.hxx
 MG_species.o: $(ARBHOME)/INCLUDE/dupstr.h
-MG_species.o: $(ARBHOME)/INCLUDE/GEN.hxx
 MG_species.o: $(ARBHOME)/INCLUDE/inline.h
 MG_species.o: $(ARBHOME)/INCLUDE/smartptr.h
-MG_species.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 MG_trees.o: merge.hxx
 MG_trees.o: mg_merge.hxx
