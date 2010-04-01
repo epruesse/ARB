@@ -662,32 +662,26 @@ MG_remap *MG_create_remap(GBDATA *gb_left, GBDATA *gb_right, const char *referen
 
 // --------------------------------------------------------------------------------
 
-MG_remaps::MG_remaps(GBDATA *gb_left, GBDATA *gb_right, AW_root *awr) {
-    memset((char *)this, 0, sizeof(*this));
-    int ref_enable = awr->awar(AWAR_REMAP_ENABLE)->read_int();
-    if (!ref_enable) return;
+MG_remaps::MG_remaps(GBDATA *gb_left, GBDATA *gb_right, bool enable, const char *reference_species_names)
+    : n_remaps(0)
+    , alignment_names(NULL)
+    , remaps(NULL)
+{
+    if (enable) { // otherwise nothing will be remapped!
+        alignment_names = GBT_get_alignment_names(gb_left);
+        for (n_remaps = 0; alignment_names[n_remaps]; n_remaps++) {} // count alignments
 
-    char *reference_species_names = awr->awar(AWAR_REMAP_SPECIES_LIST)->read_string();
-    this->alignment_names = GBT_get_alignment_names(gb_left);
-    for (n_remaps = 0; alignment_names[n_remaps]; n_remaps++) ;
-    this->remaps = (MG_remap **)GB_calloc(sizeof(MG_remap *), n_remaps);
-    int i;
-    for (i=0; i<n_remaps; i++) {
-        this->remaps[i] = MG_create_remap(gb_left, gb_right, reference_species_names, alignment_names[i]);
+        remaps = (MG_remap**)GB_calloc(sizeof(*remaps), n_remaps);
+        for (int i = 0; i<n_remaps; ++i) {
+            remaps[i] = MG_create_remap(gb_left, gb_right, reference_species_names, alignment_names[i]);
+        }
     }
-    delete reference_species_names;
 }
-// MG_remaps::MG_remaps(GBDATA *gb_left, GBDATA *gb_right, const char *reference_species_names) {
-// }
 
 MG_remaps::~MG_remaps() {
-    int i;
-    for (i=0; i<n_remaps; i++) {
-        delete remaps[i];
-        delete alignment_names[i];
-    }
-    delete alignment_names;
-    delete remaps;
+    for (int i=0; i<n_remaps; i++) delete remaps[i];
+    GBT_free_names(alignment_names);
+    free(remaps);
 }
 
 GB_ERROR MG_transfer_sequence(MG_remap *remap, GBDATA *source_species, GBDATA *destination_species, const char *alignment_name) {

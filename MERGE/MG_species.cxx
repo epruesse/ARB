@@ -187,7 +187,12 @@ static GB_ERROR MG_transfer_one_species(AW_root *aw_root, MG_remaps& remap,
     return error;
 }
 
-
+static const char *get_reference_species_names(AW_root *awr) {
+    return awr->awar(AWAR_REMAP_SPECIES_LIST)->read_char_pntr();
+}
+static bool adaption_enabled(AW_root *awr) {
+    return awr->awar(AWAR_REMAP_ENABLE)->read_int() != 0;
+}
 
 void MG_transfer_selected_species(AW_window *aww) {
     if (MG_copy_and_check_alignments(aww, 0) != 0) return;
@@ -206,7 +211,7 @@ void MG_transfer_selected_species(AW_window *aww) {
         if (!error) error = GB_begin_transaction(GLOBAL_gb_dest);
 
         if (!error) {
-            MG_remaps rm(GLOBAL_gb_merge, GLOBAL_gb_dest, aw_root);
+            MG_remaps rm(GLOBAL_gb_merge, GLOBAL_gb_dest, adaption_enabled(aw_root), get_reference_species_names(aw_root));
 
             GBDATA *gb_species_data1 = GB_search(GLOBAL_gb_merge, "species_data", GB_CREATE_CONTAINER);
             GBDATA *gb_species_data2 = GB_search(GLOBAL_gb_dest, "species_data", GB_CREATE_CONTAINER);
@@ -251,7 +256,8 @@ void MG_transfer_species_list(AW_window *aww) {
     GB_HASH *dest_species_hash    = GBT_create_species_hash(GLOBAL_gb_dest);
     GB_HASH *source_organism_hash = is_genome_db1 ? GBT_create_organism_hash(GLOBAL_gb_merge) : 0;
 
-    MG_remaps rm(GLOBAL_gb_merge, GLOBAL_gb_dest, aww->get_root());
+    AW_root   *aw_root = aww->get_root();
+    MG_remaps  rm(GLOBAL_gb_merge, GLOBAL_gb_dest, adaption_enabled(aw_root), get_reference_species_names(aw_root));
 
     GBDATA *gb_species1;
     int     queried = 0;
@@ -265,7 +271,7 @@ void MG_transfer_species_list(AW_window *aww) {
         if (IS_QUERIED(gb_species1)) {
             GBDATA *gb_species_data2 = GB_search(GLOBAL_gb_dest, "species_data", GB_CREATE_CONTAINER);
 
-            error = MG_transfer_one_species(aww->get_root(), rm,
+            error = MG_transfer_one_species(aw_root, rm,
                                             NULL, gb_species_data2,
                                             is_genome_db1, is_genome_db2,
                                             gb_species1, NULL,
@@ -305,9 +311,11 @@ void MG_transfer_fields_cb(AW_window *aww) {
         GB_begin_transaction(GLOBAL_gb_merge);
         GB_begin_transaction(GLOBAL_gb_dest);
 
-        GBDATA    *gb_dest_species_data  = GB_search(GLOBAL_gb_dest, "species_data", GB_CREATE_CONTAINER);
-        bool       transfer_of_alignment = GBS_string_matches(field, "ali_*/data", GB_MIND_CASE);
-        MG_remaps  rm(GLOBAL_gb_merge, GLOBAL_gb_dest, aww->get_root());
+        GBDATA *gb_dest_species_data  = GB_search(GLOBAL_gb_dest, "species_data", GB_CREATE_CONTAINER);
+        bool    transfer_of_alignment = GBS_string_matches(field, "ali_*/data", GB_MIND_CASE);
+
+        AW_root   *aw_root = aww->get_root();
+        MG_remaps  rm(GLOBAL_gb_merge, GLOBAL_gb_dest, adaption_enabled(aw_root), get_reference_species_names(aw_root));
 
         for (GBDATA *gb_species1 = GBT_first_species(GLOBAL_gb_merge);
              gb_species1 && !error;

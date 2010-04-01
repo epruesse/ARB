@@ -16,15 +16,13 @@
 #endif
 
 class MG_remap;
-class AW_root;
 
 struct MG_remaps {
     int        n_remaps;
     char     **alignment_names;
     MG_remap **remaps;
     
-    MG_remaps(GBDATA *gb_left, GBDATA *gb_right, AW_root *awr);
-    // MG_remaps(GBDATA *gb_left, GBDATA *gb_right, const char *reference_species_names);
+    MG_remaps(GBDATA *gb_left, GBDATA *gb_right, bool enable, const char *reference_species_names);
     ~MG_remaps();
 };
 
