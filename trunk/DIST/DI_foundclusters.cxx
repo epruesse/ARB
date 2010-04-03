@@ -378,7 +378,7 @@ public:
      }
 };
 
-void ClustersData::update_selection_list(AW_window *aww) {
+void ClustersData::update_cluster_selection_list(AW_window *aww) {
     cl_assert(clusterList);
     aww->clear_selection_list(clusterList);
 
@@ -418,7 +418,7 @@ void ClustersData::free(AW_window *aww) {
 
     shown.clear();
     stored.clear();
-    update_selection_list(aww);
+    update_cluster_selection_list(aww);
     known_clusters.clear();
 }
 

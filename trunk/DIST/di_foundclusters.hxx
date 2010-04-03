@@ -231,7 +231,7 @@ public:
     void restore_all();
     void swap_all();
 
-    void update_selection_list(AW_window *aww);
+    void update_cluster_selection_list(AW_window *aww);
 
     GBDATA *get_gb_main() const { return weighted_filter.get_gb_main(); }
     AW_root *get_aw_root() const { return weighted_filter.get_aw_root(); }

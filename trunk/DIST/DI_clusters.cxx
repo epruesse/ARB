@@ -113,7 +113,7 @@ static void di_forget_global_data(AW_window *aww) {
 //      Update contents
 
 static void update_cluster_sellist(AW_window *aww) {
-    global_data->update_selection_list(aww);
+    global_data->update_cluster_selection_list(aww);
     // @@@ update result info line
 }
 static void update_restore_label(AW_window *aww) {
@@ -666,7 +666,7 @@ static void group_clusters(AW_window *, AW_CL cl_Group_Action, AW_CL cl_aw_clust
     // careful! the following code will invalidate error, so don't use below
 
     with_affected_clusters_do(aw_root, affected, false, (AW_CL)accept, accept_proposed_names);
-    global_data->update_selection_list((AW_window*)cl_aw_clusterList);
+    global_data->update_cluster_selection_list((AW_window*)cl_aw_clusterList);
 }
 
 static void popup_group_clusters_window(AW_window *aw_clusterList) {
