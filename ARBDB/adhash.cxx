@@ -1259,7 +1259,7 @@ void TEST_GBS_hash_next_element_that() {
         GBS_write_hash(hash, "barfoo", 3);
 
 #define READ_REVERSE(value) GBS_hash_next_element_that(hash, NULL, has_value, (void*)value)
-#define ASSERT_READ_REVERSE_RETURNS(value, expected) TEST_ASSERT_STRINGRESULT(expected, READ_REVERSE(value));
+#define ASSERT_READ_REVERSE_RETURNS(value, expected) TEST_ASSERT_EQUAL(expected, READ_REVERSE(value));
 
         ASSERT_READ_REVERSE_RETURNS(0, NULL);
         ASSERT_READ_REVERSE_RETURNS(1, "bar");
