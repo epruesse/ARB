@@ -1023,3 +1023,58 @@ GB_ERROR GB_notify(GBDATA *gb_main, int id, const char *message) {
     return error;
 }
 
+// --------------------------------------------------------------------------------
+
+#if (UNIT_TESTS == 1)
+
+#include <test_unit.h>
+
+#define TEST_SPLIT_JOIN(str, sep)                               \
+    do {                                                        \
+        char **names  = GBT_split_string(str, sep, NULL);       \
+        char  *joined = GBT_join_names(names, sep);             \
+        TEST_ASSERT_EQUAL(str, joined);                         \
+        free(joined);                                           \
+        GBT_free_names(names);                                  \
+    } while(0)
+
+void TEST_split_join_names() {
+    {                                               // simple split
+        int    count;
+        char **names = GBT_split_string("a*b*c", '*', &count);
+
+        TEST_ASSERT_EQUAL(count, 3);
+        TEST_ASSERT_EQUAL(names[0], "a");
+        TEST_ASSERT_EQUAL(names[1], "b");
+        TEST_ASSERT_EQUAL(names[2], "c");
+
+        GBT_free_names(names);
+    }
+    {                                               // split string containing empty tokens
+        int    count;
+        char **names = GBT_split_string("**a**b*c*", '*', &count);
+
+        TEST_ASSERT_EQUAL(count, 7);
+        TEST_ASSERT_EQUAL(names[0], "");
+        TEST_ASSERT_EQUAL(names[1], "");
+        TEST_ASSERT_EQUAL(names[2], "a");
+        TEST_ASSERT_EQUAL(names[3], "");
+        TEST_ASSERT_EQUAL(names[4], "b");
+        TEST_ASSERT_EQUAL(names[5], "c");
+        TEST_ASSERT_EQUAL(names[6], "");
+        TEST_ASSERT_EQUAL(names[7], NULL);
+
+        GBT_free_names(names);
+    }
+
+    TEST_SPLIT_JOIN("a.b.c", '.');
+    TEST_SPLIT_JOIN("a.b.c", '*');
+    
+    TEST_SPLIT_JOIN("..a.b.c", '.');
+    TEST_SPLIT_JOIN("a.b.c..", '.');
+    TEST_SPLIT_JOIN("a..b..c", '.');
+    TEST_SPLIT_JOIN(".", '.');
+    TEST_SPLIT_JOIN("....", '.');
+}
+
+#endif
