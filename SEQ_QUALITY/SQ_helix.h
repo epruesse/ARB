@@ -99,7 +99,7 @@ void SQ_helix::SQ_calc_helix_layout(const char *seq, GBDATA * gb_main,
     if (!has_filterMap) {
         filterMap.clear();
 
-        for (int filter_pos = 0; filter_pos < filterLen; filter_pos++) {
+        for (size_t filter_pos = 0; filter_pos < filterLen; filter_pos++) {
             filterMap[filterpos_2_seqpos[filter_pos]] = filter_pos;
         }
 
@@ -115,7 +115,7 @@ void SQ_helix::SQ_calc_helix_layout(const char *seq, GBDATA * gb_main,
         // calculate the number of strong, weak and no helixes
         std::map<int, int>::iterator it;
 
-        for (int filter_pos = 0; filter_pos < filterLen; filter_pos++) {
+        for (size_t filter_pos = 0; filter_pos < filterLen; filter_pos++) {
             int seq_pos = filterpos_2_seqpos[filter_pos];
 
             BI_PAIR_TYPE pair_type = helix->pairtype(seq_pos);
