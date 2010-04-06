@@ -776,16 +776,16 @@ GB_ERROR MG_transfer_all_alignments(MG_remaps *remaps, GBDATA *source_species, G
 
 
 #define TEST_REMAP1REF(id, ro, rn, seqold, expected)                    \
-    TEST_REMAP1REF_INT(id, TEST_ASSERT_STRINGRESULT, ro, rn, seqold, expected)
+    TEST_REMAP1REF_INT(id, TEST_ASSERT_EQUAL, ro, rn, seqold, expected)
 
 #define TEST_REMAP1REF__BROKEN(id, ro, rn, seqold, expected)            \
-    TEST_REMAP1REF_INT(id, TEST_ASSERT_STRINGRESULT__BROKEN, ro, rn, seqold, expected)
+    TEST_REMAP1REF_INT(id, TEST_ASSERT_EQUAL__BROKEN, ro, rn, seqold, expected)
 
 #define TEST_REMAP2REFS(id, ro1, rn1, ro2, rn2, seqold, expected)       \
-    TEST_REMAP2REFS_INT(id, TEST_ASSERT_STRINGRESULT, ro1, rn1, ro2, rn2, seqold, expected)
+    TEST_REMAP2REFS_INT(id, TEST_ASSERT_EQUAL, ro1, rn1, ro2, rn2, seqold, expected)
 
 #define TEST_REMAP2REFS__BROKEN(id, ro1, rn1, ro2, rn2, seqold, expected) \
-    TEST_REMAP2REFS_INT(id, TEST_ASSERT_STRINGRESULT__BROKEN, ro1, rn1, ro2, rn2, seqold, expected)
+    TEST_REMAP2REFS_INT(id, TEST_ASSERT_EQUAL__BROKEN, ro1, rn1, ro2, rn2, seqold, expected)
 
 #define TEST_REMAP1REF_FWDREV(id, ro, rn, so, sn)       \
     TEST_REMAP1REF(id "(fwd)", ro, rn, so, sn);         \

@@ -26,7 +26,7 @@ namespace arb_test {
         return (s1 == s2) || (s1 && s2 && strcmp(s1, s2) == 0);
     }
 
-    inline bool str_equal(const char *s1, const char *s2) {
+    inline bool is_equal(const char *s1, const char *s2) {
         bool equal = strnullequal(s1, s2);
         if (!equal) {
             fprintf(stderr,
@@ -35,12 +35,27 @@ namespace arb_test {
         }
         return equal;
     }
-    inline bool str_different(const char *s1, const char *s2) {
+    inline bool is_different(const char *s1, const char *s2) {
         bool different = !strnullequal(s1, s2);
         if (!different) {
             fprintf(stderr, "str_different('%s', ..) returns false\n", s1);
         }
         return different;
+    }
+
+    inline bool is_equal(int n1, int n2) {
+        bool equal = n1 == n2;
+        if (!equal) {
+            fprintf(stderr, "numeric_equal(%i,%i) returns false\n", n1, n2);
+        }
+        return equal;
+    }
+    inline bool is_equal(size_t n1, size_t n2) {
+        bool equal = n1 == n2;
+        if (!equal) {
+            fprintf(stderr, "numeric_equal(%zu,%zu) returns false\n", n1, n2);
+        }
+        return equal;
     }
 };
 
@@ -75,8 +90,8 @@ namespace arb_test {
 
 #define TEST_ASSERT_SEGFAULT(cb) TEST_ASSERT(GBK_raises_SIGSEGV(cb))
 
-#define TEST_ASSERT_STRINGRESULT(s1, s2)         TEST_ASSERT(arb_test::str_equal(s1, s2))
-#define TEST_ASSERT_STRINGRESULT__BROKEN(s1, s2) TEST_ASSERT__BROKEN(arb_test::str_equal(s1, s2))
+#define TEST_ASSERT_EQUAL(t1, t2)         TEST_ASSERT(arb_test::is_equal(t1, t2))
+#define TEST_ASSERT_EQUAL__BROKEN(t1, t2) TEST_ASSERT__BROKEN(arb_test::is_equal(t1, t2))
 
 #else
 #error test_unit.h included twice
