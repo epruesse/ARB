@@ -62,9 +62,9 @@ GB_ERROR NT_repair_DB(GBDATA *gb_main);
 void NT_rerepair_DB(AW_window *, AW_CL cl_gbmain, AW_CL dummy_1x);
 
 /* NT_edconf.cxx */
+void NT_popup_configuration_admin(AW_window *aw_main, AW_CL dummy_1x, AW_CL dummy_2x);
 AW_window *NT_start_editor_on_old_configuration(AW_root *awr);
 void NT_start_editor_on_tree(AW_window *, AW_CL cl_use_species_aside, AW_CL dummy_1x);
-void NT_popup_configuration_admin(AW_window *aw_main, AW_CL dummy_1x, AW_CL dummy_2x);
 
 /* NT_extern.cxx */
 void NT_save_cb(AW_window *aww);
