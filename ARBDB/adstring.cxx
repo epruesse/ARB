@@ -20,6 +20,9 @@
 #include <ctime>
 #include <setjmp.h>
 
+#include <arb_valgrind/valgrind.h>
+
+
 #define GBS_GLOBAL_STRING_SIZE 64000
 
 static gb_warning_func_type      gb_warning_func;
@@ -1214,24 +1217,29 @@ public:
 
 bool GBK_raises_SIGSEGV(void (*cb)(void)) {
     // test whether 'cb' aborts with SIGSEGV
+    // (does nothing and always returns true if executable is running under valgrind!)
 
-    bool           segv_occurred = false;
-    SuppressOutput toConsole;
-    SigHandler     old_handler   = signal(SIGSEGV, sigsegv_handler);
-    int            trapped       = setjmp(return_after_segv);
-
-    suppress_sigsegv = true;
-    if (!trapped) {                                 // normal execution
-        cb();
+    bool segv_occurred = false;
+    if (RUNNING_ON_VALGRIND>0) {
+        segv_occurred = true;
     }
     else {
-        segv_occurred = true; 
+        SuppressOutput toConsole;
+        SigHandler     old_handler   = signal(SIGSEGV, sigsegv_handler);
+        int            trapped       = setjmp(return_after_segv);
+
+        suppress_sigsegv = true;
+        if (!trapped) {                                 // normal execution
+            cb();
+        }
+        else {
+            segv_occurred = true; 
+        }
+
+        suppress_sigsegv = false;
+        gb_assert(!trapped || trapped == 667);
+        signal(SIGSEGV, old_handler);
     }
-
-    suppress_sigsegv = false;
-    gb_assert(!trapped || trapped == 667);
-    signal(SIGSEGV, old_handler);
-
     return segv_occurred;
 }
 
