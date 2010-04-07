@@ -123,7 +123,19 @@ sub prototype_simple($) {
 sub generate_table($$\%\&) {
   my ($type,$name,$id_r,$prototyper_r) = @_;
 
-  my @tests = sort keys %$id_r;
+  my @tests = sort {
+    my $cmp;
+    my $loca = $location{$a};
+    my $locb = $location{$b};
+    if (defined $loca) {
+      if (defined $locb) { $cmp = $loca cmp $locb; }
+      else { $cmp = 1; }
+    }
+    else {
+      if (defined $locb) { $cmp = -1; }
+      else { $cmp = $a cmp $b; }
+    }
+  } keys %$id_r;
 
   my $code = '';
 
