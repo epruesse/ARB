@@ -94,7 +94,8 @@ sub filter($) {
   {
     my $warn = 0;
     foreach (sort keys %simple_test) {
-      if ($del{$_}==1) {
+      my $del = $del{$_};
+      if (defined $del and $del==1) {
         if ($warn==0) {
           print "Skipped tests (restriction set to '$expr'):\n";
           $warn = 1;
@@ -105,7 +106,8 @@ sub filter($) {
   }
 
   %simple_test = map {
-    if ($del{$_}==0) { $_ => $simple_test{$_}; }
+    my $del = $del{$_};
+    if (not defined $del or $del==0) { $_ => $simple_test{$_}; }
     else { ; }
   } keys %simple_test;
 }
