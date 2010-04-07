@@ -44,14 +44,11 @@ Translate.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 Translate.o: $(ARBHOME)/INCLUDE/AP_codon_table.hxx
 Translate.o: $(ARBHOME)/INCLUDE/AP_pro_a_nucs.hxx
 Translate.o: $(ARBHOME)/INCLUDE/arb_assert.h
+Translate.o: $(ARBHOME)/INCLUDE/arb_error.h
 Translate.o: $(ARBHOME)/INCLUDE/arbdb.h
 Translate.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 Translate.o: $(ARBHOME)/INCLUDE/arbdbt.h
 Translate.o: $(ARBHOME)/INCLUDE/arbtools.h
 Translate.o: $(ARBHOME)/INCLUDE/attributes.h
-Translate.o: $(ARBHOME)/INCLUDE/aw_device.hxx
-Translate.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
-Translate.o: $(ARBHOME)/INCLUDE/aw_position.hxx
-Translate.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-Translate.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-Translate.o: $(ARBHOME)/INCLUDE/awt.hxx
+Translate.o: $(ARBHOME)/INCLUDE/dupstr.h
+Translate.o: $(ARBHOME)/INCLUDE/smartptr.h
