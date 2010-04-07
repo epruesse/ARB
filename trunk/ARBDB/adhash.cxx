@@ -1094,19 +1094,17 @@ void TEST_GBS_hashtab_2_string() {
         GB_HASH *hash      = TEST.get_hash(true);
         char    *as_string = GBS_hashtab_2_string(hash);
 
-        printf("as_string='%s'\n", as_string);
-
         GB_HASH *hash2 = GBS_create_hash(21, GB_MIND_CASE);
         GBS_hash_do_sorted_loop(hash, insert_into_hash, GBS_HCF_sortedByKey, hash2);
         
         GB_HASH *hash3 = GBS_create_hash(100, GB_MIND_CASE);
         GBS_hash_do_sorted_loop(hash, insert_into_hash, GBS_HCF_sortedByKey, hash3);
 
-        char *as_string2 = GBS_hashtab_2_string(hash2); printf("as_string2='%s'\n", as_string2);
-        char *as_string3 = GBS_hashtab_2_string(hash3); printf("as_string3='%s'\n", as_string3);
+        char *as_string2 = GBS_hashtab_2_string(hash2); 
+        char *as_string3 = GBS_hashtab_2_string(hash3); 
 
-        TEST_ASSERT__BROKEN(strcmp(as_string, as_string2) == 0);
-        TEST_ASSERT        (strcmp(as_string, as_string3) == 0);
+        TEST_ASSERT_EQUAL__BROKEN(as_string, as_string2);
+        TEST_ASSERT_EQUAL        (as_string, as_string3);
 
         GBS_free_hash(hash3);
         GBS_free_hash(hash2);
