@@ -20,7 +20,7 @@
 #include <ctime>
 #include <setjmp.h>
 
-#include <arb_valgrind/valgrind.h>
+#include <valgrind.h>
 
 
 #define GBS_GLOBAL_STRING_SIZE 64000
