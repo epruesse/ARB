@@ -380,14 +380,14 @@ static AW_window_message *new_input_window(AW_root *root, const char *title, con
     aw_msg->at_newline();
     aw_msg->create_input_field(AW_INPUT_AWAR, INPUT_SIZE);
 
-    int    butCount     = 2;    // ok and cancel
-    char **button_names = 0;
-    int    maxlen       = 6;    // use as min.length for buttons (for 'CANCEL')
+    size_t   butCount     = 2;                      // ok and cancel
+    char   **button_names = 0;
+    int      maxlen       = 6;                      // use as min.length for buttons (for 'CANCEL')
 
     if (buttons) {
         button_names = GBT_split_string(buttons, ',', &butCount);
 
-        for (int b = 0; b<butCount; b++) {
+        for (size_t b = 0; b<butCount; b++) {
             int len = strlen(button_names[b]);
             if (len>maxlen) maxlen = len;
         }
@@ -401,7 +401,7 @@ static AW_window_message *new_input_window(AW_root *root, const char *title, con
     aw_msg->at_newline();
     aw_msg->callback(input_history_cb, -1); aw_msg->create_button("bwd", "<<", 0);
     aw_msg->callback(input_history_cb,  1); aw_msg->create_button("fwd", ">>", 0);
-    int thisLine = 2;
+    size_t thisLine = 2;
 
     // @@@ add a history button (opening a window with elements from history)
 
@@ -411,7 +411,7 @@ static AW_window_message *new_input_window(AW_root *root, const char *title, con
     }
 
     if (buttons) {
-        for (int b = 0; b<butCount; b++) {
+        for (size_t b = 0; b<butCount; b++) {
             const char *name    = button_names[b];
             bool        forceLF = name[0] == '\n';
 
