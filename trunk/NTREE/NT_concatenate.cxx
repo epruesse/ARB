@@ -183,7 +183,7 @@ void selectAlignment(AW_window *aws) {
             aws->update_selection_list(con_alignment_list);
         }
 
-        aws->select_index(db_alignment_list, AWAR_CON_DB_ALIGNS, left_index+1); // go down 1 position on left side
+        aws->select_element_at_index(db_alignment_list, left_index+1); // go down 1 position on left side
         aw_root->awar(AWAR_CON_CONCAT_ALIGNS)->write_string(selected_alignment); // position right side to newly added or already existing alignment
     }
     free(selected_alignment);
@@ -213,12 +213,13 @@ void removeAlignment(AW_window *aws) {
     char *selected_alignment = aw_root->awar(AWAR_CON_CONCAT_ALIGNS)->read_string();
 
     if (selected_alignment && selected_alignment[0] != 0) {
-        int index = aws->get_index_of_element(con_alignment_list, selected_alignment); // save old position
+        int old_position = aws->get_index_of_element(con_alignment_list, selected_alignment); 
+        
         aws->delete_selection_from_list(con_alignment_list, selected_alignment);
         aws->insert_default_selection(con_alignment_list, "????", "????");
         aws->update_selection_list(con_alignment_list);
 
-        aws->select_index(con_alignment_list, AWAR_CON_CONCAT_ALIGNS, index); // restore old position
+        aws->select_element_at_index(con_alignment_list, old_position); 
         aw_root->awar(AWAR_CON_DB_ALIGNS)->write_string(selected_alignment); // set left selection to deleted alignment
     }
     free(selected_alignment);
@@ -246,11 +247,11 @@ void shiftAlignment(AW_window *aws, long int direction) {
         case MOVE_UP:       // shifting alignments upwards
             if (sel_element_index == curr_index+1) {
                 aws->insert_selection(temp_list, selected_alignment, selected_alignment);
-                temp_listEntry = aws->get_element_of_index(con_alignment_list, curr_index++);
+                temp_listEntry = aws->get_element_at_index(con_alignment_list, curr_index++);
                 if (temp_listEntry) aws->insert_selection(temp_list, temp_listEntry, temp_listEntry);
             }
             else {
-                temp_listEntry = aws->get_element_of_index(con_alignment_list, curr_index);
+                temp_listEntry = aws->get_element_at_index(con_alignment_list, curr_index);
                 if (temp_listEntry) aws->insert_selection(temp_list, temp_listEntry, temp_listEntry);
             }
             curr_index++;
@@ -258,12 +259,12 @@ void shiftAlignment(AW_window *aws, long int direction) {
 
         case MOVE_DOWN:    // shifting alignments downwards
             if (sel_element_index == curr_index) {
-                temp_listEntry = aws->get_element_of_index(con_alignment_list, ++curr_index);
+                temp_listEntry = aws->get_element_at_index(con_alignment_list, ++curr_index);
                 if (temp_listEntry) aws->insert_selection(temp_list, temp_listEntry, temp_listEntry);
                 aws->insert_selection(temp_list, selected_alignment, selected_alignment);
             }
             else {
-                temp_listEntry = aws->get_element_of_index(con_alignment_list, curr_index);
+                temp_listEntry = aws->get_element_at_index(con_alignment_list, curr_index);
                 if (temp_listEntry) aws->insert_selection(temp_list, temp_listEntry, temp_listEntry);
             }
             curr_index++;

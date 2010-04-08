@@ -430,8 +430,8 @@ static void reorder_left_behind_right(AW_window *aws, AW_CL cl_selleft, AW_CL cl
     GBDATA *gb_source = GBT_get_changekey(GLOBAL_gb_main, source, selector->change_key_path);
     GBDATA *gb_dest   = GBT_get_changekey(GLOBAL_gb_main, dest, selector->change_key_path);
 
-    int left_index  = aws->get_index_of_current_element(sel_left->get_sellist(), AWAR_FIELD_REORDER_SOURCE);
-    int right_index = aws->get_index_of_current_element(sel_right->get_sellist(), AWAR_FIELD_REORDER_DEST);
+    int left_index  = aws->get_index_of_selected_element(sel_left->get_sellist());
+    int right_index = aws->get_index_of_selected_element(sel_right->get_sellist());
 
     if (!gb_source) {
         aw_message("Please select an item you want to move (left box)");
@@ -470,8 +470,8 @@ static void reorder_left_behind_right(AW_window *aws, AW_CL cl_selleft, AW_CL cl
         aw_message(warning);
     }
     else {
-        aws->select_index(sel_left->get_sellist(), AWAR_FIELD_REORDER_SOURCE, left_index);
-        aws->select_index(sel_right->get_sellist(), AWAR_FIELD_REORDER_DEST, right_index);
+        aws->select_element_at_index(sel_left->get_sellist(), left_index);
+        aws->select_element_at_index(sel_right->get_sellist(), right_index);
     }
 }
 
@@ -581,7 +581,7 @@ static void ad_hide_field(AW_window *aws, AW_CL cl_sel, AW_CL cl_hide) {
         free(source);
     }
     GB_end_transaction_show_error(GLOBAL_gb_main, error, aw_message);
-    if (!error) aws->move_selection(item_sel->get_sellist(), AWAR_FIELD_DELETE, 1);
+    if (!error) aws->move_selection(item_sel->get_sellist(), 1);
 }
 
 static void ad_field_delete(AW_window *aws, AW_CL cl_sel) {
@@ -592,7 +592,7 @@ static void ad_field_delete(AW_window *aws, AW_CL cl_sel) {
         AWT_itemfield_selection *item_sel   = (AWT_itemfield_selection*)cl_sel;
         const ad_item_selector  *selector   = item_sel->get_selector();
         AW_selection_list       *sellist    = item_sel->get_sellist();
-        int                      curr_index = aws->get_index_of_current_element(sellist, AWAR_FIELD_DELETE);
+        int                      curr_index = aws->get_index_of_selected_element(sellist);
         GBDATA                  *gb_source  = GBT_get_changekey(GLOBAL_gb_main, source, selector->change_key_path);
 
         if (!gb_source) error = "Please select the field you want to delete";
@@ -612,7 +612,7 @@ static void ad_field_delete(AW_window *aws, AW_CL cl_sel) {
                     error = GB_delete(gbd);
                     if (!error) {
                         // item has disappeared, this selects the next one:
-                        aws->select_index(sellist, AWAR_FIELD_DELETE, curr_index);
+                        aws->select_element_at_index(sellist, curr_index);
                     }
                 }
             }

@@ -425,7 +425,7 @@ void MP_show_probes_in_tree_move(AW_window *aww, AW_CL cl_backward, AW_CL cl_res
     bool               backward           = bool(cl_backward);
     AW_selection_list *resultProbesList = (AW_selection_list*)cl_result_probes_list;
 
-    aww->move_selection(resultProbesList, MP_AWAR_RESULTPROBES, backward ? -1 : 1);
+    aww->move_selection(resultProbesList, backward ? -1 : 1);
     MP_show_probes_in_tree(aww);
 }
 
@@ -673,7 +673,7 @@ void MP_Comment(AW_window *aww, AW_CL com)      // Comment fuer Auswahl eintrage
     char        spaces[21];
     int         len_spaces      = 0;
     char       *ecol;
-    const char *successor_value = aww->get_element_of_index(result_probes_list,
+    const char *successor_value = aww->get_element_at_index(result_probes_list,
                                                             aww->get_index_of_element(result_probes_list, aw_str2) // this mem is lost, @@ fix
                                                             +1);
 

@@ -1487,63 +1487,48 @@ int AW_window::get_no_of_entries(AW_selection_list *selection_list) {
     return count;
 }
 
-#if defined(DEVEL_RALF)
-#warning no need to pass awar_name to the next 3 functions
-#endif // DEVEL_RALF
-
-int AW_window::get_index_of_current_element(AW_selection_list *selection_list, const char *awar_name) {
-    // returns -1 if no entry is selected
-    AW_root *aw_root    = get_root();
-    char    *curr_value = aw_root->awar(awar_name)->read_string();
-    int      index      = get_index_of_element(selection_list, curr_value);
-
-    free(curr_value);
-    return index;
+int AW_window::get_index_of_selected_element(AW_selection_list *selection_list) {
+    // returns index of element (or index of default)
+    const char *awar_value = selection_list->get_awar_value(get_root());
+    return get_index_of_element(selection_list, awar_value);
 }
 
-void AW_window::select_index(AW_selection_list *selection_list, const char *awar_name, int wanted_index) {
-    AW_root *aw_root      = get_root();
-    char    *wanted_value = get_element_of_index(selection_list, wanted_index);
+void AW_window::select_element_at_index(AW_selection_list *selection_list, int wanted_index) {
+    char *wanted_value = get_element_at_index(selection_list, wanted_index);
 
     if (wanted_value) {
-        aw_root->awar(awar_name)->write_string(wanted_value);
+        selection_list->set_awar_value(get_root(), wanted_value);
         free(wanted_value);
     }
     else {
-        aw_root->awar(awar_name)->write_string("");
+        const char *default_value = selection_list->get_default_value();
+        selection_list->set_awar_value(get_root(), default_value ? default_value : "");
     }
 }
 
-void AW_window::move_selection(AW_selection_list *selection_list, const char *awar_name, int offset) {
-    int index = get_index_of_current_element(selection_list, awar_name); 
-    select_index(selection_list, awar_name, index+offset);
+void AW_window::move_selection(AW_selection_list *selection_list, int offset) {
+    int index = get_index_of_selected_element(selection_list); 
+    select_element_at_index(selection_list, index+offset);
 }
-
-#if defined(DEVEL_RALF)
-#warning get_index_of_element shall return -1 for unknown value - not index of default
-#endif // DEVEL_RALF
 
 int AW_window::get_index_of_element(AW_selection_list *selection_list, const char *searched_value) {
     /*! get index of an entry in the selection list
      * @return 0..n-1 index of matching element (or index of default entry)
      */
-    int         element_index = 0;
-    int         found_index   = -1;
-    const char *listEntry     = selection_list->first_element();
+    int element_index = 0;
 
-    while (listEntry) {
-        if (strcmp(listEntry, searched_value) == 0) {
-            found_index = element_index;
-            break;              // found
-        }
+    for (const char *listEntry = selection_list->first_element();
+         listEntry;
+         listEntry = selection_list->next_element())
+    {
+        if (strcmp(listEntry, searched_value) == 0) break; // found
         ++element_index;
-        listEntry = selection_list->next_element();
     }
 
     return element_index;
 }
 
-char *AW_window::get_element_of_index(AW_selection_list *selection_list, int index) {
+char *AW_window::get_element_at_index(AW_selection_list *selection_list, int index) {
     // get value of the entry at position 'index' [0..n-1] of the 'selection_list'
     // returns NULL if index is out of bounds
     char *element = NULL;
@@ -1881,55 +1866,6 @@ void AW_window::update_selection_list_intern(AW_selection_list *selection_list) 
     else {
         AW_ERROR("Selection list '%s' has no default selection", selection_list->variable_name);
     }
-}
-
-void AW_selection_list::selectAll() {
-    int i;
-    AW_select_table_struct *lt;
-    for (i=0, lt = list_table; lt; i++, lt = lt->next) {
-        XmListSelectPos(select_list_widget, i, False);
-    }
-    if (default_select) {
-        XmListSelectPos(select_list_widget, i, False);
-    }
-}
-
-void AW_selection_list::deselectAll() {
-    XmListDeselectAllItems(select_list_widget);
-}
-
-const char *AW_selection_list::first_element() {
-    AW_select_table_struct *lt;
-    for (lt = list_table; lt; lt = lt->next) {
-        lt->is_selected = 1;
-    }
-    loop_pntr = list_table;
-    if (!loop_pntr) return 0;
-    return loop_pntr->char_value;
-}
-
-const char *AW_selection_list::next_element() {
-    if (!loop_pntr) return 0;
-    loop_pntr = loop_pntr->next;
-    if (!loop_pntr) return 0;
-    while (loop_pntr && !loop_pntr->is_selected) loop_pntr=loop_pntr->next;
-    if (!loop_pntr) return 0;
-    return loop_pntr->char_value;
-}
-
-const char *AW_selection_list::first_selected() {
-    int i;
-    AW_select_table_struct *lt;
-    loop_pntr = 0;
-    for (i=1, lt = list_table; lt; i++, lt = lt->next) {
-        lt->is_selected = XmListPosSelected(select_list_widget, i);
-        if (lt->is_selected && !loop_pntr) loop_pntr = lt;
-    }
-    if (default_select) {
-        default_select->is_selected = XmListPosSelected(select_list_widget, i);
-        if (default_select->is_selected && !loop_pntr) loop_pntr = default_select;
-    }
-    return loop_pntr ? loop_pntr->char_value : NULL;
 }
 
 char *AW_window::get_selection_list_contents(AW_selection_list * selection_list, long number_of_lines) {
