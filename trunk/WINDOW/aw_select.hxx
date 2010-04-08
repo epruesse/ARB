@@ -38,7 +38,10 @@ public:
     // ******************** real public ***************
     void selectAll();
     void deselectAll();
+
     const char *first_selected();
+
+    // the following iterator does NOT iterate over default-element:
     const char *first_element();
     const char *next_element();
 };
