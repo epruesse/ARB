@@ -539,12 +539,13 @@ public:
     void        set_list_entry_displayed(const char *new_displayed);
     // ---------------------------------------------------------
 
-    void clear_selection_list(AW_selection_list * selection_list);
-    void update_selection_list(AW_selection_list * selection_list);
+    void clear_selection_list(AW_selection_list *selection_list);
+    void update_selection_list(AW_selection_list *selection_list);
+    void init_selection_list_from_array(AW_selection_list *selection_list, const char * const *entries, const char *defaultEntry);
 
-    int   get_no_of_entries(AW_selection_list * selection_list);
+    int   get_no_of_entries(AW_selection_list *selection_list);
     int   get_index_of_element(AW_selection_list *selection_list, const char *selected_element);
-    char *get_element_of_index(AW_selection_list *selection_list, int  index);
+    char *get_element_of_index(AW_selection_list *selection_list, int index);
 
     int  get_index_of_current_element(AW_selection_list *selection_list, const char *awar_name);
     void select_index(AW_selection_list *selection_list, const char *awar_name, int wanted_index);
