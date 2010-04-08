@@ -39,7 +39,15 @@ public:
     void selectAll();
     void deselectAll();
 
-    const char *first_selected();
+    // ---------------------------------------------------
+    // the following functions work for string awars only:
+    
+    const char *get_awar_value(AW_root *aw_root) const;
+    void set_awar_value(AW_root *aw_root, const char *new_value);
+
+    const char *get_default_value() const;
+
+    const char *first_selected(); // may differ from get_awar_value() if default selected
 
     // the following iterator does NOT iterate over default-element:
     const char *first_element();

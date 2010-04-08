@@ -359,6 +359,7 @@ AW_select.o: aw_position.hxx
 AW_select.o: aw_root.hxx
 AW_select.o: aw_select.hxx
 AW_select.o: aw_window.hxx
+AW_select.o: aw_window_Xm.hxx
 AW_select.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 AW_select.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AW_select.o: $(ARBHOME)/INCLUDE/arb_assert.h

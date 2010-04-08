@@ -545,11 +545,11 @@ public:
 
     int   get_no_of_entries(AW_selection_list *selection_list);
     int   get_index_of_element(AW_selection_list *selection_list, const char *selected_element);
-    char *get_element_of_index(AW_selection_list *selection_list, int index);
+    char *get_element_at_index(AW_selection_list *selection_list, int index);
 
-    int  get_index_of_current_element(AW_selection_list *selection_list, const char *awar_name);
-    void select_index(AW_selection_list *selection_list, const char *awar_name, int wanted_index);
-    void  move_selection(AW_selection_list *selection_list, const char *awar_name, int offset);
+    int  get_index_of_selected_element(AW_selection_list *selection_list);
+    void select_element_at_index(AW_selection_list *selection_list, int wanted_index);
+    void move_selection(AW_selection_list *selection_list, int offset);
 
 
     char     *get_selection_list_contents(AW_selection_list * selection_list, long nr_of_lines = -1);
