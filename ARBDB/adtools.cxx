@@ -297,44 +297,62 @@ void GBT_message(GBDATA *gb_main, const char *msg) {
 #warning rename to GBS_split_string and move to string functions
 #endif // DEVEL_RALF
 
-char **GBT_split_string(const char *namelist, char separator, int *countPtr) {
-    /*! Split 'namelist' into an array of substrings at 'separator'.
+char **GBT_split_string(const char *namelist, const char *separator, bool dropEmptyTokens, size_t *countPtr) {
+    /*! Split 'namelist' into an array of substrings at each member of 'separator'.
      *
      * @result NULL-terminated array of heap-copies
      * Use GBT_free_names() to free it.
      *
+     * @param dropEmptyTokens if true, empty tokens will be skipped
      * @param countPtr if != NULL it is set to the number of substrings found
-     *
-     * Note: inverse of GBT_join_names()
      */
 
-    int         sepCount = 0;
-    const char *sep      = namelist;
-    while (sep) {
-        sep = strchr(sep, separator);
-        if (sep) {
-            ++sep;
-            ++sepCount;
+    char **names = NULL;
+
+    for (int pass = 1; pass <= 2; ++pass) {
+        const char *sep        = namelist;
+        int         tokenCount = 0;
+
+        while (sep) {
+            size_t nonsepcount = strcspn(sep, separator);
+            if (nonsepcount || !dropEmptyTokens) {
+                if (pass == 2) {
+                    names[tokenCount] = GB_strpartdup(sep, sep+nonsepcount-1);
+                }
+                tokenCount++;
+                sep += nonsepcount;
+            }
+            size_t sepcount = strspn(sep, separator);
+            if (sepcount) {
+                if (!dropEmptyTokens) {
+                    if (pass == 1) tokenCount += sepcount-1;
+                    else {
+                        for (size_t s = 1; s<sepcount; ++s) names[tokenCount++] = strdup("");
+                    }
+                }
+                sep += sepcount;
+            }
+            else {
+                sep = NULL;
+            }
+        }
+
+        if (pass == 1) {
+            names = (char**)malloc((tokenCount+1)*sizeof(*names));
+        }
+        else {
+            names[tokenCount]       = NULL;
+            if (countPtr) *countPtr = tokenCount;
         }
     }
 
-    char **result = (char**)malloc((sepCount+2)*sizeof(*result)); // 3 separators -> 4 names (plus terminal NULL)
-    int    count  = 0;
+    return names;
+}
 
-    for (; count < sepCount; ++count) {
-        sep = strchr(namelist, separator);
-        gb_assert(sep);
-
-        result[count] = GB_strpartdup(namelist, sep-1);
-        namelist      = sep+1;
-    }
-
-    result[count++] = strdup(namelist);
-    result[count]   = NULL;
-
-    if (countPtr) *countPtr = count;
-
-    return result;
+char **GBT_split_string(const char *namelist, char separator, size_t *countPtr) {
+    char separator_string[] = "x";
+    separator_string[0]   = separator;
+    return GBT_split_string(namelist, separator_string, false, countPtr);
 }
 
 char *GBT_join_names(const char *const *names, char separator) {
@@ -362,9 +380,71 @@ char *GBT_join_names(const char *const *names, char separator) {
     return GBS_strclose(out);
 }
 
+size_t GBT_count_names(const char *const *names) {
+    size_t count = 0;
+    while (names[count]) ++count;
+    return count;
+}
+
+int GBT_names_index_of(const char *const *names, const char *search_for) {
+    // return index of 'search_for' or -1 if not found or given
+    int index = -1;
+    if (search_for) {
+        for (int i = 0; names[i]; ++i) {
+            if (strcmp(names[i], search_for) == 0) {
+                index = i;
+                break;
+            }
+        }
+    }
+    return index;
+}
+
+void GBT_names_erase(char **names, int index) {
+    if (index >= 0) {
+        int i;
+        for (i = 0; names[i] && i<index; ++i) {}
+        free(names[i]);
+        for (; names[i]; ++i) names[i] = names[i+1];
+    }
+}
+
+void GBT_names_add(char**& names, int insert_before, const char *name) {
+    // insert a new 'name' before position 'insert_before'
+    // if 'insert_before' == -1 -> append at end
+
+    size_t old_count = GBT_count_names(names);
+    size_t new_count = old_count+1;
+
+    names              = (char**)realloc(names, (new_count+2)*sizeof(*names));
+    names[new_count-1] = strdup(name);
+    names[new_count]   = NULL;
+
+    if (insert_before != -1) {
+        GBT_names_move(names, new_count-1, insert_before);
+    }
+}
+
+void GBT_names_move(char **names, int old_index, int new_index) {
+    int size = (int)GBT_count_names(names);
+
+    if (old_index == -1) old_index = size-1;
+    if (new_index == -1) new_index = size-1;
+
+    if (old_index != new_index && new_index<size && old_index<size) {
+        char *moved = names[old_index];
+        if (old_index>new_index) {
+            for (int i = old_index; i>new_index; --i) names[i] = names[i-1];
+        }
+        else {
+            for (int i = old_index; i<new_index; ++i) names[i] = names[i+1];
+        }
+        names[new_index] = moved;
+    }
+}
+
 void GBT_free_names(char **names) {
-    char **pn;
-    for (pn = names; *pn; pn++) free(*pn);
+    for (char **pn = names; *pn; pn++) free(*pn);
     free((char *)names);
 }
 
@@ -1031,19 +1111,22 @@ GB_ERROR GB_notify(GBDATA *gb_main, int id, const char *message) {
 
 #define TEST_SPLIT_JOIN(str, sep)                               \
     do {                                                        \
-        char **names  = GBT_split_string(str, sep, NULL);       \
+        size_t count;                                           \
+        char **names  = GBT_split_string(str, sep, &count);     \
         char  *joined = GBT_join_names(names, sep);             \
+        TEST_ASSERT_EQUAL(count, GBT_count_names(names));       \
         TEST_ASSERT_EQUAL(str, joined);                         \
         free(joined);                                           \
         GBT_free_names(names);                                  \
     } while(0)
 
-void TEST_split_join_names() {
+void TEST_GBT_split_join_names() {
     {                                               // simple split
-        int    count;
-        char **names = GBT_split_string("a*b*c", '*', &count);
+        size_t   count;
+        char   **names = GBT_split_string("a*b*c", '*', &count);
 
-        TEST_ASSERT_EQUAL(count, 3);
+        TEST_ASSERT_EQUAL(count, 3U);
+        TEST_ASSERT_EQUAL(count, GBT_count_names(names));
         TEST_ASSERT_EQUAL(names[0], "a");
         TEST_ASSERT_EQUAL(names[1], "b");
         TEST_ASSERT_EQUAL(names[2], "c");
@@ -1051,10 +1134,11 @@ void TEST_split_join_names() {
         GBT_free_names(names);
     }
     {                                               // split string containing empty tokens
-        int    count;
-        char **names = GBT_split_string("**a**b*c*", '*', &count);
+        size_t   count;
+        char   **names = GBT_split_string("**a**b*c*", '*', &count);
 
-        TEST_ASSERT_EQUAL(count, 7);
+        TEST_ASSERT_EQUAL(count, 7U);
+        TEST_ASSERT_EQUAL(count, GBT_count_names(names));
         TEST_ASSERT_EQUAL(names[0], "");
         TEST_ASSERT_EQUAL(names[1], "");
         TEST_ASSERT_EQUAL(names[2], "a");
@@ -1075,6 +1159,78 @@ void TEST_split_join_names() {
     TEST_SPLIT_JOIN("a..b..c", '.');
     TEST_SPLIT_JOIN(".", '.');
     TEST_SPLIT_JOIN("....", '.');
+}
+
+void TEST_GBT_names_index_of() {
+    char **names = GBT_split_string("**a**b*c*", '*', NULL);
+
+    TEST_ASSERT_EQUAL(GBT_names_index_of(names, "a"), 2);
+    TEST_ASSERT_EQUAL(GBT_names_index_of(names, "b"), 4);
+    TEST_ASSERT_EQUAL(GBT_names_index_of(names, "c"), 5);
+    TEST_ASSERT_EQUAL(GBT_names_index_of(names, ""), 0);
+    TEST_ASSERT_EQUAL(GBT_names_index_of(names, "no"), -1);
+
+    GBT_free_names(names);
+}
+
+#define TEST_ASSERT_NAMES_JOIN_TO(names, sep, expected) \
+    do {                                                \
+        char *joined = GBT_join_names(names, sep);      \
+        TEST_ASSERT_EQUAL(joined, expected);            \
+        free(joined);                                   \
+    } while(0)                                          \
+    
+void TEST_GBT_names_erase() {
+    char **names = GBT_split_string("a*b*c*d*e", '*', NULL);
+
+    TEST_ASSERT_EQUAL(GBT_count_names(names), 5U);
+
+    GBT_names_erase(names, 0); 
+    TEST_ASSERT_NAMES_JOIN_TO(names, '*', "b*c*d*e");
+
+    GBT_names_erase(names, 3);
+    TEST_ASSERT_NAMES_JOIN_TO(names, '*', "b*c*d");
+
+    GBT_names_erase(names, 3);                      // index out of range
+    TEST_ASSERT_NAMES_JOIN_TO(names, '*', "b*c*d");
+
+    GBT_names_erase(names, -1);                     // illegal index
+    TEST_ASSERT_NAMES_JOIN_TO(names, '*', "b*c*d");
+
+    GBT_names_erase(names, 1);
+    TEST_ASSERT_NAMES_JOIN_TO(names, '*', "b*d");
+    
+    GBT_free_names(names);
+}
+
+void TEST_GBT_names_move() {
+    char **names = GBT_split_string("a*b*c*dee", '*', NULL);
+
+    GBT_names_move(names, 0, -1); // -1 means last
+    TEST_ASSERT_NAMES_JOIN_TO(names, '*', "b*c*dee*a");
+    GBT_names_move(names, -1, 0); 
+    TEST_ASSERT_NAMES_JOIN_TO(names, '*', "a*b*c*dee");
+    GBT_names_move(names, 2, 3); 
+    TEST_ASSERT_NAMES_JOIN_TO(names, '*', "a*b*dee*c");
+    GBT_names_move(names, 2, 1); 
+    TEST_ASSERT_NAMES_JOIN_TO(names, '*', "a*dee*b*c");
+
+    GBT_free_names(names);
+}
+
+void TEST_GBT_names_add() { // test after GBT_names_move (cause add depends on move)
+    char **names = GBT_split_string("a*b*c", '*', NULL);
+
+    GBT_names_add(names, -1, "d"); // append at end
+    TEST_ASSERT_NAMES_JOIN_TO(names, '*', "a*b*c*d");
+
+    GBT_names_add(names, 2, "b2");
+    TEST_ASSERT_NAMES_JOIN_TO(names, '*', "a*b*b2*c*d");
+    
+    GBT_names_add(names, 0, "a0");
+    TEST_ASSERT_NAMES_JOIN_TO(names, '*', "a0*a*b*b2*c*d");
+
+    GBT_free_names(names);
 }
 
 #endif
