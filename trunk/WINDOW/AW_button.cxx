@@ -1476,15 +1476,7 @@ void AW_window::set_selection_list_suffix(AW_selection_list *selection_list, con
     sprintf(filter, "tmp/save_box_sel_%li/filter", (long)selection_list);
     get_root()->awar_string(filter, suffix);
     sprintf(filter, "tmp/load_box_sel_%li/filter", (long)selection_list);
-    get_root()->awar_string(filter, suffix); }
-
-int AW_window::get_no_of_entries(AW_selection_list *selection_list) {
-    AW_select_table_struct *list_table;
-    int     count = 0;
-    for (list_table = selection_list->list_table; list_table; list_table = list_table->next) count++;
-    if (selection_list->default_select)     count++;
-
-    return count;
+    get_root()->awar_string(filter, suffix);
 }
 
 int AW_window::get_index_of_selected_element(AW_selection_list *selection_list) {
@@ -1494,20 +1486,23 @@ int AW_window::get_index_of_selected_element(AW_selection_list *selection_list) 
 }
 
 void AW_window::select_element_at_index(AW_selection_list *selection_list, int wanted_index) {
-    char *wanted_value = get_element_at_index(selection_list, wanted_index);
+    const char *wanted_value = get_element_at_index(selection_list, wanted_index);
 
-    if (wanted_value) {
-        selection_list->set_awar_value(get_root(), wanted_value);
-        free(wanted_value);
+    if (!wanted_value) {
+        wanted_value = selection_list->get_default_value();
+        if (!wanted_value) wanted_value = "";
     }
-    else {
-        const char *default_value = selection_list->get_default_value();
-        selection_list->set_awar_value(get_root(), default_value ? default_value : "");
-    }
+
+    selection_list->set_awar_value(get_root(), wanted_value);
 }
 
 void AW_window::move_selection(AW_selection_list *selection_list, int offset) {
-    int index = get_index_of_selected_element(selection_list); 
+    /*! move selection 'offset' position
+     *  offset == 1  -> select next element
+     *  offset == -1 -> select previous element
+     */
+    
+    int index = get_index_of_selected_element(selection_list);
     select_element_at_index(selection_list, index+offset);
 }
 
@@ -1528,10 +1523,10 @@ int AW_window::get_index_of_element(AW_selection_list *selection_list, const cha
     return element_index;
 }
 
-char *AW_window::get_element_at_index(AW_selection_list *selection_list, int index) {
+const char *AW_window::get_element_at_index(AW_selection_list *selection_list, int index) {
     // get value of the entry at position 'index' [0..n-1] of the 'selection_list'
     // returns NULL if index is out of bounds
-    char *element = NULL;
+    const char *element = NULL;
 
     if (index >= 0) {
         int         element_index = 0;
@@ -1539,7 +1534,7 @@ char *AW_window::get_element_at_index(AW_selection_list *selection_list, int ind
 
         while (listEntry) {
             if (element_index == index) {
-                element = strdup(listEntry);
+                element = listEntry;
                 break;
             }
             ++element_index;
@@ -1556,24 +1551,19 @@ char *AW_window::get_element_at_index(AW_selection_list *selection_list, int ind
 
 void AW_window::delete_selection_from_list(AW_selection_list *selection_list, const char *disp_string)
 {
-    AW_select_table_struct *list_table,
-        *next = NULL,
-        *prev = NULL;
-    char    *ptr;
-    int     count = 0;
-
-    for (list_table = selection_list->list_table; list_table; list_table = list_table->next) count++;
-    if (selection_list->default_select)     count++;
-
-    if (count == 2) {   // Letzter Eintrag + default selection
+    if (selection_list->size() == 1) {   // Letzter Eintrag
         clear_selection_list(selection_list);
     }
+
+    AW_select_table_struct *list_table;
+    AW_select_table_struct *next = NULL;
+    AW_select_table_struct *prev = NULL;
 
     for (list_table = selection_list->list_table, next = selection_list->list_table;
          list_table;
          prev = next, list_table = list_table->next, next = list_table)
     {
-        ptr = list_table->displayed;
+        const char *ptr = list_table->displayed;
         if (strcmp(disp_string, ptr) == 0) {
             next = list_table->next;
 
@@ -1718,27 +1708,21 @@ void AW_window::update_selection_list(AW_selection_list * selection_list) {
     // update_selection_list() will not set the connected awar to the default value
     // if it contains a value which is not associated with a list entry!
 
-    AW_select_table_struct *list_table;
-    int count = 0;
-
-
-    count = 0;
-    int i;
-    for (list_table = selection_list->list_table; list_table; list_table = list_table->next) count++;
-    if (selection_list->default_select)     count++;
+    size_t count = selection_list->size();
+    if (selection_list->default_select) count++;
 
     XmString *strtab = new XmString[count];
 
     count = 0;
-    const char *s2;
-    for (list_table = selection_list->list_table; list_table; list_table = list_table->next) {
-        s2 = list_table->displayed;
+    for (AW_select_table_struct *lt = selection_list->list_table; lt; lt = lt->next) {
+        const char *s2 = lt->displayed;
         if (!strlen(s2)) s2 = "  ";
         strtab[count] = XmStringCreateSimple_wrapper(s2);
         count++;
     }
+
     if (selection_list->default_select) {
-        s2 = selection_list->default_select->displayed;
+        const char *s2 = selection_list->default_select->displayed;
         if (!strlen(s2)) s2 = "  ";
         strtab[count] = XmStringCreateSimple_wrapper(s2);
         count++;
@@ -1748,13 +1732,12 @@ void AW_window::update_selection_list(AW_selection_list * selection_list) {
         count ++;
     }
 
-    XtVaSetValues(selection_list->select_list_widget, XmNitemCount, count, XmNitems, strtab,    NULL);
+    XtVaSetValues(selection_list->select_list_widget, XmNitemCount, count, XmNitems, strtab, NULL);
 
     update_selection_list_intern(selection_list);
 
-    for (i=0; i<count; i++) XmStringFree(strtab[i]);
+    for (size_t i=0; i<count; i++) XmStringFree(strtab[i]);
     delete [] strtab;
-
 }
 
 void AW_window::init_selection_list_from_array(AW_selection_list *selection_list, const char * const *entries, const char *defaultEntry) {
@@ -1764,25 +1747,48 @@ void AW_window::init_selection_list_from_array(AW_selection_list *selection_list
     // Note: This works only with selection lists bound to AW_STRING awars.
 
     aw_assert(defaultEntry);
-    bool defInserted = false;
+    char *defaultEntryCopy = strdup(defaultEntry); // use a copy (just in case defaultEntry point to a value free'd by clear_selection_list())
+    bool  defInserted      = false;
 
     clear_selection_list(selection_list);
     for (int i = 0; entries[i]; ++i) {
-        if (!defInserted && strcmp(entries[i], defaultEntry) == 0) {
-            insert_default_selection(selection_list, defaultEntry, defaultEntry);
+        if (!defInserted && strcmp(entries[i], defaultEntryCopy) == 0) {
+            insert_default_selection(selection_list, defaultEntryCopy, defaultEntryCopy);
             defInserted = true;
         }
         else {
             insert_selection(selection_list, entries[i], entries[i]);
         }
     }
-    if (!defInserted) insert_default_selection(selection_list, defaultEntry, defaultEntry);
+    if (!defInserted) insert_default_selection(selection_list, defaultEntryCopy, defaultEntryCopy);
     update_selection_list(selection_list);
 
     const char *selected = selection_list->first_selected();
     if (selected) get_root()->awar(selection_list->variable_name)->write_string(selected);
+
+    free(defaultEntryCopy);
 }
 
+char **AW_window::selection_list_to_array(AW_selection_list *sel_list, bool values) {
+    /*! read contents of selection list into an array.
+     * @param values true->read values, false->read displayed strings
+     * Use GBT_free_names() to free the result.
+     *
+     * Note: if 'values' is true, this function only works for string selection lists! 
+     */
+
+    size_t   count = sel_list->size();
+    char   **array = (char**)malloc((count+1)*sizeof(*array));
+    size_t   idx   = 0;
+
+    for (AW_select_table_struct *lt = sel_list->list_table; lt; lt = lt->next) {
+        array[idx++] = strdup(values ? lt->char_value : lt->displayed);
+    }
+    array[idx] = NULL;
+    aw_assert(idx == count);
+
+    return array;
+}
 
 void AW_window::update_selection_list_intern(AW_selection_list *selection_list) {
     if (!selection_list->variable_name) return;     // not connected to awar
@@ -1791,13 +1797,13 @@ void AW_window::update_selection_list_intern(AW_selection_list *selection_list) 
     int      pos   = 0;
     AW_awar *awar  = root->awar(selection_list->variable_name);
 
-    AW_select_table_struct *list_table;
+    AW_select_table_struct *lt;
 
     switch (selection_list->variable_type) {
         case AW_STRING: {
             char *var_value = awar->read_string();
-            for (list_table = selection_list->list_table; list_table; list_table = list_table->next) {
-                if (strcmp(var_value, list_table->char_value) == 0) {
+            for (lt = selection_list->list_table; lt; lt = lt->next) {
+                if (strcmp(var_value, lt->char_value) == 0) {
                     found = true;
                     break;
                 }
@@ -1808,8 +1814,8 @@ void AW_window::update_selection_list_intern(AW_selection_list *selection_list) 
         }
         case AW_INT: {
             int var_value = awar->read_int();
-            for (list_table = selection_list->list_table; list_table; list_table = list_table->next) {
-                if (var_value == list_table->int_value) {
+            for (lt = selection_list->list_table; lt; lt = lt->next) {
+                if (var_value == lt->int_value) {
                     found = true;
                     break;
                 }
@@ -1819,8 +1825,8 @@ void AW_window::update_selection_list_intern(AW_selection_list *selection_list) 
         }
         case AW_FLOAT: {
             float var_value = awar->read_float();
-            for (list_table = selection_list->list_table; list_table; list_table = list_table->next) {
-                if (var_value == list_table->float_value) {
+            for (lt = selection_list->list_table; lt; lt = lt->next) {
+                if (var_value == lt->float_value) {
                     found = true;
                     break;
                 }
@@ -1830,8 +1836,8 @@ void AW_window::update_selection_list_intern(AW_selection_list *selection_list) 
         }
         case AW_POINTER: {
             void *var_value = awar->read_pointer();
-            for (list_table = selection_list->list_table; list_table; list_table = list_table->next) {
-                if (var_value == list_table->pointer_value) {
+            for (lt = selection_list->list_table; lt; lt = lt->next) {
+                if (var_value == lt->pointer_value) {
                     found = true;
                     break;
                 }
@@ -1868,15 +1874,15 @@ void AW_window::update_selection_list_intern(AW_selection_list *selection_list) 
     }
 }
 
-char *AW_window::get_selection_list_contents(AW_selection_list * selection_list, long number_of_lines) {
+char *AW_window::get_selection_list_contents(AW_selection_list *selection_list, long number_of_lines) {
     // number_of_lines == 0     -> print all
 
-    AW_select_table_struct *list_table;
+    AW_select_table_struct *lt;
     GBS_strstruct          *fd = GBS_stropen(10000);
 
-    for (list_table = selection_list->list_table; list_table; list_table = list_table->next) {
+    for (lt = selection_list->list_table; lt; lt = lt->next) {
         number_of_lines--;
-        GBS_strcat(fd, list_table->displayed);
+        GBS_strcat(fd, lt->displayed);
         GBS_chrcat(fd, '\n');
         if (!number_of_lines) break;
     }
@@ -1886,17 +1892,11 @@ char *AW_window::get_selection_list_contents(AW_selection_list * selection_list,
 GB_HASH *AW_window::selection_list_to_hash(AW_selection_list *sel_list, bool case_sens) {
     // creates a hash (key = value of selection list, value = display string from selection list)
 
-    int                     counter = 0;
-    AW_select_table_struct *list_table;
+    size_t   size = sel_list->size();
+    GB_HASH *hash = GBS_create_hash(size, case_sens ? GB_MIND_CASE : GB_IGNORE_CASE);
 
-    for (list_table = sel_list->list_table; list_table; list_table = list_table->next) {
-        counter ++;
-    }
-
-    GB_HASH *hash = GBS_create_hash(counter, case_sens ? GB_MIND_CASE : GB_IGNORE_CASE);
-
-    for (list_table = sel_list->list_table; list_table; list_table = list_table->next) {
-        GBS_write_hash(hash, list_table->char_value, (long)list_table->displayed);
+    for (AW_select_table_struct *lt = sel_list->list_table; lt; lt = lt->next) {
+        GBS_write_hash(hash, lt->char_value, (long)lt->displayed);
     }
 
     return hash;
@@ -1945,83 +1945,76 @@ AW_selection_list* AW_window::copySelectionList(AW_selection_list *sourceList, A
 
 
 void AW_window::sort_selection_list(AW_selection_list * selection_list, int backward, int case_sensitive) {
+    size_t count = selection_list->size();
+    if (count) {
+        AW_select_table_struct **tables = new AW_select_table_struct *[count];
+        count = 0;
+        for (AW_select_table_struct *lt = selection_list->list_table; lt; lt = lt->next) {
+            tables[count++] = lt;
+        }
 
-    AW_select_table_struct *list_table;
+        gb_compare_function comparator;
+        if (backward) {
+            if (case_sensitive) comparator = AW_sort_AW_select_table_struct_backward;
+            else comparator                = AW_isort_AW_select_table_struct_backward;
+        }
+        else {
+            if (case_sensitive) comparator = AW_sort_AW_select_table_struct;
+            else comparator                = AW_isort_AW_select_table_struct;
+        }
 
-    long count = 0;
-    for (list_table = selection_list->list_table; list_table; list_table = list_table->next) {
-        count ++;
+        GB_sort((void**)tables, 0, count, comparator, 0);
+
+        size_t i;
+        for (i=0; i<count-1; i++) {
+            tables[i]->next = tables[i+1];
+        }
+        tables[i]->next = 0;
+        selection_list->list_table = tables[0];
+        selection_list->last_of_list_table = tables[i];
+
+        delete [] tables;
     }
-    if (!count) return;
-
-    AW_select_table_struct **tables = new AW_select_table_struct *[count];
-    count = 0;
-    for (list_table = selection_list->list_table; list_table; list_table = list_table->next) {
-        tables[count] = list_table;
-        count ++;
-    }
-
-    gb_compare_function comparator;
-    if (backward) {
-        if (case_sensitive) comparator = AW_sort_AW_select_table_struct_backward;
-        else comparator                = AW_isort_AW_select_table_struct_backward;
-    }
-    else {
-        if (case_sensitive) comparator = AW_sort_AW_select_table_struct;
-        else comparator                = AW_isort_AW_select_table_struct;
-    }
-
-    GB_sort((void**)tables, 0, count, comparator, 0);
-
-    long i;
-    for (i=0; i<count-1; i++) {
-        tables[i]->next = tables[i+1];
-    }
-    tables[i]->next = 0;
-    selection_list->list_table = tables[0];
-    selection_list->last_of_list_table = tables[i];
-
-    delete [] tables;
-    return;
 }
 
 GB_ERROR AW_window::save_selection_list(AW_selection_list * selection_list, const char *filename, long number_of_lines) {
     // number_of_lines == 0     -> print all
 
-    AW_select_table_struct *list_table;
-    FILE                   *fd;
+    GB_ERROR  error = NULL;
+    FILE     *fd    = fopen(filename, "w");
 
-    fd = fopen(filename, "w");
     if (!fd) {
-        return GB_export_IO_error("writing", filename);
+        error = GB_IO_error("writing", filename);
     }
-    for (list_table = selection_list->list_table; list_table; list_table = list_table->next) {
-        char *sep = 0;
+    else {
+        for (AW_select_table_struct *lt = selection_list->list_table; lt; lt = lt->next) {
+            char *sep = 0;
 
-        if (!selection_list->value_equal_display) {
-            sep = strstr(list_table->displayed, "#"); // interpret displayed as 'value#displayed' (old general behavior)
-        }
+            if (!selection_list->value_equal_display) {
+                sep = strstr(lt->displayed, "#"); // interpret displayed as 'value#displayed' (old general behavior)
+            }
 
-        int res;
-        if (sep) { // replace first '#' with ','  (that's loaded different)
-            *sep = 0;
-            fprintf(fd, "%s,", list_table->displayed);
-            *sep++ = '#';
-            res  = fprintf(fd, "%s\n", sep);
-        }
-        else {
-            res = fprintf(fd, "%s\n", list_table->displayed);  // save plain (no interpretation)
-        }
+            int res;
+            if (sep) { // replace first '#' with ','  (that's loaded different)
+                *sep = 0;
+                fprintf(fd, "%s,", lt->displayed);
+                *sep++ = '#';
+                res  = fprintf(fd, "%s\n", sep);
+            }
+            else {
+                res = fprintf(fd, "%s\n", lt->displayed);  // save plain (no interpretation)
+            }
 
-        if (res<0) {
-            aw_message("Disc Full");
-            break;
-        }
+            if (res<0) {
+                error = GB_IO_error("writing", filename);
+                break;
+            }
 
-        if (--number_of_lines == 0) break; // number_of_lines == 0 -> write all lines; otherwise write number_of_lines lines
+            if (--number_of_lines == 0) break; // number_of_lines == 0 -> write all lines; otherwise write number_of_lines lines
+        }
+        fclose(fd);
     }
-    fclose(fd);
-    return 0;
+    return error;
 }
 
 GB_ERROR AW_window::load_selection_list(AW_selection_list *selection_list, const char *filename) {

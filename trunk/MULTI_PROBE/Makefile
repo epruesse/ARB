@@ -37,6 +37,7 @@ depend.init:
 # Do not add dependencies manually - use 'make depend' in $ARBHOME
 # For formatting issues see SOURCE_TOOLS/fix_depends.pl
 
+MP_Generation.o: MP_externs.hxx
 MP_Generation.o: MP_probe.hxx
 MP_Generation.o: mpdefs.h
 MP_Generation.o: MultiProbe.hxx
@@ -139,6 +140,7 @@ MP_noclass.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 MP_noclass.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 MP_noclass.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 MP_noclass.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+MP_noclass.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 MP_noclass.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 MP_noclass.o: $(ARBHOME)/INCLUDE/awt.hxx
 MP_noclass.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
@@ -148,6 +150,7 @@ MP_noclass.o: $(ARBHOME)/INCLUDE/dupstr.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/PT_com.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/servercntrl.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/smartptr.h
+MP_noclass.o: $(ARBHOME)/INCLUDE/test_unit.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/TreeCallbacks.hxx
 MP_noclass.o: $(ARBHOME)/INCLUDE/TreeDisplay.hxx
 
@@ -166,6 +169,7 @@ MP_permute.o: $(ARBHOME)/INCLUDE/dupstr.h
 MP_permute.o: $(ARBHOME)/INCLUDE/PT_com.h
 MP_permute.o: $(ARBHOME)/INCLUDE/smartptr.h
 
+MP_probe.o: MP_externs.hxx
 MP_probe.o: MP_probe.hxx
 MP_probe.o: mpdefs.h
 MP_probe.o: MultiProbe.hxx

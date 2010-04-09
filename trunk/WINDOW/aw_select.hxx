@@ -36,8 +36,11 @@ public:
     AW_selection_list      *next;
 
     // ******************** real public ***************
+    
     void selectAll();
     void deselectAll();
+
+    size_t size();
 
     // ---------------------------------------------------
     // the following functions work for string awars only:

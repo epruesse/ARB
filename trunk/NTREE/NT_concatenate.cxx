@@ -28,7 +28,6 @@ using namespace std;
 #define AWAR_CON_ALIGNMENT_SEPARATOR "tmp/concat/alignment_separator"
 #define AWAR_CON_DB_ALIGNS           "tmp/concat/database_alignments"
 #define AWAR_CON_CONCAT_ALIGNS       "tmp/concat/concatenating_alignments"
-#define AWAR_CON_DUMMY               "tmp/concat/dummy"
 #define AWAR_CON_MERGE_FIELD         "tmp/concat/merge_field"
 #define AWAR_CON_STORE_SIM_SP_NO     "tmp/concat/store_sim_sp_no"
 
@@ -65,7 +64,6 @@ void NT_createConcatenationAwars(AW_root *aw_root, AW_default aw_def) {
     aw_root->awar_string(AWAR_CON_STORE_SIM_SP_NO,     "merged_species",              aw_def);
     aw_root->awar_string(AWAR_CON_DB_ALIGNS,           "",                            aw_def);
     aw_root->awar_string(AWAR_CON_CONCAT_ALIGNS,       "",                            aw_def);
-    aw_root->awar_string(AWAR_CON_DUMMY,               "",                            aw_def);
 }
 
 /* ------------------------Selecting alignments from the database for concatenation---------------------- */
@@ -225,63 +223,19 @@ void removeAlignment(AW_window *aws) {
     free(selected_alignment);
 }
 
-void shiftAlignment(AW_window *aws, long int direction) {
-    AW_root *aw_root = aws->get_root();
-    AW_selection_list *temp_list = aws->create_selection_list(AWAR_CON_DUMMY, 0, "", 0, 0);
-    char *selected_alignment = aw_root->awar(AWAR_CON_CONCAT_ALIGNS)->read_string();
+void shiftAlignment(AW_window *aws, long direction) {
+    AW_root *aw_root            = aws->get_root();
+    char    *selected_alignment = aw_root->awar(AWAR_CON_CONCAT_ALIGNS)->read_string();
 
-    if (!selected_alignment || !selected_alignment[0] || selected_alignment[0] == '?') {
-        free(selected_alignment);
-        return;
+    if (selected_alignment && selected_alignment[0] && selected_alignment[0] != '?') {
+        char **listContent = aws->selection_list_to_array(con_alignment_list, true);
+        int    old_pos     = GBT_names_index_of(listContent, selected_alignment);
+        
+        GBT_names_move(listContent, old_pos, old_pos+direction);
+        aws->init_selection_list_from_array(con_alignment_list, listContent, con_alignment_list->get_default_value());
+        GBT_free_names(listContent);
     }
 
-    int curr_index             = 0;
-    int sel_element_index      = aws->get_index_of_element(con_alignment_list, selected_alignment);
-    const char *listEntry      = con_alignment_list->first_element();
-    const char *temp_listEntry = 0;
-
-    aws->clear_selection_list(temp_list);
-
-    while (listEntry) {
-        switch (direction) {
-        case MOVE_UP:       // shifting alignments upwards
-            if (sel_element_index == curr_index+1) {
-                aws->insert_selection(temp_list, selected_alignment, selected_alignment);
-                temp_listEntry = aws->get_element_at_index(con_alignment_list, curr_index++);
-                if (temp_listEntry) aws->insert_selection(temp_list, temp_listEntry, temp_listEntry);
-            }
-            else {
-                temp_listEntry = aws->get_element_at_index(con_alignment_list, curr_index);
-                if (temp_listEntry) aws->insert_selection(temp_list, temp_listEntry, temp_listEntry);
-            }
-            curr_index++;
-            break;
-
-        case MOVE_DOWN:    // shifting alignments downwards
-            if (sel_element_index == curr_index) {
-                temp_listEntry = aws->get_element_at_index(con_alignment_list, ++curr_index);
-                if (temp_listEntry) aws->insert_selection(temp_list, temp_listEntry, temp_listEntry);
-                aws->insert_selection(temp_list, selected_alignment, selected_alignment);
-            }
-            else {
-                temp_listEntry = aws->get_element_at_index(con_alignment_list, curr_index);
-                if (temp_listEntry) aws->insert_selection(temp_list, temp_listEntry, temp_listEntry);
-            }
-            curr_index++;
-            break;
-        }
-        listEntry = con_alignment_list->next_element();
-    }
-
-    aws->clear_selection_list(con_alignment_list);
-    listEntry = temp_list->first_element();
-
-    while (listEntry) {
-        aws->insert_selection(con_alignment_list, listEntry, listEntry);
-        listEntry = temp_list->next_element();
-    }
-    aws->insert_default_selection(con_alignment_list, "????", "????");
-    aws->update_selection_list(con_alignment_list);
     free(selected_alignment);
 }
 
@@ -318,7 +272,7 @@ void concatenateAlignments(AW_window *aws) {
     GB_push_transaction(GLOBAL_gb_main);
     AW_root  *aw_root = aws->get_root();
 
-    int no_of_sel_alignments = aws->get_no_of_entries(con_alignment_list); // getting number of selected alignments
+    size_t no_of_sel_alignments = con_alignment_list->size();
     int found[no_of_sel_alignments], missing[no_of_sel_alignments];
     for (int j = 0; j<no_of_sel_alignments; j++) { found[j] = 0; missing[j] = 0; }  // initializing found and missing alis
 
@@ -853,12 +807,12 @@ AW_window *NT_createConcatenationWindow(AW_root *aw_root) {
 
     aws->at("up");
     aws->button_length(0);
-    aws->callback(shiftAlignment, 1); // passing 1 as argument to shift the alignment upwards
+    aws->callback(shiftAlignment, -1); // shift upwards
     aws->create_button("up", "#moveUp.bitmap", 0);
 
     aws->at("down");
     aws->button_length(0);
-    aws->callback(shiftAlignment, 0); // passing 0 as argument to shift the alignment downwards
+    aws->callback(shiftAlignment, 1); // shift downwards
     aws->create_button("down", "#moveDown.bitmap", 0);
 
     aws->at("clearList");
