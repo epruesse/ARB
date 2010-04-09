@@ -411,7 +411,7 @@ void GBT_names_erase(char **names, int index) {
 
 void GBT_names_add(char**& names, int insert_before, const char *name) {
     // insert a new 'name' before position 'insert_before'
-    // if 'insert_before' == -1 -> append at end
+    // if 'insert_before' == -1 (or bigger than array size) -> append at end
 
     size_t old_count = GBT_count_names(names);
     size_t new_count = old_count+1;
@@ -420,7 +420,7 @@ void GBT_names_add(char**& names, int insert_before, const char *name) {
     names[new_count-1] = strdup(name);
     names[new_count]   = NULL;
 
-    if (insert_before != -1) {
+    if (insert_before != -1 && insert_before < old_count) {
         GBT_names_move(names, new_count-1, insert_before);
     }
 }
@@ -1220,21 +1220,36 @@ void TEST_GBT_names_move() {
     GBT_names_move(names, 2, 1); 
     TEST_ASSERT_NAMES_JOIN_TO(names, '*', "a*dee*b*c");
 
+    // test wrap arounds
+    GBT_names_move(names, 0, -1);
+    TEST_ASSERT_NAMES_JOIN_TO(names, '*', "dee*b*c*a");
+    GBT_names_move(names, -1, 99999);
+    TEST_ASSERT_NAMES_JOIN_TO(names, '*', "a*dee*b*c");
+    
     GBT_free_names(names);
 }
 
 void TEST_GBT_names_add() { // test after GBT_names_move (cause add depends on move)
-    char **names = GBT_split_string("a*b*c", '*', NULL);
+    char **names = GBT_split_string("a", '*', NULL);
 
-    GBT_names_add(names, -1, "d"); // append at end
+    GBT_names_add(names, -1, "b");                  // append at end
+    TEST_ASSERT_NAMES_JOIN_TO(names, '*', "a*b");
+
+    GBT_names_add(names, 2, "c");                   // append at end (using non-existing index)
+    TEST_ASSERT_NAMES_JOIN_TO(names, '*', "a*b*c");
+
+    GBT_names_add(names, 99, "d");                  // append at end (using even bigger non-existing index)
     TEST_ASSERT_NAMES_JOIN_TO(names, '*', "a*b*c*d");
 
-    GBT_names_add(names, 2, "b2");
+    GBT_names_add(names, 2, "b2");                  // insert inside
     TEST_ASSERT_NAMES_JOIN_TO(names, '*', "a*b*b2*c*d");
-    
-    GBT_names_add(names, 0, "a0");
+
+    GBT_names_add(names, 0, "a0");                  // insert at beginning
     TEST_ASSERT_NAMES_JOIN_TO(names, '*', "a0*a*b*b2*c*d");
 
+    GBT_names_add(names, 5, "d0");                  // insert before last
+    TEST_ASSERT_NAMES_JOIN_TO(names, '*', "a0*a*b*b2*c*d0*d");
+    
     GBT_free_names(names);
 }
 
