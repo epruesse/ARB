@@ -9,10 +9,14 @@
 // ============================================================= //
 
 #include "MP_probe.hxx"
+#include "MP_externs.hxx"
 #include "MultiProbe.hxx"
 
-extern BOOL check_status(int gen_cnt, double avg_fit, double min_fit, double max_fit);
-BOOL    Stop_evaluation = FALSE;
+#if defined(DEVEL_RALF)
+#warning replace BOOL by bool
+#endif // DEVEL_RALF
+
+BOOL Stop_evaluation = FALSE;
 
 probe_combi_statistic *Generation::single_in_generation(probe_combi_statistic *field)
 {
@@ -66,7 +70,7 @@ void Generation::calc_fitness(int flag, double old_avg_fit)     // reoulette_whe
         else if (dummy > max_fit)
             max_fit = dummy;
 
-        if (!check_status(generation_counter, old_avg_fit, min_fit, max_fit))       // Berechnungen abbrechen
+        if (!MP_check_status(generation_counter, old_avg_fit, min_fit, max_fit))       // Berechnungen abbrechen
         {
             Stop_evaluation = TRUE;
             probe_combi_array_length = i-1;
