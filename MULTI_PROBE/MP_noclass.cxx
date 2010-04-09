@@ -208,8 +208,7 @@ void MP_popup_result_window(AW_window *aww) {
     init_system3_tab();
 }
 
-BOOL    check_status(int gen_cnt, double avg_fit, double min_fit, double max_fit)
-{
+bool MP_check_status(int gen_cnt, double avg_fit, double min_fit, double max_fit) {
     char view_text[150];
 
     if (gen_cnt == 0)
@@ -220,10 +219,10 @@ BOOL    check_status(int gen_cnt, double avg_fit, double min_fit, double max_fit
     if (aw_status(view_text) == 1)
     {
         aw_closestatus();
-        return FALSE;                   // Berechnungen abbrechen !!!!!!
+        return false;                   // Berechnungen abbrechen !!!!!!
     }
 
-    return TRUE;
+    return true;
 }
 
 void init_system3_tab()
@@ -661,63 +660,57 @@ void MP_mark_probes_in_tree(AW_window *aww)
     MP_normal_colors_in_tree(aww);
 }
 
-void MP_Comment(AW_window *aww, AW_CL com)      // Comment fuer Auswahl eintragen
-{
-    char       *new_list_string;
-    AW_root    *awr             = mp_main->get_aw_root();
-    char       *aw_str          = awr->awar(MP_AWAR_RESULTPROBESCOMMENT)->read_string();
-    char       *aw_str2         = awr->awar(MP_AWAR_RESULTPROBES)->read_string();
-    char       *comment         = ((char *) com) ? (char *) com : aw_str;
-    char       *new_val;
-    char       *misms;
-    char        spaces[21];
-    int         len_spaces      = 0;
-    char       *ecol;
-    const char *successor_value = aww->get_element_at_index(result_probes_list,
-                                                            aww->get_index_of_element(result_probes_list, aw_str2) // this mem is lost, @@ fix
-                                                            +1);
+void MP_Comment(AW_window *aww, AW_CL cl_com) {
+    // Comment fuer Auswahl eintragen
 
-    // remove all '#' from new comment
-    for (char *aw_str3 = aw_str; aw_str3[0]; ++aw_str3) {
-        if (aw_str3[0] == SEPARATOR[0]) {
-            aw_str3[0] = '|';
+    AW_root *awr       = mp_main->get_aw_root();
+    char    *selprobes = awr->awar(MP_AWAR_RESULTPROBES)->read_string();
+    char    *new_val   = MP_get_probes(selprobes);
+
+    if (new_val && new_val[0]) {
+        char *new_list_string;
+        {
+            char       *edited_comment = NULL;
+            const char *comment        = NULL;
+
+            if (cl_com) {
+                comment = (char*)cl_com;
+            }
+            else {
+                edited_comment = awr->awar(MP_AWAR_RESULTPROBESCOMMENT)->read_string();
+                for (int i = 0; edited_comment[i]; ++i) { // remove all '#' from new comment
+                    if (edited_comment[i] == SEPARATOR[0]) {
+                        edited_comment[i] = '|';
+                    }
+                }
+            }
+
+            char *misms = MP_get_comment(2, selprobes);
+            char *ecol  = MP_get_comment(3, selprobes);
+
+            new_list_string = GBS_global_string_copy("%-20s" SEPARATOR "%s" SEPARATOR "%s" SEPARATOR "%s",
+                                                     comment, misms, ecol, new_val);
+            free(ecol);
+            free(misms);
+            free(edited_comment);
         }
+
+        {
+            bool autoadvance = awr->awar(MP_AWAR_AUTOADVANCE)->read_int();
+
+            if (autoadvance) aww->move_selection(result_probes_list, 1);
+
+            aww->delete_selection_from_list(result_probes_list, selprobes);
+            aww->insert_selection(result_probes_list, new_list_string, new_list_string);
+            aww->update_selection_list(result_probes_list);
+
+            if (!autoadvance) awr->awar(MP_AWAR_RESULTPROBES)->write_string(new_list_string);
+        }
+        free(new_list_string);
     }
 
-    new_val = MP_get_probes(aw_str2);
-    if (!new_val || !new_val[0])
-    {
-        free(new_val);
-        return;
-    }
-
-    misms = MP_get_comment(2, aw_str2);
-    ecol = MP_get_comment(3, aw_str2);
-
-    spaces[0] = 0;
-    len_spaces = (strlen(comment) > 20) ? 20 : strlen(comment);
-
-    for (int  i=0; i< 20 - len_spaces; i++)
-        strcat(spaces, " ");
-
-    new_list_string = new char[21+strlen(aw_str2)+2*strlen(SEPARATOR)+1+strlen(ecol)+1];    // 1 fuer 0-Zeichen
-    sprintf(new_list_string, "%.20s%s%s%s%s%s%s%s", comment, spaces, SEPARATOR, misms, SEPARATOR, ecol, SEPARATOR, new_val);
     free(new_val);
-    free(misms);
-    free(ecol);
-
-    aww->delete_selection_from_list(result_probes_list, aw_str2);
-    aww->insert_selection(result_probes_list, new_list_string, new_list_string);
-    aww->update_selection_list(result_probes_list);
-    if (awr->awar(MP_AWAR_AUTOADVANCE)->read_int() && successor_value) {
-        awr->awar(MP_AWAR_RESULTPROBES)->write_string(successor_value);
-    }
-    else {
-        awr->awar(MP_AWAR_RESULTPROBES)->write_string(new_list_string);
-    }
-    delete [] new_list_string;
-    free(aw_str2);
-    free(aw_str);
+    free(selprobes);
 }
 
 void MP_leftright(AW_window *aww) {
@@ -882,29 +875,28 @@ void MP_del_probes(AW_window *aww)
     aww->update_selection_list(probelist);
 }
 
-char *MP_get_comment(int which, char *str)      // faengt bei eins an
-{
-    char *result, *first;
-    char *ret_res;
-    int i;
+char *MP_get_comment(int which, const char *str) {
+    // Parses information from strings like "val1#val2#val3#probes".
+    // 'which' == 1 -> 'val1'
+    // 'which' == 2 -> 'val2'
+    // ...
+    // Values may be present or not (i.e. 'probes', 'val1#probes', ... are also valid as 'str')
 
-    result = first = str;
-    result = strchr(result, '#');
+    char       *result  = NULL;
+    const char *numsign = strchr(str, '#');
 
-    for (i=1; i<which; i++)
-    {
-        first = result+1;
-        result = strchr(first, '#');
+    mp_assert(which >= 1);
+
+    if (numsign) {
+        if (which == 1) {
+            result = GB_strpartdup(str, numsign-1);
+        }
+        else {
+            result = MP_get_comment(which-1, numsign+1);
+        }
     }
 
-    if (!result)
-        return NULL;
-
-    *result = 0;
-    ret_res = strdup(first);
-    *result = '#';
-
-    return ret_res;
+    return result;
 }
 
 char *MP_remove_comment(char *old_str)
@@ -927,17 +919,16 @@ char *MP_remove_comment(char *old_str)
     return ret_res;
 }
 
-char *MP_get_probes(char *str)
-{
-    char *result = strrchr(str, '#');
+char *MP_get_probes(const char *str) {
+    const char *result = strrchr(str, '#');
 
-    if (!result)
-        return strdup(str);
-
-    result++;
-    while (*result == ' ' || *result == '\t')
-        result ++;
-
+    if (!result) {
+        result = str;
+    }
+    else {
+        ++result;
+        result += strspn(result, " \t"); // skip over whitespace
+    }
     return strdup(result);
 }
 
@@ -999,3 +990,53 @@ int MP_probe_design_send_data(T_PT_PDC  pdc)
                  NULL)) return 1;
     return 0;
 }
+
+// --------------------------------------------------------------------------------
+
+#if (UNIT_TESTS == 1)
+
+#include <test_unit.h>
+
+#define MP_GET_COMMENT_EQUAL(which, str, expect)  \
+    do {                                          \
+        char *got = MP_get_comment(which, str);   \
+        TEST_ASSERT_EQUAL(got, expect);           \
+        free(got);                                \
+    } while(0)                                    \
+        
+#define MP_GET_PROBES_EQUAL(str, expect)          \
+    do {                                          \
+        char *got = MP_get_probes(str);           \
+        TEST_ASSERT_EQUAL(got, expect);           \
+        free(got);                                \
+    } while(0)                                    \
+
+void TEST_MP_get_comment_and_probes() {
+    char *probes_only    = strdup("ACGT TGCA ATCG");
+    char *probes_comment = strdup("val1#val2#val3#ACGT TGCA ATCG");
+    char *probes_1 = strdup("one#     \t    ACGT TGCA ATCG");
+    char *probes_2 = strdup("one#two#\tACGT TGCA ATCG");
+
+    MP_GET_PROBES_EQUAL(probes_only,    "ACGT TGCA ATCG");
+    MP_GET_PROBES_EQUAL(probes_comment, "ACGT TGCA ATCG");
+    MP_GET_PROBES_EQUAL(probes_1,       "ACGT TGCA ATCG");
+    MP_GET_PROBES_EQUAL(probes_2,       "ACGT TGCA ATCG");
+    
+    MP_GET_COMMENT_EQUAL(1, probes_comment, "val1");
+    MP_GET_COMMENT_EQUAL(2, probes_comment, "val2");
+    MP_GET_COMMENT_EQUAL(3, probes_comment, "val3");
+
+    MP_GET_COMMENT_EQUAL(1, probes_only, NULL);
+    MP_GET_COMMENT_EQUAL(2, probes_only, NULL);
+    MP_GET_COMMENT_EQUAL(3, probes_only, NULL);
+
+    MP_GET_COMMENT_EQUAL(1, probes_1, "one");
+    MP_GET_COMMENT_EQUAL(2, probes_1, NULL);
+    MP_GET_COMMENT_EQUAL(3, probes_1, NULL);
+    
+    MP_GET_COMMENT_EQUAL(1, probes_2, "one");
+    MP_GET_COMMENT_EQUAL(2, probes_2, "two");
+    MP_GET_COMMENT_EQUAL(3, probes_2, NULL);
+}
+
+#endif

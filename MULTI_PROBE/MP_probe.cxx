@@ -9,14 +9,14 @@
 // ============================================================= //
 
 #include "MP_probe.hxx"
+#include "MP_externs.hxx"
 #include "MultiProbe.hxx"
 
 #include <aw_window.hxx>
 
 #include <ctime>
 
-extern BOOL check_status(int gen_cnt, double avg_fit, double min_fit, double max_fit);
-extern char     *MP_get_comment(int which, char *str);
+// extern BOOL check_status(int gen_cnt, double avg_fit, double min_fit, double max_fit);
 
 void ProbeValuation::evolution()
 {
@@ -36,9 +36,7 @@ void ProbeValuation::evolution()
         return;
     }
 
-    check_status(0, 0.0, 0.0, 0.0);
-
-
+    MP_check_status(0, 0.0, 0.0, 0.0);
 
     // hier beginnt der genetische Algorithmus
     do

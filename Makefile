@@ -396,7 +396,7 @@ first_target:
 		@echo ' show         - show available shortcuts (AKA subtargets)'
 		@echo ' up           - shortcut for depends+proto+tags'
 ifeq ($(UNIT_TESTS),1)
-		@echo ' unit_tests   - only run tests
+		@echo ' unit_tests   - only run tests'
 endif
 		@echo ' modified     - rebuild files modified in svn checkout (touches files!)'
 		@echo ''
@@ -1517,7 +1517,6 @@ UNITS_WORKING = \
 	ptpan/PROBE.test \
 	PHYLO/PHYLO.test \
 	PROBE_DESIGN/PROBE_DESIGN.test \
-	MULTI_PROBE/MULTI_PROBE.test \
 	PRIMER_DESIGN/PRIMER_DESIGN.test \
 	PGT/PGT.test \
 	PARSIMONY/PARSIMONY.test \
@@ -1542,6 +1541,7 @@ UNITS_NEED_FIX = \
 
 # for the moment, put all units containing tests into UNITS_TESTED:
 UNITS_TESTED = \
+	MULTI_PROBE/MULTI_PROBE.test \
 	SL/SEQIO/SEQIO.test \
 	ARBDB/ARBDB.test \
 	MERGE/MERGE.test \
