@@ -426,10 +426,15 @@ void GBT_names_add(char**& names, int insert_before, const char *name) {
 }
 
 void GBT_names_move(char **names, int old_index, int new_index) {
+    /*! moves array-entry from 'old_index' to 'new_index' 
+     * -1 means "last entry"
+     * if new_index is out of bounds, it'll be moved to start of array
+     */
     int size = (int)GBT_count_names(names);
 
-    if (old_index == -1) old_index = size-1;
-    if (new_index == -1) new_index = size-1;
+    if (old_index == -1) old_index        = size-1;
+    if (new_index == -1) new_index        = size-1;
+    else if (new_index >= size) new_index = 0;
 
     if (old_index != new_index && new_index<size && old_index<size) {
         char *moved = names[old_index];

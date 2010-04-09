@@ -79,6 +79,17 @@ const char *AW_selection_list::get_default_value() const {
     return default_select ? default_select->char_value : NULL;
 }
 
+size_t AW_selection_list::size() {
+    AW_select_table_struct *lt    = list_table;
+    size_t                  count = 0;
+
+    while (lt) {
+        ++count;
+        lt = lt->next;
+    }
+    return count;
+}
+
 // ---------------------
 //      AW_selection
 

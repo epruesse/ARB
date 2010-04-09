@@ -543,21 +543,21 @@ public:
     void update_selection_list(AW_selection_list *selection_list);
     void init_selection_list_from_array(AW_selection_list *selection_list, const char * const *entries, const char *defaultEntry);
 
-    int   get_no_of_entries(AW_selection_list *selection_list);
-    int   get_index_of_element(AW_selection_list *selection_list, const char *selected_element);
-    char *get_element_at_index(AW_selection_list *selection_list, int index);
+    int         get_index_of_element(AW_selection_list *selection_list, const char *selected_element);
+    const char *get_element_at_index(AW_selection_list *selection_list, int index);
 
     int  get_index_of_selected_element(AW_selection_list *selection_list);
     void select_element_at_index(AW_selection_list *selection_list, int wanted_index);
     void move_selection(AW_selection_list *selection_list, int offset);
 
-
+    char    **selection_list_to_array(AW_selection_list *sel_list, bool values);
     char     *get_selection_list_contents(AW_selection_list * selection_list, long nr_of_lines = -1);
+    GB_HASH  *selection_list_to_hash(AW_selection_list *sel_list, bool case_sens);
+
     void      sort_selection_list(AW_selection_list * selection_list, int backward, int case_sensitive);
     GB_ERROR  save_selection_list(AW_selection_list * selection_list, const char *filename, long number_of_lines = 0);
     void      set_selection_list_suffix(AW_selection_list * selection_list, const char *suffix);
     GB_ERROR  load_selection_list(AW_selection_list * selection_list, const char *filename);
-    GB_HASH  *selection_list_to_hash(AW_selection_list *sel_list, bool case_sens);
 
     AW_selection_list *create_multi_selection_list(const char *label = 0, const char *mnemonic = 0, int columns = 4, int rows = 4);
     // all works, but its not connected to an AWAR may be converted to AW_mselection_list_helper

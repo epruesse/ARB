@@ -26,6 +26,7 @@
 #include <aw_awars.hxx>
 #include <aw_preset.hxx>
 #include <aw_edit.hxx>
+#include <aw_select.hxx>
 
 // general awars
 
@@ -1013,15 +1014,15 @@ static void probe_match_all_event(AW_window *aww, AW_CL cl_iselection_id, AW_CL 
     aww->init_list_entry_iterator(iselection_id); // init
     aw_openstatus("Matching all resolved strings");
 
-    int string_count = aww->get_no_of_entries(iselection_id);
-    int local_count = 0;
+    size_t string_count = iselection_id->size();
+    size_t local_count = 0;
 
     for (;;) {
         const char *entry = aww->get_list_entry_char_value();
         if (!entry) break;
 
         double percent = local_count++/double(string_count);
-        aw_status(GBS_global_string("Match string %i of %i", local_count, string_count));
+        aw_status(GBS_global_string("Match string %zu of %zu", local_count, string_count));
         aw_status(percent);
 
         root->awar(AWAR_TARGET_STRING)->write_string(entry); // probe match

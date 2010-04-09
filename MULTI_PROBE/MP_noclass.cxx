@@ -14,6 +14,7 @@
 #include "MP_probe.hxx"
 
 #include <awt.hxx>
+#include <aw_select.hxx>
 #include <TreeCallbacks.hxx>
 #include <client.h>
 #include <servercntrl.h>
@@ -329,8 +330,8 @@ void MP_compute(AW_window *aww, AW_CL cl_gb_main) {
 
     MO_Liste::set_gb_main(gb_main);
 
-    if (aww->get_no_of_entries(selected_list)-1 < mp_gl_awars.no_of_probes)
-    {
+    size_t selected_probes_count = selected_list->size();
+    if ((int)selected_probes_count < mp_gl_awars.no_of_probes) {
         aw_message("Not enough probes selected for computation !!!");
         return;
     }
@@ -350,10 +351,10 @@ void MP_compute(AW_window *aww, AW_CL cl_gb_main) {
     aww2->insert_default_selection(result_probes_list, "", "");
     aww2->update_selection_list(result_probes_list);
 
-    aww->init_list_entry_iterator(selected_list); // initialisieren
-    probe_field = new char*[aww->get_no_of_entries(selected_list)-1];       // -1 wegen default entry
-    bew_array   = new int[aww->get_no_of_entries(selected_list)-1];
-    single_mismatch = new int[aww->get_no_of_entries(selected_list)-1];
+    aww->init_list_entry_iterator(selected_list);   // initialisieren
+    probe_field     = new char*[selected_probes_count];
+    bew_array       = new int[selected_probes_count];
+    single_mismatch = new int[selected_probes_count];
 
     aw_openstatus("Computing multiprobes");
 
