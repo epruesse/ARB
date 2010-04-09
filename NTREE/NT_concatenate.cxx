@@ -78,7 +78,7 @@ void createSelectionList_callBack(struct conAlignStruct *cas) {
 
     AW_root *aw_root = cas->aws->get_root();
     char *ali_type   = aw_root->awar(AWAR_CON_SEQUENCE_TYPE)->read_string();
-    ali_type         = GBS_global_string_copy("%s=", ali_type);
+    freeset(ali_type, GBS_global_string_copy("%s=", ali_type));
 
     cas->aws->clear_selection_list(cas->db_id); // clearing the selection list
 
