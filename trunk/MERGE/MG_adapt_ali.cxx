@@ -600,8 +600,7 @@ MG_remap *MG_create_remap(GBDATA *gb_left, GBDATA *gb_right, const char *referen
     MG_remap *rem      = new MG_remap();
     char     *ref_list = strdup(reference_species_names);
 
-    char *tok;
-    for (tok = strtok(ref_list, " \n,;"); tok; tok = strtok(NULL, " \n,;")) {
+    for (char *tok = strtok(ref_list, " \n,;"); tok; tok = strtok(NULL, " \n,;")) {
         bool    is_SAI           = strncmp(tok, "SAI:", 4) == 0;
         GBDATA *gb_species_left  = 0;
         GBDATA *gb_species_right = 0;
@@ -620,39 +619,37 @@ MG_remap *MG_create_remap(GBDATA *gb_left, GBDATA *gb_right, const char *referen
                                          is_SAI ? "" : "species ",
                                          tok,
                                          gb_species_left ? "right" : "left"));
-            continue;
-        }
-
-        // look for sequence/SAI "data"
-        GBDATA *gb_seq_left  = GBT_read_sequence(gb_species_left, alignment_name);
-        if (!gb_seq_left) continue;
-        GBDATA *gb_seq_right = GBT_read_sequence(gb_species_right, alignment_name);
-        if (!gb_seq_right) continue;
-
-        GB_TYPES type_left  = GB_read_type(gb_seq_left);
-        GB_TYPES type_right = GB_read_type(gb_seq_right);
-
-        if (type_left != type_right) {
-            aw_message(GBS_global_string("Warning: data type of '%s' differs in both databases", tok));
-            continue;
-        }
-
-        const char *warning;
-        if (type_right == GB_STRING) {
-            warning = rem->add_reference(GB_read_char_pntr(gb_seq_left), GB_read_char_pntr(gb_seq_right));
         }
         else {
-            char *sleft  = GB_read_as_string(gb_seq_left);
-            char *sright = GB_read_as_string(gb_seq_right);
+            // look for sequence/SAI "data"
+            GBDATA *gb_seq_left  = GBT_read_sequence(gb_species_left, alignment_name);
+            GBDATA *gb_seq_right = GBT_read_sequence(gb_species_right, alignment_name);
 
-            warning = rem->add_reference(sleft, sright);
+            if (gb_seq_left && gb_seq_right) {
+                GB_TYPES type_left  = GB_read_type(gb_seq_left);
+                GB_TYPES type_right = GB_read_type(gb_seq_right);
 
-            free(sleft);
-            free(sright);
-        }
+                if (type_left != type_right) {
+                    aw_message(GBS_global_string("Warning: data type of '%s' differs in both databases", tok));
+                }
+                else {
+                    const char *warning;
+                    if (type_right == GB_STRING) {
+                        warning = rem->add_reference(GB_read_char_pntr(gb_seq_left), GB_read_char_pntr(gb_seq_right));
+                    }
+                    else {
+                        char *sleft  = GB_read_as_string(gb_seq_left);
+                        char *sright = GB_read_as_string(gb_seq_right);
 
-        if (warning) {
-            aw_message(GBS_global_string("Warning: '%s' %s", tok, warning));
+                        warning = rem->add_reference(sleft, sright);
+
+                        free(sleft);
+                        free(sright);
+                    }
+
+                    if (warning) aw_message(GBS_global_string("Warning: '%s' %s", tok, warning));
+                }
+            }
         }
     }
     free(ref_list);
@@ -684,7 +681,7 @@ MG_remaps::~MG_remaps() {
     free(remaps);
 }
 
-GB_ERROR MG_transfer_sequence(MG_remap *remap, GBDATA *source_species, GBDATA *destination_species, const char *alignment_name) {
+static GB_ERROR MG_transfer_sequence(MG_remap *remap, GBDATA *source_species, GBDATA *destination_species, const char *alignment_name) {
     // align sequence after copy
     GB_ERROR error = NULL;
 

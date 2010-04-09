@@ -13,6 +13,7 @@
 //  ==================================================================== //
 
 #include "merge.hxx"
+#include "MG_adapt_ali.hxx"
 
 #include <arbdbt.h>
 #include <aw_awars.hxx>
@@ -26,13 +27,15 @@ using namespace std;
 
 // find species/SAIs to preserve alignment
 
-#define AWAR_REMAP_CANDIDATE    "tmp/merge/remap_candidates"
-#define AWAR_REMAP_ALIGNMENT    "tmp/merge/remap_alignment"
+#define AWAR_REMAP_CANDIDATE     "tmp/merge/remap_candidates"
+#define AWAR_REMAP_ALIGNMENT     "tmp/merge/remap_alignment"
+#define AWAR_REMAP_SEL_REFERENCE "tmp/merge/remap_reference"
 
 struct preserve_para {
     AW_window         *window;
-    AW_selection_list *ali_id;
-    AW_selection_list *cand_id;
+    AW_selection_list *ali_id;                      // alignments
+    AW_selection_list *cand_id;                     // reference candidates
+    AW_selection_list *ref_id;                      // used references
 };
 
 // get all alignment names available in both databases
@@ -60,35 +63,21 @@ static char **get_global_alignments() {
     return src_ali_names;
 }
 
-// initialize the alignment selection list
 static void init_alignments(preserve_para *para) {
-    AW_window         *aww = para->window;
-    AW_selection_list *id  = para->ali_id;
-
-    aww->clear_selection_list(id);
-    aww->insert_default_selection(id, "All", "All");
-
-    // insert alignments available in both databases
+    // initialize the alignment selection list
     char **ali_names = get_global_alignments();
-    for (int i = 0; ali_names[i]; ++i) {
-        aww->insert_selection(id, ali_names[i], ali_names[i]);
-    }
+    para->window->init_selection_list_from_array(para->ali_id, ali_names, "All");
     GBT_free_names(ali_names);
-
-    aww->update_selection_list(id);
-    aww->get_root()->awar(AWAR_REMAP_ALIGNMENT)->write_string("All"); // select "All"
 }
 
-// clear the candidate list
 static void clear_candidates(preserve_para *para) {
+    // clear the candidate list
     AW_window         *aww = para->window;
     AW_selection_list *id  = para->cand_id;
 
     aww->clear_selection_list(id);
     aww->insert_default_selection(id, "????", "????");
     aww->update_selection_list(id);
-
-    aww->get_root()->awar(AWAR_REMAP_CANDIDATE)->write_string(""); // deselect
 }
 
 static long count_bases(const char *data, long len) {
@@ -134,7 +123,7 @@ class Candidate {
     long   base_count_diff;
 
 public:
-    Candidate(bool is_species, const char *name_, GBDATA *gb_src, GBDATA *gb_dst, const char **ali_names)
+    Candidate(bool is_species, const char *name_, GBDATA *gb_src, GBDATA *gb_dst, const char *const *ali_names)
         : name(is_species ? name_ : string("SAI:")+name_)
     {
         found_alignments = 0;
@@ -174,18 +163,12 @@ public:
 
     const char *get_name() const { return name.c_str(); }
     const char *get_entry() const {
-        bool isSAI = memcmp(get_name(), "SAI:", 4) == 0;
-        return GBS_global_string(isSAI ? "%-24s %i %li %f" : "%-8s %i %li %f",
-                                 get_name(), found_alignments, base_count_diff, score);
+        return GBS_global_string("%24s  %i %li %f", get_name(), found_alignments, base_count_diff, score);
     }
 
     bool operator < (const Candidate& other) const { // sort highest score first
         int ali_diff = found_alignments-other.found_alignments;
-
-        if (ali_diff) {
-            return ali_diff>0;
-        }
-
+        if (ali_diff) return ali_diff>0;
         return score > other.score;
     }
 };
@@ -197,7 +180,7 @@ static bool operator < (const SmartPtr<Candidate>& c1, const SmartPtr<Candidate>
 typedef set< SmartPtr<Candidate> > Candidates;
 
 // add all candidate species to 'candidates'
-static void find_species_candidates(Candidates& candidates, const char **ali_names) {
+static void find_species_candidates(Candidates& candidates, const char *const *ali_names) {
     aw_status("Examining species (kill to stop)");
     aw_status(0.0);
 
@@ -237,7 +220,7 @@ static void find_species_candidates(Candidates& candidates, const char **ali_nam
 }
 
 // add all candidate SAIs to 'candidates'
-static void find_SAI_candidates(Candidates& candidates, const char **ali_names) {
+static void find_SAI_candidates(Candidates& candidates, const char *const *ali_names) {
     aw_status("Examining SAIs");
     aw_status(0.0);
 
@@ -274,9 +257,9 @@ static void find_SAI_candidates(Candidates& candidates, const char **ali_names) 
     GBS_free_hash(src_SAIs);
 }
 
-// FIND button
-// (rebuild candidates list)
 static void calculate_preserves_cb(AW_window *, AW_CL cl_para) {
+    // FIND button (rebuild candidates list)
+
     GB_transaction ta1(GLOBAL_gb_merge);
     GB_transaction ta2(GLOBAL_gb_dest);
 
@@ -294,15 +277,15 @@ static void calculate_preserves_cb(AW_window *, AW_CL cl_para) {
     if (0 == strcmp(ali, "All")) {
         char **ali_names = get_global_alignments();
 
-        find_SAI_candidates(candidates, const_cast<const char**>(ali_names));
-        find_species_candidates(candidates, const_cast<const char**>(ali_names));
+        find_SAI_candidates(candidates, ali_names);
+        find_species_candidates(candidates, ali_names);
 
         GBT_free_names(ali_names);
     }
     else {
-        char *ali_names[2] = { ali, 0 };
-        find_SAI_candidates(candidates, const_cast<const char**>(ali_names));
-        find_species_candidates(candidates, const_cast<const char**>(ali_names));
+        const char *ali_names[2] = { ali, 0 };
+        find_SAI_candidates(candidates, ali_names);
+        find_species_candidates(candidates, ali_names);
     }
 
     int                   count = 0;
@@ -325,58 +308,129 @@ static void calculate_preserves_cb(AW_window *, AW_CL cl_para) {
     aww->update_selection_list(id);
 }
 
-// ADD button
-// (add current selected candidate to references)
+
+
+static char **read_references(AW_root *aw_root)  {
+    char  *ref_string = aw_root->awar(AWAR_REMAP_SPECIES_LIST)->read_string();
+    char **refs       = GBT_split_string(ref_string, " \n,;", true, NULL);
+
+    free(ref_string);
+    return refs;
+}
+static void write_references(AW_root *aw_root, const char *const *ref_array) {
+    char *ref_string = GBT_join_names(ref_array, '\n');
+    aw_root->awar(AWAR_REMAP_SPECIES_LIST)->write_string(ref_string);
+    aw_root->awar(AWAR_REMAP_ENABLE)->write_int(ref_string[0] != 0);
+    free(ref_string);
+}
+static void select_reference(AW_root *aw_root, const char *ref_to_select) {
+    aw_root->awar(AWAR_REMAP_SEL_REFERENCE)->write_string(ref_to_select);
+}
+static char *get_selected_reference(AW_root *aw_root) {
+    return aw_root->awar(AWAR_REMAP_SEL_REFERENCE)->read_string();
+}
+
+static void refresh_reference_list_cb(AW_root *aw_root, AW_CL cl_para) {
+    preserve_para  *para = (preserve_para*)cl_para;
+    char          **refs = read_references(aw_root);
+    para->window->init_selection_list_from_array(para->ref_id, refs, "");
+    GBT_free_names(refs);
+}
+
 static void add_selected_cb(AW_window *, AW_CL cl_para) {
-    preserve_para *para = (preserve_para*)cl_para;
-    AW_window     *aww  = para->window;
-    AW_root       *awr  = aww->get_root();
+    // ADD button (add currently selected candidate to references)
 
-    char *current    = awr->awar(AWAR_REMAP_CANDIDATE)->read_string();
-    char *references = awr->awar(AWAR_REMAP_SPECIES_LIST)->read_string();
-    if (references && references[0]) {
-        string ref = string(references);
-        size_t pos = ref.find(current);
-        int    len = strlen(current);
+    preserve_para *para    = (preserve_para*)cl_para;
+    AW_root       *aw_root = para->window->get_root();
+    
+    char **refs       = read_references(aw_root);
+    char  *candidate  = aw_root->awar(AWAR_REMAP_CANDIDATE)->read_string();
+    char  *selected   = get_selected_reference(aw_root);
+    int    cand_index = GBT_names_index_of(refs, candidate);
+    int    sel_index  = GBT_names_index_of(refs, selected);
 
-        for (;
-             pos != string::npos;
-             pos = ref.find(current, pos+1))
-        {
-            if (pos == 0 || ref[pos-1] == '\n') {
-                if ((pos+len) == ref.length()) break; // at eos -> skip
-                char behind = ref[pos+len];
-                if (behind == '\n') break; // already there -> skip
-            }
-        }
+    if (cand_index == -1) GBT_names_add(refs, sel_index+1, candidate);
+    else                  GBT_names_move(refs, cand_index, sel_index);
 
-        if (pos == string::npos) {
-            string appended = ref+'\n'+current;
-            awr->awar(AWAR_REMAP_SPECIES_LIST)->write_string(appended.c_str());
-        }
-    }
-    else {
-        awr->awar(AWAR_REMAP_SPECIES_LIST)->write_string(current);
-    }
+    write_references(aw_root, refs);
+    select_reference(aw_root, candidate);
 
-    free(references);
-    free(current);
+    free(selected);
+    free(candidate);
+    GBT_free_names(refs);
 
-    awr->awar(AWAR_REMAP_ENABLE)->write_int(1);
+    para->window->move_selection(para->cand_id, 1); 
 }
 
-// CLEAR button
-// (clear references)
 static void clear_references_cb(AW_window *aww) {
-    AW_root *awr = aww->get_root();
-    awr->awar(AWAR_REMAP_SPECIES_LIST)->write_string("");
-    awr->awar(AWAR_REMAP_ENABLE)->write_int(0);
+    // CLEAR button (clear references)
+    aww->get_root()->awar(AWAR_REMAP_SPECIES_LIST)->write_string("");
 }
 
-// SELECT PRESERVES window
+static void del_reference_cb(AW_window *aww) {
+    AW_root  *aw_root   = aww->get_root();
+    char    **refs      = read_references(aw_root);
+    char     *selected  = get_selected_reference(aw_root);
+    int       sel_index = GBT_names_index_of(refs, selected);
+
+    if (sel_index >= 0) {
+        select_reference(aw_root, refs[sel_index+1]);
+        GBT_names_erase(refs, sel_index);
+        write_references(aw_root, refs);
+    }
+
+    free(selected);
+    GBT_free_names(refs);
+}
+
+static void lower_reference_cb(AW_window *aww) {
+    AW_root  *aw_root   = aww->get_root();
+    char    **refs      = read_references(aw_root);
+    char     *selected  = get_selected_reference(aw_root);
+    int       sel_index = GBT_names_index_of(refs, selected);
+
+    if (sel_index >= 0) {
+        GBT_names_move(refs, sel_index, sel_index+1);
+        write_references(aw_root, refs);
+    }
+
+    free(selected);
+    GBT_free_names(refs);
+}
+static void raise_reference_cb(AW_window *aww) {
+    AW_root  *aw_root   = aww->get_root();
+    char    **refs      = read_references(aw_root);
+    char     *selected  = get_selected_reference(aw_root);
+    int       sel_index = GBT_names_index_of(refs, selected);
+
+    if (sel_index > 0) {
+        GBT_names_move(refs, sel_index, sel_index-1);
+        write_references(aw_root, refs);
+    }
+
+    free(selected);
+    GBT_free_names(refs);
+}
+
+static void test_references_cb(AW_window *aww) {
+    char           *reference_species_names = aww->get_root()->awar(AWAR_REMAP_SPECIES_LIST)->read_string();
+    GB_transaction  tm(GLOBAL_gb_merge);
+    GB_transaction  td(GLOBAL_gb_dest);
+    
+    MG_remaps test_mapping(GLOBAL_gb_merge, GLOBAL_gb_dest, true, reference_species_names); // will raise aw_message's in case of problems
+
+    free(reference_species_names);
+}
+
+static void init_preserve_awars(AW_root *aw_root) {
+    aw_root->awar_string(AWAR_REMAP_ALIGNMENT,     "", GLOBAL_gb_dest);
+    aw_root->awar_string(AWAR_REMAP_CANDIDATE,     "", GLOBAL_gb_dest);
+    aw_root->awar_string(AWAR_REMAP_SEL_REFERENCE, "", GLOBAL_gb_dest);
+}
+
 AW_window *MG_select_preserves_cb(AW_root *aw_root) {
-    aw_root->awar_string(AWAR_REMAP_ALIGNMENT, "", GLOBAL_gb_dest);
-    aw_root->awar_string(AWAR_REMAP_CANDIDATE, "", GLOBAL_gb_dest);
+    // SELECT PRESERVES window
+    init_preserve_awars(aw_root);
 
     AW_window_simple *aws = new AW_window_simple;
 
@@ -390,25 +444,58 @@ AW_window *MG_select_preserves_cb(AW_root *aw_root) {
     aws->callback(AW_POPUP_HELP, (AW_CL)"mg_preserve.hlp");
     aws->create_button("HELP", "HELP", "H");
 
+    // ----------
+
+    preserve_para *para = new preserve_para; // do not free (is passed to callback)
+    para->window        = aws;
+    
+    aws->at("ali");
+    para->ali_id = aws->create_selection_list(AWAR_REMAP_ALIGNMENT, 0, "", 10, 30);
+
+    // ----------
+    
     aws->at("adapt");
     aws->label("Adapt alignments");
     aws->create_toggle(AWAR_REMAP_ENABLE);
 
     aws->at("reference");
-    aws->create_text_field(AWAR_REMAP_SPECIES_LIST);
+    // aws->create_text_field(AWAR_REMAP_SPECIES_LIST); // @@@ needs to be a selection list!
+    para->ref_id = aws->create_selection_list(AWAR_REMAP_SEL_REFERENCE, 0, "", 10, 30);
 
-    preserve_para *para = new preserve_para; // do not free (is passed to callback)
-    para->window        = aws;
+    aws->button_length(8);
 
-    aws->at("candidate");
-    para->cand_id = aws->create_selection_list(AWAR_REMAP_CANDIDATE, 0, "", 10, 30);
+    aws->at("clear");
+    aws->callback(clear_references_cb);
+    aws->create_button("CLEAR", "Clear", "C");
 
-    aws->at("ali");
-    para->ali_id = aws->create_selection_list(AWAR_REMAP_ALIGNMENT, 0, "", 10, 30);
+    aws->at("del");
+    aws->callback(del_reference_cb);
+    aws->create_button("DEL", "Del", "L");
+
+    aws->at("up");
+    aws->callback(raise_reference_cb);
+    aws->create_button("UP", "Up", "U");
+
+    aws->at("down");
+    aws->callback(lower_reference_cb);
+    aws->create_button("DOWN", "Down", "D");
+
+    aws->at("test");
+    aws->callback(test_references_cb);
+    aws->create_button("TEST", "Test", "T");
+    
+    // ----------
 
     aws->at("find");
     aws->callback(calculate_preserves_cb, (AW_CL)para);
     aws->create_autosize_button("FIND", "Find candidates", "F", 1);
+
+    aws->at("add");
+    aws->callback(add_selected_cb, (AW_CL)para);
+    aws->create_button("ADD", "Add", "A");
+
+    aws->at("candidate");
+    para->cand_id = aws->create_selection_list(AWAR_REMAP_CANDIDATE, 0, "", 10, 30);
 
     {
         GB_transaction ta1(GLOBAL_gb_merge);
@@ -418,15 +505,11 @@ AW_window *MG_select_preserves_cb(AW_root *aw_root) {
         clear_candidates(para);
     }
 
-    aws->button_length(8);
-
-    aws->at("add");
-    aws->callback(add_selected_cb, (AW_CL)para);
-    aws->create_button("ADD", "Add", "A");
-
-    aws->at("clear");
-    aws->callback(clear_references_cb);
-    aws->create_button("CLEAR", "Clear", "C");
+    {
+        AW_awar *awar_list = aw_root->awar(AWAR_REMAP_SPECIES_LIST);
+        awar_list->add_callback(refresh_reference_list_cb, (AW_CL)para);
+        awar_list->touch(); // trigger callback
+    }
 
     return aws;
 }
