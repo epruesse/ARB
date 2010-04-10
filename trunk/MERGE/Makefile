@@ -223,6 +223,7 @@ MG_names.o: $(ARBHOME)/INCLUDE/dupstr.h
 MG_names.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 MG_preserves.o: merge.hxx
+MG_preserves.o: MG_adapt_ali.hxx
 MG_preserves.o: mg_merge.hxx
 MG_preserves.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 MG_preserves.o: $(ARBHOME)/INCLUDE/ad_prot.h

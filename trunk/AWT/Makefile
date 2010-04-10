@@ -419,4 +419,6 @@ AWT_www.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AWT_www.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWT_www.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AWT_www.o: $(ARBHOME)/INCLUDE/dupstr.h
+AWT_www.o: $(ARBHOME)/INCLUDE/inline.h
 AWT_www.o: $(ARBHOME)/INCLUDE/smartptr.h
+AWT_www.o: $(ARBHOME)/INCLUDE/static_assert.h

@@ -14,31 +14,100 @@
 #include <aw_global_awars.hxx>
 #include <aw_awars.hxx>
 #include <arbdbt.h>
+#include <inline.h>
+#include <static_assert.h>
 
 #define WWW_COUNT                10
-// #define AWAR_WWW_BROWSER "www/browser" // now defined by ARB_init_global_awars()
 #define AWAR_WWW_SELECT          "www/url_select"
-#define AWAR_WWW_0               "www/url_0/srt"
-#define AWAR_WWW_1               "www/url_0/srt"
-#define AWAR_WWW_2               "www/url_0/srt"
 #define AWAR_WWW_SELECT_TEMPLATE "www/url_%i/select"
 #define AWAR_WWW_TEMPLATE        "www/url_%i/srt"
 #define AWAR_WWW_DESC_TEMPLATE   "www/url_%i/desc"
 
+inline char *extract_url_host(const char *templ) {
+    const char *url_start = strstr(templ, "\"http://");
+    if (url_start) {
+        const char *host_start = url_start+8;
+        const char *slash      = strchr(host_start, '/');
 
+        if (slash) return GB_strpartdup(host_start, slash-1);
+    }
+    return NULL;
+}
+
+inline bool url_host_matches(const char *templ1, const char *templ2) {
+    bool  matches = false;
+    char *url1    = extract_url_host(templ1);
+    if (url1) {
+        char *url2 = extract_url_host(templ2);
+        matches = url1 && url2 && ARB_stricmp(url1, url2) == 0;
+        free(url2);
+    }
+    free(url1);
+    return matches;
+}
 
 void awt_create_aww_vars(AW_root *aw_root, AW_default aw_def) {
-    int i;
-    for (i=0; i<WWW_COUNT; i++) {
-        const char *awar_name;
+    struct Example {
+        const char *descr;
+        const char *templ;
+    } example[] = {
+        { "EMBL example",   "\"http://www.ebi.ac.uk/ena/data/view/\";readdb(acc)" },
+        { "SILVA example",  "\"http://www.arb-silva.de/browser/ssu/\";readdb(acc)" },
+        { "Google example", "\"http://www.google.com/search?q=\";readdb(full_name);|srt(\": =+\")" }
+    }, empty = { "", "" };
 
-        awar_name = GBS_global_string(AWAR_WWW_TEMPLATE, i);        aw_root->awar_string(awar_name, i==WWW_COUNT-1 ? "\"http://www.ebi.ac.uk/cgi-bin/emblfetch?\";readdb(acc)" : "", aw_def);
-        awar_name = GBS_global_string(AWAR_WWW_DESC_TEMPLATE, i);   aw_root->awar_string(awar_name, i==WWW_COUNT-1 ? "EMBL example" : "", aw_def);
-        awar_name = GBS_global_string(AWAR_WWW_SELECT_TEMPLATE, i); aw_root->awar_int(awar_name, 0, aw_def);
+    const int DEFAULT_SELECT = 1; // SILVA
+    const int EXAMPLE_COUNT  = sizeof(example)/sizeof(*example);
+    COMPILE_ASSERT(EXAMPLE_COUNT <= WWW_COUNT);
+
+    bool example_url_seen[EXAMPLE_COUNT];
+    for (int x = 0; x<EXAMPLE_COUNT; ++x) example_url_seen[x] = false;
+
+    AW_awar *awar_templ[WWW_COUNT];
+    AW_awar *awar_descr[WWW_COUNT];
+    bool     is_empty[WWW_COUNT];
+
+    for (int i = 0; i<WWW_COUNT; ++i) {
+        const Example&  curr = i<EXAMPLE_COUNT ? example[i] : empty;
+        const char     *awar_name;
+
+        awar_name     = GBS_global_string(AWAR_WWW_TEMPLATE, i);
+        awar_templ[i] = aw_root->awar_string(awar_name, curr.templ, aw_def);
+
+        awar_name     = GBS_global_string(AWAR_WWW_DESC_TEMPLATE, i);
+        awar_descr[i] = aw_root->awar_string(awar_name, curr.descr, aw_def);
+
+        const char *templ = awar_templ[i]->read_char_pntr();
+        const char *descr = awar_descr[i]->read_char_pntr();
+
+        is_empty[i] = !templ[0] && !descr[0];
+        if (!is_empty[i]) {
+            for (int x = 0; x<EXAMPLE_COUNT; ++x) {
+                if (!example_url_seen[x]) {
+                    example_url_seen[x] = url_host_matches(templ, example[x].templ);
+                }
+            }
+        }
+
+        awar_name = GBS_global_string(AWAR_WWW_SELECT_TEMPLATE, i);
+        aw_root->awar_int(awar_name, 0, aw_def);
     }
 
-    aw_root->awar_int(AWAR_WWW_SELECT, 0, aw_def);
+    // insert missing examples
+    for (int x = 0; x<EXAMPLE_COUNT; ++x) {
+        if (!example_url_seen[x]) {
+            for (int i = 0; i<WWW_COUNT; ++i) {
+                if (is_empty[i]) {
+                    awar_templ[i]->write_string(example[x].templ);
+                    awar_descr[i]->write_string(example[x].descr);
+                    is_empty[i] = false;
+                    break;
+                }
+            }
+        }
+    }
 
+    aw_root->awar_int(AWAR_WWW_SELECT, DEFAULT_SELECT, aw_def);
     awt_assert(ARB_global_awars_initialized());
 }
 
@@ -63,7 +132,7 @@ GB_ERROR awt_openURL_by_gbd(AW_root *aw_root, GBDATA *gb_main, GBDATA *gbd, cons
     char           *url_srt      = aw_root->awar(awar_url)->read_string();
     error                        = awt_open_ACISRT_URL_by_gbd(aw_root, gb_main, gbd, name, url_srt);
 
-    delete url_srt;
+    free(url_srt);
     return error;
 }
 
@@ -75,7 +144,7 @@ void awt_openDefaultURL_on_species(AW_window *aww, GBDATA *gb_main) {
     GBDATA         *gb_species       = GBT_find_species(gb_main, selected_species);
 
     if (!gb_species) {
-        error = GB_export_errorf("Cannot find species '%s'", selected_species);
+        error = GBS_global_string("Cannot find species '%s'", selected_species);
     }
     else {
         error = awt_openURL_by_gbd(aw_root, gb_main, gb_species, selected_species);
