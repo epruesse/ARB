@@ -102,6 +102,12 @@ static void AWAR_AWM_MASK_changed_cb(AW_root *awr) {
     awr->apply_sensitivity(mask);
 }
 
+#if defined(DARWIN)
+#define OPENURL "open"    
+#else
+#define OPENURL "xdg-open"
+#endif // DARWIN
+
 GB_ERROR ARB_init_global_awars(AW_root *aw_root, AW_default aw_def, GBDATA *gb_main) {
     aw_assert(!initialized);                        // don't call twice!
     aw_assert(aw_def != gb_main);                   // awars in DB are global by definition
@@ -109,7 +115,7 @@ GB_ERROR ARB_init_global_awars(AW_root *aw_root, AW_default aw_def, GBDATA *gb_m
     initialized  = true;
     gb_main4awar = gb_main;
 
-    GB_ERROR error = aw_root->awar_string(AWAR_WWW_BROWSER, "(netscape -remote 'openURL($(URL))' || netscape '$(URL)') &", aw_def)->make_global();
+    GB_ERROR error = aw_root->awar_string(AWAR_WWW_BROWSER, OPENURL " \"$(URL)\"", aw_def)->make_global();
 
     if (!error) {
         AW_awar *awar_awm_mask = aw_root->awar_int(AWAR_AWM_MASK, AWM_MASK_UNKNOWN, aw_def);

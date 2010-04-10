@@ -23,33 +23,27 @@ DESCRIPTION	The WWW-Interface can be used to search the Web for information
 
 EXAMPLES	Here are some search examples (URL-Entries):
 
-		Retrieve from EMBL-Database:
-			"http://www.ebi.ac.uk/cgi-bin/emblfetch?";readdb(acc)
+		Search in ARB-SILVA:
+                       "http://www.arb-silva.de/browser/ssu/";readdb(acc)
 
-		Search Medline for related information:
-			"http://www.ncbi.nlm.nih.gov/htbin-post/Entrez/query?uid=";readdb(medline_id);"&form=6&db=m&Dopt=b"
+		Search in EMBL:
+                       "http://www.ebi.ac.uk/ena/data/view/";readdb(acc)
 
 		Search the Web for full-name using google:
-                       "http://www.google.com/search?q=";readdb(full_name);"&ie=ISO-8859-1&hl=de&btnG=Google-Suche&meta="|srt(": =+")
+                       "http://www.google.com/search?q=";readdb(full_name);|srt(": =+")"
 
 
 NOTES           Look at the bottom line of the WWW configuration window
 		and check out whether the command line there calls your
 		preferred internet browser.
 
-                Netscape user enter:
+                Generic methods:
 
-                    (netscape -remote 'openURL($(URL))' || netscape '$(URL)') &
+                    xdg-open "$(URL)"
 
-                Opera users enter one of:
-
-                    opera -remote 'openURL($(URL))' &
-
-                    opera -remote 'openURL($(URL),new-window)' &
-
-
+                    open "$(URL)"               (OSX)
 
 WARNINGS        We are not responsible for any content you retrieve by using
-                this function. Only use this at your own responsibility.
+                this function. Use this at your own responsibility.
 
 BUGS		No bugs known
