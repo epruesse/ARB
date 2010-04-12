@@ -101,7 +101,7 @@ NOT4PERL GB_ERROR GBT_determine_T_or_U(GB_alignment_type alignment_type, char *T
         case GB_AT_DNA: *T_or_U = 'T'; break;
         default: {
             *T_or_U = 0;
-            return GB_export_errorf("%s not available for alignment-type", supposed_target);
+            return GBS_global_string("%s not available for alignment-type", supposed_target);
         }
     }
     return 0;
