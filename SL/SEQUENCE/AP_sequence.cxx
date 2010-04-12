@@ -14,7 +14,7 @@
 long AP_sequence::global_combineCount;
 
 AP_sequence::AP_sequence(const AliView *aliview)
-    : cashed_wbc(-1.0)
+    : cached_wbc(-1.0)
     , ali(aliview)
     , gb_sequence(NULL)
     , has_sequence(false)
