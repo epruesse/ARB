@@ -109,7 +109,7 @@ typedef struct
 } awar_vars;
 
 class AW_selection_list;
-extern BOOL Stop_evaluation;
+extern bool Stop_evaluation;
 extern AW_selection_list *selected_list;            // globale id's fuer
 extern AW_selection_list *probelist;            // identifizierung der Listen
 extern char MP_probe_tab[256];
@@ -120,8 +120,8 @@ extern int  anz_elem_unmarked;
 extern unsigned char **hamming_tab;
 extern int  **system3_tab;
 extern int  outside_mismatches;
-extern BOOL pt_server_different;
-extern BOOL new_pt_server;
+extern bool pt_server_different;
+extern bool new_pt_server;
 
 long            k_aus_n(int k, int n);                      // Berechnung k aus n
 extern int      get_random(int min, int max);       // gibt eine Zufallszahl x mit der Eigenschaft : min <= x <= max
@@ -191,25 +191,6 @@ public:
 // Globale Klassenlose Funktionen
 // *****************************************************
 void MP_compute(AW_window *, AW_CL cl_gb_main);
-
-class MP_list
-// class which implements a general purpose linked list of void*
-{
-public:
-    MP_list_elem           *first;
-    MP_list_elem           *last;
-    long                   no_of_entries;
-
-    void            append_elem(void *elem);
-    void            delete_elem(void *elem);
-    void            append_elem_backwards(void *elem);
-    short           is_elem(void *elem);
-
-    MP_list();
-    ~MP_list();
-};
-
-
 
 
 // ##################################### Bakt_Info ###########################
@@ -311,7 +292,7 @@ public:
     void        heapsort(long feldlaenge, MO_Mismatch** Nr_Mm_Feld);
     double      check_for_min(long k, MO_Mismatch** probebacts, long laenge);
 
-    MO_Mismatch**   get_matching_species(BOOL match_kompl,
+    MO_Mismatch**   get_matching_species(bool match_kompl,
                                          int match_weight,
                                          int match_mis,
                                          char *match_seq,

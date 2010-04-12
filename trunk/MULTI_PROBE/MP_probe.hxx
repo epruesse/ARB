@@ -69,19 +69,19 @@ private:
 
 
 public:
-    void        set_probe_combi(int ind, probe *f) { probe_combi[ind] = f; };
-    probe       *get_probe_combi(int j)        { return probe_combi[j]; };
-    double      get_fitness()              { return fitness; };
-    double      get_expected_children()        { return expected_children; };
+    void        set_probe_combi(int ind, probe *f) { probe_combi[ind] = f; }
+    probe       *get_probe_combi(int j)        { return probe_combi[j]; }
+    double      get_fitness()              { return fitness; }
+    double      get_expected_children()        { return expected_children; }
     int         sub_expected_children(double val);
     void        init_stats();
-    void        scale(double a, double b)      { fitness = a * fitness + b; };
+    void        scale(double a, double b)      { fitness = a * fitness + b; }
 
-    BOOL        ok_for_next_gen(int &len_roul_wheel);
+    bool        ok_for_next_gen(int &len_roul_wheel);
 
-    void        sub_life_counter()         { life_counter --; };
+    void        sub_life_counter()         { life_counter --; }
     void        init_life_counter();
-    BOOL        is_dead()              { return (life_counter <= 0) ? TRUE : FALSE; };
+    bool        is_dead()              { return life_counter <= 0; }
 
     void        sigma_truncation(double average_fit, double dev);       // dient zur Skalierung der Fitness; um zu dominante Kombis zu vermeiden
     double      calc_fitness(int len_of_field);                 // fitness-berechnung einer Sondenkombi
@@ -137,7 +137,7 @@ public:
     void        set_length() { probe_combi_array_length = last_elem; };     // nur verwenden, wenn man weiss was man tut !!!!
     void        check_for_results();                // traegt eventuelle. resultate in Ergebnisfenster ein
 
-    BOOL        insert(probe_combi_statistic *pcs);     // FALSE wenn Generation schon MAXPOPULATION Eintraege hat
+    bool        insert(probe_combi_statistic *pcs);     // false wenn Generation schon MAXPOPULATION Eintraege hat
 
     void        init_valuation();
     void        gen_determ_combis(int beg,          // wo faengt der Alg. an
@@ -204,8 +204,8 @@ private:
     // laenge von next_mism ist die maximale anzahl der Mismatche
 
 public:
-    BOOL insert(probe_combi_statistic *sondenkombi, BOOL &result, int depth = 0);   // fuegt sondenkombination ein, wenn es Sie in dieser Struktur noch nicht gibt(=> TRUE).
-    // Wenn es Sie schon gibt, dann FALSE. depth ist nur fuer interne Zwecke.
+    bool insert(probe_combi_statistic *sondenkombi, bool &result, int depth = 0);   // fuegt sondenkombination ein, wenn es Sie in dieser Struktur noch nicht gibt(=> true).
+    // Wenn es Sie schon gibt, dann false. depth ist nur fuer interne Zwecke.
 
     GenerationDuplicates(int size);
     ~GenerationDuplicates();        // loescht rekursiv nach unten alles.

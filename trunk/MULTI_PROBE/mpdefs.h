@@ -13,8 +13,6 @@
 
 #include <PT_com.h>
 
-#define TRUE      1
-#define FALSE     0
 #define SEPARATOR "#"
 
 #define NON_WEIGHTED 0

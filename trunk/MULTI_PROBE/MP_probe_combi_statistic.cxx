@@ -46,21 +46,21 @@ probe_combi_statistic::~probe_combi_statistic()
     delete probe_tab;
 }
 
-BOOL probe_combi_statistic::ok_for_next_gen(int &len_roul_wheel)
+bool probe_combi_statistic::ok_for_next_gen(int &len_roul_wheel)
 {
     double exp_child = get_expected_children();
 
     if (exp_child >= 1.0 || get_random(1, 100) <= 100 * exp_child)      // Behandlung nach Goldberg S.115 bzw. S.121
     {
         if (!is_dead())
-            return TRUE;
+            return true;
         else
         {
             len_roul_wheel -= (int) (MULTROULETTEFACTOR * get_expected_children());
             expected_children = 0.0;
         }
     }
-    return FALSE;
+    return false;
 }
 
 void probe_combi_statistic::init_life_counter()
@@ -126,7 +126,7 @@ void probe_combi_statistic::quicksort(long left, long right)        // Randomize
 
 probe_combi_statistic *probe_combi_statistic::check_duplicates(GenerationDuplicates *dup_tree)
 {
-    BOOL result = TRUE;
+    bool result = true;
 
     sort(mp_gl_awars.no_of_probes);
 
@@ -259,7 +259,7 @@ void probe_combi_statistic::crossover_Probes(probe_combi_statistic *pcombi2)    
         random_intervall--;
     }
 
-    while (TRUE)        // Crossovernachbehandlung, um duplikate in Kombinationen zu vermeiden
+    while (true)        // Crossovernachbehandlung, um duplikate in Kombinationen zu vermeiden
     {
         int change1, change2;
 

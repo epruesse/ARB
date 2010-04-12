@@ -3,9 +3,19 @@
 .SUFFIXES: .o .cxx .depend
 
 
-CPP_OBJECTS =  MP_main.o MP_Window.o MP_noclass.o MP_sonde.o MP_sondentopf.o MP_mo_liste.o MP_probe.o \
-		MP_GenerationDuplicates.o MP_Generation.o MP_probe_combi_statistic.o MP_probe_tabs.o \
-		MP_permute.o
+CPP_OBJECTS =  \
+	MP_Generation.o \
+	MP_GenerationDuplicates.o \
+	MP_Window.o \
+	MP_main.o \
+	MP_mo_liste.o \
+	MP_noclass.o \
+	MP_permute.o \
+	MP_probe.o \
+	MP_probe_combi_statistic.o \
+	MP_probe_tabs.o \
+	MP_sonde.o \
+	MP_sondentopf.o \
 
 
 $(MAIN): $(CPP_OBJECTS)

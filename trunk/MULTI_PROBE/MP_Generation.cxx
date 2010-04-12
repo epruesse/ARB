@@ -12,15 +12,11 @@
 #include "MP_externs.hxx"
 #include "MultiProbe.hxx"
 
-#if defined(DEVEL_RALF)
-#warning replace BOOL by bool
-#endif // DEVEL_RALF
-
-BOOL Stop_evaluation = FALSE;
+bool Stop_evaluation = false;
 
 probe_combi_statistic *Generation::single_in_generation(probe_combi_statistic *field)
 {
-    BOOL result = TRUE;
+    bool result = true;
 
     if (!dup_tree)
         return NULL;
@@ -72,7 +68,7 @@ void Generation::calc_fitness(int flag, double old_avg_fit)     // reoulette_whe
 
         if (!MP_check_status(generation_counter, old_avg_fit, min_fit, max_fit))       // Berechnungen abbrechen
         {
-            Stop_evaluation = TRUE;
+            Stop_evaluation = true;
             probe_combi_array_length = i-1;
             return;
         }
@@ -180,7 +176,7 @@ Generation *Generation::create_next_generation()
         *orig2 = NULL;
     int cnt = 0;
 #ifdef USE_DUP_TREE
-    BOOL res;
+    bool res;
 #endif
 
     while (len_roulette_wheel > 1)                  // kann kleiner sein, wenn Population kleiner als MAXPOPULATION
@@ -231,14 +227,14 @@ Generation *Generation::create_next_generation()
 
 #ifdef USE_DUP_TREE
 
-        res = TRUE;
+        res = true;
         if (child_generation->get_dup_tree()->insert(first_child_pcs, res, 0))
         {
             if (!child_generation->insert(first_child_pcs))     // Population schon auf MAXPOPULATION
                 break;
         }
 
-        res = TRUE;
+        res = true;
         if (child_generation->get_dup_tree()->insert(second_child_pcs, res, 0))
         {
             if (orig2)
@@ -305,15 +301,15 @@ void Generation::gen_determ_combis(int beg,
     }
 }
 
-BOOL Generation::insert(probe_combi_statistic *pcs)
+bool Generation::insert(probe_combi_statistic *pcs)
 {
     if (last_elem == MAXPOPULATION)
-        return FALSE;
+        return false;
 
     probe_combi_stat_array[last_elem++] = pcs->duplicate();
     probe_combi_array_length = last_elem;
 
-    return TRUE;
+    return true;
 }
 
 void Generation::init_valuation()

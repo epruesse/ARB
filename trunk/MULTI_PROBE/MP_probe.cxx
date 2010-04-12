@@ -16,8 +16,6 @@
 
 #include <ctime>
 
-// extern BOOL check_status(int gen_cnt, double avg_fit, double min_fit, double max_fit);
-
 void ProbeValuation::evolution()
 {
     long n=0;
@@ -52,7 +50,7 @@ void ProbeValuation::evolution()
 
         if (Stop_evaluation)            // Abgebrochen durch Benutzer
         {
-            Stop_evaluation = FALSE;
+            Stop_evaluation = false;
             act_generation->check_for_results();
             return;
         }
@@ -188,7 +186,7 @@ void ProbeValuation::init_valuation()
 
     if (new_pt_server)
     {
-        new_pt_server = FALSE;
+        new_pt_server = false;
 
         if (mp_main->get_stc())
             delete mp_main->get_stc();
@@ -200,7 +198,7 @@ void ProbeValuation::init_valuation()
     if (pt_server_different)
     {
         mp_main->set_stc(NULL);
-        new_pt_server = TRUE;
+        new_pt_server = true;
         return;
     }
 
