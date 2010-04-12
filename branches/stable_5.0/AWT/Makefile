@@ -654,3 +654,4 @@ AWT_www.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AWT_www.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AWT_www.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWT_www.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+AWT_www.o: $(ARBHOME)/INCLUDE/inline.h

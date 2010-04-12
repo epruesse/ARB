@@ -15,7 +15,7 @@
 #ifndef AW_GLOBAL_AWARS_HXX
 #define AW_GLOBAL_AWARS_HXX
 
-#define AWAR_WWW_BROWSER "www/browser" // how to call the users browser
+#define AWAR_WWW_BROWSER "www/browse_cmd" // how to call the users browser
 
 #else
 #error aw_global_awars.hxx included twice
