@@ -28,7 +28,7 @@ typedef double AP_FLOAT;
 long AP_timer();
 
 class AP_sequence : Noncopyable {
-    mutable AP_FLOAT  cashed_wbc;                   // result for weighted_base_count(); <0.0 means "not initialized"
+    mutable AP_FLOAT  cached_wbc;                   // result for weighted_base_count(); <0.0 means "not initialized"
     const AliView    *ali;
 
     GBDATA *gb_sequence;                            // points to species/ali_xxx/data (or NULL if unbound, e.g. inner nodes in tree)
@@ -42,7 +42,7 @@ protected:
         if (is_set != has_sequence) {
             update   = is_set ? AP_timer() : 0;
             has_sequence = is_set;
-            cashed_wbc   = -1.0;
+            cached_wbc   = -1.0;
         }
     }
 
@@ -85,16 +85,16 @@ public:
             unset();
             update       = 0;
             has_sequence = false;
-            cashed_wbc   = -1.0;
+            cached_wbc   = -1.0;
         }
     }
 
     AP_FLOAT weighted_base_count() const { // returns < 0.0 if no sequence!
-        if (cashed_wbc<0.0) cashed_wbc = count_weighted_bases();
-        return cashed_wbc;
+        if (cached_wbc<0.0) cached_wbc = count_weighted_bases();
+        return cached_wbc;
     }
 
-    size_t get_sequence_length() const { return ali->get_length(); }
+    size_t get_sequence_length() const { return ali->get_length(); } // filtered length
     const AP_filter *get_filter() const { return ali->get_filter(); }
     const AP_weights *get_weights() const { return ali->get_weights(); }
 
