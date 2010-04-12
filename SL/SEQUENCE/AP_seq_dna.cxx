@@ -113,7 +113,7 @@ AP_FLOAT AP_sequence_parsimony::combine(const AP_sequence *lefts, const AP_seque
     const AP_sequence_parsimony *left = (const AP_sequence_parsimony *)lefts;
     const AP_sequence_parsimony *right = (const AP_sequence_parsimony *)rights;
 
-    size_t sequence_len = get_filter()->get_filtered_length();
+    size_t sequence_len = get_sequence_length();
     if (seq_pars == 0) {
         seq_pars = new char[sequence_len + 1];
     }
@@ -273,8 +273,6 @@ void AP_sequence_parsimony::partial_match(const AP_sequence* part_, long *overla
 
 
 AP_FLOAT AP_sequence_parsimony::count_weighted_bases() const { // count all bases
-    AP_FLOAT wcount;
-
     static char *hits = 0;
     if (!hits) {
         hits = (char*)malloc(256);
@@ -298,7 +296,7 @@ AP_FLOAT AP_sequence_parsimony::count_weighted_bases() const { // count all base
         sum += hits[safeCharIndex(p[i])] * weights->weight(i);
     }
 
-    wcount = sum * 0.5;
+    AP_FLOAT wcount = sum * 0.5;
     return wcount;
 }
 

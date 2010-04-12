@@ -97,6 +97,7 @@ struct AWT_tree_selection: public AW_DB_selection {
                     insert_selection(info, *tree);
                 }
                 else {
+                    aw_message(GB_await_error());
                     insert_selection(*tree, *tree);
                 }
             }

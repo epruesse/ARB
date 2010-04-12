@@ -60,7 +60,7 @@ GB_ERROR gb_scan_directory(char *basename, gb_scandir *sd) { // goes to header: 
 
     dirp = opendir(fulldir);
     if (!dirp) {
-        GB_ERROR error = GB_export_errorf("Directory %s of file %s.arb not readable", fulldir, file);
+        GB_ERROR error = GBS_global_string("Directory %s of file %s.arb not readable", fulldir, file);
         free(path);
         return error;
     }
