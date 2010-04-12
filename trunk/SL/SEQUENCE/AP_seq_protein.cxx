@@ -13,12 +13,12 @@
 
 AP_sequence_protein::AP_sequence_protein(const AliView *aliview)
     : AP_sequence(aliview)
+    , seq_prot(NULL)
 {
-    sequence = 0;
 }
 
 AP_sequence_protein::~AP_sequence_protein() {
-    delete sequence;
+    delete [] seq_prot;
 }
 
 AP_sequence *AP_sequence_protein::dup() const {
@@ -143,7 +143,7 @@ void AP_sequence_protein::set(const char *isequence)
     update_min_mutations(translator->CodeNr(), translator->getDistanceMeter());
 
     size_t sequence_len = get_sequence_length();
-    sequence            = new AP_PROTEINS[sequence_len+1];
+    seq_prot            = new AP_PROTEINS[sequence_len+1];
 
     ap_assert(get_filter()->get_bootstrap() == 0); // bootstrapping not implemented for protein parsimony
 
@@ -174,13 +174,13 @@ void AP_sequence_protein::set(const char *isequence)
                 p = APP_GAP;
             }
 
-            sequence[oidx++] = p;
+            seq_prot[oidx++] = p;
             --left_bases;
         }
     }
 
     ap_assert(oidx == sequence_len);
-    sequence[sequence_len] = APP_ILLEGAL;
+    seq_prot[sequence_len] = APP_ILLEGAL;
 
 #if defined(SHOW_SEQ)
     fputc('\n', stdout);
@@ -190,8 +190,8 @@ void AP_sequence_protein::set(const char *isequence)
 }
 
 void AP_sequence_protein::unset() {
-    delete [] sequence;
-    sequence = 0;
+    delete [] seq_prot;
+    seq_prot = 0;
     mark_sequence_set(false);
 }
 
@@ -207,13 +207,11 @@ AP_FLOAT AP_sequence_protein::combine(const AP_sequence *lefts, const AP_sequenc
     const AP_sequence_protein *right = (const AP_sequence_protein *)rights;
 
     size_t sequence_len = get_sequence_length();
-    if (!sequence) {
-        sequence = new AP_PROTEINS[sequence_len + 1];
-    }
+    if (!seq_prot) seq_prot = new AP_PROTEINS[sequence_len + 1];
 
-    const AP_PROTEINS *p1       = left->sequence;
-    const AP_PROTEINS *p2       = right->sequence;
-    AP_PROTEINS       *p        = sequence;
+    const AP_PROTEINS *p1       = left->get_sequence();
+    const AP_PROTEINS *p2       = right->get_sequence();
+    AP_PROTEINS       *p        = seq_prot;
     const AP_weights  *weights  = get_weights();
     char              *mutpsite = mutation_per_site;
 
@@ -323,8 +321,8 @@ void AP_sequence_protein::partial_match(const AP_sequence* part_, long *overlapP
 
     const AP_sequence_protein *part = (const AP_sequence_protein *)part_;
 
-    const AP_PROTEINS *pf      = sequence;
-    const AP_PROTEINS *pp      = part->sequence;
+    const AP_PROTEINS *pf      = get_sequence();
+    const AP_PROTEINS *pp      = part->get_sequence();
     const AP_weights  *weights = get_weights();
 
     long min_end;                                   // minimum of both last non-gap positions
@@ -404,19 +402,19 @@ void AP_sequence_protein::partial_match(const AP_sequence* part_, long *overlapP
 }
 
 AP_FLOAT AP_sequence_protein::count_weighted_bases() const {
-    // if this function is used, try to determine what is really wanted:
-    // This function never counted the weighted bases - it counts the real number of bases,
-    // in contrast to AP_seq_dna::count_weighted_bases which counts the bases weighted!
-    ap_assert(0);
+    AP_FLOAT           wcount;
+    const AP_PROTEINS *sequence = get_sequence();
 
-    AP_FLOAT wcount;
     if (!sequence) wcount = -1.0;
     else {
         long   sum          = 0;
         size_t sequence_len = get_sequence_length();
+
+        const AP_weights *weights = get_weights();
+
         for (size_t idx = 0; idx<sequence_len; ++idx) {
             if (sequence[idx] != APP_GAP) {
-                ++sum;
+                sum += weights->weight(idx);
             }
         }
         wcount = sum;
