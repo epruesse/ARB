@@ -577,19 +577,24 @@ static void nt_add(AW_window *, AWT_canvas *ntw, AddWhat what, bool quick, int t
             rootEdge()->nni_rek(false, isits.abort_flag, -1, false, AP_BL_NNI_ONLY);
         }
 
-        aw_status("Calculating Branch lengths");
-        rootEdge()->nni_rek(false, isits.abort_flag, -1, false, AP_BL_BL_ONLY);
+        if (rootNode()) {
+            aw_status("Calculating Branch lengths");
+            rootEdge()->nni_rek(false, isits.abort_flag, -1, false, AP_BL_BL_ONLY);
 
-        ASSERT_VALID_TREE(rootNode());
-        rootNode()->compute_tree(GLOBAL_gb_main);
+            ASSERT_VALID_TREE(rootNode());
+            rootNode()->compute_tree(GLOBAL_gb_main);
 
-        if (oldrootleft) {
-            if (oldrootleft->father == oldrootright) oldrootleft->set_root();
-            else                                     oldrootright->set_root();
+            if (oldrootleft) {
+                if (oldrootleft->father == oldrootright) oldrootleft->set_root();
+                else                                     oldrootright->set_root();
+            }
+            else {
+                ARB_edge innermost = rootNode()->get_tree_root()->find_innermost_edge();
+                DOWNCAST(AP_tree*, innermost.son())->set_root();
+            }
         }
         else {
-            ARB_edge innermost = rootNode()->get_tree_root()->find_innermost_edge();
-            DOWNCAST(AP_tree*, innermost.son())->set_root();
+            error = "Tree lost (no leafs left)";
         }
 
         aw_closestatus();

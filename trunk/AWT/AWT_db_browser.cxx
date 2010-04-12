@@ -972,6 +972,9 @@ static void before_callback_guard() {
         aw_message(GBS_global_string("Error not clear before calling callback\n"
                                      "Unhandled error was:\n"
                                      "%s", error));
+#if defined(DEVEL_RALF)
+        awt_assert(0);
+#endif // DEVEL_RALF
     }
 }
 static void after_callback_guard() {
@@ -987,6 +990,7 @@ static void after_callback_guard() {
 }
 
 void AWT_install_cb_guards() {
+    awt_assert(!GB_have_error());
     AW_cb_struct::set_AW_cb_guards(before_callback_guard, after_callback_guard);
 }
 
