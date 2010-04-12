@@ -49,8 +49,7 @@ enum AP_PROTEINS {
 };
 
 class AP_sequence_protein : public AP_sequence {
-private:
-    AP_PROTEINS *sequence;
+    AP_PROTEINS *seq_prot;
 
     AP_FLOAT count_weighted_bases() const;
     void set(const char *isequence);
@@ -60,8 +59,10 @@ public:
     AP_sequence_protein(const AliView *aliview);
     virtual ~AP_sequence_protein();
 
-    AP_sequence *dup() const;     // used to get the real new element
-    AP_FLOAT     combine(const AP_sequence* lefts, const AP_sequence *rights, char *mutation_per_site = 0);
+    const AP_PROTEINS *get_sequence() const { lazy_load_sequence(); ap_assert(seq_prot); return seq_prot; }
+
+    AP_sequence *dup() const;                       // used to get the real new element
+    AP_FLOAT combine(const AP_sequence* lefts, const AP_sequence *rights, char *mutation_per_site = 0);
     void partial_match(const AP_sequence* part, long *overlap, long *penalty) const;
 };
 
