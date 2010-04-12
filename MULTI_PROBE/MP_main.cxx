@@ -23,7 +23,7 @@ int        remembered_mismatches;
 int        anz_elem_marked     = 0;
 int        anz_elem_unmarked   = 0;
 int        outside_mismatches  = 0;
-BOOL       pt_server_different = FALSE;
+bool       pt_server_different = false;
 
 double MAXMARKEDFACTOR = 1.0;
 double MINUNMARKEDFACTOR = 1.0;
@@ -50,7 +50,7 @@ MP_Main::~MP_Main()
     delete stc;
     delete mp_window;
 
-    new_pt_server = TRUE;
+    new_pt_server = true;
 }
 
 void MP_Main::destroy_probe_eval()
@@ -98,11 +98,11 @@ void create_tables()
 
     // probe_tab
     for (i=0; i<256; i++)
-        MP_probe_tab[i] = FALSE;
+        MP_probe_tab[i] = false;
 
     const unsigned char *true_chars = (const unsigned char *)"atgucnATGUCN";
     for (i = 0; true_chars[i]; ++i) {
-        MP_probe_tab[true_chars[i]] = TRUE;
+        MP_probe_tab[true_chars[i]] = true;
     }
 }
 

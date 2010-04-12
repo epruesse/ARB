@@ -15,8 +15,8 @@
   Caution:
   This List by default is NOT a selforganizing list. This means that by default an element
   that is being asked for is NOT put at front of the list. This only will be done while the
-  flag sotl is set to FALSE(this is default). You can change this flag with the methods
-  sotl_list() (sets the flag TRUE) and no_sotl_list() (sets the flag FALSE).
+  flag sotl is set to false(this is default). You can change this flag with the methods
+  sotl_list() (sets the flag true) and no_sotl_list() (sets the flag false).
 
   The List is created by
   List<Typename> *instance_variable = new List<Typename>(sotl_flag);
@@ -24,7 +24,7 @@
   sotl_flag is optional.
   For a normal double linked list
   this flag has not to be set. For
-  a selforganizing list : TRUE
+  a selforganizing list : true
 
   Afterwards the elements can be inserted.
   The User of this list has to delete the elements which are inserted to the list by
@@ -34,13 +34,10 @@
 
 #include <cstdio>
 
-typedef char BOOL;
 typedef unsigned long positiontype;
-#define TRUE    1
-#define FALSE   0
 
-#define RELATION_GREATER        1
-#define RELATION_LESS           2
+#define RELATION_GREATER 1
+#define RELATION_LESS    2
 
 
 template <class Type> class list_elem
@@ -53,9 +50,9 @@ public:
     list_elem<Type>             *next;
     list_elem<Type>             *prev;
     Type                        *elem;
-    BOOL                        isolate_list_elem();            // set next and prev links to NULL
-    // TRUE if isolation has taken place,
-    // else FALSE(for example if we're the
+    bool                        isolate_list_elem();            // set next and prev links to NULL
+    // true if isolation has taken place,
+    // else false(for example if we're the
     // only element
 
     Type                        *get_elem()                     { return elem; };
@@ -82,7 +79,7 @@ private:
     list_elem<Type>     *remembered_elem;
 
     positiontype        no_of_members;
-    BOOL                sotl;
+    bool                sotl;
 
 
     list_elem<Type>     *get_list_elem_with_member      (Type *object);
@@ -101,8 +98,8 @@ public:
     void                set_remembered_as_current_ARC();                // ARC = and remember current
     // only use these functions if you know what you are doing !!!  END
 
-    void                sotl_list()             { sotl = TRUE; };
-    void                no_sotl_list()          { sotl = FALSE; };
+    void                sotl_list()             { sotl = true; };
+    void                no_sotl_list()          { sotl = false; };
     positiontype        get_no_of_members()     { return no_of_members; };
 
     positiontype        insert_as_first         (Type *object);
@@ -128,7 +125,7 @@ public:
     // ask and duplicate the list, and then make a
     // sotl_list() again.
 
-    BOOL                exchange_members        (Type *ex, Type *change);
+    bool                exchange_members        (Type *ex, Type *change);
 
     /*  following functions only make sense if our list is sorted by the address of
         our item inserted to the list.
@@ -142,12 +139,12 @@ public:
     // By default an object(the meaning here is that one object equals another,
     // if the address of both objects matches) can be inserted to the list
     // several times. If there is the need to insert an object only once
-    // in the list, the flag duplicates has to be set to FALSE.
+    // in the list, the flag duplicates has to be set to false.
     // Finally the relation has to be set, by which the list is sorted.
     // The possibilities are : RELATION_GREATER and RELATION_LESS
     positiontype        insert_sorted_by_address_of_object(Type *object,
                                                                 int relation=RELATION_LESS,
-                                                                BOOL duplicates=TRUE);
+                                                                bool duplicates=true);
 
     // Comment to sort_list_join:
     // if an object found in List l is found in this list it won't be inserted
@@ -177,13 +174,13 @@ public:
     positiontype        insert_at_pos           (Type *object, positiontype pos);       // returns pos inserted to
     positiontype        get_pos_of_member       (Type *object);
     Type                *get_member_at_pos      (positiontype pos);
-    BOOL                remove_pos_from_list    (positiontype pos);             // element won't be deleted
-    BOOL                exchange_positions      (positiontype ex, positiontype change);         // exchange elems in list
+    bool                remove_pos_from_list    (positiontype pos);             // element won't be deleted
+    bool                exchange_positions      (positiontype ex, positiontype change);         // exchange elems in list
     void                update_pos_no(list_elem<Type> *elem, positiontype nr);  // updates no from
     // the given elem with nr til last
     void                update_pos_no();                // updates pos number from first to last
 
-    List(BOOL so=FALSE);
+    List(bool so=false);
     ~List();
 };
 
@@ -211,7 +208,7 @@ template <class Type> inline list_elem<Type>::~list_elem()
     isolate_list_elem();
 }
 
-template <class Type> inline  BOOL list_elem<Type>::isolate_list_elem()
+template <class Type> inline  bool list_elem<Type>::isolate_list_elem()
 {
     if (prev && next)               // somewhere in the middle
     {
@@ -231,15 +228,15 @@ template <class Type> inline  BOOL list_elem<Type>::isolate_list_elem()
         next            = NULL;
     }
     else
-        return FALSE;
+        return false;
 
-    return TRUE;
+    return true;
 }
 
 // -------------
 //      List
 
-template <class Type> inline List<Type>::List(BOOL so)
+template <class Type> inline List<Type>::List(bool so)
 {
     first = last = last_asked_list_elem = remembered_elem = NULL;
     no_of_members = 0;
@@ -670,7 +667,7 @@ template <class Type> inline void List<Type>::remove_last()
 
 template <class Type> inline positiontype List<Type>::insert_sorted_by_address_of_object(Type *object,
                                                                                           int relation,
-                                                                                          BOOL duplicates)              // falls object schon vorhanden, dann
+                                                                                          bool duplicates)              // falls object schon vorhanden, dann
 {
     list_elem<Type> *help = NULL,
         *l_help;
@@ -897,10 +894,10 @@ template <class Type> inline void List<Type>::update_pos_no()
     update_pos_no(first, 1);
 }
 
-template <class Type> inline BOOL List<Type>::exchange_members(Type *ex, Type *change)
+template <class Type> inline bool List<Type>::exchange_members(Type *ex, Type *change)
 {
     list_elem<Type> *one, *two;
-    BOOL result = FALSE;
+    bool result = false;
     while (1) {
         if (!ex || !change)
             break;
@@ -923,18 +920,18 @@ template <class Type> inline BOOL List<Type>::exchange_members(Type *ex, Type *c
 
         one->set_elem(change);
         two->set_elem(ex);
-        result = TRUE;
+        result = true;
         break;
     }
 
     return result;
 }
 
-template <class Type> inline BOOL List<Type>::exchange_positions(positiontype ex, positiontype change)
+template <class Type> inline bool List<Type>::exchange_positions(positiontype ex, positiontype change)
 {
     list_elem<Type> *one, *two;
     Type            *dummy;
-    BOOL    result = FALSE;
+    bool    result = false;
     while (1) {
         if (ex < 1 || ex > no_of_members ||
                 change < 1 || change > no_of_members)
@@ -951,7 +948,7 @@ template <class Type> inline BOOL List<Type>::exchange_positions(positiontype ex
         dummy = one->elem;
         one->elem = two->elem;
         two->elem = dummy;
-        result = TRUE;
+        result = true;
         break;
     }
     return result;
@@ -1044,10 +1041,10 @@ template <class Type> inline Type *List<Type>::get_member_at_pos_simple(position
         return NULL;
 }
 
-template <class Type> inline BOOL List<Type>::remove_pos_from_list(positiontype pos)
+template <class Type> inline bool List<Type>::remove_pos_from_list(positiontype pos)
 {
     list_elem<Type> *loc_elem;
-    BOOL result = FALSE;
+    bool result = false;
     while (1) {
         if (pos < 1 || pos > no_of_members)
             break;
@@ -1072,7 +1069,7 @@ template <class Type> inline BOOL List<Type>::remove_pos_from_list(positiontype 
 
         delete loc_elem;
         no_of_members --;
-        result = TRUE;
+        result = true;
         break;
     }
 

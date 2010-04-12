@@ -21,7 +21,7 @@
 
 #include <ctime>
 
-BOOL MP_is_probe(char *seq);
+bool MP_is_probe(char *seq);
 int  get_random(int min, int max); // gibt eine Zufallszahl x mit der Eigenschaft : min <= x <= max
 void init_system3_tab();
 
@@ -29,7 +29,7 @@ int        **system3_tab      = NULL;
 static int   system3_tab_size = 0;
 
 unsigned char **hamming_tab   = NULL;
-BOOL            new_pt_server = TRUE;
+bool            new_pt_server = true;
 struct Params   P;
 
 long k_aus_n(int k, int n) {
@@ -80,19 +80,19 @@ void MP_close_main(AW_window *aww)
     delete mp_main->get_stc();
     mp_main->set_stc(NULL);
 
-    new_pt_server = TRUE;
+    new_pt_server = true;
 }
 
 void MP_gen_quality(AW_root *awr, AW_CL cd1, AW_CL cd2)
 {
-    BOOL firsttime = TRUE;
+    bool firsttime = true;
 
     AWUSE(cd1);
     AWUSE(cd2);
 
     if (firsttime)
     {
-        firsttime = FALSE;
+        firsttime = false;
         return;
     }
 
@@ -340,7 +340,7 @@ void MP_compute(AW_window *aww, AW_CL cl_gb_main) {
     {
         delete mp_main->get_stc();
         mp_main->set_stc(NULL);
-        new_pt_server = TRUE;
+        new_pt_server = true;
     }
 
     init_system3_tab();
@@ -380,7 +380,7 @@ void MP_compute(AW_window *aww, AW_CL cl_gb_main) {
 
     if (pt_server_different)
     {
-        pt_server_different = FALSE;
+        pt_server_different = false;
         aw_message("There are species in the tree which are\nnot included in the PT-Server");
     }
 
@@ -418,8 +418,8 @@ void    MP_take_manual_sequence(AW_window *aww)
 }
 
 
-void MP_cache_sonden(AW_window *) { new_pt_server = TRUE; }
-void MP_cache_sonden2(AW_root *) { new_pt_server = TRUE; }
+void MP_cache_sonden(AW_window *) { new_pt_server = true; }
+void MP_cache_sonden2(AW_root *) { new_pt_server = true; }
 
 void MP_show_probes_in_tree_move(AW_window *aww, AW_CL cl_backward, AW_CL cl_result_probes_list) {
     bool               backward           = bool(cl_backward);
@@ -500,7 +500,7 @@ void MP_show_probes_in_tree(AW_window *aww)
 
     if (new_pt_server)
     {
-        new_pt_server = FALSE;
+        new_pt_server = false;
 
         if (mp_main->get_stc())
             delete mp_main->get_stc();
@@ -509,9 +509,9 @@ void MP_show_probes_in_tree(AW_window *aww)
         if (pt_server_different)
         {
             mp_main->set_stc(NULL);
-            new_pt_server = TRUE;
+            new_pt_server = true;
             aw_message("There are species in the tree which are\nnot included in the PT-Server");
-            pt_server_different = FALSE;
+            pt_server_different = false;
             return;
         }
     }
@@ -610,7 +610,7 @@ void MP_mark_probes_in_tree(AW_window *aww)
     free(mism_temp2);
 
     if (new_pt_server) {
-        new_pt_server = FALSE;
+        new_pt_server = false;
 
         if (mp_main->get_stc())
             delete mp_main->get_stc();
@@ -619,9 +619,9 @@ void MP_mark_probes_in_tree(AW_window *aww)
         if (pt_server_different)
         {
             mp_main->set_stc(NULL);
-            new_pt_server = TRUE;
+            new_pt_server = true;
             aw_message("There are species in the tree which are\nnot included in the PT-Server");
-            pt_server_different = FALSE;
+            pt_server_different = false;
             return;
         }
     }
@@ -745,18 +745,18 @@ void    MP_rightleft(AW_window *aww)    // von rechts nach links
     aww->update_selection_list(probelist);
 }
 
-BOOL MP_is_probe(char *seq)
+bool MP_is_probe(char *seq)
 {
-    BOOL    result=TRUE;
+    bool    result=true;
     char    *s,
         *seq2;
 
     if (! seq)
-        return FALSE;
+        return false;
 
     seq2 = MP_get_probes(seq);
     if (!seq2 || ! seq2[0])
-        return FALSE;
+        return false;
 
     s = seq2;
     while (*s && result)

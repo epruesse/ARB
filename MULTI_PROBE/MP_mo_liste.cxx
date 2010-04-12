@@ -115,7 +115,7 @@ void MO_Liste::get_all_species() {
             i++;
             if (!GBT_find_species(gb_main, match_name))
             {                               // Testen, ob Bakterium auch im Baum existiert, um
-                pt_server_different = TRUE;
+                pt_server_different = true;
                 return;
             }
             put_entry(match_name);

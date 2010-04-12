@@ -72,7 +72,7 @@ void Sonde::print()
 }
 
 
-MO_Mismatch** Sonde::get_matching_species(BOOL match_kompl, int match_weight, int match_mis, char *match_seq, MO_Liste *convert, long *number_of_species)
+MO_Mismatch** Sonde::get_matching_species(bool match_kompl, int match_weight, int match_mis, char *match_seq, MO_Liste *convert, long *number_of_species)
 {
     MO_Mismatch **ret_list   = NULL;
     const char   *servername = MP_probe_pt_look_for_server();

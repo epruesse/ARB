@@ -11,14 +11,14 @@
 #include "MP_probe.hxx"
 #include "MultiProbe.hxx"
 
-BOOL GenerationDuplicates::insert(probe_combi_statistic *sondenkombi, BOOL &result, int depth)          // initial muss result TRUE sein
+bool GenerationDuplicates::insert(probe_combi_statistic *sondenkombi, bool &result, int depth)          // initial muss result true sein
 {
     int max_depth = mp_gl_awars.no_of_probes;
 
     if (depth == max_depth)
     {
-        result = FALSE;
-        return FALSE;
+        result = false;
+        return false;
     }
 
     if (! next[sondenkombi->get_probe_combi(depth)->probe_index])               // sonde muss auf alle Faelle bis zuletzt eingetragen werden
@@ -27,7 +27,7 @@ BOOL GenerationDuplicates::insert(probe_combi_statistic *sondenkombi, BOOL &resu
         {
             next[sondenkombi->get_probe_combi(depth)->probe_index] = new GenerationDuplicates(1);
             next_mism[sondenkombi->get_probe_combi(depth)->allowed_mismatches] = 1;
-            return TRUE;
+            return true;
         }
         else
         {
