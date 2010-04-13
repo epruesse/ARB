@@ -226,7 +226,10 @@ GB_ERROR MG_export_fields(AW_root *aw_root, GBDATA *gb_source, GBDATA *gb_dest, 
                     else {
                         aw_message(GBS_global_string("'%s' when exporting %s (continuing)", error, GBT_read_name(gb_source)));
                     }
-                    if (error_suppressor) GBS_incr_hash(error_suppressor, error);
+                    if (error_suppressor) {
+                        GBS_incr_hash(error_suppressor, error);
+                        GBS_optimize_hash(error_suppressor);
+                    }
                     error = 0;
                 }
 
