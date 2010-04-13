@@ -420,7 +420,7 @@ void GBT_names_add(char**& names, int insert_before, const char *name) {
     names[new_count-1] = strdup(name);
     names[new_count]   = NULL;
 
-    if (insert_before != -1 && insert_before < old_count) {
+    if (insert_before != -1 && insert_before < (int)old_count) {
         GBT_names_move(names, new_count-1, insert_before);
     }
 }
@@ -449,8 +449,10 @@ void GBT_names_move(char **names, int old_index, int new_index) {
 }
 
 void GBT_free_names(char **names) {
-    for (char **pn = names; *pn; pn++) free(*pn);
-    free((char *)names);
+    if (names) {
+        for (char **pn = names; *pn; pn++) free(*pn);
+        free((char *)names);
+    }
 }
 
 
