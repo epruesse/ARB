@@ -1784,23 +1784,26 @@ static ARB_ERROR add_species_to_merge_list(ED4_base *base, AW_CL cl_SpeciesMerge
 
     if (base->is_species_name_terminal()) {
         ED4_species_name_terminal *name_term = base->to_species_name_terminal();
-        char   *species_name    = name_term->resolve_pointer_to_string_copy();
-        GBDATA *gb_species_data = (GBDATA*)cl_gb_species_data;
-        GBDATA *gb_species      = GBT_find_species_rel_species_data(gb_species_data, species_name);
 
-        if (gb_species) {
-            SpeciesMergeList *smlp = (SpeciesMergeList*)cl_SpeciesMergeListPtr;
-            SpeciesMergeList sml = new S_SpeciesMergeList;
-            sml->species = gb_species;
-            sml->species_name = strdup(species_name);
-            sml->next = *smlp;
-            *smlp = sml;
-        }
-        else {
-            error = GB_append_exportedError(GBS_global_string("can't find species '%s'", species_name));
-        }
+        if (name_term->parent->flag.is_consensus == 0) {
+            char   *species_name    = name_term->resolve_pointer_to_string_copy();
+            GBDATA *gb_species_data = (GBDATA*)cl_gb_species_data;
+            GBDATA *gb_species      = GBT_find_species_rel_species_data(gb_species_data, species_name);
 
-        free(species_name);
+            if (gb_species) {
+                SpeciesMergeList *smlp = (SpeciesMergeList*)cl_SpeciesMergeListPtr;
+                SpeciesMergeList sml = new S_SpeciesMergeList;
+                sml->species = gb_species;
+                sml->species_name = strdup(species_name);
+                sml->next = *smlp;
+                *smlp = sml;
+            }
+            else {
+                error = GB_append_exportedError(GBS_global_string("can't find species '%s'", species_name));
+            }
+
+            free(species_name);
+        }
     }
     return error;
 }
