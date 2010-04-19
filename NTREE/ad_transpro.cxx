@@ -400,7 +400,7 @@ GB_ERROR arb_transdna(GBDATA *gb_main, char *ali_source, char *ali_dest, long *n
             if (wanted_ali_len>max_wanted_ali_len) max_wanted_ali_len = wanted_ali_len;
         }
 
-        AWT_allowedCode allowed_code; // default = all allowed
+        AWT_allowedCode allowed_code;               // default: all allowed
 
         if (!failed) {
             int arb_transl_table, codon_start;
@@ -640,8 +640,13 @@ GB_ERROR arb_transdna(GBDATA *gb_main, char *ali_source, char *ali_dest, long *n
             nt_assert(strlen(buffer) == (unsigned)ali_len);
 
             // re-alignment successful
-            error             = GB_write_string(gb_dest_data, buffer);
-            if (!error) error = GBT_write_string(gb_species, "codon_start", "1"); // after re-alignment codon_start is always 1
+            error = GB_write_string(gb_dest_data, buffer);
+            if (!error) {
+                int writeTableNr = -1;
+                if (allowed_code.strictly_defined(writeTableNr)) {
+                    error = AWT_saveTranslationInfo(gb_species, writeTableNr, 1); // after re-alignment codon_start is always 1
+                }
+            }
         }
 
         free(buffer);
@@ -683,7 +688,7 @@ void transdna_event(AW_window *aww) {
         if (!error) error = arb_transdna(GLOBAL_gb_main, ali_source, ali_dest, &neededLength);
         error = GB_end_transaction(GLOBAL_gb_main, error);
 
-        if (neededLength) {
+        if (neededLength > 0) {
             if (retrying || !aw_ask_sure(GBS_global_string("Increase length of '%s' to %li?", ali_dest, neededLength))) {
                 error = GBS_global_string("Missing %li columns in alignment '%s'", neededLength, ali_dest);
             }
@@ -699,6 +704,9 @@ void transdna_event(AW_window *aww) {
                     retrying = true;
                 }
             }
+        }
+        else {
+            neededLength = 0;
         }
     }
 

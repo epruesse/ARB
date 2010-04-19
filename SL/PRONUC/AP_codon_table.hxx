@@ -66,6 +66,17 @@ public:
             if (a != nr) allowed[a] = 0;
         }
     }
+
+    bool strictly_defined(int& nr) {
+        nr = -1;
+        for (int table = 0; table<AWT_CODON_TABLES; ++table) {
+            if (is_allowed(table)) {
+                if (nr != -1) return false;
+                nr = table;
+            }
+        }
+        return true;
+    }
 };
 
 // --------------------------------------------------------------------------------

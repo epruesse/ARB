@@ -26,6 +26,18 @@ NOTES		If the species contains a field 'transl_table' (which should contain the 
                 If the species contains a field 'codon_start' it is overwritten with '1' to make
                 further translations work properly.
 
+                Either both fields ('transl_table' and 'codon_start') or none of them has to exist.
+                Otherwise an error occurs and you have to correct these fields manually (e.g. by
+                using the search tool and 'Write to fields of listed' or by deleting these fields).
+
+                After sucessful re-alignment the field 'codon_start' will be set to '1' if
+                - it already existed before or
+                - if ARB was able to strictly determine a content for the field 'transl_table',
+                  which will be set then.
+
+                If the re-alignment was possible using two or more different translation tables
+                neighter 'transl_table' nor 'codon_start' will be written.
+
 EXAMPLES	None
 
 WARNINGS	If you have single DNA bases at the beginning (or end) of the DNA sequence
