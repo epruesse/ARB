@@ -1,5 +1,16 @@
 ARB change log
 
+Major changes for next release:
+
+ - Detect clusters of species with similar sequences (OTUs) in ARB_DIST
+ - Rewrote chimera check. Allows filtering
+ - Rewrote alignment adaption during merge
+ - ORF display:
+   - arc does not cross characters
+   - Fixed colors of amino names
+ - load/save for window specific settings (e.g. allows to share parts of configuration
+   with other users)
+
 Major changes for arb_5.00:
 
  - ARB 64bit version
