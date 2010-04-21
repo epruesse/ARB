@@ -93,7 +93,7 @@ void AP_filter::make_permeable(size_t size) {
 }
 
 char *AP_filter::to_string() const {
-    char *data = new char[filter_len+1];
+    char *data = (char*)malloc(filter_len+1);
 
     for (size_t i=0; i<filter_len; ++i) {
         data[i] = "01"[filter_mask[i]];

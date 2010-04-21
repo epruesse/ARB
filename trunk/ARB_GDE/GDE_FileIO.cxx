@@ -1,4 +1,5 @@
 #include "GDE_proto.h"
+#include "limits.h"
 
 int MAX(int a, int b)
 {
@@ -855,7 +856,7 @@ void NormalizeOffset(NA_Alignment *aln)
 {
     int i;
     size_t j;
-    int offset = 99999999;
+    int offset = INT_MAX;
     i=0;
 
     for (j=0; j<aln->numelements; j++)
@@ -864,10 +865,12 @@ void NormalizeOffset(NA_Alignment *aln)
     for (j=0; j<aln->numelements; j++)
         aln->element[j].offset -= offset;
 
-    aln->maxlen = -999999999;
+    aln->maxlen = INT_MIN;
     for (j=0; j<aln->numelements; j++)
         aln->maxlen = MAX(aln->element[j].seqlen+aln->element[j].offset,
                           aln->maxlen);
+
+    gde_assert(aln->maxlen >= 0);
 
     aln->rel_offset += offset;
 
