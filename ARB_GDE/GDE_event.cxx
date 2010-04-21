@@ -271,21 +271,27 @@ static void GDE_export(NA_Alignment *dataset, char *align, long oldnumelements) 
             for (long j = 0; j < sequ->seqlen; j++) {
                 sequ->sequence[j] = (char)sequ->tmatrix[sequ->sequence[j]];
             }
+            sequ->sequence[sequ->seqlen] = 0;
         }
 
         char *savename = GBS_string_2_key(sequ->short_name);
 
         sequ->gb_species = 0;
 
+        const char *new_seq = (const char *)sequ->sequence;
+        gde_assert(new_seq[sequ->seqlen] == 0);
+        gde_assert((int)strlen(new_seq) == sequ->seqlen);
+
         if (!issame) {          /* save as extended */
             GBDATA *gb_extended = GBT_find_or_create_SAI(db_access.gb_main, savename);
 
             if (!gb_extended) error = GB_await_error();
             else {
-                sequ->gb_species    = gb_extended;
-                GBDATA *gb_data     = GBT_add_data(gb_extended, align, "data", GB_STRING);
+                sequ->gb_species = gb_extended;
+                GBDATA *gb_data  = GBT_add_data(gb_extended, align, "data", GB_STRING);
+
                 if (!gb_data) error = GB_await_error();
-                else    error       = GBT_write_sequence(gb_data, align, maxalignlen, (char *)sequ->sequence);
+                else error          = GBT_write_sequence(gb_data, align, maxalignlen, new_seq);
             }
         }
         else {                  /* save as sequence */
@@ -298,26 +304,27 @@ static void GDE_export(NA_Alignment *dataset, char *align, long oldnumelements) 
 
                 if (gb_species) {   /* new element that already exists !!!! */
                     int select_mode;
-                    const char *msg =
-                        GBS_global_string("You are (re-)importing a species '%s'.\n"
-                                          "That species already exists in your database!\n"
-                                          "\n"
-                                          "Possible actions:\n"
-                                          "\n"
-                                          "       - delete and overwrite the existing species\n"
-                                          "       - skip - don't change the species\n"
-                                          "       - reimport only the sequence of the existing species\n"
-                                          "       - reimport all sequences (don't ask again)\n"
-                                          "\n"
-                                          "Note: After aligning it's recommended to choose 'reimport all'.",
-                                          savename);
 
                     if (!load_all) {
+                        const char *msg = 
+                            GBS_global_string("You are (re-)importing a species '%s'.\n"
+                                              "That species already exists in your database!\n"
+                                              "\n"
+                                              "Possible actions:\n"
+                                              "\n"
+                                              "       - delete and overwrite the existing species\n"
+                                              "       - skip - don't change the species\n"
+                                              "       - reimport only the sequence of the existing species\n"
+                                              "       - reimport all sequences (don't ask again)\n"
+                                              "\n"
+                                              "Note: After aligning it's recommended to choose 'reimport all'.",
+                                              savename);
+
                         select_mode = aw_question(msg,
-                                                  "delete existing,"   // 0
-                                                  "skip,"              // 1
+                                                  "delete existing," // 0
+                                                  "skip," // 1
                                                   "reimport sequence," // 2
-                                                  "reimport all"       // 3
+                                                  "reimport all" // 3
                                                   );
 
                         if (select_mode == 3) {     // load all sequences
@@ -351,16 +358,16 @@ static void GDE_export(NA_Alignment *dataset, char *align, long oldnumelements) 
                     if (!gb_data) error = GB_await_error();
                     else {
                         GBDATA *gb_old_data = GBT_read_sequence(gb_species, align);
-                        if (gb_old_data) {  // we already have data -> compare checksums
+                        if (gb_old_data) {          // we already have data -> compare checksums
                             const char *old_seq      = GB_read_char_pntr(gb_old_data);
                             long        old_checksum = GBS_checksum(old_seq, 1, "-.");
-                            long        new_checksum = GBS_checksum((char *)sequ->sequence, 1, "-.");
+                            long        new_checksum = GBS_checksum(new_seq, 1, "-.");
 
                             if (old_checksum != new_checksum) {
-                                aw_message(GBS_global_string("Warning: Sequence checksum for '%s' differs", savename));
+                                aw_message(GBS_global_string("Warning: Sequence checksum for '%s' has changed", savename));
                             }
                         }
-                        error = GBT_write_sequence(gb_data, align, maxalignlen, (char *)sequ->sequence);
+                        error = GBT_write_sequence(gb_data, align, maxalignlen, new_seq);
                     }
                 }
                 GB_pop_my_security(db_access.gb_main);
