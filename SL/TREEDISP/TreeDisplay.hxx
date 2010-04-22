@@ -22,6 +22,7 @@
 #define AWAR_DTREE_VERICAL_DIST    "awt/dtree/verticaldist"
 #define AWAR_DTREE_AUTO_JUMP       "awt/dtree/autojump"
 #define AWAR_DTREE_SHOW_CIRCLE     "awt/dtree/show_circle"
+#define AWAR_DTREE_SHOW_BRACKETS   "awt/dtree/show_brackets"
 #define AWAR_DTREE_CIRCLE_ZOOM     "awt/dtree/circle_zoom"
 #define AWAR_DTREE_CIRCLE_MAX_SIZE "awt/dtree/max_size"
 #define AWAR_DTREE_USE_ELLIPSE     "awt/dtree/ellipse"
@@ -76,10 +77,17 @@ enum AD_MAP_VIEWER_TYPE {
 
 typedef void (*AD_map_viewer_cb)(GBDATA *gbd, AD_MAP_VIEWER_TYPE type);
 
+struct DendroSubtreeLimits {
+    double y_branch;                                // ypos of branch to subtree
+    double y_top;                                   // top ypos of whole subtree
+    double y_bot;                                   // bottom ypos of whole subtree
+    double x_right;                                 // rightmost xpos of whole subtree
+};
 
 class AWT_graphic_tree : public AWT_graphic {
     char  *species_name;
     int    baselinewidth;
+    int    show_brackets;
     int    show_circle;
     int    use_ellipse;
     float  circle_zoom_factor;
@@ -112,7 +120,7 @@ class AWT_graphic_tree : public AWT_graphic {
 
     AW_device *disp_device; // device for recursive functions
 
-    AW_bitset line_filter, vert_line_filter, text_filter, mark_filter;
+    AW_bitset line_filter, vert_line_filter, text_filter, mark_filter, group_bracket_filter;
     AW_bitset ruler_filter, root_filter;
     int       treemode;
     bool      nds_show_all;
@@ -123,7 +131,7 @@ class AWT_graphic_tree : public AWT_graphic {
 
     // functions to compute displayinformation
 
-    double show_dendrogram(AP_tree *at, double x_father, double x_son);
+    void show_dendrogram(AP_tree *at, double x_son, DendroSubtreeLimits& limits);
 
     void show_radial_tree(AP_tree *at,
                           double   x_center,

@@ -915,6 +915,24 @@ inline double discrete_ruler_length(double analog_ruler_length, double min_lengt
     return drl;
 }
 
+inline int get_linewidth(AP_tree *at) {
+    int linewidth = 0;
+    if (at->father) {
+        AP_tree *at_fath = at->get_father();
+        if (at_fath->leftson == at) linewidth = at_fath->gr.left_linewidth;
+        else                        linewidth = at_fath->gr.right_linewidth;
+    }
+    return linewidth;
+}
+
+inline void set_linewidth(AP_tree *at, int linewidth) {
+    if (at->father) {
+        AP_tree *at_fath = at->get_father();
+        if (at_fath->leftson == at) at_fath->gr.left_linewidth  = linewidth;
+        else                        at_fath->gr.right_linewidth = linewidth;
+    }
+}
+
 void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
                                int button, AW_key_mod key_modifier, AW_key_code /* key_code */, char key_char,
                                AW_event_type type, AW_pos x, AW_pos y,
@@ -1411,11 +1429,7 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
                             at = (AP_tree *)cl->client_data1;
                             if (at) {
                                 at->reset_line_width();
-                                AP_tree *at_fath = at->get_father();
-                                if (at_fath) { // reset clicked branch
-                                    if (at_fath->leftson == at) at_fath->gr.left_linewidth = 0;
-                                    else at_fath->gr.right_linewidth                       = 0;
-                                }
+                                set_linewidth(at, 0);
                                 exports.save    = 1;
                                 exports.refresh = 1;
                             }
@@ -1689,12 +1703,14 @@ void AWT_graphic_tree::set_tree_type(AP_tree_sort type)
 AWT_graphic_tree::AWT_graphic_tree(AW_root *aw_root_, GBDATA *gb_main_, AD_map_viewer_cb map_viewer_cb_)
     : AWT_graphic()
 {
-    line_filter       = AW_SCREEN|AW_CLICK|AW_CLICK_DRAG|AW_SIZE|AW_PRINTER;
-    vert_line_filter  = AW_SCREEN|AW_PRINTER;
-    text_filter       = AW_SCREEN|AW_CLICK|AW_PRINTER;
-    mark_filter       = AW_SCREEN|AW_PRINTER_EXT;
-    ruler_filter      = AW_SCREEN|AW_CLICK|AW_PRINTER|AW_SIZE;
-    root_filter       = AW_SCREEN|AW_CLICK|AW_PRINTER_EXT;
+    line_filter          = AW_SCREEN|AW_CLICK|AW_CLICK_DRAG|AW_SIZE|AW_PRINTER;
+    vert_line_filter     = AW_SCREEN|AW_PRINTER;
+    group_bracket_filter = AW_SCREEN|AW_PRINTER|AW_CLICK;
+    text_filter          = AW_SCREEN|AW_CLICK|AW_PRINTER;
+    mark_filter          = AW_SCREEN|AW_PRINTER_EXT;
+    ruler_filter         = AW_SCREEN|AW_CLICK|AW_PRINTER|AW_SIZE;
+    root_filter          = AW_SCREEN|AW_CLICK|AW_PRINTER_EXT;
+    
     set_tree_type(AP_TREE_NORMAL);
     tree_root_display = 0;
     y_pos             = 0;
@@ -1906,28 +1922,38 @@ bool AWT_show_remark_branch(AW_device *device, const char *remark_branch, bool i
     return is_bootstrap && show;
 }
 
-
-double AWT_graphic_tree::show_dendrogram(AP_tree *at, double x_father, double x_son)
-{
-    double ny0, ny1, nx0, nx1, ry, l_min, l_max, xoffset, yoffset;
-    AWUSE(x_father);
-    ny0 = y_pos;
+void AWT_graphic_tree::show_dendrogram(AP_tree *at, double x_son, DendroSubtreeLimits& limits) {
+    double ny0 = y_pos;
 
     if (disp_device->type() != AW_DEVICE_SIZE) { // tree below cliprect bottom can be cut
         AW_pos xs = 0;
         AW_pos ys = y_pos - scaled_branch_distance *2.0;
         AW_pos X, Y;
+
+        limits.y_top = y_pos;
+        
+        bool is_clipped = false;
+
         disp_device->transform(xs, ys, X, Y);
         if (Y > disp_device->clip_rect.b) {
-            y_pos += scaled_branch_distance;
-            return ny0;
+            y_pos           += scaled_branch_distance;
+            is_clipped  = true;
         }
-        ys = y_pos + scaled_branch_distance * (at->gr.view_sum+2);
-        disp_device->transform(xs, ys, X, Y);
+        else {
+            ys = y_pos + scaled_branch_distance * (at->gr.view_sum+2);
+            disp_device->transform(xs, ys, X, Y);
 
-        if (Y  < disp_device->clip_rect.t) {
-            y_pos += scaled_branch_distance*at->gr.view_sum;
-            return ny0;
+            if (Y  < disp_device->clip_rect.t) {
+                y_pos      += scaled_branch_distance*at->gr.view_sum;
+                is_clipped  = true;
+            }
+        }
+
+        if (is_clipped) {
+            limits.y_bot    = limits.y_top;
+            limits.y_branch = ny0;
+            limits.x_right  = x_son;
+            return;
         }
     }
 
@@ -1949,66 +1975,43 @@ double AWT_graphic_tree::show_dendrogram(AP_tree *at, double x_father, double x_
             const char                *data     = make_node_text_nds(this->gb_main, at->gb_node, 0, at->get_gbt_tree(), tree_static->get_tree_name());
             const AW_font_information *fontinfo = disp_device->get_font_information(at->gr.gc, 'A');
 
-#if defined(DEBUG) && 0
-            static bool dumped = false;
-            if (!dumped) {
-                for (int c = 32; c <= 255; c++) {
-                    const AW_font_information *fi = disp_device->get_font_information(at->gr.gc, (char)c);
-                    printf("fontinfo: %3i '%c' ascent=%2i descent=%2i width=%2i\n",
-                           c, (char)c,
-                           fi->this_letter.ascent,
-                           fi->this_letter.descent,
-                           fi->this_letter.width
-                           );
-                    if (c == 255) {
-                        printf("fontinfo (all-maximas): ascent=%2i descent=%2i width=%2i\n",
-                               fi->max_all_letter.ascent,
-                               fi->max_all_letter.descent,
-                               fi->max_all_letter.width
-                               );
-                        printf("fontinfo (ascii-maximas): ascent=%2i descent=%2i width=%2i\n",
-                               fi->max_letter.ascent,
-                               fi->max_letter.descent,
-                               fi->max_letter.width
-                               );
-                    }
-                }
-
-                dumped = true;
-            }
-#endif // DEBUG
-
-
             double unscale = 1.0/disp_device->get_scale();
-            yoffset = scaled_font.ascent*.5;
-            xoffset = ((fontinfo->max_letter.width * 0.5) + NT_BOX_WIDTH) * unscale;
+            double yoffset = scaled_font.ascent*.5;
+            double xoffset = ((fontinfo->max_letter.width * 0.5) + NT_BOX_WIDTH) * unscale;
+
+            size_t data_len = strlen(data);
 
             disp_device->text(at->gr.gc, data,
                               (AW_pos) x_son+xoffset, (AW_pos) ny0+yoffset,
                               (AW_pos) 0,  text_filter,
-                              (AW_CL) at,  (AW_CL) 0);
+                              (AW_CL) at,  (AW_CL) 0, data_len);
+
+            double textsize = disp_device->get_string_size(at->gr.gc, data, data_len) * unscale;
+
+            limits.x_right = x_son+xoffset + textsize; 
+        }
+        else {
+            limits.x_right = x_son;
         }
 
+        limits.y_top    = y_pos;
+        limits.y_bot    = y_pos;
+        limits.y_branch = ny0;
 
         y_pos += scaled_branch_distance;
-        return ny0;
     }
+    else if (at->gr.grouped) {
+        double l_min = at->gr.min_tree_depth;
+        double l_max = at->gr.tree_depth;
 
-    if (at->gr.grouped) {
-        l_min = at->gr.min_tree_depth;
-        l_max = at->gr.tree_depth;
-        ny1 = y_pos += scaled_branch_distance*(at->gr.view_sum-1);
-        nx0 = x_son + l_max;
-        nx1 = x_son + l_min;
+        limits.y_top = y_pos;
+        y_pos += scaled_branch_distance*(at->gr.view_sum-1);
+        
+        double ny1 = y_pos;
+        double nx0 = x_son + l_max;
+        double nx1 = x_son + l_min;
 
-        int linewidth = 0;
-        if (at->father) {
-            AP_tree *at_fath = at->get_father();
-            if (at_fath->leftson == at) linewidth = at_fath->gr.left_linewidth;
-            else                        linewidth = at_fath->gr.right_linewidth;
-        }
-
-        disp_device->set_line_attributes(at->gr.gc, linewidth+baselinewidth, AW_SOLID);
+        disp_device->set_line_attributes(at->gr.gc, get_linewidth(at)+baselinewidth, AW_SOLID);
 
         AW_pos q[8];
         q[0] = x_son;   q[1] = ny0;
@@ -2022,74 +2025,135 @@ double AWT_graphic_tree::show_dendrogram(AP_tree *at, double x_father, double x_
         const AW_font_information *fontinfo    = disp_device->get_font_information(at->gr.gc, 'A');
         double                     text_ascent = fontinfo->max_letter.ascent / disp_device->get_scale();
 
-        yoffset = (ny1-ny0+text_ascent)*.5;
-        xoffset = text_ascent*.5;
+        double yoffset = (ny1-ny0+text_ascent)*.5;
+        double xoffset = text_ascent*.5;
+
+        limits.x_right = nx0;
 
         if (at->gb_node && (disp_device->filter & text_filter)) {
-            const char *data = make_node_text_nds(this->gb_main, at->gb_node, 0, at->get_gbt_tree(), tree_static->get_tree_name());
+            const char *data     = make_node_text_nds(this->gb_main, at->gb_node, 0, at->get_gbt_tree(), tree_static->get_tree_name());
+            size_t      data_len = strlen(data);
 
             disp_device->text(at->gr.gc, data,
                               (AW_pos) nx0+xoffset, (AW_pos) ny0+yoffset,
                               (AW_pos) 0,  text_filter,
-                              (AW_CL) at,  (AW_CL) 0);
+                              (AW_CL) at,  (AW_CL) 0, data_len);
+
+            double textsize  = disp_device->get_string_size(at->gr.gc, data, data_len) / disp_device->get_scale();
+            limits.x_right  += textsize;
         }
+
         disp_device->text(at->gr.gc, (char *)GBS_global_string(" %i", at->gr.leave_sum),
                           x_son+xoffset, ny0+yoffset,
                           0, text_filter, (AW_CL)at, 0);
 
+        limits.y_bot    = y_pos;
+        limits.y_branch = (ny0+ny1)*.5;
+        
         y_pos += scaled_branch_distance;
-
-        return (ny0+ny1)*.5;
     }
-    nx0 = (x_son +  at->leftlen);
-    nx1 = (x_son +  at->rightlen);
-    ny0 = show_dendrogram(at->get_leftson(), x_son, nx0);
-    ry  = y_pos - .5*scaled_branch_distance;
-    ny1 = show_dendrogram(at->get_rightson(), x_son, nx1);
+    else {
+        double nx0 = (x_son +  at->leftlen);
+        double nx1 = (x_son +  at->rightlen);
 
-    if (at->name) {
-        NT_rotbox(at->gr.gc, x_son, ry, NT_BOX_WIDTH*2);
-    }
+        show_dendrogram(at->get_leftson(), nx0, limits); // re-use limits for left branch
 
-    if (at->leftson->remark_branch) {
-        bool bootstrap_shown = AWT_show_remark_branch(disp_device, at->leftson->remark_branch, at->leftson->is_leaf, nx0, ny0-scaled_font.ascent*0.1, 1, text_filter, (AW_CL)at, 0);
+        ny0 = limits.y_branch;
 
-        if (show_circle && bootstrap_shown) {
-            AWT_show_bootstrap_circle(disp_device, at->leftson->remark_branch, circle_zoom_factor, circle_max_size, at->leftlen, nx0, ny0, use_ellipse, scaled_branch_distance, text_filter, (AW_CL) at->leftson, (AW_CL) 0);
+        double ry = y_pos - .5*scaled_branch_distance;
+        double ny1;
+        {
+            DendroSubtreeLimits right_lim;
+            show_dendrogram(at->get_rightson(), nx1, right_lim);
+            ny1 = right_lim.y_branch;
+
+            // combine limits of both subtrees
+            limits.y_top   = std::min(limits.y_top, right_lim.y_top);
+            limits.y_bot   = std::max(limits.y_bot, right_lim.y_bot);
+            limits.x_right = std::max(limits.x_right, right_lim.x_right);
         }
-    }
 
-    if (at->rightson->remark_branch) {
-        bool bootstrap_shown = AWT_show_remark_branch(disp_device, at->rightson->remark_branch, at->rightson->is_leaf, nx1, ny1-scaled_font.ascent*0.1, 1, text_filter, (AW_CL)at, 0);
+        if (at->name) {
+            NT_rotbox(at->gr.gc, x_son, ry, NT_BOX_WIDTH*2);
 
-        if (show_circle && bootstrap_shown) {
-            AWT_show_bootstrap_circle(disp_device, at->rightson->remark_branch, circle_zoom_factor, circle_max_size, at->rightlen, nx1, ny1, use_ellipse, scaled_branch_distance, text_filter, (AW_CL) at->rightson, (AW_CL) 0);
+            if (show_brackets) {
+                double                     unscale          = 1.0/disp_device->get_scale();
+                const AW_font_information *fontinfo         = disp_device->get_font_information(at->gr.gc, 'A');
+                double                     half_text_ascent = fontinfo->max_letter.ascent * unscale * 0.5;
+
+                double x1 = limits.x_right + scaled_branch_distance*0.1;
+                double x2 = x1 + scaled_branch_distance * 0.3;
+                double y1 = limits.y_top - half_text_ascent * 0.5;
+                double y2 = limits.y_bot + half_text_ascent * 0.5;
+
+                unsigned int gc = at->gr.gc;
+                disp_device->set_line_attributes(gc, get_linewidth(at)+baselinewidth, AW_SOLID);
+
+                disp_device->line(gc, x1, y1, x2, y1, group_bracket_filter, (AW_CL)at, 0);
+                disp_device->line(gc, x1, y2, x2, y2, group_bracket_filter, (AW_CL)at, 0);
+                disp_device->line(gc, x2, y1, x2, y2, group_bracket_filter, (AW_CL)at, 0);
+
+                limits.x_right = x2;
+            
+                if (at->gb_node && (disp_device->filter & text_filter)) {
+                    const char *data     = make_node_text_nds(this->gb_main, at->gb_node, 0, at->get_gbt_tree(), tree_static->get_tree_name());
+                    size_t      data_len = strlen(data);
+
+                    LineVector bracket(x2, y1, x2, y2);
+                    LineVector worldBracket = disp_device->transform(bracket);
+
+                    double X  = worldBracket.start().xpos();
+                    double Y1 = std::max(worldBracket.start().ypos(), (double)disp_device->clip_rect.t);
+                    double Y2 = std::min(worldBracket.head().ypos(), (double)disp_device->clip_rect.b);
+
+                    LineVector clippedWorldBracket(X, Y1, X, Y2);
+                    LineVector clippedBracket = disp_device->rtransform(clippedWorldBracket);
+
+                    Position textPos = clippedBracket.centroid()+Vector(half_text_ascent, half_text_ascent);
+
+                    disp_device->text(at->gr.gc, data,
+                                      textPos,
+                                      (AW_pos) 0,  text_filter,
+                                      (AW_CL) at,  (AW_CL) 0, data_len);
+
+                    double textsize = disp_device->get_string_size(at->gr.gc, data, data_len) * unscale;
+                    limits.x_right  = textPos.xpos()+textsize;
+                }
+            }
         }
+
+        if (at->leftson->remark_branch) {
+            bool bootstrap_shown = AWT_show_remark_branch(disp_device, at->leftson->remark_branch, at->leftson->is_leaf, nx0, ny0-scaled_font.ascent*0.1, 1, text_filter, (AW_CL)at, 0);
+
+            if (show_circle && bootstrap_shown) {
+                AWT_show_bootstrap_circle(disp_device, at->leftson->remark_branch, circle_zoom_factor, circle_max_size, at->leftlen, nx0, ny0, use_ellipse, scaled_branch_distance, text_filter, (AW_CL) at->leftson, (AW_CL) 0);
+            }
+        }
+
+        if (at->rightson->remark_branch) {
+            bool bootstrap_shown = AWT_show_remark_branch(disp_device, at->rightson->remark_branch, at->rightson->is_leaf, nx1, ny1-scaled_font.ascent*0.1, 1, text_filter, (AW_CL)at, 0);
+
+            if (show_circle && bootstrap_shown) {
+                AWT_show_bootstrap_circle(disp_device, at->rightson->remark_branch, circle_zoom_factor, circle_max_size, at->rightlen, nx1, ny1, use_ellipse, scaled_branch_distance, text_filter, (AW_CL) at->rightson, (AW_CL) 0);
+            }
+        }
+
+        int          lw = at->gr.left_linewidth+baselinewidth;
+        unsigned int gc = at->get_leftson()->gr.gc;
+
+        disp_device->set_line_attributes(gc, lw, AW_SOLID);
+        disp_device->line(gc, x_son, ny0, nx0,   ny0, line_filter,      (AW_CL)at->leftson, 0);
+        disp_device->line(gc, x_son, ny0, x_son, ry,  vert_line_filter, (AW_CL)at,          0);
+
+        lw = at->gr.right_linewidth+baselinewidth;
+        gc = at->get_rightson()->gr.gc;
+
+        disp_device->set_line_attributes(gc, lw, AW_SOLID);
+        disp_device->line(gc, x_son, ny1, nx1,   ny1, line_filter,      (AW_CL)at->rightson, 0);
+        disp_device->line(gc, x_son, ry,  x_son, ny1, vert_line_filter, (AW_CL)at,           0);
+
+        limits.y_branch = ry;
     }
-
-#if defined(DEBUG) && 0
-    // display group-node-address
-    if (at->gb_node) {
-        disp_device->text(at->gr.gc, GBS_global_string("%p(gb_node)", at->gb_node), x_father, (ny0+ny1)/2, 0, text_filter, (AW_CL)at, 0);
-    }
-#endif // DEBUG
-
-
-    int          lw = at->gr.left_linewidth+baselinewidth;
-    unsigned int gc = at->get_leftson()->gr.gc;
-
-    disp_device->set_line_attributes(gc, lw, AW_SOLID);
-    disp_device->line(gc, x_son, ny0, nx0,   ny0, line_filter,      (AW_CL)at->leftson, 0);
-    disp_device->line(gc, x_son, ny0, x_son, ry,  vert_line_filter, (AW_CL)at,          0);
-
-    lw = at->gr.right_linewidth+baselinewidth;
-    gc = at->get_rightson()->gr.gc;
-
-    disp_device->set_line_attributes(gc, lw, AW_SOLID);
-    disp_device->line(gc, x_son, ny1, nx1,   ny1, line_filter,      (AW_CL)at->rightson, 0);
-    disp_device->line(gc, x_son, ry,  x_son, ny1, vert_line_filter, (AW_CL)at,           0);
-
-    return ry;
 }
 
 
@@ -2434,6 +2498,7 @@ void AWT_graphic_tree::show(AW_device *device) {
 
     grey_level         = aw_root->awar(AWAR_DTREE_GREY_LEVEL)->read_int()*.01;
     baselinewidth      = (int)aw_root->awar(AWAR_DTREE_BASELINEWIDTH)->read_int();
+    show_brackets      = (int)aw_root->awar(AWAR_DTREE_SHOW_BRACKETS)->read_int();
     show_circle        = (int)aw_root->awar(AWAR_DTREE_SHOW_CIRCLE)->read_int();
     circle_zoom_factor = aw_root->awar(AWAR_DTREE_CIRCLE_ZOOM)->read_float();
     circle_max_size    = aw_root->awar(AWAR_DTREE_CIRCLE_MAX_SIZE)->read_float();
@@ -2465,12 +2530,13 @@ void AWT_graphic_tree::show(AW_device *device) {
     }
     else {
         switch (tree_sort) {
-            case AP_TREE_NORMAL:
+            case AP_TREE_NORMAL: {
+                DendroSubtreeLimits limits;
                 y_pos             = 0.05;
-                show_dendrogram(tree_root_display, 0, 0);
+                show_dendrogram(tree_root_display, 0, limits);
                 list_tree_ruler_y = y_pos + 2.0 * scaled_branch_distance;
                 break;
-
+            }
             case AP_TREE_RADIAL:
                 NT_emptybox(tree_root_display->gr.gc, 0, 0, NT_ROOT_WIDTH);
                 show_radial_tree(tree_root_display, 0, 0, 2*M_PI, 0.0, 0, 0, tree_root_display->gr.left_linewidth);
@@ -2522,6 +2588,7 @@ void awt_create_dtree_awars(AW_root *aw_root, AW_default def)
     aw_root->awar_float(AWAR_DTREE_VERICAL_DIST, 1.0, def)->set_minmax(0.01, 30);
     aw_root->awar_int(AWAR_DTREE_AUTO_JUMP, 1, def);
 
+    aw_root->awar_int(AWAR_DTREE_SHOW_BRACKETS, 1, def);
     aw_root->awar_int(AWAR_DTREE_SHOW_CIRCLE, 0, def);
     aw_root->awar_int(AWAR_DTREE_USE_ELLIPSE, 1, def);
 
