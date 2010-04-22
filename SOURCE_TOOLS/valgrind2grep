@@ -44,6 +44,7 @@ sub check_ignore($\$$) {
       if ($text =~ /\b(XmRenderTableCopy)\b.*libXm/) { $$ignore_r = $&; return; } # 09/02/2009
       if ($text =~ /\b(XmRenderTableFree)\b.*libXm/) { $$ignore_r = $&; return; } # 09/02/2009
       if ($text =~ /\b(XmIsMotifWMRunning)\b.*libXm/) { $$ignore_r = $&; return; } # 13/06/2009
+      if ($text =~ /\b(XmGetPixmap)\b.*libXm/) { $$ignore_r = $&; return; } # 22/04/2010
     }
   }
 }
