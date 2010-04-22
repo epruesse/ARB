@@ -1496,6 +1496,10 @@ static GBT_ITEM_TYPE identify_gb_item(GBDATA *gb_item) {
 // --------------------------------------------------------------------------------
 // taxonomy caching
 
+#define GROUP_COUNT_CHARS 6                         // characters in taxonomy-key reserved for group-counter (hex number)
+#define BITS_PER_HEXCHAR  4
+#define MAX_GROUPS        (1 << (GROUP_COUNT_CHARS*BITS_PER_HEXCHAR)) // resulting number of groups
+
 struct cached_taxonomy {
     char    *tree_name;         // tree for which taxonomy is cached here
     int      groups;            // number of named groups in tree (at time of caching)
@@ -1505,6 +1509,8 @@ struct cached_taxonomy {
                         * The 'XXXX' in groupname is simply a counter to avoid multiple groups with same name.
                         * The group-db-entries are stored in hash as pointers ('>>%p') and
                         * point to their own group entry ('>XXXXgroup')
+                        *
+                        * Note: the number of 'X's in 'XXXX' above is defined by GROUP_COUNT_CHARS! 
                         */
 };
 
@@ -1523,11 +1529,13 @@ static void build_taxonomy_rek(GBT_TREE *node, GB_HASH *tax_hash, const char *pa
     }
     else {
         if (node->name) {       // named group
-            char *hash_entry;
+            char       *hash_entry;
             const char *hash_binary_entry;
             (*group_counter)++;
 
-            hash_entry = GBS_global_string_copy(">%04x%s", *group_counter, node->name);
+            gb_assert((*group_counter)<MAX_GROUPS); // overflow - increase GROUP_COUNT_CHARS
+
+            hash_entry = GBS_global_string_copy(">%0*x%s", GROUP_COUNT_CHARS, *group_counter, node->name);
             GBS_write_hash(tax_hash, hash_entry, (long)strdup(parent_group));
 
             hash_binary_entry = GBS_global_string(">>%p", node->gb_node);
@@ -1738,13 +1746,13 @@ static char *get_taxonomy_string(GB_HASH *tax_hash, const char *group_key, int d
     if (found) {
         const char *parent_group_key            = (const char *)found;
         if (strcmp(parent_group_key, "<root>") == 0) { // root reached
-            result = strdup(group_key+5); // return own group name
+            result = strdup(group_key+(GROUP_COUNT_CHARS+1)); // return own group name
         }
         else {
             if (depth>1) {
                 char *parent_name = get_taxonomy_string(tax_hash, parent_group_key, depth-1, error);
                 if (parent_name) {
-                    result = GBS_global_string_copy("%s/%s", parent_name, group_key+5);
+                    result = GBS_global_string_copy("%s/%s", parent_name, group_key+(GROUP_COUNT_CHARS+1));
                     free(parent_name);
                 }
                 else {
@@ -1753,7 +1761,7 @@ static char *get_taxonomy_string(GB_HASH *tax_hash, const char *group_key, int d
                 }
             }
             else {
-                result = strdup(group_key+5); // return own group name
+                result = strdup(group_key+(GROUP_COUNT_CHARS+1)); // return own group name
             }
         }
     }
