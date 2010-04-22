@@ -472,6 +472,7 @@ static AWT_config_mapping_def tree_setting_config_mapping[] = {
     { AWAR_DTREE_VERICAL_DIST,    "vert_dist" },
     { AWAR_DTREE_AUTO_JUMP,       "auto_jump" },
     { AWAR_DTREE_SHOW_CIRCLE,     "show_circle" },
+    { AWAR_DTREE_SHOW_BRACKETS,   "show_brackets" },
     { AWAR_DTREE_USE_ELLIPSE,     "use_ellipse" },
     { AWAR_DTREE_CIRCLE_ZOOM,     "circle_zoom" },
     { AWAR_DTREE_CIRCLE_MAX_SIZE, "circle_max_size" },
@@ -517,11 +518,15 @@ AW_window *NT_create_tree_setting(AW_root *aw_root)
     aws->create_input_field(AWAR_DTREE_VERICAL_DIST, 4);
     aws->at_newline();
 
-    aws->label("Auto Jump");
+    aws->label("Auto jump");
     aws->create_toggle(AWAR_DTREE_AUTO_JUMP);
     aws->at_newline();
 
-    aws->label("Show Bootstrap Circles");
+    aws->label("Show group brackets");
+    aws->create_toggle(AWAR_DTREE_SHOW_BRACKETS);
+    aws->at_newline();
+
+    aws->label("Show bootstrap circles");
     aws->create_toggle(AWAR_DTREE_SHOW_CIRCLE);
     aws->at_newline();
 
@@ -1122,6 +1127,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone) {
     awr->awar(AWAR_DTREE_VERICAL_DIST)->add_callback((AW_RCB)AWT_resize_cb, (AW_CL)ntw, 0);
     awr->awar(AWAR_DTREE_BASELINEWIDTH)->add_callback((AW_RCB)AWT_expose_cb, (AW_CL)ntw, 0);
     awr->awar(AWAR_DTREE_SHOW_CIRCLE)->add_callback((AW_RCB)AWT_expose_cb, (AW_CL)ntw, 0);
+    awr->awar(AWAR_DTREE_SHOW_BRACKETS)->add_callback((AW_RCB)AWT_expose_cb, (AW_CL)ntw, 0);
     awr->awar(AWAR_DTREE_CIRCLE_ZOOM)->add_callback((AW_RCB)AWT_expose_cb, (AW_CL)ntw, 0);
     awr->awar(AWAR_DTREE_CIRCLE_MAX_SIZE)->add_callback((AW_RCB)AWT_expose_cb, (AW_CL)ntw, 0);
     awr->awar(AWAR_DTREE_USE_ELLIPSE)->add_callback((AW_RCB)AWT_expose_cb, (AW_CL)ntw, 0);
