@@ -14,9 +14,12 @@
 #ifndef ARBDB_BASE_H
 #include <arbdb_base.h>
 #endif
+#ifndef AWT_NDS_HXX
+#include <awt_nds.hxx>
+#endif
 
 typedef void        (*TREE_make_node_text_init)(GBDATA *gb_main);
-typedef const char *(*TREE_make_node_text)     (GBDATA *gb_main, GBDATA * gbd, int mode, GBT_TREE *species, const char *tree_name);
+typedef const char *(*TREE_make_node_text)     (GBDATA *gb_main, GBDATA * gbd, enum NDS_Type mode, GBT_TREE *species, const char *tree_name);
 
 struct TREE_node_text_gen {
     TREE_make_node_text_init init;                  // e.g. make_node_text_init() from AWT

@@ -576,18 +576,11 @@ void make_node_text_init(GBDATA *gb_main) {
     awt_nds_ms->count       = count;
 }
 
-enum { MNTN_COMPRESSED = 0, MNTN_SPACED = 1, MNTN_TABBED = 2 };
-
 #if defined(DEBUG)
 // #define QUOTE_NDS_STRING
 #endif // DEBUG
 
-const char *make_node_text_nds(GBDATA *gb_main, GBDATA * gbd, int mode, GBT_TREE *species, const char *tree_name)
-{
-    // mode == MNTN_COMPRESSED      compress info (no tabbing, separate single fields by comma)
-    // mode == MNTN_SPACED          format info (using spaces)
-    // mode == MNTN_TABBED          format info (using 1 tab per column - for easy import into star-calc, excel, etc. )
-
+const char *make_node_text_nds(GBDATA *gb_main, GBDATA * gbd, NDS_Type mode, GBT_TREE *species, const char *tree_name) {
     awt_nds_ms->init_buffer();
 
     if (!gbd) {

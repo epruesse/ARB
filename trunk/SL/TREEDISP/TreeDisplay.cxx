@@ -1972,7 +1972,7 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, double x_son, DendroSubtreeL
 
         if (at->name && (disp_device->filter & text_filter)) {
             // display text
-            const char                *data     = make_node_text_nds(this->gb_main, at->gb_node, 0, at->get_gbt_tree(), tree_static->get_tree_name());
+            const char                *data     = make_node_text_nds(this->gb_main, at->gb_node, MNTN_COMPRESSED, at->get_gbt_tree(), tree_static->get_tree_name());
             const AW_font_information *fontinfo = disp_device->get_font_information(at->gr.gc, 'A');
 
             double unscale = 1.0/disp_device->get_scale();
@@ -2031,7 +2031,7 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, double x_son, DendroSubtreeL
         limits.x_right = nx0;
 
         if (at->gb_node && (disp_device->filter & text_filter)) {
-            const char *data     = make_node_text_nds(this->gb_main, at->gb_node, 0, at->get_gbt_tree(), tree_static->get_tree_name());
+            const char *data     = make_node_text_nds(this->gb_main, at->gb_node, MNTN_COMPRESSED, at->get_gbt_tree(), tree_static->get_tree_name());
             size_t      data_len = strlen(data);
 
             disp_device->text(at->gr.gc, data,
@@ -2096,7 +2096,7 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, double x_son, DendroSubtreeL
                 limits.x_right = x2;
             
                 if (at->gb_node && (disp_device->filter & text_filter)) {
-                    const char *data     = make_node_text_nds(this->gb_main, at->gb_node, 0, at->get_gbt_tree(), tree_static->get_tree_name());
+                    const char *data     = make_node_text_nds(this->gb_main, at->gb_node, MNTN_COMPRESSED, at->get_gbt_tree(), tree_static->get_tree_name());
                     size_t      data_len = strlen(data);
 
                     LineVector bracket(x2, y1, x2, y2);
@@ -2196,7 +2196,7 @@ void AWT_graphic_tree::show_radial_tree(AP_tree * at, double x_center,
                 x_cursor = x_center; y_cursor = y_center;
             }
             scale_text_koordinaten(disp_device, at->gr.gc, x_center, y_center, tree_orientation, 0);
-            const char *data =  make_node_text_nds(this->gb_main, at->gb_node, 0, at->get_gbt_tree(), tree_static->get_tree_name());
+            const char *data =  make_node_text_nds(this->gb_main, at->gb_node, MNTN_COMPRESSED, at->get_gbt_tree(), tree_static->get_tree_name());
             disp_device->text(at->gr.gc, data,
                               (AW_pos)x_center, (AW_pos) y_center,
                               (AW_pos) .5 - .5 * cos(tree_orientation),
@@ -2231,7 +2231,7 @@ void AWT_graphic_tree::show_radial_tree(AP_tree * at, double x_center,
             scale_text_koordinaten(disp_device, at->gr.gc, x_center, y_center, w, 0);
 
             /* insert text (e.g. name of group) */
-            const char *data = make_node_text_nds(this->gb_main, at->gb_node, 0, at->get_gbt_tree(), tree_static->get_tree_name());
+            const char *data = make_node_text_nds(this->gb_main, at->gb_node, MNTN_COMPRESSED, at->get_gbt_tree(), tree_static->get_tree_name());
             disp_device->text(at->gr.gc, data,
                               (AW_pos)x_center, (AW_pos) y_center,
                               (AW_pos).5 - .5 * cos(tree_orientation),
@@ -2452,7 +2452,7 @@ void AWT_graphic_tree::show_nds_list(GBDATA * dummy, bool use_nds)
         if (disp_device->type() != AW_DEVICE_SIZE) { // tree below cliprect bottom can be cut
             const char *data;
             if (use_nds) {
-                data = make_node_text_nds(gb_main, gb_species, 1, 0, tree_name);
+                data = make_node_text_nds(gb_main, gb_species, MNTN_SPACED, 0, tree_name);
             }
             else {
                 data = name;

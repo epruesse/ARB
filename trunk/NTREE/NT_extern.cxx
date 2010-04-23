@@ -89,7 +89,7 @@ void export_nds_cb(AW_window *aww, AW_CL print_flag) {
          gb_species;
          gb_species = GBT_next_marked_species(gb_species))
     {
-        buf = make_node_text_nds(GLOBAL_gb_main, gb_species, (tabbed ? 2 : 1), 0, tree_name);
+        buf = make_node_text_nds(GLOBAL_gb_main, gb_species, (tabbed ? MNTN_TABBED : MNTN_SPACED), 0, tree_name);
         fprintf(out, "%s\n", buf);
     }
     AW_refresh_fileselection(aw_root, AWAR_EXPORT_NDS);

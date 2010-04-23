@@ -107,7 +107,7 @@ int AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, int x_offset, int type) 
             if (node->gb_node && GB_read_flag(node->gb_node)) {
                 NT_scalebox(gc, x, irs_gl.y, NT_BOX_WIDTH);
             }
-            str = make_node_text_nds(gb_main, node->gb_node, 0, node->get_gbt_tree(), tree_static->get_tree_name());
+            str = make_node_text_nds(gb_main, node->gb_node, MNTN_COMPRESSED, node->get_gbt_tree(), tree_static->get_tree_name());
             irs_gl.device->text(gc, str, x, y, 0.0, -1, (AW_CL)node, 0);
         }
         return irs_gl.y;
@@ -122,7 +122,7 @@ int AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, int x_offset, int type) 
                 node_string = tree_static->get_tree_name();
             }
             else {
-                node_string = make_node_text_nds(gb_main, node->gb_node, 0, node->get_gbt_tree(), tree_static->get_tree_name());
+                node_string = make_node_text_nds(gb_main, node->gb_node, MNTN_COMPRESSED, node->get_gbt_tree(), tree_static->get_tree_name());
             }
         }
         else {
@@ -253,13 +253,12 @@ int AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, int x_offset, int type) 
 }
 
 int AWT_graphic_tree::draw_slot(int x_offset, bool draw_at_tips) {
-    int maxx = x_offset;
-    int i;
-    int no_compress = 0;
-    if (!draw_at_tips) no_compress = 1;
-    for (i=0; i<irs_gl.nodes_ntip; i++) {
+    int      maxx     = x_offset;
+    NDS_Type nds_mode = draw_at_tips ? MNTN_COMPRESSED : MNTN_SPACED;
+
+    for (int i=0; i<irs_gl.nodes_ntip; i++) {
         AP_tree *tip = irs_gl.nodes_id[i];
-        const char *str = make_node_text_nds(gb_main, tip->gb_node, no_compress, tip->get_gbt_tree(), tree_static->get_tree_name());
+        const char *str = make_node_text_nds(gb_main, tip->gb_node, nds_mode, tip->get_gbt_tree(), tree_static->get_tree_name());
         int len = irs_gl.device->get_string_size(tip->gr.gc, str, 0);
         int x = 0;
         int y = irs_gl.nodes_ypos[i] + irs_gl.font_height_2;
