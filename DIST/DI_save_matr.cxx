@@ -53,7 +53,7 @@ const char *DI_MATRIX::save(char *filename, enum DI_SAVE_TYPE type)
                     const char *buf        = entries[col]->name;
                     GBDATA     *gb_species = GBT_find_species_rel_species_data(gb_species_data, buf);
                     if (gb_species) {
-                        buf = make_node_text_nds(gb_main, gb_species, 0, 0, 0);
+                        buf = make_node_text_nds(gb_main, gb_species, MNTN_COMPRESSED, 0, 0);
                         while (buf[0] == ' ') ++buf;
                     }
 

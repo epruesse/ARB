@@ -24,7 +24,13 @@ struct GBT_TREE;
 #define AWAR_SELECT_ACISRT     "tmp/acisrt/select"
 #define AWAR_SELECT_ACISRT_PRE "tmp/acisrt/select_pre"
 
-const char *make_node_text_nds(GBDATA *gb_main, GBDATA * gbd, int format, GBT_TREE *species, const char *tree_name);
+enum NDS_Type {
+    MNTN_COMPRESSED = 0,                            // compress info (no tabbing, separate single fields by comma)
+    MNTN_SPACED     = 1,                            // format info (using spaces)
+    MNTN_TABBED     = 2                             // format info (using 1 tab per column - for easy import into star-calc, excel, etc. )
+};
+
+const char *make_node_text_nds(GBDATA *gb_main, GBDATA * gbd, NDS_Type format, GBT_TREE *species, const char *tree_name);
 void        make_node_text_init(GBDATA *gb_main);
 
 AW_window *AWT_create_nds_window(AW_root *aw_root, AW_CL cgb_main);
