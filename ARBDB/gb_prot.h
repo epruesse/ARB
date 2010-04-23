@@ -215,7 +215,7 @@ int gb_isMappedMemory(char *mem);
 GBDATA *gb_find_by_nr(GBDATA *father, int index);
 void gb_init_ctype_table(void);
 GBDATA *gb_search(GBDATA *gbd, const char *str, GB_TYPES create, int internflag);
-GBDATA *gb_search_marked(GBCONTAINER *gbc, GBQUARK key_quark, int firstindex);
+GBDATA *gb_search_marked(GBCONTAINER *gbc, GBQUARK key_quark, int firstindex, size_t skip_over);
 void gb_install_command_table(GBDATA *gb_main, struct GBL_command_table *table, size_t table_size);
 char *gbs_search_second_x(const char *str);
 char *gbs_search_second_bracket(const char *source);

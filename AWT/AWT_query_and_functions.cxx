@@ -634,7 +634,7 @@ public:
             }
         }
         else {
-            gb_key = GB_find_sub_by_quark(gb_item, getKeyquark(), 0);
+            gb_key = GB_find_sub_by_quark(gb_item, getKeyquark(), 0, 0);
         }
 
         return gb_key;

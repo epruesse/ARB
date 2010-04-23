@@ -422,8 +422,8 @@ GB_ERROR GB_set_undo_mem(GBDATA *gbd, long memsize);
 
 /* adquery.cxx */
 const char *GB_get_GBDATA_path(GBDATA *gbd);
-GBDATA *GB_find_sub_by_quark(GBDATA *father, GBQUARK key_quark, GBDATA *after);
-NOT4PERL GBDATA *GB_find_subcontent_by_quark(GBDATA *father, GBQUARK key_quark, GB_TYPES type, const char *val, GB_CASE case_sens, GBDATA *after);
+GBDATA *GB_find_sub_by_quark(GBDATA *father, GBQUARK key_quark, GBDATA *after, size_t skip_over);
+NOT4PERL GBDATA *GB_find_subcontent_by_quark(GBDATA *father, GBQUARK key_quark, GB_TYPES type, const char *val, GB_CASE case_sens, GBDATA *after, size_t skip_over);
 GBDATA *GB_find(GBDATA *gbd, const char *key, GB_SEARCH_TYPE gbs);
 GBDATA *GB_find_string(GBDATA *gbd, const char *key, const char *str, GB_CASE case_sens, GB_SEARCH_TYPE gbs);
 NOT4PERL GBDATA *GB_find_int(GBDATA *gbd, const char *key, long val, GB_SEARCH_TYPE gbs);
@@ -431,6 +431,7 @@ GBDATA *GB_child(GBDATA *father);
 GBDATA *GB_nextChild(GBDATA *child);
 GBDATA *GB_entry(GBDATA *father, const char *key);
 GBDATA *GB_nextEntry(GBDATA *entry);
+GBDATA *GB_followingEntry(GBDATA *entry, size_t skip_over);
 GBDATA *GB_brother(GBDATA *entry, const char *key);
 char *GB_first_non_key_char(const char *str);
 GBDATA *GB_search(GBDATA *gbd, const char *fieldpath, GB_TYPES create);
@@ -440,6 +441,7 @@ GBDATA *GB_searchOrCreate_float(GBDATA *gb_container, const char *fieldpath, dou
 GBDATA *GB_search_last_son(GBDATA *gbd);
 long GB_number_of_marked_subentries(GBDATA *gbd);
 GBDATA *GB_first_marked(GBDATA *gbd, const char *keystring);
+GBDATA *GB_following_marked(GBDATA *gbd, const char *keystring, size_t skip_over);
 GBDATA *GB_next_marked(GBDATA *gbd, const char *keystring);
 char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *commands, GBDATA *gbd, const char *default_tree_name);
 
