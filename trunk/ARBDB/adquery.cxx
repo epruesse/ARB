@@ -96,9 +96,11 @@ static bool gb_find_value_equal(GBDATA *gb, GB_TYPES type, const char *val, GB_C
     return equal;
 }
 
-static GBDATA *find_sub_by_quark(GBDATA *father, GBQUARK key_quark, GB_TYPES type, const char *val, GB_CASE case_sens, GBDATA *after) {
+static GBDATA *find_sub_by_quark(GBDATA *father, GBQUARK key_quark, GB_TYPES type, const char *val, GB_CASE case_sens, GBDATA *after, size_t skip_over) {
     /* search an entry with a key 'key_quark' below a container 'father'
        after position 'after'
+
+       if 'skip_over' > 0 search skips 'skip_over' entries
 
        if (val != NULL) search for entry with value 'val':
 
@@ -138,7 +140,7 @@ static GBDATA *find_sub_by_quark(GBDATA *father, GBQUARK key_quark, GB_TYPES typ
                             continue;
                         }
                     }
-                    return gb;
+                    if (!skip_over--) return gb;
                 }
             }
         }
@@ -167,19 +169,19 @@ static GBDATA *find_sub_by_quark(GBDATA *father, GBQUARK key_quark, GB_TYPES typ
                         if (!gb_find_value_equal(gb, type, val, case_sens)) continue;
                     }
                 }
-                return gb;
+                if (!skip_over--) return gb;
             }
         }
     }
     return NULL;
 }
 
-GBDATA *GB_find_sub_by_quark(GBDATA *father, GBQUARK key_quark, GBDATA *after) {
-    return find_sub_by_quark(father, key_quark, GB_NONE, NULL, GB_MIND_CASE, after);
+GBDATA *GB_find_sub_by_quark(GBDATA *father, GBQUARK key_quark, GBDATA *after, size_t skip_over) {
+    return find_sub_by_quark(father, key_quark, GB_NONE, NULL, GB_MIND_CASE, after, skip_over);
 }
 
-NOT4PERL GBDATA *GB_find_subcontent_by_quark(GBDATA *father, GBQUARK key_quark, GB_TYPES type, const char *val, GB_CASE case_sens, GBDATA *after) {
-    return find_sub_by_quark(father, key_quark, type, val, case_sens, after);
+NOT4PERL GBDATA *GB_find_subcontent_by_quark(GBDATA *father, GBQUARK key_quark, GB_TYPES type, const char *val, GB_CASE case_sens, GBDATA *after, size_t skip_over) {
+    return find_sub_by_quark(father, key_quark, type, val, case_sens, after, skip_over);
 }
 
 static GBDATA *find_sub_sub_by_quark(GBDATA *father, const char *key, GBQUARK sub_key_quark, GB_TYPES type, const char *val, GB_CASE case_sens, GBDATA *after) {
@@ -244,7 +246,7 @@ static GBDATA *find_sub_sub_by_quark(GBDATA *father, const char *key, GBQUARK su
         }
         gb = gbn;
         if (GB_TYPE(gb) != GB_DB) continue;
-        res = GB_find_subcontent_by_quark(gb, sub_key_quark, type, val, case_sens, NULL);
+        res = GB_find_subcontent_by_quark(gb, sub_key_quark, type, val, case_sens, NULL, 0);
         if (res) return res;
     }
     return NULL;
@@ -282,7 +284,7 @@ static GBDATA *gb_find_internal(GBDATA *gbd, const char *key, GB_TYPES type, con
             GBQUARK key_quark = key ? GB_key_2_quark(gbd, key) : -1;
 
             if (gbs == SEARCH_CHILD) {
-                result = GB_find_subcontent_by_quark((GBDATA*)gbc, key_quark, type, val, case_sens, after);
+                result = GB_find_subcontent_by_quark((GBDATA*)gbc, key_quark, type, val, case_sens, after, 0);
             }
             else {
                 gb_assert(gbs == SEARCH_GRANDCHILD);
@@ -332,15 +334,21 @@ GBDATA *GB_nextChild(GBDATA *child) {
 // ------------------------------------------------------------------------------
 //      iterate over all subentries of a container that have a specified key
 
-GBDATA *GB_entry(GBDATA *father, const char *key) { // GB_entry
+GBDATA *GB_entry(GBDATA *father, const char *key) { 
     // return first child of 'father' that has fieldname 'key'
     // (or NULL if none found)
     return GB_find(father, key, SEARCH_CHILD);
 }
-GBDATA *GB_nextEntry(GBDATA *entry) { // GB_nextEntry
+GBDATA *GB_nextEntry(GBDATA *entry) { 
     // return next child after 'entry', that has the same fieldname
     // (or NULL if 'entry' is last one)
-    return GB_find_sub_by_quark((GBDATA*)GB_FATHER(entry), GB_get_quark(entry), entry);
+    return GB_find_sub_by_quark((GBDATA*)GB_FATHER(entry), GB_get_quark(entry), entry, 0);
+}
+GBDATA *GB_followingEntry(GBDATA *entry, size_t skip_over) {
+    // return following child after 'entry', that has the same fieldname
+    // (or NULL if no such entry)
+    // skips 'skip_over' entries (skip_over == 0 behaves like GB_nextEntry)
+    return GB_find_sub_by_quark((GBDATA*)GB_FATHER(entry), GB_get_quark(entry), entry, skip_over);
 }
 
 GBDATA *GB_brother(GBDATA *entry, const char *key) {
@@ -624,15 +632,13 @@ GBDATA *GB_searchOrCreate_float(GBDATA *gb_container, const char *fieldpath, dou
     return gb_float;
 }
 
-GBDATA *gb_search_marked(GBCONTAINER *gbc, GBQUARK key_quark, int firstindex)
-{
+GBDATA *gb_search_marked(GBCONTAINER *gbc, GBQUARK key_quark, int firstindex, size_t skip_over) {
     int userbit = GBCONTAINER_MAIN(gbc)->users[0]->userbit;
     int index;
     int end = gbc->d.nheader;
     struct gb_header_list_struct *header = GB_DATA_LIST_HEADER(gbc->d);
 
-    for (index = firstindex; index<end; index++)
-    {
+    for (index = firstindex; index<end; index++) {
         GBDATA *gb;
 
         if (! (userbit & header[index].flags.flags)) continue;
@@ -643,7 +649,7 @@ GBDATA *gb_search_marked(GBCONTAINER *gbc, GBQUARK key_quark, int firstindex)
             header = GB_DATA_LIST_HEADER(gbc->d);
             gb = GB_HEADER_LIST_GBD(header[index]);
         }
-        return gb;
+        if (!skip_over--) return gb;
     }
     return NULL;
 }
@@ -684,6 +690,8 @@ long GB_number_of_marked_subentries(GBDATA *gbd) {
     return count;
 }
 
+
+
 GBDATA *GB_first_marked(GBDATA *gbd, const char *keystring) {
     GBCONTAINER *gbc = (GBCONTAINER *)gbd;
     GBQUARK key_quark;
@@ -694,12 +702,11 @@ GBDATA *GB_first_marked(GBDATA *gbd, const char *keystring) {
         key_quark = -1;
     }
     GB_TEST_TRANSACTION(gbd);
-    return gb_search_marked(gbc, key_quark, 0);
+    return gb_search_marked(gbc, key_quark, 0, 0);
 }
 
 
-GBDATA *GB_next_marked(GBDATA *gbd, const char *keystring)
-{
+GBDATA *GB_following_marked(GBDATA *gbd, const char *keystring, size_t skip_over) {
     GBCONTAINER *gbc = GB_FATHER(gbd);
     GBQUARK key_quark;
 
@@ -710,7 +717,11 @@ GBDATA *GB_next_marked(GBDATA *gbd, const char *keystring)
         key_quark = -1;
     }
     GB_TEST_TRANSACTION(gbd);
-    return gb_search_marked(gbc, key_quark, (int)gbd->index+1);
+    return gb_search_marked(gbc, key_quark, (int)gbd->index+1, skip_over);
+}
+
+GBDATA *GB_next_marked(GBDATA *gbd, const char *keystring) {
+    return GB_following_marked(gbd, keystring, 0);
 }
 
 // ----------------------------

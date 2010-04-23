@@ -153,16 +153,16 @@ GB_ERROR GB_create_index(GBDATA *gbd, const char *key, GB_CASE case_sens, long e
 
             SET_GB_INDEX_FILES_ENTRIES(ifs, (struct gb_if_entries **)GB_calloc(sizeof(void *), (int)ifs->hash_table_size));
 
-            for (gbf = GB_find_sub_by_quark(gbd, -1, 0);
+            for (gbf = GB_find_sub_by_quark(gbd, -1, 0, 0);
                  gbf;
-                 gbf = GB_find_sub_by_quark(gbd, -1, gbf))
+                 gbf = GB_find_sub_by_quark(gbd, -1, gbf, 0))
             {
                 if (GB_TYPE(gbf) == GB_DB) {
                     GBDATA *gb2;
 
-                    for (gb2 = GB_find_sub_by_quark(gbf, key_quark, 0);
+                    for (gb2 = GB_find_sub_by_quark(gbf, key_quark, 0, 0);
                          gb2;
-                         gb2 = GB_find_sub_by_quark(gbf, key_quark, gb2))
+                         gb2 = GB_find_sub_by_quark(gbf, key_quark, gb2, 0))
                     {
                         if (GB_TYPE(gb2) != GB_STRING && GB_TYPE(gb2) != GB_LINK) continue;
                         gb_index_check_in(gb2);
