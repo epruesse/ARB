@@ -665,23 +665,27 @@ void NT_scale_tree(AW_window*, AW_CL cl_ntw, AW_CL) // scale branchlengths
 void NT_jump_cb(AW_window *dummy, AWT_canvas *ntw, AW_CL auto_expand_groups)
 {
     AWUSE(dummy);
-    AW_window *aww = ntw->aww;
-    if (!AWT_TREE(ntw)) return;
+    AW_window        *aww   = ntw->aww;
+    AWT_graphic_tree *gtree = AWT_TREE(ntw);
+    
+    if (!gtree) return;
+
     GB_transaction gb_dummy(ntw->gb_main);
-    AWT_TREE(ntw)->check_update(ntw->gb_main);
+    gtree->check_update(ntw->gb_main);
+    
     char *name = aww->get_root()->awar(AWAR_SPECIES_NAME)->read_string();
     if (name[0]) {
-        AP_tree * found = AWT_TREE(ntw)->search(AWT_TREE(ntw)->tree_root_display, name);
-        if (!found && AWT_TREE(ntw)->tree_root_display != AWT_TREE(ntw)->get_root_node()) {
-            found = AWT_TREE(ntw)->search(AWT_TREE(ntw)->get_root_node(), name);
+        AP_tree * found = gtree->search(gtree->tree_root_display, name);
+        if (!found && gtree->tree_root_display != gtree->get_root_node()) {
+            found = gtree->search(gtree->get_root_node(), name);
             if (found) {
                 // now i found a species outside logical zoomed tree
                 aw_message("Species found outside displayed subtree: zoom reset done");
-                AWT_TREE(ntw)->tree_root_display = AWT_TREE(ntw)->get_root_node();
+                gtree->tree_root_display = gtree->get_root_node();
                 ntw->zoom_reset();
             }
         }
-        switch (AWT_TREE(ntw)->tree_sort) {
+        switch (gtree->tree_sort) {
             case AP_TREE_IRS:
             case AP_TREE_NORMAL: {
                 if (auto_expand_groups) {
@@ -694,74 +698,50 @@ void NT_jump_cb(AW_window *dummy, AWT_canvas *ntw, AW_CL auto_expand_groups)
                         found = found->get_father();
                     }
                     if (changed) {
-                        AWT_TREE(ntw)->get_root_node()->compute_tree(ntw->gb_main);
-                        GB_ERROR error = AWT_TREE(ntw)->save(ntw->gb_main, 0, 0, 0);
+                        gtree->get_root_node()->compute_tree(ntw->gb_main);
+                        GB_ERROR error = gtree->save(ntw->gb_main, 0, 0, 0);
                         if (error) aw_message(error);
                         ntw->zoom_reset();
                     }
                 }
-                AW_device      *device = aww->get_size_device(AW_MIDDLE_AREA);
+                // fall-through
+            }
+            case AP_LIST_NDS: {
+                AW_device *device = aww->get_size_device(AW_MIDDLE_AREA);
                 device->set_filter(AW_SIZE);
                 device->reset();
                 ntw->init_device(device);
                 ntw->tree_disp->show(device);
-                AW_rectangle    screen;
+
+                AW_rectangle screen;
                 device->get_area_size(&screen);
-                AW_pos          ys = AWT_TREE(ntw)->y_cursor;
-                AW_pos          xs = 0;
-                if (AWT_TREE(ntw)->x_cursor != 0.0 || ys != 0.0) {
-                    AW_pos          x, y;
+                
+                AW_pos ys = gtree->y_cursor;
+                AW_pos xs = 0;
+                if (gtree->x_cursor != 0.0 || ys != 0.0) {
+                    AW_pos x, y;
                     device->transform(xs, ys, x, y);
-                    if (y < 0.0) {
-                        ntw->scroll(aww, 0, (int) (y - screen.b * .5));
-                    }
-                    else if (y > screen.b) {
+                    if (y < 0.0 || y > screen.b) {
                         ntw->scroll(aww, 0, (int) (y - screen.b * .5));
                     }
                 }
                 else {
                     if (auto_expand_groups) {
-                        aw_message(GBS_global_string("Sorry, I didn't find the species '%s' in this tree", name));
+                        aw_message(GBS_global_string(gtree->tree_sort == AP_LIST_NDS
+                                                     ? "Species '%s' is not in this list"
+                                                     : "Species '%s' is not member of this tree",
+                                                     name));
                     }
                 }
                 ntw->refresh();
                 break;
             }
-            case AP_LIST_NDS:
-                {
-                    AW_device      *device = aww->get_size_device(AW_MIDDLE_AREA);
-                    device->set_filter(AW_SIZE);
-                    device->reset();
-                    ntw->init_device(device);
-                    ntw->tree_disp->show(device);
-                    AW_rectangle    screen;
-                    device->get_area_size(&screen);
-                    AW_pos          ys = AWT_TREE(ntw)->y_cursor;
-                    AW_pos          xs = 0;
-                    if (AWT_TREE(ntw)->x_cursor != 0.0 || ys != 0.0) {
-                        AW_pos          x, y;
-                        device->transform(xs, ys, x, y);
-                        if (y < 0.0) {
-                            ntw->scroll(aww, 0, (int) (y - screen.b * .5));
-                        }
-                        else if (y > screen.b) {
-                            ntw->scroll(aww, 0, (int) (y - screen.b * .5));
-                        }
-                    }
-                    else {
-                        if (auto_expand_groups) {
-                            aw_message(GBS_global_string("Sorry, your species '%s' is not marked and therefore not in this list", name));
-                        }
-                    }
-                    ntw->refresh();
-                    break;
-                }
             case AP_TREE_RADIAL: {
-                AWT_TREE(ntw)->tree_root_display = 0;
-                AWT_TREE(ntw)->jump(AWT_TREE(ntw)->get_root_node(), name);
-                if (!AWT_TREE(ntw)->tree_root_display) {
+                gtree->tree_root_display = 0;
+                gtree->jump(gtree->get_root_node(), name);
+                if (!gtree->tree_root_display) {
                     aw_message(GBS_global_string("Sorry, I didn't find the species '%s' in this tree", name));
-                    AWT_TREE(ntw)->tree_root_display = AWT_TREE(ntw)->get_root_node();
+                    gtree->tree_root_display = gtree->get_root_node();
                 }
                 ntw->zoom_reset();
                 ntw->refresh();
