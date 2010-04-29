@@ -662,8 +662,7 @@ void NT_scale_tree(AW_window*, AW_CL cl_ntw, AW_CL) // scale branchlengths
     }
 }
 
-void NT_jump_cb(AW_window *dummy, AWT_canvas *ntw, AW_CL auto_expand_groups)
-{
+void NT_jump_cb(AW_window *dummy, AWT_canvas *ntw, AW_CL auto_expand_groups) {
     AWUSE(dummy);
     AW_window        *aww   = ntw->aww;
     AWT_graphic_tree *gtree = AWT_TREE(ntw);
@@ -685,8 +684,11 @@ void NT_jump_cb(AW_window *dummy, AWT_canvas *ntw, AW_CL auto_expand_groups)
                 ntw->zoom_reset();
             }
         }
+        bool repeat = false;
         switch (gtree->tree_sort) {
             case AP_TREE_IRS:
+                repeat = true;
+                // fall-through
             case AP_TREE_NORMAL: {
                 if (auto_expand_groups) {
                     bool changed = false;
@@ -707,6 +709,7 @@ void NT_jump_cb(AW_window *dummy, AWT_canvas *ntw, AW_CL auto_expand_groups)
                 // fall-through
             }
             case AP_LIST_NDS: {
+                repeat_jump: 
                 AW_device *device = aww->get_size_device(AW_MIDDLE_AREA);
                 device->set_filter(AW_SIZE);
                 device->reset();
@@ -715,14 +718,36 @@ void NT_jump_cb(AW_window *dummy, AWT_canvas *ntw, AW_CL auto_expand_groups)
 
                 AW_rectangle screen;
                 device->get_area_size(&screen);
-                
+
                 AW_pos ys = gtree->y_cursor;
-                AW_pos xs = 0;
-                if (gtree->x_cursor != 0.0 || ys != 0.0) {
+                AW_pos xs = gtree->x_cursor;
+                if (xs != 0.0 || ys != 0.0) {
                     AW_pos x, y;
                     device->transform(xs, ys, x, y);
-                    if (y < 0.0 || y > screen.b) {
-                        ntw->scroll(aww, 0, (int) (y - screen.b * .5));
+
+                    int scroll_x = 0;
+                    int scroll_y = 0;
+
+                    if (x<0.0) scroll_x      = (int)(x - screen.r * .1);
+                    if (x>screen.r) scroll_x = (int)(x - screen.r * .5);
+
+                    if (gtree->tree_sort == AP_TREE_IRS) {
+                        // always scroll IRS tree
+                        // position a bit below vertical center
+                        scroll_y = (int) (y - screen.b * .6);
+                    }
+                    else if (y<0.0 || y>screen.b) {
+                        scroll_y = (int) (y - screen.b * .5);
+                    }
+
+                    if (scroll_x || scroll_y) {
+                        ntw->scroll(aww, scroll_x, scroll_y);
+                    }
+                    
+                    if (repeat) {
+                        // reposition jump in IRS tree (reduces jump failure rate)
+                        repeat = false;
+                        goto repeat_jump;
                     }
                 }
                 else {
@@ -754,7 +779,11 @@ void NT_jump_cb(AW_window *dummy, AWT_canvas *ntw, AW_CL auto_expand_groups)
 }
 
 void NT_jump_cb_auto(AW_window *dummy, AWT_canvas *ntw) {   // jump only if auto jump is set
-    if (AWT_TREE(ntw)->tree_sort == AP_TREE_NORMAL || AWT_TREE(ntw)->tree_sort == AP_LIST_NDS) {
+    AP_tree_sort tree_sort = AWT_TREE(ntw)->tree_sort;
+    if (tree_sort == AP_TREE_NORMAL ||
+        tree_sort == AP_LIST_NDS ||
+        tree_sort == AP_TREE_IRS)
+    {
         if (ntw->aww->get_root()->awar(AWAR_DTREE_AUTO_JUMP)->read_int()) {
             NT_jump_cb(dummy, ntw, 0);
             return;

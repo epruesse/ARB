@@ -13,34 +13,24 @@
 #include <awt_nds.hxx>
 #include <aw_awars.hxx>
 
-enum AWT_IRS_TREE_TYPES {
-    AWT_IRS_HIDDEN_TREE,
-    AWT_IRS_NORMAL_TREE
-};
-
-
-enum IRS_PRUNE_LEVEL {
-    IRS_NOPRUNE
-};
-
 /* *********************** paint sub tree ************************ */
-
-#define IS_HIDDEN(node) (type == AWT_IRS_HIDDEN_TREE && node->gr.gc>0)
 
 const int MAXSHOWNNODES = 5000;       // Something like max screen height/minimum font size
 const int tipBoxSize    = 4;
 const int nodeBoxWidth  = 5;
 
 static struct {
-    bool       ftrst_species;
-    int        y;
-    int        min_y;
-    int        max_y;
-    int        ruler_y;
-    int        min_x;
-    int        max_x;
-    int        step_y;
-    double     x_scale;
+    bool   ftrst_species;
+    int    y;
+    int    min_y;
+    int    max_y;
+    int    ruler_y;
+    int    min_x;
+    int    max_x;
+    int    step_y;
+    int    group_closed;
+    double x_scale;
+
     AW_device *device;
 
     int      nodes_xpos[MAXSHOWNNODES];   // needed for Query results drawing
@@ -49,9 +39,8 @@ static struct {
     int      nodes_ntip;                  // counts the tips stored in nodes_xx
     int      nodes_nnnodes;               // counts the inner nodes (reverse counter !!!)
 
-    int                  font_height_2;
-    enum IRS_PRUNE_LEVEL pruneLevel;
-    int                  is_size_device;
+    int font_height_2;
+    int is_size_device;
 } irs_gl;
 
 void draw_top_separator() {
@@ -65,7 +54,7 @@ void draw_top_separator() {
     }
 }
 
-int AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, int x_offset, int type) {
+int AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, int x_offset) {
     int left_y;
     int left_x;
     int right_y;
@@ -83,8 +72,6 @@ int AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, int x_offset, int type) 
         }
     }
 
-
-
     /* *********************** i'm a leaf ************************ */
     if (node->is_leaf) {
         irs_gl.y+=irs_gl.step_y;
@@ -95,11 +82,23 @@ int AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, int x_offset, int type) 
         int y = irs_gl.y + irs_gl.font_height_2;
         int gc = node->gr.gc;
 
+        if (node->name && node->name[0] == this->species_name[0] && !strcmp(node->name, this->species_name)) {
+            x_cursor = x;
+            y_cursor = irs_gl.y;
 
+            if (irs_gl.is_size_device) {
+                // hack to fix calculated cursor position:
+                // - IRS tree reports different cursor positions in AW_SIZE and normal draw modes.
+                // - the main reason for the difference is the number of open groups clipped away
+                //   above the separator line.
+                // - There is still some unhandled difference mostlikely caused by the number of
+                //   open groups on the screen, but in most cases the cursor position is inside view now.
+                
+                double correctionPerGroup = irs_gl.step_y * 2.22222; // was determined by measurements. depends on size of marked-species-font
+                double cursorCorrection   = -irs_gl.group_closed * correctionPerGroup;
 
-        if (node->name && node->name[0] == this->species_name[0] &&
-            !strcmp(node->name, this->species_name)) {
-            x_cursor = x; y_cursor = irs_gl.y;
+                y_cursor += cursorCorrection;
+            }
         }
 
         const char *str = 0;
@@ -129,8 +128,8 @@ int AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, int x_offset, int type) 
             node_string = "0123456789";
         }
     }
-    if (node->gr.grouped) {             // no recursion here    just a group symbol !!!
-        int vsize = node->gr.view_sum * irs_gl.step_y;
+    if (node->gr.grouped) {                         // no recursion here    just a group symbol !!!
+        int vsize    = node->gr.view_sum * irs_gl.step_y;
         int y_center = irs_gl.y + (vsize>>1) + irs_gl.step_y;
         if (irs_gl.y >= irs_gl.min_y) {
             if (irs_gl.ftrst_species) { // A name of a group just under the separator
@@ -169,10 +168,6 @@ int AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, int x_offset, int type) 
 
     // ungrouped groups go here
 
-    if (irs_gl.pruneLevel != IRS_NOPRUNE) {
-        node_string = 0;
-    }
-
     /* *********************** i'm a labeled node ************************ */
     /*  If I have only one child + pruneLevel != MAXPRUNE -> no labeling */
 
@@ -197,15 +192,15 @@ int AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, int x_offset, int type) 
     }
 
     /* *********************** connect two nodes == draw branches ************************ */
-    int y_center;
 
     left_x = (int)(x_offset + 0.9 + irs_gl.x_scale * node->leftlen);
-    left_y = paint_irs_sub_tree(node->get_leftson(), left_x, type);
+    left_y = paint_irs_sub_tree(node->get_leftson(), left_x);
 
     right_x = int(x_offset + 0.9 + irs_gl.x_scale * node->rightlen);
-    right_y = paint_irs_sub_tree(node->get_rightson(), right_x, type);
+    right_y = paint_irs_sub_tree(node->get_rightson(), right_x);
 
-
+    if (node_string != NULL) irs_gl.group_closed++;
+    
     /* *********************** draw structure ************************ */
 
     if (left_y > irs_gl.min_y) {
@@ -220,7 +215,7 @@ int AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, int x_offset, int type) 
         left_y = irs_gl.min_y;
     }
 
-    y_center = (left_y + right_y) / 2; // clip center(?) on bottom border
+    int y_center = (left_y + right_y) / 2; // clip center(?) on bottom border
 
     if (right_y > irs_gl.min_y && right_y < irs_gl.max_y) { // visible right branch in lower part of display
 
@@ -298,21 +293,19 @@ void AWT_graphic_tree::show_irs_tree(AP_tree *at, AW_device *device, int height)
     irs_gl.max_y          = clipped_b;
     irs_gl.ruler_y        = 0;
     irs_gl.step_y         = height;
-    irs_gl.x_scale        = 600.0 / at->gr.tree_depth;
+    irs_gl.x_scale        = (clipped_r-clipped_l)*0.8 / at->gr.tree_depth;
+    irs_gl.group_closed   = 0;
     irs_gl.is_size_device = 0;
 
     if (irs_gl.device->type() == AW_DEVICE_SIZE) {
         irs_gl.is_size_device = 1;
     }
 
-    paint_irs_sub_tree(at, 0, AWT_IRS_NORMAL_TREE);
+    paint_irs_sub_tree(at, 0);
 
-    // provide some information for ruler :
+    // provide some information for ruler:
     y_pos                       = irs_gl.ruler_y;
     irs_tree_ruler_scale_factor = irs_gl.x_scale;
-
-    if (irs_gl.is_size_device) {
-        irs_gl.device->invisible(0, irs_gl.min_x, irs_gl.y + (irs_gl.min_y-y) + 200, -1, 0, 0);
-    }
+    
     device->pop_clip_scale();
 }
