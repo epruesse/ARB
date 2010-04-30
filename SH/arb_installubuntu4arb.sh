@@ -42,8 +42,9 @@ else
                 libmotif3 \
                 xfig \
                 transfig \
-                treetool \
                 xterm \
+
+#                treetool 
 
         elif [ "$2" == "arb_OpenGL" ]; then
             $0 echo arb_noOpenGL
