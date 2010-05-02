@@ -155,7 +155,7 @@ static void aisc_server_sigsegv(int sig) {
         longjmp(return_after_segv, 666); // never returns
     }
 
-    ASSERT_RESULT(SigHandler, aisc_server_sigsegv, signal(SIGSEGV, SIG_DFL)); // uninstall aisc_server_sigsegv-handler -> deliver normal
+    ASSERT_RESULT(SigHandler, signal(SIGSEGV, SIG_DFL), aisc_server_sigsegv); // uninstall aisc_server_sigsegv-handler -> deliver normal
 }
 
 /* ----------------------------- */
@@ -407,8 +407,8 @@ struct Hs_struct *open_aisc_server(const char *path, int timeout, int fork) {
     }
 
     // install signal handlers (asserting none have been installed yet!)
-    ASSERT_RESULT(SigHandler, SIG_DFL, signal(SIGSEGV, aisc_server_sigsegv));
-    ASSERT_RESULT(SigHandler, SIG_DFL, signal(SIGPIPE, aisc_server_sigpipe));
+    ASSERT_RESULT(SigHandler, signal(SIGSEGV, aisc_server_sigsegv), SIG_DFL);
+    ASSERT_RESULT(SigHandler, signal(SIGPIPE, aisc_server_sigpipe), SIG_DFL);
 
     aisc_server_bytes_first = 0;
     aisc_server_bytes_last  = 0;
