@@ -217,9 +217,13 @@
 
 #ifdef ASSERTION_USED
 
-# define ASSERT_RESULT(Type, Expr, Expected) do {        \
-        Type value = (Expr);                             \
-        arb_assert(value == (Expected));                 \
+# define ASSERT_RESULT(Type, Expr, Expected) do {       \
+        Type value = (Expr);                            \
+        arb_assert(value == (Expected));                \
+    } while (0)
+
+# define ASSERT_RESULT_PREDICATE(Expr, Pred) do {       \
+        arb_assert(Pred(Expr));                         \
     } while (0)
 
 #else
@@ -227,6 +231,10 @@
 # define ASSERT_RESULT(Type, Expr, Expected) do {       \
         (void)Expr;                                     \
     } while(0)
+
+# define ASSERT_RESULT_PREDICATE(Expr, Pred) do {       \
+        (void)Expr;                                     \
+    } while (0)
 
 #endif
 

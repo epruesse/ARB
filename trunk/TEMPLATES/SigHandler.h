@@ -22,6 +22,10 @@
 typedef void (*SigHandler)(int);
 #endif
 
+inline bool is_default_or_ignore_sighandler(SigHandler sh) {
+    return sh == SIG_DFL || sh == SIG_IGN;
+}
+
 #else
 #error SigHandler.h included twice
 #endif // SIGHANDLER_H

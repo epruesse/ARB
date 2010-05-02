@@ -312,7 +312,7 @@ struct gbcmc_comm *gbcmc_open(const char *path)
         }
         return 0;
     }
-    ASSERT_RESULT(SigHandler, signal(SIGPIPE, gbcmc_suppress_sigpipe), SIG_DFL);
+    ASSERT_RESULT_PREDICATE(signal(SIGPIPE, gbcmc_suppress_sigpipe), is_default_or_ignore_sighandler);
     gb_local->iamclient = 1;
     return link;
 }
