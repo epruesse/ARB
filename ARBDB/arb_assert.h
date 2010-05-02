@@ -217,24 +217,24 @@
 
 #ifdef ASSERTION_USED
 
-# define ASSERT_RESULT(Type, Expected, Expr) do {        \
+# define ASSERT_RESULT(Type, Expr, Expected) do {        \
         Type value = (Expr);                             \
         arb_assert(value == (Expected));                 \
     } while (0)
 
 #else
 
-# define ASSERT_RESULT(Type, Expected, Expr) do {       \
+# define ASSERT_RESULT(Type, Expr, Expected) do {       \
         (void)Expr;                                     \
     } while(0)
 
 #endif
 
-#define ASSERT_NULL_RESULT(ptrExpr) ASSERT_RESULT(const void*, NULL, ptrExpr)
-#define ASSERT_NO_ERROR(errorExpr)  ASSERT_RESULT(GB_ERROR, NULL, errorExpr)
+#define ASSERT_NULL_RESULT(ptrExpr) ASSERT_RESULT(const void*, ptrExpr, NULL)
+#define ASSERT_NO_ERROR(errorExpr)  ASSERT_RESULT(GB_ERROR, errorExpr, NULL)
 
-#define ASSERT_TRUE(boolExpr)  ASSERT_RESULT(bool, true, boolExpr)
-#define ASSERT_FALSE(boolExpr) ASSERT_RESULT(bool, false, boolExpr)
+#define ASSERT_TRUE(boolExpr)  ASSERT_RESULT(bool, boolExpr, true)
+#define ASSERT_FALSE(boolExpr) ASSERT_RESULT(bool, boolExpr, false)
 
 // ------------------------------------------------------------
 

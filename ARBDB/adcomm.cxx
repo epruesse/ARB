@@ -182,8 +182,8 @@ GB_ERROR GBCMS_open(const char *path, long timeout, GBDATA *gb_main) {
 
             error = gbcm_open_socket(path, TCP_NODELAY, 0, &socket, &unix_name);
             if (!error) {
-                ASSERT_RESULT(SigHandler, SIG_DFL, signal(SIGPIPE, gbcms_sigpipe));
-                ASSERT_RESULT(SigHandler, SIG_DFL, signal(SIGHUP, gbcms_sighup));
+                ASSERT_RESULT(SigHandler, signal(SIGPIPE, gbcms_sigpipe), SIG_DFL);
+                ASSERT_RESULT(SigHandler, signal(SIGHUP, gbcms_sighup), SIG_DFL);
 
                 gbcms_gb_main = (GBCONTAINER *)gb_main;
 

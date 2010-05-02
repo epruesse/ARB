@@ -378,7 +378,7 @@ static void ignore_sigpipe(int) {
 }
 
 static void aisc_free_link(aisc_com *link) {
-    ASSERT_RESULT(SigHandler, ignore_sigpipe, signal(SIGPIPE, link->old_sigpipe_handler));
+    ASSERT_RESULT(SigHandler, signal(SIGPIPE, link->old_sigpipe_handler), ignore_sigpipe);
     free(link);
 }
 
