@@ -11,7 +11,8 @@
 # Goal of this script is to unify the result of 'make depends'
 # to avoid CVS/SVN changes caused by formatting.
 
-my $arbhome = qr/$ENV{ARBHOME}/;
+my $arbhome_quoted = quotemeta($ENV{ARBHOME});
+my $arbhome = qr/$arbhome_quoted/;
 my $makedependlineseen = 0;
 my @depends;
 
