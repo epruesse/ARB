@@ -408,7 +408,7 @@ struct Hs_struct *open_aisc_server(const char *path, int timeout, int fork) {
 
     // install signal handlers (asserting none have been installed yet!)
     ASSERT_RESULT(SigHandler, signal(SIGSEGV, aisc_server_sigsegv), SIG_DFL);
-    ASSERT_RESULT(SigHandler, signal(SIGPIPE, aisc_server_sigpipe), SIG_DFL);
+    ASSERT_RESULT_PREDICATE(signal(SIGPIPE, aisc_server_sigpipe), is_default_or_ignore_sighandler);
 
     aisc_server_bytes_first = 0;
     aisc_server_bytes_last  = 0;
