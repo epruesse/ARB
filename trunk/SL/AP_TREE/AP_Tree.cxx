@@ -1456,12 +1456,11 @@ static int ap_mark_duplicates_rek(AP_tree *at, GB_HASH *seen_species) {
 
 void AP_tree::mark_duplicates(GBDATA *gb_main) {
     GB_transaction  ta(gb_main);
-    GB_HASH        *seen_species = GBS_create_hash(GBT_get_species_count(gb_main), GB_IGNORE_CASE);
+    GB_HASH        *seen_species = GBS_create_hash(gr.leave_sum, GB_IGNORE_CASE);
 
     int dup_zombies = ap_mark_duplicates_rek(this, seen_species);
     if (dup_zombies) {
         aw_message(GBS_global_string("Warning: Detected %i duplicated zombies (can't mark them)", dup_zombies));
-        GBS_erase_hash(seen_species); // hash may be overfilled when there are many zombies, this avoids warnings
     }
     GBS_free_hash(seen_species);
 }
