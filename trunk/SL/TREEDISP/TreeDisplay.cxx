@@ -1824,10 +1824,7 @@ int AWT_graphic_tree::check_update(GBDATA *) {
 
     if (tree_static) {
         AP_tree *tree_root = get_root_node();
-        if (!tree_root) {
-            flags = AP_UPDATE_ERROR;
-        }
-        else {
+        if (tree_root) {
             GB_transaction ta(gb_main);
 
             flags = tree_root->check_update();
