@@ -65,6 +65,7 @@ static int InsertDatainGDE(NA_Alignment *dataset, GBDATA **the_species, unsigned
 
     if (cutoff_stop_codon) {
         unsigned long i;
+        fputs("[CUTTING STOP CODONS]\n", stdout);
         for (i=0; i<numberspecies; i++) {
             uchar *seq        = the_sequences[i];
             uchar *stop_codon = (uchar*)strchr((char*)seq, '*');
