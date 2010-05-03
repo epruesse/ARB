@@ -24,7 +24,6 @@ using namespace std;
 static AW_window_menu_modes_opengl *awm;
 static XtAppContext                 appContext;
 static XtWorkProcId                 workId   = 0;
-static GLboolean                    Spinning = GL_FALSE;
 
 // ========= SpinMolecule(XtPointer ...) : The Actual WorkProc Routine ============//
 // => Sets the Rotation speed to 0.05 : default speed in Rotation Mode.
@@ -41,23 +40,23 @@ Boolean SpinMolecule(XtPointer /* clientData */) {
 }
 
 // ========== RotateMoleculeStateChanged(void)==================================//
-// => if Spinning, removes the WorkProc routine and sets Spinning & bAutoRotate to false.
-// => if not, adds the WorkProc routine [SpinMolecule()] and sets Spinning & bAutoRotate to true.
+// => if bAutoRotate, removes the WorkProc routine and sets bAutoRotate to false.
+// => if not, adds the WorkProc routine [SpinMolecule()] and sets bAutoRotate to true.
 // bAutoRotate is used in recalculation of Rotation Matrix
 // in RenderOpenGLScene() ==> defined in RNA3D_OpenGLEngine.cxx.
 // ===============================================================================//
 
-static void RotateMoleculeStateChanged() {
-
-    if (Spinning) {
-        XtRemoveWorkProc(workId);
-        Spinning = GL_FALSE;
-        RNA3D->bAutoRotate = false;
-    }
-    else {
-        workId = XtAppAddWorkProc(appContext, SpinMolecule, NULL);
-        Spinning = GL_TRUE;
-        RNA3D->bAutoRotate = true;
+static void RotateMoleculeStateChanged(AW_root *awr) {
+    bool rotate = awr->awar(AWAR_3D_MOL_ROTATE)->read_int();
+    if (rotate != RNA3D->bAutoRotate) {
+        if (RNA3D->bAutoRotate) {
+            XtRemoveWorkProc(workId);
+            RNA3D->bAutoRotate = false;
+        }
+        else {
+            workId = XtAppAddWorkProc(appContext, SpinMolecule, NULL);
+            RNA3D->bAutoRotate = true;
+        }
     }
 }
 
@@ -70,7 +69,7 @@ static void RotateMoleculeStateChanged() {
 
 static void RotateMoleculeStateChanged_cb(AW_root *awr) {
     MapDisplayParameters(awr);
-    RotateMoleculeStateChanged();
+    RotateMoleculeStateChanged(awr);
     RefreshOpenGLDisplay();
 }
 
@@ -334,6 +333,11 @@ static void AddCallBacks(AW_root *awr) {
 
     awr->awar(AWAR_3D_DISPLAY_MASK)->add_callback(DisplayMoleculeMask);
     awr->awar(AWAR_3D_23S_RRNA_MOL)->add_callback(Change3DMolecule_CB);
+}
+
+static void InitCallBacks(AW_root *awr) {
+    // init callbacks
+    RotateMoleculeStateChanged_cb(awr);
 }
 
 static void RefreshMappingDisplay(AW_window * /* aw */) {
@@ -789,5 +793,7 @@ AW_window *CreateRNA3DMainWindow(AW_root *awr, GBDATA *gb_main) {
     cout<<"RNA3D: OpenGL Window created!"<<endl;
 #endif
 
+    InitCallBacks(awr);
+    
     return awm;
 }
