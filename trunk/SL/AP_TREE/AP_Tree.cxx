@@ -1460,7 +1460,8 @@ void AP_tree::mark_duplicates(GBDATA *gb_main) {
 
     int dup_zombies = ap_mark_duplicates_rek(this, seen_species);
     if (dup_zombies) {
-        aw_message(GBS_global_string("Warning: Detected %i duplicated zombies", dup_zombies));
+        aw_message(GBS_global_string("Warning: Detected %i duplicated zombies (can't mark them)", dup_zombies));
+        GBS_erase_hash(seen_species); // hash may be overfilled when there are many zombies, this avoids warnings
     }
     GBS_free_hash(seen_species);
 }
