@@ -199,23 +199,45 @@ GB_ERROR gb_remove_all_but_main(GB_MAIN_TYPE *Main, const char *path) {
     return error;
 }
 
-static GB_ERROR renameQuicksaves(GB_MAIN_TYPE *Main)
-{
-    /*  After hundred quicksaves rename the quicksave-files to a00...a09
-     *  to keep MS-DOS-compatibility (8.3)
-     */
-    int         i;
-    int         j;
-    GB_ERROR    error = NULL;
-    const char *path  = Main->path;
+static GB_ERROR deleteSuperfluousQuicksaves(GB_MAIN_TYPE *Main) {
+    int       cnt   = 0;
+    int       i;
+    char     *path  = Main->path;
+    GB_ERROR  error = 0;
 
-    while (1) {
-        for (i=0, j=0; i<GB_MAX_QUICK_SAVE_INDEX; i++) {
+    for (i=0; i <= GB_MAX_QUICK_SAVE_INDEX; i++) {
+        GB_CSTR qsave = gb_quicksaveName(path, i);
+        if (GB_is_regularfile(qsave)) cnt++;
+    }
+
+    for (i=0; cnt>GB_MAX_QUICK_SAVES && i <= GB_MAX_QUICK_SAVE_INDEX && !error; i++) {
+        GB_CSTR qsave = gb_quicksaveName(path, i);
+        if (GB_is_regularfile(qsave)) {
+            if (GB_unlink(qsave)<0) error = GB_await_error();
+            else cnt--;
+        }
+    }
+
+    return error;
+}
+
+static GB_ERROR renameQuicksaves(GB_MAIN_TYPE *Main) {
+    /* After hundred quicksaves rename the quicksave-files to a00...a09
+     * to keep MS-DOS-compatibility (8.3)
+     * Note: This has to be called just before saving.
+     */
+
+    GB_ERROR error = deleteSuperfluousQuicksaves(Main);
+    if (!error) {
+        const char *path = Main->path;
+        int         i;
+        int         j;
+
+        for (i=0, j=0; i <= GB_MAX_QUICK_SAVE_INDEX; i++) {
             GB_CSTR qsave = gb_quicksaveName(path, i);
 
             if (GB_is_regularfile(qsave)) {
-                if (i!=j)         // otherwise the filename is correct
-                {
+                if (i!=j) {                         // otherwise the filename is correct
                     char    *qdup = strdup(qsave);
                     GB_CSTR  qnew = gb_quicksaveName(path, j);
 
@@ -227,42 +249,8 @@ static GB_ERROR renameQuicksaves(GB_MAIN_TYPE *Main)
             }
         }
 
-        if (j<=GB_MAX_QUICK_SAVES) break; // less or equal than GB_MAX_QUICK_SAVES files -> ok
-
-        i = 0;
-        while (j>GB_MAX_QUICK_SAVES) /* otherwise delete files from lower numbers till there
-                                      * are only GB_MAX_QUICK_SAVES left */
-        {
-            GB_CSTR qsave = gb_quicksaveName(path, i);
-
-            if (GB_is_regularfile(qsave)) remove(qsave);
-            j--;
-            i++;
-        }
-    }
-
-    Main->qs.last_index = j-1;
-
-    return error;
-}
-
-static GB_ERROR deleteSuperfluousQuicksaves(GB_MAIN_TYPE *Main) {
-    int       cnt   = 0;
-    int       i;
-    char     *path  = Main->path;
-    GB_ERROR  error = 0;
-
-    for (i=0; i<GB_MAX_QUICK_SAVE_INDEX; i++) {
-        GB_CSTR qsave = gb_quicksaveName(path, i);
-        if (GB_is_regularfile(qsave)) cnt++;
-    }
-
-    for (i=0; cnt>GB_MAX_QUICK_SAVES && i<GB_MAX_QUICK_SAVE_INDEX && !error; i++) {
-        GB_CSTR qsave = gb_quicksaveName(path, i);
-        if (GB_is_regularfile(qsave)) {
-            if (GB_unlink(qsave)<0) error = GB_await_error();
-            else cnt--;
-        }
+        gb_assert(j <= GB_MAX_QUICK_SAVES);
+        Main->qs.last_index = j-1;
     }
 
     return error;
@@ -1199,7 +1187,7 @@ GB_ERROR GB_save_quick(GBDATA *gb, const char *refpath) {
     }
 
     Main->qs.last_index++;
-    if (Main->qs.last_index >= GB_MAX_QUICK_SAVE_INDEX) renameQuicksaves(Main);
+    if (Main->qs.last_index > GB_MAX_QUICK_SAVE_INDEX) renameQuicksaves(Main);
 
     path = gb_quicksaveName(Main->path, Main->qs.last_index);
     sec_path = gb_overwriteName(path);
@@ -1486,18 +1474,18 @@ void TEST_loadsave() {
                     break;
                 }
                 case 99:  {
-                    TEST_ASSERT__BROKEN(GB_is_regularfile("b2b.a90"));
-                    TEST_ASSERT__BROKEN(GB_is_regularfile("b2b.a99"));
+                    TEST_ASSERT(GB_is_regularfile("b2b.a90"));
+                    TEST_ASSERT(GB_is_regularfile("b2b.a99"));
                     TEST_ASSERT(!GB_is_regularfile("b2b.a89")); // should no longer exist
-                    TEST_ASSERT__BROKEN(!GB_is_regularfile("b2b.a00")); // should not exist yet
+                    TEST_ASSERT(!GB_is_regularfile("b2b.a00")); // should not exist yet
                     break;
                 }
                 case 100:  {
-                    TEST_ASSERT__BROKEN(GB_is_regularfile("b2b.a00"));
+                    TEST_ASSERT(GB_is_regularfile("b2b.a00"));
                     TEST_ASSERT(GB_is_regularfile("b2b.a09"));
                     TEST_ASSERT(!GB_is_regularfile("b2b.a98")); // should no longer exist
                     TEST_ASSERT(!GB_is_regularfile("b2b.a99")); // should no longer exist
-                    TEST_ASSERT__BROKEN(!GB_is_regularfile("b2b.a10")); // should not exist yet
+                    TEST_ASSERT(!GB_is_regularfile("b2b.a10")); // should not exist yet
                     break;
                 }
             }
