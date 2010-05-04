@@ -413,11 +413,6 @@ GB_BUFFER gb_bin_2_ascii(GBDATA *gbd)
 
 #define GB_PUT_OUT(c, out) do { if (c>=10) c+='A'-10; else c += '0'; putc(c, out); } while (0)
 
-long gb_test_sub(GBDATA *gbd) {
-    gbd = gbd;
-    return 0;
-}
-
 static long gb_write_rek(FILE *out, GBCONTAINER *gbc, long deep, long big_hunk) {
     // used by ASCII database save
     long     i;
@@ -598,6 +593,7 @@ void gb_put_number(long i, FILE *out) {
         putc((int)i, out);
         return;
     }
+    gb_assert(0); // overflow
 }
 
 long gb_read_bin_error(FILE *in, GBDATA *gbd, const char *text) {
@@ -1332,3 +1328,231 @@ void GB_disable_path(GBDATA *gbd, const char *path) {
     freeset(GB_MAIN(gbd)->disabled_path, path ? GBS_eval_env(path) : NULL);
 }
 
+// --------------------------------------------------------------------------------
+
+#if (UNIT_TESTS == 1)
+
+#include <test_unit.h>
+
+static bool files_are_equal(const char *file1, const char *file2) {
+    GB_ERROR   error     = NULL;
+    FILE      *fp1       = fopen(file1, "rb");
+
+    // @@@ FIXME:  use GB_IO_error() here later
+    if (!fp1) error = GBS_global_string("can't open '%s'", file1);
+    else {
+        FILE *fp2 = fopen(file2, "rb");
+        if (!fp2) error = GBS_global_string("can't open '%s'", file2);
+        else {
+            const int BLOCKSIZE = 4096;
+            char *buf1 = (char*)malloc(BLOCKSIZE);
+            char *buf2 = (char*)malloc(BLOCKSIZE);
+
+            while (!error) {
+                int read1 = fread(buf1, 1, BLOCKSIZE, fp1);
+                int read2 = fread(buf2, 1, BLOCKSIZE, fp2);
+
+                if (read1 != read2) error = "filesizes differ";
+                else {
+                    if (!read1) break; // done
+                    if (memcmp(buf1, buf2, read1) != 0) error = "content differs";
+                }
+            }
+            free(buf2);
+            free(buf1);
+            fclose(fp2);
+        }
+        fclose(fp1);
+    }
+
+    if (error) TEST_WARNING("%s", GBS_global_string("files_are_equal(%s, %s): %s", file1, file2, error));
+    return !error;
+}
+
+#define SAVE_AND_COMPARE(gbd, save_as, savetype, compare_with) \
+    TEST_ASSERT_NO_ERROR(GB_save_as(gbd, save_as, savetype));  \
+    TEST_ASSERT(files_are_equal(save_as, compare_with))
+
+static GB_ERROR modify_db(GBDATA *gb_main) {
+    GB_transaction ta(gb_main);
+
+    GB_ERROR  error          = NULL;
+    GBDATA   *gb_container   = GB_create_container(gb_main, "container");
+    if (!gb_container) error = GB_await_error();
+    else {
+        GBDATA *gb_entry     = GB_create(gb_container, "str", GB_STRING);
+        if (!gb_entry) error = GB_await_error();
+        else    error        = GB_write_string(gb_entry, "text");
+    }
+    return error;
+}
+
+// #define TEST_AUTO_UPDATE // uncomment to auto-update binary and quicksave testfiles (needed once after changing ascii testfile or modify_db())
+#define TEST_copy(src, dst) TEST_ASSERT(system(GBS_global_string("cp '%s' '%s'", src, dst)) == 0)
+
+#define TEST_loadsave_CLEANUP() TEST_ASSERT(system("rm -f [ab]2[ab]*.* master.* slave.* renamed.* TEST_loadsave.ARF") == 0)
+
+void TEST_loadsave() {
+    TEST_loadsave_CLEANUP();
+
+    // test non-existing DB
+    TEST_ASSERT_NORESULT__ERROREXPORTED(GB_open("nonexisting.arb", "r"));
+    TEST_ASSERT_NORESULT__ERROREXPORTED(GB_open("nonexisting.arb", "rw"));
+    TEST_ASSERT_RESULT__NOERROREXPORTED(GB_open("nonexisting.arb", "w")); // create new DB
+    
+    // the following DBs have to be provided in directory ../UNIT_TESTER/run
+    const char *bin_db = "TEST_loadsave.arb";
+    const char *asc_db = "TEST_loadsave_ascii.arb";
+
+    GBDATA *gb_asc = GB_open(asc_db, "rw"); TEST_ASSERT_RESULT__NOERROREXPORTED(gb_asc);
+
+#if defined(TEST_AUTO_UPDATE)
+    TEST_ASSERT_NO_ERROR(GB_save_as(gb_asc, bin_db, "b")); 
+#endif // TEST_AUTO_UPDATE
+    
+    GBDATA *gb_bin = GB_open(bin_db, "rw"); TEST_ASSERT_RESULT__NOERROREXPORTED(gb_bin);
+
+    // test ASCII / BINARY compatibility
+    SAVE_AND_COMPARE(gb_asc, "a2a.arb", "a", asc_db);
+    SAVE_AND_COMPARE(gb_asc, "a2b.arb", "b", bin_db);
+    SAVE_AND_COMPARE(gb_bin, "b2a.arb", "a", asc_db);
+    SAVE_AND_COMPARE(gb_bin, "b2b.arb", "b", bin_db);
+
+    {
+        // test opening saved DBs
+        GBDATA *gb_a2b = GB_open("a2b.arb", "rw"); TEST_ASSERT(gb_a2b);
+        GBDATA *gb_b2b = GB_open("b2b.arb", "rw"); TEST_ASSERT(gb_b2b);
+
+        // modify ..
+        TEST_ASSERT_NO_ERROR(modify_db(gb_a2b));
+        TEST_ASSERT_NO_ERROR(modify_db(gb_b2b));
+
+        // .. and quicksave
+        TEST_ASSERT_NO_ERROR(GB_save_quick(gb_a2b, "a2b.arb"));
+        TEST_ASSERT_NO_ERROR(GB_save_quick(gb_b2b, "b2b.arb"));
+
+#if defined(TEST_AUTO_UPDATE)
+        TEST_copy("a2b.a00", "TEST_loadsave_quick.a00");
+#endif // TEST_AUTO_UPDATE
+
+        TEST_ASSERT(files_are_equal("TEST_loadsave_quick.a00", "a2b.a00"));
+        TEST_ASSERT(files_are_equal("a2b.a00", "b2b.a00"));
+
+        TEST_ASSERT_NO_ERROR(GB_save_quick_as(gb_a2b, "a2b.arb"));
+
+        // check wether quicksave can be disabled
+        GB_disable_quicksave(gb_a2b, "test it");
+
+        TEST_ASSERT_ERROR__BROKEN(GB_save_quick(gb_a2b, "a2b.arb"));
+        TEST_ASSERT_ERROR__BROKEN(GB_save_quick_as(gb_a2b, "a2b.arb"));
+
+        const char *mod_db = "a2b_modified.arb";
+        TEST_ASSERT_NO_ERROR(GB_save_as(gb_a2b, mod_db, "b")); // save modified DB
+        // test loading quicksave
+        {
+            GBDATA *gb_quicksaved = GB_open("a2b.arb", "rw"); // this DB has a quicksave
+            SAVE_AND_COMPARE(gb_quicksaved, "a2b.arb", "b", mod_db);
+            GB_close(gb_quicksaved);
+        }
+
+
+        // check quicksave delete and wrap around
+        for (int i = 1; i <= 100; ++i) {
+            GB_save_quick(gb_b2b, "b2b.arb");
+            switch (i) {
+                case 1: {
+                    TEST_ASSERT(GB_is_regularfile("b2b.a00"));
+                    TEST_ASSERT(GB_is_regularfile("b2b.a01"));
+                    TEST_ASSERT(!GB_is_regularfile("b2b.a02")); // should not exist yet
+                    break;
+                }
+                case 10: {
+                    TEST_ASSERT(GB_is_regularfile("b2b.a01"));
+                    TEST_ASSERT(GB_is_regularfile("b2b.a10"));
+                    TEST_ASSERT(!GB_is_regularfile("b2b.a00")); // should no longer exist
+                    TEST_ASSERT(!GB_is_regularfile("b2b.a11")); // should not exist yet
+
+                    // speed-up-hack
+                    GB_MAIN_TYPE *Main   = GB_MAIN(gb_b2b);
+                    i                   += 78;
+                    Main->qs.last_index += 78;
+                    break;
+                }
+                case 98:  {
+                    TEST_ASSERT(GB_is_regularfile("b2b.a89"));
+                    TEST_ASSERT(GB_is_regularfile("b2b.a98"));
+                    TEST_ASSERT(!GB_is_regularfile("b2b.a88")); // should no longer exist
+                    TEST_ASSERT(!GB_is_regularfile("b2b.a99")); // should not exist yet
+                    break;
+                }
+                case 99:  {
+                    TEST_ASSERT__BROKEN(GB_is_regularfile("b2b.a90"));
+                    TEST_ASSERT__BROKEN(GB_is_regularfile("b2b.a99"));
+                    TEST_ASSERT(!GB_is_regularfile("b2b.a89")); // should no longer exist
+                    TEST_ASSERT__BROKEN(!GB_is_regularfile("b2b.a00")); // should not exist yet
+                    break;
+                }
+                case 100:  {
+                    TEST_ASSERT__BROKEN(GB_is_regularfile("b2b.a00"));
+                    TEST_ASSERT(GB_is_regularfile("b2b.a09"));
+                    TEST_ASSERT(!GB_is_regularfile("b2b.a98")); // should no longer exist
+                    TEST_ASSERT(!GB_is_regularfile("b2b.a99")); // should no longer exist
+                    TEST_ASSERT__BROKEN(!GB_is_regularfile("b2b.a10")); // should not exist yet
+                    break;
+                }
+            }
+        }
+
+        {
+            // check master/slave DBs
+            TEST_ASSERT_NO_ERROR(GB_save_as(gb_b2b, "master.arb", "b"));
+
+            GBDATA *gb_master = GB_open("master.arb", "rw"); TEST_ASSERT(gb_master);
+            TEST_ASSERT_NO_ERROR(modify_db(gb_master));
+
+            TEST_ASSERT_NO_ERROR(GB_save_quick(gb_master, "master.arb"));
+            TEST_ASSERT_NO_ERROR(GB_save_quick_as(gb_master, "master.arb"));
+
+            TEST_ASSERT_ERROR(GB_save_quick(gb_master, "renamed.arb")); // quicksave with wrong name
+
+            // check if master gets protected by creating slave-DB
+            TEST_ASSERT_NO_ERROR(GB_save_as(gb_master, "master.arb", "b")); // overwrite
+            TEST_ASSERT_NO_ERROR(GB_save_quick_as(gb_master, "slave.arb")); // create slave -> master now protected
+            TEST_ASSERT_ERROR(GB_save_as(gb_master, "master.arb", "b")); // overwrite should fail now
+
+            {
+                GBDATA *gb_slave = GB_open("slave.arb", "rw"); TEST_ASSERT(gb_slave); // load slave DB
+                TEST_ASSERT_NO_ERROR(modify_db(gb_slave));
+                TEST_ASSERT_NO_ERROR(GB_save_quick(gb_slave, "slave.arb"));
+                TEST_ASSERT_NO_ERROR(GB_save_quick_as(gb_slave, "renamed.arb"));
+                GB_close(gb_slave);
+            }
+            GB_close(gb_master);
+        }
+
+        // test various error conditions:
+
+        TEST_ASSERT_ERROR(GB_save_as(gb_b2b, "", "b")); // empty name
+
+        TEST_ASSERT_NO_ERROR(GB_set_mode_of_file(mod_db, 0444)); // write-protect
+        TEST_ASSERT_ERROR(GB_save_as(gb_b2b, mod_db, "b")); // try to overwrite write-protected DB
+
+        TEST_ASSERT_ERROR(GB_save_quick_as(gb_b2b, NULL)); // no name
+        TEST_ASSERT_ERROR(GB_save_quick_as(gb_b2b, "")); // empty name
+
+        GB_close(gb_b2b);
+        GB_close(gb_a2b);
+    }
+
+    GB_close(gb_asc);
+    GB_close(gb_bin);
+
+    TEST_loadsave_CLEANUP();
+}
+
+void TEST_db_filenames() {
+    TEST_ASSERT_EQUAL(gb_quicksaveName("nosuch.arb", 0), "nosuch.a00");
+    TEST_ASSERT_EQUAL(gb_quicksaveName("nosuch", 1), "nosuch.a01");
+}
+
+#endif
