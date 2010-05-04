@@ -28,7 +28,11 @@ void GB_set_verbose() {
 // ---------------------------------------------------
 //      helper code to read ascii file in portions
 
+#if (UNIT_TESTS == 1)
+#define READING_BUFFER_SIZE 100
+#else
 #define READING_BUFFER_SIZE (1024*32)
+#endif
 
 struct ReadingBuffer {
     char          *data;
@@ -412,7 +416,7 @@ static GB_ERROR gb_parse_ascii_rek(Reader *r, GBCONTAINER *gb_parent, const char
                         if (line[0] == '/' && line[1] == '*') { // comment at container-end
                             char *eoc  = strstr(line+2, "*/");
                             if (!eoc) {
-                                error = "expected '*/'";
+                                error = "expected '*/'"; 
                             }
                             else {
                                 line += 2;
@@ -421,7 +425,7 @@ static GB_ERROR gb_parse_ascii_rek(Reader *r, GBCONTAINER *gb_parent, const char
                                     fprintf(stderr,
                                             "Warning: comment at end of container ('%s') does not match name of container ('%s').\n"
                                             "         (might be harmless if you've edited the file and did not care about these comments)\n",
-                                            line, parent_name);
+                                            line, parent_name); 
                                 }
                                 line = eoc+2;
                             }
@@ -435,8 +439,11 @@ static GB_ERROR gb_parse_ascii_rek(Reader *r, GBCONTAINER *gb_parent, const char
                         protection = getToken(&line);
                     }
 
+                    bool readAsString = true;
                     if (line[0] == '%') {
-                        char *type = getToken(&line);
+                        readAsString = false;
+
+                        char *type   = getToken(&line);
 
                         if (type[1] == 0 || type[2] != 0) {
                             error = GBS_global_string("Syntax error in type '%s' (expected %% and 1 more character)", type);
@@ -473,13 +480,14 @@ static GB_ERROR gb_parse_ascii_rek(Reader *r, GBCONTAINER *gb_parent, const char
                                     case 'Y': gb_type = GB_BYTES; break;
                                     case 'N': gb_type = GB_INTS; break;
                                     case 'F': gb_type = GB_FLOATS; break;
+                                    case 's': gb_type = GB_STRING; readAsString = true; break; // special case (string starts with '%')
 
                                     default:
                                         error = GBS_global_string("Unknown type '%s'", type);
                                         break;
                                 }
 
-                                if (!error) {
+                                if (!error && !readAsString) {
                                     GBDATA *gb_new;
 
                                     gb_assert(gb_type != GB_NONE);
@@ -511,7 +519,8 @@ static GB_ERROR gb_parse_ascii_rek(Reader *r, GBCONTAINER *gb_parent, const char
                             }
                         }
                     }
-                    else {
+                    
+                    if (readAsString) {
                         if (line[0] != '\"') {
                             error = GBS_global_string("Unexpected content '%s'", line);
                         }
@@ -1649,3 +1658,16 @@ GBDATA *GB_open(const char *path, const char *opent)
     user = GB_getenvUSER();
     return GB_login(path, opent, user);
 }
+
+// --------------------------------------------------------------------------------
+
+#if (UNIT_TESTS == 1)
+
+#include <test_unit.h>
+
+void TEST_dummy() {
+    // just here to trigger coverage analysis as long as there are no real tests
+    // (much code from ad_load.cxx is used by ad_save_load.cxx)
+}
+
+#endif
