@@ -180,6 +180,7 @@ ad_load.o: $(ARBHOME)/INCLUDE/arbtools.h
 ad_load.o: $(ARBHOME)/INCLUDE/attributes.h
 ad_load.o: $(ARBHOME)/INCLUDE/dupstr.h
 ad_load.o: $(ARBHOME)/INCLUDE/smartptr.h
+ad_load.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 ad_save_load.o: ad_k_prot.h
 ad_save_load.o: ad_prot.h
@@ -202,6 +203,7 @@ ad_save_load.o: $(ARBHOME)/INCLUDE/arbtools.h
 ad_save_load.o: $(ARBHOME)/INCLUDE/attributes.h
 ad_save_load.o: $(ARBHOME)/INCLUDE/dupstr.h
 ad_save_load.o: $(ARBHOME)/INCLUDE/smartptr.h
+ad_save_load.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 adali.o: ad_k_prot.h
 adali.o: ad_prot.h

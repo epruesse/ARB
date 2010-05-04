@@ -40,7 +40,6 @@ GB_ERROR gb_add_reference(const char *master, const char *changes);
 GB_ERROR gb_remove_all_but_main(GB_MAIN_TYPE *Main, const char *path);
 long gb_ascii_2_bin(const char *source, GBDATA *gbd);
 GB_BUFFER gb_bin_2_ascii(GBDATA *gbd);
-long gb_test_sub(GBDATA *gbd);
 long gb_read_in_long(FILE *in, long reversed);
 long gb_read_number(FILE *in);
 void gb_put_number(long i, FILE *out);
