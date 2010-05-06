@@ -2603,28 +2603,6 @@ char GB_type_2_char(GB_TYPES type) {
     return type2char[type];
 }
 
-static void dump(const char *data, int size) {
-    int x = 0;
-
-    printf("\nDump %p (%i Byte):\n", data, size);
-
-    while (size--)
-    {
-        const char *hex = "0123456789abcdef";
-        char c = *data++;
-
-        printf("%c%c ", hex[(c&0xf0)>>4], hex[c&0x0f]);
-
-        if (++x==32)
-        {
-            x = 0;
-            printf("\n");
-        }
-    }
-
-    printf("\n");
-}
-
 GB_ERROR GB_print_debug_information(void *dummy, GBDATA *gb_main) {
     int i;
     GB_MAIN_TYPE *Main = GB_MAIN(gb_main);
