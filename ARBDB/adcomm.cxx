@@ -663,7 +663,7 @@ static int gbcms_write_keys(int socket, GBDATA *gbd)
     return 0;
 }
 
-static int gbcms_talking_unfold(int socket, long *hsin, void *sin, GBDATA *gb_in) {
+static int gbcms_talking_unfold(int socket, long */*hsin*/, void */*sin*/, GBDATA *gb_in) {
     // command: GBCM_COMMAND_UNFOLD
 
     GBCONTAINER *gbc = (GBCONTAINER *)gb_in;
@@ -674,7 +674,6 @@ static int gbcms_talking_unfold(int socket, long *hsin, void *sin, GBDATA *gb_in
     long         index_pos[1];
     int          index, start, end;
 
-    // GBUSE(hsin);GBUSE(sin);
     if ((error = gbcm_test_address((long *)gbc, GBTUM_MAGIC_NUMBER))) {
         return GBCM_SERVER_FAULT;
     }
@@ -725,18 +724,11 @@ static int gbcms_talking_unfold(int socket, long *hsin, void *sin, GBDATA *gb_in
     return 0;
 }
 
-static int gbcms_talking_get_update(int socket, long *hsin, void *sin, GBDATA *gbd)
-{
-    struct Hs_struct *hs = (struct Hs_struct *)hsin;
-    // GBUSE(hs);
-    socket = socket;
-    gbd = gbd;
-    sin = sin;
+static int gbcms_talking_get_update(int /*socket*/, long */*hsin*/, void */*sin*/, GBDATA */*gbd*/) {
     return 0;
 }
 
-static int gbcms_talking_put_update(int socket, long *hsin, void *sin, GBDATA * gbd_dummy)
-{
+static int gbcms_talking_put_update(int socket, long */*hsin*/, void */*sin*/, GBDATA */*gbd*/) {
     /* Reads
      * - the date
      * - and all changed data
@@ -750,11 +742,7 @@ static int gbcms_talking_put_update(int socket, long *hsin, void *sin, GBDATA * 
     gbcms_create_struct *cs[1], *cs_main[1];
     long                *buffer;
     bool                 end;
-    Hs_struct           *hs = (Hs_struct *) hsin;
 
-    // GBUSE(hs); GBUSE(sin);
-    sin        = sin;
-    gbd_dummy  = gbd_dummy;
     cs_main[0] = 0;
     buffer     = (long *) GB_give_buffer(1024);
     end        = false;
@@ -801,13 +789,7 @@ static int gbcms_talking_put_update(int socket, long *hsin, void *sin, GBDATA * 
     return 0;
 }
 
-static int gbcms_talking_updated(int socket, long *hsin, void *sin, GBDATA *gbd)
-{
-    struct Hs_struct *hs = (struct Hs_struct *)hsin;
-    // GBUSE(hs);
-    socket = socket;
-    gbd = gbd;
-    sin = sin;
+static int gbcms_talking_updated(int /*socket*/, long */*hsin*/, void */*sin*/, GBDATA */*gbd*/) {
     return 0;
 }
 
@@ -961,12 +943,10 @@ static int gbcms_talking_begin_transaction(int socket, long *hsin, void *sin, lo
     return 0;
 }
 
-static int gbcms_talking_commit_transaction(int socket, long *hsin, void *sin, GBDATA *gbd) {
+static int gbcms_talking_commit_transaction(int socket, long */*hsin*/, void */*sin*/, GBDATA *gbd) {
     // command: GBCM_COMMAND_COMMIT_TRANSACTION
-    GB_ERROR error = 0;
-    struct Hs_struct *hs = (struct Hs_struct *)hsin;
-    // GBUSE(hs);
-    sin = sin;
+    
+    GB_ERROR error          = 0;
     if ((error = gbcm_test_address((long *)gbd, GBTUM_MAGIC_NUMBER))) {
         GB_export_errorf("address %p not valid 4783", gbd);
         GB_print_error();
@@ -984,12 +964,10 @@ static int gbcms_talking_commit_transaction(int socket, long *hsin, void *sin, G
     return GBCM_SERVER_OK;
 }
 
-static int gbcms_talking_abort_transaction(int socket, long *hsin, void *sin, GBDATA *gbd) {
+static int gbcms_talking_abort_transaction(int socket, long */*hsin*/, void */*sin*/, GBDATA *gbd) {
     // command: GBCM_COMMAND_ABORT_TRANSACTION
+
     GB_ERROR error;
-    struct Hs_struct *hs = (struct Hs_struct *)hsin;
-    // GBUSE(hs);
-    sin = sin;
     if ((error = gbcm_test_address((long *)gbd, GBTUM_MAGIC_NUMBER))) {
         GB_export_errorf("address %p not valid 4356", gbd);
         GB_print_error();
@@ -1086,8 +1064,9 @@ static int gbcms_talking_undo(int socket, long *hsin, void *sin, GBDATA *gbd) {
     return GBCM_SERVER_OK;
 }
 
-static int gbcms_talking_find(int socket, long *hsin, void *sin, GBDATA * gbd) {
+static int gbcms_talking_find(int socket, long */*hsin*/, void */*sin*/, GBDATA * gbd) {
     // command: GBCM_COMMAND_FIND
+    
     GB_ERROR  error;
     char     *key;
     char     *val1      = 0;
@@ -1095,9 +1074,6 @@ static int gbcms_talking_find(int socket, long *hsin, void *sin, GBDATA * gbd) {
     long      val2      = 0;
     GB_TYPES  type;
     void     *buffer[2];
-
-    struct Hs_struct *hs = (struct Hs_struct *) hsin;
-    // GBUSE(hs);GBUSE(sin);
 
     if ((error = gbcm_test_address((long *) gbd, GBTUM_MAGIC_NUMBER))) {
         GB_export_errorf("address %p not valid 8734", gbd);
@@ -1170,15 +1146,13 @@ static int gbcms_talking_find(int socket, long *hsin, void *sin, GBDATA * gbd) {
     return 0;
 }
 
-static int gbcms_talking_key_alloc(int socket, long *hsin, void *sin, GBDATA * gbd) {
+static int gbcms_talking_key_alloc(int socket, long */*hsin*/, void */*sin*/, GBDATA * gbd) {
     // command: GBCM_COMMAND_KEY_ALLOC
     // (old maybe wrong comment: "do a query in the server")
 
-    GB_ERROR          error;
-    char             *key;
-    long              index;
-    struct Hs_struct *hs = (struct Hs_struct *) hsin;
-    // GBUSE(hs);GBUSE(sin);
+    GB_ERROR  error;
+    char     *key;
+    long      index;
 
     if ((error = gbcm_test_address((long *) gbd, GBTUM_MAGIC_NUMBER))) {
         GB_export_errorf("address %p not valid 8734", gbd);
@@ -1205,11 +1179,8 @@ static int gbcms_talking_key_alloc(int socket, long *hsin, void *sin, GBDATA * g
     return GBCM_SERVER_OK;
 }
 
-static int gbcms_talking_disable_wait_for_new_request(int socket, long *hsin, void *sin, GBDATA *gbd) {
+static int gbcms_talking_disable_wait_for_new_request(int /*socket*/, long *hsin, void */*sin*/, GBDATA */*gbd*/) {
     struct Hs_struct *hs = (struct Hs_struct *) hsin;
-    // GBUSE(socket);
-    // GBUSE(sin);
-    // GBUSE(gbd);
     hs->wait_for_new_request--;
     return GBCM_SERVER_OK_WAIT;
 }
