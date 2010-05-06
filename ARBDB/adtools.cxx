@@ -35,20 +35,9 @@ GBDATA *GBT_find_or_create(GBDATA *Main, const char *key, long delete_level)
  *       return the same atm. That may change.
  */
 
-char *GBT_get_default_helix(GBDATA *gb_main) {
-    // GBUSE(gb_main);
-    return strdup("HELIX");
-}
-
-char *GBT_get_default_helix_nr(GBDATA *gb_main) {
-    // GBUSE(gb_main);
-    return strdup("HELIX_NR");
-}
-
-char *GBT_get_default_ref(GBDATA *gb_main) {
-    // GBUSE(gb_main);
-    return strdup("ECOLI");
-}
+char *GBT_get_default_helix   (GBDATA *) { return strdup("HELIX"); }
+char *GBT_get_default_helix_nr(GBDATA *) { return strdup("HELIX_NR"); }
+char *GBT_get_default_ref     (GBDATA *) { return strdup("ECOLI"); }
 
 
 GB_ERROR GBT_check_arb_file(const char *name) {
@@ -157,8 +146,7 @@ static long gbs_scan_db_insert(const char *key, long val, void *cd_insert_data) 
     return val;
 }
 
-static int gbs_scan_db_compare(const void *left, const void *right, void *unused) {
-    // GBUSE(unused);
+static int gbs_scan_db_compare(const void *left, const void *right, void *) {
     return strcmp((GB_CSTR)left+1, (GB_CSTR)right+1);
 }
 
@@ -211,11 +199,8 @@ char **GBT_scan_db(GBDATA *gbd, const char *datapath) {
 // --------------------------
 //      message injection
 
-static void new_gbt_message_created_cb(GBDATA *gb_pending_messages, int *cd, GB_CB_TYPE cbt) {
+static void new_gbt_message_created_cb(GBDATA *gb_pending_messages, int */*cd*/, GB_CB_TYPE /*cbt*/) {
     static int avoid_deadlock = 0;
-
-    // GBUSE(cd);
-    // GBUSE(cbt);
 
     if (!avoid_deadlock) {
         GBDATA *gb_msg;

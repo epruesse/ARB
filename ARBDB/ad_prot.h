@@ -73,7 +73,7 @@ size_t GBS_hash_count_elems(GB_HASH *hs);
 size_t GBS_hash_count_value(GB_HASH *hs, long val);
 const char *GBS_hash_next_element_that(GB_HASH *hs, const char *last_key, bool (*condition)(const char *key, long val, void *cd), void *cd);
 void GBS_hash_do_sorted_loop(GB_HASH *hs, gb_hash_loop_type func, gbs_hash_compare_function sorter, void *client_data);
-int GBS_HCF_sortedByKey(const char *k0, long v0, const char *k1, long v1);
+int GBS_HCF_sortedByKey(const char *k0, long dummy_1x, const char *k1, long dummy_2x);
 GB_NUMHASH *GBS_create_numhash(size_t estimated_elements);
 long GBS_read_numhash(GB_NUMHASH *hs, long key);
 long GBS_write_numhash(GB_NUMHASH *hs, long key, long val);
