@@ -1163,14 +1163,10 @@ long gb_read_bin(FILE *in, GBCONTAINER *gbd, int diff_file_allowed)
     nodecnt = gb_read_in_long(in, reversed);
     GB_give_buffer(256);
 
-    if (version==1)         // teste auf map file falls version == 1
-    {
+    if (version==1) {                               // teste auf map file falls version == 1
+        long    mode = GB_mode_of_link(Main->path); // old master
         GB_CSTR map_path;
-        int merror;
-        struct gb_map_header mheader;
-        long    mode;
-        int ok=0;
-        mode = GB_mode_of_link(Main->path); // old master
+
         if (S_ISLNK(mode)) {
             char *path2 = GB_follow_unix_link(Main->path);
             map_path = gb_mapfile_name(path2);
@@ -1179,51 +1175,57 @@ long gb_read_bin(FILE *in, GBCONTAINER *gbd, int diff_file_allowed)
         else {
             map_path = gb_mapfile_name(Main->path);
         }
-        merror = gb_is_valid_mapfile(map_path, &mheader, 0);
-        if (merror>0)
-        {
-            if (gb_main_array[mheader.main_idx]==NULL)
-            {
-                GBCONTAINER *newGbd = (GBCONTAINER*)gb_map_mapfile(map_path);
 
-                if (newGbd)
-                {
-                    GBCONTAINER     *father = GB_FATHER(gbd);
-                    GB_MAIN_IDX     new_idx = mheader.main_idx,
-                        old_idx = father->main_idx;
+        bool          mapped          = false;
+        GB_ERROR      map_fail_reason = NULL;
+        gb_map_header mheader;
 
-                    GB_commit_transaction((GBDATA*)gbd);
+        switch (gb_is_valid_mapfile(map_path, &mheader, 0)) {
+            case -1: map_fail_reason = GBS_global_string("no FastLoad File '%s' found", map_path); break;
+            case  0: map_fail_reason = GB_await_error(); break;
+            case  1: {
+                if (gb_main_array[mheader.main_idx]==NULL) {
+                    GBCONTAINER *newGbd = (GBCONTAINER*)gb_map_mapfile(map_path);
 
-                    gb_assert(newGbd->main_idx == new_idx);
-                    gb_assert((new_idx % GB_MAIN_ARRAY_SIZE) == new_idx);
+                    if (newGbd) {
+                        GBCONTAINER *father  = GB_FATHER(gbd);
+                        GB_MAIN_IDX  new_idx = mheader.main_idx;
+                        GB_MAIN_IDX  old_idx = father->main_idx;
 
-                    gb_main_array[new_idx] = Main;
-                    Main->data = newGbd;
-                    father->main_idx = new_idx;
+                        GB_commit_transaction((GBDATA*)gbd);
 
-                    gbd = newGbd;
-                    SET_GB_FATHER(gbd, father);
+                        gb_assert(newGbd->main_idx == new_idx);
+                        gb_assert((new_idx % GB_MAIN_ARRAY_SIZE) == new_idx);
 
-                    gb_main_array[old_idx]    = NULL;
+                        gb_main_array[new_idx] = Main;
+                        Main->data = newGbd;
+                        father->main_idx = new_idx;
 
-                    GB_begin_transaction((GBDATA*)gbd);
-                    ok=1;
+                        gbd = newGbd;
+                        SET_GB_FATHER(gbd, father);
+
+                        gb_main_array[old_idx]    = NULL;
+
+                        GB_begin_transaction((GBDATA*)gbd);
+                        mapped = true;
+                    }
                 }
+                else {
+                    map_fail_reason = GBS_global_string("FastLoad-File index conflict (%s, %i)", map_path, mheader.main_idx);
+                }
+            
+                break;
             }
-            else {
-                GB_export_errorf("FastLoad-File index conflict (%s)", map_path);
-            }
+            default: gb_assert(0); break;
         }
-        else {
-            if (!merror) {
-                GB_warning(GB_await_error());
-            }
-            else {
-                GB_informationf("ARB: no FastLoad File '%s' found: loading entire database", map_path);
-            }
-        }
-        if (ok) return 0;
+
+        gb_assert(mapped || map_fail_reason);
+
+        if (mapped) return 0; // succeded loading mapfile -> no need to load normal DB file
+        GB_informationf("ARB: %s => loading entire DB", map_fail_reason);
     }
+
+    // load binary DB file
 
     switch (version) {
         case 0:
@@ -1268,29 +1270,24 @@ long gb_read_bin(FILE *in, GBCONTAINER *gbd, int diff_file_allowed)
 // ----------------------
 //      OPEN DATABASE
 
-long gb_next_main_idx_for_mapfile;
+long gb_next_main_idx_for_mapfile = 0;
 
 void GB_set_next_main_idx(long idx) {
     gb_next_main_idx_for_mapfile = idx;
 }
 
-GB_MAIN_IDX gb_make_main_idx(GB_MAIN_TYPE *Main)
-{
+GB_MAIN_IDX gb_make_main_idx(GB_MAIN_TYPE *Main) {
     static int initialized = 0;
     GB_MAIN_IDX idx;
 
-    if (!initialized)
-    {
-        for (idx=0; idx<GB_MAIN_ARRAY_SIZE; idx++)
-            gb_main_array[idx] = NULL;
+    if (!initialized) {
+        for (idx=0; idx<GB_MAIN_ARRAY_SIZE; idx++) gb_main_array[idx] = NULL;
         initialized = 1;
     }
     if (gb_next_main_idx_for_mapfile<=0) {
-        while (1)   // search for unused array index
-        {
-            idx = (short)(time(NULL) % GB_MAIN_ARRAY_SIZE);
-            if (gb_main_array[idx]==NULL)
-                break;
+        while (1) {                                 // search for unused array index
+            idx = (short)GB_random(GB_MAIN_ARRAY_SIZE);
+            if (gb_main_array[idx]==NULL) break;
         }
     }
     else {
@@ -1301,8 +1298,16 @@ GB_MAIN_IDX gb_make_main_idx(GB_MAIN_TYPE *Main)
     gb_assert((idx%GB_MAIN_ARRAY_SIZE) == idx);
 
     gb_main_array[idx] = Main;
-
     return idx;
+}
+
+void gb_release_main_idx(GB_MAIN_TYPE *Main) {
+    if (Main->dummy_father) {
+        GB_MAIN_IDX idx = Main->dummy_father->main_idx;
+
+        gb_assert(gb_main_array[idx] == Main);
+        gb_main_array[idx] = NULL;
+    }
 }
 
 GB_ERROR gb_login_remote(GB_MAIN_TYPE *Main, const char *path, const char *opent) {
@@ -1626,6 +1631,7 @@ GBDATA *GB_login(const char *cpath, const char *opent, const char *user) {
     gb_assert(error || gbd);
 
     if (error) {
+        gb_release_main_idx(Main);
         GB_export_error(error);
         gbd = 0;
     }
