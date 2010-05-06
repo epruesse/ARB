@@ -1554,8 +1554,7 @@ static void build_taxonomy_rek(GBT_TREE *node, GB_HASH *tax_hash, const char *pa
 
 static GB_HASH *cached_taxonomies = 0;
 
-static bool is_cached_taxonomy(const char *key, long val, void *cl_ct) {
-    // GBUSE(key);
+static bool is_cached_taxonomy(const char */*key*/, long val, void *cl_ct) {
     struct cached_taxonomy *ct1 = (struct cached_taxonomy *)val;
     struct cached_taxonomy *ct2 = (struct cached_taxonomy *)cl_ct;
 
@@ -1573,7 +1572,7 @@ static const char *tree_of_cached_taxonomy(struct cached_taxonomy *ct) {
     return tree;
 }
 
-static void flush_taxonomy_cb(GBDATA *gbd, int *cd_ct, GB_CB_TYPE cbt) {
+static void flush_taxonomy_cb(GBDATA *gbd, int *cd_ct, GB_CB_TYPE /*cbt*/) {
     /* this cb is bound all tree db members below "/tree_data/tree_xxx" which
      * may have an effect on the displayed taxonomy
      * it invalidates cached taxonomies for that tree (when changed or deleted)
@@ -1582,8 +1581,6 @@ static void flush_taxonomy_cb(GBDATA *gbd, int *cd_ct, GB_CB_TYPE cbt) {
     struct cached_taxonomy *ct    = (struct cached_taxonomy *)cd_ct;
     const char             *found = 0;
     GB_ERROR                error = 0;
-
-    // GBUSE(cbt);
 
     found = tree_of_cached_taxonomy(ct);
 
@@ -2353,12 +2350,10 @@ struct diff_params {
     char equalC;
     char diffC;
 };
-static char *calc_diff(const char *seq, const char *filter, size_t flen, void *paramP) {
+static char *calc_diff(const char *seq, const char *filter, size_t /*flen*/, void *paramP) {
     // filters 'seq' through 'filter'
     // - replace all equal     positions by 'equal_char' (if != 0)
     // - replace all differing positions by 'diff_char'  (if != 0)
-
-    // GBUSE(flen);
 
     struct diff_params *param = (struct diff_params*)paramP;
     char equal_char = param->equalC;

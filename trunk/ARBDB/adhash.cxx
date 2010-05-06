@@ -810,9 +810,7 @@ void GBS_hash_do_sorted_loop(GB_HASH *hs, gb_hash_loop_type func, gbs_hash_compa
     free(mtab);
 }
 
-int GBS_HCF_sortedByKey(const char *k0, long v0, const char *k1, long v1) {
-    // GBUSE(v0);
-    // GBUSE(v1);
+int GBS_HCF_sortedByKey(const char *k0, long /*v0*/, const char *k1, long /*v1*/) {
     return strcmp(k0, k1);
 }
 

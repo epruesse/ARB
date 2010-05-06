@@ -106,9 +106,9 @@ GBDATA *GBT_open_table_field(GBDATA *gb_table, const char *fieldname, GB_TYPES t
 
 /* adtools.cxx */
 GBDATA *GBT_find_or_create(GBDATA *Main, const char *key, long delete_level);
-char *GBT_get_default_helix(GBDATA *gb_main);
-char *GBT_get_default_helix_nr(GBDATA *gb_main);
-char *GBT_get_default_ref(GBDATA *gb_main);
+char *GBT_get_default_helix(GBDATA *);
+char *GBT_get_default_helix_nr(GBDATA *);
+char *GBT_get_default_ref(GBDATA *);
 GB_ERROR GBT_check_arb_file(const char *name);
 char **GBT_scan_db(GBDATA *gbd, const char *datapath);
 void GBT_install_message_handler(GBDATA *gb_main);

@@ -175,11 +175,8 @@ static O_gbdByKey *g_b_opti_createGbdByKey(GB_MAIN_TYPE *Main)
     return gbk;
 }
 
-static void g_b_opti_freeGbdByKey(GB_MAIN_TYPE *Main, O_gbdByKey *gbk)
-{
-    int idx;
-    // GBUSE(Main);
-    for (idx=0; idx<gbdByKey_cnt; idx++) free(gbk[idx].gbds);
+static void g_b_opti_freeGbdByKey(O_gbdByKey *gbk) {
+    for (int idx=0; idx<gbdByKey_cnt; idx++) free(gbk[idx].gbds);
     free(gbk);
 }
 
@@ -2545,7 +2542,7 @@ GB_ERROR gb_create_dictionaries(GB_MAIN_TYPE *Main, long maxmem) {
 
         printf("Done.\n");
 
-        g_b_opti_freeGbdByKey(Main, gbk);
+        g_b_opti_freeGbdByKey(gbk);
     }
 
     return error;
