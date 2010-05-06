@@ -691,6 +691,9 @@ int gb_is_valid_mapfile(const char *path, struct gb_map_header *mheader, int ver
 
 #if ( MEMORY_TEST == 1)
     // Don't map anything in memory debug mode
+    UNUSED_IN_MEMTEST(path);
+    UNUSED_IN_MEMTEST(mheader);
+    UNUSED_IN_MEMTEST(verbose);
     return -1;
 #else
     FILE *in = fopen(path, "r");

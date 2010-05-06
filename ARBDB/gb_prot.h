@@ -86,9 +86,6 @@ void gbl_install_standard_commands(GBDATA *gb_main);
 
 /* admalloc.cxx */
 void gbm_init_mem(void);
-void gbm_put_memblk_impl(char *memblk, size_t size);
-char *gbm_get_mem_impl(size_t size, long index);
-void gbm_free_mem_impl(char *data, size_t size, long index);
 void gbm_debug_mem(GB_MAIN_TYPE *Main);
 
 /* adoptimize.cxx */

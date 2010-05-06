@@ -223,22 +223,6 @@ void gbm_init_mem()
 
     gbb_cluster[GBB_CLUSTERS].size  = INT_MAX;
     gbb_cluster[GBB_CLUSTERS].first = NULL;
-
-    // give some block to memory-management (testwise)
-
-#if (defined(DEBUG) && 0)
-    {
-
-        int i;
-
-        for (i=200; i<3000; i+=1)
-        {
-            char *someMem = (char*)calloc(1, (size_t)i);
-
-            if (someMem) gbm_put_memblk(someMem, i);
-        }
-    }
-#endif
 }
 
 void GB_memerr()
@@ -307,8 +291,7 @@ static int getClusterIndex(size_t size) /* searches the index of the
     return l;
 }
 
-void gbm_put_memblk_impl(char *memblk, size_t size)
-{
+static void gbm_put_memblk(char *memblk, size_t size) {
     /* gives any memory block (allocated or not)
        into the responsibility of this module;
        the block has to be aligned!!! */
@@ -344,8 +327,7 @@ void gbm_put_memblk_impl(char *memblk, size_t size)
     TEST();
 }
 
-static char *gbm_get_memblk_impl(size_t size)
-{
+static char *gbm_get_memblk(size_t size) {
     struct gbb_data  *block = NULL;
     int           trials = GBB_MAX_TRIALS,
         idx;
@@ -424,8 +406,7 @@ inline void *GB_MEMALIGN(size_t alignment, size_t size) {
     return mem;
 }
 
-char *gbm_get_mem_impl(size_t size, long index)
-{
+char *gbmGetMemImpl(size_t size, long index) {
     unsigned long           nsize, pos;
     char                   *erg;
     struct gbm_data_struct *gds;
@@ -484,8 +465,7 @@ char *gbm_get_mem_impl(size_t size, long index)
     return erg;
 }
 
-void gbm_free_mem_impl(char *data, size_t size, long index)
-{
+void gbmFreeMemImpl(char *data, size_t size, long index) {
     long               nsize, pos;
     struct gbm_struct *ggi;
 

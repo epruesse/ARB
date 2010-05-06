@@ -41,6 +41,8 @@ typedef gb_if_entries          *GB_REL_IFES;
 typedef gb_index_files_struct  *GB_REL_IFS;
 typedef gb_if_entries         **GB_REL_PIFES;
 
+#define UNUSED_IN_MEMTEST(param) param = param
+
 #else
 
 typedef long GB_REL_ADD;
@@ -99,17 +101,18 @@ enum ARB_MEMORY_INDEX {
 
 #if (MEMORY_TEST==1)
 
-#define gbm_put_memblk(block, size)
-#define gbm_get_memblk(size)            (char*)(GB_calloc(1, size))
-#define gbm_get_mem(size, index)        (char*)(GB_calloc(1, size))
-#define gbm_free_mem(block, size, index) free(block)
+void *GB_calloc(unsigned int nelem, unsigned int elsize);
+
+inline char *gbm_get_mem(size_t size, long )          { return (char*)GB_calloc(1, size); }
+inline void gbm_free_mem(char *block, size_t , long ) { free(block); }
 
 #else
 
-#define gbm_put_memblk(block, size)    gbm_put_memblk_impl(block, size)
-#define gbm_get_memblk(size)           gbm_get_memblk_impl(size)
-#define gbm_get_mem(size, index)       gbm_get_mem_impl(size, index)
-#define gbm_free_mem(block, size, index) gbm_free_mem_impl(block, size, index)
+char *gbmGetMemImpl(size_t size, long index);
+void gbmFreeMemImpl(char *data, size_t size, long index);
+
+inline char *gbm_get_mem(size_t size, long index)              { return gbmGetMemImpl(size, index); }
+inline void gbm_free_mem(char *block, size_t size, long index) { gbmFreeMemImpl(block, size, index); }
 
 #endif
 
