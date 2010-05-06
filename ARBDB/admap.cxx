@@ -623,7 +623,7 @@ static void freeGbdByKey(GB_MAIN_TYPE *Main, gbdByKey *gbk)
    save
    ******************************************************** */
 
-int gb_save_mapfile(GB_MAIN_TYPE *Main, GB_CSTR path) {
+GB_ERROR gb_save_mapfile(GB_MAIN_TYPE *Main, GB_CSTR path) {
     GB_ERROR error = NULL;
 
     gb_gbk = createGbdByKey(Main);
@@ -678,11 +678,7 @@ int gb_save_mapfile(GB_MAIN_TYPE *Main, GB_CSTR path) {
         }
     }
 
-    if (error) {
-        GB_export_error(error);
-        return -1;
-    }
-    return 0;
+    return error;
 }
 
 int gb_is_valid_mapfile(const char *path, struct gb_map_header *mheader, int verbose) {

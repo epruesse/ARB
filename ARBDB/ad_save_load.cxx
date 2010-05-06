@@ -958,7 +958,7 @@ GB_ERROR GB_save_as(GBDATA *gb, const char *path, const char *savetype) {
                                 // it's necessary to save the mapfile FIRST,
                                 // cause this re-orders all GB_CONTAINERs containing NULL-entries in their header
                                 sec_mappath = strdup(gb_overwriteName(mappath));
-                                result |= gb_save_mapfile(Main, sec_mappath);
+                                error       = gb_save_mapfile(Main, sec_mappath);
                             }
                             else GB_unlink_or_warn(mappath, &error); // delete old mapfile
                             if (!error) result |= gb_write_bin(out, gb, 1);
