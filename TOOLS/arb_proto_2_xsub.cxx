@@ -447,6 +447,8 @@ class Parameter {
     Type   type;
     string name;
 
+    static long nonameCount;
+
 public:
     Parameter() {}
     Parameter(const char *code) {
@@ -461,6 +463,10 @@ public:
             string type_def(code, name_start-code);
             name = string(name_start, last-name_start+1);
             type = Type(type_def.c_str());
+
+            if (type.possible_in_xsub() && !type.isVoid() && name.empty()) {
+                name = GBS_global_string("noName%li", ++nonameCount);
+            }
         }
         else if (strcmp(name_start, "void") == 0) {
             string no_type(name_start, last-name_start+1);
@@ -481,6 +487,8 @@ public:
     string perl_typed_param() const { return concat_type_and_name(type.perl_decl(), name); }
     string c_typed_param   () const { return concat_type_and_name(type.c_decl   (), name); }
 };
+
+long Parameter::nonameCount = 0;
 
 // ------------------
 //      Prototype
