@@ -36,7 +36,7 @@ inline char *GB_EXTERN_DATA_DATA(struct gb_extern_data& ex) { return GB_RESOLVE(
 inline void SET_GB_EXTERN_DATA_DATA(gb_extern_data& ex, char *data) { GB_SETREL(&ex, rel_data, data); }
 
 inline void GB_CREATE_EXT(GBDATA *gbd) { if (!gbd->ext) gb_create_extended(gbd); }
-inline void _GB_DELETE_EXT(GBDATA *gbd, long gbm_index) {
+inline void GB_DELETE_EXT(GBDATA *gbd, long gbm_index) {
     if (gbd->ext) {
         gbm_free_mem((char *) gbd->ext, sizeof(struct gb_db_extended), gbm_index);
         gbd->ext = 0;
