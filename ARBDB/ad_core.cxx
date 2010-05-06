@@ -449,7 +449,7 @@ void gb_pre_delete_entry(GBDATA *gbd) {
         gb_free_cache(Main, gbd);
     }
     GB_FREE_TRANSACTION_SAVE(gbd);
-    _GB_DELETE_EXT(gbd, gbm_index);
+    GB_DELETE_EXT(gbd, gbm_index);
 }
 
 void gb_delete_entry(GBDATA **gbd_ptr) {
