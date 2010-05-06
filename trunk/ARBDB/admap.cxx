@@ -194,12 +194,12 @@ static long getrel_GBDATA(long rel_to, GBDATA *gbd) {
    write - routines
    ******************************************************** */
 
-static int writeError;
+static bool writeError;
 
 void ftwrite_aligned(const void *ptr, size_t ali_siz, FILE *fil) {
     gb_assert(ali_siz == ALIGN(ali_siz));
     if (!writeError && fwrite((const char *)ptr, 1, ali_siz, fil) != ali_siz) {
-        writeError = 1;
+        writeError = true;
     }
 }
 
@@ -623,57 +623,66 @@ static void freeGbdByKey(GB_MAIN_TYPE *Main, gbdByKey *gbk)
    save
    ******************************************************** */
 
-int gb_save_mapfile(GB_MAIN_TYPE *Main, GB_CSTR path)
-{
-    struct gb_map_header mheader;
-    FILE *out;
-    long calcOffset,
-        writeOffset;
-    GB_MAIN_IDX main_idx;
-    GB_CSTR opath = gb_overwriteName(path);
+int gb_save_mapfile(GB_MAIN_TYPE *Main, GB_CSTR path) {
+    GB_ERROR error = NULL;
 
     gb_gbk = createGbdByKey(Main);
-    if (!gb_gbk) goto error;
+    if (!gb_gbk) error = GB_await_error();
+    else {
+        FILE *out  = fopen(path, "w");
+        writeError = out==NULL;                         // global flag
 
-    calcOffset = calcGbdOffsets(Main, gb_gbk);
+        gb_assert(ADMAP_ID_LEN <= strlen(ADMAP_ID));
 
-    // write file
+        if (!writeError) {
+            long calcOffset = calcGbdOffsets(Main, gb_gbk);
 
-    out = fopen(opath, "w");
-    writeError = out==NULL;     // global flag
+            struct gb_map_header mheader;
+            memset(&mheader, 0, sizeof(mheader));
+            strcpy(mheader.mapfileID, ADMAP_ID);        // header
 
-    gb_assert(ADMAP_ID_LEN <= strlen(ADMAP_ID));
-    memset(&mheader, 0, sizeof(mheader));
-    strcpy(mheader.mapfileID, ADMAP_ID); // header
+            mheader.version    = ADMAP_VERSION;
+            mheader.byte_order = ADMAP_BYTE_ORDER;
 
-    mheader.version = ADMAP_VERSION;
-    mheader.byte_order = ADMAP_BYTE_ORDER;
-    main_idx  = gb_make_main_idx(Main); // Generate a new main idx
-    mheader.main_idx = main_idx;
+            GB_MAIN_IDX main_idx_4_save = gb_make_main_idx(Main); // Generate a new main idx (temporary during save)
+            mheader.main_idx            = main_idx_4_save;
 
-    mheader.main_data_offset = getrel_GBDATA(1, (GBDATA*)Main->data)+1;
+            mheader.main_data_offset = getrel_GBDATA(1, (GBDATA*)Main->data)+1;
 
-    ftwrite_unaligned(&mheader, sizeof(mheader), out);
+            ftwrite_unaligned(&mheader, sizeof(mheader), out);
 
-    gb_assert(GB_FATHER(Main->data)==Main->dummy_father);
-    SET_GB_FATHER(Main->data, NULL);
-    writeOffset = writeGbdByKey(Main, gb_gbk, out, main_idx);
-    SET_GB_FATHER(Main->data, Main->dummy_father);
+            gb_assert(GB_FATHER(Main->data) == Main->dummy_father);
+            SET_GB_FATHER(Main->data, NULL);
+    
+            long writeOffset = writeGbdByKey(Main, gb_gbk, out, main_idx_4_save);
+            SET_GB_FATHER(Main->data, Main->dummy_father);
 
-    gb_assert(calcOffset==writeOffset);
+            gb_assert(calcOffset==writeOffset);
 
-    freeGbdByKey(Main, gb_gbk);
-    gb_gbk = NULL;
+            freeGbdByKey(Main, gb_gbk);
+            gb_gbk = NULL;
 
-    fclose(out);
-    if (!writeError) return 0;  // no error
+            if (fclose(out) != 0) writeError = true;
 
- error :
+            {
+                GB_MAIN_IDX org_main_idx     = Main->dummy_father->main_idx;
+                Main->dummy_father->main_idx = main_idx_4_save;
+                gb_release_main_idx(Main);
+                Main->dummy_father->main_idx = org_main_idx;
+            }
+        }
 
-    GB_export_errorf("Error while saving FastLoad-File '%s'", opath);
-    GB_unlink_or_warn(opath, NULL);
+        if (writeError) {
+            error = GB_IO_error("saving fastloadfile", path);
+            GB_unlink_or_warn(path, &error);
+        }
+    }
 
-    return -1;
+    if (error) {
+        GB_export_error(error);
+        return -1;
+    }
+    return 0;
 }
 
 int gb_is_valid_mapfile(const char *path, struct gb_map_header *mheader, int verbose) {

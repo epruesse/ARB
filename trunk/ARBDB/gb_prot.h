@@ -25,6 +25,7 @@ GBDATA *gb_search_system_folder_rek(GBDATA *gbd);
 void gb_search_system_folder(GBDATA *gb_main);
 long gb_read_bin(FILE *in, GBCONTAINER *gbd, int diff_file_allowed);
 GB_MAIN_IDX gb_make_main_idx(GB_MAIN_TYPE *Main);
+void gb_release_main_idx(GB_MAIN_TYPE *Main);
 GB_ERROR gb_login_remote(GB_MAIN_TYPE *Main, const char *path, const char *opent);
 
 /* ad_save_load.cxx */
