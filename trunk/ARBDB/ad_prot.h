@@ -133,7 +133,7 @@ GB_ERROR GB_optimize(GBDATA *gb_main);
 
 /* adsort.cxx */
 void GB_sort(void **array, size_t first, size_t behind_last, gb_compare_function compare, void *client_data);
-int GB_string_comparator(const void *v0, const void *v1, void *unused);
+int GB_string_comparator(const void *v0, const void *v1, void *);
 
 /* adstring.cxx */
 void GB_raise_critical_error(const char *msg);
@@ -349,7 +349,7 @@ void GB_write_flag(GBDATA *gbd, long flag);
 int GB_read_flag(GBDATA *gbd);
 void GB_touch(GBDATA *gbd);
 char GB_type_2_char(GB_TYPES type);
-GB_ERROR GB_print_debug_information(void *dummy, GBDATA *gb_main);
+GB_ERROR GB_print_debug_information(void *, GBDATA *gb_main);
 int GB_info(GBDATA *gbd);
 long GB_number_of_subentries(GBDATA *gbd);
 

@@ -778,7 +778,7 @@ GB_ERROR GBT_compress_sequence_tree2(GBDATA *gb_main, const char *tree_name, con
 
 #ifdef DEBUG
 
-void GBT_compression_test(void *dummy, GBDATA *gb_main) {
+void GBT_compression_test(void */*dummy_AW_root*/, GBDATA *gb_main) {
     GB_ERROR  error     = GB_begin_transaction(gb_main);
     char     *ali_name  = GBT_get_default_alignment(gb_main);
     char     *tree_name = GBT_read_string(gb_main, "focus/tree_name");

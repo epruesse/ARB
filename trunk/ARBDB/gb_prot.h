@@ -192,11 +192,9 @@ GB_CBUFFER gb_uncompress_data(GBDATA *gbd, GB_CBUFFER source, long size);
 char *gb_index_check_in(GBDATA *gbd);
 void gb_index_check_out(GBDATA *gbd);
 GBDATA *gb_index_find(GBCONTAINER *gbf, struct gb_index_files_struct *ifs, GBQUARK quark, const char *val, GB_CASE case_sens, int after_index);
-char *gb_set_undo_type(GBDATA *gb_main, GB_UNDO_TYPE type);
 void gb_init_undo_stack(GB_MAIN_TYPE *Main);
 void gb_free_undo_stack(GB_MAIN_TYPE *Main);
 char *gb_set_undo_sync(GBDATA *gb_main);
-char *gb_free_all_undos(GBDATA *gb_main);
 char *gb_disable_undo(GBDATA *gb_main);
 void gb_check_in_undo_create(GB_MAIN_TYPE *Main, GBDATA *gbd);
 void gb_check_in_undo_modify(GB_MAIN_TYPE *Main, GBDATA *gbd);
@@ -220,7 +218,7 @@ char *gbs_search_next_separator(const char *source, const char *seps);
 
 /* adsocket.cxx */
 void gbcms_sigpipe(int dummy_1x);
-void gbcm_read_flush(int socket);
+void gbcm_read_flush(void);
 long gbcm_read(int socket, char *ptr, long size);
 GBCM_ServerResult gbcm_write_flush(int socket);
 GBCM_ServerResult gbcm_write(int socket, const char *ptr, long size);

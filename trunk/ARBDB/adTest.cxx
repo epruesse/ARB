@@ -16,18 +16,12 @@ static const char *actType  = "none";
 static void       *actData  = NULL;
 static GBQUARK     actQuark = 0;
 
-void err_hook() {
-    int x=2;
-    x=x;
-}
-
 #define err(gbd, quark, type, mess) \
     do { \
         fprintf(stderr, "(%s*)0x%p(=%s) %s (in (%s*)0x%p(=%s))\n", \
             type, gbd, Main->keys[quark].key, mess, \
             actType, actData, Main->keys[actQuark].key); \
         err=1; \
-        err_hook(); \
     } while (0)
 
 #define errGBD(gbd, quark, mess) err(gbd, quark, "GBDATA", mess)
@@ -123,11 +117,9 @@ void gb_testDB(GBDATA *gbd)
 
     if (!gbc) {
         fprintf(stderr, "(GBDATA*)0x%p has no father\n", gbd);
-        err_hook();
     }
     if (!Main) {
         fprintf(stderr, "(GBCONTAINER*)0x%p has no main-entry\n", gbc);
-        err_hook();
     }
 
     gbc = Main->data;

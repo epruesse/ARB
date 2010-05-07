@@ -234,6 +234,10 @@ void GBCMS_shutdown(GBDATA *gbd) {
     }
 }
 
+#if defined(DEVEL_RALF)
+#warning rewrite gbcm_write_bin (error handling - do not export)
+#endif // DEVEL_RALF
+
 static GB_ERROR gbcm_write_bin(int socket, GBDATA *gbd, long *buffer, long mode, long deep, int send_headera) {
      /* send a database item to client/server
       *
@@ -671,7 +675,6 @@ static GBCM_ServerResult gbcms_talking_unfold(int socket, long */*hsin*/, void *
     // command: GBCM_COMMAND_UNFOLD
 
     GBCONTAINER *gbc = (GBCONTAINER *)gb_in;
-    GB_ERROR     error;
     GBDATA      *gb2;
     char        *buffer;
     long         deep[1];
@@ -687,11 +690,11 @@ static GBCM_ServerResult gbcms_talking_unfold(int socket, long */*hsin*/, void *
         return GBCM_SERVER_FAULT;
     }
 
-    gbcm_read_flush(socket);
+    gbcm_read_flush();
     buffer = GB_give_buffer(1014);
 
     if (index_pos[0]==-2) {
-        error = gbcm_write_bin(socket, gb_in, (long *)buffer, 1, deep[0]+1, 1);
+        GB_ERROR error = gbcm_write_bin(socket, gb_in, (long *)buffer, 1, deep[0]+1, 1);
         if (error) {
             return GBCM_SERVER_FAULT;
         }
@@ -715,7 +718,7 @@ static GBCM_ServerResult gbcms_talking_unfold(int socket, long */*hsin*/, void *
     }
     for (index = start; index < end; index++) {
         if ((gb2 = GBCONTAINER_ELEM(gbc, index))) {
-            error = gbcm_write_bin(socket, gb2, (long *)buffer, 1, deep[0], 1);
+            GB_ERROR error = gbcm_write_bin(socket, gb2, (long *)buffer, 1, deep[0], 1);
             if (error) {
                 return GBCM_SERVER_FAULT;
             }
@@ -773,7 +776,7 @@ static GBCM_ServerResult gbcms_talking_put_update(int socket, long */*hsin*/, vo
                 return GBCM_SERVER_FAULT;
         }
     }
-    gbcm_read_flush(socket);                        // send all id's of newly created objects
+    gbcm_read_flush();                        // send all id's of newly created objects
     for (cs[0] = cs_main[0]; cs[0]; cs[0]=cs_main[0]) {
         cs_main[0] = cs[0]->next;
         buffer[0] = (long)cs[0]->client_id;
@@ -813,7 +816,7 @@ static GBCM_ServerResult gbcms_talking_init_transaction(int socket, long *hsin, 
     Main = GB_MAIN(gb_main);
     gbd = gb_main;
     user = gbcm_read_string(socket);
-    gbcm_read_flush(socket);
+    gbcm_read_flush();
     if (gbcm_login((GBCONTAINER *)gbd, user)) {
         return GBCM_SERVER_FAULT;
     }
@@ -889,7 +892,7 @@ static GBCM_ServerResult gbcms_talking_begin_transaction(int socket, long *hsin,
 
     gb_main = hs->gb_main;
     gbd = gb_main;
-    gbcm_read_flush(socket);
+    gbcm_read_flush();
     gb_local->running_client_transaction = ARB_TRANS;
 
     if (gbcm_write_two(socket, GBCM_COMMAND_TRANSACTION_RETURN, GB_MAIN(gbd)->clock)) {
@@ -945,7 +948,7 @@ static GBCM_ServerResult commit_or_abort_transaction(int socket, GBDATA *gbd, AR
     RETURN_SERVER_FAULT_ON_BAD_ADDRESS(gbd);
     
     gb_local->running_client_transaction = commit_or_abort;
-    gbcm_read_flush(socket);
+    gbcm_read_flush();
 
     if (gbcm_write_two(socket, GBCM_COMMAND_TRANSACTION_RETURN, 0)) return GBCM_SERVER_FAULT;
     return gbcm_write_flush(socket);
@@ -960,24 +963,16 @@ static GBCM_ServerResult gbcms_talking_abort_transaction(int socket, long */*hsi
     return commit_or_abort_transaction(socket, gbd, ARB_ABORT);
 }
 
-static GBCM_ServerResult gbcms_talking_close(int socket, long *hsin, void *sin, GBDATA *gbd) {
+static GBCM_ServerResult gbcms_talking_close(int /*socket*/, long */*hsin*/, void */*sin*/, GBDATA */*gbd*/) {
     // command: GBCM_COMMAND_CLOSE
-    gbd = gbd;
-    socket = socket;
-    hsin = hsin;
-    sin = sin;
     return GBCM_SERVER_ABORTED;
 }
 
-static GBCM_ServerResult gbcms_talking_system(int socket, long *hsin, void *sin, GBDATA *gbd) {
+static GBCM_ServerResult gbcms_talking_system(int socket, long */*hsin*/, void */*sin*/, GBDATA */*gbd*/) {
     // command: GBCM_COMMAND_SYSTEM
     char *comm = gbcm_read_string(socket);
 
-    gbcm_read_flush(socket);
-    gbd    = gbd;
-    socket = socket;
-    hsin   = hsin;
-    sin    = sin;
+    gbcm_read_flush();
 
     GB_ERROR error = GB_system(comm);
     if (error) {
@@ -991,7 +986,7 @@ static GBCM_ServerResult gbcms_talking_system(int socket, long *hsin, void *sin,
     return gbcm_write_flush(socket);
 }
 
-static GBCM_ServerResult gbcms_talking_undo(int socket, long *hsin, void *sin, GBDATA *gbd) {
+static GBCM_ServerResult gbcms_talking_undo(int socket, long */*hsin*/, void */*sin*/, GBDATA *gbd) {
     // command: GBCM_COMMAND_UNDO
     long cmd;
     GB_ERROR result = 0;
@@ -999,9 +994,7 @@ static GBCM_ServerResult gbcms_talking_undo(int socket, long *hsin, void *sin, G
     if (gbcm_read_two(socket, GBCM_COMMAND_UNDO_CMD, 0, &cmd)) {
         return GBCM_SERVER_FAULT;
     }
-    gbcm_read_flush(socket);
-    hsin = hsin;
-    sin = sin;
+    gbcm_read_flush();
     switch (cmd) {
         case _GBCMC_UNDOCOM_REQUEST_NOUNDO:
             result = GB_request_undo_type(gbd, GB_UNDO_NONE);
@@ -1071,7 +1064,7 @@ static GBCM_ServerResult gbcms_talking_find(int socket, long */*hsin*/, void */*
 
     {
         GB_SEARCH_TYPE gbs = GB_SEARCH_TYPE(gbcm_read_long(socket));
-        gbcm_read_flush(socket);
+        gbcm_read_flush();
 
         if (type == GB_FIND) {
             gbd = GB_find(gbd, key, gbs);
@@ -1117,7 +1110,7 @@ static GBCM_ServerResult gbcms_talking_key_alloc(int socket, long */*hsin*/, voi
 
     RETURN_SERVER_FAULT_ON_BAD_ADDRESS(gbd);
     key = gbcm_read_string(socket);
-    gbcm_read_flush(socket);
+    gbcm_read_flush();
 
     if (key)
         index = gb_create_key(GB_MAIN(gbd), key, false);
@@ -1167,13 +1160,13 @@ static GBCM_ServerResult gbcms_talking(int con, long *hs, void *sin) {
     GBCM_ServerResult error;
     long              magic_number;
 
-    gbcm_read_flush(con);
+    gbcm_read_flush();
  next_command :
     len = gbcm_read(con, (char *)buf, sizeof(long) * 3);
     if (len == sizeof(long) * 3) {
         magic_number = buf[0];
         if ((magic_number & GBTUM_MAGIC_NUMBER_FILTER) != GBTUM_MAGIC_NUMBER) {
-            gbcm_read_flush(con);
+            gbcm_read_flush();
             fprintf(stderr, "Illegal Access\n");
             return GBCM_SERVER_FAULT;
         }
@@ -1182,7 +1175,7 @@ static GBCM_ServerResult gbcms_talking(int con, long *hs, void *sin) {
         if (error == GBCM_SERVER_OK_WAIT) {
             goto next_command;
         }
-        gbcm_read_flush(con);
+        gbcm_read_flush();
         if (!error) {
             buf[0] = GBCM_SERVER_OK;
             return GBCM_SERVER_OK;
@@ -1361,7 +1354,7 @@ GB_ERROR gbcm_unfold_client(GBCONTAINER *gbd, long deep, long index_pos) {
     GB_ERROR error = NULL;
 
     socket = GBCONTAINER_MAIN(gbd)->c_link->socket;
-    gbcm_read_flush(socket);
+    gbcm_read_flush();
 
     if      (gbcm_write_two  (socket, GBCM_COMMAND_UNFOLD, gbd->server_id)) error = SEND_ERROR();
     else if (gbcm_write_two  (socket, GBCM_COMMAND_SETDEEP, deep)) error = SEND_ERROR();
@@ -1384,7 +1377,7 @@ GB_ERROR gbcm_unfold_client(GBCONTAINER *gbd, long deep, long index_pos) {
             error = GB_export_errorf("GB_unfold (%s) read error", GB_read_key_pntr((GBDATA*)gbd));
         }
         else {
-            gbcm_read_flush(socket);
+            gbcm_read_flush();
             if (index_pos < 0) {
                 gbd->flags2.folded_container = 0;
             }
@@ -1396,6 +1389,10 @@ GB_ERROR gbcm_unfold_client(GBCONTAINER *gbd, long deep, long index_pos) {
 
 // -------------------------
 //      Client functions
+
+#if defined(DEVEL_RALF)
+#warning rewrite gbcmc_... (error handling - do not export)
+#endif // DEVEL_RALF
 
 GB_ERROR gbcmc_begin_sendupdate(GBDATA *gbd)
 {
@@ -1423,7 +1420,7 @@ GB_ERROR gbcmc_end_sendupdate(GBDATA *gbd)
         gbd->server_id = buffer[1];
         GBS_write_numhash(Main->remote_hash, gbd->server_id, (long)gbd);
     }
-    gbcm_read_flush(socket);
+    gbcm_read_flush();
     return 0;
 }
 
@@ -1573,7 +1570,7 @@ GB_ERROR gbcmc_begin_transaction(GBDATA *gbd)
         }
     }
  endof_gbcmc_begin_transaction :
-    gbcm_read_flush(socket);
+    gbcm_read_flush();
     return 0;
 }
 
@@ -1617,7 +1614,7 @@ GB_ERROR gbcmc_init_transaction(GBCONTAINER *gbd)
     error = gbcmc_read_keys(socket, (GBDATA *)gbd);
     if (error) return error;
 
-    gbcm_read_flush(socket);
+    gbcm_read_flush();
     return 0;
 }
 
@@ -1634,7 +1631,7 @@ GB_ERROR gbcmc_commit_transaction(GBDATA *gbd)
         return GB_export_error("ARB_DB CLIENT ERROR send failed");
     }
     gbcm_read_two(socket, GBCM_COMMAND_TRANSACTION_RETURN, 0, dummy);
-    gbcm_read_flush(socket);
+    gbcm_read_flush();
     return 0;
 }
 GB_ERROR gbcmc_abort_transaction(GBDATA *gbd)
@@ -1649,7 +1646,7 @@ GB_ERROR gbcmc_abort_transaction(GBDATA *gbd)
         return GB_export_error("ARB_DB CLIENT ERROR send failed");
     }
     gbcm_read_two(socket, GBCM_COMMAND_TRANSACTION_RETURN, 0, dummy);
-    gbcm_read_flush(socket);
+    gbcm_read_flush();
     return 0;
 }
 
@@ -1771,7 +1768,7 @@ GBDATA *GBCMC_find(GBDATA *gbd, const char *key, GB_TYPES type, const char *str,
         gbcmc_unfold_list(socket, gbd);
         result.l = GBS_read_numhash(Main->remote_hash, result.l);
     }
-    gbcm_read_flush(socket);
+    gbcm_read_flush();
     return result.gbd;
 }
 
@@ -1798,7 +1795,7 @@ long gbcmc_key_alloc(GBDATA *gbd, const char *key) {
         return 0;
     }
     gbcm_read_two(socket, GBCM_COMMAND_KEY_ALLOC_RES, 0, gb_result);
-    gbcm_read_flush(socket);
+    gbcm_read_flush();
     return gb_result[0];
 }
 
@@ -1831,7 +1828,7 @@ int GBCMC_system(GBDATA *gbd, const char *ss) { // goes to header: __ATTR__USERE
         return -1;
     }
     gbcm_read_two(socket, GBCM_COMMAND_SYSTEM_RETURN, 0, (long *)gb_result);
-    gbcm_read_flush(socket);
+    gbcm_read_flush();
     return 0;
 }
 
@@ -1852,7 +1849,7 @@ GB_ERROR gbcmc_send_undo_commands(GBDATA *gbd, enum gb_undo_commands command) { 
         else if (gbcm_write_flush(socket)) error = SEND_ERROR();
         else {
             error = gbcm_read_string(socket);
-            gbcm_read_flush(socket);
+            gbcm_read_flush();
         }
     }
     return error;
@@ -1881,7 +1878,7 @@ char *gbcmc_send_undo_info_commands(GBDATA *gbd, enum gb_undo_commands command) 
         return 0;
     }
     result = gbcm_read_string(socket);
-    gbcm_read_flush(socket);
+    gbcm_read_flush();
     return result;
 }
 

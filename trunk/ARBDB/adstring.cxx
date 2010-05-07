@@ -1555,10 +1555,8 @@ static char *g_bs_get_string_of_tag_hash(GB_HASH *tag_hash) {
     return GBS_strclose(merge_result);
 }
 
-long g_bs_free_hash_of_hashes_elem(const char *key, long val, void *dummy) {
+long g_bs_free_hash_of_hashes_elem(const char */*key*/, long val, void *) {
     GB_HASH *hash = (GB_HASH*)val;
-    // GBUSE(key);
-    // GBUSE(dummy);
     if (hash) GBS_free_hash(hash);
     return 0;
 }
