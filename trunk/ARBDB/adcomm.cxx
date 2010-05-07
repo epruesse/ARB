@@ -941,34 +941,23 @@ static GBCM_ServerResult gbcms_talking_begin_transaction(int socket, long *hsin,
     return GBCM_SERVER_OK;
 }
 
+static GBCM_ServerResult commit_or_abort_transaction(int socket, GBDATA *gbd, ARB_TRANS_TYPE commit_or_abort) {
+    RETURN_SERVER_FAULT_ON_BAD_ADDRESS(gbd);
+    
+    gb_local->running_client_transaction = commit_or_abort;
+    gbcm_read_flush(socket);
+
+    if (gbcm_write_two(socket, GBCM_COMMAND_TRANSACTION_RETURN, 0)) return GBCM_SERVER_FAULT;
+    return gbcm_write_flush(socket);
+}
 static GBCM_ServerResult gbcms_talking_commit_transaction(int socket, long */*hsin*/, void */*sin*/, GBDATA *gbd) {
     // command: GBCM_COMMAND_COMMIT_TRANSACTION
-
-    RETURN_SERVER_FAULT_ON_BAD_ADDRESS(gbd);
-    gb_local->running_client_transaction = ARB_COMMIT;
-    gbcm_read_flush(socket);
-    if (gbcm_write_two(socket, GBCM_COMMAND_TRANSACTION_RETURN, 0)) {
-        return GBCM_SERVER_FAULT;
-    }
-    if (gbcm_write_flush(socket)) {
-        return GBCM_SERVER_FAULT;
-    }
-    return GBCM_SERVER_OK;
+    return commit_or_abort_transaction(socket, gbd, ARB_COMMIT);
 }
 
 static GBCM_ServerResult gbcms_talking_abort_transaction(int socket, long */*hsin*/, void */*sin*/, GBDATA *gbd) {
     // command: GBCM_COMMAND_ABORT_TRANSACTION
-
-    RETURN_SERVER_FAULT_ON_BAD_ADDRESS(gbd);
-    gb_local->running_client_transaction = ARB_ABORT;
-    gbcm_read_flush(socket);
-    if (gbcm_write_two(socket, GBCM_COMMAND_TRANSACTION_RETURN, 0)) {
-        return GBCM_SERVER_FAULT;
-    }
-    if (gbcm_write_flush(socket)) {
-        return GBCM_SERVER_FAULT;
-    }
-    return GBCM_SERVER_OK;
+    return commit_or_abort_transaction(socket, gbd, ARB_ABORT);
 }
 
 static GBCM_ServerResult gbcms_talking_close(int socket, long *hsin, void *sin, GBDATA *gbd) {
@@ -999,10 +988,7 @@ static GBCM_ServerResult gbcms_talking_system(int socket, long *hsin, void *sin,
     if (gbcm_write_two(socket, GBCM_COMMAND_SYSTEM_RETURN, 0)) {
         return GBCM_SERVER_FAULT;
     }
-    if (gbcm_write_flush(socket)) {
-        return GBCM_SERVER_FAULT;
-    }
-    return GBCM_SERVER_OK;
+    return gbcm_write_flush(socket);
 }
 
 static GBCM_ServerResult gbcms_talking_undo(int socket, long *hsin, void *sin, GBDATA *gbd) {
@@ -1045,10 +1031,7 @@ static GBCM_ServerResult gbcms_talking_undo(int socket, long *hsin, void *sin, G
         return GBCM_SERVER_FAULT;
     }
     if (to_free) free(to_free);
-    if (gbcm_write_flush(socket)) {
-        return GBCM_SERVER_FAULT;
-    }
-    return GBCM_SERVER_OK;
+    return gbcm_write_flush(socket);
 }
 
 static GBCM_ServerResult gbcms_talking_find(int socket, long */*hsin*/, void */*sin*/, GBDATA * gbd) {
@@ -1122,10 +1105,7 @@ static GBCM_ServerResult gbcms_talking_find(int socket, long */*hsin*/, void */*
     buffer[1] = NULL;
     gbcm_write(socket, (const char *) buffer, sizeof(long) * 2);
 
-    if (gbcm_write_flush(socket)) {
-        return GBCM_SERVER_FAULT;
-    }
-    return GBCM_SERVER_OK;
+    return gbcm_write_flush(socket);
 }
 
 static GBCM_ServerResult gbcms_talking_key_alloc(int socket, long */*hsin*/, void */*sin*/, GBDATA * gbd) {
@@ -1150,10 +1130,7 @@ static GBCM_ServerResult gbcms_talking_key_alloc(int socket, long */*hsin*/, voi
     if (gbcm_write_two(socket, GBCM_COMMAND_KEY_ALLOC_RES, index)) {
         return GBCM_SERVER_FAULT;
     }
-    if (gbcm_write_flush(socket)) {
-        return GBCM_SERVER_FAULT;
-    }
-    return GBCM_SERVER_OK;
+    return gbcm_write_flush(socket);
 }
 
 static GBCM_ServerResult gbcms_talking_disable_wait_for_new_request(int /*socket*/, long *hsin, void */*sin*/, GBDATA */*gbd*/) {
