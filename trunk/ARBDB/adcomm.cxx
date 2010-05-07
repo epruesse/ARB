@@ -318,6 +318,15 @@ static GB_ERROR gbcm_write_bin(int socket, GBDATA *gbd, long *buffer, long mode,
     return 0;
 }
 
+#define RETURN_SERVER_FAULT_ON_BAD_ADDRESS(ptr)                         \
+    do {                                                                \
+        GB_ERROR error = gbcm_test_address((long*)(ptr), GBTUM_MAGIC_NUMBER); \
+        if (error) {                                                    \
+            GB_warningf("%s (%s, #%i)", error, __FILE__, __LINE__);     \
+            return GBCM_SERVER_FAULT;                                   \
+        }                                                               \
+    } while (0)
+
 static GBCM_ServerResult gbcm_read_bin(int socket, GBCONTAINER *gbd, long *buffer, long mode, GBDATA *gb_source, void *cs_main) {
      /* read an entry into gbd
       * mode ==  1  server reads data
@@ -371,9 +380,7 @@ static GBCM_ServerResult gbcm_read_bin(int socket, GBCONTAINER *gbd, long *buffe
                 return GBCM_SERVER_FAULT;
             }
             if (mode>0) {   // transactions only in server
-                if (gbcm_test_address((long *) gb2, GBTUM_MAGIC_NUMBER)) {
-                    return GBCM_SERVER_FAULT;
-                }
+                RETURN_SERVER_FAULT_ON_BAD_ADDRESS(gb2);
             }
             if (types != GB_DB) {
                 gb_save_extern_data_in_ts(gb2);
@@ -671,9 +678,7 @@ static GBCM_ServerResult gbcms_talking_unfold(int socket, long */*hsin*/, void *
     long         index_pos[1];
     int          index, start, end;
 
-    if ((error = gbcm_test_address((long *)gbc, GBTUM_MAGIC_NUMBER))) {
-        return GBCM_SERVER_FAULT;
-    }
+    RETURN_SERVER_FAULT_ON_BAD_ADDRESS(gbc);
     if (GB_TYPE(gbc) != GB_DB) return GBCM_SERVER_FAULT;
     if (gbcm_read_two(socket, GBCM_COMMAND_SETDEEP, 0, deep)) {
         return GBCM_SERVER_FAULT;
@@ -733,7 +738,6 @@ static GBCM_ServerResult gbcms_talking_put_update(int socket, long */*hsin*/, vo
      *
      * command: GBCM_COMMAND_PUT_UPDATE
      */
-    GB_ERROR             error;
     long                 irror;
     GBDATA              *gbd;
     gbcms_create_struct *cs[1], *cs_main[1];
@@ -744,14 +748,11 @@ static GBCM_ServerResult gbcms_talking_put_update(int socket, long */*hsin*/, vo
     buffer     = (long *) GB_give_buffer(1024);
     end        = false;
     while (!end) {
-        if (gbcm_read(socket, (char *) buffer, sizeof(long) * 3) != sizeof(long) * 3)
-            return GBCM_SERVER_FAULT;
-        gbd = (GBDATA *) buffer[2];
-        if ((error = gbcm_test_address((long *)gbd, GBTUM_MAGIC_NUMBER))) {
-            GB_export_errorf("address %p not valid 3712", gbd);
-            GB_print_error();
+        if (gbcm_read(socket, (char *) buffer, sizeof(long) * 3) != sizeof(long) * 3) {
             return GBCM_SERVER_FAULT;
         }
+        gbd = (GBDATA *) buffer[2];
+        RETURN_SERVER_FAULT_ON_BAD_ADDRESS(gbd);
         switch (buffer[0]) {
             case GBCM_COMMAND_PUT_UPDATE_CREATE:
                 irror = gbcm_read_bin(socket,
@@ -942,14 +943,8 @@ static GBCM_ServerResult gbcms_talking_begin_transaction(int socket, long *hsin,
 
 static GBCM_ServerResult gbcms_talking_commit_transaction(int socket, long */*hsin*/, void */*sin*/, GBDATA *gbd) {
     // command: GBCM_COMMAND_COMMIT_TRANSACTION
-    
-    GB_ERROR error          = 0;
-    if ((error = gbcm_test_address((long *)gbd, GBTUM_MAGIC_NUMBER))) {
-        GB_export_errorf("address %p not valid 4783", gbd);
-        GB_print_error();
-        if (error) return GBCM_SERVER_FAULT;
-        return GBCM_SERVER_OK;
-    }
+
+    RETURN_SERVER_FAULT_ON_BAD_ADDRESS(gbd);
     gb_local->running_client_transaction = ARB_COMMIT;
     gbcm_read_flush(socket);
     if (gbcm_write_two(socket, GBCM_COMMAND_TRANSACTION_RETURN, 0)) {
@@ -964,12 +959,7 @@ static GBCM_ServerResult gbcms_talking_commit_transaction(int socket, long */*hs
 static GBCM_ServerResult gbcms_talking_abort_transaction(int socket, long */*hsin*/, void */*sin*/, GBDATA *gbd) {
     // command: GBCM_COMMAND_ABORT_TRANSACTION
 
-    GB_ERROR error;
-    if ((error = gbcm_test_address((long *)gbd, GBTUM_MAGIC_NUMBER))) {
-        GB_export_errorf("address %p not valid 4356", gbd);
-        GB_print_error();
-        return GBCM_SERVER_FAULT;
-    }
+    RETURN_SERVER_FAULT_ON_BAD_ADDRESS(gbd);
     gb_local->running_client_transaction = ARB_ABORT;
     gbcm_read_flush(socket);
     if (gbcm_write_two(socket, GBCM_COMMAND_TRANSACTION_RETURN, 0)) {
@@ -1064,7 +1054,6 @@ static GBCM_ServerResult gbcms_talking_undo(int socket, long *hsin, void *sin, G
 static GBCM_ServerResult gbcms_talking_find(int socket, long */*hsin*/, void */*sin*/, GBDATA * gbd) {
     // command: GBCM_COMMAND_FIND
     
-    GB_ERROR  error;
     char     *key;
     char     *val1      = 0;
     GB_CASE   case_sens = GB_CASE_UNDEFINED;
@@ -1072,11 +1061,7 @@ static GBCM_ServerResult gbcms_talking_find(int socket, long */*hsin*/, void */*
     GB_TYPES  type;
     void     *buffer[2];
 
-    if ((error = gbcm_test_address((long *) gbd, GBTUM_MAGIC_NUMBER))) {
-        GB_export_errorf("address %p not valid 8734", gbd);
-        GB_print_error();
-        return GBCM_SERVER_FAULT;
-    }
+    RETURN_SERVER_FAULT_ON_BAD_ADDRESS(gbd);
 
     key  = gbcm_read_string(socket);
     type = GB_TYPES(gbcm_read_long(socket));
@@ -1147,15 +1132,10 @@ static GBCM_ServerResult gbcms_talking_key_alloc(int socket, long */*hsin*/, voi
     // command: GBCM_COMMAND_KEY_ALLOC
     // (old maybe wrong comment: "do a query in the server")
 
-    GB_ERROR  error;
-    char     *key;
-    long      index;
+    char *key;
+    long  index;
 
-    if ((error = gbcm_test_address((long *) gbd, GBTUM_MAGIC_NUMBER))) {
-        GB_export_errorf("address %p not valid 8734", gbd);
-        GB_print_error();
-        return GBCM_SERVER_FAULT;
-    }
+    RETURN_SERVER_FAULT_ON_BAD_ADDRESS(gbd);
     key = gbcm_read_string(socket);
     gbcm_read_flush(socket);
 
