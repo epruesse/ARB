@@ -311,9 +311,7 @@ static long write_IFS(struct gb_index_files_struct *ifs, FILE *out, long *offset
     return ifsoffset;
 }
 
-static void convertFlags4Save(struct gb_flag_types *flags, struct gb_flag_types2 * flags2, struct gb_flag_types3 *flags3)
-{
-    // GBUSE(flags3);
+static void convertFlags4Save(struct gb_flag_types *flags, struct gb_flag_types2 *flags2, struct gb_flag_types3 */*flags3*/) {
     flags->unused = 0;
     flags->user_flags = 0;
     gb_assert(flags->temporary==0);
@@ -324,26 +322,18 @@ static void convertFlags4Save(struct gb_flag_types *flags, struct gb_flag_types2
     flags2->folded_container = 0;
     flags2->update_in_server = 0;
     flags2->header_changed = 0;
-
-    /*  if (flags3)
-        {
-
-        }
-    */
 }
 
-static long write_GBDATA(GB_MAIN_TYPE *Main, GBDATA *gbd, GBQUARK quark, FILE *out, long *offset, GB_MAIN_IDX main_idx)
+static long write_GBDATA(GB_MAIN_TYPE */*Main*/, GBDATA *gbd, GBQUARK quark, FILE *out, long *offset, GB_MAIN_IDX main_idx) {
      /*
        if out==NULL -> only calculate size
 
        changes     'offset' according to size of written data
        returns     offset of GBDATA in mapfile
      */
-{
     int  type = GB_TYPE(gbd);
     long gbdoffset;
 
-    // GBUSE(Main);
     gb_assert(gbd->flags.temporary==0);
 
     if (type==GB_DB)    // CONTAINER

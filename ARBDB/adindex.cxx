@@ -303,26 +303,26 @@ GBDATA *gb_index_find(GBCONTAINER *gbf, struct gb_index_files_struct *ifs, GBQUA
  * GB_UNDO_REDO    redo stack
  */
 
-char *gb_set_undo_type(GBDATA *gb_main, GB_UNDO_TYPE type) {
+static char *gb_set_undo_type(GBDATA *gb_main, GB_UNDO_TYPE type) {
     GB_MAIN_TYPE *Main = GB_MAIN(gb_main);
     Main->undo_type = type;
     return 0;
 }
 
-void g_b_add_size_to_undo_entry(struct g_b_undo_entry_struct *ue, long size) {
+static void g_b_add_size_to_undo_entry(g_b_undo_entry_struct *ue, long size) {
     ue->sizeof_this                 += size;        // undo entry
     ue->father->sizeof_this         += size;        // one undo
     ue->father->father->sizeof_this += size;        // all undos
 }
 
-struct g_b_undo_entry_struct *new_g_b_undo_entry_struct(struct g_b_undo_struct *u) {
-    struct g_b_undo_entry_struct *ue = (struct g_b_undo_entry_struct *)gbm_get_mem(sizeof(struct g_b_undo_entry_struct), GBM_UNDO);
+g_b_undo_entry_struct *new_g_b_undo_entry_struct(g_b_undo_struct *u) {
+    g_b_undo_entry_struct *ue = (g_b_undo_entry_struct *)gbm_get_mem(sizeof(g_b_undo_entry_struct), GBM_UNDO);
 
     ue->next   = u->entries;
     ue->father = u;
     u->entries = ue;
 
-    g_b_add_size_to_undo_entry(ue, sizeof(struct g_b_undo_entry_struct));
+    g_b_add_size_to_undo_entry(ue, sizeof(g_b_undo_entry_struct));
 
     return ue;
 }
@@ -336,7 +336,7 @@ void gb_init_undo_stack(GB_MAIN_TYPE *Main) {
     Main->undo->r = (struct g_b_undo_header_struct *) GB_calloc(sizeof(struct g_b_undo_header_struct), 1);
 }
 
-void delete_g_b_undo_entry_struct(struct g_b_undo_entry_struct *entry) {
+static void delete_g_b_undo_entry_struct(g_b_undo_entry_struct *entry) {
     switch (entry->type) {
         case GB_UNDO_ENTRY_TYPE_MODIFY:
         case GB_UNDO_ENTRY_TYPE_MODIFY_ARRAY:
@@ -348,11 +348,11 @@ void delete_g_b_undo_entry_struct(struct g_b_undo_entry_struct *entry) {
         default:
             break;
     }
-    gbm_free_mem((char *)entry, sizeof (struct g_b_undo_entry_struct), GBM_UNDO);
+    gbm_free_mem((char *)entry, sizeof (g_b_undo_entry_struct), GBM_UNDO);
 }
 
-void delete_g_b_undo_struct(struct g_b_undo_struct *u) {
-    struct g_b_undo_entry_struct *a, *next;
+static void delete_g_b_undo_struct(g_b_undo_struct *u) {
+    g_b_undo_entry_struct *a, *next;
     for (a = u->entries; a; a = next) {
         next = a->next;
         delete_g_b_undo_entry_struct(a);
@@ -360,8 +360,8 @@ void delete_g_b_undo_struct(struct g_b_undo_struct *u) {
     free((char *)u);
 }
 
-void delete_g_b_undo_header_struct(struct g_b_undo_header_struct *uh) {
-    struct g_b_undo_struct *a, *next=0;
+static void delete_g_b_undo_header_struct(struct g_b_undo_header_struct *uh) {
+    g_b_undo_struct *a, *next=0;
     for (a = uh->stack; a; a = next) {
         next = a->next;
         delete_g_b_undo_struct(a);
@@ -369,17 +369,17 @@ void delete_g_b_undo_header_struct(struct g_b_undo_header_struct *uh) {
     free((char *)uh);
 }
 
-char *g_b_check_undo_size2(struct g_b_undo_header_struct *uhs, long size, long max_cnt) {
+static char *g_b_check_undo_size2(struct g_b_undo_header_struct *uhs, long size, long max_cnt) {
     long csize = 0;
     long ccnt = 0;
-    struct g_b_undo_struct *us;
+    g_b_undo_struct *us;
 
     for (us = uhs->stack; us && us->next;  us = us->next) {
         csize += us->sizeof_this;
         ccnt ++;
         if (((csize + us->next->sizeof_this) > size) ||
              (ccnt >= max_cnt)) {  // delete the rest
-            struct g_b_undo_struct *a, *next=0;
+            g_b_undo_struct *a, *next=0;
 
             for (a = us->next; a; a = next) {
                 next = a->next;
@@ -393,7 +393,7 @@ char *g_b_check_undo_size2(struct g_b_undo_header_struct *uhs, long size, long m
     return 0;
 }
 
-char *g_b_check_undo_size(GB_MAIN_TYPE *Main) {
+static char *g_b_check_undo_size(GB_MAIN_TYPE *Main) {
     char *error = 0;
     long maxsize = Main->undo->max_size_of_all_undos;
     error = g_b_check_undo_size2(Main->undo->u, maxsize/2, GB_MAX_UNDO_CNT);
@@ -413,9 +413,8 @@ void gb_free_undo_stack(GB_MAIN_TYPE *Main) {
 // -------------------------
 //      real undo (redo)
 
-GB_ERROR g_b_undo_entry(GB_MAIN_TYPE *Main, struct g_b_undo_entry_struct *ue) {
+static GB_ERROR g_b_undo_entry(g_b_undo_entry_struct *ue) {
     GB_ERROR error = 0;
-    Main = Main;
     switch (ue->type) {
         case GB_UNDO_ENTRY_TYPE_CREATED:
             error = GB_delete(ue->source);
@@ -487,21 +486,21 @@ GB_ERROR g_b_undo_entry(GB_MAIN_TYPE *Main, struct g_b_undo_entry_struct *ue) {
 
 
 
-GB_ERROR g_b_undo(GB_MAIN_TYPE *Main, GBDATA *gb_main, struct g_b_undo_header_struct *uh) { // goes to header: __ATTR__USERESULT
+static GB_ERROR g_b_undo(GBDATA *gb_main, struct g_b_undo_header_struct *uh) { // goes to header: __ATTR__USERESULT
     GB_ERROR error = NULL;
 
     if (!uh->stack) {
         error = "Sorry no more undos/redos available";
     }
     else {
-        struct g_b_undo_struct       *u = uh->stack;
-        struct g_b_undo_entry_struct *ue, *next;
+        g_b_undo_struct       *u = uh->stack;
+        g_b_undo_entry_struct *ue, *next;
 
         error = GB_begin_transaction(gb_main);
 
         for (ue=u->entries; ue && !error; ue = next) {
             next = ue->next;
-            error = g_b_undo_entry(Main, ue);
+            error = g_b_undo_entry(ue);
             delete_g_b_undo_entry_struct(ue);
             u->entries = next;
         }
@@ -514,15 +513,14 @@ GB_ERROR g_b_undo(GB_MAIN_TYPE *Main, GBDATA *gb_main, struct g_b_undo_header_st
     return error;
 }
 
-GB_CSTR g_b_read_undo_key_pntr(GB_MAIN_TYPE *Main, struct g_b_undo_entry_struct *ue) {
+static GB_CSTR g_b_read_undo_key_pntr(GB_MAIN_TYPE *Main, g_b_undo_entry_struct *ue) {
     return Main->keys[ue->d.gs.key].key;
 }
 
-char *g_b_undo_info(GB_MAIN_TYPE *Main, GBDATA *gb_main, struct g_b_undo_header_struct *uh) {
+static char *g_b_undo_info(GB_MAIN_TYPE *Main, struct g_b_undo_header_struct *uh) {
     GBS_strstruct *res = GBS_stropen(1024);
-    struct g_b_undo_struct *u;
-    struct g_b_undo_entry_struct *ue;
-    // GBUSE(Main);GBUSE(gb_main);
+    g_b_undo_struct *u;
+    g_b_undo_entry_struct *ue;
     u=uh->stack;
     if (!u) return strdup("No more undos available");
     for (ue=u->entries; ue; ue = ue->next) {
@@ -548,38 +546,10 @@ char *g_b_undo_info(GB_MAIN_TYPE *Main, GBDATA *gb_main, struct g_b_undo_header_
     return GBS_strclose(res);
 }
 
-char *gb_set_undo_sync(GBDATA *gb_main)
-{
-    // start a new undoable transaction
-    GB_MAIN_TYPE *Main = GB_MAIN(gb_main);
-    char *error = g_b_check_undo_size(Main);
-    struct g_b_undo_header_struct *uhs;
-    if (error) return error;
-    switch (Main->requested_undo_type) {    // init the target undo stack
-        case GB_UNDO_UNDO:      // that will undo but delete all redos
-            uhs         = Main->undo->u;
-            break;
-        case GB_UNDO_UNDO_REDO: uhs = Main->undo->u; break;
-        case GB_UNDO_REDO:      uhs = Main->undo->r; break;
-        case GB_UNDO_KILL:      gb_free_all_undos(gb_main);
-        default:            uhs = 0;
-    }
-    if (uhs)
-    {
-        struct g_b_undo_struct *u = (struct g_b_undo_struct *) GB_calloc(sizeof(struct g_b_undo_struct),  1);
-        u->next = uhs->stack;
-        u->father = uhs;
-        uhs->stack = u;
-        Main->undo->valid_u = u;
-    }
-
-    return gb_set_undo_type(gb_main, Main->requested_undo_type);
-}
-
-char *gb_free_all_undos(GBDATA *gb_main) {
+static char *gb_free_all_undos(GBDATA *gb_main) {
     // Remove all existing undos/redos
     GB_MAIN_TYPE *Main = GB_MAIN(gb_main);
-    struct g_b_undo_struct *a, *next;
+    g_b_undo_struct *a, *next;
     for (a = Main->undo->r->stack; a; a = next) {
         next = a->next;
         delete_g_b_undo_struct(a);
@@ -597,10 +567,37 @@ char *gb_free_all_undos(GBDATA *gb_main) {
 }
 
 
+char *gb_set_undo_sync(GBDATA *gb_main) {
+    // start a new undoable transaction
+    GB_MAIN_TYPE *Main = GB_MAIN(gb_main);
+    char *error = g_b_check_undo_size(Main);
+    struct g_b_undo_header_struct *uhs;
+    if (error) return error;
+    switch (Main->requested_undo_type) {    // init the target undo stack
+        case GB_UNDO_UNDO:      // that will undo but delete all redos
+            uhs         = Main->undo->u;
+            break;
+        case GB_UNDO_UNDO_REDO: uhs = Main->undo->u; break;
+        case GB_UNDO_REDO:      uhs = Main->undo->r; break;
+        case GB_UNDO_KILL:      gb_free_all_undos(gb_main);
+        default:            uhs = 0;
+    }
+    if (uhs)
+    {
+        g_b_undo_struct *u = (g_b_undo_struct *) GB_calloc(sizeof(g_b_undo_struct),  1);
+        u->next = uhs->stack;
+        u->father = uhs;
+        uhs->stack = u;
+        Main->undo->valid_u = u;
+    }
+
+    return gb_set_undo_type(gb_main, Main->requested_undo_type);
+}
+
 char *gb_disable_undo(GBDATA *gb_main) {
     // called to finish an undoable section, called at end of gb_commit_transaction
     GB_MAIN_TYPE *Main = GB_MAIN(gb_main);
-    struct g_b_undo_struct *u = Main->undo->valid_u;
+    g_b_undo_struct *u = Main->undo->valid_u;
     if (!u) return 0;
     if (!u->entries) {      // nothing to undo, just a read transaction
         u->father->stack = u->next;
@@ -608,7 +605,7 @@ char *gb_disable_undo(GBDATA *gb_main) {
     }
     else {
         if (Main->requested_undo_type == GB_UNDO_UNDO) {    // remove all redos
-            struct g_b_undo_struct *a, *next;
+            g_b_undo_struct *a, *next;
             for (a = Main->undo->r->stack; a; a = next) {
                 next = a->next;
                 delete_g_b_undo_struct(a);
@@ -622,7 +619,7 @@ char *gb_disable_undo(GBDATA *gb_main) {
 }
 
 void gb_check_in_undo_create(GB_MAIN_TYPE *Main, GBDATA *gbd) {
-    struct g_b_undo_entry_struct *ue;
+    g_b_undo_entry_struct *ue;
     if (!Main->undo->valid_u) return;
     ue = new_g_b_undo_entry_struct(Main->undo->valid_u);
     ue->type = GB_UNDO_ENTRY_TYPE_CREATED;
@@ -633,7 +630,7 @@ void gb_check_in_undo_create(GB_MAIN_TYPE *Main, GBDATA *gbd) {
 
 void gb_check_in_undo_modify(GB_MAIN_TYPE *Main, GBDATA *gbd) {
     long type = GB_TYPE(gbd);
-    struct g_b_undo_entry_struct *ue;
+    g_b_undo_entry_struct *ue;
     struct gb_transaction_save *old;
 
     if (!Main->undo->valid_u) {
@@ -667,7 +664,7 @@ void gb_check_in_undo_modify(GB_MAIN_TYPE *Main, GBDATA *gbd) {
 
 void gb_check_in_undo_delete(GB_MAIN_TYPE *Main, GBDATA *gbd, int deep) {
     long type = GB_TYPE(gbd);
-    struct g_b_undo_entry_struct *ue;
+    g_b_undo_entry_struct *ue;
     if (!Main->undo->valid_u) {
         gb_delete_entry(&gbd);
         return;
@@ -779,7 +776,7 @@ GB_ERROR GB_undo(GBDATA *gb_main, GB_UNDO_TYPE type) { // goes to header: __ATTR
             case GB_UNDO_UNDO:
                 error = GB_request_undo_type(gb_main, GB_UNDO_REDO);
                 if (!error) {
-                    error = g_b_undo(Main, gb_main, Main->undo->u);
+                    error = g_b_undo(gb_main, Main->undo->u);
                     ASSERT_NO_ERROR(GB_request_undo_type(gb_main, old_type));
                 }
                 break;
@@ -787,7 +784,7 @@ GB_ERROR GB_undo(GBDATA *gb_main, GB_UNDO_TYPE type) { // goes to header: __ATTR
             case GB_UNDO_REDO:
                 error = GB_request_undo_type(gb_main, GB_UNDO_UNDO_REDO);
                 if (!error) {
-                    error = g_b_undo(Main, gb_main, Main->undo->r);
+                    error = g_b_undo(gb_main, Main->undo->r);
                     ASSERT_NO_ERROR(GB_request_undo_type(gb_main, old_type));
                 }
                 break;
@@ -820,9 +817,9 @@ char *GB_undo_info(GBDATA *gb_main, GB_UNDO_TYPE type) {
     }
     switch (type) {
         case GB_UNDO_UNDO:
-            return g_b_undo_info(Main, gb_main, Main->undo->u);
+            return g_b_undo_info(Main, Main->undo->u);
         case GB_UNDO_REDO:
-            return g_b_undo_info(Main, gb_main, Main->undo->r);
+            return g_b_undo_info(Main, Main->undo->r);
         default:
             GB_export_error("GB_undo_info: unknown undo type specified");
             return 0;

@@ -47,10 +47,9 @@ void gbcms_sigpipe(int) {
 // ------------------------------------------------
 //      private read and write socket functions
 
-void gbcm_read_flush(int socket) {
+void gbcm_read_flush() {
     gb_local->write_ptr  = gb_local->write_buffer;
     gb_local->write_free = gb_local->write_bufsize;
-    socket               = socket; // @@@ wtf?
 }
 
 static long gbcm_read_buffered(int socket, char *ptr, long size) {
@@ -68,7 +67,7 @@ static long gbcm_read_buffered(int socket, char *ptr, long size) {
                     holding, strerror(errno), errno);
             return 0;
         }
-        gbcm_read_flush(socket);
+        gbcm_read_flush();
         gb_local->write_free-=holding;
     }
     if (size>holding) size = holding;

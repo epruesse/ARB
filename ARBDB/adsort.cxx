@@ -36,8 +36,7 @@ void GB_sort(void **array, size_t first, size_t behind_last, gb_compare_function
 // --------------------------
 //      some comparators
 
-int GB_string_comparator(const void *v0, const void *v1, void *unused) {
-    // GBUSE(unused);
+int GB_string_comparator(const void *v0, const void *v1, void */*unused*/) {
     return strcmp((const char *)v0, (const char *)v1);
 }
 

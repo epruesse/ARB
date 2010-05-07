@@ -110,12 +110,9 @@ static void gbt_scan_db_rek(GBDATA *gbd, char *prefix, int deep, struct DbScanne
     }
 }
 
-static long gbs_scan_db_count(const char *key, long val, void *cd_scanner) {
+static long gbs_scan_db_count(const char */*key*/, long val, void *cd_scanner) {
     struct DbScanner *scanner = (struct DbScanner*)cd_scanner;
-
     scanner->count++;
-    key = key;
-
     return val;
 }
 

@@ -2596,11 +2596,10 @@ char GB_type_2_char(GB_TYPES type) {
     return type2char[type];
 }
 
-GB_ERROR GB_print_debug_information(void *dummy, GBDATA *gb_main) {
+GB_ERROR GB_print_debug_information(void */*dummy_AW_root*/, GBDATA *gb_main) {
     int i;
     GB_MAIN_TYPE *Main = GB_MAIN(gb_main);
     GB_push_transaction(gb_main);
-    dummy = dummy;
     for (i=0; i<Main->keycnt; i++) {
         if (Main->keys[i].key) {
             printf("%3i %20s    nref %i\n", i, Main->keys[i].key, (int)Main->keys[i].nref);
