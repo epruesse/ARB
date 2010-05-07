@@ -94,7 +94,7 @@ long gbcm_read(int socket, char *ptr, long size)
     return size;
 }
 
-int gbcm_write_flush(int socket) {
+GBCM_ServerResult gbcm_write_flush(int socket) {
     char *ptr;
     long    leftsize, writesize;
     ptr = gb_local->write_buffer;
@@ -137,7 +137,7 @@ int gbcm_write_flush(int socket) {
     return GBCM_SERVER_OK;
 }
 
-int gbcm_write(int socket, const char *ptr, long size) {
+GBCM_ServerResult gbcm_write(int socket, const char *ptr, long size) {
 
     while  (size >= gb_local->write_free) {
         memcpy(gb_local->write_ptr, ptr, (int)gb_local->write_free);
@@ -328,7 +328,7 @@ long gbcm_write_two(int socket, long a, long c)
 }
 
 
-long gbcm_read_two(int socket, long a, long *b, long *c) {
+GBCM_ServerResult gbcm_read_two(int socket, long a, long *b, long *c) {
     /*! read two values: length and any user long
      *
      *  if data is send by gbcm_write_two() then @param b should be zero
@@ -360,8 +360,7 @@ long gbcm_read_two(int socket, long a, long *b, long *c) {
     return GBCM_SERVER_OK;
 }
 
-long gbcm_write_string(int socket, const char *key)
-{
+GBCM_ServerResult gbcm_write_string(int socket, const char *key) {
     if (key) {
         size_t len = strlen(key);
         gbcm_write_long(socket, len);
@@ -394,7 +393,7 @@ char *gbcm_read_string(int socket)
     return key;
 }
 
-long gbcm_write_long(int socket, long data) {
+GBCM_ServerResult gbcm_write_long(int socket, long data) {
     gbcm_write(socket, (char*)&data, sizeof(data));
     return GBCM_SERVER_OK;
 }

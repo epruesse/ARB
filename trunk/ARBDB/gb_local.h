@@ -77,6 +77,13 @@ enum GB_COMPRESSION_TYPES {
     GB_COMPRESSION_LAST       = 128
 };
 
+enum GBCM_ServerResult {
+    GBCM_SERVER_OK      = 0,
+    GBCM_SERVER_FAULT   = 1,
+    GBCM_SERVER_ABORTED = 2,
+    GBCM_SERVER_OK_WAIT = 3, 
+};
+
 // ------------------------------------------------------
 //      include generated local prototypes and macros
 
