@@ -80,7 +80,7 @@ void A3Arbdb::close ( void )
 }
 
 int A3Arbdb::put_sequence_string(char *name, char *sequence) {
-    GB_change_my_security(gb_main,6,"passwd");
+    GB_change_my_security(gb_main, 6);
 
     GBDATA *gb_species_data = GB_search(gb_main,"species_data",GB_FIND);
     GBDATA *gb_seq = GB_find_string(gb_species_data, "name", name, GB_IGNORE_CASE, SEARCH_GRANDCHILD);

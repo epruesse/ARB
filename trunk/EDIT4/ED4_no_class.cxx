@@ -1366,7 +1366,7 @@ void ed4_changesecurity(AW_root *root, AW_CL /* cd1 */)
 
     ED4_ROOT->aw_root->awar(AWAR_EDIT_SECURITY_LEVEL)->map(awar_name);
     level = ED4_ROOT->aw_root->awar(awar_name)->read_int();
-    GB_change_my_security (GLOBAL_gb_main, level, "");
+    GB_change_my_security(GLOBAL_gb_main, level);
 }
 
 void ed4_change_edit_mode(AW_root *root, AW_CL cd1)

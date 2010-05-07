@@ -287,7 +287,7 @@ GB_ERROR GB_write_security_write(GBDATA *gbd, unsigned long level);
 GB_ERROR GB_write_security_read(GBDATA *gbd, unsigned long level);
 GB_ERROR GB_write_security_delete(GBDATA *gbd, unsigned long level);
 GB_ERROR GB_write_security_levels(GBDATA *gbd, unsigned long readlevel, unsigned long writelevel, unsigned long deletelevel);
-GB_ERROR GB_change_my_security(GBDATA *gbd, int level, const char *passwd);
+void GB_change_my_security(GBDATA *gbd, int level);
 void GB_push_my_security(GBDATA *gbd);
 void GB_pop_my_security(GBDATA *gbd);
 GB_TYPES GB_read_type(GBDATA *gbd);
