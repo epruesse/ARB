@@ -120,7 +120,7 @@ char *ALI_ARBDB::get_SAI(char *name) {
 
 
 int ALI_ARBDB::put_sequence_string(char *name, char *sequence) {
-    GB_change_my_security(gb_main, 6, "passwd");
+    GB_change_my_security(gb_main, 6);
     GBDATA *gb_species_data = GB_search(gb_main, "species_data", GB_FIND);
 
     GBDATA *gb_seq = GB_find_string(gb_species_data, "name", name, GB_IGNORE_CASE, SEARCH_GRANDCHILD);
@@ -137,7 +137,7 @@ int ALI_ARBDB::put_sequence_string(char *name, char *sequence) {
 }
 
 int ALI_ARBDB::put_sequence(char *name, ALI_SEQUENCE *sequence) {
-    GB_change_my_security(gb_main, 6, "passwd");
+    GB_change_my_security(gb_main, 6);
     GBDATA *gb_species_data = GB_search(gb_main, "species_data", GB_FIND);
 
     GBDATA *gb_seq = GB_find_string(gb_species_data, "name", name, GB_IGNORE_CASE, SEARCH_GRANDCHILD);
@@ -156,7 +156,7 @@ int ALI_ARBDB::put_sequence(char *name, ALI_SEQUENCE *sequence) {
 
 
 int ALI_ARBDB::put_SAI(const char *name, char *sequence) {
-    GB_change_my_security(gb_main, 6, "passwd");
+    GB_change_my_security(gb_main, 6);
 
     GBDATA *gb_extended = GBT_find_or_create_SAI(gb_main, name);
     GBDATA *gb_data     = GBT_add_data(gb_extended, alignment, "data", GB_STRING);

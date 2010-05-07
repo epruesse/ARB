@@ -1127,15 +1127,8 @@ GB_ERROR GB_write_security_levels(GBDATA *gbd, unsigned long readlevel, unsigned
     return 0;
 }
 
-GB_ERROR GB_change_my_security(GBDATA *gbd, int level, const char *passwd)
-{
-    int i;
-    i = level;
-    if (i<0) i=0;
-    if (i>=8) i = 7;
-    GB_MAIN(gbd)->security_level = i;
-    passwd = passwd;    // dummy for compiler
-    return 0;
+void GB_change_my_security(GBDATA *gbd, int level) {
+    GB_MAIN(gbd)->security_level = level<0 ? 0 : (level>7 ? 7 : level);
 }
 
 // For internal use only

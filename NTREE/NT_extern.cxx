@@ -62,9 +62,9 @@ void nt_test_ascii_print(AW_window *aww) {
 }
 
 void nt_changesecurity(AW_root *aw_root) {
-    long level = aw_root->awar(AWAR_SECURITY_LEVEL)->read_int();
+    int level = aw_root->awar(AWAR_SECURITY_LEVEL)->read_int();
     GB_push_transaction(GLOBAL_gb_main);
-    GB_change_my_security(GLOBAL_gb_main, (int)level, "");
+    GB_change_my_security(GLOBAL_gb_main, level);
     GB_pop_transaction(GLOBAL_gb_main);
 }
 

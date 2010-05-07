@@ -899,7 +899,7 @@ void AWTC_import_go_cb(AW_window *aww) // Import sequences into new or existing 
 
     GB_ERROR error = 0;
 
-    GB_change_my_security(GB_MAIN, 6, "");
+    GB_change_my_security(GB_MAIN, 6);
 
     GB_begin_transaction(GB_MAIN); // first transaction start
     char *ali_name;
@@ -1127,7 +1127,7 @@ void AWTC_import_go_cb(AW_window *aww) // Import sequences into new or existing 
 
     if (error) aw_message(error);
 
-    GB_change_my_security(GB_MAIN, 0, "");
+    GB_change_my_security(GB_MAIN, 0);
 
     if (call_func) awtcig.func(awr, awtcig.cd1, awtcig.cd2);
 }
