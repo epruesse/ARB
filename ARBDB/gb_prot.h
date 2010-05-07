@@ -69,7 +69,7 @@ long gbcmc_key_alloc(GBDATA *gbd, const char *key);
 GB_ERROR gbcmc_send_undo_commands(GBDATA *gbd, enum gb_undo_commands command) __ATTR__USERESULT;
 char *gbcmc_send_undo_info_commands(GBDATA *gbd, enum gb_undo_commands command);
 GB_ERROR gbcm_login(GBCONTAINER *gb_main, const char *user);
-long gbcmc_close(struct gbcmc_comm *link);
+GBCM_ServerResult gbcmc_close(struct gbcmc_comm *link);
 
 /* adhash.cxx */
 size_t gbs_get_a_prime(size_t above_or_equal_this);
@@ -222,16 +222,16 @@ char *gbs_search_next_separator(const char *source, const char *seps);
 void gbcms_sigpipe(int dummy_1x);
 void gbcm_read_flush(int socket);
 long gbcm_read(int socket, char *ptr, long size);
-int gbcm_write_flush(int socket);
-int gbcm_write(int socket, const char *ptr, long size);
+GBCM_ServerResult gbcm_write_flush(int socket);
+GBCM_ServerResult gbcm_write(int socket, const char *ptr, long size);
 GB_ERROR gbcm_open_socket(const char *path, long delay2, long do_connect, int *psocket, char **unix_name);
 long gbcms_close(gbcmc_comm *link);
 struct gbcmc_comm *gbcmc_open(const char *path);
 long gbcm_write_two(int socket, long a, long c);
-long gbcm_read_two(int socket, long a, long *b, long *c);
-long gbcm_write_string(int socket, const char *key);
+GBCM_ServerResult gbcm_read_two(int socket, long a, long *b, long *c);
+GBCM_ServerResult gbcm_write_string(int socket, const char *key);
 char *gbcm_read_string(int socket);
-long gbcm_write_long(int socket, long data);
+GBCM_ServerResult gbcm_write_long(int socket, long data);
 long gbcm_read_long(int socket);
 
 #else

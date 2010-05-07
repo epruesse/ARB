@@ -11,13 +11,6 @@
 #ifndef GB_COMM_H
 #define GB_COMM_H
 
-// @@@ convert the following constants into an enum
-// and change result types where used
-#define GBCM_SERVER_OK_WAIT 3
-#define GBCM_SERVER_ABORTED 2
-#define GBCM_SERVER_FAULT   1
-#define GBCM_SERVER_OK      0
-
 struct gbcmc_comm {
     int   socket;
     char *unix_name;
