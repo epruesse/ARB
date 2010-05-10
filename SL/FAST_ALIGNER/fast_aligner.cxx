@@ -1231,7 +1231,6 @@ static ARB_ERROR alignCompactedTo(CompactedSubSequence     *toAlignSequence,
                             else {
                                 GB_write_string(gbd, "");
                                 error = GB_write_string(gbd, buffer);
-                                }
                             }
                         }
 
