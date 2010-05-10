@@ -2442,10 +2442,10 @@ GB_ERROR GB_resort_data_base(GBDATA *gb_main, GBDATA **new_order_list, long list
     struct gb_header_list_struct *hl, h;
 
     if (GB_read_clients(gb_main)<0)
-        return GB_export_error("Sorry: this program is not the arbdb server, you cannot resort your data");
+        return "Sorry: this program is not the arbdb server, you cannot resort your data";
 
     if (GB_read_clients(gb_main)>0)
-        return GB_export_errorf("There are %li clients (editors, tree programs) connected to this server,\n"
+        return GBS_global_string("There are %li clients (editors, tree programs) connected to this server,\n"
                                 "please close clients and rerun operation",
                                 GB_read_clients(gb_main));
 
