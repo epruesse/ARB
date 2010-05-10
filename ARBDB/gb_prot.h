@@ -76,10 +76,11 @@ size_t gbs_get_a_prime(size_t above_or_equal_this);
 
 /* adcache.cxx */
 void gb_init_cache(GB_MAIN_TYPE *Main);
+void gb_destroy_cache(GB_MAIN_TYPE *Main);
 char *gb_read_cache(GBDATA *gbd);
-void *gb_free_cache(GB_MAIN_TYPE *Main, GBDATA *gbd);
-char *gb_flush_cache(GBDATA *gbd);
-char *gb_alloc_cache_index(GBDATA *gbd, long size);
+void gb_free_cache(GB_MAIN_TYPE *Main, GBDATA *gbd);
+char *gb_alloc_cache_index(GBDATA *gbd, size_t size);
+void gb_flush_cache(GBDATA *gbd);
 
 /* adlang1.cxx */
 void gbl_install_standard_commands(GBDATA *gb_main);

@@ -82,7 +82,7 @@ GB_ERROR GBT_commit_rename_session(int (*show_status)(double gauge), int (*show_
 
 /* adseqcompr.cxx */
 GB_ERROR GBT_compress_sequence_tree2(GBDATA *gb_main, const char *tree_name, const char *ali_name) __ATTR__USERESULT;
-void GBT_compression_test(void *dummy, GBDATA *gb_main);
+void GBT_compression_test(void *, GBDATA *gb_main);
 
 /* adtables.cxx */
 GB_ERROR GBT_install_table_link_follower(GBDATA *gb_main);

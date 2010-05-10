@@ -128,7 +128,7 @@ struct GBDATA {
     // member above are same as in GBCONTAINER
 
     gb_data_base_type_union info;
-    int                     cache_index;                                // @@@ should be a member of gb_db_extended
+    int                     cache_index;                                // @@@ should be a member of gb_db_extended and of type gb_cache_idx
 };
 
 struct GBCONTAINER {

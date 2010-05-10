@@ -82,7 +82,7 @@ void GBS_erase_numhash(GB_NUMHASH *hs);
 void GBS_free_numhash(GB_NUMHASH *hs);
 
 /* adcache.cxx */
-char *GB_set_cache_size(GBDATA *gbd, long size);
+char *GB_set_cache_size(GBDATA *gbd, size_t size);
 
 /* adhashtools.cxx */
 void GBT_add_item_to_hash(GBDATA *gb_item, GB_HASH *item_hash);
