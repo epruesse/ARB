@@ -1118,8 +1118,12 @@ static ARB_ERROR alignCompactedTo(CompactedSubSequence     *toAlignSequence,
 // if only part of the sequence should be aligned, then this functions already gets only the part
 // (i.o.w.: toAlignSequence, alignTo and toAlignChksum refer to the partial sequence)
 {
-    AlignBuffer  alignBuffer(max_seq_length);
-    const char       *master_name = read_name(gb_alignTo);
+    AlignBuffer alignBuffer(max_seq_length);
+    if (ali_params.firstColumn>0) {
+        alignBuffer.set(GAP_CHAR, alignQuality(GAP_CHAR, GAP_CHAR), ali_params.firstColumn);
+    }
+
+    const char *master_name = read_name(gb_alignTo);
 
     FastAlignReport report(master_name, ali_params.showGapsMessages);
 
@@ -1212,17 +1216,22 @@ static ARB_ERROR alignCompactedTo(CompactedSubSequence     *toAlignSequence,
                         long  len          = GB_read_string_count(gbd);
                         if (!buffer) error = GB_await_error();
                         else {
-                            int  lenToCopy     = ali_params.lastColumn-ali_params.firstColumn+1;
-                            long wholeChksum   = calcSequenceChecksum(buffer, len);
+                            int  lenToCopy   = ali_params.lastColumn-ali_params.firstColumn+1;
+                            long wholeChksum = calcSequenceChecksum(buffer, len);
 
-                            memcpy(buffer+ali_params.firstColumn, alignBuffer.text()+ali_params.firstColumn, lenToCopy);  // copy in the aligned part
+                            memcpy(buffer+ali_params.firstColumn, alignBuffer.text()+ali_params.firstColumn, lenToCopy); // copy in the aligned part
 
-                            if (calcSequenceChecksum(buffer, len)!=wholeChksum) {
-                                error = "Internal aligner error (sequence checksum changed) -- aborted";
+                            if (calcSequenceChecksum(buffer, len) != wholeChksum) {
+                                error            = "Internal aligner error (sequence checksum changed) -- aborted";
+# ifdef DEBUG
+                                char *buffer_org = GB_read_string(gbd);
+                                dump_n_compare("Old seq vs. new seq (slave)", buffer_org, len, buffer, len);
+# endif
                             }
                             else {
                                 GB_write_string(gbd, "");
                                 error = GB_write_string(gbd, buffer);
+                                }
                             }
                         }
 
@@ -1711,6 +1720,7 @@ static ARB_ERROR alignToNextRelative(const SearchRelativeParams&  relSearch,
                                     error = alignCompactedTo(toAlignPart, &referenceFastSeq,
                                                              max_seq_length, alignment, part_chksum,
                                                              gb_toAlign, gb_reference[i], ubl_ali_params);
+                                    if (error) break;
 
                                     CompactedSubSequence *alignedPart = readCompactedSequence(gb_toAlign, alignment, &error, 0, 0, start, end);
 
