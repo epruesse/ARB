@@ -234,7 +234,7 @@ ED4_returncode ED4_manager::check_bases_and_rebuild_consensi(const char *old_seq
     int   new_len;
     char *new_sequence = new_sequence_terminal->resolve_pointer_to_string_copy(&new_len);
 
-#if defined(DEBUG)
+#if defined(DEBUG) && 0
     printf("old: %s\n", old_sequence);
     printf("new: %s\n", new_sequence);
 #endif // DEBUG
@@ -1089,7 +1089,7 @@ ED4_returncode ED4_main_manager::Show(int refresh_all, int is_cleared) {
 
 ED4_returncode ED4_root_group_manager::Show(int refresh_all, int is_cleared) {
     if (update_remap()) {
-#if defined(DEBUG)
+#if defined(DEBUG) && 0
         printf("map updated\n");
 #endif // DEBUG
     }
