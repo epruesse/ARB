@@ -267,6 +267,7 @@ GB_MAIN_TYPE *gb_make_gb_main_type(const char *path) {
 }
 
 char *gb_destroy_main(GB_MAIN_TYPE *Main) {
+    gb_destroy_cache(Main);
     gb_release_main_idx(Main);
     if (Main->path) free(Main->path);
     gb_free_undo_stack(Main);

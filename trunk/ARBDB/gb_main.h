@@ -45,24 +45,31 @@ struct gb_quick_save_struct {
 
 // --------------------------------------------------------------------------------
 
-struct gb_cache_entry_struct {
-    GBDATA *gbd;
-    long    prev;
-    long    next;
-    char   *data;
-    long    clock;
-    int     sizeof_data;
-};
+#if defined(DEBUG)
+// #define GEN_CACHE_STATS
+#endif // DEBUG
 
-struct gb_cache_struct {
-    gb_cache_entry_struct *entries;
+typedef uint16_t gb_cache_idx;
 
-    long firstfree_entry;
-    long newest_entry;
-    long oldest_entry;
-    long sum_data_size;
-    long max_data_size;
-    long max_entries;
+struct gb_cache_entry;
+struct gb_cache {
+    gb_cache_entry *entries;
+
+    gb_cache_idx firstfree_entry;
+    gb_cache_idx newest_entry;
+    gb_cache_idx oldest_entry;
+    
+    size_t sum_data_size;
+    size_t max_data_size;
+    size_t big_data_min_size;
+
+    size_t max_entries;
+
+#if defined(GEN_CACHE_STATS)
+    GB_HASH *not_reused;                            // key = DB_path, value = number of cache entries not reused
+    GB_HASH *reused;                                // key = DB_path, value = number of cache entries reused
+    GB_HASH *reuse_sum;                             // key = DB_path, value = how often entries were reused
+#endif
 };
 
 // --------------------------------------------------------------------------------
@@ -87,7 +94,7 @@ struct GB_MAIN_TYPE {
     int            allow_corrupt_file_recovery;
 
     gb_quick_save_struct qs;
-    gb_cache_struct      cache;
+    gb_cache             cache;
     int                  compression_mask;
 
     int            keycnt;                          // first non used key
@@ -134,12 +141,6 @@ struct GB_MAIN_TYPE {
     gb_project_struct *this_project;
 };
 
-// -------------------------
-//      inline functions
-
-inline gb_cache_struct& GB_GET_CACHE(GB_MAIN_TYPE *gbmain) {
-    return gbmain->cache;
-}
 
 #else
 #error gb_main.h included twice
