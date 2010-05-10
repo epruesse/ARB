@@ -453,6 +453,11 @@ static void jump_to_species(ED4_species_name_terminal *name_term, int seq_pos, b
 static bool ignore_selected_species_changes_cb = false;
 static bool ignore_selected_SAI_changes_cb     = false;
 
+#if defined(DEBUG)
+// #define TRACE_JUMPS
+#endif // DEBUG
+
+
 static void select_named_sequence_terminal(const char *name) {
     GB_transaction ta(GLOBAL_gb_main);
     ED4_species_name_terminal *name_term = ED4_find_species_name_terminal(name);
@@ -482,13 +487,13 @@ static void select_named_sequence_terminal(const char *name) {
             }
         }
         if (name_term!=cursor_name_term) { // do not change if already there!
-#if defined(DEBUG) && 1
+#if defined(TRACE_JUMPS)
             printf("Jumping to species/SAI '%s'\n", name);
 #endif
             jump_to_species(name_term, -1, false, ED4_JUMP_KEEP_POSITION);
         }
         else {
-#if defined(DEBUG) && 1
+#if defined(TRACE_JUMPS)
             printf("Change ignored because same name term!\n");
 #endif
         }
@@ -503,7 +508,7 @@ void ED4_selected_SAI_changed_cb(AW_root * /* aw_root */)
         char *name = GBT_read_string(GLOBAL_gb_main, AWAR_SAI_NAME);
 
         if (name && name[0]) {
-#if defined(DEBUG)
+#if defined(TRACE_JUMPS)
             printf("Selected SAI is '%s'\n", name);
 #endif // DEBUG
 
@@ -522,7 +527,7 @@ void ED4_selected_species_changed_cb(AW_root * /* aw_root */)
     if (!ignore_selected_species_changes_cb) {
         char *name = GBT_read_string(GLOBAL_gb_main, AWAR_SPECIES_NAME);
         if (name && name[0]) {
-#if defined(DEBUG) && 1
+#if defined(TRACE_JUMPS)
             printf("Selected species is '%s'\n", name);
 #endif
             select_named_sequence_terminal(name);
@@ -530,7 +535,7 @@ void ED4_selected_species_changed_cb(AW_root * /* aw_root */)
         }
     }
     else {
-#if defined(DEBUG) && 1
+#if defined(TRACE_JUMPS)
         printf("Change ignored because ignore_selected_species_changes_cb!\n");
 #endif
     }
@@ -543,7 +548,7 @@ void ED4_jump_to_current_species(AW_window * /* aw */, AW_CL)
     char *name = GBT_read_string(GLOBAL_gb_main, AWAR_SPECIES_NAME);
     if (name && name[0]) {
         GB_transaction dummy(GLOBAL_gb_main);
-#if defined(DEBUG) && 1
+#if defined(TRACE_JUMPS)
         printf("Jump to selected species (%s)\n", name);
 #endif
         ED4_species_name_terminal *name_term = ED4_find_species_name_terminal(name);
@@ -945,9 +950,9 @@ void ED4_cursor::set_screen_relative_pos(AW_window *aww, int scroll_to_relpos) {
 
     if (scroll_amount != 0) {
         aww->set_horizontal_scrollbar_position(aww->slider_pos_horizontal + scroll_amount);
-#if defined(DEBUG)
+#if defined(TRACE_JUMPS)
         printf("set_screen_relative_pos(%i) auto-scrolls %i\n", scroll_to_relpos, scroll_amount);
-#endif // DEBUG
+#endif
         ED4_horizontal_change_cb(aww, 0, 0);
     }
 }
@@ -968,9 +973,9 @@ void ED4_cursor::jump_screen_pos(AW_window *aww, int screen_pos, ED4_CursorJumpT
     AW_pos terminal_x, terminal_y;
     owner_of_cursor->calc_world_coords(&terminal_x, &terminal_y);
 
-#if defined(DEBUG) && 0
+#if defined(TRACE_JUMPS)
     printf("jump_screen_pos(%i)\n", screen_pos);
-#endif // DEBUG
+#endif
 
     ED4_terminal *term = owner_of_cursor->to_terminal();
     term->scroll_into_view(aww); // correct y-position of terminal
@@ -1035,9 +1040,9 @@ void ED4_cursor::jump_screen_pos(AW_window *aww, int screen_pos, ED4_CursorJumpT
         scroll_amount = (scroll_amount/length_of_char)*length_of_char; // align to char-size
         if (scroll_amount != 0) {
             aww->set_horizontal_scrollbar_position(aww->slider_pos_horizontal + scroll_amount);
-#if defined(DEBUG) && 0
+#if defined(TRACE_JUMPS)
             printf("jump_screen_pos auto-scrolls %i\n", scroll_amount);
-#endif // DEBUG
+#endif
             allowed_to_draw = 0;
             ED4_horizontal_change_cb(aww, 0, 0);
         }
