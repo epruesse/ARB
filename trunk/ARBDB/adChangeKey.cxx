@@ -188,7 +188,7 @@ GB_ERROR GBT_convert_changekey(GBDATA *gb_main, const char *name, GB_TYPES targe
         GBDATA *gbspec  = GBT_first_species(gb_main);
         size_t  rounded = 0;
 
-        for (; gbspec && !error; gbspec = GBT_next_species(gbspec)) {
+        for (; gbspec; gbspec = GBT_next_species(gbspec)) {
             GBDATA *gbfield = GB_entry(gbspec, name);
 
             // If entry does not exist, no need to convert (sparse population is valid => 'NULL' value)
@@ -228,6 +228,7 @@ GB_ERROR GBT_convert_changekey(GBDATA *gb_main, const char *name, GB_TYPES targe
                     free(data);
                 }
             }
+            if (error) break;
         }
 
         if (error && gbspec) {
