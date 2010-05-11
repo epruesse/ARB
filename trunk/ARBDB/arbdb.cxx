@@ -412,17 +412,20 @@ void GB_close(GBDATA *gbd) {
     gb_assert(Main->transaction == 0); // you can't close DB if there is still an open transaction!
 
     if (!Main->local_mode) {
-        long result = gbcmc_close(Main->c_link);
+        long result            = gbcmc_close(Main->c_link);
         if (result != 0) error = GBS_global_string("gbcmc_close returns %li", result);
     }
 
+    gbcm_logout(Main, NULL);                        // logout default user
+    
     if (!error) {
         gb_assert((GBDATA*)Main->data == gbd);
 
         run_close_callbacks(gbd, Main->close_callbacks);
         Main->close_callbacks = 0;
 
-        gb_delete_main_entry(&gbd);
+        gb_delete_dummy_father(&Main->dummy_father);
+        Main->data = NULL;
 
         /* ARBDB applications using awars easily crash in gb_do_callback_list(),
          * if AWARs are still bound to elements in the closed database.
@@ -430,9 +433,7 @@ void GB_close(GBDATA *gbd) {
          * To unlink awars call AW_root::unlink_awars_from_DB().
          * If that doesn't help, test Main->data (often aka as GLOBAL_gb_main)
          */
-        Main->data = NULL;
         gb_do_callback_list(Main);                  // do all callbacks
-
         gb_destroy_main(Main);
     }
 

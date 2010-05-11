@@ -68,8 +68,9 @@ GB_ERROR gbcms_add_to_delete_list(GBDATA *gbd);
 long gbcmc_key_alloc(GBDATA *gbd, const char *key);
 GB_ERROR gbcmc_send_undo_commands(GBDATA *gbd, enum gb_undo_commands command) __ATTR__USERESULT;
 char *gbcmc_send_undo_info_commands(GBDATA *gbd, enum gb_undo_commands command);
-GB_ERROR gbcm_login(GBCONTAINER *gb_main, const char *user);
+GB_ERROR gbcm_login(GBCONTAINER *gb_main, const char *loginname);
 GBCM_ServerResult gbcmc_close(struct gbcmc_comm *link);
+GB_ERROR gbcm_logout(GB_MAIN_TYPE *Main, const char *loginname);
 
 /* adhash.cxx */
 size_t gbs_get_a_prime(size_t above_or_equal_this);
@@ -154,7 +155,8 @@ GBCONTAINER *gb_make_pre_defined_container(GBCONTAINER *father, GBCONTAINER *gbd
 GBCONTAINER *gb_make_container(GBCONTAINER *father, const char *key, long index_pos, GBQUARK keyq);
 void gb_pre_delete_entry(GBDATA *gbd);
 void gb_delete_entry(GBDATA **gbd_ptr);
-void gb_delete_main_entry(GBDATA **gbd_ptr);
+void gb_delete_entry(GBCONTAINER **gbc_ptr);
+void gb_delete_dummy_father(GBCONTAINER **dummy_father);
 struct gb_transaction_save *gb_new_gb_transaction_save(GBDATA *gbd);
 void gb_add_ref_gb_transaction_save(struct gb_transaction_save *ts);
 void gb_del_ref_gb_transaction_save(struct gb_transaction_save *ts);
@@ -192,6 +194,7 @@ GB_CBUFFER gb_uncompress_data(GBDATA *gbd, GB_CBUFFER source, long size);
 /* adindex.cxx */
 char *gb_index_check_in(GBDATA *gbd);
 void gb_index_check_out(GBDATA *gbd);
+void gb_destroy_indices(GBCONTAINER *gbc);
 GBDATA *gb_index_find(GBCONTAINER *gbf, struct gb_index_files_struct *ifs, GBQUARK quark, const char *val, GB_CASE case_sens, int after_index);
 void gb_init_undo_stack(GB_MAIN_TYPE *Main);
 void gb_free_undo_stack(GB_MAIN_TYPE *Main);

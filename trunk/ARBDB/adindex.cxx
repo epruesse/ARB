@@ -174,6 +174,30 @@ GB_ERROR GB_create_index(GBDATA *gbd, const char *key, GB_CASE case_sens, long e
     return error;
 }
 
+void gb_destroy_indices(GBCONTAINER *gbc) {
+    gb_index_files_struct *ifs = GBCONTAINER_IFS(gbc);
+
+    while (ifs) {
+        GB_REL_IFES *if_entries = GB_INDEX_FILES_ENTRIES(ifs);
+
+        for (int index = 0; index<ifs->hash_table_size; index++) {
+            gb_if_entries *ifes = GB_ENTRIES_ENTRY(if_entries, index);
+
+            while (ifes) {
+                gb_if_entries *ifes_next = GB_IF_ENTRIES_NEXT(ifes);
+
+                gbm_free_mem((char*)ifes, sizeof(*ifes), GB_GBM_INDEX(gbc));
+                ifes = ifes_next;
+            }
+        }
+        free(if_entries);
+
+        gb_index_files_struct *ifs_next = GB_INDEX_FILES_NEXT(ifs);
+        free(ifs);
+        ifs = ifs_next;
+    }
+}
+
 #if defined(DEBUG)
 
 NOT4PERL void GB_dump_indices(GBDATA *gbd) {

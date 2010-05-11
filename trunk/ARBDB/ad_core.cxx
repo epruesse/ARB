@@ -267,10 +267,26 @@ GB_MAIN_TYPE *gb_make_gb_main_type(const char *path) {
 }
 
 char *gb_destroy_main(GB_MAIN_TYPE *Main) {
+    gb_assert(!Main->dummy_father);
+    gb_assert(!Main->data);
+
     gb_destroy_cache(Main);
     gb_release_main_idx(Main);
-    if (Main->path) free(Main->path);
+
+    if (Main->command_hash) GBS_free_hash(Main->command_hash);
+
+    gb_free_all_keys(Main);
+    
+    if (Main->key_2_index_hash) GBS_free_hash(Main->key_2_index_hash);
+    freenull(Main->keys);
+
     gb_free_undo_stack(Main);
+
+    for (int j = 0; j<ALLOWED_DATES; ++j) freenull(Main->dates[j]);
+
+    free(Main->path);
+    free(Main->qs.quick_save_disabled);
+    
     gbm_free_mem((char *)Main, sizeof(*Main), 0);
 
     return 0;
@@ -418,8 +434,8 @@ GBCONTAINER *gb_make_container(GBCONTAINER * father, const char *key, long index
 
 void gb_pre_delete_entry(GBDATA *gbd) {
     // Reduce an entry to its absolute minimum and remove it from database
-    GB_MAIN_TYPE   *Main = GB_MAIN(gbd);
-    long    type = GB_TYPE(gbd);
+    GB_MAIN_TYPE *Main = GB_MAIN_NO_FATHER(gbd);
+    long          type = GB_TYPE(gbd);
 
     struct gb_callback *cb, *cb2;
     long            gbm_index;
@@ -435,7 +451,10 @@ void gb_pre_delete_entry(GBDATA *gbd) {
         }
         gbm_free_mem((char *) cb, sizeof(struct gb_callback), gbm_index);
     }
-    gb_write_key(gbd, 0);
+
+    if (GB_FATHER(gbd)) {
+        gb_write_key(gbd, 0);
+    }
     gb_unlink_entry(gbd);
 
     /* as soon as an entry is deleted, there is
@@ -454,73 +473,96 @@ void gb_pre_delete_entry(GBDATA *gbd) {
 }
 
 void gb_delete_entry(GBDATA **gbd_ptr) {
-    GBDATA *gbd  = *gbd_ptr;
-    long    gbm_index;
-    long    type = GB_TYPE(gbd);
-
-    gbm_index = GB_GBM_INDEX(gbd);
+    GBDATA *gbd       = *gbd_ptr;
+    long    type      = GB_TYPE(gbd);
 
     if (type == GB_DB) {
-        int          index;
-        GBDATA      *gbd2;
-        GBCONTAINER *gbc = ((GBCONTAINER *) gbd);
-
-        for (index = 0; index < gbc->d.nheader; index++) {
-            if ((gbd2 = GBCONTAINER_ELEM(gbc, index))!=NULL) {
-                gb_delete_entry(&gbd2);
-            }
-        };
+        gb_delete_entry((GBCONTAINER**)gbd_ptr);
     }
-    gb_pre_delete_entry(gbd);
+    else {
+        long gbm_index = GB_GBM_INDEX(gbd);
+
+        gb_pre_delete_entry(gbd);
+        if (type >= GB_BITS) GB_FREEDATA(gbd);
+        gbm_free_mem((char *) gbd, sizeof(GBDATA), gbm_index);
+        
+        *gbd_ptr = 0;                               // avoid further usage
+    }
+}
+
+void gb_delete_entry(GBCONTAINER **gbc_ptr) {
+    GBCONTAINER *gbc       = *gbc_ptr;
+    long         gbm_index = GB_GBM_INDEX(gbc);
+
+    gb_assert(GB_TYPE(gbc) == GB_DB);
+
+    for (long index = 0; index < gbc->d.nheader; index++) {
+        GBDATA *gbd = GBCONTAINER_ELEM(gbc, index);
+        if (gbd) {
+            gb_delete_entry(&gbd);
+            SET_GBCONTAINER_ELEM(gbc, index, NULL);
+        }
+    }
+
+    gb_pre_delete_entry((GBDATA*)gbc);
 
     // what is left now, is the core database entry!
 
-    if (type == GB_DB) {
-        GBCONTAINER                  *gbc = ((GBCONTAINER *) gbd);
-        struct gb_header_list_struct *hls;
-
-        if ((hls=GB_DATA_LIST_HEADER(gbc->d))!=NULL) {
-            gbm_free_mem((char *)hls,
-                         sizeof(struct gb_header_list_struct) * gbc->d.headermemsize,
-                         GBM_HEADER_INDEX);
-        }
-        gbm_free_mem((char *) gbd, sizeof(GBCONTAINER), gbm_index);
+    gb_destroy_indices(gbc);
+    struct gb_header_list_struct *hls;
+    
+    if ((hls=GB_DATA_LIST_HEADER(gbc->d)) != NULL) {
+        gbm_free_mem((char *)hls,
+                     sizeof(struct gb_header_list_struct) * gbc->d.headermemsize,
+                     GBM_HEADER_INDEX);
     }
-    else {
-        if (type >= GB_BITS) GB_FREEDATA(gbd);
-        gbm_free_mem((char *) gbd, sizeof(GBDATA), gbm_index);
-    }
+    gbm_free_mem((char *) gbc, sizeof(GBCONTAINER), gbm_index);
 
-    *gbd_ptr = 0; // avoid further usage
+    *gbc_ptr = 0;                                   // avoid further usage
 }
 
-void gb_delete_main_entry(GBDATA **gbd_ptr) {
-    GBDATA *gbd  = *gbd_ptr;
-    long    type = GB_TYPE(gbd);
+static void gb_delete_main_entry(GBCONTAINER **gb_main_ptr) {
+    GBCONTAINER *gb_main  = *gb_main_ptr;
+    
+    gb_assert(GB_TYPE(gb_main) == GB_DB);
 
-    gb_assert(type == GB_DB);
-    if (type == GB_DB) {
-        int          index;
-        int          pass;
-        GBDATA      *gbd2;
-        GBCONTAINER *gbc = ((GBCONTAINER *) gbd);
+    GBQUARK sys_quark = GB_key_2_quark((GBDATA*)gb_main, GB_SYSTEM_FOLDER);
 
-        GBQUARK sys_quark = GB_key_2_quark(gbd, GB_SYSTEM_FOLDER);
-
-        for (pass = 1; pass <= 2; pass++) {
-            for (index = 0; index < gbc->d.nheader; index++) {
-                if ((gbd2 = GBCONTAINER_ELEM(gbc, index)) != NULL) {
-                    if (pass == 2 || GB_KEY_QUARK(gbd2) != sys_quark) { // delay deletion of system folder to pass 2
-#if defined(DEBUG) && 0
-                        fprintf(stderr, "Deleting root node '%s'\n", GB_get_db_path(gbd2));
-#endif // DEBUG
-                        gb_delete_entry(&gbd2);
-                    }
+    for (int pass = 1; pass <= 2; pass++) {
+        for (int index = 0; index < gb_main->d.nheader; index++) {
+            GBDATA *gbd = GBCONTAINER_ELEM(gb_main, index);
+            if (gbd) {
+                // delay deletion of system folder to pass 2:
+                if (pass == 2 || GB_KEY_QUARK(gbd) != sys_quark) { 
+                    gb_delete_entry(&gbd);
+                    SET_GBCONTAINER_ELEM(gb_main, index, NULL);
                 }
             }
         }
-        gb_delete_entry(gbd_ptr);
     }
+    gb_delete_entry(gb_main_ptr);
+}
+
+void gb_delete_dummy_father(GBCONTAINER **dummy_father) {
+    GBCONTAINER  *gbc  = *dummy_father;
+    GB_MAIN_TYPE *Main = GB_MAIN(gbc);
+
+    gb_assert(GB_TYPE(gbc)   == GB_DB);
+    gb_assert(GB_FATHER(gbc) == NULL);
+
+    for (int index = 0; index < gbc->d.nheader; index++) {
+        GBCONTAINER *gb_main = (GBCONTAINER*)GBCONTAINER_ELEM(gbc, index);
+        if (gb_main) {
+            gb_assert(GB_TYPE(gb_main) == GB_DB);
+            gb_assert(gb_main == Main->data);
+            gb_delete_main_entry((GBCONTAINER**)&gb_main);
+
+            SET_GBCONTAINER_ELEM(gbc, index, NULL);
+            Main->data = NULL;
+        }
+    }
+
+    gb_delete_entry(dummy_father);
 }
 
 // ---------------------
@@ -739,18 +781,19 @@ long gb_create_key(GB_MAIN_TYPE *Main, const char *s, bool create_gb_key) {
 }
 
 void gb_free_all_keys(GB_MAIN_TYPE *Main) {
-    long index;
-    if (!Main->keys) return;
-    for (index = 1; index < Main->keycnt; index++) {
-        if (Main->keys[index].key) {
-            GBS_write_hash(Main->key_2_index_hash, Main->keys[index].key, 0);
-            freenull(Main->keys[index].key);
+    if (Main->keys) {
+        for (long index = 1; index < Main->keycnt; index++) {
+            if (Main->keys[index].key) {
+                GBS_write_hash(Main->key_2_index_hash, Main->keys[index].key, 0);
+                freenull(Main->keys[index].key);
+            }
+            Main->keys[index].nref = 0;
+            Main->keys[index].next_free_key = 0;
         }
-        Main->keys[index].nref = 0;
-        Main->keys[index].next_free_key = 0;
+        freenull(Main->keys[0].key); // "main"
+        Main->first_free_key = 0;
+        Main->keycnt         = 1;
     }
-    Main->first_free_key = 0;
-    Main->keycnt = 1;
 }
 
 #if defined(DEVEL_RALF)

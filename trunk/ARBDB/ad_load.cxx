@@ -368,7 +368,8 @@ static GB_ERROR set_protection_level(GB_MAIN_TYPE *Main, GBDATA *gbd, const char
         lu = atoi(p+4);
 
         for (i=Main->last_updated; i<=lu; ++i) {
-            Main->dates[i] = strdup("unknown date");
+            gb_assert(i<ALLOWED_DATES);
+            Main->dates[i]     = strdup("unknown date");
             Main->last_updated = lu+1;
         }
     }
@@ -1134,7 +1135,7 @@ long gb_read_bin(FILE *in, GBCONTAINER *gbd, int diff_file_allowed)
         gb_read_bin_error(in, (GBDATA *)gbd, "keyword 'time' not found");
         return 1;
     }
-    for (j=0; j<255; j++) {         // read times
+    for (j=0; j<(ALLOWED_DATES-1); j++) {         // read times
         p = buffer;
         for (k=0; k<256; k++) {
             c = getc(in);
@@ -1149,8 +1150,8 @@ long gb_read_bin(FILE *in, GBCONTAINER *gbd, int diff_file_allowed)
         if (p == buffer) break;
         freedup(Main->dates[j], buffer);
     }
-    if (j>=255) {
-        gb_read_bin_error(in, (GBDATA *)gbd, "more than 255 dates are not allowed");
+    if (j>=(ALLOWED_DATES-1)) {
+        gb_read_bin_error(in, (GBDATA *)gbd, "too many date entries");
         return 1;
     }
     Main->last_updated = (unsigned int)j;
@@ -1455,7 +1456,7 @@ GBDATA *GB_login(const char *cpath, const char *opent, const char *user) {
 
     if (strchr(opent, 'R')) Main->allow_corrupt_file_recovery = 1;
 
-    gb_create_key(Main, "main", false);
+    ASSERT_RESULT(long, gb_create_key(Main, "main", false), 0);
 
     Main->dummy_father            = gb_make_container(NULL, 0, -1, 0); // create "main"
     Main->dummy_father->main_idx  = gb_make_main_idx(Main);
@@ -1631,9 +1632,12 @@ GBDATA *GB_login(const char *cpath, const char *opent, const char *user) {
     gb_assert(error || gbd);
 
     if (error) {
-        gb_release_main_idx(Main);
+        gbcm_logout(Main, user);
+        gb_delete_dummy_father(&Main->dummy_father);
+        gbd        = NULL;
+        gb_destroy_main(Main);
+
         GB_export_error(error);
-        gbd = 0;
     }
     else {
         GB_commit_transaction((GBDATA *)gbd);

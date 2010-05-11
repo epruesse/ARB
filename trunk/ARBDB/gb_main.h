@@ -75,7 +75,8 @@ struct gb_cache {
 // --------------------------------------------------------------------------------
 //      root structure (one for each database)
 
-#define ALLOWED_KEYS 15000
+#define ALLOWED_KEYS  15000
+#define ALLOWED_DATES 256
 
 struct GB_MAIN_TYPE {
     int transaction;
@@ -115,7 +116,7 @@ struct GB_MAIN_TYPE {
 
     g_b_undo_mgr_struct *undo;
 
-    char         *dates[256];
+    char         *dates[ALLOWED_DATES];           // @@@ saved to DB, but never used
     unsigned int  security_level;
     int           old_security_level;
     int           pushed_security_level;
