@@ -1578,7 +1578,7 @@ clean_coverage: clean_coverage_results
 unit_tests: test_base clean_coverage_results
 	@echo "$(SEP) Running unit tests"
 	$(MAKE) $(TESTED_UNITS)
-	@echo "All unit tests passed" 
+	@echo "$(SEP) All unit tests passed" 
 
 ut: unit_tests
 

@@ -1190,26 +1190,6 @@ static GBCM_ServerResult gbcms_talking(int con, long *hs, void *sin) {
     }
 }
 
-static GB_ERROR gbcm_logout(GBCONTAINER *gb_main, char *user)
-{
-    long i;
-    GB_MAIN_TYPE *Main = GBCONTAINER_MAIN(gb_main);
-
-    for (i = 0; i<GB_MAX_USERS; i++) {
-        if (!Main->users[i]) continue;
-        if (!strcmp(user, Main->users[i]->username)) {
-            Main->users[i]->nusers--;
-            if (Main->users[i]->nusers<=0) { // kill user and his projects
-                free(Main->users[i]->username);
-                freenull(Main->users[i]);
-                fprintf(stdout, "The User %s has logged out\n", user);
-            }
-            return 0;
-        }
-    }
-    return GB_export_errorf("User '%s' not logged in", user);
-}
-
 bool GBCMS_accept_calls(GBDATA *gbd, bool wait_extra_time) {
     // returns true if served
 
@@ -1313,7 +1293,7 @@ bool GBCMS_accept_calls(GBDATA *gbd, bool wait_extra_time) {
                     si_last->next = si->next;
                 }
                 if (si->username) {
-                    gbcm_logout((GBCONTAINER *)hs->gb_main, si->username);
+                    gbcm_logout(Main, si->username);
                 }
                 g_bcms_delete_Socinf(si);
                 si = 0;
@@ -1902,31 +1882,35 @@ GB_ERROR GB_tell_server_dont_wait(GBDATA *gbd) {
 //      Login/Logout
 
 
-GB_ERROR gbcm_login(GBCONTAINER *gb_main, const char *user)
+GB_ERROR gbcm_login(GBCONTAINER *gb_main, const char *loginname) {
      // look for any free user and set this_user
-{
     int i;
     GB_MAIN_TYPE *Main = GBCONTAINER_MAIN(gb_main);
 
     for (i = 0; i<GB_MAX_USERS; i++) {
-        if (!Main->users[i]) continue;
-        if (!strcmp(user, Main->users[i]->username)) {
-            Main->this_user = Main->users[i];
-            Main->users[i]->nusers++;
+        gb_user_struct *user = Main->users[i];
+        if (user && strcmp(loginname, user->username) == 0) {
+            Main->this_user = user;
+            user->nusers++;
             return 0;
         }
     }
     for (i = 0; i<GB_MAX_USERS; i++) {
-        if (Main->users[i]) continue;
-        Main->users[i] = (struct gb_user_struct *) GB_calloc(sizeof(struct gb_user_struct), 1);
-        Main->users[i]->username = strdup(user);
-        Main->users[i]->userid = i;
-        Main->users[i]->userbit = 1<<i;
-        Main->users[i]->nusers = 1;
-        Main->this_user = Main->users[i];
-        return 0;
+        gb_user_struct*& user = Main->users[i];
+        if (!user) {
+            user = (gb_user_struct *) GB_calloc(sizeof(gb_user_struct), 1);
+            
+            user->username = strdup(loginname);
+            user->userid   = i;
+            user->userbit  = 1<<i;
+            user->nusers   = 1;
+
+            Main->this_user = user;
+
+            return 0;
+        }
     }
-    return GB_export_errorf("Too many users in this database: User '%s' ", user);
+    return GB_export_errorf("Too many users in this database: User '%s' ", loginname);
 }
 
 GBCM_ServerResult gbcmc_close(struct gbcmc_comm * link) {
@@ -1948,6 +1932,30 @@ GBCM_ServerResult gbcmc_close(struct gbcmc_comm * link) {
     free((char *)link);
     return GBCM_SERVER_OK;
 }
+
+GB_ERROR gbcm_logout(GB_MAIN_TYPE *Main, const char *loginname) {
+    // if 'loginname' is NULL, the first logged-in user will be logged out
+
+    if (!loginname) {
+        loginname = Main->users[0]->username;
+        gb_assert(loginname);
+    }
+
+    for (long i = 0; i<GB_MAX_USERS; i++) {
+        gb_user_struct*& user = Main->users[i];
+        if (user && strcmp(loginname, user->username) == 0) {
+            user->nusers--;
+            if (user->nusers<=0) { // kill user and his projects
+                if (i) fprintf(stdout, "User '%s' has logged out\n", loginname);
+                free(user->username);
+                freenull(user);
+            }
+            return 0;
+        }
+    }
+    return GB_export_errorf("User '%s' not logged in", loginname);
+}
+
 
 GB_CSTR GB_get_hostname() {
     static char *hn = 0;

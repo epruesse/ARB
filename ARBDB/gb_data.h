@@ -159,7 +159,7 @@ struct GBCONTAINER {
 //      type access
 
 inline GB_TYPES GB_TYPE(GBDATA *gbd)      { return GB_TYPES(gbd->flags.type); }
-inline GB_TYPES GB_TYPE(GBCONTAINER *gbd) { return GB_TYPES(gbd->flags.type); }
+inline GB_TYPES GB_TYPE(GBCONTAINER *gbc) { return GB_TYPES(gbc->flags.type); }
 
 // ----------------------
 //      parent access
@@ -178,6 +178,7 @@ extern GB_MAIN_TYPE *gb_main_array[];
 inline GB_MAIN_TYPE *GBCONTAINER_MAIN(GBCONTAINER *gbc) { return gb_main_array[gbc->main_idx]; }
 inline GB_MAIN_TYPE *GB_MAIN(GBDATA *gbd)               { return GBCONTAINER_MAIN(GB_FATHER(gbd)); }
 inline GB_MAIN_TYPE *GB_MAIN(GBCONTAINER *gbc)          { return GBCONTAINER_MAIN(gbc); }
+inline GB_MAIN_TYPE *GB_MAIN_NO_FATHER(GBDATA *gbd)     { return GB_TYPE(gbd) == GB_DB ? GBCONTAINER_MAIN((GBCONTAINER*)gbd) : GB_MAIN(gbd); }
 
 // -----------------------
 //      security flags
