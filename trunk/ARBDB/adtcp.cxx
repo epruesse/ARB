@@ -23,23 +23,52 @@
 // ------------------------------------------------------------
 // Data representing current content of arb_tcp.dat
 
-static GB_ULONG  ATD_modtime  = -1; // modification time of read-in arb_tcp.dat
-static char     *ATD_filename = 0; // pathname of loaded arb_tcp.dat
+class ArbTcpDat {
+    GB_ULONG  modtime;                              // modification time of read-in arb_tcp.dat
+    char     *filename;                             // pathname of loaded arb_tcp.dat
 
-static char **ATD_content = 0; /* zero-pointer terminated array of multi-separated strings
-                                * (strings have same format as the result of
-                                * GBS_read_arb_tcp(), but also contain the first element,
-                                * i.e. the server id)
-                                */
+    char **content; /* zero-pointer terminated array of multi-separated strings
+                     * (strings have same format as the result of
+                     * GBS_read_arb_tcp(), but also contain the first element,
+                     * i.e. the server id)
+                     */
+    int serverCount;
+    
 
-// ------------------------------------------------------------
+    void freeContent() {
+        if (content) {
+            for (int c = 0; content[c]; c++) free(content[c]);
+            freenull(content);
+        }
+    }
+    GB_ERROR read(int *versionFound);
 
-static const char *get_ATD_entry(const char *serverID) {
+public:
+    ArbTcpDat() : modtime(-1) , filename(NULL) , content(NULL), serverCount(-1) { }
+
+    ~ArbTcpDat() {
+        free(filename);
+        freeContent();
+    }
+
+    GB_ERROR update();
+
+    int get_server_count() const { return serverCount; }
+    const char *get_serverID(int idx) const { gb_assert(idx >= 0 && idx<serverCount); return content[idx]; }
+    const char *get_entry(const char *serverID) const;
+    const char *get_filename() const { return filename; }
+
+#if defined(DUMP_ATD_ACCESS)
+    void dump();
+#endif
+};
+
+const char *ArbTcpDat::get_entry(const char *serverID) const {
     const char *result = 0;
-    if (ATD_content) {
+    if (content) {
         int c;
-        for (c = 0; ATD_content[c]; c++) {
-            const char *id = ATD_content[c];
+        for (c = 0; content[c]; c++) {
+            const char *id = content[c];
 
             if (strcmp(id, serverID) == 0) {
                 result = strchr(id, 0)+1; // return pointer to first parameter
@@ -50,15 +79,14 @@ static const char *get_ATD_entry(const char *serverID) {
     return result;
 }
 
-// ------------------------------------------------------------
 #if defined(DUMP_ATD_ACCESS)
-static void dump_ATD() {
-    printf("ATD_filename='%s'\n", ATD_filename);
-    printf("ATD_modtime='%lu'\n", ATD_modtime);
-    if (ATD_content) {
+void ArbTcpDat::dump() {
+    printf("filename='%s'\n", filename);
+    printf("modtime='%lu'\n", modtime);
+    if (content) {
         int c;
-        for (c = 0; ATD_content[c]; c++) {
-            char *data = ATD_content[c];
+        for (c = 0; content[c]; c++) {
+            char *data = content[c];
             char *tok  = data;
             printf("Entry #%i:\n", c);
 
@@ -69,24 +97,15 @@ static void dump_ATD() {
         }
     }
     else {
-        printf("No ATD_content\n");
+        printf("No content\n");
     }
 }
 #endif // DUMP_ATD_ACCESS
-// ------------------------------------------------------------
-
-static void freeContent() {
-    if (ATD_content) {
-        int c;
-        for (c = 0; ATD_content[c]; c++) free(ATD_content[c]);
-        freenull(ATD_content);
-    }
-}
 
 #define MAXLINELEN 512
 #define MAXTOKENS  10
 
-static GB_ERROR read_arb_tcp_dat(const char *filename, int *versionFound) {
+GB_ERROR ArbTcpDat::read(int *versionFound) {
     // used to read arb_tcp.dat or arb_tcp_org.dat
     GB_ERROR  error = 0;
     FILE     *in    = fopen(filename, "rt");
@@ -179,24 +198,31 @@ static GB_ERROR read_arb_tcp_dat(const char *filename, int *versionFound) {
             for (t = 0; t<tokCount; t++) freenull(tokens[t]);
         }
 
-        ATD_content = (char**)realloc(entry, (entries+1)*sizeof(*entry));
-        if (!ATD_content) error = "Out of memory";
-        else ATD_content[entries] = 0;
+        content = (char**)realloc(entry, (entries+1)*sizeof(*entry));
+        if (!content) {
+            error   = "Out of memory";
+            serverCount = 0;
+        }
+        else {
+            content[entries] = 0;
+            serverCount      = entries;
+        }
 
         free(tokens);
         fclose(in);
     }
 
 #if defined(DUMP_ATD_ACCESS)
-    dump_ATD();
+    dump();
 #endif // DUMP_ATD_ACCESS
     return error;
 }
 
-static GB_ERROR load_arb_tcp_dat() {
+GB_ERROR ArbTcpDat::update() {
     // read arb_tcp.dat (once or if changed on disk)
-    GB_ERROR  error    = 0;
-    char     *filename = GBS_find_lib_file("arb_tcp.dat", "", 1);
+    GB_ERROR error = 0;
+
+    if (!filename) filename = GBS_find_lib_file("arb_tcp.dat", "", 1);
 
     if (!filename) {
         error = GBS_global_string("File $ARBHOME/lib/arb_tcp.dat not found");
@@ -204,11 +230,11 @@ static GB_ERROR load_arb_tcp_dat() {
     else {
         struct stat st;
         if (stat(filename, &st) == 0) {
-            GB_ULONG modtime = st.st_mtime;
-            if (ATD_modtime != modtime) { // read once or when changed
+            GB_ULONG mtime = st.st_mtime;
+            if (modtime != mtime) { // read once or when changed
                 int arb_tcp_version;
+                error = read(&arb_tcp_version);
 
-                error = read_arb_tcp_dat(filename, &arb_tcp_version);
                 if (!error) {
                     int expected_version = 2;
                     if (arb_tcp_version != expected_version) {
@@ -226,24 +252,15 @@ static GB_ERROR load_arb_tcp_dat() {
                                                   filename);
                     }
                 }
-
-                free(ATD_filename);
-                if (!error) {
-                    ATD_modtime  = modtime;
-                    ATD_filename = filename;
-                    filename     = 0;
-                }
-                else {
-                    ATD_modtime  = -1;
-                    ATD_filename = 0;
-                }
+                modtime = error ? -1 : mtime;
             }
         }
         else {
             error = GBS_global_string("Can't stat '%s'", filename);
         }
     }
-    free(filename);
+    
+    if (error) freenull(filename);
 
 #if defined(DUMP_ATD_ACCESS)
     printf("error=%s\n", error);
@@ -251,6 +268,10 @@ static GB_ERROR load_arb_tcp_dat() {
 
     return error;
 }
+
+static ArbTcpDat arb_tcp_dat;
+
+// --------------------------------------------------------------------------------
 
 const char *GBS_scan_arb_tcp_param(const char *ipPort, const char *wantedParam) {
     /* search a specific server parameter in result from GBS_read_arb_tcp()
@@ -313,7 +334,7 @@ const char *GBS_read_arb_tcp(const char *env) {
         result = resBuf;
     }
     else {
-        error = load_arb_tcp_dat(); // load once or reload after change on disk
+        error = arb_tcp_dat.update(); // load once or reload after change on disk
         if (!error) {
             const char *user = GB_getenvUSER();
             if (!user) {
@@ -321,13 +342,13 @@ const char *GBS_read_arb_tcp(const char *env) {
             }
             else {
                 char *envuser = GBS_global_string_copy("%s:%s", user, env);
-                result        = get_ATD_entry(envuser);
+                result        = arb_tcp_dat.get_entry(envuser);
 
                 if (!result) { // no user-specific entry found
-                    result = get_ATD_entry(env);
+                    result = arb_tcp_dat.get_entry(env);
                     if (!result) {
                         error = GBS_global_string("Expected entry '%s' or '%s' in '%s'",
-                                                  env, envuser, ATD_filename);
+                                                  env, envuser, arb_tcp_dat.get_filename());
                     }
                 }
                 free(envuser);
@@ -352,21 +373,18 @@ const char * const *GBS_get_arb_tcp_entries(const char *matching) {
 
     GB_ERROR error = 0;
 
-    error = load_arb_tcp_dat();
+    error = arb_tcp_dat.update();
     if (!error) {
-        int count   = 0;
-        int matched = 0;
-        int c;
-
-        while (ATD_content[count]) count++;
+        int count = arb_tcp_dat.get_server_count();
 
         if (matchingEntriesSize != count) {
             freeset(matchingEntries, (const char **)malloc((count+1)*sizeof(*matchingEntries)));
             matchingEntriesSize = count;
         }
 
-        for (c = 0; c<count; c++) {
-            const char *id = ATD_content[c];
+        int matched = 0;
+        for (int c = 0; c<count; c++) {
+            const char *id = arb_tcp_dat.get_serverID(c);
 
             if (strchr(id, ':') == 0) { // not user-specific
                 if (GBS_string_matches(id, matching, GB_MIND_CASE)) { // matches
