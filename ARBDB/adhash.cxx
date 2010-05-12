@@ -602,34 +602,43 @@ struct gbs_hash_statistic_summary {
     long   min_collisions, max_collisions, sum_collisions;
     double min_fill_ratio, max_fill_ratio, sum_fill_ratio;
     double min_hash_quality, max_hash_quality, sum_hash_quality;
+
+    void init() {
+        count          = 0;
+        min_size       = min_nelem = min_collisions = LONG_MAX;
+        max_size       = max_nelem = max_collisions = LONG_MIN;
+        min_fill_ratio = min_hash_quality = DBL_MAX;
+        max_fill_ratio = max_hash_quality = DBL_MIN;
+
+        sum_size       = sum_nelem = sum_collisions = 0;
+        sum_fill_ratio = sum_hash_quality = 0.0;
+    }
 };
 
-static GB_HASH *stat_hash = 0;
-
-static void init_hash_statistic_summary(gbs_hash_statistic_summary *stat) {
-    stat->count          = 0;
-    stat->min_size       = stat->min_nelem = stat->min_collisions = LONG_MAX;
-    stat->max_size       = stat->max_nelem = stat->max_collisions = LONG_MIN;
-    stat->min_fill_ratio = stat->min_hash_quality = DBL_MAX;
-    stat->max_fill_ratio = stat->max_hash_quality = DBL_MIN;
-
-    stat->sum_size       = stat->sum_nelem = stat->sum_collisions = 0;
-    stat->sum_fill_ratio = stat->sum_hash_quality = 0.0;
-}
-
-static gbs_hash_statistic_summary *get_stat_summary(const char *id) {
-    long found;
-    if (!stat_hash) stat_hash = GBS_create_hash(10, GB_MIND_CASE);
-    found                     = GBS_read_hash(stat_hash, id);
-    if (!found) {
-        gbs_hash_statistic_summary *stat = (gbs_hash_statistic_summary*)GB_calloc(1, sizeof(*stat));
-        init_hash_statistic_summary(stat);
-        found = (long)stat;
-        GBS_write_hash(stat_hash, id, found);
+class hash_statistic_manager {
+    GB_HASH *stat_hash;
+public:
+    hash_statistic_manager() : stat_hash(NULL) { }
+    ~hash_statistic_manager() {
+        if (stat_hash) GBS_free_hash(stat_hash);
     }
 
-    return (gbs_hash_statistic_summary*)found;
-}
+    gbs_hash_statistic_summary *get_stat_summary(const char *id) {
+        if (!stat_hash) stat_hash = GBS_create_dynaval_hash(10, GB_MIND_CASE, GBS_dynaval_free);
+
+        long found = GBS_read_hash(stat_hash, id);
+        if (!found) {
+            gbs_hash_statistic_summary *stat = (gbs_hash_statistic_summary*)GB_calloc(1, sizeof(*stat));
+            stat->init();
+            found = (long)stat;
+            GBS_write_hash(stat_hash, id, found);
+        }
+
+        return (gbs_hash_statistic_summary*)found;
+    }
+};
+
+static hash_statistic_manager hash_stat_man;
 
 static void addto_hash_statistic_summary(gbs_hash_statistic_summary *stat, long size, long nelem, long collisions, double fill_ratio, double hash_quality) {
     stat->count++;
@@ -657,11 +666,11 @@ static void addto_hash_statistic_summary(gbs_hash_statistic_summary *stat, long 
 }
 
 void GBS_clear_hash_statistic_summary(const char *id) {
-    init_hash_statistic_summary(get_stat_summary(id));
+    hash_stat_man.get_stat_summary(id)->init();
 }
 
 void GBS_print_hash_statistic_summary(const char *id) {
-    gbs_hash_statistic_summary *stat  = get_stat_summary(id);
+    gbs_hash_statistic_summary *stat  = hash_stat_man.get_stat_summary(id);
     long                        count = stat->count;
     printf("Statistic summary for %li hashes of type '%s':\n", count, id);
     printf("- size:          min = %6li ; max = %6li ; mean = %6.1f\n", stat->min_size, stat->max_size, (double)stat->sum_size/count);
@@ -691,7 +700,7 @@ void GBS_calc_hash_statistic(GB_HASH *hs, const char *id, int print) {
         printf("- collisions = %li (hash quality = %4.1f%%)\n", collisions, hash_quality*100.0);
     }
 
-    addto_hash_statistic_summary(get_stat_summary(id), hs->size, hs->nelem, collisions, fill_ratio, hash_quality);
+    addto_hash_statistic_summary(hash_stat_man.get_stat_summary(id), hs->size, hs->nelem, collisions, fill_ratio, hash_quality);
 }
 
 void GBS_hash_do_loop(GB_HASH *hs, gb_hash_loop_type func, void *client_data) {
