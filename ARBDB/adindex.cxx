@@ -142,7 +142,7 @@ GB_ERROR GB_create_index(GBDATA *gbd, const char *key, GB_CASE case_sens, long e
         if (!ifs) { // if not already have index (e.g. if fast-loaded)
             GBDATA *gbf;
 
-            ifs = (struct gb_index_files_struct *)GB_calloc(sizeof(struct gb_index_files_struct), 1);
+            ifs = (struct gb_index_files_struct *)gbm_get_mem(sizeof(gb_index_files_struct), GB_GBM_INDEX(gbc));
             SET_GB_INDEX_FILES_NEXT(ifs, GBCONTAINER_IFS(gbc));
             SET_GBCONTAINER_IFS(gbc, ifs);
 
@@ -151,7 +151,7 @@ GB_ERROR GB_create_index(GBDATA *gbd, const char *key, GB_CASE case_sens, long e
             ifs->nr_of_elements  = 0;
             ifs->case_sens       = case_sens;
 
-            SET_GB_INDEX_FILES_ENTRIES(ifs, (struct gb_if_entries **)GB_calloc(sizeof(void *), (int)ifs->hash_table_size));
+            SET_GB_INDEX_FILES_ENTRIES(ifs, (struct gb_if_entries **)gbm_get_mem(sizeof(void *)*(int)ifs->hash_table_size, GB_GBM_INDEX(gbc)));
 
             for (gbf = GB_find_sub_by_quark(gbd, -1, 0, 0);
                  gbf;
@@ -190,10 +190,10 @@ void gb_destroy_indices(GBCONTAINER *gbc) {
                 ifes = ifes_next;
             }
         }
-        free(if_entries);
+        gbm_free_mem((char*)if_entries, sizeof(void *)*(int)ifs->hash_table_size, GB_GBM_INDEX(gbc));
 
         gb_index_files_struct *ifs_next = GB_INDEX_FILES_NEXT(ifs);
-        free(ifs);
+        gbm_free_mem((char*)ifs, sizeof(gb_index_files_struct), GB_GBM_INDEX(gbc));
         ifs = ifs_next;
     }
 }
