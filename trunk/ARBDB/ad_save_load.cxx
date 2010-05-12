@@ -37,22 +37,24 @@ char *gb_findExtension(char *path) {
  * functions or to dup the string before using the second instance
  */
 
-inline void STATIC_BUFFER(char*& strvar, int minlen) {
+typedef SmartMallocPtr(char) SmartCharPtr;
+ 
+inline char *STATIC_BUFFER(SmartCharPtr& strvar, int minlen) {
     gb_assert(minlen > 0);
-    if (strvar && (strlen(strvar) < (size_t)(minlen-1))) freenull(strvar);
-    if (!strvar) strvar=(char*)GB_calloc(minlen, 1);
+    if (strvar.isNull() || (strlen(&*strvar) < (size_t)(minlen-1))) {
+        strvar = (char*)GB_calloc(minlen, 1);
+    }
+    return &*strvar;
 }
 
-GB_CSTR gb_oldQuicksaveName(GB_CSTR path, int nr)
-{
-    static char *qname = 0;
-    char        *ext;
-    size_t       len   = strlen(path);
+GB_CSTR gb_oldQuicksaveName(GB_CSTR path, int nr) {
+    static SmartCharPtr Qname;
 
-    STATIC_BUFFER(qname, len+15);
-
+    size_t  len   = strlen(path);
+    char   *qname = STATIC_BUFFER(Qname, len+15);
     strcpy(qname, path);
-    ext = gb_findExtension(qname);
+
+    char *ext     = gb_findExtension(qname);
     if (!ext) ext = qname + len;
 
     if (nr==-1) sprintf(ext, ".arb.quick?");
@@ -62,16 +64,13 @@ GB_CSTR gb_oldQuicksaveName(GB_CSTR path, int nr)
 }
 
 GB_CSTR gb_quicksaveName(GB_CSTR path, int nr) {
-    static char *qname = 0;
-    char *ext;
+    static SmartCharPtr Qname;
 
-    STATIC_BUFFER(qname, strlen(path)+4);
-
+    char *qname = STATIC_BUFFER(Qname, strlen(path)+4);
     strcpy(qname, path);
-    ext = gb_findExtension(qname);
-    if (!ext) {
-        ext = qname + strlen(qname);
-    }
+
+    char *ext     = gb_findExtension(qname);
+    if (!ext) ext = qname + strlen(qname);
 
     if (nr==-1) sprintf(ext, ".a??");
     else    sprintf(ext, ".a%02i", nr);
@@ -80,13 +79,12 @@ GB_CSTR gb_quicksaveName(GB_CSTR path, int nr) {
 }
 
 GB_CSTR gb_mapfile_name(GB_CSTR path) {
-    static char *mapname = 0;
-    char *ext;
+    static SmartCharPtr Mapname;
 
-    STATIC_BUFFER(mapname, strlen(path)+4+1);
-
+    char *mapname = STATIC_BUFFER(Mapname, strlen(path)+4+1);
     strcpy(mapname, path);
-    ext = gb_findExtension(mapname);
+
+    char *ext     = gb_findExtension(mapname);
     if (!ext) ext = mapname + strlen(mapname);
 
     strcpy(ext, ".ARM");
@@ -95,27 +93,26 @@ GB_CSTR gb_mapfile_name(GB_CSTR path) {
 }
 
 GB_CSTR gb_overwriteName(GB_CSTR path) {
-    static char *oname = 0;
-    int          len   = strlen(path);
+    static SmartCharPtr Oname;
 
-    STATIC_BUFFER(oname, len+2);
+    int   len   = strlen(path);
+    char *oname = STATIC_BUFFER(Oname, len+2);
+
     strcpy(oname, path);
-    strcpy(oname+len, "~");     // append ~
+    strcpy(oname+len, "~");                         // append ~
 
     return oname;
 }
 
 GB_CSTR gb_reffile_name(GB_CSTR path) {
-    static char *refname;
-    size_t       len = strlen(path);
-    const char  *ext;
-    size_t       ext_offset;
+    static SmartCharPtr Refname;
 
-    STATIC_BUFFER(refname, len+4+1);
+    size_t  len     = strlen(path);
+    char   *refname = STATIC_BUFFER(Refname, len+4+1);
     memcpy(refname, path, len+1);
 
-    ext        = gb_findExtension(refname);
-    ext_offset = ext ? (size_t)(ext-refname) : len;
+    const char *ext        = gb_findExtension(refname);
+    size_t      ext_offset = ext ? (size_t)(ext-refname) : len;
 
     strcpy(refname+ext_offset, ".ARF");
 
@@ -1399,6 +1396,14 @@ void TEST_loadsave() {
         TEST_ASSERT_RESULT__NOERROREXPORTED(gb_map = GB_open("fast.arb", "rw"));
         SAVE_AND_COMPARE(gb_map, "fast2b.arb", "b", bin_db);
         GB_close(gb_map);
+    }
+    {
+        // test alloc/free (no real test, just call it for code coverage)
+        char *small_block = gbm_get_mem(30, 5);
+        gbm_free_mem(small_block, 30, 5);
+
+        char *big_block = gbm_get_mem(3000, 6);
+        gbm_free_mem(big_block, 3000, 6);
     }
 #endif
 
