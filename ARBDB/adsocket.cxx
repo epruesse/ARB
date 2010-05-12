@@ -916,30 +916,33 @@ GB_CSTR GB_getenvUSER() {
 
 
 GB_CSTR GB_getenvHOME() {
-    static const char *home = 0;
-    if (!home) {
-        home = getenv_existing_directory("HOME");
+    static SmartMallocPtr(char) Home;
+    if (Home.isNull()) {
+        char *home = getenv_existing_directory("HOME");
         if (!home) {
-            home = GB_getcwd();
-            if (!home) home = ".";
+            home = nulldup(GB_getcwd());
+            if (!home) home = strdup(".");
             fprintf(stderr, "WARNING: Cannot identify user's home directory: environment variable HOME not set\n"
                     "Using current directory (%s) as home.\n", home);
         }
+        gb_assert(home);
+        Home = home;
     }
-    return home;
+    return &*Home;
 }
 
 GB_CSTR GB_getenvARBHOME() {
-    static char *arbhome = 0;
-    if (!arbhome) {
-        arbhome = getenv_existing_directory("ARBHOME"); // doc in ../HELP_SOURCE/oldhelp/arb_envar.hlp@ARBHOME
+    static SmartMallocPtr(char) Arbhome;
+    if (Arbhome.isNull()) {
+        char *arbhome = getenv_existing_directory("ARBHOME"); // doc in ../HELP_SOURCE/oldhelp/arb_envar.hlp@ARBHOME
         if (!arbhome) {
-            fprintf(stderr, "ERROR: Environment Variable ARBHOME not found !!!\n"
+            fprintf(stderr, "Fatal ERROR: Environment Variable ARBHOME not found !!!\n"
                     "   Please set 'ARBHOME' to the installation path of ARB\n");
             exit(-1);
         }
+        Arbhome = arbhome;
     }
-    return arbhome;
+    return &*Arbhome;
 }
 
 GB_CSTR GB_getenvARBMACRO() {
