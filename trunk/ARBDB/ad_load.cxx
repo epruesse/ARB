@@ -1202,8 +1202,12 @@ long gb_read_bin(FILE *in, GBCONTAINER *gbd, int diff_file_allowed)
                         Main->data = newGbd;
                         father->main_idx = new_idx;
 
+                        SET_GBCONTAINER_ELEM(father, gbd->index, NULL); // unlink old main-entry
+
                         gbd = newGbd;
                         SET_GB_FATHER(gbd, father);
+                        
+                        SET_GBCONTAINER_ELEM(father, gbd->index, (GBDATA*)gbd); // link new main-entry
 
                         gb_main_array[old_idx]    = NULL;
 

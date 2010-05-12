@@ -11,6 +11,7 @@
 #ifndef GB_MEMORY_H
 #define GB_MEMORY_H
 
+// #if defined(DEBUG) && (UNIT_TESTS == 0) // use this to run tests on mapfiles
 #if defined(DEBUG)
 #define MEMORY_TEST 1
 // MEMORY_TEST == 1 uses malloc and normal pointers for internal ARBDB memory
@@ -98,6 +99,8 @@ enum ARB_MEMORY_INDEX {
     GBM_DICT_INDEX   = -5,
     GBM_USER_INDEX   = -6
 };
+
+// gbm_get_mem returns a block filled with zero (like calloc() does)
 
 #if (MEMORY_TEST==1)
 
