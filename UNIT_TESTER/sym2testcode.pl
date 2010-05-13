@@ -34,7 +34,7 @@ sub parse($) {
   my $line;
   my $lineNr=0;
   eval {
-    while (defined ($line = <IN>)) {
+  LINE: while (defined ($line = <IN>)) {
       $lineNr++;
       if ($line =~ /^(([0-9a-f]|\s)+) (.) (.*)\n/o) {
         my ($type,$rest) = ($3,$4);
@@ -47,6 +47,7 @@ sub parse($) {
           $symbol = $rest;
         }
 
+        next LINE if ($symbol =~ /::/); # skip static variables and other scoped symbols
         if ($symbol =~ /\(/o) { $symbol = $`; } # skip prototype
         if (defined $location) { $location{$symbol} = $location; }
 
@@ -58,7 +59,7 @@ sub parse($) {
         }
         else {
           if ($is_unit_test) {
-            symbol_error($symbol, "unit-test needs global scope");
+            symbol_error($symbol, "unit-test needs global scope (type='$type' symbol='$symbol')");
           }
         }
         if ($is_unit_test) {
