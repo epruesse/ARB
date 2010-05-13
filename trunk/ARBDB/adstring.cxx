@@ -166,9 +166,10 @@ bool GB_have_error() {
 
 GB_ERROR GB_await_error() {
     if (GB_error_buffer) {
-        static char *err = 0;
-        reassign(err, GB_error_buffer);
-        return err;
+        static SmartMallocPtr(char) err;
+        err             = GB_error_buffer;
+        GB_error_buffer = NULL;
+        return &*err;
     }
     gb_assert(0);               // please correct error handling
 
@@ -1112,18 +1113,47 @@ NOT4PERL void GB_install_error_handler(gb_error_handler_type aw_message_handler)
 
 #define MAX_BACKTRACE 66
 
-void GBK_dump_backtrace(FILE *out, GB_ERROR error) {
-    void   *array[MAX_BACKTRACE];
-    size_t  size = backtrace(array, MAX_BACKTRACE); // get void*'s for all entries on the stack
+class BackTraceInfo {
+    void   **array;
+    size_t  size;
+public:
+    BackTraceInfo(size_t skipFramesAtBottom) {
+        void *tmp[MAX_BACKTRACE];
+        size = backtrace(tmp, MAX_BACKTRACE);
 
-    if (!out) out = stderr;
+        size_t ssize = skipFramesAtBottom*sizeof(*array);
+        size_t msize = size*sizeof(*array) - ssize;
 
-    // print out all the frames to out
-    fprintf(out, "\n-------------------- ARB-backtrace for '%s':\n", error);
-    backtrace_symbols_fd(array, size, fileno(out));
-    if (size == MAX_BACKTRACE) fputs("[stack truncated to avoid deadlock]\n", out);
-    fputs("-------------------- End of backtrace\n", out);
-    fflush(out);
+        gb_assert(msize>0);
+        
+        array = (void**)malloc(msize);
+        memcpy(array, tmp+skipFramesAtBottom, msize);
+    }
+    ~BackTraceInfo() { free(array); }
+
+    void dump(FILE *out, GB_CSTR message) {
+        // print out all the frames to out
+        fprintf(out, "\n-------------------- ARB-backtrace '%s':\n", message);
+        backtrace_symbols_fd(array, size, fileno(out));
+        if (size == MAX_BACKTRACE) fputs("[stack truncated to avoid deadlock]\n", out);
+        fputs("-------------------- End of backtrace\n", out);
+        fflush(out);
+    }
+};
+
+class BackTraceInfo *GBK_get_backtrace(size_t skipFramesAtBottom) {
+    return new BackTraceInfo(skipFramesAtBottom);
+}
+void GBK_dump_former_backtrace(class BackTraceInfo *trace, FILE *out, GB_CSTR message) {
+    trace->dump(out, message);
+}
+void GBK_free_backtrace(class BackTraceInfo *trace) {
+    delete trace;
+}
+
+void GBK_dump_backtrace(FILE *out, GB_CSTR message) {
+    BackTraceInfo trace(0);
+    trace.dump(out ? out : stderr, message);
 }
 
 // -----------------------

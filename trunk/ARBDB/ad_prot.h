@@ -236,6 +236,7 @@ GB_BUFFER GB_give_buffer2(long size);
 int GB_is_in_buffer(GB_CBUFFER ptr);
 char *GB_check_out_buffer(GB_CBUFFER buffer);
 GB_BUFFER GB_give_other_buffer(GB_CBUFFER buffer, long size);
+void GB_exit_gb(void);
 void GB_init_gb(void);
 void GB_atclose(GBDATA *gbd, void (*fun)(GBDATA *gb_main, void *client_data), void *client_data);
 void GB_close(GBDATA *gbd);

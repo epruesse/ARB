@@ -87,8 +87,9 @@ void gb_flush_cache(GBDATA *gbd);
 void gbl_install_standard_commands(GBDATA *gb_main);
 
 /* admalloc.cxx */
+void gbm_flush_mem(void);
 void gbm_init_mem(void);
-void gbm_debug_mem(GB_MAIN_TYPE *Main);
+void gbm_debug_mem(void);
 
 /* adoptimize.cxx */
 GB_ERROR gb_convert_V2_to_V3(GBDATA *gb_main);
@@ -175,7 +176,7 @@ GB_ERROR gb_commit_transaction_local_rek(GBDATA *gbd, long mode, int *pson_creat
 /* adcompr.cxx */
 struct gb_compress_tree *gb_build_uncompress_tree(const unsigned char *data, long short_flag, char **end);
 void gb_free_compress_tree(struct gb_compress_tree *tree);
-struct gb_compress_list *gb_build_compress_list(const unsigned char *data, long short_flag, long *size);
+gb_compress_list *gb_build_compress_list(const unsigned char *data, long short_flag, long *size);
 char *gb_compress_bits(const char *source, long size, const unsigned char *c_0, long *msize);
 GB_BUFFER gb_uncompress_bits(const char *source, long size, char c_0, char c_1);
 void gb_compress_equal_bytes_2(const char *source, long size, long *msize, char *dest);

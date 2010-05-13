@@ -171,13 +171,13 @@ const char *GB_get_db_path(GBDATA *gbd) {
     GBDATA *gb_father = (GBDATA*)GB_FATHER(gbd);
 
     if (gb_father) {
-        char *father_path = strdup(GB_get_db_path(gb_father));
+        const char *father_path = GB_get_db_path(gb_father);
 
-        static char *result; // careful! used recursively
-        freeset(result, GBS_global_string_copy("%s/%s", father_path, GB_KEY(gbd)));
-        free(father_path);
+        static SmartMallocPtr(char) result;         // careful! used recursively
+        char *key = GB_KEY(gbd);
+        result    = GBS_global_string_copy("%s/%s", father_path, key ? key : "<gbmain>");
 
-        return result;
+        return &*result;
     }
     return "";
 }

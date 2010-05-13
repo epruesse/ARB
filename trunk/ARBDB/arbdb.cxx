@@ -284,9 +284,31 @@ unsigned char GB_BIT_compress_data[] = {
     0
 };
 
+void GB_exit_gb() {
+    if (gb_local) {
+        gb_assert(gb_local->openedDBs == gb_local->closedDBs);
+
+        free(gb_local->bitcompress);
+        gb_free_compress_tree(gb_local->bituncompress);
+        free(gb_local->write_buffer);
+
+        free(check_out_buffer(&gb_local->buf2));
+        free(check_out_buffer(&gb_local->buf1));
+
+        gbm_free_mem((char*)gb_local, sizeof(*gb_local), 0);
+        gb_local = NULL;
+
+        gbm_flush_mem();
+    }
+}
+
 void GB_init_gb() {
     if (!gb_local) {
-        gb_local = (struct gb_local_data *)gbm_get_mem(sizeof(struct gb_local_data), 0);
+        GBK_install_SIGSEGV_handler(true);          // never uninstalled
+
+        gbm_init_mem();
+
+        gb_local = (gb_local_data *)gbm_get_mem(sizeof(gb_local_data), 0);
 
         init_buffer(&gb_local->buf1, 4000);
         init_buffer(&gb_local->buf2, 4000);
@@ -299,9 +321,14 @@ void GB_init_gb() {
         gb_local->bituncompress = gb_build_uncompress_tree(GB_BIT_compress_data, 1, 0);
         gb_local->bitcompress   = gb_build_compress_list(GB_BIT_compress_data, 1, &(gb_local->bc_size));
 
+        gb_local->openedDBs = 0;
+        gb_local->closedDBs = 0;
+
 #ifdef ARBDB_SIZEDEBUG
         arbdb_stat = (long *)GB_calloc(sizeof(long), 1000);
 #endif
+
+        atexit(GB_exit_gb);
     }
 }
 
@@ -968,15 +995,15 @@ GB_ERROR GB_write_link(GBDATA *gbd, const char *s)
 GB_ERROR GB_write_bits(GBDATA *gbd, const char *bits, long size, const char *c_0)
 {
     char *d;
-    long memsize[2];
+    long memsize;
 
     GB_TEST_WRITE(gbd, GB_BITS, "GB_write_bits");
     GB_TEST_NON_BUFFER(bits, "GB_write_bits");       // compress would destroy the other buffer
     gb_save_extern_data_in_ts(gbd);
 
-    d = gb_compress_bits(bits, size, (const unsigned char *)c_0, memsize);
+    d = gb_compress_bits(bits, size, (const unsigned char *)c_0, &memsize);
     gbd->flags.compressed_data = 1;
-    GB_SETSMDMALLOC(gbd, size, memsize[0], d);
+    GB_SETSMDMALLOC(gbd, size, memsize, d);
     gb_touch_entry(gbd, GB_NORMAL_CHANGE);
     GB_DO_CALLBACKS(gbd);
     return 0;
@@ -2598,10 +2625,9 @@ char GB_type_2_char(GB_TYPES type) {
 }
 
 GB_ERROR GB_print_debug_information(void */*dummy_AW_root*/, GBDATA *gb_main) {
-    int i;
     GB_MAIN_TYPE *Main = GB_MAIN(gb_main);
     GB_push_transaction(gb_main);
-    for (i=0; i<Main->keycnt; i++) {
+    for (int i=0; i<Main->keycnt; i++) {
         if (Main->keys[i].key) {
             printf("%3i %20s    nref %i\n", i, Main->keys[i].key, (int)Main->keys[i].nref);
         }
@@ -2609,7 +2635,7 @@ GB_ERROR GB_print_debug_information(void */*dummy_AW_root*/, GBDATA *gb_main) {
             printf("    %3i unused key, next free key = %li\n", i, Main->keys[i].next_free_key);
         }
     }
-    gbm_debug_mem(Main);
+    gbm_debug_mem();
     GB_pop_transaction(gb_main);
     return 0;
 }
