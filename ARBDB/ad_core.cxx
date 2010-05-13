@@ -11,6 +11,7 @@
 #include "gb_ts.h"
 #include "gb_storage.h"
 #include "gb_index.h"
+#include "gb_localdata.h"
 
 // Copy all info + external data mem to an one step undo buffer
 // (needed to abort transactions)
@@ -72,16 +73,13 @@ void gb_touch_entry(GBDATA * gbd, GB_CHANGE val) {
     }
 }
 
-void gb_touch_header(GBCONTAINER *gbc)
-{
+void gb_touch_header(GBCONTAINER *gbc) {
     gbc->flags2.header_changed = 1;
     gb_touch_entry((GBDATA*)gbc, GB_NORMAL_CHANGE);
 }
 
 
-void
-gb_untouch_children(GBCONTAINER * gbc)
-{
+void gb_untouch_children(GBCONTAINER * gbc) {
     GBDATA    *gbd;
     int        index, start, end;
     GB_CHANGE  changed;
@@ -119,8 +117,7 @@ gb_untouch_children(GBCONTAINER * gbc)
     gbc->index_of_touched_one_son = 0;
 }
 
-void gb_untouch_me(GBDATA * gbc)
-{
+void gb_untouch_me(GBDATA * gbc) {
     GB_DATA_LIST_HEADER(GB_FATHER(gbc)->d)[gbc->index].flags.changed = GB_UNCHANGED;
     if (GB_TYPE(gbc) == GB_DB) {
         gbc->flags2.header_changed = 0;
@@ -128,8 +125,7 @@ void gb_untouch_me(GBDATA * gbc)
     }
 }
 
-void gb_set_update_in_server_flags(GBCONTAINER * gbc)
-{
+void gb_set_update_in_server_flags(GBCONTAINER * gbc) {
     int             index;
     GBDATA         *gbd;
 
@@ -257,12 +253,13 @@ GB_MAIN_TYPE *gb_make_gb_main_type(const char *path) {
     GB_MAIN_TYPE *Main;
 
     Main = (GB_MAIN_TYPE *)gbm_get_mem(sizeof(*Main), 0);
-    if (path) Main->path = strdup((char*)path);
+    if (path) Main->path   = strdup((char*)path);
     Main->key_2_index_hash = GBS_create_hash(ALLOWED_KEYS, GB_MIND_CASE);
-    Main->compression_mask = -1;        // allow all compressions
+    Main->compression_mask = -1;                    // allow all compressions
     gb_init_cache(Main);
     gb_init_undo_stack(Main);
     gb_init_ctype_table();
+    gb_local->openedDBs++;
     return Main;
 }
 
@@ -286,8 +283,13 @@ char *gb_destroy_main(GB_MAIN_TYPE *Main) {
 
     free(Main->path);
     free(Main->qs.quick_save_disabled);
-    
+
     gbm_free_mem((char *)Main, sizeof(*Main), 0);
+
+    gb_local->closedDBs++;
+    if (gb_local->closedDBs == gb_local->openedDBs) {
+        GB_exit_gb(); // free most memory allocated by ARBDB library
+    }
 
     return 0;
 }
@@ -330,33 +332,28 @@ void gb_rename_entry(GBCONTAINER *gbc, const char *new_key) {
 
 GBDATA *gb_make_entry(GBCONTAINER * father, const char *key, long index_pos, GBQUARK keyq, GB_TYPES type) {
     // creates a terminal database object
-    GBDATA       *gbd;
-    long          gbm_index;
-    static char  *buffer = 0;
-    char         *p;
-    GB_MAIN_TYPE *Main   = GBCONTAINER_MAIN(father);
+    GB_MAIN_TYPE *Main = GBCONTAINER_MAIN(father);
 
     if (!keyq) keyq = gb_key_2_quark(Main, key);
-    gbm_index = GB_QUARK_2_GBMINDEX(Main, keyq);
-    gbd = (GBDATA *) gbm_get_mem(sizeof(GBDATA), gbm_index);
+
+    long    gbm_index = GB_QUARK_2_GBMINDEX(Main, keyq);
+    GBDATA *gbd       = (GBDATA *) gbm_get_mem(sizeof(GBDATA), gbm_index);
+
     GB_GBM_INDEX(gbd) = gbm_index;
     SET_GB_FATHER(gbd, father);
 
-    switch (type)
-    {
-        case GB_STRING_SHRT:    type = GB_STRING;
+    switch (type) {
+        case GB_STRING_SHRT:
+            type = GB_STRING;
+            // fall-through
         case GB_STRING:
-            if (!buffer) buffer = strdup("1234");
-            p = buffer;
-            while (!(++(*p))) { (*p)++; p++; if (!(*p)) break; }
-            GB_SETSMDMALLOC(gbd, 5, 5, buffer);
+            GB_SETSMDMALLOC(gbd, 6, 7, "<NONE>");
             break;
         case GB_LINK:
-            buffer[0] = ':';
-            buffer[1] = 0;
-            GB_SETSMDMALLOC(gbd, 0, 0, buffer);
+            GB_SETSMDMALLOC(gbd, 1, 2, ":");
             break;
-        default:        break;
+        default:
+            break;
     }
     gbd->flags.type = type;
 

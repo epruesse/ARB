@@ -54,6 +54,9 @@ struct gb_local_data {
     struct {
         GBDATA *gb_main;
     } gbl;
+
+    int openedDBs; 
+    int closedDBs;
 };
 
 extern gb_local_data *gb_local;

@@ -144,6 +144,7 @@ ad_core.o: gb_header.h
 ad_core.o: gb_index.h
 ad_core.o: gb_key.h
 ad_core.o: gb_local.h
+ad_core.o: gb_localdata.h
 ad_core.o: gb_main.h
 ad_core.o: gb_memory.h
 ad_core.o: gb_prot.h

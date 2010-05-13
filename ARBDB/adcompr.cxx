@@ -190,7 +190,7 @@ void gb_free_compress_tree(struct gb_compress_tree *tree) {
     gbm_free_mem((char *)tree, sizeof(struct gb_compress_tree), GBM_CB_INDEX);
 }
 
-struct gb_compress_list *gb_build_compress_list(const unsigned char *data, long short_flag, long *size)
+gb_compress_list *gb_build_compress_list(const unsigned char *data, long short_flag, long *size)
 {
     struct gb_compress_list *list;
     int                      i, maxi, bitc;

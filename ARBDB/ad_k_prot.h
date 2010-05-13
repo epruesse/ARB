@@ -14,7 +14,10 @@
 
 
 /* adstring.cxx */
-void GBK_dump_backtrace(FILE *out, GB_ERROR error);
+class BackTraceInfo *GBK_get_backtrace(size_t skipFramesAtBottom);
+void GBK_dump_former_backtrace(class BackTraceInfo *trace, FILE *out, GB_CSTR message);
+void GBK_free_backtrace(class BackTraceInfo *trace);
+void GBK_dump_backtrace(FILE *out, GB_CSTR message);
 void GBK_install_SIGSEGV_handler(bool dump_backtrace);
 bool GBK_raises_SIGSEGV(void (*cb)(void));
 void GBK_terminate(const char *error);

@@ -41,6 +41,7 @@ struct GB_MAIN_TYPE;
 struct GB_DICTIONARY;
 struct gb_scandir;
 struct gb_transaction_save;
+struct gb_compress_list;
 
 // -------------------
 //      enum types

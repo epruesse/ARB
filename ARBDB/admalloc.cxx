@@ -14,13 +14,16 @@
 
 #include <unistd.h>
 #include <climits>
+#include <set>
 
 #include "gb_storage.h"
 
-
 // #define DUMP_MEMBLKS
+// #define DUMP_MEMBLKS_AT_EXIT
+
 #ifndef NDEBUG
-//  #define TEST_MEMBLKS
+// #define TEST_MEMBLKS
+// #define TRACE_ALLOCS
 #endif
 
 #define GBM_MAGIC 0x74732876
@@ -184,46 +187,179 @@ NOT4PERL void *GB_recalloc(void *ptr, unsigned int oelem, unsigned int nelem, un
     return mem;
 }
 
+#ifdef TRACE_ALLOCS
 
-void gbm_init_mem()
-{
-    int i;
-    static int flag = 0;
+class AllocLogEntry {
+    char   *block;
+    size_t  size;
+    long    index;
 
-    if (flag) return;
+    mutable BackTraceInfo *trace;
 
-    flag = 1;
-    for (i=0; i<GBM_MAX_INDEX; i++)
+public:
+    AllocLogEntry(char *block_, size_t size_, long index_, bool do_trace)
+        : block(block_)
+        , size(size_)
+        , index(index_)
+        , trace(do_trace ? GBK_get_backtrace(5) : NULL)
+    { }
+    AllocLogEntry(const AllocLogEntry& other)
+        : block(other.block)
+        , size(other.size)
+        , index(other.index)
+        , trace(other.trace)
     {
-        memset((char *)&gbm_global[i], 0, sizeof(struct gbm_struct));
-        gbm_global[i].tables[0] = 0;        // CORE zero get mem
+        other.trace = NULL;
     }
-    gbm_global2.old_sbrk = (char *)sbrk(0);
+    ~AllocLogEntry() { if (trace) GBK_free_backtrace(trace); }
 
-    /* init GBB:
-     * --------- */
+    size_t get_size() const { return size; }
+    long get_index() const { return index; }
+    
+    bool operator<(const AllocLogEntry& other) const { return block < other.block; }
+    void dump(FILE *out, GB_CSTR message) const { GBK_dump_former_backtrace(trace, out, message); }
+};
 
-    gbb_cluster[0].size  = GBB_MINSIZE;
-    gbb_cluster[0].first = NULL;
+typedef std::set<AllocLogEntry> AllocLogEntries;
 
-    for (i=1; i<GBB_CLUSTERS; i++)
-    {
-        long nextSize = gbb_cluster[i-1].size * (100+GBB_INCR);
+class AllocLogger {
+    AllocLogEntries entries;
 
-        nextSize /= 100;
-        nextSize >>= GBB_ALIGN;
-        nextSize ++;
-        nextSize <<= GBB_ALIGN;
-
-        gbb_cluster[i].size  = nextSize;
-        gbb_cluster[i].first = NULL;
+    const AllocLogEntry *existingEntry(char *block) {
+        AllocLogEntries::const_iterator found = entries.find(AllocLogEntry(block, 0, 0, false));
+        
+        return found == entries.end() ? NULL : &*found;
     }
 
-    // last cluster contains ALL bigger blocks
+public:
+    AllocLogger() {
+    }
+    ~AllocLogger() {
+        size_t count = entries.size();
+        if (count) {
+            fprintf(stderr, "%zu non-freed blocks:\n", count);
+            AllocLogEntries::const_iterator end = entries.end();
+            for (AllocLogEntries::const_iterator entry = entries.begin(); entry != end; ++entry) {
+                entry->dump(stderr, "block was allocated from here");
+            }
+        }
+    }
 
-    gbb_cluster[GBB_CLUSTERS].size  = INT_MAX;
-    gbb_cluster[GBB_CLUSTERS].first = NULL;
+    void allocated(char *block, size_t size, long index) {
+        const AllocLogEntry *exists = existingEntry(block);
+        if (exists) {
+            GBK_dump_backtrace(stderr, "Block allocated again");
+            exists->dump(stderr, "Already allocated from here");
+        }
+        else {
+            entries.insert(AllocLogEntry(block, size, index, true));
+        }
+    }
+    void freed(char *block, size_t size, long index) {
+        const AllocLogEntry *exists = existingEntry(block);
+        if (!exists) {
+            if (!gb_isMappedMemory(block)) {
+                gb_assert(0);
+                // GBK_dump_backtrace(stderr, "Tried to free unallocated block");
+            }
+        }
+        else {
+            gb_assert(exists->get_size() == size);
+            gb_assert(exists->get_index() == index);
+            entries.erase(*exists);
+        }
+    }
+};
+
+static AllocLogger allocLogger;
+
+#endif
+
+inline void free_gbm_table(gbm_table_struct *table) {
+    while (table) {
+        gbm_table_struct *next = table->next;
+        
+        free(table);
+        table = next;
+    }
 }
+
+static bool gbm_mem_initialized = false;
+
+void gbm_flush_mem() {
+    gb_assert(gbm_mem_initialized);
+
+    for (int i = 0; i<GBM_MAX_INDEX; ++i) {
+        gbm_struct& gbm             = gbm_global[i];
+        bool        have_used_items = false;
+
+        for (int t = 0; t < GBM_MAX_TABLES; t++) {
+            if (gbm.useditems[t]) {
+                have_used_items = true;
+                break;
+            }
+        }
+
+        if (!have_used_items) {
+            free_gbm_table(gbm.first);
+            memset((char*)&gbm, 0, sizeof(gbm));
+        }
+    }
+}
+
+void gbm_init_mem() {
+    if (!gbm_mem_initialized) {
+        for (int i = 0; i<GBM_MAX_INDEX; ++i) {
+            memset((char *)&gbm_global[i], 0, sizeof(struct gbm_struct));
+            gbm_global[i].tables[0] = 0;        // CORE zero get mem
+        }
+        gbm_global2.old_sbrk = (char *)sbrk(0);
+
+        /* init GBB:
+         * --------- */
+
+        gbb_cluster[0].size  = GBB_MINSIZE;
+        gbb_cluster[0].first = NULL;
+
+        for (int i = 1; i<GBB_CLUSTERS; ++i) {
+            long nextSize = gbb_cluster[i-1].size * (100+GBB_INCR);
+
+            nextSize /= 100;
+            nextSize >>= GBB_ALIGN;
+            nextSize ++;
+            nextSize <<= GBB_ALIGN;
+
+            gbb_cluster[i].size  = nextSize;
+            gbb_cluster[i].first = NULL;
+        }
+
+        // last cluster contains ALL bigger blocks
+
+        gbb_cluster[GBB_CLUSTERS].size  = INT_MAX;
+        gbb_cluster[GBB_CLUSTERS].first = NULL;
+
+        gbm_mem_initialized = true;
+    }
+}
+
+struct ARBDB_memory_manager {
+    ARBDB_memory_manager() {
+        gb_assert(!gbm_mem_initialized); // there may be only one instance!
+        gbm_init_mem();
+    }
+    ~ARBDB_memory_manager() {
+#if defined(DUMP_MEMBLKS_AT_EXIT)
+        printf("memory at exit:\n");
+        gbm_debug_mem();
+#endif // DUMP_MEMBLKS_AT_EXIT
+        gbm_flush_mem();
+#if defined(DUMP_MEMBLKS_AT_EXIT)
+        printf("memory at exit (after flush):\n");
+        gbm_debug_mem();
+#endif // DUMP_MEMBLKS_AT_EXIT
+    }
+};
+static ARBDB_memory_manager memman;
 
 void GB_memerr()
 {
@@ -423,45 +559,48 @@ char *gbmGetMemImpl(size_t size, long index) {
         ggi->extern_data_items++;
 
         erg = gbm_get_memblk((size_t)nsize);
-        return erg;
     }
-
-    pos = nsize >> GBM_LD_ALIGNED;
-    if ((gds = ggi->tables[pos]))
-    {
-        ggi->tablecnt[pos]--;
-        erg = (char *)gds;
-        if (gds->magic != GBM_MAGIC)
+    else {
+        pos = nsize >> GBM_LD_ALIGNED;
+        if ((gds = ggi->tables[pos]))
         {
-            printf("%lX!= %lX\n", gds->magic, (long)GBM_MAGIC);
-            GB_internal_error("Dangerous internal error: Inconsistent database: "
-                              "Do not overwrite old files with this database");
+            ggi->tablecnt[pos]--;
+            erg = (char *)gds;
+            if (gds->magic != GBM_MAGIC)
+            {
+                printf("%lX!= %lX\n", gds->magic, (long)GBM_MAGIC);
+                GB_internal_error("Dangerous internal error: Inconsistent database: "
+                                  "Do not overwrite old files with this database");
+            }
+            ggi->tables[pos] = ggi->tables[pos]->next;
         }
-        ggi->tables[pos] = ggi->tables[pos]->next;
-    }
-    else
-    {
-        if (ggi->size < nsize)
+        else
         {
-            struct gbm_table_struct *gts = (struct gbm_table_struct *)GB_MEMALIGN(GBM_SYSTEM_PAGE_SIZE, GBM_TABLE_SIZE);
+            if (ggi->size < nsize)
+            {
+                struct gbm_table_struct *gts = (struct gbm_table_struct *)GB_MEMALIGN(GBM_SYSTEM_PAGE_SIZE, GBM_TABLE_SIZE);
 
-            if (!gts) { GB_memerr(); return NULL; }
+                if (!gts) { GB_memerr(); return NULL; }
 
-            memset((char *)gts, 0, GBM_TABLE_SIZE);
-            ggi->gds = &gts->data[0];
-            gts->next = ggi->first; // link tables
-            ggi->first = gts;
-            ggi->size = GBM_TABLE_SIZE - sizeof(void *);
-            ggi->allsize += GBM_TABLE_SIZE;
+                memset((char *)gts, 0, GBM_TABLE_SIZE);
+                ggi->gds = &gts->data[0];
+                gts->next = ggi->first; // link tables
+                ggi->first = gts;
+                ggi->size = GBM_TABLE_SIZE - sizeof(void *);
+                ggi->allsize += GBM_TABLE_SIZE;
+            }
+            erg = (char *)ggi->gds;
+            ggi->gds = (struct gbm_data_struct *)(((char *)ggi->gds) + nsize);
+            ggi->size -= (size_t)nsize;
         }
-        erg = (char *)ggi->gds;
-        ggi->gds = (struct gbm_data_struct *)(((char *)ggi->gds) + nsize);
-        ggi->size -= (size_t)nsize;
+
+        ggi->useditems[pos]++;
+        memset(erg, 0, nsize); // act like calloc()
     }
 
-    ggi->useditems[pos]++;
-    memset(erg, 0, nsize);
-
+#ifdef TRACE_ALLOCS
+    allocLogger.allocated(erg, size, index);
+#endif
     return erg;
 }
 
@@ -474,6 +613,10 @@ void gbmFreeMemImpl(char *data, size_t size, long index) {
     index &= GBM_MAX_INDEX-1;
     ggi = & gbm_global[index];
     nsize = (size + (GBM_ALIGNED - 1)) & (-GBM_ALIGNED);
+
+#ifdef TRACE_ALLOCS
+    allocLogger.freed(data, size, index);
+#endif
 
     if (nsize > GBM_MAX_SIZE)
     {
@@ -532,8 +675,7 @@ void gbmFreeMemImpl(char *data, size_t size, long index) {
 
 #endif // MEMORY_TEST==0
 
-void gbm_debug_mem(GB_MAIN_TYPE *Main)
-{
+void gbm_debug_mem() {
     int i;
     int index;
     long total = 0;
@@ -550,19 +692,7 @@ void gbm_debug_mem(GB_MAIN_TYPE *Main)
             index_total += i * GBM_ALIGNED * (int) ggi->useditems[i];
             total += i * GBM_ALIGNED * (int) ggi->useditems[i];
 
-            if (ggi->useditems[i] || ggi->tablecnt[i])
-            {
-                {
-                    int j;
-                    for (j = index; j < Main->keycnt; j+=GBM_MAX_INDEX) {
-                        if (Main->keys[j].key) {
-                            printf("%15s", Main->keys[j].key);
-                        }
-                        else {
-                            printf("%15s", "*** unused ****");
-                        }
-                    }
-                }
+            if (ggi->useditems[i] || ggi->tablecnt[i]) {
                 printf("\t'I=%3i' 'Size=%3i' * 'Items %4i' = 'size %7i'    'sum=%7li'   'totalsum=%7li' :   Free %3i\n",
                        index,
                        i * GBM_ALIGNED,
@@ -573,11 +703,10 @@ void gbm_debug_mem(GB_MAIN_TYPE *Main)
                        (int) ggi->tablecnt[i]);
             }
         }
-        if (ggi->extern_data_size)
-        {
+        if (ggi->extern_data_size) {
             index_total += ggi->extern_data_size;
             total += ggi->extern_data_size;
-            printf("\t\t'I=%3i' External Data Items=%3li = Sum=%3li  'sum=%7li'  'total=%7li\n",
+            printf("\t'I=%3i' External Data Items=%3li = Sum=%3li  'sum=%7li'  'total=%7li\n",
                    index,
                    ggi->extern_data_items,
                    (long)ggi->extern_data_size,
@@ -594,3 +723,69 @@ void gbm_debug_mem(GB_MAIN_TYPE *Main)
                topofmem-gbm_global2.old_sbrk);
     }
 }
+
+// --------------------------------------------------------------------------------
+
+#if (UNIT_TESTS == 1) && 0
+
+#include <test_unit.h>
+
+void TEST_ARBDB_memory() { // not a real unit test - just was used for debugging
+#define ALLOCS 69
+    long *blocks[ALLOCS];
+
+#if (MEMORY_TEST == 0)
+    printf("Before allocations:\n");
+    gbm_debug_mem();
+
+#if 1    
+    static int16_t non_alloc[75];                   // 150 byte
+    gbm_put_memblk((char*)non_alloc, sizeof(non_alloc));
+
+    printf("Added one non-allocated block:\n");
+    gbm_debug_mem();
+#endif
+#endif
+
+    for (int pass = 1; pass <= 2; ++pass) {
+        long allocs = 0;
+
+        for (size_t size = 10; size<5000; size += size/3) {
+            for (long index = 0; index<3; ++index) {
+                if (pass == 1) {
+                    long *block = (long*)gbm_get_mem(size, index);
+
+                    block[0] = size;
+                    block[1] = index;
+
+                    blocks[allocs++] = block;
+                }
+                else {
+                    long *block = blocks[allocs++];
+                    gbm_free_mem((char*)block, (size_t)block[0], block[1]);
+                }
+            }
+        }
+
+#if (MEMORY_TEST == 0)
+        if (pass == 1) {
+            printf("%li memory blocks allocated:\n", allocs);
+            gbm_debug_mem();
+        }
+        else {
+            printf("Memory freed:\n");
+            gbm_debug_mem();
+        }
+        printf("Memory flushed:\n");
+        gbm_flush_mem();
+        gbm_debug_mem();
+#endif
+
+        gb_assert(allocs == ALLOCS);
+    }
+
+    GBK_dump_backtrace(stderr, "test");
+}
+
+
+#endif

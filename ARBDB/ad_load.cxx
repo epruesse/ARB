@@ -944,8 +944,9 @@ long gb_read_bin_rek_V2(FILE *in, GBCONTAINER *gbd, long nitems, long version, l
             case GB_BYTES:
             case GB_INTS:
             case GB_FLOATS:
-                size = gb_read_number(in);
-                memsize =  gb_read_number(in);
+                size    = gb_read_number(in);
+                memsize = gb_read_number(in);
+
                 DEBUG_DUMP_INDENTED(deep, GBS_global_string("size=%li memsize=%li", size, memsize));
                 if (GB_CHECKINTERN(size, memsize)) {
                     GB_SETINTERN(gb2);
@@ -953,7 +954,8 @@ long gb_read_bin_rek_V2(FILE *in, GBCONTAINER *gbd, long nitems, long version, l
                 }
                 else {
                     GB_SETEXTERN(gb2);
-                    p = gbm_get_mem((size_t)memsize+1, GB_GBM_INDEX(gb2)); // ralf: added +1 because decompress ran out of this block
+                    // memsize++; // ralf: added +1 because decompress ran out of this block (cant solve like this - breaks memory management!)
+                    p = gbm_get_mem((size_t)memsize, GB_GBM_INDEX(gb2)); 
                 }
                 i = fread(p, 1, (size_t)memsize, in);
                 if (i!=memsize) {
@@ -1199,6 +1201,9 @@ long gb_read_bin(FILE *in, GBCONTAINER *gbd, int diff_file_allowed)
                         gb_assert((new_idx % GB_MAIN_ARRAY_SIZE) == new_idx);
 
                         gb_main_array[new_idx] = Main;
+
+                        gbm_free_mem((char*)Main->data, sizeof(GBCONTAINER), GB_QUARK_2_GBMINDEX(Main, 0));
+
                         Main->data = newGbd;
                         father->main_idx = new_idx;
 
@@ -1377,8 +1382,6 @@ GBDATA *GB_login(const char *cpath, const char *opent, const char *user) {
     char          *path                = strdup(cpath);
     bool           dbCreated           = false;
 
-    GBK_install_SIGSEGV_handler(true);
-
     if (!opent) opentype = gb_open_all;
     else if (strchr(opent, 'w')) opentype = gb_open_all;
     else if (strchr(opent, 's')) opentype = gb_open_read_only_all;
@@ -1450,10 +1453,9 @@ GBDATA *GB_login(const char *cpath, const char *opent, const char *user) {
         GB_informationf("ARB: Loading '%s'%s%s", path, quickFile ? " + Changes-File " : "", quickFile ? quickFile : "");
     }
 
-    gbm_init_mem();
-    GB_init_gb();
-
     if (GB_install_pid(1)) return 0;
+    
+    GB_init_gb();
 
     Main = gb_make_gb_main_type(path);
     Main->local_mode = true;
