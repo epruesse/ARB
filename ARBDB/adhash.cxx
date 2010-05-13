@@ -333,9 +333,9 @@ void GBS_optimize_hash(GB_HASH *hs) {
 }
 
 static long gbs_hash_to_strstruct(const char *key, long val, void *cd_out) {
-    const char           *p;
-    int                   c;
-    struct GBS_strstruct *out = (struct GBS_strstruct*)cd_out;
+    const char    *p;
+    int            c;
+    GBS_strstruct *out = (GBS_strstruct*)cd_out;
 
     for (p = key; (c=*p);  p++) {
         GBS_chrcat(out, c);
@@ -349,7 +349,7 @@ static long gbs_hash_to_strstruct(const char *key, long val, void *cd_out) {
 }
 
 char *GBS_hashtab_2_string(GB_HASH *hash) {
-    struct GBS_strstruct *out = GBS_stropen(1024);
+    GBS_strstruct *out = GBS_stropen(1024);
     GBS_hash_do_loop(hash, gbs_hash_to_strstruct, out);
     return GBS_strclose(out);
 }

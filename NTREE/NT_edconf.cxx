@@ -242,8 +242,8 @@ int nt_build_conf_string_rek(GB_HASH *used, GBT_TREE *tree, GBS_strstruct *memfi
 }
 
 struct SAI_string_builder {
-    struct GBS_strstruct *sai_middle;
-    const char           *last_group_name;
+    GBS_strstruct *sai_middle;
+    const char    *last_group_name;
 };
 
 static long nt_build_sai_string_by_hash(const char *key, long val, void *cd_sai_builder) {
@@ -252,8 +252,8 @@ static long nt_build_sai_string_by_hash(const char *key, long val, void *cd_sai_
     const char *sep = strchr(key, 1);
     if (!sep) return val;                           // what's wrong
 
-    struct GBS_strstruct *sai_middle      = sai_builder->sai_middle;
-    const char           *last_group_name = sai_builder->last_group_name;
+    GBS_strstruct *sai_middle      = sai_builder->sai_middle;
+    const char    *last_group_name = sai_builder->last_group_name;
 
     if (!last_group_name || strncmp(key, last_group_name, sep-key)) { // new group
         if (last_group_name) {

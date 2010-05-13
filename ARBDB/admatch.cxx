@@ -262,8 +262,8 @@ char *GBS_regreplace(const char *str, const char *regReplExpr, GB_ERROR *error) 
             GBS_regex *comreg   = GBS_compile_regexpr(regexpr, case_flag, error);
 
             if (comreg) {
-                struct GBS_strstruct *out    = GBS_stropen(1000);
-                int                   eflags = 0;
+                GBS_strstruct *out    = GBS_stropen(1000);
+                int            eflags = 0;
 
                 while (str) {
                     regmatch_t match[10];

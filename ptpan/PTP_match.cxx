@@ -704,12 +704,12 @@ extern "C" STRPTR c_get_match_hinfo(PT_probematch *)
 /* Create a big output string:  header\001name\001info\001name\001info....\000 */
 extern "C" bytestring * match_string(PT_local *locs)
 {
-    struct PTPanGlobal *pg = PTPanGlobalPtr;
-    struct GBS_strstruct *outstr;
+    PTPanGlobal   *pg         = PTPanGlobalPtr;
+    GBS_strstruct *outstr;
     PT_probematch *ml;
-    STRPTR srcptr;
-    LONG entryCount = 0;
-  
+    STRPTR         srcptr;
+    LONG           entryCount = 0;
+
     printf("EXTERN: match_string\n");
     free(pg->pg_ResultString.data);             // free old memory
     for(ml = locs->pm; ml; ml = ml->next)       // count number of entries
