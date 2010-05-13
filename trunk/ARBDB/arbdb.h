@@ -36,6 +36,7 @@ struct GB_NUMHASH;
 
 struct GBS_regex;
 struct GBS_string_matcher;
+struct GBS_strstruct;
 
 // --------------
 //      enums

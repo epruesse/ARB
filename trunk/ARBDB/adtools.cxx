@@ -345,7 +345,7 @@ char *GBT_join_names(const char *const *names, char separator) {
      *
      * Note: inverse of GBT_split_string()
      */
-    struct GBS_strstruct *out = GBS_stropen(1000);
+    GBS_strstruct *out = GBS_stropen(1000);
 
     if (names[0]) {
         GBS_strcat(out, names[0]);

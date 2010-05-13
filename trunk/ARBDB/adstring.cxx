@@ -689,10 +689,10 @@ struct GBS_strstruct {
     long  GBS_strcat_pos;
 };
 
-static struct GBS_strstruct *last_used = 0;
+static GBS_strstruct *last_used = 0;
 
-struct GBS_strstruct *GBS_stropen(long init_size) {   // opens a memory file
-    struct GBS_strstruct *strstr;
+GBS_strstruct *GBS_stropen(long init_size) {   // opens a memory file
+    GBS_strstruct *strstr;
 
     if (last_used && last_used->GBS_strcat_data_size >= init_size) {
         strstr    = last_used;
@@ -702,7 +702,7 @@ struct GBS_strstruct *GBS_stropen(long init_size) {   // opens a memory file
 #if defined(DUMP_STRSTRUCT_MEMUSE)
         printf("allocating new GBS_strstruct (size = %li)\n", init_size);
 #endif // DUMP_STRSTRUCT_MEMUSE
-        strstr                       = (struct GBS_strstruct *)malloc(sizeof(struct GBS_strstruct));
+        strstr                       = (GBS_strstruct *)malloc(sizeof(GBS_strstruct));
         strstr->GBS_strcat_data_size = init_size;
         strstr->GBS_strcat_data      = (char *)malloc((size_t)strstr->GBS_strcat_data_size);
     }
@@ -713,7 +713,7 @@ struct GBS_strstruct *GBS_stropen(long init_size) {   // opens a memory file
     return strstr;
 }
 
-char *GBS_strclose(struct GBS_strstruct *strstr) {
+char *GBS_strclose(GBS_strstruct *strstr) {
     // returns a char* copy of the memory file
 
     long  length = strstr->GBS_strcat_pos;
@@ -727,12 +727,12 @@ char *GBS_strclose(struct GBS_strstruct *strstr) {
     return str;
 }
 
-void GBS_strforget(struct GBS_strstruct *strstr) {
+void GBS_strforget(GBS_strstruct *strstr) {
     if (last_used) {
         if (last_used->GBS_strcat_data_size < strstr->GBS_strcat_data_size) { // last_used is smaller -> keep this
-            struct GBS_strstruct *tmp = last_used;
-            last_used                 = strstr;
-            strstr                    = tmp;
+            GBS_strstruct *tmp = last_used;
+            last_used          = strstr;
+            strstr             = tmp;
         }
     }
     else {
@@ -758,24 +758,24 @@ void GBS_strforget(struct GBS_strstruct *strstr) {
     }
 }
 
-GB_BUFFER GBS_mempntr(struct GBS_strstruct *strstr) {
+GB_BUFFER GBS_mempntr(GBS_strstruct *strstr) {
     // returns the memory file
     return strstr->GBS_strcat_data;
 }
 
-long GBS_memoffset(struct GBS_strstruct *strstr) {
+long GBS_memoffset(GBS_strstruct *strstr) {
     // returns the offset into the memory file
     return strstr->GBS_strcat_pos;
 }
 
-void GBS_str_cut_tail(struct GBS_strstruct *strstr, int byte_count) {
+void GBS_str_cut_tail(GBS_strstruct *strstr, int byte_count) {
     // Removes byte_count characters at the tail of a memfile
     strstr->GBS_strcat_pos -= byte_count;
     if (strstr->GBS_strcat_pos < 0) strstr->GBS_strcat_pos = 0;
     strstr->GBS_strcat_data[strstr->GBS_strcat_pos] = 0;
 }
 
-static void gbs_strensure_mem(struct GBS_strstruct *strstr, long len) {
+static void gbs_strensure_mem(GBS_strstruct *strstr, long len) {
     if (strstr->GBS_strcat_pos + len + 2 >= strstr->GBS_strcat_data_size) {
         strstr->GBS_strcat_data_size = (strstr->GBS_strcat_pos+len+2)*3/2;
         strstr->GBS_strcat_data      = (char *)realloc(strstr->GBS_strcat_data, strstr->GBS_strcat_data_size);
@@ -785,7 +785,7 @@ static void gbs_strensure_mem(struct GBS_strstruct *strstr, long len) {
     }
 }
 
-void GBS_strncat(struct GBS_strstruct *strstr, const char *ptr, size_t len) {
+void GBS_strncat(GBS_strstruct *strstr, const char *ptr, size_t len) {
     /* append some bytes string to strstruct
      * (caution : copies zero byte and mem behind if used with wrong len!)
      */
@@ -797,14 +797,14 @@ void GBS_strncat(struct GBS_strstruct *strstr, const char *ptr, size_t len) {
     }
 }
 
-void GBS_strcat(struct GBS_strstruct *strstr, const char *ptr) {
+void GBS_strcat(GBS_strstruct *strstr, const char *ptr) {
     // append string to strstruct
     GBS_strncat(strstr, ptr, strlen(ptr));
 }
 
 
 
-void GBS_strnprintf(struct GBS_strstruct *strstr, long len, const char *templat, ...) {
+void GBS_strnprintf(GBS_strstruct *strstr, long len, const char *templat, ...) {
     // goes to header: __ATTR__FORMAT(3)
     char    *buffer;
     int      psize;
@@ -825,13 +825,13 @@ void GBS_strnprintf(struct GBS_strstruct *strstr, long len, const char *templat,
     strstr->GBS_strcat_pos += psize;
 }
 
-void GBS_chrcat(struct GBS_strstruct *strstr, char ch) {
+void GBS_chrcat(GBS_strstruct *strstr, char ch) {
     gbs_strensure_mem(strstr, 1);
     strstr->GBS_strcat_data[strstr->GBS_strcat_pos++] = ch;
     strstr->GBS_strcat_data[strstr->GBS_strcat_pos] = 0;
 }
 
-void GBS_chrncat(struct GBS_strstruct *strstr, char ch, size_t n) {
+void GBS_chrncat(GBS_strstruct *strstr, char ch, size_t n) {
     gbs_strensure_mem(strstr, n);
     memset(strstr->GBS_strcat_data+strstr->GBS_strcat_pos, ch, n);
 
@@ -839,13 +839,13 @@ void GBS_chrncat(struct GBS_strstruct *strstr, char ch, size_t n) {
     strstr->GBS_strcat_data[strstr->GBS_strcat_pos]  = 0;
 }
 
-void GBS_intcat(struct GBS_strstruct *strstr, long val) {
+void GBS_intcat(GBS_strstruct *strstr, long val) {
     char buffer[200];
     long len = sprintf(buffer, "%li", val);
     GBS_strncat(strstr, buffer, len);
 }
 
-void GBS_floatcat(struct GBS_strstruct *strstr, double val) {
+void GBS_floatcat(GBS_strstruct *strstr, double val) {
     char buffer[200];
     long len = sprintf(buffer, "%f", val);
     GBS_strncat(strstr, buffer, len);
@@ -1535,7 +1535,7 @@ static GB_ERROR g_bs_convert_string_to_tagged_hash(GB_HASH *hash, char *s, char 
 }
 
 static long g_bs_merge_tags(const char *tag, long val, void *cd_sub_result) {
-    struct GBS_strstruct *sub_result = (struct GBS_strstruct*)cd_sub_result;
+    GBS_strstruct *sub_result = (GBS_strstruct*)cd_sub_result;
 
     GBS_strcat(sub_result, tag);
     GBS_strcat(sub_result, ",");
@@ -1544,9 +1544,9 @@ static long g_bs_merge_tags(const char *tag, long val, void *cd_sub_result) {
 }
 
 static long g_bs_read_tagged_hash(const char *value, long subhash, void *cd_g_bs_collect_tags_hash) {
-    char                 *str;
-    static int            counter    = 0;
-    struct GBS_strstruct *sub_result = GBS_stropen(100);
+    char          *str;
+    static int     counter    = 0;
+    GBS_strstruct *sub_result = GBS_stropen(100);
 
     GBS_hash_do_sorted_loop((GB_HASH *)subhash, g_bs_merge_tags, GBS_HCF_sortedByKey, sub_result);
     GBS_intcat(sub_result, counter++); // create a unique number
@@ -1561,7 +1561,7 @@ static long g_bs_read_tagged_hash(const char *value, long subhash, void *cd_g_bs
 }
 
 static long g_bs_read_final_hash(const char *tag, long value, void *cd_merge_result) {
-    struct GBS_strstruct *merge_result = (struct GBS_strstruct*)cd_merge_result;
+    GBS_strstruct *merge_result = (GBS_strstruct*)cd_merge_result;
 
     char *lk = const_cast<char*>(strrchr(tag, ','));
     if (lk) {           // remove number at end
@@ -1575,8 +1575,8 @@ static long g_bs_read_final_hash(const char *tag, long value, void *cd_merge_res
 }
 
 static char *g_bs_get_string_of_tag_hash(GB_HASH *tag_hash) {
-    struct GBS_strstruct *merge_result      = GBS_stropen(256);
-    GB_HASH              *collect_tags_hash = GBS_create_dynaval_hash(512, GB_IGNORE_CASE, GBS_dynaval_free);
+    GBS_strstruct *merge_result      = GBS_stropen(256);
+    GB_HASH       *collect_tags_hash = GBS_create_dynaval_hash(512, GB_IGNORE_CASE, GBS_dynaval_free);
 
     GBS_hash_do_sorted_loop(tag_hash, g_bs_read_tagged_hash, GBS_HCF_sortedByKey, collect_tags_hash);     // move everything into collect_tags_hash
     GBS_hash_do_sorted_loop(collect_tags_hash, g_bs_read_final_hash, GBS_HCF_sortedByKey, merge_result);

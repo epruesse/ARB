@@ -272,8 +272,8 @@ GB_ERROR TREE_write_XML(GBDATA *gb_main, const char *db_name, const char *tree_n
 static char *complete_newick_comment(const char *comment) {
     // ensure that all '[' in 'comment' are closed by corresponding ']' by inserting additional brackets
 
-    int                   openBrackets = 0;
-    struct GBS_strstruct *out          = GBS_stropen(strlen(comment)*1.1);
+    int            openBrackets = 0;
+    GBS_strstruct *out          = GBS_stropen(strlen(comment)*1.1);
 
     for (int o = 0; comment[o]; ++o) {
         switch (comment[o]) {

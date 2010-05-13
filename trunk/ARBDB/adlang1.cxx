@@ -2420,7 +2420,7 @@ static char *filter_seq(const char *seq, const char *filter, size_t flen, void *
     if (!flen) flen = strlen(filter);
     size_t mlen     = slen<flen ? slen : flen;
 
-    struct GBS_strstruct *out = GBS_stropen(mlen);
+    GBS_strstruct *out = GBS_stropen(mlen);
 
     const char *charset;
     int         include;
@@ -2563,7 +2563,7 @@ static GB_ERROR gbl_exec(GBL_command_arguments *args)
             // build shell command to execute
             char *sys;
             {
-                struct GBS_strstruct *str = GBS_stropen(1000);
+                GBS_strstruct *str = GBS_stropen(1000);
 
                 GBS_strcat(str, args->vparam[0].str);
                 for (i=1; i<args->cparam; i++) {   // go through all in params

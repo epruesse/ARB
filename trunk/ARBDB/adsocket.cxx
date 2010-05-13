@@ -604,7 +604,7 @@ char *GB_read_fp(FILE *in) {
      * Note: File should be opened in text-mode (e.g. "rt")
      */
 
-    struct GBS_strstruct *buf = GBS_stropen(4096);
+    GBS_strstruct *buf = GBS_stropen(4096);
     int            c;
 
     while (EOF != (c = getc(in))) {

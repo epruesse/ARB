@@ -27,15 +27,15 @@
 enum tr_lfmode { LF_UNKNOWN, LF_N, LF_R, LF_NR, LF_RN, };
 
 typedef struct {
-    char                 *tree_file_name;
-    FILE                 *in;
-    int                   last_character; // may be EOF
-    int                   line_cnt;
-    struct GBS_strstruct *tree_comment;
-    double                max_found_branchlen;
-    double                max_found_bootstrap;
-    GB_ERROR              error;
-    enum tr_lfmode        lfmode;
+    char           *tree_file_name;
+    FILE           *in;
+    int             last_character;                 // may be EOF
+    int             line_cnt;
+    GBS_strstruct  *tree_comment;
+    double          max_found_branchlen;
+    double          max_found_bootstrap;
+    GB_ERROR        error;
+    enum tr_lfmode  lfmode;
 } TreeReader;
 
 static void setReaderError(TreeReader *reader, const char *message) {
