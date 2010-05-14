@@ -1047,7 +1047,7 @@ char *GBS_extract_words(const char *source, const char *chars, float minlen, boo
         GBS_strcat(strstruct, ps[cnt]);
     }
 
-    free((char *)ps);
+    free(ps);
     free(s);
     return GBS_strclose(strstruct);
 }

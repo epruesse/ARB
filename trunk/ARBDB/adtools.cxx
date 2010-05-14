@@ -432,7 +432,7 @@ void GBT_names_move(char **names, int old_index, int new_index) {
 void GBT_free_names(char **names) {
     if (names) {
         for (char **pn = names; *pn; pn++) free(*pn);
-        free((char *)names);
+        free(names);
     }
 }
 

@@ -331,10 +331,10 @@ void ALI_PROFILE::calculate_costs(ALI_TLIST<ali_family_member *> *family_list, A
 
     ali_message("Calculation finished");
 
-    free((char *) l);
-    free((char *) g);
-    free((char *) seq);
-    free((char *) seq_len);
+    free(l);
+    free(g);
+    free(seq);
+    free(seq_len);
 }
 
 int ALI_PROFILE::find_next_helix(char h[], unsigned long h_len,
@@ -463,32 +463,25 @@ ALI_PROFILE::~ALI_PROFILE()
 {
     size_t i;
 
-    if (helix)
-        free((char *) helix);
-    if (helix_borders)
-        free((char *) helix_borders);
-    if (binding_costs)
-        free((char *) binding_costs);
-    if (sub_costs)
-        free((char *) sub_costs);
+    free(helix);
+    free(helix_borders);
+    free(binding_costs);
+    free(sub_costs);
     if (gap_costs) {
         for (i = 0; i < prof_len; i++)
             if ((*gap_costs)[i])
-                free((char *) (*gap_costs)[i]);
-        free((char *) gap_costs);
+                free((*gap_costs)[i]);
+        free(gap_costs);
     }
     if (gap_percents) {
         for (i = 0; i < prof_len; i++)
             if ((*gap_percents)[i])
-                free((char *) (*gap_percents)[i]);
-        free((char *) gap_percents);
+                free((*gap_percents)[i]);
+        free(gap_percents);
     }
-    if (lmin)
-        free((char *) lmin);
-    if (lmax)
-        free((char *) lmax);
-    if (norm_sequence)
-        delete norm_sequence;
+    free(lmin);
+    free(lmax);
+    delete norm_sequence;
 }
 
 

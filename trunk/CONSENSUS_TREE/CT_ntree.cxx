@@ -97,7 +97,7 @@ static void del_tree(NT_NODE *tree)
     for (nsonp=tree->son_list; nsonp;) {
         nson_help = nsonp->next;
         del_tree(nsonp->node);
-        free((char *)nsonp);
+        free(nsonp);
         nsonp = nson_help;
     }
     tree->son_list = NULL;

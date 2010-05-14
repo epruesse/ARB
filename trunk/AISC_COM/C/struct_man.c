@@ -63,7 +63,7 @@ void aisc_free_key(aisc_hash_node **table, char *key) {
                 table[i] = hhn->next;
             }
             free(hn->key);
-            free((char *)hn);
+            free(hn);
             break;
         }
     }
@@ -79,10 +79,10 @@ void aisc_free_hash(aisc_hash_node **table)
         for (hn = table[i]; hn; hn=hnn) {
             hnn = hn->next;
             free(hn->key);
-            free((char *)hn);
+            free(hn);
         }
     }
-    free((char *)table);
+    free(table);
 }
 
 
@@ -275,7 +275,7 @@ long trf_create(long old, long new_item)
                 for (tds = ts->dests; tds; tds = ntds) {
                     *tds->dest = new_item;
                     ntds = tds->next;
-                    free((char *)tds);
+                    free(tds);
                 }
             }
             return 0;
@@ -340,14 +340,14 @@ int trf_commit(int errors)      /* if errors == 1 then print errors and CORE */
                 else {
                     for (tds = ts->dests; tds; tds = ntds) {
                         ntds = tds->next;
-                        free((char *)tds);
+                        free(tds);
                     }
                 }
                 nts = ts->next;
-                free((char *)ts);
+                free(ts);
             }
         }
-        free((char *)trf_sp);
+        free(trf_sp);
         trf_sp = 0;
     }
     return 0;

@@ -459,10 +459,10 @@ void freeTreeNode(nodeptr p) {
     /*  Free a tree node (sector) */
     if (p) {
         if (p->x) {
-            if (p->x->a) free((char *) p->x->a);
-            free ((char *) p->x);
+            free(p->x->a);
+            free(p->x);
         }
-        free ((char *) p);
+        free(p);
     }
 }
 
@@ -824,7 +824,7 @@ xarray *setupxarray() {
             x->owner = (node *) NULL;
         }
         else {
-            free ((char *) x);
+            free(x);
             return (xarray *) NULL;
         }
     }

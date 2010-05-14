@@ -27,15 +27,14 @@ ALI_PATHMAP::~ALI_PATHMAP()
 {
     unsigned long   l;
 
-    if (pathmap) free((char *) pathmap);
+    free(pathmap);
     if (up_pointers) {
         for (l = 0; l < width; l++)
             if ((*up_pointers)[l])
-                free((char *) (*up_pointers)[l]);
-        free((char *) up_pointers);
+                free((*up_pointers)[l]);
+        free(up_pointers);
     }
-    if (optimized)
-        free((char *) optimized);
+    free(optimized);
 }
 
 
@@ -108,7 +107,7 @@ void ALI_PATHMAP::optimize(unsigned long x) {
             counter++;
 
     if (counter == 0) {
-        free((char *) (*up_pointers)[x]);
+        free((*up_pointers)[x]);
         (*up_pointers)[x] = 0;
         return;
     }
@@ -125,7 +124,7 @@ void ALI_PATHMAP::optimize(unsigned long x) {
             (*buffer)[counter++] = (*up_pointers)[x][l];
     (*buffer)[counter] = 0;
 
-    free((char *) (*up_pointers)[x]);
+    free((*up_pointers)[x]);
     (*up_pointers)[x] = (ALI_TARRAY < ali_pathmap_up_pointer > **) buffer;
 }
 

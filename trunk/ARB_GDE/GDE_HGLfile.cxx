@@ -123,7 +123,7 @@ static int OverWrite(NA_Sequence *thiss, NA_Alignment *aln) {
             strcpy(that->description, thiss->description);
         if (thiss->sequence)
         {
-            free((char*)that->sequence);
+            free(that->sequence);
             that->sequence = thiss->sequence;
             that->seqlen = thiss->seqlen;
             that->seqmaxlen = thiss->seqmaxlen;
@@ -152,7 +152,7 @@ static int OverWrite(NA_Sequence *thiss, NA_Alignment *aln) {
         }
         if (thiss->cmask)
         {
-            free((char*)that->cmask);
+            free(that->cmask);
             that->cmask = thiss->cmask;
         }
         if (thiss->offset != that->offset)

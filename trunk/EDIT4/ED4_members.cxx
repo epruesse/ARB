@@ -393,10 +393,7 @@ ED4_members::ED4_members(ED4_manager *the_owner)
 }
 
 
-ED4_members::~ED4_members()
-{
-    if (memberList) {
-        free((char *) memberList);
-    }
+ED4_members::~ED4_members() {
+    free(memberList);
 }
 

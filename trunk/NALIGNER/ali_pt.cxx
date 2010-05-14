@@ -290,7 +290,7 @@ int ALI_PT::find_family(ALI_SEQUENCE *sequence, int find_type)
         }
     }
 
-    free((char *) bs.data);
+    free(bs.data);
     return 0;
 }
 

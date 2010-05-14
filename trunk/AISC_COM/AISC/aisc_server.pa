@@ -144,7 +144,7 @@ FOR $(STRUCT)
                 SET $(access) obj->
                 SET $(index) #
                 GOSUB delete_structure
-                P $1free((char *)obj);
+                P $1free(obj);
                 P }$n
         ENDIF
 ENDFOR
@@ -545,7 +545,7 @@ FUNCTION delete_structure
                                 SET $(index) $(SIZE:THIS->=$(ac))
                                 IF $(REF) ~ *
                                         P $1if($(access)) $\
-                                        SET $(end) $1}free((char *)$(access));}$n
+                                        SET $(end) $1}free($(access));}$n
                                 ELSE
                                         SET $(end) $1}}$n
                                 ENDIF

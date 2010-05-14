@@ -17,7 +17,7 @@
 // -----------------------------------------------------------------------------
 {
     if (gb_main)    GB_close(gb_main);
-    if (alignment)  free ((char *) alignment);
+    if (alignment)  free (alignment);
 }
 
 // -----------------------------------------------------------------------------
@@ -92,7 +92,7 @@ int A3Arbdb::put_sequence_string(char *name, char *sequence) {
             GBDATA *gb_data = GB_search(gb_ali,"data",GB_STRING);
 
             GB_write_string(gb_data,sequence);
-            free((char *) sequence);
+            free(sequence);
         }
     }
 

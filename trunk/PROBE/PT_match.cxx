@@ -364,7 +364,7 @@ void pt_sort_match_list(PT_local * locs)
         aisc_unlink((struct_dllheader_ext*)my_list[i]);
         aisc_link(&locs->ppm, my_list[i]);
     }
-    free((char *)my_list);
+    free(my_list);
 }
 char *reverse_probe(char *probe, int probe_length) {
     /*! mirror a probe */

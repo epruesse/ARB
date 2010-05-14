@@ -1038,8 +1038,8 @@ unsigned long ALI_PREALIGNER::number_of_solutions() {
 
     ali_message("End: Checking number of solutions");
 
-    free((char *) column1);
-    free((char *) column2);
+    free(column1);
+    free(column2);
 
     return number;
 }

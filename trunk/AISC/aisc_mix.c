@@ -329,7 +329,7 @@ int free_hash(hash *hs) {
             if (e->val) free(e->val);
             free(e->key);
             enext = e->next;
-            free((char *)e);
+            free(e);
         }
     }
     free(hs->entries);

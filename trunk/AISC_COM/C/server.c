@@ -442,7 +442,7 @@ static int aisc_s_send_bytes_queue(int socket) {
     for (bl = aisc_server_bytes_first; bl; bl=bl_next) {
         bl_next = bl->next;
         if (aisc_s_write(socket, (char *)bl->data, bl->size)) return 1;
-        free((char *)bl);
+        free(bl);
     };
     aisc_server_bytes_first = aisc_server_bytes_last = NULL;
     return 0;
@@ -1198,7 +1198,7 @@ static int aisc_private_message(int socket, int message_type, char *message) {
         aisc_server_error = "Pipe broken";
         return 0;
     }
-    free((char *)out_buf);
+    free(out_buf);
     return 0;
 }
 
@@ -1379,7 +1379,7 @@ Hs_struct *aisc_accept_calls(Hs_struct *hs)
                 if (si->destroy_callback) {
                     si->destroy_callback(si->destroy_clientdata);
                 }
-                free((char *)si);
+                free(si);
 #ifdef SERVER_TERMINATE_ON_CONNECTION_CLOSE
                 if (hs->nsoc == 0) { /* no clients left */
                     if (hs->fork) exit(0); /* child exits */
