@@ -80,11 +80,10 @@ void gb_touch_header(GBCONTAINER *gbc) {
 
 
 void gb_untouch_children(GBCONTAINER * gbc) {
-    GBDATA    *gbd;
-    int        index, start, end;
-    GB_CHANGE  changed;
-
-    struct gb_header_list_struct *header = GB_DATA_LIST_HEADER(gbc->d);
+    GBDATA         *gbd;
+    int             index, start, end;
+    GB_CHANGE       changed;
+    gb_header_list *header = GB_DATA_LIST_HEADER(gbc->d);
 
     if (gbc->index_of_touched_one_son > 0) {
         start = (int)gbc->index_of_touched_one_son-1;
@@ -141,14 +140,13 @@ void gb_set_update_in_server_flags(GBCONTAINER * gbc) {
 
 void gb_create_header_array(GBCONTAINER *gbc, int size) {
     // creates or resizes an old array to children
-    struct gb_header_list_struct *nl, *ol;
+    gb_header_list *nl, *ol;
 
     if (size <= gbc->d.headermemsize) return;
     if (!size) return;
     if (size > 10) size++;
     if (size > 30) size = size*3/2;
-    nl = (struct gb_header_list_struct *)
-        gbm_get_mem(sizeof(struct gb_header_list_struct)*size, GBM_HEADER_INDEX);
+    nl = (gb_header_list *)gbm_get_mem(sizeof(gb_header_list)*size, GBM_HEADER_INDEX);
 
     if ((ol=GB_DATA_LIST_HEADER(gbc->d))!=NULL)
     {
@@ -167,9 +165,7 @@ void gb_create_header_array(GBCONTAINER *gbc, int size) {
             }
         }
 
-        gbm_free_mem((char *)ol,
-                     sizeof(struct gb_header_list_struct)*gbc->d.headermemsize,
-                     GBM_HEADER_INDEX);
+        gbm_free_mem((char *)ol, sizeof(gb_header_list)*gbc->d.headermemsize, GBM_HEADER_INDEX);
     }
 
     gbc->d.headermemsize = size;
@@ -230,8 +226,8 @@ void gb_unlink_entry(GBDATA * gbd)
 
     if (father)
     {
-        int index_pos = (int)gbd->index;
-        struct gb_header_list_struct *hls = &(GB_DATA_LIST_HEADER(father->d)[index_pos]);
+        int             index_pos = (int)gbd->index;
+        gb_header_list *hls       = &(GB_DATA_LIST_HEADER(father->d)[index_pos]);
 
         SET_GB_HEADER_LIST_GBD(*hls, NULL);
         hls->flags.key_quark    = 0;
@@ -245,7 +241,7 @@ void gb_unlink_entry(GBDATA * gbd)
 void gb_create_extended(GBDATA *gbd) {
     if (!gbd->ext) {
         int index = GB_GBM_INDEX(gbd);
-        gbd->ext = (struct gb_db_extended *)gbm_get_mem(sizeof(struct gb_db_extended), index);
+        gbd->ext = (gb_db_extended *)gbm_get_mem(sizeof(gb_db_extended), index);
     }
 }
 
@@ -431,22 +427,21 @@ GBCONTAINER *gb_make_container(GBCONTAINER * father, const char *key, long index
 
 void gb_pre_delete_entry(GBDATA *gbd) {
     // Reduce an entry to its absolute minimum and remove it from database
-    GB_MAIN_TYPE *Main = GB_MAIN_NO_FATHER(gbd);
-    long          type = GB_TYPE(gbd);
+    GB_MAIN_TYPE *Main      = GB_MAIN_NO_FATHER(gbd);
+    long          type      = GB_TYPE(gbd);
+    long          gbm_index = GB_GBM_INDEX(gbd);
 
-    struct gb_callback *cb, *cb2;
-    long            gbm_index;
-    gbm_index = GB_GBM_INDEX(gbd);
-    for (cb = GB_GET_EXT_CALLBACKS(gbd); cb; cb = cb2) {
+    gb_callback *cb_next;
+    for (gb_callback *cb = GB_GET_EXT_CALLBACKS(gbd); cb; cb = cb_next) {
         gbd->ext->callback = 0;
-        cb2 = cb->next;
+        cb_next = cb->next;
         if (!gbd->ext->old && type != GB_DB) {
             gb_save_extern_data_in_ts(gbd);
         }
         if (cb->type & GB_CB_DELETE) {
             gb_add_delete_callback_list(gbd, gbd->ext->old, cb->func, cb->clientdata);
         }
-        gbm_free_mem((char *) cb, sizeof(struct gb_callback), gbm_index);
+        gbm_free_mem((char *) cb, sizeof(gb_callback), gbm_index);
     }
 
     if (GB_FATHER(gbd)) {
@@ -506,12 +501,10 @@ void gb_delete_entry(GBCONTAINER **gbc_ptr) {
     // what is left now, is the core database entry!
 
     gb_destroy_indices(gbc);
-    struct gb_header_list_struct *hls;
+    gb_header_list *hls;
     
     if ((hls=GB_DATA_LIST_HEADER(gbc->d)) != NULL) {
-        gbm_free_mem((char *)hls,
-                     sizeof(struct gb_header_list_struct) * gbc->d.headermemsize,
-                     GBM_HEADER_INDEX);
+        gbm_free_mem((char *)hls, sizeof(gb_header_list) * gbc->d.headermemsize, GBM_HEADER_INDEX);
     }
     gbm_free_mem((char *) gbc, sizeof(GBCONTAINER), gbm_index);
 
@@ -565,23 +558,19 @@ void gb_delete_dummy_father(GBCONTAINER **dummy_father) {
 // ---------------------
 //      Data Storage
 
-struct gb_transaction_save *gb_new_gb_transaction_save(GBDATA *gbd) {
+gb_transaction_save *gb_new_gb_transaction_save(GBDATA *gbd) {
     // Note: does not increment the refcounter
-    struct gb_transaction_save *ts;
+    gb_transaction_save *ts = (gb_transaction_save *)gbm_get_mem(sizeof(gb_transaction_save), GBM_CB_INDEX);
 
-    ts = (struct gb_transaction_save *)gbm_get_mem(sizeof(struct gb_transaction_save), GBM_CB_INDEX);
-
-    ts->flags = gbd->flags;
+    ts->flags  = gbd->flags;
     ts->flags2 = gbd->flags2;
 
-    if (gbd->flags2.extern_data)
-    {
-        ts->info.ex.data = GB_EXTERN_DATA_DATA(gbd->info.ex);
+    if (gbd->flags2.extern_data) {
+        ts->info.ex.data    = GB_EXTERN_DATA_DATA(gbd->info.ex);
         ts->info.ex.memsize = gbd->info.ex.memsize;
-        ts->info.ex.size = gbd->info.ex.size;
+        ts->info.ex.size    = gbd->info.ex.size;
     }
-    else
-    {
+    else {
         memcpy(&(ts->info), &(gbd->info), sizeof(gbd->info));
     }
 
@@ -590,12 +579,12 @@ struct gb_transaction_save *gb_new_gb_transaction_save(GBDATA *gbd) {
     return ts;
 }
 
-void gb_add_ref_gb_transaction_save(struct gb_transaction_save *ts) {
+void gb_add_ref_gb_transaction_save(gb_transaction_save *ts) {
     if (!ts) return;
     ts->refcount ++;
 }
 
-void gb_del_ref_gb_transaction_save(struct gb_transaction_save *ts) {
+void gb_del_ref_gb_transaction_save(gb_transaction_save *ts) {
     if (!ts) return;
     ts->refcount --;
     if (ts->refcount <= 0) {    // no more references !!!!
@@ -606,13 +595,11 @@ void gb_del_ref_gb_transaction_save(struct gb_transaction_save *ts) {
                              ts->flags2.gbm_index);
             }
         }
-        gbm_free_mem((char*)ts,
-                     sizeof(struct gb_transaction_save),
-                     GBM_CB_INDEX);
+        gbm_free_mem((char*)ts, sizeof(gb_transaction_save), GBM_CB_INDEX);
     }
 }
 
-void gb_del_ref_and_extern_gb_transaction_save(struct gb_transaction_save *ts) {
+void gb_del_ref_and_extern_gb_transaction_save(gb_transaction_save *ts) {
     // remove reference to undo entry and set extern pointer to zero
     if (ts->flags2.extern_data) {
         ts->info.ex.data = 0;
@@ -621,7 +608,7 @@ void gb_del_ref_and_extern_gb_transaction_save(struct gb_transaction_save *ts) {
 }
 
 void gb_abortdata(GBDATA *gbd) {
-    struct gb_transaction_save *old;
+    gb_transaction_save *old;
 
     GB_INDEX_CHECK_OUT(gbd);
     old = gbd->ext->old;
@@ -672,26 +659,23 @@ void gb_write_index_key(GBCONTAINER *father, long index, GBQUARK new_index) {
     // Set the key quark of an database field.
     // Check for indexing data field.
 
-    GB_MAIN_TYPE          *Main      = GBCONTAINER_MAIN(father);
-    gb_header_list_struct *hls       = GB_DATA_LIST_HEADER(father->d);
-    GBQUARK                old_index = hls[index].flags.key_quark;
+    GB_MAIN_TYPE   *Main      = GBCONTAINER_MAIN(father);
+    gb_header_list *hls       = GB_DATA_LIST_HEADER(father->d);
+    GBQUARK         old_index = hls[index].flags.key_quark;
 
     GBCONTAINER *gfather;
     Main->keys[old_index].nref--;
     Main->keys[new_index].nref++;
 
-    if (Main->local_mode)
-    {
+    if (Main->local_mode) {
         GBDATA *gbd = GB_HEADER_LIST_GBD(hls[index]);
 
-        if (gbd && (GB_TYPE(gbd) == GB_STRING || GB_TYPE(gbd) == GB_LINK))
-        {
-            struct gb_index_files_struct *ifs = 0;
+        if (gbd && (GB_TYPE(gbd) == GB_STRING || GB_TYPE(gbd) == GB_LINK)) {
+            gb_index_files *ifs = 0;
 
             GB_INDEX_CHECK_OUT(gbd);
             gbd->flags2.tisa_index = 0;
-            if ((gfather = GB_FATHER(father)))
-            {
+            if ((gfather = GB_FATHER(father))) {
                 for (ifs = GBCONTAINER_IFS(gfather); ifs;
                         ifs = GB_INDEX_FILES_NEXT(ifs))
                 {
@@ -727,15 +711,15 @@ void gb_create_key_array(GB_MAIN_TYPE *Main, int index) {
         Main->sizeofkeys = index*3/2+1;
         if (Main->keys) {
             int i;
-            Main->keys = (gb_key_struct *)realloc(Main->keys, sizeof(gb_key_struct) * (size_t)Main->sizeofkeys);
-            memset((char *)&(Main->keys[Main->keycnt]), 0, sizeof(gb_key_struct) * (size_t) (Main->sizeofkeys - Main->keycnt));
+            Main->keys = (gb_Key *)realloc(Main->keys, sizeof(gb_Key) * (size_t)Main->sizeofkeys);
+            memset((char *)&(Main->keys[Main->keycnt]), 0, sizeof(gb_Key) * (size_t) (Main->sizeofkeys - Main->keycnt));
             for (i = Main->keycnt; i < Main->sizeofkeys; i++) {
                 Main->keys[i].compression_mask = -1;
             }
         }
         else {
             Main->sizeofkeys = 1000;
-            Main->keys = (gb_key_struct *)GB_calloc(sizeof(gb_key_struct), (size_t)Main->sizeofkeys);
+            Main->keys = (gb_Key *)GB_calloc(sizeof(gb_Key), (size_t)Main->sizeofkeys);
         }
     }
 }
@@ -843,9 +827,9 @@ int gb_abort_transaction_local_rek(GBDATA *gbd, long mode) {
             type = (GB_TYPES)GB_TYPE(gbd);
             if (type == GB_DB)
             {
-                int index;
-                GBCONTAINER *gbc = (GBCONTAINER *)gbd;
-                struct gb_header_list_struct *hls = GB_DATA_LIST_HEADER(gbc->d);
+                int             index;
+                GBCONTAINER    *gbc = (GBCONTAINER *)gbd;
+                gb_header_list *hls = GB_DATA_LIST_HEADER(gbc->d);
 
                 for (index = 0; index < gbc->d.nheader; index++)
                 {
@@ -946,9 +930,9 @@ GB_ERROR gb_commit_transaction_local_rek(GBDATA * gbd, long mode, int *pson_crea
 
             if (type == GB_DB)
             {
-                GBCONTAINER *gbc = (GBCONTAINER *)gbd;
-                int index, start, end;
-                struct gb_header_list_struct *hls = GB_DATA_LIST_HEADER(gbc->d);
+                GBCONTAINER    *gbc = (GBCONTAINER *)gbd;
+                int             index, start, end;
+                gb_header_list *hls = GB_DATA_LIST_HEADER(gbc->d);
 
                 if (gbc->index_of_touched_one_son>0) {
                     start = (int)gbc->index_of_touched_one_son-1;

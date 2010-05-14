@@ -13,6 +13,7 @@
 #define AISC_FUNC_TYPES_H
 
 struct sigcontext;
+struct Hs_struct;
 
 #define aisc_callback_func_proto(func_name)         int func_name(long arg1, ...)
 #define aisc_talking_func_proto_long(func_name)     long func_name(long arg1, ...)

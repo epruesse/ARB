@@ -25,7 +25,7 @@
 #define GB_KEY_LEN_MAX 64                           // max. length of a key (a whole key path may be longer)
 #define GB_KEY_LEN_MIN 2
 
-struct gb_key_struct {
+struct gb_Key {
     char *key;
 
     long nref;

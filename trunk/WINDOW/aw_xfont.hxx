@@ -7,11 +7,11 @@
 
 
 struct xfont {
-    int           size;         /* size in points */
-    Font          fid;          /* X font id */
-    char         *fname;        /* actual name of X font found */
-    XFontStruct  *fstruct;      /* X font structure */
-    struct xfont *next;         /* next in the list */
+    int          size;          /* size in points */
+    Font         fid;           /* X font id */
+    char        *fname;         /* actual name of X font found */
+    XFontStruct *fstruct;       /* X font structure */
+    xfont       *next;          /* next in the list */
 };
 
 struct _fstruct {
@@ -20,9 +20,8 @@ struct _fstruct {
 };
 
 struct _xfstruct {
-    const char     *templat;    /* templat for locating X fonts */
-    struct xfont   *xfontlist;  /* linked list of X fonts for different point
-                                 * sizes */
+    const char *templat;        /* templat for locating X fonts */
+    xfont      *xfontlist;      /* linked list of X fonts for different point sizes */
 };
 
 typedef struct _appres {

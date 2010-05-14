@@ -23,12 +23,13 @@
 // ------------------------------
 //      forward declare types
 
-struct g_b_undo_mgr_struct;
-struct gb_close_callback_struct;
+struct g_b_undo_mgr;
+struct gb_close_callback_list;
 struct gb_callback_list;
-struct gb_user_struct;
-struct gb_project_struct;
-struct gb_key_struct;
+struct gb_user;
+struct gb_project;
+struct gb_Key;
+struct gb_server_data;
 
 // --------------------------------------------------------------------------------
 
@@ -38,7 +39,7 @@ enum gb_open_types {
     gb_open_read_only_small = 17
 };
 
-struct gb_quick_save_struct {
+struct gb_quick_save {
     char *quick_save_disabled;                      // if set, quick save is not possible and text describes reason why
     int   last_index;
 };
@@ -84,26 +85,26 @@ struct GB_MAIN_TYPE {
     int local_mode;                                 // 1 = server, 0 = client
     int client_transaction_socket;
 
-    gbcmc_comm    *c_link;
-    void          *server_data;
-    GBCONTAINER   *dummy_father;
-    GBCONTAINER   *data;
-    GBDATA        *gb_key_data;
-    char          *path;
-    gb_open_types  opentype;
-    char          *disabled_path;
-    int            allow_corrupt_file_recovery;
+    gbcmc_comm     *c_link;
+    gb_server_data *server_data;
+    GBCONTAINER    *dummy_father;
+    GBCONTAINER    *data;
+    GBDATA         *gb_key_data;
+    char           *path;
+    gb_open_types   opentype;
+    char           *disabled_path;
+    int             allow_corrupt_file_recovery;
 
-    gb_quick_save_struct qs;
-    gb_cache             cache;
-    int                  compression_mask;
+    gb_quick_save qs;
+    gb_cache      cache;
+    int           compression_mask;
 
-    int            keycnt;                          // first non used key
-    long           sizeofkeys;                      // malloc size
-    long           first_free_key;                  // index of first gap
-    gb_key_struct *keys;
-    GB_HASH       *key_2_index_hash;
-    long           key_clock;                       // trans. nr. of last change
+    int      keycnt;                                // first non used key
+    long     sizeofkeys;                            // malloc size
+    long     first_free_key;                        // index of first gap
+    gb_Key  *keys;
+    GB_HASH *key_2_index_hash;
+    long     key_clock;                             // trans. nr. of last change
 
     char         *keys_new[256];
     unsigned int  last_updated;
@@ -114,7 +115,7 @@ struct GB_MAIN_TYPE {
     GB_UNDO_TYPE requested_undo_type;
     GB_UNDO_TYPE undo_type;
 
-    g_b_undo_mgr_struct *undo;
+    g_b_undo_mgr *undo;
 
     char         *dates[ALLOWED_DATES];           // @@@ saved to DB, but never used
     unsigned int  security_level;
@@ -127,7 +128,7 @@ struct GB_MAIN_TYPE {
     GB_HASH *resolve_link_hash;
     GB_HASH *table_hash;
 
-    gb_close_callback_struct *close_callbacks;
+    gb_close_callback_list *close_callbacks;
 
     gb_callback_list *cbl;                          // contains change-callbacks (after change, until callbacks are done)
     gb_callback_list *cbl_last;
@@ -135,11 +136,11 @@ struct GB_MAIN_TYPE {
     gb_callback_list *cbld;                         // contains delete-callbacks (after delete, until callbacks are done)
     gb_callback_list *cbld_last;
 
-    gb_user_struct    *users[GB_MAX_USERS];         // user 0 is server
-    gb_project_struct *projects[GB_MAX_PROJECTS];   // projects
+    gb_user    *users[GB_MAX_USERS];                // user 0 is server
+    gb_project *projects[GB_MAX_PROJECTS];          // projects
 
-    gb_user_struct    *this_user;
-    gb_project_struct *this_project;
+    gb_user    *this_user;
+    gb_project *this_project;
 };
 
 

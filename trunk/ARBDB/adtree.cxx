@@ -589,7 +589,7 @@ struct link_tree_data {
     int      duplicates;                            // counts duplicates
 };
 
-static GB_ERROR gbt_link_tree_to_hash_rek(GBT_TREE *tree, struct link_tree_data *ltd) {
+static GB_ERROR gbt_link_tree_to_hash_rek(GBT_TREE *tree, link_tree_data *ltd) {
     GB_ERROR error = 0;
     if (tree->is_leaf) {
         if (ltd->nodes) { // update status?
@@ -617,9 +617,9 @@ static GB_ERROR gbt_link_tree_to_hash_rek(GBT_TREE *tree, struct link_tree_data 
 }
 
 GB_ERROR GBT_link_tree_using_species_hash(GBT_TREE *tree, bool show_status, GB_HASH *species_hash, int *zombies, int *duplicates) {
-    GB_ERROR              error;
-    struct link_tree_data ltd;
-    long                  leafs = 0;
+    GB_ERROR       error;
+    link_tree_data ltd;
+    long           leafs = 0;
 
     if (duplicates || show_status) {
         leafs = GBT_count_leafs(tree);

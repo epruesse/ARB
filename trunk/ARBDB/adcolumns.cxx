@@ -160,7 +160,7 @@ struct insDel_params {
 
 
 
-static GB_ERROR gbt_insert_character_gbd(GBDATA *gb_data, enum insDelTarget target, const struct insDel_params *params) {
+static GB_ERROR gbt_insert_character_gbd(GBDATA *gb_data, enum insDelTarget target, const insDel_params *params) {
     GB_ERROR error = 0;
     GB_TYPES type  = GB_read_type(gb_data);
 
@@ -256,7 +256,7 @@ static GB_ERROR gbt_insert_character_gbd(GBDATA *gb_data, enum insDelTarget targ
     return error;
 }
 
-static GB_ERROR gbt_insert_character_item(GBDATA *gb_item, enum insDelTarget item_type, const struct insDel_params *params) {
+static GB_ERROR gbt_insert_character_item(GBDATA *gb_item, enum insDelTarget item_type, const insDel_params *params) {
     GB_ERROR  error  = 0;
     GBDATA   *gb_ali = GB_entry(gb_item, params->ali_name);
 
@@ -271,7 +271,7 @@ static GB_ERROR gbt_insert_character_item(GBDATA *gb_item, enum insDelTarget ite
     return error;
 }
 
-static GB_ERROR gbt_insert_character(GBDATA *gb_item_data, const char *item_field, enum insDelTarget item_type, const struct insDel_params *params) {
+static GB_ERROR gbt_insert_character(GBDATA *gb_item_data, const char *item_field, enum insDelTarget item_type, const insDel_params *params) {
     GBDATA   *gb_item;
     GB_ERROR  error      = 0;
     long      item_count = GB_number_of_subentries(gb_item_data);
@@ -288,7 +288,7 @@ static GB_ERROR gbt_insert_character(GBDATA *gb_item_data, const char *item_fiel
     return error;
 }
 
-static GB_ERROR gbt_insert_character_secstructs(GBDATA *gb_secstructs, const struct insDel_params *params) {
+static GB_ERROR gbt_insert_character_secstructs(GBDATA *gb_secstructs, const insDel_params *params) {
     GB_ERROR  error  = 0;
     GBDATA   *gb_ali = GB_entry(gb_secstructs, params->ali_name);
     if (gb_ali) {
@@ -325,7 +325,7 @@ static GB_ERROR GBT_check_lengths(GBDATA *Main, const char *alignment_name) {
     GBDATA   *gb_secstructs    = GB_search(Main, "secedit/structs", GB_CREATE_CONTAINER);
     GBDATA   *gb_ali;
 
-    struct insDel_params params = { 0, 0, 0, 0, 0 };
+    insDel_params params = { 0, 0, 0, 0, 0 };
 
     for (gb_ali = GB_entry(gb_presets, "alignment");
          gb_ali && !error;
@@ -427,7 +427,7 @@ GB_ERROR GBT_insert_character(GBDATA *Main, const char *alignment_name, long pos
                 }
 
                 if (!error) {
-                    struct insDel_params params = { use, len, pos, count, char_delete_list };
+                    insDel_params params = { use, len, pos, count, char_delete_list };
 
                     error             = gbt_insert_character(gb_species_data,   "species",  IDT_SPECIES,   &params);
                     if (!error) error = gbt_insert_character(gb_extended_data,  "extended", IDT_SAI,       &params);

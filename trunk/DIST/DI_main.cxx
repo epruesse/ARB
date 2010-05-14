@@ -57,8 +57,7 @@ int main(int argc, char **argv) {
     aw_root->init_root("ARB_DIST", false);
 
     {
-        struct arb_params *params;
-        params  = arb_trace_argv(&argc, argv);
+        arb_params *params = arb_trace_argv(&argc, argv);
         if (argc==2) {
             freedup(params->db_server, argv[1]);
         }

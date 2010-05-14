@@ -38,15 +38,13 @@ void testData(GB_MAIN_TYPE *Main, GBDATA *gbd, long server_id, GBQUARK key_quark
     if (gbd->server_id != server_id) errGBD(gbd, key_quark, "illegal server id");
 }
 
-void testContainer(GB_MAIN_TYPE *Main, GBCONTAINER *gbc, long server_id, GBQUARK key_quark)
-{
-    struct gb_header_list_struct *header;
-
-    int         item;
-    int         err      = 0;
-    const char *oldType  = actType;
-    void       *oldData  = actData;
-    GBQUARK     oldQuark = actQuark;
+void testContainer(GB_MAIN_TYPE *Main, GBCONTAINER *gbc, long server_id, GBQUARK key_quark) {
+    gb_header_list *header;
+    int             item;
+    int             err      = 0;
+    const char     *oldType  = actType;
+    void           *oldData  = actData;
+    GBQUARK         oldQuark = actQuark;
 
 #if (VERBOSE>=1)
     printf("Teste (GBCONTAINER*)0x%p (=%s)\n", gbc, Main->keys[key_quark].key);
@@ -199,11 +197,11 @@ static void GB_dump_internal(GBDATA *gbd, int *lines_allowed) {
     bool           showChildren      = true;
 
     if (father) {
-        int                    index_pos = (int)gbd->index; // my index position in father
-        gb_header_list_struct *hls       = &(GB_DATA_LIST_HEADER(father->d)[index_pos]);
+        int             index_pos = (int)gbd->index; // my index position in father
+        gb_header_list *hls       = &(GB_DATA_LIST_HEADER(father->d)[index_pos]);
 
         if (!hls) {
-            key_name = GBS_global_string("<no gb_header_list_struct found for index_pos=%i>", index_pos);
+            key_name = GBS_global_string("<no gb_header_list found for index_pos=%i>", index_pos);
             father   = 0;                           // otherwise crash below
         }
         else {

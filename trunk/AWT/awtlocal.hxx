@@ -25,7 +25,7 @@ typedef enum {
 
 #define AWT_QUERY_SEARCHES 3 // no of search-lines in search tool
 
-struct adaqbsstruct {
+struct DbQuery {
     AW_window         *aws;
     GBDATA            *gb_main;                     // the main database (in merge tool: source db in left query; dest db in right query)
     GBDATA            *gb_ref;                      // second reference database (only used by merge tool; dest db in left query; source db in right query)
@@ -86,7 +86,7 @@ struct awt_table {
 #define AWAR_TABLE_EXPORT "tmp/ad_table/export_table"
 #define AWAR_TABLE_IMPORT "tmp/ad_table/import_table"
 
-long awt_query_update_list(void *dummy, struct adaqbsstruct *cbs);
+long awt_query_update_list(void *dummy, DbQuery *cbs);
 
 
 #else

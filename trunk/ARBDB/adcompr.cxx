@@ -49,7 +49,7 @@
         } }
 
 
-STATIC_ATTRIBUTED(__ATTR__USERESULT, GB_ERROR gb_check_huffmann_tree(struct gb_compress_tree *t)) {
+STATIC_ATTRIBUTED(__ATTR__USERESULT, GB_ERROR gb_check_huffmann_tree(gb_compress_tree *t)) {
     if (t->leave)
         return 0;
     if (!t->son[0])
@@ -65,7 +65,7 @@ STATIC_ATTRIBUTED(__ATTR__USERESULT, GB_ERROR gb_check_huffmann_tree(struct gb_c
 }
 
 #if defined(TEST_HUFFMAN_CODE)
-static void gb_dump_huffmann_tree(struct gb_compress_tree *t, const char *prefix) {
+static void gb_dump_huffmann_tree(gb_compress_tree *t, const char *prefix) {
     if (t->leave) {
         long command = (long)t->son[1];
         printf("%s", prefix);
@@ -97,7 +97,7 @@ static void gb_dump_huffmann_tree(struct gb_compress_tree *t, const char *prefix
         free(my_prefix);
     }
 }
-static void gb_dump_huffmann_list(struct gb_compress_list *bc, const char *prefix) {
+static void gb_dump_huffmann_list(gb_compress_list *bc, const char *prefix) {
     if (bc->command == GB_CD_NODE) {
         int   len        = strlen(prefix);
         char *my_prefix  = malloc(len+2);
@@ -116,14 +116,13 @@ static void gb_dump_huffmann_list(struct gb_compress_list *bc, const char *prefi
 
 #endif // TEST_HUFFMAN_CODE
 
-struct gb_compress_tree *gb_build_uncompress_tree(const unsigned char *data, long short_flag, char **end)
-{
-    struct gb_compress_tree *Main, *t;
-    long                     bits, mask, i;
-    const unsigned  char    *p;
-    GB_ERROR                 error;
+gb_compress_tree *gb_build_uncompress_tree(const unsigned char *data, long short_flag, char **end) {
+    gb_compress_tree    *Main, *t;
+    long                 bits, mask, i;
+    const unsigned char *p;
+    GB_ERROR             error;
 
-    Main = (struct gb_compress_tree *)gbm_get_mem(sizeof(struct gb_compress_tree), GBM_CB_INDEX);
+    Main = (gb_compress_tree *)gbm_get_mem(sizeof(gb_compress_tree), GBM_CB_INDEX);
     for (p=data; *p; p+=3+short_flag) {
         bits = p[0];
         mask = 0x80;
@@ -141,13 +140,13 @@ struct gb_compress_tree *gb_build_uncompress_tree(const unsigned char *data, lon
             mask = mask>>1;
             if (mask & bits) {
                 if (!t->son[1]) {
-                    t->son[1] = (struct gb_compress_tree *)gbm_get_mem(sizeof(struct gb_compress_tree), GBM_CB_INDEX);
+                    t->son[1] = (gb_compress_tree *)gbm_get_mem(sizeof(gb_compress_tree), GBM_CB_INDEX);
                 }
                 t=t->son[1];
             }
             else {
                 if (!t->son[0]) {
-                    t->son[0] = (struct gb_compress_tree *)gbm_get_mem(sizeof(struct gb_compress_tree), GBM_CB_INDEX);
+                    t->son[0] = (gb_compress_tree *)gbm_get_mem(sizeof(gb_compress_tree), GBM_CB_INDEX);
                 }
                 t=t->son[0];
             }
@@ -158,12 +157,12 @@ struct gb_compress_tree *gb_build_uncompress_tree(const unsigned char *data, lon
         }
         t->leave = 1;
         if (short_flag) {
-            t->son[0] = (struct gb_compress_tree *)(long)((p[2]<<8)+p[3]);
+            t->son[0] = (gb_compress_tree *)(long)((p[2]<<8)+p[3]);
         }
         else {
-            t->son[0] = (struct gb_compress_tree *)(long)(p[2]);
+            t->son[0] = (gb_compress_tree *)(long)(p[2]);
         }
-        t->son[1] = (struct gb_compress_tree *)(long)p[1]; // command
+        t->son[1] = (gb_compress_tree *)(long)p[1]; // command
     }
     if (end) *end = ((char *)p)+1;
     if ((error = gb_check_huffmann_tree(Main))) {
@@ -180,22 +179,20 @@ struct gb_compress_tree *gb_build_uncompress_tree(const unsigned char *data, lon
     return Main;
 }
 
-void gb_free_compress_tree(struct gb_compress_tree *tree) {
+void gb_free_compress_tree(gb_compress_tree *tree) {
     if (tree) {
         if (!tree->leave) {
             if (tree->son[0]) gb_free_compress_tree(tree->son[0]);
             if (tree->son[1])gb_free_compress_tree(tree->son[1]);
         }
     }
-    gbm_free_mem((char *)tree, sizeof(struct gb_compress_tree), GBM_CB_INDEX);
+    gbm_free_mem((char *)tree, sizeof(gb_compress_tree), GBM_CB_INDEX);
 }
 
-gb_compress_list *gb_build_compress_list(const unsigned char *data, long short_flag, long *size)
-{
-    struct gb_compress_list *list;
-    int                      i, maxi, bitc;
-    int                      val, bits, mask, value;
-    const unsigned  char    *p;
+gb_compress_list *gb_build_compress_list(const unsigned char *data, long short_flag, long *size) {
+    int                  i, maxi, bitc;
+    int                  val, bits, mask, value;
+    const unsigned char *p;
 
     enum gb_compress_list_commands command = (enum gb_compress_list_commands)0;
 
@@ -210,7 +207,7 @@ gb_compress_list *gb_build_compress_list(const unsigned char *data, long short_f
     }
     *size = maxi;
 
-    list = (struct gb_compress_list *)GB_calloc(sizeof(struct gb_compress_list), (size_t)maxi+1);
+    gb_compress_list *list = (gb_compress_list *)GB_calloc(sizeof(gb_compress_list), (size_t)maxi+1);
 
     maxi = 0;
     val = -1;
@@ -296,11 +293,11 @@ char *gb_compress_bits(const char *source, long size, const unsigned char *c_0, 
 
 GB_BUFFER gb_uncompress_bits(const char *source, long size, char c_0, char c_1)
 {
-    const char              *s;
-    char                    *p, *buffer, ch = 0, outc;
-    long                     bitp, lastpos, pos;
-    struct gb_compress_tree *Main, *t;
-    long                     command;
+    const char       *s;
+    char             *p, *buffer, ch = 0, outc;
+    long              bitp, lastpos, pos;
+    gb_compress_tree *Main, *t;
+    long              command;
 
     Main = gb_local->bituncompress;
     bitp = 0;
@@ -458,48 +455,50 @@ GB_BUFFER gb_compress_equal_bytes(const char *source, long size, long *msize, in
     return buffer;
 }
 
-struct gb_compress_huffmann_struct {
-    gb_compress_huffmann_struct *next;
-    long                         val;
-    gb_compress_list            *element;
-} *gb_compress_huffmann_list = NULL;
+struct huffmann_list {
+    huffmann_list    *next;
+    long              val;
+    gb_compress_list *element;
+};
 
-void gb_compress_huffmann_add_to_list(long val, struct gb_compress_list *element)
+static huffmann_list *huffmann_listhead = NULL;
+
+void gb_compress_huffmann_add_to_list(long val, gb_compress_list *element)
 {
-    struct gb_compress_huffmann_struct *dat, *search, *searchlast;
+    huffmann_list *dat, *search, *searchlast;
 
-    dat          = (struct gb_compress_huffmann_struct *)gbm_get_mem(sizeof(struct gb_compress_huffmann_struct), GBM_CB_INDEX);
+    dat          = (huffmann_list *)gbm_get_mem(sizeof(huffmann_list), GBM_CB_INDEX);
     dat->val     = val;
     dat->element = element;
 
     searchlast = 0;
-    for (search = gb_compress_huffmann_list; search; search = search->next) {
+    for (search = huffmann_listhead; search; search = search->next) {
         if (val<search->val) break;
         searchlast = search;
     }
-    if (gb_compress_huffmann_list) {
+    if (huffmann_listhead) {
         if (searchlast) {
             dat->next = searchlast->next;
             searchlast->next = dat;
         }
         else {
-            dat->next = gb_compress_huffmann_list;
-            gb_compress_huffmann_list = dat;
+            dat->next = huffmann_listhead;
+            huffmann_listhead = dat;
         }
     }
     else {
-        gb_compress_huffmann_list = dat;
+        huffmann_listhead = dat;
     }
 }
 
-long gb_compress_huffmann_pop(long *val, struct gb_compress_list **element)
+long gb_compress_huffmann_pop(long *val, gb_compress_list **element)
 {
-    struct gb_compress_huffmann_struct *dat;
-    if ((dat = gb_compress_huffmann_list)) {
-        gb_compress_huffmann_list = dat->next;
+    huffmann_list *dat;
+    if ((dat = huffmann_listhead)) {
+        huffmann_listhead = dat->next;
         *val = dat->val;
         *element = dat->element;
-        gbm_free_mem((char *)dat, sizeof(struct gb_compress_huffmann_struct), GBM_CB_INDEX);
+        gbm_free_mem((char *)dat, sizeof(huffmann_list), GBM_CB_INDEX);
         return 1;
     }
     else {
@@ -508,12 +507,12 @@ long gb_compress_huffmann_pop(long *val, struct gb_compress_list **element)
     }
 }
 
-char *gb_compress_huffmann_rek(struct gb_compress_list *bc, int bits, int bitcnt, char *dest)
+char *gb_compress_huffmann_rek(gb_compress_list *bc, int bits, int bitcnt, char *dest)
 {
     if (bc->command == GB_CD_NODE) {
         dest = gb_compress_huffmann_rek(bc->son[0], (bits<<1), bitcnt+1, dest);
         dest = gb_compress_huffmann_rek(bc->son[1], (bits<<1)+1, bitcnt+1, dest);
-        gbm_free_mem((char *)bc, sizeof(struct gb_compress_list), GBM_CB_INDEX);
+        gbm_free_mem((char *)bc, sizeof(gb_compress_list), GBM_CB_INDEX);
         return dest;
     }
     else {
@@ -535,10 +534,10 @@ GB_BUFFER gb_compress_huffmann(GB_CBUFFER source, long size, long *msize, int la
     int            val, h_i, command;
     long           id = 0, end, len;
 
-    struct gb_compress_list  bitcompress[257], *pbc;
-    struct gb_compress_list *pbid;
+    gb_compress_list  bitcompress[257], *pbc;
+    gb_compress_list *pbid;
 
-    memset((char *)(&bitcompress[0]), 0, sizeof(struct gb_compress_list)*257);
+    memset((char *)(&bitcompress[0]), 0, sizeof(gb_compress_list)*257);
     end = 256;
 
     dest = buffer = GB_give_other_buffer(source, size*2+3*GBTUM_COMPRESS_TREE_SIZE+1);
@@ -551,9 +550,9 @@ GB_BUFFER gb_compress_huffmann(GB_CBUFFER source, long size, long *msize, int la
 
         long vali[2] = { 0, 0 };
 
-        struct gb_compress_list *element1 = 0;
-        struct gb_compress_list *element2 = 0;
-        struct gb_compress_list *bc       = 0;
+        gb_compress_list *element1 = 0;
+        gb_compress_list *element2 = 0;
+        gb_compress_list *bc       = 0;
 
         s = (unsigned char *)source;
         for (len = size; len; len--) {
@@ -578,11 +577,11 @@ GB_BUFFER gb_compress_huffmann(GB_CBUFFER source, long size, long *msize, int la
 
         gb_compress_huffmann_add_to_list(restcount, &bitcompress[id]);
         gb_compress_huffmann_add_to_list(1, &bitcompress[end]);
-        while (gb_compress_huffmann_list->next) {
+        while (huffmann_listhead->next) {
             gb_compress_huffmann_pop(&(vali[0]), &element1);
             gb_compress_huffmann_pop(&(vali[1]), &element2);
 
-            bc          = (struct gb_compress_list *)gbm_get_mem(sizeof(struct gb_compress_list), GBM_CB_INDEX);
+            bc          = (gb_compress_list *)gbm_get_mem(sizeof(gb_compress_list), GBM_CB_INDEX);
             bc->command = GB_CD_NODE;
             bc->son[0]  = element1;
             bc->son[1]  = element2;
@@ -726,7 +725,7 @@ static GB_BUFFER gb_uncompress_equal_bytes(GB_CBUFFER s, long size, long *new_si
 }
 
 static GB_BUFFER gb_uncompress_huffmann(GB_CBUFFER source, long maxsize, long *new_size) {
-    struct gb_compress_tree *un_tree, *t;
+    gb_compress_tree *un_tree, *t;
 
     char *data[1];
     char *p, *buffer;
@@ -861,7 +860,7 @@ GB_BUFFER gb_compress_longs(GB_CBUFFER source, long size, int last_flag) {
 //      Dictionary Functions
 
 GB_DICTIONARY * gb_get_dictionary(GB_MAIN_TYPE *Main, GBQUARK key) {
-    struct gb_key_struct *ks = &Main->keys[key];
+    gb_Key *ks = &Main->keys[key];
     if (ks->gb_key_disabled) return 0;
     if (!ks->gb_key) {
         gb_load_single_key_data((GBDATA *)Main->data, key);

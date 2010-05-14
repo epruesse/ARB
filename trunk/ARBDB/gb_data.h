@@ -61,10 +61,10 @@ struct gb_callback {
 // --------------------------------------------------------------------------------
 
 struct gb_db_extended {
-    long                        creation_date;
-    long                        update_date;
-    gb_callback                *callback;
-    struct gb_transaction_save *old;
+    long                 creation_date;
+    long                 update_date;
+    gb_callback         *callback;
+    gb_transaction_save *old;
 };
 
 // --------------------------------------------------------------------------------
@@ -109,10 +109,10 @@ struct gb_data_list {
     int        nheader;                                                 // size + deleted items
 };
 
-inline gb_header_list_struct *GB_DATA_LIST_HEADER(gb_data_list& dl) {
-    return GB_RESOLVE(gb_header_list_struct *, (&(dl)), rel_header);
+inline gb_header_list *GB_DATA_LIST_HEADER(gb_data_list& dl) {
+    return GB_RESOLVE(gb_header_list *, (&(dl)), rel_header);
 }
-inline void SET_GB_DATA_LIST_HEADER(gb_data_list& dl, gb_header_list_struct *head) {
+inline void SET_GB_DATA_LIST_HEADER(gb_data_list& dl, gb_header_list *head) {
     GB_SETREL(&dl, rel_header, head);
 }
 

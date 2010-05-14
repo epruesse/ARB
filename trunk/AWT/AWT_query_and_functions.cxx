@@ -30,7 +30,7 @@ using namespace std;
 
 #define AWAR_COLORIZE "tmp/dbquery_all/colorize"
 
-inline void SET_QUERIED(GBDATA *gb_species, adaqbsstruct *cbs, const char *hitInfo, size_t hitInfoLen = 0) {
+inline void SET_QUERIED(GBDATA *gb_species, DbQuery *cbs, const char *hitInfo, size_t hitInfoLen = 0) {
     awt_assert(hitInfo);
 
     GB_write_usr_private(gb_species, cbs->select_bit | GB_read_usr_private(gb_species));
@@ -57,7 +57,7 @@ inline void SET_QUERIED(GBDATA *gb_species, adaqbsstruct *cbs, const char *hitIn
     free(name);
 }
 
-inline void CLEAR_QUERIED(GBDATA *gb_species, adaqbsstruct *cbs) {
+inline void CLEAR_QUERIED(GBDATA *gb_species, DbQuery *cbs) {
     GB_write_usr_private(gb_species, (~cbs->select_bit) & GB_read_usr_private(gb_species));
 
     char *name   = cbs->selector->generate_item_id(cbs->gb_main, gb_species);
@@ -66,7 +66,7 @@ inline void CLEAR_QUERIED(GBDATA *gb_species, adaqbsstruct *cbs) {
     free(name);
 }
 
-inline const char *getHitInfo(GBDATA *gb_species, adaqbsstruct *cbs) {
+inline const char *getHitInfo(GBDATA *gb_species, DbQuery *cbs) {
     char *name = cbs->selector->generate_item_id(cbs->gb_main, gb_species);
     long  info = GBS_read_hash(cbs->hit_description, name);
     free(name);
@@ -88,7 +88,7 @@ awt_query_struct::awt_query_struct() {
     select_bit = 1;
 }
 
-long awt_count_queried_items(struct adaqbsstruct *cbs, AWT_QUERY_RANGE range) {
+long awt_count_queried_items(DbQuery *cbs, AWT_QUERY_RANGE range) {
     GBDATA                 *gb_main  = cbs->gb_main;
     const ad_item_selector *selector = cbs->selector;
 
@@ -112,7 +112,7 @@ long awt_count_queried_items(struct adaqbsstruct *cbs, AWT_QUERY_RANGE range) {
 #warning replace awt_count_items by "method" of selector
 #endif // DEVEL_RALF
 
-static int awt_count_items(struct adaqbsstruct *cbs, AWT_QUERY_RANGE range) {
+static int awt_count_items(DbQuery *cbs, AWT_QUERY_RANGE range) {
     int                     count    = 0;
     GBDATA                 *gb_main  = cbs->gb_main;
     const ad_item_selector *selector = cbs->selector;
@@ -160,7 +160,7 @@ static AWT_QUERY_RESULT_ORDER split_sort_mask(unsigned long sort_mask, AWT_QUERY
 }
 
 static void awt_first_searchkey_changed_cb(AW_root *, AW_CL cl_cbs) {
-    struct adaqbsstruct *cbs = reinterpret_cast<struct adaqbsstruct*>(cl_cbs);
+    DbQuery *cbs = reinterpret_cast<DbQuery*>(cl_cbs);
 
     AWT_QUERY_RESULT_ORDER order[MAX_CRITERIA];
     AWT_QUERY_RESULT_ORDER first = split_sort_mask(cbs->sort_mask, order);
@@ -183,7 +183,7 @@ static void awt_sort_order_changed_cb(AW_root *aw_root, AW_CL cl_cbs) {
     //
     // if 'unsorted' is selected -> delete sort order
 
-    struct adaqbsstruct    *cbs          = reinterpret_cast<struct adaqbsstruct*>(cl_cbs);
+    DbQuery                *cbs          = reinterpret_cast<DbQuery*>(cl_cbs);
     AWT_QUERY_RESULT_ORDER  new_criteria = (AWT_QUERY_RESULT_ORDER)aw_root->awar(cbs->awar_sort)->read_int();
 
     if (new_criteria == AWT_QUERY_SORT_NONE) {
@@ -212,7 +212,7 @@ static void awt_sort_order_changed_cb(AW_root *aw_root, AW_CL cl_cbs) {
 }
 
 struct awt_sort_query_hits_param {
-    struct adaqbsstruct    *cbs;
+    DbQuery                *cbs;
     char                   *first_key;
     AWT_QUERY_RESULT_ORDER  order[MAX_CRITERIA];
 };
@@ -230,7 +230,7 @@ static int awt_sort_query_hits(const void *cl_item1, const void *cl_item2, void 
     GBDATA *gb_item1 = (GBDATA*)cl_item1;
     GBDATA *gb_item2 = (GBDATA*)cl_item2;
 
-    struct adaqbsstruct    *cbs      = param->cbs;
+    DbQuery                *cbs      = param->cbs;
     const ad_item_selector *selector = cbs->selector;
 
     int cmp = 0;
@@ -306,7 +306,7 @@ static long detectMaxNameLength(const char *key, long val, void *cl_len) {
     return val;
 }
 
-long awt_query_update_list(void *dummy, struct adaqbsstruct *cbs) {
+long awt_query_update_list(void *dummy, DbQuery *cbs) {
     AWUSE(dummy);
     GB_push_transaction(cbs->gb_main);
 
@@ -412,7 +412,7 @@ long awt_query_update_list(void *dummy, struct adaqbsstruct *cbs) {
 // Mark listed species
 // mark = 1 -> mark listed
 // mark | 8 -> don't change rest
-void awt_do_mark_list(void *dummy, struct adaqbsstruct *cbs, long mark)
+void awt_do_mark_list(void *dummy, DbQuery *cbs, long mark)
 {
     AWUSE(dummy);
     GB_push_transaction(cbs->gb_main);
@@ -438,7 +438,7 @@ void awt_do_mark_list(void *dummy, struct adaqbsstruct *cbs, long mark)
     GB_pop_transaction(cbs->gb_main);
 }
 
-void awt_unquery_all(void *dummy, struct adaqbsstruct *cbs) {
+void awt_unquery_all(void *dummy, DbQuery *cbs) {
     AWUSE(dummy);
     GB_push_transaction(cbs->gb_main);
     GBDATA *gb_species;
@@ -451,7 +451,7 @@ void awt_unquery_all(void *dummy, struct adaqbsstruct *cbs) {
     GB_pop_transaction(cbs->gb_main);
 }
 
-void awt_delete_species_in_list(void *dummy, struct adaqbsstruct *cbs)
+void awt_delete_species_in_list(void *dummy, DbQuery *cbs)
 {
     GB_begin_transaction(cbs->gb_main);
     long cnt = 0;
@@ -500,7 +500,7 @@ void awt_delete_species_in_list(void *dummy, struct adaqbsstruct *cbs)
     }
 }
 
-static GB_HASH *awt_create_ref_hash(const struct adaqbsstruct *cbs, const char *key, bool split_words) {
+static GB_HASH *awt_create_ref_hash(const DbQuery *cbs, const char *key, bool split_words) {
     GBDATA  *gb_ref       = cbs->gb_ref;
     bool     queried_only = cbs->expect_hit_in_ref_list;
     GB_HASH *hash         = GBS_create_hash(GBT_get_species_count(gb_ref), GB_IGNORE_CASE);
@@ -584,7 +584,7 @@ class awt_query {
 
     // --------------------
 
-    void initFields(struct adaqbsstruct *cbs, int idx, awt_query_operator aqo, AW_root *aw_root);
+    void initFields(DbQuery *cbs, int idx, awt_query_operator aqo, AW_root *aw_root);
     awt_query() {}
 
     void       detect_query_type();
@@ -593,7 +593,7 @@ class awt_query {
 
 public:
 
-    awt_query(struct adaqbsstruct *cbs);
+    awt_query(DbQuery *cbs);
 
     ~awt_query() {
         free(key);
@@ -672,7 +672,7 @@ public:
 #endif // DEBUG
 };
 
-void awt_query::initFields(struct adaqbsstruct *cbs, int idx, awt_query_operator aqo, AW_root *aw_root) {
+void awt_query::initFields(DbQuery *cbs, int idx, awt_query_operator aqo, AW_root *aw_root) {
     awt_assert(aqo == OR || aqo == AND);
 
     error         = 0;
@@ -704,7 +704,7 @@ void awt_query::initFields(struct adaqbsstruct *cbs, int idx, awt_query_operator
     detect_query_type();
 }
 
-awt_query::awt_query(struct adaqbsstruct *cbs) {
+awt_query::awt_query(DbQuery *cbs) {
     AW_root *aw_root = cbs->aws->get_root();
 
     initFields(cbs, 0, OR, aw_root);                // initial value is false, (false OR QUERY1) == QUERY1
@@ -976,7 +976,7 @@ bool awt_query::matches(const char *data, GBDATA *gb_item) const {
     return applyNot(hit);
 }
 
-static void awt_do_query(void *dummy, struct adaqbsstruct *cbs, AW_CL cl_ext_query) {
+static void awt_do_query(void *dummy, DbQuery *cbs, AW_CL cl_ext_query) {
     AWUSE(dummy);
 
     GB_push_transaction(cbs->gb_main);
@@ -1270,7 +1270,7 @@ static void awt_do_query(void *dummy, struct adaqbsstruct *cbs, AW_CL cl_ext_que
     GB_pop_transaction(cbs->gb_main);
 }
 
-void awt_copy_selection_list_2_queried_species(struct adaqbsstruct *cbs, AW_selection_list *id, const char *hit_description) {
+void awt_copy_selection_list_2_queried_species(DbQuery *cbs, AW_selection_list *id, const char *hit_description) {
     GB_transaction ta(cbs->gb_main);
 
     awt_assert(strstr(hit_description, "%s")); // hit_description needs '%s' (which is replaced by visible content of 'id')
@@ -1338,7 +1338,7 @@ void awt_copy_selection_list_2_queried_species(struct adaqbsstruct *cbs, AW_sele
 }
 
 
-void awt_search_equal_entries(AW_window *, struct adaqbsstruct *cbs, bool tokenize) {
+void awt_search_equal_entries(AW_window *, DbQuery *cbs, bool tokenize) {
     char     *key   = cbs->aws->get_root()->awar(cbs->awar_keys[0])->read_string();
     GB_ERROR  error = 0;
 
@@ -1486,7 +1486,7 @@ void awt_search_equal_entries(AW_window *, struct adaqbsstruct *cbs, bool tokeni
     awt_query_update_list(0, cbs);
 }
 
-void awt_do_pars_list(void *dummy, struct adaqbsstruct *cbs)
+void awt_do_pars_list(void *dummy, DbQuery *cbs)
 {
     AWUSE(dummy);
     GB_ERROR  error = 0;
@@ -1649,7 +1649,7 @@ void awt_do_pars_list(void *dummy, struct adaqbsstruct *cbs)
     free(command);
 }
 
-void awt_predef_prg(AW_root *aw_root, struct adaqbsstruct *cbs) {
+void awt_predef_prg(AW_root *aw_root, DbQuery *cbs) {
     char *str = aw_root->awar(cbs->awar_parspredefined)->read_string();
     char *brk = strchr(str, '#');
     if (brk) {
@@ -1680,12 +1680,12 @@ GBDATA *AWT_get_item_with_id(GBDATA *gb_main, const ad_item_selector *sel, const
 }
 
 static void awt_colorize_listed(AW_window * /* dummy */, AW_CL cl_cbs) {
-    struct adaqbsstruct *cbs         = (struct adaqbsstruct *)cl_cbs;
-    GB_transaction       trans_dummy(cbs->gb_main);
-    GB_ERROR             error       = 0;
-    AW_root             *aw_root     = cbs->aws->get_root();
-    int                  color_group = aw_root->awar(AWAR_COLORIZE)->read_int();
-    AWT_QUERY_RANGE      range       = (AWT_QUERY_RANGE)aw_root->awar(cbs->awar_where)->read_int();
+    DbQuery         *cbs         = (DbQuery *)cl_cbs;
+    GB_transaction   trans_dummy(cbs->gb_main);
+    GB_ERROR         error       = 0;
+    AW_root         *aw_root     = cbs->aws->get_root();
+    int              color_group = aw_root->awar(AWAR_COLORIZE)->read_int();
+    AWT_QUERY_RANGE  range       = (AWT_QUERY_RANGE)aw_root->awar(cbs->awar_where)->read_int();
 
     for (GBDATA *gb_item_container = cbs->selector->get_first_item_container(cbs->gb_main, aw_root, range);
          !error && gb_item_container;
@@ -1710,7 +1710,7 @@ struct color_mark_data {
 };
 
 static void awt_colorize_marked(AW_window *aww, AW_CL cl_cmd) {
-    const color_mark_data  *cmd         = (struct color_mark_data *)cl_cmd;
+    const color_mark_data  *cmd         = (color_mark_data *)cl_cmd;
     const ad_item_selector *sel         = cmd->sel;
     GB_transaction          trans_dummy(cmd->gb_main);
     GB_ERROR                error       = 0;
@@ -1737,7 +1737,7 @@ static void awt_colorize_marked(AW_window *aww, AW_CL cl_cmd) {
 
 // @@@ awt_mark_colored is obsolete! (will be replaced by dynamic coloring in the future)
 static void awt_mark_colored(AW_window *aww, AW_CL cl_cmd, AW_CL cl_mode) {
-    const color_mark_data  *cmd         = (struct color_mark_data *)cl_cmd;
+    const color_mark_data  *cmd         = (color_mark_data *)cl_cmd;
     const ad_item_selector *sel         = cmd->sel;
     int                     mode        = int(cl_mode); // 0 = unmark 1 = mark 2 = invert
     AW_root                *aw_root     = aww->get_root();
@@ -2091,7 +2091,7 @@ static const char *color_group_name(int color_group) {
     return buf;
 }
 
-static AW_window *create_awt_colorizer_window(AW_root *aw_root, GBDATA *gb_main, struct adaqbsstruct *cbs, const ad_item_selector *sel) {
+static AW_window *create_awt_colorizer_window(AW_root *aw_root, GBDATA *gb_main, DbQuery *cbs, const ad_item_selector *sel) {
     // invoked by   'colorize listed'                   (sel != 0)
     // and          'colorize marked/mark colored'      (cbs != 0)
 
@@ -2189,7 +2189,7 @@ static AW_window *create_awt_colorizer_window(AW_root *aw_root, GBDATA *gb_main,
     return aws;
 }
 
-AW_window *create_awt_listed_items_colorizer(AW_root *aw_root, struct adaqbsstruct *cbs) {
+AW_window *create_awt_listed_items_colorizer(AW_root *aw_root, DbQuery *cbs) {
     return create_awt_colorizer_window(aw_root, cbs->gb_main, cbs, 0);
 }
 
@@ -2197,7 +2197,7 @@ AW_window *awt_create_item_colorizer(AW_root *aw_root, GBDATA *gb_main, const ad
     return create_awt_colorizer_window(aw_root, gb_main, 0, sel);
 }
 
-AW_window *create_awt_open_parser(AW_root *aw_root, struct adaqbsstruct *cbs)
+AW_window *create_awt_open_parser(AW_root *aw_root, DbQuery *cbs)
 {
     AW_window_simple *aws = 0;
     aws                   = new AW_window_simple;
@@ -2271,7 +2271,7 @@ AW_window *create_awt_open_parser(AW_root *aw_root, struct adaqbsstruct *cbs)
     return (AW_window *)aws;
 }
 
-void awt_do_set_list(void *, struct adaqbsstruct *cbs, long append) {
+void awt_do_set_list(void *, DbQuery *cbs, long append) {
     // set fields of listed items
     GB_ERROR  error = 0;
     char     *key   = cbs->aws->get_root()->awar(cbs->awar_setkey)->read_string();
@@ -2353,7 +2353,7 @@ void awt_do_set_list(void *, struct adaqbsstruct *cbs, long append) {
     free(value);
 }
 
-AW_window *create_awt_do_set_list(AW_root *aw_root, struct adaqbsstruct *cbs)
+AW_window *create_awt_do_set_list(AW_root *aw_root, DbQuery *cbs)
 {
     AW_window_simple *aws = 0;
     aws = new AW_window_simple;
@@ -2382,7 +2382,7 @@ AW_window *create_awt_do_set_list(AW_root *aw_root, struct adaqbsstruct *cbs)
 
 }
 
-void awt_do_set_protection(void *, struct adaqbsstruct *cbs) {
+void awt_do_set_protection(void *, DbQuery *cbs) {
     // set protection of listed items
     GB_ERROR  error = 0;
     char     *key   = cbs->aws->get_root()->awar(cbs->awar_setkey)->read_string();
@@ -2421,7 +2421,7 @@ void awt_do_set_protection(void *, struct adaqbsstruct *cbs) {
     free(key);
 }
 
-AW_window *create_awt_set_protection(AW_root *aw_root, struct adaqbsstruct *cbs)
+AW_window *create_awt_set_protection(AW_root *aw_root, DbQuery *cbs)
 {
     AW_window_simple *aws = 0;
     aws = new AW_window_simple;
@@ -2456,7 +2456,7 @@ AW_window *create_awt_set_protection(AW_root *aw_root, struct adaqbsstruct *cbs)
     return (AW_window *)aws;
 }
 
-void awt_toggle_flag(AW_window *aww, struct adaqbsstruct *cbs) {
+void awt_toggle_flag(AW_window *aww, DbQuery *cbs) {
     GB_transaction dummy(cbs->gb_main);
     GBDATA *gb_item = cbs->selector->get_selected_item(cbs->gb_main, aww->get_root());
     if (gb_item) {
@@ -2541,15 +2541,15 @@ struct ad_item_selector AWT_organism_selector = {
 };
 
 static void awt_new_selection_made(AW_root *aw_root, AW_CL cl_awar_selection, AW_CL cl_cbs) {
-    const char          *awar_selection = (const char *)cl_awar_selection;
-    struct adaqbsstruct *cbs            = (struct adaqbsstruct *)cl_cbs;
+    const char *awar_selection = (const char *)cl_awar_selection;
+    DbQuery    *cbs            = (DbQuery *)cl_cbs;
 
     char *item_name = aw_root->awar(awar_selection)->read_as_string();
     cbs->selector->update_item_awars(cbs->gb_main, aw_root, item_name);
     free(item_name);
 }
 
-static void query_box_init_config(AWT_config_definition& cdef, struct adaqbsstruct *cbs) {
+static void query_box_init_config(AWT_config_definition& cdef, DbQuery *cbs) {
     // this defines what is saved/restored to/from configs
     for (int key_id = 0; key_id<AWT_QUERY_SEARCHES; ++key_id) {
         cdef.add(cbs->awar_keys[key_id], "key", key_id);
@@ -2560,12 +2560,12 @@ static void query_box_init_config(AWT_config_definition& cdef, struct adaqbsstru
 }
 static char *query_box_store_config(AW_window *aww, AW_CL cl_cbs, AW_CL) {
     AWT_config_definition cdef(aww->get_root());
-    query_box_init_config(cdef, (struct adaqbsstruct *)cl_cbs);
+    query_box_init_config(cdef, (DbQuery *)cl_cbs);
     return cdef.read();
 }
 static void query_box_restore_config(AW_window *aww, const char *stored, AW_CL cl_cbs, AW_CL) {
     AWT_config_definition cdef(aww->get_root());
-    query_box_init_config(cdef, (struct adaqbsstruct *)cl_cbs);
+    query_box_init_config(cdef, (DbQuery *)cl_cbs);
     cdef.write(stored);
 }
 
@@ -2582,12 +2582,11 @@ static void query_rel_menu_entry(AW_window *aws, const char *id, const char *que
     free(rel_id);
 }
 
-struct adaqbsstruct *awt_create_query_box(AW_window *aws, awt_query_struct *awtqs, const char *query_id) // create the query box
-{
-    char                 buffer[256];
-    AW_root             *aw_root = aws->get_root();
-    GBDATA              *gb_main = awtqs->gb_main;
-    struct adaqbsstruct *cbs     = (struct adaqbsstruct *)calloc(1, sizeof(struct adaqbsstruct));
+DbQuery *awt_create_query_box(AW_window *aws, awt_query_struct *awtqs, const char *query_id) {
+    char     buffer[256];
+    AW_root *aw_root = aws->get_root();
+    GBDATA  *gb_main = awtqs->gb_main;
+    DbQuery *cbs     = (DbQuery *)calloc(1, sizeof(DbQuery));
 
     cbs->gb_main                = awtqs->gb_main;
     cbs->aws                    = aws;

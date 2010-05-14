@@ -18,7 +18,7 @@ struct gbcmc_comm {
 };
 
 
-struct gb_user_struct {
+struct gb_user {
     char *username;
     int   userid;
     int   userbit;

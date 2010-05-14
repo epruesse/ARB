@@ -112,13 +112,13 @@ static GBDATA *find_sub_by_quark(GBDATA *father, GBQUARK key_quark, GB_TYPES typ
        Note: to search for non-char*-values use GB_find_int()
              for other types write a new similar function
 
-       if key_quark<0 search everything
+             if key_quark<0 search everything
     */
 
-    int end, index;
-    GBCONTAINER *gbf = (GBCONTAINER*)father;
-    struct gb_header_list_struct *header;
-    GBDATA *gb;
+    int             end, index;
+    GBCONTAINER    *gbf = (GBCONTAINER*)father;
+    gb_header_list *header;
+    GBDATA         *gb;
 
     end  = gbf->d.nheader;
     header = GB_DATA_LIST_HEADER(gbf->d);
@@ -185,13 +185,13 @@ NOT4PERL GBDATA *GB_find_subcontent_by_quark(GBDATA *father, GBQUARK key_quark, 
 }
 
 static GBDATA *find_sub_sub_by_quark(GBDATA *father, const char *key, GBQUARK sub_key_quark, GB_TYPES type, const char *val, GB_CASE case_sens, GBDATA *after) {
-    int end, index;
-    struct gb_header_list_struct *header;
-    GBCONTAINER *gbf = (GBCONTAINER*)father;
-    GBDATA *gb;
-    GBDATA *res;
-    struct gb_index_files_struct *ifs=NULL;
-    GB_MAIN_TYPE *Main = GBCONTAINER_MAIN(gbf);
+    int             end, index;
+    gb_header_list *header;
+    GBCONTAINER    *gbf  = (GBCONTAINER*)father;
+    GBDATA         *gb;
+    GBDATA         *res;
+    gb_index_files *ifs  = NULL;
+    GB_MAIN_TYPE   *Main = GBCONTAINER_MAIN(gbf);
 
     end  = gbf->d.nheader;
     header = GB_DATA_LIST_HEADER(gbf->d);
@@ -361,9 +361,10 @@ GBDATA *gb_find_by_nr(GBDATA *father, int index) {
     /* get a subentry by its internal number:
        Warning: This subentry must exists, otherwise internal error */
 
-    GBCONTAINER *gbf = (GBCONTAINER*)father;
-    struct gb_header_list_struct *header;
-    GBDATA *gb;
+    GBCONTAINER    *gbf = (GBCONTAINER*)father;
+    gb_header_list *header;
+    GBDATA         *gb;
+
     if (GB_TYPE(father) != GB_DB) {
         GB_internal_error("type is not GB_DB");
         return NULL;
@@ -633,10 +634,10 @@ GBDATA *GB_searchOrCreate_float(GBDATA *gb_container, const char *fieldpath, dou
 }
 
 GBDATA *gb_search_marked(GBCONTAINER *gbc, GBQUARK key_quark, int firstindex, size_t skip_over) {
-    int userbit = GBCONTAINER_MAIN(gbc)->users[0]->userbit;
-    int index;
-    int end = gbc->d.nheader;
-    struct gb_header_list_struct *header = GB_DATA_LIST_HEADER(gbc->d);
+    int             userbit = GBCONTAINER_MAIN(gbc)->users[0]->userbit;
+    int             index;
+    int             end     = gbc->d.nheader;
+    gb_header_list *header  = GB_DATA_LIST_HEADER(gbc->d);
 
     for (index = firstindex; index<end; index++) {
         GBDATA *gb;
@@ -655,11 +656,12 @@ GBDATA *gb_search_marked(GBCONTAINER *gbc, GBQUARK key_quark, int firstindex, si
 }
 
 GBDATA *GB_search_last_son(GBDATA *gbd) {
-    GBCONTAINER *gbc = (GBCONTAINER *)gbd;
-    int index;
-    int end = gbc->d.nheader;
-    GBDATA *gb;
-    struct gb_header_list_struct *header = GB_DATA_LIST_HEADER(gbc->d);
+    GBCONTAINER    *gbc    = (GBCONTAINER *)gbd;
+    int             index;
+    int             end    = gbc->d.nheader;
+    GBDATA         *gb;
+    gb_header_list *header = GB_DATA_LIST_HEADER(gbc->d);
+
     for (index = end-1; index>=0; index--) {
         if (header[index].flags.changed >= GB_DELETED) continue;
         if ((gb=GB_HEADER_LIST_GBD(header[index]))==NULL)
@@ -674,12 +676,12 @@ GBDATA *GB_search_last_son(GBDATA *gbd) {
 }
 
 long GB_number_of_marked_subentries(GBDATA *gbd) {
-    GBCONTAINER *gbc = (GBCONTAINER *)gbd;
-    int userbit = GBCONTAINER_MAIN(gbc)->users[0]->userbit;
-    int index;
-    int end = gbc->d.nheader;
-    struct gb_header_list_struct *header;
-    long count = 0;
+    GBCONTAINER    *gbc     = (GBCONTAINER *)gbd;
+    int             userbit = GBCONTAINER_MAIN(gbc)->users[0]->userbit;
+    int             index;
+    int             end     = gbc->d.nheader;
+    gb_header_list *header;
+    long            count   = 0;
 
     header = GB_DATA_LIST_HEADER(gbc->d);
     for (index = 0; index<end; index++) {

@@ -39,7 +39,7 @@ void NT_createValidNamesAwars(AW_root *aw_root, AW_default aw_def) {
     aw_root->awar_string(AWAR_INPUT_INITIALS,    "",      aw_def);
 }
 
-void fillSelNamList(struct selectValidNameStruct* svnp) {
+void fillSelNamList(selectValidNameStruct* svnp) {
     const char* searchstr = svnp -> initials;
     size_t length = strlen(searchstr);
     svnp-> aws-> clear_selection_list(svnp->validNamesList);
@@ -103,12 +103,12 @@ void updateValNameList(AW_root *awr, AW_CL cl_svnp) {
 #endif
 }
 
-struct selectValidNameStruct* createValNameList(GBDATA *gb_main, AW_window *aws, const char *awarName) {
+selectValidNameStruct* createValNameList(GBDATA *gb_main, AW_window *aws, const char *awarName) {
 #if defined(DUMP)
     aw_message("ValidNameSelectionList was created");
 #endif // DUMP
 
-    static struct selectValidNameStruct* svnp = new struct selectValidNameStruct; // declared static
+    static selectValidNameStruct* svnp = new selectValidNameStruct; // declared static
 
     svnp->aws            = aws;
     svnp->gb_main        = gb_main;
@@ -173,7 +173,7 @@ AW_window *NT_searchManuallyNames(AW_root *aw_root /* , AW_CL */)
     aws->at("nameList");
     // creates the selection list and asign AWAR_SELECTED_VALNAME
 
-    struct selectValidNameStruct *vns = createValNameList(GLOBAL_gb_main, aws, AWAR_SELECTED_VALNAME);
+    selectValidNameStruct *vns = createValNameList(GLOBAL_gb_main, aws, AWAR_SELECTED_VALNAME);
 
     aws->at("select");
     aws->callback(selectValidNameFromList, 0, 0); // (... 0,0)

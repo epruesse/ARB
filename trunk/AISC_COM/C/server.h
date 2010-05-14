@@ -30,12 +30,12 @@ extern "C" {
 #include <aisc_func_types.h>
 
 const char *aisc_get_object_names P_((long i));
-struct Hs_struct *open_aisc_server P_((const char *path, int timeout, int fork));
+Hs_struct *open_aisc_server P_((const char *path, int timeout, int fork));
 int aisc_talking_get_index P_((int u, int o));
 long aisc_make_sets P_((long *obj));
-int aisc_broadcast P_((struct Hs_struct *hs, int message_type, const char *message));
-struct Hs_struct *aisc_accept_calls P_((struct Hs_struct *hs));
-void aisc_server_shutdown_and_exit P_((struct Hs_struct *hs, int exitcode)) __ATTR__NORETURN;
+int aisc_broadcast P_((Hs_struct *hs, int message_type, const char *message));
+Hs_struct *aisc_accept_calls P_((Hs_struct *hs));
+void aisc_server_shutdown_and_exit P_((Hs_struct *hs, int exitcode)) __ATTR__NORETURN;
 extern "C" int aisc_add_destroy_callback P_((aisc_callback_func callback, long clientdata));
 void aisc_remove_destroy_callback P_((void));
 

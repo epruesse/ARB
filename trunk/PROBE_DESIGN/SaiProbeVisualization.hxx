@@ -106,7 +106,7 @@ public:
 };
 
 AW_window *createSaiProbeMatchWindow(AW_root *awr, GBDATA *gb_main);
-void transferProbeData(struct saiProbeData *spd);
+void transferProbeData(saiProbeData *spd);
 
 #else
 #error SaiProbeVisualization.hxx included twice

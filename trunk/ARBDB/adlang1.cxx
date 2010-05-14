@@ -47,17 +47,17 @@ int GB_get_ACISRT_trace() { return trace; }
 //      Parameter functions
 
 struct gbl_param {
-    struct gbl_param *next;
-    GB_TYPES          type;                         // type of variable
-    void             *varaddr;                      // address of variable where value gets stored
-    const char       *param_name;                   // parameter name (e.g. 'include=')
-    const char       *help_text;                    // help text for parameter
+    gbl_param  *next;
+    GB_TYPES    type;                               // type of variable
+    void       *varaddr;                            // address of variable where value gets stored
+    const char *param_name;                         // parameter name (e.g. 'include=')
+    const char *help_text;                          // help text for parameter
 };
 
-#define GBL_BEGIN_PARAMS struct gbl_param *params = 0
+#define GBL_BEGIN_PARAMS gbl_param *params = 0
 
-static void gbl_new_param(struct gbl_param **pp, GB_TYPES type, void *vaddr, const char *param_name, const char *help_text) {
-    struct gbl_param *gblp = (struct gbl_param *)GB_calloc(1, sizeof(struct gbl_param));
+static void gbl_new_param(gbl_param **pp, GB_TYPES type, void *vaddr, const char *param_name, const char *help_text) {
+    gbl_param *gblp = (gbl_param *)GB_calloc(1, sizeof(gbl_param));
 
     gblp->next = *pp;
     *pp         = gblp;
@@ -72,27 +72,27 @@ typedef const char   *String;
 typedef int           bit;
 typedef unsigned int  uint;
 
-static int gbl_param_int(const char *param_name, int def, const char *help_text, struct gbl_param **pp, int *vaddr) {
+static int gbl_param_int(const char *param_name, int def, const char *help_text, gbl_param **pp, int *vaddr) {
     gbl_new_param(pp, GB_INT, vaddr, param_name, help_text);
     return def;
 }
 
-static char gbl_param_char(const char *param_name, char def, const char *help_text, struct gbl_param **pp, char *vaddr) {
+static char gbl_param_char(const char *param_name, char def, const char *help_text, gbl_param **pp, char *vaddr) {
     gbl_new_param(pp, GB_BYTE, vaddr, param_name, help_text);
     return def;
 }
 
-static uint gbl_param_uint(const char *param_name, uint def, const char *help_text, struct gbl_param **pp, uint *vaddr) {
+static uint gbl_param_uint(const char *param_name, uint def, const char *help_text, gbl_param **pp, uint *vaddr) {
     gbl_new_param(pp, GB_INT, vaddr, param_name, help_text);
     return def;
 }
 
-static const char *gbl_param_String(const char *param_name, const char *def, const char *help_text, struct gbl_param **pp, String *vaddr) {
+static const char *gbl_param_String(const char *param_name, const char *def, const char *help_text, gbl_param **pp, String *vaddr) {
     gbl_new_param(pp, GB_STRING, vaddr, param_name, help_text);
     return def;
 }
 
-static int gbl_param_bit(const char *param_name, int def, const char *help_text, struct gbl_param **pp, bit *vaddr) {
+static int gbl_param_bit(const char *param_name, int def, const char *help_text, gbl_param **pp, bit *vaddr) {
     gbl_new_param(pp, GB_BIT, vaddr, param_name, help_text);
     return def;
 }
@@ -112,15 +112,25 @@ static int gbl_param_bit(const char *param_name, int def, const char *help_text,
 #define GBL_STRUCT_PARAM_STRING(strct, member, param_name, def, help_text) GBL_STRUCT_PARAM_TYPE(String, strct, member, param_name, def, help_text)
 #define GBL_STRUCT_PARAM_BIT(strct,    member, param_name, def, help_text) GBL_STRUCT_PARAM_TYPE(bit,    strct, member, param_name, def, help_text)
 
-#define GBL_TRACE_PARAMS(argc, argv) {                                  \
-        GB_ERROR def_error = trace_params(argc, argv, params, args->command); \
-        if (def_error) { GBL_END_PARAMS; return def_error; }; };
+#define GBL_TRACE_PARAMS(argc, argv)                                    \
+    do {                                                                \
+        GB_ERROR def_error =                                            \
+            trace_params(argc, argv, params, args->command);            \
+        if (def_error) { GBL_END_PARAMS; return def_error; }            \
+    } while(0)
 
-#define GBL_END_PARAMS { struct gbl_param *_gblp; while (params) {      \
-                             _gblp = params; params = params->next;     \
-                             free((char *)_gblp); } };
+#define GBL_END_PARAMS                                                  \
+    do {                                                                \
+        gbl_param *_gblp;                                               \
+        while (params) {                                                \
+            _gblp = params;                                             \
+            params = params->next;                                      \
+            free((char *)_gblp);                                        \
+        }                                                               \
+    } while (0)
 
-#define GBL_CHECK_FREE_PARAM(nr, cnt) do {      \
+#define GBL_CHECK_FREE_PARAM(nr, cnt)           \
+    do {                                        \
         if ((nr)+(cnt) >= GBL_MAX_ARGUMENTS) {  \
             /* gb_assert(0); */                 \
             return "max. parameters exceeded";  \
@@ -132,13 +142,13 @@ static int gbl_param_bit(const char *param_name, int def, const char *help_text,
 #endif // DEVEL_RALF
 
 
-static GB_ERROR trace_params(int argc, const GBL *argv, struct gbl_param *ppara, const char *com) {
+static GB_ERROR trace_params(int argc, const GBL *argv, gbl_param *ppara, const char *com) {
     GB_ERROR error = 0;
     int      i;
 
     for (i=0; i<argc; i++) {
-        struct gbl_param *para;
-        const char       *argument = argv[i].str;
+        gbl_param  *para;
+        const char *argument = argv[i].str;
 
         for (para = ppara; para && !error; para = para->next) {
             int len = strlen(para->param_name);
@@ -189,16 +199,16 @@ static GB_ERROR trace_params(int argc, const GBL *argv, struct gbl_param *ppara,
         }
 
         if (!error && !para) { // no parameter found for argument
-            int                pcount = 0;
-            struct gbl_param **params;
-            int                k;
-            char              *res;
-            GBS_strstruct     *str    = GBS_stropen(1000);
-            GB_ERROR           err;
+            int             pcount = 0;
+            gbl_param     **params;
+            int             k;
+            char           *res;
+            GBS_strstruct  *str    = GBS_stropen(1000);
+            GB_ERROR        err;
 
 
             for (para = ppara; para; para = para->next) pcount++;
-            params = (struct gbl_param **)GB_calloc(sizeof(void *), pcount);
+            params = (gbl_param **)GB_calloc(sizeof(void *), pcount);
             for (k = 0, para = ppara; para; para = para->next) params[k++] = para;
 
 
@@ -1514,7 +1524,7 @@ struct cached_taxonomy {
                         */
 };
 
-static void free_cached_taxonomy(struct cached_taxonomy *ct) {
+static void free_cached_taxonomy(cached_taxonomy *ct) {
     free(ct->tree_name);
     GBS_free_hash(ct->taxonomy);
     free(ct);
@@ -1555,13 +1565,13 @@ static void build_taxonomy_rek(GBT_TREE *node, GB_HASH *tax_hash, const char *pa
 static GB_HASH *cached_taxonomies = 0;
 
 static bool is_cached_taxonomy(const char */*key*/, long val, void *cl_ct) {
-    struct cached_taxonomy *ct1 = (struct cached_taxonomy *)val;
-    struct cached_taxonomy *ct2 = (struct cached_taxonomy *)cl_ct;
+    cached_taxonomy *ct1 = (cached_taxonomy *)val;
+    cached_taxonomy *ct2 = (cached_taxonomy *)cl_ct;
 
     return ct1 == ct2;
 }
 
-static const char *tree_of_cached_taxonomy(struct cached_taxonomy *ct) {
+static const char *tree_of_cached_taxonomy(cached_taxonomy *ct) {
     /* search the hash to find the correct cached taxonomy.
      * searching for tree name does not work, because the tree possibly already was deleted
      */
@@ -1578,9 +1588,9 @@ static void flush_taxonomy_cb(GBDATA *gbd, int *cd_ct, GB_CB_TYPE /*cbt*/) {
      * it invalidates cached taxonomies for that tree (when changed or deleted)
      */
 
-    struct cached_taxonomy *ct    = (struct cached_taxonomy *)cd_ct;
-    const char             *found = 0;
-    GB_ERROR                error = 0;
+    cached_taxonomy *ct    = (cached_taxonomy *)cd_ct;
+    const char      *found = 0;
+    GB_ERROR         error = 0;
 
     found = tree_of_cached_taxonomy(ct);
 
@@ -1621,8 +1631,8 @@ static void flush_taxonomy_cb(GBDATA *gbd, int *cd_ct, GB_CB_TYPE /*cbt*/) {
 
 static void flush_taxonomy_if_new_group_cb(GBDATA *gb_tree, int *cd_ct, GB_CB_TYPE cbt) {
     // detects the creation of new groups and call flush_taxonomy_cb() manually
-    struct cached_taxonomy *ct        = (struct cached_taxonomy *)cd_ct;
-    const char             *tree_name;
+    cached_taxonomy *ct = (cached_taxonomy *)cd_ct;
+    const char      *tree_name;
 
 #if defined(DEBUG)
     fprintf(stderr, "flush_taxonomy_if_new_group_cb() has been called (cbt=%i)\n", cbt);
@@ -1659,7 +1669,7 @@ static void flush_taxonomy_if_new_group_cb(GBDATA *gb_tree, int *cd_ct, GB_CB_TY
 #endif // DEBUG
 }
 
-static struct cached_taxonomy *get_cached_taxonomy(GBDATA *gb_main, const char *tree_name, GB_ERROR *error) {
+static cached_taxonomy *get_cached_taxonomy(GBDATA *gb_main, const char *tree_name, GB_ERROR *error) {
     long cached;
     *error = 0;
     if (!cached_taxonomies) {
@@ -1724,7 +1734,7 @@ static struct cached_taxonomy *get_cached_taxonomy(GBDATA *gb_main, const char *
     }
 
     if (!*error) {
-        struct cached_taxonomy *ct = (struct cached_taxonomy*)cached;
+        cached_taxonomy *ct = (cached_taxonomy*)cached;
         gb_assert(ct);
         return ct;
     }
@@ -1769,9 +1779,9 @@ static char *get_taxonomy_string(GB_HASH *tax_hash, const char *group_key, int d
 }
 
 static const char *get_taxonomy(GBDATA *gb_species_or_group, const char *tree_name, int is_current_tree, int depth, GB_ERROR *error) {
-    GBDATA                 *gb_main = GB_get_root(gb_species_or_group);
-    struct cached_taxonomy *tax     = get_cached_taxonomy(gb_main, tree_name, error);
-    const char             *result  = 0;
+    GBDATA          *gb_main = GB_get_root(gb_species_or_group);
+    cached_taxonomy *tax     = get_cached_taxonomy(gb_main, tree_name, error);
+    const char      *result  = 0;
 
     if (tax) {
         GBDATA *gb_name       = GB_entry(gb_species_or_group, "name");
@@ -2277,8 +2287,8 @@ struct common_filter_params {
     int         pairwise;
 };
 
-#define GBL_COMMON_FILTER_PARAMS                                               \
-    struct common_filter_params common_param;                                        \
+#define GBL_COMMON_FILTER_PARAMS                                        \
+    common_filter_params common_param;                                  \
     GBL_STRUCT_PARAM_STRING(common_param, align,    "align=",    0,   "alignment to use (defaults to default alignment)"); \
     GBL_STRUCT_PARAM_STRING(common_param, sai,      "SAI=",      0,   "Use default sequence of given SAI as a filter"); \
     GBL_STRUCT_PARAM_STRING(common_param, species,  "species=",  0,   "Use default sequence of given species as a filter"); \
@@ -2292,7 +2302,7 @@ typedef char* (*filter_fun)(const char *seq, const char *filter, size_t flen, vo
  * 'param' may be any client data
  */
 
-static GB_ERROR apply_filters(GBL_command_arguments *args, struct common_filter_params *common, filter_fun filter_one, void *param) {
+static GB_ERROR apply_filters(GBL_command_arguments *args, common_filter_params *common, filter_fun filter_one, void *param) {
     GB_ERROR error = 0;
 
     if (args->cinput==0) error = "No input stream";
@@ -2355,9 +2365,9 @@ static char *calc_diff(const char *seq, const char *filter, size_t /*flen*/, voi
     // - replace all equal     positions by 'equal_char' (if != 0)
     // - replace all differing positions by 'diff_char'  (if != 0)
 
-    struct diff_params *param = (struct diff_params*)paramP;
-    char equal_char = param->equalC;
-    char diff_char  = param->diffC;
+    diff_params *param      = (diff_params*)paramP;
+    char         equal_char = param->equalC;
+    char         diff_char  = param->diffC;
 
     char *result = strdup(seq);
     int   p;
@@ -2385,7 +2395,7 @@ static GB_ERROR gbl_diff(GBL_command_arguments *args) {
     GBL_BEGIN_PARAMS;
     GBL_COMMON_FILTER_PARAMS;
 
-    struct diff_params param;
+    diff_params param;
     GBL_STRUCT_PARAM_CHAR(param, equalC,   "equal=",    '.', "symbol for equal characters");
     GBL_STRUCT_PARAM_CHAR(param, diffC,    "differ=",   0,   "symbol for diff characters (default: use char from input stream)");
 
@@ -2414,7 +2424,7 @@ struct filter_params { // used by gbl_filter and gbl_change_gc
 };
 
 static char *filter_seq(const char *seq, const char *filter, size_t flen, void *paramP) {
-    struct filter_params *param = (struct filter_params*)paramP;
+    filter_params *param = (filter_params*)paramP;
 
     size_t slen     = strlen(seq);
     if (!flen) flen = strlen(filter);
@@ -2488,7 +2498,7 @@ static GB_ERROR gbl_filter(GBL_command_arguments *args) {
     GBL_BEGIN_PARAMS;
     GBL_COMMON_FILTER_PARAMS;
 
-    struct filter_params param;
+    filter_params param;
     GBL_STRUCT_PARAM_STRING(param, exclude, "exclude=", 0, "Exclude colums");
     GBL_STRUCT_PARAM_STRING(param, include, "include=", 0, "Include colums");
     param.function = FP_FILTER;
@@ -2511,7 +2521,7 @@ static GB_ERROR gbl_change_gc(GBL_command_arguments *args) {
     GBL_BEGIN_PARAMS;
     GBL_COMMON_FILTER_PARAMS;
 
-    struct filter_params param;
+    filter_params param;
     GBL_STRUCT_PARAM_STRING(param, exclude,   "exclude=", 0,    "Exclude colums");
     GBL_STRUCT_PARAM_STRING(param, include,   "include=", 0,    "Include colums");
     GBL_STRUCT_PARAM_INT   (param, change_pc, "change=",  0,    "percentage of changed columns (default: silently change nothing)");
@@ -2609,7 +2619,7 @@ static GB_ERROR gbl_exec(GBL_command_arguments *args)
 }
 
 
-static struct GBL_command_table gbl_command_table[] = {
+static GBL_command_table gbl_command_table[] = {
     { "caps",            gbl_string_convert },
     { "change",          gbl_change_gc },
     { "checksum",        gbl_check },

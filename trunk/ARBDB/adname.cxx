@@ -15,18 +15,18 @@
 
 #include "gb_local.h"
 
-struct gbt_renamed_struct {
+struct gbt_renamed {
     int     used_by;
     char    data[1];
 };
 
-struct gbt_rename_struct {
+static struct {
     GB_HASH *renamed_hash;
     GB_HASH *old_species_hash;
-    GBDATA *gb_main;
-    GBDATA *gb_species_data;
-    int all_flag;
-} gbtrst;
+    GBDATA  *gb_main;
+    GBDATA  *gb_species_data;
+    int      all_flag;
+} NameSession;
 
 #if defined(DEVEL_RALF)
 #warning change all_flag into estimated number of renames ( == 0 shall mean all)
@@ -40,20 +40,20 @@ GB_ERROR GBT_begin_rename_session(GBDATA *gb_main, int all_flag) {
 
     GB_ERROR error = GB_push_transaction(gb_main);
     if (!error) {
-        gbtrst.gb_main         = gb_main;
-        gbtrst.gb_species_data = GB_search(gb_main, "species_data", GB_CREATE_CONTAINER);
+        NameSession.gb_main         = gb_main;
+        NameSession.gb_species_data = GB_search(gb_main, "species_data", GB_CREATE_CONTAINER);
 
         if (!all_flag) { // this is meant to be used for single or few species
             int hash_size = 128;
 
-            gbtrst.renamed_hash     = GBS_create_dynaval_hash(hash_size, GB_MIND_CASE, GBS_dynaval_free);
-            gbtrst.old_species_hash = 0;
+            NameSession.renamed_hash     = GBS_create_dynaval_hash(hash_size, GB_MIND_CASE, GBS_dynaval_free);
+            NameSession.old_species_hash = 0;
         }
         else {
-            gbtrst.renamed_hash     = GBS_create_dynaval_hash(GBT_get_species_count(gb_main), GB_MIND_CASE, GBS_dynaval_free);
-            gbtrst.old_species_hash = GBT_create_species_hash(gb_main);
+            NameSession.renamed_hash     = GBS_create_dynaval_hash(GBT_get_species_count(gb_main), GB_MIND_CASE, GBS_dynaval_free);
+            NameSession.old_species_hash = GBT_create_species_hash(gb_main);
         }
-        gbtrst.all_flag = all_flag;
+        NameSession.all_flag = all_flag;
     }
     return error;
 }
@@ -73,16 +73,16 @@ GB_ERROR GBT_rename_species(const char *oldname, const  char *newname, bool igno
     }
 #endif
 
-    if (gbtrst.all_flag) {
-        gb_assert(gbtrst.old_species_hash);
-        gb_species = (GBDATA *)GBS_read_hash(gbtrst.old_species_hash, oldname);
+    if (NameSession.all_flag) {
+        gb_assert(NameSession.old_species_hash);
+        gb_species = (GBDATA *)GBS_read_hash(NameSession.old_species_hash, oldname);
     }
     else {
         GBDATA *gb_found_species;
 
-        gb_assert(gbtrst.old_species_hash == 0);
-        gb_found_species = GBT_find_species_rel_species_data(gbtrst.gb_species_data, newname);
-        gb_species       = GBT_find_species_rel_species_data(gbtrst.gb_species_data, oldname);
+        gb_assert(NameSession.old_species_hash == 0);
+        gb_found_species = GBT_find_species_rel_species_data(NameSession.gb_species_data, newname);
+        gb_species       = GBT_find_species_rel_species_data(NameSession.gb_species_data, oldname);
 
         if (gb_found_species && gb_species != gb_found_species) {
             return GB_export_errorf("A species named '%s' already exists.", newname);
@@ -94,36 +94,35 @@ GB_ERROR GBT_rename_species(const char *oldname, const  char *newname, bool igno
     }
 
     gb_name = GB_entry(gb_species, "name");
-    if (ignore_protection) GB_push_my_security(gbtrst.gb_main);
+    if (ignore_protection) GB_push_my_security(NameSession.gb_main);
     error   = GB_write_string(gb_name, newname);
-    if (ignore_protection) GB_pop_my_security(gbtrst.gb_main);
+    if (ignore_protection) GB_pop_my_security(NameSession.gb_main);
 
     if (!error) {
-        struct gbt_renamed_struct *rns;
-        if (gbtrst.old_species_hash) {
-            GBS_write_hash(gbtrst.old_species_hash, oldname, 0);
+        if (NameSession.old_species_hash) {
+            GBS_write_hash(NameSession.old_species_hash, oldname, 0);
         }
-        rns = (struct gbt_renamed_struct *)GB_calloc(strlen(newname) + sizeof (struct gbt_renamed_struct), sizeof(char));
+        gbt_renamed *rns = (gbt_renamed *)GB_calloc(strlen(newname) + sizeof (gbt_renamed), sizeof(char));
         strcpy(&rns->data[0], newname);
-        GBS_write_hash(gbtrst.renamed_hash, oldname, (long)rns);
+        GBS_write_hash(NameSession.renamed_hash, oldname, (long)rns);
     }
     return error;
 }
 
 static void gbt_free_rename_session_data() {
-    if (gbtrst.renamed_hash) {
-        GBS_free_hash(gbtrst.renamed_hash);
-        gbtrst.renamed_hash = 0;
+    if (NameSession.renamed_hash) {
+        GBS_free_hash(NameSession.renamed_hash);
+        NameSession.renamed_hash = 0;
     }
-    if (gbtrst.old_species_hash) {
-        GBS_free_hash(gbtrst.old_species_hash);
-        gbtrst.old_species_hash = 0;
+    if (NameSession.old_species_hash) {
+        GBS_free_hash(NameSession.old_species_hash);
+        NameSession.old_species_hash = 0;
     }
 }
 
 GB_ERROR GBT_abort_rename_session() {
     gbt_free_rename_session_data();
-    return GB_abort_transaction(gbtrst.gb_main);
+    return GB_abort_transaction(NameSession.gb_main);
 }
 
 static const char *currentTreeName = 0;
@@ -134,7 +133,7 @@ GB_ERROR gbt_rename_tree_rek(GBT_TREE *tree, int tree_index) {
     if (!tree) return 0;
     if (tree->is_leaf) {
         if (tree->name) {
-            struct gbt_renamed_struct *rns = (struct gbt_renamed_struct *)GBS_read_hash(gbtrst.renamed_hash, tree->name);
+            gbt_renamed *rns = (gbt_renamed *)GBS_read_hash(NameSession.renamed_hash, tree->name);
             if (rns) {
                 char *newname;
                 if (rns->used_by == tree_index) { // species more than once in the tree
@@ -164,7 +163,7 @@ GB_ERROR GBT_commit_rename_session(int (*show_status)(double gauge), int (*show_
     // rename species in trees
     {
         int tree_count;
-        char **tree_names = GBT_get_tree_names_and_count(gbtrst.gb_main, &tree_count);
+        char **tree_names = GBT_get_tree_names_and_count(NameSession.gb_main, &tree_count);
 
         if (tree_names) {
             int count;
@@ -175,14 +174,14 @@ GB_ERROR GBT_commit_rename_session(int (*show_status)(double gauge), int (*show_
 
             for (count = 0; count<tree_count; ++count) {
                 char     *tname = tree_names[count];
-                GBT_TREE *tree  = GBT_read_tree(gbtrst.gb_main, tname, -sizeof(GBT_TREE));
+                GBT_TREE *tree  = GBT_read_tree(NameSession.gb_main, tname, -sizeof(GBT_TREE));
 
                 if (tree) {
                     currentTreeName = tname; // provide tree name (used for error message)
                     gbt_rename_tree_rek(tree, count+1);
                     currentTreeName = 0;
 
-                    GBT_write_tree(gbtrst.gb_main, 0, tname, tree);
+                    GBT_write_tree(NameSession.gb_main, 0, tname, tree);
                     GBT_delete_tree(tree);
                 }
                 if (show_status) show_status((double)(count+1)/tree_count);
@@ -193,7 +192,7 @@ GB_ERROR GBT_commit_rename_session(int (*show_status)(double gauge), int (*show_
     // rename configurations
     if (!error) {
         int config_count;
-        char **config_names = GBT_get_configuration_names_and_count(gbtrst.gb_main, &config_count);
+        char **config_names = GBT_get_configuration_names_and_count(NameSession.gb_main, &config_count);
 
         if (config_names) {
             int count;
@@ -203,7 +202,7 @@ GB_ERROR GBT_commit_rename_session(int (*show_status)(double gauge), int (*show_
             if (show_status) show_status(0.0);
 
             for (count = 0; !error && count<config_count; ++count) {
-                GBT_config *config = GBT_load_configuration_data(gbtrst.gb_main, config_names[count], &error);
+                GBT_config *config = GBT_load_configuration_data(NameSession.gb_main, config_names[count], &error);
                 if (!error) {
                     int need_save = 0;
                     int mode;
@@ -217,7 +216,7 @@ GB_ERROR GBT_commit_rename_session(int (*show_status)(double gauge), int (*show_
                         error = GBT_parse_next_config_item(parser, item);
                         while (!error && item->type != CI_END_OF_CONFIG) {
                             if (item->type == CI_SPECIES) {
-                                struct gbt_renamed_struct *rns = (struct gbt_renamed_struct *)GBS_read_hash(gbtrst.renamed_hash, item->name);
+                                gbt_renamed *rns = (gbt_renamed *)GBS_read_hash(NameSession.renamed_hash, item->name);
                                 if (rns) { // species was renamed
                                     freedup(item->name, rns->data);
                                     need_save = 1;
@@ -233,7 +232,7 @@ GB_ERROR GBT_commit_rename_session(int (*show_status)(double gauge), int (*show_
                         GBT_free_config_parser(parser);
                     }
 
-                    if (!error && need_save) error = GBT_save_configuration_data(config, gbtrst.gb_main, config_names[count]);
+                    if (!error && need_save) error = GBT_save_configuration_data(config, NameSession.gb_main, config_names[count]);
                 }
                 if (show_status) show_status((double)(count+1)/config_count);
             }
@@ -242,16 +241,16 @@ GB_ERROR GBT_commit_rename_session(int (*show_status)(double gauge), int (*show_
     }
 
     // rename links in pseudo-species
-    if (!error && GEN_is_genome_db(gbtrst.gb_main, -1)) {
+    if (!error && GEN_is_genome_db(NameSession.gb_main, -1)) {
         GBDATA *gb_pseudo;
-        for (gb_pseudo = GEN_first_pseudo_species(gbtrst.gb_main);
+        for (gb_pseudo = GEN_first_pseudo_species(NameSession.gb_main);
              gb_pseudo && !error;
              gb_pseudo = GEN_next_pseudo_species(gb_pseudo))
         {
             GBDATA *gb_origin_organism = GB_entry(gb_pseudo, "ARB_origin_species");
             if (gb_origin_organism) {
-                const char                *origin = GB_read_char_pntr(gb_origin_organism);
-                struct gbt_renamed_struct *rns    = (struct gbt_renamed_struct *)GBS_read_hash(gbtrst.renamed_hash, origin);
+                const char  *origin = GB_read_char_pntr(gb_origin_organism);
+                gbt_renamed *rns    = (gbt_renamed *)GBS_read_hash(NameSession.renamed_hash, origin);
                 if (rns) {          // species was renamed
                     const char *newname = &rns->data[0];
                     error               = GB_write_string(gb_origin_organism, newname);
@@ -262,7 +261,7 @@ GB_ERROR GBT_commit_rename_session(int (*show_status)(double gauge), int (*show_
 
     gbt_free_rename_session_data();
 
-    error = GB_pop_transaction(gbtrst.gb_main);
+    error = GB_pop_transaction(NameSession.gb_main);
     return error;
 }
 

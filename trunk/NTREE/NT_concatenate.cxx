@@ -67,7 +67,7 @@ void NT_createConcatenationAwars(AW_root *aw_root, AW_default aw_def) {
 }
 
 /* ------------------------Selecting alignments from the database for concatenation---------------------- */
-void createSelectionList_callBack(struct conAlignStruct *cas) {
+void createSelectionList_callBack(conAlignStruct *cas) {
     GBDATA *gb_alignment;
     GBDATA *gb_alignment_name;
     GBDATA *gb_alignment_type;
@@ -108,13 +108,13 @@ void createSelectionList_callBack(struct conAlignStruct *cas) {
 
 static void createSelectionList_callBack_gb(GBDATA*, int *cl_cas, GB_CB_TYPE cbtype) {
     if (cbtype == GB_CB_CHANGED) {
-        struct conAlignStruct *cas = (struct conAlignStruct*)cl_cas;
+        conAlignStruct *cas = (conAlignStruct*)cl_cas;
         createSelectionList_callBack(cas);
     }
 }
 
 static void createSelectionList_callBack_awar(AW_root *IF_ASSERTION_USED(aw_root), AW_CL cl_cas) {
-    struct conAlignStruct *cas = (struct conAlignStruct*)cl_cas;
+    conAlignStruct *cas = (conAlignStruct*)cl_cas;
     nt_assert(aw_root==cas->aws->get_root());
     createSelectionList_callBack(cas);
     // clear the selected alignments and set default to ????

@@ -602,7 +602,7 @@ void SAI_graphic::paint(AW_device *device) {
     }
 }
 
-void transferProbeData(struct saiProbeData *spd) {
+void transferProbeData(saiProbeData *spd) {
     // store pointer to currently used probe data
     g_pbdata = spd;
 

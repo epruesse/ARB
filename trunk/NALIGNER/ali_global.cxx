@@ -63,7 +63,7 @@ void ALI_GLOBAL::init(int *argc, char *argv[])
 {
     int kill, i, h, j, ret;
     char *pos;
-    struct arb_params *params;
+    arb_params *params;
     float fl;
 
     params = arb_trace_argv(argc, argv);

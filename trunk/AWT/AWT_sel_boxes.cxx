@@ -472,7 +472,7 @@ void awt_create_selection_list_on_extendeds_update(GBDATA *dummy, void *cbsid) {
     printf("start awt_create_selection_list_on_extendeds_update\n"); // @@@
 #endif // DEVEL_RALF
 
-    struct awt_sel_list_for_sai *cbs = (struct awt_sel_list_for_sai *)cbsid;
+    awt_sel_list_for_sai *cbs = (awt_sel_list_for_sai *)cbsid;
 
     AWUSE(dummy);
     cbs->aws->clear_selection_list(cbs->id);
@@ -538,8 +538,8 @@ void *awt_create_selection_list_on_extendeds(GBDATA *gb_main, AW_window *aws, co
      * filter_proc returns a string (string must be a heap copy)
      */
 
-    AW_selection_list           *id;
-    struct awt_sel_list_for_sai *cbs;
+    AW_selection_list    *id;
+    awt_sel_list_for_sai *cbs;
 
     GB_push_transaction(gb_main);
 

@@ -16,13 +16,13 @@
 
 int main(int argc, char **argv)
 {
-    struct arb_params *params;
-    GBDATA            *gb_extern;
-    GBDATA            *gb_main;
-    GB_ERROR           error;
-    int                timer;
-    int                last_update = 0;
-    int                clock;
+    arb_params *params;
+    GBDATA     *gb_extern;
+    GBDATA     *gb_main;
+    GB_ERROR    error;
+    int         timer;
+    int         last_update = 0;
+    int         clock;
 
     if (argc <= 1 || strcmp(argv[1], "--help") == 0) {
         printf("Syntax of the arb_db_server:\n");

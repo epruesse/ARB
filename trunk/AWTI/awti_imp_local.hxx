@@ -47,10 +47,10 @@ struct input_format_per_line {
 
     char *defined_at; // where was match defined
 
-    struct input_format_per_line *next;
+    input_format_per_line *next;
 
-    struct input_format_per_line *reverse(struct input_format_per_line *to_append) {
-        struct input_format_per_line *rest = next;
+    input_format_per_line *reverse(input_format_per_line *to_append) {
+        input_format_per_line *rest = next;
         next = to_append;
         return rest ? rest->reverse(this) : this;
     }

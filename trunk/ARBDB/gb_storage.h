@@ -32,13 +32,13 @@ inline bool GB_CHECKINTERN(int size, int memsize) { return size<256 && memsize<S
 inline void GB_SETINTERN(GBDATA *gbd) { gbd->flags2.extern_data = 0; }
 inline void GB_SETEXTERN(GBDATA *gbd) { gbd->flags2.extern_data = 1; }
 
-inline char *GB_EXTERN_DATA_DATA(struct gb_extern_data& ex) { return GB_RESOLVE(char*, (&(ex)), rel_data); }
+inline char *GB_EXTERN_DATA_DATA(gb_extern_data& ex) { return GB_RESOLVE(char*, (&(ex)), rel_data); }
 inline void SET_GB_EXTERN_DATA_DATA(gb_extern_data& ex, char *data) { GB_SETREL(&ex, rel_data, data); }
 
 inline void GB_CREATE_EXT(GBDATA *gbd) { if (!gbd->ext) gb_create_extended(gbd); }
 inline void GB_DELETE_EXT(GBDATA *gbd, long gbm_index) {
     if (gbd->ext) {
-        gbm_free_mem((char *) gbd->ext, sizeof(struct gb_db_extended), gbm_index);
+        gbm_free_mem((char *) gbd->ext, sizeof(gb_db_extended), gbm_index);
         gbd->ext = 0;
     }
 }

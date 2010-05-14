@@ -213,9 +213,9 @@ char *GBS_find_lib_file(const char *filename, const char *libprefix, int warn_wh
 char **GBS_read_dir(const char *dir, const char *mask);
 
 /* adsystem.cxx */
-struct DictData *GB_get_dictionary(GBDATA *gb_main, const char *key);
-GB_ERROR GB_set_dictionary(GBDATA *gb_main, const char *key, const struct DictData *dd);
-void GB_free_dictionary(struct DictData *dd);
+DictData *GB_get_dictionary(GBDATA *gb_main, const char *key);
+GB_ERROR GB_set_dictionary(GBDATA *gb_main, const char *key, const DictData *dd);
+void GB_free_dictionary(DictData *dd);
 
 /* adtcp.cxx */
 const char *GBS_scan_arb_tcp_param(const char *ipPort, const char *wantedParam);
@@ -379,12 +379,12 @@ GBDATA *GEN_first_gene_rel_gene_data(GBDATA *gb_gene_data);
 GBDATA *GEN_next_gene(GBDATA *gb_gene);
 GBDATA *GEN_first_marked_gene(GBDATA *gb_species);
 GBDATA *GEN_next_marked_gene(GBDATA *gb_gene);
-struct GEN_position *GEN_new_position(int parts, bool joinable);
-void GEN_use_uncertainties(struct GEN_position *pos);
-void GEN_free_position(struct GEN_position *pos);
-struct GEN_position *GEN_read_position(GBDATA *gb_gene);
-GB_ERROR GEN_write_position(GBDATA *gb_gene, const struct GEN_position *pos);
-void GEN_sortAndMergeLocationParts(struct GEN_position *location);
+GEN_position *GEN_new_position(int parts, bool joinable);
+void GEN_use_uncertainties(GEN_position *pos);
+void GEN_free_position(GEN_position *pos);
+GEN_position *GEN_read_position(GBDATA *gb_gene);
+GB_ERROR GEN_write_position(GBDATA *gb_gene, const GEN_position *pos);
+void GEN_sortAndMergeLocationParts(GEN_position *location);
 const char *GEN_origin_organism(GBDATA *gb_pseudo);
 const char *GEN_origin_gene(GBDATA *gb_pseudo);
 bool GEN_is_pseudo_gene_species(GBDATA *gb_species);

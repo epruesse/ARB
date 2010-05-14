@@ -79,7 +79,7 @@ struct DbScanner {
     char      *buffer;
 };
 
-static void gbt_scan_db_rek(GBDATA *gbd, char *prefix, int deep, struct DbScanner *scanner) {
+static void gbt_scan_db_rek(GBDATA *gbd, char *prefix, int deep, DbScanner *scanner) {
     GB_TYPES type = GB_read_type(gbd);
     GBDATA *gb2;
     const char *key;
@@ -111,19 +111,19 @@ static void gbt_scan_db_rek(GBDATA *gbd, char *prefix, int deep, struct DbScanne
 }
 
 static long gbs_scan_db_count(const char */*key*/, long val, void *cd_scanner) {
-    struct DbScanner *scanner = (struct DbScanner*)cd_scanner;
+    DbScanner *scanner = (DbScanner*)cd_scanner;
     scanner->count++;
     return val;
 }
 
 struct scan_db_insert {
-    struct DbScanner *scanner;
-    const char       *datapath;
+    DbScanner  *scanner;
+    const char *datapath;
 };
 
 static long gbs_scan_db_insert(const char *key, long val, void *cd_insert_data) {
-    struct scan_db_insert *insert = (struct scan_db_insert *)cd_insert_data;
-    char *to_insert = 0;
+    scan_db_insert *insert    = (scan_db_insert *)cd_insert_data;
+    char           *to_insert = 0;
 
     if (!insert->datapath) {
         to_insert = strdup(key);
@@ -136,7 +136,7 @@ static long gbs_scan_db_insert(const char *key, long val, void *cd_insert_data) 
     }
 
     if (to_insert) {
-        struct DbScanner *scanner         = insert->scanner;
+        DbScanner *scanner = insert->scanner;
         scanner->result[scanner->count++] = to_insert;
     }
 
@@ -167,7 +167,7 @@ char **GBT_scan_db(GBDATA *gbd, const char *datapath) {
      *
      * Note: this function is incredibly slow when called from clients
      */
-    struct DbScanner scanner;
+    DbScanner scanner;
 
     scanner.hash_table = GBS_create_hash(1024, GB_MIND_CASE);
     scanner.buffer     = (char *)malloc(GBT_SUM_LEN);
@@ -182,7 +182,7 @@ char **GBT_scan_db(GBDATA *gbd, const char *datapath) {
     // null terminated result
 
     scanner.count = 0;
-    struct scan_db_insert insert = { &scanner, datapath, };
+    scan_db_insert insert = { &scanner, datapath, };
     GBS_hash_do_loop(scanner.hash_table, gbs_scan_db_insert, &insert);
 
     GBS_free_hash(scanner.hash_table);
@@ -757,14 +757,14 @@ GBDATA *GBT_open(const char *path, const char *opent, const char *disabled_path)
 #define MAX_REMOTE_APPLICATION_NAME_LEN 30
 #define MAX_REMOTE_AWAR_STRING_LEN      (11+MAX_REMOTE_APPLICATION_NAME_LEN+1+6+1)
 
-struct gbt_remote_awars {
+struct remote_awars {
     char awar_action[MAX_REMOTE_AWAR_STRING_LEN];
     char awar_result[MAX_REMOTE_AWAR_STRING_LEN];
     char awar_awar[MAX_REMOTE_AWAR_STRING_LEN];
     char awar_value[MAX_REMOTE_AWAR_STRING_LEN];
 };
 
-static void gbt_build_remote_awars(struct gbt_remote_awars *awars, const char *application) {
+static void gbt_build_remote_awars(remote_awars *awars, const char *application) {
     int length;
 
     gb_assert(strlen(application) <= MAX_REMOTE_APPLICATION_NAME_LEN);
@@ -817,9 +817,9 @@ static GB_ERROR gbt_wait_for_remote_action(GBDATA *gb_main, GBDATA *gb_action, c
 }
 
 GB_ERROR GBT_remote_action(GBDATA *gb_main, const char *application, const char *action_name) {
-    struct gbt_remote_awars  awars;
-    GBDATA                  *gb_action;
-    GB_ERROR                 error = NULL;
+    remote_awars  awars;
+    GBDATA       *gb_action;
+    GB_ERROR      error = NULL;
 
     gbt_build_remote_awars(&awars, application);
     gb_action = gbt_remote_search_awar(gb_main, awars.awar_action);
@@ -833,9 +833,9 @@ GB_ERROR GBT_remote_action(GBDATA *gb_main, const char *application, const char 
 }
 
 GB_ERROR GBT_remote_awar(GBDATA *gb_main, const char *application, const char *awar_name, const char *value) {
-    struct gbt_remote_awars  awars;
-    GBDATA                  *gb_awar;
-    GB_ERROR                 error = NULL;
+    remote_awars  awars;
+    GBDATA       *gb_awar;
+    GB_ERROR      error = NULL;
 
     gbt_build_remote_awars(&awars, application);
     gb_awar = gbt_remote_search_awar(gb_main, awars.awar_awar);
@@ -851,9 +851,9 @@ GB_ERROR GBT_remote_awar(GBDATA *gb_main, const char *application, const char *a
 }
 
 GB_ERROR GBT_remote_read_awar(GBDATA *gb_main, const char *application, const char *awar_name) {
-    struct gbt_remote_awars  awars;
-    GBDATA                  *gb_awar;
-    GB_ERROR                 error = NULL;
+    remote_awars  awars;
+    GBDATA       *gb_awar;
+    GB_ERROR      error = NULL;
 
     gbt_build_remote_awars(&awars, application);
     gb_awar = gbt_remote_search_awar(gb_main, awars.awar_awar);
@@ -868,9 +868,9 @@ GB_ERROR GBT_remote_read_awar(GBDATA *gb_main, const char *application, const ch
 }
 
 const char *GBT_remote_touch_awar(GBDATA *gb_main, const char *application, const char *awar_name) {
-    struct gbt_remote_awars  awars;
-    GBDATA                  *gb_awar;
-    GB_ERROR                 error = NULL;
+    remote_awars  awars;
+    GBDATA       *gb_awar;
+    GB_ERROR      error = NULL;
 
     gbt_build_remote_awars(&awars, application);
     gb_awar = gbt_remote_search_awar(gb_main, awars.awar_awar);
@@ -909,8 +909,8 @@ struct NotifyCb {
 static void notify_cb(GBDATA *gb_message, int *cb_info, GB_CB_TYPE cb_type) {
     GB_remove_callback(gb_message, GB_CB_TYPE(GB_CB_CHANGED|GB_CB_DELETE), notify_cb, cb_info); // @@@ cbproblematic
 
-    int              cb_done = 0;
-    struct NotifyCb *pending = (NotifyCb*)cb_info;
+    int       cb_done = 0;
+    NotifyCb *pending = (NotifyCb*)cb_info;
 
     if (cb_type == GB_CB_CHANGED) {
         GB_ERROR    error   = 0;

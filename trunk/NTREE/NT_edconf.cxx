@@ -247,7 +247,7 @@ struct SAI_string_builder {
 };
 
 static long nt_build_sai_string_by_hash(const char *key, long val, void *cd_sai_builder) {
-    struct SAI_string_builder *sai_builder = (struct SAI_string_builder*)cd_sai_builder;
+    SAI_string_builder *sai_builder = (SAI_string_builder*)cd_sai_builder;
 
     const char *sep = strchr(key, 1);
     if (!sep) return val;                           // what's wrong
@@ -310,7 +310,7 @@ void nt_build_sai_string(GBS_strstruct *topfile, GBS_strstruct *middlefile) {
         GBS_chrcat(middlefile, 1);
         GBS_strcat(middlefile, "GSAI-Maingroup");
 
-        struct SAI_string_builder sai_builder = { middlefile, 0 };
+        SAI_string_builder sai_builder = { middlefile, 0 };
         GBS_hash_do_sorted_loop(hash, nt_build_sai_string_by_hash, GBS_HCF_sortedByKey, &sai_builder);
         if (sai_builder.last_group_name) {
             GBS_chrcat(middlefile, 1);              // Separated by 1

@@ -123,17 +123,16 @@ class PHDATA {
     // connection to database
     // pointers to all elements and important values of the database
 
-    struct PHENTRY
-    {
-        unsigned int    key;
-        char           *name;
-        char           *full_name;
-        GBDATA         *gb_species_data_ptr;
-        struct PHENTRY *next;
-        struct PHENTRY *prev;
-        int             group_members; /* >0: this elem is grouphead */
-        struct elem    *first_member; /* !=NULL: elem is grouphead */
-        bool            selected;
+    struct PHENTRY {
+        unsigned int  key;
+        char         *name;
+        char         *full_name;
+        GBDATA       *gb_species_data_ptr;
+        PHENTRY      *next;
+        PHENTRY      *prev;
+        int           group_members; /* >0: this elem is grouphead */
+        elem         *first_member; /* !=NULL: elem is grouphead */
+        bool          selected;
     };
     unsigned int last_key_number;
     long         seq_len;
@@ -141,15 +140,15 @@ class PHDATA {
     AW_root *aw_root;       // only link
 
 public:
-    GBDATA          *gb_main;
-    char            *use;
-    struct PHENTRY  *entries;
-    struct PHENTRY **hash_elements;
-    unsigned int     nentries;  // total number of entries
-    static PHDATA   *ROOT;      // 'global' pointer
-    AP_smatrix      *distance_table; // weights between different characters
-    AP_smatrix      *matrix;    // calculated matrix
-    float           *markerline;
+    GBDATA         *gb_main;
+    char           *use;
+    PHENTRY        *entries;
+    PHENTRY       **hash_elements;
+    unsigned int    nentries;                       // total number of entries
+    static PHDATA  *ROOT;                           // 'global' pointer
+    AP_smatrix     *distance_table;                 // weights between different characters
+    AP_smatrix     *matrix;                         // calculated matrix
+    float          *markerline;
 
     PHDATA(AW_root *awr);
     ~PHDATA();

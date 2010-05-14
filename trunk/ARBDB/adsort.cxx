@@ -15,7 +15,7 @@ struct comparator {
     void                *client_data;
 };
 
-static struct comparator Compare; // current compare function + client data
+static comparator Compare; // current compare function + client data
 
 static int qsort_compare(const void *v1, const void *v2) {
     return Compare.compare(*(void**)v1, *(void**)v2, Compare.client_data);

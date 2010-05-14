@@ -374,7 +374,7 @@ int AWT_graphic_tree::group_tree(AP_tree *at, int mode, int color_group)    // r
 
 
 
-int AWT_graphic_tree::resort_tree(int mode, struct AP_tree *at)   // run on father !!!
+int AWT_graphic_tree::resort_tree(int mode, AP_tree *at)   // run on father !!!
 {
     /* mode
 

@@ -22,7 +22,7 @@
 #include "gb_ts.h"
 
 
-struct gb_local_data *gb_local = 0;
+gb_local_data *gb_local = 0;
 
 #ifdef ARBDB_SIZEDEBUG
 long *arbdb_stat;
@@ -157,12 +157,12 @@ int gb_convert_type_2_appendix_size[] = { /* contains the size of the suffix (ak
 // ---------------------------------
 //      local buffer management
 
-static void init_buffer(struct gb_buffer *buf, size_t initial_size) {
+static void init_buffer(gb_buffer *buf, size_t initial_size) {
     buf->size = initial_size;
     buf->mem  = buf->size ? (char*)malloc(buf->size) : NULL;
 }
 
-static char *check_out_buffer(struct gb_buffer *buf) {
+static char *check_out_buffer(gb_buffer *buf) {
     char *checkOut = buf->mem;
 
     buf->mem  = 0;
@@ -171,7 +171,7 @@ static char *check_out_buffer(struct gb_buffer *buf) {
     return checkOut;
 }
 
-static void alloc_buffer(struct gb_buffer *buf, size_t size) {
+static void alloc_buffer(gb_buffer *buf, size_t size) {
     free(buf->mem);
     buf->size = size;
 #if (MEMORY_TEST==1)
@@ -181,7 +181,7 @@ static void alloc_buffer(struct gb_buffer *buf, size_t size) {
 #endif
 }
 
-static GB_BUFFER give_buffer(struct gb_buffer *buf, size_t size) {
+static GB_BUFFER give_buffer(gb_buffer *buf, size_t size) {
 #if (MEMORY_TEST==1)
     alloc_buffer(buf, size); // do NOT reuse buffer if testing memory
 #else
@@ -192,7 +192,7 @@ static GB_BUFFER give_buffer(struct gb_buffer *buf, size_t size) {
     return buf->mem;
 }
 
-static int is_in_buffer(struct gb_buffer *buf, GB_CBUFFER ptr) {
+static int is_in_buffer(gb_buffer *buf, GB_CBUFFER ptr) {
     return ptr >= buf->mem && ptr < buf->mem+buf->size;
 }
 
@@ -343,10 +343,9 @@ GB_ERROR gb_unfold(GBCONTAINER *gbd, long deep, int index_pos) {
      * @return error on failure
      */
 
-    GB_ERROR  error;
-    GBDATA   *gb2;
-
-    struct gb_header_list_struct *header = GB_DATA_LIST_HEADER(gbd->d);
+    GB_ERROR        error;
+    GBDATA         *gb2;
+    gb_header_list *header = GB_DATA_LIST_HEADER(gbd->d);
 
     if (!gbd->flags2.folded_container) return 0;
     if (index_pos> gbd->d.nheader) gb_create_header_array(gbd, index_pos + 1);
@@ -391,15 +390,14 @@ GB_ERROR gb_unfold(GBCONTAINER *gbd, long deep, int index_pos) {
 
 typedef void (*gb_close_callback)(GBDATA *gb_main, void *client_data);
 
-struct gb_close_callback_struct {
-    struct gb_close_callback_struct *next;
-
-    gb_close_callback  cb;
-    void              *client_data;
+struct gb_close_callback_list {
+    gb_close_callback_list *next;
+    gb_close_callback       cb;
+    void                   *client_data;
 };
 
 #if defined(ASSERTION_USED)
-static bool atclose_cb_exists(struct gb_close_callback_struct *gccs, gb_close_callback cb) {
+static bool atclose_cb_exists(gb_close_callback_list *gccs, gb_close_callback cb) {
     return gccs && (gccs->cb == cb || atclose_cb_exists(gccs->next, cb));
 }
 #endif // ASSERTION_USED
@@ -413,7 +411,7 @@ void GB_atclose(GBDATA *gbd, void (*fun)(GBDATA *gb_main, void *client_data), vo
 
     gb_assert(!atclose_cb_exists(Main->close_callbacks, fun)); // each close callback should only exist once
 
-    struct gb_close_callback_struct *gccs = (struct gb_close_callback_struct *)malloc(sizeof(*gccs));
+    gb_close_callback_list *gccs = (gb_close_callback_list *)malloc(sizeof(*gccs));
 
     gccs->next        = Main->close_callbacks;
     gccs->cb          = fun;
@@ -422,10 +420,10 @@ void GB_atclose(GBDATA *gbd, void (*fun)(GBDATA *gb_main, void *client_data), vo
     Main->close_callbacks = gccs;
 }
 
-static void run_close_callbacks(GBDATA *gb_main, struct gb_close_callback_struct *gccs) {
+static void run_close_callbacks(GBDATA *gb_main, gb_close_callback_list *gccs) {
     while (gccs) {
         gccs->cb(gb_main, gccs->client_data);
-        struct gb_close_callback_struct *next = gccs->next;
+        gb_close_callback_list *next = gccs->next;
         free(gccs);
         gccs = next;
     }
@@ -782,7 +780,7 @@ static void gb_do_callbacks(GBDATA *gbd) {
 
     GBDATA *gbdn, *gbdc;
     for (gbdc = gbd; gbdc; gbdc=gbdn) {
-        struct gb_callback *cb, *cbn;
+        gb_callback *cb, *cbn;
         gbdn = GB_get_father(gbdc);
         for (cb = GB_GET_EXT_CALLBACKS(gbdc); cb; cb = cbn) {
             cbn = cb->next;
@@ -878,10 +876,9 @@ GB_ERROR gb_write_compressed_pntr(GBDATA *gbd, const char *s, long memsize, long
     return 0;
 }
 
-int gb_get_compression_mask(GB_MAIN_TYPE *Main, GBQUARK key, int gb_type)
-{
-    struct gb_key_struct *ks = &Main->keys[key];
-    int compression_mask;
+int gb_get_compression_mask(GB_MAIN_TYPE *Main, GBQUARK key, int gb_type) {
+    gb_Key *ks = &Main->keys[key];
+    int     compression_mask;
 
     if (ks->gb_key_disabled) {
         compression_mask = 0;
@@ -2031,62 +2028,65 @@ int GB_get_transaction_level(GBDATA *gbd) {
 
 GB_ERROR GB_update_server(GBDATA *gbd) {
     //! Send updated data to server
-    GB_ERROR error;
-    GB_MAIN_TYPE    *Main = GB_MAIN(gbd);
-    GBDATA *gb_main = (GBDATA *)Main->data;
-    struct gb_callback_list *cbl_old = Main->cbl_last;
-    if (!Main->transaction) {
-        error = GB_export_error("GB_update_server: No running Transaction");
-        GB_internal_error(error);
-        return error;
-    }
-    if (Main->local_mode) {
-        return GB_export_error("You cannot update the server as you are the server yourself");
-    }
+    GB_ERROR      error = NULL;
+    GB_MAIN_TYPE *Main  = GB_MAIN(gbd);
 
-    error = gbcmc_begin_sendupdate(gb_main);
-    if (error) return error;
-    error = gb_commit_transaction_local_rek(gbd, 2, 0);
-    if (error) return error;
-    error = gbcmc_end_sendupdate(gb_main);
-    if (error) return error;
-    if (cbl_old != Main->cbl_last) {
-        GB_internal_error("GB_update_server produced a callback, this is not allowed");
+    if (!Main->transaction) {
+        error = "GB_update_server: No running Transaction";
+        GB_internal_error(error);
     }
-    // gb_do_callback_list(gbd);         do all callbacks
-    return 0;
+    else if (Main->local_mode) {
+        error = "You cannot update the server as you are the server yourself";
+    }
+    else {
+        GBDATA           *gb_main = (GBDATA *)Main->data;
+        gb_callback_list *cbl_old = Main->cbl_last;
+
+        error = gbcmc_begin_sendupdate(gb_main);
+        if (!error) {
+            error = gb_commit_transaction_local_rek(gbd, 2, 0);
+            if (!error) {
+                error = gbcmc_end_sendupdate(gb_main);
+                if (!error) {
+                    if (cbl_old != Main->cbl_last) {
+                        GB_internal_error("GB_update_server produced a callback, this is not allowed");
+                    }
+                    // gb_do_callback_list(gbd);         do all callbacks
+                }
+            }
+        }
+    }
+    return error;
 }
 
 // ------------------
 //      callbacks
 
-GB_ERROR gb_add_changed_callback_list(GBDATA *gbd, struct gb_transaction_save *old, GB_CB_TYPE gbtype, GB_CB func, int *clientdata)
-{
-    struct gb_callback_list *cbl;
-    GB_MAIN_TYPE    *Main = GB_MAIN(gbd);
-    cbl = (struct gb_callback_list *)gbm_get_mem(sizeof(struct gb_callback_list), GBM_CB_INDEX);
+void gb_add_changed_callback_list(GBDATA *gbd, gb_transaction_save *old, GB_CB_TYPE gbtype, GB_CB func, int *clientdata) {
+    GB_MAIN_TYPE     *Main = GB_MAIN(gbd);
+    gb_callback_list *cbl  = (gb_callback_list *)gbm_get_mem(sizeof(gb_callback_list), GBM_CB_INDEX);
+
     if (Main->cbl) {
         Main->cbl_last->next = cbl;
     }
     else {
         Main->cbl = cbl;
     }
-    Main->cbl_last = cbl;
+
+    Main->cbl_last  = cbl;
     cbl->clientdata = clientdata;
-    cbl->func = func;
-    cbl->gbd = gbd;
-    cbl->type = gbtype;
+    cbl->func       = func;
+    cbl->gbd        = gbd;
+    cbl->type       = gbtype;
+    
     gb_add_ref_gb_transaction_save(old);
     cbl->old = old;
-
-    return 0;
 }
 
-GB_ERROR gb_add_delete_callback_list(GBDATA *gbd, struct gb_transaction_save *old, GB_CB func, int *clientdata)
-{
-    struct gb_callback_list *cbl;
-    GB_MAIN_TYPE    *Main = GB_MAIN(gbd);
-    cbl = (struct gb_callback_list *)gbm_get_mem(sizeof(struct gb_callback_list), GBM_CB_INDEX);
+void gb_add_delete_callback_list(GBDATA *gbd, gb_transaction_save *old, GB_CB func, int *clientdata) {
+    GB_MAIN_TYPE     *Main = GB_MAIN(gbd);
+    gb_callback_list *cbl  = (gb_callback_list *)gbm_get_mem(sizeof(gb_callback_list), GBM_CB_INDEX);
+
     if (Main->cbld) {
         Main->cbld_last->next = cbl;
     }
@@ -2095,19 +2095,19 @@ GB_ERROR gb_add_delete_callback_list(GBDATA *gbd, struct gb_transaction_save *ol
     }
     Main->cbld_last = cbl;
     cbl->clientdata = clientdata;
-    cbl->func = func;
-    cbl->gbd = gbd;
-    cbl->type = GB_CB_DELETE;
+    cbl->func       = func;
+    cbl->gbd        = gbd;
+    cbl->type       = GB_CB_DELETE;
+
     if (old) gb_add_ref_gb_transaction_save(old);
     cbl->old = old;
-    return 0;
 }
 
-static struct gb_callback_list *g_b_old_callback_list = NULL; // points to callback during callback (NULL otherwise)
-static GB_MAIN_TYPE            *g_b_old_main          = NULL; // points to DB root during callback (NULL otherwise)
+static gb_callback_list *g_b_old_callback_list = NULL; // points to callback during callback (NULL otherwise)
+static GB_MAIN_TYPE     *g_b_old_main          = NULL; // points to DB root during callback (NULL otherwise)
 
 GB_ERROR gb_do_callback_list(GB_MAIN_TYPE *Main) {
-    struct gb_callback_list *cbl, *cbl_next;
+    gb_callback_list *cbl, *cbl_next;
     g_b_old_main = Main;
 
     // first all delete callbacks:
@@ -2117,7 +2117,7 @@ GB_ERROR gb_do_callback_list(GB_MAIN_TYPE *Main) {
         cbl_next = cbl->next;
         g_b_old_callback_list = NULL;
         gb_del_ref_gb_transaction_save(cbl->old);
-        gbm_free_mem((char *)cbl, sizeof(struct gb_callback_list), GBM_CB_INDEX);
+        gbm_free_mem((char *)cbl, sizeof(gb_callback_list), GBM_CB_INDEX);
     }
 
     Main->cbld_last = NULL;
@@ -2130,7 +2130,7 @@ GB_ERROR gb_do_callback_list(GB_MAIN_TYPE *Main) {
         cbl_next = cbl->next;
         g_b_old_callback_list = NULL;
         gb_del_ref_gb_transaction_save(cbl->old);
-        gbm_free_mem((char *)cbl, sizeof(struct gb_callback_list), GBM_CB_INDEX);
+        gbm_free_mem((char *)cbl, sizeof(gb_callback_list), GBM_CB_INDEX);
     }
 
     g_b_old_main   = NULL;
@@ -2188,7 +2188,7 @@ GBDATA *GB_get_gb_main_during_cb() {
 
 
 
-GB_CSTR gb_read_pntr_ts(GBDATA *gbd, struct gb_transaction_save *ts) {
+GB_CSTR gb_read_pntr_ts(GBDATA *gbd, gb_transaction_save *ts) {
     int         type = GB_TYPE_TS(ts);
     const char *data = GB_GETDATA_TS(ts);
     if (data) {
@@ -2234,7 +2234,7 @@ char *GB_get_callback_info(GBDATA *gbd) {
     // returns human-readable information about callbacks of 'gbd' or 0
     char *result = 0;
     if (gbd->ext) {
-        struct gb_callback *cb = gbd->ext->callback;
+        gb_callback *cb = gbd->ext->callback;
         while (cb) {
             char *cb_info = GBS_global_string_copy("func=%p type=%i clientdata=%p priority=%i",
                                                    (void*)cb->func, cb->type, cb->clientdata, cb->priority);
@@ -2269,8 +2269,6 @@ GB_ERROR GB_add_priority_callback(GBDATA *gbd, GB_CB_TYPE type, GB_CB func, int 
      * See also: GB_get_gb_main_during_cb()
      */
 
-    struct gb_callback *cb;
-
 #if defined(DEBUG)
     if (GB_inside_callback(gbd, GB_CB_DELETE)) {
         printf("Warning: GB_add_priority_callback called inside delete-callback of gbd (gbd may already be freed)\n");
@@ -2282,11 +2280,11 @@ GB_ERROR GB_add_priority_callback(GBDATA *gbd, GB_CB_TYPE type, GB_CB func, int 
 
     GB_TEST_TRANSACTION(gbd); // may return error
     GB_CREATE_EXT(gbd);
-    cb = (struct gb_callback *)gbm_get_mem(sizeof(struct gb_callback), GB_GBM_INDEX(gbd));
+    gb_callback *cb = (gb_callback *)gbm_get_mem(sizeof(gb_callback), GB_GBM_INDEX(gbd));
 
     if (gbd->ext->callback) {
-        struct gb_callback *prev = 0;
-        struct gb_callback *curr = gbd->ext->callback;
+        gb_callback *prev = 0;
+        gb_callback *curr = gbd->ext->callback;
 
         while (curr) {
             if (priority <= curr->priority) {
@@ -2350,9 +2348,9 @@ static void gb_remove_callback(GBDATA *gbd, GB_CB_TYPE type, GB_CB func, int *cl
 #endif // DEBUG
 
     if (gbd->ext) {
-        struct gb_callback **cb_ptr       = &gbd->ext->callback;
-        struct gb_callback  *cb;
-        short                prev_running = 0;
+        gb_callback **cb_ptr       = &gbd->ext->callback;
+        gb_callback  *cb;
+        short         prev_running = 0;
 
         for (cb = *cb_ptr; cb; cb = *cb_ptr) {
             short this_running = cb->running;
@@ -2368,7 +2366,7 @@ static void gb_remove_callback(GBDATA *gbd, GB_CB_TYPE type, GB_CB func, int *cl
                 }
 
                 *cb_ptr = cb->next;
-                gbm_free_mem((char *)cb, sizeof(struct gb_callback), GB_GBM_INDEX(gbd));
+                gbm_free_mem((char *)cb, sizeof(gb_callback), GB_GBM_INDEX(gbd));
                 removed = true;
                 if (exactly_one) break;
             }
@@ -2391,7 +2389,7 @@ void GB_remove_all_callbacks_to(GBDATA *gbd, GB_CB_TYPE type, GB_CB func) {
 }
 
 GB_ERROR GB_ensure_callback(GBDATA *gbd, GB_CB_TYPE type, GB_CB func, int *clientdata) {
-    struct gb_callback *cb;
+    gb_callback *cb;
     for (cb = GB_GET_EXT_CALLBACKS(gbd); cb; cb = cb->next) {
         if ((cb->func == func) && (cb->clientdata == clientdata) && (cb->type == type)) {
             return NULL;        // already in cb list
@@ -2465,9 +2463,9 @@ void GB_disable_quicksave(GBDATA *gbd, const char *reason) {
 }
 
 GB_ERROR GB_resort_data_base(GBDATA *gb_main, GBDATA **new_order_list, long listsize) {
-    long new_index;
-    GBCONTAINER *father;
-    struct gb_header_list_struct *hl, h;
+    long            new_index;
+    GBCONTAINER    *father;
+    gb_header_list *hl, h;
 
     if (GB_read_clients(gb_main)<0)
         return "Sorry: this program is not the arbdb server, you cannot resort your data";
@@ -2678,8 +2676,8 @@ int gb_info(GBDATA *gbd, int deep) {
             printf("Size %i nheader %i hmemsize %i", gbc->d.size, gbc->d.nheader, gbc->d.headermemsize);
             printf(" father=(GBDATA*)0x%lx\n", (long)GB_FATHER(gbd));
             if (size < GB_info_deep) {
-                int index;
-                struct gb_header_list_struct *header;
+                int             index;
+                gb_header_list *header;
 
                 header = GB_DATA_LIST_HEADER(gbc->d);
                 for (index = 0; index < gbc->d.nheader; index++) {
@@ -2717,9 +2715,9 @@ long GB_number_of_subentries(GBDATA *gbd)
             subentries = gbc->d.size;
         }
         else { // client really needs to count entries in header
-            int                           end    = gbc->d.nheader;
-            struct gb_header_list_struct *header = GB_DATA_LIST_HEADER(gbc->d);
-            int                           index;
+            int             end    = gbc->d.nheader;
+            gb_header_list *header = GB_DATA_LIST_HEADER(gbc->d);
+            int             index;
 
             subentries = 0;
             for (index = 0; index<end; index++) {

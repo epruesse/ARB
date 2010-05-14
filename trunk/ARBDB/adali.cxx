@@ -797,7 +797,7 @@ struct gene_part_pos {
     char           offset[256];
 };
 
-static struct gene_part_pos *gpp = 0;
+static gene_part_pos *gpp = 0;
 
 static void init_gpp(int parts) {
     if (!gpp) {
@@ -823,7 +823,7 @@ static void init_gpp(int parts) {
     }
 }
 
-static void getPartPositions(const struct GEN_position *pos, int part, size_t *startPos, size_t *stopPos) {
+static void getPartPositions(const GEN_position *pos, int part, size_t *startPos, size_t *stopPos) {
     // returns 'startPos' and 'stopPos' of one part of a gene
     gb_assert(part<pos->parts);
     *startPos = pos->start_pos[part]+gpp->offset[(pos->start_uncertain ? pos->start_uncertain : gpp->certain)[part]];
@@ -845,10 +845,10 @@ NOT4PERL char *GBT_read_gene_sequence_and_length(GBDATA *gb_gene, bool use_revCo
     //
     // For zero-length genes (e.g. "711^712") this function returns an empty string.
 
-    GB_ERROR             error       = 0;
-    char                *result      = 0;
-    GBDATA              *gb_species  = GB_get_grandfather(gb_gene);
-    struct GEN_position *pos         = GEN_read_position(gb_gene);
+    GB_ERROR      error      = 0;
+    char         *result     = 0;
+    GBDATA       *gb_species = GB_get_grandfather(gb_gene);
+    GEN_position *pos        = GEN_read_position(gb_gene);
 
     if (!pos) error = GB_await_error();
     else {

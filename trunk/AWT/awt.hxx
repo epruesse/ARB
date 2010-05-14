@@ -137,12 +137,12 @@ public:
 
 };
 
-struct adaqbsstruct;
-void awt_copy_selection_list_2_queried_species(struct adaqbsstruct *cbs, AW_selection_list *id, const char *hit_description);
-struct adaqbsstruct *awt_create_query_box(AW_window *aws, awt_query_struct *awtqs, const char *query_id); // create the query box
-void awt_search_equal_entries(AW_window *dummy, struct adaqbsstruct *cbs, bool tokenize);
-long awt_count_queried_items(struct adaqbsstruct *cbs, AWT_QUERY_RANGE range);
-void awt_unquery_all(void *dummy, struct adaqbsstruct *cbs);
+struct DbQuery;
+void awt_copy_selection_list_2_queried_species(DbQuery *cbs, AW_selection_list *id, const char *hit_description);
+DbQuery *awt_create_query_box(AW_window *aws, awt_query_struct *awtqs, const char *query_id); // create the query box
+void awt_search_equal_entries(AW_window *dummy, DbQuery *cbs, bool tokenize);
+long awt_count_queried_items(DbQuery *cbs, AWT_QUERY_RANGE range);
+void awt_unquery_all(void *dummy, DbQuery *cbs);
 
 // ------------------------------------------------------------
 

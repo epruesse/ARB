@@ -18,17 +18,15 @@
 
 struct aisc_hash_node {
     char           *key;
-    long             data;
-    struct aisc_hash_node *next;
+    long            data;
+    aisc_hash_node *next;
 };
 
 
-struct aisc_hash_node **
-aisc_init_hash(int size)
-{
+aisc_hash_node **aisc_init_hash(int size) {
     struct aisc_hash_node **tab;
-    tab = (struct aisc_hash_node **) calloc(sizeof(struct aisc_hash_node *), size);
-    tab[0] = (struct aisc_hash_node *) calloc(sizeof(struct aisc_hash_node), 1);
+    tab = (aisc_hash_node **) calloc(sizeof(aisc_hash_node *), size);
+    tab[0] = (aisc_hash_node *) calloc(sizeof(aisc_hash_node), 1);
     tab[0]->data = size;
     tab[0]->key = (char *)strdup("len_of_hash_table_(c) oliver_strunk 1.3.93");
     return tab;
@@ -46,11 +44,9 @@ int aisc_hash(char *key, int size)
     return x;
 }
 
-void
-aisc_free_key(struct aisc_hash_node **table, char *key)
-{
-    long                   i, size;
-    struct aisc_hash_node *hn, *hhn;
+void aisc_free_key(aisc_hash_node **table, char *key) {
+    long            i, size;
+    aisc_hash_node *hn, *hhn;
 
     if (table && table[0]) {
         size = table[0]->data;
@@ -73,10 +69,10 @@ aisc_free_key(struct aisc_hash_node **table, char *key)
     }
 }
 
-void aisc_free_hash(struct aisc_hash_node **table)
+void aisc_free_hash(aisc_hash_node **table)
 {
-    long i, end;
-    struct aisc_hash_node *hn, *hnn;
+    long            i, end;
+    aisc_hash_node *hn, *hnn;
 
     end = table[0]->data;
     for (i=0; i<end; i++) {
@@ -90,10 +86,10 @@ void aisc_free_hash(struct aisc_hash_node **table)
 }
 
 
-void aisc_insert_hash(struct aisc_hash_node **table, char *key, long data)
+void aisc_insert_hash(aisc_hash_node **table, char *key, long data)
 {
-    long i, size;
-    struct aisc_hash_node *hn, *hnl;
+    long            i, size;
+    aisc_hash_node *hn, *hnl;
 
     size = table[0]->data;
     i = aisc_hash(key, (int)size);
@@ -105,7 +101,7 @@ void aisc_insert_hash(struct aisc_hash_node **table, char *key, long data)
             return;
         };
     };
-    hn = (struct aisc_hash_node *)calloc(sizeof(struct aisc_hash_node), 1);
+    hn = (aisc_hash_node *)calloc(sizeof(aisc_hash_node), 1);
     hn->key = (char *)strdup(key);
     hn->data = data;
     if (hnl) {
@@ -116,10 +112,10 @@ void aisc_insert_hash(struct aisc_hash_node **table, char *key, long data)
     }
 }
 
-long aisc_read_hash(struct aisc_hash_node **table, char *key)
+long aisc_read_hash(aisc_hash_node **table, char *key)
 {
-    long i, size;
-    struct aisc_hash_node *hn;
+    long            i, size;
+    aisc_hash_node *hn;
 
     if (table && table[0]) {
         size = table[0]->data;
@@ -157,17 +153,17 @@ const char *aisc_link(dllpublic_ext * parent, dllheader_ext * mh) {
             return "Too short ident";
         }
         if (parent->hash) {
-            if (aisc_read_hash((struct aisc_hash_node **)parent->hash, mh->ident)) {
+            if (aisc_read_hash((aisc_hash_node **)parent->hash, mh->ident)) {
                 CORE;
                 return "Object already in list";
             }
             else {
-                aisc_insert_hash((struct aisc_hash_node **)parent->hash, mh->ident, (long)mh);
+                aisc_insert_hash((aisc_hash_node **)parent->hash, mh->ident, (long)mh);
             }
         }
         else {
             parent->hash = (long)aisc_init_hash(HASH_SIZE);
-            aisc_insert_hash((struct aisc_hash_node **)parent->hash, mh->ident, (long)mh);
+            aisc_insert_hash((aisc_hash_node **)parent->hash, mh->ident, (long)mh);
         }
     }
     mh->next = mh->previous = NULL;
@@ -197,7 +193,7 @@ const char *aisc_unlink(dllheader_ext * mh)
         return "Object not linked";
     }
     if (parent->hash) {
-        aisc_free_key((struct aisc_hash_node **)parent->hash, mh->ident);
+        aisc_free_key((aisc_hash_node **)parent->hash, mh->ident);
     }
     if (parent->cnt <= 0) {
         CORE;
@@ -226,7 +222,7 @@ const char *aisc_unlink(dllheader_ext * mh)
     parent->cnt--;
     if (! parent->cnt) {
         if (parent->hash) {
-            aisc_free_hash((struct aisc_hash_node **)parent->hash);
+            aisc_free_hash((aisc_hash_node **)parent->hash);
             parent->hash = 0;
         }
     }
@@ -237,7 +233,7 @@ long aisc_find_lib(dllpublic_ext *parent, char *ident)
 {
     if (!parent->hash) return 0;
     if (!ident) return 0;
-    return aisc_read_hash((struct aisc_hash_node **)parent->hash, ident);
+    return aisc_read_hash((aisc_hash_node **)parent->hash, ident);
 }
 
 
@@ -271,7 +267,7 @@ long trf_create(long old, long new_item)
     for (ts = trf_sp[i]; ts; ts = ts->next) {
         if (ts->old == old) {
             if (ts->new_item && (ts->new_item != new_item)) {
-                fprintf(stderr, "ERROR IN trf_commit:\n");
+                fprintf(stderr, "ERROR IN trf_create:\n");
                 *(int *) NULL = 0;
             }
             else {

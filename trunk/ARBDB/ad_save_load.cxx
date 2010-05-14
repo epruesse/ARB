@@ -610,8 +610,7 @@ long gb_write_out_long(long data, FILE *out) {
 }
 
 
-int gb_is_writeable(struct gb_header_list_struct *header, GBDATA *gbd, long version, long diff_save)
-{
+int gb_is_writeable(gb_header_list *header, GBDATA *gbd, long version, long diff_save) {
     /* Test whether to write any data to disc.
      *
      * version 1       write only latest data
@@ -631,9 +630,10 @@ int gb_is_writeable(struct gb_header_list_struct *header, GBDATA *gbd, long vers
 }
 
 int gb_write_bin_sub_containers(FILE *out, GBCONTAINER *gbc, long version, long diff_save, int is_root) {
-    struct gb_header_list_struct *header;
-    int i, index;
-    int counter;
+    gb_header_list *header;
+    int             i, index;
+    int             counter;
+
     header = GB_DATA_LIST_HEADER(gbc->d);
     for (i=0, index = 0; index < gbc->d.nheader; index++) {
         if (gb_is_writeable(&(header[index]), GB_HEADER_LIST_GBD(header[index]), version, diff_save)) i++;

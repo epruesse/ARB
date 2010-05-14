@@ -49,7 +49,7 @@ extern "C" {
 #endif
 
     struct Socinf {
-        struct Socinf      *next;
+        Socinf             *next;
         int                 socket;
         aisc_callback_func  destroy_callback;
         long                destroy_clientdata;
@@ -63,7 +63,7 @@ extern "C" {
 struct pollfd;
 struct Hs_struct {
     int            hso;
-    struct Socinf *soci;
+    Socinf        *soci;
     struct pollfd *fds;
     unsigned long  nfds;
     int            nsoc;
@@ -73,10 +73,9 @@ struct Hs_struct {
 };
 
 struct aisc_bytes_list {
-    char *data;
-    int   size;
-
-    struct aisc_bytes_list *next;
+    char            *data;
+    int              size;
+    aisc_bytes_list *next;
 } *aisc_server_bytes_first, *aisc_server_bytes_last;
 
 
@@ -93,9 +92,9 @@ extern aisc_talking_func_long   aisc_talking_functions_delete[];
 const char *aisc_server_error;
 int         mdba_make_core = 1;
 
-static char              error_buf[256];
-static int               aisc_server_con;
-static struct Hs_struct *aisc_server_hs;
+static char       error_buf[256];
+static int        aisc_server_con;
+static Hs_struct *aisc_server_hs;
 
 /* ----------------------------- */
 /*      valid memory tester      */
@@ -311,8 +310,8 @@ static const char *aisc_open_socket(const char *path, int delay, int do_connect,
         return err;
     }
     if (socket_id >= 0) {       /* UNIX */
-        struct sockaddr_in so_ad;
-        memset((char *)&so_ad, 0, sizeof(struct sockaddr_in));
+        sockaddr_in so_ad;
+        memset((char *)&so_ad, 0, sizeof(sockaddr_in));
         *psocket = socket(PF_INET, SOCK_STREAM, 0);
         if (*psocket <= 0) {
             return "CANNOT CREATE SOCKET";
@@ -389,13 +388,13 @@ static const char *aisc_open_socket(const char *path, int delay, int do_connect,
     }
 }
 
-struct Hs_struct *open_aisc_server(const char *path, int timeout, int fork) {
-    struct Hs_struct *hs;
-    static int      so;
-    static int      i;
+Hs_struct *open_aisc_server(const char *path, int timeout, int fork) {
+    Hs_struct  *hs;
+    static int  so;
+    static int  i;
     const char *err;
 
-    hs = (struct Hs_struct *)calloc(sizeof(struct Hs_struct), 1);
+    hs = (Hs_struct *)calloc(sizeof(Hs_struct), 1);
     if (!hs) return 0;
     hs->timeout = timeout;
     hs->fork = fork;
@@ -423,8 +422,8 @@ struct Hs_struct *open_aisc_server(const char *path, int timeout, int fork) {
 }
 
 static void aisc_s_add_to_bytes_queue(char *data, int size) {
-    struct aisc_bytes_list *bl;
-    bl = (struct aisc_bytes_list *)calloc(sizeof(struct aisc_bytes_list), 1);
+    aisc_bytes_list *bl;
+    bl = (aisc_bytes_list *)calloc(sizeof(aisc_bytes_list), 1);
     bl->data = data;
     bl->size = size;
 
@@ -439,7 +438,7 @@ static void aisc_s_add_to_bytes_queue(char *data, int size) {
 }
 
 static int aisc_s_send_bytes_queue(int socket) {
-    struct aisc_bytes_list *bl, *bl_next;
+    aisc_bytes_list *bl, *bl_next;
     for (bl = aisc_server_bytes_first; bl; bl=bl_next) {
         bl_next = bl->next;
         if (aisc_s_write(socket, (char *)bl->data, bl->size)) return 1;
@@ -1139,12 +1138,12 @@ static long aisc_talking_debug_info(long *in_buf, int size, long *out_buf, int m
     }
 }
 
-int aisc_broadcast(struct Hs_struct *hs, int message_type, const char *message)
+int aisc_broadcast(Hs_struct *hs, int message_type, const char *message)
 {
-    struct Socinf *si;
-    int            size    = message ? strlen(message) : 0;
-    int            sizeL   = (size+1+sizeof(long)-1) / sizeof(long); // number of longs needed to safely store string
-    long          *out_buf = (long *)calloc(sizeL+3, sizeof(long));
+    Socinf *si;
+    int     size    = message ? strlen(message) : 0;
+    int     sizeL   = (size+1+sizeof(long)-1) / sizeof(long); // number of longs needed to safely store string
+    long   *out_buf = (long *)calloc(sizeL+3, sizeof(long));
 
     if (!message) {
         out_buf[3] = 0;
@@ -1289,13 +1288,13 @@ static int aisc_talking(int con) {
     }
 }
 
-struct Hs_struct *aisc_accept_calls(struct Hs_struct *hs)
+Hs_struct *aisc_accept_calls(Hs_struct *hs)
 {
-    int con;
-    int anz, i;
-    struct Socinf *si, *si_last = NULL, *sinext, *sptr;
-    fd_set set, setex;
-    struct timeval timeout;
+    int             con;
+    int             anz, i;
+    Socinf         *si, *si_last = NULL, *sinext, *sptr;
+    fd_set          set, setex;
+    struct timeval  timeout;
 
     if (!hs) {
         fprintf(stderr, "AISC_SERVER_ERROR socket error (==0)\n");
@@ -1345,7 +1344,7 @@ struct Hs_struct *aisc_accept_calls(struct Hs_struct *hs)
 
             if (con>0) {
                 static int optval;
-                sptr = (struct Socinf *)calloc(sizeof(struct Socinf), 1);
+                sptr = (Socinf *)calloc(sizeof(Socinf), 1);
                 if (!sptr) return 0;
                 sptr->next = hs->soci;
                 sptr->socket = con;
@@ -1399,9 +1398,9 @@ struct Hs_struct *aisc_accept_calls(struct Hs_struct *hs)
     return hs;
 }
 
-void aisc_server_shutdown_and_exit(struct Hs_struct *hs, int exitcode) {
+void aisc_server_shutdown_and_exit(Hs_struct *hs, int exitcode) {
     /* goes to header: __ATTR__NORETURN  */
-    struct Socinf *si;
+    Socinf *si;
 
     for (si=hs->soci; si; si=si->next) {
         shutdown(si->socket, 2); /* 2 = both dir */
@@ -1426,9 +1425,9 @@ static int aisc_get_key(int *obj) {
 }
 
 extern "C" int aisc_add_destroy_callback(aisc_callback_func callback, long clientdata) {        /* call from server function */
-    struct Socinf  *si;
-    int             socket = aisc_server_con;
-    struct Hs_struct *hs = aisc_server_hs;
+    Socinf    *si;
+    int        socket = aisc_server_con;
+    Hs_struct *hs     = aisc_server_hs;
     if (!hs)
         return socket;
     for (si = hs->soci; si; si = si->next) {
@@ -1440,11 +1439,10 @@ extern "C" int aisc_add_destroy_callback(aisc_callback_func callback, long clien
     return socket;
 }
 
-void aisc_remove_destroy_callback() {   /* call from server
-                                         * function */
-    struct Socinf  *si;
-    int             socket = aisc_server_con;
-    struct Hs_struct *hs = aisc_server_hs;
+void aisc_remove_destroy_callback() {   /* call from server function */
+    Socinf    *si;
+    int        socket = aisc_server_con;
+    Hs_struct *hs     = aisc_server_hs;
     if (!hs)
         return;
     for (si = hs->soci; si; si = si->next) {
