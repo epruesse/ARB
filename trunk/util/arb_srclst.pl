@@ -17,6 +17,7 @@ my @skipped_directories = (
                            qr/\/.+\/bin$/o,
                            qr/\/HELP_SOURCE\/Xml$/o,
                            qr/\/PERL2ARB\/blib$/o,
+                           qr/\/UNIT_TESTER\/tests$/o,
                            qr/^\.\/INCLUDE$/o,
                            qr/^\.\/PERL5$/o,
                            qr/^\.\/lib\/pts$/o,
