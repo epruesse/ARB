@@ -280,7 +280,7 @@ GB_HASH *GBS_create_dynaval_hash(long estimated_elements, GB_CASE case_sens, voi
 }
 
 void GBS_dynaval_free(long val) {
-    free((char*)val);
+    free((void*)val);
 }
 
 #if defined(DEBUG)

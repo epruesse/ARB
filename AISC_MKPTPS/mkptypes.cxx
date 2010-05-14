@@ -186,7 +186,7 @@ static void word_free(Word *w)
     while (w) {
         oldw = w;
         w = w->next;
-        free((char *)oldw);
+        free(oldw);
     }
 }
 
@@ -263,7 +263,7 @@ static void typefixhack(Word *w) {
                 // delete any "unsigned" specifier present -- yes, it's supposed to do this
                 if (oldw && strcmp(oldw->string, "unsigned")==0) {
                     oldw->next = w->next;
-                    free((char *)w);
+                    free(w);
                     w = oldw;
                 }
                 strcpy(w->string, "int");

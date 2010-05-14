@@ -411,12 +411,12 @@ GBT_TREE *gbt_read_tree_rek(char **data, long *startid, GBDATA **gb_tree_nodes, 
         (*startid)++;
         node->leftson = gbt_read_tree_rek(data, startid, gb_tree_nodes, structure_size, size_of_tree, error);
         if (!node->leftson) {
-            if (!node->tree_is_one_piece_of_memory) free((char *)node);
+            if (!node->tree_is_one_piece_of_memory) free(node);
             return NULL;
         }
         node->rightson = gbt_read_tree_rek(data, startid, gb_tree_nodes, structure_size, size_of_tree, error);
         if (!node->rightson) {
-            if (!node->tree_is_one_piece_of_memory) free((char *)node);
+            if (!node->tree_is_one_piece_of_memory) free(node);
             return NULL;
         }
         node->leftson->father = node;
@@ -479,7 +479,7 @@ static GBT_TREE *read_tree_and_size_internal(GBDATA *gb_tree, GBDATA *gb_ctree, 
         free (fbuf);
     }
 
-    free((char *)gb_tree_nodes);
+    free(gb_tree_nodes);
 
     return node;
 }
@@ -492,7 +492,7 @@ GBT_TREE *GBT_read_tree_and_size(GBDATA *gb_main, const char *tree_name, long st
      * @param structure_size sizeof(yourStructure)
      *
      * If structure_size < 0 then the tree is allocated as just one big piece of memory,
-     * which can be freed by free((char *)root_of_tree) + deleting names or
+     * which can be freed by free((void *)root_of_tree) + deleting names or
      * by GBT_delete_tree().
      *
      * @param tree_name is the name of the tree in the db

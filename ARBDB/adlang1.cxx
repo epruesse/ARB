@@ -125,7 +125,7 @@ static int gbl_param_bit(const char *param_name, int def, const char *help_text,
         while (params) {                                                \
             _gblp = params;                                             \
             params = params->next;                                      \
-            free((char *)_gblp);                                        \
+            free(_gblp);                                                \
         }                                                               \
     } while (0)
 

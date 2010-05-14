@@ -1279,8 +1279,8 @@ unsigned long ALI_ALIGNER::number_of_solutions() {
     number += elem_akt_col->v2;
     number += elem_akt_col->v3;
 
-    free ((char *) column1);
-    free ((char *) column2);
+    free(column1);
+    free(column2);
 
     return number;
 }

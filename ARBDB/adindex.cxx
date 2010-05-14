@@ -377,7 +377,7 @@ static void delete_g_b_undo_list(g_b_undo_list *u) {
         next = a->next;
         delete_g_b_undo_entry(a);
     }
-    free((char *)u);
+    free(u);
 }
 
 static void delete_g_b_undo_header(g_b_undo_header *uh) {
@@ -386,7 +386,7 @@ static void delete_g_b_undo_header(g_b_undo_header *uh) {
         next = a->next;
         delete_g_b_undo_list(a);
     }
-    free((char *)uh);
+    free(uh);
 }
 
 static char *g_b_check_undo_size2(g_b_undo_header *uhs, long size, long max_cnt) {
@@ -427,7 +427,7 @@ static char *g_b_check_undo_size(GB_MAIN_TYPE *Main) {
 void gb_free_undo_stack(GB_MAIN_TYPE *Main) {
     delete_g_b_undo_header(Main->undo->u);
     delete_g_b_undo_header(Main->undo->r);
-    free((char *)Main->undo);
+    free(Main->undo);
 }
 
 // -------------------------

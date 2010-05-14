@@ -328,12 +328,12 @@ AP_tree *GA_genetic::read_tree_rek(char **data)
 
         node->leftson = read_tree_rek(data);
         if (!node->leftson) {
-            free((char *)node);
+            free(node);
             return 0;
         }
         node->rightson = read_tree_rek(data);
         if (!node->rightson) {
-            free((char *)node);
+            free(node);
             return 0;
         }
         node->leftson->father = node;

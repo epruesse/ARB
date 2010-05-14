@@ -782,7 +782,7 @@ static GBCM_ServerResult gbcms_talking_put_update(int socket, long */*hsin*/, vo
         buffer[0] = (long)cs[0]->client_id;
         buffer[1] = (long)cs[0]->server_id;
         if (gbcm_write(socket, (const char *)buffer, sizeof(long)*2)) return GBCM_SERVER_FAULT;
-        free((char *)cs[0]);
+        free(cs[0]);
     }
     buffer[0] = 0;
     if (gbcm_write(socket, (const char *)buffer, sizeof(long)*2)) return GBCM_SERVER_FAULT;
@@ -1929,7 +1929,7 @@ GBCM_ServerResult gbcmc_close(gbcmc_comm * link) {
         link->socket = 0;
     }
     if (link->unix_name) free(link->unix_name); // @@@
-    free((char *)link);
+    free(link);
     return GBCM_SERVER_OK;
 }
 

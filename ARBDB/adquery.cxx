@@ -1145,7 +1145,7 @@ char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *comma
         }
     }
     for (i=0; i<argcinput; i++) {
-        if (orig[i].str) free((char *)(orig[i].str));
+        if (orig[i].str) free(orig[i].str);
     }
 
     {

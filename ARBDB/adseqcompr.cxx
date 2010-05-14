@@ -62,8 +62,8 @@ Consensus *g_b_new_Consensus(long len) {
 
 
 void g_b_delete_Consensus(Consensus *gcon) {
-    free((char *)gcon->con[0]);
-    free((char *)gcon);
+    free(gcon->con[0]);
+    free(gcon);
 }
 
 
@@ -138,7 +138,7 @@ char *g_b_Consensus_get_sequence(Consensus *gcon) {
             s++;
         }
     }
-    free((char *)max);
+    free(max);
     return seq;
 }
 

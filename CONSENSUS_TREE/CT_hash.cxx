@@ -43,7 +43,7 @@ void hash_free() {
         while (hnp) {
             hnp_help = hnp->next;
             part_free(hnp->part);
-            free((char *)hnp);
+            free(hnp);
             hnp = hnp_help;
         }
         Hashlist[i] = NULL;
@@ -53,7 +53,7 @@ void hash_free() {
     while (hnp) {
         hnp_help = hnp->next;
         part_free(hnp->part);
-        free((char *)hnp);
+        free(hnp);
         hnp = hnp_help;
     }
     Sortedlist = NULL;
@@ -74,7 +74,7 @@ PART *hash_getpart() {
     hnp = Sortedlist;
     Sortedlist = hnp->next;
     p = hnp->part;
-    free((char *)hnp);
+    free(hnp);
     p->len /= (float) p->percent;
     p->percent *= 10000;
     p->percent /= Tree_count;
@@ -178,8 +178,8 @@ void build_sorted_list() {
         }
     }
 
-    free((char *)heads);
-    free((char *)tails);
+    free(heads);
+    free(tails);
 
     Sortedlist = head;
 }

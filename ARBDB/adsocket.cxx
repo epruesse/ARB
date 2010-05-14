@@ -207,7 +207,7 @@ GB_ERROR gbcm_open_socket(const char *path, long delay2, long do_connect, int *p
     mach_name[0] = 0;
     err = gbcm_get_m_id(path, mach_name, socket_id);
     if (err) {
-        if (mach_name[0]) free((char *)mach_name[0]);
+        if (mach_name[0]) free(mach_name[0]);
         return err;
     }
     if (socket_id[0] >= 0) {    // TCP
@@ -241,7 +241,7 @@ GB_ERROR gbcm_open_socket(const char *path, long delay2, long do_connect, int *p
                 return "Could not open socket on Server";
             }
         }
-        if (mach_name[0]) free((char *)mach_name[0]);
+        if (mach_name[0]) free(mach_name[0]);
         if (delay2 == TCP_NODELAY) {
             GB_UINT4      optval;
             optval = 1;
@@ -262,14 +262,14 @@ GB_ERROR gbcm_open_socket(const char *path, long delay2, long do_connect, int *p
 
         if (do_connect) {
             if (connect(*psocket, (sockaddr*)(&so_ad), strlen(so_ad.sun_path)+2)) {
-                if (mach_name[0]) free((char *)mach_name[0]);
+                if (mach_name[0]) free(mach_name[0]);
                 return "";
             }
         }
         else {
             if (unlink(mach_name[0]) == 0) printf("old socket found\n");
             if (bind(*psocket, (sockaddr*)(&so_ad), strlen(mach_name[0])+2)) {
-                if (mach_name[0]) free((char *)mach_name[0]);
+                if (mach_name[0]) free(mach_name[0]);
                 return "Could not open socket on Server";
             }
             if (chmod(mach_name[0], 0777)) return GB_export_errorf("Cannot change mode of socket '%s'", mach_name[0]);
@@ -303,7 +303,7 @@ gbcmc_comm *gbcmc_open(const char *path) {
 
     if (err) {
         if (link->unix_name) free(link->unix_name); // @@@
-        free((char *)link);
+        free(link);
         if (*err) {
             GB_internal_errorf("ARB_DB_CLIENT_OPEN\n(Reason: %s)", err);
         }

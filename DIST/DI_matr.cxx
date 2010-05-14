@@ -449,7 +449,7 @@ long *DI_MATRIX::create_helix_filter(BI_helix *helix, const AP_filter *filter) {
             result[count] = temp[result[count]];
         }
     }
-    free((char *)temp);
+    free(temp);
     return result;
 }
 

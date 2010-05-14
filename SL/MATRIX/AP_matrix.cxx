@@ -29,11 +29,9 @@ AP_smatrix::AP_smatrix(long si)
     size = si;
 }
 
-AP_smatrix::~AP_smatrix()
-{
-    long i;
-    for (i=0; i<size; i++) free((char *)m[i]);
-    free((char *)m);
+AP_smatrix::~AP_smatrix() {
+    for (long i=0; i<size; i++) free(m[i]);
+    free(m);
 }
 
 // ------------------
@@ -152,16 +150,14 @@ AP_matrix::AP_matrix(long si)
     size = si;
 }
 
-AP_matrix::~AP_matrix()
-{
-    long i;
-    for (i=0; i<size; i++) {
-        free((char *)(m[i]));
+AP_matrix::~AP_matrix() {
+    for (long i=0; i<size; i++) {
+        free(m[i]);
         if (x_description) free(x_description[i]);
         if (y_description) free(y_description[i]);
     }
     free(x_description);
     free(y_description);
-    free((char *)m);
+    free(m);
 }
 

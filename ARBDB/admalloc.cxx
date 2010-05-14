@@ -642,12 +642,10 @@ void gbmFreeMemImpl(char *data, size_t size, long index) {
 
             if (block->size<size) { imemerr("block size does not match"); return; }
 
-            if (block->allocFromSystem)
-            {
-                free((char *)block);
+            if (block->allocFromSystem) {
+                free(block);
             }
-            else
-            {
+            else {
                 /* printf("put unused block (size=%li block->size=%li)\n",
                    size,block->size); */
                 gbm_put_memblk((char*)block, block->size + GBB_HEADER_SIZE);

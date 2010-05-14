@@ -105,7 +105,7 @@ int aisc_c_send_bytes_queue(aisc_com    *link)
     for (bl = link->aisc_client_bytes_first; bl; bl=bl_next) {
         bl_next = bl->next;
         len = aisc_c_write(link->socket, (char *)bl->data, bl->size);
-        free((char *)bl);
+        free(bl);
         if (len<0)return 1;
     };
     link->aisc_client_bytes_first = link->aisc_client_bytes_last = NULL;

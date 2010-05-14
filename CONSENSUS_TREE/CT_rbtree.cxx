@@ -91,7 +91,7 @@ RB_INFO *rbtree(NT_NODE *tree, GBT_TREE *father)
     info_res = rbtree(nsonp->node, gbtnode);
     gbtnode->leftson = info_res->node;
     gbtnode->leftlen = info_res->len;
-    free((char *)info_res);
+    free(info_res);
 
     nsonp = nsonp->next;
     if (!nsonp) return info;
@@ -100,7 +100,7 @@ RB_INFO *rbtree(NT_NODE *tree, GBT_TREE *father)
     info_res = rbtree(nsonp->node, gbtnode);
     gbtnode->rightson = info_res->node;
     gbtnode->rightlen = info_res->len;
-    free((char *)info_res);
+    free(info_res);
 
     return info;
 }
@@ -114,7 +114,7 @@ GBT_TREE *rb_gettree(NT_NODE *tree)
 
     info = rbtree(tree, NULL);
     gbttree = info->node;
-    free((char *)info);
+    free(info);
 
     return gbttree;
 }

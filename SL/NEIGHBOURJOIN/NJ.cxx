@@ -141,7 +141,7 @@ PH_NEIGHBOURJOINING::~PH_NEIGHBOURJOINING()
 {
     delete [] dist_matrix;
     delete [] dist_list;
-    free((char *)net_divergence);
+    free(net_divergence);
     delete [] swap_tab;
 }
 
@@ -265,6 +265,6 @@ GBT_TREE *neighbourjoining(char **names, AP_FLOAT **m, long size, size_t structu
     nodes[b]->father = father;
 
     delete nj;
-    free((char*)nodes);
+    free(nodes);
     return father;
 }

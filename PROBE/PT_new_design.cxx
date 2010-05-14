@@ -110,7 +110,7 @@ static void ptnd_sort_probes_by(PT_pdc *pdc, int mode)  // mode 0 quality, mode 
         aisc_unlink(reinterpret_cast<dllheader_ext*>(my_list[i]));
         aisc_link(&pdc->ptprobes, my_list[i]);
     }
-    free((char *)my_list);
+    free(my_list);
 }
 static void ptnd_probe_delete_all_but(PT_pdc *pdc, int count)
 {
@@ -552,7 +552,7 @@ static void ptnd_sort_parts(PT_pdc *pdc) {
         aisc_unlink((struct_dllheader_ext*)my_list[i]);
         aisc_link(&pdc->pparts, my_list[i]);
     }
-    free((char *)my_list);
+    free(my_list);
 }
 static void ptnd_remove_duplicated_probepart(PT_pdc *pdc)
 {

@@ -434,7 +434,7 @@ AW_xfig::AW_xfig(const char *filename, int font_width, int font_height)
 }
 
 static long aw_xfig_hash_free_loop(const char *, long val, void *) {
-    if (val) free((char *)val);
+    free((void*)val);
     return 0;
 }
 

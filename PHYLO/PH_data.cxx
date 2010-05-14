@@ -24,7 +24,7 @@ char *PHDATA::unload() {
     for (phentry=entries; phentry; phentry=phentry->next) {
         free(phentry->name);
         free(phentry->full_name);
-        free((char *) phentry);
+        free(phentry);
     }
     entries = 0;
     nentries = 0;
