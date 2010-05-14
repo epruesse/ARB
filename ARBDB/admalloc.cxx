@@ -40,31 +40,31 @@
 #define GBM_MAX_INDEX  256                          // has to be 2 ^ x (with x = GBM_MAX_TABLES ? )
 
 
-struct gbm_data_struct {
-    long             magic;                         // indicates free element
-    gbm_data_struct *next;                          // next free element
+struct gbm_data {
+    long      magic;                                // indicates free element
+    gbm_data *next;                                 // next free element
 };
 
-struct gbm_table_struct {                           // a block containing data
-    gbm_table_struct *next;
-    gbm_data_struct   data[1];
+struct gbm_table {                           // a block containing data
+    gbm_table *next;
+    gbm_data   data[1];
 };
 
-struct gbm_struct {
-    gbm_data_struct  *gds;                          // free data area
-    size_t            size;                         // free size of current table
-    size_t            allsize;                      // full size of all tables
-    gbm_table_struct *first;                        // link list of tables
-    gbm_data_struct  *tables[GBM_MAX_TABLES+1];     // free entries
-    long              tablecnt[GBM_MAX_TABLES+1];   // number of free entries
-    long              useditems[GBM_MAX_TABLES+1];  // number of used items (everything)
-    size_t            extern_data_size;             // not handled by this routine
-    long              extern_data_items;
-} gbm_global[GBM_MAX_INDEX];
+static struct gbm_pool {                                   // one pool for each memory index
+    gbm_data  *gds;                                 // free data area
+    size_t     size;                                // free size of current table
+    size_t     allsize;                             // full size of all tables
+    gbm_table *first;                               // link list of tables
+    gbm_data  *tables[GBM_MAX_TABLES+1];            // free entries
+    long       tablecnt[GBM_MAX_TABLES+1];          // number of free entries
+    long       useditems[GBM_MAX_TABLES+1];         // number of used items (everything)
+    size_t     extern_data_size;                    // not handled by this routine
+    long       extern_data_items;
+} gbm_pool4idx[GBM_MAX_INDEX];
 
-struct gbm_struct2 {
+static struct {
     char *old_sbrk;
-} gbm_global2;
+} gbm_global;
 
 
 #define GBB_INCR       11                           // memsize increment in percent between adjacent clusters
@@ -78,8 +78,8 @@ struct gbb_data;
 
 struct gbb_freedata // part of gbb_data if it`s a free block
 {
-    long        magic;
-    struct gbb_data *next;  // next unused memblock
+    long      magic;
+    gbb_data *next;                                 // next unused memblock
 };
 
 struct gbb_data {
@@ -88,7 +88,7 @@ struct gbb_data {
     gbb_freedata content;                           // startposition of block returned to user or chain info for free blocks
 };
 
-#define GBB_HEADER_SIZE (sizeof(struct gbb_data)-sizeof(struct gbb_freedata))
+#define GBB_HEADER_SIZE (sizeof(gbb_data)-sizeof(gbb_freedata))
 
 static struct gbb_Cluster
 {
@@ -275,9 +275,9 @@ static AllocLogger allocLogger;
 
 #endif
 
-inline void free_gbm_table(gbm_table_struct *table) {
+inline void free_gbm_table(gbm_table *table) {
     while (table) {
-        gbm_table_struct *next = table->next;
+        gbm_table *next = table->next;
         
         free(table);
         table = next;
@@ -290,8 +290,8 @@ void gbm_flush_mem() {
     gb_assert(gbm_mem_initialized);
 
     for (int i = 0; i<GBM_MAX_INDEX; ++i) {
-        gbm_struct& gbm             = gbm_global[i];
-        bool        have_used_items = false;
+        gbm_pool& gbm             = gbm_pool4idx[i];
+        bool      have_used_items = false;
 
         for (int t = 0; t < GBM_MAX_TABLES; t++) {
             if (gbm.useditems[t]) {
@@ -310,10 +310,10 @@ void gbm_flush_mem() {
 void gbm_init_mem() {
     if (!gbm_mem_initialized) {
         for (int i = 0; i<GBM_MAX_INDEX; ++i) {
-            memset((char *)&gbm_global[i], 0, sizeof(struct gbm_struct));
-            gbm_global[i].tables[0] = 0;        // CORE zero get mem
+            memset((char *)&gbm_pool4idx[i], 0, sizeof(gbm_pool));
+            gbm_pool4idx[i].tables[0] = 0;        // CORE zero get mem
         }
-        gbm_global2.old_sbrk = (char *)sbrk(0);
+        gbm_global.old_sbrk = (char *)sbrk(0);
 
         /* init GBB:
          * --------- */
@@ -376,8 +376,8 @@ void testMemblocks(const char *file, int line)
 
     for (idx=0; idx<GBB_CLUSTERS; idx++)
     {
-        struct gbb_Cluster *cl = &(gbb_cluster[idx]);
-        struct gbb_data *blk = cl->first;
+        struct gbb_Cluster *cl  = &(gbb_cluster[idx]);
+        gbb_data           *blk = cl->first;
 
         while (blk)
         {
@@ -432,8 +432,8 @@ static void gbm_put_memblk(char *memblk, size_t size) {
        into the responsibility of this module;
        the block has to be aligned!!! */
 
-    struct gbb_data *block;
-    int              idx;
+    gbb_data *block;
+    int       idx;
 
     TEST();
 
@@ -448,7 +448,7 @@ static void gbm_put_memblk(char *memblk, size_t size) {
         return;
     }
 
-    block              = (struct gbb_data *)memblk;
+    block                  = (gbb_data *)memblk;
     block->size            = size-GBB_HEADER_SIZE;
     block->allocFromSystem = 0;
 
@@ -464,9 +464,9 @@ static void gbm_put_memblk(char *memblk, size_t size) {
 }
 
 static char *gbm_get_memblk(size_t size) {
-    struct gbb_data  *block = NULL;
-    int           trials = GBB_MAX_TRIALS,
-        idx;
+    gbb_data *block  = NULL;
+    int       trials = GBB_MAX_TRIALS;
+    int       idx;
 
     TEST();
 
@@ -490,7 +490,7 @@ static char *gbm_get_memblk(size_t size) {
                           ? (size_t)size
                           : (size_t)(gbb_cluster[idx].size)) + GBB_HEADER_SIZE;
 
-        block  = (struct gbb_data *)GB_calloc(1, allocationSize);
+        block  = (gbb_data *)GB_calloc(1, allocationSize);
         if (!block) { GB_memerr(); return NULL; }
 
         block->size = allocationSize-GBB_HEADER_SIZE;
@@ -504,7 +504,7 @@ static char *gbm_get_memblk(size_t size) {
     }
     else
     {
-        struct gbb_data **blockPtr = &(gbb_cluster[idx].first);
+        gbb_data **blockPtr = &(gbb_cluster[idx].first);
 
         if (idx==GBB_CLUSTERS)  // last cluster (test for block size necessary)
         {
@@ -543,14 +543,14 @@ inline void *GB_MEMALIGN(size_t alignment, size_t size) {
 }
 
 char *gbmGetMemImpl(size_t size, long index) {
-    unsigned long           nsize, pos;
-    char                   *erg;
-    struct gbm_data_struct *gds;
-    struct gbm_struct      *ggi;
+    unsigned long  nsize, pos;
+    char          *erg;
+    gbm_data      *gds;
+    gbm_pool      *ggi;
 
-    if (size < sizeof(struct gbm_data_struct)) size = sizeof(struct gbm_data_struct);
+    if (size < sizeof(gbm_data)) size = sizeof(gbm_data);
     index &= GBM_MAX_INDEX-1;
-    ggi = & gbm_global[index];
+    ggi = & gbm_pool4idx[index];
     nsize = (size + (GBM_ALIGNED - 1)) & (-GBM_ALIGNED);
 
     if (nsize > GBM_MAX_SIZE)
@@ -578,7 +578,7 @@ char *gbmGetMemImpl(size_t size, long index) {
         {
             if (ggi->size < nsize)
             {
-                struct gbm_table_struct *gts = (struct gbm_table_struct *)GB_MEMALIGN(GBM_SYSTEM_PAGE_SIZE, GBM_TABLE_SIZE);
+                gbm_table *gts = (gbm_table *)GB_MEMALIGN(GBM_SYSTEM_PAGE_SIZE, GBM_TABLE_SIZE);
 
                 if (!gts) { GB_memerr(); return NULL; }
 
@@ -590,7 +590,7 @@ char *gbmGetMemImpl(size_t size, long index) {
                 ggi->allsize += GBM_TABLE_SIZE;
             }
             erg = (char *)ggi->gds;
-            ggi->gds = (struct gbm_data_struct *)(((char *)ggi->gds) + nsize);
+            ggi->gds = (gbm_data *)(((char *)ggi->gds) + nsize);
             ggi->size -= (size_t)nsize;
         }
 
@@ -605,13 +605,13 @@ char *gbmGetMemImpl(size_t size, long index) {
 }
 
 void gbmFreeMemImpl(char *data, size_t size, long index) {
-    long               nsize, pos;
-    struct gbm_struct *ggi;
+    long      nsize, pos;
+    gbm_pool *ggi;
 
-    if (size < sizeof(struct gbm_data_struct)) size = sizeof(struct gbm_data_struct);
+    if (size < sizeof(gbm_data)) size = sizeof(gbm_data);
 
     index &= GBM_MAX_INDEX-1;
-    ggi = & gbm_global[index];
+    ggi = & gbm_pool4idx[index];
     nsize = (size + (GBM_ALIGNED - 1)) & (-GBM_ALIGNED);
 
 #ifdef TRACE_ALLOCS
@@ -620,11 +620,11 @@ void gbmFreeMemImpl(char *data, size_t size, long index) {
 
     if (nsize > GBM_MAX_SIZE)
     {
-        struct gbb_data *block;
+        gbb_data *block;
 
         if (gb_isMappedMemory(data))
         {
-            block = (struct gbb_data *)data;
+            block = (gbb_data *)data;
 
             block->size = size-GBB_HEADER_SIZE;
             block->allocFromSystem = 0;
@@ -635,7 +635,7 @@ void gbmFreeMemImpl(char *data, size_t size, long index) {
         }
         else
         {
-            block = (struct gbb_data *)(data-GBB_HEADER_SIZE);
+            block = (gbb_data *)(data-GBB_HEADER_SIZE);
 
             ggi->extern_data_size -= (size_t)nsize;
             ggi->extern_data_items--;
@@ -657,7 +657,7 @@ void gbmFreeMemImpl(char *data, size_t size, long index) {
     else
     {
         if (gb_isMappedMemory(data)) return;    //   @@@ reason: size may be shorter
-        if (((struct gbm_data_struct *)data)->magic == GBM_MAGIC)
+        if (((gbm_data *)data)->magic == GBM_MAGIC)
             // double free
         {
             imemerr("double free");
@@ -665,9 +665,9 @@ void gbmFreeMemImpl(char *data, size_t size, long index) {
         }
 
         pos = nsize >> GBM_LD_ALIGNED;
-        ((struct gbm_data_struct *) data)->next = ggi->tables[pos];
-        ((struct gbm_data_struct *) data)->magic = GBM_MAGIC;
-        ggi->tables[pos] = ((struct gbm_data_struct *) data);
+        ((gbm_data *) data)->next = ggi->tables[pos];
+        ((gbm_data *) data)->magic = GBM_MAGIC;
+        ggi->tables[pos] = ((gbm_data *) data);
         ggi->tablecnt[pos]++;
         ggi->useditems[pos]--;
     }
@@ -676,17 +676,17 @@ void gbmFreeMemImpl(char *data, size_t size, long index) {
 #endif // MEMORY_TEST==0
 
 void gbm_debug_mem() {
-    int i;
-    int index;
-    long total = 0;
-    long index_total;
-    struct gbm_struct *ggi;
+    int       i;
+    int       index;
+    long      total = 0;
+    long      index_total;
+    gbm_pool *ggi;
 
     printf("Memory Debug Information:\n");
     for (index = 0; index < GBM_MAX_INDEX; index++)
     {
         index_total = 0;
-        ggi = &gbm_global[index];
+        ggi = &gbm_pool4idx[index];
         for (i = 0; i < GBM_MAX_TABLES; i++)
         {
             index_total += i * GBM_ALIGNED * (int) ggi->useditems[i];
@@ -719,8 +719,8 @@ void gbm_debug_mem() {
         char *topofmem = (char *)sbrk(0);
         printf("spbrk %lx old %lx size %ti\n",
                (long)topofmem,
-               (long)gbm_global2.old_sbrk,
-               topofmem-gbm_global2.old_sbrk);
+               (long)gbm_global.old_sbrk,
+               topofmem-gbm_global.old_sbrk);
     }
 }
 

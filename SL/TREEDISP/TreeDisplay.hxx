@@ -205,9 +205,9 @@ public:
 
     void detect_group_state(AP_tree *at, AWT_graphic_tree_group_state *state, AP_tree *skip_this_son);
 
-    int      group_tree(struct AP_tree *at, int mode, int color_group);
+    int      group_tree(AP_tree *at, int mode, int color_group);
     void     group_rest_tree(AP_tree *at, int mode, int color_group);
-    int      resort_tree(int mode, struct AP_tree *at = 0);
+    int      resort_tree(int mode, AP_tree *at = 0);
     GB_ERROR create_group(AP_tree * at) __ATTR__USERESULT;
     void     toggle_group(AP_tree * at);
     void     jump(AP_tree *at, const char *name);

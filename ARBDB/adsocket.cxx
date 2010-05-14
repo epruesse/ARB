@@ -199,10 +199,10 @@ static GB_ERROR gbcm_get_m_id(const char *path, char **m_name, long *id) {
 
 GB_ERROR gbcm_open_socket(const char *path, long delay2, long do_connect, int *psocket, char **unix_name) {
     long      socket_id[1];
-    char    *mach_name[1];
-    struct in_addr  addr;   // union -> u_long
-    struct hostent *he;
-    GB_ERROR err;
+    char     *mach_name[1];
+    in_addr   addr;                                 // union -> u_long
+    hostent  *he;
+    GB_ERROR  err;
 
     mach_name[0] = 0;
     err = gbcm_get_m_id(path, mach_name, socket_id);
@@ -211,8 +211,8 @@ GB_ERROR gbcm_open_socket(const char *path, long delay2, long do_connect, int *p
         return err;
     }
     if (socket_id[0] >= 0) {    // TCP
-        struct sockaddr_in so_ad;
-        memset((char *)&so_ad, 0, sizeof(struct sockaddr_in));
+        sockaddr_in so_ad;
+        memset((char *)&so_ad, 0, sizeof(sockaddr_in));
         *psocket = socket(PF_INET, SOCK_STREAM, 0);
         if (*psocket <= 0) {
             return "CANNOT CREATE SOCKET";
@@ -229,7 +229,7 @@ GB_ERROR gbcm_open_socket(const char *path, long delay2, long do_connect, int *p
         so_ad.sin_family = AF_INET;
         so_ad.sin_port = htons((unsigned short)(socket_id[0])); // @@@ = pb_socket
         if (do_connect) {
-            if (connect(*psocket, (struct sockaddr *)(&so_ad), sizeof(so_ad))) {
+            if (connect(*psocket, (sockaddr *)(&so_ad), sizeof(so_ad))) {
                 GB_warningf("Cannot connect to %s:%li   errno %i", mach_name[0], socket_id[0], errno);
                 return "";
             }
@@ -237,7 +237,7 @@ GB_ERROR gbcm_open_socket(const char *path, long delay2, long do_connect, int *p
         else {
             int one = 1;
             setsockopt(*psocket, SOL_SOCKET, SO_REUSEADDR, (const char *)&one, sizeof(one));
-            if (bind(*psocket, (struct sockaddr *)(&so_ad), sizeof(so_ad))) {
+            if (bind(*psocket, (sockaddr *)(&so_ad), sizeof(so_ad))) {
                 return "Could not open socket on Server";
             }
         }
@@ -251,7 +251,8 @@ GB_ERROR gbcm_open_socket(const char *path, long delay2, long do_connect, int *p
         return 0;
     }
     else {        // UNIX
-        struct sockaddr_un so_ad; memset((char *)&so_ad, 0, sizeof(so_ad));
+        sockaddr_un so_ad;
+        memset((char *)&so_ad, 0, sizeof(so_ad));
         *psocket = socket(PF_UNIX, SOCK_STREAM, 0);
         if (*psocket <= 0) {
             return "CANNOT CREATE SOCKET";
@@ -260,14 +261,14 @@ GB_ERROR gbcm_open_socket(const char *path, long delay2, long do_connect, int *p
         strcpy(so_ad.sun_path, mach_name[0]);
 
         if (do_connect) {
-            if (connect(*psocket, (struct sockaddr*)(&so_ad), strlen(so_ad.sun_path)+2)) {
+            if (connect(*psocket, (sockaddr*)(&so_ad), strlen(so_ad.sun_path)+2)) {
                 if (mach_name[0]) free((char *)mach_name[0]);
                 return "";
             }
         }
         else {
             if (unlink(mach_name[0]) == 0) printf("old socket found\n");
-            if (bind(*psocket, (struct sockaddr*)(&so_ad), strlen(mach_name[0])+2)) {
+            if (bind(*psocket, (sockaddr*)(&so_ad), strlen(mach_name[0])+2)) {
                 if (mach_name[0]) free((char *)mach_name[0]);
                 return "Could not open socket on Server";
             }
@@ -296,13 +297,10 @@ long gbcms_close(gbcmc_comm *link)
 static void gbcmc_suppress_sigpipe(int) {
 }
 
-struct gbcmc_comm *gbcmc_open(const char *path)
-{
-    struct gbcmc_comm *link;
-    GB_ERROR err;
+gbcmc_comm *gbcmc_open(const char *path) {
+    gbcmc_comm *link = (gbcmc_comm *)GB_calloc(sizeof(gbcmc_comm), 1);
+    GB_ERROR    err  = gbcm_open_socket(path, TCP_NODELAY, 1, &link->socket, &link->unix_name);
 
-    link = (struct gbcmc_comm *)GB_calloc(sizeof(struct gbcmc_comm), 1);
-    err = gbcm_open_socket(path, TCP_NODELAY, 1, &link->socket, &link->unix_name);
     if (err) {
         if (link->unix_name) free(link->unix_name); // @@@
         free((char *)link);
@@ -404,7 +402,7 @@ long gbcm_read_long(int socket) {
 }
 
 
-struct stat gb_global_stt;
+static struct stat gb_global_stt;
 
 GB_ULONG GB_time_of_file(const char *path)
 {
@@ -684,7 +682,7 @@ char *GB_map_file(const char *path, int writeable) {
 }
 
 long GB_size_of_FILE(FILE *in) {
-    int fi = fileno(in);
+    int         fi = fileno(in);
     struct stat st;
     if (fstat(fi, &st)) {
         GB_export_error("GB_size_of_FILE: sorry file is not readable");
@@ -695,7 +693,7 @@ long GB_size_of_FILE(FILE *in) {
 
 
 GB_ULONG GB_time_of_day() {
-    struct timeval tp;
+    timeval tp;
     if (gettimeofday(&tp, 0)) return 0;
     return tp.tv_sec;
 }

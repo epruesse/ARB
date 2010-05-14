@@ -18,7 +18,7 @@ PHDATA::PHDATA(AW_root *awr) {
 }
 
 char *PHDATA::unload() {
-    struct PHENTRY *phentry;
+    PHENTRY *phentry;
 
     freenull(use);
     for (phentry=entries; phentry; phentry=phentry->next) {
@@ -84,7 +84,7 @@ char *PHDATA::load(char *usei) {
 
     GB_pop_transaction(gb_main);
 
-    hash_elements = (struct PHENTRY **)calloc(nentries, sizeof(struct PHENTRY *));
+    hash_elements = (PHENTRY **)calloc(nentries, sizeof(PHENTRY *));
 
     {
         PHENTRY *phentry = entries;

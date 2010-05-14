@@ -275,7 +275,7 @@ void AP_main_stack::print() {
 
 
 void AP_tree_stack::print() {
-    struct AP_tree_buffer *elem;
+    AP_tree_buffer *elem;
     unsigned long i = this->size();
     cout << "AP_tree_stack :  Size " << i << "\n";
     get_init();

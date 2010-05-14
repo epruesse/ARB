@@ -24,10 +24,9 @@
 #define AISC_MESSAGE_BUFFER_LEN ((AISC_MAX_STRING_LEN/4+3)*(16+2))
 
 struct aisc_bytes_list {
-    char *data;
-    int   size;
-
-    struct aisc_bytes_list *next;
+    char            *data;
+    int              size;
+    aisc_bytes_list *next;
 };
 
 typedef struct struct_aisc_com {
@@ -40,10 +39,10 @@ typedef struct struct_aisc_com {
 
     // members above have to match ../AISC/aisc_com.pa@aisc_com_public_members
 
-    long                    aisc_mes_buffer[AISC_MESSAGE_BUFFER_LEN];
-    struct aisc_bytes_list *aisc_client_bytes_first;
-    struct aisc_bytes_list *aisc_client_bytes_last;
-    SigHandler              old_sigpipe_handler;
+    long             aisc_mes_buffer[AISC_MESSAGE_BUFFER_LEN];
+    aisc_bytes_list *aisc_client_bytes_first;
+    aisc_bytes_list *aisc_client_bytes_last;
+    SigHandler       old_sigpipe_handler;
 } aisc_com;
 
 typedef struct struct_bytestring {

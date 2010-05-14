@@ -61,54 +61,54 @@ static const char *known_iso_versions[KNOWN_ISO_VERSIONS] = { "ISO8859", "ISO106
 #endif
 
 struct _xfstruct x_fontinfo[AW_NUM_FONTS] = {
-    { "-adobe-times-medium-r-*--",                  (struct xfont*) NULL }, // #0
-    { "-adobe-times-medium-i-*--",                  (struct xfont*) NULL }, // #1
-    { "-adobe-times-bold-r-*--",                    (struct xfont*) NULL }, // #2
-    { "-adobe-times-bold-i-*--",                    (struct xfont*) NULL }, // #3
-    { "-schumacher-clean-medium-r-*--",             (struct xfont*) NULL },      /* closest to Avant-Garde */
-    { "-schumacher-clean-medium-i-*--",             (struct xfont*) NULL }, // #5
-    { "-schumacher-clean-bold-r-*--",               (struct xfont*) NULL }, // #6
-    { "-schumacher-clean-bold-i-*--",               (struct xfont*) NULL }, // #7
-    { "-adobe-times-medium-r-*--",                  (struct xfont*) NULL },      /* closest to Bookman */
-    { "-adobe-times-medium-i-*--",                  (struct xfont*) NULL }, // #9
-    { "-adobe-times-bold-r-*--",                    (struct xfont*) NULL }, // #10
-    { "-adobe-times-bold-i-*--",                    (struct xfont*) NULL }, // #11
-    { "-adobe-courier-medium-r-*--",                (struct xfont*) NULL }, // #12
-    { "-adobe-courier-medium-o-*--",                (struct xfont*) NULL }, // #13
-    { "-adobe-courier-bold-r-*--",                  (struct xfont*) NULL }, // #14
-    { "-adobe-courier-bold-o-*--",                  (struct xfont*) NULL }, // #15
-    { "-adobe-helvetica-medium-r-*--",              (struct xfont*) NULL }, // #16
-    { "-adobe-helvetica-medium-o-*--",              (struct xfont*) NULL }, // #17
-    { "-adobe-helvetica-bold-r-*--",                (struct xfont*) NULL }, // #18
-    { "-adobe-helvetica-bold-o-*--",                (struct xfont*) NULL }, // #19
-    { "-adobe-helvetica-medium-r-*--",              (struct xfont*) NULL },      /* closest to Helv-nar. */
-    { "-adobe-helvetica-medium-o-*--",              (struct xfont*) NULL }, // #21
-    { "-adobe-helvetica-bold-r-*--",                (struct xfont*) NULL }, // #22
-    { "-adobe-helvetica-bold-o-*--",                (struct xfont*) NULL }, // #23
-    { "-adobe-new century schoolbook-medium-r-*--", (struct xfont*) NULL }, // #24
-    { "-adobe-new century schoolbook-medium-i-*--", (struct xfont*) NULL }, // #25
-    { "-adobe-new century schoolbook-bold-r-*--",   (struct xfont*) NULL }, // #26
-    { "-adobe-new century schoolbook-bold-i-*--",   (struct xfont*) NULL }, // #27
-    { "-*-lucidabright-medium-r-*--",               (struct xfont*) NULL },      /* closest to Palatino */
-    { "-*-lucidabright-medium-i-*--",               (struct xfont*) NULL }, // #29
-    { "-*-lucidabright-demibold-r-*--",             (struct xfont*) NULL }, // #30
-    { "-*-lucidabright-demibold-i-*--",             (struct xfont*) NULL }, // #31
-    { "-*-symbol-medium-r-*--",                     (struct xfont*) NULL }, // #32
-    { "-*-zapfchancery-medium-i-*--",               (struct xfont*) NULL }, // #33
-    { "-*-zapfdingbats-*-*-*--",                    (struct xfont*) NULL }, // #34
+    { "-adobe-times-medium-r-*--",                  (xfont*) NULL }, // #0
+    { "-adobe-times-medium-i-*--",                  (xfont*) NULL }, // #1
+    { "-adobe-times-bold-r-*--",                    (xfont*) NULL }, // #2
+    { "-adobe-times-bold-i-*--",                    (xfont*) NULL }, // #3
+    { "-schumacher-clean-medium-r-*--",             (xfont*) NULL },      /* closest to Avant-Garde */
+    { "-schumacher-clean-medium-i-*--",             (xfont*) NULL }, // #5
+    { "-schumacher-clean-bold-r-*--",               (xfont*) NULL }, // #6
+    { "-schumacher-clean-bold-i-*--",               (xfont*) NULL }, // #7
+    { "-adobe-times-medium-r-*--",                  (xfont*) NULL },      /* closest to Bookman */
+    { "-adobe-times-medium-i-*--",                  (xfont*) NULL }, // #9
+    { "-adobe-times-bold-r-*--",                    (xfont*) NULL }, // #10
+    { "-adobe-times-bold-i-*--",                    (xfont*) NULL }, // #11
+    { "-adobe-courier-medium-r-*--",                (xfont*) NULL }, // #12
+    { "-adobe-courier-medium-o-*--",                (xfont*) NULL }, // #13
+    { "-adobe-courier-bold-r-*--",                  (xfont*) NULL }, // #14
+    { "-adobe-courier-bold-o-*--",                  (xfont*) NULL }, // #15
+    { "-adobe-helvetica-medium-r-*--",              (xfont*) NULL }, // #16
+    { "-adobe-helvetica-medium-o-*--",              (xfont*) NULL }, // #17
+    { "-adobe-helvetica-bold-r-*--",                (xfont*) NULL }, // #18
+    { "-adobe-helvetica-bold-o-*--",                (xfont*) NULL }, // #19
+    { "-adobe-helvetica-medium-r-*--",              (xfont*) NULL },      /* closest to Helv-nar. */
+    { "-adobe-helvetica-medium-o-*--",              (xfont*) NULL }, // #21
+    { "-adobe-helvetica-bold-r-*--",                (xfont*) NULL }, // #22
+    { "-adobe-helvetica-bold-o-*--",                (xfont*) NULL }, // #23
+    { "-adobe-new century schoolbook-medium-r-*--", (xfont*) NULL }, // #24
+    { "-adobe-new century schoolbook-medium-i-*--", (xfont*) NULL }, // #25
+    { "-adobe-new century schoolbook-bold-r-*--",   (xfont*) NULL }, // #26
+    { "-adobe-new century schoolbook-bold-i-*--",   (xfont*) NULL }, // #27
+    { "-*-lucidabright-medium-r-*--",               (xfont*) NULL },      /* closest to Palatino */
+    { "-*-lucidabright-medium-i-*--",               (xfont*) NULL }, // #29
+    { "-*-lucidabright-demibold-r-*--",             (xfont*) NULL }, // #30
+    { "-*-lucidabright-demibold-i-*--",             (xfont*) NULL }, // #31
+    { "-*-symbol-medium-r-*--",                     (xfont*) NULL }, // #32
+    { "-*-zapfchancery-medium-i-*--",               (xfont*) NULL }, // #33
+    { "-*-zapfdingbats-*-*-*--",                    (xfont*) NULL }, // #34
     // non xfig fonts, will be mapped to xfig fonts on export
-    { "-*-lucida-medium-r-*-*-",                    (struct xfont*) NULL }, // #35
-    { "-*-lucida-medium-i-*-*-",                    (struct xfont*) NULL }, // #36
-    { "-*-lucida-bold-r-*-*-",                      (struct xfont*) NULL }, // #37
-    { "-*-lucida-bold-i-*-*-",                      (struct xfont*) NULL }, // #38
-    { "-*-lucidatypewriter-medium-r-*-*-",          (struct xfont*) NULL }, // #39
-    { "-*-lucidatypewriter-bold-r-*-*-",            (struct xfont*) NULL }, // #40
-    { "-*-screen-medium-r-*-*-",                    (struct xfont*) NULL }, // #41
-    { "-*-screen-bold-r-*-*-",                      (struct xfont*) NULL }, // #42
-    { "-*-clean-medium-r-*-*-",                     (struct xfont*) NULL }, // #43
-    { "-*-clean-bold-r-*-*-",                       (struct xfont*) NULL }, // #44
-    { "-*-terminal-medium-r-*-*-",                  (struct xfont*) NULL }, // #45
-    { "-*-terminal-bold-r-*-*-",                    (struct xfont*) NULL }, // #46
+    { "-*-lucida-medium-r-*-*-",                    (xfont*) NULL }, // #35
+    { "-*-lucida-medium-i-*-*-",                    (xfont*) NULL }, // #36
+    { "-*-lucida-bold-r-*-*-",                      (xfont*) NULL }, // #37
+    { "-*-lucida-bold-i-*-*-",                      (xfont*) NULL }, // #38
+    { "-*-lucidatypewriter-medium-r-*-*-",          (xfont*) NULL }, // #39
+    { "-*-lucidatypewriter-bold-r-*-*-",            (xfont*) NULL }, // #40
+    { "-*-screen-medium-r-*-*-",                    (xfont*) NULL }, // #41
+    { "-*-screen-bold-r-*-*-",                      (xfont*) NULL }, // #42
+    { "-*-clean-medium-r-*-*-",                     (xfont*) NULL }, // #43
+    { "-*-clean-bold-r-*-*-",                       (xfont*) NULL }, // #44
+    { "-*-terminal-medium-r-*-*-",                  (xfont*) NULL }, // #45
+    { "-*-terminal-bold-r-*-*-",                    (xfont*) NULL }, // #46
 };
 
 struct _fstruct ps_fontinfo[AW_NUM_FONTS + 1] = {
@@ -316,7 +316,7 @@ void aw_root_init_font(Display *tool_d)
 #endif // DUMP_FONT_LOOKUP
 
             aw_assert(found_fonts <= FONT_EXAMINE_MAX);
-            struct xfont *nf = NULL;
+            xfont *nf = NULL;
 
             for (int size = MIN_FONTSIZE; size <= MAX_FONTSIZE; size++) { // scan all useful sizes
                 int i;
@@ -325,7 +325,7 @@ void aw_root_init_font(Display *tool_d)
                 }
 
                 if (i < found_fonts && flist[i].s == size) {
-                    struct xfont *newfont = (struct xfont *)malloc(sizeof(struct xfont));
+                    xfont *newfont = (xfont *)malloc(sizeof(xfont));
 
                     (nf ? nf->next : x_fontinfo[f].xfontlist) = newfont;
                     nf                                        = newfont;
@@ -340,7 +340,7 @@ void aw_root_init_font(Display *tool_d)
 
             if (!nf) { // no font has been found -> fallback to "fixed 12pt"
                 aw_assert(x_fontinfo[f].xfontlist == 0);
-                struct xfont *newfont   = (struct xfont *)malloc(sizeof(struct xfont));
+                xfont *newfont   = (xfont *)malloc(sizeof(xfont));
                 x_fontinfo[f].xfontlist = newfont;
 
                 newfont->size    = DEF_FONTSIZE;
@@ -366,7 +366,7 @@ void aw_root_init_font(Display *tool_d)
 }
 
 #if defined(DUMP_FONT_DETAILS)
-static void dumpFontInformation(struct xfont *xf) {
+static void dumpFontInformation(xfont *xf) {
     printf("Font information for '%s':\n", xf->fname);
     XFontStruct *xfs = xf->fstruct;
     printf("- max letter ascent  = %2i\n", xfs->max_bounds.ascent);
@@ -388,8 +388,8 @@ static bool lookfont(Display *tool_d, int f, int s, int& found_size, bool verboo
 // if 'only_query' is true, then only report availability
 // if 'only_query' is false, then actually load the font and store the loaded fontstruct in 'fontstPtr'
 {
-    bool          found;
-    struct xfont *newfont, *nf, *oldnf;
+    bool   found;
+    xfont *newfont, *nf, *oldnf;
 
 #if defined(DEVEL_RALF)
 #warning scalability shall be checked for each font -- not only for first
@@ -445,7 +445,7 @@ static bool lookfont(Display *tool_d, int f, int s, int& found_size, bool verboo
         }
     }
     else { /* SCALABLE; none yet of that size, alloc one and put it in the list */
-        newfont = (struct xfont *) malloc(sizeof(struct xfont));
+        newfont = (xfont *) malloc(sizeof(xfont));
         /* add it on to the end of the list */
 
         nf = oldnf ? oldnf->next : 0; // store successor

@@ -127,7 +127,7 @@ struct probe_input_data {                           // every taxa's own data
     PT_probematch *match;                           // best hit for PT_new_design
 
     // find family
-    struct probe_statistic stat;
+    probe_statistic stat;
 
     int next;
 };
@@ -197,12 +197,12 @@ extern struct probe_struct_global {
     char *probe;                                    // probe design + chains
     char *main_probe;
 
-    char             *server_name;                  // name of this server
-    aisc_com         *link;
-    T_PT_MAIN         main;
-    struct Hs_struct *com_so;                       // the communication socket
-    POS_TREE         *pt;
-    PTM2             *ptmain;
+    char      *server_name;                         // name of this server
+    aisc_com  *link;
+    T_PT_MAIN  main;
+    Hs_struct *com_so;                              // the communication socket
+    POS_TREE  *pt;
+    PTM2      *ptmain;
 
     probe_statistic_struct stat;
 

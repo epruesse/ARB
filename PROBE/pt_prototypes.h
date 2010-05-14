@@ -88,7 +88,7 @@ char *PTM_get_mem P_((int size));
 int PTM_destroy_mem P_((void));
 void PTM_free_mem P_((char *data, int size));
 void PTM_debug_mem P_((void));
-PTM2 *PT_init P_((int base_count));
+PTM2 *PT_init P_((void));
 int PTD P_((POS_TREE *node));
 void PT_change_father P_((POS_TREE *father, POS_TREE *source, POS_TREE *dest));
 POS_TREE *PT_add_to_chain P_((PTM2 *ptmain, POS_TREE *node, int name, int apos, int rpos));

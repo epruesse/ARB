@@ -147,10 +147,10 @@ GBDATA *GEN_next_marked_gene(GBDATA *gb_gene) {
 // ----------------------
 //      gene position
 
-static struct GEN_position *lastFreedPosition = 0;
+static GEN_position *lastFreedPosition = 0;
 
-struct GEN_position *GEN_new_position(int parts, bool joinable) {
-    struct GEN_position *pos;
+GEN_position *GEN_new_position(int parts, bool joinable) {
+    GEN_position *pos;
 
     size_t pos_size  = parts*sizeof(pos->start_pos[0]);
     size_t comp_size = parts*sizeof(pos->complement[0]);
@@ -178,7 +178,7 @@ struct GEN_position *GEN_new_position(int parts, bool joinable) {
     return pos;
 }
 
-void GEN_use_uncertainties(struct GEN_position *pos) {
+void GEN_use_uncertainties(GEN_position *pos) {
     if (pos->start_uncertain == 0) {
         // space was already allocated in GEN_new_position
         pos->start_uncertain = pos->complement+pos->parts;
@@ -189,7 +189,7 @@ void GEN_use_uncertainties(struct GEN_position *pos) {
     }
 }
 
-void GEN_free_position(struct GEN_position *pos) {
+void GEN_free_position(GEN_position *pos) {
     if (lastFreedPosition) {
         free(lastFreedPosition->start_pos); // rest is allocated together with start_pos
         free(lastFreedPosition);
@@ -266,12 +266,12 @@ static GB_ERROR parsePositions(GBDATA *gb_gene, const char *field_name, int part
     return error;
 }
 
-struct GEN_position *GEN_read_position(GBDATA *gb_gene) {
-    int                  parts         = 1;
-    bool                 joinable      = false;
-    GBDATA              *gb_pos_joined = GB_entry(gb_gene, "pos_joined");
-    struct GEN_position *pos           = 0;
-    GB_ERROR             error         = 0;
+GEN_position *GEN_read_position(GBDATA *gb_gene) {
+    int           parts         = 1;
+    bool          joinable      = false;
+    GBDATA       *gb_pos_joined = GB_entry(gb_gene, "pos_joined");
+    GEN_position *pos           = 0;
+    GB_ERROR      error         = 0;
 
     if (gb_pos_joined) {
         parts = GB_read_int(gb_pos_joined);
@@ -343,7 +343,7 @@ struct GEN_position *GEN_read_position(GBDATA *gb_gene) {
     return pos;
 }
 
-GB_ERROR GEN_write_position(GBDATA *gb_gene, const struct GEN_position *pos) {
+GB_ERROR GEN_write_position(GBDATA *gb_gene, const GEN_position *pos) {
     GB_ERROR  error          = 0;
     GBDATA   *gb_pos_joined  = GB_entry(gb_gene, "pos_joined");
     GBDATA   *gb_pos_certain = GB_entry(gb_gene, "pos_certain");
@@ -459,7 +459,7 @@ GB_ERROR GEN_write_position(GBDATA *gb_gene, const struct GEN_position *pos) {
     return error;
 }
 
-static struct GEN_position *location2sort = 0;
+static GEN_position *location2sort = 0;
 
 static int cmp_location_parts(const void *v1, const void *v2) {
     int i1 = *(int*)v1;
@@ -472,7 +472,7 @@ static int cmp_location_parts(const void *v1, const void *v2) {
     return cmp;
 }
 
-void GEN_sortAndMergeLocationParts(struct GEN_position *location) {
+void GEN_sortAndMergeLocationParts(GEN_position *location) {
     // Note: makes location partly invalid (only start_pos + stop_pos are valid afterwards)
     int  parts = location->parts;
     int *idx   = (int*)malloc(parts*sizeof(*idx)); // idx[newpos] = oldpos

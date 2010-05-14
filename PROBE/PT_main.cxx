@@ -212,15 +212,15 @@ extern int aisc_core_on_error;
 
 int main(int argc, char **argv)
 {
-    int                i;
-    struct Hs_struct  *so;
-    const char        *name;
-    char              *error;
-    char              *aname, *tname;
-    struct stat        s_source, s_dest;
-    int                build_flag;
-    struct arb_params *params;
-    char              *command_flag;
+    int          i;
+    Hs_struct   *so;
+    const char  *name;
+    char        *error;
+    char        *aname, *tname;
+    struct stat  s_source, s_dest;
+    int          build_flag;
+    arb_params  *params;
+    char        *command_flag;
 
     params             = arb_trace_argv(&argc, argv);
     PT_init_psg();

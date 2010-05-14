@@ -46,7 +46,7 @@ long gb_read_number(FILE *in);
 void gb_put_number(long i, FILE *out);
 long gb_read_bin_error(FILE *in, GBDATA *gbd, const char *text);
 long gb_write_out_long(long data, FILE *out);
-int gb_is_writeable(struct gb_header_list_struct *header, GBDATA *gbd, long version, long diff_save);
+int gb_is_writeable(gb_header_list *header, GBDATA *gbd, long version, long diff_save);
 int gb_write_bin_sub_containers(FILE *out, GBCONTAINER *gbc, long version, long diff_save, int is_root);
 long gb_write_bin_rek(FILE *out, GBDATA *gbd, long version, long diff_save, long index_of_master_file);
 int gb_write_bin(FILE *out, GBDATA *gbd, long version);
@@ -69,7 +69,7 @@ long gbcmc_key_alloc(GBDATA *gbd, const char *key);
 GB_ERROR gbcmc_send_undo_commands(GBDATA *gbd, enum gb_undo_commands command) __ATTR__USERESULT;
 char *gbcmc_send_undo_info_commands(GBDATA *gbd, enum gb_undo_commands command);
 GB_ERROR gbcm_login(GBCONTAINER *gb_main, const char *loginname);
-GBCM_ServerResult gbcmc_close(struct gbcmc_comm *link);
+GBCM_ServerResult gbcmc_close(gbcmc_comm *link);
 GB_ERROR gbcm_logout(GB_MAIN_TYPE *Main, const char *loginname);
 
 /* adhash.cxx */
@@ -130,11 +130,11 @@ GB_ERROR gb_delete_force(GBDATA *source);
 GB_ERROR gb_set_compression(GBDATA *source);
 void gb_set_compression_mask(GBDATA *gb_main, GB_COMPRESSION_MASK disable_compression);
 GB_ERROR gb_init_transaction(GBCONTAINER *gbd);
-GB_ERROR gb_add_changed_callback_list(GBDATA *gbd, struct gb_transaction_save *old, GB_CB_TYPE gbtype, GB_CB func, int *clientdata);
-GB_ERROR gb_add_delete_callback_list(GBDATA *gbd, struct gb_transaction_save *old, GB_CB func, int *clientdata);
+void gb_add_changed_callback_list(GBDATA *gbd, gb_transaction_save *old, GB_CB_TYPE gbtype, GB_CB func, int *clientdata);
+void gb_add_delete_callback_list(GBDATA *gbd, gb_transaction_save *old, GB_CB func, int *clientdata);
 GB_ERROR gb_do_callback_list(GB_MAIN_TYPE *Main);
 GB_MAIN_TYPE *gb_get_main_during_cb(void);
-GB_CSTR gb_read_pntr_ts(GBDATA *gbd, struct gb_transaction_save *ts);
+GB_CSTR gb_read_pntr_ts(GBDATA *gbd, gb_transaction_save *ts);
 int gb_info(GBDATA *gbd, int deep);
 
 /* ad_core.cxx */
@@ -158,10 +158,10 @@ void gb_pre_delete_entry(GBDATA *gbd);
 void gb_delete_entry(GBDATA **gbd_ptr);
 void gb_delete_entry(GBCONTAINER **gbc_ptr);
 void gb_delete_dummy_father(GBCONTAINER **dummy_father);
-struct gb_transaction_save *gb_new_gb_transaction_save(GBDATA *gbd);
-void gb_add_ref_gb_transaction_save(struct gb_transaction_save *ts);
-void gb_del_ref_gb_transaction_save(struct gb_transaction_save *ts);
-void gb_del_ref_and_extern_gb_transaction_save(struct gb_transaction_save *ts);
+gb_transaction_save *gb_new_gb_transaction_save(GBDATA *gbd);
+void gb_add_ref_gb_transaction_save(gb_transaction_save *ts);
+void gb_del_ref_gb_transaction_save(gb_transaction_save *ts);
+void gb_del_ref_and_extern_gb_transaction_save(gb_transaction_save *ts);
 void gb_abortdata(GBDATA *gbd);
 void gb_save_extern_data_in_ts(GBDATA *gbd);
 void gb_write_index_key(GBCONTAINER *father, long index, GBQUARK new_index);
@@ -174,16 +174,16 @@ int gb_abort_transaction_local_rek(GBDATA *gbd, long mode);
 GB_ERROR gb_commit_transaction_local_rek(GBDATA *gbd, long mode, int *pson_created);
 
 /* adcompr.cxx */
-struct gb_compress_tree *gb_build_uncompress_tree(const unsigned char *data, long short_flag, char **end);
-void gb_free_compress_tree(struct gb_compress_tree *tree);
+gb_compress_tree *gb_build_uncompress_tree(const unsigned char *data, long short_flag, char **end);
+void gb_free_compress_tree(gb_compress_tree *tree);
 gb_compress_list *gb_build_compress_list(const unsigned char *data, long short_flag, long *size);
 char *gb_compress_bits(const char *source, long size, const unsigned char *c_0, long *msize);
 GB_BUFFER gb_uncompress_bits(const char *source, long size, char c_0, char c_1);
 void gb_compress_equal_bytes_2(const char *source, long size, long *msize, char *dest);
 GB_BUFFER gb_compress_equal_bytes(const char *source, long size, long *msize, int last_flag);
-void gb_compress_huffmann_add_to_list(long val, struct gb_compress_list *element);
-long gb_compress_huffmann_pop(long *val, struct gb_compress_list **element);
-char *gb_compress_huffmann_rek(struct gb_compress_list *bc, int bits, int bitcnt, char *dest);
+void gb_compress_huffmann_add_to_list(long val, gb_compress_list *element);
+long gb_compress_huffmann_pop(long *val, gb_compress_list **element);
+char *gb_compress_huffmann_rek(gb_compress_list *bc, int bits, int bitcnt, char *dest);
 GB_BUFFER gb_compress_huffmann(GB_CBUFFER source, long size, long *msize, int last_flag);
 GB_BUFFER gb_uncompress_bytes(GB_CBUFFER source, long size, long *new_size);
 GB_BUFFER gb_uncompress_longs_old(GB_CBUFFER source, long size, long *new_size);
@@ -196,7 +196,7 @@ GB_CBUFFER gb_uncompress_data(GBDATA *gbd, GB_CBUFFER source, long size);
 char *gb_index_check_in(GBDATA *gbd);
 void gb_index_check_out(GBDATA *gbd);
 void gb_destroy_indices(GBCONTAINER *gbc);
-GBDATA *gb_index_find(GBCONTAINER *gbf, struct gb_index_files_struct *ifs, GBQUARK quark, const char *val, GB_CASE case_sens, int after_index);
+GBDATA *gb_index_find(GBCONTAINER *gbf, gb_index_files *ifs, GBQUARK quark, const char *val, GB_CASE case_sens, int after_index);
 void gb_init_undo_stack(GB_MAIN_TYPE *Main);
 void gb_free_undo_stack(GB_MAIN_TYPE *Main);
 char *gb_set_undo_sync(GBDATA *gb_main);
@@ -207,7 +207,7 @@ void gb_check_in_undo_delete(GB_MAIN_TYPE *Main, GBDATA *gbd, int deep);
 
 /* admap.cxx */
 GB_ERROR gb_save_mapfile(GB_MAIN_TYPE *Main, GB_CSTR path);
-int gb_is_valid_mapfile(const char *path, struct gb_map_header *mheader, int verbose);
+int gb_is_valid_mapfile(const char *path, gb_map_header *mheader, int verbose);
 GBDATA *gb_map_mapfile(const char *path);
 int gb_isMappedMemory(char *mem);
 
@@ -229,7 +229,7 @@ GBCM_ServerResult gbcm_write_flush(int socket);
 GBCM_ServerResult gbcm_write(int socket, const char *ptr, long size);
 GB_ERROR gbcm_open_socket(const char *path, long delay2, long do_connect, int *psocket, char **unix_name);
 long gbcms_close(gbcmc_comm *link);
-struct gbcmc_comm *gbcmc_open(const char *path);
+gbcmc_comm *gbcmc_open(const char *path);
 long gbcm_write_two(int socket, long a, long c);
 GBCM_ServerResult gbcm_read_two(int socket, long a, long *b, long *c);
 GBCM_ServerResult gbcm_write_string(int socket, const char *key);

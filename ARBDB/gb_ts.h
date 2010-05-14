@@ -39,8 +39,8 @@ union gb_data_base_type_union2 {
 };
 
 struct gb_transaction_save {
-    struct gb_flag_types     flags;
-    struct gb_flag_types2    flags2;
+    gb_flag_types            flags;
+    gb_flag_types2           flags2;
     gb_data_base_type_union2 info;
     short                    refcount;              // number of references to this object
 };

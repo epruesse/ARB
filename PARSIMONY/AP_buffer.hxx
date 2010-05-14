@@ -124,7 +124,7 @@ class AP_tree_stack : public AP_STACK {
 public:
     AP_tree_stack() {}
     virtual ~AP_tree_stack() {}
-    void  push(struct AP_tree_buffer *value) { AP_STACK::push((void *)value); }
+    void  push(AP_tree_buffer *value) { AP_STACK::push((void *)value); }
     AP_tree_buffer * pop() { return (AP_tree_buffer *) AP_STACK::pop(); }
     AP_tree_buffer * get() { return (AP_tree_buffer *) AP_STACK::get(); }
     AP_tree_buffer * get_first() { return (AP_tree_buffer *) AP_STACK::get_first(); }

@@ -29,12 +29,12 @@ extern "C" {
 
 struct aisc_hash_node;
 
-struct aisc_hash_node **aisc_init_hash P_((int size));
+aisc_hash_node **aisc_init_hash P_((int size));
 int aisc_hash P_((char *key, int size));
-void aisc_free_key P_((struct aisc_hash_node **table, char *key));
-void aisc_free_hash P_((struct aisc_hash_node **table));
-void aisc_insert_hash P_((struct aisc_hash_node **table, char *key, long data));
-long aisc_read_hash P_((struct aisc_hash_node **table, char *key));
+void aisc_free_key P_((aisc_hash_node **table, char *key));
+void aisc_free_hash P_((aisc_hash_node **table));
+void aisc_insert_hash P_((aisc_hash_node **table, char *key, long data));
+long aisc_read_hash P_((aisc_hash_node **table, char *key));
 const char *aisc_link P_((dllpublic_ext *parent, dllheader_ext *mh));
 const char *aisc_unlink P_((dllheader_ext *mh));
 long aisc_find_lib P_((dllpublic_ext *parent, char *ident));

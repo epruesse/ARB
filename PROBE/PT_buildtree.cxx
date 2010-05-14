@@ -220,7 +220,7 @@ void enter_stage_1_build_tree(PT_main * main, char *tname) {
     // ARB applications by writing to log
     GBS_add_ptserver_logentry(GBS_global_string("Calculating probe tree (%s)", tname));
 
-    psg.ptmain = PT_init(PT_B_MAX);
+    psg.ptmain = PT_init();
     psg.ptmain->stage1 = 1;             // enter stage 1
 
     pt = PT_create_leaf(psg.ptmain, NULL, PT_N, 0, 0, 0);  // create main node
@@ -348,7 +348,7 @@ void enter_stage_1_build_tree(PT_main * main, char *tname) {
 void enter_stage_3_load_tree(PT_main * main, char *tname) {
     // load tree from disk
     main               = main;
-    psg.ptmain         = PT_init(PT_B_MAX);
+    psg.ptmain         = PT_init();
     psg.ptmain->stage3 = 1;                         // enter stage 3
 
     FILE *in;
@@ -371,7 +371,7 @@ void enter_stage_3_load_tree(PT_main * main, char *tname) {
 #define DEBUG_MAX_CHAIN_SIZE 1000
 #define DEBUG_TREE_DEEP PT_POS_TREE_HEIGHT+50
 
-struct PT_debug_struct {
+struct PT_debug {
     int chainsizes[DEBUG_MAX_CHAIN_SIZE][DEBUG_TREE_DEEP];
     int chainsizes2[DEBUG_MAX_CHAIN_SIZE];
     int splits[DEBUG_TREE_DEEP][PT_B_MAX];
@@ -432,7 +432,7 @@ void PT_analyse_tree(POS_TREE *pt, int height)
 
 void PT_debug_tree()        // show various debug information about the tree
     {
-    ptds = (struct PT_debug_struct *)calloc(sizeof(struct PT_debug_struct), 1);
+    ptds = (PT_debug *)calloc(sizeof(PT_debug), 1);
     PT_analyse_tree(psg.pt, 0);
     int i, j, k;
     int sum = 0;            // sum of chains

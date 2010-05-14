@@ -118,9 +118,9 @@ void gb_system_master_changed_cb(GBDATA *gbd, int *cl, GB_CB_TYPE type) {
 }
 
 void gb_load_single_key_data(GBDATA *gb_main, GBQUARK q) {
-    GB_MAIN_TYPE         *Main = GB_MAIN(gb_main);
-    struct gb_key_struct *ks   = &Main->keys[q];
-    const char           *key  = ks->key;
+    GB_MAIN_TYPE *Main = GB_MAIN(gb_main);
+    gb_Key       *ks   = &Main->keys[q];
+    const char   *key  = ks->key;
 
     if (!Main->gb_key_data) {
         ks->compression_mask = -1;
@@ -267,12 +267,12 @@ struct DictData {
     long  size;
 };
 
-struct DictData *GB_get_dictionary(GBDATA *gb_main, const char *key) {
+DictData *GB_get_dictionary(GBDATA *gb_main, const char *key) {
     /* return DictData or
      * NULL if no dictionary or error occurred
      */
-    struct DictData *dd    = (struct DictData*)GB_calloc(1, sizeof(*dd));
-    GB_ERROR         error = gb_load_dictionary_data(gb_main, key, &dd->data, &dd->size);
+    DictData *dd    = (DictData*)GB_calloc(1, sizeof(*dd));
+    GB_ERROR  error = gb_load_dictionary_data(gb_main, key, &dd->data, &dd->size);
 
     if (error || !dd->data) {
         GB_free_dictionary(dd);
@@ -283,7 +283,7 @@ struct DictData *GB_get_dictionary(GBDATA *gb_main, const char *key) {
     return dd;
 }
 
-GB_ERROR GB_set_dictionary(GBDATA *gb_main, const char *key, const struct DictData *dd) {
+GB_ERROR GB_set_dictionary(GBDATA *gb_main, const char *key, const DictData *dd) {
     // if 'dd' == NULL -> delete dictionary
     GB_ERROR error;
     if (dd) {
@@ -295,7 +295,7 @@ GB_ERROR GB_set_dictionary(GBDATA *gb_main, const char *key, const struct DictDa
     return error;
 }
 
-void GB_free_dictionary(struct DictData *dd) {
+void GB_free_dictionary(DictData *dd) {
     if (dd) {
         if (dd->data) gbm_free_mem(dd->data, dd->size, GBM_DICT_INDEX);
         free(dd);

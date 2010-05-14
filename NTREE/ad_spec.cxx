@@ -822,7 +822,7 @@ void ad_spec_create_field_items(AW_window *aws) {
 #include <probe_design.hxx>
 
 static void awtc_nn_search_all_listed(AW_window *aww, AW_CL _cbs) {
-    struct adaqbsstruct *cbs = (struct adaqbsstruct *)_cbs;
+    DbQuery *cbs = (DbQuery *)_cbs;
 
     nt_assert(cbs->selector->type == AWT_QUERY_ITEM_SPECIES);
 
@@ -1027,7 +1027,7 @@ static void awtc_move_hits(AW_window *aww, AW_CL id, AW_CL cbs) {
 
     char *hit_description = GBS_global_string_copy("<neighbour of %s: %%s>", current_species);
 
-    awt_copy_selection_list_2_queried_species((struct adaqbsstruct *)cbs, (AW_selection_list *)id, hit_description);
+    awt_copy_selection_list_2_queried_species((DbQuery *)cbs, (AW_selection_list *)id, hit_description);
 
     free(hit_description);
     free(current_species);
@@ -1260,11 +1260,11 @@ AW_window *NT_create_organism_window(AW_root *aw_root, AW_CL cl_gb_main) {
 AW_CL ad_query_global_cbs = 0;
 
 void ad_unquery_all() {
-    awt_unquery_all(0, (struct adaqbsstruct *)ad_query_global_cbs);
+    awt_unquery_all(0, (DbQuery *)ad_query_global_cbs);
 }
 
 void ad_query_update_list() {
-    awt_query_update_list(NULL, (struct adaqbsstruct *)ad_query_global_cbs);
+    awt_query_update_list(NULL, (DbQuery *)ad_query_global_cbs);
 }
 
 AW_window *ad_create_query_window(AW_root *aw_root)

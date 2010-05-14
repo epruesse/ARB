@@ -15,10 +15,10 @@
 
 struct Hs_struct;
 struct AN_gl_struct {
-    aisc_com         *cl_link;
-    struct Hs_struct *server_communication;
-    T_AN_MAIN         cl_main;
-    char             *server_name;
+    aisc_com  *cl_link;
+    Hs_struct *server_communication;
+    T_AN_MAIN  cl_main;
+    char      *server_name;
 };
 extern struct AN_gl_struct AN_global;
 

@@ -414,9 +414,11 @@ void GBS_add_ptserver_logentry(const char *entry) {
     FILE *log = fopen(GBS_ptserver_logname(), "at");
     if (log) {
         chmod(GBS_ptserver_logname(), 0666);
-        char       atime[256];
-        time_t     t   = time(0);
-        struct tm *tms = localtime(&t);
+
+        char    atime[256];
+        time_t  t   = time(0);
+        tm     *tms = localtime(&t);
+
         strftime(atime, 255, "%Y/%m/%d %k:%M:%S", tms);
         fprintf(log, "%s %s\n", atime, entry);
         fclose(log);
@@ -471,8 +473,8 @@ char *GBS_ptserver_id_to_choice(int i, int showBuild) {
                         newResult = GBS_global_string_copy("%s [starting or failed update]", result);
                     }
                     else {
-                        char       atime[256];
-                        struct tm *tms  = localtime(&st.st_mtime);
+                        char  atime[256];
+                        tm   *tms = localtime(&st.st_mtime);
 
                         strftime(atime, 255, "%Y/%m/%d %k:%M", tms);
                         newResult = GBS_global_string_copy("%s [%s]", result, atime);

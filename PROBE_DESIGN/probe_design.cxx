@@ -72,7 +72,7 @@
 
 // ----------------------------------------
 
-static saiProbeData *g_spd = 0;
+saiProbeData *g_spd = 0;
 
 struct gl_struct {
     aisc_com *link;

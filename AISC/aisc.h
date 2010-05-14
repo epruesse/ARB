@@ -42,14 +42,14 @@ enum aisc_commands {
 };
 
 struct hash_entry {
-    char *key;
-    char *val;
-    struct hash_entry *next;
+    char       *key;
+    char       *val;
+    hash_entry *next;
 };
-typedef struct hash_struct {
-    int size;
-    struct hash_entry **entries;
-} hash;
+struct hash {
+    int          size;
+    hash_entry **entries;
+};
 
 // ------------------------------------------------------------
 
@@ -205,66 +205,59 @@ inline const Token *Token::parent_block_token() const {
 
 // ------------------------------------------------------------
 
-struct for_data_struct {
+struct for_data {
     char        *forstr;
     const Token *forcursor;
     long         forval;
     long         forend;
-
-    struct for_data_struct *next;
+    for_data    *next;
 };
 
 
 
 typedef struct command_lines {
-    struct command_lines   *next;
-    char                   *str;
-    int                     linenr;
-    char                   *path;
-    enum aisc_commands      command;
-    struct for_data_struct *fd;
-    struct command_lines   *IF;
-    struct command_lines   *ELSE;
-    struct command_lines   *ENDIF;
-    struct command_lines   *FOR;
-    struct command_lines   *NEXT;
-    struct command_lines   *ENDFOR;
+    command_lines *next;
+    char          *str;
+    int            linenr;
+    char          *path;
+    aisc_commands  command;
+    for_data      *fd;
+    command_lines *IF;
+    command_lines *ELSE;
+    command_lines *ENDIF;
+    command_lines *FOR;
+    command_lines *NEXT;
+    command_lines *ENDFOR;
 } CL;
 
-struct stack_struct {
+struct stack {
     const Token *cursor;
     CL          *pc;
     hash        *hs;
-
-    struct stack_struct *next;
+    stack       *next;
 };
 
-struct param_struct {
-    char *param;
-    struct param_struct *next;
-};
-
-struct global_struct {
-    int                  error_flag;
-    char                 outtab[256];
-    const Token         *cursor;
-    TokenListBlock      *root;
-    CL                  *prg;
-    CL                  *pc;
-    CL                  *nextpc;
-    struct stack_struct *st;
-    int                  sp;
-    int                  line_cnt;
-    const char          *last_line_start;
-    char                *line_path;
-    int                  lastchar;
-    char                *linebuf;
-    int                  bufsize;
-    int                  s_pos;
-    FILE                *out;
-    FILE                *outs[OPENFILES];
-    char                *fouts[OPENFILES];          // type of file
-    char                *fouts_name[OPENFILES];     // file-system-name of file
+struct global {
+    int             error_flag;
+    char            outtab[256];
+    const Token    *cursor;
+    TokenListBlock *root;
+    CL             *prg;
+    CL             *pc;
+    CL             *nextpc;
+    stack          *st;
+    int             sp;
+    int             line_cnt;
+    const char     *last_line_start;
+    char           *line_path;
+    int             lastchar;
+    char           *linebuf;
+    int             bufsize;
+    int             s_pos;
+    FILE           *out;
+    FILE           *outs[OPENFILES];
+    char           *fouts[OPENFILES];               // type of file
+    char           *fouts_name[OPENFILES];          // file-system-name of file
 
     int   tabstop;
     int   tabs[10];
@@ -273,8 +266,8 @@ struct global_struct {
 
 };
 
-extern struct global_struct *gl;
-extern char                  string_buf[256];
+extern global *gl;
+extern char    string_buf[256];
 
 #define EOSTR    0
 #define BEG_STR1 '('

@@ -132,19 +132,9 @@ void PTM_debug_mem()
 #endif
 }
 
-struct PT_local_struct {
-    int base_count;
-} *PTL = 0;
-
-PTM2 *PT_init(int base_count)
-{
+PTM2 *PT_init() {
     PTM2 *ptmain;
-    if (!PTL) {
-        PTL = (struct PT_local_struct *)
-            calloc(sizeof(struct PT_local_struct), 1);
-    }
     memset(&PTM, 0, sizeof(struct PTM_struct));
-    PTL->base_count = base_count;
     ptmain = (PTM2 *)calloc(1, sizeof(PTM2));
     ptmain->mode = sizeof(PT_PNTR);
     ptmain->stage1 = 1;
@@ -450,8 +440,7 @@ void PTD_set_object_to_saved_status(POS_TREE * node, long pos, int size) {
 
 long PTD_write_tip_to_disk(FILE * out, PTM2 * /* ptmain */, POS_TREE * node, long pos)
 {
-    int size, i, cnt;
-    char *data;
+    int size, cnt;
     putc(node->flags, out);         // save type
     size = PT_LEAF_SIZE(node);
     // write 4 bytes when not in stage 2 save mode
@@ -460,8 +449,8 @@ long PTD_write_tip_to_disk(FILE * out, PTM2 * /* ptmain */, POS_TREE * node, lon
 #ifdef ARB_64
     fwrite(&node->data + sizeof(PT_PNTR), 0x01, cnt, out);   // write name rpos apos
 #else
-    for (data = (&node->data)+sizeof(PT_PNTR); cnt; cnt--) { // write apos rpos name
-        i = (int)(*(data++));
+    for (char *data = (&node->data)+sizeof(PT_PNTR); cnt; cnt--) { // write apos rpos name
+        int i = (int)(*(data++));
         putc(i, out);
     }
 #endif

@@ -1177,10 +1177,10 @@ static void usage(const char *exeName, const char *err) {
 
 int main(int argc, char **argv)
 {
-    char              *name;
-    int                i;
-    struct Hs_struct  *so;
-    struct arb_params *params;
+    char       *name;
+    int         i;
+    Hs_struct  *so;
+    arb_params *params;
 
     params                 = arb_trace_argv(&argc, argv);
     const char *executable = argv[0];

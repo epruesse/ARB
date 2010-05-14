@@ -577,10 +577,10 @@ STATIC_ATTRIBUTED(__ATTR__USERESULT, int do_com_moveto(char *str)) {
 }
 
 STATIC_ATTRIBUTED(__ATTR__USERESULT, int do_com_set(char *str)) {
-    char           *st;
-    char           *co;
-    char           *def;
-    struct hash_struct *hs;
+    char *st;
+    char *co;
+    char *def;
+    hash *hs;
 
     st = strstr(str, "$(");
     if (!st) {
@@ -688,18 +688,17 @@ STATIC_ATTRIBUTED(__ATTR__USERESULT, int do_com_if(char *str)) {
 }
 
 static void do_com_for_add(CL *co) {
-    struct for_data_struct *fd;
-    fd = (struct for_data_struct *)calloc(sizeof(struct for_data_struct), 1);
+    for_data *fd = (for_data *)calloc(sizeof(for_data), 1);
+
     fd->next = co->fd;
-    co->fd = fd;
+    co->fd   = fd;
 }
 
 static void do_com_for_sub(CL *co) {
-    struct for_data_struct *fd;
-    fd = co->fd;
+    for_data *fd = co->fd;
     if (fd->forstr) free(fd->forstr);
     co->fd = fd->next;
-    free((char *)fd);
+    free(fd);
 }
 
 int do_com_push(const char *) {
@@ -709,7 +708,7 @@ int do_com_push(const char *) {
         return 1;
     }
 
-    struct stack_struct *st = (struct stack_struct *)calloc(sizeof(struct stack_struct), 1);
+    stack *st = (stack *)calloc(sizeof(stack), 1);
 
     st->cursor = gl->cursor;
     st->pc     = gl->pc;
@@ -724,7 +723,7 @@ int do_com_push(const char *) {
 static void pop_stack() {
     aisc_assert(gl->sp>0);
 
-    struct stack_struct *st = gl->st;
+    stack *st = gl->st;
     free_hash(st->hs);
     gl->cursor = st->cursor;
     gl->st     = st->next;
@@ -875,7 +874,7 @@ STATIC_ATTRIBUTED(__ATTR__USERESULT, int do_com_for(char *str)) {
                         result = 0;
                     }
                     else {
-                        struct hash_struct *hs;
+                        hash *hs;
                         char *p = (char *) read_hash_local(st, &hs);
                         if (!p) {
                             printf_error("Undefined Ident '%s' in FOR (use CREATE first)", st);
@@ -934,7 +933,7 @@ STATIC_ATTRIBUTED(__ATTR__USERESULT, int do_com_next(const char *)) {
         else {
             gl->nextpc = gl->pc->FOR->next;
 
-            struct hash_struct *hs;
+            hash *hs;
             char *p = read_hash_local(gl->pc->FOR->fd->forstr, &hs);
             aisc_assert(p);
             if (p) {

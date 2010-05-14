@@ -310,12 +310,11 @@ void arb_print_server_params() {
            );
 }
 
-struct arb_params *arb_trace_argv(int *argc, char **argv)
+arb_params *arb_trace_argv(int *argc, char **argv)
 {
-    struct arb_params *erg;
     int s, d;
 
-    erg             = (struct arb_params *)calloc(sizeof(struct arb_params), 1);
+    arb_params *erg = (arb_params *)calloc(sizeof(arb_params), 1);
     erg->db_server  = strdup(":");
     erg->job_server = strdup("ARB_JOB_SERVER");
     erg->mgr_server = strdup("ARB_MGR_SERVER");
@@ -371,7 +370,7 @@ struct arb_params *arb_trace_argv(int *argc, char **argv)
     return erg;
 }
 
-void free_arb_params(struct arb_params *params) {
+void free_arb_params(arb_params *params) {
     free(params->species_name);
     free(params->extended_name);
     free(params->alignment);

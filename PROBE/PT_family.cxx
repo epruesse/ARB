@@ -95,9 +95,9 @@ static int mark_all_matches(POS_TREE *pt,
 static void clear_statistic() {
     /*! Clear all information in psg.data[i].stat */
 
-    int i;
-    for (i = 0; i < psg.data_count; i++)
-        memset((char *) &psg.data[i].stat, 0, sizeof(struct probe_statistic));
+    for (int i = 0; i < psg.data_count; i++) {
+        memset((char *) &psg.data[i].stat, 0, sizeof(probe_statistic));
+    }
 }
 
 

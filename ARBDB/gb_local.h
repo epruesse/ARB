@@ -38,10 +38,20 @@ typedef short GB_MAIN_IDX;      // random-index
 
 struct GBCONTAINER;
 struct GB_MAIN_TYPE;
-struct GB_DICTIONARY;
-struct gb_scandir;
+
 struct gb_transaction_save;
+struct gb_header_list;
+struct gb_index_files;
+
+struct GB_DICTIONARY;
 struct gb_compress_list;
+struct gb_compress_tree;
+
+struct gb_map_header;
+
+struct gb_scandir;
+
+struct gbcmc_comm;
 
 // -------------------
 //      enum types

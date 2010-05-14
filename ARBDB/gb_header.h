@@ -23,19 +23,18 @@ struct gb_header_flags {
     unsigned int ever_changed : 1;                  // is this element ever changed
 };
 
-struct gb_header_list_struct {                      // public fast flags
-    struct gb_header_flags flags;
-
-    GB_REL_GBDATA rel_hl_gbd;
+struct gb_header_list {                             // public fast flags
+    gb_header_flags flags;
+    GB_REL_GBDATA   rel_hl_gbd;
     /* pointer to data
        if 0 & !key_index -> free data
        if 0 & key_index -> data only in server */
 };
 
-inline GBDATA *GB_HEADER_LIST_GBD(struct gb_header_list_struct& hl) {
+inline GBDATA *GB_HEADER_LIST_GBD(gb_header_list& hl) {
     return GB_RESOLVE(GBDATA*, (&(hl)), rel_hl_gbd);
 }
-inline void SET_GB_HEADER_LIST_GBD(struct gb_header_list_struct& hl, GBDATA *gbd) {
+inline void SET_GB_HEADER_LIST_GBD(gb_header_list& hl, GBDATA *gbd) {
     GB_SETREL(&hl, rel_hl_gbd, gbd);
 }
 

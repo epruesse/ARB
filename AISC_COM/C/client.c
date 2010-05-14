@@ -81,8 +81,7 @@ int aisc_c_write(int socket, char *ptr, int size)
 
 static void aisc_c_add_to_bytes_queue(aisc_com *link, char *data, int size)
 {
-    struct aisc_bytes_list *bl;
-    bl = (struct aisc_bytes_list *)calloc(sizeof(*bl), 1);
+    aisc_bytes_list *bl = (aisc_bytes_list *)calloc(sizeof(*bl), 1);
 #ifndef NDEBUG
     memset(bl, 0, sizeof(*bl)); /* @@@ clear mem needed to avoid (rui's) */
 #endif
@@ -102,7 +101,7 @@ static void aisc_c_add_to_bytes_queue(aisc_com *link, char *data, int size)
 int aisc_c_send_bytes_queue(aisc_com    *link)
 {
     int len;
-    struct aisc_bytes_list *bl, *bl_next;
+    aisc_bytes_list *bl, *bl_next;
     for (bl = link->aisc_client_bytes_first; bl; bl=bl_next) {
         bl_next = bl->next;
         len = aisc_c_write(link->socket, (char *)bl->data, bl->size);
@@ -116,22 +115,18 @@ int aisc_c_send_bytes_queue(aisc_com    *link)
 /* -------------------------- */
 /*      message handling      */
 
-struct aisc_client_message_queue {
-    struct aisc_client_message_queue *next;
-    int message_type;
-    char        *message;
+struct client_msg_queue {
+    client_msg_queue *next;
+    int               message_type;
+    char             *message;
 };
 
 int aisc_add_message_queue(aisc_com *link, long size)
 {
-    long len;
-    char *buffer;
-    struct aisc_client_message_queue *msg, *mp;
-    msg = (struct aisc_client_message_queue *)
-        calloc(sizeof(struct aisc_client_message_queue), 1);
-    buffer = (char *)calloc(sizeof(char), (size_t)size);
+    client_msg_queue *msg    = (client_msg_queue *) calloc(sizeof(client_msg_queue), 1);
+    char             *buffer = (char *)calloc(sizeof(char), (size_t)size);
+    long              len    = aisc_c_read(link->socket, buffer, size);
 
-    len = aisc_c_read(link->socket, buffer, size);
     if (len != size) {
         link->error = err_connection_problems;
         PRTERR("AISC_ERROR");
@@ -145,7 +140,8 @@ int aisc_add_message_queue(aisc_com *link, long size)
         link->message_queue = (int *)msg;
     }
     else {
-        for (mp = (struct aisc_client_message_queue *) link->message_queue; mp->next; mp=mp->next) ;
+        client_msg_queue *mp;
+        for (mp = (client_msg_queue *) link->message_queue; mp->next; mp=mp->next) ;
         mp->next = msg;
     }
     return 0;
@@ -281,8 +277,8 @@ static const char *aisc_client_open_socket(const char *path, int delay, int do_c
         return err;
     }
     if (socket_id >= 0) {       /* UNIX */
-        struct sockaddr_in so_ad;
-        memset((char *)&so_ad, 0, sizeof(struct sockaddr_in));
+        sockaddr_in so_ad;
+        memset((char *)&so_ad, 0, sizeof(sockaddr_in));
         *psocket = socket(PF_INET, SOCK_STREAM, 0);
         if (*psocket <= 0) {
             return "CANNOT CREATE SOCKET";
@@ -468,12 +464,11 @@ int aisc_get_message(aisc_com *link)
         if (aisc_add_message_queue(link, size*sizeof(long))) return -1;
     }
     if (link->message_queue) {
-        struct aisc_client_message_queue *msg;
-        msg = (struct aisc_client_message_queue *)link->message_queue;
+        client_msg_queue *msg = (client_msg_queue *)link->message_queue;
         link->message_queue = (int *)msg->next;
         link->message = msg->message;
         link->message_type = msg->message_type;
-        free((char *)msg);
+        free(msg);
         return link->message_type;
     }
     return 0;

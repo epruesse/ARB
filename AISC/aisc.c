@@ -17,7 +17,7 @@
 const int linebufsize = 200000;
 char      string_buf[256];
 
-struct global_struct *gl;
+global *gl;
 
 inline void get_byte(const char *& io) {
     gl->lastchar = *(io++);
@@ -59,7 +59,7 @@ char *read_aisc_file(char *path)
 }
 
 static void aisc_init() {
-    gl = (struct global_struct *)calloc(sizeof(struct global_struct), 1);
+    gl = (global *)calloc(sizeof(global), 1);
 
     gl->linebuf         = (char *)calloc(sizeof(char), linebufsize+2);
     gl->line_cnt        = 1;

@@ -35,8 +35,8 @@ GB_ERROR arb_start_server(const char *arb_tcp_env, GBDATA *gbmain, int do_sleep)
 GB_ERROR arb_look_and_start_server(long magic_number, const char *arb_tcp_env, GBDATA *gbmain);
 GB_ERROR arb_look_and_kill_server(int magic_number, const char *arb_tcp_env);
 void arb_print_server_params(void);
-struct arb_params *arb_trace_argv(int *argc, char **argv);
-void free_arb_params(struct arb_params *params);
+arb_params *arb_trace_argv(int *argc, char **argv);
+void free_arb_params(arb_params *params);
 
 #else
 #error servercntrl.h included twice

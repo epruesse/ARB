@@ -26,21 +26,21 @@
 #endif
 
 struct gb_if_entries;
-struct gb_index_files_struct;
-struct gb_header_list_struct;
+struct gb_index_files;
+struct gb_header_list;
 struct GBDATA;
 struct GBCONTAINER;
 
 #if (MEMORY_TEST==1)
 
-typedef void                   *GB_REL_ADD;
-typedef char                   *GB_REL_STRING;
-typedef GBDATA                 *GB_REL_GBDATA;
-typedef GBCONTAINER            *GB_REL_CONTAINER;
-typedef gb_header_list_struct  *GB_REL_HLS;
-typedef gb_if_entries          *GB_REL_IFES;
-typedef gb_index_files_struct  *GB_REL_IFS;
-typedef gb_if_entries         **GB_REL_PIFES;
+typedef void            *GB_REL_ADD;
+typedef char            *GB_REL_STRING;
+typedef GBDATA          *GB_REL_GBDATA;
+typedef GBCONTAINER     *GB_REL_CONTAINER;
+typedef gb_header_list  *GB_REL_HLS;
+typedef gb_if_entries   *GB_REL_IFES;
+typedef gb_index_files  *GB_REL_IFS;
+typedef gb_if_entries  **GB_REL_PIFES;
 
 #define UNUSED_IN_MEMTEST(param) param = param
 

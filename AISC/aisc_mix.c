@@ -254,14 +254,11 @@ int aisc_calc_special_commands()
     return 0;
 }
 
-static int hash_index(const char *key, int size)
-{
-    int         x;
-    const char *p;
+static int hash_index(const char *key, int size) {
+    const char *p = key;
+    int         x = 1;
     char        c;
-
-    p = key;
-    x = 1;
+    
     while ((c=*(p++))) {
         x = (x<<1) ^ c;
     }
@@ -271,23 +268,17 @@ static int hash_index(const char *key, int size)
 }
 
 
-struct hash_struct *create_hash(int size)
-{
-    struct hash_struct *hs;
-    hs = (struct hash_struct *)calloc(sizeof(struct hash_struct), 1);
+hash *create_hash(int size) {
+    hash *hs = (hash *)calloc(sizeof(hash), 1);
     hs->size = size;
-    hs->entries = (struct hash_entry **)calloc(sizeof(struct hash_entry *), size);
+    hs->entries = (hash_entry **)calloc(sizeof(hash_entry *), size);
     return hs;
 }
 
-char *read_hash_local(char *key, struct hash_struct **hs)
-{
-    struct stack_struct *ss;
-    int i;
-    struct hash_entry *e;
-    i = hash_index(key, gl->st->hs->size);
-    for (ss = gl->st; ss; ss=ss->next) {
-        for (e=ss->hs->entries[i]; e; e=e->next)
+char *read_hash_local(char *key, hash **hs) {
+    int i = hash_index(key, gl->st->hs->size);
+    for (stack *ss = gl->st; ss; ss=ss->next) {
+        for (hash_entry *e=ss->hs->entries[i]; e; e=e->next)
         {
             if (!strcmp(e->key, key)) {
                 if (hs) *hs = ss->hs;
@@ -299,19 +290,16 @@ char *read_hash_local(char *key, struct hash_struct **hs)
 }
 
 
-char *read_hash(struct hash_struct *hs, char *key)
-{
-    struct hash_entry *e;
-    int i;
-    i = hash_index(key, hs->size);
-    for (e=hs->entries[i]; e; e=e->next)
+char *read_hash(hash *hs, char *key) {
+    int i = hash_index(key, hs->size);
+    for (hash_entry *e=hs->entries[i]; e; e=e->next)
     {
         if (!strcmp(e->key, key)) return e->val;
     }
     return 0;
 }
 
-void write_hash(struct hash_struct *hs, const char *key, const char *val) {
+void write_hash(hash *hs, const char *key, const char *val) {
     int         i = hash_index(key, hs->size);
     hash_entry *e;
 
@@ -324,7 +312,7 @@ void write_hash(struct hash_struct *hs, const char *key, const char *val) {
     }
 
     if (!e) {
-        e       = (struct hash_entry *)calloc(sizeof(struct hash_entry), 1);
+        e       = (hash_entry *)calloc(sizeof(hash_entry), 1);
         e->next = hs->entries[i];
         e->key  = strdup(key);
         e->val  = val ? strdup(val) : 0;
@@ -333,16 +321,14 @@ void write_hash(struct hash_struct *hs, const char *key, const char *val) {
     }
 }
 
-int free_hash(struct hash_struct *hs) {
-    int i;
-    int e2;
-    struct hash_entry *e, *ee;
-    e2 = hs->size;
-    for (i=0; i<e2; i++) {
-        for (e=hs->entries[i]; e; e=ee) {
+int free_hash(hash *hs) {
+    int e2 = hs->size;
+    for (int i=0; i<e2; i++) {
+        hash_entry *enext;
+        for (hash_entry *e=hs->entries[i]; e; e=enext) {
             if (e->val) free(e->val);
             free(e->key);
-            ee = e->next;
+            enext = e->next;
             free((char *)e);
         }
     }

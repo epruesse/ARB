@@ -30,7 +30,7 @@
 #define NDS_STRING_SIZE 4000
 #endif // DEBUG
 
-struct make_node_text_struct {
+struct NodeTextBuilder {
     char  buf[NDS_STRING_SIZE]; // buffer used to generate output
     char *bp;
     int   space_left;
@@ -547,7 +547,7 @@ void make_node_text_init(GBDATA *gb_main) {
     GBDATA *gbz, *gbe;
     int     count;
 
-    if (!awt_nds_ms) awt_nds_ms = (struct make_node_text_struct *) GB_calloc(sizeof(struct make_node_text_struct), 1);
+    if (!awt_nds_ms) awt_nds_ms = (NodeTextBuilder *) GB_calloc(sizeof(NodeTextBuilder), 1);
 
     GBDATA *gb_arb_presets = GB_search(gb_main, "arb_presets", GB_CREATE_CONTAINER);
     count                  = 0;

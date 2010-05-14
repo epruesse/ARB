@@ -746,7 +746,7 @@ void create_cprofile_var(AW_root *aw_root, AW_default aw_def)
 
     AW_create_fileselection_awars(aw_root, "cpro/save", ".", ".cpr", "", aw_def);
     AW_create_fileselection_awars(aw_root, "cpro/load", ".", ".cpr", "", aw_def);
-    memset((char *)&CPRO, 0, sizeof(struct CPRO_struct));
+    memset((char *)&CPRO, 0, sizeof(CPRO_struct));
 
 }
 

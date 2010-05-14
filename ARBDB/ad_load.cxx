@@ -780,21 +780,20 @@ static void DEBUG_DUMP_INDENTED(long deep, const char *s) {
 
 long gb_read_bin_rek_V2(FILE *in, GBCONTAINER *gbd, long nitems, long version, long reversed, long deep)
 {
-    long          item;
-    long          type, type2;
-    GBQUARK       key;
-    char         *p;
-    long          i;
-    long          size;
-    long          memsize;
-    int           index;
-    GBDATA       *gb2;
-    GBCONTAINER  *gbc;
-    long          security;
-    char         *buff;
-    GB_MAIN_TYPE *Main = GB_MAIN(gbd);
-
-    struct gb_header_list_struct *header;
+    long            item;
+    long            type, type2;
+    GBQUARK         key;
+    char           *p;
+    long            i;
+    long            size;
+    long            memsize;
+    int             index;
+    GBDATA         *gb2;
+    GBCONTAINER    *gbc;
+    long            security;
+    char           *buff;
+    GB_MAIN_TYPE   *Main = GB_MAIN(gbd);
+    gb_header_list *header;
 
     DEBUG_DUMP_INDENTED(deep, GBS_global_string("Reading container with %li items", nitems));
 
@@ -1416,7 +1415,7 @@ GBDATA *GB_login(const char *cpath, const char *opent, const char *user) {
             char *base = strdup(path);
             char *ext = gb_findExtension(base);
             {
-                struct gb_scandir dir;
+                gb_scandir dir;
                 ext[0] = 0;
                 gb_scan_directory(base, &dir);
 

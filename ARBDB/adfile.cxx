@@ -119,11 +119,11 @@ char *GB_find_all_files(const char *dir, const char *mask, bool filename_only) {
        it may be a regular expression ('/regexp/')
     */
 
-    DIR           *dirp;
-    struct dirent *dp;
-    struct stat    st;
-    char          *result = 0;
-    char           buffer[FILE_PATH_MAX];
+    DIR         *dirp;
+    dirent      *dp;
+    struct stat  st;
+    char        *result = 0;
+    char         buffer[FILE_PATH_MAX];
 
     dirp = opendir(dir);
     if (dirp) {
@@ -159,12 +159,12 @@ char *GB_find_latest_file(const char *dir, const char *mask) {
      * it may be a regular expression ('/regexp/')
      */
 
-    DIR           *dirp;
-    struct dirent *dp;
-    char           buffer[FILE_PATH_MAX];
-    struct stat    st;
-    GB_ULONG       newest = 0;
-    char          *result = 0;
+    DIR         *dirp;
+    dirent      *dp;
+    char         buffer[FILE_PATH_MAX];
+    struct stat  st;
+    GB_ULONG     newest = 0;
+    char        *result = 0;
 
     dirp = opendir(dir);
     if (dirp) {
@@ -284,7 +284,7 @@ char **GBS_read_dir(const char *dir, const char *mask) {
             int entries   = 0;
             names         = (char**)malloc(100*sizeof(*names));
 
-            struct dirent *entry;
+            dirent *entry;
             while ((entry = readdir(dirstream)) != 0) {
                 const char *name = entry->d_name;
 

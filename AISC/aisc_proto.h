@@ -33,11 +33,11 @@ int run_prg(void);
 /* aisc_mix.c */
 CL *aisc_calc_blocks(CL *co, CL *afor, CL *aif, int up);
 int aisc_calc_special_commands(void);
-struct hash_struct *create_hash(int size);
-char *read_hash_local(char *key, struct hash_struct **hs);
-char *read_hash(struct hash_struct *hs, char *key);
-void write_hash(struct hash_struct *hs, const char *key, const char *val);
-int free_hash(struct hash_struct *hs);
+hash *create_hash(int size);
+char *read_hash_local(char *key, hash **hs);
+char *read_hash(hash *hs, char *key);
+void write_hash(hash *hs, const char *key, const char *val);
+int free_hash(hash *hs);
 
 /* aisc_var_ref.c */
 const Token *aisc_find_var(const Token *cursor, char *str, LookupScope scope);
