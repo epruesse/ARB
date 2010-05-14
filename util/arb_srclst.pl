@@ -32,6 +32,7 @@ my @skipped_directories = (
 my %used_files = map { $_ => 1; } (
                                    'demo.arb',
                                    'export2sub',
+                                   'needs_libs',
                                    'Doxyfile',
                                    'Makefile',
                                    'Makefile.org',
@@ -96,6 +97,7 @@ my @used_when_matches = (
                          qr/^arb_.*\.txt$/o,
                          qr/license/io,
                          qr/disclaimer/io,
+                         qr/needs_libs\..*/io,
                          qr/readme$/io,
                          qr/unused.*source.*\.tgz$/io,
                         );
