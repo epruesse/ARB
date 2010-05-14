@@ -38,7 +38,7 @@ inline void SET_GB_EXTERN_DATA_DATA(gb_extern_data& ex, char *data) { GB_SETREL(
 inline void GB_CREATE_EXT(GBDATA *gbd) { if (!gbd->ext) gb_create_extended(gbd); }
 inline void GB_DELETE_EXT(GBDATA *gbd, long gbm_index) {
     if (gbd->ext) {
-        gbm_free_mem((char *) gbd->ext, sizeof(gb_db_extended), gbm_index);
+        gbm_free_mem(gbd->ext, sizeof(gb_db_extended), gbm_index);
         gbd->ext = 0;
     }
 }
@@ -101,7 +101,7 @@ inline void GB_SETSMDMALLOC(GBDATA *gbd, long siz, long memsiz, const char *dat)
         GB_SETEXTERN(gbd);
         gbd->info.ex.size = siz;
         gbd->info.ex.memsize = memsiz;
-        exData = gbm_get_mem((size_t)memsiz, GB_GBM_INDEX(gbd));
+        exData = (char*)gbm_get_mem((size_t)memsiz, GB_GBM_INDEX(gbd));
         SET_GB_EXTERN_DATA_DATA(gbd->info.ex, exData);
         if (dat) memcpy(exData, (char *)dat, (size_t)(memsiz));
     }
@@ -119,7 +119,7 @@ inline void GB_SETSMDMALLOC_UNINITIALIZED(GBDATA *gbd, long siz, long memsiz) {
         GB_SETEXTERN(gbd);
         gbd->info.ex.size = siz;
         gbd->info.ex.memsize = memsiz;
-        exData = gbm_get_mem((size_t)memsiz, GB_GBM_INDEX(gbd));
+        exData = (char*)gbm_get_mem((size_t)memsiz, GB_GBM_INDEX(gbd));
         SET_GB_EXTERN_DATA_DATA(gbd->info.ex, exData);
     }
     GB_INDEX_CHECK_IN(gbd);

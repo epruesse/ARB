@@ -851,7 +851,7 @@ static void test_dictionary(GB_DICTIONARY *dict, O_gbdByKey *gbk, long *uncompSu
                 compressed_sum += size;
             }
 
-            gbm_free_mem((char*)copy, size, GBM_DICT_INDEX);
+            gbm_free_mem(copy, size, GBM_DICT_INDEX);
         }
     }
 
@@ -1130,7 +1130,7 @@ DictTree single2full_dtree(DictTree tree, long *memcount)
 
             tree.single = t->brother.single;
 
-            gbm_free_mem((char*)t, sizeof(*t), GBM_DICT_INDEX);
+            gbm_free_mem(t, sizeof(*t), GBM_DICT_INDEX);
             (*memcount) -= sizeof(*t);
         }
 
@@ -1148,14 +1148,14 @@ static void free_dtree(DictTree tree)
                 if (tree.single->son.exists) free_dtree(tree.single->son);
                 if (tree.single->brother.exists) free_dtree(tree.single->brother);
 
-                gbm_free_mem((char*)tree.single, sizeof(*(tree.single)), GBM_DICT_INDEX);
+                gbm_free_mem(tree.single, sizeof(*(tree.single)), GBM_DICT_INDEX);
                 break;
             }
             case FULL_NODE: {
                 int idx;
 
                 for (idx=0; idx<256; idx++) if (tree.full->son[idx].exists) free_dtree(tree.full->son[idx]);
-                gbm_free_mem((char*)tree.full, sizeof(*(tree.full)), GBM_DICT_INDEX);
+                gbm_free_mem(tree.full, sizeof(*(tree.full)), GBM_DICT_INDEX);
                 break;
             }
         }
@@ -1177,7 +1177,7 @@ static DictTree cut_dtree(DictTree tree, int cut_count, long *memcount, long *le
                     if (tree.single->count<=cut_count) { // leaf with less/equal references
                         DictTree brother = tree.single->brother;
 
-                        gbm_free_mem((char*)tree.single, sizeof(*tree.single), GBM_DICT_INDEX);
+                        gbm_free_mem(tree.single, sizeof(*tree.single), GBM_DICT_INDEX);
                         (*memcount) -= sizeof(*tree.single);
                         if (brother.exists) return cut_dtree(brother, cut_count, memcount, leafcount);
 
@@ -1217,7 +1217,7 @@ static DictTree cut_dtree(DictTree tree, int cut_count, long *memcount, long *le
                 tree.full->usedSons = count;
 
                 if (!count) {           // no more sons
-                    gbm_free_mem((char*)tree.full, sizeof(*(tree.full)), GBM_DICT_INDEX);
+                    gbm_free_mem(tree.full, sizeof(*(tree.full)), GBM_DICT_INDEX);
                     (*memcount) -= sizeof(*(tree.full));
                     tree.exists = NULL;
                 }
@@ -1255,7 +1255,7 @@ static DictTree cut_useless_words(DictTree tree, int deep, long *removed)
                     DictTree brother = tree.single->brother;
 
                     *removed += tree.single->count;
-                    gbm_free_mem((char*)tree.single, sizeof(*tree.single), GBM_DICT_INDEX);
+                    gbm_free_mem(tree.single, sizeof(*tree.single), GBM_DICT_INDEX);
 
                     if (brother.exists) {
                         tree = cut_useless_words(brother, deep-1, &removed_single);
@@ -1303,7 +1303,7 @@ static DictTree cut_useless_words(DictTree tree, int deep, long *removed)
                 tree.full->usedSons = count;
 
                 if (!count) {           // no more sons
-                    gbm_free_mem((char*)tree.full, sizeof(*(tree.full)), GBM_DICT_INDEX);
+                    gbm_free_mem(tree.full, sizeof(*(tree.full)), GBM_DICT_INDEX);
                     tree.exists = NULL;
                 }
 
@@ -1364,7 +1364,7 @@ static DictTree add_dtree_to_dtree(DictTree toAdd, DictTree to, long *memcount)
 
                 tree = to;
 
-                gbm_free_mem((char*)toAdd.single, sizeof(*(toAdd.single)), GBM_DICT_INDEX);
+                gbm_free_mem(toAdd.single, sizeof(*(toAdd.single)), GBM_DICT_INDEX);
                 (*memcount) -= sizeof(toAdd.single);
 
                 break;
@@ -1896,7 +1896,7 @@ static DictTree build_dict_tree(O_gbdByKey *gbk, long maxmem, long maxdeep, long
             while (add_count);
         }
 
-        gbm_free_mem((char*)buffer, maxdeep, GBM_DICT_INDEX);
+        gbm_free_mem(buffer, maxdeep, GBM_DICT_INDEX);
 
         tree = cut_useless_words(tree, 0, &dummy);
     }
@@ -1948,7 +1948,7 @@ static DictTree remove_word_from_dtree(DictTree tree, cu_str wordStart, int word
                         DictTree brother = tree.single->brother;
 
                         *removed += tree.single->count;
-                        gbm_free_mem((char*)tree.single, sizeof(*tree.single), GBM_DICT_INDEX);
+                        gbm_free_mem(tree.single, sizeof(*tree.single), GBM_DICT_INDEX);
 
                         if (brother.exists)     tree = brother;
                         else                            tree.exists = NULL;
@@ -2040,7 +2040,7 @@ static DictTree remove_word_from_dtree(DictTree tree, cu_str wordStart, int word
                     DictTree brother = tree.single->brother;
 
                     *removed += tree.single->count;
-                    gbm_free_mem((char*)tree.single, sizeof(*tree.single), GBM_DICT_INDEX);
+                    gbm_free_mem(tree.single, sizeof(*tree.single), GBM_DICT_INDEX);
 
                     if (brother.exists) tree = brother;
                     else                tree.exists = NULL;
@@ -2288,7 +2288,7 @@ static GB_DICTIONARY *gb_create_dictionary(O_gbdByKey *gbk, long maxmem) {
                 u_str ntext = (u_str)gbm_get_mem(dict->textlen+DICT_STRING_INCR, GBM_DICT_INDEX);
 
                 memcpy(ntext, dict->text, dict->textlen);
-                gbm_free_mem((char*)dict->text, dict->textlen, GBM_DICT_INDEX);
+                gbm_free_mem(dict->text, dict->textlen, GBM_DICT_INDEX);
 
                 dict->text = ntext;
                 dict->textlen += DICT_STRING_INCR;
@@ -2327,7 +2327,7 @@ static GB_DICTIONARY *gb_create_dictionary(O_gbdByKey *gbk, long maxmem) {
             u_str ntext = (u_str)gbm_get_mem(offset, GBM_DICT_INDEX);
 
             memcpy(ntext, dict->text, offset);
-            gbm_free_mem((char*)dict->text, dict->textlen, GBM_DICT_INDEX);
+            gbm_free_mem(dict->text, dict->textlen, GBM_DICT_INDEX);
 
             dict->text = ntext;
             dict->textlen = offset;
@@ -2335,7 +2335,7 @@ static GB_DICTIONARY *gb_create_dictionary(O_gbdByKey *gbk, long maxmem) {
 
         sort_dict_offsets(dict);
 
-        gbm_free_mem((char*)buffer, maxdeep, GBM_DICT_INDEX);
+        gbm_free_mem(buffer, maxdeep, GBM_DICT_INDEX);
         free_dtree(tree);
 
         return dict;
@@ -2359,7 +2359,7 @@ static GB_ERROR readAndWrite(O_gbdByKey *gbkp) {
             {
                 char *d = (char*)get_data_n_size(gbd, &size);
 
-                data = gbm_get_mem(size, GBM_DICT_INDEX);
+                data = (char*)gbm_get_mem(size, GBM_DICT_INDEX);
                 memcpy(data, d, size);
                 gb_assert(data[size-1] == 0);
             }
@@ -2486,7 +2486,7 @@ GB_ERROR gb_create_dictionaries(GB_MAIN_TYPE *Main, long maxmem) {
                      */
 
                     int   dict_buffer_size = sizeof(GB_NINT) * (1+dict->words*2) + dict->textlen;
-                    char *dict_buffer      = gbm_get_mem(dict_buffer_size, GBM_DICT_INDEX);
+                    char *dict_buffer      = (char*)gbm_get_mem(dict_buffer_size, GBM_DICT_INDEX);
                     long  old_dict_buffer_size;
                     char *old_dict_buffer;
 

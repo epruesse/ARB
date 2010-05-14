@@ -100,7 +100,7 @@ void gb_index_check_out(GBDATA *gbd) {
                             else SET_GB_ENTRIES_ENTRY(entries, index, GB_IF_ENTRIES_NEXT(ifes));
 
                             ifs->nr_of_elements--;
-                            gbm_free_mem((char *)ifes, sizeof(gb_if_entries), GB_GBM_INDEX(gbd));
+                            gbm_free_mem(ifes, sizeof(gb_if_entries), GB_GBM_INDEX(gbd));
                             break;
                         }
                         ifes2 = ifes;
@@ -183,14 +183,14 @@ void gb_destroy_indices(GBCONTAINER *gbc) {
             while (ifes) {
                 gb_if_entries *ifes_next = GB_IF_ENTRIES_NEXT(ifes);
 
-                gbm_free_mem((char*)ifes, sizeof(*ifes), GB_GBM_INDEX(gbc));
+                gbm_free_mem(ifes, sizeof(*ifes), GB_GBM_INDEX(gbc));
                 ifes = ifes_next;
             }
         }
-        gbm_free_mem((char*)if_entries, sizeof(void *)*(int)ifs->hash_table_size, GB_GBM_INDEX(gbc));
+        gbm_free_mem(if_entries, sizeof(void *)*(int)ifs->hash_table_size, GB_GBM_INDEX(gbc));
 
         gb_index_files *ifs_next = GB_INDEX_FILES_NEXT(ifs);
-        gbm_free_mem((char*)ifs, sizeof(gb_index_files), GB_GBM_INDEX(gbc));
+        gbm_free_mem(ifs, sizeof(gb_index_files), GB_GBM_INDEX(gbc));
         ifs = ifs_next;
     }
 }
@@ -368,7 +368,7 @@ static void delete_g_b_undo_entry(g_b_undo_entry *entry) {
         default:
             break;
     }
-    gbm_free_mem((char *)entry, sizeof(g_b_undo_entry), GBM_UNDO);
+    gbm_free_mem(entry, sizeof(g_b_undo_entry), GBM_UNDO);
 }
 
 static void delete_g_b_undo_list(g_b_undo_list *u) {

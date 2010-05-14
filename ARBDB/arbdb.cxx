@@ -295,7 +295,7 @@ void GB_exit_gb() {
         free(check_out_buffer(&gb_local->buf2));
         free(check_out_buffer(&gb_local->buf1));
 
-        gbm_free_mem((char*)gb_local, sizeof(*gb_local), 0);
+        gbm_free_mem(gb_local, sizeof(*gb_local), 0);
         gb_local = NULL;
 
         gbm_flush_mem();
@@ -2117,7 +2117,7 @@ GB_ERROR gb_do_callback_list(GB_MAIN_TYPE *Main) {
         cbl_next = cbl->next;
         g_b_old_callback_list = NULL;
         gb_del_ref_gb_transaction_save(cbl->old);
-        gbm_free_mem((char *)cbl, sizeof(gb_callback_list), GBM_CB_INDEX);
+        gbm_free_mem(cbl, sizeof(gb_callback_list), GBM_CB_INDEX);
     }
 
     Main->cbld_last = NULL;
@@ -2130,7 +2130,7 @@ GB_ERROR gb_do_callback_list(GB_MAIN_TYPE *Main) {
         cbl_next = cbl->next;
         g_b_old_callback_list = NULL;
         gb_del_ref_gb_transaction_save(cbl->old);
-        gbm_free_mem((char *)cbl, sizeof(gb_callback_list), GBM_CB_INDEX);
+        gbm_free_mem(cbl, sizeof(gb_callback_list), GBM_CB_INDEX);
     }
 
     g_b_old_main   = NULL;
@@ -2366,7 +2366,7 @@ static void gb_remove_callback(GBDATA *gbd, GB_CB_TYPE type, GB_CB func, int *cl
                 }
 
                 *cb_ptr = cb->next;
-                gbm_free_mem((char *)cb, sizeof(gb_callback), GB_GBM_INDEX(gbd));
+                gbm_free_mem(cb, sizeof(gb_callback), GB_GBM_INDEX(gbd));
                 removed = true;
                 if (exactly_one) break;
             }

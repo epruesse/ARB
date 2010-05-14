@@ -740,7 +740,7 @@ GBDATA *gb_map_mapfile(const char *path)
     return NULL;
 }
 
-int gb_isMappedMemory(char *mem)
+int gb_isMappedMemory(void *mem)
 {
     int file = 0;
 

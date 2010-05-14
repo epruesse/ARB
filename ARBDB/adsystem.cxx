@@ -57,7 +57,7 @@ GB_ERROR gb_load_dictionary_data(GBDATA *gb_main, const char *key, char **dict_d
             GBDATA *gb_dict = GB_entry(gb_key, "@dictionary");
             if (gb_dict) {
                 const char *data = gb_read_dict_data(gb_dict, size);
-                char       *copy = gbm_get_mem(*size, GBM_DICT_INDEX);
+                char       *copy = (char*)gbm_get_mem(*size, GBM_DICT_INDEX);
                 memcpy(copy, data, *size);
                 *dict_data       = copy;
             }

@@ -209,7 +209,7 @@ void gb_check_in_undo_delete(GB_MAIN_TYPE *Main, GBDATA *gbd, int deep);
 GB_ERROR gb_save_mapfile(GB_MAIN_TYPE *Main, GB_CSTR path);
 int gb_is_valid_mapfile(const char *path, gb_map_header *mheader, int verbose);
 GBDATA *gb_map_mapfile(const char *path);
-int gb_isMappedMemory(char *mem);
+int gb_isMappedMemory(void *mem);
 
 /* adquery.cxx */
 GBDATA *gb_find_by_nr(GBDATA *father, int index);
