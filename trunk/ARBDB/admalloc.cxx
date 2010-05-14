@@ -542,7 +542,7 @@ inline void *GB_MEMALIGN(size_t alignment, size_t size) {
     return mem;
 }
 
-char *gbmGetMemImpl(size_t size, long index) {
+void *gbmGetMemImpl(size_t size, long index) {
     unsigned long  nsize, pos;
     char          *erg;
     gbm_data      *gds;
@@ -604,7 +604,7 @@ char *gbmGetMemImpl(size_t size, long index) {
     return erg;
 }
 
-void gbmFreeMemImpl(char *data, size_t size, long index) {
+void gbmFreeMemImpl(void *data, size_t size, long index) {
     long      nsize, pos;
     gbm_pool *ggi;
 
@@ -635,7 +635,7 @@ void gbmFreeMemImpl(char *data, size_t size, long index) {
         }
         else
         {
-            block = (gbb_data *)(data-GBB_HEADER_SIZE);
+            block = (gbb_data *)((char*)data-GBB_HEADER_SIZE);
 
             ggi->extern_data_size -= (size_t)nsize;
             ggi->extern_data_items--;
@@ -760,7 +760,7 @@ void TEST_ARBDB_memory() { // not a real unit test - just was used for debugging
                 }
                 else {
                     long *block = blocks[allocs++];
-                    gbm_free_mem((char*)block, (size_t)block[0], block[1]);
+                    gbm_free_mem(block, (size_t)block[0], block[1]);
                 }
             }
         }

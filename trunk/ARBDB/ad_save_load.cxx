@@ -1399,10 +1399,10 @@ void TEST_loadsave() {
     }
     {
         // test alloc/free (no real test, just call it for code coverage)
-        char *small_block = gbm_get_mem(30, 5);
+        char *small_block = (char*)gbm_get_mem(30, 5);
         gbm_free_mem(small_block, 30, 5);
 
-        char *big_block = gbm_get_mem(3000, 6);
+        char *big_block = (char*)gbm_get_mem(3000, 6);
         gbm_free_mem(big_block, 3000, 6);
     }
 #endif

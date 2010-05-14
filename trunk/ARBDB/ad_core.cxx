@@ -165,7 +165,7 @@ void gb_create_header_array(GBCONTAINER *gbc, int size) {
             }
         }
 
-        gbm_free_mem((char *)ol, sizeof(gb_header_list)*gbc->d.headermemsize, GBM_HEADER_INDEX);
+        gbm_free_mem(ol, sizeof(gb_header_list)*gbc->d.headermemsize, GBM_HEADER_INDEX);
     }
 
     gbc->d.headermemsize = size;
@@ -280,7 +280,7 @@ char *gb_destroy_main(GB_MAIN_TYPE *Main) {
     free(Main->path);
     free(Main->qs.quick_save_disabled);
 
-    gbm_free_mem((char *)Main, sizeof(*Main), 0);
+    gbm_free_mem(Main, sizeof(*Main), 0);
 
     gb_local->closedDBs++;
     if (gb_local->closedDBs == gb_local->openedDBs) {
@@ -441,7 +441,7 @@ void gb_pre_delete_entry(GBDATA *gbd) {
         if (cb->type & GB_CB_DELETE) {
             gb_add_delete_callback_list(gbd, gbd->ext->old, cb->func, cb->clientdata);
         }
-        gbm_free_mem((char *) cb, sizeof(gb_callback), gbm_index);
+        gbm_free_mem(cb, sizeof(gb_callback), gbm_index);
     }
 
     if (GB_FATHER(gbd)) {
@@ -476,7 +476,7 @@ void gb_delete_entry(GBDATA **gbd_ptr) {
 
         gb_pre_delete_entry(gbd);
         if (type >= GB_BITS) GB_FREEDATA(gbd);
-        gbm_free_mem((char *) gbd, sizeof(GBDATA), gbm_index);
+        gbm_free_mem(gbd, sizeof(GBDATA), gbm_index);
         
         *gbd_ptr = 0;                               // avoid further usage
     }
@@ -504,9 +504,9 @@ void gb_delete_entry(GBCONTAINER **gbc_ptr) {
     gb_header_list *hls;
     
     if ((hls=GB_DATA_LIST_HEADER(gbc->d)) != NULL) {
-        gbm_free_mem((char *)hls, sizeof(gb_header_list) * gbc->d.headermemsize, GBM_HEADER_INDEX);
+        gbm_free_mem(hls, sizeof(gb_header_list) * gbc->d.headermemsize, GBM_HEADER_INDEX);
     }
-    gbm_free_mem((char *) gbc, sizeof(GBCONTAINER), gbm_index);
+    gbm_free_mem(gbc, sizeof(GBCONTAINER), gbm_index);
 
     *gbc_ptr = 0;                                   // avoid further usage
 }
@@ -595,7 +595,7 @@ void gb_del_ref_gb_transaction_save(gb_transaction_save *ts) {
                              ts->flags2.gbm_index);
             }
         }
-        gbm_free_mem((char*)ts, sizeof(gb_transaction_save), GBM_CB_INDEX);
+        gbm_free_mem(ts, sizeof(gb_transaction_save), GBM_CB_INDEX);
     }
 }
 

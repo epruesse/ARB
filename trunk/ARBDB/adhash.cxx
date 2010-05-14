@@ -436,7 +436,7 @@ static void delete_from_list(GB_HASH *hs, size_t i, gbs_hash_entry *e) {
     }
     free(e->key);
     if (hs->freefun) hs->freefun(e->val);
-    gbm_free_mem((char *)e, sizeof(gbs_hash_entry), GBM_HASH_INDEX);
+    gbm_free_mem(e, sizeof(gbs_hash_entry), GBM_HASH_INDEX);
 }
 
 static long write_hash(GB_HASH *hs, char *key, bool copyKey, long val) {
@@ -576,7 +576,7 @@ void GBS_erase_hash(GB_HASH *hs) {
             if (hs->freefun) hs->freefun(e->val);
 
             gbs_hash_entry *next = e->next;
-            gbm_free_mem((char *)e, sizeof(gbs_hash_entry), GBM_HASH_INDEX);
+            gbm_free_mem(e, sizeof(gbs_hash_entry), GBM_HASH_INDEX);
             e = next;
         }
         hs->entries[i] = 0;
@@ -861,7 +861,7 @@ long GBS_write_numhash(GB_NUMHASH *hs, long key, long val) {
         for (numhash_entry *e = hs->entries[i]; e; e = e->next) {
             if (e->key == key) {
                 *nextPtr = e->next;                  // unlink entry
-                gbm_free_mem((char *) e, sizeof(*e), GBM_HASH_INDEX);
+                gbm_free_mem(e, sizeof(*e), GBM_HASH_INDEX);
                 hs->nelem--;
                 return 0;
             }
@@ -902,7 +902,7 @@ void GBS_erase_numhash(GB_NUMHASH *hs) {
         for (numhash_entry *e = hs->entries[i]; e; ) {
             numhash_entry *next = e->next;
             
-            gbm_free_mem((char *)e, sizeof(*e), GBM_HASH_INDEX);
+            gbm_free_mem(e, sizeof(*e), GBM_HASH_INDEX);
             e = next;
         }
     }

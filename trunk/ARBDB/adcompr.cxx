@@ -186,7 +186,7 @@ void gb_free_compress_tree(gb_compress_tree *tree) {
             if (tree->son[1])gb_free_compress_tree(tree->son[1]);
         }
     }
-    gbm_free_mem((char *)tree, sizeof(gb_compress_tree), GBM_CB_INDEX);
+    gbm_free_mem(tree, sizeof(gb_compress_tree), GBM_CB_INDEX);
 }
 
 gb_compress_list *gb_build_compress_list(const unsigned char *data, long short_flag, long *size) {
@@ -498,7 +498,7 @@ long gb_compress_huffmann_pop(long *val, gb_compress_list **element)
         huffmann_listhead = dat->next;
         *val = dat->val;
         *element = dat->element;
-        gbm_free_mem((char *)dat, sizeof(huffmann_list), GBM_CB_INDEX);
+        gbm_free_mem(dat, sizeof(huffmann_list), GBM_CB_INDEX);
         return 1;
     }
     else {
@@ -512,7 +512,7 @@ char *gb_compress_huffmann_rek(gb_compress_list *bc, int bits, int bitcnt, char 
     if (bc->command == GB_CD_NODE) {
         dest = gb_compress_huffmann_rek(bc->son[0], (bits<<1), bitcnt+1, dest);
         dest = gb_compress_huffmann_rek(bc->son[1], (bits<<1)+1, bitcnt+1, dest);
-        gbm_free_mem((char *)bc, sizeof(gb_compress_list), GBM_CB_INDEX);
+        gbm_free_mem(bc, sizeof(gb_compress_list), GBM_CB_INDEX);
         return dest;
     }
     else {

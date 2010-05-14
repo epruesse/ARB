@@ -11,8 +11,8 @@
 #ifndef GB_MEMORY_H
 #define GB_MEMORY_H
 
-// #if defined(DEBUG) && (UNIT_TESTS == 0) // use this to run tests on mapfiles
-#if defined(DEBUG)
+#if defined(DEBUG) && (UNIT_TESTS == 0) // use this to run tests on mapfiles
+// #if defined(DEBUG)
 #define MEMORY_TEST 1
 // MEMORY_TEST == 1 uses malloc and normal pointers for internal ARBDB memory
 // -> memory checkers like valgrand work
@@ -106,16 +106,16 @@ enum ARB_MEMORY_INDEX {
 
 void *GB_calloc(unsigned int nelem, unsigned int elsize);
 
-inline char *gbm_get_mem(size_t size, long )          { return (char*)GB_calloc(1, size); }
-inline void gbm_free_mem(char *block, size_t , long ) { free(block); }
+inline void *gbm_get_mem(size_t size, long )          { return (char*)GB_calloc(1, size); }
+inline void gbm_free_mem(void *block, size_t , long ) { free(block); }
 
 #else
 
-char *gbmGetMemImpl(size_t size, long index);
-void gbmFreeMemImpl(char *data, size_t size, long index);
+void *gbmGetMemImpl(size_t size, long index);
+void gbmFreeMemImpl(void *data, size_t size, long index);
 
-inline char *gbm_get_mem(size_t size, long index)              { return gbmGetMemImpl(size, index); }
-inline void gbm_free_mem(char *block, size_t size, long index) { gbmFreeMemImpl(block, size, index); }
+inline void *gbm_get_mem(size_t size, long index)              { return gbmGetMemImpl(size, index); }
+inline void gbm_free_mem(void *block, size_t size, long index) { gbmFreeMemImpl(block, size, index); }
 
 #endif
 

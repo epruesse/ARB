@@ -954,7 +954,7 @@ long gb_read_bin_rek_V2(FILE *in, GBCONTAINER *gbd, long nitems, long version, l
                 else {
                     GB_SETEXTERN(gb2);
                     // memsize++; // ralf: added +1 because decompress ran out of this block (cant solve like this - breaks memory management!)
-                    p = gbm_get_mem((size_t)memsize, GB_GBM_INDEX(gb2)); 
+                    p = (char*)gbm_get_mem((size_t)memsize, GB_GBM_INDEX(gb2)); 
                 }
                 i = fread(p, 1, (size_t)memsize, in);
                 if (i!=memsize) {
@@ -1201,7 +1201,7 @@ long gb_read_bin(FILE *in, GBCONTAINER *gbd, int diff_file_allowed)
 
                         gb_main_array[new_idx] = Main;
 
-                        gbm_free_mem((char*)Main->data, sizeof(GBCONTAINER), GB_QUARK_2_GBMINDEX(Main, 0));
+                        gbm_free_mem(Main->data, sizeof(GBCONTAINER), GB_QUARK_2_GBMINDEX(Main, 0));
 
                         Main->data = newGbd;
                         father->main_idx = new_idx;

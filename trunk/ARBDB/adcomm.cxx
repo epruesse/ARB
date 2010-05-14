@@ -532,7 +532,7 @@ static GBCM_ServerResult gbcm_read_bin(int socket, GBCONTAINER *gbd, long *buffe
             }
             else {
                 GB_SETEXTERN(gb2);
-                data = gbm_get_mem((size_t)memsize, GB_GBM_INDEX(gb2));
+                data = (char*)gbm_get_mem((size_t)memsize, GB_GBM_INDEX(gb2));
             }
             size = gbcm_read(socket, data, memsize);
             if (size != memsize) {
@@ -601,7 +601,7 @@ static GBCM_ServerResult gbcms_write_deleted(int socket, GBDATA *gbd, long hsin,
             if (socinf->dl == dl) return GBCM_SERVER_OK;
         }
         hs->del_first = dl->next;
-        gbm_free_mem((char *)dl, sizeof(gbcms_delete_list), GBM_CB_INDEX);
+        gbm_free_mem(dl, sizeof(gbcms_delete_list), GBM_CB_INDEX);
     }
     gbd = gbd;
     return GBCM_SERVER_OK;
