@@ -68,9 +68,9 @@ struct PTPanGlobal
 
   /* communication stuff */
   PT_main    *pg_AISC;           /* main communication pointer */
-  arb_params *pg_ArbParams;
+  struct arb_params *pg_ArbParams;
   STRPTR      pg_ServerName;     /* hostname of server */
-  Hs_struct *pg_ComSocket; /* the communication socket */
+  struct Hs_struct *pg_ComSocket; /* the communication socket */
 
   BOOL        pg_UseStdSfxTree;  /* selects between PTPan and SfxTree */
   FILE       *pg_IndexFile;      /* file handle for main index file */
