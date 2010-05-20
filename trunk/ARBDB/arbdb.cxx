@@ -430,11 +430,10 @@ static void run_close_callbacks(GBDATA *gb_main, gb_close_callback_list *gccs) {
 }
 
 void GB_close(GBDATA *gbd) {
-    GB_ERROR error = 0;
+    GB_ERROR      error = NULL;
+    GB_MAIN_TYPE *Main  = GB_MAIN(gbd);
 
-    GB_MAIN_TYPE *Main = GB_MAIN(gbd);
-
-    gb_assert(Main->transaction == 0); // you can't close DB if there is still an open transaction!
+    gb_assert(Main->transaction <= 0); // transaction running -> you can't close DB yet!
 
     if (!Main->local_mode) {
         long result            = gbcmc_close(Main->c_link);

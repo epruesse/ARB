@@ -267,6 +267,8 @@ char *gb_destroy_main(GB_MAIN_TYPE *Main) {
     gb_release_main_idx(Main);
 
     if (Main->command_hash) GBS_free_hash(Main->command_hash);
+    if (Main->table_hash) GBS_free_hash(Main->table_hash);
+    if (Main->resolve_link_hash) GBS_free_hash(Main->resolve_link_hash);
 
     gb_free_all_keys(Main);
     
@@ -278,6 +280,7 @@ char *gb_destroy_main(GB_MAIN_TYPE *Main) {
     for (int j = 0; j<ALLOWED_DATES; ++j) freenull(Main->dates[j]);
 
     free(Main->path);
+    free(Main->disabled_path);
     free(Main->qs.quick_save_disabled);
 
     gbm_free_mem(Main, sizeof(*Main), 0);
