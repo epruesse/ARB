@@ -1631,7 +1631,7 @@ void GEN_map_window::init(AW_root *awr, GBDATA *gb_main) {
     insert_menu_topic("gene_layout",       "Layout",   "L", "gene_layout.hlp", AWM_ALL, AW_POPUP, (AW_CL)GEN_create_layout_window, 0);
     insert_menu_topic("gene_options",      "Options",  "O", "gene_options.hlp", AWM_ALL, AW_POPUP, (AW_CL)GEN_create_options_window, 0);
     insert_menu_topic("gene_nds",          "NDS ( Select Gene Information ) ...",      "N", "props_nds.hlp",   AWM_ALL, AW_POPUP, (AW_CL)GEN_open_nds_window, (AW_CL)gb_main);
-    insert_menu_topic("gene_save_props",   "Save Defaults (in ~/.arb_prop/ntree.arb)", "D", "savedef.hlp", AWM_ALL, (AW_CB) AW_save_defaults, 0, 0);
+    insert_menu_topic("gene_save_props",   "Save Defaults (in ~/.arb_prop/ntree.arb)", "D", "savedef.hlp", AWM_ALL, (AW_CB) AW_save_properties, 0, 0);
 
     // ---------------------
     //      mode buttons

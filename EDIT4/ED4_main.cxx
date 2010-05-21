@@ -481,26 +481,6 @@ const char *ED4_propertyName(int mode) {
     return result;
 }
 
-
-static void openProperties() {
-    for (int mode = 0; mode <= 2; ++mode) { // search for defaults-database
-        const char *name  = ED4_propertyName(mode);
-        AW_default  found = ED4_ROOT->aw_root->open_default(name, mode == 2); // if mode == 2 -> create if missing
-
-        if (found) {
-            ED4_ROOT->props_db = found;
-            ED4_ROOT->db_name  = strdup(name);
-            break;
-        }
-    }
-
-    GB_informationf("Using properties from '%s'", ED4_ROOT->db_name);
-#if defined(DEBUG)
-    AWT_announce_properties_to_browser(ED4_ROOT->props_db, ED4_ROOT->db_name);
-#endif // DEBUG
-    ED4_ROOT->aw_root->init_variables(ED4_ROOT->props_db); // pass defaults
-}
-
 int main(int argc, char **argv)
 {
     const char *data_path = ":";
@@ -541,6 +521,8 @@ int main(int argc, char **argv)
         argc--; argv++;
     }
 
+    aw_initstatus();
+
     GLOBAL_gb_main = GB_open(data_path, "rwt");
     if (!GLOBAL_gb_main)
     {
@@ -551,18 +533,15 @@ int main(int argc, char **argv)
 #if defined(DEBUG)
     AWT_announce_db_to_browser(GLOBAL_gb_main, GBS_global_string("ARB database (%s)", data_path));
 #endif // DEBUG
+
     ED4_ROOT = new ED4_root;
-
-    openProperties(); // open properties database
-
-    ED4_ROOT->aw_root->init_root("ARB_EDIT4", false); // initialize window-system
 
     ED4_ROOT->database = new EDB_root_bact;
     ED4_ROOT->init_alignment();
     ed4_create_all_awars(ED4_ROOT->aw_root, config_name);
 
     ED4_ROOT->st_ml = STAT_create_ST_ML(GLOBAL_gb_main);
-    ED4_ROOT->sequence_colors = new AWT_seq_colors((GBDATA *)ED4_ROOT->aw_root->application_database, (int)ED4_G_SEQUENCES, ED4_refresh_window, 0, 0);
+    ED4_ROOT->sequence_colors = new AWT_seq_colors(AW_ROOT_DEFAULT, ED4_G_SEQUENCES, ED4_refresh_window, 0, 0);
 
     ED4_ROOT->edk = new ed_key;
     ED4_ROOT->edk->create_awars(ED4_ROOT->aw_root);

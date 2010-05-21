@@ -739,13 +739,20 @@ static void aw_clear_and_hide_message_cb(AW_window *aww) {
     AW_POPDOWN(aww);
 }
 
-void aw_initstatus()
-{
-    int error;
+static void create_status_awars(AW_root *aw_root) {
+    aw_root->awar_string(AWAR_STATUS_TITLE,   "------------------------------------");
+    aw_root->awar_string(AWAR_STATUS_TEXT,    "");
+    aw_root->awar_string(AWAR_STATUS_GAUGE,   "------------------------------------");
+    aw_root->awar_string(AWAR_STATUS_ELAPSED, "");
+    aw_root->awar_string(AWAR_ERROR_MESSAGES, "");
+}
 
-    aw_assert(aw_stg.pid == 0); // do not init status twice!
+void aw_initstatus() {
+    aw_assert(aw_stg.pid == 0);                     // do not init status twice!
+    aw_assert(!AW_root::SINGLETON);                 // aw_initstatus has to be called before constructing AW_root
+    aw_assert(GB_open_DBs() == 0);                  // aw_initstatus has to be called before opening the first ARB-DB
 
-    error = pipe(aw_stg.fd_to);
+    int error = pipe(aw_stg.fd_to);
     if (error) {
         printf("Cannot create socketpair\n");
         exit(-1);
@@ -775,18 +782,8 @@ void aw_initstatus()
 
         aw_stg.is_child = true; // mark as child
 
-        AW_root *aw_root;
-        aw_root = new AW_root;
-
-
-        AW_default aw_default = aw_root->open_default(".arb_prop/status.arb");
-        aw_root->init_variables(aw_default);
-        aw_root->awar_string(AWAR_STATUS_TITLE, "------------------------------------", aw_default);
-        aw_root->awar_string(AWAR_STATUS_TEXT, "", aw_default);
-        aw_root->awar_string(AWAR_STATUS_GAUGE, "------------------------------------", aw_default);
-        aw_root->awar_string(AWAR_STATUS_ELAPSED, "", aw_default);
-        aw_root->awar_string(AWAR_ERROR_MESSAGES, "", aw_default);
-        aw_root->init_root("ARB_STATUS", true);
+        AW_root *aw_root = new AW_root(".arb_prop/status.arb", "ARB_STATUS", true);
+        create_status_awars(aw_root);
 
         AW_window_simple *aws = new AW_window_simple;
         aws->init(aw_root, "STATUS_BOX", "STATUS BOX");
@@ -923,7 +920,7 @@ void aw_message(const char *msg) {
     printf("aw_message: '%s'\n", msg);
 #endif // DEBUG
     if (aw_stg.local_message) {
-        aw_insert_message_in_tmp_message(AW_root::THIS, msg);
+        aw_insert_message_in_tmp_message(AW_root::SINGLETON, msg);
     }
     else {
         if (!aw_stg.status_initialized) {

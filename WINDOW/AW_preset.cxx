@@ -21,13 +21,14 @@
 
 #include <cstdarg>
 
-void AW_save_defaults(AW_window *aw) {
-    aw->get_root()->save_default("window/font");
+void AW_save_specific_properties(AW_window *aw, const char *filename) {  // special version for EDIT4
+    GB_ERROR error = aw->get_root()->save_properties(filename);
+    if (error) aw_message(error);
+}
+void AW_save_properties(AW_window *aw) {
+    AW_save_specific_properties(aw, NULL);
 }
 
-void AW_save_specific_defaults(AW_window *aw, const char *filename) {  // special version for EDIT4
-    aw->get_root()->save_default("window/font", filename);
-}
 
 void aw_message_reload(AW_root *) {
     aw_message("Sorry, to activate new colors:\n"

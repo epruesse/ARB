@@ -197,7 +197,7 @@ void AWT_browser_forget_db(GBDATA *gb_main);
 void AWT_create_debug_menu(AW_window *awmm);
 #endif // DEBUG
 
-AW_default AWT_open_properties(AW_root *aw_root, const char *default_name);
+AW_root *AWT_create_root(const char *properties, const char *program);
 
 void AWT_install_cb_guards();
 

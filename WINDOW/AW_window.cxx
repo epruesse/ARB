@@ -49,7 +49,7 @@
 #include <sys/uio.h>
 #include <unistd.h>
 
-AW_root *AW_root::THIS = NULL;
+AW_root *AW_root::SINGLETON = NULL;
 
 AW_cb_struct::AW_cb_struct(AW_window *awi, void (*g)(AW_window*, AW_CL, AW_CL), AW_CL cd1i, AW_CL cd2i,
         const char *help_texti, class AW_cb_struct *nexti) {
@@ -126,21 +126,6 @@ bool AW_remove_button_from_sens_list(AW_root *root, Widget w) {
     }
     return removed;
 }
-
-AW_config_struct::AW_config_struct(const char *idi, AW_active maski, Widget w,
-                                   const char *variable_namei, const char *variable_valuei,
-                                   AW_config_struct *nexti)
-{
-    aw_assert(legal_mask(maski));
-
-    id             = strdup(idi);
-    mask           = maski;
-    widget         = w;
-    variable_name  = strdup(variable_namei);
-    variable_value = strdup(variable_valuei);
-    next           = nexti;
-}
-
 
 AW_option_struct::AW_option_struct(const char *variable_valuei,
         Widget choice_widgeti) :
@@ -268,14 +253,34 @@ AW_selection_list::AW_selection_list(const char *variable_namei, int variable_ty
     value_equal_display = false;
 }
 
-AW_root::AW_root() {
+static void destroy_AW_root() {
+    delete AW_root::SINGLETON;
+}
+
+AW_root::AW_root(const char *propertyFile, const char *program, bool no_exit) {
+    aw_assert(!AW_root::SINGLETON);                 // only one instance allowed
+    AW_root::SINGLETON = this;
+
     memset((char *)this, 0, sizeof(AW_root));
-    this->THIS = this;
-    this->prvt = (AW_root_Motif *)GB_calloc(sizeof(AW_root_Motif), 1);
+
+    prvt = new AW_root_Motif;
+
+    init_variables(load_properties(propertyFile));
+    init_root(program, no_exit);
+
+    atexit(destroy_AW_root); // do not call this before opening properties DB!
 }
 
 AW_root::~AW_root() {
+    exit_variables();
+    aw_assert(this == AW_root::SINGLETON);
+
+    
     delete prvt;
+
+    free(program_name);
+
+    AW_root::SINGLETON = NULL;
 }
 
 AW_window_Motif::AW_window_Motif() {
@@ -813,6 +818,15 @@ bool AW_cb_struct::contains(void (*g)(AW_window*, AW_CL, AW_CL)) {
     return (f == g) || (next && next->contains(g));
 }
 
+AW_root_Motif::AW_root_Motif() {
+    memset((char*)this, 0, sizeof(*this));
+}
+
+AW_root_Motif::~AW_root_Motif() {
+    GBS_free_hash(action_hash);
+    XmFontListFree(fontlist);
+}
+
 void AW_root_Motif::set_cursor(Display *d, Window w, Cursor c) {
     XSetWindowAttributes attrs;
     old_cursor_display = d;
@@ -1266,32 +1280,59 @@ struct fallbacks {
 };
 
 static struct fallbacks aw_fb[] = {
-// fallback awarname    init
-
-        { "FontList", "window/font", "8x13bold" }, { "background",
-                "window/background", "grey" }, { "foreground",
-                "window/foreground", "Black", }
-, { 0, "window/color_1", "red", }
-, { 0, "window/color_2", "green", }
-, { 0, "window/color_3", "blue", }
-, { 0, 0, 0 }
+    // Name         fallback awarname    default value
+    { "FontList",   "window/font",       "8x13bold" },
+    { "background", "window/background", "grey" },
+    { "foreground", "window/foreground", "Black", },
+    { 0,            "window/color_1",    "red", },
+    { 0,            "window/color_2",    "green", },
+    { 0,            "window/color_3",    "blue", },
+    { 0,            0,                   0 }
 };
 
-static const char *aw_awar_2_color[] = { "window/background",
-        "window/foreground", "window/color_1", "window/color_2",
-        "window/color_3", 0 };
+static const char *aw_awar_2_color[] = {
+    "window/background",
+    "window/foreground",
+    "window/color_1",
+    "window/color_2",
+    "window/color_3",
+    0
+};
+
 
 void AW_root::init_variables(AW_default database) {
-    application_database = database;
-
+    application_database     = database;
     hash_table_for_variables = GBS_create_hash(1000, GB_MIND_CASE);
     hash_for_windows         = GBS_create_hash(100, GB_MIND_CASE);
     prvt->action_hash        = GBS_create_hash(1000, GB_MIND_CASE);
-    int i;
-    for (i=0; i<1000; i++) {
-        if (aw_fb[i].awar == 0)
-            break;
+
+    for (int i=0; aw_fb[i].awar; ++i) {
         awar_string(aw_fb[i].awar, aw_fb[i].init, application_database);
+    }
+}
+
+static long destroy_awar(const char *, long val, void *) {
+    AW_awar *awar = (AW_awar*)val;
+    delete   awar;
+    return 0; // remove from hash
+}
+
+void AW_root::exit_variables() {
+    if (hash_table_for_variables) {
+        GBS_hash_do_loop(hash_table_for_variables, destroy_awar, NULL);
+        GBS_free_hash(hash_table_for_variables);
+        hash_table_for_variables = NULL;
+    }
+
+    if (hash_for_windows) {
+        GBS_free_hash(hash_for_windows);
+        hash_for_windows = NULL;
+    }
+
+    if (application_database) {
+        GBDATA *prop_main    = application_database;
+        application_database = NULL;
+        GB_close(prop_main);
     }
 }
 
@@ -1312,7 +1353,7 @@ void *AW_root::get_aw_var_struct_no_error(char *awar_name) {
 static void aw_root_create_color_map(AW_root *root) {
     int i;
     XColor xcolor_returned, xcolor_exakt;
-    GBDATA *gbd = (GBDATA*)root->application_database;
+    GBDATA *gbd = root->check_properties(NULL);
     p_global->color_table = (unsigned long *)GB_calloc(sizeof(unsigned long), AW_COLOR_MAX);
 
     if (p_global->screen_depth == 1) { // Black and White Monitor
@@ -1423,9 +1464,6 @@ void AW_root::init_root(const char *programname, bool no_exit) {
 
     p_r->button_list = 0;
 
-    p_r->config_list = new AW_config_struct("", AWM_ALL, NULL, "Programmer Name", "SH", NULL);
-    p_r->last_config = p_r->config_list;
-
     p_r->last_option_menu = p_r->current_option_menu = p_r->option_menu_list = NULL;
     p_r->last_toggle_field = p_r->toggle_field_list = NULL;
     p_r->last_selection_list = p_r->selection_list = NULL;
@@ -1511,35 +1549,35 @@ void AW_window::create_window_variables() {
     char buffer[200];
     memset(buffer, 0, 200);
     sprintf(buffer, "window/%s/horizontal_page_increment", window_defaults_name);
-    get_root()->awar_int(buffer, 50, get_root()->application_database);
+    get_root()->awar_int(buffer, 50);
     get_root()->awar(buffer)->add_callback(
             (AW_RCB)horizontal_scrollbar_redefinition_cb, (AW_CL)this,
             (AW_CL)p_w->scroll_bar_horizontal);
 
     sprintf(buffer, "window/%s/vertical_page_increment", window_defaults_name);
-    get_root()->awar_int(buffer, 50, get_root()->application_database);
+    get_root()->awar_int(buffer, 50);
     get_root()->awar(buffer)->add_callback((AW_RCB)vertical_scrollbar_redefinition_cb,
             (AW_CL)this, (AW_CL)p_w->scroll_bar_vertical);
 
     sprintf(buffer, "window/%s/scroll_delay_vertical", window_defaults_name);
-    get_root()->awar_int(buffer, 20, get_root()->application_database);
+    get_root()->awar_int(buffer, 20);
     get_root()->awar(buffer)->add_callback((AW_RCB)vertical_scrollbar_redefinition_cb,
             (AW_CL)this, (AW_CL)p_w->scroll_bar_vertical);
 
     sprintf(buffer, "window/%s/scroll_delay_horizontal", window_defaults_name);
-    get_root()->awar_int(buffer, 20, get_root()->application_database);
+    get_root()->awar_int(buffer, 20);
     get_root()->awar(buffer)->add_callback(
             (AW_RCB)horizontal_scrollbar_redefinition_cb, (AW_CL)this,
             (AW_CL)p_w->scroll_bar_horizontal);
 
     sprintf(buffer, "window/%s/scroll_width_horizontal", window_defaults_name);
-    get_root()->awar_int(buffer, 9, get_root()->application_database);
+    get_root()->awar_int(buffer, 9);
     get_root()->awar(buffer)->add_callback(
             (AW_RCB)horizontal_scrollbar_redefinition_cb, (AW_CL)this,
             (AW_CL)p_w->scroll_bar_horizontal);
 
     sprintf(buffer, "window/%s/scroll_width_vertical", window_defaults_name);
-    get_root()->awar_int(buffer, 20, get_root()->application_database);
+    get_root()->awar_int(buffer, 20);
     get_root()->awar(buffer)->add_callback((AW_RCB)vertical_scrollbar_redefinition_cb,
             (AW_CL)this, (AW_CL)p_w->scroll_bar_vertical);
 
@@ -3458,7 +3496,7 @@ void aw_macro_message(const char *templat, ...)
 // @@@ this function is unused.
 {
 
-    AW_root *root = AW_root::THIS;
+    AW_root *root = AW_root::SINGLETON;
     char buffer[10000];
     {
         va_list parg;

@@ -74,18 +74,6 @@ struct AW_buttons_struct {
     AW_buttons_struct *next;
 };
 
-struct AW_config_struct {
-    AW_config_struct(const char *idi, AW_active maski, Widget w, const char *variable_namei, const char *variable_valuei, AW_config_struct *nexti);
-
-    const char       *id;
-    AW_active         mask;
-    Widget            widget;
-    const char       *variable_name;
-    const char       *variable_value;
-    AW_config_struct *next;
-};
-
-
 struct AW_option_struct {
     AW_option_struct(const char *variable_valuei, Widget choice_widgeti);
     AW_option_struct(int variable_valuei, Widget choice_widgeti);
@@ -247,9 +235,6 @@ public:
 
     AW_buttons_struct *button_list;
 
-    AW_config_struct *config_list;
-    AW_config_struct *last_config;
-
     AW_option_menu_struct *option_menu_list;
     AW_option_menu_struct *last_option_menu;
     AW_option_menu_struct *current_option_menu;
@@ -278,8 +263,8 @@ public:
     FILE    *executing_macro_file;
     GB_HASH *action_hash;
 
-    AW_root_Motif() {};
-    ~AW_root_Motif() {};
+    AW_root_Motif();
+    ~AW_root_Motif();
 
     Widget get_last_widget() const { return last_widget; }
     void set_last_widget(Widget w) { last_widget = w; }

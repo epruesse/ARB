@@ -15,30 +15,36 @@ AW_HEADER_MAIN
 
 
 int main(int argc, char **argv) {
-    if (argc <1) {
-        GB_export_error("Syntax: arb_wetc [-fileedit]");
-        GB_print_error();
-        exit(-1);
-    }
+    GB_ERROR error = NULL;
 
-    const char *com        = argv[1];
-    AW_root    *aw_root    = new AW_root;
-    AW_default  aw_default = AWT_open_properties(aw_root, ".arb_prop/ntree.arb");
-    
-    aw_root->init_variables(aw_default);
-    aw_root->init_root("ARB_WETC", false);
-
-    if (!strcmp(com, "-fileedit")) {
-        AWT_show_file(aw_root, argv[2]);
+    if (argc != 3) {
+        error = "Missing arguments";
     }
     else {
-        GB_export_error("wrong parameter, allowed: [-fileedit] file");
-        GB_print_error();
-        exit(-1);
+        const char *com  = argv[1];
+        const char *file = argv[2];
+
+        if (strcmp(com, "-fileedit") != 0) {
+            error = GBS_global_string("Unexpected parameter '%s'", com);
+        }
+        else {
+            AW_root *aw_root = AWT_create_root(".arb_prop/ntree.arb", "ARB_WETC");
+
+            AWT_show_file(aw_root, file);
+            aw_root->window_hide();
+            AWT_install_cb_guards();
+            aw_root->main_loop();
+
+        }
     }
-    aw_root->window_hide();
-    AWT_install_cb_guards();
-    aw_root->main_loop();
-    return 0;
+
+    if (error) {
+        fprintf(stderr,
+                "Syntax: arb_wetc -fileedit filename\n"
+                "Error: %s\n",
+                error);
+        return EXIT_FAILURE;
+    }
+    return EXIT_SUCCESS;
 }
 

@@ -20,8 +20,8 @@
 #define AWP_FONTNAME_TEMPLATE "GCS/%s/MANAGE_GCS/%s/font"
 #define AWP_FONTSIZE_TEMPLATE "GCS/%s/MANAGE_GCS/%s/size"
 
-void AW_save_defaults(AW_window *aw);   // use this if you're unsure
-void AW_save_specific_defaults(AW_window *aw, const char *filename);
+void AW_save_properties(AW_window *aw);   // use this if you're unsure
+void AW_save_specific_properties(AW_window *aw, const char *filename);
 
 AW_window *AW_preset_window(AW_root *root);
 

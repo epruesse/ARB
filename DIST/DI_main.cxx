@@ -50,11 +50,7 @@ int main(int argc, char **argv) {
 
     aw_initstatus();
 
-    AW_root    *aw_root    = new AW_root;
-    AW_default  aw_default = AWT_open_properties(aw_root, ".arb_prop/dist.arb");
-
-    aw_root->init_variables(aw_default);
-    aw_root->init_root("ARB_DIST", false);
+    AW_root *aw_root = AWT_create_root(".arb_prop/dist.arb", "ARB_DIST");
 
     {
         arb_params *params = arb_trace_argv(&argc, argv);
@@ -74,14 +70,13 @@ int main(int argc, char **argv) {
         free_arb_params(params);
     }
 
-    DI_create_matrix_variables(aw_root, aw_default, GLOBAL_gb_main);
+    DI_create_matrix_variables(aw_root, AW_ROOT_DEFAULT, GLOBAL_gb_main);
 #ifdef FINDCORR
-    bc_create_bc_variables(aw_root, aw_default);
+    bc_create_bc_variables(aw_root, AW_ROOT_DEFAULT);
 #endif
-    ARB_init_global_awars(aw_root, aw_default, GLOBAL_gb_main);
+    ARB_init_global_awars(aw_root, AW_ROOT_DEFAULT, GLOBAL_gb_main);
 
-    AWT_graphic *awd = (AWT_graphic *)0;
-    AW_window   *aww = DI_create_matrix_window(aw_root);
+    AW_window *aww = DI_create_matrix_window(aw_root);
     aww->show();
 
     AWT_install_cb_guards();

@@ -227,7 +227,7 @@ void MG_start_cb2(AW_window *aww, AW_root *aw_root, bool save_enabled, bool dest
             awm->insert_menu_topic("quitnstart", "Quit & Start DB II", "D", "quit.hlp", AWM_ALL, MG_exit, 1, 0);
         }
 
-        awm->insert_menu_topic("save_props", "Save properties (to ~/.arb_prop/ntree.arb)",              "p", "savedef.hlp", AWM_ALL,      (AW_CB)AW_save_defaults, 0, 0);
+        awm->insert_menu_topic("save_props", "Save properties (to ~/.arb_prop/ntree.arb)",              "p", "savedef.hlp", AWM_ALL,      (AW_CB)AW_save_properties, 0, 0);
 
         awm->button_length(30);
 
@@ -417,8 +417,7 @@ void MG_create_all_awars(AW_root *awr, AW_default aw_def, const char *fname_one,
 #endif // DEBUG
 }
 
-AW_window *create_MG_main_window(AW_root *aw_root)
-{
+AW_window *create_MG_main_window(AW_root *aw_root) {
     MG_create_all_awars(aw_root, AW_ROOT_DEFAULT);
     AW_window *aww=create_merge_init_window(aw_root);
     aww->activate();

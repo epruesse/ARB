@@ -15,11 +15,11 @@
 #define aw_assert(bed) arb_assert(bed)
 #endif
 
+#define AW_ROOT_DEFAULT AW_root::SINGLETON->check_properties(NULL)
 
-#define AW_ROOT_DEFAULT (aw_main_root_default)
 class        AW_root;
 class        AW_window;
-typedef long AW_CL;             // generic client data type (void *)
+typedef long AW_CL;                                 // generic client data type (void *)
 
 typedef void (*AW_RCB)(AW_root*, AW_CL, AW_CL);
 typedef void (*AW_RCB0)(AW_root*);
@@ -35,11 +35,8 @@ typedef GBDATA     *AW_default;
 typedef AW_bitset   AW_active;                      // bits to activate/inactivate buttons
 typedef int         AW_font;
 
-extern AW_default aw_main_root_default;
-
 typedef struct _WidgetRec *Widget;
 
-// #define AWUSE(variable) variable = variable
 #if defined(DEBUG) && defined(DEVEL_RALF) && 0
 #define AWUSE(variable) (void)variable; int DONT_USE_AWUSE_FOR_##variable
 #else
@@ -179,18 +176,27 @@ typedef enum {
 } AW_ProcessEventType;
 
 class AW_root {
+    AW_default application_database;
+    
+    void init_variables(AW_default database);
+    void exit_variables();
+
+    void init_root(const char *programname, bool no_exit);
+    AW_default load_properties(const char *default_name);
+
 public:
-    static  AW_root *THIS;
-    AW_root_Motif   *prvt;                          // Do not use !!!
-    bool             value_changed;
-    long             changer_of_variable;
-    int              y_correction_for_input_labels;
-    AW_active        global_mask;
-    GB_HASH         *hash_table_for_variables;
-    bool             variable_set_by_toggle_field;
-    int              number_of_toggle_fields;
-    int              number_of_option_menus;
-    char            *program_name;
+    static AW_root *SINGLETON;
+
+    AW_root_Motif *prvt;                            // Do not use !!!
+    bool           value_changed;
+    long           changer_of_variable;
+    int            y_correction_for_input_labels;
+    AW_active      global_mask;
+    GB_HASH       *hash_table_for_variables;
+    bool           variable_set_by_toggle_field;
+    int            number_of_toggle_fields;
+    int            number_of_option_menus;
+    char          *program_name;
 
     void            *get_aw_var_struct(char *awar);
     void            *get_aw_var_struct_no_error(char *awar);
@@ -203,22 +209,21 @@ public:
     void window_hide();
 
     // the read only public section:
-    AW_default  application_database;
     short       font_width;
     short       font_height;
     short       font_ascent;
     GB_HASH    *hash_for_windows;
 
     // the real public section:
-    AW_root();
+    AW_root(const char *properties, const char *program, bool no_exit);
     ~AW_root();
+
     enum { AW_MONO_COLOR, AW_RGB_COLOR }    color_mode;
 
-    void init_variables(AW_default database);
-    void init_root(const char *programname, bool no_exit);
     void main_loop();
-    void process_events();     // might block
-    void process_pending_events();     // non-blocking
+    
+    void                process_events();           // might block
+    void                process_pending_events();   // non-blocking
     AW_ProcessEventType peek_key_event(AW_window *);
 
     void add_timed_callback               (int ms, AW_RCB2 f, AW_CL cd1, AW_CL cd2);
@@ -244,12 +249,17 @@ public:
 
     void unlink_awars_from_DB(GBDATA *gb_main);     // use before calling GB_close for 'gb_main', if you have AWARs in DB
 
-    AW_default  open_default(const char *default_name, bool create_if_missing = true);
-    AW_error   *save_default(const char *awar_name);
-    AW_error   *save_default(const char *awar_name, const char *file_name);
-    AW_error   *save_default(AW_default aw_default, const char *file_name);
-    AW_default  get_default(const char *varname);
-    AW_default  get_gbdata(const char *varname);
+    static const char *property_DB_fullname(const char *default_name);
+    static bool        property_DB_exists(const char *default_name);
+
+    AW_default check_properties(AW_default aw_props) {
+        return aw_props ? aw_props : application_database;
+    }
+
+    GB_ERROR save_properties(const char *filename = NULL) __ATTR__USERESULT;
+
+    AW_default get_gbdata(const char *varname) __ATTR__DEPRECATED; // replace by awar + gb_var
+
 
     // Control sensitivity of buttons etc.:
     void apply_sensitivity(AW_active mask);
@@ -329,6 +339,7 @@ public:
     void update_targets();
 
     AW_awar(AW_VARIABLE_TYPE var_type, const char *var_name, const char *var_value, double var_double_value, AW_default default_file, AW_root *root);
+    ~AW_awar();
 
     AW_awar *add_callback(Awar_CB2 f, AW_CL cd1, AW_CL cd2);
     AW_awar *add_callback(Awar_CB1 f, AW_CL cd1);

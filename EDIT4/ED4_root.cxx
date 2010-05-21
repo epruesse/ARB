@@ -1280,10 +1280,10 @@ static void ED4_create_faligner_window(AW_root *awr, AW_CL cl_AlignDataAccess) {
     FastAligner_create_window(awr, data_access);
 }
 
-static void ED4_save_defaults(AW_window *aw, AW_CL cl_mode, AW_CL) {
+static void ED4_save_properties(AW_window *aw, AW_CL cl_mode, AW_CL) {
     int mode = (int)cl_mode;
 
-    AW_save_specific_defaults(aw, ED4_propertyName(mode));
+    AW_save_specific_properties(aw, ED4_propertyName(mode));
 }
 
 static AW_window *ED4_create_gc_window(AW_root *aw_root, AW_gc_manager id) {
@@ -1588,14 +1588,14 @@ ED4_returncode ED4_root::generate_window(AW_device **device,    ED4_window **new
         }
 
         const char *entry = GBS_global_string("Save loaded Properties (~/%s)", db_name);
-        awmm->insert_menu_topic("save_loaded_props", entry, "l", "e4_defaults.hlp", AWM_ALL, ED4_save_defaults, (AW_CL)default_mode, 0);
+        awmm->insert_menu_topic("save_loaded_props", entry, "l", "e4_defaults.hlp", AWM_ALL, ED4_save_properties, (AW_CL)default_mode, 0);
         SEP________________________SEP;
 
         for (int mode = 2; mode >= 0; --mode) {
             char hotkey[] = "x";
             hotkey[0]     = "Pta"[mode];
             entry         = GBS_global_string("Save %sProperties (~/%s)", entry_type[mode], ED4_propertyName(mode));
-            awmm->insert_menu_topic(tag[mode], entry, hotkey, "e4_defaults.hlp", AWM_ALL, ED4_save_defaults, (AW_CL)mode, 0);
+            awmm->insert_menu_topic(tag[mode], entry, hotkey, "e4_defaults.hlp", AWM_ALL, ED4_save_properties, (AW_CL)mode, 0);
         }
     }
     awmm->close_sub_menu();
@@ -1886,45 +1886,32 @@ ED4_index ED4_root::pixel2pos(AW_pos click_x) {
     return scr_pos;
 }
 
-ED4_root::ED4_root()
-{
+static char *detectProperties() {
+    char *propname = NULL;
+
+    for (int mode = 0; !propname && mode <= 2; ++mode) { // search for properties-database
+        const char *fullprop = AW_root::property_DB_fullname(ED4_propertyName(mode));
+        if (mode == 2 || GB_is_regularfile(fullprop)) {
+            freedup(propname, fullprop);
+        }
+    }
+
+    GB_informationf("Using properties from '%s'", propname);
+    return propname;
+}
+
+ED4_root::ED4_root() {
     memset((char *)this, 0, sizeof(*this));
 
-    aw_root      = new AW_root;
-    first_window = NULL;
-    main_manager = NULL;
-    database     = NULL;
-    tmp_ed4w     = NULL;
-    tmp_aww      = NULL;
-    tmp_device   = NULL;
-    temp_gc      = 0;
+    db_name  = detectProperties();
+    aw_root  = AWT_create_root(db_name, "ARB_EDIT4");
+    props_db = AW_ROOT_DEFAULT;
 
-    scroll_links.link_for_hor_slider = NULL;
-    scroll_links.link_for_ver_slider = NULL;
-
-    folding_action = 0;
-
-    species_mode            = ED4_SM_MOVE;
-    scroll_picture.scroll   = 0;
-    scroll_picture.old_x    = 0;
-    scroll_picture.old_y    = 0;
-    middle_area_man         = NULL;
-    top_area_man            = NULL;
-    root_group_man          = NULL;
-    ecoli_ref               = NULL;
-    protstruct              = NULL;
-    protstruct_len          = 0;
-    column_stat_activated   = 0;
-    column_stat_initialized = 0;
-    visualizeSAI            = 0;
-    visualizeSAI_allSpecies = 0;
-
-    aw_initstatus();
+    species_mode = ED4_SM_MOVE;
 }
 
 
-ED4_root::~ED4_root()
-{
+ED4_root::~ED4_root() {
     delete aw_root;
     delete first_window;
     delete main_manager;
@@ -1932,5 +1919,7 @@ ED4_root::~ED4_root()
     delete top_area_man;
     delete database;
     delete ecoli_ref;
-    if (protstruct) free(protstruct);
+
+    free(protstruct);
+    free(db_name);
 }

@@ -1222,13 +1222,6 @@ static void probe_design_restore_config(AW_window *aww, const char *stored_strin
     cdef.write(stored_string);
 }
 
-void probe_design_save_default(AW_window *aw, AW_default aw_def)
-{
-    AW_root *aw_root = aw->get_root();
-    aw_root->save_default(aw_def, 0);
-}
-
-
 AW_window *create_probe_design_window(AW_root *root, AW_CL cl_gb_main) {
     AW_window_simple *aws     = new AW_window_simple;
     GBDATA           *gb_main = (GBDATA*)cl_gb_main;

@@ -1039,7 +1039,7 @@ class ED4_root {
 public:
     AW_root                 *aw_root;               // Points to 'AW-Window-Controller'
     AW_default               props_db;              // Default Properties database
-    const char              *db_name;               // name of Default Properties database
+    char                    *db_name;               // name of Default Properties database
     ED4_window              *first_window;          // Points to List of Main Windows of ED4
     ED4_main_manager        *main_manager;          // Points to Main manager of ED4
     ED4_area_manager        *middle_area_man;       // Points to middle area

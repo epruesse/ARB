@@ -152,24 +152,11 @@ WRITE_SKELETON(write_string, const char*, "%s", GB_write_string) // defines rewr
     GB_touch(gb_var);
 }
 
-AW_default aw_main_root_default = (AW_default) "this is a dummy text asfasf asfd";
-
-AW_default aw_check_default_file(AW_default root_default, AW_default default_file, const char *varname)
-{
-    if (default_file == aw_main_root_default)  return root_default;
-    if (default_file == NULL) {
-        AW_ERROR("Creating variable '%s' with zero default file\n", varname);
-        return root_default;
-    }
-    return default_file;
-}
-
-
 // for string
 AW_awar *AW_root::awar_string(const char *var_name, const char *default_value, AW_default default_file) {
     AW_awar *vs = (AW_awar *)GBS_read_hash(hash_table_for_variables, (char *)var_name);
     if (!vs) {
-        default_file = aw_check_default_file(this->application_database, default_file, var_name);
+        default_file = check_properties(default_file);
         vs           = new AW_awar(AW_STRING, var_name, default_value, 0, default_file, this);
         GBS_write_hash(hash_table_for_variables, (char *)var_name, (long)vs);
     }
@@ -181,7 +168,7 @@ AW_awar *AW_root::awar_string(const char *var_name, const char *default_value, A
 AW_awar *AW_root::awar_int(const char *var_name, long default_value, AW_default default_file) {
     AW_awar *vs = (AW_awar *)GBS_read_hash(hash_table_for_variables, (char *)var_name);
     if (!vs) {
-        default_file = aw_check_default_file(this->application_database, default_file, var_name);
+        default_file = check_properties(default_file);
         vs           = new AW_awar(AW_INT, var_name, (char *)default_value, 0, default_file, this);
         GBS_write_hash(hash_table_for_variables, (char *)var_name, (long)vs);
     }
@@ -193,7 +180,7 @@ AW_awar *AW_root::awar_int(const char *var_name, long default_value, AW_default 
 AW_awar *AW_root::awar_float(const char *var_name, float default_value, AW_default default_file) {
     AW_awar *vs = (AW_awar *)GBS_read_hash(hash_table_for_variables, (char *)var_name);
     if (!vs) {
-        default_file = aw_check_default_file(this->application_database, default_file, var_name);
+        default_file = check_properties(default_file);
         vs           = new AW_awar(AW_FLOAT, var_name, "", (double)default_value, default_file, this);
         GBS_write_hash(hash_table_for_variables, (char *)var_name, (long)vs);
     }
@@ -203,7 +190,7 @@ AW_awar *AW_root::awar_float(const char *var_name, float default_value, AW_defau
 AW_awar *AW_root::awar_pointer(const char *var_name, void *default_value, AW_default default_file) {
     AW_awar *vs = (AW_awar *)GBS_read_hash(hash_table_for_variables, (char *)var_name);
     if (!vs) {
-        default_file = aw_check_default_file(this->application_database, default_file, var_name);
+        default_file = check_properties(default_file);
         vs           = new AW_awar(AW_POINTER, var_name, (const char *)default_value, NULL, default_file, this);
         GBS_write_hash(hash_table_for_variables, (char *)var_name, (long)vs);
     }
@@ -640,29 +627,22 @@ AW_awar::AW_awar(AW_VARIABLE_TYPE var_type, const char *var_name, const char *va
     aw_assert(is_valid());
 }
 
+AW_awar::~AW_awar() {
+    remove_all_target_vars();
+    unlink();
+    free(awar_name);
+}
 
+const char *AW_root::property_DB_fullname(const char *default_name) {
+    const char *home = GB_getenvHOME();
+    return GBS_global_string("%s/%s", home, default_name);
+}
 
-AW_default AW_root::open_default(const char *default_name, bool create_if_missing)
-{
-    if (!create_if_missing) { // used to check for existing specific properties
-        const char *home   = GB_getenvHOME();
-        char       *buffer = (char *)GB_calloc(sizeof(char), strlen(home) + strlen(default_name) + 2);
+bool AW_root::property_DB_exists(const char *default_name) {
+    return GB_is_regularfile(property_DB_fullname(default_name));
+}
 
-        sprintf(buffer, "%s/%s", home, default_name);
-
-        struct stat st;
-        bool        found = stat(buffer, &st) == 0;
-
-        free(buffer);
-
-        if (!found) return 0;
-    }
-
-#if defined(DEVEL_RALF)
-#warning gb_default is never closed
-    // close it somewhere and call AWT_browser_forget_db as well
-#endif // DEVEL_RALF
-
+AW_default AW_root::load_properties(const char *default_name) {
     GBDATA *gb_default = GB_open(default_name, "rwcD");
 
     if (gb_default) {
@@ -681,46 +661,25 @@ AW_default AW_root::open_default(const char *default_name, bool create_if_missin
     return (AW_default) gb_default;
 }
 
+GB_ERROR AW_root::save_properties(const char *filename) {
+    GB_ERROR  error   = NULL;
+    GBDATA   *gb_main = application_database;
 
-AW_error *AW_root::save_default(const char *var_name) {
-    return save_default(var_name, NULL);
-}
-
-AW_error *AW_root::save_default(const char *var_name, const char *file_name) {
-    AW_awar *vs;
-    if ((vs = this->awar(var_name))) {
-        AW_root::save_default((AW_default)vs->gb_var, file_name);
-        return 0;
+    if (!gb_main) {
+        error = "No properties loaded - won't save";
     }
     else {
-        AW_ERROR("AW_root::save_default: Variable %s not defined", var_name);
+        error = GB_push_transaction(gb_main);
+        if (!error) {
+            aw_update_awar_window_geometry(this);
+            error = GB_pop_transaction(gb_main);
+            if (!error) error = GB_save_in_home(gb_main, filename, "a");
+        }
     }
-    return 0;
 
+    return error;
 }
 
-AW_error *AW_root::save_default(AW_default aw_default, const char *file_name)
-{
-    GBDATA *gb_main = GB_get_root((GBDATA *)aw_default);
-    GB_push_transaction(gb_main);
-    aw_update_awar_window_geometry(this);
-    GB_pop_transaction(gb_main);
-    GB_save_in_home(gb_main, file_name, "a");
-    return 0;
-}
-
-AW_default AW_root::get_default(const char *varname) {
-    GBDATA      *gbd;
-    AW_awar *vs;
-    if ((vs = this->awar(varname))) {
-        gbd = vs->gb_var;
-        return (AW_default)GB_get_root(gbd);
-    }
-    else {
-        AW_ERROR("AW_root::get_default: Variable %s not defined", varname);
-    }
-    return 0;
-}
 
 AW_default AW_root::get_gbdata(const char *varname) {
     GBDATA      *gbd;
