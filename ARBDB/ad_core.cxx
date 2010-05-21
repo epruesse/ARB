@@ -269,6 +269,7 @@ char *gb_destroy_main(GB_MAIN_TYPE *Main) {
     if (Main->command_hash) GBS_free_hash(Main->command_hash);
     if (Main->table_hash) GBS_free_hash(Main->table_hash);
     if (Main->resolve_link_hash) GBS_free_hash(Main->resolve_link_hash);
+    if (Main->remote_hash) GBS_free_numhash(Main->remote_hash);
 
     gb_free_all_keys(Main);
     
