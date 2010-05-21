@@ -193,8 +193,9 @@ adfiltercbstruct *awt_create_select_filter(AW_root *aw_root, GBDATA *gb_main, co
 
     struct adfiltercbstruct *acbs   = new adfiltercbstruct;
     acbs->gb_main                   = gb_main;
+    AW_default               aw_def = AW_ROOT_DEFAULT;
+
     GB_push_transaction(acbs->gb_main);
-    AW_default               aw_def = aw_root->get_default(def_name);
 
 #if defined(DEBUG)
     {

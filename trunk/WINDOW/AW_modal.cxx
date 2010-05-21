@@ -68,7 +68,7 @@ int aw_question(const char *question, const char *buttons, bool fixedSizeButtons
 
     aw_assert(buttons);
 
-    AW_root *root = AW_root::THIS;
+    AW_root *root = AW_root::SINGLETON;
 
     AW_window_message *aw_msg;
     char              *button_list  = strdup(buttons ? buttons : "OK");
@@ -447,7 +447,7 @@ char *aw_input(const char *title, const char *prompt, const char *default_input)
 
     static AW_window_message *aw_msg = 0;
 
-    AW_root *root = AW_root::THIS;
+    AW_root *root = AW_root::SINGLETON;
     if (!aw_msg) create_input_awars(root); // first call -> create awars
 
     root->awar(AW_INPUT_TITLE_AWAR)->write_string(prompt);
@@ -490,7 +490,7 @@ char *aw_input(const char *prompt, const char *default_input) {
 }
 
 char *aw_input2awar(const char *title, const char *prompt, const char *awar_name) {
-    AW_root *aw_root       = AW_root::THIS;
+    AW_root *aw_root       = AW_root::SINGLETON;
     AW_awar *awar          = aw_root->awar(awar_name);
     char    *default_value = awar->read_string();
     char    *result        = aw_input(title, prompt, default_value);
@@ -541,7 +541,7 @@ char *aw_string_selection(const char *title, const char *prompt, const char *def
     AW_window_message *& aw_msg = sd->aw_msg;
     AW_selection_list *& sel    = sd->sel;
 
-    AW_root *root = AW_root::THIS;
+    AW_root *root = AW_root::SINGLETON;
     if (!aw_msg) create_input_awars(root); // first call -> create awars
 
     root->awar(AW_INPUT_TITLE_AWAR)->write_string(prompt);
@@ -632,7 +632,7 @@ char *aw_string_selection2awar(const char *title, const char *prompt, const char
     // params see aw_string_selection
     // default_value is taken from and result is written back to awar 'awar_name'
 
-    AW_root *aw_root       = AW_root::THIS;
+    AW_root *aw_root       = AW_root::SINGLETON;
     AW_awar *awar          = aw_root->awar(awar_name);
     char    *default_value = awar->read_string();
     char    *result        = aw_string_selection(title, prompt, default_value, value_list, buttons, check_fun);
@@ -647,7 +647,7 @@ char *aw_string_selection2awar(const char *title, const char *prompt, const char
 //      aw_file_selection
 
 char *aw_file_selection(const char *title, const char *dir, const char *def_name, const char *suffix) {
-    AW_root *root = AW_root::THIS;
+    AW_root *root = AW_root::SINGLETON;
 
     static AW_window_simple *aw_msg = 0;
     if (!aw_msg) create_fileSelection_awars(root);

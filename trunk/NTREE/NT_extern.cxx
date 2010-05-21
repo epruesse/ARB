@@ -398,7 +398,7 @@ AW_window *NT_create_database_optimization_window(AW_root *aw_root) {
 
 void NT_save_as_cb(AW_window *aww) {
     char *filename = aww->get_root()->awar(AWAR_DB_PATH)->read_string();
-    char *filetype = aww->get_root()->awar(AWAR_DB"type")->read_string();
+    char *filetype = aww->get_root()->awar(AWAR_DB_TYPE)->read_string();
 
     GB_ERROR error = GB_save(GLOBAL_gb_main, filename, filetype);
     AW_refresh_fileselection(aww->get_root(), "tmp/nt/arbdb");
@@ -430,7 +430,7 @@ AW_window *NT_create_save_as(AW_root *aw_root, const char *base_name)
 
     aws->at("type");
     aws->label("Type ");
-    aws->create_option_menu(AWAR_DB"type");
+    aws->create_option_menu(AWAR_DB_TYPE);
     aws->insert_option("Binary", "B", "b");
     aws->insert_option("Bin (with FastLoad File)", "f", "bm");
     aws->insert_default_option("Ascii", "A", "a");
@@ -1537,7 +1537,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone) {
             AWMIMT("enable_advices", "Reactivate advices",                          "R", "advice.hlp", AWM_ALL, (AW_CB) AWT_reactivate_all_advices, 0, 0);
             AWMIMT("!toggle_expert", "Toggle expert mode",                          "x", 0,           AWM_ALL, NT_toggle_expert_mode, 0, 0);
             SEP________________________SEP();
-            AWMIMT("save_props",     "Save properties (in ~/.arb_prop/ntree.arb)",  "S", "savedef.hlp", AWM_ALL, (AW_CB) AW_save_defaults, 0, 0);
+            AWMIMT("save_props",     "Save properties (in ~/.arb_prop/ntree.arb)",  "S", "savedef.hlp", AWM_ALL, (AW_CB) AW_save_properties, 0, 0);
         }
     }
 

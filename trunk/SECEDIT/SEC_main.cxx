@@ -703,10 +703,15 @@ static AW_window *SEC_create_display_window(AW_root *awr) {
     return aws;
 }
 
-static void SEC_exit(GBDATA *gb_main, void *cl_sec_root) {
+#if defined(DEVEL_RALF)
+#warning use popdown callback for SEC_exit and valgrind open/close/open secedit 
+#endif // DEVEL_RALF
+
+static void SEC_exit(GBDATA *, void *cl_sec_root) {
     SEC_root *sec_root = static_cast<SEC_root*>(cl_sec_root);
 
     delete sec_root;
+    sec_root = NULL;
 }
 
 AW_window *SEC_create_main_window(AW_root *awr, GBDATA *gb_main) {

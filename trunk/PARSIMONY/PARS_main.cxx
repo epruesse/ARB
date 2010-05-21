@@ -1435,7 +1435,7 @@ static void pars_start_cb(AW_window *aw_parent, AW_CL cd_weightedFilter, AW_CL c
         awm->insert_menu_topic("props_tree",  "Tree: Colors and Fonts ...",              "C", "pars_props_data.hlp",  AWM_ALL, AW_POPUP, (AW_CL)AW_create_gc_window,    (AW_CL)aw_gc_manager);
         awm->insert_menu_topic("props_tree2", "Tree: Settings ...",                      "T", "nt_tree_settings.hlp", AWM_ALL, AW_POPUP, (AW_CL)NT_create_tree_setting, (AW_CL)ntw);
         awm->insert_menu_topic("props_kl",    "KERN. LIN ...",                           "K", "kernlin.hlp",          AWM_ALL, AW_POPUP, (AW_CL)create_kernighan_window, 0);
-        awm->insert_menu_topic("save_props",  "Save Defaults (in ~/.arb_prop/pars.arb)", "D", "savedef.hlp",          AWM_ALL, (AW_CB)AW_save_defaults, 0, 0);
+        awm->insert_menu_topic("save_props",  "Save Defaults (in ~/.arb_prop/pars.arb)", "D", "savedef.hlp",          AWM_ALL, (AW_CB)AW_save_properties, 0, 0);
     }
     awm->button_length(5);
 
@@ -1706,11 +1706,7 @@ void PARS_map_viewer(GBDATA *gb_species, AD_MAP_VIEWER_TYPE vtype) {
 int main(int argc, char **argv) {
     aw_initstatus();
 
-    AW_root    *aw_root    = new AW_root;
-    AW_default  aw_default = AWT_open_properties(aw_root, ".arb_prop/pars.arb");
-    aw_root->init_variables(aw_default);
-    aw_root->init_root("ARB_PARS", false);
-
+    AW_root *aw_root      = AWT_create_root(".arb_prop/pars.arb", "ARB_PARS");
     AD_map_viewer_aw_root = aw_root;
 
     ap_main = new AP_main;
@@ -1758,7 +1754,7 @@ int main(int argc, char **argv) {
     AWT_announce_db_to_browser(GLOBAL_gb_main, GBS_global_string("ARB-database (%s)", db_server));
 #endif // DEBUG
 
-    pars_create_all_awars(aw_root, aw_default);
+    pars_create_all_awars(aw_root, AW_ROOT_DEFAULT);
 
     AW_window *aww = create_pars_init_window(aw_root, &cmds);
     aww->show();

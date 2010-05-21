@@ -109,7 +109,7 @@ void DI_create_matrix_variables(AW_root *aw_root, AW_default def, AW_default db)
 
     aw_root->awar_int(AWAR_DIST_MATRIX_DNA_ENABLED, 0)->add_callback(delete_matrix_cb); // user matrix disabled by default
     {
-        GBDATA *gbd = GB_search((GBDATA *)aw_root->application_database, AWAR_DIST_MATRIX_DNA_BASE, GB_FIND);
+        GBDATA *gbd = GB_search(AW_ROOT_DEFAULT, AWAR_DIST_MATRIX_DNA_BASE, GB_FIND);
         GB_add_callback(gbd, GB_CB_CHANGED, (GB_CB)delete_matrix_cb, 0);
     }
 
@@ -1521,7 +1521,7 @@ AW_window *DI_create_matrix_window(AW_root *aw_root) {
 
     aws->create_menu("Properties", "P", AWM_ALL);
     aws->insert_menu_topic("frame_props", "Frame ...",                                 "F", "props_frame.hlp", AWM_ALL, AW_POPUP, (AW_CL)AW_preset_window, 0);
-    aws->insert_menu_topic("save_props",  "Save Properties (in ~/.arb_prop/dist.arb)", "S", "savedef.hlp",     AWM_ALL, (AW_CB)AW_save_defaults, 0, 0);
+    aws->insert_menu_topic("save_props",  "Save Properties (in ~/.arb_prop/dist.arb)", "S", "savedef.hlp",     AWM_ALL, (AW_CB)AW_save_properties, 0, 0);
 
     aws->insert_help_topic("help ...", "h", "dist.hlp", AWM_ALL, (AW_CB)AW_POPUP_HELP, (AW_CL)"dist.hlp", 0);
 

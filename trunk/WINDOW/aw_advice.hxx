@@ -32,7 +32,7 @@ enum AW_Advice_Type {
 };
 
 //! has to be called one time (before calling AW_advice)
-void init_Advisor(AW_root *awr, AW_default def);
+void init_Advisor(AW_root *awr);
 
 /*! @brief Show a message box with an advice for the user
     @param message the text shown to the user

@@ -247,7 +247,7 @@ void nt_delete_database(AW_window *aww) {
                 aw_message(error);
             }
             else {
-                aww->get_root()->awar(AWAR_DB"filter")->touch();
+                aww->get_root()->awar(AWAR_DB_FILTER)->touch();
             }
         }
     }
@@ -388,31 +388,27 @@ int main(int argc, char **argv) {
     aw_initstatus();
     GB_set_verbose();
 
-    AW_root *aw_root = new AW_root;
-    GLOBAL_NT.awr    = aw_root;
-    MapViewer_set_default_root(aw_root);            // set default for launch_MapViewer_cb (as long as no info-box was opened)
+    AW_root *aw_root = AWT_create_root(".arb_prop/ntree.arb", "ARB_NT");
 
-    AW_default aw_default = AWT_open_properties(aw_root, ".arb_prop/ntree.arb");
-    aw_root->init_variables(aw_default);
-    aw_root->init_root("ARB_NT", false);
+    GLOBAL_NT.awr = aw_root;
+    MapViewer_set_default_root(aw_root);            // set default for launch_MapViewer_cb (as long as no info-box was opened)
 
     // create some early awars
     // Note: normally you don't like to add your awar-init-function here, but into nt_create_all_awars()
 
-    AW_create_fileselection_awars(aw_root, AWAR_DB, "", ".arb", "noname.arb", aw_default);
-    aw_root->awar_string(AWAR_DB"type", "b", aw_default);
-
-    aw_root->awar_int(AWAR_EXPERT, 0, aw_default);
-
-    aw_root->awar_string(AWAR_DB_NAME, "noname.arb", aw_default);
+    AW_create_fileselection_awars(aw_root, AWAR_DB, "", ".arb", "noname.arb");
+    aw_root->awar_string(AWAR_DB_TYPE, "b");
+    aw_root->awar_string(AWAR_DB_NAME, "noname.arb");
     aw_root->awar(AWAR_DB_PATH)->add_callback(AWAR_DB_PATH_changed_cb);
 
-    init_Advisor(aw_root, aw_default);
+    aw_root->awar_int(AWAR_EXPERT, 0);
+    
+    init_Advisor(aw_root);
     AWT_install_cb_guards();
 
     if (argc==3) {                                  // looks like merge
         if (argv[1][0] != '-') { // not if first argument is a switch
-            MG_create_all_awars(aw_root, aw_default, argv[1], argv[2]);
+            MG_create_all_awars(aw_root, AW_ROOT_DEFAULT, argv[1], argv[2]);
             nt_intro_start_merge(0, aw_root);
             aw_root->main_loop();
         }
@@ -453,7 +449,7 @@ int main(int argc, char **argv) {
         }
 
         if (strcmp(argv[1], "-export")==0) {
-            MG_create_all_awars(aw_root, aw_default, ":", "noname.arb");
+            MG_create_all_awars(aw_root, AW_ROOT_DEFAULT, ":", "noname.arb");
             GLOBAL_gb_merge = GBT_open(":", "rw", 0);
             if (!GLOBAL_gb_merge) {
                 aw_popup_ok(GB_await_error());

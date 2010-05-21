@@ -482,7 +482,7 @@ AW_window *create_phyl_main_window(AW_root *aw_root, PH_root *ph_root, AWT_graph
     awm->create_menu("Properties", "P");
     awm->insert_menu_topic("props_menu", "Menu: Colors and Fonts ...",                 "M", "props_frame.hlp",   AWM_ALL, AW_POPUP, (AW_CL)AW_preset_window,   0);
     awm->insert_menu_topic("props_data", "Data: Colors and Fonts ...",                 "D", "ph_props_data.hlp", AWM_ALL, AW_POPUP, (AW_CL)AW_create_gc_window, (AW_CL)gcmiddle);
-    awm->insert_menu_topic("save_props", "Save Properties (in ~/.arb_prop/phylo.arb)", "S", "savedef.hlp",       AWM_ALL,          (AW_CB)AW_save_defaults,    0, 0);
+    awm->insert_menu_topic("save_props", "Save Properties (in ~/.arb_prop/phylo.arb)", "S", "savedef.hlp",       AWM_ALL,          (AW_CB)AW_save_properties,    0, 0);
 
 
     // set window areas
@@ -554,12 +554,7 @@ int main(int argc, char **argv) {
 
     aw_initstatus();
 
-    AW_root    *aw_root    = new AW_root;
-    AW_default  aw_default = AWT_open_properties(aw_root, ".arb_prop/phylo.arb");
-    aw_root->init_variables(aw_default);
-    aw_root->init_root("ARB_PHYLO", false);
-
-
+    AW_root  *aw_root = AWT_create_root(".arb_prop/phylo.arb", "ARB_PHYLO");
     PH_root  *ph_root = new PH_root;
     GB_ERROR  error   = ph_root->open(db_server);
     if (error) {
@@ -568,11 +563,11 @@ int main(int argc, char **argv) {
     }
 
     // create arb_phylo awars :
-    PH_create_filter_variables(aw_root, aw_default);
-    PH_create_matrix_variables(aw_root, aw_default);
-    ARB_init_global_awars(aw_root, aw_default, GLOBAL_gb_main);
+    PH_create_filter_variables(aw_root, AW_ROOT_DEFAULT);
+    PH_create_matrix_variables(aw_root, AW_ROOT_DEFAULT);
+    ARB_init_global_awars(aw_root, AW_ROOT_DEFAULT, GLOBAL_gb_main);
 #if defined(DEBUG)
-    AWT_create_db_browser_awars(aw_root, aw_default);
+    AWT_create_db_browser_awars(aw_root, AW_ROOT_DEFAULT);
 #endif // DEBUG
 
 #if defined(DEBUG)

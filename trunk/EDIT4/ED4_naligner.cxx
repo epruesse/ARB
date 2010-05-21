@@ -150,12 +150,6 @@ void create_naligner_variables(AW_root *root, AW_default db1) {
     root->awar_int  ("naligner/det/ic", 5,   db1);
 }
 
-void ed_nalign_save(AW_window *aww)
-{
-    AW_root *root = aww->get_root();
-    root->save_default("naligner/aa");
-}
-
 AW_window *create_expert_naligner_window(AW_root *root)
 {
     const       int     mwidth = 5;
@@ -166,10 +160,6 @@ AW_window *create_expert_naligner_window(AW_root *root)
     aws->at("close");
     aws->callback     ((AW_CB0)AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
-
-    aws->at("save");
-    aws->callback(ed_nalign_save);
-    aws->create_button("SAVE", "SAVE", "S");
 
     aws->at("minw"); aws->create_input_field("naligner/minw", mwidth);
     aws->at("maxew"); aws->create_input_field("naligner/maxew", mwidth);
@@ -226,10 +216,6 @@ AW_window *create_special_naligner_window(AW_root *root, AW_CL cd2) {
     aws->at("expert");
     aws->callback((AW_CB1)AW_POPUP, (AW_CL)create_expert_naligner_window);
     aws->create_button("EXPERT_OPTIONS", "EXPERT2", "E");
-
-    aws->at("save");
-    aws->callback(ed_nalign_save);
-    aws->create_button("SAAVE", "SAVE", "S");
 
     return (AW_window *)aws;
 }

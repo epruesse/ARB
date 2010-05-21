@@ -30,21 +30,18 @@ using namespace std;
 //      internal data :
 // -------------------------
 
-static bool        initialized  = false;
-static AW_root    *advice_root  = 0;
-static AW_default  advice_props = 0;
+static bool     initialized = false;
+static AW_root *advice_root = 0;
 
 // --------------------------------------------------------
 
-void init_Advisor(AW_root *awr, AW_default def)
-{
+void init_Advisor(AW_root *awr) {
     aw_assert(!initialized);   // can't init twice
 
     advice_root  = awr;
-    advice_props = def;
 
-    advice_root->awar_string(AWAR_ADVICE_TEXT, "<no advice>", advice_props);
-    advice_root->awar_int(AWAR_ADVICE_UNDERSTOOD, 0, advice_props);
+    advice_root->awar_string(AWAR_ADVICE_TEXT, "<no advice>");
+    advice_root->awar_int(AWAR_ADVICE_UNDERSTOOD, 0);
 
     initialized = true;
 }
@@ -54,7 +51,7 @@ void init_Advisor(AW_root *awr, AW_default def)
 // ----------------------------
 
 static AW_awar *get_disabled_advices() {
-    return advice_root->awar_string(AWAR_ADVICE_DISABLED, "", advice_props);
+    return advice_root->awar_string(AWAR_ADVICE_DISABLED, "");
 }
 
 static bool advice_disabled(const char* id, AW_awar *var = 0) {
