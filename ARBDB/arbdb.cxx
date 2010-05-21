@@ -332,6 +332,10 @@ void GB_init_gb() {
     }
 }
 
+int GB_open_DBs() {
+    return gb_local ? gb_local->openedDBs-gb_local->closedDBs : 0;
+}
+
 GB_ERROR gb_unfold(GBCONTAINER *gbd, long deep, int index_pos) {
     /*! get data from server.
      *
