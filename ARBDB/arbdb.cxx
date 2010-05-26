@@ -28,34 +28,70 @@ gb_local_data *gb_local = 0;
 long *arbdb_stat;
 #endif
 
+inline GB_ERROR gb_transactable_type(GB_TYPES type, GBDATA *gbd) {
+    GB_ERROR error = NULL;
+    if (!GB_MAIN(gbd)->transaction) {
+        error = "No running transaction";
+    }
+    else if (GB_ARRAY_FLAGS(gbd).changed == GB_DELETED) {
+        error = "Entry has been deleted";
+    }
+    else {
+        GB_TYPES gb_type = GB_TYPE(gbd);
+        if (gb_type != type && (type != GB_STRING || GB_TYPE(gbd) != GB_LINK)) {
+            error = GBS_global_string("type mismatch (want=%i, got=%i)", type, gb_type);
+        }
+    }
+    if (error) {
+        GBK_dump_backtrace(stderr, error); // it's a bug: none of the above errors should ever happen
+        gb_assert(0);
+    }
+    return error;
+}
+inline GB_ERROR gb_type_writeable_to(GB_TYPES type, GBDATA *gbd) {
+    GB_ERROR error = gb_transactable_type(type, gbd);
+    if (!error) {
+        if (GB_GET_SECURITY_WRITE(gbd) > GB_MAIN(gbd)->security_level) {
+            error = gb_security_error(gbd);
+        }
+    }
+    return error;
+}
+inline GB_ERROR gb_type_readable_from(GB_TYPES type, GBDATA *gbd) {
+    return gb_transactable_type(type, gbd);
+}
+
+inline GB_ERROR error_with_dbentry(const char *action, GBDATA *gbd, GB_ERROR error) {
+    const char *path = GB_get_db_path(gbd);
+    return GBS_global_string("Can't %s '%s':\n%s", action, path, error);
+}
+
+
+#define RETURN_ERROR_IF_NOT_WRITEABLE_AS_TYPE(gbd, type)        \
+    do {                                                        \
+        GB_ERROR error = gb_type_writeable_to(type, gbd);       \
+        if (error) {                                            \
+            return error_with_dbentry("write", gbd, error);     \
+        }                                                       \
+    } while(0)
+
+#define EXPORT_ERROR_AND_RETURN_0_IF_NOT_READABLE_AS_TYPE(gbd, type)    \
+    do {                                                                \
+        GB_ERROR error = gb_type_readable_from(type, gbd);              \
+        if (error) {                                                    \
+            error = error_with_dbentry("read", gbd, error);             \
+            GB_export_error(error);                                     \
+            return 0;                                                   \
+        }                                                               \
+    } while(0)                                                          \
+
+
 #if defined(DEVEL_RALF)
-#warning convert the following macros to inline functions (and rename them)
+#warning replace GB_TEST_READ / GB_TEST_READ by new names later
 #endif // DEVEL_RALF
 
-
-#define GB_TEST_READ(gbd, ty, error)                                    \
-    do {                                                                \
-        GB_TEST_TRANSACTION(gbd);                                       \
-        if (GB_ARRAY_FLAGS(gbd).changed == GB_DELETED) {                \
-            GB_internal_errorf("%s: %s", error, "Entry is deleted !!"); \
-            return 0; }                                                 \
-        if (GB_TYPE(gbd) != ty && (ty != GB_STRING || GB_TYPE(gbd) == GB_LINK)) { \
-            GB_internal_errorf("%s: %s", error, "wrong type");          \
-            return 0; }                                                 \
-    } while (0)
-
-#define GB_TEST_WRITE(gbd, ty, gerror)                                  \
-    do {                                                                \
-        GB_TEST_TRANSACTION(gbd);                                       \
-        if (GB_ARRAY_FLAGS(gbd).changed == GB_DELETED) {                \
-            GB_internal_errorf("%s: %s", gerror, "Entry is deleted !!"); \
-            return 0; }                                                 \
-        if (GB_TYPE(gbd) != ty && (ty != GB_STRING || GB_TYPE(gbd) != GB_LINK)) { \
-            GB_internal_errorf("%s: %s", gerror, "type conflict !!");   \
-            return 0; }                                                 \
-        if (GB_GET_SECURITY_WRITE(gbd)>GB_MAIN(gbd)->security_level)    \
-            return gb_security_error(gbd);                              \
-    } while (0)
+#define GB_TEST_READ(gbd, type, ignored) EXPORT_ERROR_AND_RETURN_0_IF_NOT_READABLE_AS_TYPE(gbd, type)
+#define GB_TEST_WRITE(gbd, type, ignored) RETURN_ERROR_IF_NOT_WRITEABLE_AS_TYPE(gbd, type)
 
 #define GB_TEST_NON_BUFFER(x, gerror)                                   \
     do {                                                                \
@@ -850,6 +886,9 @@ GB_ERROR GB_write_float(GBDATA *gbd, double f)
 
     GB_TEST_WRITE(gbd, GB_FLOAT, "GB_write_float");
 
+#if defined(DEVEL_RALF)
+#warning call GB_read_float here!
+#endif // DEVEL_RALF
     GB_TEST_READ(gbd, GB_FLOAT, "GB_read_float");
 
     xdrmem_create(&xdrs, &gbd->info.in.data[0], SIZOFINTERN, XDR_DECODE);
