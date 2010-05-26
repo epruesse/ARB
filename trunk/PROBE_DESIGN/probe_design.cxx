@@ -897,26 +897,39 @@ void probe_match_event(AW_window *aww, AW_CL cl_ProbeMatchEventParam) {
                         }
 
                         if (write_2_tmp) {
+                            // write or append to field 'tmp'
+                        
                             GBDATA   *gb_tmp = 0;
-                            GB_ERROR  error2  = 0;
+                            GB_ERROR  error2 = 0;
+                            bool      append = true;
                             {
                                 GBDATA *gb_parent = gene_flag ? gb_gene : gb_species;
                                 gb_tmp            = GB_search(gb_parent, "tmp", GB_FIND);
-                                if (gb_tmp) {
-                                    const char *name    = "<unknown>";
-                                    GBDATA     *gb_name = GB_search(gb_parent, "name", GB_FIND);
-                                    if (gb_name) name   = GB_read_char_pntr(gb_name);
-                                    error2               = GBS_global_string("field 'tmp' already exists for %s '%s'", gene_flag ? "gene" : "species", name);
-                                    gb_tmp              = 0; // don't overwrite
-                                }
-                                else {
-                                    gb_tmp = GB_search(gb_species, "tmp", GB_STRING);
+                                if (!gb_tmp) {
+                                    append              = false;
+                                    gb_tmp              = GB_search(gb_parent, "tmp", GB_STRING);
+                                    if (!gb_tmp) error2 = GB_await_error();
                                 }
                             }
 
                             if (!error2) {
                                 pd_assert(gb_tmp);
-                                error2 = GB_write_string(gb_tmp, match_info);
+                                if (append) {
+                                    char *prevContent = GB_read_string(gb_tmp);
+                                    if (!prevContent) {
+                                        error2 = GB_await_error();
+                                    }
+                                    else {
+                                        char *concatenatedContent = (char *)malloc(strlen(prevContent)+1+strlen(match_info)+1);
+                                        sprintf(concatenatedContent, "%s\n%s", prevContent, match_info);
+                                        error2 = GB_write_string(gb_tmp, concatenatedContent);
+                                        free(concatenatedContent);
+                                        free(prevContent);
+                                    }
+                                }
+                                else {
+                                    error2 = GB_write_string(gb_tmp, match_info);
+                                }
                             }
 
                             if (error2) aw_message(error2);
