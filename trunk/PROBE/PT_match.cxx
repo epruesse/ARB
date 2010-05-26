@@ -353,16 +353,14 @@ void pt_sort_match_list(PT_local * locs)
     list_len = get_MATCHLIST_CNT(locs->pm);
     if (list_len <= 1) return;
     my_list = (PT_probematch **)calloc(sizeof(void *), list_len);
-    for (i=0, match = locs->pm;
-         match;
-         i++, match=match->next)
-    {
+    for (i=0, match = locs->pm; match; i++, match=match->next) {
         my_list[i] = match;
     }
     GB_sort((void **)my_list, 0, list_len, pt_sort_compare_match, 0);
     for (i=0; i<list_len; i++) {
         aisc_unlink((struct_dllheader_ext*)my_list[i]);
         aisc_link(&locs->ppm, my_list[i]);
+    //        printf("%i\t%i\t%s\n",my_list[i]->name,my_list[i]->b_pos,virt_name(my_list[i]));
     }
     free(my_list);
 }
@@ -433,14 +431,16 @@ extern "C" int probe_match(PT_local * locs, aisc_string probestring) {
     while ((ml = locs->pm)) destroy_PT_probematch(ml);
     locs->matches_truncated = 0;
 
-#if defined(DEBUG)
+#if defined(DEBUG) && 0
     PT_pdc *pdc = locs->pdc;
-    printf("Current bond values:\n");
-    for (int y = 0; y<4; y++) {
-        for (int x = 0; x<4; x++) {
-            printf("%5.2f", pdc->bond[y*4+x].val);
+    if (pdc) {
+        printf("Current bond values:\n");
+        for (int y = 0; y<4; y++) {
+            for (int x = 0; x<4; x++) {
+                printf("%5.2f", pdc->bond[y*4+x].val);
+            }
+            printf("\n");
         }
-        printf("\n");
     }
 #endif // DEBUG
 
@@ -586,20 +586,16 @@ inline void cat_spaced_right(GBS_strstruct *memfile, const char *text, int width
 inline void cat_dashed_left (GBS_strstruct *memfile, const char *text, int width) { cat_internal(memfile, strlen(text), text, width, '-', true); }
 inline void cat_dashed_right(GBS_strstruct *memfile, const char *text, int width) { cat_internal(memfile, strlen(text), text, width, '-', false); }
 
-static const char *get_match_info_formatted(PT_probematch  *ml, const format_props& format)
+extern "C" char *get_match_overlay(PT_probematch *ml)
 {
-    int    pr_pos, al_pos;
     int    pr_len = strlen(ml->sequence);
-    double wmis   = 0.0;
-    double h;
-    int    a, b;
 
     PT_local *locs = (PT_local *)ml->mh.parent->parent;
     PT_pdc   *pdc  = locs->pdc;
 
     char *ref    = (char *)calloc(sizeof(char), 21+pr_len);
     memset(ref, '.', 10);
-    for (pr_pos  = 8, al_pos = ml->rpos-1;
+    for (int pr_pos  = 8, al_pos = ml->rpos-1;
          pr_pos >= 0 && al_pos >= 0;
          pr_pos--, al_pos--)
     {
@@ -610,30 +606,28 @@ static const char *get_match_info_formatted(PT_probematch  *ml, const format_pro
 
     pt_build_pos_to_weight((PT_MATCH_TYPE)locs->sort_by, ml->sequence);
 
-    for (pr_pos = 0, al_pos = ml->rpos;
+    for (int pr_pos = 0, al_pos = ml->rpos;
          pr_pos < pr_len && al_pos < psg.data[ml->name].size;
          pr_pos++, al_pos++)
     {
-        if ((a=ml->sequence[pr_pos]) == (b=psg.data[ml->name].data[al_pos])) {
+        int a = ml->sequence[pr_pos];
+        int b = psg.data[ml->name].data[al_pos];
+        if (a == b) {
             ref[pr_pos+10] = '=';
         }
         else {
             ref[pr_pos+10] = b;
             if (pdc && a >= PT_A && a <= PT_T && b >= PT_A && b<=PT_T) {
-                h = ptnd_check_split(pdc, ml->sequence, pr_pos, b);
-                if (h<0.0) {
-                    h = -h;
-                }
-                else {
+                double h = ptnd_check_split(pdc, ml->sequence, pr_pos, b);
+                if (h>=0.0) {
                     ref[pr_pos+10] = " nacgu"[b];
                 }
-                wmis += psg.pos_to_weight[pr_pos] * h;
             }
         }
 
     }
 
-    for (pr_pos = 0, al_pos = ml->rpos+pr_len;
+    for (int pr_pos = 0, al_pos = ml->rpos+pr_len;
          pr_pos < 9 && al_pos < psg.data[ml->name].size;
          pr_pos++, al_pos++)
     {
@@ -642,6 +636,10 @@ static const char *get_match_info_formatted(PT_probematch  *ml, const format_pro
     ref[10+pr_len] = '-';
     PT_base_2_string(ref, 0);
 
+    return ref;
+}
+
+static const char *get_match_info_formatted(PT_probematch  *ml, const format_props& format) {
     GBS_strstruct *memfile = GBS_stropen(256);
     GBS_strcat(memfile, "  ");
 
@@ -652,7 +650,7 @@ static const char *get_match_info_formatted(PT_probematch  *ml, const format_pro
         cat_spaced_right(memfile, GBS_global_string("%i", ml->mismatches), format.mis_width());
         cat_spaced_right(memfile, GBS_global_string("%i", ml->N_mismatches), format.N_mis_width());
     }
-    cat_spaced_right(memfile, GBS_global_string("%.1f", wmis), format.wmis_width());
+    cat_spaced_right(memfile, GBS_global_string("%.1f", ml->wmismatches), format.wmis_width());
     cat_spaced_right(memfile, GBS_global_string("%i", ml->b_pos), format.pos_width);
     if (format.show_gpos) {
         cat_spaced_right(memfile, GBS_global_string("%i", ml->g_pos), format.gpos_width);
@@ -662,8 +660,8 @@ static const char *get_match_info_formatted(PT_probematch  *ml, const format_pro
     }
     cat_spaced_left(memfile, GBS_global_string("%i", ml->reversed), format.rev_width());
 
+    char *ref = get_match_overlay(ml);
     GBS_strcat(memfile, ref);
-
     free(ref);
 
     static char *result = 0;
