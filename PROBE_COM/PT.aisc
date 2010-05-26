@@ -171,12 +171,13 @@ PT_probematch, MATCHLIST,       1,      (~the  PROBEMATCH list~), {
     aisc_string,virt_fullname,  %,    r,    ,       FULLNAME,       15,     ,      (~fullname of species (or genename if it's a gene pt server)~);
     double,     wmismatches,    t,    r,    ,       WMISMATCHES,    16,     ,      (~number of weighted mismatches~);
     int,        N_mismatches,   t,    r,    ,       N_MISMATCHES,   17,     ,      (~number of 'N' mismatches~);
-    int,        is_member,      t,    r,    ,       IS_MEMBER,      18,     ,      (~member of group~);
+#    int,        is_member,      t,    r,    ,       IS_MEMBER,      18,     ,      (~member of group~);
     double,     dt,             t,    r,    ,       DT,             19,     ,      (~the dt of a probe~);
     char,       sequence,       l,    r,    ,       SEQUENCE,       22,     ,      (~path of probe~);
     int,        reversed,       t,    r,    ,       REVERSED,       25,     ,      (~reversed probe matches~);
 #    aisc_string,get_match_hinfo,%,    r,    ,       INFO_HEADER,    26,     ,      (~the combined info text of _one_ probe match (header)~);
 #    aisc_string,get_match_info, %,    r,    ,       INFO,           27,     ,      (~the combined info text of _one_ probe match~);
+    aisc_string,get_match_overlay,%,  r,    ,       OVERLAY,        28,     ,      (~ascii visualization of match~);
 };
 
 # used below in MAIN/SPECIESLIST
