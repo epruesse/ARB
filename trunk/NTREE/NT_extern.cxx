@@ -1148,6 +1148,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone) {
 
     if (clone) {
         awm->create_menu("File", "F", AWM_ALL);
+        AWMIMT("new_window",   "New window", "N", "newwindow.hlp", AWM_ALL, AW_POPUP, (AW_CL)create_nt_main_window, clone+1);
         AWMIMT("close", "Close", "C", 0, AWM_ALL, (AW_CB)AW_POPDOWN, 0, 0);
     }
     else {
