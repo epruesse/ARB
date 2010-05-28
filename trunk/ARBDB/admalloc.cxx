@@ -21,7 +21,7 @@
 // #define DUMP_MEMBLKS
 // #define DUMP_MEMBLKS_AT_EXIT
 
-#ifndef NDEBUG
+#ifdef DEBUG 
 // #define TEST_MEMBLKS
 // #define TRACE_ALLOCS
 #endif
@@ -190,14 +190,14 @@ NOT4PERL void *GB_recalloc(void *ptr, unsigned int oelem, unsigned int nelem, un
 #ifdef TRACE_ALLOCS
 
 class AllocLogEntry {
-    char   *block;
+    void   *block;
     size_t  size;
     long    index;
 
     mutable BackTraceInfo *trace;
 
 public:
-    AllocLogEntry(char *block_, size_t size_, long index_, bool do_trace)
+    AllocLogEntry(void *block_, size_t size_, long index_, bool do_trace)
         : block(block_)
         , size(size_)
         , index(index_)
@@ -225,7 +225,7 @@ typedef std::set<AllocLogEntry> AllocLogEntries;
 class AllocLogger {
     AllocLogEntries entries;
 
-    const AllocLogEntry *existingEntry(char *block) {
+    const AllocLogEntry *existingEntry(void *block) {
         AllocLogEntries::const_iterator found = entries.find(AllocLogEntry(block, 0, 0, false));
         
         return found == entries.end() ? NULL : &*found;
@@ -245,7 +245,7 @@ public:
         }
     }
 
-    void allocated(char *block, size_t size, long index) {
+    void allocated(void *block, size_t size, long index) {
         const AllocLogEntry *exists = existingEntry(block);
         if (exists) {
             GBK_dump_backtrace(stderr, "Block allocated again");
@@ -255,7 +255,7 @@ public:
             entries.insert(AllocLogEntry(block, size, index, true));
         }
     }
-    void freed(char *block, size_t size, long index) {
+    void freed(void *block, size_t size, long index) {
         const AllocLogEntry *exists = existingEntry(block);
         if (!exists) {
             if (!gb_isMappedMemory(block)) {
