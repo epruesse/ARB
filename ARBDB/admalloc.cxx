@@ -23,7 +23,7 @@
 
 #ifdef DEBUG 
 // #define TEST_MEMBLKS
-// #define TRACE_ALLOCS
+#define TRACE_ALLOCS
 #endif
 
 #define GBM_MAGIC 0x74732876
