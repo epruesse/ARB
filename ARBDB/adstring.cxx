@@ -678,37 +678,155 @@ char *GBS_unescape_string(const char *str, const char *escaped_chars, char escap
 // -----------------------
 //      String streams
 
-#if defined(DEBUG)
-// # define DUMP_STRSTRUCT_MEMUSE
-#endif // DEBUG
+class GBS_strstruct : Noncopyable {
+    char   *data;
+    size_t  buffer_size;
+    size_t  pos;
+
+    void set_pos(size_t toPos) {
+        pos       = toPos;
+        data[pos] = 0;
+    }
+    void inc_pos(size_t inc) { set_pos(pos+inc); }
+
+public:
+
+    GBS_strstruct()
+        : data(NULL)
+        , buffer_size(0)
+        , pos(0)
+    {}
+    ~GBS_strstruct() { free(data); }
+
+    size_t get_buffer_size() const { return buffer_size; }
+    size_t get_position() const { return pos; }
+    
+    const char *get_data() const { return data; }
+
+    char *release_mem(size_t& size) {
+        char *result = data;
+        size         = buffer_size;
+        buffer_size  = 0;
+        data         = 0;
+        return result;
+    }
+
+    void reset_pos() { set_pos(0); }
+
+    void assign_mem(char *block, size_t blocksize) {
+        free(data);
+
+        gb_assert(block && blocksize>0);
+
+        data      = block;
+        buffer_size = blocksize;
+
+        reset_pos();
+    }
+    void reassign_mem(GBS_strstruct& from) {
+        size_t  size;
+        char   *block = from.release_mem(size);
+
+        assign_mem(block, size);
+    }
 
 
-struct GBS_strstruct {
-    char *GBS_strcat_data;
-    long  GBS_strcat_data_size;
-    long  GBS_strcat_pos;
+    void alloc_mem(size_t blocksize) {
+        gb_assert(blocksize>0);
+        gb_assert(!data);
+
+        assign_mem((char*)malloc(blocksize), blocksize);
+    }
+    void realloc_mem(size_t newsize) {
+        if (!data) alloc_mem(newsize);
+        else {
+            data      = (char*)realloc(data, newsize);
+            buffer_size = newsize;
+
+            gb_assert(pos<newsize);
+        }
+    }
+
+    void ensure_mem(size_t needed_size) {
+        // ensures insertion of 'needed_size' bytes is ok
+        size_t whole_needed_size = pos+needed_size+1;
+        if (buffer_size<whole_needed_size) {
+            size_t next_size = (whole_needed_size * 3) >> 1;
+            realloc_mem(next_size);
+        }
+    }
+
+    // --------------------
+
+    void cut_tail(size_t byte_count) {
+        set_pos(pos<byte_count ? 0 : pos-byte_count);
+    }
+    
+    void put(char c) {
+        ensure_mem(1);
+        data[pos] = c;
+        inc_pos(1);
+    }
+    void nput(char c, size_t count) {
+        ensure_mem(count);
+        memset(data+pos, c, count);
+        inc_pos(count);
+    }
+
+    void ncat(const char *from, size_t count) {
+        if (count) {
+            ensure_mem(count);
+            memcpy(data+pos, from, count);
+            inc_pos(count);
+        }
+    }
+    void cat(const char *from) { ncat(from, strlen(from)); }
+
+    void vprintf(size_t maxlen, const char *templat, va_list& parg) {
+        ensure_mem(maxlen);
+
+        char *buffer = data+pos;
+        int   printed;
+
+#ifdef LINUX
+        printed = vsnprintf(buffer, maxlen, templat, parg);
+#else
+        printed = vsprintf(buffer, templat, parg);
+#endif
+
+        assert_or_exit(printed >= 0 && (size_t)printed <= maxlen);
+        inc_pos(printed);
+    }
 };
 
-static GBS_strstruct *last_used = 0;
+static GBS_strstruct last_used;
 
-GBS_strstruct *GBS_stropen(long init_size) {   // opens a memory file
-    GBS_strstruct *strstr;
+GBS_strstruct *GBS_stropen(long init_size) { 
+    /*! create a new memory file
+     * @param init_size  estimated used size
+     */
+    
+    GBS_strstruct *strstr = new GBS_strstruct;
 
-    if (last_used && last_used->GBS_strcat_data_size >= init_size) {
-        strstr    = last_used;
-        last_used = 0;
+    gb_assert(init_size>0);
+
+    if (last_used.get_buffer_size() >= (size_t)init_size) {
+        strstr->reassign_mem(last_used);
+
+        static short oversized_counter = 0;
+
+        if ((size_t)init_size*10 < strstr->get_buffer_size()) oversized_counter++;
+        else oversized_counter = 0;
+
+        if (oversized_counter>10) {                 // was oversized more than 10 times -> realloc
+            size_t dummy;
+            free(strstr->release_mem(dummy));
+            strstr->alloc_mem(init_size);
+        }
     }
     else {
-#if defined(DUMP_STRSTRUCT_MEMUSE)
-        printf("allocating new GBS_strstruct (size = %li)\n", init_size);
-#endif // DUMP_STRSTRUCT_MEMUSE
-        strstr                       = (GBS_strstruct *)malloc(sizeof(GBS_strstruct));
-        strstr->GBS_strcat_data_size = init_size;
-        strstr->GBS_strcat_data      = (char *)malloc((size_t)strstr->GBS_strcat_data_size);
+        strstr->alloc_mem(init_size);
     }
-
-    strstr->GBS_strcat_pos     = 0;
-    strstr->GBS_strcat_data[0] = 0;
 
     return strstr;
 }
@@ -716,140 +834,80 @@ GBS_strstruct *GBS_stropen(long init_size) {   // opens a memory file
 char *GBS_strclose(GBS_strstruct *strstr) {
     // returns a char* copy of the memory file
 
-    long  length = strstr->GBS_strcat_pos;
-    char *str    = (char*)malloc(length+1);
+    size_t  length = strstr->get_position();
+    char   *str    = (char*)malloc(length+1);
 
-    gb_assert(str);
-
-    memcpy(str, strstr->GBS_strcat_data, length+1); // copy with 0
+    memcpy(str, strstr->get_data(), length+1); // copy with 0
     GBS_strforget(strstr);
 
     return str;
 }
 
 void GBS_strforget(GBS_strstruct *strstr) {
-    if (last_used) {
-        if (last_used->GBS_strcat_data_size < strstr->GBS_strcat_data_size) { // last_used is smaller -> keep this
-            GBS_strstruct *tmp = last_used;
-            last_used          = strstr;
-            strstr             = tmp;
-        }
-    }
-    else {
-        static short oversized_counter = 0;
+    size_t last_bsize = last_used.get_buffer_size();
+    size_t curr_bsize = strstr->get_buffer_size();
 
-        if (strstr->GBS_strcat_pos*10 < strstr->GBS_strcat_data_size) oversized_counter++;
-        else oversized_counter = 0;
-
-        if (oversized_counter<10) {
-            // keep strstruct for next call
-            last_used = strstr;
-            strstr    = 0;
-        }
-        // otherwise the current strstruct was oversized 10 times -> free it
+    if (last_bsize < curr_bsize) { // last_used is smaller -> keep this
+        last_used.reassign_mem(*strstr);
     }
-
-    if (strstr) {
-#if defined(DUMP_STRSTRUCT_MEMUSE)
-        printf("freeing GBS_strstruct (size = %li)\n", strstr->GBS_strcat_data_size);
-#endif // DUMP_STRSTRUCT_MEMUSE
-        free(strstr->GBS_strcat_data);
-        free(strstr);
-    }
+    delete strstr;
 }
 
 GB_BUFFER GBS_mempntr(GBS_strstruct *strstr) {
-    // returns the memory file
-    return strstr->GBS_strcat_data;
+    // returns the memory file (with write access)
+    return (GB_BUFFER)strstr->get_data(); 
 }
 
 long GBS_memoffset(GBS_strstruct *strstr) {
     // returns the offset into the memory file
-    return strstr->GBS_strcat_pos;
+    return strstr->get_position();
 }
 
-void GBS_str_cut_tail(GBS_strstruct *strstr, int byte_count) {
+void GBS_str_cut_tail(GBS_strstruct *strstr, size_t byte_count) {
     // Removes byte_count characters at the tail of a memfile
-    strstr->GBS_strcat_pos -= byte_count;
-    if (strstr->GBS_strcat_pos < 0) strstr->GBS_strcat_pos = 0;
-    strstr->GBS_strcat_data[strstr->GBS_strcat_pos] = 0;
-}
-
-static void gbs_strensure_mem(GBS_strstruct *strstr, long len) {
-    if (strstr->GBS_strcat_pos + len + 2 >= strstr->GBS_strcat_data_size) {
-        strstr->GBS_strcat_data_size = (strstr->GBS_strcat_pos+len+2)*3/2;
-        strstr->GBS_strcat_data      = (char *)realloc(strstr->GBS_strcat_data, strstr->GBS_strcat_data_size);
-#if defined(DUMP_STRSTRUCT_MEMUSE)
-        printf("re-allocated GBS_strstruct to size = %li\n", strstr->GBS_strcat_data_size);
-#endif // DUMP_STRSTRUCT_MEMUSE
-    }
+    strstr->cut_tail(byte_count);
 }
 
 void GBS_strncat(GBS_strstruct *strstr, const char *ptr, size_t len) {
     /* append some bytes string to strstruct
      * (caution : copies zero byte and mem behind if used with wrong len!)
      */
-    if (len>0) {
-        gbs_strensure_mem(strstr, len+2);
-        memcpy(strstr->GBS_strcat_data+strstr->GBS_strcat_pos, ptr, len);
-        strstr->GBS_strcat_pos += len;
-        strstr->GBS_strcat_data[strstr->GBS_strcat_pos] = 0;
-    }
+    strstr->ncat(ptr, len);
 }
 
 void GBS_strcat(GBS_strstruct *strstr, const char *ptr) {
     // append string to strstruct
-    GBS_strncat(strstr, ptr, strlen(ptr));
+    strstr->cat(ptr);
 }
-
-
 
 void GBS_strnprintf(GBS_strstruct *strstr, long len, const char *templat, ...) {
     // goes to header: __ATTR__FORMAT(3)
-    char    *buffer;
-    int      psize;
-    va_list  parg;
-
+    va_list parg;
     va_start(parg, templat);
-    gbs_strensure_mem(strstr, len+2);
-
-    buffer = strstr->GBS_strcat_data+strstr->GBS_strcat_pos;
-
-#ifdef LINUX
-    psize = vsnprintf(buffer, len, templat, parg);
-#else
-    psize = vsprintf(buffer, templat, parg);
-#endif
-
-    assert_or_exit(psize >= 0 && psize <= len);
-    strstr->GBS_strcat_pos += psize;
+    strstr->vprintf(len+2, templat, parg);
 }
 
 void GBS_chrcat(GBS_strstruct *strstr, char ch) {
-    gbs_strensure_mem(strstr, 1);
-    strstr->GBS_strcat_data[strstr->GBS_strcat_pos++] = ch;
-    strstr->GBS_strcat_data[strstr->GBS_strcat_pos] = 0;
+    strstr->put(ch);
 }
 
 void GBS_chrncat(GBS_strstruct *strstr, char ch, size_t n) {
-    gbs_strensure_mem(strstr, n);
-    memset(strstr->GBS_strcat_data+strstr->GBS_strcat_pos, ch, n);
-
-    strstr->GBS_strcat_pos                          += n;
-    strstr->GBS_strcat_data[strstr->GBS_strcat_pos]  = 0;
+    strstr->nput(ch, n);
 }
 
 void GBS_intcat(GBS_strstruct *strstr, long val) {
-    char buffer[200];
+    char buffer[100];
     long len = sprintf(buffer, "%li", val);
     GBS_strncat(strstr, buffer, len);
 }
 
 void GBS_floatcat(GBS_strstruct *strstr, double val) {
-    char buffer[200];
+    char buffer[100];
     long len = sprintf(buffer, "%f", val);
     GBS_strncat(strstr, buffer, len);
 }
+
+// --------------------------------------------------------------------------------
 
 char *GBS_eval_env(GB_CSTR p) {
     GB_ERROR       error = 0;
@@ -878,7 +936,7 @@ char *GBS_eval_env(GB_CSTR p) {
 
     if (error) {
         GB_export_error(error);
-        free(GBS_strclose(out));
+        GBS_strforget(out);
         return 0;
     }
 
@@ -1961,4 +2019,56 @@ char *GBS_log_dated_action_to(const char *comment, const char *action) {
 
     return GBS_strclose(new_comment);
 }
+
+// --------------------------------------------------------------------------------
+
+#if (UNIT_TESTS == 1)
+
+#include <test_unit.h>
+
+#define EXPECT_CONTENT(content) TEST_ASSERT_EQUAL(GBS_mempntr(strstr), content)
+
+void TEST_GBS_strstruct() {
+    {
+        GBS_strstruct *strstr = GBS_stropen(1000); EXPECT_CONTENT("");
+
+        GBS_chrncat(strstr, 'b', 3);        EXPECT_CONTENT("bbb");
+        GBS_intcat(strstr, 17);             EXPECT_CONTENT("bbb17");
+        GBS_chrcat(strstr, '_');            EXPECT_CONTENT("bbb17_");
+        GBS_floatcat(strstr, 3.5);          EXPECT_CONTENT("bbb17_3.500000");
+
+        TEST_ASSERT_EQUAL(GBS_memoffset(strstr), 14);
+        GBS_str_cut_tail(strstr, 13);       EXPECT_CONTENT("b");
+        GBS_strcat(strstr, "utter");        EXPECT_CONTENT("butter");
+        GBS_strncat(strstr, "flying", 3);   EXPECT_CONTENT("butterfly");
+
+        GBS_strnprintf(strstr, 200, "%c%s", ' ', "flutters");
+        EXPECT_CONTENT("butterfly flutters");
+
+        free(GBS_strclose(strstr));
+    }
+    {
+        // re-alloc smaller
+        GBS_strstruct *strstr = GBS_stropen(500); EXPECT_CONTENT("");
+        GBS_strforget(strstr);
+    }
+
+    // trigger downsize of oversized block
+    for (int i = 0; i<12; ++i) {
+        GBS_strstruct *strstr = GBS_stropen(10);
+        GBS_strforget(strstr);
+    }
+
+    {
+        GBS_strstruct *strstr     = GBS_stropen(10);
+        size_t         oldbufsize = strstr->get_buffer_size();
+        GBS_chrncat(strstr, 'x', 20);               // trigger reallocation of buffer
+
+        TEST_ASSERT(oldbufsize != strstr->get_buffer_size()); // did we reallocate?
+        EXPECT_CONTENT("xxxxxxxxxxxxxxxxxxxx");
+        GBS_strforget(strstr);
+    }
+}
+
+#endif
 

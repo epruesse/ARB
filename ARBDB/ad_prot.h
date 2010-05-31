@@ -167,7 +167,7 @@ char *GBS_strclose(GBS_strstruct *strstr);
 void GBS_strforget(GBS_strstruct *strstr);
 GB_BUFFER GBS_mempntr(GBS_strstruct *strstr);
 long GBS_memoffset(GBS_strstruct *strstr);
-void GBS_str_cut_tail(GBS_strstruct *strstr, int byte_count);
+void GBS_str_cut_tail(GBS_strstruct *strstr, size_t byte_count);
 void GBS_strncat(GBS_strstruct *strstr, const char *ptr, size_t len);
 void GBS_strcat(GBS_strstruct *strstr, const char *ptr);
 void GBS_strnprintf(GBS_strstruct *strstr, long len, const char *templat, ...) __ATTR__FORMAT(3);
