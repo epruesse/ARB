@@ -254,7 +254,7 @@ AW_selection_list::AW_selection_list(const char *variable_namei, int variable_ty
 }
 
 static void destroy_AW_root() {
-    delete AW_root::SINGLETON;
+    delete AW_root::SINGLETON; AW_root::SINGLETON = NULL;
 }
 
 AW_root::AW_root(const char *propertyFile, const char *program, bool no_exit) {
@@ -272,6 +272,7 @@ AW_root::AW_root(const char *propertyFile, const char *program, bool no_exit) {
 }
 
 AW_root::~AW_root() {
+    exit_root();
     exit_variables();
     aw_assert(this == AW_root::SINGLETON);
 
@@ -1487,6 +1488,10 @@ void AW_root::init_root(const char *programname, bool no_exit) {
     aw_root_init_font(XtDisplay(p_r->toplevel_widget));
     aw_install_xkeys(XtDisplay(p_r->toplevel_widget));
 
+}
+
+void AW_root::exit_root() {
+    aw_uninstall_xkeys();
 }
 
 void AW_window::_get_area_size(AW_area area, AW_rectangle *square) {

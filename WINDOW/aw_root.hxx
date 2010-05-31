@@ -182,6 +182,7 @@ class AW_root {
     void exit_variables();
 
     void init_root(const char *programname, bool no_exit);
+    void exit_root();
     AW_default load_properties(const char *default_name);
 
 public:
