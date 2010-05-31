@@ -711,6 +711,7 @@ adstring.o: $(ARBHOME)/INCLUDE/attributes.h
 adstring.o: $(ARBHOME)/INCLUDE/dupstr.h
 adstring.o: $(ARBHOME)/INCLUDE/SigHandler.h
 adstring.o: $(ARBHOME)/INCLUDE/smartptr.h
+adstring.o: $(ARBHOME)/INCLUDE/test_unit.h
 adstring.o: $(ARBHOME)/INCLUDE/valgrind.h
 
 adsystem.o: ad_k_prot.h
