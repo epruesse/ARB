@@ -21,6 +21,7 @@ struct awXKeymap_modfree { // automatically defines key with SHIFT, ALT(META) an
 };
 
 void aw_install_xkeys(Display *display);
+void aw_uninstall_xkeys();
 const awXKeymap* aw_xkey_2_awkey(XKeyEvent *xkeyevent);
 
 #else

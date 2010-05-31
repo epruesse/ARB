@@ -32,6 +32,17 @@ sub check_ignore($\$$) {
     if ($reason =~ 'loss record') { # memory leaks
       # Xtoolkit leaks:
       if ($text =~ /\b(XtAppMainLoop)\b.*libXt/) { $$ignore_r = $&; return; } # 15/06/2009
+
+      if ($reason =~ 'still reachable') { # reachable memory leaks
+        if ($text =~ /\b(XLoadQueryFont)\b.*libXt/) { $$ignore_r = $&; return; } # 29/05/2010
+        if ($text =~ /\b(XRebindKeysym)\b.*libXt/) { $$ignore_r = $&; return; } # 29/05/2010
+        if ($text =~ /\b(XmGetPixmap)\b.*libXt/) { $$ignore_r = $&; return; } # 29/05/2010
+        if ($text =~ /\b(XtOpenApplication)\b.*libXt/) { $$ignore_r = $&; return; } # 29/05/2010
+        if ($text =~ /\b(XtRealizeWidget)\b.*libXt/) { $$ignore_r = $&; return; } # 29/05/2010
+        if ($text =~ /\b(XtVaCreateManagedWidget)\b.*libXt/) { $$ignore_r = $&; return; } # 29/05/2010
+        if ($text =~ /\b(XtVaCreatePopupShell)\b.*libXt/) { $$ignore_r = $&; return; } # 29/05/2010
+        if ($text =~ /\b(XtVaSetValues)\b.*libXt/) { $$ignore_r = $&; return; } # 29/05/2010
+      }
     }
     else { # illegal memory access
       # X11 bugs:

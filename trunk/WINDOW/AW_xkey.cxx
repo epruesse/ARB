@@ -104,6 +104,9 @@ const int MODS     = ARRAY_ELEMS(moddef);
 
 static GB_HASH    *awxkeymap_string_2_key_hash;
 static GB_NUMHASH *awxkeymap_xkey_2_key_hash;
+static int         generatedKeymaps_count = -1;
+static awXKeymap  *generatedKeymaps       = 0;
+
 
 const int MAPPED_KEYS = MODFREE*MODS+FIXEDMOD;
 
@@ -143,17 +146,16 @@ void aw_install_xkeys(Display *display) {
     }
 
     int modfree = i;
-    int gensize = modfree*MODS;
 
-    static awXKeymap *generated = 0;
-
-    aw_assert(generated == 0);  // oops - called twice
-    generated = (awXKeymap*)GB_calloc(gensize, sizeof(*generated)); // never freed (cause hashes refers to it)
+    aw_assert(generatedKeymaps == 0);               // oops - called twice
+    
+    generatedKeymaps_count = modfree*MODS;
+    generatedKeymaps       = (awXKeymap*)GB_calloc(generatedKeymaps_count, sizeof(*generatedKeymaps));
 
     for (i=0; i<modfree; ++i) {
         const awXKeymap_modfree *mf = awxkeymap_modfree+i;
         for (int j = 0; j<MODS; ++j) {
-            awXKeymap *km = generated+i*MODS+j;
+            awXKeymap *km = generatedKeymaps+i*MODS+j;
             awModDef  *md = moddef+j;
 
             km->xmod  = md->xmod;
@@ -174,6 +176,20 @@ void aw_install_xkeys(Display *display) {
     }
 
     aw_assert(mappedKeys == MAPPED_KEYS);
+}
+
+void aw_uninstall_xkeys() {
+    for (int i = 0; i<generatedKeymaps_count; ++i) {
+        awXKeymap& km = generatedKeymaps[i];
+        int        j  = i%MODS;
+        awModDef&  md = moddef[j];
+
+        if (md.xstr_prefix) free((char*)km.xstr);
+    }
+    free(generatedKeymaps); generatedKeymaps = NULL;
+
+    GBS_free_numhash(awxkeymap_xkey_2_key_hash); awxkeymap_xkey_2_key_hash  = NULL;
+    GBS_free_hash(awxkeymap_string_2_key_hash); awxkeymap_string_2_key_hash = NULL;
 }
 
 #if defined(DEBUG)
