@@ -74,6 +74,18 @@ typedef enum {
     AW_TYPE_MAX = 16
 } AW_VARIABLE_TYPE;
 
+
+typedef enum {
+    AW_WIDGET_INPUT_FIELD,
+    AW_WIDGET_TEXT_FIELD,
+    AW_WIDGET_LABEL_FIELD,
+    AW_WIDGET_CHOICE_MENU,
+    AW_WIDGET_TOGGLE_FIELD,
+    AW_WIDGET_SELECTION_LIST,
+    AW_WIDGET_TOGGLE
+} AW_widget_type;
+
+
 typedef struct {
     int t, b, l, r;
 } AW_rectangle;
@@ -167,6 +179,7 @@ void aw_error(const char *text, const char *text2);     // internal error: asks 
 
 class  AW_root_Motif;
 class  AW_awar;
+struct AW_buttons_struct;
 struct AW_var_callback;
 
 typedef enum {
@@ -176,8 +189,9 @@ typedef enum {
 } AW_ProcessEventType;
 
 class AW_root {
-    AW_default application_database;
-    
+    AW_default         application_database;
+    AW_buttons_struct *button_sens_list;
+
     void init_variables(AW_default database);
     void exit_variables();
 
@@ -190,7 +204,7 @@ public:
 
     AW_root_Motif *prvt;                            // Do not use !!!
     bool           value_changed;
-    long           changer_of_variable;
+    Widget         changer_of_variable;
     int            y_correction_for_input_labels;
     AW_active      global_mask;
     GB_HASH       *hash_table_for_variables;
@@ -265,6 +279,7 @@ public:
     // Control sensitivity of buttons etc.:
     void apply_sensitivity(AW_active mask);
     void make_sensitive(Widget w, AW_active mask);
+    bool remove_button_from_sens_list(Widget button);
 
     GB_ERROR start_macro_recording(const char *file, const char *application_id, const char *stop_action_name);
     GB_ERROR stop_macro_recording();
@@ -292,6 +307,7 @@ public:
 
 struct AW_var_callback;
 struct AW_var_target;
+struct AW_widget_refresh_cb;
 
 typedef void (*Awar_CB)(AW_root *, AW_CL, AW_CL);
 typedef void (*Awar_CB2)(AW_root *, AW_CL, AW_CL);
@@ -307,8 +323,9 @@ class AW_awar {
         const char *srt;
     } pp;
 
-    struct AW_var_callback *callback_list;
-    struct AW_var_target   *target_list;
+    struct AW_var_callback      *callback_list;
+    struct AW_var_target        *target_list;
+    struct AW_widget_refresh_cb *refresh_list;
 
 #if defined(DEBUG)
     bool is_global;
@@ -341,6 +358,9 @@ public:
 
     AW_awar(AW_VARIABLE_TYPE var_type, const char *var_name, const char *var_value, double var_double_value, AW_default default_file, AW_root *root);
     ~AW_awar();
+
+    void tie_widget(AW_CL cd1, Widget widget, AW_widget_type type, AW_window *aww);
+    void untie_all_widgets();
 
     AW_awar *add_callback(Awar_CB2 f, AW_CL cd1, AW_CL cd2);
     AW_awar *add_callback(Awar_CB1 f, AW_CL cd1);

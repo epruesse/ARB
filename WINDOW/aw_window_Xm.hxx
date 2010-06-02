@@ -16,8 +16,6 @@
 #define  p_global   (root->prvt)
 #define  p_aww(aww) (aww->p_w)
 
-bool AW_remove_button_from_sens_list(AW_root *aw_root, Widget w);
-
 #define MAP_ARAM(ar) p_w->areas[ar]
 
 #define INFO_WIDGET p_w->areas[AW_INFO_AREA]->area
@@ -232,8 +230,6 @@ public:
     Pixel background;
 
     XmFontList fontlist;
-
-    AW_buttons_struct *button_list;
 
     AW_option_menu_struct *option_menu_list;
     AW_option_menu_struct *last_option_menu;

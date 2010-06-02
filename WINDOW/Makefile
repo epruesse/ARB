@@ -94,10 +94,10 @@ AW_at.o: $(ARBHOME)/INCLUDE/dupstr.h
 AW_at.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 AW_button.o: aw_at.hxx
-AW_button.o: aw_awar.hxx
 AW_button.o: aw_click.hxx
 AW_button.o: aw_device.hxx
 AW_button.o: aw_keysym.hxx
+AW_button.o: aw_nawar.hxx
 AW_button.o: aw_position.hxx
 AW_button.o: aw_print.hxx
 AW_button.o: aw_root.hxx
@@ -406,12 +406,12 @@ AW_status.o: $(ARBHOME)/INCLUDE/SigHandler.h
 AW_status.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 AW_window.o: aw_at.hxx
-AW_window.o: aw_awar.hxx
 AW_window.o: aw_click.hxx
 AW_window.o: aw_commn.hxx
 AW_window.o: aw_device.hxx
 AW_window.o: aw_global.hxx
 AW_window.o: aw_keysym.hxx
+AW_window.o: aw_nawar.hxx
 AW_window.o: aw_position.hxx
 AW_window.o: aw_print.hxx
 AW_window.o: aw_root.hxx

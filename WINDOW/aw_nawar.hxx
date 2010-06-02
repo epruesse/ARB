@@ -17,6 +17,7 @@
 
 struct AW_var_callback {
     AW_var_callback(void (*vc_cb)(AW_root*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2, AW_var_callback *next);
+    ~AW_var_callback();
 
     void (*value_changed_cb)(AW_root*, AW_CL, AW_CL);
     AW_CL value_changed_cb_cd1;

@@ -14,7 +14,7 @@
 #include "aw_print.hxx"
 #include "aw_size.hxx"
 #include "aw_select.hxx"
-#include "aw_awar.hxx"
+#include "aw_nawar.hxx"
 #include "aw_window_Xm.hxx"
 
 #include <arbdbt.h>
@@ -38,8 +38,22 @@
 // #define DUMP_BUTTON_CREATION
 #endif // DEBUG
 
-static void aw_cp_awar_2_widget_cb(AW_root *root, AW_widget_list_for_variable *widgetlist) {
-    if (widgetlist->widget == (int *)root->changer_of_variable) {
+struct AW_widget_refresh_cb {
+    AW_widget_refresh_cb(AW_widget_refresh_cb *previous, AW_awar *vs, AW_CL cd1, Widget w, AW_widget_type type, AW_window *awi);
+    ~AW_widget_refresh_cb();
+
+    AW_CL           cd;
+    AW_awar        *awar;
+    Widget          widget;
+    AW_widget_type  widget_type;
+    AW_window      *aw;
+
+    AW_widget_refresh_cb *next;
+};
+
+static void aw_cp_awar_2_widget_cb(AW_root *root, AW_CL cl_widget_refresh_cb) {
+    AW_widget_refresh_cb *widgetlist = (AW_widget_refresh_cb*)cl_widget_refresh_cb;
+    if (widgetlist->widget == root->changer_of_variable) {
         root->changer_of_variable = 0;
         root->value_changed = false;
         return;
@@ -80,16 +94,29 @@ static void aw_cp_awar_2_widget_cb(AW_root *root, AW_widget_list_for_variable *w
     root->value_changed = false;     // Maybe value changed is set because Motif calls me
 }
 
-
-AW_widget_list_for_variable::AW_widget_list_for_variable(AW_awar *vs, AW_CL cd1, int *widgeti, AW_widget_type type, AW_window *awi) {
+AW_widget_refresh_cb::AW_widget_refresh_cb(AW_widget_refresh_cb *previous, AW_awar *vs, AW_CL cd1, Widget w, AW_widget_type type, AW_window *awi) {
     cd          = cd1;
-    widget      = widgeti;
+    widget      = w;
     widget_type = type;
     awar        = vs;
     aw          = awi;
-    next        = 0;
-    awar->add_callback((AW_RCB1)aw_cp_awar_2_widget_cb, (AW_CL)this);
+    next        = previous;
+
+    awar->add_callback(aw_cp_awar_2_widget_cb, (AW_CL)this);
 }
+
+AW_widget_refresh_cb::~AW_widget_refresh_cb() {
+    if (next) delete next;
+    awar->remove_callback(aw_cp_awar_2_widget_cb, (AW_CL)this);
+}
+
+void AW_awar::tie_widget(AW_CL cd1, Widget widget, AW_widget_type type, AW_window *aww) {
+    refresh_list = new AW_widget_refresh_cb(refresh_list, this, cd1, widget, type, aww);
+}
+void AW_awar::untie_all_widgets() {
+    delete refresh_list; refresh_list = NULL;
+}
+
 
 struct AW_variable_update_struct { // used to refresh single items on change
 
@@ -138,7 +165,7 @@ void AW_variable_update_callback(Widget wgt, XtPointer variable_update_struct, X
     AW_root                   *root  = vus->awar->root;
 
     if (root->value_changed) {
-        root->changer_of_variable = (long)vus->widget;
+        root->changer_of_variable = vus->widget;
     }
 
     switch (vus->widget_type) {
@@ -846,11 +873,9 @@ void AW_window::dump_at_position(const char *tmp_label) const {
     printf("%s at x = %i / y = %i\n", tmp_label, _at->x_for_next_button, _at->y_for_next_button);
 }
 
-void AW_window::update_label(int *widget, const char *var_value) {
-    Widget w = (Widget) widget;
-
-    if (get_root()->changer_of_variable != (long)widget) {
-        XtVaSetValues(w, RES_CONVERT(XmNlabelString, var_value), NULL);
+void AW_window::update_label(Widget widget, const char *var_value) {
+    if (get_root()->changer_of_variable != widget) {
+        XtVaSetValues(widget, RES_CONVERT(XmNlabelString, var_value), NULL);
     }
     else {
         get_root()->changer_of_variable = 0;
@@ -866,17 +891,16 @@ struct aw_toggle_data {
     int   buttonWidth; // wanted width in characters
 };
 
-void AW_window::update_toggle(int *wgt, const char *var, AW_CL cd_toggle_data)
-{
+void AW_window::update_toggle(Widget widget, const char *var, AW_CL cd_toggle_data) {
     aw_toggle_data *tdata = (aw_toggle_data*)cd_toggle_data;
     const char     *text  = tdata->bitmapOrText[(var[0] == '0' || var[0] == 'n') ? 0 : 1];
 
     if (tdata->isTextToggle) {
-        XtVaSetValues((Widget)wgt, RES_CONVERT(XmNlabelString, text), NULL);
+        XtVaSetValues(widget, RES_CONVERT(XmNlabelString, text), NULL);
     }
     else {
         char *path = pixmapPath(text+1);
-        XtVaSetValues((Widget)wgt, RES_CONVERT(XmNlabelPixmap, path), NULL);
+        XtVaSetValues(widget, RES_CONVERT(XmNlabelPixmap, path), NULL);
         free(path);
     }
 }
@@ -912,7 +936,7 @@ void AW_window::create_toggle(const char *var_name, aw_toggle_data *tdata) {
     {
         char *var_value = vs->read_as_string();
 
-        this->update_toggle((int*)p_w->toggle_field, var_value, (AW_CL)tdata);
+        this->update_toggle(p_w->toggle_field, var_value, (AW_CL)tdata);
         free(var_value);
     }
 
@@ -923,7 +947,7 @@ void AW_window::create_toggle(const char *var_name, aw_toggle_data *tdata) {
                   (XtCallbackProc) AW_variable_update_callback,
                   (XtPointer) vus);
 
-    AW_INSERT_BUTTON_IN_AWAR_LIST(vs, (AW_CL)tdata, p_w->toggle_field, AW_WIDGET_TOGGLE, this);
+    vs->tie_widget((AW_CL)tdata, p_w->toggle_field, AW_WIDGET_TOGGLE, this);
 }
 
 
@@ -1059,7 +1083,7 @@ void AW_window::create_input_field(const char *var_name,   int columns) {
                   (XtCallbackProc) AW_value_changed_callback,
                   (XtPointer) root);
 
-    AW_INSERT_BUTTON_IN_AWAR_LIST(vs, 0, textField, AW_WIDGET_INPUT_FIELD, this);
+    vs->tie_widget(0, textField, AW_WIDGET_INPUT_FIELD, this);
     root->make_sensitive(textField, _at->widget_mask);
 
     short height;
@@ -1087,15 +1111,9 @@ void AW_window::create_input_field(const char *var_name,   int columns) {
 
 }
 
-
-void AW_window::update_input_field(int *widget, const char *var_value) {
-    Widget w = (Widget) widget;
-
-    XtVaSetValues(w, XmNvalue, var_value, NULL);
+void AW_window::update_input_field(Widget widget, const char *var_value) {
+    XtVaSetValues(widget, XmNvalue, var_value, NULL);
 }
-
-
-
 
 void AW_window::create_text_field(const char *var_name, int columns, int rows) {
     Widget scrolledWindowText;
@@ -1223,7 +1241,7 @@ void AW_window::create_text_field(const char *var_name, int columns, int rows) {
     // callback for value changed
     XtAddCallback(scrolledText, XmNvalueChangedCallback, (XtCallbackProc) AW_value_changed_callback, (XtPointer) root);
 
-    AW_INSERT_BUTTON_IN_AWAR_LIST(vs, 0, scrolledText, AW_WIDGET_TEXT_FIELD, this);
+    vs->tie_widget(0, scrolledText, AW_WIDGET_TEXT_FIELD, this);
     root->make_sensitive(scrolledText, _at->widget_mask);
 
     this->unset_at_commands();
@@ -1231,10 +1249,8 @@ void AW_window::create_text_field(const char *var_name, int columns, int rows) {
 }
 
 
-void AW_window::update_text_field(int *widget, const char *var_value) {
-    Widget w = (Widget) widget;
-
-    XtVaSetValues(w, XmNvalue, var_value, NULL);
+void AW_window::update_text_field(Widget widget, const char *var_value) {
+    XtVaSetValues(widget, XmNvalue, var_value, NULL);
 }
 
 // -----------------------
@@ -1398,7 +1414,7 @@ AW_selection_list* AW_window::create_selection_list(const char *var_name, const 
                           (XtCallbackProc) AW_server_callback,
                           (XtPointer) _d_callback);
         }
-        AW_INSERT_BUTTON_IN_AWAR_LIST(vs, (AW_CL)p_global->last_selection_list, scrolledList, AW_WIDGET_SELECTION_LIST, this);
+        vs->tie_widget((AW_CL)p_global->last_selection_list, scrolledList, AW_WIDGET_SELECTION_LIST, this);
         root->make_sensitive(scrolledList, _at->widget_mask);
     }
 
@@ -2208,14 +2224,14 @@ AW_option_menu_struct *AW_window::create_option_menu(const char *var_name, AW_la
 
     p_global->current_option_menu = p_global->last_option_menu;
 
-    AW_INSERT_BUTTON_IN_AWAR_LIST(vs, (AW_CL)p_global->current_option_menu, optionMenu, AW_WIDGET_CHOICE_MENU, this);
+    vs->tie_widget((AW_CL)p_global->current_option_menu, optionMenu, AW_WIDGET_CHOICE_MENU, this);
     root->make_sensitive(optionMenu1, _at->widget_mask);
 
     return p_global->current_option_menu;
 }
 
 static void remove_option_from_option_menu(AW_root *aw_root, AW_option_struct *os) {
-    AW_remove_button_from_sens_list(aw_root, os->choice_widget);
+    aw_root->remove_button_from_sens_list(os->choice_widget);
     XtDestroyWidget(os->choice_widget);
 }
 
@@ -2351,7 +2367,7 @@ void AW_window::update_option_menu() {
 }
 
 void AW_window::update_option_menu(AW_option_menu_struct *oms) {
-    if (get_root()->changer_of_variable != (long)oms->label_widget) {
+    if (get_root()->changer_of_variable != oms->label_widget) {
         AW_option_struct *active_choice = oms->first_choice;
         {
             char  *global_var_value       = NULL;
@@ -2517,7 +2533,7 @@ void AW_window::create_toggle_field(const char *var_name, int orientation) {
         p_global->last_toggle_field = p_global->toggle_field_list = new AW_toggle_field_struct(get_root()->number_of_toggle_fields, var_name, vs->variable_type, toggle_field, _at->correct_for_at_center);
     }
 
-    AW_INSERT_BUTTON_IN_AWAR_LIST(vs, get_root()->number_of_toggle_fields, toggle_field, AW_WIDGET_TOGGLE_FIELD, this);
+    vs->tie_widget(get_root()->number_of_toggle_fields, toggle_field, AW_WIDGET_TOGGLE_FIELD, this);
     root->make_sensitive(toggle_field, _at->widget_mask);
 }
 
