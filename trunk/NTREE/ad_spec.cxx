@@ -1174,7 +1174,7 @@ void NT_detach_information_window(AW_window *aww, AW_CL cl_pointer_to_aww, AW_CL
         awr->awar_string(new_awar, "", AW_ROOT_DEFAULT);
 
         cb_info->remap(new_awar); // remap the callback from old awar to new unique awar
-        aww->update_label((int*)di->get_detach_button(), "GET");
+        aww->update_label(di->get_detach_button(), "GET");
 
         *aww_pointer = 0;       // caller window will be recreated on next open after clearing this pointer
         // [Note : the aww_pointer points to the static window pointer]

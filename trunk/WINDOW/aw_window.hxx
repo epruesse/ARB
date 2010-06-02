@@ -241,10 +241,10 @@ public:
     int calculate_string_height(int columns, int offset);
     char *align_string(const char *string, int columns);
 
-    void update_label(int *widget, const char *var_value);
-    void update_toggle(int *widget, const char *var_value, AW_CL cd);
-    void update_input_field(int *widget, const char *var_value);
-    void update_text_field(int *widget, const char *var_value);
+    void update_label(Widget widget, const char *var_value);
+    void update_toggle(Widget widget, const char *var_value, AW_CL cd);
+    void update_input_field(Widget widget, const char *var_value);
+    void update_text_field(Widget widget, const char *var_value);
 
     void  create_invisible(int columns);
     void *_create_option_entry(AW_VARIABLE_TYPE type, const char *name, const char *mnemonic, const char *name_of_color);

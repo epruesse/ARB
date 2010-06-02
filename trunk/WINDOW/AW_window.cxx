@@ -10,7 +10,7 @@
 
 #include "aw_commn.hxx"
 #include "aw_at.hxx"
-#include "aw_awar.hxx"
+#include "aw_nawar.hxx"
 #include "aw_xfig.hxx"
 #include "aw_Xm.hxx"
 #include "aw_click.hxx"
@@ -83,7 +83,7 @@ void AW_root::make_sensitive(Widget w, AW_active mask) {
     prvt->set_last_widget(w);
 
     if (mask != AWM_ALL) { // no need to make widget sensitive, if its shown unconditionally
-        prvt->button_list = new AW_buttons_struct(mask, w, prvt->button_list);
+        button_sens_list = new AW_buttons_struct(mask, w, button_sens_list);
         if (!(mask & global_mask)) XtSetSensitive(w, False); // disable widget if mask doesn't match
     }
 }
@@ -98,25 +98,25 @@ AW_buttons_struct::AW_buttons_struct(AW_active maski, Widget w, AW_buttons_struc
 }
 
 AW_buttons_struct::~AW_buttons_struct() {
-    aw_assert(next == 0); // has to be removed from global list before calling dtor
+    delete next;
 }
 
-bool AW_remove_button_from_sens_list(AW_root *root, Widget w) {
+bool AW_root::remove_button_from_sens_list(Widget button) {
     bool removed = false;
-    if (p_global->button_list) {
+    if (button_sens_list) {
         AW_buttons_struct *prev = 0;
-        AW_buttons_struct *bl   = p_global->button_list;
+        AW_buttons_struct *bl   = button_sens_list;
 
         while (bl) {
-            if (bl->button == w) break; // found wanted widget
+            if (bl->button == button) break; // found wanted widget
             prev = bl;
             bl = bl->next;
         }
 
         if (bl) {
             // remove from list
-            if (prev) prev->next       = bl->next;
-            else p_global->button_list = bl->next;
+            if (prev) prev->next  = bl->next;
+            else button_sens_list = bl->next;
 
             bl->next = 0;
             removed  = true;
@@ -128,7 +128,7 @@ bool AW_remove_button_from_sens_list(AW_root *root, Widget w) {
 }
 
 AW_option_struct::AW_option_struct(const char *variable_valuei,
-        Widget choice_widgeti) :
+                                   Widget choice_widgeti) :
     variable_value(strdup(variable_valuei)), choice_widget(choice_widgeti),
             next(0) {
 }
@@ -272,11 +272,13 @@ AW_root::AW_root(const char *propertyFile, const char *program, bool no_exit) {
 }
 
 AW_root::~AW_root() {
+    delete focus_callback_list; focus_callback_list = NULL;
+    delete button_sens_list;    button_sens_list    = NULL;
+
     exit_root();
     exit_variables();
     aw_assert(this == AW_root::SINGLETON);
 
-    
     delete prvt;
 
     free(program_name);
@@ -1463,7 +1465,7 @@ void AW_root::init_root(const char *programname, bool no_exit) {
 
     p_r->fontlist = XmFontListCreate(fontstruct, XmSTRING_DEFAULT_CHARSET);
 
-    p_r->button_list = 0;
+    button_sens_list = 0;
 
     p_r->last_option_menu = p_r->current_option_menu = p_r->option_menu_list = NULL;
     p_r->last_toggle_field = p_r->toggle_field_list = NULL;
@@ -1772,14 +1774,14 @@ void AW_label_in_awar_list(AW_window *aww, Widget widget, const char *str) {
     if (is_awar) {
         char *var_value = is_awar->read_as_string();
         if (var_value) {
-            aww->update_label((int*)widget, var_value);
+            aww->update_label(widget, var_value);
         }
         else {
             AW_ERROR("AW_label_in_awar_list:: AWAR %s not found\n", str);
-            aww->update_label((int*)widget, str);
+            aww->update_label(widget, str);
         }
         free(var_value);
-        AW_INSERT_BUTTON_IN_AWAR_LIST(is_awar, 0, widget, AW_WIDGET_LABEL_FIELD, aww);
+        is_awar->tie_widget(0, widget, AW_WIDGET_LABEL_FIELD, aww);
     }
 }
 
@@ -2653,7 +2655,7 @@ void AW_root::apply_sensitivity(AW_active mask) {
     AW_buttons_struct *list;
 
     global_mask = mask;
-    for (list = p_r->button_list; list; list = list->next) {
+    for (list = button_sens_list; list; list = list->next) {
         XtSetSensitive(list->button, (list->mask & mask) ? True : False);
     }
 }

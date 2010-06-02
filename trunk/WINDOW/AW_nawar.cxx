@@ -30,6 +30,9 @@ AW_var_callback::AW_var_callback(void (*vc_cb)(AW_root*, AW_CL, AW_CL), AW_CL cd
     value_changed_cb_cd2 = cd2;
     next                 = nexti;
 }
+AW_var_callback::~AW_var_callback() {
+    delete next;
+}
 
 
 void AW_var_callback::run_callback(AW_root *root) {
@@ -243,11 +246,7 @@ AW_awar *AW_awar::remove_callback(void (*f)(AW_root*, AW_CL), AW_CL cd1) { retur
 AW_awar *AW_awar::remove_callback(void (*f)(AW_root*)) { return remove_callback((AW_RCB) f, 0, 0); }
 
 void AW_awar::remove_all_callbacks() {
-    while (callback_list) {
-        AW_var_callback *del = callback_list;
-        callback_list        = del->next;
-        delete del;
-    }
+    delete callback_list; callback_list = NULL;
 }
 
 
@@ -628,8 +627,8 @@ AW_awar::AW_awar(AW_VARIABLE_TYPE var_type, const char *var_name, const char *va
 }
 
 AW_awar::~AW_awar() {
-    remove_all_target_vars();
     unlink();
+    untie_all_widgets();
     free(awar_name);
 }
 
