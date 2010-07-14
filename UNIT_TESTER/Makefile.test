@@ -85,10 +85,10 @@ clean:
 # --------------------------------------------------------------------------------
 
 $(DESTDIR):
-	test -d $(DESTDIR) || mkdir $(DESTDIR)
+	test -d $(DESTDIR) || mkdir -p $(DESTDIR)
 
 $(RUNDIR):
-	test -d $(RUNDIR) || mkdir $(RUNDIR)
+	test -d $(RUNDIR) || mkdir -p $(RUNDIR)
 
 makedirs: $(DESTDIR) $(RUNDIR)
 
