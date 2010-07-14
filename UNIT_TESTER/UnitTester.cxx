@@ -18,6 +18,8 @@
 #include <cstdlib>
 #include <cstdio>
 
+#include <sys/time.h>
+
 #define SIMPLE_ARB_ASSERT
 #include <arb_assert.h>
 #define ut_assert(cond) arb_assert(cond)
@@ -71,10 +73,13 @@ static void UT_sigsegv_handler(int sig) {
     exit(EXIT_FAILURE);
 }
 
-static UnitTestResult execute_guarded(UnitTest_function fun) {
+#define SECOND 1000000
+
+static UnitTestResult execute_guarded(UnitTest_function fun, long *duration_usec) {
     SigHandler     old_handler = signal(SIGSEGV, UT_sigsegv_handler);
-    int            trapped     = setjmp(UT_return_after_segv);
     UnitTestResult result      = TEST_OK;
+    timeval        t1, t2;
+    int            trapped     = setjmp(UT_return_after_segv);
 
     if (trapped) {                                  // trapped
         ut_assert(trapped == 668);
@@ -82,8 +87,13 @@ static UnitTestResult execute_guarded(UnitTest_function fun) {
     }
     else {                                          // normal execution
         inside_test = true;
+        gettimeofday(&t1, NULL);
         fun();
     }
+
+    gettimeofday(&t2, NULL);
+    *duration_usec = (t2.tv_sec - t1.tv_sec) * SECOND + (t2.tv_usec - t1.tv_usec);
+    
     inside_test = false;
     signal(SIGSEGV, old_handler);
 
@@ -95,9 +105,10 @@ static UnitTestResult execute_guarded(UnitTest_function fun) {
 class SimpleTester {
     const UnitTest_simple *tests;
     size_t                 count;
+    double                 duration_ms;
 
     bool perform(size_t which);
-    
+
 public:
     SimpleTester(const UnitTest_simple *tests_)
         : tests(tests_)
@@ -107,6 +118,8 @@ public:
 
     size_t perform_all();
     size_t get_test_count() const { return count; }
+
+    double overall_duration_ms() const { return duration_ms; }
 };
 
 
@@ -125,11 +138,15 @@ size_t SimpleTester::perform_all() {
 bool SimpleTester::perform(size_t which) {
     ut_assert(which<count);
 
-    const UnitTest_simple& test   = tests[which];
-    UnitTest_function      fun    = test.fun;
-    UnitTestResult         result = execute_guarded(fun);
+    const UnitTest_simple& test = tests[which];
+    UnitTest_function      fun  = test.fun;
 
-    trace("* %s = %s\n", test.name, readable_result[result]);
+    long           duration_usec;
+    UnitTestResult result           = execute_guarded(fun, &duration_usec);
+    double         duration_ms_this = duration_usec/1000.0;
+
+    duration_ms += duration_ms_this;
+    trace("* %s = %s (%.1f ms)\n", test.name, readable_result[result], duration_ms_this);
     if (result != TEST_OK) {
         fprintf(stderr, "%s: Error: %s failed (details above)\n", test.location, test.name);
     }
@@ -143,24 +160,26 @@ bool SimpleTester::perform(size_t which) {
 UnitTester::UnitTester(const char *libname, const UnitTest_simple *simple_tests) {
     size_t tests  = 0;
     size_t passed = 0;
+    double duration_ms;
 
     {
         SimpleTester simple_tester(simple_tests);
 
-        tests = simple_tester.get_test_count();
+        tests             = simple_tester.get_test_count();
         if (tests) passed = simple_tester.perform_all();
+        duration_ms       = simple_tester.overall_duration_ms();
     }
 
     if (tests>0) {
         if (passed == tests) {
-            trace("all unit tests for '%s' passed OK\n", libname);
+            trace("all unit tests for '%s' passed OK (%.0f ms)\n\n", libname, duration_ms);
         }
         else {
-            trace("unit tests for '%s': %zu OK / %zu FAILED\n", libname, passed, tests-passed);
+            trace("unit tests for '%s': %zu OK / %zu FAILED (%.0f ms)\n\n", libname, passed, tests-passed, duration_ms);
         }
     }
     else {
-        trace("No tests defined for '%s'\n", libname);
+        trace("No tests defined for '%s'\n\n", libname);
     }
 
     exit(tests == passed ? EXIT_SUCCESS : EXIT_FAILURE);
