@@ -222,7 +222,7 @@ GB_ERROR ArbTcpDat::update() {
     // read arb_tcp.dat (once or if changed on disk)
     GB_ERROR error = 0;
 
-    if (!filename) filename = GBS_find_lib_file("arb_tcp.dat", "", 1);
+    if (!filename) filename = GBS_find_lib_file("arb_tcp.dat", "", true);
 
     if (!filename) {
         error = GBS_global_string("File $ARBHOME/lib/arb_tcp.dat not found");

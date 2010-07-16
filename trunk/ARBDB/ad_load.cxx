@@ -1508,7 +1508,7 @@ GBDATA *GB_login(const char *cpath, const char *opent, const char *user) {
                         if (strchr(opent, 'd')) pre = "";
                         else                    pre = "arb_default/";
 
-                        found_path = GBS_find_lib_file(path, pre, 0);
+                        found_path = GBS_find_lib_file(path, pre, false);
                         if (!found_path) {
                             fprintf(stderr, "file %s not found\n", path);
                             dbCreated = true;

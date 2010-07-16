@@ -188,7 +188,7 @@ char *GB_find_latest_file(const char *dir, const char *mask) {
     return result;
 }
 
-char *GBS_find_lib_file(const char *filename, const char *libprefix, int warn_when_not_found) {
+char *GBS_find_lib_file(const char *filename, const char *libprefix, bool warn_when_not_found) {
     // Searches files in current dir, $HOME, $ARBHOME/lib/libprefix
 
     char *result = 0;
