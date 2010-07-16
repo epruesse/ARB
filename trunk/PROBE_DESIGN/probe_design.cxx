@@ -1807,8 +1807,11 @@ static void arb_tcp_dat_changed_cb(const char * /* path */, bool fileChanged, bo
 }
 
 static void pd_edit_arb_tcp(AW_window *aww, AW_CL cl_gb_main) {
-    GBDATA *gb_main = (GBDATA*)cl_gb_main;
-    AW_edit("$(ARBHOME)/lib/arb_tcp.dat", arb_tcp_dat_changed_cb, aww, gb_main);
+    GBDATA *gb_main  = (GBDATA*)cl_gb_main;
+    char   *filename = GBS_find_lib_file("arb_tcp.dat", "", true);
+
+    AW_edit(filename, arb_tcp_dat_changed_cb, aww, gb_main);
+    free(filename);
 }
 
 AW_window *create_probe_admin_window(AW_root *root, AW_CL cl_gb_main) {
