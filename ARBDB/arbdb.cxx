@@ -1243,17 +1243,58 @@ GB_CSTR gb_read_key_pntr(GBDATA *gbd) {
 }
 
 
-GBQUARK GB_key_2_quark(GBDATA *gbd, const char *s) {
-    long          index;
-    GB_MAIN_TYPE *Main = GB_MAIN(gbd);
+GBQUARK gb_key_2_existing_quark(GB_MAIN_TYPE *Main, const char *key) {
+    /*! @return existing quark for 'key'
+     *          -1 = key is NULL
+     *           0 = no quark exists
+     *        else = quark
+     */
 
-    if (!s) return -1;
-    index = GBS_read_hash(Main->key_2_index_hash, s);
-    if (!index) {   // create new index
-        index = gb_create_key(Main, s, true);
-    }
-    return (GBQUARK)index;
+    GBQUARK quark  = -1;
+    if (key) quark = GBS_read_hash(Main->key_2_index_hash, key);
+    return quark;
 }
+
+GBQUARK GB_key_2_quark(GBDATA *gbd, const char *key) {
+    /*! find or create quark for 'key'
+     * @return -1 if key is NULL, else existing or created quark
+     */
+
+    GB_MAIN_TYPE *Main  = GB_MAIN(gbd);
+    GBQUARK       quark = gb_key_2_existing_quark(Main, key);
+    if (!quark) quark   = gb_create_key(GB_MAIN(gbd), key, true);
+    return quark;
+}
+
+#if defined(DEVEL_RALF)
+#warning add gb_NULLkey_2_quark allowing NULL as key
+#endif // DEVEL_RALF
+
+GBQUARK gb_key_2_quark(GB_MAIN_TYPE *Main, const char *key) {
+    // similar to GB_key_2_quark, 
+    // but if 'key' is NULL, quark 0 will be returned.
+    // 
+    // Use this function with care.
+    //
+    // Known good use:
+    // - create main entry and its dummy father via gb_make_container()
+    //
+    // Other uses (maybe just to pass GB_MAIN_TYPE instead of GBDATA as GB_key_2_quark likes):
+    // - gb_rename_entry
+    // - gb_make_entry
+    // - compress_sequence_tree
+    // - dictionary compression (several calls)
+
+    GBQUARK quark = 0;
+    if (key) {
+        quark             = gb_key_2_existing_quark(Main, key);
+        if (!quark) quark = gb_create_key(Main, key, true);
+        gb_assert(quark>0);
+    }
+    return quark;
+}
+
+// ---------------------------------------------
 
 GBQUARK GB_get_quark(GBDATA *gbd) {
     return GB_KEY_QUARK(gbd);
@@ -1264,27 +1305,14 @@ bool GB_has_key(GBDATA *gbd, const char *key) {
     return (quark == GB_get_quark(gbd));
 }
 
-GBQUARK gb_key_2_quark(GB_MAIN_TYPE *Main, const char *s) {
-    long index;
-    if (!s) return 0;
-    index = GBS_read_hash(Main->key_2_index_hash, s);
-    if (!index) {   // create new index
-        index = gb_create_key(Main, s, true);
-    }
-    return (GBQUARK)index;
-}
+// ---------------------------------------------
 
-
-
-
-long GB_read_clock(GBDATA *gbd)
-{
+long GB_read_clock(GBDATA *gbd) {
     if (GB_ARRAY_FLAGS(gbd).changed) return GB_MAIN(gbd)->clock;
     return GB_GET_EXT_UPDATE_DATE(gbd);
 }
 
-long    GB_read_transaction(GBDATA *gbd)
-{
+long GB_read_transaction(GBDATA *gbd) {
     return GB_MAIN(gbd)->transaction;
 }
 

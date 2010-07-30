@@ -122,7 +122,8 @@ GB_ERROR gb_write_compressed_pntr(GBDATA *gbd, const char *s, long memsize, long
 int gb_get_compression_mask(GB_MAIN_TYPE *Main, GBQUARK key, int gb_type);
 GB_ERROR gb_security_error(GBDATA *gbd) __ATTR__USERESULT;
 GB_CSTR gb_read_key_pntr(GBDATA *gbd);
-GBQUARK gb_key_2_quark(GB_MAIN_TYPE *Main, const char *s);
+GBQUARK gb_key_2_existing_quark(GB_MAIN_TYPE *Main, const char *key);
+GBQUARK gb_key_2_quark(GB_MAIN_TYPE *Main, const char *key);
 GBDATA *gb_create(GBDATA *father, const char *key, GB_TYPES type);
 GBDATA *gb_create_container(GBDATA *father, const char *key);
 void gb_rename(GBCONTAINER *gbc, const char *new_key);
