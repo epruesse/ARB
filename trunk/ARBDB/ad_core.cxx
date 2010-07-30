@@ -458,7 +458,7 @@ void gb_pre_delete_entry(GBDATA *gbd) {
      * within the server at the client side
      */
     if (!Main->local_mode && gbd->server_id) {
-        GBS_write_numhash(Main->remote_hash, gbd->server_id, 0);
+        if (Main->remote_hash) GBS_write_numhash(Main->remote_hash, gbd->server_id, 0);
     }
 
     if (type >= GB_BITS && type < GB_DB) {
@@ -520,7 +520,11 @@ static void gb_delete_main_entry(GBCONTAINER **gb_main_ptr) {
     
     gb_assert(GB_TYPE(gb_main) == GB_DB);
 
-    GBQUARK sys_quark = GB_key_2_quark((GBDATA*)gb_main, GB_SYSTEM_FOLDER);
+    GBQUARK sys_quark = gb_key_2_existing_quark(GB_MAIN((GBDATA*)gb_main), GB_SYSTEM_FOLDER);
+
+    // Note: sys_quark may be 0 (happens when destroying client db which never established a connection).
+    // In this case no system folder/quark has been created (and we do no longer try to create it)
+    // Nothing will happen in pass 2 below.
 
     for (int pass = 1; pass <= 2; pass++) {
         for (int index = 0; index < gb_main->d.nheader; index++) {

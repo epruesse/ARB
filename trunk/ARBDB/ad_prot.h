@@ -295,7 +295,7 @@ void GB_pop_my_security(GBDATA *gbd);
 GB_TYPES GB_read_type(GBDATA *gbd);
 char *GB_read_key(GBDATA *gbd);
 GB_CSTR GB_read_key_pntr(GBDATA *gbd);
-GBQUARK GB_key_2_quark(GBDATA *gbd, const char *s);
+GBQUARK GB_key_2_quark(GBDATA *gbd, const char *key);
 GBQUARK GB_get_quark(GBDATA *gbd);
 bool GB_has_key(GBDATA *gbd, const char *key);
 long GB_read_clock(GBDATA *gbd);

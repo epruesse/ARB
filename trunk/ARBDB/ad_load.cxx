@@ -1463,10 +1463,10 @@ GBDATA *GB_login(const char *cpath, const char *opent, const char *user) {
 
     ASSERT_RESULT(long, gb_create_key(Main, "main", false), 0);
 
-    Main->dummy_father            = gb_make_container(NULL, 0, -1, 0); // create "main"
+    Main->dummy_father            = gb_make_container(NULL, NULL, -1, 0); // create "main"
     Main->dummy_father->main_idx  = gb_make_main_idx(Main);
     Main->dummy_father->server_id = GBTUM_MAGIC_NUMBER;
-    gbd                           = gb_make_container(Main->dummy_father, 0, -1, 0); // create "main"
+    gbd                           = gb_make_container(Main->dummy_father, NULL, -1, 0); // create "main"
 
     Main->data = gbd;
     gbcm_login(gbd, user);
