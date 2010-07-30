@@ -21,9 +21,12 @@
 // #define DUMP_MEMBLKS
 // #define DUMP_MEMBLKS_AT_EXIT
 
-#ifdef DEBUG 
+#ifdef DEBUG
 // #define TEST_MEMBLKS
-#define TRACE_ALLOCS
+// #define TRACE_ALLOCS
+#if defined(DEVEL_RALF)
+#warning unit tests fail when TRACE_ALLOCS is defined (due to wrong sized block during load(?). cant fix atm. see [6672])
+#endif // DEVEL_RALF
 #endif
 
 #define GBM_MAGIC 0x74732876
