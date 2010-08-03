@@ -17,6 +17,7 @@
 #include <cstdarg>
 #include <cstdlib>
 #include <cstdio>
+#include <cstring>
 
 #include <sys/time.h>
 
@@ -149,6 +150,13 @@ bool SimpleTester::perform(size_t which) {
     trace("* %s = %s (%.1f ms)\n", test.name, readable_result[result], duration_ms_this);
     if (result != TEST_OK) {
         fprintf(stderr, "%s: Error: %s failed (details above)\n", test.location, test.name);
+    }
+
+    if (duration_ms_this>1000) {                    // long test duration
+        if (strlen(test.name) <= 10 || memcmp(test.name, "TEST_SLOW_", 10) != 0) {
+            fprintf(stderr, "%s: Warning: Name of slow tests shall start with TEST_SLOW_ (it'll be run after other tests)\n",
+                    test.location);
+        }
     }
 
     return result == TEST_OK;

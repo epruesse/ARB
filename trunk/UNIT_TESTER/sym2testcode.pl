@@ -140,6 +140,20 @@ sub generate_table($$\%\&) {
     }
   } keys %$id_r;
 
+  # sort TEST_SLOW_ to the end
+  {
+    my @tests_fast = ();
+    my @tests_slow = ();
+
+    foreach (@tests) {
+      if (/^TEST_SLOW_/) { push @tests_slow, $_; }
+      else { push @tests_fast, $_; }
+    }
+
+    @tests = @tests_fast;
+    push @tests, @tests_slow;
+  }
+
   my $code = '';
 
   # "prototypes"
