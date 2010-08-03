@@ -1350,7 +1350,7 @@ static GB_ERROR modify_db(GBDATA *gb_main) {
 
 #define TEST_loadsave_CLEANUP() TEST_ASSERT(system("rm -f [ab]2[ab]*.* master.* slave.* renamed.* fast.* fast2b.* TEST_loadsave.ARF") == 0)
 
-void TEST_loadsave() {
+void TEST_SLOW_loadsave() {
     TEST_loadsave_CLEANUP();
 
     // test non-existing DB

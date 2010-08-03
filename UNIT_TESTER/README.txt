@@ -39,23 +39,34 @@ How to use ARB unit testing
 
    Failing tests:
 
-          If you have some broken behavior that you cannot fix now, please do NOT leave
-          the test as "failing". Instead change TEST_ASSERT into
+      If you have some broken behavior that you cannot fix now, please do NOT leave
+      the test as "failing". Instead change TEST_ASSERT into
 
-              TEST_ASSERT_BROKEN(failing_condition);
+          TEST_ASSERT_BROKEN(failing_condition);
 
-          That will print a warning as reminder as long as the condition fails.
-          When the behavior was fixed (so that the condition is fulfilled now),
-          it will abort the test as failed!
-          Just change TEST_ASSERT_BROKEN back into TEST_ASSERT then.
+      That will print a warning as reminder as long as the condition fails.
+      When the behavior was fixed (so that the condition is fulfilled now),
+      it will abort the test as failed!
+      Just change TEST_ASSERT_BROKEN back into TEST_ASSERT then.
+
 
    Missing tests:
 
-           You may drop a reminder like
+      You may drop a reminder like
 
-               MISSING_TEST(describe what is missing);
+          MISSING_TEST(describe what is missing);
 
-           which will appear as warning during test run.
+      which will appear as warning during test run.
+
+
+   Order of tests:
+
+      Tests are executed in the order they appear in the code.
+      Multiple Files are sorted alphabethically.
+
+      Tests with names starting with 'TEST_SLOW_' are executed after
+      all other tests. These are meant to indicate "slow" tests
+      (i.e. tests which need more than a second to execute)
 
 
 3. Valgrinding test code
