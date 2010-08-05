@@ -70,6 +70,7 @@ int PT_complement P_((int base));
 void complement_probe P_((char *probe, int probe_length));
 void pt_build_pos_to_weight P_((PT_MATCH_TYPE type, const char *sequence));
 extern "C" int probe_match P_((PT_local *locs, aisc_string probestring));
+extern "C" char *get_match_overlay P_((PT_probematch *ml));
 extern "C" bytestring *match_string P_((PT_local *locs));
 extern "C" bytestring *MP_match_string P_((PT_local *locs));
 extern "C" bytestring *MP_all_species_string P_((PT_local *));
