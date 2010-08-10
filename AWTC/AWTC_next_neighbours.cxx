@@ -20,22 +20,40 @@
 
 #define awtc_assert(bed) arb_assert(bed)
 
-AWTC_FIND_FAMILY_MEMBER::AWTC_FIND_FAMILY_MEMBER() {
+void awtc_ff_message(const char *msg) {
+    GB_warning(msg);
+}
+
+
+// -------------------
+//      FamilyList
+
+FamilyList::FamilyList() {
     matches = 0;
     name = 0;
     next = 0;
 }
 
-AWTC_FIND_FAMILY_MEMBER::~AWTC_FIND_FAMILY_MEMBER() {
+FamilyList::~FamilyList() {
     free(name);
 }
 
-void awtc_ff_message(const char *msg) {
-    GB_warning(msg);
+// ---------------------
+//      FamilyFinder
+
+FamilyFinder::FamilyFinder()
+    : family_list(NULL),
+      hits_truncated(false),
+      real_hits(-1)
+{
 }
 
-void AWTC_FIND_FAMILY::delete_family_list() {
-    AWTC_FIND_FAMILY_MEMBER *fl, *fln;
+FamilyFinder::~FamilyFinder() {
+    delete_family_list();
+}
+
+void FamilyFinder::delete_family_list() {
+    FamilyList *fl, *fln;
     for (fl = family_list; fl;  fl = fln) {
          fln = fl->next;
          delete fl;
@@ -43,7 +61,28 @@ void AWTC_FIND_FAMILY::delete_family_list() {
     family_list = 0;
 }
 
-GB_ERROR AWTC_FIND_FAMILY::init_communication() {
+// ------------------------
+//      PT_FamilyFinder
+
+PT_FamilyFinder::PT_FamilyFinder(GBDATA *gb_main_, int server_id_, int oligo_len_, int mismatches_, bool fast_flag_, bool rel_matches_)
+    : gb_main(gb_main_),
+      server_id(server_id_),
+      oligo_len(oligo_len_),
+      mismatches(mismatches_),
+      fast_flag(fast_flag_),
+      rel_matches(rel_matches_),
+      link(NULL),
+      com(0),
+      locs(0)
+{
+}
+
+PT_FamilyFinder::~PT_FamilyFinder() {
+    delete_family_list();
+    close();
+}
+
+GB_ERROR PT_FamilyFinder::init_communication() {
     const char *user = "Find Family";
 
     awtc_assert(!com);
@@ -60,7 +99,7 @@ GB_ERROR AWTC_FIND_FAMILY::init_communication() {
 }
 
 
-GB_ERROR AWTC_FIND_FAMILY::open(const char *servername) {
+GB_ERROR PT_FamilyFinder::open(const char *servername) {
     GB_ERROR error = 0;
     if (arb_look_and_start_server(AISC_MAGIC_NUMBER, servername, gb_main)) {
         error = "Cannot contact PT  server";
@@ -77,34 +116,13 @@ GB_ERROR AWTC_FIND_FAMILY::open(const char *servername) {
     return error;
 }
 
-void AWTC_FIND_FAMILY::close() {
+void PT_FamilyFinder::close() {
     if (link) aisc_close(link);
     link = 0;
     com  = 0;
 }
 
-AWTC_FIND_FAMILY::AWTC_FIND_FAMILY(GBDATA *gb_main_, int server_id_, int oligo_len_, int mismatches_, bool fast_flag_, bool rel_matches_)
-    : gb_main(gb_main_),
-      server_id(server_id_),
-      oligo_len(oligo_len_),
-      mismatches(mismatches_),
-      fast_flag(fast_flag_),
-      rel_matches(rel_matches_),
-      link(NULL),
-      com(0),
-      locs(0),
-      family_list(NULL),
-      hits_truncated(false),
-      real_hits(-1)
-{
-}
-
-AWTC_FIND_FAMILY::~AWTC_FIND_FAMILY() {
-    delete_family_list();
-    close();
-}
-
-GB_ERROR AWTC_FIND_FAMILY::retrieve_family(char *sequence, FF_complement compl_mode, int max_results) {
+GB_ERROR PT_FamilyFinder::retrieve_family(char *sequence, FF_complement compl_mode, int max_results) {
     delete_family_list();
 
     char     *compressed_sequence = GB_command_interpreter(gb_main, sequence, "|keep(acgtunACGTUN)", 0, 0);
@@ -147,7 +165,7 @@ GB_ERROR AWTC_FIND_FAMILY::retrieve_family(char *sequence, FF_complement compl_m
             hits_truncated = false;
             if (max_results<1) max_results = INT_MAX;
 
-            AWTC_FIND_FAMILY_MEMBER *tail = NULL;
+            FamilyList *tail = NULL;
             while (f_list) {
                 if (max_results == 0) {
                     hits_truncated = true;
@@ -155,7 +173,7 @@ GB_ERROR AWTC_FIND_FAMILY::retrieve_family(char *sequence, FF_complement compl_m
                 }
                 max_results--;
 
-                AWTC_FIND_FAMILY_MEMBER *fl = new AWTC_FIND_FAMILY_MEMBER();
+                FamilyList *fl = new FamilyList();
 
                 (tail ? tail->next : family_list) = fl;
                 tail                              = fl;
@@ -174,14 +192,14 @@ GB_ERROR AWTC_FIND_FAMILY::retrieve_family(char *sequence, FF_complement compl_m
     return error;
 }
 
-void AWTC_FIND_FAMILY::print() {
-    AWTC_FIND_FAMILY_MEMBER *fl;
+void PT_FamilyFinder::print() {
+    FamilyList *fl;
     for (fl = family_list; fl;  fl = fl->next) {
         printf("%s %li\n", fl->name, fl->matches);
     }
 }
 
-GB_ERROR AWTC_FIND_FAMILY::findFamily(char *sequence, FF_complement compl_mode, int max_results) {
+GB_ERROR PT_FamilyFinder::searchFamily(char *sequence, FF_complement compl_mode, int max_results) {
     // searches the PT-server for related species.
     //
     // relation-score is calculated by fragmenting the sequence into oligos of length 'oligo_len' and

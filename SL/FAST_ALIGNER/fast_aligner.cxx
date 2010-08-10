@@ -1476,24 +1476,24 @@ static ARB_ERROR alignToNextRelative(const SearchRelativeParams&  relSearch,
 
         {
             // find relatives
-            AWTC_FIND_FAMILY family(gb_main,
-                                    relSearch.pt_server_id,
-                                    relSearch.fam_oligo_len,
-                                    relSearch.fam_mismatches,
-                                    relSearch.fam_fast_mode,
-                                    relSearch.fam_rel_matches);
+            PT_FamilyFinder family(gb_main,
+                                   relSearch.pt_server_id,
+                                   relSearch.fam_oligo_len,
+                                   relSearch.fam_mismatches,
+                                   relSearch.fam_fast_mode,
+                                   relSearch.fam_rel_matches);
 
             aw_status("Searching relatives");
-            error = family.findFamily(toAlignExpSequence,
-                                      FF_FORWARD,
-                                      relativesToTest+1);
+            error = family.searchFamily(toAlignExpSequence,
+                                        FF_FORWARD,
+                                        relativesToTest+1);
 
             double bestScore = 0;
             if (!error) {
 #if defined(DEBUG)
                 double lastScore = -1;
 #endif // DEBUG
-                for (const AWTC_FIND_FAMILY_MEMBER *fl = family.getFamilyList(); fl; fl=fl->next) {
+                for (const FamilyList *fl = family.getFamilyList(); fl; fl=fl->next) {
                     if (strcmp(toAlignSequence->name(), fl->name)!=0) {
                         if (GBT_find_species(gb_main, fl->name)) { // @@@
                             double thisScore = relSearch.fam_rel_matches ? fl->rel_matches : fl->matches;
@@ -1521,14 +1521,14 @@ static ARB_ERROR alignToNextRelative(const SearchRelativeParams&  relSearch,
                 error = GBT_determine_T_or_U(global_alignmentType, &T_or_U, "reverse-complement");
                 GBT_reverseComplementNucSequence(mirroredSequence, length, T_or_U);
 
-                error = family.findFamily(mirroredSequence,
-                                          FF_FORWARD,
-                                          relativesToTest+1);
+                error = family.searchFamily(mirroredSequence,
+                                            FF_FORWARD,
+                                            relativesToTest+1);
                 if (!error) {
 #if defined(DEBUG)
                     double lastScore = -1;
 #endif // DEBUG
-                    for (const AWTC_FIND_FAMILY_MEMBER *fl = family.getFamilyList(); fl; fl = fl->next) {
+                    for (const FamilyList *fl = family.getFamilyList(); fl; fl = fl->next) {
                         double thisScore = relSearch.fam_rel_matches ? fl->rel_matches : fl->matches;
 #if defined(DEBUG)
                         // check whether family list is sorted correctly
