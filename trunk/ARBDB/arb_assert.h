@@ -177,13 +177,16 @@
 #  error Unit testing not allowed in release
 # else
 
-#  define test_assert(cond)                                             \
-    do {                                                                \
-        if (!(cond)) {                                                  \
-            fprintf(stderr, "%s:%i: Assertion '%s' failed\n",           \
-                    __FILE__, __LINE__, #cond);                         \
-            ARB_SIGSEGV(0);                                             \
-        }                                                               \
+#  define test_assert(cond)                                     \
+    do {                                                        \
+        if (!(cond)) {                                          \
+            fflush(stdout);                                     \
+            fflush(stderr);                                     \
+            fprintf(stderr, "%s:%i: Assertion '%s' failed\n",   \
+                    __FILE__, __LINE__, #cond);                 \
+            fflush(stderr);                                     \
+            ARB_SIGSEGV(0);                                     \
+        }                                                       \
     } while(0)
 
 #  if defined(ASSERTION_USED)

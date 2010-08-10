@@ -30,19 +30,33 @@ namespace arb_test {
         return (s1 == s2) || (s1 && s2 && strcmp(s1, s2) == 0);
     }
 
+    inline int printf_flushed(const char *format, ...) {
+        fflush(stdout);
+        fflush(stderr);
+
+        va_list parg;
+        va_start(parg, format);
+        int     printed = vfprintf(stderr, format, parg);
+        va_end(parg);
+
+        fflush(stderr);
+
+        return printed;
+    }
+
     inline bool is_equal(const char *s1, const char *s2) {
         bool equal = strnullequal(s1, s2);
         if (!equal) {
-            fprintf(stderr,
-                    "str_equal('%s',\n"
-                    "          '%s') returns false\n", s1, s2);
+            printf_flushed(stderr,
+                           "str_equal('%s',\n"
+                           "          '%s') returns false\n", s1, s2);
         }
         return equal;
     }
     inline bool is_different(const char *s1, const char *s2) {
         bool different = !strnullequal(s1, s2);
         if (!different) {
-            fprintf(stderr, "str_different('%s', ..) returns false\n", s1);
+            printf_flushed(stderr, "str_different('%s', ..) returns false\n", s1);
         }
         return different;
     }
@@ -50,14 +64,14 @@ namespace arb_test {
     inline bool is_equal(int n1, int n2) {
         bool equal = n1 == n2;
         if (!equal) {
-            fprintf(stderr, "numeric_equal(%i,%i) returns false\n", n1, n2);
+            printf_flushed(stderr, "numeric_equal(%i,%i) returns false\n", n1, n2);
         }
         return equal;
     }
     inline bool is_equal(size_t n1, size_t n2) {
         bool equal = n1 == n2;
         if (!equal) {
-            fprintf(stderr, "numeric_equal(%zu,%zu) returns false\n", n1, n2);
+            printf_flushed(stderr, "numeric_equal(%zu,%zu) returns false\n", n1, n2);
         }
         return equal;
     }
