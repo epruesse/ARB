@@ -15,6 +15,9 @@
 #ifndef ARB_ASSERT_H
 #include <arb_assert.h>
 #endif
+#ifndef _CPP_CSTDARG
+#include <cstdarg>
+#endif
 
 /* Note:
  * This file should not generate any static code.
@@ -47,8 +50,7 @@ namespace arb_test {
     inline bool is_equal(const char *s1, const char *s2) {
         bool equal = strnullequal(s1, s2);
         if (!equal) {
-            printf_flushed(stderr,
-                           "str_equal('%s',\n"
+            printf_flushed("str_equal('%s',\n"
                            "          '%s') returns false\n", s1, s2);
         }
         return equal;
@@ -56,7 +58,7 @@ namespace arb_test {
     inline bool is_different(const char *s1, const char *s2) {
         bool different = !strnullequal(s1, s2);
         if (!different) {
-            printf_flushed(stderr, "str_different('%s', ..) returns false\n", s1);
+            printf_flushed("str_different('%s', ..) returns false\n", s1);
         }
         return different;
     }
@@ -64,14 +66,14 @@ namespace arb_test {
     inline bool is_equal(int n1, int n2) {
         bool equal = n1 == n2;
         if (!equal) {
-            printf_flushed(stderr, "numeric_equal(%i,%i) returns false\n", n1, n2);
+            printf_flushed("numeric_equal(%i,%i) returns false\n", n1, n2);
         }
         return equal;
     }
     inline bool is_equal(size_t n1, size_t n2) {
         bool equal = n1 == n2;
         if (!equal) {
-            printf_flushed(stderr, "numeric_equal(%zu,%zu) returns false\n", n1, n2);
+            printf_flushed("numeric_equal(%zu,%zu) returns false\n", n1, n2);
         }
         return equal;
     }
