@@ -1476,19 +1476,19 @@ static ARB_ERROR alignToNextRelative(const SearchRelativeParams&  relSearch,
 
         {
             // find relatives
-            AWTC_FIND_FAMILY family(gb_main); 
-            double           bestScore = 0;
+            AWTC_FIND_FAMILY family(gb_main,
+                                    relSearch.pt_server_id,
+                                    relSearch.fam_oligo_len,
+                                    relSearch.fam_mismatches,
+                                    relSearch.fam_fast_mode,
+                                    relSearch.fam_rel_matches);
 
             aw_status("Searching relatives");
-            error = family.findFamily(relSearch.pt_server_id,
-                                      toAlignExpSequence,
-                                      relSearch.fam_oligo_len,
-                                      relSearch.fam_mismatches,
-                                      relSearch.fam_fast_mode,
-                                      relSearch.fam_rel_matches,
+            error = family.findFamily(toAlignExpSequence,
                                       FF_FORWARD,
                                       relativesToTest+1);
 
+            double bestScore = 0;
             if (!error) {
 #if defined(DEBUG)
                 double lastScore = -1;
@@ -1521,12 +1521,7 @@ static ARB_ERROR alignToNextRelative(const SearchRelativeParams&  relSearch,
                 error = GBT_determine_T_or_U(global_alignmentType, &T_or_U, "reverse-complement");
                 GBT_reverseComplementNucSequence(mirroredSequence, length, T_or_U);
 
-                error = family.findFamily(relSearch.pt_server_id,
-                                          mirroredSequence,
-                                          relSearch.fam_oligo_len,
-                                          relSearch.fam_mismatches,
-                                          relSearch.fam_fast_mode,
-                                          relSearch.fam_rel_matches,
+                error = family.findFamily(mirroredSequence,
                                           FF_FORWARD,
                                           relativesToTest+1);
                 if (!error) {

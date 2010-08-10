@@ -881,9 +881,9 @@ static void awtc_nn_search_all_listed(AW_window *aww, AW_CL _cbs) {
         }
         else {
             char             *sequence = GB_read_string(gb_data);
-            AWTC_FIND_FAMILY  ff(GLOBAL_gb_main);
+            AWTC_FIND_FAMILY  ff(GLOBAL_gb_main, pts, oligo_len, mismatches, fast_mode, rel_matches);
 
-            error = ff.findFamily(pts, sequence, oligo_len, mismatches, fast_mode, rel_matches, compl_mode, wanted_entries);
+            error = ff.findFamily(sequence, compl_mode, wanted_entries);
             if (!error) {
                 const AWTC_FIND_FAMILY_MEMBER *fm = ff.getFamilyList();
 
@@ -966,20 +966,22 @@ static void awtc_nn_search(AW_window *aww, AW_CL id) {
         free(sel_species);
     }
 
-    AWTC_FIND_FAMILY ff(GLOBAL_gb_main);
-    bool             rel_matches = aw_root->awar(AWAR_NN_REL_MATCHES)->read_int();
+    int  pts         = aw_root->awar(AWAR_PROBE_ADMIN_PT_SERVER)->read_int();
+    int  oligo_len   = aw_root->awar(AWAR_NN_OLIGO_LEN)->read_int();
+    int  mismatches  = aw_root->awar(AWAR_NN_MISMATCHES)->read_int();
+    bool fast_mode   = aw_root->awar(AWAR_NN_FAST_MODE)->read_int();
+    bool rel_matches = aw_root->awar(AWAR_NN_REL_MATCHES)->read_int();
+
+    AWTC_FIND_FAMILY ff(GLOBAL_gb_main, pts, oligo_len, mismatches, fast_mode, rel_matches);
 
     int max_hits = 0; // max wanted hits
 
     if (!error) {
-        int           pts        = aw_root->awar(AWAR_PROBE_ADMIN_PT_SERVER)->read_int();
-        int           oligo_len  = aw_root->awar(AWAR_NN_OLIGO_LEN)->read_int();
-        int           mismatches = aw_root->awar(AWAR_NN_MISMATCHES)->read_int();
-        bool          fast_mode  = aw_root->awar(AWAR_NN_FAST_MODE)->read_int();
         FF_complement compl_mode = static_cast<FF_complement>(aw_root->awar(AWAR_NN_COMPLEMENT)->read_int());
         max_hits                 = aw_root->awar(AWAR_NN_MAX_HITS)->read_int();
 
-        error = ff.findFamily(pts, sequence, oligo_len, mismatches, fast_mode, rel_matches, compl_mode, max_hits);
+        // error = ff.findFamily(pts, sequence, oligo_len, mismatches, fast_mode, rel_matches, compl_mode, max_hits);
+        error = ff.findFamily(sequence, compl_mode, max_hits);
     }
 
     // update result list

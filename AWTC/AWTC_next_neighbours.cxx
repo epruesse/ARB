@@ -18,6 +18,7 @@
 
 #include <climits>
 
+#define awtc_assert(bed) arb_assert(bed)
 
 AWTC_FIND_FAMILY_MEMBER::AWTC_FIND_FAMILY_MEMBER() {
     matches = 0;
@@ -42,10 +43,11 @@ void AWTC_FIND_FAMILY::delete_family_list() {
     family_list = 0;
 }
 
-GB_ERROR AWTC_FIND_FAMILY::init_communication()
-{
+GB_ERROR AWTC_FIND_FAMILY::init_communication() {
     const char *user = "Find Family";
 
+    awtc_assert(!com);
+    
     // connect PT server
     if (aisc_create(link, PT_MAIN, com,
                     MAIN_LOCS, PT_LOCS, &locs,
@@ -53,11 +55,12 @@ GB_ERROR AWTC_FIND_FAMILY::init_communication()
                     NULL)) {
         return GB_export_error("Cannot initialize communication");
     }
+    awtc_assert(com);
     return 0;
 }
 
 
-GB_ERROR AWTC_FIND_FAMILY::open(char *servername) {
+GB_ERROR AWTC_FIND_FAMILY::open(const char *servername) {
     GB_ERROR error = 0;
     if (arb_look_and_start_server(AISC_MAGIC_NUMBER, servername, gb_main)) {
         error = "Cannot contact PT  server";
@@ -74,25 +77,34 @@ GB_ERROR AWTC_FIND_FAMILY::open(char *servername) {
     return error;
 }
 
-void AWTC_FIND_FAMILY::close()
-{
-   if (link) aisc_close(link);
-   link = 0;
+void AWTC_FIND_FAMILY::close() {
+    if (link) aisc_close(link);
+    link = 0;
+    com  = 0;
 }
 
-AWTC_FIND_FAMILY::AWTC_FIND_FAMILY(GBDATA *gb_maini)
+AWTC_FIND_FAMILY::AWTC_FIND_FAMILY(GBDATA *gb_main_, int server_id_, int oligo_len_, int mismatches_, bool fast_flag_, bool rel_matches_)
+    : gb_main(gb_main_),
+      server_id(server_id_),
+      oligo_len(oligo_len_),
+      mismatches(mismatches_),
+      fast_flag(fast_flag_),
+      rel_matches(rel_matches_),
+      link(NULL),
+      com(0),
+      locs(0),
+      family_list(NULL),
+      hits_truncated(false),
+      real_hits(-1)
 {
-    memset((char *)this, 0, sizeof(*this));
-    this->gb_main = gb_maini;
 }
 
-AWTC_FIND_FAMILY::~AWTC_FIND_FAMILY()
-{
+AWTC_FIND_FAMILY::~AWTC_FIND_FAMILY() {
     delete_family_list();
     close();
 }
 
-GB_ERROR AWTC_FIND_FAMILY::retrieve_family(char *sequence, int oligo_len, int mismatches, bool fast_flag, bool rel_matches, FF_complement compl_mode, int max_results) {
+GB_ERROR AWTC_FIND_FAMILY::retrieve_family(char *sequence, FF_complement compl_mode, int max_results) {
     delete_family_list();
 
     char     *compressed_sequence = GB_command_interpreter(gb_main, sequence, "|keep(acgtunACGTUN)", 0, 0);
@@ -169,7 +181,7 @@ void AWTC_FIND_FAMILY::print() {
     }
 }
 
-GB_ERROR AWTC_FIND_FAMILY::findFamily(int server_id, char *sequence, int oligo_len, int mismatches, bool fast_flag, bool rel_matches, FF_complement compl_mode, int max_results) {
+GB_ERROR AWTC_FIND_FAMILY::findFamily(char *sequence, FF_complement compl_mode, int max_results) {
     // searches the PT-server for related species.
     //
     // relation-score is calculated by fragmenting the sequence into oligos of length 'oligo_len' and
@@ -188,13 +200,13 @@ GB_ERROR AWTC_FIND_FAMILY::findFamily(int server_id, char *sequence, int oligo_l
     if (!error) {
         error = init_communication();
         if (!error) {
-            error = retrieve_family(sequence, oligo_len, mismatches, fast_flag, rel_matches, compl_mode, max_results);
+            error = retrieve_family(sequence, compl_mode, max_results);
         }
     }
     close();
+    free(buffer);
     return error;
 }
-
 
 void AWTC_create_common_next_neighbour_vars(AW_root *aw_root) {
     static bool created = false;
