@@ -880,12 +880,12 @@ static void awtc_nn_search_all_listed(AW_window *aww, AW_CL _cbs) {
             error = "operation aborted";
         }
         else {
-            char             *sequence = GB_read_string(gb_data);
-            AWTC_FIND_FAMILY  ff(GLOBAL_gb_main, pts, oligo_len, mismatches, fast_mode, rel_matches);
+            char            *sequence = GB_read_string(gb_data);
+            PT_FamilyFinder  ff(GLOBAL_gb_main, pts, oligo_len, mismatches, fast_mode, rel_matches);
 
-            error = ff.findFamily(sequence, compl_mode, wanted_entries);
+            error = ff.searchFamily(sequence, compl_mode, wanted_entries);
             if (!error) {
-                const AWTC_FIND_FAMILY_MEMBER *fm = ff.getFamilyList();
+                const FamilyList *fm = ff.getFamilyList();
 
                 GBS_strstruct *value = NULL;
                 while (fm) {
@@ -972,7 +972,7 @@ static void awtc_nn_search(AW_window *aww, AW_CL id) {
     bool fast_mode   = aw_root->awar(AWAR_NN_FAST_MODE)->read_int();
     bool rel_matches = aw_root->awar(AWAR_NN_REL_MATCHES)->read_int();
 
-    AWTC_FIND_FAMILY ff(GLOBAL_gb_main, pts, oligo_len, mismatches, fast_mode, rel_matches);
+    PT_FamilyFinder ff(GLOBAL_gb_main, pts, oligo_len, mismatches, fast_mode, rel_matches);
 
     int max_hits = 0; // max wanted hits
 
@@ -980,8 +980,7 @@ static void awtc_nn_search(AW_window *aww, AW_CL id) {
         FF_complement compl_mode = static_cast<FF_complement>(aw_root->awar(AWAR_NN_COMPLEMENT)->read_int());
         max_hits                 = aw_root->awar(AWAR_NN_MAX_HITS)->read_int();
 
-        // error = ff.findFamily(pts, sequence, oligo_len, mismatches, fast_mode, rel_matches, compl_mode, max_hits);
-        error = ff.findFamily(sequence, compl_mode, max_hits);
+        error = ff.searchFamily(sequence, compl_mode, max_hits);
     }
 
     // update result list
@@ -998,7 +997,7 @@ static void awtc_nn_search(AW_window *aww, AW_CL id) {
             int count    = 1;
             int numWidth = log(max_hits)/log(10)+1;
 
-            for (const AWTC_FIND_FAMILY_MEMBER *fm = ff.getFamilyList(); fm; fm = fm->next) {
+            for (const FamilyList *fm = ff.getFamilyList(); fm; fm = fm->next) {
                 const char *dis;
                 if (rel_matches) {
                     dis = GBS_global_string("#%0*i %-12s Rel.hits: %5.1f%%", numWidth, count, fm->name, fm->rel_matches*100);

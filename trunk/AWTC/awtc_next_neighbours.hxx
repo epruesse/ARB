@@ -15,18 +15,18 @@
 #include <arbdb_base.h>
 #endif
 
-class AWTC_FIND_FAMILY_MEMBER {
+class FamilyList {
     // list is sorted either by 'matches' or 'rel_matches' (descending)
-    // depending on 'rel_matches' paramater to findFamily()
+    // depending on 'rel_matches' paramater to PT_FamilyFinder::searchFamily()
 public:
-    AWTC_FIND_FAMILY_MEMBER *next;
+    FamilyList *next;
 
     char   *name;
     long    matches;
     double  rel_matches;
 
-    AWTC_FIND_FAMILY_MEMBER();
-    ~AWTC_FIND_FAMILY_MEMBER();
+    FamilyList();
+    ~FamilyList();
 };
 
 struct struct_aisc_com;
@@ -40,7 +40,27 @@ enum FF_complement {
     // do NOT change the order here w/o fixing ../PROBE/PT_family.cxx@FF_complement_dep
 };
 
-class AWTC_FIND_FAMILY {
+class FamilyFinder {
+protected: 
+    FamilyList *family_list;
+
+    bool hits_truncated;
+    int  real_hits;
+
+public:
+    FamilyFinder();
+    virtual ~FamilyFinder();
+
+    virtual GB_ERROR searchFamily(char *sequence, FF_complement compl_mode, int max_results) = 0;
+
+    const FamilyList *getFamilyList() const { return family_list; }
+    void delete_family_list();
+    
+    bool hits_were_truncated() const { return hits_truncated; }
+    int getRealHits() const { return real_hits; }
+};
+
+class PT_FamilyFinder : public FamilyFinder {
     GBDATA *gb_main;
     int     server_id;
     int     oligo_len;
@@ -52,13 +72,6 @@ class AWTC_FIND_FAMILY {
     long             com;
     long             locs;
 
-    // valid after calling retrieve_family():
-    AWTC_FIND_FAMILY_MEMBER *family_list;
-
-    bool hits_truncated;
-    int  real_hits;
-
-    void     delete_family_list();
     GB_ERROR init_communication();
     GB_ERROR open(const char *servername);
     GB_ERROR retrieve_family(char *sequence, FF_complement compl_mode, int max_results) __ATTR__USERESULT;
@@ -66,14 +79,10 @@ class AWTC_FIND_FAMILY {
 
 public:
 
-    AWTC_FIND_FAMILY(GBDATA *gb_main_, int server_id_, int oligo_len_, int mismatches_, bool fast_flag_, bool rel_matches_);
-    ~AWTC_FIND_FAMILY();
+    PT_FamilyFinder(GBDATA *gb_main_, int server_id_, int oligo_len_, int mismatches_, bool fast_flag_, bool rel_matches_);
+    ~PT_FamilyFinder();
 
-    GB_ERROR findFamily(char *sequence, FF_complement compl_mode, int max_results);
-
-    const AWTC_FIND_FAMILY_MEMBER *getFamilyList() const { return family_list; }
-    bool hits_were_truncated() const { return hits_truncated; }
-    int getRealHits() const { return real_hits; }
+    GB_ERROR searchFamily(char *sequence, FF_complement compl_mode, int max_results) __ATTR__USERESULT;
 
     void print();
 };
