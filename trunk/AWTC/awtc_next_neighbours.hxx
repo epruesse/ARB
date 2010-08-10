@@ -41,16 +41,16 @@ enum FF_complement {
 };
 
 class AWTC_FIND_FAMILY {
+    GBDATA *gb_main;
+    int     server_id;
+    int     oligo_len;
+    int     mismatches;
+    bool    fast_flag;
+    bool    rel_matches;
+    
     struct_aisc_com *link;
-    GBDATA          *gb_main;
     long             com;
     long             locs;
-
-    void     delete_family_list();
-    GB_ERROR init_communication();
-    GB_ERROR open(char *servername);
-    GB_ERROR retrieve_family(char *sequence, int oligo_len, int mismatches, bool fast_flag, bool rel_matches, FF_complement compl_mode, int max_results) __ATTR__USERESULT;
-    void     close();
 
     // valid after calling retrieve_family():
     AWTC_FIND_FAMILY_MEMBER *family_list;
@@ -58,12 +58,18 @@ class AWTC_FIND_FAMILY {
     bool hits_truncated;
     int  real_hits;
 
+    void     delete_family_list();
+    GB_ERROR init_communication();
+    GB_ERROR open(const char *servername);
+    GB_ERROR retrieve_family(char *sequence, FF_complement compl_mode, int max_results) __ATTR__USERESULT;
+    void     close();
+
 public:
 
-    AWTC_FIND_FAMILY(GBDATA *gb_maini);
+    AWTC_FIND_FAMILY(GBDATA *gb_main_, int server_id_, int oligo_len_, int mismatches_, bool fast_flag_, bool rel_matches_);
     ~AWTC_FIND_FAMILY();
 
-    GB_ERROR findFamily(int server_id, char *sequence, int oligo_len, int mismatches, bool fast_flag, bool rel_matches, FF_complement compl_mode, int max_results);
+    GB_ERROR findFamily(char *sequence, FF_complement compl_mode, int max_results);
 
     const AWTC_FIND_FAMILY_MEMBER *getFamilyList() const { return family_list; }
     bool hits_were_truncated() const { return hits_truncated; }
