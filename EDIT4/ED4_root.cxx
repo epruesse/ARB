@@ -1581,11 +1581,12 @@ ED4_returncode ED4_root::generate_window(AW_device **device,    ED4_window **new
         // check what is the default mode
         int default_mode = -1;
         for (int mode = 0; mode <= 2; ++mode) {
-            if (0 == strcmp(ED4_propertyName(mode), db_name)) {
+            if (0 == strcmp(AW_root::property_DB_fullname(ED4_propertyName(mode)), db_name)) {
                 default_mode = mode;
                 break;
             }
         }
+        e4_assert(default_mode != -1);
 
         const char *entry = GBS_global_string("Save loaded Properties (~/%s)", db_name);
         awmm->insert_menu_topic("save_loaded_props", entry, "l", "e4_defaults.hlp", AWM_ALL, ED4_save_properties, (AW_CL)default_mode, 0);
