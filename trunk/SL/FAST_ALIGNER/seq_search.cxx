@@ -133,10 +133,14 @@ CompactedSequence::~CompactedSequence()
 {
     fa_assert(referred==0);
 
+    delete [] myText;
+
     delete[] expdPositionTab;
-    if (points) delete points;
+    delete[] gapsBeforePosition;
 
     free(myName);
+    
+    delete points;
 }
 
 int CompactedSequence::compPosition(int xPos) const
@@ -183,6 +187,12 @@ FastSearchSequence::FastSearchSequence(const CompactedSubSequence& seq)
 
         myOffset[tidx] = top;
         ++triple;
+    }
+}
+
+FastSearchSequence::~FastSearchSequence() {
+    for (int tidx = 0; tidx<MAX_TRIPLES; ++tidx) {
+        delete myOffset[tidx];
     }
 }
 
