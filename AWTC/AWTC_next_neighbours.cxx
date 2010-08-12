@@ -28,21 +28,59 @@ void awtc_ff_message(const char *msg) {
 // -------------------
 //      FamilyList
 
-FamilyList::FamilyList() {
-    matches = 0;
-    name = 0;
-    next = 0;
-}
+FamilyList::FamilyList()
+    : next(NULL),
+      name(NULL),
+      matches(0),
+      rel_matches(0.0)
+{}
 
 FamilyList::~FamilyList() {
     free(name);
+    delete next;
+}
+
+FamilyList *FamilyList::insertSortedBy_matches(FamilyList *other) {
+    awtc_assert(next == NULL);                      // only insert unlinked instace!
+
+    if (!other) {
+        return this;
+    }
+
+    if (matches >= other->matches) {
+        next = other;
+        return this;
+    }
+
+    // insert into other
+    FamilyList *rest = other->next;
+    other->next      = rest ? insertSortedBy_matches(rest) : this;
+
+    return other;
+}
+
+FamilyList *FamilyList::insertSortedBy_rel_matches(FamilyList *other) {
+    awtc_assert(next == NULL);                      // only insert unlinked instace!
+
+    if (rel_matches >= other->rel_matches) {
+        next = other;
+        return this;
+    }
+
+    // insert into other
+    FamilyList *rest = other->next;
+    other->next      = rest ? insertSortedBy_rel_matches(rest) : this;
+
+    return other;
+
 }
 
 // ---------------------
 //      FamilyFinder
 
-FamilyFinder::FamilyFinder()
-    : family_list(NULL),
+FamilyFinder::FamilyFinder(bool rel_matches_)
+    : rel_matches(rel_matches_), 
+      family_list(NULL),
       hits_truncated(false),
       real_hits(-1)
 {
@@ -53,24 +91,20 @@ FamilyFinder::~FamilyFinder() {
 }
 
 void FamilyFinder::delete_family_list() {
-    FamilyList *fl, *fln;
-    for (fl = family_list; fl;  fl = fln) {
-         fln = fl->next;
-         delete fl;
-    }
-    family_list = 0;
+    delete family_list;
+    family_list = NULL;
 }
 
 // ------------------------
 //      PT_FamilyFinder
 
 PT_FamilyFinder::PT_FamilyFinder(GBDATA *gb_main_, int server_id_, int oligo_len_, int mismatches_, bool fast_flag_, bool rel_matches_)
-    : gb_main(gb_main_),
+    : FamilyFinder(rel_matches_), 
+      gb_main(gb_main_),
       server_id(server_id_),
       oligo_len(oligo_len_),
       mismatches(mismatches_),
       fast_flag(fast_flag_),
-      rel_matches(rel_matches_),
       link(NULL),
       com(0),
       locs(0)
@@ -122,7 +156,7 @@ void PT_FamilyFinder::close() {
     com  = 0;
 }
 
-GB_ERROR PT_FamilyFinder::retrieve_family(char *sequence, FF_complement compl_mode, int max_results) {
+GB_ERROR PT_FamilyFinder::retrieve_family(const char *sequence, FF_complement compl_mode, int max_results) {
     delete_family_list();
 
     char     *compressed_sequence = GB_command_interpreter(gb_main, sequence, "|keep(acgtunACGTUN)", 0, 0);
@@ -146,7 +180,7 @@ GB_ERROR PT_FamilyFinder::retrieve_family(char *sequence, FF_complement compl_mo
                      LOCS_FF_PROBE_LEN,       oligo_len,        // oligo length (12 hardcoded till July 2008)
                      LOCS_FF_MISMATCH_NUMBER, mismatches,       // number of mismatches (0 hardcoded till July 2008)
                      LOCS_FF_FIND_TYPE,       int(fast_flag),   // 0: complete search, 1: quick search (only search oligos starting with 'A')
-                     LOCS_FF_SORT_TYPE,       int(rel_matches), // 0: matches, 1: relative matches (0 hardcoded till July 2008)
+                     LOCS_FF_SORT_TYPE,       int(uses_rel_matches()), // 0: matches, 1: relative matches (0 hardcoded till July 2008)
                      LOCS_FF_SORT_MAX,        max_results,      // speed up family sorting (only sort retrieved results)
                      LOCS_FF_COMPLEMENT,      compl_mode,       // any combination of: 1 = forward, 2 = reverse, 4 = reverse-complement, 8 = complement (1 hardcoded in PT-Server till July 2008)
                      LOCS_FF_FIND_FAMILY,     &bs,
@@ -199,7 +233,7 @@ void PT_FamilyFinder::print() {
     }
 }
 
-GB_ERROR PT_FamilyFinder::searchFamily(char *sequence, FF_complement compl_mode, int max_results) {
+GB_ERROR PT_FamilyFinder::searchFamily(const char *sequence, FF_complement compl_mode, int max_results) {
     // searches the PT-server for related species.
     //
     // relation-score is calculated by fragmenting the sequence into oligos of length 'oligo_len' and

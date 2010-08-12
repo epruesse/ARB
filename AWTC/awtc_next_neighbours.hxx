@@ -25,6 +25,9 @@ public:
     long    matches;
     double  rel_matches;
 
+    FamilyList *insertSortedBy_matches(FamilyList *other);
+    FamilyList *insertSortedBy_rel_matches(FamilyList *other);
+
     FamilyList();
     ~FamilyList();
 };
@@ -41,22 +44,25 @@ enum FF_complement {
 };
 
 class FamilyFinder {
-protected: 
+    bool rel_matches;
+    
+protected:
     FamilyList *family_list;
 
     bool hits_truncated;
     int  real_hits;
 
 public:
-    FamilyFinder();
+    FamilyFinder(bool rel_matches_);
     virtual ~FamilyFinder();
 
-    virtual GB_ERROR searchFamily(char *sequence, FF_complement compl_mode, int max_results) = 0;
+    virtual GB_ERROR searchFamily(const char *sequence, FF_complement compl_mode, int max_results) = 0;
 
     const FamilyList *getFamilyList() const { return family_list; }
     void delete_family_list();
     
     bool hits_were_truncated() const { return hits_truncated; }
+    bool uses_rel_matches() const { return rel_matches; }
     int getRealHits() const { return real_hits; }
 };
 
@@ -66,7 +72,6 @@ class PT_FamilyFinder : public FamilyFinder {
     int     oligo_len;
     int     mismatches;
     bool    fast_flag;
-    bool    rel_matches;
     
     struct_aisc_com *link;
     long             com;
@@ -74,7 +79,7 @@ class PT_FamilyFinder : public FamilyFinder {
 
     GB_ERROR init_communication();
     GB_ERROR open(const char *servername);
-    GB_ERROR retrieve_family(char *sequence, FF_complement compl_mode, int max_results) __ATTR__USERESULT;
+    GB_ERROR retrieve_family(const char *sequence, FF_complement compl_mode, int max_results) __ATTR__USERESULT;
     void     close();
 
 public:
@@ -82,7 +87,7 @@ public:
     PT_FamilyFinder(GBDATA *gb_main_, int server_id_, int oligo_len_, int mismatches_, bool fast_flag_, bool rel_matches_);
     ~PT_FamilyFinder();
 
-    GB_ERROR searchFamily(char *sequence, FF_complement compl_mode, int max_results) __ATTR__USERESULT;
+    GB_ERROR searchFamily(const char *sequence, FF_complement compl_mode, int max_results) __ATTR__USERESULT;
 
     void print();
 };

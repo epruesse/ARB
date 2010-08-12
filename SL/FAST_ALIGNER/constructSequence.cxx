@@ -537,6 +537,9 @@ char *constructSequence(int parts, const char **seqs, int minMatchingBases, char
     return NULL;
 }
 
+// --------------------------------------------------------------------------------
+// @@@ make code below a unit test
+
 #ifdef DEBUG
 # define TEST_THIS_MODULE
 #endif
