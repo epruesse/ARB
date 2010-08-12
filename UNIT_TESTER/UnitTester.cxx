@@ -112,7 +112,8 @@ class SimpleTester {
 
 public:
     SimpleTester(const UnitTest_simple *tests_)
-        : tests(tests_)
+        : tests(tests_), 
+          duration_ms(0.0)
     {
         for (count = 0; tests[count].fun; ++count) {}
     }
@@ -164,6 +165,8 @@ bool SimpleTester::perform(size_t which) {
 
 
 // --------------------------------------------------------------------------------
+
+
 
 UnitTester::UnitTester(const char *libname, const UnitTest_simple *simple_tests) {
     size_t tests  = 0;

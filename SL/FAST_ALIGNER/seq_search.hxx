@@ -245,7 +245,7 @@ class TripleOffset                                  // a list of offsets (used i
 public:
 
     TripleOffset(long Offset, TripleOffset *next_toff) : myOffset(Offset), myNext(next_toff) { IV(); }
-    ~TripleOffset();
+    ~TripleOffset() { delete myNext; }
 
     TripleOffset *next() const { IV(); return myNext; }
     long offset() const { IV(); return myOffset; }
@@ -465,7 +465,7 @@ class FastSearchSequence           // a sequence where search of character tripl
 public:
 
     FastSearchSequence(const CompactedSubSequence& seq);
-    ~FastSearchSequence() {}
+    ~FastSearchSequence();
 
     ARB_ERROR fast_align(const CompactedSubSequence& align_to, AlignBuffer *alignBuffer,
                          int max_seq_length, int matchScore, int mismatchScore,

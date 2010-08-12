@@ -1754,6 +1754,7 @@ static ARB_ERROR alignToNextRelative(SearchRelativeParams&  relSearch,
                     if (!error) { // write used relatives to db-field
                         error = GBT_write_string(gb_toAlign, "used_rels", used_relatives);
                     }
+                    free(used_relatives);
                 }
 
                 delete alignToSequence;

@@ -93,7 +93,7 @@ static int *zzd;                                    // -------------- " --------
 static int  print_ptr;
 static int  last_print;
 
-static const int *gapsBeforePosition;
+static const int *gaps_before_position;
 
 #if defined(DEBUG)
 // #define MATRIX_DUMP
@@ -117,7 +117,7 @@ static int horizontalOpen       [DISPLAY_MATRIX_SIZE+2][DISPLAY_MATRIX_SIZE+2];
 static inline int master_gap_open(int beforePosition)
 {
 #ifdef DYNAMIC_PENALTIES
-    long gaps = gapsBeforePosition[beforePosition-1];
+    long gaps = gaps_before_position[beforePosition-1];
     return (gaps) ? MASTER_GAP_OPEN - MAX_GAP_OPEN_DISCOUNT : MASTER_GAP_OPEN;
 
     /*    return
@@ -131,7 +131,7 @@ static inline int master_gap_open(int beforePosition)
 static inline int master_gap_extend(int beforePosition)
 {
 #ifdef DYNAMIC_PENALTIES
-    long gaps = gapsBeforePosition[beforePosition-1];
+    long gaps = gaps_before_position[beforePosition-1];
 
     return (gaps) ? MASTER_GAP_EXTEND - MAX_GAP_EXTEND_DISCOUNT : MASTER_GAP_EXTEND;
     /*    return
@@ -1097,7 +1097,7 @@ ARB_ERROR ClustalV_align(int          is_dna,
                          int         *score)
 {
     ARB_ERROR error;
-    gapsBeforePosition = gapsBefore1;
+    gaps_before_position = gapsBefore1;
 
     if (!module_initialized) { // initialize only once
         dnaflag = is_dna;
