@@ -27,6 +27,18 @@
 #include <cctype>
 #include <climits>
 
+// #warning "remove arb_debug.h"
+// #include "arb_debug.h"
+
+
+// --------------------------------------------------------------------------------
+
+#if defined(DEBUG)
+// #define TRACE_CLUSTAL_DATA
+// #define TRACE_ISLANDHOPPER_DATA
+// #define TRACE_COMPRESSED_ALIGNMENT
+#endif // DEBUG
+
 // --------------------------------------------------------------------------------
 
 enum FA_report {
@@ -67,13 +79,22 @@ struct AlignParams {
 };
 
 struct SearchRelativeParams {
-    int     pt_server_id;           // pt_server to search for next relative
-    GB_CSTR pt_server_alignment;    // alignment used in pt_server (may differ from 'alignment')
-    int     maxRelatives;           // max # of relatives to use
-    int     fam_oligo_len;          // oligo length
-    int     fam_mismatches;         // allowed mismatches
-    bool    fam_fast_mode;          // fast family find (serch only oligos starting with 'A')
-    bool    fam_rel_matches;        // sort results by relative matches
+    FamilyFinder *ff;
+    char         *pt_server_alignment;              // alignment used in pt_server (may differ from 'alignment')
+    int           maxRelatives;                     // max # of relatives to use
+
+    SearchRelativeParams(FamilyFinder *ff_, const char *pt_server_alignment_, int maxRelatives_)
+        : ff(ff_),
+          pt_server_alignment(strdup(pt_server_alignment_)),
+          maxRelatives(maxRelatives_)
+    {}
+    
+    ~SearchRelativeParams() {
+        free(pt_server_alignment);
+        delete(ff);
+    }
+
+    FamilyFinder *getFamilyFinder() { return ff; }
 };
 
 // --------------------------------------------------------------------------------
@@ -92,6 +113,7 @@ struct SearchRelativeParams {
 #define FA_AWAR_MIRROR              FA_AWAR_ROOT "mirror"
 #define FA_AWAR_REPORT              FA_AWAR_ROOT "report"
 #define FA_AWAR_SHOW_GAPS_MESSAGES  FA_AWAR_ROOT "show_gaps"
+#define FA_AWAR_CONTINUE_ON_ERROR   FA_AWAR_ROOT "continue_on_error"
 #define FA_AWAR_USE_SECONDARY       FA_AWAR_ROOT "use_secondary"
 #define FA_AWAR_NEXT_RELATIVES      FA_AWAR_ROOT "next_relatives"
 #define FA_AWAR_PT_SERVER_ALIGNMENT "tmp/" FA_AWAR_ROOT "relative_ali"
@@ -118,8 +140,8 @@ struct SearchRelativeParams {
 
 // --------------------------------------------------------------------------------
 
-static IslandHopping *island_hopper = 0;
-static GB_alignment_type global_alignmentType = GB_AT_UNKNOWN; // type of actually aligned sequence
+static IslandHopping     *island_hopper        = NULL; // NULL -> use fast aligner; else use island hopper
+static GB_alignment_type  global_alignmentType = GB_AT_UNKNOWN; // type of actually aligned sequence
 
 static int currentSequenceNumber;    // used for counter
 static int overallSequenceNumber;
@@ -383,6 +405,9 @@ static inline char compareChar(char base1, char base2)
 {
     return base1==base2 ? '=' : (relatedBases(base1, base2) ? 'x' : 'X');
 }
+
+#if defined(TRACE_COMPRESSED_ALIGNMENT)
+    
 static void dump_n_compare_one(const char *seq1, const char *seq2, long len, long offset)
 {
     fa_assert(len<=BUFLEN);
@@ -449,6 +474,7 @@ static void dump_n_compare(const char *text, const CompactedSubSequence& seq1, c
 {
     dump_n_compare(text, seq1.text(), seq1.length(), seq2.text(), seq2.length());
 }
+#endif // TRACE_COMPRESSED_ALIGNMENT
 
 #undef BUFLEN
 
@@ -679,7 +705,6 @@ static ARB_ERROR insertAligned(AlignBuffer *alignBuffer,
     return NULL;
 }
 
-
 static ARB_ERROR cannot_fast_align(const CompactedSubSequence& master, long moffset, long mlength,
                                    const CompactedSubSequence& slaveSequence, long soffset, long slength,
                                    int max_seq_length,
@@ -696,11 +721,11 @@ static ARB_ERROR cannot_fast_align(const CompactedSubSequence& master, long moff
         if (mlength) { // if slave- and master-sequences contain bases, we call the slow aligner
             int score;
 
-#if defined(DEBUG) && 1
+#ifdef TRACE_CLUSTAL_DATA
             printf("ClustalV-Align:\n");
             printf(" mseq = '%s'\n", lstr(mtext, mlength));
             printf(" sseq = '%s'\n", lstr(stext, slength));
-#endif
+#endif // TRACE_CLUSTAL_DATA
 
             int is_dna = -1;
 
@@ -721,11 +746,11 @@ static ARB_ERROR cannot_fast_align(const CompactedSubSequence& master, long moff
             }
 
             if (!error) {
-#if defined(DEBUG) && 1
+#ifdef TRACE_CLUSTAL_DATA
                 printf("ClustalV returns:\n");
                 printf(" maligned = '%s'\n", lstr(maligned, len));
                 printf(" saligned = '%s'\n", lstr(saligned, len));
-#endif
+#endif // TRACE_CLUSTAL_DATA
 
                 SequencePosition masterPos(master, moffset);
                 SequencePosition slavePos(slaveSequence, soffset);
@@ -1106,15 +1131,14 @@ static ARB_ERROR writeStringToAlignment(GBDATA *gb_species, GB_CSTR alignment, G
 
 // --------------------------------------------------------------------------------
 
-
 static ARB_ERROR alignCompactedTo(CompactedSubSequence     *toAlignSequence,
                                   const FastSearchSequence *alignTo,
-                                  int                            max_seq_length,
-                                  GB_CSTR                        alignment,
-                                  long                           toAlignChksum,
-                                  GBDATA                        *gb_toAlign,
-                                  GBDATA                        *gb_alignTo,      // may be NULL
-                                  const AlignParams&             ali_params)
+                                  int                       max_seq_length,
+                                  GB_CSTR                   alignment,
+                                  long                      toAlignChksum,
+                                  GBDATA                   *gb_toAlign,
+                                  GBDATA                   *gb_alignTo, // may be NULL
+                                  const AlignParams&        ali_params)
 // if only part of the sequence should be aligned, then this functions already gets only the part
 // (i.o.w.: toAlignSequence, alignTo and toAlignChksum refer to the partial sequence)
 {
@@ -1141,13 +1165,13 @@ static ARB_ERROR alignCompactedTo(CompactedSubSequence     *toAlignSequence,
             currentSequenceNumber++;
         }
 
-        aw_status(stat_buf);
+        GB_status(stat_buf);
     }
 
-#if (defined(DEBUG) && 1)
+#ifdef TRACE_COMPRESSED_ALIGNMENT
     printf("alignCompactedTo(): master='%s' ", master_name);
     printf("slave='%s'\n", toAlignSequence->name());
-#endif
+#endif // TRACE_COMPRESSED_ALIGNMENT
 
     ARB_ERROR error = GB_pop_transaction(gb_toAlign);
     if (!error) {
@@ -1156,11 +1180,11 @@ static ARB_ERROR alignCompactedTo(CompactedSubSequence     *toAlignSequence,
             if (!error) {
                 fa_assert(island_hopper->was_aligned());
 
-#if defined(DEBUG)
+#ifdef TRACE_ISLANDHOPPER_DATA
                 printf("Island-Hopper returns:\n");
                 printf("maligned = '%s'\n", lstr(island_hopper->get_result_ref(), island_hopper->get_result_length()));
                 printf("saligned = '%s'\n", lstr(island_hopper->get_result(), island_hopper->get_result_length()));
-#endif // DEBUG
+#endif // TRACE_ISLANDHOPPER_DATA
 
                 SequencePosition masterPos(alignTo->sequence(), 0);
                 SequencePosition slavePos(*toAlignSequence, 0);
@@ -1181,12 +1205,12 @@ static ARB_ERROR alignCompactedTo(CompactedSubSequence     *toAlignSequence,
         alignBuffer.expandPoints(*toAlignSequence);
     }
 
-#if (defined(DEBUG) && 1)
+#ifdef TRACE_COMPRESSED_ALIGNMENT
     if (!error) {
         CompactedSubSequence alignedSlave(alignBuffer.text(), alignBuffer.length(), toAlignSequence->name());
         dump_n_compare("reference vs. aligned:", alignTo->sequence(), alignedSlave);
-}
-#endif
+    }
+#endif // TRACE_COMPRESSED_ALIGNMENT
 
     {
         ARB_ERROR err     = GB_push_transaction(gb_toAlign);
@@ -1197,10 +1221,10 @@ static ARB_ERROR alignCompactedTo(CompactedSubSequence     *toAlignSequence,
         if (calcSequenceChecksum(alignBuffer.text(), alignBuffer.length())!=toAlignChksum) { // sequence-chksum changed
             error = "Internal aligner error (sequence checksum changed) -- aborted";
 
-# ifdef DEBUG
+#ifdef TRACE_COMPRESSED_ALIGNMENT
             CompactedSubSequence alignedSlave(alignBuffer.text(), alignBuffer.length(), toAlignSequence->name());
             dump_n_compare("Old Slave vs. new Slave", *toAlignSequence, alignedSlave);
-# endif
+#endif // TRACE_COMPRESSED_ALIGNMENT
         }
         else {
             GB_push_my_security(gb_toAlign);
@@ -1223,10 +1247,10 @@ static ARB_ERROR alignCompactedTo(CompactedSubSequence     *toAlignSequence,
 
                             if (calcSequenceChecksum(buffer, len) != wholeChksum) {
                                 error            = "Internal aligner error (sequence checksum changed) -- aborted";
-# ifdef DEBUG
+# ifdef TRACE_COMPRESSED_ALIGNMENT
                                 char *buffer_org = GB_read_string(gbd);
                                 dump_n_compare("Old seq vs. new seq (slave)", buffer_org, len, buffer, len);
-# endif
+# endif // TRACE_COMPRESSED_ALIGNMENT
                             }
                             else {
                                 GB_write_string(gbd, "");
@@ -1326,12 +1350,12 @@ static ARB_ERROR align_error(ARB_ERROR olderr, GBDATA *gb_toAlign, GBDATA *gb_al
                              name_toAlign, name_alignTo, olderr.deliver());
 }
 
-static ARB_ERROR alignTo(GBDATA                        *gb_toAlign,
-                         GB_CSTR                        alignment,
+static ARB_ERROR alignTo(GBDATA                   *gb_toAlign,
+                         GB_CSTR                   alignment,
                          const FastSearchSequence *alignTo,
-                         GBDATA                        *gb_alignTo, // may be NULL
-                         int                            max_seq_length,
-                         const AlignParams&             ali_params)
+                         GBDATA                   *gb_alignTo, // may be NULL
+                         int                       max_seq_length,
+                         const AlignParams&        ali_params)
 {
     ARB_ERROR                  error           = NULL;
     long                       chksum;
@@ -1417,12 +1441,12 @@ static void appendNameAndUsedBasePositions(char **toString, GBDATA *gb_species, 
 
 inline int min(int i, int j) { return i<j ? i : j; }
 
-static ARB_ERROR alignToNextRelative(const SearchRelativeParams&  relSearch,
-                                     int                          max_seq_length,
-                                     FA_turn                      turnAllowed,
-                                     GB_CSTR                      alignment,
-                                     GBDATA                      *gb_toAlign,
-                                     const AlignParams&           ali_params)
+static ARB_ERROR alignToNextRelative(SearchRelativeParams&  relSearch,
+                                     int                    max_seq_length,
+                                     FA_turn                turnAllowed,
+                                     GB_CSTR                alignment,
+                                     GBDATA                *gb_toAlign,
+                                     const AlignParams&     ali_params)
 {
     CompactedSubSequence *toAlignSequence = NULL;
     bool use_different_pt_server_alignment = 0 != strcmp(relSearch.pt_server_alignment, alignment);
@@ -1476,27 +1500,20 @@ static ARB_ERROR alignToNextRelative(const SearchRelativeParams&  relSearch,
 
         {
             // find relatives
-            PT_FamilyFinder family(gb_main,
-                                   relSearch.pt_server_id,
-                                   relSearch.fam_oligo_len,
-                                   relSearch.fam_mismatches,
-                                   relSearch.fam_fast_mode,
-                                   relSearch.fam_rel_matches);
+            FamilyFinder *familyFinder = relSearch.getFamilyFinder();
 
-            aw_status("Searching relatives");
-            error = family.searchFamily(toAlignExpSequence,
-                                        FF_FORWARD,
-                                        relativesToTest+1);
+            GB_status("Searching relatives");
+            error = familyFinder->searchFamily(toAlignExpSequence, FF_FORWARD, relativesToTest+1);
 
             double bestScore = 0;
             if (!error) {
 #if defined(DEBUG)
                 double lastScore = -1;
 #endif // DEBUG
-                for (const FamilyList *fl = family.getFamilyList(); fl; fl=fl->next) {
+                for (const FamilyList *fl = familyFinder->getFamilyList(); fl; fl=fl->next) {
                     if (strcmp(toAlignSequence->name(), fl->name)!=0) {
                         if (GBT_find_species(gb_main, fl->name)) { // @@@
-                            double thisScore = relSearch.fam_rel_matches ? fl->rel_matches : fl->matches;
+                            double thisScore = familyFinder->uses_rel_matches() ? fl->rel_matches : fl->matches;
 #if defined(DEBUG)
                             // check whether family list is sorted correctly
                             fa_assert(lastScore < 0 || lastScore >= thisScore);
@@ -1521,15 +1538,13 @@ static ARB_ERROR alignToNextRelative(const SearchRelativeParams&  relSearch,
                 error = GBT_determine_T_or_U(global_alignmentType, &T_or_U, "reverse-complement");
                 GBT_reverseComplementNucSequence(mirroredSequence, length, T_or_U);
 
-                error = family.searchFamily(mirroredSequence,
-                                            FF_FORWARD,
-                                            relativesToTest+1);
+                error = familyFinder->searchFamily(mirroredSequence, FF_FORWARD, relativesToTest+1);
                 if (!error) {
 #if defined(DEBUG)
                     double lastScore = -1;
 #endif // DEBUG
-                    for (const FamilyList *fl = family.getFamilyList(); fl; fl = fl->next) {
-                        double thisScore = relSearch.fam_rel_matches ? fl->rel_matches : fl->matches;
+                    for (const FamilyList *fl = familyFinder->getFamilyList(); fl; fl = fl->next) {
+                        double thisScore = familyFinder->uses_rel_matches() ? fl->rel_matches : fl->matches;
 #if defined(DEBUG)
                         // check whether family list is sorted correctly
                         fa_assert(lastScore < 0 || lastScore >= thisScore);
@@ -1547,7 +1562,7 @@ static ARB_ERROR alignToNextRelative(const SearchRelativeParams&  relSearch,
                 if (bestMirroredScore>bestScore) {
                     if (turnAllowed==FA_TURN_INTERACTIVE) {
                         const char *message;
-                        if (relSearch.fam_rel_matches) {
+                        if (familyFinder->uses_rel_matches()) {
                             message = GBS_global_string("'%s' seems to be the other way round (score: %.1f%%, score if turned: %.1f%%)",
                                                         toAlignSequence->name(), bestScore*100, bestMirroredScore*100);
                         }
@@ -1662,7 +1677,10 @@ static ARB_ERROR alignToNextRelative(const SearchRelativeParams&  relSearch,
                 else {
                     char *used_relatives = 0;
 
-                    if (!unaligned_bases.is_empty()) {
+                    if (unaligned_bases.is_empty()) {
+                        appendNameAndUsedBasePositions(&used_relatives, gb_reference[0], -1);
+                    }
+                    else {
                         if (island_hopper) {
                             appendNameAndUsedBasePositions(&used_relatives, gb_reference[0], -1);
                             if (next_relatives>1) error = "Island hopping uses only one relative";
@@ -1681,7 +1699,6 @@ static ARB_ERROR alignToNextRelative(const SearchRelativeParams&  relSearch,
                             }
 
                             int toalign_positions = toAlignSequence->length();
-
                             if (unaligned_positions<toalign_positions) {
                                 appendNameAndUsedBasePositions(&used_relatives, gb_reference[0], toalign_positions-unaligned_positions);
                             }
@@ -1754,40 +1771,325 @@ static ARB_ERROR alignToNextRelative(const SearchRelativeParams&  relSearch,
     return error;
 }
 
-// ---------------------
-//      aligner
+// ------------------------
+//      AlignmentReference
 
-static ARB_ERROR aligner(GBDATA                             *gb_main,
-                         // define alignment target(s):
-                         FA_alignTarget                      alignWhat,
-                         GB_CSTR                             alignment, // name of alignment to use (==NULL -> use default)
-                         GB_CSTR                             toalign, // name of species to align (used if alignWhat == FA_CURRENT)
-                         Aligner_get_first_selected_species  get_first_selected_species, // used if alignWhat == FA_SELECTED
-                         Aligner_get_next_selected_species   get_next_selected_species, // --- "" ---
+class AlignmentReference {
+    GB_CSTR            alignment;
+    int                max_seq_length;
+    const AlignParams& ali_params;
 
-                         // define reference sequence(s):
-                         GB_CSTR                     reference, // name of reference species
-                         Aligner_get_consensus_func  get_consensus, // function to get consensus seq
-                         const SearchRelativeParams& relSearch, // params to search for relatives
+public:
+    AlignmentReference(GB_CSTR            alignment_,
+                       int                max_seq_length_,
+                       const AlignParams& ali_params_)
+        : alignment(alignment_),
+          max_seq_length(max_seq_length_),
+          ali_params(ali_params_)
+    {}
+    virtual ~AlignmentReference() {}
 
-                         // general params:
-                         FA_turn            turnAllowed,
-                         const AlignParams& ali_params,
-                         int                maxProtection) // protection level
-{
+    virtual ARB_ERROR align_to(GBDATA *gb_toalign) const = 0;
+
+    GB_CSTR get_alignment() const { return alignment; }
+    int get_max_seq_length() const { return max_seq_length; }
+    const AlignParams& get_ali_params() const { return ali_params; }
+};
+
+
+#if defined(DEVEL_RALF)
+#warning make alignTo a member of ExplicitReference (or of AlignmentReference)
+#warning let alignToGroupConsensus and alignToNextRelative use ExplicitReference
+#endif // DEVEL_RALF
+
+class ExplicitReference: public AlignmentReference {
+    const FastSearchSequence *targetSequence;
+    GBDATA                   *gb_alignTo;
+
+public:
+    ExplicitReference(GB_CSTR                   alignment_,
+                      const FastSearchSequence *targetSequence_,
+                      GBDATA                   *gb_alignTo_, 
+                      int                       max_seq_length_,
+                      const AlignParams&        ali_params_)
+        : AlignmentReference(alignment_, max_seq_length_, ali_params_), 
+          targetSequence(targetSequence_), 
+          gb_alignTo(gb_alignTo_) 
+    {}
+
+    ARB_ERROR align_to(GBDATA *gb_toalign) const {
+        return alignTo(gb_toalign, get_alignment(), targetSequence, gb_alignTo, get_max_seq_length(), get_ali_params());
+    }
+};
+
+#if defined(DEVEL_RALF)
+#warning make alignToGroupConsensus a member of ConsensusReference
+#endif // DEVEL_RALF
+
+class ConsensusReference: public AlignmentReference {
+    Aligner_get_consensus_func  get_consensus;
+
+public:
+    ConsensusReference(GB_CSTR                     alignment_, 
+                       Aligner_get_consensus_func  get_consensus_, 
+                       int                         max_seq_length_, 
+                       const AlignParams&          ali_params_)
+        : AlignmentReference(alignment_, max_seq_length_, ali_params_),
+          get_consensus(get_consensus_) 
+    {}
+    
+    ARB_ERROR align_to(GBDATA *gb_toalign) const {
+        return alignToGroupConsensus(gb_toalign, get_alignment(), get_consensus, get_max_seq_length(), get_ali_params());
+    }
+};
+
+#if defined(DEVEL_RALF)
+#warning make alignToNextRelative a member of SearchRelativesReference
+#endif // DEVEL_RALF
+
+class SearchRelativesReference: public AlignmentReference {
+    SearchRelativeParams&  relSearch;
+    FA_turn                turnAllowed;
+
+public:
+    SearchRelativesReference(SearchRelativeParams&  relSearch_,
+                             int                    max_seq_length_,
+                             FA_turn                turnAllowed_,
+                             GB_CSTR                alignment_,
+                             const AlignParams&     ali_params_)
+        : AlignmentReference(alignment_, max_seq_length_, ali_params_),
+          relSearch(relSearch_),
+          turnAllowed(turnAllowed_) 
+    {}
+
+    ARB_ERROR align_to(GBDATA *gb_toalign) const {
+        return alignToNextRelative(relSearch, get_max_seq_length(), turnAllowed, get_alignment(), gb_toalign, get_ali_params());
+    }
+};
+
+
+// ----------------
+//      Aligner
+
+class Aligner {
+    GBDATA *gb_main;
+
+    // define alignment target(s):
+    FA_alignTarget                     alignWhat;
+    GB_CSTR                            alignment;   // name of alignment to use (==NULL -> use default)
+    GB_CSTR                            toalign;     // name of species to align (used if alignWhat == FA_CURRENT)
+    Aligner_get_first_selected_species get_first_selected_species; // used if alignWhat == FA_SELECTED
+    Aligner_get_next_selected_species  get_next_selected_species; // --- "" ---
+
+    // define reference sequence(s):
+    GB_CSTR                    reference;           // name of reference species
+    Aligner_get_consensus_func get_consensus;       // function to get consensus seq
+    SearchRelativeParams&      relSearch;           // params to search for relatives
+
+    // general params:
+    FA_turn            turnAllowed;
+    const AlignParams& ali_params;
+    int                maxProtection;               // protection level
+
+    // -------------------- new members
+    int wasNotAllowedToAlign;                       // number of failures caused by wrong protection
+    int err_count;                                  // count errors
+
+    ARB_ERROR alignToReference(GBDATA *gb_toalign, const AlignmentReference& ref);
+    ARB_ERROR alignTargetsToReference(const AlignmentReference& ref, GBDATA *gb_species_data);
+    
+    ARB_ERROR alignToExplicitReference(GBDATA *gb_species_data, int max_seq_length);
+    ARB_ERROR alignToConsensus(GBDATA *gb_species_data, int max_seq_length);
+    ARB_ERROR alignToRelatives(GBDATA *gb_species_data, int max_seq_length);
+
+public:
+
+#if defined(DEVEL_RALF)
+#warning pass AlignmentReference from caller (replacing reference parameters)
+#endif // DEVEL_RALF
+    
+    Aligner(GBDATA         *gb_main_,
+            // define alignment target(s):
+            FA_alignTarget  alignWhat_,
+            GB_CSTR                             alignment_, // name of alignment to use (==NULL -> use default)
+            GB_CSTR                             toalign_, // name of species to align (used if alignWhat == FA_CURRENT)
+            Aligner_get_first_selected_species  get_first_selected_species_, // used if alignWhat == FA_SELECTED
+            Aligner_get_next_selected_species   get_next_selected_species_, // --- "" ---
+
+            // define reference sequence(s):
+            GB_CSTR                    reference_,  // name of reference species
+            Aligner_get_consensus_func get_consensus_, // function to get consensus seq
+            SearchRelativeParams&      relSearch_,  // params to search for relatives
+
+            // general params:
+            FA_turn            turnAllowed_,
+            const AlignParams& ali_params_,
+            int                maxProtection_) // protection level
+        : gb_main(gb_main_),
+          alignWhat(alignWhat_), 
+          alignment(alignment_), 
+          toalign(toalign_), 
+          get_first_selected_species(get_first_selected_species_), 
+          get_next_selected_species(get_next_selected_species_), 
+          reference(reference_), 
+          get_consensus(get_consensus_), 
+          relSearch(relSearch_), 
+          turnAllowed(turnAllowed_),
+          ali_params(ali_params_),
+          maxProtection(maxProtection_)
+    { }
+
+    ARB_ERROR run();
+
+};
+
+ARB_ERROR Aligner::alignToReference(GBDATA *gb_toalign, const AlignmentReference& ref) {
+    int       myProtection = GB_read_security_write(GBT_read_sequence(gb_toalign, alignment));
+    ARB_ERROR error;
+
+    if (myProtection<=maxProtection) error = ref.align_to(gb_toalign);
+    else wasNotAllowedToAlign++;
+
+    return error;
+}
+
+ARB_ERROR Aligner::alignTargetsToReference(const AlignmentReference& ref, GBDATA *gb_species_data) {
+    ARB_ERROR error;
+
+    switch (alignWhat) {
+        case FA_CURRENT: { // align one sequence
+            fa_assert(toalign);
+
+            GBDATA *gb_toalign = GBT_find_species_rel_species_data(gb_species_data, toalign);
+            if (!gb_toalign) {
+                error = species_not_found(toalign);
+            }
+            else {
+                currentSequenceNumber = overallSequenceNumber = 1;
+                error = alignToReference(gb_toalign, ref);
+            }
+            break;
+        }
+        case FA_MARKED: { // align all marked sequences
+            int     count      = GBT_count_marked_species(gb_main);
+            int     done       = 0;
+            GBDATA *gb_species = GBT_first_marked_species_rel_species_data(gb_species_data);
+
+            currentSequenceNumber = 1;
+            overallSequenceNumber = count;
+
+            while (gb_species) {
+                error = alignToReference(gb_species, ref);
+                if (error) err_count++;
+                GB_end_transaction_show_error(gb_main, error, aw_message);
+                error = NULL;
+
+                done++;
+                GB_status(double(done)/double(count));
+
+                GB_push_transaction(gb_main);
+                gb_species = GBT_next_marked_species(gb_species);
+            }
+            break;
+        }
+        case FA_SELECTED: { // align all selected species
+            int     count;
+            int     done       = 0;
+            GBDATA *gb_species = get_first_selected_species(&count);
+
+            currentSequenceNumber = 1;
+            overallSequenceNumber = count;
+
+            if (!gb_species) {
+                aw_message("There is no selected species!");
+            }
+
+            while (gb_species) {
+                error = alignToReference(gb_species, ref);
+                if (error) err_count++;
+                GB_end_transaction_show_error(gb_main, error, aw_message);
+                error = NULL;
+
+                done++;
+                GB_status(double(done)/double(count));
+
+                GB_push_transaction(gb_main);
+                gb_species = get_next_selected_species();
+            }
+
+            break;
+        }
+    }
+    return error;
+}
+
+ARB_ERROR Aligner::alignToExplicitReference(GBDATA *gb_species_data, int max_seq_length) {
+    ARB_ERROR  error;
+    GBDATA    *gb_reference = GBT_find_species_rel_species_data(gb_species_data, reference);
+
+    if (!gb_reference) {
+        error = species_not_found(reference);
+    }
+    else {
+        long                  referenceChksum;
+        CompactedSubSequence *referenceSeq = readCompactedSequence(gb_reference, alignment, &error, NULL, &referenceChksum, ali_params.firstColumn, ali_params.lastColumn);
+
+        if (island_hopper) {
+#if defined(DEVEL_RALF)
+#warning setting island_hopper reference has to be done in called function (seems that it is NOT done for alignToConsensus and alignToRelatives). First get tests in place!
+#endif // DEVEL_RALF
+            GBDATA *gb_seq = GBT_read_sequence(gb_reference, alignment);        // get sequence
+            if (gb_seq) {
+                long        length = GB_read_string_count(gb_seq);
+                const char *data   = GB_read_char_pntr(gb_seq);
+
+                island_hopper->set_ref_sequence(data);
+                island_hopper->set_alignment_length(length);
+            }
+        }
+
+
+        if (!error) {
+#if defined(DEVEL_RALF)
+#warning do not pass FastSearchSequence to ExplicitReference, instead pass sequence and length (ExplicitReference shall create it itself)
+#endif // DEVEL_RALF
+
+            FastSearchSequence referenceFastSeq(*referenceSeq);
+            ExplicitReference  target(alignment, &referenceFastSeq, gb_reference, max_seq_length, ali_params);
+
+            error = alignTargetsToReference(target, gb_species_data);
+
+            delete referenceSeq;
+        }
+    }
+    return error;
+}
+
+ARB_ERROR Aligner::alignToConsensus(GBDATA *gb_species_data, int max_seq_length) {
+    return alignTargetsToReference(ConsensusReference(alignment, get_consensus, max_seq_length, ali_params),
+                                   gb_species_data);
+}
+
+ARB_ERROR Aligner::alignToRelatives(GBDATA *gb_species_data, int max_seq_length) {
+    return alignTargetsToReference(SearchRelativesReference(relSearch, max_seq_length, turnAllowed, alignment, ali_params),
+                                   gb_species_data);
+}
+
+ARB_ERROR Aligner::run() {
     // (reference == NULL && get_consensus==NULL -> use next relative for (each) sequence)
 
-    ARB_ERROR error                = GB_push_transaction(gb_main); // @@@
-    int       search_by_pt_server  = reference==NULL && get_consensus==NULL;
-    int       err_count            = 0;
-    int       wasNotAllowedToAlign = 0;             // incremented for every sequence which has higher protection level (and was not aligned)
+    ARB_ERROR error               = GB_push_transaction(gb_main); // @@@
+    bool      search_by_pt_server = reference==NULL && get_consensus==NULL;
+
+    err_count            = 0;
+    wasNotAllowedToAlign = 0;                       // incremented for every sequence which has higher protection level (and was not aligned)
 
     fa_assert(reference==NULL || get_consensus==NULL);    // can't do both modes
 
     if (turnAllowed != FA_TURN_NEVER) {
         if ((ali_params.firstColumn!=0 || ali_params.lastColumn!=-1) || !search_by_pt_server) {
             // if not selected 'Range/Whole sequence' or not selected 'Reference/Auto search..'
-            turnAllowed = FA_TURN_NEVER; // then disable mirroring for the actual call
+            turnAllowed = FA_TURN_NEVER; // then disable mirroring for the current call
         }
     }
 
@@ -1814,304 +2116,9 @@ static ARB_ERROR aligner(GBDATA                             *gb_main,
         GBDATA *gb_species_data = GB_search(gb_main, "species_data", GB_CREATE_CONTAINER);
         int     max_seq_length  = GBT_get_alignment_len(gb_main, alignment);
 
-        if (reference) { // align to reference sequence
-            GBDATA *gb_reference = GBT_find_species_rel_species_data(gb_species_data, reference);
-
-            if (!gb_reference) {
-                error = species_not_found(reference);
-            }
-            else {
-                long                       referenceChksum;
-                CompactedSubSequence *referenceSeq = readCompactedSequence(gb_reference, alignment, &error, NULL, &referenceChksum, ali_params.firstColumn, ali_params.lastColumn);
-                if (island_hopper) {
-                    GBDATA *gb_seq = GBT_read_sequence(gb_reference, alignment);        // get sequence
-                    if (gb_seq) {
-                        long        length = GB_read_string_count(gb_seq);
-                        const char *data   = GB_read_char_pntr(gb_seq);
-
-                        island_hopper->set_ref_sequence(data);
-                        island_hopper->set_alignment_length(length);
-                    }
-                }
-
-
-                if (!error) {
-                    FastSearchSequence referenceFastSeq(*referenceSeq);
-
-                    switch (alignWhat) {
-                        case FA_CURRENT: { // align one sequence
-                            fa_assert(toalign);
-                            GBDATA *gb_toalign = GBT_find_species_rel_species_data(gb_species_data, toalign);
-                            if (!gb_toalign) {
-                                error = species_not_found(toalign);
-                            }
-                            else {
-                                currentSequenceNumber = overallSequenceNumber = 1;
-                                int myProtection = GB_read_security_write(GBT_read_sequence(gb_toalign, alignment));
-                                error = 0;
-                                if (myProtection<=maxProtection) {
-                                    error = alignTo(gb_toalign, alignment, &referenceFastSeq, gb_reference, max_seq_length, ali_params);
-                                }
-                                else {
-                                    wasNotAllowedToAlign++;
-                                }
-                            }
-                            break;
-                        }
-                        case FA_MARKED: { // align all marked sequences
-                            int count = GBT_count_marked_species(gb_main);
-                            int done = 0;
-                            GBDATA *gb_species = GBT_first_marked_species_rel_species_data(gb_species_data);
-
-                            currentSequenceNumber = 1;
-                            overallSequenceNumber = count;
-
-                            while (gb_species) {
-                                int myProtection = GB_read_security_write(GBT_read_sequence(gb_species, alignment));
-                                error = 0;
-                                if (myProtection<=maxProtection) {
-                                    error = alignTo(gb_species, alignment, &referenceFastSeq, gb_reference, max_seq_length, ali_params);
-                                }
-                                else {
-                                    wasNotAllowedToAlign++;
-                                }
-
-                                if (error) err_count++;
-                                GB_end_transaction_show_error(gb_main, error, aw_message);
-                                error = NULL;
-
-                                done++;
-                                GB_status(double(done)/double(count));
-
-                                GB_push_transaction(gb_main);
-                                gb_species = GBT_next_marked_species(gb_species);
-                            }
-                            break;
-                        }
-                        case FA_SELECTED: { // align all selected species
-                            int count;
-                            int done = 0;
-                            GBDATA *gb_species = get_first_selected_species(&count);
-
-                            currentSequenceNumber = 1;
-                            overallSequenceNumber = count;
-
-                            if (!gb_species) {
-                                aw_message("There is no selected species!");
-                            }
-
-                            while (gb_species) {
-                                int myProtection = GB_read_security_write(GBT_read_sequence(gb_species, alignment));
-
-                                error = 0;
-                                if (myProtection<=maxProtection) {
-                                    error = alignTo(gb_species, alignment, &referenceFastSeq, gb_reference, max_seq_length, ali_params);
-                                }
-                                else {
-                                    wasNotAllowedToAlign++;
-                                }
-
-                                if (error) err_count++;
-                                GB_end_transaction_show_error(gb_main, error, aw_message);
-                                error = NULL;
-
-                                done++;
-                                GB_status(double(done)/double(count));
-
-                                GB_push_transaction(gb_main);
-                                gb_species = get_next_selected_species();
-                            }
-
-                            break;
-                        }
-                    }
-
-                    delete referenceSeq;
-                }
-            }
-        }
-        else if (get_consensus) { // align to group consensi
-            switch (alignWhat) {
-                case FA_CURRENT: { // align one sequence
-                    fa_assert(toalign);
-                    GBDATA *gb_toalign = GBT_find_species_rel_species_data(gb_species_data, toalign);
-
-                    currentSequenceNumber = overallSequenceNumber = 1;
-
-                    if (!gb_toalign) {
-                        error = species_not_found(toalign);
-                    }
-                    else {
-                        int myProtection = GB_read_security_write(GBT_read_sequence(gb_toalign, alignment));
-
-                        error = 0;
-                        if (myProtection<=maxProtection) {
-                            error = alignToGroupConsensus(gb_toalign, alignment, get_consensus, max_seq_length, ali_params);
-                        }
-                        else {
-                            wasNotAllowedToAlign++;
-                        }
-                    }
-                    break;
-                }
-                case FA_MARKED: { // align all marked sequences
-                    int count = GBT_count_marked_species(gb_main);
-                    int done = 0;
-                    GBDATA *gb_species = GBT_first_marked_species_rel_species_data(gb_species_data);
-
-                    currentSequenceNumber = 1;
-                    overallSequenceNumber = count;
-
-                    while (gb_species) {
-                        int myProtection = GB_read_security_write(GBT_read_sequence(gb_species, alignment));
-
-                        error = 0;
-                        if (myProtection<=maxProtection) {
-                            error = alignToGroupConsensus(gb_species, alignment, get_consensus, max_seq_length, ali_params);
-                        }
-                        else {
-                            wasNotAllowedToAlign++;
-                        }
-
-                        if (error) err_count++;
-                        GB_end_transaction_show_error(gb_main, error, aw_message);
-                        error = NULL;
-
-                        done++;
-                        GB_status(double(done)/double(count));
-
-                        GB_push_transaction(gb_main);
-                        gb_species = GBT_next_marked_species(gb_species);
-                    }
-                    break;
-                }
-                case FA_SELECTED: { // align all selected species
-                    int count;
-                    int done = 0;
-                    GBDATA *gb_species = get_first_selected_species(&count);
-
-                    currentSequenceNumber = 1;
-                    overallSequenceNumber = count;
-
-                    if (!gb_species) {
-                        aw_message("There is no selected species!");
-                    }
-
-                    while (gb_species) {
-                        int myProtection = GB_read_security_write(GBT_read_sequence(gb_species, alignment));
-
-                        if (myProtection<=maxProtection) {
-                            error = alignToGroupConsensus(gb_species, alignment, get_consensus, max_seq_length, ali_params);
-                        }
-                        else {
-                            wasNotAllowedToAlign++;
-                        }
-
-                        if (error) err_count++;
-                        GB_end_transaction_show_error(gb_main, error, aw_message);
-                        error = NULL;
-
-                        done++;
-                        GB_status(double(done)/double(count));
-
-                        GB_push_transaction(gb_main);
-                        gb_species = get_next_selected_species();
-                    }
-                    break;
-                }
-            }
-        }
-        else { // align to next relative
-            switch (alignWhat) {
-                case FA_CURRENT: { // align one sequence
-                    fa_assert(toalign);
-                    GBDATA *gb_toalign = GBT_find_species_rel_species_data(gb_species_data, toalign);
-
-                    currentSequenceNumber = overallSequenceNumber = 1;
-
-                    if (!gb_toalign) {
-                        error = species_not_found(toalign);
-                    }
-                    else {
-                        int myProtection = GB_read_security_write(GBT_read_sequence(gb_toalign, alignment));
-
-                        error = 0;
-                        if (myProtection<=maxProtection) {
-                            error = alignToNextRelative(relSearch, max_seq_length, turnAllowed, alignment, gb_toalign, ali_params);
-                        }
-                        else {
-                            wasNotAllowedToAlign++;
-                        }
-                    }
-                    break;
-                }
-                case FA_MARKED: { // align all marked sequences
-                    int count = GBT_count_marked_species(gb_main);
-                    int done = 0;
-                    GBDATA *gb_species = GBT_first_marked_species_rel_species_data(gb_species_data);
-
-                    currentSequenceNumber = 1;
-                    overallSequenceNumber = count;
-
-                    while (gb_species) {
-                        int myProtection = GB_read_security_write(GBT_read_sequence(gb_species, alignment));
-
-                        error = 0;
-                        if (myProtection<=maxProtection) {
-                            error = alignToNextRelative(relSearch, max_seq_length, turnAllowed, alignment, gb_species, ali_params);
-                        }
-                        else {
-                            wasNotAllowedToAlign++;
-                        }
-
-                        if (error) err_count++;
-                        GB_end_transaction_show_error(gb_main, error, aw_message);
-                        error = NULL;
-
-                        done++;
-                        GB_status(double(done)/double(count));
-
-                        GB_push_transaction(gb_main);
-                        gb_species = GBT_next_marked_species(gb_species);
-                    }
-                    break;
-                }
-                case FA_SELECTED: { // align all selected species
-                    int count;
-                    int done = 0;
-                    GBDATA *gb_species = get_first_selected_species(&count);
-
-                    currentSequenceNumber = 1;
-                    overallSequenceNumber = count;
-
-                    if (!gb_species) {
-                        aw_message("There is no selected species!");
-                    }
-
-                    while (gb_species) {
-                        int myProtection = GB_read_security_write(GBT_read_sequence(gb_species, alignment));
-
-                        if (myProtection<=maxProtection) {
-                            error = alignToNextRelative(relSearch, max_seq_length, turnAllowed, alignment, gb_species, ali_params);
-                        }
-                        else {
-                            wasNotAllowedToAlign++;
-                        }
-
-                        if (error) err_count++;
-                        GB_end_transaction_show_error(gb_main, error, aw_message);
-                        error = NULL;
-
-                        done++;
-                        GB_status(double(done)/double(count));
-
-                        GB_push_transaction(gb_main);
-                        gb_species = get_next_selected_species();
-                    }
-                    break;
-                }
-            }
-        }
+        if (reference) error          = alignToExplicitReference(gb_species_data, max_seq_length);
+        else if (get_consensus) error = alignToConsensus(gb_species_data, max_seq_length);
+        else error                    = alignToRelatives(gb_species_data, max_seq_length);
     }
 
     ClustalV_exit();
@@ -2272,15 +2279,14 @@ void FastAligner_start(AW_window *aw, AW_CL cl_AlignDataAccess) {
             lastColumn  = -1;
         }
 
-        struct SearchRelativeParams relSearch = {
-            pt_server_id,
-            pt_server_alignment,
-            root->awar(FA_AWAR_NEXT_RELATIVES)->read_int(),
-            root->awar(AWAR_NN_OLIGO_LEN)->read_int(),
-            root->awar(AWAR_NN_MISMATCHES)->read_int(),
-            root->awar(AWAR_NN_FAST_MODE)->read_int(),
-            root->awar(AWAR_NN_REL_MATCHES)->read_int(),
-        };
+        SearchRelativeParams relSearch(new PT_FamilyFinder(gb_main,
+                                                           pt_server_id,
+                                                           root->awar(AWAR_NN_OLIGO_LEN)->read_int(),
+                                                           root->awar(AWAR_NN_MISMATCHES)->read_int(),
+                                                           root->awar(AWAR_NN_FAST_MODE)->read_int(),
+                                                           root->awar(AWAR_NN_REL_MATCHES)->read_int()),
+                                       pt_server_alignment,
+                                       root->awar(FA_AWAR_NEXT_RELATIVES)->read_int());
 
         struct AlignParams ali_params = {
             static_cast<FA_report>(root->awar(FA_AWAR_REPORT)->read_int()),
@@ -2290,23 +2296,25 @@ void FastAligner_start(AW_window *aw, AW_CL cl_AlignDataAccess) {
         };
 
         {
-            GB_transaction ta(gb_main);
+            GB_transaction ta(gb_main);             // global alignment transaction
+
             aw_openstatus("FastAligner");
-            error = aligner(gb_main, 
-                                 alignWhat,
-                                 editor_alignment,
-                                 toalign,
-                                 get_first_selected_species,
-                                 get_next_selected_species,
+            Aligner aligner(gb_main,
+                            alignWhat,
+                            editor_alignment,
+                            toalign,
+                            get_first_selected_species,
+                            get_next_selected_species,
+                                
+                            reference,
+                            get_consensus ? data_access->get_group_consensus : NULL,
+                            relSearch,
 
-                                 reference,
-                                 get_consensus ? data_access->get_group_consensus : NULL,
-                                 relSearch,
-
-                                 static_cast<FA_turn>(root->awar(FA_AWAR_MIRROR)->read_int()),
-                                 ali_params,
-                                 root->awar(FA_AWAR_PROTECTION)->read_int()
-                                 );
+                            static_cast<FA_turn>(root->awar(FA_AWAR_MIRROR)->read_int()),
+                            ali_params,
+                            root->awar(FA_AWAR_PROTECTION)->read_int()
+                            );
+            error = aligner.run();
             aw_closestatus();
             error = ta.close(error);
         }
@@ -2345,6 +2353,7 @@ void FastAligner_create_variables(AW_root *root, AW_default db1)
     root->awar_int(FA_AWAR_MIRROR,             FA_TURN_INTERACTIVE, db1);
     root->awar_int(FA_AWAR_REPORT,             FA_NO_REPORT,        db1);
     root->awar_int(FA_AWAR_SHOW_GAPS_MESSAGES, 1,                   db1);
+    root->awar_int(FA_AWAR_CONTINUE_ON_ERROR,  1,                   db1);
     root->awar_int(FA_AWAR_USE_SECONDARY,      0,                   db1);
     root->awar_int(AWAR_PT_SERVER,             0,                   db1);
     root->awar_int(FA_AWAR_NEXT_RELATIVES,     1,                   db1)->set_minmax(1, 100);
@@ -2380,8 +2389,7 @@ void FastAligner_create_variables(AW_root *root, AW_default db1)
     AWTC_create_common_next_neighbour_vars(root);
 }
 
-void FastAligner_set_align_current(AW_root *root, AW_default db1)
-{
+void FastAligner_set_align_current(AW_root *root, AW_default db1) {
     root->awar_int(FA_AWAR_TO_ALIGN, FA_CURRENT, db1);
 }
 
@@ -2632,6 +2640,11 @@ AW_window *FastAligner_create_window(AW_root *root, const AlignDataAccess *data_
     aws->at("gaps");
     aws->create_toggle(FA_AWAR_SHOW_GAPS_MESSAGES);
 
+    aws->at("continue");
+    aws->sens_mask(AWM_DISABLED); // not impl. yet
+    aws->create_toggle(FA_AWAR_CONTINUE_ON_ERROR);
+    aws->sens_mask(AWM_ALL);
+
     aws->at("align");
     aws->callback(FastAligner_start, (AW_CL)data_access);
     aws->highlight();
@@ -2640,5 +2653,395 @@ AW_window *FastAligner_create_window(AW_root *root, const AlignDataAccess *data_
     return aws;
 }
 
+// --------------------------------------------------------------------------------
+
+#if (UNIT_TESTS == 1)
+
+#include <test_unit.h>
+
+struct test_alignment_data {
+    int         mark;
+    const char *name;
+    const char *data;
+};
+
+static const char *test_aliname = "ali_test";
+
+struct test_alignment_data TestAlignmentData[] =
+    {
+        { 0, "s1", ".........A--UCU-C------C-U-AAACC-CA-A-C-C-G-UAG-UUC--------GAA-U-UGAGG-AC--U-GUAA-CU-C..........." }, // reference
+        { 0, "s2", "AUCUCCUAAACCCAACCGUAGUUCGAAUUGAGGACUGUAACUC......................................................" }, // align single sequence (same data as reference)
+        { 1, "m1", "UAGAGGAUUUGGGUUGGCAUCAAGCUUAACUCCUGACAUUGAG......................................................" }, // align marked sequences.. (complement of reference)
+        { 1, "m2", "...UCCUAAACCCAACCGUAGUUCGAAUUGAGGACUGUAA........................................................." },
+        { 1, "m3", "AUC---UAAACCCAACCGUAGUUCGAAUUGAGGACUG---CUC......................................................" },
+        { 0, "c1", "AUCUCCUAAACCCAACC--------AAUUGAGGACUGUAACUC......................................................" },  // align selected sequences..
+        { 0, "c2", "AUCUCCU------AACCGUAGUUCCCCGAA------ACUGUAACUC..................................................." },
+        { 0, "r1", "GAGUUACAGUCCUCAAUUCGGGGAACUACGGUUGGGUUUAGGAGAU..................................................." },  // align by faked pt_server
+    };
+
+const int SPECIES_COUNT = sizeof(TestAlignmentData)/sizeof(*TestAlignmentData);
+
+static GBDATA *test_create_DB(ARB_ERROR& error) {
+    GBDATA *gb_main = GB_open("nodb.arb", "crw");
+    error           = GB_push_transaction(gb_main);
+
+    if (!error) {
+        GBDATA *gb_species_data     = GB_search(gb_main, "species_data", GB_CREATE_CONTAINER);
+        if (!gb_species_data) error = GB_await_error();
+        else {
+            long    ali_len          = strlen(TestAlignmentData[0].data);
+            GBDATA *gb_alignment     = GBT_create_alignment(gb_main, test_aliname, ali_len, 1, 0, "rna");
+            if (!gb_alignment) error = GB_await_error();
+            else {
+                for (int sp = 0; sp<SPECIES_COUNT && !error; ++sp) {
+                    test_alignment_data&  species    = TestAlignmentData[sp];
+                    GBDATA               *gb_species = GBT_find_or_create_species(gb_main, species.name);
+                    if (!gb_species) error           = GB_await_error();
+                    else {
+                        GB_write_flag(gb_species, species.mark);
+
+                        GBDATA *gb_data     = GBT_add_data(gb_species, test_aliname, "data", GB_STRING);
+                        if (!gb_data) error = GB_await_error();
+                        else    error       = GB_write_string(gb_data, species.data);
+                    }
+                }
+            }
+        }
+    }
+
+    error = GB_pop_transaction(gb_main);
+
+    return gb_main;
+}
+
+
+
+static const char *test_aligned_data_of(GBDATA *gb_main, const char *species_name) {
+    GB_transaction  ta(gb_main);
+    ARB_ERROR       error;
+    const char     *data = NULL;
+
+    GBDATA *gb_species     = GBT_find_species(gb_main, species_name);
+    if (!gb_species) error = GB_await_error();
+    else {
+        GBDATA *gb_data     = GBT_read_sequence(gb_species, test_aliname);
+        if (!gb_data) error = GB_await_error();
+        else {
+            data             = GB_read_char_pntr(gb_data);
+            if (!data) error = GB_await_error();
+        }
+    }
+
+    TEST_ASSERT_EQUAL(error.deliver(), NULL);
+
+    return data;
+}
+
+#define ALIGNED_DATA_OF(name) test_aligned_data_of(gb_main, name)
+
+static GBDATA *selection_fake_gb_main = NULL;
+static GBDATA *selection_fake_gb_last = NULL;
+
+static GBDATA *fake_first_selected(int *count) {
+    selection_fake_gb_last = NULL;
+    *count                 = 2; // we fake two species as selected ("c1" and "c2")
+    return GBT_find_species(selection_fake_gb_main, "c1");
+}
+static GBDATA *fake_next_selected() {
+    if (!selection_fake_gb_last) {
+        selection_fake_gb_last = GBT_find_species(selection_fake_gb_main, "c2");
+    }
+    else {
+        selection_fake_gb_last = NULL;
+    }
+    return selection_fake_gb_last;
+}
+
+static char *fake_get_consensus(const char*, int, int) {
+    return strdup(test_aligned_data_of(selection_fake_gb_main, "s1"));
+}
+
+static int fake_status_gauge(double) { return 0; }
+static int fake_status_msg(const char*) { return 0; }
+
+// ---------------------
+//      OligoCounter
+
+#include <map>
+#include <string>
+
+using std::map;
+using std::string;
+
+typedef map<string, size_t> OligoCount;
+
+class OligoCounter {
+    size_t oligo_len;
+    size_t datasize;
+    
+    mutable OligoCount occurance;
+
+    static string removeGaps(const char *seq) {
+        size_t len = strlen(seq);
+        string nogaps;
+        nogaps.reserve(len);
+
+        for (size_t p = 0; p<len; ++p) {
+            char c = seq[p];
+            if (c != '-' && c != '.') nogaps.append(1, c);
+        }
+        return nogaps;
+    }
+
+    void count_oligos(const string& seq) {
+        occurance.clear();
+        size_t max_pos = seq.length()-oligo_len;
+        for (size_t p = 0; p <= max_pos; ++p) {
+            string oligo(seq, p, oligo_len);
+            occurance[oligo]++;
+        }
+    }
+
+public:
+    OligoCounter()
+        : oligo_len(0), 
+          datasize(0)
+    {}
+    OligoCounter(const char *seq, size_t oligo_len_)
+        : oligo_len(oligo_len_)
+    {
+        string seq_nogaps = removeGaps(seq);
+        datasize          = seq_nogaps.length();
+        count_oligos(seq_nogaps);
+    }
+
+    OligoCounter(const OligoCounter& other)
+        : oligo_len(other.oligo_len),
+          datasize(other.datasize),
+          occurance(other.occurance)
+    {}
+
+    size_t oligo_count(const char *oligo) {
+        fa_assert(strlen(oligo) == oligo_len);
+        return occurance[oligo];
+    }
+
+    size_t similarity_score(const OligoCounter& other) const {
+        size_t score = 0;
+        if (oligo_len == other.oligo_len) {
+            for (OligoCount::const_iterator o = occurance.begin(); o != occurance.end(); ++o) {
+                const string& oligo = o->first;
+                size_t        count = o->second;
+
+                score += min(count, other.occurance[oligo]);
+            }
+        }
+        return score;
+    }
+
+    size_t getDataSize() const { return datasize; }
+};
+
+void TEST_OligoCounter() {
+    OligoCounter oc1("CCAGGT", 3);
+    OligoCounter oc2("GGTCCA", 3);
+    OligoCounter oc2_gaps("..GGT--CCA..", 3);
+    OligoCounter oc3("AGGTCC", 3);
+    OligoCounter oc4("AGGTCCAGG", 3);
+
+    TEST_ASSERT(oc1.oligo_count("CCA") == 1);
+    TEST_ASSERT(oc1.oligo_count("CCG") == 0);
+    TEST_ASSERT(oc4.oligo_count("AGG") == 2);
+
+    int sc1_2 = oc1.similarity_score(oc2);
+    int sc2_1 = oc2.similarity_score(oc1);
+    TEST_ASSERT_EQUAL(sc1_2, sc2_1);
+
+    int sc1_2gaps = oc1.similarity_score(oc2_gaps);
+    TEST_ASSERT_EQUAL(sc1_2, sc1_2gaps);
+    
+    int sc1_3 = oc1.similarity_score(oc3);
+    int sc2_3 = oc2.similarity_score(oc3);
+    int sc3_4 = oc3.similarity_score(oc4);
+
+    TEST_ASSERT_EQUAL(sc1_2, 2);                    // common oligos (CCA GGT)
+    TEST_ASSERT_EQUAL(sc1_3, 2);                    // common oligos (AGG GGT)
+    TEST_ASSERT_EQUAL(sc2_3, 3);                    // common oligos (GGT GTC TCC)
+    
+    TEST_ASSERT_EQUAL(sc3_4, 4); 
+}
+
+// -------------------------
+//      FakeFamilyFinder
+
+class FakeFamilyFinder: public FamilyFinder {
+    // used by unit tests to detect next relatives instead of asking the pt-server 
+
+    GBDATA                    *gb_main;
+    string                     ali_name;
+    map<string, OligoCounter>  oligos_counted;      // key = species name
+    size_t                     oligo_len;
+
+public:
+    FakeFamilyFinder(GBDATA *gb_main_, string ali_name_, bool rel_matches_, size_t oligo_len_)
+        : FamilyFinder(rel_matches_),
+          gb_main(gb_main_),
+          ali_name(ali_name_), 
+          oligo_len(oligo_len_)
+    {}
+
+    GB_ERROR searchFamily(const char *sequence, FF_complement compl_mode, int max_results) {
+        TEST_ASSERT(compl_mode == FF_FORWARD); // not fit for other modes
+
+        delete_family_list();
+
+        OligoCounter seq_oligo_count(sequence, oligo_len);
+
+        GB_transaction ta(gb_main);
+        
+        int results = 0;
+        for (GBDATA *gb_species = GBT_first_species(gb_main);
+             gb_species && results<max_results;
+             gb_species = GBT_next_species(gb_species))
+        {
+            string name = GBT_get_name(gb_species);
+            if (oligos_counted.find(name) == oligos_counted.end()) {
+                GBDATA     *gb_data  = GBT_read_sequence(gb_species, ali_name.c_str());
+                const char *spec_seq = GB_read_char_pntr(gb_data);
+                oligos_counted[name] = OligoCounter(spec_seq, oligo_len);
+            }
+
+            const OligoCounter& spec_oligo_count = oligos_counted[name];
+            size_t              score            = seq_oligo_count.similarity_score(spec_oligo_count);
+
+            FamilyList *newMember = new FamilyList();
+
+            newMember->name        = strdup(name.c_str());
+            newMember->matches     = score;
+            newMember->rel_matches = score/spec_oligo_count.getDataSize();
+            newMember->next        = NULL;
+
+            family_list = newMember->insertSortedBy_matches(family_list);
+            results++;
+        }
+
+        return NULL;
+    }
+};
+
+
+void TEST_Aligner() { // only performs some alignments
+    // create test DB
+    ARB_ERROR   error;
+    GBDATA     *gb_main = test_create_DB(error);
+
+    TEST_ASSERT_EQUAL(error.deliver(), NULL);
+    
+    AlignParams ali_params = {
+        FA_NO_REPORT,
+        false, // showGapsMessages
+        0, // firstColumn
+        -1, // lastColumn
+    };
+
+    SearchRelativeParams search_relative_params(new FakeFamilyFinder(gb_main, test_aliname, false, 8),
+                                                test_aliname,
+                                                2);
+
+    selection_fake_gb_main = gb_main;
+
+    GB_install_status(fake_status_gauge, fake_status_msg);
+
+    {
+        Aligner aligner(gb_main,
+                        FA_CURRENT,
+                        test_aliname,
+                        "s2",                       // toalign
+                        NULL,                       // get_first_selected_species
+                        NULL,                       // get_next_selected_species
+                        "s1",                       // reference species
+                        NULL,                       // get_consensus
+                        search_relative_params,     // relative search
+                        FA_TURN_ALWAYS,
+                        ali_params,
+                        0);
+        error = aligner.run();
+        TEST_ASSERT_EQUAL(error.deliver(), NULL);
+    }
+    {
+        Aligner aligner(gb_main,
+                        FA_MARKED,
+                        test_aliname,
+                        NULL,                       // toalign
+                        NULL,                       // get_first_selected_species
+                        NULL,                       // get_next_selected_species
+                        "s1",                       // reference species
+                        NULL,                       // get_consensus
+                        search_relative_params,     // relative search
+                        FA_TURN_ALWAYS,
+                        ali_params,
+                        0);
+        error = aligner.run();
+        TEST_ASSERT_EQUAL(error.deliver(), NULL);
+    }
+    {
+        Aligner aligner(gb_main,
+                        FA_SELECTED,
+                        test_aliname,
+                        NULL,                       // toalign
+                        fake_first_selected,        // get_first_selected_species
+                        fake_next_selected,         // get_next_selected_species
+                        // "s1",                       // reference species
+                        NULL,                       // reference species
+                        fake_get_consensus,         // get_consensus
+                        search_relative_params,     // relative search
+                        FA_TURN_ALWAYS,
+                        ali_params,
+                        0);
+        error = aligner.run();
+        TEST_ASSERT_EQUAL(error.deliver(), NULL);
+    }
+    {
+        Aligner aligner(gb_main,
+                        FA_CURRENT,
+                        test_aliname,
+                        "r1",                       // toalign
+                        NULL,                       // get_first_selected_species
+                        NULL,                       // get_next_selected_species
+                        NULL,                       // reference species
+                        NULL,                       // get_consensus
+                        search_relative_params,     // relative search
+                        FA_TURN_ALWAYS,
+                        ali_params,
+                        0);
+
+        error = aligner.run();
+        TEST_ASSERT_EQUAL(error.deliver(), NULL);
+    }
+    
+    TEST_ASSERT_EQUAL(        ALIGNED_DATA_OF("s2"), ".........A--UCU-C------C-U-AAACC-CA-A-C-C-G-UAG-UUC--------GAA-U-UGAGG-AC--U-GUAA-CU-C...........");
+
+    TEST_ASSERT_EQUAL(        ALIGNED_DATA_OF("m1"), ".......UAG--AGG-A------U-U-UGGGU-UG-G-C-A-U-CAA-GCU--------UAA-C-UCCUG-AC--A-UUGAG...............");
+    TEST_ASSERT_EQUAL(        ALIGNED_DATA_OF("m2"), "..............U-C------C-U-AAACC-CA-A-C-C-G-UAG-UUC--------GAA-U-UGAGG-AC--U-GUAA................");
+    TEST_ASSERT_EQUAL(        ALIGNED_DATA_OF("m3"), "..............A-U------C-U-AAACC-CA-A-C-C-G-UAG-UUC--------GAA-U-UGAGG-AC--U-G----CU-C...........");
+
+    TEST_ASSERT_EQUAL(        ALIGNED_DATA_OF("c1"), ".........A--UCU-C------C-U-AAACC-CA-A-C-C-------------------AA-U-UGAGG-AC--U-GUAA-CU-C...........");
+    TEST_ASSERT_EQUAL(        ALIGNED_DATA_OF("c2"), ".........A--UCU-C------C-U-AA---------C-C-G-UAG-UUC------------C-CCGAA-AC--U-GUAA-CU-C...........");
+
+    TEST_ASSERT_EQUAL(        ALIGNED_DATA_OF("r1"), ".........A--UCU-C------C-U-AAACC-CA-A-C-C-G-UAG-UUCCCC-----GAA-U-UGAGG-AC--U-GUAA-CU-C..........."); // here sequence shall be turned!
+
+    {
+        GB_transaction ta(gb_main);
+        GBDATA     *gb_r1        = GBT_find_species(gb_main, "r1");
+        GBDATA     *gb_used_rels = GB_search(gb_r1, "used_rels", GB_FIND);
+        const char *used_rels    = GB_read_char_pntr(gb_used_rels);
+
+        TEST_ASSERT_EQUAL(used_rels, "s2:43, s1:1");
+    }
+
+    GB_close(gb_main);
+}
+
+#endif
 
 
