@@ -1164,6 +1164,7 @@ xml:	XML/XML.dummy
 xmlin:  XML_IMPORT/XML_IMPORT.dummy# broken
 templ:	TEMPLATES/TEMPLATES.dummy
 stat:   STAT/STAT.dummy $(NTREE) $(EDIT4)
+fa:	SL/FAST_ALIGNER/FAST_ALIGNER.dummy
 
 #********************************************************************************
 

@@ -678,7 +678,11 @@ GB_ERROR ED4_Edit_String::command(AW_key_mod keymod, AW_key_code keycode, char k
 
                             FastAligner_set_align_current(ED4_ROOT->aw_root, ED4_ROOT->props_db);
                             AW_clock_cursor(ED4_ROOT->aw_root);
+                            GB_commit_transaction(dataAccess_4_aligner.gb_main);
+
                             FastAligner_start(aw_tmp, (AW_CL)&dataAccess_4_aligner);
+
+                            GB_begin_transaction(dataAccess_4_aligner.gb_main);
                             AW_normal_cursor(ED4_ROOT->aw_root);
                             dataAccess_4_aligner.do_refresh = old_refresh;
 

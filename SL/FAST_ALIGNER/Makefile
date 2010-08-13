@@ -93,6 +93,7 @@ fast_aligner.o: $(ARBHOME)/INCLUDE/awtc_next_neighbours.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/dupstr.h
 fast_aligner.o: $(ARBHOME)/INCLUDE/island_hopping.h
 fast_aligner.o: $(ARBHOME)/INCLUDE/smartptr.h
+fast_aligner.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 seq_search.o: seq_search.hxx
 seq_search.o: $(ARBHOME)/INCLUDE/ad_k_prot.h

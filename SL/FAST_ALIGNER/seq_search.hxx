@@ -252,8 +252,7 @@ public:
 };
 
 
-class AlignBuffer                                   // alignment result buffer
-{
+class AlignBuffer {                                 // alignment result buffer
     char *myBuffer;
     char *myQuality;
 
@@ -268,23 +267,19 @@ class AlignBuffer                                   // alignment result buffer
     long mySize;
     long used;
 
-    void set_used(long newVal)
-    {
+    void set_used(long newVal) {
         fa_assert(newVal<=mySize);
         used = newVal;
-        GB_status(double(used)/double(mySize));
     }
-    void add_used(long toAdd)
-    {
+    void add_used(long toAdd) {
         set_used(toAdd+used);
     }
 
-    int isGlobalGap(long off)   // TRUE if gap in slave AND master
-    {
+    int isGlobalGap(long off) {
+        // TRUE if gap in slave AND master
         return (myBuffer[off]=='-' || myBuffer[off]=='.') && myQuality[off]=='-';
     }
-    void moveUnaligned(long from, long to)
-    {
+    void moveUnaligned(long from, long to) {
         myBuffer[to] = myBuffer[from];
         myQuality[to] = myQuality[from];
         myBuffer[from] = '-';
@@ -293,8 +288,7 @@ class AlignBuffer                                   // alignment result buffer
 
 public:
 
-    AlignBuffer(long size)
-    {
+    AlignBuffer(long size) {
         mySize = size;
         set_used(0);
         myBuffer = new char[size+1];
@@ -302,8 +296,7 @@ public:
         myQuality = new char[size+1];
         myQuality[size] = 0;
     }
-    ~AlignBuffer()
-    {
+    ~AlignBuffer() {
         delete [] myBuffer;
         delete [] myQuality;
     }
@@ -315,29 +308,25 @@ public:
     long offset() const                 { return used; }
     long free() const                   { return mySize-used; }
 
-    void copy(const char *s, char q, long len)
-    {
+    void copy(const char *s, char q, long len) {
         fa_assert(len<=free());
         memcpy(myBuffer+used, s, len);
         memset(myQuality+used, q, len);
         add_used(len);
     }
-    void set(char c, char q)
-    {
+    void set(char c, char q) {
         fa_assert(free()>=1);
         myBuffer[used] = c;
         myQuality[used] = q;
         add_used(1);
     }
-    void set(char c, char q, long len)
-    {
+    void set(char c, char q, long len) {
         fa_assert(len<=free());
         memset(myBuffer+used, c, len);
         memset(myQuality+used, q, len);
         add_used(len);
     }
-    void reset(long newOffset=0)
-    {
+    void reset(long newOffset=0) {
         fa_assert(newOffset>=0 && newOffset<mySize);
         set_used(newOffset);
     }
@@ -349,8 +338,7 @@ public:
 };
 
 
-class FastAlignInsertion
-{
+class FastAlignInsertion {
     long insert_at_offset;
     long inserted_gaps;
 

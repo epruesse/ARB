@@ -119,8 +119,6 @@ PT_FamilyFinder::~PT_FamilyFinder() {
 GB_ERROR PT_FamilyFinder::init_communication() {
     const char *user = "Find Family";
 
-    awtc_assert(!com);
-    
     // connect PT server
     if (aisc_create(link, PT_MAIN, com,
                     MAIN_LOCS, PT_LOCS, &locs,
@@ -128,13 +126,15 @@ GB_ERROR PT_FamilyFinder::init_communication() {
                     NULL)) {
         return GB_export_error("Cannot initialize communication");
     }
-    awtc_assert(com);
     return 0;
 }
 
 
 GB_ERROR PT_FamilyFinder::open(const char *servername) {
     GB_ERROR error = 0;
+    
+    awtc_assert(!com && !link);
+
     if (arb_look_and_start_server(AISC_MAGIC_NUMBER, servername, gb_main)) {
         error = "Cannot contact PT  server";
     }
@@ -147,6 +147,9 @@ GB_ERROR PT_FamilyFinder::open(const char *servername) {
             else if (init_communication()) error = "Cannot contact PT server [2]";
         }
     }
+
+    awtc_assert(error || (com && link));
+    
     return error;
 }
 
