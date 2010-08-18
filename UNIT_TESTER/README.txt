@@ -64,9 +64,12 @@ How to use ARB unit testing
       Tests are executed in the order they appear in the code.
       Multiple Files are sorted alphabethically.
 
-      Tests with names starting with 'TEST_SLOW_' are executed after
-      all other tests. These are meant to indicate "slow" tests
-      (i.e. tests which need more than a second to execute)
+      Exceptions:
+      - If test name starts with 'TEST_###' (where ### are digits), it declares a test with priority ###.
+        The default priority is 100. Lower numbers mean higher priority, i.e. start more early. 
+      - If test name starts with 'TEST_SLOW' the test is executed after all other tests.
+        These is meant to indicate "slow" tests (i.e. tests which need more than a second to execute).
+        The priority of slow tests is '900'.
 
 
 3. Valgrinding test code
