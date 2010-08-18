@@ -6,11 +6,9 @@ use warnings;
 # --------------------------------------------------------------------------------
 
 my %location = (); # key=symbol, value=location
-
 my %exported = (); # key=exported symbols
-
 my %simple_test = (); # key=names of existing simple test functions
-
+my %test_priority = (); # key=test value=priority
 
 # --------------------------------------------------------------------------------
 
@@ -24,6 +22,14 @@ sub symbol_error($$) {
   else {
     print STDERR "sym2testcode.pl: Error: Location of '$symbol' is unknown\n";
     print STDERR "sym2testcode.pl: Error: $message ($symbol)\n";
+  }
+}
+
+sub calculate_priorities() {
+  foreach (keys %simple_test) {
+    if (/^TEST_SLOW_/)        { $test_priority{$_} = 900; }
+    elsif (/^TEST_([0-9]+)_/) { $test_priority{$_} = $1; }
+    else                      { $test_priority{$_} = 100; }
   }
 }
 
@@ -126,33 +132,28 @@ sub prototype_simple($) {
 sub generate_table($$\%\&) {
   my ($type,$name,$id_r,$prototyper_r) = @_;
 
+  calculate_priorities();
+
   my @tests = sort {
-    my $cmp;
-    my $loca = $location{$a};
-    my $locb = $location{$b};
-    if (defined $loca) {
-      if (defined $locb) { $cmp = $loca cmp $locb; }
-      else { $cmp = 1; }
+    my $prioa = $test_priority{$a};
+    my $priob = $test_priority{$b};
+
+    my $cmp = $prioa - $priob;
+
+    if ($cmp ==0) {
+      my $loca = $location{$a};
+      my $locb = $location{$b};
+      if (defined $loca) {
+        if (defined $locb) { $cmp = $loca cmp $locb; }
+        else { $cmp = 1; }
+      }
+      else {
+        if (defined $locb) { $cmp = -1; }
+        else { $cmp = $a cmp $b; }
+      }
     }
-    else {
-      if (defined $locb) { $cmp = -1; }
-      else { $cmp = $a cmp $b; }
-    }
+    $cmp;
   } keys %$id_r;
-
-  # sort TEST_SLOW_ to the end
-  {
-    my @tests_fast = ();
-    my @tests_slow = ();
-
-    foreach (@tests) {
-      if (/^TEST_SLOW_/) { push @tests_slow, $_; }
-      else { push @tests_fast, $_; }
-    }
-
-    @tests = @tests_fast;
-    push @tests, @tests_slow;
-  }
 
   my $code = '';
 
