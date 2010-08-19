@@ -21,7 +21,7 @@ struct UnitTest_simple {
 };
 
 struct UnitTester {
-    UnitTester(const char *libname, const UnitTest_simple *simple_tests);
+    UnitTester(const char *libname, const UnitTest_simple *simple_tests, int warn_level);
 };
 
 #else

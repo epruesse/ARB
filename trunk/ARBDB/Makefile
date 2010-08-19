@@ -705,6 +705,7 @@ adstring.o: gb_main.h
 adstring.o: gb_memory.h
 adstring.o: gb_prot.h
 adstring.o: gb_tune.h
+adstring.o: $(ARBHOME)/INCLUDE/arb_backtrace.h
 adstring.o: $(ARBHOME)/INCLUDE/arb_error.h
 adstring.o: $(ARBHOME)/INCLUDE/arbtools.h
 adstring.o: $(ARBHOME)/INCLUDE/attributes.h

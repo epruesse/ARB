@@ -42,10 +42,6 @@
 #error arb_assert already defined
 #endif
 
-#ifndef _ERRNO_H
-#include <errno.h>
-#endif
-
 // only use ONE of the following ASSERT_xxx defines :
 
 #if defined(DEBUG) && !defined(DEVEL_RELEASE)
@@ -180,6 +176,35 @@
 #  error Unit testing not allowed in release
 # else
 
+#  ifdef __cplusplus
+
+namespace arb_test {
+    class GlobalTestData {
+        GlobalTestData()
+            : show_warnings(true),
+              assertion_failed(false)
+        {}
+
+    public:
+        bool show_warnings;
+        bool assertion_failed;
+
+        static GlobalTestData& instance() {
+            static GlobalTestData *data = 0; // singleton
+            if (!data) data = new GlobalTestData;
+            return *data;
+        }
+    };
+
+    inline GlobalTestData& test_data() { return GlobalTestData::instance(); }
+};
+
+#   define ASSERTION_HAS_FAILED() arb_test::test_data().assertion_failed = true  
+
+#  else
+#   define ASSERTION_HAS_FAILED() // impossible in C
+#  endif
+
 #  define test_assert(cond)                                     \
     do {                                                        \
         if (!(cond)) {                                          \
@@ -188,14 +213,11 @@
             fprintf(stderr, "%s:%i: Assertion '%s' failed\n",   \
                     __FILE__, __LINE__, #cond);                 \
             fflush(stderr);                                     \
-            errno = ECANCELED;                                  \
+            ASSERTION_HAS_FAILED();                             \
             ARB_SIGSEGV(0);                                     \
         }                                                       \
     } while(0)
-// Note: errno is misused as flag that test_assert has been called
-// see ../UNIT_TESTER/UnitTester.cxx@errnohack
 
-    
 #  if defined(ASSERTION_USED)
 #   undef arb_assert
 #   define arb_assert(cond) test_assert(cond)

@@ -22,8 +22,10 @@
 #include <sys/time.h>
 
 #define SIMPLE_ARB_ASSERT
+#include <test_unit.h>
 #include <arb_backtrace.h>
 #define ut_assert(cond) arb_assert(cond)
+
 
 using namespace std;
 
@@ -68,10 +70,9 @@ static bool    inside_test = false;
 
 static void UT_sigsegv_handler(int sig) {
     if (inside_test) {
-        if (errno != ECANCELED) { // not caused by assertion
+        if (!arb_test::test_data().assertion_failed) { // not caused by assertion
             BackTraceInfo(0).dump(stderr, "Catched SIGSEGV not caused by assertion");
         }
-        errno = 0;
         longjmp(UT_return_after_segv, 668);             // suppress SIGSEGV
     }
     fprintf(stderr, "[UnitTester terminating with signal %i]\n", sig);
@@ -94,7 +95,7 @@ static UnitTestResult execute_guarded(UnitTest_function fun, long *duration_usec
         inside_test = true;
         gettimeofday(&t1, NULL);
 
-        errno = 0; // ../ARBDB/arb_assert.h@errnohack
+        arb_test::test_data().assertion_failed = false;
         fun();
     }
 
@@ -174,10 +175,12 @@ bool SimpleTester::perform(size_t which) {
 
 
 
-UnitTester::UnitTester(const char *libname, const UnitTest_simple *simple_tests) {
+UnitTester::UnitTester(const char *libname, const UnitTest_simple *simple_tests, int warn_level) {
     size_t tests  = 0;
     size_t passed = 0;
     double duration_ms;
+
+    arb_test::test_data().show_warnings = (warn_level != 0);
 
     {
         SimpleTester simple_tester(simple_tests);
