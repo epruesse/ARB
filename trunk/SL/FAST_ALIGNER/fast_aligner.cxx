@@ -2992,11 +2992,15 @@ static const char *get_aligned_data_of(GBDATA *gb_main, const char *species_name
 
 static const char *get_used_rels_for(GBDATA *gb_main, const char *species_name) {
     GB_transaction  ta(gb_main);
-    GBDATA         *gb_species   = GBT_find_species(gb_main, species_name);
-    GBDATA         *gb_used_rels = GB_search(gb_species, "used_rels", GB_FIND);
-    const char     *used_rels    = GB_read_char_pntr(gb_used_rels);
-
-    return used_rels;
+    const char     *result     = NULL;
+    GBDATA         *gb_species = GBT_find_species(gb_main, species_name);
+    if (!gb_species) result    = GBS_global_string("<No such species '%s'>", species_name);
+    else {
+        GBDATA *gb_used_rels      = GB_search(gb_species, "used_rels", GB_FIND);
+        if (!gb_used_rels) result = "<No such field 'used_rels'>";
+        else    result            = GB_read_char_pntr(gb_used_rels);
+    }
+    return result;
 }
 
 #define ALIGNED_DATA_OF(name) get_aligned_data_of(gb_main, name)
@@ -3205,7 +3209,7 @@ void TEST_Aligner_checksumError() {
     test_install_fakes(gb_main);
 
     bool cont_on_err = true;
-    {
+    if (!error) {
         Aligner aligner(gb_main,
                         FA_CURRENT,
                         test_aliname,
@@ -3222,10 +3226,9 @@ void TEST_Aligner_checksumError() {
                         FA_MARK_ALIGNED);
 
         error = aligner.run();
-        TEST_ASSERT_EQUAL(error.deliver(), NULL);
     }
-
-    TEST_ASSERT_EQUAL(USED_RELS_FOR("MtnK1722"), "???");
+    TEST_ASSERT_EQUAL__BROKEN(error.deliver(), NULL);
+    TEST_ASSERT_EQUAL__BROKEN(USED_RELS_FOR("MtnK1722"), "???");
     
     GB_close(gb_main);
 }
