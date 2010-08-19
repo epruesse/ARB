@@ -42,6 +42,9 @@
 #error arb_assert already defined
 #endif
 
+#ifndef _ERRNO_H
+#include <errno.h>
+#endif
 
 // only use ONE of the following ASSERT_xxx defines :
 
@@ -185,10 +188,14 @@
             fprintf(stderr, "%s:%i: Assertion '%s' failed\n",   \
                     __FILE__, __LINE__, #cond);                 \
             fflush(stderr);                                     \
+            errno = ECANCELED;                                  \
             ARB_SIGSEGV(0);                                     \
         }                                                       \
     } while(0)
+// Note: errno is misused as flag that test_assert has been called
+// see ../UNIT_TESTER/UnitTester.cxx@errnohack
 
+    
 #  if defined(ASSERTION_USED)
 #   undef arb_assert
 #   define arb_assert(cond) test_assert(cond)
