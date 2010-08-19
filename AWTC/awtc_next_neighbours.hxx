@@ -50,7 +50,10 @@ protected:
     FamilyList *family_list;
 
     bool hits_truncated;
-    int  real_hits;
+#if defined(DEVEL_RALF)
+#warning change real_hits back to int when aisc_get() has been made failsafe
+#endif // DEVEL_RALF
+    long real_hits;
 
 public:
     FamilyFinder(bool rel_matches_);
