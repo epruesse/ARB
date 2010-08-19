@@ -435,7 +435,7 @@ GBDATA *gb_search(GBDATA * gbd, const char *str, GB_TYPES create, int internflag
     int     separator = 0;
     char    buffer[GB_PATH_MAX];
 
-    GB_TEST_TRANSACTION(gbd);
+    GB_test_transaction(gbd);
     if (!str) {
         return GB_child(gbd);
     }
@@ -703,7 +703,7 @@ GBDATA *GB_first_marked(GBDATA *gbd, const char *keystring) {
     else {
         key_quark = -1;
     }
-    GB_TEST_TRANSACTION(gbd);
+    GB_test_transaction(gbd);
     return gb_search_marked(gbc, key_quark, 0, 0);
 }
 
@@ -718,7 +718,7 @@ GBDATA *GB_following_marked(GBDATA *gbd, const char *keystring, size_t skip_over
     else {
         key_quark = -1;
     }
-    GB_TEST_TRANSACTION(gbd);
+    GB_test_transaction(gbd);
     return gb_search_marked(gbc, key_quark, (int)gbd->index+1, skip_over);
 }
 
