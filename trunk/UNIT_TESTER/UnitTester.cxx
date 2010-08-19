@@ -22,7 +22,7 @@
 #include <sys/time.h>
 
 #define SIMPLE_ARB_ASSERT
-#include <arb_assert.h>
+#include <arb_backtrace.h>
 #define ut_assert(cond) arb_assert(cond)
 
 using namespace std;
@@ -68,6 +68,10 @@ static bool    inside_test = false;
 
 static void UT_sigsegv_handler(int sig) {
     if (inside_test) {
+        if (errno != ECANCELED) { // not caused by assertion
+            BackTraceInfo(0).dump(stderr, "Catched SIGSEGV not caused by assertion");
+        }
+        errno = 0;
         longjmp(UT_return_after_segv, 668);             // suppress SIGSEGV
     }
     fprintf(stderr, "[UnitTester terminating with signal %i]\n", sig);
@@ -89,6 +93,8 @@ static UnitTestResult execute_guarded(UnitTest_function fun, long *duration_usec
     else {                                          // normal execution
         inside_test = true;
         gettimeofday(&t1, NULL);
+
+        errno = 0; // ../ARBDB/arb_assert.h@errnohack
         fun();
     }
 
