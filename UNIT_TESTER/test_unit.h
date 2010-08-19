@@ -22,7 +22,7 @@
 /* Note:
  * This file should not generate any static code.
  * Only place define's or inline functions here.
- *
+ * 
  * All macros named 'XXX__BROKEN' are intended to be used, when a
  * test is known to fail, but cannot be fixed atm for some reason
  * 
@@ -81,12 +81,16 @@ namespace arb_test {
 
 // --------------------------------------------------------------------------------
 
-#define TEST_MSG(format, strarg)                \
-    fprintf(stderr, "%s:%i: " format "\n",      \
-            __FILE__, __LINE__, (strarg))
+#define TEST_MSG(format, strarg)                                \
+    arb_test::printf_flushed("%s:%i: " format "\n",             \
+                             __FILE__, __LINE__, (strarg))
 
-#define TEST_WARNING(format, strarg)            \
-    TEST_MSG("Warning: " format, strarg)
+#define TEST_WARNING(format, strarg)                    \
+    do {                                                \
+        if (arb_test::test_data().show_warnings) {    \
+            TEST_MSG("Warning: " format, strarg);       \
+        }                                               \
+    } while(0)
 
 #define TEST_ERROR(format, strarg)              \
     do {                                        \

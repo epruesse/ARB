@@ -12,18 +12,22 @@ my %test_priority = (); # key=test value=priority
 
 # --------------------------------------------------------------------------------
 
-sub symbol_error($$) {
-  my ($symbol,$message) = @_;
+my $warn_level = 1;
+
+sub symbol_message($$$) {
+  my ($symbol,$message,$type) = @_;
   my $loc = $location{$symbol};
 
   if (defined $loc) {
-    print STDERR "$loc: Error: $message ($symbol)\n";
+    print STDERR "$loc: $type: $message ($symbol)\n";
   }
   else {
     print STDERR "sym2testcode.pl: Error: Location of '$symbol' is unknown\n";
-    print STDERR "sym2testcode.pl: Error: $message ($symbol)\n";
+    print STDERR "sym2testcode.pl: $type: $message ($symbol)\n";
   }
 }
+sub symbol_warning($$) { my($symbol, $message)= @_; $warn_level==0 || symbol_message($symbol, $message, "Warning"); }
+sub symbol_error($$)   { my($symbol, $message)= @_; symbol_message($symbol, $message, "Error");   }
 
 sub calculate_priorities() {
   foreach (keys %simple_test) {
@@ -57,19 +61,28 @@ sub parse($) {
         if ($symbol =~ /\(/o) { $symbol = $`; } # skip prototype
         if (defined $location) { $location{$symbol} = $location; }
 
-        my $is_unit_test = undef;
-        if ($symbol =~ /^TEST_/o) { $is_unit_test = 1; }
+        my $is_unit_test     = undef;
+        my $is_disabled_test = undef;
 
-        if ($type eq 'T') {
-          $exported{$symbol} = 1;
-        }
-        else {
-          if ($is_unit_test) {
-            symbol_error($symbol, "unit-test needs global scope (type='$type' symbol='$symbol')");
+        if ($symbol =~ /^TEST_/o) { $is_unit_test = 1; }
+        elsif ($symbol =~ /TEST_/o) { $is_disabled_test = 1; }
+
+        my $is_global_symbol = ($type eq 'T');
+
+        if ($is_global_symbol) { $exported{$symbol} = 1; }
+
+        if ($is_unit_test) {
+          if ($is_global_symbol) {
+            $simple_test{$symbol} = 1;
+          }
+          else {
+            symbol_warning($symbol, "unit-tests need global scope (type='$type' symbol='$symbol')");
           }
         }
-        if ($is_unit_test) {
-          $simple_test{$symbol} = 1;
+        elsif ($is_disabled_test) {
+          if ($is_global_symbol) {
+            symbol_warning($symbol, "Test looks disabled");
+          }
         }
       }
       else {
@@ -192,6 +205,7 @@ HEAD
 
   my $UNIT_TESTER = 'UnitTester unitTester("'.$libname.'", ';
   $UNIT_TESTER .= UT_name('simple');
+  $UNIT_TESTER .= ', '.$warn_level;
   $UNIT_TESTER .= ');';
 
   my $MAIN = '';
@@ -216,15 +230,21 @@ HEAD
 
 sub main() {
   my $args = scalar(@ARGV);
-  if ($args != 4) {
-    die "Usage: sym2testcode.pl libname restrict-expr nm-output gen-cxx\n".
-      "Error: Expected 4 arguments\n";
+  if ($args != 5) {
+    die("Usage: sym2testcode.pl libname restrict-expr nm-output gen-cxx warn-level\n".
+        "    libname        name of library to run tests for\n".
+        "    restrict-expr  regexpr to restrict to specific module in library\n".
+        "    nm-output      output of nm\n".
+        "    gen_cxx        name of C++ file to generate\n".
+        "    warn-level     (0=quiet|1=noisy)\n".
+        "Error: Expected 5 arguments\n");
   }
 
   my $libname   = $ARGV[0];
   my $restrict  = $ARGV[1];
   my $nm_output = $ARGV[2];
   my $gen_cxx   = $ARGV[3];
+  $warn_level   = $ARGV[4];
 
   parse($nm_output);
   filter($restrict);
