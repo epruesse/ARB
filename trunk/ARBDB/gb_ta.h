@@ -18,7 +18,7 @@
 #include "gb_data.h"
 #endif
 
-inline void GB_TEST_TRANSACTION(GBDATA *gbd) {
+inline void GB_test_transaction(GBDATA *gbd) {
     if (!GB_MAIN(gbd)->transaction) {
         GBK_terminate("No running transaction");
     }

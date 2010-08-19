@@ -1114,15 +1114,15 @@ GB_ERROR GB_write_as_string(GBDATA *gbd, const char *val)
 //      security functions
 
 int GB_read_security_write(GBDATA *gbd) {
-    GB_TEST_TRANSACTION(gbd);
+    GB_test_transaction(gbd);
     return GB_GET_SECURITY_WRITE(gbd);
 }
 int GB_read_security_read(GBDATA *gbd) {
-    GB_TEST_TRANSACTION(gbd);
+    GB_test_transaction(gbd);
     return GB_GET_SECURITY_READ(gbd);
 }
 int GB_read_security_delete(GBDATA *gbd) {
-    GB_TEST_TRANSACTION(gbd);
+    GB_test_transaction(gbd);
     return GB_GET_SECURITY_DELETE(gbd);
 }
 int GB_get_my_security(GBDATA *gbd) {
@@ -1145,7 +1145,7 @@ GB_ERROR gb_security_error(GBDATA *gbd) { // goes to header: __ATTR__USERESULT
 GB_ERROR GB_write_security_write(GBDATA *gbd, unsigned long level)
 {
     GB_MAIN_TYPE *Main = GB_MAIN(gbd);
-    GB_TEST_TRANSACTION(gbd);
+    GB_test_transaction(gbd);
 
     if (GB_GET_SECURITY_WRITE(gbd)>Main->security_level)
         return gb_security_error(gbd);
@@ -1158,7 +1158,7 @@ GB_ERROR GB_write_security_write(GBDATA *gbd, unsigned long level)
 GB_ERROR GB_write_security_read(GBDATA *gbd, unsigned long level)
 {
     GB_MAIN_TYPE *Main = GB_MAIN(gbd);
-    GB_TEST_TRANSACTION(gbd);
+    GB_test_transaction(gbd);
     if (GB_GET_SECURITY_WRITE(gbd)>Main->security_level)
         return gb_security_error(gbd);
     if (GB_GET_SECURITY_READ(gbd) == level) return 0;
@@ -1171,7 +1171,7 @@ GB_ERROR GB_write_security_read(GBDATA *gbd, unsigned long level)
 GB_ERROR GB_write_security_delete(GBDATA *gbd, unsigned long level)
 {
     GB_MAIN_TYPE *Main = GB_MAIN(gbd);
-    GB_TEST_TRANSACTION(gbd);
+    GB_test_transaction(gbd);
     if (GB_GET_SECURITY_WRITE(gbd)>Main->security_level)
         return gb_security_error(gbd);
     if (GB_GET_SECURITY_DELETE(gbd) == level) return 0;
@@ -1183,7 +1183,7 @@ GB_ERROR GB_write_security_delete(GBDATA *gbd, unsigned long level)
 GB_ERROR GB_write_security_levels(GBDATA *gbd, unsigned long readlevel, unsigned long writelevel, unsigned long deletelevel)
 {
     GB_MAIN_TYPE *Main = GB_MAIN(gbd);
-    GB_TEST_TRANSACTION(gbd);
+    GB_test_transaction(gbd);
     if (GB_GET_SECURITY_WRITE(gbd)>Main->security_level)
         return gb_security_error(gbd);
     GB_PUT_SECURITY_WRITE(gbd, writelevel);
@@ -1222,7 +1222,7 @@ void GB_pop_my_security(GBDATA *gbd) {
 //      Key information
 
 GB_TYPES GB_read_type(GBDATA *gbd) {
-    GB_TEST_TRANSACTION(gbd);
+    GB_test_transaction(gbd);
     return (GB_TYPES)GB_TYPE(gbd);
 }
 
@@ -1232,7 +1232,7 @@ char *GB_read_key(GBDATA *gbd) {
 
 GB_CSTR GB_read_key_pntr(GBDATA *gbd) {
     GB_CSTR k;
-    GB_TEST_TRANSACTION(gbd);
+    GB_test_transaction(gbd);
     k         = GB_KEY(gbd);
     if (!k) k = GBS_global_string("<invalid key (quark=%i)>", GB_KEY_QUARK(gbd));
     return k;
@@ -1323,7 +1323,7 @@ GBDATA *GB_get_father(GBDATA *gbd) {
     // Get the father of an entry
     GBDATA *father;
 
-    GB_TEST_TRANSACTION(gbd);
+    GB_test_transaction(gbd);
     if (!(father=(GBDATA*)GB_FATHER(gbd)))  return NULL;
     if (!GB_FATHER(father))         return NULL;
 
@@ -1332,7 +1332,7 @@ GBDATA *GB_get_father(GBDATA *gbd) {
 
 GBDATA *GB_get_grandfather(GBDATA *gbd) {
     GBDATA *gb_grandpa;
-    GB_TEST_TRANSACTION(gbd);
+    GB_test_transaction(gbd);
 
     gb_grandpa = (GBDATA*)GB_FATHER(gbd);
     if (gb_grandpa) {
@@ -1392,7 +1392,7 @@ int GB_rename(GBDATA *gbc, const char *new_key) {
         return -1;
     }
 
-    GB_TEST_TRANSACTION(gbc);
+    GB_test_transaction(gbc);
     old_father = GB_FATHER(gbc);
 
     if (GB_TYPE(gbc) != GB_DB) {
@@ -1444,7 +1444,7 @@ GBDATA *GB_create(GBDATA *father, const char *key, GB_TYPES type) {
         GB_internal_errorf("GB_create error in GB_create:\nno father (key = '%s')", key);
         return NULL;
     }
-    GB_TEST_TRANSACTION(father);
+    GB_test_transaction(father);
     if (GB_TYPE(father)!=GB_DB) {
         GB_export_errorf("GB_create: father (%s) is not of GB_DB type (%i) (creating '%s')",
                          GB_read_key_pntr(father), GB_TYPE(father), key);
@@ -1494,7 +1494,7 @@ GBDATA *GB_create_container(GBDATA *father, const char *key) {
         GB_internal_errorf("GB_create error in GB_create:\nno father (key = '%s')", key);
         return NULL;
     }
-    GB_TEST_TRANSACTION(father);
+    GB_test_transaction(father);
     if (GB_TYPE(father)!=GB_DB) {
         GB_export_errorf("GB_create: father (%s) is not of GB_DB type (%i) (creating '%s')",
                          GB_read_key_pntr(father), GB_TYPE(father), key);
@@ -1513,7 +1513,7 @@ GBDATA *GB_create_container(GBDATA *father, const char *key) {
 GB_ERROR GB_delete(GBDATA *source) {
     GBDATA *gb_main;
 
-    GB_TEST_TRANSACTION(source);
+    GB_test_transaction(source);
     if (GB_GET_SECURITY_DELETE(source)>GB_MAIN(source)->security_level) {
         return GBS_global_string("Security error: deleting entry '%s' not permitted", GB_read_key_pntr(source));
     }
@@ -1565,7 +1565,7 @@ GB_ERROR GB_copy_with_protection(GBDATA *dest, GBDATA *source, bool copy_all_pro
     GBCONTAINER *destc, *sourcec;
     const char *key;
 
-    GB_TEST_TRANSACTION(source);
+    GB_test_transaction(source);
     type = GB_TYPE(source);
     if (GB_TYPE(dest) != type)
     {
@@ -1672,7 +1672,7 @@ char* GB_get_subfields(GBDATA *gbd) {
     long type;
     char *result = 0;
 
-    GB_TEST_TRANSACTION(gbd);
+    GB_test_transaction(gbd);
     type = GB_TYPE(gbd);
 
     if (type==GB_DB) { // we are a container
@@ -1735,7 +1735,7 @@ GB_ERROR gb_set_compression(GBDATA *source)
     GBDATA *gb_p;
     char *string;
 
-    GB_TEST_TRANSACTION(source);
+    GB_test_transaction(source);
     type = GB_TYPE(source);
 
     switch (type) {
@@ -1776,7 +1776,7 @@ GB_ERROR GB_set_temporary(GBDATA *gbd) {
      * @see GB_clear_temporary() and GB_is_temporary()
      */
 
-    GB_TEST_TRANSACTION(gbd);
+    GB_test_transaction(gbd);
     if (GB_GET_SECURITY_DELETE(gbd)>GB_MAIN(gbd)->security_level)
         return GB_export_errorf("Security error in GB_set_temporary: %s", GB_read_key_pntr(gbd));
     gbd->flags.temporary = 1;
@@ -1787,7 +1787,7 @@ GB_ERROR GB_set_temporary(GBDATA *gbd) {
 GB_ERROR GB_clear_temporary(GBDATA *gbd) {
     //! undo effect of GB_set_temporary()
 
-    GB_TEST_TRANSACTION(gbd);
+    GB_test_transaction(gbd);
     gbd->flags.temporary = 0;
     gb_touch_entry(gbd, GB_NORMAL_CHANGE);
     return 0;
@@ -1795,7 +1795,7 @@ GB_ERROR GB_clear_temporary(GBDATA *gbd) {
 
 bool GB_is_temporary(GBDATA *gbd) {
     //! @see GB_set_temporary() and GB_in_temporary_branch()
-    GB_TEST_TRANSACTION(gbd);
+    GB_test_transaction(gbd);
     return (long)gbd->flags.temporary;
 }
 
@@ -2348,7 +2348,7 @@ GB_ERROR GB_add_priority_callback(GBDATA *gbd, GB_CB_TYPE type, GB_CB func, int 
     }
 #endif // DEBUG
 
-    GB_TEST_TRANSACTION(gbd); // may return error
+    GB_test_transaction(gbd); // may return error
     GB_CREATE_EXT(gbd);
     gb_callback *cb = (gb_callback *)gbm_get_mem(sizeof(gb_callback), GB_GBM_INDEX(gbd));
 
@@ -2478,7 +2478,7 @@ GB_ERROR GB_release(GBDATA *gbd) {
     int           index;
     GB_MAIN_TYPE *Main = GB_MAIN(gbd);
 
-    GB_TEST_TRANSACTION(gbd);
+    GB_test_transaction(gbd);
     if (Main->local_mode) return 0;
     if (GB_ARRAY_FLAGS(gbd).changed && !gbd->flags2.update_in_server) {
         GB_update_server(gbd);
@@ -2610,7 +2610,7 @@ GB_ERROR GB_resort_system_folder_to_top(GBDATA *gb_main) {
 //      user flags
 
 GB_ERROR GB_write_usr_public(GBDATA *gbd, long flags) {
-    GB_TEST_TRANSACTION(gbd);
+    GB_test_transaction(gbd);
     if (GB_GET_SECURITY_WRITE(gbd) > GB_MAIN(gbd)->security_level)
         return gb_security_error(gbd);
     gbd->flags.user_flags = flags;
@@ -2620,7 +2620,7 @@ GB_ERROR GB_write_usr_public(GBDATA *gbd, long flags) {
 
 long GB_read_usr_public(GBDATA *gbd)
 {
-    GB_TEST_TRANSACTION(gbd);
+    GB_test_transaction(gbd);
     return (long)gbd->flags.user_flags;
 }
 
@@ -2656,7 +2656,7 @@ void GB_write_flag(GBDATA *gbd, long flag) {
     int          prev;
     int          ubit = GB_MAIN(gbd)->users[0]->userbit;
 
-    GB_TEST_TRANSACTION(gbd);
+    GB_test_transaction(gbd);
 
     prev = GB_ARRAY_FLAGS(gbc).flags;
     gbd->flags.saved_flags = prev;
@@ -2675,13 +2675,13 @@ void GB_write_flag(GBDATA *gbd, long flag) {
 }
 
 int GB_read_flag(GBDATA *gbd) {
-    GB_TEST_TRANSACTION(gbd);
+    GB_test_transaction(gbd);
     if (GB_ARRAY_FLAGS(gbd).flags & GB_MAIN(gbd)->users[0]->userbit) return 1;
     else return 0;
 }
 
 void GB_touch(GBDATA *gbd) {
-    GB_TEST_TRANSACTION(gbd);
+    GB_test_transaction(gbd);
     gb_touch_entry(gbd, GB_NORMAL_CHANGE);
     GB_DO_CALLBACKS(gbd);
 }
