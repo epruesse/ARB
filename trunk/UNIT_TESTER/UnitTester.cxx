@@ -11,13 +11,11 @@
 
 #include "UnitTester.hxx"
 
-#include <SigHandler.h>
-#include <setjmp.h>
-
 #include <cstdarg>
 #include <cstdlib>
 #include <cstdio>
 #include <cstring>
+#include <cerrno>
 
 #include <sys/time.h>
 
@@ -26,6 +24,8 @@
 #include <arb_backtrace.h>
 #define ut_assert(cond) arb_assert(cond)
 
+#include <SigHandler.h>
+#include <setjmp.h>
 
 using namespace std;
 
@@ -65,15 +65,15 @@ static const char *readable_result[] = {
 
 // --------------------------------------------------------------------------------
 
-static jmp_buf UT_return_after_segv;
+static jmp_buf UNITTEST_return_after_segv;
 static bool    inside_test = false;
 
-static void UT_sigsegv_handler(int sig) {
+static void UNITTEST_sigsegv_handler(int sig) {
     if (inside_test) {
         if (!arb_test::test_data().assertion_failed) { // not caused by assertion
             BackTraceInfo(0).dump(stderr, "Catched SIGSEGV not caused by assertion");
         }
-        longjmp(UT_return_after_segv, 668);             // suppress SIGSEGV
+        siglongjmp(UNITTEST_return_after_segv, 668);                    // suppress SIGSEGV
     }
     fprintf(stderr, "[UnitTester terminating with signal %i]\n", sig);
     exit(EXIT_FAILURE);
@@ -82,10 +82,14 @@ static void UT_sigsegv_handler(int sig) {
 #define SECOND 1000000
 
 static UnitTestResult execute_guarded(UnitTest_function fun, long *duration_usec) {
-    SigHandler     old_handler = signal(SIGSEGV, UT_sigsegv_handler);
-    UnitTestResult result      = TEST_OK;
-    timeval        t1, t2;
-    int            trapped     = setjmp(UT_return_after_segv);
+    SigHandler old_handler = INSTALL_SIGHANDLER(SIGSEGV, UNITTEST_sigsegv_handler, "execute_guarded");
+    
+    // ----------------------------------------
+    // start of critical section
+    // (need volatile for modified local auto variables, see man longjump)
+    volatile timeval        t1;
+    volatile UnitTestResult result  = TEST_OK;
+    volatile int            trapped = sigsetjmp(UNITTEST_return_after_segv, 1);
 
     if (trapped) {                                  // trapped
         ut_assert(trapped == 668);
@@ -93,17 +97,20 @@ static UnitTestResult execute_guarded(UnitTest_function fun, long *duration_usec
     }
     else {                                          // normal execution
         inside_test = true;
-        gettimeofday(&t1, NULL);
+        gettimeofday((timeval*)&t1, NULL);
 
         arb_test::test_data().assertion_failed = false;
         fun();
     }
+    // end of critical section
+    // ----------------------------------------
 
+    timeval t2;
     gettimeofday(&t2, NULL);
     *duration_usec = (t2.tv_sec - t1.tv_sec) * SECOND + (t2.tv_usec - t1.tv_usec);
-    
+
     inside_test = false;
-    signal(SIGSEGV, old_handler);
+    UNINSTALL_SIGHANDLER(SIGSEGV, UNITTEST_sigsegv_handler, old_handler, "execute_guarded");
 
     return result;
 }
@@ -176,18 +183,20 @@ bool SimpleTester::perform(size_t which) {
 
 
 UnitTester::UnitTester(const char *libname, const UnitTest_simple *simple_tests, int warn_level) {
-    size_t tests  = 0;
-    size_t passed = 0;
-    double duration_ms;
+    size_t tests       = 0;
+    size_t passed      = 0;
+    double duration_ms = 0;
 
     arb_test::test_data().show_warnings = (warn_level != 0);
 
     {
         SimpleTester simple_tester(simple_tests);
 
-        tests             = simple_tester.get_test_count();
-        if (tests) passed = simple_tester.perform_all();
-        duration_ms       = simple_tester.overall_duration_ms();
+        tests = simple_tester.get_test_count();
+        if (tests) {
+            passed      = simple_tester.perform_all();
+            duration_ms = simple_tester.overall_duration_ms();
+        }
     }
 
     if (tests>0) {

@@ -31,8 +31,9 @@
 #include "server.h"
 #include "aisc_global.h"
 
-#include "../INCLUDE/SigHandler.h"
-#include "../INCLUDE/arb_assert.h"
+#include <arb_assert.h>
+#include <SigHandler.h>
+
 #define aisc_assert(cond) arb_assert(cond)
 
 #define AISC_SERVER_OK 1
@@ -99,8 +100,8 @@ static Hs_struct *aisc_server_hs;
 /* ----------------------------- */
 /*      valid memory tester      */
 
-static int     sigsegv_occurred = 0;
-static int     catch_sigsegv    = 0;
+static bool    sigsegv_occurred = false;
+static bool    catch_sigsegv    = 0;
 static jmp_buf return_after_segv;
 
 static const char *test_address_valid(void *address, long key)
@@ -111,15 +112,17 @@ static const char *test_address_valid(void *address, long key)
      * returns NULL or error string
      */
 
-    static char buf[256];
+    static char  buf[256];
+    char        *result = buf;
 
-    char *result = buf;
-    long  i;
+    sigsegv_occurred = false;
+    catch_sigsegv    = true;
 
-    sigsegv_occurred = 0;
-    catch_sigsegv  = 1;
-
-    int trapped = setjmp(return_after_segv);
+    // ----------------------------------------
+    // start of critical section
+    // (need volatile for modified local auto variables, see man longjump)
+    volatile long  i;
+    volatile int trapped = sigsetjmp(return_after_segv, 1);
 
     if (trapped == 0) { // normal execution
         i = *(long *)address; // here a SIGSEGV may happen. Execution will continue in else-branch
@@ -128,8 +131,10 @@ static const char *test_address_valid(void *address, long key)
         arb_assert(trapped == 666); // oops - SEGV did not occur in mem access above!
         arb_assert(sigsegv_occurred); // oops - wrong handler installed ?
     }
+    // end of critical section
+    // ----------------------------------------
 
-    catch_sigsegv = 0;
+    catch_sigsegv = false;
 
     if (sigsegv_occurred) {
         sprintf(buf, "AISC memory manager error: can't access memory at address %p", address);
@@ -148,13 +153,13 @@ static const char *test_address_valid(void *address, long key)
 }
 
 static void aisc_server_sigsegv(int sig) {
-    sigsegv_occurred = 1;
+    sigsegv_occurred = true;
 
     if (catch_sigsegv) {
-        longjmp(return_after_segv, 666); // never returns
+        siglongjmp(return_after_segv, 666); // never returns
     }
 
-    ASSERT_RESULT(SigHandler, signal(SIGSEGV, SIG_DFL), aisc_server_sigsegv); // uninstall aisc_server_sigsegv-handler -> deliver normal
+    UNINSTALL_SIGHANDLER(SIGSEGV, aisc_server_sigsegv, SIG_DFL, "aisc_server_sigsegv");
 }
 
 /* ----------------------------- */
@@ -406,8 +411,8 @@ Hs_struct *open_aisc_server(const char *path, int timeout, int fork) {
     }
 
     // install signal handlers (asserting none have been installed yet!)
-    ASSERT_RESULT(SigHandler, signal(SIGSEGV, aisc_server_sigsegv), SIG_DFL);
-    ASSERT_RESULT_PREDICATE(signal(SIGPIPE, aisc_server_sigpipe), is_default_or_ignore_sighandler);
+    ASSERT_RESULT(SigHandler, INSTALL_SIGHANDLER(SIGSEGV, aisc_server_sigsegv, "open_aisc_server"), SIG_DFL);
+    ASSERT_RESULT_PREDICATE(INSTALL_SIGHANDLER(SIGPIPE, aisc_server_sigpipe, "open_aisc_server"), is_default_or_ignore_sighandler);
 
     aisc_server_bytes_first = 0;
     aisc_server_bytes_last  = 0;

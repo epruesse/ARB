@@ -19,8 +19,6 @@
 #include "client_privat.h"
 #include "client.h"
 
-#include "../INCLUDE/arb_assert.h"
-
 #include "trace.h"
 
 #define aisc_assert(cond) arb_assert(cond)
@@ -374,7 +372,9 @@ static void ignore_sigpipe(int) {
 }
 
 static void aisc_free_link(aisc_com *link) {
-    ASSERT_RESULT(SigHandler, signal(SIGPIPE, link->old_sigpipe_handler), ignore_sigpipe);
+    if (link->old_sigpipe_handler != SIG_ERR) { // failed to install -> do not uninstall
+        UNINSTALL_SIGHANDLER(SIGPIPE, ignore_sigpipe, link->old_sigpipe_handler, "aisc_free_link");
+    }
     free(link);
 }
 
@@ -396,7 +396,7 @@ aisc_com *aisc_open(const char *path, long *mgr, long magic) {
         return 0;
     }
 
-    link->old_sigpipe_handler = signal(SIGPIPE, ignore_sigpipe);
+    link->old_sigpipe_handler = INSTALL_SIGHANDLER(SIGPIPE, ignore_sigpipe, "aisc_open");
 
     *mgr = 0;
     *mgr = (long)aisc_init_client(link);
