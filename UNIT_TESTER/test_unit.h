@@ -242,7 +242,18 @@ namespace arb_test {
 #endif
 
 #if defined(ASSERTION_USED)
-#define TEST_ASSERT_CODE_ASSERTION_FAILS(cb) TEST_ASSERT_SEGFAULT(cb)
+#define TEST_ASSERT_CODE_ASSERTION_FAILS(cb)                            \
+    do {                                                                \
+        bool& assertion_failed =                                        \
+            arb_test::test_data().assertion_failed;                     \
+        bool old_state   = assertion_failed;                            \
+        assertion_failed = false;                                       \
+        TEST_ASSERT_SEGFAULT(cb);                                       \
+        TEST_ASSERT(assertion_failed);                                  \
+        if (!assertion_failed) {                                        \
+            assertion_failed = old_state;                               \
+        }                                                               \
+    } while (0)
 #else
 #define TEST_ASSERT_CODE_ASSERTION_FAILS(cb)
 #endif // ASSERTION_USED

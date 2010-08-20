@@ -2035,13 +2035,23 @@ char *GBS_log_dated_action_to(const char *comment, const char *action) {
 
 static void failassertion() { gb_assert(0); }
 static void provokesegv() { *(int *)0 = 0; }
+static void provokesegv_does_not_fail_assertion() {
+    // provokesegv does not raise assertion
+    // -> the following assertion fails
+    TEST_ASSERT_CODE_ASSERTION_FAILS(provokesegv);
+}
 
 void TEST_signal_tests() {
-    // tests whether signal suppression works when used more than once
+    // check whether we can test for SEGV and assertion failures
     TEST_ASSERT_SEGFAULT(provokesegv);
     TEST_ASSERT_CODE_ASSERTION_FAILS(failassertion);
+
+    // tests whether signal suppression works multiple times (by repeating tests)
     TEST_ASSERT_CODE_ASSERTION_FAILS(failassertion);
     TEST_ASSERT_SEGFAULT(provokesegv);
+
+    // test whether SEGV can be distinguished from assertion
+    TEST_ASSERT_CODE_ASSERTION_FAILS(provokesegv_does_not_fail_assertion);
 }
 
 #define EXPECT_CONTENT(content) TEST_ASSERT_EQUAL(GBS_mempntr(strstr), content)
