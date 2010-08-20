@@ -14,6 +14,10 @@
 #ifndef AISC_GLOBAL_H
 #include "aisc_global.h"
 #endif
+
+#ifndef ARB_ASSERT_H
+#include <arb_assert.h>
+#endif
 #ifndef SIGHANDLER_H
 #include <SigHandler.h>
 #endif

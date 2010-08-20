@@ -19,6 +19,8 @@
 #include <cstdarg>
 #endif
 
+#define ENABLE_CRASH_TESTS // comment out this line to get rid of provoked SEGVs (e.g. while debugging test-code)
+
 /* Note:
  * This file should not generate any static code.
  * Only place define's or inline functions here.
@@ -233,7 +235,20 @@ namespace arb_test {
 
 // --------------------------------------------------------------------------------
 
+#ifdef ENABLE_CRASH_TESTS
 #define TEST_ASSERT_SEGFAULT(cb) TEST_ASSERT(GBK_raises_SIGSEGV(cb))
+#else
+#define TEST_ASSERT_SEGFAULT(cb) 
+#endif
+
+#if defined(ASSERTION_USED)
+#define TEST_ASSERT_CODE_ASSERTION_FAILS(cb) TEST_ASSERT_SEGFAULT(cb)
+#else
+#define TEST_ASSERT_CODE_ASSERTION_FAILS(cb)
+#endif // ASSERTION_USED
+
+
+// --------------------------------------------------------------------------------
 
 #define TEST_ASSERT_EQUAL(t1, t2)         TEST_ASSERT(arb_test::is_equal(t1, t2))
 #define TEST_ASSERT_EQUAL__BROKEN(t1, t2) TEST_ASSERT__BROKEN(arb_test::is_equal(t1, t2))

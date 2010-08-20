@@ -1298,7 +1298,7 @@ void TEST_hash_specials() {
     TEST_ASSERT(gbs_get_a_prime(MAX_PRIME) == MAX_PRIME);
 
 #if defined(ASSERTION_USED)
-    TEST_ASSERT_SEGFAULT(detect_prime_overflow);
+    TEST_ASSERT_CODE_ASSERTION_FAILS(detect_prime_overflow);
 #else
     TEST_ASSERT(get_overflown_prime() == MAX_PRIME+1);
 #endif // ASSERTION_USED

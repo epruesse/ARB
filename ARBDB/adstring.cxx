@@ -23,7 +23,6 @@
 
 #include <valgrind.h>
 
-
 #define GBS_GLOBAL_STRING_SIZE 64000
 
 static gb_warning_func_type      gb_warning_func;
@@ -1196,7 +1195,7 @@ void sigsegv_handler(int sig) {
     // Note: sigsegv_handler is intentionally global, to show it in backtrace!
 
     if (suppress_sigsegv) {
-        longjmp(return_after_segv, 667); // suppress SIGSEGV (see below)
+        siglongjmp(return_after_segv, 667); // suppress SIGSEGV (see below)
     }
 
     if (dump_backtrace_on_sigsegv) {
@@ -1208,30 +1207,34 @@ void sigsegv_handler(int sig) {
 
 void GBK_install_SIGSEGV_handler(bool dump_backtrace) {
     dump_backtrace_on_sigsegv = dump_backtrace;
-
-    SigHandler old_handler = signal(SIGSEGV, sigsegv_handler);
-    if (old_handler && old_handler != sigsegv_handler) {
+    SigHandler old_handler = INSTALL_SIGHANDLER(SIGSEGV, sigsegv_handler, "GBK_install_SIGSEGV_handler");
+    if (old_handler != sigsegv_handler && old_handler != SIG_ERR && old_handler != SIG_DFL) {
 #if defined(DEBUG)
         fprintf(stderr, "GBK_install_SIGSEGV_handler: Did not install SIGSEGV handler (there's already another one installed)\n");
 #endif // DEBUG
-        signal(SIGSEGV, old_handler);               // restore existing signal handler (AISC servers install their own)
+        UNINSTALL_SIGHANDLER(SIGSEGV, sigsegv_handler, old_handler, "GBK_install_SIGSEGV_handler"); // restore existing signal handler (AISC servers install their own)
     }
 }
 
 GB_ERROR gbcm_test_address(long *address, long key) {
-    bool segv_occurred = false;
-    long found_key;
-
     gb_assert(!suppress_sigsegv);
     suppress_sigsegv = true;
 
-    int trapped = setjmp(return_after_segv);
+    // ----------------------------------------
+    // start of critical section
+    // (need volatile for modified local auto variables, see man longjump / NOTES)
+    volatile bool segv_occurred = false;
+    volatile long found_key;
+    volatile int  trapped       = sigsetjmp(return_after_segv, 1);
+
     if (!trapped) {                                 // normal execution
         found_key = *address;
     }
     else {
         segv_occurred = true;
     }
+    // end of critical section
+    // ----------------------------------------
 
     suppress_sigsegv = false;
     gb_assert(!trapped || trapped == 667);
@@ -1255,22 +1258,41 @@ GB_ERROR gbcm_test_address(long *address, long key) {
 
 class SuppressOutput {
     // temporarily redirect stdout and stderr to /dev/null
-    FILE *suppress;
+    FILE *devnull;
     FILE *org_stdout;
     FILE *org_stderr;
+
+    void flush() {
+        fflush(stdout);
+        fflush(stderr);
+    }
+
 public:
+    void suppress() {
+        if (stdout != devnull) {
+            flush();
+            stdout = devnull;
+            stderr = devnull;
+        }
+    }
+    void dont_suppress() {
+        if (stdout == devnull) {
+            flush();
+            stdout = org_stdout;
+            stderr = org_stderr;
+        }
+    }
+
     SuppressOutput()
-        : suppress(fopen("/dev/null", "w"))
+        : devnull(fopen("/dev/null", "w"))
         , org_stdout(stdout)
         , org_stderr(stderr)
     {
-        stdout = suppress;
-        stderr = suppress;
+        suppress();
     }
     ~SuppressOutput() {
-        stdout = org_stdout;
-        stderr = org_stderr;
-        fclose(suppress);
+        dont_suppress();
+        fclose(devnull);
     }
 };
 
@@ -1278,27 +1300,41 @@ bool GBK_raises_SIGSEGV(void (*cb)(void)) {
     // test whether 'cb' aborts with SIGSEGV
     // (does nothing and always returns true if executable is running under valgrind!)
 
-    bool segv_occurred = false;
+    volatile bool segv_occurred = false;
     if (RUNNING_ON_VALGRIND>0) {
         segv_occurred = true;
     }
     else {
-        SuppressOutput toConsole;
-        SigHandler     old_handler   = signal(SIGSEGV, sigsegv_handler);
-        int            trapped       = setjmp(return_after_segv);
+        gb_assert(!suppress_sigsegv);
+        SigHandler old_handler = INSTALL_SIGHANDLER(SIGSEGV, sigsegv_handler, "GBK_raises_SIGSEGV");
 
         suppress_sigsegv = true;
-        if (!trapped) {                                 // normal execution
-            cb();
-        }
-        else {
-            segv_occurred = true; 
-        }
 
-        suppress_sigsegv = false;
-        gb_assert(!trapped || trapped == 667);
-        signal(SIGSEGV, old_handler);
+        // ----------------------------------------
+        // start of critical section
+        // (need volatile for modified local auto variables, see man longjump)
+        {
+            volatile int trapped;
+            {
+                volatile SuppressOutput toConsole;           // comment-out this line to show console output of 'cb'
+                trapped = sigsetjmp(return_after_segv, 1);
+
+                if (!trapped) {                     // normal execution
+                    cb();
+                }
+                else {
+                    segv_occurred = true;
+                }
+            }
+            suppress_sigsegv = false;
+            gb_assert(!trapped || trapped == 667);
+        }
+        // end of critical section
+        // ----------------------------------------
+
+        UNINSTALL_SIGHANDLER(SIGSEGV, sigsegv_handler, old_handler, "GBK_raises_SIGSEGV");
     }
+
     return segv_occurred;
 }
 
@@ -1996,6 +2032,17 @@ char *GBS_log_dated_action_to(const char *comment, const char *action) {
 #if (UNIT_TESTS == 1)
 
 #include <test_unit.h>
+
+static void failassertion() { gb_assert(0); }
+static void provokesegv() { *(int *)0 = 0; }
+
+void TEST_signal_tests() {
+    // tests whether signal suppression works when used more than once
+    TEST_ASSERT_SEGFAULT(provokesegv);
+    TEST_ASSERT_CODE_ASSERTION_FAILS(failassertion);
+    TEST_ASSERT_CODE_ASSERTION_FAILS(failassertion);
+    TEST_ASSERT_SEGFAULT(provokesegv);
+}
 
 #define EXPECT_CONTENT(content) TEST_ASSERT_EQUAL(GBS_mempntr(strstr), content)
 
