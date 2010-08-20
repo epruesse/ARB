@@ -321,7 +321,7 @@ void enter_stage_1_build_tree(PT_main * main, char *tname) {
     if (need64bit) {                                // last_obj is bigger than int
 #ifdef ARB_64
         PTD_put_longlong(out, last_obj);            // write last_obj as long long (64 bit)
-        PTD_put_int(out, 0xffffffff);               // write 0xffffffff at the end to signal 64bit ptserver is needed
+        PTD_put_int(out, 0xffffffff);               // write 0xffffffff at the end to signalize 64bit ptserver is needed
 #else
         pt_assert(0);
 #endif

@@ -315,7 +315,7 @@ char *getLine(Reader *r) {
         }
 
         if (!eol_found && r->current_line[0] == 0)
-            return 0;               // signal eof
+            return 0;               // report "eof seen"
 
     }
 
