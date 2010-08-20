@@ -828,8 +828,8 @@ void PTD_read_leafs_from_disk(char *fname, PTM2 *ptmain, POS_TREE **pnode) {
         PT_READ_INT(main, i);
 #ifdef ARB_64
         if (i == 0xffffffff) {                      // 0xffffffff signalizes that "last_obj" is stored
-            main                      -= 8;         // in the previous 8 byte (in a long long)
-            COMPILE_ASSERT(sizeof(PT_PNTR) == 8);        // 0xffffffff is used as a signal to be compatible with older pt-servers
+            main -= 8;                              // in the previous 8 byte (in a long long)
+            COMPILE_ASSERT(sizeof(PT_PNTR) == 8);   // 0xffffffff is used to signalize to be compatible with older pt-servers
             PT_READ_PNTR(main, i);                  // this search tree can only be loaded at 64 Bit
 
             big_db = true;

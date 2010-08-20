@@ -3678,7 +3678,7 @@ GB_ERROR AW_root::check_for_remote_command(AW_default gb_maind, const char *rm_b
             error = this->awar(tmp_awar)->write_as_string(value);
         }
         GBT_write_string(gb_main, awar_result, error ? error : "");
-        GBT_write_string(gb_main, awar_awar, ""); // this works as READY-signal for perl-client (BIO::remote_awar and BIO:remote_read_awar)
+        GBT_write_string(gb_main, awar_awar, ""); // tell perl-client call has completed (BIO::remote_awar and BIO:remote_read_awar)
     }
     GB_pop_transaction(gb_main);
 
@@ -3696,7 +3696,7 @@ GB_ERROR AW_root::check_for_remote_command(AW_default gb_maind, const char *rm_b
             aw_message(GB_export_errorf("Unknown action '%s' in macro", action));
             GBT_write_string(gb_main, awar_result, GB_await_error());
         }
-        GBT_write_string(gb_main, awar_action, ""); // this works as READY-signal for perl-client (remote_action)
+        GBT_write_string(gb_main, awar_action, ""); // tell perl-client call has completed (remote_action)
     }
 
     free(tmp_awar);
