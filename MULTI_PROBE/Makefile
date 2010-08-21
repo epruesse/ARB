@@ -120,6 +120,7 @@ MP_mo_liste.o: $(ARBHOME)/INCLUDE/attributes.h
 MP_mo_liste.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 MP_mo_liste.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 MP_mo_liste.o: $(ARBHOME)/INCLUDE/client.h
+MP_mo_liste.o: $(ARBHOME)/INCLUDE/client_types.h
 MP_mo_liste.o: $(ARBHOME)/INCLUDE/dupstr.h
 MP_mo_liste.o: $(ARBHOME)/INCLUDE/PT_com.h
 MP_mo_liste.o: $(ARBHOME)/INCLUDE/smartptr.h
@@ -155,6 +156,7 @@ MP_noclass.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 MP_noclass.o: $(ARBHOME)/INCLUDE/awt.hxx
 MP_noclass.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 MP_noclass.o: $(ARBHOME)/INCLUDE/client.h
+MP_noclass.o: $(ARBHOME)/INCLUDE/client_types.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/downcast.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/dupstr.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/PT_com.h
@@ -249,6 +251,7 @@ MP_sonde.o: $(ARBHOME)/INCLUDE/attributes.h
 MP_sonde.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 MP_sonde.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 MP_sonde.o: $(ARBHOME)/INCLUDE/client.h
+MP_sonde.o: $(ARBHOME)/INCLUDE/client_types.h
 MP_sonde.o: $(ARBHOME)/INCLUDE/dupstr.h
 MP_sonde.o: $(ARBHOME)/INCLUDE/PT_com.h
 MP_sonde.o: $(ARBHOME)/INCLUDE/smartptr.h

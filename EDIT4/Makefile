@@ -807,6 +807,7 @@ graph_aligner_gui.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/client.h
+graph_aligner_gui.o: $(ARBHOME)/INCLUDE/client_types.h
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/dupstr.h
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/fast_aligner.hxx
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/PT_com.h

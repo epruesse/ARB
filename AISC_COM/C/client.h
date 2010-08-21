@@ -20,12 +20,11 @@
 # include <attributes.h>
 #endif
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 
 /* client.c */
+
+#include <client_types.h>
+
 int aisc_c_read P_((int socket, char *ptr, long size));
 int aisc_c_write P_((int socket, char *ptr, int size));
 int aisc_c_send_bytes_queue P_((aisc_com *link));
@@ -34,8 +33,8 @@ int aisc_check_error P_((aisc_com *link));
 char *aisc_client_get_hostname P_((void));
 const char *aisc_client_get_m_id P_((const char *path, char **m_name, int *id));
 void *aisc_init_client P_((aisc_com *link));
-aisc_com *aisc_open P_((const char *path, long *mgr, long magic));
-int aisc_close P_((aisc_com *link));
+extern "C" aisc_com *aisc_open P_((const char *path, long *mgr, long magic));
+extern "C" int aisc_close P_((aisc_com *link));
 int aisc_get_message P_((aisc_com *link));
 int aisc_get P_((aisc_com *link, int o_type, long object, ...)) __ATTR__SENTINEL;
 long *aisc_debug_info P_((aisc_com *link, int o_type, long object, int attribute));
@@ -45,10 +44,6 @@ int aisc_create P_((aisc_com *link, int father_type, long father, int attribute,
 int aisc_copy P_((aisc_com *link, int s_type, long source, int father_type, long father, int attribute, int object_type, long *object, ...)) __ATTR__SENTINEL;
 int aisc_delete P_((aisc_com *link, int object_type, long source));
 int aisc_find P_((aisc_com *link, int father_type, long father, int attribute, int object_type, long *object, char *ident));
-
-#ifdef __cplusplus
-}
-#endif
 
 #undef P_
 

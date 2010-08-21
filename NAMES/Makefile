@@ -39,6 +39,7 @@ names.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 names.o: $(ARBHOME)/INCLUDE/arbtools.h
 names.o: $(ARBHOME)/INCLUDE/attributes.h
 names.o: $(ARBHOME)/INCLUDE/client.h
+names.o: $(ARBHOME)/INCLUDE/client_types.h
 names.o: $(ARBHOME)/INCLUDE/dupstr.h
 names.o: $(ARBHOME)/INCLUDE/names_client.h
 names.o: $(ARBHOME)/INCLUDE/names_prototypes.h

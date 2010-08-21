@@ -153,6 +153,7 @@ PT_main.o: $(ARBHOME)/INCLUDE/arbdbt.h
 PT_main.o: $(ARBHOME)/INCLUDE/arbtools.h
 PT_main.o: $(ARBHOME)/INCLUDE/attributes.h
 PT_main.o: $(ARBHOME)/INCLUDE/client.h
+PT_main.o: $(ARBHOME)/INCLUDE/client_types.h
 PT_main.o: $(ARBHOME)/INCLUDE/dupstr.h
 PT_main.o: $(ARBHOME)/INCLUDE/PT_com.h
 PT_main.o: $(ARBHOME)/INCLUDE/PT_server.h

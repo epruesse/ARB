@@ -45,6 +45,7 @@ AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/client.h
+AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/client_types.h
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/dupstr.h
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/PT_com.h
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/servercntrl.h

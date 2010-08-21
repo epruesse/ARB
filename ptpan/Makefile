@@ -276,6 +276,7 @@ PTP_main.o: $(ARBHOME)/INCLUDE/arbdbt.h
 PTP_main.o: $(ARBHOME)/INCLUDE/arbtools.h
 PTP_main.o: $(ARBHOME)/INCLUDE/attributes.h
 PTP_main.o: $(ARBHOME)/INCLUDE/client.h
+PTP_main.o: $(ARBHOME)/INCLUDE/client_types.h
 PTP_main.o: $(ARBHOME)/INCLUDE/dupstr.h
 PTP_main.o: $(ARBHOME)/INCLUDE/PT_com.h
 PTP_main.o: $(ARBHOME)/INCLUDE/PT_server.h

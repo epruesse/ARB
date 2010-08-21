@@ -44,6 +44,7 @@ servercntrl.o: $(ARBHOME)/INCLUDE/arbtools.h
 servercntrl.o: $(ARBHOME)/INCLUDE/attributes.h
 servercntrl.o: $(ARBHOME)/INCLUDE/client.h
 servercntrl.o: $(ARBHOME)/INCLUDE/client_privat.h
+servercntrl.o: $(ARBHOME)/INCLUDE/client_types.h
 servercntrl.o: $(ARBHOME)/INCLUDE/dupstr.h
 servercntrl.o: $(ARBHOME)/INCLUDE/SigHandler.h
 servercntrl.o: $(ARBHOME)/INCLUDE/smartptr.h

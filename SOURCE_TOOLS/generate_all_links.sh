@@ -169,6 +169,7 @@ symlink_maybe_no_target ../PROBE_COM/PT_server_prototypes.h INCLUDE/PT_server_pr
 symlink_file ../AISC_COM/C/aisc_func_types.h INCLUDE/aisc_func_types.h &&
 symlink_file ../AISC_COM/C/aisc_global.h INCLUDE/aisc_global.h &&
 symlink_file ../AISC_COM/C/client.h INCLUDE/client.h &&
+symlink_file ../AISC_COM/C/client_types.h INCLUDE/client_types.h &&
 symlink_file ../AISC_COM/C/client_privat.h INCLUDE/client_privat.h &&
 symlink_file ../AISC_COM/C/server.h INCLUDE/server.h &&
 symlink_file ../AISC_COM/C/struct_man.h INCLUDE/struct_man.h &&
