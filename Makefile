@@ -1579,6 +1579,12 @@ clean_coverage: clean_coverage_results
 unit_tests: test_base clean_coverage_results
 	@echo "$(SEP) Running unit tests"
 	$(MAKE) $(TESTED_UNITS)
+	@$(MAKE) -C UNIT_TESTER -f Makefile.test -r \
+		"UNITDIR=ARBDB" \
+		"UNITLIBNAME=ARBDB" \
+		"COVERAGE=$(COVERAGE)" \
+		"cflags=$(cflags)" \
+		store_patch
 	@echo "$(SEP) All unit tests passed" 
 
 ut: unit_tests
