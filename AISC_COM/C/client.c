@@ -500,9 +500,9 @@ int aisc_get(aisc_com *link, int o_type, long object, ...)
     va_start(parg, object);
     link->aisc_mes_buffer[mes_cnt++] = object;
     while ((code=va_arg(parg, long))) {
-        attribute       = code &0x0000ffff;
-        type            = code &0xff000000;
-        o_t             = code &0x00ff0000;
+        attribute       = code & AISC_ATTR_MASK;
+        type            = code & AISC_VAR_TYPE_MASK;
+        o_t             = code & AISC_OBJ_TYPE_MASK;
 
         if ((o_t != (int)o_type)) {
             sprintf(errbuf, "ARG NR %li DON'T FIT OBJECT", count);
@@ -546,24 +546,24 @@ int aisc_get(aisc_com *link, int o_type, long object, ...)
         mes_cnt = 0;
         for (i=0; i<arg_cnt; i++) {
             switch (arg_types[i]) {
-                case AISC_ATTR_INT:
-                case AISC_ATTR_COMMON:
+                case AISC_TYPE_INT:
+                case AISC_TYPE_COMMON:
                     AISC_DUMP(aisc_get, int, link->aisc_mes_buffer[mes_cnt]);
                     arg_pntr[i][0] = link->aisc_mes_buffer[mes_cnt++];
                     break;
-                case AISC_ATTR_DOUBLE:
+                case AISC_TYPE_DOUBLE:
                     AISC_DUMP(aisc_get, double, *(double*)&(link->aisc_mes_buffer[mes_cnt]));
                     ((int*)arg_pntr[i])[0] = (int)(link->aisc_mes_buffer[mes_cnt++]);
                     ((int*)arg_pntr[i])[1] = (int)(link->aisc_mes_buffer[mes_cnt++]);
                     break;
-                case AISC_ATTR_STRING: {
-                    char *str = strdup((char *)(&(link->aisc_mes_buffer[mes_cnt+1])));
+                case AISC_TYPE_STRING: {
+                    char *str       = strdup((char *)(&(link->aisc_mes_buffer[mes_cnt+1])));
                     AISC_DUMP(aisc_get, charPtr, str);
                     arg_pntr[i][0]  = (long)str;
                     mes_cnt        += link->aisc_mes_buffer[mes_cnt] + 1;
                     break;
                 }
-                case AISC_ATTR_BYTES:
+                case AISC_TYPE_BYTES:
                     size = arg_pntr[i][1] = link->aisc_mes_buffer[mes_cnt++];
                     AISC_DUMP(aisc_get, int, size);
                     if (size) {
@@ -594,14 +594,14 @@ int aisc_get(aisc_com *link, int o_type, long object, ...)
     return 0;
 }
 
-long    *aisc_debug_info(aisc_com *link, int o_type, long object, int attribute)
+long *aisc_debug_info(aisc_com *link, int o_type, long object, int attribute)
 {
     int mes_cnt;
     int o_t;
     int len;
 
     mes_cnt = 2;
-    o_t                 = attribute &0x00ff0000;
+    o_t     = attribute & AISC_OBJ_TYPE_MASK;
     if ((o_t != (int)o_type)) {
         link->error = "ATTRIBUTE DON'T FIT OBJECT";
         PRTERR("AISC_DEBUG_ERROR");
@@ -660,9 +660,9 @@ static int aisc_collect_sets(aisc_com *link, int mes_cnt, va_list parg, int o_ty
     AISC_DUMP_SEP();
 
     while ((code=va_arg(parg, int))) {
-        attribute       = code &0x0000ffff;
-        type            = code &0xff000000;
-        o_t             = code &0x00ff0000;
+        attribute       = code & AISC_ATTR_MASK;
+        type            = code & AISC_VAR_TYPE_MASK;
+        o_t             = code & AISC_OBJ_TYPE_MASK;
 
         if (code != AISC_INDEX) {
             if ((o_t != (int)o_type)) {
@@ -682,12 +682,12 @@ static int aisc_collect_sets(aisc_com *link, int mes_cnt, va_list parg, int o_ty
         }
         link->aisc_mes_buffer[mes_cnt++] = code;
         switch (type) {
-            case AISC_ATTR_INT:
-            case AISC_ATTR_COMMON:
+            case AISC_TYPE_INT:
+            case AISC_TYPE_COMMON:
                 link->aisc_mes_buffer[mes_cnt++] = va_arg(parg, long);
                 AISC_DUMP(aisc_collect_sets, int, link->aisc_mes_buffer[mes_cnt-1]);
                 break;
-            case AISC_ATTR_DOUBLE: {
+            case AISC_TYPE_DOUBLE: {
                 int *ptr;
                 dummy    = va_arg(parg, double);
                 AISC_DUMP(aisc_collect_sets, double, dummy);
@@ -696,7 +696,7 @@ static int aisc_collect_sets(aisc_com *link, int mes_cnt, va_list parg, int o_ty
                 link->aisc_mes_buffer[mes_cnt++] = *ptr;
                 break;
             }
-            case AISC_ATTR_STRING:
+            case AISC_TYPE_STRING:
                 str = va_arg(parg, char *);
                 AISC_DUMP(aisc_collect_sets, charPtr, str);
                 len = strlen(str)+1;
@@ -717,7 +717,7 @@ static int aisc_collect_sets(aisc_com *link, int mes_cnt, va_list parg, int o_ty
                 mes_cnt += ilen;
                 break;
 
-            case AISC_ATTR_BYTES:
+            case AISC_TYPE_BYTES:
                 {
                     bytestring *bs;
                     bs = va_arg(parg, bytestring *);
@@ -834,7 +834,7 @@ int aisc_create(aisc_com *link, int father_type, long father,
     link->aisc_mes_buffer[mes_cnt++] = father;
     link->aisc_mes_buffer[mes_cnt++] = attribute;
     link->aisc_mes_buffer[mes_cnt++] = object_type;
-    if (father_type != (attribute&0x00ff0000)) {
+    if (father_type != (attribute & AISC_OBJ_TYPE_MASK)) {
         link->error = "ATTRIBUTE TYPE DON'T FIT OBJECT";
         PRTERR("AISC_CREATE_ERROR");
         CORE();
@@ -883,7 +883,7 @@ int aisc_copy(aisc_com *link, int s_type, long source, int father_type,
     link->aisc_mes_buffer[mes_cnt++] = father;
     link->aisc_mes_buffer[mes_cnt++] = attribute;
     link->aisc_mes_buffer[mes_cnt++] = object_type;
-    if (father_type != (attribute&0x00ff0000)) {
+    if (father_type != (attribute & AISC_OBJ_TYPE_MASK)) {
         link->error = "ATTRIBUTE TYPE DON'T FIT OBJECT";
         PRTERR("AISC_COPY_ERROR");
         CORE();
@@ -946,7 +946,7 @@ int aisc_find(aisc_com *link,
         CORE();
         return 1;
     }
-    if (father_type != (attribute & 0x00ff0000)) {
+    if (father_type != (attribute & AISC_OBJ_TYPE_MASK)) {
         link->error = "ATTRIBUTE TYPE DON'T MACH FATHER";
         PRTERR("AISC_FIND_ERROR");
         CORE();
