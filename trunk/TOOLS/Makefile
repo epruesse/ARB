@@ -237,6 +237,7 @@ arb_probe.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 arb_probe.o: $(ARBHOME)/INCLUDE/arbtools.h
 arb_probe.o: $(ARBHOME)/INCLUDE/attributes.h
 arb_probe.o: $(ARBHOME)/INCLUDE/client.h
+arb_probe.o: $(ARBHOME)/INCLUDE/client_types.h
 arb_probe.o: $(ARBHOME)/INCLUDE/dupstr.h
 arb_probe.o: $(ARBHOME)/INCLUDE/PT_com.h
 arb_probe.o: $(ARBHOME)/INCLUDE/servercntrl.h

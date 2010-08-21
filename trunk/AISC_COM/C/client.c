@@ -23,6 +23,8 @@
 
 #define aisc_assert(cond) arb_assert(cond)
 
+/* AISC_MKPT_PROMOTE:#include <client_types.h> */
+
 #define AISC_MAGIC_NUMBER_FILTER 0xffffff00
 
 static const char *err_connection_problems = "CONNECTION PROBLEMS";
@@ -378,7 +380,7 @@ static void aisc_free_link(aisc_com *link) {
     free(link);
 }
 
-aisc_com *aisc_open(const char *path, long *mgr, long magic) {
+extern "C" aisc_com *aisc_open(const char *path, long *mgr, long magic) {
     aisc_com *link;
     const char *err;
 
@@ -408,7 +410,7 @@ aisc_com *aisc_open(const char *path, long *mgr, long magic) {
     return link;
 }
 
-int aisc_close(aisc_com *link) {
+extern "C" int aisc_close(aisc_com *link) {
     if (link) {
         if (link->socket) {
             link->aisc_mes_buffer[0] = 0;
