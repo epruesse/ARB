@@ -99,6 +99,8 @@ static void error(const char *msg) {
     errorAt(linenum, msg);
 }
 
+// ------------------------------------------------------------
+
 struct SymPart {
     char *part;
     int   len;                                      // len of part
@@ -107,12 +109,12 @@ struct SymPart {
     SymPart *next;
 };
 
-static SymPart *symParts = 0;                       // create only prototypes for parts in this list
+static void setSymParts(SymPart*& symParts, const char *parts) {
+    assert(!symParts);
 
-static void addSymParts(const char *parts) {
-    char *p = strdup(parts);
+    char       *p   = strdup(parts);
     const char *sep = ",";
-    char *s = strtok(p, sep);
+    char       *s   = strtok(p, sep);
 
     while (s) {
         SymPart *sp = (SymPart*)malloc(sizeof(*sp));
@@ -130,9 +132,9 @@ static void addSymParts(const char *parts) {
     free(p);
 }
 
-static bool matchesSymPart(const char *name) {
-    SymPart *sp       = symParts;
-    bool     matches = 0;
+static bool matchesSymPart(SymPart*& symParts, const char *name) {
+    SymPart *sp      = symParts;
+    bool     matches = false;
 
     while (sp && !matches) {
         if (sp->atStart) {
@@ -147,7 +149,7 @@ static bool matchesSymPart(const char *name) {
     return matches;
 }
 
-static void freeSymParts() {
+static void freeSymParts(SymPart*& symParts) {
     SymPart *next = symParts;
 
     while (next) {
@@ -157,7 +159,29 @@ static void freeSymParts() {
         free(del->part);
         free(del);
     }
+    
+    symParts = NULL;
 }
+
+// ----------------------------------------
+
+static SymPart *requiredSymParts = 0; // only create prototypes if function-name matches one of these parts
+static SymPart *excludedSymParts = 0; // DONT create prototypes if function-name matches one of these parts
+
+inline void setRequiredSymParts(const char *parts) { setSymParts(requiredSymParts, parts); }
+inline void setExcludedSymParts(const char *parts) { setSymParts(excludedSymParts, parts); }
+
+inline void freeRequiredSymParts() { freeSymParts(requiredSymParts); }
+inline void freeExcludedSymParts() { freeSymParts(excludedSymParts); }
+
+inline bool hasRequiredSymPart(const char *name) { return !requiredSymParts || matchesSymPart(requiredSymParts, name); }
+inline bool hasExcludedSymPart(const char *name) { return excludedSymParts  && matchesSymPart(excludedSymParts, name); }
+
+inline bool wantPrototypeFor(const char *name) {
+    return hasRequiredSymPart(name) && !hasExcludedSymPart(name);
+}
+
+// ----------------------------------------
 
 typedef struct word {
     struct word *next;
@@ -1209,7 +1233,7 @@ static void getdecl(FILE *f, const char *header) {
                     if (w->string[0]==':' && w->string[1]==0) oktoprint = 0; // do not emit prototypes for member functions
                 }
 
-                if (oktoprint && symParts && !matchesSymPart(w->string)) { // name does not contain sym_part
+                if (oktoprint && !wantPrototypeFor(w->string)) { 
                     oktoprint = 0;                  // => do not emit prototype
                 }
             }
@@ -1247,6 +1271,7 @@ static void Usage() {
           "\n   -m               promote declaration of 'main()' (default is to skip it)"
           "\n   -F part[,part]*  only promote declarations for functionnames containing one of the parts"
           "                      if 'part' starts with a '^' functionname has to start with rest of part\n"
+          "     -S (like -F)     do NOT promote matching declarations (defaults to -S '^TEST_')\n"
           "\n"
           "\n   -W               don't promote types in old style declarations"
           "\n   -x               omit parameter names in prototypes"
@@ -1291,6 +1316,8 @@ int main(int argc, char **argv) {
 
     argv++; argc--;
 
+    setExcludedSymParts("^TEST_");
+
     iobuf = (char *)malloc(NEWBUFSIZ);
     while (*argv && **argv == '-') {
         t = *argv++; --argc; t++;
@@ -1332,7 +1359,14 @@ int main(int argc, char **argv) {
             else if (*t == 'F') {
                 t = *argv++; --argc;
                 if (!t) Usage();
-                addSymParts(t);
+                setRequiredSymParts(t);
+                break;
+            }
+            else if (*t == 'S') {
+                t = *argv++; --argc;
+                if (!t) Usage();
+                freeExcludedSymParts();
+                setExcludedSymParts(t);
                 break;
             }
             else if (*t == 'V') {
@@ -1482,7 +1516,10 @@ int main(int argc, char **argv) {
     }
 
     free(include_macro);
-    freeSymParts();
+
+    freeRequiredSymParts();
+    freeExcludedSymParts();
+
     free(current_file);
     free(current_dir);
 
