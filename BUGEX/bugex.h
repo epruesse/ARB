@@ -33,10 +33,12 @@
 
 #define BUGEX_DUMPS
 #define BUGEX_MAX_STRING_PRINT 40
-#define RALF_DUMP_VAL(var)  ALL_DUMP_VAL(var)
-#define RALF_DUMP_STR(var)  ALL_DUMP_STR(var)
-#define RALF_DUMP_PTR(var)  ALL_DUMP_PTR(var)
-#define RALF_DUMP_MARK()    ALL_DUMP_MARK()
+
+#define RALF_DUMP_EXPR(type,var) ALL_DUMP_EXPR(type,var)
+#define RALF_DUMP_VAL(var)       ALL_DUMP_VAL(var)
+#define RALF_DUMP_STR(var)       ALL_DUMP_STR(var)
+#define RALF_DUMP_PTR(var)       ALL_DUMP_PTR(var)
+#define RALF_DUMP_MARK()         ALL_DUMP_MARK()
 
 #else
 
@@ -76,13 +78,20 @@
 #endif
 
 // Do NOT use the following macros!!!
+
+#define ALL_DUMP_EXPR(type,expr)                                        \
+    do {                                                                \
+        type tmp_var = (expr);                                          \
+        bugex_dump_value(&tmp_var, "[" #expr "]", sizeof(tmp_var), __FILE__, __LINE__); \
+    } while (0)
+
 #define ALL_DUMP_VAL(var) bugex_dump_value(&var, #var, sizeof(var), __FILE__, __LINE__)
 #define ALL_DUMP_STR(var) bugex_dump_string(&var, #var, __FILE__, __LINE__)
 #define ALL_DUMP_PTR(var) bugex_dump_pointer(&var, #var, __FILE__, __LINE__)
 #define ALL_DUMP_MARK()   bugex_dump_mark(__FILE__, __LINE__)
 
 static void bugex_dump_mark(const char *file, size_t lineno) {
-    fprintf(stderr, "%s:%u: ------------------------------ MARK\n", file, lineno);
+    fprintf(stderr, "%s:%zu: ------------------------------ MARK\n", file, lineno);
     fflush(stderr);
 }
 
@@ -103,14 +112,14 @@ static void bugex_printString(const char *str, size_t len) {
 }
 
 static void bugex_dump_pointer(void *somePtr, const char *someName, const char *file, size_t lineno) {
-    fprintf(stderr, "%s:%u: %s: %p -> %p\n", file, lineno, someName, somePtr, *(void**)somePtr);
+    fprintf(stderr, "%s:%zu: %s: %p -> %p\n", file, lineno, someName, somePtr, *(void**)somePtr);
     fflush(stderr);
 }
 
 static void bugex_dump_string(void *strPtr, const char *strName, const char *file, size_t lineno) {
     const char *s = *((const char **)strPtr);
 
-    fprintf(stderr, "%s:%u: ", file, lineno);
+    fprintf(stderr, "%s:%zu: ", file, lineno);
 
     if (s == 0) {               // NULL pointer
         fprintf(stderr, "%s is NULL (&=%p)\n", strName, strPtr);
@@ -127,7 +136,7 @@ static void bugex_dump_string(void *strPtr, const char *strName, const char *fil
             fprintf(stderr, "\" .. \"");
             bugex_printString(s+len-BUGEX_MAX_STRING_PRINT/2, BUGEX_MAX_STRING_PRINT/2);
         }
-        fprintf(stderr, "\" (len=%u, &=%p -> %p)\n", len, strPtr, s);
+        fprintf(stderr, "\" (len=%zu, &=%p -> %p)\n", len, strPtr, s);
     }
     fflush(stderr);
 }
@@ -152,47 +161,39 @@ static void bugex_dump_value(void *valuePtr, const char *valueName, size_t size,
         }
     }
 
-    fprintf(stderr, "%s:%u: ", file, lineno);
+    fprintf(stderr, "%s:%zu: ", file, lineno);
 
     switch (type) {
         case BUGEX_CHAR: {
             unsigned char c = *(unsigned char*)valuePtr;
             int           i = (int)(signed char)c;
 
-            if (i<0) {
-                fprintf(stderr, "(char)  %s = '%c' = %i = %u (&=%p)", valueName, c, i, (unsigned int)c, valuePtr);
-            }
-            else {
-                fprintf(stderr, "(char)  %s = '%c' = %i (&=%p)", valueName, c, i, valuePtr);
-            }
+            fprintf(stderr, "(char)  %s = '%c' = %i", valueName, c, i);
+            if (i<0) fprintf(stderr, " = %u", (unsigned int)c);
+            fprintf(stderr, " (&=%p)", valuePtr);
             break;
         }
         case BUGEX_SHORT: {
             unsigned short s  = *(unsigned short *)valuePtr;
             signed short   ss = (signed short)s;
-            if (ss<0) {
-                fprintf(stderr, "(short) %s = %i = %u (&=%p)", valueName, (int)ss, (unsigned)s, valuePtr);
-            }
-            else {
-                fprintf(stderr, "(short) %s = %i (&=%p)", valueName, (int)ss, valuePtr);
-            }
+            
+            fprintf(stderr, "(short) %s = %hi", valueName, (int)ss);
+            if (ss<0) fprintf(stderr, " = %hu", s);
+            fprintf(stderr, " = 0x%hx (&=%p)", s, valuePtr);
             break;
         }
         case BUGEX_INT: {
             unsigned int u = *(unsigned int *)valuePtr;
             int          i = (int)u;
 
-            if (i<0) {
-                fprintf(stderr, "(int)   %s = %i = %u (&=%p)", valueName, i, u, valuePtr);
-            }
-            else {
-                fprintf(stderr, "(int)   %s = %i (&=%p)", valueName, i, valuePtr);
-            }
+            fprintf(stderr, "(int) %s = %i", valueName, i);
+            if (i<0) fprintf(stderr, " = %u", u);
+            fprintf(stderr, " = 0x%x (&=%p)", u, valuePtr);
             break;
         }
         case BUGEX_LONG: {
             unsigned long l = *(unsigned long *)valuePtr;
-            fprintf(stderr, "(long)  %s = %li = %lu (&=%p)", valueName, (signed long)l, (unsigned long)l, valuePtr);
+            fprintf(stderr, "(long)  %s = %li = %lu = 0x%lx (&=%p)", valueName, (signed long)l, (unsigned long)l, (unsigned long)l, valuePtr);
             break;
         }
         default: {
