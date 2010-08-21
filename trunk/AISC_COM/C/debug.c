@@ -64,28 +64,28 @@ const char *aisc_debug_local(aisc_com *link, int key, long object, char *str, ..
         sprintf(bptr, "%30s,", sc);
         bptr += strlen(bptr);
         sc += strlen(sc)+1;
-        type = code & 0xff000000;
+        type = code & AISC_VAR_TYPE_MASK;
         er = (long *)aisc_debug_info(link, key, object, (int)code);
         if (!er)return"connection problems";
         if (!er[1]) {
             switch (type) {
-                case AISC_ATTR_INT:
-                case AISC_ATTR_COMMON:
+                case AISC_TYPE_INT:
+                case AISC_TYPE_COMMON:
                     if (aisc_get(link, key, object, code, &gint, NULL))
                         return "connection problems";
                     sprintf(bptr, "%20li, /* ", gint);
                     break;
-                case AISC_ATTR_DOUBLE:
+                case AISC_TYPE_DOUBLE:
                     if (aisc_get(link, key, object, code, &gdouble, NULL))
                         return "connection problems";
                     sprintf(bptr, "%20f, /* ", gdouble);
                     break;
-                case AISC_ATTR_BYTES:
+                case AISC_TYPE_BYTES:
                     if (aisc_get(link, key, object, code, &gbs, NULL))
                         return "connection problems";
                     sprintf(bptr, "%5d:%14s, /* ", gbs.size, gbs.data);
                     break;
-                case AISC_ATTR_STRING:
+                case AISC_TYPE_STRING:
                     if (aisc_get(link, key, object, code, &gstring, NULL))
                         return "connection problems";
                     {
@@ -108,7 +108,7 @@ const char *aisc_debug_local(aisc_com *link, int key, long object, char *str, ..
         if (!er[3]) *(bptr++) = 'f'; else *(bptr++) = '-';
         if (!er[4]) *(bptr++) = 'c'; else *(bptr++) = '-';
         if (!er[5]) *(bptr++) = 'c'; else *(bptr++) = '-';
-        if ((type == AISC_ATTR_COMMON) && (gint)) {
+        if ((type == AISC_TYPE_COMMON) && (gint)) {
             if (aisc_get(link, AISC_COMMON, gint,
                          COMMON_KEYSTRING, &keystr,
                          COMMON_CNT, &anz,

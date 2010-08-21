@@ -488,7 +488,7 @@ static long aisc_talking_get(long *in_buf, int size, long *out_buf, int max_size
     in_pos = out_pos = 0;
     aisc_server_error = NULL;
     object = in_buf[in_pos++];
-    object_type = (in_buf[in_pos] & 0x00ff0000);
+    object_type = (in_buf[in_pos] & AISC_OBJ_TYPE_MASK);
     attribute = 0;
     max_size = 0;
 
@@ -509,9 +509,9 @@ static long aisc_talking_get(long *in_buf, int size, long *out_buf, int max_size
     AISC_DUMP(aisc_talking_get, int, object_type);
 
     while (!aisc_server_error && (in_pos < size)) {
-        code = in_buf[in_pos];
-        attribute = code & 0x0000ffff;
-        type = code & 0xff000000;
+        code      = in_buf[in_pos];
+        attribute = code & AISC_ATTR_MASK;
+        type      = code & AISC_VAR_TYPE_MASK;
         functions = aisc_talking_functions_get[object_type];
         if (!functions) {
             aisc_server_error = "OBJECT HAS NO ATTRIBUTES";
@@ -535,7 +535,7 @@ static long aisc_talking_get(long *in_buf, int size, long *out_buf, int max_size
         AISC_DUMP(aisc_talking_get, int, attribute);
         AISC_DUMP(aisc_talking_get, int, type);
 
-        if (type == AISC_ATTR_DOUBLE) {
+        if (type == AISC_TYPE_DOUBLE) {
             dfunction = (aisc_talking_func_double) function;
             derg = dfunction(object);
         }
@@ -546,19 +546,19 @@ static long aisc_talking_get(long *in_buf, int size, long *out_buf, int max_size
             break;
         }
         switch (type) {
-            case AISC_ATTR_INT:
-            case AISC_ATTR_COMMON:
+            case AISC_TYPE_INT:
+            case AISC_TYPE_COMMON:
                 AISC_DUMP(aisc_talking_get, int, erg);
                 out_buf[out_pos++] = erg;
                 break;
 
-            case AISC_ATTR_DOUBLE:
+            case AISC_TYPE_DOUBLE:
                 AISC_DUMP(aisc_talking_get, double, derg);
                 out_buf[out_pos++] = ((int *) &derg)[0];
                 out_buf[out_pos++] = ((int *) &derg)[1];
                 break;
 
-            case AISC_ATTR_STRING:
+            case AISC_TYPE_STRING:
                 if (!erg) erg = (long) "(null)";
                 len           = strlen((char *)erg);
                 if (len > AISC_MAX_STRING_LEN) {
@@ -575,7 +575,7 @@ static long aisc_talking_get(long *in_buf, int size, long *out_buf, int max_size
                 strcpy((char *)&out_buf[out_pos], (char *)erg);
                 out_pos += len;
                 break;
-            case AISC_ATTR_BYTES:
+            case AISC_TYPE_BYTES:
                 {
                     bytestring *bs = (bytestring *)erg;
 
@@ -639,7 +639,7 @@ static long aisc_talking_sets(long *in_buf, int size, long *out_buf, long *objec
     in_pos = out_pos = 0;
     aisc_server_index = -1;
     aisc_server_error   = NULL;
-    object_type         = (object_type &0x00ff0000);
+    object_type         = (object_type & AISC_OBJ_TYPE_MASK);
 
     attribute = 0;
     if (object_type > (AISC_MAX_OBJECT*0x10000)) {
@@ -661,9 +661,9 @@ static long aisc_talking_sets(long *in_buf, int size, long *out_buf, long *objec
     AISC_DUMP(aisc_talking_sets, int, object_type);
 
     while (!aisc_server_error && (in_pos<size)) {
-        code            = in_buf[in_pos++];
-        attribute       = code &0x0000ffff;
-        type            = code &0xff000000;
+        code      = in_buf[in_pos++];
+        attribute = code & AISC_ATTR_MASK;
+        type      = code & AISC_VAR_TYPE_MASK;
         if (attribute > AISC_MAX_ATTR) {
             sprintf(error_buf, "ATTRIBUTE %li DOESN'T EXIST",
                     attribute);
@@ -688,14 +688,14 @@ static long aisc_talking_sets(long *in_buf, int size, long *out_buf, long *objec
         AISC_DUMP(aisc_talking_sets, int, type);
 
         switch (type) {
-            case        AISC_ATTR_INT:
-            case        AISC_ATTR_COMMON:
+            case AISC_TYPE_INT:
+            case AISC_TYPE_COMMON:
 
                 AISC_DUMP(aisc_talking_sets, long, in_buf[in_pos]);
 
                 function((long)object, in_buf[in_pos++]);
                 break;
-            case        AISC_ATTR_DOUBLE:
+            case AISC_TYPE_DOUBLE:
                 {
                     double dummy;
                     int *ptr;
@@ -708,7 +708,7 @@ static long aisc_talking_sets(long *in_buf, int size, long *out_buf, long *objec
                     function((long)object, dummy);
                     break;
                 }
-            case        AISC_ATTR_STRING:
+            case AISC_TYPE_STRING:
                 {
                     char *str = strdup((char *)&(in_buf[in_pos+1]));
 
@@ -718,7 +718,7 @@ static long aisc_talking_sets(long *in_buf, int size, long *out_buf, long *objec
                     in_pos    += in_buf[in_pos]+1;
                     break;
                 }
-            case        AISC_ATTR_BYTES:
+            case AISC_TYPE_BYTES:
                 bsize = (int)in_buf[in_pos++];
 
                 AISC_DUMP(aisc_talking_sets, int, bsize);
@@ -769,7 +769,7 @@ static long aisc_talking_set(long *in_buf, int size, long *out_buf, int max_size
     aisc_server_error      = NULL;
     max_size = 0;
     object = in_buf[in_pos++];
-    object_type    = ((int)in_buf[in_pos++])& 0x00ff0000;
+    object_type    = ((int)in_buf[in_pos++]) & AISC_OBJ_TYPE_MASK;
     return aisc_talking_sets(&(in_buf[in_pos]),
                              size-in_pos, out_buf, (long *)object, object_type);
 }
@@ -783,7 +783,7 @@ static long aisc_talking_nset(long *in_buf, int size, long *out_buf, int max_siz
     aisc_server_error      = NULL;
     max_size = 0;
     object = in_buf[in_pos++];
-    object_type    = (int)(in_buf[in_pos++]& 0x00ff0000);
+    object_type    = (int)(in_buf[in_pos++] & AISC_OBJ_TYPE_MASK);
     error =  aisc_talking_sets(&(in_buf[in_pos]),
                                size-in_pos, out_buf, (long *)object, object_type);
     return AISC_NO_ANSWER;
@@ -831,10 +831,10 @@ static long aisc_talking_create(long *in_buf, int size, long *out_buf, int max_s
         if (aisc_server_error) break;
 
         father_type = father_type>>16;
-        functions = aisc_talking_functions_create[father_type];
-        code = in_buf[in_pos++];
-        attribute = code & 0x0000ffff;
-        type = code & 0xff000000;
+        functions   = aisc_talking_functions_create[father_type];
+        code        = in_buf[in_pos++];
+        attribute   = code & AISC_ATTR_MASK;
+        type        = code & AISC_VAR_TYPE_MASK;
         object_type = in_buf[in_pos++];
         if (!functions) {
             sprintf(error_buf, "AISC_CREATE_SERVER_ERROR: FATHER %s DOESN'T HAVE TARGET-ATTRIBUTE %s",
@@ -897,11 +897,13 @@ static long aisc_talking_copy(long *in_buf, int size, long *out_buf, int max_siz
         if (aisc_server_error) break;
 
         father_type = father_type>>16;
-        functions = aisc_talking_functions_copy[father_type];
-        code = (int)in_buf[in_pos++];
+        functions   = aisc_talking_functions_copy[father_type];
+        code        = (int)in_buf[in_pos++];
         object_type = (int)in_buf[in_pos++];
-        attribute = code & 0x0000ffff;
-        type = code & 0xff000000;
+
+        attribute = code & AISC_ATTR_MASK;
+        type      = code & AISC_VAR_TYPE_MASK;
+
         if (!functions) {
             aisc_server_error = "AISC_COPY_SERVER_ERROR: FATHER DOESN'T HAVE TARGET-ATTRIBUTES";
             break;
@@ -964,11 +966,14 @@ static long aisc_talking_find(long *in_buf, int size, long *out_buf, int max_siz
         aisc_server_error = test_address_valid((void *)father, father_type);
         if (aisc_server_error)
             break;
+
         father_type = father_type>>16;
-        functions = aisc_talking_functions_find[father_type];
-        code = in_buf[in_pos++];
-        attribute = code & 0x0000ffff;
-        type = code & 0xff000000;
+        functions   = aisc_talking_functions_find[father_type];
+        code        = in_buf[in_pos++];
+
+        attribute = code & AISC_ATTR_MASK;
+        type      = code & AISC_VAR_TYPE_MASK;
+
         if (!functions) {
             aisc_server_error = "AISC_FIND_SERVER_ERROR: FATHER DON'T KNOW ATTRIBUTES FOR SEARCH";
             break;
@@ -1035,7 +1040,7 @@ static long aisc_talking_delete(long *in_buf, int size, long *out_buf, int max_s
     in_pos = out_pos = 0;
     aisc_server_error = NULL;
     object_type = in_buf[in_pos++];
-    object_type = (object_type & 0x00ff0000);
+    object_type = (object_type & AISC_OBJ_TYPE_MASK);
     object = in_buf[in_pos++];
     for (i = 0; i < 1; i++) {
         if (object_type > (AISC_MAX_OBJECT*0x10000)) {
@@ -1084,18 +1089,21 @@ static long aisc_talking_debug_info(long *in_buf, int size, long *out_buf, int m
 
     for (i=0; i<256; i++) out_buf[i] = 0;
     for (i = 0; i < 1; i++) {
-        object = (long *)in_buf[in_pos++];
-        attribute = in_buf[in_pos++];
+        object            = (long *)in_buf[in_pos++];
+        attribute         = in_buf[in_pos++];
         aisc_server_error = test_address_valid((void *)object, 0);
+
         if (aisc_server_error)
             break;
+
         object_type = *object;
         if ((object_type > (AISC_MAX_OBJECT*0x10000)) || (object_type&0xff00ffff) || (object_type<0x00010000)) {
             aisc_server_error = "AISC_DEBUGINFO_SERVER_ERROR: UNKNOWN OBJECT";
             break;
         }
-        attribute &= 0x0000ffff;
-        object_type = object_type>>16;
+        attribute   &= AISC_ATTR_MASK;
+        object_type  = object_type>>16;
+
         if (!aisc_talking_functions_delete[object_type]) { out_buf[0] = 1; };
 
         if (!(functionsg=aisc_talking_functions_get[object_type])) {
