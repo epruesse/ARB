@@ -37,6 +37,11 @@ WARN_LEVEL=1# enable warnings (recommended)
 
 # ----------------------------------------------------------
 
+# target 'ut' in main ARB makefile create patches each time (selected) unit tests succeed
+DELETE_PATCHES_AFTER=20160# delete created patches after XXX min (20160=14 days)
+
+# ----------------------------------------------------------
+
 RELUNITDIR=../$(UNITDIR)
 FULLUNITDIR=$(ARBHOME)/$(UNITDIR)
 
@@ -59,6 +64,7 @@ FULLLIB=$(FULLUNITDIR)/$(UNITLIB)
 
 DESTDIR=tests
 RUNDIR=run
+PATCHDIR=patches
 RUN2HERE=..# prefix from RUNDIR to here (UNIT_TESTER)
 
 SYMLIST=$(DESTDIR)/$(UNIQUE_NAME).sym
@@ -97,6 +103,9 @@ $(DESTDIR):
 $(RUNDIR):
 	test -d $(RUNDIR) || mkdir -p $(RUNDIR)
 
+$(PATCHDIR):
+	test -d $(PATCHDIR) || mkdir -p $(PATCHDIR)
+
 makedirs: $(DESTDIR) $(RUNDIR)
 
 $(SYMLIST) : $(FULLLIB) Makefile makedirs
@@ -128,8 +137,6 @@ dump:
 	@echo "LINKLIST       ='$(LINKLIST)'"
 	@echo "LINKDEPS       ='$(LINKDEPS)'"
 
-
-
 perform_test: $(TEST_EXE)
 	@echo "fake[3]: Entering directory \`$(FULLUNITDIR)'"
 ifeq ($(VALGRIND),2)
@@ -147,6 +154,29 @@ endif
 
 skip_test:
 	@echo "unit-tests completely skipped for '$(UNITLIBNAME)' (RESTRICT_LIB='$(RESTRICT_LIB)')"
+
+# --------------------
+
+PATCHNAME:=TestsOk_`date '+%Y%m%d_%H%M%S'`
+ifneq ('$(RESTRICT_LIB)','')
+	PATCHNAME:=$(PATCHNAME)_$(RESTRICT_LIB)
+endif
+ifneq ($(RESTRICT_MODULE),'.')
+	PATCHNAME:=$(PATCHNAME)_$(subst \.,.,$(RESTRICT_MODULE))
+endif
+PATCHNAME:=$(PATCHNAME).patch
+PATCHNAME:=$(subst $(S1),$(S2),$(PATCHNAME))
+
+PATCH=$(PATCHDIR)/$(PATCHNAME)
+
+del_old_patches: $(PATCHDIR)
+	@find $(PATCHDIR) -mmin +$(DELETE_PATCHES_AFTER) -exec rm {} \;
+
+store_patch: del_old_patches 
+	@echo Saving patch for current state: 
+	@svn diff $(ARBHOME) > $(PATCH)
+	@ls -alh $(PATCH)
+#	ls -alh -rt $(PATCHDIR)
 
 # --------------------
 
