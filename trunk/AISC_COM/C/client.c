@@ -988,3 +988,12 @@ int aisc_find(aisc_com *link,
     if (to_free) free(to_free);
     return 0;
 }
+
+#if (UNIT_TESTS == 1)
+
+#include <test_unit.h>
+
+void TEST_dummy() {
+}
+
+#endif

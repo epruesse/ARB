@@ -5,6 +5,8 @@ use warnings;
 
 use Cwd;
 
+my $showCoverageForAll = 0; # set to 1 to see coverage for all modules (recommended setting is 0)
+
 my $verbose = 0;
 
 # --------------------------------------------------------------------------------
@@ -55,7 +57,7 @@ sub parseCoveredLines($\@) {
   my ($gcov, $covered_lines_r) = @_;
 
   my ($lines,$covered,$tests_seen) = (0,0,0);
-  open(GCOV,'<'.$gcov) || die "can't read '$gcov' (Reason: $!)";
+  open(GCOV,'<'.$gcov) || die "gcov2msg.pl: can't read '$gcov' (Reason: $!)";
   my $line;
   while (defined ($line = <GCOV>)) {
     if (not $line =~ /^\s*([^\s:][^:]*):\s*([^\s:][^:]*):(.*)$/o) { die "can't parse '$line'"; }
@@ -152,11 +154,11 @@ sub collect_gcov_data($$) {
     unlink($gcov);
   }
   else {
-    # $verbose==0 ||
+    $verbose==0 ||
     print "collect_gcov_data($gcov): lines=$lines covered=$covered (coverage=$percent%)\n";
     $covered>0 || die "Argh.. collected data for completely uncovered file '$source'";
 
-    if ($tests_seen==0) {
+    if ($tests_seen==0 and $showCoverageForAll==0) {
       print "$source_name defines no tests. lines=$lines covered=$covered (coverage=$percent%)\n";
     }
     else {
@@ -194,18 +196,20 @@ sub find_gcda_files($) {
   closedir(DIR);
   return @gcda;
 }
-sub gcda2code($$) {
-  my ($dir,$gcda) = @_;
+sub gcda2code($\@) {
+  my ($gcda, $srcdirs_r) = @_;
 
   if (not $gcda =~ /\.gcda$/o) {
     die "wrong file in gcda2code: '$gcda'";
   }
   my $base = $`;
-  foreach (@known_source_ext) {
-    my $name = $base.'.'.$_;
-    my $full = $dir.'/'.$name;
-    if (-f $full) {
-      return $name;
+  foreach my $dir (@$srcdirs_r) {
+    foreach (@known_source_ext) {
+      my $name = $base.'.'.$_;
+      my $full = $dir.'/'.$name;
+      if (-f $full) {
+        return [$name,$dir];
+      }
     }
   }
   die "Failed to find code file for '$gcda'";
@@ -213,34 +217,70 @@ sub gcda2code($$) {
 
 sub die_usage($) {
   my ($err) = @_;
-  print "Usage: gcov2msg.pl directory\n";
+  print("Usage: gcov2msg.pl [options] directory\n".
+        "Options: --srcdirs=dir,dir,dir  set sourcedirectories (default is 'directory')\n".
+        "         --builddir=dir         set dir from which build was done (default is 'directory')\n");
   die "Error: $err\n";
 }
 
 sub main() {
   my $args = scalar(@ARGV);
-  if ($args!=1) { die_usage("Missing argument\n"); }
+  if ($args<1) { die_usage("Missing argument\n"); }
 
-  my $dir = $ARGV[0];
-  if (not -d $dir) { die "No such directory '$dir'\n"; }
+  my $dir;
+  my @srcdirs;
+  my $builddir = undef;
+  {
+    my $srcdirs  = undef;
+
+    while ($ARGV[0] =~ /^--/) {
+      if ($ARGV[0] =~ /^--srcdirs=/) {
+        $srcdirs = $';
+        shift @ARGV;
+      }
+      elsif ($ARGV[0] =~ /^--builddir=/) {
+        $builddir = $';
+        shift @ARGV;
+      }
+    }
+    $dir = $ARGV[0];
+    if (not -d $dir) { die "No such directory '$dir'\n"; }
+
+    if (not defined $builddir) { $builddir = $dir; }
+    if (not defined $srcdirs) { $srcdirs = $dir; }
+    @srcdirs = split(',', $srcdirs);
+  }
 
   my @gcda = find_gcda_files($dir);
-  my %gcda2code = map { $_ => gcda2code($dir,$_); } @gcda;
+  my %gcda2code = map { $_ => gcda2code($_,@srcdirs); } @gcda; # value=[name,srcdir]
 
   my $olddir = cwd();
   chdir($dir) || die "can't cd to '$dir' (Reason: $!)\n";;
 
   eval {
     foreach (sort @gcda) {
-      my $code = $gcda2code{$_};
-      # print "'$_' -> '$code'\n";
+      my $cs_ref = $gcda2code{$_};
+      my ($code,$srcdir) = @$cs_ref;
 
-      my $fullcode = $dir.'/'.$code;
-      my $cmd      = "gcov '$fullcode'";
+      my $fullcode  = $srcdir.'/'.$code;
+      my $objSwitch = '';
+
+      if ($srcdir ne $dir) {
+        $objSwitch = " -o '$dir'";
+      }
+
+      if ($builddir ne $dir) {
+        chdir($builddir) || die "can't cd to '$builddir' (Reason: $!)\n";;
+      }
+      my $cmd = "gcov '$fullcode' $objSwitch";
 
       $verbose==0 || print "[Action: $cmd]\n";
 
       open(CMD,$cmd.'|') || die "can't execute '$cmd' (Reason: $!)";
+
+      if ($builddir ne $dir) {
+        chdir($dir) || die "can't cd to '$dir' (Reason: $!)\n";;
+      }
 
       my ($file,$percent,$lines,$source,$gcov) = (undef,undef,undef,undef,undef);
 
@@ -256,10 +296,14 @@ sub main() {
 
           if ($percent>0 and $lines>0) {
             if ($source =~ /^\/usr\/include/o) {
-              print "Skipping '$gcov'\n";
+              # print "Skipping '$gcov'\n";
             }
             else {
-              collect_gcov_data($source,$gcov);
+              my $fullgcov = $gcov;
+              if ($dir ne $builddir) {
+                $fullgcov = $builddir.'/'.$gcov;
+              }
+              collect_gcov_data($source,$fullgcov);
             }
           }
           if (-f $gcov) { unlink($gcov); }
