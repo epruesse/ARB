@@ -22,7 +22,8 @@
 # DEBUG_GRAPHICS        all X-graphics are flushed immediately (for debugging)
 # ARB_64=0/1            1=>compile 64 bit version
 # UNIT_TESTS=0/1        1=>compile in unit tests and call them after build
-# COVERAGE=0/1          1=>compile in gcov support (useful together with UNIT_TESTS=1)
+# COVERAGE=0/1/2        compile in gcov support (useful together with UNIT_TESTS=1)
+#                       0=no, 1+2=compile in, 1=show
 #
 # -----------------------------------------------------
 # The ARB source code is aware of the following defines:
@@ -201,7 +202,7 @@ endif
 ifndef COVERAGE
 	COVERAGE=0#default is "no"
 endif
-ifeq ($(COVERAGE),1)
+ifneq ($(COVERAGE),0)
 	GCOVFLAGS=-ftest-coverage -fprofile-arcs
 	cflags += $(GCOVFLAGS)
 	EXECLIBS=-lgcov

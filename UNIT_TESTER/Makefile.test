@@ -156,8 +156,9 @@ ifeq ($(VALGRIND),2)
 endif
 	cd $(RUNDIR);$(RUN2HERE)/$(TEST_EXE)
 ifeq ($(COVERAGE),1)
-	@echo "---------------------------------------- test-coverage for $(UNITLIBNAME)"
-	./gcov2msg.pl $(FULLUNITDIR)
+	@echo "-------------------- test-coverage for $(UNITLIBNAME)"
+	./gcov2msg.sh $(FULLUNITDIR) $(UNITLIBNAME)
+	@echo "-------------------- test-coverage for $(UNITLIBNAME) [end]"
 endif
 ifeq ($(VALGRIND),1)
 	cd $(RUNDIR);$(ARBHOME)/SOURCE_TOOLS/arb_valgrind -l -c 15 $(RUN2HERE)/$(TEST_EXE)
