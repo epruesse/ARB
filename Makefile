@@ -41,6 +41,7 @@ LD_LIBRARY_PATH:=${ARBHOME}/lib
 endif
 
 FORCEMASK = umask 002
+NODIR=--no-print-directory
 
 # ---------------------- [unconditionally used options]
 
@@ -1541,6 +1542,7 @@ UNITS_NEED_FIX = \
 
 # for the moment, put all units containing tests into UNITS_TESTED:
 UNITS_TESTED = \
+	PROBE_COM/client.test \
 	TOOLS/arb_probe.test \
 	SL/FAST_ALIGNER/FAST_ALIGNER.test \
 	MULTI_PROBE/MULTI_PROBE.test \
@@ -1578,13 +1580,15 @@ clean_coverage: clean_coverage_results
 
 unit_tests: test_base clean_coverage_results
 	@echo "$(SEP) Running unit tests"
-	$(MAKE) $(TESTED_UNITS)
-	@$(MAKE) -C UNIT_TESTER -f Makefile.test -r \
+	@echo "fake[1]: Entering directory \`$(ARBHOME)/UNIT_TESTER'"
+	$(MAKE) $(NODIR) $(TESTED_UNITS)
+	@$(MAKE) $(NODIR) -C UNIT_TESTER -f Makefile.test -r \
 		"UNITDIR=" \
 		"UNITLIBNAME=" \
 		"COVERAGE=0" \
 		"cflags=$(cflags)" \
 		store_patch
+	@echo "fake[1]: Leaving directory \`$(ARBHOME)/UNIT_TESTER'"
 	@echo "$(SEP) All unit tests passed" 
 
 ut: unit_tests

@@ -102,6 +102,8 @@ How to use ARB unit testing
    Set 'RESTRICT=expr' to '.' to run all tests.
 
    Set it to sth else to run only tests for matching source files.
-   This is helpful if you'd like to check test-coverage. 
+   This is helpful if you'd like to check test-coverage.
+
+   Set 'RESTRICT_LIB=lib1:lib2' to test only a few libs.
 
 
