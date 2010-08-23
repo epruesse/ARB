@@ -32,7 +32,7 @@ public:
     ~FamilyList();
 };
 
-struct struct_aisc_com;
+struct aisc_com;
 
 enum FF_complement {
     FF_FORWARD            = 1,
@@ -75,10 +75,10 @@ class PT_FamilyFinder : public FamilyFinder {
     int     oligo_len;
     int     mismatches;
     bool    fast_flag;
-    
-    struct_aisc_com *link;
-    long             com;
-    long             locs;
+
+    aisc_com *link;
+    long      com;
+    long      locs;
 
     GB_ERROR init_communication();
     GB_ERROR open(const char *servername);

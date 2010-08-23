@@ -43,16 +43,7 @@ P #define AISC_MAX_STRING_LEN $(MAX_STRING_LEN)
 P #define AISC_MESSAGE_BUFFER_LEN ((AISC_MAX_STRING_LEN/4+3)*($(MAX_PAR_CNT)+2))
 P #define AISC_MAGIC_NUMBER $(MAGIC_NUMBER)00
 
-P $ntypedef struct struct_aisc_com {
-P $1int$2socket;
-P $1int$2message_type;
-P $1char$2*message;
-P $1int$2*message_queue;
-P $1int$2magic;
-P $1char$2*error;
-P } aisc_com;$n
-
-#  members of aisc_com have to match ../C/client_privat.h@aisc_com_public_members
+P $nstruct aisc_com;$n
 
 P #ifndef _AISC_BYTESTRING
 P #define _AISC_BYTESTRING

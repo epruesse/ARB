@@ -15,6 +15,7 @@
 #include "aisc_global.h"
 #endif
 
+
 #ifndef ARB_ASSERT_H
 #include <arb_assert.h>
 #endif
@@ -33,21 +34,19 @@ struct aisc_bytes_list {
     aisc_bytes_list *next;
 };
 
-typedef struct struct_aisc_com {
-    int                     socket;
-    int                     message_type;
-    char                   *message;
-    int                    *message_queue;
-    long                    magic;
-    const char             *error;
-
-    // members above have to match ../AISC/aisc_com.pa@aisc_com_public_members
+struct aisc_com {
+    int         socket;
+    int         message_type;
+    char       *message;
+    int        *message_queue;
+    long        magic;
+    const char *error;
 
     long             aisc_mes_buffer[AISC_MESSAGE_BUFFER_LEN];
     aisc_bytes_list *aisc_client_bytes_first;
     aisc_bytes_list *aisc_client_bytes_last;
     SigHandler       old_sigpipe_handler;
-} aisc_com;
+};
 
 typedef struct struct_bytestring {
     char *data;
