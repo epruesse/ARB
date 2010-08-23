@@ -28,6 +28,11 @@
 # version of arb_tcp.dat
 ARB_TCP_DAT_VERSION 2
 
+#***********    Test Servers  ******************
+
+ARB_TEST_PT_SERVER          localhost:3200          arb_pt_server   -D$(ARBHOME)/UNIT_TESTER/run/TEST_pt.arb
+
+
 #***********    Private Servers (for each user) ******************
 #
 # This is a local server, running on one machine. Each user has his own socket:

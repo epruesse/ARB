@@ -82,7 +82,7 @@ sub dependencyFile2target($) {
     }
     else {
       $libname = substr($suffix,1);
-      $libname =~ s/\_(so|a)$/\.$1/o;
+      $libname =~ s/\_(so|a|o)$/\.$1/o;
     }
     $target = $dir.'/'.$libname;
   }
@@ -109,7 +109,7 @@ sub target2dependencyFile($) {
     }
     else {
       my $targetName =  filenameOf($target);
-      $targetName    =~ s/\.(a|so)$/_$1/o;
+      $targetName    =~ s/\.(so|a|o)$/_$1/o;
       $depfile       =  $dir.'/'.$libdepend_file.'.'.$targetName;
     }
   }
@@ -256,7 +256,7 @@ sub declare_initial_target($$) {
 sub detect_target_type($) {
   my ($target) = @_;
 
-  if ($target =~ /\.(so|a)$/o) {
+  if ($target =~ /\.(so|a|o)$/o) {
     if ($1 eq 'so') { $DYNAMIC_LIB; }
     else { $STATIC_LIB; }
   }
@@ -608,8 +608,8 @@ sub pushDynamicLibsTo(\@\@) {
 
 sub die_usage($) {
   my ($err) = @_;
-  print "Usage: needed_libs.pl [options] [lib|executable]\n";
-  print "Scans directories of 'lib's for files named '$libdepend_file' or '$libdepend_file.libname'\n";
+  print "Usage: needed_libs.pl [options] [lib|obj|executable]\n";
+  print "Scans directories of 'lib|obj's for files named '$libdepend_file' or '$libdepend_file.libname'\n";
   print "In case of an executable, it scans for a file named 'BINDEP/$libdepend_file.executable'.\n";
   print "\n";
   print "These files have to contain the name(s) of the libraries needed by 'lib',\n";

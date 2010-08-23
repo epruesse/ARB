@@ -242,6 +242,7 @@ arb_probe.o: $(ARBHOME)/INCLUDE/dupstr.h
 arb_probe.o: $(ARBHOME)/INCLUDE/PT_com.h
 arb_probe.o: $(ARBHOME)/INCLUDE/servercntrl.h
 arb_probe.o: $(ARBHOME)/INCLUDE/smartptr.h
+arb_probe.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/ad_prot.h

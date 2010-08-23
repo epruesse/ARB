@@ -1541,6 +1541,7 @@ UNITS_NEED_FIX = \
 
 # for the moment, put all units containing tests into UNITS_TESTED:
 UNITS_TESTED = \
+	TOOLS/arb_probe.test \
 	SL/FAST_ALIGNER/FAST_ALIGNER.test \
 	MULTI_PROBE/MULTI_PROBE.test \
 	SL/SEQIO/SEQIO.test \
@@ -1566,7 +1567,6 @@ TESTED_UNITS = $(TESTED_UNITS_MANUAL)
 		runtest \
 	) >$(@D).$$ID.log 2>&1 && (cat $(@D).$$ID.log;rm $(@D).$$ID.log)) || (cat $(@D).$$ID.log;rm $(@D).$$ID.log;false))
 
-
 test_base: $(UNIT_TESTER_LIB:.a=.dummy)
 
 clean_coverage_results:
@@ -1580,9 +1580,9 @@ unit_tests: test_base clean_coverage_results
 	@echo "$(SEP) Running unit tests"
 	$(MAKE) $(TESTED_UNITS)
 	@$(MAKE) -C UNIT_TESTER -f Makefile.test -r \
-		"UNITDIR=ARBDB" \
-		"UNITLIBNAME=ARBDB" \
-		"COVERAGE=$(COVERAGE)" \
+		"UNITDIR=" \
+		"UNITLIBNAME=" \
+		"COVERAGE=0" \
 		"cflags=$(cflags)" \
 		store_patch
 	@echo "$(SEP) All unit tests passed" 
@@ -1591,7 +1591,10 @@ ut: unit_tests
 
 # --------------------------------------------------------------------------------
 
-all: checks
+TIMELOG=$(ARBHOME)/arb_time.log
+TIMEARGS=--append --output=$(TIMELOG) --format " %E(%S+%U) %P [%C]"
+
+build:
 	$(MAKE) links
 	$(MAKE) com
 	$(MAKE) arb
@@ -1603,9 +1606,17 @@ all: checks
 ifeq ("$(DEVELOPER)","SAVETEST")
 	$(MAKE) save_test
 endif
+
+all: checks
+	@echo "Build times" > $(TIMELOG)
+	@echo $(MAKE) build
+	@time $(TIMEARGS) $(MAKE) build
 	@echo $(SEP)
 	@echo "made 'all' with success."
 	@echo "to start arb enter 'arb'"
 ifeq ($(UNIT_TESTS),1)
-	$(MAKE) unit_tests
+	@echo $(MAKE) unit_tests
+	@time $(TIMEARGS) $(MAKE) unit_tests
 endif
+	@cat $(TIMELOG)
+	@rm $(TIMELOG)

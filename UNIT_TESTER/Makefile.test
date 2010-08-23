@@ -26,6 +26,7 @@ RESTRICT_MODULE='.'
 
 # restrict tests to library with basename
 RESTRICT_LIB=# run all tests
+#RESTRICT_LIB=arb_probe# test only this library
 #RESTRICT_LIB=ARBDB# test only this library
 #RESTRICT_LIB=FAST_ALIGNER# test only this library
 #RESTRICT_LIB=MERGE# test only this library
@@ -50,12 +51,20 @@ SHAREDLIBS=\
 	AWT \
 	WINDOW \
 
-ISSHAREDLIB=$(findstring $(UNITDIR),$(SHAREDLIBS))
+EXEOBJDIRS=\
+	TOOLS \
 
-ifeq ($(ISSHAREDLIB),)
-	UNITLIB=$(UNITLIBNAME).a
-else
+ISSHAREDLIB=$(findstring $(UNITDIR),$(SHAREDLIBS))
+ISEXEOBJECT=$(findstring $(UNITDIR),$(EXEOBJDIRS))
+
+ifneq ($(ISSHAREDLIB),)
 	UNITLIB=lib$(UNITLIBNAME).so
+else
+ifneq ($(ISEXEOBJECT),)
+	UNITLIB=$(UNITLIBNAME).o
+else
+	UNITLIB=$(UNITLIBNAME).a
+endif
 endif
 
 UNIQUE_NAME=test_$(subst /,_,$(subst .,_,$(UNITDIR)_$(UNITLIB)))
@@ -83,6 +92,7 @@ INCLUDES= \
 UNIT_TESTER_LIB=./UNIT_TESTER.a
 
 ifeq ($(UNITLIB),.a)
+# nothing given (only avoids undefined symbols)
 LINKLIST=
 LINKDEPS=
 else
@@ -165,7 +175,6 @@ ifneq ($(RESTRICT_MODULE),'.')
 	PATCHNAME:=$(PATCHNAME)_$(subst \.,.,$(RESTRICT_MODULE))
 endif
 PATCHNAME:=$(PATCHNAME).patch
-PATCHNAME:=$(subst $(S1),$(S2),$(PATCHNAME))
 
 PATCH=$(PATCHDIR)/$(PATCHNAME)
 
@@ -175,7 +184,7 @@ del_old_patches: $(PATCHDIR)
 store_patch: del_old_patches 
 	@echo Saving patch for current state: 
 	@svn diff $(ARBHOME) > $(PATCH)
-	@ls -alh $(PATCH)
+	@ls -alh $(PATCHDIR)/*.patch | tail -1
 #	ls -alh -rt $(PATCHDIR)
 
 # --------------------

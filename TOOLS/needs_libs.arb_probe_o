@@ -1,0 +1,3 @@
+# libraries needed to link against TOOLS/arb_probe.o
+
+PROBE_COM/client.a
