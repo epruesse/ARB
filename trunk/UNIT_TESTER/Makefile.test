@@ -25,8 +25,10 @@ RESTRICT_MODULE='.'
 #RESTRICT_MODULE='MG_species\.cxx'
 
 # restrict tests to library with basename
+# (empty=no restriction, ':'-separated list of allowed test-names)
+#
 RESTRICT_LIB=# run all tests
-#RESTRICT_LIB=arb_probe# test only this library
+#RESTRICT_LIB=client:arb_probe# test only these libraries
 #RESTRICT_LIB=ARBDB# test only this library
 #RESTRICT_LIB=FAST_ALIGNER# test only this library
 #RESTRICT_LIB=MERGE# test only this library
@@ -148,7 +150,7 @@ dump:
 	@echo "LINKDEPS       ='$(LINKDEPS)'"
 
 perform_test: $(TEST_EXE)
-	@echo "fake[3]: Entering directory \`$(FULLUNITDIR)'"
+	@echo "fake[2]: Entering directory \`$(FULLUNITDIR)'"
 ifeq ($(VALGRIND),2)
 	cd $(RUNDIR);$(ARBHOME)/SOURCE_TOOLS/arb_valgrind -l -c 15 $(RUN2HERE)/$(TEST_EXE)
 endif
@@ -160,16 +162,16 @@ endif
 ifeq ($(VALGRIND),1)
 	cd $(RUNDIR);$(ARBHOME)/SOURCE_TOOLS/arb_valgrind -l -c 15 $(RUN2HERE)/$(TEST_EXE)
 endif
-	@echo "fake[3]: Leaving directory \`$(FULLUNITDIR)'"
+	@echo "fake[2]: Leaving directory \`$(FULLUNITDIR)'"
 
 skip_test:
-	@echo "unit-tests completely skipped for '$(UNITLIBNAME)' (RESTRICT_LIB='$(RESTRICT_LIB)')"
+	@echo "unit-tests completely skipped for '$(UNITLIBNAME)'"
 
 # --------------------
 
-PATCHNAME:=TestsOk_`date '+%Y%m%d_%H%M%S'`
+PATCHNAME=TestsOk_`date '+%Y%m%d_%H%M%S'`
 ifneq ('$(RESTRICT_LIB)','')
-	PATCHNAME:=$(PATCHNAME)_$(RESTRICT_LIB)
+	PATCHNAME:=$(PATCHNAME)_$(subst :,_,$(RESTRICT_LIB))
 endif
 ifneq ($(RESTRICT_MODULE),'.')
 	PATCHNAME:=$(PATCHNAME)_$(subst \.,.,$(RESTRICT_MODULE))
@@ -184,15 +186,15 @@ del_old_patches: $(PATCHDIR)
 store_patch: del_old_patches 
 	@echo Saving patch for current state: 
 	@svn diff $(ARBHOME) > $(PATCH)
-	@ls -alh $(PATCHDIR)/*.patch | tail -1
-#	ls -alh -rt $(PATCHDIR)
+	@ls -alh -rt $(PATCHDIR)/*.patch | tail -1
 
 # --------------------
 
 RUN:=perform_test
 
 ifneq ('$(RESTRICT_LIB)','')
-ifneq ($(UNITLIBNAME),$(RESTRICT_LIB))
+IS_RESTRICTED_TO=$(findstring :$(UNITLIBNAME):,:$(RESTRICT_LIB):)
+ifeq ('$(IS_RESTRICTED_TO)','')
 	RUN:=skip_test
 endif
 endif
