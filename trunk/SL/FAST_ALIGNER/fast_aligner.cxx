@@ -1223,7 +1223,7 @@ static ARB_ERROR alignCompactedTo(CompactedSubSequence     *toAlignSequence,
 #endif // TRACE_COMPRESSED_ALIGNMENT
 
     {
-        ARB_ERROR err     = GB_push_transaction(gb_toAlign);
+        GB_ERROR err = GB_push_transaction(gb_toAlign);
         if (!error) error = err;
     }
 
