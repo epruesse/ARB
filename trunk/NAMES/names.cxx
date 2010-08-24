@@ -1202,7 +1202,7 @@ int main(int argc, char **argv)
         name = params->tcp;
     }
     else {
-        const char *cname = GBS_read_arb_tcp("ARB_NAME_SERVER");
+        const char *cname = GBS_read_arb_tcp(GBS_nameserver_tag(NULL));
 
         if (!cname) {
             GB_print_error();

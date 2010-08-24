@@ -219,6 +219,13 @@ void GB_free_dictionary(DictData *dd);
 
 /* adtcp.cxx */
 const char *GBS_scan_arb_tcp_param(const char *ipPort, const char *wantedParam);
+
+#if (UNIT_TESTS == 1)
+#define TEST_SERVER_ID (-666)
+#endif
+
+const char *GBS_nameserver_tag(const char *add_field);
+const char *GBS_ptserver_tag(int id);
 const char *GBS_read_arb_tcp(const char *env);
 const char *const *GBS_get_arb_tcp_entries(const char *matching);
 const char *GBS_ptserver_logname(void);

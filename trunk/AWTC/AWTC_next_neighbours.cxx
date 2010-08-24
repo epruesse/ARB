@@ -249,9 +249,7 @@ GB_ERROR PT_FamilyFinder::searchFamily(const char *sequence, FF_complement compl
     // 'max_results' limits the length of the generated result list (low scores deleted first)
     //               if < 1 -> don't limit
 
-    char     *buffer = GBS_global_string_copy("ARB_PT_SERVER%i", server_id);
-    GB_ERROR  error  = open(buffer);
-
+    GB_ERROR error = open(GBS_ptserver_tag(server_id));
     if (!error) {
         error = init_communication();
         if (!error) {
@@ -259,7 +257,6 @@ GB_ERROR PT_FamilyFinder::searchFamily(const char *sequence, FF_complement compl
         }
     }
     close();
-    free(buffer);
     return error;
 }
 

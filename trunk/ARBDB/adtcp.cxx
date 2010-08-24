@@ -13,6 +13,7 @@
 #include <sys/stat.h>
 
 #include <arbdbt.h>
+#include <inline.h>
 
 #include "gb_local.h"
 
@@ -296,6 +297,33 @@ const char *GBS_scan_arb_tcp_param(const char *ipPort, const char *wantedParam) 
     return result;
 }
 
+/* AISC_MKPT_PROMOTE:#if (UNIT_TESTS == 1)*/
+/* AISC_MKPT_PROMOTE:#define TEST_SERVER_ID (-666)*/
+/* AISC_MKPT_PROMOTE:#endif*/
+
+const char *GBS_nameserver_tag(const char *add_field) {
+    if (add_field) {
+        static char *tag = NULL;
+        freeset(tag, GBS_global_string_copy("ARB_NAME_SERVER_%s", add_field));
+        ARB_strupper(tag);
+        return tag;
+    }
+    return "ARB_NAME_SERVER";
+}
+
+const char *GBS_ptserver_tag(int id) {
+#if (UNIT_TESTS == 1)
+    if (id == TEST_SERVER_ID) {
+        return "ARB_TEST_PT_SERVER";
+    }
+#endif // UNIT_TESTS
+    gb_assert(id >= 0);
+    const int   MAXIDSIZE = 30;
+    static char server_tag[MAXIDSIZE];
+    ASSERT_RESULT_BELOW(int, sprintf(server_tag, "ARB_PT_SERVER%i", id), MAXIDSIZE);
+    return server_tag;
+}
+
 const char *GBS_read_arb_tcp(const char *env) {
     /*! Find an entry in the $ARBHOME/lib/arb_tcp.dat file
      *
@@ -310,7 +338,7 @@ const char *GBS_read_arb_tcp(const char *env) {
      *
      * To access these words follow this example:
      *
-     * const char *ipPort = GBS_read_arb_tcp("ARB_NAME_SERVER");
+     * const char *ipPort = GBS_read_arb_tcp(GBS_nameserver_tag(NULL));
      * if (ipPort) {
      *     const char *serverExe = strchr(ipPort, 0)+1;
      *     const char *para1     = strchr(serverExe, 0)+1; // always exists!
@@ -434,9 +462,8 @@ char *GBS_ptserver_id_to_choice(int i, int showBuild) {
      *
      * Return NULL in case of error (which was exported then)
      */
-    char       *serverID = GBS_global_string_copy("ARB_PT_SERVER%i", i);
-    const char *ipPort   = GBS_read_arb_tcp(serverID);
-    char       *result   = 0;
+    const char *ipPort = GBS_read_arb_tcp(GBS_ptserver_tag(i));
+    char       *result = 0;
 
     if (ipPort) {
         const char *file     = GBS_scan_arb_tcp_param(ipPort, "-d");
@@ -493,8 +520,22 @@ char *GBS_ptserver_id_to_choice(int i, int showBuild) {
             }
         }
     }
-    free(serverID);
 
     return result;
 }
 
+// --------------------------------------------------------------------------------
+
+#if (UNIT_TESTS == 1)
+
+#include <test_unit.h>
+
+void TEST_GBS_servertags() {
+    TEST_ASSERT_EQUAL(GBS_ptserver_tag(0), "ARB_PT_SERVER0");
+    TEST_ASSERT_EQUAL(GBS_ptserver_tag(7), "ARB_PT_SERVER7");
+    
+    TEST_ASSERT_EQUAL(GBS_nameserver_tag(NULL),   "ARB_NAME_SERVER");
+    TEST_ASSERT_EQUAL(GBS_nameserver_tag("test"), "ARB_NAME_SERVER_TEST");
+}
+
+#endif
