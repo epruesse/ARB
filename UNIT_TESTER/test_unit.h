@@ -69,14 +69,14 @@ namespace arb_test {
     inline bool is_equal(int n1, int n2) {
         bool equal = n1 == n2;
         if (!equal) {
-            printf_flushed("numeric_equal(%i,%i) returns false\n", n1, n2);
+            printf_flushed("numeric_equal(%i,%i)=(0x%x,0x%x) returns false\n", n1, n2, n1, n2);
         }
         return equal;
     }
     inline bool is_equal(size_t z1, size_t z2) {
         bool equal = z1 == z2;
         if (!equal) {
-            printf_flushed("numeric_equal(%zu,%zu) returns false\n", z1, z2);
+            printf_flushed("numeric_equal(%zu,%zu)=(0x%zx,0x%zx) returns false\n", z1, z2, z1, z2);
         }
         return equal;
     }
@@ -114,7 +114,7 @@ namespace arb_test {
 #define TEST_ERROR(format, strarg)              \
     do {                                        \
         TEST_MSG("Error: " format, strarg);     \
-        ARB_SIGSEGV(0);                         \
+        TEST_ASSERT(0);                         \
     } while(0)
 
 
@@ -128,7 +128,7 @@ namespace arb_test {
 #define TEST_ERROR2(format, strarg1, strarg2)           \
     do {                                                \
         TEST_MSG2("Error: " format, strarg1, strarg2);  \
-        ARB_SIGSEGV(0);                                 \
+        TEST_ASSERT(0);                                 \
     } while(0)
 
 // --------------------------------------------------------------------------------
@@ -258,7 +258,7 @@ namespace arb_test {
 #define TEST_ASSERT_SEGFAULT(cb) 
 #endif
 
-#if defined(ASSERTION_USED)
+#if defined(ASSERTION_USED) && defined(ENABLE_CRASH_TESTS)
 #define TEST_ASSERT_CODE_ASSERTION_FAILS(cb)                            \
     do {                                                                \
         bool& assertion_failed =                                        \

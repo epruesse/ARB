@@ -2033,6 +2033,7 @@ char *GBS_log_dated_action_to(const char *comment, const char *action) {
 
 #include <test_unit.h>
 
+#ifdef ENABLE_CRASH_TESTS
 static void failassertion() { gb_assert(0); }
 static void provokesegv() { *(int *)0 = 0; }
 static void provokesegv_does_not_fail_assertion() {
@@ -2040,6 +2041,7 @@ static void provokesegv_does_not_fail_assertion() {
     // -> the following assertion fails
     TEST_ASSERT_CODE_ASSERTION_FAILS(provokesegv);
 }
+#endif
 
 void TEST_signal_tests() {
     // check whether we can test for SEGV and assertion failures
