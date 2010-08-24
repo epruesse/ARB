@@ -1597,7 +1597,7 @@ ut: unit_tests
 # --------------------------------------------------------------------------------
 
 TIMELOG=$(ARBHOME)/arb_time.log
-TIMEARGS=--append --output=$(TIMELOG) --format " %E(%S+%U) %P [%C]"
+TIMEARGS=--append --output=$(TIMELOG) --format=" %E(%S+%U) %P [%C]"
 
 build:
 	$(MAKE) links
