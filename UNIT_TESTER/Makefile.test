@@ -170,7 +170,8 @@ skip_test:
 
 # --------------------
 
-PATCHNAME=TestsOk_`date '+%Y%m%d_%H%M%S'`
+PATCHNAME=TestsOk_$(shell date '+%Y%m%d_%H%M%S')
+RECENT_PATCH=$(ARBHOME)/latest_test_ok.patch
 ifneq ('$(RESTRICT_LIB)','')
 	PATCHNAME:=$(PATCHNAME)_$(subst :,_,$(RESTRICT_LIB))
 endif
@@ -187,7 +188,10 @@ del_old_patches: $(PATCHDIR)
 store_patch: del_old_patches 
 	@echo Saving patch for current state: 
 	@svn diff $(ARBHOME) > $(PATCH)
-	@ls -alh -rt $(PATCHDIR)/*.patch | tail -1
+	@ls -alh $(PATCH)
+	@ln --force $(PATCH) $(RECENT_PATCH)
+
+#	@ls -alh -rt $(PATCHDIR)/*.patch | tail -1
 
 # --------------------
 
