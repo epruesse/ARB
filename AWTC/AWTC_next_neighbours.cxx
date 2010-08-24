@@ -109,6 +109,9 @@ PT_FamilyFinder::PT_FamilyFinder(GBDATA *gb_main_, int server_id_, int oligo_len
       com(0),
       locs(0)
 {
+    // 'mismatches'  = the number of allowed mismatches
+    // 'fast_flag'   = 0 -> do complete search, 1 -> search only oligos starting with 'A'
+    // 'rel_matches' = 0 -> score is number of oligo-hits, 1 -> score is relative to longer sequence (target or source) * 10
 }
 
 PT_FamilyFinder::~PT_FamilyFinder() {
@@ -237,14 +240,10 @@ void PT_FamilyFinder::print() {
 }
 
 GB_ERROR PT_FamilyFinder::searchFamily(const char *sequence, FF_complement compl_mode, int max_results) {
-    // searches the PT-server for related species.
+    // searches the PT-server for species related to 'sequence'.
     //
     // relation-score is calculated by fragmenting the sequence into oligos of length 'oligo_len' and
     // then summarizing the number of hits.
-    //
-    // 'mismatches'  = the number of allowed mismatches
-    // 'fast_flag'   = 0 -> do complete search, 1 -> search only oligos starting with 'A'
-    // 'rel_matches' = 0 -> score is number of oligo-hits, 1 -> score is relative to longer sequence (target or source) * 10
     //
     // 'max_results' limits the length of the generated result list (low scores deleted first)
     //               if < 1 -> don't limit
@@ -298,3 +297,69 @@ void AWTC_create_common_next_neighbour_fields(AW_window *aws) {
 
 }
 
+// --------------------------------------------------------------------------------
+
+#if (UNIT_TESTS == 1)
+
+#include <test_unit.h>
+
+void TEST_SLOW_PT_FamilyFinder() {
+    GBDATA *gb_main = GB_open("no.arb", "c");
+
+    for (int relativeMatches = 0; relativeMatches <= 1; ++relativeMatches) {
+        for (int fastMode = 0; fastMode <= 1; ++fastMode) {
+            PT_FamilyFinder ff(gb_main, TEST_SERVER_ID, 18, 1, fastMode, relativeMatches);
+            
+            // sequence of 'BcSSSS00' in TEST_pt.arb:
+            const char *sequence = "UUUAUCGGAGAGUUUGAUCAAGUCGAGCGGACAGAUGGGAGCUUGCUCCCUGAUGUUAGCGGCGGACGGACUCCGGGAAACCGGGGCUAAUACCGGAUGGUGAUGAUUGGGGUGAAGUCGUAACAAGGUAGCCGUAUCGGAAGGUGCGGCUGGAUCACCUCCUUUCU";
+
+            TEST_ASSERT_NO_ERROR(ff.searchFamily(sequence, FF_FORWARD, 4));
+
+#define TEST_ASSERT_NEXT_RELATIVE(NAME, MATCHES, REL_MATCHES) do {      \
+                TEST_ASSERT(fm);                                        \
+                TEST_ASSERT((arb_test::is_equal(fm->name, NAME) +       \
+                             arb_test::is_equal(fm->matches, MATCHES) + \
+                             arb_test::is_equal(fm->rel_matches, REL_MATCHES)) == 3); \
+                fm = fm->next;                                          \
+            } while(0)
+
+            const FamilyList *fm = ff.getFamilyList();
+            TEST_ASSERT(fm);
+
+            if (fastMode == 0) { // full-search
+                TEST_ASSERT_NEXT_RELATIVE("BcSSSS00", 150, 0.993377);
+                TEST_ASSERT_NEXT_RELATIVE("Bl0LLL00",  65, 0.488722);
+
+                if (relativeMatches == 0) {
+                    TEST_ASSERT_NEXT_RELATIVE("ClfPerfr",  24, 0.160000);
+                    TEST_ASSERT_NEXT_RELATIVE("Stsssola",  23, 0.161972);
+                    TEST_ASSERT(!fm); // checked all?
+                }
+                else {
+                    TEST_ASSERT_NEXT_RELATIVE("Stsssola",  23, 0.161972);
+                    TEST_ASSERT_NEXT_RELATIVE("ClfPerfr",  24, 0.160000);
+                    TEST_ASSERT(!fm); // checked all?
+                }
+            }
+            else { // fast-search 
+                TEST_ASSERT_NEXT_RELATIVE("BcSSSS00", 34, 0.225166);
+                TEST_ASSERT_NEXT_RELATIVE("Bl0LLL00", 18, 0.135338);
+
+                if (relativeMatches == 0) {
+                    TEST_ASSERT_NEXT_RELATIVE("DcdNodos",  6, 0.041096);
+                    TEST_ASSERT_NEXT_RELATIVE("LgtLytic",  6, 0.041379);
+                    TEST_ASSERT(!fm); // checked all?
+                }
+                else {
+                    TEST_ASSERT_NEXT_RELATIVE("PslFlave",  6, 0.043478);
+                    TEST_ASSERT_NEXT_RELATIVE("HllHalod",  6, 0.041958);
+                    TEST_ASSERT(!fm); // checked all? 
+                }
+            }
+        }
+    }
+
+    GB_close(gb_main);
+}
+
+#endif
