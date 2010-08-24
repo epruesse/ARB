@@ -160,7 +160,7 @@ static char *AP_probe_design_event() {
         if (*locs_error) {
             aw_message(locs_error);
         }
-        delete locs_error;
+        free(locs_error);
     }
 
     aisc_get(pd_gl.link, PT_PDC, pdc,
@@ -182,11 +182,12 @@ static char *AP_probe_design_event() {
 
     while (tprobe) {
         if (aisc_get(pd_gl.link, PT_TPROBE, tprobe,
-                      TPROBE_NEXT,      &tprobe,
-                      TPROBE_INFO,      &match_info,
-                      NULL)) break;
+                     TPROBE_NEXT,      &tprobe,
+                     TPROBE_INFO,      &match_info,
+                     NULL)) break;
         GBS_strcat(outstr, match_info);
         GBS_chrcat(outstr, '\n');
+        free(match_info);
     }
 
     aisc_close(pd_gl.link); pd_gl.link = 0;
@@ -392,8 +393,10 @@ int main(int argc, const char ** argv) {
 
 static void test_arb_probe(int fake_argc, const char **fake_argv, const char *expected) {
     TEST_ASSERT_EQUAL(true, parseCommandLine(fake_argc, fake_argv));
-    P.SERVERID = TEST_SERVER_ID; // use test pt_server
-    TEST_ASSERT_EQUAL(execute(), expected);
+    P.SERVERID   = TEST_SERVER_ID; // use test pt_server
+    char *answer = execute();
+    TEST_ASSERT_EQUAL(answer, expected);
+    free(answer);
 }
 
 #define COUNT(array) sizeof(array)/sizeof(*array)
