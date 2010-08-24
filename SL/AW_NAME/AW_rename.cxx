@@ -200,16 +200,8 @@ public:
     GB_ERROR connect(GBDATA *gb_main) {
         GB_ERROR err = 0;
         if (!link) {
-            char       *server_id;
             const char *add_field = AW_get_nameserver_addid(gb_main);
-
-            if (add_field[0] == 0) { // no additional field -> traditional name server
-                server_id = strdup("ARB_NAME_SERVER");
-            }
-            else {
-                server_id = GBS_global_string_copy("ARB_NAME_SERVER_%s", add_field);
-                ARB_strupper(server_id);
-            }
+            const char *server_id = GBS_nameserver_tag(add_field);
 
             err = arb_look_and_start_server(AISC_MAGIC_NUMBER, server_id, gb_main);
 
@@ -228,7 +220,6 @@ public:
                     }
                 }
             }
-            free(server_id);
         }
         else {
             long linkAge     = int(time(0)-linktime);

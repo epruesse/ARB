@@ -967,20 +967,15 @@ int MP_init_local_com_struct()
     return 0;
 }
 
-const char *MP_probe_pt_look_for_server()
-{
-    char choice[256];
-    sprintf(choice, "ARB_PT_SERVER%ld", mp_gl_awars.ptserver);
-#if defined(DEVEL_RALF)
-#warning use GBS_ptserver_id_to_choice here ?
-#endif // DEVEL_RALF
-    GB_ERROR error;
-    error = arb_look_and_start_server(AISC_MAGIC_NUMBER, choice, 0);
+const char *MP_probe_pt_look_for_server() {
+    const char *server_tag = GBS_ptserver_tag(mp_gl_awars.ptserver);
+    GB_ERROR    error      = arb_look_and_start_server(AISC_MAGIC_NUMBER, server_tag, 0);
+
     if (error) {
-        aw_message((char *)error);
+        aw_message(error);
         return 0;
     }
-    return GBS_read_arb_tcp(choice);
+    return GBS_read_arb_tcp(server_tag);
 }
 
 

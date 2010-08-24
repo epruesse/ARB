@@ -254,6 +254,16 @@ namespace arb_test {
         arb_assert(value == (Expected));                \
     } while (0)
 
+# define ASSERT_RESULT_BELOW(Type, Expr, Limit) do {    \
+        Type value = (Expr);                            \
+        arb_assert(value < (Limit));                    \
+    } while (0)
+
+# define ASSERT_RESULT_ABOVE(Type, Expr, Limit) do {    \
+        Type value = (Expr);                            \
+        arb_assert(value > (Limit));                    \
+    } while (0)
+    
 # define ASSERT_RESULT_PREDICATE(Expr, Pred) do {       \
         arb_assert(Pred(Expr));                         \
     } while (0)
@@ -266,7 +276,10 @@ namespace arb_test {
 
 # define ASSERT_RESULT_PREDICATE(Expr, Pred) do {       \
         (void)Expr;                                     \
-    } while (0)
+    } while(0)
+
+# define ASSERT_RESULT_BELOW(Type, Expr, Limit) ASSERT_RESULT(Type, Expr, 0)
+# define ASSERT_RESULT_ABOVE(Type, Expr, Limit) ASSERT_RESULT(Type, Expr, 0)
 
 #endif
 

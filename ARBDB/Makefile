@@ -80,7 +80,7 @@ tlpro: $(GB_T:.o=.cxx)
 global_proto: pro ppro tpro kpro
 
 pro: $(GB_O:.o=.cxx)
-	../MAKEBIN/aisc_mkpt -c "ARB database interface" -G -A -w ad_prot.h -F ^GB_,^GEN_,^EXP_,^GBS_,^GBT_,^GBCM $^ >ad_prot.h.tmp
+	../MAKEBIN/aisc_mkpt -c "ARB database interface" -G -P -A -w ad_prot.h -F ^GB_,^GEN_,^EXP_,^GBS_,^GBT_,^GBCM $^ >ad_prot.h.tmp
 	../SOURCE_TOOLS/mv_if_diff ad_prot.h.tmp ad_prot.h
 
 ppro: $(GB_O:.o=.cxx)
@@ -768,7 +768,9 @@ adtcp.o: $(ARBHOME)/INCLUDE/arb_error.h
 adtcp.o: $(ARBHOME)/INCLUDE/arbtools.h
 adtcp.o: $(ARBHOME)/INCLUDE/attributes.h
 adtcp.o: $(ARBHOME)/INCLUDE/dupstr.h
+adtcp.o: $(ARBHOME)/INCLUDE/inline.h
 adtcp.o: $(ARBHOME)/INCLUDE/smartptr.h
+adtcp.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 adTest.o: ad_k_prot.h
 adTest.o: ad_prot.h

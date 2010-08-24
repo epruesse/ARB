@@ -231,13 +231,12 @@ static const char *PD_probe_pt_look_for_server(AW_root *root, GBDATA *gb_main, G
     // return PT server info string (see GBS_read_arb_tcp for details)
     // or NULL (in this case 'error' is set)
 
-    const char *result = 0;
-    char        choice[256];
+    const char *result     = 0;
+    const char *server_tag = GBS_ptserver_tag(root->awar(AWAR_PT_SERVER)->read_int());
 
-    sprintf(choice, "ARB_PT_SERVER%li", root->awar(AWAR_PT_SERVER)->read_int());
-    error = arb_look_and_start_server(AISC_MAGIC_NUMBER, choice, gb_main);
+    error = arb_look_and_start_server(AISC_MAGIC_NUMBER, server_tag, gb_main);
     if (!error) {
-        result             = GBS_read_arb_tcp(choice);
+        result             = GBS_read_arb_tcp(server_tag);
         if (!result) error = GB_await_error();
     }
     pd_assert(!!result != !!error);
@@ -1622,16 +1621,13 @@ AW_window *create_probe_match_window(AW_root *root, AW_CL cl_gb_main) {
 }
 
 static void pd_start_pt_server(AW_window *aww, AW_CL cl_gb_main) {
-    AW_root *awr = aww->get_root();
-    char pt_server[256];
-    sprintf(pt_server, "ARB_PT_SERVER%li", awr->awar(AWAR_PROBE_ADMIN_PT_SERVER)->read_int());
-    GB_ERROR error;
+    const char *server_tag = GBS_ptserver_tag(aww->get_root()->awar(AWAR_PROBE_ADMIN_PT_SERVER)->read_int());
+    
     aw_openstatus("Start a server");
     aw_status("Look for server or start one");
-    error = arb_look_and_start_server(AISC_MAGIC_NUMBER, pt_server, (GBDATA*)cl_gb_main);
-    if (error) {
-        aw_message(error);
-    }
+    
+    GB_ERROR error = arb_look_and_start_server(AISC_MAGIC_NUMBER, server_tag, (GBDATA*)cl_gb_main);
+    if (error) aw_message(error);
     aw_closestatus();
 }
 
@@ -1662,8 +1658,8 @@ void pd_kill_pt_server(AW_window *aww, AW_CL kill_all)
 
             aw_status(GBS_global_string("Trying to stop '%s'", choice));
 
-            const char *pt_server = GBS_global_string("ARB_PT_SERVER%i", i);
-            GB_ERROR    error     = arb_look_and_kill_server(AISC_MAGIC_NUMBER, pt_server);
+            const char *server_tag = GBS_ptserver_tag(i);
+            GB_ERROR    error      = arb_look_and_kill_server(AISC_MAGIC_NUMBER, server_tag);
 
             if (error) aw_message(GBS_global_string("Could not stop '%s' (Reason: %s)", choice, error));
             else aw_message(GBS_global_string("Stopped '%s'", choice));
@@ -1674,11 +1670,8 @@ void pd_kill_pt_server(AW_window *aww, AW_CL kill_all)
     }
 }
 
-void pd_query_pt_server(AW_window *aww)
-{
-    AW_root *awr = aww->get_root();
-    char     pt_server[256];
-    sprintf(pt_server, "ARB_PT_SERVER%li", awr->awar(AWAR_PROBE_ADMIN_PT_SERVER)->read_int());
+void pd_query_pt_server(AW_window *aww) {
+    const char *server_tag = GBS_ptserver_tag(aww->get_root()->awar(AWAR_PROBE_ADMIN_PT_SERVER)->read_int());
 
     GBS_strstruct *strstruct = GBS_stropen(1024);
     GBS_strcat(strstruct,   "echo Contents of directory ARBHOME/lib/pts:;echo;"
@@ -1688,7 +1681,7 @@ void pd_query_pt_server(AW_window *aww)
     GBS_strcat(strstruct, "echo;echo 'Running ARB programs:';");
 
     {
-        const char *server  = GBS_read_arb_tcp(pt_server);
+        const char *server  = GBS_read_arb_tcp(server_tag);
         char       *arb_who = prefixSSH(server, "$ARBHOME/bin/arb_who", 0);
         GBS_strcat(strstruct, arb_who);
         free(arb_who);
@@ -1703,7 +1696,6 @@ static void pd_export_pt_server(AW_window *aww, AW_CL cl_gb_main) {
     GBDATA   *gb_main = (GBDATA*)cl_gb_main;
     AW_root  *awr     = aww->get_root();
     GB_ERROR  error   = 0;
-    char      pt_server[256];
 
     bool create_gene_server = awr->awar(AWAR_PROBE_CREATE_GENE_SERVER)->read_int();
     {
@@ -1723,8 +1715,8 @@ static void pd_export_pt_server(AW_window *aww, AW_CL cl_gb_main) {
         }
     }
 
-    long serverid = awr->awar(AWAR_PROBE_ADMIN_PT_SERVER)->read_int();
-    sprintf(pt_server, "ARB_PT_SERVER%li", serverid);
+    long        server_num = awr->awar(AWAR_PROBE_ADMIN_PT_SERVER)->read_int();
+    const char *server_tag  = GBS_ptserver_tag(server_num);
 
     if (!error &&
         aw_question("This function will send your currently loaded data as the new data to the pt_server !!!\n"
@@ -1737,9 +1729,9 @@ static void pd_export_pt_server(AW_window *aww, AW_CL cl_gb_main) {
     {
         aw_openstatus("Updating PT-server");
         aw_status("Stopping PT-server");
-        arb_look_and_kill_server(AISC_MAGIC_NUMBER, pt_server);
+        arb_look_and_kill_server(AISC_MAGIC_NUMBER, server_tag);
 
-        const char *ipPort = GBS_read_arb_tcp(pt_server);
+        const char *ipPort = GBS_read_arb_tcp(server_tag);
         const char *file   = GBS_scan_arb_tcp_param(ipPort, "-d");
 
         GBS_add_ptserver_logentry(GBS_global_string("Started build of '%s'", file));
@@ -1789,7 +1781,7 @@ static void pd_export_pt_server(AW_window *aww, AW_CL cl_gb_main) {
 
         if (!error) {
             aw_status("Start PT-server (builds in background)");
-            error = arb_start_server(pt_server, gb_main, 1);
+            error = arb_start_server(server_tag, gb_main, 1);
         }
         aw_closestatus();
 

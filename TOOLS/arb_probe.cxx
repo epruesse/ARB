@@ -68,21 +68,15 @@ static void aw_message(const char *error) {
     printf("%s\n", error);
 }
 
-static const char *AP_probe_pt_look_for_server()
-{
-    char choice[256];
-    sprintf(choice, "ARB_PT_SERVER%i", P.SERVERID);
+static const char *AP_probe_pt_look_for_server() {
+    const char *server_tag = GBS_ptserver_tag(P.SERVERID);
+    GB_ERROR    error      = arb_look_and_start_server(AISC_MAGIC_NUMBER, server_tag, 0);
 
-#if defined(UNIT_TESTS)
-    if (P.SERVERID == -1) strcpy(choice, "ARB_TEST_PT_SERVER");
-#endif // UNIT_TESTS
-
-    GB_ERROR error = arb_look_and_start_server(AISC_MAGIC_NUMBER, choice, 0);
     if (error) {
         aw_message(error);
         return 0;
     }
-    return GBS_read_arb_tcp(choice);
+    return GBS_read_arb_tcp(server_tag);
 }
 
 
@@ -398,7 +392,7 @@ int main(int argc, const char ** argv) {
 
 static void test_arb_probe(int fake_argc, const char **fake_argv, const char *expected) {
     TEST_ASSERT_EQUAL(true, parseCommandLine(fake_argc, fake_argv));
-    P.SERVERID = -1; // use fake server
+    P.SERVERID = TEST_SERVER_ID; // use test pt_server
     TEST_ASSERT_EQUAL(execute(), expected);
 }
 
