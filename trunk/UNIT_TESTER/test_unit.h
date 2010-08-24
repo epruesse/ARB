@@ -65,6 +65,7 @@ namespace arb_test {
         return different;
     }
 
+
     inline bool is_equal(int n1, int n2) {
         bool equal = n1 == n2;
         if (!equal) {
@@ -72,13 +73,29 @@ namespace arb_test {
         }
         return equal;
     }
-    inline bool is_equal(size_t n1, size_t n2) {
-        bool equal = n1 == n2;
+    inline bool is_equal(size_t z1, size_t z2) {
+        bool equal = z1 == z2;
         if (!equal) {
-            printf_flushed("numeric_equal(%zu,%zu) returns false\n", n1, n2);
+            printf_flushed("numeric_equal(%zu,%zu) returns false\n", z1, z2);
         }
         return equal;
     }
+
+    inline bool is_similar(double d1, double d2, double epsilon) {
+        double diff = d1-d2;
+        if (diff<0.0) diff = -diff; // do not use fabs() here
+
+        bool in_epsilon_range = diff < epsilon;
+        if (!in_epsilon_range) {
+            printf_flushed("is_similar(%f,%f,%f) returns false\n", d1, d2, epsilon);
+        }
+        return in_epsilon_range;
+    }
+
+    inline bool is_equal(double d1, double d2) {
+        return is_similar(d1, d2, 0.000001);
+    }
+
 };
 
 // --------------------------------------------------------------------------------
@@ -261,8 +278,11 @@ namespace arb_test {
 
 // --------------------------------------------------------------------------------
 
-#define TEST_ASSERT_EQUAL(t1, t2)         TEST_ASSERT(arb_test::is_equal(t1, t2))
-#define TEST_ASSERT_EQUAL__BROKEN(t1, t2) TEST_ASSERT__BROKEN(arb_test::is_equal(t1, t2))
+#define TEST_ASSERT_EQUAL(t1,t2)           TEST_ASSERT(arb_test::is_equal(t1, t2))
+#define TEST_ASSERT_EQUAL__BROKEN(t1,t2)   TEST_ASSERT__BROKEN(arb_test::is_equal(t1, t2))
+
+#define TEST_ASSERT_SIMILAR(t1,t2,epsilon)         TEST_ASSERT(arb_test::is_similar(t1, t2, epsilon))
+#define TEST_ASSERT_SIMILAR__BROKEN(t1,t2,epsilon) TEST_ASSERT__BROKEN(arb_test::is_similar(t1, t2, epsilon))
 
 #else
 #error test_unit.h included twice
