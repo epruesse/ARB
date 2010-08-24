@@ -150,10 +150,7 @@ static GB_ERROR test_db(const char *filename) {
     return error;
 }
 
-int main(int argc, char **argv)
-{
-    GB_HASH *test_hash = GBS_create_hash(40000, GB_IGNORE_CASE);
-
+int main(int argc, char **argv) {
     if (argc != 2) {
         fprintf(stderr, "arb_test -- database test program\n"
                 "Syntax: arb_test database\n");
