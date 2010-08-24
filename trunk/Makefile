@@ -1598,6 +1598,7 @@ ut: unit_tests
 
 TIMELOG=$(ARBHOME)/arb_time.log
 TIMEARGS=--append --output=$(TIMELOG) --format=" %E(%S+%U) %P [%C]"
+TIMECMD=/usr/bin/time $(TIMEARGS)
 
 build:
 	$(MAKE) links
@@ -1613,15 +1614,15 @@ ifeq ("$(DEVELOPER)","SAVETEST")
 endif
 
 all: checks
-	@echo "Build times" > $(TIMELOG)
+	@echo "Build time" > $(TIMELOG)
 	@echo $(MAKE) build
-	@time $(TIMEARGS) $(MAKE) build
+	@$(TIMECMD) $(MAKE) build
 	@echo $(SEP)
 	@echo "made 'all' with success."
 	@echo "to start arb enter 'arb'"
 ifeq ($(UNIT_TESTS),1)
 	@echo $(MAKE) unit_tests
-	@time $(TIMEARGS) $(MAKE) unit_tests
+	@$(TIMECMD) $(MAKE) unit_tests
 endif
 	@cat $(TIMELOG)
 	@rm $(TIMELOG)
