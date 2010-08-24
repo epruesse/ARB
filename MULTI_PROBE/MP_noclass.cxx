@@ -1033,6 +1033,11 @@ void TEST_MP_get_comment_and_probes() {
     MP_GET_COMMENT_EQUAL(1, probes_2, "one");
     MP_GET_COMMENT_EQUAL(2, probes_2, "two");
     MP_GET_COMMENT_EQUAL(3, probes_2, NULL);
+
+    free(probes_2);
+    free(probes_1);
+    free(probes_comment);
+    free(probes_only);
 }
 
 #endif

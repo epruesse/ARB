@@ -1743,32 +1743,34 @@ static ARB_ERROR alignToNextRelative(SearchRelativeParams&  relSearch,
                                     fa_assert(ali_params.firstColumn<=start && start<=end && (end<=ali_params.lastColumn || ali_params.lastColumn==-1));
 
                                     CompactedSubSequence *alignToPart = readCompactedSequence(gb_reference[i], alignment, &error, 0, 0, start, end);
-                                    if (error) break;
 
-                                    long part_chksum;
-                                    CompactedSubSequence *toAlignPart = readCompactedSequence(gb_toAlign, alignment, &error, 0, &part_chksum, start, end);
-                                    if (error) break;
+                                    if (!error) {
+                                        long                  part_chksum;
+                                        CompactedSubSequence *toAlignPart = readCompactedSequence(gb_toAlign, alignment, &error, 0, &part_chksum, start, end);
 
-                                    AlignParams ubl_ali_params = {
-                                        ali_params.report,
-                                        ali_params.showGapsMessages,
-                                        start,
-                                        end
-                                    };
+                                        if (!error) {
+                                            AlignParams ubl_ali_params = {
+                                                ali_params.report,
+                                                ali_params.showGapsMessages,
+                                                start,
+                                                end
+                                            };
 
-                                    FastSearchSequence referenceFastSeq(*alignToPart);
-                                    error = alignCompactedTo(toAlignPart, &referenceFastSeq,
-                                                             max_seq_length, alignment, part_chksum,
-                                                             gb_toAlign, gb_reference[i], ubl_ali_params);
-                                    if (error) break;
-
-                                    CompactedSubSequence *alignedPart = readCompactedSequence(gb_toAlign, alignment, &error, 0, 0, start, end);
-
-                                    unaligned_positions_for_next += ubl_for_next_relative.add_and_recalc_positions(&unaligned_bases, toAlignPart, alignedPart);
-
-                                    delete alignedPart;
+                                            FastSearchSequence referenceFastSeq(*alignToPart);
+                                            error = alignCompactedTo(toAlignPart, &referenceFastSeq,
+                                                                     max_seq_length, alignment, part_chksum,
+                                                                     gb_toAlign, gb_reference[i], ubl_ali_params);
+                                            if (!error) {
+                                                CompactedSubSequence *alignedPart = readCompactedSequence(gb_toAlign, alignment, &error, 0, 0, start, end);
+                                                if (!error) {
+                                                    unaligned_positions_for_next += ubl_for_next_relative.add_and_recalc_positions(&unaligned_bases, toAlignPart, alignedPart);
+                                                }
+                                                delete alignedPart;
+                                            }
+                                            delete toAlignPart;
+                                        }
+                                    }
                                     delete alignToPart;
-                                    delete toAlignPart;
                                 }
 
                                 if (!error) {
