@@ -42,6 +42,7 @@ WARN_LEVEL=1# enable warnings (recommended)
 
 # target 'ut' in main ARB makefile create patches each time (selected) unit tests succeed
 DELETE_PATCHES_AFTER=20160# delete created patches after XXX min (20160=14 days)
+#DELETE_PATCHES_AFTER=0# delete created patches instantly (always one patch present)
 
 # ----------------------------------------------------------
 
@@ -75,7 +76,6 @@ FULLLIB=$(FULLUNITDIR)/$(UNITLIB)
 
 DESTDIR=tests
 RUNDIR=run
-PATCHDIR=patches
 RUN2HERE=..# prefix from RUNDIR to here (UNIT_TESTER)
 
 SYMLIST=$(DESTDIR)/$(UNIQUE_NAME).sym
@@ -114,9 +114,6 @@ $(DESTDIR):
 
 $(RUNDIR):
 	test -d $(RUNDIR) || mkdir -p $(RUNDIR)
-
-$(PATCHDIR):
-	test -d $(PATCHDIR) || mkdir -p $(PATCHDIR)
 
 makedirs: $(DESTDIR) $(RUNDIR)
 
@@ -170,28 +167,13 @@ skip_test:
 
 # --------------------
 
-PATCHNAME=TestsOk_$(shell date '+%Y%m%d_%H%M%S')
-RECENT_PATCH=$(ARBHOME)/latest_test_ok.patch
-ifneq ('$(RESTRICT_LIB)','')
-	PATCHNAME:=$(PATCHNAME)_$(subst :,_,$(RESTRICT_LIB))
-endif
-ifneq ($(RESTRICT_MODULE),'.')
-	PATCHNAME:=$(PATCHNAME)_$(subst \.,.,$(RESTRICT_MODULE))
-endif
-PATCHNAME:=$(PATCHNAME).patch
+PATCHBASENAME=TestsOk
 
-PATCH=$(PATCHDIR)/$(PATCHNAME)
+del_old_patches:
+	@../SOURCE_TOOLS/arb_cleanup_patches.sh $(PATCHBASENAME) $(DELETE_PATCHES_AFTER) 
 
-del_old_patches: $(PATCHDIR)
-	@find $(PATCHDIR) -mmin +$(DELETE_PATCHES_AFTER) -exec rm {} \;
-
-store_patch: del_old_patches 
-	@echo Saving patch for current state: 
-	@svn diff $(ARBHOME) > $(PATCH)
-	@ls -alh $(PATCH)
-	@ln --force $(PATCH) $(RECENT_PATCH)
-
-#	@ls -alh -rt $(PATCHDIR)/*.patch | tail -1
+store_patch: del_old_patches
+	@../SOURCE_TOOLS/arb_create_patch.sh $(PATCHBASENAME)
 
 # --------------------
 

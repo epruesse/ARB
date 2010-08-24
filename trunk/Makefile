@@ -408,7 +408,7 @@ endif
 		@echo ' stable      - like "release", but increase major version number'
 		@echo ' tarfile     - make rebuild and create arb version tarfile ("tarfile_quick" to skip rebuild)'
 		@echo ' save        - save all basic ARB sources into arbsrc_DATE'
-		@echo ' rtc_patch   - create LIBLINK/libRTC8M.so (SOLARIS ONLY)'
+		@echo ' patch       - save svn diff to patchfile'
 		@echo ' source_doc  - create doxygen documentation'
 		@echo ' relocated   - rebuild partly (use when you have relocated ARBHOME)'
 		@echo ' check_res   - check ressource usage'
@@ -1271,8 +1271,6 @@ readseq:	READSEQ/READSEQ.dummy
 #***************************************************************************************
 #			Some user commands
 #***************************************************************************************
-rtc_patch:
-	rtc_patch_area -so LIBLINK/libRTC8M.so
 
 menus: binlink
 	@(( \
@@ -1410,7 +1408,10 @@ tarfile_quick: all
 
 save: sourcetarfile 
 
-# test early whether save will work 
+patch:
+	SOURCE_TOOLS/arb_create_patch.sh arbPatch
+
+# test early whether save will work
 testsave:
 	@util/arb_srclst.pl >/dev/null
 
