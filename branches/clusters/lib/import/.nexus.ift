@@ -1,5 +1,0 @@
-AUTODETECT      "#NEXUS*Matrix*"
-
-SYSTEM          "cat $< |tr -s ' ' >$>;arb_replace '*Matrix=' $>; arb_replace -l '*>*=>*1\nSQ *2' $>"
-
-NEW_FORMAT      "lib/import/nonformats/nexus.ift"
