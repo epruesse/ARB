@@ -11,6 +11,12 @@
 #ifndef AISC_GLOBAL_H
 #define AISC_GLOBAL_H
 
+struct bytestring {
+    char *data;
+    int   size;
+};
+
+
 // type mask
 #define AISC_TYPE_NONE   0x00000000
 #define AISC_TYPE_INT    0x01000000

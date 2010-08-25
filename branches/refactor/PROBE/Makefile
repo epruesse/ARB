@@ -52,6 +52,7 @@ PT_buildtree.o: probe_tree.hxx
 PT_buildtree.o: pt_prototypes.h
 PT_buildtree.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 PT_buildtree.o: $(ARBHOME)/INCLUDE/ad_prot.h
+PT_buildtree.o: $(ARBHOME)/INCLUDE/aisc_global.h
 PT_buildtree.o: $(ARBHOME)/INCLUDE/arb_assert.h
 PT_buildtree.o: $(ARBHOME)/INCLUDE/arb_error.h
 PT_buildtree.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -69,6 +70,7 @@ PT_etc.o: probe.h
 PT_etc.o: pt_prototypes.h
 PT_etc.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 PT_etc.o: $(ARBHOME)/INCLUDE/ad_prot.h
+PT_etc.o: $(ARBHOME)/INCLUDE/aisc_global.h
 PT_etc.o: $(ARBHOME)/INCLUDE/arb_assert.h
 PT_etc.o: $(ARBHOME)/INCLUDE/arb_error.h
 PT_etc.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -88,6 +90,7 @@ PT_family.o: pt_prototypes.h
 PT_family.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 PT_family.o: $(ARBHOME)/INCLUDE/ad_prot.h
 PT_family.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+PT_family.o: $(ARBHOME)/INCLUDE/aisc_global.h
 PT_family.o: $(ARBHOME)/INCLUDE/arb_assert.h
 PT_family.o: $(ARBHOME)/INCLUDE/arb_error.h
 PT_family.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -108,6 +111,7 @@ PT_findEx.o: probe_tree.hxx
 PT_findEx.o: pt_prototypes.h
 PT_findEx.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 PT_findEx.o: $(ARBHOME)/INCLUDE/ad_prot.h
+PT_findEx.o: $(ARBHOME)/INCLUDE/aisc_global.h
 PT_findEx.o: $(ARBHOME)/INCLUDE/arb_assert.h
 PT_findEx.o: $(ARBHOME)/INCLUDE/arb_error.h
 PT_findEx.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -125,6 +129,7 @@ PT_io.o: probe.h
 PT_io.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 PT_io.o: $(ARBHOME)/INCLUDE/ad_prot.h
 PT_io.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+PT_io.o: $(ARBHOME)/INCLUDE/aisc_global.h
 PT_io.o: $(ARBHOME)/INCLUDE/arb_assert.h
 PT_io.o: $(ARBHOME)/INCLUDE/arb_error.h
 PT_io.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -170,6 +175,7 @@ PT_match.o: pt_prototypes.h
 PT_match.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 PT_match.o: $(ARBHOME)/INCLUDE/ad_prot.h
 PT_match.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+PT_match.o: $(ARBHOME)/INCLUDE/aisc_global.h
 PT_match.o: $(ARBHOME)/INCLUDE/arb_assert.h
 PT_match.o: $(ARBHOME)/INCLUDE/arb_error.h
 PT_match.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -191,6 +197,7 @@ PT_new_design.o: pt_prototypes.h
 PT_new_design.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 PT_new_design.o: $(ARBHOME)/INCLUDE/ad_prot.h
 PT_new_design.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+PT_new_design.o: $(ARBHOME)/INCLUDE/aisc_global.h
 PT_new_design.o: $(ARBHOME)/INCLUDE/arb_assert.h
 PT_new_design.o: $(ARBHOME)/INCLUDE/arb_error.h
 PT_new_design.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -211,6 +218,7 @@ PT_prefixtree.o: probe.h
 PT_prefixtree.o: probe_tree.hxx
 PT_prefixtree.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 PT_prefixtree.o: $(ARBHOME)/INCLUDE/ad_prot.h
+PT_prefixtree.o: $(ARBHOME)/INCLUDE/aisc_global.h
 PT_prefixtree.o: $(ARBHOME)/INCLUDE/arb_assert.h
 PT_prefixtree.o: $(ARBHOME)/INCLUDE/arb_error.h
 PT_prefixtree.o: $(ARBHOME)/INCLUDE/arbdb.h
