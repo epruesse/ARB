@@ -114,12 +114,12 @@ static char *AP_probe_design_event() {
 
     aisc_create(pd_gl.link, PT_LOCS, pd_gl.locs,
                 LOCS_PROBE_DESIGN_CONFIG, PT_PDC,   &pdc,
-                PDC_PROBELENGTH, P.DESIGNPROBELENGTH,
-                PDC_MINTEMP,    (double)P.MINTEMP,
-                PDC_MAXTEMP,    (double)P.MAXTEMP,
-                PDC_MINGC,  P.MINGC/100.0,
-                PDC_MAXGC,  P.MAXGC/100.0,
-                PDC_MAXBOND,    (double)P.MAXBOND,
+                PDC_PROBELENGTH, (long)P.DESIGNPROBELENGTH,
+                PDC_MINTEMP,     (double)P.MINTEMP,
+                PDC_MAXTEMP,     (double)P.MAXTEMP,
+                PDC_MINGC,       P.MINGC/100.0,
+                PDC_MAXGC,       P.MAXGC/100.0,
+                PDC_MAXBOND,     (double)P.MAXBOND,
                 NULL);
     aisc_put(pd_gl.link, PT_PDC, pdc,
              PDC_MINPOS,    P.MINPOS,
@@ -228,13 +228,13 @@ static char *AP_probe_match_event()
 
 
 
-    if (aisc_nput(pd_gl.link, PT_LOCS, pd_gl.locs,
-                  LOCS_MATCH_REVERSED,      P.COMPLEMENT,
-                  LOCS_MATCH_SORT_BY,       P.WEIGHTED,
-                  LOCS_MATCH_COMPLEMENT,        0,
-                  LOCS_MATCH_MAX_MISMATCHES,    P.MISMATCHES,
-                  LOCS_MATCH_MAX_SPECIES,       100000,
-                  LOCS_SEARCHMATCH,     P.SEQUENCE,
+    if (aisc_nput(pd_gl.link, PT_LOCS, pd_gl.locs, // @@@ first wui
+                  LOCS_MATCH_REVERSED,          (long)P.COMPLEMENT,
+                  LOCS_MATCH_SORT_BY,           (long)P.WEIGHTED,
+                  LOCS_MATCH_COMPLEMENT,        0L,
+                  LOCS_MATCH_MAX_MISMATCHES,    (long)P.MISMATCHES,
+                  LOCS_MATCH_MAX_SPECIES,       (long)100000,
+                  LOCS_SEARCHMATCH,             P.SEQUENCE,
                   NULL)) {
         free(probe);
         aw_message ("Connection to PT_SERVER lost (2)");
