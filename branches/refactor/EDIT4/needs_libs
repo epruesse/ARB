@@ -1,0 +1,12 @@
+# libraries needed to link against EDIT4/EDIT4.a
+
+ARB_GDE/ARB_GDE.a # needed for what?
+RNA3D/RNA3D.a
+SECEDIT/SECEDIT.a
+SL/AW_HELIX/AW_HELIX.a
+SL/FAST_ALIGNER/FAST_ALIGNER.a
+SL/TRANSLATE/TRANSLATE.a
+STAT/STAT.a
+
+
+

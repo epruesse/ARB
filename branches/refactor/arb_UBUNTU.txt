@@ -1,0 +1,61 @@
+
+ARB requirements on Ubuntu 8.04
+-------------------------------
+
+
+1) Package dependencies for running precompiled ARB
+   
+ 1a) Non OPENGL version
+
+     - libmotif3
+     - gnuplot
+     - gv
+     - xfig
+     - xterm
+     - treetool
+
+ 1b) OPENGL version 
+
+     - packets mentioned under 1a)
+     - libpng12-0
+
+
+2) Package dependencies for compiling ARB
+
+ 2a) Non OPENGL version
+
+     - packets mentioned under 1a)
+     - g++
+     - libx11-dev
+     - libmotif-dev
+     - libxt-dev
+     - x11proto-print-dev
+     - lynx
+     - libxpm-dev
+     - libxp-dev
+     - libxext-dev
+     - libtiff4-dev
+     - libxml2-utils
+     - sablotron
+     - libxaw7-dev
+     - xutils-dev
+
+ 2b) OPENGL version
+
+     Add the following repository to your packet manager:
+
+         deb http://dev.mikro.biologie.tu-muenchen.de/debian hardy non-free
+
+     Install the following packets:
+
+     - packets mentioned under 1b)
+     - packets mentioned under 2a)
+     - libglew1.5-dev
+     - libpng12-dev
+     - freeglut3-dev
+     - libglw-mesa-arb
+
+
+[Note:]
+You may use the provided install script, e.g.
+    sudo SH/arb_installubuntu4arb.sh

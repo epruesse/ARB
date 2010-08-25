@@ -1,0 +1,5 @@
+# libraries needed to link against PROBE/PROBE.a
+
+PROBE_COM/server.a
+SL/HELIX/HELIX.a
+
