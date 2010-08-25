@@ -531,6 +531,7 @@ int aisc_get(aisc_com *link, int o_type, long object, ...)
             return      1;
         }
     }
+    va_end(parg);
     if (mes_cnt > 3) {
         link->aisc_mes_buffer[0] = mes_cnt - 2;
         link->aisc_mes_buffer[1] = AISC_GET+link->magic;
