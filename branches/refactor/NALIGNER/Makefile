@@ -60,6 +60,7 @@ ali_aligner.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 ali_aligner.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ali_aligner.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 ali_aligner.o: $(ARBHOME)/INCLUDE/aisc_func_types.h
+ali_aligner.o: $(ARBHOME)/INCLUDE/aisc_global.h
 ali_aligner.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ali_aligner.o: $(ARBHOME)/INCLUDE/arb_error.h
 ali_aligner.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -113,6 +114,7 @@ ali_global.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 ali_global.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ali_global.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 ali_global.o: $(ARBHOME)/INCLUDE/aisc_func_types.h
+ali_global.o: $(ARBHOME)/INCLUDE/aisc_global.h
 ali_global.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ali_global.o: $(ARBHOME)/INCLUDE/arb_error.h
 ali_global.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -145,6 +147,7 @@ ali_main.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 ali_main.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ali_main.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 ali_main.o: $(ARBHOME)/INCLUDE/aisc_func_types.h
+ali_main.o: $(ARBHOME)/INCLUDE/aisc_global.h
 ali_main.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ali_main.o: $(ARBHOME)/INCLUDE/arb_error.h
 ali_main.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -183,6 +186,7 @@ ali_prealigner.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 ali_prealigner.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ali_prealigner.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 ali_prealigner.o: $(ARBHOME)/INCLUDE/aisc_func_types.h
+ali_prealigner.o: $(ARBHOME)/INCLUDE/aisc_global.h
 ali_prealigner.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ali_prealigner.o: $(ARBHOME)/INCLUDE/arb_error.h
 ali_prealigner.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -209,6 +213,7 @@ ali_profile.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 ali_profile.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ali_profile.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 ali_profile.o: $(ARBHOME)/INCLUDE/aisc_func_types.h
+ali_profile.o: $(ARBHOME)/INCLUDE/aisc_global.h
 ali_profile.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ali_profile.o: $(ARBHOME)/INCLUDE/arb_error.h
 ali_profile.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -234,6 +239,7 @@ ali_pt.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 ali_pt.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ali_pt.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 ali_pt.o: $(ARBHOME)/INCLUDE/aisc_func_types.h
+ali_pt.o: $(ARBHOME)/INCLUDE/aisc_global.h
 ali_pt.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ali_pt.o: $(ARBHOME)/INCLUDE/arb_error.h
 ali_pt.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -265,6 +271,7 @@ ali_solution.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 ali_solution.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ali_solution.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 ali_solution.o: $(ARBHOME)/INCLUDE/aisc_func_types.h
+ali_solution.o: $(ARBHOME)/INCLUDE/aisc_global.h
 ali_solution.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ali_solution.o: $(ARBHOME)/INCLUDE/arb_error.h
 ali_solution.o: $(ARBHOME)/INCLUDE/arbdb.h

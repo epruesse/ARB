@@ -791,6 +791,7 @@ graph_aligner_gui.o: graph_aligner_gui.hxx
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/ad_prot.h
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+graph_aligner_gui.o: $(ARBHOME)/INCLUDE/aisc_global.h
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/arb_assert.h
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/arb_error.h
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/arbdb.h

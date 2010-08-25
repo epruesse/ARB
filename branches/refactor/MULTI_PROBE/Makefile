@@ -110,6 +110,7 @@ MP_mo_liste.o: SoTl.hxx
 MP_mo_liste.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 MP_mo_liste.o: $(ARBHOME)/INCLUDE/ad_prot.h
 MP_mo_liste.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+MP_mo_liste.o: $(ARBHOME)/INCLUDE/aisc_global.h
 MP_mo_liste.o: $(ARBHOME)/INCLUDE/arb_assert.h
 MP_mo_liste.o: $(ARBHOME)/INCLUDE/arb_error.h
 MP_mo_liste.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -134,6 +135,7 @@ MP_noclass.o: SoTl.hxx
 MP_noclass.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/ad_prot.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+MP_noclass.o: $(ARBHOME)/INCLUDE/aisc_global.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/AliView.hxx
 MP_noclass.o: $(ARBHOME)/INCLUDE/AP_sequence.hxx
 MP_noclass.o: $(ARBHOME)/INCLUDE/AP_Tree.hxx
@@ -241,6 +243,7 @@ MP_sonde.o: SoTl.hxx
 MP_sonde.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 MP_sonde.o: $(ARBHOME)/INCLUDE/ad_prot.h
 MP_sonde.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+MP_sonde.o: $(ARBHOME)/INCLUDE/aisc_global.h
 MP_sonde.o: $(ARBHOME)/INCLUDE/arb_assert.h
 MP_sonde.o: $(ARBHOME)/INCLUDE/arb_error.h
 MP_sonde.o: $(ARBHOME)/INCLUDE/arbdb.h

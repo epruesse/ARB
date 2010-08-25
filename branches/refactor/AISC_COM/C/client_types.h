@@ -12,12 +12,16 @@
 #ifndef CLIENT_TYPES_H
 #define CLIENT_TYPES_H
 
-// content comes later
-
 #ifndef __cplusplus
-#error need c++
+#error AISC clients no longer work in plain C
 #endif
 
+#ifndef AISC_GLOBAL_H
+#include <aisc_global.h>
+#endif
+#ifndef ARB_ASSERT_H
+#include <arb_assert.h>
+#endif
 
 #else
 #error client_types.h included twice

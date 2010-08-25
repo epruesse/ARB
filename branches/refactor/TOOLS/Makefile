@@ -230,6 +230,7 @@ arb_primer.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 arb_probe.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 arb_probe.o: $(ARBHOME)/INCLUDE/ad_prot.h
+arb_probe.o: $(ARBHOME)/INCLUDE/aisc_global.h
 arb_probe.o: $(ARBHOME)/INCLUDE/arb_assert.h
 arb_probe.o: $(ARBHOME)/INCLUDE/arb_error.h
 arb_probe.o: $(ARBHOME)/INCLUDE/arbdb.h

@@ -32,6 +32,7 @@ AWTC_next_neighbours.o: awtc_next_neighbours.hxx
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/aisc_global.h
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/arb_error.h
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/arbdb.h

@@ -268,6 +268,7 @@ PTP_main.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 PTP_main.o: $(ARBHOME)/INCLUDE/ad_prot.h
 PTP_main.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 PTP_main.o: $(ARBHOME)/INCLUDE/aisc_func_types.h
+PTP_main.o: $(ARBHOME)/INCLUDE/aisc_global.h
 PTP_main.o: $(ARBHOME)/INCLUDE/arb_assert.h
 PTP_main.o: $(ARBHOME)/INCLUDE/arb_error.h
 PTP_main.o: $(ARBHOME)/INCLUDE/arbdb.h
