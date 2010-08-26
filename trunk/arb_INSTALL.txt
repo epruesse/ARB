@@ -104,8 +104,11 @@ To build ARB from source
 
       to install arb for all users
 
-   and follow the instructions there (if any).
+   and follow the instructions there.
 
+   On the first call 'make' will generate a file name
+   config.makefile. Edit the file to change the
+   build-options available for ARB (e.g. 32/64 bit, openGL)
 
 
 Additional software that is needed to compile ARB:
