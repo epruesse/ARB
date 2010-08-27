@@ -20,6 +20,7 @@
 #endif
 
 #define ENABLE_CRASH_TESTS // comment out this line to get rid of provoked SEGVs (e.g. while debugging test-code)
+// #define TRACE_IS_EQUAL // print calls to numerical is_equal()
 
 /* Note:
  * This file should not generate any static code.
@@ -49,7 +50,63 @@ namespace arb_test {
         return printed;
     }
 
-    inline bool is_equal(const char *s1, const char *s2) {
+    inline void print(int i)           { fprintf(stderr, "%i", i); }
+    inline void print(unsigned u)      { fprintf(stderr, "%u", u); }
+    inline void print(size_t z)        { fprintf(stderr, "%zu", z); }
+    inline void print(long L)          { fprintf(stderr, "%li", L); }
+
+    inline void print_hex(int i)             { fprintf(stderr, "0x%x", i); }
+    inline void print_hex(unsigned u)        { fprintf(stderr, "0x%ux", u); }
+    inline void print_hex(size_t z)          { fprintf(stderr, "0x%zx", z); }
+    inline void print_hex(long L)            { fprintf(stderr, "0x%lx", L); }
+    
+    template <typename T1, typename T2> void print_pair(T1 t1, T2 t2) {
+        print(t1);
+        fputc(',', stderr);
+        print(t2);
+    }
+    template <typename T1, typename T2> void print_hex_pair(T1 t1, T2 t2) {
+        print_hex(t1);
+        fputc(',', stderr);
+        print_hex(t2);
+    }
+    template <typename T1, typename T2> void print_failed_equal(T1 t1, T2 t2) {
+        fflush(stdout);
+        fflush(stderr);
+        fputs("is_equal(", stderr);
+        print_pair(t1, t2);
+        fputs(") (", stderr);
+        print_hex_pair(t1, t2);
+        fputs(") returns false\n", stderr);
+        fflush(stderr);
+    }
+
+    template <typename T> inline const char *nameoftype(T unspecialized) {
+        return specialized_nameoftype(unspecialized);  // define instanciating type below!
+    }
+
+#define NAMEOFTYPE(type) template <> inline const char * nameoftype<>(type) { return #type; }
+    NAMEOFTYPE(bool);
+    NAMEOFTYPE(int);
+    NAMEOFTYPE(unsigned int);
+    NAMEOFTYPE(long int);
+    NAMEOFTYPE(long unsigned int);
+#undef NAMEOFTYPE
+
+    template <typename T1, typename T2> inline bool is_equal(T1 t1, T2 t2) {
+        bool equal = (t1 == t2);
+#ifdef TRACE_IS_EQUAL
+        fprintf(stderr, "%-5s = is_equal(%s ", (equal ? "true" : "false"), nameoftype(t1));
+        print(t1);
+        fprintf(stderr, ",%s ", nameoftype(t2));
+        print(t2);
+        fprintf(stderr, ")\n");
+#endif
+        if (!equal) print_failed_equal(t1, t2);
+        return equal;
+    }
+
+    template<> inline bool is_equal<>(const char *s1, const char *s2) {
         bool equal = strnullequal(s1, s2);
         if (!equal) {
             printf_flushed("str_equal('%s',\n"
@@ -57,28 +114,23 @@ namespace arb_test {
         }
         return equal;
     }
+    template<> inline bool is_equal<>(char *s1, char *s2) { return is_equal((const char *)s1, (const char *)s2); }
+    template<> inline bool is_equal<>(const char *s1, char *s2) { return is_equal(s1, (const char *)s2); }
+    template<> inline bool is_equal<>(char *s1, const char *s2) { return is_equal((const char *)s1, s2); }
+
+    typedef long int NULLPTR; // @@@ maybe needs to be redefined for 32bit
+
+    template<> inline bool is_equal<>(const char *s1, NULLPTR null) { return is_equal(s1, (const char *)null); }
+    template<> inline bool is_equal<>(char *s1, NULLPTR null) { return is_equal(s1, (const char *)null); }
+    template<> inline bool is_equal<>(NULLPTR null, const char *s2) { return is_equal((const char *)null, s2); }
+    template<> inline bool is_equal<>(NULLPTR null, char *s2) { return is_equal((const char *)null, s2); }
+
     inline bool is_different(const char *s1, const char *s2) {
         bool different = !strnullequal(s1, s2);
         if (!different) {
             printf_flushed("str_different('%s', ..) returns false\n", s1);
         }
         return different;
-    }
-
-
-    inline bool is_equal(int n1, int n2) {
-        bool equal = n1 == n2;
-        if (!equal) {
-            printf_flushed("numeric_equal(%i,%i)=(0x%x,0x%x) returns false\n", n1, n2, n1, n2);
-        }
-        return equal;
-    }
-    inline bool is_equal(size_t z1, size_t z2) {
-        bool equal = z1 == z2;
-        if (!equal) {
-            printf_flushed("numeric_equal(%zu,%zu)=(0x%zx,0x%zx) returns false\n", z1, z2, z1, z2);
-        }
-        return equal;
     }
 
     inline bool is_similar(double d1, double d2, double epsilon) {
@@ -143,6 +195,9 @@ namespace arb_test {
             TEST_WARNING("Known broken behavior ('%s' fails)", #cond);  \
     } while (0)
 
+
+#define TEST_ASSERT_ZERO(cond)         TEST_ASSERT((cond)         == 0)
+#define TEST_ASSERT_ZERO__BROKEN(cond) TEST_ASSERT__BROKEN((cond) == 0)
 
 // --------------------------------------------------------------------------------
 
