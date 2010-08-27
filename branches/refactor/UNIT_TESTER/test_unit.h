@@ -50,15 +50,22 @@ namespace arb_test {
         return printed;
     }
 
-    inline void print(int i)           { fprintf(stderr, "%i", i); }
-    inline void print(unsigned u)      { fprintf(stderr, "%u", u); }
-    inline void print(size_t z)        { fprintf(stderr, "%zu", z); }
-    inline void print(long L)          { fprintf(stderr, "%li", L); }
-
+    inline void print(int i)                 { fprintf(stderr, "%i", i); }
     inline void print_hex(int i)             { fprintf(stderr, "0x%x", i); }
-    inline void print_hex(unsigned u)        { fprintf(stderr, "0x%ux", u); }
-    inline void print_hex(size_t z)          { fprintf(stderr, "0x%zx", z); }
+
+    inline void print(long L)                { fprintf(stderr, "%li", L); }
     inline void print_hex(long L)            { fprintf(stderr, "0x%lx", L); }
+
+    inline void print(size_t z)              { fprintf(stderr, "%zu", z); }
+    inline void print_hex(size_t z)          { fprintf(stderr, "0x%zx", z); }
+#ifdef ARB_64
+    inline void print(unsigned u)            { fprintf(stderr, "%u", u); }
+    inline void print_hex(unsigned u)        { fprintf(stderr, "0x%ux", u); }
+#else
+    inline void print(long unsigned u)       { fprintf(stderr, "%lu", u); }
+    inline void print_hex(long unsigned u)   { fprintf(stderr, "0x%lux", u); }
+#endif    
+
     
     template <typename T1, typename T2> void print_pair(T1 t1, T2 t2) {
         print(t1);
@@ -118,7 +125,11 @@ namespace arb_test {
     template<> inline bool is_equal<>(const char *s1, char *s2) { return is_equal(s1, (const char *)s2); }
     template<> inline bool is_equal<>(char *s1, const char *s2) { return is_equal((const char *)s1, s2); }
 
-    typedef long int NULLPTR; // @@@ maybe needs to be redefined for 32bit
+#ifdef ARB_64
+    typedef long int NULLPTR;
+#else    
+    typedef int NULLPTR;
+#endif
 
     template<> inline bool is_equal<>(const char *s1, NULLPTR null) { return is_equal(s1, (const char *)null); }
     template<> inline bool is_equal<>(char *s1, NULLPTR null) { return is_equal(s1, (const char *)null); }
