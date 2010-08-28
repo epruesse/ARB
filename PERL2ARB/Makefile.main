@@ -57,7 +57,7 @@ $(TARGET_SO) : $(ARB_SO)
 $(ARB_SO) : $(XS_DEPENDS) depends.stamp
 	-rm $(ARB_SO)
 	@echo "-------- calling MakeMaker-Makefile"
-	( $(MAKE) "dflags=${dflags}" $@ || \
+	( $(MAKE) "dflags=${dflags} " $@ || \
 		(echo "------ failed.. retry once"; \
 		 $(MAKE) "dflags=${dflags}" $@))
 	@echo "-------- post-recreating .depends"
@@ -71,11 +71,12 @@ ARB.c : $(XS_DEPENDS)
 		 $(MAKE) "dflags=${dflags}" $@ ))
 	@echo "-------- end of MakeMaker-Makefile"
 
-Makefile : $(MACH).PL typemap  
+# buildMakefile
+Makefile : $(MACH).PL typemap Makefile.main  
 	( PATH=/usr/arb/bin:${PATH}; \
 	  export PATH; \
-	  echo calling perl ${MACH}.PL; \
-	  perl ${MACH}.PL )
+	  echo calling perl ${MACH}.PL "$(cross_cflags)" "$(cross_lflags)"; \
+	  perl ${MACH}.PL "$(cross_cflags)" "$(cross_lflags)" )
 
 Makefile.PL : $(MACH).PL
 	cp -p $< $@

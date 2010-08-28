@@ -1,6 +1,12 @@
 use ExtUtils::MakeMaker;
 # See lib/ExtUtils/MakeMaker.pm for details on how to influence
 # the contents of the Makefile that gets written.
+
+print "DARWIN.PL:5: Warning: Please inspect comments here\n";
+# DARWIN.PL is now called with two parameters containing compiler- and linker-flags
+# it would be better to use them instead of hardcoding values below
+# Please remove this section when done.
+
 WriteMakefile(
               'NAME'         => 'ARB',
               'VERSION_FROM' => 'ARB.pm',

@@ -146,6 +146,9 @@ ifndef BUILDHOST_64
 	BUILDHOST_64:=$(ARB_64)# assume build host is same as version (see config.makefile)
 endif
 
+cross_cflags:=
+cross_lflags:=
+
 ifeq ($(ARB_64),1)
 	dflags += -DARB_64 #-fPIC 
 	lflags +=
@@ -155,26 +158,29 @@ ifeq ($(ARB_64),1)
 #		build 64-bit ARB version on 64-bit host
 		CROSS_LIB:=# empty = autodetect below
 		ifdef DARWIN
-			cflags += -arch x86_64
-			lflags += -arch x86_64
+			cross_cflags += -arch x86_64
+			cross_lflags += -arch x86_64
 		endif
 	else
 #		build 64-bit ARB version on 32-bit host
 		CROSS_LIB:=/lib64
-		cflags += -m64
-		lflags += -m64 -m elf_x86_64
+		cross_cflags += -m64
+		cross_lflags += -m64 -m elf_x86_64
 	endif
 else
 	ifeq ($(BUILDHOST_64),1)
 #		build 32-bit ARB version on 64-bit host
 		CROSS_LIB:=# empty = autodetect below
-		cflags += -m32
-		lflags += -m32 -m elf_i386 
+		cross_cflags += -m32
+		cross_lflags += -m32 -m elf_i386 
 	else
 #		build 32-bit ARB version on 32-bit host
 		CROSS_LIB:=/lib
 	endif
 endif
+
+cflags += $(cross_cflags)
+lflags += $(cross_lflags)
 
 ifeq ('$(CROSS_LIB)','')
 # autodetect libdir
@@ -1304,6 +1310,8 @@ perl: tools
 	@$(MAKE) -C PERL2ARB -r -f Makefile.main \
 		"AUTODEPENDS=1" \
 		"dflags=$(dflags)" \
+		"cross_cflags=$(cross_cflags) $(dflags)" \
+		"cross_lflags=$(cross_lflags)" \
 		all
 
 testperlscripts: perl 
