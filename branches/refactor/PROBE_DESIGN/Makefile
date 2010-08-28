@@ -59,6 +59,7 @@ probe_design.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/awt_config_manager.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/awt_iupac.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
+probe_design.o: $(ARBHOME)/INCLUDE/bytestring.h
 probe_design.o: $(ARBHOME)/INCLUDE/client.h
 probe_design.o: $(ARBHOME)/INCLUDE/client_types.h
 probe_design.o: $(ARBHOME)/INCLUDE/downcast.h

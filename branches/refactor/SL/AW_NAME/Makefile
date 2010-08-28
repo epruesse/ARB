@@ -76,6 +76,7 @@ AW_rename.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AW_rename.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AW_rename.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AW_rename.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+AW_rename.o: $(ARBHOME)/INCLUDE/bytestring.h
 AW_rename.o: $(ARBHOME)/INCLUDE/client.h
 AW_rename.o: $(ARBHOME)/INCLUDE/client_types.h
 AW_rename.o: $(ARBHOME)/INCLUDE/dupstr.h

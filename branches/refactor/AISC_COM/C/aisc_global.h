@@ -11,11 +11,11 @@
 #ifndef AISC_GLOBAL_H
 #define AISC_GLOBAL_H
 
-struct bytestring {
-    char *data;
-    int   size;
-};
+#ifndef BYTESTRING_H
+#include <bytestring.h>
+#endif
 
+#define aisc_assert(cond) arb_assert(cond)
 
 // type mask
 #define AISC_TYPE_NONE   0x00000000

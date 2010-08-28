@@ -57,6 +57,7 @@ PT_cachehandler.o: $(ARBHOME)/INCLUDE/arbdb.h
 PT_cachehandler.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 PT_cachehandler.o: $(ARBHOME)/INCLUDE/arbtools.h
 PT_cachehandler.o: $(ARBHOME)/INCLUDE/attributes.h
+PT_cachehandler.o: $(ARBHOME)/INCLUDE/bytestring.h
 PT_cachehandler.o: $(ARBHOME)/INCLUDE/dupstr.h
 PT_cachehandler.o: $(ARBHOME)/INCLUDE/PT_com.h
 PT_cachehandler.o: $(ARBHOME)/INCLUDE/PT_server.h
@@ -79,6 +80,7 @@ PT_hashing.o: $(ARBHOME)/INCLUDE/arbdb.h
 PT_hashing.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 PT_hashing.o: $(ARBHOME)/INCLUDE/arbtools.h
 PT_hashing.o: $(ARBHOME)/INCLUDE/attributes.h
+PT_hashing.o: $(ARBHOME)/INCLUDE/bytestring.h
 PT_hashing.o: $(ARBHOME)/INCLUDE/dupstr.h
 PT_hashing.o: $(ARBHOME)/INCLUDE/PT_com.h
 PT_hashing.o: $(ARBHOME)/INCLUDE/PT_server.h
@@ -101,6 +103,7 @@ PT_huffman.o: $(ARBHOME)/INCLUDE/arbdb.h
 PT_huffman.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 PT_huffman.o: $(ARBHOME)/INCLUDE/arbtools.h
 PT_huffman.o: $(ARBHOME)/INCLUDE/attributes.h
+PT_huffman.o: $(ARBHOME)/INCLUDE/bytestring.h
 PT_huffman.o: $(ARBHOME)/INCLUDE/dupstr.h
 PT_huffman.o: $(ARBHOME)/INCLUDE/PT_com.h
 PT_huffman.o: $(ARBHOME)/INCLUDE/PT_server.h
@@ -123,6 +126,7 @@ PT_lowlevel.o: $(ARBHOME)/INCLUDE/arbdb.h
 PT_lowlevel.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 PT_lowlevel.o: $(ARBHOME)/INCLUDE/arbtools.h
 PT_lowlevel.o: $(ARBHOME)/INCLUDE/attributes.h
+PT_lowlevel.o: $(ARBHOME)/INCLUDE/bytestring.h
 PT_lowlevel.o: $(ARBHOME)/INCLUDE/dupstr.h
 PT_lowlevel.o: $(ARBHOME)/INCLUDE/PT_com.h
 PT_lowlevel.o: $(ARBHOME)/INCLUDE/PT_server.h
@@ -145,6 +149,7 @@ PT_treepack.o: $(ARBHOME)/INCLUDE/arbdb.h
 PT_treepack.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 PT_treepack.o: $(ARBHOME)/INCLUDE/arbtools.h
 PT_treepack.o: $(ARBHOME)/INCLUDE/attributes.h
+PT_treepack.o: $(ARBHOME)/INCLUDE/bytestring.h
 PT_treepack.o: $(ARBHOME)/INCLUDE/dupstr.h
 PT_treepack.o: $(ARBHOME)/INCLUDE/PT_com.h
 PT_treepack.o: $(ARBHOME)/INCLUDE/PT_server.h
@@ -167,6 +172,7 @@ PTP_buildtree.o: $(ARBHOME)/INCLUDE/arbdb.h
 PTP_buildtree.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 PTP_buildtree.o: $(ARBHOME)/INCLUDE/arbtools.h
 PTP_buildtree.o: $(ARBHOME)/INCLUDE/attributes.h
+PTP_buildtree.o: $(ARBHOME)/INCLUDE/bytestring.h
 PTP_buildtree.o: $(ARBHOME)/INCLUDE/dupstr.h
 PTP_buildtree.o: $(ARBHOME)/INCLUDE/PT_com.h
 PTP_buildtree.o: $(ARBHOME)/INCLUDE/PT_server.h
@@ -189,6 +195,7 @@ PTP_etc.o: $(ARBHOME)/INCLUDE/arbdb.h
 PTP_etc.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 PTP_etc.o: $(ARBHOME)/INCLUDE/arbtools.h
 PTP_etc.o: $(ARBHOME)/INCLUDE/attributes.h
+PTP_etc.o: $(ARBHOME)/INCLUDE/bytestring.h
 PTP_etc.o: $(ARBHOME)/INCLUDE/dupstr.h
 PTP_etc.o: $(ARBHOME)/INCLUDE/PT_com.h
 PTP_etc.o: $(ARBHOME)/INCLUDE/PT_server.h
@@ -214,6 +221,7 @@ PTP_family.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 PTP_family.o: $(ARBHOME)/INCLUDE/arbdbt.h
 PTP_family.o: $(ARBHOME)/INCLUDE/arbtools.h
 PTP_family.o: $(ARBHOME)/INCLUDE/attributes.h
+PTP_family.o: $(ARBHOME)/INCLUDE/bytestring.h
 PTP_family.o: $(ARBHOME)/INCLUDE/dupstr.h
 PTP_family.o: $(ARBHOME)/INCLUDE/PT_com.h
 PTP_family.o: $(ARBHOME)/INCLUDE/PT_server.h
@@ -237,6 +245,7 @@ PTP_findEx.o: $(ARBHOME)/INCLUDE/arbdb.h
 PTP_findEx.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 PTP_findEx.o: $(ARBHOME)/INCLUDE/arbtools.h
 PTP_findEx.o: $(ARBHOME)/INCLUDE/attributes.h
+PTP_findEx.o: $(ARBHOME)/INCLUDE/bytestring.h
 PTP_findEx.o: $(ARBHOME)/INCLUDE/dupstr.h
 PTP_findEx.o: $(ARBHOME)/INCLUDE/PT_com.h
 PTP_findEx.o: $(ARBHOME)/INCLUDE/PT_server.h
@@ -262,6 +271,7 @@ PTP_io.o: $(ARBHOME)/INCLUDE/arbdbt.h
 PTP_io.o: $(ARBHOME)/INCLUDE/arbtools.h
 PTP_io.o: $(ARBHOME)/INCLUDE/attributes.h
 PTP_io.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
+PTP_io.o: $(ARBHOME)/INCLUDE/bytestring.h
 PTP_io.o: $(ARBHOME)/INCLUDE/dupstr.h
 PTP_io.o: $(ARBHOME)/INCLUDE/PT_com.h
 PTP_io.o: $(ARBHOME)/INCLUDE/PT_server.h
@@ -286,6 +296,7 @@ PTP_main.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 PTP_main.o: $(ARBHOME)/INCLUDE/arbdbt.h
 PTP_main.o: $(ARBHOME)/INCLUDE/arbtools.h
 PTP_main.o: $(ARBHOME)/INCLUDE/attributes.h
+PTP_main.o: $(ARBHOME)/INCLUDE/bytestring.h
 PTP_main.o: $(ARBHOME)/INCLUDE/client.h
 PTP_main.o: $(ARBHOME)/INCLUDE/client_types.h
 PTP_main.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -315,6 +326,7 @@ PTP_match.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 PTP_match.o: $(ARBHOME)/INCLUDE/arbdbt.h
 PTP_match.o: $(ARBHOME)/INCLUDE/arbtools.h
 PTP_match.o: $(ARBHOME)/INCLUDE/attributes.h
+PTP_match.o: $(ARBHOME)/INCLUDE/bytestring.h
 PTP_match.o: $(ARBHOME)/INCLUDE/dupstr.h
 PTP_match.o: $(ARBHOME)/INCLUDE/PT_com.h
 PTP_match.o: $(ARBHOME)/INCLUDE/PT_server.h
@@ -340,6 +352,7 @@ PTP_new_design.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 PTP_new_design.o: $(ARBHOME)/INCLUDE/arbdbt.h
 PTP_new_design.o: $(ARBHOME)/INCLUDE/arbtools.h
 PTP_new_design.o: $(ARBHOME)/INCLUDE/attributes.h
+PTP_new_design.o: $(ARBHOME)/INCLUDE/bytestring.h
 PTP_new_design.o: $(ARBHOME)/INCLUDE/dupstr.h
 PTP_new_design.o: $(ARBHOME)/INCLUDE/PT_com.h
 PTP_new_design.o: $(ARBHOME)/INCLUDE/PT_server.h

@@ -120,6 +120,7 @@ MP_mo_liste.o: $(ARBHOME)/INCLUDE/arbtools.h
 MP_mo_liste.o: $(ARBHOME)/INCLUDE/attributes.h
 MP_mo_liste.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 MP_mo_liste.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+MP_mo_liste.o: $(ARBHOME)/INCLUDE/bytestring.h
 MP_mo_liste.o: $(ARBHOME)/INCLUDE/client.h
 MP_mo_liste.o: $(ARBHOME)/INCLUDE/client_types.h
 MP_mo_liste.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -157,6 +158,7 @@ MP_noclass.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 MP_noclass.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 MP_noclass.o: $(ARBHOME)/INCLUDE/awt.hxx
 MP_noclass.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
+MP_noclass.o: $(ARBHOME)/INCLUDE/bytestring.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/client.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/client_types.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/downcast.h
@@ -253,6 +255,7 @@ MP_sonde.o: $(ARBHOME)/INCLUDE/arbtools.h
 MP_sonde.o: $(ARBHOME)/INCLUDE/attributes.h
 MP_sonde.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 MP_sonde.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+MP_sonde.o: $(ARBHOME)/INCLUDE/bytestring.h
 MP_sonde.o: $(ARBHOME)/INCLUDE/client.h
 MP_sonde.o: $(ARBHOME)/INCLUDE/client_types.h
 MP_sonde.o: $(ARBHOME)/INCLUDE/dupstr.h
