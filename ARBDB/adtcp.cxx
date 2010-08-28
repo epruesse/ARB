@@ -302,7 +302,7 @@ const char *GBS_scan_arb_tcp_param(const char *ipPort, const char *wantedParam) 
 /* AISC_MKPT_PROMOTE:#endif*/
 
 const char *GBS_nameserver_tag(const char *add_field) {
-    if (add_field) {
+    if (add_field && add_field[0]) {
         static char *tag = NULL;
         freeset(tag, GBS_global_string_copy("ARB_NAME_SERVER_%s", add_field));
         ARB_strupper(tag);
@@ -535,6 +535,7 @@ void TEST_GBS_servertags() {
     TEST_ASSERT_EQUAL(GBS_ptserver_tag(7), "ARB_PT_SERVER7");
     
     TEST_ASSERT_EQUAL(GBS_nameserver_tag(NULL),   "ARB_NAME_SERVER");
+    TEST_ASSERT_EQUAL(GBS_nameserver_tag(""),     "ARB_NAME_SERVER");
     TEST_ASSERT_EQUAL(GBS_nameserver_tag("test"), "ARB_NAME_SERVER_TEST");
 }
 
