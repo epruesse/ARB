@@ -195,9 +195,7 @@ static char *AP_probe_design_event() {
     return GBS_strclose(outstr);
 }
 
-static char *AP_probe_match_event()
-{
-    T_PT_PDC        pdc;
+static char *AP_probe_match_event() {
     T_PT_MATCHLIST  match_list;
     char           *probe = 0;
     char           *locs_error;
@@ -218,17 +216,7 @@ static char *AP_probe_match_event()
         return NULL;
     }
 
-    aisc_create(pd_gl.link, PT_LOCS, pd_gl.locs,
-                LOCS_PROBE_DESIGN_CONFIG, PT_PDC,   &pdc,
-                NULL);
-    if (probe_design_send_data(pdc)) {
-        aw_message ("Connection to PT_SERVER lost (2)");
-        return NULL;
-    }
-
-
-
-    if (aisc_nput(pd_gl.link, PT_LOCS, pd_gl.locs, // @@@ first wui
+    if (aisc_nput(pd_gl.link, PT_LOCS, pd_gl.locs,
                   LOCS_MATCH_REVERSED,          (long)P.COMPLEMENT,
                   LOCS_MATCH_SORT_BY,           (long)P.WEIGHTED,
                   LOCS_MATCH_COMPLEMENT,        0L,
@@ -391,7 +379,70 @@ int main(int argc, const char ** argv) {
 
 #include <test_unit.h>
 
+static void test_ensure_newest_ptserver() {
+    static bool killed = false;
+
+    if (!killed) {
+        // first kill pt-server (otherwise we may test an outdated pt-server)
+        const char *server_tag = GBS_ptserver_tag(TEST_SERVER_ID);
+        TEST_ASSERT_NO_ERROR(arb_look_and_start_server(AISC_MAGIC_NUMBER, server_tag, 0));
+        killed = true;
+    }
+}
+
+void TEST_SLOW_variable_defaults_in_server() {
+    test_ensure_newest_ptserver();
+
+    const char *server_tag = GBS_ptserver_tag(TEST_SERVER_ID);
+    TEST_ASSERT_NO_ERROR(arb_look_and_start_server(AISC_MAGIC_NUMBER, server_tag, 0));
+
+    const char *servername = GBS_read_arb_tcp(server_tag);;
+    TEST_ASSERT_EQUAL(servername, "localhost:3200"); // as defined in ../lib/arb_tcp.dat@ARB_TEST_PT_SERVER
+
+    long com;
+    long locs;
+    aisc_com *link = aisc_open(servername, &com, AISC_MAGIC_NUMBER);
+    TEST_ASSERT(link);
+
+    TEST_ASSERT_ZERO(aisc_create(link, PT_MAIN, com, MAIN_LOCS, PT_LOCS, &locs, NULL));
+
+    {
+#define LOCAL(rvar) (prev_read_##rvar)
+#define TEST__READ(type,rvar,expected)                                  \
+        do {                                                            \
+            TEST_ASSERT_ZERO(aisc_get(link, PT_LOCS, locs, rvar, &(LOCAL(rvar)), NULL)); \
+            TEST_ASSERT_EQUAL(LOCAL(rvar), expected);                   \
+        } while(0)
+#define TEST_WRITE(type,rvar,val)                                       \
+        TEST_ASSERT_ZERO(aisc_put(link, PT_LOCS, locs, rvar, (type)val, NULL))
+#define TEST_CHANGE(type,rvar,val)              \
+        do {                                    \
+            TEST_WRITE(type, rvar, val);        \
+            TEST__READ(type, rvar, val);        \
+        } while(0)
+#define TEST_DEFAULT_CHANGE(type,remote_variable,default_value,other_value) \
+        do {                                                            \
+            const type DEFAULT_VALUE = default_value;                   \
+            const type OTHER_VALUE   = other_value;                     \
+            type LOCAL(remote_variable);                                \
+            TEST__READ(type, remote_variable, DEFAULT_VALUE);           \
+            TEST_CHANGE(type, remote_variable, OTHER_VALUE);            \
+            TEST_CHANGE(type, remote_variable, DEFAULT_VALUE);          \
+        } while(0)
+
+        TEST_DEFAULT_CHANGE(long, LOCS_FF_PROBE_LEN, 12, 67);
+        TEST_DEFAULT_CHANGE(char*, LOCS_LOGINTIME, "notime", "sometime");
+    }
+
+    TEST_ASSERT_ZERO(aisc_close(link));
+}
+
+// ----------------------------------
+//      test probe design / match
+
 static void test_arb_probe(int fake_argc, const char **fake_argv, const char *expected) {
+    test_ensure_newest_ptserver();
+    
     TEST_ASSERT_EQUAL(true, parseCommandLine(fake_argc, fake_argv));
     P.SERVERID   = TEST_SERVER_ID; // use test pt_server
     char *answer = execute();
@@ -432,7 +483,7 @@ void TEST_SLOW_design_probe() {
         "GAAAGGAAGAUUAAUACC 18 A+     1   94    4 33.3 48.0    GGUAUUAAUCUUCCUUUC |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n"
         "UCAAGUCGAGCGAUGAAG 18 B=    17   17    4 50.0 54.0    CUUCAUCGCUCGACUUGA |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n"
         "AUCAAGUCGAGCGAUGAA 18 B-     1   16    4 44.4 52.0    UUCAUCGCUCGACUUGAU |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  1,  2,  3,\n";
-    
+
     test_arb_probe(COUNT(arguments), arguments, expected);
 }
 
