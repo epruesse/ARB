@@ -1296,13 +1296,17 @@ public:
     }
 };
 
-bool GBK_raises_SIGSEGV(void (*cb)(void)) {
+bool GBK_running_on_valgrind() {
+    return RUNNING_ON_VALGRIND>0;
+}
+
+bool GBK_raises_SIGSEGV(void (*cb)(void), bool result_in_valgrind) {
     // test whether 'cb' aborts with SIGSEGV
-    // (does nothing and always returns true if executable is running under valgrind!)
+    // (does nothing and always returns 'result_in_valgrind' if executable is running under valgrind!)
 
     volatile bool segv_occurred = false;
-    if (RUNNING_ON_VALGRIND>0) {
-        segv_occurred = true;
+    if (GBK_running_on_valgrind()) {
+        segv_occurred = result_in_valgrind;
     }
     else {
         gb_assert(!suppress_sigsegv);
@@ -1384,7 +1388,7 @@ void GBK_terminate(const char *error) {
 
     fprintf(stderr, "Error: '%s'\n", error);
     fputs("Can't continue - terminating..\n", stderr);
-    GBK_dump_backtrace(stderr, "GBK_terminate");
+    GBK_dump_backtrace(stderr, "GBK_terminate (reason above) ");
 
     fflush(stderr);
     ARB_SIGSEGV(0); // GBK_terminate shall not be called, fix reason for call (this will crash in RELEASE version)
