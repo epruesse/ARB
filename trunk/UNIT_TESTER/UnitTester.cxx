@@ -211,6 +211,7 @@ UnitTester::UnitTester(const char *libname, const UnitTest_simple *simple_tests,
         trace("No tests defined for '%s'\n\n", libname);
     }
 
+    arb_test::GlobalTestData::erase_instance();
     exit(tests == passed ? EXIT_SUCCESS : EXIT_FAILURE);
 }
 
