@@ -251,30 +251,33 @@ namespace arb_test {
     } while (0)
 
 // --------------------------------------------------------------------------------
+// TEST_ASSERT_SEGFAULT and TEST_ASSERT_CODE_ASSERTION_FAILS
+// only work if binary is linked with ARBDB
+
 
 #ifdef ENABLE_CRASH_TESTS
-#define TEST_ASSERT_SEGFAULT(cb) TEST_ASSERT(GBK_raises_SIGSEGV(cb))
-#else
-#define TEST_ASSERT_SEGFAULT(cb) 
-#endif
-
-#if defined(ASSERTION_USED) && defined(ENABLE_CRASH_TESTS)
-#define TEST_ASSERT_CODE_ASSERTION_FAILS(cb)                            \
+# ifdef ASSERTION_USED
+#  define TEST_INTERNAL_SEGFAULT_ASSERTION(cb,wantAssert)               \
     do {                                                                \
-        bool& assertion_failed =                                        \
-            arb_test::test_data().assertion_failed;                     \
-        bool old_state   = assertion_failed;                            \
-        assertion_failed = false;                                       \
-        TEST_ASSERT_SEGFAULT(cb);                                       \
-        TEST_ASSERT(assertion_failed);                                  \
-        if (!assertion_failed) {                                        \
-            assertion_failed = old_state;                               \
-        }                                                               \
+         bool& assertion_failed =                                       \
+             arb_test::test_data().assertion_failed;                    \
+         bool old_state = assertion_failed;                             \
+         assertion_failed = false;                                      \
+         TEST_ASSERT(GBK_raises_SIGSEGV(cb,true));                      \
+         if (!GBK_running_on_valgrind())                                \
+             TEST_ASSERT(assertion_failed == wantAssert);               \
+         assertion_failed = old_state;                                  \
     } while (0)
-#else
-#define TEST_ASSERT_CODE_ASSERTION_FAILS(cb)
-#endif // ASSERTION_USED
-
+#  define TEST_ASSERT_CODE_ASSERTION_FAILS(cb) TEST_INTERNAL_SEGFAULT_ASSERTION(cb,true)
+#  define TEST_ASSERT_SEGFAULT(cb)             TEST_INTERNAL_SEGFAULT_ASSERTION(cb,false)
+# else // ENABLE_CRASH_TESTS but no ASSERTION_USED (test segfaults in NDEBUG mode)
+#  define TEST_ASSERT_CODE_ASSERTION_FAILS(cb)
+#  define TEST_ASSERT_SEGFAULT(cb)             TEST_ASSERT(GBK_raises_SIGSEGV(cb,true))
+# endif
+#else // not ENABLE_CRASH_TESTS (i.e. skip these tests completely)
+# define TEST_ASSERT_CODE_ASSERTION_FAILS(cb)
+# define TEST_ASSERT_SEGFAULT(cb)
+#endif
 
 // --------------------------------------------------------------------------------
 
