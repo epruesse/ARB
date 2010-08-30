@@ -146,10 +146,14 @@ dump:
 	@echo "LINKLIST       ='$(LINKLIST)'"
 	@echo "LINKDEPS       ='$(LINKDEPS)'"
 
+valgrind:
+	echo "Valgrinding.."
+	cd $(RUNDIR);$(ARBHOME)/SOURCE_TOOLS/arb_valgrind -q -l -r -c 15 $(RUN2HERE)/$(TEST_EXE)
+
 perform_test: $(TEST_EXE)
 	@echo "fake[2]: Entering directory \`$(FULLUNITDIR)'"
 ifeq ($(VALGRIND),2)
-	cd $(RUNDIR);$(ARBHOME)/SOURCE_TOOLS/arb_valgrind -l -c 15 $(RUN2HERE)/$(TEST_EXE)
+	$(MAKE) -f Makefile.test valgrind
 endif
 	cd $(RUNDIR);$(RUN2HERE)/$(TEST_EXE)
 ifeq ($(COVERAGE),1)
@@ -158,7 +162,7 @@ ifeq ($(COVERAGE),1)
 	@echo "-------------------- test-coverage for $(UNITLIBNAME) [end]"
 endif
 ifeq ($(VALGRIND),1)
-	cd $(RUNDIR);$(ARBHOME)/SOURCE_TOOLS/arb_valgrind -l -c 15 $(RUN2HERE)/$(TEST_EXE)
+	$(MAKE) -f Makefile.test valgrind
 endif
 	@echo "fake[2]: Leaving directory \`$(FULLUNITDIR)'"
 
