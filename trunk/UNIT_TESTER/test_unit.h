@@ -27,110 +27,112 @@
  * 
  * All macros named 'XXX__BROKEN' are intended to be used, when a
  * test is known to fail, but cannot be fixed atm for some reason
- * 
+ *
  */
 
 namespace arb_test {
-    inline bool strnullequal(const char *s1, const char *s2) {
-        return (s1 == s2) || (s1 && s2 && strcmp(s1, s2) == 0);
-    }
-
-    inline int printf_flushed(const char *format, ...) {
-        fflush(stdout);
-        fflush(stderr);
-
-        va_list parg;
-        va_start(parg, format);
-        int     printed = vfprintf(stderr, format, parg);
-        va_end(parg);
-
-        fflush(stderr);
-
-        return printed;
-    }
-
-    inline bool is_equal(const char *s1, const char *s2) {
-        bool equal = strnullequal(s1, s2);
-        if (!equal) {
-            printf_flushed("str_equal('%s',\n"
-                           "          '%s') returns false\n", s1, s2);
+    class FlushedOutput {
+        inline void flushall() { fflush(stdout); fflush(stderr); }
+    public:
+        FlushedOutput() { flushall(); }
+        ~FlushedOutput() { flushall(); }
+        
+#define VPRINTFORMAT(format) do { va_list parg; va_start(parg, format); vfprintf(stderr, format, parg); va_end(parg); } while(0)
+    
+        static void printf(const char *format, ...) __attribute__((format(printf, 1, 2))) {
+            FlushedOutput yes;
+            VPRINTFORMAT(format);
         }
-        return equal;
-    }
-    inline bool is_different(const char *s1, const char *s2) {
-        bool different = !strnullequal(s1, s2);
-        if (!different) {
-            printf_flushed("str_different('%s', ..) returns false\n", s1);
+        static void messagef(const char *filename, int lineno, const char *format, ...) __attribute__((format(printf, 3, 4))) {
+            FlushedOutput yes;
+            fprintf(stderr, "%s:%i: ", filename, lineno);
+            VPRINTFORMAT(format);
         }
-        return different;
-    }
-
-
-    inline bool is_equal(int n1, int n2) {
-        bool equal = n1 == n2;
-        if (!equal) {
-            printf_flushed("numeric_equal(%i,%i)=(0x%x,0x%x) returns false\n", n1, n2, n1, n2);
+        static void warningf(const char *filename, int lineno, const char *format, ...) __attribute__((format(printf, 3, 4))) {
+            GlobalTestData& global = test_data();
+            if (global.show_warnings) {
+                FlushedOutput yes;
+                fprintf(stderr, "%s:%i: Warning: ", filename, lineno);
+                VPRINTFORMAT(format);
+                global.warnings++;
+            }
         }
-        return equal;
-    }
-    inline bool is_equal(size_t z1, size_t z2) {
-        bool equal = z1 == z2;
-        if (!equal) {
-            printf_flushed("numeric_equal(%zu,%zu)=(0x%zx,0x%zx) returns false\n", z1, z2, z1, z2);
+        static void errorf(const char *filename, int lineno, const char *format, ...) __attribute__((format(printf, 3, 4))) {
+            FlushedOutput yes;
+            fprintf(stderr, "%s:%i: Error: ", filename, lineno);
+            VPRINTFORMAT(format);
         }
-        return equal;
-    }
+#undef VPRINTFORMAT
+    };
 
-    inline bool is_similar(double d1, double d2, double epsilon) {
-        double diff = d1-d2;
-        if (diff<0.0) diff = -diff; // do not use fabs() here
-
-        bool in_epsilon_range = diff < epsilon;
-        if (!in_epsilon_range) {
-            printf_flushed("is_similar(%f,%f,%f) returns false\n", d1, d2, epsilon);
+    struct Compare { // no data - only static functions
+        static bool strnullequal(const char *s1, const char *s2) {
+            return (s1 == s2) || (s1 && s2 && strcmp(s1, s2) == 0);
         }
-        return in_epsilon_range;
-    }
+        static bool is_equal(const char *s1, const char *s2) {
+            bool equal = strnullequal(s1, s2);
+            if (!equal) {
+                FlushedOutput::printf("str_equal('%s',\n"
+                                      "          '%s') returns false\n", s1, s2);
+            }
+            return equal;
+        }
+        static bool is_different(const char *s1, const char *s2) {
+            bool different = !strnullequal(s1, s2);
+            if (!different) {
+                FlushedOutput::printf("str_different('%s', ..) returns false\n", s1);
+            }
+            return different;
+        }
+        
+        static bool is_equal(int n1, int n2) {
+            bool equal = n1 == n2;
+            if (!equal) {
+                FlushedOutput::printf("numeric_equal(%i,%i)=(0x%x,0x%x) returns false\n", n1, n2, n1, n2);
+            }
+            return equal;
+        }
+        static bool is_equal(size_t z1, size_t z2) {
+            bool equal = z1 == z2;
+            if (!equal) {
+                FlushedOutput::printf("numeric_equal(%zu,%zu)=(0x%zx,0x%zx) returns false\n", z1, z2, z1, z2);
+            }
+            return equal;
+        }
 
-    inline bool is_equal(double d1, double d2) {
-        return is_similar(d1, d2, 0.000001);
-    }
+        static bool is_similar(double d1, double d2, double epsilon) {
+            double diff = d1-d2;
+            if (diff<0.0) diff = -diff; // do not use fabs() here
+
+            bool in_epsilon_range = diff < epsilon;
+            if (!in_epsilon_range) {
+                FlushedOutput::printf("is_similar(%f,%f,%f) returns false\n", d1, d2, epsilon);
+            }
+            return in_epsilon_range;
+        }
+    };
+
+    inline bool is_equal(const char *s1, const char *s2) { return Compare::is_equal(s1, s2); }
+    inline bool is_equal(int n1, int n2) { return Compare::is_equal(n1, n2); }
+    inline bool is_equal(size_t z1, size_t z2) { return Compare::is_equal(z1, z2); }
+
+    inline bool is_different(const char *s1, const char *s2) { return Compare::is_different(s1, s2); }
+
+    inline bool is_similar(double d1, double d2, double epsilon) { return Compare::is_similar(d1, d2, epsilon); }
+    inline bool is_equal(double d1, double d2) { return is_similar(d1, d2, 0.000001); }
 
 };
 
 // --------------------------------------------------------------------------------
 
-#define TEST_MSG(format, strarg)                                \
-    arb_test::printf_flushed("%s:%i: " format "\n",             \
-                             __FILE__, __LINE__, (strarg))
+#define TEST_MSG(format,strarg)           arb_test::FlushedOutput::messagef(__FILE__, __LINE__, format, (strarg))
+#define TEST_MSG2(format,strarg1,strarg2) arb_test::FlushedOutput::messagef(__FILE__, __LINE__, format, (strarg1), (strarg2))
 
-#define TEST_MSG2(format, strarg1, strarg2)             \
-    fprintf(stderr, "%s:%i: " format "\n",              \
-            __FILE__, __LINE__, (strarg1), (strarg2))
+#define TEST_WARNING(format,strarg)           arb_test::FlushedOutput::warningf(__FILE__, __LINE__, format, (strarg))
+#define TEST_WARNING2(format,strarg1,strarg2) arb_test::FlushedOutput::warningf(__FILE__, __LINE__, format, (strarg1), (strarg2))
 
-#define TEST_WARNING_INTERNAL(cmd)                      \
-    do {                                                \
-        arb_test::test_data().warnings++;               \
-        if (arb_test::test_data().show_warnings) {      \
-            cmd;                                        \
-        }                                               \
-    } while (0)
-            
-#define TEST_WARNING(format,strarg)           TEST_WARNING_INTERNAL((TEST_MSG("Warning: " format, strarg)))
-#define TEST_WARNING2(format,strarg1,strarg2) TEST_WARNING_INTERNAL((TEST_MSG2("Warning: " format, strarg1, strarg2)))
-
-#define TEST_ERROR(format, strarg)                      \
-          do {                                          \
-              TEST_MSG("Error: " format, strarg);       \
-              TEST_ASSERT(0);                           \
-    } while(0)
-
-
-#define TEST_ERROR2(format, strarg1, strarg2)           \
-    do {                                                \
-        TEST_MSG2("Error: " format, strarg1, strarg2);  \
-        TEST_ASSERT(0);                                 \
-    } while(0)
+#define TEST_ERROR(format,strarg)           do { arb_test::FlushedOutput::errorf(__FILE__, __LINE__, format, (strarg)); TEST_ASSERT(0); } while(0)
+#define TEST_ERROR2(format,strarg1,strarg2) do { arb_test::FlushedOutput::errorf(__FILE__, __LINE__, format, (strarg1), (strarg2)); TEST_ASSERT(0); } while(0)
 
 // --------------------------------------------------------------------------------
 
