@@ -33,6 +33,9 @@ RESTRICT_LIB=# run all tests
 #RESTRICT_LIB=FAST_ALIGNER# test only this library
 #RESTRICT_LIB=MERGE# test only this library
 
+SKIP_SLOW=0# run all tests
+#SKIP_SLOW=1# skip slow tests
+
 # ----------------------------------------------------------
 
 #WARN_LEVEL=0# disable warnings 
@@ -120,8 +123,8 @@ makedirs: $(DESTDIR) $(RUNDIR)
 $(SYMLIST) : $(FULLLIB) Makefile makedirs
 	nm -C -l $< > $@
 
-$(TEST_CODE) : $(SYMLIST) $(SYM2TESTCODE) 
-	$(SYM2TESTCODE) $(UNITLIB) $(RESTRICT_MODULE) $< $@ $(WARN_LEVEL)
+$(TEST_CODE) : $(SYMLIST) $(SYM2TESTCODE) Makefile.test
+	$(SYM2TESTCODE) $(UNITLIB) $(RESTRICT_MODULE) $< $@ $(WARN_LEVEL) $(SKIP_SLOW)
 
 $(TEST_OBJ) : $(TEST_CODE) $(INCLUDES)
 	$(CPP) $(cflags) -c $< -o $@ -I. 
@@ -146,10 +149,14 @@ dump:
 	@echo "LINKLIST       ='$(LINKLIST)'"
 	@echo "LINKDEPS       ='$(LINKDEPS)'"
 
+valgrind:
+	echo "Valgrinding.."
+	cd $(RUNDIR);$(ARBHOME)/SOURCE_TOOLS/arb_valgrind -q -l -r -c 15 $(RUN2HERE)/$(TEST_EXE)
+
 perform_test: $(TEST_EXE)
 	@echo "fake[2]: Entering directory \`$(FULLUNITDIR)'"
 ifeq ($(VALGRIND),2)
-	cd $(RUNDIR);$(ARBHOME)/SOURCE_TOOLS/arb_valgrind -l -c 15 $(RUN2HERE)/$(TEST_EXE)
+	$(MAKE) -f Makefile.test valgrind
 endif
 	cd $(RUNDIR);$(RUN2HERE)/$(TEST_EXE)
 ifeq ($(COVERAGE),1)
@@ -158,7 +165,7 @@ ifeq ($(COVERAGE),1)
 	@echo "-------------------- test-coverage for $(UNITLIBNAME) [end]"
 endif
 ifeq ($(VALGRIND),1)
-	cd $(RUNDIR);$(ARBHOME)/SOURCE_TOOLS/arb_valgrind -l -c 15 $(RUN2HERE)/$(TEST_EXE)
+	$(MAKE) -f Makefile.test valgrind
 endif
 	@echo "fake[2]: Leaving directory \`$(FULLUNITDIR)'"
 

@@ -12,6 +12,10 @@
 #ifndef UNITTESTER_HXX
 #define UNITTESTER_HXX
 
+#ifndef _CPP_CSTDLIB
+#include <cstdlib>
+#endif
+
 typedef void (*UnitTest_function)();
 
 struct UnitTest_simple {
@@ -21,7 +25,7 @@ struct UnitTest_simple {
 };
 
 struct UnitTester {
-    UnitTester(const char *libname, const UnitTest_simple *simple_tests, int warn_level);
+    UnitTester(const char *libname, const UnitTest_simple *simple_tests, int warn_level, size_t skippedTests);
 };
 
 #else

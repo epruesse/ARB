@@ -379,7 +379,7 @@ public:
         }
         // [Code-TAG: enum_type_replacement]
         // for each enum type converted here, you need to support a
-        // conversion function in ../ARBDB/adperl.c@enum_conversion_functions
+        // conversion function in ../ARBDB/adperl.cxx@enum_conversion_functions
         else if (c_type == "GB_CASE"        ||
                  c_type == "GB_CB_TYPE"     ||
                  c_type == "GB_TYPES"       ||

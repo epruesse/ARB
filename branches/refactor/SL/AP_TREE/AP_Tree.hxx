@@ -84,7 +84,7 @@ enum AWT_REMOVE_TYPE { // bit flags
     AWT_REMOVE_BUT_DONT_FREE = 16
 
     // please keep AWT_REMOVE_TYPE in sync with GBT_TREE_REMOVE_TYPE
-    // see ../ARBDB/arbdbt.h@sync_GBT_TREE_REMOVE_TYPE_AWT_REMOVE_TYPE
+    // see ../../ARBDB/arbdbt.h@sync_GBT_TREE_REMOVE_TYPE_AWT_REMOVE_TYPE
 };
 
 class AP_rates {

@@ -13,6 +13,7 @@ if [ -z $1 ] ; then
     echo '    -f <filter>    regexpr to filter the reason (default: all)'
     echo '    -l [-r]        turn on leak-checking (-r for reachable blocks)'
     echo '    -A             show known boring errors (most Xt/Motif-related)'
+    echo '    -q             quiet'
     echo '    -D             run gdb on error'
     echo ''
     echo ''
@@ -55,6 +56,7 @@ else
     LEAK_CHECK=''
     TOOL='--tool=memcheck'
     ATTACH=''
+    QUIET=''
 
     if [ ! -f $LIST ] ; then
         UPDATE=1
@@ -97,6 +99,11 @@ else
                 shift 1
                 SCAN_ARGS=1
             fi
+            if [ $1 = '-q' ] ; then
+                QUIET='--quiet'
+                shift 1
+                SCAN_ARGS=1
+            fi
             if [ $1 = '-D' ] ; then
                 ATTACH='--db-attach=yes'
                 shift 1
@@ -125,7 +132,7 @@ else
         echo "CALLERS='$CALLERS'"
         echo "FILTER ='$FILTER'"
         VG_CALLERS=$[$CALLERS+5]
-        COMMAND="valgrind $TOOL -v --error-limit=no --num-callers=$VG_CALLERS $SHOW_REACHABLE $LEAK_CHECK $ATTACH $*"
+        COMMAND="valgrind $QUIET $TOOL -v --error-limit=no --num-callers=$VG_CALLERS $SHOW_REACHABLE $LEAK_CHECK $ATTACH $*"
         echo "COMMAND='$COMMAND'"
         if [ "$ATTACH" = "" ]; then
             $COMMAND 2>&1 >/tmp/arb_valgrind_$USER.stdout | $DIR/valgrind2grep $CALLERS "$FILTER" $SUPPX

@@ -19,7 +19,8 @@ void GBK_dump_former_backtrace(class BackTraceInfo *trace, FILE *out, GB_CSTR me
 void GBK_free_backtrace(class BackTraceInfo *trace);
 void GBK_dump_backtrace(FILE *out, GB_CSTR message);
 void GBK_install_SIGSEGV_handler(bool dump_backtrace);
-bool GBK_raises_SIGSEGV(void (*cb)(void));
+bool GBK_running_on_valgrind(void);
+bool GBK_raises_SIGSEGV(void (*cb)(void), bool result_in_valgrind);
 void GBK_terminate(const char *error);
 void GBK_terminatef(const char *templat, ...) __ATTR__FORMAT(1);
 GB_ERROR GBK_assert_msg(const char *assertion, const char *file, int linenr);
