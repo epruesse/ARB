@@ -230,6 +230,8 @@ HEAD
   my $have_main = defined $exported{'main'};
   if ($have_main==0) {
     $MAIN .= 'int main(void) {'."\n";
+    # $MAIN .= 'extern int jkahdfakshdu; jkahdfakshdu=1;'; # cause unittest compile error
+    # $MAIN .= 'int *x=0; *x=0;'; # cause unittest crash
     $MAIN .= '    '.$UNIT_TESTER."\n";
     $MAIN .= '    return EXIT_SUCCESS;'."\n";
     $MAIN .= '}'."\n";
