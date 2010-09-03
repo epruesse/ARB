@@ -55,10 +55,12 @@ long PT_abs_2_rel P_((long pos));
 long PT_rel_2_abs P_((long pos));
 
 /* PT_main.cxx */
-char *pt_init_main_struct P_((PT_main *main, char *filename));
+char *pt_init_main_struct P_((PT_main *, char *filename));
 extern "C" int server_shutdown P_((PT_main *pm, aisc_string passwd));
-extern "C" int broadcast P_((PT_main *main, int dummy));
+extern "C" int broadcast P_((PT_main *main, int dummy_1x));
 void PT_init_psg P_((void));
+void PT_exit_psg P_((void));
+void PT_exit P_((int exitcode));
 void PT_init_map P_((void));
 
 /* PT_match.cxx */

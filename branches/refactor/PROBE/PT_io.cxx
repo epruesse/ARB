@@ -10,6 +10,7 @@
 
 
 #include "probe.h"
+#include "pt_prototypes.h"
 
 #include <arbdbt.h>
 #include <BI_helix.hxx>
@@ -81,13 +82,13 @@ void probe_read_data_base(char *name)
     gb_main = GB_open(name, "r");
     if (!gb_main) {
         printf("Error reading file %s\n", name);
-        exit(EXIT_FAILURE);
+        PT_exit(EXIT_FAILURE);
     }
     GB_begin_transaction(gb_main);
     gb_species_data = GB_entry(gb_main, "species_data");
     if (!gb_species_data) {
         printf("Database %s is empty\n", name);
-        exit(EXIT_FAILURE);
+        PT_exit(EXIT_FAILURE);
     }
     psg.gb_main         = gb_main;
     psg.gb_species_data = gb_species_data;

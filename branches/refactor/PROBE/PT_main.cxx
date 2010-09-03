@@ -38,9 +38,7 @@ gene_struct_index_internal gene_struct_internal2arb; // sorted by internal name
 // ----------------------
 //      Communication
 
-char *pt_init_main_struct(PT_main *main, char *filename)
-{
-    main               = main;
+char *pt_init_main_struct(PT_main *, char *filename) {
     probe_read_data_base(filename);
     GB_begin_transaction(psg.gb_main);
     psg.alignment_name = GBT_get_default_alignment(psg.gb_main);
@@ -57,28 +55,54 @@ extern "C" int server_shutdown(PT_main *pm, aisc_string passwd) {
     // password check
     pm = pm;
     if (strcmp(passwd, "47@#34543df43%&3667gh")) return 1;
-    printf("\nI got the shutdown message.\n");
+    fprintf(stderr, "\nARB_PT_SERVER: received shutdown message\n");
 
     // shutdown clients
-    aisc_broadcast(psg.com_so, 0,
-                   "SERVER UPDATE BY ADMINISTRATOR!\nYou'll get the latest version. Your screen information will be lost, sorry!");
+    aisc_broadcast(psg.com_so, 0, "Used PT-server has been shut down");
+
     // shutdown server
-    aisc_server_shutdown_and_exit(psg.com_so, EXIT_SUCCESS); // never returns
-    return 0;
-}
-extern "C" int broadcast(PT_main *main, int dummy)
-{
-    aisc_broadcast(psg.com_so, main->m_type, main->m_text);
-    dummy = dummy;
+    aisc_server_shutdown(psg.com_so);
+    PT_exit(EXIT_SUCCESS); // never returns
     return 0;
 }
 
+extern "C" int broadcast(PT_main *main, int) {
+    aisc_broadcast(psg.com_so, main->m_type, main->m_text);
+    return 0;
+}
+
+// ----------------------------------------------
+//      global data initialization / cleanup
+
+static bool psg_initialized = false;
 void PT_init_psg() {
+    pt_assert(!psg_initialized);
     memset((char *)&psg, 0, sizeof(psg));
     int i;
     for (i=0; i<256; i++) {
         psg.complement[i] = PT_complement(i);
     }
+}
+
+void PT_exit_psg() {
+    static bool executed = false;
+    pt_assert(!executed);
+    executed             = true;
+
+    if (psg_initialized) {
+        if (psg.gb_main) {
+            GB_close(psg.gb_main);
+            psg.gb_main         = NULL;;
+            psg.gb_species_data = NULL;;
+            psg.gb_sai_data     = NULL;;
+        }
+    }
+}
+
+void PT_exit(int exitcode) {
+    // unique exit point to ensure cleanup
+    PT_exit_psg();
+    exit(exitcode);
 }
 
 // ------------------------------------------------------------------------------ name mapping
@@ -148,7 +172,7 @@ static void parse_names_into_gene_struct(const char *map_str, gene_struct_list& 
 
     if (err) {
         printf("Error parsing name-mapping (%s)\n", err);
-        exit(EXIT_FAILURE);
+        PT_exit(EXIT_FAILURE);
     }
 
 }
@@ -199,7 +223,7 @@ void PT_init_map() {
         }
         if (err) {
             fprintf(stderr, "Sorry - PT server cannot start.\n");
-            exit(EXIT_FAILURE);
+            PT_exit(EXIT_FAILURE);
         }
     }
     else {
@@ -237,7 +261,7 @@ int main(int argc, char **argv)
         (argc >= 2 && strcmp(argv[1], "--help") == 0))
     {
         printf("Syntax: %s [-look/-build/-kill/-QUERY] -Dfile.arb -TSocketid\n", argv[0]);
-        exit(EXIT_FAILURE);
+        PT_exit(EXIT_FAILURE);
     }
     if (argc==2) {
         command_flag = argv[1];
@@ -250,7 +274,7 @@ int main(int argc, char **argv)
     if (!(name = params->tcp)) {
         if (!(name=GBS_read_arb_tcp("ARB_PT_SERVER0"))) {
             GB_print_error();
-            exit(EXIT_FAILURE);
+            PT_exit(EXIT_FAILURE);
         }
     }
 
@@ -263,7 +287,7 @@ int main(int argc, char **argv)
         if ((error = pt_init_main_struct(aisc_main, params->db_server)))
         {
             printf("PT_SERVER: Gave up:\nERROR: %s\n", error);
-            exit(EXIT_FAILURE);
+            PT_exit(EXIT_FAILURE);
         }
         enter_stage_1_build_tree(aisc_main, tname);
 
@@ -281,24 +305,24 @@ int main(int argc, char **argv)
             free(msg);
         }
 
-        exit(EXIT_SUCCESS);
+        PT_exit(EXIT_SUCCESS);
     }
     if (!strcmp(command_flag, "-QUERY")) {
         if ((error = pt_init_main_struct(aisc_main, params->db_server)))
         {
             printf("PT_SERVER: Gave up:\nERROR: %s\n", error);
-            exit(EXIT_FAILURE);
+            PT_exit(EXIT_FAILURE);
         }
         enter_stage_3_load_tree(aisc_main, tname); // now stage 3
         printf("Tree loaded - performing checks..\n");
         PT_debug_tree();
         printf("Checks done");
-        exit(EXIT_SUCCESS);
+        PT_exit(EXIT_SUCCESS);
     }
     psg.link = (aisc_com *) aisc_open(name, &psg.main, AISC_MAGIC_NUMBER);
     if (psg.link) {
         if (strcmp(command_flag, "-look") == 0) {
-            exit(EXIT_SUCCESS); // already another server
+            PT_exit(EXIT_SUCCESS); // already another server
         }
         printf("There is another activ server. I try to kill him...\n");
         aisc_nput(psg.link, PT_MAIN, psg.main,
@@ -307,7 +331,7 @@ int main(int argc, char **argv)
         aisc_close(psg.link); psg.link      = 0;
     }
     if (strcmp(command_flag, "-kill") == 0) {
-        exit(EXIT_SUCCESS);
+        PT_exit(EXIT_SUCCESS);
     }
     printf("\nTUM POS_TREE SERVER (Oliver Strunk) V 1.0 (C) 1993 \ninitializing:\n");
     printf("open connection...\n");
@@ -319,13 +343,14 @@ int main(int argc, char **argv)
     }
     if (!so) {
         printf("PT_SERVER: Gave up on opening the communication socket!\n");
-        exit(EXIT_FAILURE);
+        PT_exit(EXIT_FAILURE);
     }
     psg.com_so = so;
 
     if (stat(aname, &s_source)) {
         printf("PT_SERVER error while stat source %s\n", aname);
-        aisc_server_shutdown_and_exit(so, EXIT_FAILURE); // never returns
+        aisc_server_shutdown(so);
+        PT_exit(EXIT_FAILURE); // never returns
     }
     build_flag = 0;
     if (stat(tname, &s_dest)) {
@@ -343,7 +368,7 @@ int main(int argc, char **argv)
         printf("Executing '%s'\n", buf);
         if (system(buf) != 0) {
             printf("Error building pt-server.\n");
-            exit(EXIT_FAILURE);
+            PT_exit(EXIT_FAILURE);
         }
     }
 
@@ -356,14 +381,15 @@ int main(int argc, char **argv)
             reserved_for_mmap = malloc(size_of_file);
             if (!reserved_for_mmap) {
                 printf("Can't reserve enough memory to map pt file!\n");
-                exit(EXIT_FAILURE);
+                PT_exit(EXIT_FAILURE);
             }
         }
 
         if ((error = pt_init_main_struct(aisc_main, params->db_server)))
         {
             printf("PT_SERVER: Gave up:\nERROR: %s\n", error);
-            aisc_server_shutdown_and_exit(so, EXIT_FAILURE); // never returns
+            aisc_server_shutdown(so);
+            PT_exit(EXIT_FAILURE); // never returns
         }
         if (reserved_for_mmap) free(reserved_for_mmap);
     }
@@ -372,8 +398,9 @@ int main(int argc, char **argv)
     PT_init_map();
 
     // all ok -> main "loop"
-    printf("ok, server is running.\n"); // do NOT change or remove! others depend on it 
+    printf("ok, server is running.\n");             // do NOT change or remove! others depend on it
     fflush(stdout);
     aisc_accept_calls(so);
-    aisc_server_shutdown_and_exit(so, EXIT_SUCCESS); // never returns
+    aisc_server_shutdown(so);
+    PT_exit(EXIT_SUCCESS); // never returns
 }

@@ -195,7 +195,7 @@ void enter_stage_1_build_tree(PT_main * main, char *tname) {
     if (unlink(tname)) {
         if (GB_size_of_file(tname)>=0) {
             fprintf(stderr, "Cannot remove %s\n", tname);
-            exit(EXIT_FAILURE);
+            PT_exit(EXIT_FAILURE);
         }
     }
 
@@ -204,7 +204,7 @@ void enter_stage_1_build_tree(PT_main * main, char *tname) {
     out = fopen(t2name, "w");               // open file for output
     if (!out) {
         fprintf(stderr, "Cannot open %s\n", t2name);
-        exit(EXIT_FAILURE);
+        PT_exit(EXIT_FAILURE);
     }
     {
         GB_ERROR sm_error = GB_set_mode_of_file(t2name, 0666);
@@ -336,7 +336,7 @@ void enter_stage_1_build_tree(PT_main * main, char *tname) {
     GB_ERROR mv_error = GB_rename_file(t2name, tname);
     if (mv_error) {
         fprintf(stderr, "PT_SERVER: %s\n", mv_error);
-        exit(EXIT_FAILURE);
+        PT_exit(EXIT_FAILURE);
     }
 
     GB_ERROR sm_error = GB_set_mode_of_file(tname, 00666);
@@ -355,14 +355,14 @@ void enter_stage_3_load_tree(PT_main * main, char *tname) {
     long size = GB_size_of_file(tname);
     if (size<0) {
         fprintf(stderr, "PT_SERVER: Error while opening file %s\n", tname);
-        exit(EXIT_FAILURE);
+        PT_exit(EXIT_FAILURE);
     }
 
     printf ("PT_SERVER: Reading Tree %s of size %li from disk\n", tname, size);
     in = fopen(tname, "r");
     if (!in) {
         fprintf(stderr, "PT_SERVER: Error while opening file %s\n", tname);
-        exit(EXIT_FAILURE);
+        PT_exit(EXIT_FAILURE);
     }
     PTD_read_leafs_from_disk(tname, psg.ptmain, &psg.pt);
     fclose(in);

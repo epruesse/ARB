@@ -10,6 +10,7 @@
 
 #include "probe.h"
 #include "probe_tree.hxx"
+#include "pt_prototypes.h"
 
 #include <sys/types.h>
 #include <sys/mman.h>
@@ -507,7 +508,7 @@ void ptd_write_chain_entries(FILE * out, long *ppos, PTM2 * /* ptmain */, char *
         int size = wp -buffer;
         if (1 != fwrite(buffer, size, 1, out)) {
             fprintf(stderr, "Write Error (Disc Full ?\?\?)\n");
-            exit(EXIT_FAILURE);
+            PT_exit(EXIT_FAILURE);
         }
         *ppos += size;
         PTM_free_mem(entry, rp-entry);
@@ -888,7 +889,7 @@ void PTD_read_leafs_from_disk(char *fname, PTM2 *ptmain, POS_TREE **pnode) {
 
     if (error) {
         fprintf(stderr, "PT_SERVER-Error: %s\n", error);
-        exit(EXIT_FAILURE);
+        PT_exit(EXIT_FAILURE);
     }
 
 }
