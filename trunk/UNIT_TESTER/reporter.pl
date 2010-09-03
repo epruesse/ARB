@@ -20,8 +20,10 @@ sub get_existing_logs() {
 }
 
 sub do_init() {
-  my @logs = get_existing_logs();
-  foreach (@logs) { unlink($_) || die "can't unlink '$_' (Reason: $!)"; }
+  if (-d $logdirectory) {
+    my @logs = get_existing_logs();
+    foreach (@logs) { unlink($_) || die "can't unlink '$_' (Reason: $!)"; }
+  }
   return undef;
 }
 # --------------------------------------------------------------------------------
@@ -117,12 +119,7 @@ sub main() {
       elsif ($command eq 'report') { $cb = \&do_report; }
       else { $error = "Unknown command '$command'"; }
 
-      if (not $error) {
-        $logdirectory = shift @ARGV;
-        if (not -d $logdirectory) {
-          $error = "No such directory '$logdirectory'";
-        }
-      }
+      if (not $error) { $logdirectory = shift @ARGV; }
     }
     else {
       $error = 'Wrong number of arguments';
