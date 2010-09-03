@@ -33,6 +33,9 @@ RESTRICT_LIB=# run all tests
 #RESTRICT_LIB=FAST_ALIGNER# test only this library
 #RESTRICT_LIB=MERGE# test only this library
 
+SKIP_SLOW=0# run all tests
+#SKIP_SLOW=1# skip slow tests
+
 # ----------------------------------------------------------
 
 #WARN_LEVEL=0# disable warnings 
@@ -120,8 +123,8 @@ makedirs: $(DESTDIR) $(RUNDIR)
 $(SYMLIST) : $(FULLLIB) Makefile makedirs
 	nm -C -l $< > $@
 
-$(TEST_CODE) : $(SYMLIST) $(SYM2TESTCODE) 
-	$(SYM2TESTCODE) $(UNITLIB) $(RESTRICT_MODULE) $< $@ $(WARN_LEVEL)
+$(TEST_CODE) : $(SYMLIST) $(SYM2TESTCODE) Makefile.test
+	$(SYM2TESTCODE) $(UNITLIB) $(RESTRICT_MODULE) $< $@ $(WARN_LEVEL) $(SKIP_SLOW)
 
 $(TEST_OBJ) : $(TEST_CODE) $(INCLUDES)
 	$(CPP) $(cflags) -c $< -o $@ -I. 

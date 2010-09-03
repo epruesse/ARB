@@ -5,14 +5,18 @@ use warnings;
 
 # --------------------------------------------------------------------------------
 
-my %location = (); # key=symbol, value=location
-my %exported = (); # key=exported symbols
-my %simple_test = (); # key=names of existing simple test functions
+my %location      = (); # key=symbol, value=location
+my %exported      = (); # key=exported symbols
+my %simple_test   = (); # key=names of existing simple test functions; value=1
+my %skipped_test  = (); # like simple_test, but not performed (atm)
 my %test_priority = (); # key=test value=priority
 
 # --------------------------------------------------------------------------------
 
-my $warn_level = 1;
+my $warn_level = undef;
+my $skip_slow  = undef; # 0=normal 1=skip slow tests
+
+# --------------------------------------------------------------------------------
 
 sub symbol_message($$$) {
   my ($symbol,$message,$type) = @_;
@@ -28,6 +32,14 @@ sub symbol_message($$$) {
 }
 sub symbol_warning($$) { my($symbol, $message)= @_; $warn_level==0 || symbol_message($symbol, $message, "Warning"); }
 sub symbol_error($$)   { my($symbol, $message)= @_; symbol_message($symbol, $message, "Error");   }
+
+
+sub skip_slow_tests() {
+  foreach (keys %simple_test) {
+    if (/^TEST_SLOW_/) { $skipped_test{$_} = 1; }
+  }
+  foreach (keys %skipped_test) { delete $simple_test{$_}; }
+}
 
 sub calculate_priorities() {
   foreach (keys %simple_test) {
@@ -82,6 +94,7 @@ sub parse($) {
         elsif ($is_disabled_test) {
           if ($is_global_symbol) {
             symbol_warning($symbol, "Test looks disabled");
+            $skipped_test{$symbol} = 1; # just note down for summary
           }
         }
       }
@@ -145,6 +158,7 @@ sub prototype_simple($) {
 sub generate_table($$\%\&) {
   my ($type,$name,$id_r,$prototyper_r) = @_;
 
+  if ($skip_slow==1) { skip_slow_tests(); }
   calculate_priorities();
 
   my @tests = sort {
@@ -203,9 +217,13 @@ HEAD
 
   my $TABLES = generate_table(UT_type('simple'), UT_name('simple'), %simple_test, &prototype_simple);
 
+  my $skipped_count = scalar(keys %skipped_test);
+
+  # UnitTester is declared in UnitTester.cxx@InvokeUnitTester
   my $UNIT_TESTER = 'UnitTester unitTester("'.$libname.'", ';
   $UNIT_TESTER .= UT_name('simple');
   $UNIT_TESTER .= ', '.$warn_level;
+  $UNIT_TESTER .= ', '.$skipped_count;
   $UNIT_TESTER .= ');';
 
   my $MAIN = '';
@@ -230,21 +248,23 @@ HEAD
 
 sub main() {
   my $args = scalar(@ARGV);
-  if ($args != 5) {
-    die("Usage: sym2testcode.pl libname restrict-expr nm-output gen-cxx warn-level\n".
+  if ($args != 6) {
+    die("Usage: sym2testcode.pl libname restrict-expr nm-output gen-cxx warn-level skip-slow\n".
         "    libname        name of library to run tests for\n".
         "    restrict-expr  regexpr to restrict to specific module in library\n".
         "    nm-output      output of nm\n".
         "    gen_cxx        name of C++ file to generate\n".
         "    warn-level     (0=quiet|1=noisy)\n".
-        "Error: Expected 5 arguments\n");
+        "    skip-slow      (0=run all|1=skip slow)\n".
+        "Error: Expected 6 arguments\n");
   }
 
-  my $libname   = $ARGV[0];
-  my $restrict  = $ARGV[1];
-  my $nm_output = $ARGV[2];
-  my $gen_cxx   = $ARGV[3];
-  $warn_level   = $ARGV[4];
+  my $libname   = shift @ARGV;
+  my $restrict  = shift @ARGV;
+  my $nm_output = shift @ARGV;
+  my $gen_cxx   = shift @ARGV;
+  $warn_level   = shift @ARGV;
+  $skip_slow    = shift @ARGV;
 
   parse($nm_output);
   filter($restrict);

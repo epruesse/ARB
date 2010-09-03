@@ -104,26 +104,27 @@ namespace arb_test {
     arb_test::printf_flushed("%s:%i: " format "\n",             \
                              __FILE__, __LINE__, (strarg))
 
-#define TEST_WARNING(format, strarg)                    \
-    do {                                                \
-        if (arb_test::test_data().show_warnings) {    \
-            TEST_MSG("Warning: " format, strarg);       \
-        }                                               \
-    } while(0)
-
-#define TEST_ERROR(format, strarg)              \
-    do {                                        \
-        TEST_MSG("Error: " format, strarg);     \
-        TEST_ASSERT(0);                         \
-    } while(0)
-
-
 #define TEST_MSG2(format, strarg1, strarg2)             \
     fprintf(stderr, "%s:%i: " format "\n",              \
             __FILE__, __LINE__, (strarg1), (strarg2))
 
-#define TEST_WARNING2(format, strarg1, strarg2)         \
-    TEST_MSG2("Warning: " format, strarg1, strarg2)
+#define TEST_WARNING_INTERNAL(cmd)                      \
+    do {                                                \
+        arb_test::test_data().warnings++;               \
+        if (arb_test::test_data().show_warnings) {      \
+            cmd;                                        \
+        }                                               \
+    } while (0)
+            
+#define TEST_WARNING(format,strarg)           TEST_WARNING_INTERNAL((TEST_MSG("Warning: " format, strarg)))
+#define TEST_WARNING2(format,strarg1,strarg2) TEST_WARNING_INTERNAL((TEST_MSG2("Warning: " format, strarg1, strarg2)))
+
+#define TEST_ERROR(format, strarg)                      \
+          do {                                          \
+              TEST_MSG("Error: " format, strarg);       \
+              TEST_ASSERT(0);                           \
+    } while(0)
+
 
 #define TEST_ERROR2(format, strarg1, strarg2)           \
     do {                                                \

@@ -1568,16 +1568,21 @@ TESTED_UNITS_MANUAL = \
 #TESTED_UNITS = $(TESTED_UNITS_AUTO)
 TESTED_UNITS = $(TESTED_UNITS_MANUAL)
 
+# ----------------------------------------
+
+TEST_LOG_DIR = UNIT_TESTER/logs
+TEST_REPORTER = $(ARBHOME)/UNIT_TESTER/reporter.pl
+
 %.test:
-	@( export ID=$$$$; \
-	(( \
+	-@( export ID=$$$$; mkdir -p $(TEST_LOG_DIR); \
+	( \
 	    $(MAKE) -C UNIT_TESTER -f Makefile.test -r \
 		"UNITDIR=$(@D)" \
 		"UNITLIBNAME=$(@F:.test=)" \
 		"COVERAGE=$(COVERAGE)" \
 		"cflags=$(cflags)" \
 		runtest \
-	) >$(@D).$$ID.log 2>&1 && (cat $(@D).$$ID.log;rm $(@D).$$ID.log)) || (cat $(@D).$$ID.log;rm $(@D).$$ID.log;false))
+	) >$(TEST_LOG_DIR)/$(@F).log 2>&1 ; cat $(TEST_LOG_DIR)/$(@F).log)
 
 test_base: $(UNIT_TESTER_LIB:.a=.dummy)
 
@@ -1590,15 +1595,17 @@ clean_coverage: clean_coverage_results
 
 unit_tests: test_base clean_coverage_results
 	@echo "$(SEP) Running unit tests"
+	@$(TEST_REPORTER) init $(TEST_LOG_DIR)
 	@echo "fake[1]: Entering directory \`$(ARBHOME)/UNIT_TESTER'"
 	$(MAKE) $(NODIR) $(TESTED_UNITS)
+	@echo "fake[1]: Leaving directory \`$(ARBHOME)/UNIT_TESTER'"
+	@$(TEST_REPORTER) report $(TEST_LOG_DIR)
 	@$(MAKE) $(NODIR) -C UNIT_TESTER -f Makefile.test -r \
 		"UNITDIR=" \
 		"UNITLIBNAME=" \
 		"COVERAGE=0" \
 		"cflags=$(cflags)" \
 		store_patch
-	@echo "fake[1]: Leaving directory \`$(ARBHOME)/UNIT_TESTER'"
 	@echo "$(SEP) All unit tests passed" 
 
 ut: unit_tests
