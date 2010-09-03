@@ -35,7 +35,8 @@ int aisc_talking_get_index P_((int u, int o));
 long aisc_make_sets P_((long *obj));
 int aisc_broadcast P_((Hs_struct *hs, int message_type, const char *message));
 Hs_struct *aisc_accept_calls P_((Hs_struct *hs));
-void aisc_server_shutdown_and_exit P_((Hs_struct *hs, int exitcode)) __ATTR__NORETURN;
+void aisc_server_shutdown P_((Hs_struct *hs));
+void aisc_server_shutdown_and_exit P_((Hs_struct *hs, int exitcode)) __ATTR__NORETURN __ATTR__DEPRECATED;
 extern "C" int aisc_add_destroy_callback P_((aisc_callback_func callback, long clientdata));
 void aisc_remove_destroy_callback P_((void));
 

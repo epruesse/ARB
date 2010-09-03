@@ -1411,8 +1411,7 @@ Hs_struct *aisc_accept_calls(Hs_struct *hs)
     return hs;
 }
 
-void aisc_server_shutdown_and_exit(Hs_struct *hs, int exitcode) {
-    /* goes to header: __ATTR__NORETURN  */
+void aisc_server_shutdown(Hs_struct *hs) {
     Socinf *si;
 
     for (si=hs->soci; si; si=si->next) {
@@ -1422,9 +1421,16 @@ void aisc_server_shutdown_and_exit(Hs_struct *hs, int exitcode) {
     shutdown(hs->hso, 2);
     close(hs->hso);
     if (hs->unix_name) unlink(hs->unix_name);
+}
 
+void aisc_server_shutdown_and_exit(Hs_struct *hs, int exitcode) {
+    /* goes to header:
+     * __ATTR__NORETURN
+     * __ATTR__DEPRECATED cause it hides a call to exit() inside a library
+     */
+
+    aisc_server_shutdown(hs);
     printf("Server terminates with code %i.\n", exitcode);
-
     exit(exitcode);
 }
 
