@@ -28,6 +28,7 @@ RESTRICT_MODULE='.'
 # (empty=no restriction, ':'-separated list of allowed test-names)
 #
 RESTRICT_LIB=# run all tests
+#RESTRICT_LIB=mkptypes# test only these libraries
 #RESTRICT_LIB=client:arb_probe:AWTC# test only these libraries
 #RESTRICT_LIB=ARBDB# test only this library
 #RESTRICT_LIB=FAST_ALIGNER# test only this library
@@ -59,6 +60,7 @@ SHAREDLIBS=\
 
 EXEOBJDIRS=\
 	TOOLS \
+	AISC_MKPTPS \
 
 ISSHAREDLIB=$(findstring $(UNITDIR),$(SHAREDLIBS))
 ISEXEOBJECT=$(findstring $(UNITDIR),$(EXEOBJDIRS))

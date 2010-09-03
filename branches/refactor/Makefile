@@ -1551,6 +1551,7 @@ UNITS_NEED_FIX = \
 
 # for the moment, put all units containing tests into UNITS_TESTED:
 UNITS_TESTED = \
+	AISC_MKPTPS/mkptypes.test \
 	PROBE_COM/client.test \
 	TOOLS/arb_probe.test \
 	AWTC/AWTC.test \
