@@ -32,12 +32,14 @@ names.o: names.h
 names.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 names.o: $(ARBHOME)/INCLUDE/ad_prot.h
 names.o: $(ARBHOME)/INCLUDE/aisc_func_types.h
+names.o: $(ARBHOME)/INCLUDE/aisc_global.h
 names.o: $(ARBHOME)/INCLUDE/arb_assert.h
 names.o: $(ARBHOME)/INCLUDE/arb_error.h
 names.o: $(ARBHOME)/INCLUDE/arbdb.h
 names.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 names.o: $(ARBHOME)/INCLUDE/arbtools.h
 names.o: $(ARBHOME)/INCLUDE/attributes.h
+names.o: $(ARBHOME)/INCLUDE/bytestring.h
 names.o: $(ARBHOME)/INCLUDE/client.h
 names.o: $(ARBHOME)/INCLUDE/client_types.h
 names.o: $(ARBHOME)/INCLUDE/dupstr.h

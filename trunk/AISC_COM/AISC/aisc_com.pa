@@ -47,14 +47,6 @@ P #define AISC_MAGIC_NUMBER $(MAGIC_NUMBER)00
 
 P $nstruct aisc_com;$n
 
-P #ifndef _AISC_BYTESTRING
-P #define _AISC_BYTESTRING
-P $ntypedef struct struct_bytestring {
-P $1char$2*data;
-P $1int$2size;$n} bytestring;
-P #endif
-
-
 P #ifdef __cplusplus
 P const int $1AISC_GET$3= (int)AISC_MAGIC_NUMBER$6+ 0;
 P const int $1AISC_SET$3= (int)AISC_MAGIC_NUMBER$6+ 1;

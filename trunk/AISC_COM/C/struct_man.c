@@ -1,10 +1,20 @@
+/* ============================================================== */
+/*                                                                */
+/*   File      : struct_man.c                                     */
+/*   Purpose   :                                                  */
+/*                                                                */
+/*   Institute of Microbiology (Technical University Munich)      */
+/*   http://www.arb-home.de/                                      */
+ /*                                                                */
+ /* ============================================================== */
+
+
+#include <aisc.h>
+#include <struct_man.h>
+
 #include <stdio.h>
 #include <stdlib.h>
-/* #include <malloc.h> */
 #include <string.h>
-#include "aisc.h"
-
-#include "struct_man.h"
 
 /* AISC_MKPT_PROMOTE:struct aisc_hash_node; */
 

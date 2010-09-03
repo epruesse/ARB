@@ -62,6 +62,7 @@ AW_rename.o: AW_rename.hxx
 AW_rename.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 AW_rename.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AW_rename.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+AW_rename.o: $(ARBHOME)/INCLUDE/aisc_global.h
 AW_rename.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_rename.o: $(ARBHOME)/INCLUDE/arb_error.h
 AW_rename.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -75,6 +76,7 @@ AW_rename.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AW_rename.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AW_rename.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AW_rename.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+AW_rename.o: $(ARBHOME)/INCLUDE/bytestring.h
 AW_rename.o: $(ARBHOME)/INCLUDE/client.h
 AW_rename.o: $(ARBHOME)/INCLUDE/client_types.h
 AW_rename.o: $(ARBHOME)/INCLUDE/dupstr.h

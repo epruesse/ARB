@@ -11,7 +11,14 @@
 #ifndef AISC_GLOBAL_H
 #define AISC_GLOBAL_H
 
+#ifndef BYTESTRING_H
+#include <bytestring.h>
+#endif
+
+#define aisc_assert(cond) arb_assert(cond)
+
 // type mask
+#define AISC_TYPE_NONE   0x00000000
 #define AISC_TYPE_INT    0x01000000
 #define AISC_TYPE_DOUBLE 0x02000000
 #define AISC_TYPE_STRING 0x03000000
