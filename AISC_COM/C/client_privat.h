@@ -48,11 +48,6 @@ struct aisc_com {
     SigHandler       old_sigpipe_handler;
 };
 
-typedef struct struct_bytestring {
-    char *data;
-    int   size;
-} bytestring;
-
 #define AISC_MAGIC_NUMBER 0
 
 enum aisc_command_list {

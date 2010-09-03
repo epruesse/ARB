@@ -230,12 +230,14 @@ arb_primer.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 arb_probe.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 arb_probe.o: $(ARBHOME)/INCLUDE/ad_prot.h
+arb_probe.o: $(ARBHOME)/INCLUDE/aisc_global.h
 arb_probe.o: $(ARBHOME)/INCLUDE/arb_assert.h
 arb_probe.o: $(ARBHOME)/INCLUDE/arb_error.h
 arb_probe.o: $(ARBHOME)/INCLUDE/arbdb.h
 arb_probe.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 arb_probe.o: $(ARBHOME)/INCLUDE/arbtools.h
 arb_probe.o: $(ARBHOME)/INCLUDE/attributes.h
+arb_probe.o: $(ARBHOME)/INCLUDE/bytestring.h
 arb_probe.o: $(ARBHOME)/INCLUDE/client.h
 arb_probe.o: $(ARBHOME)/INCLUDE/client_types.h
 arb_probe.o: $(ARBHOME)/INCLUDE/dupstr.h

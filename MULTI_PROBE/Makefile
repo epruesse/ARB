@@ -110,6 +110,7 @@ MP_mo_liste.o: SoTl.hxx
 MP_mo_liste.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 MP_mo_liste.o: $(ARBHOME)/INCLUDE/ad_prot.h
 MP_mo_liste.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+MP_mo_liste.o: $(ARBHOME)/INCLUDE/aisc_global.h
 MP_mo_liste.o: $(ARBHOME)/INCLUDE/arb_assert.h
 MP_mo_liste.o: $(ARBHOME)/INCLUDE/arb_error.h
 MP_mo_liste.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -119,6 +120,7 @@ MP_mo_liste.o: $(ARBHOME)/INCLUDE/arbtools.h
 MP_mo_liste.o: $(ARBHOME)/INCLUDE/attributes.h
 MP_mo_liste.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 MP_mo_liste.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+MP_mo_liste.o: $(ARBHOME)/INCLUDE/bytestring.h
 MP_mo_liste.o: $(ARBHOME)/INCLUDE/client.h
 MP_mo_liste.o: $(ARBHOME)/INCLUDE/client_types.h
 MP_mo_liste.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -134,6 +136,7 @@ MP_noclass.o: SoTl.hxx
 MP_noclass.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/ad_prot.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+MP_noclass.o: $(ARBHOME)/INCLUDE/aisc_global.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/AliView.hxx
 MP_noclass.o: $(ARBHOME)/INCLUDE/AP_sequence.hxx
 MP_noclass.o: $(ARBHOME)/INCLUDE/AP_Tree.hxx
@@ -155,6 +158,7 @@ MP_noclass.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 MP_noclass.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 MP_noclass.o: $(ARBHOME)/INCLUDE/awt.hxx
 MP_noclass.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
+MP_noclass.o: $(ARBHOME)/INCLUDE/bytestring.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/client.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/client_types.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/downcast.h
@@ -241,6 +245,7 @@ MP_sonde.o: SoTl.hxx
 MP_sonde.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 MP_sonde.o: $(ARBHOME)/INCLUDE/ad_prot.h
 MP_sonde.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+MP_sonde.o: $(ARBHOME)/INCLUDE/aisc_global.h
 MP_sonde.o: $(ARBHOME)/INCLUDE/arb_assert.h
 MP_sonde.o: $(ARBHOME)/INCLUDE/arb_error.h
 MP_sonde.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -250,6 +255,7 @@ MP_sonde.o: $(ARBHOME)/INCLUDE/arbtools.h
 MP_sonde.o: $(ARBHOME)/INCLUDE/attributes.h
 MP_sonde.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 MP_sonde.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+MP_sonde.o: $(ARBHOME)/INCLUDE/bytestring.h
 MP_sonde.o: $(ARBHOME)/INCLUDE/client.h
 MP_sonde.o: $(ARBHOME)/INCLUDE/client_types.h
 MP_sonde.o: $(ARBHOME)/INCLUDE/dupstr.h

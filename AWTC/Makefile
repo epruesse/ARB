@@ -32,6 +32,7 @@ AWTC_next_neighbours.o: awtc_next_neighbours.hxx
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/aisc_global.h
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/arb_error.h
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -44,6 +45,7 @@ AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/bytestring.h
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/client.h
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/client_types.h
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/dupstr.h

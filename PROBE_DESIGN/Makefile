@@ -33,6 +33,7 @@ probe_design.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 probe_design.o: $(ARBHOME)/INCLUDE/ad_prot.h
 probe_design.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 probe_design.o: $(ARBHOME)/INCLUDE/adGene.h
+probe_design.o: $(ARBHOME)/INCLUDE/aisc_global.h
 probe_design.o: $(ARBHOME)/INCLUDE/AliView.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/AP_sequence.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/AP_Tree.hxx
@@ -58,6 +59,7 @@ probe_design.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/awt_config_manager.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/awt_iupac.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
+probe_design.o: $(ARBHOME)/INCLUDE/bytestring.h
 probe_design.o: $(ARBHOME)/INCLUDE/client.h
 probe_design.o: $(ARBHOME)/INCLUDE/client_types.h
 probe_design.o: $(ARBHOME)/INCLUDE/downcast.h

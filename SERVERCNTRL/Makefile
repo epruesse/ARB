@@ -42,6 +42,7 @@ servercntrl.o: $(ARBHOME)/INCLUDE/arbdb.h
 servercntrl.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 servercntrl.o: $(ARBHOME)/INCLUDE/arbtools.h
 servercntrl.o: $(ARBHOME)/INCLUDE/attributes.h
+servercntrl.o: $(ARBHOME)/INCLUDE/bytestring.h
 servercntrl.o: $(ARBHOME)/INCLUDE/client.h
 servercntrl.o: $(ARBHOME)/INCLUDE/client_privat.h
 servercntrl.o: $(ARBHOME)/INCLUDE/client_types.h

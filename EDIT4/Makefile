@@ -791,6 +791,7 @@ graph_aligner_gui.o: graph_aligner_gui.hxx
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/ad_prot.h
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+graph_aligner_gui.o: $(ARBHOME)/INCLUDE/aisc_global.h
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/arb_assert.h
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/arb_error.h
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -806,6 +807,7 @@ graph_aligner_gui.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
+graph_aligner_gui.o: $(ARBHOME)/INCLUDE/bytestring.h
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/client.h
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/client_types.h
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/dupstr.h

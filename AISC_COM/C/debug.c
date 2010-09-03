@@ -10,7 +10,6 @@
 
 #include <aisc_com.h>
 #include "client.h"
-#include "aisc_global.h"
 
 #include <cstdarg>
 #include <cstring>
