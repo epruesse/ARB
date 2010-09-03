@@ -32,23 +32,39 @@
  */
 
 namespace arb_test {
-    inline bool strnullequal(const char *s1, const char *s2) {
-        return (s1 == s2) || (s1 && s2 && strcmp(s1, s2) == 0);
-    }
-
-    inline int printf_flushed(const char *format, ...) {
-        fflush(stdout);
-        fflush(stderr);
-
-        va_list parg;
-        va_start(parg, format);
-        int     printed = vfprintf(stderr, format, parg);
-        va_end(parg);
-
-        fflush(stderr);
-
-        return printed;
-    }
+    class FlushedOutput {
+        inline void flushall() { fflush(stdout); fflush(stderr); }
+    public:
+        FlushedOutput() { flushall(); }
+        ~FlushedOutput() { flushall(); }
+        
+#define VPRINTFORMAT(format) do { va_list parg; va_start(parg, format); vfprintf(stderr, format, parg); va_end(parg); } while(0)
+    
+        static void printf(const char *format, ...) __attribute__((format(printf, 1, 2))) {
+            FlushedOutput yes;
+            VPRINTFORMAT(format);
+        }
+        static void messagef(const char *filename, int lineno, const char *format, ...) __attribute__((format(printf, 3, 4))) {
+            FlushedOutput yes;
+            fprintf(stderr, "%s:%i: ", filename, lineno);
+            VPRINTFORMAT(format);
+        }
+        static void warningf(const char *filename, int lineno, const char *format, ...) __attribute__((format(printf, 3, 4))) {
+            GlobalTestData& global = test_data();
+            if (global.show_warnings) {
+                FlushedOutput yes;
+                fprintf(stderr, "%s:%i: Warning: ", filename, lineno);
+                VPRINTFORMAT(format);
+                global.warnings++;
+            }
+        }
+        static void errorf(const char *filename, int lineno, const char *format, ...) __attribute__((format(printf, 3, 4))) {
+            FlushedOutput yes;
+            fprintf(stderr, "%s:%i: Error: ", filename, lineno);
+            VPRINTFORMAT(format);
+        }
+#undef VPRINTFORMAT
+    };
 
     inline void print(int i)                 { fprintf(stderr, "%i", i); }
     inline void print_hex(int i)             { fprintf(stderr, "0x%x", i); }
@@ -64,8 +80,7 @@ namespace arb_test {
 #else
     inline void print(long unsigned u)       { fprintf(stderr, "%lu", u); }
     inline void print_hex(long unsigned u)   { fprintf(stderr, "0x%lux", u); }
-#endif    
-
+#endif
     
     template <typename T1, typename T2> void print_pair(T1 t1, T2 t2) {
         print(t1);
@@ -78,14 +93,12 @@ namespace arb_test {
         print_hex(t2);
     }
     template <typename T1, typename T2> void print_failed_equal(T1 t1, T2 t2) {
-        fflush(stdout);
-        fflush(stderr);
+        FlushedOutput yes;
         fputs("is_equal(", stderr);
         print_pair(t1, t2);
         fputs(") (", stderr);
         print_hex_pair(t1, t2);
         fputs(") returns false\n", stderr);
-        fflush(stderr);
     }
 
     template <typename T> inline const char *nameoftype(T unspecialized) {
@@ -99,6 +112,11 @@ namespace arb_test {
     NAMEOFTYPE(long int);
     NAMEOFTYPE(long unsigned int);
 #undef NAMEOFTYPE
+
+    
+    inline bool strnullequal(const char *s1, const char *s2) {
+        return (s1 == s2) || (s1 && s2 && strcmp(s1, s2) == 0);
+    }
 
     template <typename T1, typename T2> inline bool is_equal(T1 t1, T2 t2) {
         bool equal = (t1 == t2);
@@ -116,8 +134,8 @@ namespace arb_test {
     template<> inline bool is_equal<>(const char *s1, const char *s2) {
         bool equal = strnullequal(s1, s2);
         if (!equal) {
-            printf_flushed("str_equal('%s',\n"
-                           "          '%s') returns false\n", s1, s2);
+            FlushedOutput::printf("str_equal('%s',\n"
+                                  "          '%s') returns false\n", s1, s2);
         }
         return equal;
     }
@@ -139,7 +157,7 @@ namespace arb_test {
     inline bool is_different(const char *s1, const char *s2) {
         bool different = !strnullequal(s1, s2);
         if (!different) {
-            printf_flushed("str_different('%s', ..) returns false\n", s1);
+            FlushedOutput::printf("str_different('%s', ..) returns false\n", s1);
         }
         return different;
     }
@@ -150,7 +168,7 @@ namespace arb_test {
 
         bool in_epsilon_range = diff < epsilon;
         if (!in_epsilon_range) {
-            printf_flushed("is_similar(%f,%f,%f) returns false\n", d1, d2, epsilon);
+            FlushedOutput::printf("is_similar(%f,%f,%f) returns false\n", d1, d2, epsilon);
         }
         return in_epsilon_range;
     }
@@ -163,37 +181,14 @@ namespace arb_test {
 
 // --------------------------------------------------------------------------------
 
-#define TEST_MSG(format, strarg)                                \
-    arb_test::printf_flushed("%s:%i: " format "\n",             \
-                             __FILE__, __LINE__, (strarg))
+#define TEST_MSG(format,strarg)           arb_test::FlushedOutput::messagef(__FILE__, __LINE__, format, (strarg))
+#define TEST_MSG2(format,strarg1,strarg2) arb_test::FlushedOutput::messagef(__FILE__, __LINE__, format, (strarg1), (strarg2))
 
-#define TEST_MSG2(format, strarg1, strarg2)             \
-    fprintf(stderr, "%s:%i: " format "\n",              \
-            __FILE__, __LINE__, (strarg1), (strarg2))
+#define TEST_WARNING(format,strarg)           arb_test::FlushedOutput::warningf(__FILE__, __LINE__, format, (strarg))
+#define TEST_WARNING2(format,strarg1,strarg2) arb_test::FlushedOutput::warningf(__FILE__, __LINE__, format, (strarg1), (strarg2))
 
-#define TEST_WARNING_INTERNAL(cmd)                      \
-    do {                                                \
-        arb_test::test_data().warnings++;               \
-        if (arb_test::test_data().show_warnings) {      \
-            cmd;                                        \
-        }                                               \
-    } while (0)
-            
-#define TEST_WARNING(format,strarg)           TEST_WARNING_INTERNAL((TEST_MSG("Warning: " format, strarg)))
-#define TEST_WARNING2(format,strarg1,strarg2) TEST_WARNING_INTERNAL((TEST_MSG2("Warning: " format, strarg1, strarg2)))
-
-#define TEST_ERROR(format, strarg)                      \
-          do {                                          \
-              TEST_MSG("Error: " format, strarg);       \
-              TEST_ASSERT(0);                           \
-    } while(0)
-
-
-#define TEST_ERROR2(format, strarg1, strarg2)           \
-    do {                                                \
-        TEST_MSG2("Error: " format, strarg1, strarg2);  \
-        TEST_ASSERT(0);                                 \
-    } while(0)
+#define TEST_ERROR(format,strarg)           do { arb_test::FlushedOutput::errorf(__FILE__, __LINE__, format, (strarg)); TEST_ASSERT(0); } while(0)
+#define TEST_ERROR2(format,strarg1,strarg2) do { arb_test::FlushedOutput::errorf(__FILE__, __LINE__, format, (strarg1), (strarg2)); TEST_ASSERT(0); } while(0)
 
 // --------------------------------------------------------------------------------
 
