@@ -178,11 +178,16 @@
 
 #  ifdef __cplusplus
 
+#ifndef _CPP_CSTDLIB
+#include <cstdlib>
+#endif
+
 namespace arb_test {
     class GlobalTestData {
         GlobalTestData()
             : show_warnings(true),
-              assertion_failed(false)
+              assertion_failed(false),
+              warnings(0)
         {}
 
         static GlobalTestData *instance(bool erase) {
@@ -200,6 +205,9 @@ namespace arb_test {
     public:
         bool show_warnings;
         bool assertion_failed;
+
+        // counters
+        size_t warnings;
 
         static GlobalTestData& get_instance() { return *instance(false); }
         static void erase_instance() { instance(true); }
