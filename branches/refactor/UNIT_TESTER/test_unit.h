@@ -28,7 +28,7 @@
  * 
  * All macros named 'XXX__BROKEN' are intended to be used, when a
  * test is known to fail, but cannot be fixed atm for some reason
- * 
+ *
  */
 
 namespace arb_test {
