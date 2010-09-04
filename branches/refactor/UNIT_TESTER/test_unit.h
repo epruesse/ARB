@@ -177,6 +177,46 @@ namespace arb_test {
         return is_similar(d1, d2, 0.000001);
     }
 
+    inline bool files_are_equal(const char *file1, const char *file2) {
+        const char *error = NULL;
+        FILE       *fp1   = fopen(file1, "rb");
+
+        if (!fp1) {
+            FlushedOutput::printf("can't open '%s'", file1);
+            error = "i/o error";
+        }
+        else {
+            FILE *fp2 = fopen(file2, "rb");
+            if (!fp2) {
+                FlushedOutput::printf("can't open '%s'", file2);
+                error = "i/o error";
+            }
+            else {
+                const int BLOCKSIZE = 4096;
+                char *buf1 = (char*)malloc(BLOCKSIZE);
+                char *buf2 = (char*)malloc(BLOCKSIZE);
+
+                while (!error) {
+                    int read1 = fread(buf1, 1, BLOCKSIZE, fp1);
+                    int read2 = fread(buf2, 1, BLOCKSIZE, fp2);
+
+                    if (read1 != read2) error = "filesizes differ";
+                    else {
+                        if (!read1) break; // done
+                        if (memcmp(buf1, buf2, read1) != 0) error = "content differs";
+                    }
+                }
+                free(buf2);
+                free(buf1);
+                fclose(fp2);
+            }
+            fclose(fp1);
+        }
+
+        if (error) FlushedOutput::printf("files_are_equal(%s, %s) fails: %s\n", file1, file2, error);
+        return !error;
+    }
+    
 };
 
 // --------------------------------------------------------------------------------
@@ -348,6 +388,8 @@ namespace arb_test {
 
 #define TEST_ASSERT_SIMILAR(t1,t2,epsilon)         TEST_ASSERT(arb_test::is_similar(t1, t2, epsilon))
 #define TEST_ASSERT_SIMILAR__BROKEN(t1,t2,epsilon) TEST_ASSERT__BROKEN(arb_test::is_similar(t1, t2, epsilon))
+
+#define TEST_ASSERT_FILES_EQUAL(f1,f2) TEST_ASSERT(arb_test::files_are_equal(f1,f2))
 
 #else
 #error test_unit.h included twice
