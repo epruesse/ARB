@@ -17,7 +17,7 @@
   <!--  <xsl:output method="html" encoding="iso-8859-1" indent="no"/>-->
   <!--<xsl:output method="html" indent="no"/>-->
   <!--<xsl:output method="html" encoding="iso-8859-1" indent="yes"/>-->
-  <xsl:output method="html" indent="yes"/>
+  <xsl:output method="html" indent="no"/>
 
   <xsl:param name="myname"/>
   <xsl:param name="xml_location"/>
@@ -125,7 +125,7 @@
   <!-- ============================== -->
   <xsl:template name="header" >
     <xsl:param name="title" select="'Untitled'"/>
-    <xsl:comment>Generated from XML with Sablotron -- Stylesheet by Ralf Westram (ralf@arb-home.de) </xsl:comment>
+    <xsl:comment>Generated from XML - XSLT-Stylesheet by Ralf Westram (ralf@arb-home.de) </xsl:comment>
     <HEAD>
       <META NAME="Author" CONTENT="{$author}"/>
       <meta http-equiv="expires" content="86400"/>
