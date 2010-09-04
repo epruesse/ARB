@@ -77,6 +77,14 @@ namespace arb_test {
 
     inline void print(size_t z)              { fprintf(stderr, "%zu", z); }
     inline void print_hex(size_t z)          { fprintf(stderr, "0x%zx", z); }
+    
+    inline void print(unsigned char c)       { fprintf(stderr, "'%c'", c); }
+    inline void print_hex(unsigned char c)   { print_hex(size_t(c)); }
+
+    inline void print(char c)                { print((unsigned char)c); }
+    inline void print_hex(char c)            { print_hex((unsigned char)c); }
+
+    // dont dup size_t:
 #ifdef ARB_64
     inline void print(unsigned u)            { fprintf(stderr, "%u", u); }
     inline void print_hex(unsigned u)        { fprintf(stderr, "0x%ux", u); }
@@ -84,7 +92,7 @@ namespace arb_test {
     inline void print(long unsigned u)       { fprintf(stderr, "%lu", u); }
     inline void print_hex(long unsigned u)   { fprintf(stderr, "0x%lux", u); }
 #endif
-    
+
     template <typename T1, typename T2> void print_pair(T1 t1, T2 t2) {
         print(t1);
         fputc(',', stderr);
@@ -110,6 +118,8 @@ namespace arb_test {
 
 #define NAMEOFTYPE(type) template <> inline const char * nameoftype<>(type) { return #type; }
     NAMEOFTYPE(bool);
+    NAMEOFTYPE(char);
+    NAMEOFTYPE(unsigned char);
     NAMEOFTYPE(int);
     NAMEOFTYPE(unsigned int);
     NAMEOFTYPE(long int);
