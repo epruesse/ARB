@@ -47,6 +47,7 @@ namespace arb_test {
         static void messagef(const char *filename, int lineno, const char *format, ...) __attribute__((format(printf, 3, 4))) {
             FlushedOutput yes;
             fprintf(stderr, "%s:%i: ", filename, lineno);
+            fputc('\n', stderr);
             VPRINTFORMAT(format);
         }
         static void warningf(const char *filename, int lineno, const char *format, ...) __attribute__((format(printf, 3, 4))) {
@@ -55,6 +56,7 @@ namespace arb_test {
                 FlushedOutput yes;
                 fprintf(stderr, "%s:%i: Warning: ", filename, lineno);
                 VPRINTFORMAT(format);
+                fputc('\n', stderr);
                 global.warnings++;
             }
         }
@@ -62,6 +64,7 @@ namespace arb_test {
             FlushedOutput yes;
             fprintf(stderr, "%s:%i: Error: ", filename, lineno);
             VPRINTFORMAT(format);
+            fputc('\n', stderr);
         }
 #undef VPRINTFORMAT
     };
