@@ -191,8 +191,9 @@ namespace arb_test {
     }
 
     inline bool files_are_equal(const char *file1, const char *file2) {
-        const char *error = NULL;
-        FILE       *fp1   = fopen(file1, "rb");
+        const char    *error = NULL;
+        FILE          *fp1   = fopen(file1, "rb");
+        FlushedOutput  yes;
 
         if (!fp1) {
             FlushedOutput::printf("can't open '%s'", file1);
@@ -205,20 +206,56 @@ namespace arb_test {
                 error = "i/o error";
             }
             else {
-                const int BLOCKSIZE = 4096;
-                char *buf1 = (char*)malloc(BLOCKSIZE);
-                char *buf2 = (char*)malloc(BLOCKSIZE);
+                const int      BLOCKSIZE    = 4096;
+                unsigned char *buf1         = (unsigned char*)malloc(BLOCKSIZE);
+                unsigned char *buf2         = (unsigned char*)malloc(BLOCKSIZE);
+                int            equal_bytes  = 0;
+                bool           repositioned = false;
 
                 while (!error) {
-                    int read1 = fread(buf1, 1, BLOCKSIZE, fp1);
-                    int read2 = fread(buf2, 1, BLOCKSIZE, fp2);
+                    int read1  = fread(buf1, 1, BLOCKSIZE, fp1);
+                    int read2  = fread(buf2, 1, BLOCKSIZE, fp2);
+                    int common = read1<read2 ? read1 : read2;
 
-                    if (read1 != read2) error = "filesizes differ";
+                    if (!common) {
+                        if (read1 != read2) error = "filesize differs";
+                        break;
+                    }
+
+                    if (memcmp(buf1, buf2, common) == 0) {
+                        equal_bytes += common;
+                    }
                     else {
-                        if (!read1) break; // done
-                        if (memcmp(buf1, buf2, read1) != 0) error = "content differs";
+                        int x = 0;
+                        while (buf1[x] == buf2[x]) {
+                            x++;
+                            equal_bytes++;
+                        }
+                        error = "content differs";
+
+                        // x is the position inside the current block
+                        const int DUMP       = 7;
+                        int       y1         = x >= DUMP ? x-DUMP : 0;
+                        int       y2         = (x+DUMP)>common ? common : (x+DUMP);
+                        int       blockstart = equal_bytes-x;
+
+                        for (int y = y1; y <= y2; y++) {
+                            fprintf(stderr, "[0x%04x]", blockstart+y);
+                            print_pair(buf1[y], buf2[y]);
+                            fputc(' ', stderr);
+                            print_hex_pair(buf1[y], buf2[y]);
+                            if (x == y) fputs("                     <- diff", stderr);
+                            fputc('\n', stderr);
+                        }
+                        if (y2 == common) {
+                            fputs("[end of block - truncated]\n", stderr);
+                        }
                     }
                 }
+
+                if (error) FlushedOutput::printf("files_are_equal: equal_bytes=%i\n", equal_bytes);
+                test_assert(error || equal_bytes); // comparing empty files is nonsense
+
                 free(buf2);
                 free(buf1);
                 fclose(fp2);
@@ -402,7 +439,8 @@ namespace arb_test {
 #define TEST_ASSERT_SIMILAR(t1,t2,epsilon)         TEST_ASSERT(arb_test::is_similar(t1, t2, epsilon))
 #define TEST_ASSERT_SIMILAR__BROKEN(t1,t2,epsilon) TEST_ASSERT__BROKEN(arb_test::is_similar(t1, t2, epsilon))
 
-#define TEST_ASSERT_FILES_EQUAL(f1,f2) TEST_ASSERT(arb_test::files_are_equal(f1,f2))
+#define TEST_ASSERT_FILES_EQUAL(f1,f2)         TEST_ASSERT(arb_test::files_are_equal(f1,f2))
+#define TEST_ASSERT_FILES_EQUAL__BROKEN(f1,f2) TEST_ASSERT__BROKEN(arb_test::files_are_equal(f1,f2))
 
 #else
 #error test_unit.h included twice
