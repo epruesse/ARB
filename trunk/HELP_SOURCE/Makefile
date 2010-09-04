@@ -27,7 +27,9 @@ BINARIES = $(TOOL_OBJECTS:%.o=$(ARBHOME)/bin/%)
 QUIETLY = ./quietly.pl
 
 # We use Sablotron 1.0 and XMLLINT
-XSLT = sabcmd
+
+SABCMD = sabcmd
+XSLTPROC = xsltproc
 VALIDATE = $(QUIETLY) XMLLINT
 
 # --------------------------------------------------------------------------------
@@ -89,8 +91,9 @@ OLD_HELP_ALL= \
 
 ifeq ($(TEST_ONE),1)
 #OLD_HELP=$(HLP_SOURCE)/parser.hlp $(HLP_SOURCE)/commands.hlp $(HLP_SOURCE)/FAQS.hlp $(HLP_SOURCE)/acisrt.hlp
+#OLD_HELP=$(HLP_SOURCE)/arb.hlp $(HLP_SOURCE)/version.hlp $(HLP_SOURCE)/translate_dna_2_pro.hlp $(HLP_SOURCE)/species_join.hlp
+OLD_HELP=$(HLP_SOURCE)/version.hlp
 #OLD_HELP=$(HLP_SOURCE)/arb.hlp
-OLD_HELP=$(HLP_SOURCE)/arb.hlp
 else
 OLD_HELP=$(OLD_HELP_ALL:$(HLP_SOURCE)/FORM.hlp=)# remove FORM.hlp (this is just a default file)
 endif
@@ -182,16 +185,20 @@ STYLE_HELP=to_help.xsl
 
 # --------------------------------------------------------------------------------
 
-$(HELP) : $(STYLE_HELP) $(DTD)
+XSLTPROC_ARGS=--nonet --stringparam xml_location "$(XML_LOCATION)"
 
-$(HLP_DEST)/%.hlp : $(XML_LOCATION)/%.xml
+$(HELP) : $(STYLE_HELP) $(DTD) Makefile
+
+$(HLP_DEST)/%.hlp : $(XML_LOCATION)/%.xml 
 		@((test -f $@ && rm $@) || true)
-		$(XSLT) $(STYLE_HELP) $< $@ '$$myname=$(subst $(XML_LOCATION)/,,$<)' '$$xml_location=$(XML_LOCATION)' || rm $@
+		@$(SABCMD) $(STYLE_HELP) $< $@.old '$$myname=$(subst $(XML_LOCATION)/,,$<)' '$$xml_location=$(XML_LOCATION)' || rm $@
+		@$(XSLTPROC) --output $@ $(XSLTPROC_ARGS) --stringparam myname "$(subst $(XML_LOCATION)/,,$<)" $(STYLE_HELP) $< || rm $@
 		@test -f $@
+		@diff $@.old $@ || (echo "$@:0: Error: not same as with sabcmd" && false)
 
 # --------------------------------------------------------------------------------
 
-$(HTML) : $(STYLE_HTML) $(DTD)
+$(HTML) : $(STYLE_HTML) $(DTD) Makefile
 
 # Google logo
 google_logo: $(HTML_LOCATION)/Logo_25wht.gif
@@ -201,8 +208,10 @@ $(HTML_LOCATION)/Logo_25wht.gif : Logo_25wht.gif
 
 $(HTML_LOCATION)/%.html : $(XML_LOCATION)/%.xml
 		@((test -f $@ && rm $@) || true)
-		$(XSLT) $(STYLE_HTML) $< $@ '$$myname=$(subst $(XML_LOCATION)/,,$<)' '$$xml_location=$(XML_LOCATION)' || (rm $@ && test -f $@)
+		@$(SABCMD) $(STYLE_HTML) $< $@.old '$$myname=$(subst $(XML_LOCATION)/,,$<)' '$$xml_location=$(XML_LOCATION)' || (rm $@ && test -f $@)
+		@$(XSLTPROC) --output $@ $(XSLTPROC_ARGS) --stringparam myname "$(subst $(XML_LOCATION)/,,$<)" $(STYLE_HTML) $< || (rm $@ && test -f $@)
 		@test -f $@
+		@diff $@.old $@ || (echo "$@:0: Error: not same as with sabcmd" && false)
 
 # --------------------------------------------------------------------------------
 
