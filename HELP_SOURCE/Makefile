@@ -185,7 +185,7 @@ XSLTPROC_ARGS=--nonet --nomkdir --stringparam xml_location "$(XML_LOCATION)"
 $(HELP) : $(STYLE_HELP) $(DTD) Makefile
 
 $(HLP_DEST)/%.hlp : $(XML_LOCATION)/%.xml 
-		@-rm $@
+		@-rm -f $@
 		@$(XSLTPROC) --output $@ $(XSLTPROC_ARGS) --stringparam myname "$(subst $(XML_LOCATION)/,,$<)" $(STYLE_HELP) $< || rm $@
 		@test -f $@ || (echo "$<:0: did not compile to $@" && false)
 
@@ -200,7 +200,7 @@ $(HTML_LOCATION)/Logo_25wht.gif : Logo_25wht.gif
 		@test -f $@
 
 $(HTML_LOCATION)/%.html : $(XML_LOCATION)/%.xml
-		@-rm $@
+		@-rm -f $@
 		@$(XSLTPROC) --output $@ $(XSLTPROC_ARGS) --stringparam myname "$(subst $(XML_LOCATION)/,,$<)" $(STYLE_HTML) $< || (rm $@ && test -f $@)
 		@test -f $@ || (echo "$<:0: did not compile to $@" && false)
 
