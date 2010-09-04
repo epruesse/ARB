@@ -26,9 +26,7 @@ BINARIES = $(TOOL_OBJECTS:%.o=$(ARBHOME)/bin/%)
 
 QUIETLY = ./quietly.pl
 
-# We use Sablotron 1.0 and XMLLINT
-
-SABCMD = sabcmd
+# using xsltproc and XMLLINT:
 XSLTPROC = xsltproc
 VALIDATE = $(QUIETLY) XMLLINT
 
@@ -36,17 +34,14 @@ VALIDATE = $(QUIETLY) XMLLINT
 
 all: date generated dirs tools nonhlp_formats delzerohtml
 ifeq ($(CONVERT_FROM_OLD_HELP),1)
-		@echo ---------------------------------------------------
-		@echo ------------ Converting old hlp 2 xml:
-		$(MAKE) xml
+		@echo --------------------------------------------------- [old hlp 2 xml]
+		time $(MAKE) xml
 endif
-		@echo ---------------------------------------------------
-		@echo ------------ Converting xml 2 hlp:
-		$(MAKE) help
+		@echo --------------------------------------------------- [xml 2 hlp]
+		time $(MAKE) help
 		$(MAKE) $(HLP_DEST)/FORM.hlp
-		@echo ---------------------------------------------------
-		@echo ------------ Converting xml 2 html:
-		$(MAKE) html
+		@echo --------------------------------------------------- [xml 2 html]
+		time $(MAKE) html
 		$(MAKE) html_index
 
 $(HLP_DEST)/FORM.hlp: $(HLP_SOURCE)/FORM.hlp
@@ -119,7 +114,7 @@ $(XML_LOCATION)/%.xml : $(HLP_SOURCE)/%.hlp $(DTD)
 				( echo $<:1: exists twice -- only one existence allowed; \
 				  echo $(HLP_GENERATED)/$(<F):1: other occurrence \
 				  && false )
-		arb_help2xml $< $@
+		@arb_help2xml $< $@
 		@$(VALIDATE) $@
 
 $(XML_LOCATION)/%.xml : $(HLP_GENERATED)/%.hlp $(DTD)
@@ -127,7 +122,7 @@ $(XML_LOCATION)/%.xml : $(HLP_GENERATED)/%.hlp $(DTD)
 				( echo $<:1: exists twice -- only one existence allowed; \
 				  echo $(HLP_SOURCE)/$(<F):1: other occurrence \
 				  && false )
-		arb_help2xml $< $@
+		@arb_help2xml $< $@
 		@$(VALIDATE) $@
 
 else
@@ -185,16 +180,14 @@ STYLE_HELP=to_help.xsl
 
 # --------------------------------------------------------------------------------
 
-XSLTPROC_ARGS=--nonet --stringparam xml_location "$(XML_LOCATION)"
+XSLTPROC_ARGS=--nonet --nomkdir --stringparam xml_location "$(XML_LOCATION)"
 
 $(HELP) : $(STYLE_HELP) $(DTD) Makefile
 
 $(HLP_DEST)/%.hlp : $(XML_LOCATION)/%.xml 
-		@((test -f $@ && rm $@) || true)
-		@$(SABCMD) $(STYLE_HELP) $< $@.old '$$myname=$(subst $(XML_LOCATION)/,,$<)' '$$xml_location=$(XML_LOCATION)' || rm $@
+		@-rm $@
 		@$(XSLTPROC) --output $@ $(XSLTPROC_ARGS) --stringparam myname "$(subst $(XML_LOCATION)/,,$<)" $(STYLE_HELP) $< || rm $@
-		@test -f $@
-		@diff $@.old $@ || (echo "$@:0: Error: not same as with sabcmd" && false)
+		@test -f $@ || (echo "$<:0: did not compile to $@" && false)
 
 # --------------------------------------------------------------------------------
 
@@ -207,24 +200,22 @@ $(HTML_LOCATION)/Logo_25wht.gif : Logo_25wht.gif
 		@test -f $@
 
 $(HTML_LOCATION)/%.html : $(XML_LOCATION)/%.xml
-		@((test -f $@ && rm $@) || true)
-		@$(SABCMD) $(STYLE_HTML) $< $@.old '$$myname=$(subst $(XML_LOCATION)/,,$<)' '$$xml_location=$(XML_LOCATION)' || (rm $@ && test -f $@)
+		@-rm $@
 		@$(XSLTPROC) --output $@ $(XSLTPROC_ARGS) --stringparam myname "$(subst $(XML_LOCATION)/,,$<)" $(STYLE_HTML) $< || (rm $@ && test -f $@)
-		@test -f $@
-		@diff $@.old $@ || (echo "$@:0: Error: not same as with sabcmd" && false)
+		@test -f $@ || (echo "$<:0: did not compile to $@" && false)
 
 # --------------------------------------------------------------------------------
 
 HTML_IDX = _index.html
 
 html.list: $(HTML)
-		find $(HTML_LOCATION) -name "*.html" >$@
+		@find $(HTML_LOCATION) -name "*.html" >$@
 
 $(HTML_IDX) : html.list
-		echo '<HTML><HEAD><TITLE>Arb-Help Index</TITLE></HEAD>' >$@
-		echo '<BODY>' >>$@
-		cat $< |  sed -e 's/^\(.*\)$$/<A href="\1">\1<\/A> /'  >>$@
-		echo '</BODY></HTML>' >>$@
+		@echo '<HTML><HEAD><TITLE>Arb-Help Index</TITLE></HEAD>' >$@
+		@echo '<BODY>' >>$@
+		@cat $< |  sed -e 's/^\(.*\)$$/<A href="\1">\1<\/A> /'  >>$@
+		@echo '</BODY></HTML>' >>$@
 
 # --------------------------------------------------------------------------------
 
