@@ -1410,54 +1410,6 @@ void TEST_SLOW_loadsave() {
             GB_close(gb_quicksaved);
         }
 
-
-        // check quicksave delete and wrap around
-        for (int i = 1; i <= 100; ++i) {
-            GB_save_quick(gb_b2b, "b2b.arb");
-            switch (i) {
-                case 1: {
-                    TEST_ASSERT(GB_is_regularfile("b2b.a00"));
-                    TEST_ASSERT(GB_is_regularfile("b2b.a01"));
-                    TEST_ASSERT(!GB_is_regularfile("b2b.a02")); // should not exist yet
-                    break;
-                }
-                case 10: {
-                    TEST_ASSERT(GB_is_regularfile("b2b.a01"));
-                    TEST_ASSERT(GB_is_regularfile("b2b.a10"));
-                    TEST_ASSERT(!GB_is_regularfile("b2b.a00")); // should no longer exist
-                    TEST_ASSERT(!GB_is_regularfile("b2b.a11")); // should not exist yet
-
-                    // speed-up-hack
-                    GB_MAIN_TYPE *Main   = GB_MAIN(gb_b2b);
-                    i                   += 78;
-                    Main->qs.last_index += 78;
-                    break;
-                }
-                case 98:  {
-                    TEST_ASSERT(GB_is_regularfile("b2b.a89"));
-                    TEST_ASSERT(GB_is_regularfile("b2b.a98"));
-                    TEST_ASSERT(!GB_is_regularfile("b2b.a88")); // should no longer exist
-                    TEST_ASSERT(!GB_is_regularfile("b2b.a99")); // should not exist yet
-                    break;
-                }
-                case 99:  {
-                    TEST_ASSERT(GB_is_regularfile("b2b.a90"));
-                    TEST_ASSERT(GB_is_regularfile("b2b.a99"));
-                    TEST_ASSERT(!GB_is_regularfile("b2b.a89")); // should no longer exist
-                    TEST_ASSERT(!GB_is_regularfile("b2b.a00")); // should not exist yet
-                    break;
-                }
-                case 100:  {
-                    TEST_ASSERT(GB_is_regularfile("b2b.a00"));
-                    TEST_ASSERT(GB_is_regularfile("b2b.a09"));
-                    TEST_ASSERT(!GB_is_regularfile("b2b.a98")); // should no longer exist
-                    TEST_ASSERT(!GB_is_regularfile("b2b.a99")); // should no longer exist
-                    TEST_ASSERT(!GB_is_regularfile("b2b.a10")); // should not exist yet
-                    break;
-                }
-            }
-        }
-
         {
             // check master/slave DBs
             TEST_ASSERT_NO_ERROR(GB_save_as(gb_b2b, "master.arb", "b"));
@@ -1503,6 +1455,66 @@ void TEST_SLOW_loadsave() {
     GB_close(gb_bin);
 
     TEST_loadsave_CLEANUP();
+}
+
+#define TEST_quicksave_CLEANUP() TEST_ASSERT(system("rm -f min_bin.a[0-9]* min_bin.ARF") == 0)
+
+inline bool quicksave_exists(int i) {
+    const char *qsformat = "min_bin.a%02i";
+    return GB_is_regularfile(GBS_global_string(qsformat, (i)));
+}
+inline bool quicksave_missng(int i)          { return !quicksave_exists(i); }
+inline bool is_first_quicksave(int i)        { return quicksave_exists(i) && !quicksave_exists(i-1); }
+inline bool is_last_quicksave(int i)         { return quicksave_exists(i) && !quicksave_exists(i+1); }
+inline bool quicksaves_range(int from, int to) { return is_first_quicksave(from) && is_last_quicksave(to); }
+
+#define TEST_QUICK_RANGE(s,e) TEST_ASSERT(quicksaves_range(s,e))
+#define TEST_QUICK_GONE(i)    TEST_ASSERT(quicksave_missng(i))
+
+void TEST_SLOW_quicksave_names() {
+    // check quicksave delete and wrap around
+
+    TEST_quicksave_CLEANUP();
+    const char *bname = "min_bin.arb";
+    
+#if 0
+    {
+        // update min_bin.arb from min_ascii.arb
+        const char *aname    = "min_ascii.arb";
+        GBDATA     *gb_ascii = GB_open(aname, "rw"); TEST_ASSERT(gb_ascii);
+
+        TEST_ASSERT_NO_ERROR(GB_save_as(gb_ascii, bname, "b"));
+        GB_close(gb_ascii);
+    }
+#endif
+    GBDATA *gb_bin = GB_open(bname, "rw"); TEST_ASSERT(gb_bin);
+    for (int i = 0; i <= 100; ++i) {
+        TEST_ASSERT_NO_ERROR(GB_save_quick(gb_bin, bname));
+        switch (i) {
+            case  0: TEST_QUICK_RANGE( 0,  0); break;
+            case  1: TEST_QUICK_RANGE( 0,  1); break;
+            case 10: TEST_QUICK_RANGE( 1, 10); break;
+            case 98: TEST_QUICK_RANGE(89, 98); break;
+            case 99: TEST_QUICK_RANGE(90, 99);
+                TEST_QUICK_GONE(0);    // should not exist yet
+                break;
+            case 100: TEST_QUICK_RANGE(0, 9);
+                TEST_QUICK_GONE((i-8));
+                TEST_QUICK_GONE((i-1));
+                TEST_QUICK_GONE(i);
+                break;
+        }
+        if (i == 10) {
+            // speed-up-hack
+            GB_MAIN_TYPE *Main   = GB_MAIN(gb_bin);
+            i                   += 78; // -> 88 (afterwards run 10 times w/o checks to fake correct state)
+            Main->qs.last_index += 78;
+        }
+    }
+
+    GB_close(gb_bin);
+    
+    TEST_quicksave_CLEANUP();
 }
 
 void TEST_db_filenames() {

@@ -210,7 +210,6 @@ namespace arb_test {
                 unsigned char *buf1         = (unsigned char*)malloc(BLOCKSIZE);
                 unsigned char *buf2         = (unsigned char*)malloc(BLOCKSIZE);
                 int            equal_bytes  = 0;
-                bool           repositioned = false;
 
                 while (!error) {
                     int read1  = fread(buf1, 1, BLOCKSIZE, fp1);
