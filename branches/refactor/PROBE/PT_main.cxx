@@ -82,6 +82,7 @@ void PT_init_psg() {
     for (i=0; i<256; i++) {
         psg.complement[i] = PT_complement(i);
     }
+    psg_initialized = true;
 }
 
 void PT_exit_psg() {
