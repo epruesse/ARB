@@ -27,7 +27,8 @@ DESCRIPTION	First you have to select the species you want to submit (or enter th
                 At last enter a name, press save file and send that file by email
                 to some submission address.
 
-SECTION FILLING The forms provided with ARB contain fields in the form $(SOME_ID)
+SECTION FILLING
+                The forms provided with ARB contain fields in the form $(SOME_ID)
                 These fields are replaced by the respective values from 'Your private data'
                 and 'READ INFO'.
 
