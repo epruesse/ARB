@@ -30,6 +30,7 @@ else
                         echo "===================================================================" >> $FAKEPATCH
                     fi
                     ln --force $FAKEPATCH $RECENT_PATCH
+                    touch $FAKEPATCH
                     echo "No patch generated (no diff)"
                 else
                     ln --force $PATCH $RECENT_PATCH
