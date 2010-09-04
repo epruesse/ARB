@@ -172,7 +172,7 @@ endif
 	@echo "fake[2]: Leaving directory \`$(FULLUNITDIR)'"
 
 skip_test:
-	@echo "unit-tests completely skipped for '$(UNITLIBNAME)'"
+	@echo "UnitTester: $(UNITLIBNAME) tests=0 (skipped via RESTRICT_LIB)"
 
 # --------------------
 
