@@ -1,7 +1,0 @@
-# configuration file for the cgi part of the arb_probe_server.
-# configured for host: none
-
-# uncomment the following lines and set the correct values:
-# root_dir=/trance1/ARB/source/ARB/PROBE_SERVER
-# running_servers=15,16,17,18,19,20
-
