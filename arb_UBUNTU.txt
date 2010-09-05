@@ -1,23 +1,18 @@
 
-ARB requirements on Ubuntu 8.10
+ARB requirements on Ubuntu 8.04
 -------------------------------
-
-[Note:]
-You may use the provided install script, e.g.
-    sudo SH/arb_installubuntu4arb.sh
-
 
 
 1) Package dependencies for running precompiled ARB
    
  1a) Non OPENGL version
 
+     - libmotif3
      - gnuplot
      - gv
-     - libmotif3
      - xfig
-     - transfig
      - xterm
+     - treetool
 
  1b) OPENGL version 
 
@@ -31,18 +26,18 @@ You may use the provided install script, e.g.
 
      - packets mentioned under 1a)
      - g++
-     - libmotif-dev
-     - libtiff4-dev
      - libx11-dev
-     - libxaw7-dev
-     - libxext-dev
-     - libxml2-utils
-     - libxp-dev
-     - libxpm-dev
+     - libmotif-dev
      - libxt-dev
-     - lynx
      - x11proto-print-dev
-     - xsltproc
+     - lynx
+     - libxpm-dev
+     - libxp-dev
+     - libxext-dev
+     - libtiff4-dev
+     - libxml2-utils
+     - sablotron
+     - libxaw7-dev
      - xutils-dev
 
  2b) OPENGL version
@@ -51,17 +46,16 @@ You may use the provided install script, e.g.
 
          deb http://dev.mikro.biologie.tu-muenchen.de/debian hardy non-free
 
-         (replace 'hardy' with your ubuntu distribution; see
-          http://dev.mikro.biologie.tu-muenchen.de/debian/dists/
-          for available distributions)
-
      Install the following packets:
 
-     - libglw-mesa-arb
      - packets mentioned under 1b)
      - packets mentioned under 2a)
-     - freeglut3-dev
      - libglew1.5-dev
      - libpng12-dev
+     - freeglut3-dev
+     - libglw-mesa-arb
 
 
+[Note:]
+You may use the provided install script, e.g.
+    sudo SH/arb_installubuntu4arb.sh

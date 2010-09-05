@@ -1,24 +1,31 @@
-// =============================================================== //
-//                                                                 //
-//   File      : DI_mldist.cxx                                     //
-//   Purpose   :                                                   //
-//                                                                 //
-//   Institute of Microbiology (Technical University Munich)       //
-//   http://www.arb-home.de/                                       //
-//                                                                 //
-// =============================================================== //
+#include <stdio.h>
+#include <stdlib.h>
+#include <memory.h>
+// #include <malloc.h>
+#include <string.h>
 
-#include "di_mldist.hxx"
+#include <math.h>
+
+#include <arbdb.h>
+#include <arbdbt.h>
+
+#include <aw_root.hxx>
+#include <aw_device.hxx>
+#include <aw_window.hxx>
+#include <aw_preset.hxx>
+#include <awt.hxx>
+
+#include <awt_tree.hxx>
+#include "dist.hxx"
+#include <awt_csp.hxx>
+
 #include "di_matr.hxx"
+#include "di_mldist.hxx"
 
-#include <AP_seq_simple_pro.hxx>
-
-#include <cmath>
+#define epsilon         0.000001/* a small number */
 
 
-#define epsilon 0.000001                            // a small number
-
-void di_mldist::givens(di_ml_matrix a, long i, long j, long n, double ctheta, double stheta, bool left)
+void di_mldist::givens(di_ml_matrix a,long i,long j,long n,double ctheta,double stheta,GB_BOOL left)
 {
     /* Givens transform at i,j for 1..n with angle theta */
     long            k;
@@ -29,16 +36,15 @@ void di_mldist::givens(di_ml_matrix a, long i, long j, long n, double ctheta, do
             d = ctheta * a[i - 1][k] + stheta * a[j - 1][k];
             a[j - 1][k] = ctheta * a[j - 1][k] - stheta * a[i - 1][k];
             a[i - 1][k] = d;
-        }
-        else {
+        } else {
             d = ctheta * a[k][i - 1] + stheta * a[k][j - 1];
             a[k][j - 1] = ctheta * a[k][j - 1] - stheta * a[k][i - 1];
             a[k][i - 1] = d;
         }
     }
-}
+}                               /* givens */
 
-void di_mldist::coeffs(double x, double y, double *c, double *s, double accuracy)
+void di_mldist::coeffs(double x,double y,double *c,double *s,double accuracy)
 {
     /* compute cosine and sine of theta */
     double          root;
@@ -47,14 +53,13 @@ void di_mldist::coeffs(double x, double y, double *c, double *s, double accuracy
     if (root < accuracy) {
         *c = 1.0;
         *s = 0.0;
-    }
-    else {
+    } else {
         *c = x / root;
         *s = y / root;
     }
-}
+}                               /* coeffs */
 
-void di_mldist::tridiag(di_ml_matrix a, long n, double accuracy)
+void di_mldist::tridiag(di_ml_matrix a,long n,double accuracy)
 {
     /* Givens tridiagonalization */
     long            i, j;
@@ -63,12 +68,12 @@ void di_mldist::tridiag(di_ml_matrix a, long n, double accuracy)
     for (i = 2; i < n; i++) {
         for (j = i + 1; j <= n; j++) {
             coeffs(a[i - 2][i - 1], a[i - 2][j - 1], &c, &s, accuracy);
-            givens(a, i, j, n, c, s, true);
-            givens(a, i, j, n, c, s, false);
-            givens(eigvecs, i, j, n, c, s, true);
+            givens(a, i, j, n, c, s, GB_TRUE);
+            givens(a, i, j, n, c, s, GB_FALSE);
+            givens(eigvecs, i, j, n, c, s, GB_TRUE);
         }
     }
-}
+}                               /* tridiag */
 
 void di_mldist::shiftqr(di_ml_matrix a, long n, double accuracy)
 {
@@ -90,18 +95,18 @@ void di_mldist::shiftqr(di_ml_matrix a, long n, double accuracy)
                 a[j][j] -= approx;
             for (j = 1; j < i; j++) {
                 coeffs(a[j - 1][j - 1], a[j][j - 1], &c, &s, accuracy);
-                givens(a, j, j + 1, i, c, s, true);
-                givens(a, j, j + 1, i, c, s, false);
-                givens(eigvecs, j, j + 1, n, c, s, true);
+                givens(a, j, j + 1, i, c, s, GB_TRUE);
+                givens(a, j, j + 1, i, c, s, GB_FALSE);
+                givens(eigvecs, j, j + 1, n, c, s, GB_TRUE);
             }
             for (j = 0; j < i; j++)
                 a[j][j] += approx;
         } while (fabs(a[i - 1][i - 2]) > accuracy);
     }
-}
+}                               /* shiftqr */
 
 
-void di_mldist::qreigen(di_ml_matrix proba, long n)
+void di_mldist::qreigen(di_ml_matrix proba,long n)
 {
     /* QR eigenvector/eigenvalue method for symmetric matrix */
     double          accuracy;
@@ -122,34 +127,34 @@ void di_mldist::qreigen(di_ml_matrix proba, long n)
             proba[i][j] = sqrt(pi[j]) * eigvecs[i][j];
     }
     /* proba[i][j] is the value of U' times pi^(1/2) */
-}
+}                               /* qreigen */
 
 
 /* pameigen */
 
-void di_mldist::build_exptteig(double tt) {
+void di_mldist::build_exptteig(double tt){
     int m;
     for (m = 0; m < n_states; m++) {
         exptteig[m] = exp(tt * eig[m]);
     }
 }
 
-void di_mldist::predict(double /* tt */, long nb1, long  nb2)
+void di_mldist::predict(double /*tt*/, long nb1,long  nb2)
 {
     /* make contribution to prediction of this aa pair */
     long            m;
     double          q;
     double          TEMP;
-    for (m = n_states-1; m >= 0; m--) {
+    for (m = n_states-1; m >=0; m--) {
         q = prob[m][nb1] * prob[m][nb2] * exptteig[m];
         p += q;
         TEMP = eig[m];
         dp += TEMP * q;
         d2p += TEMP * TEMP * q;
     }
-}
+}                               /* predict */
 
-void di_mldist::build_predikt_table(int pos) {
+void            di_mldist::build_predikt_table(int pos){
     int             b1, b2;
     double tt = pos_2_tt(pos);
     build_exptteig(tt);
@@ -164,7 +169,7 @@ void di_mldist::build_predikt_table(int pos) {
             d2p = 0.0;
             predict(tt, b1, b2);
 
-            if (p > 0.0) {
+            if (p > 0.0){
                 double ip = 1.0/p;
                 akt_slopes[0][b1][b2] = dp * ip;
                 akt_curves[0][b1][b2] = d2p * ip - dp * dp * (ip * ip);
@@ -172,8 +177,7 @@ void di_mldist::build_predikt_table(int pos) {
                 akt_slopes[0][b2][b1] = akt_slopes[0][b1][b2];
                 akt_curves[0][b2][b1] = akt_curves[0][b1][b2];
                 akt_infs[0][b2][b1] = 0;
-            }
-            else {
+            }else{
                 akt_infs[0][b1][b2] = 1;
                 akt_infs[0][b2][b1] = 1;
             }
@@ -183,7 +187,7 @@ void di_mldist::build_predikt_table(int pos) {
 
 int di_mldist::tt_2_pos(double tt) {
     int pos = (int)(tt * fracchange * DI_ML_RESOLUTION);
-    if (pos >= DI_ML_RESOLUTION * DI_ML_MAX_DIST)
+    if (pos >= DI_ML_RESOLUTION * DI_ML_MAX_DIST )
         pos = DI_ML_RESOLUTION * DI_ML_MAX_DIST - 1;
     if (pos < 0)
         pos = 0;
@@ -195,11 +199,11 @@ double di_mldist::pos_2_tt(int pos) {
     return tt+epsilon;
 }
 
-void di_mldist::build_akt_predikt(double tt)
+void            di_mldist::build_akt_predikt(double tt)
 {
-    /* take an actual slope from the hash table, else calculate a new one */
+    /* take an aktual slope from the hash table, else calculate a new one */
     int             pos = tt_2_pos(tt);
-    if (!slopes[pos]) {
+    if (!slopes[pos]){
         build_predikt_table(pos);
     }
     akt_slopes = slopes[pos];
@@ -209,7 +213,7 @@ void di_mldist::build_akt_predikt(double tt)
 
 }
 
-const char *di_mldist::makedists(bool *aborted_flag)
+const char *di_mldist::makedists()
 {
     /* compute the distances */
     long            i, j, k, iterations;
@@ -219,26 +223,23 @@ const char *di_mldist::makedists(bool *aborted_flag)
     int         pos;
 
     for (i = 0; i < spp; i++) {
-        matrix->set(i, i, 0.0);
+        matrix->set(i,i,0.0);
         {
             double gauge = (double)i/(double)spp;
-            if (aw_status(gauge*gauge)) {
-                if (aborted_flag) *aborted_flag = true;
-                return "Aborted by user";
-            }
+            if (aw_status(gauge*gauge)) return "Aborted";
         }
         {
             /* move all unknown characters to del */
-            ap_pro *seq = entries[i]->sequence_protein->get_sequence();
-            for (k = 0; k <chars;  k++) {
-                b1 = seq[k];
-                if (b1 <= val) continue;
+            ap_pro *seq1 = entries[i]->sequence_protein->sequence;
+            for (k = 0; k <chars ; k++) {
+                b1 = seq1[k];
+                if (b1 <=val) continue;
                 if (b1 == asx || b1 == glx) continue;
-                seq[k] = del;
+                seq1[k] = del;
             }
         }
 
-        for (j = 0; j < i;  j++) {
+        for (j = 0; j < i ; j++) {
             tt = 1.0;
             delta = tt / 2.0;
             iterations = 0;
@@ -248,19 +249,19 @@ const char *di_mldist::makedists(bool *aborted_flag)
                 pos = tt_2_pos(tt);
                 tt = pos_2_tt(pos);
                 build_akt_predikt(tt);
-                const ap_pro *seq1 = entries[i]->sequence_protein->get_sequence();
-                const ap_pro *seq2 = entries[j]->sequence_protein->get_sequence();
+                ap_pro *seq1 = entries[i]->sequence_protein->sequence;
+                ap_pro *seq2 = entries[j]->sequence_protein->sequence;
                 for (k = chars; k >0; k--) {
                     b1 = *(seq1++);
                     b2 = *(seq2++);
-                    if (predict_infinity(b1, b2)) {
+                    if (predict_infinity(b1,b2)){
                         break;
                     }
-                    slope += predict_slope(b1, b2);
-                    curv += predict_curve(b1, b2);
+                    slope += predict_slope(b1,b2);
+                    curv += predict_curve(b1,b2);
                 }
                 iterations++;
-                if (!predict_infinity(b1, b2)) {
+                if (!predict_infinity(b1,b2)) {
                     if (curv < 0.0) {
                         tt -= slope / curv;
                         if (tt > 10000.0) {
@@ -270,55 +271,57 @@ const char *di_mldist::makedists(bool *aborted_flag)
                         }
                         int npos = tt_2_pos(tt);
                         int d = npos - pos; if (d<0) d=-d;
-                        if (d<=1) { // cannot optimize
+                        if (d<=1){  // cannot optimize
                             break;
                         }
 
-                    }
-                    else {
+                    } else {
                         if ((slope > 0.0 && delta < 0.0) || (slope < 0.0 && delta > 0.0))
                             delta /= -2;
-                        if (tt + delta < 0 && tt <= epsilon) {
+                        if (tt + delta < 0 && tt<= epsilon) {
                             break;
                         }
                         tt += delta;
                     }
-                }
-                else {
+                } else {
                     delta /= -2;
                     tt += delta;
                     if (tt < 0) tt = 0;
                 }
             } while (iterations < 20);
         }
-        matrix->set(i, j, fracchange * tt);
+        matrix->set(i,j,fracchange * tt);
     }
     return 0;
-}
+}                               /* makedists */
 
 
-void di_mldist::clean_slopes() {
-    for (int i=0; i<DI_ML_RESOLUTION*DI_ML_MAX_DIST; i++) {
-        freenull(slopes[i]);
-        freenull(curves[i]);
-        freenull(infs[i]);
+void di_mldist::clean_slopes(){
+    int i;
+    if (slopes) {
+        for (i=0;i<DI_ML_RESOLUTION*DI_ML_MAX_DIST;i++) {
+            delete slopes[i]; slopes[i] = 0;
+            delete curves[i]; curves[i] = 0;
+            delete infs[i]; infs[i] = 0;
+        }
     }
     akt_slopes = 0;
     akt_curves = 0;
     akt_infs = 0;
 }
 
-di_mldist::~di_mldist() {
+di_mldist::~di_mldist(){
     clean_slopes();
 }
 
-di_mldist::di_mldist(long nentries, DI_ENTRY **entriesi, long seq_len, AP_smatrix *matrixi) {
-    memset((char *)this, 0, sizeof(di_mldist));
+di_mldist::di_mldist(long nentries, DI_ENTRY     **entriesi, long seq_len, AP_smatrix *matrixi){
+    memset((char *)this,0,sizeof(di_mldist));
     entries = entriesi;
     matrix = matrixi;
 
     spp = nentries;
     chars = seq_len;
 
-    qreigen(prob, 20L); // @@@ reported buffer overflow (ignore for now, since this module is not used atm)
+    //maketrans();
+    qreigen(prob, 20L);
 }

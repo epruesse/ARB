@@ -33,10 +33,8 @@ depend.init:
 WETC_main.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 WETC_main.o: $(ARBHOME)/INCLUDE/ad_prot.h
 WETC_main.o: $(ARBHOME)/INCLUDE/arb_assert.h
-WETC_main.o: $(ARBHOME)/INCLUDE/arb_error.h
 WETC_main.o: $(ARBHOME)/INCLUDE/arbdb.h
 WETC_main.o: $(ARBHOME)/INCLUDE/arbdb_base.h
-WETC_main.o: $(ARBHOME)/INCLUDE/arbtools.h
 WETC_main.o: $(ARBHOME)/INCLUDE/attributes.h
 WETC_main.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 WETC_main.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
@@ -44,5 +42,3 @@ WETC_main.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 WETC_main.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 WETC_main.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 WETC_main.o: $(ARBHOME)/INCLUDE/awt.hxx
-WETC_main.o: $(ARBHOME)/INCLUDE/dupstr.h
-WETC_main.o: $(ARBHOME)/INCLUDE/smartptr.h

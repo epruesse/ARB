@@ -1,19 +1,21 @@
-// =============================================================== //
-//                                                                 //
-//   File      : adGene.h                                          //
-//   Purpose   : Specific defines for ARB genome                   //
-//                                                                 //
-//   Coded by Ralf Westram (coder@reallysoft.de) in July 2002      //
-//   Institute of Microbiology (Technical University Munich)       //
-//   http://www.arb-home.de/                                       //
-//                                                                 //
-// =============================================================== //
+/*  ====================================================================  */
+/*                                                                        */
+/*    File      : adGene.h                                                */
+/*    Purpose   : Specific defines for ARB genome                         */
+/*                                                                        */
+/*                                                                        */
+/*  Coded by Ralf Westram (coder@reallysoft.de) in July 2002              */
+/*  Copyright Department of Microbiology (Technical University Munich)    */
+/*                                                                        */
+/*  Visit our web site at: http://www.arb-home.de/                        */
+/*                                                                        */
+/*  ====================================================================  */
 
 #ifndef ADGENE_H
 #define ADGENE_H
 
-#ifndef _CPP_CSTDLIB
-#include <cstdlib>
+#ifndef ARBDB_H
+#include "arbdb.h"
 #endif
 
 #define GENOM_ALIGNMENT "ali_genom"
@@ -35,10 +37,10 @@
 
 struct GEN_position {
     int            parts;
-    bool           joinable;                        // true = join(...), false = order(...) aka not joinable or unknown
+    GB_BOOL        joinable;    // GB_TRUE = join(...), GB_FALSE = order(...) aka not joinable or unknown
     size_t        *start_pos;
     size_t        *stop_pos;
-    unsigned char *complement;                      // 0       = normal or 1 = complementary
+    unsigned char *complement;  // 0       = normal or 1 = complementary
 
     // [optional elements]
 
@@ -47,13 +49,19 @@ struct GEN_position {
     // '<' = position MIGHT be lower
     // '=' = position is certain
     // '>' = position MIGHT be higher
-    // '+' = position is directly BEHIND (but before next base position, i.e. specifies a location between to base positions)
+    // '+' = position is directly BEHIND (but before next base position, i.e. specifies a location between to base positions) 
     // '-' = position is BEFORE
 
     unsigned char *start_uncertain;
     unsigned char *stop_uncertain;
 };
 
+#ifndef ARBDB_H
+#include "arbdb.h"
+#endif
+
+
 #else
 #error adGene.h included twice
-#endif // ADGENE_H
+#endif /* ADGENE_H */
+

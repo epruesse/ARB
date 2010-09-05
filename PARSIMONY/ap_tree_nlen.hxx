@@ -1,26 +1,7 @@
-// =============================================================== //
-//                                                                 //
-//   File      : ap_tree_nlen.hxx                                  //
-//   Purpose   :                                                   //
-//                                                                 //
-//   Coded by Ralf Westram (coder@reallysoft.de) in Summer 1995    //
-//   Institute of Microbiology (Technical University Munich)       //
-//   http://www.arb-home.de/                                       //
-//                                                                 //
-// =============================================================== //
-
-#ifndef AP_TREE_NLEN_HXX
-#define AP_TREE_NLEN_HXX
-
-#ifndef _CPP_IOSTREAM
 #include <iostream>
-#endif
-#ifndef _CPP_CLIMITS
-#include <climits>
-#endif
-#ifndef AP_MAIN_HXX
-#include <ap_main.hxx>
-#endif
+#include <limits.h>
+
+#define ap_assert(x) arb_assert(x)
 
 class AP_tree_nlen;
 
@@ -48,13 +29,19 @@ typedef enum {
     AP_BL_BL_ONLY            = 2, // try to calculate the branch lengths
     AP_BL_NNI_BL             = 3, // better tree & branch lengths
     AP_BL_BOOTSTRAP_LIMIT    = 4, // calculate upper bootstrap limits
-    AP_BL_BOOTSTRAP_ESTIMATE = 12 // calculate estimate of bootstrap (includes AP_BL_BOOTSTRAP_LIMIT)
+    AP_BL_BOOTSTRAP_ESTIMATE = 12 // calculate estimate of bootstrap
 } AP_BL_MODE;
 
 class AP_tree_edge;
 
-class AP_tree_nlen : public AP_tree {
-    /* tree that is independent of branch lengths and root */
+class AP_tree_nlen : public AP_tree {           /* tree that is independent of branch lengths and root */
+    AP_tree *dup(void);
+
+    AP_BOOL clear(unsigned long stack_update,unsigned long user_push_counter);
+    void    unhash_sequence(void);
+    void    createListRekUp(AP_CO_LIST *list,int *cn);
+    void    createListRekSide(AP_CO_LIST *list,int *cn);
+
 
     AP_TREE_SIDE kernighan;     // Flag zum markieren
     int          distance;      // distance to tree border (0=leaf, INT_MAX=UNKNOWN)
@@ -64,68 +51,52 @@ class AP_tree_nlen : public AP_tree {
     AP_tree_edge *edge[3];      // the edges to the father and the sons
     int           index[3];     // index to node[] in AP_tree_edge
 
-    AP_FLOAT mutation_rate;
-
-
-
-    void createListRekUp(AP_CO_LIST *list, int *cn);
-    void createListRekSide(AP_CO_LIST *list, int *cn);
+protected:
 
 public:
+    AP_FLOAT costs(void);       /* cost of a tree (number of changes ..)*/
+    AP_BOOL  push(AP_STACK_MODE, unsigned long); /* push state of costs */
+    void     pop(unsigned long); /* pop old tree costs */
+    
+    virtual AP_UPDATE_FLAGS check_update(); // disable  load !!!!
+
+
     AP_tree_nlen(AP_tree_root *tree_root);
     virtual ~AP_tree_nlen() {}
-    DEFINE_TREE_ACCESSORS(AP_tree_root, AP_tree_nlen);
-
-    // ARB_tree interface
-    virtual AP_tree_nlen *dup() const;
-    // ARB_tree interface (end)
-
-    void     unhash_sequence();
-    AP_FLOAT costs(char *mutPerSite = NULL);        /* cost of a tree (number of changes ..) */
-
-    bool push(AP_STACK_MODE, unsigned long); /* push state of costs */
-    void pop(unsigned long);    /* pop old tree costs */
-    bool clear(unsigned long stack_update, unsigned long user_push_counter);
-
-    virtual AP_UPDATE_FLAGS check_update(); // disable  load !!!!
 
     void copy(AP_tree_nlen *tree);
     int  Distance();
 
     // tree reconstruction methods:
-    void insert(AP_tree_nlen *new_brother);
-    void remove();
-    void swap_assymetric(AP_TREE_SIDE mode);
-    void moveTo(AP_tree_nlen *new_brother, AP_FLOAT rel_pos); // if unsure, use cantMoveTo to test if possible
+    void insert(AP_tree *new_brother);
+    void remove(void);
+    void swap_assymetric(AP_TREE_SIDE modus);
+    void moveTo(AP_tree *new_brother, AP_FLOAT rel_pos); // if unsure, use cantMoveTo to test if possible
     void set_root();
 
-    // overload virtual methods from AP_tree:
-    void insert(AP_tree *new_brother) { insert(DOWNCAST(AP_tree_nlen*, new_brother)); }
-    void moveTo(AP_tree *node, AP_FLOAT rel_pos) { moveTo(DOWNCAST(AP_tree_nlen*, node), rel_pos); }
-
     // tree optimization methods:
-    void parsimony_rek(char *mutPerSite = NULL);
+    void parsimony_rek();
 
-    AP_FLOAT nn_interchange_rek(bool        openclosestatus,
+    AP_FLOAT nn_interchange_rek(AP_BOOL     openclosestatus,
                                 int        &abort,
-                                int         deep,   // -1 means: do whole subtree
-                                AP_BL_MODE  mode,
-                                bool        skip_hidden);
+                                int         deep, // -1 means: do whole subtree
+                                AP_BL_MODE  mode        = AP_BL_NNI_ONLY,
+                                GB_BOOL     skip_hidden = GB_FALSE);
 
-    AP_FLOAT nn_interchange(AP_FLOAT parsimony, AP_BL_MODE mode);
+    AP_FLOAT nn_interchange(AP_FLOAT parsimony,AP_BL_MODE mode);
 
     void kernighan_rek(int         rek_deep,
                        int        *rek_breite,
                        int         rek_breite_anz,
                        const int   rek_deep_max,
-                       double    (*function)(double, double *, int),
+                       double (*funktion)(double,double *,int),
                        double     *param_liste,
                        int         param_anz,
                        AP_FLOAT    pars_best,
                        AP_FLOAT    pars_start,
                        AP_FLOAT    pars_prev,
                        AP_KL_FLAG  searchflag,
-                       bool       *abort_flag);
+                       AP_BOOL    *abbruch_flag);
 
     // for crossover creates a list of 3 times the nodes with all
     // ancestors in it
@@ -135,41 +106,45 @@ public:
 
     // misc stuff:
 
-    void setBranchlen(double leftLen, double rightLen) { leftlen = leftLen; rightlen = rightLen; }
+    void setBranchlen(double leftLen,double rightLen) { leftlen = leftLen; rightlen = rightLen; }
 
+    int         test() const;
     const char* fullname() const;
+
     const char* sortByName();
+
+    // casted access to neighbours:
+
+    AP_tree_nlen *Father() const { return (AP_tree_nlen*)father; }
+    AP_tree_nlen *Brother() const { return (AP_tree_nlen*)brother(); }
+    AP_tree_nlen *Leftson() const { return (AP_tree_nlen*)leftson; }
+    AP_tree_nlen *Rightson() const { return (AP_tree_nlen*)rightson; }
 
     // AP_tree_edge access functions:
 
-    int indexOf(const AP_tree_edge *e) const { int i; for (i=0; i<3; i++) if (edge[i]==e) return i; return -1; }
+    int indexOf(const AP_tree_edge *e) const { int i; for (i=0; i<3; i++) if (edge[i]==e) return i;return -1; }
 
     AP_tree_edge* edgeTo(const AP_tree_nlen *brother) const;
     AP_tree_edge* nextEdge(const AP_tree_edge *thisEdge=NULL) const;
-    int unusedEdgeIndex() const; // [0..2], -1 if none
+    int unusedEdge() const;
 
     // more complex edge functions:
 
     void linkAllEdges(AP_tree_edge *edge1, AP_tree_edge *edge2, AP_tree_edge *edge3);
     void unlinkAllEdges(AP_tree_edge **edgePtr1, AP_tree_edge **edgePtr2, AP_tree_edge **edgePtr3);
 
-    char *getSequenceCopy();
+    //void      destroyAllEdges();
 
-#if defined(CHECK_TREE_STRUCTURE)
-    void assert_edges_valid() const;
-    void assert_valid() const;
-#endif // CHECK_TREE_STRUCTURE
+    // test stuff:
 
+    char *getSequence();
 
     friend      class AP_tree_edge;
-    friend      std::ostream& operator<<(std::ostream&, const AP_tree_nlen&);
+    friend      std::ostream& operator<<(std::ostream&,const AP_tree_nlen&);
 };
 
-// ---------------------
-//      AP_tree_edge
 
-class MutationsPerSite;
-
+/************ AP_tree_edge  ************/
 class AP_tree_edge
 {
     // the following members are stored/restored by
@@ -192,22 +167,23 @@ class AP_tree_edge
     //          -1 means we go through the whole tree
     //           0 means we only act on the actual edge
 
+    //    int clearValues(int deep,AP_tree_nlen *skip=NULL);    // clears used and data.distance
     AP_tree_edge *buildChain(int                 deep,
-                             bool                skip_hidden = false,
+                             GB_BOOL             skip_hidden = GB_FALSE,
                              int                 distance    = 0,
                              const AP_tree_nlen *skip        = NULL,
                              AP_tree_edge       *comesFrom   = NULL);
 
-    long sizeofChain();
+    long sizeofChain(void);
     void calcDistance();
     void tailDistance(AP_tree_nlen*);
-
+    
     int distanceOK() const { int diff = node[0]->distance-node[1]->distance; return diff>=-1 && diff<=1; }
 
     // my friends:
 
     friend class AP_tree_nlen;
-    friend std::ostream& operator<<(std::ostream&, const AP_tree_edge&);
+    friend std::ostream& operator<<(std::ostream&,const AP_tree_edge&);
 
 protected:
 
@@ -229,7 +205,7 @@ public:
     int isConnectedTo(const AP_tree_nlen *n) const              { return node[0]==n || node[1]==n; }
     int indexOf(const AP_tree_nlen *n) const                    { ap_assert(isConnectedTo(n)); return node[1] == n; }
     AP_tree_nlen* otherNode(const AP_tree_nlen *n) const        { return node[1-indexOf(n)]; }
-    AP_tree_nlen* sonNode() const                               { return node[0]->get_father() == node[1] ? node[0] : node[1]; }
+    AP_tree_nlen* sonNode() const                               { return node[0]->Father() == node[1] ? node[0] : node[1]; }
     AP_tree_edge* Next() const                                  { return next; }
     long Age() const                                            { return age; }
 
@@ -239,15 +215,14 @@ public:
 
     // tree optimization:
 
-    AP_FLOAT nni_rek(bool          openclosestatus,
+    AP_FLOAT nni_rek(AP_BOOL       openclosestatus,
                      int&          Abort,
                      int           deep,
-                     bool          skip_hidden = false,
+                     GB_BOOL       skip_hidden = GB_FALSE,
                      AP_BL_MODE    mode        = AP_BL_NNI_ONLY,
                      AP_tree_nlen *skipNode    = NULL);
 
-    AP_FLOAT nni_mutPerSite(AP_FLOAT pars_one, AP_BL_MODE mode, MutationsPerSite *mps);
-    AP_FLOAT nni(AP_FLOAT pars_one, AP_BL_MODE mode) { return nni_mutPerSite(pars_one, mode, NULL); }
+    AP_FLOAT nni(AP_FLOAT pars_one, AP_BL_MODE mode);
 
     // test methods:
 
@@ -257,32 +232,29 @@ public:
     void testChain(int deep);
 
     int Distance() const { ap_assert(distanceOK()); return (node[0]->distance+node[1]->distance) >> 1; }
-    int distanceToBorder(int maxsearch=INT_MAX, AP_tree_nlen *skip=NULL) const; // obsolete
+    int distanceToBorder(int maxsearch=INT_MAX,AP_tree_nlen *skip=NULL) const;  // obsolete
 
     static int dumpNNI;             // should NNI dump its values?
     static int distInsertBorder; // distance from insert pos to tree border
     static int basesChanged;    // no of bases which were changed
     // in fathers sequence because of insertion
 
-    void countSpecies(int deep=-1, const AP_tree_nlen* skip=NULL);
+    void countSpecies(int deep=-1,const AP_tree_nlen* skip=NULL);
 
-    static int speciesInTree;                       // no of species (leafs) in tree (updated by countSpecies)
-    static int nodesInTree;                         // no of nodes in tree - including leafs, but w/o rootnode (updated by countSpecies)
-
-    static int edgesInTree() { return nodesInTree-1; } // (updated by countSpecies)
+    static int speciesInTree;   // no of species (leafs) in tree
+    static int nodesInTree;     // no of nodes in tree
 };
 
 std::ostream& operator<<(std::ostream&, const AP_tree_edge&);
 
+/******** two easy-access-functions for the root *********/
 
 inline AP_tree_nlen *rootNode() {
-    return ap_main->get_root_node();
+    return ((AP_tree_nlen*)*ap_main->tree_root);
 }
 
 inline AP_tree_edge *rootEdge() {
-    return rootNode()->get_leftson()->edgeTo(rootNode()->get_rightson());
+    return rootNode()->Leftson()->edgeTo(rootNode()->Rightson());
 }
 
-#else
-#error ap_tree_nlen.hxx included twice
-#endif // AP_TREE_NLEN_HXX
+/**************************************************/

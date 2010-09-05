@@ -36,8 +36,9 @@ sub dieOnError($$) {
 
 sub expectError($) {
   my ($where) = @_;
-  my $err = ARB::await_error();
+  my $err = ARB::get_error();
 
+  if (not $err) { $err = "Unknown error"; }
   dieOnError($err,$where);
 }
 

@@ -1,16 +1,16 @@
-// =============================================================== //
-//                                                                 //
-//   File      : NT_validNames.cxx                                 //
-//   Purpose   :                                                   //
-//                                                                 //
-//   Institute of Microbiology (Technical University Munich)       //
-//   http://www.arb-home.de/                                       //
-//                                                                 //
-// =============================================================== //
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <string>
+#include <list>
+#include <vector>
 
-#include "nt_validNameParser.hxx"
 
+#include <arbdb.h>
 #include <arbdbt.h>
+#include <aw_root.hxx>
+#include <aw_device.hxx>
+#include <aw_window.hxx>
 #include <aw_awars.hxx>
 #include <awt.hxx>
 #include <awt_www.hxx>
@@ -19,8 +19,13 @@
 #include <iostream>
 #include <iterator>
 
+#include "nt_validNameParser.hxx"
+
 using namespace std;
 
+#ifndef ARB_ASSERT_H
+#include <arb_assert.h>
+#endif
 #define nt_assert(bed) arb_assert(bed)
 
 #if defined(DEVEL_LOTHAR)
@@ -34,13 +39,13 @@ void NT_deleteValidNames(AW_window*, AW_CL, AW_CL)
     GB_ERROR error;
 
     GB_begin_transaction(GLOBAL_gb_main);
-    GBDATA* namesCont = GB_search(GLOBAL_gb_main, "VALID_NAMES", GB_CREATE_CONTAINER);
-    GB_write_security_delete(namesCont, 6);
+    GBDATA* namesCont = GB_search(GLOBAL_gb_main, "VALID_NAMES",GB_CREATE_CONTAINER);
+    GB_write_security_delete(namesCont,6);
     error = GB_delete(namesCont);
     if (error != 0) {
         aw_message("Valid Names container was not removed from database\nProtection level 6 needed");
     }
-    else {
+    else{
         aw_message("Valid Names container was removed from database\nThink again before saving");
     }
     GB_commit_transaction(GLOBAL_gb_main);
@@ -67,7 +72,7 @@ void NT_importValidNames(AW_window*, AW_CL, AW_CL) {
     // file select dialog goes here
     try {
         ifstream namesFile(fileName);
-        if (!namesFile.is_open()) {
+        if (!namesFile.is_open()){
             throw string("cannot open file \"") + fileName + "\" to read";
         }
         namesFile.unsetf(ios::skipws); // keep white spaces
@@ -76,10 +81,10 @@ void NT_importValidNames(AW_window*, AW_CL, AW_CL) {
 
         std::cout << "Reading valid names from '" << fileName << "'\n";
 
-        for (; inIter != theEnd; ++inIter) {
+        for ( ;inIter != theEnd; ++inIter) {
             if (*inIter == '\r') continue; // remove empty lines due to dos \r
-            if (*inIter == '\n') {
-                if (!tmpString.empty()) {  // check for newline
+            if (*inIter == '\n'){
+                if ( !tmpString.empty()) { // check for newline
                     fileContent.push_back(tmpString);
                     tmpString = "";
                 }
@@ -87,15 +92,15 @@ void NT_importValidNames(AW_window*, AW_CL, AW_CL) {
             else {
                 tmpString += *inIter;
             }
-        }
+        } // closes file automatically
         if (!tmpString.empty()) fileContent.push_back(tmpString); // if last line doesn't end with \n
 
         StrL::iterator it;
         bool isHeader = true;
-        for (it = fileContent.begin(); it != fileContent.end(); it++) {
-            if (isHeader) {
+        for (it = fileContent.begin(); it != fileContent.end(); it++){
+            if (isHeader){
                 string nameStart ("ABIOTROPHIA");
-                if (it->find(nameStart.c_str(), 0, 11) != string::npos) {
+                if(it->find(nameStart.c_str(), 0, 11) != string::npos){
                     isHeader = false;
                     Desco myDesc =  validNames::determineType(*it);
 #if defined(DUMP)
@@ -104,8 +109,7 @@ void NT_importValidNames(AW_window*, AW_CL, AW_CL) {
 #endif // DUMP
                     myDescs.push_back(myDesc);
                 }
-            }
-            else {
+            }else{
                 Desco myDesc =  validNames::determineType(*it);
 #if defined(DUMP)
                 std::cout << string("valid name: ") << myDesc.getFirstName() << std::endl
@@ -127,8 +131,8 @@ void NT_importValidNames(AW_window*, AW_CL, AW_CL) {
             if (!gb_namesCont) error = GB_await_error();
             else {
                 DescList::iterator di;
-                for (di = myDescs.begin(); di != myDescs.end() && !error; di++) {
-                    if (di->getType() < 10) {
+                for ( di = myDescs.begin(); di != myDescs.end() && !error; di++){
+                    if(di->getType() < 10){
                         GBDATA* gb_pair     = GB_create_container(gb_namesCont, "pair");
                         if (!gb_pair) error = GB_await_error();
                         else {
@@ -178,7 +182,7 @@ void NT_suggestValidNames(AW_window*, AW_CL, AW_CL) {
          gb_species = GBT_next_species(gb_species))
     {
         // retrieve species names
-        GBDATA*  gb_fullName = GB_entry(gb_species, "full_name"); // gb_fullname
+        GBDATA*  gb_fullName = GB_entry(gb_species,"full_name"); // gb_fullname
         char    *fullName     = gb_fullName ? GB_read_string(gb_fullName) : 0;
         if (!fullName) err    = "Species has no fullname";
 
@@ -201,7 +205,7 @@ void NT_suggestValidNames(AW_window*, AW_CL, AW_CL) {
             if (!validName || !depName) err = GB_await_error();
             else {
                 // now compare all names
-                if (!err && ((strcmp(fullName, validName) == 0)||(strcmp(fullName, depName) == 0))) {
+                if(!err && ( (strcmp(fullName, validName) == 0)||(strcmp(fullName, depName) == 0))) {
                     // insert new database fields if necessary
                     GBDATA* gb_validNameCont   = GB_search(gb_species, "Valid_Name", GB_CREATE_CONTAINER);
                     if (!gb_validNameCont) err = GB_await_error();
@@ -211,7 +215,7 @@ void NT_suggestValidNames(AW_window*, AW_CL, AW_CL) {
                     }
                 }
             }
-
+                
             free(validName);
             free(depName);
             free(typeString);

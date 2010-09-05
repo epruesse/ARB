@@ -1,22 +1,11 @@
-// =============================================================== //
-//                                                                 //
-//   File      : ali_sequence.hxx                                  //
-//   Purpose   :                                                   //
-//                                                                 //
-//   Institute of Microbiology (Technical University Munich)       //
-//   http://www.arb-home.de/                                       //
-//                                                                 //
-// =============================================================== //
 
-#ifndef ALI_SEQUENCE_HXX
-#define ALI_SEQUENCE_HXX
+#ifndef _ALI_SEQUENCE_INC_
+#define _ALI_SEQUENCE_INC_
 
-#ifndef _CPP_CSTRING
-#include <cstring>
-#endif
-#ifndef ALI_MISC_HXX
+#include <string.h>
+// #include <malloc.h>
+
 #include "ali_misc.hxx"
-#endif
 
 
 class ALI_SEQUENCE {
@@ -36,24 +25,24 @@ public:
         seq_len = str_len;
         seq_name = strdup(Name);
     }
-    ~ALI_SEQUENCE() {
+    ~ALI_SEQUENCE(void) {
         if (seq)
             free((char *) seq);
         if (seq_name)
             free((char *) seq_name);
     }
-    unsigned char *sequence() {
+    unsigned char *sequence(void) {
         return seq;
     }
     unsigned char base(unsigned long position) {
         return seq[position];
     }
-    int check();
-    char *string();
-    char *name() {
+    int check(void);
+    char *string(void);
+    char *name(void) {
         return seq_name;
     }
-    unsigned long length() {
+    unsigned long length(void) {
         return seq_len;
     }
 };
@@ -67,7 +56,7 @@ class ALI_NORM_SEQUENCE {
 public:
     ALI_NORM_SEQUENCE(char *name, char *str);
     ALI_NORM_SEQUENCE(ALI_SEQUENCE *sequence);
-    ~ALI_NORM_SEQUENCE() {
+    ~ALI_NORM_SEQUENCE(void) {
         if (seq)
             free((char *) seq);
         if (seq_name)
@@ -75,17 +64,17 @@ public:
         if (dots)
             free((char *) dots);
     }
-    unsigned char *sequence() {
+    unsigned char *sequence(void) {
         return seq;
     }
     unsigned char base(unsigned long position) {
         return seq[position];
     }
-    char *string();
-    char *name() {
+    char *string(void);
+    char *name(void) {
         return seq_name;
     }
-    unsigned long length() {
+    unsigned long length(void) {
         return seq_len;
     }
     int is_begin(unsigned long pos) {
@@ -100,6 +89,4 @@ public:
     }
 };
 
-#else
-#error ali_sequence.hxx included twice
-#endif // ALI_SEQUENCE_HXX
+#endif

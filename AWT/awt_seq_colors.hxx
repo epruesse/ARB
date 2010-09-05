@@ -11,9 +11,6 @@
 #ifndef AWT_SEQ_COLORS_HXX
 #define AWT_SEQ_COLORS_HXX
 
-#ifndef AW_WINDOW_HXX
-#include <aw_window.hxx>
-#endif
 
 #define AWAR_SEQ_PATH                  "awt/seq_colors/"
 #define AWAR_SEQ_NAME_STRINGS_TEMPLATE AWAR_SEQ_PATH  "strings/elem_%i"
@@ -44,15 +41,15 @@ public:
     char char_2_gc_aa[256];      // translate to gc  - for aminoacid sequence
     char char_2_char_aa[256];    // translate to char - for aminoacid sequence
 
-    AWT_seq_colors(GBDATA *gb_default, int base_gc, AW_CB cb, AW_CL cd1, AW_CL cd2);
+    AWT_seq_colors(GBDATA *gb_default, int base_gc,AW_CB cb,AW_CL cd1,AW_CL cd2);
 };
 
-class AWT_reference {
+class AWT_reference{
     GBDATA *gb_main;
     int     ref_len;
     char   *reference;
     char   *init_species_name;
-
+    
 public:
     AWT_reference(GBDATA *gb_main);
     ~AWT_reference();
@@ -63,7 +60,7 @@ public:
 
     void expand_to_length(int len);             // make sure that reference is at least len long
 
-    int convert(char c, int pos) const                           { return (c=='-' || c!=reference[pos]) ? c : '.'; }
+    int convert(char c,int pos) const                           { return (c=='-' || c!=reference[pos]) ? c : '.'; }
     int reference_species_is(const char *species_name) const    { return init_species_name ? strcmp(species_name, init_species_name)==0 : 0; }
 };
 

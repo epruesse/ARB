@@ -20,19 +20,19 @@ public:
     AWT_auto_states *children;
     int              value_is_malloced;
     AW_CL            value;
-
+    
     AWT_auto_states();
     ~AWT_auto_states();
 };
 
-class AWT_automata : protected  AWT_auto_states {
+class AWT_automata: protected  AWT_auto_states {
     char gaps[256];
     int  value_is_malloced;
 
 public:
     AWT_automata(int free_value = 0);
     ~AWT_automata();
-
+    
     char  *insert(char *str, AW_CL value);
     void   set_gaps(char *gaps);
     // returns error msg

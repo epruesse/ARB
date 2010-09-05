@@ -2,7 +2,7 @@
 //                                                                       //
 //    File      : MG_gene_species.cxx                                    //
 //    Purpose   : Transfer fields from organism and gene when            //
-//                transferring gene species                              //
+//                tranferring gene species                               //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in July 2002             //
@@ -13,15 +13,20 @@
 //                                                                       //
 //  ==================================================================== //
 
-#include "merge.hxx"
+#include <string.h>
+#include <stdlib.h>
 
+#include <aw_window.hxx>
 #include <aw_awars.hxx>
 #include <awt.hxx>
 #include <awt_config_manager.hxx>
 
-#include <adGene.h>
 #include <arbdbt.h>
+
+#include <adGene.h>
 #include <inline.h>
+
+#include "merge.hxx"
 
 using namespace std;
 
@@ -42,7 +47,7 @@ using namespace std;
 #define AWAR_MERGE_GENE_SPECIES_CREATE_FIELDS AWAR_MERGE_GENE_SPECIES_BASE "activated"
 #define AWAR_MERGE_GENE_SPECIES_FIELDS_DEFS   AWAR_MERGE_GENE_SPECIES_BASE "field_defs"
 
-enum CreationMethod {
+enum CreationMethod  {
     MG_CREATE_COPY_ORGANISM,
     MG_CREATE_COPY_GENE,
     MG_CREATE_USING_ACI_ONLY
@@ -86,7 +91,7 @@ inline const char *field_awar(const char *field_name, const char *subfield) {
 
     char *end = strcpydest(strcpydest(buffer, AWAR_MERGE_GENE_SPECIES_BASE"def_"), field_name);
     *end++ = '/';
-    IF_DEBUG(end=) strcpydest(end, subfield);
+    end       = strcpydest(end, subfield);
 
     mg_assert((end-buffer)<BUFSIZE);
 
@@ -171,7 +176,7 @@ static char *MG_create_field_content(GBDATA *gb_species, CreationMethod method, 
         if (aci_result) freeset(result, aci_result);
     }
 
-    if (error) freenull(result);
+    if (error) freeset(result, 0);
 
     mg_assert(result||error);
     return result;
@@ -186,7 +191,7 @@ GB_ERROR MG_export_fields(AW_root *aw_root, GBDATA *gb_source, GBDATA *gb_dest, 
 
     if (export_fields) { // should fields be exported ?
         mg_assert(GEN_is_pseudo_gene_species(gb_source));
-
+        
         char *existing_definitions = aw_root->awar(AWAR_MERGE_GENE_SPECIES_FIELDS_DEFS)->read_string();
         char *start                = existing_definitions+1;
 
@@ -210,7 +215,7 @@ GB_ERROR MG_export_fields(AW_root *aw_root, GBDATA *gb_source, GBDATA *gb_dest, 
 
                 char *result = MG_create_field_content(gb_source, method, source, aci, error, source_organism_hash);
                 mg_assert(result || error);
-
+                
                 if (result) {
                     error = GBT_write_string(gb_dest, start, result);
                     free(result);
@@ -226,10 +231,7 @@ GB_ERROR MG_export_fields(AW_root *aw_root, GBDATA *gb_source, GBDATA *gb_dest, 
                     else {
                         aw_message(GBS_global_string("'%s' when exporting %s (continuing)", error, GBT_read_name(gb_source)));
                     }
-                    if (error_suppressor) {
-                        GBS_incr_hash(error_suppressor, error);
-                        GBS_optimize_hash(error_suppressor);
-                    }
+                    if (error_suppressor) GBS_incr_hash(error_suppressor, error);
                     error = 0;
                 }
 
@@ -282,7 +284,6 @@ static void MG_update_example(AW_root *aw_root) {
     aw_root->awar(AWAR_MERGE_GENE_SPECIES_EXAMPLE)->write_string(result);
 
     free(result);
-    free(curr_species);
 }
 
 static void check_and_correct_current_field(char*& cur_field) {
@@ -452,6 +453,7 @@ static void MG_aci_changed_cb(AW_root *aw_root) {
 static void MG_update_selection_list_on_field_transfers(AW_root *aw_root, AW_CL cl_aww, AW_CL cl_sel_id) {
     AW_window         *aww     = (AW_window*)cl_aww;
     AW_selection_list *sel_id  = (AW_selection_list*)cl_sel_id;
+//     AW_root           *aw_root = aww->get_root();
 
     aww->clear_selection_list(sel_id);
 
@@ -515,7 +517,7 @@ static void init_gene_species_xfer_fields_config(AWT_config_definition& cdef) {
     cdef.add(AWAR_MERGE_GENE_SPECIES_FIELDS_DEFS, "fields");
     cdef.add(AWAR_MERGE_GENE_SPECIES_FIELDS_SAVE, "defs");
 }
-static char *store_gene_species_xfer_fields(AW_window *aww, AW_CL,  AW_CL) {
+static char *store_gene_species_xfer_fields(AW_window *aww, AW_CL , AW_CL ) {
     AW_root *aw_root = aww->get_root();
     {
         char                  *existing_definitions = aw_root->awar(AWAR_MERGE_GENE_SPECIES_FIELDS_DEFS)->read_string();
@@ -535,14 +537,14 @@ static char *store_gene_species_xfer_fields(AW_window *aww, AW_CL,  AW_CL) {
     init_gene_species_xfer_fields_config(sub_cdef);
     return sub_cdef.read();
 }
-static void load_gene_species_xfer_fields(AW_window *aww, const char *stored_string, AW_CL cl_sel_id, AW_CL) {
+static void load_gene_species_xfer_fields(AW_window *aww, const char *stored_string, AW_CL cl_sel_id, AW_CL ) {
     AW_root *aw_root = aww->get_root();
 
     aw_root->awar(AWAR_MERGE_GENE_SPECIES_CURRENT_FIELD)->write_string(""); // de-select
 
     // Load 'AWAR_MERGE_GENE_SPECIES_FIELDS_DEFS' and 'AWAR_MERGE_GENE_SPECIES_FIELDS_SAVE'
     {
-        AWT_config_definition sub_cdef(aw_root);
+        AWT_config_definition sub_cdef(aw_root);    
         init_gene_species_xfer_fields_config(sub_cdef);
         sub_cdef.write(stored_string);
     }
@@ -577,11 +579,11 @@ AW_window *MG_gene_species_create_field_transfer_def_window(AW_root *aw_root) {
 
     aws->at("close");
     aws->callback(AW_POPDOWN);
-    aws->create_button("CLOSE", "CLOSE", "C");
+    aws->create_button("CLOSE","CLOSE","C");
 
     aws->at("help");
-    aws->callback(AW_POPUP_HELP, (AW_CL)"gene_species_field_transfer.hlp");
-    aws->create_button("HELP", "HELP");
+    aws->callback(AW_POPUP_HELP,(AW_CL)"gene_species_field_transfer.hlp");
+    aws->create_button("HELP","HELP");
 
     aws->at("active");
     aws->create_toggle(AWAR_MERGE_GENE_SPECIES_CREATE_FIELDS);

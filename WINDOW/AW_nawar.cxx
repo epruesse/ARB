@@ -1,17 +1,13 @@
-// =============================================================== //
-//                                                                 //
-//   File      : AW_nawar.cxx                                      //
-//   Purpose   :                                                   //
-//                                                                 //
-//   Institute of Microbiology (Technical University Munich)       //
-//   http://www.arb-home.de/                                       //
-//                                                                 //
-// =============================================================== //
-
-#include "aw_nawar.hxx"
-#include <arbdb.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <sys/stat.h>
+// #include <fcntl.h>
 
+#include <arbdb.h>
+#include "aw_root.hxx"
+#include "aw_nawar.hxx"
+#include "awt.hxx"
 #define AWAR_EPS 0.00000001
 
 #if defined(DEBUG)
@@ -19,41 +15,28 @@
 // #define DUMP_AWAR_CHANGES
 #endif // DEBUG
 
-AW_var_target::AW_var_target(void* pntr, AW_var_target *nexti) {
+AW_var_target::AW_var_target(void* pntr, AW_var_target *nexti){
     next    = nexti;
     pointer = pntr;
 }
 
-AW_var_callback::AW_var_callback(void (*vc_cb)(AW_root*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2, AW_var_callback *nexti) {
+AW_var_callback::AW_var_callback( void (*vc_cb)(AW_root*,AW_CL,AW_CL), AW_CL cd1, AW_CL cd2, AW_var_callback *nexti ) {
     value_changed_cb     = vc_cb;
     value_changed_cb_cd1 = cd1;
     value_changed_cb_cd2 = cd2;
     next                 = nexti;
-}
-AW_var_callback::~AW_var_callback() {
-    delete next;
 }
 
 
 void AW_var_callback::run_callback(AW_root *root) {
     if (this->next) this->next->run_callback(root);     // callback the whole list
     if (!this->value_changed_cb) return;
-    this->value_changed_cb(root, this->value_changed_cb_cd1, this->value_changed_cb_cd2);
+    this->value_changed_cb(root,this->value_changed_cb_cd1,this->value_changed_cb_cd2);
 }
 
-void AW_var_gbdata_callback_delete_intern(GBDATA *gbd, int *cl) {
+void AW_var_gbdata_callback_delete_intern(GBDATA *, int *cl) {
     AW_awar *awar = (AW_awar *)cl;
-
-    if (awar->gb_origin == gbd) {
-        // make awar zombie 
-        awar->gb_var    = NULL;
-        awar->gb_origin = NULL;
-    }
-    else {
-        aw_assert(awar->gb_var == gbd);             // forgot to remove a callback ?
-        awar->gb_var = awar->gb_origin;             // unmap
-    }
-
+    awar->gb_var = 0;
     awar->update();
 }
 
@@ -72,13 +55,13 @@ GB_ERROR AW_MSG_UNMAPPED_AWAR = "Error (unmapped AWAR):\n"
     "You cannot write to this field because it is either deleted or\n"
     "unmapped. Try to select a different item, reselect this and retry.";
 
-char *AW_awar::read_as_string() {
+char *AW_awar::read_as_string( void ) {
     if (!gb_var) return strdup("");
     GB_transaction ta(gb_var);
     return GB_read_as_string(gb_var);
 }
 
-char *AW_awar::read_string() {
+char *AW_awar::read_string(){
     aw_assert(variable_type == AW_STRING);
 
     if (!gb_var) return strdup("");
@@ -86,7 +69,7 @@ char *AW_awar::read_string() {
     return GB_read_string(gb_var);
 }
 
-const char *AW_awar::read_char_pntr() {
+const char *AW_awar::read_char_pntr(){
     aw_assert(variable_type == AW_STRING);
 
     if (!gb_var) return "";
@@ -97,7 +80,7 @@ const char *AW_awar::read_char_pntr() {
 long AW_awar::read_int() {
     if (!gb_var) return 0;
     GB_transaction ta(gb_var);
-    return (long)GB_read_int(gb_var);
+    return (long)GB_read_int( gb_var );
 }
 double AW_awar::read_float() {
     if (!gb_var) return 0.0;
@@ -147,19 +130,32 @@ WRITE_SKELETON(write_string, const char*, "%s", GB_write_string) // defines rewr
 #undef AWAR_CHANGE_DUMP
 
 
-    void AW_awar::touch() {
+    void AW_awar::touch( void ) {
     if (!gb_var) {
         return;
     }
     GB_transaction dummy(gb_var);
-    GB_touch(gb_var);
+    GB_touch( gb_var );
 }
 
+AW_default aw_main_root_default = (AW_default) "this is a dummy text asfasf asfd";
+
+AW_default aw_check_default_file(AW_default root_default, AW_default default_file,const char *varname)
+{
+    if (default_file == aw_main_root_default)  return root_default;
+    if (default_file == NULL) {
+        AW_ERROR("Creating variable '%s' with zero default file\n",varname);
+        return root_default;
+    }
+    return default_file;
+}
+
+
 // for string
-AW_awar *AW_root::awar_string(const char *var_name, const char *default_value, AW_default default_file) {
+AW_awar *AW_root::awar_string( const char *var_name, const char *default_value, AW_default default_file ) {
     AW_awar *vs = (AW_awar *)GBS_read_hash(hash_table_for_variables, (char *)var_name);
     if (!vs) {
-        default_file = check_properties(default_file);
+        default_file = aw_check_default_file(this->application_database,default_file,var_name);
         vs           = new AW_awar(AW_STRING, var_name, default_value, 0, default_file, this);
         GBS_write_hash(hash_table_for_variables, (char *)var_name, (long)vs);
     }
@@ -171,7 +167,7 @@ AW_awar *AW_root::awar_string(const char *var_name, const char *default_value, A
 AW_awar *AW_root::awar_int(const char *var_name, long default_value, AW_default default_file) {
     AW_awar *vs = (AW_awar *)GBS_read_hash(hash_table_for_variables, (char *)var_name);
     if (!vs) {
-        default_file = check_properties(default_file);
+        default_file = aw_check_default_file(this->application_database,default_file,var_name);
         vs           = new AW_awar(AW_INT, var_name, (char *)default_value, 0, default_file, this);
         GBS_write_hash(hash_table_for_variables, (char *)var_name, (long)vs);
     }
@@ -183,7 +179,7 @@ AW_awar *AW_root::awar_int(const char *var_name, long default_value, AW_default 
 AW_awar *AW_root::awar_float(const char *var_name, float default_value, AW_default default_file) {
     AW_awar *vs = (AW_awar *)GBS_read_hash(hash_table_for_variables, (char *)var_name);
     if (!vs) {
-        default_file = check_properties(default_file);
+        default_file = aw_check_default_file(this->application_database,default_file,var_name);
         vs           = new AW_awar(AW_FLOAT, var_name, "", (double)default_value, default_file, this);
         GBS_write_hash(hash_table_for_variables, (char *)var_name, (long)vs);
     }
@@ -193,45 +189,44 @@ AW_awar *AW_root::awar_float(const char *var_name, float default_value, AW_defau
 AW_awar *AW_root::awar_pointer(const char *var_name, void *default_value, AW_default default_file) {
     AW_awar *vs = (AW_awar *)GBS_read_hash(hash_table_for_variables, (char *)var_name);
     if (!vs) {
-        default_file = check_properties(default_file);
+        default_file = aw_check_default_file(this->application_database,default_file,var_name);
         vs           = new AW_awar(AW_POINTER, var_name, (const char *)default_value, NULL, default_file, this);
         GBS_write_hash(hash_table_for_variables, (char *)var_name, (long)vs);
     }
     return vs;
 }
 
-AW_awar *AW_root::awar_no_error(const char *var_name) {
+AW_awar *AW_root::awar_no_error(const char *var_name){
     AW_awar *vs = (AW_awar *)GBS_read_hash(hash_table_for_variables, (char *)var_name);
     return vs;
 }
 
-AW_awar *AW_root::awar(const char *var_name) {
+AW_awar *AW_root::awar(const char *var_name){
     AW_awar *vs = (AW_awar *)GBS_read_hash(hash_table_for_variables, (char *)var_name);
     if (vs) return vs;  /* already defined */
-    AW_ERROR("AWAR %s not defined", var_name);
+    AW_ERROR("AWAR %s not defined",var_name);
     return this->awar_string(var_name);
 }
 
 
-AW_awar *AW_awar::add_callback(void (*f)(class AW_root*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
-    callback_list = new AW_var_callback(f, cd1, cd2, callback_list);
+AW_awar *AW_awar::add_callback( void (*f)(class AW_root*,AW_CL,AW_CL), AW_CL cd1, AW_CL cd2 ) {
+    callback_list = new AW_var_callback(f,cd1,cd2,callback_list);
     return this;
 }
 
-AW_awar *AW_awar::add_callback(void (*f)(AW_root*, AW_CL), AW_CL cd1) { return add_callback((AW_RCB)f, cd1, 0); }
-AW_awar *AW_awar::add_callback(void (*f)(AW_root*)) { return add_callback((AW_RCB)f, 0, 0); }
+AW_awar *AW_awar::add_callback( void (*f)(AW_root*,AW_CL), AW_CL cd1 ) { return add_callback((AW_RCB)f,cd1,0); }
+AW_awar *AW_awar::add_callback( void (*f)(AW_root*)){ return add_callback((AW_RCB)f,0,0); }
 
-AW_awar *AW_awar::remove_callback(void (*f)(AW_root*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
+AW_awar *AW_awar::remove_callback( void (*f)(AW_root*,AW_CL,AW_CL), AW_CL cd1, AW_CL cd2 ){
     // remove a callback, please set unused AW_CL to (AW_CL)0
     AW_var_callback *prev = 0;
-    for (AW_var_callback *vc = callback_list; vc; vc = vc->next) {
-        if (vc->value_changed_cb == f &&
+    for (AW_var_callback *vc = callback_list; vc; vc = vc->next){
+        if (vc->value_changed_cb== f &&
             vc->value_changed_cb_cd1 == cd1 &&
-            vc->value_changed_cb_cd2 == cd2) {
+            vc->value_changed_cb_cd2 == cd2){
             if (prev) {
                 prev->next = vc->next;
-            }
-            else {
+            }else{
                 callback_list = vc->next;
             }
             delete vc;
@@ -246,46 +241,53 @@ AW_awar *AW_awar::remove_callback(void (*f)(AW_root*, AW_CL), AW_CL cd1) { retur
 AW_awar *AW_awar::remove_callback(void (*f)(AW_root*)) { return remove_callback((AW_RCB) f, 0, 0); }
 
 void AW_awar::remove_all_callbacks() {
-    delete callback_list; callback_list = NULL;
+    while (callback_list) {
+        AW_var_callback *del = callback_list;
+        callback_list        = del->next;
+        delete del;
+    }
 }
 
 
 // --------------------------------------------------------------------------------
 
-inline bool member_of_DB(GBDATA *gbd, GBDATA *gb_main) {
-    return gbd && GB_get_root(gbd) == gb_main;;
-}
-
-void AW_awar::unlink() {
-    aw_assert(is_valid());
-    remove_all_callbacks();
-    remove_all_target_vars();
-    gb_origin = NULL;                               // make zombie awar
-    unmap();                                        // unmap to nothing
-    aw_assert(is_valid());
-}
-
 bool AW_awar::unlink_from_DB(GBDATA *gb_main) {
-    bool make_zombie  = false;
-    bool mapped_to_DB = member_of_DB(gb_var, gb_main);
-    bool origin_in_DB = member_of_DB(gb_origin, gb_main);
-
-    aw_assert(is_valid());
-    
-    if (mapped_to_DB) {
-        if (origin_in_DB) make_zombie = true;
-        else unmap();
+    bool make_zombie = false;
+    if (gb_origin == gb_var) {                      // not mapped
+        if (gb_var) {                               // no zombie awar
+            if (GB_get_root(gb_var) == gb_main) {   // awar is in questionable DB
+                make_zombie = true;
+            }
+        }
     }
-    else if (origin_in_DB) {
-        // origin is in DB, current mapping is not
-        // -> remap permanentely
-        gb_origin = gb_var;
+    else {
+        if (GB_get_root(gb_var) == gb_main) {
+            if (GB_get_root(gb_origin) == gb_main) {
+                // mapped and origin in DB
+                make_zombie = true;
+            }
+            else {
+                // origin is in other DB -> just unmap
+                unmap();
+            }
+        }
+        else {
+            if (GB_get_root(gb_origin) == gb_main) {
+                // origin is in DB, current mapping is not
+                // -> remap permanentely
+                gb_origin = gb_var;
+            }
+            // else both are in other DB -> nothing to do
+        }
     }
 
-    if (make_zombie) unlink();
+    if (make_zombie) {
+        remove_all_callbacks();
+        remove_all_target_vars();
+        map(AW_default(NULL));                      // map to nothing
+        gb_origin = NULL;                           // make zombie awar (will not unmap)
+    }
 
-    aw_assert(is_valid());
-    
     return make_zombie;
 }
 
@@ -305,31 +307,30 @@ long AW_unlink_awar_from_DB(const char *key, long cl_awar, void *cl_gb_main) {
 
 void AW_root::unlink_awars_from_DB(AW_default database) {
     GBDATA *gb_main = (GBDATA*)database;
-
+    
     aw_assert(GB_get_root(gb_main) == gb_main);
 
-    GB_transaction ta(gb_main); // needed in awar-callbacks during unlink
+    GB_transaction ta(gb_main); // needed in awar-callbacks during unlink 
     GBS_hash_do_loop(hash_table_for_variables, AW_unlink_awar_from_DB, gb_main);
 }
 
 // --------------------------------------------------------------------------------
 
-GB_ERROR AW_awar::toggle_toggle() {
+GB_ERROR AW_awar::toggle_toggle(){
     char *var = this->read_as_string();
-    GB_ERROR    error = 0;
+    GB_ERROR    error =0;
     if (var[0] == '0' || var[0] == 'n') {
         switch (this->variable_type) {
-            case AW_STRING:     error = this->write_string("yes"); break;
-            case AW_INT:        error = this->write_int(1); break;
-            case AW_FLOAT:      error = this->write_float(1.0); break;
+            case AW_STRING:     error = this->write_string("yes");break;
+            case AW_INT:        error = this->write_int(1);break;
+            case AW_FLOAT:      error = this->write_float(1.0);break;
             default: break;
         }
-    }
-    else {
+    }else{
         switch (this->variable_type) {
-            case AW_STRING:     error = this->write_string("no"); break;
-            case AW_INT:        error = this->write_int(0); break;
-            case AW_FLOAT:      error = this->write_float(0.0); break;
+            case AW_STRING:     error = this->write_string("no");break;
+            case AW_INT:        error = this->write_int(0);break;
+            case AW_FLOAT:      error = this->write_float(0.0);break;
             default: break;
         }
     }
@@ -339,11 +340,10 @@ GB_ERROR AW_awar::toggle_toggle() {
 
 
 
-AW_awar *AW_awar::set_minmax(float min, float max) {
+AW_awar *AW_awar::set_minmax(float min, float max){
     if (min>max || variable_type == AW_STRING) {
-        AW_ERROR("ERROR: set MINMAX for AWAR '%s' invalid", awar_name);
-    }
-    else {
+        AW_ERROR("ERROR: set MINMAX for AWAR '%s' invalid",awar_name);
+    }else{
         pp.f.min = min;
         pp.f.max = max;
         update(); // corrects wrong default value
@@ -352,34 +352,31 @@ AW_awar *AW_awar::set_minmax(float min, float max) {
 }
 
 
-AW_awar *AW_awar::add_target_var(char **ppchr) {
+AW_awar *AW_awar::add_target_var( char **ppchr){
     if (variable_type != AW_STRING) {
-        AW_ERROR("Cannot set target awar '%s', WRONG AWAR TYPE", awar_name);
-    }
-    else {
-        target_list = new AW_var_target((void *)ppchr, target_list);
+        AW_ERROR("Cannot set target awar '%s', WRONG AWAR TYPE",awar_name);
+    }else{
+        target_list = new AW_var_target((void *)ppchr,target_list);
         update_target(target_list);
     }
     return this;
 }
 
-AW_awar *AW_awar::add_target_var(float *pfloat) {
+AW_awar *AW_awar::add_target_var( float *pfloat){
     if (variable_type != AW_FLOAT) {
-        AW_ERROR("Cannot set target awar '%s', WRONG AWAR TYPE", awar_name);
-    }
-    else {
-        target_list = new AW_var_target((void *)pfloat, target_list);
+        AW_ERROR("Cannot set target awar '%s', WRONG AWAR TYPE",awar_name);
+    }else{
+        target_list = new AW_var_target((void *)pfloat,target_list);
         update_target(target_list);
     }
     return this;
 }
 
-AW_awar *AW_awar::add_target_var(long *pint) {
+AW_awar *AW_awar::add_target_var( long *pint){
     if (variable_type != AW_INT) {
-        AW_ERROR("Cannot set target awar '%s', WRONG AWAR TYPE", awar_name);
-    }
-    else {
-        target_list = new AW_var_target((void *)pint, target_list);
+        AW_ERROR("Cannot set target awar '%s', WRONG AWAR TYPE",awar_name);
+    }else{
+        target_list = new AW_var_target((void *)pint,target_list);
         update_target(target_list);
     }
     return this;
@@ -397,9 +394,8 @@ void AW_awar::remove_all_target_vars() {
 AW_awar *AW_awar::set_srt(const char *srt)
 {
     if (variable_type != AW_STRING) {
-        AW_ERROR("ERROR: set SRT for AWAR '%s' invalid", awar_name);
-    }
-    else {
+        AW_ERROR("ERROR: set SRT for AWAR '%s' invalid",awar_name);
+    }else{
         pp.srt = srt;
     }
     return this;
@@ -407,61 +403,41 @@ AW_awar *AW_awar::set_srt(const char *srt)
 
 
 AW_awar *AW_awar::map(AW_default gbd) {
-    if (gb_var) {                                   // remove old mapping
+    if (gbd) GB_push_transaction((GBDATA *)gbd);
+    if (gb_var) {               /* old map */
         GB_remove_callback((GBDATA *)gb_var, GB_CB_CHANGED, (GB_CB)AW_var_gbdata_callback, (int *)this);
-        if (gb_var != gb_origin) {                  // keep callback if pointing to origin!
-            GB_remove_callback((GBDATA *)gb_var, GB_CB_DELETE, (GB_CB)AW_var_gbdata_callback_delete, (int *)this);
-        }
-        gb_var = NULL;
+        GB_remove_callback((GBDATA *)gb_var, GB_CB_DELETE, (GB_CB)AW_var_gbdata_callback_delete, (int *)this);
     }
-
-    if (!gbd) {                                     // attempt to remap to NULL -> unmap
-        gbd = gb_origin;
+    if (gbd){
+        GB_add_callback((GBDATA *) gbd, GB_CB_CHANGED, (GB_CB)AW_var_gbdata_callback, (int *)this );
+        GB_add_callback((GBDATA *) gbd, GB_CB_DELETE, (GB_CB)AW_var_gbdata_callback_delete, (int *)this );
     }
-
-    if (gbd) {
-        GB_transaction ta(gbd);
-
-        GB_ERROR error = GB_add_callback((GBDATA *) gbd, GB_CB_CHANGED, (GB_CB)AW_var_gbdata_callback, (int *)this);
-        if (!error && gbd != gb_origin) {           // do not add delete callback if mapping to origin
-            error = GB_add_callback((GBDATA *) gbd, GB_CB_DELETE, (GB_CB)AW_var_gbdata_callback_delete, (int *)this);
-        }
-        if (error) aw_message(error);
-
-        gb_var = gbd;
-        update();
-    }
-    else {
-        update();
-    }
-
-    aw_assert(is_valid()); 
-
+    gb_var = (GBDATA *)gbd;
+    this->update();
+    if (gbd) GB_pop_transaction((GBDATA *)gbd);
     return this;
 }
 
-AW_awar *AW_awar::map(AW_awar *dest) {
+AW_awar *AW_awar::map( AW_awar *dest) {
     return this->map(dest->gb_var);
 }
 
-AW_awar *AW_awar::unmap() {
+AW_awar *AW_awar::unmap( ) {
     return this->map(gb_origin);
 }
 
-AW_VARIABLE_TYPE AW_awar::get_type() {
+AW_VARIABLE_TYPE AW_awar::get_type(){
     return this->variable_type;
 }
 
-void AW_awar::update() {
+void AW_awar::update(void)
+{
     bool out_of_range = false;
-
-    aw_assert(is_valid()); 
-    
-    if (gb_var && ((pp.f.min != pp.f.max) || pp.srt)) {
+    if (gb_var && ((pp.f.min != pp.f.max) || pp.srt) ) {
         float fl;
         char *str;
         switch (variable_type) {
-            case AW_INT: {
+            case AW_INT:{
                 long lo;
 
                 lo = this->read_int();
@@ -476,8 +452,7 @@ void AW_awar::update() {
                 if (out_of_range) {
                     if (root) root->changer_of_variable = 0;
                     this->write_int(lo);
-                    aw_assert(is_valid()); 
-                    return;
+                    return;             // returns update !!!!
                 }
                 break;
             }
@@ -493,8 +468,7 @@ void AW_awar::update() {
                 }
                 if (out_of_range) {
                     if (root) root->changer_of_variable = 0;
-                    this->write_float(fl); 
-                    aw_assert(is_valid()); 
+                    this->write_float(fl);              // returns update !!!!
                     return;
                 }
                 break;
@@ -502,14 +476,13 @@ void AW_awar::update() {
             case AW_STRING:
                 str = this->read_string();
                 char *n;
-                n = GBS_string_eval(str, pp.srt, 0);
+                n = GBS_string_eval(str,pp.srt,0);
                 if (!n) AW_ERROR("SRT ERROR %s %s", pp.srt, GB_await_error());
-                else {
-                    if (strcmp(n, str)) {
+                else{
+                    if (strcmp(n,str)) {
                         this->write_string(n);
                         free(n);
                         free(str);
-                        aw_assert(is_valid()); 
                         return;
                     }
                     free(n);
@@ -522,39 +495,37 @@ void AW_awar::update() {
     }
     this->update_targets();
     this->run_callbacks();
-
-    aw_assert(is_valid()); 
 }
 
-void AW_awar::run_callbacks() {
+void AW_awar::run_callbacks(){
     if (callback_list) callback_list->run_callback(root);
 
 }
 
 // send data to all variables
-void AW_awar::update_target(AW_var_target *pntr) {
+void AW_awar::update_target(AW_var_target *pntr){
     if (!pntr->pointer) return;
-    switch (variable_type) {
-        case AW_STRING: this->get((char **)pntr->pointer); break;
-        case AW_FLOAT:  this->get((float *)pntr->pointer); break;
-        case AW_INT:    this->get((long *)pntr->pointer); break;
+    switch(variable_type) {
+        case AW_STRING: this->get((char **)pntr->pointer);break;
+        case AW_FLOAT:  this->get((float *)pntr->pointer);break;
+        case AW_INT:    this->get((long *)pntr->pointer);break;
         default:
-            aw_assert(0);
+            gb_assert(0);
             GB_warning("Unknown awar type");
             break;
     }
 }
 
 // send data to all variables
-void AW_awar::update_targets() {
+void AW_awar::update_targets(void){
     AW_var_target*pntr;
-    for (pntr = target_list; pntr; pntr = pntr->next) {
+    for (pntr = target_list; pntr; pntr = pntr->next){
         update_target(pntr);
     }
 }
 
-AW_awar::AW_awar(AW_VARIABLE_TYPE var_type, const char *var_name, const char *var_value, double var_double_value, AW_default default_file, AW_root *rooti) {
-    memset((char *)this, 0, sizeof(AW_awar));
+AW_awar::AW_awar(AW_VARIABLE_TYPE var_type, const char *var_name, const char *var_value, double var_double_value, AW_default default_file, AW_root *rooti){
+    memset((char *)this,0,sizeof(AW_awar));
     GB_transaction dummy((GBDATA *)default_file);
 
     aw_assert(var_name && var_name[0] != 0);
@@ -566,11 +537,11 @@ AW_awar::AW_awar(AW_VARIABLE_TYPE var_type, const char *var_name, const char *va
 
     this->awar_name = strdup(var_name);
     this->root      = rooti;
-    GBDATA *gb_def  = GB_search((GBDATA *)default_file, var_name, GB_FIND);
+    GBDATA *gb_def  = GB_search((GBDATA *)default_file, var_name,GB_FIND);
 
     GB_TYPES wanted_gbtype = (GB_TYPES)var_type;
 
-    if (gb_def) {                                   // belege Variable mit Datenbankwert
+    if ( gb_def ) {                                 // belege Variable mit Datenbankwert
         GB_TYPES gbtype = GB_read_type(gb_def);
 
         if (gbtype != wanted_gbtype) {
@@ -582,7 +553,7 @@ AW_awar::AW_awar(AW_VARIABLE_TYPE var_type, const char *var_name, const char *va
     }
 
     if (!gb_def) {                                  // belege Variable mit Programmwert
-        gb_def = GB_search((GBDATA *)default_file, var_name, wanted_gbtype);
+        gb_def = GB_search( (GBDATA *)default_file, var_name, wanted_gbtype);
 
         switch (var_type) {
             case AW_STRING:
@@ -591,14 +562,14 @@ AW_awar::AW_awar(AW_VARIABLE_TYPE var_type, const char *var_name, const char *va
 #endif // DUMP_AWAR_CHANGES
                 GB_write_string(gb_def, (char *)var_value);
                 break;
-
+                
             case AW_INT:
 #if defined(DUMP_AWAR_CHANGES)
                 fprintf(stderr, "creating awar_int '%s' with default value '%li'\n", var_name, (long)var_value);
 #endif // DUMP_AWAR_CHANGES
                 GB_write_int(gb_def, (long)var_value);
                 break;
-
+                
             case AW_FLOAT:
 #if defined(DUMP_AWAR_CHANGES)
                 fprintf(stderr, "creating awar_float '%s' with default value '%f'\n", var_name, (double)var_double_value);
@@ -606,42 +577,46 @@ AW_awar::AW_awar(AW_VARIABLE_TYPE var_type, const char *var_name, const char *va
                 GB_write_float(gb_def, (double)var_double_value);
                 break;
 
-            case AW_POINTER:
+            case AW_POINTER: 
 #if defined(DUMP_AWAR_CHANGES)
                 fprintf(stderr, "creating awar_pointer '%s' with default value '%p'\n", var_name, (void*)var_value);
 #endif // DUMP_AWAR_CHANGES
                 GB_write_pointer(gb_def, (void*)var_value);
                 break;
-
+                
             default:
-                GB_warningf("AWAR '%s' cannot be created because of disallowed type", var_name);
+                GB_warningf("AWAR '%s' cannot be created because of disallowed type",var_name);
                 break;
         }
     }
-
-    variable_type   = var_type;
+    variable_type               = var_type;
     this->gb_origin = gb_def;
     this->map(gb_def);
-
-    aw_assert(is_valid());
 }
 
-AW_awar::~AW_awar() {
-    unlink();
-    untie_all_widgets();
-    free(awar_name);
-}
 
-const char *AW_root::property_DB_fullname(const char *default_name) {
-    const char *home = GB_getenvHOME();
-    return GBS_global_string("%s/%s", home, default_name);
-}
 
-bool AW_root::property_DB_exists(const char *default_name) {
-    return GB_is_regularfile(property_DB_fullname(default_name));
-}
+AW_default AW_root::open_default(const char *default_name, bool create_if_missing)
+{
+    if (!create_if_missing) { // used to check for existing specific properties
+        const char *home   = GB_getenvHOME();
+        char       *buffer = (char *)GB_calloc(sizeof(char),strlen(home)+ strlen(default_name) + 2);
 
-AW_default AW_root::load_properties(const char *default_name) {
+        sprintf(buffer,"%s/%s", home, default_name);
+
+        struct stat st;
+        bool        found = stat(buffer, &st) == 0;
+
+        free(buffer);
+
+        if (!found) return 0;
+    }
+
+#if defined(DEVEL_RALF)
+#warning gb_default is never closed
+    // close it somewhere and call AWT_browser_forget_db as well
+#endif // DEVEL_RALF
+
     GBDATA *gb_default = GB_open(default_name, "rwcD");
 
     if (gb_default) {
@@ -649,6 +624,9 @@ AW_default AW_root::load_properties(const char *default_name) {
 
         GBDATA *gb_tmp = GB_search(gb_default, "tmp", GB_CREATE_CONTAINER);
         GB_set_temporary(gb_tmp);
+#if defined(DEBUG)
+        AWT_announce_db_to_browser(gb_default, GBS_global_string("Properties (%s)", default_name));
+#endif // DEBUG
     }
     else {
         GB_ERROR    error           = GB_await_error();
@@ -660,34 +638,52 @@ AW_default AW_root::load_properties(const char *default_name) {
     return (AW_default) gb_default;
 }
 
-GB_ERROR AW_root::save_properties(const char *filename) {
-    GB_ERROR  error   = NULL;
-    GBDATA   *gb_main = application_database;
 
-    if (!gb_main) {
-        error = "No properties loaded - won't save";
-    }
-    else {
-        error = GB_push_transaction(gb_main);
-        if (!error) {
-            aw_update_awar_window_geometry(this);
-            error = GB_pop_transaction(gb_main);
-            if (!error) error = GB_save_in_home(gb_main, filename, "a");
-        }
-    }
-
-    return error;
+AW_error *AW_root::save_default( const char *var_name ) {
+    return save_default(var_name, NULL);
 }
 
+AW_error *AW_root::save_default( const char *var_name, const char *file_name) {
+    AW_awar *vs;
+    if ( (vs = this->awar( var_name ))  ) {
+        AW_root::save_default((AW_default)vs->gb_var, file_name);
+        return 0;
+    }else {
+        AW_ERROR("AW_root::save_default: Variable %s not defined", var_name);
+    }
+    return 0;
 
-AW_default AW_root::get_gbdata(const char *varname) {
+}
+
+AW_error *AW_root::save_default(AW_default aw_default, const char *file_name)
+{
+    GBDATA *gb_main = GB_get_root((GBDATA *)aw_default);
+    GB_push_transaction(gb_main);
+    aw_update_awar_window_geometry(this);
+    GB_pop_transaction(gb_main);
+    GB_save_in_home(gb_main,file_name,"a");
+    return 0;
+}
+
+AW_default AW_root::get_default(const char *varname) {
     GBDATA      *gbd;
     AW_awar *vs;
-    if ((vs = this->awar(varname))) {
+    if ( (vs = this->awar( varname )) ) {
+        gbd = vs->gb_var;
+        return (AW_default)GB_get_root(gbd);
+    }else {
+        AW_ERROR("AW_root::get_default: Variable %s not defined", varname);
+    }
+    return 0;
+}
+
+AW_default AW_root::get_gbdata( const char *varname) {
+    GBDATA      *gbd;
+    AW_awar *vs;
+    if ( (vs = this->awar( varname )) ) {
         gbd = vs->gb_var;
         return (AW_default)gbd;
-    }
-    else {
+    }else {
         AW_ERROR("AW_root::get_gbdata: Variable %s not defined", varname);
     }
     return 0;
@@ -723,7 +719,7 @@ void Awar_Callback_Info::init(AW_root *awr_, const char *awar_name_, Awar_CB2 ca
     org_awar_name = strdup(awar_name_);
 }
 
-void AW_create_fileselection_awars(AW_root *awr, const char *awar_base,
+void aw_create_selection_box_awars(AW_root *awr, const char *awar_base,
                                    const char *directory, const char *filter, const char *file_name,
                                    AW_default default_file, bool resetValues)
 {
@@ -734,7 +730,7 @@ void AW_create_fileselection_awars(AW_root *awr, const char *awar_base,
     sprintf(awar_name, "%s%s", awar_base, "/directory"+int(has_slash));
     AW_awar *awar_dir = awr->awar_string(awar_name, directory, default_file);
 
-    sprintf(awar_name, "%s%s", awar_base, "/filter"   + int(has_slash));
+    sprintf(awar_name, "%s%s", awar_base, "/filter"   +int(has_slash));
     AW_awar *awar_filter = awr->awar_string(awar_name, filter, default_file);
 
     sprintf(awar_name, "%s%s", awar_base, "/file_name"+int(has_slash));

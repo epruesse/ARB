@@ -1,22 +1,11 @@
-// ============================================================= //
-//                                                               //
-//   File      : CT_ctree.hxx                                    //
-//   Purpose   :                                                 //
-//                                                               //
-//   Institute of Microbiology (Technical University Munich)     //
-//   http://www.arb-home.de/                                     //
-//                                                               //
-// ============================================================= //
+#ifndef CT_ctree_hxx_included
+#define CT_ctree_hxx_included
 
-#ifndef CT_CTREE_HXX
-#define CT_CTREE_HXX
+void ctree_init(int node_count, char **names);
+void insert_ctree(GBT_TREE *tree, int weight); 
+GBT_TREE *get_ctree(void);
 
-struct GBT_TREE;
 
-void      ctree_init(int node_count, char **names);
-void      insert_ctree(GBT_TREE *tree, int weight);
-GBT_TREE *get_ctree();
 
-#else
-#error CT_ctree.hxx included twice
-#endif // CT_CTREE_HXX
+
+#endif

@@ -25,6 +25,7 @@ Plot::Plot(Display *d, Window w)
 {
     // SET PARENT WINDOW (WHERE THE GNUPLOT WINDOW WILL BE EMBEDDED)
     m_parent_display= d;
+    // m_parent_shell= s;
     m_parent_window= w;
 
     // RESERVE SPACE FOR THE GNUPLOT WINDOW TITLE
@@ -113,9 +114,15 @@ void Plot::embed()
         }
         else
         {
+            // IF THE EVENT IS NOT OF INTEREST FOR US RETURN IT TO THE QUEUE
+            // XPutBackEvent(m_parent_display, &event);
+
             // DECREASE LOOP COUNTER
             countdown--;
         }
+
+        // THIS XSYNC ERASES THE EVENT QUEUE (ALSO MAKES XPUTBACKEVENT OBSOLETE)
+        // XSync(m_parent_display, true);
     }
 
     // EXIT, IF WE WERE NOT ABLE TO FIND THE GNUPLOT WINDOW
@@ -126,7 +133,7 @@ void Plot::embed()
     XWithdrawWindow(m_parent_display, m_gnuplot_window, 0);
 
     // THE REPARENTING MUST BE TRIED MULTIPLE TIMES TO WORK.
-    // DON'T ASK ME WHY...
+    // DONT ASK ME WHY...
     for(int c= 0; c < 100; c++)
     {
         XReparentWindow(m_parent_display, m_gnuplot_window, m_parent_window, 0, 0);
@@ -164,16 +171,20 @@ FILE *Plot::open_command_pipe()
     char *buf= (char *)malloc(1024*sizeof(char));
 
     // CREATE GNUPLOT TITLE (NEEDED FOR LATER RECOGNITION)
+    // m_local_ID++;
     sprintf(m_title, "plot%dclient%d", getpid(), ++m_local_ID);
     sprintf(buf, "gnuplot -geometry %dx%d -title '%s'",
             GNUPLOT_WINDOW_WIDTH, GNUPLOT_WINDOW_HEIGHT, m_title);
+
+    // CREATE A TEMPORARY FILENAME (WARNING: TMPNAM() IS DEPRECATED)
+    // if((m_temp_name= tmpnam(NULL)) == NULL) return NULL;
 
     // CREATE A TEMPORARY FILENAME (USING MKSTEMP)
     m_temp_name= (char *)malloc(17 * sizeof(char));
     strcpy(m_temp_name, "/tmp/plot_XXXXXX");
         if((mkstemp(m_temp_name)) == -1) return NULL;
 
-    // AS MKTEMP ALSO CREATES THE FILE ITSELF (WHAT WE DON'T WANT) REMOVE IT
+    // AS MKTEMP ALSO CREATES THE FILE ITSELF (WHAT WE DONT WANT) REMOVE IT
     // RIGHT AFTER ITS CREATION FOR FURTHER USE AS A PIPE
     unlink(m_temp_name);
 
@@ -218,6 +229,7 @@ FILE *Plot::open_data_pipe()
 {
     if(!m_has_command_pipe) return NULL;
 
+    // fprintf(m_command_pipe, "plot \"%s\" with lines\n", m_temp_name);
     fprintf(m_command_pipe, "plot \"%s\" with linespoints\n", m_temp_name);
 
     fflush(m_command_pipe);
@@ -311,6 +323,7 @@ void Plot::demo()
     }
 
     close_data_pipe();
+    // close_command_pipe();
 
     // RESET LOCALES
     setlocale(LC_ALL, "");

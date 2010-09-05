@@ -123,6 +123,7 @@ class imageDialog : public MDialog
         Widget m_UpdateGeneButton;
         //
         vector<SPOT> m_spotList;
+        // list<SPOT> m_spotList;
         map<char *, char *, ltstr> m_descriptorList;
         map<char *, GBDATA*, ltstr> m_gene_GBDATA_map;
         //

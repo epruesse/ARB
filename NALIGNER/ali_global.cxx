@@ -1,13 +1,9 @@
-// =============================================================== //
-//                                                                 //
-//   File      : ali_global.cxx                                    //
-//   Purpose   :                                                   //
-//                                                                 //
-//   Institute of Microbiology (Technical University Munich)       //
-//   http://www.arb-home.de/                                       //
-//                                                                 //
-// =============================================================== //
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include "ali_misc.hxx"
 #include "ali_global.hxx"
 
 #define EXCLUSIVE_FLAG_DEFAULT             1
@@ -32,7 +28,9 @@
 #define INTERVALL_BORDER_DEFAULT           5
 #define INTERVALL_CENTER_DEFAULT           5
 
-// ACHTUNG: muss noch durch parameter belegbar sein
+/*
+ * ACHTUNG: muss noch durch parameter belegbar sein
+ */
 #define MATCHES_MIN_DEFAULT          1000
 #define PERCENT_MIN_DEFAULT          0.75
 #define FAM_LIST_MAX_DEFAULT         5
@@ -42,20 +40,20 @@
 
 double default_substitute_matrix[5][5] = {
     /* a    c    g    u    -          */
-    { 0.0, 3.0, 1.0, 3.0, 5.0 }, /* a */
-    { 3.0, 0.0, 3.0, 1.0, 5.0 }, /* c */
-    { 1.0, 3.0, 0.0, 3.0, 5.0 }, /* g */
-    { 3.0, 1.0, 3.0, 0.0, 5.0 }, /* u */
-    { 5.0, 5.0, 5.0, 5.0, 0.0 } /* - */
+    {0.0, 3.0, 1.0, 3.0, 5.0},  /* a */
+    {3.0, 0.0, 3.0, 1.0, 5.0},  /* c */
+    {1.0, 3.0, 0.0, 3.0, 5.0},  /* g */
+    {3.0, 1.0, 3.0, 0.0, 5.0},  /* u */
+    {5.0, 5.0, 5.0, 5.0, 0.0}   /* - */
 };
 
 double default_binding_matrix[5][5] = {
     /* a    c    g    u    -          */
-    { 9.9, 9.9, 2.0, 0.9, 9.9 }, /* a */
-    { 9.9, 9.9, 0.6, 9.9, 9.9 }, /* c */
-    { 2.0, 0.6, 5.0, 1.1, 9.9 }, /* g */
-    { 0.9, 9.9, 1.1, 9.9, 9.9 }, /* u */
-    { 9.9, 9.9, 9.9, 9.9, 0.0 } /* - */
+    {9.9, 9.9, 2.0, 0.9, 9.9},  /* a */
+    {9.9, 9.9, 0.6, 9.9, 9.9},  /* c */
+    {2.0, 0.6, 5.0, 1.1, 9.9},  /* g */
+    {0.9, 9.9, 1.1, 9.9, 9.9},  /* u */
+    {9.9, 9.9, 9.9, 9.9, 0.0}   /* - */
 };
 
 
@@ -63,17 +61,19 @@ void ALI_GLOBAL::init(int *argc, char *argv[])
 {
     int kill, i, h, j, ret;
     char *pos;
-    arb_params *params;
+    struct arb_params *params;
     float fl;
 
-    params = arb_trace_argv(argc, argv);
+    params = arb_trace_argv(argc,argv);
 
     prog_name = argv[0];
     species_name = params->species_name;
     default_file = params->default_file;
     db_server = params->db_server;
 
-    // Set the defaults
+    /*
+     * Set the defaults
+     */
 
     for (i = 0; i < 5; i++)
         for (j = 0; j < 5; j++) {
@@ -85,7 +85,7 @@ void ALI_GLOBAL::init(int *argc, char *argv[])
     cost_middle = COST_MIDDLE_DEFAULT;
     cost_high = COST_HIGH_DEFAULT;
     preali_context.max_number_of_maps = MAX_NUMBER_OF_MAPS_DEFAULT;
-    preali_context.max_number_of_maps_aligner =
+    preali_context.max_number_of_maps_aligner = 
         MAX_NUMBER_OF_MAPS_ALIGNER_DEFAULT;
     preali_context.intervall_border = INTERVALL_BORDER_DEFAULT;
     preali_context.intervall_center = INTERVALL_CENTER_DEFAULT;
@@ -112,75 +112,77 @@ void ALI_GLOBAL::init(int *argc, char *argv[])
     pt_context.ext_list_max = EXT_LIST_MAX_DEFAULT;
     pt_context.use_specified_family = USE_SPECIFIED_FAMILY_DEFAULT;
 
-    // evaluate the parameters
+    /*
+     * evaluate the parameters
+     */
 
     for (i = 1; i < *argc;) {
         kill = 0;
-        if (strcmp("-nx", argv[i]) == 0 && kill == 0) {
+        if (strcmp("-nx",argv[i]) == 0 && kill == 0) {
             prof_context.exclusive_flag = 0;
             kill = i;
         }
-        if (strncmp("-f", argv[i], 2) == 0 && kill == 0) {
+        if (strncmp("-f",argv[i],2) == 0 && kill == 0) {
             pt_context.use_specified_family = strdup(argv[i] + 2);
             kill = i;
         }
-        if (strcmp("-ms", argv[i]) == 0 && kill == 0) {
+        if (strcmp("-ms",argv[i]) == 0 && kill == 0) {
             mark_species_flag = 1;
             kill = i;
         }
-        if (strcmp("-mf", argv[i]) == 0 && kill == 0) {
+        if (strcmp("-mf",argv[i]) == 0 && kill == 0) {
             prof_context.mark_family_flag = 1;
             kill = i;
         }
-        if (strcmp("-mfe", argv[i]) == 0 && kill == 0) {
+        if (strcmp("-mfe",argv[i]) == 0 && kill == 0) {
             prof_context.mark_family_extension_flag = 1;
             kill = i;
         }
-        if (strncmp("-mgf", argv[i], 4) == 0 && kill == 0) {
+        if (strncmp("-mgf",argv[i],4) == 0 && kill == 0) {
             kill = i;
             pos = argv[i] + 4;
-            ret = sscanf(pos, "%f", &prof_context.multi_gap_factor);
+            ret = sscanf(pos,"%f",&prof_context.multi_gap_factor);
             if (ret != 1) {
                 ali_warning("Wrong format for -mgf");
                 break;
             }
         }
-        if (strncmp("-if", argv[i], 3) == 0 && kill == 0) {
+        if (strncmp("-if",argv[i],3) == 0 && kill == 0) {
             kill = i;
             pos = argv[i] + 3;
-            ret = sscanf(pos, "%f", &prof_context.insert_factor);
+            ret = sscanf(pos,"%f",&prof_context.insert_factor);
             if (ret != 1) {
                 ali_warning("Wrong format for -if");
                 break;
             }
         }
-        if (strncmp("-mif", argv[i], 4) == 0 && kill == 0) {
+        if (strncmp("-mif",argv[i],4) == 0 && kill == 0) {
             kill = i;
             pos = argv[i] + 4;
-            ret = sscanf(pos, "%f", &prof_context.multi_insert_factor);
+            ret = sscanf(pos,"%f",&prof_context.multi_insert_factor);
             if (ret != 1) {
                 ali_warning("Wrong format for -mif");
                 break;
             }
         }
-        if (strcmp("-m", argv[i]) == 0 && kill == 0) {
+        if (strcmp("-m",argv[i]) == 0 && kill == 0) {
             mark_species_flag = 1;
             prof_context.mark_family_flag = 1;
             kill = i;
         }
-        if (strncmp("-msub", argv[i], 5) == 0 && kill == 0) {
+        if (strncmp("-msub",argv[i],5) == 0 && kill == 0) {
             kill = i;
             pos = argv[i] + 5;
             for (h = 0; h < 5; h++)
                 for (j = 0; j < 5; j++) {
-                    ret = sscanf(pos, "%f", &fl);
+                    ret = sscanf(pos,"%f",&fl);
                     if (ret != 1) {
                         ali_warning("wrong format for -msub");
                         break;
                     }
                     else
                         prof_context.substitute_matrix[h][j] = (double) fl;
-                    pos = strchr(pos, ',');
+                    pos = strchr(pos,',');
                     if ((h != 4 || j != 4) && pos == 0) {
                         ali_warning("Not enought values for -msub");
                         break;
@@ -188,19 +190,19 @@ void ALI_GLOBAL::init(int *argc, char *argv[])
                     pos++;
                 }
         }
-        if (strncmp("-mbind", argv[i], 6) == 0 && kill == 0) {
+        if (strncmp("-mbind",argv[i],6) == 0 && kill == 0) {
             kill = i;
             pos = argv[i] + 6;
             for (h = 0; h < 5; h++)
                 for (j = 0; j < 5; j++) {
-                    ret = sscanf(pos, "%f", &fl);
+                    ret = sscanf(pos,"%f",&fl);
                     if (ret != 1) {
                         ali_warning("Wrong format for -mbind");
                         break;
                     }
                     else
                         prof_context.binding_matrix[h][j] = (double) fl;
-                    pos = strchr(pos, ',');
+                    pos = strchr(pos,',');
                     if ((h != 4 || j != 4) && pos == 0) {
                         ali_warning("Not enought values for -mbind");
                         break;
@@ -208,131 +210,135 @@ void ALI_GLOBAL::init(int *argc, char *argv[])
                     pos++;
                 }
         }
-        if (strncmp("-maxf", argv[i], 5) == 0 && kill == 0) {
+        if (strncmp("-maxf",argv[i],5) == 0 && kill == 0) {
             kill = i;
             pos = argv[i] + 5;
-            ret = sscanf(pos, "%d", &prof_context.max_family_size);
+            ret = sscanf(pos,"%d",&prof_context.max_family_size);
             if (ret != 1) {
                 ali_warning("Wrong format for -maxf");
                 break;
             }
         }
-        if (strncmp("-minf", argv[i], 5) == 0 && kill == 0) {
+        if (strncmp("-minf",argv[i],5) == 0 && kill == 0) {
             kill = i;
             pos = argv[i] + 5;
-            ret = sscanf(pos, "%d", &prof_context.min_family_size);
+            ret = sscanf(pos,"%d",&prof_context.min_family_size);
             if (ret != 1) {
                 ali_warning("Wrong format for -minf");
                 break;
             }
         }
-        if (strncmp("-minw", argv[i], 5) == 0 && kill == 0) {
+        if (strncmp("-minw",argv[i],5) == 0 && kill == 0) {
             kill = i;
             pos = argv[i] + 5;
-            ret = sscanf(pos, "%f", &prof_context.min_weight);
+            ret = sscanf(pos,"%f",&prof_context.min_weight);
             if (ret != 1) {
                 ali_warning("Wrong format for -minw");
                 break;
             }
         }
-        if (strncmp("-maxew", argv[i], 6) == 0 && kill == 0) {
+        if (strncmp("-maxew",argv[i],6) == 0 && kill == 0) {
             kill = i;
             pos = argv[i] + 6;
-            ret = sscanf(pos, "%f", &prof_context.ext_max_weight);
+            ret = sscanf(pos,"%f",&prof_context.ext_max_weight);
             if (ret != 1) {
                 ali_warning("Wrong format for -minw");
                 break;
             }
         }
 
-        // ACHTUNG: Unused BEGIN
-        if (strncmp("-cl", argv[i], 3) == 0 && kill == 0) {
+        /* 
+         * ACHTUNG: Unused BEGIN
+         */
+        if (strncmp("-cl",argv[i],3) == 0 && kill == 0) {
             kill = i;
             pos = argv[i] + 3;
-            ret = sscanf(pos, "%f", &cost_low);
+            ret = sscanf(pos,"%f",&cost_low);
             if (ret != 1) {
                 ali_warning("Wrong format for -cl");
                 break;
             }
         }
-        if (strncmp("-cm", argv[i], 3) == 0 && kill == 0) {
+        if (strncmp("-cm",argv[i],3) == 0 && kill == 0) {
             kill = i;
             pos = argv[i] + 3;
-            ret = sscanf(pos, "%f", &cost_middle);
+            ret = sscanf(pos,"%f",&cost_middle);
             if (ret != 1) {
                 ali_warning("Wrong format for -cm");
                 break;
             }
         }
-        if (strncmp("-ch", argv[i], 3) == 0 && kill == 0) {
+        if (strncmp("-ch",argv[i],3) == 0 && kill == 0) {
             kill = i;
             pos = argv[i] + 3;
-            ret = sscanf(pos, "%f", &cost_high);
+            ret = sscanf(pos,"%f",&cost_high);
             if (ret != 1) {
                 ali_warning("Wrong format for -ch");
                 break;
             }
         }
-        // ACHTUNG: Unused END
+        /*
+         * ACHTUNG: Unused END
+         */
 
-        if (strncmp("-csub", argv[i], 5) == 0 && kill == 0) {
+        if (strncmp("-csub",argv[i],5) == 0 && kill == 0) {
             kill = i;
             pos = argv[i] + 5;
-            ret = sscanf(pos, "%f", &preali_context.max_cost_of_sub_percent);
+            ret = sscanf(pos,"%f",&preali_context.max_cost_of_sub_percent);
             if (ret != 1) {
                 ali_warning("Wrong format for -csub");
                 break;
             }
         }
-        if (strncmp("-chel", argv[i], 5) == 0 && kill == 0) {
+        if (strncmp("-chel",argv[i],5) == 0 && kill == 0) {
             kill = i;
             pos = argv[i] + 5;
-            ret = sscanf(pos, "%f", &preali_context.max_cost_of_helix);
+            ret = sscanf(pos,"%f",&preali_context.max_cost_of_helix);
             if (ret != 1) {
                 ali_warning("Wrong format for -chel");
                 break;
             }
         }
-        if (strncmp("-mma", argv[i], 4) == 0 && kill == 0) {
+        if (strncmp("-mma",argv[i],4) == 0 && kill == 0) {
             kill = i;
             pos = argv[i] + 4;
-            ret = sscanf(pos, "%ld", &preali_context.max_number_of_maps_aligner);
+            ret = sscanf(pos,"%ld",&preali_context.max_number_of_maps_aligner);
             if (ret != 1) {
                 ali_warning("Wrong format for -mma");
                 break;
             }
         }
-        if (strncmp("-mm", argv[i], 3) == 0 && kill == 0) {
+        if (strncmp("-mm",argv[i],3) == 0 && kill == 0) {
             kill = i;
             pos = argv[i] + 3;
-            ret = sscanf(pos, "%ld", &preali_context.max_number_of_maps);
+            ret = sscanf(pos,"%ld",&preali_context.max_number_of_maps);
             if (ret != 1) {
                 ali_warning("Wrong format for -mm");
                 break;
             }
         }
-        if (strncmp("-ec", argv[i], 3) == 0 && kill == 0) {
+        if (strncmp("-ec",argv[i],3) == 0 && kill == 0) {
             kill = i;
             pos = argv[i] + 3;
-            ret = sscanf(pos, "%ld", &preali_context.error_count);
+            ret = sscanf(pos,"%ld",&preali_context.error_count);
             if (ret != 1) {
                 ali_warning("Wrong format for -ec");
                 break;
             }
         }
-        if (strncmp("-ib", argv[i], 3) == 0 && kill == 0) {
+        if (strncmp("-ib",argv[i],3) == 0 && kill == 0) {
             kill = i;
             pos = argv[i] + 3;
-            ret = sscanf(pos, "%d", &preali_context.intervall_border);
+            ret = sscanf(pos,"%d",&preali_context.intervall_border);
             if (ret != 1) {
                 ali_warning("Wrong format for -ib");
                 break;
             }
         }
-        if (strncmp("-ic", argv[i], 3) == 0 && kill == 0) {
+        if (strncmp("-ic",argv[i],3) == 0 && kill == 0) {
             kill = i;
             pos = argv[i] + 3;
-            ret = sscanf(pos, "%d", &preali_context.intervall_center);
+            ret = sscanf(pos,"%d",&preali_context.intervall_center);
             if (ret != 1) {
                 ali_warning("Wrong format for -ic");
                 break;
@@ -349,7 +355,9 @@ void ALI_GLOBAL::init(int *argc, char *argv[])
             i++;
     }
 
-    // Check for consistency
+    /*
+     * Check for consistency
+     */
 
     if (prof_context.min_family_size > prof_context.max_family_size) {
         ali_warning("minf <= maxf");
@@ -368,7 +376,9 @@ void ALI_GLOBAL::init(int *argc, char *argv[])
         ali_warning("0 <= cl <= cm <= ch <= 1.0");
     }
 
-    // Open Database and Pt server
+    /*
+     * Open Database and Pt server
+     */
 
     ali_message("Connecting to Database server");
     if (arbdb.open(db_server) != 0) {

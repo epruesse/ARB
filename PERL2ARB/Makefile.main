@@ -9,8 +9,6 @@ MAKETHIS=$(MAKE) -f $(THIS)
 
 LIB=$(ARBHOME)/lib
 ARBDB=$(ARBHOME)/ARBDB
-
-# code in -> ../TOOLS/arb_proto_2_xsub.cxx
 ARB_PROTO_2_XSUB=$(ARBHOME)/bin/arb_proto_2_xsub
 
 HEADERS = \
@@ -30,7 +28,7 @@ TARGET_SO=$(LIB)/ARB.$(SO)
 
 TARGETS=$(TARGET_PM) $(TARGET_SO)
 
-XS_DEPENDS = Makefile Makefile.main ARB.xs debug.h Makefile.PL
+XS_DEPENDS = Makefile ARB.xs debug.h Makefile.PL
 
 # ------------------------------------------------------------
 # variables for Makefile
@@ -57,7 +55,7 @@ $(TARGET_SO) : $(ARB_SO)
 $(ARB_SO) : $(XS_DEPENDS) depends.stamp
 	-rm $(ARB_SO)
 	@echo "-------- calling MakeMaker-Makefile"
-	( $(MAKE) "dflags=${dflags} " $@ || \
+	( $(MAKE) "dflags=${dflags}" $@ || \
 		(echo "------ failed.. retry once"; \
 		 $(MAKE) "dflags=${dflags}" $@))
 	@echo "-------- post-recreating .depends"
@@ -69,21 +67,20 @@ ARB.c : $(XS_DEPENDS)
 	( $(MAKE) "dflags=${dflags}" $@ || \
 		(echo "------ failed.. retry once"; \
 		 $(MAKE) "dflags=${dflags}" $@ ))
-	@echo "-------- end of MakeMaker-Makefile"
+	@echo "-------- end of MakeMaker-Makefile" 
 
-# buildMakefile
-Makefile : $(MACH).PL typemap Makefile.main  
+Makefile : $(MACH).PL typemap  
 	( PATH=/usr/arb/bin:${PATH}; \
 	  export PATH; \
-	  echo calling perl ${MACH}.PL "$(cross_cflags)" "$(cross_lflags)"; \
-	  perl ${MACH}.PL "$(cross_cflags)" "$(cross_lflags)" )
+	  echo calling perl ${MACH}.PL; \
+	  perl ${MACH}.PL )
 
 Makefile.PL : $(MACH).PL
 	cp -p $< $@
 
-ARB.xs : $(ARB_PROTO_2_XSUB) proto.h ARB.default.xs perlmain_source.c typemap
+ARB.xs : $(ARB_PROTO_2_XSUB) proto.h ARB.xs.default
 	-@test -f $@ && chmod a+w $@
-	LD_LIBRARY_PATH=$(LIB):$(LD_LIBRARY_PATH) $(ARB_PROTO_2_XSUB) proto.h ARB.default.xs typemap >$@
+	LD_LIBRARY_PATH=$(LIB):$(LD_LIBRARY_PATH) $(ARB_PROTO_2_XSUB) proto.h ARB.xs.default > $@
 	@test -f $@ && chmod a-w $@
 
 proto.h : $(HEADERS) $(THIS) depends.stamp

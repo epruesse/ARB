@@ -1,4 +1,5 @@
-/* PNG loader library for OpenGL v1.45 (10/07/00)
+/*
+ * PNG loader library for OpenGL v1.45 (10/07/00)
  * by Ben Wyatt ben@wyatt100.freeserve.co.uk
  * Using LibPNG 1.0.2 and ZLib 1.1.3
  *
@@ -18,9 +19,9 @@
  *    misrepresented as being the original source.
  * 3. This notice must not be removed or altered from any source distribution.
  *
- * ---------------------------------------------------
  * This version has been modified for usage inside ARB
  * http://arb-home.de/
+ *
  */
 
 #ifdef _WIN32 /* Stupid Windows needs to include windows.h before gl.h */
@@ -71,14 +72,14 @@ static double screenGamma = 2.2 / 1.45;
 static double screenGamma = 2.2 / 1.0;
 #endif
 
-static char gammaExplicit = 0;  /* if  */
+static char gammaExplicit = 0;  /*if  */
 
 static void checkForGammaEnv()
 {
     double viewingGamma;
     char *gammaEnv = getenv("VIEWING_GAMMA");
 
-    if (gammaEnv && !gammaExplicit)
+    if(gammaEnv && !gammaExplicit)
     {
         sscanf(gammaEnv, "%lf", &viewingGamma);
         screenGamma = 2.2/viewingGamma;
@@ -300,7 +301,7 @@ int APIENTRY pngLoadRawF(FILE *fp, pngRawInfo *pinfo) {
     pinfo->Height = height;
     pinfo->Depth  = depth;
 
-    /* --GAMMA-- */
+    /*--GAMMA--*/
     checkForGammaEnv();
     if (png_get_gAMA(png, info, &fileGamma))
         png_set_gamma(png, screenGamma, fileGamma);
@@ -372,8 +373,7 @@ int APIENTRY pngLoadF(FILE *fp, int mipmap, int trans, pngInfo *pinfo) {
     png_structp png;
     png_infop   info;
     png_infop   endinfo;
-    png_bytep   data;
-    ;
+    png_bytep   data, data2;
     png_bytep  *row_p;
     double       fileGamma;
 
@@ -441,7 +441,7 @@ int APIENTRY pngLoadF(FILE *fp, int mipmap, int trans, pngInfo *pinfo) {
         if (color == PNG_COLOR_TYPE_PALETTE)
             png_set_expand(png);
 
-    /* --GAMMA-- */
+    /*--GAMMA--*/
     checkForGammaEnv();
     if (png_get_gAMA(png, info, &fileGamma))
         png_set_gamma(png, screenGamma, fileGamma);
@@ -468,7 +468,7 @@ int APIENTRY pngLoadF(FILE *fp, int mipmap, int trans, pngInfo *pinfo) {
     if (rw != width || rh != height) {
         const int channels = png_get_rowbytes(png, info)/width;
 
-        png_bytep data2 = (png_bytep) malloc(rw*rh*channels);
+        data2 = (png_bytep) malloc(rw*rh*channels);
 
         /* Doesn't work on certain sizes */
         /*              if (gluScaleImage(glformat, width, height, GL_UNSIGNED_BYTE, data, rw, rh, GL_UNSIGNED_BYTE, data2) != 0)
@@ -478,7 +478,7 @@ int APIENTRY pngLoadF(FILE *fp, int mipmap, int trans, pngInfo *pinfo) {
 
         width = rw, height = rh;
         free(data);
-        data  = data2;
+        data = data2;
     }
 
     { /* OpenGL stuff */
@@ -504,6 +504,7 @@ int APIENTRY pngLoadF(FILE *fp, int mipmap, int trans, pngInfo *pinfo) {
                 case 1<<12: intf = GL_COLOR_INDEX12_EXT; break;
                 case 1<<16: intf = GL_COLOR_INDEX16_EXT; break;
                 default:
+                    /*printf("Warning: Colour depth %i not recognised\n", cols);*/
                     return 0;
             }
             glColorTableEXT(GL_TEXTURE_2D, GL_RGB8, cols, GL_RGB, GL_UNSIGNED_BYTE, pal);
@@ -532,6 +533,7 @@ int APIENTRY pngLoadF(FILE *fp, int mipmap, int trans, pngInfo *pinfo) {
                         break;
 
                     default:
+                        /*puts("glformat not set");*/
                         return 0;
                 }
 
@@ -543,7 +545,7 @@ int APIENTRY pngLoadF(FILE *fp, int mipmap, int trans, pngInfo *pinfo) {
                     glTexImage2D(GL_TEXTURE_2D, mipmap, glcomponent, width, height, 0, glformat, GL_UNSIGNED_BYTE, data);
             }
             else {
-                png_bytep p, endp, q, data2;
+                png_bytep p, endp, q;
                 int r, g, b, a;
 
                 p = data, endp = p+width*height*3;
@@ -553,9 +555,9 @@ int APIENTRY pngLoadF(FILE *fp, int mipmap, int trans, pngInfo *pinfo) {
 
 #define FORSTART                                \
                 do {                            \
-                    r = *p++; /* red  */        \
-                    g = *p++; /* green */       \
-                    b = *p++; /* blue */        \
+                    r = *p++; /*red  */         \
+                    g = *p++; /*green*/         \
+                    b = *p++; /*blue */         \
                     *q++ = r;                   \
                     *q++ = g;                   \
                     *q++ = b;
@@ -700,7 +702,7 @@ void APIENTRY pngSetAlphaCallback(unsigned char (*callback)(unsigned char red, u
 }
 
 void APIENTRY pngSetViewingGamma(double viewingGamma) {
-    if (viewingGamma > 0) {
+    if(viewingGamma > 0) {
         gammaExplicit = 1;
         screenGamma = 2.2/viewingGamma;
     }

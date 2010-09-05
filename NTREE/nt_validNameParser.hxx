@@ -1,16 +1,14 @@
-// =============================================================== //
-//                                                                 //
-//   File      : nt_validNameParser.hxx                            //
-//   Purpose   :                                                   //
-//                                                                 //
-//   Coded by Lothar Richter in November 2002                      //
-//   Institute of Microbiology (Technical University Munich)       //
-//   http://www.arb-home.de/                                       //
-//                                                                 //
-// =============================================================== //
+/**
+ * Declaration of all objects belonging to this version of
+ * the valid names text file
+ *
+ * 29. November 2002
+ * 
+ * copyright by Lothar Richter
+ */
 
-#ifndef NT_VALIDNAMEPARSER_HXX
-#define NT_VALIDNAMEPARSER_HXX
+#ifndef NT_VALID_NAMEPARSER
+#define NT_VALID_NAMEPARSER
 
 #ifndef __LIST__
 #include <list>
@@ -48,18 +46,13 @@ namespace validNames {
         std::string secondsub;
 
     public:
-        Desco(DESCT       type_,  bool isCorrected_,
+        Desco(DESCT       type_ , bool isCorrected_,
               std::string firstgen_, std::string firstspec_, std::string firstsub_,
               std::string secondgen_, std::string secondspec_, std::string secondsub_)
-            : type(type_)
-            , isCorrected(isCorrected_)
-            , firstgen(firstgen_)
-            , firstspec(firstspec_)
-            , firstsub(firstsub_)
-            , secondgen(secondgen_)
-            , secondspec(secondspec_)
-            , secondsub(secondsub_)
-        {}
+            : type(type_) , isCorrected(isCorrected_)
+            , firstgen(firstgen_) , firstspec(firstspec_) , firstsub(firstsub_)
+            , secondgen(secondgen_) , secondspec(secondspec_) , secondsub(secondsub_)
+        { }
 
         std::string getFirstName();
         std::string getSecondName();
@@ -78,6 +71,5 @@ namespace validNames {
     bool isUpperCase(const std::string& input);
 }; /* end namespace */
 
-#else
-#error nt_validNameParser.hxx included twice
-#endif // NT_VALIDNAMEPARSER_HXX
+#endif
+

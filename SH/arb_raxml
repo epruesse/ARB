@@ -166,7 +166,7 @@ else
         else
             if [ "$USESINPUTTREE" == "0" ]; then
                 arb_message "Given input tree ignored"
-                # don't use tree:
+                # dont use tree:
                 TREEPARAMS=
             fi
         fi

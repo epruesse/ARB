@@ -5,8 +5,7 @@ To install a precompiled ARB
 1. download the needed files from our homepage http://www.arb-home.de/
    and save them into a directory of your choice (i.e. ~/arb-install/ )
 
-   Files needed: 'arb.*.tgz' and 'arb_install.sh'
-                 (see arb_README.txt for details on different versions)
+   Files needed: 'arb.tgz' and 'arb_install.sh'
 
 2. get root
 3. run arb_install.sh and follow the instructions
@@ -43,6 +42,12 @@ Software that is useful together with ARB:
 - treetool
 
 --------------------------------------------------------------------------------
+If you don't want to use the 3D features in ARB, you may as well install  
+the Non-OPENGL version of ARB:
+
+Instead of downloading arb.tgz, download arb_noOPENGL.tgz.
+
+--------------------------------------------------------------------------------
 Libraries needed to run 32-bit ARB on 64-bit machine:
 (checked on OpenSuSE 10.2)
 
@@ -73,42 +78,13 @@ To build ARB from source
 2. Unpack the source
 
    e.g.
-        tar -zxvf arbsrc.tgz
+        tar -zxvf arbsrc_2003_05_22.tgz
 
-3. Goto source dir
-
-   e.g.
-        cd arbsrc_6213
-
-4. Set up compile environment
-
-   if you're using bash:
-
-      export ARBHOME=`pwd`
-      export PATH=$ARBHOME/bin:$PATH
-      export LD_LIBRARY_PATH=$ARBHOME/LIBLINK:$LD_LIBRARY_PATH
-
-5. Now either
-
-   a. run
+3. Run
 
         make all
-        arb
-
-      to run arb in compilation directory or
-
-   a. run
-
-        make tarfile
-        ./arb_install.sh
-
-      to install arb for all users
 
    and follow the instructions there.
-
-   On the first call 'make' will generate a file name
-   config.makefile. Edit the file to change the
-   build-options available for ARB (e.g. 32/64 bit, openGL)
 
 
 Additional software that is needed to compile ARB:

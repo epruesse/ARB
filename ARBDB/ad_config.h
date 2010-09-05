@@ -14,24 +14,24 @@
 #ifndef AD_CONFIG_H
 #define AD_CONFIG_H
 
-#ifndef ARBDB_BASE_H
-#include "arbdb_base.h"
+#ifdef __cplusplus
+extern "C" {
 #endif
 
-#define CONFIG_DATA_PATH "configuration_data"
-#define CONFIG_ITEM      "configuration"
+#define AWAR_CONFIG_DATA "configuration_data"
+#define AWAR_CONFIG      "configuration"
 
-    GBDATA *GBT_find_configuration(GBDATA *gb_main, const char *name);
+    GBDATA *GBT_find_configuration(GBDATA *gb_main,const char *name);
     GBDATA *GBT_create_configuration(GBDATA *gb_main, const char *name);
 
     char **GBT_get_configuration_names(GBDATA *gb_main);
     char **GBT_get_configuration_names_and_count(GBDATA *gb_main, int *countPtr);
 
 
-    struct GBT_config {
+    typedef struct s_gbt_config {
         char *top_area;
         char *middle_area;
-    };
+    } GBT_config;
 
     GBT_config *GBT_load_configuration_data(GBDATA *gb_main, const char *name, GB_ERROR *error);
 
@@ -39,7 +39,7 @@
     void     GBT_free_configuration_data(GBT_config *data);
 
 
-    enum GBT_CONFIG_ITEM_TYPE {
+    typedef enum {
         CI_UNKNOWN       = 1,
         CI_GROUP         = 2,
         CI_FOLDED_GROUP  = 4,
@@ -47,23 +47,23 @@
         CI_SAI           = 16,
         CI_CLOSE_GROUP   = 32,
         CI_END_OF_CONFIG = 64,
-    };
+    } gbt_config_item_type;
 
-    struct GBT_config_item {
-        GBT_CONFIG_ITEM_TYPE  type;
+    typedef struct s_gbt_config_item {
+        gbt_config_item_type  type;
         char                 *name;
-    };
+    } GBT_config_item;
 
-    struct GBT_config_parser {
+    typedef struct s_gbt_config_parser {
         char *config_string;
         int   parse_pos;
-    };
+    } GBT_config_parser;
 
     GBT_config_parser *GBT_start_config_parser(const char *config_string);
     void               GBT_free_config_parser(GBT_config_parser *parser);
 
     GB_ERROR         GBT_parse_next_config_item(GBT_config_parser *parser, GBT_config_item *item);
-    void             GBT_append_to_config_string(const GBT_config_item *item, struct GBS_strstruct *strstruct);
+    void             GBT_append_to_config_string(const GBT_config_item *item, void *strstruct);
 
     GBT_config_item *GBT_create_config_item();
     void             GBT_free_config_item(GBT_config_item *item);
@@ -71,6 +71,10 @@
 #if defined(DEBUG)
         void GBT_test_config_parser(GBDATA *gb_main);
 #endif // DEBUG
+
+#ifdef __cplusplus
+}
+#endif
 
 #else
 #error ad_config.h included twice

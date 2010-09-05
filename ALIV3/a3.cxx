@@ -1,20 +1,16 @@
-// ================================================================ //
-//                                                                  //
-//   File      : a3.cxx                                             //
-//   Purpose   :                                                    //
-//                                                                  //
-//   Institute of Microbiology (Technical University Munich)        //
-//   http://www.arb-home.de/                                        //
-//                                                                  //
-// ================================================================ //
-
-#include "a3_arbdb.hxx"
-#include "a3_ali.hxx"
-
-#include <BI_helix.hxx>
+// -----------------------------------------------------------------------------
+//  Include-Dateien
+// -----------------------------------------------------------------------------
 
 #include <iostream>
 #include <fstream>
+#include <cstdio>
+#include <cstdlib>
+
+#include "a3_arbdb.hxx"
+#include <BI_helix.hxx>
+// #include "a3_bihelix.hxx"
+#include "a3_ali.hxx"
 
 using std::cout;
 using std::ifstream;
@@ -50,41 +46,45 @@ static void Usage ( void )
         
         while (!error)
         {
-            PSolution *psol = new PSolution;
-
-            if (!psol) error = 3;
-            else
+//          if      (!input.gets(&line) && !input.eof()) error = 2;
+//          else if (strlen(line))
             {
-                str tmp = strtok(line,",");
+                PSolution *psol = new PSolution;
 
-                while (!error && tmp)
+                if (!psol) error = 3;
+                else
                 {
-                    HMatch *m = new HMatch;
+                    str tmp = strtok(line,",");
 
-                    if (!m) error = 4;
-                    else
+                    while (!error && tmp)
                     {
-                        sscanf(tmp,"%d%d",&m->first,&m->last);
+                        HMatch *m = new HMatch;
 
-                        psol->match.Add(m);
-                        psol->score += (m->last - m->first + 1);
+                        if (!m) error = 4;
+                        else
+                        {
+                            sscanf(tmp,"%d%d",&m->first,&m->last);
 
-                        tmp = strtok(NULL,",");
+                            psol->match.Add(m);
+                            psol->score += (m->last - m->first + 1);
+
+                            tmp = strtok(NULL,",");
+                        }
+                    }
+
+                    if (!error)
+                    {
+                        psol->match.Sort(hmatchcmp);
+                        pre->Add(psol);
                     }
                 }
 
-                if (!error)
-                {
-                    psol->match.Sort(hmatchcmp);
-                    pre->Add(psol);
-                }
+                delete line;
             }
-
-            delete line;
 
             if (input.eof()) break;
         }
-
+        
         if (!error) pre->Sort(psolcmp);
     }
 
@@ -118,27 +118,40 @@ static void Usage ( void )
             if (!(seq && fam)) error = 2;
             else
             {
+//              DArray *pre = ReadMatches("matches.txt");
+
                 cout << "\n" << seq;
+//              cout << "\n" << fam << "\n";
                 
-                BI_helix    helix;
-                const char *err = helix.init(db.gb_main);
-                size_t      pos = 0;
-
-                if (err) cout << err << ", " << helix.size();
-
-                while (pos < helix.size())
+//              if (!pre) error = 3;
+//              else
                 {
-                    if (helix.pairtype(pos) != HELIX_PAIR) cout << ".";
-                    else
+                    BI_helix    helix;
+                    const char *err = helix.init(db.gb_main);
+                    size_t      pos = 0;
+
+                    if (err) cout << err << ", " << helix.size();
+
+                    while (pos < helix.size())
                     {
-                        if (helix.opposite_position(pos) < pos) cout << "]";
-                        else cout << "[";
+                        if (helix.pairtype(pos) != HELIX_PAIR) cout << ".";
+                        else
+                        {
+                            if (helix.opposite_position(pos) < pos) cout << "]";
+                            else cout << "[";
+                        }
+
+                        pos++;
                     }
 
-                    pos++;
-                }
+                    cout << flush;
 
-                cout << flush;
+//                  Aligner  ali(seq[2],seq[0],seq[1],*pre);
+//                  DArray  &tmp = ali.Align();
+
+//                  delete &tmp;
+//                  delete  pre;
+                }
             }
 
             if (seq) delete seq;

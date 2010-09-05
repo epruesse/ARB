@@ -12,6 +12,16 @@
 #ifndef SEC_DB_HXX
 #define SEC_DB_HXX
 
+#ifndef _CPP_CSTDIO
+#include <cstdio>
+#endif
+
+#ifndef ARBDB_H
+#include <arbdb.h>
+#endif
+#ifndef ARBTOOLS_H
+#include <arbtools.h>
+#endif
 #ifndef BI_HELIX_HXX
 #include <BI_helix.hxx>
 #endif
@@ -137,7 +147,7 @@ class SEC_db_interface : Noncopyable {
     void alilen_changed(const SEC_dbcb *cb);
 
     void bind_awars(const char **awars, SEC_dbcb *cb);
-
+    
 public:
     SEC_db_interface(SEC_graphic *Gfx, AWT_canvas *Ntw);
     ~SEC_db_interface();

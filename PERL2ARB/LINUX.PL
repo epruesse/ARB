@@ -1,27 +1,10 @@
 use ExtUtils::MakeMaker;
-# See lib/ExtUtils/MakeMaker.pm for details on how to influence
-# the contents of the Makefile that gets written.
-
-# called from Makefile.main@buildMakefile
-
-my $args = scalar(@ARGV);
-if ($args!=2) {
-  die "Usage: LINUX.PL compiler-flags linker-flags\n".
-    "Missing arguments";
-}
-
-my $cflags = shift @ARGV;
-my $lflags = shift @ARGV;
-
+# See lib/ExtUtils/MakeMaker.pm for details of how to influence
+# the contents of the Makefile that is written.
 WriteMakefile(
-              'NAME'         => 'ARB',
-              'VERSION_FROM' => 'ARB.pm',
-              'CC'           => 'g++',
-              'CCFLAGS'      => $cflags,
-              'LD'           => 'g++ '.$lflags,
-              'DEFINE'       => '',
-              'INC'          => '-I../INCLUDE',
-              'LIBS'         => '-L../ARBDB -lARBDB -lstdc++',
-             );
-
-
+    'NAME'	=> 'ARB',
+    'VERSION_FROM' => 'ARB.pm', # finds $VERSION
+    'LIBS'	=> '-L../ARBDB2 -lARBDB',   # e.g., '-lm' 
+    'DEFINE'	=> '',     # e.g., '-DHAVE_SOMETHING' 
+    'INC'	=> '-I../INCLUDE',     # e.g., '-I/usr/include/other' 
+);

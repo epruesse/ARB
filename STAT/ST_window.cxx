@@ -1,64 +1,39 @@
-// ================================================================ //
-//                                                                  //
-//   File      : ST_window.cxx                                      //
-//   Purpose   :                                                    //
-//                                                                  //
-//   Institute of Microbiology (Technical University Munich)        //
-//   http://www.arb-home.de/                                        //
-//                                                                  //
-// ================================================================ //
-
+#include <stdio.h>
+#include <stdlib.h>
+#include <arbdb.h>
+#include <arbdbt.h>
+#include <aw_root.hxx>
+#include <aw_window.hxx>
+#include <aw_awars.hxx>
+#include <awt.hxx>
+#include <awt_tree.hxx>
+#include <awt_csp.hxx>
+#include <awt_item_sel_list.hxx>
+#include <awt_sel_boxes.hxx>
+#include "st_window.hxx"
 #include "st_ml.hxx"
 #include "st_quality.hxx"
 
-#include <gui_aliview.hxx>
-#include <ColumnStat.hxx>
+void st_ok_cb(AW_window *aww, ST_ML *st_ml) {
+    AW_root        *root           = aww->get_root();
+    char           *alignment_name = root->awar_string(AWAR_DEFAULT_ALIGNMENT, "-none-", st_ml->gb_main)->read_string();
+    char           *tree_name      = root->awar_string(AWAR_TREE, "tree_stat", st_ml->gb_main)->read_string();
+    int             marked_only    = root->awar_int(ST_ML_AWAR_CQ_MARKED_ONLY)->read_int();
 
-#include <aw_awars.hxx>
-#include <awt.hxx>
-#include <awt_item_sel_list.hxx>
-#include <awt_filter.hxx>
+    GB_ERROR error    = GB_push_transaction(st_ml->gb_main);
+    if (!error) error = st_ml->init(tree_name, alignment_name, (char *) 0, marked_only, (char *) 0, st_ml->awt_csp);
+    if (!error && st_ml->refresh_func) st_ml->refresh_func(st_ml->aw_window);
 
-#define ST_ML_AWAR "tmp/st_ml/"
-
-#define ST_ML_AWAR_COLSTAT_PREFIX ST_ML_AWAR "colstat/"
-#define ST_ML_AWAR_COLSTAT_NAME   ST_ML_AWAR_COLSTAT_PREFIX "name" 
-
-#define ST_ML_AWAR_FILTER_PREFIX    ST_ML_AWAR "filter/"
-#define ST_ML_AWAR_FILTER_ALIGNMENT ST_ML_AWAR_FILTER_PREFIX "alignment"
-#define ST_ML_AWAR_FILTER_NAME      ST_ML_AWAR_FILTER_PREFIX "name"
-#define ST_ML_AWAR_FILTER_FILTER    ST_ML_AWAR_FILTER_PREFIX "filter"
-#define ST_ML_AWAR_FILTER_SIMPLIFY  ST_ML_AWAR_FILTER_PREFIX "simplify"
-
-#define ST_ML_AWAR_CQ_BUCKET_SIZE  ST_ML_AWAR "bucket_size"
-#define ST_ML_AWAR_CQ_MARKED_ONLY  ST_ML_AWAR "marked_only"
-#define ST_ML_AWAR_CQ_DEST_FIELD   ST_ML_AWAR "dest_field"
-#define ST_ML_AWAR_CQ_REPORT       ST_ML_AWAR "report"
-#define ST_ML_AWAR_CQ_KEEP_REPORTS ST_ML_AWAR "keep_reports"
-
-static void st_ok_cb(AW_window *aww, AW_CL cl_st_ml) {
-    ST_ML   *st_ml          = (ST_ML*)cl_st_ml;
-    AW_root *root           = aww->get_root();
-    char    *alignment_name = root->awar_string(AWAR_DEFAULT_ALIGNMENT, "-none-", st_ml->get_gb_main())->read_string();
-    char    *tree_name      = root->awar_string(AWAR_TREE, "tree_stat", st_ml->get_gb_main())->read_string();
-    int      marked_only    = root->awar_int(ST_ML_AWAR_CQ_MARKED_ONLY)->read_int();
-
-    GB_ERROR error = GB_push_transaction(st_ml->get_gb_main());
-    if (!error) {
-        error = st_ml->init_st_ml(tree_name, alignment_name, NULL, marked_only, st_ml->get_column_statistic(), true, NULL);
-        if (!error) st_ml->do_refresh();
-    }
-
-    error = GB_end_transaction(st_ml->get_gb_main(), error);
+    error = GB_end_transaction(st_ml->gb_main, error);
     aww->hide_or_notify(error);
 
     free(tree_name);
     free(alignment_name);
 }
 
-AW_window *STAT_create_main_window(AW_root *root, ST_ML *st_ml, AW_CB0 refresh_func, AW_window *refreshed_win) {
+AW_window *st_create_main_window(AW_root * root, ST_ML * st_ml, AW_CB0 refresh_func, AW_window * win) {
     AW_window_simple *aws = new AW_window_simple;
-    aws->init(root, "COLUMN_STATISTIC", "COLUMN STATISTIC");
+    aws->init(root, "ENABLE_ONLINE_STATISTIC", "ACTIVATE ONLINE STATISTIC");
 
     aws->load_xfig("stat_main.fig");
 
@@ -70,26 +45,30 @@ AW_window *STAT_create_main_window(AW_root *root, ST_ML *st_ml, AW_CB0 refresh_f
     aws->at("help");
     aws->create_button("HELP", "HELP", "H");
 
-    root->awar_string(ST_ML_AWAR_COLSTAT_NAME, "");
+    root->awar_string(ST_ML_AWAR_CSP, "");
     root->awar_int(ST_ML_AWAR_CQ_MARKED_ONLY, 1);
 
-    AW_awar *awar_default_alignment = root->awar_string(AWAR_DEFAULT_ALIGNMENT, "-none-", st_ml->get_gb_main());
-    root->awar_string(AWAR_TREE, "tree_main", st_ml->get_gb_main());
+    root->awar_string(AWAR_DEFAULT_ALIGNMENT, "-none-", st_ml->gb_main);
+    root->awar_string(AWAR_TREE, "tree_main", st_ml->gb_main);
 
-    st_ml->create_column_statistic(root, ST_ML_AWAR_COLSTAT_NAME, awar_default_alignment);
-    st_ml->set_refresh_callback(refresh_func, refreshed_win);
+    root->awar_string(ST_ML_AWAR_ALIGNMENT)->map(AWAR_DEFAULT_ALIGNMENT);
+    st_ml->awt_csp = new AWT_csp(st_ml->gb_main, root, ST_ML_AWAR_CSP);
+    st_ml->refresh_func = refresh_func;
+    st_ml->aw_window = win;
 
     aws->at("GO");
-    aws->callback(st_ok_cb, (AW_CL)st_ml);
+    aws->callback((AW_CB1) st_ok_cb, (AW_CL) st_ml);
     aws->create_button("GO", "GO", "G");
 
     aws->at("awt_csp");
-    aws->callback(AW_POPUP, (AW_CL)COLSTAT_create_selection_window, (AW_CL)st_ml->get_column_statistic());
+    aws->callback(AW_POPUP, (AW_CL) create_csp_window,
+    (AW_CL) st_ml->awt_csp);
     aws->button_length(20);
-    aws->create_button("SELECT_CSP", ST_ML_AWAR_COLSTAT_NAME);
+    aws->create_button("SELECT_CSP", ST_ML_AWAR_CSP);
 
     aws->at("marked");
-    aws->create_toggle_field(ST_ML_AWAR_CQ_MARKED_ONLY, "Calculate for ..", "");
+    aws->create_toggle_field(ST_ML_AWAR_CQ_MARKED_ONLY, "Calculate for ..",
+    "");
     aws->insert_toggle("All species", "A", 0);
     aws->insert_toggle("Marked species", "M", 1);
     aws->update_toggle_field();
@@ -97,158 +76,134 @@ AW_window *STAT_create_main_window(AW_root *root, ST_ML *st_ml, AW_CB0 refresh_f
     return aws;
 }
 
-ST_ML *STAT_create_ST_ML(GBDATA *gb_main) {
+ST_ML *new_ST_ML(GBDATA * gb_main) {
     return new ST_ML(gb_main);
 }
 
-ST_ML_Color *STAT_get_color_string(ST_ML *st_ml, char *species_name, AP_tree *node, int start_ali_pos, int end_ali_pos) {
-    return st_ml->get_color_string(species_name, node, start_ali_pos, end_ali_pos);
+ST_ML_Color *st_ml_get_color_string(ST_ML * st_ml, char *species_name,
+        AP_tree * node, int start_ali_pos, int end_ali_pos) {
+    return st_ml->get_color_string(species_name, node, start_ali_pos,
+            end_ali_pos);
 }
 
-bool STAT_update_ml_likelihood(ST_ML *st_ml, char *result[4], int& latest_update, const char *species_name, AP_tree *node) {
-    /*! @see ST_ML::update_ml_likelihood() */
-    return st_ml->update_ml_likelihood(result, latest_update, species_name, node);
+int st_ml_update_ml_likelihood(ST_ML * st_ml, char *result[4],
+        int *latest_update, char *species_name, AP_tree * node) {
+    return st_ml->update_ml_likelihood(result, latest_update, species_name,
+            node);
 }
 
-AP_tree *STAT_find_node_by_name(ST_ML *st_ml, const char *species_name) {
-    return st_ml->find_node_by_name(species_name);
+AP_tree *st_ml_convert_species_name_to_node(ST_ML * st_ml,
+        const char *species_name) {
+    AP_tree *node;
+    if (!st_ml->hash_2_ap_tree)
+        return 0;
+    node = (AP_tree *) GBS_read_hash(st_ml->hash_2_ap_tree, species_name);
+    return node;
 }
 
-struct st_check_cb_data {
-    GBDATA         *gb_main;
-    ColumnStat     *colstat;
-    WeightedFilter *filter;
+int st_is_inited(ST_ML * st_ml) {
+    return st_ml->is_inited;
+}
 
-    st_check_cb_data(GBDATA *gb_main_, AW_root *root, const char *columnStatAwarName, const char *filterAwarName, AW_awar *awar_default_alignment) {
-        gb_main = gb_main_;
-        colstat = new ColumnStat(gb_main, root, columnStatAwarName, awar_default_alignment);
-        filter  = new WeightedFilter(gb_main, root, filterAwarName, NULL, awar_default_alignment);
-    }
-};
-
-static void st_check_cb(AW_window *aww, AW_CL cl_st_check_cb_data) {
-    st_check_cb_data *data = (st_check_cb_data*)cl_st_check_cb_data;
-    GB_transaction    ta(data->gb_main);
-
+void st_check_cb(AW_window * aww, GBDATA * gb_main, AWT_csp * awt_csp) {
+    GB_begin_transaction(gb_main);
     AW_root *r = aww->get_root();
-
-    char *alignment_name = r->awar(ST_ML_AWAR_FILTER_ALIGNMENT)->read_string();
-    int   bucket_size    = r->awar(ST_ML_AWAR_CQ_BUCKET_SIZE)->read_int();
-    char *tree_name      = r->awar(AWAR_TREE)->read_string();
-    char *dest_field     = r->awar(ST_ML_AWAR_CQ_DEST_FIELD)->read_string();
-    int   marked_only    = r->awar(ST_ML_AWAR_CQ_MARKED_ONLY)->read_int();
-
+    char *alignment_name = r->awar(ST_ML_AWAR_ALIGNMENT)->read_string();
+    int bucket_size = r->awar(ST_ML_AWAR_CQ_BUCKET_SIZE)->read_int();
+    char *tree_name = r->awar(AWAR_TREE)->read_string();
+    char *dest_field = r->awar(ST_ML_AWAR_CQ_DEST_FIELD)->read_string();
+    int marked_only = r->awar(ST_ML_AWAR_CQ_MARKED_ONLY)->read_int();
+    char *filter_string = r->awar(ST_ML_AWAR_CQ_FILTER_FILTER)->read_string();
     st_report_enum report = (st_report_enum) r->awar(ST_ML_AWAR_CQ_REPORT)->read_int();
-
-    GB_ERROR error = st_ml_check_sequence_quality(data->gb_main, tree_name, alignment_name, data->colstat, data->filter, bucket_size, marked_only, report, dest_field);
-    
+    GB_ERROR error = st_ml_check_sequence_quality(gb_main, tree_name,
+            alignment_name, awt_csp, bucket_size, marked_only, report,
+            filter_string, dest_field);
+    free(filter_string);
     free(dest_field);
     free(alignment_name);
     free(tree_name);
-
-    error = ta.close(error);
-    if (error) aw_message(error);
-}
-
-void STAT_create_awars(AW_root *root, GBDATA *gb_main) {
-    root->awar_string(AWAR_DEFAULT_ALIGNMENT, "-none-",    gb_main);
-    root->awar_string(AWAR_TREE,              "tree_main", gb_main);
-
-    root->awar_string(ST_ML_AWAR_COLSTAT_NAME, "none");
-
-    root->awar_string(ST_ML_AWAR_FILTER_ALIGNMENT, "none");
-    root->awar_string(ST_ML_AWAR_FILTER_NAME,      "none");
-    root->awar_string(ST_ML_AWAR_FILTER_FILTER,    "");
-    root->awar_int   (ST_ML_AWAR_FILTER_SIMPLIFY,  0);
-
-    root->awar_int   (ST_ML_AWAR_CQ_BUCKET_SIZE,  300);
-    root->awar_int   (ST_ML_AWAR_CQ_MARKED_ONLY,  0);
-    root->awar_string(ST_ML_AWAR_CQ_DEST_FIELD,   "tmp");
-    root->awar_int   (ST_ML_AWAR_CQ_REPORT,       0);
-    root->awar_int   (ST_ML_AWAR_CQ_KEEP_REPORTS, 0);
-
-    root->awar_string(ST_ML_AWAR_FILTER_ALIGNMENT)->map(AWAR_DEFAULT_ALIGNMENT);
-}
-
-static void st_remove_entries(AW_window *aww) {
-    // @@@ shall remove created all entries (from current alignment)
-}
-
-AW_window *STAT_create_quality_check_window(AW_root *root, GBDATA *gb_main) {
-    static AW_window_simple *aws = 0;
-    if (!aws) {
-        aws = new AW_window_simple;
-        aws->init(root, "SEQUENCE_QUALITY_CHECK", "Check quality of marked sequences");
-        aws->load_xfig("check_quality.fig");
-
-        STAT_create_awars(root, gb_main);
-
-        aws->callback(AW_POPDOWN);
-        aws->at("close");
-        aws->create_button("CLOSE", "CLOSE", "C");
-
-        aws->callback(AW_POPUP_HELP, (AW_CL) "check_quality.hlp");
-        aws->at("help");
-        aws->create_button("HELP", "HELP", "H");
-
-        AW_awar *awar_default_alignment = root->awar_string(AWAR_DEFAULT_ALIGNMENT, "-none-", gb_main);
-        st_check_cb_data *cb_data = new st_check_cb_data(gb_main, root, ST_ML_AWAR_COLSTAT_NAME, ST_ML_AWAR_FILTER_NAME, awar_default_alignment); // bound to cb (not freed)
-
-        aws->at("which");
-        {
-            aws->create_option_menu(ST_ML_AWAR_CQ_MARKED_ONLY);
-            aws->insert_option("All in tree", "t", 0);
-            aws->insert_option("Only marked and in tree", "m", 1);
-            aws->update_option_menu();
-        }
-
-        aws->at("colstat");
-        aws->callback(AW_POPUP, (AW_CL)COLSTAT_create_selection_window, (AW_CL)cb_data->colstat);
-        aws->create_button("SELECT_CSP", ST_ML_AWAR_COLSTAT_NAME);
-
-        
-        aws->at("filter");
-        aws->callback(AW_POPUP, (AW_CL)awt_create_select_filter_win, (AW_CL)(cb_data->filter->get_adfiltercbstruct()));
-        aws->create_button("SELECT_FILTER", ST_ML_AWAR_FILTER_NAME);
-        
-        aws->at("sb");
-        aws->create_input_field(ST_ML_AWAR_CQ_BUCKET_SIZE);
-
-        awt_create_selection_list_on_itemfields(gb_main, aws,
-                                                ST_ML_AWAR_CQ_DEST_FIELD,
-                                                1 << GB_STRING,
-                                                "dest",
-                                                0,
-                                                &AWT_species_selector,
-                                                20, 10,
-                                                AWT_SF_STANDARD,
-                                                "SELECT_REPORT_FIELD");
-
-        aws->at("report");
-        {
-            aws->create_option_menu(ST_ML_AWAR_CQ_REPORT);
-            aws->insert_option("No", "N", 0);
-            aws->insert_option("to temporary entry", "t", 1);
-            aws->insert_option("to permanent entry", "p", 2);
-            aws->update_option_menu();
-        }
-
-        {                                           // @@@ not implemented yet
-            aws->sens_mask(AWM_DISABLED);
-
-            aws->at("keep");
-            aws->create_toggle(ST_ML_AWAR_CQ_KEEP_REPORTS);
-
-            aws->at("del");
-            aws->callback(st_remove_entries);
-            aws->create_button("DEL_ENTRIES", "Remove them now!", "R");
-
-            aws->sens_mask(AWM_ALL);
-        }
-
-        aws->at("GO");
-        aws->callback(st_check_cb, (AW_CL)cb_data);
-        aws->create_button("GO", "GO", "G");
+    if (error) {
+        aw_message(error);
+        GB_abort_transaction(gb_main);
+    } else {
+        GB_commit_transaction(gb_main);
     }
+}
+
+AW_window *st_create_quality_check_window(AW_root * root, GBDATA * gb_main) {
+    static AW_window_simple *aws = 0;
+    if (aws)
+        return aws;
+    static AWT_csp *awt_csp;
+    aws = new AW_window_simple;
+    aws->init(root, "SEQUENCE_QUALITY_CHECK",
+            "CHECK QUALITY OF MARKED SEQUENCES");
+
+    aws->load_xfig("check_quality.fig");
+    //    aws->load_xfig("stat_main.fig");
+
+    aws->callback(AW_POPDOWN);
+    aws->at("close");
+    aws->create_button("CLOSE", "CLOSE", "C");
+
+    aws->callback(AW_POPUP_HELP, (AW_CL) "check_quality.hlp");
+    aws->at("help");
+    aws->create_button("HELP", "HELP", "H");
+
+    root->awar_string(ST_ML_AWAR_CSP, "");
+    root->awar_string(AWAR_DEFAULT_ALIGNMENT, "-none-", gb_main);
+    root->awar_int(ST_ML_AWAR_CQ_BUCKET_SIZE, 300);
+    root->awar_int(ST_ML_AWAR_CQ_MARKED_ONLY, 0);
+    root->awar_string(AWAR_TREE, "tree_main", gb_main);
+    root->awar_string(ST_ML_AWAR_CQ_DEST_FIELD, "tmp");
+    root->awar_int(ST_ML_AWAR_CQ_REPORT, 0);
+
+    root->awar_string(ST_ML_AWAR_CQ_FILTER_NAME, "ECOLI");
+    root->awar_string(ST_ML_AWAR_CQ_FILTER_ALIGNMENT);
+    root->awar_string(ST_ML_AWAR_CQ_FILTER_FILTER);
+
+    root->awar_string(ST_ML_AWAR_ALIGNMENT)->map(AWAR_DEFAULT_ALIGNMENT);
+    root->awar_string(ST_ML_AWAR_CQ_FILTER_ALIGNMENT)->
+    map(AWAR_DEFAULT_ALIGNMENT);
+
+    awt_csp = new AWT_csp(gb_main, root, ST_ML_AWAR_CSP);
+    //AW_CL filter_cl =
+    awt_create_select_filter(root, gb_main, ST_ML_AWAR_CQ_FILTER_NAME);
+
+    aws->at("which");
+    {
+        aws->create_option_menu(ST_ML_AWAR_CQ_MARKED_ONLY);
+        aws->insert_option("All in tree", "t", 0);
+        aws->insert_option("Only marked and in tree", "m", 1);
+        aws->update_option_menu();
+    }
+
+    aws->at("report");
+    {
+        aws->create_option_menu(ST_ML_AWAR_CQ_REPORT);
+        aws->insert_option("No report", "N", 0);
+        aws->insert_option("R. to temporary sequence", "t", 1);
+        aws->insert_option("R. to sequence", "s", 2);
+        aws->update_option_menu();
+    }
+
+    aws->at("awt_csp");
+    aws->callback(AW_POPUP, (AW_CL) create_csp_window, (AW_CL) awt_csp);
+    aws->create_button("SELECT_CSP", ST_ML_AWAR_CSP);
+
+    aws->at("sb");
+    aws->create_input_field(ST_ML_AWAR_CQ_BUCKET_SIZE);
+
+    awt_create_selection_list_on_scandb(gb_main, aws,
+                                        ST_ML_AWAR_CQ_DEST_FIELD,
+                                        1 << GB_STRING,
+                                        "dest",
+                                        0,
+                                        &AWT_species_selector,
+                                        20, 10);
+
+    aws->at("GO");
+    aws->callback((AW_CB) st_check_cb, (AW_CL) gb_main, (AW_CL) awt_csp);
+    aws->create_button("GO", "GO", "G");
     return aws;
 }

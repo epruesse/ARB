@@ -1,4 +1,5 @@
-// --------------------------------------------------------------------------------
+/////////////////////////////////////////////////////////////////////////////
+//
 // Copyright (C) 2000
 // Ralf Westram
 //
@@ -9,14 +10,15 @@
 // in supporting documentation.  Ralf Westram makes no
 // representations about the suitability of this software for any
 // purpose.  It is provided "as is" without express or implied warranty.
-// --------------------------------------------------------------------------------
+//
+/////////////////////////////////////////////////////////////////////////////
 
 
 #ifndef FILEBUFFER_H
 #define FILEBUFFER_H
 
-#ifndef _CPP_CSTDIO
-#include <cstdio>
+#ifndef _STDIO_H
+#include <stdio.h>
 #endif
 
 // --------------------------------------------------------------------------------
@@ -25,15 +27,22 @@
 struct ClassFileBuffer;
 typedef struct ClassFileBuffer *FILE_BUFFER;
 
-FILE_BUFFER  create_FILE_BUFFER(const char *filename, FILE *in);
-void         destroy_FILE_BUFFER(FILE_BUFFER file_buffer);
-const char  *FILE_BUFFER_read(FILE_BUFFER file_buffer, size_t *lengthPtr);
-void         FILE_BUFFER_back(FILE_BUFFER file_buffer, const char *backline);
-void         FILE_BUFFER_rewind(FILE_BUFFER file_buffer);
+#ifdef __cplusplus
+extern "C" {
+#endif
+
+    FILE_BUFFER  create_FILE_BUFFER(const char *filename, FILE *in);
+    void         destroy_FILE_BUFFER(FILE_BUFFER file_buffer);
+    const char  *FILE_BUFFER_read(FILE_BUFFER file_buffer, size_t *lengthPtr);
+    void         FILE_BUFFER_back(FILE_BUFFER file_buffer, const char *backline);
+    void         FILE_BUFFER_rewind(FILE_BUFFER file_buffer);
+
+#ifdef __cplusplus
+}
+#endif
 
 // --------------------------------------------------------------------------------
 // c++-interface
-
 #ifdef __cplusplus
 
 #ifndef ARBTOOLS_H
@@ -62,7 +71,7 @@ private:
 
     string *next_line;
 
-    size_t lineNumber;                              // current line number
+    long   lineNumber;                              // current line number
     string filename;
     bool   showFilename;
 
@@ -84,14 +93,14 @@ public:
         next_line  = 0;
         lineNumber = 0;
     }
-    virtual ~FileBuffer() {
+    ~FileBuffer() {
         delete next_line;
         if (fp) fclose(fp);
     }
 
     bool good() { return fp!=0; }
 
-    virtual bool getLine(string& line) {
+    bool getLine(string& line) {
         lineNumber++;
         if (next_line) {
             line = *next_line;
@@ -115,21 +124,9 @@ public:
     const string& getFilename() const { return filename; }
 
     void showFilenameInLineError(bool show) { showFilename = show; }
-    string lineError(const string& msg) const;
-    string lineError(const char *msg) const { return lineError(string(msg)); }
-
-    size_t getLineNumber() { return lineNumber; }
-    void setLineNumber(size_t line) { lineNumber = line; }
-
-    void copyTo(FILE *out) {
-        string line;
-        while (getLine(line)) {
-            fputs(line.c_str(), out);
-            fputc('\n', out);
-        }
-    }
+    string lineError(const char *msg);
+    string lineError(const string& msg) { return lineError(msg.c_str()); }
 };
-
 #endif // __cplusplus
 
 #else

@@ -1,23 +1,17 @@
-// =============================================================== //
-//                                                                 //
-//   File      : PT_etc.cxx                                        //
-//   Purpose   :                                                   //
-//                                                                 //
-//   Institute of Microbiology (Technical University Munich)       //
-//   http://www.arb-home.de/                                       //
-//                                                                 //
-// =============================================================== //
-
-#include "probe.h"
-
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+// #include <malloc.h>
+#include <memory.h>
+#include <PT_server.h>
 #include <PT_server_prototypes.h>
+#include "probe.h"
 #include "pt_prototypes.h"
 #include <struct_man.h>
 
-
+/* get a weighted table for PT_N mismatches */
 void set_table_for_PT_N_mis()
 {
-    // get a weighted table for PT_N mismatches
     int i;
     psg.w_N_mismatches[0] = 0;
     psg.w_N_mismatches[1] = 0;
@@ -63,9 +57,9 @@ static const char *arb2internal_name(const char *name) {
     return found ? found->get_internal_gene_name() : 0;
 }
 
+/* get the name with a virtual function */
 extern "C" const char *virt_name(PT_probematch *ml)
 {
-    // get the name with a virtual function
     if (gene_flag) {
         const gene_struct *gs = get_gene_struct_by_internal_gene_name(psg.data[ml->name].name);
         return gs ? gs->get_arb_species_name() : "<cantResolveName>";
@@ -87,9 +81,9 @@ extern "C" const char *virt_fullname(PT_probematch * ml)
     }
 }
 
+/* copy one mismatch table to a new one allocating memory */
 int *table_copy(int *mis_table, int length)
 {
-    // copy one mismatch table to a new one allocating memory
     int *result_table;
     int i;
 
@@ -98,9 +92,9 @@ int *table_copy(int *mis_table, int length)
         result_table[i] = mis_table[i];
     return result_table;
 }
+/* add the values of a source table to a destination table */
 void table_add(int *mis_tabled, int *mis_tables, int length)
 {
-    // add the values of a source table to a destination table
     int i;
     for (i=0; i<length; i++)
         mis_tabled[i] += mis_tables[i];
@@ -147,12 +141,11 @@ static const char *get_list_part(const char *list, int& offset) {
 
 #undef MAX_LIST_PART_SIZE
 
-char *ptpd_read_names(PT_local *locs, const char *names_list, const char *checksums, const char*& error) {
-    /* read the name list separated by '#' and set the flag for the group members,
-     + returns a list of names which have not been found
-     */
+/* read the name list seperated by # and set the flag for the group members,
+   + returns a list of names which have not been found */
 
-    // clear 'is_group'
+char *ptpd_read_names(PT_local *locs, const char *names_list, const char *checksums, const char*& error) {
+    /* clear 'is_group' */
     for (int i = 0; i < psg.data_count; i++) {
         psg.data[i].is_group = 0; // Note: probes are designed for species with is_group == 1
     }
@@ -223,17 +216,17 @@ char *ptpd_read_names(PT_local *locs, const char *names_list, const char *checks
     }
 
     char *result = not_found ? GBS_strclose(not_found) : 0;
-    if (error) freenull(result);
+    if (error) freeset(result, 0);
     return result;
 }
 
-extern "C" bytestring *PT_unknown_names(struct_PT_pdc *pdc) {
-    static bytestring un = { 0, 0 };
+extern "C" bytestring *PT_unknown_names(struct_PT_pdc *pdc){
+    static bytestring un = {0,0};
     PT_local *locs = (PT_local*)pdc->mh.parent->parent;
     delete un.data;
 
     const char *error;
-    un.data = ptpd_read_names(locs, pdc->names.data, pdc->checksums.data, error);
+    un.data = ptpd_read_names(locs,pdc->names.data,pdc->checksums.data, error);
     if (un.data) {
         un.size = strlen(un.data) + 1;
         pt_assert(!error);
@@ -246,14 +239,14 @@ extern "C" bytestring *PT_unknown_names(struct_PT_pdc *pdc) {
     return &un;
 }
 
-int get_clip_max_from_length(int length) {
-    // compute clip max using the probe length
-
-    int    data_size;
-    int    i;
-    double hitperc_zero_mismatches;
-    double half_mismatches;
-    data_size               = psg.data_count * psg.max_size;
+/* compute clip max using the probe length */
+int get_clip_max_from_length(int length)
+{
+    int             data_size;
+    int             i;
+    double          hitperc_zero_mismatches;
+    double          half_mismatches;
+    data_size = psg.data_count * psg.max_size;
     hitperc_zero_mismatches = (double)data_size;
     for (i = 0; i < length; i++) {
         hitperc_zero_mismatches *= .25;
@@ -267,13 +260,13 @@ int get_clip_max_from_length(int length) {
 }
 
 
-void PT_init_base_string_counter(char *str, char initval, int size)
+void PT_init_base_string_counter(char *str,char initval,int size)
 {
-    memset(str, initval, size+1);
+    memset(str,initval,size+1);
     str[size] = 0;
 }
 
-void PT_inc_base_string_count(char *str, char initval, char maxval, int size)
+void PT_inc_base_string_count(char *str,char initval, char maxval, int size)
 {
     int i;
     if (!size) {
@@ -284,9 +277,8 @@ void PT_inc_base_string_count(char *str, char initval, char maxval, int size)
         str[i]++;
         if (str[i] >= maxval) {
             str[i] = initval;
-            if (!i) str[i]=255; // end flag
-        }
-        else {
+            if (!i) str[i]=255; /* end flag */
+        }else{
             break;
         }
     }

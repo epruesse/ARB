@@ -1,16 +1,3 @@
-// ================================================================ //
-//                                                                  //
-//   File      : RNA3D_Interface.hxx                                //
-//   Purpose   :                                                    //
-//                                                                  //
-//   Institute of Microbiology (Technical University Munich)        //
-//   http://www.arb-home.de/                                        //
-//                                                                  //
-// ================================================================ //
-
-#ifndef RNA3D_INTERFACE_HXX
-#define RNA3D_INTERFACE_HXX
-
 #define WINDOW_WIDTH   950
 #define WINDOW_HEIGHT  650
 
@@ -24,18 +11,15 @@ enum {
     WHEEL_DOWN
 };
 
-void ResizeOpenGLWindow(Widget w, XtPointer client_data, XEvent *event, char* x);
-void ExposeOpenGLWindow(Widget w, XtPointer client_data, XEvent *event, char* x);
-void KeyBoardEventHandler(Widget w, XtPointer client_data, XEvent *event, char* x);
-void ButtonPressEventHandler(Widget w, XtPointer client_data, XEvent *event, char* x);
-void ButtonReleaseEventHandler(Widget w, XtPointer client_data, XEvent *event, char* x);
-void MouseMoveEventHandler(Widget w, XtPointer client_data, XEvent *event, char* x);
+void ResizeOpenGLWindow( Widget w, XtPointer client_data, XEvent *event, char* x );
+void ExposeOpenGLWindow( Widget w, XtPointer client_data, XEvent *event, char* x );
+void KeyBoardEventHandler( Widget w, XtPointer client_data, XEvent *event, char* x );
+void ButtonPressEventHandler( Widget w, XtPointer client_data, XEvent *event, char* x );
+void ButtonReleaseEventHandler( Widget w, XtPointer client_data, XEvent *event, char* x );
+void MouseMoveEventHandler( Widget w, XtPointer client_data, XEvent *event, char* x );
 void RefreshOpenGLDisplay();
+//void SetOpenGLBackGroundColor();
 
 class AW_root;
 class AW_window;
-AW_window *CreateRNA3DMainWindow(AW_root *awr, GBDATA *gb_main);
-
-#else
-#error RNA3D_Interface.hxx included twice
-#endif // RNA3D_INTERFACE_HXX
+AW_window *CreateRNA3DMainWindow(AW_root *awr); // Creates RNA3D Application Main Window

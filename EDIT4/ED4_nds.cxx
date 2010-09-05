@@ -1,18 +1,15 @@
-// =============================================================== //
-//                                                                 //
-//   File      : ED4_nds.cxx                                       //
-//   Purpose   :                                                   //
-//                                                                 //
-//   Institute of Microbiology (Technical University Munich)       //
-//   http://www.arb-home.de/                                       //
-//                                                                 //
-// =============================================================== //
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#include <arbdb.h>
+#include <arbdbt.h>
+#include <aw_root.hxx>
+#include <aw_awars.hxx>
+#include <aw_window.hxx>
 
 #include "ed4_class.hxx"
 #include "ed4_awars.hxx"
-
-#include <arbdbt.h>
-#include <aw_awars.hxx>
 
 #define NDS_COUNT 10
 
@@ -52,10 +49,7 @@ static void NDS_changed(AW_root *root, AW_CL refresh)
 
     if (int(refresh)) {
         ED4_calc_terminal_extentions();
-        {
-            ARB_ERROR error = ED4_ROOT->main_manager->route_down_hierarchy(update_terminal_extension);
-            aw_message_if(error);
-        }
+        ED4_ROOT->main_manager->route_down_hierarchy(0,0,update_terminal_extension);
         ED4_gc_is_modified(ED4_ROOT->get_aww(), 0, 0);
     }
 }
@@ -65,10 +59,10 @@ void ED4_create_NDS_awars(AW_root *root)
     int i;
     GB_transaction dummy(GLOBAL_gb_main);
 
-    root->awar_int(ED4_AWAR_NDS_SELECT, 0)->add_callback(NDS_changed, 1);
-    root->awar_int(ED4_AWAR_NDS_BRACKETS, 6)->set_minmax(0, 99)->add_callback(NDS_changed, 1);
-    root->awar_int(ED4_AWAR_NDS_INFO_WIDTH, 5)->set_minmax(0, 99)->add_callback(NDS_changed, 1);
-    root->awar_string(ED4_AWAR_NDS_ECOLI_NAME, "Ecoli")->add_callback(NDS_changed, 1);
+    root->awar_int(ED4_AWAR_NDS_SELECT, 0)->add_callback(NDS_changed,1);
+    root->awar_int(ED4_AWAR_NDS_BRACKETS, 6)->set_minmax(0,99)->add_callback(NDS_changed,1);
+    root->awar_int(ED4_AWAR_NDS_INFO_WIDTH, 5)->set_minmax(0,99)->add_callback(NDS_changed,1);
+    root->awar_string(ED4_AWAR_NDS_ECOLI_NAME, "Ecoli")->add_callback(NDS_changed,1);
 
     for (i=0; i<NDS_COUNT; i++) {
         char buf[256];
@@ -92,7 +86,7 @@ void ED4_create_NDS_awars(AW_root *root)
             case 1: aci = "readdb(full_name)"; break;
             default: aci = "\"<not defined>\""; break;
         }
-        root->awar_string(buf, aci)->add_callback(NDS_changed, 1);
+        root->awar_string(buf, aci)->add_callback(NDS_changed,1);
 
         int len;
         sprintf(buf, ED4_AWAR_NDS_WIDTH_TEMPLATE, i);
@@ -101,19 +95,19 @@ void ED4_create_NDS_awars(AW_root *root)
             case 1: len = 27; break;
             default: len = 20; break;
         }
-        root->awar_int(buf, len)->add_callback(NDS_changed, 1);
+        root->awar_int(buf, len)->add_callback(NDS_changed,1);
     }
 
-    NDS_changed(root, 0); // init globals
+    NDS_changed(root,0); // init globals
 }
 
 /* a crazy implementation of a toggle field */
-void ed4_nds_select_change(AW_window *aww, AW_CL selected) {
+void ed4_nds_select_change(AW_window *aww,AW_CL selected){
     int i;
     AW_root *aw_root = aww->get_root();
-    for (i=0; i<NDS_COUNT; i++) {
-        const char *awar_name = GBS_global_string(ED4_AWAR_NDS_SELECT_TEMPLATE, i);
-        aw_root->awar(awar_name)->write_int((i==selected) ? 1 : 0);
+    for (i=0;i<NDS_COUNT;i++){
+        const char *awar_name = GBS_global_string(ED4_AWAR_NDS_SELECT_TEMPLATE,i);
+        aw_root->awar(awar_name)->write_int( (i==selected)? 1:0);
     }
     aw_root->awar(ED4_AWAR_NDS_SELECT)->write_int(selected);
 }
@@ -121,19 +115,21 @@ void ed4_nds_select_change(AW_window *aww, AW_CL selected) {
 AW_window *ED4_create_nds_window(AW_root *root)
 {
     AW_window_simple *aws = new AW_window_simple;
-    int               description_x, aci_x, length_x;
-    int               i, dummy, fieldselectx;
+    int description_x, aci_x, length_x;
+    int i, dummy, fieldselectx;
+    //int y[NDS_COUNT];
+    //int toggle_y, data_x;
 
     aws->init(root, "NDS_PROPS", "NDS");
     aws->load_xfig("edit4/nds.fig");
 
-    aws->callback((AW_CB0)AW_POPDOWN);
+    aws->callback( (AW_CB0)AW_POPDOWN);
     aws->at("close");
-    aws->create_button("CLOSE", "CLOSE", "C");
+    aws->create_button("CLOSE", "CLOSE","C");
 
-    aws->callback(AW_POPUP_HELP, (AW_CL)"ed4_nds.hlp");
+    aws->callback( AW_POPUP_HELP,(AW_CL)"ed4_nds.hlp");
     aws->at("help");
-    aws->create_button("HELP", "HELP", "H");
+    aws->create_button("HELP", "HELP","H");
 
     aws->at("brackets");
     aws->label("Used maximum group depth");
@@ -156,20 +152,20 @@ AW_window *ED4_create_nds_window(AW_root *root)
     for (i=0; i<NDS_COUNT; ++i) {
         char buf[256];
         sprintf(buf, ED4_AWAR_NDS_SELECT_TEMPLATE, i);
-        aws->callback(ed4_nds_select_change, i);
+        aws->callback(ed4_nds_select_change,i);
         aws->create_toggle(buf);
 
-        aws->get_at_position(&description_x, &dummy);
-        sprintf(buf, ED4_AWAR_NDS_DESCRIPTION_TEMPLATE, i);
-        aws->create_input_field(buf, 15);
+        aws->get_at_position( &description_x,&dummy );
+        sprintf(buf,ED4_AWAR_NDS_DESCRIPTION_TEMPLATE,i);
+        aws->create_input_field(buf,15);
 
-        aws->get_at_position(&aci_x, &dummy);
-        sprintf(buf, ED4_AWAR_NDS_ACI_TEMPLATE, i);
-        aws->create_input_field(buf, 30);
+        aws->get_at_position( &aci_x,&dummy );
+        sprintf(buf,ED4_AWAR_NDS_ACI_TEMPLATE,i);
+        aws->create_input_field(buf,30);
 
-        aws->get_at_position(&length_x, &dummy);
-        sprintf(buf, ED4_AWAR_NDS_WIDTH_TEMPLATE, i);
-        aws->create_input_field(buf, 3);
+        aws->get_at_position( &length_x,&dummy );
+        sprintf(buf,ED4_AWAR_NDS_WIDTH_TEMPLATE,i);
+        aws->create_input_field(buf,3);
 
         aws->at_newline();
     }
@@ -185,3 +181,65 @@ AW_window *ED4_create_nds_window(AW_root *root)
     return (AW_window*)aws;
 }
 
+/*
+    aws->auto_increment(0, 25);
+
+    aws->at("toggle");
+    aws->get_at_position(&dummy, &toggle_y);
+
+    aws->auto_space(10, 2);
+
+    // calculate y-offset between two NDS toggles
+    {
+        aws->at_newline();
+        aws->create_button(0, "");
+
+        int y_after_toggle;
+        aws->get_at_position(&dummy, &y_after_toggle);
+
+        int y_per_toggle = y_after_toggle-toggle_y;
+        for (i=0; i<NDS_COUNT; i++) {
+            y[i] = toggle_y + y_per_toggle*i;
+        }
+    }
+
+    // insert toggles for NDS
+    char toggle_name[] = "A";
+    aws->at("toggle");
+    aws->create_toggle_field(ED4_AWAR_NDS_TOGGLE, 0);
+    aws->insert_default_toggle(toggle_name, "", 0);
+    for (i=1; i<NDS_COUNT; i++) {
+        toggle_name[0]++;
+        aws->insert_toggle(toggle_name, "", i);
+    }
+    aws->update_toggle_field();
+
+    aws->at("data");
+    aws->get_at_position(&data_x, &dummy);
+
+    // add data fields behind each toggle
+    aws->auto_space(10,0);
+
+    for (i=0; i<NDS_COUNT; i++) {
+        char buf[256];
+
+        aws->at(data_x, y[i]);
+
+        sprintf(buf, ED4_AWAR_NDS_DESCRIPTION_TEMPLATE, i);
+        aws->get_at_position(&description_x, &dummy);
+        aws->create_input_field(buf, 15);
+
+        sprintf(buf, ED4_AWAR_NDS_ACI_TEMPLATE, i);
+        aws->get_at_position(&aci_x, &dummy);
+        aws->create_input_field(buf, 30);
+
+        sprintf(buf, ED4_AWAR_NDS_WIDTH_TEMPLATE, i);
+        aws->get_at_position(&length_x, &dummy);
+        aws->create_input_field(buf, 3);
+    }
+
+    aws->auto_off();
+
+    return (AW_window*)aws;
+
+*/

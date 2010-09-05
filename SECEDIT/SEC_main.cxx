@@ -8,22 +8,23 @@
 //                                                                 //
 // =============================================================== //
 
+
+#include <cstdio>
+
+#include <arbdb.h>
+#include <arbdbt.h>
+#include <aw_window.hxx>
+#include <aw_awars.hxx>
+#include <aw_preset.hxx>
+#include <awt.hxx>
+#include <ed4_extern.hxx>
+#include <FileBuffer.h>
+
 #include "SEC_root.hxx"
 #include "SEC_graphic.hxx"
 #include "SEC_helix.hxx"
 #include "SEC_drawn_pos.hxx"
 #include "SEC_toggle.hxx"
-
-#include <ed4_extern.hxx>
-#include <FileBuffer.h>
-
-#include <awt.hxx>
-
-#include <aw_awars.hxx>
-#include <aw_preset.hxx>
-#include <aw_file.hxx>
-
-#include <arbdbt.h>
 
 #ifndef sec_assert // happens in NDEBUG mode
 #define sec_assert(cond) arb_assert(cond)
@@ -71,7 +72,7 @@ void SEC_root::add_autoscroll(const Vector& scroll) {
 bool SEC_root::perform_autoscroll() {
     bool        scrolled = false;
     AWT_canvas *canvas   = db->canvas();
-
+    
     if (canvas && (nailedAbsPos != -1 || autoscroll)) {
         AW_device *device = canvas->aww->get_device(AW_MIDDLE_AREA);
 
@@ -84,9 +85,7 @@ bool SEC_root::perform_autoscroll() {
                 nailedAbsPos = -1;
                 autoscroll   = 0;
 
-#if defined(DEVEL_RALF)
 #warning make the refresh invisible
-#endif // DEVEL_RALF
                 canvas->refresh();
 
                 nailedAbsPos = absPos;
@@ -136,7 +135,7 @@ void SEC_root::position_cursor(bool toCenter, bool evenIfVisible) {
 
     AWT_canvas *ntw    = db->canvas();
     AW_device  *device = ntw->aww->get_device(AW_MIDDLE_AREA);
-
+    
     Rectangle cursor(device->transform(cursorLine));
     Rectangle screen = device->get_area_size();
 
@@ -179,7 +178,7 @@ void SEC_center_cb(AW_window *, AW_CL cl_secroot, AW_CL) {
     root->position_cursor(true, true);
 }
 
-static void SEC_fit_window_cb(AW_window * /* aw */, AW_CL cl_secroot, AW_CL) {
+static void SEC_fit_window_cb(AW_window */*aw*/, AW_CL cl_secroot, AW_CL) {
     SEC_root               *root = (SEC_root*)cl_secroot;
     const SEC_db_interface *db   = root->get_db();
 
@@ -190,12 +189,14 @@ static void SEC_fit_window_cb(AW_window * /* aw */, AW_CL cl_secroot, AW_CL) {
 static void sec_mode_event(AW_window *aws, AW_CL cl_secroot, AW_CL cl_mode)
 {
     SEC_root         *sec_root = (SEC_root*)cl_secroot;
-    AWT_COMMAND_MODE  mode     = (AWT_COMMAND_MODE)cl_mode;
-    const char       *text     = 0;
+    AWT_COMMAND_MODE  mode = (AWT_COMMAND_MODE)cl_mode;
+
+    // SEC_root   *sec_root = SEC_GRAPHIC->sec_root;
+    const char *text     = 0;
 
     sec_root->set_show_constraints(SEC_NO_TYPE);
 
-    switch (mode) {
+    switch(mode){
         case AWT_MODE_ZOOM: {
             text="ZOOM MODE : CLICK or SELECT an area to ZOOM IN (LEFT) or ZOOM OUT (RIGHT) ";
             break;
@@ -217,7 +218,7 @@ static void sec_mode_event(AW_window *aws, AW_CL cl_secroot, AW_CL cl_mode)
             sec_root->set_show_constraints(SEC_ANY_TYPE);
             break;
         }
-        case AWT_MODE_EDIT: {
+        case AWT_MODE_MOD: {
             text="CONSTRAINT MODE    LEFT: modify constraint";
             sec_root->set_show_constraints(SEC_ANY_TYPE);
             break;
@@ -250,13 +251,13 @@ static void sec_mode_event(AW_window *aws, AW_CL cl_secroot, AW_CL cl_mode)
 void SEC_undo_cb(AW_window *, AW_CL cl_db, AW_CL cl_undo_type) {
     SEC_db_interface *db        = (SEC_db_interface*)cl_db;
     GB_UNDO_TYPE      undo_type = (GB_UNDO_TYPE)cl_undo_type;
-
+    
     GBDATA   *gb_main = db->gbmain();
     GB_ERROR  error   = GB_undo(gb_main, undo_type);
     if (error) {
         aw_message(error);
     }
-    else {
+    else{
         GB_begin_transaction(gb_main);
         GB_commit_transaction(gb_main);
         db->canvas()->refresh();
@@ -265,7 +266,7 @@ void SEC_undo_cb(AW_window *, AW_CL cl_db, AW_CL cl_undo_type) {
 
 // --------------------------------------------------------------------------------
 
-#define ASS       "ARB secondary structure v1" // don't change version here!
+#define ASS       "ARB secondary structure v1" // dont change version here!
 #define ASS_START "["ASS"]"
 #define ASS_EOS   "[end of structure]"
 #define ASS_EOF   "[end of "ASS"]"
@@ -294,22 +295,17 @@ static void export_structure_to_file(AW_window *, AW_CL cl_db)
 
         sec_assert(xstr.get_x_string_length() == strlen(x_string));
 
-        char *foldInfo = SEC_xstring_to_foldedHelixList(x_string, xstr.get_x_string_length(), sec_root->get_helixDef(), error);
-        if (foldInfo) {
-            fprintf(out, "foldedHelices=%s\n", foldInfo);
-            free(foldInfo);
-        }
+        char *foldInfo = SEC_xstring_to_foldedHelixList(x_string, xstr.get_x_string_length(), sec_root->get_helixDef());
+        fprintf(out, "foldedHelices=%s\n", foldInfo);
+        free(foldInfo);
 
         fputs(ASS_EOF, out); fputc('\n', out);
         fclose(out);
-
-        if (error) GB_unlink_or_warn(filename, &error);
     }
     else {
         error = GB_export_errorf("Can't write secondary structure to '%s'", filename);
     }
 
-    free(filename);
     if (error) aw_popup_ok(error);
 }
 
@@ -373,14 +369,14 @@ static void import_structure_from_file(AW_window *, AW_CL cl_db) {
         else {
             FileBuffer file(filename, in);
             error = expectContent(file, ASS_START);
-
+        
             string structure;
             while (!error) {
                 string line;
                 if (!file.getLine(line)) error = expectedError(ASS_EOS);
                 else {
                     if (line == ASS_EOS) break;
-                    structure += line + "\n";
+                    structure += line + "\n"; 
                 }
             }
 
@@ -448,22 +444,22 @@ static AW_window *SEC_importExport(AW_root *root, int export_to_file, SEC_db_int
 
     aws->at("close");
     aws->callback((AW_CB0)AW_POPDOWN);
-    aws->create_button("CLOSE", "CLOSE", "C");
+    aws->create_button("CLOSE","CLOSE","C");
 
     aws->at("help");
-    aws->callback(AW_POPUP_HELP, (AW_CL)"sec_imexport.hlp");
-    aws->create_button("HELP", "HELP", "H");
+    aws->callback( AW_POPUP_HELP, (AW_CL)"sec_imexport.hlp");
+    aws->create_button("HELP","HELP","H");
 
-    AW_create_fileselection(aws, AWAR_SECEDIT_SAVEDIR);
+    awt_create_selection_box((AW_window *)aws, AWAR_SECEDIT_SAVEDIR);
 
     aws->at("save");
     if (export_to_file) {
         aws->callback(export_structure_to_file, (AW_CL)db);
-        aws->create_button("EXPORT", "EXPORT", "E");
+        aws->create_button("EXPORT","EXPORT","E");
     }
     else {
         aws->callback(import_structure_from_file, (AW_CL)db);
-        aws->create_button("IMPORT", "IMPORT", "I");
+        aws->create_button("IMPORT","IMPORT","I");
     }
 
     return aws;
@@ -577,9 +573,9 @@ static AW_window *SEC_create_bonddef_window(AW_root *awr) {
     aws->at("close");
     aws->create_button("CLOSE", "CLOSE", "C");
 
-    aws->callback(AW_POPUP_HELP, (AW_CL)"sec_bonddef.hlp");
+    aws->callback( AW_POPUP_HELP,(AW_CL)"sec_bonddef.hlp");
     aws->at("help");
-    aws->create_button("HELP", "HELP", "H");
+    aws->create_button("HELP","HELP","H");
 
     aws->at("label"); int x_label = aws->get_at_xposition();
     aws->at("pairs"); int x_pairs = aws->get_at_xposition();
@@ -603,7 +599,7 @@ static AW_window *SEC_create_bonddef_window(AW_root *awr) {
     INSERT_PAIR_FIELDS("User pairs", USER);
 
 #undef INSERT_PAIR_FIELDS
-
+    
     return aws;
 }
 
@@ -617,10 +613,10 @@ static AW_window *SEC_create_display_window(AW_root *awr) {
     aws->at("close");
     aws->create_button("CLOSE", "CLOSE", "C");
 
-    aws->callback(AW_POPUP_HELP, (AW_CL)"sec_display.hlp");
+    aws->callback( AW_POPUP_HELP,(AW_CL)"sec_display.hlp");
     aws->at("help");
-    aws->create_button("HELP", "HELP", "H");
-
+    aws->create_button("HELP","HELP","H");
+    
     // ----------------------------------------
 
     aws->at("bases");
@@ -648,7 +644,7 @@ static AW_window *SEC_create_display_window(AW_root *awr) {
     aws->create_input_field(AWAR_SECEDIT_BOND_THICKNESS);
 
     // ----------------------------------------
-
+    
     aws->at("cursor");
     aws->label("Annotate cursor            :");
     aws->create_option_menu(AWAR_SECEDIT_SHOW_CURPOS);
@@ -657,7 +653,7 @@ static AW_window *SEC_create_display_window(AW_root *awr) {
     aws->insert_option("Ecoli",    "e", SHOW_ECOLI_CURPOS);
     aws->insert_option("Base",     "b", SHOW_BASE_CURPOS);
     aws->update_option_menu();
-
+    
     aws->at("helixNrs");
     aws->label("Annotate helices           :");
     aws->create_toggle(AWAR_SECEDIT_SHOW_HELIX_NRS);
@@ -673,17 +669,17 @@ static AW_window *SEC_create_display_window(AW_root *awr) {
     aws->at("sai");
     aws->label("Visualize SAI              :");
     aws->create_toggle(AWAR_SECEDIT_DISPLAY_SAI);
-
+    
     // ----------------------------------------
 
     aws->at("binding");
     aws->label("Binding helix positions    :");
     aws->create_toggle(AWAR_SECEDIT_DISPPOS_BINDING);
-
+    
     aws->at("ecoli2");
     aws->label("Ecoli base positions       :");
     aws->create_toggle(AWAR_SECEDIT_DISPPOS_ECOLI);
-
+    
     // ----------------------------------------
 
     aws->at("strSkeleton");
@@ -703,15 +699,10 @@ static AW_window *SEC_create_display_window(AW_root *awr) {
     return aws;
 }
 
-#if defined(DEVEL_RALF)
-#warning use popdown callback for SEC_exit and valgrind open/close/open secedit 
-#endif // DEVEL_RALF
-
-static void SEC_exit(GBDATA *, void *cl_sec_root) {
+static void SEC_exit(GBDATA *gb_main, void *cl_sec_root) {
     SEC_root *sec_root = static_cast<SEC_root*>(cl_sec_root);
 
     delete sec_root;
-    sec_root = NULL;
 }
 
 AW_window *SEC_create_main_window(AW_root *awr, GBDATA *gb_main) {
@@ -719,7 +710,7 @@ AW_window *SEC_create_main_window(AW_root *awr, GBDATA *gb_main) {
     SEC_root    *root = gfx->sec_root;
 
     AW_window_menu_modes *awm = new AW_window_menu_modes();
-    awm->init(awr, "ARB_SECEDIT", "ARB_SECEDIT: Secondary structure editor", 200, 200);
+    awm->init(awr,"ARB_SECEDIT", "ARB_SECEDIT: Secondary structure editor", 200,200);
 
     AW_gc_manager aw_gc_manager;
     AWT_canvas *ntw = new AWT_canvas(gb_main, awm, gfx, aw_gc_manager, AWAR_SPECIES_NAME);
@@ -731,8 +722,8 @@ AW_window *SEC_create_main_window(AW_root *awr, GBDATA *gb_main) {
     const SEC_db_interface *db = root->get_db();
 
     GB_atclose(gb_main, SEC_exit, root);
-
-    awm->create_menu("File", "F", AWM_ALL);
+    
+    awm->create_menu("File", "F", "secedit_file.hlp",  AWM_ALL );
 
     awm->insert_menu_topic("secedit_new", "New structure", "N", 0, AWM_ALL, SEC_new_structure, (AW_CL)db, 0);
     awm->insert_menu_topic("secedit_rename", "Rename structure", "R", 0, AWM_ALL, SEC_rename_structure, (AW_CL)db, 0);
@@ -745,47 +736,54 @@ AW_window *SEC_create_main_window(AW_root *awr, GBDATA *gb_main) {
     awm->insert_menu_topic("print_secedit",  "Print Structure",          "P", "secedit2prt.hlp", AWM_ALL, AWT_popup_print_window,      (AW_CL)ntw, 0);
     awm->insert_separator();
 
-    awm->insert_menu_topic("close", "Close", "C", "quit.hlp", AWM_ALL, (AW_CB)AW_POPDOWN, 0, 0);
+    awm->insert_menu_topic( "close", "Close", "C","quit.hlp", AWM_ALL, (AW_CB)AW_POPDOWN, 0, 0);
 
-    awm->create_menu("Properties", "P", AWM_ALL);
+    awm->create_menu("Properties","P","properties.hlp", AWM_ALL);
     awm->insert_menu_topic("sec_display", "Display options", "D", "sec_display.hlp", AWM_ALL, AW_POPUP, (AW_CL)SEC_create_display_window, 0);
     awm->insert_separator();
-    awm->insert_menu_topic("props_secedit", "Change Colors and Fonts", "C", "secedit_props_data.hlp", AWM_ALL, AW_POPUP, (AW_CL)AW_create_gc_window, (AW_CL)aw_gc_manager);
+    awm->insert_menu_topic("props_secedit", "Change Colors and Fonts","C","secedit_props_data.hlp",AWM_ALL, AW_POPUP, (AW_CL)AW_create_gc_window, (AW_CL)aw_gc_manager );
     awm->insert_separator();
     awm->insert_menu_topic("sync_search_colors", "Sync search colors with EDIT4", "s", "sync_colors.hlp", AWM_ALL, SEC_sync_colors, (AW_CL)1, 0);
     awm->insert_menu_topic("sync_range_colors",  "Sync range colors with EDIT4",  "r", "sync_colors.hlp", AWM_ALL, SEC_sync_colors, (AW_CL)2, 0);
     awm->insert_menu_topic("sync_other_colors",  "Sync other colors with EDIT4",  "o", "sync_colors.hlp", AWM_ALL, SEC_sync_colors, (AW_CL)4, 0);
     awm->insert_menu_topic("sync_all_colors",    "Sync all colors with EDIT4",    "a", "sync_colors.hlp", AWM_ALL, SEC_sync_colors, (AW_CL)(1|2|4), 0);
     awm->insert_separator();
-    awm->insert_menu_topic("sec_save_props",    "How to save properties",   "p", "savedef.hlp", AWM_ALL, (AW_CB) AW_POPUP_HELP, (AW_CL)"sec_props.hlp", 0);
+    awm->insert_menu_topic("sec_save_props",    "How to save properties",   "p","savedef.hlp",  AWM_ALL, (AW_CB) AW_POPUP_HELP, (AW_CL)"sec_props.hlp", 0 );
 
     awm->create_mode("pzoom.bitmap",       "sec_mode.hlp", AWM_ALL, sec_mode_event, (AW_CL)root, (AW_CL)AWT_MODE_ZOOM);
     awm->create_mode("sec_modify.bitmap",  "sec_mode.hlp", AWM_ALL, sec_mode_event, (AW_CL)root, (AW_CL)AWT_MODE_MOVE);
     awm->create_mode("setroot.bitmap",     "sec_mode.hlp", AWM_ALL, sec_mode_event, (AW_CL)root, (AW_CL)AWT_MODE_SETROOT);
     awm->create_mode("rot.bitmap",         "sec_mode.hlp", AWM_ALL, sec_mode_event, (AW_CL)root, (AW_CL)AWT_MODE_ROT);
     awm->create_mode("stretch.bitmap",     "sec_mode.hlp", AWM_ALL, sec_mode_event, (AW_CL)root, (AW_CL)AWT_MODE_STRETCH);
-    awm->create_mode("info.bitmap",        "sec_mode.hlp", AWM_ALL, sec_mode_event, (AW_CL)root, (AW_CL)AWT_MODE_EDIT);
+    awm->create_mode("info.bitmap",        "sec_mode.hlp", AWM_ALL, sec_mode_event, (AW_CL)root, (AW_CL)AWT_MODE_MOD);
     awm->create_mode("sec_setcurs.bitmap", "sec_mode.hlp", AWM_ALL, sec_mode_event, (AW_CL)root, (AW_CL)AWT_MODE_LINE);
     awm->create_mode("probeInfo.bitmap",   "sec_mode.hlp", AWM_ALL, sec_mode_event, (AW_CL)root, (AW_CL)AWT_MODE_PROINFO);
 
-    awm->set_info_area_height(250);
-    awm->at(5, 2);
-    awm->auto_space(0, -2);
+    awm->set_info_area_height( 250 );
+    awm->at(5,2);
+    // awm->auto_space(5,-2);
+    awm->auto_space(0,-2);
 
     awm->button_length(0);
     awm->help_text("quit.hlp");
     awm->callback((AW_CB0)AW_POPDOWN);
     awm->create_button("Close", "#quit.xpm"); // use quit button, cause users regard secedit as separate program
 
+    // awm->callback(AW_POPUP_HELP,(AW_CL)"arb_secedit.hlp");
+    // awm->button_length(0);
+    // awm->help_text("help.hlp");
+    // awm->create_button("HELP", "HELP","H");
+
     awm->callback(AW_help_entry_pressed);
     awm->help_text("arb_secedit.hlp");
-    awm->create_button("HELP", "#help.xpm");
+    // awm->create_button(0,"?");
+    awm->create_button("HELP","#help.xpm");
 
-    awm->callback(SEC_undo_cb, (AW_CL)db, (AW_CL)GB_UNDO_UNDO);
+    awm->callback(SEC_undo_cb,(AW_CL)db,(AW_CL)GB_UNDO_UNDO);
     awm->help_text("undo.hlp");
     awm->create_button("Undo", "#undo.bitmap");
 
-    awm->callback(SEC_undo_cb, (AW_CL)db, (AW_CL)GB_UNDO_REDO);
+    awm->callback(SEC_undo_cb,(AW_CL)db,(AW_CL)GB_UNDO_REDO);
     awm->help_text("undo.hlp");
     awm->create_button("Redo", "#redo.bitmap");
 
@@ -797,7 +795,7 @@ AW_window *SEC_create_main_window(AW_root *awr, GBDATA *gb_main) {
     awm->help_text("sec_main.hlp");
     awm->create_button("Center", "Center");
 
-    awm->callback((AW_CB)SEC_fit_window_cb, (AW_CL)root, 0);
+    awm->callback((AW_CB)SEC_fit_window_cb,(AW_CL)root, 0);
     awm->help_text("sec_main.hlp");
     awm->create_button("fitWindow", "Fit");
 
@@ -807,11 +805,12 @@ AW_window *SEC_create_main_window(AW_root *awr, GBDATA *gb_main) {
         AW_at_maxsize maxSize; // store size (so AWAR_FOOTER does not affect min. window size)
         maxSize.store(awm->_at);
         awm->button_length(AWAR_FOOTER_MAX_LEN);
-        awm->create_button(0, AWAR_FOOTER);
+        awm->create_button(0,AWAR_FOOTER);
         awm->at_newline();
         maxSize.restore(awm->_at);
     }
 
+    // awm->set_info_area_height(awm->get_at_yposition()+6);
     awm->set_info_area_height(awm->get_at_yposition());
 
     return awm;

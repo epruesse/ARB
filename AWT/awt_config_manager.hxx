@@ -16,18 +16,9 @@
 #ifndef AWT_CONFIG_MANAGER_HXX
 #define AWT_CONFIG_MANAGER_HXX
 
-#ifndef ARBDB_BASE_H
-#include <arbdb_base.h>
-#endif
-#ifndef AW_ROOT_HXX
-#include <aw_root.hxx>
-#endif
-
-class AW_window;
-
 struct AWT_config_mapping;
 
-struct AWT_config_mapping_def {
+struct AWT_config_mapping_def { 
     const char *awar_name;
     const char *config_name;
 };
@@ -37,13 +28,13 @@ struct AWT_config_mapping_def {
 // ----------------------------------------
 class AWT_config {
     // stores one specific configuration (key->value pairs)
-    //
+    // 
     // this class allows to modify the config_string before calling AWT_config_definition::write().
-    // This is e.g. necessary if some config-entries change and you want to support
+    // This is e.g. neccessary if some config-entries change and you want to support
     // automatic conversion from old format to new format.
 
     AWT_config_mapping *mapping;
-    GB_ERROR           parse_error; // set by AWT_config(const char *)
+    GB_ERROR           parse_error; // set by AWT_config(const char *) 
 
     AWT_config(const AWT_config&);
     AWT_config& operator = (const AWT_config&);

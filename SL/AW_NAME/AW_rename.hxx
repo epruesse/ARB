@@ -1,34 +1,16 @@
-// =============================================================== //
-//                                                                 //
-//   File      : AW_rename.hxx                                     //
-//   Purpose   :                                                   //
-//                                                                 //
-//   Institute of Microbiology (Technical University Munich)       //
-//   http://www.arb-home.de/                                       //
-//                                                                 //
-// =============================================================== //
-
 #ifndef AW_RENAME_HXX
 #define AW_RENAME_HXX
-
-#ifndef AW_ROOT_HXX
-#include <aw_root.hxx>
-#endif
-#ifndef ARBDB_H
-#include <arbdb.h>
-#endif
 
 #define AWT_RENAME_USE_ADVICE "awt_rename/use_advice"
 #define AWT_RENAME_SAVE_DATA  "awt_rename/save_data"
 
 #define AWAR_NAMESERVER_ADDID "nt/nameserver_addid"
 
-// --------------------------------------------------------------------------------
 #ifndef AW_RENAME_SKIP_GUI
 
-void       AWTC_create_rename_awars(AW_root *root, AW_default db1);
+void       AWTC_create_rename_awars(AW_root *root,AW_default db1);
 AW_window *AWTC_create_rename_window(AW_root *root, AW_CL gb_main);
-void       awt_rename_cb(AW_window *aww, GBDATA *gb_main);
+void       awt_rename_cb(AW_window *aww,GBDATA *gb_main);
 
 void       AW_create_namesadmin_awars(AW_root *aw_root, GBDATA *gb_main);
 AW_window *AW_create_namesadmin_window(AW_root *aw_root, AW_CL cl_gb_main);
@@ -36,7 +18,6 @@ AW_window *AW_create_namesadmin_window(AW_root *aw_root, AW_CL cl_gb_main);
 GB_ERROR AW_select_nameserver(GBDATA *gb_main, GBDATA *gb_other_main);
 
 #endif // AW_RENAME_SKIP_GUI
-// --------------------------------------------------------------------------------
 
 char     *AWTC_create_numbered_suffix(GB_HASH *species_name_hash, const char *shortname, GB_ERROR& warning);
 GB_ERROR  AWTC_pars_names(GBDATA *gb_main, int update_status = 0, bool *isWarning = 0);
@@ -65,16 +46,16 @@ public:
 char *AWTC_makeUniqueShortName(const char *prefix, UniqueNameDetector& existingNames);
 char *AWTC_generate_random_name(UniqueNameDetector& existingNames);
 
-struct PersistentNameServerConnection {
-    // create a PersistentNameServerConnection instance while calling AWTC_generate_one_name
+struct PersistantNameServerConnection {
+    // create a PersistantNameServerConnection instance while calling AWTC_generate_one_name
     // to avoid repeated re-connections to name server
     bool dummy;
-    PersistentNameServerConnection();
-    ~PersistentNameServerConnection();
+    PersistantNameServerConnection();
+    ~PersistantNameServerConnection();
 };
 
-int AWTC_name_quality(const char *short_name);
+int AWTC_name_quality(const char *short_name); 
 
 #else
 #error AW_rename.hxx included twice
-#endif // AW_RENAME_HXX
+#endif

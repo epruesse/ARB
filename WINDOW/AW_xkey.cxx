@@ -1,29 +1,21 @@
-// =============================================================== //
-//                                                                 //
-//   File      : AW_xkey.cxx                                       //
-//   Purpose   :                                                   //
-//                                                                 //
-//   Institute of Microbiology (Technical University Munich)       //
-//   http://www.arb-home.de/                                       //
-//                                                                 //
-// =============================================================== //
-
-#include "aw_keysym.hxx"
-#include "aw_xkey.hxx"
-#include "aw_root.hxx"
-
-#include <arbdbt.h>
+#include <stdio.h>
+#include <string.h>
 
 #include <X11/Xlib.h>
 #include <X11/keysym.h>
 #include <X11/Xutil.h>
 
-// #ifndef aw_assert
-// #ifndef ARB_ASSERT_H
-// #include <arb_assert.h>
-// #endif
-// #define aw_assert(bed) arb_assert(bed)
-// #endif
+#include "aw_keysym.hxx"
+#include "aw_xkey.hxx"
+#include "aw_root.hxx"
+#include <arbdbt.h>
+
+#ifndef aw_assert
+#ifndef ARB_ASSERT_H
+#include <arb_assert.h>
+#endif
+#define aw_assert(bed) arb_assert(bed)
+#endif
 
 // for keysyms see /usr/include/X11/keysymdef.h
 
@@ -38,81 +30,53 @@ static awXKeymap_modfree awxkeymap_modfree[] = {
     { XK_Home,   "Home",   AW_KEY_HOME },
     { XK_End,    "End",    AW_KEY_END },
     { XK_Delete, "Delete", AW_KEY_DELETE }, // was same as BackSpace in the past -- 2007/11/15
-
-    { 0, 0, AW_KEY_NONE },
+    
+    { 0, 0, AW_KEY_NONE }, 
 };
 
 // manual key defs
-// keys where all (or most) modifiers don't work should go here
+// keys where all (or most) modifiers dont work should go here
 static awXKeymap awxkeymap[] = {
-    // sun keypad ?
-    { XK_Shift_R, XK_R10, "Shift-Left",  AW_KEYMODE_SHIFT, AW_KEY_LEFT,  0 },
-    { XK_Shift_R, XK_R12, "Shift-Right", AW_KEYMODE_SHIFT, AW_KEY_RIGHT, 0 },
-    { XK_Shift_L, XK_R10, "Shift-Left",  AW_KEYMODE_SHIFT, AW_KEY_LEFT,  0 },
-    { XK_Shift_L, XK_R12, "Shift-Right", AW_KEYMODE_SHIFT, AW_KEY_RIGHT, 0 },
-    { 0,          XK_R7,  "Home",        AW_KEYMODE_NONE,  AW_KEY_HOME,  0 },
-    { 0,          XK_R13, "End",         AW_KEYMODE_NONE,  AW_KEY_END,   0 },
+    // sun keypad ? 
+    { XK_Shift_R, XK_R10, "Shift-Left",  AW_KEYMODE_SHIFT, AW_KEY_LEFT,  0},
+    { XK_Shift_R, XK_R12, "Shift-Right", AW_KEYMODE_SHIFT, AW_KEY_RIGHT, 0},
+    { XK_Shift_L, XK_R10, "Shift-Left",  AW_KEYMODE_SHIFT, AW_KEY_LEFT,  0},
+    { XK_Shift_L, XK_R12, "Shift-Right", AW_KEYMODE_SHIFT, AW_KEY_RIGHT, 0},
+    { 0,          XK_R7,  "Home",        AW_KEYMODE_NONE,  AW_KEY_HOME,  0},
+    { 0,          XK_R13, "End",         AW_KEYMODE_NONE,  AW_KEY_END,   0},
 
     // functions keys
-    { 0, XK_F1,  0, AW_KEYMODE_NONE, AW_KEY_F1,  0 },
-    { 0, XK_F2,  0, AW_KEYMODE_NONE, AW_KEY_F2,  0 },
-    { 0, XK_F3,  0, AW_KEYMODE_NONE, AW_KEY_F3,  0 },
-    { 0, XK_F4,  0, AW_KEYMODE_NONE, AW_KEY_F4,  0 },
-    { 0, XK_F5,  0, AW_KEYMODE_NONE, AW_KEY_F5,  0 },
-    { 0, XK_F6,  0, AW_KEYMODE_NONE, AW_KEY_F6,  0 },
-    { 0, XK_F7,  0, AW_KEYMODE_NONE, AW_KEY_F7,  0 },
-    { 0, XK_F8,  0, AW_KEYMODE_NONE, AW_KEY_F8,  0 },
-    { 0, XK_F9,  0, AW_KEYMODE_NONE, AW_KEY_F9,  0 },
-    { 0, XK_F10, 0, AW_KEYMODE_NONE, AW_KEY_F10, 0 },
-    { 0, XK_F11, 0, AW_KEYMODE_NONE, AW_KEY_F11, 0 },
-    { 0, XK_F12, 0, AW_KEYMODE_NONE, AW_KEY_F12, 0 },
+    { 0, XK_F1,  0, AW_KEYMODE_NONE, AW_KEY_F1,  0},
+    { 0, XK_F2,  0, AW_KEYMODE_NONE, AW_KEY_F2,  0},
+    { 0, XK_F3,  0, AW_KEYMODE_NONE, AW_KEY_F3,  0},
+    { 0, XK_F4,  0, AW_KEYMODE_NONE, AW_KEY_F4,  0},
+    { 0, XK_F5,  0, AW_KEYMODE_NONE, AW_KEY_F5,  0},
+    { 0, XK_F6,  0, AW_KEYMODE_NONE, AW_KEY_F6,  0},
+    { 0, XK_F7,  0, AW_KEYMODE_NONE, AW_KEY_F7,  0},
+    { 0, XK_F8,  0, AW_KEYMODE_NONE, AW_KEY_F8,  0},
+    { 0, XK_F9,  0, AW_KEYMODE_NONE, AW_KEY_F9,  0},
+    { 0, XK_F10, 0, AW_KEYMODE_NONE, AW_KEY_F10, 0},
+    { 0, XK_F11, 0, AW_KEYMODE_NONE, AW_KEY_F11, 0},
+    { 0, XK_F12, 0, AW_KEYMODE_NONE, AW_KEY_F12, 0},
 
     // other
-    { 0, XK_BackSpace, "BackSpace", AW_KEYMODE_NONE, AW_KEY_BACKSPACE, 0 },
-    { 0, XK_Help,      0,           AW_KEYMODE_NONE, AW_KEY_HELP,      0 },
-    { 0, XK_Escape,    0,           AW_KEYMODE_NONE, AW_KEY_ESCAPE,    0 },
-    { 0, XK_Return,    0,           AW_KEYMODE_NONE, AW_KEY_RETURN,    0 },
-    { 0, XK_Tab,       0,           AW_KEYMODE_NONE, AW_KEY_RETURN,    0 }, // done to accept input-field-changes via TAB, also disables inserting tabs
+    { 0, XK_BackSpace, "BackSpace", AW_KEYMODE_NONE, AW_KEY_BACKSPACE, 0},
+    { 0, XK_Help,      0,           AW_KEYMODE_NONE, AW_KEY_HELP,      0},
+    { 0, XK_Escape,    0,           AW_KEYMODE_NONE, AW_KEY_ESCAPE,    0},
+    { 0, XK_Return,    0,           AW_KEYMODE_NONE, AW_KEY_RETURN,    0},
+    { 0, XK_Tab,       0,           AW_KEYMODE_NONE, AW_KEY_RETURN,    0}, // done to accept input-field-changes via TAB, also disables inserting tabs
 
-    { 0, 0, (char*)1, AW_KEYMODE_NONE, AW_KEY_NONE, 0 }
+    { 0, 0, (char*)1, AW_KEYMODE_NONE, AW_KEY_NONE, 0}
 };
 
-struct awModDef {
-    int         xmod;
-    const char *xstr_prefix;
-    AW_key_mod  awmod;
-};
+static GB_HASH  *awxkeymap_string_2_key_hash;
+static GB_HASHI *awxkeymap_xkey_2_key_hash;
 
-static awModDef moddef[] = {
-    { XK_Shift_L,   "Shift",   AW_KEYMODE_SHIFT },
-    { XK_Shift_R,   "Shift",   AW_KEYMODE_SHIFT },
-    { XK_Meta_L,    "Meta",    AW_KEYMODE_ALT },     // handle Meta as Alt
-    { XK_Meta_R,    "Meta",    AW_KEYMODE_ALT },
-    { XK_Alt_L,     "Alt",     AW_KEYMODE_ALT },
-    { XK_Alt_R,     "Alt",     AW_KEYMODE_ALT },
-    { XK_Control_L, "Control", AW_KEYMODE_CONTROL },
-    { XK_Control_R, "Control", AW_KEYMODE_CONTROL },
-    { 0,            0,         AW_KEYMODE_NONE },   // "no modifier" (this is NO array terminator!)
-};
+const int KEYMAX = 100; // size for hashes
 
-#define ARRAY_ELEMS(array)            (sizeof(array)/sizeof(array[0]))
-#define TERMINATED_ARRAY_ELEMS(array) (ARRAY_ELEMS(array)-1)
-
-const int FIXEDMOD = TERMINATED_ARRAY_ELEMS(awxkeymap);
-const int MODFREE  = TERMINATED_ARRAY_ELEMS(awxkeymap_modfree);
-const int MODS     = ARRAY_ELEMS(moddef);
-
-static GB_HASH    *awxkeymap_string_2_key_hash;
-static GB_NUMHASH *awxkeymap_xkey_2_key_hash;
-static int         generatedKeymaps_count = -1;
-static awXKeymap  *generatedKeymaps       = 0;
-
-
-const int MAPPED_KEYS = MODFREE*MODS+FIXEDMOD;
-
-#if defined(ASSERTION_USED)
+#if defined(DEBUG)
 static int mappedKeys = 0;
-#endif // ASSERTION_USED
+#endif
 
 static void map_awXKey(Display *display, const awXKeymap *awxk) {
     if (awxk->xstr) {
@@ -127,35 +91,55 @@ static void map_awXKey(Display *display, const awXKeymap *awxk) {
 
         GBS_write_hash(awxkeymap_string_2_key_hash, awxk->xstr, (long)awxk);
     }
-    GBS_write_numhash(awxkeymap_xkey_2_key_hash, awxk->xkey, (long)awxk);
+    GBS_write_hashi(awxkeymap_xkey_2_key_hash, awxk->xkey, (long)awxk);
 
-#if defined(ASSERTION_USED)
+#if defined(DEBUG)
     ++mappedKeys;
-#endif // ASSERTION_USED
+#endif // DEBUG
 }
 
 void aw_install_xkeys(Display *display) {
     int i;
-
-    awxkeymap_string_2_key_hash = GBS_create_hash(MAPPED_KEYS, GB_MIND_CASE);
-    awxkeymap_xkey_2_key_hash   = GBS_create_numhash(MAPPED_KEYS);
+    
+    awxkeymap_string_2_key_hash = GBS_create_hash(KEYMAX, GB_MIND_CASE);
+    awxkeymap_xkey_2_key_hash   = GBS_create_hashi(KEYMAX);
 
     // auto-generate all key/modifier combinations for keys in awxkeymap_modfree
-    for (i=0; ; ++i) {
+    for (i=0;;++i) {
         if (awxkeymap_modfree[i].xstr_suffix == 0) break;
     }
 
+    const int MODS = 9;         // (2*SHIFT, 2*ALT, 2*META, 2*CTRL, 1 unMODified)
+
+    struct awModDef {
+        int         xmod;
+        const char *xstr_prefix;
+        AW_key_mod  awmod;
+    } 
+    moddef[MODS] = {
+        { XK_Shift_L,   "Shift",   AW_KEYMODE_SHIFT },
+        { XK_Shift_R,   "Shift",   AW_KEYMODE_SHIFT },
+        { XK_Meta_L,    "Meta",    AW_KEYMODE_ALT },     // handle Meta as Alt
+        { XK_Meta_R,    "Meta",    AW_KEYMODE_ALT },
+        { XK_Alt_L,     "Alt",     AW_KEYMODE_ALT },
+        { XK_Alt_R,     "Alt",     AW_KEYMODE_ALT },
+        { XK_Control_L, "Control", AW_KEYMODE_CONTROL },
+        { XK_Control_R, "Control", AW_KEYMODE_CONTROL },
+        { 0,            0,         AW_KEYMODE_NONE },
+    };
+
     int modfree = i;
+    int gensize = modfree*MODS;
 
-    aw_assert(generatedKeymaps == 0);               // oops - called twice
-    
-    generatedKeymaps_count = modfree*MODS;
-    generatedKeymaps       = (awXKeymap*)GB_calloc(generatedKeymaps_count, sizeof(*generatedKeymaps));
+    static awXKeymap *generated = 0;
 
-    for (i=0; i<modfree; ++i) {
+    aw_assert(generated == 0);  // oops - called twice
+    generated = (awXKeymap*)GB_calloc(gensize, sizeof(*generated)); // never freed (cause hashes refers to it)
+
+    for (i=0;i<modfree;++i) {
         const awXKeymap_modfree *mf = awxkeymap_modfree+i;
         for (int j = 0; j<MODS; ++j) {
-            awXKeymap *km = generatedKeymaps+i*MODS+j;
+            awXKeymap *km = generated+i*MODS+j;
             awModDef  *md = moddef+j;
 
             km->xmod  = md->xmod;
@@ -170,35 +154,21 @@ void aw_install_xkeys(Display *display) {
     }
 
     // add manually defined keys
-    for (i=0; ; ++i) {
-        if (awxkeymap[i].xstr == (char*)1) break;
+    for (i=0;;++i) {
+        if (awxkeymap[i].xstr== (char*)1) break;
         map_awXKey(display, awxkeymap+i);
     }
 
-    aw_assert(mappedKeys == MAPPED_KEYS);
-}
-
-void aw_uninstall_xkeys() {
-    for (int i = 0; i<generatedKeymaps_count; ++i) {
-        awXKeymap& km = generatedKeymaps[i];
-        int        j  = i%MODS;
-        awModDef&  md = moddef[j];
-
-        if (md.xstr_prefix) free((char*)km.xstr);
-    }
-    free(generatedKeymaps); generatedKeymaps = NULL;
-
-    GBS_free_numhash(awxkeymap_xkey_2_key_hash); awxkeymap_xkey_2_key_hash  = NULL;
-    GBS_free_hash(awxkeymap_string_2_key_hash); awxkeymap_string_2_key_hash = NULL;
+    aw_assert(mappedKeys<KEYMAX);
 }
 
 #if defined(DEBUG)
-// #define DUMP_KEYEVENTS
+//#define DUMP_KEYEVENTS
 #endif // DEBUG
 
 const awXKeymap *aw_xkey_2_awkey(XKeyEvent *xkeyevent) {
     awXKeymap *result;
-    static awXKeymap singlekey = { 0, 0, 0, AW_KEYMODE_NONE, AW_KEY_NONE, 0 };
+    static awXKeymap singlekey = { 0,0,0,AW_KEYMODE_NONE,AW_KEY_NONE,0};
     bool numlockwason = false;
 
     if (xkeyevent->state & AW_KEYMODE_NUMLOCK) {    // numlock is active
@@ -209,14 +179,14 @@ const awXKeymap *aw_xkey_2_awkey(XKeyEvent *xkeyevent) {
     static char    buffer[256];
     KeySym         keysym;
     XComposeStatus compose;
-    int            count = XLookupString(xkeyevent, buffer, 256, &keysym, &compose);
+    int            count = XLookupString(xkeyevent,buffer,256,&keysym,&compose);
     buffer[count]        = 0;
 
 #if defined(DUMP_KEYEVENTS)
     printf("state=%u keycode=%u name='%s' ", xkeyevent->state, xkeyevent->keycode, buffer);
 #endif // DUMP_KEYEVENTS
 
-    if (keysym >= XK_space && keysym <= XK_asciitilde) {
+    if( keysym >= XK_space && keysym <= XK_asciitilde ) {
         singlekey.awkey = AW_KEY_ASCII;
         singlekey.awmod = AW_KEYMODE_NONE;
         singlekey.awstr = buffer;
@@ -225,7 +195,7 @@ const awXKeymap *aw_xkey_2_awkey(XKeyEvent *xkeyevent) {
 
         if (numlockwason && (xkeyevent->state & AW_KEYMODE_ALT)) {
             static bool warned = false;
-            if (!warned) {
+            if (!warned){
                 aw_message("Warning: Accelerator keys only work if NUMLOCK is off!");
                 warned = true;
             }
@@ -238,16 +208,16 @@ const awXKeymap *aw_xkey_2_awkey(XKeyEvent *xkeyevent) {
     else {
         long ptr;
 
-        if (count && (ptr = GBS_read_hash(awxkeymap_string_2_key_hash, buffer))) {
+        if (count && (ptr = GBS_read_hash(awxkeymap_string_2_key_hash,buffer))){
             result    = (awXKeymap*)ptr;
 
 #if defined(DUMP_KEYEVENTS)
             printf("_awxkeymap_string_2_key_hash['%s']=", buffer);
 #endif // DUMP_KEYEVENTS
         }
-        else if ((ptr = GBS_read_numhash(awxkeymap_xkey_2_key_hash, keysym))) {
+        else if ( (ptr = GBS_read_hashi(awxkeymap_xkey_2_key_hash,keysym))){
             result    = (awXKeymap*)ptr;
-
+            
 #if defined(DUMP_KEYEVENTS)
             printf("_awxkeymap_xkey_2_key_hash['%x']='%s'", (unsigned)keysym, result->xstr);
 #endif // DUMP_KEYEVENTS

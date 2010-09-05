@@ -1,42 +1,43 @@
-// =============================================================== //
-//                                                                 //
-//   File      : PT_io.cxx                                         //
-//   Purpose   :                                                   //
-//                                                                 //
-//   Institute of Microbiology (Technical University Munich)       //
-//   http://www.arb-home.de/                                       //
-//                                                                 //
-// =============================================================== //
+#include <stdio.h>
+#include <stdlib.h>
+// #include <malloc.h>
+#include <memory.h>
+#include <string.h>
+#include <stdint.h>
 
-
+#include <PT_server.h>
 #include "probe.h"
-
 #include <arbdbt.h>
 #include <BI_helix.hxx>
+
 #include <inline.h>
 
-int compress_data(char *probestring) {
-    /*! change a sequence with normal bases the PT_? format and delete all other signs */
+extern "C" { char *gbs_malloc_copy(char *,long); }
+
+
+/* change a sequence with normal bases the PT_? format and delete all other signs */
+int compress_data(char *probestring)
+{
     char    c;
     char    *src,
         *dest;
     dest = src = probestring;
 
-    while ((c=*(src++)))
+    while((c=*(src++)))
     {
         switch (c) {
             case 'A':
-            case 'a': *(dest++) = PT_A; break;
+            case 'a': *(dest++) = PT_A;break;
             case 'C':
-            case 'c': *(dest++) = PT_C; break;
+            case 'c': *(dest++) = PT_C;break;
             case 'G':
-            case 'g': *(dest++) = PT_G; break;
+            case 'g': *(dest++) = PT_G;break;
             case 'U':
             case 'u':
             case 'T':
-            case 't': *(dest++) = PT_T; break;
+            case 't': *(dest++) = PT_T;break;
             case 'N':
-            case 'n': *(dest++) = PT_N; break;
+            case 'n': *(dest++) = PT_N;break;
             default: break;
         }
 
@@ -45,24 +46,25 @@ int compress_data(char *probestring) {
     return 0;
 }
 
-void PT_base_2_string(char *id_string, long len) {
-    /*! get a string with readable bases from a string with PT_? */
+/* get a string with readable bases from a string with PT_? */
+void PT_base_2_string(char *id_string, long len)
+{
     char    c;
     char    *src,
         *dest;
     if (!len) len = strlen(id_string);
     dest = src = id_string;
 
-    while ((len--)>0) {
+    while((len--)>0){
         c=*(src++);
         switch (c) {
-            case PT_A: *(dest++)  = 'A'; break;
-            case PT_C: *(dest++)  = 'C'; break;
-            case PT_G: *(dest++)  = 'G'; break;
-            case PT_T: *(dest++)  = 'U'; break;
-            case PT_N: *(dest++)  = 'N'; break;
+            case PT_A: *(dest++)  = 'A';break;
+            case PT_C: *(dest++)  = 'C';break;
+            case PT_G: *(dest++)  = 'G';break;
+            case PT_T: *(dest++)  = 'U';break;
+            case PT_N: *(dest++)  = 'N';break;
             case 0: *(dest++)     = '0'; break;
-            default: *(dest++)    = c; break;
+            default: *(dest++)    = c;break;
         }
 
     }
@@ -76,17 +78,17 @@ void probe_read_data_base(char *name)
 
     GB_set_verbose();
 #if defined(DEVEL_RALF)
-#warning gb_main should be closed
+#warning gb_main should be closed    
 #endif // DEVEL_RALF
-    gb_main = GB_open(name, "r");
+    gb_main = GB_open(name,"r");
     if (!gb_main) {
-        printf("Error reading file %s\n", name);
+        printf("Error reading file %s\n",name);
         exit(EXIT_FAILURE);
     }
     GB_begin_transaction(gb_main);
-    gb_species_data = GB_entry(gb_main, "species_data");
-    if (!gb_species_data) {
-        printf("Database %s is empty\n", name);
+    gb_species_data = GB_entry(gb_main,"species_data");
+    if (!gb_species_data){
+        printf("Database %s is empty\n",name);
         exit(EXIT_FAILURE);
     }
     psg.gb_main         = gb_main;
@@ -134,8 +136,8 @@ int probe_compress_sequence(char *seq, int seqsize)
     static uchar *tab = 0;
     if (!tab) {
         tab = (uchar *)malloc(256);
-        memset(tab, PT_N, 256);
-
+        memset(tab,PT_N,256);
+        
         tab['A'] = tab['a'] = PT_A;
         tab['C'] = tab['c'] = PT_C;
         tab['G'] = tab['g'] = PT_G;
@@ -166,8 +168,8 @@ int probe_compress_sequence(char *seq, int seqsize)
     }
 
 #ifdef ARB_64
-    pt_assert(!((dest - seq) & 0xffffffff00000000));    // must fit into 32 bit
-#endif
+    arb_assert(!((dest - seq) & 0xffffffff00000000));    // must fit into 32 bit
+#endif    
 
     return dest-seq;
 }
@@ -190,7 +192,7 @@ static char *probe_read_string_append_point(GBDATA *gb_data, int *psize) {
 char *probe_read_alignment(int j, int *psize) {
     char   *buffer = 0;
     GBDATA *gb_ali = GB_entry(psg.data[j].gbd, psg.alignment_name);
-
+    
     if (gb_ali) {
         GBDATA *gb_data = GB_entry(gb_ali, "data");
         if (gb_data) buffer = probe_read_string_append_point(gb_data, psize);
@@ -222,7 +224,7 @@ void probe_read_alignments() {
 
     psg.data       = (probe_input_data *)calloc(sizeof(probe_input_data), count);
     psg.data_count = 0;
-
+    
     printf("Database contains %i species.\nPreparing sequence data:\n", count);
 
     int data_missing  = 0;
@@ -232,7 +234,7 @@ void probe_read_alignments() {
 
     for (GBDATA *gb_species = GBT_first_species_rel_species_data(psg.gb_species_data);
          gb_species;
-         gb_species = GBT_next_species(gb_species))
+         gb_species = GBT_next_species(gb_species) )
     {
         probe_input_data& pid = psg.data[count];
 
@@ -243,12 +245,12 @@ void probe_read_alignments() {
 
         pid.is_group = 1;
         pid.gbd      = gb_species;
-
+        
         GBDATA *gb_ali = GB_entry(gb_species, psg.alignment_name);
         if (gb_ali) {
-            GBDATA *gb_data = GB_entry(gb_ali, "data");
+            GBDATA *gb_data = GB_entry(gb_ali,"data");
             if (!gb_data) {
-                fprintf(stderr, "Species '%s' has no data in '%s'\n", pid.name, psg.alignment_name);
+                fprintf(stderr,"Species '%s' has no data in '%s'\n", pid.name, psg.alignment_name);
                 data_missing++;
             }
             else {
@@ -258,9 +260,9 @@ void probe_read_alignments() {
                     pid.checksum = GB_checksum(data, hsize, 1, ".-");
                     int   size = probe_compress_sequence(data, hsize);
 
-                    pid.data = GB_memdup(data, size);
+                    pid.data = (char *)gbs_malloc_copy(data, size);
                     pid.size = size;
-
+                    
                     free(data);
                 }
 
@@ -276,7 +278,7 @@ void probe_read_alignments() {
 
     psg.data_count = count;
     GB_commit_transaction(psg.gb_main);
-
+    
     if (data_missing) {
         printf("\n%i species were ignored because of missing data.\n", data_missing);
     }
@@ -286,28 +288,27 @@ void probe_read_alignments() {
     fflush(stdout);
 }
 
-void PT_build_species_hash() {
+void PT_build_species_hash(void){
     long i;
-    psg.namehash = GBS_create_hash(psg.data_count, GB_MIND_CASE);
-    for (i=0; i<psg.data_count; i++) {
-        GBS_write_hash(psg.namehash, psg.data[i].name, i+1);
+    psg.namehash = GBS_create_hash(PT_NAME_HASH_SIZE, GB_MIND_CASE);
+    for (i=0;i<psg.data_count;i++){
+        GBS_write_hash(psg.namehash, psg.data[i].name,i+1);
     }
     unsigned int    max_size;
     max_size = 0;
-    for (i = 0; i < psg.data_count; i++) {  // get max sequence len
-        max_size = std::max(max_size, (unsigned)(psg.data[i].size));
+    for (i = 0; i < psg.data_count; i++){   /* get max sequence len */
+        max_size = max(max_size, (unsigned)(psg.data[i].size));
         psg.char_count += psg.data[i].size;
     }
     psg.max_size = max_size;
 
-    if (psg.ecoli) {
+    if ( psg.ecoli){
         BI_ecoli_ref *ref = new BI_ecoli_ref;
-        const char *error = ref->init(psg.ecoli, strlen(psg.ecoli));
+        const char *error = ref->init(psg.ecoli,strlen(psg.ecoli));
         if (error) {
             delete psg.ecoli;
             psg.ecoli = 0;
-        }
-        else {
+        }else{
             psg.bi_ecoli = ref;
         }
     }

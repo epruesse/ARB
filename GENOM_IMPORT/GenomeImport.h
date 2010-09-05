@@ -11,8 +11,11 @@
 #ifndef GENOMEIMPORT_H
 #define GENOMEIMPORT_H
 
-#ifndef ARBDB_BASE_H
-#include <arbdb_base.h>
+#ifndef _CPP_CSTDIO
+#include <cstdio>
+#endif
+#ifndef ARBDB_H
+#include <arbdb.h>
 #endif
 
 class UniqueNameDetector;

@@ -12,13 +12,13 @@
 
 using namespace std;
 
-Texture2D::Texture2D() {
+Texture2D::Texture2D(void){
 }
 
-Texture2D::~Texture2D() {
+Texture2D::~Texture2D(void){
 }
 
-static char* GetImageFile(int ImageId) {
+static char* GetImageFile(int ImageId){
     const char *imageName = 0;
 
     switch (ImageId) {
@@ -45,7 +45,7 @@ static char* GetImageFile(int ImageId) {
         throw string(GBS_global_string("Illegal image id %i", ImageId));
     }
 
-    char *fname = GBS_find_lib_file(imageName, "rna3d/images/", false);
+    char *fname = GBS_find_lib_file(imageName, "rna3d/images/", 0);
     if (!fname) {
         throw string("File not found: ")+imageName;
     }
@@ -53,7 +53,7 @@ static char* GetImageFile(int ImageId) {
 }
 
 // Load Bitmaps And Convert To Textures
-void Texture2D::LoadGLTextures() {
+void Texture2D::LoadGLTextures(void) {
 
     for (int i = 0; i < SHAPE_MAX; i++)
     {
@@ -68,14 +68,14 @@ void Texture2D::LoadGLTextures() {
         }
 
         if (!RNA3D->bPointSpritesSupported) {
-            glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_DECAL);
+            glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_DECAL);
         }
         else {
-            glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+            glTexEnvf(GL_TEXTURE_ENV,GL_TEXTURE_ENV_MODE,GL_MODULATE);
         }
 
 #ifdef DEBUG
-        cout<<ImageFile<<" : Size = "<<info.Width<<" x "<<info.Height << ", Depth = "
+        cout<<ImageFile<<" : Size = "<<info.Width<<" x "<<info.Height <<", Depth = "
             <<info.Depth<<", Alpha = "<<info.Alpha<<endl;
 #endif
 

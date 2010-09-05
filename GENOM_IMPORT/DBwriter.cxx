@@ -8,15 +8,14 @@
 //   http://www.arb-home.de/                                        //
 //                                                                  //
 // ================================================================ //
-
 #include "DBwriter.h"
 
 #define AW_RENAME_SKIP_GUI
-
 #include <algorithm>
 #include <AW_rename.hxx>
 #include <arbdbt.h>
-#include <Translate.hxx>
+#include <adGene.h>
+#include <awt_translate.hxx>
 #include <aw_question.hxx>
 #include <GEN.hxx>
 
@@ -48,7 +47,10 @@ static GBDATA *DB_create_container(GBDATA *parent, const char *name, bool mark) 
     GBDATA *gb_container = GB_create_container(parent, name);
     if (!gb_container) throw DBerror(GBS_global_string("Failed to create container '%s'", name));
 
-    if (mark) GB_write_flag(gb_container, 1);
+    if (mark) {
+        GB_ERROR err = GB_write_flag(gb_container, 1);
+        if (err) throw DBerror(GBS_global_string("Failed to mark %s", name), err);
+    }
 
     return gb_container;
 }
@@ -210,7 +212,7 @@ void DBwriter::writeFeature(const Feature& feature)
     {
         const stringMap& qualifiers = feature.getQualifiers();
         stringMapCIter   e          = qualifiers.end();
-
+        
         for (stringMapCIter i = qualifiers.begin(); i != e; ++i) {
             const string& unreserved = getUnreservedQualifier(i->first);
             DB_create_string_field(gb_gene, unreserved.c_str(), i->second.c_str());
@@ -306,6 +308,7 @@ public:
         pos = pp;
     }
 
+    // const GEN_position *getPosition() const { return &*pos; }
     const GEN_positionPtr& getPosition() const { return pos; }
 
     const char *getName() const {
@@ -347,6 +350,8 @@ public:
     hasType(const char *t) : type(t) {}
     bool operator()(const PosGene& pg) { return pg.hasType(type); }
 };
+
+// typedef SmartPtr<PosGene> PosGenePtr;
 
 void DBwriter::hideUnwantedGenes() {
     typedef vector<PosGene> Genes;
@@ -431,7 +436,7 @@ void DBwriter::finalizeOrganism(const MetaInfo& meta, const References& refs, Im
     // finalize genes data
     if (gb_gene_data) {
         renumberDuplicateGenes();            // renumber genes with equal names
-        testAndRemoveTranslations(importer); // test translations and remove reproducible translations
+        testAndRemoveTranslations(importer); // test translations and remove reproducable translations
         hideUnwantedGenes();
     }
     else GB_warning("No genes have been written (missing feature table?)");

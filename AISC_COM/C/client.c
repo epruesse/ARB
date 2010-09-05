@@ -1,44 +1,37 @@
-/* =============================================================== */
-/*                                                                 */
-/*   File      : client.c                                          */
-/*   Purpose   :                                                   */
-/*                                                                 */
-/*   Institute of Microbiology (Technical University Munich)       */
-/*   http://www.arb-home.de/                                       */
-/*                                                                 */
-/* =============================================================== */
-
-#include <netdb.h>
-#include <netinet/tcp.h>
-#include <sys/stat.h>
-#include <sys/un.h>
-
+#include <stdio.h>
+#include <stdlib.h>
+/* #include <malloc.h> */
 #include <unistd.h>
-#include <cstdarg>
+#include <errno.h>
 
+#include <ad_varargs.h>
+
+#include <sys/time.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <sys/socket.h>
+#include <sys/un.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
+#include <netinet/tcp.h>
+#include <netdb.h>
+#include <signal.h>
+#include <string.h>
 #include "client_privat.h"
 #include "client.h"
 
+#include "../INCLUDE/SIG_PF.h"
+
 #include "trace.h"
-
-#define aisc_assert(cond) arb_assert(cond)
-
-/* AISC_MKPT_PROMOTE:#include <client_types.h> */
 
 #define AISC_MAGIC_NUMBER_FILTER 0xffffff00
 
 static const char *err_connection_problems = "CONNECTION PROBLEMS";
 
-int   aisc_core_on_error = 1;
+int aisc_core_on_error = 1;
+
 char *aisc_error;
-
-#define CORE()                                                  \
-    do {                                                        \
-        if (aisc_core_on_error) {                               \
-            ARB_SIGSEGV(true);                                  \
-        }                                                       \
-    } while (0)
-
+#define CORE if (aisc_core_on_error) { *(int *)NULL = 0; };
 aisc_com *aisc_client_link;
 
 int aisc_print_error_to_stderr = 1;
@@ -46,14 +39,15 @@ static char errbuf[300];
 
 #define PRTERR(msg) if (aisc_print_error_to_stderr) fprintf(stderr, "%s: %s\n", msg, link->error);
 
+/******************************************* new read command *******************************************/
 
-int aisc_c_read(int socket, char *ptr, long size)
+int aisc_c_read(int socket,char *ptr,long size)
 {
-    long        leftsize, readsize;
+    long        leftsize,readsize;
     leftsize = size;
     readsize = 0;
     while (leftsize) {
-        readsize = read(socket, ptr, (size_t)leftsize);
+        readsize = read(socket,ptr,(size_t)leftsize);
         if (readsize<=0) return 0;
         ptr += readsize;
         leftsize -= readsize;
@@ -61,38 +55,35 @@ int aisc_c_read(int socket, char *ptr, long size)
     return size;
 }
 
-int aisc_c_write(int socket, char *ptr, int size)
+int aisc_c_write(int socket,char *ptr,int size)
 {
-    int leftsize, writesize;
+    int leftsize,writesize;
     leftsize = size;
     writesize = 0;
     while (leftsize) {
-        writesize = write(socket, ptr, leftsize);
+        writesize = write(socket,ptr,leftsize);
         if (writesize<=0) return 0;
         ptr += writesize;
         leftsize -= writesize;
     }
     return size;
 }
-
-/* ----------------------------- */
-/*      bytestring handling      */
-
+/******************************************* bytestring handling *******************************************/
 
 static void aisc_c_add_to_bytes_queue(aisc_com *link, char *data, int size)
 {
-    aisc_bytes_list *bl = (aisc_bytes_list *)calloc(sizeof(*bl), 1);
+    struct aisc_bytes_list *bl;
+    bl = (struct aisc_bytes_list *)calloc(sizeof(*bl),1);
 #ifndef NDEBUG
     memset(bl, 0, sizeof(*bl)); /* @@@ clear mem needed to avoid (rui's) */
 #endif
     bl->data = data;
     bl->size = size;
 
-    if (link->aisc_client_bytes_first) {
+    if (link->aisc_client_bytes_first){
         link->aisc_client_bytes_last->next = bl;
         link->aisc_client_bytes_last = bl;
-    }
-    else {
+    }else{
         link->aisc_client_bytes_first = bl;
         link->aisc_client_bytes_last = bl;
     }
@@ -101,32 +92,35 @@ static void aisc_c_add_to_bytes_queue(aisc_com *link, char *data, int size)
 int aisc_c_send_bytes_queue(aisc_com    *link)
 {
     int len;
-    aisc_bytes_list *bl, *bl_next;
-    for (bl = link->aisc_client_bytes_first; bl; bl=bl_next) {
+    struct aisc_bytes_list *bl,*bl_next;
+    for (bl = link->aisc_client_bytes_first;bl;bl=bl_next){
         bl_next = bl->next;
-        len = aisc_c_write(link->socket, (char *)bl->data, bl->size);
-        free(bl);
+        len = aisc_c_write(link->socket,(char *)bl->data,bl->size);
+        free((char *)bl);
         if (len<0)return 1;
     };
     link->aisc_client_bytes_first = link->aisc_client_bytes_last = NULL;
     return 0;
 }
 
-/* -------------------------- */
-/*      message handling      */
+/******************************************* message handling *******************************************/
 
-struct client_msg_queue {
-    client_msg_queue *next;
-    int               message_type;
-    char             *message;
+struct aisc_client_message_queue {
+    struct aisc_client_message_queue *next;
+    int message_type;
+    char        *message;
 };
 
 int aisc_add_message_queue(aisc_com *link, long size)
 {
-    client_msg_queue *msg    = (client_msg_queue *) calloc(sizeof(client_msg_queue), 1);
-    char             *buffer = (char *)calloc(sizeof(char), (size_t)size);
-    long              len    = aisc_c_read(link->socket, buffer, size);
+    long len;
+    char *buffer;
+    struct aisc_client_message_queue *msg,*mp;
+    msg = (struct aisc_client_message_queue *)
+        calloc(sizeof(struct aisc_client_message_queue),1);
+    buffer = (char *)calloc(sizeof(char),(size_t)size);
 
+    len = aisc_c_read(link->socket, buffer, size);
     if (len != size) {
         link->error = err_connection_problems;
         PRTERR("AISC_ERROR");
@@ -138,10 +132,8 @@ int aisc_add_message_queue(aisc_com *link, long size)
 
     if (link->message_queue == 0) {
         link->message_queue = (int *)msg;
-    }
-    else {
-        client_msg_queue *mp;
-        for (mp = (client_msg_queue *) link->message_queue; mp->next; mp=mp->next) ;
+    }else{
+        for (mp = (struct aisc_client_message_queue *) link->message_queue; mp->next; mp=mp->next) ;
         mp->next = msg;
     }
     return 0;
@@ -153,7 +145,7 @@ int aisc_check_error(aisc_com * link)
     long        magic_number;
     long        size;
 
- aisc_check_next :
+ aisc_check_next:
 
     link->error = 0; /* @@@ avoid (rui) */
     len = aisc_c_read(link->socket, (char *)(link->aisc_mes_buffer), 2*sizeof(long));
@@ -168,7 +160,7 @@ int aisc_check_error(aisc_com * link)
         return 1;
     }
     magic_number = link->aisc_mes_buffer[1];
-    if ((unsigned long)(magic_number & AISC_MAGIC_NUMBER_FILTER) != (unsigned long)(link->magic & AISC_MAGIC_NUMBER_FILTER)) {
+    if ( (unsigned long)(magic_number & AISC_MAGIC_NUMBER_FILTER) != (unsigned long)(link->magic & AISC_MAGIC_NUMBER_FILTER)) {
         link->error = err_connection_problems;
         PRTERR("AISC_ERROR");
         return 1;
@@ -176,7 +168,7 @@ int aisc_check_error(aisc_com * link)
     size = link->aisc_mes_buffer[0];
     if (size) {
         if (magic_number-link->magic == AISC_CCOM_MESSAGE) {
-            if (aisc_add_message_queue(link, size*sizeof(long))) return 1;
+            if (aisc_add_message_queue(link,size*sizeof(long))) return 1;
             goto aisc_check_next;
 
         }
@@ -193,7 +185,7 @@ int aisc_check_error(aisc_com * link)
                 sprintf(errbuf, "SERVER_ERROR %s", (char *)(link->aisc_mes_buffer));
                 link->error = errbuf;
                 PRTERR("AISC_ERROR");
-                CORE();
+                CORE;
                 return 1;
             default:
                 return 0;
@@ -202,11 +194,20 @@ int aisc_check_error(aisc_com * link)
     return 0;
 }
 
-char *aisc_client_get_hostname() {
+
+/******************************************* signal handling *******************************************/
+
+void *aisc_client_sigio()
+{
+    return 0;
+}
+
+/************************************* find the mach name and id *************************************/
+char *aisc_client_get_hostname(void){
     static char *hn = 0;
-    if (!hn) {
+    if (!hn){
         char buffer[4096];
-        gethostname(buffer, 4095);
+        gethostname(buffer,4095);
         hn = strdup(buffer);
     }
     return hn;
@@ -219,21 +220,20 @@ const char *aisc_client_get_m_id(const char *path, char **m_name, int *id) {
     if (!path) {
         return "AISC_CLIENT_OPEN ERROR: missing hostname:socketid";
     }
-    if (!strcmp(path, ":")) {
+    if (!strcmp(path,":")) {
         path = (char *)getenv("SOCKET");
-        if (!path) return "environment socket not found";
+        if (!path) return "ENVIROMENT SOCKET NOT FOUNT";
     }
     p = (char *) strchr(path, ':');
-    if (path[0] == '*' || path[0] == ':') {     /* UNIX MODE */
+    if (path[0] == '*' || path[0] == ':'){      /* UNIX MODE */
         char buffer[128];
         if (!p) {
             return "AISC_CLIENT_OPEN ERROR: missing ':' in *:socketid";
         }
         if (p[1] == '~') {
-            sprintf(buffer, "%s%s", getenv("HOME"), p+2);
+            sprintf(buffer,"%s%s",getenv("HOME"),p+2);
             *m_name = (char *)strdup(buffer);
-        }
-        else {
+        }else{
             *m_name = (char *)strdup(p+1);
         }
         *id = -1;
@@ -249,7 +249,7 @@ const char *aisc_client_get_m_id(const char *path, char **m_name, int *id) {
     /* @@@ falls hier in mn ein der Bereich von path bis p stehen soll, fehlt eine abschliesende 0 am String-Ende
        auf jeden Fall erzeugt der folgende strcmp einen (rui) */
 
-    if (!strcmp(mn, "localhost")) {
+    if (!strcmp(mn,"localhost")){
         free(mn);
         mn = strdup(aisc_client_get_hostname());
     }
@@ -262,7 +262,7 @@ const char *aisc_client_get_m_id(const char *path, char **m_name, int *id) {
     return 0;
 }
 
-static const char *aisc_client_open_socket(const char *path, int delay, int do_connect, int *psocket, char **unix_name) {
+const char *aisc_client_open_socket(const char *path, int delay, int do_connect, int *psocket, char **unix_name) {
     char            buffer[128];
     struct in_addr  addr;                                     /* union -> u_long  */
     struct hostent *he;
@@ -277,8 +277,8 @@ static const char *aisc_client_open_socket(const char *path, int delay, int do_c
         return err;
     }
     if (socket_id >= 0) {       /* UNIX */
-        sockaddr_in so_ad;
-        memset((char *)&so_ad, 0, sizeof(sockaddr_in));
+        struct sockaddr_in so_ad;
+        memset((char *)&so_ad,0,sizeof(struct sockaddr_in));
         *psocket = socket(PF_INET, SOCK_STREAM, 0);
         if (*psocket <= 0) {
             return "CANNOT CREATE SOCKET";
@@ -288,21 +288,21 @@ static const char *aisc_client_open_socket(const char *path, int delay, int do_c
             free(mach_name);
             return (char *)strdup(buffer);
         }
-        /* simply take first address  */
-        free(mach_name); mach_name = 0;
+        /** simply take first address **/
+        free(mach_name);mach_name = 0;
         addr.s_addr = *(int *) (he->h_addr);
         so_ad.sin_addr = addr;
         so_ad.sin_family = AF_INET;
         so_ad.sin_port = htons(socket_id);      /* @@@ = pb_socket  */
-        if (do_connect) {
+        if (do_connect){
+            /*printf("Connecting to %X:%i\n",addr.s_addr,socket_id);*/
             if (connect(*psocket, (struct sockaddr *)&so_ad, 16)) {
                 return "";
             }
-        }
-        else {
+        }else{
             char one = 1;
-            setsockopt(*psocket, SOL_SOCKET, SO_REUSEADDR, (const char *)&one, sizeof(one));
-            if (bind(*psocket, (struct sockaddr *)&so_ad, 16)) {
+            setsockopt(*psocket,SOL_SOCKET,SO_REUSEADDR,(const char *)&one,sizeof(one));
+            if (bind(*psocket,(struct sockaddr *)&so_ad,16)){
                 return "Could not open socket on Server";
             }
         }
@@ -313,39 +313,36 @@ static const char *aisc_client_open_socket(const char *path, int delay, int do_c
         }
         *unix_name = 0;
         return 0;
-    }
-    else {
+    } else {
         struct sockaddr_un so_ad;
         *psocket = socket(PF_UNIX, SOCK_STREAM, 0);
         if (*psocket <= 0) {
             return "CANNOT CREATE SOCKET";
         }
         so_ad.sun_family = AF_UNIX;
-        strcpy(so_ad.sun_path, mach_name);
-        if (do_connect) {
+        strcpy(so_ad.sun_path,mach_name);
+        if (do_connect){
             if (connect(*psocket, (struct sockaddr*)&so_ad, strlen(mach_name)+2)) {
                 return "";
             }
-        }
-        else {
-            test = fopen(mach_name, "r");
+        }else{
+            test = fopen(mach_name,"r");
             if (test) {
                 struct stat stt;
                 fclose(test);
-                if (!stat(path, &stt)) {
-                    if (S_ISREG(stt.st_mode)) {
-                        fprintf(stderr, "%X\n", (unsigned int)stt.st_mode);
+                if (!stat(path, &stt)){
+                    if (S_ISREG(stt.st_mode)){
+                        fprintf(stderr,"%X\n",(unsigned int)stt.st_mode);
                         return "Socket already exists as a file";
                     }
                 }
             }
             if (unlink(mach_name)) {
                 ;
-            }
-            else {
+            }else{
                 printf("old socket found\n");
             }
-            if (bind(*psocket, (struct sockaddr*)&so_ad, strlen(mach_name)+2)) {
+            if (bind(*psocket,(struct sockaddr*)&so_ad,strlen(mach_name)+2)){
                 return "Could not open socket on Server";
             }
         }
@@ -353,10 +350,11 @@ static const char *aisc_client_open_socket(const char *path, int delay, int do_c
         return 0;
     }
 }
+/******************************************* aisc_init_client *******************************************/
 
-void *aisc_init_client(aisc_com *link)
+void *aisc_init_client( aisc_com *link )
 {
-    int len, mes_cnt;
+    int len,mes_cnt;
     mes_cnt = 2;
     link->aisc_mes_buffer[0] = mes_cnt-2;
     link->aisc_mes_buffer[1] = AISC_INIT+link->magic;
@@ -370,47 +368,36 @@ void *aisc_init_client(aisc_com *link)
     return (void *)(link->aisc_mes_buffer[0]);
 }
 
-static void ignore_sigpipe(int) {
-}
-
-static void aisc_free_link(aisc_com *link) {
-    if (link->old_sigpipe_handler != SIG_ERR) { // failed to install -> do not uninstall
-        UNINSTALL_SIGHANDLER(SIGPIPE, ignore_sigpipe, link->old_sigpipe_handler, "aisc_free_link");
-    }
-    free(link);
-}
-
-extern "C" aisc_com *aisc_open(const char *path, long *mgr, long magic) {
+aisc_com *aisc_open(const char *path,long *mgr, long magic)
+{
     aisc_com *link;
     const char *err;
+    static char *unix_name = 0;
 
     link = (aisc_com *) calloc(sizeof(aisc_com), 1);
     link->aisc_client_bytes_first = link->aisc_client_bytes_last = NULL;
     link->magic = magic;
-    {
-        static char *unix_name = 0;
-        err = aisc_client_open_socket(path, TCP_NODELAY, 1, &link->socket, &unix_name);
-        freenull(unix_name);
-    }
+    err = aisc_client_open_socket(path, TCP_NODELAY, 1, &link->socket, &unix_name);
+    if(unix_name) free(unix_name);
     if (err) {
-        free(link);
+        free((char *)link);
         if (*err) PRTERR("ARB_DB_CLIENT_OPEN");
         return 0;
     }
-
-    link->old_sigpipe_handler = INSTALL_SIGHANDLER(SIGPIPE, ignore_sigpipe, "aisc_open");
-
+    signal(SIGPIPE, (SIG_PF) aisc_client_sigio);
     *mgr = 0;
     *mgr = (long)aisc_init_client(link);
-    if (!*mgr || link->error) {
-        aisc_free_link(link);
+    if (!*mgr || link->error){
+        free((char *)link);
         return 0;
     }
     aisc_client_link = link;
     return link;
 }
 
-extern "C" int aisc_close(aisc_com *link) {
+int
+aisc_close(aisc_com * link)
+{
     if (link) {
         if (link->socket) {
             link->aisc_mes_buffer[0] = 0;
@@ -421,7 +408,7 @@ extern "C" int aisc_close(aisc_com *link) {
             close(link->socket);
             link->socket = 0;
         }
-        aisc_free_link(link);
+        free((char *)link);
     }
     return 0;
 }
@@ -429,8 +416,8 @@ extern "C" int aisc_close(aisc_com *link) {
 
 int aisc_get_message(aisc_com *link)
 {
-    int anz, len;
-    long        size, magic_number;
+    int anz,len;
+    long        size,magic_number;
     struct timeval timeout;
     fd_set set;
     timeout.tv_sec = 0;
@@ -442,9 +429,9 @@ int aisc_get_message(aisc_com *link)
     link->message_type = 0;
     link->message = 0;
 
-    anz = select(FD_SETSIZE, &set, NULL, NULL, &timeout);
+    anz = select(FD_SETSIZE,&set,NULL,NULL,&timeout);
 
-    if (anz) {
+    if (anz){
         len = aisc_c_read(link->socket, (char *)(link->aisc_mes_buffer), 2*sizeof(long));
         if (len != 2*sizeof(long)) {
             link->error = err_connection_problems;
@@ -457,20 +444,21 @@ int aisc_get_message(aisc_com *link)
             return -1;
         }
         magic_number = link->aisc_mes_buffer[1]-link->magic;
-        if (magic_number != AISC_CCOM_MESSAGE) {
+        if ( magic_number != AISC_CCOM_MESSAGE) {
             link->error = err_connection_problems;
             PRTERR("AISC_ERROR");
             return -1;
         }
         size = link->aisc_mes_buffer[0];
-        if (aisc_add_message_queue(link, size*sizeof(long))) return -1;
+        if (aisc_add_message_queue(link,size*sizeof(long))) return -1;
     }
     if (link->message_queue) {
-        client_msg_queue *msg = (client_msg_queue *)link->message_queue;
+        struct aisc_client_message_queue *msg;
+        msg = (struct aisc_client_message_queue *)link->message_queue;
         link->message_queue = (int *)msg->next;
         link->message = msg->message;
         link->message_type = msg->message_type;
-        free(msg);
+        free((char *)msg);
         return link->message_type;
     }
     return 0;
@@ -478,7 +466,7 @@ int aisc_get_message(aisc_com *link)
 
 
 
-int aisc_get(aisc_com *link, int o_type, long object, ...)
+int aisc_get(aisc_com *link, int o_type, long objekt, ...)
 {
     /* goes to header: __ATTR__SENTINEL  */
     long    *arg_pntr[MAX_AISC_SET_GET];
@@ -486,52 +474,51 @@ int aisc_get(aisc_com *link, int o_type, long object, ...)
     long     mes_cnt;
     long     arg_cnt;
     va_list  parg;
-    long     type, o_t;
-    long     attribute, code;
+    long     type,o_t;
+    long     attribute,code;
     long     count;
-    long     i, len;
+    long     i,len;
     long     size;
 
     AISC_DUMP_SEP();
 
     mes_cnt = 2;
     arg_cnt = 0;
-    count = 4;
-    va_start(parg, object);
-    link->aisc_mes_buffer[mes_cnt++] = object;
-    while ((code=va_arg(parg, long))) {
-        attribute       = code & AISC_ATTR_MASK;
-        type            = code & AISC_VAR_TYPE_MASK;
-        o_t             = code & AISC_OBJ_TYPE_MASK;
+    count =4;
+    va_start(parg,objekt);
+    link->aisc_mes_buffer[mes_cnt++] = objekt;
+    while( (code=va_arg(parg,long)) ) {
+        attribute       = code &0x0000ffff;
+        type            = code &0xff000000;
+        o_t             = code &0x00ff0000;
 
-        if ((o_t != (int)o_type)) {
+        if (    (o_t != (int)o_type) ){
             sprintf(errbuf, "ARG NR %li DON'T FIT OBJECT", count);
             link->error = errbuf;
             PRTERR("AISC_GET_ERROR");
-            CORE();
+            CORE;
             return      1;
         };
 
-        if ((attribute > AISC_MAX_ATTR)) {
+        if(     (attribute > AISC_MAX_ATTR) ) {
             sprintf(errbuf, "ARG %li IS NOT AN ATTRIBUTE_TYPE", count);
             link->error = errbuf;
             PRTERR("AISC_GET_ERROR");
-            CORE();
+            CORE;
             return      1;
         };
         link->aisc_mes_buffer[mes_cnt++] = code;
-        arg_pntr[arg_cnt] = va_arg(parg, long *);
+        arg_pntr[arg_cnt] = va_arg(parg,long *);
         arg_types[arg_cnt++] = type;
-        count += 2;
+        count +=2;
         if (arg_cnt>=MAX_AISC_SET_GET) {
             sprintf(errbuf, "TOO MANY ARGS (>%i)", MAX_AISC_SET_GET);
             link->error = errbuf;
             PRTERR("AISC_GET_ERROR");
-            CORE();
+            CORE;
             return      1;
         }
     }
-    va_end(parg);
     if (mes_cnt > 3) {
         link->aisc_mes_buffer[0] = mes_cnt - 2;
         link->aisc_mes_buffer[1] = AISC_GET+link->magic;
@@ -545,31 +532,31 @@ int aisc_get(aisc_com *link, int o_type, long object, ...)
 
         if (aisc_check_error(link)) return 1;
         mes_cnt = 0;
-        for (i=0; i<arg_cnt; i++) {
+        for (i=0;i<arg_cnt;i++) {
             switch (arg_types[i]) {
-                case AISC_TYPE_INT:
-                case AISC_TYPE_COMMON:
+                case AISC_ATTR_INT:
+                case AISC_ATTR_COMMON:
                     AISC_DUMP(aisc_get, int, link->aisc_mes_buffer[mes_cnt]);
                     arg_pntr[i][0] = link->aisc_mes_buffer[mes_cnt++];
                     break;
-                case AISC_TYPE_DOUBLE:
+                case AISC_ATTR_DOUBLE:
                     AISC_DUMP(aisc_get, double, *(double*)&(link->aisc_mes_buffer[mes_cnt]));
                     ((int*)arg_pntr[i])[0] = (int)(link->aisc_mes_buffer[mes_cnt++]);
                     ((int*)arg_pntr[i])[1] = (int)(link->aisc_mes_buffer[mes_cnt++]);
                     break;
-                case AISC_TYPE_STRING: {
-                    char *str       = strdup((char *)(&(link->aisc_mes_buffer[mes_cnt+1])));
+                case AISC_ATTR_STRING: {
+                    char *str = strdup((char *)(&(link->aisc_mes_buffer[mes_cnt+1])));
                     AISC_DUMP(aisc_get, charPtr, str);
                     arg_pntr[i][0]  = (long)str;
                     mes_cnt        += link->aisc_mes_buffer[mes_cnt] + 1;
                     break;
                 }
-                case AISC_TYPE_BYTES:
+                case AISC_ATTR_BYTES:
                     size = arg_pntr[i][1] = link->aisc_mes_buffer[mes_cnt++];
                     AISC_DUMP(aisc_get, int, size);
-                    if (size) {
-                        arg_pntr[i][0] = (long)calloc(sizeof(char), (size_t)size);
-                        len = aisc_c_read(link->socket, (char *)(arg_pntr[i][0]), size);
+                    if (size){
+                        arg_pntr[i][0] = (long)calloc(sizeof(char),(size_t)size);
+                        len = aisc_c_read(link->socket,(char *)(arg_pntr[i][0]),size);
                         if (size!=len) {
                             link->error = err_connection_problems;
                             PRTERR("AISC_GET_ERROR");
@@ -577,8 +564,7 @@ int aisc_get(aisc_com *link, int o_type, long object, ...)
 #if defined(DUMP_COMMUNICATION)
                         aisc_dump_hex("aisc_get bytestring: ", (char *)(arg_pntr[i][0]), size);
 #endif /* DUMP_COMMUNICATION */
-                    }
-                    else {
+                    }else{
                         arg_pntr[i][0] = 0;
                     }
                     break;
@@ -586,7 +572,7 @@ int aisc_get(aisc_com *link, int o_type, long object, ...)
                 default:
                     link->error = "UNKNOWN TYPE";
                     PRTERR("AISC_GET_ERROR");
-                    CORE();
+                    CORE;
                     return 1;
             }
         }
@@ -595,28 +581,28 @@ int aisc_get(aisc_com *link, int o_type, long object, ...)
     return 0;
 }
 
-long *aisc_debug_info(aisc_com *link, int o_type, long object, int attribute)
+long    *aisc_debug_info(aisc_com *link,int o_type,long objekt,int attribute)
 {
     int mes_cnt;
     int o_t;
     int len;
 
     mes_cnt = 2;
-    o_t     = attribute & AISC_OBJ_TYPE_MASK;
-    if ((o_t != (int)o_type)) {
+    o_t                 = attribute &0x00ff0000;
+    if (        (o_t != (int)o_type) ) {
         link->error = "ATTRIBUTE DON'T FIT OBJECT";
         PRTERR("AISC_DEBUG_ERROR");
-        CORE();
+        CORE;
         return 0;
     };
     attribute = attribute&0xffff;
-    if ((attribute > AISC_MAX_ATTR)) {
+    if(         (attribute > AISC_MAX_ATTR) ) {
         link->error = "CLIENT DEBUG NOT CORRECT TYPE";
         PRTERR("AISC_DEBUG_ERROR");
-        CORE();
+        CORE;
         return 0;
     };
-    link->aisc_mes_buffer[mes_cnt++] = object;
+    link->aisc_mes_buffer[mes_cnt++] = objekt;
     link->aisc_mes_buffer[mes_cnt++] = attribute;
     link->aisc_mes_buffer[0] = mes_cnt - 2;
     link->aisc_mes_buffer[1] = AISC_DEBUG_INFO+link->magic;
@@ -631,64 +617,50 @@ long *aisc_debug_info(aisc_com *link, int o_type, long object, int attribute)
 }
 
 
-inline char *part_of(const char *str, size_t max_len, size_t str_len) {
-    aisc_assert(strlen(str) == str_len);
-    char *part;
-    if (str_len <= max_len) {
-        part = strdup(str);
-    }
-    else {
-        const int DOTS = 3;
-        int       copy = max_len-DOTS;
-
-        part = (char*)malloc(max_len+1);
-        memcpy(part, str, copy);
-        memset(part+copy, '.', DOTS);
-        
-        part[max_len] = 0;
-    }
-    return part;
-}
-
-static int aisc_collect_sets(aisc_com *link, int mes_cnt, va_list parg, int o_type, int count) {
+static int      aisc_collect_sets(aisc_com *link,
+                                  int       mes_cnt,
+                                  va_list   parg,
+                                  int o_type,
+                                  int count)
+{
     double dummy;
-    int type, o_t;
-    int attribute, code;
-    int len, ilen;
+    int type,o_t;
+    int attribute,code;
+    int len,ilen;
     char        *str;
     int arg_cnt = 0;
 
     AISC_DUMP_SEP();
 
-    while ((code=va_arg(parg, int))) {
-        attribute       = code & AISC_ATTR_MASK;
-        type            = code & AISC_VAR_TYPE_MASK;
-        o_t             = code & AISC_OBJ_TYPE_MASK;
+    while( (code=va_arg(parg,int)) ) {
+        attribute       = code &0x0000ffff;
+        type            = code &0xff000000;
+        o_t             = code &0x00ff0000;
 
-        if (code != AISC_INDEX) {
-            if ((o_t != (int)o_type)) {
+        if ( code != AISC_INDEX) {
+            if (        (o_t != (int)o_type) ) {
                 sprintf(errbuf, "ATTRIBUTE ARG NR %i DON'T FIT OBJECT", count);
                 link->error = errbuf;
                 PRTERR("AISC_SET_ERROR");
-                CORE();
+                CORE;
                 return 0;
             }
-            if ((attribute > AISC_MAX_ATTR)) {
+            if(         (attribute > AISC_MAX_ATTR) ) {
                 sprintf(errbuf, "ARG %i IS NOT AN ATTRIBUTE_TYPE", count);
                 link->error = errbuf;
                 PRTERR("AISC_SET_ERROR");
-                CORE();
+                CORE;
                 return 0;
             }
         }
         link->aisc_mes_buffer[mes_cnt++] = code;
         switch (type) {
-            case AISC_TYPE_INT:
-            case AISC_TYPE_COMMON:
-                link->aisc_mes_buffer[mes_cnt++] = va_arg(parg, long);
+            case AISC_ATTR_INT:
+            case AISC_ATTR_COMMON:
+                link->aisc_mes_buffer[mes_cnt++] = va_arg(parg,long);
                 AISC_DUMP(aisc_collect_sets, int, link->aisc_mes_buffer[mes_cnt-1]);
                 break;
-            case AISC_TYPE_DOUBLE: {
+            case AISC_ATTR_DOUBLE: {
                 int *ptr;
                 dummy    = va_arg(parg, double);
                 AISC_DUMP(aisc_collect_sets, double, dummy);
@@ -697,34 +669,30 @@ static int aisc_collect_sets(aisc_com *link, int mes_cnt, va_list parg, int o_ty
                 link->aisc_mes_buffer[mes_cnt++] = *ptr;
                 break;
             }
-            case AISC_TYPE_STRING:
-                str = va_arg(parg, char *);
+            case AISC_ATTR_STRING:
+                str = va_arg(parg,char *);
                 AISC_DUMP(aisc_collect_sets, charPtr, str);
                 len = strlen(str)+1;
                 if (len > AISC_MAX_STRING_LEN) {
-                    char *strpart = part_of(str, AISC_MAX_STRING_LEN-40, len-1);
-                    sprintf(errbuf, "ARG %i: STRING \'%s\' TOO LONG", count+2, strpart);
-                    free(strpart);
-
+                    sprintf(errbuf, "ARG %i: STRING \'%s\' TOO LONG", count+2, str);
                     link->error = errbuf;
                     PRTERR("AISC_SET_ERROR");
-                    CORE();
-
+                    CORE;
                     return 0;
                 }
-                ilen = (len)/sizeof(long) + 1;
+                ilen = (len)/sizeof(long) +1;
                 link->aisc_mes_buffer[mes_cnt++] = ilen;
-                memcpy((char *)(&(link->aisc_mes_buffer[mes_cnt])), str, len);
+                memcpy( (char *)(&(link->aisc_mes_buffer[mes_cnt])), str,len);
                 mes_cnt += ilen;
                 break;
 
-            case AISC_TYPE_BYTES:
+            case AISC_ATTR_BYTES:
                 {
                     bytestring *bs;
-                    bs = va_arg(parg, bytestring *);
+                    bs = va_arg(parg,bytestring *);
                     AISC_DUMP(aisc_collect_sets, int, bs->size);
                     if (bs->data && bs->size) {
-                        aisc_c_add_to_bytes_queue(link, bs->data, bs->size);
+                        aisc_c_add_to_bytes_queue(link, bs->data,bs->size);
 #if defined(DUMP_COMMUNICATION)
                         aisc_dump_hex("aisc_collect_sets bytestring: ", bs->data, bs->size);
 #endif /* DUMP_COMMUNICATION */
@@ -735,34 +703,34 @@ static int aisc_collect_sets(aisc_com *link, int mes_cnt, va_list parg, int o_ty
             default:
                 link->error = "UNKNOWN TYPE";
                 PRTERR("AISC_SET_ERROR");
-                CORE();
+                CORE;
                 return 0;
         }
 
-        count += 2;
+        count +=2;
         if ((arg_cnt++) >= MAX_AISC_SET_GET) {
             sprintf(errbuf, "TOO MANY ARGS (>%i)", MAX_AISC_SET_GET);
             link->error = errbuf;
             PRTERR("AISC_SET_ERROR");
-            CORE();
+            CORE;
             return      0;
         }
     }
     return mes_cnt;
 }
 
-int     aisc_put(aisc_com        *link, int o_type, long object, ...)
+int     aisc_put(       aisc_com        *link, int o_type, long objekt, ...)
 {
     /* goes to header: __ATTR__SENTINEL  */
-    int mes_cnt, arg_cnt;
+    int mes_cnt,arg_cnt;
     va_list     parg;
     int len;
     arg_cnt = mes_cnt = 2;
-    link->aisc_mes_buffer[mes_cnt++] = object;
+    link->aisc_mes_buffer[mes_cnt++] = objekt;
     link->aisc_mes_buffer[mes_cnt++] = o_type;
 
-    va_start(parg, object);
-    if (!(mes_cnt = aisc_collect_sets(link, mes_cnt, parg, o_type, 4))) return 1;
+    va_start(parg,objekt);
+    if (!(mes_cnt = aisc_collect_sets(link, mes_cnt,parg,o_type,4))) return 1;
 
     if (mes_cnt > 3) {
         link->aisc_mes_buffer[0] = mes_cnt - 2;
@@ -779,18 +747,18 @@ int     aisc_put(aisc_com        *link, int o_type, long object, ...)
     return 0;
 }
 
-int     aisc_nput(aisc_com        *link, int o_type, long object, ...)
+int     aisc_nput(      aisc_com        *link, int o_type, long objekt, ...)
 {
     /* goes to header: __ATTR__SENTINEL  */
-    int mes_cnt, arg_cnt;
+    int mes_cnt,arg_cnt;
     va_list     parg;
     int len;
     arg_cnt = mes_cnt = 2;
-    link->aisc_mes_buffer[mes_cnt++] = object;
+    link->aisc_mes_buffer[mes_cnt++] = objekt;
     link->aisc_mes_buffer[mes_cnt++] = o_type;
 
-    va_start(parg, object);
-    if (!(mes_cnt = aisc_collect_sets(link, mes_cnt, parg, o_type, 4))) {
+    va_start(parg,objekt);
+    if (!(mes_cnt = aisc_collect_sets(link, mes_cnt,parg,o_type,4))) {
         return 1;
     }
 
@@ -819,30 +787,30 @@ int aisc_create(aisc_com *link, int father_type, long father,
     va_list parg;
     *object = 0;
     mes_cnt = 2;
-    if ((father_type&0xff00ffff)) {
+    if ( (father_type&0xff00ffff)  ){
         link->error = "FATHER_TYPE UNKNOWN";
         PRTERR("AISC_CREATE_ERROR");
-        CORE();
+        CORE;
         return 1;
     }
-    if ((object_type&0xff00ffff)) {
+    if ( (object_type&0xff00ffff)  ){
         link->error = "OBJECT_TYPE UNKNOWN";
         PRTERR("AISC_CREATE_ERROR");
-        CORE();
+        CORE;
         return 1;
     }
     link->aisc_mes_buffer[mes_cnt++] = father_type;
     link->aisc_mes_buffer[mes_cnt++] = father;
     link->aisc_mes_buffer[mes_cnt++] = attribute;
     link->aisc_mes_buffer[mes_cnt++] = object_type;
-    if (father_type != (attribute & AISC_OBJ_TYPE_MASK)) {
+    if (father_type != (attribute&0x00ff0000) ) {
         link->error = "ATTRIBUTE TYPE DON'T FIT OBJECT";
         PRTERR("AISC_CREATE_ERROR");
-        CORE();
+        CORE;
         return 1;
     }
-    va_start(parg, object);
-    if (!(mes_cnt = aisc_collect_sets(link, mes_cnt, parg, object_type, 7))) return 1;
+    va_start(parg,object);
+    if (!(mes_cnt = aisc_collect_sets(link, mes_cnt,parg,object_type,7))) return 1;
     link->aisc_mes_buffer[0] = mes_cnt - 2;
     link->aisc_mes_buffer[1] = AISC_CREATE+link->magic;
     len = aisc_c_write(link->socket, (char *)(link->aisc_mes_buffer), mes_cnt * sizeof(long));
@@ -857,7 +825,7 @@ int aisc_create(aisc_com *link, int father_type, long father,
     return 0;
 }
 
-int aisc_copy(aisc_com *link, int s_type, long source, int father_type,
+int aisc_copy(  aisc_com *link, int s_type, long source, int father_type,
                 long father, int attribute, int object_type, long *object, ...)
 {
     /* goes to header: __ATTR__SENTINEL  */
@@ -865,18 +833,18 @@ int aisc_copy(aisc_com *link, int s_type, long source, int father_type,
     int len;
     va_list parg;
     *object = 0;
-    if (s_type != object_type) {
+    if (s_type!= object_type) {
         link->error = "OBJECT_TYPE IS DIFFERENT FROM SOURCE_TYPE";
         PRTERR("AISC_COPY_ERROR");
-        CORE();
+        CORE;
         return 1;
     }
 
     mes_cnt = 2;
-    if ((father_type&0xff00ffff)) {
+    if ( (father_type&0xff00ffff)  ){
         link->error = "FATHER UNKNOWN";
         PRTERR("AISC_COPY_ERROR");
-        CORE();
+        CORE;
         return 1;
     }
     link->aisc_mes_buffer[mes_cnt++] = source;
@@ -884,14 +852,14 @@ int aisc_copy(aisc_com *link, int s_type, long source, int father_type,
     link->aisc_mes_buffer[mes_cnt++] = father;
     link->aisc_mes_buffer[mes_cnt++] = attribute;
     link->aisc_mes_buffer[mes_cnt++] = object_type;
-    if (father_type != (attribute & AISC_OBJ_TYPE_MASK)) {
+    if (father_type != (attribute&0x00ff0000) ) {
         link->error = "ATTRIBUTE TYPE DON'T FIT OBJECT";
         PRTERR("AISC_COPY_ERROR");
-        CORE();
+        CORE;
         return 1;
     }
-    va_start(parg, object);
-    if (!(mes_cnt = aisc_collect_sets(link, mes_cnt, parg, object_type, 9))) return 1;
+    va_start(parg,object);
+    if (!(mes_cnt = aisc_collect_sets(link, mes_cnt,parg,object_type,9))) return 1;
     link->aisc_mes_buffer[0] = mes_cnt - 2;
     link->aisc_mes_buffer[1] = AISC_COPY+link->magic;
     len = aisc_c_write(link->socket, (char *)(link->aisc_mes_buffer), mes_cnt * sizeof(long));
@@ -908,12 +876,12 @@ int aisc_copy(aisc_com *link, int s_type, long source, int father_type,
 
 
 
-int aisc_delete(aisc_com *link, int object_type, long source)
+int aisc_delete(aisc_com *link,int objekt_type,long source)
 {
-    int len, mes_cnt;
+    int len,mes_cnt;
 
     mes_cnt = 2;
-    link->aisc_mes_buffer[mes_cnt++] = object_type;
+    link->aisc_mes_buffer[mes_cnt++] = objekt_type;
     link->aisc_mes_buffer[mes_cnt++] = source;
     link->aisc_mes_buffer[0] = mes_cnt - 2;
     link->aisc_mes_buffer[1] = AISC_DELETE+link->magic;
@@ -936,29 +904,29 @@ int aisc_find(aisc_com *link,
               char      *ident)
 {
     int mes_cnt;
-    int i, len;
+    int i,len;
     char        *to_free = 0;
     object_type = object_type;
     *object = 0;
     mes_cnt = 2;
-    if ((father_type&0xff00ffff)) {
+    if ( (father_type&0xff00ffff)  ){
         link->error = "FATHER_TYPE UNKNOWN";
         PRTERR("AISC_FIND_ERROR");
-        CORE();
+        CORE;
         return 1;
     }
-    if (father_type != (attribute & AISC_OBJ_TYPE_MASK)) {
+    if (father_type != (attribute & 0x00ff0000) ) {
         link->error = "ATTRIBUTE TYPE DON'T MACH FATHER";
         PRTERR("AISC_FIND_ERROR");
-        CORE();
+        CORE;
     }
     link->aisc_mes_buffer[mes_cnt++] = father_type;
     link->aisc_mes_buffer[mes_cnt++] = father;
     link->aisc_mes_buffer[mes_cnt++] = attribute;
-    if (!ident) {
+    if (!ident){
         link->error = "IDENT == NULL";
         PRTERR("AISC_FIND_ERROR");
-        CORE();
+        CORE;
         return 1;
     }
     len = strlen(ident);
@@ -968,12 +936,12 @@ int aisc_find(aisc_com *link,
         PRTERR("AISC_FIND_ERROR");
         return 1;
     }
-    if (((long)ident) & 3) {
+    if ( ((long)ident) & 3 ) {
         to_free = ident = strdup(ident);
     }
     len = (len+1)/sizeof(long)+1;
     link->aisc_mes_buffer[mes_cnt++] = len;
-    for (i=0; i<len; i++) {
+    for (i=0;i<len;i++){
         link->aisc_mes_buffer[mes_cnt++] = ((long *)ident)[i];
     }
     link->aisc_mes_buffer[0] = mes_cnt - 2;
@@ -989,12 +957,3 @@ int aisc_find(aisc_com *link,
     if (to_free) free(to_free);
     return 0;
 }
-
-#if (UNIT_TESTS == 1)
-
-#include <test_unit.h>
-
-void TEST_dummy() {
-}
-
-#endif

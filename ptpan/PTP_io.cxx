@@ -669,7 +669,7 @@ BOOL OpenDataBase(struct PTPanGlobal *pg)
   }
   GB_begin_transaction(pg->pg_MainDB);
   /* open the species data */
-  if(!(pg->pg_SpeciesData = GB_find(pg->pg_MainDB, "species_data", SEARCH_CHILD)))
+  if(!(pg->pg_SpeciesData = GB_find(pg->pg_MainDB, "species_data", down_level)))
   {
     printf("Database %s is empty\n", pg->pg_DBName);
     return(FALSE);
@@ -696,8 +696,8 @@ BOOL LoadEcoliSequence(struct PTPanGlobal *pg)
   free(defaultref);
 
   /* free memory if previously allocated */
-  freenull(pg->pg_EcoliSeq);
-  freenull(pg->pg_EcoliBaseTable);
+  freeset(pg->pg_EcoliSeq, NULL);
+  freeset(pg->pg_EcoliBaseTable, NULL);
 
   /* prepare ecoli sequence */
   if(gb_extdata)
@@ -786,7 +786,7 @@ BOOL CacheSpeciesUnload(struct CacheHandler *, struct PTPanSpecies *ps)
   if(ps->ps_SeqData)
   {
     /* load alignment data */
-    freenull(ps->ps_SeqData);
+    freeset(ps->ps_SeqData, NULL);
     return(TRUE);
   }
   return(FALSE);
@@ -865,7 +865,7 @@ BOOL LoadSpecies(struct PTPanGlobal *pg)
     STRPTR spname;
 
     /* get name */
-    gb_name = GB_find(gb_species, "name", SEARCH_CHILD);
+    gb_name = GB_find(gb_species, "name", down_level);
     if(!gb_name)
     {
       ignorecount++;
@@ -874,14 +874,14 @@ BOOL LoadSpecies(struct PTPanGlobal *pg)
     spname = GB_read_string(gb_name);
 
     /* get alignments */
-    gb_ali = GB_find(gb_species, pg->pg_AlignmentName, SEARCH_CHILD);
+    gb_ali = GB_find(gb_species, pg->pg_AlignmentName, down_level);
     if(!gb_ali)
     {
       ignorecount++;
       free(spname);
       continue; /* too bad, no alignment information found */
     }
-    gb_data = GB_find(gb_ali, "data", SEARCH_CHILD);
+    gb_data = GB_find(gb_ali, "data", down_level);
     if(!gb_data)
     {
       ignorecount++;
@@ -899,7 +899,7 @@ BOOL LoadSpecies(struct PTPanGlobal *pg)
     ps->ps_SeqDataDB = gb_data;
     ps->ps_IsGroup = TRUE;
     ps->ps_Name = spname;
-    gb_name = GB_find(gb_species, "full_name", SEARCH_CHILD);
+    gb_name = GB_find(gb_species, "full_name", down_level);
     if(gb_name)
     {
       ps->ps_FullName = GB_read_string(gb_name);
@@ -931,7 +931,7 @@ BOOL LoadSpecies(struct PTPanGlobal *pg)
 #endif
 
     ps->ps_RawDataSize = CompressSequenceWithDotsAndHyphens(pg, ps);
-    freenull(ps->ps_SeqData);
+    freeset(ps->ps_SeqData, NULL);
     if (ps->ps_RawDataSize < 0)                                 // TODO: problem, ps_RawDataSize is unsigned...
     {
         printf("%s is corrupt, ignoring!\n", ps->ps_Name);
@@ -1068,8 +1068,8 @@ BOOL LoadIndexHeader(struct PTPanGlobal *pg)
 
   // read Ecoli Sequence
   /* free memory if previously allocated */
-  freenull(pg->pg_EcoliSeq);
-  freenull(pg->pg_EcoliBaseTable);
+  freeset(pg->pg_EcoliSeq, NULL);
+  freeset(pg->pg_EcoliBaseTable, NULL);
 
   fread(&pg->pg_EcoliSeqSize, sizeof(pg->pg_EcoliSeqSize), 1, fh);
   if (pg->pg_EcoliSeqSize > 0)
@@ -1180,19 +1180,18 @@ BOOL LoadIndexHeader(struct PTPanGlobal *pg)
   pg->pg_SpeciesBinTree = BuildBinTree(&pg->pg_Species);
 
   /* build a species name hash to mark species in groups */
-  pg->pg_SpeciesNameHash = GBS_create_hash(SPECIESNAMEHASHSIZE, GB_IGNORE_CASE); // FIXME: don't use hardcoded limit, use number of species
+  pg->pg_SpeciesNameHash = GBS_create_hash(SPECIESNAMEHASHSIZE, GB_IGNORE_CASE);    // TODO: JB: check if GB_IGNORE_CASE
+                                                                                    //           is right (was 0)
   ps = (struct PTPanSpecies *) pg->pg_Species.lh_Head;
   while(ps->ps_Node.ln_Succ)
   {
-      GBS_write_hash(pg->pg_SpeciesNameHash, ps->ps_Name, ps->ps_Num + 1);
-      ps = (struct PTPanSpecies *) ps->ps_Node.ln_Succ;
+    GBS_write_hash(pg->pg_SpeciesNameHash, ps->ps_Name, ps->ps_Num + 1);
+    ps = (struct PTPanSpecies *) ps->ps_Node.ln_Succ;
   }
 
-  arb_assert(GBS_hash_count_elems(pg->pg_SpeciesNameHash) <= SPECIESNAMEHASHSIZE); 
-
   printf("\n\nDatabase contains %ld valid species (%ld ignored).\n"
-         "%lld bytes alignment data (%lld bases).\n",
-         pg->pg_NumSpecies, ignorecount, pg->pg_TotalSeqSize, pg->pg_TotalRawSize);
+    "%lld bytes alignment data (%lld bases).\n",
+    pg->pg_NumSpecies, ignorecount, pg->pg_TotalSeqSize, pg->pg_TotalRawSize);
   printf("Compressed sequence data (with dots and hyphens): %llu byte (%llu kb, %llu mb)\n",
     pg->pg_TotalSeqCompressedSize, pg->pg_TotalSeqCompressedSize >> 10, pg->pg_TotalSeqCompressedSize >> 20);
 

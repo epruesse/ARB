@@ -1,7 +1,7 @@
 // =============================================================== //
 //                                                                 //
 //   File      : NT_trackAliChanges.cxx                            //
-//   Purpose   : Track alignment and sequences changes             //
+//   Purpose   : Track alignment and sequences changes             // 
 //                                                                 //
 //   Coded by Ralf Westram (coder@reallysoft.de) in June 2007      //
 //   Institute of Microbiology (Technical University Munich)       //
@@ -9,12 +9,16 @@
 //                                                                 //
 // =============================================================== //
 
-#include "NT_trackAliChanges.h"
-
-#include <awt_sel_boxes.hxx>
-#include <aw_window.hxx>
-#include <arbdbt.h>
+#include <cstdlib>
+#include <cstring>
 #include <ctime>
+
+
+#include <awt.hxx>
+#include <awt_sel_boxes.hxx>
+#include <arbdbt.h>
+
+#include "NT_trackAliChanges.h"
 
 extern GBDATA *GLOBAL_gb_main;
 
@@ -70,7 +74,7 @@ static void trackAlignmentChanges(AW_window *aww) {
         time_t     t        = time(0);
         struct tm *tms      = localtime(&t);
 
-        strftime(atime, 255, "%Y/%m/%d %k:%M", tms);
+        strftime(atime, 255,"%Y/%m/%d %k:%M", tms);
         stamp = GBS_global_string_copy("%s %s", atime, initials);
         free(initials);
     }
@@ -164,14 +168,14 @@ AW_window *NT_create_trackAliChanges_window(AW_root *root) {
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("help");
-    aws->callback(AW_POPUP_HELP, (AW_CL)"track_ali_changes.hlp");
-    aws->create_button("HELP", "HELP", "H");
+    aws->callback( AW_POPUP_HELP,(AW_CL)"track_ali_changes.hlp");
+    aws->create_button("HELP","HELP","H");
 
     aws->at("initials");
     aws->create_input_field(AWAR_TRACK_INITIALS);
-
+    
     aws->at("ali_sel");
-    awt_create_selection_list_on_alignments(GLOBAL_gb_main, aws, AWAR_TRACK_ALI, "*=");
+    awt_create_selection_list_on_ad(GLOBAL_gb_main, aws, AWAR_TRACK_ALI, "*=");
 
     aws->at("go");
     aws->callback(trackAlignmentChanges);

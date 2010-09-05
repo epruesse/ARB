@@ -153,8 +153,7 @@ void PP_buildPosWeight(SearchQuery *sq)
     for (int pos=0; pos < sq->sq_QueryLen; ++pos) {
         if (sq->sq_SortMode == SORT_HITS_WEIGHTED) {
             sq->sq_PosWeight[pos] = PP_calc_position_wmis(pos, sq->sq_QueryLen, 0.3, 1.0);
-        }
-        else {
+        }else{
             sq->sq_PosWeight[pos] = 1.0;
         }
     }
@@ -704,12 +703,12 @@ extern "C" STRPTR c_get_match_hinfo(PT_probematch *)
 /* Create a big output string:  header\001name\001info\001name\001info....\000 */
 extern "C" bytestring * match_string(PT_local *locs)
 {
-    PTPanGlobal   *pg         = PTPanGlobalPtr;
-    GBS_strstruct *outstr;
+    struct PTPanGlobal *pg = PTPanGlobalPtr;
+    struct GBS_strstruct *outstr;
     PT_probematch *ml;
-    STRPTR         srcptr;
-    LONG           entryCount = 0;
-
+    STRPTR srcptr;
+    LONG entryCount = 0;
+  
     printf("EXTERN: match_string\n");
     free(pg->pg_ResultString.data);             // free old memory
     for(ml = locs->pm; ml; ml = ml->next)       // count number of entries

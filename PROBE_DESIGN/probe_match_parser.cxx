@@ -11,14 +11,18 @@
 //                                                                       //
 //  ==================================================================== //
 
-#include "probe_match_parser.hxx"
-
-#include <arbdbt.h>
-
+#include <cstring>
+#include <cstdlib>
+#include <cstdio>
 #include <cctype>
 #include <map>
 
+#include <arbdb.h>
+#include <arbdbt.h>
+
 #define pm_assert(cond) arb_assert(cond)
+
+#include "probe_match_parser.hxx"
 
 using namespace std;
 
@@ -30,8 +34,8 @@ struct column {
     const char *title;          // column title (pointer into ProbeMatch_impl::headline)
     int         start_column, end_column;
 
-    column() : title(0), start_column(-1), end_column(-1) {}
-    column(const char *t, int sc, int ec) : title(t), start_column(sc), end_column(ec) {}
+    column() : title(0), start_column(-1), end_column(-1) { }
+    column(const char *t, int sc, int ec) : title(t), start_column(sc), end_column(ec) { }
 };
 
 // ------------------------

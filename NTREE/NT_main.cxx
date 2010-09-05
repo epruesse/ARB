@@ -1,30 +1,32 @@
-// =============================================================== //
-//                                                                 //
-//   File      : NT_main.cxx                                       //
-//   Purpose   :                                                   //
-//                                                                 //
-//   Institute of Microbiology (Technical University Munich)       //
-//   http://www.arb-home.de/                                       //
-//                                                                 //
-// =============================================================== //
+#include <string.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <arbdb.h>
+#include <arbdbt.h>
+#include <adGene.h>
 
-#include "map_viewer.hxx"
+#include <servercntrl.h>
+#include <aw_root.hxx>
+#include <aw_device.hxx>
+#include <aw_window.hxx>
+#include <aw_awars.hxx>
+#include <aw_question.hxx>
+#include <aw_global.hxx>
+#include <awt_canvas.hxx>
+#include <awt_advice.hxx>
+
+#include <awt_tree.hxx>
+#include <awt_dtree.hxx>
+#include <awt.hxx>
+#include <awti_import.hxx>
+
+#include <mg_merge.hxx>
+
 #include "nt_internal.h"
 #include "ntree.hxx"
 #include "nt_cb.hxx"
+#include "NT_dbrepair.hxx"
 
-#include <mg_merge.hxx>
-#include <awti_import.hxx>
-
-#include <awt.hxx>
-
-#include <aw_advice.hxx>
-#include <aw_question.hxx>
-#include <aw_awars.hxx>
-#include <aw_edit.hxx>
-#include <aw_file.hxx>
-
-#include <adGene.h>
 #include <arb_version.h>
 
 using namespace std;
@@ -54,11 +56,11 @@ GB_ERROR NT_format_all_alignments(GBDATA *gb_main) {
     err = GBT_check_data(gb_main, 0);
 
     AW_repeated_question  question;
-    GBDATA               *gb_presets = GB_entry(gb_main, "presets");
+    GBDATA               *gb_presets = GB_entry(gb_main,"presets");
 
     question.add_help("prompt/format_alignments.hlp");
 
-    for (GBDATA *gb_ali = GB_entry(gb_presets, "alignment"); gb_ali && !err; gb_ali = GB_nextEntry(gb_ali)) {
+    for (GBDATA *gb_ali = GB_entry(gb_presets,"alignment"); gb_ali && !err; gb_ali = GB_nextEntry(gb_ali)) {
         GBDATA *gb_aligned = GB_search(gb_ali, "aligned", GB_INT);
 
         if (GB_read_int(gb_aligned) == 0) { // sequences in alignment are not formatted
@@ -68,7 +70,7 @@ GB_ERROR NT_format_all_alignments(GBDATA *gb_main) {
                 FA_SKIP_ALL   = 2, // skip automatically w/o asking
             };
             FormatAction  format_action = FA_ASK_USER;
-            GBDATA       *gb_ali_name   = GB_entry(gb_ali, "alignment_name");
+            GBDATA       *gb_ali_name   = GB_entry(gb_ali,"alignment_name");
             const char   *ali_name      = GB_read_char_pntr(gb_ali_name);
 
             {
@@ -149,27 +151,27 @@ static GB_ERROR nt_check_database_consistency() {
 }
 
 
-void serve_db_interrupt(AW_root *awr) {
-    bool success = GBCMS_accept_calls(GLOBAL_gb_main, false);
-    while (success) {
-        awr->check_for_remote_command((AW_default)GLOBAL_gb_main, AWAR_NT_REMOTE_BASE);
-        success = GBCMS_accept_calls(GLOBAL_gb_main, true);
+void serve_db_interrupt(AW_root *awr){
+    GB_BOOL succes = GBCMS_accept_calls(GLOBAL_gb_main,GB_FALSE);
+    while (succes){
+        awr->check_for_remote_command((AW_default)GLOBAL_gb_main,AWAR_NT_REMOTE_BASE);
+        succes = GBCMS_accept_calls(GLOBAL_gb_main,GB_TRUE);
     }
 
-    awr->add_timed_callback(NT_SERVE_DB_TIMER, (AW_RCB)serve_db_interrupt, 0, 0);
+    awr->add_timed_callback(NT_SERVE_DB_TIMER,(AW_RCB)serve_db_interrupt,0,0);
 }
 
-void check_db_interrupt(AW_root *awr) {
-    awr->check_for_remote_command((AW_default)GLOBAL_gb_main, AWAR_NT_REMOTE_BASE);
-    awr->add_timed_callback(NT_CHECK_DB_TIMER, (AW_RCB)check_db_interrupt, 0, 0);
+void check_db_interrupt(AW_root *awr){
+    awr->check_for_remote_command((AW_default)GLOBAL_gb_main,AWAR_NT_REMOTE_BASE);
+    awr->add_timed_callback(NT_CHECK_DB_TIMER,(AW_RCB)check_db_interrupt,0,0);
 }
 
-GB_ERROR create_nt_window(AW_root *aw_root) {
+GB_ERROR create_nt_window(AW_root *aw_root){
     AW_window *aww;
     GB_ERROR error = GB_request_undo_type(GLOBAL_gb_main, GB_UNDO_NONE);
     if (error) aw_message(error);
-    nt_create_all_awars(aw_root, AW_ROOT_DEFAULT);
-    aww = create_nt_main_window(aw_root, 0);
+    nt_create_all_awars(aw_root,AW_ROOT_DEFAULT);
+    aww = create_nt_main_window(aw_root,0);
     aww->show();
     error = GB_request_undo_type(GLOBAL_gb_main, GB_UNDO_UNDO);
     if (error) aw_message(error);
@@ -177,11 +179,11 @@ GB_ERROR create_nt_window(AW_root *aw_root) {
 }
 
 // after intro
-void nt_main_startup_main_window(AW_root *aw_root) {
+void nt_main_startup_main_window(AW_root *aw_root){
     create_nt_window(aw_root);
 
     if (GB_read_clients(GLOBAL_gb_main)==0) { // i am the server
-        GB_ERROR error = GBCMS_open(":", 0, GLOBAL_gb_main);
+        GB_ERROR error = GBCMS_open(":",0,GLOBAL_gb_main);
         if (error) {
             aw_message(
                        "THIS PROGRAM HAS PROBLEMS TO OPEN INTERCLIENT COMMUNICATION !!!\n"
@@ -189,15 +191,13 @@ void nt_main_startup_main_window(AW_root *aw_root) {
                        "You cannot use any EDITOR or other external SOFTWARE with this dataset!\n\n"
                        "Advice: Close ARB again, open a console, type 'arb_clean' and restart arb.\n"
                        "Caution: Any unsaved data in an eventually running ARB will be lost!\n");
-        }
-        else {
-            aw_root->add_timed_callback(NT_SERVE_DB_TIMER, (AW_RCB)serve_db_interrupt, 0, 0);
+        }else{
+            aw_root->add_timed_callback(NT_SERVE_DB_TIMER,(AW_RCB)serve_db_interrupt,0,0);
             error = nt_check_database_consistency();
             if (error) aw_message(error);
         }
-    }
-    else {
-        aw_root->add_timed_callback(NT_CHECK_DB_TIMER, (AW_RCB)check_db_interrupt, 0, 0);
+    }else{
+        aw_root->add_timed_callback(NT_CHECK_DB_TIMER,(AW_RCB)check_db_interrupt,0,0);
     }
 }
 
@@ -205,7 +205,7 @@ int main_load_and_startup_main_window(AW_root *aw_root) // returns 0 when succes
 {
 
     char *db_server = aw_root->awar(AWAR_DB_PATH)->read_string();
-    GLOBAL_gb_main = GBT_open(db_server, "rw", "$(ARBHOME)/lib/pts/*");
+    GLOBAL_gb_main = GBT_open(db_server,"rw","$(ARBHOME)/lib/pts/*");
 
     if (!GLOBAL_gb_main) {
         aw_popup_ok(GB_await_error());
@@ -214,7 +214,7 @@ int main_load_and_startup_main_window(AW_root *aw_root) // returns 0 when succes
 
     aw_root->awar(AWAR_DB_PATH)->write_string(db_server);
 
-#define MAXNAMELEN 35
+#define MAXNAMELEN 35    
     int len = strlen(db_server);
     if (len>MAXNAMELEN) {
         char *nameOnly = strrchr(db_server, '/');
@@ -237,9 +237,9 @@ int main_load_and_startup_main_window(AW_root *aw_root) // returns 0 when succes
     return 0;
 }
 
-void nt_delete_database(AW_window *aww) {
+void nt_delete_database(AW_window *aww){
     char *db_server = aww->get_root()->awar(AWAR_DB_PATH)->read_string();
-    if (strlen(db_server)) {
+    if (strlen(db_server)){
         if (aw_ask_sure(GBS_global_string("Are you sure to delete database %s\nNote: there is no way to undelete it afterwards", db_server))) {
             GB_ERROR error = 0;
             error = GB_delete_database(db_server);
@@ -247,7 +247,7 @@ void nt_delete_database(AW_window *aww) {
                 aw_message(error);
             }
             else {
-                aww->get_root()->awar(AWAR_DB_FILTER)->touch();
+                aww->get_root()->awar(AWAR_DB"filter")->touch();
             }
         }
     }
@@ -265,12 +265,11 @@ void main3(AW_root *aw_root)
     create_nt_window(aw_root);
 
     if (GB_read_clients(GLOBAL_gb_main)==0) {
-        GB_ERROR error = GBCMS_open(":", 0, GLOBAL_gb_main);
+        GB_ERROR error = GBCMS_open(":",0,GLOBAL_gb_main);
         if (error) {
             aw_message("THIS PROGRAM IS NOT THE ONLY DB SERVER !!!\nDON'T USE ANY ARB PROGRAM !!!!");
-        }
-        else {
-            aw_root->add_timed_callback(NT_SERVE_DB_TIMER, (AW_RCB)serve_db_interrupt, 0, 0);
+        }else{
+            aw_root->add_timed_callback(NT_SERVE_DB_TIMER, (AW_RCB)serve_db_interrupt,0,0);
             error = nt_check_database_consistency();
             if (error) aw_message(error);
         }
@@ -286,7 +285,7 @@ void nt_intro_start_old(AW_window *aws)
     }
 }
 
-void nt_intro_start_merge(AW_window *aws, AW_root *awr) {
+void nt_intro_start_merge(AW_window *aws,AW_root *awr){
     if (aws) awr = aws->get_root();
     create_MG_main_window(awr);
     if (aws) aws->hide();
@@ -295,7 +294,7 @@ void nt_intro_start_merge(AW_window *aws, AW_root *awr) {
 void nt_intro_start_import(AW_window *aws)
 {
     aws->hide();
-    aws->get_root()->awar_string(AWAR_DB_PATH)->write_string("noname.arb");
+    aws->get_root()->awar_string( AWAR_DB_PATH )->write_string( "noname.arb");
     aws->get_root()->awar_int(AWAR_READ_GENOM_DB, IMP_PLAIN_SEQUENCE); // Default toggle  in window  "Create&import" is Non-Genom
     GLOBAL_gb_main = open_AWTC_import_window(aws->get_root(), "", true, 0, (AW_RCB)main3, 0, 0);
 }
@@ -303,23 +302,23 @@ void nt_intro_start_import(AW_window *aws)
 AW_window *nt_create_intro_window(AW_root *awr)
 {
     AW_window_simple *aws = new AW_window_simple;
-    aws->init(awr, "ARB_INTRO", "ARB INTRO");
+    aws->init( awr, "ARB_INTRO", "ARB INTRO");
     aws->load_xfig("arb_intro.fig");
 
-    aws->callback((AW_CB0)exit);
+    aws->callback( (AW_CB0)exit);
     aws->at("close");
-    aws->create_button("CANCEL", "CANCEL", "C");
+    aws->create_button("CANCEL","CANCEL","C");
 
     aws->at("help");
-    aws->callback(AW_POPUP_HELP, (AW_CL)"arb_intro.hlp");
-    aws->create_button("HELP", "HELP", "H");
+    aws->callback(AW_POPUP_HELP,(AW_CL)"arb_intro.hlp");
+    aws->create_button("HELP","HELP","H");
 
-    AW_create_fileselection(aws, "tmp/nt/arbdb");
+    awt_create_selection_box(aws,"tmp/nt/arbdb");
 
     aws->button_length(0);
 
     aws->at("logo");
-    aws->create_button(0, "#logo.xpm");
+    aws->create_button(0,"#logo.xpm");
 
     aws->at("version");
     aws->create_button(0, GBS_global_string("Version " ARB_VERSION), 0); // version
@@ -327,28 +326,35 @@ AW_window *nt_create_intro_window(AW_root *awr)
     aws->at("copyright");
     aws->create_button(0, GBS_global_string("(C) 1993-" ARB_BUILD_YEAR), 0);
 
+    //  aws->button_length(25);
+
     aws->at("old");
     aws->callback(nt_intro_start_old);
-    aws->create_autosize_button("OPEN_SELECTED", "OPEN SELECTED", "O");
+    aws->create_autosize_button("OPEN_SELECTED","OPEN SELECTED","O");
 
     aws->at("del");
     aws->callback(nt_delete_database);
-    aws->create_autosize_button("DELETE_SELECTED", "DELETE SELECTED");
+    aws->create_autosize_button("DELETE_SELECTED","DELETE SELECTED");
 
     aws->at("new_complex");
     aws->callback(nt_intro_start_import);
-    aws->create_autosize_button("CREATE_AND_IMPORT", "CREATE AND IMPORT", "I");
+    aws->create_autosize_button("CREATE_AND_IMPORT","CREATE AND IMPORT","I");
 
     aws->at("merge");
-    aws->callback((AW_CB1)nt_intro_start_merge, 0);
-    aws->create_autosize_button("MERGE_TWO_DATABASES", "MERGE TWO ARB DATABASES", "O");
+    aws->callback((AW_CB1)nt_intro_start_merge,0);
+    aws->create_autosize_button("MERGE_TWO_DATABASES","MERGE TWO ARB DATABASES","O");
 
     aws->at("expert");
     aws->create_toggle(AWAR_EXPERT);
 
-    return aws;
+    return (AW_window *)aws;
 }
 
+void AD_set_default_root(AW_root *aw_root);
+
+//  ----------------------------------------------------------
+//      static void AWAR_DB_PATH_changed_cb(AW_root *awr)
+//  ----------------------------------------------------------
 static void AWAR_DB_PATH_changed_cb(AW_root *awr) {
     static int avoid_recursion = 0;
 
@@ -376,40 +382,50 @@ static void AWAR_DB_PATH_changed_cb(AW_root *awr) {
     }
 }
 
-int main(int argc, char **argv) {
-    const char *db_server = ":";
+//  ---------------------------------------
+//      int main(int argc, char **argv)
+//  ---------------------------------------
+int main(int argc, char **argv)
+{
+    AW_root *aw_root;
+    AW_default aw_default;
+
+    const char *db_server =":";
 
     unsigned long mtime = GB_time_of_file("$(ARBHOME)/lib/message");
     unsigned long rtime = GB_time_of_file("$(HOME)/.arb_prop/msgtime");
-    if (mtime > rtime) {
-        AW_edit("${ARBHOME}/lib/message");
+    if (mtime > rtime){
+        AWT_edit("${ARBHOME}/lib/message");
         system("touch ${HOME}/.arb_prop/msgtime");
     }
     aw_initstatus();
     GB_set_verbose();
 
-    AW_root *aw_root = AWT_create_root(".arb_prop/ntree.arb", "ARB_NT");
-
+    aw_root       = new AW_root;
     GLOBAL_NT.awr = aw_root;
-    MapViewer_set_default_root(aw_root);            // set default for launch_MapViewer_cb (as long as no info-box was opened)
+    AD_set_default_root(aw_root);                   // set default for AD_map_viewer (as long as no info-box was opened)
+
+    aw_default = aw_root->open_default(".arb_prop/ntree.arb");
+    aw_root->init_variables(aw_default);
+    aw_root->init_root("ARB_NT", false);
 
     // create some early awars
     // Note: normally you don't like to add your awar-init-function here, but into nt_create_all_awars()
 
-    AW_create_fileselection_awars(aw_root, AWAR_DB, "", ".arb", "noname.arb");
-    aw_root->awar_string(AWAR_DB_TYPE, "b");
-    aw_root->awar_string(AWAR_DB_NAME, "noname.arb");
+    aw_create_selection_box_awars(aw_root, AWAR_DB, "", ".arb", "noname.arb", aw_default);
+    aw_root->awar_string( AWAR_DB"type", "b", aw_default);
+
+    aw_root->awar_int(AWAR_EXPERT, 0, aw_default);
+
+    aw_root->awar_string(AWAR_DB_NAME, "noname.arb", aw_default);
     aw_root->awar(AWAR_DB_PATH)->add_callback(AWAR_DB_PATH_changed_cb);
 
-    aw_root->awar_int(AWAR_EXPERT, 0);
-    
-    init_Advisor(aw_root);
-    AWT_install_cb_guards();
+    init_Advisor(aw_root, aw_default);
 
-    if (argc==3) {                                  // looks like merge
-        if (argv[1][0] != '-') { // not if first argument is a switch
-            MG_create_all_awars(aw_root, AW_ROOT_DEFAULT, argv[1], argv[2]);
-            nt_intro_start_merge(0, aw_root);
+    if (argc==3) {              // looks like merge
+        if (argv[1][0] != '-') { // not if first argument is a switch 
+            MG_create_all_awars(aw_root,aw_default,argv[1],argv[2]);
+            nt_intro_start_merge(0,aw_root);
             aw_root->main_loop();
         }
     }
@@ -448,9 +464,9 @@ int main(int argc, char **argv) {
             exit(1);
         }
 
-        if (strcmp(argv[1], "-export")==0) {
-            MG_create_all_awars(aw_root, AW_ROOT_DEFAULT, ":", "noname.arb");
-            GLOBAL_gb_merge = GBT_open(":", "rw", 0);
+        if ( strcmp(argv[1],"-export")==0) {
+            MG_create_all_awars(aw_root,aw_default,":","noname.arb");
+            GLOBAL_gb_merge = GBT_open(":","rw",0);
             if (!GLOBAL_gb_merge) {
                 aw_popup_ok(GB_await_error());
                 exit(0);
@@ -459,7 +475,7 @@ int main(int argc, char **argv) {
             AWT_announce_db_to_browser(GLOBAL_gb_merge, "Current database (:)");
 #endif // DEBUG
 
-            GLOBAL_gb_dest = GBT_open("noname.arb", "cw", 0);
+            GLOBAL_gb_dest = GBT_open("noname.arb","cw",0);
 #if defined(DEBUG)
             AWT_announce_db_to_browser(GLOBAL_gb_dest, "New database (noname.arb)");
 #endif // DEBUG
@@ -480,14 +496,14 @@ int main(int argc, char **argv) {
 
         if (load_file_err) {
             int   answer    = -1;
-            char *full_path = AW_unfold_path(db_server);
+            char *full_path = AWT_unfold_path(db_server);
 
             printf("load_file_err='%s'\n", load_file_err);
 
-            if (GB_is_directory(full_path)) answer = 2; // autoselect browser
+            if (AWT_is_dir(full_path)) answer = 2; // autoselect browser
 
             if (answer == -1) {
-                if (!GB_is_regularfile(full_path)) {
+                if (!AWT_is_file(full_path)) {
                     const char *msg = GBS_global_string("'%s' is neither a known option nor a legal file- or directory-name.\n(Error: %s)",
                                                         full_path, load_file_err);
                     answer          = aw_question(msg, "Browser,Exit");
@@ -495,7 +511,7 @@ int main(int argc, char **argv) {
                     switch (answer) { // map answer to codes used by aw_message below
                         case 0: answer = 2; break; // Browse
                         case 1: answer = 3; break; // Exit
-                        default: nt_assert(0);
+                        default : nt_assert(0);
                     }
                 }
                 else {
@@ -514,10 +530,10 @@ int main(int argc, char **argv) {
                 }
                 case 2: {        // Browse
                     char *dir = nulldup(full_path);
-                    while (dir && !GB_is_directory(dir)) freeset(dir, AW_extract_directory(dir));
+                    while (dir && !AWT_is_dir(dir)) freeset(dir, AWT_extract_directory(dir));
 
                     if (dir) {
-                        nt_assert(GB_is_directory(dir));
+                        nt_assert(AWT_is_dir(dir));
                         reassign(browser_startdir, dir);
                         start_db_browser = true;
                     }
@@ -546,7 +562,7 @@ int main(int argc, char **argv) {
     if (start_db_browser) {
         aw_root->awar(AWAR_DB"directory")->write_string(browser_startdir);
         char *latest = GB_find_latest_file(browser_startdir, "/\\.(arb|a[0-9]{2})$/");
-        if (latest) {
+        if (latest){
             int l = strlen(latest);
             latest[l-1] = 'b';
             latest[l-2] = 'r';
@@ -555,10 +571,9 @@ int main(int argc, char **argv) {
             free(latest);
         }
         AW_window *iws;
-        if (GLOBAL_NT.window_creator) {
-            iws = GLOBAL_NT.window_creator(aw_root, 0);
-        }
-        else {
+        if (GLOBAL_NT.window_creator){
+            iws = GLOBAL_NT.window_creator(aw_root,0);
+        }else{
             iws = nt_create_intro_window(aw_root);
         }
         iws->show();

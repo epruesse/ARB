@@ -14,14 +14,14 @@
 #if defined(DEBUG)
 
 // if you get the valgrind warning
-// "Conditional jump or move depends on uninitialized value"
+// "Conditional jump or move depends on uninitialised value"
 // for a complex statement, use the following macro to find out
 // which part of the statement is the cause.
 
 #define TEST_INITIALIZED(expr) do {             \
         if (expr) printf("0");                  \
         else printf("1");                       \
-    } while (0)
+    } while(0)
 
 #else
 
