@@ -1,18 +1,14 @@
-// =============================================================== //
-//                                                                 //
-//   File      : ED4_secedit.cxx                                   //
-//   Purpose   :                                                   //
-//                                                                 //
-//   Institute of Microbiology (Technical University Munich)       //
-//   http://www.arb-home.de/                                       //
-//                                                                 //
-// =============================================================== //
+#include <stdio.h>
 
-#include "ed4_secedit.hxx"
+#include <aw_root.hxx>
+#include <arbdb.h>
+#include <aw_device.hxx>
+#include <aw_window.hxx>
+
+#include <awt_canvas.hxx>
 
 #include <secedit_extern.hxx>
-#include <arbdb.h>
-#include <awt_canvas.hxx>
+#include "ed4_secedit.hxx"
 
 void ED4_SECEDIT_start(AW_window *aw, AW_CL cl_gbmain, AW_CL) {
     static AW_window *aw_sec = 0;

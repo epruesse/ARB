@@ -1,16 +1,5 @@
-// ============================================================= //
-//                                                               //
-//   File      : arb_read_tree.cxx                               //
-//   Purpose   :                                                 //
-//                                                               //
-//   Institute of Microbiology (Technical University Munich)     //
-//   http://www.arb-home.de/                                     //
-//                                                               //
-// ============================================================= //
-
 #include <TreeRead.h>
-#include <arbdbt.h>
-#include <ctime>
+#include <time.h>
 
 // add_bootstrap interprets the length of the branches as bootstrap value
 // (this is needed by Phylip DNAPARS/PROTPARS with bootstrapping)
@@ -19,7 +8,7 @@
 
 void add_bootstrap(GBT_TREE *node, double hundred) {
     if (node->is_leaf) {
-        freenull(node->remark_branch);
+        freeset(node->remark_branch, 0);
         return;
     }
 
@@ -44,7 +33,7 @@ void add_bootstrap(GBT_TREE *node, double hundred) {
     add_bootstrap(node->rightson, hundred);
 }
 
-STATIC_ATTRIBUTED(__ATTR__NORETURN, void abort_with_usage(GBDATA *gb_main, const char *error)) {
+ATTRIBUTED(__ATTR__NORETURN, static void abort_with_usage(GBDATA *gb_main, const char *error)) {
     printf("Usage: arb_read_tree [-scale factor] [-consense #ofTrees] tree_name treefile [comment] [-commentFromFile file]\n");
     if (error) {
         printf("Error: %s\n", error);
@@ -53,22 +42,22 @@ STATIC_ATTRIBUTED(__ATTR__NORETURN, void abort_with_usage(GBDATA *gb_main, const
     exit(-1);
 }
 
-int main(int argc, char **argv)
+int main(int argc,char **argv)
 {
-    GBDATA *gb_main = GB_open(":", "r");
-    if (!gb_main) {
+    GBDATA *gb_main = GB_open(":","r");
+    if (!gb_main){
         printf("arb_read_tree: Error: you have to start an arbdb server first\n");
         return -1;
     }
 
-#define SHIFT_ARGS(off) do { argc -= off; argv += off; } while (0)
+#define SHIFT_ARGS(off) do { argc -= off; argv += off; } while(0)
 
     SHIFT_ARGS(1);              // position onto first argument
 
     bool   scale        = false;
     double scale_factor = 0.0;
 
-    if (argc>0 && strcmp("-scale", argv[0]) == 0) {
+    if (argc>0 && strcmp("-scale",argv[0]) == 0) {
         scale = true;
         if (argc<2) abort_with_usage(gb_main, "-scale expects a 2nd argument (scale factor)");
         scale_factor = atof(argv[1]);
@@ -78,7 +67,7 @@ int main(int argc, char **argv)
     bool consense         = false;
     int  calculated_trees = 0;
 
-    if (argc>0 && strcmp("-consense", argv[0]) == 0) {
+    if (argc>0 && strcmp("-consense",argv[0]) == 0) {
         consense = true;
         if (argc<2) abort_with_usage(gb_main, "-consense expects a 2nd argument (number of trees)");
 
@@ -163,9 +152,9 @@ int main(int argc, char **argv)
 
     if (!error) {
         error = GB_begin_transaction(gb_main);
-
+        
         if (!error && tree->is_leaf) error = "Cannot load tree (need at least 2 leafs)";
-        if (!error) error                  = GBT_write_tree(gb_main, 0, tree_name, tree);
+        if (!error) error                  = GBT_write_tree(gb_main,0,tree_name,tree);
 
         if (!error) {
             // write tree comment:
@@ -210,7 +199,7 @@ int main(int argc, char **argv)
 
     if (error) GBT_message(gb_main, error);
     else GBT_message(gb_main, GBS_global_string("Tree %s read into the database", tree_name));
-
+    
     GB_close(gb_main);
 
     free(comment_from_file);

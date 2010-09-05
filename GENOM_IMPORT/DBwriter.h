@@ -8,7 +8,6 @@
 //   http://www.arb-home.de/                                        //
 //                                                                  //
 // ================================================================ //
-
 #ifndef DBWRITER_H
 #define DBWRITER_H
 
@@ -26,6 +25,11 @@
 #endif
 #ifndef GENOMEIMPORT_H
 #include "GenomeImport.h"
+#endif
+
+
+#ifndef ARBDB_H
+#include <arbdb.h>
 #endif
 
 class UniqueNameDetector;
@@ -57,7 +61,7 @@ class DBwriter : public Noncopyable {
     // following data is valid for one organism write :
     GBDATA      *gb_organism;   // current organism
     GBDATA      *gb_gene_data;  // current gene data
-    NameCounter  generatedGenes; // helper to create unique gene names (key = name, value = count occurrences)
+    NameCounter  generatedGenes; // helper to create unique gene names (key = name, value = count occurances)
 
     void testAndRemoveTranslations(Importer& importer); // test and delete translations (if test was ok). warns via Importer
     void hideUnwantedGenes();

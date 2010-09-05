@@ -1,25 +1,16 @@
-// =============================================================== //
-//                                                                 //
-//   File      : ali_aligner.hxx                                   //
-//   Purpose   :                                                   //
-//                                                                 //
-//   Institute of Microbiology (Technical University Munich)       //
-//   http://www.arb-home.de/                                       //
-//                                                                 //
-// =============================================================== //
 
-#ifndef ALI_ALIGNER_HXX
-#define ALI_ALIGNER_HXX
 
-#ifndef ALI_SOLUTION_HXX
+#ifndef _ALI_ALIGNER_INC_
+#define _ALI_ALIGNER_INC_
+
+// #include <malloc.h>
+
 #include "ali_solution.hxx"
-#endif
-#ifndef ALI_TSTACK_HXX
 #include "ali_tstack.hxx"
-#endif
-#ifndef ALI_PATHMAP_HXX
+#include "ali_tlist.hxx"
+#include "ali_tarray.hxx"
+#include "ali_profile.hxx"
 #include "ali_pathmap.hxx"
-#endif
 
 #define ALI_ALIGNER_INS        1
 #define ALI_ALIGNER_SUB        2
@@ -30,48 +21,57 @@ struct ALI_ALIGNER_CONTEXT {
     long max_number_of_maps;
 };
 
-// Structure of a cell of the distance matrix
+/*
+ * Structure of a cell of the distance matrix
+ */
 struct ali_aligner_cell {
     float d1, d2, d3;
     ALI_TARRAY<ali_pathmap_up_pointer> *starts;
 
-    ali_aligner_cell() {
+    ali_aligner_cell(void) {
         d1 = d2 = d3 = 0.0;
         starts = 0;
     }
 
-    void print() {
-        printf("%4.2f %4.2f %4.2f %8p", d1, d2, d3, starts);
+    void print(void) {
+        printf("%4.2f %4.2f %4.2f %8p",d1,d2,d3,starts);
     }
 };
 
-// Structure of a column of the distance matrix
+/*
+ * Structure of a column of the distance matrix
+ */
 struct ali_aligner_column {
     unsigned long column_length;
+    //ali_aligner_cell (*cells)[];
     ali_aligner_cell **cells;
 
     ali_aligner_column(unsigned long length) {
         column_length = length;
         cells = (ali_aligner_cell**) calloc((unsigned int) column_length, sizeof(ali_aligner_cell));
+        //cells = (ali_aligner_cell (*) [0]) calloc((unsigned int) column_length, sizeof(ali_aligner_cell));
+        //cells = (ali_aligner_cell (*) [1]) calloc((unsigned int) column_length, sizeof(ali_aligner_cell));
         if (cells == 0)
             ali_fatal_error("Out of memory");
     }
-    ~ali_aligner_column() {
+    ~ali_aligner_column(void) {
         if (cells)
             free((char  *) cells);
     }
 
-    void print() {
+    void print(void) {
         unsigned int i;
         for (i = 0; i < column_length; i++) {
-            printf("%2d: ", i);
+            printf("%2d: ",i);
             (*cells)[i].print();
             printf("\n");
         }
     }
 };
 
-// Structure of a LONG deletion (multi gap) in the distance matrix
+/*
+ * Structure of a LONG deletion (multi gap) in the distance matrix
+ */
 struct ali_aligner_dellist_elem {
     unsigned long start;
     float costs;
@@ -84,12 +84,14 @@ struct ali_aligner_dellist_elem {
         operation = op;
     }
 
-    void print() {
-        printf("(%3ld %4.2f %2d)", start, costs, operation);
+    void print(void) {
+        printf("(%3ld %4.2f %2d)",start,costs,operation);
     }
 };
 
-// Structure of the list of LONG deletions in the distance matrix
+/*
+ * Structure of the list of LONG deletions in the distance matrix
+ */
 struct ali_aligner_dellist {
     ALI_PROFILE *profile;
     ALI_TLIST<ali_aligner_dellist_elem *> list_of_dels;
@@ -97,7 +99,7 @@ struct ali_aligner_dellist {
     ali_aligner_dellist(ALI_PROFILE *p) {
         profile = p;
     }
-    ~ali_aligner_dellist() {
+    ~ali_aligner_dellist(void) {
         ali_aligner_dellist_elem * elem;
         if (!list_of_dels.is_empty()) {
             elem = list_of_dels.first();
@@ -109,7 +111,7 @@ struct ali_aligner_dellist {
         }
     }
 
-    void print() {
+    void print(void) {
         printf("DEL_LIST: ");
         if (!list_of_dels.is_empty()) {
             list_of_dels.first()->print();
@@ -126,17 +128,17 @@ struct ali_aligner_dellist {
             elem = list_of_dels.first();
             while (list_of_dels.is_next()) {
                 elem->print();
-                printf("\t %f\n", profile->gap_percent(elem->start, position));
+                printf("\t %f\n",profile->gap_percent(elem->start,position));
                 elem = list_of_dels.next();
             }
             elem->print();
-            printf("\t %f\n", profile->gap_percent(elem->start, position));
+            printf("\t %f\n",profile->gap_percent(elem->start,position));
         }
     }
-    unsigned long length() {
+    unsigned long length(void) {
         return list_of_dels.cardinality();
     }
-    void make_empty() {
+    void make_empty(void) {
         ali_aligner_dellist_elem *elem;
         if (!list_of_dels.is_empty()) {
             elem = list_of_dels.first();
@@ -151,7 +153,7 @@ struct ali_aligner_dellist {
     void insert(unsigned long start, float costs, unsigned char operation) {
         ali_aligner_dellist_elem *new_elem;
 
-        new_elem = new ali_aligner_dellist_elem(start, costs, operation);
+        new_elem = new ali_aligner_dellist_elem(start,costs,operation);
         list_of_dels.append_end(new_elem);
     }
     float update(unsigned long position);
@@ -161,7 +163,9 @@ struct ali_aligner_dellist {
 };
 
 
-// Structure of the virtual cell at the left buttom
+/*
+ * Structure of the virtual cell at the left buttom
+ */
 struct ali_aligner_last_cell {
     ALI_PROFILE *profile;
     float d1, d2, d3;
@@ -233,14 +237,16 @@ struct ali_aligner_last_cell {
         if (akt_cell->d2 == min)
             operation |= ALI_DIAG;
 
-        insert_up(akt_pos, operation,
+        insert_up(akt_pos,operation,
                   min + profile->w_del_multi_cheap(start_y + akt_pos, end_y));
     }
     void update_up(ali_aligner_column *akt_col,
                    unsigned long start_y, unsigned long end_y) {
         unsigned long cell;
 
-        // Value for start := start + 1 (because of -1)
+        /*
+         * Value for start := start + 1 (because of -1)
+         */
 
         for (cell = 0; cell < akt_col->column_length - 1; cell++)
             update_up(&(*akt_col->cells)[cell], cell + 1, start_y, end_y);
@@ -248,16 +254,16 @@ struct ali_aligner_last_cell {
         d2 = (*akt_col->cells)[akt_col->column_length - 1].d2;
     }
 
-    void print() {
+    void print(void) {
         ali_pathmap_up_pointer elem;
-        printf("d1 = %f, d2 = %f, d3 = %f\n", d1, d2, d3);
+        printf("d1 = %f, d2 = %f, d3 = %f\n",d1,d2,d3);
         printf("left starts = ");
         if (!left_starts.is_empty()) {
             elem = left_starts.first();
-            printf("<(%ld %d)", (long)elem.start, elem.operation);
+            printf("<(%ld %d)",(long)elem.start,elem.operation);
             while (left_starts.is_next()) {
                 elem = left_starts.next();
-                printf(", (%ld %d)", (long)elem.start, elem.operation);
+                printf(", (%ld %d)",(long)elem.start,elem.operation);
             }
             printf(">\n");
         }
@@ -267,10 +273,10 @@ struct ali_aligner_last_cell {
         printf("up starts = ");
         if (!up_starts.is_empty()) {
             elem = up_starts.first();
-            printf("<(%ld %d)", elem.start, elem.operation);
+            printf("<(%ld %d)",elem.start,elem.operation);
             while (up_starts.is_next()) {
                 elem = up_starts.next();
-                printf(", (%ld %d)", (long)elem.start, elem.operation);
+                printf(", (%ld %d)",(long)elem.start,elem.operation);
             }
             printf(">\n");
         }
@@ -281,14 +287,16 @@ struct ali_aligner_last_cell {
 };
 
 
-// Structure for collecting all possible solution
+/*
+ * Structure for collecting all possible solution
+ */
 struct ali_aligner_result {
     ALI_TLIST<ALI_MAP *> *map_list;
 
-    ali_aligner_result() {
+    ali_aligner_result(void) {
         map_list = new ALI_TLIST<ALI_MAP *>;
     }
-    ~ali_aligner_result() {
+    ~ali_aligner_result(void) {
         if (map_list) {
             clear();
             delete map_list;
@@ -298,7 +306,7 @@ struct ali_aligner_result {
     void insert(ALI_MAP *in_map) {
         map_list->append_end(in_map);
     }
-    void clear() {
+    void clear(void) {
         if (!map_list->is_empty()) {
             delete map_list->first();
             while (map_list->is_next())
@@ -308,7 +316,9 @@ struct ali_aligner_result {
 };
 
 
-// Class of the extended aligner
+/*
+ * Class of the extended aligner
+ */
 class ALI_ALIGNER {
     ALI_PROFILE *profile;
     ALI_PATHMAP *path_map[3];
@@ -363,7 +373,7 @@ class ALI_ALIGNER {
                           unsigned long pos_x,
                           ali_aligner_dellist *del_list);
 
-    void calculate_matrix();
+    void calculate_matrix(void);
 
     void generate_result(ALI_TSTACK<unsigned char> *stack);
     void mapper_pre(ALI_TSTACK<unsigned char> *stack,
@@ -384,7 +394,7 @@ class ALI_ALIGNER {
                 unsigned long pos_x, unsigned long pos_y);
     void make_map_random(ALI_TSTACK<unsigned char> *stack);
     void make_map_systematic(ALI_TSTACK<unsigned char> *stack);
-    void make_map();
+    void make_map(void);
 
     unsigned long number_of_solutions();
 
@@ -392,7 +402,7 @@ public:
     ALI_ALIGNER(ALI_ALIGNER_CONTEXT *context, ALI_PROFILE *profile,
                 unsigned long start_x, unsigned long end_x,
                 unsigned long start_y, unsigned long end_y);
-    ALI_TLIST<ALI_MAP *> *solutions() {
+    ALI_TLIST<ALI_MAP *> *solutions(void) {
         ALI_TLIST<ALI_MAP *> *ret = result.map_list;
         result.map_list = 0;
         return ret;
@@ -400,6 +410,6 @@ public:
 };
 
 
-#else
-#error ali_aligner.hxx included twice
-#endif // ALI_ALIGNER_HXX
+
+#endif
+

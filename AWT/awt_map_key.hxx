@@ -11,16 +11,14 @@
 #ifndef AWT_MAP_KEY_HXX
 #define AWT_MAP_KEY_HXX
 
-#define MAX_MAPPED_KEYS 20
 
-class AW_root;
-class AW_window;
+#define MAX_MAPPED_KEYS 20
 
 class ed_key {
     char map[256];
 
 public:
-    ed_key();
+    ed_key(void);
 
     char        map_key(char);
     void        create_awars(AW_root *root);

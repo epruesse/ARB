@@ -1,14 +1,6 @@
-// =============================================================== //
-//                                                                 //
-//   File      : arb_2_ascii.cxx                                   //
-//   Purpose   :                                                   //
-//                                                                 //
-//   Institute of Microbiology (Technical University Munich)       //
-//   http://www.arb-home.de/                                       //
-//                                                                 //
-// =============================================================== //
-
-
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 #include <arbdb.h>
 
 static void to_stderr(const char *msg) {
@@ -37,7 +29,7 @@ int main(int argc, char **argv) {
     else {
         char *in  = argv[1];
         char *out = NULL;
-
+    
         const char *readflags = "rw";
         const char *saveflags = "a";
 
@@ -55,17 +47,17 @@ int main(int argc, char **argv) {
             }
         }
 
-        GBDATA   *gb_main = GB_open(in, readflags);
+        GBDATA   *gb_main = GB_open(in,readflags);
         if (!gb_main) {
             error = GB_await_error();
         }
         else {
-            error = GB_save(gb_main, out, saveflags);
+            error = GB_save(gb_main,out, saveflags);
         }
 
         GB_close(gb_main);
     }
-
+    
     if (error) {
         fprintf(stderr, "arb_2_ascii: Error: %s\n", error);
         return EXIT_FAILURE;

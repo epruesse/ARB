@@ -1,13 +1,27 @@
-// ============================================================= //
-//                                                               //
-//   File      : ED4_main.cxx                                    //
-//   Purpose   :                                                 //
-//                                                               //
-//   Institute of Microbiology (Technical University Munich)     //
-//   http://www.arb-home.de/                                     //
-//                                                               //
-// ============================================================= //
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <memory.h>
+// #include <malloc.h>
 
+#include <arbdb.h>
+#include <arbdbt.h>
+#include <ad_config.h>
+
+#include <aw_root.hxx>
+#include <aw_device.hxx>
+#include <aw_window.hxx>
+#include <aw_preset.hxx>
+#include <aw_awars.hxx>
+#include <awt_seq_colors.hxx>
+#include <awt_map_key.hxx>
+#include <awt.hxx>
+#include <AW_helix.hxx>
+#include <st_window.hxx>
+#include <gde.hxx>
+#include<awt_pro_a_nucs.hxx>
+
+#include <ed4_extern.hxx>
 
 #include "ed4_class.hxx"
 #include "ed4_awars.hxx"
@@ -17,48 +31,40 @@
 #include "ed4_ProteinViewer.hxx"
 #include "ed4_protein_2nd_structure.hxx"
 #include "ed4_dots.hxx"
-#include "ed4_naligner.hxx"
-#include "graph_aligner_gui.hxx"
-#include <ed4_extern.hxx>
 
-#include <st_window.hxx>
-#include <gde.hxx>
-#include <AW_helix.hxx>
-#include <AP_pro_a_nucs.hxx>
-#include <ad_config.h>
-#include <awt_seq_colors.hxx>
-#include <awt_map_key.hxx>
-#include <awt.hxx>
-#include <aw_preset.hxx>
-#include <aw_awars.hxx>
-#include <arbdbt.h>
+#include "edit_naligner.hxx"
+#include "graph_aligner_gui.hxx"
 
 AW_HEADER_MAIN
 
 ED4_root     *ED4_ROOT;
-GBDATA       *GLOBAL_gb_main = NULL;                                    // global gb_main for arb_edit4
+GBDATA       *GLOBAL_gb_main = NULL; // global gb_main for arb_edit4
 ED4_database *main_db;
 
-int TERMINALHEIGHT;                                                     // this variable replaces the define
+int  TERMINALHEIGHT;            // this variable replaces the define
 
 int INFO_TERM_TEXT_YOFFSET;
 int SEQ_TERM_TEXT_YOFFSET;
 
-int MAXSEQUENCECHARACTERLENGTH;                                         // greatest # of characters in a sequence string terminal
-int MAXSPECIESWIDTH;
-int MAXINFOWIDTH;                                                       // # of pixels used to display sequence info ("CONS", "4data", etc.)
+int  MAXSEQUENCECHARACTERLENGTH; // greatest # of characters in a sequence string terminal
+int  MAXSPECIESWIDTH;
+int  MAXINFOWIDTH;              // # of pixels used to display sequence info ("CONS", "4data", etc.)
 
-long ED4_counter = 0;
-
+long           ED4_counter = 0;
 size_t         not_found_counter;                   // nr of species which haven't been found
 GBS_strstruct *not_found_message;
 
 long         max_seq_terminal_length;               // global maximum of sequence terminal length
-ED4_EDITMODI awar_edit_mode;
+ED4_EDITMODI awar_edit_modus;
 long         awar_edit_direction;
 bool         move_cursor;                           // only needed for editing in consensus
 bool         DRAW;
 bool         last_window_reached;                   // needed for refreshing all windows (if TRUE refresh/...-flags will be cleared)
+
+size_t status_count_total;                          // used for consensus progress bar
+size_t status_count_curr;
+
+bool loading;
 
 void ED4_config_change_cb(AW_root *)
 {
@@ -113,7 +119,7 @@ inline const char *id(ED4_base *base)
     return base->id ? base->id : "???";
 }
 
-static void children(ED4_manager *manager)
+static void childs(ED4_manager *manager)
 {
     int i;
     int anz = manager->children->members();
@@ -140,7 +146,7 @@ void baum(ED4_base *base)
 
     printf("[%2i] %-30s", level, id(base));
     if (base->is_manager()) {
-        children(base->to_manager());
+        childs(base->to_manager());
     }
     printf("\n");
 
@@ -158,10 +164,11 @@ static char *add_area_for_gde(ED4_area_manager *area_man, uchar **&the_names, uc
                               long &allocated, long &numberspecies, long &maxalign,
                               int show_sequence, int show_SAI, int show_helix, int show_consensus, int show_remark)
 {
-    ED4_terminal *terminal = area_man->get_first_terminal();
-    ED4_terminal *last     = area_man->get_last_terminal();
+    ED4_terminal *terminal = area_man->get_first_terminal(),
+        *last = area_man->get_last_terminal();
+    //    ED4_multi_species_manager *last_multi = 0;
 
-    for (; terminal;) {
+    for (;terminal;) {
         if (terminal->is_species_name_terminal()) {
             ED4_species_manager *species_manager = terminal->get_parent(ED4_L_SPECIES)->to_species_manager();
             ED4_species_name_terminal *species_name = species_manager->search_spec_child_rek(ED4_L_SPECIES_NAME)->to_species_name_terminal();
@@ -207,7 +214,7 @@ static char *add_area_for_gde(ED4_area_manager *area_man, uchar **&the_names, uc
                     ED4_group_manager *group_manager = sequence_terminal->get_parent(ED4_L_GROUP)->to_group_manager();
                     int size = group_manager->table().size();
 
-                    seq       = (char*)GB_calloc(size+1, sizeof(char));
+                    seq       = (char*)GB_calloc(size+1, sizeof(char)); // GB_give_buffer(size+1);
                     seq[size] = 0;
                     seq       = group_manager->table().build_consensus_string(0, size-1, seq);
                     seq_len   = size;
@@ -219,7 +226,7 @@ static char *add_area_for_gde(ED4_area_manager *area_man, uchar **&the_names, uc
                     if (folded_group_man) { // we are in a folded group
                         if (folded_group_man==group_manager) { // we are the consensus of the folded group
                             if (folded_group_man->is_in_folded_group()) { // a folded group inside a folded group -> do not show
-                                freenull(seq);
+                                freeset(seq, 0);
                             }
                             else { // group folded but consensus shown -> add '-' before name
                                 char *new_name = (char*)GB_calloc(name_len+2, sizeof(char));
@@ -230,7 +237,7 @@ static char *add_area_for_gde(ED4_area_manager *area_man, uchar **&the_names, uc
                             }
                         }
                         else { // we are really inside a folded group -> don't show
-                            freenull(seq);
+                            freeset(seq, 0);
                         }
                     }
                 }
@@ -245,7 +252,6 @@ static char *add_area_for_gde(ED4_area_manager *area_man, uchar **&the_names, uc
                     if (show_helix && !is_SAI && ED4_ROOT->helix->size()) {
                         char *helix = ED4_ROOT->helix->seq_2_helix(seq, '.');
                         set_and_realloc_gde_array(the_names, the_sequences, allocated, numberspecies, maxalign, name, name_len, helix, seq_len);
-                        free(helix);
                     }
                     if (show_remark && !is_consensus) {
                         ED4_multi_sequence_manager *ms_man = sequence_terminal->get_parent(ED4_L_MULTI_SEQUENCE)->to_multi_sequence_manager();
@@ -267,7 +273,7 @@ static char *add_area_for_gde(ED4_area_manager *area_man, uchar **&the_names, uc
             }
             free(name);
         }
-    end_of_loop :
+    end_of_loop:
         if (terminal==last) break;
         terminal = terminal->get_next_terminal();
     }
@@ -275,13 +281,14 @@ static char *add_area_for_gde(ED4_area_manager *area_man, uchar **&the_names, uc
     return 0;
 }
 
-char *ED4_create_sequences_for_gde(AW_CL, GBDATA **&the_species, uchar **&the_names, uchar **&the_sequences, long &numberspecies, long &maxalign) {
-    int top     = ED4_ROOT->aw_root->awar("gde/top_area")->read_int();
-    int tops    = ED4_ROOT->aw_root->awar("gde/top_area_sai")->read_int();
-    int toph    = ED4_ROOT->aw_root->awar("gde/top_area_helix")->read_int();
-    int topk    = ED4_ROOT->aw_root->awar("gde/top_area_kons")->read_int();
-    int topr    = ED4_ROOT->aw_root->awar("gde/top_area_remark")->read_int();
-    int middle  = ED4_ROOT->aw_root->awar("gde/middle_area")->read_int();
+char *ED4_create_sequences_for_gde(void*, GBDATA **&the_species, uchar **&the_names, uchar **&the_sequences, long &numberspecies, long &maxalign)
+{
+    int top = ED4_ROOT->aw_root->awar("gde/top_area")->read_int();
+    int tops = ED4_ROOT->aw_root->awar("gde/top_area_sai")->read_int();
+    int toph = ED4_ROOT->aw_root->awar("gde/top_area_helix")->read_int();
+    int topk = ED4_ROOT->aw_root->awar("gde/top_area_kons")->read_int();
+    int topr = ED4_ROOT->aw_root->awar("gde/top_area_remark")->read_int();
+    int middle = ED4_ROOT->aw_root->awar("gde/middle_area")->read_int();
     int middles = ED4_ROOT->aw_root->awar("gde/middle_area_sai")->read_int();
     int middleh = ED4_ROOT->aw_root->awar("gde/middle_area_helix")->read_int();
     int middlek = ED4_ROOT->aw_root->awar("gde/middle_area_kons")->read_int();
@@ -315,7 +322,7 @@ static void ED4_gap_chars_changed(AW_root *root) {
     free(gap_chars);
 }
 
-static void ED4_edit_direction_changed(AW_root * /* awr */) {
+static void ED4_edit_direction_changed(AW_root */*awr*/) {
     ED4_ROOT->get_ed4w()->cursor.redraw();
 }
 
@@ -352,6 +359,7 @@ static void ed4_create_mainDB_awars(AW_root *root, const char *config_name) {
     root->awar_string(AWAR_SPECIES_NAME, "", GLOBAL_gb_main);
     root->awar_string(AWAR_SAI_NAME,     "", GLOBAL_gb_main);
     root->awar_string(AWAR_SAI_GLOBAL,   "", GLOBAL_gb_main);
+    //    root->awar_string(AWAR_SAI_COLOR_STR, "", GLOBAL_gb_main); //sai visualization in probe match
 
     root->awar_string(AWAR_EDIT_CONFIGURATION, config_name, GLOBAL_gb_main);
 
@@ -362,7 +370,7 @@ static void ed4_create_all_awars(AW_root *root, const char *config_name) {
     // Note: cursor awars are created in window constructor
 
     ed4_create_mainDB_awars(root, config_name);
-
+    
 #if defined(DEBUG)
     AWT_create_db_browser_awars(root, AW_ROOT_DEFAULT);
 #endif // DEBUG
@@ -370,31 +378,34 @@ static void ed4_create_all_awars(AW_root *root, const char *config_name) {
     create_naligner_variables(root, AW_ROOT_DEFAULT);
     create_sina_variables(root, AW_ROOT_DEFAULT);
 
-    awar_edit_mode = AD_ALIGN;
+    awar_edit_modus = AD_ALIGN;
 
     int def_sec_level = 0;
 #ifdef DEBUG
     def_sec_level = 6; // don't nag developers
 #endif
-    root->awar_int(AWAR_EDIT_SECURITY_LEVEL, def_sec_level, AW_ROOT_DEFAULT);
+    root->awar_int( AWAR_EDIT_SECURITY_LEVEL, def_sec_level,AW_ROOT_DEFAULT);
 
-    root->awar_int(AWAR_EDIT_SECURITY_LEVEL_ALIGN, def_sec_level, AW_ROOT_DEFAULT)->add_callback(ed4_changesecurity, (AW_CL) def_sec_level);
-    root->awar_int(AWAR_EDIT_SECURITY_LEVEL_CHANGE, def_sec_level, AW_ROOT_DEFAULT)->add_callback(ed4_changesecurity, (AW_CL) def_sec_level);
+    root->awar_int( AWAR_EDIT_SECURITY_LEVEL_ALIGN, def_sec_level,AW_ROOT_DEFAULT)->add_callback(ed4_changesecurity,(AW_CL) def_sec_level);
+    root->awar_int( AWAR_EDIT_SECURITY_LEVEL_CHANGE, def_sec_level,AW_ROOT_DEFAULT)->add_callback(ed4_changesecurity,(AW_CL) def_sec_level);
 
-    root->awar_int(AWAR_EDIT_MODE,    0)->add_callback(ed4_change_edit_mode, (AW_CL)0);
-    root->awar_int(AWAR_INSERT_MODE, 1)->add_callback(ed4_change_edit_mode, (AW_CL)0);
+    //    root->awar_int( AWAR_EDIT_MODE, (long) awar_edit_modus )->add_target_var((long *) &awar_edit_modus)->add_callback(ed4_changesecurity,(AW_CL) 0);
 
-    root->awar_int(AWAR_EDIT_DIRECTION, 1)->add_target_var(&awar_edit_direction)->add_callback(ED4_edit_direction_changed);
-    root->awar_int(AWAR_EDIT_HELIX_SPACING, 0)->add_target_var(&ED4_ROOT->helix_add_spacing)->add_callback(ED4_do_expose);
-    root->awar_int(AWAR_EDIT_TERMINAL_SPACING, 0)->add_target_var(&ED4_ROOT->terminal_add_spacing)->add_callback(ED4_do_expose);
-    root->awar_int(AWAR_EDIT_TITLE_MODE, 0);
+    root->awar_int( AWAR_EDIT_MODE,   0)->add_callback(ed4_change_edit_mode, (AW_CL)0);
+    root->awar_int( AWAR_INSERT_MODE, 1)->add_callback(ed4_change_edit_mode, (AW_CL)0);
 
-    ed4_changesecurity(root, 0);
+    root->awar_int( AWAR_EDIT_DIRECTION, 1)->add_target_var(&awar_edit_direction)->add_callback(ED4_edit_direction_changed);
+    root->awar_int( AWAR_EDIT_HELIX_SPACING, 0)->add_target_var(&ED4_ROOT->helix_add_spacing)->add_callback(ED4_do_expose);
+    root->awar_int( AWAR_EDIT_TERMINAL_SPACING, 0)->add_target_var(&ED4_ROOT->terminal_add_spacing)->add_callback(ED4_do_expose);
+    root->awar_int( AWAR_EDIT_TITLE_MODE, 0);
 
-    root->awar_int(ED4_AWAR_COMPRESS_SEQUENCE_GAPS, 0)->add_callback(ED4_compression_toggle_changed_cb, AW_CL(0), 0);
-    root->awar_int(ED4_AWAR_COMPRESS_SEQUENCE_HIDE, 0)->add_callback(ED4_compression_toggle_changed_cb, AW_CL(1), 0);
-    root->awar_int(ED4_AWAR_COMPRESS_SEQUENCE_TYPE, 0)->add_callback(ED4_compression_changed_cb);
-    root->awar_int(ED4_AWAR_COMPRESS_SEQUENCE_PERCENT, 1)->add_callback(ED4_compression_changed_cb)->set_minmax(1, 99);
+    ed4_changesecurity(root,0);
+
+    root->awar_int(ED4_AWAR_COMPRESS_SEQUENCE_GAPS,0)->add_callback(ED4_compression_toggle_changed_cb, AW_CL(0), 0);
+    root->awar_int(ED4_AWAR_COMPRESS_SEQUENCE_HIDE,0)->add_callback(ED4_compression_toggle_changed_cb, AW_CL(1), 0);
+    root->awar_int(ED4_AWAR_COMPRESS_SEQUENCE_TYPE,0)->add_callback(ED4_compression_changed_cb);
+    root->awar_int(ED4_AWAR_COMPRESS_SEQUENCE_PERCENT,1)->add_callback(ED4_compression_changed_cb)->set_minmax(1,99);
+//     root->awar_int(ED4_AWAR_COMPRESS_LEFT_COLUMN,0);
 
     root->awar_int(ED4_AWAR_DIGITS_AS_REPEAT, 0);
     root->awar_int(ED4_AWAR_FAST_CURSOR_JUMP, 0);
@@ -416,7 +427,7 @@ static void ed4_create_all_awars(AW_root *root, const char *config_name) {
     ED4_gap_chars_changed(root);
     root->awar_int(ED4_AWAR_ANNOUNCE_CHECKSUM_CHANGES, 0);
 
-    GDE_create_var(ED4_ROOT->aw_root, ED4_ROOT->props_db, GLOBAL_gb_main, ED4_create_sequences_for_gde, GDE_WINDOWTYPE_EDIT4, 0);
+    create_gde_var(ED4_ROOT->aw_root, ED4_ROOT->db, ED4_create_sequences_for_gde, CGSS_WT_EDIT4, 0);
 
     root->awar_string(ED4_AWAR_CREATE_FROM_CONS_REPL_EQUAL, "-");
     root->awar_string(ED4_AWAR_CREATE_FROM_CONS_REPL_POINT, "?");
@@ -424,22 +435,22 @@ static void ed4_create_all_awars(AW_root *root, const char *config_name) {
     root->awar_int(ED4_AWAR_CREATE_FROM_CONS_ALL_UPPER, 1);
     root->awar_int(ED4_AWAR_CREATE_FROM_CONS_DATA_SOURCE, 0);
 
-    ED4_createVisualizeSAI_Awars(root, AW_ROOT_DEFAULT);
-    ED4_create_dot_missing_bases_awars(root, AW_ROOT_DEFAULT);
+    ED4_createVisualizeSAI_Awars(root,AW_ROOT_DEFAULT);
+    ED4_create_dot_missing_bases_awars(root,AW_ROOT_DEFAULT);
 
     // Create Awars To Be Used In Protein Viewer
-    if (ED4_ROOT->alignment_type == GB_AT_DNA) {
-        PV_CreateAwars(root, AW_ROOT_DEFAULT);
+    if(ED4_ROOT->alignment_type == GB_AT_DNA) {
+        PV_CreateAwars(root,AW_ROOT_DEFAULT);
     }
-
+    
     // create awars to be used for protein secondary structure match
-    if (ED4_ROOT->alignment_type == GB_AT_AA) {
+    if(ED4_ROOT->alignment_type == GB_AT_AA) {
         root->awar_int(PFOLD_AWAR_ENABLE, 1);
         root->awar_string(PFOLD_AWAR_SELECTED_SAI, "PFOLD");
         root->awar_int(PFOLD_AWAR_MATCH_METHOD, SECSTRUCT_SEQUENCE);
         int pt;
         char awar[256];
-        for (int i = 0; pfold_match_type_awars[i].name; i++) {
+        for (int i = 0; pfold_match_type_awars[i].name; i++){
             pt = pfold_match_type_awars[i].value;
             sprintf(awar, PFOLD_AWAR_PAIR_TEMPLATE, pfold_match_type_awars[i].name);
             root->awar_string(awar, pfold_pairs[pt])->add_target_var(&pfold_pairs[pt]);
@@ -481,13 +492,30 @@ const char *ED4_propertyName(int mode) {
     return result;
 }
 
+
+static void openProperties() {
+    for (int mode = 0; mode <= 2; ++mode) { // search for defaults-database
+        const char *name  = ED4_propertyName(mode);
+        AW_default  found = ED4_ROOT->aw_root->open_default(name, mode == 2); // if mode == 2 -> create if missing
+
+        if (found) {
+            ED4_ROOT->db      = found;
+            ED4_ROOT->db_name = strdup(name);
+            break;
+        }
+    }
+
+    GB_informationf("Using properties from '%s'", ED4_ROOT->db_name);
+    ED4_ROOT->aw_root->init_variables( ED4_ROOT->db); // pass defaults
+}
+
 int main(int argc, char **argv)
 {
     const char *data_path = ":";
     const char *err = NULL;
     char *config_name = NULL;
 
-    if (argc > 1 && ((strcmp(argv[1], "-h") == 0) || (strcmp(argv[1], "--help") == 0))) {
+    if (argc > 1 && ((strcmp(argv[1],"-h") == 0) || (strcmp(argv[1],"--help") == 0))) {
         fprintf(stderr,
                 "\n"
                 "arb_edit4 commandline reference:\n"
@@ -503,9 +531,9 @@ int main(int argc, char **argv)
                 );
     }
 
-    if (argc > 1 && strcmp(argv[1], "-c") == 0) {
+    if (argc > 1 && strcmp(argv[1],"-c") == 0) {
         config_name = new char[strlen(argv[2])+1];
-        strcpy(config_name, argv[2]);
+        strcpy(config_name,argv[2]);
         argc -= 2; argv += 2;
     }
     else { // load 'default_configuration' if no command line is given
@@ -521,8 +549,6 @@ int main(int argc, char **argv)
         argc--; argv++;
     }
 
-    aw_initstatus();
-
     GLOBAL_gb_main = GB_open(data_path, "rwt");
     if (!GLOBAL_gb_main)
     {
@@ -533,22 +559,25 @@ int main(int argc, char **argv)
 #if defined(DEBUG)
     AWT_announce_db_to_browser(GLOBAL_gb_main, GBS_global_string("ARB database (%s)", data_path));
 #endif // DEBUG
-
     ED4_ROOT = new ED4_root;
+
+    openProperties(); // open properties database
+
+    ED4_ROOT->aw_root->init_root("ARB_EDIT4", false); // initialize window-system
 
     ED4_ROOT->database = new EDB_root_bact;
     ED4_ROOT->init_alignment();
     ed4_create_all_awars(ED4_ROOT->aw_root, config_name);
 
-    ED4_ROOT->st_ml = STAT_create_ST_ML(GLOBAL_gb_main);
-    ED4_ROOT->sequence_colors = new AWT_seq_colors(AW_ROOT_DEFAULT, ED4_G_SEQUENCES, ED4_refresh_window, 0, 0);
+    ED4_ROOT->st_ml = new_ST_ML(GLOBAL_gb_main);
+    ED4_ROOT->sequence_colors = new AWT_seq_colors((GBDATA *)ED4_ROOT->aw_root->application_database,(int)ED4_G_SEQUENCES, ED4_refresh_window, 0,0);
 
     ED4_ROOT->edk = new ed_key;
     ED4_ROOT->edk->create_awars(ED4_ROOT->aw_root);
 
     ED4_ROOT->helix = new AW_helix(ED4_ROOT->aw_root);
 
-    if (err) {
+    if (err){
         aw_message(err);
         err = 0;
     }
@@ -563,7 +592,7 @@ int main(int argc, char **argv)
             err = ED4_pfold_set_SAI(&ED4_ROOT->protstruct, GLOBAL_gb_main, ED4_ROOT->alignment_name, &ED4_ROOT->protstruct_len);
             break;
 
-        default:
+        default :
             e4_assert(0);
             break;
     }
@@ -625,13 +654,16 @@ int main(int argc, char **argv)
         printf("Species container contains %i species (at startup)\n", ED4_elements_in_species_container);
 #endif
     }
-
+    
     // Create Additional sequence (aminoacid) terminals to be used in Protein Viewer
-    if (ED4_ROOT->alignment_type == GB_AT_DNA) {
+    if(ED4_ROOT->alignment_type == GB_AT_DNA) {
         PV_CallBackFunction(ED4_ROOT->aw_root);
     }
 
-    AWT_install_cb_guards();
     ED4_ROOT->aw_root->main_loop(); // enter main-loop
+}
+
+void AD_map_viewer(GBDATA *,AD_MAP_VIEWER_TYPE)
+{
 }
 

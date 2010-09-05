@@ -11,11 +11,29 @@
 #ifndef AWT_HXX
 #define AWT_HXX
 
+#ifndef ARB_ASSERT_H
+#include <arb_assert.h>
+#endif
+#define awt_assert(bed) arb_assert(bed)
+
 #ifndef AW_WINDOW_HXX
 #include <aw_window.hxx>
 #endif
+#ifndef ARBDB_H
+#include <arbdb.h>
+#endif
 
-#define awt_assert(bed) arb_assert(bed)
+// ------------------------------------------------------------
+// filename related functions:
+
+char       *AWT_fold_path(char *path, const char *pwd = "PWD");
+char       *AWT_unfold_path(const char *path, const char *pwd = "PWD");
+const char *AWT_valid_path(const char *path);
+
+int   AWT_is_dir(const char *path);
+int   AWT_is_file(const char *path);
+int   AWT_is_link(const char *path);
+char *AWT_extract_directory(const char *path);
 
 // ------------------------------------------------------------
 
@@ -72,7 +90,7 @@ struct ad_item_selector {
 
     GBDATA *(*get_first_item_container)(GBDATA *, AW_root *, AWT_QUERY_RANGE); // AW_root may be NULL for AWT_QUERY_ALL_SPECIES and AWT_QUERY_MARKED_SPECIES
     GBDATA *(*get_next_item_container)(GBDATA *, AWT_QUERY_RANGE); // use same AWT_QUERY_RANGE as in get_first_item_container()
-
+    
     GBDATA *(*get_first_item)(GBDATA *);
     GBDATA *(*get_next_item)(GBDATA *);
 
@@ -88,15 +106,55 @@ GBDATA *AWT_get_item_with_id(GBDATA *gb_main, const ad_item_selector *sel, const
 extern ad_item_selector AWT_species_selector;
 extern ad_item_selector AWT_organism_selector;
 
-// ------------------
-//      query box
+/**************************************************************************
+ *********************       File Selection Boxes    *******************
+ ***************************************************************************/
 
-typedef AW_window *(*awt_create_viewer_window_cb)(AW_root *aw_root, AW_CL cl_gb_main);
+void awt_create_selection_box(AW_window *aws, const char *awar_prefix, const char *at_prefix = "", const char *pwd = "PWD", bool show_dir = true, bool allow_wildcards = false);
+/* Create a file selection box, this box needs 3 AWARS:
 
-#define IS_QUERIED(gb_species, cbs)   (cbs->select_bit & GB_read_usr_private(gb_species))
+1. "$awar_prefix/filter"
+2. "$awar_prefix/directory"
+3. "$awar_prefix/file_name"
+
+(Note: The function aw_create_selection_box_awars can be used to create them)
+*/
+
+/* the "$awar_prefix/file_name" contains the full filename
+   Use awt_get_selected_fullname() to read it.
+
+The items are placed at
+
+1. "$at_prefix""filter"
+2. "$at_prefix""box"
+3. "$at_prefix""file_name"
+
+if show_dir== true than show directories and files
+else only files
+
+pwd is a 'shell enviroment variable' which indicates the base directory
+( mainly PWD or ARBHOME ) */
+
+char *awt_get_selected_fullname(AW_root *awr, const char *awar_prefix);
+
+void awt_refresh_selection_box(AW_root *awr, const char *awar_prefix);
+
+// -------------------------------
+
+AW_window *create_save_box_for_selection_lists(AW_root *aw_root,AW_CL selid);
+AW_window *create_load_box_for_selection_lists(AW_root *aw_root,AW_CL selid);
+void create_print_box_for_selection_lists(AW_window *aw_window,AW_CL selid);
+/* Create a file selection box to save a selection list */
+
+/**************************************************************************
+ *********************   Query Box           *******************
+ ***************************************************************************/
+
+
+#define IS_QUERIED(gb_species,cbs)    (cbs->select_bit & GB_read_usr_private(gb_species))
 class awt_query_struct {
 public:
-    awt_query_struct();
+    awt_query_struct(void);
 
     GBDATA *gb_main;                                // the main database (in merge tool: source db in left query; dest db in right query)
     GBDATA *gb_ref;                                 // second reference database (only used by merge tool; dest db in left query; source db in right query)
@@ -104,22 +162,25 @@ public:
     AWAR    species_name;                           // AWAR containing current species name
     AWAR    tree_name;                              // AWAR containing current tree name
 
-    const ad_item_selector *selector;               // which kind of item do we handle?
+    const ad_item_selector *selector;  // which kind of item do we handle?
 
-    int select_bit;                                 // one of 1 2 4 8 .. 128 (one for each query box)
-    int use_menu;                                   // put additional commands in menu
+    //     bool query_genes;           // true -> create gene query box
+    //     AWAR gene_name;             // AWAR containing current gene name
 
-    const char *ere_pos_fig;                        // rebuild enlarge reduce
-    const char *where_pos_fig;                      // current, marked or all species (used for sub-items of species)
-    const char *by_pos_fig;                         // fit query don't fit, marked
+    int select_bit;             // one of 1 2 4 8 .. 128 (one for each query box)
+    int use_menu;               // put additional commands in menu
 
-    const char *qbox_pos_fig;                       // key box for queries
-    const char *rescan_pos_fig;                     // rescan label
-    const char *key_pos_fig;                        // the key
-    const char *query_pos_fig;                      // the query
+    const char *ere_pos_fig;    // rebuild enlarge reduce
+    const char *where_pos_fig;  // current, marked or all species (used for sub-items of species)
+    const char *by_pos_fig;     // fit query dont fit, marked
+
+    const char *qbox_pos_fig;   // key box for queries
+    const char *rescan_pos_fig; // rescan label
+    const char *key_pos_fig;    // the key
+    const char *query_pos_fig;  // the query
 
 
-    const char *result_pos_fig;                     // the result box
+    const char *result_pos_fig; // the result box
     const char *count_pos_fig;
 
     const char *do_query_pos_fig;
@@ -127,39 +188,57 @@ public:
     const char *do_mark_pos_fig;
     const char *do_unmark_pos_fig;
     const char *do_delete_pos_fig;
-    const char *do_set_pos_fig;                     // multi set a key
+    const char *do_set_pos_fig; // multi set a key
     const char *open_parser_pos_fig;
     const char *do_refresh_pos_fig;
-
-    awt_create_viewer_window_cb create_view_window;
+    AW_CL       create_view_window;     // AW_window *(*create_view_window)(AW_root *aw_root)
 
     const char *info_box_pos_fig;
 
 };
 
-struct DbQuery;
-void awt_copy_selection_list_2_queried_species(DbQuery *cbs, AW_selection_list *id, const char *hit_description);
-DbQuery *awt_create_query_box(AW_window *aws, awt_query_struct *awtqs, const char *query_id); // create the query box
-void awt_search_equal_entries(AW_window *dummy, DbQuery *cbs, bool tokenize);
-long awt_count_queried_items(DbQuery *cbs, AWT_QUERY_RANGE range);
-void awt_unquery_all(void *dummy, DbQuery *cbs);
-
-// ------------------------------------------------------------
+struct adaqbsstruct;
+void awt_copy_selection_list_2_queried_species(struct adaqbsstruct *cbs, AW_selection_list *id, const char *hit_description);
+struct adaqbsstruct *awt_create_query_box(AW_window *aws, awt_query_struct *awtqs, const char *query_id); // create the query box
+/* Create the query box */
+void awt_search_equal_entries(AW_window *dummy, struct adaqbsstruct *cbs, bool tokenize);
+long awt_count_queried_items(struct adaqbsstruct *cbs, AWT_QUERY_RANGE range);
+void awt_unquery_all(void *dummy, struct adaqbsstruct *cbs);
 
 AW_window *awt_create_item_colorizer(AW_root *aw_root, GBDATA *gb_main, const ad_item_selector *sel);
+
+/**************************************************************************
+ *********************   Simple Awar Controll Procs  *******************
+ ***************************************************************************/
 
 void awt_set_long(AW_window *aws, AW_CL varname, AW_CL value);      // set an awar
 void awt_set_string(AW_window *aws, AW_CL varname, AW_CL value);    // set an awar
 
-void AWT_create_ascii_print_window(AW_root *awr, const char *text_to_print, const char *title=0);
-void AWT_write_file(const char *filename, const char *file);
+/**************************************************************************
+ *********************   Call External Editor        *******************
+ ***************************************************************************/
+
+typedef void (*awt_fileChanged_cb)(const char *path, bool fileWasChanged, bool editorTerminated);
+void AWT_edit(const char *path, awt_fileChanged_cb callback = 0, AW_window *aww = 0, GBDATA *gb_main = 0);
+
+void AWT_create_ascii_print_window(AW_root *awr, const char *text_to_print,const char *title=0);
+void AWT_write_file(const char *filename,const char *file);
 void AWT_show_file(AW_root *awr, const char *filename);
+
+enum AD_MAP_VIEWER_TYPE {
+    ADMVT_INFO,
+    ADMVT_WWW,
+    ADMVT_SELECT
+};
+void AD_map_viewer(GBDATA *gbd,AD_MAP_VIEWER_TYPE type = ADMVT_INFO);
 
 // open database viewer using input-mask-file
 class awt_item_type_selector;
 GB_ERROR AWT_initialize_input_mask(AW_root *root, GBDATA *gb_main, const awt_item_type_selector *sel, const char* mask_name, bool localMask);
 
-
+//  ----------------------------------------
+//      class awt_input_mask_descriptor
+//  ----------------------------------------
 class awt_input_mask_descriptor {
 private:
     char *title;                // title of the input mask
@@ -191,15 +270,10 @@ const awt_input_mask_descriptor *AWT_look_input_mask(int id); // id starts with 
 // database browser :
 void AWT_create_db_browser_awars(AW_root *aw_root, AW_default aw_def);
 void AWT_announce_db_to_browser(GBDATA *gb_main, const char *description);
-void AWT_announce_properties_to_browser(GBDATA *gb_defaults, const char *defaults_name);
 void AWT_browser_forget_db(GBDATA *gb_main);
 
 void AWT_create_debug_menu(AW_window *awmm);
 #endif // DEBUG
-
-AW_root *AWT_create_root(const char *properties, const char *program);
-
-void AWT_install_cb_guards();
 
 #else
 #error awt.hxx included twice

@@ -1,21 +1,13 @@
-/* ============================================================= */
-/*                                                               */
-/*   File      : align.c                                         */
-/*   Purpose   :                                                 */
-/*                                                               */
-/*   Institute of Microbiology (Technical University Munich)     */
-/*   http://www.arb-home.de/                                     */
-/*                                                               */
-/* ============================================================= */
+#include <stdlib.h>
+#include <stdio.h>
+#include <math.h>
+#include <string.h>
 
-#include "mem.h"
+#include "memory.h"
 #include "trnsprob.h"
 
 #define EXTERN
 #include "i-hopper.h"
-
-#include <stdio.h>
-#include <math.h>
 
 #define MSIZE          512
 #define ESIZE          36
@@ -165,8 +157,7 @@ static double getEntropy(double **E,double m,int l) {
         return(
                ((mb-m)*E[l][ja]+(m-ma)*E[l][jb])/(mb-ma)
                );
-    }
-    else {
+    } else {
         if(l<=32) {
             if(l<=18) {la=16; lb=18; ia=16; ib=17;} else
                 if(l<=20) {la=18; lb=20; ia=17; ib=18;} else
@@ -186,8 +177,7 @@ static double getEntropy(double **E,double m,int l) {
                                     if(l<=56) {la=52; lb=56; ia=29; ib=30;} else
                                         if(l<=60) {la=56; lb=60; ia=30; ib=31;} else
                                             if(l<=64) {la=60; lb=64; ia=31; ib=32;}
-            }
-            else {
+            } else {
                 if(l<= 128) {la=  64; lb= 128; ia=32; ib=33;} else
                     if(l<= 256) {la= 128; lb= 256; ia=33; ib=34;} else
                         if(l<= 512) {la= 256; lb= 512; ia=34; ib=35;} else
@@ -342,8 +332,7 @@ static Island *newIsland(char *X,char *Y,int i,int j,int d) {
         *ff=NULL;
         p->beginX= i; p->beginY= j;
         p->endX  =ii; p->endY  =jj;
-    }
-    else {
+    } else {
         L=NULL;
         for(;;) {
             s+=GS[(int)X[ii]][(int)Y[jj]];
@@ -549,6 +538,7 @@ static void drawIsland(Island *f) {
                i>=0&&i<TELEN&&j>=0&&j<TELEN /* &&score>TE[i][j] */
                ) {
                 TE[i][j]=score;
+                /* TE[i][j]=-1.; */
             }
 #endif
 
@@ -822,8 +812,7 @@ void Align(
 
     if(freqs) {
         if(fT<=0.||fC<=0.||fA<=0.||fG<=0.) {Error="Bad argument"; return;}
-    }
-    else {
+    } else {
         fT=0.; fC=0.; fA=0.; fG=0.;
         for(s=X;*s;s++) {
             switch(*s) {
@@ -877,3 +866,5 @@ void Align(
     for(i=0;i<nY;i++) Y[i]=decodeBase(Y[i]);
 
 }
+
+

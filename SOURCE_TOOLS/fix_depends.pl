@@ -11,8 +11,7 @@
 # Goal of this script is to unify the result of 'make depends'
 # to avoid CVS/SVN changes caused by formatting.
 
-my $arbhome_quoted = quotemeta($ENV{ARBHOME});
-my $arbhome = qr/$arbhome_quoted/;
+my $arbhome = qr/$ENV{ARBHOME}/;
 my $makedependlineseen = 0;
 my @depends;
 
@@ -72,7 +71,7 @@ print "# For formatting issues see SOURCE_TOOLS/fix_depends.pl\n";
 # sort dependency lines
 
 sub beautiful($$) {
-  # sorts files alphabetically (ign. case)
+  # sorts files alphabethically (ign. case)
   # sorts local dependencies first (for each file)
   my ($a,$b) = @_;
   my ($ap,$bp) = ('','');

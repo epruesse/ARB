@@ -1,18 +1,12 @@
-// =============================================================== //
-//                                                                 //
-//   File      : arb_perf_test.cxx                                 //
-//   Purpose   :                                                   //
-//                                                                 //
-//   Institute of Microbiology (Technical University Munich)       //
-//   http://www.arb-home.de/                                       //
-//                                                                 //
-// =============================================================== //
-
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+#include <sys/time.h>
+#include <arbdb.h>
 #include <arbdbt.h>
 
-#include <climits>
-#include <ctime>
-#include <sys/time.h>
+#include <limits.h>
+
 
 // --------------------------------------------------------------------------------
 // data used for tests
@@ -24,7 +18,7 @@ static GBDATA *gb_main         = 0;
 // Test functions
 
 static void iterate(GBDATA *gbd) {
-    for (GBDATA *gb_child = GB_child(gbd); gb_child; gb_child = GB_nextChild(gb_child)) {
+    for (GBDATA *gb_child = GB_child(gbd); gb_child; gb_child = GB_nextChild(gb_child))  {
         iterate(gb_child);
     }
 }
@@ -33,11 +27,11 @@ static void test_GB_iterate_DB() { // iterate through all DB elements
     iterate(gb_main);
 }
 static void test_GB_find_string() {
-    GB_find_string(gb_species_data, "full_name", "asdfasdf", GB_IGNORE_CASE, SEARCH_GRANDCHILD);
+    GB_find_string(gb_species_data,"full_name","asdfasdf", GB_IGNORE_CASE, down_2_level);
 }
 static void test_GB_find_string_indexed() {
     // field 'name' is indexed by GBT_open!
-    GB_find_string(gb_species_data, "name", "asdfasdf", GB_IGNORE_CASE, SEARCH_GRANDCHILD);
+    GB_find_string(gb_species_data,"name","asdfasdf", GB_IGNORE_CASE, down_2_level);
 }
 
 // --------------------------------------------------------------------------------
@@ -52,7 +46,7 @@ struct Test {
     test_fun     fun;
 };
 
-#define TEST(fun) { #fun, test_##fun }
+#define TEST(fun ) { #fun, test_##fun }
 
 static Test Test[] = {
     TEST(GB_iterate_DB),
@@ -67,18 +61,18 @@ static Test Test[] = {
 static long callDelay(long loops);
 
 #define SECOND      1000000
-#define WANTED_TIME 5*SECOND // time reserved for each test
+#define WANTED_TIME 5*SECOND // time reserved for each test 
 
 static long run_test(test_fun fun, long loops, double *perCall) {
     /* returns time for test 'fun' in microseconds */
     struct timeval t1;
     struct timeval t2;
 
-    gettimeofday(&t1, 0);
+    gettimeofday(&t1,0);
     for (int i = 0; i<loops; ++i) {
         fun();
     }
-    gettimeofday(&t2, 0);
+    gettimeofday(&t2,0);
 
     long usecs  = t2.tv_sec - t1.tv_sec;
     usecs      *= SECOND;
@@ -116,6 +110,7 @@ static long estimate_loops(test_fun fun) {
     long   duration = run_test(fun, loops, &perCall);
 
     while (duration<1000) {
+        // printf("duration for %li loops was %li\n", loops, duration);
         loops = (loops*10000.0)/duration+1;
         if (loops>0) {
             duration = run_test(fun, loops, &perCall);
@@ -124,12 +119,13 @@ static long estimate_loops(test_fun fun) {
 
     loops = (loops*double(WANTED_TIME))/duration+1;
     if (loops <= 0) loops = LONG_MAX;
+    // printf("estimate_loops=%li\n", loops);
     return loops;
 }
 
 static long count_elements(GBDATA *gbd) {
     long count = 0;
-    for (GBDATA *gb_child = GB_child(gbd); gb_child; gb_child = GB_nextChild(gb_child)) {
+    for (GBDATA *gb_child = GB_child(gbd); gb_child; gb_child = GB_nextChild(gb_child))  {
         count += count_elements(gb_child);
     }
     return count+1; // self
@@ -140,16 +136,16 @@ int main(int argc, char **argv)
     GB_ERROR error = 0;
 
     if (argc == 0) {
-        fprintf(stderr, "arb_perf_test source.arb\n");
-        fprintf(stderr, "Test performance of some commands - see source code\n");
+        fprintf(stderr,"arb_perf_test source.arb\n");
+        fprintf(stderr,"Test performance of some commands - see source code\n");
 
         error = "Missing arguments";
     }
     else {
         char *in = argv[1];
-        gb_main  = GBT_open(in, "rw", 0);
+        gb_main  = GBT_open(in,"rw",0);
 
-        if (!gb_main) {
+        if (!gb_main){
             error = GB_await_error();
         }
         else {
@@ -174,7 +170,7 @@ int main(int argc, char **argv)
                 printf("Test #%i: %-25s %10li loops = %10li us (%10.2f us/call, %10.2f calls/sec)\n",
                        test+1,
                        Test[test].name,
-                       esti_loops,
+                       esti_loops, 
                        usecs,
                        perCall,
                        SECOND/perCall);

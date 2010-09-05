@@ -1,22 +1,19 @@
-// ================================================================ //
-//                                                                  //
-//   File      : a3_seq.hxx                                         //
-//   Purpose   :                                                    //
-//                                                                  //
-//   Institute of Microbiology (Technical University Munich)        //
-//   http://www.arb-home.de/                                        //
-//                                                                  //
-// ================================================================ //
+// -----------------------------------------------------------------------------
 
-#ifndef A3_SEQ_HXX
-#define A3_SEQ_HXX
+#ifndef _A3_SEQ_HXX
+#define _A3_SEQ_HXX
 
-#ifndef A3_TYPES_H
+// -----------------------------------------------------------------------------
+//  Include-Dateien
+// -----------------------------------------------------------------------------
+
+#include <string.h>
+
 #include "a3_types.h"
-#endif
-#ifndef _CPP_CSTRING
-#include <cstring>
-#endif
+
+// -----------------------------------------------------------------------------
+//  Datentypen
+// -----------------------------------------------------------------------------
 
 class Sequence              // Klasse fuer RNS-Sequenzen
 {
@@ -62,6 +59,8 @@ class Sequence              // Klasse fuer RNS-Sequenzen
     void    Dump            ( void );                                   // Gibt die Sequenz aus
 };
 
-#else
-#error a3_seq.hxx included twice
-#endif // A3_SEQ_HXX
+// -----------------------------------------------------------------------------
+
+#endif
+
+// -----------------------------------------------------------------------------

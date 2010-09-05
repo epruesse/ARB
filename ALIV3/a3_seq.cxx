@@ -1,22 +1,18 @@
-// ================================================================ //
-//                                                                  //
-//   File      : a3_seq.cxx                                         //
-//   Purpose   :                                                    //
-//                                                                  //
-//   Institute of Microbiology (Technical University Munich)        //
-//   http://www.arb-home.de/                                        //
-//                                                                  //
-// ================================================================ //
+// -----------------------------------------------------------------------------
+//  Include-Dateien
+// -----------------------------------------------------------------------------
+
+#include <iostream>
+#include <fstream>
+#include <cstdlib>
+#include <ctime>
+
+#include <arbdb.h>
 
 #include "a3_basen.h"
 #include "a3_seq.hxx"
 
-#include <arbdb.h>
 #include <inline.h>
-
-#include <iostream>
-#include <fstream>
-#include <ctime>
 
 using std::ifstream;
 using std::cout;
@@ -132,6 +128,8 @@ using std::cout;
             {
                 if (tmp) delete tmp, tmp = NULL;
                 
+//              if (!input.gets(&tmp)) error = 1;
+
                 line--;
             }
 

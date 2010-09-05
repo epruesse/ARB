@@ -7,14 +7,13 @@
 #ifndef AW_KEYSYM_HXX
 #include <aw_keysym.hxx>
 #endif
-#ifndef _Xm_h
-#include <Xm/Xm.h>
-#endif
 
-// macro definitions
+// Makrodefinitionen
 #define  p_r        prvt
 #define  p_global   (root->prvt)
 #define  p_aww(aww) (aww->p_w)
+
+bool AW_remove_button_from_sens_list(AW_root *aw_root, Widget w);
 
 #define MAP_ARAM(ar) p_w->areas[ar]
 
@@ -26,43 +25,47 @@
 #define AW_SCROLL_MAX 100
 #define AW_MAX_MENU_DEEP 10
 
-#define RES_CONVERT(res_name, res_value)  \
+#define RES_CONVERT( res_name, res_value) \
     XtVaTypedArg, (res_name), XmRString, (res_value), strlen(res_value) + 1
 
 #define AW_MOTIF_LABEL
 
-#define RES_LABEL_CONVERT(str)                                     \
-    XmNlabelType, (str[0]=='#') ? XmPIXMAP : XmSTRING,             \
-    XtVaTypedArg, (str[0]=='#') ? XmNlabelPixmap : XmNlabelString, \
-    XmRString,                                                     \
-    aw_str_2_label(str, this),                                     \
-    strlen(aw_str_2_label(str, this))+1
+#define RES_LABEL_CONVERT(str) \
+    XmNlabelType, (str[0]=='#')?XmPIXMAP:XmSTRING,\
+    XtVaTypedArg, (str[0]=='#')?XmNlabelPixmap:XmNlabelString, \
+    XmRString, \
+    aw_str_2_label(str,this), \
+    strlen(aw_str_2_label(str,this))+1
 
-#define RES_LABEL_CONVERT2(str, aww)                               \
-    XmNlabelType, (str[0]=='#') ? XmPIXMAP : XmSTRING,             \
-    XtVaTypedArg, (str[0]=='#') ? XmNlabelPixmap : XmNlabelString, \
-    XmRString,                                                     \
-    aw_str_2_label(str, aww),                                      \
-    strlen(aw_str_2_label(str, aww))+1
+#define RES_LABEL_CONVERT2(str,aww) \
+    XmNlabelType, (str[0]=='#')?XmPIXMAP:XmSTRING,\
+    XtVaTypedArg, (str[0]=='#')?XmNlabelPixmap:XmNlabelString, \
+    XmRString, \
+    aw_str_2_label(str,aww), \
+    strlen(aw_str_2_label(str,aww))+1
 
 
-#define AW_JUSTIFY_LABEL(widget, corr)                                                \
-    switch (corr) {                                                                   \
-        case 1: XtVaSetValues(widget, XmNalignment, XmALIGNMENT_CENTER, NULL); break; \
-        case 2: XtVaSetValues(widget, XmNalignment, XmALIGNMENT_END, NULL); break;    \
-        default: break;                                                               \
+#define AW_JUSTIFY_LABEL(widget,corr) \
+    switch(corr){\
+        case 1: XtVaSetValues( widget,XmNalignment,XmALIGNMENT_CENTER,NULL);break;\
+        case 2: XtVaSetValues( widget,XmNalignment,XmALIGNMENT_END,NULL);break;\
+        default: break;\
     }
 
 
+/*************************************************************************/
 struct AW_timer_cb_struct {
-    AW_timer_cb_struct(AW_root *ari, void (*g)(AW_root*, AW_CL, AW_CL), AW_CL cd1i, AW_CL cd2i);
-    ~AW_timer_cb_struct();
+    AW_timer_cb_struct(AW_root *ari, void (*g)(AW_root*,AW_CL ,AW_CL), AW_CL cd1i, AW_CL cd2i);
+    ~AW_timer_cb_struct(void);
     AW_root *ar;
-    void (*f)(AW_root*, AW_CL, AW_CL);
+    void (*f)(AW_root*,AW_CL ,AW_CL);
     AW_CL cd1;
     AW_CL cd2;
 };
 
+
+
+/************************************************************************/
 struct AW_buttons_struct {
     AW_buttons_struct(AW_active maski, Widget w, AW_buttons_struct *next);
     ~AW_buttons_struct();
@@ -72,10 +75,24 @@ struct AW_buttons_struct {
     AW_buttons_struct *next;
 };
 
+
+/************************************************************************/
+struct AW_config_struct {
+    AW_config_struct( const char *idi, AW_active maski, Widget w, const char *variable_namei, const char *variable_valuei, AW_config_struct *nexti );
+
+    const char       *id;
+    AW_active         mask;
+    Widget            widget;
+    const char       *variable_name;
+    const char       *variable_value;
+    AW_config_struct *next;
+};
+
+
 struct AW_option_struct {
-    AW_option_struct(const char *variable_valuei, Widget choice_widgeti);
-    AW_option_struct(int variable_valuei, Widget choice_widgeti);
-    AW_option_struct(float variable_valuei, Widget choice_widgeti);
+    AW_option_struct( const char *variable_valuei, Widget choice_widgeti );
+    AW_option_struct( int variable_valuei, Widget choice_widgeti );
+    AW_option_struct( float variable_valuei, Widget choice_widgeti );
     ~AW_option_struct();
 
     char             *variable_value;
@@ -86,7 +103,7 @@ struct AW_option_struct {
 };
 
 struct AW_option_menu_struct {
-    AW_option_menu_struct(int numberi, const char *variable_namei, AW_VARIABLE_TYPE variable_typei, Widget label_widgeti, Widget menu_widgeti, AW_pos xi, AW_pos yi, int correct);
+    AW_option_menu_struct( int numberi, const char *variable_namei, AW_VARIABLE_TYPE variable_typei, Widget label_widgeti, Widget menu_widgeti, AW_pos xi, AW_pos yi, int correct);
 
     int               option_menu_number;
     char             *variable_name;
@@ -106,9 +123,9 @@ struct AW_option_menu_struct {
 
 struct AW_toggle_struct {
 
-    AW_toggle_struct(const char *variable_valuei, Widget choice_widgeti);
-    AW_toggle_struct(int variable_valuei, Widget choice_widgeti);
-    AW_toggle_struct(float variable_valuei, Widget choice_widgeti);
+    AW_toggle_struct( const char *variable_valuei, Widget choice_widgeti );
+    AW_toggle_struct( int variable_valuei, Widget choice_widgeti );
+    AW_toggle_struct( float variable_valuei, Widget choice_widgeti );
 
     char   *variable_value;
     int     variable_int_value;
@@ -121,7 +138,7 @@ struct AW_toggle_struct {
 
 struct AW_toggle_field_struct {
 
-    AW_toggle_field_struct(int toggle_field_numberi, const char *variable_namei, AW_VARIABLE_TYPE variable_typei, Widget label_widgeti, int correct);
+    AW_toggle_field_struct( int toggle_field_numberi, const char *variable_namei, AW_VARIABLE_TYPE variable_typei, Widget label_widgeti, int correct);
 
     int               toggle_field_number;
     char             *variable_name;
@@ -139,12 +156,12 @@ struct AW_toggle_field_struct {
 
 struct AW_select_table_struct {
 
-    AW_select_table_struct(const char *displayedi, const char *value);
-    AW_select_table_struct(const char *displayedi, long value);
-    AW_select_table_struct(const char *displayedi, float value);
-    AW_select_table_struct(const char *displayedi, void *pointer);
+    AW_select_table_struct( const char *displayedi, const char *value );
+    AW_select_table_struct( const char *displayedi, long value );
+    AW_select_table_struct( const char *displayedi, float value );
+    AW_select_table_struct( const char *displayedi, void *pointer );
 
-    ~AW_select_table_struct();
+    ~AW_select_table_struct( void );
 
     static char *copy_string(const char *str);
 
@@ -163,8 +180,11 @@ struct AW_select_table_struct {
     AW_select_table_struct *next;
 };
 
-// -------------------------------------------
-//      area management: devices callbacks
+
+
+/*****************************************************************************************************
+        area management:    devices callbacks
+*****************************************************************************************************/
 
 class AW_common;
 class AW_device_Xm;
@@ -198,21 +218,21 @@ public:
 
     void create_devices(AW_window *aww, AW_area ar);
 
-    void set_expose_callback(AW_window *aww, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2);
-    void set_resize_callback(AW_window *aww, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2);
-    void set_input_callback(AW_window *aww, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2);
-    void set_double_click_callback(AW_window *aww, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2);
-    void set_motion_callback(AW_window *aww, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2);
+    void set_expose_callback(AW_window *aww, void (*f)(AW_window*,AW_CL,AW_CL), AW_CL cd1, AW_CL cd2);
+    void set_resize_callback(AW_window *aww, void (*f)(AW_window*,AW_CL,AW_CL), AW_CL cd1, AW_CL cd2);
+    void set_input_callback(AW_window *aww, void (*f)(AW_window*,AW_CL,AW_CL), AW_CL cd1, AW_CL cd2);
+    void set_double_click_callback(AW_window *aww, void (*f)(AW_window*,AW_CL,AW_CL), AW_CL cd1, AW_CL cd2);
+    void set_motion_callback(AW_window *aww, void (*f)(AW_window*,AW_CL,AW_CL), AW_CL cd1, AW_CL cd2);
 
-    bool is_expose_callback(AW_window *aww, void (*f)(AW_window*, AW_CL, AW_CL));
-    bool is_resize_callback(AW_window *aww, void (*f)(AW_window*, AW_CL, AW_CL));
-    bool is_input_callback(AW_window *aww, void (*f)(AW_window*, AW_CL, AW_CL));
-    bool is_double_click_callback(AW_window *aww, void (*f)(AW_window*, AW_CL, AW_CL));
-    bool is_motion_callback(AW_window *aww, void (*f)(AW_window*, AW_CL, AW_CL));
+    bool is_expose_callback(AW_window *aww, void (*f)(AW_window*,AW_CL,AW_CL));
+    bool is_resize_callback(AW_window *aww, void (*f)(AW_window*,AW_CL,AW_CL));
+    bool is_input_callback(AW_window *aww, void (*f)(AW_window*,AW_CL,AW_CL));
+    bool is_double_click_callback(AW_window *aww, void (*f)(AW_window*,AW_CL,AW_CL));
+    bool is_motion_callback(AW_window *aww, void (*f)(AW_window*,AW_CL,AW_CL));
 
-    AW_area_management(AW_root *awr, Widget form, Widget widget);
+    AW_area_management(AW_root *awr,Widget form,Widget widget);
 };
-
+/************************************************************************/
 
 class AW_selection_list;
 
@@ -230,6 +250,11 @@ public:
     Pixel background;
 
     XmFontList fontlist;
+
+    AW_buttons_struct *button_list;
+
+    AW_config_struct *config_list;
+    AW_config_struct *last_config;
 
     AW_option_menu_struct *option_menu_list;
     AW_option_menu_struct *last_option_menu;
@@ -259,18 +284,18 @@ public:
     FILE    *executing_macro_file;
     GB_HASH *action_hash;
 
-    AW_root_Motif();
-    ~AW_root_Motif();
+    AW_root_Motif() {};
+    ~AW_root_Motif() {};
 
     Widget get_last_widget() const { return last_widget; }
     void set_last_widget(Widget w) { last_widget = w; }
 
     void set_cursor(Display *d, Window w, Cursor c);
-    void normal_cursor();
+    void normal_cursor(void);
 };
 
+/**********************************************************************/
 const int AW_NUMBER_OF_F_KEYS = 20;
-#define AW_FIX_POS_ON_EXPOSE -12345
 
 class AW_window_Motif {
 public:
@@ -308,17 +333,14 @@ public:
 
 
 void        aw_root_init_font(Display *tool_d);
-const char *aw_str_2_label(const char *str, AW_window *aww);
-void        AW_label_in_awar_list(AW_window *aww, Widget widget, const char *str);
+const char *aw_str_2_label(const char *str,AW_window *aww);
+void        AW_label_in_awar_list(AW_window *aww,Widget widget,const char *str);
 void        AW_server_callback(Widget wgt, XtPointer aw_cb_struct, XtPointer call_data);
-
-// ------------------------------------------------------------
-// do not use the following functions
-void message_cb(AW_window *aw, AW_CL cd1);
-void input_cb(AW_window *aw, AW_CL cd1);
-void input_history_cb(AW_window *aw, AW_CL cl_mode);
-void file_selection_cb(AW_window *aw, AW_CL cd1);
-// ------------------------------------------------------------
+void        aw_message_timer_listen_event(AW_root *awr, AW_CL cl1, AW_CL cl2);
+void        message_cb( AW_window *aw, AW_CL cd1 );
+// void        macro_message_cb( AW_window *aw, AW_CL cd1 );
+void        input_cb( AW_window *aw, AW_CL cd1 );
+void        input_history_cb( AW_window *aw, AW_CL cl_mode); // internal
 
 Widget aw_create_shell(AW_window *aww, bool allow_resize, bool allow_close, int width, int height, int posx, int posy);
 void   aw_realize_widget(AW_window *aww);

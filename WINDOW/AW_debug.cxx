@@ -9,10 +9,13 @@
 //                                                             //
 // =========================================================== //
 
+
+#include <Xm/Xm.h>
+
+#include "aw_root.hxx"
 #include "aw_window.hxx"
 #include "aw_Xm.hxx"
 #include "aw_window_Xm.hxx"
-
 #include <arbdbt.h>
 
 #include <vector>
@@ -34,7 +37,7 @@ static GB_HASH *alreadyCalledHash = 0;
 
 static void forgetCalledCallbacks() {
     if (alreadyCalledHash) GBS_free_hash(alreadyCalledHash);
-    alreadyCalledHash = GBS_create_hash(2500, GB_MIND_CASE);
+    alreadyCalledHash = GBS_create_hash(5000, GB_MIND_CASE);
 }
 
 static long auto_dontcall1(const char *key, long value, void *cl_hash) {
@@ -51,7 +54,7 @@ static long auto_dontcall2(const char *key, long value, void *) {
 
 static void build_dontCallHash() {
     aw_assert(!dontCallHash);
-    dontCallHash = GBS_create_hash(100, GB_MIND_CASE);
+    dontCallHash = GBS_create_hash(30, GB_MIND_CASE);
     forgetCalledCallbacks();
 
     GBS_write_hash(dontCallHash, "ARB_NT/QUIT",    1);
@@ -60,7 +63,7 @@ static void build_dontCallHash() {
     GBS_write_hash(dontCallHash, "ARB_INTRO/CANCEL", 1);
 
     // avoid start of some external programs:
-#if 1
+#if 1    
     GBS_write_hash(dontCallHash, "ARB_NT/EDIT_SEQUENCES",                              2);
     GBS_write_hash(dontCallHash, "CPR_MAIN/HELP",                                      2);
     GBS_write_hash(dontCallHash, "GDE__user__Start_a_slave_ARB_on_a_foreign_host_/GO", 2);
@@ -70,6 +73,7 @@ static void build_dontCallHash() {
     GBS_write_hash(dontCallHash, "MACROS/EXECUTE",                                     2);
     GBS_write_hash(dontCallHash, "NAME_SERVER_ADMIN/EDIT_NAMES_FILE",                  2);
     GBS_write_hash(dontCallHash, "arb_dist",                                           2);
+    GBS_write_hash(dontCallHash, "arb_edit",                                           2);
     GBS_write_hash(dontCallHash, "arb_pars",                                           2);
     GBS_write_hash(dontCallHash, "arb_pars_quick",                                     2);
     GBS_write_hash(dontCallHash, "arb_phyl",                                           2);
@@ -84,9 +88,9 @@ static void build_dontCallHash() {
     GBS_write_hash(dontCallHash, "NAME_SERVER_ADMIN/REMOVE_SUPERFLUOUS_ENTRIES_IN_NAMES_FILE", 2);
     GBS_write_hash(dontCallHash, "PRINT_CANVAS/PRINT", 2);
     GBS_write_hash(dontCallHash, "PT_SERVER_ADMIN/CREATE_TEMPLATE", 2);
-    GBS_write_hash(dontCallHash, "SELECT_CONFIGURATION/START", 2);
+    GBS_write_hash(dontCallHash, "SELECT_CONFIFURATION/START", 2);
 #endif
-
+    
     // avoid saving
     GBS_write_hash(dontCallHash, "save_changes", 3);
     GBS_write_hash(dontCallHash, "save_props",   3);
@@ -105,7 +109,7 @@ static void build_dontCallHash() {
     GBS_write_hash(dontCallHash, "ARB_NT/mark_long_branches",                            5);
     GBS_write_hash(dontCallHash, "ARB_NT/tree_scale_lengths",                            5);
     GBS_write_hash(dontCallHash, "CREATE_USER_MASK/CREATE",                              5);
-    GBS_write_hash(dontCallHash, "GDE__Import__Import_sequences_using_Readseq_slow_/GO", 5);
+    GBS_write_hash(dontCallHash, "GDE__import__Import_sequences_using_Readseq_slow_/GO", 5);
     GBS_write_hash(dontCallHash, "INFO_OF_ALIGNMENT/DELETE",                             5);
     GBS_write_hash(dontCallHash, "LOAD_SELECTION_BOX/LOAD",                              5);
     GBS_write_hash(dontCallHash, "MULTI_PROBE/CREATE_NEW_SEQUENCE",                      5);
@@ -115,17 +119,17 @@ static void build_dontCallHash() {
     GBS_write_hash(dontCallHash, "PT_SERVER_ADMIN/KILL_ALL_SERVERS",                     5);
     GBS_write_hash(dontCallHash, "PT_SERVER_ADMIN/KILL_SERVER",                          5);
     GBS_write_hash(dontCallHash, "PT_SERVER_ADMIN/UPDATE_SERVER",                        5);
-    GBS_write_hash(dontCallHash, "REALIGN_DNA/REALIGN",                                  5);
     GBS_write_hash(dontCallHash, "SPECIES_QUERY/DELETE_LISTED",                          5);
-    GBS_write_hash(dontCallHash, "SPECIES_QUERY/SAVELOAD_CONFIG_spec",                   5);
+    GBS_write_hash(dontCallHash, "SPECIES_QUERY/SAVELOAD_CONFIG",                        5);
     GBS_write_hash(dontCallHash, "SPECIES_SELECTIONS/RENAME",                            5);
     GBS_write_hash(dontCallHash, "SPECIES_SELECTIONS/STORE",                             5);
+    GBS_write_hash(dontCallHash, "del_marked",                                           5);
+    GBS_write_hash(dontCallHash, "REALIGN_DNA/REALIGN",                                  5);
     GBS_write_hash(dontCallHash, "TREE_PROPS/SAVELOAD_CONFIG",                           5);
     GBS_write_hash(dontCallHash, "WWW_PROPS/SAVELOAD_CONFIG",                            5);
-    GBS_write_hash(dontCallHash, "del_marked",                                           5);
 #endif
 
-    GB_HASH *autodontCallHash = GBS_create_hash(100, GB_MIND_CASE);
+    GB_HASH *autodontCallHash = GBS_create_hash(30, GB_MIND_CASE);
     GBS_hash_do_loop(dontCallHash, auto_dontcall1, autodontCallHash);
     GBS_hash_do_loop(autodontCallHash, auto_dontcall2, dontCallHash);
     GBS_free_hash(autodontCallHash);
@@ -210,7 +214,7 @@ size_t AW_root::callallcallbacks(int mode) {
             case 1:
             case 3: reverse(callbacks.begin(), callbacks.end()); break; // use reverse order
             case 10: random_shuffle(callbacks.begin(), callbacks.end()); break; // use random order
-            default: aw_assert(0); break;           // unknown mode
+            default : gb_assert(0); break;          // unknown mode
         }
 
         count = callbacks.size();
@@ -240,7 +244,7 @@ size_t AW_root::callallcallbacks(int mode) {
                         }
                         else {
                             fprintf(stderr, "Calling back %zu/%zu (%s)\n", curr, count, remote_command);
-
+                        
                             GB_clear_error();
 
                             cbs->run_callback();
@@ -256,7 +260,7 @@ size_t AW_root::callallcallbacks(int mode) {
                                 if (awp) {
                                     awp->force_expose();
                                     process_pending_events();
-
+                                    
                                     fprintf(stderr, "Popping down window '%s'\n", awp->get_window_id());
                                     awp->hide();
                                     process_pending_events();

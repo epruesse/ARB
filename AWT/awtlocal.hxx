@@ -11,6 +11,54 @@
 #ifndef AWTLOCAL_HXX
 #define AWTLOCAL_HXX
 
+
+struct adawcbstruct {
+    // @@@ FIXME: rethink design - maybe split into base class +
+    // several derived classes for the different usages.
+
+    AW_window              *aws;
+    AW_root                *awr;
+    GBDATA                 *gb_main;
+    GBDATA                 *gb_user;
+    GBDATA                 *gb_edit;
+    AW_selection_list      *id;
+    char                   *comm;
+    char                   *def_name;
+    char                   *def_gbd;
+    char                   *def_alignment;
+    char                   *def_source;
+    char                   *def_dest;
+    char                   *def_filter;
+    char                   *previous_filename;
+    char                   *pwd;
+    char                   *pwdx;                   // additional directories
+    bool                    show_dir;
+    bool                    leave_wildcards;
+    char                    may_be_an_error;
+    char                    show_only_marked;
+    char                    scannermode;
+    char                   *def_dir;
+    const ad_item_selector *selector;
+    bool                    add_pseudo_fields;      // true -> add pseudo-fields (used by 'awt_create_selection_list_on_scandb_cb')
+    bool                    include_hidden_fields;  // true -> show hidden fields in selection list
+};
+
+struct awt_sel_list_for_tables {
+    AW_window         *aws;
+    GBDATA            *gb_main;
+    AW_selection_list *id;
+    const char        *table_name;
+};
+
+struct awt_sel_list_for_sai {
+    AW_window         *aws;
+    GBDATA            *gb_main;
+    AW_selection_list *id;
+    char *(*filter_poc)(GBDATA *gb_ext, AW_CL);
+    AW_CL              filter_cd;
+    bool               add_selected_species;
+};
+
 typedef enum {
     AWT_QUERY_GENERATE,
     AWT_QUERY_ENLARGE,
@@ -25,7 +73,7 @@ typedef enum {
 
 #define AWT_QUERY_SEARCHES 3 // no of search-lines in search tool
 
-struct DbQuery {
+struct adaqbsstruct {
     AW_window         *aws;
     GBDATA            *gb_main;                     // the main database (in merge tool: source db in left query; dest db in right query)
     GBDATA            *gb_ref;                      // second reference database (only used by merge tool; dest db in left query; source db in right query)
@@ -76,7 +124,7 @@ struct awt_table {
     char   *awar_field_new_type;
     char   *awar_field_rem;
     char   *awar_selected_field;
-    awt_table(GBDATA *gb_main, AW_root *awr, const char *table_name);
+    awt_table(GBDATA *gb_main,AW_root *awr,const char *table_name);
     ~awt_table();
 };
 
@@ -86,11 +134,12 @@ struct awt_table {
 #define AWAR_TABLE_EXPORT "tmp/ad_table/export_table"
 #define AWAR_TABLE_IMPORT "tmp/ad_table/import_table"
 
-long awt_query_update_list(void *dummy, DbQuery *cbs);
+#define PSEUDO_FIELD_ANY_FIELD  "[any field]"
+#define PSEUDO_FIELD_ALL_FIELDS "[all fields]"
+
+long awt_query_update_list(void *dummy, struct adaqbsstruct *cbs);
 
 
 #else
 #error awtlocal.hxx included twice
 #endif // AWTLOCAL_HXX
-
-

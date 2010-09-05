@@ -253,7 +253,7 @@ $(XML_DEPEND) : arb_help2xml.cxx
 	$(CPP) $(cflags) -c $< $(CPPINCLUDES) $(POST_COMPILE)
 
 $(HELP2XML): arb_help2xml.o $(LIBS)
-	$(LINK_EXECUTABLE) $@ $< $(LIBS) $(LIBPATH) $(ARBDB_LIB) $(EXECLIBS)
+	$(LINK_EXECUTABLE) $@ $< $(LIBS) $(LIBPATH) -lARBDB
 
 DEPENDS = $(TOOL_OBJECTS:.o=.depend)
 depends: $(DEPENDS)
@@ -276,5 +276,4 @@ arb_help2xml.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 arb_help2xml.o: $(ARBHOME)/INCLUDE/arb_assert.h
 arb_help2xml.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 arb_help2xml.o: $(ARBHOME)/INCLUDE/attributes.h
-arb_help2xml.o: $(ARBHOME)/INCLUDE/dupstr.h
 arb_help2xml.o: $(ARBHOME)/INCLUDE/xml.hxx

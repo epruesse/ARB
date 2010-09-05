@@ -44,11 +44,6 @@ DESCRIPTION     Arb is aware of several environment variables:
 
                             your username (normally set by shell).
 
-                    PRINTER
-
-                            if PRINTER is defined, it may contain the name of your printer. ARB will
-                            then automatically use it in the printer command.
-
                     ARB_PID
 
                             internal PID for communication (set by the 'arb' script)
@@ -62,11 +57,6 @@ DESCRIPTION     Arb is aware of several environment variables:
 
                             directory name where your local ARB-macros will be saved to/loaded from
                             (default: $HOME/.arb_prop/macros )
-
-                    ARBCONFIG
-
-                            directory name where your local ARB-configs will be saved to/loaded from
-                            (default: $HOME/.arb_prop/cfgSave )
 
                     ARB_GS
 
@@ -87,11 +77,6 @@ DESCRIPTION     Arb is aware of several environment variables:
 
                             directory where ARB searches for *.ps, *.ps.gz, *.pdf
                             and *.pdf.gz (default: $ARBHOME/lib/help)
-
-                    ARB_HTMLDOC
-
-                            directory where ARB searches for *.html help files
-                            (default: $ARBHOME/lib/help_html)
 
 NOTES		Short description of how to set an environment variable:
 

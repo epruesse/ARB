@@ -1,22 +1,11 @@
-/* ============================================================= */
-/*                                                               */
-/*   File      : trnsprob.c                                      */
-/*   Purpose   :                                                 */
-/*                                                               */
-/*   Institute of Microbiology (Technical University Munich)     */
-/*   http://www.arb-home.de/                                     */
-/*                                                               */
-/* ============================================================= */
-
-#include "trnsprob.h"
-#include "defs.h"
-#include "mem.h"
-
-#define SIMPLE_ARB_ASSERT
-#include <arb_assert.h>
+#include <stdlib.h>
+#include <math.h>
 #include <stdio.h>
 
-#define ih_assert(bed) arb_assert(bed)
+#include "defs.h"
+#include "memory.h"
+#include "trnsprob.h"
+
 #define EPS 0.00001
 
 /*============================================================================*/
@@ -235,10 +224,9 @@ void updateTrnsprob(double ***PP,double *F,double *X,short M) {
     S[T]=ST; S[C]=SC; S[A]=SA; S[G]=SG;
 
     switch(M) {
-        case REV:   a = X[0]; b=X[1]; c=X[2]; d=X[3]; e=X[4]; f=1.0-(a+b+c+d+e); break;
-        case TN93:  a = X[0]; b=c=d=e=X[1]; f=1.0-(a+b+c+d+e); break;
-        case HKY85: a = f=X[0]; b=c=d=e=0.25*(1.0-(a+f)); break;
-        default : ih_assert(0); break;
+        case REV:   a=X[0]; b=X[1]; c=X[2]; d=X[3]; e=X[4]; f=1.0-(a+b+c+d+e); break;
+        case TN93:  a=X[0]; b=c=d=e=X[1]; f=1.0-(a+b+c+d+e); break;
+        case HKY85: a=f=X[0]; b=c=d=e=0.25*(1.0-(a+f)); break;
     }
 
     s=0.5/(a*F[T]*F[C]+b*F[T]*F[A]+c*F[T]*F[G]+d*F[C]*F[A]+e*F[C]*F[G]+f*F[A]*F[G]);
@@ -407,4 +395,5 @@ void updateTrnsprob(double ***PP,double *F,double *X,short M) {
     dot(PP[ 31 + 96 ],PP[ 16 + 96 ],PP[ 15 + 96 ]);
 
 }
+
 

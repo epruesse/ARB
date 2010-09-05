@@ -1,13 +1,8 @@
-// =============================================================== //
-//                                                                 //
-//   File      : GEN_local.hxx                                     //
-//   Purpose   :                                                   //
-//                                                                 //
-//   Coded by Ralf Westram (coder@reallysoft.de) in 2001           //
-//   Institute of Microbiology (Technical University Munich)       //
-//   http://www.arb-home.de/                                       //
-//                                                                 //
-// =============================================================== //
+/*********************************************************************************
+ *  Coded by Ralf Westram (coder@reallysoft.de) in 2001                          *
+ *  Institute of Microbiology (Technical University Munich)                      *
+ *  http://www.mikro.biologie.tu-muenchen.de/                                    *
+ *********************************************************************************/
 
 #ifndef GEN_LOCAL_HXX
 #define GEN_LOCAL_HXX
@@ -16,6 +11,9 @@
 #include "GEN.hxx"
 #endif
 
+#ifndef ARB_ASSERT_H
+#include <arb_assert.h>
+#endif
 #define gen_assert(bed) arb_assert(bed)
 
 // to create new genes:
@@ -69,17 +67,9 @@
 // --------------------------------------------------------------------------------
 
 const char *GEN_window_local_awar_name(const char *awar_name, int window_nr);
-
-struct GEN_create_map_param {
-    GBDATA *gb_main;
-    int     window_nr;
-    GEN_create_map_param(GBDATA *gb_main_, int window_nr_) : gb_main(gb_main_) , window_nr(window_nr_) { }
-};
-
-AW_window *GEN_create_map(AW_root *aw_root, AW_CL cl_GEN_create_map_param);
+AW_window  *GEN_map(AW_root *aw_root, int window_number);
 
 // --------------------------------------------------------------------------------
-
 #else
 #error GEN_local.hxx included twice
 #endif // GEN_LOCAL_HXX

@@ -1,20 +1,14 @@
-// ================================================================ //
-//                                                                  //
-//   File      : a3_ptree1.cxx                                      //
-//   Purpose   :                                                    //
-//                                                                  //
-//   Institute of Microbiology (Technical University Munich)        //
-//   http://www.arb-home.de/                                        //
-//                                                                  //
-// ================================================================ //
+// -----------------------------------------------------------------------------
+//  Include-Dateien
+// -----------------------------------------------------------------------------
+
+#include <iostream>
+#include <cstdlib>
 
 #include "a3_basen.h"
 #include "a3_ptree.hxx"
 
 #include <inline.h>
-
-#include <iostream>
-#include <cstdlib>
 
 using std::cout;
 using std::hex;

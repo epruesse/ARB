@@ -1,14 +1,24 @@
+#include <stdio.h>
+#include <stdlib.h>
+// #include <malloc.h>
+#include <memory.h>
+#include <string.h>
+#include <ctype.h>
+
+#include <arbdb.h>
 #include <arbdbt.h>
+#include <aw_keysym.hxx>
+#include <aw_root.hxx>
+#include <aw_window.hxx>
 #include <AW_helix.hxx>
 
 #include <fast_aligner.hxx>
 #include <awt_map_key.hxx>
 
+#include "ed4_defs.hxx"
 #include "ed4_edit_string.hxx"
 #include "ed4_class.hxx"
 #include "ed4_awars.hxx"
-
-#include <cctype>
 
 #define SAFE_EDITING        // undef this to remove sequence test code
 
@@ -26,10 +36,10 @@ void ED4_init_is_align_character(GB_CSTR gap_chars)
     }
 }
 
-GB_ERROR  ED4_Edit_String::insert(char *text, long position, int direction, int removeAtNextGap) {
+ED4_ERROR * ED4_Edit_String::insert(char *text,long position, int direction, int removeAtNextGap) {
     long i;
     int text_len = strlen(text);
-    if (text_len == 0) return 0;
+    if (text_len ==0) return 0;
 
     int rest_len;
 
@@ -61,8 +71,8 @@ GB_ERROR  ED4_Edit_String::insert(char *text, long position, int direction, int 
         rest_len = (afterGap-position)*direction;
     }
 
-    if (direction>=0) {
-        if (text_len + position >= seq_len) {
+    if (direction>=0){
+        if ( text_len + position >= seq_len) {
             return GBS_global_string("You cannot insert that many characters after cursor!");
         }
 
@@ -72,16 +82,16 @@ GB_ERROR  ED4_Edit_String::insert(char *text, long position, int direction, int 
             }
         }
 
-        for (i = position+rest_len-text_len-1; i>=position; i--) {
+        for (i= position+rest_len-text_len-1; i>=position; i--) {
             seq[i+text_len] = seq[i];
         }
 
-        for (i = 0; i<text_len; i++) {
+        for (i = 0 ;i<text_len;i++) {
             seq[position+i] = text[i];
         }
     }
     else {
-        if (position - text_len < 0) {
+        if ( position - text_len < 0) {
             return GBS_global_string("You cannot insert that many characters before cursor!");
         }
 
@@ -90,24 +100,24 @@ GB_ERROR  ED4_Edit_String::insert(char *text, long position, int direction, int 
                 goto no_gaps;
             }
         }
-        for (i = 0; i<position-text_len; i++) {
+        for (i= 0; i<position-text_len;i++) {
             seq[i] = seq[i+text_len];
         }
 
-        for (i = 0; i<text_len; i++) {
+        for (i = 0; i<text_len;i++) {
             seq[position-i-1] = text[i];
         }
     }
 
     return 0;
 
- no_gaps :
+ no_gaps:
     return GBS_global_string("There are no/not enough gaps at %s of sequence => can't insert characters%s",
                              direction >= 0 ? "end" : "start",
                              direction >= 0 ? "\nMaybe your sequences are not formatted?" : "");
 }
 
-GB_ERROR ED4_Edit_String::remove(int len, long position, int direction, int insertAtNextGap) {
+ED4_ERROR *ED4_Edit_String::remove(int len, long position, int direction, int insertAtNextGap) {
 
     int rest_len; // bases between cursor-position and the directed sequence end
 
@@ -158,44 +168,109 @@ GB_ERROR ED4_Edit_String::remove(int len, long position, int direction, int inse
     return 0;
 }
 
-GB_ERROR ED4_Edit_String::replace(char *text, long position, int direction) {
+/*
+  ED4_ERROR *ED4_Edit_String::remove(int len, long position, int direction, int insertAtNextGap) {
+  long new_len;
+  long i;
+
+  if (direction<0) {
+  position -= len;
+  }
+  if ((position >= seq_len) || (len == 0) || (seq_len - len < 0)) {
+  return GBS_global_string("Delete outside sequence!");
+  }
+
+  if ((len + position) >= seq_len) {
+  len = (int)(seq_len-position);
+  }
+
+  int rest_len = direction>=0 ? seq_len-position : position;
+
+  if (insertAtNextGap) {
+  int nextGap = get_next_gap(position+len*direction, direction);
+
+  if (nextGap!=-1) {
+  rest_len = (nextGap-position)*direction;
+  }
+  }
+
+  new_len = rest_len-len;
+  if (direction>=0) {
+  for (i=0; i<new_len; i++) {
+  seq[position+i] = seq[position+len+i];
+  }
+  for (; i<rest_len; i++) {
+  seq[position+i] = '.';
+  }
+  }
+  else {
+  for (i=0; i<new_len; i++) {
+  seq[position-i] = seq[position-len-i];
+  }
+  for (; i<rest_len; i++) {
+  seq[position-i] = '.';
+  }
+  }
+
+  e4_assert(seq[seq_len]=='\0');
+
+  return 0;
+  }
+
+*/
+
+ED4_ERROR *ED4_Edit_String::replace(char *text,long position, int direction) {
     int text_len = strlen(text);
     int i;
-    if (direction>=0) {
+    if (direction>=0){
 
         if ((position + text_len > seq_len) || (position > seq_len)) {
             return GBS_global_string("Replace after end of sequence !");
         }
-        for (i = 0; i < text_len;   i ++) {
+        for ( i = 0; i < text_len ; i ++) {
             seq[i+position] = text[i];
         }
-    }
-    else {
-        if ((position - text_len < 0) || (position > seq_len)) {
+    }else{
+        if ((position - text_len < 0 ) || (position > seq_len)) {
             return GBS_global_string("Replace before start of sequence !");
         }
-        for (i = 0; i < text_len;   i ++) {
+        for ( i = 0; i < text_len ; i ++) {
             seq[position - i - 1] = text[i];
         }
     }
     return 0;
 }
 
-GB_ERROR ED4_Edit_String::swap_gaps(long position, char ch) {
+ED4_ERROR *ED4_Edit_String::swap_gaps(long position, char ch){
     long i;
     for (i = position; i < seq_len; i++) {
-        if (!ADPP_IS_ALIGN_CHARACTER(seq[i])) break;
+        if ( !ADPP_IS_ALIGN_CHARACTER(seq[i])) break;
         seq[i] = ch;
     }
     for (i = position; i >= 0; i--) {
-        if (!ADPP_IS_ALIGN_CHARACTER(seq[i])) break;
+        if ( !ADPP_IS_ALIGN_CHARACTER(seq[i])) break;
         seq[i] = ch;
     }
     return 0;
 }
 
 
-GB_ERROR ED4_Edit_String::moveBase(long source_position, long dest_position, unsigned char gap_to_use)
+// ED4_ERROR *ED4_Edit_String::check_base(char chr,long position, int direction)
+// {
+//     if (direction<0) position--;
+
+//     printf("chr=%c seq[%i]=%c\n", chr, position, seq[position]);
+
+//     if (position <0 && position >= seq_len){
+//  return GBS_global_string("End of sequence reached");
+//     }
+//     if (seq[position] != chr){
+//  return GBS_global_string("Base does not match");
+//     }
+//     return 0;
+// }
+
+ED4_ERROR *ED4_Edit_String::moveBase(long source_position, long dest_position, unsigned char gap_to_use)
 {
     e4_assert(source_position!=dest_position);
 #ifdef SAFE_EDITING
@@ -226,17 +301,19 @@ GB_ERROR ED4_Edit_String::moveBase(long source_position, long dest_position, uns
     return 0;
 }
 
-GB_ERROR ED4_Edit_String::shiftBases(long source_pos, long last_source, long dest_pos, int direction, long *last_dest, unsigned char gap_to_use)
+ED4_ERROR *ED4_Edit_String::shiftBases(long source_pos, long last_source, long dest_pos, int direction, long *last_dest, unsigned char gap_to_use)
     // shifts bases from source_pos-last_source to dest_pos
     // last_dest is set to the position after the last dest_pos (direction<0 ? pos. right of bases : pos. left of bases)
 {
-    GB_ERROR err = 0;
+    ED4_ERROR *err = 0;
+
+    //    printf("shiftBases(%li,%li,%li,%i,%c)\n", source_pos, last_source, dest_pos, direction, gap_to_use);
 
     if (direction<0) {
         e4_assert(dest_pos<source_pos);
         e4_assert(source_pos<=last_source);
-        while (1) {
-            err = moveBase(source_pos, dest_pos, gap_to_use);
+        while(1) {
+            err = moveBase(source_pos,dest_pos,gap_to_use);
             if (err || source_pos>=last_source) break;
             source_pos++;
             dest_pos++;
@@ -248,8 +325,8 @@ GB_ERROR ED4_Edit_String::shiftBases(long source_pos, long last_source, long des
     else {
         e4_assert(source_pos<dest_pos);
         e4_assert(last_source<=source_pos);
-        while (1) {
-            err = moveBase(source_pos, dest_pos, gap_to_use);
+        while(1) {
+            err = moveBase(source_pos,dest_pos,gap_to_use);
             if (err || source_pos<=last_source) break;
             source_pos--;
             dest_pos--;
@@ -269,7 +346,7 @@ GB_ERROR ED4_Edit_String::shiftBases(long source_pos, long last_source, long des
 long ED4_Edit_String::get_next_base(long position, int direction) {
     long pos;
     if (direction < 0) position--;
-    for (pos = position; pos>=0 && pos < seq_len; pos += direction) {
+    for (pos = position; pos>=0 && pos < seq_len; pos += direction){
         if (!ADPP_IS_ALIGN_CHARACTER(seq[pos])) break;
     }
 
@@ -278,7 +355,7 @@ long ED4_Edit_String::get_next_base(long position, int direction) {
 long ED4_Edit_String::get_next_gap(long position, int direction) {
     long pos;
     if (direction < 0) position--;
-    for (pos = position; pos >= 0 && pos < seq_len; pos += direction) {
+    for (pos = position; pos >= 0 && pos < seq_len; pos += direction){
         if (ADPP_IS_ALIGN_CHARACTER(seq[pos])) break;
     }
 
@@ -288,7 +365,7 @@ long ED4_Edit_String::get_next_visible_base(long position, int direction)
 {
     long pos;
     if (direction < 0) position--;
-    for (pos = position; pos>=0 && pos < seq_len; pos += direction) {
+    for (pos = position; pos>=0 && pos < seq_len; pos += direction){
         if (!ADPP_IS_ALIGN_CHARACTER(seq[pos]) && remap->is_visible(pos)) {
             break;
         }
@@ -299,7 +376,7 @@ long ED4_Edit_String::get_next_visible_base(long position, int direction)
 long ED4_Edit_String::get_next_visible_gap(long position, int direction) {
     long pos;
     if (direction < 0) position--;
-    for (pos = position; pos >= 0 && pos < seq_len; pos += direction) {
+    for (pos = position; pos >= 0 && pos < seq_len; pos += direction){
         if (ADPP_IS_ALIGN_CHARACTER(seq[pos]) && remap->is_visible(pos)) {
             break;
         }
@@ -311,7 +388,7 @@ long ED4_Edit_String::get_next_visible_pos(long position, int direction)
 {
     long pos;
     if (direction < 0) position--;
-    for (pos = position; pos >= 0 && pos < seq_len; pos += direction) {
+    for (pos = position; pos >= 0 && pos < seq_len; pos += direction){
         if (remap->is_visible(pos)) {
             break;
         }
@@ -319,7 +396,7 @@ long ED4_Edit_String::get_next_visible_pos(long position, int direction)
     return pos<0 || pos>=seq_len ? -1 : pos;
 }
 
-extern AlignDataAccess dataAccess_4_aligner;
+extern AWTC_faligner_cd faligner_client_data;
 
 unsigned char ED4_Edit_String::get_gap_type(long pos, int direction)
 {
@@ -330,7 +407,7 @@ unsigned char ED4_Edit_String::get_gap_type(long pos, int direction)
     return '-';
 }
 
-GB_ERROR ED4_Edit_String::command(AW_key_mod keymod, AW_key_code keycode, char key, int direction, ED4_EDITMODI mode, bool is_consensus,
+ED4_ERROR *ED4_Edit_String::command( AW_key_mod keymod, AW_key_code keycode, char key, int direction, ED4_EDITMODI mode, bool is_consensus,
                                      long &seq_pos, bool &changed_flag, ED4_CursorJumpType& cursor_jump, bool &cannot_handle, bool &write_fault, GBDATA* gb_data, bool is_sequence)
 {
     changed_flag = 0;
@@ -349,7 +426,7 @@ GB_ERROR ED4_Edit_String::command(AW_key_mod keymod, AW_key_code keycode, char k
 
     direction = direction>0 ? 1 : -1;
 
-    if ((cursorpos > screen_len) || (cursorpos < 0)) {
+    if ((cursorpos > screen_len) || (cursorpos < 0 )) {
         if (cursorpos<MAXSEQUENCECHARACTERLENGTH && cursorpos>=0) {
             char *seq2 = new char[MAXSEQUENCECHARACTERLENGTH+1];
 
@@ -368,7 +445,7 @@ GB_ERROR ED4_Edit_String::command(AW_key_mod keymod, AW_key_code keycode, char k
         }
     }
 
-    GB_ERROR ad_err = 0;
+    ED4_ERROR *ad_err = 0;
     long h;
     bool reinterpret_key = true;
 
@@ -378,7 +455,7 @@ GB_ERROR ED4_Edit_String::command(AW_key_mod keymod, AW_key_code keycode, char k
         switch (keycode) {
             case AW_KEY_HOME:
                 {
-                    int new_seq_pos = get_next_visible_base(0, 1);
+                    int new_seq_pos = get_next_visible_base(0,1);
                     if (new_seq_pos>=0) seq_pos = new_seq_pos==seq_pos ? 0 : new_seq_pos;
                     else seq_pos = 0;
                     break;
@@ -391,7 +468,7 @@ GB_ERROR ED4_Edit_String::command(AW_key_mod keymod, AW_key_code keycode, char k
                         seq_pos = new_seq_pos==seq_pos ? seq_len : new_seq_pos;
                     }
                     else {
-                        seq_pos = seq_len;
+                        seq_pos = seq_len; 
                     }
                     break;
                 }
@@ -464,7 +541,7 @@ GB_ERROR ED4_Edit_String::command(AW_key_mod keymod, AW_key_code keycode, char k
                                     else                    { seq_pos = get_next_visible_gap(pos, direction); }
 
                                     if (direction<0)    { seq_pos = seq_pos==-1 ? 0       : seq_pos+1; }
-                                    else        { seq_pos = seq_pos==-1 ? seq_len : seq_pos; }
+                                    else        { seq_pos = seq_pos==-1 ? seq_len : seq_pos;   }
                                 }
                             }
                             continue;
@@ -587,17 +664,16 @@ GB_ERROR ED4_Edit_String::command(AW_key_mod keymod, AW_key_code keycode, char k
                                 n = 0;
                             }
                         }
-                    }
+                    } // end-while
                     break;
                 }
-
+                
             case AW_KEY_BACKSPACE:
                 h = seq_pos;
 
                 if (direction>0) {
                     seq_pos -= nrepeat;
-                }
-                else {
+                }else{
                     seq_pos += nrepeat;
                 }
                 if (seq_pos <0 || seq_pos >= seq_len) {
@@ -625,7 +701,7 @@ GB_ERROR ED4_Edit_String::command(AW_key_mod keymod, AW_key_code keycode, char k
                             else        offset = -nrepeat;
 
                             for (len = nrepeat-1; len>=0; len--) {
-                                if (!ADPP_IS_ALIGN_CHARACTER(seq[h+offset+len])) {
+                                if (!ADPP_IS_ALIGN_CHARACTER(seq[h+offset+len])){
                                     ad_err = GBS_global_string("You cannot remove bases in align mode");
                                     break;
                                 }
@@ -643,27 +719,28 @@ GB_ERROR ED4_Edit_String::command(AW_key_mod keymod, AW_key_code keycode, char k
                         break;
                 }
 
+                //      nrepeat_zero_requested = 1;
                 break;
             case AW_KEY_ASCII: {
 
-                //      keyboard layout:
+                //      Tastaturbelegung:
                 //
                 //      - CTRL-A    Align                               ok
-                //      - CTRL-E    Toggle edit/align                   ok
-                //      - CTRL-I    Toggle insert/replace               ok
+                //      - CTRL-E    Edit/Align umschalten               ok
+                //      - CTRL-I    Insert/Replace umschalten           ok
                 //      - CTRL-J    Jump opposite helix position        ok
                 //      - CTRL-L    Refresh                             ok
                 //      - CTRL-R    set aligner reference species       ok
                 //      - CTRL-S    Repeat last search                  ok
-                //      - CTRL-U    Undo                                @@@ crashes!!!
+                //      - CTRL-U    Undo                                @@@ absturz!!!
 
 
                 if (key >0 && key<=26) { // CTRL-Keys
                     switch (key+'A'-1) {
-                        case 'R': {  // CTRL-R = set aligner reference species
+                        case 'R':  { // CTRL-R = set aligner refernce species
                             if (is_consensus) { cannot_handle = 1; return 0; };
 
-                            FastAligner_set_reference_species(0, (AW_CL)ED4_ROOT->aw_root);
+                            AWTC_set_reference_species_name(0, (AW_CL)ED4_ROOT->aw_root);
                             break;
                         }
                         case 'A': { // CTRL-A = Start Fast-Aligner
@@ -671,20 +748,16 @@ GB_ERROR ED4_Edit_String::command(AW_key_mod keymod, AW_key_code keycode, char k
                             if (is_consensus) { cannot_handle = 1; return 0; };
                             if (mode==AD_NOWRITE) { write_fault = 1; return 0; }
 
-                            int old_refresh                 = dataAccess_4_aligner.do_refresh;
-                            dataAccess_4_aligner.do_refresh = 0;
+                            int old_refresh                 = faligner_client_data.do_refresh;
+                            faligner_client_data.do_refresh = 0;
 
-                            ED4_init_aligner_data_access(&dataAccess_4_aligner);
+                            ED4_init_faligner_data(&faligner_client_data);
 
-                            FastAligner_set_align_current(ED4_ROOT->aw_root, ED4_ROOT->props_db);
+                            AWTC_awar_set_current_sequence(ED4_ROOT->aw_root, ED4_ROOT->db);
                             AW_clock_cursor(ED4_ROOT->aw_root);
-                            GB_commit_transaction(dataAccess_4_aligner.gb_main);
-
-                            FastAligner_start(aw_tmp, (AW_CL)&dataAccess_4_aligner);
-
-                            GB_begin_transaction(dataAccess_4_aligner.gb_main);
+                            AWTC_start_faligning(aw_tmp, (AW_CL)&faligner_client_data);
                             AW_normal_cursor(ED4_ROOT->aw_root);
-                            dataAccess_4_aligner.do_refresh = old_refresh;
+                            faligner_client_data.do_refresh = old_refresh;
 
                             int basesLeftOf = 0;
                             int pos;
@@ -770,7 +843,7 @@ GB_ERROR ED4_Edit_String::command(AW_key_mod keymod, AW_key_code keycode, char k
                             last_mode = current_mode;
                             break;
                         }
-                        case 'L': {  // CTRL-L = Refresh
+                        case 'L':  { // CTRL-L = Refresh
                             ED4_refresh_window(0, 0, 0);
                             cursor_jump = ED4_JUMP_CENTERED;
                             break;
@@ -802,11 +875,12 @@ GB_ERROR ED4_Edit_String::command(AW_key_mod keymod, AW_key_code keycode, char k
                 else { // normal characters
                     if (is_consensus) { cannot_handle = 1; return 0; }
                     if (mode==AD_NOWRITE) { write_fault = 1; break; }
+                    //      if (is_compressed_but_no_sequence(is_sequence)) { break; }
 
                     if (key == ' ') { // insert gap
                         if (is_sequence) {
                             long left;
-                            int l, r;
+                            int l,r;
                             left = cursorpos-1; if (left<0) left = 0;
                             l = seq[left]; r = seq[cursorpos];
                             key = '-';
@@ -820,7 +894,7 @@ GB_ERROR ED4_Edit_String::command(AW_key_mod keymod, AW_key_code keycode, char k
                         case AD_ALIGN: {
                             if (ADPP_IS_ALIGN_CHARACTER(key)) {
                                 long left;
-                                int l, r;
+                                int l,r;
 
                                 left = seq_pos-1;
                                 if (left<0) left = 0;
@@ -828,20 +902,20 @@ GB_ERROR ED4_Edit_String::command(AW_key_mod keymod, AW_key_code keycode, char k
                                 l = seq[left];
                                 r = seq[seq_pos];
 
-                                if (ADPP_IS_ALIGN_CHARACTER(l) && l!=key)       ad_err = swap_gaps(left, key);
-                                else if (ADPP_IS_ALIGN_CHARACTER(r) && r!=key)      ad_err = swap_gaps(seq_pos, key);
-                                else if (!ad_err) {
-                                    char *nstr = (char *)GB_calloc(1, nrepeat+1);
+                                if (ADPP_IS_ALIGN_CHARACTER(l) && l!=key)       ad_err = swap_gaps(left,key);
+                                else if (ADPP_IS_ALIGN_CHARACTER(r) && r!=key )     ad_err = swap_gaps(seq_pos,key);
+                                else if (!ad_err){
+                                    char *nstr = (char *)GB_calloc(1,nrepeat+1);
                                     int i;
 
                                     for (i = 0; i< nrepeat; i++) nstr[i] = key;
                                     ad_err = insert(nstr, seq_pos, direction, 0);
-                                    if (!ad_err) seq_pos = get_next_visible_pos(seq_pos+(direction>=0 ? nrepeat : 0), direction);
+                                    if (!ad_err) seq_pos = get_next_visible_pos(seq_pos+(direction>=0?nrepeat:0), direction);
                                     delete nstr;
                                 }
                                 changed_flag = 1;
                             }
-                            else { // check typed bases against sequence
+                            else {// check typed bases against sequence
                                 while (nrepeat && !ad_err) {
                                     nrepeat--;
                                     seq_pos = get_next_visible_base(seq_pos, direction);
@@ -874,7 +948,7 @@ GB_ERROR ED4_Edit_String::command(AW_key_mod keymod, AW_key_code keycode, char k
                                     }
                                 }
                                 else {
-                                    int left_pos = get_next_visible_pos(seq_pos, -1);
+                                    int left_pos = get_next_visible_pos(seq_pos,-1);
 
                                     if (left_pos>=0)    ad_err = replace(str, left_pos+1, -1);
                                     else            ad_err = "End of sequence";
@@ -899,7 +973,7 @@ GB_ERROR ED4_Edit_String::command(AW_key_mod keymod, AW_key_code keycode, char k
                                     }
                                 }
                                 else {
-                                    int left_pos = get_next_visible_pos(seq_pos, -1);
+                                    int left_pos = get_next_visible_pos(seq_pos,-1);
 
                                     if (left_pos>=0) {
                                         ad_err = insert(str, left_pos+1, -1, !is_sequence);
@@ -939,7 +1013,7 @@ GB_ERROR ED4_Edit_String::command(AW_key_mod keymod, AW_key_code keycode, char k
 
 ED4_Edit_String::ED4_Edit_String()
 {
-    memset((char *)this, 0, sizeof(*this));
+    memset((char *)this,0,sizeof(*this));
     remap = ED4_ROOT->root_group_man->remap();
 }
 
@@ -948,7 +1022,8 @@ ED4_Edit_String::~ED4_Edit_String()
     free(old_seq);
 }
 
-GB_ERROR ED4_Edit_String::edit(ED4_work_info *info) {
+void ED4_Edit_String::edit(ED4_work_info *info)
+{
     e4_assert(info->working_terminal != 0);
 
     if (info->direction == 0) { // 5'<-3'
@@ -961,7 +1036,7 @@ GB_ERROR ED4_Edit_String::edit(ED4_work_info *info) {
     info->cannot_handle    = false;
     old_seq                = 0;
 
-    if (info->string) {
+    if (info->string){
         seq = info->string;
         seq_len = strlen(seq);
     }
@@ -973,7 +1048,7 @@ GB_ERROR ED4_Edit_String::edit(ED4_work_info *info) {
     }
 
     int map_key = ED4_ROOT->edk->map_key(info->event.character);
-    GB_ERROR err = 0;
+    ED4_ERROR *err = 0;
 
     nrepeat_zero_requested = 1;
     if (!nrepeat) {
@@ -1026,7 +1101,6 @@ GB_ERROR ED4_Edit_String::edit(ED4_work_info *info) {
         }
 
         bool write_fault = 0;
-
         err = command(info->event.keymodifier,
                       info->event.keycode,
                       map_key,
@@ -1040,8 +1114,6 @@ GB_ERROR ED4_Edit_String::edit(ED4_work_info *info) {
                       write_fault,
                       info->gb_data,
                       info->is_sequence);
-
-        e4_assert(!(err && info->cannot_handle));
 
         if (write_fault) {
             e4_assert(info->mode==AD_NOWRITE);
@@ -1058,9 +1130,9 @@ GB_ERROR ED4_Edit_String::edit(ED4_work_info *info) {
         }
     }
 
-    if (!err) {
-        if (info->gb_data) {
-            if (info->refresh_needed) {
+    if (!err){
+        if (info->gb_data){
+            if (info->refresh_needed){
                 e4_assert(info->working_terminal->get_species_pointer() == info->gb_data);
 
                 int old_seq_len_int;
@@ -1072,7 +1144,7 @@ GB_ERROR ED4_Edit_String::edit(ED4_work_info *info) {
                     info->out_seq_position = remap->screen_to_sequence(info->char_position);    // correct cursor_pos if protection error occurred
                 }
             }
-            freenull(seq);
+            freeset(seq, 0);
         }
     }
 
@@ -1082,13 +1154,13 @@ GB_ERROR ED4_Edit_String::edit(ED4_work_info *info) {
         info->out_seq_position = remap->screen_to_sequence(info->char_position);
     }
 
-    return err;
+    info->error = (char *)err;
 }
 
 void ED4_Edit_String::finish_edit()
 {
     nrepeat_is_already_set = 0;
-    if (nrepeat_zero_requested) {
+    if (nrepeat_zero_requested){
         nrepeat_zero_requested = 0;
         nrepeat = 0;
     }

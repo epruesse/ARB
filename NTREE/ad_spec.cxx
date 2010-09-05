@@ -1,27 +1,26 @@
-// =============================================================== //
-//                                                                 //
-//   File      : ad_spec.cxx                                       //
-//   Purpose   : Create and modify species and SAI.                //
-//                                                                 //
-//   Institute of Microbiology (Technical University Munich)       //
-//   http://www.arb-home.de/                                       //
-//                                                                 //
-// =============================================================== //
-
-#include "map_viewer.hxx"
 #include "ad_spec.hxx"
-#include "nt_internal.h"
-#include "ntree.hxx"
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <arbdbt.h>
+#include <aw_awars.hxx>
+#include <awt_www.hxx>
+#include <awt_tree.hxx>
+#include <awt_canvas.hxx>
+#include <awt_dtree.hxx>
+#include <awtlocal.hxx>
+#include <awt_item_sel_list.hxx>
+#include <awt_sel_boxes.hxx>
+#include <db_scanner.hxx>
 #include <awtc_next_neighbours.hxx>
 #include <AW_rename.hxx>
-#include <db_scanner.hxx>
-#include <awt_item_sel_list.hxx>
-#include <awtlocal.hxx>
-#include <awt_www.hxx>
-#include <awt_sel_boxes.hxx>
-#include <aw_awars.hxx>
+#include <ntree.hxx>
+#include <nt_internal.h>
 
+#ifndef ARB_ASSERT_H
+#include <arb_assert.h>
+#endif
 #define nt_assert(bed) arb_assert(bed)
 
 extern GBDATA *GLOBAL_gb_main;
@@ -84,50 +83,49 @@ static void move_species_to_extended(AW_window *aww) {
     free(source);
 }
 
+/** \file   ad_spec.cxx
+ *  \brief Functions for creating and modifying species and SAIs.
+*/
+/** \brief Creates an SAI from protein secondary structure of a selected species.
+ *
+ *  \param[in] aww AW_window
+ *  \param[in] ntw AWT_canvas
+ *
+ *  The function takes the currently selected species and searches for the field
+ *  "sec_struct". A new SAI is created using the data in this field. A simple input
+ *  window allows the user to change the default name ([species name]_pfold) for
+ *  the new SAI.
+ * 
+ *  \note The import filter "dssp_all.ift" allows for importing the amino acid sequence
+ *        as well as the protein secondary structure from a dssp file and the structure
+ *        is stored in the field "sec_struct". That way, secondary structure can be
+ *        aligned along with the sequence manually and can later be extracted to create
+ *        an SAI.  
+ * 
+ *  \attention The import filter "dssp_2nd_struct.ift" extracts only the protein
+ *             secondary structure which is stored as alignment data. SAIs can simply
+ *             be created from these species via move_species_to_extended().
+ */
 void create_sai_from_pfold(AW_window *aww, AW_CL ntw, AW_CL) {
-    /*! \brief Creates an SAI from protein secondary structure of a selected species.
-     *
-     *  \param[in] aww AW_window
-     *  \param[in] ntw AWT_canvas
-     *
-     *  The function takes the currently selected species and searches for the field
-     *  "sec_struct". A new SAI is created using the data in this field. A simple input
-     *  window allows the user to change the default name ([species name]_pfold) for
-     *  the new SAI.
-     *
-     *  \note The import filter "dssp_all.ift" allows for importing the amino acid sequence
-     *        as well as the protein secondary structure from a dssp file and the structure
-     *        is stored in the field "sec_struct". That way, secondary structure can be
-     *        aligned along with the sequence manually and can later be extracted to create
-     *        an SAI.
-     *
-     *  \attention The import filter "dssp_2nd_struct.ift" extracts only the protein
-     *             secondary structure which is stored as alignment data. SAIs can simply
-     *             be created from these species via move_species_to_extended().
-     */
-
-    GB_ERROR  error      = 0;
+    GB_ERROR error = 0;
     GB_begin_transaction(GLOBAL_gb_main);
-    char     *sai_name   = 0;
-    char     *sec_struct = 0;
-    bool      canceled   = false;
+    char *sai_name = 0;
+    char *sec_struct = 0;
+    bool canceled = false;
 
     // get the selected species
     char *species_name = aww->get_root()->awar(AWAR_SPECIES_NAME)->read_string();
     GBDATA *gb_species = 0;
-    if (!strcmp(species_name, "") || !(gb_species = GBT_find_species(GLOBAL_gb_main, species_name))) {
+    if ( !strcmp(species_name, "") || !(gb_species = GBT_find_species(GLOBAL_gb_main, species_name)) ) { 
         error = "Please select a species first.";
-    }
-    else {
+    } else {
         // search for the field "sec_struct"
         GBDATA *gb_species_sec_struct = GB_entry(gb_species, "sec_struct");
         if (!gb_species_sec_struct) {
             error = "Field \"sec_struct\" not found or empty. Please select another species.";
-        }
-        else if (!(sec_struct = GB_read_string(gb_species_sec_struct))) {
+        } else if ( !(sec_struct = GB_read_string(gb_species_sec_struct)) ) {
             error = "Couldn't read field \"sec_struct\". Is it empty?";
-        }
-        else {
+        } else {
             // generate default name and name input field for the new SAI
             {
                 char *sai_default_name = GBS_global_string_copy("%s%s", species_name, strstr(species_name, "_pfold") ? "" : "_pfold");
@@ -137,23 +135,20 @@ void create_sai_from_pfold(AW_window *aww, AW_CL ntw, AW_CL) {
 
             if (!sai_name) {
                 canceled = true;
-            }
-            else if (strspn(sai_name, " ") == strlen(sai_name)) {
+            } else if (strspn(sai_name, " ") == strlen(sai_name)) {
                 error = "Name of SAI is empty. Please enter a valid name.";
-            }
-            else {
+            } else {
                 GBDATA *gb_sai_data = GBT_get_SAI_data(GLOBAL_gb_main);
                 GBDATA *gb_sai      = GBT_find_SAI_rel_SAI_data(gb_sai_data, sai_name);
                 char   *ali_name    = GBT_get_default_alignment(GLOBAL_gb_main);
 
                 if (gb_sai) {
                     error = "SAI with the same name already exists. Please enter another name.";
-                }
-                else {
+                } else {
                     // create SAI container and copy fields from the species to the SAI
                     gb_sai                   = GB_create_container(gb_sai_data, "extended");
                     GBDATA *gb_species_field = GB_child(gb_species);
-
+                    
                     while (gb_species_field && !error) {
                         char   *key          = GB_read_key(gb_species_field);
                         GBDATA *gb_sai_field = GB_search(gb_sai, GB_read_key(gb_species_field), GB_read_type(gb_species_field));
@@ -175,7 +170,7 @@ void create_sai_from_pfold(AW_window *aww, AW_CL ntw, AW_CL) {
 
                     // generate accession number and delete field "sec_struct" from the SAI
                     if (!error) {
-                        // TODO: is it necessary that a new acc is generated here?
+                        //TODO: is it necessary that a new acc is generated here?
                         GBDATA *gb_sai_acc = GB_search(gb_sai, "acc", GB_FIND);
                         if (gb_sai_acc) {
                             GB_delete(gb_sai_acc);
@@ -196,7 +191,7 @@ void create_sai_from_pfold(AW_window *aww, AW_CL ntw, AW_CL) {
 
     if (!error) {
         AW_window *sai_info = NT_create_extendeds_window(aww->get_root());
-        // TODO: why doesn't info box show anything on first startup? proper refresh needed?
+        //TODO: why doesn't info box show anything on first startup? proper refresh needed?
         sai_info->activate();
         ((AWT_canvas *)ntw)->refresh(); // refresh doesn't work, I guess...
     }
@@ -231,22 +226,22 @@ static void species_create_cb(AW_window * aww) {
 static AW_window *create_species_create_window(AW_root *root)
 {
     AW_window_simple *aws = new AW_window_simple;
-    aws->init(root, "CREATE_SPECIES", "SPECIES CREATE");
+    aws->init( root, "CREATE_SPECIES","SPECIES CREATE");
     aws->load_xfig("ad_al_si.fig");
 
-    aws->callback((AW_CB0)AW_POPDOWN);
+    aws->callback( (AW_CB0)AW_POPDOWN);
     aws->at("close");
-    aws->create_button("CLOSE", "CLOSE", "C");
+    aws->create_button("CLOSE","CLOSE","C");
 
     aws->at("label");
-    aws->create_autosize_button(0, "Please enter the name\nof the new species");
+    aws->create_autosize_button(0,"Please enter the name\nof the new species");
 
     aws->at("input");
-    aws->create_input_field(AWAR_SPECIES_DEST, 15);
+    aws->create_input_field(AWAR_SPECIES_DEST,15);
 
     aws->at("ok");
     aws->callback(species_create_cb);
-    aws->create_button("GO", "GO", "G");
+    aws->create_button("GO","GO","G");
 
     return (AW_window *)aws;
 }
@@ -359,7 +354,7 @@ static AW_CL    ad_global_scannerid      = 0;
 static AW_root *ad_global_scannerroot    = 0;
 static AW_root *ad_global_default_awroot = 0;
 
-void MapViewer_set_default_root(AW_root *aw_root) {
+void AD_set_default_root(AW_root *aw_root) {
     ad_global_default_awroot = aw_root;
 }
 
@@ -367,20 +362,19 @@ static void AD_map_species(AW_root *aw_root, AW_CL scannerid, AW_CL mapOrganism)
 {
     GB_push_transaction(GLOBAL_gb_main);
     char *source = aw_root->awar((bool)mapOrganism ? AWAR_ORGANISM_NAME : AWAR_SPECIES_NAME)->read_string();
-    GBDATA *gb_species = GBT_find_species(GLOBAL_gb_main, source);
+    GBDATA *gb_species = GBT_find_species(GLOBAL_gb_main,source);
     if (gb_species) {
-        map_db_scanner(scannerid, gb_species, CHANGE_KEY_PATH);
+        awt_map_arbdb_scanner(scannerid,gb_species,0, CHANGE_KEY_PATH);
     }
     GB_pop_transaction(GLOBAL_gb_main);
     free(source);
 }
-
-void launch_MapViewer_cb(GBDATA *gbd, AD_MAP_VIEWER_TYPE type) {
+void AD_map_viewer(GBDATA *gbd,AD_MAP_VIEWER_TYPE type) {
     GB_ERROR error = GB_push_transaction(GLOBAL_gb_main);
 
     if (!error) {
         const char *species_name    = "";
-        GBDATA     *gb_species_data = GB_search(GLOBAL_gb_main, "species_data", GB_CREATE_CONTAINER);
+        GBDATA     *gb_species_data = GB_search(GLOBAL_gb_main,"species_data",GB_CREATE_CONTAINER);
 
         if (gbd && GB_get_father(gbd) == gb_species_data) {
             species_name = GBT_read_name(gbd);
@@ -395,8 +389,8 @@ void launch_MapViewer_cb(GBDATA *gbd, AD_MAP_VIEWER_TYPE type) {
     }
 
     if (!error && gbd && type == ADMVT_WWW) {
-        GBDATA *gb_name       = GB_entry(gbd, "name");
-        if (!gb_name) gb_name = GB_entry(gbd, "group_name"); // bad hack, should work
+        GBDATA *gb_name       = GB_entry(gbd,"name");
+        if (!gb_name) gb_name = GB_entry(gbd,"group_name"); // bad hack, should work
 
         const char *name = gb_name ? GB_read_char_pntr(gb_name) : "noname";
         error = awt_openURL_by_gbd(GLOBAL_NT.awr, GLOBAL_gb_main, gbd, name);
@@ -415,23 +409,20 @@ static int count_key_data_elements(GBDATA *gb_key_data) {
     return nitems;
 }
 
-static void reorder_left_behind_right(AW_window *aws, AW_CL cl_selleft, AW_CL cl_selright) {
+static void ad_list_reorder_cb(AW_window *aws, AW_CL cl_cbs1, AW_CL cl_cbs2) {
     GB_begin_transaction(GLOBAL_gb_main);
     char     *source  = aws->get_root()->awar(AWAR_FIELD_REORDER_SOURCE)->read_string();
     char     *dest    = aws->get_root()->awar(AWAR_FIELD_REORDER_DEST)->read_string();
     GB_ERROR  warning = 0;
 
-    AWT_itemfield_selection *sel_left  = (AWT_itemfield_selection*)cl_selleft;
-    AWT_itemfield_selection *sel_right = (AWT_itemfield_selection*)cl_selright;
+    const adawcbstruct     *cbs1      = (const adawcbstruct*)cl_cbs1;
+    const adawcbstruct     *cbs2      = (const adawcbstruct*)cl_cbs2;
+    const ad_item_selector *selector  = cbs1->selector;
+    GBDATA                 *gb_source = GBT_get_changekey(GLOBAL_gb_main,source, selector->change_key_path);
+    GBDATA                 *gb_dest   = GBT_get_changekey(GLOBAL_gb_main,dest, selector->change_key_path);
 
-    const ad_item_selector *selector = sel_left->get_selector();
-    nt_assert(selector == sel_right->get_selector());
-
-    GBDATA *gb_source = GBT_get_changekey(GLOBAL_gb_main, source, selector->change_key_path);
-    GBDATA *gb_dest   = GBT_get_changekey(GLOBAL_gb_main, dest, selector->change_key_path);
-
-    int left_index  = aws->get_index_of_selected_element(sel_left->get_sellist());
-    int right_index = aws->get_index_of_selected_element(sel_right->get_sellist());
+    int left_index  = aws->get_index_of_current_element(cbs1->id, AWAR_FIELD_REORDER_SOURCE);
+    int right_index = aws->get_index_of_current_element(cbs2->id, AWAR_FIELD_REORDER_DEST);
 
     if (!gb_source) {
         aw_message("Please select an item you want to move (left box)");
@@ -439,7 +430,7 @@ static void reorder_left_behind_right(AW_window *aws, AW_CL cl_selleft, AW_CL cl
     else if (!gb_dest) {
         aw_message("Please select a destination where to place your item (right box)");
     }
-    else if (gb_dest != gb_source) {
+    else if (gb_dest !=gb_source) {
         nt_assert(left_index != right_index);
 
         GBDATA  *gb_key_data = GB_search(GLOBAL_gb_main, selector->change_key_path, GB_CREATE_CONTAINER);
@@ -455,7 +446,7 @@ static void reorder_left_behind_right(AW_window *aws, AW_CL cl_selleft, AW_CL cl
                 new_order[nitems++] = gb_source;
             }
         }
-        warning = GB_resort_data_base(GLOBAL_gb_main, new_order, nitems);
+        warning = GB_resort_data_base(GLOBAL_gb_main,new_order,nitems);
         delete [] new_order;
 
         if (left_index>right_index) { left_index++; right_index++; } // in one case increment indices
@@ -470,19 +461,21 @@ static void reorder_left_behind_right(AW_window *aws, AW_CL cl_selleft, AW_CL cl
         aw_message(warning);
     }
     else {
-        aws->select_element_at_index(sel_left->get_sellist(), left_index);
-        aws->select_element_at_index(sel_right->get_sellist(), right_index);
+        aws->select_index(cbs1->id, AWAR_FIELD_REORDER_SOURCE, left_index);
+        aws->select_index(cbs2->id, AWAR_FIELD_REORDER_DEST, right_index);
     }
 }
 
-static void reorder_up_down(AW_window *aws, AW_CL cl_selector, AW_CL cl_dir) {
+static void ad_list_reorder_cb2(AW_window *aws, AW_CL cl_cbs2, AW_CL cl_dir) {
     GB_begin_transaction(GLOBAL_gb_main);
-    int                     dir      = (int)cl_dir;
-    const ad_item_selector *selector = (const ad_item_selector*)cl_selector;
-    
-    char     *field_name = aws->get_root()->awar(AWAR_FIELD_REORDER_DEST)->read_string(); // use the list on the right side
-    GBDATA   *gb_field   = GBT_get_changekey(GLOBAL_gb_main, field_name, selector->change_key_path);
-    GB_ERROR  warning    = 0;
+    int                 dir  = (int)cl_dir;
+    const adawcbstruct *cbs2 = (const adawcbstruct*)cl_cbs2;
+
+    GB_ERROR warning = 0;
+
+    char                   *field_name = aws->get_root()->awar(AWAR_FIELD_REORDER_DEST)->read_string();
+    const ad_item_selector *selector   = cbs2->selector;
+    GBDATA                 *gb_field   = GBT_get_changekey(GLOBAL_gb_main, field_name, selector->change_key_path);
 
     if (!gb_field) {
         warning = "Please select an item to move (right box)";
@@ -516,7 +509,7 @@ static void reorder_up_down(AW_window *aws, AW_CL cl_selector, AW_CL cl_dir) {
                 new_order[new_index] = gb_field;
             }
 
-            warning = GB_resort_data_base(GLOBAL_gb_main, new_order, nitems);
+            warning = GB_resort_data_base(GLOBAL_gb_main,new_order,nitems);
         }
 
         delete [] new_order;
@@ -529,71 +522,70 @@ static void reorder_up_down(AW_window *aws, AW_CL cl_selector, AW_CL cl_dir) {
 AW_window *NT_create_ad_list_reorder(AW_root *root, AW_CL cl_item_selector)
 {
     const ad_item_selector *selector = (const ad_item_selector*)cl_item_selector;
-    
+
     static AW_window_simple *awsa[AWT_QUERY_ITEM_TYPES];
-    if (!awsa[selector->type]) {
-        AW_window_simple *aws = new AW_window_simple;
-        awsa[selector->type]  = aws;
+    if (awsa[selector->type]) return (AW_window *)awsa[selector->type];
 
-        aws->init(root, "REORDER_FIELDS", "REORDER FIELDS");
-        aws->load_xfig("ad_kreo.fig");
+    AW_window_simple *aws = new AW_window_simple;
+    awsa[selector->type]  = aws;
 
-        aws->callback((AW_CB0)AW_POPDOWN);
-        aws->at("close");
-        aws->create_button("CLOSE", "CLOSE", "C");
+    aws->init( root, "REORDER_FIELDS", "REORDER FIELDS");
+    aws->load_xfig("ad_kreo.fig");
 
-        AWT_itemfield_selection *sel1 = awt_create_selection_list_on_itemfields(GLOBAL_gb_main, aws, AWAR_FIELD_REORDER_SOURCE, AWT_NDS_FILTER, "source", 0, selector, 20, 10);
-        AWT_itemfield_selection *sel2 = awt_create_selection_list_on_itemfields(GLOBAL_gb_main, aws, AWAR_FIELD_REORDER_DEST,   AWT_NDS_FILTER, "dest",   0, selector, 20, 10);
+    aws->callback( (AW_CB0)AW_POPDOWN);
+    aws->at("close");
+    aws->create_button("CLOSE","CLOSE","C");
 
-        aws->button_length(0);
+    AW_CL cbs1 = awt_create_selection_list_on_scandb(GLOBAL_gb_main, (AW_window*)aws, AWAR_FIELD_REORDER_SOURCE, AWT_NDS_FILTER, "source", 0, selector, 20, 10);
+    AW_CL cbs2 = awt_create_selection_list_on_scandb(GLOBAL_gb_main, (AW_window*)aws, AWAR_FIELD_REORDER_DEST,   AWT_NDS_FILTER, "dest",   0, selector, 20, 10);
 
-        aws->at("doit");
-        aws->callback(reorder_left_behind_right, (AW_CL)sel1, (AW_CL)sel2);
-        aws->help_text("spaf_reorder.hlp");
-        aws->create_button("MOVE_LEFT_BEHIND_RIGHT", "MOVE LEFT\nBEHIND RIGHT", "L");
+    aws->button_length(0);
 
-        aws->at("doit2");
-        aws->callback(reorder_up_down, (AW_CL)selector, -1);
-        aws->help_text("spaf_reorder.hlp");
-        aws->create_button("MOVE_UP_RIGHT", "MOVE RIGHT\nUP", "U");
+    aws->at("doit");
+    aws->callback(ad_list_reorder_cb, cbs1, cbs2);
+    aws->help_text("spaf_reorder.hlp");
+    aws->create_button("MOVE_LEFT_BEHIND_RIGHT", "MOVE LEFT\nBEHIND RIGHT","L");
 
-        aws->at("doit3");
-        aws->callback(reorder_up_down, (AW_CL)selector, 1);
-        aws->help_text("spaf_reorder.hlp");
-        aws->create_button("MOVE_DOWN_RIGHT", "MOVE RIGHT\nDOWN", "U");
-    }
-    
-    return awsa[selector->type];
+    aws->at("doit2");
+    aws->callback(ad_list_reorder_cb2, cbs2, -1);
+    aws->help_text("spaf_reorder.hlp");
+    aws->create_button("MOVE_UP_RIGHT", "MOVE RIGHT\nUP","U");
+
+    aws->at("doit3");
+    aws->callback(ad_list_reorder_cb2, cbs2, 1);
+    aws->help_text("spaf_reorder.hlp");
+    aws->create_button("MOVE_DOWN_RIGHT", "MOVE RIGHT\nDOWN","U");
+
+    return (AW_window *)aws;
 }
 
-static void ad_hide_field(AW_window *aws, AW_CL cl_sel, AW_CL cl_hide) {
-    AWT_itemfield_selection *item_sel = (AWT_itemfield_selection*)cl_sel;
-    GB_ERROR                 error    = GB_begin_transaction(GLOBAL_gb_main);
+static void ad_hide_field(AW_window *aws, AW_CL cl_cbs, AW_CL cl_hide) {
+    const adawcbstruct *cbs   = (const adawcbstruct *)cl_cbs;
+    GB_ERROR            error = GB_begin_transaction(GLOBAL_gb_main);
 
     if (!error) {
         char                   *source    = aws->get_root()->awar(AWAR_FIELD_DELETE)->read_string();
-        const ad_item_selector *selector  = item_sel->get_selector();
+        const ad_item_selector *selector  = cbs->selector;
         GBDATA                 *gb_source = GBT_get_changekey(GLOBAL_gb_main, source, selector->change_key_path);
 
         if (!gb_source) error = "Please select the field you want to (un)hide";
         else error            = GBT_write_int(gb_source, CHANGEKEY_HIDDEN, int(cl_hide));
-
+        
         free(source);
     }
     GB_end_transaction_show_error(GLOBAL_gb_main, error, aw_message);
-    if (!error) aws->move_selection(item_sel->get_sellist(), 1);
+    if (!error) aws->move_selection(cbs->id, AWAR_FIELD_DELETE, 1);
 }
 
-static void ad_field_delete(AW_window *aws, AW_CL cl_sel) {
+static void ad_field_delete(AW_window *aws, AW_CL cl_cbs) {
     GB_ERROR error = GB_begin_transaction(GLOBAL_gb_main);
 
     if (!error) {
-        char                    *source     = aws->get_root()->awar(AWAR_FIELD_DELETE)->read_string();
-        AWT_itemfield_selection *item_sel   = (AWT_itemfield_selection*)cl_sel;
-        const ad_item_selector  *selector   = item_sel->get_selector();
-        AW_selection_list       *sellist    = item_sel->get_sellist();
-        int                      curr_index = aws->get_index_of_selected_element(sellist);
-        GBDATA                  *gb_source  = GBT_get_changekey(GLOBAL_gb_main, source, selector->change_key_path);
+        char                   *source     = aws->get_root()->awar(AWAR_FIELD_DELETE)->read_string();
+        const adawcbstruct     *cbs        = (const adawcbstruct *)cl_cbs;
+        const ad_item_selector *selector   = cbs->selector;
+        int                     curr_index = aws->get_index_of_current_element(cbs->id, AWAR_FIELD_DELETE);
+        GBDATA                 *gb_source  = GBT_get_changekey(GLOBAL_gb_main, source, selector->change_key_path);
 
         if (!gb_source) error = "Please select the field you want to delete";
         else error            = GB_delete(gb_source);
@@ -611,8 +603,8 @@ static void ad_field_delete(AW_window *aws, AW_CL cl_sel) {
                 if (gbd) {
                     error = GB_delete(gbd);
                     if (!error) {
-                        // item has disappeared, this selects the next one:
-                        aws->select_element_at_index(sellist, curr_index);
+                        // item has disappeared, this selects the next one: 
+                        aws->select_index(cbs->id, AWAR_FIELD_DELETE, curr_index);
                     }
                 }
             }
@@ -625,49 +617,50 @@ static void ad_field_delete(AW_window *aws, AW_CL cl_sel) {
 }
 
 
-AW_window *NT_create_ad_field_delete(AW_root *root, AW_CL cl_item_selector) {
+AW_window *NT_create_ad_field_delete(AW_root *root, AW_CL cl_item_selector)
+{
     const ad_item_selector *selector = (const ad_item_selector*)cl_item_selector;
 
     static AW_window_simple *awsa[AWT_QUERY_ITEM_TYPES];
-    if (!awsa[selector->type]) {
-        AW_window_simple *aws = new AW_window_simple;
-        awsa[selector->type]  = aws;
+    if (awsa[selector->type]) return (AW_window *)awsa[selector->type];
 
-        aws->init(root, "DELETE_FIELD", "DELETE FIELD");
-        aws->load_xfig("ad_delof.fig");
-        aws->button_length(6);
+    AW_window_simple *aws = new AW_window_simple;
+    awsa[selector->type]  = aws;
 
-        aws->at("close"); aws->callback(AW_POPDOWN);
-        aws->create_button("CLOSE", "CLOSE", "C");
+    aws = new AW_window_simple;
+    aws->init( root, "DELETE_FIELD", "DELETE FIELD");
+    aws->load_xfig("ad_delof.fig");
+    aws->button_length(6);
 
-        aws->at("help"); aws->callback(AW_POPUP_HELP, (AW_CL)"spaf_delete.hlp");
-        aws->create_button("HELP", "HELP", "H");
+    aws->at("close");aws->callback( AW_POPDOWN);
+    aws->create_button("CLOSE","CLOSE","C");
 
-        AWT_itemfield_selection *item_sel =
-            awt_create_selection_list_on_itemfields(GLOBAL_gb_main,
-                                                    aws, AWAR_FIELD_DELETE,
+    aws->at("help");aws->callback( AW_POPUP_HELP,(AW_CL)"spaf_delete.hlp");
+    aws->create_button("HELP","HELP","H");
+
+    AW_CL cbs = awt_create_selection_list_on_scandb(GLOBAL_gb_main,
+                                                    (AW_window*)aws,AWAR_FIELD_DELETE,
                                                     -1,
                                                     "source", 0, selector, 20, 10,
                                                     AWT_SF_HIDDEN);
 
-        aws->button_length(13);
-        aws->at("hide");
-        aws->callback(ad_hide_field, (AW_CL)item_sel, (AW_CL)1);
-        aws->help_text("rm_field_only.hlp");
-        aws->create_button("HIDE_FIELD", "Hide field", "H");
+    aws->button_length(13);
+    aws->at("hide");
+    aws->callback(ad_hide_field, cbs, (AW_CL)1);
+    aws->help_text("rm_field_only.hlp");
+    aws->create_button("HIDE_FIELD","Hide field","H");
 
-        aws->at("unhide");
-        aws->callback(ad_hide_field, (AW_CL)item_sel, (AW_CL)0);
-        aws->help_text("rm_field_only.hlp");
-        aws->create_button("UNHIDE_FIELD", "Unhide field", "U");
+    aws->at("unhide");
+    aws->callback(ad_hide_field, cbs, (AW_CL)0);
+    aws->help_text("rm_field_only.hlp");
+    aws->create_button("UNHIDE_FIELD","Unhide field","U");
 
-        aws->at("delf");
-        aws->callback(ad_field_delete, (AW_CL)item_sel);
-        aws->help_text("rm_field_cmpt.hlp");
-        aws->create_button("DELETE_FIELD", "DELETE FIELD\n(DATA DELETED)", "C");
-    }
-    
-    return awsa[selector->type];
+    aws->at("delf");
+    aws->callback(ad_field_delete, cbs);
+    aws->help_text("rm_field_cmpt.hlp");
+    aws->create_button("DELETE_FIELD", "DELETE FIELD\n(DATA DELETED)","C");
+
+    return (AW_window *)aws;
 }
 
 static void ad_field_create_cb(AW_window *aws, AW_CL cl_item_selector)
@@ -701,19 +694,19 @@ AW_window *NT_create_ad_field_create(AW_root *root, AW_CL cl_item_selector)
     AW_window_simple *aws = new AW_window_simple;
     awsa[selector->type]  = aws;
 
-    aws->init(root, "CREATE_FIELD", "CREATE A NEW FIELD");
+    aws->init( root, "CREATE_FIELD","CREATE A NEW FIELD");
     aws->load_xfig("ad_fcrea.fig");
 
-    aws->callback((AW_CB0)AW_POPDOWN);
+    aws->callback( (AW_CB0)AW_POPDOWN);
     aws->at("close");
-    aws->create_button("CLOSE", "CLOSE", "C");
+    aws->create_button("CLOSE","CLOSE","C");
 
     aws->at("input");
     aws->label("FIELD NAME");
-    aws->create_input_field(AWAR_FIELD_CREATE_NAME, 15);
+    aws->create_input_field(AWAR_FIELD_CREATE_NAME,15);
 
     aws->at("type");
-    aws->create_toggle_field(AWAR_FIELD_CREATE_TYPE, "FIELD TYPE", "F");
+    aws->create_toggle_field(AWAR_FIELD_CREATE_TYPE,"FIELD TYPE","F");
     aws->insert_toggle("Ascii Text",        "S", (int)GB_STRING);
     aws->insert_toggle("Link",              "L", (int)GB_LINK);
     aws->insert_toggle("Rounded Numerical", "N", (int)GB_INT);
@@ -723,7 +716,7 @@ AW_window *NT_create_ad_field_create(AW_root *root, AW_CL cl_item_selector)
 
     aws->at("ok");
     aws->callback(ad_field_create_cb, cl_item_selector);
-    aws->create_button("CREATE", "CREATE", "C");
+    aws->create_button("CREATE","CREATE","C");
 
     return (AW_window *)aws;
 }
@@ -772,23 +765,23 @@ AW_window *NT_create_ad_field_convert(AW_root *root, AW_CL cl_item_selector) {
     aws->load_xfig("ad_conv.fig");
 
     aws->at("close");
-    aws->callback((AW_CB0)AW_POPDOWN);
-    aws->create_button("CLOSE", "CLOSE", "C");
+    aws->callback( (AW_CB0)AW_POPDOWN);
+    aws->create_button("CLOSE","CLOSE","C");
 
     aws->at("help");
-    aws->callback(AW_POPUP_HELP, (AW_CL)"spaf_convert.hlp");
-    aws->create_button("HELP", "HELP", "H");
+    aws->callback( AW_POPUP_HELP,(AW_CL)"spaf_convert.hlp");
+    aws->create_button("HELP","HELP","H");
 
     aws->callback(ad_field_convert_update_typesel_cb, cl_item_selector);
-    awt_create_selection_list_on_itemfields(GLOBAL_gb_main,
-                                            aws,
-                                            AWAR_FIELD_CONVERT_SOURCE, // AWAR containing selection
-                                            -1,     // type filter
-                                            "source", // selector xfig position
-                                            0,      // rescan button xfig position
-                                            selector,
-                                            40, 20, // selector w,h
-                                            AWT_SF_HIDDEN);
+    awt_create_selection_list_on_scandb(GLOBAL_gb_main,
+                                        aws,
+                                        AWAR_FIELD_CONVERT_SOURCE, // AWAR containing selection
+                                        -1,     // type filter
+                                        "source", // selector xfig position
+                                        0,      // rescan button xfig position
+                                        selector,
+                                        40, 20, // selector w,h
+                                        AWT_SF_HIDDEN);
 
     aws->at("typesel");
     aws->create_toggle_field(AWAR_FIELD_CONVERT_TYPE, NULL, "F");
@@ -801,7 +794,7 @@ AW_window *NT_create_ad_field_convert(AW_root *root, AW_CL cl_item_selector) {
 
     aws->at("convert");
     aws->callback(ad_field_convert_commit_cb, cl_item_selector);
-    aws->create_button("CONVERT", "CONVERT", "T");
+    aws->create_button("CONVERT","CONVERT","T");
 
     return (AW_window*)aws;
 }
@@ -810,8 +803,8 @@ void ad_spec_create_field_items(AW_window *aws) {
     aws->insert_menu_topic("spec_reorder_fields", "Reorder fields ...",     "R", "spaf_reorder.hlp", AWM_ALL, AW_POPUP, (AW_CL)NT_create_ad_list_reorder, (AW_CL)&AWT_species_selector);
     aws->insert_menu_topic("spec_delete_field",   "Delete/Hide fields ...", "D", "spaf_delete.hlp",  AWM_EXP, AW_POPUP, (AW_CL)NT_create_ad_field_delete, (AW_CL)&AWT_species_selector);
     aws->insert_menu_topic("spec_create_field",   "Create fields ...",      "C", "spaf_create.hlp",  AWM_ALL, AW_POPUP, (AW_CL)NT_create_ad_field_create, (AW_CL)&AWT_species_selector);
-    aws->insert_menu_topic("spec_convert_field",  "Convert fields ...",     "t", "spaf_convert.hlp", AWM_EXP, AW_POPUP, (AW_CL)NT_create_ad_field_convert, (AW_CL)&AWT_species_selector);
-    aws->insert_separator();
+    aws->insert_menu_topic("spec_convert_field",  "Convert fields ...",     "t", "spaf_convert.hlp", AWM_EXP, AW_POPUP, (AW_CL)NT_create_ad_field_convert,(AW_CL)&AWT_species_selector);
+    aws->insert_separator(); 
     aws->insert_menu_topic("spec_unhide_fields", "Show all hidden fields", "S", "scandb.hlp", AWM_ALL, (AW_CB)awt_selection_list_unhide_all_cb, (AW_CL)GLOBAL_gb_main, AWT_NDS_FILTER);
     aws->insert_separator();
     aws->insert_menu_topic("spec_scan_unknown_fields", "Scan unknown fields",   "u", "scandb.hlp", AWM_ALL, (AW_CB)awt_selection_list_scan_unknown_cb,  (AW_CL)GLOBAL_gb_main, AWT_NDS_FILTER);
@@ -821,8 +814,8 @@ void ad_spec_create_field_items(AW_window *aws) {
 
 #include <probe_design.hxx>
 
-static void awtc_nn_search_all_listed(AW_window *aww, AW_CL _cbs) {
-    DbQuery *cbs = (DbQuery *)_cbs;
+static void awtc_nn_search_all_listed(AW_window *aww,AW_CL _cbs) {
+    struct adaqbsstruct *cbs = (struct adaqbsstruct *)_cbs;
 
     nt_assert(cbs->selector->type == AWT_QUERY_ITEM_SPECIES);
 
@@ -830,10 +823,10 @@ static void awtc_nn_search_all_listed(AW_window *aww, AW_CL _cbs) {
 
     AW_root *aw_root    = aww->get_root();
     char    *dest_field = aw_root->awar(AWAR_NN_DEST_FIELD)->read_string();
-
+    
     GB_ERROR error     = 0;
     GB_TYPES dest_type = GBT_get_type_of_changekey(GLOBAL_gb_main, dest_field, CHANGE_KEY_PATH);
-    if (!dest_type) {
+    if (!dest_type){
         error = GB_export_error("Please select a valid field");
     }
     long max = awt_count_queried_items(cbs, AWT_QUERY_ALL_SPECIES);
@@ -865,27 +858,27 @@ static void awtc_nn_search_all_listed(AW_window *aww, AW_CL _cbs) {
          !error && gb_species;
          gb_species = GBT_next_species(gb_species))
     {
-        if (!IS_QUERIED(gb_species, cbs)) continue;
-
+        if (!IS_QUERIED(gb_species,cbs)) continue;
+        
         count++;
-        if ((count%10) == 0) {
-            GBDATA *gb_name = GB_search(gb_species, "name", GB_STRING);
+        if ((count%10) == 0){
+            GBDATA *gb_name = GB_search(gb_species,"name",GB_STRING);
             aw_status(GBS_global_string("Species '%s' (%li:%li)", GB_read_char_pntr(gb_name), count, max));
         }
-
-        GBDATA *gb_data = GBT_read_sequence(gb_species, ali_name);
+        
+        GBDATA *gb_data = GBT_read_sequence(gb_species,ali_name);
         if (!gb_data) continue;
 
-        if (aw_status(count/(double)max)) {
+        if (aw_status(count/(double)max)){
             error = "operation aborted";
         }
         else {
-            char            *sequence = GB_read_string(gb_data);
-            PT_FamilyFinder  ff(GLOBAL_gb_main, pts, oligo_len, mismatches, fast_mode, rel_matches);
+            char             *sequence = GB_read_string(gb_data);
+            AWTC_FIND_FAMILY  ff(GLOBAL_gb_main);
 
-            error = ff.searchFamily(sequence, compl_mode, wanted_entries);
+            error = ff.findFamily(pts, sequence, oligo_len, mismatches, fast_mode, rel_matches, compl_mode, wanted_entries);
             if (!error) {
-                const FamilyList *fm = ff.getFamilyList();
+                const AWTC_FIND_FAMILY_MEMBER *fm = ff.getFamilyList();
 
                 GBS_strstruct *value = NULL;
                 while (fm) {
@@ -920,7 +913,7 @@ static void awtc_nn_search_all_listed(AW_window *aww, AW_CL _cbs) {
 
                 if (value) {
                     GBDATA *gb_dest = GB_search(gb_species, dest_field, dest_type);
-
+                    
                     error = GB_write_as_string(gb_dest, GBS_mempntr(value));
                     GBS_strforget(value);
                 }
@@ -946,58 +939,57 @@ static void awtc_nn_search(AW_window *aww, AW_CL id) {
         GB_transaction ta(GLOBAL_gb_main);
 
         char   *sel_species = aw_root->awar(AWAR_SPECIES_NAME)->read_string();
-        GBDATA *gb_species  = GBT_find_species(GLOBAL_gb_main, sel_species);
+        GBDATA *gb_species  = GBT_find_species(GLOBAL_gb_main,sel_species);
 
-        if (!gb_species) {
+        if (!gb_species){
             error = "Select a species first";
         }
         else {
             char   *ali_name = aw_root->awar(AWAR_DEFAULT_ALIGNMENT)->read_string();
-            GBDATA *gb_data  = GBT_read_sequence(gb_species, ali_name);
+            GBDATA *gb_data  = GBT_read_sequence(gb_species,ali_name);
 
             if (gb_data) {
                 sequence = GB_read_string(gb_data);
             }
             else {
-                error = GBS_global_string("Species '%s' has no sequence '%s'", sel_species, ali_name);
+                error = GBS_global_string("Species '%s' has no sequence '%s'",sel_species,ali_name);
             }
             free(ali_name);
         }
         free(sel_species);
     }
 
-    int  pts         = aw_root->awar(AWAR_PROBE_ADMIN_PT_SERVER)->read_int();
-    int  oligo_len   = aw_root->awar(AWAR_NN_OLIGO_LEN)->read_int();
-    int  mismatches  = aw_root->awar(AWAR_NN_MISMATCHES)->read_int();
-    bool fast_mode   = aw_root->awar(AWAR_NN_FAST_MODE)->read_int();
-    bool rel_matches = aw_root->awar(AWAR_NN_REL_MATCHES)->read_int();
-
-    PT_FamilyFinder ff(GLOBAL_gb_main, pts, oligo_len, mismatches, fast_mode, rel_matches);
+    AWTC_FIND_FAMILY ff(GLOBAL_gb_main);
+    bool             rel_matches = aw_root->awar(AWAR_NN_REL_MATCHES)->read_int();
 
     int max_hits = 0; // max wanted hits
 
     if (!error) {
+        int           pts        = aw_root->awar(AWAR_PROBE_ADMIN_PT_SERVER)->read_int();
+        int           oligo_len  = aw_root->awar(AWAR_NN_OLIGO_LEN)->read_int();
+        int           mismatches = aw_root->awar(AWAR_NN_MISMATCHES)->read_int();
+        bool          fast_mode  = aw_root->awar(AWAR_NN_FAST_MODE)->read_int();
         FF_complement compl_mode = static_cast<FF_complement>(aw_root->awar(AWAR_NN_COMPLEMENT)->read_int());
         max_hits                 = aw_root->awar(AWAR_NN_MAX_HITS)->read_int();
 
-        error = ff.searchFamily(sequence, compl_mode, max_hits);
+        error = ff.findFamily(pts, sequence, oligo_len, mismatches, fast_mode, rel_matches, compl_mode, max_hits);
     }
 
     // update result list
     {
         AW_selection_list* sel = (AW_selection_list *)id;
         aww->clear_selection_list(sel);
-
+    
         int hits = 0;
         if (error) {
             aw_message(error);
-            aww->insert_default_selection(sel, "<Error>", "");
+            aww->insert_default_selection(sel,"<Error>","");
         }
         else {
             int count    = 1;
             int numWidth = log(max_hits)/log(10)+1;
 
-            for (const FamilyList *fm = ff.getFamilyList(); fm; fm = fm->next) {
+            for (const AWTC_FIND_FAMILY_MEMBER *fm = ff.getFamilyList(); fm; fm = fm->next) {
                 const char *dis;
                 if (rel_matches) {
                     dis = GBS_global_string("#%0*i %-12s Rel.hits: %5.1f%%", numWidth, count, fm->name, fm->rel_matches*100);
@@ -1010,7 +1002,7 @@ static void awtc_nn_search(AW_window *aww, AW_CL id) {
                 count++;
             }
 
-            aww->insert_default_selection(sel, ff.hits_were_truncated() ? "<List truncated>" : "<No more hits>", "");
+            aww->insert_default_selection(sel, ff.hits_were_truncated() ? "<List truncated>" : "<No more hits>","");
             hits = ff.getRealHits();
         }
         aw_root->awar(AWAR_NN_HIT_COUNT)->write_int(hits);
@@ -1023,12 +1015,12 @@ static void awtc_nn_search(AW_window *aww, AW_CL id) {
 static void awtc_move_hits(AW_window *aww, AW_CL id, AW_CL cbs) {
     AW_root *aw_root         = aww->get_root();
     char    *current_species = aw_root->awar(AWAR_SPECIES_NAME)->read_string();
-
+    
     if (!current_species) current_species = strdup("<unknown>");
 
     char *hit_description = GBS_global_string_copy("<neighbour of %s: %%s>", current_species);
 
-    awt_copy_selection_list_2_queried_species((DbQuery *)cbs, (AW_selection_list *)id, hit_description);
+    awt_copy_selection_list_2_queried_species((struct adaqbsstruct *)cbs, (AW_selection_list *)id, hit_description);
 
     free(hit_description);
     free(current_species);
@@ -1040,7 +1032,7 @@ static void create_next_neighbours_vars(AW_root *aw_root) {
     if (!created) {
         aw_root->awar_int(AWAR_PROBE_ADMIN_PT_SERVER);
         aw_root->awar_int(AWAR_NN_COMPLEMENT,  FF_FORWARD);
-
+        
         aw_root->awar_int(AWAR_NN_MAX_HITS,  50);
         aw_root->awar_int(AWAR_NN_HIT_COUNT, 0);
 
@@ -1073,22 +1065,22 @@ static void create_common_next_neighbour_fields(AW_window *aws) {
     aws->update_option_menu();
 }
 
-static AW_window *ad_spec_next_neighbours_listed_create(AW_root *aw_root, AW_CL cbs) {
+static AW_window *ad_spec_next_neighbours_listed_create(AW_root *aw_root,AW_CL cbs){
     static AW_window_simple *aws = 0;
     if (!aws) {
         create_next_neighbours_vars(aw_root);
 
         aws = new AW_window_simple;
-        aws->init(aw_root, "SEARCH_NEXT_RELATIVES_OF_LISTED", "Search Next Neighbours of Listed");
+        aws->init( aw_root, "SEARCH_NEXT_RELATIVES_OF_LISTED", "Search Next Neighbours of Listed");
         aws->load_xfig("ad_spec_nnm.fig");
 
         aws->at("close");
-        aws->callback((AW_CB0)AW_POPDOWN);
-        aws->create_button("CLOSE", "CLOSE", "C");
+        aws->callback( (AW_CB0)AW_POPDOWN);
+        aws->create_button("CLOSE","CLOSE","C");
 
         aws->at("help");
         aws->callback(AW_POPUP_HELP, (AW_CL)"next_neighbours_listed.hlp");
-        aws->create_button("HELP", "HELP", "H");
+        aws->create_button("HELP","HELP","H");
 
         create_common_next_neighbour_fields(aws);
 
@@ -1097,38 +1089,38 @@ static AW_window *ad_spec_next_neighbours_listed_create(AW_root *aw_root, AW_CL 
 
         aws->at("add_score");
         aws->create_toggle(AWAR_NN_SCORED_ENTRIES);
-
+        
         aws->at("min_score");
         aws->create_input_field(AWAR_NN_MIN_SCORE, 5);
 
         aws->at("field");
-        awt_create_selection_list_on_itemfields(GLOBAL_gb_main, aws, AWAR_NN_DEST_FIELD,
-                                                (1<<GB_INT) | (1<<GB_STRING), "field", 0,
-                                                &AWT_species_selector, 20, 10);
+        awt_create_selection_list_on_scandb(GLOBAL_gb_main,aws,AWAR_NN_DEST_FIELD,
+                                            (1<<GB_INT) | (1<<GB_STRING), "field",0,
+                                            &AWT_species_selector, 20, 10);
 
         aws->at("go");
-        aws->callback(awtc_nn_search_all_listed, cbs);
-        aws->create_button("WRITE_FIELDS", "Write to field");
-    }
+        aws->callback(awtc_nn_search_all_listed,cbs);
+        aws->create_button("WRITE_FIELDS","Write to field");
+    }    
     return aws;
 }
 
-static AW_window *ad_spec_next_neighbours_create(AW_root *aw_root, AW_CL cbs) {
+static AW_window *ad_spec_next_neighbours_create(AW_root *aw_root,AW_CL cbs){
     static AW_window_simple *aws = 0;
     if (!aws) {
         create_next_neighbours_vars(aw_root);
 
         aws = new AW_window_simple;
-        aws->init(aw_root, "SEARCH_NEXT_RELATIVE_OF_SELECTED", "Search Next Neighbours");
+        aws->init( aw_root, "SEARCH_NEXT_RELATIVE_OF_SELECTED", "Search Next Neighbours");
         aws->load_xfig("ad_spec_nn.fig");
 
         aws->at("close");
-        aws->callback((AW_CB0)AW_POPDOWN);
-        aws->create_button("CLOSE", "CLOSE", "C");
+        aws->callback( (AW_CB0)AW_POPDOWN);
+        aws->create_button("CLOSE","CLOSE","C");
 
         aws->at("help");
         aws->callback(AW_POPUP_HELP, (AW_CL)"next_neighbours.hlp");
-        aws->create_button("HELP", "HELP", "H");
+        aws->create_button("HELP","HELP","H");
 
         create_common_next_neighbour_fields(aws);
 
@@ -1140,16 +1132,16 @@ static AW_window *ad_spec_next_neighbours_create(AW_root *aw_root, AW_CL cbs) {
 
         aws->at("hits");
         AW_selection_list *id = aws->create_selection_list(AWAR_SPECIES_NAME);
-        aws->insert_default_selection(id, "No hits found", "");
+        aws->insert_default_selection(id,"No hits found","");
         aws->update_selection_list(id);
 
         aws->at("go");
-        aws->callback(awtc_nn_search, (AW_CL)id);
-        aws->create_button("SEARCH", "SEARCH");
+        aws->callback(awtc_nn_search,(AW_CL)id);
+        aws->create_button("SEARCH","SEARCH");
 
         aws->at("move");
         aws->callback(awtc_move_hits, (AW_CL)id, cbs);
-        aws->create_button("MOVE_TO_HITLIST", "MOVE TO HITLIST");
+        aws->create_button("MOVE_TO_HITLIST","MOVE TO HITLIST");
 
     }
     return aws;
@@ -1175,7 +1167,7 @@ void NT_detach_information_window(AW_window *aww, AW_CL cl_pointer_to_aww, AW_CL
         awr->awar_string(new_awar, "", AW_ROOT_DEFAULT);
 
         cb_info->remap(new_awar); // remap the callback from old awar to new unique awar
-        aww->update_label(di->get_detach_button(), "GET");
+        aww->update_label((int*)di->get_detach_button(), "GET");
 
         *aww_pointer = 0;       // caller window will be recreated on next open after clearing this pointer
         // [Note : the aww_pointer points to the static window pointer]
@@ -1186,97 +1178,100 @@ void NT_detach_information_window(AW_window *aww, AW_CL cl_pointer_to_aww, AW_CL
     free(curr_species);
 }
 
-static AW_window *create_speciesOrganismWindow(AW_root *aw_root, GBDATA *gb_main, bool organismWindow) {
+AW_window *create_speciesOrganismWindow(AW_root *aw_root, bool organismWindow)
+{
     int windowIdx = (int)organismWindow;
 
     static AW_window_simple_menu *AWS[2] = { 0, 0 };
-    if (!AWS[windowIdx]) {
-        AW_window_simple_menu *& aws = AWS[windowIdx];
-
-        aws = new AW_window_simple_menu;
-        if (organismWindow) aws->init(aw_root, "ORGANISM_INFORMATION", "ORGANISM INFORMATION");
-        else                aws->init(aw_root, "SPECIES_INFORMATION", "SPECIES INFORMATION");
-        aws->load_xfig("ad_spec.fig");
-
-        aws->button_length(8);
-
-        aws->at("close");
-        aws->callback((AW_CB0)AW_POPDOWN);
-        aws->create_button("CLOSE", "CLOSE", "C");
-
-        aws->at("search");
-        aws->callback(AW_POPUP, (AW_CL)ad_create_query_window, 0);
-        aws->create_button("SEARCH", "SEARCH", "S");
-
-        aws->at("help");
-        aws->callback(AW_POPUP_HELP, (AW_CL)"sp_info.hlp");
-        aws->create_button("HELP", "HELP", "H");
-
-        AW_CL scannerid = create_db_scanner(gb_main, aws, "box", 0, "field", "enable", DB_VIEWER, 0, "mark", AWT_NDS_FILTER,
-                                            organismWindow ? &AWT_organism_selector : &AWT_species_selector);
-        ad_global_scannerid = scannerid;
-        ad_global_scannerroot = aws->get_root();
-
-        if (organismWindow) aws->create_menu("ORGANISM",    "O", AWM_ALL);
-        else                aws->create_menu("SPECIES",     "S", AWM_ALL);
-
-        aws->insert_menu_topic("species_delete",        "Delete",         "D", "spa_delete.hlp",  AWM_ALL, ad_species_delete_cb,            0,                                   0);
-        aws->insert_menu_topic("species_rename",        "Rename",         "R", "spa_rename.hlp",  AWM_ALL, ad_species_rename_cb,            0,                                   0);
-        aws->insert_menu_topic("species_copy",          "Copy",           "y", "spa_copy.hlp",    AWM_ALL, ad_species_copy_cb,              0,                                   0);
-        aws->insert_menu_topic("species_create",        "Create",         "C", "spa_create.hlp",  AWM_ALL, AW_POPUP,                        (AW_CL)create_species_create_window, 0);
-        aws->insert_menu_topic("species_convert_2_sai", "Convert to SAI", "S", "sp_sp_2_ext.hlp", AWM_ALL, (AW_CB)move_species_to_extended, 0,                                   0);
-        aws->insert_separator();
-
-        aws->create_menu("FIELDS", "F", AWM_ALL);
-        ad_spec_create_field_items(aws);
-
-        {
-            const char         *awar_name = (bool)organismWindow ? AWAR_ORGANISM_NAME : AWAR_SPECIES_NAME;
-            AW_root            *awr       = aws->get_root();
-            Awar_Callback_Info *cb_info   = new Awar_Callback_Info(awr, awar_name, AD_map_species, (AW_CL)scannerid, (AW_CL)organismWindow); // do not delete!
-            cb_info->add_callback();
-
-            AW_detach_information *detach_info = new AW_detach_information(cb_info); // do not delete!
-
-            aws->at("detach");
-            aws->callback(NT_detach_information_window, (AW_CL)&aws, (AW_CL)detach_info);
-            aws->create_button("DETACH", "DETACH", "D");
-
-            detach_info->set_detach_button(aws->get_last_widget());
-        }
-
-        aws->show();
-        AD_map_species(aws->get_root(), scannerid, (AW_CL)organismWindow);
+    if (AWS[windowIdx]) {
+        return (AW_window *)AWS[windowIdx]; // already created (and not detached)
     }
-    return AWS[windowIdx]; // already created (and not detached)
+
+    AW_window_simple_menu *& aws = AWS[windowIdx];
+
+    aws = new AW_window_simple_menu;
+    if (organismWindow) aws->init( aw_root, "ORGANISM_INFORMATION", "ORGANISM INFORMATION");
+    else                aws->init( aw_root, "SPECIES_INFORMATION", "SPECIES INFORMATION");
+    aws->load_xfig("ad_spec.fig");
+
+    aws->button_length(8);
+
+    aws->at("close");
+    aws->callback( (AW_CB0)AW_POPDOWN);
+    aws->create_button("CLOSE","CLOSE","C");
+
+    aws->at("search");
+    aws->callback(AW_POPUP, (AW_CL)ad_create_query_window, 0);
+    aws->create_button("SEARCH","SEARCH","S");
+
+    aws->at("help");
+    aws->callback(AW_POPUP_HELP, (AW_CL)"sp_info.hlp");
+    aws->create_button("HELP","HELP","H");
+
+    AW_CL scannerid = awt_create_arbdb_scanner(GLOBAL_gb_main, aws, "box",0,"field","enable",AWT_VIEWER,0,"mark",AWT_NDS_FILTER,
+                                               organismWindow ? &AWT_organism_selector : &AWT_species_selector);
+    ad_global_scannerid = scannerid;
+    ad_global_scannerroot = aws->get_root();
+
+    if (organismWindow) aws->create_menu("ORGANISM",     "O", "spa_organism.hlp",  AWM_ALL );
+    else                aws->create_menu("SPECIES",     "S", "spa_species.hlp",  AWM_ALL );
+
+    aws->insert_menu_topic("species_delete",        "Delete",        "D","spa_delete.hlp",   AWM_ALL,   ad_species_delete_cb, 0, 0);
+    aws->insert_menu_topic("species_rename",        "Rename",        "R","spa_rename.hlp",   AWM_ALL,   ad_species_rename_cb, 0, 0);
+    aws->insert_menu_topic("species_copy",          "Copy",          "y","spa_copy.hlp", AWM_ALL,   ad_species_copy_cb, 0, 0);
+    aws->insert_menu_topic("species_create",        "Create",        "C","spa_create.hlp",   AWM_ALL,   AW_POPUP, (AW_CL)create_species_create_window, 0);
+    aws->insert_menu_topic("species_convert_2_sai", "Convert to SAI","S","sp_sp_2_ext.hlp",AWM_ALL,    (AW_CB)move_species_to_extended, 0, 0);
+    aws->insert_separator();
+
+    aws->create_menu("FIELDS",     "F", "spa_fields.hlp",  AWM_ALL );
+    ad_spec_create_field_items(aws);
+
+    {
+        const char         *awar_name = (bool)organismWindow ? AWAR_ORGANISM_NAME : AWAR_SPECIES_NAME;
+        AW_root            *awr       = aws->get_root();
+        Awar_Callback_Info *cb_info   = new Awar_Callback_Info(awr, awar_name, AD_map_species, (AW_CL)scannerid, (AW_CL)organismWindow); // do not delete!
+        cb_info->add_callback();
+
+        AW_detach_information *detach_info = new AW_detach_information(cb_info); // do not delete!
+
+        aws->at("detach");
+        aws->callback(NT_detach_information_window, (AW_CL)&aws, (AW_CL)detach_info);
+        aws->create_button("DETACH", "DETACH", "D");
+
+        detach_info->set_detach_button(aws->get_last_widget());
+    }
+
+    aws->show();
+    AD_map_species(aws->get_root(),scannerid, (AW_CL)organismWindow);
+    return (AW_window *)aws;
 }
 
-AW_window *NT_create_species_window(AW_root *aw_root, AW_CL cl_gb_main) {
-    return create_speciesOrganismWindow(aw_root, (GBDATA*)cl_gb_main, false);
+AW_window *NT_create_species_window(AW_root *aw_root) {
+    return create_speciesOrganismWindow(aw_root, false);
 }
-AW_window *NT_create_organism_window(AW_root *aw_root, AW_CL cl_gb_main) {
-    return create_speciesOrganismWindow(aw_root, (GBDATA*)cl_gb_main, true);
+AW_window *NT_create_organism_window(AW_root *aw_root) {
+    return create_speciesOrganismWindow(aw_root, true);
 }
 
 AW_CL ad_query_global_cbs = 0;
 
-void ad_unquery_all() {
-    awt_unquery_all(0, (DbQuery *)ad_query_global_cbs);
+void ad_unquery_all(){
+    awt_unquery_all(0,(struct adaqbsstruct *)ad_query_global_cbs);
 }
 
-void ad_query_update_list() {
-    awt_query_update_list(NULL, (DbQuery *)ad_query_global_cbs);
+void ad_query_update_list(){
+    awt_query_update_list(NULL,(struct adaqbsstruct *)ad_query_global_cbs);
 }
 
 AW_window *ad_create_query_window(AW_root *aw_root)
 {
     static AW_window_simple_menu *aws = 0;
-    if (aws) {
+    if (aws){
         return (AW_window *)aws;
     }
     aws = new AW_window_simple_menu;
-    aws->init(aw_root, "SPECIES_QUERY", "SEARCH and QUERY");
-    aws->create_menu("More functions", "f");
+    aws->init( aw_root, "SPECIES_QUERY", "SEARCH and QUERY");
+    aws->create_menu("More functions","f");
     aws->load_xfig("ad_query.fig");
 
 
@@ -1303,27 +1298,27 @@ AW_window *ad_create_query_window(AW_root *aw_root)
     awtqs.do_set_pos_fig      = "doset";
     awtqs.do_refresh_pos_fig  = "dorefresh";
     awtqs.open_parser_pos_fig = "openparser";
-    awtqs.create_view_window  = NT_create_species_window;
+    awtqs.create_view_window  = (AW_CL)NT_create_species_window;
     awtqs.selector            = &AWT_species_selector;
 
     AW_CL cbs           = (AW_CL)awt_create_query_box(aws, &awtqs, "spec");
     ad_query_global_cbs = cbs;
 
-    aws->create_menu("More search",     "s");
-    aws->insert_menu_topic("spec_search_equal_fields_within_db", "Search For Equal Fields and Mark Duplicates",                "E", "search_duplicates.hlp", AWM_ALL, (AW_CB)awt_search_equal_entries, cbs,                                          0);
-    aws->insert_menu_topic("spec_search_equal_words_within_db",  "Search For Equal Words Between Fields and Mark Duplicates",  "W", "search_duplicates.hlp", AWM_ALL, (AW_CB)awt_search_equal_entries, cbs,                                          1);
-    aws->insert_menu_topic("spec_search_next_relativ_of_sel",    "Search Next Relatives of SELECTED Species in PT_Server ...", "R", 0,                       AWM_ALL, (AW_CB)AW_POPUP,                 (AW_CL)ad_spec_next_neighbours_create,        cbs);
-    aws->insert_menu_topic("spec_search_next_relativ_of_listed", "Search Next Relatives of LISTED Species in PT_Server ...",   "L", 0,                       AWM_ALL, (AW_CB)AW_POPUP,                 (AW_CL)ad_spec_next_neighbours_listed_create, cbs);
+    aws->create_menu("More search",     "s" );
+    aws->insert_menu_topic("spec_search_equal_fields_within_db","Search For Equal Fields and Mark Duplicates",                "E", "search_duplicates.hlp", AWM_ALL, (AW_CB)awt_search_equal_entries, cbs, 0);
+    aws->insert_menu_topic("spec_search_equal_words_within_db", "Search For Equal Words Between Fields and Mark Duplicates",  "W", "search_duplicates.hlp", AWM_ALL, (AW_CB)awt_search_equal_entries, cbs, 1);
+    aws->insert_menu_topic("spec_search_next_relativ_of_sel",   "Search Next Relatives of SELECTED Species in PT_Server ...", "R", 0,                       AWM_ALL, (AW_CB)AW_POPUP, (AW_CL)ad_spec_next_neighbours_create, cbs);
+    aws->insert_menu_topic("spec_search_next_relativ_of_listed","Search Next Relatives of LISTED Species in PT_Server ...",   "L", 0,                       AWM_ALL, (AW_CB)AW_POPUP, (AW_CL)ad_spec_next_neighbours_listed_create, cbs);
 
     aws->button_length(7);
 
     aws->at("close");
     aws->callback((AW_CB0)AW_POPDOWN);
-    aws->create_button("CLOSE", "CLOSE", "C");
+    aws->create_button("CLOSE","CLOSE","C");
 
     aws->at("help");
-    aws->callback(AW_POPUP_HELP, (AW_CL)"sp_search.hlp");
-    aws->create_button("HELP", "HELP", "H");
+    aws->callback(AW_POPUP_HELP,(AW_CL)"sp_search.hlp");
+    aws->create_button("HELP","HELP","H");
 
     return (AW_window *)aws;
 }

@@ -13,10 +13,9 @@
 #ifndef MERGE_HXX
 #define MERGE_HXX
 
-#ifndef AW_WINDOW_HXX
-#include <aw_window.hxx>
+#ifndef ARB_ASSERT_H
+#include <arb_assert.h>
 #endif
-
 #define mg_assert(bed) arb_assert(bed)
 
 #define AWAR_MERGE_DB "tmp/merge1/db"
@@ -34,7 +33,7 @@ AW_window *create_mg_check_fields(AW_root *aw_root);
 void MG_create_config_awar(AW_root *aw_root, AW_default aw_def);
 void MG_create_trees_awar(AW_root *aw_root, AW_default aw_def);
 void MG_create_extendeds_awars(AW_root *aw_root, AW_default aw_def);
-void MG_create_alignment_awars(AW_root *aw_root, AW_default aw_def);
+void MG_create_alignment_awars(AW_root *aw_root,AW_default aw_def);
 void MG_create_species_awars(AW_root *aw_root, AW_default aw_def);
 void MG_create_rename_awars(AW_root *aw_root, AW_default aw_def);
 
@@ -44,7 +43,7 @@ void MG_create_db_dependent_rename_awars(AW_root *aw_root, GBDATA *gb_merge, GBD
 void     MG_set_renamed(bool renamed, AW_root *aw_root, const char *reason);
 GB_ERROR MG_expect_renamed();
 
-int MG_copy_and_check_alignments(AW_window *aww, int show_status);
+int MG_check_alignment(AW_window *aww, int fast = 0);
 
 // export of gene-species:
 
@@ -59,6 +58,31 @@ GB_ERROR   MG_export_fields(AW_root *aw_root, GBDATA *gb_source, GBDATA *gb_dest
 
 const char *MG_left_AWAR_SPECIES_NAME();
 const char *MG_right_AWAR_SPECIES_NAME();
+
+class MG_remap {
+    int in_length;
+    int out_length;
+    int *remap_tab;
+    int *soft_remap_tab;
+    int compiled;
+public:
+    MG_remap();
+    ~MG_remap();
+    GB_ERROR set(const char *in_reference, const char *out_reference); // returns only warnings
+    GB_ERROR compile();         // after last set
+    char *remap(const char *sequence); // returns 0 on error, else copy of sequence
+};
+
+class AW_root;
+
+class MG_remaps {
+public:
+    int n_remaps;
+    char **alignment_names;
+    MG_remap **remaps;
+    MG_remaps(GBDATA *gb_left,GBDATA *gb_right,AW_root *awr);
+    ~MG_remaps();
+};
 
 #ifndef MG_MERGE_HXX
 #include "mg_merge.hxx"

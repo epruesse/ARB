@@ -1,18 +1,11 @@
 #ifndef SAIPROBEVISUALIZATION_HXX
 #define SAIPROBEVISUALIZATION_HXX
 
-#ifndef _CPP_CCTYPE
-#include <cctype>
-#endif
-#ifndef _CPP_VECTOR
+#ifndef __VECTOR__
 #include <vector>
 #endif
-#ifndef AWT_CANVAS_HXX
-#include <awt_canvas.hxx>
-#endif
 
-
-#define MAX(x, y) (((x)>(y)) ?  (x) : (y))
+#define MAX(x,y)  (((x)>(y)) ?  (x) : (y))
 #define sai_assert(cond) arb_assert(cond)
 
 #define AWAR_SPV_SAI_2_PROBE "sai_visualize/sai_2_probe"
@@ -62,7 +55,7 @@ public:
     }
 
     const char *getProbeTarget() const {
-        sai_assert(probeTarget); // always need a target
+        // sai_assert(probeTarget); // always need a target
         return probeTarget;
     }
     size_t getProbeTargetLen() const {
@@ -74,8 +67,8 @@ public:
         sai_assert(target);
         free(probeTarget);
         unsigned int len = strlen(target);
-        char temp[len]; temp[len] = '\0';
-        for (unsigned int i = 0; i < len; i++) {
+        char temp[len];temp[len] = '\0';
+        for( unsigned int i = 0; i < len; i++) {
             temp[i] = toupper(target[i]);  // converting the Bases to Upper case
         }
         probeTarget    = strdup(temp);
@@ -87,15 +80,15 @@ public:
     }
 };
 
-class SAI_graphic : public AWT_nonDB_graphic {
+class SAI_graphic: public AWT_nonDB_graphic {
 public:
     GBDATA     *gb_main;
     AW_root    *aw_root;
 
     SAI_graphic(AW_root *aw_root, GBDATA *gb_main);
-    ~SAI_graphic();
+    ~SAI_graphic(void);
 
-    AW_gc_manager init_devices(AW_window *, AW_device *, AWT_canvas *ntw, AW_CL);
+    AW_gc_manager init_devices(AW_window *,AW_device *,AWT_canvas *ntw,AW_CL);
 
     void show(AW_device *device);
     void info(AW_device *device, AW_pos x, AW_pos y, AW_clicked_line *cl, AW_clicked_text *ct);
@@ -105,8 +98,8 @@ public:
 
 };
 
-AW_window *createSaiProbeMatchWindow(AW_root *awr, GBDATA *gb_main);
-void transferProbeData(saiProbeData *spd);
+AW_window *createSaiProbeMatchWindow(AW_root *awr);
+void transferProbeData(struct saiProbeData *spd);
 
 #else
 #error SaiProbeVisualization.hxx included twice

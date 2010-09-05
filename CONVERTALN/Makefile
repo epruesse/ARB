@@ -1,33 +1,19 @@
-OBJECT= \
-	alma.o \
-	convert.o \
-	date.o \
-	embl.o \
-	fconv.o \
-	gcg.o \
-	genbank.o \
-	macke.o \
-	main.o \
-	mg.o \
-	paup.o \
-	phylip.o \
-	printable.o \
-	routines.o \
-	util.o \
+OBJECT=  main.o fconv.o mg.o genbank.o macke.o phylip.o paup.o \
+	util.o date.o embl.o gcg.o printable.o alma.o \
+	routines.o convert.o
 
-
-.SUFFIXES: .o .cxx .depend
+.SUFFIXES: .o .c .cxx .depend
 
 BINARY=$(ARBHOME)/bin/arb_convert_aln
 
 $(BINARY): $(OBJECT)
-	$(LINK_EXECUTABLE) $@ $(OBJECT) ../SL/FILE_BUFFER/FILE_BUFFER.a $(LIBPATH) $(ARBDB_LIB) $(EXECLIBS)
+	$(LINK_EXECUTABLE) $@ $(OBJECT) ../SL/FILE_BUFFER/FILE_BUFFER.a $(LIBPATH) -lARBDB
 
-.cxx.o:
-	$(CPP) $(cflags) -c $< $(AINCLUDES) $(POST_COMPILE)
+.c.o:
+	$(ACC) $(cflags) -Wstrict-prototypes -c $< $(AINCLUDES) $(POST_COMPILE)
 
 proto:
-	../MAKEBIN/aisc_mkpt -A -w prototypes.h $(OBJECT:.o=.cxx) >prototypes.h.tmp
+	../MAKEBIN/aisc_mkpt -C -w prototypes.h $(OBJECT:.o=.c) >prototypes.h.tmp
 	../SOURCE_TOOLS/mv_if_diff prototypes.h.tmp prototypes.h
 
 clean:

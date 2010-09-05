@@ -1,18 +1,14 @@
-// ================================================================ //
-//                                                                  //
-//   File      : a3_helix.cxx                                       //
-//   Purpose   :                                                    //
-//                                                                  //
-//   Institute of Microbiology (Technical University Munich)        //
-//   http://www.arb-home.de/                                        //
-//                                                                  //
-// ================================================================ //
-
-#include "a3_ali.hxx"
-#include "a3_matrix.hxx"
+// -----------------------------------------------------------------------------
+//  Include-Dateien
+// -----------------------------------------------------------------------------
 
 #include <iostream>
 #include <fstream>
+#include <cstring>
+
+#include "a3_helix.hxx"
+#include "a3_ali.hxx"
+#include "a3_matrix.hxx"
 
 using std::cout;
 
@@ -326,6 +322,7 @@ static str CleanHelix ( str hel )
     if (all)
     {
         cout << "\nhelix     = "   << helix;
+        // cout << "\n\nkonsensus = " << konsensus;
         cout << "\n\nlength    = " << length;
 
         cout << "\n";

@@ -1,20 +1,24 @@
-// =============================================================== //
-//                                                                 //
-//   File      : ad_ext.cxx                                        //
-//   Purpose   :                                                   //
-//                                                                 //
-//   Institute of Microbiology (Technical University Munich)       //
-//   http://www.arb-home.de/                                       //
-//                                                                 //
-// =============================================================== //
+#include <stdio.h>
+#include <stdlib.h>
+#include <memory.h>
+// #include <malloc.h>
+#include <string.h>
 
-#include <db_scanner.hxx>
+#include <arbdb.h>
+#include <arbdbt.h>
+#include <aw_root.hxx>
+#include <aw_device.hxx>
+#include <aw_window.hxx>
 #include <awt.hxx>
 #include <awt_sel_boxes.hxx>
 #include <aw_awars.hxx>
-#include <arbdbt.h>
+#include <db_scanner.hxx>
 
+#ifndef ARB_ASSERT_H
+#include <arb_assert.h>
+#endif
 #define nt_assert(bed) arb_assert(bed)
+
 
 extern GBDATA *GLOBAL_gb_main;
 
@@ -135,7 +139,7 @@ static void delete_SAI_cb(AW_window *aww) {
     GB_ERROR  error       = GB_begin_transaction(GLOBAL_gb_main);
 
     if (!error) {
-        GBDATA *gb_sai = GBT_find_SAI(GLOBAL_gb_main, sai_name);
+        GBDATA *gb_sai = GBT_find_SAI(GLOBAL_gb_main,sai_name);
         error          = gb_sai ? GB_delete(gb_sai) : "Please select a SAI";
     }
     GB_end_transaction_show_error(GLOBAL_gb_main, error, aw_message);
@@ -147,7 +151,7 @@ static void map_SAI_to_scanner(AW_root *aw_root, AW_CL scannerid) {
     char           *sai_name = aw_root->awar(AWAR_SAI_NAME)->read_string();
     GBDATA         *gb_sai   = GBT_find_SAI(GLOBAL_gb_main, sai_name);
 
-    map_db_scanner(scannerid, gb_sai, CHANGE_KEY_PATH);
+    awt_map_arbdb_scanner(scannerid, gb_sai, 0, CHANGE_KEY_PATH);
     free(sai_name);
 }
 
@@ -207,7 +211,7 @@ static char *getExistingSAIgroups() {
     // scan SAIs for existing groups.
     // return a string of ';'-separated group names (or NULL)
 
-    GB_HASH       *groups = GBS_create_hash(GBT_get_SAI_count(GLOBAL_gb_main), GB_MIND_CASE);
+    GB_HASH       *groups = GBS_create_hash(30, GB_MIND_CASE);
     GBS_strstruct *out    = GBS_stropen(1000);
     int            count  = 0;
     GB_transaction ta(GLOBAL_gb_main);
@@ -290,47 +294,47 @@ AW_window *NT_create_extendeds_window(AW_root *aw_root)
 
     if (!aws) {
         aws = new AW_window_simple;
-        aws->init(aw_root, "INFO_OF_SAI", "SAI INFORMATION");
+        aws->init( aw_root, "INFO_OF_SAI", "SAI INFORMATION");
         aws->load_xfig("ad_ext.fig");
 
-        aws->callback((AW_CB0)AW_POPDOWN);
+        aws->callback( (AW_CB0)AW_POPDOWN);
         aws->at("close");
-        aws->create_button("CLOSE", "CLOSE", "C");
+        aws->create_button("CLOSE","CLOSE","C");
 
-        aws->callback(AW_POPUP_HELP, (AW_CL)"ad_extended.hlp");
+        aws->callback( AW_POPUP_HELP,(AW_CL)"ad_extended.hlp");
         aws->at("help");
-        aws->create_button("HELP", "HELP", "H");
+        aws->create_button("HELP","HELP","H");
 
         aws->button_length(13);
 
         aws->at("delete");
         aws->callback(delete_SAI_cb);
-        aws->create_button("DELETE", "DELETE", "D");
+        aws->create_button("DELETE","DELETE","D");
 
         aws->at("rename");
         aws->callback(rename_SAI_cb);
-        aws->create_button("RENAME", "RENAME", "R");
+        aws->create_button("RENAME","RENAME","R");
 
         aws->at("copy");
         aws->callback(copy_SAI_cb);
-        aws->create_button("COPY", "COPY", "C");
+        aws->create_button("COPY","COPY","C");
 
         aws->at("remark");
         aws->callback(edit_SAI_description);
-        aws->create_button("EDIT_COMMENT", "EDIT COMMENT", "R");
+        aws->create_button("EDIT_COMMENT","EDIT COMMENT","R");
 
         aws->at("group");
         aws->callback(assign_SAI_to_group);
-        aws->create_button("ASSIGN_GROUP", "ASSIGN GROUP", "R");
+        aws->create_button("ASSIGN_GROUP","ASSIGN GROUP","R");
 
         aws->at("makespec");
         aws->callback(copy_SAI_to_species_cb);
-        aws->create_button("COPY_TO_SPECIES", "COPY TO\nSPECIES", "C");
+        aws->create_button("COPY_TO_SPECIES","COPY TO\nSPECIES","C");
 
         aws->at("list");
-        awt_create_selection_list_on_extendeds(GLOBAL_gb_main, (AW_window *)aws, AWAR_SAI_NAME);
+        awt_create_selection_list_on_extendeds(GLOBAL_gb_main,(AW_window *)aws,AWAR_SAI_NAME);
 
-        AW_CL scannerid = create_db_scanner(GLOBAL_gb_main, aws, "info", 0, 0, 0, DB_SCANNER, 0, 0, 0, &AWT_species_selector);
+        AW_CL scannerid = awt_create_arbdb_scanner(GLOBAL_gb_main, aws, "info",0,0,0,AWT_SCANNER,0,0,0, &AWT_species_selector);
         aws->get_root()->awar(AWAR_SAI_NAME)->add_callback(map_SAI_to_scanner, scannerid);
     }
     aws->show();

@@ -12,11 +12,18 @@
 #ifndef SEC_GRAPHIC_HXX
 #define SEC_GRAPHIC_HXX
 
-#ifndef _CPP_CCTYPE
-#include <cctype>
+#ifndef _STRING_H
+#include "string.h"
 #endif
+#ifndef _CTYPE_H
+#include "ctype.h"
+#endif
+
 #ifndef AWT_CANVAS_HXX
 #include <awt_canvas.hxx>
+#endif
+#ifndef AW_POSITION_HXX
+#include <aw_position.hxx>
 #endif
 
 using namespace AW;
@@ -37,7 +44,7 @@ enum SEC_update_request {
 
 class SEC_base;
 
-class SEC_graphic : public AWT_graphic {
+class SEC_graphic: public AWT_graphic {
     SEC_update_request  update_requested;
     char               *load_error; // error occurred during load()
 
@@ -58,17 +65,18 @@ public:
     GBDATA *gb_main;
     AW_root *aw_root;
     SEC_root *sec_root;
+    // SEC_bond_def bond;
 
     GBDATA *gb_struct;          // used to save the structure
     GBDATA *gb_struct_ref;      // used to save reference numbers
-
+    
     mutable long last_saved;    // the transaction serial id when we last saved everything
 
     // *********** public section
     SEC_graphic(AW_root *aw_root, GBDATA *gb_main);
-    virtual ~SEC_graphic();
+    virtual ~SEC_graphic(void);
 
-    virtual AW_gc_manager init_devices(AW_window *, AW_device *, AWT_canvas *ntw, AW_CL);
+    virtual AW_gc_manager init_devices(AW_window *,AW_device *,AWT_canvas *ntw,AW_CL);
 
     virtual void show(AW_device *device);
     virtual void info(AW_device *device, AW_pos x, AW_pos y, AW_clicked_line *cl, AW_clicked_text *ct);
@@ -85,6 +93,8 @@ public:
 
     void request_update(SEC_update_request req) { update_requested = static_cast<SEC_update_request>(update_requested|req); }
 };
+
+// extern SEC_graphic *SEC_GRAPHIC;
 
 
 #endif

@@ -1,16 +1,13 @@
-// =============================================================== //
-//                                                                 //
-//   File      : MG_names.cxx                                      //
-//   Purpose   :                                                   //
-//                                                                 //
-//   Institute of Microbiology (Technical University Munich)       //
-//   http://www.arb-home.de/                                       //
-//                                                                 //
-// =============================================================== //
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 
-#include "merge.hxx"
-
+#include <arbdb.h>
+#include <aw_root.hxx>
+#include <aw_device.hxx>
+#include <aw_window.hxx>
 #include <AW_rename.hxx>
+#include "merge.hxx"
 
 // --------------------------------------------------------------------------------
 
@@ -40,13 +37,13 @@ static const char *addids_match_info(AW_root *aw_root) {
 
     free(addid2);
     free(addid1);
-
+    
     return result;
 }
 
 static void addids_match_info_refresh_cb(AW_root *aw_root) {
     aw_root->awar(AWAR_ADDID_MATCH)->write_string(addids_match_info(aw_root));
-    MG_set_renamed(false, aw_root, "Needed (add.field changed)");
+    MG_set_renamed(false, aw_root, "Needed (add.field changed)"); 
 }
 
 void MG_create_db_dependent_rename_awars(AW_root *aw_root, GBDATA *gb_merge, GBDATA *gb_dest) {
@@ -88,7 +85,7 @@ void MG_create_db_dependent_rename_awars(AW_root *aw_root, GBDATA *gb_merge, GBD
 
             addids_match_info_refresh_cb(aw_root);
         }
-
+        
         if (error) {
             error = t1.close(error);
             error = t2.close(error);
@@ -172,19 +169,19 @@ static void override_toggle_cb(AW_window *aww) {
     }
 }
 
-AW_window *MG_merge_names_cb(AW_root *awr) {
+AW_window *MG_merge_names_cb(AW_root *awr){
     static AW_window_simple *aws = 0;
     if (!aws) {
         aws = new AW_window_simple;
-        aws->init(awr, "MERGE_AUTORENAME_SPECIES", "SYNCHRONIZE NAMES");
+        aws->init( awr, "MERGE_AUTORENAME_SPECIES", "SYNCHRONIZE NAMES");
         aws->load_xfig("merge/names.fig");
 
-        aws->at("close"); aws->callback((AW_CB0)AW_POPDOWN);
-        aws->create_button("CLOSE", "CLOSE", "C");
+        aws->at("close");aws->callback((AW_CB0)AW_POPDOWN);
+        aws->create_button("CLOSE","CLOSE","C");
 
         aws->at("help");
-        aws->callback(AW_POPUP_HELP, (AW_CL)"mg_names.hlp");
-        aws->create_button("HELP", "HELP", "H");
+        aws->callback(AW_POPUP_HELP,(AW_CL)"mg_names.hlp");
+        aws->create_button("HELP","HELP","H");
 
         aws->at("addid1");
         aws->create_input_field(AWAR_MERGE_ADDID, 10);
@@ -212,12 +209,12 @@ AW_window *MG_merge_names_cb(AW_root *awr) {
 
         aws->at("rename");
         aws->callback(rename_both_databases);
-        aws->create_autosize_button("RENAME_DATABASES", "Rename species");
-
+        aws->create_autosize_button("RENAME_DATABASES","Rename species");
+        
         aws->button_length(0);
         aws->shadow_width(1);
         aws->at("icon");
-        aws->callback(AW_POPUP_HELP, (AW_CL)"mg_names.hlp");
+        aws->callback(AW_POPUP_HELP,(AW_CL)"mg_names.hlp");
         aws->create_button("HELP_MERGE", "#merge/icon.bitmap");
     }
     return aws;

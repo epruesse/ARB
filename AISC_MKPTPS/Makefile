@@ -1,6 +1,6 @@
 # INCLUDE und GLOBALS MAIN CC cflags werden von aussen uebergeben
 
-.SUFFIXES: .o .cxx .depend
+.SUFFIXES: .o .c .depend
 
 OBJECTS = mkptypes.o
 BINARY = aisc_mkpt
@@ -8,10 +8,10 @@ BINARY = aisc_mkpt
 $(MAIN): $(BINARY)
 
 $(BINARY): $(OBJECTS)
-	$(LINK_EXECUTABLE) $@ $(OBJECTS) $(EXECLIBS)
+	$(ACC) $(cflags) -o $@ $(OBJECTS)
 
-.cxx.o:
-	$(CPP) $(cflags) -c $< $(POST_COMPILE)
+.c.o:
+	$(ACC) $(cflags) -c $< $(POST_COMPILE)
 
 clean:
 	rm -f $(OBJECTS) $(BINARY)

@@ -12,12 +12,14 @@
 #include "NT_dbrepair.hxx"
 
 #include <arbdbt.h>
+#include <adGene.h>
 
 #include <awt.hxx>                                  // for ad_item_selector only
-#include <GEN.hxx>
-#include <EXP.hxx>
-#include <aw_color_groups.hxx>
+#include <GEN.hxx> 
+#include <EXP.hxx> 
+#include <aw_color_groups.hxx> 
 
+#include <smartptr.h>
 #include <inline.h>
 
 #include <map>
@@ -25,6 +27,8 @@
 #include <string>
 #include <vector>
 
+#include <cstdlib>
+#include <cstring>
 
 #define nt_assert(bed) arb_assert(bed)
 
@@ -39,7 +43,7 @@ using namespace std;
 // --------------------------------------------------------------------------------
 // CheckedConsistencies provides an easy way to automatically correct flues in the database
 // by calling a check routine exactly once.
-//
+// 
 // For an example see nt_check_database_consistency()
 //
 // Note: this makes problems if DB is loaded with older ARB version and some already
@@ -85,7 +89,7 @@ public:
         }
         else {
             GB_transaction ta(gb_main);
-
+            
             GBDATA *gb_checks = GB_search(gb_main, "checks", GB_CREATE_CONTAINER);
             GBDATA *gb_check  = GB_create(gb_checks, "check", GB_STRING);
 
@@ -140,7 +144,7 @@ public:
 GB_ERROR CheckedConsistencies::perform_selected_item_checks(ad_item_selector *sel) {
     GB_ERROR        error = NULL;
     item_check_iter end   = item_checks.end();
-
+    
     for (GBDATA *gb_cont = sel->get_first_item_container(gb_main, NULL, AWT_QUERY_ALL_SPECIES);
          gb_cont && !error;
          gb_cont = sel->get_next_item_container(gb_cont, AWT_QUERY_ALL_SPECIES))
@@ -186,7 +190,7 @@ void CheckedConsistencies::perform_item_checks(GB_ERROR& error) {
 
 // --------------------------------------------------------------------------------
 
-static GB_ERROR NT_fix_gene_data(GBDATA *gb_main, size_t species_count, size_t /* sai_count */) {
+static GB_ERROR NT_fix_gene_data(GBDATA *gb_main, size_t species_count, size_t /*sai_count*/) {
     GB_transaction ta(gb_main);
     size_t         deleted_gene_datas   = 0;
     size_t         generated_gene_datas = 0;
@@ -218,7 +222,7 @@ static GB_ERROR NT_fix_gene_data(GBDATA *gb_main, size_t species_count, size_t /
                                           GBT_read_name(gb_species));
             }
         }
-
+        
         aw_status(double(++count)/species_count);
     }
 
@@ -254,7 +258,7 @@ static GBDATA *disexpectField(GBDATA *gb_gene, const char *field, GB_ERROR& data
     return gb_field;
 }
 
-static GB_ERROR NT_convert_gene_locations(GBDATA *gb_main, size_t species_count, size_t /* sai_count */) {
+static GB_ERROR NT_convert_gene_locations(GBDATA *gb_main, size_t species_count, size_t /*sai_count*/) {
     GB_transaction ta(gb_main);
     GB_ERROR       error         = 0;
     long           fixed_genes   = 0;
@@ -270,7 +274,7 @@ static GB_ERROR NT_convert_gene_locations(GBDATA *gb_main, size_t species_count,
          gb_organism = GEN_next_organism(gb_organism))
     {
 
-
+        
         GBDATA *gb_gene_data = GEN_find_gene_data(gb_organism);
         nt_assert(gb_gene_data);
         if (gb_gene_data) {
@@ -296,13 +300,13 @@ static GB_ERROR NT_convert_gene_locations(GBDATA *gb_main, size_t species_count,
 
                 if (!gb_pos_start && !error) { // assume old format
                     // parts<-1 would be valid in new format, but here we have old format
-                    if (parts<1) error = GBS_global_string("Illegal value in 'pos_joined' (%i)", parts);
-
+                    if (parts<1) error = GBS_global_string("Illegal value in 'pos_joined' (%i)", parts); 
+                    
                     GB_ERROR      data_error = 0;   // error in this gene -> don't convert
-                    GEN_position *pos        = GEN_new_position(parts, false); // all were joinable (no information about it was stored)
+                    GEN_position *pos        = GEN_new_position(parts, GB_FALSE); // all were joinable (no information about it was stored)
 
                     // parse old gene information into 'pos'
-                    //
+                    // 
                     // old-format was:
                     // Start-Positions:  pos_begin, pos_begin2, pos_begin3, ...
                     // End-Positions:    pos_end, pos_end2, pos_end3, ...
@@ -328,7 +332,7 @@ static GB_ERROR NT_convert_gene_locations(GBDATA *gb_main, size_t species_count,
                         if (p == 1) {
                             gb_pos_begin = expectField(gb_gene, "pos_begin", data_error);
                             gb_pos_end   = expectField(gb_gene, "pos_end", data_error);
-
+                        
                             pos_uncertain_field = "pos_uncertain";
                         }
                         else {
@@ -459,7 +463,7 @@ static GB_ERROR NT_convert_gene_locations(GBDATA *gb_main, size_t species_count,
             if (already_fixed_genes>0) aw_message(GBS_global_string("Location entries of %li genes already were in new format.", already_fixed_genes));
         }
     }
-
+    
     return error;
 }
 
@@ -549,7 +553,7 @@ static bool testDictionaryCompression(GBDATA *gbd, GBQUARK key_quark, bool testU
     // returns true, if
     // testUse == true  and ANY entries below 'gbd' with quark 'key_quark' uses dictionary compression
     // testUse == false and ALL entries below 'gbd' with quark 'key_quark' can be decompressed w/o errors
-
+    
     nt_assert(GB_read_type(gbd) == GB_DB);
 
     for (GBDATA *gb_sub = GB_child(gbd); gb_sub; gb_sub = GB_nextChild(gb_sub)) {
@@ -558,18 +562,18 @@ static bool testDictionaryCompression(GBDATA *gbd, GBQUARK key_quark, bool testU
                 // return false if any compression failed or return true if any uses dict-compression
                 if (testDictionaryCompression(gb_sub, key_quark, testUse) == testUse) return testUse;
                 break;
-
+                
             case GB_STRING:
             case GB_LINK:
-                if (GB_get_quark(gb_sub) == key_quark && GB_is_dictionary_compressed(gb_sub)) {
+                if (GB_get_quark(gb_sub) == key_quark && GB_is_directory_compressed(gb_sub)) {
                     if (testUse) return true;
 
                     const char *decompressed = GB_read_char_pntr(gb_sub);
                     if (!decompressed) return false;
                 }
                 break;
-
-            default:
+                
+            default :
                 break;
         }
     }
@@ -626,7 +630,7 @@ public:
 
     const string& getGroup() const { return group; }
     const string& getOriginalKey() const { return orgkey; }
-
+    
     bool mayBeUsedWith(const string& key) const { return strcasecmp(group.c_str(), key.c_str()) == 0; }
 
     GB_ERROR assignToKey(const string& key) const { return GB_set_dictionary(gb_main, key.c_str(), data); }
@@ -668,7 +672,7 @@ bool contains(const CONT& container, const KEY& key) {
 
 static GB_ERROR findAffectedKeys(GBDATA *gb_key_data, KeyCounter& kcount, Keys& keys, Dicts& dicts) {
     GB_ERROR  error   = 0;
-    GBDATA   *gb_main = GB_get_root(gb_key_data);
+    GBDATA   *gb_main = GB_get_root(gb_key_data) ;
 
     for (int pass = 1; pass <= 2; ++pass) {
         for (GBDATA *gb_key = GB_entry(gb_key_data, "@key"); !error && gb_key; gb_key = GB_nextEntry(gb_key)) {
@@ -717,7 +721,7 @@ static GB_ERROR deleteDataOfKey(GBDATA *gbd, GBQUARK key_quark, StringSet& delet
             case GB_STRING:
             case GB_LINK:
                 if (GB_get_quark(gb_sub) == key_quark) {
-                    if (GB_is_dictionary_compressed(gb_sub)) {
+                    if (GB_is_directory_compressed(gb_sub)) {
                         string path(GB_get_db_path(gb_sub));
                         error = GB_delete(gb_sub);
                         if (!error) {
@@ -730,7 +734,7 @@ static GB_ERROR deleteDataOfKey(GBDATA *gbd, GBQUARK key_quark, StringSet& delet
                     }
                 }
                 break;
-            default:
+            default :
                 break;
         }
     }
@@ -748,12 +752,12 @@ static char *readFirstCompressedDataOf(GBDATA *gbd, GBQUARK key_quark) {
             case GB_STRING:
             case GB_LINK:
                 if (GB_get_quark(gb_sub) == key_quark) {
-                    if (GB_is_dictionary_compressed(gb_sub)) {
+                    if (GB_is_directory_compressed(gb_sub)) {
                         data = GB_read_as_string(gb_sub);
                     }
                 }
                 break;
-            default:
+            default :
                 break;
         }
     }
@@ -805,7 +809,7 @@ static GB_ERROR NT_fix_dict_compress(GBDATA *gb_main, size_t, size_t) {
             int combinations = 0; // possible key/dict combinations
 
             DictMap   use;      // keyname -> dictionary (which dictionary to use)
-            StringSet multiDecompressible; // keys which can be decompressed with multiple dictionaries
+            StringSet multiDecompressable; // keys which can be decompressed with multiple dictionaries
 
             for (int pass = 1; pass <= 2; ++pass) {
                 for (Dicts::iterator di = dicts.begin(); di != dicts.end(); ++di) {
@@ -826,7 +830,7 @@ static GB_ERROR NT_fix_dict_compress(GBDATA *gb_main, size_t, size_t) {
                                             use[keyname] = d;
                                         }
                                         else { // already have another dictionary working with keyname
-                                            multiDecompressible.insert(keyname);
+                                            multiDecompressable.insert(keyname);
                                         }
                                     }
                                     aw_status(++cnt/double(combinations));
@@ -837,23 +841,23 @@ static GB_ERROR NT_fix_dict_compress(GBDATA *gb_main, size_t, size_t) {
                 }
             }
 
-            StringSet notDecompressible; // keys which can be decompressed with none of the dictionaries
+            StringSet notDecompressable; // keys which can be decompressed with none of the dictionaries
             for (Keys::iterator ki = keys.begin(); ki != keys.end(); ++ki) {
                 KeyInfoPtr    k       = ki->second;
                 const string& keyname = k->getName();
 
                 if (k->isCompressed()) {
-                    if (!contains(use, keyname)) notDecompressible.insert(keyname);
-                    if (contains(multiDecompressible, keyname)) use.erase(keyname);
+                    if (!contains(use, keyname)) notDecompressable.insert(keyname);
+                    if (contains(multiDecompressable, keyname)) use.erase(keyname);
                 }
             }
 
             bool dataLost   = false;
             int  reassigned = 0;
 
-            if (!notDecompressible.empty()) {
-                // bad .. found undecompressible data
-                int nd_count = notDecompressible.size();
+            if (!notDecompressable.empty()) {
+                // bad .. found undecompressable data
+                int nd_count = notDecompressable.size();
                 aw_message(GBS_global_string("Detected corrupted dictionary compression\n"
                                              "Data of %i DB-keys is lost and will be deleted", nd_count));
 
@@ -864,8 +868,8 @@ static GB_ERROR NT_fix_dict_compress(GBDATA *gb_main, size_t, size_t) {
                 StringSet deletedData;
                 long      deleted    = 0;
                 long      notDeleted = 0;
-
-                for (StringSet::iterator ki = notDecompressible.begin(); !error && ki != notDecompressible.end(); ++ki) {
+                
+                for (StringSet::iterator ki = notDecompressable.begin(); !error && ki != notDecompressable.end(); ++ki) {
                     const string& keyname    = *ki;
 
                     error = deleteDataOfKey(gb_main, GB_key_2_quark(gb_main, keyname.c_str()), deletedData, deleted, notDeleted);
@@ -885,8 +889,8 @@ static GB_ERROR NT_fix_dict_compress(GBDATA *gb_main, size_t, size_t) {
                 }
             }
 
-            if (!error && !multiDecompressible.empty()) {
-                for (StringSet::iterator ki = multiDecompressible.begin(); !error && ki != multiDecompressible.end(); ++ki) {
+            if (!error && !multiDecompressable.empty()) {
+                for (StringSet::iterator ki = multiDecompressable.begin(); !error && ki != multiDecompressable.end(); ++ki) {
                     const string&   keyname  = *ki;
                     int             possible = 0;
                     vector<DictPtr> possibleDicts;
@@ -921,7 +925,7 @@ static GB_ERROR NT_fix_dict_compress(GBDATA *gb_main, size_t, size_t) {
                                                                     "and example data was dumped to the console.\n"
                                                                     "Please examine output and decide which is the correct possibility!",
                                                                     possible, keyname.c_str());
-
+                    
                             const char *buttons = "Abort";
                             for (int p = 1; p <= possible; ++p) buttons = GBS_global_string("%s,%i", buttons, p);
                             selected = aw_question(question, buttons, false, NULL);
@@ -997,7 +1001,7 @@ static GB_ERROR remove_dup_colors(GBDATA *gb_item, const ad_item_selector *sel) 
         while (!error) {
             GBDATA *gb_next_color = GB_nextEntry(gb_color);
             if (!gb_next_color) break;
-
+            
             error = GB_delete(gb_next_color);
 #if defined(DEBUG)
             if (!error) del_count++;
@@ -1012,7 +1016,7 @@ static GB_ERROR remove_dup_colors(GBDATA *gb_item, const ad_item_selector *sel) 
                            del_count,
                            sel->item_name,
                            sel->generate_item_id(GB_get_root(gb_item), gb_item));
-#else
+#else    
     sel = sel;                                      // no warning
 #endif // DEBUG
 
@@ -1042,7 +1046,7 @@ GB_ERROR NT_repair_DB(GBDATA *gb_main) {
 
     check.register_item_check("duplicated_item_colors", remove_dup_colors);
     check.perform_item_checks(err);
-
+    
     return err;
 }
 

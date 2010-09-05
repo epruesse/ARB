@@ -1,19 +1,13 @@
-// ================================================================ //
-//                                                                  //
-//   File      : a3_darray.cxx                                      //
-//   Purpose   :                                                    //
-//                                                                  //
-//   Institute of Microbiology (Technical University Munich)        //
-//   http://www.arb-home.de/                                        //
-//                                                                  //
-// ================================================================ //
-
-#include "a3_darray.hxx"
+// -----------------------------------------------------------------------------
+//  Include-Dateien
+// -----------------------------------------------------------------------------
 
 #include <cstring>
 #include <cstdlib>
 #include <fstream>
 #include <iostream>
+
+#include "a3_darray.hxx"
 
 using std::cout;
 

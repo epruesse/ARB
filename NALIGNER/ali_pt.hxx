@@ -1,30 +1,13 @@
-// =============================================================== //
-//                                                                 //
-//   File      : ali_pt.hxx                                        //
-//   Purpose   :                                                   //
-//                                                                 //
-//   Institute of Microbiology (Technical University Munich)       //
-//   http://www.arb-home.de/                                       //
-//                                                                 //
-// =============================================================== //
 
-#ifndef ALI_PT_HXX
-#define ALI_PT_HXX
+#ifndef _ALI_PT_INC_
+#define _ALI_PT_INC_
 
-#ifndef ALI_OTHER_STUFF_HXX
 #include "ali_other_stuff.hxx"
-#endif
-#ifndef ALI_TLIST_HXX
 #include "ali_tlist.hxx"
-#endif
-#ifndef ALI_SEQUENCE_HXX
 #include "ali_sequence.hxx"
-#endif
-#ifndef CLIENT_H
 #include <client.h>
-#endif
 
-typedef enum { ServerMode, SpecifiedMode } ALI_PT_MODE;
+typedef enum {ServerMode, SpecifiedMode} ALI_PT_MODE;
 
 typedef struct {
     char *servername;
@@ -38,7 +21,9 @@ typedef struct {
     char *use_specified_family;
 } ALI_PT_CONTEXT;
 
-// class of family members
+/*
+ * class of family members
+ */
 class ali_pt_member {
 public:
     char *name;
@@ -48,14 +33,16 @@ public:
         name = speciesname;
         matches = number_of_matches;
     }
-    ~ali_pt_member() {
+    ~ali_pt_member(void) {
         if (name)
             free((char *) name);
     }
 };
 
 
-// Class for accessing the PT server
+/*
+ * Class for accessing the PT server
+ */
 class ALI_PT {
 private:
     ALI_PT_MODE mode;
@@ -74,15 +61,15 @@ private:
     ALI_TLIST<ali_pt_member *> *extension_list;
 
 
-    int init_communication();
+    int init_communication(void);
     char *get_family_member(char *specified_family, unsigned long number);
     char *get_extension_member(char *specified_family, unsigned long number);
-    int open(char *servername, GBDATA *gb_main);
-    void close();
+    int open(char *servername,GBDATA *gb_main);
+    void close(void);
 
 public:
     ALI_PT(ALI_PT_CONTEXT *context);
-    ~ALI_PT();
+    ~ALI_PT(void);
 
     int find_family(ALI_SEQUENCE *sequence, int find_type = 1);
 
@@ -93,6 +80,4 @@ public:
     int next_family_(char **seq_name, int *matches);
 };
 
-#else
-#error ali_pt.hxx included twice
-#endif // ALI_PT_HXX
+#endif

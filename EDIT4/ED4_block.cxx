@@ -1,4 +1,15 @@
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <climits>
+#include <cctype>
+#include <cmath>
+
+#include <arbdb.h>
 #include <arbdbt.h>
+#include <aw_root.hxx>
+#include <aw_keysym.hxx>
+#include <aw_window.hxx>
 #include <aw_awars.hxx>
 #include <fast_aligner.hxx>
 
@@ -7,9 +18,6 @@
 #include "ed4_tools.hxx"
 #include "ed4_block.hxx"
 #include "ed4_edit_string.hxx"
-
-#include <climits>
-#include <cctype>
 
 // --------------------------------------------------------------------------------
 
@@ -169,8 +177,10 @@ static GB_ERROR perform_block_operation_on_part_of_sequence(ED4_blockoperation b
 void ED4_with_whole_block(ED4_blockoperation block_operation, int repeat) {
     GB_ERROR               error    = GB_begin_transaction(GLOBAL_gb_main);
     ED4_sequence_terminal *err_term = 0;
-    ED4_cursor            *cursor   = &ED4_ROOT->get_ed4w()->cursor;
-    int                    base_pos = (cursor && cursor->owner_of_cursor != 0) ? cursor->get_base_position() : -1;
+    //    ED4_terminal *term        = ED4_ROOT->root_group_man->get_first_terminal();
+
+    ED4_cursor *cursor   = &ED4_ROOT->get_ed4w()->cursor;
+    int         base_pos = (cursor && cursor->owner_of_cursor != 0) ? cursor->get_base_position() : -1;
 
     switch (blocktype) {
         case ED4_BT_NOBLOCK: {
@@ -261,7 +271,7 @@ void ED4_setBlocktype(ED4_blocktype bt) {
     }
 }
 
-void ED4_toggle_block_type() {
+void ED4_toggle_block_type(void) {
     switch (blocktype) {
         case ED4_BT_NOBLOCK: {
             aw_message("No block selected.");
@@ -356,8 +366,9 @@ static void select_and_update(ED4_sequence_terminal *term1, ED4_sequence_termina
         int do_above = 1; // we have to update terminals between last_term1 and term1
         int do_below = 1; // we have to update terminals between term2 and last_term2
 
-        ED4_terminal *term          = term1;
-        int           xRangeChanged = last_pos1!=range_col1 || last_pos2!=range_col2;
+        ED4_terminal *term = term1;
+        //      ED4_terminal *start_term = term1;
+        int xRangeChanged = last_pos1!=range_col1 || last_pos2!=range_col2;
 
         while (term) {
             if (term->is_sequence_terminal()) {
@@ -426,6 +437,10 @@ static void select_and_update(ED4_sequence_terminal *term1, ED4_sequence_termina
     last_pos1 = range_col1;
     last_pos2 = range_col2;
 }
+
+// static inline double fabs(double d) {
+// return d<0 ? -d : d;
+// }
 
 void ED4_setColumnblockCorner(AW_event *event, ED4_sequence_terminal *seq_term) {
     static ED4_sequence_terminal *fix_term = 0;
@@ -503,7 +518,6 @@ void ED4_setColumnblockCorner(AW_event *event, ED4_sequence_terminal *seq_term) 
                     else {
                         fix_name_term = min_term;
                     }
-                    e4_assert(fix_name_term);
                     fix_term = fix_name_term->corresponding_sequence_terminal();
                 }
 
@@ -587,7 +601,7 @@ static int strncmpWithJoker(GB_CSTR s1, GB_CSTR s2, int len) { // s2 contains '?
 static char *oldString, *newString;
 static int oldStringContainsJoker;
 
-static char* replace_in_sequence(const char *sequence, int len, int /* repeat */, int *new_len, GB_ERROR*) {
+static char* replace_in_sequence(const char *sequence, int len, int /*repeat*/, int *new_len, GB_ERROR*) {
     int maxlen;
     int olen = strlen(oldString);
     int nlen = strlen(newString);
@@ -595,7 +609,7 @@ static char* replace_in_sequence(const char *sequence, int len, int /* repeat */
     if (nlen<=olen) {
         maxlen = len;
     }
-    else {
+    else  {
         maxlen = (len/olen+1)*nlen;
     }
 
@@ -664,12 +678,12 @@ AW_window *ED4_create_replace_window(AW_root *root) {
     aws->load_xfig("edit4/replace.fig");
 
     aws->at("close");
-    aws->callback((AW_CB0)AW_POPDOWN);
-    aws->create_button("CLOSE", "Close", "C");
+    aws->callback( (AW_CB0)AW_POPDOWN);
+    aws->create_button("CLOSE", "Close","C");
 
     aws->at("help");
-    aws->callback(AW_POPUP_HELP, (AW_CL)"e4_replace.hlp");
-    aws->create_button("HELP", "Help", "H");
+    aws->callback( AW_POPUP_HELP,(AW_CL)"e4_replace.hlp");
+    aws->create_button("HELP", "Help","H");
 
     aws->at("spattern");
     aws->create_input_field(ED4_AWAR_REP_SEARCH_PATTERN, 30);
@@ -688,7 +702,7 @@ AW_window *ED4_create_replace_window(AW_root *root) {
 //      Other block operations
 // --------------------------------------------------------------------------------
 
-static char *sequence_to_upper_case(const char *seq, int len, int /* repeat */, int *new_len, GB_ERROR*) {
+static char *sequence_to_upper_case(const char *seq, int len, int /*repeat*/, int *new_len, GB_ERROR*) {
     char *new_seq = (char*)GB_calloc(len+1, sizeof(*new_seq));
     int l;
 
@@ -699,7 +713,7 @@ static char *sequence_to_upper_case(const char *seq, int len, int /* repeat */, 
     if (new_len) *new_len = len;
     return new_seq;
 }
-static char *sequence_to_lower_case(const char *seq, int len, int /* repeat */, int *new_len, GB_ERROR*) {
+static char *sequence_to_lower_case(const char *seq, int len, int /*repeat*/, int *new_len, GB_ERROR*) {
     char *new_seq = (char*)GB_calloc(len+1, sizeof(*new_seq));
     int l;
 
@@ -730,6 +744,8 @@ static char *complement_sequence(const char *seq, int len, int repeat, int *new_
     *error = GBT_determine_T_or_U(ED4_ROOT->alignment_type, &T_or_U, "complement");
     if (*error) return 0;
 
+    //     char T_or_U = ED4_ROOT->alignment_type==GB_AT_DNA ? 'T' : 'U';
+
     char *new_seq         = GBT_complementNucSequence(seq, len, T_or_U);
     if (new_len) *new_len = len;
     return new_seq;
@@ -743,6 +759,7 @@ static char *reverse_complement_sequence(const char *seq, int len, int repeat, i
     char T_or_U;
     *error = GBT_determine_T_or_U(ED4_ROOT->alignment_type, &T_or_U, "reverse-complement");
     if (*error) return 0;
+    // char  T_or_U = ED4_ROOT->alignment_type==GB_AT_DNA ? 'T' : 'U';
     char *new_seq1  = GBT_complementNucSequence(seq, len, T_or_U);
     char *new_seq2  = GBT_reverseNucSequence(new_seq1, len);
 
@@ -786,11 +803,11 @@ static char *unalign_sequence_internal(const char *seq, int len, int *new_len, b
     return new_seq;
 }
 
-static char *unalign_left_sequence(const char *seq, int len, int /* repeat */, int *new_len, GB_ERROR *) {
+static char *unalign_left_sequence(const char *seq, int len, int /*repeat*/, int *new_len, GB_ERROR *) {
     return unalign_sequence_internal(seq, len, new_len, false);
 }
 
-static char *unalign_right_sequence(const char *seq, int len, int /* repeat */, int *new_len, GB_ERROR *) {
+static char *unalign_right_sequence(const char *seq, int len, int /*repeat*/, int *new_len, GB_ERROR *) {
     return unalign_sequence_internal(seq, len, new_len, true);
 }
 

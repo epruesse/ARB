@@ -32,7 +32,7 @@ extern "C" int PT_find_exProb(PT_exProb *pep)
   printf("EXTERN: PT_find_exProb\n");
 
   /* free old result */
-  freenull(pep->result);
+  freeset(pep->result, NULL);
 
   /* do we need to start from scratch? */
   if(pep->restart)

@@ -1,4 +1,5 @@
 #include "frand.h"
+#include "defines.h"
 #include <math.h>
 #include <stdlib.h>
 
@@ -8,7 +9,7 @@
 /* */
 /*  Liefert einen Zufallswert zwischen -0.5 und +0.5 */
 /* */
-static double randval()
+static double randval(void)
 {
     double val = rand();
 
@@ -16,7 +17,7 @@ static double randval()
     val -= 0.5;
 
     assert(val>=-0.5);
-    assert(val <= 0.5);
+    assert(val<= 0.5);
 
     return val;
 }
@@ -74,7 +75,7 @@ void freeFrand(Frand f)
 /* */
 /*  Liefert einen Zufallswert zwischen 0.0 und 1.0 */
 /* */
-double randProb()
+double randProb(void)
 {
     double val = rand();
 

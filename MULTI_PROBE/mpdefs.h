@@ -1,18 +1,23 @@
-// =============================================================== //
-//                                                                 //
-//   File      : mpdefs.h                                          //
-//   Purpose   :                                                   //
-//                                                                 //
-//   Institute of Microbiology (Technical University Munich)       //
-//   http://www.arb-home.de/                                       //
-//                                                                 //
-// =============================================================== //
+#ifndef MPDEFS
+#define MPDEFS
 
-#ifndef MPDEFS_H
-#define MPDEFS_H
+//#include <mpdefs2.h>
+
+#ifndef _STDIO_H
+#include <stdio.h>
+#endif
+
+#ifndef ARBDB_H
+#include <arbdb.h>
+#endif
 
 #include <PT_com.h>
+#include <client.h>
 
+#include <servercntrl.h>
+
+#define TRUE      1
+#define FALSE     0
 #define SEPARATOR "#"
 
 #define NON_WEIGHTED 0
@@ -54,7 +59,7 @@ struct apd_sequence {
     char         *sequence;
 };
 
-extern struct Params {
+extern struct Params{
     int   DESIGNCPLIPOUTPUT;
     int   SERVERID;
     char *DESINGNAMES;
@@ -79,13 +84,14 @@ extern struct Params {
 } P;
 
 
-extern struct mp_gl_struct {
+extern struct mp_gl_struct{
     aisc_com  *link;
     T_PT_LOCS  locs;
     T_PT_MAIN  com;
     int        pd_design_id;
 } mp_pd_gl;
 
-#else
-#error mpdefs.h included twice
-#endif // MPDEFS_H
+
+
+
+#endif

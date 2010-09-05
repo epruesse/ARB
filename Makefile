@@ -17,13 +17,10 @@
 # -----------------------------------------------------
 # ARB Makefile and ARB source code are aware of the following defines:
 #
-# $(MACH)               name of the machine (LINUX or DARWIN; see config.makefile)
+# $(MACH)               name of the machine (LINUX,SUN4,SUN5,HP,SGI or DIGITAL; see config.makefile)
 # DEBUG                 compiles the DEBUG sections
 # DEBUG_GRAPHICS        all X-graphics are flushed immediately (for debugging)
 # ARB_64=0/1            1=>compile 64 bit version
-# UNIT_TESTS=0/1        1=>compile in unit tests and call them after build
-# COVERAGE=0/1/2        compile in gcov support (useful together with UNIT_TESTS=1)
-#                       0=no, 1+2=compile in, 1=show
 #
 # -----------------------------------------------------
 # The ARB source code is aware of the following defines:
@@ -42,7 +39,6 @@ LD_LIBRARY_PATH:=${ARBHOME}/lib
 endif
 
 FORCEMASK = umask 002
-NODIR=--no-print-directory
 
 # ---------------------- [unconditionally used options]
 
@@ -61,8 +57,8 @@ ALLOWED_GCC_4xx_VERSIONS=\
 	4.0.0 4.0.1 4.0.2 4.0.3 \
 	4.1.1 4.1.2 4.1.3 \
 	4.2.0 4.2.1 4.2.3 4.2.4 \
-	4.3 4.3.1 4.3.2 4.3.3 4.3.4 \
-	4.4 4.4.1 4.4.3
+	4.3 4.3.1 4.3.2 4.3.3 \
+	4.4.1
 
 ALLOWED_GCC_VERSIONS=$(ALLOWED_GCC_3xx_VERSIONS) $(ALLOWED_GCC_4xx_VERSIONS)
 
@@ -146,9 +142,6 @@ ifndef BUILDHOST_64
 	BUILDHOST_64:=$(ARB_64)# assume build host is same as version (see config.makefile)
 endif
 
-cross_cflags:=
-cross_lflags:=
-
 ifeq ($(ARB_64),1)
 	dflags += -DARB_64 #-fPIC 
 	lflags +=
@@ -158,29 +151,26 @@ ifeq ($(ARB_64),1)
 #		build 64-bit ARB version on 64-bit host
 		CROSS_LIB:=# empty = autodetect below
 		ifdef DARWIN
-			cross_cflags += -arch x86_64
-			cross_lflags += -arch x86_64
+			cflags += -arch x86_64
+			lflags += -arch x86_64
 		endif
 	else
 #		build 64-bit ARB version on 32-bit host
 		CROSS_LIB:=/lib64
-		cross_cflags += -m64
-		cross_lflags += -m64 -m elf_x86_64
+		cflags += -m64
+		lflags += -m64 -m elf_x86_64
 	endif
 else
 	ifeq ($(BUILDHOST_64),1)
 #		build 32-bit ARB version on 64-bit host
 		CROSS_LIB:=# empty = autodetect below
-		cross_cflags += -m32
-		cross_lflags += -m32 -m elf_i386 
+		cflags += -m32
+		lflags += -m32 -m elf_i386 
 	else
 #		build 32-bit ARB version on 32-bit host
 		CROSS_LIB:=/lib
 	endif
 endif
-
-cflags += $(cross_cflags)
-lflags += $(cross_lflags)
 
 ifeq ('$(CROSS_LIB)','')
 # autodetect libdir
@@ -189,32 +179,6 @@ ifeq ('$(CROSS_LIB)','')
 	else
 		CROSS_LIB:=`(test -d /lib32 && echo lib32) || echo lib`
 	endif
-endif
-
-#---------------------- unit tests
-
-ifndef UNIT_TESTS
-	UNIT_TESTS=0#default is "no tests"
-endif
-ifeq ($(UNIT_TESTS),1)
-	dflags += -DUNIT_TESTS
-	UNIT_TESTER_LIB=UNIT_TESTER/UNIT_TESTER.a
-else
-	UNIT_TESTER_LIB=
-endif
-
-#---------------------- use gcov
-
-ifndef COVERAGE
-	COVERAGE=0#default is "no"
-endif
-ifneq ($(COVERAGE),0)
-	GCOVFLAGS=-ftest-coverage -fprofile-arcs
-	cflags += $(GCOVFLAGS)
-	EXECLIBS=-lgcov
-else
-	GCOVFLAGS=
-	EXECLIBS=
 endif
 
 #---------------------- other flags
@@ -254,15 +218,13 @@ endif
 ifeq ($(OPENGL),1) 
 	cflags += -DARB_OPENGL # activate OPENGL code
 	GL     := gl # this is the name of the OPENGL base target
-	GL_LIB_SYS := -lGL -lGLU
-	GL_LIB_ARB := -L$(ARBHOME)/GL/glAW -lglAW
+	GL_LIB := -lGL -L$(ARBHOME)/GL/glAW -lglAW
 
  ifdef DEBIAN
-	GL_LIB_SYS += -lpthread
+	GL_LIB += -lpthread
  endif
 
-GL_PNGLIBS_ARB := -L$(ARBHOME)/GL/glpng -lglpng_arb
-GL_PNGLIBS_SYS := -lpng
+GL_PNGLIBS := -L$(ARBHOME)/GL/glpng -lglpng_arb -lpng
 
  ifdef DARWIN
 	GLEWLIB := -L/usr/lib -lGLEW -L$(OSX_SDK)/usr/X11/lib -lGLw
@@ -272,19 +234,17 @@ GL_PNGLIBS_SYS := -lpng
 	GLUTLIB := -lglut
  endif
 
-GL_LIBS_SYS := $(GL_LIB_SYS) $(GL_PNGLIBS_SYS) $(GLEWLIB) $(GLUTLIB)
-GL_LIBS_ARB := $(GL_LIB_ARB) $(GL_PNGLIBS_ARB)
+GL_LIBS := $(GL_LIB) $(GLEWLIB) $(GLUTLIB) $(GL_PNGLIBS)
+
+#XLIBS += $(GL_LIB)
 
 else
 # OPENGL=0
 
-GL_LIBS_ARB:=# no opengl -> no libs
-GL_LIBS_SYS:=# no opengl -> no libs
+GL_LIBS:=# no opengl -> no libs
 GL:=# don't build ARB openGL libs
 
 endif
-
-GL_LIBS:=$(GL_LIBS_ARB) $(GL_LIBS_SYS)
 
 #---------------------- tiff lib:
 
@@ -352,11 +312,12 @@ SHARED_LIB_SUFFIX = a# static lib suffix
 LINK_SHARED_LIB := $(LINK_STATIC_LIB)
 else
 SHARED_LIB_SUFFIX = so# shared lib suffix
-LINK_SHARED_LIB := $(GPP) $(lflags) -shared $(GCOVFLAGS) -o# link shared lib
+LINK_SHARED_LIB := $(GPP) $(lflags) -shared -o# link shared lib
 endif
 
 # other used tools
 
+CTAGS := etags
 ifdef DARWIN
 	XMKMF := /usr/X11/bin/xmkmf
 else
@@ -403,9 +364,6 @@ first_target:
 		@echo ' rmbak        - remove all "*%" and cores'
 		@echo ' show         - show available shortcuts (AKA subtargets)'
 		@echo ' up           - shortcut for depends+proto+tags'
-ifeq ($(UNIT_TESTS),1)
-		@echo ' unit_tests   - only run tests'
-endif
 		@echo ' modified     - rebuild files modified in svn checkout (touches files!)'
 		@echo ''
 		@echo 'Internal maintenance:'
@@ -414,7 +372,7 @@ endif
 		@echo ' rel_major   - build a release (increases MAJOR version number)'
 		@echo ' tarfile     - make rebuild and create arb version tarfile ("tarfile_quick" to skip rebuild)'
 		@echo ' save        - save all basic ARB sources into arbsrc_DATE'
-		@echo ' patch       - save svn diff to patchfile'
+		@echo ' rtc_patch   - create LIBLINK/libRTC8M.so (SOLARIS ONLY)'
 		@echo ' source_doc  - create doxygen documentation'
 		@echo ' relocated   - rebuild partly (use when you have relocated ARBHOME)'
 		@echo ' check_res   - check ressource usage'
@@ -571,9 +529,10 @@ checks: check_setup check_tabs
 # end test section ------------------------------
 
 ARBDB_LIB=-lARBDB
+ARBDBPP_LIB=-lARBDBPP
 
 LIBS = $(ARBDB_LIB) $(SYSLIBS)
-GUI_LIBS = $(LIBS) -lWINDOW -lAWT $(XLIBS)
+GUI_LIBS = $(LIBS) -lAW -lAWT $(XLIBS)
 
 LIBPATH = -L$(ARBHOME)/LIBLINK
 
@@ -582,7 +541,7 @@ DEST_BIN = bin
 
 AINCLUDES := -I. -I$(ARBHOME)/INCLUDE $(XINCLUDES)
 CPPINCLUDES := -I. -I$(ARBHOME)/INCLUDE $(XINCLUDES)
-MAKEDEPENDFLAGS := -- $(cflags) -- -DARB_OPENGL -DUNIT_TESTS=1 -I. -Y$(ARBHOME)/INCLUDE
+MAKEDEPENDFLAGS := -- $(cflags) -- -DARB_OPENGL -I. -Y$(ARBHOME)/INCLUDE
 
 ifeq ($(VTABLE_INFRONTOF_CLASS),1)
 # Some code in ARB depends on the location of the vtable pointer
@@ -627,6 +586,9 @@ ARCHS = \
 			AISC_MKPTPS/dummy.a \
 			ALIV3/ALIV3.a \
 			ARBDB/libARBDB.a \
+			ARBDB2/libARBDB.a \
+			ARBDBPP/libARBDBPP.a \
+			ARBDBS/libARBDB.a \
 			ARB_GDE/ARB_GDE.a \
 			AWT/libAWT.a \
 			AWTC/AWTC.a \
@@ -635,6 +597,7 @@ ARCHS = \
 			CONVERTALN/CONVERTALN.a \
 			DBSERVER/DBSERVER.a \
 			DIST/DIST.a \
+			EDIT/EDIT.a \
 			EDIT4/EDIT4.a \
 			EISPACK/EISPACK.a \
 			GDE/GDE.a \
@@ -664,13 +627,9 @@ ARCHS = \
 			STAT/STAT.a \
 			TOOLS/TOOLS.a \
 			TREEGEN/TREEGEN.a \
-			UNIT_TESTER/UNIT_TESTER.a \
 			WETC/WETC.a \
-			WINDOW/libWINDOW.a \
+			WINDOW/libAW.a \
 			XML/XML.a \
-
-# ----------------------- 
-#     library packets     
 
 ARCHS_CLIENT_PROBE = PROBE_COM/client.a
 ARCHS_CLIENT_NAMES = NAMES_COM/client.a
@@ -682,21 +641,6 @@ ARCHS_COMMUNICATION =	NAMES_COM/server.a \
 # communication libs need aisc and aisc_mkpts:
 $(ARCHS_COMMUNICATION:.a=.dummy) : $(ARCHS_MAKEBIN:.a=.dummy)
 
-ARCHS_SEQUENCE = \
-		SL/SEQUENCE/SEQUENCE.a \
-		SL/ALIVIEW/ALIVIEW.a \
-		SL/PRONUC/PRONUC.a \
-
-ARCHS_TREE = \
-		$(ARCHS_SEQUENCE) \
-		SL/FILTER/FILTER.a \
-		SL/ARB_TREE/ARB_TREE.a \
-
-# parsimony tree (used by NTREE, PARSIMONY, STAT(->EDIT4), DIST(obsolete!))
-ARCHS_AP_TREE = \
-		$(ARCHS_TREE) \
-		SL/AP_TREE/AP_TREE.a \
-
 #***************************************************************************************
 #		Individual Programs Section
 #***************************************************************************************
@@ -704,9 +648,7 @@ ARCHS_AP_TREE = \
 #***********************************	arb_ntree **************************************
 NTREE = bin/arb_ntree
 ARCHS_NTREE = \
-		NTREE/NTREE.a \
 		$(ARCHS_CLIENT_PROBE) \
-		$(ARCHS_AP_TREE) \
 		ARB_GDE/ARB_GDE.a \
 		AWTC/AWTC.a \
 		AWTI/AWTI.a \
@@ -714,19 +656,16 @@ ARCHS_NTREE = \
 		GENOM_IMPORT/GENOM_IMPORT.a \
 		MERGE/MERGE.a \
 		MULTI_PROBE/MULTI_PROBE.a \
+		NTREE/NTREE.a \
 		PRIMER_DESIGN/PRIMER_DESIGN.a \
 		PROBE_DESIGN/PROBE_DESIGN.a \
 		SEQ_QUALITY/SEQ_QUALITY.a \
 		SERVERCNTRL/SERVERCNTRL.a \
 		SL/AW_NAME/AW_NAME.a \
 		SL/DB_SCANNER/DB_SCANNER.a \
-		SL/SEQIO/SEQIO.a \
 		SL/FILE_BUFFER/FILE_BUFFER.a \
-		SL/GUI_ALIVIEW/GUI_ALIVIEW.a \
 		SL/HELIX/HELIX.a \
 		SL/REGEXPR/REGEXPR.a \
-		SL/TRANSLATE/TRANSLATE.a \
-		SL/TREEDISP/TREEDISP.a \
 		SL/TREE_READ/TREE_READ.a \
 		SL/TREE_WRITE/TREE_WRITE.a \
 		STAT/STAT.a \
@@ -735,8 +674,8 @@ ARCHS_NTREE = \
 $(NTREE): $(ARCHS_NTREE:.a=.dummy) NAMES_COM/server.dummy shared_libs
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_NTREE) $(GUI_LIBS) || ( \
 		echo Link $@ ; \
-		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_NTREE) $(GUI_LIBS) $(EXECLIBS)" ; \
-		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_NTREE) $(GUI_LIBS) $(EXECLIBS)  \
+		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_NTREE) $(GUI_LIBS)" ; \
+		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_NTREE) $(GUI_LIBS)  \
 		)
 
 #*********************************** arb_rna3d **************************************
@@ -748,26 +687,43 @@ $(RNA3D): $(ARCHS_RNA3D:.a=.dummy) shared_libs
 	@echo $@ currently does not work as standalone application
 	false
 
+#***********************************	arb_edit **************************************
+EDIT = bin/arb_edit
+ARCHS_EDIT = \
+		NAMES_COM/client.a \
+		SERVERCNTRL/SERVERCNTRL.a \
+		EDIT/EDIT.a \
+		ARB_GDE/ARB_GDE.a \
+		STAT/STAT.a \
+		XML/XML.a \
+		SL/HELIX/HELIX.a \
+		SL/AW_HELIX/AW_HELIX.a \
+		SL/AW_NAME/AW_NAME.a \
+
+$(EDIT): $(ARCHS_EDIT:.a=.dummy) shared_libs
+	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_EDIT) $(GUI_LIBS) || ( \
+		echo Link $@ ; \
+		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_EDIT) -lARBDBPP $(GUI_LIBS)" ; \
+		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_EDIT) -lARBDBPP $(GUI_LIBS) ; \
+		)
+
 #***********************************	arb_edit4 **************************************
 EDIT4 = bin/arb_edit4
 
 ARCHS_EDIT4 := \
-		EDIT4/EDIT4.a \
-		$(ARCHS_AP_TREE) \
-		ARB_GDE/ARB_GDE.a \
+		NAMES_COM/client.a \
 		AWTC/AWTC.a \
-		ISLAND_HOPPING/ISLAND_HOPPING.a \
-		$(ARCHS_CLIENT_NAMES) \
+		EDIT4/EDIT4.a \
 		SECEDIT/SECEDIT.a \
 		SERVERCNTRL/SERVERCNTRL.a \
+		STAT/STAT.a \
+		ARB_GDE/ARB_GDE.a \
+		ISLAND_HOPPING/ISLAND_HOPPING.a \
+		SL/FAST_ALIGNER/FAST_ALIGNER.a \
+		SL/HELIX/HELIX.a \
 		SL/AW_HELIX/AW_HELIX.a \
 		SL/AW_NAME/AW_NAME.a \
-		SL/FAST_ALIGNER/FAST_ALIGNER.a \
 		SL/FILE_BUFFER/FILE_BUFFER.a \
-		SL/GUI_ALIVIEW/GUI_ALIVIEW.a \
-		SL/HELIX/HELIX.a \
-		SL/TRANSLATE/TRANSLATE.a \
-		STAT/STAT.a \
 		XML/XML.a \
 
 ifeq ($(OPENGL),1)
@@ -778,8 +734,8 @@ LIBS_EDIT4 := $(GL_LIBS)
 $(EDIT4): $(ARCHS_EDIT4:.a=.dummy) shared_libs $(GL)
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_EDIT4) $(GUI_LIBS) || ( \
 		echo Link $@ ; \
-		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_EDIT4) $(GUI_LIBS) $(LIBS_EDIT4) $(EXECLIBS)" ; \
-		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_EDIT4) $(GUI_LIBS) $(LIBS_EDIT4) $(EXECLIBS) \
+		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_EDIT4) $(GUI_LIBS) $(LIBS_EDIT4)" ; \
+		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_EDIT4) $(GUI_LIBS) $(LIBS_EDIT4) \
 		)
 
 #***********************************	arb_pgt **************************************
@@ -793,8 +749,8 @@ PGT_SYS_LIBS=$(XLIBS) $(TIFFLIBS) $(LIBS)
 $(PGT) : $(ARCHS_PGT:.a=.dummy) shared_libs
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_PGT) || ( \
 		echo Link $@ ; \
-		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_PGT) $(PGT_SYS_LIBS) $(EXECLIBS)"; \
-		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_PGT) $(PGT_SYS_LIBS) $(EXECLIBS); \
+		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_PGT) $(PGT_SYS_LIBS)"; \
+		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_PGT) $(PGT_SYS_LIBS); \
 		)
 
 
@@ -803,57 +759,48 @@ WETC = bin/arb_wetc
 ARCHS_WETC = \
 		WETC/WETC.a \
 		SL/HELIX/HELIX.a \
-		SL/FILTER/FILTER.a \
 		XML/XML.a \
 
 $(WETC): $(ARCHS_WETC:.a=.dummy) shared_libs
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_WETC) $(GUI_LIBS) || ( \
 		echo Link $@ ; \
-		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_WETC) $(GUI_LIBS) $(EXECLIBS)" ; \
-		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_WETC) $(GUI_LIBS) $(EXECLIBS) ; \
+		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_WETC) $(GUI_LIBS)" ; \
+		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_WETC) $(GUI_LIBS) ; \
 		)
 
 #***********************************	arb_dist **************************************
 DIST = bin/arb_dist
 ARCHS_DIST = \
 		$(ARCHS_CLIENT_PROBE) \
-		$(ARCHS_AP_TREE) \
-		CONSENSUS_TREE/CONSENSUS_TREE.a \
 		DIST/DIST.a \
-		EISPACK/EISPACK.a \
 		SERVERCNTRL/SERVERCNTRL.a \
-		SL/GUI_ALIVIEW/GUI_ALIVIEW.a \
+		CONSENSUS_TREE/CONSENSUS_TREE.a \
+		EISPACK/EISPACK.a \
 		SL/HELIX/HELIX.a \
-		SL/MATRIX/MATRIX.a \
-		SL/NEIGHBOURJOIN/NEIGHBOURJOIN.a \
 		XML/XML.a \
 
 $(DIST): $(ARCHS_DIST:.a=.dummy) shared_libs
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_DIST) $(GUI_LIBS) || ( \
 		echo Link $@ ; \
-		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_DIST) $(GUI_LIBS) $(EXECLIBS)" ; \
-		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_DIST) $(GUI_LIBS) $(EXECLIBS) ; \
+		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_DIST) $(GUI_LIBS)" ; \
+		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_DIST) $(GUI_LIBS) ; \
 		)
 
 #***********************************	arb_pars **************************************
 PARSIMONY = bin/arb_pars
 ARCHS_PARSIMONY = \
-		$(ARCHS_AP_TREE) \
-		$(ARCHS_CLIENT_NAMES) \
-		PARSIMONY/PARSIMONY.a \
+		NAMES_COM/client.a \
 		SERVERCNTRL/SERVERCNTRL.a \
-		SL/AW_NAME/AW_NAME.a \
-		SL/GUI_ALIVIEW/GUI_ALIVIEW.a \
+		PARSIMONY/PARSIMONY.a \
 		SL/HELIX/HELIX.a \
-		SL/TRANSLATE/TRANSLATE.a \
-		SL/TREEDISP/TREEDISP.a \
+		SL/AW_NAME/AW_NAME.a \
 		XML/XML.a \
 
 $(PARSIMONY): $(ARCHS_PARSIMONY:.a=.dummy) shared_libs
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_PARSIMONY) $(GUI_LIBS) || ( \
 		echo Link $@ ; \
-		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_PARSIMONY) $(GUI_LIBS) $(EXECLIBS)" ; \
-		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_PARSIMONY) $(GUI_LIBS) $(EXECLIBS) ; \
+		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_PARSIMONY) $(GUI_LIBS)" ; \
+		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_PARSIMONY) $(GUI_LIBS) ; \
 		)
 
 #*********************************** arb_treegen **************************************
@@ -864,8 +811,8 @@ ARCHS_TREEGEN =	\
 $(TREEGEN) :  $(ARCHS_TREEGEN:.a=.dummy)
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_TREEGEN) || ( \
 		echo Link $@ ; \
-		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_TREEGEN) $(EXECLIBS)" ; \
-		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_TREEGEN) $(EXECLIBS) ; \
+		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_TREEGEN)" ; \
+		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_TREEGEN) ; \
 		)
 
 #***********************************	arb_naligner **************************************
@@ -879,8 +826,8 @@ ARCHS_NALIGNER = \
 $(NALIGNER): $(ARCHS_NALIGNER:.a=.dummy) shared_libs
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_NALIGNER) || ( \
 		echo Link $@ ; \
-		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_NALIGNER) $(LIBS) $(EXECLIBS)" ; \
-		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_NALIGNER) $(LIBS) $(EXECLIBS) \
+		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_NALIGNER) $(LIBS)" ; \
+		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_NALIGNER) $(LIBS) \
 		)
 
 #***********************************	arb_secedit **************************************
@@ -899,15 +846,13 @@ PHYLO = bin/arb_phylo
 ARCHS_PHYLO = \
 		PHYLO/PHYLO.a \
 		SL/HELIX/HELIX.a \
-		SL/FILTER/FILTER.a \
-		SL/MATRIX/MATRIX.a \
 		XML/XML.a \
 
 $(PHYLO): $(ARCHS_PHYLO:.a=.dummy) shared_libs
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_PHYLO) $(GUI_LIBS) || ( \
 		echo Link $@ ; \
-		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_PHYLO) $(GUI_LIBS) $(EXECLIBS)" ; \
-		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_PHYLO) $(GUI_LIBS) $(EXECLIBS) ; \
+		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_PHYLO) $(GUI_LIBS)" ; \
+		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_PHYLO) $(GUI_LIBS) ; \
 		)
 
 #***************************************************************************************
@@ -923,8 +868,8 @@ ARCHS_DBSERVER = \
 $(DBSERVER): $(ARCHS_DBSERVER:.a=.dummy) shared_libs
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_DBSERVER) $(ARBDB_LIB) || ( \
 		echo Link $@ ; \
-		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_DBSERVER) $(ARBDB_LIB) $(SYSLIBS) $(EXECLIBS)" ; \
-		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_DBSERVER) $(ARBDB_LIB) $(SYSLIBS) $(EXECLIBS) ; \
+		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_DBSERVER) $(ARBDB_LIB) $(SYSLIBS)" ; \
+		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_DBSERVER) $(ARBDB_LIB) $(SYSLIBS) ; \
 		)
 
 #***********************************	arb_pt_server **************************************
@@ -945,8 +890,8 @@ ARCHS_PROBE_DEPEND = \
 $(PROBE): $(ARCHS_PROBE_DEPEND:.a=.dummy) shared_libs 
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_PROBE_LINK) $(ARBDB_LIB) $(ARCHS_CLIENT_PROBE) || ( \
 		echo Link $@ ; \
-		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_PROBE_LINK) $(ARBDB_LIB) $(ARCHS_CLIENT_PROBE) $(SYSLIBS) $(EXECLIBS)" ; \
-		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_PROBE_LINK) $(ARBDB_LIB) $(ARCHS_CLIENT_PROBE) $(SYSLIBS) $(EXECLIBS) ; \
+		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_PROBE_LINK) $(ARBDB_LIB) $(ARCHS_CLIENT_PROBE) $(SYSLIBS)" ; \
+		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_PROBE_LINK) $(ARBDB_LIB) $(ARCHS_CLIENT_PROBE) $(SYSLIBS) ; \
 		)
 
 #***********************************	arb_name_server **************************************
@@ -959,8 +904,8 @@ ARCHS_NAMES = \
 $(NAMES): $(ARCHS_NAMES:.a=.dummy) shared_libs
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_NAMES) $(ARBDB_LIB) $(ARCHS_CLIENT_NAMES) || ( \
 		echo Link $@ ; \
-		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_NAMES) $(ARBDB_LIB) $(ARCHS_CLIENT_NAMES) $(SYSLIBS) $(EXECLIBS)" ; \
-		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_NAMES) $(ARBDB_LIB) $(ARCHS_CLIENT_NAMES) $(SYSLIBS) $(EXECLIBS) ; \
+		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_NAMES) $(ARBDB_LIB) $(ARCHS_CLIENT_NAMES) $(SYSLIBS)" ; \
+		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_NAMES) $(ARBDB_LIB) $(ARCHS_CLIENT_NAMES) $(SYSLIBS) ; \
 		)
 
 #***********************************	OTHER EXECUTABLES   ********************************************
@@ -972,11 +917,11 @@ ARCHS_ALIV3 = \
 
 $(ALIV3): $(ARCHS_ALIV3:.a=.dummy) shared_libs
 	@echo $(SEP) Link $@
-	$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_ALIV3) $(ARBDB_LIB) $(SYSLIBS) $(EXECLIBS)
+	$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_ALIV3) $(ARBDB_LIB) $(SYSLIBS)
 
 #***********************************	SHARED LIBRARIES SECTION  **************************************
 
-shared_libs: db aw awt
+shared_libs: dball aw awt
 		@echo -------------------- Updating shared libraries
 		$(MAKE) libs
 
@@ -987,12 +932,17 @@ addlibs:
 				"link_static=$(LINK_STATIC)" \
 	)
 
-libs:   lib/libARBDB.$(SHARED_LIB_SUFFIX) \
-	lib/libWINDOW.$(SHARED_LIB_SUFFIX) \
+libs:	lib/libARBDB.$(SHARED_LIB_SUFFIX) \
+	lib/libARBDBPP.$(SHARED_LIB_SUFFIX) \
+	lib/libARBDO.$(SHARED_LIB_SUFFIX) \
+	lib/libAW.$(SHARED_LIB_SUFFIX) \
 	lib/libAWT.$(SHARED_LIB_SUFFIX)
 
 lib/lib%.$(SHARED_LIB_SUFFIX): LIBLINK/lib%.$(SHARED_LIB_SUFFIX)
 	cp $< $@
+
+# lib/$(MOTIF_LIBNAME):  $(MOTIF_LIBPATH)
+# 	cp $< $@
 
 #***************************************************************************************
 #			Recursive calls to sub-makefiles
@@ -1005,7 +955,7 @@ include SOURCE_TOOLS/export2sub
 	@$(MAKE) -C $(@D) -r \
 		"AUTODEPENDS=1" \
 		"MAIN=nothing" \
-		"cflags=noCflagsHere_use_MAKEDEPENDFLAGS" \
+		"cflags=noCflags" \
 		depends;
 	@grep "^# DO NOT DELETE" $(@D)/Makefile >/dev/null
 	@cat $(@D)/Makefile \
@@ -1093,7 +1043,7 @@ show:
 		@echo ' libraries:'
 		@echo ''
 		@echo '  com    communication libraries'
-		@echo '  db     ARB database'
+		@echo '  dball  ARB database (all versions: db dbs and db2)'
 		@echo '  aw     GUI lib'
 		@echo '  awt    GUI toolkit'
 		@echo '  awtc   general purpose library'
@@ -1128,8 +1078,12 @@ help:   HELP_SOURCE/HELP_SOURCE.dummy
 
 HELP_SOURCE/HELP_SOURCE.dummy: xml menus# need to create some files in GDE-subtree first
 
+dball:	db dbs db2 dp
 db:	ARBDB/libARBDB.dummy
-aw:	WINDOW/libWINDOW.dummy
+dbs:	ARBDBS/libARBDB.dummy
+db2:	ARBDB2/libARBDB.dummy
+dp:	ARBDBPP/libARBDBPP.dummy
+aw:	WINDOW/libAW.dummy
 awt:	AWT/libAWT.dummy
 awtc:	AWTC/AWTC.dummy
 awti:	AWTI/AWTI.dummy
@@ -1140,6 +1094,7 @@ ge: 	GENOM/GENOM.dummy
 prd: 	PRIMER_DESIGN/PRIMER_DESIGN.dummy
 
 nt:	menus $(NTREE)
+ed:	$(EDIT)
 
 nal:	$(NALIGNER)
 a3:	$(ALIV3)
@@ -1163,7 +1118,7 @@ sq:	SEQ_QUALITY/SEQ_QUALITY.dummy
 
 sec:	SECEDIT/SECEDIT.dummy
 
-e4:	$(EDIT4) wetc help readseq menus 
+e4:	wetc help readseq menus $(EDIT4)
 gi:	GENOM_IMPORT/GENOM_IMPORT.dummy
 wetc:	$(WETC)
 
@@ -1171,8 +1126,6 @@ pgt:	$(PGT)
 xml:	XML/XML.dummy
 xmlin:  XML_IMPORT/XML_IMPORT.dummy# broken
 templ:	TEMPLATES/TEMPLATES.dummy
-stat:   STAT/STAT.dummy $(NTREE) $(EDIT4)
-fa:	SL/FAST_ALIGNER/FAST_ALIGNER.dummy
 
 #********************************************************************************
 
@@ -1218,7 +1171,6 @@ proto: proto_tools
 		SERVERCNTRL/SERVERCNTRL.proto \
 		AISC_COM/AISC_COM.proto \
 		GDE/GDE.proto \
-		SL/SL.proto \
 
 #********************************************************************************
 
@@ -1236,39 +1188,34 @@ tags:
 	$(MAKE) tags_$(MACH)
 	mv $(TAGFILE_TMP) $(TAGFILE)
 
-tags_LINUX: tags_ctags
+tags_LINUX: tags2
+tags_SUN5: tags1
 
-tags_etags:
+tags1:
 # first search class definitions
-	etags -f $(TAGFILE_TMP)          --language=none "--regex=/^[ \t]*class[ \t]+\([^ \t]+\)/" `find . -name '*.[ch]xx' -type f`
-	etags -f $(TAGFILE_TMP) --append --language=none "--regex=/\([^ \t]+\)::/" `find . -name '*.[ch]xx' -type f`
+	$(CTAGS) -f $(TAGFILE_TMP)          --language=none "--regex=/^[ \t]*class[ \t]+\([^ \t]+\)/" `find . -name '*.[ch]xx' -type f`
+	$(CTAGS) -f $(TAGFILE_TMP) --append --language=none "--regex=/\([^ \t]+\)::/" `find . -name '*.[ch]xx' -type f`
 # then append normal tags (headers first)
-	etags -f $(TAGFILE_TMP) --append --members ARBDB/*.h `find . -name '*.[h]xx' -type f`
-	etags -f $(TAGFILE_TMP) --append ARBDB/*.c `find . -name '*.[c]xx' -type f`
+	$(CTAGS) -f $(TAGFILE_TMP) --append --members ARBDB/*.h `find . -name '*.[h]xx' -type f`
+	$(CTAGS) -f $(TAGFILE_TMP) --append ARBDB/*.c `find . -name '*.[c]xx' -type f`
 
-tags_ctags:
+# if the above tag creation does not work -> try tags2:
+tags2:
 	ctags -f $(TAGFILE_TMP)    -e --c-types=cdt --sort=no `find . \( -name '*.[ch]xx' -o -name "*.[ch]" \) -type f | grep -v -i perl5`
 	ctags -f $(TAGFILE_TMP) -a -e --c-types=f-tvx --sort=no `find . \( -name '*.[ch]xx' -o -name "*.[ch]" \) -type f | grep -v -i perl5`
 
 #********************************************************************************
 
-LINKSTAMP=SOURCE_TOOLS/generate_all_links.stamp
+links: SOURCE_TOOLS/generate_all_links.stamp
 
-links: $(LINKSTAMP)
-
-$(LINKSTAMP): SOURCE_TOOLS/generate_all_links.sh
+SOURCE_TOOLS/generate_all_links.stamp: SOURCE_TOOLS/generate_all_links.sh
 	SOURCE_TOOLS/generate_all_links.sh
-	touch $(LINKSTAMP)
-
-redo_links:
-	find . -path './lib' -prune -o -type l -exec rm {} \;
-	@-rm $(LINKSTAMP)
-	$(MAKE) links
+	touch SOURCE_TOOLS/generate_all_links.stamp
 
 gde:		GDE/GDE.dummy
 GDE:		gde
 agde: 		ARB_GDE/ARB_GDE.dummy
-tools:		shared_libs SL/SL.dummy TOOLS/TOOLS.dummy
+tools:		SL/SL.dummy TOOLS/TOOLS.dummy
 convert:	SL/FILE_BUFFER/FILE_BUFFER.dummy shared_libs
 	$(MAKE) CONVERTALN/CONVERTALN.dummy
 
@@ -1277,6 +1224,8 @@ readseq:	READSEQ/READSEQ.dummy
 #***************************************************************************************
 #			Some user commands
 #***************************************************************************************
+rtc_patch:
+	rtc_patch_area -so LIBLINK/libRTC8M.so
 
 menus: binlink
 	@(( \
@@ -1310,11 +1259,10 @@ perl: tools
 	@$(MAKE) -C PERL2ARB -r -f Makefile.main \
 		"AUTODEPENDS=1" \
 		"dflags=$(dflags)" \
-		"cross_cflags=$(cross_cflags) $(dflags)" \
-		"cross_lflags=$(cross_lflags)" \
 		all
+	@$(MAKE) testperlscripts
 
-testperlscripts: perl 
+testperlscripts: 
 	@$(MAKE) -C PERL_SCRIPTS/test test
 
 perl_clean:
@@ -1324,23 +1272,8 @@ perl_clean:
 
 # ----------------------------------------
 
-CLOC=cloc-1.08.pl
-CLOCFLAGS=--no3 --quiet --progress-rate=0
-CLOCARB=--exclude-dir=GDE .
-CLOCEXT=GDE
-CLOCCODE=--read-lang-def=$(ARBHOME)/SOURCE_TOOLS/arb.cloc.code.def
-CLOCREST=--read-lang-def=$(ARBHOME)/SOURCE_TOOLS/arb.cloc.rest.def
-CLOCFILT=tail --lines=+4
-
-cloc:
-	@echo 'Arb code:'
-	@$(CLOC) $(CLOCFLAGS) $(CLOCCODE) $(CLOCARB) | $(CLOCFILT)
-	@echo 'Arb rest:'
-	@$(CLOC) $(CLOCFLAGS) $(CLOCREST) $(CLOCARB) | $(CLOCFILT)
-	@echo 'External code:'
-	@$(CLOC) $(CLOCFLAGS) $(CLOCCODE) $(CLOCEXT) | $(CLOCFILT)
-	@echo 'External rest:'
-	@$(CLOC) $(CLOCFLAGS) $(CLOCREST) $(CLOCEXT) | $(CLOCFILT)
+wc:
+	wc `find . -type f \( -name '*.[ch]' -o -name '*.[ch]xx' \) -print`
 
 # ---------------------------------------- check ressources
 
@@ -1372,15 +1305,13 @@ clean2: $(ARCHS:.a=.clean) \
 		GDEHELP/GDEHELP.clean \
 		HELP_SOURCE/HELP_SOURCE.clean \
 		SOURCE_TOOLS/SOURCE_TOOLS.clean \
-		UNIT_TESTER/UNIT_TESTER.clean \
 		bin/bin.clean \
 		perl_clean
 	rm -f *.last_gcc
 
 # links are needed for cleanup
-clean: redo_links
+clean: links
 	$(MAKE) clean2
-	$(MAKE) clean_coverage
 
 # 'relocated' is about 50% faster than 'rebuild'
 reloc_clean: links
@@ -1416,10 +1347,7 @@ tarfile_quick: all
 
 save: sourcetarfile 
 
-patch:
-	SOURCE_TOOLS/arb_create_patch.sh arbPatch
-
-# test early whether save will work
+# test early whether save will work 
 testsave:
 	@util/arb_srclst.pl >/dev/null
 
@@ -1462,8 +1390,11 @@ arbbasic: links preplib
 
 arbbasic2: templ mbin com sl $(GL)
 
+# shared arb libraries
+arbshared: dball aw dp awt
+
 # needed arb applications
-arbapplications: nt pa e4 wetc pt na nal di ph ds pgt
+arbapplications: nt pa ed e4 wetc pt na nal di ph ds pgt
 
 # optionally things (no real harm for ARB if any of them fails):
 arbxtras: tg pst a3 xmlin 
@@ -1476,147 +1407,9 @@ tryxtras:
 		echo "ARB will work nevertheless!" ) )
 
 arb: arbbasic
-	$(MAKE) shared_libs arbapplications help
+	$(MAKE) arbshared arbapplications help
 
-# --------------------------------------------------------------------------------
-# unit testing 
-# @@@ work in progress
-#
-# goal is to automatically test all libraries/executables using TESTED_UNITS_AUTO
-#
-# currently not all test executables link w/o error
-# (see UNITS_WORKING, UNITS_UNTESTABLE_ATM and UNITS_NEED_FIX)
-
-TESTED_UNITS_AUTO = $(ARCHS:.a=.test)
-
-UNITS_WORKING = \
-	ISLAND_HOPPING/ISLAND_HOPPING.test \
-	WINDOW/WINDOW.test \
-	AWT/AWT.test \
-	SL/ALIVIEW/ALIVIEW.test \
-	SL/AP_TREE/AP_TREE.test \
-	SL/ARB_TREE/ARB_TREE.test \
-	SL/AW_HELIX/AW_HELIX.test \
-	SL/AW_NAME/AW_NAME.test \
-	SL/DB_SCANNER/DB_SCANNER.test \
-	SL/FILE_BUFFER/FILE_BUFFER.test \
-	SL/FILTER/FILTER.test \
-	SL/GUI_ALIVIEW/GUI_ALIVIEW.test \
-	ARB_GDE/ARB_GDE.test \
-	SL/HELIX/HELIX.test \
-	SL/MATRIX/MATRIX.test \
-	SL/NEIGHBOURJOIN/NEIGHBOURJOIN.test \
-	SL/PRONUC/PRONUC.test \
-	SL/REGEXPR/REGEXPR.test \
-	SL/SEQUENCE/SEQUENCE.test \
-	SL/TRANSLATE/TRANSLATE.test \
-	SL/TREEDISP/TREEDISP.test \
-	SL/TREE_READ/TREE_READ.test \
-	XML/XML.test \
-	SL/TREE_WRITE/TREE_WRITE.test \
-	ALIV3/ALIV3.test \
-	CONSENSUS_TREE/CONSENSUS_TREE.test \
-	EISPACK/EISPACK.test \
-	DIST/DIST.test \
-	NALIGNER/NALIGNER.test \
-	GL/glAW/libglAW.test \
-	GL/glpng/libglpng_arb.test \
-	SEQ_QUALITY/SEQ_QUALITY.test \
-	STAT/STAT.test \
-	WETC/WETC.test \
-	ptpan/PROBE.test \
-	PHYLO/PHYLO.test \
-	PROBE_DESIGN/PROBE_DESIGN.test \
-	PRIMER_DESIGN/PRIMER_DESIGN.test \
-	PGT/PGT.test \
-	PARSIMONY/PARSIMONY.test \
-	TREEGEN/TREEGEN.test \
-	EDIT4/EDIT4.test \
-	NTREE/NTREE.test \
-	NAMES/NAMES.test \
-	PROBE/PROBE.test \
-	DBSERVER/DBSERVER.test \
-
-UNITS_UNTESTABLE_ATM = \
-	SERVERCNTRL/SERVERCNTRL.test \
-	PROBE_SET/PROBE_SET.test \
-	XML_IMPORT/XML_IMPORT.test \
-
-UNITS_NEED_FIX = \
-	GENOM_IMPORT/GENOM_IMPORT.test \
-	GENOM/GENOM.test \
-	AWTI/AWTI.test \
-	SECEDIT/SECEDIT.test \
-	RNA3D/RNA3D.test \
-
-# for the moment, put all units containing tests into UNITS_TESTED:
-UNITS_TESTED = \
-	PROBE_COM/client.test \
-	TOOLS/arb_probe.test \
-	AWTC/AWTC.test \
-	SL/FAST_ALIGNER/FAST_ALIGNER.test \
-	MULTI_PROBE/MULTI_PROBE.test \
-	SL/SEQIO/SEQIO.test \
-	ARBDB/ARBDB.test \
-	MERGE/MERGE.test \
-
-TESTED_UNITS_MANUAL = \
-	$(UNITS_TESTED) \
-
-#	$(UNITS_WORKING)
-
-#TESTED_UNITS = $(TESTED_UNITS_AUTO)
-TESTED_UNITS = $(TESTED_UNITS_MANUAL)
-
-# ----------------------------------------
-
-TEST_LOG_DIR = UNIT_TESTER/logs
-TEST_REPORTER = $(ARBHOME)/UNIT_TESTER/reporter.pl
-
-%.test:
-	-@( export ID=$$$$; mkdir -p $(TEST_LOG_DIR); \
-	( \
-	    $(MAKE) -C UNIT_TESTER -f Makefile.test -r \
-		"UNITDIR=$(@D)" \
-		"UNITLIBNAME=$(@F:.test=)" \
-		"COVERAGE=$(COVERAGE)" \
-		"cflags=$(cflags)" \
-		runtest \
-	) >$(TEST_LOG_DIR)/$(@F).log 2>&1 ; cat $(TEST_LOG_DIR)/$(@F).log)
-
-test_base: $(UNIT_TESTER_LIB:.a=.dummy)
-
-clean_coverage_results:
-	find . \( -name "*.gcda" -o -name "*.gcov" -o -name "*.cov" \) -exec rm {} \;
-
-clean_coverage: clean_coverage_results
-	find . \( -name "*.gcno" \) -exec rm {} \;
-
-
-unit_tests: test_base clean_coverage_results
-	@echo "$(SEP) Running unit tests"
-	@$(TEST_REPORTER) init $(TEST_LOG_DIR)
-	@echo "fake[1]: Entering directory \`$(ARBHOME)/UNIT_TESTER'"
-	$(MAKE) $(NODIR) $(TESTED_UNITS)
-	@echo "fake[1]: Leaving directory \`$(ARBHOME)/UNIT_TESTER'"
-	@$(TEST_REPORTER) report $(TEST_LOG_DIR)
-	@$(MAKE) $(NODIR) -C UNIT_TESTER -f Makefile.test -r \
-		"UNITDIR=" \
-		"UNITLIBNAME=" \
-		"COVERAGE=0" \
-		"cflags=$(cflags)" \
-		store_patch
-	@echo "$(SEP) All unit tests passed" 
-
-ut: unit_tests
-
-# --------------------------------------------------------------------------------
-
-TIMELOG=$(ARBHOME)/arb_time.log
-TIMEARGS=--append --output=$(TIMELOG) --format=" %E(%S+%U) %P [%C]"
-TIMECMD=/usr/bin/time $(TIMEARGS)
-
-build:
+all: checks
 	$(MAKE) links
 	$(MAKE) com
 	$(MAKE) arb
@@ -1628,17 +1421,7 @@ build:
 ifeq ("$(DEVELOPER)","SAVETEST")
 	$(MAKE) save_test
 endif
-
-all: checks
-	@echo "Build time" > $(TIMELOG)
-	@echo $(MAKE) build
-	@$(TIMECMD) $(MAKE) build
 	@echo $(SEP)
 	@echo "made 'all' with success."
 	@echo "to start arb enter 'arb'"
-ifeq ($(UNIT_TESTS),1)
-	@echo $(MAKE) unit_tests
-	@$(TIMECMD) $(MAKE) unit_tests
-endif
-	@cat $(TIMELOG)
-	@rm $(TIMELOG)
+

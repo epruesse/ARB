@@ -12,7 +12,10 @@
 
 #define TEMP_DB_PATH "tmp/global_awars"
 
+#include <stdio.h>
+#include <stdlib.h>
 #include <arbdb.h>
+#include <aw_root.hxx>
 #include <aw_global_awars.hxx>
 #include <aw_awars.hxx>
 #include <aw_window.hxx>
@@ -25,7 +28,7 @@ inline const char *get_db_path(const AW_awar *awar) {
 
 static bool in_global_awar_cb = false;
 
-static void awar_updated_cb(AW_root * /* aw_root */, AW_CL cl_awar) {
+static void awar_updated_cb(AW_root */*aw_root*/, AW_CL cl_awar) {
     if (!in_global_awar_cb) {
         AW_awar        *awar    = (AW_awar*)cl_awar;
         char           *content = awar->read_as_string();
@@ -43,7 +46,7 @@ static void awar_updated_cb(AW_root * /* aw_root */, AW_CL cl_awar) {
     }
 }
 
-static void db_updated_cb(GBDATA *gbd, int *cl_awar, GB_CB_TYPE /* cbtype */) {
+static void db_updated_cb(GBDATA *gbd, int *cl_awar, GB_CB_TYPE /*cbtype*/) {
     if (!in_global_awar_cb) {
         AW_awar        *awar = (AW_awar*)cl_awar;
         GB_transaction  dummy(gb_main4awar);
@@ -109,8 +112,7 @@ static void AWAR_AWM_MASK_changed_cb(AW_root *awr) {
 #endif // DARWIN
 
 GB_ERROR ARB_init_global_awars(AW_root *aw_root, AW_default aw_def, GBDATA *gb_main) {
-    aw_assert(!initialized);                        // don't call twice!
-    aw_assert(aw_def != gb_main);                   // awars in DB are global by definition
+    aw_assert(!initialized);    // don't call twice!
 
     initialized  = true;
     gb_main4awar = gb_main;
@@ -119,7 +121,7 @@ GB_ERROR ARB_init_global_awars(AW_root *aw_root, AW_default aw_def, GBDATA *gb_m
 
     if (!error) {
         AW_awar *awar_awm_mask = aw_root->awar_int(AWAR_AWM_MASK, AWM_MASK_UNKNOWN, aw_def);
-
+        
         awar_awm_mask->add_callback(AWAR_AWM_MASK_changed_cb);
         error = awar_awm_mask->make_global();
     }

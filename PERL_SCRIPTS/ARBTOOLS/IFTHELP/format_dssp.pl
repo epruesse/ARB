@@ -91,8 +91,7 @@ for (my $i = 0; $i <= $seqnum; $i++) {
   print "REFERENCE $reference\n";
   if ($chains[$i] ne ' ') {
     print "PDB_ID    $pdb_id\_$chains[$i]\n";
-  }
-  else {
+  } else {
     print "PDB_ID    $pdb_id\n";
   }
   print "DATE      $date\n";

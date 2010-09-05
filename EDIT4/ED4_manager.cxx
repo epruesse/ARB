@@ -1,5 +1,17 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <memory.h>
+// #include <malloc.h>
+#include <math.h>
+
+#include <arbdb.h>
 #include <arbdbt.h>
 
+#include <aw_root.hxx>
+#include <aw_device.hxx>
+#include <aw_keysym.hxx>
+#include <aw_window.hxx>
 #include <aw_preset.hxx>
 
 #include "ed4_class.hxx"
@@ -9,13 +21,13 @@
 #include "ed4_ProteinViewer.hxx"
 #include "ed4_protein_2nd_structure.hxx"
 
-// #define TEST_REFRESH_FLAG
+//#define TEST_REFRESH_FLAG
 
 
 // -----------------------------------------------------------------
 //      Manager static properties (used by manager-constructors)
 // -----------------------------------------------------------------
-
+  
 // Each manager should either be ED4_P_HORIZONTAL or ED4_P_VERTICAL - never both !!!
 
 ED4_object_specification main_manager_spec = {
@@ -137,7 +149,7 @@ ED4_returncode ED4_manager::rebuild_consensi(ED4_base *start_species, ED4_update
                     multi_species_manager = group_manager->get_defined_level(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
                     for (i=0; i<multi_species_manager->children->members(); i++) {
                         if (multi_species_manager->children->member(i)->flag.is_consensus) {
-                            rebuild_consensus(multi_species_manager->children->member(i)).expect_no_error();
+                            rebuild_consensus(NULL, NULL, multi_species_manager->children->member(i));
                         }
                     }
                 }
@@ -146,13 +158,13 @@ ED4_returncode ED4_manager::rebuild_consensi(ED4_base *start_species, ED4_update
             break;
         case ED4_U_UP_DOWN:     // only search first groupmanager and update consensi recursively downwards
             while (temp_parent && !(temp_parent->is_area_manager())) {
-                if (temp_parent->is_group_manager()) {
+                if (temp_parent->is_group_manager()){
                     first_group_manager = temp_parent->to_group_manager();
                 }
                 temp_parent = temp_parent->parent;
             }
             if (first_group_manager)
-                first_group_manager->route_down_hierarchy(rebuild_consensus).expect_no_error();
+                first_group_manager->route_down_hierarchy(NULL, NULL, rebuild_consensus);
             break;
     }
     return ED4_R_OK;
@@ -234,7 +246,7 @@ ED4_returncode ED4_manager::check_bases_and_rebuild_consensi(const char *old_seq
     int   new_len;
     char *new_sequence = new_sequence_terminal->resolve_pointer_to_string_copy(&new_len);
 
-#if defined(DEBUG) && 0
+#if defined(DEBUG)
     printf("old: %s\n", old_sequence);
     printf("new: %s\n", new_sequence);
 #endif // DEBUG
@@ -272,7 +284,7 @@ ED4_returncode ED4_manager::check_bases(const ED4_base *old_base, const ED4_base
         ED4_species_manager *new_species_manager   = new_base->to_species_manager();
         ED4_terminal        *old_sequence_terminal = old_species_manager->get_consensus_relevant_terminal();
         ED4_terminal        *new_sequence_terminal = new_species_manager->get_consensus_relevant_terminal();
-
+        
         int   old_len;
         int   new_len;
         char *old_seq = old_sequence_terminal->resolve_pointer_to_string_copy(&old_len);
@@ -308,7 +320,7 @@ ED4_returncode ED4_manager::check_bases(const ED4_base *old_base, const ED4_base
             }                                                           \
             walk_up = walk_up->parent;                                  \
         }                                                               \
-    } while (0)
+    } while(0)
 
 ED4_returncode ED4_manager::check_bases(const char *old_sequence, int old_len, const char *new_sequence, int new_len, int start_pos, int end_pos) {
     ED4_manager *walk_up = this;
@@ -332,18 +344,15 @@ ED4_returncode ED4_manager::check_bases(const char *old_sequence, int old_len, c
 #endif
 
             WITH_ALL_ABOVE_GROUP_MANAGER_TABLES(walk_up, sub_and_add(old_sequence, new_sequence, start_pos, end_pos));
-        }
-        else {
+        } else {
             e4_assert(start_pos==0 && end_pos==-1);
             WITH_ALL_ABOVE_GROUP_MANAGER_TABLES(walk_up, sub(old_sequence, old_len));
         }
-    }
-    else {
+    } else {
         if (new_sequence) {
             e4_assert(start_pos==0 && end_pos==-1);
             WITH_ALL_ABOVE_GROUP_MANAGER_TABLES(walk_up, add(new_sequence, new_len));
-        }
-        else {
+        } else {
             return ED4_R_OK;
         }
     }
@@ -363,18 +372,15 @@ ED4_returncode ED4_manager::check_bases(const ED4_char_table *old_table, const E
                 }
             }
             WITH_ALL_ABOVE_GROUP_MANAGER_TABLES(walk_up, sub_and_add(*old_table, *new_table, start_pos, end_pos));
-        }
-        else {
+        } else {
             e4_assert(start_pos==0 && end_pos==-1);
             WITH_ALL_ABOVE_GROUP_MANAGER_TABLES(walk_up, sub(*old_table));
         }
-    }
-    else {
+    } else {
         if (new_table) {
             e4_assert(start_pos==0 && end_pos==-1);
             WITH_ALL_ABOVE_GROUP_MANAGER_TABLES(walk_up, add(*new_table));
-        }
-        else {
+        } else {
             return ED4_R_OK;
         }
     }
@@ -616,7 +622,7 @@ ED4_returncode  ED4_manager::handle_move(ED4_move_info *mi) {
         parent_man->to_multi_species_manager()->invalidate_species_counters();
 
         object->extension.position[X_POS] = rel_x + x_off;
-        object->extension.position[Y_POS] = rel_y;
+        object->extension.position[Y_POS] = rel_y; // was: rel_y + y_off;
         ED4_base::touch_world_cache();
 
         object->parent = this;
@@ -743,7 +749,7 @@ ED4_returncode  ED4_manager::event_sent_by_parent(AW_event *event, AW_window *aw
     return (returncode);
 }
 
-ED4_returncode  ED4_manager::calc_size_requested_by_parent() {
+ED4_returncode  ED4_manager::calc_size_requested_by_parent(void) {
     if (calc_bounding_box()) {
         if (parent) {
             parent->resize_requested_by_child();
@@ -753,7 +759,7 @@ ED4_returncode  ED4_manager::calc_size_requested_by_parent() {
     return (ED4_R_OK);
 }
 
-ED4_returncode  ED4_manager::refresh_requested_by_child() {
+ED4_returncode  ED4_manager::refresh_requested_by_child(void) {
     // handles a refresh-request from a child
     if (!update_info.refresh) { // determine if there were more refresh requests already => no need to tell parent about it
         update_info.set_refresh(1); // this is the first refresh request
@@ -787,9 +793,9 @@ int ED4_manager::refresh_flag_ok() {
     return 1;
 }
 
-short ED4_manager::calc_bounding_box() {
-    // calculates the smallest rectangle containing the object and
-    // gives information if something has changed
+short ED4_manager::calc_bounding_box(void) {
+    //calculates the smallest rectangle containing the object and
+    //gives information if something has changed
     AW_pos         sum_width  = 0;
     AW_pos         sum_height = 0;
     AW_pos         max_x      = 0;
@@ -800,7 +806,7 @@ short ED4_manager::calc_bounding_box() {
     ED4_list_elem *current_list_elem;
     ED4_base      *child, *object;
 
-    // initialize with first child
+    //initialize with first child
     while ((child = children->member(i++)) != NULL) { // check all children
         if (!child->flag.hidden) {
             sum_width  += child->extension.size[WIDTH];
@@ -858,7 +864,7 @@ short ED4_manager::calc_bounding_box() {
     return (bb_changed);
 }
 
-ED4_returncode ED4_manager::distribute_children() {
+ED4_returncode ED4_manager::distribute_children(void) {
     // distributes all children of current object according to current object's properties and
     // justification value; a recalculation of current object's extension will take place if necessary
 
@@ -870,6 +876,8 @@ ED4_returncode ED4_manager::distribute_children() {
     AW_pos     max_rel_size   = 0;
     AW_pos     max_other_size = 0;
     ED4_base  *current_child;
+
+    //    printf("distribute_children this=%p\n", this);
 
     // set extension-indexes rel_pos and rel_size according to properties
     if (spec->static_prop & ED4_P_HORIZONTAL) {
@@ -907,7 +915,7 @@ ED4_returncode ED4_manager::distribute_children() {
     return (ED4_R_OK);
 }
 
-ED4_returncode ED4_manager::resize_requested_by_parent() {
+ED4_returncode ED4_manager::resize_requested_by_parent(void) {
     if (update_info.resize) { // object wants to resize
         update_info.set_resize(0); // first clear the resize flag (remember it could be set again from somewhere below the hierarchy)
 
@@ -929,7 +937,7 @@ ED4_returncode ED4_manager::resize_requested_by_parent() {
 
     return ED4_R_OK;
 }
-ED4_returncode ED4_root_group_manager::resize_requested_by_parent() {
+ED4_returncode ED4_root_group_manager::resize_requested_by_parent(void) {
     ED4_returncode result = ED4_R_OK;
 
     if (update_info.resize) {
@@ -996,8 +1004,8 @@ ED4_returncode ED4_main_manager::Show(int refresh_all, int is_cleared) {
 
         // loop through all rectangles between folding lines:
 
-        int x1, y1, x2, y2;
-        ED4_folding_line *flv, *flh;
+        int x1,y1,x2,y2;
+        ED4_folding_line *flv,*flh;
         ED4_window& win = *ED4_ROOT->get_ed4w();
         int old_last_window_reached = last_window_reached;
 
@@ -1088,8 +1096,8 @@ ED4_returncode ED4_main_manager::Show(int refresh_all, int is_cleared) {
 
 
 ED4_returncode ED4_root_group_manager::Show(int refresh_all, int is_cleared) {
-    if (update_remap()) {
-#if defined(DEBUG) && 0
+    if (update_remap())  {
+#if defined(DEBUG)
         printf("map updated\n");
 #endif // DEBUG
     }
@@ -1129,6 +1137,8 @@ ED4_returncode ED4_manager::Show(int refresh_all, int is_cleared) {
             rect.b = rect.t+(clip_rect.b-clip_rect.t);
         }
 
+        //      draw_bb(ED4_G_STANDARD); // debugging only!
+
         // binary search to find first visible child
 
         int first_visible_child = 0;
@@ -1151,7 +1161,7 @@ ED4_returncode ED4_manager::Show(int refresh_all, int is_cleared) {
                         m = (l+h)/2-1;
                         while (children->member(m)->flag.hidden) {
                             if (m==l) {
-                                // all children between l..h are flag.hidden
+                                // all childs between l..h are flag.hidden
                                 goto no_visible_child_found;
                             }
                             m--;
@@ -1166,7 +1176,7 @@ ED4_returncode ED4_manager::Show(int refresh_all, int is_cleared) {
                 ED4_base *child = children->member(m);
                 e4_assert(!child->flag.hidden);
 
-                AW_pos x, y;
+                AW_pos x,y;
                 child->calc_world_coords(&x, &y);
 
                 if (spec->static_prop & ED4_P_HORIZONTAL) { // horizontal manager
@@ -1192,7 +1202,7 @@ ED4_returncode ED4_manager::Show(int refresh_all, int is_cleared) {
             }
         }
 
-    no_visible_child_found :
+    no_visible_child_found:
 
         i = 0;
 
@@ -1203,7 +1213,7 @@ ED4_returncode ED4_manager::Show(int refresh_all, int is_cleared) {
             int flags_cleared = 0;
 
             if (!child->flag.hidden && (refresh_all || child->update_info.refresh) && i>=first_visible_child) {
-                AW_pos x, y;
+                AW_pos x,y;
                 child->calc_world_coords(&x, &y);
 
                 AW_device *device = ED4_ROOT->get_device();
@@ -1225,8 +1235,7 @@ ED4_returncode ED4_manager::Show(int refresh_all, int is_cleared) {
             }
 
             if (last_window_reached) {
-                if (!flags_cleared && child->is_manager() && child->update_info.refresh) {
-                    // if we didn't show a manager we must clear its children's refresh flags
+                if (!flags_cleared && child->is_manager() && child->update_info.refresh) {      // if we didn't show a manager we must clear its childs refresh flags
                     child->to_manager()->clear_refresh();
                 }
                 else {
@@ -1236,6 +1245,8 @@ ED4_returncode ED4_manager::Show(int refresh_all, int is_cleared) {
             }
         }
     }
+
+    //    if (last_window_reached) update_info.refresh = 0;
 
 #ifdef TEST_REFRESH_FLAG
     e4_assert(refresh_flag_ok());
@@ -1268,7 +1279,7 @@ ED4_returncode ED4_manager::clear_refresh() {
     return ED4_R_OK;
 }
 
-ED4_returncode ED4_manager::resize_requested_by_child() {
+ED4_returncode ED4_manager::resize_requested_by_child(void) {
     // handles a resize-request from a child
     if (!update_info.resize) {  // this is the first resize request
         if (parent) {           // if we have a parent, tell him about our resize
@@ -1300,14 +1311,14 @@ ED4_returncode ED4_manager::delete_requested_by_parent() {
     return ED4_R_OK;
 }
 
-ED4_returncode ED4_terminal::delete_requested_children() {
+ED4_returncode ED4_terminal::delete_requested_childs() {
     e4_assert(update_info.delete_requested);
     e4_assert(flag.deleted);
 
     delete this;
     return ED4_R_WARNING;       // == remove all links to me
 }
-ED4_returncode ED4_manager::delete_requested_children() {
+ED4_returncode ED4_manager::delete_requested_childs() {
     e4_assert(update_info.delete_requested);
 
     int i;
@@ -1315,7 +1326,7 @@ ED4_returncode ED4_manager::delete_requested_children() {
 
     for (i=0; (child=children->member(i))!=NULL; i++) {
         if (child->update_info.delete_requested) {
-            ED4_returncode removed = child->delete_requested_children();
+            ED4_returncode removed = child->delete_requested_childs();
             if (removed==ED4_R_WARNING) {
                 children->delete_member(child);
                 if (i) i--;
@@ -1499,7 +1510,7 @@ void ED4_multi_species_manager::invalidate_species_counters() {
 void ED4_multi_species_manager::set_species_counters(int no_of_species, int no_of_selected) {
 
 #if defined(DEBUG)
-    int sp, sel;
+    int sp,sel;
 
     count_species(&sp, &sel);
     e4_assert(no_of_species==sp);
@@ -1800,7 +1811,12 @@ void ED4_multi_species_manager::mark_selected_species(int mark) {
                     GBDATA *gbd = species_man->get_species_pointer();
                     e4_assert(gbd);
 
-                    GB_write_flag(gbd, mark ? 1 : 0);
+#if defined(ASSERTION_USED)
+                    GB_ERROR error =
+#endif // ASSERTION_USED
+                        GB_write_flag(gbd, mark ? 1 : 0);
+                    e4_assert(!error);
+
                     sel++;
                 }
             }
@@ -1814,7 +1830,7 @@ void ED4_multi_species_manager::mark_selected_species(int mark) {
 
 ED4_species_manager *ED4_multi_species_manager::get_consensus_manager() const {
     ED4_species_manager *consensus_manager = 0;
-
+    
     for (int i=0; i<children->members(); i++) {
         ED4_base *member = children->member(i);
         if (member->flag.is_consensus) {
@@ -1989,7 +2005,7 @@ GB_ERROR ED4_remap::compile(ED4_root_group_manager *gm)
     e4_assert(update_needed);
 
     const ED4_char_table&  table = gm->table();
-    size_t                 i, j;
+    size_t                 i,j;
 
     changed = 0; // is changed by set_sequence_to_screen
     update_needed = 0;
@@ -2006,13 +2022,17 @@ GB_ERROR ED4_remap::compile(ED4_root_group_manager *gm)
     switch (gm->remap()->get_mode()) {
         default: e4_assert(0);
         case ED4_RM_NONE: {
-        dont_map :
+        dont_map:
             for (i=0; i<sequence_table_len; i++) {
-                set_sequence_to_screen(i, i);
+                set_sequence_to_screen(i,i);
             }
             screen_len = sequence_len;
             break;
         }
+            //      case ED4_RM_SHOW_ABOVE_30: {
+            //          above_percent = 30;
+            //          goto calc_percent;
+            //      }
         case ED4_RM_SHOW_ABOVE: {
             above_percent = show_above_percent;
             goto calc_percent;
@@ -2020,14 +2040,14 @@ GB_ERROR ED4_remap::compile(ED4_root_group_manager *gm)
         case ED4_RM_MAX_ALIGN:
         case ED4_RM_MAX_EDIT: {
             above_percent = 0;
-        calc_percent :
-            for (i=0, j=0; i<(sequence_table_len-1); i++) {
+        calc_percent:
+            for (i=0,j=0; i<(sequence_table_len-1); i++) {
                 int bases;
                 int gaps;
 
                 table.bases_and_gaps_at(i, &bases, &gaps);
 
-                if (bases==0 && gaps==0) {  // special case (should occur only after inserting columns)
+                if (bases==0 && gaps==0)  { // special case (should occur only after inserting columns)
                     set_sequence_to_screen(i, -j); // hide
                 }
                 else {
@@ -2036,26 +2056,25 @@ GB_ERROR ED4_remap::compile(ED4_root_group_manager *gm)
                     e4_assert(percent==((bases*100)/(bases+gaps)));
 
                     if (bases && percent>=above_percent) {
-                        set_sequence_to_screen(i, j++);
-                    }
-                    else {
+                        set_sequence_to_screen(i,j++);
+                    }else{
                         set_sequence_to_screen(i, -j);
                     }
                 }
             }
-            for (; i<sequence_table_len; i++) { // fill rest of table
-                set_sequence_to_screen(i, j++);
+            for (;i<sequence_table_len;i++) { // fill rest of table
+                set_sequence_to_screen(i,j++);
             }
             screen_len = j;
             break;
         }
         case ED4_RM_DYNAMIC_GAPS: {
-            for (i=0, j=0; i<(sequence_table_len-1); i++) {
+            for (i=0,j=0; i<(sequence_table_len-1); i++) {
                 int bases;
 
                 table.bases_and_gaps_at(i, &bases, 0);
                 if (bases) {
-                    set_sequence_to_screen(i, j++);
+                    set_sequence_to_screen(i,j++);
                 }
                 else {
                     size_t k = i+1;
@@ -2083,17 +2102,17 @@ GB_ERROR ED4_remap::compile(ED4_root_group_manager *gm)
                         shown_gapsize = gaps/1000 + 19;
                     }
 
-                    for (; i<k && shown_gapsize; i++, shown_gapsize--) {
-                        set_sequence_to_screen(i, j++);
+                    for (; i<k && shown_gapsize; i++,shown_gapsize--) {
+                        set_sequence_to_screen(i,j++);
                     }
                     for (; i<k; i++) {
-                        set_sequence_to_screen(i, -j);
+                        set_sequence_to_screen(i,-j);
                     }
                     i--;
                 }
             }
-            for (; i<sequence_table_len; i++) {
-                set_sequence_to_screen(i, j++); // fill rest of table
+            for (;i<sequence_table_len;i++) {
+                set_sequence_to_screen(i,j++); // fill rest of table
             }
             screen_len = j;
             break;
@@ -2129,7 +2148,7 @@ GB_ERROR ED4_remap::compile(ED4_root_group_manager *gm)
 // --------------------------------------------------------------------------------
 
 ED4_root_group_manager::ED4_root_group_manager(const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent)
-    : ED4_group_manager(temp_id, x, y, width, height, temp_parent),
+    : ED4_group_manager(temp_id,x,y,width,height,temp_parent),
       my_remap()
 {
     spec = &(root_group_manager_spec);
@@ -2183,7 +2202,7 @@ ED4_sequence_manager::~ED4_sequence_manager() {
 }
 
 
-ED4_multi_name_manager::ED4_multi_name_manager(const char *temp_id, AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent, bool temp_is_group)
+ED4_multi_name_manager::ED4_multi_name_manager(const char *temp_id,AW_pos x, AW_pos y, AW_pos width, AW_pos height, ED4_manager *temp_parent, bool temp_is_group)
     : ED4_manager(temp_id, x, y, width, height, temp_parent, temp_is_group)
 {
     spec = &(multi_name_manager_spec);

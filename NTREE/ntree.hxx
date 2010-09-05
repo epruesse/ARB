@@ -11,10 +11,6 @@
 #ifndef NTREE_HXX
 #define NTREE_HXX
 
-#ifndef AW_WINDOW_HXX
-#include <aw_window.hxx>
-#endif
-
 #define NT_AW_TRUE  1
 #define NT_AW_FALSE 0
 
@@ -31,10 +27,10 @@ extern NT_global  GLOBAL_NT;
 extern GBDATA    *GLOBAL_gb_main;
 
 
-class NT_install_window_creator {
+class NT_install_window_creator{
     int dummy;
 public:
-    NT_install_window_creator(AW_Window_Creator wc) {
+    NT_install_window_creator( AW_Window_Creator wc ) {
         GLOBAL_NT.window_creator = wc;
     };
 };

@@ -47,21 +47,21 @@ sub node2string($) {
   my $str = indent()."(";
   $depth++;
 
-  my @children = ();
+  my @childs = ();
   foreach my $child ($node->each_Descendent()) {
-    push @children, node2string($child).':'.$child->branch_length;
+    push @childs, node2string($child).':'.$child->branch_length;
   }
 
   if ($inTreeComments) {
     my $len = length($str);
 
-    $str .= make_indent($inTreeComments-$len)."[children=".scalar(@children);
+    $str .= make_indent($inTreeComments-$len)."[childs=".scalar(@childs);
     if ($indent_incr==0) { $str .= ', level='.$depth; }
     $str .= "]";
   }
   $str .= "\n";
 
-  $str .= join(",\n", @children)."\n";
+  $str .= join(",\n", @childs)."\n";
 
   $depth--;
   $str .= indent().")";

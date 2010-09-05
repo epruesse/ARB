@@ -28,8 +28,10 @@ using std::string;
 #define gi_assert(cond) arb_assert(cond)
 
 // simple helper functions from ARBDB
-const char *GBS_global_string(const char *templat, ...) __attribute__((format(printf, 1, 2)));
-
+extern "C" {
+    const char *GBS_global_string(const char *templat, ...) __attribute__((format(printf, 1, 2)));
+}
+    
 #else
 #error defs.h included twice
 #endif // DEFS_H

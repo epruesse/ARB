@@ -26,10 +26,10 @@ main(int argc, char **argv, char **env)
     int exitstatus;
 
 #ifdef PERL_GLOBAL_STRUCT
-#define PERLVAR(var, type)
-#define PERLVARA(var, type)
-#define PERLVARI(var, type, init) PL_Vars.var = init;
-#define PERLVARIC(var, type, init) PL_Vars.var = init;
+#define PERLVAR(var,type) /**/
+#define PERLVARA(var,type) /**/
+#define PERLVARI(var,type,init) PL_Vars.var = init;
+#define PERLVARIC(var,type,init) PL_Vars.var = init;
 #include "perlvars.h"
 #undef PERLVAR
 #undef PERLVARA
@@ -37,7 +37,7 @@ main(int argc, char **argv, char **env)
 #undef PERLVARIC
 #endif
 
-    PERL_SYS_INIT3(&argc, &argv, &env);
+    PERL_SYS_INIT3(&argc,&argv,&env);
 
     if (!PL_do_undump) {
 	my_perl = perl_alloc();
@@ -66,19 +66,17 @@ main(int argc, char **argv, char **env)
 EXTERN_C void boot_ARB (pTHX_ CV* cv);
 EXTERN_C void boot_DynaLoader (pTHX_ CV* cv);
 
-
 static void
 xs_init(pTHX)
 {
-    const char *file = __FILE__;
-
-    dXSUB_SYS;
-    {
+	char *file = __FILE__;
+	dXSUB_SYS;
+	{
 	newXS("ARB::bootstrap", boot_ARB, file);
-    }
-    {
+	}
+	{
 	/* DynaLoader is a special case */
 
 	newXS("DynaLoader::boot_DynaLoader", boot_DynaLoader, file);
-    }
+	}
 }

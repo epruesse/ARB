@@ -18,8 +18,15 @@
 #ifndef ARBDBT_H
 #include <arbdbt.h>
 #endif
+#ifndef AW_ROOT_HXX
+#include <aw_root.hxx>
+#endif
+
 #ifndef AWTI_IMPORT_HXX
 #include <awti_import.hxx>
+#endif
+#ifndef SMARTPTR_H
+#include <smartptr.h>
 #endif
 
 #define awti_assert(cond) arb_assert(cond)
@@ -47,10 +54,10 @@ struct input_format_per_line {
 
     char *defined_at; // where was match defined
 
-    input_format_per_line *next;
+    struct input_format_per_line *next;
 
-    input_format_per_line *reverse(input_format_per_line *to_append) {
-        input_format_per_line *rest = next;
+    struct input_format_per_line *reverse(struct input_format_per_line *to_append) {
+        struct input_format_per_line *rest = next;
         next = to_append;
         return rest ? rest->reverse(this) : this;
     }
@@ -60,6 +67,8 @@ struct input_format_per_line {
 };
 
 #define IFS_VARIABLES 26                            // 'a'-'z'
+
+// typedef std::map<char, std::string> SetVariables;
 
 class SetVariables {
     typedef SmartPtr<std::string> StringPtr;
@@ -75,7 +84,7 @@ public:
     const std::string *get(char c) const {
         awti_assert(c >= 'a' && c <= 'z');
         StringPtr v = value[c-'a'];
-        return v.isNull() ? NULL : &*v;
+        return v.Null() ? NULL : &*v;
     }
 };
 
@@ -110,21 +119,21 @@ struct input_format_struct {
 
     input_format_per_line *pl;
 
-    input_format_struct();
-    ~input_format_struct();
+    input_format_struct(void);
+    ~input_format_struct(void);
 };
 
 struct awtcig_struct {
     struct input_format_struct  *ifo; // main input format
     struct input_format_struct  *ifo2; // symlink to input format
     GBDATA                      *gb_main; // import database
-    AW_CL                        cd1, cd2;
+    AW_CL                        cd1,cd2;
     AWTC_RCB(func);
     char                       **filenames;
     char                       **current_file;
     FILE                        *in;
     bool                         doExit; // whether import window 'close' does exit
-    GBDATA                      *gb_other_main; // main DB
+    GBDATA                      *gb_other_main; // main DB 
 };
 
 

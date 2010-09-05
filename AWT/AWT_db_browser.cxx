@@ -1,32 +1,34 @@
-//  ==================================================================== //
-//                                                                       //
-//    File      : AWT_db_browser.cxx                                     //
-//    Purpose   : Simple database viewer                                 //
-//                                                                       //
-//                                                                       //
-//  Coded by Ralf Westram (coder@reallysoft.de) in May 2004              //
-//  Copyright Department of Microbiology (Technical University Munich)   //
-//                                                                       //
-//  Visit our web site at: http://www.arb-home.de/                       //
-//                                                                       //
-//  ==================================================================== //
+//  ==================================================================== // 
+//                                                                       // 
+//    File      : AWT_db_browser.cxx                                     // 
+//    Purpose   : Simple database viewer                                 // 
+//                                                                       // 
+//                                                                       // 
+//  Coded by Ralf Westram (coder@reallysoft.de) in May 2004              // 
+//  Copyright Department of Microbiology (Technical University Munich)   // 
+//                                                                       // 
+//  Visit our web site at: http://www.arb-home.de/                       // 
+//                                                                       // 
+//  ==================================================================== // 
 
 #include "awt.hxx"
-
+#include "awt_tree.hxx"
 #include <inline.h>
-#include <AP_Tree.hxx>
 
 #include <string>
 #include <vector>
 #include <map>
 #include <algorithm>
 
+#include <cstring>
+#include <smartptr.h>
+
 // do includes above (otherwise depends depend on DEBUG)
 #if defined(DEBUG)
 
 using namespace std;
 
-// used AWARs :
+// used AWARs : 
 
 #define AWAR_DBB_BASE     "/dbbrowser"
 #define AWAR_DBB_TMP_BASE "/tmp" AWAR_DBB_BASE
@@ -58,7 +60,7 @@ const char *sort_order_name[SORT_COUNT] = {
     "Name",
     "Name (DB)",
     "Type",
-    "Content",
+    "Content", 
 };
 
 
@@ -100,7 +102,7 @@ struct list_entry {
                 is_less = less_than_by_name(other);
                 break;
 
-            case SORT_NAME_DB:
+            case SORT_NAME_DB: 
                 is_less = less_than_by_name_container(other);
                 break;
 
@@ -109,18 +111,18 @@ struct list_entry {
 
                 if (cmp != 0) is_less = cmp<0;
                 else is_less          = less_than_by_name_container(other);
-
+                
                 break;
             }
             case SORT_TYPE: {
                 int cmp = type-other.type;
-
+                
                 if (cmp == 0) is_less = less_than_by_name(other);
                 else is_less          = cmp<0;
-
+                
                 break;
             }
-            default:
+            default :
                 awt_assert(0);  // illegal 'sort_order'
                 break;
         }
@@ -144,7 +146,7 @@ void AWT_create_db_browser_awars(AW_root *aw_root, AW_default aw_def) {
 }
 
 // @@@  this may be moved to ARBDB-sources
-GBDATA *GB_search_numbered(GBDATA *gbd, const char *str, GB_TYPES create) {
+GBDATA *GB_search_numbered(GBDATA *gbd, const char *str, long /*enum gb_search_enum*/ create) {
     if (str) {
         if (str[0] == '/' && str[1] == 0) { // root
             return GB_get_root(gbd);
@@ -164,9 +166,10 @@ GBDATA *GB_search_numbered(GBDATA *gbd, const char *str, GB_TYPES create) {
                     GBDATA *gb_parent = 0;
                     {
                         if (previous_slash) { // found a slash
-                            char *parent_path = GB_strpartdup(str, previous_slash-1);
+                            int   parent_path_len = previous_slash-str;
+                            char *parent_path     = (char*)malloc(parent_path_len+1); memcpy(parent_path, str, parent_path_len); parent_path[parent_path_len] = 0;
 
-                            // we are sure parent path does not contain brackets -> search normal
+                            // parent path may not contain brackets -> search normal
                             if (parent_path[0] == 0) { // that means : root-item is numbered (e.g. '/species_data[7]/...')
                                 gb_parent = GB_get_root(gbd);
                             }
@@ -185,9 +188,9 @@ GBDATA *GB_search_numbered(GBDATA *gbd, const char *str, GB_TYPES create) {
                     if (gb_parent) {
                         GBDATA *gb_son = 0;
                         {
-                            const char *name_start = previous_slash ? previous_slash+1 : str;
-                            char       *key_name   = GB_strpartdup(name_start, first_bracket-1);
-                            int         c          = 0;
+                            int   key_name_len = first_bracket-previous_slash-1;
+                            char *key_name     = (char*)malloc(key_name_len+1); memcpy(key_name, previous_slash+1, key_name_len); key_name[key_name_len] = 0;
+                            int   c            = 0;
 
                             gb_son = GB_entry(gb_parent, key_name);
                             while (c<count && gb_son) {
@@ -244,7 +247,7 @@ public:
         : gb_main(gb_main_)
         , description(description_)
         , current_path("/")
-    {}
+    { }
 
     const GBDATA *get_db() const { return gb_main; }
     const string& get_description() const { return description; }
@@ -256,7 +259,7 @@ public:
 
 class hasDB {
     GBDATA *db;
-public:
+public: 
     hasDB(GBDATA *gbm) : db(gbm) {}
     bool operator()(const KnownDB& kdb) { return kdb.get_db() == db; }
 };
@@ -282,7 +285,7 @@ class DB_browser {
     friend DB_browser *get_the_browser(bool autocreate);
 
     void update_DB_selector();
-
+    
     DB_browser(const DB_browser& other);            // copying not allowed
     DB_browser& operator = (const DB_browser& other); // assignment not allowed
 public:
@@ -324,7 +327,7 @@ public:
 SmartPtr<DB_browser> DB_browser::the_browser;
 
 static DB_browser *get_the_browser(bool autocreate = true) {
-    if (DB_browser::the_browser.isNull() && autocreate) {
+    if (DB_browser::the_browser.Null() && autocreate) {
         DB_browser::the_browser = new DB_browser;
     }
     return &*DB_browser::the_browser;
@@ -336,10 +339,6 @@ static DB_browser *get_the_browser(bool autocreate = true) {
 
 void AWT_announce_db_to_browser(GBDATA *gb_main, const char *description) {
     get_the_browser()->add_db(gb_main, description);
-}
-
-void AWT_announce_properties_to_browser(GBDATA *gb_defaults, const char *defaults_name) {
-    AWT_announce_db_to_browser(gb_defaults, GBS_global_string("Properties (%s)", defaults_name));
 }
 
 void AWT_browser_forget_db(GBDATA *gb_main) {
@@ -432,8 +431,8 @@ static GB_ERROR browse_cmd_goto_valid_node(AW_window *aww) {
 }
 
 static BrowserCommand browser_command_table[] = {
-    { BROWSE_CMD_GOTO_VALID_NODE, browse_cmd_goto_valid_node },
-    { BROWSE_CMD_GO_UP, browse_cmd_go_up },
+    { BROWSE_CMD_GOTO_VALID_NODE, browse_cmd_goto_valid_node},
+    { BROWSE_CMD_GO_UP, browse_cmd_go_up},
     { 0, 0 }
 };
 
@@ -561,9 +560,9 @@ static void update_browser_selection_list(AW_root *aw_root, AW_CL cl_aww, AW_CL 
 
         if (!is_root) aww->insert_selection(id, GBS_global_string("%-*s   parent container", maxkeylen, ".."), BROWSE_CMD_GO_UP);
 
-        // collect children and sort them
+        // collect childs and sort them
 
-        vector<list_entry> sorted_children;
+        vector<list_entry> sorted_childs;
 
         for (GBDATA *child = GB_child(node); child; child = GB_nextChild(child)) {
             list_entry entry;
@@ -580,13 +579,13 @@ static void update_browser_selection_list(AW_root *aw_root, AW_CL cl_aww, AW_CL 
 
             char *content = 0;
             if (entry.type == GB_DB) {
-                // the children listed here are displayed behind the container entry
-                const char *known_children[] = { "@name", "name", "key_name", "alignment_name", "group_name", "key_text", 0 };
-                for (int i = 0; known_children[i]; ++i) {
-                    GBDATA *gb_known = GB_entry(entry.gbd, known_children[i]);
+                // the childs listed here are displayed behind the container entry
+                const char *known_childs[] = { "@name", "name", "key_name", "alignment_name", "group_name", "key_text", 0 };
+                for (int i = 0; known_childs[i]; ++i) {
+                    GBDATA *gb_known = GB_entry(entry.gbd, known_childs[i]);
 
                     if (gb_known && GB_read_type(gb_known) != GB_DB && GB_nextEntry(gb_known) == 0) { // exactly one child exits
-                        content = GBS_global_string_copy("[%s=%s]", known_children[i], GB_read_as_string(gb_known));
+                        content = GBS_global_string_copy("[%s=%s]", known_childs[i], GB_read_as_string(gb_known));
                         break;
                     }
                 }
@@ -609,15 +608,15 @@ static void update_browser_selection_list(AW_root *aw_root, AW_CL cl_aww, AW_CL 
             entry.content = content;
             free(content);
 
-            sorted_children.push_back(entry);
+            sorted_childs.push_back(entry);
         }
 
         list_entry::sort_order = (SortOrder)aw_root->awar(AWAR_DBB_ORDER)->read_int();
         if (list_entry::sort_order != SORT_NONE) {
-            sort(sorted_children.begin(), sorted_children.end());
+            sort(sorted_childs.begin(), sorted_childs.end());
         }
 
-        for (vector<list_entry>::iterator ch = sorted_children.begin(); ch != sorted_children.end(); ++ch) {
+        for (vector<list_entry>::iterator ch = sorted_childs.begin(); ch != sorted_childs.end(); ++ch) {
             const list_entry&  entry            = *ch;
             const char        *key_name         = entry.key_name;
             char              *numbered_keyname = 0;
@@ -678,6 +677,8 @@ static void child_changed_cb(AW_root *aw_root) {
             GBDATA         *gb_selected_node = GB_search_numbered(gb_main, fullpath, GB_FIND);
 
             string info;
+            // info += GBS_global_string("child='%s'\n", child);
+            // info += GBS_global_string("path='%s'\n", path);
             info += GBS_global_string("fullpath='%s'\n", fullpath);
 
             if (gb_selected_node == 0) {
@@ -857,12 +858,12 @@ AW_window *DB_browser::get_window(AW_root *aw_root) {
         aws->init(aw_root, "DB_BROWSER", "ARB database browser");
         aws->load_xfig("dbbrowser.fig");
 
-        aws->at("close"); aws->callback((AW_CB0)AW_POPDOWN);
-        aws->create_button("CLOSE", "CLOSE", "C");
+        aws->at("close");aws->callback((AW_CB0)AW_POPDOWN);
+        aws->create_button("CLOSE","CLOSE","C");
 
-        aws->callback(AW_POPUP_HELP, (AW_CL)"db_browser.hlp");
+        aws->callback( AW_POPUP_HELP, (AW_CL)"db_browser.hlp");
         aws->at("help");
-        aws->create_button("HELP", "HELP", "H");
+        aws->create_button("HELP","HELP","H");
 
         aws->at("db");
         update_DB_selector();
@@ -892,6 +893,7 @@ AW_window *DB_browser::get_window(AW_root *aw_root) {
 
         aws->at("info");
         aws->create_text_field(AWAR_DBB_INFO, 40, 40);
+        // update_info_selection_list(aw_root, (AW_CL)aws, (AW_CL)info_id);
 
         // add callbacks
         aw_root->awar(AWAR_DBB_BROWSE)->add_callback(child_changed_cb);
@@ -929,14 +931,14 @@ static void callallcallbacks(AW_window *aww, AW_CL mode, AW_CL) {
 
 
 void AWT_create_debug_menu(AW_window *awmm) {
-    awmm->create_menu("4debug", "4", AWM_ALL);
+    awmm->create_menu("4debug", "4", NULL, AWM_ALL);
 
     awmm->insert_menu_topic("-db_browser", "Browse loaded database(s)", "B", "db_browser.hlp", AWM_ALL, AW_POPUP, (AW_CL)create_db_browser, 0);
     awmm->insert_menu_topic("-dump_gcs",   "Dump GCs",                  "G", "",               AWM_ALL, dump_gcs, 0,                        0);
-
+    
     awmm->insert_separator();
     {
-        awmm->insert_sub_menu("Callbacks (dangerous! use at your own risk)", "C", AWM_ALL);
+        awmm->insert_sub_menu("Callbacks (dangerous! use at your own risk)", "C", NULL, AWM_ALL);
         awmm->insert_menu_topic("!run_all_cbs_alph",  "Call all callbacks (alpha-order)",     "a", "", AWM_ALL, callallcallbacks, 0,  0);
         awmm->insert_menu_topic("!run_all_cbs_nalph", "Call all callbacks (alpha-reverse)",   "l", "", AWM_ALL, callallcallbacks, 1,  0);
         awmm->insert_menu_topic("!run_all_cbs_loc",   "Call all callbacks (code-order)",      "c", "", AWM_ALL, callallcallbacks, 2,  0);
@@ -949,47 +951,7 @@ void AWT_create_debug_menu(AW_window *awmm) {
         awmm->close_sub_menu();
     }
     awmm->insert_separator();
-
+    
 }
 
 #endif // DEBUG
-
-AW_root *AWT_create_root(const char *properties, const char *program) {
-    AW_root *aw_root = new AW_root(properties, program, false);
-#if defined(DEBUG)
-    AWT_announce_properties_to_browser(AW_ROOT_DEFAULT, properties);
-#endif // DEBUG
-    return aw_root;
-}
-
-// ------------------------
-//      callback guards
-
-static void before_callback_guard() {
-    if (GB_have_error()) {
-        GB_ERROR error = GB_await_error();
-        aw_message(GBS_global_string("Error not clear before calling callback\n"
-                                     "Unhandled error was:\n"
-                                     "%s", error));
-#if defined(DEVEL_RALF)
-        awt_assert(0);
-#endif // DEVEL_RALF
-    }
-}
-static void after_callback_guard() {
-    if (GB_have_error()) {
-        GB_ERROR error = GB_await_error();
-        aw_message(GBS_global_string("Error not handled by callback!\n"
-                                     "Unhandled error was:\n"
-                                     "'%s'", error));
-#if defined(DEVEL_RALF)
-        awt_assert(0);
-#endif // DEVEL_RALF
-    }
-}
-
-void AWT_install_cb_guards() {
-    awt_assert(!GB_have_error());
-    AW_cb_struct::set_AW_cb_guards(before_callback_guard, after_callback_guard);
-}
-
