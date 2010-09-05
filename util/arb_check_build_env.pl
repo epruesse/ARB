@@ -21,7 +21,7 @@ my @commands = (
                 'perl',
                 'rm',
                 'xmllint',
-                'xsltproc',
+                'sabcmd',
                 'sed',
                 'sort',
                 'tar',

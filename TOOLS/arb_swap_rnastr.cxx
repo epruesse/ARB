@@ -1,13 +1,8 @@
-// =============================================================== //
-//                                                                 //
-//   File      : arb_swap_rnastr.cxx                               //
-//   Purpose   :                                                   //
-//                                                                 //
-//   Institute of Microbiology (Technical University Munich)       //
-//   http://www.arb-home.de/                                       //
-//                                                                 //
-// =============================================================== //
+#include <stdio.h>
+#include <stdlib.h>
 
+#include <string.h>
+#include <arbdb.h>
 #include <arbdbt.h>
 
 #define ASRS_BUFFERSIZE 256
@@ -27,60 +22,58 @@ void arb_asrs_menu()
     printf("please select dest file name\n");
     fgets(asrs.dest, ASRS_BUFFERSIZE, stdin);
 }
-#define NEXTBASE(p) while (*p && ((*p<'A') || (*p>'Z')) && ((*p<'a') || (*p>'z'))) p++;
+#define NEXTBASE(p) while ( *p && ((*p<'A') || (*p>'Z')) && ((*p<'a') || (*p>'z')) ) p++;
 void arb_asrs_swap()
 {
-    FILE *in, *out;
+    FILE *in,*out;
     char buffer[1024];
     char *p;
     char *ok;
 
-    in = fopen(asrs.source, "r");
+    in = fopen(asrs.source,"r");
     if (!in) {
         printf("source file not found\n");
         exit (0);
     }
-    out = fopen(asrs.dest, "w");
+    out = fopen(asrs.dest,"w");
     if (!out) {
         printf("dest file could not be written\n");
         exit (0);
     }
     p = asrs.sequence;
     NEXTBASE(p);
-    while ((ok = fgets(buffer, 1020, in))) {
-        if (!strchr(buffer, '#')) {
-            ok = strchr(buffer, ' ');
+    while ((ok = fgets(buffer,1020,in))){
+        if (!strchr(buffer,'#')) {
+            ok = strchr(buffer,' ');
             if (ok && ok[1]) {
-                if (*p) {
+                if (*p){
                     ok[1] = *(p++);
                     NEXTBASE(p);
-                }
-                else {
+                }else{
                     ok[1] = '-';
                 }
             }
-            fputs(buffer, out);
-        }
-        else {
-            fputs(buffer, out);
+            fputs(buffer,out);
+        }else{
+            fputs(buffer,out);
             break;
         }
     }
-    while ((ok = fgets(buffer, 1020, in))) {
-        fputs(buffer, out);
+    while ((ok = fgets(buffer,1020,in))){
+        fputs(buffer,out);
     }
     fclose(in);
     fclose(out);
 }
 
-int main(int argc, char ** /* argv */) {
+int main(int argc, char **/*argv*/) {
     GB_ERROR error = 0;
     if (argc != 1) {
         error = "no parameters";
     }
     else {
-        asrs.gb_main = GB_open(":", "rwt");
-        if (!asrs.gb_main) {
+        asrs.gb_main = GB_open(":","rwt");
+        if (!asrs.gb_main){
             error = "cannot find ARB server";
         }
         else {
@@ -94,16 +87,16 @@ int main(int argc, char ** /* argv */) {
             }
             else {
                 asrs.sp_name   = strdup(GBT_read_name(gb_species));
-                GBDATA *gb_use = GB_search(asrs.gb_main, "presets/use", GB_FIND);
+                GBDATA *gb_use = GB_search(asrs.gb_main,"presets/use",GB_FIND);
                 char   *use    = GB_read_string(gb_use);
-                GBDATA *gb_ali = GB_entry(gb_species, use);
-
+                GBDATA *gb_ali = GB_entry(gb_species,use);
+                
                 if (!gb_ali) {
                     error = GBS_global_string("Species '%s' has no data in alignment '%s'", asrs.sp_name, use);
                 }
                 else {
-                    GBDATA *gb_data = GB_entry(gb_ali, "data");
-
+                    GBDATA *gb_data = GB_entry(gb_ali,"data");
+                    
                     asrs.sequence = GB_read_string(gb_data);
                 }
             }

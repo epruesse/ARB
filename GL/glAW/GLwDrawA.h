@@ -42,8 +42,11 @@
 #include <GL/glx.h>
 #include <GL/gl.h>
 
-// -------------------------------
-//      GLwDrawingArea widgets
+/****************************************************************
+ *
+ * GLwDrawingArea widgets
+ *
+ ****************************************************************/
 
 /* Resources:
 
@@ -134,12 +137,14 @@ accumAlphaSize      AccumAlphaSize     int             0
 typedef struct _GLwMDrawingAreaClassRec *GLwMDrawingAreaWidgetClass;
 typedef struct _GLwMDrawingAreaRec      *GLwMDrawingAreaWidget;
 
-// BUG. Extended by Daniel Koitzsch and Christian Becker
+/** BUG. Extended by Daniel Koitzsch and Christian Becker */
 // #define glwMDrawingAreaWidgetClass glwM1DrawingAreaWidgetClass
 // defining glwMDrawingAreaWidgetClass twice doesn't work
 #define glwMDrawingAreaWidgetClass glwM2DrawingAreaWidgetClass
+/** END OF EXT */
 
 extern WidgetClass glwMDrawingAreaWidgetClass;
+
 
 #else
 
@@ -170,7 +175,7 @@ typedef struct
 {
     int       reason;
     XEvent   *event;
-    Dimension width, height;
+    Dimension width,height;
 } GLwDrawingAreaCallbackStruct;
 
 #if defined(__cplusplus) || defined(c_plusplus)
@@ -178,14 +183,14 @@ extern "C" {
 #endif
 
     /* front ends to glXMakeCurrent and glXSwapBuffers */
-    extern void GLwDrawingAreaMakeCurrent(Widget w, GLXContext ctx);
+    extern void GLwDrawingAreaMakeCurrent(Widget w,GLXContext ctx);
     extern void GLwDrawingAreaSwapBuffers(Widget w);
 
 #ifdef __GLX_MOTIF
 #ifdef _NO_PROTO
     extern Widget GLwCreateMDrawingArea();
 #else
-    extern Widget GLwCreateMDrawingArea(Widget parent, char *name, ArgList arglist, Cardinal argcount);
+    extern Widget GLwCreateMDrawingArea(Widget parent,char *name,ArgList arglist,Cardinal argcount);
 #endif
 #endif
 

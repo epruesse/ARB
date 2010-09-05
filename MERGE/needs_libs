@@ -1,5 +1,0 @@
-# libraries needed to link against MERGE/MERGE.a
-
-AWT/libAWT.so
-SL/DB_SCANNER/DB_SCANNER.a
-

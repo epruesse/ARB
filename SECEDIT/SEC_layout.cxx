@@ -59,24 +59,24 @@ const Angle& SEC_oriented::calc_rel_angle() {
 // ------------------------------------
 
 void SEC_segment::calculate_segment_size() {
-    alpha = ((get_region()->get_base_count()+1) / loop->get_circumference()) * (2*M_PI);
+    alpha = ((get_region()->get_base_count()+1) / loop->get_circumferance()) * (2*M_PI);
 }
 
-void SEC_loop::compute_circumference() {      // Calculates the circumference of the loop by counting the bases of the loop
+void SEC_loop::compute_circumferance(void) {  // Calculates the circumferance of the loop by counting the bases of the loop
     SEC_root *sroot = get_root();
     double    dbs   = sroot->display_params().distance_between_strands;
 
-    Circumference = 0;
+    Circumferance = 0;
     for (SEC_segment_iterator seg(this); seg; ++seg) {
         SEC_region *reg = seg->get_region();
         reg->update_base_count(sroot);
-        Circumference += reg->get_base_count() + 1 + dbs;
+        Circumferance += reg->get_base_count() + 1 + dbs;
     }
 }
 
-void SEC_loop::compute_radius() {
-    compute_circumference();
-    setStandardSize(Circumference / (2 * M_PI));
+void SEC_loop::compute_radius(void) {
+    compute_circumferance();
+    setStandardSize(Circumferance / (2 * M_PI));
 }
 
 void SEC_loop::calculate_loop_size() {
@@ -149,7 +149,7 @@ void SEC_loop::calculate_loop_coordinates() {
     Angle current(center, loop_fixpoint);
 
     double dbs                   = get_root()->display_params().distance_between_strands;
-    double angle_between_strands = (dbs / Circumference) * (2*M_PI);  // angle between two strands
+    double angle_between_strands = ( dbs / Circumferance) * (2*M_PI); //angle between two strands
 
     SEC_segment      *seg     = strand_away->get_next_segment();
     SEC_helix_strand *pstrand = strand_away;
@@ -157,7 +157,7 @@ void SEC_loop::calculate_loop_coordinates() {
 #if defined(DEBUG)
     static int avoid_deep_recursion = 0;
     avoid_deep_recursion++;
-    sec_assert(avoid_deep_recursion<500); // structure with more than 500 loops ? Sure ?
+    sec_assert(avoid_deep_recursion<500); // structure with more than 500 loops ? Sure ? 
 #endif // DEBUG
 
     while (seg) {
@@ -215,7 +215,7 @@ void SEC_helix::calculate_helix_coordinates() {
 
 void SEC_root::calculate_coordinates() {
     SEC_loop *rootLoop = get_root_loop();
-
+    
     if (rootLoop) {
         rootLoop->set_center(Origin);
         rootLoop->mark_angle_absolute(); // mark angle as absolute
@@ -251,7 +251,7 @@ void SEC_helix::invalidate_sub_angles() {
         outLoop->invalidate();
     }
     else {
-        sec_assert(get_root()->under_construction()); // loop missing and structure
+        sec_assert(get_root()->under_construction()); // loop missing and structure 
     }
 }
 
@@ -273,7 +273,7 @@ void SEC_region::invalidate_base_count() {
 #if defined(DEBUG)
     abspos_array_size = 0;
 #endif // DEBUG
-
+    
     baseCount = -1;
 }
 
@@ -301,7 +301,7 @@ void SEC_region::count_bases(SEC_root *root) {
 
     int size;
     int last;
-
+    
     if (sequence_end < sequence_start) { // if this is the "endings-segment"
         size           = (max_index - sequence_start + 1) + sequence_end;
         last           = max_index;

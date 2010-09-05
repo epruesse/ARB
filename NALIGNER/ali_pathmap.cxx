@@ -1,14 +1,10 @@
-// =============================================================== //
-//                                                                 //
-//   File      : ali_pathmap.cxx                                   //
-//   Purpose   :                                                   //
-//                                                                 //
-//   Institute of Microbiology (Technical University Munich)       //
-//   http://www.arb-home.de/                                       //
-//                                                                 //
-// =============================================================== //
+
+// #include <malloc.h>
+#include <stdlib.h>
 
 #include "ali_pathmap.hxx"
+#include "ali_misc.hxx"
+
 
 ALI_PATHMAP::ALI_PATHMAP(unsigned long w, unsigned long h)
 {
@@ -16,30 +12,39 @@ ALI_PATHMAP::ALI_PATHMAP(unsigned long w, unsigned long h)
     height = h;
     height_real = (h / 2) + 1;
 
-    pathmap     = (unsigned char **) CALLOC((unsigned int) (height_real * w), sizeof(unsigned char));
+    pathmap = (unsigned char **) CALLOC((unsigned int) (height_real * w), sizeof(unsigned char));
+    //pathmap = (unsigned char (*)[1]) CALLOC((unsigned int) (height_real * w), sizeof(unsigned char));
     up_pointers = (ALI_TARRAY < ali_pathmap_up_pointer > ****) CALLOC((unsigned int) w, sizeof(ALI_TARRAY < ali_pathmap_up_pointer > *));
-    optimized   = (unsigned char **) CALLOC((unsigned int) ((w / 8) + 1), sizeof(unsigned char));
+    //up_pointers = (ALI_TARRAY < ali_pathmap_up_pointer > **(*)[1]) CALLOC((unsigned int) w, sizeof(ALI_TARRAY < ali_pathmap_up_pointer > *));
+    optimized = (unsigned char **) CALLOC((unsigned int) ((w / 8) + 1), sizeof(unsigned char));
+    //optimized = (unsigned char (*)[1]) CALLOC((unsigned int) ((w / 8) + 1), sizeof(unsigned char));
     if (pathmap == 0 || up_pointers == 0 || optimized == 0)
         ali_fatal_error("Out of memory");
 }
 
-ALI_PATHMAP::~ALI_PATHMAP()
+ALI_PATHMAP::~ALI_PATHMAP(void)
 {
     unsigned long   l;
 
-    free(pathmap);
+    if (pathmap) free((char *) pathmap);
     if (up_pointers) {
         for (l = 0; l < width; l++)
             if ((*up_pointers)[l])
-                free((*up_pointers)[l]);
-        free(up_pointers);
+                free((char *) (*up_pointers)[l]);
+        free((char *) up_pointers);
     }
-    free(optimized);
+    if (optimized)
+        free((char *) optimized);
 }
 
 
-void ALI_PATHMAP::set(unsigned long x, unsigned long y, unsigned char val, ALI_TARRAY < ali_pathmap_up_pointer > *up_pointer) {
-    // Set a value in the pathmap
+/*
+ * Set a value in the pathmap
+ */
+void            ALI_PATHMAP::
+set(unsigned long x, unsigned long y, unsigned char val,
+    ALI_TARRAY < ali_pathmap_up_pointer > *up_pointer)
+{
     if (x >= width || y >= height)
         ali_fatal_error("Out of range", "ALI_PATHMAP::set()");
 
@@ -64,8 +69,13 @@ void ALI_PATHMAP::set(unsigned long x, unsigned long y, unsigned char val, ALI_T
     (*pathmap)[x * height_real + (y >> 1)] |= val;
 }
 
-void ALI_PATHMAP::get(unsigned long x, unsigned long y, unsigned char *val, ALI_TARRAY < ali_pathmap_up_pointer > **up_pointer) {
-    // Get a value from the pathmap
+/*
+ * Get a value from the pathmap
+ */
+void            ALI_PATHMAP::
+get(unsigned long x, unsigned long y, unsigned char *val,
+    ALI_TARRAY < ali_pathmap_up_pointer > **up_pointer)
+{
     unsigned long   l, counter;
 
     *up_pointer = 0;
@@ -94,8 +104,12 @@ void ALI_PATHMAP::get(unsigned long x, unsigned long y, unsigned char *val, ALI_
 }
 
 
-void ALI_PATHMAP::optimize(unsigned long x) {
-    // optimize the pathmap (the dynamic field with up_pointers)
+/*
+ * optimize the pathmap (the dynamic field with up_pointers)
+ */
+void            ALI_PATHMAP::
+optimize(unsigned long x)
+{
     unsigned long   l, counter;
     ALI_TARRAY < ali_pathmap_up_pointer > *(*buffer)[];
 
@@ -107,7 +121,7 @@ void ALI_PATHMAP::optimize(unsigned long x) {
             counter++;
 
     if (counter == 0) {
-        free((*up_pointers)[x]);
+        free((char *) (*up_pointers)[x]);
         (*up_pointers)[x] = 0;
         return;
     }
@@ -124,12 +138,13 @@ void ALI_PATHMAP::optimize(unsigned long x) {
             (*buffer)[counter++] = (*up_pointers)[x][l];
     (*buffer)[counter] = 0;
 
-    free((*up_pointers)[x]);
+    free((char *) (*up_pointers)[x]);
     (*up_pointers)[x] = (ALI_TARRAY < ali_pathmap_up_pointer > **) buffer;
 }
 
 
-void ALI_PATHMAP::print()
+void            ALI_PATHMAP::
+print(void)
 {
     ali_pathmap_up_pointer up;
     unsigned long   x, y, i;
@@ -160,8 +175,7 @@ void ALI_PATHMAP::print()
                     }
                     printf(") ");
                 }
-            }
-            else {
+            } else {
                 for (y = 0; y < height; y++) {
                     printf("(");
                     if ((*up_pointers)[x][y]) {
@@ -183,10 +197,11 @@ void ALI_PATHMAP::print()
 
 
 
-/* ------------------------------------------------------------
+/***************************************************************
  *
  * TEST PART
  *
+ ***************************************************************
 
 #include "ali_tarray.hxx"
 
@@ -315,4 +330,6 @@ main()
         check_pathmap(pmap);
 }
 
------------------------------------------------------------- */
+
+
+*****************************************************************/

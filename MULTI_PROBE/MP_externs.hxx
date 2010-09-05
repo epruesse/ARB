@@ -1,15 +1,5 @@
-// ============================================================= //
-//                                                               //
-//   File      : MP_externs.hxx                                  //
-//   Purpose   : global functions (inside MULTI_PROBE)           //
-//                                                               //
-//   Institute of Microbiology (Technical University Munich)     //
-//   http://www.arb-home.de/                                     //
-//                                                               //
-// ============================================================= //
-
-#ifndef MP_EXTERNS_HXX
-#define MP_EXTERNS_HXX
+#ifndef MPEXTERNS
+#define MPEXTERNS
 
 class        AW_window;
 class        AW_root;
@@ -36,15 +26,11 @@ void MP_group_all_except_marked(AW_window *aww);
 void MP_normal_colors_in_tree(AW_window *aww);
 void MP_selected_chosen(AW_window *aww);
 
-bool MP_check_status(int gen_cnt, double avg_fit, double min_fit, double max_fit);
-
-char *MP_get_comment(int which, const char *str);
-char *MP_remove_comment(char *);
-char *MP_get_probes(const char *str);
-int   MP_init_local_com_struct();
-
+char       *MP_get_comment(int which, char *str); //faengt bei 1 an
+char       *MP_remove_comment(char *);
+char       *MP_get_probes(char *str);
+int         MP_init_local_com_struct();
 const char *MP_probe_pt_look_for_server();
+// int      MP_probe_design_send_data(T_PT_PDC pdc);
 
-#else
-#error MP_externs.hxx included twice
-#endif // MP_EXTERNS_HXX
+#endif

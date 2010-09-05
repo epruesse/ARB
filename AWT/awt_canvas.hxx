@@ -1,6 +1,12 @@
 #ifndef AWT_CANVAS_HXX
 #define AWT_CANVAS_HXX
 
+#ifndef AW_ROOT_HXX
+#include <aw_root.hxx>
+#endif
+#ifndef AW_POSITION_HXX
+#include <aw_position.hxx>
+#endif
 #ifndef AW_WINDOW_HXX
 #include <aw_window.hxx>
 #endif
@@ -17,7 +23,7 @@ typedef enum {
     AWT_MODE_GROUP,
     AWT_MODE_ZOOM,          // no command
     AWT_MODE_LZOOM,
-    AWT_MODE_EDIT, // species info
+    AWT_MODE_MOD, // species info
     AWT_MODE_WWW,
     AWT_MODE_LINE,
     AWT_MODE_ROT,
@@ -38,18 +44,18 @@ typedef enum {
 
 class AWT_graphic_exports {
 public:
-    unsigned int zoom_reset : 1;
-    unsigned int resize : 1;
-    unsigned int refresh : 1;
-    unsigned int save : 1;
-    unsigned int structure_change : 1; // maybe useless
-    unsigned int dont_fit_x : 1;
-    unsigned int dont_fit_y : 1;
-    unsigned int dont_fit_larger : 1; // if xsize>ysize -> dont_fit_x (otherwise dont_fit_y)
-    unsigned int dont_scroll : 1;
+    unsigned int zoom_reset:1;
+    unsigned int resize:1;
+    unsigned int refresh:1;
+    unsigned int save:1;
+    unsigned int structure_change:1; // maybe useless
+    unsigned int dont_fit_x:1;
+    unsigned int dont_fit_y:1;
+    unsigned int dont_fit_larger:1; // if xsize>ysize -> dont_fit_x (otherwise dont_fit_y)
+    unsigned int dont_scroll:1;
 
-    void init();     // like clear, but resets fit/scroll state
-    void clear();
+    void init(void); // like clear, but resets fit/scroll state
+    void clear(void);
 
     short left_offset;
     short right_offset;
@@ -67,7 +73,7 @@ public:
 
     AWT_graphic();
     virtual ~AWT_graphic();
-
+    
     // pure virtual interface (methods implemented by AWT_nonDB_graphic)
 
     virtual GB_ERROR load(GBDATA *gb_main, const char *name, AW_CL cd1, AW_CL cd2) = 0;
@@ -76,7 +82,7 @@ public:
     virtual void update(GBDATA *gb_main)                                           = 0; // mark the database
 
     // pure virtual interface (rest)
-
+    
     virtual void show(AW_device *device) = 0;
 
     virtual void info(AW_device *device, AW_pos x, AW_pos y, AW_clicked_line *cl, AW_clicked_text *ct) = 0;     /* double click */
@@ -86,7 +92,7 @@ public:
                 or AWT_resize_cb(aw_window, ntw, cd2);
                 The function may return a pointer to a preset window */
 
-    // implemented interface (most are dummies doing nothing):
+    // implemented interface (most are dummies doing nothing): 
 
     virtual void push_transaction(GBDATA *gb_main);
     virtual void pop_transaction(GBDATA *gb_main);
@@ -98,25 +104,25 @@ public:
     virtual void text(AW_device *device, char *text);
 };
 
-// a partly implementation of AWT_graphic
+// a partly implementation of AWT_graphic 
 class AWT_nonDB_graphic : public AWT_graphic {
 public:
     AWT_nonDB_graphic() {}
     virtual ~AWT_nonDB_graphic();
 
-    // dummy functions, only spittings out warnings:
+    // dummy functions, only spittings out warnings: 
     GB_ERROR load(GBDATA *gb_main, const char *name, AW_CL cd1, AW_CL cd2) __ATTR__USERESULT;
     GB_ERROR save(GBDATA *gb_main, const char *name, AW_CL cd1, AW_CL cd2) __ATTR__USERESULT;
     int  check_update(GBDATA *gb_main);
-    void update(GBDATA *gb_main);
+    void update(GBDATA *gb_main); 
 };
 
 
-#define EPS               0.0001 /* div zero check */
+#define EPS               0.0001 /*div zero check*/
 #define AWT_F_ALL         ((AW_active)-1)
 #define CLIP_OVERLAP      15
-#define AWT_CATCH_LINE    50    /* pixel */
-#define AWT_CATCH_TEXT    5     /* pixel */
+#define AWT_CATCH_LINE    50    /*pixel*/
+#define AWT_CATCH_TEXT    5     /*pixel*/
 #define AWT_ZOOM_OUT_STEP 40    /* (pixel) rand um screen */
 #define AWT_MIN_WIDTH     100   /* Minimum center screen (= screen-offset) */
 enum {
@@ -131,15 +137,13 @@ enum {
 
 class AWT_canvas {
 public:
-    // too many callbacks -> public
-    // in fact: private
-    // (in real fact: needs rewrite)
-
-    char   *user_awar;
-    void    init_device(AW_device *device);
-    AW_pos  trans_to_fit;
-    AW_pos  shift_x_to_fit;
-    AW_pos  shift_y_to_fit;
+    /** too many callbacks -> public **/
+    /** in fact: private         **/
+    char *user_awar;
+    void init_device(AW_device *device);
+    AW_pos trans_to_fit;
+    AW_pos shift_x_to_fit;
+    AW_pos shift_y_to_fit;
 
     int old_hor_scroll_pos;
     int old_vert_scroll_pos;
@@ -161,8 +165,7 @@ public:
     void set_vertical_scrollbar_position(AW_window *aww, int pos);
 
 
-    // public (read only)
-
+    /*************  Read only public section : ************/
     GBDATA      *gb_main;
     AW_window   *aww;
     AW_root     *awr;
@@ -170,12 +173,13 @@ public:
 
     AW_gc_manager gc_manager;
     int           drag_gc;
-
+    
     AWT_COMMAND_MODE mode;
 
-    // real public
+    /** the real public section **/
 
     AWT_canvas(GBDATA *gb_main, AW_window *aww, AWT_graphic *awd, AW_gc_manager &gc_manager, const char *user_awar);
+    // gc_manager is the preset window
 
     void refresh();
     void recalc_size();         // Calculate the size of the sb
@@ -190,7 +194,9 @@ public:
     }
 };
 
-void AWT_expose_cb(AW_window *dummy, AWT_canvas *ntw, AW_CL cl2);
+void AWT_input_event(AW_window *aww, AWT_canvas *ntw, AW_CL cd2);
+void AWT_motion_event(AW_window *aww, AWT_canvas *ntw, AW_CL cd2);
+void AWT_expose_cb(AW_window *dummy,AWT_canvas *ntw, AW_CL cl2);
 void AWT_resize_cb(AW_window *dummy, AWT_canvas *ntw, AW_CL cl2);
 
 #define AWAR_PRINT_TREE                "NT/print/"

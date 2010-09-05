@@ -1,4 +1,5 @@
-/* FIG : Facility for Interactive Generation of figures
+/*
+ * FIG : Facility for Interactive Generation of figures
  * Copyright (c) 1985 by Supoj Sutanthavibul
  * Copyright (c) 1992 by Brian V. Smith
  *
@@ -12,12 +13,18 @@
  * This software has been widely modified for usage inside ARB.
  */
 
-#include "aw_commn.hxx"
-#include "aw_xfont.hxx"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <memory.h>
+#include <ctype.h>
+#include <X11/Xlib.h>
 
 #include <arbdb.h>
-
-#include <cctype>
+#include <aw_root.hxx>
+#include "aw_device.hxx"
+#include "aw_commn.hxx"
+#include "aw_xfont.hxx"
 
 // --------------------------------------------------------------------------------
 
@@ -61,107 +68,107 @@ static const char *known_iso_versions[KNOWN_ISO_VERSIONS] = { "ISO8859", "ISO106
 #endif
 
 struct _xfstruct x_fontinfo[AW_NUM_FONTS] = {
-    { "-adobe-times-medium-r-*--",                  (xfont*) NULL }, // #0
-    { "-adobe-times-medium-i-*--",                  (xfont*) NULL }, // #1
-    { "-adobe-times-bold-r-*--",                    (xfont*) NULL }, // #2
-    { "-adobe-times-bold-i-*--",                    (xfont*) NULL }, // #3
-    { "-schumacher-clean-medium-r-*--",             (xfont*) NULL },      /* closest to Avant-Garde */
-    { "-schumacher-clean-medium-i-*--",             (xfont*) NULL }, // #5
-    { "-schumacher-clean-bold-r-*--",               (xfont*) NULL }, // #6
-    { "-schumacher-clean-bold-i-*--",               (xfont*) NULL }, // #7
-    { "-adobe-times-medium-r-*--",                  (xfont*) NULL },      /* closest to Bookman */
-    { "-adobe-times-medium-i-*--",                  (xfont*) NULL }, // #9
-    { "-adobe-times-bold-r-*--",                    (xfont*) NULL }, // #10
-    { "-adobe-times-bold-i-*--",                    (xfont*) NULL }, // #11
-    { "-adobe-courier-medium-r-*--",                (xfont*) NULL }, // #12
-    { "-adobe-courier-medium-o-*--",                (xfont*) NULL }, // #13
-    { "-adobe-courier-bold-r-*--",                  (xfont*) NULL }, // #14
-    { "-adobe-courier-bold-o-*--",                  (xfont*) NULL }, // #15
-    { "-adobe-helvetica-medium-r-*--",              (xfont*) NULL }, // #16
-    { "-adobe-helvetica-medium-o-*--",              (xfont*) NULL }, // #17
-    { "-adobe-helvetica-bold-r-*--",                (xfont*) NULL }, // #18
-    { "-adobe-helvetica-bold-o-*--",                (xfont*) NULL }, // #19
-    { "-adobe-helvetica-medium-r-*--",              (xfont*) NULL },      /* closest to Helv-nar. */
-    { "-adobe-helvetica-medium-o-*--",              (xfont*) NULL }, // #21
-    { "-adobe-helvetica-bold-r-*--",                (xfont*) NULL }, // #22
-    { "-adobe-helvetica-bold-o-*--",                (xfont*) NULL }, // #23
-    { "-adobe-new century schoolbook-medium-r-*--", (xfont*) NULL }, // #24
-    { "-adobe-new century schoolbook-medium-i-*--", (xfont*) NULL }, // #25
-    { "-adobe-new century schoolbook-bold-r-*--",   (xfont*) NULL }, // #26
-    { "-adobe-new century schoolbook-bold-i-*--",   (xfont*) NULL }, // #27
-    { "-*-lucidabright-medium-r-*--",               (xfont*) NULL },      /* closest to Palatino */
-    { "-*-lucidabright-medium-i-*--",               (xfont*) NULL }, // #29
-    { "-*-lucidabright-demibold-r-*--",             (xfont*) NULL }, // #30
-    { "-*-lucidabright-demibold-i-*--",             (xfont*) NULL }, // #31
-    { "-*-symbol-medium-r-*--",                     (xfont*) NULL }, // #32
-    { "-*-zapfchancery-medium-i-*--",               (xfont*) NULL }, // #33
-    { "-*-zapfdingbats-*-*-*--",                    (xfont*) NULL }, // #34
+    {"-adobe-times-medium-r-*--",                  (struct xfont*) NULL}, // #0
+    {"-adobe-times-medium-i-*--",                  (struct xfont*) NULL}, // #1
+    {"-adobe-times-bold-r-*--",                    (struct xfont*) NULL}, // #2
+    {"-adobe-times-bold-i-*--",                    (struct xfont*) NULL}, // #3
+    {"-schumacher-clean-medium-r-*--",             (struct xfont*) NULL},       /* closest to Avant-Garde */
+    {"-schumacher-clean-medium-i-*--",             (struct xfont*) NULL}, // #5
+    {"-schumacher-clean-bold-r-*--",               (struct xfont*) NULL}, // #6
+    {"-schumacher-clean-bold-i-*--",               (struct xfont*) NULL}, // #7
+    {"-adobe-times-medium-r-*--",                  (struct xfont*) NULL},       /* closest to Bookman */
+    {"-adobe-times-medium-i-*--",                  (struct xfont*) NULL}, // #9
+    {"-adobe-times-bold-r-*--",                    (struct xfont*) NULL}, // #10
+    {"-adobe-times-bold-i-*--",                    (struct xfont*) NULL}, // #11
+    {"-adobe-courier-medium-r-*--",                (struct xfont*) NULL}, // #12
+    {"-adobe-courier-medium-o-*--",                (struct xfont*) NULL}, // #13
+    {"-adobe-courier-bold-r-*--",                  (struct xfont*) NULL}, // #14
+    {"-adobe-courier-bold-o-*--",                  (struct xfont*) NULL}, // #15
+    {"-adobe-helvetica-medium-r-*--",              (struct xfont*) NULL}, // #16
+    {"-adobe-helvetica-medium-o-*--",              (struct xfont*) NULL}, // #17
+    {"-adobe-helvetica-bold-r-*--",                (struct xfont*) NULL}, // #18
+    {"-adobe-helvetica-bold-o-*--",                (struct xfont*) NULL}, // #19
+    {"-adobe-helvetica-medium-r-*--",              (struct xfont*) NULL},       /* closest to Helv-nar. */
+    {"-adobe-helvetica-medium-o-*--",              (struct xfont*) NULL}, // #21
+    {"-adobe-helvetica-bold-r-*--",                (struct xfont*) NULL}, // #22
+    {"-adobe-helvetica-bold-o-*--",                (struct xfont*) NULL}, // #23
+    {"-adobe-new century schoolbook-medium-r-*--", (struct xfont*) NULL}, // #24
+    {"-adobe-new century schoolbook-medium-i-*--", (struct xfont*) NULL}, // #25
+    {"-adobe-new century schoolbook-bold-r-*--",   (struct xfont*) NULL}, // #26
+    {"-adobe-new century schoolbook-bold-i-*--",   (struct xfont*) NULL}, // #27
+    {"-*-lucidabright-medium-r-*--",               (struct xfont*) NULL},       /* closest to Palatino */
+    {"-*-lucidabright-medium-i-*--",               (struct xfont*) NULL}, // #29
+    {"-*-lucidabright-demibold-r-*--",             (struct xfont*) NULL}, // #30
+    {"-*-lucidabright-demibold-i-*--",             (struct xfont*) NULL}, // #31
+    {"-*-symbol-medium-r-*--",                     (struct xfont*) NULL}, // #32
+    {"-*-zapfchancery-medium-i-*--",               (struct xfont*) NULL}, // #33
+    {"-*-zapfdingbats-*-*-*--",                    (struct xfont*) NULL}, // #34
     // non xfig fonts, will be mapped to xfig fonts on export
-    { "-*-lucida-medium-r-*-*-",                    (xfont*) NULL }, // #35
-    { "-*-lucida-medium-i-*-*-",                    (xfont*) NULL }, // #36
-    { "-*-lucida-bold-r-*-*-",                      (xfont*) NULL }, // #37
-    { "-*-lucida-bold-i-*-*-",                      (xfont*) NULL }, // #38
-    { "-*-lucidatypewriter-medium-r-*-*-",          (xfont*) NULL }, // #39
-    { "-*-lucidatypewriter-bold-r-*-*-",            (xfont*) NULL }, // #40
-    { "-*-screen-medium-r-*-*-",                    (xfont*) NULL }, // #41
-    { "-*-screen-bold-r-*-*-",                      (xfont*) NULL }, // #42
-    { "-*-clean-medium-r-*-*-",                     (xfont*) NULL }, // #43
-    { "-*-clean-bold-r-*-*-",                       (xfont*) NULL }, // #44
-    { "-*-terminal-medium-r-*-*-",                  (xfont*) NULL }, // #45
-    { "-*-terminal-bold-r-*-*-",                    (xfont*) NULL }, // #46
+    {"-*-lucida-medium-r-*-*-",                    (struct xfont*) NULL}, // #35
+    {"-*-lucida-medium-i-*-*-",                    (struct xfont*) NULL}, // #36
+    {"-*-lucida-bold-r-*-*-",                      (struct xfont*) NULL}, // #37
+    {"-*-lucida-bold-i-*-*-",                      (struct xfont*) NULL}, // #38
+    {"-*-lucidatypewriter-medium-r-*-*-",          (struct xfont*) NULL}, // #39
+    {"-*-lucidatypewriter-bold-r-*-*-",            (struct xfont*) NULL}, // #40
+    {"-*-screen-medium-r-*-*-",                    (struct xfont*) NULL}, // #41
+    {"-*-screen-bold-r-*-*-",                      (struct xfont*) NULL}, // #42
+    {"-*-clean-medium-r-*-*-",                     (struct xfont*) NULL}, // #43
+    {"-*-clean-bold-r-*-*-",                       (struct xfont*) NULL}, // #44
+    {"-*-terminal-medium-r-*-*-",                  (struct xfont*) NULL}, // #45
+    {"-*-terminal-bold-r-*-*-",                    (struct xfont*) NULL}, // #46
 };
 
 struct _fstruct ps_fontinfo[AW_NUM_FONTS + 1] = {
     // map window fonts to postscript fonts
     // negative values indicate monospaced fonts
-    { "Default",                      -1 },
-    { "Times-Roman",                  0 },
-    { "Times-Italic",                 1 },
-    { "Times-Bold",                   2 },
-    { "Times-BoldItalic",             3 },
-    { "AvantGarde-Book",              4 },
-    { "AvantGarde-BookOblique",       5 },
-    { "AvantGarde-Demi",              6 },
-    { "AvantGarde-DemiOblique",       7 },
-    { "Bookman-Light",                8 },
-    { "Bookman-LightItalic",          9 },
-    { "Bookman-Demi",                 10 },
-    { "Bookman-DemiItalic",           11 },
-    { "Courier",                      -12 },
-    { "Courier-Oblique",              -13 },
-    { "Courier-Bold",                 -14 },
-    { "Courier-BoldOblique",          -15 },
-    { "Helvetica",                    16 },
-    { "Helvetica-Oblique",            17 },
-    { "Helvetica-Bold",               18 },
-    { "Helvetica-BoldOblique",        19 },
-    { "Helvetica-Narrow",             20 },
-    { "Helvetica-Narrow-Oblique",     21 },
-    { "Helvetica-Narrow-Bold",        22 },
-    { "Helvetica-Narrow-BoldOblique", 23 },
-    { "NewCenturySchlbk-Roman",       24 },
-    { "NewCenturySchlbk-Italic",      25 },
-    { "NewCenturySchlbk-Bold",        26 },
-    { "NewCenturySchlbk-BoldItalic",  27 },
-    { "Palatino-Roman",               28 },
-    { "Palatino-Italic",              29 },
-    { "Palatino-Bold",                30 },
-    { "Palatino-BoldItalic",          31 },
-    { "Symbol",                       32 },
-    { "ZapfChancery-MediumItalic",    33 },
-    { "ZapfDingbats",                 34 },
-    { "LucidaSans",                   16 },
-    { "LucidaSans-Italic",            17 },
-    { "LucidaSans-Bold",              18 },
-    { "LucidaSans-BoldItalic",        19 },
-    { "LucidaSansTypewriter",         -12 },
-    { "LucidaSansTypewriter-Bold",    -14 },
-    { "Screen",                       -16 },
-    { "Screen-Bold",                  -18 },
-    { "Clean",                        -12 },
-    { "Clean-Bold",                   -14 },
-    { "Terminal",                     -12 },
-    { "Terminal-Bold",                -14 },
+    {"Default",                         -1},
+    {"Times-Roman",                     0},
+    {"Times-Italic",                    1},
+    {"Times-Bold",                      2},
+    {"Times-BoldItalic",                3},
+    {"AvantGarde-Book",                 4},
+    {"AvantGarde-BookOblique",          5},
+    {"AvantGarde-Demi",                 6},
+    {"AvantGarde-DemiOblique",          7},
+    {"Bookman-Light",                   8},
+    {"Bookman-LightItalic",             9},
+    {"Bookman-Demi",                    10},
+    {"Bookman-DemiItalic",              11},
+    {"Courier",                         -12},
+    {"Courier-Oblique",                 -13},
+    {"Courier-Bold",                    -14},
+    {"Courier-BoldOblique",             -15},
+    {"Helvetica",                       16},
+    {"Helvetica-Oblique",               17},
+    {"Helvetica-Bold",                  18},
+    {"Helvetica-BoldOblique",           19},
+    {"Helvetica-Narrow",                20},
+    {"Helvetica-Narrow-Oblique",        21},
+    {"Helvetica-Narrow-Bold",           22},
+    {"Helvetica-Narrow-BoldOblique",    23},
+    {"NewCenturySchlbk-Roman",          24},
+    {"NewCenturySchlbk-Italic",         25},
+    {"NewCenturySchlbk-Bold",           26},
+    {"NewCenturySchlbk-BoldItalic",     27},
+    {"Palatino-Roman",                  28},
+    {"Palatino-Italic",                 29},
+    {"Palatino-Bold",                   30},
+    {"Palatino-BoldItalic",             31},
+    {"Symbol",                          32},
+    {"ZapfChancery-MediumItalic",       33},
+    {"ZapfDingbats",                    34},
+    {"LucidaSans",                      16},
+    {"LucidaSans-Italic",               17},
+    {"LucidaSans-Bold",                 18},
+    {"LucidaSans-BoldItalic",           19},
+    {"LucidaSansTypewriter",            -12},
+    {"LucidaSansTypewriter-Bold",       -14},
+    {"Screen",                          -16},
+    {"Screen-Bold",                     -18},
+    {"Clean",                           -12},
+    {"Clean-Bold",                      -14},
+    {"Terminal",                        -12},
+    {"Terminal-Bold",                   -14},
 };
 
 #define FONT_STRING_PARTS 14
@@ -227,7 +234,8 @@ void aw_root_init_font(Display *tool_d)
     appres.debug   = true;
 #endif // DUMP_FONT_LOOKUP
 
-    /* Now initialize the font structure for the X fonts corresponding to the
+    /*
+     * Now initialize the font structure for the X fonts corresponding to the
      * Postscript fonts for the canvas.  OpenWindows can use any LaserWriter
      * fonts at any size, so we don't need to load anything if we are using
      * it.
@@ -250,22 +258,20 @@ void aw_root_init_font(Display *tool_d)
             for (int f=0; f<AW_NUM_FONTS; f++) {     /* copy the OpenWindow font names */
                 x_fontinfo[f].templat = ps_fontinfo[f+1].name;
 #if defined(DUMP_FONT_LOOKUP)
-                printf("ps_fontinfo[f+1].name='%s'\n", ps_fontinfo[f+1].name);
+                printf("ps_fontinfo[f+1].name='%s'\n",ps_fontinfo[f+1].name);
 #endif // DUMP_FONT_LOOKUP
             }
             XFreeFontNames(fontlist);
-        }
-        else {
+        } else {
             char templat[200];
-            strcpy(templat, x_fontinfo[0].templat); /* nope, check for font size 0 */
-            strcat(templat, "0-0-*-*-*-*-*-*");
-            if ((fontlist = XListFonts(tool_d, templat, 1, &count))!=0) {
+            strcpy(templat,x_fontinfo[0].templat); /* nope, check for font size 0 */
+            strcat(templat,"0-0-*-*-*-*-*-*");
+            if ((fontlist = XListFonts(tool_d, templat, 1, &count))!=0){
 #if defined(DUMP_FONT_LOOKUP)
                 printf("Using SCALABLEFONTS!\n");
 #endif // DUMP_FONT_LOOKUP
                 XFreeFontNames(fontlist);
-            }
-            else {
+            }else{
 #if defined(DUMP_FONT_LOOKUP)
                 printf("Not using SCALABLEFONTS!\n");
 #endif // DUMP_FONT_LOOKUP
@@ -302,7 +308,7 @@ void aw_root_init_font(Display *tool_d)
                     for (int c = 0; c<count; ++c) {
                         const char *fontname  = fontlist[iso][c];
                         int         size      = parsesize(fontname);
-                        flist[found_fonts].fn = fontname; // valid as long fontlist[iso] is not freed!
+                        flist[found_fonts].fn = fontname; // valid as long fontlist[iso] is not free'd!
                         flist[found_fonts].s  = size;
                         found_fonts++;
                     }
@@ -316,7 +322,7 @@ void aw_root_init_font(Display *tool_d)
 #endif // DUMP_FONT_LOOKUP
 
             aw_assert(found_fonts <= FONT_EXAMINE_MAX);
-            xfont *nf = NULL;
+            struct xfont *nf = NULL;
 
             for (int size = MIN_FONTSIZE; size <= MAX_FONTSIZE; size++) { // scan all useful sizes
                 int i;
@@ -325,7 +331,7 @@ void aw_root_init_font(Display *tool_d)
                 }
 
                 if (i < found_fonts && flist[i].s == size) {
-                    xfont *newfont = (xfont *)malloc(sizeof(xfont));
+                    struct xfont *newfont = (struct xfont *)malloc(sizeof(struct xfont));
 
                     (nf ? nf->next : x_fontinfo[f].xfontlist) = newfont;
                     nf                                        = newfont;
@@ -340,7 +346,7 @@ void aw_root_init_font(Display *tool_d)
 
             if (!nf) { // no font has been found -> fallback to "fixed 12pt"
                 aw_assert(x_fontinfo[f].xfontlist == 0);
-                xfont *newfont   = (xfont *)malloc(sizeof(xfont));
+                struct xfont *newfont   = (struct xfont *)malloc(sizeof(struct xfont));
                 x_fontinfo[f].xfontlist = newfont;
 
                 newfont->size    = DEF_FONTSIZE;
@@ -366,7 +372,7 @@ void aw_root_init_font(Display *tool_d)
 }
 
 #if defined(DUMP_FONT_DETAILS)
-static void dumpFontInformation(xfont *xf) {
+static void dumpFontInformation(struct xfont *xf) {
     printf("Font information for '%s':\n", xf->fname);
     XFontStruct *xfs = xf->fstruct;
     printf("- max letter ascent  = %2i\n", xfs->max_bounds.ascent);
@@ -376,7 +382,8 @@ static void dumpFontInformation(xfont *xf) {
 }
 #endif // DEBUG
 
-/* Lookup an X font, "f" corresponding to a Postscript font style that is
+/*
+ * Lookup an X font, "f" corresponding to a Postscript font style that is
  * close in size to "s"
  */
 
@@ -388,8 +395,9 @@ static bool lookfont(Display *tool_d, int f, int s, int& found_size, bool verboo
 // if 'only_query' is true, then only report availability
 // if 'only_query' is false, then actually load the font and store the loaded fontstruct in 'fontstPtr'
 {
-    bool   found;
-    xfont *newfont, *nf, *oldnf;
+    // char          fn[128];      memset(fn,0,128);
+    bool          found;
+    struct xfont *newfont, *nf, *oldnf;
 
 #if defined(DEVEL_RALF)
 #warning scalability shall be checked for each font -- not only for first
@@ -421,7 +429,7 @@ static bool lookfont(Display *tool_d, int f, int s, int& found_size, bool verboo
         else {
             while (nf != NULL) {
                 if (nf->size == s ||
-                    (!appres.SCALABLEFONTS && (nf->size >= s && oldnf->size <= s)))
+                    (!appres.SCALABLEFONTS && (nf->size >= s && oldnf->size <= s )))
                 {
                     found = true;
                     break;
@@ -432,6 +440,7 @@ static bool lookfont(Display *tool_d, int f, int s, int& found_size, bool verboo
         }
     }
     if (found) {                /* found exact size (or only larger available) */
+        // strcpy(fn,nf->fname);  /* put the name in fn */
         if (verboose) {
             if (s < nf->size) fprintf(stderr, "Font size %d not found, using larger %d point\n", s, nf->size);
             if (appres.debug) fprintf(stderr, "Detected font %s\n", nf->fname);
@@ -439,13 +448,14 @@ static bool lookfont(Display *tool_d, int f, int s, int& found_size, bool verboo
     }
     else if (!appres.SCALABLEFONTS) { /* not found, use largest available */
         nf = oldnf;
+        // strcpy(fn,nf->fname);           /* put the name in fn */
         if (verboose) {
             if (s > nf->size) fprintf(stderr, "Font size %d not found, using smaller %d point\n", s, nf->size);
             if (appres.debug) fprintf(stderr, "Using font %s for size %d\n", nf->fname, s);
         }
     }
     else { /* SCALABLE; none yet of that size, alloc one and put it in the list */
-        newfont = (xfont *) malloc(sizeof(xfont));
+        newfont = (struct xfont *) malloc(sizeof(struct xfont));
         /* add it on to the end of the list */
 
         nf = oldnf ? oldnf->next : 0; // store successor
@@ -464,6 +474,7 @@ static bool lookfont(Display *tool_d, int f, int s, int& found_size, bool verboo
             /* OpenWindows fonts, create font name like times-roman-13 */
 
             nf->fname = GBS_global_string_copy("%s-%d", x_fontinfo[f].templat, s);
+            // sprintf(fn, "%s-%d", x_fontinfo[f].templat, s);
         }
         else {
             // X11 fonts, create a full XLFD font name
@@ -472,9 +483,13 @@ static bool lookfont(Display *tool_d, int f, int s, int& found_size, bool verboo
 
             for (int iso = 0; iso<KNOWN_ISO_VERSIONS; ++iso) {
                 char *fontname = GBS_global_string_copy("%s%d-*-*-*-*-*-%s-*", x_fontinfo[f].templat, s, known_iso_versions[iso]);
+                // sprintf(fn, "%s%d-*-*-*-*-*-%s-*", x_fontinfo[f].templat, s, known_iso_versions[iso]);
 #if defined(DUMP_FONT_LOOKUP)
                 fprintf(stderr, "Checking for '%s' (x_fontinfo[%i].templat='%s')\n", fontname, f, x_fontinfo[f].templat);
 #endif
+
+                // PIX_FONT fontst = XQueryFont(tool_d, fontname);
+                // PIX_FONT fontst = XLoadQueryFont(tool_d, fontname); // @@@ why loaded here and not below (at least use XQueryFont instead!)
 
                 int    matching_fonts_found;
                 char **matching_fonts = XListFonts(tool_d, fontname, 1, &matching_fonts_found);
@@ -486,6 +501,12 @@ static bool lookfont(Display *tool_d, int f, int s, int& found_size, bool verboo
                     break;
                 }
 
+                //                 if (fontst) {
+                //                     XFreeFontInfo(fontst); // only did query -- loading done below
+                //                     // nf->fstruct = fontst;
+                //                     nf->fname      = fontname;
+                //                     break;
+                //                 }
                 free(fontname);
             }
             // @@@ what if nf->fstruct is 0 now ?
@@ -533,7 +554,12 @@ static int get_available_fontsizes(Display *tool_d, int f, int *available_sizes)
         int      found_size;
         PIX_FONT fontst;
 
-        ASSERT_TRUE(lookfont(tool_d, f, size, found_size, false, true, &fontst)); // lookfont should do fallback 
+#if defined(DEBUG)
+        bool     was_found =
+#endif // DEBUG
+            lookfont(tool_d, f, size, found_size, false, true, &fontst);
+
+        aw_assert(was_found); // because lookfont does fallback
 
         if (found_size<size) size = found_size;
         if (found_size == size) available_sizes[size_count++] = size;
@@ -571,13 +597,11 @@ static char *caps(char *sentence) {
 }
 
 
-const char *AW_root::font_2_ascii(AW_font font_nr) {
-    //! converts fontnr to string
-    //
-    // @return 0 if font is not available
-
+const char *AW_root::font_2_ascii(AW_font font_nr)
+{
     aw_assert(font_nr >= 0);
-    if (font_nr<0 || font_nr>=AW_NUM_FONTS) return 0;
+    // if (font_nr < 0) return "FIXED";
+    if (font_nr<0 || font_nr>=AW_NUM_FONTS ) return 0;
 
     const char        *readable_fontname = 0;
     struct _xfstruct&  xf                = x_fontinfo[font_nr];
@@ -613,18 +637,16 @@ const char *AW_root::font_2_ascii(AW_font font_nr) {
             }
         }
     }
-    else {
+    else  {
         readable_fontname = xf.templat;
     }
     return readable_fontname;
+    // return (ps_fontinfo[font_nr+1].name);
 }
 
-int AW_root::font_2_xfig(AW_font font_nr) {
-    //! converts fontnr to xfigid
-    //
-    // negative values indicate monospaced f.
-
-    if (font_nr<0 || font_nr>=AW_NUM_FONTS) return 0;
+int AW_root::font_2_xfig(AW_font font_nr)
+{
+    if (font_nr<0 || font_nr>=AW_NUM_FONTS ) return 0;
     return (ps_fontinfo[font_nr+1].xfontnum);
 }
 
@@ -641,8 +663,7 @@ inline void CI_GetCharInfo_1D(const XFontStruct *fs, unsigned col, const XCharSt
     if (col >= fs->min_char_or_byte2 && col <= fs->max_char_or_byte2) {
         if (fs->per_char == NULL) {
             cs = &fs->min_bounds;
-        }
-        else {
+        } else {
             cs = &fs->per_char[col - fs->min_char_or_byte2];
             if (CI_NonExistChar(cs)) cs = def;
         }
@@ -653,7 +674,8 @@ inline void CI_GetDefaultInfo_1D(const XFontStruct *fs, const XCharStruct*& cs) 
     CI_GetCharInfo_1D(fs, fs->default_char, NULL, cs);
 }
 
-/* CI_GET_CHAR_INFO_2D - return the charinfo struct for the indicated row and
+/*
+ * CI_GET_CHAR_INFO_2D - return the charinfo struct for the indicated row and
  * column.  This is used for fonts that have more than row zero.
  */
 
@@ -683,7 +705,8 @@ inline void CI_GetDefaultInfo_2D(const XFontStruct *fs, const XCharStruct*& cs)
     CI_GetCharInfo_2D (fs, r, c, NULL, cs);
 }
 
-/* CI_GetRowzeroCharInfo_2D - do the same thing as CI_GetCharInfo_1D,
+/*
+ * CI_GetRowzeroCharInfo_2D - do the same thing as CI_GetCharInfo_1D,
  * except that the font has more than one row.  This is special case of more
  * general version used in XTextExt16.c since row == 0.  This is used when
  * max_byte2 is not zero.  A further optimization would do the check for
@@ -697,8 +720,7 @@ inline void CI_GetRowzeroCharInfo_2D(const XFontStruct *fs, unsigned col, const 
         col >= fs->min_char_or_byte2 && col <= fs->max_char_or_byte2) {
         if (fs->per_char == NULL) {
             cs = &fs->min_bounds;
-        }
-        else {
+        } else {
             cs = &fs->per_char[(col - fs->min_char_or_byte2)];
             if (CI_NonExistChar(cs)) cs = def;
         }
@@ -713,7 +735,12 @@ void AW_GC_Xm::set_font(AW_font font_nr, int size, int *found_size)
 
     {
         int  found_font_size;
-        ASSERT_TRUE(lookfont(common->display, font_nr, size, found_font_size, true, false, &xfs)); // lookfont should do fallback
+#if defined(DEBUG)
+        bool was_found =
+#endif // DEBUG
+            lookfont(common->display, font_nr, size, found_font_size, true, false, &xfs);
+        aw_assert(was_found); // because lookfont does fallback
+
         if (found_size) *found_size = found_font_size;
     }
     XSetFont(common->display, gc, xfs->fid);
@@ -740,10 +767,10 @@ void AW_GC_Xm::set_font(AW_font font_nr, int size, int *found_size)
 
     unsigned int i;
     for (i = AW_FONTINFO_CHAR_MIN; i <= AW_FONTINFO_CHAR_MAX; i++) {
-        if (singlerow) { /* optimization */
+        if (singlerow) {/* optimization */
             CI_GetCharInfo_1D(xfs, i, def, cs);
-        }
-        else {
+        } else {
+            // cs = def;   // X11R4
             CI_GetRowzeroCharInfo_2D(xfs, i, def, cs);
         }
         if (cs) {

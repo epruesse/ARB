@@ -1,27 +1,23 @@
-// =============================================================== //
-//                                                                 //
-//   File      : NT_import.cxx                                     //
-//   Purpose   :                                                   //
-//                                                                 //
-//   Institute of Microbiology (Technical University Munich)       //
-//   http://www.arb-home.de/                                       //
-//                                                                 //
-// =============================================================== //
-
-#include "nt_internal.h"
-#include "ad_spec.hxx"
-
-#include <GEN.hxx>
+#include <stdio.h>
+#include <stdlib.h>
+#include <arbdb.h>
+#include <arbdbt.h>
+#include <aw_root.hxx>
+#include <aw_window.hxx>
 #include <awti_import.hxx>
 #include <awt_canvas.hxx>
 #include <mg_merge.hxx>
-#include <arbdbt.h>
 
+#include "nt_internal.h"
+#include "ad_spec.hxx"
+#include "GEN.hxx"
+
+#ifndef ARB_ASSERT_H
+#include <arb_assert.h>
+#endif
 #define nt_assert(bed) arb_assert(bed)
 
-extern GBDATA *GLOBAL_gb_main;
-
-void nt_seq_load_cb(AW_root *awr, AW_CL, AW_CL) {
+void nt_seq_load_cb(AW_root *awr, AW_CL, AW_CL){
     GLOBAL_gb_dest    = GLOBAL_gb_main;
     AW_window *aww    = ad_create_query_window(awr);
     ad_unquery_all();
@@ -32,9 +28,11 @@ void nt_seq_load_cb(AW_root *awr, AW_CL, AW_CL) {
 }
 
 
-void NT_import_sequences(AW_window *aww, AW_CL, AW_CL) {
-    /*! Opens the "Import Sequences" dialog from the ARB main window (ARB_NTREE)
-     */
+/**
+ * Opens the "Import Sequences" dialog from the
+ * ARB main window (arb_ntree)
+*/
+void NT_import_sequences(AW_window *aww,AW_CL,AW_CL){
 
     if (GLOBAL_gb_merge) {
 #if defined(DEBUG)
@@ -63,7 +61,7 @@ void NT_import_sequences(AW_window *aww, AW_CL, AW_CL) {
     nt_assert(gb_main_is_genom_db == gb_merge_is_genom_db);
 
     awr->awar(AWAR_READ_GENOM_DB)->write_int(gb_main_is_genom_db ? IMP_GENOME_FLATFILE : IMP_PLAIN_SEQUENCE);
-
+    
     {
         GB_transaction dummy(GLOBAL_gb_main);
         char *ali_name = GBT_get_default_alignment(GLOBAL_gb_main);

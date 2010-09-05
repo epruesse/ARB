@@ -10,13 +10,13 @@
 #ifndef DI_VIEW_MATRIX_HXX
 #define DI_VIEW_MATRIX_HXX
 
-#ifndef AW_ROOT_HXX
-#include <aw_root.hxx>
+#ifndef AW_WINDOW_HXX
+#include <aw_window.hxx>
 #endif
 
 #define SPECIES_NAME_LEN 10    // only for displaying speciesnames
 
-typedef enum {
+typedef enum  {
     DI_G_STANDARD,
     DI_G_NAMES,
     DI_G_RULER,
@@ -25,10 +25,6 @@ typedef enum {
     DI_G_ABOVE_DIST,
     DI_G_LAST                   // must be last
 } DI_gc;
-
-class AW_device;
-class AW_event;
-class DI_MATRIX;
 
 class DI_dmatrix {
     AW_pos  screen_width;         // dimensions of main screen
@@ -49,7 +45,7 @@ class DI_dmatrix {
     double  min_view_dist;        // m[i][j]<min_view_dist -> ascii ; else small slider
     double  max_view_dist;        // m[i][j]>max_view_dist -> ascii ; else small slider
 
-    void set_scrollbar_steps(long width, long hight, long xinc, long yinc);
+    void set_scrollbar_steps(long width,long hight,long xinc,long yinc);
 
 public:
     AW_window *awm;
@@ -61,22 +57,21 @@ public:
     void monitor_vertical_scroll_cb(AW_window *);   // vertical and horizontal
     void monitor_horizontal_scroll_cb(AW_window *); // scrollbar movements
     void display(bool clear);                       // display data
-    void resized();                                 // call after resize main window
+    void resized(void);                             // call after resize main window
 
     // ******************** real public section *******************
     void set_slider_min(double d) { min_view_dist = d; };
     void set_slider_max(double d) { max_view_dist = d; };
 
     void handle_move(AW_event& event);
-
+    
     DI_dmatrix();
     void init(DI_MATRIX *matrix=0); // set the output matrix
 
     // if matrix == 0, use DI_MATRIX::root
 };
 
-struct save_matrix_params;
-AW_window *DI_create_view_matrix_window(AW_root *awr, DI_dmatrix *dmatrix, save_matrix_params *sparam);
+AW_window *DI_create_view_matrix_window(AW_root *awr, DI_dmatrix *dmatrix);
 
 
 #else

@@ -11,86 +11,64 @@
 #ifndef AWTC_NEXT_NEIGHBOURS_HXX
 #define AWTC_NEXT_NEIGHBOURS_HXX
 
-#ifndef ARBDB_BASE_H
-#include <arbdb_base.h>
+#ifndef ARBDB_H
+#include <arbdb.h>
 #endif
 
-class FamilyList {
+
+class AWTC_FIND_FAMILY_MEMBER {
     // list is sorted either by 'matches' or 'rel_matches' (descending)
-    // depending on 'rel_matches' paramater to PT_FamilyFinder::searchFamily()
+    // depending on 'rel_matches' paramater to findFamily() 
 public:
-    FamilyList *next;
+    AWTC_FIND_FAMILY_MEMBER *next;
 
     char   *name;
     long    matches;
     double  rel_matches;
 
-    FamilyList *insertSortedBy_matches(FamilyList *other);
-    FamilyList *insertSortedBy_rel_matches(FamilyList *other);
-
-    FamilyList();
-    ~FamilyList();
+    AWTC_FIND_FAMILY_MEMBER();
+    ~AWTC_FIND_FAMILY_MEMBER();
 };
 
-struct aisc_com;
+struct struct_aisc_com;
 
 enum FF_complement {
     FF_FORWARD            = 1,
     FF_REVERSE            = 2,
     FF_REVERSE_COMPLEMENT = 4,
     FF_COMPLEMENT         = 8,
-
+    
     // do NOT change the order here w/o fixing ../PROBE/PT_family.cxx@FF_complement_dep
 };
 
-class FamilyFinder {
-    bool rel_matches;
+class AWTC_FIND_FAMILY {
+    struct_aisc_com *link;
+    GBDATA          *gb_main;
+    long             com;
+    long             locs;
     
-protected:
-    FamilyList *family_list;
-
-    bool hits_truncated;
-#if defined(DEVEL_RALF)
-#warning change real_hits back to int when aisc_get() has been made failsafe
-#endif // DEVEL_RALF
-    long real_hits;
-
-public:
-    FamilyFinder(bool rel_matches_);
-    virtual ~FamilyFinder();
-
-    virtual GB_ERROR searchFamily(const char *sequence, FF_complement compl_mode, int max_results) = 0;
-
-    const FamilyList *getFamilyList() const { return family_list; }
-    void delete_family_list();
-    
-    bool hits_were_truncated() const { return hits_truncated; }
-    bool uses_rel_matches() const { return rel_matches; }
-    int getRealHits() const { return real_hits; }
-};
-
-class PT_FamilyFinder : public FamilyFinder {
-    GBDATA *gb_main;
-    int     server_id;
-    int     oligo_len;
-    int     mismatches;
-    bool    fast_flag;
-
-    aisc_com *link;
-    long      com;
-    long      locs;
-
-    GB_ERROR init_communication();
-    GB_ERROR open(const char *servername);
-    GB_ERROR retrieve_family(const char *sequence, FF_complement compl_mode, int max_results) __ATTR__USERESULT;
+    void     delete_family_list();
+    GB_ERROR init_communication(void);
+    GB_ERROR open(char *servername);
+    GB_ERROR retrieve_family(char *sequence, int oligo_len, int mismatches, bool fast_flag, bool rel_matches, FF_complement compl_mode, int max_results);
     void     close();
 
+    // valid after calling retrieve_family():
+    AWTC_FIND_FAMILY_MEMBER *family_list;
+
+    bool hits_truncated;
+    int  real_hits;
+
 public:
 
-    PT_FamilyFinder(GBDATA *gb_main_, int server_id_, int oligo_len_, int mismatches_, bool fast_flag_, bool rel_matches_);
-    ~PT_FamilyFinder();
+    AWTC_FIND_FAMILY(GBDATA *gb_maini);
+    ~AWTC_FIND_FAMILY();
 
-    GB_ERROR searchFamily(const char *sequence, FF_complement compl_mode, int max_results) __ATTR__USERESULT;
+    GB_ERROR findFamily(int server_id,char *sequence, int oligo_len, int mismatches, bool fast_flag, bool rel_matches, FF_complement compl_mode, int max_results);
+
+    const AWTC_FIND_FAMILY_MEMBER *getFamilyList() const { return family_list; }
+    bool hits_were_truncated() const { return hits_truncated; }
+    int getRealHits() const { return real_hits; }
 
     void print();
 };

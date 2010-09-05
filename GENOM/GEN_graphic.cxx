@@ -1,25 +1,32 @@
-// =============================================================== //
-//                                                                 //
-//   File      : GEN_graphic.cxx                                   //
-//   Purpose   :                                                   //
-//                                                                 //
-//   Coded by Ralf Westram (coder@reallysoft.de) in 2001           //
-//   Institute of Microbiology (Technical University Munich)       //
-//   http://www.arb-home.de/                                       //
-//                                                                 //
-// =============================================================== //
+/*********************************************************************************
+ *  Coded by Ralf Westram (coder@reallysoft.de) in 2001                          *
+ *  Institute of Microbiology (Technical University Munich)                      *
+ *  http://www.mikro.biologie.tu-muenchen.de/                                    *
+ *********************************************************************************/
+
+#include <arbdb.h>
+#include <arbdbt.h>
+#include <aw_root.hxx>
+#include <aw_device.hxx>
+#include <aw_window.hxx>
+#include <aw_awars.hxx>
+#include <aw_preset.hxx>
+#include <awt_canvas.hxx>
+#include <awt_attributes.hxx>
+#include <awt.hxx>
 
 #include "GEN_local.hxx"
 #include "GEN_gene.hxx"
 #include "GEN_graphic.hxx"
 
-#include <arbdbt.h>
-#include <aw_awars.hxx>
-#include <aw_preset.hxx>
-#include <awt_attributes.hxx>
-#include <awt.hxx>
-
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
+#include <cmath>
 #include <climits>
+
+#include <string>
+
 
 using namespace std;
 
@@ -76,8 +83,8 @@ void GEN_graphic::show(AW_device *device) {
         gen_root->paint(device);
     }
     else {
-        device->line(GEN_GC_DEFAULT, -100, -100, 100, 100);
-        device->line(GEN_GC_DEFAULT, -100, 100, 100, -100);
+        device->line(GEN_GC_DEFAULT, -100,-100,100,100);
+        device->line(GEN_GC_DEFAULT, -100,100,100,-100);
     }
 }
 
@@ -97,7 +104,7 @@ void GEN_graphic::info(AW_device *device, AW_pos x, AW_pos y, AW_clicked_line *c
     AWUSE(ct);
 }
 
-void GEN_graphic::command(AW_device *device, AWT_COMMAND_MODE cmd, int button, AW_key_mod /* key_modifier */, AW_key_code /* key_code */, char /* key_char */, AW_event_type type,
+void GEN_graphic::command(AW_device *device, AWT_COMMAND_MODE cmd, int button, AW_key_mod /*key_modifier*/, AW_key_code /*key_code*/, char /*key_char*/, AW_event_type type,
                           AW_pos screen_x, AW_pos screen_y, AW_clicked_line *cl, AW_clicked_text *ct) {
     AW_pos world_x;
     AW_pos world_y;
@@ -109,8 +116,8 @@ void GEN_graphic::command(AW_device *device, AWT_COMMAND_MODE cmd, int button, A
                 break;
             }
             case AWT_MODE_SELECT:
-            case AWT_MODE_EDIT: {
-                if (button==AWT_M_LEFT) {
+            case AWT_MODE_MOD: {
+                if(button==AWT_M_LEFT) {
                     GEN_gene *gene = 0;
                     if (ct) gene   = (GEN_gene*)ct->client_data1;
                     if (cl) gene   = (GEN_gene*)cl->client_data1;
@@ -119,8 +126,8 @@ void GEN_graphic::command(AW_device *device, AWT_COMMAND_MODE cmd, int button, A
                         GB_transaction dummy(gb_main);
                         aw_root->awar(AWAR_LOCAL_GENE_NAME(window_nr))->write_string(gene->Name().c_str());
 
-                        if (cmd == AWT_MODE_EDIT) {
-                            GEN_create_gene_window(aw_root, (AW_CL)gb_main)->activate();
+                        if (cmd == AWT_MODE_MOD) {
+                            GEN_create_gene_window(aw_root)->activate();
                         }
                     }
                 }
@@ -148,7 +155,7 @@ inline void increase_selected_range(AW_world& selected_range, AW_pos x1, AW_pos 
     increase_selected_range(selected_range, x1, y1);
     increase_selected_range(selected_range, x2, y2);
 }
-inline int smart_text(AW_world& selected_range, AW_device *device, int gc, const char *str, AW_pos x, AW_pos y, AW_pos alignment, AW_bitset filteri, AW_CL cd1, AW_CL cd2, long opt_strlen) {
+inline int smart_text(AW_world& selected_range, AW_device *device, int gc, const char *str,AW_pos x,AW_pos y, AW_pos alignment, AW_bitset filteri, AW_CL cd1, AW_CL cd2,long opt_strlen) {
     int res = device->text(gc, str, x, y, alignment, filteri, cd1, cd2, opt_strlen);
     if (gc == GEN_GC_CURSOR) {
 #if defined(DEVEL_RALF)
@@ -158,7 +165,7 @@ inline int smart_text(AW_world& selected_range, AW_device *device, int gc, const
     }
     return res;
 }
-inline int smart_line(AW_world& selected_range, AW_device *device, int gc, AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW_bitset filteri, AW_CL cd1, AW_CL cd2) {
+inline int smart_line(AW_world& selected_range, AW_device *device, int gc, AW_pos x0,AW_pos y0, AW_pos x1,AW_pos y1, AW_bitset filteri, AW_CL cd1, AW_CL cd2) {
     int res = device->line(gc, x0, y0, x1, y1, filteri, cd1, cd2);
     if (gc == GEN_GC_CURSOR) increase_selected_range(selected_range, x0, y0, x1, y1);
     return res;
@@ -188,6 +195,7 @@ inline bool getDrawGcs(GEN_iterator& gene, PaintWhat what, const string& curr_ge
         }
         else {
             int color_group = AWT_gene_get_dominant_color(gb_gene);
+            // int color_group = AW_find_color_group(gb_gene);
 
             if (color_group) {
                 draw_gc = text_gc = GEN_GC_FIRST_COLOR_GROUP+color_group-1;
@@ -229,6 +237,7 @@ void GEN_root::paint(AW_device *device) {
                 while (curr != end) {
                     int draw_gc, text_gc;
                     if (getDrawGcs(curr, paint_what, gene_name, draw_gc, text_gc)) {
+                    // if (paint_what || text_gc != GEN_GC_DEFAULT) {
                         double w    = w0*curr->StartPos()-mp2;
                         double sinw = sin(w);
                         double cosw = cos(w);
@@ -270,7 +279,7 @@ void GEN_root::paint(AW_device *device) {
 
                 GEN_iterator curr = gene_set.begin();
                 GEN_iterator end  = gene_set.end();
-
+                
                 while (curr != end) {
                     int draw_gc, text_gc;
                     if (getDrawGcs(curr, paint_what, gene_name, draw_gc, text_gc)) {
@@ -304,12 +313,12 @@ void GEN_root::paint(AW_device *device) {
 
                 GEN_iterator curr = gene_set.begin();
                 GEN_iterator end  = gene_set.end();
-
+                
                 while (curr != end) {
                     int draw_gc, text_gc;
                     if (getDrawGcs(curr, paint_what, gene_name, draw_gc, text_gc)) {
                         int line1 = curr->StartPos()/display_width;
-                        int line2 = curr->EndPos()  / display_width;
+                        int line2 = curr->EndPos()  /display_width;
                         int x1    = int((curr->StartPos()-line1*display_width)*width_factor+0.5);
                         int x2    = int((curr->EndPos()  -line2*display_width)*width_factor+0.5);
                         int y1    = line1*height_of_line;

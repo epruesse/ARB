@@ -1,7 +1,7 @@
 //  ==================================================================== //
 //                                                                       //
 //    File      : inline.h                                               //
-//    Purpose   : general purpose inlined functions                      //
+//    Purpose   : general purpose inlined funcions                       //
 //                                                                       //
 //                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in June 2002             //
@@ -23,9 +23,8 @@
 #error inline.h may be used in C++ only
 #endif
 
+/** Like strcmp but ignoring case */
 inline int ARB_stricmp(const char *s1, const char *s2) {
-    /*! Like strcmp but ignoring case */
-
     int    cmp = 0;
     size_t idx = 0;
     while (!cmp) {
@@ -36,11 +35,9 @@ inline int ARB_stricmp(const char *s1, const char *s2) {
     }
     return cmp;
 }
+/** compares the beginning of two strings
+    (Note: always returns 0 if one the the strings is empty) */
 inline int ARB_strscmp(const char *s1, const char *s2) {
-    /*! compares the beginning of two strings
-     * (Note: always returns 0 if one the the strings is empty)
-     */
-
     int    cmp = 0;
     size_t idx = 0;
     while (!cmp) {

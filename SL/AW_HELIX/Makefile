@@ -39,10 +39,8 @@ AW_helix.o: AW_helix.hxx
 AW_helix.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 AW_helix.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AW_helix.o: $(ARBHOME)/INCLUDE/arb_assert.h
-AW_helix.o: $(ARBHOME)/INCLUDE/arb_error.h
 AW_helix.o: $(ARBHOME)/INCLUDE/arbdb.h
 AW_helix.o: $(ARBHOME)/INCLUDE/arbdb_base.h
-AW_helix.o: $(ARBHOME)/INCLUDE/arbtools.h
 AW_helix.o: $(ARBHOME)/INCLUDE/attributes.h
 AW_helix.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 AW_helix.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
@@ -50,5 +48,3 @@ AW_helix.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AW_helix.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AW_helix.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AW_helix.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
-AW_helix.o: $(ARBHOME)/INCLUDE/dupstr.h
-AW_helix.o: $(ARBHOME)/INCLUDE/smartptr.h

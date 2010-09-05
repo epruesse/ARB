@@ -1,26 +1,14 @@
 
 ARCHS_ALL = \
-	ALIVIEW/ALIVIEW.dummy  \
-	AP_TREE/AP_TREE.dummy  \
-	ARB_TREE/ARB_TREE.dummy  \
+	TREE_READ/TREE_READ.dummy  \
+	TREE_WRITE/TREE_WRITE.dummy  \
+	HELIX/HELIX.dummy  \
 	AW_HELIX/AW_HELIX.dummy  \
 	AW_NAME/AW_NAME.dummy  \
 	DB_SCANNER/DB_SCANNER.dummy  \
-	SEQIO/SEQIO.dummy  \
-	FAST_ALIGNER/FAST_ALIGNER.dummy  \
 	FILE_BUFFER/FILE_BUFFER.dummy  \
-	FILTER/FILTER.dummy  \
-	GUI_ALIVIEW/GUI_ALIVIEW.dummy  \
-	HELIX/HELIX.dummy  \
-	MATRIX/MATRIX.dummy  \
-	NEIGHBOURJOIN/NEIGHBOURJOIN.dummy  \
-	PRONUC/PRONUC.dummy  \
 	REGEXPR/REGEXPR.dummy  \
-	SEQUENCE/SEQUENCE.dummy  \
-	TRANSLATE/TRANSLATE.dummy  \
-	TREEDISP/TREEDISP.dummy  \
-	TREE_READ/TREE_READ.dummy  \
-	TREE_WRITE/TREE_WRITE.dummy  \
+	FAST_ALIGNER/FAST_ALIGNER.dummy  \
 
 # --------------------------------------------------------------------------------
 # If a package is available as debian package it should go here
@@ -55,8 +43,6 @@ depends: $(ARCHS:.dummy=.depend)
 
 clean: $(ARCHS:.dummy=.clean)
 
-proto: TREEDISP/TREEDISP.proto 
-
 %.depend:
 	@cp -p $(@D)/Makefile $(@D)/Makefile.old # save old Makefile
 	@$(MAKE) -C $(@D) -r  depends
@@ -77,10 +63,6 @@ proto: TREEDISP/TREEDISP.proto
 %.clean:
 	@$(MAKE) -C $(@D) \
 		clean
-
-%.proto:
-	@$(MAKE) -C $(@D) \
-		proto
 
 # the end of the above command avoids that the output of parallel make calls gets mixed up 
 

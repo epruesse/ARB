@@ -58,7 +58,7 @@ public:
     virtual void remove_awar_callbacks(AW_root *root, void (*f)(AW_root*, AW_CL), AW_CL cl_mask) const = 0;
 
     // returns the current item
-    virtual GBDATA *current(AW_root *root, GBDATA *gb_main) const = 0;
+    virtual GBDATA *current(AW_root *root) const = 0;
 
     // returns the keypath for items
     virtual const char *getKeyPath() const = 0;
@@ -70,10 +70,10 @@ public:
     virtual size_t get_self_awar_content_length() const = 0;
 };
 
-typedef void (*AWT_OpenMaskWindowCallback)(AW_window* aww, AW_CL cl_id, AW_CL cl_user);
+
 
 awt_item_type AWT_getItemType(const std::string& itemtype_name);
-void          AWT_create_mask_submenu(AW_window_menu_modes *awm, awt_item_type wanted_item_type, AWT_OpenMaskWindowCallback open_mask_window_cb, AW_CL cl_user);
+void          AWT_create_mask_submenu(AW_window_menu_modes *awm, awt_item_type wanted_item_type, void (*open_window_cb)(AW_window* aww, AW_CL cl_id, AW_CL));
 void          AWT_destroy_input_masks();
 
 #else

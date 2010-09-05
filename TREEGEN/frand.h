@@ -16,11 +16,11 @@ typedef struct S_Frand
 } *Frand;
 
 /* Um den Frequenzgenerator an der selben Stelle wiederaufzusetzen, */
-/* muss der Wert 'val' gemerkt und spaeter wiedereingesetzt werden. */
+/* muá der Wert 'val' gemerkt und sp„ter wiedereingesetzt werden. */
 
 #ifdef __cplusplus
 extern "C" {
-#endif
+#endif    
 
     Frand  initFrand (double medium, double low, double high);
     void   freeFrand (Frand f);
@@ -29,10 +29,10 @@ extern "C" {
 
     /* Zufallszahl (0.0 bis 1.0): */
 
-    double randProb  ();
+    double randProb  (void);
 
 #ifdef __cplusplus
 }
-#endif
+#endif    
 
 #endif

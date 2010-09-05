@@ -1,9 +1,9 @@
+#include "simcfg.h"
 #include "readcfg.h"
-#include "rns.h"
-
 #include <math.h>
 #include <stdlib.h>
 #include <string.h>
+#include "rns.h"
 
 static struct S_cfgLine cfg_lines[];
 
@@ -128,6 +128,8 @@ static struct S_cfgLine cfg_lines[] =
     { "Loop-GC-Pressure",   "0.62 0.05 0.01",   decodeFrand,        &loopGcDruck,       "part of G-C bonds in loop regions" },
     { "Loop-GC-Rate",       "0.5 0.001 0.001",  decodeFrand,        &loopGcRate,        "G:C rate in loop regions" },
     { "Loop-AT-Rate",       "0.5 0.001 0.001",  decodeFrand,        &loopAtRate,        "A:T rate in loop regions" },
+
+/*    { "", "", decode, &, "" }, */
 
     { NULL, 0, 0, 0, 0 }
 };

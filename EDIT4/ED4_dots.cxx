@@ -14,7 +14,7 @@
 #include "ed4_visualizeSAI.hxx" // for SAI selection box
 
 #include <arbdbt.h>
-#include <cctype>
+#include <ctype.h>
 
 using namespace std;
 
@@ -35,8 +35,8 @@ struct dot_insert_stat {
     size_t sequences_checked;
 };
 
-static ARB_ERROR dot_sequence_by_consensus(ED4_base *base, AW_CL cl_insert_stat) {
-    ARB_ERROR error = 0;
+static ED4_returncode dot_sequence_by_consensus(void **cl_insert_stat, void **, ED4_base *base) {
+    GB_ERROR error = 0;
 
     if (base->is_sequence_info_terminal()) {
         ED4_sequence_info_terminal *seq_term = base->to_sequence_info_terminal();
@@ -72,7 +72,7 @@ static ARB_ERROR dot_sequence_by_consensus(ED4_base *base, AW_CL cl_insert_stat)
                                     case '.':
                                         stat.already_there++;
                                         break;
-
+                                    
                                     default:
                                         break;
                                 }
@@ -91,7 +91,11 @@ static ARB_ERROR dot_sequence_by_consensus(ED4_base *base, AW_CL cl_insert_stat)
         }
     }
 
-    return error;
+    if (error) {
+        GB_export_error(error);
+        return ED4_R_ERROR;
+    }
+    return ED4_R_OK;
 }
 
 static void dot_missing_bases(AW_window *aww) {
@@ -99,9 +103,9 @@ static void dot_missing_bases(AW_window *aww) {
     ED4_cursor *cursor   = &ed4w->cursor;
     ED4_base   *selected = cursor->owner_of_cursor;
 
-    ARB_ERROR            error       = 0;
+    GB_ERROR             error       = 0;
     ED4_species_manager *species_man = 0;
-
+    
     if (selected) {
         species_man = selected->get_parent(ED4_L_SPECIES)->to_species_manager();
         if (species_man && !species_man->flag.is_consensus) species_man = 0;
@@ -193,7 +197,8 @@ static void dot_missing_bases(AW_window *aww) {
         if (!error) {
             e4_assert(stat.pos_count);
             GB_transaction ta(GLOBAL_gb_main);
-            error = group_manager->route_down_hierarchy(dot_sequence_by_consensus, (AW_CL)&stat);
+            ED4_returncode result = group_manager->route_down_hierarchy((void**)&stat, NULL, &dot_sequence_by_consensus);
+            if (result == ED4_R_ERROR) error = GB_await_error();
 
             if (stat.sequences_checked == 0 && !error) {
                 error = GBS_global_string("Group contains no %ssequences", stat.marked_only ? "marked " : "");
@@ -216,7 +221,7 @@ static void dot_missing_bases(AW_window *aww) {
         }
     }
 
-    aw_message_if(error);
+    if (error) aw_message(error);
 }
 
 void ED4_create_dot_missing_bases_awars(AW_root *aw_root, AW_default aw_def) {
@@ -240,10 +245,10 @@ void ED4_popup_dot_missing_bases_window(AW_window *editor_window, AW_CL, AW_CL) 
         aws->at("close");
         aws->callback(AW_POPDOWN);
         aws->create_button("CLOSE", "CLOSE", "C");
-
+        
         aws->at("help");
         aws->callback(AW_POPUP_HELP, (AW_CL)"missbase.hlp");
-        aws->create_button("HELP", "HELP", "H");
+        aws->create_button("HELP", "HELP","H");
 
         aws->at("marked");
         aws->label("Marked species only");
@@ -267,7 +272,7 @@ void ED4_popup_dot_missing_bases_window(AW_window *editor_window, AW_CL, AW_CL) 
     }
 
     e4_assert(aws);
-
+    
     aws->activate();
 }
 

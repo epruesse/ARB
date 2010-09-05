@@ -1,23 +1,21 @@
-// ================================================================ //
-//                                                                  //
-//   File      : a3_arbdb.cxx                                       //
-//   Purpose   :                                                    //
-//                                                                  //
-//   Institute of Microbiology (Technical University Munich)        //
-//   http://www.arb-home.de/                                        //
-//                                                                  //
-// ================================================================ //
+// -----------------------------------------------------------------------------
+//  Include-Dateien
+// -----------------------------------------------------------------------------
+
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <ctype.h>
+#include <memory.h>
 
 #include "a3_arbdb.hxx"
-
-#include <cctype>
 
 // -----------------------------------------------------------------------------
     A3Arbdb::~A3Arbdb ( void )
 // -----------------------------------------------------------------------------
 {
     if (gb_main)    GB_close(gb_main);
-    if (alignment)  free (alignment);
+    if (alignment)  free ((char *) alignment);
 }
 
 // -----------------------------------------------------------------------------
@@ -48,7 +46,7 @@ void A3Arbdb::close ( void )
 // -----------------------------------------------------------------------------
 {
     GB_close(gb_main);
-    freenull(alignment);
+    freeset(alignment, 0);
 }
 
 // -----------------------------------------------------------------------------
@@ -58,7 +56,7 @@ void A3Arbdb::close ( void )
 {
    char   *sequence = NULL;
    GBDATA *gb_species_data = GB_search(gb_main,"species_data",GB_FIND);
-   GBDATA *gb_seq          = GB_find_string(gb_species_data, "name", name, GB_IGNORE_CASE, SEARCH_GRANDCHILD);
+   GBDATA *gb_seq          = GB_find_string(gb_species_data,"name",name,GB_IGNORE_CASE,down_2_level);
 
    if (gb_seq)
    {
@@ -80,10 +78,10 @@ void A3Arbdb::close ( void )
 }
 
 int A3Arbdb::put_sequence_string(char *name, char *sequence) {
-    GB_change_my_security(gb_main, 6);
+    GB_change_my_security(gb_main,6,"passwd");
 
     GBDATA *gb_species_data = GB_search(gb_main,"species_data",GB_FIND);
-    GBDATA *gb_seq = GB_find_string(gb_species_data, "name", name, GB_IGNORE_CASE, SEARCH_GRANDCHILD);
+    GBDATA *gb_seq = GB_find_string(gb_species_data,"name",name,GB_IGNORE_CASE,down_2_level);
 
     if (gb_seq) {
         GBDATA *gb_ali = GB_brother(gb_seq,alignment);
@@ -92,7 +90,7 @@ int A3Arbdb::put_sequence_string(char *name, char *sequence) {
             GBDATA *gb_data = GB_search(gb_ali,"data",GB_STRING);
 
             GB_write_string(gb_data,sequence);
-            free(sequence);
+            free((char *) sequence);
         }
     }
 

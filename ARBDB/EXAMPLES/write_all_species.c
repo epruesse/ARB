@@ -14,7 +14,7 @@ int main(int argc,char **argv)
     gb_main = GB_open(path,"r");
     if(!gb_main)
     {
-        printf("could not open database '%s'\n", path);
+        printf("konnte Datenbank nicht oeffnen\n");
         return(-1);
     }
     fehler=GB_begin_transaction(gb_main);
@@ -24,7 +24,7 @@ int main(int argc,char **argv)
         return(-1);
     }
     gb_species=GB_search(gb_main,"species_data/species",GB_FIND);
-    for(; gb_species; gb_species=GB_find(gb_species,0,0,SEARCH_NEXT_BROTHER))
+    for(;gb_species;gb_species=GB_find(gb_species,0,0,this_level+search_next))
     {
         gb_speciesname=GB_search(gb_species,"name",GB_FIND);
         species_name=GB_read_string(gb_speciesname);

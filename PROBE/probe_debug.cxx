@@ -1,26 +1,15 @@
-// =============================================================== //
-//                                                                 //
-//   File      : probe_debug.cxx                                   //
-//   Purpose   :                                                   //
-//                                                                 //
-//   Institute of Microbiology (Technical University Munich)       //
-//   http://www.arb-home.de/                                       //
-//                                                                 //
-// =============================================================== //
-
-#include <cstdio>
+#include <stdio.h>
 #include <PT_com.h>
 #include <client.h>
-
 extern "C" {
     char *md2(void * object);
 }
-main(int argc, char ** argv)
+main(int argc,char ** argv)
 {
     int zw;
     T_PT_MAIN com;
     aisc_com *link;
-    if (argc<3) {
+    if(argc<3){
         printf("syntax: %s <machine name> address\n", argv[0]);
         exit(EXIT_FAILURE);
     }
@@ -30,6 +19,6 @@ main(int argc, char ** argv)
         exit(EXIT_FAILURE);
     }
     zw = atoi(argv[2]);
-    if (!zw) zw = (int)com;
-    printf("%s\n", md2((void *)zw));
+    if(!zw) zw = (int)com;
+    printf("%s\n",md2((void *)zw));
 }

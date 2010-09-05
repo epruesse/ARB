@@ -9,13 +9,14 @@
 //                                                                  //
 // ================================================================ //
 
+#include "Importer.h"
 #include "tools.h"
+#include "Feature.h"
 #include "DBwriter.h"
-#include <arbdb.h>
 
 using namespace std;
 
-// --------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------
 
 static bool is_escaped(const string& str, size_t pos) {
     // returns true, if position 'pos' in string 'str' is escaped by '\\'
@@ -115,13 +116,13 @@ bool FeatureLine::reinterpret_as_continued_line() {
     return ok;
 }
 
-// --------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------
 
 Importer::Importer(FileBuffer& Flatfile, DBwriter& DB_writer, const MetaTag *meta_description)
     : db_writer(DB_writer)
     , flatfile(Flatfile)
     , tagTranslator(meta_description)
-{}
+{ }
 
 void Importer::warning(const char *msg) {
     warnings.push_back(msg);
@@ -143,14 +144,14 @@ FeatureLinePtr Importer::getFeatureTableLine() {
 
 FeatureLinePtr Importer::getUnwrappedFeatureTableLine() {
     FeatureLinePtr fline = getFeatureTableLine();
-    if (!fline.isNull()) {
+    if (!fline.Null()) {
         if (fline->type & FL_META_CONTINUED) throw "Expected start of feature or qualifier";
 
         if (0 == (fline->type & (FL_QUALIFIER_NODATA|FL_QUALIFIER_QUOTED))) {
             // qualifier/featurestart may be wrapped
             FeatureLinePtr next_fline = getFeatureTableLine();
 
-            while (!next_fline.isNull() &&
+            while (!next_fline.Null() &&
                    fline->type != FL_QUALIFIER_QUOTED) // already seen closing quote
             {
                 if ((next_fline->type&FL_META_CONTINUED) == 0) {
@@ -180,7 +181,7 @@ FeatureLinePtr Importer::getUnwrappedFeatureTableLine() {
                 next_fline = getFeatureTableLine();
             }
 
-            if (!next_fline.isNull()) backFeatureTableLine(next_fline);
+            if (!next_fline.Null()) backFeatureTableLine(next_fline);
         }
     }
     return fline;
@@ -190,17 +191,17 @@ FeaturePtr Importer::parseFeature() {
     FeaturePtr     feature;
     FeatureLinePtr fline = getUnwrappedFeatureTableLine();
 
-    if (!fline.isNull()) {         // found a feature table line
+    if (!fline.Null()) {         // found a feature table line
         if (fline->type != FL_START) throw "Expected feature start";
 
         feature = new Feature(fline->name, fline->rest);
 
         fline = getUnwrappedFeatureTableLine();
-        while (!fline.isNull() && (fline->type & FL_META_QUALIFIER)) {
+        while (!fline.Null() && (fline->type & FL_META_QUALIFIER)) {
             feature->addQualifiedEntry(fline->name, fline->rest);
             fline = getUnwrappedFeatureTableLine();
         }
-        if (!fline.isNull()) backFeatureTableLine(fline);
+        if (!fline.Null()) backFeatureTableLine(fline);
     }
 
     return feature;
@@ -209,7 +210,7 @@ FeaturePtr Importer::parseFeature() {
 void Importer::parseFeatureTable() {
     FeaturePtr feature = parseFeature();
 
-    while (!feature.isNull()) {
+    while (!feature.Null()) {
         feature->expectLocationInSequence(expectedSeqLength);
         feature->fixEmptyQualifiers();
         db_writer.writeFeature(*feature);
@@ -254,10 +255,10 @@ void Importer::import() {
     catch (const char *err) { throw flatfile.lineError(err); }
 }
 
-// --------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------
 // Meta information definitions
-//
-//
+// 
+// 
 // [ please keep the list of common entries in
 //      ../HELP_SOURCE/oldhelp/sp_info.hlp
 //   up to date! ]
@@ -273,7 +274,7 @@ static MetaTag genebank_meta_description[] = {
     { "   PUBMED", "pubmed_id",   MT_REF },
     { "  MEDLINE", "medline_id",  MT_REF },
     { "  REMARK",  "refremark",   MT_REF },
-
+    
     { "DEFINITION", "definition", MT_BASIC },
     { "ACCESSION",  "acc",        MT_BASIC },
     { "VERSION",    "version",    MT_BASIC },
@@ -284,7 +285,7 @@ static MetaTag genebank_meta_description[] = {
     { "PROJECT",     "projref",   MT_BASIC },
 
     { "FEATURES", "", MT_FEATURE_START },
-    { "CONTIG",   "", MT_CONTIG },
+    { "CONTIG",   "", MT_CONTIG }, 
     { "BASE",     "", MT_SEQUENCE_START }, // BASE COUNT (sometimes missing)
     { "ORIGIN",   "", MT_SEQUENCE_START }, // only used if BASE COUNT is missing
     { "//",       "", MT_END },
@@ -303,7 +304,7 @@ static MetaTag embl_meta_description[] = {
     { "RP", "nuc_rp",          MT_REF },
     { "RT", "title",           MT_REF },
     { "RX", "",                MT_REF_DBID }, // @@@ extract field 'pubmed_id' ?
-
+    
     { "AC", "acc",             MT_BASIC },
     { "AH", "assembly_header", MT_BASIC },
     { "AS", "assembly_info",   MT_BASIC },
@@ -325,16 +326,16 @@ static MetaTag embl_meta_description[] = {
     { "//", "", MT_END },
 
     { "XX", "", MT_IGNORE }, // spacer
-
+    
     { "", "", MT_IGNORE }, // End of array
 };
 
-// --------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------
 
 
 GenebankImporter::GenebankImporter(FileBuffer& Flatfile, DBwriter& DB_writer)
     : Importer(Flatfile, DB_writer, genebank_meta_description)
-{}
+{ }
 
 bool GenebankImporter::readFeatureTableLine(string& line) {
     if (flatfile.getLine(line)) {
@@ -347,7 +348,7 @@ bool GenebankImporter::readFeatureTableLine(string& line) {
 }
 
 static bool splitGenebankTag(const string& line, string& tag, string& content) {
-    // split a line into tag (incl. preceding spaces) and content
+    // split a line into tag (incl. preceeding spaces) and content
     // returns true, if line suffices the format requirements
     // Note: returns tag="" at wrapped lines
 
@@ -425,6 +426,7 @@ void GenebankImporter::import_section() {
                     case MT_BASIC:      meta.add(prevTag, prevContent, true); break;
                     case MT_HEADER:
                         meta.add(prevTag, prevContent, true); // save header line
+                        // printf("Header not handled yet: '%s'\n", prevContent.c_str());
                         expectedSeqLength = scanSeqlenFromLOCUS(prevContent);
                         break;
                     case MT_REF_DBID: // embl only
@@ -443,7 +445,7 @@ void GenebankImporter::import_section() {
                     prevTag     = knownTag;
                     prevContent = content;
                     break;
-
+                    
                 case MT_REF_START:
                     refs.start(); // start a new reference
                     break;
@@ -480,12 +482,12 @@ void GenebankImporter::import_section() {
     show_warnings(meta.getAccessionNumber());
 }
 
-// --------------------------------------------------------------------------------
+//--------------------------------------------------------------------------------
 
 
 EmblImporter::EmblImporter(FileBuffer& Flatfile, DBwriter& DB_writer)
     : Importer(Flatfile, DB_writer, embl_meta_description)
-{}
+{ }
 
 static bool splitEmblTag(const string& line, string& tag, string& content) {
     // split a line into 2-character tag and content
@@ -536,7 +538,7 @@ static long scanSeqlenFromID(const string& idContent) {
     }
 
     if (bp == -1) throw "Could not parse bp from header";
-
+    
     return bp;
 }
 
@@ -573,7 +575,8 @@ void EmblImporter::import_section() {
                     case MT_REF_DBID:   refs.add_dbid(prevContent); prevAppendNL = false; break;
                     case MT_BASIC:      meta.add(prevTag, prevContent, true); break;
                     case MT_HEADER:
-                        meta.add(prevTag, prevContent, true);
+                        meta.add(prevTag, prevContent, true); 
+                        // printf("Header not handled yet: '%s'\n", prevContent.c_str());
                         expectedSeqLength = scanSeqlenFromID(prevContent);
                         break;
                     default: gi_assert(0); break;
@@ -637,7 +640,7 @@ inline bool parseCounter(bool expect, BaseCounter& headerCount, StringParser& pa
 
     bool        found = false;
     stringCIter start = parser.getPosition();
-
+    
     parser.expectSpaces(0);
 
     bool seen_number;
@@ -684,12 +687,12 @@ void GenebankImporter::parseSequence(const string& tag, const string& headerline
     }
 
     // parse sequence data
-    size_t         est_seq_size = headerCount.isNull() ? 500000 : headerCount->getCount(BC_ALL);
+    size_t         est_seq_size = headerCount.Null() ? 500000 : headerCount->getCount(BC_ALL);
     SequenceBuffer seqData(est_seq_size);
     {
         string line;
 
-        if (!headerCount.isNull()) {
+        if (!headerCount.Null()) {
             // if BASE COUNT was present, check ORIGIN line
             // otherwise ORIGIN line has already been read
             expectLine(line);
@@ -725,14 +728,14 @@ void GenebankImporter::parseSequence(const string& tag, const string& headerline
                     data.append(start, end);
                     blocks++;
                 }
-
+                
                 if (blocks>6) throw "Found more than 6 parts of sequence data";
                 seqData.addLine(data);
             }
         }
     }
 
-    if (headerCount.isNull()) {
+    if (headerCount.Null()) {
         warning("No 'BASE COUNT' found. Base counts have not been validated.");
     }
     else {

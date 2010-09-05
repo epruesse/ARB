@@ -1,19 +1,14 @@
-// =============================================================== //
-//                                                                 //
-//   File      : arb_gene_probe.cxx                                //
-//   Purpose   :                                                   //
-//                                                                 //
-//   Institute of Microbiology (Technical University Munich)       //
-//   http://www.arb-home.de/                                       //
-//                                                                 //
-// =============================================================== //
-
+#include <arbdb.h>
 #include <arbdbt.h>
 #include <adGene.h>
 
 #include <map>
 #include <list>
 #include <set>
+
+#include <cstdio>
+#include <cstdlib>
+#include <cstring>
 
 #include <unistd.h>
 #include <sys/types.h>
@@ -33,7 +28,7 @@ static int gene_counter          = 0; // pre-incremented counters
 static int splitted_gene_counter = 0;
 static int intergene_counter     = 0;
 
-static map<const char *, char *> names;
+static map<const char *,char *> names;
 
 // --------------------------------------------------------------------------------
 
@@ -190,14 +185,14 @@ void GenePositionMap::dump() const
 static GB_ERROR create_data_entry(GBDATA *gb_species2, const char *sequence, int seqlen) {
     GB_ERROR  error         = 0;
     char     *gene_sequence = new char[seqlen+1];
-
+    
     memcpy(gene_sequence, sequence, seqlen);        // @@@ FIXME: avoid this copy!
     gene_sequence[seqlen] = 0;
 
     GBDATA *gb_ali     = GB_create_container(gb_species2, "ali_ptgene");
     if (!gb_ali) error = GB_await_error();
     else    error      = GBT_write_string(gb_ali, "data", gene_sequence);
-
+    
     delete [] gene_sequence;
     return error;
 }
@@ -220,7 +215,7 @@ static GBDATA *create_gene_species(GBDATA *gb_species_data2, const char *interna
     // Note: 'sequence' is not necessarily 0-terminated!
 
 #if defined(DEBUG)
-    const char *firstSem = strchr(long_name, ';');
+    char *firstSem = strchr(long_name, ';');
     gp_assert(firstSem);
     CHECK_SEMI_ESCAPED(firstSem+1);
 #endif // DEBUG
@@ -235,7 +230,7 @@ static GBDATA *create_gene_species(GBDATA *gb_species_data2, const char *interna
 
     if (!error) {
         GBDATA *gb_name = GB_create(gb_species2, "name", GB_STRING);
-
+        
         if (!gb_name) error = GB_await_error();
         else {
             error = GB_write_string(gb_name, internal_name);
@@ -304,7 +299,7 @@ static GB_ERROR create_splitted_gene(GBDATA *gb_species_data2, PositionPairList&
 
     char *split_pos_list = 0;   // contains split information: 'gene pos of part2,abs pos of part2;gene pos of part3,abs pos of part3;...'
 
-    for (PositionPairList::iterator part = part_list.begin(); part != list_end;) {
+    for (PositionPairList::iterator part = part_list.begin(); part != list_end; ) {
         int part_size   = part->end-part->begin+1;
         int genome_pos  = part->begin;
         memcpy(gene_sequence+gene_off, ali_genome+part->begin, part_size);
@@ -379,8 +374,8 @@ static GB_ERROR insert_genes_of_organism(GBDATA *gb_organism, GBDATA *gb_species
     int intergene_counter_old     = intergene_counter;
 
     GBDATA *gb_ali_genom = GBT_read_sequence(gb_organism, GENOM_ALIGNMENT);
-    gp_assert(gb_ali_genom);                                                       // existence has to be checked by caller!
-
+    gp_assert(gb_ali_genom);                                                       // existance has to be checked by caller!
+    
     const char *ali_genom       = GB_read_char_pntr(gb_ali_genom);
     if (!ali_genom) error       = GB_await_error();
     PositionPair::genome_length = GB_read_count(gb_ali_genom);     // this affects checks in PositionPair
@@ -390,7 +385,7 @@ static GB_ERROR insert_genes_of_organism(GBDATA *gb_organism, GBDATA *gb_species
          gb_gene = GEN_next_gene(gb_gene))
     {
         const char *gene_name = GBT_read_name(gb_gene);
-
+        
         PositionPairList part_list;
         error = scan_gene_positions(gb_gene, part_list);
 
@@ -490,8 +485,8 @@ int main(int argc, char* argv[]) {
         GB_request_undo_type(gb_main, GB_UNDO_NONE); // disable arbdb builtin undo
         GB_begin_transaction(gb_main);
 
-        GBDATA *gb_species_data     = GB_entry(gb_main, "species_data");
-        GBDATA *gb_species_data_new = GB_create_container(gb_main, "species_data"); // introducing a second 'species_data' container
+        GBDATA *gb_species_data     = GB_entry(gb_main,"species_data");
+        GBDATA *gb_species_data_new = GB_create_container(gb_main,"species_data"); // introducing a second 'species_data' container
 
         if (!gb_species_data || ! gb_species_data_new) {
             error = GB_await_error();
@@ -536,8 +531,8 @@ int main(int argc, char* argv[]) {
             // create map-string
             char* map_string;
             {
-                map<const char*, char*>::iterator NameEnd = names.end();
-                map<const char*, char*>::iterator NameIter;
+                map<const char*,char*>::iterator NameEnd = names.end();
+                map<const char*,char*>::iterator NameIter;
 
                 size_t mapsize = 0;
                 for (NameIter = names.begin(); NameIter != NameEnd; ++NameIter) {
@@ -564,7 +559,7 @@ int main(int argc, char* argv[]) {
                 gp_assert(moff <= mapsize);
             }
 
-            GBDATA *gb_gene_map     = GB_create_container(gb_main, "gene_map");
+            GBDATA *gb_gene_map     = GB_create_container(gb_main,"gene_map");
             if (!gb_gene_map) error = GB_await_error();
             else    error           = GBT_write_string(gb_gene_map, "map_string", map_string);
         }
@@ -574,11 +569,11 @@ int main(int argc, char* argv[]) {
             error = GBT_set_default_alignment(gb_main, "ali_ptgene");
 
             if (!error) {
-                GBDATA *gb_use     = GB_search(gb_main, "presets/alignment/alignment_name", GB_STRING);
+                GBDATA *gb_use     = GB_search(gb_main,"presets/alignment/alignment_name",GB_STRING);
                 if (!gb_use) error = GB_await_error();
                 else {
                     GB_push_my_security(gb_main);
-                    error = GB_write_string(gb_use, "ali_ptgene");
+                    error = GB_write_string(gb_use,"ali_ptgene");
                     GB_pop_my_security(gb_main);
                 }
             }

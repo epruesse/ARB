@@ -1,19 +1,22 @@
-// =============================================================== //
-//                                                                 //
-//   File      : ali_sequence.cxx                                  //
-//   Purpose   :                                                   //
-//                                                                 //
-//   Institute of Microbiology (Technical University Munich)       //
-//   http://www.arb-home.de/                                       //
-//                                                                 //
-// =============================================================== //
 
+
+#include <string.h>
+#include <stdlib.h>
+// #include <malloc.h>
+
+#include "ali_misc.hxx"
 #include "ali_sequence.hxx"
 
-// ---------------------
-//      ALI_SEQUENCE
 
-int ALI_SEQUENCE::check()
+
+/*****************************************************************************
+ *
+ *  ALI_SEQUENCE
+ *
+ *****************************************************************************/
+
+
+int ALI_SEQUENCE::check(void)
 {
     unsigned char *seq_buf;
     unsigned long i;
@@ -26,13 +29,13 @@ int ALI_SEQUENCE::check()
     return 1;
 }
 
-char *ALI_SEQUENCE::string()
+char *ALI_SEQUENCE::string(void)
 {
     char *str, *str_buf;
     unsigned char *seq_buf;
     unsigned long i;
 
-    str = (char *) CALLOC((unsigned int) seq_len + 1, sizeof(char));
+    str = (char *) CALLOC((unsigned int) seq_len + 1,sizeof(char));
 
     str_buf = str;
     seq_buf = seq;
@@ -40,13 +43,16 @@ char *ALI_SEQUENCE::string()
         *(str_buf++) = *(seq_buf++);
     }
     *str_buf = '\0';
-    ali_sequence_to_string((unsigned char*) str, seq_len);
+    ali_sequence_to_string((unsigned char*) str,seq_len);
 
     return str;
 }
 
-// --------------------------
-//      ALI_NORM_SEQUENCE
+/*****************************************************************************
+ *
+ *  ALI_NORM_SEQUENCE
+ *
+ *****************************************************************************/
 
 ALI_NORM_SEQUENCE::ALI_NORM_SEQUENCE(char *Name, char *String)
 {
@@ -55,16 +61,18 @@ ALI_NORM_SEQUENCE::ALI_NORM_SEQUENCE(char *Name, char *String)
     int dot_flag;
     char *str;
 
-    // Count only _BASES_
+    /*
+     * Count only _BASES_
+     */
     for (counter = 0, str = String; *str != '\0'; str++)
         if (ali_is_base(*str))
             counter++;
     seq_len = counter;
 
-    seq      = (unsigned char*) CALLOC((unsigned int) seq_len, sizeof(unsigned char));
-    dots     = (unsigned char **) CALLOC((unsigned int) (seq_len/8)+1, sizeof(unsigned char));
+    seq = (unsigned char*) CALLOC((unsigned int) seq_len,sizeof(unsigned char));
+    dots = (unsigned char **) CALLOC((unsigned int) (seq_len/8)+1, sizeof(unsigned char));
+    //dots = (unsigned char (*) [1]) CALLOC((unsigned int) (seq_len/8)+1, sizeof(unsigned char));
     seq_name = strdup(Name);
-
     if (seq == 0 || dots == 0 || seq_name == 0) {
         ali_fatal_error("Out of memory");
     }
@@ -99,10 +107,10 @@ ALI_NORM_SEQUENCE::ALI_NORM_SEQUENCE(ALI_SEQUENCE *SEQ)
             counter++;
     seq_len = counter;
 
-    seq      = (unsigned char*) CALLOC((unsigned int) seq_len, sizeof(unsigned char));
-    dots     = (unsigned char **) CALLOC((unsigned int) (seq_len/8)+1, sizeof(unsigned char));
+    seq = (unsigned char*) CALLOC((unsigned int) seq_len,sizeof(unsigned char));
+    dots = (unsigned char **) CALLOC((unsigned int) (seq_len/8)+1, sizeof(unsigned char));
+    //dots = (unsigned char (*) [1]) CALLOC((unsigned int) (seq_len/8)+1, sizeof(unsigned char));
     seq_name = strdup(SEQ->name());
-
     if (seq == 0 || dots == 0 || seq_name == 0) {
         ali_fatal_error("Out of memory");
     }
@@ -131,7 +139,7 @@ char *ALI_NORM_SEQUENCE::string()
     unsigned char *seq_buf;
     unsigned long i;
 
-    str = (char *) CALLOC((unsigned int) seq_len + 1, sizeof(char));
+    str = (char *) CALLOC((unsigned int) seq_len + 1,sizeof(char));
     if (str == 0)
         ali_fatal_error("Out of memory");
 
@@ -139,7 +147,7 @@ char *ALI_NORM_SEQUENCE::string()
         *str_buf++ = *seq_buf++;
     *str_buf = '\0';
 
-    ali_sequence_to_string((unsigned char*) str, seq_len);
+    ali_sequence_to_string((unsigned char*) str,seq_len);
 
     return str;
 }

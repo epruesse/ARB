@@ -3,20 +3,27 @@
 //    File      : arb_help2xml.cxx                                       //
 //    Purpose   : Converts old ARB help format to XML                    //
 //                                                                       //
+//                                                                       //
 //  Coded by Ralf Westram (coder@reallysoft.de) in October 2001          //
 //  Copyright Department of Microbiology (Technical University Munich)   //
 //                                                                       //
 //  Visit our web site at: http://www.arb-home.de/                       //
 //                                                                       //
+//                                                                       //
 //  ==================================================================== //
 
-#include <xml.hxx>
+#ifndef ARB_ASSERT_H
+#include <arb_assert.h>
+#endif
+#define h2x_assert(bed) arb_assert(bed)
 
 #include <list>
 #include <set>
+#include <string>
 #include <iostream>
 #include <fstream>
 
+#include <cstdio>
 #include <cstdlib>
 #include <cstdarg>
 #include <cstring>
@@ -24,9 +31,9 @@
 
 #include <sys/stat.h>
 
-using namespace std;
+#include <xml.hxx>
 
-#define h2x_assert(bed) arb_assert(bed)
+using namespace std;
 
 #if defined(DEBUG)
 #define WARN_TODO
@@ -34,7 +41,7 @@ using namespace std;
 
 
 // #define DUMP_DATA // use this to see internal data (class Helpfile)
-#define MAX_LINE_LENGTH 200     // maximum length of lines in input stream
+#define MAX_LINE_LENGTH 2000     // maximum length of lines in input stream
 #define TABSIZE         8
 
 static const char *knownSections[] = { "OCCURRENCE", "DESCRIPTION", "NOTES", "EXAMPLES", "WARNINGS", "BUGS",
@@ -58,6 +65,7 @@ static string vstrf(const char *format, va_list argPtr) {
 
         // otherwise resize buffer :
         buf_size += buf_size/2;
+        //                 cerr << "Reallocate vstrf-buffer to size=" << buf_size << endl;
         delete [] buffer;
         buffer    = new char[buf_size];
     }
@@ -155,21 +163,12 @@ private:
                     lineBuffer2[o2] = 0;
                     strcpy(lineBuffer, lineBuffer2);
                 }
-
-                char *eol = strchr(lineBuffer, 0)-1;
-                while (eol >= lineBuffer && eol[0] == ' ') eol--;
-                if (eol > lineBuffer) {
-                    // now eol points to last character
-                    if (eol[0] == '-' && isalnum(eol[-1])) {
-                        add_warning("manual hyphenation detected", lineNo);
-                    }
-                }
             }
         }
     }
 
 public:
-    Reader(istream& in_) : in(in_),  readAgain(true),  eof(false), lineNo(0) { getline(); }
+    Reader(istream& in_) : in(in_) , readAgain(true) , eof(false), lineNo(0) { getline(); }
     virtual ~Reader() {}
 
     const char *getNext() {
@@ -188,6 +187,7 @@ public:
 
 
 typedef list<string> Strings;
+// typedef list<string> Section;
 
 class Section {
     Strings content;
@@ -206,7 +206,7 @@ public:
 
 
 #if defined(WARN_TODO)
-void check_TODO(const char *line, const Reader& reader) {
+void check_TODO(const char *line, Reader& reader) {
     if (strstr(line, "@@@") != NULL || strstr(line, "TODO") != NULL) {
         string warn = strf("TODO: %s", line);
         add_warning(warn.c_str(), reader.getLineNo());
@@ -302,7 +302,7 @@ inline const char *extractKeyword(const char *line, string& keyword) {
     // returns NULL if no keyword was found
     // otherwise returns position behind keyword and sets value of 'keyword'
 
-    const char *space = strchr(line, ' ');
+    char *space = strchr(line, ' ');
     if (space && space>line) {
         keyword = string(line, 0, space-line);
         return space;
@@ -310,6 +310,7 @@ inline const char *extractKeyword(const char *line, string& keyword) {
     else if (!space) { // test for keyword w/o content behind
         if (line[0]) { // not empty
             keyword = line;
+//             cout << "keyword='" << keyword << "'\n";
             return strchr(line, 0);
         }
     }
@@ -357,10 +358,6 @@ static void parseSection(Section& sec, const char *line, int indentation, Reader
                 break;
             }
 
-#if defined(WARN_TODO)
-            check_TODO(line, reader);
-#endif // WARN_TODO
-        
             string Line = line;
             const char *first = firstChar(line);
             if (first[0] == '-') {
@@ -388,6 +385,8 @@ static void parseSection(Section& sec, const char *line, int indentation, Reader
         Strings::iterator p = sec.Content().begin();
 
         *p = string("\n")+spaces+*p;
+//         advance(p, sec.size()-1);
+//         *p = *p+string("\n");
     }
 }
 string cutoff_hlp_extension(const string& s) __ATTR__DEPRECATED;
@@ -407,10 +406,10 @@ inline string cutoff_hlp_extension(const string& s) {
     if ((pos+4) == s.length()) {
         return s; // accept .pdf
     }
-
+    
     throw string("Expected extension .hlp, .ps or .pdf");
 }
-inline void check_duplicates(const string& link, const char * /* where */, const Links& existing, bool add_warnings) {
+inline void check_duplicates(const string& link, const char */*where*/, const Links& existing, bool add_warnings) {
     for (Links::const_iterator ex = existing.begin(); ex != existing.end(); ++ex) {
         if (ex->Target() == link) {
             if (add_warnings) add_warning(strf("First Link to '%s' was found here.", ex->Target().c_str()), ex->SourceLineno());
@@ -443,7 +442,7 @@ void Helpfile::readHelp(istream& in, const string& filename) {
 #if defined(WARN_TODO)
             check_TODO(line, read);
 #endif // WARN_TODO
-
+            
             string      keyword;
             const char *rest = extractKeyword(line, keyword);
 
@@ -494,13 +493,13 @@ void Helpfile::readHelp(istream& in, const string& filename) {
                         if (keyword == "SECTION") {
                             string  section_name = eatWhite(rest);
                             Section sec(read.getLineNo());
-
+                            
                             parseSection(sec, "", 0, read);
                             sections.push_back(NamedSection(section_name, sec));
                         }
                         else {
                             Section sec(read.getLineNo());
-
+                            
                             rest = eatWhite(rest);
                             parseSection(sec, rest, rest-line, read);
                             sections.push_back(NamedSection(keyword, sec));
@@ -519,6 +518,9 @@ void Helpfile::readHelp(istream& in, const string& filename) {
 
     catch (string& err) { throw LineAttachedMessage(err, read.getLineNo()); }
     catch (const char *err) { throw LineAttachedMessage(err, read.getLineNo()); }
+
+    // catch (string& err) { throw strf("%s:%i: %s", filename.c_str(), read.getLineNo(), err.c_str()); }
+    // catch (const char *err) { throw strf("%s:%i: %s", filename.c_str(), read.getLineNo(), err); }
 }
 
 static bool shouldReflow(const string& s, int& foundIndentation) {
@@ -713,7 +715,7 @@ private:
         if (!reflow) {
             size_t reststart = text.find('\n', 1);
             if (reststart != string::npos) {
-                int    rest_indent = -1;
+                int    rest_indent;
                 string rest        = text.substr(reststart);
                 bool   rest_reflow = shouldReflow(rest, rest_indent);
 
@@ -728,9 +730,17 @@ private:
                         h2x_assert(textstart != string::npos);
 #endif // DEBUG
 
+                        // text = string("\n")+string(rest_indent, ' ')
+                        // + text.substr(textstart, reststart-textstart)+rest;
+
                         text   = text.substr(0, reststart)+correctIndentation(rest, -8);
                         reflow = shouldReflow(text, indentation);
                     }
+//                     else {
+//                         char buffer[100];
+//                         sprintf(buffer, "rest_indent=%i first_indent=%i ", rest_indent, first_indent);
+//                         text = string("\n")+string(first_indent, ' ')+buffer+text;
+//                     }
                 }
             }
         }
@@ -931,7 +941,7 @@ ParagraphTree* ParagraphTree::format_enums() {
             ParagraphTree *lookin = enum_this;
             int            lookfor;
 
-            for (lookfor = 2; ; ++lookfor) {
+            for ( lookfor = 2; ; ++lookfor) {
                 ParagraphTree *next_enum = lookin->extractEmbeddedEnum(lookfor);
                 if (!next_enum) break;
 
@@ -951,7 +961,7 @@ ParagraphTree* ParagraphTree::format_enums() {
 
 ParagraphTree* ParagraphTree::format_indentations() {
     if (brother) {
-        if (is_enumerated) {
+        if (is_enumerated)  {
             if (brother) brother = brother->format_indentations();
             if (son) son = son->format_indentations();
         }
@@ -960,7 +970,7 @@ ParagraphTree* ParagraphTree::format_indentations() {
             if (same_indent) {
                 if (same_indent == brother) {
                     brother     = brother->format_indentations();
-                    if (son) son = son->format_indentations();
+                    if(son) son = son->format_indentations();
                 }
                 else {
                     ParagraphTree *children = brother->removeTill(same_indent);
@@ -1001,10 +1011,10 @@ const char *link_id[] = {
     "www",
     "www",
     "www",
-    "email",
-    "hlp",
-    "ps",
-    "pdf",
+    "email", 
+    "hlp", 
+    "ps", 
+    "pdf", 
 };
 
 static string LinkType2id(LinkType type) {
@@ -1031,10 +1041,10 @@ static LinkType detectLinkType(const string& link_target) {
     if      (ext && strcasecmp(ext, "hlp") == 0)            type = LT_HLP;
     else if (link_target.find("http://")   == 0)            type = LT_HTTP;
     else if (link_target.find("ftp://")    == 0)            type = LT_FTP;
-    else if (link_target.find("file://")   == 0)            type = LT_FILE;
-    else if (link_target.find('@')         != string::npos) type = LT_EMAIL;
-    else if (ext && strcasecmp(ext, "ps")  == 0)            type = LT_PS;
-    else if (ext && strcasecmp(ext, "pdf") == 0)            type = LT_PDF;
+    else if (link_target.find("file://")   == 0)            type = LT_FILE; 
+    else if (link_target.find('@')         != string::npos) type = LT_EMAIL; 
+    else if (ext && strcasecmp(ext, "ps")  == 0)            type = LT_PS; 
+    else if (ext && strcasecmp(ext, "pdf") == 0)            type = LT_PDF; 
 
     return type;
 }
@@ -1071,11 +1081,8 @@ static string locate_document(const string& docname) {
 }
 
 static void add_link_attributes(XML_Tag& link, LinkType type, const string& dest, size_t source_line) {
-    if (type == LT_UNKNOWN) {
-        string msg = string("Invalid link (dest='")+dest+"')";
-        throw LineAttachedMessage(msg, source_line);
-    }
-
+    if (type == LT_UNKNOWN) throw LineAttachedMessage("Invalid link", source_line);
+    
     link.add_attribute("dest", dest);
     link.add_attribute("type", LinkType2id(type));
     link.add_attribute("source_line", source_line);
@@ -1085,7 +1092,7 @@ static void add_link_attributes(XML_Tag& link, LinkType type, const string& dest
         if (fullhelp.empty()) {
             link.add_attribute("missing", "1");
             string warning = strf("Dead link to '%s'", dest.c_str());
-            h2x_assert(source_line<1000); // illegal line number ?
+            h2x_assert(source_line<1000); // illegal line number ? 
             add_warning(warning, source_line);
         }
     }
@@ -1130,7 +1137,7 @@ void ParagraphTree::xml_write(bool ignore_enumerated, bool write_as_entry) {
                 textblock.add_attribute("reflow", reflow ? "1" : "0");
                 {
                     string usedText;
-                    if (reflow) {
+                    if (reflow)  {
                         usedText = correctIndentation(text, (textblock.Indent()+1) * the_XML_Document->indentation_per_level);
                     }
                     else {
@@ -1172,7 +1179,7 @@ void Helpfile::writeXML(FILE *out, const string& page_name) {
     XML_Document xml("PAGE", "arb_help.dtd", out);
     xml.skip_empty_tags       = true;
     xml.indentation_per_level = 2;
-
+    
     xml.getRoot().add_attribute("name", page_name);
 #if defined(DEBUG)
     xml.getRoot().add_attribute("edit_warning", "devel"); // inserts a edit warning into development version
@@ -1230,7 +1237,7 @@ void Helpfile::extractInternalLinks() {
         const Section& sec = named_sec->getSection();
         try {
             const Strings& s   = sec.Content();
-
+            
             for (Strings::const_iterator li = s.begin(); li != s.end(); ++li) {
                 const string& line = *li;
                 size_t        start = 0;
@@ -1249,6 +1256,8 @@ void Helpfile::extractInternalLinks() {
                         link_target.find("file://") == string::npos &&
                         link_target.find('@')       == string::npos)
                     {
+                        // string rest_noext = cutoff_hlp_extension(link_target);
+
                         try {
                             check_duplicates(link_target, "SUB", references, true); // check only sublinks here
                             try {

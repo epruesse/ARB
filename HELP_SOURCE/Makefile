@@ -26,22 +26,25 @@ BINARIES = $(TOOL_OBJECTS:%.o=$(ARBHOME)/bin/%)
 
 QUIETLY = ./quietly.pl
 
-# using xsltproc and XMLLINT:
-XSLTPROC = xsltproc
+# We use Sablotron 1.0 and XMLLINT
+XSLT = sabcmd
 VALIDATE = $(QUIETLY) XMLLINT
 
 # --------------------------------------------------------------------------------
 
 all: date generated dirs tools nonhlp_formats delzerohtml
 ifeq ($(CONVERT_FROM_OLD_HELP),1)
-		@echo --------------------------------------------------- [old hlp 2 xml]
-		time $(MAKE) xml
+		@echo ---------------------------------------------------
+		@echo ------------ Converting old hlp 2 xml:
+		$(MAKE) xml
 endif
-		@echo --------------------------------------------------- [xml 2 hlp]
-		time $(MAKE) help
+		@echo ---------------------------------------------------
+		@echo ------------ Converting xml 2 hlp:
+		$(MAKE) help
 		$(MAKE) $(HLP_DEST)/FORM.hlp
-		@echo --------------------------------------------------- [xml 2 html]
-		time $(MAKE) html
+		@echo ---------------------------------------------------
+		@echo ------------ Converting xml 2 html:
+		$(MAKE) html
 		$(MAKE) html_index
 
 $(HLP_DEST)/FORM.hlp: $(HLP_SOURCE)/FORM.hlp
@@ -86,9 +89,8 @@ OLD_HELP_ALL= \
 
 ifeq ($(TEST_ONE),1)
 #OLD_HELP=$(HLP_SOURCE)/parser.hlp $(HLP_SOURCE)/commands.hlp $(HLP_SOURCE)/FAQS.hlp $(HLP_SOURCE)/acisrt.hlp
-#OLD_HELP=$(HLP_SOURCE)/arb.hlp $(HLP_SOURCE)/version.hlp $(HLP_SOURCE)/translate_dna_2_pro.hlp $(HLP_SOURCE)/species_join.hlp
-OLD_HELP=$(HLP_SOURCE)/version.hlp
 #OLD_HELP=$(HLP_SOURCE)/arb.hlp
+OLD_HELP=$(HLP_SOURCE)/arb.hlp
 else
 OLD_HELP=$(OLD_HELP_ALL:$(HLP_SOURCE)/FORM.hlp=)# remove FORM.hlp (this is just a default file)
 endif
@@ -114,7 +116,7 @@ $(XML_LOCATION)/%.xml : $(HLP_SOURCE)/%.hlp $(DTD)
 				( echo $<:1: exists twice -- only one existence allowed; \
 				  echo $(HLP_GENERATED)/$(<F):1: other occurrence \
 				  && false )
-		@arb_help2xml $< $@
+		arb_help2xml $< $@
 		@$(VALIDATE) $@
 
 $(XML_LOCATION)/%.xml : $(HLP_GENERATED)/%.hlp $(DTD)
@@ -122,7 +124,7 @@ $(XML_LOCATION)/%.xml : $(HLP_GENERATED)/%.hlp $(DTD)
 				( echo $<:1: exists twice -- only one existence allowed; \
 				  echo $(HLP_SOURCE)/$(<F):1: other occurrence \
 				  && false )
-		@arb_help2xml $< $@
+		arb_help2xml $< $@
 		@$(VALIDATE) $@
 
 else
@@ -180,18 +182,16 @@ STYLE_HELP=to_help.xsl
 
 # --------------------------------------------------------------------------------
 
-XSLTPROC_ARGS=--nonet --nomkdir --stringparam xml_location "$(XML_LOCATION)"
+$(HELP) : $(STYLE_HELP) $(DTD)
 
-$(HELP) : $(STYLE_HELP) $(DTD) Makefile
-
-$(HLP_DEST)/%.hlp : $(XML_LOCATION)/%.xml 
-		@-rm -f $@
-		@$(XSLTPROC) --output $@ $(XSLTPROC_ARGS) --stringparam myname "$(subst $(XML_LOCATION)/,,$<)" $(STYLE_HELP) $< || rm $@
-		@test -f $@ || (echo "$<:0: did not compile to $@" && false)
+$(HLP_DEST)/%.hlp : $(XML_LOCATION)/%.xml
+		@((test -f $@ && rm $@) || true)
+		$(XSLT) $(STYLE_HELP) $< $@ '$$myname=$(subst $(XML_LOCATION)/,,$<)' '$$xml_location=$(XML_LOCATION)' || rm $@
+		@test -f $@
 
 # --------------------------------------------------------------------------------
 
-$(HTML) : $(STYLE_HTML) $(DTD) Makefile
+$(HTML) : $(STYLE_HTML) $(DTD)
 
 # Google logo
 google_logo: $(HTML_LOCATION)/Logo_25wht.gif
@@ -200,22 +200,22 @@ $(HTML_LOCATION)/Logo_25wht.gif : Logo_25wht.gif
 		@test -f $@
 
 $(HTML_LOCATION)/%.html : $(XML_LOCATION)/%.xml
-		@-rm -f $@
-		@$(XSLTPROC) --output $@ $(XSLTPROC_ARGS) --stringparam myname "$(subst $(XML_LOCATION)/,,$<)" $(STYLE_HTML) $< || (rm $@ && test -f $@)
-		@test -f $@ || (echo "$<:0: did not compile to $@" && false)
+		@((test -f $@ && rm $@) || true)
+		$(XSLT) $(STYLE_HTML) $< $@ '$$myname=$(subst $(XML_LOCATION)/,,$<)' '$$xml_location=$(XML_LOCATION)' || (rm $@ && test -f $@)
+		@test -f $@
 
 # --------------------------------------------------------------------------------
 
 HTML_IDX = _index.html
 
 html.list: $(HTML)
-		@find $(HTML_LOCATION) -name "*.html" >$@
+		find $(HTML_LOCATION) -name "*.html" >$@
 
 $(HTML_IDX) : html.list
-		@echo '<HTML><HEAD><TITLE>Arb-Help Index</TITLE></HEAD>' >$@
-		@echo '<BODY>' >>$@
-		@cat $< |  sed -e 's/^\(.*\)$$/<A href="\1">\1<\/A> /'  >>$@
-		@echo '</BODY></HTML>' >>$@
+		echo '<HTML><HEAD><TITLE>Arb-Help Index</TITLE></HEAD>' >$@
+		echo '<BODY>' >>$@
+		cat $< |  sed -e 's/^\(.*\)$$/<A href="\1">\1<\/A> /'  >>$@
+		echo '</BODY></HTML>' >>$@
 
 # --------------------------------------------------------------------------------
 
@@ -253,7 +253,7 @@ $(XML_DEPEND) : arb_help2xml.cxx
 	$(CPP) $(cflags) -c $< $(CPPINCLUDES) $(POST_COMPILE)
 
 $(HELP2XML): arb_help2xml.o $(LIBS)
-	$(LINK_EXECUTABLE) $@ $< $(LIBS) $(LIBPATH) $(ARBDB_LIB) $(EXECLIBS)
+	$(LINK_EXECUTABLE) $@ $< $(LIBS) $(LIBPATH) -lARBDB
 
 DEPENDS = $(TOOL_OBJECTS:.o=.depend)
 depends: $(DEPENDS)
@@ -276,5 +276,4 @@ arb_help2xml.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 arb_help2xml.o: $(ARBHOME)/INCLUDE/arb_assert.h
 arb_help2xml.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 arb_help2xml.o: $(ARBHOME)/INCLUDE/attributes.h
-arb_help2xml.o: $(ARBHOME)/INCLUDE/dupstr.h
 arb_help2xml.o: $(ARBHOME)/INCLUDE/xml.hxx

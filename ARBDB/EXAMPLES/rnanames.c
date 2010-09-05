@@ -17,21 +17,25 @@ int main(int argc, char **argv) {
 
     GB_begin_transaction(gbmain);
 
-    if(!(gbali=GB_search(gbmain, "presets/alignment", GB_FIND))) GB_abort_transaction(gbmain);
+    if(!(gbali=GB_search(gbmain, "presets/allignment", GB_FIND))) GB_abort_transaction(gbmain);
 
-    for (gbrnali=GB_find(gbali, "alignment_type", "%rna%", SEARCH_CHILD); gbrnali; gbrnali=GB_find(gbrnali, 0,"%rna%", SEARCH_NEXT_BROTHER))
+    for (gbrnali=GB_find(gbali, "alignment_type", "%rna%",down_level); gbrnali; gbrnali=GB_find(gbrnali, 0,"%rna%", this_level+search_next))
     {
-        gbseqname = GB_read_string(GB_search(GB_get_father(gbrnali), "alignment_name", GB_FIND));
+        gbseqname = GB_read_string(GB_search(GB_get_father(gbrnali), "allignment_name", GB_FIND));
         gbspec = GB_search(gbmain, "species_data/species", GB_FIND);
 
         for (gbname = GB_entry(gbspec, "name"); gbname; gbname = GB_nextEntry(gbname)) {
-            if (strcmp(GB_read_char_pntr(gbname), gbseqname) != 0) {
+            if(strcmp(GB_read_char_pntr(gbname), gbseqname)) {
                 gbdata = GB_search(GB_get_father(gbname), "ali_xxx/data", GB_find);
                 fprintf(stdout, "%20s: %50s\n", GB_read_char_pntr(gbseqname), GB_read_char_pntr(gbdata));
                 break;
             }
-            if (strcmp(GB_read_char_pntr(gbname), GB_read_char_pntr(gbseqname)) >= 0) break
+            else {
+                if(strcmp(GB_read_char_pntr(gbname), GB_read_char_pntr(gbseqname)) < 0) continue;
+                else /* > */ break;
+            }
         }
+
     }
 
     GB_commit_transaction(gbmain);

@@ -15,10 +15,9 @@
 #ifndef EXP_LOCAL_HXX
 #define EXP_LOCAL_HXX
 
-#ifndef EXP_HXX
-#include <EXP.hxx>
+#ifndef ARB_ASSERT_H
+#include <arb_assert.h>
 #endif
-
 #define exp_assert(bed) arb_assert(bed)
 
 // contains the path to the experiment:  "organism_name;experiment_name"
@@ -28,8 +27,8 @@
 // to create new experiments:
 #define AWAR_EXPERIMENT_DEST "tmp/experiment/dest"
 
-AW_window *EXP_create_experiment_window(AW_root *aw_root, AW_CL cl_gb_main);
-void EXP_popup_experiment_window(AW_window *aww, AW_CL cl_gb_main, AW_CL);
+AW_window *EXP_create_experiment_window(AW_root *aw_root);
+void EXP_popup_experiment_window(AW_window *aww, AW_CL, AW_CL);
 
 #else
 #error EXP_local.hxx included twice

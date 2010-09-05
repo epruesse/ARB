@@ -1,19 +1,13 @@
-// ============================================================= //
-//                                                               //
-//   File      : island_hopping.cpp                              //
-//   Purpose   :                                                 //
-//                                                               //
-//   Institute of Microbiology (Technical University Munich)     //
-//   http://www.arb-home.de/                                     //
-//                                                               //
-// ============================================================= //
-
 #include "island_hopping.h"
+
+#include <stdlib.h>
+#include <stdio.h>
+#include <string.h>
 
 #define EXTERN
 extern "C" {
 #include "i-hopper.h"
-#include "mem.h"
+#include "memory.h"
 }
 
 #ifndef ARB_ASSERT_H
@@ -190,6 +184,10 @@ GB_ERROR IslandHopping::do_align() {
         }
         aligned_ref_sequence[o] = 0;
         output_sequence[o]      = 0;
+
+
+        //         memcpy(aligned_ref_sequence, XX, nXY+1);
+        //         memcpy(output_sequence, YY, nXY+1);
     }
 
     free(X);

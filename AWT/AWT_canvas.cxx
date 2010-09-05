@@ -1,24 +1,35 @@
-// ================================================================ //
-//                                                                  //
-//   File      : AWT_canvas.cxx                                     //
-//   Purpose   :                                                    //
-//                                                                  //
-//   Institute of Microbiology (Technical University Munich)        //
-//   http://www.arb-home.de/                                        //
-//                                                                  //
-// ================================================================ //
+#include <stdio.h>
+#include <string.h>
 
-#include "awt_canvas.hxx"
-#include "awt.hxx"
-
+#include <arbdb.h>
 #include <arbdbt.h>
+
+#include <aw_root.hxx>
+#include <aw_device.hxx>
+#include <aw_window.hxx>
+#include <awt_canvas.hxx>
+#include <awt.hxx>
 
 #include <algorithm>
 
 using namespace std;
 using namespace AW;
 
-void AWT_graphic_exports::clear() {
+void AWT_motion_event(AW_window *aww, AWT_canvas *ntw, AW_CL cd2);
+void AWT_clip_expose(AW_window *aww,AWT_canvas *ntw,
+                     int left_border, int right_border,
+                     int top_border, int bottom_border,
+                     int hor_overlap, int ver_overlap);
+void AWT_expose_cb(AW_window *dummy,AWT_canvas *ntw, AW_CL cl2);
+void AWT_resize_cb(AW_window *dummy,AWT_canvas *ntw, AW_CL cl2);
+void AWT_focus_cb(AW_window *dummy,AWT_canvas *ntw);
+void AWT_input_event(AW_window *aww, AWT_canvas *ntw, AW_CL cd2);
+void AWT_motion_event(AW_window *aww, AWT_canvas *ntw, AW_CL cd2);
+void AWT_scroll_vert_cb( AW_window *aww, AWT_canvas* ntw, AW_CL cl1);
+void AWT_scroll_hor_cb( AW_window *aww, AWT_canvas* ntw, AW_CL cl1);
+
+
+void AWT_graphic_exports::clear(){
     zoom_reset       = 0;
     resize           = 0;
     refresh          = 0;
@@ -49,7 +60,7 @@ void AWT_canvas::set_vertical_scrollbar_position(AW_window *, int pos) {
 }
 
 void
-AWT_canvas::set_scrollbars()
+AWT_canvas::set_scrollbars( )
     //
 {
     AW_pos width = this->worldinfo.r - this->worldinfo.l;
@@ -89,7 +100,7 @@ void AWT_canvas::init_device(AW_device *device) {
     device->zoom(this->trans_to_fit);
 }
 
-void AWT_canvas::zoom_reset()
+void AWT_canvas::zoom_reset( void )
 {
     GB_transaction dummy(this->gb_main);
 
@@ -139,6 +150,11 @@ void AWT_canvas::zoom_reset()
             else {
                 ;
             }
+            //             if (tree_disp->exports.dont_fit_y) { // Ralf: old version (IMHO wrong)
+            //                 ;
+            //             }else{
+            //                 if (y_scale < x_scale) x_scale = y_scale;
+            //             }
         }
     }
 
@@ -157,7 +173,7 @@ void AWT_canvas::zoom_reset()
 }
 
 void
-AWT_canvas::recalc_size() {
+AWT_canvas::recalc_size( void ){
     GB_transaction dummy(this->gb_main);
     AW_device *device = aww->get_size_device (AW_MIDDLE_AREA);
     device->set_filter(AW_SIZE);
@@ -181,12 +197,6 @@ void AWT_canvas::zoom(AW_device *device, bool zoomIn, const Rectangle& wanted_pa
 
     init_device(device);
 
-    if (!tree_disp) {
-        awt_assert(0); // we have no display - does this occur?
-                       // if yes, pls inform devel@arb-home.de about circumstances
-        return;
-    }
-
     AW_pos width  = worldinfo.r-worldinfo.l;
     AW_pos height = worldinfo.b-worldinfo.t;
 
@@ -196,11 +206,13 @@ void AWT_canvas::zoom(AW_device *device, bool zoomIn, const Rectangle& wanted_pa
     bool takex = true;
     bool takey = true;
 
-    if (tree_disp->exports.dont_fit_y) takey = false;
-    if (tree_disp->exports.dont_fit_x) takex = false;
-    if (tree_disp->exports.dont_fit_larger) {
-        if (width>height)   takey = false;
-        else                takex = false;
+    if (tree_disp) {
+        if (tree_disp->exports.dont_fit_y) takey = false;
+        if (tree_disp->exports.dont_fit_x) takex = false;
+        if (tree_disp->exports.dont_fit_larger) {
+            if (width>height)   takey = false;
+            else                takex = false;
+        }
     }
 
     if (!takex && !takey) {
@@ -225,12 +237,12 @@ void AWT_canvas::zoom(AW_device *device, bool zoomIn, const Rectangle& wanted_pa
     }
 
     if (isClick) { // very small part or single click
-        // -> zoom by 10 % on click position
+        // -> zomm by 10 % on click position
         Vector wanted_diagonal = current.diagonal()*0.45;
 
         Position clickPos     = device->rtransform(wanted_part.centroid());
         Position screenCenter = current.centroid();
-
+        
         Vector center2click(screenCenter, clickPos);
         Vector center2click_zoomed = center2click / 0.9;
 
@@ -239,8 +251,11 @@ void AWT_canvas::zoom(AW_device *device, bool zoomIn, const Rectangle& wanted_pa
 
         Position zoomedCenter = screenCenter+to_zoomed;
 
+        // wanted = Rectangle(clickPos-wanted_diagonal, 2*wanted_diagonal);
         // zoom-rectangle around center
         wanted = Rectangle(zoomedCenter-wanted_diagonal, 2*wanted_diagonal);
+
+        
     }
     else {
         wanted = Rectangle(device->rtransform(wanted_part));
@@ -308,7 +323,7 @@ void AWT_canvas::zoom(AW_device *device, bool zoomIn, const Rectangle& wanted_pa
     set_scrollbars();
 }
 
-inline void nt_draw_zoom_box(AW_device *device, int gc, AW_pos x1, AW_pos y1, AW_pos x2, AW_pos y2) {
+inline void nt_draw_zoom_box(AW_device *device, int gc, AW_pos x1, AW_pos y1, AW_pos x2, AW_pos y2 ) {
     device->box(gc, false, x1, y1, x2-x1, y2-y1, AWT_F_ALL, 0, 0);
 }
 inline void nt_draw_zoom_box(AW_device *device, AWT_canvas *ntw) {
@@ -317,10 +332,10 @@ inline void nt_draw_zoom_box(AW_device *device, AWT_canvas *ntw) {
                      ntw->zoom_drag_ex, ntw->zoom_drag_ey);
 }
 
-static void clip_expose(AW_window *aww, AWT_canvas *ntw,
-                        int left_border, int right_border,
-                        int top_border, int bottom_border,
-                        int hor_overlap, int ver_overlap)
+void AWT_clip_expose(AW_window *aww,AWT_canvas *ntw,
+                     int left_border, int right_border,
+                     int top_border, int bottom_border,
+                     int hor_overlap, int ver_overlap)
 {
     AW_device *device = aww->get_device (AW_MIDDLE_AREA);
     device->set_filter(AW_SCREEN);
@@ -331,46 +346,46 @@ static void clip_expose(AW_window *aww, AWT_canvas *ntw,
     device->set_left_clip_border(left_border);
     device->set_right_clip_border(right_border);
 
-    device->clear_part(left_border, top_border, right_border-left_border,
+    device->clear_part(left_border,top_border,right_border-left_border,
                        bottom_border-top_border, -1);
 
     GB_transaction dummy(ntw->gb_main);
 
-    if (ntw->tree_disp->check_update(ntw->gb_main)>0) {
+    if (ntw->tree_disp->check_update(ntw->gb_main)>0){
         ntw->zoom_reset();
     }
 
     ntw->init_device(device);
 
-    if (hor_overlap> 0.0) {
+    if ( hor_overlap> 0.0) {
         device->set_right_clip_border(right_border + hor_overlap);
     }
-    if (hor_overlap< 0.0) {
+    if ( hor_overlap< 0.0) {
         device->set_left_clip_border(left_border + hor_overlap);
     }
-    if (ver_overlap> 0.0) {
+    if ( ver_overlap> 0.0) {
         device->set_bottom_clip_border(bottom_border + ver_overlap);
     }
-    if (ver_overlap< 0.0) {
+    if ( ver_overlap< 0.0) {
         device->set_top_clip_border(top_border + ver_overlap);
     }
     ntw->tree_disp->show(device);
 }
 
-void AWT_expose_cb(AW_window *dummy, AWT_canvas *ntw, AW_CL) {
+void AWT_expose_cb(AW_window *dummy,AWT_canvas *ntw, AW_CL){
     AWUSE(dummy);
     ntw->refresh();
 }
 
-void AWT_canvas::refresh()
+void AWT_canvas::refresh( void )
 {
     AW_device *device = this->aww->get_device (AW_MIDDLE_AREA);
     device->clear(-1);
-    clip_expose(this->aww, this, this->rect.l, this->rect.r,
-                this->rect.t, this->rect.b, 0, 0);
+    AWT_clip_expose(this->aww, this, this->rect.l, this->rect.r,
+                    this->rect.t, this->rect.b,0,0);
 }
 
-void AWT_resize_cb(AW_window *dummy, AWT_canvas *ntw, AW_CL)
+void AWT_resize_cb(AW_window *dummy,AWT_canvas *ntw, AW_CL)
 {
     AWUSE(dummy);
     ntw->zoom_reset();
@@ -379,13 +394,13 @@ void AWT_resize_cb(AW_window *dummy, AWT_canvas *ntw, AW_CL)
 
 
 
-static void focus_cb(AW_window *dummy, AWT_canvas *ntw) {
+void AWT_focus_cb(AW_window *dummy,AWT_canvas *ntw){
     AWUSE(dummy);
     if (!ntw->gb_main) return;
     ntw->tree_disp->push_transaction(ntw->gb_main);
 
     int flags = ntw->tree_disp->check_update(ntw->gb_main);
-    if (flags) {
+    if (flags){
         ntw->recalc_size();
         ntw->refresh();
     }
@@ -420,13 +435,14 @@ static bool handleZoomEvent(AW_window *aww, AWT_canvas *ntw, AW_device *device, 
     return handled;
 }
 
-static void input_event(AW_window *aww, AWT_canvas *ntw, AW_CL cd2) {
+void AWT_input_event(AW_window *aww, AWT_canvas *ntw, AW_CL cd2)
+{
     AWUSE(cd2);
     AW_event event;
     AW_device *device, *click_device;
 
-    aww->get_event(&event);
-    device = aww->get_device (AW_MIDDLE_AREA);
+    aww->get_event( &event );
+    device = aww->get_device (AW_MIDDLE_AREA  );
 
     device->set_filter(AW_SCREEN);
     device->reset();
@@ -436,6 +452,8 @@ static void input_event(AW_window *aww, AWT_canvas *ntw, AW_CL cd2) {
 
     ntw->tree_disp->check_update(ntw->gb_main);
 
+    /*** here appear all modes which must be handled right here ***/
+
     bool event_handled = false;
 
     if (ntw->mode == AWT_MODE_ZOOM) { // zoom mode is identical for all applications, so handle it here
@@ -443,7 +461,7 @@ static void input_event(AW_window *aww, AWT_canvas *ntw, AW_CL cd2) {
     }
 
     if (!event_handled) {
-        click_device = aww->get_click_device (AW_MIDDLE_AREA, event.x, event.y, AWT_CATCH_LINE, AWT_CATCH_TEXT, 0);
+        click_device = aww->get_click_device (AW_MIDDLE_AREA,event.x, event.y, AWT_CATCH_LINE, AWT_CATCH_TEXT, 0);
         click_device->set_filter(AW_CLICK);
         device->set_filter(AW_SCREEN);
 
@@ -458,13 +476,13 @@ static void input_event(AW_window *aww, AWT_canvas *ntw, AW_CL cd2) {
                                 event.button, event.keymodifier, event.keycode, event.character,
                                 event.type, event.x,
                                 event.y, &ntw->clicked_line,
-                                &ntw->clicked_text);
-        if (ntw->tree_disp->exports.save) {
+                                &ntw->clicked_text );
+        if (ntw->tree_disp->exports.save ) {
             // save it
-            GB_ERROR error = ntw->tree_disp->save(ntw->gb_main, 0, 0, 0);
+            GB_ERROR error = ntw->tree_disp->save(ntw->gb_main, 0,0,0);
             if (error) {
                 aw_message(error);
-                ntw->tree_disp->load(ntw->gb_main, 0, 0, 0);
+                ntw->tree_disp->load(ntw->gb_main, 0,0,0);
             }
         }
         if (ntw->gb_main) {
@@ -501,10 +519,10 @@ void AWT_canvas::set_dragEndpoint(int dragx, int dragy) {
             AW_pos width  = worldinfo.r-worldinfo.l;
             AW_pos height = worldinfo.b-worldinfo.t;
 
-            if (width>height) {                     // like dont_fit_x = 1; dont_fit_y = 0;
+            if (width>height) {     // like dont_fit_x = 1; dont_fit_y = 0;
                 dont_fit_x = true;
             }
-            else {                                  // like dont_fit_y = 1; dont_fit_x = 0;
+            else { // like dont_fit_y = 1; dont_fit_x = 0;
                 dont_fit_y = true;
             }
         }
@@ -560,24 +578,24 @@ void AWT_canvas::set_dragEndpoint(int dragx, int dragy) {
             zoom_drag_ex = zoom_drag_sx+width;
         }
         else if (correct_y) {
-            int height = int(scr_sy*factor) * ((drag_sx*drag_sy) < 0 ? -1 : 1);
+            int height = int(scr_sy*factor) * ((drag_sx*drag_sy) < 0 ? -1 : 1);            
             zoom_drag_ey = zoom_drag_sy+height;
         }
     }
 }
 
-static void motion_event(AW_window *aww, AWT_canvas *ntw, AW_CL cd2) {
+void AWT_motion_event(AW_window *aww, AWT_canvas *ntw, AW_CL cd2) {
     AWUSE(cd2);
     AW_event event;
-    AW_device *device, *click_device;
+    AW_device *device,*click_device;
     int dx, dy;
 
-    device = aww->get_device (AW_MIDDLE_AREA);
+    device = aww->get_device (AW_MIDDLE_AREA  );
     device->reset();
     device->set_filter(AW_SCREEN);
 
     if (ntw->gb_main) ntw->tree_disp->push_transaction(ntw->gb_main);
-    aww->get_event(&event);
+    aww->get_event( &event );
 
     if (event.button == AWT_M_MIDDLE) {
         // shift display in ALL modes
@@ -618,8 +636,8 @@ static void motion_event(AW_window *aww, AWT_canvas *ntw, AW_CL cd2) {
                     click_device->get_clicked_text(&ntw->clicked_text);
                     run_command  = false;
                     break;
-
-                default:
+                    
+                default :
                     break;
             }
         }
@@ -629,13 +647,13 @@ static void motion_event(AW_window *aww, AWT_canvas *ntw, AW_CL cd2) {
             ntw->tree_disp->command(device, ntw->mode,
                                     event.button, event.keymodifier, event.keycode, event.character, AW_Mouse_Drag, event.x,
                                     event.y, &ntw->clicked_line,
-                                    &ntw->clicked_text);
+                                    &ntw->clicked_text );
             if (ntw->gb_main) {
                 ntw->tree_disp->update(ntw->gb_main);
             }
         }
     }
-
+    
     if (ntw->tree_disp->exports.zoom_reset) {
         ntw->zoom_reset();
         ntw->refresh();
@@ -651,7 +669,7 @@ static void motion_event(AW_window *aww, AWT_canvas *ntw, AW_CL cd2) {
     if (ntw->gb_main) ntw->tree_disp->pop_transaction(ntw->gb_main);
 }
 
-void AWT_canvas::scroll(AW_window *dummy, int dx, int dy, bool dont_update_scrollbars) {
+void AWT_canvas::scroll( AW_window *dummy, int dx, int dy, bool dont_update_scrollbars) {
     AWUSE(dummy);
 
     int csx, cdx, cwidth, csy, cdy, cheight;
@@ -670,59 +688,56 @@ void AWT_canvas::scroll(AW_window *dummy, int dx, int dy, bool dont_update_scrol
 
     /* compute move area params */
 
-    if (dx>0) {
+    if(dx>0){
         csx = dx;
         cdx = 0;
         cwidth = screenwidth-dx;
-    }
-    else {
+    }else{
         csx = 0;
         cdx = -dx;
         cwidth = screenwidth+dx;
     }
-    if (dy>0) {
+    if(dy>0){
         csy = dy;
         cdy = 0;
         cheight = screenheight-dy;
-    }
-    else {
+    }else{
         csy = 0;
         cdy = -dy;
         cheight = screenheight+dy;
     }
 
     /* move area */
-    if (!tree_disp->exports.dont_scroll) {
-        device->move_region(csx, csy, cwidth, cheight, cdx, cdy);
+    if (!tree_disp->exports.dont_scroll){
+        device->move_region( csx, csy, cwidth, cheight, cdx, cdy);
         /* redraw stripes */
         this->shift_x_to_fit -= dx/this->trans_to_fit;
         this->shift_y_to_fit -= dy/this->trans_to_fit;
 
         // x-stripe
-        if ((int)dx>0) {
-            clip_expose(aww, this,
-                        screenwidth-dx, screenwidth, 0, screenheight,
-                        -CLIP_OVERLAP,  0);
+        if((int)dx>0){
+            AWT_clip_expose(aww, this, screenwidth-dx, screenwidth,
+                            0, screenheight,
+                            -CLIP_OVERLAP , 0);
         }
-        if ((int)dx<0) {
-            clip_expose(aww, this,
-                        0, -dx, 0, screenheight,
-                        CLIP_OVERLAP, 0);
+        if((int)dx<0){
+            AWT_clip_expose(aww, this,  0, -dx,
+                            0, screenheight,
+                            CLIP_OVERLAP,0);
         }
 
         // y-stripe
-        if ((int)dy>0) {
-            clip_expose(aww, this,
-                        0, screenwidth, screenheight-dy, screenheight,
-                        0, -CLIP_OVERLAP);
+        if((int)dy>0){
+            AWT_clip_expose(aww, this, 0, screenwidth,
+                            screenheight-dy, screenheight,
+                            0,-CLIP_OVERLAP);
         }
-        if ((int)dy<0) {
-            clip_expose(aww, this,
-                        0, screenwidth, 0,  -dy,
-                        0,  CLIP_OVERLAP);
+        if((int)dy<0){
+            AWT_clip_expose(aww, this,  0, screenwidth,
+                            0,  -dy,
+                            0,  CLIP_OVERLAP);
         }
-    }
-    else {          // redraw everything
+    }else{          // redraw everything
         /* redraw stripes */
         this->shift_x_to_fit -= dx/this->trans_to_fit;
         this->shift_y_to_fit -= dy/this->trans_to_fit;
@@ -731,12 +746,14 @@ void AWT_canvas::scroll(AW_window *dummy, int dx, int dy, bool dont_update_scrol
     this->refresh();
 }
 
-static void scroll_vert_cb(AW_window *aww, AWT_canvas* ntw, AW_CL cl1) {
+void
+AWT_scroll_vert_cb( AW_window *aww, AWT_canvas* ntw, AW_CL cl1)
+{
     AWUSE(cl1);
     int delta_screen_y;
 
     int new_vert = aww->slider_pos_vertical;
-    delta_screen_y = (new_vert - ntw->old_vert_scroll_pos);
+    delta_screen_y = (new_vert - ntw->old_vert_scroll_pos) ;
 
 
     ntw->scroll(aww, 0, delta_screen_y, true);
@@ -745,12 +762,14 @@ static void scroll_vert_cb(AW_window *aww, AWT_canvas* ntw, AW_CL cl1) {
 
 }
 
-static void scroll_hor_cb(AW_window *aww, AWT_canvas* ntw, AW_CL cl1) {
+void
+AWT_scroll_hor_cb( AW_window *aww, AWT_canvas* ntw, AW_CL cl1)
+{
     AWUSE(cl1);
     int delta_screen_x;
 
     int new_hor = aww->slider_pos_horizontal;
-    delta_screen_x = (new_hor - ntw->old_hor_scroll_pos);
+    delta_screen_x = (new_hor - ntw->old_hor_scroll_pos) ;
 
     ntw->scroll(aww, delta_screen_x, 0, true);
 
@@ -773,32 +792,32 @@ AWT_canvas::AWT_canvas(GBDATA *gb_maini, AW_window *awwi, AWT_graphic *awd, AW_g
     tree_disp->drag_gc  = drag_gc;
     set_gc_manager      = gc_manager;
 
-    memset((char *)&clicked_line, 0, sizeof(clicked_line));
-    memset((char *)&clicked_text, 0, sizeof(clicked_text));
+    memset((char *)&clicked_line,0,sizeof(clicked_line));
+    memset((char *)&clicked_text,0,sizeof(clicked_text));
 
     AWT_resize_cb(aww, this, 0);
 
-    aww->set_expose_callback(AW_MIDDLE_AREA, (AW_CB)AWT_expose_cb, (AW_CL)this, 0);
-    aww->set_resize_callback(AW_MIDDLE_AREA, (AW_CB)AWT_resize_cb, (AW_CL)this, 0);
-    aww->set_input_callback(AW_MIDDLE_AREA, (AW_CB)input_event, (AW_CL)this, 0);
-    aww->set_focus_callback((AW_CB)focus_cb, (AW_CL)this, 0);
+    aww->set_expose_callback (AW_MIDDLE_AREA, (AW_CB)AWT_expose_cb, (AW_CL)this, 0);
+    aww->set_resize_callback (AW_MIDDLE_AREA,(AW_CB)AWT_resize_cb, (AW_CL)this, 0);
+    aww->set_input_callback (AW_MIDDLE_AREA,(AW_CB)AWT_input_event,(AW_CL)this, 0 );
+    aww->set_focus_callback ((AW_CB)AWT_focus_cb,(AW_CL)this, 0 );
 
-    aww->set_motion_callback(AW_MIDDLE_AREA, (AW_CB)motion_event, (AW_CL)this, 0);
-    aww->set_horizontal_change_callback((AW_CB)scroll_hor_cb, (AW_CL)this, 0);
-    aww->set_vertical_change_callback((AW_CB)scroll_vert_cb, (AW_CL)this, 0);
+    aww->set_motion_callback (AW_MIDDLE_AREA,(AW_CB)AWT_motion_event,(AW_CL)this, 0 );
+    aww->set_horizontal_change_callback((AW_CB)AWT_scroll_hor_cb,(AW_CL)this, 0 );
+    aww->set_vertical_change_callback((AW_CB)AWT_scroll_vert_cb,(AW_CL)this, 0 );
 }
 
 // --------------------
 //      AWT_graphic
 // --------------------
 
-AWT_graphic::AWT_graphic() {
+AWT_graphic::AWT_graphic(void) {
     exports.init();
 }
-AWT_graphic::~AWT_graphic() {
+AWT_graphic::~AWT_graphic(void) {
 }
 
-void AWT_graphic::pop_transaction(GBDATA *gb_main) {
+void AWT_graphic::pop_transaction(GBDATA *gb_main)  {
     GB_pop_transaction(gb_main);
 }
 void AWT_graphic::push_transaction(GBDATA *gb_main) {
@@ -810,7 +829,7 @@ void AWT_graphic::command(AW_device *, AWT_COMMAND_MODE, int, AW_key_mod, AW_key
 {
 }
 
-void AWT_graphic::text(AW_device * /* device */, char * /* text */) {
+void AWT_graphic::text(AW_device */*device*/, char */*text*/) {
 }
 
 // --------------------------
@@ -838,4 +857,5 @@ void AWT_nonDB_graphic::update(GBDATA *) {
     printf("AWT_nonDB_graphic can't be updated\n");
 #endif // DEBUG
 }
+
 

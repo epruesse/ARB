@@ -9,6 +9,9 @@
 //                                                                 //
 // =============================================================== //
 
+#include <arb_assert.h>
+#define aw_assert(cond) arb_assert(cond)
+
 #include "aw_position.hxx"
 
 using namespace std;
@@ -63,21 +66,21 @@ void Angle::recalcNormal() const {
 
 namespace AW {
     Position crosspoint(const LineVector& l1, const LineVector& l2, double& factor_l1, double& factor_l2) {
-        // calculates the crossing point of the two straight lines defined by l1 and l2.
+        // calculates the crossing point of the two staight lines defined by l1 and l2.
         // sets two factors, so that
         // crosspoint == l1.start()+factor_l1*l1.line_vector();
         // crosspoint == l2.start()+factor_l2*l2.line_vector();
 
-        // Herleitung:
+        // Herleitung: 
         // x1+g*sx = x2+h*tx
         // y1+g*sy = y2+h*ty
         //
-        // h = -(x2-sx*g-x1)/tx
+        // h = -(x2-sx*g-x1)/tx                                       
         // h = (y1-y2+sy*g)/ty                                        (h is factor_l2)
-        //
+        // 
         // -(x2-sx*g-x1)/tx = (y1-y2+sy*g)/ty
-        //
-        // g = (tx*y1+ty*x2-tx*y2-ty*x1)/(sx*ty-sy*tx)
+        // 
+        // g = (tx*y1+ty*x2-tx*y2-ty*x1)/(sx*ty-sy*tx)                
         //
         // g = (tx*(y1-y2)+ty*(x2-x1))/(sx*ty-sy*tx)                  (g is factor_l1)
 
@@ -87,7 +90,7 @@ namespace AW {
         const Vector& s = l1.line_vector();
         const Vector& t = l2.line_vector();
 
-        factor_l1 = (t.x()*(p1.ypos()-p2.ypos()) + t.y()*(p2.xpos()-p1.xpos()))
+        factor_l1 = ( t.x()*(p1.ypos()-p2.ypos()) + t.y()*(p2.xpos()-p1.xpos()) )
             / (s.x()*t.y() - s.y()*t.x());
 
         factor_l2 = (p1.ypos()-p2.ypos()+s.y()*factor_l1) / t.y();
@@ -115,7 +118,7 @@ namespace AW {
             aw_assert(f1>1);
             dist = Distance(pos, line.head());
         }
-
+    
         return dist;
     }
 

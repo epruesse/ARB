@@ -7,17 +7,19 @@
 #ifndef AW_WINDOW_HXX
 #include <aw_window.hxx>
 #endif
-#ifndef ARBDB_BASE_H
-#include <arbdb_base.h>
+#ifndef ARBDB_H
+#include <arbdb.h>
 #endif
 
-class  ED4_root;
-class  ED4_database;
-struct GBS_strstruct;
 
-typedef int ED4_COORDINATE;
+//needed prototype classes
+class ED4_root;
+class ED4_database;
 
-typedef enum ad_edit_mode {
+typedef const char  ED4_ERROR;
+typedef int     ED4_COORDINATE;
+
+typedef enum ad_edit_modus {
     AD_ALIGN,   // add & remove of . possible (default)
     AD_NOWRITE, // no edits allowed
     AD_NOWRITE_IF_COMPRESSED,
@@ -26,7 +28,7 @@ typedef enum ad_edit_mode {
 } ED4_EDITMODI;
 
 
-// global variables
+//global variables
 extern GBDATA       *GLOBAL_gb_main;
 extern ED4_root     *ED4_ROOT;
 extern ED4_database *main_db;
@@ -35,23 +37,24 @@ extern int TERMINALHEIGHT;      // this variable replaces the define
 extern int INFO_TERM_TEXT_YOFFSET;
 extern int SEQ_TERM_TEXT_YOFFSET;
 
-extern int  MAXSEQUENCECHARACTERLENGTH;             // greatest # of characters in a sequence string terminal
-extern int  MAXSPECIESWIDTH;
-extern int  MAXINFOWIDTH;
-extern long ED4_counter;
+extern int            MAXSEQUENCECHARACTERLENGTH; // greatest # of characters in a sequence string terminal
+extern int            MAXSPECIESWIDTH;
+extern int            MAXINFOWIDTH;
+extern long           ED4_counter;
+extern long           all_found; // nr of species which haven't been found
+extern long           species_read; // nr of species read; important during loading
+extern GBS_strstruct *not_found_message;
+extern long           max_seq_terminal_length; // global maximum of sequence terminal length
+extern ED4_EDITMODI   awar_edit_modus;
+extern long           awar_edit_direction;
+extern bool           move_cursor; //only needed for editing in consensus
+extern bool           DRAW;
+extern bool           last_window_reached; //only needed for refreshing all windows
 
-// use ED4_init_notFoundMessage and ED4_finish_and_show_notFoundMessage to
-// modify the following elements
-#define MAX_SHOWN_MISSING_SPECIES 200U              // limit no of missing species/data printed into not_found_message
-extern size_t         not_found_counter;            // nr of species which haven't been found
-extern GBS_strstruct *not_found_message;            // error message containing (some) missing/unloadable species
+extern size_t status_count_total; // used for consensus progress bar
+extern size_t status_count_curr;
 
-extern long         max_seq_terminal_length;        // global maximum of sequence terminal length
-extern ED4_EDITMODI awar_edit_mode;
-extern long         awar_edit_direction;
-extern bool         move_cursor;                    // only needed for editing in consensus
-extern bool         DRAW;
-extern bool         last_window_reached;            // only needed for refreshing all windows
+extern bool loading;
 
 // globally used defines and flags
 
@@ -76,8 +79,9 @@ extern bool         last_window_reached;            // only needed for refreshin
 
 #define MAX_POSSIBLE_SEQ_LENGTH     100000000
 
-#define MAXCHARTABLE 256                            // Maximum of Consensustable
-#define MAXWINDOWS   5
+#define MAXCHARTABLE    256                     // Maximum of Consensustable
+#define MAXWINDOWS  5
+#define MINSPECFORSTATWIN   200
 
 #define AWAR_EDIT_MODE                  "tmp/edit4/edit_mode"
 #define AWAR_INSERT_MODE                "tmp/edit4/insert_mode"
@@ -122,9 +126,9 @@ typedef enum
     ED4_L_SEQUENCE      = 0x40,
     ED4_L_TREE          = 0x80,
     ED4_L_SPECIES_NAME      = 0x100,
-    ED4_L_SEQUENCE_INFO     = 0x200,                // evtl. aendern fuer Name-Manager und group-manager
+    ED4_L_SEQUENCE_INFO     = 0x200,                //evtl. aendern fuer Name-Manager und group-manager
     ED4_L_SEQUENCE_STRING   = 0x400,
-    ED4_L_AA_SEQUENCE_STRING   = 0x600, // ykadi
+    ED4_L_AA_SEQUENCE_STRING   = 0x600, //ykadi
     ED4_L_SPACER        = 0x800,
     ED4_L_LINE          = 0x1000,
     ED4_L_MULTI_NAME        = 0x2000,
@@ -194,8 +198,8 @@ typedef enum
 //  ED4_P_ = 1024,
 //  ED4_P_   = 2048,
     ED4_P_IS_FOLDED     = 4096,                 // Flag whether group is folded or not
-    ED4_P_CONSENSUS_RELEVANT = 8192, // contains information relevant for consensus
-    ED4_P_ALIGNMENT_DATA = 16384, // contains aligned data (also SAIs)
+    ED4_P_CONSENSUS_RELEVANT= 8192, // contains information relevant for consensus
+    ED4_P_ALIGNMENT_DATA= 16384, // contains aligned data (also SAIs)
     ED4_P_ALL       = 0x7fffffff
 }   ED4_properties;
 
@@ -312,31 +316,32 @@ struct ED4_work_info
     ED4_EDITMODI mode;
 
     bool    is_sequence;        // ==1 -> special handling for sequences
-    bool    cannot_handle;      // if TRUE then cannot edit
+    bool    cannot_handle;      // if TRUE than cannot edit
 
     ED4_CursorJumpType cursor_jump;
     bool    refresh_needed;
 
     long    out_seq_position;   // sequence position (after editing)
 
-    char     *out_string;                           // nur falls new malloc
+    char    *out_string;        // nur falls new malloc
+    char    *error;
 
     int     repeat_count;       // only for keystrokes: contains # of times key should be repeated
 
-    ED4_terminal *working_terminal; // this contains the terminal
+    ED4_terminal *working_terminal; // this contains the terminal 
 };
 
 
 struct ED4_update_info // if you add new elements, please ensure to initialize them in ED4_base::ED4_base()
 {
-    unsigned int        resize : 1;
-    unsigned int        refresh : 1;
-    unsigned int    clear_at_refresh : 1;
-    unsigned int        linked_to_folding_line : 1;
-    unsigned int        linked_to_scrolled_rectangle : 1;
-    unsigned int        refresh_horizontal_scrolling : 1;
-    unsigned int        refresh_vertical_scrolling : 1;
-    unsigned int    delete_requested : 1;
+    unsigned int        resize:1;
+    unsigned int        refresh:1;
+    unsigned int    clear_at_refresh:1;
+    unsigned int        linked_to_folding_line:1;
+    unsigned int        linked_to_scrolled_rectangle:1;
+    unsigned int        refresh_horizontal_scrolling:1;
+    unsigned int        refresh_vertical_scrolling:1;
+    unsigned int    delete_requested:1;
 
     void set_clear_at_refresh(int value) {
         clear_at_refresh = value;
@@ -362,13 +367,13 @@ struct ED4_coords
     middle_area_x,
     middle_area_y,
 
-    window_width,               // of whole window (top and middle area and ... )
-    window_height,              // of whole window (top and middle area and ... )
+    window_width,               //of whole window (top and middle area and ... )
+    window_height,              //of whole window (top and middle area and ... )
 
-    window_upper_clip_point,        // absolute coordinate of upper visible clipping point in middle area
-    window_lower_clip_point,        // absolute coordinate of lower visible clipping point in middle area
-    window_left_clip_point,         // absolute coordinate of left  visible clipping point in top and middle area
-    window_right_clip_point;        // absolute coordinate of right visible clipping point in top and middle area
+    window_upper_clip_point,        //absolute coordinate of upper visible clipping point in middle area
+    window_lower_clip_point,        //absolute coordinate of lower visible clipping point in middle area
+    window_left_clip_point,         //absolute coordinate of left  visible clipping point in top and middle area
+    window_right_clip_point;        //absolute coordinate of right visible clipping point in top and middle area
 
     void clear() {
     top_area_x = 0;

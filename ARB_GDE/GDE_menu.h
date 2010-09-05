@@ -1,20 +1,7 @@
-// =============================================================== //
-//                                                                 //
-//   File      : GDE_menu.h                                        //
-//   Purpose   :                                                   //
-//                                                                 //
-// =============================================================== //
 
-#ifndef GDE_MENU_H
-#define GDE_MENU_H
-
-#ifndef GDE_HXX
-#include "gde.hxx"
+#ifndef ARB_ASSERT_H
+#include <arb_assert.h>
 #endif
-#ifndef GDE_DEF_H
-#include "GDE_def.h"
-#endif
-
 #define gde_assert(bed) arb_assert(bed)
 
 typedef struct GargChoicetype
@@ -38,7 +25,10 @@ typedef struct GmenuItemArgtype
     char       *symbol;         /* internal symbol table mapping */
     char       *method;         /* commandline interpretation */
     GargChoice *choice;         /* choices */
-    /* ARB BEGIN */
+    /*ARB BEGIN*/
+    /*  Panel_item  X;*/        /* Xview menu item entry */
+
+
 } GmenuItemArg;
 
 typedef struct GfileFormattype
@@ -52,8 +42,6 @@ typedef struct GfileFormattype
     char *name;                 /* file name */
 } GfileFormat;
 
-class AW_window;
-
 typedef struct GmenuItemtype
 {
     int               numargs;  /* number of agruments to cmnd */
@@ -63,11 +51,12 @@ typedef struct GmenuItemtype
     char             *method;   /* commandline produced */
     GfileFormat      *input;    /* input definitions */
     GfileFormat      *output;   /* output definitions */
-    GmenuItemArg     *arg;      /* argument definitions */
+    GmenuItemArg     *arg;      /* arguement definitions */
     char              meta;     /* Meta character for function */
     char              seqtype;  /* A -> amino, N -> nucleotide, '-' -> no sequence, otherwise both */
     char             *help;     /* commandline help */
     /* ARB BEGIN */
+    /*  Panel_item  X; */       /* Xview panel */
     struct Gmenutype *parent_menu;
     AW_window        *aws;      /* opened window */
 } GmenuItem;
@@ -78,19 +67,16 @@ typedef struct Gmenutype
     char      *label;           /* menu heading */
     GmenuItem *item;            /* menu items */
     /* ARB BEGIN */
+    /*  Panel_item  button;*/       /* Button to activate menu */
+    /*  Menu        X;*/        /* XView menu structure */
     char       meta;            /* Meta character for menu */
 } Gmenu;
 
-typedef unsigned char uchar;
+// typedef unsigned char uchar;
 
-extern struct gde_database_access {
-    GDE_get_sequences_cb  get_sequences;
-    gde_window_type       window_type;
-    AW_CL                 client_data;
-    GBDATA               *gb_main;
-} db_access;
+extern struct choose_get_sequence_struct {
+    char *(*get_sequences)(void *THIS, GBDATA **&the_species, uchar **&the_names, uchar **&the_sequences, long &numberspecies,long &maxalignlen);
+    gde_cgss_window_type wt;
+    void *THIS;
+} gde_cgss;
 
-
-#else
-#error GDE_menu.h included twice
-#endif // GDE_MENU_H

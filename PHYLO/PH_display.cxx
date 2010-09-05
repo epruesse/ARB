@@ -1,28 +1,18 @@
-// =============================================================== //
-//                                                                 //
-//   File      : PH_display.cxx                                    //
-//   Purpose   :                                                   //
-//                                                                 //
-//   Institute of Microbiology (Technical University Munich)       //
-//   http://www.arb-home.de/                                       //
-//                                                                 //
-// =============================================================== //
-
 #include "phylo.hxx"
 #include "phwin.hxx"
 #include "PH_display.hxx"
-#include <arbdb.h>
+#include <cstring>
 
-extern void display_status(AW_window *, AW_CL, AW_CL);
+extern void display_status(AW_window *,AW_CL,AW_CL);
 GB_ERROR    ph_check_initialized();
 
-void vertical_change_cb(AW_window *aww, void *cb1, void *cb2)
+void vertical_change_cb(AW_window *aww,void *cb1,void *cb2)
 {
     AWUSE(cb1); AWUSE(cb2);
     PH_display::ph_display->monitor_vertical_scroll_cb(aww);
 }
 
-void horizontal_change_cb(AW_window *aww, void *cb1, void *cb2)
+void horizontal_change_cb(AW_window *aww,void *cb1,void *cb2)
 {
     AWUSE(cb1); AWUSE(cb2);
     PH_display::ph_display->monitor_horizontal_scroll_cb(aww);
@@ -35,22 +25,22 @@ void ph_view_matrix_cb(AW_window *aww)
 
     PH_display::ph_display->initialize(matrix_dpy);
     PH_display::ph_display->display();
-    main_win->set_vertical_change_callback((AW_CB2)vertical_change_cb, 0, 0);
-    main_win->set_horizontal_change_callback((AW_CB2)horizontal_change_cb, 0, 0);
+    main_win->set_vertical_change_callback((AW_CB2)vertical_change_cb,0,0);
+    main_win->set_horizontal_change_callback((AW_CB2)horizontal_change_cb,0,0);
 }
 
-void ph_view_species_cb(AW_window *aww, AW_CL cb1, AW_CL cb2)
+void ph_view_species_cb(AW_window *aww,AW_CL cb1,AW_CL cb2)
 {
     AWUSE(aww); AWUSE(cb1); AWUSE(cb2);
     AW_window *main_win = PH_used_windows::windowList->phylo_main_window;
 
     PH_display::ph_display->initialize(species_dpy);
     PH_display::ph_display->display();
-    main_win->set_vertical_change_callback((AW_CB2)vertical_change_cb, 0, 0);
-    main_win->set_horizontal_change_callback((AW_CB2)horizontal_change_cb, 0, 0);
+    main_win->set_vertical_change_callback((AW_CB2)vertical_change_cb,0,0);
+    main_win->set_horizontal_change_callback((AW_CB2)horizontal_change_cb,0,0);
 }
 
-void ph_view_filter_cb(AW_window *aww, AW_CL, AW_CL)
+void ph_view_filter_cb(AW_window *aww,AW_CL ,AW_CL )
 {
     GB_ERROR err = ph_check_initialized();
     if (err) {
@@ -65,15 +55,15 @@ void ph_view_filter_cb(AW_window *aww, AW_CL, AW_CL)
         PHDATA::ROOT->markerline=ph_filter->calculate_column_homology();
         PH_display::ph_display->initialize(filter_dpy);
         PH_display::ph_display->display();
-        main_win->set_vertical_change_callback((AW_CB2)vertical_change_cb, 0, 0);
-        main_win->set_horizontal_change_callback((AW_CB2)horizontal_change_cb, 0, 0);
+        main_win->set_vertical_change_callback((AW_CB2)vertical_change_cb,0,0);
+        main_win->set_horizontal_change_callback((AW_CB2)horizontal_change_cb,0,0);
     }
 }
 
 
 PH_display::PH_display()
 {
-    memset((char *) this, 0, sizeof(PH_display));
+    memset((char *) this,0,sizeof(PH_display));
     this->display_what = NONE;
 }
 
@@ -82,17 +72,17 @@ void PH_display::initialize (display_type dpyt)
 {
     display_what = dpyt;
     device=PH_used_windows::windowList->phylo_main_window->get_device(AW_MIDDLE_AREA);
-    if (!device)
+    if(!device)
     {
         aw_message("could not get device !!");
         return;
     }
-    const AW_font_information *aw_fi=device->get_font_information(0, 0);
-    switch (display_what)
+    const AW_font_information *aw_fi=device->get_font_information(0,0);
+    switch(display_what)
     {
         case NONE:
             return;
-
+            
         case species_dpy:
         case filter_dpy:
             cell_width  = aw_fi->max_letter.width;
@@ -101,10 +91,10 @@ void PH_display::initialize (display_type dpyt)
 
             off_dx = SPECIES_NAME_LEN*aw_fi->max_letter.width+20;
             off_dy = cell_height*3;
-
+            
             total_cells_horiz = PHDATA::ROOT->get_seq_len();
             total_cells_vert  = PHDATA::ROOT->nentries;
-            set_scrollbar_steps(PH_used_windows::windowList->phylo_main_window, cell_width, cell_height, 50, 50);
+            set_scrollbar_steps(PH_used_windows::windowList->phylo_main_window, cell_width,cell_height,50,50);
             break;
 
         case matrix_dpy:
@@ -114,31 +104,31 @@ void PH_display::initialize (display_type dpyt)
 
             off_dx = SPECIES_NAME_LEN*aw_fi->max_letter.width+20;
             off_dy = 3*cell_height;
-
+            
             total_cells_horiz = PHDATA::ROOT->nentries;
             total_cells_vert  = PHDATA::ROOT->nentries;
-            set_scrollbar_steps(PH_used_windows::windowList->phylo_main_window, cell_width, cell_height, 50, 50);
+            set_scrollbar_steps(PH_used_windows::windowList->phylo_main_window, cell_width,cell_height,50,50);
             break;
 
         default:
             aw_message("init: unknown display type (maybe not implemented yet)");
             break;
-    }
-    resized();  // initialize window_size dependent parameters
+    }  // switch
+    resized();  // initalize window_size dependend parameters
 }
 
 
-void PH_display::resized()
+void PH_display::resized(void)
 {
     AW_rectangle squ;
     AW_rectangle rect =  { 0, 0, 0, 0 };
-    long         horiz_paint_size, vert_paint_size;
+    long         horiz_paint_size,vert_paint_size;
 
     PH_used_windows::windowList->phylo_main_window->get_device(AW_MIDDLE_AREA)-> get_area_size(&squ);
     screen_width  = squ.r-squ.l;
     screen_height = squ.b-squ.t;
 
-    switch (display_what) {
+    switch(display_what) {
         case NONE:
             return;
 
@@ -154,7 +144,7 @@ void PH_display::resized()
             break;
 
         case matrix_dpy: {
-            const AW_font_information *aw_fi = device->get_font_information(0, 0);
+            const AW_font_information *aw_fi = device->get_font_information(0,0);
 
             horiz_paint_size = (squ.r-aw_fi->max_letter.width-off_dx)/cell_width;
             vert_paint_size  = (squ.b-off_dy)/cell_height;
@@ -169,7 +159,7 @@ void PH_display::resized()
         case filter_dpy:
             horiz_paint_size  = (squ.r-off_dx)/cell_width;
             vert_paint_size   = (squ.b-off_dy)/cell_height;
-            vert_paint_size  -= (3/8)/cell_height + 2;
+            vert_paint_size  -= (3/8)/cell_height +2;
             horiz_page_size   = (PHDATA::ROOT->get_seq_len() > horiz_paint_size) ? horiz_paint_size : PHDATA::ROOT->get_seq_len();
             vert_page_size    = (long(PHDATA::ROOT->nentries) > vert_paint_size) ? vert_paint_size : PHDATA::ROOT->nentries;
             rect.l            = 0;
@@ -199,42 +189,43 @@ void PH_display::resized()
 
 
 
-void PH_display::display()       // draw area
+void PH_display::display(void)   // draw area
 {
-    char buf[50], cbuf[2];
-    long x, y, xpos, ypos;
+    char buf[50],cbuf[2];
+    long x,y,xpos,ypos;
     AW_window *main_win = PH_used_windows::windowList->phylo_main_window;
+    // AW_font_information *aw_fi=0;
     long minhom;
     long maxhom;
-    long startcol, stopcol;
+    long startcol,stopcol;
 
     if (!PHDATA::ROOT) return; // not correctly initialized yet
 
     float *markerline = PHDATA::ROOT->markerline;
 
-    if (!device) return;
+    if(!device) return;
     GB_transaction dummy(PHDATA::ROOT->gb_main);
-    switch (display_what) // be careful: text origin is lower left
+    switch(display_what)  // be careful: text origin is lower left
     {
         case NONE: return;
         case species_dpy:
             device->shift(AW::Vector(off_dx, off_dy));
             ypos=0;
-            for (y=vert_page_start; y<(vert_page_start+vert_page_size) &&
-                    (y<total_cells_vert); y++)
+            for(y=vert_page_start;y<(vert_page_start+vert_page_size) &&
+                    (y<total_cells_vert);y++)
             {
-                device->text(0, PHDATA::ROOT->hash_elements[y]->name, -off_dx,
+                device->text(0,PHDATA::ROOT->hash_elements[y]->name,-off_dx,
                              ypos*cell_height-cell_offset,
-                             0.0, -1, 0, 0);                       // species names
+                             0.0,-1,0,0);                          // species names
 
                 GBDATA     *gb_seq_data = PHDATA::ROOT->hash_elements[y]->gb_species_data_ptr;
                 const char *seq_data    = GB_read_char_pntr(gb_seq_data);
                 long        seq_len     = GB_read_count(gb_seq_data);
-
+                
                 device->text(0,
-                             (horiz_page_start >= seq_len) ? "" : (seq_data+horiz_page_start),
-                             0, ypos*cell_height-cell_offset,
-                             0.0, -1, 0, 0);                       // alignment
+                             (horiz_page_start >=seq_len) ? "" : (seq_data+horiz_page_start),
+                             0,ypos*cell_height-cell_offset,
+                             0.0,-1,0,0);                          // alignment
                 ypos++;
             }
             device->shift(-AW::Vector(off_dx, off_dy));
@@ -243,30 +234,30 @@ void PH_display::display()       // draw area
         case matrix_dpy:
             device->shift(AW::Vector(off_dx, off_dy));
             xpos=0;
-            for (x=horiz_page_start; x<(horiz_page_start+horiz_page_size) &&
-                    (x<total_cells_horiz); x++)
+            for(x=horiz_page_start;x<(horiz_page_start+horiz_page_size) &&
+                    (x<total_cells_horiz);x++)
             {
                 ypos=0;
-                for (y=vert_page_start; y<(vert_page_start+vert_page_size) &&
-                        (y<total_cells_vert); y++)
+                for(y=vert_page_start;y<(vert_page_start+vert_page_size) &&
+                        (y<total_cells_vert);y++)
                 {
-                    sprintf(buf, "%3.4f", PHDATA::ROOT->matrix->get(x, y));
-                    device->text(0, buf, xpos*cell_width, ypos*cell_height-cell_offset,
-                                 0.0, -1, 0, 0);
+                    sprintf(buf,"%3.4f",PHDATA::ROOT->matrix->get(x,y));
+                    device->text(0,buf,xpos*cell_width,ypos*cell_height-cell_offset,
+                                 0.0,-1,0,0);
                     ypos++;
                 }
                 // display horizontal speciesnames :
-                device->text(0, PHDATA::ROOT->hash_elements[x]->name,
-                             xpos*cell_width, cell_height-off_dy-cell_offset, 0.0, -1, 0, 0);
+                device->text(0,PHDATA::ROOT->hash_elements[x]->name,
+                             xpos*cell_width,cell_height-off_dy-cell_offset,0.0,-1,0,0);
                 xpos++;
             }
             device->shift(AW::Vector(-off_dx, 0));
             // display vertical speciesnames
             ypos=0;
-            for (y=vert_page_start; y<vert_page_start+vert_page_size; y++)
+            for(y=vert_page_start;y<vert_page_start+vert_page_size;y++)
             {
-                device->text(0, PHDATA::ROOT->hash_elements[y]->name,
-                             0, ypos*cell_height-cell_offset, 0.0, -1, 0, 0);
+                device->text(0,PHDATA::ROOT->hash_elements[y]->name,
+                             0,ypos*cell_height-cell_offset,0.0,-1,0,0);
                 ypos++;
             }
             device->shift(AW::Vector(0, -off_dy));
@@ -278,26 +269,26 @@ void PH_display::display()       // draw area
         case filter_dpy: {
             device->shift(AW::Vector(off_dx, off_dy));
             ypos=0;
-            for (y=vert_page_start; y<(vert_page_start+vert_page_size) &&
-                    (y<total_cells_vert); y++)
+            for(y=vert_page_start;y<(vert_page_start+vert_page_size) &&
+                    (y<total_cells_vert);y++)
             {
-                device->text(0, PHDATA::ROOT->hash_elements[y]->name, -off_dx,
+                device->text(0,PHDATA::ROOT->hash_elements[y]->name,-off_dx,
                              ypos*cell_height-cell_offset,
-                             0.0, -1, 0, 0);                       // species names
+                             0.0,-1,0,0);                          // species names
 
                 GBDATA     *gb_seq_data = PHDATA::ROOT->hash_elements[y]->gb_species_data_ptr;
                 const char *seq_data    = GB_read_char_pntr(gb_seq_data);
                 long        seq_len     = GB_read_count(gb_seq_data);
 
                 device->text(0,
-                             (horiz_page_start >= seq_len) ? "" : (seq_data+horiz_page_start),
-                             0, ypos*cell_height-cell_offset,
-                             0.0, -1, 0, 0); // alignment
+                             (horiz_page_start >=seq_len) ? "" : (seq_data+horiz_page_start),
+                             0,ypos*cell_height-cell_offset,
+                             0.0,-1,0,0); // alignment
                 ypos++;
             }
             xpos=0;
             cbuf[0]='\0'; cbuf[1]='\0';
-            const AW_font_information *aw_fi=device->get_font_information(0, 0);
+            const AW_font_information *aw_fi=device->get_font_information(0,0);
             minhom = main_win->get_root()->awar("phyl/filter/minhom")->read_int();
             maxhom = main_win->get_root()->awar("phyl/filter/maxhom")->read_int();
             startcol = main_win->get_root()->awar("phyl/filter/startcol")->read_int();
@@ -305,12 +296,12 @@ void PH_display::display()       // draw area
             for (x = horiz_page_start; x < horiz_page_start + horiz_page_size; x++) {
                 int             gc = 1;
                 float       ml = markerline[x];
-                if (x < startcol || x>stopcol) {
+                if (x < startcol || x>stopcol){
                     gc = 2;
                 }
                 if (markerline[x] >= 0.0) {
-                    if (ml < minhom ||
-                            ml > maxhom) {
+                    if (    ml < minhom ||
+                            ml > maxhom){
                         gc = 2;
                     }
                     sprintf(buf, "%3.0f", ml);
@@ -339,31 +330,31 @@ void PH_display::display()       // draw area
 }
 
 
-void PH_display::print()
+void PH_display::print(void)
 {
     printf("\nContents of class PH_display:\n");
-    printf("display_what: %d\n", display_what);
-    printf("screen_width:          %f  screen_height:        %f\n", screen_width, screen_height);
-    printf("cell_width:            %ld  cell_height:          %ld\n", cell_width, cell_height);
-    printf("cell_offset:           %ld\n", cell_offset);
-    printf("horiz_page_size:       %ld  vert_page_size:       %ld\n", horiz_page_size, vert_page_size);
-    printf("horiz_page_start:      %ld  vert_page_start:      %ld\n", horiz_page_start, vert_page_start);
-    printf("off_dx:                %ld  off_dy:               %ld\n", off_dx, off_dy);
-    printf("horiz_last_view_start: %ld  vert_last_view_start: %ld\n", horiz_last_view_start, vert_last_view_start);
+    printf("display_what: %d\n",display_what);
+    printf("screen_width:          %f  screen_height:        %f\n",screen_width,screen_height);
+    printf("cell_width:            %ld  cell_height:          %ld\n",cell_width,cell_height);
+    printf("cell_offset:           %ld\n",cell_offset);
+    printf("horiz_page_size:       %ld  vert_page_size:       %ld\n",horiz_page_size,vert_page_size);
+    printf("horiz_page_start:      %ld  vert_page_start:      %ld\n",horiz_page_start,vert_page_start);
+    printf("off_dx:                %ld  off_dy:               %ld\n",off_dx,off_dy);
+    printf("horiz_last_view_start: %ld  vert_last_view_start: %ld\n" ,horiz_last_view_start,vert_last_view_start);
 }
 
 
-void PH_display::set_scrollbar_steps(AW_window *aww, long width_h, long width_v, long page_h, long page_v)
+void PH_display::set_scrollbar_steps(AW_window *aww,long width_h,long width_v,long page_h,long page_v)
 {
     char buffer[200];
 
-    sprintf(buffer, "window/%s/scroll_width_horizontal", aww->window_defaults_name);
+    sprintf(buffer,"window/%s/scroll_width_horizontal",aww->window_defaults_name);
     aww->get_root()->awar(buffer)->write_int(width_h);
-    sprintf(buffer, "window/%s/scroll_width_vertical", aww->window_defaults_name);
+    sprintf(buffer,"window/%s/scroll_width_vertical",aww->window_defaults_name);
     aww->get_root()->awar(buffer)->write_int(width_v);
-    sprintf(buffer, "window/%s/horizontal_page_increment", aww->window_defaults_name);
+    sprintf( buffer,"window/%s/horizontal_page_increment",aww->window_defaults_name);
     aww->get_root()->awar(buffer)->write_int(page_h);
-    sprintf(buffer, "window/%s/vertical_page_increment", aww->window_defaults_name);
+    sprintf(buffer,"window/%s/vertical_page_increment",aww->window_defaults_name);
     aww->get_root()->awar(buffer)->write_int(page_v);
 }
 
@@ -372,21 +363,38 @@ void PH_display::monitor_vertical_scroll_cb(AW_window *aww)    // draw area
 {
     long diff;
 
-    if (!device) return;
-    if (vert_last_view_start==aww->slider_pos_vertical) return;
+    if(!device) return;
+    if(vert_last_view_start==aww->slider_pos_vertical) return;
     diff=(aww->slider_pos_vertical-vert_last_view_start)/cell_height;
     // fast scroll: be careful: no transformation in move_region
-    if (diff==1) // scroll one position up (== \/ arrow pressed)
+    if(diff==1) // scroll one position up (== \/ arrow pressed)
     {
-        device->move_region(0, off_dy, screen_width, vert_page_size*cell_height, 0, off_dy-cell_height);
-        device->clear_part(0, off_dy-cell_height+(vert_page_size-1)*cell_height+1, screen_width, cell_height, -1);
+        device->move_region(0,off_dy,screen_width,vert_page_size*cell_height,0,off_dy-cell_height);
+
+        // device->line(0,0,off_dy+1,100,off_dy+1,-1,0,0);  // source top
+        // device->line(0,0,(vert_page_size-1)*cell_height+off_dy+1,100,
+        //  (vert_page_size-1)*cell_height+off_dy+1,-1,0,0);  // source bottom
+        // device->line(0,0,off_dy-cell_height,50,off_dy-cell_height,-1,0,0); // target top
+
+        device->clear_part(0,off_dy-cell_height+(vert_page_size-1)*cell_height+1,
+                           screen_width,cell_height, -1);
+
+        // device->line(0,6,off_dy-cell_height+(vert_page_size-1)*cell_height+1,
+        // 6,off_dy-cell_height+(vert_page_size)*cell_height,-1,0,0);
+
         device->push_clip_scale();
         device->set_top_clip_border((int)(off_dy+(vert_page_size-2)*cell_height));
     }
-    else if (diff==-1) // scroll one position down (== /\ arrow pressed)
+    else if(diff==-1) // scroll one position down (== /\ arrow pressed)
     {
-        device->move_region(0, off_dy-cell_height, screen_width, (vert_page_size-1)*cell_height+1, 0, off_dy);
-        device->clear_part(0, off_dy-cell_height, screen_width, cell_height, -1);
+        device->move_region(0,off_dy-cell_height,screen_width,(vert_page_size-1)*cell_height+1,0,
+                            off_dy);
+        // device->line(0,0,off_dy-cell_height,50,off_dy-cell_height,-1,0,0);
+        // device->line(0,0,(vert_page_size-1)*cell_height+1+(off_dy-cell_height),
+        //                50,(vert_page_size-1)*cell_height+1+(off_dy-cell_height),-1,0,0);
+        device->clear_part(0,off_dy-cell_height,screen_width,cell_height, -1);
+        // device->line(0,0,off_dy-cell_height,50,off_dy-cell_height,-1,0,0);
+        // device->line(0,0,off_dy,50,off_dy,-1,0,0);
         device->push_clip_scale();
         device->set_bottom_clip_border((int)off_dy);
     }
@@ -395,29 +403,43 @@ void PH_display::monitor_vertical_scroll_cb(AW_window *aww)    // draw area
     vert_last_view_start=aww->slider_pos_vertical;
     vert_page_start=aww->slider_pos_vertical/cell_height;
     display();
-    if ((diff==1) || (diff==-1)) device->pop_clip_scale();
+    if((diff==1) || (diff==-1))  device->pop_clip_scale();
 }
 
 void PH_display::monitor_horizontal_scroll_cb(AW_window *aww)  // draw area
 {
     long diff;
 
-    if (!device) return;
-    if (horiz_last_view_start==aww->slider_pos_horizontal) return;
+    if(!device) return;
+    if( horiz_last_view_start==aww->slider_pos_horizontal) return;
     diff=(aww->slider_pos_horizontal- horiz_last_view_start)/cell_width;
     // fast scroll
-    if (diff==1)  // scroll one position left ( > arrow pressed)
+    if(diff==1)   // scroll one position left ( > arrow pressed)
     {
-        device->move_region(off_dx+cell_width, 0, horiz_page_size*cell_width, screen_height, off_dx, 0);
-        device->clear_part(off_dx+(horiz_page_size-1)*cell_width, 0, cell_width, screen_height, -1);
+        device->move_region(off_dx+cell_width,0,
+                            horiz_page_size*cell_width,screen_height,
+                            off_dx,0);
+
+        // device->line(0,off_dx+cell_width,0,off_dx+cell_width,screen_height,-1,0,0);   // left border
+        // device->line(0,horiz_page_size*cell_width+off_dx+cell_width,0,
+        //            horiz_page_size*cell_width+off_dx+cell_width,screen_height,-1,0,0); // right border
+        // device->line(0,off_dx,0,off_dx,screen_height,-1,0,0);  // target
+
+        device->clear_part(off_dx+(horiz_page_size-1)*cell_width,0,cell_width,screen_height, -1);
+
+        // device->line(0,off_dx+(horiz_page_size-1)*cell_width,0,
+        //             off_dx+(horiz_page_size-1)*cell_width,screen_height,-1,0,0);
+        // device->line(0,off_dx+(horiz_page_size-1)*cell_width+cell_width,0,
+        //              off_dx+(horiz_page_size-1)*cell_width+cell_width,screen_height,-1,0,0);
+
         device->push_clip_scale();
         device->set_left_clip_border((int)((horiz_page_size-1)*cell_width));
     }
-    else if (diff==-1) // scroll one position right ( < arrow pressed)
+    else if(diff==-1) // scroll one position right ( < arrow pressed)
     {
-        device->move_region(off_dx, 0, (horiz_page_size-1)*cell_width, screen_height, off_dx+cell_width,
+        device->move_region(off_dx,0,(horiz_page_size-1)*cell_width,screen_height,off_dx+cell_width,
                             0);
-        device->clear_part(off_dx, 0, cell_width, screen_height, -1);
+        device->clear_part(off_dx,0,cell_width,screen_height, -1);
         device->push_clip_scale();
         device->set_right_clip_border((int)(off_dx+cell_width));
     }
@@ -426,7 +448,7 @@ void PH_display::monitor_horizontal_scroll_cb(AW_window *aww)  // draw area
     horiz_last_view_start=aww->slider_pos_horizontal;
     horiz_page_start=aww->slider_pos_horizontal/cell_width;
     display();
-    if ((diff==1) || (diff==-1)) device->pop_clip_scale();
+    if((diff==1) || (diff==-1))  device->pop_clip_scale();
 }
 
 PH_display_status::PH_display_status(AW_device *awd)
@@ -434,13 +456,13 @@ PH_display_status::PH_display_status(AW_device *awd)
     AW_rectangle rect;
     device=awd;
 
-    if (!device) return;
-    const AW_font_information *aw_fi=device->get_font_information(0, 0);
+    if(!device) return;
+    const AW_font_information *aw_fi=device->get_font_information(0,0);
     font_width=aw_fi->max_letter.width;
     font_height=aw_fi->max_letter.height;
     device->reset();
     device->get_area_size(&rect);
-    device->set_foreground_color(0, AW_WINDOW_FG);
+    device->set_foreground_color(0,AW_WINDOW_FG);
     max_x=(rect.r-rect.l)/font_width;
     max_y=(rect.b-rect.t)/font_height;
     x_pos=0.0;
@@ -450,13 +472,13 @@ PH_display_status::PH_display_status(AW_device *awd)
 
 void PH_display_status::write(const char *text)
 {
-    device->text(0, text, x_pos*font_width, y_pos*font_height, 0.0, -1, 0, 0);
+    device->text(0,text,x_pos*font_width,y_pos*font_height,0.0,-1,0,0);
     x_pos+=strlen(text);
 }
 
 void PH_display_status::writePadded(const char *text, size_t len)
 {
-    device->text(0, text, x_pos*font_width, y_pos*font_height, 0.0, -1, 0, 0);
+    device->text(0,text,x_pos*font_width,y_pos*font_height,0.0,-1,0,0);
     x_pos += len;
 }
 
@@ -464,7 +486,7 @@ void PH_display_status::write(long numl)
 {
     char buf[20];
 
-    sprintf(buf, "%ld", numl);
+    sprintf(buf,"%ld",numl);
     write(buf);
 }
 
@@ -472,37 +494,37 @@ void PH_display_status::write(AW_pos numA)
 {
     char buf[20];
 
-    sprintf(buf, "%3.3G", numA);
+    sprintf(buf,"%3.3G",numA);
     write(buf);
 }
 
-void PH_display_status::clear() {
+void PH_display_status::clear(void){
     device->clear(-1);
 }
 
-void display_status(AW_window *dummy, AW_CL cl_awroot, AW_CL cd2)  // bottom area
+void display_status(AW_window *dummy,AW_CL cl_awroot,AW_CL cd2)    // bottom area
 {
     AWUSE(dummy); AWUSE(cd2);
     AW_root *aw_root = (AW_root *) cl_awroot;
 
-    if (!PH_display::ph_display) return;
-    if (!PH_used_windows::windowList) return;
+    if(!PH_display::ph_display) return;
+    if(!PH_used_windows::windowList) return;
 
     {
         static PH_display_status phds(PH_used_windows::windowList->phylo_main_window->get_device (AW_BOTTOM_AREA));
         phds.clear();
-
+        
         const int LABEL_LEN = 21;
 
-        switch (PH_display::ph_display->displayed())
+        switch(PH_display::ph_display->displayed())
         {
             case NONE: return;
             case filter_dpy:
             case species_dpy: phds.set_origin();
-                phds.set_cursor((phds.get_size('x')/2)-10, 0);
+                phds.set_cursor((phds.get_size('x')/2)-10,0);
                 phds.write("STATUS REPORT FILTER");
                 phds.newline();
-
+                
                 phds.writePadded("Start at column:", LABEL_LEN);
                 phds.write((long)aw_root->awar("phyl/filter/startcol")->read_int());
                 phds.move_x(15);
@@ -536,10 +558,10 @@ void display_status(AW_window *dummy, AW_CL cl_awroot, AW_CL cd2)  // bottom are
                 break;
 
             case matrix_dpy: phds.set_origin();
-                phds.set_cursor((phds.get_size('x')/2)-10, 0);
+                phds.set_cursor((phds.get_size('x')/2)-10,0);
                 phds.write("STATUS REPORT MATRIX");
                 break;
-
+                
             default: printf("\nstatus: unknown display type (maybe not implemented yet)\n");
         }
     }

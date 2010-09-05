@@ -1,39 +1,30 @@
-// =============================================================== //
-//                                                                 //
-//   File      : GEN_gene.hxx                                      //
-//   Purpose   :                                                   //
-//                                                                 //
-//   Coded by Ralf Westram (coder@reallysoft.de) in 2001           //
-//   Institute of Microbiology (Technical University Munich)       //
-//   http://www.arb-home.de/                                       //
-//                                                                 //
-// =============================================================== //
+/*********************************************************************************
+ *  Coded by Ralf Westram (coder@reallysoft.de) in 2001                          *
+ *  Institute of Microbiology (Technical University Munich)                      *
+ *  http://www.mikro.biologie.tu-muenchen.de/                                    *
+ *********************************************************************************/
 
 #ifndef GEN_GENE_HXX
 #define GEN_GENE_HXX
 
-#ifndef ARBDB_BASE_H
-#include <arbdb_base.h>
-#endif
-#ifndef AW_ROOT_HXX
-#include <aw_root.hxx>
-#endif
-
-#ifndef _CPP_SET
+#ifndef __SET__
 #include <set>
 #endif
-#ifndef _CPP_STRING
+#ifndef __STRING__
 #include <string>
 #endif
 
-
-// ------------------------------------------
+//  ----------------------------------------
 //      display classes for ARB_GENE_MAP:
+//  ----------------------------------------
 
 class  GEN_root;
 class  GEN_graphic;
 struct GEN_position;
 
+//  -----------------------
+//      class GEN_gene
+//  -----------------------
 class GEN_gene {
 private:
     GBDATA              *gb_gene;
@@ -43,6 +34,8 @@ private:
     long                 pos1;
     long                 pos2;
     bool                 complement;
+
+    //     int       level; // on which "level" the gene is printed
 
     // Note: if a gene is joined from several parts it is represented in several GEN_gene's!
 
@@ -64,6 +57,7 @@ public:
     long EndPos() const { return pos2; } // last position of gene (1..n)
     long Length() const { return pos2-pos1+1; }
     bool Complement() const { return complement; }
+    //     int Level() const { return level; }
     const std::string& NodeInfo() const { return nodeInfo; }
     const std::string& Name() const { return name; } // returns the short name of the gene
     const GBDATA *GbGene() const { return gb_gene; }
@@ -75,8 +69,9 @@ public:
 typedef std::multiset<GEN_gene> GEN_gene_set;
 typedef GEN_gene_set::iterator GEN_iterator;
 
-class AW_device;
-
+//  -----------------------
+//      class GEN_root
+//  -----------------------
 class GEN_root {
 private:
     GBDATA      *gb_main;
@@ -111,6 +106,8 @@ public:
 
     const AW_world& get_selected_range() const { return selected_range; }
 };
+
+
 
 #else
 #error GEN_gene.hxx included twice

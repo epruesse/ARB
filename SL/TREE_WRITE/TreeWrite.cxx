@@ -1,17 +1,9 @@
-// =============================================================== //
-//                                                                 //
-//   File      : TreeWrite.cxx                                     //
-//   Purpose   :                                                   //
-//                                                                 //
-//   Institute of Microbiology (Technical University Munich)       //
-//   http://www.arb-home.de/                                       //
-//                                                                 //
-// =============================================================== //
+#include <stdio.h>
 
-
-#include <TreeWrite.h>
-#include <arbdbt.h>
 #include <xml.hxx>
+
+#include <TreeRead.h>
+#include <TreeWrite.h>
 
 using namespace std;
 
@@ -44,7 +36,7 @@ static void export_tree_label(const char *label, FILE *out, TREE_node_quoting qm
             if (c == used_quote || // replace used quote by an '_' if it appears inside label
                 (force_replace && strchr(problem_chars, c))) // replace all problematic characters if requested
             {
-                c = '_';
+                c = '_'; 
             }
             fputc(c, out);
         }
@@ -64,8 +56,8 @@ static void export_tree_label(const char *label, FILE *out, TREE_node_quoting qm
 
 inline void indentTo(int indent, FILE *out) {
     for (int i = 0; i < indent; i++) {
-        putc(' ', out);
-        putc(' ', out);
+        putc(' ',out);
+        putc(' ',out);
     }
 }
 
@@ -78,9 +70,9 @@ static const char *export_tree_node_print(GBDATA *gb_main, FILE *out, GBT_TREE *
     const char *buf;
 
     if (pretty) indentTo(indent, out);
-
+    
     if (tree->is_leaf) {
-        if (node_gen) buf = node_gen->gen(gb_main, tree->gb_node, MNTN_COMPRESSED, tree, tree_name);
+        if (node_gen) buf = node_gen->gen(gb_main, tree->gb_node,0,tree, tree_name);
         else          buf = tree->name;
 
         export_tree_label(buf, out, qmode);
@@ -111,7 +103,7 @@ static const char *export_tree_node_print(GBDATA *gb_main, FILE *out, GBT_TREE *
                 char   *end = 0;
                 double  val = strtod(boot, &end);
                 tree_assert(end[0] == '%');        // otherwise sth strange is contained in remark_branch
-
+                
                 boot = GBS_global_string("%i", int(val+0.5));
             }
             bootstrap = strdup(boot);
@@ -151,7 +143,7 @@ static const char *export_tree_node_print_xml(GBDATA *gb_main, GBT_TREE *tree, d
 
         item_tag.add_attribute("itemname",
                                node_gen
-                               ? node_gen->gen(gb_main, tree->gb_node, MNTN_COMPRESSED, tree, tree_name)
+                               ? node_gen->gen(gb_main, tree->gb_node, 0, tree, tree_name)
                                : tree->name);
 
         item_tag.add_attribute("length", GBS_global_string("%.5f", my_length));
@@ -165,7 +157,7 @@ static const char *export_tree_node_print_xml(GBDATA *gb_main, GBT_TREE *tree, d
             if (boot[0] && boot[strlen(boot)-1] == '%') { // does remark_branch contain a bootstrap value ?
                 char   *end = 0;
                 double  val = strtod(boot, &end);
-
+                
                 tree_assert(end[0] == '%');          // otherwise sth strange is contained in remark_branch
                 bootstrap = GBS_global_string_copy("%i", int(val+0.5));
             }
@@ -174,7 +166,7 @@ static const char *export_tree_node_print_xml(GBDATA *gb_main, GBT_TREE *tree, d
         if (tree->name) {
             const char *buf;
 
-            if (node_gen) buf = node_gen->gen(gb_main, tree->gb_node, MNTN_COMPRESSED, tree, tree_name);
+            if (node_gen) buf = node_gen->gen(gb_main, tree->gb_node,0,tree, tree_name);
             else          buf = tree->name;
 
             tree_assert(buf);
@@ -186,7 +178,7 @@ static const char *export_tree_node_print_xml(GBDATA *gb_main, GBT_TREE *tree, d
             }
         }
 
-        if (my_length || bootstrap || groupname) {
+        if (my_length || bootstrap || groupname ) {
             bool hide_this_group = skip_folded && folded; // hide folded groups only if skip_folded is true
 
             XML_Tag branch_tag(hide_this_group ? "FOLDED_GROUP" : "BRANCH");
@@ -199,11 +191,11 @@ static const char *export_tree_node_print_xml(GBDATA *gb_main, GBT_TREE *tree, d
             }
             if (bootstrap) {
                 branch_tag.add_attribute("bootstrap", bootstrap);
-                freenull(bootstrap);
+                freeset(bootstrap, 0);
             }
             if (groupname) {
                 branch_tag.add_attribute("groupname", groupname);
-                freenull(groupname);
+                freeset(groupname, 0);
                 if (folded) branch_tag.add_attribute("folded", "1");
             }
             else {
@@ -212,7 +204,7 @@ static const char *export_tree_node_print_xml(GBDATA *gb_main, GBT_TREE *tree, d
 
             int my_son_counter = 0;
             if (hide_this_group) {
-                branch_tag.add_attribute("items_in_group", GBT_count_leafs(tree));
+                branch_tag.add_attribute("items_in_group", GBT_count_nodes(tree));
             }
             else {
                 if (!error) error  = export_tree_node_print_xml(gb_main, tree->leftson, tree->leftlen, tree_name, node_gen, skip_folded, my_id, my_son_counter);
@@ -236,14 +228,14 @@ GB_ERROR TREE_write_XML(GBDATA *gb_main, const char *db_name, const char *tree_n
     else {
         GB_transaction gb_dummy(gb_main);
 
-        GBT_TREE *tree   = GBT_read_tree(gb_main, tree_name, sizeof(GBT_TREE));
+        GBT_TREE *tree   = GBT_read_tree(gb_main,tree_name,sizeof(GBT_TREE));
         if (!tree) error = GB_await_error();
         else {
-            error = GBT_link_tree(tree, gb_main, true, 0, 0);
+            error = GBT_link_tree(tree,gb_main,GB_TRUE, 0, 0);
             if (!error && node_gen) node_gen->init(gb_main);
 
             if (!error) {
-                GBDATA *tree_cont   = GBT_get_tree(gb_main, tree_name);
+                GBDATA *tree_cont   = GBT_get_tree(gb_main,tree_name);
                 GBDATA *tree_remark = GB_entry(tree_cont, "remark");
 
                 XML_Document xml_doc("ARB_TREE", "arb_tree.dtd", output);
@@ -260,7 +252,7 @@ GB_ERROR TREE_write_XML(GBDATA *gb_main, const char *db_name, const char *tree_n
                 }
 
                 int my_son_counter = 0;
-                error              = export_tree_node_print_xml(gb_main, tree, 0.0, tree_name, node_gen, skip_folded, "", my_son_counter);
+                error              = export_tree_node_print_xml(gb_main,tree,0.0, tree_name, node_gen, skip_folded, "", my_son_counter);
             }
         }
         fclose(output);
@@ -272,8 +264,8 @@ GB_ERROR TREE_write_XML(GBDATA *gb_main, const char *db_name, const char *tree_n
 static char *complete_newick_comment(const char *comment) {
     // ensure that all '[' in 'comment' are closed by corresponding ']' by inserting additional brackets
 
-    int            openBrackets = 0;
-    GBS_strstruct *out          = GBS_stropen(strlen(comment)*1.1);
+    int                   openBrackets = 0;
+    struct GBS_strstruct *out          = GBS_stropen(strlen(comment)*1.1);
 
     for (int o = 0; comment[o]; ++o) {
         switch (comment[o]) {
@@ -300,7 +292,7 @@ static char *complete_newick_comment(const char *comment) {
         openBrackets--;
     }
 
-    tree_assert(openBrackets == 0);
+    gb_assert(openBrackets == 0);
 
     return GBS_strclose(out);
 }
@@ -314,15 +306,15 @@ GB_ERROR TREE_write_Newick(GBDATA *gb_main, char *tree_name, const TREE_node_tex
     else {
         GB_transaction gb_dummy(gb_main);
 
-        GBT_TREE *tree   = GBT_read_tree(gb_main, tree_name, sizeof(GBT_TREE));
+        GBT_TREE *tree   = GBT_read_tree(gb_main,tree_name,sizeof(GBT_TREE));
         if (!tree) error = GB_await_error();
         else {
-            error = GBT_link_tree(tree, gb_main, true, 0, 0);
+            error = GBT_link_tree(tree,gb_main,GB_TRUE, 0, 0);
             if (!error && node_gen) node_gen->init(gb_main);
 
             if (!error) {
                 char   *remark      = 0;
-                GBDATA *tree_cont   = GBT_get_tree(gb_main, tree_name);
+                GBDATA *tree_cont   = GBT_get_tree(gb_main,tree_name);
                 GBDATA *tree_remark = GB_entry(tree_cont, "remark");
 
                 if (tree_remark) {
@@ -330,7 +322,7 @@ GB_ERROR TREE_write_Newick(GBDATA *gb_main, char *tree_name, const TREE_node_tex
                 }
                 {
                     const char *saved_to = GBS_global_string("%s saved to %s", tree_name, path);
-                    freeset(remark, GBS_log_dated_action_to(remark, saved_to));
+                    freeset(remark, TREE_log_action_to_tree_comment(remark, saved_to));
                 }
 
                 if (remark) {
@@ -394,21 +386,22 @@ static void export_tree_rek(GBT_TREE *tree, FILE *out, bool export_branchlens, b
 /* need some additional parameters (no comment, trifurcation) */
 #endif /* DEBUG */
 
-GB_ERROR TREE_export_tree(GBDATA *, FILE *out, GBT_TREE *tree, bool triple_root, bool export_branchlens, bool dquot) {
-    if (triple_root) {
-        GBT_TREE *one, *two, *three;
-        if (tree->is_leaf) {
+GB_ERROR TREE_export_tree(GBDATA *gb_main,FILE *out,GBT_TREE *tree, bool triple_root, bool export_branchlens, bool dquot) {
+    GBUSE(gb_main);
+    
+    if (triple_root){
+        GBT_TREE *one,*two,*three;
+        if (tree->is_leaf){
             return GB_export_error("Tree is two small, minimum 3 nodes");
         }
-        if (tree->leftson->is_leaf && tree->rightson->is_leaf) {
+        if (tree->leftson->is_leaf && tree->rightson->is_leaf){
             return GB_export_error("Tree is two small, minimum 3 nodes");
         }
-        if (tree->leftson->is_leaf) {
+        if (tree->leftson->is_leaf){
             one = tree->leftson;
             two = tree->rightson->leftson;
             three = tree->rightson->rightson;
-        }
-        else {
+        }else{
             one = tree->leftson->leftson;
             two = tree->leftson->rightson;
             three = tree->rightson;

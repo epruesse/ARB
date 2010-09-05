@@ -1,21 +1,5 @@
-// =============================================================== //
-//                                                                 //
-//   File      : di_protdist.hxx                                   //
-//   Purpose   :                                                   //
-//                                                                 //
-//   Institute of Microbiology (Technical University Munich)       //
-//   http://www.arb-home.de/                                       //
-//                                                                 //
-// =============================================================== //
 
-#ifndef DI_PROTDIST_HXX
-#define DI_PROTDIST_HXX
-
-#ifndef AP_SEQ_SIMPLE_PRO_HXX
-#include <AP_seq_simple_pro.hxx>
-#endif
-
-const int di_max_aa     = stop; // must be 20
+const int di_max_aa     = stop; // mussed be 20
 const int di_max_paa    = unk;  // includes virtual aa
 const int di_resolution = 1000; // max res
 const int di_max_dist   = 10;   // max dist
@@ -26,16 +10,13 @@ typedef enum {
     universal, ciliate, mito, vertmito, flymito, yeastmito
 } di_codetype;
 typedef enum {
-    none, similarity, kimura, pam, chemical, hall, george
+    none,similarity,kimura,pam,chemical, hall, george
 } di_cattype;
 
 
 typedef double di_aa_matrix[di_max_aa][di_max_aa];
 typedef double di_paa_matrix[di_max_paa][di_max_paa];
 typedef char   di_bool_matrix[di_max_paa][di_max_paa];
-
-class DI_ENTRY;
-class AP_smatrix;
 
 class di_protdist {
     static double pameigs[20];
@@ -46,7 +27,9 @@ class di_protdist {
     long spp;                   // number of species
     long chars;                 // number of characters
 
-    // spp = number of species chars = number of sites in actual sequences
+    /*
+     * spp = number of species chars = number of sites in actual sequences
+     */
 
     double         freqa, freqc, freqg, freqt, ttratio, xi, xv, ease, fracchange;
     DI_ENTRY      **entries;                                                        // link to entries
@@ -76,33 +59,29 @@ class di_protdist {
     void maketrans();
     void code();
     void transition();
-    void givens(di_aa_matrix a, long i, long j, long n, double ctheta, double stheta, bool left);
-    void coeffs(double x, double y, double *c, double *s, double accuracy);
-    void tridiag(di_aa_matrix a, long n, double accuracy);
+    void givens(di_aa_matrix a,long i,long j,long n,double ctheta,double stheta,GB_BOOL left);
+    void coeffs(double x,double y,double *c,double *s,double accuracy);
+    void tridiag(di_aa_matrix a,long n,double accuracy);
     void shiftqr(di_aa_matrix a, long n, double accuracy);
-    void qreigen(di_aa_matrix prob, long n);
+    void qreigen(di_aa_matrix prob,long n);
     void pameigen();
 
-    void predict(double tt, long nb1, long  nb2);
+    void predict(double tt,long nb1,long  nb2);
     int tt_2_pos(double tt);        // double to cash index
     double pos_2_tt(int pos);       // cash index to pos
     void build_exptteig(double tt);
     void build_predikt_table(int pos);      // build akt_slopes akt_curves
     void build_akt_predikt(double tt);      // build akt_slopes akt_curves
 
-    double predict_slope(int b1, int b2) { return akt_slopes[0][b1][b2]; }
-    double predict_curve(int b1, int b2) { return akt_curves[0][b1][b2]; }
-    char predict_infinity(int b1, int b2) { return akt_infs[0][b1][b2]; }
+    double predict_slope(int b1,int b2) { return akt_slopes[0][b1][b2]; }
+    double predict_curve(int b1,int b2) { return akt_curves[0][b1][b2]; }
+    char predict_infinity(int b1,int b2) { return akt_infs[0][b1][b2]; }
 
     void clean_slopes();
 
 public:
     di_protdist(di_codetype codei, di_cattype cati, long nentries, DI_ENTRY  **entries, long seq_len, AP_smatrix *matrixi);
     ~di_protdist();
-
-    const char *makedists(bool *aborted_flag);    // calculate the distance matrix
+    
+    const char *makedists();    // calculate the distance matrix
 };
-
-#else
-#error di_protdist.hxx included twice
-#endif // DI_PROTDIST_HXX

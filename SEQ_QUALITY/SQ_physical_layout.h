@@ -12,9 +12,6 @@
 //                                                                       //
 //  ==================================================================== //
 
-#ifndef _CPP_CMATH
-#include <cmath>
-#endif
 
 #ifndef ARB_ASSERT_H
 #include <arb_assert.h>
@@ -64,7 +61,7 @@ void SQ_physical_layout::SQ_calc_physical_layout(const char *sequence,
 
     for (int i = 0; i < size; i++) {
         switch (sequence[i]) {
-        case '-': /* calculate number of dots and spaces */
+        case '-': /*calculate number of dots and spaces */
             count_bases--;
             count_scores++;
             break;
@@ -72,7 +69,7 @@ void SQ_physical_layout::SQ_calc_physical_layout(const char *sequence,
             count_bases--;
             count_dots++;
             break;
-        case 'G': /* calculate GC layout of sequence */
+        case 'G': /*calculate GC layout of sequence */
         case 'g':
             GC++;
             break;
@@ -83,7 +80,7 @@ void SQ_physical_layout::SQ_calc_physical_layout(const char *sequence,
         }
     }
 
-    /* calculate layout in percent */
+    /*calculate layout in percent */
     if (GC != 0) {
         GC_proportion = GC / count_bases;
     }

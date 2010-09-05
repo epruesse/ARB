@@ -9,6 +9,8 @@
 //                                                                 //
 // =============================================================== //
 
+#include <map>
+
 #include "SEC_root.hxx"
 #include "SEC_drawn_pos.hxx"
 #include "SEC_iter.hxx"
@@ -16,8 +18,8 @@
 using namespace std;
 
 enum AngleBufferMode {
-    BUFFER_ABSOLUTE_ANGLES,
-    BUFFER_CENTER_RELATIVE,
+    BUFFER_ABSOLUTE_ANGLES, 
+    BUFFER_CENTER_RELATIVE, 
 };
 
 class AngleBuffer { // stores the absolute values of some SEC_oriented
@@ -103,7 +105,7 @@ void SEC_loop::toggle_root(SEC_loop *old_root) {
 
     thisOldAbs.storeAllHelices(this, mid_helix);
     otherOldAbs.storeAllHelices(old_root, mid_helix);
-
+    
     // modify structure
     get_root()->set_root_loop(this);
     mid_helix->flip();
@@ -190,12 +192,12 @@ inline SEC_segment *findSegmentContaining(SEC_root *root, int start, int end, GB
     if (start_segment) {
         SEC_segment *end_segment;
         if (end == start+1) {
-            end_segment = start_segment;
+            end_segment = start_segment;;
         }
         else {
             end_segment = findSegmentContaining(root, end-1, error);
         }
-
+        
         if (end_segment) {
             if (end_segment != start_segment) {
                 error         = GBS_global_string("Positions %i and %i are in different segments", start, end);
@@ -250,7 +252,7 @@ GB_ERROR SEC_root::split_loop(int start1, int end1, int start2, int end2) {
 
                 SEC_helix *new_helix = 0;
                 SEC_loop  *new_loop  = 0;
-
+                
                 if (seg1 == seg2) { // split one segment
                     //                           \                                                   .
                     //                            \ seg1     >>>                                     .
@@ -291,17 +293,17 @@ GB_ERROR SEC_root::split_loop(int start1, int end1, int start2, int end2) {
                     new_loop = new SEC_loop(this);
 
                     seg2->set_loop(new_loop);
-
+                    
                     strand2->set_origin_loop(new_loop);
                     new_loop->set_fixpoint_strand(strand2);
                 }
                 else { // split two segments
                     //                                   \                       /
-                    //     seg1                           \ seg1     >>>        /
+                    //     seg1                           \ seg1     >>>        / 
                     // ______________                      \       strand1     / seg3
-                    //                                      \_________________/
+                    //                                      \_________________/      
                     //                    =>     old_loop    _________________        new_loop
-                    // ______________                       /                 \                                     .
+                    // ______________                       /                 \                                     .   
                     //     seg2                            /       strand2     \ seg2
                     //                                    / seg4     <<<        \                                   .
                     //                                   /                       \                                  .
@@ -309,7 +311,7 @@ GB_ERROR SEC_root::split_loop(int start1, int end1, int start2, int end2) {
                     // seg1 and seg2 are the old segments
 
                     // maybe swap seg1/seg2 (to ensure fixpoint-strand stays in old loop)
-                    for (SEC_segment *s = seg1; s != seg2;) {
+                    for (SEC_segment *s = seg1; s != seg2; ) {
                         SEC_helix_strand *hs = s->get_next_strand();
                         if (!hs->isRootsideFixpoint()) { // fixpoint-strand is between seg1 -> seg2
                             // swap seg1<->seg2
@@ -327,13 +329,13 @@ GB_ERROR SEC_root::split_loop(int start1, int end1, int start2, int end2) {
                     SEC_helix_strand *strand2 = seg2->split(start2, end2, &seg4);
 
                     new_helix = new SEC_helix(this, strand2, strand1);
-
+                    
                     strand1->set_next_segment(seg4);
                     strand2->set_next_segment(seg3);
 
                     new_loop = new SEC_loop(this);
 
-                    for (SEC_segment *s = seg3; ;) {
+                    for (SEC_segment *s = seg3; ; ) {
                         s->set_loop(new_loop);
                         SEC_helix_strand *h = s->get_next_strand();
                         h->set_origin_loop(new_loop);
@@ -348,15 +350,15 @@ GB_ERROR SEC_root::split_loop(int start1, int end1, int start2, int end2) {
                 new_helix->set_rel_angle(0); // wrong, but relayout fails otherwise
                 new_loop->set_rel_angle(0);
 
-                relayout();
+                relayout(); 
 
                 // correct angles of other helices
                 oldAngles.restoreAll(new_loop);
                 oldAngles.set_angle(new_helix, Angle(0));
                 oldAngles.restoreAll(old_loop);
 
-                recalc();
-
+                recalc();      
+                
                 if (setRootTo) {
                     set_root(setRootTo); // restore root loop
                 }
@@ -371,14 +373,14 @@ GB_ERROR SEC_root::split_loop(int start1, int end1, int start2, int end2) {
 // ----------------------
 
 GB_ERROR SEC_root::unsplit_loop(SEC_helix_strand *remove_strand) {
-    //
+    // 
     //          \ before[0]               / after[1]
     //           \                       /
     //            \        >>>>         /
     //             \      strand[0]    /
     //              \_________________/
     //   loop[0]     _________________           loop[1]
-    //              /     strand[1]   \                             .
+    //              /     strand[1]   \                             . 
     //             /       <<<<        \                            .
     //            /                     \                           .
     //           /                       \                          .
@@ -395,7 +397,7 @@ GB_ERROR SEC_root::unsplit_loop(SEC_helix_strand *remove_strand) {
 #if defined(CHECK_INTEGRITY)
     check_integrity(CHECK_STRUCTURE);
 #endif // CHECK_INTEGRITY
-
+    
     int s;
     for (s = 0; s<2; s++) {
         after[s]  = strand[s]->get_next_segment();
@@ -424,7 +426,7 @@ GB_ERROR SEC_root::unsplit_loop(SEC_helix_strand *remove_strand) {
     if (unsplit) {
         int del = i0 >= 0 ? i0 : 1; // index of loop which will be deleted
 
-        SEC_loop *setRootTo = 0; // set root back to afterwards?
+        SEC_loop *setRootTo = 0; // set root back to afterwards? 
 
         {
             // move away root-loop to make things easy
@@ -439,6 +441,8 @@ GB_ERROR SEC_root::unsplit_loop(SEC_helix_strand *remove_strand) {
 
                 set_root(anotherLoop);
                 setRootTo = loop[1-del]; // afterwards set root back to non-deleted loop
+
+                // recalc();
             }
         }
 
@@ -455,7 +459,7 @@ GB_ERROR SEC_root::unsplit_loop(SEC_helix_strand *remove_strand) {
             before[i1]->mergeWith(after[i1], loop[i1]);
 
             sec_assert(after[i0] == before[i0]);
-            delete after[i0];       // delete the segment of the terminal-loop
+            delete after[i0];       // delete the segment of the terminal-loop 
         }
         else { // none of the loops is terminal
             // keep loop[0], delete loop[1]
@@ -486,9 +490,9 @@ GB_ERROR SEC_root::unsplit_loop(SEC_helix_strand *remove_strand) {
         delete strand[0];       // delete both strands
 
         relayout();
-
+        
         oldAngles.restoreAll(loop[1-del]);
-        recalc();
+        recalc();  
 
         if (setRootTo) set_root(setRootTo);
     }

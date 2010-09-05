@@ -1,23 +1,13 @@
-// =============================================================== //
-//                                                                 //
-//   File      : GEN_graphic.hxx                                   //
-//   Purpose   :                                                   //
-//                                                                 //
-//   Coded by Ralf Westram (coder@reallysoft.de) in 2001           //
-//   Institute of Microbiology (Technical University Munich)       //
-//   http://www.arb-home.de/                                       //
-//                                                                 //
-// =============================================================== //
+/*********************************************************************************
+ *  Coded by Ralf Westram (coder@reallysoft.de) in 2001                          *
+ *  Institute of Microbiology (Technical University Munich)                      *
+ *  http://www.mikro.biologie.tu-muenchen.de/                                    *
+ *********************************************************************************/
 
 #ifndef GEN_GRAPHIC_HXX
 #define GEN_GRAPHIC_HXX
 
-#ifndef AW_COLOR_GROUPS_HXX
 #include <aw_color_groups.hxx>
-#endif
-#ifndef AWT_CANVAS_HXX
-#include <awt_canvas.hxx>
-#endif
 
 enum {
     GEN_GC_DEFAULT    = 0,
@@ -79,7 +69,7 @@ public:
     void set_display_style(GEN_DisplayStyle type);
     GEN_DisplayStyle get_display_style() const { return style; }
 
-    virtual     AW_gc_manager init_devices(AW_window *, AW_device *, AWT_canvas *ntw, AW_CL);
+    virtual     AW_gc_manager init_devices(AW_window *,AW_device *,AWT_canvas *ntw,AW_CL);
 
     virtual     void show(AW_device *device);
     virtual void info(AW_device *device, AW_pos x, AW_pos y, AW_clicked_line *cl, AW_clicked_text *ct);

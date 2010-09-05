@@ -1,46 +1,51 @@
-// =============================================================== //
-//                                                                 //
-//   File      : AW_click.cxx                                      //
-//   Purpose   :                                                   //
-//                                                                 //
-//   Institute of Microbiology (Technical University Munich)       //
-//   http://www.arb-home.de/                                       //
-//                                                                 //
-// =============================================================== //
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <memory.h>
+// #include <malloc.h>
+#include <X11/X.h>
+#include <X11/Xlib.h>
 
-#include <aw_click.hxx>
+#include <aw_root.hxx>
+#include "aw_device.hxx"
 #include "aw_commn.hxx"
+#include <aw_click.hxx>
 
 using namespace AW;
 
-// ------------------------
-//      AW_device_click
+// *****************************************************************************************
+//          device_click
+// *****************************************************************************************
 
-AW_device_click::AW_device_click(AW_common *commoni) : AW_device(commoni) {
+AW_device_click::AW_device_click(AW_common *commoni):AW_device(commoni) {
 }
 
-void AW_device_click::init(AW_pos mousex, AW_pos mousey, AW_pos max_distance_linei, AW_pos max_distance_texti, AW_pos radi, AW_bitset filteri) {
+void AW_device_click::init(AW_pos mousex,AW_pos mousey, AW_pos max_distance_linei, AW_pos max_distance_texti, AW_pos radi, AW_bitset filteri) {
     AWUSE(radi);
     mouse_x           = mousex;
     mouse_y           = mousey;
     filter            = filteri;
     max_distance_line = max_distance_linei*max_distance_linei;
     max_distance_text = max_distance_texti;
-    memset((char *)&opt_line, 0, sizeof(opt_line));
-    memset((char *)&opt_text, 0, sizeof(opt_text));
+    memset((char *)&opt_line,0,sizeof(opt_line));
+    memset((char *)&opt_text,0,sizeof(opt_text));
     opt_line.exists   = false;
     opt_text.exists   = false;
 }
 
 
-AW_DEVICE_TYPE AW_device_click::type() {
+AW_DEVICE_TYPE AW_device_click::type(void) {
     return AW_DEVICE_CLICK;
 }
 
 
+/***********************************************************************************************************************/
+/* line  text  zoomtext  box *******************************************************************************************/
+/***********************************************************************************************************************/
+
 int AW_device_click::line(int gc, AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW_bitset filteri, AW_CL clientdata1, AW_CL clientdata2) {
-    AW_pos X0, Y0, X1, Y1;                          // Transformed pos
-    AW_pos CX0, CY0, CX1, CY1;                      // Clipped line
+    AW_pos X0,Y0,X1,Y1;                             // Transformed pos
+    AW_pos CX0,CY0,CX1,CY1;                         // Clipped line
     int    drawflag;                                // is line visible on screen
     AW_pos lx, ly;
     AW_pos dx, dy;
@@ -49,14 +54,14 @@ int AW_device_click::line(int gc, AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW
     bool   best_line        = false;             // is this line the best ?
 
     AWUSE(gc);
-    if (!(filteri & filter)) return false;
+    if(!(filteri & filter)) return false;
 
-    this->transform(x0, y0, X0, Y0);
-    this->transform(x1, y1, X1, Y1);
-    drawflag = this->clip(X0, Y0, X1, Y1, CX0, CY0, CX1, CY1);
+    this->transform(x0,y0,X0,Y0);
+    this->transform(x1,y1,X1,Y1);
+    drawflag = this->clip(X0,Y0,X1,Y1,CX0,CY0,CX1,CY1);
 
     if (drawflag) {
-        // stimmen die Kreise um die Punkte ?
+        //stimmen die Kreise um die Punkte ?
 
 
 
@@ -67,7 +72,7 @@ int AW_device_click::line(int gc, AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW
         if (distance < max_distance_line) {
             best_line = true;
             max_distance_line = distance;
-            // add more comments
+            //add more comments
             skalar = 0.0;
         }
 
@@ -78,7 +83,7 @@ int AW_device_click::line(int gc, AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW
         if (distance < max_distance_line) {
             best_line = true;
             max_distance_line = distance;
-            // add more comments
+            //add more comments
             skalar = 1.0;
         }
 
@@ -87,9 +92,9 @@ int AW_device_click::line(int gc, AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW
         h2 = (lx*lx) + (ly*ly);
 
         // Punkt darf nicht in der Verlaengerung der Linie liegen
-        if (h2 > 0.0000000001) {
+        if (h2 > 0.0000000001){
             skalar = (dx*lx+dy*ly)/h2;
-            if (0.0 <= skalar && skalar <= 1.0) {
+            if ( 0.0 <= skalar && skalar <= 1.0 ) {
                 // berechne Trefferpunkt auf Linie
                 // distance to the line
                 h1       = dx*ly - dy*lx;
@@ -97,12 +102,12 @@ int AW_device_click::line(int gc, AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW
                 if (distance < max_distance_line) {
                     best_line         = true;
                     max_distance_line = distance;
-                    // add more comments
+                    //add more comments
                 }
             }
         }
 
-        if (best_line) {
+        if (best_line == true) {
             aw_assert(x0 == x0); aw_assert(x1 == x1); // not NAN
             aw_assert(y0 == y0); aw_assert(y1 == y1);
 
@@ -122,17 +127,17 @@ int AW_device_click::line(int gc, AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW
 }
 
 
-int AW_device_click::text(int gc, const char *str, AW_pos x, AW_pos y, AW_pos alignment, AW_bitset filteri, AW_CL clientdata1, AW_CL clientdata2, long opt_strlen) {
-    if (filteri & filter) {
-        AW_pos X0, Y0;          // Transformed pos
-        this->transform(x, y, X0, Y0);
+int AW_device_click::text(int gc, const char *str, AW_pos x, AW_pos y, AW_pos alignment, AW_bitset filteri, AW_CL clientdata1, AW_CL clientdata2,long opt_strlen) {
+    if(filteri & filter) {
+        AW_pos X0,Y0;           // Transformed pos
+        this->transform(x,y,X0,Y0);
 
         XFontStruct *xfs = &common->gcs[gc]->curfont;
 
         AW_pos Y1 = Y0+(AW_pos)(xfs->max_bounds.descent);
         Y0        = Y0-(AW_pos)(xfs->max_bounds.ascent);
 
-        // Fast check text against top bottom clip
+        /***************** Fast check text against top bottom clip ***************************/
 
         if (this->clip_rect.t == 0) {
             if (Y1 < this->clip_rect.t) return 0;
@@ -148,10 +153,11 @@ int AW_device_click::text(int gc, const char *str, AW_pos x, AW_pos y, AW_pos al
             if (Y1 > this->clip_rect.b) return 0;
         }
 
-        // vertical check mouse against textsurrounding
+        /***************** vertical check mouse against textsurrounding  ***************************/
+
         bool   exact     = true;
         double best_dist = 0;
-
+        
         if (mouse_y > Y1) {     // outside text
             if (mouse_y > Y1+max_distance_text) return 0; // too far above
             exact = false;
@@ -163,14 +169,14 @@ int AW_device_click::text(int gc, const char *str, AW_pos x, AW_pos y, AW_pos al
             best_dist = Y0 - mouse_y;
         }
 
-        // align text
+        /***************** align text  ***************************/
         int len        = opt_strlen ? opt_strlen : strlen(str);
-        int text_width = (int)get_string_size(gc, str, len);
+        int text_width = (int)get_string_size(gc,str,len);
 
-        X0        = common->x_alignment(X0, text_width, alignment);
+        X0        = common->x_alignment(X0,text_width,alignment);
         AW_pos X1 = X0+text_width;
 
-        // check against left right clipping areas
+        /**************** check against left right clipping areas *********/
         if (X1 < this->clip_rect.l) return 0;
         if (X0 > this->clip_rect.r) return 0;
 
@@ -272,4 +278,6 @@ bool AW_getBestClick(const AW::Position& click, AW_clicked_line *cl, AW_clicked_
 
     return bestClick;
 }
+
+
 

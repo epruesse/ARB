@@ -30,18 +30,17 @@ GB_ERROR PG_initSpeciesMaps(GBDATA *pb_main) {
   GBDATA *pb_mapping = GB_entry(pb_main, "species_mapping");
   if (!pb_mapping) {  // error
     GB_export_error("No species mapping");
-  }
-  else {
+  }  else {
     // retrieve mapping from string
     const char *mapping = GB_read_char_pntr(pb_mapping);
     if (!mapping) return GB_export_error("Can't read mapping");
-
+    
     while (mapping[0]) {
-      const char *comma     = strchr(mapping, ',');   if (!comma) break;
-      const char *semicolon = strchr(comma, ';');     if (!semicolon) break;
-      string      name(mapping, comma-mapping);
-      comma+=1;
-      string idnum(comma, semicolon-comma);
+      const char *komma     = strchr(mapping, ',');   if (!komma) break;
+      const char *semicolon = strchr(komma, ';');     if (!semicolon) break;
+      string      name(mapping, komma-mapping);
+      komma+=1;
+      string idnum(komma,semicolon-komma);
       SpeciesID   id        = atoi(idnum.c_str());
 
       __NAME2ID_MAP[name] = id;
@@ -65,7 +64,7 @@ const string& PG_SpeciesID2SpeciesName(SpeciesID num) {
   return __ID2NAME_MAP[num];
 }
 
-int PG_NumberSpecies() {
+int PG_NumberSpecies(){
     return __ID2NAME_MAP.size();
 }
 
@@ -85,10 +84,16 @@ int PG_NumberSpecies() {
 //                  | "num" (contains species-number (created by PG_SpeciesName2SpeciesID))
 //                  |
 //                  "node" <more nodes...>
-//
+//  
 //  Notes:  - the "node"s contained in the path from "group_tree" to any "group"
 //            describes the members of the group
 
+
+
+// search or create "group_tree"-entry
+// static GBDATA *group_tree(GBDATA *pb_main) {
+//     return GB_search(pb_main, "group_tree", GB_CREATE_CONTAINER);
+// }
 
 
 GBDATA *PG_get_first_probe(GBDATA *pb_group) {

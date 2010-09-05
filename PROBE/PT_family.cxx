@@ -1,170 +1,168 @@
-// =============================================================== //
-//                                                                 //
-//   File      : PT_family.cxx                                     //
-//   Purpose   :                                                   //
-//                                                                 //
-//   Institute of Microbiology (Technical University Munich)       //
-//   http://www.arb-home.de/                                       //
-//                                                                 //
-// =============================================================== //
-
-#include "probe.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <algorithm>
+// #include <malloc.h>
+#include <PT_server.h>
 #include <struct_man.h>
 #include <PT_server_prototypes.h>
+#include "probe.h"
 #include "probe_tree.hxx"
 #include "pt_prototypes.h"
-
 #include <arbdbt.h>
-
-#include <algorithm>
-
 
 // overloaded functions to avoid problems with type-punning:
 inline void aisc_link(dll_public *dll, PT_family_list *family)   { aisc_link(reinterpret_cast<dllpublic_ext*>(dll), reinterpret_cast<dllheader_ext*>(family)); }
 
+/*****************************************************************************/
+/*****************************************************************************/
+/*****************************************************************************/
+/* Increment match_count for a matched chain */
+
 struct mark_all_matches_chain_handle {
-    int operator()(int name, int /* pos */, int /* rpos */) {
-        /*! Increment match_count for a matched chain */
-        // @@@ Why do we not have to check for "rest of probe" (see below) here?
+    int operator()(int name, int /*pos*/, int /*rpos*/) {
         psg.data[name].stat.match_count++;
         return 0;
     }
 };
 
-static int mark_all_matches(POS_TREE *pt,
-                            char     *probe,
-                            int       length,
-                            int       mismatches,
-                            int       height,
-                            int       max_mismatches)
+/* Increment match_count for every match */
+static int mark_all_matches( PT_local *locs,
+                             POS_TREE *pt,
+                             char     *probe,
+                             int       length,
+                             int       mismatches,
+                             int       height,
+                             int       max_mismatches)
 {
-    /*! Increment match_count for every match */
+    int       ref_pos, ref2_pos, ref_name;
+    int       base;
+    int       type_of_node;
+    POS_TREE *pt_son;
+    
     if (pt == NULL || mismatches > max_mismatches) {
         return 0;
     }
-
-    int type_of_node = PT_read_type(pt);
-    if (type_of_node != PT_NT_NODE) {
-        // Found unique solution
+    type_of_node = PT_read_type(pt);
+    if ((type_of_node = PT_read_type(pt)) != PT_NT_NODE) {
+        /*
+         * Found unique solution
+         */
         if (type_of_node == PT_NT_LEAF) {
-            int ref_pos = PT_read_rpos(psg.ptmain, pt);
-            int ref_name = PT_read_name(psg.ptmain, pt);
-
-            // Check rest of probe
-            while (*probe && mismatches <= max_mismatches) {
-                if (*probe != psg.data[ref_name].data[ref_pos+height]) {
+            ref2_pos = PT_read_rpos(psg.ptmain,pt);
+            ref_pos = ref2_pos + height;
+            ref_name = PT_read_name(psg.ptmain,pt);
+            /*
+             * Check rest of probe
+             */
+            while (mismatches <= max_mismatches && *probe) {
+                if (psg.data[ref_name].data[ref_pos++] != *probe) {
                     mismatches++;
                 }
                 probe++;
                 height++;
             }
-            // Increment count if probe matches
-            if (mismatches <= max_mismatches) {
+            /*
+             * Increment count if probe matches
+             */
+            if (mismatches <= max_mismatches)
                 psg.data[ref_name].stat.match_count++;
-            }
-        }
-        else { // type_of_node == CHAIN
-            PT_read_chain(psg.ptmain, pt, mark_all_matches_chain_handle());
+            return 0;
+        } else {        /* type_of_node == CHAIN !! */
+            psg.mismatches = mismatches;
+            psg.height = height;
+            psg.length = length;
+            psg.probe = probe;
+            PT_read_chain(psg.ptmain,pt,mark_all_matches_chain_handle());
+            return 0;
         }
     }
-    else {
-        // type_of_node == PT_NT_NODE
-        for (int base = PT_N; base < PT_B_MAX; base++) {
-            POS_TREE *pt_son = PT_read_son(psg.ptmain, pt, (PT_BASES)base);
-            if (pt_son) {
-                if (*probe) {
-                    if (*probe != base) {
-                        mark_all_matches(pt_son, probe+1, length,
-                                         mismatches + 1, height + 1, max_mismatches);
-                    }
-                    else {
-                        mark_all_matches(pt_son, probe+1, length,
-                                         mismatches, height + 1, max_mismatches);
-                    }
-                }
-                else {
-                    mark_all_matches(pt_son, probe, length,
+    for (base = PT_N; base < PT_B_MAX; base++) {
+        if ( (pt_son = PT_read_son(psg.ptmain, pt, (PT_BASES)base))) {
+            if (*probe) {
+                if (*probe != base) {
+                    mark_all_matches(locs, pt_son, probe+1, length,
+                                     mismatches + 1, height + 1, max_mismatches);
+                } else {
+                    mark_all_matches(locs, pt_son, probe+1, length,
                                      mismatches, height + 1, max_mismatches);
                 }
+            } else {
+                mark_all_matches(locs, pt_son, probe, length,
+                                 mismatches, height + 1, max_mismatches);
             }
         }
     }
     return 0;
 }
 
-static void clear_statistic() {
-    /*! Clear all information in psg.data[i].stat */
-
-    for (int i = 0; i < psg.data_count; i++) {
-        memset((char *) &psg.data[i].stat, 0, sizeof(probe_statistic));
-    }
+/* Clear all informations in psg.data[i].stat */
+static void clear_statistic(){
+    int i;
+    for (i = 0; i < psg.data_count; i++)
+        memset((char *) &psg.data[i].stat,0,sizeof(struct probe_statistic));
 }
 
 
-
+/* Calculate the statistic informations for the family */
 static void make_match_statistic(int probe_len, int sequence_length) {
-    /*! Calculate the statistic information for the family */
-
-    // compute statistic for all species in family
-    for (int i = 0; i < psg.data_count; i++) {
-        int all_len = std::min(psg.data[i].size, sequence_length) - probe_len + 1;
-        if (all_len <= 0) {
+    int i;
+    /*
+     * compute statistic for all species in family
+     */
+    for (i = 0; i < psg.data_count; i++) {
+        int all_len = min(psg.data[i].size,sequence_length) - probe_len + 1;
+        if (all_len <= 0){
             psg.data[i].stat.rel_match_count = 0;
-        }
-        else {
+        }else{
             psg.data[i].stat.rel_match_count = psg.data[i].stat.match_count / (double) (all_len);
         }
     }
 }
 
-struct cmp_probe_abs {
-    bool operator()(const struct probe_input_data* a, const struct probe_input_data* b) {
-        return b->stat.match_count < a->stat.match_count;
-    }
-};
+extern "C" {
+    struct cmp_probe_abs {
+        bool operator()(const struct probe_input_data* a, const struct probe_input_data* b) {
+            return b->stat.match_count < a->stat.match_count;
+        }
+    };
 
-struct cmp_probe_rel {
-    bool operator()(const struct probe_input_data* a, const struct probe_input_data* b) {
-        return b->stat.rel_match_count < a->stat.rel_match_count;
-    }
-};
+    struct cmp_probe_rel {
+        bool operator()(const struct probe_input_data* a, const struct probe_input_data* b) {
+            return b->stat.rel_match_count < a->stat.rel_match_count;
+        }
+    };
+}
 
+/*  Make sorted list of family members */
 static int make_PT_family_list(PT_local *locs) {
-    /*!  Make sorted list of family members */
-
     // Sort the data
-    struct probe_input_data *my_list[psg.data_count];
-    for (int i = 0; i < psg.data_count; i++) {
-        my_list[i] = &psg.data[i];
-    }
+    struct probe_input_data **my_list = (struct probe_input_data**) calloc(sizeof(void *),psg.data_count);
+    int i;
+    for (i = 0; i < psg.data_count; i++) my_list[i] = &psg.data[i];
 
     bool sort_all = locs->ff_sort_max == 0 || locs->ff_sort_max >= psg.data_count;
-
     if (locs->ff_sort_type == 0) {
         if (sort_all) {
             std::sort(my_list, my_list + psg.data_count, cmp_probe_abs());
-        }
-        else {
+        } else {
             std::partial_sort(my_list, my_list + locs->ff_sort_max, my_list + psg.data_count, cmp_probe_abs());
         }
-    }
-    else {
+    } else {
         if (sort_all) {
             std::sort(my_list, my_list + psg.data_count, cmp_probe_rel());
-        }
-        else {
+        } else {
             std::partial_sort(my_list, my_list + locs->ff_sort_max, my_list + psg.data_count, cmp_probe_rel());
         }
     }
 
     // destroy old list
-    while (locs->ff_fl) destroy_PT_family_list(locs->ff_fl);
+    while(locs->ff_fl) destroy_PT_family_list(locs->ff_fl);
 
     // build new list
     int real_hits = 0;
 
-    int end = (sort_all) ? psg.data_count : locs->ff_sort_max;
-    for (int i = 0; i < end; i++) {
+    for (i = 0; i < psg.data_count; i++) {
         if (my_list[i]->stat.match_count != 0) {
             PT_family_list *fl = create_PT_family_list();
 
@@ -176,18 +174,20 @@ static int make_PT_family_list(PT_local *locs) {
             real_hits++;
         }
     }
+    free((char *)my_list);
 
     locs->ff_list_size = real_hits;
 
     return 0;
 }
 
+/* Check the probe for inconsitencies */
 inline int probe_is_ok(char *probe, int probe_len, char first_c, char second_c)
 {
-    /*! Check the probe for inconsistencies */
+    int i;
     if (probe_len < 2 || probe[0] != first_c || probe[1] != second_c)
         return 0;
-    for (int i = 2; i < probe_len; i++)
+    for (i = 2; i < probe_len; i++)
         if (probe[i] < PT_A || probe[i] > PT_T)
             return 0;
     return 1;
@@ -211,11 +211,11 @@ inline void complement_sequence(char *seq, int len) {
 }
 
 extern "C" int ff_find_family(PT_local *locs, bytestring *species) {
-    /*! make sorted list of family members of species */
-
+    // make sorted list of family members of species
+ 
     int probe_len   = locs->ff_pr_len;
     int mismatch_nr = locs->ff_mis_nr;
-    int complement  = locs->ff_compl; // any combination of: 1 = forward, 2 = reverse, 4 = reverse-complement, 8 = complement
+    int complement  = locs->ff_compl; // any combination of: 1 = forward, 2 = reverse, 4 = reverse-complement, 8 = complement 
 
     char *sequence     = species->data;
     int   sequence_len = probe_compress_sequence(sequence, species->size);
@@ -226,7 +226,7 @@ extern "C" int ff_find_family(PT_local *locs, bytestring *species) {
     char last_first_c = locs->ff_find_type ? PT_A : PT_T;
 
     // Note: code depends on order of ../AWTC/awtc_next_neighbours.hxx@FF_complement_dep
-    for (int cmode = 1; cmode <= 8; cmode *= 2) {
+    for (int cmode = 1; cmode <= 8; cmode *= 2) { 
         switch (cmode) {
             case 1:             // forward
                 break;
@@ -245,7 +245,7 @@ extern "C" int ff_find_family(PT_local *locs, bytestring *species) {
                     char *last_probe = sequence+sequence_len-probe_len;
                     for (char *probe = sequence; probe < last_probe; ++probe) {
                         if (probe_is_ok(probe, probe_len, first_c, second_c)) {
-                            mark_all_matches(psg.pt, probe, probe_len, 0, 0, mismatch_nr);
+                            mark_all_matches(locs,psg.pt,probe,probe_len,0,0,mismatch_nr);
                         }
                     }
                 }
@@ -255,7 +255,7 @@ extern "C" int ff_find_family(PT_local *locs, bytestring *species) {
 
     make_match_statistic(locs->ff_pr_len, sequence_len);
     make_PT_family_list(locs);
-
+    
     free(species->data);
     return 0;
 }

@@ -1,26 +1,5 @@
-// =============================================================== //
-//                                                                 //
-//   File      : client_privat.h                                   //
-//   Purpose   :                                                   //
-//                                                                 //
-//   Institute of Microbiology (Technical University Munich)       //
-//   http://www.arb-home.de/                                       //
-//                                                                 //
-// =============================================================== //
-
-#ifndef CLIENT_PRIVAT_H
-#define CLIENT_PRIVAT_H
-
-#ifndef AISC_GLOBAL_H
+#ifndef GLOBAL_H
 #include "aisc_global.h"
-#endif
-
-
-#ifndef ARB_ASSERT_H
-#include <arb_assert.h>
-#endif
-#ifndef SIGHANDLER_H
-#include <SigHandler.h>
 #endif
 
 #define AISC_MAX_ATTR           4095
@@ -29,24 +8,28 @@
 #define AISC_MESSAGE_BUFFER_LEN ((AISC_MAX_STRING_LEN/4+3)*(16+2))
 
 struct aisc_bytes_list {
-    char            *data;
-    int              size;
-    aisc_bytes_list *next;
+    char *data;
+    int   size;
+
+    struct aisc_bytes_list *next;
 };
 
-struct aisc_com {
-    int         socket;
-    int         message_type;
-    char       *message;
-    int        *message_queue;
-    long        magic;
-    const char *error;
+typedef struct struct_aisc_com {
+    int                     socket;
+    int                     message_type;
+    char                   *message;
+    int                    *message_queue;
+    long                    magic;
+    const char             *error;
+    long                    aisc_mes_buffer[AISC_MESSAGE_BUFFER_LEN];
+    struct aisc_bytes_list *aisc_client_bytes_first;
+    struct aisc_bytes_list *aisc_client_bytes_last;
+} aisc_com;
 
-    long             aisc_mes_buffer[AISC_MESSAGE_BUFFER_LEN];
-    aisc_bytes_list *aisc_client_bytes_first;
-    aisc_bytes_list *aisc_client_bytes_last;
-    SigHandler       old_sigpipe_handler;
-};
+typedef struct struct_bytestring {
+    char *data;
+    int   size;
+} bytestring;
 
 #define AISC_MAGIC_NUMBER 0
 
@@ -68,7 +51,3 @@ enum aisc_client_command_list {
     AISC_CCOM_ERROR   = AISC_MAGIC_NUMBER + 1,
     AISC_CCOM_MESSAGE = AISC_MAGIC_NUMBER + 2
 };
-
-#else
-#error client_privat.h included twice
-#endif // CLIENT_PRIVAT_H

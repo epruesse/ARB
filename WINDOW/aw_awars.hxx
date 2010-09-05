@@ -1,12 +1,9 @@
 #ifndef AW_AWARS_HXX
 #define AW_AWARS_HXX
 
-#define AWAR_DB        "tmp/nt/arbdb/"
-#define AWAR_DB_PATH   AWAR_DB "file_name"
-#define AWAR_DB_TYPE   AWAR_DB "type"
-#define AWAR_DB_FILTER AWAR_DB "filter"
-#define AWAR_DB_NAME   AWAR_DB_PATH "_without_path" //  awar is automatically updated when AWAR_DB_PATH changes
-
+#define AWAR_DB                "tmp/nt/arbdb/"
+#define AWAR_DB_PATH           AWAR_DB "file_name"
+#define AWAR_DB_NAME           AWAR_DB_PATH "_without_path" //  awar is automatically updated when AWAR_DB_PATH changes
 #define AWAR_DEFAULT_ALIGNMENT "presets/use"
 
 #define AWAR_TREE          "focus/tree_name"
@@ -29,7 +26,7 @@
 #define AWAR_ITARGET_STRING       "nt/itarget_string"
 #define AWAR_EXPERT               "nt/expert"
 
-#define AWAR_SAI_COLOR_STR       "tmp/sai_color_str" // to visualize SAIs in probe Match window
+#define AWAR_SAI_COLOR_STR       "tmp/sai_color_str" //to visualize SAIs in probe Match window
 
 /* local awars for edit and edit4: */
 
@@ -50,7 +47,7 @@
    contains the name of the species the pseudo gene-species originated from */
 // #define AWAR_EXPERIMENT_NAME    "tmp/focus/experiment_name" /* string :  name of selected experiment */
 #define AWAR_SAI_NAME           "tmp/focus/sai_name" /* string :  name of selected SAI (e.g. in EDIT4 and 'Manage SAI') */
-#define AWAR_SAI_GLOBAL         "tmp/focus/sai_global" /* string :  name of selected SAI in EDIT4/Visualize SAI Tool - used in RNA3D Tool */
+#define AWAR_SAI_GLOBAL         "tmp/focus/sai_global" /* string :  name of selected SAI in EDIT4/Visualize SAI Tool - used in RNA3D Tool*/
 
 #define AWAR_HELIX_NAME "tmp/focus/helix_name" /* string: name of selected helix, for helix numbers append _NR, get default by GBT_get_default_helix */
 

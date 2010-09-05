@@ -1,6 +1,9 @@
 #ifndef __RNS_H
 #define __RNS_H
 
+#ifndef __DEFINES_H
+#include "defines.h"
+#endif
 #ifndef __BASE_H
 #include "base.h"
 #endif
@@ -63,16 +66,16 @@ typedef struct S_RNS
 
 #ifdef __cplusplus
 extern "C" {
-#endif
+#endif    
 
-    RNS  createOriginRNS ();
+    RNS  createOriginRNS (void);
     void freeRNS         (RNS rns);
     void splitRNS        (int no_of_father, RNS origin, double age, int steps, int depth);
 
-    void dumpDepths      ();
+    void dumpDepths      (void);
 
 #ifdef __cplusplus
 }
-#endif
+#endif    
 
 #endif

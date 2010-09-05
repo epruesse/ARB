@@ -1,33 +1,22 @@
-// =============================================================== //
-//                                                                 //
-//   File      : ali_profile.hxx                                   //
-//   Purpose   :                                                   //
-//                                                                 //
-//   Institute of Microbiology (Technical University Munich)       //
-//   http://www.arb-home.de/                                       //
-//                                                                 //
-// =============================================================== //
+#ifndef _ALI_PROFILE_INC_
+#define _ALI_PROFILE_INC_
 
-#ifndef ALI_PROFILE_HXX
-#define ALI_PROFILE_HXX
-
-#ifndef ALI_ARBDB_HXX
+#include "ali_sequence.hxx"
 #include "ali_arbdb.hxx"
-#endif
-#ifndef ALI_PT_HXX
 #include "ali_pt.hxx"
-#endif
+#include "ali_tlist.hxx"
+#include "ali_misc.hxx"
 
 #define ALI_PROFILE_BORDER_LEFT '['
 #define ALI_PROFILE_BORDER_RIGHT ']'
 
-typedef void ALI_MAP_; /* make module independent */
+typedef void ALI_MAP_; /* make modul independent */
 
 
 typedef struct {
     ALI_ARBDB *arbdb;
     ALI_PT *pt;
-
+        
     int find_family_mode;
 
     int exclusive_flag;
@@ -51,13 +40,15 @@ typedef struct {
 } ALI_PROFILE_CONTEXT;
 
 
-// Class for a family member
+/*
+ * Class for a family member
+ */
 class ali_family_member {
 public:
     ALI_SEQUENCE *sequence;
     float matches;
     float weight;
-
+ 
     ali_family_member(ALI_SEQUENCE *seq, float m, float w = 0.0) {
         sequence = seq;
         matches = m;
@@ -66,14 +57,16 @@ public:
 };
 
 
-// Class for the profiling
+/*
+ * Class for the profiling
+ */
 class ALI_PROFILE {
     ALI_NORM_SEQUENCE *norm_sequence;
     unsigned long prof_len;
 
     long **helix;                    /* base to base connection */
     char **helix_borders;            /* borders of the helix '[' and ']' */
-    unsigned long helix_len;
+    unsigned long helix_len;        
 
     float (**base_weights)[4];         /* relative weight of base i */
     float (**sub_costs)[6];            /* costs to substitute with base i */
@@ -87,13 +80,13 @@ class ALI_PROFILE {
     float (*binding_costs)[5][5];       /* Matrix for binding costs a c g u - */
     float w_bind_maximum;
 
-    unsigned long *lmin, *lmax;
+    unsigned long *lmin, *lmax; 
     float ***gap_costs;
     float ***gap_percents;
 
     int is_binding_marker(char c);
 
-    ALI_TLIST<ali_family_member *> *find_family(ALI_SEQUENCE *sequence,
+    ALI_TLIST<ali_family_member *> *find_family(ALI_SEQUENCE *sequence, 
                                                 ALI_PROFILE_CONTEXT *context);
     void calculate_costs(ALI_TLIST<ali_family_member *> *family_list,
                          ALI_PROFILE_CONTEXT *context);
@@ -106,15 +99,15 @@ class ALI_PROFILE {
                         unsigned long *start, unsigned long *end);
     void delete_comp_helix(char h1[], char h2[], unsigned long h_len,
                            unsigned long start, unsigned long end);
-    // int map_helix(char h[], unsigned long h_len,
-                  // unsigned long start1, unsigned long end1,
-                  // unsigned long start2, unsigned long end2);
+    int map_helix(char h[], unsigned long h_len,
+                  unsigned long start1, unsigned long end1,
+                  unsigned long start2, unsigned long end2);
     void initialize_helix(ALI_PROFILE_CONTEXT *context);
 
 public:
 
     ALI_PROFILE(ALI_SEQUENCE *sequence, ALI_PROFILE_CONTEXT *context);
-    ~ALI_PROFILE();
+    ~ALI_PROFILE(void);
 
     void print(int start = -1, int end = -1)
     {
@@ -132,34 +125,34 @@ public:
             start = end;
             end = i;
         }
+                        
 
-
-        printf("\nProfile from %d to %d\n", start, end);
+        printf("\nProfile from %d to %d\n",start,end);
         printf("Substitutions kosten:\n");
         for (i = start; i <= end; i++) {
-            printf("%2d: ", i);
+            printf("%2d: ",i);
             for (j = 0; j < 6; j++)
-                printf("%4.2f ", (*sub_costs)[i][j]);
+                printf("%4.2f ",(*sub_costs)[i][j]);
             printf("\n");
         }
 
         printf("\nGap Bereiche:\n");
         for (i = start; i <= end; i++) {
-            printf("%2d: %3ld %3ld\n", i, lmin[i], lmax[i]);
+            printf("%2d: %3ld %3ld\n",i,lmin[i],lmax[i]);
             printf("  : ");
             for (j = 0; j <= lmax[i] - lmin[i] + 1; j++)
-                printf("%4.2f ", (*gap_percents)[i][j]);
+                printf("%4.2f ",(*gap_percents)[i][j]);
             printf("\n  : ");
             for (j = 0; j <= lmax[i] - lmin[i] + 1; j++)
-                printf("%4.2f ", (*gap_costs)[i][j]);
+                printf("%4.2f ",(*gap_costs)[i][j]);
             printf("\n");
         }
 
     }
 
-    int is_in_helix(unsigned long pos,
+    int is_in_helix(unsigned long pos, 
                     unsigned long *first, unsigned long *last);
-    int is_outside_helix(unsigned long pos,
+    int is_outside_helix(unsigned long pos, 
                          unsigned long *first, unsigned long *last);
     int complement_position(unsigned long pos) {
         if (pos >= helix_len)
@@ -180,7 +173,7 @@ public:
                     return 0;
             }
         for (l = (long) pos + 1; l < (long) prof_len; l++)
-            switch ((*helix_borders)[l]) {
+            switch((*helix_borders)[l]) {
                 case ALI_PROFILE_BORDER_LEFT:
                     return 0;
                 case ALI_PROFILE_BORDER_RIGHT:
@@ -192,9 +185,9 @@ public:
     int is_internal_last(unsigned long pos) {
         return norm_sequence->is_begin(pos + 1);
     }
-
-    char *cheapest_sequence();
-    char *borders_sequence() {
+                          
+    char *cheapest_sequence(void);      
+    char *borders_sequence(void) {
         unsigned long i;
         char *str, *str_buffer;
 
@@ -211,19 +204,19 @@ public:
         return str_buffer;
     }
 
-    unsigned long length() {
+    unsigned long length(void) {
         return prof_len;
     }
-    ALI_NORM_SEQUENCE *sequence() {
+    ALI_NORM_SEQUENCE *sequence(void) {
         return norm_sequence;
     }
-    unsigned long sequence_length() {
+    unsigned long sequence_length(void) {
         return norm_sequence->length();
     }
 
     float base_weight(unsigned long pos, unsigned char c) {
         if (c > 3)
-            ali_fatal_error("Out of range", "ALI_PROFILE::base_weight()");
+            ali_fatal_error("Out of range","ALI_PROFILE::base_weight()");
         return (*base_weights)[pos][c];
     }
 
@@ -244,7 +237,7 @@ public:
         return costs * multi_gap_factor;
     }
 
-    float w_sub_maximum() {
+    float w_sub_maximum(void) {
         return sub_costs_maximum;
     }
 
@@ -265,7 +258,7 @@ public:
         float costs = 0.0;
         unsigned long i;
         for (i = start; i <= end; i++)
-            costs += w_del(start, i);
+            costs += w_del(start,i);
         return costs;
     }
     float w_del_multi_cheap(unsigned long start, unsigned long end) {
@@ -279,14 +272,14 @@ public:
         float costs = 0.0;
         unsigned long i;
         for (i = start; i <= end; i++)
-            costs += w_del(i, i);
+            costs += w_del(i,i);
         return costs;
     }
 
-    float w_ins(unsigned long /* positionx */, unsigned long /* positiony */) {
+    float w_ins(unsigned long /*positionx*/, unsigned long /*positiony*/) {
         return insert_cost;
     }
-    float w_ins_cheap(unsigned long /* positionx */, unsigned long /* positiony */) {
+    float w_ins_cheap(unsigned long /*positionx*/, unsigned long /*positiony*/) {
         return multi_insert_cost;
     }
     float w_ins_multi_unweighted(unsigned long startx, unsigned long endx) {
@@ -311,7 +304,7 @@ public:
         }
     }
 
-    float w_bind(unsigned long pos_1, unsigned char base_1,
+    float w_bind(unsigned long pos_1, unsigned char base_1, 
                  unsigned long pos_2, unsigned char base_2) {
         int i, j;
         float cost_in, cost = 0;
@@ -335,11 +328,10 @@ public:
         }
         return cost;
     }
-
+                
     float w_binding(unsigned long first_position_of_sequence,
                     ALI_SEQUENCE *sequence);
 };
 
-#else
-#error ali_profile.hxx included twice
-#endif // ALI_PROFILE_HXX
+
+#endif

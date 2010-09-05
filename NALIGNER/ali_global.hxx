@@ -1,19 +1,11 @@
-// =============================================================== //
-//                                                                 //
-//   File      : ali_global.hxx                                    //
-//   Purpose   :                                                   //
-//                                                                 //
-//   Institute of Microbiology (Technical University Munich)       //
-//   http://www.arb-home.de/                                       //
-//                                                                 //
-// =============================================================== //
+#ifndef _ALI_GLOBAL_INC_
+#define _ALI_GLOBAL_INC_
 
-#ifndef ALI_GLOBAL_HXX
-#define ALI_GLOBAL_HXX
-
-#ifndef ALI_PREALIGNER_HXX
+#include "ali_arbdb.hxx"
+#include "ali_pt.hxx"
+#include "ali_profile.hxx"
 #include "ali_prealigner.hxx"
-#endif
+
 
 class ALI_GLOBAL {
 private:
@@ -47,6 +39,4 @@ public:
     void init(int *argc, char *argv[]);
 };
 
-#else
-#error ali_global.hxx included twice
-#endif // ALI_GLOBAL_HXX
+#endif

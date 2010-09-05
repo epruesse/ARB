@@ -59,7 +59,7 @@ static int minDepth = INT_MAX, /* minimale Tiefe (Astanzahl) der Blattspitzen */
 /* -------------------------------------------------------------------------- */
 /*      void dumpDepths(void) */
 /* ------------------------------------------------------ 24.05.95 22.27 ---- */
-void dumpDepths()
+void dumpDepths(void)
 {
     printf("Minimale Baumtiefe = %i\n", minDepth);
     printf("Maximale Baumtiefe = %i\n", maxDepth);
@@ -175,6 +175,8 @@ static RNS allocRNS(int len)
 
     if (!rns) outOfMemory();
 
+/*     rns->bases = orgLen; */
+/*     rns->base  = malloc(sizeof(*(rns->base))*orgLen); */
     rns->bases = len;
     rns->base  = malloc(sizeof(*(rns->base))*len);
 
@@ -188,7 +190,7 @@ static RNS allocRNS(int len)
 /* */
 /*  Erzeugt eine Ur-RNS */
 /* */
-RNS createOriginRNS()
+RNS createOriginRNS(void)
 {
     RNS rns      = allocRNS(orgLen);
     int helixLen = orgLen*orgHelixPart,
@@ -352,21 +354,45 @@ static RNS dupRNS(RNS rns)
     return neu;
 }
 /* -------------------------------------------------------------------------- */
+/*      static void dumpDoubleProb(double *d, int anz) */
+/* ------------------------------------------------------ 25.05.95 01.31 ---- */
+/*static void dumpDoubleProb(double *d, int anz) */
+/*{ */
+/*    while (anz--) printf("%-10f", *d++); */
+/*    printf("\n\n"); */
+/*} */
+/* -------------------------------------------------------------------------- */
 /*      static void calcMutationMatrix(DoubleProb mutationMatrix, double mu... */
 /* ------------------------------------------------------ 24.05.95 13.58 ---- */
 static void calcMutationMatrix(DoubleProb mutationMatrix, double muteRate, double gcDruck, double gcRate, double atRate, double *pairProb)
 {
-    double k = transitionRate/transversionRate,
-        fa   = (1.0-gcDruck)*atRate,
-        fc   = gcDruck*(1.0-gcRate),
-        fg   = gcDruck*gcRate,
-        ft   = (1.0-gcDruck)*(1.0-atRate),
-        bfa  = transversionRate*fa,
-        bfc  = transversionRate*fc,
-        bfg  = transversionRate*fg,
-        bft  = transversionRate*ft,
-        kag  = k/(fa+fg),
-        kct  = k/(fc+ft);
+    double k   = transitionRate/transversionRate,
+           fa  = (1.0-gcDruck)*atRate,
+           fc  = gcDruck*(1.0-gcRate),
+           fg  = gcDruck*gcRate,
+           ft  = (1.0-gcDruck)*(1.0-atRate),
+           bfa = transversionRate*fa,
+           bfc = transversionRate*fc,
+           bfg = transversionRate*fg,
+           bft = transversionRate*ft,
+           kag = k/(fa+fg),
+           kct = k/(fc+ft);
+/*           sa  = (kag+3.0)*bfa,                            // Summe der "mutierenden" Positionen jeder Zeile */
+/*           sc  = (kct+3.0)*bfc, */
+/*           sg  = (kag+3.0)*bfg, */
+/*           st  = (kct+3.0)*bft; */
+
+    /* Auf aktuelle Mutationsrate normieren */
+
+/*    bfa = bfa*muteRate/sa; */
+/*    bfc = bfc*muteRate/sc; */
+/*    bfg = bfg*muteRate/sg; */
+/*    bft = bft*muteRate/st; */
+
+/*    printf("bfa=%f\n", bfa); */
+/*    printf("bfc=%f\n", bfc); */
+/*    printf("bfg=%f\n", bfg); */
+/*    printf("bft=%f\n", bft); */
 
     /* Matrix besetzen */
 
@@ -389,6 +415,34 @@ static void calcMutationMatrix(DoubleProb mutationMatrix, double muteRate, doubl
     mutationMatrix[BASE_C][BASE_T] = (kct+1.0)*bft;
     mutationMatrix[BASE_G][BASE_T] = bft;
     mutationMatrix[BASE_T][BASE_T] = 1.0-(kct+3.0)*bft;
+
+/*    { */
+/*        int von,                                         // Matrix ausgeben */
+/*            nach; */
+/* */
+/*        printf("       von %c     von %c     von %c     von %c     \n", */
+/*                helixBaseChar[0], */
+/*                helixBaseChar[1], */
+/*                helixBaseChar[2], */
+/*                helixBaseChar[3] ); */
+/* */
+/*        for (nach = BASE_A; nach<=BASE_T; nach++) */
+/*        { */
+/*            double sum = 0.0; */
+/* */
+/*            printf("nach %c ", helixBaseChar[nach]); */
+/* */
+/*            for (von = BASE_A; von<=BASE_T; von++) */
+/*            { */
+/*                printf("%-10f", mutationMatrix[von][nach]); */
+/*                sum += mutationMatrix[von][nach]; */
+/*            } */
+/* */
+/*            printf("    sum = %-10f\n", sum); */
+/*        } */
+/* */
+/*        printf("\n"); */
+/*    } */
 
     if (pairProb)                                          /* soll pairProb berechnet werden? */
     {
@@ -432,10 +486,19 @@ static int calcPairTrials(double pairProb, double actPairPart)
         pairProb *= failProb;
         succProb += pairProb;
         trials++;
+
+/*        printf("trials=%i succProb=%f actPairPart=%f\n", trials, succProb, actPairPart); */
     }
 
     return trials;
 }
+/* -------------------------------------------------------------------------- */
+/*      static void indent(int depth) */
+/* ------------------------------------------------------ 24.05.95 21.08 ---- */
+/*static void indent(int depth) */
+/*{ */
+/*    while (depth--) fputc(' ', topo); */
+/*} */
 /* -------------------------------------------------------------------------- */
 /*      static void mutateRNS(RNS rns, int steps, int depth) */
 /* ------------------------------------------------------ 20.05.95 19.50 ---- */
@@ -485,6 +548,7 @@ static void mutateRNS(int no_of_father, RNS rns, int steps, int depth)
             calcMutationMatrix(loopMutationMatrix, actMutationRate, getFrand(loopGcDruck), getFrand(loopGcRate), getFrand(loopAtRate), NULL);
 
             pairTrials = calcPairTrials(pairProb, actPairPart);
+/*            printf("pairProb=%f pairTrials=%i\n", pairProb, pairTrials); */
         }
 
         for (b = 0; b<BASETYPES; b++)
@@ -499,7 +563,7 @@ static void mutateRNS(int no_of_father, RNS rns, int steps, int depth)
         /* |  Alle Basen(-paare) durchlaufen  | */
         /* \----------------------------------/ */
 
-        for (b = 0; b<(rns->bases);)
+        for (b = 0; b<(rns->bases); )
         {
             char base = rns->base[b];
 
@@ -621,6 +685,7 @@ void splitRNS(int no_of_father, RNS origin, double age, int steps, int depth)
                mutationRate_val = mutationRate->val,
                splitRate_val    = splitRate->val;
 
+/*        indent(depth); */
         fprintf(topo, "(no%i:%f,\n", origin->laufNr, age);
 
         {
@@ -651,6 +716,7 @@ void splitRNS(int no_of_father, RNS origin, double age, int steps, int depth)
         if      (depth>maxDepth) maxDepth = depth;
         else if (depth<minDepth) minDepth = depth;
 
+/*        indent(depth); */
         fprintf(topo, "no%i:%f", origin->laufNr, age);
 
         if ((origin->laufNr%100) == 0) {

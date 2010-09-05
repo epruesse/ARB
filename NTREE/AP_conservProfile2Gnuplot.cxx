@@ -1,19 +1,23 @@
-// =============================================================== //
-//                                                                 //
-//   File      : AP_conservProfile2Gnuplot.cxx                     //
-//   Purpose   :                                                   //
-//                                                                 //
-//   Institute of Microbiology (Technical University Munich)       //
-//   http://www.arb-home.de/                                       //
-//                                                                 //
-// =============================================================== //
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <math.h>
+#include <unistd.h>
+#include <sys/types.h>
 
-#include "nt_internal.h"
-#include "ap_conservProfile2Gnuplot.hxx"
-
-#include <aw_window.hxx>
-#include <aw_file.hxx>
+#include <arbdb.h>
 #include <arbdbt.h>
+#include <aw_root.hxx>
+#include <aw_device.hxx>
+#include <aw_window.hxx>
+#include <aw_awars.hxx>
+#include <aw_global.hxx>
+#include <awt.hxx>
+#include <awt_tree.hxx>
+#include <awt_canvas.hxx>
+#include <awt_csp.hxx>
+#include "ap_conservProfile2Gnuplot.hxx"
+//#include "nt_cb.hxx"
 
 extern GBDATA *GLOBAL_gb_main;
 
@@ -34,12 +38,12 @@ void AP_conservProfile2Gnuplot_callback(AW_window *aww) {
         int   minY    = aww->get_root()->awar(AP_AWAR_CONSPRO_GNUPLOT_MIN_Y)->read_int();
         int   maxY    = aww->get_root()->awar(AP_AWAR_CONSPRO_GNUPLOT_MAX_Y)->read_int();
 
-        if (minX>0 || maxX>0)   fprintf(cmdFile, "set xrange [%i:%i]\n", minX, maxX);
-        if (minY>0 || maxY>0)   fprintf(cmdFile, "set yrange [%i:%i]\n", minY, maxY);
+        if (minX>0 || maxX>0)   fprintf(cmdFile, "set xrange [%i:%i]\n",minX,maxX);
+        if (minY>0 || maxY>0)   fprintf(cmdFile, "set yrange [%i:%i]\n",minY,maxY);
 
         fprintf(cmdFile, "plot \"%s\" %s title \"%s\"\n", fname, smooth, legend);
 
-        if (dispPos) fprintf(cmdFile, "replot \"%s\" title \"Base Positions\"\n", fname);
+        if(dispPos)  fprintf(cmdFile, "replot \"%s\" title \"Base Positions\"\n", fname);
 
         fprintf(cmdFile, "pause -1 \"Press RETURN to close gnuplot\"\n");
 
@@ -51,7 +55,7 @@ void AP_conservProfile2Gnuplot_callback(AW_window *aww) {
 
     if (!error) {
         char *script = GBS_global_string_copy("gnuplot %s && rm -f %s", command_file, command_file);
-        GB_xcmd(script, true, true);          // execute GNUPLOT using command_file
+        GB_xcmd(script, GB_TRUE, GB_TRUE);          // execute GNUPLOT using command_file
         free(script);
     }
     free(command_file);
@@ -61,17 +65,17 @@ void AP_conservProfile2Gnuplot_callback(AW_window *aww) {
 }
 
 
-AW_window *AP_createConservationProfileWindow(AW_root *root) {
+AW_window *AP_openConservationPorfileWindow( AW_root *root ){
 
     AW_window_simple *aws = new AW_window_simple;
 
-    aws->init(root, "DISP_CONSERV_PROFILE_GNUPLOT", "Conservation Profile Using Base Frequency Filter");
+    aws->init( root, "DISP_CONSERV_PROFILE_GNUPLOT", "Conservation Profile Using Base Frequency Filter");
     aws->load_xfig("conservProfile2Gnuplot.fig");
 
     root->awar_string(AP_AWAR_CONSPRO_SMOOTH_GNUPLOT);
     root->awar_string(AP_AWAR_BASE_FREQ_FILTER_NAME);
 
-    AW_create_fileselection_awars(root, AP_AWAR_CONSPRO, "", ".gnu", "noname.gnu");
+    aw_create_selection_box_awars(root, AP_AWAR_CONSPRO, "", ".gnu", "noname.gnu");
 
     root->awar_string(AP_AWAR_CONSPRO_GNUPLOT_LEGEND);
     root->awar_int(AP_AWAR_CONSPRO_GNUPLOT_DISP_POS);
@@ -80,15 +84,17 @@ AW_window *AP_createConservationProfileWindow(AW_root *root) {
     root->awar_int(AP_AWAR_CONSPRO_GNUPLOT_MIN_Y);
     root->awar_int(AP_AWAR_CONSPRO_GNUPLOT_MAX_Y);
 
-    aws->at("close"); aws->callback((AW_CB0)AW_POPDOWN);
-    aws->create_button("CLOSE", "CLOSE", "C");
+    aws->at("close");aws->callback((AW_CB0)AW_POPDOWN);
+    aws->create_button("CLOSE","CLOSE","C");
 
-    aws->at("help"); aws->callback(AW_POPUP_HELP, (AW_CL)"conservProfile2Gnuplot.hlp");
-    aws->create_button("HELP", "HELP", "H");
+    aws->at("help");aws->callback(AW_POPUP_HELP,(AW_CL)"coservProfile2Gnuplot.hlp");
+    aws->create_button("HELP","HELP","H");
 
-    AW_create_fileselection(aws, AP_AWAR_CONSPRO);
+    awt_create_selection_box(aws,AP_AWAR_CONSPRO);
 
-    aws->at("baseFreqFlt");
+    aws->at("baseFreqFlt");// aws->callback((AW_CB0)AW_POPDOWN);
+    //    aws->callback(createTipsAndTricks_window);
+    //    aws->callback(AW_POPUP,(AW_CL)NT_system_cb,(AW_CL)"arb_phylo &");
     aws->create_button("SELECT_FILTER", AP_AWAR_BASE_FREQ_FILTER_NAME);
 
     aws->at("minX");
@@ -108,9 +114,10 @@ AW_window *AP_createConservationProfileWindow(AW_root *root) {
 
     aws->at("smooth");
     aws->create_toggle_field(AP_AWAR_CONSPRO_SMOOTH_GNUPLOT, 1);
-    aws->insert_default_toggle("None", "N", "");
-    aws->insert_toggle("Unique", "U", "smooth unique");
-    aws->insert_toggle("Bezier", "B", "smooth bezier");
+    aws->insert_default_toggle("None","N", "");
+    aws->insert_toggle("Unique","U", "smooth unique");
+    //    aws->insert_toggle("CSpline","S", "smooth cspline");
+    aws->insert_toggle("Bezier","B", "smooth bezier");
     aws->update_toggle_field();
 
     aws->at("dispPos");
@@ -118,8 +125,8 @@ AW_window *AP_createConservationProfileWindow(AW_root *root) {
 
     aws->at("dispProfile");
     aws->callback(AP_conservProfile2Gnuplot_callback);
-    aws->create_button("DISPLAY_PROFILE", "SAVE & DISPLAY CONSERVATION PROFILE");
+    aws->create_button("DISPLAY_PROFILE","SAVE & DISPLAY CONSERVATION PROFILE");
 
-    return aws;
+    return (AW_window *)aws;
 }
 

@@ -1,16 +1,11 @@
-// =============================================================== //
-//                                                                 //
-//   File      : PT_findEx.cxx                                     //
-//   Purpose   :                                                   //
-//                                                                 //
-//   Institute of Microbiology (Technical University Munich)       //
-//   http://www.arb-home.de/                                       //
-//                                                                 //
-// =============================================================== //
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+// #include <malloc.h>
 
-
-#include "probe.h"
+#include <PT_server.h>
 #include <PT_server_prototypes.h>
+#include "probe.h"
 #include "probe_tree.hxx"
 #include "pt_prototypes.h"
 
@@ -18,7 +13,7 @@ static bool findLeftmostProbe(POS_TREE *node, char *probe, int restlen, int heig
     if (restlen==0) return true;
 
     switch (PT_read_type(node)) {
-        case PT_NT_NODE: {
+        case PT_NT_NODE:  {
             for (int i=PT_A; i<PT_B_MAX; ++i) {
                 POS_TREE *son = PT_read_son(psg.ptmain, node, PT_BASES(i));
                 if (son) {
@@ -31,10 +26,11 @@ static bool findLeftmostProbe(POS_TREE *node, char *probe, int restlen, int heig
             break;
         }
         case PT_NT_CHAIN: {
+            // fprintf(stdout, "Reached chain in findLeftmostProbe() (restlen=%i)\n", restlen);
             pt_assert(0);  // unhandled yet
             break;
         }
-        case PT_NT_LEAF: {
+        case PT_NT_LEAF:  {
             // here the probe-tree is cut off, because only one species matches
             int pos  = PT_read_rpos(psg.ptmain, node) + height;
             int name = PT_read_name(psg.ptmain, node);
@@ -52,7 +48,7 @@ static bool findLeftmostProbe(POS_TREE *node, char *probe, int restlen, int heig
             pt_assert(strlen(probe) == (size_t)restlen);
             return true;
         }
-        default: pt_assert(0); break;  // oops
+        default : pt_assert(0); break; // oops
     }
 
     return false;
@@ -68,7 +64,7 @@ static bool findNextProbe(POS_TREE *node, char *probe, int restlen, int height) 
     // returning false upwards takes the next after
 
     switch (PT_read_type(node)) {
-        case PT_NT_NODE: {
+        case PT_NT_NODE:  {
             POS_TREE *son   = PT_read_son(psg.ptmain, node, PT_BASES(probe[0]));
             bool      found = (son != 0) && findNextProbe(son, probe+1, restlen-1, height+1);
 
@@ -87,17 +83,21 @@ static bool findNextProbe(POS_TREE *node, char *probe, int restlen, int height) 
             return found;
         }
         case PT_NT_CHAIN:
-        case PT_NT_LEAF: {
+        case PT_NT_LEAF:  {
             // species list or single species reached
+            // fprintf(stdout, "Reached chain or leaf in findNextProbe() (restlen=%i)\n", restlen);
             return false;
         }
-        default: pt_assert(0); break;  // oops
+        default : pt_assert(0); break; // oops
     }
 
     pt_assert(0);
     return false;
 }
 
+//  ------------------------------------------------------
+//      extern "C" int PT_find_exProb(PT_exProb *pep)
+//  ------------------------------------------------------
 extern "C" int PT_find_exProb(PT_exProb *pep) {
     POS_TREE      *pt      = psg.pt; // start search at root
     GBS_strstruct *gbs_str = GBS_stropen(pep->numget*(pep->plength+1)+1);

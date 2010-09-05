@@ -469,7 +469,7 @@ int main(int argc, char *argv[])
       }
       if(!LoadIndexHeader(pg))
       {
-        forcebuild = TRUE; /* an error occurred while loading the index header */
+        forcebuild = TRUE; /* an error occured while loading the index header */
       }
     }
     if(forcebuild)
@@ -536,8 +536,7 @@ int main(int argc, char *argv[])
   }
   /****** all ok: main loop ********/
 
-  printf("ok, server is running.\n"); // do NOT change or remove! others depend on it
-  fflush(stdout);
+  printf("ok, server is running.\n");
 
   aisc_accept_calls(pg->pg_ComSocket);
   aisc_server_shutdown_and_exit(pg->pg_ComSocket, 0);

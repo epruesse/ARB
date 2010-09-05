@@ -8,12 +8,10 @@
 //   http://www.arb-home.de/                                        //
 //                                                                  //
 // ================================================================ //
-
 #include "Location.h"
 #include "tools.h"
 
 #include <adGene.h>
-#include <arbdb.h>
 
 #include <cctype>
 #include <string>
@@ -77,7 +75,7 @@ public:
     virtual LocationJoinType getJoinType() const { return joinType; }
     virtual int count() const {
         int Count = 0;
-
+        
         LocationVectorCIter e = locations.end();
         for (LocationVectorCIter i = locations.begin(); i != e; ++i) {
             Count += (*i)->count();
@@ -222,11 +220,11 @@ LocationPtr parseLocation(const string& source) {
             return new SimpleLocation(pos1, pos2, uncertain1, uncertain2);
         }
 
-        size_t in_between = source.find("^");
-        if (in_between != string::npos) {
+        size_t inbetween = source.find("^");
+        if (inbetween != string::npos) {
             char   uncertain1, uncertain2;
-            size_t pos1 = parsePosition(source.substr(0, in_between), uncertain1);
-            size_t pos2 = parsePosition(source.substr(in_between+1), uncertain2);
+            size_t pos1 = parsePosition(source.substr(0, inbetween), uncertain1);
+            size_t pos2 = parsePosition(source.substr(inbetween+1), uncertain2);
 
             if (uncertain1 == '=' && uncertain2 == '=' && pos2 == pos1+1) {
                 return new SimpleLocation(pos1, pos2, '+', '-');
@@ -248,13 +246,13 @@ LocationPtr parseLocation(const string& source) {
 }
 
 GEN_position *Location::create_GEN_position() const {
-    GEN_position *pos = GEN_new_position(count(), getJoinType() == LJT_JOIN);
+    GEN_position *pos = GEN_new_position(count(), GB_BOOL(getJoinType() == LJT_JOIN));
     GEN_use_uncertainties(pos);
 
-#if defined(ASSERTION_USED)
+#if defined(DEBUG)
     int org_parts = pos->parts;
-#endif // ASSERTION_USED
-
+#endif // DEBUG
+    
     pos->parts = 0;             // misuse 'parts' as index for filling 'pos'
     save(pos, false);
 
