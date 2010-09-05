@@ -368,8 +368,8 @@ first_target:
 		@echo ''
 		@echo 'Internal maintenance:'
 		@echo ''
-		@echo ' release     - build a release (increases minor version number)'
-		@echo ' stable      - like "release", but increase major version number'
+		@echo ' rel_minor   - build a release (increases minor version number)'
+		@echo ' rel_major   - build a release (increases MAJOR version number)'
 		@echo ' tarfile     - make rebuild and create arb version tarfile ("tarfile_quick" to skip rebuild)'
 		@echo ' save        - save all basic ARB sources into arbsrc_DATE'
 		@echo ' rtc_patch   - create LIBLINK/libRTC8M.so (SOLARIS ONLY)'
@@ -1361,16 +1361,16 @@ save_test: rmbak
 	@echo "Testing source list.."
 	@util/arb_srclst.pl > /dev/null
 
-release:
+rel_minor:
 	touch SOURCE_TOOLS/inc_minor.stamp
 	$(MAKE) do_release
 
-stable:
+rel_major:
 	touch SOURCE_TOOLS/inc_major.stamp
 	$(MAKE) do_release
 
 do_release: 
-	@echo Making release
+	@echo Building release
 	@echo PATH=$(PATH)
 	@echo ARBHOME=$(ARBHOME)
 	-rm arb.tgz arbsrc.tgz
