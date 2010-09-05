@@ -1,8 +1,0 @@
-#!/bin/sh
-cd $ARBHOME/lib/help
-file=index
-
-rm -f $file
-grep TITLE *.hlp | sed -e "s/^\(.\{1,15\}\)TITLE/\1	TITLE/g" -e "s/TITLE/	TITLE/g" >$file
-ls *.ps >>$file
-textedit $file&
