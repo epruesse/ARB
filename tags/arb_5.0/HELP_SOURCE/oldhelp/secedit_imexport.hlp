@@ -1,0 +1,26 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+#SUB	subtopic.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		Export & import secondary structure
+
+OCCURRENCE	ARB_SECEDIT/Files/Import Structure
+				 /Export Structure
+
+DESCRIPTION	Export secondary structure to file and import secondary 
+		structure from file.
+				
+NOTES		None
+
+EXAMPLES	None
+
+WARNINGS	After you have changed the length of the alignment, it's no 
+		longer possible to import your exported secondary structure.
+
+BUGS		No bugs known
