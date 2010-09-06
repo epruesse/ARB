@@ -65,9 +65,6 @@ sub add_dependency(\@$$) {
   if (not $depends_on =~ m@/usr/include/@) {
     push @$depends_r, "$file: $depends_on";
   }
-  else {
-    push @$depends_r, "# skipped '$depends_on'";
-  }
 }
 
 sub read_input_stream(\@) {
