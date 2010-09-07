@@ -56,16 +56,16 @@
     } while(0)
 
 namespace arb_test {
-    class FlushedOutputNoNewline {
+    class FlushedOutputNoLF {
         inline void flushall() { fflush(stdout); fflush(stderr); }
     public:
-        FlushedOutputNoNewline() { flushall(); }
-        ~FlushedOutputNoNewline() { flushall(); }
+        FlushedOutputNoLF() { flushall(); }
+        ~FlushedOutputNoLF() { flushall(); }
     };
-    struct FlushedOutput : public FlushedOutputNoNewline {
+    struct FlushedOutput : public FlushedOutputNoLF {
         ~FlushedOutput() { fputc('\n', stderr); }
     };
-        
+
     class GlobalTestData {
         GlobalTestData()
             : show_warnings(true),
@@ -97,7 +97,7 @@ namespace arb_test {
         
         static void assertfailmsg(const char *filename, int lineno, const char *condition) {
             FlushedOutput yes;
-            fprintf(stderr, "%s:%i: Assertion '%s' failed\n", filename, lineno, condition);
+            fprintf(stderr, "%s:%i: Assertion '%s' failed", filename, lineno, condition);
         }
     };
 

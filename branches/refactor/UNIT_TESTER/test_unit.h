@@ -50,7 +50,7 @@ namespace arb_test {
     public:
 
         static void printf(const char *format, ...) __attribute__((format(printf, 1, 2))) {
-            FlushedOutputNoNewline yes;
+            FlushedOutputNoLF yes;
             VPRINTFORMAT(format);
         }
         static void warningf(const char *filename, int lineno, const char *format, ...) __attribute__((format(printf, 3, 4))) {
@@ -112,7 +112,7 @@ namespace arb_test {
         print_hex(t2);
     }
     template <typename T1, typename T2> void print_failed_equal(T1 t1, T2 t2) {
-        FlushedOutput yes;
+        FlushedOutputNoLF yes;
         fputs("is_equal(", stderr);
         print_pair(t1, t2);
         fputs(") (", stderr);
@@ -198,12 +198,12 @@ namespace arb_test {
         return is_similar(d1, d2, 0.000001);
     }
 
-    
+
 
     inline bool files_are_equal(const char *file1, const char *file2) {
-        const char    *error = NULL;
-        FILE          *fp1   = fopen(file1, "rb");
-        FlushedOutput  yes;
+        const char        *error = NULL;
+        FILE              *fp1   = fopen(file1, "rb");
+        FlushedOutputNoLF  yes;
 
         if (!fp1) {
             StaticCode::printf("can't open '%s'", file1);
