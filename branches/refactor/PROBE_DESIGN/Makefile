@@ -68,6 +68,7 @@ probe_design.o: $(ARBHOME)/INCLUDE/GEN.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/PT_com.h
 probe_design.o: $(ARBHOME)/INCLUDE/servercntrl.h
 probe_design.o: $(ARBHOME)/INCLUDE/smartptr.h
+probe_design.o: $(ARBHOME)/INCLUDE/test_global.h
 probe_design.o: $(ARBHOME)/INCLUDE/TreeCallbacks.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/TreeDisplay.hxx
 
@@ -84,6 +85,7 @@ probe_match_parser.o: $(ARBHOME)/INCLUDE/arbtools.h
 probe_match_parser.o: $(ARBHOME)/INCLUDE/attributes.h
 probe_match_parser.o: $(ARBHOME)/INCLUDE/dupstr.h
 probe_match_parser.o: $(ARBHOME)/INCLUDE/smartptr.h
+probe_match_parser.o: $(ARBHOME)/INCLUDE/test_global.h
 
 SaiProbeVisualization.o: probe_match_parser.hxx
 SaiProbeVisualization.o: SaiProbeVisualization.hxx
@@ -111,3 +113,4 @@ SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/awt_nds.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/dupstr.h
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/smartptr.h
+SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/test_global.h

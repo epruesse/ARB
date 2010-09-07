@@ -48,6 +48,7 @@ ClustalV.o: $(ARBHOME)/INCLUDE/attributes.h
 ClustalV.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 ClustalV.o: $(ARBHOME)/INCLUDE/dupstr.h
 ClustalV.o: $(ARBHOME)/INCLUDE/smartptr.h
+ClustalV.o: $(ARBHOME)/INCLUDE/test_global.h
 
 constructSequence.o: constructSequence.hxx
 constructSequence.o: seq_search.hxx
@@ -68,6 +69,7 @@ constructSequence.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 constructSequence.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 constructSequence.o: $(ARBHOME)/INCLUDE/dupstr.h
 constructSequence.o: $(ARBHOME)/INCLUDE/smartptr.h
+constructSequence.o: $(ARBHOME)/INCLUDE/test_global.h
 
 fast_aligner.o: ClustalV.hxx
 fast_aligner.o: fast_aligner.hxx
@@ -93,6 +95,7 @@ fast_aligner.o: $(ARBHOME)/INCLUDE/awtc_next_neighbours.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/dupstr.h
 fast_aligner.o: $(ARBHOME)/INCLUDE/island_hopping.h
 fast_aligner.o: $(ARBHOME)/INCLUDE/smartptr.h
+fast_aligner.o: $(ARBHOME)/INCLUDE/test_global.h
 fast_aligner.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 seq_search.o: seq_search.hxx
@@ -107,3 +110,4 @@ seq_search.o: $(ARBHOME)/INCLUDE/attributes.h
 seq_search.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 seq_search.o: $(ARBHOME)/INCLUDE/dupstr.h
 seq_search.o: $(ARBHOME)/INCLUDE/smartptr.h
+seq_search.o: $(ARBHOME)/INCLUDE/test_global.h

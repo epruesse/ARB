@@ -31,6 +31,7 @@ depend.init:
 # Do not add dependencies manually - use 'make depend' in $ARBHOME
 # For formatting issues see SOURCE_TOOLS/fix_depends.pl
 
+UnitTester.o: test_global.h
 UnitTester.o: test_unit.h
 UnitTester.o: UnitTester.hxx
 UnitTester.o: $(ARBHOME)/INCLUDE/arb_assert.h

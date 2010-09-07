@@ -50,4 +50,5 @@ TreeWrite.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 TreeWrite.o: $(ARBHOME)/INCLUDE/awt_nds.hxx
 TreeWrite.o: $(ARBHOME)/INCLUDE/dupstr.h
 TreeWrite.o: $(ARBHOME)/INCLUDE/smartptr.h
+TreeWrite.o: $(ARBHOME)/INCLUDE/test_global.h
 TreeWrite.o: $(ARBHOME)/INCLUDE/xml.hxx

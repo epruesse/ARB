@@ -74,6 +74,7 @@ EXP_interface.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 EXP_interface.o: $(ARBHOME)/INCLUDE/db_scanner.hxx
 EXP_interface.o: $(ARBHOME)/INCLUDE/dupstr.h
 EXP_interface.o: $(ARBHOME)/INCLUDE/smartptr.h
+EXP_interface.o: $(ARBHOME)/INCLUDE/test_global.h
 
 EXP_main.o: ../NTREE/nt_cb.hxx
 EXP_main.o: EXP.hxx
@@ -100,6 +101,7 @@ EXP_main.o: $(ARBHOME)/INCLUDE/awt_input_mask.hxx
 EXP_main.o: $(ARBHOME)/INCLUDE/dupstr.h
 EXP_main.o: $(ARBHOME)/INCLUDE/ntree.hxx
 EXP_main.o: $(ARBHOME)/INCLUDE/smartptr.h
+EXP_main.o: $(ARBHOME)/INCLUDE/test_global.h
 
 GEN_gene.o: GEN.hxx
 GEN_gene.o: GEN_gene.hxx
@@ -123,6 +125,7 @@ GEN_gene.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 GEN_gene.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 GEN_gene.o: $(ARBHOME)/INCLUDE/dupstr.h
 GEN_gene.o: $(ARBHOME)/INCLUDE/smartptr.h
+GEN_gene.o: $(ARBHOME)/INCLUDE/test_global.h
 
 GEN_graphic.o: GEN.hxx
 GEN_graphic.o: GEN_gene.hxx
@@ -152,6 +155,7 @@ GEN_graphic.o: $(ARBHOME)/INCLUDE/awt_attributes.hxx
 GEN_graphic.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 GEN_graphic.o: $(ARBHOME)/INCLUDE/dupstr.h
 GEN_graphic.o: $(ARBHOME)/INCLUDE/smartptr.h
+GEN_graphic.o: $(ARBHOME)/INCLUDE/test_global.h
 
 GEN_interface.o: ../NTREE/ad_spec.hxx
 GEN_interface.o: ../NTREE/nt_internal.h
@@ -182,6 +186,7 @@ GEN_interface.o: $(ARBHOME)/INCLUDE/db_scanner.hxx
 GEN_interface.o: $(ARBHOME)/INCLUDE/dupstr.h
 GEN_interface.o: $(ARBHOME)/INCLUDE/ntree.hxx
 GEN_interface.o: $(ARBHOME)/INCLUDE/smartptr.h
+GEN_interface.o: $(ARBHOME)/INCLUDE/test_global.h
 
 GEN_map.o: ../NTREE/ad_spec.hxx
 GEN_map.o: EXP.hxx
@@ -219,6 +224,7 @@ GEN_map.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 GEN_map.o: $(ARBHOME)/INCLUDE/awt_input_mask.hxx
 GEN_map.o: $(ARBHOME)/INCLUDE/dupstr.h
 GEN_map.o: $(ARBHOME)/INCLUDE/smartptr.h
+GEN_map.o: $(ARBHOME)/INCLUDE/test_global.h
 
 GEN_nds.o: GEN_interface.hxx
 GEN_nds.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
@@ -241,6 +247,7 @@ GEN_nds.o: $(ARBHOME)/INCLUDE/awt_nds.hxx
 GEN_nds.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 GEN_nds.o: $(ARBHOME)/INCLUDE/dupstr.h
 GEN_nds.o: $(ARBHOME)/INCLUDE/smartptr.h
+GEN_nds.o: $(ARBHOME)/INCLUDE/test_global.h
 
 GEN_translations.o: GEN.hxx
 GEN_translations.o: GEN_local.hxx
@@ -264,4 +271,5 @@ GEN_translations.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 GEN_translations.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 GEN_translations.o: $(ARBHOME)/INCLUDE/dupstr.h
 GEN_translations.o: $(ARBHOME)/INCLUDE/smartptr.h
+GEN_translations.o: $(ARBHOME)/INCLUDE/test_global.h
 GEN_translations.o: $(ARBHOME)/INCLUDE/Translate.hxx

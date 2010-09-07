@@ -123,6 +123,7 @@ fb_test.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 fb_test.o: $(ARBHOME)/INCLUDE/attributes.h
 fb_test.o: $(ARBHOME)/INCLUDE/dupstr.h
 fb_test.o: $(ARBHOME)/INCLUDE/smartptr.h
+fb_test.o: $(ARBHOME)/INCLUDE/test_global.h
 
 ps_arb2asciipaths.o: ps_defs.hxx
 ps_arb2asciipaths.o: ps_filebuffer.hxx
@@ -137,6 +138,7 @@ ps_arb2asciipaths.o: $(ARBHOME)/INCLUDE/arbtools.h
 ps_arb2asciipaths.o: $(ARBHOME)/INCLUDE/attributes.h
 ps_arb2asciipaths.o: $(ARBHOME)/INCLUDE/dupstr.h
 ps_arb2asciipaths.o: $(ARBHOME)/INCLUDE/smartptr.h
+ps_arb2asciipaths.o: $(ARBHOME)/INCLUDE/test_global.h
 
 ps_convert_db.o: ps_database.hxx
 ps_convert_db.o: ps_defs.hxx
@@ -154,6 +156,7 @@ ps_convert_db.o: $(ARBHOME)/INCLUDE/arbtools.h
 ps_convert_db.o: $(ARBHOME)/INCLUDE/attributes.h
 ps_convert_db.o: $(ARBHOME)/INCLUDE/dupstr.h
 ps_convert_db.o: $(ARBHOME)/INCLUDE/smartptr.h
+ps_convert_db.o: $(ARBHOME)/INCLUDE/test_global.h
 
 ps_database.o: ps_database.hxx
 ps_database.o: ps_defs.hxx
@@ -165,6 +168,7 @@ ps_database.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 ps_database.o: $(ARBHOME)/INCLUDE/attributes.h
 ps_database.o: $(ARBHOME)/INCLUDE/dupstr.h
 ps_database.o: $(ARBHOME)/INCLUDE/smartptr.h
+ps_database.o: $(ARBHOME)/INCLUDE/test_global.h
 
 ps_detect_weak_differences.o: ps_bitmap.hxx
 ps_detect_weak_differences.o: ps_bitset.hxx
@@ -179,6 +183,7 @@ ps_detect_weak_differences.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 ps_detect_weak_differences.o: $(ARBHOME)/INCLUDE/attributes.h
 ps_detect_weak_differences.o: $(ARBHOME)/INCLUDE/dupstr.h
 ps_detect_weak_differences.o: $(ARBHOME)/INCLUDE/smartptr.h
+ps_detect_weak_differences.o: $(ARBHOME)/INCLUDE/test_global.h
 
 ps_eval_candidates.o: ps_bitmap.hxx
 ps_eval_candidates.o: ps_bitset.hxx
@@ -194,6 +199,7 @@ ps_eval_candidates.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 ps_eval_candidates.o: $(ARBHOME)/INCLUDE/attributes.h
 ps_eval_candidates.o: $(ARBHOME)/INCLUDE/dupstr.h
 ps_eval_candidates.o: $(ARBHOME)/INCLUDE/smartptr.h
+ps_eval_candidates.o: $(ARBHOME)/INCLUDE/test_global.h
 
 ps_filebuffer.o: ps_filebuffer.hxx
 
@@ -211,6 +217,7 @@ ps_find_probes.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 ps_find_probes.o: $(ARBHOME)/INCLUDE/attributes.h
 ps_find_probes.o: $(ARBHOME)/INCLUDE/dupstr.h
 ps_find_probes.o: $(ARBHOME)/INCLUDE/smartptr.h
+ps_find_probes.o: $(ARBHOME)/INCLUDE/test_global.h
 
 ps_get_probes.o: ps_defs.hxx
 ps_get_probes.o: ps_filebuffer.hxx
@@ -225,6 +232,7 @@ ps_get_probes.o: $(ARBHOME)/INCLUDE/arbtools.h
 ps_get_probes.o: $(ARBHOME)/INCLUDE/attributes.h
 ps_get_probes.o: $(ARBHOME)/INCLUDE/dupstr.h
 ps_get_probes.o: $(ARBHOME)/INCLUDE/smartptr.h
+ps_get_probes.o: $(ARBHOME)/INCLUDE/test_global.h
 
 ps_merge_my_dbs.o: ps_database.hxx
 ps_merge_my_dbs.o: ps_defs.hxx
@@ -237,6 +245,7 @@ ps_merge_my_dbs.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 ps_merge_my_dbs.o: $(ARBHOME)/INCLUDE/attributes.h
 ps_merge_my_dbs.o: $(ARBHOME)/INCLUDE/dupstr.h
 ps_merge_my_dbs.o: $(ARBHOME)/INCLUDE/smartptr.h
+ps_merge_my_dbs.o: $(ARBHOME)/INCLUDE/test_global.h
 
 ps_my2ascii.o: ps_defs.hxx
 ps_my2ascii.o: ps_filebuffer.hxx
@@ -247,6 +256,7 @@ ps_my2ascii.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 ps_my2ascii.o: $(ARBHOME)/INCLUDE/attributes.h
 ps_my2ascii.o: $(ARBHOME)/INCLUDE/dupstr.h
 ps_my2ascii.o: $(ARBHOME)/INCLUDE/smartptr.h
+ps_my2ascii.o: $(ARBHOME)/INCLUDE/test_global.h
 
 ps_my2asciipaths.o: ps_defs.hxx
 ps_my2asciipaths.o: ps_filebuffer.hxx
@@ -257,6 +267,7 @@ ps_my2asciipaths.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 ps_my2asciipaths.o: $(ARBHOME)/INCLUDE/attributes.h
 ps_my2asciipaths.o: $(ARBHOME)/INCLUDE/dupstr.h
 ps_my2asciipaths.o: $(ARBHOME)/INCLUDE/smartptr.h
+ps_my2asciipaths.o: $(ARBHOME)/INCLUDE/test_global.h
 
 ps_node.o: ps_defs.hxx
 ps_node.o: ps_filebuffer.hxx
@@ -267,6 +278,7 @@ ps_node.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 ps_node.o: $(ARBHOME)/INCLUDE/attributes.h
 ps_node.o: $(ARBHOME)/INCLUDE/dupstr.h
 ps_node.o: $(ARBHOME)/INCLUDE/smartptr.h
+ps_node.o: $(ARBHOME)/INCLUDE/test_global.h
 
 ps_show_result.o: ps_bitmap.hxx
 ps_show_result.o: ps_bitset.hxx

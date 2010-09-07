@@ -64,6 +64,7 @@ arb_interface.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 arb_interface.o: $(ARBHOME)/INCLUDE/dupstr.h
 arb_interface.o: $(ARBHOME)/INCLUDE/EXP.hxx
 arb_interface.o: $(ARBHOME)/INCLUDE/smartptr.h
+arb_interface.o: $(ARBHOME)/INCLUDE/test_global.h
 
 config_dialog.o: arb_interface.hxx
 config_dialog.o: config_dialog.hxx
@@ -80,6 +81,7 @@ config_dialog.o: $(ARBHOME)/INCLUDE/arbtools.h
 config_dialog.o: $(ARBHOME)/INCLUDE/attributes.h
 config_dialog.o: $(ARBHOME)/INCLUDE/dupstr.h
 config_dialog.o: $(ARBHOME)/INCLUDE/smartptr.h
+config_dialog.o: $(ARBHOME)/INCLUDE/test_global.h
 
 dialog.o: dialog.hxx
 dialog.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
@@ -94,6 +96,7 @@ dialog.o: $(ARBHOME)/INCLUDE/arbtools.h
 dialog.o: $(ARBHOME)/INCLUDE/attributes.h
 dialog.o: $(ARBHOME)/INCLUDE/dupstr.h
 dialog.o: $(ARBHOME)/INCLUDE/smartptr.h
+dialog.o: $(ARBHOME)/INCLUDE/test_global.h
 
 entry_sel_dialog.o: arb_interface.hxx
 entry_sel_dialog.o: dialog.hxx
@@ -110,6 +113,7 @@ entry_sel_dialog.o: $(ARBHOME)/INCLUDE/arbtools.h
 entry_sel_dialog.o: $(ARBHOME)/INCLUDE/attributes.h
 entry_sel_dialog.o: $(ARBHOME)/INCLUDE/dupstr.h
 entry_sel_dialog.o: $(ARBHOME)/INCLUDE/smartptr.h
+entry_sel_dialog.o: $(ARBHOME)/INCLUDE/test_global.h
 
 file_import.o: arb_interface.hxx
 file_import.o: file_import.hxx
@@ -125,6 +129,7 @@ file_import.o: $(ARBHOME)/INCLUDE/arbtools.h
 file_import.o: $(ARBHOME)/INCLUDE/attributes.h
 file_import.o: $(ARBHOME)/INCLUDE/dupstr.h
 file_import.o: $(ARBHOME)/INCLUDE/smartptr.h
+file_import.o: $(ARBHOME)/INCLUDE/test_global.h
 
 help_dialog.o: dialog.hxx
 help_dialog.o: help_dialog.hxx
@@ -148,6 +153,7 @@ image_dialog.o: $(ARBHOME)/INCLUDE/arbtools.h
 image_dialog.o: $(ARBHOME)/INCLUDE/attributes.h
 image_dialog.o: $(ARBHOME)/INCLUDE/dupstr.h
 image_dialog.o: $(ARBHOME)/INCLUDE/smartptr.h
+image_dialog.o: $(ARBHOME)/INCLUDE/test_global.h
 
 import_dialog.o: arb_interface.hxx
 import_dialog.o: dialog.hxx
@@ -167,6 +173,7 @@ import_dialog.o: $(ARBHOME)/INCLUDE/arbtools.h
 import_dialog.o: $(ARBHOME)/INCLUDE/attributes.h
 import_dialog.o: $(ARBHOME)/INCLUDE/dupstr.h
 import_dialog.o: $(ARBHOME)/INCLUDE/smartptr.h
+import_dialog.o: $(ARBHOME)/INCLUDE/test_global.h
 
 main.o: arb_interface.hxx
 main.o: dialog.hxx
@@ -187,6 +194,7 @@ main.o: $(ARBHOME)/INCLUDE/arbtools.h
 main.o: $(ARBHOME)/INCLUDE/attributes.h
 main.o: $(ARBHOME)/INCLUDE/dupstr.h
 main.o: $(ARBHOME)/INCLUDE/smartptr.h
+main.o: $(ARBHOME)/INCLUDE/test_global.h
 
 main_dialog.o: analyze_window.hxx
 main_dialog.o: arb_interface.hxx
@@ -211,6 +219,7 @@ main_dialog.o: $(ARBHOME)/INCLUDE/arbtools.h
 main_dialog.o: $(ARBHOME)/INCLUDE/attributes.h
 main_dialog.o: $(ARBHOME)/INCLUDE/dupstr.h
 main_dialog.o: $(ARBHOME)/INCLUDE/smartptr.h
+main_dialog.o: $(ARBHOME)/INCLUDE/test_global.h
 
 msgbox.o: dialog.hxx
 msgbox.o: msgbox.hxx
@@ -233,5 +242,6 @@ selection_dialog.o: $(ARBHOME)/INCLUDE/arbtools.h
 selection_dialog.o: $(ARBHOME)/INCLUDE/attributes.h
 selection_dialog.o: $(ARBHOME)/INCLUDE/dupstr.h
 selection_dialog.o: $(ARBHOME)/INCLUDE/smartptr.h
+selection_dialog.o: $(ARBHOME)/INCLUDE/test_global.h
 
 tiff_image.o: tiff_image.hxx

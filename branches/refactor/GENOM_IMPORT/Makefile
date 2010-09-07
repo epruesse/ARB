@@ -82,6 +82,7 @@ DBwriter.o: $(ARBHOME)/INCLUDE/dupstr.h
 DBwriter.o: $(ARBHOME)/INCLUDE/FileBuffer.h
 DBwriter.o: $(ARBHOME)/INCLUDE/GEN.hxx
 DBwriter.o: $(ARBHOME)/INCLUDE/smartptr.h
+DBwriter.o: $(ARBHOME)/INCLUDE/test_global.h
 DBwriter.o: $(ARBHOME)/INCLUDE/Translate.hxx
 
 Feature.o: defs.h
@@ -95,6 +96,7 @@ Feature.o: $(ARBHOME)/INCLUDE/arbtools.h
 Feature.o: $(ARBHOME)/INCLUDE/attributes.h
 Feature.o: $(ARBHOME)/INCLUDE/dupstr.h
 Feature.o: $(ARBHOME)/INCLUDE/smartptr.h
+Feature.o: $(ARBHOME)/INCLUDE/test_global.h
 
 GenomeImport.o: DBwriter.h
 GenomeImport.o: defs.h
@@ -121,6 +123,7 @@ GenomeImport.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 GenomeImport.o: $(ARBHOME)/INCLUDE/dupstr.h
 GenomeImport.o: $(ARBHOME)/INCLUDE/FileBuffer.h
 GenomeImport.o: $(ARBHOME)/INCLUDE/smartptr.h
+GenomeImport.o: $(ARBHOME)/INCLUDE/test_global.h
 
 Importer.o: DBwriter.h
 Importer.o: defs.h
@@ -144,6 +147,7 @@ Importer.o: $(ARBHOME)/INCLUDE/attributes.h
 Importer.o: $(ARBHOME)/INCLUDE/dupstr.h
 Importer.o: $(ARBHOME)/INCLUDE/FileBuffer.h
 Importer.o: $(ARBHOME)/INCLUDE/smartptr.h
+Importer.o: $(ARBHOME)/INCLUDE/test_global.h
 
 Location.o: defs.h
 Location.o: Location.h
@@ -160,6 +164,7 @@ Location.o: $(ARBHOME)/INCLUDE/arbtools.h
 Location.o: $(ARBHOME)/INCLUDE/attributes.h
 Location.o: $(ARBHOME)/INCLUDE/dupstr.h
 Location.o: $(ARBHOME)/INCLUDE/smartptr.h
+Location.o: $(ARBHOME)/INCLUDE/test_global.h
 
 MetaInfo.o: defs.h
 MetaInfo.o: MetaInfo.h
@@ -172,6 +177,7 @@ MetaInfo.o: $(ARBHOME)/INCLUDE/arbtools.h
 MetaInfo.o: $(ARBHOME)/INCLUDE/attributes.h
 MetaInfo.o: $(ARBHOME)/INCLUDE/dupstr.h
 MetaInfo.o: $(ARBHOME)/INCLUDE/RegExpr.hxx
+MetaInfo.o: $(ARBHOME)/INCLUDE/test_global.h
 
 SequenceBuffer.o: defs.h
 SequenceBuffer.o: SequenceBuffer.h
@@ -183,6 +189,7 @@ SequenceBuffer.o: $(ARBHOME)/INCLUDE/arbtools.h
 SequenceBuffer.o: $(ARBHOME)/INCLUDE/attributes.h
 SequenceBuffer.o: $(ARBHOME)/INCLUDE/dupstr.h
 SequenceBuffer.o: $(ARBHOME)/INCLUDE/smartptr.h
+SequenceBuffer.o: $(ARBHOME)/INCLUDE/test_global.h
 
 tools.o: defs.h
 tools.o: tools.h
@@ -193,3 +200,4 @@ tools.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 tools.o: $(ARBHOME)/INCLUDE/arbtools.h
 tools.o: $(ARBHOME)/INCLUDE/attributes.h
 tools.o: $(ARBHOME)/INCLUDE/dupstr.h
+tools.o: $(ARBHOME)/INCLUDE/test_global.h

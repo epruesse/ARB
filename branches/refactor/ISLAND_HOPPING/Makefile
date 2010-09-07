@@ -48,6 +48,7 @@ island_hopping.o: $(ARBHOME)/INCLUDE/arb_assert.h
 island_hopping.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 island_hopping.o: $(ARBHOME)/INCLUDE/attributes.h
 island_hopping.o: $(ARBHOME)/INCLUDE/dupstr.h
+island_hopping.o: $(ARBHOME)/INCLUDE/test_global.h
 
 mem.o: mem.h
 
@@ -55,3 +56,4 @@ trnsprob.o: defs.h
 trnsprob.o: mem.h
 trnsprob.o: trnsprob.h
 trnsprob.o: $(ARBHOME)/INCLUDE/arb_assert.h
+trnsprob.o: $(ARBHOME)/INCLUDE/test_global.h

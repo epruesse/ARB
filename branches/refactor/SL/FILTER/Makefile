@@ -47,3 +47,4 @@ AP_filter.o: $(ARBHOME)/INCLUDE/attributes.h
 AP_filter.o: $(ARBHOME)/INCLUDE/dupstr.h
 AP_filter.o: $(ARBHOME)/INCLUDE/inline.h
 AP_filter.o: $(ARBHOME)/INCLUDE/smartptr.h
+AP_filter.o: $(ARBHOME)/INCLUDE/test_global.h

@@ -44,6 +44,7 @@ SQ_ambiguities.o: $(ARBHOME)/INCLUDE/arbtools.h
 SQ_ambiguities.o: $(ARBHOME)/INCLUDE/attributes.h
 SQ_ambiguities.o: $(ARBHOME)/INCLUDE/dupstr.h
 SQ_ambiguities.o: $(ARBHOME)/INCLUDE/smartptr.h
+SQ_ambiguities.o: $(ARBHOME)/INCLUDE/test_global.h
 
 SQ_functions.o: SQ_ambiguities.h
 SQ_functions.o: SQ_functions.h
@@ -71,6 +72,7 @@ SQ_functions.o: $(ARBHOME)/INCLUDE/awt.hxx
 SQ_functions.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 SQ_functions.o: $(ARBHOME)/INCLUDE/dupstr.h
 SQ_functions.o: $(ARBHOME)/INCLUDE/smartptr.h
+SQ_functions.o: $(ARBHOME)/INCLUDE/test_global.h
 
 SQ_GroupData.o: SQ_GroupData.h
 SQ_GroupData.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
@@ -78,6 +80,7 @@ SQ_GroupData.o: $(ARBHOME)/INCLUDE/arb_assert.h
 SQ_GroupData.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 SQ_GroupData.o: $(ARBHOME)/INCLUDE/attributes.h
 SQ_GroupData.o: $(ARBHOME)/INCLUDE/dupstr.h
+SQ_GroupData.o: $(ARBHOME)/INCLUDE/test_global.h
 
 SQ_main.o: seq_quality.h
 SQ_main.o: SQ_functions.h
@@ -103,3 +106,4 @@ SQ_main.o: $(ARBHOME)/INCLUDE/awt_filter.hxx
 SQ_main.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 SQ_main.o: $(ARBHOME)/INCLUDE/dupstr.h
 SQ_main.o: $(ARBHOME)/INCLUDE/smartptr.h
+SQ_main.o: $(ARBHOME)/INCLUDE/test_global.h

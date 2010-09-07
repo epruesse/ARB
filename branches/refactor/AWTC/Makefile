@@ -52,6 +52,7 @@ AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/dupstr.h
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/PT_com.h
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/servercntrl.h
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/smartptr.h
+AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/test_global.h
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 AWTC_submission.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
@@ -74,3 +75,4 @@ AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AWTC_submission.o: $(ARBHOME)/INCLUDE/awt.hxx
 AWTC_submission.o: $(ARBHOME)/INCLUDE/dupstr.h
 AWTC_submission.o: $(ARBHOME)/INCLUDE/smartptr.h
+AWTC_submission.o: $(ARBHOME)/INCLUDE/test_global.h

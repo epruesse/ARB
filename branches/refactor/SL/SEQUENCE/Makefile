@@ -61,6 +61,7 @@ AP_seq_dna.o: $(ARBHOME)/INCLUDE/downcast.h
 AP_seq_dna.o: $(ARBHOME)/INCLUDE/dupstr.h
 AP_seq_dna.o: $(ARBHOME)/INCLUDE/inline.h
 AP_seq_dna.o: $(ARBHOME)/INCLUDE/smartptr.h
+AP_seq_dna.o: $(ARBHOME)/INCLUDE/test_global.h
 
 AP_seq_protein.o: AP_parsimony_defaults.hxx
 AP_seq_protein.o: AP_seq_protein.hxx
@@ -83,6 +84,7 @@ AP_seq_protein.o: $(ARBHOME)/INCLUDE/downcast.h
 AP_seq_protein.o: $(ARBHOME)/INCLUDE/dupstr.h
 AP_seq_protein.o: $(ARBHOME)/INCLUDE/inline.h
 AP_seq_protein.o: $(ARBHOME)/INCLUDE/smartptr.h
+AP_seq_protein.o: $(ARBHOME)/INCLUDE/test_global.h
 
 AP_seq_simple_pro.o: AP_seq_simple_pro.hxx
 AP_seq_simple_pro.o: AP_sequence.hxx
@@ -103,6 +105,7 @@ AP_seq_simple_pro.o: $(ARBHOME)/INCLUDE/attributes.h
 AP_seq_simple_pro.o: $(ARBHOME)/INCLUDE/downcast.h
 AP_seq_simple_pro.o: $(ARBHOME)/INCLUDE/dupstr.h
 AP_seq_simple_pro.o: $(ARBHOME)/INCLUDE/smartptr.h
+AP_seq_simple_pro.o: $(ARBHOME)/INCLUDE/test_global.h
 
 AP_sequence.o: AP_sequence.hxx
 AP_sequence.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
@@ -118,3 +121,4 @@ AP_sequence.o: $(ARBHOME)/INCLUDE/arbtools.h
 AP_sequence.o: $(ARBHOME)/INCLUDE/attributes.h
 AP_sequence.o: $(ARBHOME)/INCLUDE/dupstr.h
 AP_sequence.o: $(ARBHOME)/INCLUDE/smartptr.h
+AP_sequence.o: $(ARBHOME)/INCLUDE/test_global.h

@@ -51,6 +51,7 @@ PH_data.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 PH_data.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 PH_data.o: $(ARBHOME)/INCLUDE/dupstr.h
 PH_data.o: $(ARBHOME)/INCLUDE/smartptr.h
+PH_data.o: $(ARBHOME)/INCLUDE/test_global.h
 
 PH_display.o: PH_display.hxx
 PH_display.o: PH_filter.hxx
@@ -72,6 +73,7 @@ PH_display.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 PH_display.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 PH_display.o: $(ARBHOME)/INCLUDE/dupstr.h
 PH_display.o: $(ARBHOME)/INCLUDE/smartptr.h
+PH_display.o: $(ARBHOME)/INCLUDE/test_global.h
 
 PH_filt.o: PH_filter.hxx
 PH_filt.o: phwin.hxx
@@ -94,6 +96,7 @@ PH_filt.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 PH_filt.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 PH_filt.o: $(ARBHOME)/INCLUDE/dupstr.h
 PH_filt.o: $(ARBHOME)/INCLUDE/smartptr.h
+PH_filt.o: $(ARBHOME)/INCLUDE/test_global.h
 
 PH_main.o: PH_display.hxx
 PH_main.o: PH_filter.hxx
@@ -120,6 +123,7 @@ PH_main.o: $(ARBHOME)/INCLUDE/awt.hxx
 PH_main.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 PH_main.o: $(ARBHOME)/INCLUDE/dupstr.h
 PH_main.o: $(ARBHOME)/INCLUDE/smartptr.h
+PH_main.o: $(ARBHOME)/INCLUDE/test_global.h
 
 PH_matr.o: PH_filter.hxx
 PH_matr.o: phylo.hxx
@@ -139,6 +143,7 @@ PH_matr.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 PH_matr.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 PH_matr.o: $(ARBHOME)/INCLUDE/dupstr.h
 PH_matr.o: $(ARBHOME)/INCLUDE/smartptr.h
+PH_matr.o: $(ARBHOME)/INCLUDE/test_global.h
 
 PH_root.o: PH_filter.hxx
 PH_root.o: phylo.hxx
@@ -154,3 +159,4 @@ PH_root.o: $(ARBHOME)/INCLUDE/attributes.h
 PH_root.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 PH_root.o: $(ARBHOME)/INCLUDE/dupstr.h
 PH_root.o: $(ARBHOME)/INCLUDE/smartptr.h
+PH_root.o: $(ARBHOME)/INCLUDE/test_global.h

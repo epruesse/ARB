@@ -57,6 +57,7 @@ a3.o: $(ARBHOME)/INCLUDE/attributes.h
 a3.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 a3.o: $(ARBHOME)/INCLUDE/dupstr.h
 a3.o: $(ARBHOME)/INCLUDE/smartptr.h
+a3.o: $(ARBHOME)/INCLUDE/test_global.h
 
 a3_ali.o: a3_ali.hxx
 a3_ali.o: a3_darray.hxx
@@ -78,6 +79,7 @@ a3_arbdb.o: $(ARBHOME)/INCLUDE/arbtools.h
 a3_arbdb.o: $(ARBHOME)/INCLUDE/attributes.h
 a3_arbdb.o: $(ARBHOME)/INCLUDE/dupstr.h
 a3_arbdb.o: $(ARBHOME)/INCLUDE/smartptr.h
+a3_arbdb.o: $(ARBHOME)/INCLUDE/test_global.h
 
 a3_basen.o: a3_basen.h
 
@@ -120,3 +122,4 @@ a3_seq.o: $(ARBHOME)/INCLUDE/attributes.h
 a3_seq.o: $(ARBHOME)/INCLUDE/dupstr.h
 a3_seq.o: $(ARBHOME)/INCLUDE/inline.h
 a3_seq.o: $(ARBHOME)/INCLUDE/smartptr.h
+a3_seq.o: $(ARBHOME)/INCLUDE/test_global.h
