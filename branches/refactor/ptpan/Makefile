@@ -63,6 +63,7 @@ PT_cachehandler.o: $(ARBHOME)/INCLUDE/PT_com.h
 PT_cachehandler.o: $(ARBHOME)/INCLUDE/PT_server.h
 PT_cachehandler.o: $(ARBHOME)/INCLUDE/PT_server_prototypes.h
 PT_cachehandler.o: $(ARBHOME)/INCLUDE/smartptr.h
+PT_cachehandler.o: $(ARBHOME)/INCLUDE/test_global.h
 
 PT_hashing.o: dlist.h
 PT_hashing.o: globalprefs.h
@@ -86,6 +87,7 @@ PT_hashing.o: $(ARBHOME)/INCLUDE/PT_com.h
 PT_hashing.o: $(ARBHOME)/INCLUDE/PT_server.h
 PT_hashing.o: $(ARBHOME)/INCLUDE/PT_server_prototypes.h
 PT_hashing.o: $(ARBHOME)/INCLUDE/smartptr.h
+PT_hashing.o: $(ARBHOME)/INCLUDE/test_global.h
 
 PT_huffman.o: dlist.h
 PT_huffman.o: globalprefs.h
@@ -109,6 +111,7 @@ PT_huffman.o: $(ARBHOME)/INCLUDE/PT_com.h
 PT_huffman.o: $(ARBHOME)/INCLUDE/PT_server.h
 PT_huffman.o: $(ARBHOME)/INCLUDE/PT_server_prototypes.h
 PT_huffman.o: $(ARBHOME)/INCLUDE/smartptr.h
+PT_huffman.o: $(ARBHOME)/INCLUDE/test_global.h
 
 PT_lowlevel.o: dlist.h
 PT_lowlevel.o: globalprefs.h
@@ -132,6 +135,7 @@ PT_lowlevel.o: $(ARBHOME)/INCLUDE/PT_com.h
 PT_lowlevel.o: $(ARBHOME)/INCLUDE/PT_server.h
 PT_lowlevel.o: $(ARBHOME)/INCLUDE/PT_server_prototypes.h
 PT_lowlevel.o: $(ARBHOME)/INCLUDE/smartptr.h
+PT_lowlevel.o: $(ARBHOME)/INCLUDE/test_global.h
 
 PT_treepack.o: dlist.h
 PT_treepack.o: globalprefs.h
@@ -155,6 +159,7 @@ PT_treepack.o: $(ARBHOME)/INCLUDE/PT_com.h
 PT_treepack.o: $(ARBHOME)/INCLUDE/PT_server.h
 PT_treepack.o: $(ARBHOME)/INCLUDE/PT_server_prototypes.h
 PT_treepack.o: $(ARBHOME)/INCLUDE/smartptr.h
+PT_treepack.o: $(ARBHOME)/INCLUDE/test_global.h
 
 PTP_buildtree.o: dlist.h
 PTP_buildtree.o: globalprefs.h
@@ -178,6 +183,7 @@ PTP_buildtree.o: $(ARBHOME)/INCLUDE/PT_com.h
 PTP_buildtree.o: $(ARBHOME)/INCLUDE/PT_server.h
 PTP_buildtree.o: $(ARBHOME)/INCLUDE/PT_server_prototypes.h
 PTP_buildtree.o: $(ARBHOME)/INCLUDE/smartptr.h
+PTP_buildtree.o: $(ARBHOME)/INCLUDE/test_global.h
 
 PTP_etc.o: dlist.h
 PTP_etc.o: globalprefs.h
@@ -202,6 +208,7 @@ PTP_etc.o: $(ARBHOME)/INCLUDE/PT_server.h
 PTP_etc.o: $(ARBHOME)/INCLUDE/PT_server_prototypes.h
 PTP_etc.o: $(ARBHOME)/INCLUDE/smartptr.h
 PTP_etc.o: $(ARBHOME)/INCLUDE/struct_man.h
+PTP_etc.o: $(ARBHOME)/INCLUDE/test_global.h
 
 PTP_family.o: dlist.h
 PTP_family.o: globalprefs.h
@@ -228,6 +235,7 @@ PTP_family.o: $(ARBHOME)/INCLUDE/PT_server.h
 PTP_family.o: $(ARBHOME)/INCLUDE/PT_server_prototypes.h
 PTP_family.o: $(ARBHOME)/INCLUDE/smartptr.h
 PTP_family.o: $(ARBHOME)/INCLUDE/struct_man.h
+PTP_family.o: $(ARBHOME)/INCLUDE/test_global.h
 
 PTP_findEx.o: dlist.h
 PTP_findEx.o: globalprefs.h
@@ -251,6 +259,7 @@ PTP_findEx.o: $(ARBHOME)/INCLUDE/PT_com.h
 PTP_findEx.o: $(ARBHOME)/INCLUDE/PT_server.h
 PTP_findEx.o: $(ARBHOME)/INCLUDE/PT_server_prototypes.h
 PTP_findEx.o: $(ARBHOME)/INCLUDE/smartptr.h
+PTP_findEx.o: $(ARBHOME)/INCLUDE/test_global.h
 
 PTP_io.o: dlist.h
 PTP_io.o: globalprefs.h
@@ -276,6 +285,7 @@ PTP_io.o: $(ARBHOME)/INCLUDE/dupstr.h
 PTP_io.o: $(ARBHOME)/INCLUDE/PT_com.h
 PTP_io.o: $(ARBHOME)/INCLUDE/PT_server.h
 PTP_io.o: $(ARBHOME)/INCLUDE/smartptr.h
+PTP_io.o: $(ARBHOME)/INCLUDE/test_global.h
 
 PTP_main.o: dlist.h
 PTP_main.o: globalprefs.h
@@ -307,6 +317,7 @@ PTP_main.o: $(ARBHOME)/INCLUDE/server.h
 PTP_main.o: $(ARBHOME)/INCLUDE/servercntrl.h
 PTP_main.o: $(ARBHOME)/INCLUDE/smartptr.h
 PTP_main.o: $(ARBHOME)/INCLUDE/struct_man.h
+PTP_main.o: $(ARBHOME)/INCLUDE/test_global.h
 
 PTP_match.o: dlist.h
 PTP_match.o: globalprefs.h
@@ -333,6 +344,7 @@ PTP_match.o: $(ARBHOME)/INCLUDE/PT_server.h
 PTP_match.o: $(ARBHOME)/INCLUDE/PT_server_prototypes.h
 PTP_match.o: $(ARBHOME)/INCLUDE/smartptr.h
 PTP_match.o: $(ARBHOME)/INCLUDE/struct_man.h
+PTP_match.o: $(ARBHOME)/INCLUDE/test_global.h
 
 PTP_new_design.o: dlist.h
 PTP_new_design.o: globalprefs.h
@@ -359,3 +371,4 @@ PTP_new_design.o: $(ARBHOME)/INCLUDE/PT_server.h
 PTP_new_design.o: $(ARBHOME)/INCLUDE/PT_server_prototypes.h
 PTP_new_design.o: $(ARBHOME)/INCLUDE/smartptr.h
 PTP_new_design.o: $(ARBHOME)/INCLUDE/struct_man.h
+PTP_new_design.o: $(ARBHOME)/INCLUDE/test_global.h
