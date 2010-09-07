@@ -35,6 +35,50 @@
  */
 
 namespace arb_test {
+
+    class StaticCode {
+    public:
+#define VPRINTFORMAT(format) do { va_list parg; va_start(parg, format); vfprintf(stderr, format, parg); va_end(parg); } while(0)
+
+        static void printf(const char *format, ...) __attribute__((format(printf, 1, 2))) {
+            FlushedOutput yes;
+            VPRINTFORMAT(format);
+        }
+        static void messagef(const char *filename, int lineno, const char *format, ...) __attribute__((format(printf, 3, 4))) {
+            FlushedOutput yes;
+            fprintf(stderr, "%s:%i: ", filename, lineno);
+            fputc('\n', stderr);
+            VPRINTFORMAT(format);
+        }
+        static void warningf(const char *filename, int lineno, const char *format, ...) __attribute__((format(printf, 3, 4))) {
+            GlobalTestData& global = test_data();
+            if (global.show_warnings) {
+                FlushedOutput yes;
+                fprintf(stderr, "%s:%i: Warning: ", filename, lineno);
+                VPRINTFORMAT(format);
+                fputc('\n', stderr);
+                global.warnings++;
+            }
+        }
+        static void errorf(const char *filename, int lineno, const char *format, ...) __attribute__((format(printf, 3, 4))) {
+            FlushedOutput yes;
+            fprintf(stderr, "%s:%i: Error: ", filename, lineno);
+            VPRINTFORMAT(format);
+            fputc('\n', stderr);
+            TRIGGER_ASSERTION(); // fake an assertion failure
+        }
+        static void ioerrorf(const char *filename, int lineno, const char *format, ...) __attribute__((format(printf, 3, 4))) {
+            FlushedOutput yes;
+            fprintf(stderr, "%s:%i: Error: ", filename, lineno);
+            VPRINTFORMAT(format);
+            fprintf(stderr, " (errno=%i='%s')", errno, strerror(errno));
+            fputc('\n', stderr);
+            TRIGGER_ASSERTION(); // fake an assertion failure
+        }
+#undef VPRINTFORMAT
+    };
+
+
     inline void print(int i)                 { fprintf(stderr, "%i", i); }
     inline void print_hex(int i)             { fprintf(stderr, "0x%x", i); }
 
@@ -113,8 +157,8 @@ namespace arb_test {
     template<> inline bool is_equal<>(const char *s1, const char *s2) {
         bool equal = strnullequal(s1, s2);
         if (!equal) {
-            FlushedOutput::printf("str_equal('%s',\n"
-                                  "          '%s') returns false\n", s1, s2);
+            StaticCode::printf("str_equal('%s',\n"
+                               "          '%s') returns false\n", s1, s2);
         }
         return equal;
     }
@@ -136,7 +180,7 @@ namespace arb_test {
     inline bool is_different(const char *s1, const char *s2) {
         bool different = !strnullequal(s1, s2);
         if (!different) {
-            FlushedOutput::printf("str_different('%s', ..) returns false\n", s1);
+            StaticCode::printf("str_different('%s', ..) returns false\n", s1);
         }
         return different;
     }
@@ -147,7 +191,7 @@ namespace arb_test {
 
         bool in_epsilon_range = diff < epsilon;
         if (!in_epsilon_range) {
-            FlushedOutput::printf("is_similar(%f,%f,%f) returns false\n", d1, d2, epsilon);
+            StaticCode::printf("is_similar(%f,%f,%f) returns false\n", d1, d2, epsilon);
         }
         return in_epsilon_range;
     }
@@ -164,13 +208,13 @@ namespace arb_test {
         FlushedOutput  yes;
 
         if (!fp1) {
-            FlushedOutput::printf("can't open '%s'", file1);
+            StaticCode::printf("can't open '%s'", file1);
             error = "i/o error";
         }
         else {
             FILE *fp2 = fopen(file2, "rb");
             if (!fp2) {
-                FlushedOutput::printf("can't open '%s'", file2);
+                StaticCode::printf("can't open '%s'", file2);
                 error = "i/o error";
             }
             else {
@@ -220,7 +264,7 @@ namespace arb_test {
                     }
                 }
 
-                if (error) FlushedOutput::printf("files_are_equal: equal_bytes=%i\n", equal_bytes);
+                if (error) StaticCode::printf("files_are_equal: equal_bytes=%i\n", equal_bytes);
                 test_assert(error || equal_bytes); // comparing empty files is nonsense
 
                 free(buf2);
@@ -230,7 +274,7 @@ namespace arb_test {
             fclose(fp1);
         }
 
-        if (error) FlushedOutput::printf("files_are_equal(%s, %s) fails: %s\n", file1, file2, error);
+        if (error) StaticCode::printf("files_are_equal(%s, %s) fails: %s\n", file1, file2, error);
         return !error;
     }
     
@@ -238,15 +282,15 @@ namespace arb_test {
 
 // --------------------------------------------------------------------------------
 
-#define TEST_MSG(format,strarg)           arb_test::FlushedOutput::messagef(__FILE__, __LINE__, format, (strarg))
-#define TEST_MSG2(format,strarg1,strarg2) arb_test::FlushedOutput::messagef(__FILE__, __LINE__, format, (strarg1), (strarg2))
+#define TEST_MSG(format,strarg)           arb_test::StaticCode::messagef(__FILE__, __LINE__, format, (strarg))
+#define TEST_MSG2(format,strarg1,strarg2) arb_test::StaticCode::messagef(__FILE__, __LINE__, format, (strarg1), (strarg2))
 
-#define TEST_WARNING(format,strarg)           arb_test::FlushedOutput::warningf(__FILE__, __LINE__, format, (strarg))
-#define TEST_WARNING2(format,strarg1,strarg2) arb_test::FlushedOutput::warningf(__FILE__, __LINE__, format, (strarg1), (strarg2))
+#define TEST_WARNING(format,strarg)           arb_test::StaticCode::warningf(__FILE__, __LINE__, format, (strarg))
+#define TEST_WARNING2(format,strarg1,strarg2) arb_test::StaticCode::warningf(__FILE__, __LINE__, format, (strarg1), (strarg2))
 
-#define TEST_ERROR(format,strarg)           arb_test::FlushedOutput::errorf(__FILE__, __LINE__, format, (strarg))
-#define TEST_ERROR2(format,strarg1,strarg2) arb_test::FlushedOutput::errorf(__FILE__, __LINE__, format, (strarg1), (strarg2))
-#define TEST_IOERROR(format,strarg)         arb_test::FlushedOutput::ioerrorf(__FILE__, __LINE__, format, (strarg))
+#define TEST_ERROR(format,strarg)           arb_test::StaticCode::errorf(__FILE__, __LINE__, format, (strarg))
+#define TEST_ERROR2(format,strarg1,strarg2) arb_test::StaticCode::errorf(__FILE__, __LINE__, format, (strarg1), (strarg2))
+#define TEST_IOERROR(format,strarg)         arb_test::StaticCode::ioerrorf(__FILE__, __LINE__, format, (strarg))
 
 // --------------------------------------------------------------------------------
 

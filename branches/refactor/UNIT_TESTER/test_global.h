@@ -35,7 +35,7 @@
 # ifdef __cplusplus
 
 #  define SET_ASSERTION_FAILED_FLAG() arb_test::test_data().assertion_failed = true  
-#  define PRINT_ASSERTION_FAILED_MSG(cond) arb_test::FlushedOutput::assertfailmsg(__FILE__, __LINE__, #cond)  
+#  define PRINT_ASSERTION_FAILED_MSG(cond) arb_test::GlobalTestData::assertfailmsg(__FILE__, __LINE__, #cond)  
 
 # else
 #  define SET_ASSERTION_FAILED_FLAG() // impossible in C (assertions in C code will be handled like normal SEGV)
@@ -56,6 +56,13 @@
     } while(0)
 
 namespace arb_test {
+    class FlushedOutput {
+        inline void flushall() { fflush(stdout); fflush(stderr); }
+    public:
+        FlushedOutput() { flushall(); }
+        ~FlushedOutput() { flushall(); }
+    };
+        
     class GlobalTestData {
         GlobalTestData()
             : show_warnings(true),
@@ -84,62 +91,14 @@ namespace arb_test {
 
         static GlobalTestData& get_instance() { return *instance(false); }
         static void erase_instance() { instance(true); }
+        
+        static void assertfailmsg(const char *filename, int lineno, const char *condition) {
+            FlushedOutput yes;
+            fprintf(stderr, "%s:%i: Assertion '%s' failed\n", filename, lineno, condition);
+        }
     };
 
     inline GlobalTestData& test_data() { return GlobalTestData::get_instance(); }
-
-    
-    class FlushedOutput {
-        inline void flushall() { fflush(stdout); fflush(stderr); }
-    public:
-        FlushedOutput() { flushall(); }
-        ~FlushedOutput() { flushall(); }
-        
-#define VPRINTFORMAT(format) do { va_list parg; va_start(parg, format); vfprintf(stderr, format, parg); va_end(parg); } while(0)
-    
-        static void printf(const char *format, ...) __attribute__((format(printf, 1, 2))) {
-            FlushedOutput yes;
-            VPRINTFORMAT(format);
-        }
-        static void assertfailmsg(const char *filename, int lineno, const char *condition) {
-            FlushedOutput yes;
-            fprintf(stderr, "%s:%i: Assertion '%s' failed", filename, lineno, condition);
-            fputc('\n', stderr);
-        }
-        static void messagef(const char *filename, int lineno, const char *format, ...) __attribute__((format(printf, 3, 4))) {
-            FlushedOutput yes;
-            fprintf(stderr, "%s:%i: ", filename, lineno);
-            fputc('\n', stderr);
-            VPRINTFORMAT(format);
-        }
-        static void warningf(const char *filename, int lineno, const char *format, ...) __attribute__((format(printf, 3, 4))) {
-            GlobalTestData& global = test_data();
-            if (global.show_warnings) {
-                FlushedOutput yes;
-                fprintf(stderr, "%s:%i: Warning: ", filename, lineno);
-                VPRINTFORMAT(format);
-                fputc('\n', stderr);
-                global.warnings++;
-            }
-        }
-        static void errorf(const char *filename, int lineno, const char *format, ...) __attribute__((format(printf, 3, 4))) {
-            FlushedOutput yes;
-            fprintf(stderr, "%s:%i: Error: ", filename, lineno);
-            VPRINTFORMAT(format);
-            fputc('\n', stderr);
-            TRIGGER_ASSERTION(); // fake an assertion failure
-        }
-        static void ioerrorf(const char *filename, int lineno, const char *format, ...) __attribute__((format(printf, 3, 4))) {
-            FlushedOutput yes;
-            fprintf(stderr, "%s:%i: Error: ", filename, lineno);
-            VPRINTFORMAT(format);
-            fprintf(stderr, " (errno=%i='%s')", errno, strerror(errno));
-            fputc('\n', stderr);
-            TRIGGER_ASSERTION(); // fake an assertion failure
-        }
-#undef VPRINTFORMAT
-    };
-
 };
 
 // --------------------------------------------------------------------------------
