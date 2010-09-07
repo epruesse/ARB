@@ -38,6 +38,7 @@ PH_data.o: $(ARBHOME)/INCLUDE/ad_prot.h
 PH_data.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 PH_data.o: $(ARBHOME)/INCLUDE/AP_matrix.hxx
 PH_data.o: $(ARBHOME)/INCLUDE/arb_assert.h
+PH_data.o: $(ARBHOME)/INCLUDE/arb_core.h
 PH_data.o: $(ARBHOME)/INCLUDE/arb_error.h
 PH_data.o: $(ARBHOME)/INCLUDE/arbdb.h
 PH_data.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -61,6 +62,7 @@ PH_display.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 PH_display.o: $(ARBHOME)/INCLUDE/ad_prot.h
 PH_display.o: $(ARBHOME)/INCLUDE/AP_matrix.hxx
 PH_display.o: $(ARBHOME)/INCLUDE/arb_assert.h
+PH_display.o: $(ARBHOME)/INCLUDE/arb_core.h
 PH_display.o: $(ARBHOME)/INCLUDE/arb_error.h
 PH_display.o: $(ARBHOME)/INCLUDE/arbdb.h
 PH_display.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -83,6 +85,7 @@ PH_filt.o: $(ARBHOME)/INCLUDE/ad_prot.h
 PH_filt.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 PH_filt.o: $(ARBHOME)/INCLUDE/AP_matrix.hxx
 PH_filt.o: $(ARBHOME)/INCLUDE/arb_assert.h
+PH_filt.o: $(ARBHOME)/INCLUDE/arb_core.h
 PH_filt.o: $(ARBHOME)/INCLUDE/arb_error.h
 PH_filt.o: $(ARBHOME)/INCLUDE/arbdb.h
 PH_filt.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -107,6 +110,7 @@ PH_main.o: $(ARBHOME)/INCLUDE/ad_prot.h
 PH_main.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 PH_main.o: $(ARBHOME)/INCLUDE/AP_matrix.hxx
 PH_main.o: $(ARBHOME)/INCLUDE/arb_assert.h
+PH_main.o: $(ARBHOME)/INCLUDE/arb_core.h
 PH_main.o: $(ARBHOME)/INCLUDE/arb_error.h
 PH_main.o: $(ARBHOME)/INCLUDE/arbdb.h
 PH_main.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -131,6 +135,7 @@ PH_matr.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 PH_matr.o: $(ARBHOME)/INCLUDE/AP_matrix.hxx
 PH_matr.o: $(ARBHOME)/INCLUDE/AP_pro_a_nucs.hxx
 PH_matr.o: $(ARBHOME)/INCLUDE/arb_assert.h
+PH_matr.o: $(ARBHOME)/INCLUDE/arb_core.h
 PH_matr.o: $(ARBHOME)/INCLUDE/arb_error.h
 PH_matr.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 PH_matr.o: $(ARBHOME)/INCLUDE/arbtools.h
@@ -151,6 +156,7 @@ PH_root.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 PH_root.o: $(ARBHOME)/INCLUDE/ad_prot.h
 PH_root.o: $(ARBHOME)/INCLUDE/AP_matrix.hxx
 PH_root.o: $(ARBHOME)/INCLUDE/arb_assert.h
+PH_root.o: $(ARBHOME)/INCLUDE/arb_core.h
 PH_root.o: $(ARBHOME)/INCLUDE/arb_error.h
 PH_root.o: $(ARBHOME)/INCLUDE/arbdb.h
 PH_root.o: $(ARBHOME)/INCLUDE/arbdb_base.h

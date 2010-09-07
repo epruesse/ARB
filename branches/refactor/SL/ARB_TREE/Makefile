@@ -43,6 +43,7 @@ ARB_Tree.o: $(ARBHOME)/INCLUDE/AliView.hxx
 ARB_Tree.o: $(ARBHOME)/INCLUDE/AP_filter.hxx
 ARB_Tree.o: $(ARBHOME)/INCLUDE/AP_sequence.hxx
 ARB_Tree.o: $(ARBHOME)/INCLUDE/arb_assert.h
+ARB_Tree.o: $(ARBHOME)/INCLUDE/arb_core.h
 ARB_Tree.o: $(ARBHOME)/INCLUDE/arb_error.h
 ARB_Tree.o: $(ARBHOME)/INCLUDE/arbdb.h
 ARB_Tree.o: $(ARBHOME)/INCLUDE/arbdb_base.h

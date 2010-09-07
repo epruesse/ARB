@@ -58,6 +58,7 @@ alma.o: global.h
 alma.o: prototypes.h
 alma.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 alma.o: $(ARBHOME)/INCLUDE/arb_assert.h
+alma.o: $(ARBHOME)/INCLUDE/arb_core.h
 alma.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 alma.o: $(ARBHOME)/INCLUDE/arbtools.h
 alma.o: $(ARBHOME)/INCLUDE/attributes.h
@@ -70,6 +71,7 @@ convert.o: global.h
 convert.o: prototypes.h
 convert.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 convert.o: $(ARBHOME)/INCLUDE/arb_assert.h
+convert.o: $(ARBHOME)/INCLUDE/arb_core.h
 convert.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 convert.o: $(ARBHOME)/INCLUDE/arbtools.h
 convert.o: $(ARBHOME)/INCLUDE/attributes.h
@@ -82,6 +84,7 @@ date.o: global.h
 date.o: prototypes.h
 date.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 date.o: $(ARBHOME)/INCLUDE/arb_assert.h
+date.o: $(ARBHOME)/INCLUDE/arb_core.h
 date.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 date.o: $(ARBHOME)/INCLUDE/arbtools.h
 date.o: $(ARBHOME)/INCLUDE/attributes.h
@@ -94,6 +97,7 @@ embl.o: global.h
 embl.o: prototypes.h
 embl.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 embl.o: $(ARBHOME)/INCLUDE/arb_assert.h
+embl.o: $(ARBHOME)/INCLUDE/arb_core.h
 embl.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 embl.o: $(ARBHOME)/INCLUDE/arbtools.h
 embl.o: $(ARBHOME)/INCLUDE/attributes.h
@@ -106,6 +110,7 @@ fconv.o: global.h
 fconv.o: prototypes.h
 fconv.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 fconv.o: $(ARBHOME)/INCLUDE/arb_assert.h
+fconv.o: $(ARBHOME)/INCLUDE/arb_core.h
 fconv.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 fconv.o: $(ARBHOME)/INCLUDE/arbtools.h
 fconv.o: $(ARBHOME)/INCLUDE/attributes.h
@@ -118,6 +123,7 @@ gcg.o: global.h
 gcg.o: prototypes.h
 gcg.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 gcg.o: $(ARBHOME)/INCLUDE/arb_assert.h
+gcg.o: $(ARBHOME)/INCLUDE/arb_core.h
 gcg.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 gcg.o: $(ARBHOME)/INCLUDE/arbtools.h
 gcg.o: $(ARBHOME)/INCLUDE/attributes.h
@@ -130,6 +136,7 @@ genbank.o: global.h
 genbank.o: prototypes.h
 genbank.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 genbank.o: $(ARBHOME)/INCLUDE/arb_assert.h
+genbank.o: $(ARBHOME)/INCLUDE/arb_core.h
 genbank.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 genbank.o: $(ARBHOME)/INCLUDE/arbtools.h
 genbank.o: $(ARBHOME)/INCLUDE/attributes.h
@@ -142,6 +149,7 @@ macke.o: global.h
 macke.o: prototypes.h
 macke.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 macke.o: $(ARBHOME)/INCLUDE/arb_assert.h
+macke.o: $(ARBHOME)/INCLUDE/arb_core.h
 macke.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 macke.o: $(ARBHOME)/INCLUDE/arbtools.h
 macke.o: $(ARBHOME)/INCLUDE/attributes.h
@@ -154,6 +162,7 @@ main.o: global.h
 main.o: prototypes.h
 main.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 main.o: $(ARBHOME)/INCLUDE/arb_assert.h
+main.o: $(ARBHOME)/INCLUDE/arb_core.h
 main.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 main.o: $(ARBHOME)/INCLUDE/arbtools.h
 main.o: $(ARBHOME)/INCLUDE/attributes.h
@@ -166,6 +175,7 @@ mg.o: global.h
 mg.o: prototypes.h
 mg.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 mg.o: $(ARBHOME)/INCLUDE/arb_assert.h
+mg.o: $(ARBHOME)/INCLUDE/arb_core.h
 mg.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 mg.o: $(ARBHOME)/INCLUDE/arbtools.h
 mg.o: $(ARBHOME)/INCLUDE/attributes.h
@@ -178,6 +188,7 @@ paup.o: global.h
 paup.o: prototypes.h
 paup.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 paup.o: $(ARBHOME)/INCLUDE/arb_assert.h
+paup.o: $(ARBHOME)/INCLUDE/arb_core.h
 paup.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 paup.o: $(ARBHOME)/INCLUDE/arbtools.h
 paup.o: $(ARBHOME)/INCLUDE/attributes.h
@@ -190,6 +201,7 @@ phylip.o: global.h
 phylip.o: prototypes.h
 phylip.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 phylip.o: $(ARBHOME)/INCLUDE/arb_assert.h
+phylip.o: $(ARBHOME)/INCLUDE/arb_core.h
 phylip.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 phylip.o: $(ARBHOME)/INCLUDE/arbtools.h
 phylip.o: $(ARBHOME)/INCLUDE/attributes.h
@@ -202,6 +214,7 @@ printable.o: global.h
 printable.o: prototypes.h
 printable.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 printable.o: $(ARBHOME)/INCLUDE/arb_assert.h
+printable.o: $(ARBHOME)/INCLUDE/arb_core.h
 printable.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 printable.o: $(ARBHOME)/INCLUDE/arbtools.h
 printable.o: $(ARBHOME)/INCLUDE/attributes.h
@@ -214,6 +227,7 @@ routines.o: global.h
 routines.o: prototypes.h
 routines.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 routines.o: $(ARBHOME)/INCLUDE/arb_assert.h
+routines.o: $(ARBHOME)/INCLUDE/arb_core.h
 routines.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 routines.o: $(ARBHOME)/INCLUDE/arbtools.h
 routines.o: $(ARBHOME)/INCLUDE/attributes.h
@@ -226,6 +240,7 @@ util.o: global.h
 util.o: prototypes.h
 util.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 util.o: $(ARBHOME)/INCLUDE/arb_assert.h
+util.o: $(ARBHOME)/INCLUDE/arb_core.h
 util.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 util.o: $(ARBHOME)/INCLUDE/arbtools.h
 util.o: $(ARBHOME)/INCLUDE/attributes.h

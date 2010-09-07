@@ -40,6 +40,7 @@ AP_matrix.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 AP_matrix.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AP_matrix.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AP_matrix.o: $(ARBHOME)/INCLUDE/arb_assert.h
+AP_matrix.o: $(ARBHOME)/INCLUDE/arb_core.h
 AP_matrix.o: $(ARBHOME)/INCLUDE/arb_error.h
 AP_matrix.o: $(ARBHOME)/INCLUDE/arbdb.h
 AP_matrix.o: $(ARBHOME)/INCLUDE/arbdb_base.h

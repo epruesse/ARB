@@ -119,6 +119,7 @@ fb_test.o: ps_filebuffer.hxx
 fb_test.o: ps_node.hxx
 fb_test.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 fb_test.o: $(ARBHOME)/INCLUDE/arb_assert.h
+fb_test.o: $(ARBHOME)/INCLUDE/arb_core.h
 fb_test.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 fb_test.o: $(ARBHOME)/INCLUDE/attributes.h
 fb_test.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -131,6 +132,7 @@ ps_arb2asciipaths.o: ps_pg_tree_functions.cxx
 ps_arb2asciipaths.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 ps_arb2asciipaths.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ps_arb2asciipaths.o: $(ARBHOME)/INCLUDE/arb_assert.h
+ps_arb2asciipaths.o: $(ARBHOME)/INCLUDE/arb_core.h
 ps_arb2asciipaths.o: $(ARBHOME)/INCLUDE/arb_error.h
 ps_arb2asciipaths.o: $(ARBHOME)/INCLUDE/arbdb.h
 ps_arb2asciipaths.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -149,6 +151,7 @@ ps_convert_db.o: ps_tools.hxx
 ps_convert_db.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 ps_convert_db.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ps_convert_db.o: $(ARBHOME)/INCLUDE/arb_assert.h
+ps_convert_db.o: $(ARBHOME)/INCLUDE/arb_core.h
 ps_convert_db.o: $(ARBHOME)/INCLUDE/arb_error.h
 ps_convert_db.o: $(ARBHOME)/INCLUDE/arbdb.h
 ps_convert_db.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -164,6 +167,7 @@ ps_database.o: ps_filebuffer.hxx
 ps_database.o: ps_node.hxx
 ps_database.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 ps_database.o: $(ARBHOME)/INCLUDE/arb_assert.h
+ps_database.o: $(ARBHOME)/INCLUDE/arb_core.h
 ps_database.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 ps_database.o: $(ARBHOME)/INCLUDE/attributes.h
 ps_database.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -179,6 +183,7 @@ ps_detect_weak_differences.o: ps_node.hxx
 ps_detect_weak_differences.o: ps_tools.hxx
 ps_detect_weak_differences.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 ps_detect_weak_differences.o: $(ARBHOME)/INCLUDE/arb_assert.h
+ps_detect_weak_differences.o: $(ARBHOME)/INCLUDE/arb_core.h
 ps_detect_weak_differences.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 ps_detect_weak_differences.o: $(ARBHOME)/INCLUDE/attributes.h
 ps_detect_weak_differences.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -195,6 +200,7 @@ ps_eval_candidates.o: ps_node.hxx
 ps_eval_candidates.o: ps_tools.hxx
 ps_eval_candidates.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 ps_eval_candidates.o: $(ARBHOME)/INCLUDE/arb_assert.h
+ps_eval_candidates.o: $(ARBHOME)/INCLUDE/arb_core.h
 ps_eval_candidates.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 ps_eval_candidates.o: $(ARBHOME)/INCLUDE/attributes.h
 ps_eval_candidates.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -213,6 +219,7 @@ ps_find_probes.o: ps_node.hxx
 ps_find_probes.o: ps_tools.hxx
 ps_find_probes.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 ps_find_probes.o: $(ARBHOME)/INCLUDE/arb_assert.h
+ps_find_probes.o: $(ARBHOME)/INCLUDE/arb_core.h
 ps_find_probes.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 ps_find_probes.o: $(ARBHOME)/INCLUDE/attributes.h
 ps_find_probes.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -225,6 +232,7 @@ ps_get_probes.o: ps_pg_tree_functions.cxx
 ps_get_probes.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 ps_get_probes.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ps_get_probes.o: $(ARBHOME)/INCLUDE/arb_assert.h
+ps_get_probes.o: $(ARBHOME)/INCLUDE/arb_core.h
 ps_get_probes.o: $(ARBHOME)/INCLUDE/arb_error.h
 ps_get_probes.o: $(ARBHOME)/INCLUDE/arbdb.h
 ps_get_probes.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -241,6 +249,7 @@ ps_merge_my_dbs.o: ps_node.hxx
 ps_merge_my_dbs.o: ps_tools.hxx
 ps_merge_my_dbs.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 ps_merge_my_dbs.o: $(ARBHOME)/INCLUDE/arb_assert.h
+ps_merge_my_dbs.o: $(ARBHOME)/INCLUDE/arb_core.h
 ps_merge_my_dbs.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 ps_merge_my_dbs.o: $(ARBHOME)/INCLUDE/attributes.h
 ps_merge_my_dbs.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -252,6 +261,7 @@ ps_my2ascii.o: ps_filebuffer.hxx
 ps_my2ascii.o: ps_node.hxx
 ps_my2ascii.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 ps_my2ascii.o: $(ARBHOME)/INCLUDE/arb_assert.h
+ps_my2ascii.o: $(ARBHOME)/INCLUDE/arb_core.h
 ps_my2ascii.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 ps_my2ascii.o: $(ARBHOME)/INCLUDE/attributes.h
 ps_my2ascii.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -263,6 +273,7 @@ ps_my2asciipaths.o: ps_filebuffer.hxx
 ps_my2asciipaths.o: ps_node.hxx
 ps_my2asciipaths.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 ps_my2asciipaths.o: $(ARBHOME)/INCLUDE/arb_assert.h
+ps_my2asciipaths.o: $(ARBHOME)/INCLUDE/arb_core.h
 ps_my2asciipaths.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 ps_my2asciipaths.o: $(ARBHOME)/INCLUDE/attributes.h
 ps_my2asciipaths.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -274,6 +285,7 @@ ps_node.o: ps_filebuffer.hxx
 ps_node.o: ps_node.hxx
 ps_node.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 ps_node.o: $(ARBHOME)/INCLUDE/arb_assert.h
+ps_node.o: $(ARBHOME)/INCLUDE/arb_core.h
 ps_node.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 ps_node.o: $(ARBHOME)/INCLUDE/attributes.h
 ps_node.o: $(ARBHOME)/INCLUDE/dupstr.h

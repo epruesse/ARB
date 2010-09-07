@@ -37,6 +37,7 @@ AWTI_export.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AWTI_export.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AWTI_export.o: $(ARBHOME)/INCLUDE/AP_filter.hxx
 AWTI_export.o: $(ARBHOME)/INCLUDE/arb_assert.h
+AWTI_export.o: $(ARBHOME)/INCLUDE/arb_core.h
 AWTI_export.o: $(ARBHOME)/INCLUDE/arb_error.h
 AWTI_export.o: $(ARBHOME)/INCLUDE/arbdb.h
 AWTI_export.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -64,6 +65,7 @@ AWTI_import.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AWTI_import.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AWTI_import.o: $(ARBHOME)/INCLUDE/adGene.h
 AWTI_import.o: $(ARBHOME)/INCLUDE/arb_assert.h
+AWTI_import.o: $(ARBHOME)/INCLUDE/arb_core.h
 AWTI_import.o: $(ARBHOME)/INCLUDE/arb_error.h
 AWTI_import.o: $(ARBHOME)/INCLUDE/arbdb.h
 AWTI_import.o: $(ARBHOME)/INCLUDE/arbdb_base.h

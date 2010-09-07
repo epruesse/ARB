@@ -68,6 +68,7 @@ ED4_base.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 ED4_base.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ED4_base.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 ED4_base.o: $(ARBHOME)/INCLUDE/arb_assert.h
+ED4_base.o: $(ARBHOME)/INCLUDE/arb_core.h
 ED4_base.o: $(ARBHOME)/INCLUDE/arb_error.h
 ED4_base.o: $(ARBHOME)/INCLUDE/arbdb.h
 ED4_base.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -97,6 +98,7 @@ ED4_block.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 ED4_block.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ED4_block.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 ED4_block.o: $(ARBHOME)/INCLUDE/arb_assert.h
+ED4_block.o: $(ARBHOME)/INCLUDE/arb_core.h
 ED4_block.o: $(ARBHOME)/INCLUDE/arb_error.h
 ED4_block.o: $(ARBHOME)/INCLUDE/arbdb.h
 ED4_block.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -128,6 +130,7 @@ ED4_cursor.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 ED4_cursor.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ED4_cursor.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 ED4_cursor.o: $(ARBHOME)/INCLUDE/arb_assert.h
+ED4_cursor.o: $(ARBHOME)/INCLUDE/arb_core.h
 ED4_cursor.o: $(ARBHOME)/INCLUDE/arb_error.h
 ED4_cursor.o: $(ARBHOME)/INCLUDE/arbdb.h
 ED4_cursor.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -157,6 +160,7 @@ ED4_dots.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 ED4_dots.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ED4_dots.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 ED4_dots.o: $(ARBHOME)/INCLUDE/arb_assert.h
+ED4_dots.o: $(ARBHOME)/INCLUDE/arb_core.h
 ED4_dots.o: $(ARBHOME)/INCLUDE/arb_error.h
 ED4_dots.o: $(ARBHOME)/INCLUDE/arbdb.h
 ED4_dots.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -180,6 +184,7 @@ ED4_dump.o: ed4_search.hxx
 ED4_dump.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 ED4_dump.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ED4_dump.o: $(ARBHOME)/INCLUDE/arb_assert.h
+ED4_dump.o: $(ARBHOME)/INCLUDE/arb_core.h
 ED4_dump.o: $(ARBHOME)/INCLUDE/arb_error.h
 ED4_dump.o: $(ARBHOME)/INCLUDE/arbdb.h
 ED4_dump.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -205,6 +210,7 @@ ED4_edit_string.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 ED4_edit_string.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ED4_edit_string.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 ED4_edit_string.o: $(ARBHOME)/INCLUDE/arb_assert.h
+ED4_edit_string.o: $(ARBHOME)/INCLUDE/arb_core.h
 ED4_edit_string.o: $(ARBHOME)/INCLUDE/arb_error.h
 ED4_edit_string.o: $(ARBHOME)/INCLUDE/arbdb.h
 ED4_edit_string.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -231,6 +237,7 @@ ED4_list.o: ed4_defs.hxx
 ED4_list.o: ed4_search.hxx
 ED4_list.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 ED4_list.o: $(ARBHOME)/INCLUDE/arb_assert.h
+ED4_list.o: $(ARBHOME)/INCLUDE/arb_core.h
 ED4_list.o: $(ARBHOME)/INCLUDE/arb_error.h
 ED4_list.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 ED4_list.o: $(ARBHOME)/INCLUDE/arbtools.h
@@ -265,6 +272,7 @@ ED4_main.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ED4_main.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 ED4_main.o: $(ARBHOME)/INCLUDE/AP_pro_a_nucs.hxx
 ED4_main.o: $(ARBHOME)/INCLUDE/arb_assert.h
+ED4_main.o: $(ARBHOME)/INCLUDE/arb_core.h
 ED4_main.o: $(ARBHOME)/INCLUDE/arb_error.h
 ED4_main.o: $(ARBHOME)/INCLUDE/arbdb.h
 ED4_main.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -303,6 +311,7 @@ ED4_manager.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 ED4_manager.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ED4_manager.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 ED4_manager.o: $(ARBHOME)/INCLUDE/arb_assert.h
+ED4_manager.o: $(ARBHOME)/INCLUDE/arb_core.h
 ED4_manager.o: $(ARBHOME)/INCLUDE/arb_error.h
 ED4_manager.o: $(ARBHOME)/INCLUDE/arbdb.h
 ED4_manager.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -327,6 +336,7 @@ ED4_members.o: ed4_search.hxx
 ED4_members.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 ED4_members.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ED4_members.o: $(ARBHOME)/INCLUDE/arb_assert.h
+ED4_members.o: $(ARBHOME)/INCLUDE/arb_core.h
 ED4_members.o: $(ARBHOME)/INCLUDE/arb_error.h
 ED4_members.o: $(ARBHOME)/INCLUDE/arbdb.h
 ED4_members.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -351,6 +361,7 @@ ED4_mini_classes.o: ed4_search.hxx
 ED4_mini_classes.o: ed4_tools.hxx
 ED4_mini_classes.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 ED4_mini_classes.o: $(ARBHOME)/INCLUDE/arb_assert.h
+ED4_mini_classes.o: $(ARBHOME)/INCLUDE/arb_core.h
 ED4_mini_classes.o: $(ARBHOME)/INCLUDE/arb_error.h
 ED4_mini_classes.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 ED4_mini_classes.o: $(ARBHOME)/INCLUDE/arbtools.h
@@ -372,6 +383,7 @@ ED4_naligner.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 ED4_naligner.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ED4_naligner.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 ED4_naligner.o: $(ARBHOME)/INCLUDE/arb_assert.h
+ED4_naligner.o: $(ARBHOME)/INCLUDE/arb_core.h
 ED4_naligner.o: $(ARBHOME)/INCLUDE/arb_error.h
 ED4_naligner.o: $(ARBHOME)/INCLUDE/arbdb.h
 ED4_naligner.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -398,6 +410,7 @@ ED4_nds.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 ED4_nds.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ED4_nds.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 ED4_nds.o: $(ARBHOME)/INCLUDE/arb_assert.h
+ED4_nds.o: $(ARBHOME)/INCLUDE/arb_core.h
 ED4_nds.o: $(ARBHOME)/INCLUDE/arb_error.h
 ED4_nds.o: $(ARBHOME)/INCLUDE/arbdb.h
 ED4_nds.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -429,6 +442,7 @@ ED4_no_class.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 ED4_no_class.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ED4_no_class.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 ED4_no_class.o: $(ARBHOME)/INCLUDE/arb_assert.h
+ED4_no_class.o: $(ARBHOME)/INCLUDE/arb_core.h
 ED4_no_class.o: $(ARBHOME)/INCLUDE/arb_error.h
 ED4_no_class.o: $(ARBHOME)/INCLUDE/arbdb.h
 ED4_no_class.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -465,6 +479,7 @@ ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/arb_assert.h
+ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/arb_core.h
 ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/arb_error.h
 ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/arbdb.h
 ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -493,6 +508,7 @@ ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/AP_codon_table.hxx
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/AP_pro_a_nucs.hxx
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/arb_assert.h
+ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/arb_core.h
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/arb_error.h
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/arbdb.h
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -519,6 +535,7 @@ ED4_RNA3D.o: ../RNA3D/RNA3D_Main.hxx
 ED4_RNA3D.o: ed4_RNA3D.hxx
 ED4_RNA3D.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 ED4_RNA3D.o: $(ARBHOME)/INCLUDE/arb_assert.h
+ED4_RNA3D.o: $(ARBHOME)/INCLUDE/arb_core.h
 ED4_RNA3D.o: $(ARBHOME)/INCLUDE/arb_error.h
 ED4_RNA3D.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 ED4_RNA3D.o: $(ARBHOME)/INCLUDE/arbtools.h
@@ -554,6 +571,7 @@ ED4_root.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ED4_root.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 ED4_root.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ED4_root.o: $(ARBHOME)/INCLUDE/arb_build.h
+ED4_root.o: $(ARBHOME)/INCLUDE/arb_core.h
 ED4_root.o: $(ARBHOME)/INCLUDE/arb_error.h
 ED4_root.o: $(ARBHOME)/INCLUDE/arb_version.h
 ED4_root.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -593,6 +611,7 @@ ED4_search.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 ED4_search.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ED4_search.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 ED4_search.o: $(ARBHOME)/INCLUDE/arb_assert.h
+ED4_search.o: $(ARBHOME)/INCLUDE/arb_core.h
 ED4_search.o: $(ARBHOME)/INCLUDE/arb_error.h
 ED4_search.o: $(ARBHOME)/INCLUDE/arbdb.h
 ED4_search.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -618,6 +637,7 @@ ED4_secedit.o: ed4_secedit.hxx
 ED4_secedit.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 ED4_secedit.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ED4_secedit.o: $(ARBHOME)/INCLUDE/arb_assert.h
+ED4_secedit.o: $(ARBHOME)/INCLUDE/arb_core.h
 ED4_secedit.o: $(ARBHOME)/INCLUDE/arb_error.h
 ED4_secedit.o: $(ARBHOME)/INCLUDE/arbdb.h
 ED4_secedit.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -646,6 +666,7 @@ ED4_terminal.o: ed4_search.hxx
 ED4_terminal.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 ED4_terminal.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ED4_terminal.o: $(ARBHOME)/INCLUDE/arb_assert.h
+ED4_terminal.o: $(ARBHOME)/INCLUDE/arb_core.h
 ED4_terminal.o: $(ARBHOME)/INCLUDE/arb_error.h
 ED4_terminal.o: $(ARBHOME)/INCLUDE/arbdb.h
 ED4_terminal.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -679,6 +700,7 @@ ED4_text_terminals.o: ed4_visualizeSAI.hxx
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/arb_assert.h
+ED4_text_terminals.o: $(ARBHOME)/INCLUDE/arb_core.h
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/arb_error.h
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/arbdb.h
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -713,6 +735,7 @@ ED4_tools.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 ED4_tools.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ED4_tools.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 ED4_tools.o: $(ARBHOME)/INCLUDE/arb_assert.h
+ED4_tools.o: $(ARBHOME)/INCLUDE/arb_core.h
 ED4_tools.o: $(ARBHOME)/INCLUDE/arb_error.h
 ED4_tools.o: $(ARBHOME)/INCLUDE/arbdb.h
 ED4_tools.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -742,6 +765,7 @@ ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/arb_assert.h
+ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/arb_core.h
 ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/arb_error.h
 ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/arbdb.h
 ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -771,6 +795,7 @@ ED4_window.o: ed4_search.hxx
 ED4_window.o: ed4_tools.hxx
 ED4_window.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 ED4_window.o: $(ARBHOME)/INCLUDE/arb_assert.h
+ED4_window.o: $(ARBHOME)/INCLUDE/arb_core.h
 ED4_window.o: $(ARBHOME)/INCLUDE/arb_error.h
 ED4_window.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 ED4_window.o: $(ARBHOME)/INCLUDE/arbtools.h
@@ -795,6 +820,7 @@ EDB_root_bact.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 EDB_root_bact.o: $(ARBHOME)/INCLUDE/ad_prot.h
 EDB_root_bact.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 EDB_root_bact.o: $(ARBHOME)/INCLUDE/arb_assert.h
+EDB_root_bact.o: $(ARBHOME)/INCLUDE/arb_core.h
 EDB_root_bact.o: $(ARBHOME)/INCLUDE/arb_error.h
 EDB_root_bact.o: $(ARBHOME)/INCLUDE/arbdb.h
 EDB_root_bact.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -819,6 +845,7 @@ graph_aligner_gui.o: $(ARBHOME)/INCLUDE/ad_prot.h
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/aisc_global.h
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/arb_assert.h
+graph_aligner_gui.o: $(ARBHOME)/INCLUDE/arb_core.h
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/arb_error.h
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/arbdb.h
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/arbdb_base.h

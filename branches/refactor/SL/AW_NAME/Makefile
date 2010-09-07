@@ -42,6 +42,7 @@ AW_names_admin.o: AW_rename.hxx
 AW_names_admin.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 AW_names_admin.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AW_names_admin.o: $(ARBHOME)/INCLUDE/arb_assert.h
+AW_names_admin.o: $(ARBHOME)/INCLUDE/arb_core.h
 AW_names_admin.o: $(ARBHOME)/INCLUDE/arb_error.h
 AW_names_admin.o: $(ARBHOME)/INCLUDE/arbdb.h
 AW_names_admin.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -65,6 +66,7 @@ AW_rename.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AW_rename.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AW_rename.o: $(ARBHOME)/INCLUDE/aisc_global.h
 AW_rename.o: $(ARBHOME)/INCLUDE/arb_assert.h
+AW_rename.o: $(ARBHOME)/INCLUDE/arb_core.h
 AW_rename.o: $(ARBHOME)/INCLUDE/arb_error.h
 AW_rename.o: $(ARBHOME)/INCLUDE/arbdb.h
 AW_rename.o: $(ARBHOME)/INCLUDE/arbdb_base.h

@@ -274,6 +274,7 @@ depend.init:
 
 arb_help2xml.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 arb_help2xml.o: $(ARBHOME)/INCLUDE/arb_assert.h
+arb_help2xml.o: $(ARBHOME)/INCLUDE/arb_core.h
 arb_help2xml.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 arb_help2xml.o: $(ARBHOME)/INCLUDE/attributes.h
 arb_help2xml.o: $(ARBHOME)/INCLUDE/dupstr.h

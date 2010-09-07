@@ -40,6 +40,7 @@ RegExpr.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 RegExpr.o: $(ARBHOME)/INCLUDE/ad_prot.h
 RegExpr.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 RegExpr.o: $(ARBHOME)/INCLUDE/arb_assert.h
+RegExpr.o: $(ARBHOME)/INCLUDE/arb_core.h
 RegExpr.o: $(ARBHOME)/INCLUDE/arb_error.h
 RegExpr.o: $(ARBHOME)/INCLUDE/arbdb.h
 RegExpr.o: $(ARBHOME)/INCLUDE/arbdb_base.h

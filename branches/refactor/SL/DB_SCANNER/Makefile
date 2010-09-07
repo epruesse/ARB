@@ -40,6 +40,7 @@ db_scanner.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 db_scanner.o: $(ARBHOME)/INCLUDE/ad_prot.h
 db_scanner.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 db_scanner.o: $(ARBHOME)/INCLUDE/arb_assert.h
+db_scanner.o: $(ARBHOME)/INCLUDE/arb_core.h
 db_scanner.o: $(ARBHOME)/INCLUDE/arb_error.h
 db_scanner.o: $(ARBHOME)/INCLUDE/arbdb.h
 db_scanner.o: $(ARBHOME)/INCLUDE/arbdb_base.h

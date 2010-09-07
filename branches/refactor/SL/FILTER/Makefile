@@ -39,6 +39,7 @@ AP_filter.o: AP_filter.hxx
 AP_filter.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 AP_filter.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AP_filter.o: $(ARBHOME)/INCLUDE/arb_assert.h
+AP_filter.o: $(ARBHOME)/INCLUDE/arb_core.h
 AP_filter.o: $(ARBHOME)/INCLUDE/arb_error.h
 AP_filter.o: $(ARBHOME)/INCLUDE/arbdb.h
 AP_filter.o: $(ARBHOME)/INCLUDE/arbdb_base.h

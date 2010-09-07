@@ -40,6 +40,7 @@ depend.init:
 FileBuffer.o: FileBuffer.h
 FileBuffer.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 FileBuffer.o: $(ARBHOME)/INCLUDE/arb_assert.h
+FileBuffer.o: $(ARBHOME)/INCLUDE/arb_core.h
 FileBuffer.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 FileBuffer.o: $(ARBHOME)/INCLUDE/arbtools.h
 FileBuffer.o: $(ARBHOME)/INCLUDE/attributes.h
