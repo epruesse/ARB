@@ -37,47 +37,45 @@
 namespace arb_test {
 
     class StaticCode {
+        static void vcompiler_msg(const char *filename, int lineno, const char *message_type, const char *format, va_list parg) {
+            fprintf(stderr, "%s:%i: ", filename, lineno);
+            if (message_type) fprintf(stderr, "%s: ", message_type);
+            vfprintf(stderr, format, parg);
+        }
+
+#define WITHVALISTFROM(format,CODE)             do { va_list parg; va_start(parg, format); CODE; va_end(parg); } while(0)
+#define VPRINTFORMAT(format)                    WITHVALISTFROM(format, vfprintf(stderr, format, parg))
+#define VCOMPILERMSG(file,line,msgtype,format)  WITHVALISTFROM(format, vcompiler_msg(file, line, msgtype, format, parg))
+        
     public:
-#define VPRINTFORMAT(format) do { va_list parg; va_start(parg, format); vfprintf(stderr, format, parg); va_end(parg); } while(0)
 
         static void printf(const char *format, ...) __attribute__((format(printf, 1, 2))) {
-            FlushedOutput yes;
-            VPRINTFORMAT(format);
-        }
-        static void messagef(const char *filename, int lineno, const char *format, ...) __attribute__((format(printf, 3, 4))) {
-            FlushedOutput yes;
-            fprintf(stderr, "%s:%i: ", filename, lineno);
-            fputc('\n', stderr);
+            FlushedOutputNoNewline yes;
             VPRINTFORMAT(format);
         }
         static void warningf(const char *filename, int lineno, const char *format, ...) __attribute__((format(printf, 3, 4))) {
             GlobalTestData& global = test_data();
             if (global.show_warnings) {
                 FlushedOutput yes;
-                fprintf(stderr, "%s:%i: Warning: ", filename, lineno);
-                VPRINTFORMAT(format);
-                fputc('\n', stderr);
+                VCOMPILERMSG(filename, lineno, "Warning", format);
                 global.warnings++;
             }
         }
         static void errorf(const char *filename, int lineno, const char *format, ...) __attribute__((format(printf, 3, 4))) {
             FlushedOutput yes;
-            fprintf(stderr, "%s:%i: Error: ", filename, lineno);
-            VPRINTFORMAT(format);
-            fputc('\n', stderr);
+            VCOMPILERMSG(filename, lineno, "Error", format);
             TRIGGER_ASSERTION(); // fake an assertion failure
         }
         static void ioerrorf(const char *filename, int lineno, const char *format, ...) __attribute__((format(printf, 3, 4))) {
             FlushedOutput yes;
-            fprintf(stderr, "%s:%i: Error: ", filename, lineno);
-            VPRINTFORMAT(format);
+            VCOMPILERMSG(filename, lineno, "Error", format);
             fprintf(stderr, " (errno=%i='%s')", errno, strerror(errno));
-            fputc('\n', stderr);
             TRIGGER_ASSERTION(); // fake an assertion failure
         }
 #undef VPRINTFORMAT
+#undef VCOMPILERMSG
+#undef WITHVALISTFROM
     };
-
 
     inline void print(int i)                 { fprintf(stderr, "%i", i); }
     inline void print_hex(int i)             { fprintf(stderr, "0x%x", i); }
@@ -282,9 +280,6 @@ namespace arb_test {
 
 // --------------------------------------------------------------------------------
 
-#define TEST_MSG(format,strarg)           arb_test::StaticCode::messagef(__FILE__, __LINE__, format, (strarg))
-#define TEST_MSG2(format,strarg1,strarg2) arb_test::StaticCode::messagef(__FILE__, __LINE__, format, (strarg1), (strarg2))
-
 #define TEST_WARNING(format,strarg)           arb_test::StaticCode::warningf(__FILE__, __LINE__, format, (strarg))
 #define TEST_WARNING2(format,strarg1,strarg2) arb_test::StaticCode::warningf(__FILE__, __LINE__, format, (strarg1), (strarg2))
 
@@ -310,7 +305,7 @@ namespace arb_test {
 
 #define TEST_ASSERT_ZERO_OR_SHOW_ERRNO(iocond)                  \
     do {                                                        \
-        if (!(iocond))                                          \
+        if ((iocond))                                           \
             TEST_IOERROR("I/O-failure in '%s'", #iocond);       \
     } while(0)
 

@@ -56,11 +56,14 @@
     } while(0)
 
 namespace arb_test {
-    class FlushedOutput {
+    class FlushedOutputNoNewline {
         inline void flushall() { fflush(stdout); fflush(stderr); }
     public:
-        FlushedOutput() { flushall(); }
-        ~FlushedOutput() { flushall(); }
+        FlushedOutputNoNewline() { flushall(); }
+        ~FlushedOutputNoNewline() { flushall(); }
+    };
+    struct FlushedOutput : public FlushedOutputNoNewline {
+        ~FlushedOutput() { fputc('\n', stderr); }
     };
         
     class GlobalTestData {
