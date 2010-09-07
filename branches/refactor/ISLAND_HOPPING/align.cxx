@@ -321,7 +321,7 @@ static void updateEntropy(double **P,double **S,double **E) {
 static Island *newIsland(char *X,char *Y,int i,int j,int d) {
     Island *p; Fragment *f,**ff,*L; int k,ii,jj,iii,jjj,l; double s;
 
-    p=newBlock(sizeof(Island));
+    p=(Island*)newBlock(sizeof(Island));
 
     ii=i; jj=j; l=0; s=0.;
 
@@ -332,7 +332,7 @@ static Island *newIsland(char *X,char *Y,int i,int j,int d) {
             if(++l==1) {iii=ii; jjj=jj;}
             k=U[ii][jj].up;
             if(k) {
-                f=newBlock(sizeof(Fragment));
+                f=(Fragment*)newBlock(sizeof(Fragment));
                 f->beginX=iii; f->beginY=jjj; f->length=l;
                 l=0; *ff=f; ff=&f->next;
             }
@@ -350,7 +350,7 @@ static Island *newIsland(char *X,char *Y,int i,int j,int d) {
             if(++l==1) {iii=ii; jjj=jj;}
             k=U[ii][jj].down;
             if(k) {
-                f=newBlock(sizeof(Fragment));
+                f=(Fragment*)newBlock(sizeof(Fragment));
                 f->beginX=iii-l+1; f->beginY=jjj-l+1; f->length=l;
                 l=0; f->next=L; L=f;
             }
@@ -804,8 +804,8 @@ void Align(
     char *s;
     int i,j,maxlen;
 
-    *XX = newBlock((nX+nY+1)*sizeof(char));
-    *YY = newBlock((nX+nY+1)*sizeof(char));
+    *XX = (char*)newBlock((nX+nY+1)*sizeof(char));
+    *YY = (char*)newBlock((nX+nY+1)*sizeof(char));
 
     Supp=supp;
     GapA=gapA;

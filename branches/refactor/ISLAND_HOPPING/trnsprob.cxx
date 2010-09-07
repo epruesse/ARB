@@ -156,7 +156,7 @@ void normalizeRateParams(
 void initTrnsprob(double ****PP) {
     double ***P; short j;
 
-    P=newVector(128,sizeof(double **));
+    P=(double***)newVector(128,sizeof(double **));
     for(j=0;j<128;j++) P[j]=(double **)newMatrix(N,N,sizeof(double));
 
     *PP=P;

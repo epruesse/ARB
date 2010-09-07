@@ -1,5 +1,5 @@
 # INCLUDE und GLOBALS MAIN CC cflags werden von aussen uebergeben
-.SUFFIXES: .o .c .cpp .depend
+.SUFFIXES: .o .c .cxx .depend
 
 CPP_OBJECTS = island_hopping.o i-hopper.o align.o mem.o trnsprob.o
 
@@ -7,8 +7,8 @@ $(MAIN): $(CPP_OBJECTS)
 	$(LINK_STATIC_LIB) $(MAIN) $(CPP_OBJECTS)
 .c.o:
 	$(ACC) $(cflags) -DARB -c $<  $(CPPINCLUDES)
-.cpp.o:
-	$(CPP) $(cflags) -c $<  $(CPPINCLUDES)
+.cxx.o:
+	$(CPP) $(cflags) -DARB -c $<  $(CPPINCLUDES)
 
 clean:
 	rm -f $(CPP_OBJECTS) *.a
@@ -22,7 +22,7 @@ depend.init:
 	$(MAKEDEPEND) $(MAKEDEPENDFLAGS) 2>/dev/null # remove dependencies
 .c.depend:
 	$(MAKEDEPEND) -f- $(MAKEDEPENDFLAGS) $< 2>/dev/null >$@
-.cpp.depend:
+.cxx.depend:
 	$(MAKEDEPEND) -f- $(MAKEDEPENDFLAGS) $< 2>/dev/null >$@
 
 # DO NOT DELETE
