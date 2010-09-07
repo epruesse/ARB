@@ -18,6 +18,9 @@
 #ifndef _CPP_CSTDARG
 #include <cstdarg>
 #endif
+#ifndef ERRNO_H
+#include <errno.h>
+#endif
 
 #define ENABLE_CRASH_TESTS // comment out this line to get rid of provoked SEGVs (e.g. while debugging test-code)
 // #define TRACE_IS_EQUAL // print calls to numerical is_equal()
@@ -153,6 +156,8 @@ namespace arb_test {
         return is_similar(d1, d2, 0.000001);
     }
 
+    
+
     inline bool files_are_equal(const char *file1, const char *file2) {
         const char    *error = NULL;
         FILE          *fp1   = fopen(file1, "rb");
@@ -241,6 +246,7 @@ namespace arb_test {
 
 #define TEST_ERROR(format,strarg)           arb_test::FlushedOutput::errorf(__FILE__, __LINE__, format, (strarg))
 #define TEST_ERROR2(format,strarg1,strarg2) arb_test::FlushedOutput::errorf(__FILE__, __LINE__, format, (strarg1), (strarg2))
+#define TEST_IOERROR(format,strarg)         arb_test::FlushedOutput::ioerrorf(__FILE__, __LINE__, format, (strarg))
 
 // --------------------------------------------------------------------------------
 
@@ -257,6 +263,12 @@ namespace arb_test {
 
 #define TEST_ASSERT_ZERO(cond)         TEST_ASSERT((cond)         == 0)
 #define TEST_ASSERT_ZERO__BROKEN(cond) TEST_ASSERT__BROKEN((cond) == 0)
+
+#define TEST_ASSERT_ZERO_OR_SHOW_ERRNO(iocond)                  \
+    do {                                                        \
+        if (!(iocond))                                          \
+            TEST_IOERROR("I/O-failure in '%s'", #iocond);       \
+    } while(0)
 
 // --------------------------------------------------------------------------------
 

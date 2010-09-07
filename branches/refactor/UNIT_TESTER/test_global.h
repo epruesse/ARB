@@ -129,6 +129,14 @@ namespace arb_test {
             fputc('\n', stderr);
             TRIGGER_ASSERTION(); // fake an assertion failure
         }
+        static void ioerrorf(const char *filename, int lineno, const char *format, ...) __attribute__((format(printf, 3, 4))) {
+            FlushedOutput yes;
+            fprintf(stderr, "%s:%i: Error: ", filename, lineno);
+            VPRINTFORMAT(format);
+            fprintf(stderr, " (errno=%i='%s')", errno, strerror(errno));
+            fputc('\n', stderr);
+            TRIGGER_ASSERTION(); // fake an assertion failure
+        }
 #undef VPRINTFORMAT
     };
 
