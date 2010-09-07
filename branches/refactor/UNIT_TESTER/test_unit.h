@@ -239,8 +239,8 @@ namespace arb_test {
 #define TEST_WARNING(format,strarg)           arb_test::FlushedOutput::warningf(__FILE__, __LINE__, format, (strarg))
 #define TEST_WARNING2(format,strarg1,strarg2) arb_test::FlushedOutput::warningf(__FILE__, __LINE__, format, (strarg1), (strarg2))
 
-#define TEST_ERROR(format,strarg)           do { arb_test::FlushedOutput::errorf(__FILE__, __LINE__, format, (strarg)); TEST_ASSERT(0); } while(0)
-#define TEST_ERROR2(format,strarg1,strarg2) do { arb_test::FlushedOutput::errorf(__FILE__, __LINE__, format, (strarg1), (strarg2)); TEST_ASSERT(0); } while(0)
+#define TEST_ERROR(format,strarg)           arb_test::FlushedOutput::errorf(__FILE__, __LINE__, format, (strarg))
+#define TEST_ERROR2(format,strarg1,strarg2) arb_test::FlushedOutput::errorf(__FILE__, __LINE__, format, (strarg1), (strarg2))
 
 // --------------------------------------------------------------------------------
 

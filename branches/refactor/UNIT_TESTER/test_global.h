@@ -19,7 +19,41 @@
 #ifndef _CPP_CSTDIO
 #include <cstdio>
 #endif
+#ifndef _CPP_CERRNO
+#include <cerrno>
+#endif
+#ifndef _CPP_CSTRING
+#include <cstring>
+#endif
 
+#if (UNIT_TESTS == 1)
+
+# if defined(DEVEL_RELEASE)
+#  error Unit testing not allowed in release
+# endif
+
+# ifdef __cplusplus
+
+#  define SET_ASSERTION_FAILED_FLAG() arb_test::test_data().assertion_failed = true  
+#  define PRINT_ASSERTION_FAILED_MSG(cond) arb_test::FlushedOutput::assertfailmsg(__FILE__, __LINE__, #cond)  
+
+# else
+#  define SET_ASSERTION_FAILED_FLAG() // impossible in C (assertions in C code will be handled like normal SEGV)
+#  define PRINT_ASSERTION_FAILED_MSG(cond)                      \
+    do {                                                        \
+        fflush(stdout);                                         \
+        fflush(stderr);                                         \
+        fprintf(stderr, "%s:%i: Assertion '%s' failed [C]\n",   \
+                __FILE__, __LINE__, #cond);                     \
+        fflush(stderr);                                         \
+    } while(0)
+# endif
+
+# define TRIGGER_ASSERTION()                            \
+    do {                                                \
+        SET_ASSERTION_FAILED_FLAG();                    \
+        ARB_SIGSEGV(0);                                 \
+    } while(0)
 
 namespace arb_test {
     class GlobalTestData {
@@ -67,6 +101,11 @@ namespace arb_test {
             FlushedOutput yes;
             VPRINTFORMAT(format);
         }
+        static void assertfailmsg(const char *filename, int lineno, const char *condition) {
+            FlushedOutput yes;
+            fprintf(stderr, "%s:%i: Assertion '%s' failed", filename, lineno, condition);
+            fputc('\n', stderr);
+        }
         static void messagef(const char *filename, int lineno, const char *format, ...) __attribute__((format(printf, 3, 4))) {
             FlushedOutput yes;
             fprintf(stderr, "%s:%i: ", filename, lineno);
@@ -88,11 +127,34 @@ namespace arb_test {
             fprintf(stderr, "%s:%i: Error: ", filename, lineno);
             VPRINTFORMAT(format);
             fputc('\n', stderr);
+            TRIGGER_ASSERTION(); // fake an assertion failure
         }
 #undef VPRINTFORMAT
     };
 
 };
+
+// --------------------------------------------------------------------------------
+
+// special assert for unit tests (additionally to SEGV it sets a global flag)
+# define test_assert(cond)                      \
+    do {                                        \
+        if (!(cond)) {                          \
+            PRINT_ASSERTION_FAILED_MSG(cond);   \
+            TRIGGER_ASSERTION();                \
+        }                                       \
+    } while(0)
+
+
+// redefine arb_assert with test_assert when compiling for unit tests
+# if defined(ASSERTION_USED)
+#  undef arb_assert
+#  define arb_assert(cond) test_assert(cond)
+# endif
+
+#else // UNIT_TESTS != 1
+#error test_global.h may only be included if UNIT_TESTS is 1
+#endif
 
 #else
 #error test_global.h included twice
