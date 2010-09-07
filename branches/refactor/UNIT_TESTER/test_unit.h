@@ -32,43 +32,6 @@
  */
 
 namespace arb_test {
-    class FlushedOutput {
-        inline void flushall() { fflush(stdout); fflush(stderr); }
-    public:
-        FlushedOutput() { flushall(); }
-        ~FlushedOutput() { flushall(); }
-        
-#define VPRINTFORMAT(format) do { va_list parg; va_start(parg, format); vfprintf(stderr, format, parg); va_end(parg); } while(0)
-    
-        static void printf(const char *format, ...) __attribute__((format(printf, 1, 2))) {
-            FlushedOutput yes;
-            VPRINTFORMAT(format);
-        }
-        static void messagef(const char *filename, int lineno, const char *format, ...) __attribute__((format(printf, 3, 4))) {
-            FlushedOutput yes;
-            fprintf(stderr, "%s:%i: ", filename, lineno);
-            fputc('\n', stderr);
-            VPRINTFORMAT(format);
-        }
-        static void warningf(const char *filename, int lineno, const char *format, ...) __attribute__((format(printf, 3, 4))) {
-            GlobalTestData& global = test_data();
-            if (global.show_warnings) {
-                FlushedOutput yes;
-                fprintf(stderr, "%s:%i: Warning: ", filename, lineno);
-                VPRINTFORMAT(format);
-                fputc('\n', stderr);
-                global.warnings++;
-            }
-        }
-        static void errorf(const char *filename, int lineno, const char *format, ...) __attribute__((format(printf, 3, 4))) {
-            FlushedOutput yes;
-            fprintf(stderr, "%s:%i: Error: ", filename, lineno);
-            VPRINTFORMAT(format);
-            fputc('\n', stderr);
-        }
-#undef VPRINTFORMAT
-    };
-
     inline void print(int i)                 { fprintf(stderr, "%i", i); }
     inline void print_hex(int i)             { fprintf(stderr, "0x%x", i); }
 
