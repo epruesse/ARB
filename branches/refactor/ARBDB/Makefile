@@ -493,6 +493,7 @@ adlang1.o: gb_memory.h
 adlang1.o: gb_prot.h
 adlang1.o: gb_tune.h
 adlang1.o: $(ARBHOME)/INCLUDE/arb_core.h
+adlang1.o: $(ARBHOME)/INCLUDE/arb_defs.h
 adlang1.o: $(ARBHOME)/INCLUDE/arb_error.h
 adlang1.o: $(ARBHOME)/INCLUDE/arbtools.h
 adlang1.o: $(ARBHOME)/INCLUDE/attributes.h

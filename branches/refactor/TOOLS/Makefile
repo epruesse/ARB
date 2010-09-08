@@ -255,6 +255,7 @@ arb_probe.o: $(ARBHOME)/INCLUDE/ad_prot.h
 arb_probe.o: $(ARBHOME)/INCLUDE/aisc_global.h
 arb_probe.o: $(ARBHOME)/INCLUDE/arb_assert.h
 arb_probe.o: $(ARBHOME)/INCLUDE/arb_core.h
+arb_probe.o: $(ARBHOME)/INCLUDE/arb_defs.h
 arb_probe.o: $(ARBHOME)/INCLUDE/arb_error.h
 arb_probe.o: $(ARBHOME)/INCLUDE/arbdb.h
 arb_probe.o: $(ARBHOME)/INCLUDE/arbdb_base.h

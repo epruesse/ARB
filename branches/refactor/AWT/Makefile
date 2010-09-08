@@ -440,6 +440,7 @@ AWT_www.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AWT_www.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AWT_www.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWT_www.o: $(ARBHOME)/INCLUDE/arb_core.h
+AWT_www.o: $(ARBHOME)/INCLUDE/arb_defs.h
 AWT_www.o: $(ARBHOME)/INCLUDE/arb_error.h
 AWT_www.o: $(ARBHOME)/INCLUDE/arb_str.h
 AWT_www.o: $(ARBHOME)/INCLUDE/arbdb.h

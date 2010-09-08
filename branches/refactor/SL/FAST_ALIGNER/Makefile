@@ -81,6 +81,7 @@ fast_aligner.o: $(ARBHOME)/INCLUDE/ad_prot.h
 fast_aligner.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 fast_aligner.o: $(ARBHOME)/INCLUDE/arb_assert.h
 fast_aligner.o: $(ARBHOME)/INCLUDE/arb_core.h
+fast_aligner.o: $(ARBHOME)/INCLUDE/arb_defs.h
 fast_aligner.o: $(ARBHOME)/INCLUDE/arb_error.h
 fast_aligner.o: $(ARBHOME)/INCLUDE/arbdb.h
 fast_aligner.o: $(ARBHOME)/INCLUDE/arbdb_base.h

@@ -540,6 +540,7 @@ AW_xkey.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AW_xkey.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AW_xkey.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_xkey.o: $(ARBHOME)/INCLUDE/arb_core.h
+AW_xkey.o: $(ARBHOME)/INCLUDE/arb_defs.h
 AW_xkey.o: $(ARBHOME)/INCLUDE/arb_error.h
 AW_xkey.o: $(ARBHOME)/INCLUDE/arbdb.h
 AW_xkey.o: $(ARBHOME)/INCLUDE/arbdb_base.h
