@@ -13,6 +13,7 @@
 #include "aw_root.hxx"
 
 #include <arbdbt.h>
+#include <arb_defs.h>
 
 #include <X11/Xlib.h>
 #include <X11/keysym.h>
@@ -94,9 +95,6 @@ static awModDef moddef[] = {
     { XK_Control_R, "Control", AW_KEYMODE_CONTROL },
     { 0,            0,         AW_KEYMODE_NONE },   // "no modifier" (this is NO array terminator!)
 };
-
-#define ARRAY_ELEMS(array)            (sizeof(array)/sizeof(array[0]))
-#define TERMINATED_ARRAY_ELEMS(array) (ARRAY_ELEMS(array)-1)
 
 const int FIXEDMOD = TERMINATED_ARRAY_ELEMS(awxkeymap);
 const int MODFREE  = TERMINATED_ARRAY_ELEMS(awxkeymap_modfree);

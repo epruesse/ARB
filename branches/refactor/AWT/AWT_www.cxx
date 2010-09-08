@@ -15,6 +15,7 @@
 #include <aw_awars.hxx>
 #include <arbdbt.h>
 #include <arb_str.h>
+#include <arb_defs.h>
 #include <static_assert.h>
 
 #define WWW_COUNT                10
@@ -57,7 +58,7 @@ void awt_create_aww_vars(AW_root *aw_root, AW_default aw_def) {
     }, empty = { "", "" };
 
     const int DEFAULT_SELECT = 1; // SILVA
-    const int EXAMPLE_COUNT  = sizeof(example)/sizeof(*example);
+    const int EXAMPLE_COUNT  = ARRAY_ELEMS(example);
     COMPILE_ASSERT(EXAMPLE_COUNT <= WWW_COUNT);
 
     bool example_url_seen[EXAMPLE_COUNT];

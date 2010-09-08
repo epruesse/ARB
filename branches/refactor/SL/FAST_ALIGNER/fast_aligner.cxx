@@ -17,13 +17,14 @@
 #include <island_hopping.h>
 
 #include <awtc_next_neighbours.hxx>
-
 #include <awt_sel_boxes.hxx>
 
 #include <aw_window.hxx>
 #include <aw_awars.hxx>
 
 #include <arbdbt.h>
+
+#include <arb_defs.h>
 
 #include <cctype>
 #include <climits>
@@ -2968,8 +2969,8 @@ static GBDATA *test_create_DB(ARB_ERROR& error, test_alignment_data *ali_data, i
     return gb_main;
 }
 
-#define TEST_SPECIES_COUNT(test_ali_data) (sizeof(test_ali_data)/sizeof(*test_ali_data))
-#define TEST_CREATE_DB(error, test_ali_data) test_create_DB(error, test_ali_data, TEST_SPECIES_COUNT(test_ali_data))
+#define TEST_SPECIES_COUNT(test_ali_data)   ARRAY_ELEMS(test_ali_data)
+#define TEST_CREATE_DB(error,test_ali_data) test_create_DB(error, test_ali_data, TEST_SPECIES_COUNT(test_ali_data))
 
 static const char *get_aligned_data_of(GBDATA *gb_main, const char *species_name) {
     GB_transaction  ta(gb_main);
