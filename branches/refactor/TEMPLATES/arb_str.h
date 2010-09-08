@@ -1,19 +1,16 @@
-//  ==================================================================== //
-//                                                                       //
-//    File      : inline.h                                               //
-//    Purpose   : general purpose inlined functions                      //
-//                                                                       //
-//                                                                       //
-//  Coded by Ralf Westram (coder@reallysoft.de) in June 2002             //
-//  Copyright Department of Microbiology (Technical University Munich)   //
-//                                                                       //
-//  Visit our web site at: http://www.arb-home.de/                       //
-//                                                                       //
-//                                                                       //
-//  ==================================================================== //
+// ================================================================= //
+//                                                                   //
+//   File      : arb_str.h                                           //
+//   Purpose   : inlined string functions                            //
+//                                                                   //
+//   Coded by Ralf Westram (coder@reallysoft.de) in June 2002        //
+//   Institute of Microbiology (Technical University Munich)         //
+//   http://www.arb-home.de/                                         //
+//                                                                   //
+// ================================================================= //
 
-#ifndef INLINE_H
-#define INLINE_H
+#ifndef ARB_STR_H
+#define ARB_STR_H
 
 #include <cctype>
 
@@ -56,7 +53,7 @@ inline void ARB_strlower(char *s) { for (int i = 0; s[i]; ++i) s[i] = tolower(s[
 
 inline unsigned char safeCharIndex(char c) { return static_cast<unsigned char>(c); }
 
-#else
-#error inline.h included twice
-#endif // INLINE_H
 
+#else
+#error arb_str.h included twice
+#endif // ARB_STR_H

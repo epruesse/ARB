@@ -5,7 +5,7 @@
 #include <AP_filter.hxx>
 #include <ARB_Tree.hxx>
 
-#include <inline.h>
+#include <arb_str.h>
 #include <climits>
 
 

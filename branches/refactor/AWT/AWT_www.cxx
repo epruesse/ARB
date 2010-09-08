@@ -14,7 +14,7 @@
 #include <aw_global_awars.hxx>
 #include <aw_awars.hxx>
 #include <arbdbt.h>
-#include <inline.h>
+#include <arb_str.h>
 #include <static_assert.h>
 
 #define WWW_COUNT                10

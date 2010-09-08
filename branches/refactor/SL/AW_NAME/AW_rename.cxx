@@ -13,7 +13,7 @@
 #include <arbdbt.h>
 #include <aw_awars.hxx>
 #include <aw_window.hxx>
-#include <inline.h>
+#include <cctype>
 
 #include <names_client.h>
 #include <servercntrl.h>

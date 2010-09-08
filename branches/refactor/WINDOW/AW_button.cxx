@@ -19,7 +19,7 @@
 
 #include <arbdbt.h>
 
-#include <inline.h>
+#include <arb_str.h>
 
 #include <Xm/Frame.h>
 #include <Xm/MenuShell.h>
