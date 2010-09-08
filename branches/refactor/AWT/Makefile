@@ -186,6 +186,7 @@ AWT_db_browser.o: $(ARBHOME)/INCLUDE/AP_Tree.hxx
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/arb_core.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/arb_error.h
+AWT_db_browser.o: $(ARBHOME)/INCLUDE/arb_str.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/ARB_Tree.hxx
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/arbdb.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -200,7 +201,6 @@ AWT_db_browser.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/downcast.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/dupstr.h
-AWT_db_browser.o: $(ARBHOME)/INCLUDE/inline.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/smartptr.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -441,6 +441,7 @@ AWT_www.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AWT_www.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWT_www.o: $(ARBHOME)/INCLUDE/arb_core.h
 AWT_www.o: $(ARBHOME)/INCLUDE/arb_error.h
+AWT_www.o: $(ARBHOME)/INCLUDE/arb_str.h
 AWT_www.o: $(ARBHOME)/INCLUDE/arbdb.h
 AWT_www.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AWT_www.o: $(ARBHOME)/INCLUDE/arbdbt.h
@@ -454,7 +455,6 @@ AWT_www.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AWT_www.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWT_www.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AWT_www.o: $(ARBHOME)/INCLUDE/dupstr.h
-AWT_www.o: $(ARBHOME)/INCLUDE/inline.h
 AWT_www.o: $(ARBHOME)/INCLUDE/smartptr.h
 AWT_www.o: $(ARBHOME)/INCLUDE/static_assert.h
 AWT_www.o: $(ARBHOME)/INCLUDE/test_global.h

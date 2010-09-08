@@ -494,7 +494,6 @@ ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/dupstr.h
-ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/inline.h
 ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/smartptr.h
 ED4_protein_2nd_structure.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -702,6 +701,7 @@ ED4_text_terminals.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/arb_core.h
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/arb_error.h
+ED4_text_terminals.o: $(ARBHOME)/INCLUDE/arb_str.h
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/arbdb.h
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/arbtools.h
@@ -720,7 +720,6 @@ ED4_text_terminals.o: $(ARBHOME)/INCLUDE/awt_attributes.hxx
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/awt_seq_colors.hxx
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/dupstr.h
-ED4_text_terminals.o: $(ARBHOME)/INCLUDE/inline.h
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/smartptr.h
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/st_window.hxx
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/test_global.h

@@ -39,6 +39,7 @@ AWTI_export.o: $(ARBHOME)/INCLUDE/AP_filter.hxx
 AWTI_export.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWTI_export.o: $(ARBHOME)/INCLUDE/arb_core.h
 AWTI_export.o: $(ARBHOME)/INCLUDE/arb_error.h
+AWTI_export.o: $(ARBHOME)/INCLUDE/arb_str.h
 AWTI_export.o: $(ARBHOME)/INCLUDE/arbdb.h
 AWTI_export.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AWTI_export.o: $(ARBHOME)/INCLUDE/arbdbt.h
@@ -53,7 +54,6 @@ AWTI_export.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWTI_export.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AWTI_export.o: $(ARBHOME)/INCLUDE/awt_filter.hxx
 AWTI_export.o: $(ARBHOME)/INCLUDE/dupstr.h
-AWTI_export.o: $(ARBHOME)/INCLUDE/inline.h
 AWTI_export.o: $(ARBHOME)/INCLUDE/seqio.hxx
 AWTI_export.o: $(ARBHOME)/INCLUDE/smartptr.h
 AWTI_export.o: $(ARBHOME)/INCLUDE/test_global.h

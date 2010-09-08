@@ -116,13 +116,13 @@ AW_button.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AW_button.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_button.o: $(ARBHOME)/INCLUDE/arb_core.h
 AW_button.o: $(ARBHOME)/INCLUDE/arb_error.h
+AW_button.o: $(ARBHOME)/INCLUDE/arb_str.h
 AW_button.o: $(ARBHOME)/INCLUDE/arbdb.h
 AW_button.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AW_button.o: $(ARBHOME)/INCLUDE/arbdbt.h
 AW_button.o: $(ARBHOME)/INCLUDE/arbtools.h
 AW_button.o: $(ARBHOME)/INCLUDE/attributes.h
 AW_button.o: $(ARBHOME)/INCLUDE/dupstr.h
-AW_button.o: $(ARBHOME)/INCLUDE/inline.h
 AW_button.o: $(ARBHOME)/INCLUDE/smartptr.h
 AW_button.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -174,11 +174,11 @@ AW_device.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 AW_device.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_device.o: $(ARBHOME)/INCLUDE/arb_core.h
 AW_device.o: $(ARBHOME)/INCLUDE/arb_error.h
+AW_device.o: $(ARBHOME)/INCLUDE/arb_str.h
 AW_device.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AW_device.o: $(ARBHOME)/INCLUDE/arbtools.h
 AW_device.o: $(ARBHOME)/INCLUDE/attributes.h
 AW_device.o: $(ARBHOME)/INCLUDE/dupstr.h
-AW_device.o: $(ARBHOME)/INCLUDE/inline.h
 AW_device.o: $(ARBHOME)/INCLUDE/smartptr.h
 AW_device.o: $(ARBHOME)/INCLUDE/test_global.h
 

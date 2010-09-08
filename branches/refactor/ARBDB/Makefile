@@ -834,10 +834,10 @@ adtcp.o: gb_local.h
 adtcp.o: gb_prot.h
 adtcp.o: $(ARBHOME)/INCLUDE/arb_core.h
 adtcp.o: $(ARBHOME)/INCLUDE/arb_error.h
+adtcp.o: $(ARBHOME)/INCLUDE/arb_str.h
 adtcp.o: $(ARBHOME)/INCLUDE/arbtools.h
 adtcp.o: $(ARBHOME)/INCLUDE/attributes.h
 adtcp.o: $(ARBHOME)/INCLUDE/dupstr.h
-adtcp.o: $(ARBHOME)/INCLUDE/inline.h
 adtcp.o: $(ARBHOME)/INCLUDE/smartptr.h
 adtcp.o: $(ARBHOME)/INCLUDE/test_global.h
 adtcp.o: $(ARBHOME)/INCLUDE/test_unit.h

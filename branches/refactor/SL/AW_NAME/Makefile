@@ -83,7 +83,6 @@ AW_rename.o: $(ARBHOME)/INCLUDE/bytestring.h
 AW_rename.o: $(ARBHOME)/INCLUDE/client.h
 AW_rename.o: $(ARBHOME)/INCLUDE/client_types.h
 AW_rename.o: $(ARBHOME)/INCLUDE/dupstr.h
-AW_rename.o: $(ARBHOME)/INCLUDE/inline.h
 AW_rename.o: $(ARBHOME)/INCLUDE/names_client.h
 AW_rename.o: $(ARBHOME)/INCLUDE/servercntrl.h
 AW_rename.o: $(ARBHOME)/INCLUDE/smartptr.h

@@ -172,6 +172,7 @@ MG_gene_species.o: $(ARBHOME)/INCLUDE/adGene.h
 MG_gene_species.o: $(ARBHOME)/INCLUDE/arb_assert.h
 MG_gene_species.o: $(ARBHOME)/INCLUDE/arb_core.h
 MG_gene_species.o: $(ARBHOME)/INCLUDE/arb_error.h
+MG_gene_species.o: $(ARBHOME)/INCLUDE/arb_str.h
 MG_gene_species.o: $(ARBHOME)/INCLUDE/arbdb.h
 MG_gene_species.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 MG_gene_species.o: $(ARBHOME)/INCLUDE/arbdbt.h
@@ -186,7 +187,6 @@ MG_gene_species.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 MG_gene_species.o: $(ARBHOME)/INCLUDE/awt.hxx
 MG_gene_species.o: $(ARBHOME)/INCLUDE/awt_config_manager.hxx
 MG_gene_species.o: $(ARBHOME)/INCLUDE/dupstr.h
-MG_gene_species.o: $(ARBHOME)/INCLUDE/inline.h
 MG_gene_species.o: $(ARBHOME)/INCLUDE/smartptr.h
 MG_gene_species.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -272,6 +272,7 @@ MG_species.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 MG_species.o: $(ARBHOME)/INCLUDE/arb_assert.h
 MG_species.o: $(ARBHOME)/INCLUDE/arb_core.h
 MG_species.o: $(ARBHOME)/INCLUDE/arb_error.h
+MG_species.o: $(ARBHOME)/INCLUDE/arb_str.h
 MG_species.o: $(ARBHOME)/INCLUDE/arbdb.h
 MG_species.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 MG_species.o: $(ARBHOME)/INCLUDE/arbdbt.h
@@ -289,7 +290,6 @@ MG_species.o: $(ARBHOME)/INCLUDE/awt.hxx
 MG_species.o: $(ARBHOME)/INCLUDE/awt_item_sel_list.hxx
 MG_species.o: $(ARBHOME)/INCLUDE/db_scanner.hxx
 MG_species.o: $(ARBHOME)/INCLUDE/dupstr.h
-MG_species.o: $(ARBHOME)/INCLUDE/inline.h
 MG_species.o: $(ARBHOME)/INCLUDE/smartptr.h
 MG_species.o: $(ARBHOME)/INCLUDE/test_global.h
 

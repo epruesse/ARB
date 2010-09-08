@@ -387,6 +387,7 @@ NT_dbrepair.o: $(ARBHOME)/INCLUDE/adGene.h
 NT_dbrepair.o: $(ARBHOME)/INCLUDE/arb_assert.h
 NT_dbrepair.o: $(ARBHOME)/INCLUDE/arb_core.h
 NT_dbrepair.o: $(ARBHOME)/INCLUDE/arb_error.h
+NT_dbrepair.o: $(ARBHOME)/INCLUDE/arb_str.h
 NT_dbrepair.o: $(ARBHOME)/INCLUDE/arbdb.h
 NT_dbrepair.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 NT_dbrepair.o: $(ARBHOME)/INCLUDE/arbdbt.h
@@ -402,7 +403,6 @@ NT_dbrepair.o: $(ARBHOME)/INCLUDE/awt.hxx
 NT_dbrepair.o: $(ARBHOME)/INCLUDE/dupstr.h
 NT_dbrepair.o: $(ARBHOME)/INCLUDE/EXP.hxx
 NT_dbrepair.o: $(ARBHOME)/INCLUDE/GEN.hxx
-NT_dbrepair.o: $(ARBHOME)/INCLUDE/inline.h
 NT_dbrepair.o: $(ARBHOME)/INCLUDE/smartptr.h
 NT_dbrepair.o: $(ARBHOME)/INCLUDE/test_global.h
 
