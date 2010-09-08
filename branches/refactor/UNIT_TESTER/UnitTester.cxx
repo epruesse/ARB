@@ -50,11 +50,6 @@ static void trace(const char *format, ...) {
 
 // --------------------------------------------------------------------------------
 
-enum UnitTestResult {
-    TEST_OK,
-    TEST_TRAPPED,
-};
-
 static const char *readable_result[] = {
     "OK",
     "TRAPPED", 
@@ -78,7 +73,7 @@ static void UNITTEST_sigsegv_handler(int sig) {
 
 #define SECOND 1000000
 
-static UnitTestResult execute_guarded(UnitTest_function fun, long *duration_usec) {
+UnitTestResult execute_guarded(UnitTest_function fun, long *duration_usec) {
     SigHandler old_handler = INSTALL_SIGHANDLER(SIGSEGV, UNITTEST_sigsegv_handler, "execute_guarded");
     
     // ----------------------------------------
