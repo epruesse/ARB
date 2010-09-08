@@ -378,6 +378,7 @@ int main(int argc, const char ** argv) {
 #if (UNIT_TESTS == 1)
 
 #include <test_unit.h>
+#include <unistd.h>
 
 #define TEST_REBUILD_PTSERVER // test rebuild of pt-server (slow but complete)
 
@@ -394,7 +395,11 @@ static void test_ptserver_activate(bool start) {
 
 static void test_cleanup() {
     test_ptserver_activate(false);
-    TEST_ASSERT_NO_ERROR(GB_system("rm TEST_pt.arb.pt"));
+    
+    // currently terminates the test-program cause we are outside any guarded region
+    // since this happens AFTER the tests passed, error is not propagated!
+    // @@@ should not be called by atexit(), but from UnitTester
+    TEST_ASSERT_ZERO_OR_SHOW_ERRNO(unlink("TEST_pt.arb.pt"));
 }
 
 static void test_setup() {
