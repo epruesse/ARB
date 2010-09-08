@@ -879,6 +879,7 @@ adtools.o: gb_memory.h
 adtools.o: gb_prot.h
 adtools.o: $(ARBHOME)/INCLUDE/arb_core.h
 adtools.o: $(ARBHOME)/INCLUDE/arb_error.h
+adtools.o: $(ARBHOME)/INCLUDE/arb_str.h
 adtools.o: $(ARBHOME)/INCLUDE/arbtools.h
 adtools.o: $(ARBHOME)/INCLUDE/attributes.h
 adtools.o: $(ARBHOME)/INCLUDE/dupstr.h

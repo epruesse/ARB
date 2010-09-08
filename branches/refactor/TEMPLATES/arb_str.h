@@ -12,12 +12,11 @@
 #ifndef ARB_STR_H
 #define ARB_STR_H
 
+#ifndef _CPP_CSTDDEF
+#include <cstddef>
+#endif
+#ifndef _CPP_CCTYPE
 #include <cctype>
-
-#ifndef __cplusplus
-// this header only works with c++
-// those functions needed by ARBDB are duplicated in adstring.c (with GBS_-prefix)
-#error inline.h may be used in C++ only
 #endif
 
 inline int ARB_stricmp(const char *s1, const char *s2) {

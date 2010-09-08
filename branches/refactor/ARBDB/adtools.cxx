@@ -8,6 +8,7 @@
 //                                                                 //
 // =============================================================== //
 
+#include <arb_str.h>
 #include <arbdbt.h>
 
 #include "gb_data.h"
@@ -129,7 +130,7 @@ static long gbs_scan_db_insert(const char *key, long val, void *cd_insert_data) 
         to_insert = strdup(key);
     }
     else {
-        if (GBS_strscmp(insert->datapath, key+1) == 0) { // datapath matches
+        if (ARB_strscmp(insert->datapath, key+1) == 0) { // datapath matches
             to_insert    = strdup(key+strlen(insert->datapath)); // cut off prefix
             to_insert[0] = key[0]; // copy type
         }
