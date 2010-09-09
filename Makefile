@@ -582,7 +582,7 @@ DEST_BIN = bin
 
 AINCLUDES := -I. -I$(ARBHOME)/INCLUDE $(XINCLUDES)
 CPPINCLUDES := -I. -I$(ARBHOME)/INCLUDE $(XINCLUDES)
-MAKEDEPENDFLAGS := -- $(cflags) -- -DARB_OPENGL -DUNIT_TESTS=1 -I. -Y$(ARBHOME)/INCLUDE
+MAKEDEPENDFLAGS := -- $(cflags) -- -DARB_OPENGL -DUNIT_TESTS=1 -D__cplusplus -I. -Y$(ARBHOME)/INCLUDE
 
 ifeq ($(VTABLE_INFRONTOF_CLASS),1)
 # Some code in ARB depends on the location of the vtable pointer
@@ -1551,6 +1551,7 @@ UNITS_NEED_FIX = \
 
 # for the moment, put all units containing tests into UNITS_TESTED:
 UNITS_TESTED = \
+	AISC_MKPTPS/mkptypes.test \
 	PROBE_COM/client.test \
 	TOOLS/arb_probe.test \
 	AWTC/AWTC.test \

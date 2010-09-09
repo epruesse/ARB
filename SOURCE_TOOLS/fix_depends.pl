@@ -11,24 +11,17 @@
 # Goal of this script is to unify the result of 'make depends'
 # to avoid CVS/SVN changes caused by formatting.
 
+use strict;
+use warnings;
+
 my $arbhome_quoted = quotemeta($ENV{ARBHOME});
 my $arbhome = qr/$arbhome_quoted/;
-my $makedependlineseen = 0;
-my @depends;
-
-if (0) {
-  foreach (<>) {
-    print "ALL: $_";
-  }
-
-  die "done";
-}
 
 sub fix_name($) {
   my ($name) = @_;
   $name =~ s/^$arbhome/\$\(ARBHOME\)/ig; # translate $ARBHOME
   $name =~ s/^.\///ig; # remove './' at start
-  
+
   # ensure there's a / behind '$(ARBHOME)'
   if ($name =~ /\$\(ARBHOME\)[^\/]/) {
     $name =~ s/\$\(ARBHOME\)/\$\(ARBHOME\)\//ig;
@@ -37,41 +30,7 @@ sub fix_name($) {
   $name;
 }
 
-# read input stream
-foreach (<>) {
-  if ($makedependlineseen==0) { # simply forward lines before 'DO NOT DELETE'
-    print "$_";
-    if (/^\# DO NOT DELETE/) { $makedependlineseen = 1; }
-  }
-  else { # put lines behind into '@depends'
-    chomp;
-    if (/^ *[\/\$a-z]/i) {
-      if (/^([^:]*): *(.*)$/) {
-        my $file       = $1;
-        my $depends_on = $2;
-        $file = fix_name($file);
-
-        while ($depends_on =~ / /) { # split lines with multiple dependencies
-          my $name = $`;
-          my $rest = $';
-          $name = fix_name($name);
-          push @depends, "$file: $name";
-          $depends_on = $rest;
-        }
-        $depends_on = fix_name($depends_on);
-        $_ = "$file: $depends_on";
-      }
-      push @depends,$_;
-    }
-  }
-}
-
-print "\n# Do not add dependencies manually - use 'make depend' in \$ARBHOME\n";
-print "# For formatting issues see SOURCE_TOOLS/fix_depends.pl\n";
-
-# sort dependency lines
-
-sub beautiful($$) {
+sub arb_dependency_order($$) {
   # sorts files alphabetically (ign. case)
   # sorts local dependencies first (for each file)
   my ($a,$b) = @_;
@@ -98,17 +57,69 @@ sub beautiful($$) {
   }
 }
 
-@depends = sort beautiful @depends;
+sub add_dependency(\@$$) {
+  my ($depends_r,$file,$depends_on) = @_;
+  $depends_on = fix_name($depends_on);
 
-# print dependency lines
-
-my $prefix = '';
-foreach (@depends) {
-  my $tprefix = '';
-  if (/^([^:]*):/) { $tprefix = $1; }
-  if ($tprefix ne $prefix) {
-    print "\n"; # empty line between different files
-    $prefix = $tprefix;
+  # skip outside dependencies
+  if (not $depends_on =~ m@/usr/include/@) {
+    push @$depends_r, "$file: $depends_on";
   }
-  print "$_\n";
 }
+
+sub read_input_stream(\@) {
+  my ($depends_r) = @_;
+  my $makedependlineseen = 0;
+
+  foreach (<>) {
+    if ($makedependlineseen==0) { # simply forward lines until 'DO NOT DELETE'
+      print "$_";
+      if (/^\# DO NOT DELETE/) { $makedependlineseen = 1; }
+    }
+    else { # put lines behind into '@depends'
+      chomp;
+      if (/^ *[\/\$a-z]/i) { # skip empty lines
+        if (/^([^:]*): *(.*)$/) {
+          my $file       = $1;
+          my $depends_on = $2;
+          $file = fix_name($file);
+
+          while ($depends_on =~ / /) { # split lines with multiple dependencies
+            my $name = $`;
+            my $rest = $';
+
+            add_dependency(@$depends_r,$file,$name);
+            $depends_on = $rest;
+          }
+          add_dependency(@$depends_r,$file,$depends_on);
+        }
+        else {
+          push @$depends_r,$_; # what lines go here?
+        }
+      }
+    }
+  }
+}
+
+sub main() {
+  my @depends=();
+  read_input_stream(@depends);
+
+  @depends = sort arb_dependency_order @depends; 
+
+  print "\n# Do not add dependencies manually - use 'make depend' in \$ARBHOME\n";
+  print "# For formatting issues see SOURCE_TOOLS/fix_depends.pl\n";
+
+  # print dependency lines
+  my $prefix = '';
+  foreach (@depends) {
+    my $tprefix = '';
+    if (/^([^:]*):/) { $tprefix = $1; }
+    if ($tprefix ne $prefix) {
+      print "\n"; # empty line between different files
+      $prefix = $tprefix;
+    }
+    print "$_\n";
+  }
+}
+main();

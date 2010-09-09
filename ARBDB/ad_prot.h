@@ -138,7 +138,7 @@ int GB_string_comparator(const void *v0, const void *v1, void *);
 /* adstring.cxx */
 void GB_raise_critical_error(const char *msg);
 GB_ERROR GB_export_error(const char *error);
-GB_ERROR GB_export_errorf(const char *templat, ...) __ATTR__FORMAT(1);
+GB_ERROR GB_export_errorf(const char *templat, ...) __ATTR__FORMAT(1) __ATTR__DEPRECATED;
 GB_ERROR GB_IO_error(const char *action, const char *filename);
 GB_ERROR GB_export_IO_error(const char *action, const char *filename) __ATTR__DEPRECATED;
 NOT4PERL GB_ERROR GB_print_error(void);

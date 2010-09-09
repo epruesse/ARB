@@ -72,7 +72,12 @@ GB_ERROR GB_export_error(const char *error) { // just a temp hack around format-
 }
 
 GB_ERROR GB_export_errorf(const char *templat, ...) {
-    // goes to header: __ATTR__FORMAT(1) __ATTR__DEPRECATED
+    /* goes to header:
+     * __ATTR__FORMAT(1)
+     * __ATTR__DEPRECATED
+     *          because it's misused (where GBS_global_string should be used)
+     *          old functionality will remain available via 'GB_export_error(GBS_global_string(...))' 
+     */
 
     char     buffer[GBS_GLOBAL_STRING_SIZE];
     char    *p = buffer;
