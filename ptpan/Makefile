@@ -52,6 +52,7 @@ PT_cachehandler.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 PT_cachehandler.o: $(ARBHOME)/INCLUDE/ad_prot.h
 PT_cachehandler.o: $(ARBHOME)/INCLUDE/aisc_global.h
 PT_cachehandler.o: $(ARBHOME)/INCLUDE/arb_assert.h
+PT_cachehandler.o: $(ARBHOME)/INCLUDE/arb_core.h
 PT_cachehandler.o: $(ARBHOME)/INCLUDE/arb_error.h
 PT_cachehandler.o: $(ARBHOME)/INCLUDE/arbdb.h
 PT_cachehandler.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -75,6 +76,7 @@ PT_hashing.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 PT_hashing.o: $(ARBHOME)/INCLUDE/ad_prot.h
 PT_hashing.o: $(ARBHOME)/INCLUDE/aisc_global.h
 PT_hashing.o: $(ARBHOME)/INCLUDE/arb_assert.h
+PT_hashing.o: $(ARBHOME)/INCLUDE/arb_core.h
 PT_hashing.o: $(ARBHOME)/INCLUDE/arb_error.h
 PT_hashing.o: $(ARBHOME)/INCLUDE/arbdb.h
 PT_hashing.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -98,6 +100,7 @@ PT_huffman.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 PT_huffman.o: $(ARBHOME)/INCLUDE/ad_prot.h
 PT_huffman.o: $(ARBHOME)/INCLUDE/aisc_global.h
 PT_huffman.o: $(ARBHOME)/INCLUDE/arb_assert.h
+PT_huffman.o: $(ARBHOME)/INCLUDE/arb_core.h
 PT_huffman.o: $(ARBHOME)/INCLUDE/arb_error.h
 PT_huffman.o: $(ARBHOME)/INCLUDE/arbdb.h
 PT_huffman.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -121,6 +124,7 @@ PT_lowlevel.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 PT_lowlevel.o: $(ARBHOME)/INCLUDE/ad_prot.h
 PT_lowlevel.o: $(ARBHOME)/INCLUDE/aisc_global.h
 PT_lowlevel.o: $(ARBHOME)/INCLUDE/arb_assert.h
+PT_lowlevel.o: $(ARBHOME)/INCLUDE/arb_core.h
 PT_lowlevel.o: $(ARBHOME)/INCLUDE/arb_error.h
 PT_lowlevel.o: $(ARBHOME)/INCLUDE/arbdb.h
 PT_lowlevel.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -144,6 +148,7 @@ PT_treepack.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 PT_treepack.o: $(ARBHOME)/INCLUDE/ad_prot.h
 PT_treepack.o: $(ARBHOME)/INCLUDE/aisc_global.h
 PT_treepack.o: $(ARBHOME)/INCLUDE/arb_assert.h
+PT_treepack.o: $(ARBHOME)/INCLUDE/arb_core.h
 PT_treepack.o: $(ARBHOME)/INCLUDE/arb_error.h
 PT_treepack.o: $(ARBHOME)/INCLUDE/arbdb.h
 PT_treepack.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -167,6 +172,7 @@ PTP_buildtree.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 PTP_buildtree.o: $(ARBHOME)/INCLUDE/ad_prot.h
 PTP_buildtree.o: $(ARBHOME)/INCLUDE/aisc_global.h
 PTP_buildtree.o: $(ARBHOME)/INCLUDE/arb_assert.h
+PTP_buildtree.o: $(ARBHOME)/INCLUDE/arb_core.h
 PTP_buildtree.o: $(ARBHOME)/INCLUDE/arb_error.h
 PTP_buildtree.o: $(ARBHOME)/INCLUDE/arbdb.h
 PTP_buildtree.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -190,6 +196,7 @@ PTP_etc.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 PTP_etc.o: $(ARBHOME)/INCLUDE/ad_prot.h
 PTP_etc.o: $(ARBHOME)/INCLUDE/aisc_global.h
 PTP_etc.o: $(ARBHOME)/INCLUDE/arb_assert.h
+PTP_etc.o: $(ARBHOME)/INCLUDE/arb_core.h
 PTP_etc.o: $(ARBHOME)/INCLUDE/arb_error.h
 PTP_etc.o: $(ARBHOME)/INCLUDE/arbdb.h
 PTP_etc.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -215,6 +222,7 @@ PTP_family.o: $(ARBHOME)/INCLUDE/ad_prot.h
 PTP_family.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 PTP_family.o: $(ARBHOME)/INCLUDE/aisc_global.h
 PTP_family.o: $(ARBHOME)/INCLUDE/arb_assert.h
+PTP_family.o: $(ARBHOME)/INCLUDE/arb_core.h
 PTP_family.o: $(ARBHOME)/INCLUDE/arb_error.h
 PTP_family.o: $(ARBHOME)/INCLUDE/arbdb.h
 PTP_family.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -240,6 +248,7 @@ PTP_findEx.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 PTP_findEx.o: $(ARBHOME)/INCLUDE/ad_prot.h
 PTP_findEx.o: $(ARBHOME)/INCLUDE/aisc_global.h
 PTP_findEx.o: $(ARBHOME)/INCLUDE/arb_assert.h
+PTP_findEx.o: $(ARBHOME)/INCLUDE/arb_core.h
 PTP_findEx.o: $(ARBHOME)/INCLUDE/arb_error.h
 PTP_findEx.o: $(ARBHOME)/INCLUDE/arbdb.h
 PTP_findEx.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -264,6 +273,7 @@ PTP_io.o: $(ARBHOME)/INCLUDE/ad_prot.h
 PTP_io.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 PTP_io.o: $(ARBHOME)/INCLUDE/aisc_global.h
 PTP_io.o: $(ARBHOME)/INCLUDE/arb_assert.h
+PTP_io.o: $(ARBHOME)/INCLUDE/arb_core.h
 PTP_io.o: $(ARBHOME)/INCLUDE/arb_error.h
 PTP_io.o: $(ARBHOME)/INCLUDE/arbdb.h
 PTP_io.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -290,6 +300,7 @@ PTP_main.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 PTP_main.o: $(ARBHOME)/INCLUDE/aisc_func_types.h
 PTP_main.o: $(ARBHOME)/INCLUDE/aisc_global.h
 PTP_main.o: $(ARBHOME)/INCLUDE/arb_assert.h
+PTP_main.o: $(ARBHOME)/INCLUDE/arb_core.h
 PTP_main.o: $(ARBHOME)/INCLUDE/arb_error.h
 PTP_main.o: $(ARBHOME)/INCLUDE/arbdb.h
 PTP_main.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -320,6 +331,7 @@ PTP_match.o: $(ARBHOME)/INCLUDE/ad_prot.h
 PTP_match.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 PTP_match.o: $(ARBHOME)/INCLUDE/aisc_global.h
 PTP_match.o: $(ARBHOME)/INCLUDE/arb_assert.h
+PTP_match.o: $(ARBHOME)/INCLUDE/arb_core.h
 PTP_match.o: $(ARBHOME)/INCLUDE/arb_error.h
 PTP_match.o: $(ARBHOME)/INCLUDE/arbdb.h
 PTP_match.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -346,6 +358,7 @@ PTP_new_design.o: $(ARBHOME)/INCLUDE/ad_prot.h
 PTP_new_design.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 PTP_new_design.o: $(ARBHOME)/INCLUDE/aisc_global.h
 PTP_new_design.o: $(ARBHOME)/INCLUDE/arb_assert.h
+PTP_new_design.o: $(ARBHOME)/INCLUDE/arb_core.h
 PTP_new_design.o: $(ARBHOME)/INCLUDE/arb_error.h
 PTP_new_design.o: $(ARBHOME)/INCLUDE/arbdb.h
 PTP_new_design.o: $(ARBHOME)/INCLUDE/arbdb_base.h

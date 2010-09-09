@@ -34,6 +34,7 @@ names.o: $(ARBHOME)/INCLUDE/ad_prot.h
 names.o: $(ARBHOME)/INCLUDE/aisc_func_types.h
 names.o: $(ARBHOME)/INCLUDE/aisc_global.h
 names.o: $(ARBHOME)/INCLUDE/arb_assert.h
+names.o: $(ARBHOME)/INCLUDE/arb_core.h
 names.o: $(ARBHOME)/INCLUDE/arb_error.h
 names.o: $(ARBHOME)/INCLUDE/arbdb.h
 names.o: $(ARBHOME)/INCLUDE/arbdb_base.h

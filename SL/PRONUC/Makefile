@@ -42,6 +42,7 @@ AP_codon_table.o: AP_codon_table.hxx
 AP_codon_table.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 AP_codon_table.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AP_codon_table.o: $(ARBHOME)/INCLUDE/arb_assert.h
+AP_codon_table.o: $(ARBHOME)/INCLUDE/arb_core.h
 AP_codon_table.o: $(ARBHOME)/INCLUDE/arb_error.h
 AP_codon_table.o: $(ARBHOME)/INCLUDE/arbdb.h
 AP_codon_table.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -57,12 +58,13 @@ AP_pro_a_nucs.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 AP_pro_a_nucs.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AP_pro_a_nucs.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AP_pro_a_nucs.o: $(ARBHOME)/INCLUDE/arb_assert.h
+AP_pro_a_nucs.o: $(ARBHOME)/INCLUDE/arb_core.h
 AP_pro_a_nucs.o: $(ARBHOME)/INCLUDE/arb_error.h
+AP_pro_a_nucs.o: $(ARBHOME)/INCLUDE/arb_str.h
 AP_pro_a_nucs.o: $(ARBHOME)/INCLUDE/arbdb.h
 AP_pro_a_nucs.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AP_pro_a_nucs.o: $(ARBHOME)/INCLUDE/arbdbt.h
 AP_pro_a_nucs.o: $(ARBHOME)/INCLUDE/arbtools.h
 AP_pro_a_nucs.o: $(ARBHOME)/INCLUDE/attributes.h
 AP_pro_a_nucs.o: $(ARBHOME)/INCLUDE/dupstr.h
-AP_pro_a_nucs.o: $(ARBHOME)/INCLUDE/inline.h
 AP_pro_a_nucs.o: $(ARBHOME)/INCLUDE/smartptr.h

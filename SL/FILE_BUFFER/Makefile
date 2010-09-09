@@ -38,3 +38,10 @@ depend.init:
 # For formatting issues see SOURCE_TOOLS/fix_depends.pl
 
 FileBuffer.o: FileBuffer.h
+FileBuffer.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
+FileBuffer.o: $(ARBHOME)/INCLUDE/arb_assert.h
+FileBuffer.o: $(ARBHOME)/INCLUDE/arb_core.h
+FileBuffer.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+FileBuffer.o: $(ARBHOME)/INCLUDE/arbtools.h
+FileBuffer.o: $(ARBHOME)/INCLUDE/attributes.h
+FileBuffer.o: $(ARBHOME)/INCLUDE/dupstr.h

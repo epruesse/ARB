@@ -38,6 +38,7 @@ probe_design.o: $(ARBHOME)/INCLUDE/AliView.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/AP_sequence.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/AP_Tree.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/arb_assert.h
+probe_design.o: $(ARBHOME)/INCLUDE/arb_core.h
 probe_design.o: $(ARBHOME)/INCLUDE/arb_error.h
 probe_design.o: $(ARBHOME)/INCLUDE/ARB_Tree.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -76,6 +77,7 @@ probe_match_parser.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 probe_match_parser.o: $(ARBHOME)/INCLUDE/ad_prot.h
 probe_match_parser.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 probe_match_parser.o: $(ARBHOME)/INCLUDE/arb_assert.h
+probe_match_parser.o: $(ARBHOME)/INCLUDE/arb_core.h
 probe_match_parser.o: $(ARBHOME)/INCLUDE/arb_error.h
 probe_match_parser.o: $(ARBHOME)/INCLUDE/arbdb.h
 probe_match_parser.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -91,6 +93,7 @@ SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/ad_prot.h
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/arb_assert.h
+SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/arb_core.h
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/arb_error.h
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/arbdb.h
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/arbdb_base.h

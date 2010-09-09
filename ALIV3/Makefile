@@ -48,6 +48,7 @@ a3.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 a3.o: $(ARBHOME)/INCLUDE/ad_prot.h
 a3.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 a3.o: $(ARBHOME)/INCLUDE/arb_assert.h
+a3.o: $(ARBHOME)/INCLUDE/arb_core.h
 a3.o: $(ARBHOME)/INCLUDE/arb_error.h
 a3.o: $(ARBHOME)/INCLUDE/arbdb.h
 a3.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -70,6 +71,7 @@ a3_arbdb.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 a3_arbdb.o: $(ARBHOME)/INCLUDE/ad_prot.h
 a3_arbdb.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 a3_arbdb.o: $(ARBHOME)/INCLUDE/arb_assert.h
+a3_arbdb.o: $(ARBHOME)/INCLUDE/arb_core.h
 a3_arbdb.o: $(ARBHOME)/INCLUDE/arb_error.h
 a3_arbdb.o: $(ARBHOME)/INCLUDE/arbdb.h
 a3_arbdb.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -98,13 +100,13 @@ a3_ptree1.o: a3_basen.h
 a3_ptree1.o: a3_ptree.hxx
 a3_ptree1.o: a3_seq.hxx
 a3_ptree1.o: a3_types.h
-a3_ptree1.o: $(ARBHOME)/INCLUDE/inline.h
+a3_ptree1.o: $(ARBHOME)/INCLUDE/arb_str.h
 
 a3_ptree2.o: a3_basen.h
 a3_ptree2.o: a3_ptree.hxx
 a3_ptree2.o: a3_seq.hxx
 a3_ptree2.o: a3_types.h
-a3_ptree2.o: $(ARBHOME)/INCLUDE/inline.h
+a3_ptree2.o: $(ARBHOME)/INCLUDE/arb_str.h
 
 a3_seq.o: a3_basen.h
 a3_seq.o: a3_seq.hxx
@@ -112,11 +114,12 @@ a3_seq.o: a3_types.h
 a3_seq.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 a3_seq.o: $(ARBHOME)/INCLUDE/ad_prot.h
 a3_seq.o: $(ARBHOME)/INCLUDE/arb_assert.h
+a3_seq.o: $(ARBHOME)/INCLUDE/arb_core.h
 a3_seq.o: $(ARBHOME)/INCLUDE/arb_error.h
+a3_seq.o: $(ARBHOME)/INCLUDE/arb_str.h
 a3_seq.o: $(ARBHOME)/INCLUDE/arbdb.h
 a3_seq.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 a3_seq.o: $(ARBHOME)/INCLUDE/arbtools.h
 a3_seq.o: $(ARBHOME)/INCLUDE/attributes.h
 a3_seq.o: $(ARBHOME)/INCLUDE/dupstr.h
-a3_seq.o: $(ARBHOME)/INCLUDE/inline.h
 a3_seq.o: $(ARBHOME)/INCLUDE/smartptr.h
