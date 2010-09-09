@@ -14,9 +14,16 @@ dummy:
 
 # ----------------------------------------------------------
 
+# @@@ valgrind makes tests fail atm
+# (most likely two pt-servers try to start parallel on the same port)
+
 VALGRIND=0# only test
 #VALGRIND=1# run valgrind after sucessful test
 #VALGRIND=2# run valgrind before test (useful if test traps w/o any helpful information)
+
+#CHECK_LEAKS=0# check no leaks
+CHECK_LEAKS=1# check definite leaks
+#CHECK_LEAKS=2# check reachable leaks
 
 # ----------------------------------------------------------
 
@@ -28,6 +35,7 @@ RESTRICT_MODULE='.'
 # (empty=no restriction, ':'-separated list of allowed test-names)
 #
 RESTRICT_LIB=# run all tests
+#RESTRICT_LIB=AWTC# test only this library
 #RESTRICT_LIB=mkptypes# test only these libraries
 #RESTRICT_LIB=client:arb_probe:AWTC# test only these libraries
 #RESTRICT_LIB=ARBDB# test only this library
@@ -80,8 +88,7 @@ UNIQUE_NAME=test_$(subst /,_,$(subst .,_,$(UNITDIR)_$(UNITLIB)))
 FULLLIB=$(FULLUNITDIR)/$(UNITLIB)
 
 DESTDIR=tests
-RUNDIR=run
-RUN2HERE=..# prefix from RUNDIR to here (UNIT_TESTER)
+RUNDIR=run# see also UnitTester.cxx@chdir
 
 SYMLIST=$(DESTDIR)/$(UNIQUE_NAME).sym
 TEST_CODE=$(DESTDIR)/$(UNIQUE_NAME).cxx
@@ -151,16 +158,26 @@ dump:
 	@echo "LINKLIST       ='$(LINKLIST)'"
 	@echo "LINKDEPS       ='$(LINKDEPS)'"
 
+ifeq ($(CHECK_LEAKS),0)
+	LEAKS:=
+else
+ifeq ($(CHECK_LEAKS),1)
+	LEAKS:=-l
+else
+	LEAKS:=-l -r
+endif
+endif
+
 valgrind:
 	echo "Valgrinding.."
-	cd $(RUNDIR);$(ARBHOME)/SOURCE_TOOLS/arb_valgrind -q -l -r -c 15 $(RUN2HERE)/$(TEST_EXE)
+	$(ARBHOME)/SOURCE_TOOLS/arb_valgrind -q $(LEAKS) -c 15 $(TEST_EXE)
 
 perform_test: $(TEST_EXE)
 	@echo "fake[2]: Entering directory \`$(FULLUNITDIR)'"
 ifeq ($(VALGRIND),2)
 	$(MAKE) -f Makefile.test valgrind
 endif
-	cd $(RUNDIR);$(RUN2HERE)/$(TEST_EXE)
+	$(TEST_EXE) 
 ifeq ($(COVERAGE),1)
 	@echo "-------------------- test-coverage for $(UNITLIBNAME)"
 	./gcov2msg.sh $(FULLUNITDIR) $(UNITLIBNAME)
@@ -172,7 +189,7 @@ endif
 	@echo "fake[2]: Leaving directory \`$(FULLUNITDIR)'"
 
 skip_test:
-	@echo "unit-tests completely skipped for '$(UNITLIBNAME)'"
+	@echo "UnitTester: $(UNITLIBNAME) tests=0 (skipped via RESTRICT_LIB)"
 
 # --------------------
 

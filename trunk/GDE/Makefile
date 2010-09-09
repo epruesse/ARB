@@ -38,14 +38,18 @@ ARCHS = $(ARCHS_ALL) $(ARCHS_NON_DEBIAN)
 endif
 
 # --------------------------------------------------------------------------------
-# no warnings in this subtree
+# modify cflags for submakefiles 
 
-RAISE_WARNINGS=0
+RAISE_WARNINGS=0# no warnings in this subtree
+UNIT_TESTS=0# no warnings in this subtree
+
+sub_cflags:=$(cflags)
 
 ifeq ('$(RAISE_WARNINGS)','0')
-sub_cflags:=$(subst -W -Wall,-w,$(cflags))
-else
-sub_cflags:=$(cflags)
+sub_cflags:=$(subst -W -Wall,-w,$(sub_cflags))
+endif
+ifeq ('$(UNIT_TESTS)','0')
+sub_cflags:=$(subst -DUNIT_TESTS,,$(sub_cflags))
 endif
 
 # --------------------------------------------------------------------------------

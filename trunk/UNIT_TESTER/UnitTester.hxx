@@ -23,10 +23,16 @@ struct UnitTest_simple {
     const char        *name;
     const char        *location;
 };
+enum UnitTestResult {
+    TEST_OK,
+    TEST_TRAPPED,
+};
 
 struct UnitTester {
     UnitTester(const char *libname, const UnitTest_simple *simple_tests, int warn_level, size_t skippedTests);
 };
+
+UnitTestResult execute_guarded(UnitTest_function fun, long *duration_usec);
 
 #else
 #error UnitTester.hxx included twice

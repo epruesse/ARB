@@ -1,18 +1,27 @@
 # INCLUDE und GLOBALS MAIN CC cflags werden von aussen uebergeben
 .SUFFIXES: .o .cxx .depend
 
-CPP_OBJECTS = \
+TESTER_OBJECTS = \
 	UnitTester.o \
 
+GLOBAL_OBJECTS = \
+	TestEnvironment.o \
 
-$(MAIN): $(CPP_OBJECTS)
-	$(LINK_STATIC_LIB) $(MAIN) $(CPP_OBJECTS)
+CPP_OBJECTS = $(TESTER_OBJECTS) $(GLOBAL_OBJECTS)
+
+$(MAIN): $(TESTER_OBJECTS) test_environment
+	$(LINK_STATIC_LIB) $(MAIN) $(TESTER_OBJECTS)
+
+test_environment: $(GLOBAL_OBJECTS) $(TESTER_OBJECTS)
+	$(LINK_EXECUTABLE) test_environment $(GLOBAL_OBJECTS) $(TESTER_OBJECTS) $(LIBPATH) $(ARBDB_LIB)  
+
 .cxx.o:
 	$(CPP) $(cflags) -c $<  $(CPPINCLUDES)
 
 clean:
-	rm -f $(CPP_OBJECTS) 
+	rm -f $(CPP_OBJECTS) *.a test_environment 
 	$(MAKE) -f Makefile.test clean
+
 
 DEPENDS = $(CPP_OBJECTS:.o=.depend)
 depends: $(DEPENDS)
@@ -31,6 +40,24 @@ depend.init:
 # Do not add dependencies manually - use 'make depend' in $ARBHOME
 # For formatting issues see SOURCE_TOOLS/fix_depends.pl
 
+TestEnvironment.o: test_global.h
+TestEnvironment.o: test_unit.h
+TestEnvironment.o: UnitTester.hxx
+TestEnvironment.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
+TestEnvironment.o: $(ARBHOME)/INCLUDE/ad_prot.h
+TestEnvironment.o: $(ARBHOME)/INCLUDE/arb_assert.h
+TestEnvironment.o: $(ARBHOME)/INCLUDE/arb_core.h
+TestEnvironment.o: $(ARBHOME)/INCLUDE/arb_defs.h
+TestEnvironment.o: $(ARBHOME)/INCLUDE/arb_error.h
+TestEnvironment.o: $(ARBHOME)/INCLUDE/arb_str.h
+TestEnvironment.o: $(ARBHOME)/INCLUDE/arbdb.h
+TestEnvironment.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+TestEnvironment.o: $(ARBHOME)/INCLUDE/arbtools.h
+TestEnvironment.o: $(ARBHOME)/INCLUDE/attributes.h
+TestEnvironment.o: $(ARBHOME)/INCLUDE/dupstr.h
+TestEnvironment.o: $(ARBHOME)/INCLUDE/smartptr.h
+
+UnitTester.o: test_global.h
 UnitTester.o: test_unit.h
 UnitTester.o: UnitTester.hxx
 UnitTester.o: $(ARBHOME)/INCLUDE/arb_assert.h

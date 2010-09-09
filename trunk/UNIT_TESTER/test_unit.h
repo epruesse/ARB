@@ -18,6 +18,9 @@
 #ifndef _CPP_CSTDARG
 #include <cstdarg>
 #endif
+#ifndef ERRNO_H
+#include <errno.h>
+#endif
 
 #define ENABLE_CRASH_TESTS // comment out this line to get rid of provoked SEGVs (e.g. while debugging test-code)
 // #define TRACE_IS_EQUAL // print calls to numerical is_equal()
@@ -32,38 +35,46 @@
  */
 
 namespace arb_test {
-    class FlushedOutput {
-        inline void flushall() { fflush(stdout); fflush(stderr); }
-    public:
-        FlushedOutput() { flushall(); }
-        ~FlushedOutput() { flushall(); }
-        
-#define VPRINTFORMAT(format) do { va_list parg; va_start(parg, format); vfprintf(stderr, format, parg); va_end(parg); } while(0)
-    
-        static void printf(const char *format, ...) __attribute__((format(printf, 1, 2))) {
-            FlushedOutput yes;
-            VPRINTFORMAT(format);
-        }
-        static void messagef(const char *filename, int lineno, const char *format, ...) __attribute__((format(printf, 3, 4))) {
-            FlushedOutput yes;
+
+    class StaticCode {
+        static void vcompiler_msg(const char *filename, int lineno, const char *message_type, const char *format, va_list parg) {
             fprintf(stderr, "%s:%i: ", filename, lineno);
+            if (message_type) fprintf(stderr, "%s: ", message_type);
+            vfprintf(stderr, format, parg);
+        }
+
+#define WITHVALISTFROM(format,CODE)             do { va_list parg; va_start(parg, format); CODE; va_end(parg); } while(0)
+#define VPRINTFORMAT(format)                    WITHVALISTFROM(format, vfprintf(stderr, format, parg))
+#define VCOMPILERMSG(file,line,msgtype,format)  WITHVALISTFROM(format, vcompiler_msg(file, line, msgtype, format, parg))
+        
+    public:
+
+        static void printf(const char *format, ...) __attribute__((format(printf, 1, 2))) {
+            FlushedOutputNoLF yes;
             VPRINTFORMAT(format);
         }
         static void warningf(const char *filename, int lineno, const char *format, ...) __attribute__((format(printf, 3, 4))) {
             GlobalTestData& global = test_data();
             if (global.show_warnings) {
                 FlushedOutput yes;
-                fprintf(stderr, "%s:%i: Warning: ", filename, lineno);
-                VPRINTFORMAT(format);
+                VCOMPILERMSG(filename, lineno, "Warning", format);
                 global.warnings++;
             }
         }
         static void errorf(const char *filename, int lineno, const char *format, ...) __attribute__((format(printf, 3, 4))) {
             FlushedOutput yes;
-            fprintf(stderr, "%s:%i: Error: ", filename, lineno);
-            VPRINTFORMAT(format);
+            VCOMPILERMSG(filename, lineno, "Error", format);
+            TRIGGER_ASSERTION(); // fake an assertion failure
+        }
+        static void ioerrorf(const char *filename, int lineno, const char *format, ...) __attribute__((format(printf, 3, 4))) {
+            FlushedOutput yes;
+            VCOMPILERMSG(filename, lineno, "Error", format);
+            fprintf(stderr, " (errno=%i='%s')", errno, strerror(errno));
+            TRIGGER_ASSERTION(); // fake an assertion failure
         }
 #undef VPRINTFORMAT
+#undef VCOMPILERMSG
+#undef WITHVALISTFROM
     };
 
     inline void print(int i)                 { fprintf(stderr, "%i", i); }
@@ -74,6 +85,14 @@ namespace arb_test {
 
     inline void print(size_t z)              { fprintf(stderr, "%zu", z); }
     inline void print_hex(size_t z)          { fprintf(stderr, "0x%zx", z); }
+    
+    inline void print(unsigned char c)       { fprintf(stderr, "'%c'", c); }
+    inline void print_hex(unsigned char c)   { print_hex(size_t(c)); }
+
+    inline void print(char c)                { print((unsigned char)c); }
+    inline void print_hex(char c)            { print_hex((unsigned char)c); }
+
+    // dont dup size_t:
 #ifdef ARB_64
     inline void print(unsigned u)            { fprintf(stderr, "%u", u); }
     inline void print_hex(unsigned u)        { fprintf(stderr, "0x%ux", u); }
@@ -81,7 +100,7 @@ namespace arb_test {
     inline void print(long unsigned u)       { fprintf(stderr, "%lu", u); }
     inline void print_hex(long unsigned u)   { fprintf(stderr, "0x%lux", u); }
 #endif
-    
+
     template <typename T1, typename T2> void print_pair(T1 t1, T2 t2) {
         print(t1);
         fputc(',', stderr);
@@ -93,7 +112,7 @@ namespace arb_test {
         print_hex(t2);
     }
     template <typename T1, typename T2> void print_failed_equal(T1 t1, T2 t2) {
-        FlushedOutput yes;
+        FlushedOutputNoLF yes;
         fputs("is_equal(", stderr);
         print_pair(t1, t2);
         fputs(") (", stderr);
@@ -107,6 +126,8 @@ namespace arb_test {
 
 #define NAMEOFTYPE(type) template <> inline const char * nameoftype<>(type) { return #type; }
     NAMEOFTYPE(bool);
+    NAMEOFTYPE(char);
+    NAMEOFTYPE(unsigned char);
     NAMEOFTYPE(int);
     NAMEOFTYPE(unsigned int);
     NAMEOFTYPE(long int);
@@ -134,8 +155,8 @@ namespace arb_test {
     template<> inline bool is_equal<>(const char *s1, const char *s2) {
         bool equal = strnullequal(s1, s2);
         if (!equal) {
-            FlushedOutput::printf("str_equal('%s',\n"
-                                  "          '%s') returns false\n", s1, s2);
+            StaticCode::printf("str_equal('%s',\n"
+                               "          '%s') returns false\n", s1, s2);
         }
         return equal;
     }
@@ -157,7 +178,7 @@ namespace arb_test {
     inline bool is_different(const char *s1, const char *s2) {
         bool different = !strnullequal(s1, s2);
         if (!different) {
-            FlushedOutput::printf("str_different('%s', ..) returns false\n", s1);
+            StaticCode::printf("str_different('%s', ..) returns false\n", s1);
         }
         return different;
     }
@@ -168,7 +189,7 @@ namespace arb_test {
 
         bool in_epsilon_range = diff < epsilon;
         if (!in_epsilon_range) {
-            FlushedOutput::printf("is_similar(%f,%f,%f) returns false\n", d1, d2, epsilon);
+            StaticCode::printf("is_similar(%f,%f,%f) returns false\n", d1, d2, epsilon);
         }
         return in_epsilon_range;
     }
@@ -177,18 +198,95 @@ namespace arb_test {
         return is_similar(d1, d2, 0.000001);
     }
 
+
+
+    inline bool files_are_equal(const char *file1, const char *file2) {
+        const char        *error = NULL;
+        FILE              *fp1   = fopen(file1, "rb");
+        FlushedOutputNoLF  yes;
+
+        if (!fp1) {
+            StaticCode::printf("can't open '%s'", file1);
+            error = "i/o error";
+        }
+        else {
+            FILE *fp2 = fopen(file2, "rb");
+            if (!fp2) {
+                StaticCode::printf("can't open '%s'", file2);
+                error = "i/o error";
+            }
+            else {
+                const int      BLOCKSIZE    = 4096;
+                unsigned char *buf1         = (unsigned char*)malloc(BLOCKSIZE);
+                unsigned char *buf2         = (unsigned char*)malloc(BLOCKSIZE);
+                int            equal_bytes  = 0;
+                bool           repositioned = false;
+
+                while (!error) {
+                    int read1  = fread(buf1, 1, BLOCKSIZE, fp1);
+                    int read2  = fread(buf2, 1, BLOCKSIZE, fp2);
+                    int common = read1<read2 ? read1 : read2;
+
+                    if (!common) {
+                        if (read1 != read2) error = "filesize differs";
+                        break;
+                    }
+
+                    if (memcmp(buf1, buf2, common) == 0) {
+                        equal_bytes += common;
+                    }
+                    else {
+                        int x = 0;
+                        while (buf1[x] == buf2[x]) {
+                            x++;
+                            equal_bytes++;
+                        }
+                        error = "content differs";
+
+                        // x is the position inside the current block
+                        const int DUMP       = 7;
+                        int       y1         = x >= DUMP ? x-DUMP : 0;
+                        int       y2         = (x+DUMP)>common ? common : (x+DUMP);
+                        int       blockstart = equal_bytes-x;
+
+                        for (int y = y1; y <= y2; y++) {
+                            fprintf(stderr, "[0x%04x]", blockstart+y);
+                            print_pair(buf1[y], buf2[y]);
+                            fputc(' ', stderr);
+                            print_hex_pair(buf1[y], buf2[y]);
+                            if (x == y) fputs("                     <- diff", stderr);
+                            fputc('\n', stderr);
+                        }
+                        if (y2 == common) {
+                            fputs("[end of block - truncated]\n", stderr);
+                        }
+                    }
+                }
+
+                if (error) StaticCode::printf("files_are_equal: equal_bytes=%i\n", equal_bytes);
+                test_assert(error || equal_bytes); // comparing empty files is nonsense
+
+                free(buf2);
+                free(buf1);
+                fclose(fp2);
+            }
+            fclose(fp1);
+        }
+
+        if (error) StaticCode::printf("files_are_equal(%s, %s) fails: %s\n", file1, file2, error);
+        return !error;
+    }
+    
 };
 
 // --------------------------------------------------------------------------------
 
-#define TEST_MSG(format,strarg)           arb_test::FlushedOutput::messagef(__FILE__, __LINE__, format, (strarg))
-#define TEST_MSG2(format,strarg1,strarg2) arb_test::FlushedOutput::messagef(__FILE__, __LINE__, format, (strarg1), (strarg2))
+#define TEST_WARNING(format,strarg)           arb_test::StaticCode::warningf(__FILE__, __LINE__, format, (strarg))
+#define TEST_WARNING2(format,strarg1,strarg2) arb_test::StaticCode::warningf(__FILE__, __LINE__, format, (strarg1), (strarg2))
 
-#define TEST_WARNING(format,strarg)           arb_test::FlushedOutput::warningf(__FILE__, __LINE__, format, (strarg))
-#define TEST_WARNING2(format,strarg1,strarg2) arb_test::FlushedOutput::warningf(__FILE__, __LINE__, format, (strarg1), (strarg2))
-
-#define TEST_ERROR(format,strarg)           do { arb_test::FlushedOutput::errorf(__FILE__, __LINE__, format, (strarg)); TEST_ASSERT(0); } while(0)
-#define TEST_ERROR2(format,strarg1,strarg2) do { arb_test::FlushedOutput::errorf(__FILE__, __LINE__, format, (strarg1), (strarg2)); TEST_ASSERT(0); } while(0)
+#define TEST_ERROR(format,strarg)           arb_test::StaticCode::errorf(__FILE__, __LINE__, format, (strarg))
+#define TEST_ERROR2(format,strarg1,strarg2) arb_test::StaticCode::errorf(__FILE__, __LINE__, format, (strarg1), (strarg2))
+#define TEST_IOERROR(format,strarg)         arb_test::StaticCode::ioerrorf(__FILE__, __LINE__, format, (strarg))
 
 // --------------------------------------------------------------------------------
 
@@ -205,6 +303,12 @@ namespace arb_test {
 
 #define TEST_ASSERT_ZERO(cond)         TEST_ASSERT((cond)         == 0)
 #define TEST_ASSERT_ZERO__BROKEN(cond) TEST_ASSERT__BROKEN((cond) == 0)
+
+#define TEST_ASSERT_ZERO_OR_SHOW_ERRNO(iocond)                  \
+    do {                                                        \
+        if ((iocond))                                           \
+            TEST_IOERROR("I/O-failure in '%s'", #iocond);       \
+    } while(0)
 
 // --------------------------------------------------------------------------------
 
@@ -348,6 +452,9 @@ namespace arb_test {
 
 #define TEST_ASSERT_SIMILAR(t1,t2,epsilon)         TEST_ASSERT(arb_test::is_similar(t1, t2, epsilon))
 #define TEST_ASSERT_SIMILAR__BROKEN(t1,t2,epsilon) TEST_ASSERT__BROKEN(arb_test::is_similar(t1, t2, epsilon))
+
+#define TEST_ASSERT_FILES_EQUAL(f1,f2)         TEST_ASSERT(arb_test::files_are_equal(f1,f2))
+#define TEST_ASSERT_FILES_EQUAL__BROKEN(f1,f2) TEST_ASSERT__BROKEN(arb_test::files_are_equal(f1,f2))
 
 #else
 #error test_unit.h included twice
