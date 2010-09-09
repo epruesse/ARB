@@ -17,7 +17,7 @@
 #include <awt_item_sel_list.hxx>
 #include <aw_awars.hxx>
 #include <arbdbt.h>
-#include <inline.h>
+#include <arb_str.h>
 
 #define AWAR1 "tmp/merge1/"
 #define AWAR2 "tmp/merge2/"

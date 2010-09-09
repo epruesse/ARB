@@ -12,6 +12,7 @@
 #include <PT_com.h>
 #include <client.h>
 #include <servercntrl.h>
+#include <arb_defs.h>
 
 struct apd_sequence {
     apd_sequence *next;
@@ -450,8 +451,6 @@ static void test_arb_probe(int fake_argc, const char **fake_argv, const char *ex
     free(answer);
 }
 
-#define COUNT(array) sizeof(array)/sizeof(*array)
-
 void TEST_SLOW_match_probe() {
     const char *arguments[] = {
         "fake", // "program"-name 
@@ -461,7 +460,7 @@ void TEST_SLOW_match_probe() {
         "    name---- fullname mis N_mis wmis pos rev          'UAUCGGAGAGUUUGA'\1"
         "BcSSSS00\1" "  BcSSSS00            0     0  0.0   2 0   .......UU-===============-UCAAGUCGA\1";
 
-    test_arb_probe(COUNT(arguments), arguments, expected);
+    test_arb_probe(ARRAY_ELEMS(arguments), arguments, expected);
 }
 
 void TEST_SLOW_design_probe() {
@@ -484,7 +483,7 @@ void TEST_SLOW_design_probe() {
         "UCAAGUCGAGCGAUGAAG 18 B=    17   17    4 50.0 54.0    CUUCAUCGCUCGACUUGA |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n"
         "AUCAAGUCGAGCGAUGAA 18 B-     1   16    4 44.4 52.0    UUCAUCGCUCGACUUGAU |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  1,  2,  3,\n";
 
-    test_arb_probe(COUNT(arguments), arguments, expected);
+    test_arb_probe(ARRAY_ELEMS(arguments), arguments, expected);
 }
 
 void TEST_SLOW_match_designed_probe() {
@@ -499,7 +498,7 @@ void TEST_SLOW_match_designed_probe() {
     "CPPParap\1" "  CPPParap            0     0  0.0  17 0   AGAGUUUGA-==================-UUCCUUCGG\1"
     "ClfPerfr\1" "  ClfPerfr            0     0  0.0  17 0   AGAGUUUGA-==================-UUUCCUUCG\1";
 
-    test_arb_probe(COUNT(arguments), arguments, expected);
+    test_arb_probe(ARRAY_ELEMS(arguments), arguments, expected);
 }
 
 

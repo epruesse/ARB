@@ -11,7 +11,7 @@
 #include "aw_window.hxx"
 #include "aw_commn.hxx"
 
-#include <inline.h>
+#include <arb_str.h>
 
 void AW_clip::set_cliprect(AW_rectangle *rect, bool allow_oversize) {
     clip_rect = *rect;  // coordinates : (0,0) = top-left-corner

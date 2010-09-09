@@ -12,6 +12,10 @@
 #ifndef ARB_ERROR_H
 #define ARB_ERROR_H
 
+#ifndef ARB_CORE_H
+#include <arb_core.h>
+#endif
+
 // ARB_ERROR is a dropin replacement for GB_ERROR (C++ only)
 //
 // If CHECK_ERROR_DROP is undefined (e.g. in NDEBUG version)

@@ -13,7 +13,7 @@
 #include <sys/stat.h>
 
 #include <arbdbt.h>
-#include <inline.h>
+#include <arb_str.h>
 
 #include "gb_local.h"
 

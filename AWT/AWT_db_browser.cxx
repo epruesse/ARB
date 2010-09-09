@@ -13,7 +13,7 @@
 
 #include "awt.hxx"
 
-#include <inline.h>
+#include <arb_str.h>
 #include <AP_Tree.hxx>
 
 #include <string>

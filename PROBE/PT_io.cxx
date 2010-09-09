@@ -13,7 +13,7 @@
 
 #include <arbdbt.h>
 #include <BI_helix.hxx>
-#include <inline.h>
+#include <arb_str.h>
 
 int compress_data(char *probestring) {
     /*! change a sequence with normal bases the PT_? format and delete all other signs */

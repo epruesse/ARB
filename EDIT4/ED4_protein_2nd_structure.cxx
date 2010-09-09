@@ -21,7 +21,6 @@
 #include "ed4_awars.hxx"
 
 #include "arbdbt.h"
-#include <inline.h>
 
 #include <iostream>
 
