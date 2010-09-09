@@ -134,6 +134,7 @@ ad_config.o: $(ARBHOME)/INCLUDE/arbtools.h
 ad_config.o: $(ARBHOME)/INCLUDE/attributes.h
 ad_config.o: $(ARBHOME)/INCLUDE/dupstr.h
 ad_config.o: $(ARBHOME)/INCLUDE/smartptr.h
+ad_config.o: $(ARBHOME)/INCLUDE/test_global.h
 
 ad_core.o: ad_k_prot.h
 ad_core.o: ad_prot.h
@@ -158,6 +159,7 @@ ad_core.o: $(ARBHOME)/INCLUDE/arbtools.h
 ad_core.o: $(ARBHOME)/INCLUDE/attributes.h
 ad_core.o: $(ARBHOME)/INCLUDE/dupstr.h
 ad_core.o: $(ARBHOME)/INCLUDE/smartptr.h
+ad_core.o: $(ARBHOME)/INCLUDE/test_global.h
 
 ad_load.o: ad_k_prot.h
 ad_load.o: ad_prot.h
@@ -184,6 +186,7 @@ ad_load.o: $(ARBHOME)/INCLUDE/arbtools.h
 ad_load.o: $(ARBHOME)/INCLUDE/attributes.h
 ad_load.o: $(ARBHOME)/INCLUDE/dupstr.h
 ad_load.o: $(ARBHOME)/INCLUDE/smartptr.h
+ad_load.o: $(ARBHOME)/INCLUDE/test_global.h
 ad_load.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 ad_save_load.o: ad_k_prot.h
@@ -208,6 +211,7 @@ ad_save_load.o: $(ARBHOME)/INCLUDE/arbtools.h
 ad_save_load.o: $(ARBHOME)/INCLUDE/attributes.h
 ad_save_load.o: $(ARBHOME)/INCLUDE/dupstr.h
 ad_save_load.o: $(ARBHOME)/INCLUDE/smartptr.h
+ad_save_load.o: $(ARBHOME)/INCLUDE/test_global.h
 ad_save_load.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 adali.o: ad_k_prot.h
@@ -226,6 +230,7 @@ adali.o: $(ARBHOME)/INCLUDE/arbtools.h
 adali.o: $(ARBHOME)/INCLUDE/attributes.h
 adali.o: $(ARBHOME)/INCLUDE/dupstr.h
 adali.o: $(ARBHOME)/INCLUDE/smartptr.h
+adali.o: $(ARBHOME)/INCLUDE/test_global.h
 
 adcache.o: ad_k_prot.h
 adcache.o: ad_prot.h
@@ -247,6 +252,7 @@ adcache.o: $(ARBHOME)/INCLUDE/arbtools.h
 adcache.o: $(ARBHOME)/INCLUDE/attributes.h
 adcache.o: $(ARBHOME)/INCLUDE/dupstr.h
 adcache.o: $(ARBHOME)/INCLUDE/smartptr.h
+adcache.o: $(ARBHOME)/INCLUDE/test_global.h
 
 adChangeKey.o: ad_k_prot.h
 adChangeKey.o: ad_prot.h
@@ -263,6 +269,7 @@ adChangeKey.o: $(ARBHOME)/INCLUDE/arbtools.h
 adChangeKey.o: $(ARBHOME)/INCLUDE/attributes.h
 adChangeKey.o: $(ARBHOME)/INCLUDE/dupstr.h
 adChangeKey.o: $(ARBHOME)/INCLUDE/smartptr.h
+adChangeKey.o: $(ARBHOME)/INCLUDE/test_global.h
 
 adcolumns.o: ad_k_prot.h
 adcolumns.o: ad_prot.h
@@ -280,6 +287,7 @@ adcolumns.o: $(ARBHOME)/INCLUDE/arbtools.h
 adcolumns.o: $(ARBHOME)/INCLUDE/attributes.h
 adcolumns.o: $(ARBHOME)/INCLUDE/dupstr.h
 adcolumns.o: $(ARBHOME)/INCLUDE/smartptr.h
+adcolumns.o: $(ARBHOME)/INCLUDE/test_global.h
 
 adcomm.o: ad_k_prot.h
 adcomm.o: ad_prot.h
@@ -304,6 +312,7 @@ adcomm.o: $(ARBHOME)/INCLUDE/attributes.h
 adcomm.o: $(ARBHOME)/INCLUDE/dupstr.h
 adcomm.o: $(ARBHOME)/INCLUDE/SigHandler.h
 adcomm.o: $(ARBHOME)/INCLUDE/smartptr.h
+adcomm.o: $(ARBHOME)/INCLUDE/test_global.h
 
 adcompr.o: ad_k_prot.h
 adcompr.o: ad_prot.h
@@ -331,6 +340,7 @@ adcompr.o: $(ARBHOME)/INCLUDE/attributes.h
 adcompr.o: $(ARBHOME)/INCLUDE/dupstr.h
 adcompr.o: $(ARBHOME)/INCLUDE/smartptr.h
 adcompr.o: $(ARBHOME)/INCLUDE/static_assert.h
+adcompr.o: $(ARBHOME)/INCLUDE/test_global.h
 
 adExperiment.o: ad_k_prot.h
 adExperiment.o: ad_prot.h
@@ -347,6 +357,7 @@ adExperiment.o: $(ARBHOME)/INCLUDE/arbtools.h
 adExperiment.o: $(ARBHOME)/INCLUDE/attributes.h
 adExperiment.o: $(ARBHOME)/INCLUDE/dupstr.h
 adExperiment.o: $(ARBHOME)/INCLUDE/smartptr.h
+adExperiment.o: $(ARBHOME)/INCLUDE/test_global.h
 
 adfile.o: ad_k_prot.h
 adfile.o: ad_prot.h
@@ -362,6 +373,7 @@ adfile.o: $(ARBHOME)/INCLUDE/arbtools.h
 adfile.o: $(ARBHOME)/INCLUDE/attributes.h
 adfile.o: $(ARBHOME)/INCLUDE/dupstr.h
 adfile.o: $(ARBHOME)/INCLUDE/smartptr.h
+adfile.o: $(ARBHOME)/INCLUDE/test_global.h
 
 adGene.o: ad_k_prot.h
 adGene.o: ad_prot.h
@@ -379,6 +391,7 @@ adGene.o: $(ARBHOME)/INCLUDE/arbtools.h
 adGene.o: $(ARBHOME)/INCLUDE/attributes.h
 adGene.o: $(ARBHOME)/INCLUDE/dupstr.h
 adGene.o: $(ARBHOME)/INCLUDE/smartptr.h
+adGene.o: $(ARBHOME)/INCLUDE/test_global.h
 
 adhash.o: ad_k_prot.h
 adhash.o: ad_prot.h
@@ -398,6 +411,7 @@ adhash.o: $(ARBHOME)/INCLUDE/arbtools.h
 adhash.o: $(ARBHOME)/INCLUDE/attributes.h
 adhash.o: $(ARBHOME)/INCLUDE/dupstr.h
 adhash.o: $(ARBHOME)/INCLUDE/smartptr.h
+adhash.o: $(ARBHOME)/INCLUDE/test_global.h
 adhash.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 adhashtools.o: ad_k_prot.h
@@ -415,6 +429,7 @@ adhashtools.o: $(ARBHOME)/INCLUDE/arbtools.h
 adhashtools.o: $(ARBHOME)/INCLUDE/attributes.h
 adhashtools.o: $(ARBHOME)/INCLUDE/dupstr.h
 adhashtools.o: $(ARBHOME)/INCLUDE/smartptr.h
+adhashtools.o: $(ARBHOME)/INCLUDE/test_global.h
 
 adindex.o: ad_k_prot.h
 adindex.o: ad_prot.h
@@ -440,6 +455,7 @@ adindex.o: $(ARBHOME)/INCLUDE/arbtools.h
 adindex.o: $(ARBHOME)/INCLUDE/attributes.h
 adindex.o: $(ARBHOME)/INCLUDE/dupstr.h
 adindex.o: $(ARBHOME)/INCLUDE/smartptr.h
+adindex.o: $(ARBHOME)/INCLUDE/test_global.h
 
 aditem.o: ad_k_prot.h
 aditem.o: ad_prot.h
@@ -456,6 +472,7 @@ aditem.o: $(ARBHOME)/INCLUDE/arbtools.h
 aditem.o: $(ARBHOME)/INCLUDE/attributes.h
 aditem.o: $(ARBHOME)/INCLUDE/dupstr.h
 aditem.o: $(ARBHOME)/INCLUDE/smartptr.h
+aditem.o: $(ARBHOME)/INCLUDE/test_global.h
 
 adlang1.o: ad_k_prot.h
 adlang1.o: ad_prot.h
@@ -483,6 +500,7 @@ adlang1.o: $(ARBHOME)/INCLUDE/attributes.h
 adlang1.o: $(ARBHOME)/INCLUDE/dupstr.h
 adlang1.o: $(ARBHOME)/INCLUDE/smartptr.h
 adlang1.o: $(ARBHOME)/INCLUDE/static_assert.h
+adlang1.o: $(ARBHOME)/INCLUDE/test_global.h
 
 adlink.o: ad_k_prot.h
 adlink.o: ad_prot.h
@@ -500,6 +518,7 @@ adlink.o: $(ARBHOME)/INCLUDE/arbtools.h
 adlink.o: $(ARBHOME)/INCLUDE/attributes.h
 adlink.o: $(ARBHOME)/INCLUDE/dupstr.h
 adlink.o: $(ARBHOME)/INCLUDE/smartptr.h
+adlink.o: $(ARBHOME)/INCLUDE/test_global.h
 
 admalloc.o: ad_k_prot.h
 admalloc.o: ad_prot.h
@@ -521,6 +540,7 @@ admalloc.o: $(ARBHOME)/INCLUDE/arbtools.h
 admalloc.o: $(ARBHOME)/INCLUDE/attributes.h
 admalloc.o: $(ARBHOME)/INCLUDE/dupstr.h
 admalloc.o: $(ARBHOME)/INCLUDE/smartptr.h
+admalloc.o: $(ARBHOME)/INCLUDE/test_global.h
 
 admap.o: ad_k_prot.h
 admap.o: ad_prot.h
@@ -545,6 +565,7 @@ admap.o: $(ARBHOME)/INCLUDE/attributes.h
 admap.o: $(ARBHOME)/INCLUDE/dupstr.h
 admap.o: $(ARBHOME)/INCLUDE/smartptr.h
 admap.o: $(ARBHOME)/INCLUDE/static_assert.h
+admap.o: $(ARBHOME)/INCLUDE/test_global.h
 
 admatch.o: ad_k_prot.h
 admatch.o: ad_prot.h
@@ -559,6 +580,7 @@ admatch.o: $(ARBHOME)/INCLUDE/arbtools.h
 admatch.o: $(ARBHOME)/INCLUDE/attributes.h
 admatch.o: $(ARBHOME)/INCLUDE/dupstr.h
 admatch.o: $(ARBHOME)/INCLUDE/smartptr.h
+admatch.o: $(ARBHOME)/INCLUDE/test_global.h
 
 admath.o: ad_k_prot.h
 admath.o: ad_prot.h
@@ -573,6 +595,7 @@ admath.o: $(ARBHOME)/INCLUDE/arbtools.h
 admath.o: $(ARBHOME)/INCLUDE/attributes.h
 admath.o: $(ARBHOME)/INCLUDE/dupstr.h
 admath.o: $(ARBHOME)/INCLUDE/smartptr.h
+admath.o: $(ARBHOME)/INCLUDE/test_global.h
 
 adname.o: ad_config.h
 adname.o: ad_k_prot.h
@@ -590,6 +613,7 @@ adname.o: $(ARBHOME)/INCLUDE/arbtools.h
 adname.o: $(ARBHOME)/INCLUDE/attributes.h
 adname.o: $(ARBHOME)/INCLUDE/dupstr.h
 adname.o: $(ARBHOME)/INCLUDE/smartptr.h
+adname.o: $(ARBHOME)/INCLUDE/test_global.h
 
 adoptimize.o: ad_k_prot.h
 adoptimize.o: ad_prot.h
@@ -615,6 +639,7 @@ adoptimize.o: $(ARBHOME)/INCLUDE/arbtools.h
 adoptimize.o: $(ARBHOME)/INCLUDE/attributes.h
 adoptimize.o: $(ARBHOME)/INCLUDE/dupstr.h
 adoptimize.o: $(ARBHOME)/INCLUDE/smartptr.h
+adoptimize.o: $(ARBHOME)/INCLUDE/test_global.h
 
 adperl.o: ad_k_prot.h
 adperl.o: ad_prot.h
@@ -629,6 +654,7 @@ adperl.o: $(ARBHOME)/INCLUDE/arbtools.h
 adperl.o: $(ARBHOME)/INCLUDE/attributes.h
 adperl.o: $(ARBHOME)/INCLUDE/dupstr.h
 adperl.o: $(ARBHOME)/INCLUDE/smartptr.h
+adperl.o: $(ARBHOME)/INCLUDE/test_global.h
 
 adquery.o: ad_k_prot.h
 adquery.o: ad_prot.h
@@ -654,6 +680,7 @@ adquery.o: $(ARBHOME)/INCLUDE/arbtools.h
 adquery.o: $(ARBHOME)/INCLUDE/attributes.h
 adquery.o: $(ARBHOME)/INCLUDE/dupstr.h
 adquery.o: $(ARBHOME)/INCLUDE/smartptr.h
+adquery.o: $(ARBHOME)/INCLUDE/test_global.h
 
 adRevCompl.o: ad_k_prot.h
 adRevCompl.o: ad_prot.h
@@ -668,6 +695,7 @@ adRevCompl.o: $(ARBHOME)/INCLUDE/arbtools.h
 adRevCompl.o: $(ARBHOME)/INCLUDE/attributes.h
 adRevCompl.o: $(ARBHOME)/INCLUDE/dupstr.h
 adRevCompl.o: $(ARBHOME)/INCLUDE/smartptr.h
+adRevCompl.o: $(ARBHOME)/INCLUDE/test_global.h
 
 adseqcompr.o: ad_k_prot.h
 adseqcompr.o: ad_prot.h
@@ -690,6 +718,7 @@ adseqcompr.o: $(ARBHOME)/INCLUDE/arbtools.h
 adseqcompr.o: $(ARBHOME)/INCLUDE/attributes.h
 adseqcompr.o: $(ARBHOME)/INCLUDE/dupstr.h
 adseqcompr.o: $(ARBHOME)/INCLUDE/smartptr.h
+adseqcompr.o: $(ARBHOME)/INCLUDE/test_global.h
 
 adsocket.o: ad_k_prot.h
 adsocket.o: ad_prot.h
@@ -710,6 +739,7 @@ adsocket.o: $(ARBHOME)/INCLUDE/attributes.h
 adsocket.o: $(ARBHOME)/INCLUDE/dupstr.h
 adsocket.o: $(ARBHOME)/INCLUDE/SigHandler.h
 adsocket.o: $(ARBHOME)/INCLUDE/smartptr.h
+adsocket.o: $(ARBHOME)/INCLUDE/test_global.h
 adsocket.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 adsort.o: ad_k_prot.h
@@ -723,6 +753,7 @@ adsort.o: $(ARBHOME)/INCLUDE/arbtools.h
 adsort.o: $(ARBHOME)/INCLUDE/attributes.h
 adsort.o: $(ARBHOME)/INCLUDE/dupstr.h
 adsort.o: $(ARBHOME)/INCLUDE/smartptr.h
+adsort.o: $(ARBHOME)/INCLUDE/test_global.h
 
 adstring.o: ad_k_prot.h
 adstring.o: ad_prot.h
@@ -745,6 +776,7 @@ adstring.o: $(ARBHOME)/INCLUDE/attributes.h
 adstring.o: $(ARBHOME)/INCLUDE/dupstr.h
 adstring.o: $(ARBHOME)/INCLUDE/SigHandler.h
 adstring.o: $(ARBHOME)/INCLUDE/smartptr.h
+adstring.o: $(ARBHOME)/INCLUDE/test_global.h
 adstring.o: $(ARBHOME)/INCLUDE/test_unit.h
 adstring.o: $(ARBHOME)/INCLUDE/valgrind.h
 
@@ -770,6 +802,7 @@ adsystem.o: $(ARBHOME)/INCLUDE/arbtools.h
 adsystem.o: $(ARBHOME)/INCLUDE/attributes.h
 adsystem.o: $(ARBHOME)/INCLUDE/dupstr.h
 adsystem.o: $(ARBHOME)/INCLUDE/smartptr.h
+adsystem.o: $(ARBHOME)/INCLUDE/test_global.h
 
 adtables.o: ad_k_prot.h
 adtables.o: ad_prot.h
@@ -789,6 +822,7 @@ adtables.o: $(ARBHOME)/INCLUDE/arbtools.h
 adtables.o: $(ARBHOME)/INCLUDE/attributes.h
 adtables.o: $(ARBHOME)/INCLUDE/dupstr.h
 adtables.o: $(ARBHOME)/INCLUDE/smartptr.h
+adtables.o: $(ARBHOME)/INCLUDE/test_global.h
 
 adtcp.o: ad_k_prot.h
 adtcp.o: ad_prot.h
@@ -806,6 +840,7 @@ adtcp.o: $(ARBHOME)/INCLUDE/arbtools.h
 adtcp.o: $(ARBHOME)/INCLUDE/attributes.h
 adtcp.o: $(ARBHOME)/INCLUDE/dupstr.h
 adtcp.o: $(ARBHOME)/INCLUDE/smartptr.h
+adtcp.o: $(ARBHOME)/INCLUDE/test_global.h
 adtcp.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 adTest.o: ad_k_prot.h
@@ -828,6 +863,7 @@ adTest.o: $(ARBHOME)/INCLUDE/arbtools.h
 adTest.o: $(ARBHOME)/INCLUDE/attributes.h
 adTest.o: $(ARBHOME)/INCLUDE/dupstr.h
 adTest.o: $(ARBHOME)/INCLUDE/smartptr.h
+adTest.o: $(ARBHOME)/INCLUDE/test_global.h
 
 adtools.o: ad_k_prot.h
 adtools.o: ad_prot.h
@@ -848,6 +884,7 @@ adtools.o: $(ARBHOME)/INCLUDE/arbtools.h
 adtools.o: $(ARBHOME)/INCLUDE/attributes.h
 adtools.o: $(ARBHOME)/INCLUDE/dupstr.h
 adtools.o: $(ARBHOME)/INCLUDE/smartptr.h
+adtools.o: $(ARBHOME)/INCLUDE/test_global.h
 adtools.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 adtree.o: ad_k_prot.h
@@ -865,6 +902,7 @@ adtree.o: $(ARBHOME)/INCLUDE/arbtools.h
 adtree.o: $(ARBHOME)/INCLUDE/attributes.h
 adtree.o: $(ARBHOME)/INCLUDE/dupstr.h
 adtree.o: $(ARBHOME)/INCLUDE/smartptr.h
+adtree.o: $(ARBHOME)/INCLUDE/test_global.h
 
 adtune.o: gb_tune.h
 
@@ -894,6 +932,7 @@ arbdb.o: $(ARBHOME)/INCLUDE/arbtools.h
 arbdb.o: $(ARBHOME)/INCLUDE/attributes.h
 arbdb.o: $(ARBHOME)/INCLUDE/dupstr.h
 arbdb.o: $(ARBHOME)/INCLUDE/smartptr.h
+arbdb.o: $(ARBHOME)/INCLUDE/test_global.h
 
 arbdbpp.o: ad_k_prot.h
 arbdbpp.o: ad_prot.h
@@ -908,3 +947,4 @@ arbdbpp.o: $(ARBHOME)/INCLUDE/arbtools.h
 arbdbpp.o: $(ARBHOME)/INCLUDE/attributes.h
 arbdbpp.o: $(ARBHOME)/INCLUDE/dupstr.h
 arbdbpp.o: $(ARBHOME)/INCLUDE/smartptr.h
+arbdbpp.o: $(ARBHOME)/INCLUDE/test_global.h

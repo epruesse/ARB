@@ -196,41 +196,49 @@ altree.o: ../../INCLUDE/arb_assert.h
 altree.o: matrixut.h
 altree.o: molphy.h
 altree.o: protml.h
+altree.o: $(ARBHOME)/INCLUDE/test_global.h
 
 distan.o: ../../INCLUDE/arb_assert.h
 distan.o: matrixut.h
 distan.o: molphy.h
 distan.o: protml.h
+distan.o: $(ARBHOME)/INCLUDE/test_global.h
 
 dyhfjtt.o: ../../INCLUDE/arb_assert.h
 dyhfjtt.o: matrixut.h
 dyhfjtt.o: molphy.h
 dyhfjtt.o: protml.h
+dyhfjtt.o: $(ARBHOME)/INCLUDE/test_global.h
 
 getseq.o: ../../INCLUDE/arb_assert.h
 getseq.o: matrixut.h
 getseq.o: molphy.h
 getseq.o: prot_tml.h
 getseq.o: protml.h
+getseq.o: $(ARBHOME)/INCLUDE/test_global.h
 
 matrixut.o: ../../INCLUDE/arb_assert.h
 matrixut.o: matrixut.h
 matrixut.o: mo_assert.h
+matrixut.o: $(ARBHOME)/INCLUDE/test_global.h
 
 mlklhd.o: ../../INCLUDE/arb_assert.h
 mlklhd.o: matrixut.h
 mlklhd.o: molphy.h
 mlklhd.o: protml.h
+mlklhd.o: $(ARBHOME)/INCLUDE/test_global.h
 
 mltree.o: ../../INCLUDE/arb_assert.h
 mltree.o: matrixut.h
 mltree.o: molphy.h
 mltree.o: protml.h
+mltree.o: $(ARBHOME)/INCLUDE/test_global.h
 
 mtrev24.o: ../../INCLUDE/arb_assert.h
 mtrev24.o: matrixut.h
 mtrev24.o: molphy.h
 mtrev24.o: protml.h
+mtrev24.o: $(ARBHOME)/INCLUDE/test_global.h
 
 mygetopt.o: molphy.h
 
@@ -238,49 +246,59 @@ njmtree.o: ../../INCLUDE/arb_assert.h
 njmtree.o: matrixut.h
 njmtree.o: molphy.h
 njmtree.o: protml.h
+njmtree.o: $(ARBHOME)/INCLUDE/test_global.h
 
 njtree.o: ../../INCLUDE/arb_assert.h
 njtree.o: matrixut.h
 njtree.o: molphy.h
 njtree.o: prot_tml.h
 njtree.o: protml.h
+njtree.o: $(ARBHOME)/INCLUDE/test_global.h
 
 protml.o: ../../INCLUDE/arb_assert.h
 protml.o: matrixut.h
 protml.o: molphy.h
 protml.o: protml.h
+protml.o: $(ARBHOME)/INCLUDE/test_global.h
 
 protproc.o: ../../INCLUDE/arb_assert.h
 protproc.o: matrixut.h
 protproc.o: molphy.h
 protproc.o: protml.h
+protproc.o: $(ARBHOME)/INCLUDE/test_global.h
 
 prtree.o: ../../INCLUDE/arb_assert.h
 prtree.o: matrixut.h
 prtree.o: molphy.h
 prtree.o: protml.h
+prtree.o: $(ARBHOME)/INCLUDE/test_global.h
 
 pstree.o: ../../INCLUDE/arb_assert.h
 pstree.o: matrixut.h
 pstree.o: molphy.h
 pstree.o: protml.h
+pstree.o: $(ARBHOME)/INCLUDE/test_global.h
 
 qltree.o: ../../INCLUDE/arb_assert.h
 qltree.o: matrixut.h
 qltree.o: molphy.h
 qltree.o: protml.h
+qltree.o: $(ARBHOME)/INCLUDE/test_global.h
 
 seqproc.o: ../../INCLUDE/arb_assert.h
 seqproc.o: matrixut.h
 seqproc.o: molphy.h
 seqproc.o: protml.h
+seqproc.o: $(ARBHOME)/INCLUDE/test_global.h
 
 sltree.o: ../../INCLUDE/arb_assert.h
 sltree.o: matrixut.h
 sltree.o: molphy.h
 sltree.o: protml.h
+sltree.o: $(ARBHOME)/INCLUDE/test_global.h
 
 tranprb.o: ../../INCLUDE/arb_assert.h
 tranprb.o: matrixut.h
 tranprb.o: molphy.h
 tranprb.o: protml.h
+tranprb.o: $(ARBHOME)/INCLUDE/test_global.h

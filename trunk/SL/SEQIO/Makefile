@@ -53,6 +53,7 @@ seq_export.o: $(ARBHOME)/INCLUDE/arbtools.h
 seq_export.o: $(ARBHOME)/INCLUDE/attributes.h
 seq_export.o: $(ARBHOME)/INCLUDE/dupstr.h
 seq_export.o: $(ARBHOME)/INCLUDE/smartptr.h
+seq_export.o: $(ARBHOME)/INCLUDE/test_global.h
 seq_export.o: $(ARBHOME)/INCLUDE/xml.hxx
 
 seqio.o: seqio.hxx
@@ -67,3 +68,4 @@ seqio.o: $(ARBHOME)/INCLUDE/arbtools.h
 seqio.o: $(ARBHOME)/INCLUDE/attributes.h
 seqio.o: $(ARBHOME)/INCLUDE/dupstr.h
 seqio.o: $(ARBHOME)/INCLUDE/smartptr.h
+seqio.o: $(ARBHOME)/INCLUDE/test_global.h

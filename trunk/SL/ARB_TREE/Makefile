@@ -53,3 +53,4 @@ ARB_Tree.o: $(ARBHOME)/INCLUDE/attributes.h
 ARB_Tree.o: $(ARBHOME)/INCLUDE/downcast.h
 ARB_Tree.o: $(ARBHOME)/INCLUDE/dupstr.h
 ARB_Tree.o: $(ARBHOME)/INCLUDE/smartptr.h
+ARB_Tree.o: $(ARBHOME)/INCLUDE/test_global.h

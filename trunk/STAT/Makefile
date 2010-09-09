@@ -58,6 +58,7 @@ ST_ml.o: $(ARBHOME)/INCLUDE/downcast.h
 ST_ml.o: $(ARBHOME)/INCLUDE/dupstr.h
 ST_ml.o: $(ARBHOME)/INCLUDE/gui_aliview.hxx
 ST_ml.o: $(ARBHOME)/INCLUDE/smartptr.h
+ST_ml.o: $(ARBHOME)/INCLUDE/test_global.h
 
 ST_quality.o: MostLikelySeq.hxx
 ST_quality.o: st_ml.hxx
@@ -87,6 +88,7 @@ ST_quality.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 ST_quality.o: $(ARBHOME)/INCLUDE/ColumnStat.hxx
 ST_quality.o: $(ARBHOME)/INCLUDE/dupstr.h
 ST_quality.o: $(ARBHOME)/INCLUDE/smartptr.h
+ST_quality.o: $(ARBHOME)/INCLUDE/test_global.h
 
 ST_window.o: st_ml.hxx
 ST_window.o: st_quality.hxx
@@ -114,3 +116,4 @@ ST_window.o: $(ARBHOME)/INCLUDE/ColumnStat.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/dupstr.h
 ST_window.o: $(ARBHOME)/INCLUDE/gui_aliview.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/smartptr.h
+ST_window.o: $(ARBHOME)/INCLUDE/test_global.h

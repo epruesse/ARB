@@ -71,6 +71,7 @@ GDE.o: $(ARBHOME)/INCLUDE/awt_filter.hxx
 GDE.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 GDE.o: $(ARBHOME)/INCLUDE/dupstr.h
 GDE.o: $(ARBHOME)/INCLUDE/smartptr.h
+GDE.o: $(ARBHOME)/INCLUDE/test_global.h
 
 GDE_arbdb_io.o: gde.hxx
 GDE_arbdb_io.o: GDE_def.h
@@ -94,6 +95,7 @@ GDE_arbdb_io.o: $(ARBHOME)/INCLUDE/AW_rename.hxx
 GDE_arbdb_io.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 GDE_arbdb_io.o: $(ARBHOME)/INCLUDE/dupstr.h
 GDE_arbdb_io.o: $(ARBHOME)/INCLUDE/smartptr.h
+GDE_arbdb_io.o: $(ARBHOME)/INCLUDE/test_global.h
 
 GDE_event.o: gde.hxx
 GDE_event.o: GDE_awars.h
@@ -121,6 +123,7 @@ GDE_event.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 GDE_event.o: $(ARBHOME)/INCLUDE/awt_filter.hxx
 GDE_event.o: $(ARBHOME)/INCLUDE/dupstr.h
 GDE_event.o: $(ARBHOME)/INCLUDE/smartptr.h
+GDE_event.o: $(ARBHOME)/INCLUDE/test_global.h
 
 GDE_FileIO.o: gde.hxx
 GDE_FileIO.o: GDE_def.h
@@ -141,6 +144,7 @@ GDE_FileIO.o: $(ARBHOME)/INCLUDE/attributes.h
 GDE_FileIO.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 GDE_FileIO.o: $(ARBHOME)/INCLUDE/dupstr.h
 GDE_FileIO.o: $(ARBHOME)/INCLUDE/smartptr.h
+GDE_FileIO.o: $(ARBHOME)/INCLUDE/test_global.h
 
 GDE_Genbank.o: gde.hxx
 GDE_Genbank.o: GDE_def.h
@@ -161,6 +165,7 @@ GDE_Genbank.o: $(ARBHOME)/INCLUDE/attributes.h
 GDE_Genbank.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 GDE_Genbank.o: $(ARBHOME)/INCLUDE/dupstr.h
 GDE_Genbank.o: $(ARBHOME)/INCLUDE/smartptr.h
+GDE_Genbank.o: $(ARBHOME)/INCLUDE/test_global.h
 
 GDE_global.o: gde.hxx
 GDE_global.o: GDE_def.h
@@ -181,6 +186,7 @@ GDE_global.o: $(ARBHOME)/INCLUDE/attributes.h
 GDE_global.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 GDE_global.o: $(ARBHOME)/INCLUDE/dupstr.h
 GDE_global.o: $(ARBHOME)/INCLUDE/smartptr.h
+GDE_global.o: $(ARBHOME)/INCLUDE/test_global.h
 
 GDE_HGLfile.o: gde.hxx
 GDE_HGLfile.o: GDE_def.h
@@ -201,6 +207,7 @@ GDE_HGLfile.o: $(ARBHOME)/INCLUDE/attributes.h
 GDE_HGLfile.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 GDE_HGLfile.o: $(ARBHOME)/INCLUDE/dupstr.h
 GDE_HGLfile.o: $(ARBHOME)/INCLUDE/smartptr.h
+GDE_HGLfile.o: $(ARBHOME)/INCLUDE/test_global.h
 
 GDE_ParseMenu.o: gde.hxx
 GDE_ParseMenu.o: GDE_def.h
@@ -221,3 +228,4 @@ GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/attributes.h
 GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/dupstr.h
 GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/smartptr.h
+GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/test_global.h

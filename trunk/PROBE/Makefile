@@ -67,6 +67,7 @@ PT_buildtree.o: $(ARBHOME)/INCLUDE/PT_server.h
 PT_buildtree.o: $(ARBHOME)/INCLUDE/PT_server_prototypes.h
 PT_buildtree.o: $(ARBHOME)/INCLUDE/smartptr.h
 PT_buildtree.o: $(ARBHOME)/INCLUDE/static_assert.h
+PT_buildtree.o: $(ARBHOME)/INCLUDE/test_global.h
 
 PT_etc.o: probe.h
 PT_etc.o: pt_prototypes.h
@@ -87,6 +88,7 @@ PT_etc.o: $(ARBHOME)/INCLUDE/PT_server.h
 PT_etc.o: $(ARBHOME)/INCLUDE/PT_server_prototypes.h
 PT_etc.o: $(ARBHOME)/INCLUDE/smartptr.h
 PT_etc.o: $(ARBHOME)/INCLUDE/struct_man.h
+PT_etc.o: $(ARBHOME)/INCLUDE/test_global.h
 
 PT_family.o: probe.h
 PT_family.o: probe_tree.hxx
@@ -111,6 +113,7 @@ PT_family.o: $(ARBHOME)/INCLUDE/PT_server_prototypes.h
 PT_family.o: $(ARBHOME)/INCLUDE/smartptr.h
 PT_family.o: $(ARBHOME)/INCLUDE/static_assert.h
 PT_family.o: $(ARBHOME)/INCLUDE/struct_man.h
+PT_family.o: $(ARBHOME)/INCLUDE/test_global.h
 
 PT_findEx.o: probe.h
 PT_findEx.o: probe_tree.hxx
@@ -132,6 +135,7 @@ PT_findEx.o: $(ARBHOME)/INCLUDE/PT_server.h
 PT_findEx.o: $(ARBHOME)/INCLUDE/PT_server_prototypes.h
 PT_findEx.o: $(ARBHOME)/INCLUDE/smartptr.h
 PT_findEx.o: $(ARBHOME)/INCLUDE/static_assert.h
+PT_findEx.o: $(ARBHOME)/INCLUDE/test_global.h
 
 PT_io.o: probe.h
 PT_io.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
@@ -153,6 +157,7 @@ PT_io.o: $(ARBHOME)/INCLUDE/dupstr.h
 PT_io.o: $(ARBHOME)/INCLUDE/PT_com.h
 PT_io.o: $(ARBHOME)/INCLUDE/PT_server.h
 PT_io.o: $(ARBHOME)/INCLUDE/smartptr.h
+PT_io.o: $(ARBHOME)/INCLUDE/test_global.h
 
 PT_main.o: probe.h
 PT_main.o: pt_prototypes.h
@@ -180,6 +185,7 @@ PT_main.o: $(ARBHOME)/INCLUDE/server.h
 PT_main.o: $(ARBHOME)/INCLUDE/servercntrl.h
 PT_main.o: $(ARBHOME)/INCLUDE/smartptr.h
 PT_main.o: $(ARBHOME)/INCLUDE/struct_man.h
+PT_main.o: $(ARBHOME)/INCLUDE/test_global.h
 
 PT_match.o: probe.h
 PT_match.o: probe_tree.hxx
@@ -204,6 +210,7 @@ PT_match.o: $(ARBHOME)/INCLUDE/PT_server_prototypes.h
 PT_match.o: $(ARBHOME)/INCLUDE/smartptr.h
 PT_match.o: $(ARBHOME)/INCLUDE/static_assert.h
 PT_match.o: $(ARBHOME)/INCLUDE/struct_man.h
+PT_match.o: $(ARBHOME)/INCLUDE/test_global.h
 
 PT_new_design.o: probe.h
 PT_new_design.o: probe_tree.hxx
@@ -229,6 +236,7 @@ PT_new_design.o: $(ARBHOME)/INCLUDE/PT_server_prototypes.h
 PT_new_design.o: $(ARBHOME)/INCLUDE/smartptr.h
 PT_new_design.o: $(ARBHOME)/INCLUDE/static_assert.h
 PT_new_design.o: $(ARBHOME)/INCLUDE/struct_man.h
+PT_new_design.o: $(ARBHOME)/INCLUDE/test_global.h
 
 PT_prefixtree.o: probe.h
 PT_prefixtree.o: probe_tree.hxx
@@ -248,3 +256,4 @@ PT_prefixtree.o: $(ARBHOME)/INCLUDE/PT_com.h
 PT_prefixtree.o: $(ARBHOME)/INCLUDE/PT_server.h
 PT_prefixtree.o: $(ARBHOME)/INCLUDE/smartptr.h
 PT_prefixtree.o: $(ARBHOME)/INCLUDE/static_assert.h
+PT_prefixtree.o: $(ARBHOME)/INCLUDE/test_global.h

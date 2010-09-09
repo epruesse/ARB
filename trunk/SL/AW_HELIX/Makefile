@@ -53,3 +53,4 @@ AW_helix.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AW_helix.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 AW_helix.o: $(ARBHOME)/INCLUDE/dupstr.h
 AW_helix.o: $(ARBHOME)/INCLUDE/smartptr.h
+AW_helix.o: $(ARBHOME)/INCLUDE/test_global.h

@@ -51,6 +51,7 @@ AP_codon_table.o: $(ARBHOME)/INCLUDE/attributes.h
 AP_codon_table.o: $(ARBHOME)/INCLUDE/awt_iupac.hxx
 AP_codon_table.o: $(ARBHOME)/INCLUDE/dupstr.h
 AP_codon_table.o: $(ARBHOME)/INCLUDE/smartptr.h
+AP_codon_table.o: $(ARBHOME)/INCLUDE/test_global.h
 
 AP_pro_a_nucs.o: AP_codon_table.hxx
 AP_pro_a_nucs.o: AP_pro_a_nucs.hxx
@@ -68,3 +69,4 @@ AP_pro_a_nucs.o: $(ARBHOME)/INCLUDE/arbtools.h
 AP_pro_a_nucs.o: $(ARBHOME)/INCLUDE/attributes.h
 AP_pro_a_nucs.o: $(ARBHOME)/INCLUDE/dupstr.h
 AP_pro_a_nucs.o: $(ARBHOME)/INCLUDE/smartptr.h
+AP_pro_a_nucs.o: $(ARBHOME)/INCLUDE/test_global.h

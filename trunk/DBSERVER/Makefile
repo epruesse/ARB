@@ -40,3 +40,4 @@ db_server.o: $(ARBHOME)/INCLUDE/attributes.h
 db_server.o: $(ARBHOME)/INCLUDE/dupstr.h
 db_server.o: $(ARBHOME)/INCLUDE/servercntrl.h
 db_server.o: $(ARBHOME)/INCLUDE/smartptr.h
+db_server.o: $(ARBHOME)/INCLUDE/test_global.h
