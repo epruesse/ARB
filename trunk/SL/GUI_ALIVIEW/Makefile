@@ -45,6 +45,7 @@ AWT_filter.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AWT_filter.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AWT_filter.o: $(ARBHOME)/INCLUDE/AP_filter.hxx
 AWT_filter.o: $(ARBHOME)/INCLUDE/arb_assert.h
+AWT_filter.o: $(ARBHOME)/INCLUDE/arb_core.h
 AWT_filter.o: $(ARBHOME)/INCLUDE/arb_error.h
 AWT_filter.o: $(ARBHOME)/INCLUDE/arbdb.h
 AWT_filter.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -68,6 +69,7 @@ ColumnStat.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ColumnStat.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 ColumnStat.o: $(ARBHOME)/INCLUDE/AP_filter.hxx
 ColumnStat.o: $(ARBHOME)/INCLUDE/arb_assert.h
+ColumnStat.o: $(ARBHOME)/INCLUDE/arb_core.h
 ColumnStat.o: $(ARBHOME)/INCLUDE/arb_error.h
 ColumnStat.o: $(ARBHOME)/INCLUDE/arbdb.h
 ColumnStat.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -91,6 +93,7 @@ GUI_aliview.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 GUI_aliview.o: $(ARBHOME)/INCLUDE/AliView.hxx
 GUI_aliview.o: $(ARBHOME)/INCLUDE/AP_filter.hxx
 GUI_aliview.o: $(ARBHOME)/INCLUDE/arb_assert.h
+GUI_aliview.o: $(ARBHOME)/INCLUDE/arb_core.h
 GUI_aliview.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 GUI_aliview.o: $(ARBHOME)/INCLUDE/attributes.h
 GUI_aliview.o: $(ARBHOME)/INCLUDE/dupstr.h

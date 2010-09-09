@@ -55,6 +55,7 @@ GDE.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 GDE.o: $(ARBHOME)/INCLUDE/ad_prot.h
 GDE.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 GDE.o: $(ARBHOME)/INCLUDE/arb_assert.h
+GDE.o: $(ARBHOME)/INCLUDE/arb_core.h
 GDE.o: $(ARBHOME)/INCLUDE/arb_error.h
 GDE.o: $(ARBHOME)/INCLUDE/arbdb.h
 GDE.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -81,6 +82,7 @@ GDE_arbdb_io.o: $(ARBHOME)/INCLUDE/ad_prot.h
 GDE_arbdb_io.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 GDE_arbdb_io.o: $(ARBHOME)/INCLUDE/AP_filter.hxx
 GDE_arbdb_io.o: $(ARBHOME)/INCLUDE/arb_assert.h
+GDE_arbdb_io.o: $(ARBHOME)/INCLUDE/arb_core.h
 GDE_arbdb_io.o: $(ARBHOME)/INCLUDE/arb_error.h
 GDE_arbdb_io.o: $(ARBHOME)/INCLUDE/arbdb.h
 GDE_arbdb_io.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -104,6 +106,7 @@ GDE_event.o: $(ARBHOME)/INCLUDE/ad_prot.h
 GDE_event.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 GDE_event.o: $(ARBHOME)/INCLUDE/AP_filter.hxx
 GDE_event.o: $(ARBHOME)/INCLUDE/arb_assert.h
+GDE_event.o: $(ARBHOME)/INCLUDE/arb_core.h
 GDE_event.o: $(ARBHOME)/INCLUDE/arb_error.h
 GDE_event.o: $(ARBHOME)/INCLUDE/arbdb.h
 GDE_event.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -128,6 +131,7 @@ GDE_FileIO.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 GDE_FileIO.o: $(ARBHOME)/INCLUDE/ad_prot.h
 GDE_FileIO.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 GDE_FileIO.o: $(ARBHOME)/INCLUDE/arb_assert.h
+GDE_FileIO.o: $(ARBHOME)/INCLUDE/arb_core.h
 GDE_FileIO.o: $(ARBHOME)/INCLUDE/arb_error.h
 GDE_FileIO.o: $(ARBHOME)/INCLUDE/arbdb.h
 GDE_FileIO.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -147,6 +151,7 @@ GDE_Genbank.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 GDE_Genbank.o: $(ARBHOME)/INCLUDE/ad_prot.h
 GDE_Genbank.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 GDE_Genbank.o: $(ARBHOME)/INCLUDE/arb_assert.h
+GDE_Genbank.o: $(ARBHOME)/INCLUDE/arb_core.h
 GDE_Genbank.o: $(ARBHOME)/INCLUDE/arb_error.h
 GDE_Genbank.o: $(ARBHOME)/INCLUDE/arbdb.h
 GDE_Genbank.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -166,6 +171,7 @@ GDE_global.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 GDE_global.o: $(ARBHOME)/INCLUDE/ad_prot.h
 GDE_global.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 GDE_global.o: $(ARBHOME)/INCLUDE/arb_assert.h
+GDE_global.o: $(ARBHOME)/INCLUDE/arb_core.h
 GDE_global.o: $(ARBHOME)/INCLUDE/arb_error.h
 GDE_global.o: $(ARBHOME)/INCLUDE/arbdb.h
 GDE_global.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -185,6 +191,7 @@ GDE_HGLfile.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 GDE_HGLfile.o: $(ARBHOME)/INCLUDE/ad_prot.h
 GDE_HGLfile.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 GDE_HGLfile.o: $(ARBHOME)/INCLUDE/arb_assert.h
+GDE_HGLfile.o: $(ARBHOME)/INCLUDE/arb_core.h
 GDE_HGLfile.o: $(ARBHOME)/INCLUDE/arb_error.h
 GDE_HGLfile.o: $(ARBHOME)/INCLUDE/arbdb.h
 GDE_HGLfile.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -204,6 +211,7 @@ GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/ad_prot.h
 GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/arb_assert.h
+GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/arb_core.h
 GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/arb_error.h
 GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/arbdb.h
 GDE_ParseMenu.o: $(ARBHOME)/INCLUDE/arbdb_base.h

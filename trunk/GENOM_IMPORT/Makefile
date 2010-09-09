@@ -65,6 +65,7 @@ DBwriter.o: $(ARBHOME)/INCLUDE/ad_prot.h
 DBwriter.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 DBwriter.o: $(ARBHOME)/INCLUDE/adGene.h
 DBwriter.o: $(ARBHOME)/INCLUDE/arb_assert.h
+DBwriter.o: $(ARBHOME)/INCLUDE/arb_core.h
 DBwriter.o: $(ARBHOME)/INCLUDE/arb_error.h
 DBwriter.o: $(ARBHOME)/INCLUDE/arbdb.h
 DBwriter.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -90,6 +91,7 @@ Feature.o: Location.h
 Feature.o: types.h
 Feature.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 Feature.o: $(ARBHOME)/INCLUDE/arb_assert.h
+Feature.o: $(ARBHOME)/INCLUDE/arb_core.h
 Feature.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 Feature.o: $(ARBHOME)/INCLUDE/arbtools.h
 Feature.o: $(ARBHOME)/INCLUDE/attributes.h
@@ -110,6 +112,7 @@ GenomeImport.o: types.h
 GenomeImport.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 GenomeImport.o: $(ARBHOME)/INCLUDE/ad_prot.h
 GenomeImport.o: $(ARBHOME)/INCLUDE/arb_assert.h
+GenomeImport.o: $(ARBHOME)/INCLUDE/arb_core.h
 GenomeImport.o: $(ARBHOME)/INCLUDE/arb_error.h
 GenomeImport.o: $(ARBHOME)/INCLUDE/arbdb.h
 GenomeImport.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -136,6 +139,7 @@ Importer.o: types.h
 Importer.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 Importer.o: $(ARBHOME)/INCLUDE/ad_prot.h
 Importer.o: $(ARBHOME)/INCLUDE/arb_assert.h
+Importer.o: $(ARBHOME)/INCLUDE/arb_core.h
 Importer.o: $(ARBHOME)/INCLUDE/arb_error.h
 Importer.o: $(ARBHOME)/INCLUDE/arbdb.h
 Importer.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -153,6 +157,7 @@ Location.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 Location.o: $(ARBHOME)/INCLUDE/ad_prot.h
 Location.o: $(ARBHOME)/INCLUDE/adGene.h
 Location.o: $(ARBHOME)/INCLUDE/arb_assert.h
+Location.o: $(ARBHOME)/INCLUDE/arb_core.h
 Location.o: $(ARBHOME)/INCLUDE/arb_error.h
 Location.o: $(ARBHOME)/INCLUDE/arbdb.h
 Location.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -167,6 +172,7 @@ MetaInfo.o: MetaTag.h
 MetaInfo.o: types.h
 MetaInfo.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 MetaInfo.o: $(ARBHOME)/INCLUDE/arb_assert.h
+MetaInfo.o: $(ARBHOME)/INCLUDE/arb_core.h
 MetaInfo.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 MetaInfo.o: $(ARBHOME)/INCLUDE/arbtools.h
 MetaInfo.o: $(ARBHOME)/INCLUDE/attributes.h
@@ -178,6 +184,7 @@ SequenceBuffer.o: SequenceBuffer.h
 SequenceBuffer.o: types.h
 SequenceBuffer.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 SequenceBuffer.o: $(ARBHOME)/INCLUDE/arb_assert.h
+SequenceBuffer.o: $(ARBHOME)/INCLUDE/arb_core.h
 SequenceBuffer.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 SequenceBuffer.o: $(ARBHOME)/INCLUDE/arbtools.h
 SequenceBuffer.o: $(ARBHOME)/INCLUDE/attributes.h
@@ -189,6 +196,7 @@ tools.o: tools.h
 tools.o: types.h
 tools.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 tools.o: $(ARBHOME)/INCLUDE/arb_assert.h
+tools.o: $(ARBHOME)/INCLUDE/arb_core.h
 tools.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 tools.o: $(ARBHOME)/INCLUDE/arbtools.h
 tools.o: $(ARBHOME)/INCLUDE/attributes.h

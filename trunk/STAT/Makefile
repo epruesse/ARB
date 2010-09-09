@@ -43,6 +43,7 @@ ST_ml.o: $(ARBHOME)/INCLUDE/AP_filter.hxx
 ST_ml.o: $(ARBHOME)/INCLUDE/AP_sequence.hxx
 ST_ml.o: $(ARBHOME)/INCLUDE/AP_Tree.hxx
 ST_ml.o: $(ARBHOME)/INCLUDE/arb_assert.h
+ST_ml.o: $(ARBHOME)/INCLUDE/arb_core.h
 ST_ml.o: $(ARBHOME)/INCLUDE/arb_error.h
 ST_ml.o: $(ARBHOME)/INCLUDE/ARB_Tree.hxx
 ST_ml.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -69,6 +70,7 @@ ST_quality.o: $(ARBHOME)/INCLUDE/AliView.hxx
 ST_quality.o: $(ARBHOME)/INCLUDE/AP_filter.hxx
 ST_quality.o: $(ARBHOME)/INCLUDE/AP_sequence.hxx
 ST_quality.o: $(ARBHOME)/INCLUDE/arb_assert.h
+ST_quality.o: $(ARBHOME)/INCLUDE/arb_core.h
 ST_quality.o: $(ARBHOME)/INCLUDE/arb_error.h
 ST_quality.o: $(ARBHOME)/INCLUDE/arbdb.h
 ST_quality.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -92,6 +94,7 @@ ST_window.o: st_window.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 ST_window.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ST_window.o: $(ARBHOME)/INCLUDE/arb_assert.h
+ST_window.o: $(ARBHOME)/INCLUDE/arb_core.h
 ST_window.o: $(ARBHOME)/INCLUDE/arb_error.h
 ST_window.o: $(ARBHOME)/INCLUDE/arbdb.h
 ST_window.o: $(ARBHOME)/INCLUDE/arbdb_base.h

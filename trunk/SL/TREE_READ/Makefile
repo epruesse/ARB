@@ -40,6 +40,7 @@ TreeRead.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 TreeRead.o: $(ARBHOME)/INCLUDE/ad_prot.h
 TreeRead.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 TreeRead.o: $(ARBHOME)/INCLUDE/arb_assert.h
+TreeRead.o: $(ARBHOME)/INCLUDE/arb_core.h
 TreeRead.o: $(ARBHOME)/INCLUDE/arb_error.h
 TreeRead.o: $(ARBHOME)/INCLUDE/arbdb.h
 TreeRead.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -54,6 +55,7 @@ TreeTools.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 TreeTools.o: $(ARBHOME)/INCLUDE/ad_prot.h
 TreeTools.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 TreeTools.o: $(ARBHOME)/INCLUDE/arb_assert.h
+TreeTools.o: $(ARBHOME)/INCLUDE/arb_core.h
 TreeTools.o: $(ARBHOME)/INCLUDE/arb_error.h
 TreeTools.o: $(ARBHOME)/INCLUDE/arbdb.h
 TreeTools.o: $(ARBHOME)/INCLUDE/arbdb_base.h

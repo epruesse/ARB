@@ -34,6 +34,7 @@ depend.init:
 xml.o: xml.hxx
 xml.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 xml.o: $(ARBHOME)/INCLUDE/arb_assert.h
+xml.o: $(ARBHOME)/INCLUDE/arb_core.h
 xml.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 xml.o: $(ARBHOME)/INCLUDE/attributes.h
 xml.o: $(ARBHOME)/INCLUDE/dupstr.h

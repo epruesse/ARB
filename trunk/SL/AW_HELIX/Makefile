@@ -39,6 +39,7 @@ AW_helix.o: AW_helix.hxx
 AW_helix.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 AW_helix.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AW_helix.o: $(ARBHOME)/INCLUDE/arb_assert.h
+AW_helix.o: $(ARBHOME)/INCLUDE/arb_core.h
 AW_helix.o: $(ARBHOME)/INCLUDE/arb_error.h
 AW_helix.o: $(ARBHOME)/INCLUDE/arbdb.h
 AW_helix.o: $(ARBHOME)/INCLUDE/arbdb_base.h

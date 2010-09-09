@@ -37,6 +37,7 @@ CT_ctree.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 CT_ctree.o: $(ARBHOME)/INCLUDE/ad_prot.h
 CT_ctree.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 CT_ctree.o: $(ARBHOME)/INCLUDE/arb_assert.h
+CT_ctree.o: $(ARBHOME)/INCLUDE/arb_core.h
 CT_ctree.o: $(ARBHOME)/INCLUDE/arb_error.h
 CT_ctree.o: $(ARBHOME)/INCLUDE/arbdb.h
 CT_ctree.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -53,6 +54,7 @@ CT_dtree.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 CT_dtree.o: $(ARBHOME)/INCLUDE/ad_prot.h
 CT_dtree.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 CT_dtree.o: $(ARBHOME)/INCLUDE/arb_assert.h
+CT_dtree.o: $(ARBHOME)/INCLUDE/arb_core.h
 CT_dtree.o: $(ARBHOME)/INCLUDE/arb_error.h
 CT_dtree.o: $(ARBHOME)/INCLUDE/arbdb.h
 CT_dtree.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -70,6 +72,7 @@ CT_hash.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 CT_hash.o: $(ARBHOME)/INCLUDE/ad_prot.h
 CT_hash.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 CT_hash.o: $(ARBHOME)/INCLUDE/arb_assert.h
+CT_hash.o: $(ARBHOME)/INCLUDE/arb_core.h
 CT_hash.o: $(ARBHOME)/INCLUDE/arb_error.h
 CT_hash.o: $(ARBHOME)/INCLUDE/arbdb.h
 CT_hash.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -86,6 +89,7 @@ CT_ntree.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 CT_ntree.o: $(ARBHOME)/INCLUDE/ad_prot.h
 CT_ntree.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 CT_ntree.o: $(ARBHOME)/INCLUDE/arb_assert.h
+CT_ntree.o: $(ARBHOME)/INCLUDE/arb_core.h
 CT_ntree.o: $(ARBHOME)/INCLUDE/arb_error.h
 CT_ntree.o: $(ARBHOME)/INCLUDE/arbdb.h
 CT_ntree.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -101,6 +105,7 @@ CT_part.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 CT_part.o: $(ARBHOME)/INCLUDE/ad_prot.h
 CT_part.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 CT_part.o: $(ARBHOME)/INCLUDE/arb_assert.h
+CT_part.o: $(ARBHOME)/INCLUDE/arb_core.h
 CT_part.o: $(ARBHOME)/INCLUDE/arb_error.h
 CT_part.o: $(ARBHOME)/INCLUDE/arbdb.h
 CT_part.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -118,6 +123,7 @@ CT_rbtree.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 CT_rbtree.o: $(ARBHOME)/INCLUDE/ad_prot.h
 CT_rbtree.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 CT_rbtree.o: $(ARBHOME)/INCLUDE/arb_assert.h
+CT_rbtree.o: $(ARBHOME)/INCLUDE/arb_core.h
 CT_rbtree.o: $(ARBHOME)/INCLUDE/arb_error.h
 CT_rbtree.o: $(ARBHOME)/INCLUDE/arbdb.h
 CT_rbtree.o: $(ARBHOME)/INCLUDE/arbdb_base.h

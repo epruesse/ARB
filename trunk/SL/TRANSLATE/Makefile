@@ -44,6 +44,7 @@ Translate.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 Translate.o: $(ARBHOME)/INCLUDE/AP_codon_table.hxx
 Translate.o: $(ARBHOME)/INCLUDE/AP_pro_a_nucs.hxx
 Translate.o: $(ARBHOME)/INCLUDE/arb_assert.h
+Translate.o: $(ARBHOME)/INCLUDE/arb_core.h
 Translate.o: $(ARBHOME)/INCLUDE/arb_error.h
 Translate.o: $(ARBHOME)/INCLUDE/arbdb.h
 Translate.o: $(ARBHOME)/INCLUDE/arbdb_base.h

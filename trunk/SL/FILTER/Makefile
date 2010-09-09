@@ -39,11 +39,12 @@ AP_filter.o: AP_filter.hxx
 AP_filter.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 AP_filter.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AP_filter.o: $(ARBHOME)/INCLUDE/arb_assert.h
+AP_filter.o: $(ARBHOME)/INCLUDE/arb_core.h
 AP_filter.o: $(ARBHOME)/INCLUDE/arb_error.h
+AP_filter.o: $(ARBHOME)/INCLUDE/arb_str.h
 AP_filter.o: $(ARBHOME)/INCLUDE/arbdb.h
 AP_filter.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AP_filter.o: $(ARBHOME)/INCLUDE/arbtools.h
 AP_filter.o: $(ARBHOME)/INCLUDE/attributes.h
 AP_filter.o: $(ARBHOME)/INCLUDE/dupstr.h
-AP_filter.o: $(ARBHOME)/INCLUDE/inline.h
 AP_filter.o: $(ARBHOME)/INCLUDE/smartptr.h
