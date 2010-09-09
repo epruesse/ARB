@@ -158,6 +158,7 @@ GB_ERROR gbt_rename_tree_rek(GBT_TREE *tree, int tree_index) {
 }
 
 GB_ERROR GBT_commit_rename_session(int (*show_status)(double gauge), int (*show_status_text)(const char *)) {
+    // goes to header: __ATTR__USERESULT
     GB_ERROR error = 0;
 
     // rename species in trees
@@ -227,12 +228,17 @@ GB_ERROR GBT_commit_rename_session(int (*show_status)(double gauge), int (*show_
                         }
 
                         if (!error) freeset(*configStrPtr, GBS_strclose(strstruct));
+                        else {
+                            error = GBS_global_string("Failed to parse configuration '%s' (Reason: %s)", config_names[count], error);
+                        }
 
                         GBT_free_config_item(item);
                         GBT_free_config_parser(parser);
                     }
 
-                    if (!error && need_save) error = GBT_save_configuration_data(config, NameSession.gb_main, config_names[count]);
+                    if (!error && need_save) {
+                        error = GBT_save_configuration_data(config, NameSession.gb_main, config_names[count]);
+                    }
                 }
                 if (show_status) show_status((double)(count+1)/config_count);
             }
@@ -261,7 +267,7 @@ GB_ERROR GBT_commit_rename_session(int (*show_status)(double gauge), int (*show_
 
     gbt_free_rename_session_data();
 
-    error = GB_pop_transaction(NameSession.gb_main);
+    error = GB_end_transaction(NameSession.gb_main, error);
     return error;
 }
 
