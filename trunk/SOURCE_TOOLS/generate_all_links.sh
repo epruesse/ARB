@@ -138,8 +138,11 @@ symlink_maybe_no_target GENH/aisc.h               PROBE_COM/PT_server.h &&
 
 symlink_file ../TEMPLATES/SigHandler.h INCLUDE/SigHandler.h &&
 symlink_file ../TEMPLATES/arb_backtrace.h INCLUDE/arb_backtrace.h &&
+symlink_file ../TEMPLATES/arb_core.h INCLUDE/arb_core.h &&
 symlink_file ../TEMPLATES/arb_debug.h INCLUDE/arb_debug.h &&
+symlink_file ../TEMPLATES/arb_defs.h INCLUDE/arb_defs.h &&
 symlink_file ../TEMPLATES/arb_error.h INCLUDE/arb_error.h &&
+symlink_file ../TEMPLATES/arb_str.h INCLUDE/arb_str.h &&
 symlink_file ../TEMPLATES/arb_version.h INCLUDE/arb_version.h &&
 symlink_file ../TEMPLATES/arbtools.h INCLUDE/arbtools.h &&
 symlink_file ../TEMPLATES/attributes.h INCLUDE/attributes.h &&
@@ -147,7 +150,6 @@ symlink_file ../TEMPLATES/bytestring.h INCLUDE/bytestring.h &&
 symlink_file ../TEMPLATES/config_parser.h INCLUDE/config_parser.h &&
 symlink_file ../TEMPLATES/downcast.h INCLUDE/downcast.h &&
 symlink_file ../TEMPLATES/dupstr.h INCLUDE/dupstr.h &&
-symlink_file ../TEMPLATES/inline.h INCLUDE/inline.h &&
 symlink_file ../TEMPLATES/output.h INCLUDE/output.h &&
 symlink_file ../TEMPLATES/perf_timer.h INCLUDE/perf_timer.h &&
 symlink_file ../TEMPLATES/smartptr.h INCLUDE/smartptr.h &&

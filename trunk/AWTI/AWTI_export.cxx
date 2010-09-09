@@ -17,7 +17,7 @@
 #include <aw_file.hxx>
 #include <aw_window.hxx>
 #include <arbdbt.h>
-#include <inline.h>
+#include <arb_str.h>
 
 #define AWAR_EXPORT_FILE           "tmp/export_db/file"
 #define AWAR_EXPORT_FORM           "export/form"

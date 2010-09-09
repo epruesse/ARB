@@ -27,7 +27,7 @@
 #include <awt_seq_colors.hxx>
 #include <awt_attributes.hxx>
 #include <st_window.hxx>
-#include <inline.h>
+#include <arb_str.h>
 
 #include <iostream>
 

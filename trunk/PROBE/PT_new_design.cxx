@@ -14,7 +14,7 @@
 #include <struct_man.h>
 #include "probe_tree.hxx"
 #include <arbdbt.h>
-#include <inline.h>
+#include <arb_str.h>
 
 #ifdef P_
 #error P_ already defined

@@ -18,7 +18,7 @@
 #include <EXP.hxx>
 #include <aw_color_groups.hxx>
 
-#include <inline.h>
+#include <arb_str.h>
 
 #include <map>
 #include <set>

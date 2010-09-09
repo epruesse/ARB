@@ -21,7 +21,7 @@
 
 #include <adGene.h>
 #include <arbdbt.h>
-#include <inline.h>
+#include <arb_str.h>
 
 using namespace std;
 

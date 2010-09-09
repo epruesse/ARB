@@ -17,7 +17,7 @@
 #include <aw_awars.hxx>
 #include <aw_select.hxx>
 
-#include <inline.h>
+#include <arb_str.h>
 #include <arbdbt.h>
 
 #include <unistd.h>

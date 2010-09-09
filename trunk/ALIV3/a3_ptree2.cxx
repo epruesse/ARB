@@ -11,7 +11,7 @@
 #include "a3_basen.h"
 #include "a3_ptree.hxx"
 
-#include <inline.h>
+#include <arb_str.h>
 
 #include <iostream>
 #include <fstream>

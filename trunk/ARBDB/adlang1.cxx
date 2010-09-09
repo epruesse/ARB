@@ -18,6 +18,7 @@
 #include "gb_localdata.h"
 
 #include <static_assert.h>
+#include <arb_defs.h>
 
 #define AWAR_TREE_REFRESH "tmp/focus/tree_refresh" // touch this awar to refresh the tree display
 
@@ -2691,7 +2692,6 @@ static GBL_command_table gbl_command_table[] = {
 
 };
 
-void gbl_install_standard_commands(GBDATA *gb_main)
-{
-    gb_install_command_table(gb_main, gbl_command_table, sizeof(gbl_command_table)/sizeof(gbl_command_table[0]));
+void gbl_install_standard_commands(GBDATA *gb_main) {
+    gb_install_command_table(gb_main, gbl_command_table, ARRAY_ELEMS(gbl_command_table));
 }
