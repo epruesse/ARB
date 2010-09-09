@@ -11,7 +11,7 @@ $(BINARY): $(OBJECTS)
 	$(LINK_EXECUTABLE) $@ $(OBJECTS) $(EXECLIBS)
 
 .cxx.o:
-	$(CPP) $(cflags) -c $< $(POST_COMPILE)
+	$(CPP) $(cflags) -c $< $(CPPINCLUDES) $(POST_COMPILE)
 
 clean:
 	rm -f $(OBJECTS) $(BINARY)

@@ -21,11 +21,12 @@
 #include <cstdio>
 #include <cctype>
 #include <cstring>
+#include <cstdarg>
 
-#ifndef EXIT_SUCCESS
-#define EXIT_SUCCESS  0
-#define EXIT_FAILURE  1
-#endif
+#define SIMPLE_ARB_ASSERT
+#include <arb_assert.h>
+
+#define mp_assert(cond) arb_assert(cond)
 
 static void Version();
 
@@ -99,6 +100,23 @@ static void error(const char *msg) {
     errorAt(linenum, msg);
 }
 
+static void errorf(const char *format, ...) __attribute__((format(__printf__, 1, 2)));
+static void errorf(const char *format, ...) {
+    const int BUFFERSIZE = 1000;
+    char      buffer[BUFFERSIZE];
+    va_list   args;
+
+    va_start(args, format);
+    int printed = vsprintf(buffer, format, args);
+    if (printed >= BUFFERSIZE) {
+        fputs("buffer overflow\n", stderr);
+        exit(EXIT_FAILURE);
+    }
+    va_end(args);
+
+    error(buffer);
+}
+
 // ------------------------------------------------------------
 
 struct SymPart {
@@ -110,7 +128,7 @@ struct SymPart {
 };
 
 static void setSymParts(SymPart*& symParts, const char *parts) {
-    assert(!symParts);
+    mp_assert(!symParts);
 
     char       *p   = strdup(parts);
     const char *sep = ",";
@@ -320,62 +338,224 @@ static char *found__ATTR__      = 0;
 
 static void clear_found_attribute() {
     free(found__attribute__); found__attribute__ = 0;
-    free(found__ATTR__); found__ATTR__      = 0;
+    free(found__ATTR__);      found__ATTR__      = 0;
 }
 
-static void search_comment_for_attribute() {
-    char *att;
+const char *nextNonSpace(const char* ptr) {
+    while (isspace(*ptr)) ++ptr;
+    return ptr;
+}
+const char *nextNonWord(const char* ptr) {
+    while (isalnum(*ptr) || *ptr == '_') ++ptr;
+    return ptr;
+}
 
-    if (found__attribute__ || found__ATTR__) return; // only take first __attribute__
+inline const char *matchingParen(const char *from) {
+    int open = 1;
+    int i;
+    for (i = 1; from[i] && open>0; ++i) {
+        switch (from[i]) {
+            case '(': open++; break;
+            case ')': open--; break;
+        }
+    }
+    if (open) return NULL; // no matching closing paren
+    return from+i-1;
+}
 
-    last_comment[lc_size] = 0;  // close string
+// -----------------
+//      LinePart
 
-    att = strstr(last_comment, "__attribute__");
-    if (att != 0) {
-        char *a  = att+13;
-        int   parens = 1;
+class LinePart {
+    const char *line;
+    size_t      linelen; // of line
 
-        while (*a && *a != '(') ++a; // search '('
-        if (*a++ == '(') {    // if '(' found
-            while (parens && *a) {
-                switch (*a++) {
-                    case '(': parens++; break;
-                    case ')': parens--; break;
-                }
-            }
-            *a                 = 0;
-            DEBUG_PRINT("__attribute__ found!\n");
-            found__attribute__ = strdup(att);
-            if (search__ATTR__) { error("found '__attribute__' but expected '__ATTR__..'"); }
+    size_t pos;
+    size_t size;
+
+    bool part_is_legal() { return (pos <= linelen) && ((pos+size) <= linelen); }
+
+    void set(size_t newPos, size_t newSize) {
+        pos  = newPos;
+        size = newSize;
+        mp_assert(part_is_legal());
+    }
+    
+public:
+
+    LinePart(const char *wholeLine, size_t len = -1U)
+        : line(wholeLine),
+          linelen(len != -1U ? len : strlen(line))
+    {
+        mp_assert(line[linelen] == 0);
+        undefine();
+    }
+
+    size_t get_size() const { return size; }
+    bool   is_empty() const { return !size; }
+
+    const char *whole_line() const { return line; }
+
+    void define(const char *start, const char *end) { set(start-line, end-start+1); }
+    void undefine() { set(0, 0); }
+
+    void copyTo(char *buffer) const {
+        mp_assert(!is_empty());
+        memcpy(buffer, line+pos, size);
+        buffer[size] = 0;
+    }
+
+    LinePart behind() const {
+        mp_assert(!is_empty());
+        size_t behind_offset = pos+size;
+        mp_assert(linelen >= behind_offset);
+        return LinePart(line+behind_offset, linelen-behind_offset);
+    }
+
+    void error(const char *format) {
+        // 'format' has to contain one '%s'
+        mp_assert(!is_empty());
+        char part[get_size()+1];
+        copyTo(part);
+        errorf(format, part);
+        undefine();
+    }
+};
+
+
+// ------------------
+//      PartQueue
+
+class PartQueue {
+    LinePart   first;
+    PartQueue *next;
+    size_t     size;
+
+    bool is_empty() const { return !size; }
+    size_t get_size() const { return size; }
+
+    void copyPartsTo(char *buffer) const {
+        mp_assert(!first.is_empty());
+        first.copyTo(buffer);
+        buffer += first.get_size();
+        if (next) {
+            *buffer++ = ' ';
+            next->copyPartsTo(buffer);
         }
     }
 
-    att = strstr(last_comment, "__ATTR__");
-    if (att != 0) {
-        char *a  = att+8;
+public:
+    PartQueue(LinePart first_)
+        : first(first_),
+          next(0),
+          size(first.get_size())
+    {}
+    ~PartQueue() { delete next; }
 
-        while (*a && (isalnum(*a) || *a == '_')) ++a; // goto end of name
+    void append(PartQueue *mp) {
+        mp_assert(!next);
+        next  = mp;
+        size += 1+mp->get_size(); // add pos for space
+    }
 
-        if (*a == '(') {
-            int parens = 1;
-            a++;
+    char *to_string() {
+        char *result = (char *)malloc(get_size()+1);
+        copyPartsTo(result);
+        mp_assert(get_size() == strlen(result));
+        return result;
+    }
+};
 
-            while (parens && *a) {
-                switch (*a++) {
-                    case '(': parens++; break;
-                    case ')': parens--; break;
+// ------------------------
+//      AttributeParser
+
+class AttributeParser {
+    const char *attrName;
+    size_t      attrNameLen;
+    bool        expandName;   // try to expand 'attrName'
+    bool        expectParens; // otherwise parens are optional
+
+public:
+    AttributeParser(const char *attrName_, bool expandName_, bool expectParens_)
+        : attrName(attrName_),
+          attrNameLen(strlen(attrName)),
+          expandName(expandName_),
+          expectParens(expectParens_)
+    {}
+
+private:
+    void parse_one_attr(LinePart& part) const {
+        const char *found = strstr(part.whole_line(), attrName);
+        if (found) {
+            const char *behind     = found+attrNameLen;
+            if (expandName) behind = nextNonWord(behind);
+            const char *openParen  = nextNonSpace(behind);
+
+            if (*openParen == '(') {
+                const char *closeParen = matchingParen(openParen);
+                if (closeParen) part.define(found, closeParen);
+                else {
+                    part.define(found, openParen);
+                    part.error("Could not find matching paren after '%s'");
                 }
             }
-            *a = 0;
-            DEBUG_PRINT("__ATTR__ with parameters found!\n");
-            found__ATTR__ = strdup(att);
+            else {
+                part.define(found, behind-1);
+                if (expectParens) part.error("Expected to see '(' after '%s'");
+            }
         }
-        else {
-            *a = 0;
-            DEBUG_PRINT("__ATTR__ w/o parameters found!\n");
-            found__ATTR__ = strdup(att);
+    }
+
+    // rest is not really part of this class - may go to abstract base class if needed
+
+    PartQueue *parse_all(LinePart from) const {
+        parse_one_attr(from);
+        if (from.is_empty()) return NULL;
+
+        PartQueue *head = new PartQueue(from);
+        PartQueue *rest = parse_all(from.behind());
+        if (rest) head->append(rest);
+
+        return head;
+    }
+
+public:
+    char *parse(const char *toParse, size_t toParseSize) const {
+        char      *result           = NULL;
+        PartQueue *found_attributes = parse_all(LinePart(toParse, toParseSize));
+
+        if (found_attributes) {
+            result = found_attributes->to_string();
+            delete found_attributes;
         }
-        if (search__attribute__) { error("found '__ATTR__..' but expected '__attribute__'"); }
+        return result;
+    }
+};
+
+static AttributeParser attribute_parser("__attribute__", false, true);
+static AttributeParser ATTR_parser("__ATTR__", true, false);
+
+static void search_comment_for_attribute() {
+    if (found__attribute__ || found__ATTR__) return; // only parse once (until reset)
+    last_comment[lc_size] = 0;  // close string
+
+    char *seen_attribute = attribute_parser.parse(last_comment, lc_size);
+    char *seen_ATTR      = ATTR_parser.parse(last_comment, lc_size);
+
+    if (search__attribute__) {
+        mp_assert(!search__ATTR__);
+        found__attribute__ = seen_attribute;
+        if (seen_ATTR) {
+            error("Expected not to see '__ATTR__..' (when looking for '__attribute__(...)')");
+        }
+    }
+
+    if (search__ATTR__) {
+        mp_assert(!search__attribute__);
+        found__ATTR__ = seen_ATTR;
+        if (seen_attribute) {
+            error("Expected not to see '__attribute__(...)' (when looking for '__ATTR__..')");
+        }
     }
 
     if (found__attribute__ && found__ATTR__) {
@@ -436,7 +616,7 @@ static void search_comment_for_promotion() {
     while (promotion_found) {
         char *behind_promo = promotion_found+promotion_tag_len;
         char *eol, *eoc;
-        assert(behind_promo[-1] == ':'); // wrong promotion_tag_len
+        mp_assert(behind_promo[-1] == ':'); // wrong promotion_tag_len
 
         eol = strchr(behind_promo, '\n');
         eoc = strstr(behind_promo, "*/");
@@ -454,7 +634,7 @@ static void search_comment_for_promotion() {
             while (eol>behind_promo && eol[-1] == ' ') --eol; // trim spaces at eol
         }
 
-        assert(eol);
+        mp_assert(eol);
         if (!eol) {
             promotion_found = 0;
         }
@@ -508,7 +688,7 @@ static int fnextch(FILE *f) {
                 lastc                   = c;
                 c                       = ngetc(f);
                 last_comment[lc_size++] = c;
-                assert(lc_size<MAX_COMMENT_SIZE);
+                mp_assert(lc_size<MAX_COMMENT_SIZE);
 
                 if (lastc == '*' && c == '/') incomment = 0;
                 else if (c < 0) {
@@ -531,7 +711,7 @@ static int fnextch(FILE *f) {
                 lastc                   = c;
                 c                       = ngetc(f);
                 last_comment[lc_size++] = c;
-                assert(lc_size<MAX_COMMENT_SIZE);
+                mp_assert(lc_size<MAX_COMMENT_SIZE);
 
                 if (lastc != '\\' && c == '\n') incomment = 0;
                 else if (c < 0) break;
@@ -950,7 +1130,7 @@ static Word *getparamlist(FILE *f) {
 
 #if !defined(AUTO_INT)
             if (add_dummy_name) {
-                assert(dummy_counter<100);
+                mp_assert(dummy_counter<100);
                 dummy_name[DUMMY_COUNTER_POS] = (dummy_counter/10)+'0';
                 dummy_name[DUMMY_COUNTER_POS] = (dummy_counter%10)+'0';
                 addword(tlist, dummy_name);
@@ -1529,3 +1709,63 @@ int main(int argc, char **argv) {
 static void Version() {
     fprintf(stderr, "%s 1.1 ARB\n", ourname);
 }
+
+// --------------------------------------------------------------------------------
+
+#if (UNIT_TESTS == 1)
+
+#include <test_unit.h>
+
+inline char*& searchResult(bool ATTR) { return ATTR ? found__ATTR__ : found__attribute__; }
+inline int& doSearchFor(bool ATTR) { return ATTR ? search__ATTR__ : search__attribute__; }
+
+inline const char *test_extract(bool ATTR, const char *str) {
+    doSearchFor(ATTR)  = true;
+    doSearchFor(!ATTR) = false;
+
+    clear_found_attribute();
+
+    strcpy(last_comment, str);
+    lc_size = strlen(last_comment);
+
+    search_comment_for_attribute();
+
+    TEST_ASSERT(!searchResult(!ATTR));
+    return searchResult(ATTR);
+}
+
+#define TEST_ATTR_____(comment,extracted) TEST_ASSERT_EQUAL(test_extract(true, comment), extracted)
+#define TEST_attribute(comment,extracted) TEST_ASSERT_EQUAL(test_extract(false, comment), extracted)
+
+#define TEST_both(c,e) do { TEST_attribute(c,e); TEST_ATTR_____(c,e); } while(0)
+
+void TEST_attribute_parser() {
+    TEST_both("", NULL);
+    TEST_both("nothing here", NULL);
+
+    TEST_attribute("bla bla __attribute__(whatever) more content", "__attribute__(whatever)");
+    TEST_ATTR_____("bla bla __ATTR__DEPRECATED more content",      "__ATTR__DEPRECATED");
+    TEST_ATTR_____("bla bla __ATTR__FORMAT(pos) more content",     "__ATTR__FORMAT(pos)");
+    
+    TEST_ATTR_____("__ATTR__DEPRECATED",       "__ATTR__DEPRECATED");
+    TEST_ATTR_____("__ATTR__FORMAT(pos)",      "__ATTR__FORMAT(pos)");
+    TEST_ATTR_____("bla __ATTR__FORMAT(pos)",  "__ATTR__FORMAT(pos)");
+    TEST_ATTR_____("__ATTR__FORMAT(pos) bla",  "__ATTR__FORMAT(pos)");
+    TEST_ATTR_____("    __ATTR__FORMAT(pos) ", "__ATTR__FORMAT(pos)");
+    
+    TEST_ATTR_____("__ATTR__FORMAT((pos)",           NULL);
+    TEST_ATTR_____("__attribute__(pos",              NULL);
+    TEST_ATTR_____("__ATTR__FORMAT(pos))",           "__ATTR__FORMAT(pos)");
+    TEST_ATTR_____("__ATTR__FORMAT((pos))",          "__ATTR__FORMAT((pos))");
+    TEST_ATTR_____("__ATTR__FORMAT((pos)+((sop)))",  "__ATTR__FORMAT((pos)+((sop)))");
+    TEST_ATTR_____("__ATTR__FORMAT(((pos)))+(sop))", "__ATTR__FORMAT(((pos)))");
+
+    TEST_ATTR_____("bla bla __ATTR__DEPRECATED __ATTR__FORMAT(pos) more content", "__ATTR__DEPRECATED __ATTR__FORMAT(pos)");
+    TEST_ATTR_____("bla __ATTR__DEPRECATED bla more__ATTR__FORMAT(pos)content", "__ATTR__DEPRECATED __ATTR__FORMAT(pos)");
+    
+    TEST_ATTR_____(" goes to header: __ATTR__NORETURN  */", "__ATTR__NORETURN");
+
+    clear_found_attribute();
+}
+
+#endif
