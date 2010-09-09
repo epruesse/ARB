@@ -11,10 +11,8 @@
 #include "island_hopping.h"
 
 #define EXTERN
-extern "C" {
 #include "i-hopper.h"
 #include "mem.h"
-}
 
 #ifndef ARB_ASSERT_H
 #include <arb_assert.h>
