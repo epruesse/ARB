@@ -53,3 +53,4 @@ Translate.o: $(ARBHOME)/INCLUDE/arbtools.h
 Translate.o: $(ARBHOME)/INCLUDE/attributes.h
 Translate.o: $(ARBHOME)/INCLUDE/dupstr.h
 Translate.o: $(ARBHOME)/INCLUDE/smartptr.h
+Translate.o: $(ARBHOME)/INCLUDE/test_global.h

@@ -52,3 +52,4 @@ NJ.o: $(ARBHOME)/INCLUDE/arbtools.h
 NJ.o: $(ARBHOME)/INCLUDE/attributes.h
 NJ.o: $(ARBHOME)/INCLUDE/dupstr.h
 NJ.o: $(ARBHOME)/INCLUDE/smartptr.h
+NJ.o: $(ARBHOME)/INCLUDE/test_global.h

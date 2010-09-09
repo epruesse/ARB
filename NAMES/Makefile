@@ -51,3 +51,4 @@ names.o: $(ARBHOME)/INCLUDE/server.h
 names.o: $(ARBHOME)/INCLUDE/servercntrl.h
 names.o: $(ARBHOME)/INCLUDE/smartptr.h
 names.o: $(ARBHOME)/INCLUDE/struct_man.h
+names.o: $(ARBHOME)/INCLUDE/test_global.h

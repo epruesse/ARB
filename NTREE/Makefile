@@ -85,6 +85,7 @@ ad_ali.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ad_ali.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 ad_ali.o: $(ARBHOME)/INCLUDE/dupstr.h
 ad_ali.o: $(ARBHOME)/INCLUDE/smartptr.h
+ad_ali.o: $(ARBHOME)/INCLUDE/test_global.h
 
 ad_ext.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 ad_ext.o: $(ARBHOME)/INCLUDE/ad_prot.h
@@ -108,6 +109,7 @@ ad_ext.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 ad_ext.o: $(ARBHOME)/INCLUDE/db_scanner.hxx
 ad_ext.o: $(ARBHOME)/INCLUDE/dupstr.h
 ad_ext.o: $(ARBHOME)/INCLUDE/smartptr.h
+ad_ext.o: $(ARBHOME)/INCLUDE/test_global.h
 
 ad_spec.o: ad_spec.hxx
 ad_spec.o: map_viewer.hxx
@@ -149,6 +151,7 @@ ad_spec.o: $(ARBHOME)/INCLUDE/downcast.h
 ad_spec.o: $(ARBHOME)/INCLUDE/dupstr.h
 ad_spec.o: $(ARBHOME)/INCLUDE/probe_design.hxx
 ad_spec.o: $(ARBHOME)/INCLUDE/smartptr.h
+ad_spec.o: $(ARBHOME)/INCLUDE/test_global.h
 ad_spec.o: $(ARBHOME)/INCLUDE/TreeDisplay.hxx
 
 ad_transpro.o: nt_internal.h
@@ -174,6 +177,7 @@ ad_transpro.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ad_transpro.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 ad_transpro.o: $(ARBHOME)/INCLUDE/dupstr.h
 ad_transpro.o: $(ARBHOME)/INCLUDE/smartptr.h
+ad_transpro.o: $(ARBHOME)/INCLUDE/test_global.h
 ad_transpro.o: $(ARBHOME)/INCLUDE/Translate.hxx
 
 ad_trees.o: ad_trees.hxx
@@ -201,6 +205,7 @@ ad_trees.o: $(ARBHOME)/INCLUDE/awt_nds.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 ad_trees.o: $(ARBHOME)/INCLUDE/dupstr.h
 ad_trees.o: $(ARBHOME)/INCLUDE/smartptr.h
+ad_trees.o: $(ARBHOME)/INCLUDE/test_global.h
 ad_trees.o: $(ARBHOME)/INCLUDE/TreeRead.h
 ad_trees.o: $(ARBHOME)/INCLUDE/TreeWrite.h
 
@@ -223,6 +228,7 @@ AP_consensus.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AP_consensus.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 AP_consensus.o: $(ARBHOME)/INCLUDE/dupstr.h
 AP_consensus.o: $(ARBHOME)/INCLUDE/smartptr.h
+AP_consensus.o: $(ARBHOME)/INCLUDE/test_global.h
 
 AP_conservProfile2Gnuplot.o: ap_conservProfile2Gnuplot.hxx
 AP_conservProfile2Gnuplot.o: nt_internal.h
@@ -245,6 +251,7 @@ AP_conservProfile2Gnuplot.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AP_conservProfile2Gnuplot.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AP_conservProfile2Gnuplot.o: $(ARBHOME)/INCLUDE/dupstr.h
 AP_conservProfile2Gnuplot.o: $(ARBHOME)/INCLUDE/smartptr.h
+AP_conservProfile2Gnuplot.o: $(ARBHOME)/INCLUDE/test_global.h
 
 AP_cprofile.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 AP_cprofile.o: $(ARBHOME)/INCLUDE/ad_prot.h
@@ -267,6 +274,7 @@ AP_cprofile.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AP_cprofile.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 AP_cprofile.o: $(ARBHOME)/INCLUDE/dupstr.h
 AP_cprofile.o: $(ARBHOME)/INCLUDE/smartptr.h
+AP_cprofile.o: $(ARBHOME)/INCLUDE/test_global.h
 
 AP_pos_var_pars.o: ap_pos_var_pars.hxx
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
@@ -289,6 +297,7 @@ AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/dupstr.h
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/smartptr.h
+AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/test_global.h
 
 ColumnStat_2_gnuplot.o: nt_internal.h
 ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
@@ -314,6 +323,7 @@ ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/awt_filter.hxx
 ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/ColumnStat.hxx
 ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/dupstr.h
 ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/smartptr.h
+ColumnStat_2_gnuplot.o: $(ARBHOME)/INCLUDE/test_global.h
 
 NT_cb.o: ad_trees.hxx
 NT_cb.o: nt_cb.hxx
@@ -340,6 +350,7 @@ NT_cb.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 NT_cb.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 NT_cb.o: $(ARBHOME)/INCLUDE/dupstr.h
 NT_cb.o: $(ARBHOME)/INCLUDE/smartptr.h
+NT_cb.o: $(ARBHOME)/INCLUDE/test_global.h
 
 NT_concatenate.o: nt_internal.h
 NT_concatenate.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
@@ -366,6 +377,7 @@ NT_concatenate.o: $(ARBHOME)/INCLUDE/awt_item_sel_list.hxx
 NT_concatenate.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 NT_concatenate.o: $(ARBHOME)/INCLUDE/dupstr.h
 NT_concatenate.o: $(ARBHOME)/INCLUDE/smartptr.h
+NT_concatenate.o: $(ARBHOME)/INCLUDE/test_global.h
 
 NT_dbrepair.o: NT_dbrepair.hxx
 NT_dbrepair.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
@@ -392,6 +404,7 @@ NT_dbrepair.o: $(ARBHOME)/INCLUDE/dupstr.h
 NT_dbrepair.o: $(ARBHOME)/INCLUDE/EXP.hxx
 NT_dbrepair.o: $(ARBHOME)/INCLUDE/GEN.hxx
 NT_dbrepair.o: $(ARBHOME)/INCLUDE/smartptr.h
+NT_dbrepair.o: $(ARBHOME)/INCLUDE/test_global.h
 
 NT_edconf.o: nt_cb.hxx
 NT_edconf.o: nt_internal.h
@@ -416,6 +429,7 @@ NT_edconf.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 NT_edconf.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 NT_edconf.o: $(ARBHOME)/INCLUDE/dupstr.h
 NT_edconf.o: $(ARBHOME)/INCLUDE/smartptr.h
+NT_edconf.o: $(ARBHOME)/INCLUDE/test_global.h
 
 NT_extern.o: ad_spec.hxx
 NT_extern.o: ad_trees.hxx
@@ -475,6 +489,7 @@ NT_extern.o: $(ARBHOME)/INCLUDE/seq_quality.h
 NT_extern.o: $(ARBHOME)/INCLUDE/smartptr.h
 NT_extern.o: $(ARBHOME)/INCLUDE/st_window.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/svn_revision.h
+NT_extern.o: $(ARBHOME)/INCLUDE/test_global.h
 NT_extern.o: $(ARBHOME)/INCLUDE/TreeCallbacks.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/TreeDisplay.hxx
 
@@ -504,6 +519,7 @@ NT_import.o: $(ARBHOME)/INCLUDE/dupstr.h
 NT_import.o: $(ARBHOME)/INCLUDE/GEN.hxx
 NT_import.o: $(ARBHOME)/INCLUDE/mg_merge.hxx
 NT_import.o: $(ARBHOME)/INCLUDE/smartptr.h
+NT_import.o: $(ARBHOME)/INCLUDE/test_global.h
 
 NT_ins_col.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 NT_ins_col.o: $(ARBHOME)/INCLUDE/ad_prot.h
@@ -524,6 +540,7 @@ NT_ins_col.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 NT_ins_col.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 NT_ins_col.o: $(ARBHOME)/INCLUDE/dupstr.h
 NT_ins_col.o: $(ARBHOME)/INCLUDE/smartptr.h
+NT_ins_col.o: $(ARBHOME)/INCLUDE/test_global.h
 
 NT_join.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 NT_join.o: $(ARBHOME)/INCLUDE/ad_prot.h
@@ -548,6 +565,7 @@ NT_join.o: $(ARBHOME)/INCLUDE/awt_item_sel_list.hxx
 NT_join.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 NT_join.o: $(ARBHOME)/INCLUDE/dupstr.h
 NT_join.o: $(ARBHOME)/INCLUDE/smartptr.h
+NT_join.o: $(ARBHOME)/INCLUDE/test_global.h
 
 NT_main.o: map_viewer.hxx
 NT_main.o: nt_cb.hxx
@@ -590,6 +608,7 @@ NT_main.o: $(ARBHOME)/INCLUDE/dupstr.h
 NT_main.o: $(ARBHOME)/INCLUDE/mg_merge.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/smartptr.h
 NT_main.o: $(ARBHOME)/INCLUDE/svn_revision.h
+NT_main.o: $(ARBHOME)/INCLUDE/test_global.h
 NT_main.o: $(ARBHOME)/INCLUDE/TreeDisplay.hxx
 
 NT_sort.o: nt_cb.hxx
@@ -615,6 +634,7 @@ NT_sort.o: $(ARBHOME)/INCLUDE/awt.hxx
 NT_sort.o: $(ARBHOME)/INCLUDE/awt_item_sel_list.hxx
 NT_sort.o: $(ARBHOME)/INCLUDE/dupstr.h
 NT_sort.o: $(ARBHOME)/INCLUDE/smartptr.h
+NT_sort.o: $(ARBHOME)/INCLUDE/test_global.h
 
 NT_trackAliChanges.o: NT_trackAliChanges.h
 NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
@@ -636,6 +656,7 @@ NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/dupstr.h
 NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/smartptr.h
+NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/test_global.h
 
 NT_tree_cmp.o: nt_tree_cmp.hxx
 NT_tree_cmp.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
@@ -658,6 +679,7 @@ NT_tree_cmp.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 NT_tree_cmp.o: $(ARBHOME)/INCLUDE/downcast.h
 NT_tree_cmp.o: $(ARBHOME)/INCLUDE/dupstr.h
 NT_tree_cmp.o: $(ARBHOME)/INCLUDE/smartptr.h
+NT_tree_cmp.o: $(ARBHOME)/INCLUDE/test_global.h
 
 NT_validManual.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 NT_validManual.o: $(ARBHOME)/INCLUDE/ad_prot.h
@@ -679,6 +701,7 @@ NT_validManual.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 NT_validManual.o: $(ARBHOME)/INCLUDE/awt.hxx
 NT_validManual.o: $(ARBHOME)/INCLUDE/dupstr.h
 NT_validManual.o: $(ARBHOME)/INCLUDE/smartptr.h
+NT_validManual.o: $(ARBHOME)/INCLUDE/test_global.h
 
 NT_validNameParser.o: nt_validNameParser.hxx
 NT_validNameParser.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
@@ -687,6 +710,7 @@ NT_validNameParser.o: $(ARBHOME)/INCLUDE/arb_core.h
 NT_validNameParser.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 NT_validNameParser.o: $(ARBHOME)/INCLUDE/attributes.h
 NT_validNameParser.o: $(ARBHOME)/INCLUDE/dupstr.h
+NT_validNameParser.o: $(ARBHOME)/INCLUDE/test_global.h
 
 NT_validNames.o: nt_validNameParser.hxx
 NT_validNames.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
@@ -710,3 +734,4 @@ NT_validNames.o: $(ARBHOME)/INCLUDE/awt.hxx
 NT_validNames.o: $(ARBHOME)/INCLUDE/awt_www.hxx
 NT_validNames.o: $(ARBHOME)/INCLUDE/dupstr.h
 NT_validNames.o: $(ARBHOME)/INCLUDE/smartptr.h
+NT_validNames.o: $(ARBHOME)/INCLUDE/test_global.h

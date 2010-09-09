@@ -62,6 +62,7 @@ AWT_filter.o: $(ARBHOME)/INCLUDE/awt.hxx
 AWT_filter.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 AWT_filter.o: $(ARBHOME)/INCLUDE/dupstr.h
 AWT_filter.o: $(ARBHOME)/INCLUDE/smartptr.h
+AWT_filter.o: $(ARBHOME)/INCLUDE/test_global.h
 
 ColumnStat.o: ColumnStat.hxx
 ColumnStat.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
@@ -85,6 +86,7 @@ ColumnStat.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 ColumnStat.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 ColumnStat.o: $(ARBHOME)/INCLUDE/dupstr.h
 ColumnStat.o: $(ARBHOME)/INCLUDE/smartptr.h
+ColumnStat.o: $(ARBHOME)/INCLUDE/test_global.h
 
 GUI_aliview.o: awt_filter.hxx
 GUI_aliview.o: ColumnStat.hxx
@@ -97,3 +99,4 @@ GUI_aliview.o: $(ARBHOME)/INCLUDE/arb_core.h
 GUI_aliview.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 GUI_aliview.o: $(ARBHOME)/INCLUDE/attributes.h
 GUI_aliview.o: $(ARBHOME)/INCLUDE/dupstr.h
+GUI_aliview.o: $(ARBHOME)/INCLUDE/test_global.h

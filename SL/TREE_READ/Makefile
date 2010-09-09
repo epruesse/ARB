@@ -49,6 +49,7 @@ TreeRead.o: $(ARBHOME)/INCLUDE/arbtools.h
 TreeRead.o: $(ARBHOME)/INCLUDE/attributes.h
 TreeRead.o: $(ARBHOME)/INCLUDE/dupstr.h
 TreeRead.o: $(ARBHOME)/INCLUDE/smartptr.h
+TreeRead.o: $(ARBHOME)/INCLUDE/test_global.h
 
 TreeTools.o: TreeRead.h
 TreeTools.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
@@ -64,3 +65,4 @@ TreeTools.o: $(ARBHOME)/INCLUDE/arbtools.h
 TreeTools.o: $(ARBHOME)/INCLUDE/attributes.h
 TreeTools.o: $(ARBHOME)/INCLUDE/dupstr.h
 TreeTools.o: $(ARBHOME)/INCLUDE/smartptr.h
+TreeTools.o: $(ARBHOME)/INCLUDE/test_global.h

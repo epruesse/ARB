@@ -40,21 +40,25 @@ aisc.o: aisc_proto.h
 aisc.o: $(ARBHOME)/INCLUDE/arb_assert.h
 aisc.o: $(ARBHOME)/INCLUDE/attributes.h
 aisc.o: $(ARBHOME)/INCLUDE/dupstr.h
+aisc.o: $(ARBHOME)/INCLUDE/test_global.h
 
 aisc_commands.o: aisc.h
 aisc_commands.o: aisc_proto.h
 aisc_commands.o: $(ARBHOME)/INCLUDE/arb_assert.h
 aisc_commands.o: $(ARBHOME)/INCLUDE/attributes.h
 aisc_commands.o: $(ARBHOME)/INCLUDE/dupstr.h
+aisc_commands.o: $(ARBHOME)/INCLUDE/test_global.h
 
 aisc_mix.o: aisc.h
 aisc_mix.o: aisc_proto.h
 aisc_mix.o: $(ARBHOME)/INCLUDE/arb_assert.h
 aisc_mix.o: $(ARBHOME)/INCLUDE/attributes.h
 aisc_mix.o: $(ARBHOME)/INCLUDE/dupstr.h
+aisc_mix.o: $(ARBHOME)/INCLUDE/test_global.h
 
 aisc_var_ref.o: aisc.h
 aisc_var_ref.o: aisc_proto.h
 aisc_var_ref.o: $(ARBHOME)/INCLUDE/arb_assert.h
 aisc_var_ref.o: $(ARBHOME)/INCLUDE/attributes.h
 aisc_var_ref.o: $(ARBHOME)/INCLUDE/dupstr.h
+aisc_var_ref.o: $(ARBHOME)/INCLUDE/test_global.h

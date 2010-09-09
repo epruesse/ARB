@@ -64,6 +64,7 @@ alma.o: $(ARBHOME)/INCLUDE/arbtools.h
 alma.o: $(ARBHOME)/INCLUDE/attributes.h
 alma.o: $(ARBHOME)/INCLUDE/dupstr.h
 alma.o: $(ARBHOME)/INCLUDE/FileBuffer.h
+alma.o: $(ARBHOME)/INCLUDE/test_global.h
 
 convert.o: convert.h
 convert.o: global.h
@@ -76,6 +77,7 @@ convert.o: $(ARBHOME)/INCLUDE/arbtools.h
 convert.o: $(ARBHOME)/INCLUDE/attributes.h
 convert.o: $(ARBHOME)/INCLUDE/dupstr.h
 convert.o: $(ARBHOME)/INCLUDE/FileBuffer.h
+convert.o: $(ARBHOME)/INCLUDE/test_global.h
 
 date.o: convert.h
 date.o: global.h
@@ -88,6 +90,7 @@ date.o: $(ARBHOME)/INCLUDE/arbtools.h
 date.o: $(ARBHOME)/INCLUDE/attributes.h
 date.o: $(ARBHOME)/INCLUDE/dupstr.h
 date.o: $(ARBHOME)/INCLUDE/FileBuffer.h
+date.o: $(ARBHOME)/INCLUDE/test_global.h
 
 embl.o: convert.h
 embl.o: global.h
@@ -100,6 +103,7 @@ embl.o: $(ARBHOME)/INCLUDE/arbtools.h
 embl.o: $(ARBHOME)/INCLUDE/attributes.h
 embl.o: $(ARBHOME)/INCLUDE/dupstr.h
 embl.o: $(ARBHOME)/INCLUDE/FileBuffer.h
+embl.o: $(ARBHOME)/INCLUDE/test_global.h
 
 fconv.o: convert.h
 fconv.o: global.h
@@ -112,6 +116,7 @@ fconv.o: $(ARBHOME)/INCLUDE/arbtools.h
 fconv.o: $(ARBHOME)/INCLUDE/attributes.h
 fconv.o: $(ARBHOME)/INCLUDE/dupstr.h
 fconv.o: $(ARBHOME)/INCLUDE/FileBuffer.h
+fconv.o: $(ARBHOME)/INCLUDE/test_global.h
 
 gcg.o: convert.h
 gcg.o: global.h
@@ -124,6 +129,7 @@ gcg.o: $(ARBHOME)/INCLUDE/arbtools.h
 gcg.o: $(ARBHOME)/INCLUDE/attributes.h
 gcg.o: $(ARBHOME)/INCLUDE/dupstr.h
 gcg.o: $(ARBHOME)/INCLUDE/FileBuffer.h
+gcg.o: $(ARBHOME)/INCLUDE/test_global.h
 
 genbank.o: convert.h
 genbank.o: global.h
@@ -136,6 +142,7 @@ genbank.o: $(ARBHOME)/INCLUDE/arbtools.h
 genbank.o: $(ARBHOME)/INCLUDE/attributes.h
 genbank.o: $(ARBHOME)/INCLUDE/dupstr.h
 genbank.o: $(ARBHOME)/INCLUDE/FileBuffer.h
+genbank.o: $(ARBHOME)/INCLUDE/test_global.h
 
 macke.o: convert.h
 macke.o: global.h
@@ -148,6 +155,7 @@ macke.o: $(ARBHOME)/INCLUDE/arbtools.h
 macke.o: $(ARBHOME)/INCLUDE/attributes.h
 macke.o: $(ARBHOME)/INCLUDE/dupstr.h
 macke.o: $(ARBHOME)/INCLUDE/FileBuffer.h
+macke.o: $(ARBHOME)/INCLUDE/test_global.h
 
 main.o: convert.h
 main.o: global.h
@@ -160,6 +168,7 @@ main.o: $(ARBHOME)/INCLUDE/arbtools.h
 main.o: $(ARBHOME)/INCLUDE/attributes.h
 main.o: $(ARBHOME)/INCLUDE/dupstr.h
 main.o: $(ARBHOME)/INCLUDE/FileBuffer.h
+main.o: $(ARBHOME)/INCLUDE/test_global.h
 
 mg.o: convert.h
 mg.o: global.h
@@ -172,6 +181,7 @@ mg.o: $(ARBHOME)/INCLUDE/arbtools.h
 mg.o: $(ARBHOME)/INCLUDE/attributes.h
 mg.o: $(ARBHOME)/INCLUDE/dupstr.h
 mg.o: $(ARBHOME)/INCLUDE/FileBuffer.h
+mg.o: $(ARBHOME)/INCLUDE/test_global.h
 
 paup.o: convert.h
 paup.o: global.h
@@ -184,6 +194,7 @@ paup.o: $(ARBHOME)/INCLUDE/arbtools.h
 paup.o: $(ARBHOME)/INCLUDE/attributes.h
 paup.o: $(ARBHOME)/INCLUDE/dupstr.h
 paup.o: $(ARBHOME)/INCLUDE/FileBuffer.h
+paup.o: $(ARBHOME)/INCLUDE/test_global.h
 
 phylip.o: convert.h
 phylip.o: global.h
@@ -196,6 +207,7 @@ phylip.o: $(ARBHOME)/INCLUDE/arbtools.h
 phylip.o: $(ARBHOME)/INCLUDE/attributes.h
 phylip.o: $(ARBHOME)/INCLUDE/dupstr.h
 phylip.o: $(ARBHOME)/INCLUDE/FileBuffer.h
+phylip.o: $(ARBHOME)/INCLUDE/test_global.h
 
 printable.o: convert.h
 printable.o: global.h
@@ -208,6 +220,7 @@ printable.o: $(ARBHOME)/INCLUDE/arbtools.h
 printable.o: $(ARBHOME)/INCLUDE/attributes.h
 printable.o: $(ARBHOME)/INCLUDE/dupstr.h
 printable.o: $(ARBHOME)/INCLUDE/FileBuffer.h
+printable.o: $(ARBHOME)/INCLUDE/test_global.h
 
 routines.o: convert.h
 routines.o: global.h
@@ -220,6 +233,7 @@ routines.o: $(ARBHOME)/INCLUDE/arbtools.h
 routines.o: $(ARBHOME)/INCLUDE/attributes.h
 routines.o: $(ARBHOME)/INCLUDE/dupstr.h
 routines.o: $(ARBHOME)/INCLUDE/FileBuffer.h
+routines.o: $(ARBHOME)/INCLUDE/test_global.h
 
 util.o: convert.h
 util.o: global.h
@@ -232,3 +246,4 @@ util.o: $(ARBHOME)/INCLUDE/arbtools.h
 util.o: $(ARBHOME)/INCLUDE/attributes.h
 util.o: $(ARBHOME)/INCLUDE/dupstr.h
 util.o: $(ARBHOME)/INCLUDE/FileBuffer.h
+util.o: $(ARBHOME)/INCLUDE/test_global.h

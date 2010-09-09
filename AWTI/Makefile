@@ -56,6 +56,7 @@ AWTI_export.o: $(ARBHOME)/INCLUDE/awt_filter.hxx
 AWTI_export.o: $(ARBHOME)/INCLUDE/dupstr.h
 AWTI_export.o: $(ARBHOME)/INCLUDE/seqio.hxx
 AWTI_export.o: $(ARBHOME)/INCLUDE/smartptr.h
+AWTI_export.o: $(ARBHOME)/INCLUDE/test_global.h
 
 AWTI_import.o: awti_imp_local.hxx
 AWTI_import.o: awti_import.hxx
@@ -87,3 +88,4 @@ AWTI_import.o: $(ARBHOME)/INCLUDE/GEN.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/GenomeImport.h
 AWTI_import.o: $(ARBHOME)/INCLUDE/seqio.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/smartptr.h
+AWTI_import.o: $(ARBHOME)/INCLUDE/test_global.h

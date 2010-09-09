@@ -58,6 +58,7 @@ AW_names_admin.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AW_names_admin.o: $(ARBHOME)/INCLUDE/awt.hxx
 AW_names_admin.o: $(ARBHOME)/INCLUDE/dupstr.h
 AW_names_admin.o: $(ARBHOME)/INCLUDE/smartptr.h
+AW_names_admin.o: $(ARBHOME)/INCLUDE/test_global.h
 
 AW_rename.o: AW_rename.hxx
 AW_rename.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
@@ -85,3 +86,4 @@ AW_rename.o: $(ARBHOME)/INCLUDE/dupstr.h
 AW_rename.o: $(ARBHOME)/INCLUDE/names_client.h
 AW_rename.o: $(ARBHOME)/INCLUDE/servercntrl.h
 AW_rename.o: $(ARBHOME)/INCLUDE/smartptr.h
+AW_rename.o: $(ARBHOME)/INCLUDE/test_global.h

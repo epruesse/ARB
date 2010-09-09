@@ -59,3 +59,4 @@ db_scanner.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 db_scanner.o: $(ARBHOME)/INCLUDE/awt.hxx
 db_scanner.o: $(ARBHOME)/INCLUDE/dupstr.h
 db_scanner.o: $(ARBHOME)/INCLUDE/smartptr.h
+db_scanner.o: $(ARBHOME)/INCLUDE/test_global.h
