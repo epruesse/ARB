@@ -537,7 +537,7 @@ GB_ERROR AWTC_pars_names(GBDATA *gb_main, int update_status, bool *isWarningPtr)
                 GBT_abort_rename_session();
             }
             else {
-                GBT_commit_rename_session(aw_status, aw_status);
+                err = GBT_commit_rename_session(aw_status, aw_status);
             }
 
             GBS_free_hash(hash);

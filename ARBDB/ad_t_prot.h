@@ -78,7 +78,7 @@ GBDATA **GBT_gen_species_array(GBDATA *gb_main, long *pspeccnt);
 GB_ERROR GBT_begin_rename_session(GBDATA *gb_main, int all_flag);
 GB_ERROR GBT_rename_species(const char *oldname, const char *newname, bool ignore_protection);
 GB_ERROR GBT_abort_rename_session(void);
-GB_ERROR GBT_commit_rename_session(int (*show_status)(double gauge), int (*show_status_text)(const char *));
+GB_ERROR GBT_commit_rename_session(int (*show_status)(double gauge), int (*show_status_text)(const char *)) __ATTR__USERESULT;
 
 /* adseqcompr.cxx */
 GB_ERROR GBT_compress_sequence_tree2(GBDATA *gb_main, const char *tree_name, const char *ali_name) __ATTR__USERESULT;
