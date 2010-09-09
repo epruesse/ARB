@@ -1292,44 +1292,9 @@ void GB_disable_path(GBDATA *gbd, const char *path) {
 
 #include <test_unit.h>
 
-static bool files_are_equal(const char *file1, const char *file2) {
-    GB_ERROR   error     = NULL;
-    FILE      *fp1       = fopen(file1, "rb");
-
-    // @@@ FIXME:  use GB_IO_error() here later
-    if (!fp1) error = GBS_global_string("can't open '%s'", file1);
-    else {
-        FILE *fp2 = fopen(file2, "rb");
-        if (!fp2) error = GBS_global_string("can't open '%s'", file2);
-        else {
-            const int BLOCKSIZE = 4096;
-            char *buf1 = (char*)malloc(BLOCKSIZE);
-            char *buf2 = (char*)malloc(BLOCKSIZE);
-
-            while (!error) {
-                int read1 = fread(buf1, 1, BLOCKSIZE, fp1);
-                int read2 = fread(buf2, 1, BLOCKSIZE, fp2);
-
-                if (read1 != read2) error = "filesizes differ";
-                else {
-                    if (!read1) break; // done
-                    if (memcmp(buf1, buf2, read1) != 0) error = "content differs";
-                }
-            }
-            free(buf2);
-            free(buf1);
-            fclose(fp2);
-        }
-        fclose(fp1);
-    }
-
-    if (error) TEST_WARNING("%s", GBS_global_string("files_are_equal(%s, %s): %s", file1, file2, error));
-    return !error;
-}
-
 #define SAVE_AND_COMPARE(gbd, save_as, savetype, compare_with) \
     TEST_ASSERT_NO_ERROR(GB_save_as(gbd, save_as, savetype));  \
-    TEST_ASSERT(files_are_equal(save_as, compare_with))
+    TEST_ASSERT_FILES_EQUAL(save_as, compare_with)
 
 static GB_ERROR modify_db(GBDATA *gb_main) {
     GB_transaction ta(gb_main);
@@ -1341,6 +1306,7 @@ static GB_ERROR modify_db(GBDATA *gb_main) {
         GBDATA *gb_entry     = GB_create(gb_container, "str", GB_STRING);
         if (!gb_entry) error = GB_await_error();
         else    error        = GB_write_string(gb_entry, "text");
+        // else    error        = GB_write_string(gb_entry, "bla"); // provoke error in file compare
     }
     return error;
 }
@@ -1424,8 +1390,8 @@ void TEST_SLOW_loadsave() {
         TEST_copy("a2b.a00", "TEST_loadsave_quick.a00");
 #endif // TEST_AUTO_UPDATE
 
-        TEST_ASSERT(files_are_equal("TEST_loadsave_quick.a00", "a2b.a00"));
-        TEST_ASSERT(files_are_equal("a2b.a00", "b2b.a00"));
+        TEST_ASSERT_FILES_EQUAL("TEST_loadsave_quick.a00", "a2b.a00");
+        TEST_ASSERT_FILES_EQUAL("a2b.a00", "b2b.a00");
 
         TEST_ASSERT_NO_ERROR(GB_save_quick_as(gb_a2b, "a2b.arb"));
 

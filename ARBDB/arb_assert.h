@@ -179,75 +179,9 @@
 // ------------------------------------------------------------
 
 #if (UNIT_TESTS == 1)
-# if defined(DEVEL_RELEASE)
-#  error Unit testing not allowed in release
-# else
-
-#  ifdef __cplusplus
-
-#ifndef _CPP_CSTDLIB
-#include <cstdlib>
+#ifndef TEST_GLOBAL_H
+#include <test_global.h> // overrides arb_assert()!
 #endif
-
-namespace arb_test {
-    class GlobalTestData {
-        GlobalTestData()
-            : show_warnings(true),
-              assertion_failed(false),
-              warnings(0)
-        {}
-
-        static GlobalTestData *instance(bool erase) {
-            static GlobalTestData *data = 0; // singleton
-            if (erase) {
-                delete data;
-                data = 0;
-            }
-            else {
-                if (!data) data = new GlobalTestData;
-            }
-            return data;
-        }
-
-    public:
-        bool show_warnings;
-        bool assertion_failed;
-
-        // counters
-        size_t warnings;
-
-        static GlobalTestData& get_instance() { return *instance(false); }
-        static void erase_instance() { instance(true); }
-    };
-
-    inline GlobalTestData& test_data() { return GlobalTestData::get_instance(); }
-};
-
-#   define ASSERTION_HAS_FAILED() arb_test::test_data().assertion_failed = true  
-
-#  else
-#   define ASSERTION_HAS_FAILED() // impossible in C
-#  endif
-
-#  define test_assert(cond)                                     \
-    do {                                                        \
-        if (!(cond)) {                                          \
-            fflush(stdout);                                     \
-            fflush(stderr);                                     \
-            fprintf(stderr, "%s:%i: Assertion '%s' failed\n",   \
-                    __FILE__, __LINE__, #cond);                 \
-            fflush(stderr);                                     \
-            ASSERTION_HAS_FAILED();                             \
-            ARB_SIGSEGV(0);                                     \
-        }                                                       \
-    } while(0)
-
-#  if defined(ASSERTION_USED)
-#   undef arb_assert
-#   define arb_assert(cond) test_assert(cond)
-#  endif
-
-# endif
 #endif
 
 // ------------------------------------------------------------

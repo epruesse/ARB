@@ -16,6 +16,8 @@ else
             DATE=`date '+%Y%m%d_%H%M%S'`
             PATCHNAME=${NAME}_$DATE
             PATCH=$PATCHDIR/$PATCHNAME.patch
+            FAKEPATCH=$PATCHDIR/fake.patch
+            RECENT_PATCH=$ARBHOME/latest.patch
 
             cd $ARBHOME
             svn diff > $PATCH
@@ -23,9 +25,14 @@ else
             if [ -e $PATCH ]; then
                 if [ ! -s $PATCH ]; then
                     rm $PATCH
+                    if [ ! -e $FAKEPATCH ]; then
+                        echo "Index: No changes" > $FAKEPATCH
+                        echo "===================================================================" >> $FAKEPATCH
+                    fi
+                    ln --force $FAKEPATCH $RECENT_PATCH
+                    touch $FAKEPATCH
                     echo "No patch generated (no diff)"
                 else
-                    RECENT_PATCH=$ARBHOME/latest.patch
                     ln --force $PATCH $RECENT_PATCH
                     ls -alh $PATCH $RECENT_PATCH
                 fi
