@@ -1,0 +1,44 @@
+
+notarget:
+	@echo "Usage: make (init|cleanup|unskip)" 
+	false
+
+include Makefile.setup
+
+TEST_REPORTER = ./reporter.pl
+TEST_LOG_DIR = ./logs
+
+PATCHNAMEBASE:=TestsOk
+PATCHNAMESUFFIX:=
+
+unskip:
+	@(test -f skipslow.stamp && rm skipslow.stamp) || true
+
+init:
+	@echo "$(SEP) Running unit tests"
+	@$(TEST_REPORTER) init $(TEST_LOG_DIR) $(SKIP_SLOW)
+
+ifneq ('$(RESTRICT_LIB)','')
+PATCHNAMESUFFIX:=$(PATCHNAMESUFFIX)__only_$(RESTRICT_LIB)
+endif
+ifneq ($(RESTRICT_MODULE),'.')
+PATCHNAMESUFFIX:=$(PATCHNAMESUFFIX)__notAllFiles
+endif
+SKIPPED_SLOW:=$(shell (test -f skipslow.stamp && ls -1 skipslow.stamp))
+ifneq ('$(SKIPPED_SLOW)','')
+PATCHNAMESUFFIX:=$(PATCHNAMESUFFIX)__SLOW_skipped
+endif
+
+cleanup:
+	@$(TEST_REPORTER) report $(TEST_LOG_DIR) $(SKIP_SLOW)
+	@$(MAKE) $(NODIR) -f Makefile.test -r \
+		"UNITDIR=" \
+		"UNITLIBNAME=" \
+		"COVERAGE=0" \
+		"cflags=faked" \
+		"PATCHNAMEBASE=$(PATCHNAMEBASE)" \
+		"PATCHNAMESUFFIX=$(PATCHNAMESUFFIX)" \
+		store_patch
+	@echo "$(SEP) All unit tests passed"
+
+
