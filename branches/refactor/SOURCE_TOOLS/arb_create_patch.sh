@@ -33,8 +33,18 @@ else
                     touch $FAKEPATCH
                     echo "No patch generated (no diff)"
                 else
-                    ln --force $PATCH $RECENT_PATCH
-                    ls -hog $PATCH $RECENT_PATCH
+                    DIFF=0
+                    if [ -e $RECENT_PATCH ]; then
+                        DIFF=`diff $PATCH $RECENT_PATCH | wc -l`
+                    fi
+
+                    if [ $DIFF = 0 ]; then
+                        echo "No patch generated (same as last patch)"
+                        rm $PATCH
+                    else
+                        ln --force $PATCH $RECENT_PATCH
+                        ls -hog $PATCH $RECENT_PATCH
+                    fi
                 fi
             fi
         fi
