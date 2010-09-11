@@ -150,14 +150,6 @@ skip_test:
 
 # --------------------
 
-del_old_patches:
-	@../SOURCE_TOOLS/arb_cleanup_patches.sh $(PATCHNAMEBASE) $(DELETE_PATCHES_AFTER) 
-
-store_patch: del_old_patches
-	@../SOURCE_TOOLS/arb_create_patch.sh $(PATCHNAMEBASE)$(PATCHNAMESUFFIX)
-
-# --------------------
-
 RUN:=perform_test
 
 ifneq ('$(RESTRICT_LIB)','')
