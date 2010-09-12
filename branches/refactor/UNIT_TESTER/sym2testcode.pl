@@ -160,7 +160,7 @@ sub prototype_simple($) {
 sub generate_table($$\%\&) {
   my ($type,$name,$id_r,$prototyper_r) = @_;
 
-  if ($skip_slow!=0) { skip_slow_tests(); }
+  if ($skip_slow) { skip_slow_tests(); }
   calculate_priorities();
 
   my @tests = sort {
