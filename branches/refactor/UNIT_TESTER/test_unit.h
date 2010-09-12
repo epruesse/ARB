@@ -133,8 +133,8 @@ namespace arb_test {
 
 
 #ifdef TRACE_IS_EQUAL
-    template <typename T1, typename T2> inline bool is_equal__traced(bool equal, T1 t1, T2 t2) {
-        fprintf(stderr, "%-5s = is_equal(%s ", (equal ? "true" : "false"), nameoftype(t1));
+    template <typename T1, typename T2> inline bool bool_traced(const char *name, bool equal, T1 t1, T2 t2) {
+        fprintf(stderr, "%-5s = %s(%s ", (equal ? "true" : "false"), name, nameoftype(t1));
         print(t1);
         fprintf(stderr, ",%s ", nameoftype(t2));
         print(t2);
@@ -142,16 +142,19 @@ namespace arb_test {
         return equal;
     }
 #else
-    template <typename T1, typename T2> inline bool is_equal__traced(bool equal, T1 , T2 ) {
+    template <typename T1, typename T2> inline bool bool_traced(const char *, bool equal, T1 , T2 ) {
         return equal;
     }
 #endif
 
     template <typename T1, typename T2> inline bool is_equal(T1 t1, T2 t2) {
-        return is_equal__traced(t1 == t2, t1, t2);
+        return bool_traced("is_equal", t1 == t2, t1, t2);
     }
     template<> inline bool is_equal<>(const char *s1, const char *s2) {
-        return is_equal__traced((s1 == s2) || (s1 && s2 && strcmp(s1, s2) == 0), s1, s2);
+        return bool_traced("is_equal", (s1 == s2) || (s1 && s2 && strcmp(s1, s2) == 0), s1, s2);
+    }
+    template <typename T1, typename T2> inline bool is_less(T1 t1, T2 t2) {
+        return bool_traced("is_less", t1 < t2, t1, t2);
     }
 
 
@@ -165,6 +168,9 @@ namespace arb_test {
     }
     template <typename T1, typename T2> inline void print_failed_equal(T1 t1, T2 t2) {
         print_failed_compare(t1, t2, "test_equal(", ") (", ") returns false");
+    }
+    template <typename T1, typename T2> inline void print_failed_less_equal(T1 t1, T2 t2) {
+        print_failed_compare(t1, t2, "test_less_equal(", ") (", ") returns false");
     }
     template <typename T1, typename T2> inline void print_failed_different(T1 t1, T2 t2) {
         print_failed_compare(t1, t2, "test_different(", ") (", ") returns false");
@@ -190,6 +196,11 @@ namespace arb_test {
         bool equal = is_equal(t1, t2);
         if (!equal) print_failed_equal(t1, t2);
         return equal;
+    }
+    template <typename T1, typename T2> inline bool test_less_equal(T1 lower, T2 upper) {
+        bool less_equal = is_equal(lower, upper) || is_less(lower, upper);
+        if (!less_equal) print_failed_less_equal(lower, upper);
+        return less_equal;
     }
     template <typename T1, typename T2> inline bool test_different(T1 t1, T2 t2) {
         bool different = !is_equal(t1, t2);
@@ -479,14 +490,18 @@ namespace arb_test {
 
 // --------------------------------------------------------------------------------
 
-#define TEST_ASSERT_EQUAL(t1,t2)           TEST_ASSERT(arb_test::test_equal(t1, t2))
-#define TEST_ASSERT_EQUAL__BROKEN(t1,t2)   TEST_ASSERT__BROKEN(arb_test::test_equal(t1, t2))
+#define TEST_ASSERT_EQUAL(e1,t2)           TEST_ASSERT(arb_test::test_equal(e1, t2))
+#define TEST_ASSERT_EQUAL__BROKEN(e1,t2)   TEST_ASSERT__BROKEN(arb_test::test_equal(e1, t2))
 
-#define TEST_ASSERT_SIMILAR(t1,t2,epsilon)         TEST_ASSERT(arb_test::test_similar(t1, t2, epsilon))
-#define TEST_ASSERT_SIMILAR__BROKEN(t1,t2,epsilon) TEST_ASSERT__BROKEN(arb_test::test_similar(t1, t2, epsilon))
+#define TEST_ASSERT_SIMILAR(e1,t2,epsilon)         TEST_ASSERT(arb_test::test_similar(e1, t2, epsilon))
+#define TEST_ASSERT_SIMILAR__BROKEN(e1,t2,epsilon) TEST_ASSERT__BROKEN(arb_test::test_similar(e1, t2, epsilon))
 
-#define TEST_ASSERT_DIFFERENT(t1,t2)         TEST_ASSERT(arb_test::test_different(t1, t2))
-#define TEST_ASSERT_DIFFERENT__BROKEN(t1,t2) TEST_ASSERT__BROKEN(arb_test::test_different(t1, t2))
+#define TEST_ASSERT_DIFFERENT(e1,t2)         TEST_ASSERT(arb_test::test_different(e1, t2))
+#define TEST_ASSERT_DIFFERENT__BROKEN(e1,t2) TEST_ASSERT__BROKEN(arb_test::test_different(e1, t2))
+
+#define TEST_ASSERT_LOWER_EQUAL(lower,upper)  TEST_ASSERT(arb_test::test_less_equal(lower, upper))
+#define TEST_ASSERT_LOWER(lower,upper) do { TEST_ASSERT_LOWER_EQUAL(lower, upper); TEST_ASSERT_DIFFERENT(lower, upper); } while(0)
+#define TEST_ASSERT_IN_RANGE(val,lower,upper) do { TEST_ASSERT_LOWER_EQUAL(lower, val); TEST_ASSERT_LOWER_EQUAL(val, upper); } while(0)
 
 #define TEST_ASSERT_FILES_EQUAL(f1,f2)         TEST_ASSERT(arb_test::test_files_equal(f1,f2))
 #define TEST_ASSERT_FILES_EQUAL__BROKEN(f1,f2) TEST_ASSERT__BROKEN(arb_test::test_files_equal(f1,f2))
