@@ -49,6 +49,7 @@ TestEnvironment.o: $(ARBHOME)/INCLUDE/arb_assert.h
 TestEnvironment.o: $(ARBHOME)/INCLUDE/arb_core.h
 TestEnvironment.o: $(ARBHOME)/INCLUDE/arb_defs.h
 TestEnvironment.o: $(ARBHOME)/INCLUDE/arb_error.h
+TestEnvironment.o: $(ARBHOME)/INCLUDE/arb_str.h
 TestEnvironment.o: $(ARBHOME)/INCLUDE/arbdb.h
 TestEnvironment.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 TestEnvironment.o: $(ARBHOME)/INCLUDE/arbtools.h
