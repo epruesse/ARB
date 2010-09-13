@@ -116,8 +116,14 @@ sub parse_log($) {
 
 sub percent($$) {
   my ($part,$all) = @_;
-  my $percent = 100*$part/$all;
-  return sprintf("%5.1f%%", $percent);
+  if ($all) {
+    my $percent = 100*$part/$all;
+    return sprintf("%5.1f%%", $percent);
+  }
+  else {
+    $part==0 || die;
+    return "  0.0%";
+  }
 }
 
 sub slow_note() {
@@ -182,6 +188,6 @@ sub main() {
     eval { $error = &$cb(); };
     if ($@) { $error = $@; }
   }
-  if ($error) { die "reporter.pl:197: Error: ".$error; }
+  if ($error) { die "Error: ".$error; }
 }
 main();
