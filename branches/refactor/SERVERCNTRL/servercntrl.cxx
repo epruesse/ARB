@@ -384,3 +384,16 @@ void free_arb_params(arb_params *params) {
 
     free(params);
 }
+
+// --------------------------------------------------------------------------------
+
+#if (UNIT_TESTS == 1)
+
+#include <test_unit.h>
+
+void TEST_servercntrl() {
+    // TEST_ASSERT(0);
+}
+
+#endif
+

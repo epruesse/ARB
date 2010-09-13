@@ -919,6 +919,7 @@ DBSERVER = bin/arb_db_server
 ARCHS_DBSERVER = \
 		DBSERVER/DBSERVER.a \
 		SERVERCNTRL/SERVERCNTRL.a \
+		PROBE_COM/client.a \
 
 $(DBSERVER): $(ARCHS_DBSERVER:.a=.dummy) shared_libs
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_DBSERVER) $(ARBDB_LIB) || ( \
@@ -1536,8 +1537,11 @@ UNITS_WORKING = \
 	DBSERVER/DBSERVER.test \
 	AWT/AWT.test \
 
+# untestable units
+
+UNITS_TRY_FIX = \
+
 UNITS_UNTESTABLE_ATM = \
-	SERVERCNTRL/SERVERCNTRL.test \
 	PROBE_SET/PROBE_SET.test \
 	XML_IMPORT/XML_IMPORT.test \
 
@@ -1550,9 +1554,9 @@ UNITS_NEED_FIX = \
 
 # for the moment, put all units containing tests into UNITS_TESTED:
 UNITS_TESTED = \
+	SERVERCNTRL/SERVERCNTRL.test \
 	SL/PRONUC/PRONUC.test \
 	AISC_MKPTPS/mkptypes.test \
-	PROBE_COM/client.test \
 	TOOLS/arb_probe.test \
 	AWTC/AWTC.test \
 	SL/FAST_ALIGNER/FAST_ALIGNER.test \
@@ -1562,8 +1566,9 @@ UNITS_TESTED = \
 	MERGE/MERGE.test \
 
 TESTED_UNITS_MANUAL = \
+	$(UNITS_TRY_FIX) \
 	$(UNITS_TESTED) \
-	$(UNITS_WORKING)
+	$(UNITS_WORKING) \
 
 #TESTED_UNITS = $(TESTED_UNITS_AUTO)
 TESTED_UNITS = $(TESTED_UNITS_MANUAL)
