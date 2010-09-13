@@ -283,10 +283,10 @@ SEC_paint.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 SEC_paint.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 SEC_paint.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 SEC_paint.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
-SEC_paint.o: $(ARBHOME)/INCLUDE/awt_iupac.hxx
 SEC_paint.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 SEC_paint.o: $(ARBHOME)/INCLUDE/dupstr.h
 SEC_paint.o: $(ARBHOME)/INCLUDE/ed4_extern.hxx
+SEC_paint.o: $(ARBHOME)/INCLUDE/iupac.h
 SEC_paint.o: $(ARBHOME)/INCLUDE/smartptr.h
 SEC_paint.o: $(ARBHOME)/INCLUDE/test_global.h
 

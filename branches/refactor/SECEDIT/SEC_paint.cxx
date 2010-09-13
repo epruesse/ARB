@@ -15,7 +15,7 @@
 #include "SEC_bonddef.hxx"
 #include "SEC_toggle.hxx"
 
-#include <awt_iupac.hxx>
+#include <iupac.h>
 
 #include <ed4_extern.hxx>
 

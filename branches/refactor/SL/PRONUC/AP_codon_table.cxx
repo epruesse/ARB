@@ -9,9 +9,9 @@
 //                                                                 //
 // =============================================================== //
 
-#include "awt_iupac.hxx"
-
 #include "AP_codon_table.hxx"
+#include "iupac.h"
+
 #include <arbdb.h>
 
 #include <cctype>

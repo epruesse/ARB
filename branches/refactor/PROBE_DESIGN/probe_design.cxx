@@ -19,7 +19,7 @@
 #include <GEN.hxx>
 #include <TreeCallbacks.hxx>
 
-#include <awt_iupac.hxx>
+#include <iupac.h>
 #include <awt_config_manager.hxx>
 #include <awt_sel_boxes.hxx>
 

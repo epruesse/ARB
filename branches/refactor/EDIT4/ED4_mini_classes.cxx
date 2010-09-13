@@ -14,7 +14,7 @@
 #include "ed4_awars.hxx"
 #include "ed4_tools.hxx"
 
-#include <awt_iupac.hxx>
+#include <iupac.h>
 
 #include <cctype>
 

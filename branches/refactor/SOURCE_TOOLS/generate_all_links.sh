@@ -195,7 +195,6 @@ symlink_file ../AWT/awt_config_manager.hxx INCLUDE/awt_config_manager.hxx &&
 symlink_file ../AWT/awt_hotkeys.hxx INCLUDE/awt_hotkeys.hxx &&
 symlink_file ../AWT/awt_input_mask.hxx INCLUDE/awt_input_mask.hxx &&
 symlink_file ../AWT/awt_item_sel_list.hxx INCLUDE/awt_item_sel_list.hxx &&
-symlink_file ../AWT/awt_iupac.hxx INCLUDE/awt_iupac.hxx &&
 symlink_file ../AWT/awt_macro.hxx INCLUDE/awt_macro.hxx &&
 symlink_file ../AWT/awt_map_key.hxx INCLUDE/awt_map_key.hxx &&
 symlink_file ../AWT/awt_nds.hxx INCLUDE/awt_nds.hxx &&
@@ -241,6 +240,7 @@ symlink_file ../SL/MATRIX/AP_matrix.hxx INCLUDE/AP_matrix.hxx &&
 symlink_file ../SL/NEIGHBOURJOIN/neighbourjoin.hxx INCLUDE/neighbourjoin.hxx &&
 symlink_file ../SL/PRONUC/AP_codon_table.hxx INCLUDE/AP_codon_table.hxx &&
 symlink_file ../SL/PRONUC/AP_pro_a_nucs.hxx INCLUDE/AP_pro_a_nucs.hxx &&
+symlink_file ../SL/PRONUC/iupac.h INCLUDE/iupac.h &&
 symlink_file ../SL/REGEXPR/RegExpr.hxx INCLUDE/RegExpr.hxx &&
 symlink_file ../SL/SEQUENCE/AP_seq_dna.hxx INCLUDE/AP_seq_dna.hxx &&
 symlink_file ../SL/SEQUENCE/AP_seq_protein.hxx INCLUDE/AP_seq_protein.hxx &&

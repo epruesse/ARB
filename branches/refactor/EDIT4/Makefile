@@ -373,8 +373,8 @@ ED4_mini_classes.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ED4_mini_classes.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 ED4_mini_classes.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 ED4_mini_classes.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-ED4_mini_classes.o: $(ARBHOME)/INCLUDE/awt_iupac.hxx
 ED4_mini_classes.o: $(ARBHOME)/INCLUDE/dupstr.h
+ED4_mini_classes.o: $(ARBHOME)/INCLUDE/iupac.h
 ED4_mini_classes.o: $(ARBHOME)/INCLUDE/smartptr.h
 ED4_mini_classes.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -749,9 +749,9 @@ ED4_tools.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ED4_tools.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 ED4_tools.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 ED4_tools.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-ED4_tools.o: $(ARBHOME)/INCLUDE/awt_iupac.hxx
 ED4_tools.o: $(ARBHOME)/INCLUDE/dupstr.h
 ED4_tools.o: $(ARBHOME)/INCLUDE/fast_aligner.hxx
+ED4_tools.o: $(ARBHOME)/INCLUDE/iupac.h
 ED4_tools.o: $(ARBHOME)/INCLUDE/smartptr.h
 ED4_tools.o: $(ARBHOME)/INCLUDE/test_global.h
 

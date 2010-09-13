@@ -8,9 +8,11 @@
 //                                                                  //
 // ================================================================ //
 
-#include "awt_iupac.hxx"
+#include "iupac.h"
+
 #include <arb_assert.h>
 #include <arb_str.h>
+
 #include <cctype>
 
 #define awt_assert(bed) arb_assert(bed)
