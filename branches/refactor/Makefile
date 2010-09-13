@@ -1492,7 +1492,6 @@ TESTED_UNITS_AUTO = $(ARCHS:.a=.test)
 UNITS_WORKING = \
 	ISLAND_HOPPING/ISLAND_HOPPING.test \
 	WINDOW/WINDOW.test \
-	AWT/AWT.test \
 	SL/ALIVIEW/ALIVIEW.test \
 	SL/AP_TREE/AP_TREE.test \
 	SL/ARB_TREE/ARB_TREE.test \
@@ -1551,6 +1550,7 @@ UNITS_NEED_FIX = \
 
 # for the moment, put all units containing tests into UNITS_TESTED:
 UNITS_TESTED = \
+	AWT/AWT.test \
 	AISC_MKPTPS/mkptypes.test \
 	PROBE_COM/client.test \
 	TOOLS/arb_probe.test \

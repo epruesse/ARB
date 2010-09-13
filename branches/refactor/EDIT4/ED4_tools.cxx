@@ -22,11 +22,11 @@
 #include <cctype>
 
 char ED4_encode_iupac(const char bases[], GB_alignment_type ali) {
-    return AWT_encode_iupac(bases, ali);
+    return iupac::encode(bases, ali);
 }
 
 const char *ED4_decode_iupac(char iupac, GB_alignment_type ali) {
-    return AWT_decode_iupac(iupac, ali, ED4_ROOT->aw_root->awar(ED4_AWAR_CONSENSUS_GROUP)->read_int()); // IUPAC shown in consensus!
+    return iupac::decode(iupac, ali, ED4_ROOT->aw_root->awar(ED4_AWAR_CONSENSUS_GROUP)->read_int()); // IUPAC shown in consensus!
 }
 
 void ED4_set_clipping_rectangle(AW_rectangle *rect)

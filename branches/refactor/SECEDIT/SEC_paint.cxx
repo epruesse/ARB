@@ -486,8 +486,8 @@ void SEC_bond_def::paint(AW_device *device, char base1, char base2, const Positi
         char Bond = get_bond(base1, base2);
         if (Bond == ' ') {
             // check IUPACs
-            const char *iupac1 = AWT_decode_iupac(base1, ali_type, 0);
-            const char *iupac2 = AWT_decode_iupac(base2, ali_type, 0);
+            const char *iupac1 = iupac::decode(base1, ali_type, 0);
+            const char *iupac2 = iupac::decode(base2, ali_type, 0);
 
             bool useBond[SEC_BOND_PAIR_CHARS];
             for (int i = 0; i<SEC_BOND_PAIR_CHARS; i++) useBond[i] = false;

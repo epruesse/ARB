@@ -261,10 +261,12 @@ AWT_iupac.o: awt_iupac.hxx
 AWT_iupac.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 AWT_iupac.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWT_iupac.o: $(ARBHOME)/INCLUDE/arb_core.h
+AWT_iupac.o: $(ARBHOME)/INCLUDE/arb_str.h
 AWT_iupac.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AWT_iupac.o: $(ARBHOME)/INCLUDE/attributes.h
 AWT_iupac.o: $(ARBHOME)/INCLUDE/dupstr.h
 AWT_iupac.o: $(ARBHOME)/INCLUDE/test_global.h
+AWT_iupac.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 AWT_macro.o: awt_macro.hxx
 AWT_macro.o: $(ARBHOME)/INCLUDE/ad_k_prot.h

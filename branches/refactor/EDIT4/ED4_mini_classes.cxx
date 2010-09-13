@@ -536,9 +536,10 @@ char *ED4_char_table::build_consensus_string(int left_idx, int right_idx, char *
                     else {
                         e4_assert(IS_AMINO());
 
-                        int group_count[ED4_IUPAC_GROUPS];
+                        const int amino_groups = iupac::AA_GROUP_COUNT;
+                        int       group_count[amino_groups];
 
-                        for (j=0; j<ED4_IUPAC_GROUPS; j++) {
+                        for (j=0; j<amino_groups; j++) {
                             group_count[j] = 0;
                         }
                         for (j=0; j<used_bases_tables; j++) {
@@ -546,21 +547,21 @@ char *ED4_char_table::build_consensus_string(int left_idx, int right_idx, char *
 
                             if (!ADPP_IS_ALIGN_CHARACTER(bchar)) {
                                 if (PERCENT(base[j], sequences)>=BK_considbound) {
-                                    group_count[AWT_iupac_group[toupper(bchar)-'A']] += base[j];
+                                    group_count[iupac::get_amino_group_for(bchar)] += base[j];
                                 }
                             }
                         }
 
                         kcount = 0;
                         int bestGroup = 0;
-                        for (j=0; j<ED4_IUPAC_GROUPS; j++) {
+                        for (j=0; j<amino_groups; j++) {
                             if (group_count[j]>kcount) {
                                 bestGroup = j;
                                 kcount = group_count[j];
                             }
                         }
 
-                        kchar = "?ADHIF"[bestGroup];
+                        kchar = "?ADHIF"[bestGroup]; // @@@ DRY!
                     }
                 }
                 else {
@@ -649,7 +650,7 @@ ED4_char_table::ED4_char_table(int maxseqlength)
         }
         else {
             e4_assert(IS_AMINO());
-            groups = "P,A,G,S,T,Q,N,E,D,B,Z,H,K,R,L,I,V,M,F,Y,W,";
+            groups = "P,A,G,S,T,Q,N,E,D,B,Z,H,K,R,L,I,V,M,F,Y,W,"; // @@@ DRY (sollte auch mit groups funktionieren)
         }
 
         e4_assert(groups);
