@@ -323,8 +323,11 @@ sub scan_target($) {
     my $fulldep = fullpath($depfile);
 
     if (not -f $fulldep) {
+      my $dir = dirOf($fulldep);
+      my $err = "Missing dependency file for '$target'";
+      if (not -d $dir) { $err .= " (No such directory '$dir')"; }
       my $location = $fulldep.':0';
-      location_error($location,"Missing dependency file for '$target'");
+      location_error($location,$err);
     }
     else {
       open(IN,'<'.$fulldep) || die "can't read '$fulldep' (Reason: $!)";
