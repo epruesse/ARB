@@ -363,8 +363,10 @@ sub rec_add_depends_to_hash($\%) {
   else {
     my $dep_r = $dependencies_of{$target};
     foreach (keys %$dep_r) {
-      $$hash_r{$_} = 1;
-      rec_add_depends_to_hash($_,%$hash_r);
+      if (not defined $$hash_r{$_}) {
+        $$hash_r{$_} = 1;
+        rec_add_depends_to_hash($_,%$hash_r);
+      }
     }
   }
 }
