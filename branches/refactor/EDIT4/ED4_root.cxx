@@ -14,7 +14,7 @@
 #include "ed4_block.hxx"
 #include "ed4_dots.hxx"
 #include "ed4_nds.hxx"
-#include "ed4_known_plugins.hxx"
+#include "ed4_plugins.hxx"
 #include "ed4_visualizeSAI.hxx"
 #include "ed4_naligner.hxx"
 #include "ed4_ProteinViewer.hxx"
@@ -1450,7 +1450,10 @@ ED4_returncode ED4_root::generate_window(AW_device **device,    ED4_window **new
     SEP________________________SEP;
     awmm->insert_menu_topic("missing_bases", "Dot potentially missing bases", "D", "missbase.hlp", AWM_EXP, ED4_popup_dot_missing_bases_window, 0, 0);
     SEP________________________SEP;
-    awmm->insert_menu_topic("sec_edit", "Edit secondary structure", "c", 0, AWM_ALL, ED4_SECEDIT_start, (AW_CL)GLOBAL_gb_main, 0);
+    awmm->insert_menu_topic("sec_edit", "Edit secondary structure", "c", 0, AWM_ALL, ED4_start_plugin, (AW_CL)GLOBAL_gb_main, (AW_CL)"SECEDIT");
+#if defined(ARB_OPENGL)
+    awmm->insert_menu_topic("rna3d", "View 3D molecule", "c", 0, AWM_ALL, ED4_start_plugin, (AW_CL)GLOBAL_gb_main, (AW_CL)"RNA3D");
+#endif // ARB_OPENGL
 
     // ------------------------------
     //  View
@@ -1762,13 +1765,13 @@ ED4_returncode ED4_root::generate_window(AW_device **device,    ED4_window **new
         awmm->button_length(0);
 
         awmm->at("secedit");
-        awmm->callback(ED4_SECEDIT_start, (AW_CL)GLOBAL_gb_main, 0);
+        awmm->callback(ED4_start_plugin, (AW_CL)GLOBAL_gb_main, (AW_CL)"SECEDIT");
         awmm->help_text("arb_secedit.hlp");
         awmm->create_button("SECEDIT", "#edit/secedit.xpm");
 
 #if defined(ARB_OPENGL)
         awmm->at("rna3d");
-        awmm->callback(ED4_RNA3D_start, (AW_CL)GLOBAL_gb_main, 0);
+        awmm->callback(ED4_start_plugin, (AW_CL)GLOBAL_gb_main, (AW_CL)"RNA3D");
         awmm->help_text("rna3d_general.hlp");
         awmm->create_button("RNA3D", "#edit/rna3d.xpm");
 #endif // ARB_OPENGL

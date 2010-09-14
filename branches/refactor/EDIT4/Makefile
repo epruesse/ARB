@@ -562,9 +562,9 @@ ED4_root.o: ed4_class.hxx
 ED4_root.o: ed4_defs.hxx
 ED4_root.o: ed4_dots.hxx
 ED4_root.o: ed4_extern.hxx
-ED4_root.o: ed4_known_plugins.hxx
 ED4_root.o: ed4_naligner.hxx
 ED4_root.o: ed4_nds.hxx
+ED4_root.o: ed4_plugins.hxx
 ED4_root.o: ed4_protein_2nd_structure.hxx
 ED4_root.o: ed4_ProteinViewer.hxx
 ED4_root.o: ed4_search.hxx

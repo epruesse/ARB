@@ -39,6 +39,10 @@ struct ED4_plugin_connector {
 
 typedef AW_window *ED4_plugin(ED4_plugin_connector&);
 
+#if defined(IN_ARB_EDIT4)
+void ED4_start_plugin(AW_window *aw, AW_CL cl_gb_main, AW_CL cl_pluginname);
+#endif // IN_ARB_EDIT4
+
 #else
 #error ed4_plugins.hxx included twice
 #endif // ED4_PLUGINS_HXX
