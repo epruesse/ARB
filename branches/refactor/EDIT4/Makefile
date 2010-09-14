@@ -632,6 +632,7 @@ ED4_search.o: $(ARBHOME)/INCLUDE/fast_aligner.hxx
 ED4_search.o: $(ARBHOME)/INCLUDE/smartptr.h
 ED4_search.o: $(ARBHOME)/INCLUDE/test_global.h
 
+ED4_secedit.o: ed4_extern.hxx
 ED4_secedit.o: ed4_secedit.hxx
 ED4_secedit.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 ED4_secedit.o: $(ARBHOME)/INCLUDE/ad_prot.h
@@ -642,6 +643,7 @@ ED4_secedit.o: $(ARBHOME)/INCLUDE/arbdb.h
 ED4_secedit.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 ED4_secedit.o: $(ARBHOME)/INCLUDE/arbtools.h
 ED4_secedit.o: $(ARBHOME)/INCLUDE/attributes.h
+ED4_secedit.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 ED4_secedit.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 ED4_secedit.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ED4_secedit.o: $(ARBHOME)/INCLUDE/aw_position.hxx

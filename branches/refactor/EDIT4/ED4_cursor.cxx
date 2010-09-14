@@ -1571,14 +1571,6 @@ int ED4_base_position::get_sequence_position(const ED4_base *base, int base_pos)
     return base_pos<count ? seq_pos[base_pos] : seq_pos[count-1]+1;
 }
 
-int ED4_get_base_position(const ED4_sequence_terminal *seq_term, int seq_position) {
-    static ED4_base_position *base_pos = 0;
-
-    if (!base_pos) base_pos = new ED4_base_position;
-    return base_pos->get_base_position(seq_term, seq_position);
-}
-
-
 /* --------------------------------------------------------------------------------
    Store/Restore Cursorpositions
    -------------------------------------------------------------------------------- */

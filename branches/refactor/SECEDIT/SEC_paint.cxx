@@ -369,29 +369,26 @@ void SEC_loop::paint_constraints(AW_device *device) {
 void SEC_root::cacheBackgroundColor() {
     freenull(bg_color);
 
-    const ED4_sequence_terminal *sterm = db->get_seqTerminal();
-    if (sterm) {
-        int start = 0;
-        int len   = db->length();
-        int end   = len-1;
+    int start = 0;
+    int len   = db->length();
+    int end   = len-1;
 
-        bg_color = (char*)malloc(len);
+    bg_color = (char*)malloc(len);
 
-        const char *bg_sai    = displayParams.display_sai ? ED4_getSaiColorString(db->awroot(), start, end) : 0;
-        const char *bg_search = displayParams.display_search ? ED4_buildColorString(sterm, start, end) : 0;
+    const char *bg_sai    = displayParams.display_sai    ? host().get_SAI_background(start, end)    : 0;
+    const char *bg_search = displayParams.display_search ? host().get_search_background(start, end) : 0;
 
-        if (bg_sai) {
-            if (bg_search) {
-                for (int i = start; i <= end; ++i) {
-                    bg_color[i] = bg_search[i] ? bg_search[i] : bg_sai[i];
-                }
+    if (bg_sai) {
+        if (bg_search) {
+            for (int i = start; i <= end; ++i) {
+                bg_color[i] = bg_search[i] ? bg_search[i] : bg_sai[i];
             }
-            else memcpy(bg_color, bg_sai, len);
         }
-        else {
-            if (bg_search) memcpy(bg_color, bg_search, len);
-            else memset(bg_color, 0, len);
-        }
+        else memcpy(bg_color, bg_sai, len);
+    }
+    else {
+        if (bg_search) memcpy(bg_color, bg_search, len);
+        else memset(bg_color, 0, len);
     }
 }
 
@@ -1099,7 +1096,7 @@ GB_ERROR SEC_root::paint(AW_device *device) {
                     break;
                 case SHOW_BASE_CURPOS:
                     cursor_gc  = SEC_GC_DEFAULT;
-                    cursor_pos = ED4_get_base_position(db->get_seqTerminal(), curAbs)+1; // show base position starting with 1
+                    cursor_pos = host().get_base_position(curAbs)+1; // show base position starting with 1
                     break;
                 case SHOW_ECOLI_CURPOS: {
                     cursor_gc  = SEC_GC_ECOLI;

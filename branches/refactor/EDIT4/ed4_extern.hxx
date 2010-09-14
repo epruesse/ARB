@@ -85,15 +85,13 @@ typedef enum
 
 class ED4_sequence_terminal;
 
-ED4_sequence_terminal *ED4_find_seq_terminal(const char *species_name);
-const char *ED4_buildColorString(const ED4_sequence_terminal *seq_term, int start, int end); // search results
+ED4_sequence_terminal *ED4_find_seq_terminal(const char *species_name); // @@@ still needed by RNA3D
+const char *ED4_buildColorString(const ED4_sequence_terminal *seq_term, int start, int end); // @@@ still needed by RNA3D
 
 // visualized SAIs
 
-bool ED4_SAIs_visualized();
-const char *ED4_getSaiColorString(AW_root *aw_root, int start, int end);
-
-int ED4_get_base_position(const ED4_sequence_terminal *seq_term, int seq_position);
+bool ED4_SAIs_visualized(); // @@@ still needed by RNA3D
+const char *ED4_getSaiColorString(AW_root *aw_root, int start, int end); // @@@ still needed by RNA3D
 
 // ------------------------
 //      event injection

@@ -14,7 +14,6 @@
 #include "SEC_drawn_pos.hxx"
 #include "SEC_toggle.hxx"
 
-#include <ed4_extern.hxx>
 #include <FileBuffer.h>
 
 #include <awt.hxx>
@@ -714,7 +713,7 @@ static void SEC_exit(GBDATA *, void *cl_sec_root) {
     sec_root = NULL;
 }
 
-AW_window *SEC_create_main_window(AW_root *awr, GBDATA *gb_main) {
+AW_window *SEC_create_main_window(SEC_host& host, AW_root *awr, GBDATA *gb_main) {
     SEC_graphic *gfx  = new SEC_graphic(awr, gb_main); // never freed
     SEC_root    *root = gfx->sec_root;
 
@@ -723,7 +722,7 @@ AW_window *SEC_create_main_window(AW_root *awr, GBDATA *gb_main) {
 
     AW_gc_manager aw_gc_manager;
     AWT_canvas *ntw = new AWT_canvas(gb_main, awm, gfx, aw_gc_manager, AWAR_SPECIES_NAME);
-    root->init(gfx, ntw);
+    root->init(gfx, ntw, host);
 
     ntw->recalc_size();
     ntw->set_mode(AWT_MODE_ZOOM); // Default-Mode
