@@ -713,7 +713,10 @@ static void SEC_exit(GBDATA *, void *cl_sec_root) {
     sec_root = NULL;
 }
 
-AW_window *SEC_create_main_window(SEC_host& host, AW_root *awr, GBDATA *gb_main) {
+AW_window *start_SECEDIT_plugin(ED4_plugin_connector& host) {
+    AW_root *awr     = host.get_application_root();
+    GBDATA  *gb_main = host.get_database();
+
     SEC_graphic *gfx  = new SEC_graphic(awr, gb_main); // never freed
     SEC_root    *root = gfx->sec_root;
 

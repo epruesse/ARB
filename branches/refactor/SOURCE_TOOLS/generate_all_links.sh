@@ -210,6 +210,7 @@ symlink_file ../BUGEX/bugex.h INCLUDE/bugex.h &&
 symlink_file ../CONSENSUS_TREE/CT_ctree.hxx INCLUDE/CT_ctree.hxx &&
 symlink_file ../DIST/dist.hxx INCLUDE/dist.hxx &&
 symlink_file ../EDIT4/ed4_extern.hxx INCLUDE/ed4_extern.hxx &&
+symlink_file ../EDIT4/ed4_plugins.hxx INCLUDE/ed4_plugins.hxx &&
 symlink_file ../GENOM/EXP.hxx INCLUDE/EXP.hxx &&
 symlink_file ../GENOM/GEN.hxx INCLUDE/GEN.hxx &&
 symlink_file ../GENOM_IMPORT/GenomeImport.h INCLUDE/GenomeImport.h &&
@@ -220,6 +221,7 @@ symlink_file ../NTREE/ntree.hxx INCLUDE/ntree.hxx &&
 symlink_file ../PRIMER_DESIGN/primer_design.hxx INCLUDE/primer_design.hxx &&
 symlink_file ../PROBE_DESIGN/probe_design.hxx INCLUDE/probe_design.hxx &&
 symlink_file ../SECEDIT/secedit_extern.hxx INCLUDE/secedit_extern.hxx &&
+symlink_file ../RNA3D/rna3d_extern.hxx INCLUDE/rna3d_extern.hxx &&
 symlink_file ../SEQ_QUALITY/seq_quality.h INCLUDE/seq_quality.h &&
 symlink_file ../SERVERCNTRL/servercntrl.h INCLUDE/servercntrl.h &&
 symlink_file ../SL/ALIVIEW/AliView.hxx INCLUDE/AliView.hxx &&

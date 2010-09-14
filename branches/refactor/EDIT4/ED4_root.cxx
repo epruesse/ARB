@@ -14,15 +14,12 @@
 #include "ed4_block.hxx"
 #include "ed4_dots.hxx"
 #include "ed4_nds.hxx"
-#include "ed4_secedit.hxx"
+#include "ed4_known_plugins.hxx"
 #include "ed4_visualizeSAI.hxx"
 #include "ed4_naligner.hxx"
 #include "ed4_ProteinViewer.hxx"
 #include "ed4_protein_2nd_structure.hxx"
 #include "graph_aligner_gui.hxx"
-#if defined(ARB_OPENGL)
-#include "ed4_RNA3D.hxx"
-#endif // ARB_OPENGL
 
 #include <ed4_extern.hxx>
 #include <fast_aligner.hxx>
@@ -1771,7 +1768,7 @@ ED4_returncode ED4_root::generate_window(AW_device **device,    ED4_window **new
 
 #if defined(ARB_OPENGL)
         awmm->at("rna3d");
-        awmm->callback(ED4_RNA3D_Start, (AW_CL)GLOBAL_gb_main, 0);
+        awmm->callback(ED4_RNA3D_start, (AW_CL)GLOBAL_gb_main, 0);
         awmm->help_text("rna3d_general.hlp");
         awmm->create_button("RNA3D", "#edit/rna3d.xpm");
 #endif // ARB_OPENGL

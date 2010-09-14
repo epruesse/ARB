@@ -107,6 +107,7 @@ SEC_db.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 SEC_db.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 SEC_db.o: $(ARBHOME)/INCLUDE/dupstr.h
 SEC_db.o: $(ARBHOME)/INCLUDE/ed4_extern.hxx
+SEC_db.o: $(ARBHOME)/INCLUDE/ed4_plugins.hxx
 SEC_db.o: $(ARBHOME)/INCLUDE/smartptr.h
 SEC_db.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -131,6 +132,7 @@ SEC_graphic.o: $(ARBHOME)/INCLUDE/arbdbt.h
 SEC_graphic.o: $(ARBHOME)/INCLUDE/arbtools.h
 SEC_graphic.o: $(ARBHOME)/INCLUDE/attributes.h
 SEC_graphic.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
+SEC_graphic.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 SEC_graphic.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 SEC_graphic.o: $(ARBHOME)/INCLUDE/aw_font_group.hxx
 SEC_graphic.o: $(ARBHOME)/INCLUDE/aw_global.hxx
@@ -142,6 +144,8 @@ SEC_graphic.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 SEC_graphic.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 SEC_graphic.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 SEC_graphic.o: $(ARBHOME)/INCLUDE/dupstr.h
+SEC_graphic.o: $(ARBHOME)/INCLUDE/ed4_extern.hxx
+SEC_graphic.o: $(ARBHOME)/INCLUDE/ed4_plugins.hxx
 SEC_graphic.o: $(ARBHOME)/INCLUDE/smartptr.h
 SEC_graphic.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -167,6 +171,7 @@ SEC_helix.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 SEC_helix.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 SEC_helix.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 SEC_helix.o: $(ARBHOME)/INCLUDE/dupstr.h
+SEC_helix.o: $(ARBHOME)/INCLUDE/ed4_plugins.hxx
 SEC_helix.o: $(ARBHOME)/INCLUDE/smartptr.h
 SEC_helix.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -192,6 +197,7 @@ SEC_io.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 SEC_io.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 SEC_io.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 SEC_io.o: $(ARBHOME)/INCLUDE/dupstr.h
+SEC_io.o: $(ARBHOME)/INCLUDE/ed4_plugins.hxx
 SEC_io.o: $(ARBHOME)/INCLUDE/smartptr.h
 SEC_io.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -217,6 +223,7 @@ SEC_layout.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 SEC_layout.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 SEC_layout.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 SEC_layout.o: $(ARBHOME)/INCLUDE/dupstr.h
+SEC_layout.o: $(ARBHOME)/INCLUDE/ed4_plugins.hxx
 SEC_layout.o: $(ARBHOME)/INCLUDE/smartptr.h
 SEC_layout.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -254,6 +261,7 @@ SEC_main.o: $(ARBHOME)/INCLUDE/awt.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/dupstr.h
+SEC_main.o: $(ARBHOME)/INCLUDE/ed4_plugins.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/FileBuffer.h
 SEC_main.o: $(ARBHOME)/INCLUDE/smartptr.h
 SEC_main.o: $(ARBHOME)/INCLUDE/test_global.h
@@ -289,6 +297,7 @@ SEC_paint.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 SEC_paint.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 SEC_paint.o: $(ARBHOME)/INCLUDE/dupstr.h
 SEC_paint.o: $(ARBHOME)/INCLUDE/ed4_extern.hxx
+SEC_paint.o: $(ARBHOME)/INCLUDE/ed4_plugins.hxx
 SEC_paint.o: $(ARBHOME)/INCLUDE/iupac.h
 SEC_paint.o: $(ARBHOME)/INCLUDE/smartptr.h
 SEC_paint.o: $(ARBHOME)/INCLUDE/test_global.h
@@ -315,6 +324,7 @@ SEC_read.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 SEC_read.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 SEC_read.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 SEC_read.o: $(ARBHOME)/INCLUDE/dupstr.h
+SEC_read.o: $(ARBHOME)/INCLUDE/ed4_plugins.hxx
 SEC_read.o: $(ARBHOME)/INCLUDE/smartptr.h
 SEC_read.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -341,6 +351,7 @@ SEC_split.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 SEC_split.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 SEC_split.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 SEC_split.o: $(ARBHOME)/INCLUDE/dupstr.h
+SEC_split.o: $(ARBHOME)/INCLUDE/ed4_plugins.hxx
 SEC_split.o: $(ARBHOME)/INCLUDE/smartptr.h
 SEC_split.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -366,6 +377,7 @@ SEC_structure.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 SEC_structure.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 SEC_structure.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 SEC_structure.o: $(ARBHOME)/INCLUDE/dupstr.h
+SEC_structure.o: $(ARBHOME)/INCLUDE/ed4_plugins.hxx
 SEC_structure.o: $(ARBHOME)/INCLUDE/smartptr.h
 SEC_structure.o: $(ARBHOME)/INCLUDE/test_global.h
 

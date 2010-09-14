@@ -13,6 +13,8 @@
 #include "SEC_iter.hxx"
 #include "SEC_toggle.hxx"
 
+#include <ed4_extern.hxx>
+
 #include <arbdbt.h>
 #include <aw_awars.hxx>
 #include <aw_global.hxx>

@@ -89,10 +89,10 @@ RNA3D_Interface.o: $(ARBHOME)/INCLUDE/GL/glpng.h
 RNA3D_Interface.o: $(ARBHOME)/INCLUDE/smartptr.h
 RNA3D_Interface.o: $(ARBHOME)/INCLUDE/test_global.h
 
+RNA3D_Main.o: rna3d_extern.hxx
 RNA3D_Main.o: RNA3D_Global.hxx
 RNA3D_Main.o: RNA3D_GlobalHeader.hxx
 RNA3D_Main.o: RNA3D_Interface.hxx
-RNA3D_Main.o: RNA3D_Main.hxx
 RNA3D_Main.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 RNA3D_Main.o: $(ARBHOME)/INCLUDE/ad_prot.h
 RNA3D_Main.o: $(ARBHOME)/INCLUDE/arb_assert.h
@@ -108,6 +108,7 @@ RNA3D_Main.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 RNA3D_Main.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 RNA3D_Main.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 RNA3D_Main.o: $(ARBHOME)/INCLUDE/dupstr.h
+RNA3D_Main.o: $(ARBHOME)/INCLUDE/ed4_plugins.hxx
 RNA3D_Main.o: $(ARBHOME)/INCLUDE/GL/glpng.h
 RNA3D_Main.o: $(ARBHOME)/INCLUDE/smartptr.h
 RNA3D_Main.o: $(ARBHOME)/INCLUDE/test_global.h
@@ -225,6 +226,7 @@ RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/dupstr.h
 RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/ed4_extern.hxx
+RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/ed4_plugins.hxx
 RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/GL/glpng.h
 RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/smartptr.h
 RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/test_global.h

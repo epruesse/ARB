@@ -1265,10 +1265,6 @@ char *ED4_SearchResults::buildColorString(const ED4_sequence_terminal *seq_termi
     return buffer-start;
 }
 
-const char *ED4_buildColorString(const ED4_sequence_terminal *seq_terminal, int start, int end) {
-    return seq_terminal->results().buildColorString(seq_terminal, start, end);
-}
-
 ED4_SearchPosition *ED4_SearchResults::get_shown_at(int pos) const
 // used by ED4_cursor::updateAwars to get search-comment
 {
@@ -1833,19 +1829,5 @@ AW_window *ED4_create_search_window(AW_root *root, AW_CL cl) {
     return (AW_window *)aws;
 }
 
-static int has_species_name(ED4_base *base, AW_CL cl_species_name) {
-    if (base->is_sequence_terminal()) {
-        ED4_sequence_terminal *seq_term = base->to_sequence_terminal();
-        const char *species_name = (const char *)cl_species_name;
-        return species_name && seq_term && seq_term->species_name && strcmp(species_name, seq_term->species_name)==0;
-    }
-    return 0;
-}
 
-ED4_sequence_terminal *ED4_find_seq_terminal(const char *species_name) {
-    ED4_base *base = ED4_ROOT->main_manager->find_first_that(ED4_L_SEQUENCE_STRING, has_species_name, (AW_CL)species_name);
-    ED4_sequence_terminal *seq_term = base->to_sequence_terminal();
-
-    return seq_term;
-}
 
