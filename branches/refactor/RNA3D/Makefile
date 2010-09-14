@@ -112,6 +112,7 @@ RNA3D_Main.o: $(ARBHOME)/INCLUDE/ed4_plugins.hxx
 RNA3D_Main.o: $(ARBHOME)/INCLUDE/GL/glpng.h
 RNA3D_Main.o: $(ARBHOME)/INCLUDE/smartptr.h
 RNA3D_Main.o: $(ARBHOME)/INCLUDE/test_global.h
+RNA3D_Main.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 RNA3D_OpenGLEngine.o: RNA3D_Global.hxx
 RNA3D_OpenGLEngine.o: RNA3D_GlobalHeader.hxx

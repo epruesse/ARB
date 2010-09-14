@@ -713,7 +713,7 @@ static void SEC_exit(GBDATA *, void *cl_sec_root) {
     sec_root = NULL;
 }
 
-AW_window *start_SECEDIT_plugin(ED4_plugin_connector& host) {
+AW_window *start_SECEDIT_plugin(ED4_plugin_host& host) {
     AW_root *awr     = host.get_application_root();
     GBDATA  *gb_main = host.get_database();
 

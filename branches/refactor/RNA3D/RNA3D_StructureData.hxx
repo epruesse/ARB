@@ -104,7 +104,7 @@ struct Vector3;
 
 class ED4_sequence_terminal;
 class BI_ecoli_ref;
-struct ED4_plugin_connector;
+struct ED4_plugin_host;
 
 class Structure3D {
 public:
@@ -122,11 +122,11 @@ public:
 
     static GBDATA         *gb_main;
     BI_ecoli_ref          *EColiRef;
-    ED4_plugin_connector&  Host;
+    ED4_plugin_host&  Host;
 
     OpenGLGraphics *GRAPHICS; // not really a good place - it better should be passed from callers
 
-    Structure3D(ED4_plugin_connector& host_);
+    Structure3D(ED4_plugin_host& host_);
     ~Structure3D();
 
     void ReadCoOrdinateFile();

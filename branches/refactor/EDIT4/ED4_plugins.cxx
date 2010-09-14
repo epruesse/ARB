@@ -12,14 +12,12 @@
 #include <rna3d_extern.hxx>
 
 #include <arbdb.h>
+#include <arb_defs.h>
 
 #include "ed4_visualizeSAI.hxx"
 #include "ed4_class.hxx"
 
 #define e4_assert(bed) arb_assert(bed)
-
-// ------------------------------------------------------------
-//      functions used to implement ED4_plugin_connector
 
 static int has_species_name(ED4_base *base, AW_CL cl_species_name) {
     if (base->is_sequence_terminal()) {
@@ -30,18 +28,10 @@ static int has_species_name(ED4_base *base, AW_CL cl_species_name) {
     return 0;
 }
 
-static ED4_sequence_terminal *find_seq_terminal(const char *species_name) {
-    ED4_base *base = ED4_ROOT->main_manager->find_first_that(ED4_L_SEQUENCE_STRING, has_species_name, (AW_CL)species_name);
-    ED4_sequence_terminal *seq_term = base->to_sequence_terminal();
+// -----------------
+//      ED4_host
 
-    return seq_term;
-}
-
-
-// -----------------------------------
-//      Implement plugin connector
-
-class ED4_plugin_connector_impl : public ED4_plugin_connector {
+class ED4_host : public ED4_plugin_host {
     AW_root *aw_root;
     GBDATA  *gb_main;
 
@@ -49,17 +39,20 @@ class ED4_plugin_connector_impl : public ED4_plugin_connector {
     mutable ED4_base_position    base_pos;
 
 public:
-    ED4_plugin_connector_impl(AW_root *aw_root_, GBDATA *gb_main_)
+    ED4_host(AW_root *aw_root_, GBDATA *gb_main_)
         : aw_root(aw_root_),
           gb_main(gb_main_), 
           seq_term(NULL)
     {}
-    virtual ~ED4_plugin_connector_impl() {}
+    virtual ~ED4_host() {}
 
     AW_root *get_application_root() const { return aw_root; }
     GBDATA *get_database() const { return gb_main; }
 
-    void announce_current_species(const char *species) { seq_term = find_seq_terminal(species); }
+    void announce_current_species(const char *species_name) {
+        ED4_base *base = ED4_ROOT->main_manager->find_first_that(ED4_L_SEQUENCE_STRING, has_species_name, (AW_CL)species_name);
+        seq_term       = base->to_sequence_terminal();
+    }
 
     bool SAIs_visualized() const { return ED4_ROOT->visualizeSAI; }
     const char* get_SAI_background(int start, int end) const {
@@ -67,8 +60,7 @@ public:
     }
 
     const char* get_search_background(int start, int end) const {
-        return
-            seq_term
+        return seq_term
             ? seq_term->results().buildColorString(seq_term, start, end)
             : 0;
     }
@@ -81,74 +73,83 @@ public:
     void forward_event(AW_event *event) const { ED4_remote_event(event); }
 };
 
-static ED4_plugin_connector& plugin_connector(AW_root *aw_root, GBDATA *gb_main) {
-    static ED4_plugin_connector *host = 0;
-    if (!host) {
-        host = new ED4_plugin_connector_impl(aw_root, gb_main);
-    }
-    return *host;
-}
+// ---------------
+//      PlugIn
 
+class PlugIn {
+    char              *name;
+    ED4_plugin        *start_plugin;
+    mutable AW_window *window;
 
-// ----------------
-//      SECEDIT
+public:
+    PlugIn(const char *name_, ED4_plugin *start_plugin_)
+        : name(strdup(name_)),
+          start_plugin(start_plugin_),
+          window(NULL)
+    {}
+    ~PlugIn() { free(name); }
 
+    bool has_name(const char *Name) const { return strcmp(Name, name) == 0; }
 
-static void ED4_SECEDIT_start(AW_window *aw, AW_CL cl_gbmain, AW_CL) {
-    static AW_window *aw_sec = 0;
-
-    if (!aw_sec) { // do not open window twice
-        GBDATA                *gb_main   = (GBDATA*)cl_gbmain;
-        ED4_plugin_connector&  connector = plugin_connector(aw->get_root(), gb_main);
-        
-        aw_sec = start_SECEDIT_plugin(connector);
-        if (!aw_sec) {
-            GB_ERROR err = GB_await_error();
-            aw_message(GBS_global_string("Couldn't start SECEDIT\nReason: %s", err));
-            return;
+    GB_ERROR activate(AW_root *aw_root, GBDATA *gb_main) const {
+        GB_ERROR error = NULL;
+        if (!window) {
+            static ED4_plugin_host *host = 0;
+            if (!host) host = new ED4_host(aw_root, gb_main);
+            window = start_plugin(*host);
+            error = window ? NULL : GB_await_error();
+            if (error) error = GBS_global_string("Couldn't start plugin '%s'\nReason: %s", name, error);
         }
+        if (!error) window->activate();
+        return error;
     }
-    aw_sec->activate();
-}
+};
 
-// --------------
-//      RNA3D
 
+static PlugIn registered[] = { // register plugins here
+    PlugIn("SECEDIT", start_SECEDIT_plugin),
 #if defined(ARB_OPENGL)
+    PlugIn("RNA3D", start_RNA3D_plugin),
+#endif // ARB_OPENGL
+};
 
-static void ED4_RNA3D_start(AW_window *aw, AW_CL cl_gbmain, AW_CL) {
-    static AW_window *aw_3d = 0;
-
-    if (!aw_3d) { // do not open window twice
-        GBDATA                *gb_main   = (GBDATA*)cl_gbmain;
-        ED4_plugin_connector&  connector = plugin_connector(aw->get_root(), gb_main);
-        
-        aw_3d = start_RNA3D_plugin(connector);
-        if (!aw_3d) {
-            GB_ERROR err = GB_await_error();
-            aw_message(GBS_global_string("Couldn't start RNA3D\nReason: %s", err));
-            return;
+static const PlugIn *findPlugin(const char *name) {
+    for (size_t plug = 0; plug<ARRAY_ELEMS(registered); ++plug) {
+        if (registered[plug].has_name(name)) {
+            return &registered[plug];
         }
     }
-    aw_3d->activate();
+    return NULL;
 }
-
-#endif // ARB_OPENGL
-
 
 void ED4_start_plugin(AW_window *aw, AW_CL cl_gbmain, AW_CL cl_pluginname) {
     const char *pluginname = (const char *)cl_pluginname;
+    GBDATA     *gb_main    = (GBDATA*)cl_gbmain;
 
-    if (strcmp(pluginname, "SECEDIT") == 0) {
-        ED4_SECEDIT_start(aw, cl_gbmain, 0);
-    }
-#if defined(ARB_OPENGL)
-    else if (strcmp(pluginname, "RNA3D") == 0) {
-        ED4_RNA3D_start(aw, cl_gbmain, 0);
-    }
-#endif // ARB_OPENGL
-    else {
-        aw_message(GBS_global_string("Failed to start unknown plugin '%s'", pluginname));
-    }
+    const PlugIn *plugin = findPlugin(pluginname);
+
+    GB_ERROR error = plugin
+        ? plugin->activate(aw->get_root(), gb_main)
+        : GBS_global_string("plugin '%s' is unknown", pluginname);
+    
+    aw_message_if(error);
 }
+
+
+// --------------------------------------------------------------------------------
+
+#if (UNIT_TESTS == 1)
+#include <test_unit.h>
+
+void TEST_plugin_found() {
+    TEST_ASSERT(findPlugin("SECEDIT"));
+    TEST_ASSERT(!findPlugin("unknown"));
+#if defined(ARB_OPENGL)
+    TEST_ASSERT(findPlugin("RNA3D"));
+#else    
+    TEST_ASSERT(!findPlugin("RNA3D"));
+#endif // ARB_OPENGL
+}
+
+#endif // UNIT_TESTS
 

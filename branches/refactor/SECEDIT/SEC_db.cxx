@@ -166,7 +166,7 @@ static void bind_bonddef_awars(SEC_db_interface *db) {
 
 // --------------------------------------------------------------------------------
 
-void SEC_displayParams::reread(AW_root *aw_root, const ED4_plugin_connector& host) {
+void SEC_displayParams::reread(AW_root *aw_root, const ED4_plugin_host& host) {
     show_helixNrs            = aw_root->awar(AWAR_SECEDIT_SHOW_HELIX_NRS)->read_int();
     distance_between_strands = aw_root->awar(AWAR_SECEDIT_DIST_BETW_STRANDS)->read_float();
     show_bonds               = (ShowBonds)aw_root->awar(AWAR_SECEDIT_SHOW_BONDS)->read_int();
@@ -403,7 +403,7 @@ static void create_awars(AW_root *aw_root, AW_default def) {
 
 // --------------------------------------------------------------------------------
 
-SEC_db_interface::SEC_db_interface(SEC_graphic *Gfx, AWT_canvas *Ntw, ED4_plugin_connector& host_)
+SEC_db_interface::SEC_db_interface(SEC_graphic *Gfx, AWT_canvas *Ntw, ED4_plugin_host& host_)
     : sequence(0)
     , Host(host_)
     , displayEcoliPositions(false)

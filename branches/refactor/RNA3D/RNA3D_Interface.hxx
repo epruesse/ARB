@@ -35,9 +35,9 @@ void RefreshOpenGLDisplay();
 class  AW_root;
 class  AW_window;
 class  GBDATA;
-struct ED4_plugin_connector;
+struct ED4_plugin_host;
 
-AW_window *CreateRNA3DMainWindow(AW_root *awr, GBDATA *gb_main, ED4_plugin_connector& host);
+AW_window *CreateRNA3DMainWindow(AW_root *awr, GBDATA *gb_main, ED4_plugin_host& host);
 
 #else
 #error RNA3D_Interface.hxx included twice

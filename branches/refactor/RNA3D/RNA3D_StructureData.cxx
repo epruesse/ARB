@@ -46,7 +46,7 @@ static void throw_IO_error(const char *filename) {
 
 GBDATA *Structure3D::gb_main = 0;
 
-Structure3D::Structure3D(ED4_plugin_connector& host_)
+Structure3D::Structure3D(ED4_plugin_host& host_)
     : strCen(new Vector3(0.0, 0.0, 0.0)),
       iInterval(25),
       iMapSAI(0),

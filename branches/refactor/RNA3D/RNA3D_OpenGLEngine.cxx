@@ -21,13 +21,13 @@
 RNA3D_Global *RNA3D = 0;
 char globalComment[1000];
 
-void RNA3D_init_global_data(ED4_plugin_connector& host) {
+void RNA3D_init_global_data(ED4_plugin_host& host) {
     if (!RNA3D) {
         RNA3D = new RNA3D_Global(host);
     }
 }
 
-RNA3D_Global::RNA3D_Global(ED4_plugin_connector& host) {
+RNA3D_Global::RNA3D_Global(ED4_plugin_host& host) {
     OpenGLEngineState = -1;
     iRotateMolecule   = 0;
     bPointSpritesSupported           = false;

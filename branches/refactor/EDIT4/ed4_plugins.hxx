@@ -18,10 +18,10 @@
 
 class AW_event;
 
-struct ED4_plugin_connector {
+struct ED4_plugin_host {
     // interface provided for EDIT4 plugins (SECEDIT and RNA3D)
 
-    virtual ~ED4_plugin_connector() {}
+    virtual ~ED4_plugin_host() {}
 
     virtual AW_root *get_application_root() const = 0;
     virtual GBDATA *get_database() const          = 0;
@@ -37,7 +37,7 @@ struct ED4_plugin_connector {
     virtual void announce_current_species(const char *species_name) = 0;
 };
 
-typedef AW_window *ED4_plugin(ED4_plugin_connector&);
+typedef AW_window *ED4_plugin(ED4_plugin_host&);
 
 #if defined(IN_ARB_EDIT4)
 void ED4_start_plugin(AW_window *aw, AW_CL cl_gb_main, AW_CL cl_pluginname);

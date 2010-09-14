@@ -673,7 +673,7 @@ static AW_window *CreateHelp_window(AW_root *aw_root) {
     return (AW_window *)aws;
 }
 
-AW_window *CreateRNA3DMainWindow(AW_root *awr, GBDATA *gb_main, ED4_plugin_connector& host) {
+AW_window *CreateRNA3DMainWindow(AW_root *awr, GBDATA *gb_main, ED4_plugin_host& host) {
     // Main Window - Canvas on which the actual painting is done
     GB_transaction dummy(gb_main);
 

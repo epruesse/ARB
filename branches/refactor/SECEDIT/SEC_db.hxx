@@ -94,7 +94,7 @@ class SEC_structure_toggler;
 
 class SEC_db_interface : Noncopyable {
     SEC_seq_data          *sequence;       // 0 = no sequence selected
-    ED4_plugin_connector&  Host;
+    ED4_plugin_host&  Host;
 
     bool          displayEcoliPositions; // whether to display ecoli positions
     SEC_seq_data *ecoli_seq;        // 0 = no ecoli found or not used
@@ -143,7 +143,7 @@ class SEC_db_interface : Noncopyable {
     void bind_awars(const char **awars, SEC_dbcb *cb);
 
 public:
-    SEC_db_interface(SEC_graphic *Gfx, AWT_canvas *Ntw, ED4_plugin_connector& host_);
+    SEC_db_interface(SEC_graphic *Gfx, AWT_canvas *Ntw, ED4_plugin_host& host_);
     ~SEC_db_interface();
 
     void update_shown_positions();
@@ -169,7 +169,7 @@ public:
     BI_ecoli_ref *ecoli() const { return Ecoli; }
     SEC_bond_def *bonds() const { return bonddef; }
     SEC_structure_toggler *structure() const { return toggler; }
-    const ED4_plugin_connector& host() const { return Host; }
+    const ED4_plugin_host& host() const { return Host; }
 
     void init_toggler() const;
 };

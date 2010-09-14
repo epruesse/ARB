@@ -65,7 +65,7 @@ static void  CreateRNA3DAwars(AW_root *root) {
     root->awar_int(AWAR_3D_23S_RRNA_MOL, 3, AW_ROOT_DEFAULT);
 }
 
-AW_window *start_RNA3D_plugin(ED4_plugin_connector& host) {
+AW_window *start_RNA3D_plugin(ED4_plugin_host& host) {
     CreateRNA3DAwars(host.get_application_root());
     return CreateRNA3DMainWindow(host.get_application_root(), host.get_database(), host);
 }

@@ -478,6 +478,7 @@ ED4_plugins.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 ED4_plugins.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ED4_plugins.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ED4_plugins.o: $(ARBHOME)/INCLUDE/arb_core.h
+ED4_plugins.o: $(ARBHOME)/INCLUDE/arb_defs.h
 ED4_plugins.o: $(ARBHOME)/INCLUDE/arb_error.h
 ED4_plugins.o: $(ARBHOME)/INCLUDE/arbdb.h
 ED4_plugins.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -495,6 +496,7 @@ ED4_plugins.o: $(ARBHOME)/INCLUDE/rna3d_extern.hxx
 ED4_plugins.o: $(ARBHOME)/INCLUDE/secedit_extern.hxx
 ED4_plugins.o: $(ARBHOME)/INCLUDE/smartptr.h
 ED4_plugins.o: $(ARBHOME)/INCLUDE/test_global.h
+ED4_plugins.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 ED4_protein_2nd_structure.o: ed4_awars.hxx
 ED4_protein_2nd_structure.o: ed4_class.hxx
