@@ -133,10 +133,6 @@ static void ED4_RNA3D_start(AW_window *aw, AW_CL cl_gbmain, AW_CL) {
     aw_3d->activate();
 }
 
-// #else
-// #error never used ? 
-// void ED4_RNA3D_start(AW_window *, AW_CL, AW_CL) {}
-
 #endif // ARB_OPENGL
 
 
@@ -146,9 +142,11 @@ void ED4_start_plugin(AW_window *aw, AW_CL cl_gbmain, AW_CL cl_pluginname) {
     if (strcmp(pluginname, "SECEDIT") == 0) {
         ED4_SECEDIT_start(aw, cl_gbmain, 0);
     }
+#if defined(ARB_OPENGL)
     else if (strcmp(pluginname, "RNA3D") == 0) {
         ED4_RNA3D_start(aw, cl_gbmain, 0);
     }
+#endif // ARB_OPENGL
     else {
         aw_message(GBS_global_string("Failed to start unknown plugin '%s'", pluginname));
     }

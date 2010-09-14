@@ -275,6 +275,8 @@ GL_PNGLIBS_SYS := -lpng
 GL_LIBS_SYS := $(GL_LIB_SYS) $(GL_PNGLIBS_SYS) $(GLEWLIB) $(GLUTLIB)
 GL_LIBS_ARB := $(GL_LIB_ARB) $(GL_PNGLIBS_ARB)
 
+RNA3D_LIB := RNA3D/RNA3D.a
+
 else
 # OPENGL=0
 
@@ -282,7 +284,11 @@ GL_LIBS_ARB:=# no opengl -> no libs
 GL_LIBS_SYS:=# no opengl -> no libs
 GL:=# don't build ARB openGL libs
 
+RNA3D_LIB :=
+
 endif
+
+
 
 GL_LIBS:=$(GL_LIBS_ARB) $(GL_LIBS_SYS)
 
@@ -1538,8 +1544,10 @@ UNITS_WORKING = \
 
 # untestable units
 
+RNA3D_TEST := $(subst .a,.test,$(RNA3D_LIB))
+
 UNITS_TRY_FIX = \
-	RNA3D/RNA3D.test \
+	$(RNA3D_TEST) \
 	SECEDIT/SECEDIT.test \
 	EDIT4/EDIT4.test \
 

@@ -6,7 +6,8 @@
 export ARBHOME
 
 export DEBUG
-export OPENGL
+export OPENGL 
+export RNA3D_LIB 
 
 export MACH
 export DEBIAN
