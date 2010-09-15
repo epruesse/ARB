@@ -169,6 +169,12 @@ void PP_buildPosWeight(SearchQuery *sq)
 }
 
 
+extern "C" char *get_match_overlay(PT_probematch *ml) {
+    GBK_terminate("get_match_overlay() not implemented");
+    // has been introduced to pt_server with [6668]
+}
+
+
 /* /// "probe_match()" */
 extern "C" int probe_match(PT_local *locs, aisc_string probestring)
 {
