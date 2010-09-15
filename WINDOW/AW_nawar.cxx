@@ -234,6 +234,7 @@ AW_awar *AW_awar::remove_callback(void (*f)(AW_root*, AW_CL, AW_CL), AW_CL cd1, 
             else {
                 callback_list = vc->next;
             }
+            vc->next = NULL; // avoid to delete all callbacks
             delete vc;
             break;
         }
