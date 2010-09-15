@@ -649,7 +649,9 @@ ED4_char_table::ED4_char_table(int maxseqlength)
         }
         else {
             e4_assert(IS_AMINO());
-            groups = "P,A,G,S,T,Q,N,E,D,B,Z,H,K,R,L,I,V,M,F,Y,W,";
+
+            // @@@ create 'groups' from AA_GROUP_...
+            groups = "P,A,G,S,T,Q,N,E,D,B,Z,H,K,R,L,I,V,M,F,Y,W,C,X";
         }
 
         e4_assert(groups);
