@@ -62,7 +62,7 @@ AW_cb_struct::AW_cb_struct(AW_window *awi, void (*g)(AW_window*, AW_CL, AW_CL), 
     this->next = nexti;
 }
 
-AW_timer_cb_struct::AW_timer_cb_struct(AW_root *ari, void (*g)(AW_root*, AW_CL, AW_CL), AW_CL cd1i, AW_CL cd2i) {
+AW_timer_cb_struct::AW_timer_cb_struct(AW_root *ari, AW_RCB g, AW_CL cd1i, AW_CL cd2i) {
     ar = ari;
     f = g;
     cd1 = cd1i;
@@ -272,8 +272,8 @@ AW_root::AW_root(const char *propertyFile, const char *program, bool no_exit) {
 }
 
 AW_root::~AW_root() {
-    delete focus_callback_list; focus_callback_list = NULL;
-    delete button_sens_list;    button_sens_list    = NULL;
+    AW_root_cblist::clear(focus_callback_list);
+    delete button_sens_list;    button_sens_list = NULL;
 
     exit_root();
     exit_variables();
@@ -626,14 +626,14 @@ static void AW_timer_callback_never_disabled(XtPointer aw_timer_cb_struct,
     delete tcbs; // timer only once
 }
 
-void AW_root::add_timed_callback(int ms, void (*f)(AW_root*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
+void AW_root::add_timed_callback(int ms, AW_RCB f, AW_CL cd1, AW_CL cd2) {
     XtAppAddTimeOut(p_r->context,
     (unsigned long)ms,
     (XtTimerCallbackProc)AW_timer_callback,
     (XtPointer) new AW_timer_cb_struct(this, f, cd1, cd2));
 }
 
-void AW_root::add_timed_callback_never_disabled(int ms, void (*f)(AW_root*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
+void AW_root::add_timed_callback_never_disabled(int ms, AW_RCB f, AW_CL cd1, AW_CL cd2) {
     XtAppAddTimeOut(p_r->context,
     (unsigned long)ms,
     (XtTimerCallbackProc)AW_timer_callback_never_disabled,
@@ -925,16 +925,13 @@ void AW_normal_cursor(AW_root *root) {
 //      focus
 
 
-static void AW_root_focusCB(Widget wgt, XtPointer awrp, XEvent*, Boolean*) {
-    AWUSE(wgt);
+static void AW_root_focusCB(Widget /*wgt*/, XtPointer awrp, XEvent*, Boolean*) {
     AW_root *aw_root = (AW_root *)awrp;
-    if (aw_root->focus_callback_list) {
-        aw_root->focus_callback_list->run_callback(aw_root);
-    }
+    AW_root_cblist::call(aw_root->focus_callback_list, aw_root);
 }
 
-void AW_root::set_focus_callback(void (*f)(class AW_root*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
-    focus_callback_list = new AW_var_callback(f, cd1, cd2, focus_callback_list);
+void AW_root::set_focus_callback(AW_RCB f, AW_CL cd1, AW_CL cd2) {
+    AW_root_cblist::add(focus_callback_list, AW_root_callback(f, cd1, cd2));
 }
 
 static void AW_focusCB(Widget wgt, XtPointer aw_cb_struct, XEvent*, Boolean*) {

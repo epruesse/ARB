@@ -24,7 +24,8 @@ class AW_window;
 
 typedef void (*AW_RCB0)(AW_root*);
 typedef void (*AW_RCB1)(AW_root*, AW_CL);
-typedef void (*AW_RCB2)(AW_root*, AW_CL, AW_CL);
+typedef AW_RCB AW_RCB2;
+
 typedef AW_window *(*AW_PPP)(AW_root*, AW_CL, AW_CL);
 
 typedef const char *AWAR;
@@ -180,7 +181,7 @@ void aw_error(const char *text, const char *text2);     // internal error: asks 
 class  AW_root_Motif;
 class  AW_awar;
 struct AW_buttons_struct;
-struct AW_var_callback;
+class  AW_root_cblist;
 
 typedef enum {
     NO_EVENT     = 0,
@@ -216,8 +217,8 @@ public:
     void            *get_aw_var_struct(char *awar);
     void            *get_aw_var_struct_no_error(char *awar);
 
-    bool                    disable_callbacks;
-    struct AW_var_callback *focus_callback_list;
+    bool            disable_callbacks;
+    AW_root_cblist *focus_callback_list;
 
     int  active_windows;
     void window_show();         // a window is set to screen
@@ -250,7 +251,7 @@ public:
     void add_timed_callback               (int ms, AW_RCB0 f) { add_timed_callback               (ms, (AW_RCB2)f, 0, 0); }
     void add_timed_callback_never_disabled(int ms, AW_RCB0 f) { add_timed_callback_never_disabled(ms, (AW_RCB2)f, 0, 0); }
 
-    void set_focus_callback(void(*f)(class AW_root*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2); /* any focus callback in any window */
+    void set_focus_callback(AW_RCB fcb, AW_CL cd1, AW_CL cd2); /* any focus callback in any window */
 
     AW_awar *awar(const char *awar);
     AW_awar *awar_no_error(const char *awar);
@@ -305,12 +306,12 @@ public:
 // --------------
 //      AWARS
 
-struct AW_var_callback;
+class  AW_root_cblist;
 struct AW_var_target;
 struct AW_widget_refresh_cb;
 
-typedef void (*Awar_CB)(AW_root *, AW_CL, AW_CL);
-typedef void (*Awar_CB2)(AW_root *, AW_CL, AW_CL);
+typedef AW_RCB  Awar_CB;
+typedef Awar_CB Awar_CB2;
 typedef void (*Awar_CB1)(AW_root *, AW_CL);
 typedef void (*Awar_CB0)(AW_root *);
 
@@ -323,9 +324,9 @@ class AW_awar {
         const char *srt;
     } pp;
 
-    struct AW_var_callback      *callback_list;
-    struct AW_var_target        *target_list;
-    struct AW_widget_refresh_cb *refresh_list;
+    AW_root_cblist       *callback_list;
+    AW_var_target        *target_list;
+    AW_widget_refresh_cb *refresh_list;
 
 #if defined(DEBUG)
     bool is_global;

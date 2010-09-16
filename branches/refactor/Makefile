@@ -1498,7 +1498,6 @@ TESTED_UNITS_AUTO = $(ARCHS:.a=.test)
 
 UNITS_WORKING = \
 	ISLAND_HOPPING/ISLAND_HOPPING.test \
-	WINDOW/WINDOW.test \
 	SL/ALIVIEW/ALIVIEW.test \
 	SL/AP_TREE/AP_TREE.test \
 	SL/ARB_TREE/ARB_TREE.test \
@@ -1562,6 +1561,7 @@ UNITS_UNTESTABLE_ATM = \
 
 # for the moment, put all units containing tests into UNITS_TESTED:
 UNITS_TESTED = \
+	WINDOW/WINDOW.test \
 	SERVERCNTRL/SERVERCNTRL.test \
 	SL/PRONUC/PRONUC.test \
 	AISC_MKPTPS/mkptypes.test \
