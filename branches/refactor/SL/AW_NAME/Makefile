@@ -56,6 +56,7 @@ AW_names_admin.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AW_names_admin.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AW_names_admin.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AW_names_admin.o: $(ARBHOME)/INCLUDE/awt.hxx
+AW_names_admin.o: $(ARBHOME)/INCLUDE/cb.h
 AW_names_admin.o: $(ARBHOME)/INCLUDE/dupstr.h
 AW_names_admin.o: $(ARBHOME)/INCLUDE/smartptr.h
 AW_names_admin.o: $(ARBHOME)/INCLUDE/test_global.h
@@ -80,6 +81,7 @@ AW_rename.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AW_rename.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AW_rename.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AW_rename.o: $(ARBHOME)/INCLUDE/bytestring.h
+AW_rename.o: $(ARBHOME)/INCLUDE/cb.h
 AW_rename.o: $(ARBHOME)/INCLUDE/client.h
 AW_rename.o: $(ARBHOME)/INCLUDE/client_types.h
 AW_rename.o: $(ARBHOME)/INCLUDE/dupstr.h

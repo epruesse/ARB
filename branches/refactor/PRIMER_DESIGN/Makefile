@@ -157,6 +157,7 @@ primer_design.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 primer_design.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 primer_design.o: $(ARBHOME)/INCLUDE/awt_config_manager.hxx
 primer_design.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
+primer_design.o: $(ARBHOME)/INCLUDE/cb.h
 primer_design.o: $(ARBHOME)/INCLUDE/dupstr.h
 primer_design.o: $(ARBHOME)/INCLUDE/GEN.hxx
 primer_design.o: $(ARBHOME)/INCLUDE/smartptr.h

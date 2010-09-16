@@ -53,6 +53,7 @@ ST_ml.o: $(ARBHOME)/INCLUDE/arbtools.h
 ST_ml.o: $(ARBHOME)/INCLUDE/attributes.h
 ST_ml.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 ST_ml.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+ST_ml.o: $(ARBHOME)/INCLUDE/cb.h
 ST_ml.o: $(ARBHOME)/INCLUDE/ColumnStat.hxx
 ST_ml.o: $(ARBHOME)/INCLUDE/downcast.h
 ST_ml.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -85,6 +86,7 @@ ST_quality.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 ST_quality.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 ST_quality.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ST_quality.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
+ST_quality.o: $(ARBHOME)/INCLUDE/cb.h
 ST_quality.o: $(ARBHOME)/INCLUDE/ColumnStat.hxx
 ST_quality.o: $(ARBHOME)/INCLUDE/dupstr.h
 ST_quality.o: $(ARBHOME)/INCLUDE/smartptr.h
@@ -112,6 +114,7 @@ ST_window.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/awt.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/awt_filter.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/awt_item_sel_list.hxx
+ST_window.o: $(ARBHOME)/INCLUDE/cb.h
 ST_window.o: $(ARBHOME)/INCLUDE/ColumnStat.hxx
 ST_window.o: $(ARBHOME)/INCLUDE/dupstr.h
 ST_window.o: $(ARBHOME)/INCLUDE/gui_aliview.hxx
