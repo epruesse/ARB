@@ -10,6 +10,9 @@
 #ifndef ARB_ERROR_H
 #include <arb_error.h>
 #endif
+#ifndef CB_H
+#include <cb.h>
+#endif
 
 #ifndef aw_assert
 #define aw_assert(bed) arb_assert(bed)
@@ -17,11 +20,8 @@
 
 #define AW_ROOT_DEFAULT AW_root::SINGLETON->check_properties(NULL)
 
-class        AW_root;
-class        AW_window;
-typedef long AW_CL;                                 // generic client data type (void *)
+class AW_window;
 
-typedef void (*AW_RCB)(AW_root*, AW_CL, AW_CL);
 typedef void (*AW_RCB0)(AW_root*);
 typedef void (*AW_RCB1)(AW_root*, AW_CL);
 typedef void (*AW_RCB2)(AW_root*, AW_CL, AW_CL);
