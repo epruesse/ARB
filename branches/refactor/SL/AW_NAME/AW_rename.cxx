@@ -570,10 +570,7 @@ void awt_rename_cb(AW_window *aww, GBDATA *gb_main) {
 }
 
 
-AW_window *AWTC_create_rename_window(AW_root *root, AW_CL gb_main)
-{
-    AWUSE(root);
-
+AW_window *AWTC_create_rename_window(AW_root *root, AW_CL gb_main) {
     AW_window_simple *aws = new AW_window_simple;
     aws->init(root, "AUTORENAME_SPECIES", "AUTORENAME SPECIES");
 

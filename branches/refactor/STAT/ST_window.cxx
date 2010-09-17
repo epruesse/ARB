@@ -172,7 +172,7 @@ void STAT_create_awars(AW_root *root, GBDATA *gb_main) {
     root->awar_string(ST_ML_AWAR_FILTER_ALIGNMENT)->map(AWAR_DEFAULT_ALIGNMENT);
 }
 
-static void st_remove_entries(AW_window *aww) {
+static void st_remove_entries(AW_window */*aww*/) {
     // @@@ shall remove created all entries (from current alignment)
 }
 

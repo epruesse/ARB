@@ -381,17 +381,13 @@ void AW_window::set_horizontal_scrollbar_left_indent(int indent) {
     left_indent_of_horizontal_scrollbar = indent;
 }
 
-static void value_changed_scroll_bar_horizontal(Widget wgt,
-        XtPointer aw_cb_struct, XtPointer call_data) {
-    AWUSE(wgt);
+static void value_changed_scroll_bar_horizontal(Widget /*wgt*/, XtPointer aw_cb_struct, XtPointer call_data) {
     XmScrollBarCallbackStruct *sbcbs = (XmScrollBarCallbackStruct *)call_data;
     AW_cb_struct *cbs = (AW_cb_struct *) aw_cb_struct;
     (cbs->aw)->slider_pos_horizontal = sbcbs->value; // setzt Scrollwerte im AW_window
     cbs->run_callback();
 }
-static void drag_scroll_bar_horizontal(Widget wgt, XtPointer aw_cb_struct,
-        XtPointer call_data) {
-    AWUSE(wgt);
+static void drag_scroll_bar_horizontal(Widget /*wgt*/, XtPointer aw_cb_struct, XtPointer call_data) {
     XmScrollBarCallbackStruct *sbcbs = (XmScrollBarCallbackStruct *)call_data;
     AW_cb_struct *cbs = (AW_cb_struct *) aw_cb_struct;
     (cbs->aw)->slider_pos_horizontal = sbcbs->value; // setzt Scrollwerte im AW_window
@@ -406,17 +402,13 @@ void AW_window::set_horizontal_change_callback(void (*f)(AW_window*, AW_CL, AW_C
             (XtPointer) new AW_cb_struct(this, f, cd1, cd2, ""));
 }
 
-static void value_changed_scroll_bar_vertical(Widget wgt,
-        XtPointer aw_cb_struct, XtPointer call_data) {
-    AWUSE(wgt);
+static void value_changed_scroll_bar_vertical(Widget /*wgt*/, XtPointer aw_cb_struct, XtPointer call_data) {
     XmScrollBarCallbackStruct *sbcbs = (XmScrollBarCallbackStruct *)call_data;
     AW_cb_struct *cbs = (AW_cb_struct *) aw_cb_struct;
     cbs->aw->slider_pos_vertical = sbcbs->value; // setzt Scrollwerte im AW_window
     cbs->run_callback();
 }
-static void drag_scroll_bar_vertical(Widget wgt, XtPointer aw_cb_struct,
-        XtPointer call_data) {
-    AWUSE(wgt);
+static void drag_scroll_bar_vertical(Widget /*wgt*/, XtPointer aw_cb_struct, XtPointer call_data) {
     XmScrollBarCallbackStruct *sbcbs = (XmScrollBarCallbackStruct *)call_data;
     AW_cb_struct *cbs = (AW_cb_struct *) aw_cb_struct;
     cbs->aw->slider_pos_vertical = sbcbs->value; // setzt Scrollwerte im AW_window
@@ -599,8 +591,7 @@ void AW_window::set_horizontal_scrollbar_position(int position) {
     XtVaSetValues(p_w->scroll_bar_horizontal, XmNvalue, position, NULL);
 }
 
-static void AW_timer_callback(XtPointer aw_timer_cb_struct, XtIntervalId *id) {
-    AWUSE(id);
+static void AW_timer_callback(XtPointer aw_timer_cb_struct, XtIntervalId */*id*/) {
     AW_timer_cb_struct *tcbs = (AW_timer_cb_struct *) aw_timer_cb_struct;
     if (!tcbs)
         return;
@@ -619,9 +610,7 @@ static void AW_timer_callback(XtPointer aw_timer_cb_struct, XtIntervalId *id) {
     }
 }
 
-static void AW_timer_callback_never_disabled(XtPointer aw_timer_cb_struct,
-        XtIntervalId *id) {
-    AWUSE(id);
+static void AW_timer_callback_never_disabled(XtPointer aw_timer_cb_struct, XtIntervalId */*id*/) {
     AW_timer_cb_struct *tcbs = (AW_timer_cb_struct *) aw_timer_cb_struct;
     if (!tcbs)
         return;
@@ -856,9 +845,7 @@ void AW_root_Motif::normal_cursor() {
     set_cursor(old_cursor_display, old_cursor_window, 0);
 }
 
-void AW_server_callback(Widget wgt, XtPointer aw_cb_struct, XtPointer call_data) {
-    AWUSE(wgt);
-    AWUSE(call_data);
+void AW_server_callback(Widget /*wgt*/, XtPointer aw_cb_struct, XtPointer /*call_data*/) {
     AW_cb_struct *cbs = (AW_cb_struct *) aw_cb_struct;
 
     AW_root *root = cbs->aw->get_root();
@@ -938,8 +925,7 @@ void AW_root::set_focus_callback(AW_RCB f, AW_CL cd1, AW_CL cd2) {
     AW_root_cblist::add(focus_callback_list, AW_root_callback(f, cd1, cd2));
 }
 
-static void AW_focusCB(Widget wgt, XtPointer aw_cb_struct, XEvent*, Boolean*) {
-    AWUSE(wgt);
+static void AW_focusCB(Widget /*wgt*/, XtPointer aw_cb_struct, XEvent*, Boolean*) {
     AW_cb_struct *cbs = (AW_cb_struct *) aw_cb_struct;
     cbs->run_callback();
 }
@@ -956,9 +942,8 @@ void AW_window::set_focus_callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd
 // ---------------
 //      expose
 
-static void AW_exposeCB(Widget wgt, XtPointer aw_cb_struct, XmDrawingAreaCallbackStruct *call_data) {
+static void AW_exposeCB(Widget /*wgt*/, XtPointer aw_cb_struct, XmDrawingAreaCallbackStruct *call_data) {
     XEvent *ev = call_data->event;
-    AWUSE(wgt);
     AW_area_management *aram = (AW_area_management *) aw_cb_struct;
     if (ev->xexpose.count == 0) { // last expose cb
         if (aram->expose_cb)
@@ -1091,9 +1076,7 @@ void cleanupResizeEvents(Display *display) {
     }
 }
 
-static void AW_resizeCB_draw_area(Widget wgt, XtPointer aw_cb_struct, XtPointer call_data) {
-    AWUSE(wgt);
-    AWUSE(call_data);
+static void AW_resizeCB_draw_area(Widget /*wgt*/, XtPointer aw_cb_struct, XtPointer /*call_data*/) {
     AW_area_management *aram = (AW_area_management *) aw_cb_struct;
     cleanupResizeEvents(aram->common->display);
     if (aram->resize_cb)
@@ -1121,7 +1104,6 @@ void AW_window::set_resize_callback(AW_area area, void (*f)(AW_window*, AW_CL, A
 
 
 static void AW_inputCB_draw_area(Widget wgt, XtPointer aw_cb_struct, XmDrawingAreaCallbackStruct *call_data) {
-    AWUSE(wgt);
     XEvent             *ev                        = call_data->event;
     AW_cb_struct       *cbs                       = (AW_cb_struct *) aw_cb_struct;
     AW_window          *aww                       = cbs->aw;
@@ -1255,8 +1237,7 @@ void AW_window::get_event(AW_event *eventi) {
 // ---------------
 //      motion
 
-static void AW_motionCB(Widget w, XtPointer aw_cb_struct, XEvent *ev, Boolean*) {
-    AWUSE(w);
+static void AW_motionCB(Widget /*w*/, XtPointer aw_cb_struct, XEvent *ev, Boolean*) {
     AW_cb_struct *cbs = (AW_cb_struct *) aw_cb_struct;
 
     cbs->aw->event.type    = AW_Mouse_Drag;
@@ -1502,10 +1483,8 @@ void AW_window::_get_area_size(AW_area area, AW_rectangle *square) {
     *square = aram->common->screen;
 }
 
-static void horizontal_scrollbar_redefinition_cb(class AW_root *aw_root,
-        AW_CL cd1, AW_CL cd2) {
+static void horizontal_scrollbar_redefinition_cb(class AW_root */*aw_root*/, AW_CL cd1, AW_CL cd2) {
     AW_rectangle screen;
-    AWUSE(aw_root);
 
     char buffer[200];
     AW_window *aw = (AW_window *)cd1;
@@ -1528,10 +1507,8 @@ static void horizontal_scrollbar_redefinition_cb(class AW_root *aw_root,
 
 }
 
-static void vertical_scrollbar_redefinition_cb(class AW_root *aw_root,
-        AW_CL cd1, AW_CL cd2) {
+static void vertical_scrollbar_redefinition_cb(class AW_root */*aw_root*/, AW_CL cd1, AW_CL cd2) {
     AW_rectangle screen;
-    AWUSE(aw_root);
 
     char buffer[200];
     AW_window *aw = (AW_window *)cd1;
@@ -3360,8 +3337,7 @@ AW_ProcessEventType AW_root::peek_key_event(AW_window * /* aww */) {
     return (AW_ProcessEventType)xevent.type;
 }
 
-static void timed_window_title_cb(class AW_root* aw_root, AW_CL cd1, AW_CL cd2) {
-    AWUSE(aw_root);
+static void timed_window_title_cb(AW_root* /*aw_root*/, AW_CL cd1, AW_CL cd2) {
     char *title = (char *)cd1;
     AW_window *aw = (AW_window *)cd2;
 

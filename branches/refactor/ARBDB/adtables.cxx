@@ -40,7 +40,7 @@
  *      }
  */
 
-GBDATA *gbt_table_link_follower(GBDATA *gb_main, GBDATA *gb_link, const char *link) {
+GBDATA *gbt_table_link_follower(GBDATA *gb_main, GBDATA */*gb_link*/, const char *link) {
     GBDATA *gb_table;
     char save;
     char *sep;
@@ -70,9 +70,6 @@ GB_ERROR GBT_install_table_link_follower(GBDATA *gb_main) {
 
 static void g_bt_table_deleted(GBDATA *gb_table, int *clientdata, GB_CB_TYPE gbtype) {
     GB_MAIN_TYPE *Main = gb_get_main_during_cb();
-    // GBUSE(gb_table);
-    // GBUSE(gbtype);
-    // GBUSE(clientdata);
     GBS_free_hash(Main->table_hash);
     Main->table_hash = GBS_create_hash(256, GB_MIND_CASE);
 }

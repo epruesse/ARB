@@ -19,17 +19,17 @@
 extern void display_status(AW_window *, AW_CL, AW_CL);
 GB_ERROR    ph_check_initialized();
 
-void vertical_change_cb(AW_window *aww, void *cb1, void *cb2)
+void vertical_change_cb(AW_window *aww, void */*cb1*/, void */*cb2*/)
 {
     PH_display::ph_display->monitor_vertical_scroll_cb(aww);
 }
 
-void horizontal_change_cb(AW_window *aww, void *cb1, void *cb2)
+void horizontal_change_cb(AW_window *aww, void */*cb1*/, void */*cb2*/)
 {
     PH_display::ph_display->monitor_horizontal_scroll_cb(aww);
 }
 
-void ph_view_matrix_cb(AW_window *aww)
+void ph_view_matrix_cb(AW_window */*aww*/)
 {
     AW_window *main_win = PH_used_windows::windowList->phylo_main_window;
 
@@ -39,7 +39,7 @@ void ph_view_matrix_cb(AW_window *aww)
     main_win->set_horizontal_change_callback((AW_CB2)horizontal_change_cb, 0, 0);
 }
 
-void ph_view_species_cb(AW_window *aww, AW_CL cb1, AW_CL cb2)
+void ph_view_species_cb(AW_window */*aww*/, AW_CL /*cb1*/, AW_CL /*cb2*/)
 {
     AW_window *main_win = PH_used_windows::windowList->phylo_main_window;
 
@@ -49,7 +49,7 @@ void ph_view_species_cb(AW_window *aww, AW_CL cb1, AW_CL cb2)
     main_win->set_horizontal_change_callback((AW_CB2)horizontal_change_cb, 0, 0);
 }
 
-void ph_view_filter_cb(AW_window *aww, AW_CL, AW_CL)
+void ph_view_filter_cb(AW_window */*aww*/, AW_CL, AW_CL)
 {
     GB_ERROR err = ph_check_initialized();
     if (err) {
@@ -478,9 +478,8 @@ void PH_display_status::clear() {
     device->clear(-1);
 }
 
-void display_status(AW_window *dummy, AW_CL cl_awroot, AW_CL cd2)  // bottom area
-{
-    AWUSE(dummy); AWUSE(cd2);
+void display_status(AW_window *, AW_CL cl_awroot, AW_CL /*cd2*/) {
+    // bottom area
     AW_root *aw_root = (AW_root *) cl_awroot;
 
     if (!PH_display::ph_display) return;

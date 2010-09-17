@@ -309,8 +309,7 @@ static long detectMaxNameLength(const char *key, long val, void *cl_len) {
     return val;
 }
 
-long awt_query_update_list(void *dummy, DbQuery *cbs) {
-    AWUSE(dummy);
+long awt_query_update_list(void *, DbQuery *cbs) {
     GB_push_transaction(cbs->gb_main);
 
     // clear
@@ -412,12 +411,10 @@ long awt_query_update_list(void *dummy, DbQuery *cbs) {
 
     return count;
 }
-// Mark listed species
-// mark = 1 -> mark listed
-// mark | 8 -> don't change rest
-void awt_do_mark_list(void *dummy, DbQuery *cbs, long mark)
-{
-    AWUSE(dummy);
+void awt_do_mark_list(void *, DbQuery *cbs, long mark) {
+    // Mark listed species
+    // mark = 1 -> mark listed
+    // mark | 8 -> don't change rest
     GB_push_transaction(cbs->gb_main);
 
     for (GBDATA *gb_item_container = cbs->selector->get_first_item_container(cbs->gb_main, cbs->aws->get_root(), AWT_QUERY_ALL_SPECIES);
@@ -441,8 +438,7 @@ void awt_do_mark_list(void *dummy, DbQuery *cbs, long mark)
     GB_pop_transaction(cbs->gb_main);
 }
 
-void awt_unquery_all(void *dummy, DbQuery *cbs) {
-    AWUSE(dummy);
+void awt_unquery_all(void *, DbQuery *cbs) {
     GB_push_transaction(cbs->gb_main);
     GBDATA *gb_species;
     for (gb_species = GBT_first_species(cbs->gb_main);
@@ -979,9 +975,7 @@ bool awt_query::matches(const char *data, GBDATA *gb_item) const {
     return applyNot(hit);
 }
 
-static void awt_do_query(void *dummy, DbQuery *cbs, AW_CL cl_ext_query) {
-    AWUSE(dummy);
-
+static void awt_do_query(void *, DbQuery *cbs, AW_CL cl_ext_query) {
     GB_push_transaction(cbs->gb_main);
 
     AWT_EXT_QUERY_TYPES  ext_query = (AWT_EXT_QUERY_TYPES)cl_ext_query;
@@ -1489,9 +1483,7 @@ void awt_search_equal_entries(AW_window *, DbQuery *cbs, bool tokenize) {
     awt_query_update_list(0, cbs);
 }
 
-void awt_do_pars_list(void *dummy, DbQuery *cbs)
-{
-    AWUSE(dummy);
+void awt_do_pars_list(void *, DbQuery *cbs) {
     GB_ERROR  error = 0;
     char     *key   = cbs->aws->get_root()->awar(cbs->awar_parskey)->read_string();
 

@@ -472,10 +472,8 @@ static char *preCreateTempfile(const char *name) {
     return fullname;
 }
 
-void GDE_startaction_cb(AW_window *aw, GmenuItem *gmenuitem, AW_CL cd)
-{
+void GDE_startaction_cb(AW_window *aw, GmenuItem *gmenuitem, AW_CL /*cd*/) {
     long oldnumelements=0;
-    AWUSE(cd);
     AW_root *aw_root=aw->get_root();
 
     GapCompression  compress          = static_cast<GapCompression>(aw_root->awar(AWAR_GDE_COMPRESSION)->read_int());

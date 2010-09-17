@@ -274,9 +274,7 @@ void awt_pre_to_view(AW_root *aw_root) {
     }
     free(str);
 }
-void AWT_create_select_srtaci_window(AW_window *aww, AW_CL awar_acisrt, AW_CL awar_short)
-{
-    AWUSE(awar_short);
+void AWT_create_select_srtaci_window(AW_window *aww, AW_CL awar_acisrt, AW_CL /*awar_short*/) {
     static AW_window *win = 0;
 
     if (!win) {

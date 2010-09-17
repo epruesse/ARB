@@ -268,7 +268,7 @@ static void show_soft_link(AW_window *aws, AW_selection_list *sel_id, const char
     }
 }
 
-static void fill_fileselection_cb(void *dummy, File_selection *cbs) {
+static void fill_fileselection_cb(void */*dummy*/, File_selection *cbs) {
     AW_root *aw_root = cbs->aws->get_root();
     cbs->aws->clear_selection_list(cbs->id);
 

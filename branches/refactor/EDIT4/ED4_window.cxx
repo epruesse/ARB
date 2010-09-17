@@ -179,11 +179,8 @@ ED4_window *ED4_window::get_matching_ed4w(AW_window *aw) {
 
 
 
-ED4_returncode ED4_window::delete_folding_line(ED4_folding_line *fl, ED4_properties prop) {
-    AWUSE(fl);
-    AWUSE(prop);
-
-    return (ED4_R_OK);
+ED4_returncode ED4_window::delete_folding_line(ED4_folding_line */*fl*/, ED4_properties /*prop*/) {
+    return ED4_R_OK;
 }
 
 ED4_returncode ED4_window::update_scrolled_rectangle()

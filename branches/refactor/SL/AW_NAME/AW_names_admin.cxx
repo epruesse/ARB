@@ -25,7 +25,7 @@ static char *namesFilename(AW_CL cl_gb_main) {
     return fullname;
 }
 
-static void awtc_delete_names_file(AW_window *aws, AW_CL cl_gb_main) {
+static void awtc_delete_names_file(AW_window */*aws*/, AW_CL cl_gb_main) {
     char     *path    = namesFilename(cl_gb_main);
     char     *newpath = GBS_string_eval(path, "*=*%", 0);
     GB_ERROR  error   = GB_rename_file(path, newpath);

@@ -53,11 +53,7 @@ void awt_inserchar_event(AW_window *aws, AW_CL awcl_mode)
     free(deletes);
 }
 
-AW_window *create_insertchar_window(AW_root *root, AW_default def)
-{
-    AWUSE(root);
-    AWUSE(def);
-
+AW_window *create_insertchar_window(AW_root *root, AW_default /*def*/) {
     static AW_window_simple *aws = 0;
     if (aws) return aws;
     aws = new AW_window_simple;

@@ -109,10 +109,8 @@ void ed_al_check_len_cb(AW_window *aww)
     if (error) aw_message(error);
     free(use);
 }
-void ed_al_export_sec_cb(AW_window *aww)
-{
+void ed_al_export_sec_cb(AW_window */*aww*/) {
     aw_message("This Function is not implemented,\nPlease press 'CHECK' to do this");
-    AWUSE(aww);
 }
 void ed_al_align_cb(AW_window *aww)
 {

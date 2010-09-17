@@ -8,10 +8,9 @@
 #include <arbdbt.h>
 
 /*! recalc filter */
-void awt_create_select_filter_window_aw_cb(void *dummy, struct adfiltercbstruct *cbs)
+void awt_create_select_filter_window_aw_cb(void *, struct adfiltercbstruct *cbs)
 {       // update the variables
     AW_root *aw_root = cbs->awr;
-    AWUSE(dummy);
     char    buffer[256];
     GB_push_transaction(cbs->gb_main);
     char *target = aw_root->awar(cbs->def_subname)->read_string();

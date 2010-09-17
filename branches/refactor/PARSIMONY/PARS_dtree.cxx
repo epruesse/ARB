@@ -297,7 +297,6 @@ void AWT_graphic_parsimony::command(AW_device *device, AWT_COMMAND_MODE cmd, int
 {
     static int bl_drag_flag;
 
-    AWUSE(ct);
     AP_tree *at;
 
     bool compute_tree = false;

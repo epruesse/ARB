@@ -21,16 +21,6 @@ typedef AW_RCB AW_RCB2;
 
 typedef AW_window *(*AW_PPP)(AW_root*, AW_CL, AW_CL);
 
-#if defined(DEBUG) && defined(DEVEL_RALF) && 0
-#define AWUSE(variable) (void)variable; int DONT_USE_AWUSE_FOR_##variable
-#else
-#define AWUSE(variable) (void)variable
-#endif // DEBUG
-// AWUSE is a obsolete way to get rid of unused-warnings. Will be removed in the future - do not use!
-// If your warning is about a parameter, skip the parameters name.
-// If your warning is about a variable, the variable is superfluous and should most likely be removed.
-
-
 #if defined(ASSERTION_USED)
 #define legal_mask(m) (((m)&AWM_ALL) == (m))
 #endif // ASSERTION_USED

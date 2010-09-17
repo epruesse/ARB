@@ -258,17 +258,11 @@ bool AW_awar::unlink_from_DB(GBDATA *gb_main) {
     return make_zombie;
 }
 
-long AW_unlink_awar_from_DB(const char *key, long cl_awar, void *cl_gb_main) {
+long AW_unlink_awar_from_DB(const char */*key*/, long cl_awar, void *cl_gb_main) {
     AW_awar *awar    = (AW_awar*)cl_awar;
     GBDATA  *gb_main = (GBDATA*)cl_gb_main;
 
-#if defined(DEBUG) && 0
-    bool is_zombie = awar->unlink_from_DB(gb_main);
-    if (is_zombie) printf("Unlinked awar '%s' from DB\n", key);
-#else
-    AWUSE(key);
     awar->unlink_from_DB(gb_main);
-#endif // DEBUG
     return cl_awar;
 }
 

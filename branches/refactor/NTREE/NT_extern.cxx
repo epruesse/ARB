@@ -777,9 +777,7 @@ AW_window *NT_submit_bug(AW_root *aw_root, int bug_report) {
     return aws;
 }
 
-void NT_focus_cb(AW_window *aww)
-{
-    AWUSE(aww);
+void NT_focus_cb(AW_window */*aww*/) {
     GB_transaction dummy(GLOBAL_gb_main);
 }
 
