@@ -33,10 +33,10 @@ $(MAIN): $(OBJECTS)
 	$(LINK_SHARED_LIB) $(@:.a=).$(SHARED_LIB_SUFFIX) $(OBJECTS)
 	touch $@
 .cxx.o:
-	$(CPPLIB) $(cflags) -c $< $(CPPINCLUDES)
+	$(CPPLIB) $(cflags) -c $< $(CPPINCLUDES) $(POST_COMPILE)
 
 .c.o:
-	$(ACCLIB) $(cflags) -c $< $(CPPINCLUDES)
+	$(ACCLIB) $(cflags) -c $< $(CPPINCLUDES) $(POST_COMPILE)
 
 clean:
 	rm -f $(OBJECTS) *.a *.so

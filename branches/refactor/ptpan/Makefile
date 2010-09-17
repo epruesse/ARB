@@ -10,9 +10,9 @@ AOBJECTS = #BI_helix.o
 $(MAIN): $(OBJECTS) $(AOBJECTS)
 	$(LINK_STATIC_LIB) $(MAIN) $(OBJECTS) $(AOBJECTS)
 .c.o:
-	$(ACC) $(cflags) -c $< $(AINCLUDES)  -I./../probe_bank/COM
+	$(ACC) $(cflags) -c $< $(AINCLUDES)  -I./../probe_bank/COM $(POST_COMPILE)
 .cxx.o:
-	$(CPP) $(cflags) -c $<  $(CPPINCLUDES) -I./../probe_bank/COM
+	$(CPP) $(cflags) -c $<  $(CPPINCLUDES) -I./../probe_bank/COM $(POST_COMPILE)
 proto:
 	../MAKEBIN/aisc_mkpt -E -w pt_prototypes.h $(OBJECTS:.o=.cxx) >pt_prototypes.h.tmp
 	../SOURCE_TOOLS/mv_if_diff pt_prototypes.h.tmp pt_prototypes.h

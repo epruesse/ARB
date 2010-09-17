@@ -6,9 +6,9 @@ CPP_OBJECTS = island_hopping.o i-hopper.o align.o mem.o trnsprob.o
 $(MAIN): $(CPP_OBJECTS)
 	$(LINK_STATIC_LIB) $(MAIN) $(CPP_OBJECTS)
 .c.o:
-	$(ACC) $(cflags) -DARB -c $<  $(CPPINCLUDES)
+	$(ACC) $(cflags) -DARB -c $<  $(CPPINCLUDES) $(POST_COMPILE)
 .cxx.o:
-	$(CPP) $(cflags) -DARB -c $<  $(CPPINCLUDES)
+	$(CPP) $(cflags) -DARB -c $<  $(CPPINCLUDES) $(POST_COMPILE)
 
 clean:
 	rm -f $(CPP_OBJECTS) *.a

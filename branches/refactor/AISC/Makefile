@@ -11,7 +11,7 @@ $(BINARY):	$(OBJECTS)
 	$(CPP) $(cflags) -o $@ $(OBJECTS)
 
 .c.o:
-	$(CPP) $(cflags) -c $< $(AINCLUDES)
+	$(CPP) $(cflags) -c $< $(AINCLUDES) $(POST_COMPILE)
 
 DEPENDS = $(OBJECTS:.o=.depend)
 depends: $(DEPENDS)

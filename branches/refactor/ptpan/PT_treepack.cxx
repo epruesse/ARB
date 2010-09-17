@@ -3120,3 +3120,5 @@ BOOL FindSequenceMatchRec(struct SearchQuery *sq, struct QueryHit *qh, STRPTR ta
   return(FALSE);
 }
 /* \\\ */
+
+#error test error

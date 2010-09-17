@@ -16,7 +16,7 @@ test_environment: $(GLOBAL_OBJECTS) $(TESTER_OBJECTS)
 	$(LINK_EXECUTABLE) test_environment $(GLOBAL_OBJECTS) $(TESTER_OBJECTS) $(LIBPATH) $(ARBDB_LIB)  
 
 .cxx.o:
-	$(CPP) $(cflags) -c $<  $(CPPINCLUDES)
+	$(CPP) $(cflags) -c $<  $(CPPINCLUDES) $(POST_COMPILE)
 
 clean:
 	rm -f $(CPP_OBJECTS) *.a test_environment 

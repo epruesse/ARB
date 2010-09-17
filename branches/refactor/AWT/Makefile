@@ -27,9 +27,7 @@ $(MAIN): $(OBJECTS)
 	touch $@
 
 .cxx.o:
-	$(CPPLIB) $(cflags) -c $<  $(CPPINCLUDES)
-
-#	$(CPPLIB) $(cflags) -c -D_USE_AW_WINDOW $<  $(CPPINCLUDES)
+	$(CPPLIB) $(cflags) -c $<  $(CPPINCLUDES) $(POST_COMPILE)
 
 clean:
 	rm -f $(OBJECTS) *.a *.so
