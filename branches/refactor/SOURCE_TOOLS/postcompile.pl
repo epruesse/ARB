@@ -25,7 +25,7 @@ my $reg_location2 = qr/^[^:]+:\sAt\stop\slevel:/;
 # regexps for messages:
 my $reg_shadow_warning = qr/^warning:\sdeclaration\sof\s.*\sshadows\s/;
 my $reg_shadow_location = qr/^warning:\sshadowed\s/;
-my $reg_is_error = qr/^Error:\s/;
+my $reg_is_error = qr/^error:\s/i;
 
 # regexps for files:
 my $reg_user_include = qr/^\/usr\/include\//;
