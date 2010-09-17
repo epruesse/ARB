@@ -1125,7 +1125,10 @@ show:
 		@echo $(SEP)
 
 source_doc:
-		doxygen
+	@echo "Remove some links (doxygen crashes otherwise):"
+	find . \( -name "AISC" -o -name "C" -o -name "GDEHELP" \) -type l -exec rm {} \;
+	doxygen
+	$(MAKE) forcelinks
 
 mbin:	$(ARCHS_MAKEBIN:.a=.dummy)
 
@@ -1262,6 +1265,10 @@ tags_ctags:
 LINKSTAMP=SOURCE_TOOLS/generate_all_links.stamp
 
 links: $(LINKSTAMP)
+
+forcelinks:
+	rm $(LINKSTAMP)
+	$(MAKE) links
 
 $(LINKSTAMP): SOURCE_TOOLS/generate_all_links.sh
 	SOURCE_TOOLS/generate_all_links.sh
