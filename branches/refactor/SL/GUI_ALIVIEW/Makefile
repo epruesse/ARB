@@ -52,10 +52,10 @@ AWT_filter.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AWT_filter.o: $(ARBHOME)/INCLUDE/arbdbt.h
 AWT_filter.o: $(ARBHOME)/INCLUDE/arbtools.h
 AWT_filter.o: $(ARBHOME)/INCLUDE/attributes.h
+AWT_filter.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 AWT_filter.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
-AWT_filter.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+AWT_filter.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AWT_filter.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
-AWT_filter.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AWT_filter.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWT_filter.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AWT_filter.o: $(ARBHOME)/INCLUDE/awt.hxx
@@ -78,9 +78,10 @@ ColumnStat.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 ColumnStat.o: $(ARBHOME)/INCLUDE/arbdbt.h
 ColumnStat.o: $(ARBHOME)/INCLUDE/arbtools.h
 ColumnStat.o: $(ARBHOME)/INCLUDE/attributes.h
-ColumnStat.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+ColumnStat.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
+ColumnStat.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 ColumnStat.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
-ColumnStat.o: $(ARBHOME)/INCLUDE/aw_position.hxx
+ColumnStat.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 ColumnStat.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 ColumnStat.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ColumnStat.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx

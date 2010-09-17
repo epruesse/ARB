@@ -41,9 +41,8 @@ AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/arbdbt.h
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/arbtools.h
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/attributes.h
-AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
-AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/bytestring.h
@@ -68,11 +67,12 @@ AWTC_submission.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AWTC_submission.o: $(ARBHOME)/INCLUDE/arbdbt.h
 AWTC_submission.o: $(ARBHOME)/INCLUDE/arbtools.h
 AWTC_submission.o: $(ARBHOME)/INCLUDE/attributes.h
+AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
-AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_edit.hxx
 AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
-AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_position.hxx
+AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AWTC_submission.o: $(ARBHOME)/INCLUDE/awt.hxx

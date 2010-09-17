@@ -48,13 +48,15 @@ db_scanner.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 db_scanner.o: $(ARBHOME)/INCLUDE/arbdbt.h
 db_scanner.o: $(ARBHOME)/INCLUDE/arbtools.h
 db_scanner.o: $(ARBHOME)/INCLUDE/attributes.h
+db_scanner.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 db_scanner.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
-db_scanner.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+db_scanner.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 db_scanner.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
-db_scanner.o: $(ARBHOME)/INCLUDE/aw_position.hxx
+db_scanner.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 db_scanner.o: $(ARBHOME)/INCLUDE/AW_rename.hxx
 db_scanner.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 db_scanner.o: $(ARBHOME)/INCLUDE/aw_select.hxx
+db_scanner.o: $(ARBHOME)/INCLUDE/aw_status.hxx
 db_scanner.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 db_scanner.o: $(ARBHOME)/INCLUDE/awt.hxx
 db_scanner.o: $(ARBHOME)/INCLUDE/cb.h

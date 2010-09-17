@@ -149,11 +149,13 @@ primer_design.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 primer_design.o: $(ARBHOME)/INCLUDE/arbdbt.h
 primer_design.o: $(ARBHOME)/INCLUDE/arbtools.h
 primer_design.o: $(ARBHOME)/INCLUDE/attributes.h
+primer_design.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 primer_design.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
-primer_design.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+primer_design.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 primer_design.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
-primer_design.o: $(ARBHOME)/INCLUDE/aw_position.hxx
+primer_design.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 primer_design.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+primer_design.o: $(ARBHOME)/INCLUDE/aw_status.hxx
 primer_design.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 primer_design.o: $(ARBHOME)/INCLUDE/awt_config_manager.hxx
 primer_design.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
