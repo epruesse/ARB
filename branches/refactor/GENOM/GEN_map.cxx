@@ -23,7 +23,10 @@
 #include <aw_question.hxx>
 #include <AW_rename.hxx>
 #include <awt_input_mask.hxx>
-#include <arbdbt.h>
+#include <aw_msg.hxx>
+#include <aw_status.hxx>
+#include <aw_root.hxx>
+#include <adGene.h>
 
 #include <map>
 

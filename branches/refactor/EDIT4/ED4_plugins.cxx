@@ -11,6 +11,7 @@
 #include <secedit_extern.hxx>
 #include <rna3d_extern.hxx>
 
+#include <aw_msg.hxx>
 #include <arbdb.h>
 #include <arb_defs.h>
 

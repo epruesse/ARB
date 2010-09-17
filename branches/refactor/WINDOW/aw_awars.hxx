@@ -1,6 +1,10 @@
 #ifndef AW_AWARS_HXX
 #define AW_AWARS_HXX
 
+#ifndef AW_AWAR_HXX
+#include <aw_awar.hxx>
+#endif
+
 #define AWAR_DB        "tmp/nt/arbdb/"
 #define AWAR_DB_PATH   AWAR_DB "file_name"
 #define AWAR_DB_TYPE   AWAR_DB "type"

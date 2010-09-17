@@ -19,6 +19,8 @@
 #include <aw_awars.hxx>
 #include <aw_global.hxx>
 #include <aw_preset.hxx>
+#include <aw_msg.hxx>
+#include <aw_root.hxx>
 
 #include <vector>
 

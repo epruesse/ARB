@@ -1,9 +1,14 @@
 #include "GDE_extglob.h"
 #include "GDE_awars.h"
 
+#include <aw_window.hxx>
+#include <aw_msg.hxx>
+#include <aw_awar.hxx>
+#include <aw_root.hxx>
 #include <awt_sel_boxes.hxx>
 #include <awt_filter.hxx>
-#include <aw_window.hxx>
+
+#include <cmath>
 
 /* AISC_MKPT_PROMOTE:#ifndef GDE_MENU_H */
 /* AISC_MKPT_PROMOTE:#include "GDE_menu.h" */

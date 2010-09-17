@@ -1,5 +1,7 @@
 #include <arbdbt.h>
 #include <aw_awars.hxx>
+#include <aw_msg.hxx>
+#include <aw_root.hxx>
 #include <fast_aligner.hxx>
 
 #include "ed4_awars.hxx"

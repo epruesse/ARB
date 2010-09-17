@@ -15,6 +15,8 @@
 
 #include <aw_awars.hxx>
 #include <aw_file.hxx>
+#include <aw_msg.hxx>
+#include <aw_root.hxx>
 #include <arbdbt.h>
 
 #define NDS_PER_PAGE 10         // number of NDS definitions on each config-page

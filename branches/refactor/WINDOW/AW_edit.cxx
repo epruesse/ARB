@@ -10,6 +10,8 @@
 
 #include "aw_edit.hxx"
 #include "aw_window.hxx"
+#include "aw_root.hxx"
+#include "aw_msg.hxx"
 
 #include <arbdbt.h>
 

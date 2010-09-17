@@ -4,6 +4,9 @@
 #include <arbdbt.h>
 #include <aw_awars.hxx>
 #include <AW_helix.hxx>
+#include <aw_msg.hxx>
+#include <aw_status.hxx>
+#include <aw_root.hxx>
 
 #include <ed4_extern.hxx>
 

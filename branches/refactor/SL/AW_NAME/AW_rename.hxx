@@ -11,11 +11,11 @@
 #ifndef AW_RENAME_HXX
 #define AW_RENAME_HXX
 
-#ifndef AW_ROOT_HXX
-#include <aw_root.hxx>
+#ifndef AW_BASE_HXX
+#include <aw_base.hxx>
 #endif
-#ifndef ARBDB_H
-#include <arbdb.h>
+#ifndef ARBDBT_H
+#include <arbdbt.h>
 #endif
 
 #define AWT_RENAME_USE_ADVICE "awt_rename/use_advice"

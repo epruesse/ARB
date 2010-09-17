@@ -12,6 +12,8 @@
 
 #include <aw_awars.hxx>
 #include <aw_advice.hxx>
+#include <aw_msg.hxx>
+#include <aw_root.hxx>
 #include <awt.hxx>
 
 #include <cctype>

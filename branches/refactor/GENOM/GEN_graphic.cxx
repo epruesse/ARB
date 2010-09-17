@@ -18,6 +18,8 @@
 #include <aw_preset.hxx>
 #include <awt_attributes.hxx>
 #include <awt.hxx>
+#include <aw_msg.hxx>
+#include <aw_root.hxx>
 
 #include <climits>
 

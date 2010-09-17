@@ -13,6 +13,9 @@
 
 #include <aw_global_awars.hxx>
 #include <aw_awars.hxx>
+#include <aw_root.hxx>
+#include <aw_msg.hxx>
+
 #include <arbdbt.h>
 #include <arb_str.h>
 #include <arb_defs.h>

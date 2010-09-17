@@ -20,6 +20,10 @@
 #include "aw_xkey.hxx"
 #include "aw_select.hxx"
 #include "aw_global.hxx"
+#include "aw_awar.hxx"
+#include "aw_msg.hxx"
+#include "aw_status.hxx"
+#include "aw_root.hxx"
 
 #include <arbdbt.h>
 
@@ -1683,7 +1687,7 @@ AW_color AW_window::alloc_named_data_color(int colnum, char *colorname) {
         if (XAllocNamedColor(p_global->display, p_global->colormap, colorname,
         &xcolor_returned, &xcolor_exakt) == 0) {
             sprintf(AW_ERROR_BUFFER, "XAllocColor failed: %s\n", colorname);
-            aw_message();
+            aw_errorbuffer_message();
             color_table[colnum] = (unsigned long)-1;
         }
         else {
@@ -3314,6 +3318,11 @@ bool AW_window::is_shown() {
     return window_is_shown;
 }
 
+void AW_window::hide_or_notify(const char *error) {
+    if (error) aw_message(error);
+    else hide();
+}
+
 void AW_root::window_show() {
     active_windows++;
 }
@@ -3860,3 +3869,4 @@ void AW_window::TuneBackground(Widget w, int modStrength) {
     // otherwise some value overflowed
     set_background(hex_color, w);
 }
+

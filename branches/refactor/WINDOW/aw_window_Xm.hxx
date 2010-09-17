@@ -10,6 +10,10 @@
 #ifndef _Xm_h
 #include <Xm/Xm.h>
 #endif
+#ifndef CB_H
+#include <cb.h>
+#endif
+
 
 // macro definitions
 #define  p_r        prvt

@@ -21,6 +21,12 @@
 #ifndef ARBDB_H
 #include <arbdb.h>
 #endif
+#ifndef AW_AWAR_HXX
+#include <aw_awar.hxx>
+#endif
+#ifndef AW_ROOT_HXX
+#include <aw_root.hxx>
+#endif
 
 #ifndef _CPP_MAP
 #include <map>

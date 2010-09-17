@@ -10,6 +10,7 @@
 
 #include <iostream>
 
+#include <aw_root.hxx>
 #include <aw_awars.hxx>
 #include <BI_helix.hxx>
 

@@ -65,9 +65,6 @@ bool AW_device_size::invisible(int gc, AW_pos x, AW_pos y, AW_bitset filteri, AW
 
 
 int AW_device_size::line(int gc, AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW_bitset filteri, AW_CL clientdata1, AW_CL clientdata2) {
-    AWUSE(clientdata1); AWUSE(clientdata2);
-    AWUSE(gc);
-
     if (filteri & filter) {
         dot(x0, y0);
         dot(x1, y1);
@@ -77,8 +74,6 @@ int AW_device_size::line(int gc, AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW_
 }
 
 int AW_device_size::text(int gc, const char *str, AW_pos x, AW_pos y, AW_pos alignment, AW_bitset filteri, AW_CL clientdata1, AW_CL clientdata2, long opt_strlen) {
-    AWUSE(clientdata1); AWUSE(clientdata2);
-
     if (filteri & filter) {
         XFontStruct *xfs = &(common->gcs[gc]->curfont);
 

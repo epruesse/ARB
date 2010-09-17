@@ -15,6 +15,7 @@
 #include <arbdb.h>
 #include <aw_global_awars.hxx>
 #include <aw_awars.hxx>
+#include <aw_root.hxx>
 #include <aw_window.hxx>
 
 static GBDATA *gb_main4awar = 0; // gb_main used for global awars

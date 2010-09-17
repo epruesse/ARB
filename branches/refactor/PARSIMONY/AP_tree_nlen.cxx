@@ -13,6 +13,7 @@
 #include "pars_debug.hxx"
 
 #include <AP_seq_dna.hxx>
+#include <aw_root.hxx>
 
 using namespace std;
 

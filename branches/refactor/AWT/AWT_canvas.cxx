@@ -11,6 +11,8 @@
 #include "awt_canvas.hxx"
 #include "awt.hxx"
 
+#include <aw_root.hxx>
+#include <aw_msg.hxx>
 #include <arbdbt.h>
 
 #include <algorithm>

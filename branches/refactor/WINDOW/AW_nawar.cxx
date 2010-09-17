@@ -9,7 +9,9 @@
 // =============================================================== //
 
 #include "aw_nawar.hxx"
-#include "aw_root.hxx"
+#include "aw_awar.hxx"
+#include "aw_detach.hxx"
+#include "aw_msg.hxx"
 #include <arbdb.h>
 #include <sys/stat.h>
 
@@ -224,7 +226,7 @@ inline bool member_of_DB(GBDATA *gbd, GBDATA *gb_main) {
 }
 
 void AW_awar::unlink() {
-    aw_assert(is_valid());
+    aw_assert(this->is_valid());
     remove_all_callbacks();
     remove_all_target_vars();
     gb_origin = NULL;                               // make zombie awar
@@ -372,7 +374,6 @@ AW_awar *AW_awar::set_srt(const char *srt)
     return this;
 }
 
-
 AW_awar *AW_awar::map(AW_default gbd) {
     if (gb_var) {                                   // remove old mapping
         GB_remove_callback((GBDATA *)gb_var, GB_CB_CHANGED, (GB_CB)AW_var_gbdata_callback, (int *)this);
@@ -409,6 +410,9 @@ AW_awar *AW_awar::map(AW_default gbd) {
 
 AW_awar *AW_awar::map(AW_awar *dest) {
     return this->map(dest->gb_var);
+}
+AW_awar *AW_awar::map(const char *awarn) {
+    return map(root->awar(awarn));
 }
 
 AW_awar *AW_awar::unmap() {

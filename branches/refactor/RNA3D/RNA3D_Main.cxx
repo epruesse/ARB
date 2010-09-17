@@ -14,6 +14,7 @@
 #include "RNA3D_Interface.hxx"
 #include "rna3d_extern.hxx"
 
+#include <aw_root.hxx>
 #include <aw_window.hxx>
 #include <arbdb.h>
 

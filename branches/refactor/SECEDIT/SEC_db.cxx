@@ -16,6 +16,8 @@
 
 #include <aw_awars.hxx>
 #include <aw_file.hxx>
+#include <aw_msg.hxx>
+#include <aw_root.hxx>
 #include <arbdbt.h>
 #include <ed4_extern.hxx>
 

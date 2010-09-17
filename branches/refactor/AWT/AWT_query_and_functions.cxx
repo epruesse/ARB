@@ -16,7 +16,10 @@
 #include <aw_advice.hxx>
 #include <aw_color_groups.hxx>
 #include <aw_file.hxx>
+#include <aw_msg.hxx>
 #include <aw_awars.hxx>
+#include <aw_status.hxx>
+#include <aw_root.hxx>
 
 #include <arbdbt.h>
 

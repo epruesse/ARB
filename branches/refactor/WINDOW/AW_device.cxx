@@ -10,6 +10,7 @@
 
 #include "aw_window.hxx"
 #include "aw_commn.hxx"
+#include "aw_root.hxx"
 
 #include <arb_str.h>
 

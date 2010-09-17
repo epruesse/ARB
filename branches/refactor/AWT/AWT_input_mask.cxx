@@ -18,6 +18,7 @@
 #include <awt_www.hxx>
 #include <aw_edit.hxx>
 #include <aw_file.hxx>
+#include <aw_msg.hxx>
 
 #include <sys/stat.h>
 #include <sys/types.h>

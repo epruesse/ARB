@@ -24,6 +24,10 @@
 #include <gui_aliview.hxx>
 
 #include <aw_preset.hxx>
+#include <aw_awar.hxx>
+#include <aw_msg.hxx>
+#include <aw_status.hxx>
+#include <aw_root.hxx>
 
 AP_tree_nlen *PARS_global::get_root_node() {
     return DOWNCAST(AP_tree_nlen*, tree->get_root_node());

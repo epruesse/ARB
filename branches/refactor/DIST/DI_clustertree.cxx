@@ -10,7 +10,7 @@
 // =============================================================== //
 
 #include "di_clustertree.hxx"
-#include <aw_root.hxx>
+#include <aw_status.hxx>
 #include <set>
 #include <cmath>
 #include <limits>

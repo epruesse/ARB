@@ -14,7 +14,11 @@
 
 #include <awt_sel_boxes.hxx>
 #include <aw_preset.hxx>
+#include <aw_awar.hxx>
+#include <aw_msg.hxx>
 #include <awt.hxx>
+#include <aw_status.hxx>
+#include <aw_root.hxx>
 #include <arbdbt.h>
 
 #include <iostream>

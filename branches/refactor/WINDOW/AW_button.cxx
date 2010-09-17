@@ -15,7 +15,10 @@
 #include "aw_size.hxx"
 #include "aw_select.hxx"
 #include "aw_nawar.hxx"
+#include "aw_awar.hxx"
 #include "aw_window_Xm.hxx"
+#include "aw_msg.hxx"
+#include "aw_root.hxx"
 
 #include <arbdbt.h>
 

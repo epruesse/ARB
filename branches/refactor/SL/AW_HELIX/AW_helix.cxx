@@ -12,7 +12,10 @@
 // ==================================================================== //
 
 #include "AW_helix.hxx"
+#include <aw_root.hxx>
 #include <aw_window.hxx>
+#include <aw_awar.hxx>
+#include <aw_device.hxx>
 #include <cctype>
 
 #define HELIX_AWAR_ENABLE          "Helix/enable"

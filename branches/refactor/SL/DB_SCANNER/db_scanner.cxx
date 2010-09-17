@@ -16,9 +16,11 @@
 
 #include <aw_awars.hxx>
 #include <aw_select.hxx>
+#include <aw_msg.hxx>
+#include <aw_status.hxx>
+#include <aw_root.hxx>
 
 #include <arb_str.h>
-#include <arbdbt.h>
 
 #include <unistd.h>
 #include <ctime>

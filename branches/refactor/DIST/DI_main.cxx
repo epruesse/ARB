@@ -15,6 +15,9 @@
 #include <awt_canvas.hxx>
 
 #include <aw_preset.hxx>
+#include <aw_root.hxx>
+#include <aw_msg.hxx>
+#include <aw_status.hxx>
 #include <arbdb.h>
 
 

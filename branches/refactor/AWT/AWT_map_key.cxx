@@ -10,6 +10,8 @@
 
 #include "awt_map_key.hxx"
 #include <aw_window.hxx>
+#include <aw_root.hxx>
+#include <aw_awar.hxx>
 
 ed_key::ed_key()
 {

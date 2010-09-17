@@ -15,6 +15,8 @@
 #include <ColumnStat.hxx>
 
 #include <aw_awars.hxx>
+#include <aw_root.hxx>
+#include <aw_msg.hxx>
 #include <awt.hxx>
 #include <awt_item_sel_list.hxx>
 #include <awt_filter.hxx>

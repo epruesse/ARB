@@ -12,11 +12,18 @@
 #ifndef AW_POSITION_HXX
 #define AW_POSITION_HXX
 
-#ifndef AW_ROOT_HXX
-#include <aw_root.hxx>
+#ifndef AW_BASE_HXX
+#include "aw_base.hxx"
+#endif
+#ifndef ARB_ASSERT_H
+#include <arb_assert.h>
 #endif
 #ifndef _CPP_CMATH
 #include <cmath>
+#endif
+
+#ifndef aw_assert
+#define aw_assert(bed) arb_assert(bed)
 #endif
 
 // ------------------------

@@ -15,6 +15,9 @@
 
 #include <awt.hxx>
 #include <aw_select.hxx>
+#include <aw_msg.hxx>
+#include <aw_status.hxx>
+#include <aw_root.hxx>
 #include <TreeCallbacks.hxx>
 #include <client.h>
 #include <servercntrl.h>

@@ -11,6 +11,10 @@
 #include "awt_canvas.hxx"
 
 #include <aw_file.hxx>
+#include <aw_awar.hxx>
+#include <aw_msg.hxx>
+#include <aw_status.hxx>
+#include <aw_root.hxx>
 #include <arbdbt.h>
 
 #define awt_assert(cond) arb_assert(cond)

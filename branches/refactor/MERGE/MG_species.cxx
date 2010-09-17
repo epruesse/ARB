@@ -16,7 +16,9 @@
 #include <awt.hxx>
 #include <awt_item_sel_list.hxx>
 #include <aw_awars.hxx>
-#include <arbdbt.h>
+#include <aw_msg.hxx>
+#include <aw_status.hxx>
+#include <aw_root.hxx>
 #include <arb_str.h>
 
 #define AWAR1 "tmp/merge1/"

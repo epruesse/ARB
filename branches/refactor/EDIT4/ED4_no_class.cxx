@@ -25,7 +25,9 @@
 #include <awt_sel_boxes.hxx>
 #include <awt_seq_colors.hxx>
 #include <aw_awars.hxx>
-#include <arbdbt.h>
+#include <aw_msg.hxx>
+#include <aw_status.hxx>
+#include <aw_root.hxx>
 
 #include <cctype>
 

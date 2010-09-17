@@ -22,6 +22,9 @@
 
 #include <aw_window.hxx>
 #include <aw_awars.hxx>
+#include <aw_msg.hxx>
+#include <aw_status.hxx>
+#include <aw_root.hxx>
 
 using namespace std;
 

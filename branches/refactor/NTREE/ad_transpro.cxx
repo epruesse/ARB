@@ -16,6 +16,9 @@
 #include <AP_pro_a_nucs.hxx>
 #include <aw_awars.hxx>
 #include <aw_window.hxx>
+#include <aw_root.hxx>
+#include <aw_msg.hxx>
+#include <aw_status.hxx>
 #include <arbdbt.h>
 #include <cctype>
 

@@ -10,6 +10,7 @@
 
 #include "aw_print.hxx"
 #include "aw_commn.hxx"
+#include "aw_root.hxx"
 
 AW_device_print::AW_device_print(AW_common *commoni) : AW_device(commoni) {
     out = 0;

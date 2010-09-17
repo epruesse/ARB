@@ -12,8 +12,11 @@
 #ifndef AW_COLOR_GROUPS_HXX
 #define AW_COLOR_GROUPS_HXX
 
-#ifndef AW_ROOT_HXX
-#include <aw_root.hxx>
+#ifndef AW_BASE_HXX
+#include "aw_base.hxx"
+#endif
+#ifndef ARBDB_BASE_H
+#include <arbdb_base.h>
 #endif
 
 

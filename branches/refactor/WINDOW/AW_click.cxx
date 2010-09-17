@@ -20,7 +20,6 @@ AW_device_click::AW_device_click(AW_common *commoni) : AW_device(commoni) {
 }
 
 void AW_device_click::init(AW_pos mousex, AW_pos mousey, AW_pos max_distance_linei, AW_pos max_distance_texti, AW_pos radi, AW_bitset filteri) {
-    AWUSE(radi);
     mouse_x           = mousex;
     mouse_y           = mousey;
     filter            = filteri;
@@ -48,7 +47,6 @@ int AW_device_click::line(int gc, AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW
     AW_pos distance, skalar = 0;
     bool   best_line        = false;             // is this line the best ?
 
-    AWUSE(gc);
     if (!(filteri & filter)) return false;
 
     this->transform(x0, y0, X0, Y0);

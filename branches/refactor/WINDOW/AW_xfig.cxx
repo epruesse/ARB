@@ -10,6 +10,7 @@
 
 #include "aw_xfig.hxx"
 #include <aw_device.hxx>
+#include "aw_msg.hxx"
 
 #include <arbdb.h>
 #include <climits>

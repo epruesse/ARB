@@ -12,14 +12,12 @@
 #ifndef GEN_HXX
 #define GEN_HXX
 
-#ifndef AW_WINDOW_HXX
-#include <aw_window.hxx>
+#ifndef AW_BASE_HXX
+#include <aw_base.hxx>
 #endif
-#ifndef ADGENE_H
-#include <adGene.h>
+#ifndef ARBDB_BASE_H
+#include <arbdb_base.h>
 #endif
-
-class AWT_canvas;
 
 // --------------------------------------------------------------------------------
 // this header is visible ARB-wide (so here are only things needed somewhere else)
@@ -41,6 +39,7 @@ AW_window *GEN_create_gene_window(AW_root *aw_root, AW_CL cl_gb_main);
 AW_window *GEN_create_gene_query_window(AW_root *aw_root, AW_CL cl_gb_main);
 AW_window *GEN_create_first_map(AW_root *aw_root, AW_CL cl_gb_main);
 
+class AW_window_menu_modes;
 void GEN_create_genes_submenu(AW_window_menu_modes *awm, GBDATA *gb_main, bool for_ARB_NTREE);
 
 // --------------------------------------------------------------------------------

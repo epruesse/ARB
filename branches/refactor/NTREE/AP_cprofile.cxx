@@ -44,10 +44,15 @@
 #include <aw_awars.hxx>
 #include <aw_file.hxx>
 #include <aw_window.hxx>
+#include <aw_msg.hxx>
+#include <aw_status.hxx>
+#include <aw_root.hxx>
+#include <aw_device.hxx>
 
 #include <arbdbt.h>
 
 #include <iostream>
+#include <cmath>
 
 #define ap_assert(cond) arb_assert(cond)
 

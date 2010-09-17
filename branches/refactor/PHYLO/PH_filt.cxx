@@ -11,6 +11,9 @@
 #include "phylo.hxx"
 #include "phwin.hxx"
 #include <arbdbt.h>
+#include <aw_awar.hxx>
+#include <aw_status.hxx>
+#include <aw_root.hxx>
 #include <cctype>
 
 static long PH_timer() {

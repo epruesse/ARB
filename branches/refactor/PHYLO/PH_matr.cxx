@@ -12,6 +12,9 @@
 
 #include <aw_file.hxx>
 #include <aw_window.hxx>
+#include <aw_awar.hxx>
+#include <aw_msg.hxx>
+#include <aw_root.hxx>
 
 #include <AP_pro_a_nucs.hxx>
 

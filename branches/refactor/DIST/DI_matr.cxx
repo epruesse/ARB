@@ -30,11 +30,15 @@
 #include <aw_preset.hxx>
 #include <aw_awars.hxx>
 #include <aw_file.hxx>
+#include <aw_msg.hxx>
+#include <aw_status.hxx>
+#include <aw_root.hxx>
 
 #include <gui_aliview.hxx>
 
 #include <climits>
 #include <ctime>
+#include <cmath>
 
 #define di_assert(cond) arb_assert(cond)
 
@@ -61,7 +65,6 @@ AP_matrix DI_dna_matrix(AP_MAX);
 
 static void delete_matrix_cb(AW_root *dummy)
 {
-    AWUSE(dummy);
     delete DI_MATRIX::ROOT;
     DI_MATRIX::ROOT = 0;
     if (di_dmatrix) {

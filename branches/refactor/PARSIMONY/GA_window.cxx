@@ -7,7 +7,6 @@
 #include <cmath>
 #include <servercntrl.h>
 #include <cstdlib>
-#include <aw_root.hxx>
 #include <aw_device.hxx>
 #include <aw_window.hxx>
 #include <aw_display.hxx>

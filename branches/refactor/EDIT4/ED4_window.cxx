@@ -11,6 +11,8 @@
 #include <ed4_extern.hxx>
 #include "ed4_class.hxx"
 #include "ed4_tools.hxx"
+#include <aw_awar.hxx>
+#include <aw_root.hxx>
 
 int ED4_window::no_of_windows = 0;                  // static variable has to be initialized only once
 

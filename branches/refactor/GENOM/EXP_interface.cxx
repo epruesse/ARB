@@ -23,6 +23,8 @@
 #include <awt_sel_boxes.hxx>
 #include <awt_item_sel_list.hxx>
 #include <aw_awars.hxx>
+#include <aw_detach.hxx>
+#include <aw_msg.hxx>
 #include <arbdbt.h>
 
 using namespace std;

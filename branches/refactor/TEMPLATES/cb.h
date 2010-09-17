@@ -12,9 +12,9 @@
 #ifndef CB_H
 #define CB_H
 
-class AW_root;
-
-typedef long AW_CL; // client data (casted from pointer or value)
+#ifndef AW_BASE_HXX
+#include <aw_base.hxx>
+#endif
 
 typedef void (*AW_RCB)(AW_root*, AW_CL, AW_CL);
 

@@ -11,6 +11,8 @@
 #include <aw_window.hxx>
 #include <aw_global.hxx>
 #include <aw_file.hxx>
+#include <aw_awar.hxx>
+#include "aw_root.hxx"
 
 #include <arbdbt.h>
 
@@ -26,8 +28,7 @@ using namespace std;
 
 int aw_message_cb_result;
 
-void message_cb(AW_window *aw, AW_CL cd1) {
-    AWUSE(aw);
+void message_cb(AW_window *, AW_CL cd1) {
     long result = (long)cd1;
     if (result == -1) { /* exit */
         exit(EXIT_FAILURE);

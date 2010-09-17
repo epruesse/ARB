@@ -10,7 +10,8 @@
 
 #include "di_protdist.hxx"
 #include "di_matr.hxx"
-
+#include <aw_msg.hxx>
+#include <aw_status.hxx>
 #include <cmath>
 
 #define di_assert(cond) arb_assert(cond)

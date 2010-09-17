@@ -11,9 +11,10 @@
 #ifndef GDE_HXX
 #define GDE_HXX
 
-#ifndef AW_ROOT_HXX
-#include <aw_root.hxx>
+#ifndef AW_BASE_HXX
+#include <aw_base.hxx>
 #endif
+
 
 typedef unsigned char uchar;
 enum gde_window_type {

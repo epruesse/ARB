@@ -64,7 +64,7 @@ void crop(char *input, char *head, char *tail);
 #include "GDE_extglob.h"
 #endif
 
-void ReadArbdb_plain(char *filename, NA_Alignment *dataset, int type);
+void ReadArbdb_plain(char *, NA_Alignment *dataset, int dummy_1x);
 int ReadArbdb2(NA_Alignment *dataset, AP_filter *filter, GapCompression compress, bool cutoff_stop_codon);
 int ReadArbdb(NA_Alignment *dataset, bool marked, AP_filter *filter, GapCompression compress, bool cutoff_stop_codon);
 int getelem(NA_Sequence *a, int b);
