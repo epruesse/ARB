@@ -30,8 +30,8 @@ my $reg_is_error = qr/^error:\s/i;
 # regexps for files:
 my $reg_user_include = qr/^\/usr\/include\//;
 
-# output buffer
-# my @out = ();
+my $stop_after_first_error = 0;
+my $hide_warnings          = 0;
 
 sub warning($\@) {
   my ($msg,$out_r) = @_;
@@ -70,7 +70,7 @@ sub parse_input(\@) {
   my @out = ();
   my @errout = ();
 
-  foreach (<>) {
+ LINE: foreach (<>) {
     chomp;
     my $is_error=0;
     if ($_ =~ $reg_file) {
@@ -104,8 +104,6 @@ sub parse_input(\@) {
       elsif ($msg =~ $reg_is_error) {
         $is_error = 1;
       }
-
-      # if (defined $_) { $_ .= ' [reg_file]'; } # # test
     }
     elsif ($_ =~ $reg_location or $_ =~ $reg_location2) {
       $location_info = $_;
@@ -126,14 +124,29 @@ sub parse_input(\@) {
       my $curr_out_r = $is_error==1 ? \@errout : \@out;
       push_loc_and_includes($location_info,$_,@included,@$curr_out_r);
       @included = ();
+
+      if (($is_error==1) and ($stop_after_first_error==1)) {
+        @out = (); # drop warnings
+        last LINE;
+      }
     }
   }
 
   @$out_r = @errout;
-  push @$out_r, @out;
+  if ($hide_warnings==0) { push @$out_r, @out; }
 }
 
 sub main() {
+  my $args = scalar(@ARGV);
+  if ($args>0) {
+    my $arg = shift(@ARGV);
+    if ($arg eq '--no-warnings') { $hide_warnings = 1; }
+    elsif ($arg eq '--only-first-error') { $stop_after_first_error = 1; }
+    else {
+      die "Usage: postcompile.pl [--no-warnings] [--only-first-error]\n";
+    }
+  }
+  
   my @out = ();
   parse_input(@out);
   store_shadow(undef,@out);
