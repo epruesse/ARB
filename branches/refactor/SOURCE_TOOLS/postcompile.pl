@@ -138,15 +138,16 @@ sub parse_input(\@) {
 
 sub main() {
   my $args = scalar(@ARGV);
-  if ($args>0) {
+  while ($args>0) {
     my $arg = shift(@ARGV);
     if ($arg eq '--no-warnings') { $hide_warnings = 1; }
     elsif ($arg eq '--only-first-error') { $stop_after_first_error = 1; }
     else {
       die "Usage: postcompile.pl [--no-warnings] [--only-first-error]\n";
     }
+    $args--;
   }
-  
+
   my @out = ();
   parse_input(@out);
   store_shadow(undef,@out);
