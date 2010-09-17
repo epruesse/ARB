@@ -16,7 +16,7 @@ use warnings;
 # Note: g++ must be called with -fmessage-length=0
 
 # regexps for whole line:
-my $reg_file = qr/^([^:]+):([0-9]+):\s/; # finds all messages
+my $reg_file = qr/^([^:]+):([0-9]+):(([0-9]+):)?\s/; # finds all messages
 my $reg_included = qr/^In\sfile\sincluded\sfrom\s(.*)[,:]/;
 my $reg_included2 = qr/^\s+from\s(.*)[,:]/;
 my $reg_location = qr/^[^:]+:\sIn\sfunction\s/;
@@ -58,7 +58,7 @@ sub push_loc_and_includes($$\@\@) {
   }
   push @$out_r, $message;
   foreach (@$included_r) {
-    push @$out_r, $message.': included from here';
+    push @$out_r, $_.': included from here';
   }
 }
 
