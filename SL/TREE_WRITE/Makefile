@@ -47,7 +47,7 @@ TreeWrite.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 TreeWrite.o: $(ARBHOME)/INCLUDE/arbdbt.h
 TreeWrite.o: $(ARBHOME)/INCLUDE/arbtools.h
 TreeWrite.o: $(ARBHOME)/INCLUDE/attributes.h
-TreeWrite.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+TreeWrite.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 TreeWrite.o: $(ARBHOME)/INCLUDE/awt_nds.hxx
 TreeWrite.o: $(ARBHOME)/INCLUDE/dupstr.h
 TreeWrite.o: $(ARBHOME)/INCLUDE/smartptr.h

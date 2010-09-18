@@ -53,7 +53,7 @@ void NT_undo_info_cb(AW_window *, AW_CL undo_type);
 AW_window *NT_create_tree_setting(AW_root *aw_root);
 void NT_submit_mail(AW_window *aww, AW_CL cl_awar_base);
 AW_window *NT_submit_bug(AW_root *aw_root, int bug_report);
-void NT_focus_cb(AW_window *aww);
+void NT_focus_cb(AW_window *);
 void NT_modify_cb(AW_window *aww, AW_CL cd1, AW_CL cd2);
 void NT_primer_cb(void);
 void NT_mark_degenerated_branches(AW_window *aww, AW_CL ntwcl);

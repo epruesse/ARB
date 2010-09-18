@@ -45,12 +45,15 @@ AW_helix.o: $(ARBHOME)/INCLUDE/arbdb.h
 AW_helix.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AW_helix.o: $(ARBHOME)/INCLUDE/arbtools.h
 AW_helix.o: $(ARBHOME)/INCLUDE/attributes.h
+AW_helix.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
+AW_helix.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AW_helix.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 AW_helix.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AW_helix.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AW_helix.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AW_helix.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AW_helix.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
+AW_helix.o: $(ARBHOME)/INCLUDE/cb.h
 AW_helix.o: $(ARBHOME)/INCLUDE/dupstr.h
 AW_helix.o: $(ARBHOME)/INCLUDE/smartptr.h
 AW_helix.o: $(ARBHOME)/INCLUDE/test_global.h

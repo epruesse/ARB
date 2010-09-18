@@ -46,7 +46,6 @@ TestEnvironment.o: UnitTester.hxx
 TestEnvironment.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 TestEnvironment.o: $(ARBHOME)/INCLUDE/ad_prot.h
 TestEnvironment.o: $(ARBHOME)/INCLUDE/arb_assert.h
-TestEnvironment.o: $(ARBHOME)/INCLUDE/arb_core.h
 TestEnvironment.o: $(ARBHOME)/INCLUDE/arb_defs.h
 TestEnvironment.o: $(ARBHOME)/INCLUDE/arb_error.h
 TestEnvironment.o: $(ARBHOME)/INCLUDE/arb_str.h
