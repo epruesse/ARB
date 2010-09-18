@@ -36,6 +36,37 @@ sub symbol_warning($$) { my($symbol, $message)= @_; $warn_level==0 || symbol_mes
 sub symbol_error($$)   { my($symbol, $message)= @_; symbol_message($symbol, $message, "Error");   }
 
 
+sub fail_if_no_tests_defined($) {
+  my ($libname) = @_;
+  my $skipped = scalar(keys %skipped_test);
+  my $active  = scalar(keys %simple_test);
+
+  if (($skipped+$active)==0) {
+    # my $makefileDefiningTests = $ENV{ARBHOME}.'/Makefile';
+    my $makefileDefiningTests = '../Makefile';
+    my $thisTest = $libname;
+    $thisTest =~ s/\.(a|o|so)/.test/; 
+    my $cmd      = "grep -Hn '$thisTest' $makefileDefiningTests";
+
+    open(GREP,$cmd.'|') || die "can't execute '$cmd' (Reason: $!)";
+    my $lineCount = 0;
+    foreach (<GREP>) {
+      if (/^([^:]+:[0-9]+:)/o) {
+        my ($loc,$line) = ($1,$');
+        chomp($line);
+        print $1.' Error: No tests defined by '.$libname." (do not call this test!)\n";
+        $lineCount++;
+      }
+      else { print "unhandled grep out='$_'\n"; }
+    }
+    close(GREP);
+    if ($lineCount!=1) { die "expected exactly one line from grep (got $lineCount)"; }
+    die "sym2testcode.pl: won't generated useless test code\n";
+  }
+
+  return $active; # return number of active tests
+}
+
 sub skip_slow_tests() {
   foreach (keys %simple_test) {
     if (/^TEST_SLOW_/) { $skipped_test{$_} = 1; }
@@ -269,6 +300,8 @@ sub main() {
   $warn_level   = shift @ARGV;
 
   parse($nm_output);
+  fail_if_no_tests_defined($libname);
+
   filter($restrict);
   eval {
     create($libname,$gen_cxx);

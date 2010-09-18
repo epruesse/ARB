@@ -1505,6 +1505,9 @@ arb: arbbasic
 # currently not all test executables link w/o error
 # (see UNITS_WORKING, UNITS_UNTESTABLE_ATM and UNITS_NEED_FIX)
 
+# define RNA3D/RNA3D.test
+RNA3D_TEST := $(subst .a,.test,$(RNA3D_LIB))
+
 TESTED_UNITS_AUTO = $(ARCHS:.a=.test)
 
 UNITS_WORKING = \
@@ -1551,15 +1554,14 @@ UNITS_WORKING = \
 	PROBE/PROBE.test \
 	DBSERVER/DBSERVER.test \
 	AWT/AWT.test \
+	SL/SEQIO/SEQIO.test \
+	SECEDIT/SECEDIT.test \
+	$(RNA3D_TEST) \
+	SERVERCNTRL/SERVERCNTRL.test \
 
 # untestable units
 
-RNA3D_TEST := $(subst .a,.test,$(RNA3D_LIB))
-
 UNITS_TRY_FIX = \
-	$(RNA3D_TEST) \
-	SECEDIT/SECEDIT.test \
-	EDIT4/EDIT4.test \
 
 UNITS_NEED_FIX = \
 	GENOM_IMPORT/GENOM_IMPORT.test \
@@ -1573,16 +1575,15 @@ UNITS_UNTESTABLE_ATM = \
 # for the moment, put all units containing tests into UNITS_TESTED:
 UNITS_TESTED = \
 	WINDOW/WINDOW.test \
-	SERVERCNTRL/SERVERCNTRL.test \
 	SL/PRONUC/PRONUC.test \
 	AISC_MKPTPS/mkptypes.test \
 	TOOLS/arb_probe.test \
 	AWTC/AWTC.test \
 	SL/FAST_ALIGNER/FAST_ALIGNER.test \
 	MULTI_PROBE/MULTI_PROBE.test \
-	SL/SEQIO/SEQIO.test \
 	ARBDB/ARBDB.test \
 	MERGE/MERGE.test \
+	EDIT4/EDIT4.test \
 
 TESTED_UNITS_MANUAL = \
 	$(UNITS_TRY_FIX) \

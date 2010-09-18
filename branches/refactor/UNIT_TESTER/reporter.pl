@@ -131,7 +131,7 @@ sub slow_note() {
 }
 
 sub print_summary() {
-  print "Unit-test summary:\n";
+  print "\n-------------------- [ Unit-test summary ] --------------------\n";
   print sprintf(" Tests   : %4i\n", $tests);
   print sprintf(" Skipped : %4i =%s%s\n", $skipped, percent($skipped,$tests), slow_note());
   print sprintf(" Passed  : %4i =%s\n", $passed, percent($passed,$tests));

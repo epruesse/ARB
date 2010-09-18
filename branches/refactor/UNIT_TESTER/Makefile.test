@@ -96,7 +96,7 @@ $(RUNDIR):
 
 makedirs: $(DESTDIR) $(RUNDIR)
 
-$(SYMLIST) : $(FULLLIB) Makefile makedirs
+$(SYMLIST) : $(FULLLIB) Makefile makedirs show_test_header
 	nm -C -l $< > $@
 
 $(TEST_CODE) : $(SYMLIST) $(SYM2TESTCODE) Makefile.test
@@ -128,6 +128,10 @@ dump:
 valgrind:
 	echo "Valgrinding.."
 	$(ARBHOME)/SOURCE_TOOLS/arb_valgrind -q $(LEAKS) -c 15 $(TEST_EXE)
+
+show_test_header:
+	@echo ""
+	@echo "-------------------- [ Test $(UNITLIBNAME) ] --------------------"
 
 perform_test: $(TEST_EXE)
 	@echo "fake[2]: Entering directory \`$(FULLUNITDIR)'"

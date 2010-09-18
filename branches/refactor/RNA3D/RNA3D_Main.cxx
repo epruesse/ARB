@@ -71,14 +71,3 @@ AW_window *start_RNA3D_plugin(ED4_plugin_host& host) {
     return CreateRNA3DMainWindow(host.get_application_root(), host.get_database(), host);
 }
 
-
-// --------------------------------------------------------------------------------
-
-#if (UNIT_TESTS == 1)
-#include <test_unit.h>
-
-void TEST_rna3d() {
-    // TEST_ASSERT(0);
-}
-
-#endif // UNIT_TESTS
