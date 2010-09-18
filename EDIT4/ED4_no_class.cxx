@@ -25,7 +25,9 @@
 #include <awt_sel_boxes.hxx>
 #include <awt_seq_colors.hxx>
 #include <aw_awars.hxx>
-#include <arbdbt.h>
+#include <aw_msg.hxx>
+#include <aw_status.hxx>
+#include <aw_root.hxx>
 
 #include <cctype>
 
@@ -115,13 +117,8 @@ void ED4_expose_recalculations() {
     ED4_ROOT->get_ed4w()->update_scrolled_rectangle();
 }
 
-void ED4_expose_cb(AW_window *aww, AW_CL cd1, AW_CL cd2)
-{
+void ED4_expose_cb(AW_window *aww, AW_CL /*cd1*/, AW_CL /*cd2*/) {
     static bool dummy = 0;
-
-    AWUSE(aww);
-    AWUSE(cd1);
-    AWUSE(cd2);
 
     ED4_ROOT->use_window(aww);
 
@@ -142,12 +139,7 @@ void ED4_expose_cb(AW_window *aww, AW_CL cd1, AW_CL cd2)
     GB_pop_transaction(GLOBAL_gb_main);
 }
 
-void ED4_resize_cb(AW_window *aww, AW_CL cd1, AW_CL cd2)
-{
-    AWUSE(aww);
-    AWUSE(cd1);
-    AWUSE(cd2);
-
+void ED4_resize_cb(AW_window *aww, AW_CL /*cd1*/, AW_CL /*cd2*/) {
     ED4_ROOT->use_window(aww);
 
     GB_push_transaction(GLOBAL_gb_main);
@@ -497,11 +489,7 @@ static int get_max_slider_ypos() {
     return int(max_ypos+0.5);
 }
 
-void ED4_vertical_change_cb(AW_window *aww, AW_CL cd1, AW_CL cd2)
-{
-    AWUSE(cd1);
-    AWUSE(cd2);
-
+void ED4_vertical_change_cb(AW_window *aww, AW_CL /*cd1*/, AW_CL /*cd2*/) {
     ED4_ROOT->use_window(aww);
 
     GB_push_transaction(GLOBAL_gb_main);
@@ -528,11 +516,7 @@ void ED4_vertical_change_cb(AW_window *aww, AW_CL cd1, AW_CL cd2)
     win->update_window_coords();
 }
 
-void ED4_horizontal_change_cb(AW_window *aww, AW_CL cd1, AW_CL cd2)
-{
-    AWUSE(cd1);
-    AWUSE(cd2);
-
+void ED4_horizontal_change_cb(AW_window *aww, AW_CL /*cd1*/, AW_CL /*cd2*/) {
     ED4_ROOT->use_window(aww);
 
     GB_push_transaction(GLOBAL_gb_main);
@@ -559,11 +543,7 @@ void ED4_horizontal_change_cb(AW_window *aww, AW_CL cd1, AW_CL cd2)
     win->update_window_coords();
 }
 
-void ED4_scrollbar_change_cb(AW_window *aww, AW_CL cd1, AW_CL cd2)
-{
-    AWUSE(cd1);
-    AWUSE(cd2);
-
+void ED4_scrollbar_change_cb(AW_window *aww, AW_CL /*cd1*/, AW_CL /*cd2*/) {
     ED4_ROOT->use_window(aww);
 
     GB_push_transaction(GLOBAL_gb_main);
@@ -603,10 +583,7 @@ void ED4_scrollbar_change_cb(AW_window *aww, AW_CL cd1, AW_CL cd2)
     win->update_window_coords();
 }
 
-void ED4_motion_cb(AW_window *aww, AW_CL cd1, AW_CL cd2)
-{
-    AWUSE(cd1);
-    AWUSE(cd2);
+void ED4_motion_cb(AW_window *aww, AW_CL cd1, AW_CL cd2) {
     AW_event event;
 
     ED4_ROOT->use_window(aww);
@@ -822,22 +799,12 @@ void ED4_quit_editor(AW_window *aww, AW_CL /* cd1 */, AW_CL /* cd2 */) {
     ED4_ROOT->get_ed4w()->is_hidden = true;
 }
 
-void ED4_load_data(AW_window *aww, AW_CL cd1, AW_CL cd2)
-{
+void ED4_load_data(AW_window *aww, AW_CL /*cd1*/, AW_CL /*cd2*/) {
     ED4_ROOT->use_window(aww);
-
-    AWUSE(aww);
-    AWUSE(cd1);
-    AWUSE(cd2);
 }
 
-void ED4_save_data(AW_window *aww, AW_CL cd1, AW_CL cd2)
-{
+void ED4_save_data(AW_window *aww, AW_CL /*cd1*/, AW_CL /*cd2*/) {
     ED4_ROOT->use_window(aww);
-
-    AWUSE(aww);
-    AWUSE(cd1);
-    AWUSE(cd2);
 }
 
 void ED4_timer_refresh()

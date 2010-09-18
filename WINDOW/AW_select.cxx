@@ -11,6 +11,8 @@
 
 #include "aw_select.hxx"
 #include "aw_window_Xm.hxx"
+#include "aw_root.hxx"
+#include "aw_awar.hxx"
 
 #include <Xm/List.h>
 

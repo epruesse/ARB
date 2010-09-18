@@ -48,6 +48,10 @@
 
 #include <awt_sel_boxes.hxx>
 #include <aw_window.hxx>
+#include <aw_status.hxx>
+#include <aw_root.hxx>
+#include <aw_msg.hxx>
+#include <aw_awar.hxx>
 #include <arbdbt.h>
 
 #define AWAR_MAX_FREQ   "tmp/CON_MAX_FREQ/"

@@ -57,9 +57,7 @@ void create_fields_vars(AW_root *aw_root) {
     GB_pop_transaction(gb_main);
 }
 
-AW_window *create_fields_window(AW_root *root, AW_default aw_def)
-{
-    AWUSE(aw_def);
+AW_window *create_fields_window(AW_root *root, AW_default /*aw_def*/) {
     create_fields_vars(root);
     AW_window_simple *aws = new AW_window_simple;
     aws->init(root, "INFO_OF_FIELD", "FIELDS INFORMATION", 100, 0);

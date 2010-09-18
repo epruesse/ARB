@@ -31,6 +31,9 @@
 #include <awt_map_key.hxx>
 #include <aw_awars.hxx>
 #include <aw_preset.hxx>
+#include <aw_msg.hxx>
+#include <aw_status.hxx>
+#include <aw_root.hxx>
 #include <arb_version.h>
 #include <arbdbt.h>
 

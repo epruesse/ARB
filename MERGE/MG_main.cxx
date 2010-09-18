@@ -17,8 +17,10 @@
 #include <aw_preset.hxx>
 #include <aw_awars.hxx>
 #include <aw_file.hxx>
+#include <aw_msg.hxx>
+#include <aw_status.hxx>
+#include <aw_root.hxx>
 
-#include <arbdbt.h>
 
 GBDATA *GLOBAL_gb_merge = NULL;
 GBDATA *GLOBAL_gb_dest  = NULL;

@@ -11,6 +11,7 @@
 #include "merge.hxx"
 #include "MG_adapt_ali.hxx"
 
+#include <aw_msg.hxx>
 #include <arbdbt.h>
 
 #include <algorithm>

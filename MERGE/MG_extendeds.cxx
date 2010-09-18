@@ -13,6 +13,8 @@
 #include <awt.hxx>
 #include <awt_sel_boxes.hxx>
 #include <aw_awars.hxx>
+#include <aw_msg.hxx>
+#include <aw_root.hxx>
 #include <arbdbt.h>
 
 #define AWAR_EX_NAME1 "tmp/merge1/extended_name"

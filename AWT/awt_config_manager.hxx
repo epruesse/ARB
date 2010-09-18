@@ -19,11 +19,9 @@
 #ifndef ARBDB_BASE_H
 #include <arbdb_base.h>
 #endif
-#ifndef AW_ROOT_HXX
-#include <aw_root.hxx>
+#ifndef AW_BASE_HXX
+#include <aw_base.hxx>
 #endif
-
-class AW_window;
 
 struct AWT_config_mapping;
 
@@ -32,9 +30,9 @@ struct AWT_config_mapping_def {
     const char *config_name;
 };
 
-// ----------------------------------------
-//      class AWT_config
-// ----------------------------------------
+// -------------------
+//      AWT_config
+
 class AWT_config {
     // stores one specific configuration (key->value pairs)
     //
@@ -65,9 +63,9 @@ public:
     GB_ERROR write_to_awars(const AWT_config_mapping *cfgname_2_awar, AW_root *root) const; // internal use (write config into awars)
 };
 
-//  ------------------------------------
-//      class AWT_config_definition
-//  ------------------------------------
+// ------------------------------
+//      AWT_config_definition
+
 class AWT_config_definition {
 private:
     AW_root            *root;
@@ -90,11 +88,16 @@ public:
     AW_root *get_root() const { return root; }
 };
 
-// callbacks from config manager :
+// ----------------------------------------
+//      callbacks from config manager :
+
 typedef char *(*AWT_store_config_to_string)(AW_window *aww, AW_CL cl1, AW_CL cl2);
 typedef void (*AWT_load_config_from_string)(AW_window *aww, const char *stored_string, AW_CL cl1, AW_CL cl2);
 
-// the config manager itself -> adds button at cursor position when called (from a window generator function)
+// ----------------------------------
+// the config manager itself
+// adds button at cursor position when called (from a window generator function)
+
 void AWT_insert_config_manager(AW_window *aww, AW_default default_file_, const char *id, AWT_store_config_to_string store, AWT_load_config_from_string load, AW_CL cl1, AW_CL cl2, const char *macro_id = NULL);
 
 #else

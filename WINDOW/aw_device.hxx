@@ -29,13 +29,6 @@ typedef enum {
     AW_DEVICE_PRINTER = 16
 } AW_DEVICE_TYPE;
 
-typedef enum {
-    AW_INFO_AREA,
-    AW_MIDDLE_AREA,
-    AW_BOTTOM_AREA,
-    AW_MAX_AREA
-} AW_area;
-
 enum {
     AW_FIXED             = -1,
     AW_TIMES             = 0,
@@ -77,17 +70,6 @@ enum {
     AW_DEFAULT_FIXED_FONT  = AW_LUCIDA_SANS_TYPEWRITER,
 
 };      // AW_font
-
-typedef enum {
-    AW_WINDOW_BG,
-    AW_WINDOW_FG,
-    AW_WINDOW_C1,
-    AW_WINDOW_C2,
-    AW_WINDOW_C3,
-    AW_WINDOW_DRAG,
-    AW_DATA_BG,
-    AW_COLOR_MAX
-} AW_color;
 
 typedef enum {
     AW_cursor_insert,
@@ -329,6 +311,7 @@ public:
 };
 
 class AW_clip_scale_stack;
+struct AW_world;
 
 class AW_device : public AW_matrix, public AW_gc
 {

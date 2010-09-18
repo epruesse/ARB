@@ -23,6 +23,8 @@
 #include <aw_awars.hxx>
 
 #include <AW_helix.hxx>
+#include <aw_msg.hxx>
+#include <aw_root.hxx>
 
 #include <awt_seq_colors.hxx>
 #include <awt_attributes.hxx>
@@ -128,11 +130,10 @@ ED4_returncode ED4_consensus_sequence_terminal::draw(int /* only_text */)
     return (ED4_R_OK);
 }
 
-static int ED4_show_helix_on_device(AW_device *device, int gc, const char *opt_string, size_t opt_string_size, size_t start, size_t size,
-                                    AW_pos x, AW_pos y, AW_pos opt_ascent, AW_pos opt_descent,
+static int ED4_show_helix_on_device(AW_device *device, int gc, const char *opt_string, size_t /*opt_string_size*/, size_t start, size_t size,
+                                    AW_pos x, AW_pos y, AW_pos /*opt_ascent*/, AW_pos /*opt_descent*/,
                                     AW_CL cduser, AW_CL real_sequence_length, AW_CL cd2)
 {
-    AWUSE(opt_ascent); AWUSE(opt_descent); AWUSE(opt_string_size);
     AW_helix        *helix  = (AW_helix *)cduser;
     const ED4_remap *rm     = ED4_ROOT->root_group_man->remap();
     char            *buffer = GB_give_buffer(size+1);

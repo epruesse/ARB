@@ -12,8 +12,11 @@
 #ifndef FAST_ALIGNER_HXX
 #define FAST_ALIGNER_HXX
 
-#ifndef AW_ROOT_HXX
-#include <aw_root.hxx>
+#ifndef AW_BASE_HXX
+#include <aw_base.hxx>
+#endif
+#ifndef ARB_ERROR_H
+#include <arb_error.h>
 #endif
 
 #define INTEGRATED_ALIGNERS_TITLE "Integrated Aligners"

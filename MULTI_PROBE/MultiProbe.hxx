@@ -21,8 +21,11 @@
 #ifndef AW_AWARS_HXX
 #include <aw_awars.hxx>
 #endif
-#ifndef AW_ROOT_HXX
-#include <aw_root.hxx>
+#ifndef AW_BASE_HXX
+#include <aw_base.hxx>
+#endif
+#ifndef ARB_ASSERT_H
+#include <arb_assert.h>
 #endif
 
 #define mp_assert(x) arb_assert(x)

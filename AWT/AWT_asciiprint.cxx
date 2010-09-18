@@ -11,10 +11,13 @@
 #include "awt_asciiprint.hxx"
 #include "awt.hxx"
 
+#include <aw_root.hxx>
+#include <aw_awar.hxx>
+#include <aw_msg.hxx>
 #include <arbdbt.h>
 
 double awt_aps_get_xy_ratio(AW_root *awr) {
-    AWT_asciiprint_paper_size psize = (AWT_asciiprint_paper_size)awr->awar(AWAR_APRINT_PAPER_SIZE)->read_int();
+    // AWT_asciiprint_paper_size psize = (AWT_asciiprint_paper_size)awr->awar(AWAR_APRINT_PAPER_SIZE)->read_int();
     AWT_asciiprint_orientation ori = AWT_asciiprint_orientation(awr->awar(AWAR_APRINT_ORIENTATION)->read_int());
     double res = 1.0;
     switch (ori) {

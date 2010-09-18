@@ -11,6 +11,8 @@
 #include <ed4_extern.hxx>
 #include "ed4_class.hxx"
 
+#include <aw_msg.hxx>
+#include <aw_status.hxx>
 #include <arbdbt.h>
 #include <ad_config.h>
 

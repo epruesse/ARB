@@ -14,6 +14,7 @@
 #include <ColumnStat.hxx>
 #include <AP_filter.hxx>
 #include <AP_Tree.hxx>
+#include <aw_status.hxx>
 #include <gui_aliview.hxx>
 
 #include <cctype>

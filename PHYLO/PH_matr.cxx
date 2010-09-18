@@ -12,6 +12,9 @@
 
 #include <aw_file.hxx>
 #include <aw_window.hxx>
+#include <aw_awar.hxx>
+#include <aw_msg.hxx>
+#include <aw_root.hxx>
 
 #include <AP_pro_a_nucs.hxx>
 
@@ -81,9 +84,7 @@ void PH_create_matrix_variables(AW_root *aw_root, AW_default def)
 
 
 
-void ph_calculate_matrix_cb(AW_window *aww, AW_CL cb1, AW_CL cb2) {
-    AWUSE(cb1);
-    AWUSE(cb2);
+void ph_calculate_matrix_cb(AW_window *aww, AW_CL /*cb1*/, AW_CL /*cb2*/) {
     char *cancel, *transformation;
 
     if (!PHDATA::ROOT) {

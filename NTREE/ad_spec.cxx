@@ -21,6 +21,9 @@
 #include <awt_www.hxx>
 #include <awt_sel_boxes.hxx>
 #include <aw_awars.hxx>
+#include <aw_detach.hxx>
+#include <aw_msg.hxx>
+#include <aw_status.hxx>
 
 #define nt_assert(bed) arb_assert(bed)
 
@@ -732,8 +735,8 @@ AW_window *NT_create_ad_field_create(AW_root *root, AW_CL cl_item_selector)
 #warning GBT_convert_changekey currently only works for species fields, make it work with genes/exp/... as well (use selector)
 #endif // DEVEL_RALF
 
-static void ad_field_convert_commit_cb(AW_window *aws, AW_CL cl_item_selector) {
-    const ad_item_selector *selector = (const ad_item_selector*) cl_item_selector;
+static void ad_field_convert_commit_cb(AW_window *aws, AW_CL /*cl_item_selector*/) {
+    // const ad_item_selector *selector = (const ad_item_selector*) cl_item_selector;
     AW_root *root = aws->get_root();
     GB_ERROR error = NULL;
 

@@ -15,7 +15,10 @@
 #include "aw_size.hxx"
 #include "aw_select.hxx"
 #include "aw_nawar.hxx"
+#include "aw_awar.hxx"
 #include "aw_window_Xm.hxx"
+#include "aw_msg.hxx"
+#include "aw_root.hxx"
 
 #include <arbdbt.h>
 
@@ -151,9 +154,8 @@ AW_variable_update_struct::AW_variable_update_struct(Widget widgeti,
 }
 
 
-void AW_variable_update_callback(Widget wgt, XtPointer variable_update_struct, XtPointer call_data) {
-    AWUSE(wgt); AWUSE(call_data);
-    AW_variable_update_struct *vus   = (AW_variable_update_struct *) variable_update_struct;
+void AW_variable_update_callback(Widget /*wgt*/, XtPointer variable_update_struct, XtPointer call_data) {
+    AW_variable_update_struct *vus = (AW_variable_update_struct *) variable_update_struct;
 
     aw_assert(vus);
 
@@ -297,8 +299,7 @@ void AW_variable_update_callback(Widget wgt, XtPointer variable_update_struct, X
 }
 
 
-void AW_value_changed_callback(Widget wgt, XtPointer rooti, XtPointer call_data) {
-    AWUSE(wgt); AWUSE(call_data);
+void AW_value_changed_callback(Widget /*wgt*/, XtPointer rooti, XtPointer /*call_data*/) {
     AW_root *root = (AW_root *)rooti;
     root->value_changed = true;
 }
@@ -563,7 +564,7 @@ void AW_window::create_autosize_button(const char *macro_name, AW_label buttonla
     _at->height_of_buttons = height_of_buttons;
 }
 
-void AW_window::create_button(const char *macro_name, AW_label buttonlabel, const  char *mnemonic, const char *color) {
+void AW_window::create_button(const char *macro_name, AW_label buttonlabel, const char */*mnemonic*/, const char *color) {
     // Create a button or text display.
     //
     // If a callback is bound via at->callback(), a button is created.
@@ -580,8 +581,6 @@ void AW_window::create_button(const char *macro_name, AW_label buttonlabel, cons
     TuneOrSetBackground(_at->attach_any ? INFO_FORM : INFO_WIDGET, // set background for buttons / text displays
                         color,
                         _callback ? TUNE_BUTTON : 0);
-
-    AWUSE(mnemonic);
 
 #if defined(DUMP_BUTTON_CREATION)
     printf("------------------------------ Button '%s'\n", buttonlabel);
@@ -1257,18 +1256,20 @@ void AW_window::update_text_field(Widget widget, const char *var_value) {
 //      selection list
 
 
-AW_selection_list* AW_window::create_selection_list(const char *var_name, const char *tmp_label, const char *mnemonic, int columns, int rows) {
-    AWUSE(mnemonic);
-    Widget                     scrolledWindowList;
-    Widget                     scrolledList;
-    Widget                     l                     = 0;
+AW_selection_list* AW_window::create_selection_list(const char *var_name, const char *tmp_label, const char */*mnemonic*/, int columns, int rows) {
+    Widget scrolledWindowList;
+    Widget scrolledList;
+    Widget l = 0;
+
     AW_variable_update_struct *vus;
     AW_cb_struct              *cbs;
-    int                        width_of_label        = 0, height_of_label = 0;
-    int                        width_of_list;
-    int                        height_of_list;
-    int                        width_of_last_widget  = 0;
-    int                        height_of_last_widget = 0;
+
+    int width_of_label        = 0;
+    int height_of_label       = 0;
+    int width_of_list;
+    int height_of_list;
+    int width_of_last_widget  = 0;
+    int height_of_last_widget = 0;
 
     if (_at->label_for_inputfield) {
         tmp_label = _at->label_for_inputfield;
@@ -2255,9 +2256,7 @@ void AW_window::clear_option_menu(AW_option_menu_struct *oms) {
     oms->last_choice    = 0;
 }
 
-void *AW_window::_create_option_entry(AW_VARIABLE_TYPE type, const char *name, const char *mnemonic, const char *name_of_color) {
-
-    AWUSE(mnemonic);
+void *AW_window::_create_option_entry(AW_VARIABLE_TYPE type, const char *name, const char */*mnemonic*/, const char *name_of_color) {
     Widget                 entry;
     AW_option_menu_struct *oms = p_global->current_option_menu;
 
@@ -2434,8 +2433,7 @@ void AW_window::update_option_menu(AW_option_menu_struct *oms) {
 // -------------------------------------------------------
 //      toggle field (actually this are radio buttons)
 
-void AW_window::create_toggle_field(const char *var_name, AW_label labeli, const char *mnemonic) {
-    AWUSE(mnemonic);
+void AW_window::create_toggle_field(const char *var_name, AW_label labeli, const char */*mnemonic*/) {
     if (labeli) this->label(labeli);
     this->create_toggle_field(var_name);
 }

@@ -10,7 +10,9 @@
 
 #include <arbdbt.h>
 #include <aw_window.hxx>
+#include <aw_root.hxx>
 #include <aw_awars.hxx>
+#include <aw_msg.hxx>
 
 #define nt_assert(bed) arb_assert(bed)
 
@@ -51,11 +53,7 @@ void awt_inserchar_event(AW_window *aws, AW_CL awcl_mode)
     free(deletes);
 }
 
-AW_window *create_insertchar_window(AW_root *root, AW_default def)
-{
-    AWUSE(root);
-    AWUSE(def);
-
+AW_window *create_insertchar_window(AW_root *root, AW_default /*def*/) {
     static AW_window_simple *aws = 0;
     if (aws) return aws;
     aws = new AW_window_simple;

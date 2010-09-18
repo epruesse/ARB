@@ -8,8 +8,11 @@
 //                                                                 //
 // =============================================================== //
 
+#include <aw_root.hxx>
 #include <aw_awars.hxx>
 #include <aw_window.hxx>
+#include "aw_msg.hxx"
+#include "aw_status.hxx"
 
 #include <arbdbt.h>
 #include <SigHandler.h>
@@ -938,7 +941,7 @@ void aw_message(const char *msg) {
 #endif // DEVEL_RALF
 char AW_ERROR_BUFFER[1024];
 
-void aw_message() { aw_message(AW_ERROR_BUFFER); }
+void aw_errorbuffer_message() { aw_message(AW_ERROR_BUFFER); }
 
 void aw_error(const char *text, const char *text2) {
     char    buffer[1024];

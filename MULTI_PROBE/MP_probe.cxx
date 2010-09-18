@@ -13,6 +13,8 @@
 #include "MultiProbe.hxx"
 
 #include <aw_window.hxx>
+#include <aw_msg.hxx>
+#include <aw_status.hxx>
 
 #include <ctime>
 

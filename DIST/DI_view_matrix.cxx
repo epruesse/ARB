@@ -14,6 +14,8 @@
 
 #include <aw_awars.hxx>
 #include <aw_preset.hxx>
+#include <aw_msg.hxx>
+#include <aw_root.hxx>
 
 #include <awt_canvas.hxx>
 
@@ -478,7 +480,6 @@ void DI_dmatrix::monitor_horizontal_scroll_cb(AW_window *aww) { // draw area
 static int update_display_on_dist_change = 1;
 
 void di_view_set_max_d(AW_window *aww, AW_CL cl_max_d, AW_CL /* clmatr */) {
-    AWUSE(aww);
     double   max_d   = cl_max_d*0.01;
     AW_root *aw_root = aww->get_root();
 

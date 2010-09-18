@@ -16,6 +16,9 @@
 #define MAX_TOP_AREA_SIZE 10    // size limit for top-area
 #endif
 
+#ifndef ARB_ERROR_H
+#include <arb_error.h>
+#endif
 #ifndef ED4_DEFS_HXX
 #include "ed4_defs.hxx"
 #endif
@@ -75,6 +78,7 @@ class AWT_reference;
 class AWT_seq_colors;
 class BI_ecoli_ref;
 class AW_helix;
+class aw_status_counter;
 class ST_ML;
 class ed_key;
 

@@ -13,7 +13,11 @@
 #include "GEN_local.hxx"
 #include "GEN_nds.hxx"
 
+#include <aw_awar.hxx>
+#include <aw_msg.hxx>
+#include <aw_root.hxx>
 #include <arbdbt.h>
+#include <adGene.h>
 
 // Standard fields of a gb_gene entry:
 // -----------------------------------

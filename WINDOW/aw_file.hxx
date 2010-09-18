@@ -12,8 +12,8 @@
 #ifndef AW_FILE_HXX
 #define AW_FILE_HXX
 
-#ifndef AW_ROOT_HXX
-#include "aw_root.hxx"
+#ifndef AW_BASE_HXX
+#include "aw_base.hxx"
 #endif
 
 char *AW_unfold_path(const char *path, const char *pwd_envar = "PWD");

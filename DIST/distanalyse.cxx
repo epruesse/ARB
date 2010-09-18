@@ -11,6 +11,9 @@
 #include "di_matr.hxx"
 #include <AP_seq_dna.hxx>
 #include <AP_filter.hxx>
+#include <aw_awar.hxx>
+#include <aw_msg.hxx>
+#include <aw_root.hxx>
 
 
 void DI_MATRIX::analyse() {

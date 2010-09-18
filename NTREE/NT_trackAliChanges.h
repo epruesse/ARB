@@ -12,8 +12,8 @@
 #ifndef NT_TRACKALICHANGES_H
 #define NT_TRACKALICHANGES_H
 
-#ifndef AW_ROOT_HXX
-#include <aw_root.hxx>
+#ifndef AW_BASE_HXX
+#include <aw_base.hxx>
 #endif
 
 class AW_window;

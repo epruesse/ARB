@@ -12,6 +12,9 @@
 #include <awt_item_sel_list.hxx>
 #include <awt_sel_boxes.hxx>
 #include <aw_awars.hxx>
+#include <aw_root.hxx>
+#include <aw_msg.hxx>
+#include <aw_status.hxx>
 #include <arbdbt.h>
 
 #define nt_assert(bed) arb_assert(bed)

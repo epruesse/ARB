@@ -15,8 +15,8 @@
 #ifndef EXP_HXX
 #define EXP_HXX
 
-#ifndef AW_ROOT_HXX
-#include <aw_root.hxx>
+#ifndef AW_BASE_HXX
+#include <aw_base.hxx>
 #endif
 
 class AW_window_menu_modes;

@@ -13,6 +13,7 @@
 #include <aw_window.hxx>
 #include <aw_window_Xm.hxx>
 #include <aw_commn.hxx>
+#include <aw_root.hxx>
 
 XtAppContext AW_get_XtAppContext(AW_root *aw_root) {
     return aw_root->prvt->context;

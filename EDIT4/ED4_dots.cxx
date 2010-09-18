@@ -13,6 +13,9 @@
 #include "ed4_class.hxx"
 #include "ed4_visualizeSAI.hxx" // for SAI selection box
 
+#include <aw_awar.hxx>
+#include <aw_msg.hxx>
+#include <aw_root.hxx>
 #include <arbdbt.h>
 #include <cctype>
 

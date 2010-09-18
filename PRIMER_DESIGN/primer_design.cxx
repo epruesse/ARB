@@ -19,10 +19,16 @@
 #include <awt_config_manager.hxx>
 
 #include <aw_awars.hxx>
+#include <aw_window.hxx>
+#include <aw_msg.hxx>
+#include <aw_status.hxx>
+#include <aw_root.hxx>
 
 #include <arbdbt.h>
+#include <adGene.h>
 
 #include <string>
+#include <cmath>
 
 using std::string;
 

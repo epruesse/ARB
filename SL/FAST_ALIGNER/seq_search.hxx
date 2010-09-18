@@ -12,11 +12,14 @@
 #ifndef SEQ_SEARCH_HXX
 #define SEQ_SEARCH_HXX
 
-#ifndef AW_ROOT_HXX
-#include <aw_root.hxx>
+#ifndef AW_BASE_HXX
+#include <aw_base.hxx>
 #endif
-#ifndef ARBDB_H
-#include <arbdb.h>
+#ifndef ARBDB_BASE_H
+#include <arbdb_base.h>
+#endif
+#ifndef AW_MSG_HXX
+#include <aw_msg.hxx>
 #endif
 
 

@@ -7,7 +7,6 @@
 #include <cmath>
 #include <servercntrl.h>
 #include <cstdlib>
-#include <aw_root.hxx>
 #include <aw_device.hxx>
 #include <aw_window.hxx>
 #include <aw_display.hxx>
@@ -30,29 +29,25 @@ void start_genetic_cb(AW_window *, AW_CL) {
     start_genetic(ap_main->gb_main);
 }
 
-void savetree_genetic_cb(AW_window *aww, AW_CL cld1) {
-    AWUSE(cld1);
-    AW_root *aw_root = aww->get_root();
+void savetree_genetic_cb(AW_window */*aww*/, AW_CL /*cld1*/) {
+    // AW_root *aw_root = aww->get_root();
 
 }
 
-void test_genetic_cb(AW_window *aww, AW_CL cld1) {
-    AWUSE(cld1);
-    AW_root *aw_root = aww->get_root();
+void test_genetic_cb(AW_window */*aww*/, AW_CL /*cld1*/) {
+    // AW_root *aw_root = aww->get_root();
 }
 
-void save_genetic_cb(AW_window *aww, AW_CL cld1) {
-    AWUSE(cld1);
+void save_genetic_cb(AW_window *aww, AW_CL /*cld1*/) {
     AW_root *aw_root = aww->get_root();
     int cluster = (int)aw_root->awar("genetic/presets/curCluster")->read_int();
     GAgenetic->put_start_tree(ap_main->tree_root, 0, cluster);
     return;
 }
 
-void quit_genetic_cb(AW_window *aww, AW_CL cld1) {
-    AWUSE(cld1);
+void quit_genetic_cb(AW_window */*aww*/, AW_CL /*cld1*/) {
     quit_genetic();
-    AW_root *aw_root = aww->get_root();
+    // AW_root *aw_root = aww->get_root();
 }
 
 void create_genetic_variables(AW_root *aw_root, AW_default def)

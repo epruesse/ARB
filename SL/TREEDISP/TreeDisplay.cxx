@@ -14,6 +14,8 @@
 #include <awt_nds.hxx>
 #include <aw_preset.hxx>
 #include <aw_awars.hxx>
+#include <aw_msg.hxx>
+#include <aw_root.hxx>
 
 #include <awt_attributes.hxx>
 
@@ -2712,16 +2714,8 @@ void AWT_graphic_tree::show(AW_device *device) {
     }
 }
 
-void AWT_graphic_tree::info(AW_device *device, AW_pos x, AW_pos y,
-                            AW_clicked_line *cl, AW_clicked_text *ct)
-{
+void AWT_graphic_tree::info(AW_device */*device*/, AW_pos /*x*/, AW_pos /*y*/, AW_clicked_line */*cl*/, AW_clicked_text */*ct*/) {
     aw_message("INFO MESSAGE");
-    AWUSE(device);
-    AWUSE(x);
-    AWUSE(y);
-    AWUSE(cl);
-    AWUSE(ct);
-
 }
 
 AWT_graphic_tree *NT_generate_tree(AW_root *root, GBDATA *gb_main, AD_map_viewer_cb map_viewer_cb) {

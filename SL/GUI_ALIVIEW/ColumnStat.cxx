@@ -14,6 +14,9 @@
 #include <AP_filter.hxx>
 #include <BI_helix.hxx>
 #include <aw_window.hxx>
+#include <aw_root.hxx>
+#include <aw_awar.hxx>
+#include <aw_msg.hxx>
 #include <arbdbt.h>
 
 #define AWAR_COLSTAT_NAME         "/name=/name"

@@ -16,6 +16,9 @@
 #include <AP_pro_a_nucs.hxx>
 #include <aw_awars.hxx>
 #include <aw_window.hxx>
+#include <aw_root.hxx>
+#include <aw_msg.hxx>
+#include <aw_status.hxx>
 #include <arbdbt.h>
 #include <cctype>
 
@@ -244,7 +247,6 @@ void nt_trans_cursorpos_changed(AW_root *awr) {
 }
 
 AW_window *NT_create_dna_2_pro_window(AW_root *root) {
-    AWUSE(root);
     GB_transaction dummy(GLOBAL_gb_main);
 
     AW_window_simple *aws = new AW_window_simple;

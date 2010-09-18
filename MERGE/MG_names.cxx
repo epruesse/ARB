@@ -11,6 +11,10 @@
 #include "merge.hxx"
 
 #include <AW_rename.hxx>
+#include <aw_root.hxx>
+#include <aw_awar.hxx>
+#include <aw_msg.hxx>
+#include <aw_status.hxx>
 
 // --------------------------------------------------------------------------------
 

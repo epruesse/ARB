@@ -12,11 +12,15 @@
 #include "NT_dbrepair.hxx"
 
 #include <arbdbt.h>
+#include <adGene.h>
 
 #include <awt.hxx>                                  // for ad_item_selector only
 #include <GEN.hxx>
 #include <EXP.hxx>
 #include <aw_color_groups.hxx>
+#include <aw_msg.hxx>
+#include <aw_status.hxx>
+#include <aw_root.hxx>
 
 #include <arb_str.h>
 

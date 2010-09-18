@@ -16,8 +16,8 @@
 #ifndef BI_HELIX_HXX
 #include <BI_helix.hxx>
 #endif
-#ifndef AW_ROOT_HXX
-#include <aw_root.hxx>
+#ifndef AW_BASE_HXX
+#include <aw_base.hxx>
 #endif
 
 class AW_cb_struct;

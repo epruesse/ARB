@@ -21,12 +21,15 @@
 
 #include <aw_window.hxx>
 #include <aw_awars.hxx>
+#include <aw_status.hxx>
+#include <aw_root.hxx>
 
 #include <arbdbt.h>
 
 #include <arb_defs.h>
 
 #include <cctype>
+#include <cmath>
 #include <climits>
 
 #include <list>

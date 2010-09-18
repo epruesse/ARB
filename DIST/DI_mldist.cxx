@@ -12,6 +12,8 @@
 #include "di_matr.hxx"
 
 #include <AP_seq_simple_pro.hxx>
+#include <aw_msg.hxx>
+#include <aw_status.hxx>
 
 #include <cmath>
 

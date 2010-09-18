@@ -12,6 +12,7 @@
 #include "ap_tree_nlen.hxx"
 
 #include <AP_filter.hxx>
+#include <aw_status.hxx>
 
 #include <cmath>
 #include <iomanip>

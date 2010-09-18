@@ -14,6 +14,10 @@
 #ifndef AW_DEVICE_HXX
 #include "aw_device.hxx"
 #endif
+#ifndef AW_BASE_HXX
+#include "aw_base.hxx"
+#endif
+
 
 class AW_device_size : public AW_device {
     bool     drawn;

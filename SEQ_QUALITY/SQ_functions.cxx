@@ -18,6 +18,7 @@
 #include "SQ_functions.h"
 
 #include <aw_preset.hxx>
+#include <aw_status.hxx>
 #include <awt.hxx>
 #include <arbdbt.h>
 

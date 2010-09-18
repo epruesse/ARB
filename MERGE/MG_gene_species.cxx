@@ -15,10 +15,11 @@
 
 #include "merge.hxx"
 
-#include <aw_awars.hxx>
 #include <awt.hxx>
 #include <awt_config_manager.hxx>
-
+#include <aw_awars.hxx>
+#include <aw_root.hxx>
+#include <aw_msg.hxx>
 #include <adGene.h>
 #include <arbdbt.h>
 #include <arb_str.h>

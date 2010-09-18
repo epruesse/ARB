@@ -12,6 +12,8 @@
 
 #include <aw_awars.hxx>
 #include <aw_edit.hxx>
+#include <aw_root.hxx>
+#include <aw_msg.hxx>
 
 #include <arbdbt.h>
 
@@ -39,10 +41,7 @@ static void ed_calltexe_event(AW_window *aww, char *varname)
     free(file);
 }
 
-static AW_window *create_calltexe_window(AW_root *root, char *varname)
-{
-    AWUSE(root);
-
+static AW_window *create_calltexe_window(AW_root *root, char *varname) {
     AW_window_simple *aws = new AW_window_simple;
     {
         char *var_id    = GBS_string_2_key(varname);

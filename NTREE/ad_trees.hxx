@@ -11,8 +11,8 @@
 #ifndef AD_TREES_HXX
 #define AD_TREES_HXX
 
-#ifndef AW_ROOT_HXX
-#include <aw_root.hxx>
+#ifndef AW_BASE_HXX
+#include <aw_base.hxx>
 #endif
 
 #define AWAR_TREE_NAME "tmp/ad_tree/tree_name"

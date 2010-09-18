@@ -14,6 +14,8 @@
 
 #include <aw_awars.hxx>
 #include <aw_file.hxx>
+#include <aw_msg.hxx>
+#include <aw_root.hxx>
 
 #include <ad_config.h>
 
@@ -299,8 +301,7 @@ struct awt_sel_list_for_tables {
     const char        *table_name;
 };
 
-void awt_create_selection_list_on_tables_cb(GBDATA *dummy, struct awt_sel_list_for_tables *cbs) {
-    AWUSE(dummy);
+void awt_create_selection_list_on_tables_cb(GBDATA *, struct awt_sel_list_for_tables *cbs) {
     cbs->aws->clear_selection_list(cbs->id);
     GBDATA *gb_table;
     for (gb_table = GBT_first_table(cbs->gb_main);
@@ -342,8 +343,7 @@ void awt_create_selection_list_on_tables(GBDATA *gb_main, AW_window *aws, const 
     GB_pop_transaction(gb_main);
 }
 
-void awt_create_selection_list_on_table_fields_cb(GBDATA *dummy, struct awt_sel_list_for_tables *cbs) {
-    AWUSE(dummy);
+void awt_create_selection_list_on_table_fields_cb(GBDATA *, struct awt_sel_list_for_tables *cbs) {
     cbs->aws->clear_selection_list(cbs->id);
     GBDATA  *gb_table = GBT_open_table(cbs->gb_main, cbs->table_name, true); // read only
     GBDATA *gb_table_field;
@@ -461,7 +461,7 @@ struct awt_sel_list_for_sai {
     bool               add_selected_species;
 };
 
-void awt_create_selection_list_on_extendeds_update(GBDATA *dummy, void *cbsid) {
+void awt_create_selection_list_on_extendeds_update(GBDATA *, void *cbsid) {
     /* update the selection box defined by awt_create_selection_list_on_extendeds
      *
      * useful only when filterproc is defined
@@ -474,7 +474,6 @@ void awt_create_selection_list_on_extendeds_update(GBDATA *dummy, void *cbsid) {
 
     awt_sel_list_for_sai *cbs = (awt_sel_list_for_sai *)cbsid;
 
-    AWUSE(dummy);
     cbs->aws->clear_selection_list(cbs->id);
     GB_transaction ta(cbs->gb_main);
 

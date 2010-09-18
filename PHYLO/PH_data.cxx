@@ -11,6 +11,9 @@
 #include "phwin.hxx"
 #include "phylo.hxx"
 #include <arbdbt.h>
+#include <aw_awar.hxx>
+#include <aw_status.hxx>
+#include <aw_root.hxx>
 
 PHDATA::PHDATA(AW_root *awr) {
     memset((char *)this, 0, sizeof(PHDATA));

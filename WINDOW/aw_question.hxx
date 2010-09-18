@@ -15,8 +15,11 @@
 #ifndef AW_QUESTION_HXX
 #define AW_QUESTION_HXX
 
-#ifndef AW_ROOT_HXX
-#include <aw_root.hxx>
+#ifndef AW_BASE_HXX
+#include "aw_base.hxx"
+#endif
+#ifndef ARBTOOLS_H
+#include <arbtools.h>
 #endif
 
 // for simple questions use :  int aw_message(const char *msg, const char *buttons)

@@ -10,6 +10,8 @@
 
 #include "nt_tree_cmp.hxx"
 #include <AP_Tree.hxx>
+#include <aw_msg.hxx>
+#include <aw_status.hxx>
 #include <string>
 
 #define nt_assert(bed) arb_assert(bed)

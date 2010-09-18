@@ -14,6 +14,7 @@
 
 #include <arbdb.h>
 #include <aw_question.hxx>
+#include "aw_root.hxx"
 
 using namespace std;
 

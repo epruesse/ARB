@@ -15,6 +15,9 @@
 
 #include <awt.hxx>
 #include <aw_select.hxx>
+#include <aw_msg.hxx>
+#include <aw_status.hxx>
+#include <aw_root.hxx>
 #include <TreeCallbacks.hxx>
 #include <client.h>
 #include <servercntrl.h>
@@ -47,7 +50,6 @@ int get_random(int min, int max) {
 }
 
 void MP_new_sequence(AW_window *aww) {
-    AWUSE(aww);
     mp_main->get_aw_root()->awar_string(MP_AWAR_SEQUENZEINGABE)->write_string("");
 
     char *res = aw_input2awar("Enter target sequence", MP_AWAR_SEQUENZEINGABE);
@@ -83,12 +85,8 @@ void MP_close_main(AW_window *aww)
     new_pt_server = true;
 }
 
-void MP_gen_quality(AW_root *awr, AW_CL cd1, AW_CL cd2)
-{
+void MP_gen_quality(AW_root *awr, AW_CL /*cd1*/, AW_CL /*cd2*/) {
     bool firsttime = true;
-
-    AWUSE(cd1);
-    AWUSE(cd2);
 
     if (firsttime)
     {
@@ -124,14 +122,11 @@ void MP_gen_quality(AW_root *awr, AW_CL cd1, AW_CL cd2)
     delete ecol_pos;
 }
 
-void MP_modify_selected(AW_root *awr, AW_CL cd1, AW_CL cd2) // setzt den 2.Parameter in selected_list
-{
-    char    *com1, *com2, *com3, *probes, *ptr2, temp[120];
-    AW_window   *aww = mp_main->get_mp_window()->get_window();
-    List<char>  *l = new List<char>;
-
-    AWUSE(cd1);
-    AWUSE(cd2);
+void MP_modify_selected(AW_root *awr, AW_CL /*cd1*/, AW_CL /*cd2*/) {
+    // setzt den 2.Parameter in selected_list
+    char       *com1, *com2, *com3, *probes, *ptr2, temp[120];
+    AW_window  *aww = mp_main->get_mp_window()->get_window();
+    List<char> *l   = new List<char>;
 
     aww->init_list_entry_iterator(selected_list); // initialisieren
 
@@ -176,11 +171,7 @@ void MP_modify_selected(AW_root *awr, AW_CL cd1, AW_CL cd2) // setzt den 2.Param
     delete l;
 }
 
-void MP_gen_singleprobe(AW_root *awr, AW_CL cd1, AW_CL cd2)
-{
-    AWUSE(cd1);
-    AWUSE(cd2);
-
+void MP_gen_singleprobe(AW_root *awr, AW_CL /*cd1*/, AW_CL /*cd2*/) {
     char *probe, *new_sing;
     char *selected = awr->awar(MP_AWAR_SELECTEDPROBES)->read_string();
     AW_window *aww = mp_main->get_mp_window()->get_window();
@@ -203,8 +194,7 @@ void MP_gen_singleprobe(AW_root *awr, AW_CL cd1, AW_CL cd2)
     delete new_sing;
 }
 
-void MP_popup_result_window(AW_window *aww) {
-    AWUSE(aww);
+void MP_popup_result_window(AW_window */*aww*/) {
     mp_main->get_mp_window()->create_result_window(mp_main->get_aw_root())->activate();
     init_system3_tab();
 }
@@ -391,13 +381,10 @@ void MP_compute(AW_window *aww, AW_CL cl_gb_main) {
 
 }
 
-void    MP_take_manual_sequence(AW_window *aww)
-{
-    AW_window_simple    *aws = mp_main->get_mp_window()->get_window();
-    char        *seq = mp_gl_awars.manual_sequence,
-        *new_seq;
-
-    AWUSE(aww);
+void MP_take_manual_sequence(AW_window */*aww*/) {
+    AW_window_simple *aws = mp_main->get_mp_window()->get_window();
+    char             *seq = mp_gl_awars.manual_sequence;
+    char             *new_seq;
 
     if (! MP_is_probe(seq)) {
         aw_message("This is not a valid probe !!!");
@@ -429,14 +416,11 @@ void MP_show_probes_in_tree_move(AW_window *aww, AW_CL cl_backward, AW_CL cl_res
     MP_show_probes_in_tree(aww);
 }
 
-void MP_show_probes_in_tree(AW_window *aww)
-{
+void MP_show_probes_in_tree(AW_window */*aww*/) {
     AWT_canvas *ntw                = mp_main->get_ntw();
     char       *mism, *mism_temp;
     char       *a_probe, *another_probe, *the_probe, *mism_temp2;
     int         i, how_many_probes = 0;
-
-    AWUSE(aww);
 
     {
         char *sel = mp_main->get_aw_root()->awar(MP_AWAR_RESULTPROBES)->read_string();
@@ -542,15 +526,12 @@ void MP_show_probes_in_tree(AW_window *aww)
     delete [] mismatches;
 }
 
-void MP_mark_probes_in_tree(AW_window *aww)
-{
+void MP_mark_probes_in_tree(AW_window *aww) {
     AWT_canvas  *ntw                = mp_main->get_ntw();
     char        *mism, *mism_temp;
     char        *a_probe, *another_probe, *the_probe, *mism_temp2;
     int          i, how_many_probes = 0;
     GBDATA      *gb_species;
-
-    AWUSE(aww);
 
     {
         char *sel = mp_main->get_aw_root()->awar(MP_AWAR_RESULTPROBES)->read_string();
@@ -768,12 +749,9 @@ bool MP_is_probe(char *seq)
     return result;
 }
 
-void MP_selected_chosen(AW_window *aww)
-{
+void MP_selected_chosen(AW_window */*aww*/) {
     char *selected = mp_main->get_aw_root()->awar(MP_AWAR_SELECTEDPROBES)->read_string();
     char *probe;
-
-    AWUSE(aww);
 
     if (!selected || !selected[0])
         return;
@@ -800,12 +778,8 @@ void MP_group_all_except_marked(AW_window * /* aww */) {
     NT_group_not_marked_cb(0, ntw);
 }
 
-void MP_normal_colors_in_tree(AW_window *aww)
-{
+void MP_normal_colors_in_tree(AW_window */*aww*/) {
     AWT_canvas  *ntw = mp_main->get_ntw();
-
-    AWUSE(aww);
-
     GB_transaction dummy(ntw->gb_main);
 
     AWT_TREE(ntw)->get_root_node()->calc_color();
@@ -933,13 +907,10 @@ char *MP_get_probes(const char *str) {
     return strdup(result);
 }
 
-void MP_result_chosen(AW_window *aww)
-{
-    AW_root     *aw_root    = mp_main->get_aw_root();
-    char    *str        = aw_root->awar(MP_AWAR_RESULTPROBES)->read_as_string(),
-        *new_str;
-
-    AWUSE(aww);
+void MP_result_chosen(AW_window */*aww*/) {
+    AW_root *aw_root = mp_main->get_aw_root();
+    char    *str     = aw_root->awar(MP_AWAR_RESULTPROBES)->read_as_string();
+    char    *new_str;
 
     new_str = MP_get_comment(1, str);
 

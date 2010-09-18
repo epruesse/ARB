@@ -10,7 +10,9 @@
 #include <fstream>
 
 #include <arbdbt.h>
+#include <aw_msg.hxx>
 #include <aw_awars.hxx>
+#include <aw_root.hxx>
 #include <ed4_extern.hxx>
 #include <ed4_plugins.hxx>
 #include <BI_helix.hxx>

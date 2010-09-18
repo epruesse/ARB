@@ -10,6 +10,7 @@
 
 #include "aw_print.hxx"
 #include "aw_commn.hxx"
+#include "aw_root.hxx"
 
 AW_device_print::AW_device_print(AW_common *commoni) : AW_device(commoni) {
     out = 0;
@@ -19,7 +20,7 @@ void AW_device_print::init() {}
 
 AW_DEVICE_TYPE AW_device_print::type() { return AW_DEVICE_PRINTER; }
 
-int AW_device_print::line(int gc, AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW_bitset filteri, AW_CL cd1, AW_CL cd2) {
+int AW_device_print::line(int gc, AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW_bitset filteri, AW_CL /*cd1*/, AW_CL /*cd2*/) {
     class AW_GC_Xm *gcm      = AW_MAP_GC(gc);
     AW_pos          X0, Y0, X1, Y1; // Transformed pos
     AW_pos          CX0, CY0, CX1, CY1; // Clipped line
@@ -32,8 +33,6 @@ int AW_device_print::line(int gc, AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW
         if (drawflag) {
             int line_width                = gcm->line_width;
             if (line_width<=0) line_width = 1;
-            AWUSE(cd1);
-            AWUSE(cd2);
 
             aw_assert(out);     // file has to be good!
 
@@ -50,15 +49,14 @@ int AW_device_print::line(int gc, AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW
 }
 
 int AW_draw_string_on_printer(AW_device *devicei, int gc, const char *str, size_t /* opt_strlen */, size_t start, size_t size,
-                              AW_pos x, AW_pos y, AW_pos opt_ascent, AW_pos opt_descent,
-                              AW_CL cduser, AW_CL cd1, AW_CL cd2)
+                              AW_pos x, AW_pos y, AW_pos /*opt_ascent*/, AW_pos /*opt_descent*/,
+                              AW_CL /*cduser*/, AW_CL /*cd1*/, AW_CL /*cd2*/)
 {
     AW_pos           X, Y;
     AW_device_print *device = (AW_device_print *)devicei;
     AW_common       *common = device->common;
     class AW_GC_Xm  *gcm    = AW_MAP_GC(gc);
 
-    AWUSE(cd1); AWUSE(cd2); AWUSE(opt_ascent); AWUSE(opt_descent); AWUSE(cduser);
     device->transform(x, y, X, Y);
     char *pstr = strdup(str+start);
     if (size < strlen(pstr)) pstr[size] = 0;
@@ -167,8 +165,7 @@ int AW_device_print::box(int gc, bool filled, AW_pos x0, AW_pos y0, AW_pos width
     return res;
 }
 
-int AW_device_print::circle(int gc, bool filled, AW_pos x0, AW_pos y0, AW_pos width, AW_pos height, AW_bitset filteri, AW_CL cd1, AW_CL cd2) {
-    AWUSE(cd1); AWUSE(cd2);
+int AW_device_print::circle(int gc, bool filled, AW_pos x0, AW_pos y0, AW_pos width, AW_pos height, AW_bitset filteri, AW_CL /*cd1*/, AW_CL /*cd2*/) {
     AW_GC_Xm *gcm = AW_MAP_GC(gc);
     AW_pos    x1, y1;
     AW_pos    X0, Y0, X1, Y1;   // Transformed pos
@@ -184,9 +181,6 @@ int AW_device_print::circle(int gc, bool filled, AW_pos x0, AW_pos y0, AW_pos wi
         this->transform(x1, y1, X1, Y1);
         int drawflag = this->box_clip(X0, Y0, X1, Y1, CX0, CY0, CX1, CY1);
         if (drawflag) {
-            AWUSE(cd1);
-            AWUSE(cd2);
-
             // Don't know how to use greylevel --ralf
             // short greylevel             = (short)(gcm->grey_level*22);
             // if (greylevel>21) greylevel = 21;

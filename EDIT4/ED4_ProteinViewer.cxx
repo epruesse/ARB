@@ -20,6 +20,8 @@
 #include <aw_question.hxx>
 #include <aw_preset.hxx>
 #include <aw_awars.hxx>
+#include <aw_msg.hxx>
+#include <aw_root.hxx>
 #include <arbdbt.h>
 
 #include <iostream>
@@ -498,7 +500,7 @@ static void PV_WriteTranslatedSequenceToDB(ED4_AA_sequence_terminal *aaSeqTerm, 
     GB_end_transaction_show_error(GLOBAL_gb_main, error, aw_message);
 }
 
-void PV_SaveData(AW_window *aww) {
+void PV_SaveData(AW_window */*aww*/) {
     // IDEA:
     // 1. walk thru the AA_sequence terminals
     // 2. check the visibility status
@@ -546,7 +548,6 @@ void PV_SaveData(AW_window *aww) {
         }
     }
     gbWritingData = false;
-    AWUSE(aww);
 }
 
 static void TranslateGeneToAminoAcidSequence(AW_root * /* root */, ED4_AA_sequence_terminal *seqTerm, char *speciesName, int startPos4Translation, int translationMode) {

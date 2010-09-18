@@ -16,6 +16,7 @@
 
 #include <arbdbt.h>
 #include <aw_awars.hxx>
+#include <aw_root.hxx>
 #include <fast_aligner.hxx>
 #include <iupac.h>
 
