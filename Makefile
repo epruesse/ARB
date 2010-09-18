@@ -111,7 +111,11 @@ ifeq ($(DEBUG),1)
 	lflags += -g
  endif
 
+# control how much you get spammed
 	POST_COMPILE := 2>&1 | $(ARBHOME)/SOURCE_TOOLS/postcompile.pl
+#	POST_COMPILE := 2>&1 | $(ARBHOME)/SOURCE_TOOLS/postcompile.pl --no-warnings
+#	POST_COMPILE := 2>&1 | $(ARBHOME)/SOURCE_TOOLS/postcompile.pl --only-first-error
+#	POST_COMPILE := 2>&1 | $(ARBHOME)/SOURCE_TOOLS/postcompile.pl --no-warnings --only-first-error
 
 # Enable several warnings
 	extended_warnings     := -Wwrite-strings -Wunused -Wno-aggregate-return -Wshadow

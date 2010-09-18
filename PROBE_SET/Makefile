@@ -89,7 +89,7 @@ CPP_OBJECTS = $(SHARED_OBJECTS) \
 	$(PS_SHOW_RESULT_OBJECTS) \
 
 .cxx.o:
-	$(CPP) $(cflags) -c -o $@ $(@:.o=.cxx)  $(CPPINCLUDES)
+	$(CPP) $(cflags) -c -o $@ $(@:.o=.cxx)  $(CPPINCLUDES) $(POST_COMPILE)
 
 clean:
 	rm -f $(CPP_OBJECTS)
