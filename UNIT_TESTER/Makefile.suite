@@ -1,0 +1,45 @@
+
+notarget:
+	@echo "Usage: make (init|cleanup|unskip)" 
+	false
+
+include Makefile.setup
+
+TEST_REPORTER = ./reporter.pl
+TEST_LOG_DIR = ./logs
+
+PATCHNAMEBASE:=TestsOk
+PATCHNAMESUFFIX:=
+
+# -------------------- build patch name
+
+ifneq ('$(RESTRICT_LIB)','')
+PATCHNAMESUFFIX:=$(PATCHNAMESUFFIX)__only_$(RESTRICT_LIB)
+endif
+ifneq ($(RESTRICT_MODULE),'.')
+PATCHNAMESUFFIX:=$(PATCHNAMESUFFIX)__notAllFiles
+endif
+SKIPPED_SLOW:=$(shell (test -f skipslow.stamp && ls -1 skipslow.stamp))
+ifneq ('$(SKIPPED_SLOW)','')
+PATCHNAMESUFFIX:=$(PATCHNAMESUFFIX)__SLOW_skipped
+endif
+
+# -------------------- targets
+
+tests_passed:
+	@$(TEST_REPORTER) report $(TEST_LOG_DIR) $(SKIP_SLOW)
+
+update_patches_if_passed: tests_passed
+	@../SOURCE_TOOLS/arb_create_patch.sh $(PATCHNAMEBASE)$(PATCHNAMESUFFIX)
+	@../SOURCE_TOOLS/arb_cleanup_patches.pl $(PATCHNAMEBASE) $(PATCHES_KEEP_HOURS) $(PATCHES_MIN_KEPT) 
+
+unskip:
+	@(test -f skipslow.stamp && rm skipslow.stamp) || true
+
+init:
+	@echo "$(SEP) Running unit tests"
+	@$(TEST_REPORTER) init $(TEST_LOG_DIR) $(SKIP_SLOW)
+
+cleanup: update_patches_if_passed
+	@echo "$(SEP) All unit tests passed"
+

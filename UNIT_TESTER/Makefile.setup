@@ -1,0 +1,49 @@
+# ---------- setup unit tests
+
+# @@@ valgrind makes tests fail atm
+# (most likely two pt-servers try to start parallel on the same port)
+VALGRIND=0# only test
+#VALGRIND=1# run valgrind after sucessful test
+#VALGRIND=2# run valgrind before test (useful if test traps w/o any helpful information)
+
+# ---------- Leak checking needs VALGRIND!=0
+#CHECK_LEAKS=0# check no leaks
+CHECK_LEAKS=1# check definite leaks
+#CHECK_LEAKS=2# check reachable leaks
+
+# ---------- restrict tests to modules matching regexpr 'RESTRICT_MODULE': 
+RESTRICT_MODULE='.'
+#RESTRICT_MODULE='MG_species\.cxx'
+
+# ---------- restrict tests to library with basename
+# (empty=no restriction, ':'-separated list of allowed test-names)
+#
+RESTRICT_LIB=# run all tests
+#RESTRICT_LIB=AWTC# test only this library
+#RESTRICT_LIB=mkptypes# test only these libraries
+#RESTRICT_LIB=client:arb_probe:AWTC# test only these libraries
+#RESTRICT_LIB=ARBDB# test only this library
+#RESTRICT_LIB=FAST_ALIGNER# test only this library
+#RESTRICT_LIB=MERGE# test only this library
+
+# ---------- slow tests 
+#SKIP_SLOW=0# always run all tests
+SKIP_SLOW=15# skip slow tests (run only every SKIP_SLOW minutes)
+
+# ---------- warnings?
+#WARN_LEVEL=0# disable warnings 
+WARN_LEVEL=1# enable warnings (recommended)
+
+# ---------- unit tests create a patch each time tests pass ok
+# PATCHES_KEEP_HOURS and PATCHES_MIN_KEPT define when patches are removed again 
+
+#PATCHES_KEEP_HOURS=336# delete created patches after two weeks
+PATCHES_KEEP_HOURS=168# delete created patches after one week
+#PATCHES_KEEP_HOURS=72# delete created patches after 3 days
+#PATCHES_KEEP_HOURS=0# delete created patches instantly (always PATCHES_MIN_KEPT patches present)
+
+PATCHES_MIN_KEPT=50# how many patches to keep at least
+
+# ---------- end
+
+

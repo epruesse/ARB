@@ -242,14 +242,16 @@ sub is_file($)     { my ($target) = @_; return is_library($target) || is_executa
 sub declare_initial_target($$) {
   my ($target,$type) = @_;
 
-  my $inherit_locations_r = $inheritants_of{$target};
-  if (not defined $inherit_locations_r) {
-    my %new_hash = ();
-    $inheritants_of{$target} = \%new_hash;
-    $target_type{$target} = $type;
-  }
-  else {
-    $target_type{$target}==$type || die "type mismatch for initial '$target' (".$target_type{$target}." vs $type)\n";
+  if ($target ne '') {
+    my $inherit_locations_r = $inheritants_of{$target};
+    if (not defined $inherit_locations_r) {
+      my %new_hash = ();
+      $inheritants_of{$target} = \%new_hash;
+      $target_type{$target} = $type;
+    }
+    else {
+      $target_type{$target}==$type || die "type mismatch for initial '$target' (".$target_type{$target}." vs $type)\n";
+    }
   }
 }
 
@@ -315,6 +317,7 @@ my %scanned = (); # key=dependsfile, value=1 -> already scanned
 
 sub scan_target($) {
   my ($target) = @_;
+
   my $depfile = target2dependencyFile($target);
 
   if (not defined $scanned{$depfile}) {
@@ -378,7 +381,16 @@ sub resolve_dependencies() {
       if ($target_type{$target} != $EXTRA_PARAMS) { # recurse dependency
         my $depfile = target2dependencyFile($target);
         if (not defined $scanned{$depfile}) {
-          $unscanned{$target} = 1;
+          if ($target eq '') {
+            my $inh_r = $inheritants_of{$target};
+            foreach (keys %$inh_r) {
+              my $loc = $$inh_r{$_};
+              location_error($loc, "Empty target inherited from here");
+            }
+          }
+          else {
+            $unscanned{$target} = 1;
+          }
         }
       }
     }

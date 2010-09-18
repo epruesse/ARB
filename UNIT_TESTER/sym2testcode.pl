@@ -14,7 +14,9 @@ my %test_priority = (); # key=test value=priority
 # --------------------------------------------------------------------------------
 
 my $warn_level = undef;
-my $skip_slow  = undef; # 0=normal 1=skip slow tests
+
+# when file exists, skip slow tests (see reporter.pl@SkipSlow)
+my $skip_slow  = (-e 'skipslow.stamp');
 
 # --------------------------------------------------------------------------------
 
@@ -33,6 +35,43 @@ sub symbol_message($$$) {
 sub symbol_warning($$) { my($symbol, $message)= @_; $warn_level==0 || symbol_message($symbol, $message, "Warning"); }
 sub symbol_error($$)   { my($symbol, $message)= @_; symbol_message($symbol, $message, "Error");   }
 
+
+sub fail_if_no_tests_defined($) {
+  my ($libname) = @_;
+  my $skipped = scalar(keys %skipped_test);
+  my $active  = scalar(keys %simple_test);
+
+  if (($skipped+$active)==0) {
+    # my $makefileDefiningTests = $ENV{ARBHOME}.'/Makefile';
+    my $makefileDefiningTests = '../Makefile';
+    my $thisTest = $libname;
+
+    $thisTest =~ s/\.(a|o|so)/.test/o;
+    $thisTest =~ s/^lib//o;
+
+    my $cmd = "grep -Hn '$thisTest' $makefileDefiningTests";
+
+    open(GREP,$cmd.'|') || die "can't execute '$cmd' (Reason: $!)";
+    my $lineCount = 0;
+    foreach (<GREP>) {
+      if (/^([^:]+:[0-9]+:)/o) {
+        my ($loc,$line) = ($1,$');
+        chomp($line);
+        print $1.' Error: No tests defined by '.$libname." (do not call this test!)\n";
+        $lineCount++;
+      }
+      else { print "unhandled grep out='$_'\n"; }
+    }
+    close(GREP);
+    if ($lineCount!=1) {
+      die "expected exactly one line from grep (got $lineCount)\n".
+        "grep-cmd was '$cmd'";
+    }
+    die "sym2testcode.pl: won't generated useless test code\n";
+  }
+
+  return $active; # return number of active tests
+}
 
 sub skip_slow_tests() {
   foreach (keys %simple_test) {
@@ -158,7 +197,7 @@ sub prototype_simple($) {
 sub generate_table($$\%\&) {
   my ($type,$name,$id_r,$prototyper_r) = @_;
 
-  if ($skip_slow==1) { skip_slow_tests(); }
+  if ($skip_slow) { skip_slow_tests(); }
   calculate_priorities();
 
   my @tests = sort {
@@ -250,15 +289,14 @@ HEAD
 
 sub main() {
   my $args = scalar(@ARGV);
-  if ($args != 6) {
+  if ($args != 5) {
     die("Usage: sym2testcode.pl libname restrict-expr nm-output gen-cxx warn-level skip-slow\n".
         "    libname        name of library to run tests for\n".
         "    restrict-expr  regexpr to restrict to specific module in library\n".
         "    nm-output      output of nm\n".
         "    gen_cxx        name of C++ file to generate\n".
         "    warn-level     (0=quiet|1=noisy)\n".
-        "    skip-slow      (0=run all|1=skip slow)\n".
-        "Error: Expected 6 arguments\n");
+        "Error: Expected 5 arguments\n");
   }
 
   my $libname   = shift @ARGV;
@@ -266,9 +304,10 @@ sub main() {
   my $nm_output = shift @ARGV;
   my $gen_cxx   = shift @ARGV;
   $warn_level   = shift @ARGV;
-  $skip_slow    = shift @ARGV;
 
   parse($nm_output);
+  fail_if_no_tests_defined($libname);
+
   filter($restrict);
   eval {
     create($libname,$gen_cxx);

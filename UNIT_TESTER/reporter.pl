@@ -6,6 +6,46 @@ use warnings;
 # --------------------------------------------------------------------------------
 
 my $logdirectory = undef;
+my $slow_delay = undef;
+
+# --------------------------------------------------------------------------------
+
+sub getModtime($) {
+  my ($file_or_dir) = @_;
+  if (-f $file_or_dir or -d $file_or_dir) {
+    my @st = stat($file_or_dir);
+    if (not @st) { die "can't stat '$file_or_dir' ($!)"; }
+    return $st[9];
+  }
+  return 0; # does not exist -> use epoch
+}
+sub getAge($) { my ($file_or_dir) = @_; return time-getModtime($file_or_dir); }
+
+# --------------------------------------------------------------------------------
+
+# when file $slow_stamp exists, slow tests get skipped (see sym2testcode.pl@SkipSlow)
+my $slow_stamp = 'skipslow.stamp';
+my $slow_age   = getAge($slow_stamp); # seconds since of last successful slow test
+
+sub shall_run_slow() { return (($slow_delay==0) or ($slow_age>($slow_delay*60))); }
+
+sub slow_init() {
+  if (shall_run_slow()) {
+    print "Running SLOW tests\n";
+    unlink($slow_stamp);
+  }
+  else {
+    print "Skipping SLOW tests\n";
+  }
+}
+
+sub slow_cleanup($) {
+  my ($tests_failed) = @_;
+
+  if (shall_run_slow() and not $tests_failed) {
+    system("touch $slow_stamp");
+  }
+}
 
 # --------------------------------------------------------------------------------
 
@@ -24,6 +64,7 @@ sub do_init() {
     my @logs = get_existing_logs();
     foreach (@logs) { unlink($_) || die "can't unlink '$_' (Reason: $!)"; }
   }
+  slow_init();
   return undef;
 }
 # --------------------------------------------------------------------------------
@@ -75,16 +116,24 @@ sub parse_log($) {
 
 sub percent($$) {
   my ($part,$all) = @_;
-  my $percent = 100*$part/$all;
-  return sprintf("%5.1f%%", $percent);
+  if ($all) {
+    my $percent = 100*$part/$all;
+    return sprintf("%5.1f%%", $percent);
+  }
+  else {
+    $part==0 || die;
+    return "  0.0%";
+  }
 }
 
-
+sub slow_note() {
+  return (shall_run_slow() ? "" : " (slow tests skipped)");
+}
 
 sub print_summary() {
-  print "Unit-test summary:\n";
+  print "\n-------------------- [ Unit-test summary ] --------------------\n";
   print sprintf(" Tests   : %4i\n", $tests);
-  print sprintf(" Skipped : %4i =%s\n", $skipped, percent($skipped,$tests));
+  print sprintf(" Skipped : %4i =%s%s\n", $skipped, percent($skipped,$tests), slow_note());
   print sprintf(" Passed  : %4i =%s\n", $passed, percent($passed,$tests));
   print sprintf(" Failed  : %4i =%s\n", $failed, percent($failed,$tests));
   print sprintf(" Elapsed : %4i ms\n", $elapsed);
@@ -100,9 +149,12 @@ sub do_report() {
 
   print_summary();
 
-  if ($failed>0 || $crashed>0) {
+  my $tests_failed = (($failed>0) or ($crashed>0));
+  slow_cleanup($tests_failed);
+  if ($tests_failed) {
     die "tests failed\n";
   }
+  return undef;
 }
 
 # --------------------------------------------------------------------------------
@@ -112,24 +164,30 @@ sub main() {
   my $cb    = undef;
   {
     my $args = scalar(@ARGV);
-    if ($args==2) {
+    if ($args==3) {
       my $command   = shift @ARGV;
 
       if ($command eq 'init') { $cb = \&do_init; }
       elsif ($command eq 'report') { $cb = \&do_report; }
       else { $error = "Unknown command '$command'"; }
 
-      if (not $error) { $logdirectory = shift @ARGV; }
+      if (not $error) {
+        $logdirectory = shift @ARGV;
+        $slow_delay = shift @ARGV;
+      }
     }
     else {
       $error = 'Wrong number of arguments';
     }
   }
-  if ($error) { print "Usage: reporter.pl [init|report] logdirectory\n"; }
+  if ($error) {
+    print "Usage: reporter.pl [init|report] logdirectory slow-delay\n";
+    print "       slow-delay    >0 => run slow tests only every slow-delay minutes\n";
+  }
   else {
     eval { $error = &$cb(); };
     if ($@) { $error = $@; }
   }
-  if ($error) { die $error; }
+  if ($error) { die "Error: ".$error; }
 }
 main();

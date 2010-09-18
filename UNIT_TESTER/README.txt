@@ -49,6 +49,8 @@ How to use ARB unit testing
       it will abort the test as failed!
       Just change TEST_ASSERT_BROKEN back into TEST_ASSERT then.
 
+      Set WARN_LEVEL to 0 in Makefile.setup to disable warnings.
+
 
    Missing tests:
 
@@ -78,7 +80,7 @@ How to use ARB unit testing
 
       VALGRIND=1
 
-   in UNIT_TESTER/Makefile.test, valgrind will be started on the test-binary after the normal
+   in UNIT_TESTER/Makefile.setup, valgrind will be started on the test-binary after the normal
    unit tests passed with success.
    Valgrind errors/warnings will not raise an error or abort testing.
 
@@ -115,4 +117,10 @@ How to use ARB unit testing
 
    Set 'RESTRICT_LIB=lib1:lib2' to test only a few libs.
 
+6. Auto-patch generation
 
+   Whenever unit tests complete successfully, a patch (svn diff) is generated and
+   stored inside $ARBHOME/patches.arb/
+
+   After DELETE_PATCHES_AFTER seconds the patch will be deleted automatically
+   (see Makefile.setup).

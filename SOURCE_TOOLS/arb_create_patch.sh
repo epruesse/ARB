@@ -11,15 +11,15 @@ else
         if [ ! -d $ARBHOME/.svn ]; then
             echo "No patch created (no SVN checkout in ARBHOME)"
         else
-            PATCHDIR=$ARBHOME/patches.arb
+            cd $ARBHOME
+            PATCHDIR=./patches.arb
             mkdir -p $PATCHDIR
             DATE=`date '+%Y%m%d_%H%M%S'`
             PATCHNAME=${NAME}_$DATE
             PATCH=$PATCHDIR/$PATCHNAME.patch
             FAKEPATCH=$PATCHDIR/fake.patch
-            RECENT_PATCH=$ARBHOME/latest.patch
+            RECENT_PATCH=./latest.patch
 
-            cd $ARBHOME
             svn diff > $PATCH
 
             if [ -e $PATCH ]; then
@@ -33,8 +33,18 @@ else
                     touch $FAKEPATCH
                     echo "No patch generated (no diff)"
                 else
-                    ln --force $PATCH $RECENT_PATCH
-                    ls -alh $PATCH $RECENT_PATCH
+                    DIFF=0
+                    if [ -e $RECENT_PATCH ]; then
+                        DIFF=`diff $PATCH $RECENT_PATCH | wc -l`
+                    fi
+
+                    if [ $DIFF = 0 ]; then
+                        echo "No patch generated (same as last patch)"
+                        rm $PATCH
+                    else
+                        ln --force $PATCH $RECENT_PATCH
+                        ls -hog $PATCH $RECENT_PATCH
+                    fi
                 fi
             fi
         fi

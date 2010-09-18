@@ -6,7 +6,8 @@
 export ARBHOME
 
 export DEBUG
-export OPENGL
+export OPENGL 
+export RNA3D_LIB 
 
 export MACH
 export DEBIAN
@@ -26,6 +27,7 @@ export LINK_EXECUTABLE LINK_STATIC_LIB LINK_SHARED_LIB SHARED_LIB_SUFFIX
 export MAKEDEPENDFLAGS MAKEDEPEND
 
 export SEP
+export NODIR
 
 export ARBDB_LIB
 
