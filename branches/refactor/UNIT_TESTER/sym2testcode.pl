@@ -45,8 +45,11 @@ sub fail_if_no_tests_defined($) {
     # my $makefileDefiningTests = $ENV{ARBHOME}.'/Makefile';
     my $makefileDefiningTests = '../Makefile';
     my $thisTest = $libname;
-    $thisTest =~ s/\.(a|o|so)/.test/; 
-    my $cmd      = "grep -Hn '$thisTest' $makefileDefiningTests";
+
+    $thisTest =~ s/\.(a|o|so)/.test/o;
+    $thisTest =~ s/^lib//o;
+
+    my $cmd = "grep -Hn '$thisTest' $makefileDefiningTests";
 
     open(GREP,$cmd.'|') || die "can't execute '$cmd' (Reason: $!)";
     my $lineCount = 0;
@@ -60,7 +63,10 @@ sub fail_if_no_tests_defined($) {
       else { print "unhandled grep out='$_'\n"; }
     }
     close(GREP);
-    if ($lineCount!=1) { die "expected exactly one line from grep (got $lineCount)"; }
+    if ($lineCount!=1) {
+      die "expected exactly one line from grep (got $lineCount)\n".
+        "grep-cmd was '$cmd'";
+    }
     die "sym2testcode.pl: won't generated useless test code\n";
   }
 

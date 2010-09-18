@@ -59,13 +59,13 @@ else
                 libx11-dev \
                 libxaw7-dev \
                 libxext-dev \
+                libxml2-utils \
                 libxp-dev \
                 libxpm-dev \
                 libxt-dev \
                 lynx \
-                libxml2-utils \
-                sablotron \
                 x11proto-print-dev \
+                xsltproc \
                 xutils-dev \
 
         elif [ "$2" == "compile_noOpenGL" ]; then

@@ -194,26 +194,24 @@ GB_ERROR GBT_parse_next_config_item(GBT_config_parser *parser, GBT_config_item *
             default: item->type = CI_UNKNOWN; break;
         }
 
-        switch (item->type) {
-            case CI_CLOSE_GROUP:
-                pos += 2;
-                break;
+        if (item->type == CI_CLOSE_GROUP) {
+            pos += 2;
+        }
+        else {
+            const char *start_of_name = str+pos+2;
+            const char *behind_name   = strchr(start_of_name, '\1');
 
-            case CI_UNKNOWN:
-                error = GBS_global_string_copy("Unknown flag '%c'", label);
-                break;
+            if (!behind_name) behind_name = strchr(start_of_name, '\0'); // eos
+            gb_assert(behind_name);
 
-            default: {
-                const char *start_of_name = str+pos+2;
-                const char *behind_name   = strchr(start_of_name, '\1');
-
-                if (!behind_name) behind_name = strchr(start_of_name, '\0'); // eos
-                gb_assert(behind_name);
-
-                item->name = (char*)GB_calloc(1, behind_name-start_of_name+1);
-                memcpy(item->name, start_of_name, behind_name-start_of_name);
-                pos       = behind_name-str;
-                break;
+            char *data = GB_strpartdup(start_of_name, behind_name-1);
+            if (item->type == CI_UNKNOWN) {
+                error = GBS_global_string_copy("Unknown flag '%c' (followed by '%s')", label, data);
+                free(data);
+            }
+            else {
+                item->name = data;
+                pos        = behind_name-str;
             }
         }
 

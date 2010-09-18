@@ -11,6 +11,31 @@ Major changes for next release:
    - Fixed colors of amino names
  - load/save for window specific settings (e.g. allows to share parts of configuration
    with other users)
+ - many internal refactorings
+
+
+Fixes for arb_5.2:
+
+ * bugfixes
+   - quicksave did silently do nothing (especially not save anything) if an error occurred 
+   - ARB_EDIT4: crashed when using config with MANY unknown species
+   - ARB_SECEDIT: crashed when trying to paint strand w/o any base
+   - ARB_NTREE/ARB_PARS: crashed when clicking on inner tree node w/o groupinfo
+ * changes
+   - ARB uses xdg-open to display web-pages
+ * internal fixes
+   - karmic koala (gcc 4.4.1)
+   - installation script
+   - arb build process uses xsltproc instead of sablotron 
+
+
+Fixes for arb_5.1:
+
+ * fixed a bug in 'Create species from consensus' (created sequence was corrupted)
+ * fixed 2 bugs in optimize DB (alignment w/o data, missing transaction)
+ * updated installation instructions, fixed install script, added OSX instruction (thx to Matt Cottrell)
+ * fixed broken demo.arb
+
 
 Major changes for arb_5.00:
 

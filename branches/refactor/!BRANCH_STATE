@@ -5,6 +5,8 @@ performed merges
 
         HEAD->BRANCH
 
+                6871 merges various things from trunk (partly merge from complete diff 'refactor->trunk')
+
         BRANCH->HEAD
 
                 6753,6788,6789 -> 6812
@@ -37,4 +39,5 @@ performed merges
                 6846 _____skip
                 6859 _____skip
 
-        not reviewed: 6861:HEAD
+        
+        not reviewed: 6872:HEAD
