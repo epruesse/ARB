@@ -48,11 +48,11 @@ AW_window_ogl.o: $(ARBHOME)/INCLUDE/arbdb.h
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/arbtools.h
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/attributes.h
-AW_window_ogl.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+AW_window_ogl.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
-AW_window_ogl.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+AW_window_ogl.o: $(ARBHOME)/INCLUDE/cb.h
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/dupstr.h
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/smartptr.h
 AW_window_ogl.o: $(ARBHOME)/INCLUDE/test_global.h

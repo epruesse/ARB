@@ -51,8 +51,9 @@ AP_Tree.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AP_Tree.o: $(ARBHOME)/INCLUDE/arbdbt.h
 AP_Tree.o: $(ARBHOME)/INCLUDE/arbtools.h
 AP_Tree.o: $(ARBHOME)/INCLUDE/attributes.h
+AP_Tree.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AP_Tree.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
-AP_Tree.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+AP_Tree.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 AP_Tree.o: $(ARBHOME)/INCLUDE/awt_attributes.hxx
 AP_Tree.o: $(ARBHOME)/INCLUDE/downcast.h
 AP_Tree.o: $(ARBHOME)/INCLUDE/dupstr.h

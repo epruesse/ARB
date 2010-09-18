@@ -61,7 +61,7 @@ arb_interface.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 arb_interface.o: $(ARBHOME)/INCLUDE/arbdbt.h
 arb_interface.o: $(ARBHOME)/INCLUDE/arbtools.h
 arb_interface.o: $(ARBHOME)/INCLUDE/attributes.h
-arb_interface.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+arb_interface.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 arb_interface.o: $(ARBHOME)/INCLUDE/dupstr.h
 arb_interface.o: $(ARBHOME)/INCLUDE/EXP.hxx
 arb_interface.o: $(ARBHOME)/INCLUDE/smartptr.h

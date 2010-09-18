@@ -47,11 +47,12 @@ AP_matrix.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AP_matrix.o: $(ARBHOME)/INCLUDE/arbdbt.h
 AP_matrix.o: $(ARBHOME)/INCLUDE/arbtools.h
 AP_matrix.o: $(ARBHOME)/INCLUDE/attributes.h
-AP_matrix.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+AP_matrix.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
+AP_matrix.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AP_matrix.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
-AP_matrix.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AP_matrix.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AP_matrix.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+AP_matrix.o: $(ARBHOME)/INCLUDE/cb.h
 AP_matrix.o: $(ARBHOME)/INCLUDE/dupstr.h
 AP_matrix.o: $(ARBHOME)/INCLUDE/smartptr.h
 AP_matrix.o: $(ARBHOME)/INCLUDE/test_global.h
