@@ -9,8 +9,7 @@ CPP_OBJECTS = \
 	ED4_cursor.o \
 	ED4_dump.o \
 	ED4_nds.o \
-	ED4_secedit.o \
-	ED4_RNA3D.o \
+	ED4_plugins.o \
 	ED4_main.o \
 	ED4_mini_classes.o \
 	ED4_edit_string.o \
@@ -373,8 +372,8 @@ ED4_mini_classes.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ED4_mini_classes.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 ED4_mini_classes.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 ED4_mini_classes.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-ED4_mini_classes.o: $(ARBHOME)/INCLUDE/awt_iupac.hxx
 ED4_mini_classes.o: $(ARBHOME)/INCLUDE/dupstr.h
+ED4_mini_classes.o: $(ARBHOME)/INCLUDE/iupac.h
 ED4_mini_classes.o: $(ARBHOME)/INCLUDE/smartptr.h
 ED4_mini_classes.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -470,6 +469,35 @@ ED4_no_class.o: $(ARBHOME)/INCLUDE/smartptr.h
 ED4_no_class.o: $(ARBHOME)/INCLUDE/st_window.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/test_global.h
 
+ED4_plugins.o: ed4_class.hxx
+ED4_plugins.o: ed4_defs.hxx
+ED4_plugins.o: ed4_plugins.hxx
+ED4_plugins.o: ed4_search.hxx
+ED4_plugins.o: ed4_visualizeSAI.hxx
+ED4_plugins.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
+ED4_plugins.o: $(ARBHOME)/INCLUDE/ad_prot.h
+ED4_plugins.o: $(ARBHOME)/INCLUDE/arb_assert.h
+ED4_plugins.o: $(ARBHOME)/INCLUDE/arb_core.h
+ED4_plugins.o: $(ARBHOME)/INCLUDE/arb_defs.h
+ED4_plugins.o: $(ARBHOME)/INCLUDE/arb_error.h
+ED4_plugins.o: $(ARBHOME)/INCLUDE/arbdb.h
+ED4_plugins.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+ED4_plugins.o: $(ARBHOME)/INCLUDE/arbtools.h
+ED4_plugins.o: $(ARBHOME)/INCLUDE/attributes.h
+ED4_plugins.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
+ED4_plugins.o: $(ARBHOME)/INCLUDE/aw_device.hxx
+ED4_plugins.o: $(ARBHOME)/INCLUDE/aw_font_group.hxx
+ED4_plugins.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
+ED4_plugins.o: $(ARBHOME)/INCLUDE/aw_position.hxx
+ED4_plugins.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+ED4_plugins.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+ED4_plugins.o: $(ARBHOME)/INCLUDE/dupstr.h
+ED4_plugins.o: $(ARBHOME)/INCLUDE/rna3d_extern.hxx
+ED4_plugins.o: $(ARBHOME)/INCLUDE/secedit_extern.hxx
+ED4_plugins.o: $(ARBHOME)/INCLUDE/smartptr.h
+ED4_plugins.o: $(ARBHOME)/INCLUDE/test_global.h
+ED4_plugins.o: $(ARBHOME)/INCLUDE/test_unit.h
+
 ED4_protein_2nd_structure.o: ed4_awars.hxx
 ED4_protein_2nd_structure.o: ed4_class.hxx
 ED4_protein_2nd_structure.o: ed4_defs.hxx
@@ -530,25 +558,6 @@ ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/smartptr.h
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/test_global.h
 ED4_ProteinViewer.o: $(ARBHOME)/INCLUDE/Translate.hxx
 
-ED4_RNA3D.o: ../RNA3D/RNA3D_Main.hxx
-ED4_RNA3D.o: ed4_RNA3D.hxx
-ED4_RNA3D.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
-ED4_RNA3D.o: $(ARBHOME)/INCLUDE/arb_assert.h
-ED4_RNA3D.o: $(ARBHOME)/INCLUDE/arb_core.h
-ED4_RNA3D.o: $(ARBHOME)/INCLUDE/arb_error.h
-ED4_RNA3D.o: $(ARBHOME)/INCLUDE/arbdb_base.h
-ED4_RNA3D.o: $(ARBHOME)/INCLUDE/arbtools.h
-ED4_RNA3D.o: $(ARBHOME)/INCLUDE/attributes.h
-ED4_RNA3D.o: $(ARBHOME)/INCLUDE/aw_device.hxx
-ED4_RNA3D.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
-ED4_RNA3D.o: $(ARBHOME)/INCLUDE/aw_position.hxx
-ED4_RNA3D.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-ED4_RNA3D.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-ED4_RNA3D.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
-ED4_RNA3D.o: $(ARBHOME)/INCLUDE/dupstr.h
-ED4_RNA3D.o: $(ARBHOME)/INCLUDE/smartptr.h
-ED4_RNA3D.o: $(ARBHOME)/INCLUDE/test_global.h
-
 ED4_root.o: ed4_awars.hxx
 ED4_root.o: ed4_block.hxx
 ED4_root.o: ed4_class.hxx
@@ -557,11 +566,10 @@ ED4_root.o: ed4_dots.hxx
 ED4_root.o: ed4_extern.hxx
 ED4_root.o: ed4_naligner.hxx
 ED4_root.o: ed4_nds.hxx
+ED4_root.o: ed4_plugins.hxx
 ED4_root.o: ed4_protein_2nd_structure.hxx
 ED4_root.o: ed4_ProteinViewer.hxx
-ED4_root.o: ed4_RNA3D.hxx
 ED4_root.o: ed4_search.hxx
-ED4_root.o: ed4_secedit.hxx
 ED4_root.o: ed4_tools.hxx
 ED4_root.o: ed4_visualizeSAI.hxx
 ED4_root.o: graph_aligner_gui.hxx
@@ -631,27 +639,6 @@ ED4_search.o: $(ARBHOME)/INCLUDE/dupstr.h
 ED4_search.o: $(ARBHOME)/INCLUDE/fast_aligner.hxx
 ED4_search.o: $(ARBHOME)/INCLUDE/smartptr.h
 ED4_search.o: $(ARBHOME)/INCLUDE/test_global.h
-
-ED4_secedit.o: ed4_secedit.hxx
-ED4_secedit.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
-ED4_secedit.o: $(ARBHOME)/INCLUDE/ad_prot.h
-ED4_secedit.o: $(ARBHOME)/INCLUDE/arb_assert.h
-ED4_secedit.o: $(ARBHOME)/INCLUDE/arb_core.h
-ED4_secedit.o: $(ARBHOME)/INCLUDE/arb_error.h
-ED4_secedit.o: $(ARBHOME)/INCLUDE/arbdb.h
-ED4_secedit.o: $(ARBHOME)/INCLUDE/arbdb_base.h
-ED4_secedit.o: $(ARBHOME)/INCLUDE/arbtools.h
-ED4_secedit.o: $(ARBHOME)/INCLUDE/attributes.h
-ED4_secedit.o: $(ARBHOME)/INCLUDE/aw_device.hxx
-ED4_secedit.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
-ED4_secedit.o: $(ARBHOME)/INCLUDE/aw_position.hxx
-ED4_secedit.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-ED4_secedit.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-ED4_secedit.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
-ED4_secedit.o: $(ARBHOME)/INCLUDE/dupstr.h
-ED4_secedit.o: $(ARBHOME)/INCLUDE/secedit_extern.hxx
-ED4_secedit.o: $(ARBHOME)/INCLUDE/smartptr.h
-ED4_secedit.o: $(ARBHOME)/INCLUDE/test_global.h
 
 ED4_terminal.o: ed4_awars.hxx
 ED4_terminal.o: ed4_block.hxx
@@ -749,9 +736,9 @@ ED4_tools.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ED4_tools.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 ED4_tools.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 ED4_tools.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-ED4_tools.o: $(ARBHOME)/INCLUDE/awt_iupac.hxx
 ED4_tools.o: $(ARBHOME)/INCLUDE/dupstr.h
 ED4_tools.o: $(ARBHOME)/INCLUDE/fast_aligner.hxx
+ED4_tools.o: $(ARBHOME)/INCLUDE/iupac.h
 ED4_tools.o: $(ARBHOME)/INCLUDE/smartptr.h
 ED4_tools.o: $(ARBHOME)/INCLUDE/test_global.h
 

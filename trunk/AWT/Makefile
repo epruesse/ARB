@@ -13,7 +13,6 @@ OBJECTS =	\
 		AWT_hotkeys.o \
 		AWT_input_mask.o \
 		AWT_item_sel_list.o \
-		AWT_iupac.o \
 		AWT_macro.o \
 		AWT_map_key.o \
 		AWT_nds.o \
@@ -256,15 +255,6 @@ AWT_item_sel_list.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AWT_item_sel_list.o: $(ARBHOME)/INCLUDE/dupstr.h
 AWT_item_sel_list.o: $(ARBHOME)/INCLUDE/smartptr.h
 AWT_item_sel_list.o: $(ARBHOME)/INCLUDE/test_global.h
-
-AWT_iupac.o: awt_iupac.hxx
-AWT_iupac.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
-AWT_iupac.o: $(ARBHOME)/INCLUDE/arb_assert.h
-AWT_iupac.o: $(ARBHOME)/INCLUDE/arb_core.h
-AWT_iupac.o: $(ARBHOME)/INCLUDE/arbdb_base.h
-AWT_iupac.o: $(ARBHOME)/INCLUDE/attributes.h
-AWT_iupac.o: $(ARBHOME)/INCLUDE/dupstr.h
-AWT_iupac.o: $(ARBHOME)/INCLUDE/test_global.h
 
 AWT_macro.o: awt_macro.hxx
 AWT_macro.o: $(ARBHOME)/INCLUDE/ad_k_prot.h

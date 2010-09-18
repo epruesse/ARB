@@ -12,8 +12,11 @@
 #ifndef SECEDIT_EXTERN_HXX
 #define SECEDIT_EXTERN_HXX
 
-AW_window *SEC_create_main_window(AW_root *awr, GBDATA *gb_main);
+#ifndef ED4_PLUGINS_HXX
+#include <ed4_plugins.hxx>
+#endif
 
+ED4_plugin start_SECEDIT_plugin;
 
 #else
 #error secedit_extern.hxx included twice

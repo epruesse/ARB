@@ -1,6 +1,6 @@
 // ================================================================ //
 //                                                                  //
-//   File      : RNA3D_Main.hxx                                     //
+//   File      : rna3d_extern.hxx                                   //
 //   Purpose   :                                                    //
 //                                                                  //
 //   Institute of Microbiology (Technical University Munich)        //
@@ -8,19 +8,15 @@
 //                                                                  //
 // ================================================================ //
 
-#ifndef RNA3D_MAIN_HXX
-#define RNA3D_MAIN_HXX
+#ifndef RNA3D_EXTERN_HXX
+#define RNA3D_EXTERN_HXX
 
-#ifndef AW_ROOT_HXX
-#include <aw_root.hxx>
-#endif
-#ifndef ARBDB_BASE_H
-#include <arbdb_base.h>
+#ifndef ED4_PLUGINS_HXX
+#include <ed4_plugins.hxx>
 #endif
 
-
-void RNA3D_StartApplication(AW_root *awr, GBDATA *gb_main);
+ED4_plugin start_RNA3D_plugin;
 
 #else
-#error RNA3D_Main.hxx included twice
-#endif // RNA3D_MAIN_HXX
+#error rna3d_extern.hxx included twice
+#endif // RNA3D_EXTERN_HXX

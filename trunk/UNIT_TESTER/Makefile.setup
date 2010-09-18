@@ -19,12 +19,13 @@ RESTRICT_MODULE='.'
 # (empty=no restriction, ':'-separated list of allowed test-names)
 #
 RESTRICT_LIB=# run all tests
+#RESTRICT_LIB=AWT# test only this library
 #RESTRICT_LIB=AWTC# test only this library
 #RESTRICT_LIB=mkptypes# test only these libraries
-#RESTRICT_LIB=client:arb_probe:AWTC# test only these libraries
 #RESTRICT_LIB=ARBDB# test only this library
 #RESTRICT_LIB=FAST_ALIGNER# test only this library
 #RESTRICT_LIB=MERGE# test only this library
+#RESTRICT_LIB=client:arb_probe:AWTC# test only these libraries
 
 # ---------- slow tests 
 #SKIP_SLOW=0# always run all tests

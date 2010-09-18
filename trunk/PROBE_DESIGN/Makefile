@@ -58,7 +58,6 @@ probe_design.o: $(ARBHOME)/INCLUDE/aw_select.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/awt_config_manager.hxx
-probe_design.o: $(ARBHOME)/INCLUDE/awt_iupac.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/bytestring.h
 probe_design.o: $(ARBHOME)/INCLUDE/client.h
@@ -66,6 +65,7 @@ probe_design.o: $(ARBHOME)/INCLUDE/client_types.h
 probe_design.o: $(ARBHOME)/INCLUDE/downcast.h
 probe_design.o: $(ARBHOME)/INCLUDE/dupstr.h
 probe_design.o: $(ARBHOME)/INCLUDE/GEN.hxx
+probe_design.o: $(ARBHOME)/INCLUDE/iupac.h
 probe_design.o: $(ARBHOME)/INCLUDE/PT_com.h
 probe_design.o: $(ARBHOME)/INCLUDE/servercntrl.h
 probe_design.o: $(ARBHOME)/INCLUDE/smartptr.h

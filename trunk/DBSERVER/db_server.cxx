@@ -80,7 +80,3 @@ int main(int argc, char **argv)
     return (0);
 }
 
-extern "C" {
-    int aisc_open() { return 0; }
-    int aisc_close() { return 0; }
-}

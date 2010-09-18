@@ -21,13 +21,13 @@
 RNA3D_Global *RNA3D = 0;
 char globalComment[1000];
 
-void RNA3D_init_global_data() {
+void RNA3D_init_global_data(ED4_plugin_host& host) {
     if (!RNA3D) {
-        RNA3D = new RNA3D_Global();
+        RNA3D = new RNA3D_Global(host);
     }
 }
 
-RNA3D_Global::RNA3D_Global() {
+RNA3D_Global::RNA3D_Global(ED4_plugin_host& host) {
     OpenGLEngineState = -1;
     iRotateMolecule   = 0;
     bPointSpritesSupported           = false;
@@ -43,7 +43,7 @@ RNA3D_Global::RNA3D_Global() {
     scale = 0.01;
 
     cGraphics  = new OpenGLGraphics();
-    cStructure = new Structure3D();
+    cStructure = new Structure3D(host);
     cTexture   = new Texture2D();
     cRenderer  = new GLRenderer();
 
@@ -333,7 +333,7 @@ void MapDisplayParameters(AW_root *root) {
         }
         if (cStructure->iMapSAI) {
             if (!RNA3D->bMapSaiDispListCreated) {
-                cStructure->MapSaiToEcoliTemplate(root);
+                cStructure->MapSaiToEcoliTemplate();
             }
         }
         if (!bMapSpDispListCreated) {
@@ -373,7 +373,7 @@ void MapSelectedSpeciesChanged_CB(AW_root *awr) {
     RefreshOpenGLDisplay();
 }
 
-void MapSaiToEcoliTemplateChanged_CB(AW_root *awr) {
+void MapSaiToEcoliTemplateChanged_CB(AW_root */*awr*/) {
     // if SAI changed in EDIT4 then display lists should be recalculated
 
     if (RNA3D->cStructure->iMapEnable  &&
@@ -382,7 +382,7 @@ void MapSaiToEcoliTemplateChanged_CB(AW_root *awr) {
     {
         RNA3D->bMapSaiDispListCreated = false;
         glDeleteLists(MAP_SAI_TO_STRUCTURE, 1);
-        RNA3D->cStructure->MapSaiToEcoliTemplate(awr);
+        RNA3D->cStructure->MapSaiToEcoliTemplate();
     }
 
     RefreshOpenGLDisplay();

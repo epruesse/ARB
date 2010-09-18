@@ -990,11 +990,9 @@ int aisc_find(aisc_com *link,
     return 0;
 }
 
-#if (UNIT_TESTS == 1)
+/* --------------------------------------------------------------------------------
+ * Note: it's not possible to define unit tests here - they won't execute
+ * Instead put your tests into ../../SERVERCNTRL/servercntrl.cxx@UNIT_TESTS
+ */
 
-#include <test_unit.h>
 
-void TEST_dummy() {
-}
-
-#endif

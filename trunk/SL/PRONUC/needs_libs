@@ -1,4 +1,4 @@
 # libraries needed to link against SL/PRONUC/PRONUC.a
 
-AWT/libAWT.so
+ARBDB/libARBDB.so
 

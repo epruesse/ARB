@@ -1,5 +1,5 @@
 # libraries needed to link against NALIGNER/NALIGNER.a
 
-PROBE_COM/client.a
+SERVERCNTRL/SERVERCNTRL.a
 SL/HELIX/HELIX.a
 

@@ -1,8 +1,4 @@
 # libraries needed to link against SL/AW_NAME/AW_NAME.a
 
-# in fact this needs NAMES_COM/client.a, but it does not seem to matter
-# (e.g. arb_ntree only links PROBE_COM/client.a, so we always use that one)
-PROBE_COM/client.a
-# NAMES_COM/client.a
-
+SERVERCNTRL/SERVERCNTRL.a
 WINDOW/libWINDOW.so

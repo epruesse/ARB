@@ -71,6 +71,16 @@ LINKLIST=$(shell ../SOURCE_TOOLS/needed_libs.pl -S -A .. -l $(FULLLIB))
 LINKDEPS=$(shell ../SOURCE_TOOLS/needed_libs.pl -S -A .. -F $(FULLLIB))
 endif
 
+ifeq ($(CHECK_LEAKS),0)
+	LEAKS:=
+else
+ifeq ($(CHECK_LEAKS),1)
+	LEAKS:=-l
+else
+	LEAKS:=-l -r
+endif
+endif
+
 # --------------------------------------------------------------------------------
 
 clean:
@@ -114,16 +124,6 @@ dump:
 	@echo "INCLUDES       ='$(INCLUDES)'"
 	@echo "LINKLIST       ='$(LINKLIST)'"
 	@echo "LINKDEPS       ='$(LINKDEPS)'"
-
-ifeq ($(CHECK_LEAKS),0)
-	LEAKS:=
-else
-ifeq ($(CHECK_LEAKS),1)
-	LEAKS:=-l
-else
-	LEAKS:=-l -r
-endif
-endif
 
 valgrind:
 	echo "Valgrinding.."

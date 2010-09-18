@@ -104,6 +104,7 @@ struct Vector3;
 
 class ED4_sequence_terminal;
 class BI_ecoli_ref;
+struct ED4_plugin_host;
 
 class Structure3D {
 public:
@@ -119,14 +120,14 @@ public:
     int LSU_molID;
     int HelixBase; // to create display lists storing helix information
 
-    static GBDATA *gb_main;
-    BI_ecoli_ref *EColiRef;
-    ED4_sequence_terminal *ED4_SeqTerminal;
+    static GBDATA         *gb_main;
+    BI_ecoli_ref          *EColiRef;
+    ED4_plugin_host&  Host;
 
     OpenGLGraphics *GRAPHICS; // not really a good place - it better should be passed from callers
 
-    Structure3D();
-    virtual  ~Structure3D();
+    Structure3D(ED4_plugin_host& host_);
+    ~Structure3D();
 
     void ReadCoOrdinateFile();
     void StoreCoordinates(float x, float y, float z, char base, unsigned int pos);
@@ -169,7 +170,7 @@ public:
 
     void GenerateCursorPositionDispList(long pos);
 
-    void MapSaiToEcoliTemplate(AW_root *awr);
+    void MapSaiToEcoliTemplate();
     void MapSearchStringsToEcoliTemplate(AW_root *awr);
 };
 

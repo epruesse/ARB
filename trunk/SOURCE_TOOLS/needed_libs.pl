@@ -326,8 +326,11 @@ sub scan_target($) {
     my $fulldep = fullpath($depfile);
 
     if (not -f $fulldep) {
+      my $dir = dirOf($fulldep);
+      my $err = "Missing dependency file for '$target'";
+      if (not -d $dir) { $err .= " (No such directory '$dir')"; }
       my $location = $fulldep.':0';
-      location_error($location,"Missing dependency file for '$target'");
+      location_error($location,$err);
     }
     else {
       open(IN,'<'.$fulldep) || die "can't read '$fulldep' (Reason: $!)";
@@ -366,8 +369,10 @@ sub rec_add_depends_to_hash($\%) {
   else {
     my $dep_r = $dependencies_of{$target};
     foreach (keys %$dep_r) {
-      $$hash_r{$_} = 1;
-      rec_add_depends_to_hash($_,%$hash_r);
+      if (not defined $$hash_r{$_}) {
+        $$hash_r{$_} = 1;
+        rec_add_depends_to_hash($_,%$hash_r);
+      }
     }
   }
 }
