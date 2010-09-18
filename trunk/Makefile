@@ -275,6 +275,8 @@ GL_PNGLIBS_SYS := -lpng
 GL_LIBS_SYS := $(GL_LIB_SYS) $(GL_PNGLIBS_SYS) $(GLEWLIB) $(GLUTLIB)
 GL_LIBS_ARB := $(GL_LIB_ARB) $(GL_PNGLIBS_ARB)
 
+RNA3D_LIB := RNA3D/RNA3D.a
+
 else
 # OPENGL=0
 
@@ -282,7 +284,11 @@ GL_LIBS_ARB:=# no opengl -> no libs
 GL_LIBS_SYS:=# no opengl -> no libs
 GL:=# don't build ARB openGL libs
 
+RNA3D_LIB :=
+
 endif
+
+
 
 GL_LIBS:=$(GL_LIBS_ARB) $(GL_LIBS_SYS)
 
@@ -1487,6 +1493,9 @@ arb: arbbasic
 # currently not all test executables link w/o error
 # (see UNITS_WORKING, UNITS_UNTESTABLE_ATM and UNITS_NEED_FIX)
 
+# define RNA3D/RNA3D.test
+RNA3D_TEST := $(subst .a,.test,$(RNA3D_LIB))
+
 TESTED_UNITS_AUTO = $(ARCHS:.a=.test)
 
 UNITS_WORKING = \
@@ -1536,11 +1545,17 @@ UNITS_WORKING = \
 	NAMES/NAMES.test \
 	PROBE/PROBE.test \
 	DBSERVER/DBSERVER.test \
+	SL/SEQIO/SEQIO.test \
+	SECEDIT/SECEDIT.test \
+	$(RNA3D_TEST) \
+	SERVERCNTRL/SERVERCNTRL.test \
 
 UNITS_UNTESTABLE_ATM = \
 	SERVERCNTRL/SERVERCNTRL.test \
 	PROBE_SET/PROBE_SET.test \
 	XML_IMPORT/XML_IMPORT.test \
+
+UNITS_TRY_FIX = \
 
 UNITS_NEED_FIX = \
 	GENOM_IMPORT/GENOM_IMPORT.test \
@@ -1557,9 +1572,13 @@ UNITS_TESTED = \
 	AWTC/AWTC.test \
 	SL/FAST_ALIGNER/FAST_ALIGNER.test \
 	MULTI_PROBE/MULTI_PROBE.test \
-	SL/SEQIO/SEQIO.test \
 	ARBDB/ARBDB.test \
 	MERGE/MERGE.test \
+
+UNITS_TESTED_SOON = \
+	WINDOW/WINDOW.test \
+	SL/PRONUC/PRONUC.test \
+	EDIT4/EDIT4.test \
 
 TESTED_UNITS_MANUAL = \
 	$(UNITS_TESTED) \
@@ -1572,7 +1591,7 @@ TESTED_UNITS = $(TESTED_UNITS_MANUAL)
 # ----------------------------------------
 
 TEST_LOG_DIR = UNIT_TESTER/logs
-TEST_REPORTER = $(ARBHOME)/UNIT_TESTER/reporter.pl
+TEST_RUN_SUITE=$(MAKE) $(NODIR) -C UNIT_TESTER -f Makefile.suite -r
 
 %.test:
 	-@( export ID=$$$$; mkdir -p $(TEST_LOG_DIR); \
@@ -1595,21 +1614,17 @@ clean_coverage: clean_coverage_results
 
 
 unit_tests: test_base clean_coverage_results
-	@echo "$(SEP) Running unit tests"
-	@$(TEST_REPORTER) init $(TEST_LOG_DIR)
+	@$(TEST_RUN_SUITE) init
 	@echo "fake[1]: Entering directory \`$(ARBHOME)/UNIT_TESTER'"
 	$(MAKE) $(NODIR) $(TESTED_UNITS)
 	@echo "fake[1]: Leaving directory \`$(ARBHOME)/UNIT_TESTER'"
-	@$(TEST_REPORTER) report $(TEST_LOG_DIR)
-	@$(MAKE) $(NODIR) -C UNIT_TESTER -f Makefile.test -r \
-		"UNITDIR=" \
-		"UNITLIBNAME=" \
-		"COVERAGE=0" \
-		"cflags=$(cflags)" \
-		store_patch
-	@echo "$(SEP) All unit tests passed" 
+	@$(TEST_RUN_SUITE) cleanup
 
 ut: unit_tests
+
+aut:
+	@$(TEST_RUN_SUITE) unskip
+	$(MAKE) ut
 
 # --------------------------------------------------------------------------------
 

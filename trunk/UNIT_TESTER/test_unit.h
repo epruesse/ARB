@@ -83,9 +83,12 @@ namespace arb_test {
     inline void print(long L)                { fprintf(stderr, "%li", L); }
     inline void print_hex(long L)            { fprintf(stderr, "0x%lx", L); }
 
+    inline void print(const char *s)         { fprintf(stderr, "\"%s\"", s); }
+    // no print_hex for strings
+
     inline void print(size_t z)              { fprintf(stderr, "%zu", z); }
     inline void print_hex(size_t z)          { fprintf(stderr, "0x%zx", z); }
-    
+
     inline void print(unsigned char c)       { fprintf(stderr, "'%c'", c); }
     inline void print_hex(unsigned char c)   { print_hex(size_t(c)); }
 
@@ -101,23 +104,15 @@ namespace arb_test {
     inline void print_hex(long unsigned u)   { fprintf(stderr, "0x%lux", u); }
 #endif
 
-    template <typename T1, typename T2> void print_pair(T1 t1, T2 t2) {
+    template <typename T1, typename T2> inline void print_pair(T1 t1, T2 t2) {
         print(t1);
-        fputc(',', stderr);
+        fputs(", ", stderr);
         print(t2);
     }
-    template <typename T1, typename T2> void print_hex_pair(T1 t1, T2 t2) {
+    template <typename T1, typename T2> inline void print_hex_pair(T1 t1, T2 t2) {
         print_hex(t1);
         fputc(',', stderr);
         print_hex(t2);
-    }
-    template <typename T1, typename T2> void print_failed_equal(T1 t1, T2 t2) {
-        FlushedOutputNoLF yes;
-        fputs("is_equal(", stderr);
-        print_pair(t1, t2);
-        fputs(") (", stderr);
-        print_hex_pair(t1, t2);
-        fputs(") returns false\n", stderr);
     }
 
     template <typename T> inline const char *nameoftype(T unspecialized) {
@@ -128,79 +123,128 @@ namespace arb_test {
     NAMEOFTYPE(bool);
     NAMEOFTYPE(char);
     NAMEOFTYPE(unsigned char);
+    NAMEOFTYPE(const char*);
     NAMEOFTYPE(int);
     NAMEOFTYPE(unsigned int);
     NAMEOFTYPE(long int);
     NAMEOFTYPE(long unsigned int);
 #undef NAMEOFTYPE
 
-    
-    inline bool strnullequal(const char *s1, const char *s2) {
-        return (s1 == s2) || (s1 && s2 && strcmp(s1, s2) == 0);
-    }
 
-    template <typename T1, typename T2> inline bool is_equal(T1 t1, T2 t2) {
-        bool equal = (t1 == t2);
+
 #ifdef TRACE_IS_EQUAL
-        fprintf(stderr, "%-5s = is_equal(%s ", (equal ? "true" : "false"), nameoftype(t1));
+    template <typename T1, typename T2> inline bool bool_traced(const char *name, bool equal, T1 t1, T2 t2) {
+        fprintf(stderr, "%-5s = %s(%s ", (equal ? "true" : "false"), name, nameoftype(t1));
         print(t1);
         fprintf(stderr, ",%s ", nameoftype(t2));
         print(t2);
         fprintf(stderr, ")\n");
+        return equal;
+    }
+#else
+    template <typename T1, typename T2> inline bool bool_traced(const char *, bool equal, T1 , T2 ) {
+        return equal;
+    }
 #endif
+
+    template <typename T1, typename T2> inline bool is_equal(T1 t1, T2 t2) {
+        return bool_traced("is_equal", t1 == t2, t1, t2);
+    }
+    template<> inline bool is_equal<>(const char *s1, const char *s2) {
+        return bool_traced("is_equal", (s1 == s2) || (s1 && s2 && strcmp(s1, s2) == 0), s1, s2);
+    }
+    template <typename T1, typename T2> inline bool is_less(T1 t1, T2 t2) {
+        return bool_traced("is_less", t1 < t2, t1, t2);
+    }
+
+
+    template <typename T1, typename T2> inline void print_failed_compare(T1 t1, T2 t2, const char *prefix, const char *infix, const char *suffix) {
+        FlushedOutput yes;
+        fputs(prefix, stderr);
+        print_pair(t1, t2);
+        fputs(infix, stderr);
+        print_hex_pair(t1, t2);
+        fputs(suffix, stderr);
+    }
+    template <typename T1, typename T2> inline void print_failed_equal(T1 t1, T2 t2) {
+        print_failed_compare(t1, t2, "test_equal(", ") (", ") returns false");
+    }
+    template <typename T1, typename T2> inline void print_failed_less_equal(T1 t1, T2 t2) {
+        print_failed_compare(t1, t2, "test_less_equal(", ") (", ") returns false");
+    }
+    template <typename T1, typename T2> inline void print_failed_different(T1 t1, T2 t2) {
+        print_failed_compare(t1, t2, "test_different(", ") (", ") returns false");
+    }
+
+    template<> inline void print_failed_equal<>(const char *s1, const char *s2) {
+        FlushedOutput yes;
+        fputs("test_equal(", stderr);
+        print(s1);
+        fputs(",\n           ", stderr);
+        print(s2);
+        fputs(") returns false", stderr);
+    }
+    template<> inline void print_failed_different<>(const char *s1, const char *) {
+        FlushedOutput yes;
+        fputs("test_different(", stderr);
+        print(s1);
+        fputs(", <same>", stderr);
+        fputs(") returns false", stderr);
+    }
+
+    template <typename T1, typename T2> inline bool test_equal(T1 t1, T2 t2) {
+        bool equal = is_equal(t1, t2);
         if (!equal) print_failed_equal(t1, t2);
         return equal;
     }
-
-    template<> inline bool is_equal<>(const char *s1, const char *s2) {
-        bool equal = strnullequal(s1, s2);
-        if (!equal) {
-            StaticCode::printf("str_equal('%s',\n"
-                               "          '%s') returns false\n", s1, s2);
-        }
-        return equal;
+    template <typename T1, typename T2> inline bool test_less_equal(T1 lower, T2 upper) {
+        bool less_equal = is_equal(lower, upper) || is_less(lower, upper);
+        if (!less_equal) print_failed_less_equal(lower, upper);
+        return less_equal;
     }
-    template<> inline bool is_equal<>(char *s1, char *s2) { return is_equal((const char *)s1, (const char *)s2); }
-    template<> inline bool is_equal<>(const char *s1, char *s2) { return is_equal(s1, (const char *)s2); }
-    template<> inline bool is_equal<>(char *s1, const char *s2) { return is_equal((const char *)s1, s2); }
-
-#ifdef ARB_64
-    typedef long int NULLPTR;
-#else    
-    typedef int NULLPTR;
-#endif
-
-    template<> inline bool is_equal<>(const char *s1, NULLPTR null) { return is_equal(s1, (const char *)null); }
-    template<> inline bool is_equal<>(char *s1, NULLPTR null) { return is_equal(s1, (const char *)null); }
-    template<> inline bool is_equal<>(NULLPTR null, const char *s2) { return is_equal((const char *)null, s2); }
-    template<> inline bool is_equal<>(NULLPTR null, char *s2) { return is_equal((const char *)null, s2); }
-
-    inline bool is_different(const char *s1, const char *s2) {
-        bool different = !strnullequal(s1, s2);
-        if (!different) {
-            StaticCode::printf("str_different('%s', ..) returns false\n", s1);
-        }
+    template <typename T1, typename T2> inline bool test_different(T1 t1, T2 t2) {
+        bool different = !is_equal(t1, t2);
+        if (!different) print_failed_different(t1, t2);
         return different;
     }
 
-    inline bool is_similar(double d1, double d2, double epsilon) {
+#define ACCEPT_NON_CONST_ARGUMENTS(FUN,TYPE) \
+    template<> inline bool FUN<>(TYPE p1, TYPE p2) { return FUN((const TYPE)p1, (const TYPE)p2); } \
+        template<> inline bool FUN<>(TYPE p1, const TYPE p2) { return FUN((const TYPE)p1, p2); } \
+        template<> inline bool FUN<>(const TYPE p1, TYPE p2) { return FUN(p1, (const TYPE)p2); }
+
+    ACCEPT_NON_CONST_ARGUMENTS(test_equal, char*);
+    ACCEPT_NON_CONST_ARGUMENTS(test_different, char*);
+
+#ifdef ARB_64
+    typedef long int NULLPTR;
+#else
+    typedef int      NULLPTR;
+#endif
+    
+#define ACCEPT_NULLPTR_ARGUMENTS(FUN,TYPE)         \
+    template<> inline bool FUN<>(TYPE p1, NULLPTR p2) { test_assert(!p2); return FUN((const TYPE)p1, (const TYPE)p2); } \
+        template<> inline bool FUN<>(const TYPE p1, NULLPTR p2) { test_assert(!p2); return FUN((const TYPE)p1, (const TYPE)p2); } \
+        template<> inline bool FUN<>(NULLPTR p1, TYPE p2) { test_assert(!p1); return FUN((const TYPE)p1, (const TYPE)p2); } \
+        template<> inline bool FUN<>(NULLPTR p1, const TYPE p2) { test_assert(!p1); return FUN((const TYPE)p1, (const TYPE)p2); }
+
+    ACCEPT_NULLPTR_ARGUMENTS(test_equal, char*);
+    ACCEPT_NULLPTR_ARGUMENTS(test_different, char*);
+
+    inline bool test_similar(double d1, double d2, double epsilon) {
         double diff = d1-d2;
         if (diff<0.0) diff = -diff; // do not use fabs() here
 
         bool in_epsilon_range = diff < epsilon;
         if (!in_epsilon_range) {
-            StaticCode::printf("is_similar(%f,%f,%f) returns false\n", d1, d2, epsilon);
+            StaticCode::printf("test_similar(%f,%f,%f) returns false\n", d1, d2, epsilon);
         }
         return in_epsilon_range;
     }
 
-    inline bool is_equal(double d1, double d2) {
-        return is_similar(d1, d2, 0.000001);
-    }
+    inline bool test_equal(double d1, double d2) { return test_similar(d1, d2, 0.000001); }
 
-
-
-    inline bool files_are_equal(const char *file1, const char *file2) {
+    inline bool test_files_equal(const char *file1, const char *file2) {
         const char        *error = NULL;
         FILE              *fp1   = fopen(file1, "rb");
         FlushedOutputNoLF  yes;
@@ -220,7 +264,6 @@ namespace arb_test {
                 unsigned char *buf1         = (unsigned char*)malloc(BLOCKSIZE);
                 unsigned char *buf2         = (unsigned char*)malloc(BLOCKSIZE);
                 int            equal_bytes  = 0;
-                bool           repositioned = false;
 
                 while (!error) {
                     int read1  = fread(buf1, 1, BLOCKSIZE, fp1);
@@ -263,7 +306,7 @@ namespace arb_test {
                     }
                 }
 
-                if (error) StaticCode::printf("files_are_equal: equal_bytes=%i\n", equal_bytes);
+                if (error) StaticCode::printf("test_files_equal: equal_bytes=%i\n", equal_bytes);
                 test_assert(error || equal_bytes); // comparing empty files is nonsense
 
                 free(buf2);
@@ -273,7 +316,7 @@ namespace arb_test {
             fclose(fp1);
         }
 
-        if (error) StaticCode::printf("files_are_equal(%s, %s) fails: %s\n", file1, file2, error);
+        if (error) StaticCode::printf("test_files_equal(%s, %s) fails: %s\n", file1, file2, error);
         return !error;
     }
     
@@ -447,14 +490,21 @@ namespace arb_test {
 
 // --------------------------------------------------------------------------------
 
-#define TEST_ASSERT_EQUAL(t1,t2)           TEST_ASSERT(arb_test::is_equal(t1, t2))
-#define TEST_ASSERT_EQUAL__BROKEN(t1,t2)   TEST_ASSERT__BROKEN(arb_test::is_equal(t1, t2))
+#define TEST_ASSERT_EQUAL(e1,t2)           TEST_ASSERT(arb_test::test_equal(e1, t2))
+#define TEST_ASSERT_EQUAL__BROKEN(e1,t2)   TEST_ASSERT__BROKEN(arb_test::test_equal(e1, t2))
 
-#define TEST_ASSERT_SIMILAR(t1,t2,epsilon)         TEST_ASSERT(arb_test::is_similar(t1, t2, epsilon))
-#define TEST_ASSERT_SIMILAR__BROKEN(t1,t2,epsilon) TEST_ASSERT__BROKEN(arb_test::is_similar(t1, t2, epsilon))
+#define TEST_ASSERT_SIMILAR(e1,t2,epsilon)         TEST_ASSERT(arb_test::test_similar(e1, t2, epsilon))
+#define TEST_ASSERT_SIMILAR__BROKEN(e1,t2,epsilon) TEST_ASSERT__BROKEN(arb_test::test_similar(e1, t2, epsilon))
 
-#define TEST_ASSERT_FILES_EQUAL(f1,f2)         TEST_ASSERT(arb_test::files_are_equal(f1,f2))
-#define TEST_ASSERT_FILES_EQUAL__BROKEN(f1,f2) TEST_ASSERT__BROKEN(arb_test::files_are_equal(f1,f2))
+#define TEST_ASSERT_DIFFERENT(e1,t2)         TEST_ASSERT(arb_test::test_different(e1, t2))
+#define TEST_ASSERT_DIFFERENT__BROKEN(e1,t2) TEST_ASSERT__BROKEN(arb_test::test_different(e1, t2))
+
+#define TEST_ASSERT_LOWER_EQUAL(lower,upper)  TEST_ASSERT(arb_test::test_less_equal(lower, upper))
+#define TEST_ASSERT_LOWER(lower,upper) do { TEST_ASSERT_LOWER_EQUAL(lower, upper); TEST_ASSERT_DIFFERENT(lower, upper); } while(0)
+#define TEST_ASSERT_IN_RANGE(val,lower,upper) do { TEST_ASSERT_LOWER_EQUAL(lower, val); TEST_ASSERT_LOWER_EQUAL(val, upper); } while(0)
+
+#define TEST_ASSERT_FILES_EQUAL(f1,f2)         TEST_ASSERT(arb_test::test_files_equal(f1,f2))
+#define TEST_ASSERT_FILES_EQUAL__BROKEN(f1,f2) TEST_ASSERT__BROKEN(arb_test::test_files_equal(f1,f2))
 
 #else
 #error test_unit.h included twice

@@ -315,11 +315,12 @@ void TEST_SLOW_PT_FamilyFinder() {
 
             TEST_ASSERT_NO_ERROR(ff.searchFamily(sequence, FF_FORWARD, 4));
 
-#define TEST_ASSERT_NEXT_RELATIVE(NAME, MATCHES, REL_MATCHES) do {      \
+#define TEST_ASSERT_NEXT_RELATIVE(NAME, MATCHES, REL_MATCHES)           \
+            do {                                                        \
                 TEST_ASSERT(fm);                                        \
-                TEST_ASSERT((arb_test::is_equal(fm->name, NAME) +       \
-                             arb_test::is_equal(fm->matches, MATCHES) + \
-                             arb_test::is_equal(fm->rel_matches, REL_MATCHES)) == 3); \
+                TEST_ASSERT((arb_test::test_equal(fm->name, NAME) +     \
+                             arb_test::test_equal(fm->matches, MATCHES) + \
+                             arb_test::test_equal(fm->rel_matches, REL_MATCHES)) == 3); \
                 fm = fm->next;                                          \
             } while(0)
 

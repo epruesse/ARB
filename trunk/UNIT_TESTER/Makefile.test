@@ -12,51 +12,8 @@
 dummy:
 	false
 
-# ----------------------------------------------------------
+include Makefile.setup
 
-# @@@ valgrind makes tests fail atm
-# (most likely two pt-servers try to start parallel on the same port)
-
-VALGRIND=0# only test
-#VALGRIND=1# run valgrind after sucessful test
-#VALGRIND=2# run valgrind before test (useful if test traps w/o any helpful information)
-
-#CHECK_LEAKS=0# check no leaks
-CHECK_LEAKS=1# check definite leaks
-#CHECK_LEAKS=2# check reachable leaks
-
-# ----------------------------------------------------------
-
-# restrict tests to modules matching regexpr 'RESTRICT_MODULE': 
-RESTRICT_MODULE='.'
-#RESTRICT_MODULE='MG_species\.cxx'
-
-# restrict tests to library with basename
-# (empty=no restriction, ':'-separated list of allowed test-names)
-#
-RESTRICT_LIB=# run all tests
-#RESTRICT_LIB=AWTC# test only this library
-#RESTRICT_LIB=mkptypes# test only these libraries
-#RESTRICT_LIB=client:arb_probe:AWTC# test only these libraries
-#RESTRICT_LIB=ARBDB# test only this library
-#RESTRICT_LIB=FAST_ALIGNER# test only this library
-#RESTRICT_LIB=MERGE# test only this library
-
-SKIP_SLOW=0# run all tests
-#SKIP_SLOW=1# skip slow tests
-
-# ----------------------------------------------------------
-
-#WARN_LEVEL=0# disable warnings 
-WARN_LEVEL=1# enable warnings (recommended)
-
-# ----------------------------------------------------------
-
-# target 'ut' in main ARB makefile create patches each time (selected) unit tests succeed
-DELETE_PATCHES_AFTER=20160# delete created patches after XXX min (20160=14 days)
-#DELETE_PATCHES_AFTER=0# delete created patches instantly (always one patch present)
-
-# ----------------------------------------------------------
 
 RELUNITDIR=../$(UNITDIR)
 FULLUNITDIR=$(ARBHOME)/$(UNITDIR)
@@ -129,11 +86,11 @@ $(RUNDIR):
 
 makedirs: $(DESTDIR) $(RUNDIR)
 
-$(SYMLIST) : $(FULLLIB) Makefile makedirs
+$(SYMLIST) : $(FULLLIB) Makefile makedirs show_test_header
 	nm -C -l $< > $@
 
 $(TEST_CODE) : $(SYMLIST) $(SYM2TESTCODE) Makefile.test
-	$(SYM2TESTCODE) $(UNITLIB) $(RESTRICT_MODULE) $< $@ $(WARN_LEVEL) $(SKIP_SLOW)
+	$(SYM2TESTCODE) $(UNITLIB) $(RESTRICT_MODULE) $< $@ $(WARN_LEVEL)
 
 $(TEST_OBJ) : $(TEST_CODE) $(INCLUDES)
 	$(CPP) $(cflags) -c $< -o $@ -I. 
@@ -172,6 +129,10 @@ valgrind:
 	echo "Valgrinding.."
 	$(ARBHOME)/SOURCE_TOOLS/arb_valgrind -q $(LEAKS) -c 15 $(TEST_EXE)
 
+show_test_header:
+	@echo ""
+	@echo "-------------------- [ Test $(UNITLIBNAME) ] --------------------"
+
 perform_test: $(TEST_EXE)
 	@echo "fake[2]: Entering directory \`$(FULLUNITDIR)'"
 ifeq ($(VALGRIND),2)
@@ -190,16 +151,6 @@ endif
 
 skip_test:
 	@echo "UnitTester: $(UNITLIBNAME) tests=0 (skipped via RESTRICT_LIB)"
-
-# --------------------
-
-PATCHBASENAME=TestsOk
-
-del_old_patches:
-	@../SOURCE_TOOLS/arb_cleanup_patches.sh $(PATCHBASENAME) $(DELETE_PATCHES_AFTER) 
-
-store_patch: del_old_patches
-	@../SOURCE_TOOLS/arb_create_patch.sh $(PATCHBASENAME)
 
 # --------------------
 
