@@ -14,7 +14,11 @@
 
 #include <awt_sel_boxes.hxx>
 #include <aw_preset.hxx>
+#include <aw_awar.hxx>
+#include <aw_msg.hxx>
 #include <awt.hxx>
+#include <aw_status.hxx>
+#include <aw_root.hxx>
 #include <arbdbt.h>
 
 #include <iostream>
@@ -82,9 +86,7 @@ void startup_sequence_cb(AW_window *aww, AW_CL cd1, AW_CL cl_aww)
     ph_view_species_cb(0, 0, 0);
 }
 
-STATIC_ATTRIBUTED(__ATTR__NORETURN, void ph_exit(AW_window *aw_window, PH_root *ph_root))
-{
-    AWUSE(aw_window);
+STATIC_ATTRIBUTED(__ATTR__NORETURN, void ph_exit(AW_window *aw_window, PH_root *ph_root)) {
     GBDATA *gb_main = ph_root->gb_main;
     if (gb_main) {
         aw_window->get_root()->unlink_awars_from_DB(gb_main);
@@ -97,23 +99,16 @@ STATIC_ATTRIBUTED(__ATTR__NORETURN, void ph_exit(AW_window *aw_window, PH_root *
 }
 
 
-void expose_callb(AW_window *aw, AW_CL cd1, AW_CL cd2)
-{
-    AWUSE(aw); AWUSE(cd1); AWUSE(cd2);
-
-    if (PH_display::ph_display->displayed()!=NONE)
-    {
+void expose_callb(AW_window */*aw*/, AW_CL /*cd1*/, AW_CL /*cd2*/) {
+    if (PH_display::ph_display->displayed()!=NONE) {
         PH_display::ph_display->clear_window();
         PH_display::ph_display->display();
     }
 }
 
 
-void resize_callb(AW_window *aw, AW_CL cd1, AW_CL cd2)
-{
-    AWUSE(aw); AWUSE(cd1); AWUSE(cd2);
-    if (PH_display::ph_display)
-    {
+void resize_callb(AW_window */*aw*/, AW_CL /*cd1*/, AW_CL /*cd2*/) {
+    if (PH_display::ph_display) {
         PH_display::ph_display->resized();
         PH_display::ph_display->display();
     }
@@ -431,9 +426,7 @@ AW_window *PH_save_markerline(AW_root *root, AW_CL cl_multi_line)
     return aws;
 }
 
-AW_window *create_phyl_main_window(AW_root *aw_root, PH_root *ph_root, AWT_graphic * awd)
-{
-    AWUSE(awd);
+AW_window *create_phyl_main_window(AW_root *aw_root, PH_root *ph_root, AWT_graphic * /*awd*/) {
     AW_window_menu_modes *awm = new AW_window_menu_modes();
     awm->init(aw_root, "ARB_PHYLO", "ARB_PHYLO", 830, 630);
 

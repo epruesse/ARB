@@ -8,9 +8,12 @@
 //                                                                  //
 // ================================================================ //
 
+#include <aw_awar.hxx>
 #include <aw_window.hxx>
 #include <aw_awars.hxx>
 #include <aw_file.hxx>
+#include "aw_msg.hxx"
+#include "aw_root.hxx"
 
 #include <arbdbt.h>
 
@@ -265,9 +268,8 @@ static void show_soft_link(AW_window *aws, AW_selection_list *sel_id, const char
     }
 }
 
-static void fill_fileselection_cb(void *dummy, File_selection *cbs) {
-    AW_root             *aw_root = cbs->aws->get_root();
-    AWUSE(dummy);
+static void fill_fileselection_cb(void */*dummy*/, File_selection *cbs) {
+    AW_root *aw_root = cbs->aws->get_root();
     cbs->aws->clear_selection_list(cbs->id);
 
     char *diru    = aw_root->awar(cbs->def_dir)->read_string();

@@ -1,6 +1,9 @@
 #include <arbdbt.h>
 
 #include <aw_preset.hxx>
+#include <aw_awar.hxx>
+#include <aw_msg.hxx>
+#include <aw_root.hxx>
 
 #include "ed4_class.hxx"
 #include "ed4_awars.hxx"

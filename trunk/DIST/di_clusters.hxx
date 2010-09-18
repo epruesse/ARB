@@ -12,8 +12,8 @@
 #ifndef DI_CLUSTERS_HXX
 #define DI_CLUSTERS_HXX
 
-#ifndef AW_ROOT_HXX
-#include <aw_root.hxx>
+#ifndef AW_BASE_HXX
+#include <aw_base.hxx>
 #endif
 
 void DI_create_cluster_awars(AW_root *aw_root, AW_default def, AW_default db);

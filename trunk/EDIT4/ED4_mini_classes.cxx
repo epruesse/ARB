@@ -14,6 +14,8 @@
 #include "ed4_awars.hxx"
 #include "ed4_tools.hxx"
 
+#include <aw_awar.hxx>
+#include <aw_root.hxx>
 #include <iupac.h>
 
 #include <cctype>

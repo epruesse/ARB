@@ -27,6 +27,10 @@
 #include <aw_preset.hxx>
 #include <aw_edit.hxx>
 #include <aw_select.hxx>
+#include <aw_msg.hxx>
+#include <aw_status.hxx>
+#include <aw_root.hxx>
+#include <adGene.h>
 
 // general awars
 
@@ -417,7 +421,7 @@ void probe_design_event(AW_window *aww, AW_CL cl_gb_main) {
     }
 
     if (error) {
-        aw_message (error);
+        aw_message(error);
         aw_closestatus();
         return;
     }

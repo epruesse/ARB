@@ -9,6 +9,9 @@
 // =============================================================== //
 
 #include "aw_nawar.hxx"
+#include "aw_awar.hxx"
+#include "aw_detach.hxx"
+#include "aw_msg.hxx"
 #include <arbdb.h>
 #include <sys/stat.h>
 
@@ -22,23 +25,6 @@
 AW_var_target::AW_var_target(void* pntr, AW_var_target *nexti) {
     next    = nexti;
     pointer = pntr;
-}
-
-AW_var_callback::AW_var_callback(void (*vc_cb)(AW_root*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2, AW_var_callback *nexti) {
-    value_changed_cb     = vc_cb;
-    value_changed_cb_cd1 = cd1;
-    value_changed_cb_cd2 = cd2;
-    next                 = nexti;
-}
-AW_var_callback::~AW_var_callback() {
-    delete next;
-}
-
-
-void AW_var_callback::run_callback(AW_root *root) {
-    if (this->next) this->next->run_callback(root);     // callback the whole list
-    if (!this->value_changed_cb) return;
-    this->value_changed_cb(root, this->value_changed_cb_cd1, this->value_changed_cb_cd2);
 }
 
 void AW_var_gbdata_callback_delete_intern(GBDATA *gbd, int *cl) {
@@ -213,33 +199,16 @@ AW_awar *AW_root::awar(const char *var_name) {
 }
 
 
-AW_awar *AW_awar::add_callback(void (*f)(class AW_root*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
-    callback_list = new AW_var_callback(f, cd1, cd2, callback_list);
+AW_awar *AW_awar::add_callback(AW_RCB value_changed_cb, AW_CL cd1, AW_CL cd2) {
+    AW_root_cblist::add(callback_list, AW_root_callback(value_changed_cb, cd1, cd2));
     return this;
 }
 
 AW_awar *AW_awar::add_callback(void (*f)(AW_root*, AW_CL), AW_CL cd1) { return add_callback((AW_RCB)f, cd1, 0); }
 AW_awar *AW_awar::add_callback(void (*f)(AW_root*)) { return add_callback((AW_RCB)f, 0, 0); }
 
-AW_awar *AW_awar::remove_callback(void (*f)(AW_root*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
-    // remove a callback, please set unused AW_CL to (AW_CL)0
-    AW_var_callback *prev = 0;
-    for (AW_var_callback *vc = callback_list; vc; vc = vc->next) {
-        if (vc->value_changed_cb == f &&
-            vc->value_changed_cb_cd1 == cd1 &&
-            vc->value_changed_cb_cd2 == cd2) {
-            if (prev) {
-                prev->next = vc->next;
-            }
-            else {
-                callback_list = vc->next;
-            }
-            vc->next = NULL; // avoid to delete all callbacks
-            delete vc;
-            break;
-        }
-        prev = vc;
-    }
+AW_awar *AW_awar::remove_callback(AW_RCB value_changed_cb, AW_CL cd1, AW_CL cd2) {
+    AW_root_cblist::remove(callback_list, AW_root_callback(value_changed_cb, cd1, cd2));
     return this;
 }
 
@@ -247,9 +216,8 @@ AW_awar *AW_awar::remove_callback(void (*f)(AW_root*, AW_CL), AW_CL cd1) { retur
 AW_awar *AW_awar::remove_callback(void (*f)(AW_root*)) { return remove_callback((AW_RCB) f, 0, 0); }
 
 void AW_awar::remove_all_callbacks() {
-    delete callback_list; callback_list = NULL;
+    AW_root_cblist::clear(callback_list);
 }
-
 
 // --------------------------------------------------------------------------------
 
@@ -258,7 +226,7 @@ inline bool member_of_DB(GBDATA *gbd, GBDATA *gb_main) {
 }
 
 void AW_awar::unlink() {
-    aw_assert(is_valid());
+    aw_assert(this->is_valid());
     remove_all_callbacks();
     remove_all_target_vars();
     gb_origin = NULL;                               // make zombie awar
@@ -290,17 +258,11 @@ bool AW_awar::unlink_from_DB(GBDATA *gb_main) {
     return make_zombie;
 }
 
-long AW_unlink_awar_from_DB(const char *key, long cl_awar, void *cl_gb_main) {
+long AW_unlink_awar_from_DB(const char */*key*/, long cl_awar, void *cl_gb_main) {
     AW_awar *awar    = (AW_awar*)cl_awar;
     GBDATA  *gb_main = (GBDATA*)cl_gb_main;
 
-#if defined(DEBUG) && 0
-    bool is_zombie = awar->unlink_from_DB(gb_main);
-    if (is_zombie) printf("Unlinked awar '%s' from DB\n", key);
-#else
-    AWUSE(key);
     awar->unlink_from_DB(gb_main);
-#endif // DEBUG
     return cl_awar;
 }
 
@@ -406,7 +368,6 @@ AW_awar *AW_awar::set_srt(const char *srt)
     return this;
 }
 
-
 AW_awar *AW_awar::map(AW_default gbd) {
     if (gb_var) {                                   // remove old mapping
         GB_remove_callback((GBDATA *)gb_var, GB_CB_CHANGED, (GB_CB)AW_var_gbdata_callback, (int *)this);
@@ -443,6 +404,9 @@ AW_awar *AW_awar::map(AW_default gbd) {
 
 AW_awar *AW_awar::map(AW_awar *dest) {
     return this->map(dest->gb_var);
+}
+AW_awar *AW_awar::map(const char *awarn) {
+    return map(root->awar(awarn));
 }
 
 AW_awar *AW_awar::unmap() {
@@ -528,12 +492,11 @@ void AW_awar::update() {
 }
 
 void AW_awar::run_callbacks() {
-    if (callback_list) callback_list->run_callback(root);
-
+    AW_root_cblist::call(callback_list, root);
 }
 
-// send data to all variables
 void AW_awar::update_target(AW_var_target *pntr) {
+    // send data to all variables
     if (!pntr->pointer) return;
     switch (variable_type) {
         case AW_STRING: this->get((char **)pntr->pointer); break;
@@ -546,8 +509,8 @@ void AW_awar::update_target(AW_var_target *pntr) {
     }
 }
 
-// send data to all variables
 void AW_awar::update_targets() {
+    // send data to all variables
     AW_var_target*pntr;
     for (pntr = target_list; pntr; pntr = pntr->next) {
         update_target(pntr);
@@ -791,3 +754,47 @@ void AW_create_fileselection_awars(AW_root *awr, const char *awar_base,
 
     delete [] awar_name;
 }
+
+// --------------------------------------------------------------------------------
+
+#if (UNIT_TESTS == 1)
+#include <test_unit.h>
+
+static int test_cb1_called;
+static int test_cb2_called;
+
+static void test_cb1(AW_root *, AW_CL cd1, AW_CL cd2) { test_cb1_called += (cd1+cd2); }
+static void test_cb2(AW_root *, AW_CL cd1, AW_CL cd2) { test_cb2_called += (cd1+cd2); }
+
+#define TEST_ASSERT_CBS_CALLED(cbl, c1,c2)              \
+    do {                                                \
+        test_cb1_called = test_cb2_called = 0;          \
+        AW_root_cblist::call(cbl, NULL);                \
+        TEST_ASSERT_EQUAL(test_cb1_called, c1);         \
+        TEST_ASSERT_EQUAL(test_cb2_called, c2);         \
+    } while(0)
+
+void TEST_AW_root_cblist() {
+    AW_root_cblist *cb_list = NULL;
+
+    AW_root_callback tcb1(test_cb1, 1, 0);
+    AW_root_callback tcb2(test_cb2, 0, 1);
+    AW_root_callback wrong_tcb2(test_cb2, 1, 0);
+
+    AW_root_cblist::add(cb_list, tcb1); TEST_ASSERT_CBS_CALLED(cb_list, 1, 0);
+    AW_root_cblist::add(cb_list, tcb2); TEST_ASSERT_CBS_CALLED(cb_list, 1, 1);
+
+    AW_root_cblist::remove(cb_list, tcb1);       TEST_ASSERT_CBS_CALLED(cb_list, 0, 1);
+    AW_root_cblist::remove(cb_list, wrong_tcb2); TEST_ASSERT_CBS_CALLED(cb_list, 0, 1);
+    AW_root_cblist::remove(cb_list, tcb2);       TEST_ASSERT_CBS_CALLED(cb_list, 0, 0);
+
+    AW_root_cblist::add(cb_list, tcb1);
+    AW_root_cblist::add(cb_list, tcb1); // add callback twice
+    TEST_ASSERT_CBS_CALLED(cb_list, 1, 0);  // should only be called once
+
+    AW_root_cblist::add(cb_list, tcb2);
+    AW_root_cblist::clear(cb_list);
+    TEST_ASSERT_CBS_CALLED(cb_list, 0, 0); // list clear - nothing should be called
+}
+
+#endif // UNIT_TESTS

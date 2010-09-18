@@ -15,6 +15,7 @@
 #include <PT_com.h>
 #include <client.h>
 #include <aw_window.hxx>
+#include <aw_root.hxx>
 
 #include <climits>
 

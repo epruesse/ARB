@@ -11,13 +11,14 @@
 #include "SaiProbeVisualization.hxx"
 #include "probe_match_parser.hxx"
 
-#include <aw_awars.hxx>
-#include <awt_nds.hxx>
-#include <aw_preset.hxx>
 #include <awt.hxx>
+#include <awt_nds.hxx>
 #include <awt_sel_boxes.hxx>
-
 #include <awt_config_manager.hxx>
+#include <aw_awars.hxx>
+#include <aw_root.hxx>
+#include <aw_preset.hxx>
+#include <aw_msg.hxx>
 #include <arbdbt.h>
 
 #include <iostream>
@@ -101,14 +102,8 @@ void SAI_graphic::show(AW_device *device) {
     paint(device);
 }
 
-void SAI_graphic::info(AW_device *device, AW_pos x, AW_pos y, AW_clicked_line *cl, AW_clicked_text *ct)
-{
+void SAI_graphic::info(AW_device */*device*/, AW_pos /*x*/, AW_pos /*y*/, AW_clicked_line */*cl*/, AW_clicked_text */*ct*/) {
     aw_message("INFO MESSAGE");
-    AWUSE(device);
-    AWUSE(x);
-    AWUSE(y);
-    AWUSE(cl);
-    AWUSE(ct);
 }
 
 static void colorDefChanged_callback(AW_root *awr, AW_CL cl_awarNo) {
@@ -153,9 +148,8 @@ static void colorDefChanged_callback(AW_root *awr, AW_CL cl_awarNo) {
     awr->awar(AWAR_SPV_DISP_SAI)->touch(); // refreshes the display
 }
 
-static void refreshCanvas(AW_root *awr, AW_CL cl_ntw) {
+static void refreshCanvas(AW_root */*awr*/, AW_CL cl_ntw) {
     // repaints the canvas
-    AWUSE(awr);
     AWT_canvas *ntw = (AWT_canvas*)cl_ntw;
     ntw->refresh();
 }

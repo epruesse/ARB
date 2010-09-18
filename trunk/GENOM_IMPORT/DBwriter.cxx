@@ -15,10 +15,10 @@
 
 #include <algorithm>
 #include <AW_rename.hxx>
-#include <arbdbt.h>
 #include <Translate.hxx>
 #include <aw_question.hxx>
 #include <GEN.hxx>
+#include <adGene.h>
 
 #define ARB_GENE_REF "ARB_is_gene"
 

@@ -14,6 +14,7 @@
 #include "MultiProbe.hxx"
 #include "mp_proto.hxx"
 
+#include <aw_root.hxx>
 #include <awt_canvas.hxx>
 
 awar_vars  mp_gl_awars;

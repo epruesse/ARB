@@ -11,6 +11,10 @@
 #include "merge.hxx"
 
 #include <awt_sel_boxes.hxx>
+#include <aw_root.hxx>
+#include <aw_awar.hxx>
+#include <aw_msg.hxx>
+#include <aw_status.hxx>
 #include <arbdbt.h>
 
 #include <unistd.h>
@@ -82,7 +86,7 @@ void MG_create_alignment_awars(AW_root *aw_root, AW_default aw_def) {
     aw_root->awar_int(AWAR2"security",      0, aw_def);
 }
 
-int MG_copy_and_check_alignments(AW_window *aww, int show_status) {
+int MG_copy_and_check_alignments(AW_window */*aww*/, int show_status) {
     // returns 0 if alignments are ok for merging.
     // checks types and names.
 

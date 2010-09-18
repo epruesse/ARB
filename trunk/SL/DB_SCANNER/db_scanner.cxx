@@ -16,9 +16,11 @@
 
 #include <aw_awars.hxx>
 #include <aw_select.hxx>
+#include <aw_msg.hxx>
+#include <aw_status.hxx>
+#include <aw_root.hxx>
 
 #include <arb_str.h>
-#include <arbdbt.h>
 
 #include <unistd.h>
 #include <ctime>
@@ -79,9 +81,7 @@ static bool inside_scanner_keydata(db_scanner_data *cbs, GBDATA *gbd) {
     return GB_check_father(gbd, gb_key_data);
 }
 
-static void scanner_delete_selected_field(void *dummy, db_scanner_data *cbs)
-{
-    AWUSE(dummy);
+static void scanner_delete_selected_field(void *, db_scanner_data *cbs) {
     GBDATA *gbd = get_mapped_item_and_begin_trans((AW_CL)cbs);
     if (!gbd) {
         aw_message("Sorry, cannot perform your operation, please redo it");
@@ -96,8 +96,7 @@ static void scanner_delete_selected_field(void *dummy, db_scanner_data *cbs)
     GB_commit_transaction(cbs->gb_main);
 }
 
-static void selected_field_changed_cb(GBDATA *dummy, db_scanner_data *cbs, GB_CB_TYPE gbtype) {
-    AWUSE(dummy);
+static void selected_field_changed_cb(GBDATA *, db_scanner_data *cbs, GB_CB_TYPE gbtype) {
     AW_window *aws = cbs->aws;
     cbs->may_be_an_error = true;
 
@@ -261,9 +260,7 @@ static void toggle_marked_cb(AW_window *aws, db_scanner_data *cbs, char *awar_na
     GB_pop_transaction(cbs->gb_main);
 }
 
-static void remap_edit_box(GBDATA *dummy, db_scanner_data *cbs)
-{
-    AWUSE(dummy);
+static void remap_edit_box(GBDATA *, db_scanner_data *cbs) {
     GBDATA *gbd;
     cbs->may_be_an_error = false;
     GB_push_transaction(cbs->gb_main);
@@ -442,8 +439,7 @@ static void scan_fields_recursive(GBDATA *gbd, db_scanner_data *cbs, int deep, A
     free(key);
 }
 
-static void scan_list(GBDATA *dummy, db_scanner_data *cbs)
-{
+static void scan_list(GBDATA *, db_scanner_data *cbs) {
 #define INFO_WIDTH 1000
  refresh_again :
     char buffer[INFO_WIDTH+1];
@@ -454,7 +450,6 @@ static void scan_list(GBDATA *dummy, db_scanner_data *cbs)
 
     if (last_max_name_width == 0) last_max_name_width = 15;
 
-    AWUSE(dummy);
     cbs->aws->clear_selection_list(cbs->id);
 
     GBDATA *gb_key_data = GB_search(cbs->gb_main, cbs->selector->change_key_path, GB_CREATE_CONTAINER);
@@ -526,9 +521,7 @@ static void scan_list(GBDATA *dummy, db_scanner_data *cbs)
 #undef INFO_WIDTH
 }
 
-static void scanner_changed_cb(GBDATA *dummy, db_scanner_data *cbs, GB_CB_TYPE gbtype)
-{
-    AWUSE(dummy);
+static void scanner_changed_cb(GBDATA *, db_scanner_data *cbs, GB_CB_TYPE gbtype) {
     AW_window *aws = cbs->aws;
 
     cbs->may_be_an_error = true;

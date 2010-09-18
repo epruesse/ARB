@@ -9,6 +9,7 @@
 // ================================================================ //
 
 #include <awt.hxx>
+#include <aw_root.hxx>
 #include <arbdb.h>
 
 AW_HEADER_MAIN

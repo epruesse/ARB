@@ -11,6 +11,7 @@
 #include "ed4_naligner.hxx"
 
 #include <aw_awars.hxx>
+#include <aw_root.hxx>
 #include <awt.hxx>
 #include <awt_sel_boxes.hxx>
 #include <arbdbt.h>
@@ -173,14 +174,13 @@ AW_window *create_expert_naligner_window(AW_root *root)
     return (AW_window *)aws;
 }
 
-AW_window *create_special_naligner_window(AW_root *root, AW_CL cd2) {
+AW_window *create_special_naligner_window(AW_root *root, AW_CL /*cd2*/) {
     AW_window_simple *aws    = new AW_window_simple;
     const       int   mwidth = 3;
 
     aws->init(root, "ALIGNER_V2_EXPERT", "ALIGNER V2.0 EXPERT");
     aws->load_xfig("ed_al_sp.fig");
 
-    AWUSE(cd2);
     aws->label_length(22);
 
     aws->at("close");
@@ -220,13 +220,10 @@ AW_window *create_special_naligner_window(AW_root *root, AW_CL cd2) {
     return (AW_window *)aws;
 }
 
-AW_window *create_naligner_window(AW_root *root, AW_CL cd2) {
-
+AW_window *create_naligner_window(AW_root *root, AW_CL /*cd2*/) {
     AW_window_simple *aws = new AW_window_simple;
     aws->init(root, "ALIGNER_V2", "ALIGNER V2.0");
     aws->load_xfig("awt/align.fig");
-
-    AWUSE(cd2);
 
     aws->label_length(10);
     aws->button_length(10);

@@ -23,6 +23,9 @@
 #include <aw_awars.hxx>
 #include <aw_edit.hxx>
 #include <aw_file.hxx>
+#include <aw_msg.hxx>
+#include <aw_status.hxx>
+#include <aw_root.hxx>
 
 #include <adGene.h>
 #include <arb_version.h>

@@ -305,7 +305,6 @@ AW_modal.o: $(ARBHOME)/INCLUDE/smartptr.h
 AW_modal.o: $(ARBHOME)/INCLUDE/test_global.h
 
 AW_nawar.o: aw_nawar.hxx
-AW_nawar.o: aw_root.hxx
 AW_nawar.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 AW_nawar.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AW_nawar.o: $(ARBHOME)/INCLUDE/arb_assert.h
@@ -318,6 +317,7 @@ AW_nawar.o: $(ARBHOME)/INCLUDE/attributes.h
 AW_nawar.o: $(ARBHOME)/INCLUDE/dupstr.h
 AW_nawar.o: $(ARBHOME)/INCLUDE/smartptr.h
 AW_nawar.o: $(ARBHOME)/INCLUDE/test_global.h
+AW_nawar.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 AW_position.o: aw_position.hxx
 AW_position.o: aw_root.hxx

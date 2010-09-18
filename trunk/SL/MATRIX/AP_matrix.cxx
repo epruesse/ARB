@@ -12,6 +12,8 @@
 
 #include <arbdbt.h>
 #include <aw_window.hxx>
+#include <aw_root.hxx>
+#include <aw_awar.hxx>
 
 #define ap_assert(cond) arb_assert(cond)
 

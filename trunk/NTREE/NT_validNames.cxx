@@ -12,6 +12,7 @@
 
 #include <arbdbt.h>
 #include <aw_awars.hxx>
+#include <aw_msg.hxx>
 #include <awt.hxx>
 #include <awt_www.hxx>
 

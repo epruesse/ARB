@@ -21,6 +21,12 @@
 #ifndef ARBDB_H
 #include <arbdb.h>
 #endif
+#ifndef AW_AWAR_HXX
+#include <aw_awar.hxx>
+#endif
+#ifndef AW_ROOT_HXX
+#include <aw_root.hxx>
+#endif
 
 #ifndef _CPP_MAP
 #include <map>
@@ -175,14 +181,14 @@ public:
     GB_ERROR set_name(const std::string& name_, bool is_global);
     GB_ERROR remove_name();
 
-    inline const awt_viewport *to_viewport(bool fail = true) const;
-    inline awt_viewport *to_viewport(bool fail = true);
+    inline const awt_viewport *to_viewport() const;
+    inline awt_viewport *to_viewport();
 
-    inline const awt_linked_to_item *to_linked_item(bool fail = true) const;
-    inline awt_linked_to_item *to_linked_item(bool fail = true);
+    inline const awt_linked_to_item *to_linked_item() const;
+    inline awt_linked_to_item *to_linked_item();
 
-    bool is_viewport() const { return to_viewport(0) != 0; }
-    bool is_linked_item() const { return to_linked_item(0) != 0; }
+    bool is_viewport() const { return to_viewport() != 0; }
+    bool is_linked_item() const { return to_linked_item() != 0; }
 
     virtual std::string get_value() const                    = 0; // reads the current value of the item
     virtual GB_ERROR set_value(const std::string& new_value) = 0; // assigns a new value to the item
@@ -574,11 +580,11 @@ public:
 //  ----------------
 //      casts :
 
-inline const awt_linked_to_item *awt_mask_item::to_linked_item(bool fail) const { const awt_linked_to_item *linked = dynamic_cast<const awt_linked_to_item*>(this); AWUSE(fail); awt_assert(!fail || linked); return linked; }
-inline awt_linked_to_item *awt_mask_item::to_linked_item(bool fail) { awt_linked_to_item *linked = dynamic_cast< awt_linked_to_item*>(this); AWUSE(fail); awt_assert(!fail || linked); return linked; }
+inline const awt_linked_to_item *awt_mask_item::to_linked_item() const { const awt_linked_to_item *linked = dynamic_cast<const awt_linked_to_item*>(this); return linked; }
+inline       awt_linked_to_item *awt_mask_item::to_linked_item()       {       awt_linked_to_item *linked = dynamic_cast<      awt_linked_to_item*>(this); return linked; }
 
-inline const awt_viewport *awt_mask_item::to_viewport(bool fail) const { const awt_viewport *viewport = dynamic_cast<const awt_viewport*>(this); AWUSE(fail); awt_assert(!fail || viewport); return viewport; }
-inline awt_viewport *awt_mask_item::to_viewport(bool fail)  { awt_viewport *viewport = dynamic_cast<awt_viewport*>(this); AWUSE(fail); awt_assert(!fail || viewport); return viewport; }
+inline const awt_viewport *awt_mask_item::to_viewport() const { const awt_viewport *viewport = dynamic_cast<const awt_viewport*>(this); return viewport; }
+inline       awt_viewport *awt_mask_item::to_viewport()       {       awt_viewport *viewport = dynamic_cast<      awt_viewport*>(this); return viewport; }
 
 #else
 #error awt_input_mask_internal.hxx included twice

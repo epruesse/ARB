@@ -16,6 +16,10 @@
 #include <aw_def.hxx>
 #include <aw_preset.hxx>
 #include <aw_advice.hxx>
+#include <aw_awar.hxx>
+#include <aw_msg.hxx>
+#include "aw_device.hxx"
+#include "aw_root.hxx"
 
 #include <arbdbt.h>
 

@@ -19,6 +19,7 @@
 #define GLX_GLXEXT_PROTOTYPES
 
 #include <aw_window_Xm.hxx>
+#include <aw_root.hxx>
 #include <arbdb.h>
 
 #include <Xm/Frame.h>

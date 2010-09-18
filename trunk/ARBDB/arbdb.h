@@ -62,7 +62,7 @@ enum GB_TYPES {                                     // supported DB entry types
     GB_DB          = 15,
 
     // keep GB_TYPES consistent with AW_VARIABLE_TYPE
-    // see ../WINDOW/aw_root.hxx@sync_GB_TYPES_AW_VARIABLE_TYPE
+    // see ../WINDOW/aw_base.hxx@sync_GB_TYPES_AW_VARIABLE_TYPE
 
     GB_TYPE_MAX = 16,
 

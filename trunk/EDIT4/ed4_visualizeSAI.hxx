@@ -12,8 +12,8 @@
 #ifndef ED4_VISUALIZESAI_HXX
 #define ED4_VISUALIZESAI_HXX
 
-#ifndef AW_ROOT_HXX
-#include <aw_root.hxx>
+#ifndef AW_BASE_HXX
+#include <aw_base.hxx>
 #endif
 
 

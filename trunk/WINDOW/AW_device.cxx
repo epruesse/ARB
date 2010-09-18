@@ -10,6 +10,7 @@
 
 #include "aw_window.hxx"
 #include "aw_commn.hxx"
+#include "aw_root.hxx"
 
 #include <arb_str.h>
 
@@ -401,8 +402,7 @@ void AW_gc::set_background_color(int gc, AW_color color) {
     common->gcs[gc]->set_background_color(col);
 }
 
-void AW_get_common_extends_cb(AW_window *aww, AW_common *common) {
-    AWUSE(aww);
+void AW_get_common_extends_cb(AW_window */*aww*/, AW_common *common) {
     Window       root;
     unsigned int width, height;
     unsigned int depth, borderwidth;
@@ -565,9 +565,7 @@ AW_device::AW_device(class AW_common *commoni) : AW_gc() {
 
 AW_gc::AW_gc() : AW_clip() {}
 
-bool AW_device::invisible(int gc, AW_pos x, AW_pos y, AW_bitset filteri, AW_CL clientdata1, AW_CL clientdata2) {
-    AWUSE(clientdata1); AWUSE(clientdata2);
-    AWUSE(gc);
+bool AW_device::invisible(int /*gc*/, AW_pos x, AW_pos y, AW_bitset filteri, AW_CL /*clientdata1*/, AW_CL /*clientdata2*/) {
     if (filteri & filter) {
         AW_pos X, Y;            // Transformed pos
         transform(x, y, X, Y);

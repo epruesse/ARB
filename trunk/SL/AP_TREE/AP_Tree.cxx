@@ -12,6 +12,7 @@
 
 #include <AP_filter.hxx>
 #include <awt_attributes.hxx>
+#include <aw_msg.hxx>
 
 #include <math.h>
 #include <map>

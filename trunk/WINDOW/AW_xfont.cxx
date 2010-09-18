@@ -14,6 +14,7 @@
 
 #include "aw_commn.hxx"
 #include "aw_xfont.hxx"
+#include "aw_root.hxx"
 
 #include <arbdb.h>
 

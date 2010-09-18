@@ -3,6 +3,7 @@
 #include "RNA3D_Interface.hxx"
 #include "RNA3D_OpenGLEngine.hxx"
 
+#include <aw_msg.hxx>
 #include <aw_preset.hxx>
 
 

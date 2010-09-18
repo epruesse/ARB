@@ -11,8 +11,8 @@
 #ifndef ED4_NALIGNER_HXX
 #define ED4_NALIGNER_HXX
 
-#ifndef AW_ROOT_HXX
-#include <aw_root.hxx>
+#ifndef AW_BASE_HXX
+#include <aw_base.hxx>
 #endif
 
 void create_naligner_variables(AW_root *root, AW_default db1);

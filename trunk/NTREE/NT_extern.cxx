@@ -42,6 +42,9 @@
 #include <aw_preset.hxx>
 #include <aw_awars.hxx>
 #include <aw_file.hxx>
+#include <aw_msg.hxx>
+#include <aw_status.hxx>
+#include <aw_root.hxx>
 
 #include <arb_version.h>
 
@@ -774,9 +777,7 @@ AW_window *NT_submit_bug(AW_root *aw_root, int bug_report) {
     return aws;
 }
 
-void NT_focus_cb(AW_window *aww)
-{
-    AWUSE(aww);
+void NT_focus_cb(AW_window */*aww*/) {
     GB_transaction dummy(GLOBAL_gb_main);
 }
 

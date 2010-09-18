@@ -18,6 +18,8 @@
 #include <aw_preset.hxx>
 #include <awt_attributes.hxx>
 #include <awt.hxx>
+#include <aw_msg.hxx>
+#include <aw_root.hxx>
 
 #include <climits>
 
@@ -88,13 +90,8 @@ int GEN_graphic::check_update(GBDATA *) {
     return do_zoom_reset;
 }
 
-void GEN_graphic::info(AW_device *device, AW_pos x, AW_pos y, AW_clicked_line *cl, AW_clicked_text *ct) {
+void GEN_graphic::info(AW_device */*device*/, AW_pos /*x*/, AW_pos /*y*/, AW_clicked_line */*cl*/, AW_clicked_text */*ct*/) {
     aw_message("INFO MESSAGE");
-    AWUSE(device);
-    AWUSE(x);
-    AWUSE(y);
-    AWUSE(cl);
-    AWUSE(ct);
 }
 
 void GEN_graphic::command(AW_device *device, AWT_COMMAND_MODE cmd, int button, AW_key_mod /* key_modifier */, AW_key_code /* key_code */, char /* key_char */, AW_event_type type,

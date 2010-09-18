@@ -15,12 +15,15 @@
 
 #include <aw_awars.hxx>
 #include <aw_preset.hxx>
+#include <aw_msg.hxx>
 
 #include <awt.hxx>
 #include <ColumnStat.hxx>
 #include <awt_nds.hxx>
 #include <awt_sel_boxes.hxx>
 #include <awt_filter.hxx>
+#include <aw_status.hxx>
+#include <aw_root.hxx>
 #include <gui_aliview.hxx>
 
 #include <TreeCallbacks.hxx>
@@ -158,7 +161,7 @@ static long insert_species_in_tree_test(const char *key, long val, void *cd_isit
                 key,
                 leaf->get_seq()->weighted_base_count(),
                 MIN_SEQUENCE_LENGTH);
-        aw_message();
+        aw_errorbuffer_message();
         delete leaf;
         return val;
     }
@@ -358,7 +361,7 @@ static AP_tree_nlen *insert_species_in_tree(const char *key, AP_tree_nlen *leaf,
                 leaf->get_seq()->weighted_base_count(),
                 MIN_SEQUENCE_LENGTH);
 
-        aw_message();
+        aw_errorbuffer_message();
         delete leaf;
         return 0;
     }

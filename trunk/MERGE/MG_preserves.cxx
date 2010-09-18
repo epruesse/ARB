@@ -15,13 +15,15 @@
 #include "merge.hxx"
 #include "MG_adapt_ali.hxx"
 
-#include <arbdbt.h>
-#include <aw_awars.hxx>
 #include <awt.hxx>
+#include <aw_awars.hxx>
+#include <aw_root.hxx>
+#include <aw_msg.hxx>
+#include <aw_status.hxx>
+#include <arbdbt.h>
 
 #include <set>
 #include <string>
-// #include <cassert>
 
 using namespace std;
 

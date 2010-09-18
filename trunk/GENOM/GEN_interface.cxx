@@ -19,7 +19,10 @@
 #include <awt_item_sel_list.hxx>
 #include <awt_sel_boxes.hxx>
 #include <aw_awars.hxx>
+#include <aw_detach.hxx>
+#include <aw_msg.hxx>
 #include <arbdbt.h>
+#include <adGene.h>
 
 using namespace std;
 
@@ -75,8 +78,7 @@ static GBDATA *gen_find_gene_by_id(GBDATA *gb_main, const char *id) {
 }
 
 
-extern "C" GB_ERROR GEN_mark_organism_or_corresponding_organism(GBDATA *gb_species, int *client_data) {
-    AWUSE(client_data);
+extern "C" GB_ERROR GEN_mark_organism_or_corresponding_organism(GBDATA *gb_species, int */*client_data*/) {
     GB_ERROR error = 0;
 
     if (GEN_is_pseudo_gene_species(gb_species)) {

@@ -16,9 +16,11 @@
 #include <BI_helix.hxx>
 #include <AP_filter.hxx>
 #include <aw_awars.hxx>
+#include <aw_status.hxx>
 #include <arbdbt.h>
 
 #include <cctype>
+#include <cmath>
 
 // --------------------------
 //      LikelihoodRanges

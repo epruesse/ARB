@@ -17,6 +17,8 @@
 #include <fast_aligner.hxx>
 
 #include <aw_awars.hxx>
+#include <aw_msg.hxx>
+#include <aw_root.hxx>
 #include <awt_sel_boxes.hxx>
 #include <servercntrl.h>
 #include <PT_com.h>

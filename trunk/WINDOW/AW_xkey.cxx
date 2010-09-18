@@ -10,7 +10,7 @@
 
 #include "aw_keysym.hxx"
 #include "aw_xkey.hxx"
-#include "aw_root.hxx"
+#include "aw_msg.hxx"
 
 #include <arbdbt.h>
 #include <arb_defs.h>
@@ -19,12 +19,9 @@
 #include <X11/keysym.h>
 #include <X11/Xutil.h>
 
-// #ifndef aw_assert
-// #ifndef ARB_ASSERT_H
-// #include <arb_assert.h>
-// #endif
-// #define aw_assert(bed) arb_assert(bed)
-// #endif
+#ifndef aw_assert
+#define aw_assert(bed) arb_assert(bed)
+#endif
 
 // for keysyms see /usr/include/X11/keysymdef.h
 

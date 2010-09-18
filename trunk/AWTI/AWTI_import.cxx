@@ -15,9 +15,14 @@
 #include <awt_item_sel_list.hxx>
 #include <aw_advice.hxx>
 #include <aw_file.hxx>
+#include <aw_awar.hxx>
 #include <AW_rename.hxx>
+#include <aw_msg.hxx>
+#include <aw_status.hxx>
+#include <aw_root.hxx>
 #include <GenomeImport.h>
 #include <GEN.hxx>
+#include <adGene.h>
 
 #include <climits>
 

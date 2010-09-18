@@ -1,15 +1,23 @@
 #ifndef AW_WINDOW_HXX
 #define AW_WINDOW_HXX
 
-#ifndef AW_DEVICE_HXX
-#include <aw_device.hxx>
+#ifndef AW_BASE_HXX
+#include "aw_base.hxx"
+#endif
+#ifndef ARBDB_BASE_H
+#include <arbdb_base.h>
+#endif
+#ifndef ARB_ASSERT_H
+#include <arb_assert.h>
 #endif
 #ifndef AW_KEYSYM_HXX
-#include <aw_keysym.hxx>
+#include "aw_keysym.hxx"
 #endif
 
 class AW_window;
-typedef struct _WidgetRec *Widget;
+class AW_device;
+class AW_rectangle;
+struct GB_HASH;
 
 typedef void (*AW_CB)(AW_window*, AW_CL, AW_CL);
 typedef void (*AW_CB0)(AW_window*);
@@ -65,6 +73,12 @@ public:
     void restore(AW_at *at) const;
 };
 
+typedef const char *AW_label;       // label for buttons menus etc
+// "fsdf" simple label  // no '/' symbol !!!
+// "awarname/asdf"  // awar name (any '/' in string)
+// "#file.bitmap"   // bitmap in $ARBHOME/lib/pixmaps/file.bitmap
+
+
 typedef enum {
     AW_Keyboard_Press   = 1,
     AW_Keyboard_Release = 2,
@@ -72,12 +86,6 @@ typedef enum {
     AW_Mouse_Release    = 4,
     AW_Mouse_Drag       = 5
 } AW_event_type;
-
-typedef const char *AW_label;       // label for buttons menus etc
-// "fsdf" simple label  // no '/' symbol !!!
-// "awarname/asdf"  // awar name (any '/' in string)
-// "#file.bitmap"   // bitmap in $ARBHOME/lib/pixmaps/file.bitmap
-
 
 struct AW_event {
     AW_event_type       type;       /* AW_Keyboard or AW_Mouse */
@@ -90,7 +98,6 @@ struct AW_event {
     AW_key_code     keycode;    /* which key type was pressed */
     char            character;  /* the c character */
 };
-
 
 void AW_POPDOWN(AW_window *);
 void AW_POPUP_HELP(AW_window *, AW_CL /* char */ helpfile);
@@ -255,7 +262,7 @@ public:
     void  increment_at_commands(int width, int height);
 
 
-    AW_color    alloc_named_data_color(int colnum, char *colorname);
+    AW_color alloc_named_data_color(int colnum, char *colorname);
     const char *GC_to_RGB(AW_device *device, int gc, int& red, int& green, int& blue); // returns colors in result-parameters or error message in return value
     // Converts GC to RGB float values to the range (0 - 1.0)
     const char *GC_to_RGB_float(AW_device *device, int gc, float& red, float& green, float& blue);
@@ -295,10 +302,7 @@ public:
 
     bool is_shown();                                // is window visible (== true) or hidden (== false). ?
 
-    void hide_or_notify(const char *error) {
-        if (error) aw_message(error);
-        else hide();
-    }
+    void hide_or_notify(const char *error);
 
     void    message(char *title, int ms);   // Set for ms milliseconds the title of the window
     void    set_window_title(const char *title);   // Set the window title forever
@@ -609,18 +613,6 @@ public:
 
 
 typedef void* AW_gc_manager;
-
-class AW_detach_information {
-    Awar_Callback_Info *cb_info;
-    Widget              detach_button;
-public:
-    AW_detach_information(Awar_Callback_Info *cb_info_)
-        : cb_info(cb_info_),  detach_button(0) {}
-
-    Awar_Callback_Info *get_cb_info() { return cb_info; }
-    Widget get_detach_button() { aw_assert(detach_button); return detach_button; }
-    void set_detach_button(Widget w) { detach_button = w; }
-};
 
 #else
 #error aw_window.hxx included twice

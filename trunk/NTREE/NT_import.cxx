@@ -15,6 +15,8 @@
 #include <awti_import.hxx>
 #include <awt_canvas.hxx>
 #include <mg_merge.hxx>
+#include <aw_awar.hxx>
+#include <aw_root.hxx>
 #include <arbdbt.h>
 
 #define nt_assert(bed) arb_assert(bed)

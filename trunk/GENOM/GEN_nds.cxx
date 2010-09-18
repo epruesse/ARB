@@ -15,6 +15,9 @@
 #include <awt_nds.hxx>
 #include <awt_item_sel_list.hxx>
 #include <awt_sel_boxes.hxx>
+#include <aw_msg.hxx>
+#include <aw_root.hxx>
+#include <aw_awar.hxx>
 
 #define gen_assert(bed) arb_assert(bed)
 

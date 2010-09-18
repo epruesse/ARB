@@ -10,8 +10,8 @@
 #ifndef DI_VIEW_MATRIX_HXX
 #define DI_VIEW_MATRIX_HXX
 
-#ifndef AW_ROOT_HXX
-#include <aw_root.hxx>
+#ifndef AW_BASE_HXX
+#include <aw_base.hxx>
 #endif
 
 #define SPECIES_NAME_LEN 10    // only for displaying speciesnames

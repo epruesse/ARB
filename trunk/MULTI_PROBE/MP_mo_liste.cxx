@@ -11,6 +11,7 @@
 #include "MP_externs.hxx"
 #include "MultiProbe.hxx"
 
+#include <aw_msg.hxx>
 #include <arbdbt.h>
 #include <client.h>
 

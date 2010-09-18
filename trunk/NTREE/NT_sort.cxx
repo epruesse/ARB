@@ -13,6 +13,10 @@
 
 #include <awt_item_sel_list.hxx>
 #include <awt.hxx>
+#include <aw_awar.hxx>
+#include <aw_status.hxx>
+#include <aw_msg.hxx>
+#include <aw_root.hxx>
 #include <arbdbt.h>
 
 #define NT_RESORT_FILTER (1<<GB_STRING)|(1<<GB_INT)|(1<<GB_FLOAT)

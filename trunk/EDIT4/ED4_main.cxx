@@ -31,6 +31,9 @@
 #include <awt.hxx>
 #include <aw_preset.hxx>
 #include <aw_awars.hxx>
+#include <aw_msg.hxx>
+#include <aw_status.hxx>
+#include <aw_root.hxx>
 #include <arbdbt.h>
 
 AW_HEADER_MAIN

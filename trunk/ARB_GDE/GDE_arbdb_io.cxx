@@ -1,6 +1,8 @@
 #include "GDE_def.h"
 #include "GDE_proto.h"
 
+#include <aw_msg.hxx>
+#include <aw_status.hxx>
 #include <AW_rename.hxx>
 #include <AP_filter.hxx>
 #include <aw_awars.hxx>
@@ -297,8 +299,7 @@ static int InsertDatainGDE(NA_Alignment *dataset, GBDATA **the_species, unsigned
     return 0;
 }
 
-void ReadArbdb_plain(char *filename, NA_Alignment *dataset, int type) {
-    AWUSE(filename); AWUSE(type);
+void ReadArbdb_plain(char */*filename*/, NA_Alignment *dataset, int /*type*/) {
     ReadArbdb(dataset, true, NULL, COMPRESS_NONE, false);
 }
 

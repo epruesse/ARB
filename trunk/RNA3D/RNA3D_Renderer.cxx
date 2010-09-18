@@ -6,6 +6,9 @@
 #include "RNA3D_OpenGLGraphics.hxx"
 #include "RNA3D_Graphics.hxx"
 
+#include <aw_root.hxx>
+#include <aw_awar.hxx>
+
 using namespace std;
 
 GLRenderer::GLRenderer() {

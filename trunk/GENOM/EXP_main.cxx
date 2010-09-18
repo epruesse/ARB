@@ -17,6 +17,7 @@
 
 #include <awt_input_mask.hxx>
 #include <aw_awars.hxx>
+#include <aw_root.hxx>
 #include <arbdbt.h>
 #include <ntree.hxx>
 

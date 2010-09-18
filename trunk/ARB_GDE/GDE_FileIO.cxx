@@ -1,5 +1,6 @@
 #include "GDE_proto.h"
 #include "limits.h"
+#include <aw_msg.hxx>
 
 int MAX(int a, int b)
 {

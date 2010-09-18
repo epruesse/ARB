@@ -24,6 +24,10 @@
 #include <gui_aliview.hxx>
 
 #include <aw_preset.hxx>
+#include <aw_awar.hxx>
+#include <aw_msg.hxx>
+#include <aw_status.hxx>
+#include <aw_root.hxx>
 
 AP_tree_nlen *PARS_global::get_root_node() {
     return DOWNCAST(AP_tree_nlen*, tree->get_root_node());
@@ -293,7 +297,6 @@ void AWT_graphic_parsimony::command(AW_device *device, AWT_COMMAND_MODE cmd, int
 {
     static int bl_drag_flag;
 
-    AWUSE(ct);
     AP_tree *at;
 
     bool compute_tree = false;

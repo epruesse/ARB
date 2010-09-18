@@ -4,6 +4,9 @@
 #ifndef AW_WINDOW_HXX
 #include <aw_window.hxx>
 #endif
+#ifndef AW_DEVICE_HXX
+#include <aw_device.hxx>
+#endif
 
 class AWT_canvas;
 class AW_device;

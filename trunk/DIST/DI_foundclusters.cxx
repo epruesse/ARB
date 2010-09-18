@@ -14,6 +14,7 @@
 
 #include <aw_window.hxx>
 
+#include <cmath>
 
 using namespace std;
 

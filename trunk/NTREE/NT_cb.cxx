@@ -16,13 +16,15 @@
 #include <awt_canvas.hxx>
 #include <awt_sel_boxes.hxx>
 #include <aw_awars.hxx>
+#include <aw_root.hxx>
+#include <aw_msg.hxx>
 #include <arbdbt.h>
 
 /* AISC_MKPT_PROMOTE:#ifndef ARBDB_BASE_H */
 /* AISC_MKPT_PROMOTE:#include <arbdb_base.h> */
 /* AISC_MKPT_PROMOTE:#endif */
-/* AISC_MKPT_PROMOTE:#ifndef AW_ROOT_HXX */
-/* AISC_MKPT_PROMOTE:#include <aw_root.hxx> */
+/* AISC_MKPT_PROMOTE:#ifndef AW_BASE_HXX */
+/* AISC_MKPT_PROMOTE:#include <aw_base.hxx> */
 /* AISC_MKPT_PROMOTE:#endif */
 /* AISC_MKPT_PROMOTE: */
 /* AISC_MKPT_PROMOTE:class AW_window; */

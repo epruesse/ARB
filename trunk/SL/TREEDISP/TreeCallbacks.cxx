@@ -12,6 +12,8 @@
 
 #include <aw_awars.hxx>
 #include <aw_advice.hxx>
+#include <aw_msg.hxx>
+#include <aw_root.hxx>
 #include <awt.hxx>
 
 #include <cctype>
@@ -20,10 +22,7 @@
 /* AISC_MKPT_PROMOTE:#include <TreeDisplay.hxx> */
 /* AISC_MKPT_PROMOTE:#endif */
 
-void
-nt_mode_event(AW_window *aws, AWT_canvas *ntw, AWT_COMMAND_MODE mode)
-{
-    AWUSE(aws);
+void nt_mode_event(AW_window */*aws*/, AWT_canvas *ntw, AWT_COMMAND_MODE mode) {
     const char *text;
 
     switch (mode) {
@@ -97,9 +96,7 @@ nt_mode_event(AW_window *aws, AWT_canvas *ntw, AWT_COMMAND_MODE mode)
 //      Basic mark/unmark callbacks :
 // ---------------------------------------
 
-void NT_count_mark_all_cb(void *dummy, AW_CL cl_ntw)
-{
-    AWUSE(dummy);
+void NT_count_mark_all_cb(void *, AW_CL cl_ntw) {
     AWT_canvas *ntw = (AWT_canvas*)cl_ntw;
     GB_push_transaction(ntw->gb_main);
 
@@ -531,9 +528,7 @@ void NT_insert_color_collapse_submenu(AW_window_menu_modes *awm, AWT_canvas *ntr
 //      tree sorting :
 // ------------------------
 
-void NT_resort_tree_cb(void *dummy, AWT_canvas *ntw, int type)
-{
-    AWUSE(dummy);
+void NT_resort_tree_cb(void *, AWT_canvas *ntw, int type) {
     GB_transaction gb_dummy(ntw->gb_main);
     AWT_TREE(ntw)->check_update(ntw->gb_main);
     int stype;
@@ -546,9 +541,7 @@ void NT_resort_tree_cb(void *dummy, AWT_canvas *ntw, int type)
     nt_save_changed_tree(ntw);
 }
 
-void NT_reset_lzoom_cb(void *dummy, AWT_canvas *ntw)
-{
-    AWUSE(dummy);
+void NT_reset_lzoom_cb(void *, AWT_canvas *ntw) {
     GB_transaction gb_dummy(ntw->gb_main);
     AWT_TREE(ntw)->check_update(ntw->gb_main);
     AWT_TREE(ntw)->tree_root_display = AWT_TREE(ntw)->get_root_node();
@@ -556,18 +549,14 @@ void NT_reset_lzoom_cb(void *dummy, AWT_canvas *ntw)
     ntw->refresh();
 }
 
-void NT_reset_pzoom_cb(void *dummy, AWT_canvas *ntw)
-{
-    AWUSE(dummy);
+void NT_reset_pzoom_cb(void *, AWT_canvas *ntw) {
     GB_transaction gb_dummy(ntw->gb_main);
     AWT_TREE(ntw)->check_update(ntw->gb_main);
     ntw->zoom_reset();
     ntw->refresh();
 }
 
-void NT_set_tree_style(void *dummy, AWT_canvas *ntw, AP_tree_sort type)
-{
-    AWUSE(dummy);
+void NT_set_tree_style(void *, AWT_canvas *ntw, AP_tree_sort type) {
     GB_transaction gb_dummy(ntw->gb_main);
     AWT_TREE(ntw)->check_update(ntw->gb_main);
     AWT_TREE(ntw)->set_tree_type(type);
@@ -662,8 +651,7 @@ void NT_scale_tree(AW_window*, AW_CL cl_ntw, AW_CL) // scale branchlengths
     }
 }
 
-void NT_jump_cb(AW_window *dummy, AWT_canvas *ntw, AW_CL auto_expand_groups) {
-    AWUSE(dummy);
+void NT_jump_cb(AW_window *, AWT_canvas *ntw, AW_CL auto_expand_groups) {
     AW_window        *aww   = ntw->aww;
     AWT_graphic_tree *gtree = AWT_TREE(ntw);
     

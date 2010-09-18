@@ -10,15 +10,17 @@
 
 #include "AW_rename.hxx"
 
-#include <arbdbt.h>
 #include <aw_awars.hxx>
 #include <aw_window.hxx>
-#include <cctype>
+#include <aw_root.hxx>
+#include <aw_msg.hxx>
+#include <aw_status.hxx>
 
 #include <names_client.h>
 #include <servercntrl.h>
 #include <client.h>
 
+#include <cctype>
 #include <ctime>
 
 static const char *get_addid(GBDATA *gb_main) {
@@ -557,9 +559,7 @@ GB_ERROR AWTC_pars_names(GBDATA *gb_main, int update_status, bool *isWarningPtr)
 }
 
 
-void awt_rename_cb(AW_window *aww, GBDATA *gb_main)
-{
-    AWUSE(aww);
+void awt_rename_cb(AW_window *aww, GBDATA *gb_main) {
     aw_openstatus("Generating new names");
     aw_status("Contacting name server");
     GB_ERROR error     = AWTC_pars_names(gb_main, 1);
@@ -570,10 +570,7 @@ void awt_rename_cb(AW_window *aww, GBDATA *gb_main)
 }
 
 
-AW_window *AWTC_create_rename_window(AW_root *root, AW_CL gb_main)
-{
-    AWUSE(root);
-
+AW_window *AWTC_create_rename_window(AW_root *root, AW_CL gb_main) {
     AW_window_simple *aws = new AW_window_simple;
     aws->init(root, "AUTORENAME_SPECIES", "AUTORENAME SPECIES");
 

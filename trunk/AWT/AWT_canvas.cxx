@@ -11,6 +11,8 @@
 #include "awt_canvas.hxx"
 #include "awt.hxx"
 
+#include <aw_root.hxx>
+#include <aw_msg.hxx>
 #include <arbdbt.h>
 
 #include <algorithm>
@@ -357,30 +359,25 @@ static void clip_expose(AW_window *aww, AWT_canvas *ntw,
     ntw->tree_disp->show(device);
 }
 
-void AWT_expose_cb(AW_window *dummy, AWT_canvas *ntw, AW_CL) {
-    AWUSE(dummy);
+void AWT_expose_cb(AW_window *, AWT_canvas *ntw, AW_CL) {
     ntw->refresh();
 }
 
-void AWT_canvas::refresh()
-{
+void AWT_canvas::refresh() {
     AW_device *device = this->aww->get_device (AW_MIDDLE_AREA);
     device->clear(-1);
     clip_expose(this->aww, this, this->rect.l, this->rect.r,
                 this->rect.t, this->rect.b, 0, 0);
 }
 
-void AWT_resize_cb(AW_window *dummy, AWT_canvas *ntw, AW_CL)
-{
-    AWUSE(dummy);
+void AWT_resize_cb(AW_window *, AWT_canvas *ntw, AW_CL) {
     ntw->zoom_reset();
     AWT_expose_cb(ntw->aww, ntw, 0);
 }
 
 
 
-static void focus_cb(AW_window *dummy, AWT_canvas *ntw) {
-    AWUSE(dummy);
+static void focus_cb(AW_window *, AWT_canvas *ntw) {
     if (!ntw->gb_main) return;
     ntw->tree_disp->push_transaction(ntw->gb_main);
 
@@ -420,8 +417,7 @@ static bool handleZoomEvent(AW_window *aww, AWT_canvas *ntw, AW_device *device, 
     return handled;
 }
 
-static void input_event(AW_window *aww, AWT_canvas *ntw, AW_CL cd2) {
-    AWUSE(cd2);
+static void input_event(AW_window *aww, AWT_canvas *ntw, AW_CL /*cd2*/) {
     AW_event event;
     AW_device *device, *click_device;
 
@@ -566,8 +562,7 @@ void AWT_canvas::set_dragEndpoint(int dragx, int dragy) {
     }
 }
 
-static void motion_event(AW_window *aww, AWT_canvas *ntw, AW_CL cd2) {
-    AWUSE(cd2);
+static void motion_event(AW_window *aww, AWT_canvas *ntw, AW_CL /*cd2*/) {
     AW_event event;
     AW_device *device, *click_device;
     int dx, dy;
@@ -651,9 +646,7 @@ static void motion_event(AW_window *aww, AWT_canvas *ntw, AW_CL cd2) {
     if (ntw->gb_main) ntw->tree_disp->pop_transaction(ntw->gb_main);
 }
 
-void AWT_canvas::scroll(AW_window *dummy, int dx, int dy, bool dont_update_scrollbars) {
-    AWUSE(dummy);
-
+void AWT_canvas::scroll(AW_window *, int dx, int dy, bool dont_update_scrollbars) {
     int csx, cdx, cwidth, csy, cdy, cheight;
     AW_device *device;
     if (!dont_update_scrollbars) {
@@ -731,8 +724,7 @@ void AWT_canvas::scroll(AW_window *dummy, int dx, int dy, bool dont_update_scrol
     this->refresh();
 }
 
-static void scroll_vert_cb(AW_window *aww, AWT_canvas* ntw, AW_CL cl1) {
-    AWUSE(cl1);
+static void scroll_vert_cb(AW_window *aww, AWT_canvas* ntw, AW_CL /*cl1*/) {
     int delta_screen_y;
 
     int new_vert = aww->slider_pos_vertical;
@@ -745,8 +737,7 @@ static void scroll_vert_cb(AW_window *aww, AWT_canvas* ntw, AW_CL cl1) {
 
 }
 
-static void scroll_hor_cb(AW_window *aww, AWT_canvas* ntw, AW_CL cl1) {
-    AWUSE(cl1);
+static void scroll_hor_cb(AW_window *aww, AWT_canvas* ntw, AW_CL /*cl1*/) {
     int delta_screen_x;
 
     int new_hor = aww->slider_pos_horizontal;
