@@ -160,7 +160,7 @@ $(BIN)/treedist:     treedist.o phylip.o cons.o
 #	$(ACC) $(cflags) -o $@ $^ $(LIBS)
 
 .c.o :
-	$(ACC) -c $(cflags) $<
+	$(ACC) -c $(cflags) $< $(POST_COMPILE)
 
 DEPENDS = $(notdir $(PROGS:%=%.depend))
 depends: $(DEPENDS)

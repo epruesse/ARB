@@ -7,12 +7,31 @@ OBJECTS = PTP_new_design.o PTP_main.o PTP_io.o \
 	dlist.o
 AOBJECTS = #BI_helix.o
 
-$(MAIN): $(OBJECTS) $(AOBJECTS)
+# --------------------------------------------------------------------------------
+# no warnings for ptpan (code is rotten in public repository)
+
+RAISE_WARNINGS=0
+
+ifeq ('$(RAISE_WARNINGS)','0')
+pan_cflags:=$(subst -W -Wall,-w,$(cflags))
+else
+pan_cflags:=$(cflags)
+endif
+
+# --------------------------------------------------------------------------------
+
+$(MAIN): $(OBJECTS) $(AOBJECTS) Makefile
 	$(LINK_STATIC_LIB) $(MAIN) $(OBJECTS) $(AOBJECTS)
+ifeq ('$(RAISE_WARNINGS)','0')
+	@echo ----------------- warnings enabled again
+endif
+
+$(OBJECTS): Makefile
+
 .c.o:
-	$(ACC) $(cflags) -c $< $(AINCLUDES)  -I./../probe_bank/COM
+	$(ACC) $(pan_cflags) -c $< $(AINCLUDES)  -I./../probe_bank/COM $(POST_COMPILE)
 .cxx.o:
-	$(CPP) $(cflags) -c $<  $(CPPINCLUDES) -I./../probe_bank/COM
+	$(CPP) $(pan_cflags) -c $<  $(CPPINCLUDES) -I./../probe_bank/COM $(POST_COMPILE)
 proto:
 	../MAKEBIN/aisc_mkpt -E -w pt_prototypes.h $(OBJECTS:.o=.cxx) >pt_prototypes.h.tmp
 	../SOURCE_TOOLS/mv_if_diff pt_prototypes.h.tmp pt_prototypes.h

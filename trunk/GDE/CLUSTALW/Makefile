@@ -10,7 +10,7 @@ $(BINARY) : $(OBJECTS)
 	 $(ACC) $(cflags) -o $@ $(OBJECTS) -lm
 
 .c.o:
-	$(ACC) $(cflags) -c -o $@ $< $(AINCLUDES)
+	$(ACC) $(cflags) -c -o $@ $< $(AINCLUDES) $(POST_COMPILE)
 
 clean:
 	rm -f *.o $(BINARY)

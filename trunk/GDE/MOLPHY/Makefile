@@ -95,7 +95,7 @@ $(INSTALLDIR)/nucdml : $(OBJML) $(OBJNDML)
 
 # default
 .c.o :
-	$(ACC) -c $(cflags) $<
+	$(ACC) -c $(cflags) $< $(POST_COMPILE)
 
 
 #Nucml.c : protml.c optimtpm.c abratio.c

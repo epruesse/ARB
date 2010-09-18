@@ -18,10 +18,10 @@ $(MAIN): $(OBJECTS)
 	$(LINK_STATIC_LIB) $(MAIN) $(OBJECTS)
 
 .c.o:
-	$(ACC) $(cflags) -c $< $(AINCLUDES)
+	$(ACC) $(cflags) -c $< $(AINCLUDES) $(POST_COMPILE)
 
 .cxx.o:
-	$(CPP) $(cflags) -c $<  $(CPPINCLUDES)
+	$(CPP) $(cflags) -c $<  $(CPPINCLUDES) $(POST_COMPILE)
 
 proto:
 	../MAKEBIN/aisc_mkpt -E -w pt_prototypes.h $(OBJECTS:.o=.cxx) probe_tree.hxx >pt_prototypes.h.tmp
