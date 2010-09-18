@@ -1,7 +1,6 @@
 # libraries needed to link against SECEDIT/SECEDIT.a
 
-# depends on EDIT4/EDIT4.a # need some kind of interface
-
 AWT/libAWT.so
+SL/PRONUC/PRONUC.a
 SL/FILE_BUFFER/FILE_BUFFER.a
 SL/HELIX/HELIX.a

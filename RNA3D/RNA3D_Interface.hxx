@@ -32,9 +32,12 @@ void ButtonReleaseEventHandler(Widget w, XtPointer client_data, XEvent *event, c
 void MouseMoveEventHandler(Widget w, XtPointer client_data, XEvent *event, char* x);
 void RefreshOpenGLDisplay();
 
-class AW_root;
-class AW_window;
-AW_window *CreateRNA3DMainWindow(AW_root *awr, GBDATA *gb_main);
+class  AW_root;
+class  AW_window;
+class  GBDATA;
+struct ED4_plugin_host;
+
+AW_window *CreateRNA3DMainWindow(AW_root *awr, GBDATA *gb_main, ED4_plugin_host& host);
 
 #else
 #error RNA3D_Interface.hxx included twice

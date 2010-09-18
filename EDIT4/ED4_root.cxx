@@ -14,15 +14,12 @@
 #include "ed4_block.hxx"
 #include "ed4_dots.hxx"
 #include "ed4_nds.hxx"
-#include "ed4_secedit.hxx"
+#include "ed4_plugins.hxx"
 #include "ed4_visualizeSAI.hxx"
 #include "ed4_naligner.hxx"
 #include "ed4_ProteinViewer.hxx"
 #include "ed4_protein_2nd_structure.hxx"
 #include "graph_aligner_gui.hxx"
-#if defined(ARB_OPENGL)
-#include "ed4_RNA3D.hxx"
-#endif // ARB_OPENGL
 
 #include <ed4_extern.hxx>
 #include <fast_aligner.hxx>
@@ -1444,6 +1441,7 @@ ED4_returncode ED4_root::generate_window(AW_device **device,    ED4_window **new
     awmm->insert_menu_topic("turn_sequence", "Turn Sequence",             "T", 0, AWM_ALL, ED4_turnSpecies,     1, 0);
     awmm->insert_menu_topic(0,               "Test (test split & merge)", "T", 0, AWM_ALL, ED4_testSplitNMerge, 1, 0);
 #endif
+    
     SEP________________________SEP;
     awmm->insert_menu_topic("fast_aligner",       INTEGRATED_ALIGNERS_TITLE " [Ctrl-A]", "I", "faligner.hlp",     AWM_ALL,            AW_POPUP,                               (AW_CL)ED4_create_faligner_window, (AW_CL)&dataAccess_4_aligner);
     awmm->insert_menu_topic("fast_align_set_ref", "Set aligner reference [Ctrl-R]",      "R", "faligner.hlp",     AWM_ALL,            (AW_CB)FastAligner_set_reference_species, (AW_CL)aw_root,                    0);
@@ -1452,8 +1450,17 @@ ED4_returncode ED4_root::generate_window(AW_device **device,    ED4_window **new
     awmm->insert_menu_topic("del_ali_tmp",        "Remove all aligner Entries",          "v", 0,                  AWM_ALL,            ED4_remove_faligner_entries,            1,                                 0);
     SEP________________________SEP;
     awmm->insert_menu_topic("missing_bases", "Dot potentially missing bases", "D", "missbase.hlp", AWM_EXP, ED4_popup_dot_missing_bases_window, 0, 0);
-    SEP________________________SEP;
-    awmm->insert_menu_topic("sec_edit", "Edit secondary structure", "c", 0, AWM_ALL, ED4_SECEDIT_start, (AW_CL)GLOBAL_gb_main, 0);
+
+    if (alignment_type == GB_AT_RNA) { // if the database contains valid alignment of rRNA sequences
+        SEP________________________SEP;
+        awmm->insert_menu_topic("sec_edit", "Edit secondary structure", "c", "arb_secedit.hlp", AWM_ALL, ED4_start_plugin, (AW_CL)GLOBAL_gb_main, (AW_CL)"SECEDIT");
+#if defined(ARB_OPENGL)
+        awmm->insert_menu_topic("rna3d", "View 3D molecule", "3", "rna3d_general.hlp", AWM_ALL, ED4_start_plugin, (AW_CL)GLOBAL_gb_main, (AW_CL)"RNA3D");
+#endif // ARB_OPENGL
+#if defined(DEBUG)
+        awmm->insert_menu_topic("noplugin", "DEBUG: call unknown plugin", "", 0, AWM_ALL, ED4_start_plugin, (AW_CL)GLOBAL_gb_main, (AW_CL)"testplugin");
+#endif // DEBUG
+    }
 
     // ------------------------------
     //  View
@@ -1760,18 +1767,19 @@ ED4_returncode ED4_root::generate_window(AW_device **device,    ED4_window **new
 
     int xoffset = 0;
 
-    // Enable RNA3D and SECEDIT programs if the database contains valid alignment of rRNA sequences.
-    if (alignment_type == GB_AT_RNA) {
+    if (alignment_type == GB_AT_RNA) { // if the database contains valid alignment of rRNA sequences
+        // add buttons for RNA3D and SECEDIT plugins
+
         awmm->button_length(0);
 
         awmm->at("secedit");
-        awmm->callback(ED4_SECEDIT_start, (AW_CL)GLOBAL_gb_main, 0);
+        awmm->callback(ED4_start_plugin, (AW_CL)GLOBAL_gb_main, (AW_CL)"SECEDIT");
         awmm->help_text("arb_secedit.hlp");
         awmm->create_button("SECEDIT", "#edit/secedit.xpm");
 
 #if defined(ARB_OPENGL)
         awmm->at("rna3d");
-        awmm->callback(ED4_RNA3D_Start, (AW_CL)GLOBAL_gb_main, 0);
+        awmm->callback(ED4_start_plugin, (AW_CL)GLOBAL_gb_main, (AW_CL)"RNA3D");
         awmm->help_text("rna3d_general.hlp");
         awmm->create_button("RNA3D", "#edit/rna3d.xpm");
 #endif // ARB_OPENGL

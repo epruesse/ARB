@@ -19,7 +19,7 @@
 #include <GEN.hxx>
 #include <TreeCallbacks.hxx>
 
-#include <awt_iupac.hxx>
+#include <iupac.h>
 #include <awt_config_manager.hxx>
 #include <awt_sel_boxes.hxx>
 
@@ -1345,12 +1345,12 @@ static void resolve_IUPAC_target_string(AW_root *, AW_CL cl_aww, AW_CL cl_selid)
             if (i=='?') continue; // ignore '?'
 
             int idx = i-'A';
-            if (idx<0 || idx>=26 || AWT_iupac_code[idx][index].iupac==0) {
+            if (idx<0 || idx>=26 || iupac::nuc_group[idx][index].members==0) {
                 err = GB_export_errorf("Illegal character '%c' in IUPAC-String", i);
                 break;
             }
 
-            if (AWT_iupac_code[idx][index].count>1) {
+            if (iupac::nuc_group[idx][index].count>1) {
                 bases_to_resolve++;
             }
         }
@@ -1367,12 +1367,12 @@ static void resolve_IUPAC_target_string(AW_root *, AW_CL cl_aww, AW_CL cl_selid)
                     if (!i) break;
 
                     if (i!='?') {
-                        int idx = AWT_iupac2index(i);
-                        pd_assert(AWT_iupac_code[idx][index].iupac);
+                        int idx = iupac::to_index(i);
+                        pd_assert(iupac::nuc_group[idx][index].members);
 
-                        if (AWT_iupac_code[idx][index].count>1) {
+                        if (iupac::nuc_group[idx][index].count>1) {
                             offsets_to_resolve[offset_count++] = offset; // store string offsets of non-unique base-codes
-                            resolutions *= AWT_iupac_code[idx][index].count; // calc # of resolutions
+                            resolutions *= iupac::nuc_group[idx][index].count; // calc # of resolutions 
                         }
                     }
                     offset++;
@@ -1392,8 +1392,8 @@ static void resolve_IUPAC_target_string(AW_root *, AW_CL cl_aww, AW_CL cl_selid)
                     int i;
                     for (i=0; i<bases_to_resolve; i++) {
                         resolution_idx[i] = 0;
-                        int idx = AWT_iupac2index(istring[offsets_to_resolve[i]]);
-                        resolution_max_idx[i] = AWT_iupac_code[idx][index].count-1;
+                        int idx = iupac::to_index(istring[offsets_to_resolve[i]]);
+                        resolution_max_idx[i] = iupac::nuc_group[idx][index].count-1;
                     }
                 }
 
@@ -1407,10 +1407,10 @@ static void resolve_IUPAC_target_string(AW_root *, AW_CL cl_aww, AW_CL cl_selid)
                     memcpy(buffer, istring, istring_length+1);
                     for (i=0; i<bases_to_resolve; i++) {
                         int off = offsets_to_resolve[i];
-                        int idx = AWT_iupac2index(istring[off]);
+                        int idx = iupac::to_index(istring[off]);
 
-                        pd_assert(AWT_iupac_code[idx][index].iupac);
-                        buffer[off] = AWT_iupac_code[idx][index].iupac[resolution_idx[i]];
+                        pd_assert(iupac::nuc_group[idx][index].members);
+                        buffer[off] = iupac::nuc_group[idx][index].members[resolution_idx[i]];
                     }
 
                     aww->insert_selection(selection_id, buffer, buffer);

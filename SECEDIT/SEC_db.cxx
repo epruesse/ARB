@@ -166,7 +166,7 @@ static void bind_bonddef_awars(SEC_db_interface *db) {
 
 // --------------------------------------------------------------------------------
 
-void SEC_displayParams::reread(AW_root *aw_root) {
+void SEC_displayParams::reread(AW_root *aw_root, const ED4_plugin_host& host) {
     show_helixNrs            = aw_root->awar(AWAR_SECEDIT_SHOW_HELIX_NRS)->read_int();
     distance_between_strands = aw_root->awar(AWAR_SECEDIT_DIST_BETW_STRANDS)->read_float();
     show_bonds               = (ShowBonds)aw_root->awar(AWAR_SECEDIT_SHOW_BONDS)->read_int();
@@ -175,7 +175,7 @@ void SEC_displayParams::reread(AW_root *aw_root) {
     hide_bases     = aw_root->awar(AWAR_SECEDIT_HIDE_BASES)->read_int();
     show_ecoli_pos = aw_root->awar(AWAR_SECEDIT_SHOW_ECOLI_POS)->read_int();
     display_search = aw_root->awar(AWAR_SECEDIT_DISPLAY_SEARCH)->read_int();
-    display_sai    = aw_root->awar(AWAR_SECEDIT_DISPLAY_SAI)->read_int() && ED4_SAIs_visualized();
+    display_sai    = aw_root->awar(AWAR_SECEDIT_DISPLAY_SAI)->read_int() && host.SAIs_visualized();
 
     show_strSkeleton   = aw_root->awar(AWAR_SECEDIT_SHOW_STR_SKELETON)->read_int();
     skeleton_thickness = aw_root->awar(AWAR_SECEDIT_SKELETON_THICKNESS)->read_int();
@@ -200,14 +200,8 @@ void SEC_db_interface::reload_sequence(const SEC_dbcb *cb) {
     GBDATA *gb_species   = GBT_find_species(gb_main, species_name);
 
     delete sequence;
-    if (gb_species) {
-        sequence = new SEC_seq_data(gb_species, aliname, cb);
-        seqTerminal = ED4_find_seq_terminal(species_name);
-    }
-    else {
-        sequence    = 0;
-        seqTerminal = 0;
-    }
+    sequence = gb_species ? new SEC_seq_data(gb_species, aliname, cb) : 0;
+    Host.announce_current_species(species_name);
 
     if (bool(sequence) != had_sequence) gfx->request_update(SEC_UPDATE_ZOOM_RESET);
     if (sequence) gfx->request_update(SEC_UPDATE_SHOWN_POSITIONS);
@@ -287,7 +281,7 @@ void SEC_db_interface::update_positions(const SEC_dbcb *) {
 
 void SEC_db_interface::relayout(const SEC_dbcb *) {
     SEC_root *root = secroot();
-    root->reread_display_params(awroot());
+    root->reread_display_params(awroot(), Host);
     root->nail_cursor();
     gfx->request_update(SEC_UPDATE_RECOUNT);
     if (perform_refresh) ntw->refresh();
@@ -295,7 +289,7 @@ void SEC_db_interface::relayout(const SEC_dbcb *) {
 
 void SEC_db_interface::refresh(const SEC_dbcb *) {
     SEC_root *root = secroot();
-    root->reread_display_params(awroot());
+    root->reread_display_params(awroot(), Host);
     if (perform_refresh) ntw->refresh();
 }
 
@@ -409,9 +403,9 @@ static void create_awars(AW_root *aw_root, AW_default def) {
 
 // --------------------------------------------------------------------------------
 
-SEC_db_interface::SEC_db_interface(SEC_graphic *Gfx, AWT_canvas *Ntw)
+SEC_db_interface::SEC_db_interface(SEC_graphic *Gfx, AWT_canvas *Ntw, ED4_plugin_host& host_)
     : sequence(0)
-    , seqTerminal(0)
+    , Host(host_)
     , displayEcoliPositions(false)
     , ecoli_seq(0)
     , Ecoli(0)

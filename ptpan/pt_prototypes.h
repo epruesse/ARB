@@ -168,6 +168,7 @@ void SearchPartition P_((struct PTPanPartition *pp, struct SearchQuery *sq));
 void QueryTests P_((struct PTPanGlobal *pg));
 void PP_convertBondMatrix P_((PT_pdc *pdc, PTPanGlobal *pg));
 void PP_buildPosWeight P_((SearchQuery *sq));
+extern "C" char *get_match_overlay P_((PT_probematch *ml));
 extern "C" int probe_match P_((PT_local *locs, aisc_string probestring));
 void SortHitsList P_((struct SearchQuery *sq));
 void CreateHitsGUIList P_((struct SearchQuery *sq));

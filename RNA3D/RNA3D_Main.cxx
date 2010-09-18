@@ -11,14 +11,11 @@
 
 #include "RNA3D_GlobalHeader.hxx"
 #include "RNA3D_Global.hxx"
-#include "RNA3D_Main.hxx"
 #include "RNA3D_Interface.hxx"
+#include "rna3d_extern.hxx"
 
 #include <aw_window.hxx>
 #include <arbdb.h>
-
-
-using namespace std;
 
 static void  CreateRNA3DAwars(AW_root *root) {
     // Display Base Section
@@ -68,24 +65,8 @@ static void  CreateRNA3DAwars(AW_root *root) {
     root->awar_int(AWAR_3D_23S_RRNA_MOL, 3, AW_ROOT_DEFAULT);
 }
 
-void RNA3D_StartApplication(AW_root *awr, GBDATA *gb_main) {
-
-    CreateRNA3DAwars(awr);
-
-    // Creating and Initializing Motif/OpenGL window and
-    // rendering the structure
-    {
-        static AW_window *aw_3D = 0;
-
-        if (!aw_3D) { // do not open window twice
-            aw_3D = CreateRNA3DMainWindow(awr, gb_main);
-            if (!aw_3D) {
-                GB_ERROR err = GB_get_error();
-                aw_message(GBS_global_string("Couldn't start Ribosomal RNA 3D Structure Tool.\nReason: %s", err));
-                return;
-            }
-        }
-        aw_3D->show();
-    }
-
+AW_window *start_RNA3D_plugin(ED4_plugin_host& host) {
+    CreateRNA3DAwars(host.get_application_root());
+    return CreateRNA3DMainWindow(host.get_application_root(), host.get_database(), host);
 }
+

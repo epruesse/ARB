@@ -28,7 +28,9 @@
 #ifndef SEC_DB_HXX
 #include "SEC_db.hxx"
 #endif
-
+#ifndef SECEDIT_EXTERN_HXX
+#include "secedit_extern.hxx"
+#endif
 
 using namespace AW;
 
@@ -650,7 +652,7 @@ struct SEC_displayParams {
     bool show_debug;            // show debug info in structure display
 #endif // DEBUG
 
-    void reread(AW_root *aw_root);
+    void reread(AW_root *aw_root, const ED4_plugin_host& host);
 };
 
 
@@ -732,12 +734,13 @@ public:
     SEC_root();
     ~SEC_root();
 
-    void init(SEC_graphic *gfx, AWT_canvas *ntw);
+    void init(SEC_graphic *gfx, AWT_canvas *ntw, ED4_plugin_host& host);
 
     bool under_construction() const { return constructing; }
     void set_under_construction(bool construct) { constructing = construct; }
 
     const SEC_db_interface *get_db() const { return db; }
+    const ED4_plugin_host& host() const { return db->host(); }
     bool canDisplay() const { return db && db->canDisplay(); }
     const BI_helix *get_helixDef() const { sec_assert(db); return db->helix(); }
     BI_PAIR_TYPE getBondtype(int abspos) { const BI_helix *h = get_helixDef(); return h ? h->pairtype(abspos) : HELIX_NONE; }
@@ -746,7 +749,7 @@ public:
     const size_t *getHelixPositions(const char *helixNr) const;
     const double& get_char_radius(int gc) const { return char_radius[gc]; }
 
-    void reread_display_params(AW_root *aw_root) { displayParams.reread(aw_root); }
+    void reread_display_params(AW_root *aw_root, const ED4_plugin_host& Host) { displayParams.reread(aw_root, Host); }
     const SEC_displayParams& display_params() const { return displayParams; }
 
     bool has_xString() const { return xString; }

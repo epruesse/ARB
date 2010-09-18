@@ -19,6 +19,10 @@
 #ifndef SEC_DEFS_HXX
 #include "SEC_defs.hxx"
 #endif
+#ifndef SECEDIT_EXTERN_HXX
+#include "secedit_extern.hxx"
+#endif
+
 
 // --------------------------------------------------------------------------------
 
@@ -89,8 +93,8 @@ class SEC_root;
 class SEC_structure_toggler;
 
 class SEC_db_interface : Noncopyable {
-    SEC_seq_data                *sequence; // 0 = no sequence selected
-    const ED4_sequence_terminal *seqTerminal;
+    SEC_seq_data          *sequence;       // 0 = no sequence selected
+    ED4_plugin_host&  Host;
 
     bool          displayEcoliPositions; // whether to display ecoli positions
     SEC_seq_data *ecoli_seq;        // 0 = no ecoli found or not used
@@ -139,7 +143,7 @@ class SEC_db_interface : Noncopyable {
     void bind_awars(const char **awars, SEC_dbcb *cb);
 
 public:
-    SEC_db_interface(SEC_graphic *Gfx, AWT_canvas *Ntw);
+    SEC_db_interface(SEC_graphic *Gfx, AWT_canvas *Ntw, ED4_plugin_host& host_);
     ~SEC_db_interface();
 
     void update_shown_positions();
@@ -163,9 +167,9 @@ public:
     AWT_canvas *canvas() const { return ntw; }
     BI_helix *helix() const { return Helix; }
     BI_ecoli_ref *ecoli() const { return Ecoli; }
-    const ED4_sequence_terminal *get_seqTerminal() const { return seqTerminal; }
     SEC_bond_def *bonds() const { return bonddef; }
     SEC_structure_toggler *structure() const { return toggler; }
+    const ED4_plugin_host& host() const { return Host; }
 
     void init_toggler() const;
 };

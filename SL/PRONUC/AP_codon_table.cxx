@@ -9,9 +9,9 @@
 //                                                                 //
 // =============================================================== //
 
-#include "awt_iupac.hxx"
-
 #include "AP_codon_table.hxx"
+#include "iupac.h"
+
 #include <arbdb.h>
 
 #include <cctype>
@@ -465,7 +465,7 @@ bool AWT_is_codon(char protein, const char *dna, const AWT_allowedCode& allowed_
                     fail_reason = GBS_global_string("Three consecutive IUPAC codes '%c%c%c'", dna[0], dna[1], dna[2]);
                 }
                 else {
-                    const char *decoded_iupac = AWT_decode_iupac(dna[first_error_pos], GB_AT_DNA, 0);
+                    const char *decoded_iupac = iupac::decode(dna[first_error_pos], GB_AT_DNA, 0);
 
                     if (!decoded_iupac[0]) { // no valid IUPAC
                         allowed_code_left.forbidAll();
@@ -621,7 +621,7 @@ inline const char *buildMixedCodon(const char *con1, const char *con2) {
 
     if (mismatches==1) { // exactly one position differs between codons
         pn_assert(mismatch_index!=-1);
-        buf[mismatch_index] = AWT_iupac_add(con1[mismatch_index], con2[mismatch_index], GB_AT_DNA);
+        buf[mismatch_index] = iupac::combine(con1[mismatch_index], con2[mismatch_index], GB_AT_DNA);
         buf[3] = 0;
         return buf;
     }
@@ -755,7 +755,7 @@ const char *AWT_get_protein_iupac(char protein, int code_nr) {
     memcpy(result, codons, 3);
     for (int off = 3; codons[off]; off += 3) {
         for (int base = 0; base<3; ++base) {
-            result[base] = AWT_iupac_add(result[base], codons[off+base], GB_AT_DNA);
+            result[base] = iupac::combine(result[base], codons[off+base], GB_AT_DNA);
         }
     }
 

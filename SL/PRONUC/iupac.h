@@ -1,5 +1,15 @@
-#ifndef AWT_IUPAC
-#define AWT_IUPAC
+// ================================================================= //
+//                                                                   //
+//   File      : iupac.h                                             //
+//   Purpose   :                                                     //
+//                                                                   //
+//   Institute of Microbiology (Technical University Munich)         //
+//   http://www.arb-home.de/                                         //
+//                                                                   //
+// ================================================================= //
+
+#ifndef IUPAC_H
+#define IUPAC_H
 
 #ifndef ARBDB_BASE_H
 #include <arbdb_base.h>
@@ -48,7 +58,6 @@ namespace iupac {
     const char* decode(char iupac, GB_alignment_type aliType, int decode_amino_iupac_groups);
 };
 
-
 #else
-#error awt_iupac.hxx included twice
-#endif // AWT_IUPAC
+#error iupac.h included twice
+#endif // IUPAC_H

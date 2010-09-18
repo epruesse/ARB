@@ -13,11 +13,12 @@
 #include "SEC_iter.hxx"
 #include "SEC_toggle.hxx"
 
+#include <ed4_extern.hxx>
+
 #include <arbdbt.h>
 #include <aw_awars.hxx>
 #include <aw_global.hxx>
 #include <aw_preset.hxx>
-#include <ed4_extern.hxx>
 
 #include <vector>
 
@@ -227,7 +228,7 @@ GB_ERROR SEC_graphic::handleKey(AW_event_type event, AW_key_mod key_modifier, AW
             faked_event.keycode     = key_code;
             faked_event.character   = key_char;
 
-            ED4_remote_event(&faked_event);
+            sec_root->host().forward_event(&faked_event);
         }
     }
 

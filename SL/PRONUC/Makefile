@@ -6,6 +6,7 @@ C_OBJECTS =
 CPP_OBJECTS = \
 	AP_pro_a_nucs.o \
 	AP_codon_table.o \
+	iupac.o \
 
 OBJECTS=$(C_OBJECTS) $(CPP_OBJECTS)
 
@@ -39,6 +40,7 @@ depend.init:
 # For formatting issues see SOURCE_TOOLS/fix_depends.pl
 
 AP_codon_table.o: AP_codon_table.hxx
+AP_codon_table.o: iupac.h
 AP_codon_table.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 AP_codon_table.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AP_codon_table.o: $(ARBHOME)/INCLUDE/arb_assert.h
@@ -48,7 +50,6 @@ AP_codon_table.o: $(ARBHOME)/INCLUDE/arbdb.h
 AP_codon_table.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AP_codon_table.o: $(ARBHOME)/INCLUDE/arbtools.h
 AP_codon_table.o: $(ARBHOME)/INCLUDE/attributes.h
-AP_codon_table.o: $(ARBHOME)/INCLUDE/awt_iupac.hxx
 AP_codon_table.o: $(ARBHOME)/INCLUDE/dupstr.h
 AP_codon_table.o: $(ARBHOME)/INCLUDE/smartptr.h
 AP_codon_table.o: $(ARBHOME)/INCLUDE/test_global.h
@@ -70,3 +71,14 @@ AP_pro_a_nucs.o: $(ARBHOME)/INCLUDE/attributes.h
 AP_pro_a_nucs.o: $(ARBHOME)/INCLUDE/dupstr.h
 AP_pro_a_nucs.o: $(ARBHOME)/INCLUDE/smartptr.h
 AP_pro_a_nucs.o: $(ARBHOME)/INCLUDE/test_global.h
+
+iupac.o: iupac.h
+iupac.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
+iupac.o: $(ARBHOME)/INCLUDE/arb_assert.h
+iupac.o: $(ARBHOME)/INCLUDE/arb_core.h
+iupac.o: $(ARBHOME)/INCLUDE/arb_str.h
+iupac.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+iupac.o: $(ARBHOME)/INCLUDE/attributes.h
+iupac.o: $(ARBHOME)/INCLUDE/dupstr.h
+iupac.o: $(ARBHOME)/INCLUDE/test_global.h
+iupac.o: $(ARBHOME)/INCLUDE/test_unit.h

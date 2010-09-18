@@ -1744,6 +1744,8 @@ void        ED4_calc_terminal_extentions();
 void        ED4_input_cb            (AW_window *aww, AW_CL cd1, AW_CL cd2);
 void        ED4_resize_cb           (AW_window *aww, AW_CL cd1, AW_CL cd2);
 
+void ED4_remote_event(AW_event *faked_event);
+
 void        ED4_gc_is_modified      (AW_window *aww, AW_CL cd1, AW_CL cd2);
 void        ED4_quit            (AW_window *aww, AW_CL cd1, AW_CL cd2);
 

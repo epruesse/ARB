@@ -15,13 +15,9 @@
 #ifndef AW_COLOR_GROUPS_HXX
 #include <aw_color_groups.hxx>
 #endif
-#ifndef AW_WINDOW_HXX
-#include <aw_window.hxx>
-#endif
-
 
 // define GCs
-// (used by secedit to sync colors)
+// (used by plugins to sync colors)
 
 #define ED4_G_FIRST_FONT ED4_G_STANDARD // ED4_G_SEQUENCES
 #define ED4_G_LAST_FONT  ED4_G_HELIX
@@ -74,32 +70,9 @@ typedef enum
     ED4_G_DRAG = ED4_G_LAST_COLOR_GROUP+1               // must be last
 } ED4_gc;
 
-// ------------------------------
-//      get background colors
-// ------------------------------
-
-// search background :
 
 #define ED4_AWAR_SEARCH_RESULT_CHANGED "tmp/search/result_changed" // triggered when search result changes
 #define AWAR_EDIT_DIRECTION            "tmp/edit4/edit_direction"
-
-class ED4_sequence_terminal;
-
-ED4_sequence_terminal *ED4_find_seq_terminal(const char *species_name);
-const char *ED4_buildColorString(const ED4_sequence_terminal *seq_term, int start, int end); // search results
-
-// visualized SAIs
-
-bool ED4_SAIs_visualized();
-const char *ED4_getSaiColorString(AW_root *aw_root, int start, int end);
-
-int ED4_get_base_position(const ED4_sequence_terminal *seq_term, int seq_position);
-
-// ------------------------
-//      event injection
-// ------------------------
-
-void ED4_remote_event(AW_event *faked_event); // used to forward keystrokes from SECEDIT
 
 #else
 #error ed4_extern.hxx included twice

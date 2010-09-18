@@ -86,6 +86,7 @@ class GLRenderer;
 
 class AW_root;
 class AWT_canvas;
+struct ED4_plugin_host;
 
 class RNA3D_Global {
 public:
@@ -119,7 +120,7 @@ public:
     Vector3 Center;
     Vector3 Up;
 
-    RNA3D_Global();
+    RNA3D_Global(ED4_plugin_host& host);
     ~RNA3D_Global();
 };
 
@@ -128,4 +129,4 @@ public:
 extern RNA3D_Global *RNA3D;
 extern char          globalComment[1000];
 
-void RNA3D_init_global_data();
+void RNA3D_init_global_data(ED4_plugin_host& host);
