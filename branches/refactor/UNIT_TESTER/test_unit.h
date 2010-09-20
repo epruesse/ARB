@@ -62,14 +62,18 @@ namespace arb_test {
             }
         }
         static void errorf(const char *filename, int lineno, const char *format, ...) __attribute__((format(printf, 3, 4))) {
-            FlushedOutput yes;
-            VCOMPILERMSG(filename, lineno, "Error", format);
+            {
+                FlushedOutput yes;
+                VCOMPILERMSG(filename, lineno, "Error", format);
+            }
             TRIGGER_ASSERTION(); // fake an assertion failure
         }
         static void ioerrorf(const char *filename, int lineno, const char *format, ...) __attribute__((format(printf, 3, 4))) {
-            FlushedOutput yes;
-            VCOMPILERMSG(filename, lineno, "Error", format);
-            fprintf(stderr, " (errno=%i='%s')", errno, strerror(errno));
+            {
+                FlushedOutput yes;
+                VCOMPILERMSG(filename, lineno, "Error", format);
+                fprintf(stderr, " (errno=%i='%s')", errno, strerror(errno));
+            }
             TRIGGER_ASSERTION(); // fake an assertion failure
         }
 #undef VPRINTFORMAT
