@@ -1271,7 +1271,7 @@ LINKSTAMP=SOURCE_TOOLS/generate_all_links.stamp
 links: $(LINKSTAMP)
 
 forcelinks:
-	rm $(LINKSTAMP)
+	-rm $(LINKSTAMP)
 	$(MAKE) links
 
 $(LINKSTAMP): SOURCE_TOOLS/generate_all_links.sh
