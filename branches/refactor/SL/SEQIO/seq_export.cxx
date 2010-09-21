@@ -732,3 +732,79 @@ GB_ERROR SEQIO_export_by_format(GBDATA *gb_main, int marked_only, AP_filter *fil
 
     return error;
 }
+
+// --------------------------------------------------------------------------------
+
+#if (UNIT_TESTS == 1)
+#include <test_unit.h>
+
+// uncomment to auto-update exported files
+// (needed once after changing database or export formats)
+// #define TEST_AUTO_UPDATE 
+
+#define TEST_EXPORT_FORMAT(filename,load_complete_form)                 \
+    do {                                                                \
+        export_format efo;                                              \
+        TEST_ASSERT_NO_ERROR(read_export_format((&efo),                 \
+                                                filename,               \
+                                                load_complete_form));   \
+    } while(0)                                                          \
+
+void TEST_sequence_export() {
+    GBDATA  *gb_main    = GB_open("TEST_loadsave.arb", "r");
+    char    *export_dir = nulldup(GB_path_in_ARBLIB("export", NULL));
+    char   **eft        = GBS_read_dir(export_dir, "*.eft");
+
+    AP_filter *filter = NULL;
+    {
+        GB_transaction ta(gb_main);
+        size_t         alilen = GBT_get_alignment_len(gb_main, GBT_get_default_alignment(gb_main));
+        filter                = new AP_filter(alilen);
+
+        GBT_mark_all(gb_main, 0);
+        GBDATA *gb_species = GBT_find_species(gb_main, "MetMazei");
+        TEST_ASSERT(gb_species);
+
+        GB_write_flag(gb_species, 1); // mark
+    }
+    for (int e = 0; eft[e]; ++e) {
+        for (int complete = 0; complete <= 1; ++complete) {
+            TEST_EXPORT_FORMAT(eft[e], complete);
+            if (complete) {
+                const char *outname      = "impexp/exported";
+                char       *used_outname = NULL;
+
+                {
+                    GB_transaction ta(gb_main);
+                    TEST_ASSERT_NO_ERROR(SEQIO_export_by_format(gb_main, 1, filter, 0, 0, "DBname", eft[e], outname, 0, &used_outname));
+                }
+
+                const char *name = strrchr(eft[e], '/');
+                TEST_ASSERT(name); 
+                name++;
+
+                char *expected = GBS_global_string_copy("impexp/%s.exported", name);
+
+#if defined(TEST_AUTO_UPDATE)
+                system(GBS_global_string("cp %s %s", outname, expected));
+#else
+                const char *dated_formats = "#ae2.eft#paup.eft#xml.eft#";
+                bool        exports_date  = !!strstr(dated_formats, GBS_global_string("#%s#", name));
+
+                TEST_ASSERT_TEXTFILE_DIFFLINES(outname, expected, exports_date);
+#endif // TEST_AUTO_UPDATE
+                TEST_ASSERT_ZERO_OR_SHOW_ERRNO(unlink(outname));
+
+                free(expected);
+                free(used_outname);
+            }
+        }
+    }
+
+    delete filter;
+    GBT_free_names(eft);
+    free(export_dir);
+    GB_close(gb_main);
+}
+
+#endif // UNIT_TESTS
