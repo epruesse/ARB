@@ -7,10 +7,10 @@
   <!ENTITY semi "&#59;">
 ]>
 
- <!--There&apostr;s a basic version of ARB_seq_export.dtd in /home/westram_waltz/ARB-waltz/ARB.seqio_tests/lib/dtd
+ <!--There is a basic version of ARB_seq_export.dtd in $ARBHOME/lib/dtd
 but you might need to expand it by yourself,
 because the ARB-database may contain any kind of fields.-->
-<ARB_SEQ_EXPORT database="DBname" export_date="Tue Sep 21 10:55:44 2010">
+<ARB_SEQ_EXPORT database="DBname" export_date="Tue Sep 21 21:09:20 2010">
  <species name="MetMazei">
   <ALIGNMENT name="16s">
    <data>.....................AUUCUGGUU-----GA--U-CC-U-G-CCAG-AG-GU-U-AC-U-GC--U-AU-C--G-GU-GUUC--GC---C-U--AAGCCA-U-GC-G-AGU-CAU-A-UGU---------A---------------..............</data>

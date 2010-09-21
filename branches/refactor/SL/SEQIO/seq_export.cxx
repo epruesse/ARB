@@ -600,12 +600,9 @@ static GB_ERROR export_format_single(const char *db_name, const char *formname, 
                     }
                     xml->add_attribute("export_date", GB_date_string());
                     {
-                        char *fulldtd = AW_unfold_path("lib/dtd", "ARBHOME");
-                        XML_Comment rem(GBS_global_string("There's a basic version of ARB_seq_export.dtd in %s\n"
-                                                          "but you might need to expand it by yourself,\n"
-                                                          "because the ARB-database may contain any kind of fields.",
-                                                          fulldtd));
-                        free(fulldtd);
+                        XML_Comment rem("There is a basic version of ARB_seq_export.dtd in $ARBHOME/lib/dtd\n"
+                                        "but you might need to expand it by yourself,\n"
+                                        "because the ARB-database may contain any kind of fields.");
                     }
                 }
 
@@ -792,6 +789,7 @@ void TEST_sequence_export() {
                 bool        exports_date  = !!strstr(dated_formats, GBS_global_string("#%s#", name));
 
                 TEST_ASSERT_TEXTFILE_DIFFLINES(outname, expected, exports_date);
+                // see ../../UNIT_TESTER/run/impexp
 #endif // TEST_AUTO_UPDATE
                 TEST_ASSERT_ZERO_OR_SHOW_ERRNO(unlink(outname));
 
