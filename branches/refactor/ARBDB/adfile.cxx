@@ -321,3 +321,156 @@ char **GBS_read_dir(const char *dir, const char *mask) {
     return names;
 }
 
+// --------------------------------------------------------------------------------
+
+#if (UNIT_TESTS == 1)
+#include <test_unit.h>
+
+// GB_test_textfile_difflines + GB_test_files_equal are helper functions used
+// by unit tests.
+// 
+// @@@ GB_test_textfile_difflines + GB_test_files_equal -> ARBCORE
+
+bool GB_test_textfile_difflines(const char *file1, const char *file2, int expected_difflines) {
+    char       *cmd     = GBS_global_string_copy("/usr/bin/diff --unified %s %s", file1, file2);
+    FILE       *diffout = popen(cmd, "r");
+    const char *error   = NULL;
+
+    if (diffout) {
+#define BUFSIZE 5000
+        char   *diff    = strdup("");
+        size_t  difflen = 0;
+        char   *buffer  = (char*)malloc(BUFSIZE);
+        int     added   = 0;
+        int     deleted = 0;
+        bool    inHunk  = false;
+
+        while (!feof(diffout)) {
+            char *line = fgets(buffer, BUFSIZE, diffout);
+            if (!line) break;
+            
+            size_t len = strlen(line);
+
+            test_assert(line && len<(BUFSIZE-1)); // increase BUFSIZE
+
+            if (strncmp(line, "@@", 2) == 0) inHunk = true;
+            else if (!inHunk && strncmp(line, "Index: ", 7) == 0) inHunk = false;
+            else if (inHunk) {
+                bool append = false;
+
+                if      (line[0] == '+') { added++;   append = true; }
+                else if (line[0] == '-') { deleted++; append = true; }
+
+                if (append) {
+                    char *newDiff = (char*)malloc(difflen+1+len+1);
+
+                    memcpy(newDiff, diff, difflen);
+                    newDiff[difflen] = '\n';
+                    memcpy(newDiff+difflen+1, line, len+1);
+
+                    freeset(diff, newDiff);
+                    difflen += len+1;
+                }
+            }
+        }
+
+        if (added != deleted) {
+            error = GBS_global_string("added lines (=%i) differ from deleted lines(=%i)", added, deleted);
+        }
+        else if (added != expected_difflines) {
+            error = GBS_global_string("files differ in %i lines (expected=%i)", added, expected_difflines);
+        }
+
+        if (error) printf("Different lines:\n%s\n", diff);
+
+        free(diff);
+        free(buffer);
+        pclose(diffout);
+#undef BUFSIZE
+    }
+    else {
+        error = GBS_global_string("failed to run diff (%s)", cmd);
+    }
+    free(cmd);
+    // return result;
+    if (error) printf("GB_test_textfile_difflines(%s, %s) fails: %s\n", file1, file2, error);
+    return !error;
+}
+
+bool GB_test_files_equal(const char *file1, const char *file2) {
+    const char        *error = NULL;
+    FILE              *fp1   = fopen(file1, "rb");
+
+    if (!fp1) {
+        printf("can't open '%s'\n", file1);
+        error = "i/o error";
+    }
+    else {
+        FILE *fp2 = fopen(file2, "rb");
+        if (!fp2) {
+            printf("can't open '%s'\n", file2);
+            error = "i/o error";
+        }
+        else {
+            const int      BLOCKSIZE    = 4096;
+            unsigned char *buf1         = (unsigned char*)malloc(BLOCKSIZE);
+            unsigned char *buf2         = (unsigned char*)malloc(BLOCKSIZE);
+            int            equal_bytes  = 0;
+
+            while (!error) {
+                int read1  = fread(buf1, 1, BLOCKSIZE, fp1);
+                int read2  = fread(buf2, 1, BLOCKSIZE, fp2);
+                int common = read1<read2 ? read1 : read2;
+
+                if (!common) {
+                    if (read1 != read2) error = "filesize differs";
+                    break;
+                }
+
+                if (memcmp(buf1, buf2, common) == 0) {
+                    equal_bytes += common;
+                }
+                else {
+                    int x = 0;
+                    while (buf1[x] == buf2[x]) {
+                        x++;
+                        equal_bytes++;
+                    }
+                    error = "content differs";
+
+                    // x is the position inside the current block
+                    const int DUMP       = 7;
+                    int       y1         = x >= DUMP ? x-DUMP : 0;
+                    int       y2         = (x+DUMP)>common ? common : (x+DUMP);
+                    int       blockstart = equal_bytes-x;
+
+                    for (int y = y1; y <= y2; y++) {
+                        fprintf(stderr, "[0x%04x]", blockstart+y);
+                        arb_test::print_pair(buf1[y], buf2[y]);
+                        fputc(' ', stderr);
+                        arb_test::print_hex_pair(buf1[y], buf2[y]);
+                        if (x == y) fputs("                     <- diff", stderr);
+                        fputc('\n', stderr);
+                    }
+                    if (y2 == common) {
+                        fputs("[end of block - truncated]\n", stderr);
+                    }
+                }
+            }
+
+            if (error) printf("test_files_equal: equal_bytes=%i\n", equal_bytes);
+            test_assert(error || equal_bytes); // comparing empty files is nonsense
+
+            free(buf2);
+            free(buf1);
+            fclose(fp2);
+        }
+        fclose(fp1);
+    }
+
+    if (error) printf("test_files_equal(%s, %s) fails: %s\n", file1, file2, error);
+    return !error;
+}
+
+
+#endif // UNIT_TESTS
