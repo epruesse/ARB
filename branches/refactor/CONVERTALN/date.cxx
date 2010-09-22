@@ -285,3 +285,14 @@ char *gcg_date(char *date_string) {
 
     return (date);
 }
+
+// --------------------------------------------------------------------------------
+
+#if (UNIT_TESTS == 1)
+#include <test_unit.h>
+
+void TEST_conv_date() {
+    // TEST_ASSERT(0);
+}
+
+#endif // UNIT_TESTS

@@ -866,6 +866,20 @@ $(PARSIMONY): $(ARCHS_PARSIMONY:.a=.dummy) shared_libs
 		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_PARSIMONY) $(GUI_LIBS) $(EXECLIBS) ; \
 		)
 
+#*********************************** arb_convert_aln **************************************
+CONVERT_ALN = bin/arb_convert_aln
+ARCHS_CONVERT_ALN =	\
+		CONVERTALN/CONVERTALN.a \
+		SL/FILE_BUFFER/FILE_BUFFER.a \
+
+
+$(CONVERT_ALN) :  $(ARCHS_CONVERT_ALN:.a=.dummy)
+	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_CONVERT_ALN) || ( \
+		echo Link $@ ; \
+		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_CONVERT_ALN) $(EXECLIBS)" ; \
+		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARBDB_LIB) $(ARCHS_CONVERT_ALN) $(EXECLIBS) ; \
+		)
+
 #*********************************** arb_treegen **************************************
 TREEGEN = bin/arb_treegen
 ARCHS_TREEGEN =	\
@@ -1287,9 +1301,8 @@ gde:		GDE/GDE.dummy
 GDE:		gde
 agde: 		ARB_GDE/ARB_GDE.dummy
 tools:		shared_libs SL/SL.dummy TOOLS/TOOLS.dummy
-convert:	SL/FILE_BUFFER/FILE_BUFFER.dummy shared_libs
-	$(MAKE) CONVERTALN/CONVERTALN.dummy
 
+convert:	$(CONVERT_ALN)
 readseq:	READSEQ/READSEQ.dummy
 
 #***************************************************************************************
@@ -1583,6 +1596,7 @@ UNITS_TESTED = \
 	ARBDB/ARBDB.test \
 	MERGE/MERGE.test \
 	EDIT4/EDIT4.test \
+	CONVERTALN/CONVERTALN.test \
 	SL/SEQIO/SEQIO.test \
 
 TESTED_UNITS_MANUAL = \

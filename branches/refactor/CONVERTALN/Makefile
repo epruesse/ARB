@@ -1,4 +1,4 @@
-OBJECT= \
+OBJECTS= \
 	alma.o \
 	convert.o \
 	date.o \
@@ -16,27 +16,22 @@ OBJECT= \
 	util.o \
 
 
-.SUFFIXES: .o .cxx .depend
+.SUFFIXES: .o .a .cxx .depend
 
-BINARY=$(ARBHOME)/bin/arb_convert_aln
-
-$(BINARY): $(OBJECT)
-	$(LINK_EXECUTABLE) $@ $(OBJECT) ../SL/FILE_BUFFER/FILE_BUFFER.a $(LIBPATH) $(ARBDB_LIB) $(EXECLIBS)
+$(MAIN): $(OBJECTS)
+	$(LINK_STATIC_LIB) $(MAIN) $(OBJECTS)
 
 .cxx.o:
 	$(CPP) $(cflags) -c $< $(AINCLUDES) $(POST_COMPILE)
 
 proto:
-	../MAKEBIN/aisc_mkpt -A -w prototypes.h $(OBJECT:.o=.cxx) >prototypes.h.tmp
+	../MAKEBIN/aisc_mkpt -A -w prototypes.h $(OBJECTS:.o=.cxx) >prototypes.h.tmp
 	../SOURCE_TOOLS/mv_if_diff prototypes.h.tmp prototypes.h
 
 clean:
-	rm -f $(OBJECT) $(BINARY)
+	rm -f $(OBJECTS) $(BINARY)
 
-#depend:
-#	$(MAKEDEPEND) $(OBJECT:.o=.c*)
-
-DEPENDS = $(OBJECT:.o=.depend)
+DEPENDS = $(OBJECTS:.o=.depend)
 depends: $(DEPENDS)
 	@cat $(DEPENDS) | grep -v '^#' >>Makefile
 	@rm $(DEPENDS)
