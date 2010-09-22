@@ -18,6 +18,7 @@ my @skipped_directories = (
                            qr/\/HELP_SOURCE\/Xml$/o,
                            qr/\/PERL2ARB\/blib$/o,
                            qr/\/UNIT_TESTER\/tests$/o,
+                           qr/\/UNIT_TESTER\/logs$/o,
                            qr/^\.\/INCLUDE$/o,
                            qr/^\.\/PERL5$/o,
                            qr/^\.\/lib\/pts$/o,
@@ -26,6 +27,7 @@ my @skipped_directories = (
                            qr/^\.\/ARB_SOURCE_DOC/o,
                            qr/^\.\/MAKEBIN$/o,
                            qr/^\.\/LIBLINK$/o,
+                           qr/^\.\/patches.arb$/o,
                            qr/\/ignore\./o,
                           );
 
@@ -39,6 +41,9 @@ my %used_files = map { $_ => 1; } (
                                    'Makefile',
                                    'Makefile.org',
                                    'Makefile.test',
+                                   'Makefile.setup',
+                                   'Makefile.suite',
+                                   '!BRANCH_STATE',
                                    'AUTHORS',
                                    'COPYING',
                                   );
@@ -50,6 +55,7 @@ my %skipped_files = map { $_ => 1; } (
                                       'config.makefile',
                                       'ChangeLog',
                                       'ARB_GDEmenus',
+                                      'makeloc.here',
                                       'helpfiles.lst',
                                       '_index.html',
                                       'nt_date.h',
@@ -90,6 +96,7 @@ my %skipped_extensions = map { $_ => 1; } (
                                            'bak',
                                            'old',
                                            'last_gcc',
+                                           'patch',
                                           );
 
 
@@ -140,7 +147,10 @@ my @used_when_matchesFull = (
                              qr/\/READSEQ\/.*\.help$/o,
                              qr/\/SH\/[^\/\.]*$/o,
                              qr/\/SOURCE_TOOLS\//o,
-                             qr/\/UNIT_TESTER\/run\/TEST_.*\.(arb|a00)/o,
+                             qr/\/UNIT_TESTER\/run\/(TEST_.*|min_(bin|ascii))\.(arb|a00)$/o,
+                             qr/\/UNIT_TESTER\/run\/.*\.expected$/o,
+                             qr/\/UNIT_TESTER\/run\/impexp\/.*\.exported$/o,
+                             qr/\/UNIT_TESTER\/run\/TEST_.*\.pt$/o, # has to move to skipped_when_matches later!
                              qr/^\.\/etc\//o,
                              qr/^\.\/lib\/arb_tcp_org\.dat$/o,
                              qr/^\.\/lib\/config\.[^\.]+$/io,
