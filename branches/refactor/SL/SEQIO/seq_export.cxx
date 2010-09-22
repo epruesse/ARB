@@ -495,6 +495,7 @@ static GB_ERROR XML_recursive(GBDATA *gbd) {
                 char *content = GB_read_as_string(gbd);
                 if (content) {
                     XML_Text text(content);
+                    free(content);
                 }
                 else {
                     tag->add_attribute("error", "unsavable");
@@ -755,14 +756,17 @@ void TEST_sequence_export() {
     AP_filter *filter = NULL;
     {
         GB_transaction ta(gb_main);
-        size_t         alilen = GBT_get_alignment_len(gb_main, GBT_get_default_alignment(gb_main));
-        filter                = new AP_filter(alilen);
+
+        char   *ali    = GBT_get_default_alignment(gb_main);
+        size_t  alilen = GBT_get_alignment_len(gb_main, ali);
+        filter         = new AP_filter(alilen);
 
         GBT_mark_all(gb_main, 0);
         GBDATA *gb_species = GBT_find_species(gb_main, "MetMazei");
         TEST_ASSERT(gb_species);
 
         GB_write_flag(gb_species, 1); // mark
+        free(ali);
     }
     for (int e = 0; eft[e]; ++e) {
         for (int complete = 0; complete <= 1; ++complete) {
@@ -785,10 +789,7 @@ void TEST_sequence_export() {
 #if defined(TEST_AUTO_UPDATE)
                 system(GBS_global_string("cp %s %s", outname, expected));
 #else
-                const char *dated_formats = "#ae2.eft#paup.eft#xml.eft#";
-                bool        exports_date  = !!strstr(dated_formats, GBS_global_string("#%s#", name));
-
-                TEST_ASSERT_TEXTFILE_DIFFLINES(outname, expected, exports_date);
+                TEST_ASSERT_TEXTFILE_DIFFLINES_IGNORE_DATES(outname, expected, 0);
                 // see ../../UNIT_TESTER/run/impexp
 #endif // TEST_AUTO_UPDATE
                 TEST_ASSERT_ZERO_OR_SHOW_ERRNO(unlink(outname));

@@ -328,22 +328,123 @@ char **GBS_read_dir(const char *dir, const char *mask) {
 
 // GB_test_textfile_difflines + GB_test_files_equal are helper functions used
 // by unit tests.
-// 
+//
 // @@@ GB_test_textfile_difflines + GB_test_files_equal -> ARBCORE
 
-bool GB_test_textfile_difflines(const char *file1, const char *file2, int expected_difflines) {
+#define MAX_REGS 10
+
+class difflineMode {
+    int               mode;
+    GBS_regex        *reg[MAX_REGS];
+    const char       *replace[MAX_REGS];
+    int               count;
+    mutable GB_ERROR  error;
+
+    void add(const char *regEx, GB_CASE case_flag, const char *replacement) {
+        if (!error) {
+            gb_assert(count<MAX_REGS);
+            reg[count] = GBS_compile_regexpr(regEx, case_flag, &error);
+            if (!error) {
+                replace[count] = replacement;
+                count++;
+            }
+        }
+    }
+
+public:
+    difflineMode(int mode_)
+        : mode(mode_),
+          count(0),
+          error(NULL)
+    {
+        memset(reg, 0, sizeof(reg));
+        switch (mode) {
+            case 0: break;
+            case 1:  {
+                add("[0-9]{2}:[0-9]{2}:[0-9]{2}", GB_MIND_CASE, "<TIME>");
+                add("(Mon|Tue|Wed|Thu|Fri|Sat|Sun)", GB_IGNORE_CASE, "<DOW>");
+                add("(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Nov|Dec)", GB_IGNORE_CASE, "<MON>");
+                add("<MON>[ -][0-9]{4}", GB_IGNORE_CASE, "<MON> <YEAR>");
+                add("<TIME>[ -][0-9]{4}", GB_IGNORE_CASE, "<TIME> <YEAR>");
+                add("<MON>[ -][0-9]{2}", GB_IGNORE_CASE, "<MON> <DAY>");
+                add("[0-9]{2}[ -]<MON>", GB_IGNORE_CASE, "<DAY> <MON>");
+                break;
+            }
+            default: gb_assert(0); break;
+        }
+        printf("difflineMode with %i expressions\n", count);
+    }
+    ~difflineMode() {
+        for (int i = 0; i<count; ++i) {
+            GBS_free_regexpr(reg[i]);
+            reg[i] = NULL;
+        }
+    }
+
+    const char *get_error() const { return error; }
+    int get_count() const { return count; }
+
+    void replaceAll(char*& str) const {
+        for (int i = 0; i<count; ++i) {
+            size_t      matchlen;
+            const char *matched = GBS_regmatch_compiled(str, reg[i], &matchlen);
+
+            if (matched) {
+                char       *prefix = GB_strpartdup(str, matched-1);
+                const char *suffix = matched+matchlen;
+
+                freeset(str, GBS_global_string_copy("%s%s%s", prefix, replace[i], suffix));
+                free(prefix);
+            }
+        }
+    }
+    void replaceAll(char*& str1, char*& str2) const { replaceAll(str1); replaceAll(str2); }
+};
+
+static void cutEOL(char *s) {
+    char *lf      = strchr(s, '\n');
+    if (lf) lf[0] = 0;
+}
+
+static bool test_accept_diff_lines(const char *line1, const char *line2, const difflineMode& mode) {
+    if (*line1++ != '-') return false;
+    if (*line2++ != '+') return false;
+
+    char *dup1 = strdup(line1);
+    char *dup2 = strdup(line2);
+
+    cutEOL(dup1); // side-effect: accepts missing trailing newline
+    cutEOL(dup2);
+
+    mode.replaceAll(dup1, dup2);
+
+    bool equalNow = strcmp(dup1, dup2) == 0;
+    // printf("dup1='%s'\ndup2='%s'\n", dup1, dup2);
+
+    free(dup2);
+    free(dup1);
+
+    return equalNow;
+}
+
+bool GB_test_textfile_difflines(const char *file1, const char *file2, int expected_difflines, int special_mode) {
+    // special_modes: 0 = none, 1 = accept date and time changes as equal
     char       *cmd     = GBS_global_string_copy("/usr/bin/diff --unified %s %s", file1, file2);
     FILE       *diffout = popen(cmd, "r");
     const char *error   = NULL;
 
     if (diffout) {
 #define BUFSIZE 5000
-        char   *diff    = strdup("");
-        size_t  difflen = 0;
-        char   *buffer  = (char*)malloc(BUFSIZE);
-        int     added   = 0;
-        int     deleted = 0;
-        bool    inHunk  = false;
+        char   *diff           = strdup("");
+        size_t  difflen        = 0;
+        char   *buffer         = (char*)malloc(BUFSIZE);
+        int     added          = 0;
+        int     deleted        = 0;
+        bool    inHunk         = false;
+        int     lastLineOffset = -1;
+
+        difflineMode mode(special_mode);
+        TEST_ASSERT_NO_ERROR(mode.get_error());
 
         while (!feof(diffout)) {
             char *line = fgets(buffer, BUFSIZE, diffout);
@@ -353,23 +454,41 @@ bool GB_test_textfile_difflines(const char *file1, const char *file2, int expect
 
             test_assert(line && len<(BUFSIZE-1)); // increase BUFSIZE
 
-            if (strncmp(line, "@@", 2) == 0) inHunk = true;
+            if (strncmp(line, "@@", 2) == 0) {
+                inHunk = true;
+            }
             else if (!inHunk && strncmp(line, "Index: ", 7) == 0) inHunk = false;
             else if (inHunk) {
                 bool append = false;
 
-                if      (line[0] == '+') { added++;   append = true; }
-                else if (line[0] == '-') { deleted++; append = true; }
+                if      (line[0] == '-') { deleted++; append = true; }
+                else if (line[0] == '+') {
+                    bool accept_diff = false;
+                    if (special_mode && lastLineOffset >= 0) {
+                        accept_diff = test_accept_diff_lines(diff+lastLineOffset, line, mode);
+                    }
+                    if (!accept_diff) {
+                        added++;
+                        append = true;
+                    }
+                    else {
+                        deleted--;
+                        append        = false;
+                        difflen       = lastLineOffset;
+                        diff[difflen] = 0;
+                    }
+                }
 
                 if (append) {
-                    char *newDiff = (char*)malloc(difflen+1+len+1);
+                    char *newDiff = (char*)malloc(difflen+len+1);
+
+                    lastLineOffset = difflen;
 
                     memcpy(newDiff, diff, difflen);
-                    newDiff[difflen] = '\n';
-                    memcpy(newDiff+difflen+1, line, len+1);
+                    memcpy(newDiff+difflen, line, len+1);
 
                     freeset(diff, newDiff);
-                    difflen += len+1;
+                    difflen += len;
                 }
             }
         }
@@ -380,7 +499,6 @@ bool GB_test_textfile_difflines(const char *file1, const char *file2, int expect
         else if (added != expected_difflines) {
             error = GBS_global_string("files differ in %i lines (expected=%i)", added, expected_difflines);
         }
-
         if (error) printf("Different lines:\n%s\n", diff);
 
         free(diff);

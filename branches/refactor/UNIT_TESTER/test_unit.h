@@ -289,10 +289,10 @@ namespace arb_test {
 
 #define TEST_ASSERT_NO_ERROR(error_cond)                                \
     do {                                                                \
-        const char *error = (error_cond);                               \
-        if (error) {                                                    \
+        const char *error_ = (error_cond);                              \
+        if (error_) {                                                   \
             TEST_ERROR2("call '%s' returns unexpected error '%s'",      \
-                        #error_cond, error);                            \
+                        #error_cond, error_);                           \
         }                                                               \
     } while (0)
 
@@ -447,7 +447,11 @@ namespace arb_test {
     }
     inline bool test_textfile_difflines(const char *file1, const char *file2, int expected_difflines) {
         FlushedOutputNoLF yes;
-        return GB_test_textfile_difflines(file1, file2, expected_difflines);
+        return GB_test_textfile_difflines(file1, file2, expected_difflines, 0);
+    }
+    inline bool test_textfile_difflines_ignoreDates(const char *file1, const char *file2, int expected_difflines) {
+        FlushedOutputNoLF yes;
+        return GB_test_textfile_difflines(file1, file2, expected_difflines, 1);
     }
 };
 
@@ -456,6 +460,9 @@ namespace arb_test {
 
 #define TEST_ASSERT_TEXTFILE_DIFFLINES(f1,f2,diff)         TEST_ASSERT(arb_test::test_textfile_difflines(f1,f2, diff))
 #define TEST_ASSERT_TEXTFILE_DIFFLINES__BROKEN(f1,f2,diff) TEST_ASSERT__BROKEN(arb_test::test_textfile_difflines(f1,f2, diff))
+
+#define TEST_ASSERT_TEXTFILE_DIFFLINES_IGNORE_DATES(f1,f2,diff)         TEST_ASSERT(arb_test::test_textfile_difflines_ignoreDates(f1,f2, diff))
+#define TEST_ASSERT_TEXTFILE_DIFFLINES_IGNORE_DATES__BROKEN(f1,f2,diff) TEST_ASSERT__BROKEN(arb_test::test_textfile_difflines_ignoreDates(f1,f2, diff))
 
 #endif
 
