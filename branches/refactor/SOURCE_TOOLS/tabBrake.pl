@@ -9,10 +9,11 @@
 use strict;
 use warnings;
 
-my $forceAll = 0; # 1 -> force scan of all files if no stamp, 0 -> assume all ok, scan only new files
+my $forceAll  = 0; # 1 -> force scan of all files if no stamp, 0 -> assume all ok, scan only new files
+my $defsStart = 15; # lineno of start of definition
 
 my %scan_extension = map { $_ => 1; } (
-                                       'c', 'h', 
+                                       'c', 'h',
                                        'cxx', 'hxx',
                                        'cpp', 'hpp',
                                        'f', 'inc',
@@ -69,6 +70,7 @@ my %ignored_subdirs = map { $_ => 1; } (
                                         'GDE/SUPPORT',
                                         'GDE/PHYLIP',
                                         'patches',
+                                        'UNIT_TESTER/run',
                                         'bin',
                                        );
 
@@ -283,6 +285,9 @@ if ($exitcode==0) {
   # i.e. user inserts TAB to file -> fail once
 }
 recurse_dirs($ARBHOME,$ARBHOME);
-if ($tab_count>0) { $exitcode = 1; }
+if ($tab_count>0) {
+  $exitcode = 1;
+  print $ARBHOME.'/SOURCE_TOOLS/tabBrake.pl:'.$defsStart.': Warning: what may contain TABs is defined here'."\n";
+}
 
 exit($exitcode);
