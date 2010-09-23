@@ -42,7 +42,7 @@ char *genbank_date(char *other_date);
 void find_date(const char *date_string, int *month, int *day, int *year);
 bool two_char(const char *str, char determ);
 void find_date_long_form(char *date_string, int *month, int *day, int *year);
-int ismonth(char *string);
+int ismonth(const char *str);
 int isdatenum(char *string);
 int is_genbank_date(char *string);
 char *today_date(void);

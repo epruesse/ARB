@@ -7,10 +7,23 @@
 #include "convert.h"
 #include "global.h"
 
-#define SIZE    128
-static const char *mon[12] = {
-    "JAN", "FEB", "MAR", "APR", "MAY", "JUN",
-    "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"
+#define SIZE 128 // default buffer size for generated dates
+
+static const char *ERROR_DATE = "\?\?-\?\?\?-\?\?\?\?";
+
+static const char *MON[12] = {
+    "JAN", "FEB", "MAR",
+    "APR", "MAY", "JUN",
+    "JUL", "AUG", "SEP",
+    "OCT", "NOV", "DEC"
+};
+
+
+static const char *Month[12] = {
+    "January", "February", "March",
+    "April",   "May",      "June",
+    "July",    "August",   "September",
+    "October", "November", "December"
 };
 
 /* --------------------------------------------------------------------
@@ -44,20 +57,19 @@ char *genbank_date(char *other_date) {
     else {
         sprintf(temp, "Unknown date format: %s, cannot convert.\n", other_date);
         warning(146, temp);
-        return (Dupstr("\?\?-\?\?\?-\?\?\?\?"));
+        return Dupstr(ERROR_DATE);
     }
     if (day <= 0 || month <= 0 || year <= 0 || day > 31 || month > 12) {
         sprintf(temp, "Wrong date format: %s\n", other_date);
         warning(147, temp);
-        return (Dupstr("\?\?-\?\?\?-\?\?\?\?"));
+        return Dupstr(ERROR_DATE);
     }
-    if (day < 10)
-        sprintf(temp, "0%d-%s-19%d", day, mon[month - 1], year);
-    else
-        sprintf(temp, "%d-%s-19%d", day, mon[month - 1], year);
-    gdate = (char *)Dupstr(temp);
-    return (gdate);
+    
+    if (day < 10) sprintf(temp, "0%d-%s-19%d", day, MON[month - 1], year);
+    else          sprintf(temp, "%d-%s-19%d", day, MON[month - 1], year);
 
+    gdate = (char *)Dupstr(temp);
+    return gdate;
 }
 
 /* -----------------------------------------------------------
@@ -149,26 +161,17 @@ void find_date_long_form(char *date_string, int *month, int *day, int *year) {
 
 /* --------------------------------------------------------------------
  *   Function ismonth().
- *       Return true if the char string is one of 12 months.
+ *       Return [1..12] if the char string is one of 12 months.
  *           Case insensitive.
  */
-int ismonth(char *string) {
-    int num = 0;
-
-    // @@@ all conditions are wrong! (now it's obvious)
-    if      (str_iequal(string, "JAN") == 0) num = 1;
-    else if (str_iequal(string, "FEB") == 0) num = 2;
-    else if (str_iequal(string, "MAR") == 0) num = 3;
-    else if (str_iequal(string, "APR") == 0) num = 4;
-    else if (str_iequal(string, "MAY") == 0) num = 5;
-    else if (str_iequal(string, "JUN") == 0) num = 6;
-    else if (str_iequal(string, "JUL") == 0) num = 7;
-    else if (str_iequal(string, "AUG") == 0) num = 8;
-    else if (str_iequal(string, "SEP") == 0) num = 9;
-    else if (str_iequal(string, "OCT") == 0) num = 10;
-    else if (str_iequal(string, "NOV") == 0) num = 11;
-    else if (str_iequal(string, "DEC") == 0) num = 12;
-    return (num);
+int ismonth(const char *str) {
+    for (int i = 0; i<12; i++) {
+        // @@@ condition is wrong! (now it's obvious)
+        if (str_iequal(str, MON[i]) == 0) {
+            return i+1;
+        }
+    }
+    return 0;
 }
 
 /* ------------------------------------------------------------------
@@ -227,11 +230,11 @@ char *today_date() {
  *       Create gcg format of date.
  */
 char *gcg_date(char *date_string) {
-    static char date[128];
+    static char date[SIZE];
 
     ca_assert(strlen(date_string) >= 8);
 
-    char temp[128];
+    char temp[SIZE];
     temp[0] = '\0';
 
     ca_assert(date_string[7] == ' ');
@@ -249,10 +252,10 @@ char *gcg_date(char *date_string) {
     else if (str_equal("Oct", date_string + 4)) Catstr(temp, "October");
     else if (str_equal("Nov", date_string + 4)) Catstr(temp, "November");
     else if (str_equal("Dec", date_string + 4)) Catstr(temp, "December");
-    
+
     date_string[7] = ' ';
 
-    char time[128];
+    char time[SIZE];
     int  day, year;
     int  scanned = sscanf(date_string + 8, "%d %s %d", &day, time, &year);
     ca_assert(scanned == 3);
@@ -299,8 +302,6 @@ char *gcg_date(char *date_string) {
 
 
 void TEST_conv_date() {
-    const char *error_date = "\?\?-\?\?\?-\?\?\?\?";
-
     // @@@ broken behavior (day completely broken, month contains day, year<100)
     TEST_ASSERT_FIND_____DATE("19-APR-1999", 0, 19, 99);
     TEST_ASSERT_FIND_____DATE("22-SEP-2010", 0, 22, 10);
@@ -315,13 +316,15 @@ void TEST_conv_date() {
     // TEST_ASSERT_FIND_LONGDATE("Mon Apr 19 25:46:19 CEST 1999", 19, 4, 1999);
     // TEST_ASSERT_FIND_LONGDATE("Wed Sep 22 19:46:25 CEST 2010", 22, 9, 2010);
     
-    TEST_ASSERT_GENBANK_DATE("19 Apr 1999", error_date); // "Wrong date format"
+    TEST_ASSERT_GENBANK_DATE("19 Apr 1999", ERROR_DATE); // "Wrong date format"
 
     TEST_ASSERT_GENBANK_DATE("19-APR-1999", "19-APR-1999");
     TEST_ASSERT_GENBANK_DATE("22-SEP-2010", "22-SEP-2010");
 
     TEST_ASSERT_GENBANK_DATE__BROKEN("Wed Sep 22 19:46:25 CEST 2010", "22-SEP-2010");
 
+    TEST_ASSERT_EQUAL__BROKEN(ismonth("Apr"), 4);
+    
     TEST_ASSERT_GCG_DATE("Mon Apr 19 25:46:19 1999", "April 19, 1999  25:46:19");
     TEST_ASSERT_GCG_DATE("Wed Sep 22 19:46:25 2010", "September 22, 2010  19:46:25");
     TEST_ASSERT(gcg_date(today_date())); // gcg_date is only used like this
