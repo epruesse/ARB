@@ -166,8 +166,7 @@ void find_date_long_form(char *date_string, int *month, int *day, int *year) {
  */
 int ismonth(const char *str) {
     for (int i = 0; i<12; i++) {
-        // @@@ condition is wrong! (now it's obvious)
-        if (str_iequal(str, MON[i]) == 0) {
+        if (str_iequal(str, MON[i])) {
             return i+1;
         }
     }
@@ -310,20 +309,19 @@ void TEST_conv_date() {
     // TEST_ASSERT_FIND_____DATE("22-SEP-2010", 22, 9, 2010);
 
     // @@@ broken behavior (month completely broken, year<100)
-    TEST_ASSERT_FIND_LONGDATE("Mon Apr 19 25:46:19 CEST 1999", 19, 1, 99);
-    TEST_ASSERT_FIND_LONGDATE("Wed Sep 22 19:46:25 CEST 2010", 22, 1, 10);
+    TEST_ASSERT_FIND_LONGDATE("Mon Apr 19 25:46:19 CEST 1999", 19, 4, 99);
+    TEST_ASSERT_FIND_LONGDATE("Wed Sep 22 19:46:25 CEST 2010", 22, 9, 10);
     MISSING_TEST(correct behavior);
     // TEST_ASSERT_FIND_LONGDATE("Mon Apr 19 25:46:19 CEST 1999", 19, 4, 1999);
     // TEST_ASSERT_FIND_LONGDATE("Wed Sep 22 19:46:25 CEST 2010", 22, 9, 2010);
     
-    TEST_ASSERT_GENBANK_DATE("19 Apr 1999", ERROR_DATE); // "Wrong date format"
-
+    TEST_ASSERT_GENBANK_DATE("19 Apr 1999", "19-APR-1999");
     TEST_ASSERT_GENBANK_DATE("19-APR-1999", "19-APR-1999");
     TEST_ASSERT_GENBANK_DATE("22-SEP-2010", "22-SEP-2010");
 
     TEST_ASSERT_GENBANK_DATE__BROKEN("Wed Sep 22 19:46:25 CEST 2010", "22-SEP-2010");
 
-    TEST_ASSERT_EQUAL__BROKEN(ismonth("Apr"), 4);
+    TEST_ASSERT_EQUAL(ismonth("Apr"), 4);
     
     TEST_ASSERT_GCG_DATE("Mon Apr 19 25:46:19 1999", "April 19, 1999  25:46:19");
     TEST_ASSERT_GCG_DATE("Wed Sep 22 19:46:25 2010", "September 22, 2010  19:46:25");
