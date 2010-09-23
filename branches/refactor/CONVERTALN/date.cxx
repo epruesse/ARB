@@ -301,31 +301,63 @@ char *gcg_date(char *date_string) {
 
 
 void TEST_conv_date() {
+    TEST_ASSERT_EQUAL(ismonth("Apr"), 4);
+
     // @@@ broken behavior (day completely broken, month contains day, year<100)
+    TEST_ASSERT_FIND_____DATE("19-APR-99", 0, 19, 99);
+    TEST_ASSERT_FIND_____DATE("22-JUN-65", 0, 22, 65);
+    TEST_ASSERT_FIND_____DATE("5-SEP-10", 0, 5, 10);
+    TEST_ASSERT_FIND_____DATE("05-SEP-10", 0, 5, 10);
+
     TEST_ASSERT_FIND_____DATE("19-APR-1999", 0, 19, 99);
-    TEST_ASSERT_FIND_____DATE("22-SEP-2010", 0, 22, 10);
+    TEST_ASSERT_FIND_____DATE("22-JUN-1965", 0, 22, 65); // test date b4 epoch
+    TEST_ASSERT_FIND_____DATE("5-SEP-2010", 0, 5, 10);
+    TEST_ASSERT_FIND_____DATE("05-SEP-2010", 0, 5, 10);
+
     MISSING_TEST(correct behavior);
     // TEST_ASSERT_FIND_____DATE("19-APR-1999", 19, 4, 1999);
     // TEST_ASSERT_FIND_____DATE("22-SEP-2010", 22, 9, 2010);
 
+    // --------------------
+
     // @@@ broken behavior (month completely broken, year<100)
+    TEST_ASSERT_FIND_LONGDATE("Mon Apr 19 25:46:19 CEST 99", 19, 4, 99);
+    TEST_ASSERT_FIND_LONGDATE("Tue Jun 22 05:11:00 CEST 65", 22, 6, 65);
+    TEST_ASSERT_FIND_LONGDATE("Wed Sep 5 19:46:25 CEST 10", 5, 9, 10);
+    TEST_ASSERT_FIND_LONGDATE("Wed Sep 05 19:46:25 CEST 10", 5, 9, 10);
+
     TEST_ASSERT_FIND_LONGDATE("Mon Apr 19 25:46:19 CEST 1999", 19, 4, 99);
-    TEST_ASSERT_FIND_LONGDATE("Wed Sep 22 19:46:25 CEST 2010", 22, 9, 10);
+    TEST_ASSERT_FIND_LONGDATE("Tue Jun 22 05:11:00 CEST 1965", 22, 6, 65);
+    TEST_ASSERT_FIND_LONGDATE("Wed Sep 5 19:46:25 CEST 2010", 5, 9, 10);
+    TEST_ASSERT_FIND_LONGDATE("Wed Sep 05 19:46:25 CEST 2010", 5, 9, 10);
+    
     MISSING_TEST(correct behavior);
     // TEST_ASSERT_FIND_LONGDATE("Mon Apr 19 25:46:19 CEST 1999", 19, 4, 1999);
     // TEST_ASSERT_FIND_LONGDATE("Wed Sep 22 19:46:25 CEST 2010", 22, 9, 2010);
+
+    // --------------------
     
     TEST_ASSERT_GENBANK_DATE("19 Apr 1999", "19-APR-1999");
     TEST_ASSERT_GENBANK_DATE("19-APR-1999", "19-APR-1999");
-    TEST_ASSERT_GENBANK_DATE("22-SEP-2010", "22-SEP-2010");
+    TEST_ASSERT_GENBANK_DATE("22-JUN-1965", "22-JUN-1965");
+    TEST_ASSERT_GENBANK_DATE("5-SEP-2010", ERROR_DATE);
+    TEST_ASSERT_GENBANK_DATE("05-SEP-2010", "05-SEP-2010");
 
-    TEST_ASSERT_GENBANK_DATE__BROKEN("Wed Sep 22 19:46:25 CEST 2010", "22-SEP-2010");
+    TEST_ASSERT_GENBANK_DATE        ("Mon Apr 19 25:46:19 CEST 1999", "19-APR-1999");
+    TEST_ASSERT_GENBANK_DATE        ("Tue Jun 22 05:11:00 CEST 1965", "22-JUN-1965");
+    TEST_ASSERT_GENBANK_DATE__BROKEN("Wed Sep 5 19:46:25 CEST 2010",  "05-SEP-2010");
+    TEST_ASSERT_GENBANK_DATE__BROKEN("Wed Sep 05 19:46:25 CEST 2010", "05-SEP-2010");
 
-    TEST_ASSERT_EQUAL(ismonth("Apr"), 4);
-    
+    // --------------------
+
+    TEST_ASSERT_GCG_DATE("Mon Apr 19 25:46:19 99", "April 19, 99  25:46:19");
+
     TEST_ASSERT_GCG_DATE("Mon Apr 19 25:46:19 1999", "April 19, 1999  25:46:19");
-    TEST_ASSERT_GCG_DATE("Wed Sep 22 19:46:25 2010", "September 22, 2010  19:46:25");
-    TEST_ASSERT(gcg_date(today_date())); // gcg_date is only used like this
+    TEST_ASSERT_GCG_DATE("Tue Jun 22 05:11:00 1965", "June 22, 1965  05:11:00");
+    TEST_ASSERT_GCG_DATE("Wed Sep 5 19:46:25 2010", "September 5, 2010  19:46:25");
+    TEST_ASSERT_GCG_DATE("Wed Sep 05 19:46:25 2010", "September 5, 2010  19:46:25");
+
+    TEST_ASSERT(gcg_date(today_date())); // currently gcg_date is only used like this
 }
 
 #endif // UNIT_TESTS
