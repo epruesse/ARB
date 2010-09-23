@@ -2,7 +2,6 @@
 #include "convert.h"
 #include "global.h"
 
-#include <assert.h>
 #include <errno.h>
 
 /* ---------------------------------------------------------------
@@ -40,7 +39,7 @@ void to_phylip(char *inf, char *outf, int informat, int readstdin)
     ifp = create_FILE_BUFFER(inf, IFP);
     if (Lenstr(outf) <= 0) {
         ofp = stdout;
-        assert(0);              // can't use stdout (because rewind is used below)
+        ca_assert(0); // can't use stdout (because rewind is used below)
         error(140, "Cannot write to standard output, EXIT\n");
     }
     else if ((ofp = fopen(outf, "w")) == NULL) {
@@ -149,7 +148,7 @@ void to_phylip(char *inf, char *outf, int informat, int readstdin)
     /* rewrite output header */
     errno = 0;
     rewind(ofp);
-    assert(errno == 0);
+    ca_assert(errno == 0);
     if (errno) {
         perror("rewind error");
         sprintf(temp, "Failed to rewind file (errno=%i), EXIT\n", errno);
@@ -163,7 +162,7 @@ void to_phylip(char *inf, char *outf, int informat, int readstdin)
 
     if (headersize1 != headersize2) {
         sprintf(temp, "Failed to rewrite header (headersize differs: %i != %i), EXIT\n", headersize1, headersize2);
-        assert(0);
+        ca_assert(0);
         error(142, temp);
     }
 

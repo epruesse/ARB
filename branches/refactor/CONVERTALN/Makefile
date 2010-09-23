@@ -86,6 +86,7 @@ date.o: $(ARBHOME)/INCLUDE/attributes.h
 date.o: $(ARBHOME)/INCLUDE/dupstr.h
 date.o: $(ARBHOME)/INCLUDE/FileBuffer.h
 date.o: $(ARBHOME)/INCLUDE/test_global.h
+date.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 embl.o: convert.h
 embl.o: global.h

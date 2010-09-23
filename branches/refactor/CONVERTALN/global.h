@@ -18,6 +18,8 @@
 #include "prototypes.h"
 #endif
 
+#define ca_assert(cond) arb_assert(cond)
+
 #define LINENUM         126
 #define LONGTEXT        5000
 #define TOKENNUM        80

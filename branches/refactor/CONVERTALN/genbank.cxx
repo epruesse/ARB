@@ -4,7 +4,6 @@
 #include <ctype.h>
 #include "convert.h"
 #include "global.h"
-#include <assert.h>
 
 #define NOPERIOD    0
 #define PERIOD      1
@@ -511,7 +510,7 @@ const char *genbank_comments(char *line, FILE_BUFFER fp)
         }
         else {                  /* other comments */
 
-            assert(ptr == 12);
+            ca_assert(ptr == 12);
             if (data.gbk.comments.others == NULL) {
                 data.gbk.comments.others = (char *)Dupstr(line + ptr);
             }
