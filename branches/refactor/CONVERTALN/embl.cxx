@@ -96,27 +96,27 @@ char embl_in(FILE_BUFFER fp) {
         embl_key_word(line, 0, key, TOKENNUM);
         eoen = 'n';
 
-        if ((Cmpstr(key, "ID")) == EQ) {
+        if (str_equal(key, "ID")) {
             eof = embl_one_entry(line, fp, &(data.embl.id), key);
 
         }
-        else if ((Cmpstr(key, "DT")) == EQ) {
+        else if (str_equal(key, "DT")) {
             eof = embl_date(line, fp);
 
         }
-        else if ((Cmpstr(key, "DE")) == EQ) {
+        else if (str_equal(key, "DE")) {
             eof = embl_one_entry(line, fp, &(data.embl.description), key);
 
         }
-        else if ((Cmpstr(key, "OS")) == EQ) {
+        else if (str_equal(key, "OS")) {
             eof = embl_one_entry(line, fp, &(data.embl.os), key);
 
         }
-        else if ((Cmpstr(key, "AC")) == EQ) {
+        else if (str_equal(key, "AC")) {
             eof = embl_one_entry(line, fp, &(data.embl.accession), key);
 
         }
-        else if ((Cmpstr(key, "KW")) == EQ) {
+        else if (str_equal(key, "KW")) {
             eof = embl_one_entry(line, fp, &(data.embl.keywords), key);
 
             /* correct missing '.' */
@@ -127,18 +127,18 @@ char embl_in(FILE_BUFFER fp) {
                 Append_char(&(data.embl.keywords), '.');
 
         }
-        else if ((Cmpstr(key, "DR")) == EQ) {
+        else if (str_equal(key, "DR")) {
             eof = embl_one_entry(line, fp, &(data.embl.dr), key);
 
         }
-        else if ((Cmpstr(key, "RA")) == EQ) {
+        else if (str_equal(key, "RA")) {
 
             refnum = data.embl.numofref - 1;
             eof = embl_one_entry(line, fp, &(data.embl.reference[refnum].author), key);
             Append_char(&(data.embl.reference[refnum].author), ';');
 
         }
-        else if ((Cmpstr(key, "RT")) == EQ) {
+        else if (str_equal(key, "RT")) {
 
             refnum = data.embl.numofref - 1;
             eof = embl_one_entry(line, fp, &(data.embl.reference[refnum].title), key);
@@ -147,30 +147,30 @@ char embl_in(FILE_BUFFER fp) {
             embl_verify_title(refnum);
 
         }
-        else if ((Cmpstr(key, "RL")) == EQ) {
+        else if (str_equal(key, "RL")) {
 
             refnum = data.embl.numofref - 1;
             eof = embl_one_entry(line, fp, &(data.embl.reference[refnum].journal), key);
             Append_char(&(data.embl.reference[refnum].journal), '.');
 
         }
-        else if ((Cmpstr(key, "RP")) == EQ) {
+        else if (str_equal(key, "RP")) {
 
             refnum = data.embl.numofref - 1;
             eof = embl_one_entry(line, fp, &(data.embl.reference[refnum].processing), key);
 
         }
-        else if ((Cmpstr(key, "RN")) == EQ) {
+        else if (str_equal(key, "RN")) {
 
             eof = embl_version(line, fp);
 
         }
-        else if ((Cmpstr(key, "CC")) == EQ) {
+        else if (str_equal(key, "CC")) {
 
             eof = embl_comments(line, fp);
 
         }
-        else if ((Cmpstr(key, "SQ")) == EQ) {
+        else if (str_equal(key, "SQ")) {
 
             eof = embl_origin(line, fp);
             eoen = 'y';
@@ -215,10 +215,10 @@ char embl_in_id(FILE_BUFFER fp) {
         embl_key_word(line, 0, key, TOKENNUM);
         eoen = 'n';
 
-        if ((Cmpstr(key, "ID")) == EQ) {
+        if (str_equal(key, "ID")) {
             eof = embl_one_entry(line, fp, &(data.embl.id), key);
         }
-        else if ((Cmpstr(key, "SQ")) == EQ) {
+        else if (str_equal(key, "SQ")) {
             eof = embl_origin(line, fp);
             eoen = 'y';
         }
@@ -296,7 +296,7 @@ char *embl_continue_line(char *pattern, char **string, char *line, FILE_BUFFER f
 
         embl_key_word(line, 0, key, TOKENNUM);
 
-        if (Cmpstr(pattern, key) != EQ)
+        if (!str_equal(pattern, key))
             break;
 
         /* remove end-of-line, if there is any */
@@ -364,14 +364,14 @@ char *embl_date(char *line, FILE_BUFFER fp) {
 
     eof = Fgetline(line, LINENUM, fp);
     embl_key_word(line, 0, key, TOKENNUM);
-    if ((Cmpstr(key, "DT")) == EQ) {
+    if (str_equal(key, "DT")) {
         index = Skip_white_space(line, p_nonkey_start);
         replace_entry(&(data.embl.datec), line + index);
         /* skip the rest of DT lines */
         do {
             eof = Fgetline(line, LINENUM, fp);
             embl_key_word(line, 0, key, TOKENNUM);
-        } while (eof != NULL && Cmpstr(key, "DT") == EQ);
+        } while (eof != NULL && str_equal(key, "DT"));
         return (eof);
     }
     else {
@@ -427,50 +427,50 @@ char *embl_comments(char *line, FILE_BUFFER fp) {
         index = Skip_white_space(line, 5);
         offset = embl_comment_key(line + index, key);
         index = Skip_white_space(line, index + offset);
-        if (Cmpstr(key, "Source of strain:") == EQ) {
+        if (str_equal(key, "Source of strain:")) {
             eof = embl_one_comment_entry(fp, &(data.embl.comments.orginf.source), line, index);
 
         }
-        else if (Cmpstr(key, "Culture collection:") == EQ) {
+        else if (str_equal(key, "Culture collection:")) {
 
             eof = embl_one_comment_entry(fp, &(data.embl.comments.orginf.cc), line, index);
 
         }
-        else if (Cmpstr(key, "Former name:") == EQ) {
+        else if (str_equal(key, "Former name:")) {
 
             eof = embl_one_comment_entry(fp, &(data.embl.comments.orginf.formname), line, index);
 
         }
-        else if (Cmpstr(key, "Alternate name:") == EQ) {
+        else if (str_equal(key, "Alternate name:")) {
 
             eof = embl_one_comment_entry(fp, &(data.embl.comments.orginf.nickname), line, index);
 
         }
-        else if (Cmpstr(key, "Common name:") == EQ) {
+        else if (str_equal(key, "Common name:")) {
 
             eof = embl_one_comment_entry(fp, &(data.embl.comments.orginf.commname), line, index);
 
         }
-        else if (Cmpstr(key, "Host organism:") == EQ) {
+        else if (str_equal(key, "Host organism:")) {
 
             eof = embl_one_comment_entry(fp, &(data.embl.comments.orginf.hostorg), line, index);
 
         }
-        else if (Cmpstr(key, "RDP ID:") == EQ) {
+        else if (str_equal(key, "RDP ID:")) {
             eof = embl_one_comment_entry(fp, &(data.embl.comments.seqinf.RDPid), line, index);
 
         }
-        else if (Cmpstr(key, "Corresponding GenBank entry:") == EQ) {
+        else if (str_equal(key, "Corresponding GenBank entry:")) {
 
             eof = embl_one_comment_entry(fp, &(data.embl.comments.seqinf.gbkentry), line, index);
 
         }
-        else if (Cmpstr(key, "Sequencing methods:") == EQ) {
+        else if (str_equal(key, "Sequencing methods:")) {
 
             eof = embl_one_comment_entry(fp, &(data.embl.comments.seqinf.methods), line, index);
 
         }
-        else if (Cmpstr(key, "5' end complete:") == EQ) {
+        else if (str_equal(key, "5' end complete:")) {
 
             sscanf(line + index, "%s", key);
             if (key[0] == 'Y')
@@ -481,7 +481,7 @@ char *embl_comments(char *line, FILE_BUFFER fp) {
             eof = Fgetline(line, LINENUM, fp);
 
         }
-        else if (Cmpstr(key, "3' end complete:") == EQ) {
+        else if (str_equal(key, "3' end complete:")) {
 
             sscanf(line + index, "%s", key);
             if (key[0] == 'Y')
@@ -492,7 +492,7 @@ char *embl_comments(char *line, FILE_BUFFER fp) {
             eof = Fgetline(line, LINENUM, fp);
 
         }
-        else if (Cmpstr(key, "Sequence information ") == EQ) {
+        else if (str_equal(key, "Sequence information ")) {
 
             /* do nothing */
             data.embl.comments.seqinf.exist = 1;
@@ -500,7 +500,7 @@ char *embl_comments(char *line, FILE_BUFFER fp) {
             eof = Fgetline(line, LINENUM, fp);
 
         }
-        else if (Cmpstr(key, "Organism information") == EQ) {
+        else if (str_equal(key, "Organism information")) {
 
             /* do nothing */
             data.embl.comments.orginf.exist = 1;
@@ -535,7 +535,7 @@ char *embl_skip_unidentified(char *pattern, char *line, FILE_BUFFER fp) {
     /* check continue lines */
     for (eof = Fgetline(line, LINENUM, fp); eof != NULL; eof = Fgetline(line, LINENUM, fp)) {
         embl_key_word(line, 0, key, TOKENNUM);
-        if (Cmpstr(key, pattern) != EQ)
+        if (!str_equal(key, pattern))
             break;
     }                           /* end of continue line checking */
     return (eof);
@@ -1080,8 +1080,8 @@ int etog() {
         /* get short_id from DR line if there is RDP def. */
         Cpystr(t3, "dummy");
         sscanf(data.embl.dr, "%s %s %s", t1, t2, t3);
-        if (Cmpstr(t1, "RDP;") == EQ) {
-            if (Cmpstr(t3, "dummy") != EQ) {
+        if (str_equal(t1, "RDP;")) {
+            if (!str_equal(t3, "dummy")) {
                 Cpystr(key, t3);
             }
             else
@@ -1245,7 +1245,7 @@ char *etog_journal(char *string) {
     char  token[TOKENNUM];
 
     sscanf(string, "%s", token);
-    if (Cmpstr(token, "(in)") == EQ || Cmpstr(token, "Submitted") == EQ || Cmpstr(token, "Unpublished") == EQ) {
+    if (str_equal(token, "(in)") == 1 || str_equal(token, "Submitted") || str_equal(token, "Unpublished")) {
         /* remove '.' */
         string[Lenstr(string) - 2] = '\n';
         string[Lenstr(string) - 1] = '\0';
@@ -1541,7 +1541,7 @@ char *gtoe_journal(char *string) {
     int  indi, indj, index, len;
 
     sscanf(string, "%s", token);
-    if (Cmpstr(token, "(in)") == EQ || Cmpstr(token, "Unpublished") == EQ || Cmpstr(token, "Submitted") == EQ) {
+    if (str_equal(token, "(in)") == 1 || str_equal(token, "Unpublished") || str_equal(token, "Submitted")) {
         journal = (char *)Dupstr(string);
         Append_char(&journal, '.');
         return (journal);

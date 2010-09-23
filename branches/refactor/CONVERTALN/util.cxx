@@ -7,35 +7,6 @@
 
 int warning_out = 1;
 
-/* --------------------------------------------------------------
- *   Function Cmpstr().
- *       Compare string s1 and string s2, if eq. return 1
- *           else return 0.
- */
-int Cmpcasestr(const char *s1, const char *s2)
-{
-    int indi;
-
-    for (indi = 0; s1[indi] != '\0' && s2[indi] != '\0'; indi++)
-        if (!same_char(s1[indi], s2[indi]))
-            return (0);
-
-    return (same_char(s1[indi], s2[indi]));
-}
-
-/* --------------------------------------------------------------
- *   Function Cmpstr().
- *       Compare string s1 and string s2, if eq. return 1
- *           else return 0.
- */
-int Cmpstr(const char *s1, const char *s2)
-{
-    if (strcmp(s1, s2) == 0)
-        return (1);
-    else
-        return (0);
-}
-
 /* --------------------------------------------------------------- *
  *   Function Freespace().
  *   Free the pointer if not NULL.

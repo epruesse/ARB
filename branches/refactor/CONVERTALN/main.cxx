@@ -229,13 +229,13 @@ int file_type(char *filename)
         error(5, temp);
     }
     fscanf(fp, "%s", token);
-    if (Cmpstr(token, "LOCUS") == EQ)
+    if (str_equal(token, "LOCUS"))
         return (GENBANK);
-    else if (Cmpstr(token, "#-") == EQ)
+    else if (str_equal(token, "#-"))
         return (MACKE);
-    else if (Cmpstr(token, "ID") == EQ)
+    else if (str_equal(token, "ID"))
         return (PROTEIN);
-    else if (Cmpstr(token, "#NEXUS") == EQ)
+    else if (str_equal(token, "#NEXUS"))
         return (PAUP);
     else if (isnum(token))
         return (PHYLIP);

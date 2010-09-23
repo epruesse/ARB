@@ -55,7 +55,7 @@ void to_gcg(int intype, char *inf)
                 error(39, temp);
             }
             for (macke_abbrev(line2, name, 2);
-                 eof2 != NULL && line2[0] == '#' && line2[1] == ':' && Cmpstr(name, key) == EQ;
+                 eof2 != NULL && line2[0] == '#' && line2[1] == ':' && str_equal(name, key);
                  eof2 = Fgetline(line2, LINENUM, ifp2), macke_abbrev(line2, name, 2))
                 gcg_doc_out(line2, ofp);
             eof3 = macke_origin(key, line3, ifp3);
@@ -70,7 +70,7 @@ void to_gcg(int intype, char *inf)
         while (eof != NULL) {
             if (intype == GENBANK) {
                 genbank_key_word(line, 0, temp, TOKENNUM);
-                if ((Cmpstr(temp, "LOCUS")) == EQ) {
+                if (str_equal(temp, "LOCUS")) {
                     genbank_key_word(line + 12, 0, key, TOKENNUM);
                     gcg_output_filename(key, outf);
                     if ((ofp = fopen(outf, "w")) == NULL) {
@@ -78,7 +78,7 @@ void to_gcg(int intype, char *inf)
                         error(40, temp);
                     }
                 }
-                else if (Cmpstr(temp, "ORIGIN") == EQ) {
+                else if (str_equal(temp, "ORIGIN")) {
                     gcg_doc_out(line, ofp);
                     seqdata = 1;
                     eof = genbank_origin(line, ifp1);

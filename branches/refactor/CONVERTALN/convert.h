@@ -7,8 +7,6 @@
 #define INITSEQ 6000
 #define RNA     0
 #define NONRNA  1
-#define EQ      1
-#define NONEQ   0
 
 #define GENBANK   'g'
 #define MACKE     'm'

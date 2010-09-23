@@ -5,6 +5,11 @@
 #ifndef PROTOTYPES_H
 #define PROTOTYPES_H
 
+/* define ARB attributes: */
+#ifndef ATTRIBUTES_H
+# include <attributes.h>
+#endif
+
 
 /* alma.cxx */
 void init_alma(void);
@@ -193,8 +198,6 @@ void count_base(int *base_a, int *base_t, int *base_g, int *base_c, int *base_ot
 void replace_entry(char **string1, const char *string2);
 
 /* util.cxx */
-int Cmpcasestr(const char *s1, const char *s2);
-int Cmpstr(const char *s1, const char *s2);
 void Freespace(void *pointer);
 void error(int error_num, const char *error_message);
 void warning(int warning_num, const char *warning_message);

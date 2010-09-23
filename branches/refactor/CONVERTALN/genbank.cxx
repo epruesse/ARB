@@ -88,14 +88,14 @@ char genbank_in(FILE_BUFFER fp) {
 
         eoen = 'n';
 
-        if ((Cmpstr(key, "LOCUS")) == EQ) {
+        if (str_equal(key, "LOCUS")) {
 
             eof = genbank_one_entry_in(&data.gbk.locus, line, fp);
             if (Lenstr(data.gbk.locus) < 61)
                 warning(14, "LOCUS data might be incomplete");
 
         }
-        else if ((Cmpstr(key, "DEFINITION")) == EQ) {
+        else if (str_equal(key, "DEFINITION")) {
 
             eof = genbank_one_entry_in(&data.gbk.definition, line, fp);
 
@@ -103,35 +103,35 @@ char genbank_in(FILE_BUFFER fp) {
             Append_char(&(data.gbk.definition), '.');
 
         }
-        else if ((Cmpstr(key, "ACCESSION")) == EQ) {
+        else if (str_equal(key, "ACCESSION")) {
 
             eof = genbank_one_entry_in(&data.gbk.accession, line, fp);
 
             genbank_verify_accession();
 
         }
-        else if ((Cmpstr(key, "KEYWORDS")) == EQ) {
+        else if (str_equal(key, "KEYWORDS")) {
 
             eof = genbank_one_entry_in(&data.gbk.keywords, line, fp);
             genbank_verify_keywords();
 
         }
-        else if ((Cmpstr(key, "SOURCE")) == EQ) {
+        else if (str_equal(key, "SOURCE")) {
             eof = genbank_source(line, fp);
             /* correct missing '.' at the end */
             Append_char(&(data.gbk.source), '.');
             Append_char(&(data.gbk.organism), '.');
         }
-        else if ((Cmpstr(key, "REFERENCE")) == EQ) {
+        else if (str_equal(key, "REFERENCE")) {
             eof = genbank_reference(line, fp);
         }
-        else if ((Cmpstr(key, "COMMENTS")) == EQ) {
+        else if (str_equal(key, "COMMENTS")) {
             eof = genbank_comments(line, fp);
         }
-        else if ((Cmpstr(key, "COMMENT")) == EQ) {
+        else if (str_equal(key, "COMMENT")) {
             eof = genbank_comments(line, fp);
         }
-        else if ((Cmpstr(key, "ORIGIN")) == EQ) {
+        else if (str_equal(key, "ORIGIN")) {
             eof = genbank_origin(line, fp);
             eoen = 'y';
         }
@@ -295,7 +295,7 @@ char *genbank_source(char *line, FILE_BUFFER fp)
 
     eof = genbank_one_entry_in(&(data.gbk.source), line, fp);
     genbank_key_word(line, 2, key, TOKENNUM);
-    if (Cmpstr(key, "ORGANISM") == EQ) {
+    if (str_equal(key, "ORGANISM")) {
         index = Skip_white_space(line, 12);
         data.gbk.organism = Dupstr(line + index);
         dummy = (char *)Dupstr("\n");
@@ -337,7 +337,7 @@ char *genbank_reference(char *line, FILE_BUFFER fp)
         /* find the key word */
         genbank_key_word(line, 2, key, TOKENNUM);
         /* skip white space */
-        if ((Cmpstr(key, "AUTHORS")) == EQ) {
+        if (str_equal(key, "AUTHORS")) {
             eof = genbank_one_entry_in(&(data.gbk.reference[refnum - 1].author), line, fp);
 
             /* add '.' if missing at the end */
@@ -352,7 +352,7 @@ char *genbank_reference(char *line, FILE_BUFFER fp)
             }
 
         }
-        else if ((Cmpstr(key, "TITLE")) == EQ) {
+        else if (str_equal(key, "TITLE")) {
             eof = genbank_one_entry_in(&(data.gbk.reference[refnum - 1].title), line, fp);
             if (tcount == 0)
                 tcount = 1;
@@ -363,7 +363,7 @@ char *genbank_reference(char *line, FILE_BUFFER fp)
                 warning(11, temp);
             }
         }
-        else if ((Cmpstr(key, "JOURNAL")) == EQ) {
+        else if (str_equal(key, "JOURNAL")) {
 
             eof = genbank_one_entry_in(&(data.gbk.reference[refnum - 1].journal), line, fp);
 
@@ -376,7 +376,7 @@ char *genbank_reference(char *line, FILE_BUFFER fp)
                 warning(12, temp);
             }
         }
-        else if ((Cmpstr(key, "STANDARD")) == EQ) {
+        else if (str_equal(key, "STANDARD")) {
 
             eof = genbank_one_entry_in(&(data.gbk.reference[refnum - 1].standard), line, fp);
 
@@ -439,50 +439,50 @@ const char *genbank_comments(char *line, FILE_BUFFER fp)
         }
 #endif /* DEBUG */
 
-        if (Cmpstr(key, "Source of strain:") == EQ) {
+        if (str_equal(key, "Source of strain:")) {
             eof = genbank_one_comment_entry(&(data.gbk.comments.orginf.source), line, index, fp);
 
         }
-        else if (Cmpstr(key, "Culture collection:") == EQ) {
+        else if (str_equal(key, "Culture collection:")) {
 
             eof = genbank_one_comment_entry(&(data.gbk.comments.orginf.cc), line, index, fp);
 
         }
-        else if (Cmpstr(key, "Former name:") == EQ) {
+        else if (str_equal(key, "Former name:")) {
 
             eof = genbank_one_comment_entry(&(data.gbk.comments.orginf.formname), line, index, fp);
 
         }
-        else if (Cmpstr(key, "Alternate name:") == EQ) {
+        else if (str_equal(key, "Alternate name:")) {
 
             eof = genbank_one_comment_entry(&(data.gbk.comments.orginf.nickname), line, index, fp);
 
         }
-        else if (Cmpstr(key, "Common name:") == EQ) {
+        else if (str_equal(key, "Common name:")) {
 
             eof = genbank_one_comment_entry(&(data.gbk.comments.orginf.commname), line, index, fp);
 
         }
-        else if (Cmpstr(key, "Host organism:") == EQ) {
+        else if (str_equal(key, "Host organism:")) {
 
             eof = genbank_one_comment_entry(&(data.gbk.comments.orginf.hostorg), line, index, fp);
 
         }
-        else if (Cmpstr(key, "RDP ID:") == EQ) {
+        else if (str_equal(key, "RDP ID:")) {
             eof = genbank_one_comment_entry(&(data.gbk.comments.seqinf.RDPid), line, index, fp);
 
         }
-        else if (Cmpstr(key, "Corresponding GenBank entry:") == EQ) {
+        else if (str_equal(key, "Corresponding GenBank entry:")) {
 
             eof = genbank_one_comment_entry(&(data.gbk.comments.seqinf.gbkentry), line, index, fp);
 
         }
-        else if (Cmpstr(key, "Sequencing methods:") == EQ) {
+        else if (str_equal(key, "Sequencing methods:")) {
 
             eof = genbank_one_comment_entry(&(data.gbk.comments.seqinf.methods), line, index, fp);
 
         }
-        else if (Cmpstr(key, "5' end complete:") == EQ) {
+        else if (str_equal(key, "5' end complete:")) {
             sscanf(line + index, "%s", key);
             if (key[0] == 'Y')
                 data.gbk.comments.seqinf.comp5 = 'y';
@@ -490,7 +490,7 @@ const char *genbank_comments(char *line, FILE_BUFFER fp)
                 data.gbk.comments.seqinf.comp5 = 'n';
             eof = Fgetline(line, LINENUM, fp);
         }
-        else if (Cmpstr(key, "3' end complete:") == EQ) {
+        else if (str_equal(key, "3' end complete:")) {
             sscanf(line + index, "%s", key);
             if (key[0] == 'Y')
                 data.gbk.comments.seqinf.comp3 = 'y';
@@ -498,12 +498,12 @@ const char *genbank_comments(char *line, FILE_BUFFER fp)
                 data.gbk.comments.seqinf.comp3 = 'n';
             eof = Fgetline(line, LINENUM, fp);
         }
-        else if (Cmpstr(key, "Sequence information ") == EQ) {
+        else if (str_equal(key, "Sequence information ")) {
             /* do nothing */
             data.gbk.comments.seqinf.exist = 1;
             eof = Fgetline(line, LINENUM, fp);
         }
-        else if (Cmpstr(key, "Organism information") == EQ) {
+        else if (str_equal(key, "Organism information")) {
             /* do nothing */
             data.gbk.comments.orginf.exist = 1;
             eof = Fgetline(line, LINENUM, fp);
@@ -584,7 +584,7 @@ void genbank_verify_accession()
     int  indi, len, count, remainder;
     char temp[LONGTEXT];
 
-    if (Cmpstr(data.gbk.accession, "No information\n") == EQ)
+    if (str_equal(data.gbk.accession, "No information\n"))
         return;
     len = Lenstr(data.gbk.accession);
     if ((len % 7) != 0) {
@@ -671,11 +671,11 @@ char genbank_in_locus(FILE_BUFFER fp)
     eoen = ' ';                 /* end-of-entry, set to be 'y' after '//' is read */
     for (eof = Fgetline(line, LINENUM, fp); eof != NULL && eoen != 'y';) {
         genbank_key_word(line, 0, key, TOKENNUM);
-        if ((Cmpstr(key, "ORIGIN")) == EQ) {
+        if (str_equal(key, "ORIGIN")) {
             eof = genbank_origin(line, fp);
             eoen = 'y';
         }
-        else if ((Cmpstr(key, "LOCUS")) == EQ) {
+        else if (str_equal(key, "LOCUS")) {
             eof = genbank_one_entry_in(&data.gbk.locus, line, fp);
         }
         else

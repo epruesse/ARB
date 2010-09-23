@@ -21,7 +21,7 @@ void convert(char *inf, char *outf, int intype, int outype)
         dd = 1;
     }
 
-    if (Cmpstr(inf, outf) == EQ)
+    if (str_equal(inf, outf))
         error(45, "Input file and output file must be different file.\n");
     if (intype == GENBANK && outype == MACKE) {
         genbank_to_macke(inf, outf);

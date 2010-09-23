@@ -100,47 +100,47 @@ char macke_in(FILE_BUFFER fp1, FILE_BUFFER fp2, FILE_BUFFER fp3)
     data.macke.seqabbr = Dupstr(oldname);
 
     /* read seq. information */
-    for (index = macke_abbrev(line1, name, 2); eof1 != NULL && line1[0] == '#' && line1[1] == ':' && Cmpstr(name, oldname) == EQ;) {
+    for (index = macke_abbrev(line1, name, 2); eof1 != NULL && line1[0] == '#' && line1[1] == ':' && str_equal(name, oldname);) {
         index = macke_abbrev(line1, key, index);
-        if (Cmpstr(key, "name") == EQ) {
+        if (str_equal(key, "name")) {
             eof1 = macke_one_entry_in(fp1, "name", oldname, &(data.macke.name), line1, index);
         }
-        else if (Cmpstr(key, "atcc") == EQ) {
+        else if (str_equal(key, "atcc")) {
             eof1 = macke_one_entry_in(fp1, "atcc", oldname, &(data.macke.atcc), line1, index);
         }
-        else if (Cmpstr(key, "rna") == EQ) {
+        else if (str_equal(key, "rna")) {
             /* old version entry */
             eof1 = macke_one_entry_in(fp1, "rna", oldname, &(data.macke.rna), line1, index);
         }
-        else if (Cmpstr(key, "date") == EQ) {
+        else if (str_equal(key, "date")) {
             eof1 = macke_one_entry_in(fp1, "date", oldname, &(data.macke.date), line1, index);
         }
-        else if (Cmpstr(key, "nbk") == EQ) {
+        else if (str_equal(key, "nbk")) {
             /* old version entry */
             eof1 = macke_one_entry_in(fp1, "nbk", oldname, &(data.macke.nbk), line1, index);
         }
-        else if (Cmpstr(key, "acs") == EQ) {
+        else if (str_equal(key, "acs")) {
             eof1 = macke_one_entry_in(fp1, "acs", oldname, &(data.macke.acs), line1, index);
         }
-        else if (Cmpstr(key, "subsp") == EQ) {
+        else if (str_equal(key, "subsp")) {
             eof1 = macke_one_entry_in(fp1, "subsp", oldname, &(data.macke.subspecies), line1, index);
         }
-        else if (Cmpstr(key, "strain") == EQ) {
+        else if (str_equal(key, "strain")) {
             eof1 = macke_one_entry_in(fp1, "strain", oldname, &(data.macke.strain), line1, index);
         }
-        else if (Cmpstr(key, "auth") == EQ) {
+        else if (str_equal(key, "auth")) {
             eof1 = macke_one_entry_in(fp1, "auth", oldname, &(data.macke.author), line1, index);
         }
-        else if (Cmpstr(key, "title") == EQ) {
+        else if (str_equal(key, "title")) {
             eof1 = macke_one_entry_in(fp1, "title", oldname, &(data.macke.title), line1, index);
         }
-        else if (Cmpstr(key, "jour") == EQ) {
+        else if (str_equal(key, "jour")) {
             eof1 = macke_one_entry_in(fp1, "jour", oldname, &(data.macke.journal), line1, index);
         }
-        else if (Cmpstr(key, "who") == EQ) {
+        else if (str_equal(key, "who")) {
             eof1 = macke_one_entry_in(fp1, "who", oldname, &(data.macke.who), line1, index);
         }
-        else if (Cmpstr(key, "rem") == EQ) {
+        else if (str_equal(key, "rem")) {
             data.macke.remarks = (char **)Reallocspace((char *)data.macke.remarks, (unsigned)(sizeof(char *) * (numofrem + 1)));
             data.macke.remarks[numofrem++] = Dupstr(line1 + index);
             eof1 = Fgetline(line1, LINENUM, fp1);
@@ -197,11 +197,11 @@ char *macke_continue_line(const char *key, char *oldname, char **var, char *line
             continue;
 
         index = macke_abbrev(line, name, 0);
-        if (Cmpstr(name, oldname) != EQ)
+        if (!str_equal(name, oldname))
             break;
 
         index = macke_abbrev(line, newkey, index);
-        if (Cmpstr(newkey, key) != EQ)
+        if (!str_equal(newkey, key))
             break;
 
         Append_rp_eoln(var, line + index);
@@ -227,7 +227,7 @@ char
 
     index = macke_abbrev(line, name, 0);
     eof = line;
-    for (; eof != NULL && Cmpstr(key, name) == EQ;) {
+    for (; eof != NULL && str_equal(key, name);) {
         sscanf(line + index, "%d%s", &seqnum, seq);
         for (indj = data.seq_length; indj < seqnum; indj++)
             if (indj < data.max)
@@ -328,7 +328,7 @@ char macke_in_name(FILE_BUFFER fp)
 
     /* read in line by line */
     Freespace(&(data.macke.seqabbr));
-    for (index = macke_abbrev(line, name, 0), data.macke.seqabbr = Dupstr(name); line[0] != EOF && Cmpstr(data.macke.seqabbr, name) == EQ;) {
+    for (index = macke_abbrev(line, name, 0), data.macke.seqabbr = Dupstr(name); line[0] != EOF && str_equal(data.macke.seqabbr, name);) {
         sscanf(line + index, "%d%s", &seqnum, seq);
         for (indj = data.seq_length; indj < seqnum; indj++)
             if (data.seq_length < data.max)
@@ -612,35 +612,35 @@ int macke_in_one_line(char *string)
 
     macke_key_word(string, 0, keyword, TOKENNUM);
     iskey = 0;
-    if (Cmpstr(keyword, "KEYWORDS") == EQ)
+    if (str_equal(keyword, "KEYWORDS"))
         iskey = 1;
-    else if (Cmpstr(keyword, "GenBank ACCESSION") == EQ)
+    else if (str_equal(keyword, "GenBank ACCESSION"))
         iskey = 1;
-    else if (Cmpstr(keyword, "auth") == EQ)
+    else if (str_equal(keyword, "auth"))
         iskey = 1;
-    else if (Cmpstr(keyword, "title") == EQ)
+    else if (str_equal(keyword, "title"))
         iskey = 1;
-    else if (Cmpstr(keyword, "jour") == EQ)
+    else if (str_equal(keyword, "jour"))
         iskey = 1;
-    else if (Cmpstr(keyword, "standard") == EQ)
+    else if (str_equal(keyword, "standard"))
         iskey = 1;
-    else if (Cmpstr(keyword, "Source of strain") == EQ)
+    else if (str_equal(keyword, "Source of strain"))
         iskey = 1;
-    else if (Cmpstr(keyword, "Former name") == EQ)
+    else if (str_equal(keyword, "Former name"))
         iskey = 1;
-    else if (Cmpstr(keyword, "Alternate name") == EQ)
+    else if (str_equal(keyword, "Alternate name"))
         iskey = 1;
-    else if (Cmpstr(keyword, "Common name") == EQ)
+    else if (str_equal(keyword, "Common name"))
         iskey = 1;
-    else if (Cmpstr(keyword, "Host organism") == EQ)
+    else if (str_equal(keyword, "Host organism"))
         iskey = 1;
-    else if (Cmpstr(keyword, "RDP ID") == EQ)
+    else if (str_equal(keyword, "RDP ID"))
         iskey = 1;
-    else if (Cmpstr(keyword, "Sequencing methods") == EQ)
+    else if (str_equal(keyword, "Sequencing methods"))
         iskey = 1;
-    else if (Cmpstr(keyword, "3' end complete") == EQ)
+    else if (str_equal(keyword, "3' end complete"))
         iskey = 1;
-    else if (Cmpstr(keyword, "5' end complete") == EQ)
+    else if (str_equal(keyword, "5' end complete"))
         iskey = 1;
 
     /* is-key then could be more than one line */

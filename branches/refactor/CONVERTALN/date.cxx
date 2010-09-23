@@ -155,18 +155,19 @@ void find_date_long_form(char *date_string, int *month, int *day, int *year) {
 int ismonth(char *string) {
     int num = 0;
 
-    if (Cmpcasestr(string, "JAN") == 0) num = 1;
-    else if (Cmpcasestr(string, "FEB") == 0) num = 2;
-    else if (Cmpcasestr(string, "MAR") == 0) num = 3;
-    else if (Cmpcasestr(string, "APR") == 0) num = 4;
-    else if (Cmpcasestr(string, "MAY") == 0) num = 5;
-    else if (Cmpcasestr(string, "JUN") == 0) num = 6;
-    else if (Cmpcasestr(string, "JUL") == 0) num = 7;
-    else if (Cmpcasestr(string, "AUG") == 0) num = 8;
-    else if (Cmpcasestr(string, "SEP") == 0) num = 9;
-    else if (Cmpcasestr(string, "OCT") == 0) num = 10;
-    else if (Cmpcasestr(string, "NOV") == 0) num = 11;
-    else if (Cmpcasestr(string, "DEC") == 0) num = 12;
+    // @@@ all conditions are wrong! (now it's obvious)
+    if      (str_iequal(string, "JAN") == 0) num = 1;
+    else if (str_iequal(string, "FEB") == 0) num = 2;
+    else if (str_iequal(string, "MAR") == 0) num = 3;
+    else if (str_iequal(string, "APR") == 0) num = 4;
+    else if (str_iequal(string, "MAY") == 0) num = 5;
+    else if (str_iequal(string, "JUN") == 0) num = 6;
+    else if (str_iequal(string, "JUL") == 0) num = 7;
+    else if (str_iequal(string, "AUG") == 0) num = 8;
+    else if (str_iequal(string, "SEP") == 0) num = 9;
+    else if (str_iequal(string, "OCT") == 0) num = 10;
+    else if (str_iequal(string, "NOV") == 0) num = 11;
+    else if (str_iequal(string, "DEC") == 0) num = 12;
     return (num);
 }
 
@@ -236,18 +237,18 @@ char *gcg_date(char *date_string) {
     ca_assert(date_string[7] == ' ');
     date_string[7] = '\0';
 
-    if (Cmpstr("Jan", date_string + 4)      == 1) Catstr(temp, "January");
-    else if (Cmpstr("Feb", date_string + 4) == 1) Catstr(temp, "February");
-    else if (Cmpstr("Mar", date_string + 4) == 1) Catstr(temp, "March");
-    else if (Cmpstr("Apr", date_string + 4) == 1) Catstr(temp, "April");
-    else if (Cmpstr("May", date_string + 4) == 1) Catstr(temp, "May");
-    else if (Cmpstr("Jun", date_string + 4) == 1) Catstr(temp, "June");
-    else if (Cmpstr("Jul", date_string + 4) == 1) Catstr(temp, "July");
-    else if (Cmpstr("Aug", date_string + 4) == 1) Catstr(temp, "August");
-    else if (Cmpstr("Sep", date_string + 4) == 1) Catstr(temp, "September");
-    else if (Cmpstr("Oct", date_string + 4) == 1) Catstr(temp, "October");
-    else if (Cmpstr("Nov", date_string + 4) == 1) Catstr(temp, "November");
-    else if (Cmpstr("Dec", date_string + 4) == 1) Catstr(temp, "December");
+    if (str_equal("Jan", date_string + 4)) Catstr(temp, "January");
+    else if (str_equal("Feb", date_string + 4)) Catstr(temp, "February");
+    else if (str_equal("Mar", date_string + 4)) Catstr(temp, "March");
+    else if (str_equal("Apr", date_string + 4)) Catstr(temp, "April");
+    else if (str_equal("May", date_string + 4)) Catstr(temp, "May");
+    else if (str_equal("Jun", date_string + 4)) Catstr(temp, "June");
+    else if (str_equal("Jul", date_string + 4)) Catstr(temp, "July");
+    else if (str_equal("Aug", date_string + 4)) Catstr(temp, "August");
+    else if (str_equal("Sep", date_string + 4)) Catstr(temp, "September");
+    else if (str_equal("Oct", date_string + 4)) Catstr(temp, "October");
+    else if (str_equal("Nov", date_string + 4)) Catstr(temp, "November");
+    else if (str_equal("Dec", date_string + 4)) Catstr(temp, "December");
     
     date_string[7] = ' ';
 

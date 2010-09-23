@@ -33,6 +33,10 @@
                                    general rule to separate lines. */
 #define p_nonkey_start  5
 
+
+inline bool str_equal(const char *s1, const char *s2) { return strcmp(s1, s2) == 0; }
+inline bool str_iequal(const char *s1, const char *s2) { return strcasecmp(s1, s2) == 0; }
+
 #else
 #error global.h included twice
 #endif // GLOBAL_H

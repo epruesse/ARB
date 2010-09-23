@@ -143,7 +143,7 @@ int gtom()
     if (Lenstr(data.gbk.comments.seqinf.gbkentry) > 1)
         replace_entry(&(data.macke.acs), data.gbk.comments.seqinf.gbkentry);
     else {
-        if (Lenstr(data.gbk.accession) > 1 && Cmpstr(data.gbk.accession, "No information\n") != EQ) {
+        if (Lenstr(data.gbk.accession) > 1 && !str_equal(data.gbk.accession, "No information\n")) {
             sscanf(data.gbk.accession, "%s", buffer);
             Catstr(buffer, "\n");
         }
@@ -318,7 +318,7 @@ char *genbank_get_strain()
             /* get strain */
             get_string(data.gbk.definition, temp, indj);
             if (Lenstr(strain) > 1) {
-                if (Cmpstr(temp, strain) != EQ) {
+                if (!str_equal(temp, strain)) {
                     sprintf(buffer, "Inconsistent strain definition in DEFINITION: %s and %s", temp, strain);
                     warning(91, buffer);
                 }               /* check consistency of duplicated def */
@@ -337,7 +337,7 @@ char *genbank_get_strain()
             /* get strain */
             get_string(data.gbk.source, temp, indj);
             if (Lenstr(strain) > 1) {
-                if (Cmpstr(temp, strain) != EQ) {
+                if (!str_equal(temp, strain)) {
                     sprintf(buffer, "Inconsistent strain definition in SOURCE: %s and %s", temp, strain);
                     warning(92, buffer);
                 }
@@ -388,7 +388,7 @@ char *genbank_get_subspecies() {
                 /* get subspecies */
                 get_string(data.gbk.comments.others, temp, indj);
                 if (Lenstr(subspecies) > 1) {
-                    if (Cmpstr(temp, subspecies) != EQ) {
+                    if (!str_equal(temp, subspecies)) {
                         sprintf(buffer, "Inconsistent subspecies definition in COMMENTS *source: %s and %s", temp, subspecies);
                         warning(20, buffer);
                     }
@@ -410,7 +410,7 @@ char *genbank_get_subspecies() {
             get_string(data.gbk.source, temp, indj);
             correct_subspecies(temp);
             if (Lenstr(subspecies) > 1) {
-                if (Cmpstr(temp, subspecies) != EQ) {
+                if (!str_equal(temp, subspecies)) {
                     sprintf(buffer, "Inconsistent subspecies definition in SOURCE: %s and %s", temp, subspecies);
                     warning(21, buffer);
                 }
@@ -757,18 +757,18 @@ void mtog_decode_ref_and_remarks()
     }
     for (indi = 0; indi < data.macke.numofrem; indi++) {
         indj = macke_key_word(data.macke.remarks[indi], 0, key, TOKENNUM);
-        if (Cmpstr(key, "KEYWORDS") == EQ) {
+        if (str_equal(key, "KEYWORDS")) {
             mtog_copy_remark(&(data.gbk.keywords), &indi, indj);
 
             /* append a '.' at the end */
             Append_char(&(data.gbk.keywords), '.');
 
         }
-        else if (Cmpstr(key, "GenBank ACCESSION") == EQ) {
+        else if (str_equal(key, "GenBank ACCESSION")) {
             mtog_copy_remark(&(data.gbk.accession), &indi, indj);
 
         }
-        else if (Cmpstr(key, "ref") == EQ) {
+        else if (str_equal(key, "ref")) {
             if ((rcount + 1) > data.gbk.numofref) {
                 /* new reference */
                 data.gbk.reference = (Reference *)
@@ -780,7 +780,7 @@ void mtog_decode_ref_and_remarks()
                 rcount = data.gbk.numofref - 1;
             data.gbk.reference[rcount++].ref = macke_copyrem(data.macke.remarks, &indi, data.macke.numofrem, indj);
         }
-        else if (Cmpstr(key, "auth") == EQ) {
+        else if (str_equal(key, "auth")) {
             if ((acount + 1) > data.gbk.numofref) {
                 /* new reference */
                 data.gbk.reference = (Reference *)
@@ -792,7 +792,7 @@ void mtog_decode_ref_and_remarks()
                 acount = data.gbk.numofref - 1;
             data.gbk.reference[acount++].author = macke_copyrem(data.macke.remarks, &indi, data.macke.numofrem, indj);
         }
-        else if (Cmpstr(key, "title") == EQ) {
+        else if (str_equal(key, "title")) {
             if ((tcount + 1) > data.gbk.numofref) {
                 data.gbk.reference = (Reference *)
                     Reallocspace(data.gbk.reference, sizeof(Reference) * (tcount + 1));
@@ -803,7 +803,7 @@ void mtog_decode_ref_and_remarks()
                 tcount = data.gbk.numofref - 1;
             data.gbk.reference[tcount++].title = macke_copyrem(data.macke.remarks, &indi, data.macke.numofrem, indj);
         }
-        else if (Cmpstr(key, "jour") == EQ) {
+        else if (str_equal(key, "jour")) {
             if ((jcount + 1) > data.gbk.numofref) {
                 data.gbk.reference = (Reference *)
                     Reallocspace(data.gbk.reference, sizeof(Reference) * (jcount + 1));
@@ -814,7 +814,7 @@ void mtog_decode_ref_and_remarks()
                 jcount = data.gbk.numofref - 1;
             data.gbk.reference[jcount++].journal = macke_copyrem(data.macke.remarks, &indi, data.macke.numofrem, indj);
         }
-        else if (Cmpstr(key, "standard") == EQ) {
+        else if (str_equal(key, "standard")) {
             if ((scount + 1) > data.gbk.numofref) {
                 data.gbk.reference = (Reference *)
                     Reallocspace(data.gbk.reference, sizeof(Reference) * (scount + 1));
@@ -826,64 +826,64 @@ void mtog_decode_ref_and_remarks()
             data.gbk.reference[scount++].standard = macke_copyrem(data.macke.remarks, &indi, data.macke.numofrem, indj);
 
         }
-        else if (Cmpstr(key, "Source of strain") == EQ) {
+        else if (str_equal(key, "Source of strain")) {
 
             data.gbk.comments.orginf.exist = 1;
             mtog_copy_remark(&(data.gbk.comments.orginf.source), &indi, indj);
 
         }
-        else if (Cmpstr(key, "Former name") == EQ) {
+        else if (str_equal(key, "Former name")) {
 
             data.gbk.comments.orginf.exist = 1;
             mtog_copy_remark(&(data.gbk.comments.orginf.formname), &indi, indj);
 
         }
-        else if (Cmpstr(key, "Alternate name") == EQ) {
+        else if (str_equal(key, "Alternate name")) {
 
             data.gbk.comments.orginf.exist = 1;
             mtog_copy_remark(&(data.gbk.comments.orginf.nickname), &indi, indj);
 
         }
-        else if (Cmpstr(key, "Common name") == EQ) {
+        else if (str_equal(key, "Common name")) {
 
             data.gbk.comments.orginf.exist = 1;
             mtog_copy_remark(&(data.gbk.comments.orginf.commname), &indi, indj);
 
         }
-        else if (Cmpstr(key, "Host organism") == EQ) {
+        else if (str_equal(key, "Host organism")) {
 
             data.gbk.comments.orginf.exist = 1;
             mtog_copy_remark(&(data.gbk.comments.orginf.hostorg), &indi, indj);
 
         }
-        else if (Cmpstr(key, "RDP ID") == EQ) {
+        else if (str_equal(key, "RDP ID")) {
 
             data.gbk.comments.seqinf.exist = 1;
             mtog_copy_remark(&(data.gbk.comments.seqinf.RDPid), &indi, indj);
 
         }
-        else if (Cmpstr(key, "Sequencing methods") == EQ) {
+        else if (str_equal(key, "Sequencing methods")) {
 
             data.gbk.comments.seqinf.exist = 1;
             mtog_copy_remark(&(data.gbk.comments.seqinf.methods), &indi, indj);
 
         }
-        else if (Cmpstr(key, "3' end complete") == EQ) {
+        else if (str_equal(key, "3' end complete")) {
 
             data.gbk.comments.seqinf.exist = 1;
             sscanf(data.macke.remarks[indi] + indj, "%s", key);
-            if (Cmpstr(key, "Yes") == EQ)
+            if (str_equal(key, "Yes"))
                 data.gbk.comments.seqinf.comp3 = 'y';
             else
                 data.gbk.comments.seqinf.comp3 = 'n';
 
         }
-        else if (Cmpstr(key, "5' end complete") == EQ) {
+        else if (str_equal(key, "5' end complete")) {
 
             data.gbk.comments.seqinf.exist = 1;
             sscanf(data.macke.remarks[indi] + indj, "%s", key);
 
-            if (Cmpstr(key, "Yes") == EQ)
+            if (str_equal(key, "Yes"))
                 data.gbk.comments.seqinf.comp5 = 'y';
             else
                 data.gbk.comments.seqinf.comp5 = 'n';

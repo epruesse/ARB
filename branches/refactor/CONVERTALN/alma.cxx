@@ -160,27 +160,27 @@ char alma_in(FILE_BUFFER fp)
         }
         index = alma_key_word(line, 0, key, TOKENNUM);
         eoen = 'n';
-        if ((Cmpstr(key, "NXT ENTRY")) == EQ) {
+        if (str_equal(key, "NXT ENTRY")) {
             /* do nothing, just indicate beginning of entry */
         }
-        else if ((Cmpstr(key, "ENTRY ID")) == EQ) {
+        else if (str_equal(key, "ENTRY ID")) {
             alma_one_entry(line, index, &(data.alma.id));
             for (indi = 0, len = Lenstr(data.alma.id); indi < len; indi++)
                 if (data.alma.id[indi] == ' ')
                     data.alma.id[indi] = '_';
         }
-        else if ((Cmpstr(key, "SEQUENCE")) == EQ) {
+        else if (str_equal(key, "SEQUENCE")) {
             alma_one_entry(line, index, &(data.alma.filename));
         }
-        else if ((Cmpstr(key, "FORMAT")) == EQ) {
+        else if (str_equal(key, "FORMAT")) {
             alma_one_entry(line, index, &format);
-            if ((Cmpstr(format, "NBRF")) == EQ)
+            if (str_equal(format, "NBRF"))
                 data.alma.format = NBRF;
-            else if ((Cmpstr(format, "UWGCG")) == EQ || (Cmpstr(format, "GCG")) == EQ)
+            else if (str_equal(format, "UWGCG") || str_equal(format, "GCG"))
                 data.alma.format = GCG;
-            else if ((Cmpstr(format, "EMBL")) == EQ)
+            else if (str_equal(format, "EMBL"))
                 data.alma.format = EMBL;
-            else if ((Cmpstr(format, "STADEN")) == EQ)
+            else if (str_equal(format, "STADEN"))
                 data.alma.format = STADEN;
             else {
                 sprintf(line, "Unidentified file format %s in ALMA format, Exit.", format);
@@ -188,17 +188,17 @@ char alma_in(FILE_BUFFER fp)
             }
             Freespace(&(format));
         }
-        else if ((Cmpstr(key, "DEFGAP")) == EQ) {
+        else if (str_equal(key, "DEFGAP")) {
             /* skip white spaces */
             for (; line[index] != '[' && line[index] != '\n' && line[index] != '\0'; index++) ;
             if (line[index] == '[')
                 data.alma.defgap = line[index + 1];
         }
-        else if ((Cmpstr(key, "GAPS")) == EQ) {
+        else if (str_equal(key, "GAPS")) {
             eof = alma_in_gaps(fp);
             eoen = 'y';
         }
-        else if ((Cmpstr(key, "END FILE")) == EQ) {
+        else if (str_equal(key, "END FILE")) {
             return (EOF);
         }
         if (eoen != 'y')
@@ -683,8 +683,8 @@ int etoa()
         /* get short_id from DR line if there is RDP def. */
         Cpystr(t3, "dummy");
         sscanf(data.embl.dr, "%s %s %s", t1, t2, t3);
-        if (Cmpstr(t1, "RDP;") == EQ) {
-            if (Cmpstr(t3, "dummy") != EQ) {
+        if (str_equal(t1, "RDP;")) {
+            if (!str_equal(t3, "dummy")) {
                 Cpystr(temp, t3);
             }
             else
