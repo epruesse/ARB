@@ -22,6 +22,7 @@
 #define SIMPLE_ARB_ASSERT
 #include <test_unit.h>
 #include <arb_backtrace.h>
+#include <valgrind.h>
 #define ut_assert(cond) arb_assert(cond)
 
 #include <SigHandler.h>
@@ -161,8 +162,10 @@ bool SimpleTester::perform(size_t which) {
 
     if (duration_ms_this>1000) {                    // long test duration
         if (strlen(test.name) <= 10 || memcmp(test.name, "TEST_SLOW_", 10) != 0) {
-            fprintf(stderr, "%s: Warning: Name of slow tests shall start with TEST_SLOW_ (it'll be run after other tests)\n",
-                    test.location);
+            if (RUNNING_ON_VALGRIND <= 0) {
+                fprintf(stderr, "%s: Warning: Name of slow tests shall start with TEST_SLOW_ (it'll be run after other tests)\n",
+                        test.location);
+            }
         }
     }
 

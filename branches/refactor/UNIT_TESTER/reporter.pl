@@ -131,17 +131,17 @@ sub slow_note() {
 }
 
 my $BigOk = <<EndOk;
-   __  __ _    _  _
-  /  \\(  / )  (_)( \\
- (  O ))  (    _  ) )
-  \\__/(__\\_)  (_)(_/
+  __  __ _    _  _
+ /  \\(  / )  (_)( \\
+(  O ))  (    _  ) )
+ \\__/(__\\_)  (_)(_/
 EndOk
 
 my $BigFailed = <<EndFailed;
-  ____  __   __  __    ____  ____   _
- (  __)/ _\\ (  )(  )  (  __)(    \\ / \\
-  ) _)/    \\ )( / (_/\\ ) _)  ) D ( \\_/
- (__) \\_/\\_/(__)\\____/(____)(____/ (_)
+ ____  __   __  __    ____  ____   _
+(  __)/ _\\ (  )(  )  (  __)(    \\ / \\
+ ) _)/    \\ )( / (_/\\ ) _)  ) D ( \\_/
+(__) \\_/\\_/(__)\\____/(____)(____/ (_)
 EndFailed
 
 
@@ -167,9 +167,14 @@ sub print_summary() {
     my $len = length($summary[$i]);
     if ($len>$col) { $col = $len; }
   }
-  $col += 5;
+
+  $col += 6; # add horizontal offset
+
+  my $vOffset = scalar(@summary) - scalar(@big);
+  if ($vOffset<0) { $vOffset = 0; }
+
   for (my $i=0; $i<scalar(@big); $i++) {
-    my $j = $i+1;
+    my $j = $i+$vOffset;
     my $padded = $summary[$j];
     my $len = length($padded);
     while ($len<$col) { $padded .= ' '; $len++; }

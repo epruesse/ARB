@@ -789,7 +789,7 @@ void TEST_sequence_export() {
 #if defined(TEST_AUTO_UPDATE)
                 system(GBS_global_string("cp %s %s", outname, expected));
 #else
-                TEST_ASSERT_TEXTFILE_DIFFLINES_IGNORE_DATES(outname, expected, 0);
+                TEST_ASSERT_TEXTFILE_DIFFLINES_IGNORE_DATES(expected, outname, 0);
                 // see ../../UNIT_TESTER/run/impexp
 #endif // TEST_AUTO_UPDATE
                 TEST_ASSERT_ZERO_OR_SHOW_ERRNO(unlink(outname));
