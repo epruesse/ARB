@@ -29,7 +29,7 @@ void to_paup(char *inf, char *outf, int informat)
 
     char temp[TOKENNUM], eof;
 
-    char *name, *today;
+    char *name;
 
     if ((IFP = fopen(inf, "r")) == NULL) {
         sprintf(temp, "Cannot open input file %s, exit\n", inf);
@@ -139,11 +139,8 @@ void to_paup(char *inf, char *outf, int informat)
     /* rewrite output header */
     rewind(ofp);
     fprintf(ofp, "#NEXUS\n");
-    today = today_date();
-    if (today[Lenstr(today) - 1] == '\n')
-        today[Lenstr(today) - 1] = '\0';
 
-    fprintf(ofp, "[! RDP - the Ribosomal Database Project, (%s).]\n", today);
+    fprintf(ofp, "[! RDP - the Ribosomal Database Project, (%s).]\n", today_date());
 
     fprintf(ofp, "[! To get started, send HELP to rdp@info.mcs.anl.gov ]\n");
 
@@ -159,17 +156,12 @@ void to_paup(char *inf, char *outf, int informat)
  *       Convert from ALMA format to PAUP format,
  *           one seq by one seq.
  */
-void to_paup_1x1(char *inf, char *outf, int informat)
-{
+void to_paup_1x1(char *inf, char *outf, int informat) {
     FILE *IFP, *ofp;
-
     FILE_BUFFER ifp;
-
     int maxsize, current, total_seq, first_line;
-
     char temp[TOKENNUM], eof;
-
-    char *name, *today;
+    char *name;
 
     if ((IFP = fopen(inf, "r")) == NULL) {
         sprintf(temp, "Cannot open input file %s, exit\n", inf);
@@ -261,11 +253,8 @@ void to_paup_1x1(char *inf, char *outf, int informat)
     /* rewrite output header */
     rewind(ofp);
     fprintf(ofp, "#NEXUS\n");
-    today = today_date();
-    if (today[Lenstr(today) - 1] == '\n')
-        today[Lenstr(today) - 1] = '\0';
 
-    fprintf(ofp, "[! RDP - the Ribosomal Database Project, (%s).]\n", today);
+    fprintf(ofp, "[! RDP - the Ribosomal Database Project, (%s).]\n", today_date());
 
     fprintf(ofp, "[! To get started, send HELP to rdp@info.mcs.anl.gov ]\n");
 
@@ -356,28 +345,14 @@ void paup_print_line(char *string, char *sequence, int seq_length, int index, in
  *   Function paup_print_header().
  *       Print out the header of each paup format.
  */
-void paup_print_header(FILE * ofp)
-{
-    char *today;
-
+void paup_print_header(FILE * ofp) {
     fprintf(ofp, "#NEXUS\n");
-    today = today_date();
-    if (today[Lenstr(today) - 1] == '\n')
-        today[Lenstr(today) - 1] = '\0';
-
-    fprintf(ofp, "[! RDP - the Ribosomal Database Project, (%s).]\n", today);
-
+    fprintf(ofp, "[! RDP - the Ribosomal Database Project, (%s).]\n", today_date());
     fprintf(ofp, "[! To get started, send HELP to rdp@info.mcs.anl.gov ]\n");
-
     fprintf(ofp, "BEGIN DATA;\n   DIMENSIONS\n");
-
     fprintf(ofp, "      NTAX =       \n      NCHAR =       \n      ;\n");
-
     fprintf(ofp, "   FORMAT\n      LABELPOS = LEFT\n");
-
     fprintf(ofp, "      MISSING = .\n      EQUATE = \"%s\"\n", data.paup.equate);
-
     fprintf(ofp, "      INTERLEAVE\n      DATATYPE = RNA\n      GAP = %c\n      ;\n", data.paup.gap);
-
     fprintf(ofp, "   OPTIONS\n      GAPMODE = MISSING\n      ;\n   MATRIX\n");
 }

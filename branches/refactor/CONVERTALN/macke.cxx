@@ -369,14 +369,12 @@ char macke_in_name(FILE_BUFFER fp)
  *   Function macke_out_header().
  *       Output the Macke format header.
  */
-void macke_out_header(FILE * fp)
-{
-    char *date;
-
+void macke_out_header(FILE * fp) {
     fprintf(fp, "#-\n#-\n#-\teditor\n");
-    date = today_date();
-    fprintf(fp, "#-\t%s#-\n#-\n", date);
-    Freespace(&date);
+    const char *date = today_date();
+    fprintf(fp, "#-\t%s\n#-\n#-\n", date);
+#warning next line crashes, but compiles w/o warning
+    // Freespace(&date);
 }
 
 /* ------------------------------------------------------------

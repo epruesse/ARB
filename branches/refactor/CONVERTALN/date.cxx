@@ -26,50 +26,60 @@ static const char *Month[12] = {
     "October", "November", "December"
 };
 
+
+
 /* --------------------------------------------------------------------
  *   Function genbank_date().
  *       Convert the date to be in genbank date form.
  */
-char *genbank_date(char *other_date) {
-    char *gdate, temp[SIZE];
-    int   day, month, year;
-    int   length;
+const char *genbank_date(const char *other_date) {
+    const char *result;
+    int         length = Lenstr(other_date);
 
-    length = Lenstr(other_date);
     if (other_date[length - 1] == '\n') {
-        length--;
-        other_date[length] = '\0';
-    }
-
-    if (length <= 10 && length >= 6) {
-        find_date(other_date, &month, &day, &year);
-    }
-    else if (length > 10) {
-        if (is_genbank_date(other_date)) {
-            if (Lenstr(other_date) > 11)
-                other_date[11] = '\0';
-            gdate = Dupstr(other_date);
-            return (gdate);
-        }
-        else
-            find_date_long_form(other_date, &month, &day, &year);
+        char *dup     = Dupstr(other_date);
+        dup[--length] = '\0';
+        result        = genbank_date(dup);
+        free(dup);
     }
     else {
-        sprintf(temp, "Unknown date format: %s, cannot convert.\n", other_date);
-        warning(146, temp);
-        return Dupstr(ERROR_DATE);
-    }
-    if (day <= 0 || month <= 0 || year <= 0 || day > 31 || month > 12) {
-        sprintf(temp, "Wrong date format: %s\n", other_date);
-        warning(147, temp);
-        return Dupstr(ERROR_DATE);
-    }
-    
-    if (day < 10) sprintf(temp, "0%d-%s-19%d", day, MON[month - 1], year);
-    else          sprintf(temp, "%d-%s-19%d", day, MON[month - 1], year);
+        static char gdate[SIZE];
+        gdate[0] = 0;
 
-    gdate = (char *)Dupstr(temp);
-    return gdate;
+        int day, month, year;
+        if (length <= 10 && length >= 6) {
+            find_date(other_date, &month, &day, &year);
+        }
+        else if (length > 10) {
+            if (is_genbank_date(other_date)) {
+                strncpy(gdate, other_date, 11);
+                gdate[11] = 0;
+            }
+            else {
+                find_date_long_form(other_date, &month, &day, &year);
+            }
+        }
+        else {
+            sprintf(gdate, "Unknown date format: %s, cannot convert.\n", other_date);
+            warning(146, gdate);
+            strcpy(gdate, ERROR_DATE);
+        }
+
+        if (!gdate[0]) {
+            if (day <= 0 || month <= 0 || year <= 0 || day > 31 || month > 12) {
+                sprintf(gdate, "Wrong date format: %s\n", other_date);
+                warning(147, gdate);
+                strcpy(gdate, ERROR_DATE);
+            }
+            else {
+                sprintf(gdate, "%02d-%s-19%d", day, MON[month - 1], year);
+            }
+        }
+
+        ca_assert(gdate[0]);
+        result = gdate;
+    }
+    return result;
 }
 
 /* -----------------------------------------------------------
@@ -111,13 +121,8 @@ void find_date(const char *date_string, int *month, int *day, int *year) {
  */
 bool two_char(const char *str, char determ) {
     int count = 0;
-    int len   = Lenstr(str);
-
-    for (int indi = 0; indi < len; indi++)
-        if (str[indi] == determ)
-            count++;
-
-    return count == 2;
+    for (const char *d = strchr(str, determ); d; d = strchr(d+1, determ)) count++;
+    return count;
 }
 
 /* -----------------------------------------------------------------
@@ -125,38 +130,33 @@ bool two_char(const char *str, char determ) {
  *       Find day, month, year in the long term date string
  *           like day-of-week, month, day, time, year.
  */
-void find_date_long_form(char *date_string, int *month, int *day, int *year) {
-    int  indi, index, length, nums[3], num;
-    char token[SIZE];
+void find_date_long_form(const char *date_string, int *month, int *day, int *year) {
+    int nums[3] = { 0, 0, 0 };
+    int length = Lenstr(date_string);
 
-    nums[0] = nums[1] = nums[2] = 0;
-    length = Lenstr(date_string);
-    for (indi = 0, index = 0; index <= length; index++) {
-        if (index == length || date_string[index] == ' '
-            || date_string[index] == '\0' || date_string[index] == '\n'
-            || date_string[index] == '\t' || date_string[index] == '(' || date_string[index] == ')' || date_string[index] == ',') {
-            if (indi == 0)
-                continue;       /* empty token */
+    for (int indi = 0, index = 0; index <= length; index++) {
+        char token[SIZE];
+        if ((index == length) || isspace(date_string[index]) || strchr("(),", date_string[index]) != 0) {
+            if (indi == 0) continue; /* empty token */
             token[indi] = '\0';
-            if ((num = ismonth(token)) > 0 && nums[0] == 0)
+
+            int num = ismonth(token);
+            if (num>0 && nums[0] == 0) {
                 nums[0] = num;
+            }
             else if ((num = isdatenum(token)) > 0) {
-                if (nums[0] == 0 && num < 12)
-                    nums[0] = num;
-                else if (nums[1] == 0 && num < 31)
-                    nums[1] = num;
-                else if (nums[2] == 0)
-                    nums[2] = (num % 100);
+                if (nums[0] == 0 && num < 12)           nums[0] = num;
+                else if (nums[1] == 0 && num < 31)      nums[1] = num;
+                else if (nums[2] == 0)                  nums[2] = (num % 100);
             }
             indi = 0;
         }
-        else
-            token[indi++] = date_string[index];
+        else token[indi++] = date_string[index];
     }
+
     *month = nums[0];
     *day   = nums[1];
     *year  = nums[2];
-    return;
 }
 
 /* --------------------------------------------------------------------
@@ -199,68 +199,60 @@ int isdatenum(char *string) {
  *       Return true if it is genbank form of date, which is
  *           day(2 digits)-MONTH(in letters)-year(4 digits).
  */
-int is_genbank_date(char *string) {
-    if (Lenstr(string) >= 11 && string[2] == '-' && string[6] == '-')
-        return (1);
-    else
-        return (0);
+int is_genbank_date(const char *str) {
+    return Lenstr(str) >= 11 && str[2] == '-' && str[6] == '-';
 }
 
 /* ----------------------------------------------------------------
  *   Function today_date().
  *       Get today's date.
  */
-char *today_date() {
-    struct timeval  tp;
-    struct timezone tzp;
-    char            line[SIZE], *return_value;
+const char *today_date() {
+    static char line[SIZE] = "";
+    if (!line[0]) {
+        struct timeval  tp;
+        struct timezone tzp;
+        (void)gettimeofday(&tp, &tzp);
 
-    (void)gettimeofday(&tp, &tzp);
+        Cpystr(line, ctime(&(tp.tv_sec)));
 
-    Cpystr(line, ctime(&(tp.tv_sec)));
-
-    return_value = Dupstr(line);
-
-    return (return_value);
+        int len = strlen(line);
+        if (line[len-1] == '\n') {
+            line[len-1] = 0;
+        }
+    }
+    return line;
 }
 
 /* ---------------------------------------------------------------
  *   Function gcg_date().
  *       Create gcg format of date.
  */
-char *gcg_date(char *date_string) {
+const char *gcg_date(const char *input) {
     static char date[SIZE];
 
-    ca_assert(strlen(date_string) >= 8);
+    ca_assert(strlen(input) >= 8);
 
-    char temp[SIZE];
-    temp[0] = '\0';
+    const int MONTH_POS = 4;
+    const int MONTH_LEN = 3;
+    const int DAY_POS = MONTH_POS+MONTH_LEN+1;
 
-    ca_assert(date_string[7] == ' ');
-    date_string[7] = '\0';
+    const char *monthname = ""; 
+    {
+        char part[MONTH_LEN+1];
+        memcpy(part, input+MONTH_POS, MONTH_LEN);
+        part[MONTH_LEN] = 0;
 
-    if (str_equal("Jan", date_string + 4)) Catstr(temp, "January");
-    else if (str_equal("Feb", date_string + 4)) Catstr(temp, "February");
-    else if (str_equal("Mar", date_string + 4)) Catstr(temp, "March");
-    else if (str_equal("Apr", date_string + 4)) Catstr(temp, "April");
-    else if (str_equal("May", date_string + 4)) Catstr(temp, "May");
-    else if (str_equal("Jun", date_string + 4)) Catstr(temp, "June");
-    else if (str_equal("Jul", date_string + 4)) Catstr(temp, "July");
-    else if (str_equal("Aug", date_string + 4)) Catstr(temp, "August");
-    else if (str_equal("Sep", date_string + 4)) Catstr(temp, "September");
-    else if (str_equal("Oct", date_string + 4)) Catstr(temp, "October");
-    else if (str_equal("Nov", date_string + 4)) Catstr(temp, "November");
-    else if (str_equal("Dec", date_string + 4)) Catstr(temp, "December");
-
-    date_string[7] = ' ';
+        int month = ismonth(part);
+        if (month) monthname = Month[month-1];
+    }
 
     char time[SIZE];
     int  day, year;
-    int  scanned = sscanf(date_string + 8, "%d %s %d", &day, time, &year);
+    int  scanned = sscanf(input+DAY_POS, "%d %s %d", &day, time, &year);
     ca_assert(scanned == 3);
 
-    sprintf(date, "%s %d, %d  %s", temp, day, year, time);
-
+    sprintf(date, "%s %d, %d  %s", monthname, day, year, time);
     return date;
 }
 
@@ -269,18 +261,12 @@ char *gcg_date(char *date_string) {
 #if (UNIT_TESTS == 1)
 #include <test_unit.h>
 
-#define TEST_ASSERT_DATE_IMPL(input,expect,ASSERTION,CONVERT)   \
-    do {                                                        \
-        char *dup_ = strdup(input);                             \
-        ASSERTION(CONVERT(dup_), expect);                       \
-        free(dup_);                                             \
-    } while(0)
+#define TEST_ASSERT_CONVERT(input,expect,CONVERT,ASSERTION) ASSERTION(CONVERT(input), expect);
 
-
-#define TEST_ASSERT_GENBANK_DATE(input,expect)         TEST_ASSERT_DATE_IMPL(input, expect, TEST_ASSERT_EQUAL, genbank_date)
-#define TEST_ASSERT_GENBANK_DATE__BROKEN(input,expect) TEST_ASSERT_DATE_IMPL(input, expect, TEST_ASSERT_EQUAL__BROKEN, genbank_date)
-#define TEST_ASSERT_GCG_DATE(input,expect)             TEST_ASSERT_DATE_IMPL(input, expect, TEST_ASSERT_EQUAL, gcg_date)
-#define TEST_ASSERT_GCG_DATE__BROKEN(input,expect)     TEST_ASSERT_DATE_IMPL(input, expect, TEST_ASSERT_EQUAL__BROKEN, gcg_date)
+#define TEST_ASSERT_GENBANK_DATE(input,expect)         TEST_ASSERT_CONVERT(input, expect, genbank_date, TEST_ASSERT_EQUAL)
+#define TEST_ASSERT_GENBANK_DATE__BROKEN(input,expect) TEST_ASSERT_CONVERT(input, expect, genbank_date, TEST_ASSERT_EQUAL__BROKEN)
+#define TEST_ASSERT_GCG_DATE(input,expect)             TEST_ASSERT_CONVERT(input, expect, gcg_date, TEST_ASSERT_EQUAL)
+#define TEST_ASSERT_GCG_DATE__BROKEN(input,expect)     TEST_ASSERT_CONVERT(input, expect, gcg_date, TEST_ASSERT_EQUAL__BROKEN)
 
 #define TEST_ASSERT_FIND_ANYDATE(input,d,m,y,finder)    \
     do {                                                \
@@ -342,6 +328,7 @@ void TEST_conv_date() {
     TEST_ASSERT_GENBANK_DATE("22-JUN-1965", "22-JUN-1965");
     TEST_ASSERT_GENBANK_DATE("5-SEP-2010", ERROR_DATE);
     TEST_ASSERT_GENBANK_DATE("05-SEP-2010", "05-SEP-2010");
+    TEST_ASSERT_GENBANK_DATE("crap", ERROR_DATE);
 
     TEST_ASSERT_GENBANK_DATE        ("Mon Apr 19 25:46:19 CEST 1999", "19-APR-1999");
     TEST_ASSERT_GENBANK_DATE        ("Tue Jun 22 05:11:00 CEST 1965", "22-JUN-1965");

@@ -133,7 +133,7 @@ int gtom()
 
     /* copy date---DD-MMM-YYYY\n\0  */
     if (Lenstr(data.gbk.locus) < 61) {
-        data.macke.date = genbank_date(today_date());
+        data.macke.date = Dupstr(genbank_date(today_date()));
         Append(&(data.macke.date), "\n");
     }
     else

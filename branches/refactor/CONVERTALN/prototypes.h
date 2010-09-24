@@ -38,15 +38,15 @@ int realloc_sequence_data(int total_seqs);
 void free_sequence_data(int used_entries);
 
 /* date.cxx */
-char *genbank_date(char *other_date);
+const char *genbank_date(const char *other_date);
 void find_date(const char *date_string, int *month, int *day, int *year);
 bool two_char(const char *str, char determ);
-void find_date_long_form(char *date_string, int *month, int *day, int *year);
+void find_date_long_form(const char *date_string, int *month, int *day, int *year);
 int ismonth(const char *str);
 int isdatenum(char *string);
-int is_genbank_date(char *string);
-char *today_date(void);
-char *gcg_date(char *date_string);
+int is_genbank_date(const char *str);
+const char *today_date(void);
+const char *gcg_date(const char *input);
 
 /* embl.cxx */
 void init_em_data(void);
