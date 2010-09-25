@@ -76,11 +76,28 @@ public:
         wrapped_error = NULL;
 
         long            duration;
-        UnitTestResult  guard_says = execute_guarded(wrapped, &duration);
+        UnitTestResult  guard_says = execute_guarded(wrapped, &duration, MAX_EXEC_MS_ENV);
         const char     *error      = wrapped_error;
 
-        if (guard_says == TEST_TRAPPED) error = GBS_global_string("%s(%s) trapped", name, upcase(mode_command[mode]));
-        if (error) error                      = GBS_global_string("%s: (during %s of '%s')", error, mode_command[mode], name);
+        switch (guard_says) {
+            case TEST_OK:
+                error = wrapped_error;
+                break;
+            case TEST_TRAPPED:
+            case TEST_INTERRUPTED:  {
+                const char *what_happened = guard_says == TEST_TRAPPED
+                    ? "trapped"
+                    : "has been interrupted (might be a deaklock)";
+
+                error = GBS_global_string("%s(%s) %s%s",
+                                          name, upcase(mode_command[mode]),
+                                          what_happened,
+                                          wrapped_error ? GBS_global_string(" (wrapped_error='%s')", wrapped_error) : "");
+            }
+        }
+
+        if (error) error = GBS_global_string("%s: (during %s of '%s')", error, mode_command[mode], name);
+
         return error;
     }
 };
