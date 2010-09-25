@@ -145,7 +145,8 @@ my $BigFailed = <<EndFailed;
 EndFailed
 
 
-sub print_summary() {
+sub print_summary($) {
+  my ($tests_failed) = @_;
   print "\n-------------------- [ Unit-test summary ] --------------------\n";
 
   my @summary = ();
@@ -159,7 +160,7 @@ sub print_summary() {
   push @summary, sprintf(" Warnings: %4i", $warnings);
 
   my @big;
-  my $Big = $failed ? $BigFailed : $BigOk;
+  my $Big = $tests_failed ? $BigFailed : $BigOk;
   @big= split '\n', $Big;
 
   my $col = 0;
@@ -190,9 +191,8 @@ sub do_report() {
     parse_log($_);
   }
 
-  print_summary();
-
   my $tests_failed = (($failed>0) or ($crashed>0));
+  print_summary($tests_failed);
   slow_cleanup($tests_failed);
   if ($tests_failed) {
     die "tests failed\n";
