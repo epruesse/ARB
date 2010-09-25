@@ -212,6 +212,8 @@ UnitTestResult execute_guarded(UnitTest_function fun, long *duration_usec, long 
         }
     }
     else { // child
+#if (DEADLOCKGUARD == 1)
+        // the following section is completely incompatible with debuggers
         int  seconds = max_allowed_duration_ms/1000;
         long rest_ms = max_allowed_duration_ms - seconds*1000;
 
@@ -229,12 +231,15 @@ UnitTestResult execute_guarded(UnitTest_function fun, long *duration_usec, long 
 
         fprintf(stderr, "[test still running -> terminate]\n"); fflush(stderr);
         kill_verbose(GLOBAL.pid, SIGTERM, "SIGTERM");
-        usleep(aBIT); // give parent a chance to kill me 
+        usleep(aBIT); // give parent a chance to kill me
 
         fprintf(stderr, "[still running -> kill]\n"); fflush(stderr);
         kill_verbose(GLOBAL.pid, SIGKILL, "SIGKILL"); // commit suicide
         // parent had his chance
         fprintf(stderr, "[still alive after suicide -> perplexed]\n"); fflush(stderr);
+#else        
+#warning DEADLOCKGUARD has been disabled (not default!)
+#endif
         exit(EXIT_FAILURE);
     }
 
