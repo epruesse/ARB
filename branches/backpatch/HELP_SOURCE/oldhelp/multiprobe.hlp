@@ -1,0 +1,127 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+UP	pt_server.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+SUB	arb.pdf
+SUB	mp_params.hlp
+SUB	multiproberesults.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile strunk ********
+TITLE		Multiprobe Calculation
+
+
+DESCRIPTION	Finds an optimal probe-triple given a set of probes.
+		Often a group of species cannot be detected by a single
+		oligo-nucleic probe. So several ( normally 3) probes are
+		combined to get a better result. Each probe is labeled with
+		a unique color (red, green and blue (and mixes of these)).
+
+NOTES           WHAT DOES MULTI PROBE DO NOT
+
+                     It does not generate new probes !
+
+                WHAT DOES IT DO
+
+                     It combines a given set of probes (eg. the results of
+                     several probe design processes ).
+
+		The MULTI PROBE main window shows two selection list. The
+		upper left one is just used as a temporary clipboard. The
+		upper right shows all probes that will be used in further
+		calculations.
+
+        INPUT
+
+                        As input a list of precomputed probes is expected. Normally
+        		you simply use the result from a former probe design session,
+        		you transfer the data using save and load.
+
+        		If you plan to use your probe design to get probes for
+        		MULTI PROBE, you should loosen the parameter set:
+
+        			SET high values for 'Max non group hits' ( +- 200)
+        			and low values for 'Min group hits (%)' (+- 30%)
+
+
+        PARAMETERS
+
+        	PT_SERVER
+
+                        See LINK{pt_server.hlp} for more details
+
+        	Build
+
+                        select number of probes in target set
+
+        	Check complement
+
+                                        check also the complement. This should be
+                                        the default selection, if you are mixing probes
+                                        with target sequences.
+
+        	Weight mismatches
+
+                                        If set, minor mismatches and mismatches at
+                                        the ends of the probe are down weighted.
+
+        	Max. non group hits
+
+                                        As you can never be sure that your tree
+                                        is absolutely correct, you allow a few non group hits.
+                                        If you set this parameter to a too small value, you
+                                        will not get any or good results.
+
+        	Min. mismatches for non group
+
+                                                the better your technical assistant
+                                                the lower the value of this parameter.
+
+        	Max mismatches for group
+
+                                                Often a small mismatch ( GU instead
+                                                of GC, or GA instead of TA) does not destabilize a probe.
+
+
+        COMPUTATION
+
+                        Normally there are too many combinations of probes to be tested.
+        		So the program uses a heuristic approach to find a good but
+        		not optimal solution. The program never stops unless the
+        		user stops the computation by hand pressing the kill button.
+
+        RESULT
+
+                        Read the result help text.
+
+
+NOTES		You get much better results if all sequences are full sequences.
+		Maybe you should delete all short sequences from the dataset,
+		and create a new pt_server index file.
+
+		The pt_server index file and the currently loaded database
+		should be nearly identical.
+
+		The program never stops. If you think you cannot wait any longer
+		press kill and inspect the results.
+
+		The target group and nothing else should be marked. Be sure that
+		you don't forget species to mark, especially if you are not
+		working with the complete tree.
+
+        The buttons at the bottom of the window:
+
+        	- 'Compute' calculates possible results
+        	- 'Open result window' : This button can be chosen to go directly
+                  to the result window without calculation(i.e. to load an
+                  old result list)
+
+        The colors for the probes can be specified in the ARB Properties->Tree:
+
+        	Color and Fonts
+
+
+

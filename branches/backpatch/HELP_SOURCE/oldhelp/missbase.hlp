@@ -1,0 +1,38 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+#SUB	subtopic.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		Dot potentially missing bases
+
+OCCURRENCE	ARB_EDIT4/Edit/Dot potentially missing bases
+
+DESCRIPTION     This function changes all gaps ('-') where bases are possibly
+                missing into dots ('.').
+
+                It applies to all (or all marked) sequences of one group.
+                The cursor has to be placed on the consensus of the group.
+
+                In columns where the group consensus shows an uppercase base,
+                all gaps get replaced by dots.
+
+                Additionally an SAI can be used to restrict the affected columns:
+
+                - Select the wanted SAI
+                - Edit characters that shall be used to select a column.
+
+                Click on the 'Consensus' button to change the way how the consensus
+                is calculated (see also 'LINK{e4_consensus.hlp}')
+
+NOTES           None
+
+EXAMPLES	None
+
+WARNINGS	None
+
+BUGS		No bugs known

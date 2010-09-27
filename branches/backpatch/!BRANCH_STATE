@@ -1,0 +1,43 @@
+
+performed merges
+
+        FullSync @ 6751
+
+        HEAD->BRANCH
+
+                6871 merges various things from trunk (partly merge from complete diff 'refactor->trunk')
+
+        BRANCH->HEAD
+
+                6753,6788,6789 -> 6812
+                6796,6804,6806,6808 -> 6813
+                6794 -> 6815
+                6757-6762,6764,6791,6795,6798-6802,6809,6810 -> 6816
+                6819,6821-6824,6826,6827,6829,6838,6862 -> 6863
+                6852,6854,6857 -> 6864
+                6820,6828,6830-6837,6839,6840 -> 6865
+                6848,6849,6850,6851,6853,6855,6856,6860 -> 6866
+                6844 6845 6847 6858 6861 -> 6867
+
+        not merged yet:
+        BRANCH->HEAD
+
+                6754 AISC
+                6755 pt
+                6756 pt
+                6763 test
+                6787 pt
+                6790 _____skip
+                6792 _____skip
+                6793 _____skip
+                6797 _____skip
+                6803 test (PT)
+                6805 _____skip
+                6807 _____skip
+                6818 _____skip
+                6825 _____skip
+                6846 _____skip
+                6859 _____skip
+
+        
+        not reviewed: 6872:HEAD
