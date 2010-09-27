@@ -429,87 +429,94 @@ static bool test_accept_diff_lines(const char *line1, const char *line2, const d
 
 bool GB_test_textfile_difflines(const char *file1, const char *file2, int expected_difflines, int special_mode) {
     // special_modes: 0 = none, 1 = accept date and time changes as equal
-    char       *cmd     = GBS_global_string_copy("/usr/bin/diff --unified %s %s", file1, file2);
-    FILE       *diffout = popen(cmd, "r");
     const char *error   = NULL;
 
-    if (diffout) {
-#define BUFSIZE 5000
-        char   *diff           = strdup("");
-        size_t  difflen        = 0;
-        char   *buffer         = (char*)malloc(BUFSIZE);
-        int     added          = 0;
-        int     deleted        = 0;
-        bool    inHunk         = false;
-        int     lastLineOffset = -1;
-
-        difflineMode mode(special_mode);
-        TEST_ASSERT_NO_ERROR(mode.get_error());
-
-        while (!feof(diffout)) {
-            char *line = fgets(buffer, BUFSIZE, diffout);
-            if (!line) break;
-            
-            size_t len = strlen(line);
-
-            test_assert(line && len<(BUFSIZE-1)); // increase BUFSIZE
-
-            if (strncmp(line, "@@", 2) == 0) {
-                inHunk = true;
-            }
-            else if (!inHunk && strncmp(line, "Index: ", 7) == 0) inHunk = false;
-            else if (inHunk) {
-                bool append = false;
-
-                if      (line[0] == '-') { deleted++; append = true; }
-                else if (line[0] == '+') {
-                    bool accept_diff = false;
-                    if (special_mode && lastLineOffset >= 0) {
-                        accept_diff = test_accept_diff_lines(diff+lastLineOffset, line, mode);
-                    }
-                    if (!accept_diff) {
-                        added++;
-                        append = true;
-                    }
-                    else {
-                        deleted--;
-                        append        = false;
-                        difflen       = lastLineOffset;
-                        diff[difflen] = 0;
-                    }
-                }
-
-                if (append) {
-                    char *newDiff = (char*)malloc(difflen+len+1);
-
-                    lastLineOffset = difflen;
-
-                    memcpy(newDiff, diff, difflen);
-                    memcpy(newDiff+difflen, line, len+1);
-
-                    freeset(diff, newDiff);
-                    difflen += len;
-                }
-            }
-        }
-
-        if (added != deleted) {
-            error = GBS_global_string("added lines (=%i) differ from deleted lines(=%i)", added, deleted);
-        }
-        else if (added != expected_difflines) {
-            error = GBS_global_string("files differ in %i lines (expected=%i)", added, expected_difflines);
-        }
-        if (error) printf("Different lines:\n%s\n", diff);
-
-        free(diff);
-        free(buffer);
-        pclose(diffout);
-#undef BUFSIZE
-    }
+    if      (!GB_is_regularfile(file1)) error = GBS_global_string("No such file '%s'", file1);
+    else if (!GB_is_regularfile(file2)) error = GBS_global_string("No such file '%s'", file2);
     else {
-        error = GBS_global_string("failed to run diff (%s)", cmd);
+        char *cmd     = GBS_global_string_copy("/usr/bin/diff --unified %s %s", file1, file2);
+        FILE *diffout = popen(cmd, "r");
+
+
+        if (diffout) {
+#define BUFSIZE 5000
+            char   *diff           = strdup("");
+            size_t  difflen        = 0;
+            char   *buffer         = (char*)malloc(BUFSIZE);
+            int     added          = 0;
+            int     deleted        = 0;
+            bool    inHunk         = false;
+            int     lastLineOffset = -1;
+
+            difflineMode mode(special_mode);
+            TEST_ASSERT_NO_ERROR(mode.get_error());
+
+            while (!feof(diffout)) {
+                char *line = fgets(buffer, BUFSIZE, diffout);
+                if (!line) break;
+
+                size_t len = strlen(line);
+
+                test_assert(line && len<(BUFSIZE-1)); // increase BUFSIZE
+
+                if (strncmp(line, "@@", 2) == 0) {
+                    inHunk = true;
+                }
+                else if (!inHunk && strncmp(line, "Index: ", 7) == 0) inHunk = false;
+                else if (inHunk) {
+                    bool append = false;
+
+                    if      (line[0] == '-') { deleted++; append = true; }
+                    else if (line[0] == '+') {
+                        bool accept_diff = false;
+                        if (special_mode && lastLineOffset >= 0) {
+                            accept_diff = test_accept_diff_lines(diff+lastLineOffset, line, mode);
+                        }
+                        if (!accept_diff) {
+                            added++;
+                            append = true;
+                        }
+                        else {
+                            deleted--;
+                            append        = false;
+                            difflen       = lastLineOffset;
+                            diff[difflen] = 0;
+                        }
+                    }
+
+                    if (append) {
+                        char *newDiff = (char*)malloc(difflen+len+1);
+
+                        lastLineOffset = difflen;
+
+                        memcpy(newDiff, diff, difflen);
+                        memcpy(newDiff+difflen, line, len+1);
+
+                        freeset(diff, newDiff);
+                        difflen += len;
+                    }
+                }
+            }
+
+            if (added != deleted) {
+                error = GBS_global_string("added lines (=%i) differ from deleted lines(=%i)", added, deleted);
+            }
+            else if (added != expected_difflines) {
+                error = GBS_global_string("files differ in %i lines (expected=%i)", added, expected_difflines);
+            }
+            if (error) printf("Different lines:\n%s\n", diff);
+
+            free(diff);
+            free(buffer);
+            IF_ASSERTION_USED(int err =) pclose(diffout);
+            gb_assert(err != -1);
+#undef BUFSIZE
+        }
+        else {
+            error = GBS_global_string("failed to run diff (%s)", cmd);
+        }
+        free(cmd);
     }
-    free(cmd);
     // return result;
     if (error) printf("GB_test_textfile_difflines(%s, %s) fails: %s\n", file1, file2, error);
     return !error;
