@@ -683,7 +683,7 @@ char genbank_in_locus(FILE_BUFFER fp)
     }                           /* for loop to read an entry line by line */
 
     if (eoen == 'n')
-        error(9, "Reach EOF before one entry is read, Exit");
+        throw_error(9, "Reach EOF before one entry is read");
 
     if (eof == NULL)
         return (EOF);
@@ -1007,22 +1007,16 @@ void genbank_out_origin(FILE * fp)
  *   Function genbank_to_genbank().
  *       Convert from genbank to genbank.
  */
-void genbank_to_genbank(char *inf, char *outf)
-{
+void genbank_to_genbank(char *inf, char *outf) {
     FILE *IFP, *ofp;
-
     FILE_BUFFER ifp;
 
-    char temp[TOKENNUM];
-
     if ((IFP = fopen(inf, "r")) == NULL) {
-        sprintf(temp, "Cannot open input file %s, exit\n", inf);
-        error(35, temp);
+        throw_errorf(35, "Cannot open input file %s", inf);
     }
     ifp = create_FILE_BUFFER(inf, IFP);
     if ((ofp = fopen(outf, "w")) == NULL) {
-        sprintf(temp, "Cannot open output file %s, exit\n", outf);
-        error(36, temp);
+        throw_errorf(36, "Cannot open output file %s", outf);
     }
     init();
     init_genbank();

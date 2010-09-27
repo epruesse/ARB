@@ -24,8 +24,7 @@ void to_gcg(int intype, char *inf)
 
     if (intype == MACKE) {
         if ((IFP1 = fopen(inf, "r")) == NULL || (IFP2 = fopen(inf, "r")) == NULL || (IFP3 = fopen(inf, "r")) == NULL) {
-            sprintf(temp, "Cannot open input file %s\n", inf);
-            error(38, temp);
+            throw_errorf(38, "Cannot open input file %s", inf);
         }
         ifp1 = create_FILE_BUFFER(inf, IFP1);
         ifp2 = create_FILE_BUFFER(inf, IFP2);
@@ -33,8 +32,7 @@ void to_gcg(int intype, char *inf)
     }
     else {
         if ((IFP1 = fopen(inf, "r")) == NULL) {
-            sprintf(temp, "CANNOT open input file %s, exit.\n", inf);
-            error(37, temp);
+            throw_errorf(37, "CANNOT open input file %s", inf);
         }
         ifp1 = create_FILE_BUFFER(inf, IFP1);
     }
@@ -51,8 +49,7 @@ void to_gcg(int intype, char *inf)
             Cpystr(temp, key);
             gcg_output_filename(temp, outf);
             if ((ofp = fopen(outf, "w")) == NULL) {
-                sprintf(temp, "CANNOT open file %s, exit.\n", outf);
-                error(39, temp);
+                throw_errorf(39, "CANNOT open file %s", outf);
             }
             for (macke_abbrev(line2, name, 2);
                  eof2 != NULL && line2[0] == '#' && line2[1] == ':' && str_equal(name, key);
@@ -74,8 +71,7 @@ void to_gcg(int intype, char *inf)
                     genbank_key_word(line + 12, 0, key, TOKENNUM);
                     gcg_output_filename(key, outf);
                     if ((ofp = fopen(outf, "w")) == NULL) {
-                        sprintf(temp, "CANNOT open file %s, exit.\n", outf);
-                        error(40, temp);
+                        throw_errorf(40, "CANNOT open file %s", outf);
                     }
                 }
                 else if (str_equal(temp, "ORIGIN")) {
@@ -89,8 +85,7 @@ void to_gcg(int intype, char *inf)
                     embl_key_word(line, 5, key, TOKENNUM);
                     gcg_output_filename(key, outf);
                     if ((ofp = fopen(outf, "w")) == NULL) {
-                        sprintf(temp, "CANNOT open file %s, exit.\n", outf);
-                        error(41, temp);
+                        throw_errorf(41, "CANNOT open file %s", outf);
                     }
                 }
                 else if (Lenstr(line) > 1 && line[0] == 'S' && line[1] == 'Q') {

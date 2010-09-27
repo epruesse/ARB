@@ -22,12 +22,24 @@ void Freespace(void *pointer)
     (*the_pointer) = NULL;
 }
 
-/* ---------------------------------------------------------------
- *   Function error()
- *   Syntax error in prolog input file, print out error and exit.
- */
-void error(int error_num, const char *error_message) {
+void throw_error(int error_num, const char *error_message) { // __ATTR__NORETURN
     throw Convaln_exception(error_num, error_message);
+}
+
+void throw_errorf(int error_num, const char *error_messagef, ...) { // __ATTR__FORMAT(2) __ATTR__NORETURN
+    va_list parg;
+    va_start(parg, error_messagef);
+
+    const int   BUFSIZE = 1000;
+    static char buffer[BUFSIZE];
+    int         printed = vsprintf(buffer, error_messagef, parg);
+
+    va_end(parg);
+
+    if (printed >= BUFSIZE) {
+        throw_errorf(998, "Internal buffer overflow (while formatting error #%i '%s')", error_num, error_messagef);
+    }
+    throw_error(error_num, buffer);
 }
 
 /* --------------------------------------------------------------
@@ -66,7 +78,7 @@ char *Reallocspace(void *block, unsigned int size)
         if (answer == 'y') {
             return (NULL);
         }
-        error(999, message);
+        throw_error(999, message);
     }
     return (temp);
 }
@@ -92,7 +104,7 @@ char *Dupstr(const char *string)
             if (answer == 'y') {
                 return (NULL);
             }
-            error(888, message);
+            throw_error(888, message);
         }
         strcpy(temp, string);
         return (temp);

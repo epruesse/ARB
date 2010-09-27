@@ -67,7 +67,7 @@ static int main_WRAPPED(int argc, char *argv[]) {
                 intype = GENBANK;
                 break;          /* default selection */
             default:
-                error(16, "Unknown input file format, EXIT.");
+                throw_error(16, "Unknown input file format");
         }
         argv = (char **)calloc(1, sizeof(char *) * 5);
 
@@ -75,7 +75,7 @@ static int main_WRAPPED(int argc, char *argv[]) {
         Getstr(temp, LINENUM);
         argv[2] = Dupstr(temp);
         if (!file_exist(temp))
-            error(77, "Input file not found, EXIT.");
+            throw_error(77, "Input file not found");
 
         /* output file information */
         fprintf(stderr, "\nSelect output format (<CR> means default)\n\n");
@@ -125,7 +125,7 @@ static int main_WRAPPED(int argc, char *argv[]) {
                 outtype = MACKE;
                 break;
             default:
-                error(66, "Unknown output file format, EXIT.");
+                throw_error(66, "Unknown output file format");
         }
         change_file_suffix(argv[2], temp, outtype);
         if (outtype != GCG) {
@@ -152,7 +152,7 @@ static int main_WRAPPED(int argc, char *argv[]) {
                  && (argv[1][2] == 'L' || argv[1][2] == 'l'))
             intype = ALMA;
         else
-            error(67, "UNKNOWN input file type, EXIT.");
+            throw_error(67, "UNKNOWN input file type");
 
         /* output file */
         if ((argv[3][1] == 'G' || argv[3][1] == 'g')
@@ -184,7 +184,7 @@ static int main_WRAPPED(int argc, char *argv[]) {
                  && (argv[3][2] == 'L' || argv[3][2] == 'l'))
             outtype = ALMA;
         else
-            error(68, "UNKNOWN output file file, EXIT.");
+            throw_error(68, "UNKNOWN output file file");
     }                           /* command line */
 
     if (argc == 4) {            /* default output file */
@@ -230,14 +230,12 @@ int main(int argc, char *argv[]) {
  *      According to the first line in the file to decide
  *      the file type.  File type could be Genbank, Macke,...
  */
-int file_type(char *filename)
-{
-    char  token[LINENUM], temp[LINENUM];
+int file_type(char *filename) {
+    char  token[LINENUM];
     FILE *fp;
 
     if ((fp = fopen(filename, "r")) == NULL) {
-        sprintf(temp, "Cannot open file: %s. Exit.\n", filename);
-        error(5, temp);
+        throw_errorf(5, "Cannot open file: %s", filename);
     }
     fscanf(fp, "%s", token);
     if (str_equal(token, "LOCUS"))
@@ -274,13 +272,9 @@ int isnum(char *string)
  *      Check if file is already existed and also check file
  *          name is valid or not.
  */
-int file_exist(char *file_name)
-{
-    char temp[TOKENNUM];
-
+int file_exist(char *file_name) {
     if (Lenstr(file_name) <= 0) {
-        sprintf(temp, "illegal file name: %s, EXIT.", file_name);
-        error(152, temp);
+        throw_errorf(152, "illegal file name: %s", file_name);
     }
     return ((fopen(file_name, "r") != NULL));
 }

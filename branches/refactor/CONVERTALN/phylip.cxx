@@ -33,18 +33,16 @@ void to_phylip(char *inf, char *outf, int informat, int readstdin)
     char *name;
 
     if ((IFP = fopen(inf, "r")) == NULL) {
-        sprintf(temp, "Cannot open input file %s, exit\n", inf);
-        error(64, temp);
+        throw_errorf(64, "Cannot open input file %s", inf);
     }
     ifp = create_FILE_BUFFER(inf, IFP);
     if (Lenstr(outf) <= 0) {
         ofp = stdout;
         ca_assert(0); // can't use stdout (because rewind is used below)
-        error(140, "Cannot write to standard output, EXIT\n");
+        throw_error(140, "Cannot write to standard output");
     }
     else if ((ofp = fopen(outf, "w")) == NULL) {
-        sprintf(temp, "Cannot open output file %s, exit\n", outf);
-        error(117, temp);
+        throw_errorf(117, "Cannot open output file %s", outf);
     }
     maxsize = 1;
     out_of_memory = 0;
@@ -70,7 +68,7 @@ void to_phylip(char *inf, char *outf, int informat, int readstdin)
             eof = macke_in_name(ifp);
         }
         else
-            error(34, "UNKNOWN input format when converting to PHYLIP format.");
+            throw_error(34, "UNKNOWN input format when converting to PHYLIP format");
         if (eof == EOF)
             break;
         if (informat == ALMA) {
@@ -86,7 +84,7 @@ void to_phylip(char *inf, char *outf, int informat, int readstdin)
             Cpystr(temp, data.macke.seqabbr);
         }
         else
-            error(119, "UNKNOWN input format when converting to PHYLIP format.");
+            throw_error(119, "UNKNOWN input format when converting to PHYLIP format");
         total_seq++;
 
         if ((name = Dupstr(temp)) == NULL && temp != NULL) {
@@ -151,8 +149,7 @@ void to_phylip(char *inf, char *outf, int informat, int readstdin)
     ca_assert(errno == 0);
     if (errno) {
         perror("rewind error");
-        sprintf(temp, "Failed to rewind file (errno=%i), EXIT\n", errno);
-        error(141, temp);
+        throw_errorf(141, "Failed to rewind file (errno=%i)", errno);
     }
 
     int headersize2 = fprintf(ofp, "%8d %8d", total_seq, maxsize);
@@ -161,9 +158,8 @@ void to_phylip(char *inf, char *outf, int informat, int readstdin)
     fclose(ofp);
 
     if (headersize1 != headersize2) {
-        sprintf(temp, "Failed to rewrite header (headersize differs: %i != %i), EXIT\n", headersize1, headersize2);
         ca_assert(0);
-        error(142, temp);
+        throw_errorf(142, "Failed to rewrite header (headersize differs: %i != %i)", headersize1, headersize2);
     }
 
 #ifdef log
@@ -188,15 +184,13 @@ void to_phylip_1x1(char *inf, char *outf, int informat)
     char *name;
 
     if ((IFP = fopen(inf, "r")) == NULL) {
-        sprintf(temp, "Cannot open input file %s, exit\n", inf);
-        error(123, temp);
+        throw_errorf(123, "Cannot open input file %s", inf);
     }
     ifp = create_FILE_BUFFER(inf, IFP);
     if (Lenstr(outf) <= 0)
         ofp = stdout;
     else if ((ofp = fopen(outf, "w")) == NULL) {
-        sprintf(temp, "Cannot open output file %s, exit\n", outf);
-        error(124, temp);
+        throw_errorf(124, "Cannot open output file %s", outf);
     }
     maxsize = 1;
     current = 0;
@@ -225,7 +219,7 @@ void to_phylip_1x1(char *inf, char *outf, int informat)
                 eof = macke_in_name(ifp);
             }
             else
-                error(128, "UNKNOWN input format when converting to PHYLIP format.");
+                throw_error(128, "UNKNOWN input format when converting to PHYLIP format");
             if (eof == EOF)
                 break;
             if (informat == ALMA) {
@@ -241,7 +235,7 @@ void to_phylip_1x1(char *inf, char *outf, int informat)
                 macke_key_word(data.macke.name, 0, temp, TOKENNUM);
             }
             else
-                error(130, "UNKNOWN input format when converting to PHYLIP format.");
+                throw_error(130, "UNKNOWN input format when converting to PHYLIP format");
             Freespace(&name);
             name = Dupstr(temp);
             if (data.seq_length > maxsize)

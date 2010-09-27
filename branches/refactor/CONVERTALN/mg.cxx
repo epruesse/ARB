@@ -21,26 +21,19 @@ void init_gm_data()
  *   Function genbank_to_macke().
  *   Convert from Genbank format to Macke format.
  */
-void genbank_to_macke(char *inf, char *outf)
-{
+void genbank_to_macke(char *inf, char *outf) {
     FILE *IFP, *ofp;
-
     FILE_BUFFER ifp;
-
-    char temp[TOKENNUM];
-
     int indi, total_num;
 
     if ((IFP = fopen(inf, "r")) == NULL) {
-        sprintf(temp, "CANNOT open input file %s, exit.\n", inf);
-        error(0, temp);
+        throw_errorf(0, "CANNOT open input file %s", inf);
     }
     ifp = create_FILE_BUFFER(inf, IFP);
     if (Lenstr(outf) <= 0)
         ofp = stdout;
     else if ((ofp = fopen(outf, "w")) == NULL) {
-        sprintf(temp, "CANNOT open output file %s, exit.\n", outf);
-        error(1, temp);
+        throw_errorf(1, "CANNOT open output file %s", outf);
     }
     /* seq irrelevant header */
     init();
@@ -75,7 +68,7 @@ void genbank_to_macke(char *inf, char *outf)
                 }
             }
             else
-                error(7, "Conversion from genbank to macke fails, Exit");
+                throw_error(7, "Conversion from genbank to macke fails");
             init_gm_data();
 #ifdef log
             if ((data.numofseq % 100) == 0)
@@ -591,17 +584,12 @@ int num_of_remark()
  *   Function macke_to_genbank().
  *       Convert from macke format to genbank format.
  */
-void macke_to_genbank(char *inf, char *outf)
-{
+void macke_to_genbank(char *inf, char *outf) {
     FILE *IFP1, *IFP2, *IFP3, *ofp;
-
     FILE_BUFFER ifp1, ifp2, ifp3;
 
-    char temp[TOKENNUM];
-
     if ((IFP1 = fopen(inf, "r")) == NULL || (IFP2 = fopen(inf, "r")) == NULL || (IFP3 = fopen(inf, "r")) == NULL) {
-        sprintf(temp, "Cannot open input file %s\n", inf);
-        error(19, temp);
+        throw_errorf(19, "Cannot open input file %s", inf);
     }
 
     ifp1 = create_FILE_BUFFER(inf, IFP1);
@@ -611,8 +599,7 @@ void macke_to_genbank(char *inf, char *outf)
     if (Lenstr(outf) <= 0)
         ofp = stdout;
     else if ((ofp = fopen(outf, "w")) == NULL) {
-        sprintf(temp, "Cannot open output file %s\n", outf);
-        error(44, temp);
+        throw_errorf(44, "Cannot open output file %s", outf);
     }
     init();
     init_seq_data();
@@ -627,7 +614,7 @@ void macke_to_genbank(char *inf, char *outf)
         if (mtog())
             genbank_out(ofp);
         else
-            error(15, "Conversion from macke to genbank fails, Exit");
+            throw_error(15, "Conversion from macke to genbank fails");
         init_gm_data();
 
 #ifdef log

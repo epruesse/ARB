@@ -199,7 +199,8 @@ void replace_entry(char **string1, const char *string2);
 
 /* util.cxx */
 void Freespace(void *pointer);
-void error(int error_num, const char *error_message);
+void throw_error(int error_num, const char *error_message) __ATTR__NORETURN;
+void throw_errorf(int error_num, const char *error_messagef, ...) __ATTR__FORMAT(2) __ATTR__NORETURN;
 void warning(int warning_num, const char *warning_message);
 char *Reallocspace(void *block, unsigned int size);
 char *Dupstr(const char *string);

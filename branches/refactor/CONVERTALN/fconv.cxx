@@ -23,7 +23,7 @@ static void convert_WRAPPED(char *inf, char *outf, int intype, int outype) {
     }
 
     if (str_equal(inf, outf))
-        error(45, "Input file and output file must be different file.\n");
+        throw_error(45, "Input file and output file must be different file");
     if (intype == GENBANK && outype == MACKE) {
         genbank_to_macke(inf, outf);
     }
@@ -37,7 +37,7 @@ static void convert_WRAPPED(char *inf, char *outf, int intype, int outype) {
         to_phylip(inf, outf, GENBANK, dd);
     }
     else if (intype == GENBANK && outype == PROTEIN) {
-        error(69, "Sorry, cannot convert from GENBANK to SWISSPROT, Exit");
+        throw_error(69, "Sorry, cannot convert from GENBANK to SWISSPROT");
     }
     else if (intype == GENBANK && outype == EMBL) {
         genbank_to_embl(inf, outf);
@@ -70,40 +70,40 @@ static void convert_WRAPPED(char *inf, char *outf, int intype, int outype) {
         macke_to_alma(inf, outf);
     }
     else if (intype == PAUP && outype == GENBANK) {
-        error(6, "Sorry, cannot convert from Paup to GENBANK, Exit.\n");
+        throw_error(6, "Sorry, cannot convert from Paup to GENBANK");
     }
     else if (intype == PAUP && outype == MACKE) {
-        error(81, "Sorry, cannot convert from Paup to AE2, Exit.\n");
+        throw_error(81, "Sorry, cannot convert from Paup to AE2");
     }
     else if (intype == PAUP && outype == PHYLIP) {
-        error(8, "Sorry, cannot convert from Paup to Phylip, Exit.\n");
+        throw_error(8, "Sorry, cannot convert from Paup to Phylip");
     }
     else if (intype == PAUP && outype == PROTEIN) {
-        error(71, "Sorry, cannot convert from Paup to SWISSPROT, Exit.");
+        throw_error(71, "Sorry, cannot convert from Paup to SWISSPROT");
     }
     else if (intype == PAUP && outype == EMBL) {
-        error(78, "Sorry, cannot convert from Paup to SWISSPROT, Exit.");
+        throw_error(78, "Sorry, cannot convert from Paup to SWISSPROT");
     }
     else if (intype == PHYLIP && outype == GENBANK) {
-        error(85, "Sorry, cannot convert from Phylip to GenBank, Exit.\n");
+        throw_error(85, "Sorry, cannot convert from Phylip to GenBank");
     }
     else if (intype == PHYLIP && outype == MACKE) {
-        error(88, "Sorry, cannot convert from Phylip to AE2, Exit.\n");
+        throw_error(88, "Sorry, cannot convert from Phylip to AE2");
     }
     else if (intype == PHYLIP && outype == PAUP) {
-        error(89, "Sorry, cannot convert from Phylip to Paup, Exit.\n");
+        throw_error(89, "Sorry, cannot convert from Phylip to Paup");
     }
     else if (intype == PHYLIP && outype == PROTEIN) {
-        error(72, "Sorry, cannot convert from Phylip to SWISSPROT, Exit.\n");
+        throw_error(72, "Sorry, cannot convert from Phylip to SWISSPROT");
     }
     else if (intype == PHYLIP && outype == EMBL) {
-        error(79, "Sorry, cannot convert from Phylip to SWISSPROT, Exit.\n");
+        throw_error(79, "Sorry, cannot convert from Phylip to SWISSPROT");
     }
     else if (intype == PROTEIN && outype == MACKE) {
         embl_to_macke(inf, outf, PROTEIN);
     }
     else if (intype == PROTEIN && outype == GENBANK) {
-        error(78, "GenBank doesn't maintain protein data.");
+        throw_error(78, "GenBank doesn't maintain protein data");
     }
     else if (intype == PROTEIN && outype == PAUP) {
         to_paup(inf, outf, PROTEIN);
@@ -112,7 +112,7 @@ static void convert_WRAPPED(char *inf, char *outf, int intype, int outype) {
         to_phylip(inf, outf, PROTEIN, dd);
     }
     else if (intype == PROTEIN && outype == EMBL) {
-        error(58, "EMBL doesn't maintain protein data.");
+        throw_error(58, "EMBL doesn't maintain protein data");
     }
     else if (intype == PROTEIN && outype == PRINTABLE) {
         to_printable(inf, outf, PROTEIN);
@@ -160,7 +160,7 @@ static void convert_WRAPPED(char *inf, char *outf, int intype, int outype) {
         to_gcg(intype, inf);
     }
     else
-        error(90, "Unidentified input type or output type, Exit\n");
+        throw_error(90, "Unidentified input type or output type");
 }
 void convert(const char *cinf, const char *coutf, int intype, int outype) {
     char *inf  = strdup(cinf);

@@ -32,15 +32,13 @@ void to_paup(char *inf, char *outf, int informat)
     char *name;
 
     if ((IFP = fopen(inf, "r")) == NULL) {
-        sprintf(temp, "Cannot open input file %s, exit\n", inf);
-        error(64, temp);
+        throw_errorf(64, "Cannot open input file %s", inf);
     }
     ifp = create_FILE_BUFFER(inf, IFP);
     if (Lenstr(outf) <= 0)
         ofp = stdout;
     else if ((ofp = fopen(outf, "w")) == NULL) {
-        sprintf(temp, "Cannot open output file %s, exit\n", outf);
-        error(65, temp);
+        throw_errorf(65, "Cannot open output file %s", outf);
     }
     maxsize = 1;
     out_of_memory = 0;
@@ -67,7 +65,7 @@ void to_paup(char *inf, char *outf, int informat)
             eof = macke_in_name(ifp);
         }
         else
-            error(63, "UNKNOWN input format when converting to PAUP format.");
+            throw_error(63, "UNKNOWN input format when converting to PAUP format");
         if (eof == EOF)
             break;
         if (informat == ALMA) {
@@ -83,7 +81,7 @@ void to_paup(char *inf, char *outf, int informat)
             Cpystr(temp, data.macke.seqabbr);
         }
         else
-            error(118, "UNKNOWN input format when converting to PAUP format.");
+            throw_error(118, "UNKNOWN input format when converting to PAUP format");
 
         total_seq++;
 
@@ -164,15 +162,13 @@ void to_paup_1x1(char *inf, char *outf, int informat) {
     char *name;
 
     if ((IFP = fopen(inf, "r")) == NULL) {
-        sprintf(temp, "Cannot open input file %s, exit\n", inf);
-        error(121, temp);
+        throw_errorf(121, "Cannot open input file %s", inf);
     }
     ifp = create_FILE_BUFFER(inf, IFP);
     if (Lenstr(outf) <= 0)
         ofp = stdout;
     else if ((ofp = fopen(outf, "w")) == NULL) {
-        sprintf(temp, "Cannot open output file %s, exit\n", outf);
-        error(122, temp);
+        throw_errorf(122, "Cannot open output file %s", outf);
     }
     maxsize = 1;
     current = 0;
@@ -202,7 +198,7 @@ void to_paup_1x1(char *inf, char *outf, int informat) {
                 eof = macke_in_name(ifp);
             }
             else
-                error(127, "UNKNOWN input format when converting to PAUP format.");
+                throw_error(127, "UNKNOWN input format when converting to PAUP format");
 
             if (eof == EOF)
                 break;
@@ -219,7 +215,7 @@ void to_paup_1x1(char *inf, char *outf, int informat) {
                 macke_key_word(data.macke.name, 0, temp, TOKENNUM);
             }
             else
-                error(70, "UNKNOWN input format when converting to PAUP format.");
+                throw_error(70, "UNKNOWN input format when converting to PAUP format");
 
             Freespace(&name);
             name = Dupstr(temp);

@@ -186,7 +186,7 @@ char embl_in(FILE_BUFFER fp) {
     }                           /* for loop to read an entry line by line */
 
     if (eoen == 'n')
-        error(83, "Reach EOF before one entry is read, Exit");
+        throw_error(83, "Reach EOF before one entry is read");
 
     if (eof == NULL)
         return (EOF);
@@ -232,7 +232,7 @@ char embl_in_id(FILE_BUFFER fp) {
     }                           /* for loop to read an entry line by line */
 
     if (eoen == 'n')
-        error(84, "Reach EOF before one entry is read, Exit");
+        throw_error(84, "Reach EOF before one entry is read");
 
     if (eof == NULL)
         return (EOF);
@@ -893,26 +893,19 @@ void embl_out_origin(FILE * fp) {
  *      Function embl_to_macke().
  *      Convert from Embl format to Macke format.
  */
-void embl_to_macke(char *inf, char *outf, int format)
-{
+void embl_to_macke(char *inf, char *outf, int format) {
     FILE *IFP, *ofp;
-
     FILE_BUFFER ifp;
-
-    char temp[TOKENNUM];
-
     int indi, total_num;
 
     if ((IFP = fopen(inf, "r")) == NULL) {
-        sprintf(temp, "Cannot open input file %s, exit\n", inf);
-        error(98, temp);
+        throw_errorf(98, "Cannot open input file %s", inf);
     }
     ifp = create_FILE_BUFFER(inf, IFP);
     if (Lenstr(outf) <= 0)
         ofp = stdout;
     else if ((ofp = fopen(outf, "w")) == NULL) {
-        sprintf(temp, "Cannot open output file %s, exit\n", outf);
-        error(97, temp);
+        throw_errorf(97, "Cannot open output file %s", outf);
     }
 
     init();
@@ -943,7 +936,7 @@ void embl_to_macke(char *inf, char *outf, int format)
                 }
             }
             else
-                error(4, "Conversion from embl to macke fails, Exit");
+                throw_error(4, "Conversion from embl to macke fails");
             init_em_data();
         }
         total_num = data.numofseq;
@@ -975,24 +968,18 @@ int etom() {
  *      Function embl_to_embl().
  *              Print out EMBL data.
  */
-void embl_to_embl(char *inf, char *outf)
-{
+void embl_to_embl(char *inf, char *outf) {
     FILE *IFP, *ofp;
-
     FILE_BUFFER ifp;
 
-    char temp[TOKENNUM];
-
     if ((IFP = fopen(inf, "r")) == NULL) {
-        sprintf(temp, "Cannot open input file %s\n", inf);
-        error(27, temp);
+        throw_errorf(27, "Cannot open input file %s", inf);
     }
     ifp = create_FILE_BUFFER(inf, IFP);
     if (Lenstr(outf) <= 0)
         ofp = stdout;
     else if ((ofp = fopen(outf, "w")) == NULL) {
-        sprintf(temp, "Cannot open output file %s\n", outf);
-        error(28, temp);
+        throw_errorf(28, "Cannot open output file %s", outf);
     }
     init();
     init_seq_data();
@@ -1018,24 +1005,18 @@ void embl_to_embl(char *inf, char *outf)
  *      Function embl_to_genbank().
  *              Convert from EMBL format to genbank format.
  */
-void embl_to_genbank(char *inf, char *outf)
-{
+void embl_to_genbank(char *inf, char *outf) {
     FILE *IFP, *ofp;
-
     FILE_BUFFER ifp;
 
-    char temp[TOKENNUM];
-
     if ((IFP = fopen(inf, "r")) == NULL) {
-        sprintf(temp, "Cannot open input file %s\n", inf);
-        error(30, temp);
+        throw_errorf(30, "Cannot open input file %s", inf);
     }
     ifp = create_FILE_BUFFER(inf, IFP);
     if (Lenstr(outf) <= 0)
         ofp = stdout;
     else if ((ofp = fopen(outf, "w")) == NULL) {
-        sprintf(temp, "Cannot open output file %s\n", outf);
-        error(31, temp);
+        throw_errorf(31, "Cannot open output file %s", outf);
     }
     init();
     init_seq_data();
@@ -1051,7 +1032,7 @@ void embl_to_genbank(char *inf, char *outf)
         if (etog())
             genbank_out(ofp);
         else
-            error(32, "Conversion from macke to genbank fails, Exit");
+            throw_error(32, "Conversion from macke to genbank fails");
         init_genbank();
         init_embl();
 #ifdef log
@@ -1332,22 +1313,16 @@ void etog_comments() {
  *      Function genbank_to_embl().
  *              Convert from genbank to EMBL.
  */
-void genbank_to_embl(char *inf, char *outf)
-{
+void genbank_to_embl(char *inf, char *outf) {
     FILE *IFP, *ofp;
-
     FILE_BUFFER ifp;
 
-    char temp[TOKENNUM];
-
     if ((IFP = fopen(inf, "r")) == NULL) {
-        sprintf(temp, "Cannot open input file %s, exit\n", inf);
-        error(132, temp);
+        throw_errorf(132, "Cannot open input file %s", inf);
     }
     ifp = create_FILE_BUFFER(inf, IFP);
     if ((ofp = fopen(outf, "w")) == NULL) {
-        sprintf(temp, "Cannot open output file %s, exit\n", outf);
-        error(133, temp);
+        throw_errorf(133, "Cannot open output file %s", outf);
     }
     init();
     init_genbank();
@@ -1617,17 +1592,12 @@ void gtoe_comments() {
  *      Function macke_to_embl().
  *              Convert from macke to EMBL.
  */
-void macke_to_embl(char *inf, char *outf)
-{
+void macke_to_embl(char *inf, char *outf) {
     FILE *IFP1, *IFP2, *IFP3, *ofp;
-
     FILE_BUFFER ifp1, ifp2, ifp3;
 
-    char temp[TOKENNUM];
-
     if ((IFP1 = fopen(inf, "r")) == NULL || (IFP2 = fopen(inf, "r")) == NULL || (IFP3 = fopen(inf, "r")) == NULL) {
-        sprintf(temp, "Cannot open input file %s\n", inf);
-        error(99, temp);
+        throw_errorf(99, "Cannot open input file %s", inf);
     }
 
     ifp1 = create_FILE_BUFFER(inf, IFP1);
@@ -1637,8 +1607,7 @@ void macke_to_embl(char *inf, char *outf)
     if (Lenstr(outf) <= 0)
         ofp = stdout;
     else if ((ofp = fopen(outf, "w")) == NULL) {
-        sprintf(temp, "Cannot open output file %s\n", outf);
-        error(43, temp);
+        throw_errorf(43, "Cannot open output file %s", outf);
     }
     init();
     init_seq_data();
@@ -1661,7 +1630,7 @@ void macke_to_embl(char *inf, char *outf)
         if (mtog() && gtoe() && partial_mtoe())
             embl_out(ofp);
         else
-            error(14, "Conversion from macke to embl fails, Exit");
+            throw_error(14, "Conversion from macke to embl fails");
 
         init_genbank();
         init_embl();

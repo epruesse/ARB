@@ -8,30 +8,22 @@
  *   Function to_printable()
  *       Convert from some format to PRINTABLE format.
  */
-void to_printable(char *inf, char *outf, int informat)
-{
+void to_printable(char *inf, char *outf, int informat) {
     FILE *IFP, *ofp;
-
     FILE_BUFFER ifp;
-
     int maxsize, current, total_seq, length;
-
     int out_of_memory, indi, index, *base_nums, base_count, start;
-
     char temp[TOKENNUM], eof;
-
     char *name;
 
     if ((IFP = fopen(inf, "r")) == NULL) {
-        sprintf(temp, "Cannot open input file %s, exit\n", inf);
-        error(64, temp);
+        throw_errorf(64, "Cannot open input file %s", inf);
     }
     ifp = create_FILE_BUFFER(inf, IFP);
     if (Lenstr(outf) <= 0)
         ofp = stdout;
     else if ((ofp = fopen(outf, "w")) == NULL) {
-        sprintf(temp, "Cannot open output file %s, exit\n", outf);
-        error(117, temp);
+        throw_errorf(117, "Cannot open output file %s", outf);
     }
     maxsize = 1;
     out_of_memory = 0;
@@ -57,7 +49,7 @@ void to_printable(char *inf, char *outf, int informat)
             eof = macke_in_name(ifp);
         }
         else
-            error(48, "UNKNOWN input format when converting to PRINTABLE format.");
+            throw_error(48, "UNKNOWN input format when converting to PRINTABLE format");
         if (eof == EOF)
             break;
         if (informat == ALMA) {
@@ -73,7 +65,7 @@ void to_printable(char *inf, char *outf, int informat)
             Cpystr(temp, data.macke.seqabbr);
         }
         else
-            error(120, "UNKNOWN input format when converting to PRINTABLE format.");
+            throw_error(120, "UNKNOWN input format when converting to PRINTABLE format");
         total_seq++;
 
         if ((name = Dupstr(temp)) == NULL && temp != NULL) {
@@ -144,30 +136,22 @@ void to_printable(char *inf, char *outf, int informat)
  *   Function to_printable_1x1()
  *       Convert from one foramt to PRINTABLE format, one seq by one seq.
  */
-void to_printable_1x1(char *inf, char *outf, int informat)
-{
+void to_printable_1x1(char *inf, char *outf, int informat) {
     FILE *IFP, *ofp;
-
     FILE_BUFFER ifp;
-
     int maxsize, current, total_seq;
-
     int base_count, index;
-
     char temp[TOKENNUM], eof;
-
     char *name;
 
     if ((IFP = fopen(inf, "r")) == NULL) {
-        sprintf(temp, "Cannot open input file %s, exit\n", inf);
-        error(125, temp);
+        throw_errorf(125, "Cannot open input file %s", inf);
     }
     ifp = create_FILE_BUFFER(inf, IFP);
     if (Lenstr(outf) <= 0)
         ofp = stdout;
     else if ((ofp = fopen(outf, "w")) == NULL) {
-        sprintf(temp, "Cannot open output file %s, exit\n", outf);
-        error(126, temp);
+        throw_errorf(126, "Cannot open output file %s", outf);
     }
     maxsize = 1;
     current = 0;
@@ -194,7 +178,7 @@ void to_printable_1x1(char *inf, char *outf, int informat)
                 eof = macke_in_name(ifp);
             }
             else
-                error(129, "UNKNOWN input format when converting to PRINTABLE format.");
+                throw_error(129, "UNKNOWN input format when converting to PRINTABLE format");
             if (eof == EOF)
                 break;
             if (informat == ALMA) {
@@ -210,7 +194,7 @@ void to_printable_1x1(char *inf, char *outf, int informat)
                 macke_key_word(data.macke.name, 0, temp, TOKENNUM);
             }
             else
-                error(131, "UNKNOWN input format when converting to PRINTABLE format.");
+                throw_error(131, "UNKNOWN input format when converting to PRINTABLE format");
             Freespace(&name);
             name = Dupstr(temp);
             if (data.seq_length > maxsize)

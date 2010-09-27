@@ -27,26 +27,19 @@ void init_alma()
  *   Function alma_to_macke().
  *       Convert from ALMA format to Macke format.
  */
-void alma_to_macke(char *inf, char *outf)
-{
+void alma_to_macke(char *inf, char *outf) {
     FILE *IFP, *ofp;
-
     FILE_BUFFER ifp;
-
-    char temp[TOKENNUM];
-
     int indi, total_num;
 
     if ((IFP = fopen(inf, "r")) == NULL) {
-        sprintf(temp, "Cannot open input file %s, EXIT.", inf);
-        error(46, temp);
+        throw_errorf(46, "Cannot open input file %s", inf);
     }
     ifp = create_FILE_BUFFER(inf, IFP);
     if (Lenstr(outf) <= 0)
         ofp = stdout;
     else if ((ofp = fopen(outf, "w")) == NULL) {
-        sprintf(temp, "Cannot open output file %s, EXIT.", outf);
-        error(47, temp);
+        throw_errorf(47, "Cannot open output file %s", outf);
     }
 
     init();
@@ -78,7 +71,7 @@ void alma_to_macke(char *inf, char *outf)
                 }
             }
             else
-                error(48, "Conversion from alma to macke fails, Exit.");
+                throw_error(48, "Conversion from alma to macke fails");
             init_alma();
             init_macke();
         }
@@ -100,24 +93,18 @@ void alma_to_macke(char *inf, char *outf)
  *   Function alma_to_genbank().
  *       Convert from ALMA format to GenBank format.
  */
-void alma_to_genbank(char *inf, char *outf)
-{
+void alma_to_genbank(char *inf, char *outf) {
     FILE *IFP, *ofp;
-
     FILE_BUFFER ifp;
 
-    char temp[TOKENNUM];
-
     if ((IFP = fopen(inf, "r")) == NULL) {
-        sprintf(temp, "Cannot open input file %s, EXIT.", inf);
-        error(73, temp);
+        throw_errorf(73, "Cannot open input file %s", inf);
     }
     ifp = create_FILE_BUFFER(inf, IFP);
     if (Lenstr(outf) <= 0)
         ofp = stdout;
     else if ((ofp = fopen(outf, "w")) == NULL) {
-        sprintf(temp, "Cannot open output file %s, EXIT.", outf);
-        error(74, temp);
+        throw_errorf(74, "Cannot open output file %s", outf);
     }
 
     init();
@@ -183,8 +170,7 @@ char alma_in(FILE_BUFFER fp)
             else if (str_equal(format, "STADEN"))
                 data.alma.format = STADEN;
             else {
-                sprintf(line, "Unidentified file format %s in ALMA format, Exit.", format);
-                error(49, line);
+                throw_errorf(49, "Unidentified file format %s in ALMA format", format);
             }
             Freespace(&(format));
         }
@@ -351,18 +337,12 @@ char *alma_in_gaps(FILE_BUFFER fp) {
  *   Function alma_in_sequence().
  *       Read in sequence data.
  */
-void alma_in_sequence()
-{
-
-    char temp[LINENUM];
-
+void alma_in_sequence() {
     FILE *IFP;                  /* ex-infile */
-
     FILE_BUFFER ifp;
 
     if ((IFP = fopen(data.alma.filename, "r")) == NULL) {
-        sprintf(temp, "Cannot open file %s, Exit.", data.alma.filename);
-        error(51, temp);
+        throw_errorf(51, "Cannot open file %s", data.alma.filename);
     }
 
     ifp = create_FILE_BUFFER(data.alma.filename, IFP);
@@ -381,8 +361,7 @@ void alma_in_sequence()
         staden_in(ifp);
     }
     else {
-        sprintf(temp, "Unidentified file format %d in ALMA file, Exit.", data.alma.format);
-        error(50, temp);
+        throw_errorf(50, "Unidentified file format %d in ALMA file", data.alma.format);
     }
     destroy_FILE_BUFFER(ifp);
 }
@@ -397,7 +376,7 @@ void nbrf_in(FILE_BUFFER fp)
     char line[LINENUM], temp[TOKENNUM], *eof;
 
     if ((eof = Fgetline(line, LINENUM, fp)) == NULL)
-        error(52, "Cannot find id line in NBRF file, Exit.");
+        throw_error(52, "Cannot find id line in NBRF file");
     Cpystr(temp, line + 4);
     length = Lenstr(temp);
     if (temp[length - 1] == '\n')
@@ -406,7 +385,7 @@ void nbrf_in(FILE_BUFFER fp)
     replace_entry(&(data.nbrf.id), temp);
 
     if ((eof = Fgetline(line, LINENUM, fp)) == NULL)
-        error(54, "Cannot find description line in NBRF file, Exit.");
+        throw_error(54, "Cannot find description line in NBRF file");
 
     replace_entry(&(data.nbrf.description), line);
 
@@ -498,7 +477,7 @@ int atom() {
     else if (data.alma.format == STADEN) {
     }
     else {
-        error(53, "Unidentified format type in ALMA file, Exit.");
+        throw_error(53, "Unidentified format type in ALMA file");
     }
 
     replace_entry(&(data.macke.seqabbr), data.alma.id);
@@ -510,22 +489,16 @@ int atom() {
  *   Function embl_to_alma().
  *       Convert from EMBL to ALMA.
  */
-void embl_to_alma(char *inf, char *outf)
-{
+void embl_to_alma(char *inf, char *outf) {
     FILE *IFP, *ofp;
-
     FILE_BUFFER ifp;
 
-    char temp[TOKENNUM];
-
     if ((IFP = fopen(inf, "r")) == NULL) {
-        sprintf(temp, "Cannot open input file %s, EXIT.", inf);
-        error(134, temp);
+        throw_errorf(134, "Cannot open input file %s", inf);
     }
     ifp = create_FILE_BUFFER(inf, IFP);
     if ((ofp = fopen(outf, "w")) == NULL) {
-        sprintf(temp, "Cannot open output file %s, EXIT.", outf);
-        error(135, temp);
+        throw_errorf(135, "Cannot open output file %s", outf);
     }
 
     init();
@@ -561,22 +534,16 @@ void embl_to_alma(char *inf, char *outf)
  *   Function genbank_to_alma().
  *       Convert from GenBank to ALMA.
  */
-void genbank_to_alma(char *inf, char *outf)
-{
+void genbank_to_alma(char *inf, char *outf) {
     FILE *IFP, *ofp;
-
     FILE_BUFFER ifp;
 
-    char temp[TOKENNUM];
-
     if ((IFP = fopen(inf, "r")) == NULL) {
-        sprintf(temp, "Cannot open input file %s, EXIT.", inf);
-        error(61, temp);
+        throw_errorf(61, "Cannot open input file %s", inf);
     }
     ifp = create_FILE_BUFFER(inf, IFP);
     if ((ofp = fopen(outf, "w")) == NULL) {
-        sprintf(temp, "Cannot open output file %s, EXIT.", outf);
-        error(62, temp);
+        throw_errorf(62, "Cannot open output file %s", outf);
     }
 
     init();
@@ -614,17 +581,12 @@ void genbank_to_alma(char *inf, char *outf)
  *   Function macke_to_alma().
  *       Convert from MACKE to ALMA.
  */
-void macke_to_alma(char *inf, char *outf)
-{
+void macke_to_alma(char *inf, char *outf) {
     FILE *IFP1, *IFP2, *IFP3, *ofp;
-
     FILE_BUFFER ifp1, ifp2, ifp3;
 
-    char temp[TOKENNUM];
-
     if ((IFP1 = fopen(inf, "r")) == NULL || (IFP2 = fopen(inf, "r")) == NULL || (IFP3 = fopen(inf, "r")) == NULL) {
-        sprintf(temp, "Cannot open input file %s, EXIT.", inf);
-        error(59, temp);
+        throw_errorf(59, "Cannot open input file %s", inf);
     }
 
     ifp1 = create_FILE_BUFFER(inf, IFP1);
@@ -632,8 +594,7 @@ void macke_to_alma(char *inf, char *outf)
     ifp3 = create_FILE_BUFFER(inf, IFP3);
 
     if ((ofp = fopen(outf, "w")) == NULL) {
-        sprintf(temp, "Cannot open output file %s, EXIT.", outf);
-        error(60, temp);
+        throw_errorf(60, "Cannot open output file %s", outf);
     }
 
     init();
@@ -808,8 +769,7 @@ FILE *alma_out_entry_header(FILE * fp, char *entry_id, char *filename, int forma
         warning(55, temp);
     }
     if ((outfile = fopen(filename, "w")) == NULL) {
-        sprintf(temp, "Cannot open file: %s, Exit.", filename);
-        error(56, temp);
+        throw_errorf(56, "Cannot open file: %s", filename);
     }
     fprintf(fp, "SEQUENCE>%s\n", filename);
     if (format_type == EMBL)
@@ -821,7 +781,7 @@ FILE *alma_out_entry_header(FILE * fp, char *entry_id, char *filename, int forma
     else if (format_type == STADEN)
         fprintf(fp, "FORMAT>STADEN\n");
     else
-        error(57, "Unknown format type when writing ALMA format, EXIT.");
+        throw_error(57, "Unknown format type when writing ALMA format");
 
     fprintf(fp, "ACCEPT>ALL\n");
     fprintf(fp, "DEFGAP>[-]\n");
