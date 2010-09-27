@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include "convert.h"
 #include "global.h"
+#include "types.h"
 
 int warning_out = 1;
 
@@ -54,10 +55,8 @@ void Freespace(void *pointer)
  *   Function error()
  *   Syntax error in prolog input file, print out error and exit.
  */
-void error(int error_num, const char *error_message)
-{
-    fprintf(stderr, "ERROR(%d): %s\n", error_num, error_message);
-    exit(error_num);
+void error(int error_num, const char *error_message) {
+    throw Convaln_exception(error_num, error_message);
 }
 
 /* --------------------------------------------------------------
@@ -89,13 +88,14 @@ char *Reallocspace(void *block, unsigned int size)
         temp = (char *)realloc(block, size);
     }
     if (temp == NULL) {
-        warning(999, "Run out of memory");
+        const char *message = "Run out of memory (Reallocspace)";
+        warning(999, message);
         fprintf(stderr, "Are you converting to Paup or Phylip?(y/n) ");
         scanf("%c", &answer);
-        if (answer == 'y')
+        if (answer == 'y') {
             return (NULL);
-        else
-            exit(999);
+        }
+        error(999, message);
     }
     return (temp);
 }
@@ -114,13 +114,14 @@ char *Dupstr(const char *string)
     else {
         size = strlen(string);
         if ((temp = (char *)calloc(1, size + 1)) == NULL) {
-            warning(888, "Run out of memory");
+            const char *message = "Run out of memory (Dupstr)";
+            warning(888, message);
             fprintf(stderr, "Are you converting to Paup or Phylip?(y/n) ");
             scanf("%c", &answer);
-            if (answer == 'y')
+            if (answer == 'y') {
                 return (NULL);
-            else
-                exit(888);
+            }
+            error(888, message);
         }
         strcpy(temp, string);
         return (temp);

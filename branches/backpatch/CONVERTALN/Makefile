@@ -86,6 +86,7 @@ date.o: $(ARBHOME)/INCLUDE/attributes.h
 date.o: $(ARBHOME)/INCLUDE/dupstr.h
 date.o: $(ARBHOME)/INCLUDE/FileBuffer.h
 date.o: $(ARBHOME)/INCLUDE/test_global.h
+date.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 embl.o: convert.h
 embl.o: global.h
@@ -103,15 +104,24 @@ embl.o: $(ARBHOME)/INCLUDE/test_global.h
 fconv.o: convert.h
 fconv.o: global.h
 fconv.o: prototypes.h
+fconv.o: types.h
 fconv.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
+fconv.o: $(ARBHOME)/INCLUDE/ad_prot.h
+fconv.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 fconv.o: $(ARBHOME)/INCLUDE/arb_assert.h
 fconv.o: $(ARBHOME)/INCLUDE/arb_core.h
+fconv.o: $(ARBHOME)/INCLUDE/arb_defs.h
+fconv.o: $(ARBHOME)/INCLUDE/arb_error.h
+fconv.o: $(ARBHOME)/INCLUDE/arbdb.h
 fconv.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+fconv.o: $(ARBHOME)/INCLUDE/arbdbt.h
 fconv.o: $(ARBHOME)/INCLUDE/arbtools.h
 fconv.o: $(ARBHOME)/INCLUDE/attributes.h
 fconv.o: $(ARBHOME)/INCLUDE/dupstr.h
 fconv.o: $(ARBHOME)/INCLUDE/FileBuffer.h
+fconv.o: $(ARBHOME)/INCLUDE/smartptr.h
 fconv.o: $(ARBHOME)/INCLUDE/test_global.h
+fconv.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 gcg.o: convert.h
 gcg.o: global.h
@@ -155,6 +165,7 @@ macke.o: $(ARBHOME)/INCLUDE/test_global.h
 main.o: convert.h
 main.o: global.h
 main.o: prototypes.h
+main.o: types.h
 main.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 main.o: $(ARBHOME)/INCLUDE/arb_assert.h
 main.o: $(ARBHOME)/INCLUDE/arb_core.h
@@ -233,6 +244,7 @@ routines.o: $(ARBHOME)/INCLUDE/test_global.h
 util.o: convert.h
 util.o: global.h
 util.o: prototypes.h
+util.o: types.h
 util.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 util.o: $(ARBHOME)/INCLUDE/arb_assert.h
 util.o: $(ARBHOME)/INCLUDE/arb_core.h
