@@ -425,8 +425,6 @@ static void crash_convert() {
     test_convert_by_format_num_WRAPPED(crash_from, crash_to);
 }
 
-#define TEST_ANNOTATE_ASSERT(a)
-
 static void test_convert_by_format_num(int from, int to) {
     TEST_ANNOTATE_ASSERT(GBS_global_string("while converting %s -> %s", NAME(from), NAME(to)));
     if (cap[from][to].crashes) {
