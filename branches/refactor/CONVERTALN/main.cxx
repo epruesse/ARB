@@ -13,14 +13,14 @@
 #include <string.h>
 #include "convert.h"
 #include "global.h"
+#include "types.h"
 
 /* ---------------------------------------------------------------
  *  Main program:
  *      File conversion;  convert from one file format to
  *      the other.  eg.  Genbank<-->Macke format.
  */
-int main(int argc, char *argv[])
-{
+static int main_WRAPPED(int argc, char *argv[]) {
     int  intype, outtype;
     char temp[LINENUM];
     char choice[LINENUM];
@@ -62,7 +62,7 @@ int main(int argc, char *argv[])
                 intype = ALMA;
                 break;
             case '6':
-                exit(0);
+                exit(0); // ok - interactive mode only
             case '\0':
                 intype = GENBANK;
                 break;          /* default selection */
@@ -120,7 +120,7 @@ int main(int argc, char *argv[])
                 outtype = ALMA;
                 break;
             case '9':
-                exit(0);
+                exit(0); // ok - interactive mode only
             case '\0':
                 outtype = MACKE;
                 break;
@@ -212,6 +212,17 @@ int main(int argc, char *argv[])
     convert(argv[2], argv[4], intype, outtype);
     return 0;
 
+}
+
+int main(int argc, char *argv[]) {
+    int exitcode = EXIT_FAILURE;
+    try {
+        exitcode = main_WRAPPED(argc, argv);
+    }
+    catch (Convaln_exception& err) {
+        fprintf(stderr, "ERROR(%d): %s\n", err.error_code, err.error);
+    }
+    return exitcode;
 }
 
 /* ---------------------------------------------------------------
