@@ -149,7 +149,7 @@ void macke_out2(FILE *fp);
 /* main.cxx */
 int file_type(char *filename);
 int isnum(char *string);
-int file_exist(char *file_name);
+bool file_exists(char *file_name);
 void change_file_suffix(char *old_file, char *file_name, int type);
 
 /* mg.cxx */
@@ -201,6 +201,10 @@ void replace_entry(char **string1, const char *string2);
 void Freespace(void *pointer);
 void throw_error(int error_num, const char *error_message) __ATTR__NORETURN;
 void throw_errorf(int error_num, const char *error_messagef, ...) __ATTR__FORMAT(2) __ATTR__NORETURN;
+void throw_cant_open_input(const char *filename);
+void throw_cant_open_output(const char *filename);
+FILE *open_input_or_die(const char *filename);
+FILE *open_output_or_die(const char *filename);
 void warning(int warning_num, const char *warning_message);
 char *Reallocspace(void *block, unsigned int size);
 char *Dupstr(const char *string);

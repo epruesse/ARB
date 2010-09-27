@@ -28,19 +28,11 @@ void init_alma()
  *       Convert from ALMA format to Macke format.
  */
 void alma_to_macke(char *inf, char *outf) {
-    FILE *IFP, *ofp;
-    FILE_BUFFER ifp;
+    FILE        *IFP = open_input_or_die(inf);
+    FILE_BUFFER  ifp = create_FILE_BUFFER(inf, IFP);
+    FILE        *ofp = open_output_or_die(outf);
+    
     int indi, total_num;
-
-    if ((IFP = fopen(inf, "r")) == NULL) {
-        throw_errorf(46, "Cannot open input file %s", inf);
-    }
-    ifp = create_FILE_BUFFER(inf, IFP);
-    if (Lenstr(outf) <= 0)
-        ofp = stdout;
-    else if ((ofp = fopen(outf, "w")) == NULL) {
-        throw_errorf(47, "Cannot open output file %s", outf);
-    }
 
     init();
     /* macke format seq irrelevant header */
@@ -94,18 +86,9 @@ void alma_to_macke(char *inf, char *outf) {
  *       Convert from ALMA format to GenBank format.
  */
 void alma_to_genbank(char *inf, char *outf) {
-    FILE *IFP, *ofp;
-    FILE_BUFFER ifp;
-
-    if ((IFP = fopen(inf, "r")) == NULL) {
-        throw_errorf(73, "Cannot open input file %s", inf);
-    }
-    ifp = create_FILE_BUFFER(inf, IFP);
-    if (Lenstr(outf) <= 0)
-        ofp = stdout;
-    else if ((ofp = fopen(outf, "w")) == NULL) {
-        throw_errorf(74, "Cannot open output file %s", outf);
-    }
+    FILE        *IFP = open_input_or_die(inf);
+    FILE_BUFFER  ifp = create_FILE_BUFFER(inf, IFP);
+    FILE        *ofp = open_output_or_die(outf);
 
     init();
     init_seq_data();
@@ -338,14 +321,8 @@ char *alma_in_gaps(FILE_BUFFER fp) {
  *       Read in sequence data.
  */
 void alma_in_sequence() {
-    FILE *IFP;                  /* ex-infile */
-    FILE_BUFFER ifp;
-
-    if ((IFP = fopen(data.alma.filename, "r")) == NULL) {
-        throw_errorf(51, "Cannot open file %s", data.alma.filename);
-    }
-
-    ifp = create_FILE_BUFFER(data.alma.filename, IFP);
+    FILE        *IFP = open_input_or_die(data.alma.filename);
+    FILE_BUFFER  ifp = create_FILE_BUFFER(data.alma.filename, IFP);
 
     if (data.alma.format == NBRF) {
         nbrf_in(ifp);
@@ -490,16 +467,9 @@ int atom() {
  *       Convert from EMBL to ALMA.
  */
 void embl_to_alma(char *inf, char *outf) {
-    FILE *IFP, *ofp;
-    FILE_BUFFER ifp;
-
-    if ((IFP = fopen(inf, "r")) == NULL) {
-        throw_errorf(134, "Cannot open input file %s", inf);
-    }
-    ifp = create_FILE_BUFFER(inf, IFP);
-    if ((ofp = fopen(outf, "w")) == NULL) {
-        throw_errorf(135, "Cannot open output file %s", outf);
-    }
+    FILE        *IFP = open_input_or_die(inf);
+    FILE_BUFFER  ifp = create_FILE_BUFFER(inf, IFP);
+    FILE        *ofp = open_output_or_die(outf);
 
     init();
     init_embl();
@@ -535,16 +505,9 @@ void embl_to_alma(char *inf, char *outf) {
  *       Convert from GenBank to ALMA.
  */
 void genbank_to_alma(char *inf, char *outf) {
-    FILE *IFP, *ofp;
-    FILE_BUFFER ifp;
-
-    if ((IFP = fopen(inf, "r")) == NULL) {
-        throw_errorf(61, "Cannot open input file %s", inf);
-    }
-    ifp = create_FILE_BUFFER(inf, IFP);
-    if ((ofp = fopen(outf, "w")) == NULL) {
-        throw_errorf(62, "Cannot open output file %s", outf);
-    }
+    FILE        *IFP = open_input_or_die(inf);
+    FILE_BUFFER  ifp = create_FILE_BUFFER(inf, IFP);
+    FILE        *ofp = open_output_or_die(outf);
 
     init();
     init_genbank();
@@ -582,20 +545,13 @@ void genbank_to_alma(char *inf, char *outf) {
  *       Convert from MACKE to ALMA.
  */
 void macke_to_alma(char *inf, char *outf) {
-    FILE *IFP1, *IFP2, *IFP3, *ofp;
-    FILE_BUFFER ifp1, ifp2, ifp3;
-
-    if ((IFP1 = fopen(inf, "r")) == NULL || (IFP2 = fopen(inf, "r")) == NULL || (IFP3 = fopen(inf, "r")) == NULL) {
-        throw_errorf(59, "Cannot open input file %s", inf);
-    }
-
-    ifp1 = create_FILE_BUFFER(inf, IFP1);
-    ifp2 = create_FILE_BUFFER(inf, IFP2);
-    ifp3 = create_FILE_BUFFER(inf, IFP3);
-
-    if ((ofp = fopen(outf, "w")) == NULL) {
-        throw_errorf(60, "Cannot open output file %s", outf);
-    }
+    FILE        *IFP1 = open_input_or_die(inf);
+    FILE        *IFP2 = open_input_or_die(inf);
+    FILE        *IFP3 = open_input_or_die(inf);
+    FILE_BUFFER  ifp1 = create_FILE_BUFFER(inf, IFP1);
+    FILE_BUFFER  ifp2 = create_FILE_BUFFER(inf, IFP2);
+    FILE_BUFFER  ifp3 = create_FILE_BUFFER(inf, IFP3);
+    FILE        *ofp  = open_output_or_die(outf);
 
     init();
     init_macke();
@@ -755,33 +711,24 @@ FILE *alma_out(FILE * fp, int format)
  *  Function alma_out_entry_header().
  *      Output one ALMA entry header.
  */
-FILE *alma_out_entry_header(FILE * fp, char *entry_id, char *filename, int format_type)
-{
-    char temp[TOKENNUM];
-
-    FILE *outfile = 0;
-
+FILE *alma_out_entry_header(FILE * fp, char *entry_id, char *filename, int format_type) {
     fprintf(fp, "NXT ENTRY>S\n");
     fprintf(fp, "ENTRY ID>%s\n", entry_id);
 
-    if (fopen(filename, "r") != NULL) {
-        sprintf(temp, "file %s is overwritten.", filename);
+    if (file_exists(filename)) {
+        char temp[TOKENNUM];
+        sprintf(temp, "file %s gets overwritten.", filename);
         warning(55, temp);
     }
-    if ((outfile = fopen(filename, "w")) == NULL) {
-        throw_errorf(56, "Cannot open file: %s", filename);
-    }
+    FILE *outfile = open_output_or_die(filename); 
+
     fprintf(fp, "SEQUENCE>%s\n", filename);
-    if (format_type == EMBL)
-        fprintf(fp, "FORMAT>EMBL\n");
-    else if (format_type == NBRF)
-        fprintf(fp, "FORMAT>NBRF\n");
-    else if (format_type == GCG)
-        fprintf(fp, "FORMAT>UWGCG\n");
-    else if (format_type == STADEN)
-        fprintf(fp, "FORMAT>STADEN\n");
-    else
-        throw_error(57, "Unknown format type when writing ALMA format");
+
+    if      (format_type == EMBL)       fprintf(fp, "FORMAT>EMBL\n");
+    else if (format_type == NBRF)       fprintf(fp, "FORMAT>NBRF\n");
+    else if (format_type == GCG)        fprintf(fp, "FORMAT>UWGCG\n");
+    else if (format_type == STADEN)     fprintf(fp, "FORMAT>STADEN\n");
+    else throw_error(57, "Unknown format type when writing ALMA format");
 
     fprintf(fp, "ACCEPT>ALL\n");
     fprintf(fp, "DEFGAP>[-]\n");

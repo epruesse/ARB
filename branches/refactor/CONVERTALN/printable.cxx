@@ -9,28 +9,21 @@
  *       Convert from some format to PRINTABLE format.
  */
 void to_printable(char *inf, char *outf, int informat) {
-    FILE *IFP, *ofp;
-    FILE_BUFFER ifp;
     int maxsize, current, total_seq, length;
     int out_of_memory, indi, index, *base_nums, base_count, start;
     char temp[TOKENNUM], eof;
     char *name;
 
-    if ((IFP = fopen(inf, "r")) == NULL) {
-        throw_errorf(64, "Cannot open input file %s", inf);
-    }
-    ifp = create_FILE_BUFFER(inf, IFP);
-    if (Lenstr(outf) <= 0)
-        ofp = stdout;
-    else if ((ofp = fopen(outf, "w")) == NULL) {
-        throw_errorf(117, "Cannot open output file %s", outf);
-    }
-    maxsize = 1;
+    FILE        *IFP = open_input_or_die(inf);
+    FILE_BUFFER  ifp = create_FILE_BUFFER(inf, IFP);
+    FILE        *ofp = open_output_or_die(outf);
+    
+    maxsize       = 1;
     out_of_memory = 0;
-    name = NULL;
+    name          = NULL;
     init();
-    total_seq = 0;
-    base_nums = NULL;
+    total_seq     = 0;
+    base_nums     = NULL;
     do {
         if (informat == ALMA) {
             init_alma();
@@ -137,22 +130,15 @@ void to_printable(char *inf, char *outf, int informat) {
  *       Convert from one foramt to PRINTABLE format, one seq by one seq.
  */
 void to_printable_1x1(char *inf, char *outf, int informat) {
-    FILE *IFP, *ofp;
-    FILE_BUFFER ifp;
     int maxsize, current, total_seq;
     int base_count, index;
     char temp[TOKENNUM], eof;
     char *name;
 
-    if ((IFP = fopen(inf, "r")) == NULL) {
-        throw_errorf(125, "Cannot open input file %s", inf);
-    }
-    ifp = create_FILE_BUFFER(inf, IFP);
-    if (Lenstr(outf) <= 0)
-        ofp = stdout;
-    else if ((ofp = fopen(outf, "w")) == NULL) {
-        throw_errorf(126, "Cannot open output file %s", outf);
-    }
+    FILE        *IFP = open_input_or_die(inf);
+    FILE_BUFFER  ifp = create_FILE_BUFFER(inf, IFP);
+    FILE        *ofp = open_output_or_die(outf);
+    
     maxsize = 1;
     current = 0;
     name = NULL;

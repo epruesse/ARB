@@ -74,7 +74,7 @@ static int main_WRAPPED(int argc, char *argv[]) {
         fprintf(stderr, "\nInput file name? ");
         Getstr(temp, LINENUM);
         argv[2] = Dupstr(temp);
-        if (!file_exist(temp))
+        if (!file_exists(temp))
             throw_error(77, "Input file not found");
 
         /* output file information */
@@ -203,7 +203,7 @@ static int main_WRAPPED(int argc, char *argv[]) {
 #endif
 
     /* check if output file exists and filename's validation */
-    if (file_exist(argv[4])) {
+    if (file_exists(argv[4])) {
         sprintf(temp, "Output file %s exists, will be overwritten.", argv[4]);
         warning(151, temp);
     }
@@ -231,13 +231,12 @@ int main(int argc, char *argv[]) {
  *      the file type.  File type could be Genbank, Macke,...
  */
 int file_type(char *filename) {
-    char  token[LINENUM];
-    FILE *fp;
+    char token[LINENUM];
+    FILE *fp = open_input_or_die(filename);
 
-    if ((fp = fopen(filename, "r")) == NULL) {
-        throw_errorf(5, "Cannot open file: %s", filename);
-    }
     fscanf(fp, "%s", token);
+    fclose(fp);
+
     if (str_equal(token, "LOCUS"))
         return (GENBANK);
     else if (str_equal(token, "#-"))
@@ -268,15 +267,20 @@ int isnum(char *string)
 }
 
 /* ------------------------------------------------------------------
- *  Function file_exist().
+ *  Function file_exists().
  *      Check if file is already existed and also check file
  *          name is valid or not.
  */
-int file_exist(char *file_name) {
+bool file_exists(char *file_name) {
     if (Lenstr(file_name) <= 0) {
         throw_errorf(152, "illegal file name: %s", file_name);
     }
-    return ((fopen(file_name, "r") != NULL));
+
+    FILE *ifp    = fopen(file_name, "r");
+    bool  exists = ifp != NULL;
+    if (ifp) fclose(ifp);
+
+    return exists;
 }
 
 /* -------------------------------------------------------------------

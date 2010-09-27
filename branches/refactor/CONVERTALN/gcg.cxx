@@ -6,34 +6,25 @@
  *   Function to_gcg().
  *       Convert from whatever to GCG format.
  */
-void to_gcg(int intype, char *inf)
-{
+void to_gcg(int intype, char *inf) {
     FILE *IFP1, *IFP2, *IFP3, *ofp;
-
     FILE_BUFFER ifp1 = 0, ifp2 = 0, ifp3 = 0;
-
     char temp[TOKENNUM], *eof, line[LINENUM], key[TOKENNUM];
-
     char line1[LINENUM], line2[LINENUM], line3[LINENUM], name[LINENUM];
-
     char *eof1, *eof2, *eof3;
-
     char outf[TOKENNUM];
-
     int seqdata;
 
     if (intype == MACKE) {
-        if ((IFP1 = fopen(inf, "r")) == NULL || (IFP2 = fopen(inf, "r")) == NULL || (IFP3 = fopen(inf, "r")) == NULL) {
-            throw_errorf(38, "Cannot open input file %s", inf);
-        }
+        IFP1 = open_input_or_die(inf);
+        IFP2 = open_input_or_die(inf);
+        IFP3 = open_input_or_die(inf);
         ifp1 = create_FILE_BUFFER(inf, IFP1);
         ifp2 = create_FILE_BUFFER(inf, IFP2);
         ifp3 = create_FILE_BUFFER(inf, IFP3);
     }
     else {
-        if ((IFP1 = fopen(inf, "r")) == NULL) {
-            throw_errorf(37, "CANNOT open input file %s", inf);
-        }
+        IFP1 = open_input_or_die(inf);
         ifp1 = create_FILE_BUFFER(inf, IFP1);
     }
     if (intype == MACKE) {
@@ -48,13 +39,13 @@ void to_gcg(int intype, char *inf)
             macke_abbrev(line1, key, 2);
             Cpystr(temp, key);
             gcg_output_filename(temp, outf);
-            if ((ofp = fopen(outf, "w")) == NULL) {
-                throw_errorf(39, "CANNOT open file %s", outf);
-            }
+            ofp = open_output_or_die(outf);
             for (macke_abbrev(line2, name, 2);
                  eof2 != NULL && line2[0] == '#' && line2[1] == ':' && str_equal(name, key);
                  eof2 = Fgetline(line2, LINENUM, ifp2), macke_abbrev(line2, name, 2))
+            {
                 gcg_doc_out(line2, ofp);
+            }
             eof3 = macke_origin(key, line3, ifp3);
             gcg_seq_out(ofp, key);
             fclose(ofp);
@@ -70,9 +61,7 @@ void to_gcg(int intype, char *inf)
                 if (str_equal(temp, "LOCUS")) {
                     genbank_key_word(line + 12, 0, key, TOKENNUM);
                     gcg_output_filename(key, outf);
-                    if ((ofp = fopen(outf, "w")) == NULL) {
-                        throw_errorf(40, "CANNOT open file %s", outf);
-                    }
+                    ofp = open_output_or_die(outf);
                 }
                 else if (str_equal(temp, "ORIGIN")) {
                     gcg_doc_out(line, ofp);
@@ -84,9 +73,7 @@ void to_gcg(int intype, char *inf)
                 if (Lenstr(line) > 2 && line[0] == 'I' && line[1] == 'D') {
                     embl_key_word(line, 5, key, TOKENNUM);
                     gcg_output_filename(key, outf);
-                    if ((ofp = fopen(outf, "w")) == NULL) {
-                        throw_errorf(41, "CANNOT open file %s", outf);
-                    }
+                    ofp = open_output_or_die(outf);
                 }
                 else if (Lenstr(line) > 1 && line[0] == 'S' && line[1] == 'Q') {
                     gcg_doc_out(line, ofp);

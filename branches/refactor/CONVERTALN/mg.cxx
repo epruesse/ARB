@@ -22,19 +22,12 @@ void init_gm_data()
  *   Convert from Genbank format to Macke format.
  */
 void genbank_to_macke(char *inf, char *outf) {
-    FILE *IFP, *ofp;
-    FILE_BUFFER ifp;
+    FILE        *IFP = open_input_or_die(inf);
+    FILE_BUFFER  ifp = create_FILE_BUFFER(inf, IFP);
+    FILE        *ofp = open_output_or_die(outf);
+
     int indi, total_num;
 
-    if ((IFP = fopen(inf, "r")) == NULL) {
-        throw_errorf(0, "CANNOT open input file %s", inf);
-    }
-    ifp = create_FILE_BUFFER(inf, IFP);
-    if (Lenstr(outf) <= 0)
-        ofp = stdout;
-    else if ((ofp = fopen(outf, "w")) == NULL) {
-        throw_errorf(1, "CANNOT open output file %s", outf);
-    }
     /* seq irrelevant header */
     init();
     init_gm_data();
@@ -585,22 +578,14 @@ int num_of_remark()
  *       Convert from macke format to genbank format.
  */
 void macke_to_genbank(char *inf, char *outf) {
-    FILE *IFP1, *IFP2, *IFP3, *ofp;
-    FILE_BUFFER ifp1, ifp2, ifp3;
+    FILE        *IFP1 = open_input_or_die(inf);
+    FILE        *IFP2 = open_input_or_die(inf);
+    FILE        *IFP3 = open_input_or_die(inf);
+    FILE_BUFFER  ifp1 = create_FILE_BUFFER(inf, IFP1);
+    FILE_BUFFER  ifp2 = create_FILE_BUFFER(inf, IFP2);
+    FILE_BUFFER  ifp3 = create_FILE_BUFFER(inf, IFP3);
+    FILE        *ofp  = open_output_or_die(outf);
 
-    if ((IFP1 = fopen(inf, "r")) == NULL || (IFP2 = fopen(inf, "r")) == NULL || (IFP3 = fopen(inf, "r")) == NULL) {
-        throw_errorf(19, "Cannot open input file %s", inf);
-    }
-
-    ifp1 = create_FILE_BUFFER(inf, IFP1);
-    ifp2 = create_FILE_BUFFER(inf, IFP2);
-    ifp3 = create_FILE_BUFFER(inf, IFP3);
-
-    if (Lenstr(outf) <= 0)
-        ofp = stdout;
-    else if ((ofp = fopen(outf, "w")) == NULL) {
-        throw_errorf(44, "Cannot open output file %s", outf);
-    }
     init();
     init_seq_data();
     init_gm_data();

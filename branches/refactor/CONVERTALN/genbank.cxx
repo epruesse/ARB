@@ -1008,16 +1008,10 @@ void genbank_out_origin(FILE * fp)
  *       Convert from genbank to genbank.
  */
 void genbank_to_genbank(char *inf, char *outf) {
-    FILE *IFP, *ofp;
-    FILE_BUFFER ifp;
-
-    if ((IFP = fopen(inf, "r")) == NULL) {
-        throw_errorf(35, "Cannot open input file %s", inf);
-    }
-    ifp = create_FILE_BUFFER(inf, IFP);
-    if ((ofp = fopen(outf, "w")) == NULL) {
-        throw_errorf(36, "Cannot open output file %s", outf);
-    }
+    FILE        *IFP = open_input_or_die(inf);
+    FILE_BUFFER  ifp = create_FILE_BUFFER(inf, IFP);
+    FILE        *ofp = open_output_or_die(outf);
+    
     init();
     init_genbank();
     while (genbank_in(ifp) != EOF) {

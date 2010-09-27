@@ -894,19 +894,11 @@ void embl_out_origin(FILE * fp) {
  *      Convert from Embl format to Macke format.
  */
 void embl_to_macke(char *inf, char *outf, int format) {
-    FILE *IFP, *ofp;
-    FILE_BUFFER ifp;
+    FILE        *IFP = open_input_or_die(inf);
+    FILE_BUFFER  ifp = create_FILE_BUFFER(inf, IFP);
+    FILE        *ofp = open_output_or_die(outf);
+    
     int indi, total_num;
-
-    if ((IFP = fopen(inf, "r")) == NULL) {
-        throw_errorf(98, "Cannot open input file %s", inf);
-    }
-    ifp = create_FILE_BUFFER(inf, IFP);
-    if (Lenstr(outf) <= 0)
-        ofp = stdout;
-    else if ((ofp = fopen(outf, "w")) == NULL) {
-        throw_errorf(97, "Cannot open output file %s", outf);
-    }
 
     init();
     /* macke format seq irrelevant header */
@@ -969,18 +961,10 @@ int etom() {
  *              Print out EMBL data.
  */
 void embl_to_embl(char *inf, char *outf) {
-    FILE *IFP, *ofp;
-    FILE_BUFFER ifp;
+    FILE        *IFP = open_input_or_die(inf);
+    FILE_BUFFER  ifp = create_FILE_BUFFER(inf, IFP);
+    FILE        *ofp = open_output_or_die(outf);
 
-    if ((IFP = fopen(inf, "r")) == NULL) {
-        throw_errorf(27, "Cannot open input file %s", inf);
-    }
-    ifp = create_FILE_BUFFER(inf, IFP);
-    if (Lenstr(outf) <= 0)
-        ofp = stdout;
-    else if ((ofp = fopen(outf, "w")) == NULL) {
-        throw_errorf(28, "Cannot open output file %s", outf);
-    }
     init();
     init_seq_data();
     init_embl();
@@ -1006,18 +990,10 @@ void embl_to_embl(char *inf, char *outf) {
  *              Convert from EMBL format to genbank format.
  */
 void embl_to_genbank(char *inf, char *outf) {
-    FILE *IFP, *ofp;
-    FILE_BUFFER ifp;
+    FILE        *IFP = open_input_or_die(inf);
+    FILE_BUFFER  ifp = create_FILE_BUFFER(inf, IFP);
+    FILE        *ofp = open_output_or_die(outf);
 
-    if ((IFP = fopen(inf, "r")) == NULL) {
-        throw_errorf(30, "Cannot open input file %s", inf);
-    }
-    ifp = create_FILE_BUFFER(inf, IFP);
-    if (Lenstr(outf) <= 0)
-        ofp = stdout;
-    else if ((ofp = fopen(outf, "w")) == NULL) {
-        throw_errorf(31, "Cannot open output file %s", outf);
-    }
     init();
     init_seq_data();
     init_genbank();
@@ -1314,16 +1290,10 @@ void etog_comments() {
  *              Convert from genbank to EMBL.
  */
 void genbank_to_embl(char *inf, char *outf) {
-    FILE *IFP, *ofp;
-    FILE_BUFFER ifp;
-
-    if ((IFP = fopen(inf, "r")) == NULL) {
-        throw_errorf(132, "Cannot open input file %s", inf);
-    }
-    ifp = create_FILE_BUFFER(inf, IFP);
-    if ((ofp = fopen(outf, "w")) == NULL) {
-        throw_errorf(133, "Cannot open output file %s", outf);
-    }
+    FILE        *IFP = open_input_or_die(inf);
+    FILE_BUFFER  ifp = create_FILE_BUFFER(inf, IFP);
+    FILE        *ofp = open_output_or_die(outf);
+    
     init();
     init_genbank();
     init_embl();
@@ -1593,22 +1563,14 @@ void gtoe_comments() {
  *              Convert from macke to EMBL.
  */
 void macke_to_embl(char *inf, char *outf) {
-    FILE *IFP1, *IFP2, *IFP3, *ofp;
-    FILE_BUFFER ifp1, ifp2, ifp3;
+    FILE        *IFP1 = open_input_or_die(inf);
+    FILE        *IFP2 = open_input_or_die(inf);
+    FILE        *IFP3 = open_input_or_die(inf);
+    FILE_BUFFER  ifp1 = create_FILE_BUFFER(inf, IFP1);
+    FILE_BUFFER  ifp2 = create_FILE_BUFFER(inf, IFP2);
+    FILE_BUFFER  ifp3 = create_FILE_BUFFER(inf, IFP3);
+    FILE        *ofp  = open_output_or_die(outf);
 
-    if ((IFP1 = fopen(inf, "r")) == NULL || (IFP2 = fopen(inf, "r")) == NULL || (IFP3 = fopen(inf, "r")) == NULL) {
-        throw_errorf(99, "Cannot open input file %s", inf);
-    }
-
-    ifp1 = create_FILE_BUFFER(inf, IFP1);
-    ifp2 = create_FILE_BUFFER(inf, IFP2);
-    ifp3 = create_FILE_BUFFER(inf, IFP3);
-
-    if (Lenstr(outf) <= 0)
-        ofp = stdout;
-    else if ((ofp = fopen(outf, "w")) == NULL) {
-        throw_errorf(43, "Cannot open output file %s", outf);
-    }
     init();
     init_seq_data();
     init_genbank();

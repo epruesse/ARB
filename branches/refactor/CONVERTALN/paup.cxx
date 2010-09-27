@@ -17,36 +17,23 @@ void init_paup()
  *   Function to_paup()
  *       Convert from some format to PAUP format.
  */
-void to_paup(char *inf, char *outf, int informat)
-{
-    FILE *IFP, *ofp;
-
-    FILE_BUFFER ifp;
-
+void to_paup(char *inf, char *outf, int informat) {
     int maxsize, current, total_seq, first_line;
-
     int out_of_memory, indi;
-
     char temp[TOKENNUM], eof;
-
     char *name;
 
-    if ((IFP = fopen(inf, "r")) == NULL) {
-        throw_errorf(64, "Cannot open input file %s", inf);
-    }
-    ifp = create_FILE_BUFFER(inf, IFP);
-    if (Lenstr(outf) <= 0)
-        ofp = stdout;
-    else if ((ofp = fopen(outf, "w")) == NULL) {
-        throw_errorf(65, "Cannot open output file %s", outf);
-    }
-    maxsize = 1;
+    FILE        *IFP = open_input_or_die(inf);
+    FILE_BUFFER  ifp = create_FILE_BUFFER(inf, IFP);
+    FILE        *ofp = open_output_or_die(outf);
+    
+    maxsize       = 1;
     out_of_memory = 0;
-    name = NULL;
+    name          = NULL;
     init();
     init_paup();
     paup_print_header(ofp);
-    total_seq = 0;
+    total_seq     = 0;
     do {
         if (informat == ALMA) {
             init_alma();
@@ -155,24 +142,17 @@ void to_paup(char *inf, char *outf, int informat)
  *           one seq by one seq.
  */
 void to_paup_1x1(char *inf, char *outf, int informat) {
-    FILE *IFP, *ofp;
-    FILE_BUFFER ifp;
     int maxsize, current, total_seq, first_line;
     char temp[TOKENNUM], eof;
     char *name;
 
-    if ((IFP = fopen(inf, "r")) == NULL) {
-        throw_errorf(121, "Cannot open input file %s", inf);
-    }
-    ifp = create_FILE_BUFFER(inf, IFP);
-    if (Lenstr(outf) <= 0)
-        ofp = stdout;
-    else if ((ofp = fopen(outf, "w")) == NULL) {
-        throw_errorf(122, "Cannot open output file %s", outf);
-    }
+    FILE        *IFP = open_input_or_die(inf);
+    FILE_BUFFER  ifp = create_FILE_BUFFER(inf, IFP);
+    FILE        *ofp = open_output_or_die(outf);
+    
     maxsize = 1;
     current = 0;
-    name = NULL;
+    name    = NULL;
     paup_print_header(ofp);
     while (maxsize > current) {
         init();

@@ -18,38 +18,27 @@ void init_phylip()
  *  Function to_phylip()
  *      Convert from some format to PHYLIP format.
  */
-void to_phylip(char *inf, char *outf, int informat, int readstdin)
-{
-    FILE *IFP, *ofp;
-
-    FILE_BUFFER ifp;
-
+void to_phylip(char *inf, char *outf, int informat, int readstdin) {
     int maxsize, current, total_seq;
-
     int out_of_memory, indi;
-
     char temp[TOKENNUM], eof;
-
     char *name;
 
-    if ((IFP = fopen(inf, "r")) == NULL) {
-        throw_errorf(64, "Cannot open input file %s", inf);
-    }
-    ifp = create_FILE_BUFFER(inf, IFP);
-    if (Lenstr(outf) <= 0) {
-        ofp = stdout;
+    FILE        *IFP = open_input_or_die(inf);
+    FILE_BUFFER  ifp = create_FILE_BUFFER(inf, IFP);
+    FILE        *ofp = open_output_or_die(outf);
+
+    if (ofp == stdout) {
         ca_assert(0); // can't use stdout (because rewind is used below)
         throw_error(140, "Cannot write to standard output");
     }
-    else if ((ofp = fopen(outf, "w")) == NULL) {
-        throw_errorf(117, "Cannot open output file %s", outf);
-    }
-    maxsize = 1;
+
+    maxsize       = 1;
     out_of_memory = 0;
-    name = NULL;
+    name          = NULL;
     init();
     init_phylip();
-    total_seq = 0;
+    total_seq     = 0;
     do {
         if (informat == ALMA) {
             init_alma();
@@ -171,30 +160,18 @@ void to_phylip(char *inf, char *outf, int informat, int readstdin)
  *   Function to_phylip_1x1()
  *       Convert from one format to PHYLIP format, one seq by one seq.
  */
-void to_phylip_1x1(char *inf, char *outf, int informat)
-{
-    FILE *IFP, *ofp;
-
-    FILE_BUFFER ifp;
-
+void to_phylip_1x1(char *inf, char *outf, int informat) {
     int maxsize, current, total_seq;
-
     char temp[TOKENNUM], eof;
-
     char *name;
 
-    if ((IFP = fopen(inf, "r")) == NULL) {
-        throw_errorf(123, "Cannot open input file %s", inf);
-    }
-    ifp = create_FILE_BUFFER(inf, IFP);
-    if (Lenstr(outf) <= 0)
-        ofp = stdout;
-    else if ((ofp = fopen(outf, "w")) == NULL) {
-        throw_errorf(124, "Cannot open output file %s", outf);
-    }
+    FILE        *IFP = open_input_or_die(inf);
+    FILE_BUFFER  ifp = create_FILE_BUFFER(inf, IFP);
+    FILE        *ofp = open_output_or_die(outf);
+    
     maxsize = 1;
     current = 0;
-    name = NULL;
+    name    = NULL;
     fprintf(ofp, "%4d %4d\n", maxsize, current);
     while (maxsize > current) {
         init();

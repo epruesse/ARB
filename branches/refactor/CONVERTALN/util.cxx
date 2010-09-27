@@ -42,6 +42,28 @@ void throw_errorf(int error_num, const char *error_messagef, ...) { // __ATTR__F
     throw_error(error_num, buffer);
 }
 
+void throw_cant_open_input(const char *filename) {
+    throw_errorf(1, "can't read input file '%s' (Reason: %s)", filename, strerror(errno));
+}
+void throw_cant_open_output(const char *filename) {
+    throw_errorf(2, "can't write output file '%s' (Reason: %s)", filename, strerror(errno));
+}
+
+FILE *open_input_or_die(const char *filename) {
+    FILE *in = fopen(filename, "rt");
+    if (!in) throw_cant_open_input(filename);
+    return in;
+}
+FILE *open_output_or_die(const char *filename) {
+    FILE *out;
+    if (!filename[0]) out = stdout; // empty filename -> stdout
+    else {
+        out = fopen(filename, "wt");
+        if (!out) throw_cant_open_output(filename);
+    }
+    return out;
+}
+
 /* --------------------------------------------------------------
  *  Function warning()
  *      print out warning_message and continue execution.
