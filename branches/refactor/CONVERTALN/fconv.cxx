@@ -157,7 +157,7 @@ static void convert_WRAPPED(char *inf, char *outf, int intype, int outype) {
         to_printable(inf, outf, ALMA);
     }
     else if (outype == GCG) {
-        to_gcg(intype, inf);
+        to_gcg(inf, outf, intype);
     }
     else
         throw_error(90, "Unidentified input type or output type");
@@ -291,7 +291,8 @@ void init_seq_data()
 #include <test_unit.h>
 #include <arb_defs.h>
 
-// #define TEST_AUTO_UPDATE
+#define TEST_AUTO_UPDATE
+#define TEST_AUTO_UPDATE_ONLY_MISSING // do auto-update only if file is missing 
 
 struct FormatSpec {
     char        id; // GENBANK, MACKE, ...
@@ -363,22 +364,30 @@ static Capabilities cap[fcount][fcount];
 #define NAME(f)  format[f].name
 #define INPUT(f) format[f].testfile
 
+static void test_expected_conversion(const char *file, const char *flavor) {
+    char *expected;
+    if (flavor) expected = GBS_global_string_copy("%s.%s.expected", file, flavor);
+    else expected = GBS_global_string_copy("%s.expected", file);
 
-#ifdef TEST_AUTO_UPDATE
-#define TEST_EXPECTED_CONVERSION(file)                                  \
-    do {                                                                \
-        char *expected = GBS_global_string_copy("%s.expected", file);   \
-        system(GBS_global_string("cp %s %s", file, expected));          \
-        free(expected);                                                 \
-    } while (0)
+#if defined(TEST_AUTO_UPDATE)
+#if defined(TEST_AUTO_UPDATE_ONLY_MISSING)
+    if (GB_is_regularfile(expected)) {
+        TEST_ASSERT_TEXTFILE_DIFFLINES_IGNORE_DATES(file, expected, 0);
+    }
+    else {
+        TEST_ASSERT_ZERO_OR_SHOW_ERRNO(system(GBS_global_string("cp %s %s", file, expected)));
+    }
 #else
-#define TEST_EXPECTED_CONVERSION(file)                                  \
-    do {                                                                \
-        char *expected = GBS_global_string_copy("%s.expected", toFile); \
-        TEST_ASSERT_TEXTFILE_DIFFLINES_IGNORE_DATES(file, expected, 0); \
-        free(expected);                                                 \
-    } while (0)
+    // TEST_AUTO_UPDATE && !TEST_AUTO_UPDATE_ONLY_MISSING
+    TEST_ASSERT_ZERO_OR_SHOW_ERRNO(system(GBS_global_string("cp %s %s", file, expected)));
 #endif
+#else
+    // !TEST_AUTO_UPDATE
+    TEST_ASSERT_TEXTFILE_DIFFLINES_IGNORE_DATES(file, expected, 0);
+#endif
+
+    free(expected);
+}
 
 static const char *test_convert(const char *inf, const char *outf, int intype, int outype) {
     const char *error = NULL;
@@ -410,7 +419,7 @@ static void test_convert_by_format_num_WRAPPED(int from, int to) {
                 TEST_ASSERT_EQUAL(GB_size_of_file(toFile), 0);
             }
             else {                                                  
-                TEST_EXPECTED_CONVERSION(toFile);                   
+                test_expected_conversion(toFile, NULL);
             }                                                       
             TEST_ASSERT_ZERO_OR_SHOW_ERRNO(unlink(toFile));         
         }
@@ -418,12 +427,15 @@ static void test_convert_by_format_num_WRAPPED(int from, int to) {
     free(toFile);
 }
 
+
+#if defined(ENABLE_CRASH_TESTS)
 static int crash_from = -1;
-static int crash_to = -1;
+static int crash_to   = -1;
 
 static void crash_convert() {
     test_convert_by_format_num_WRAPPED(crash_from, crash_to);
 }
+#endif // ENABLE_CRASH_TESTS
 
 static void test_convert_by_format_num(int from, int to) {
     TEST_ANNOTATE_ASSERT(GBS_global_string("while converting %s -> %s", NAME(from), NAME(to)));
@@ -515,10 +527,8 @@ void TEST_converter() {
     CRASHES(PAUP, GCG);
     CRASHES(ALMA, GCG);
 
-    NO_OUTFILE_CREATED(MACKE, GCG);   // did not create file
-
     EMPTY_OUTFILE_CREATED(ALMA, GENBANK);
-    EMPTY_OUTFILE_CREATED(ALMA, MACKE);
+    EMPTY_OUTFILE_CREATED(ALMA, MACKE); 
     EMPTY_OUTFILE_CREATED(ALMA, PRINTABLE);
 
     EMPTY_OUTFILE_CREATED(EMBL, GENBANK);
@@ -547,10 +557,15 @@ void TEST_converter() {
 
             possible++;
             Capabilities& me = cap[from][to];
-            
 
             if (me.shall_be_tested()) {
                 test_convert_by_format_num(from, to);
+                if (to == NUM_ALMA && cap[from][to].supported) {
+                    const char *additional_outfile = "MetMazei.EMBL";
+                    test_expected_conversion(additional_outfile, NAME(from));
+                    TEST_ASSERT_ZERO_OR_SHOW_ERRNO(unlink(additional_outfile));
+                }
+
                 tested++;
             }
 

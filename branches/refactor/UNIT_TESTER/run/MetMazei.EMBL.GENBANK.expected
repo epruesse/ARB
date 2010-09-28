@@ -1,0 +1,20 @@
+ID   METMAZEI  preliminary; RNA; UNA; 165 BP.
+XX
+AC   X69874
+XX
+DT   28-SEP-1910 (Rel. 1, Last updated, Version 1)
+DT   28-SEP-1910 (Rel. 1, Created)
+XX
+DE   Methanosarcina mazei.
+XX
+KW   .
+XX
+RN   [1]
+RT   ;
+XX
+DR   RDP; MetMazei.
+XX
+SQ   Sequence 66 BP; 13 A; 15 C; 17 G; 21 T; 0 other;
+     AUUCUGGUUG AUCCUGCCAG AGGUUACUGC UAUCGGUGUU CGCCUAAGCC AUGCGAGUCA
+     UAUGUA
+//

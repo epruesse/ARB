@@ -6,13 +6,13 @@
  *   Function to_gcg().
  *       Convert from whatever to GCG format.
  */
-void to_gcg(int intype, char *inf) {
+
+void to_gcg(char *inf, char *outf, int intype) {
     FILE *IFP1, *IFP2, *IFP3, *ofp;
     FILE_BUFFER ifp1 = 0, ifp2 = 0, ifp3 = 0;
     char temp[TOKENNUM], *eof, line[LINENUM], key[TOKENNUM];
     char line1[LINENUM], line2[LINENUM], line3[LINENUM], name[LINENUM];
     char *eof1, *eof2, *eof3;
-    char outf[TOKENNUM];
     int seqdata;
 
     if (intype == MACKE) {
@@ -38,7 +38,6 @@ void to_gcg(int intype, char *inf) {
         for (; eof1 != NULL && (line1[0] == '#' && line1[1] == '='); eof1 = Fgetline(line1, LINENUM, ifp1)) {
             macke_abbrev(line1, key, 2);
             Cpystr(temp, key);
-            gcg_output_filename(temp, outf);
             ofp = open_output_or_die(outf);
             for (macke_abbrev(line2, name, 2);
                  eof2 != NULL && line2[0] == '#' && line2[1] == ':' && str_equal(name, key);
@@ -60,7 +59,6 @@ void to_gcg(int intype, char *inf) {
                 genbank_key_word(line, 0, temp, TOKENNUM);
                 if (str_equal(temp, "LOCUS")) {
                     genbank_key_word(line + 12, 0, key, TOKENNUM);
-                    gcg_output_filename(key, outf);
                     ofp = open_output_or_die(outf);
                 }
                 else if (str_equal(temp, "ORIGIN")) {
@@ -72,7 +70,6 @@ void to_gcg(int intype, char *inf) {
             else {              /* EMBL or SwissProt */
                 if (Lenstr(line) > 2 && line[0] == 'I' && line[1] == 'D') {
                     embl_key_word(line, 5, key, TOKENNUM);
-                    gcg_output_filename(key, outf);
                     ofp = open_output_or_die(outf);
                 }
                 else if (Lenstr(line) > 1 && line[0] == 'S' && line[1] == 'Q') {

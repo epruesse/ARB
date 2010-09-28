@@ -94,7 +94,7 @@ void init(void);
 void init_seq_data(void);
 
 /* gcg.cxx */
-void to_gcg(int intype, char *inf);
+void to_gcg(char *inf, char *outf, int intype);
 void gcg_seq_out(FILE *ofp, char *key);
 void gcg_doc_out(char *line, FILE *ofp);
 int checksum(char *string, int numofstr);

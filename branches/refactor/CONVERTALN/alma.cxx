@@ -679,23 +679,33 @@ void alma_out_header(FILE * fp)
     fprintf(fp, "HOMOEF_T>    0\n");
 }
 
+static const char *alma_get_extension_for(int format_type) {
+    if (format_type == EMBL)       return ".EMBL";
+    if (format_type == NBRF)       return ".NBRF";
+    if (format_type == GCG)        return ".UWGCG";
+    if (format_type == STADEN)     return ".STADEN";
+
+    throw_error(57, "Unknown format type when writing ALMA format");
+}
+static const char *alma_get_format_id(int format_type) {
+    return alma_get_extension_for(format_type)+1; 
+}
+
 /* -------------------------------------------------------------
  *   Function alma_out().
  *       Output one alma entry.
  */
-FILE *alma_out(FILE * fp, int format)
-{
+FILE *alma_out(FILE * fp, int format) {
     int indi, len;
-
     char filename[TOKENNUM];
-
     FILE *outfile;
 
     Cpystr(filename, data.alma.id);
     for (indi = 0, len = Lenstr(filename); indi < len; indi++)
         if (!isalnum(filename[indi]))
             filename[indi] = '_';
-    Catstr(filename, ".EMBL");
+
+    Catstr(filename, alma_get_extension_for(format));
 
     outfile = alma_out_entry_header(fp, data.alma.id, filename, format);
     alma_out_gaps(fp);
@@ -712,15 +722,12 @@ FILE *alma_out_entry_header(FILE * fp, char *entry_id, char *filename, int forma
     fprintf(fp, "ENTRY ID>%s\n", entry_id);
 
     if (file_exists(filename)) warningf(55, "file %s gets overwritten.", filename);
-    FILE *outfile = open_output_or_die(filename); 
+    FILE *outfile = open_output_or_die(filename);
 
     fprintf(fp, "SEQUENCE>%s\n", filename);
 
-    if      (format_type == EMBL)       fprintf(fp, "FORMAT>EMBL\n");
-    else if (format_type == NBRF)       fprintf(fp, "FORMAT>NBRF\n");
-    else if (format_type == GCG)        fprintf(fp, "FORMAT>UWGCG\n");
-    else if (format_type == STADEN)     fprintf(fp, "FORMAT>STADEN\n");
-    else throw_error(57, "Unknown format type when writing ALMA format");
+    const char *format_name = alma_get_format_id(format_type);
+    fprintf(fp, "FORMAT>%s\n", format_name);
 
     fprintf(fp, "ACCEPT>ALL\n");
     fprintf(fp, "DEFGAP>[-]\n");
