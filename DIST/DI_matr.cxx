@@ -63,7 +63,7 @@ DI_dmatrix *di_dmatrix      = 0;
 
 AP_matrix DI_dna_matrix(AP_MAX);
 
-static void delete_matrix_cb(AW_root *dummy)
+static void delete_matrix_cb(AW_root *)
 {
     delete DI_MATRIX::ROOT;
     DI_MATRIX::ROOT = 0;
@@ -498,7 +498,7 @@ GB_ERROR DI_MATRIX::calculate_rates(DI_MUT_MATR &hrates, DI_MUT_MATR &nrates, DI
 // ----------------------------------------------------------------
 //      Some test functions to check correlated base correction
 
-GB_ERROR DI_MATRIX::haeschoe(const char *path) {
+GB_ERROR DI_MATRIX::haeschoe(const char *path, bool update_status) {
     static BI_helix *helix = 0;
     if (!helix) helix      = new BI_helix();
 
@@ -539,10 +539,12 @@ GB_ERROR DI_MATRIX::haeschoe(const char *path) {
 
                 for (row = 0; row<nentries; row++) {
                     if (nentries > 100 || ((row&0xf) == 0)) {
-                        double gauge = (double)row/(double)nentries;
-                        if (aw_status(gauge*gauge)) {
-                            error = "Aborted by user";
-                            break;
+                        if (update_status) {
+                            double gauge = (double)row/(double)nentries;
+                            if (aw_status(gauge*gauge)) {
+                                error = "Aborted by user";
+                                break;
+                            }
                         }
                     }
                     fprintf (out, "\n%s  ", entries[row]->name);
@@ -634,10 +636,10 @@ double DI_MATRIX::corr(double dist, double b, double & sigma) {
     return - b * log(1-dist/b);
 }
 
-GB_ERROR DI_MATRIX::calculate(AW_root *awr, char *cancel, double /* alpha */, DI_TRANSFORMATION transformation, bool *aborted_flag)
+GB_ERROR DI_MATRIX::calculate(AW_root *awr, char *cancel, double /* alpha */, DI_TRANSFORMATION transformation, bool *aborted_flag, bool update_status)
 {
     if (transformation == DI_TRANSFORMATION_HAESCH) {
-        GB_ERROR error = haeschoe("outfile");
+        GB_ERROR error = haeschoe("outfile", update_status);
         if (error) return error;
         return "Your matrices have been written to 'outfile'\nSorry I can not make a tree";
     }
@@ -694,11 +696,13 @@ GB_ERROR DI_MATRIX::calculate(AW_root *awr, char *cancel, double /* alpha */, DI
 
     for (row = 0; row<nentries; row++) {
         if (nentries > 100 || ((row&0xf) == 0)) {
-            double gauge = (double)row/(double)nentries;
-            if (aw_status(gauge*gauge)) {
-                aw_closestatus();
-                if (aborted_flag) *aborted_flag = true;
-                return "Aborted by user";
+            if (update_status) {
+                double gauge = (double)row/(double)nentries;
+                if (aw_status(gauge*gauge)) {
+                    aw_closestatus();
+                    if (aborted_flag) *aborted_flag = true;
+                    return "Aborted by user";
+                }
             }
         }
         for (col=0; col<=row; col++) {
@@ -933,7 +937,7 @@ STATIC_ATTRIBUTED(__ATTR__USERESULT, GB_ERROR di_calculate_matrix(AW_window *aww
             DI_TRANSFORMATION trans = (DI_TRANSFORMATION)aw_root->awar(AWAR_DIST_CORR_TRANS)->read_int();
 
             if (phm->is_AA) error = phm->calculate_pro(trans, &aborted);
-            else error            = phm->calculate(aw_root, cancel, 0.0, trans, &aborted);
+            else error            = phm->calculate(aw_root, cancel, 0.0, trans, &aborted, !bootstrap_flag);
         }
         if (!bootstrap_flag) aw_closestatus();
         delete DI_MATRIX::ROOT;
@@ -1022,7 +1026,7 @@ static void di_mark_by_distance(AW_window *aww, AW_CL cl_weightedFilter) {
                             error = phm->calculate_pro(trans, NULL);
                         }
                         else {
-                            error = phm->calculate(aw_root, cancel, 0.0, trans, NULL);
+                            error = phm->calculate(aw_root, cancel, 0.0, trans, NULL, false);
                         }
 
                         double dist_value = phm->matrix->get(0, 1);                         // distance or conformance
@@ -1259,8 +1263,8 @@ static void di_calculate_tree_cb(AW_window *aww, AW_CL cl_weightedFilter, AW_CL 
                 }
             }
             else {
-                if ((loop_count-last_status_upd)*4 < trees_per_second) {
-                    show_update = false; // do not update more often than 4 times a second
+                if ((loop_count-last_status_upd) < trees_per_second) {
+                    show_update = false; // do not update more often than once a second
                 }
             }
 
