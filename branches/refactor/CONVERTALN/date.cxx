@@ -60,15 +60,13 @@ const char *genbank_date(const char *other_date) {
             }
         }
         else {
-            sprintf(gdate, "Unknown date format: %s, cannot convert.\n", other_date);
-            warning(146, gdate);
+            warningf(146, "Unknown date format: %s, cannot convert.", other_date);
             strcpy(gdate, ERROR_DATE);
         }
 
         if (!gdate[0]) {
             if (day <= 0 || month <= 0 || year <= 0 || day > 31 || month > 12) {
-                sprintf(gdate, "Wrong date format: %s\n", other_date);
-                warning(147, gdate);
+                warningf(147, "Wrong date format: %s", other_date);
                 strcpy(gdate, ERROR_DATE);
             }
             else {

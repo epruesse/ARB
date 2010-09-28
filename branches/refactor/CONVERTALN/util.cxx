@@ -71,10 +71,27 @@ FILE *open_output_or_die(const char *filename) {
  *      print out warning_message and continue execution.
  */
 /* ------------------------------------------------------------- */
-void warning(int warning_num, const char *warning_message)
-{
+
+void warning(int warning_num, const char *warning_message) {
     if (warning_out)
         fprintf(stderr, "WARNING(%d): %s\n", warning_num, warning_message);
+}
+void warningf(int warning_num, const char *warning_messagef, ...) { // __ATTR__FORMAT(2)
+    if (warning_out) {
+        va_list parg;
+        va_start(parg, warning_messagef);
+
+        const int   BUFSIZE = 1000;
+        static char buffer[BUFSIZE];
+        int         printed = vsprintf(buffer, warning_messagef, parg);
+
+        va_end(parg);
+
+        if (printed >= BUFSIZE) {
+            throw_errorf(998, "Internal buffer overflow (while formatting warning #%i '%s')", warning_num, warning_messagef);
+        }
+        warning(warning_num, buffer);
+    }
 }
 
 /* ------------------------------------------------------------

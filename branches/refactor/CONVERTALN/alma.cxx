@@ -272,15 +272,11 @@ char *alma_in_gaps(FILE_BUFFER fp) {
     }
 
     if (bases_not_matching) {
-        sprintf(line, "Bases number in ALMA file is larger than that in data file %s", data.alma.filename);
-
-        warning(142, line);
+        warningf(142, "Bases number in ALMA file is larger than that in data file %s", data.alma.filename);
     }
 
     if (count < data.seq_length) {
-        sprintf(line, "Bases number in ALMA file is less than that in data file %s", data.alma.filename);
-
-        warning(143, line);
+        warningf(143, "Bases number in ALMA file is less than that in data file %s", data.alma.filename);
 
         /* Append the rest of the data at the end */
         data.alma.sequence = (char *)Reallocspace(data.alma.sequence, (unsigned)(sizeof(char) * (numofseq + data.seq_length - count + 1)));
@@ -715,11 +711,7 @@ FILE *alma_out_entry_header(FILE * fp, char *entry_id, char *filename, int forma
     fprintf(fp, "NXT ENTRY>S\n");
     fprintf(fp, "ENTRY ID>%s\n", entry_id);
 
-    if (file_exists(filename)) {
-        char temp[TOKENNUM];
-        sprintf(temp, "file %s gets overwritten.", filename);
-        warning(55, temp);
-    }
+    if (file_exists(filename)) warningf(55, "file %s gets overwritten.", filename);
     FILE *outfile = open_output_or_die(filename); 
 
     fprintf(fp, "SEQUENCE>%s\n", filename);

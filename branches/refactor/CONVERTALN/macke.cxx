@@ -61,7 +61,7 @@ char macke_in(FILE_BUFFER fp1, FILE_BUFFER fp2, FILE_BUFFER fp3)
     static char  line3[LINENUM];
     static int   first_time = 1;
     char         oldname[TOKENNUM], name[TOKENNUM];
-    char         key[TOKENNUM], temp[LINENUM];
+    char         key[TOKENNUM];
     char        *eof1, *eof2, *eof3;
     int          numofrem   = 0;
     int          index;
@@ -146,8 +146,7 @@ char macke_in(FILE_BUFFER fp1, FILE_BUFFER fp2, FILE_BUFFER fp3)
             eof1 = Fgetline(line1, LINENUM, fp1);
         }
         else {
-            sprintf(temp, "Unidentified AE2 key word #%s#\n", key);
-            warning(144, temp);
+            warningf(144, "Unidentified AE2 key word #%s#", key);
             eof1 = Fgetline(line1, LINENUM, fp1);
         }
         if (eof1 != NULL && line1[0] == '#' && line1[1] == ':')
@@ -653,15 +652,11 @@ int macke_in_one_line(char *string)
  *   Function macke_out2().
  *       Output Macke format sequences data.
  */
-void macke_out2(FILE * fp)
-{
+void macke_out2(FILE * fp) {
     int indj, indk;
 
-    char temp[LINENUM];
-
     if (data.seq_length > MACKELIMIT) {
-        sprintf(temp, "Length of sequence data is %d over AE2's limit %d.\n", data.seq_length, MACKELIMIT);
-        warning(145, temp);
+        warningf(145, "Length of sequence data is %d over AE2's limit %d.", data.seq_length, MACKELIMIT);
     }
 
     for (indk = indj = 0; indk < data.seq_length; indk++) {

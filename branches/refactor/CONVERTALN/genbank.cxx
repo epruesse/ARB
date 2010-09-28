@@ -315,14 +315,12 @@ char *genbank_reference(char *line, FILE_BUFFER fp)
 #define TIT  1
 #define JOUR 2
     char *eof, key[TOKENNUM];
-    char  temp[LINENUM];
     int   refnum;
     int   acount = 0, tcount = 0, jcount = 0, scount = 0;
 
     sscanf(line + 12, "%d", &refnum);
     if (refnum <= data.gbk.numofref) {
-        sprintf(temp, "Might redefine reference %d", refnum);
-        warning(17, temp);
+        warningf(17, "Might redefine reference %d", refnum);
         eof = genbank_skip_unidentified(line, fp, 12);
     }
     else {
@@ -343,57 +341,39 @@ char *genbank_reference(char *line, FILE_BUFFER fp)
             /* add '.' if missing at the end */
             Append_char(&(data.gbk.reference[refnum - 1].author), '.');
 
-            if (acount == 0)
-                acount = 1;
+            if (acount == 0) acount = 1;
             else {
-
-                sprintf(temp, "AUTHORS of REFERENCE %d is redefined", refnum);
-                warning(10, temp);
+                warningf(10, "AUTHORS of REFERENCE %d is redefined", refnum);
             }
 
         }
         else if (str_equal(key, "TITLE")) {
             eof = genbank_one_entry_in(&(data.gbk.reference[refnum - 1].title), line, fp);
-            if (tcount == 0)
-                tcount = 1;
+            if (tcount == 0) tcount = 1;
             else {
-
-                sprintf(temp, "TITLE of REFERENCE %d is redefined", refnum);
-
-                warning(11, temp);
+                warningf(11, "TITLE of REFERENCE %d is redefined", refnum);
             }
         }
         else if (str_equal(key, "JOURNAL")) {
 
             eof = genbank_one_entry_in(&(data.gbk.reference[refnum - 1].journal), line, fp);
 
-            if (jcount == 0)
-                jcount = 1;
+            if (jcount == 0) jcount = 1;
             else {
-
-                sprintf(temp, "JOURNAL of REFERENCE %d is redefined", refnum);
-
-                warning(12, temp);
+                warningf(12, "JOURNAL of REFERENCE %d is redefined", refnum);
             }
         }
         else if (str_equal(key, "STANDARD")) {
 
             eof = genbank_one_entry_in(&(data.gbk.reference[refnum - 1].standard), line, fp);
 
-            if (scount == 0)
-                scount = 1;
+            if (scount == 0) scount = 1;
             else {
-
-                sprintf(temp, "STANDARD of REFERENCE %d is redefined", refnum);
-
-                warning(13, temp);
+                warningf(13, "STANDARD of REFERENCE %d is redefined", refnum);
             }
         }
         else {
-
-            sprintf(temp, "Unidentified REFERENCE subkeyword: %s#", key);
-
-            warning(18, temp);
+            warningf(18, "Unidentified REFERENCE subkeyword: %s#", key);
             eof = genbank_skip_unidentified(line, fp, 12);
         }
     }                           /* for loop */
@@ -581,8 +561,7 @@ char
  */
 void genbank_verify_accession()
 {
-    int  indi, len, count, remainder;
-    char temp[LONGTEXT];
+    int indi, len, count, remainder;
 
     if (str_equal(data.gbk.accession, "No information\n"))
         return;
@@ -607,8 +586,7 @@ void genbank_verify_accession()
                     return;
                 }
                 if (!isalpha(data.gbk.accession[indi])) {
-                    sprintf(temp, "The %d(th) accession number must start with a letter.", count);
-                    warning(138, temp);
+                    warningf(138, "The %d(th) accession number must start with a letter.", count);
                 }
                 break;
             case 1:
@@ -617,8 +595,7 @@ void genbank_verify_accession()
             case 4:
             case 5:
                 if (!isdigit(data.gbk.accession[indi])) {
-                    sprintf(temp, "The last 5 characters of the %d(th) accession number should be all digits.", count);
-                    warning(140, temp);
+                    warningf(140, "The last 5 characters of the %d(th) accession number should be all digits.", count);
                 }
                 break;
             case 6:

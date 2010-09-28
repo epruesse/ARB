@@ -276,10 +276,9 @@ void gtom_copy_remark(char *string, const char *key, int *remnum)
  *       Get strain from DEFINITION, COMMENT or SOURCE line in
  *       Genbank data file.
  */
-char *genbank_get_strain()
-{
+char *genbank_get_strain() {
     int  indj, indk;
-    char strain[LONGTEXT], temp[LONGTEXT], buffer[LONGTEXT];
+    char strain[LONGTEXT], temp[LONGTEXT];
 
     strain[0] = '\0';
     /* get strain */
@@ -305,8 +304,7 @@ char *genbank_get_strain()
             get_string(data.gbk.definition, temp, indj);
             if (Lenstr(strain) > 1) {
                 if (!str_equal(temp, strain)) {
-                    sprintf(buffer, "Inconsistent strain definition in DEFINITION: %s and %s", temp, strain);
-                    warning(91, buffer);
+                    warningf(91, "Inconsistent strain definition in DEFINITION: %s and %s", temp, strain);
                 }               /* check consistency of duplicated def */
             }
             else
@@ -324,8 +322,7 @@ char *genbank_get_strain()
             get_string(data.gbk.source, temp, indj);
             if (Lenstr(strain) > 1) {
                 if (!str_equal(temp, strain)) {
-                    sprintf(buffer, "Inconsistent strain definition in SOURCE: %s and %s", temp, strain);
-                    warning(92, buffer);
+                    warningf(92, "Inconsistent strain definition in SOURCE: %s and %s", temp, strain);
                 }
             }
             else
@@ -344,7 +341,7 @@ char *genbank_get_strain()
  */
 char *genbank_get_subspecies() {
     int  indj, indk;
-    char subspecies[LONGTEXT], temp[LONGTEXT], buffer[LONGTEXT];
+    char subspecies[LONGTEXT], temp[LONGTEXT];
 
     subspecies[0] = '\0';
     /* get subspecies */
@@ -375,8 +372,7 @@ char *genbank_get_subspecies() {
                 get_string(data.gbk.comments.others, temp, indj);
                 if (Lenstr(subspecies) > 1) {
                     if (!str_equal(temp, subspecies)) {
-                        sprintf(buffer, "Inconsistent subspecies definition in COMMENTS *source: %s and %s", temp, subspecies);
-                        warning(20, buffer);
+                        warningf(20, "Inconsistent subspecies definition in COMMENTS *source: %s and %s", temp, subspecies);
                     }
                 }
                 else
@@ -397,8 +393,7 @@ char *genbank_get_subspecies() {
             correct_subspecies(temp);
             if (Lenstr(subspecies) > 1) {
                 if (!str_equal(temp, subspecies)) {
-                    sprintf(buffer, "Inconsistent subspecies definition in SOURCE: %s and %s", temp, subspecies);
-                    warning(21, buffer);
+                    warningf(21, "Inconsistent subspecies definition in SOURCE: %s and %s", temp, subspecies);
                 }
             }
             else

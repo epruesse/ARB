@@ -204,8 +204,7 @@ static int main_WRAPPED(int argc, char *argv[]) {
 
     /* check if output file exists and filename's validation */
     if (file_exists(argv[4])) {
-        sprintf(temp, "Output file %s exists, will be overwritten.", argv[4]);
-        warning(151, temp);
+        warningf(151, "Output file %s exists, will be overwritten.", argv[4]);
     }
 
     /* file format transfer... */

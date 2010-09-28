@@ -206,6 +206,7 @@ void throw_cant_open_output(const char *filename);
 FILE *open_input_or_die(const char *filename);
 FILE *open_output_or_die(const char *filename);
 void warning(int warning_num, const char *warning_message);
+void warningf(int warning_num, const char *warning_messagef, ...) __ATTR__FORMAT(2);
 char *Reallocspace(void *block, unsigned int size);
 char *Dupstr(const char *string);
 char *Catstr(char *s1, const char *s2);
