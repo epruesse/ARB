@@ -1640,7 +1640,14 @@ unit_tests: test_base clean_coverage_results
 	@echo "fake[1]: Leaving directory \`$(ARBHOME)/UNIT_TESTER'"
 	@$(TEST_RUN_SUITE) cleanup
 
-ut: unit_tests
+ut:
+ifeq ($(UNIT_TESTS),1)
+	@echo $(MAKE) unit_tests
+	@$(MAKE) unit_tests
+else
+	@echo "Not compiled with unit tests"
+endif
+
 
 aut:
 	@$(TEST_RUN_SUITE) unskip

@@ -2,6 +2,8 @@
 #include <string.h>
 #include <ctype.h>
 #include <stdlib.h>
+#include <stdarg.h>
+#include <errno.h>
 #include "convert.h"
 #include "global.h"
 #include "types.h"
