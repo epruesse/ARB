@@ -103,7 +103,7 @@ static void convert_WRAPPED(char *inf, char *outf, int intype, int outype) {
         embl_to_macke(inf, outf, PROTEIN);
     }
     else if (intype == PROTEIN && outype == GENBANK) {
-        throw_error(78, "GenBank doesn't maintain protein data");
+        throw_error(76, "GenBank doesn't maintain protein data");
     }
     else if (intype == PROTEIN && outype == PAUP) {
         to_paup(inf, outf, PROTEIN);

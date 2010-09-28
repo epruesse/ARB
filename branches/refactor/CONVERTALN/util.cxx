@@ -88,7 +88,7 @@ void warningf(int warning_num, const char *warning_messagef, ...) { // __ATTR__F
         va_end(parg);
 
         if (printed >= BUFSIZE) {
-            throw_errorf(998, "Internal buffer overflow (while formatting warning #%i '%s')", warning_num, warning_messagef);
+            throw_errorf(997, "Internal buffer overflow (while formatting warning #%i '%s')", warning_num, warning_messagef);
         }
         warning(warning_num, buffer);
     }

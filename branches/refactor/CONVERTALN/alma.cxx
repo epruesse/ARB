@@ -63,7 +63,7 @@ void alma_to_macke(char *inf, char *outf) {
                 }
             }
             else
-                throw_error(48, "Conversion from alma to macke fails");
+                throw_error(47, "Conversion from alma to macke fails");
             init_alma();
             init_macke();
         }
