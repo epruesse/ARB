@@ -77,8 +77,7 @@ GBT_TREE *get_ctree()
         n = ntree_get();
     }
     else {  /* if father has tree sons */
-            /* this case should happen nerver! */
-        printf("Es gibt noch was zu tun !!!!!! \n");
+        arb_assert(0); /* this case should happen nerver! */
     }
 
     return rb_gettree(n);
