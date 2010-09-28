@@ -8,6 +8,7 @@ use warnings;
 my %loc = (); # key=ID content=location
 my %num = (); # key=ID content=errornumber
 my %msg = (); # key=ID content=message
+my %type = (); # key=ID content=W|E|? (warning|error|unknown)
 
 my %numUsed = (); # key=num content=times used
 
@@ -37,12 +38,19 @@ sub pad_locs() {
 }
 
 sub parse_errors() {
-  my $cmd = "grep -n 'throw_error' *.cxx";
+  my $cmd = "grep -En 'throw_error|warning' *.cxx";
   open(GREP,$cmd.'|') || die "failed to run '$cmd' (Reason: $!)";
   foreach (<GREP>) {
     chomp;
-    if (/throw_errorf?\(\s*([0-9]+)\s*,(.*)/) {
-      my ($loc,$num,$msg) =  ($`,$1,$2);
+    if (/(throw_errorf?|warningf?)\(\s*([0-9]+)\s*,(.*)/) {
+      my ($loc,$what,$num,$msg) =  ($`,$1,$2,$3);
+
+      my $msgType = '?';
+      if ($what =~ /warning/o) { $msgType = 'W'; }
+      if ($what =~ /error/o) { $msgType = 'E'; }
+      if ($msgType eq '?') {
+        die "what='$what'";
+      }
 
       $msg =~ s/\);\s*$//g;
       $loc =~ s/^\s*([^\s]+)\s*.*/$1/og;
@@ -52,6 +60,7 @@ sub parse_errors() {
       $loc{$ID} = $loc;
       $num{$ID} = $num;
       $msg{$ID} = $msg;
+      $type{$ID} = $msgType;
 
       $ID++;
     }
@@ -67,25 +76,61 @@ sub head($) {
   print "\n---------------------------------------- $msg:\n\n";
 }
 
+sub show(\@) {
+  my ($ID_r) = @_;
+  foreach $ID (@$ID_r) {
+    print sprintf("%s %3i [%s] %s\n", $loc{$ID}, $num{$ID}, $type{$ID}, $msg{$ID});
+  }
+}
+
 sub show_by_num() {
   head('sorted by error-number');
   my @ID = sort { $num{$a} <=> $num{$b}; } keys %num;
-  foreach $ID (@ID) {
-    print sprintf("%s %3i %s\n", $loc{$ID}, $num{$ID}, $msg{$ID});
-  }
+  show(@ID);
 }
 sub show_by_msg() {
   head('sorted by message');
   my @ID = sort { $msg{$a} cmp $msg{$b}; } keys %num;
+  show(@ID);
+}
+
+sub show_duplicates() {
+  my @ID = sort { $num{$a} <=> $num{$b}; } keys %num;
+  my %seen = (); # key=num, value=ID of 1st occurrance
+  my $err_count = 0;
+
   foreach $ID (@ID) {
-    print sprintf("%s %3i %s\n", $loc{$ID}, $num{$ID}, $msg{$ID});
+    my $num = $num{$ID};
+    my $type = $type{$ID};
+    my $key = $type.'.'.$num;
+    my $seen = $seen{$key};
+    if (defined $seen) {
+      my $what = $type eq 'E' ? 'error' : 'warning';
+      print STDERR sprintf("%s Error: Duplicated use of $what-code '%i'\n", $loc{$ID}, $num);
+      my $id_1st = $seen{$type.'.'.$num};
+      print STDERR sprintf("%s (%i first used here)\n", $loc{$id_1st}, $num{$id_1st});
+      $err_count++;
+    }
+    else {
+      $seen{$key} = $ID;
+    }
   }
+  return ($err_count>0);
 }
 
 sub main() {
-  parse_errors();
+  my $mode = $ARGV[0];
+  if (not defined $mode or $mode =~ /help/i) {
+    print "Usage: show_error_list.pl [-check|-listnum|-listmsg]\n";
+    die "No mode specified";
+  }
+  else {
+    parse_errors();
 
-  show_by_num();
-  show_by_msg();
+    if ($mode eq '-check') { show_duplicates(); }
+    elsif ($mode eq '-listnum') { show_by_num(); }
+    elsif ($mode eq '-listmsg') { show_by_msg(); }
+    else { die "Unknown mode"; }
+  }
 }
 main();

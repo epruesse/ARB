@@ -18,8 +18,11 @@ OBJECTS= \
 
 .SUFFIXES: .o .a .cxx .depend
 
-$(MAIN): $(OBJECTS)
+$(MAIN): $(OBJECTS) check_error_codes
 	$(LINK_STATIC_LIB) $(MAIN) $(OBJECTS)
+
+check_error_codes:
+	@./show_error_list.pl -check
 
 .cxx.o:
 	$(CPP) $(cflags) -c $< $(AINCLUDES) $(POST_COMPILE)
