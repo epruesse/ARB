@@ -40,7 +40,7 @@ sub pad_locs() {
 sub parse_errors() {
   my $cmd = "grep -En 'throw_error|warning' *.cxx";
   open(GREP,$cmd.'|') || die "failed to run '$cmd' (Reason: $!)";
-  foreach (<GREP>) {
+ LINE: foreach (<GREP>) {
     chomp;
     if (/(throw_errorf?|warningf?)\(\s*([0-9]+)\s*,(.*)/) {
       my ($loc,$what,$num,$msg) =  ($`,$1,$2,$3);
@@ -51,6 +51,8 @@ sub parse_errors() {
       if ($msgType eq '?') {
         die "what='$what'";
       }
+
+      if ($loc =~ /\/\//o) { next LINE; } # ignore comments
 
       $msg =~ s/\);\s*$//g;
       $loc =~ s/^\s*([^\s]+)\s*.*/$1/og;
