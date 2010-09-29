@@ -42,7 +42,7 @@ static int InsertDatainGDE(NA_Alignment *dataset, GBDATA **the_species, unsigned
     NA_Sequence *this_elem;
     AP_filter   *allocatedFilter = 0;
 
-    gde_assert((the_species==0) != (the_names==0));
+    gde_assert(contradicted(the_species, the_names));
 
     if (filter==0) {
         allocatedFilter = new AP_filter(maxalignlen);
@@ -315,7 +315,7 @@ int ReadArbdb2(NA_Alignment *dataset, AP_filter *filter, GapCompression compress
                                                      the_species, the_names, the_sequences,
                                                      numberspecies, maxalignlen);
 
-    gde_assert((the_species==0) != (the_names==0));
+    gde_assert(contradicted(the_species, the_names));
 
     if (error) {
         aw_message(error);

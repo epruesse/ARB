@@ -24,7 +24,7 @@ static bool findLeftmostProbe(POS_TREE *node, char *probe, int restlen, int heig
                 if (son) {
                     probe[0] = PT_BASES(i); // write leftmost probe into result
                     bool found = findLeftmostProbe(son, probe+1, restlen-1, height+1);
-                    pt_assert(!found || (strlen(probe) == (size_t)restlen));
+                    pt_assert(implicated(found, strlen(probe) == (size_t)restlen));
                     if (found) return true;
                 }
             }
@@ -72,7 +72,7 @@ static bool findNextProbe(POS_TREE *node, char *probe, int restlen, int height) 
             POS_TREE *son   = PT_read_son(psg.ptmain, node, PT_BASES(probe[0]));
             bool      found = (son != 0) && findNextProbe(son, probe+1, restlen-1, height+1);
 
-            pt_assert(!found || (strlen(probe) == (size_t)restlen));
+            pt_assert(implicated(found, strlen(probe) == (size_t)restlen));
 
             if (!found) {
                 for (int i=probe[0]+1; !found && i<PT_B_MAX; ++i) {
@@ -80,7 +80,7 @@ static bool findNextProbe(POS_TREE *node, char *probe, int restlen, int height) 
                     if (son) {
                         probe[0] = PT_BASES(i); // change probe
                         found = findLeftmostProbe(son, probe+1, restlen-1, height+1);
-                        pt_assert(!found || (strlen(probe) == (size_t)restlen));
+                        pt_assert(implicated(found, strlen(probe) == (size_t)restlen));
                     }
                 }
             }

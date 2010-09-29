@@ -357,7 +357,7 @@ public:
     Bakt_Info** get_mo_liste() { return mo_liste; }
 
     static void set_gb_main(GBDATA *gb_main_) {
-        mp_assert(!gb_main || gb_main == gb_main_);
+        mp_assert(implicated(gb_main, gb_main == gb_main_));
         gb_main = gb_main_;
     }
 

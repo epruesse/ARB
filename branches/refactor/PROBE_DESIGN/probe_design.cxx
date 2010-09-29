@@ -243,7 +243,7 @@ static const char *PD_probe_pt_look_for_server(AW_root *root, GBDATA *gb_main, G
         result             = GBS_read_arb_tcp(server_tag);
         if (!result) error = GB_await_error();
     }
-    pd_assert(!!result != !!error);
+    pd_assert(contradicted(result, error));
     return result;
 }
 

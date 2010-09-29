@@ -18,7 +18,6 @@
 #include <list>
 #include <string>
 
-
 #include "gb_local.h"
 #include "gb_load.h"
 
@@ -636,6 +635,53 @@ bool GB_test_files_equal(const char *file1, const char *file2) {
     if (error) printf("test_files_equal(%s, %s) fails: %s\n", file1, file2, error);
     return !error;
 }
+
+// --------------------------------------------------------------------------------
+// tests for global code included from central ARB headers (located in $ARBHOME/TEMPLATES)
+// @@@ should go to ARB_CORE library later
+
+void TEST_logic() {
+#define FOR_ANY_BOOL(name) for (int name = 0; name<2; ++name)
+
+    TEST_ASSERT(implicated(true, true));
+    // for (int any = 0; any<2; ++any) {
+    FOR_ANY_BOOL(any) {
+        TEST_ASSERT(implicated(false, any)); // "..aus Falschem folgt Beliebiges.."
+        TEST_ASSERT(implicated(any, any));
+
+        TEST_ASSERT( correlated(any, any));
+        TEST_ASSERT(!correlated(any, !any));
+        TEST_ASSERT(!contradicted(any, any));
+        TEST_ASSERT( contradicted(any, !any));
+    }
+
+    TEST_ASSERT(correlated(false, false));
+
+    TEST_ASSERT(contradicted(true, false));
+    TEST_ASSERT(contradicted(false, true));
+
+    FOR_ANY_BOOL(kermitIsFrog) {
+        FOR_ANY_BOOL(kermitIsGreen) {
+            bool allFrogsAreGreen  = implicated(kermitIsFrog, kermitIsGreen);
+            bool onlyFrogsAreGreen = implicated(kermitIsGreen, kermitIsFrog);
+
+            TEST_ASSERT(implicated( kermitIsFrog  && allFrogsAreGreen,  kermitIsGreen));
+            TEST_ASSERT(implicated(!kermitIsGreen && allFrogsAreGreen, !kermitIsFrog));
+
+            TEST_ASSERT(implicated( kermitIsGreen && onlyFrogsAreGreen,  kermitIsFrog));
+            TEST_ASSERT(implicated(!kermitIsFrog  && onlyFrogsAreGreen, !kermitIsGreen));
+
+            TEST_ASSERT(implicated(kermitIsFrog  && !kermitIsGreen, !allFrogsAreGreen));
+            TEST_ASSERT(implicated(kermitIsGreen && !kermitIsFrog,  !onlyFrogsAreGreen));
+
+            TEST_ASSERT(correlated(
+                                  correlated(kermitIsGreen, kermitIsFrog), 
+                                  allFrogsAreGreen && onlyFrogsAreGreen
+                                  ));
+        }
+    }
+}
+
 
 
 #endif // UNIT_TESTS

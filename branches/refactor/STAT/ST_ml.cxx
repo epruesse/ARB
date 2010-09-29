@@ -709,7 +709,7 @@ bool ST_ML::update_ml_likelihood(char *result[4], int& latest_update, const char
      *        (0 is a good start value)
      */
 
-    st_assert(!!species_name != !!node);            // need node xor species_name
+    st_assert(contradicted(species_name, node));
 
     if (latest_update < latest_modification) {
         if (!node) {                                // if node isn't given search it using species name

@@ -472,7 +472,7 @@ class FastSearchOccurrence                          // iterates through all occu
     const FastSearchSequence&  mySequence;
     const TripleOffset        *myOffset;
 
-    void assertValid() const { fa_assert(!myOffset || myOffset!=myOffset->next()); }
+    void assertValid() const { fa_assert(implicated(myOffset, myOffset != myOffset->next())); }
 
 public:
 
