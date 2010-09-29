@@ -9,9 +9,13 @@
  *       Convert from some format to PRINTABLE format.
  */
 void to_printable(char *inf, char *outf, int informat) {
-    int maxsize, current, total_seq, length;
-    int out_of_memory, indi, index, *base_nums, base_count, start;
-    char temp[TOKENNUM], eof;
+    if (informat != ALMA && informat != GENBANK && informat != EMBL && informat != PROTEIN && informat != MACKE) {
+        throw_conversion_not_supported(informat, PRINTABLE);
+    }
+    
+    int   maxsize, current, total_seq, length;
+    int   out_of_memory, indi, index, *base_nums, base_count, start;
+    char  temp[TOKENNUM], eof;
     char *name;
 
     FILE        *IFP = open_input_or_die(inf);

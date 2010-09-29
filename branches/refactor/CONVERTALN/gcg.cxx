@@ -67,7 +67,10 @@ void to_gcg(char *inf, char *outf, int intype) {
                     eof = genbank_origin(line, ifp1);
                 }
             }
-            else {              /* EMBL or SwissProt */
+            else { /* EMBL or SwissProt */
+                if (intype != EMBL && intype != PROTEIN)
+                    throw_conversion_not_supported(intype, GCG);
+
                 if (Lenstr(line) > 2 && line[0] == 'I' && line[1] == 'D') {
                     embl_key_word(line, 5, key, TOKENNUM);
                     ofp = open_output_or_die(outf);

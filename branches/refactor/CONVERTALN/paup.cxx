@@ -18,6 +18,11 @@ void init_paup()
  *       Convert from some format to PAUP format.
  */
 void to_paup(char *inf, char *outf, int informat) {
+
+    if (informat != ALMA && informat != GENBANK && informat != EMBL && informat != PROTEIN && informat != MACKE) {
+        throw_conversion_not_supported(informat, PAUP);
+    }
+
     int maxsize, current, total_seq, first_line;
     int out_of_memory, indi;
     char temp[TOKENNUM], eof;
@@ -38,37 +43,28 @@ void to_paup(char *inf, char *outf, int informat) {
         if (informat == ALMA) {
             init_alma();
             eof = alma_in(ifp);
+            if (eof == EOF) break;
+            alma_key_word(data.alma.id, 0, temp, TOKENNUM);
         }
         else if (informat == GENBANK) {
             init_genbank();
             eof = genbank_in_locus(ifp);
+            if (eof == EOF) break;
+            genbank_key_word(data.gbk.locus, 0, temp, TOKENNUM); 
         }
         else if (informat == EMBL || informat == PROTEIN) {
             init_embl();
             eof = embl_in_id(ifp);
+            if (eof == EOF) break;
+            embl_key_word(data.embl.id, 0, temp, TOKENNUM);
         }
         else if (informat == MACKE) {
             init_macke();
             eof = macke_in_name(ifp);
+            if (eof == EOF) break;
+            Cpystr(temp, data.macke.seqabbr); 
         }
-        else
-            throw_error(63, "UNKNOWN input format when converting to PAUP format");
-        if (eof == EOF)
-            break;
-        if (informat == ALMA) {
-            alma_key_word(data.alma.id, 0, temp, TOKENNUM);
-        }
-        else if (informat == GENBANK) {
-            genbank_key_word(data.gbk.locus, 0, temp, TOKENNUM);
-        }
-        else if (informat == EMBL || informat == PROTEIN) {
-            embl_key_word(data.embl.id, 0, temp, TOKENNUM);
-        }
-        else if (informat == MACKE) {
-            Cpystr(temp, data.macke.seqabbr);
-        }
-        else
-            throw_error(118, "UNKNOWN input format when converting to PAUP format");
+        else ca_assert(0);
 
         total_seq++;
 

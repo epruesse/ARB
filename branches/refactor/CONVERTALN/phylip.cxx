@@ -19,6 +19,10 @@ void init_phylip()
  *      Convert from some format to PHYLIP format.
  */
 void to_phylip(char *inf, char *outf, int informat, int readstdin) {
+    if (informat != ALMA && informat != GENBANK && informat != EMBL && informat != PROTEIN && informat != MACKE) {
+        throw_conversion_not_supported(informat, PHYLIP);
+    }
+
     int maxsize, current, total_seq;
     int out_of_memory, indi;
     char temp[TOKENNUM], eof;
@@ -43,37 +47,29 @@ void to_phylip(char *inf, char *outf, int informat, int readstdin) {
         if (informat == ALMA) {
             init_alma();
             eof = alma_in(ifp);
+            if (eof == EOF) break;
+            alma_key_word(data.alma.id, 0, temp, TOKENNUM);
         }
         else if (informat == GENBANK) {
             init_genbank();
             eof = genbank_in_locus(ifp);
+            if (eof == EOF) break;
+            genbank_key_word(data.gbk.locus, 0, temp, TOKENNUM);
         }
         else if (informat == EMBL || informat == PROTEIN) {
             init_embl();
             eof = embl_in_id(ifp);
+            if (eof == EOF) break;
+            embl_key_word(data.embl.id, 0, temp, TOKENNUM);
         }
         else if (informat == MACKE) {
             init_macke();
             eof = macke_in_name(ifp);
-        }
-        else
-            throw_error(34, "UNKNOWN input format when converting to PHYLIP format");
-        if (eof == EOF)
-            break;
-        if (informat == ALMA) {
-            alma_key_word(data.alma.id, 0, temp, TOKENNUM);
-        }
-        else if (informat == GENBANK) {
-            genbank_key_word(data.gbk.locus, 0, temp, TOKENNUM);
-        }
-        else if (informat == EMBL || informat == PROTEIN) {
-            embl_key_word(data.embl.id, 0, temp, TOKENNUM);
-        }
-        else if (informat == MACKE) {
+            if (eof == EOF) break;
             Cpystr(temp, data.macke.seqabbr);
         }
-        else
-            throw_error(119, "UNKNOWN input format when converting to PHYLIP format");
+        else ca_assert(0);
+
         total_seq++;
 
         if ((name = Dupstr(temp)) == NULL && temp != NULL) {

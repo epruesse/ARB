@@ -89,6 +89,8 @@ void macke_to_embl(char *inf, char *outf);
 int partial_mtoe(void);
 
 /* fconv.cxx */
+const char *format2name(int format_type);
+void throw_conversion_not_supported(int input_format, int output_format) __ATTR__NORETURN;
 void convert(const char *cinf, const char *coutf, int intype, int outype);
 void init(void);
 void init_seq_data(void);

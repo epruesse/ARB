@@ -6,8 +6,32 @@
 #include "global.h"
 #include "types.h"
 
+const char *format2name(int format_type) {
+    switch (format_type) {
+        case ALMA:      return "ALMA";
+        case EMBL:      return "EMBL";
+        case GCG:       return "GCG";
+        case GENBANK:   return "GENBANK";
+        case MACKE:     return "MACKE";
+        case NBRF:      return "NBRF";
+        case PAUP:      return "PAUP";
+        case PHYLIP2:   return "PHYLIP2";
+        case PHYLIP:    return "PHYLIP";
+        case PRINTABLE: return "PRINTABLE";
+        case PROTEIN:   return "SWISSPROT";
+        case STADEN:    return "STADEN";
+        default: ca_assert(0);
+    }
+    return NULL;
+}
+
+void throw_conversion_not_supported(int input_format, int output_format) { // __ATTR__NORETURN
+    throw_errorf(90, "Conversion from %s to %s is not supported",
+                 format2name(input_format), format2name(output_format));
+}
+
 /* -------------------------------------------------------------
- *      Function convert().
+ *      Function convert_WRAPPED().
  *              For given input file and  type, convert the file
  *                      to desired out type and save the result in
  *                      the out file.
@@ -24,144 +48,74 @@ static void convert_WRAPPED(char *inf, char *outf, int intype, int outype) {
 
     if (str_equal(inf, outf))
         throw_error(45, "Input file and output file must be different file");
-    if (intype == GENBANK && outype == MACKE) {
-        genbank_to_macke(inf, outf);
+
+    bool converted = true;
+    switch (intype) {
+        case ALMA:
+            switch (outype) {
+                case GENBANK:   alma_to_genbank(inf, outf); break;
+                case MACKE:     alma_to_macke(inf, outf); break;
+                default: converted = false; break;
+            }
+            break;
+
+        case EMBL:
+            switch (outype) {
+                case ALMA:      embl_to_alma(inf, outf); break;
+                case EMBL:      embl_to_embl(inf, outf); break;
+                case GENBANK:   embl_to_genbank(inf, outf); break;
+                case MACKE:     embl_to_macke(inf, outf, EMBL); break;
+                case PROTEIN:   embl_to_embl(inf, outf); break;
+                default: converted = false; break;
+            }
+            break;
+
+        case GENBANK:
+            switch (outype) {
+                case ALMA:      genbank_to_alma(inf, outf); break;
+                case EMBL:      genbank_to_embl(inf, outf); break;
+                case GENBANK:   genbank_to_genbank(inf, outf); break;
+                case MACKE:     genbank_to_macke(inf, outf); break;
+                default: converted = false; break;
+            }
+            break;
+
+        case MACKE:
+            switch (outype) {
+                case ALMA:      macke_to_alma(inf, outf); break;
+                case EMBL:      macke_to_embl(inf, outf); break;
+                case GENBANK:   macke_to_genbank(inf, outf); break;
+                case PROTEIN:   macke_to_embl(inf, outf); break;
+                default: converted = false; break;
+            }
+            break;
+
+        case PROTEIN:
+            switch (outype) {
+                case MACKE:     embl_to_macke(inf, outf, PROTEIN); break;
+                default: converted = false; break;
+            }
+            break;
+
+        default: converted = false; break;
     }
-    else if (intype == GENBANK && outype == GENBANK) {
-        genbank_to_genbank(inf, outf);
+
+    if (!converted) {
+        converted = true;
+        switch (outype) {
+            case GCG:       to_gcg(inf, outf, intype); break;
+            case PAUP:      to_paup(inf, outf, intype); break;
+            case PHYLIP:    to_phylip(inf, outf, intype, dd); break;
+            case PRINTABLE: to_printable(inf, outf, intype); break;
+            default: converted = false; break;
+        }
     }
-    else if (intype == GENBANK && outype == PAUP) {
-        to_paup(inf, outf, GENBANK);
+
+    if (!converted) {
+        throw_conversion_not_supported(intype, outype);
     }
-    else if (intype == GENBANK && outype == PHYLIP) {
-        to_phylip(inf, outf, GENBANK, dd);
-    }
-    else if (intype == GENBANK && outype == PROTEIN) {
-        throw_error(69, "Sorry, cannot convert from GENBANK to SWISSPROT");
-    }
-    else if (intype == GENBANK && outype == EMBL) {
-        genbank_to_embl(inf, outf);
-    }
-    else if (intype == GENBANK && outype == PRINTABLE) {
-        to_printable(inf, outf, GENBANK);
-    }
-    else if (intype == GENBANK && outype == ALMA) {
-        genbank_to_alma(inf, outf);
-    }
-    else if (intype == MACKE && outype == GENBANK) {
-        macke_to_genbank(inf, outf);
-    }
-    else if (intype == MACKE && outype == PAUP) {
-        to_paup(inf, outf, MACKE);
-    }
-    else if (intype == MACKE && outype == PHYLIP) {
-        to_phylip(inf, outf, MACKE, dd);
-    }
-    else if (intype == MACKE && outype == PROTEIN) {
-        macke_to_embl(inf, outf);
-    }
-    else if (intype == MACKE && outype == EMBL) {
-        macke_to_embl(inf, outf);
-    }
-    else if (intype == MACKE && outype == PRINTABLE) {
-        to_printable(inf, outf, MACKE);
-    }
-    else if (intype == MACKE && outype == ALMA) {
-        macke_to_alma(inf, outf);
-    }
-    else if (intype == PAUP && outype == GENBANK) {
-        throw_error(6, "Sorry, cannot convert from Paup to GENBANK");
-    }
-    else if (intype == PAUP && outype == MACKE) {
-        throw_error(81, "Sorry, cannot convert from Paup to AE2");
-    }
-    else if (intype == PAUP && outype == PHYLIP) {
-        throw_error(8, "Sorry, cannot convert from Paup to Phylip");
-    }
-    else if (intype == PAUP && outype == PROTEIN) {
-        throw_error(71, "Sorry, cannot convert from Paup to SWISSPROT");
-    }
-    else if (intype == PAUP && outype == EMBL) {
-        throw_error(78, "Sorry, cannot convert from Paup to SWISSPROT");
-    }
-    else if (intype == PHYLIP && outype == GENBANK) {
-        throw_error(85, "Sorry, cannot convert from Phylip to GenBank");
-    }
-    else if (intype == PHYLIP && outype == MACKE) {
-        throw_error(88, "Sorry, cannot convert from Phylip to AE2");
-    }
-    else if (intype == PHYLIP && outype == PAUP) {
-        throw_error(89, "Sorry, cannot convert from Phylip to Paup");
-    }
-    else if (intype == PHYLIP && outype == PROTEIN) {
-        throw_error(72, "Sorry, cannot convert from Phylip to SWISSPROT");
-    }
-    else if (intype == PHYLIP && outype == EMBL) {
-        throw_error(79, "Sorry, cannot convert from Phylip to SWISSPROT");
-    }
-    else if (intype == PROTEIN && outype == MACKE) {
-        embl_to_macke(inf, outf, PROTEIN);
-    }
-    else if (intype == PROTEIN && outype == GENBANK) {
-        throw_error(76, "GenBank doesn't maintain protein data");
-    }
-    else if (intype == PROTEIN && outype == PAUP) {
-        to_paup(inf, outf, PROTEIN);
-    }
-    else if (intype == PROTEIN && outype == PHYLIP) {
-        to_phylip(inf, outf, PROTEIN, dd);
-    }
-    else if (intype == PROTEIN && outype == EMBL) {
-        throw_error(58, "EMBL doesn't maintain protein data");
-    }
-    else if (intype == PROTEIN && outype == PRINTABLE) {
-        to_printable(inf, outf, PROTEIN);
-    }
-    else if (intype == EMBL && outype == EMBL) {
-        embl_to_embl(inf, outf);
-    }
-    else if (intype == EMBL && outype == GENBANK) {
-        embl_to_genbank(inf, outf);
-    }
-    else if (intype == EMBL && outype == MACKE) {
-        embl_to_macke(inf, outf, EMBL);
-    }
-    else if (intype == EMBL && outype == PROTEIN) {
-        embl_to_embl(inf, outf);
-    }
-    else if (intype == EMBL && outype == PAUP) {
-        to_paup(inf, outf, EMBL);
-    }
-    else if (intype == EMBL && outype == PHYLIP) {
-        to_phylip(inf, outf, EMBL, dd);
-    }
-    else if (intype == EMBL && outype == PRINTABLE) {
-        to_printable(inf, outf, EMBL);
-    }
-    else if (intype == EMBL && outype == ALMA) {
-        embl_to_alma(inf, outf);
-    }
-    else if (intype == ALMA && outype == MACKE) {
-        alma_to_macke(inf, outf);
-    }
-    else if (intype == ALMA && outype == GENBANK) {
-        alma_to_genbank(inf, outf);
-    }
-    else if (intype == ALMA && outype == PAUP) {
-        to_paup(inf, outf, ALMA);
-    }
-    else if (intype == ALMA && outype == PHYLIP) {
-        to_phylip(inf, outf, ALMA, dd);
-    }
-    else if (intype == ALMA && outype == PRINTABLE) {
-        to_printable(inf, outf, ALMA);
-    }
-    else if (outype == GCG) {
-        to_gcg(inf, outf, intype);
-    }
-    else
-        throw_error(90, "Unidentified input type or output type");
 }
+
 void convert(const char *cinf, const char *coutf, int intype, int outype) {
     char *inf  = strdup(cinf);
     char *outf = strdup(coutf);
@@ -359,7 +313,6 @@ struct Capabilities {
 static Capabilities cap[fcount][fcount];
 #define CAP(from,to) (cap[NUM_##from][NUM_##to])
 
-
 #define ID(f)    format[f].id
 #define NAME(f)  format[f].name
 #define INPUT(f) format[f].testfile
@@ -397,19 +350,21 @@ static const char *test_convert(const char *inf, const char *outf, int intype, i
 }
 
 static void test_convert_by_format_num_WRAPPED(int from, int to) {
-    char          *toFile       = GBS_global_string_copy("impexp/conv.%s_2_%s", NAME(from), NAME(to));
-    bool           test_outfile = true;
-    const char    *error        = test_convert(INPUT(from), toFile, ID(from), ID(to));
-    Capabilities&  me           = cap[from][to];
+    char *toFile = GBS_global_string_copy("impexp/conv.%s_2_%s", NAME(from), NAME(to));
+    if (GB_is_regularfile(toFile)) TEST_ASSERT_ZERO_OR_SHOW_ERRNO(unlink(toFile));
 
-    if (error) {
-        if (me.supported) { /* error ok if unsupported */
-            TEST_ERROR("convert() reports error: '%s'", error);
-        }
-        test_outfile = false;
+    const char    *error = test_convert(INPUT(from), toFile, ID(from), ID(to));
+    Capabilities&  me    = cap[from][to];
+
+    if (me.supported && error) {
+        TEST_ERROR("convert() reports error: '%s' (for supported conversion)", error);
+    }
+    if (!me.supported && !error) {
+        TEST_ERROR("No error for unsupported conversion '%s'", GBS_global_string("%s -> %s", NAME(from), NAME(to)));
     }
 
-    if (test_outfile) {
+    TEST_ASSERT(me.supported == !error);
+    if (me.supported) {
         if (me.noOutput) {
             TEST_ASSERT(!GB_is_regularfile(toFile));
         }
@@ -420,10 +375,14 @@ static void test_convert_by_format_num_WRAPPED(int from, int to) {
             }
             else {                                                  
                 test_expected_conversion(toFile, NULL);
-            }                                                       
-            TEST_ASSERT_ZERO_OR_SHOW_ERRNO(unlink(toFile));         
+            }
+            TEST_ASSERT_ZERO_OR_SHOW_ERRNO(unlink(toFile));
         }
     }
+    else {
+        TEST_ASSERT(!GB_is_regularfile(toFile)); // unsupported produced output
+    }
+    
     free(toFile);
 }
 
@@ -450,7 +409,6 @@ static void test_convert_by_format_num(int from, int to) {
         test_convert_by_format_num_WRAPPED(from, to);
     }
 }
-
 
 static void init_cap() {
     for (int from = 0; from<fcount; from++) {
@@ -482,7 +440,7 @@ void TEST_converter() {
 
     NOT_SUPPORTED(PHYLIP, ALMA);
     NOT_SUPPORTED(PHYLIP, EMBL);
-    CRASHES(PHYLIP, GCG);
+    NOT_SUPPORTED(PHYLIP, GCG);
     NOT_SUPPORTED(PHYLIP, GENBANK);
     NOT_SUPPORTED(PHYLIP, MACKE);
     NOT_SUPPORTED(PHYLIP, NBRF);
@@ -493,6 +451,7 @@ void TEST_converter() {
     
     NOT_SUPPORTED(PAUP, ALMA);
     NOT_SUPPORTED(PAUP, EMBL);
+    NOT_SUPPORTED(PAUP, GCG);
     NOT_SUPPORTED(PAUP, GENBANK);
     NOT_SUPPORTED(PAUP, MACKE);
     NOT_SUPPORTED(PAUP, NBRF);
@@ -519,14 +478,12 @@ void TEST_converter() {
     NOT_SUPPORTED(ALMA, NBRF);
     NOT_SUPPORTED(ALMA, PROTEIN);
     NOT_SUPPORTED(ALMA, STADEN);
+    NOT_SUPPORTED(ALMA, GCG);
 
     // broken atm:
     FCKDUP(EMBL, GCG);
     FCKDUP(GENBANK, GCG);
     
-    CRASHES(PAUP, GCG);
-    CRASHES(ALMA, GCG);
-
     EMPTY_OUTFILE_CREATED(ALMA, GENBANK);
     EMPTY_OUTFILE_CREATED(ALMA, MACKE); 
     EMPTY_OUTFILE_CREATED(ALMA, PRINTABLE);
