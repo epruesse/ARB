@@ -8,7 +8,7 @@
  */
 
 void to_gcg(char *inf, char *outf, int intype) {
-    FILE *IFP1, *IFP2, *IFP3, *ofp;
+    FILE *IFP1, *IFP2, *IFP3;
     FILE_BUFFER ifp1 = 0, ifp2 = 0, ifp3 = 0;
     char temp[TOKENNUM], *eof, line[LINENUM], key[TOKENNUM];
     char line1[LINENUM], line2[LINENUM], line3[LINENUM], name[LINENUM];
@@ -27,6 +27,7 @@ void to_gcg(char *inf, char *outf, int intype) {
         IFP1 = open_input_or_die(inf);
         ifp1 = create_FILE_BUFFER(inf, IFP1);
     }
+    FILE *ofp = NULL;
     if (intype == MACKE) {
         /* skip to #=; where seq. first appears */
         for (eof1 = Fgetline(line1, LINENUM, ifp1); eof1 != NULL && (line1[0] != '#' || line1[1] != '='); eof1 = Fgetline(line1, LINENUM, ifp1)) ;
@@ -48,6 +49,7 @@ void to_gcg(char *inf, char *outf, int intype) {
             eof3 = macke_origin(key, line3, ifp3);
             gcg_seq_out(ofp, key);
             fclose(ofp);
+            ofp = NULL;
             init_seq_data();
         }
     }
@@ -81,16 +83,18 @@ void to_gcg(char *inf, char *outf, int intype) {
                     eof = embl_origin(line, ifp1);
                 }
             }
+
             if (seqdata) {
                 gcg_seq_out(ofp, key);
                 init_seq_data();
                 seqdata = 0;
                 fclose(ofp);
+                ofp = NULL;
             }
             else {
                 gcg_doc_out(line, ofp);
-                eof = Fgetline(line, LINENUM, ifp1);
             }
+            eof = Fgetline(line, LINENUM, ifp1);
         }
     }
 }
@@ -108,11 +112,11 @@ void gcg_seq_out(FILE * ofp, char *key) {
  *   Function gcg_doc_out().
  *       Output non-sequence data(document) of gcg format.
  */
-void gcg_doc_out(char *line, FILE * ofp)
-{
+void gcg_doc_out(char *line, FILE * ofp) {
     int indi, len;
-
     int previous_is_dot;
+
+    ca_assert(ofp);
 
     for (indi = 0, len = Lenstr(line), previous_is_dot = 0; indi < len; indi++) {
         if (previous_is_dot) {

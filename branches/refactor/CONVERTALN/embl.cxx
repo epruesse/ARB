@@ -597,30 +597,31 @@ char *embl_one_comment_entry(FILE_BUFFER fp, char **datastring, char *line, int 
  *      Function embl_origin().
  *              Read in embl sequence data.
  */
-char
- *embl_origin(char *line, FILE_BUFFER fp)
-{
+char *embl_origin(char *line, FILE_BUFFER fp) {
     char *eof;
-
     int index;
 
     data.seq_length = 0;
     /* read in whole sequence data */
-    for (eof = Fgetline(line, LINENUM, fp); eof != NULL && line[0] != '/' && line[1] != '/'; eof = Fgetline(line, LINENUM, fp)) {
+    for (eof = Fgetline(line, LINENUM, fp);
+         eof != NULL && line[0] != '/' && line[1] != '/';
+         eof = Fgetline(line, LINENUM, fp))
+    {
         for (index = 5; line[index] != '\n' && line[index] != '\0'; index++) {
-            if (line[index] != ' ' && data.seq_length >= data.max) {
-                data.max += 100;
-                data.sequence = (char *)
-                    Reallocspace(data.sequence, (unsigned)(sizeof(char) * data.max));
+            if (line[index] != ' ') {
+                if (data.seq_length >= data.max) {
+                    data.max += data.max/2;
+                    data.sequence = Reallocspace(data.sequence, data.max);
+                }
+                else {
+                    data.sequence[data.seq_length++] = line[index];
+                }
             }
-            if (line[index] != ' ')
-                data.sequence[data.seq_length++]
-                    = line[index];
         }
         data.sequence[data.seq_length] = '\0';
     }
 
-    return (eof);
+    return eof;
 }
 
 /* ----------------------------------------------------------------

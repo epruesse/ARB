@@ -425,7 +425,6 @@ static void init_cap() {
 #define NO_OUTFILE_CREATED(t1,t2)    cap[NUM_##t1][NUM_##t2].noOutput    = true
 #define EMPTY_OUTFILE_CREATED(t1,t2) cap[NUM_##t1][NUM_##t2].emptyOutput = true
 #define CRASHES(t1,t2)               cap[NUM_##t1][NUM_##t2].crashes     = true
-#define FCKDUP(t1,t2)                cap[NUM_##t1][NUM_##t2].broken      = true
 
 void TEST_converter() {
     init_cap();
@@ -481,11 +480,9 @@ void TEST_converter() {
     NOT_SUPPORTED(ALMA, GCG);
 
     // broken atm:
-    FCKDUP(EMBL, GCG);
-    FCKDUP(GENBANK, GCG);
-    
+
     EMPTY_OUTFILE_CREATED(ALMA, GENBANK);
-    EMPTY_OUTFILE_CREATED(ALMA, MACKE); 
+    EMPTY_OUTFILE_CREATED(ALMA, MACKE);
     EMPTY_OUTFILE_CREATED(ALMA, PRINTABLE);
 
     EMPTY_OUTFILE_CREATED(EMBL, GENBANK);
@@ -547,7 +544,8 @@ void TEST_converter() {
             " - noInputFile:  %3i\n"
             " - noOutput:     %3i\n"
             " - emptyOutput:  %3i\n"
-            " - broken:       %3i (in some other way)\n",
+            " - broken:       %3i (in some other way)\n"
+            " - converted:    %3i\n",
             fcount,
             possible,
             unsupported,
@@ -557,7 +555,8 @@ void TEST_converter() {
             noInput,
             noOutput,
             emptyOutput,
-            broken);
+            broken,
+            tested-(emptyOutput+noOutput+unsupported));
 
     int untested     = possible - tested;
     int max_untested = noInput+neverReturns+broken; // the 3 counters may overlop

@@ -1,0 +1,16 @@
+LOCUS       MetMazei       66 bp ss-RNA             RNA 
+DEFINITION  Methanosarcina mazei
+ACCESSION   X69874
+  ORGANISM  [DEW] Archaea
+            Euryarchaeota
+            Methanomicrobium group
+            [EBI] Prokaryota; Bacteria; Mendosicutes; Archaeobacteria;
+            Methanomicrobiales; Methanosarcinaceae.
+REFERENCE   1
+ORIGIN
+
+MetMazei  Length: 66  September 29, 2010  19:53:39  Type: N  Check: 2814  ..
+
+       1  AUUCUGGUUG AUCCUGCCAG AGGUUACUGC UAUCGGUGUU CGCCUAAGCC 
+
+      51  AUGCGAGUCA UAUGUA 
