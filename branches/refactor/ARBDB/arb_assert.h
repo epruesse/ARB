@@ -187,12 +187,12 @@
 // ------------------------------------------------------------
 // logical operators (mostly used for assertions)
 
-#ifdef __cplusplus
+// Note: 'conclusion' is not evaluated if 'hypothesis' is wrong!
+#define implicated(hypothesis,conclusion) (!(hypothesis) || !!(conclusion))
 
-inline bool implicated(bool hypothesis, bool conclusion) { return hypothesis ? conclusion : true; }
+#ifdef __cplusplus
 inline bool correlated(bool hypo1, bool hypo2) { return implicated(hypo1, hypo2) == implicated(hypo2, hypo1); } // equivalence!
 inline bool contradicted(bool hypo1, bool hypo2) { return !correlated(hypo1, hypo2); } // non-equivalence!
-
 #endif
 
 // ------------------------------------------------------------
