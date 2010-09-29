@@ -335,7 +335,7 @@ char **GBS_read_dir(const char *dir, const char *mask) {
 //
 // @@@ GB_test_textfile_difflines + GB_test_files_equal -> ARBCORE
 
-#define MAX_REGS 10
+#define MAX_REGS 11
 
 class difflineMode {
     int               mode;
@@ -366,12 +366,18 @@ public:
             case 0: break;
             case 1:  {
                 add("[0-9]{2}:[0-9]{2}:[0-9]{2}", GB_MIND_CASE, "<TIME>");
+
                 add("(Mon|Tue|Wed|Thu|Fri|Sat|Sun)", GB_IGNORE_CASE, "<DOW>");
+                add("(January|February|March|April|May|June|July|August|September|November|December)", GB_IGNORE_CASE, "<Month>");
                 add("(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Nov|Dec)", GB_IGNORE_CASE, "<MON>");
-                add("<MON>[ -][0-9]{4}", GB_IGNORE_CASE, "<MON> <YEAR>");
-                add("<TIME>[ -][0-9]{4}", GB_IGNORE_CASE, "<TIME> <YEAR>");
-                add("<MON>[ -][0-9]{2}", GB_IGNORE_CASE, "<MON> <DAY>");
-                add("[0-9]{2}[ -]<MON>", GB_IGNORE_CASE, "<DAY> <MON>");
+
+                add("<MON>[ -][0-9]{4}",   GB_IGNORE_CASE, "<MON> <YEAR>");
+                add("<Month>[ -][0-9]{4}", GB_IGNORE_CASE, "<Month> <YEAR>");
+                add("<TIME>[ -][0-9]{4}",  GB_IGNORE_CASE, "<TIME> <YEAR>");
+                add("<MON>[ -][0-9]{2}",   GB_IGNORE_CASE, "<MON> <DAY>");
+                add("<Month>[ -][0-9]{2}", GB_IGNORE_CASE, "<Month> <DAY>");
+                add("[0-9]{2}[ -]<MON>",   GB_IGNORE_CASE, "<DAY> <MON>");
+                add("[0-9]{2}[ -]<Month>", GB_IGNORE_CASE, "<DAY> <Month>");
                 break;
             }
             default: gb_assert(0); break;
