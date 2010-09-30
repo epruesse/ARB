@@ -563,20 +563,14 @@ int num_of_remark()
  *       Convert from macke format to genbank format.
  */
 void macke_to_genbank(char *inf, char *outf) {
-    FILE        *IFP1 = open_input_or_die(inf);
-    FILE        *IFP2 = open_input_or_die(inf);
-    FILE        *IFP3 = open_input_or_die(inf);
-    FILE_BUFFER  ifp1 = create_FILE_BUFFER(inf, IFP1);
-    FILE_BUFFER  ifp2 = create_FILE_BUFFER(inf, IFP2);
-    FILE_BUFFER  ifp3 = create_FILE_BUFFER(inf, IFP3);
-    FILE        *ofp  = open_output_or_die(outf);
-
     init();
     init_seq_data();
     init_gm_data();
 
-    MackeReader macke;
-    while (macke.in(ifp1, ifp2, ifp3) != EOF) {
+    MackeReader  macke(inf);
+    FILE        *ofp = open_output_or_die(outf);
+    
+    while (macke.in() != EOF) {
         data.numofseq++;
         if (mtog())
             genbank_out(ofp);

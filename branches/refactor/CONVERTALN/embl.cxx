@@ -1544,13 +1544,7 @@ void gtoe_comments() {
  *              Convert from macke to EMBL.
  */
 void macke_to_embl(char *inf, char *outf) {
-    FILE        *IFP1 = open_input_or_die(inf);
-    FILE        *IFP2 = open_input_or_die(inf);
-    FILE        *IFP3 = open_input_or_die(inf);
-    FILE_BUFFER  ifp1 = create_FILE_BUFFER(inf, IFP1);
-    FILE_BUFFER  ifp2 = create_FILE_BUFFER(inf, IFP2);
-    FILE_BUFFER  ifp3 = create_FILE_BUFFER(inf, IFP3);
-    FILE        *ofp  = open_output_or_die(outf);
+    FILE *ofp  = open_output_or_die(outf);
 
     init();
     init_seq_data();
@@ -1558,9 +1552,8 @@ void macke_to_embl(char *inf, char *outf) {
     init_macke();
     init_embl();
 
-    MackeReader macke;
-    while (macke.in(ifp1, ifp2, ifp3) != EOF) {
-
+    MackeReader macke(inf);
+    while (macke.in() != EOF) {
         data.numofseq++;
 
         /* partial_mtoe() is particularly handling

@@ -13,12 +13,26 @@
 #define MACKE_H
 
 class MackeReader {
-    bool firstRead;
+    bool  firstRead;
+    char *inName;
+
+    FILE        *IFP1, *IFP2, *IFP3;
+    FILE_BUFFER  fp1, fp2, fp3;
+    
+    void start_reading();
+    void stop_reading();
 
 public:
-    MackeReader() : firstRead(true) {}
+    MackeReader(const char *inName_)
+        : firstRead(true), 
+          inName(strdup(inName_))
+    {}
+    ~MackeReader() {
+        stop_reading();
+        free(inName);
+    }
 
-    char in(FILE_BUFFER ifp1, FILE_BUFFER ifp2, FILE_BUFFER ifp3);
+    char in();
 };
 
 

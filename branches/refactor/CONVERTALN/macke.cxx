@@ -56,7 +56,22 @@ void init_macke()
  *      Read in one sequence data from Macke file.
  */
 
-char MackeReader::in(FILE_BUFFER fp1, FILE_BUFFER fp2, FILE_BUFFER fp3) {
+void MackeReader::start_reading() {
+    IFP1 = open_input_or_die(inName);
+    IFP2 = open_input_or_die(inName);
+    IFP3 = open_input_or_die(inName);
+    fp1 = create_FILE_BUFFER(inName, IFP1);
+    fp2 = create_FILE_BUFFER(inName, IFP2);
+    fp3 = create_FILE_BUFFER(inName, IFP3);
+}
+
+void MackeReader::stop_reading() {
+    destroy_FILE_BUFFER(fp3);
+    destroy_FILE_BUFFER(fp2);
+    destroy_FILE_BUFFER(fp1);
+}
+
+char MackeReader::in() {
     char  line1[LINESIZE];
     char  line2[LINESIZE];
     char  line3[LINESIZE];
@@ -70,6 +85,8 @@ char MackeReader::in(FILE_BUFFER fp1, FILE_BUFFER fp2, FILE_BUFFER fp3) {
     /* file 2 points to seq. data */
     /* file 3 points to seq. names */
     if (firstRead) {
+        start_reading();
+    
         /* skip to next "#:" line */
         for (eof1 = Fgetline(line1, LINESIZE, fp1); eof1 != NULL && (line1[0] != '#' || line1[1] != ':'); eof1 = Fgetline(line1, LINESIZE, fp1)) ;
 
