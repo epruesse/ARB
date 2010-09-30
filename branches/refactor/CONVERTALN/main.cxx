@@ -27,25 +27,35 @@ static int main_WRAPPED(int argc, char *argv[]) {
 
     intype = outtype = UNKNOWN;
     if (argc < 3 || argv[1][0] != '-') {
-        fprintf(stderr, "---------------------------------------------------------------\n");
-        fprintf(stderr, "\n  convert_aln - an alignment and file converter written by\n");
-        fprintf(stderr, "  WenMin Kuan for the RDP database project.  Please\n");
-        fprintf(stderr, "  report errors or deficiencies to kuan@phylo.life.uiuc.edu\n");
-        fprintf(stderr, "\n  Command line usage:\n\n");
-        fprintf(stderr, "  $ convert_aln -infmt input_file -outfmt output_file, where   \n");
-        fprintf(stderr, "  infmt can be either GenBank, EMBL, AE2, SwissProt or ALMA\n");
-        fprintf(stderr, "  outfmt GenBank, EMBL, AE2, PAUP, PHYLIP, GCG, Printable or ALMA\n\n");
-        fprintf(stderr, "---------------------------------------------------------------\n\n");
-        fprintf(stderr, "Select input format (<CR> means default)\n\n");
-        fprintf(stderr, "  (1)  GenBank [default]\n");
-        fprintf(stderr, "  (2)  EMBL\n");
-        fprintf(stderr, "  (3)  AE2\n");
-        fprintf(stderr, "  (4)  SwissProt\n");
-        fprintf(stderr, "  (5)  ALMA\n");
-        fprintf(stderr, "  (6)  Quit\n");
-        fprintf(stderr, "  ? ");
+        fputs("---------------------------------------------------------------\n"
+              "\n"
+              "  convert_aln - an alignment and file converter written by\n"
+              "  WenMin Kuan for the RDP database project.\n"
+              "\n"
+              "  Modified for use in ARB by Ralf Westram\n"
+              "  Report errors or deficiencies to devel@arb-home.de\n"
+              "\n"
+              "  Command line usage:\n"
+              "\n"
+              "  $ arb_convert_aln -infmt input_file -outfmt output_file\n"
+              "  where\n"
+              "  infmt  may be GenBank, EMBL, AE2 or SwissProt and\n"
+              "  outfmt may be GenBank, EMBL, AE2, PAUP, PHYLIP, GCG or Printable\n"
+              "\n"
+              "---------------------------------------------------------------\n"
+              "\n"
+              "Select input format (<CR> means default)\n"
+              "\n"
+              "  (1)  GenBank [default]\n"
+              "  (2)  EMBL\n"
+              "  (3)  AE2\n"
+              "  (4)  SwissProt\n"
+              "  (5)  Quit\n"
+              "  ? ", stderr);
+
         Getstr(choice, LINENUM);
         switch (choice[0]) {
+            case '\0': // [default]
             case '1':
                 intype = GENBANK;
                 break;
@@ -59,15 +69,9 @@ static int main_WRAPPED(int argc, char *argv[]) {
                 intype = PROTEIN;
                 break;
             case '5':
-                intype = ALMA;
-                break;
-            case '6':
                 exit(0); // ok - interactive mode only
-            case '\0':
-                intype = GENBANK;
-                break;          /* default selection */
             default:
-                throw_error(16, "Unknown input file format");
+                throw_errorf(16, "Unknown input format selection '%s'", choice);
         }
         argv = (char **)calloc(1, sizeof(char *) * 5);
 
@@ -78,18 +82,20 @@ static int main_WRAPPED(int argc, char *argv[]) {
             throw_error(77, "Input file not found");
 
         /* output file information */
-        fprintf(stderr, "\nSelect output format (<CR> means default)\n\n");
-        fprintf(stderr, "  (1)  GenBank\n");
-        fprintf(stderr, "  (2)  EMBL\n");
-        fprintf(stderr, "  (3)  AE2 [default]\n");
-        fprintf(stderr, "  (4)  PAUP\n");
-        fprintf(stderr, "  (5)  PHYLIP\n");
-        fprintf(stderr, "  (A)  PHYLIP2 (insert stdin in first line)\n");
-        fprintf(stderr, "  (6)  GCG\n");
-        fprintf(stderr, "  (7)  Printable\n");
-        fprintf(stderr, "  (8)  ALMA\n");
-        fprintf(stderr, "  (9)  Quit\n");
-        fprintf(stderr, "  ? ");
+        fputs("\n"
+              "Select output format (<CR> means default)\n"
+              "\n"
+              "  (1)  GenBank\n"
+              "  (2)  EMBL\n"
+              "  (3)  AE2 [default]\n"
+              "  (4)  PAUP\n"
+              "  (5)  PHYLIP\n"
+              "  (A)  PHYLIP2 (insert stdin in first line)\n"
+              "  (6)  GCG\n"
+              "  (7)  Printable\n"
+              "  (8)  Quit\n"
+              "  ? ", stderr);
+
         Getstr(choice, LINENUM);
         switch (choice[0]) {
             case '1':
@@ -98,6 +104,7 @@ static int main_WRAPPED(int argc, char *argv[]) {
             case '2':
                 outtype = EMBL;
                 break;
+            case '\0': // [default]
             case '3':
                 outtype = MACKE;
                 break;
@@ -117,15 +124,9 @@ static int main_WRAPPED(int argc, char *argv[]) {
                 outtype = PRINTABLE;
                 break;
             case '8':
-                outtype = ALMA;
-                break;
-            case '9':
                 exit(0); // ok - interactive mode only
-            case '\0':
-                outtype = MACKE;
-                break;
             default:
-                throw_error(66, "Unknown output file format");
+                throw_errorf(66, "Unknown output format selection '%s'", choice);
         }
         change_file_suffix(argv[2], temp, outtype);
         if (outtype != GCG) {
@@ -137,35 +138,19 @@ static int main_WRAPPED(int argc, char *argv[]) {
         argv[4] = Dupstr(temp);
         argc = 5;
     }
-    else {                      /* processing command line */
+    else { /* process command line */
         /* input file */
-        if (argv[1][1] == 'G' || argv[1][1] == 'g')
-            intype = GENBANK;
-        else if (argv[1][1] == 'E' || argv[1][1] == 'e')
-            intype = EMBL;
-        else if ((argv[1][1] == 'A' || argv[1][1] == 'a')
-                 && (argv[1][2] == 'E' || argv[1][2] == 'e'))
-            intype = MACKE;
-        else if (argv[1][1] == 'S' || argv[1][1] == 's')
-            intype = PROTEIN;
-        else if ((argv[1][1] == 'A' || argv[1][1] == 'a')
-                 && (argv[1][2] == 'L' || argv[1][2] == 'l'))
-            intype = ALMA;
-        else
-            throw_error(67, "UNKNOWN input file type");
+        if      (argv[1][1] == 'G' || argv[1][1] == 'g') intype = GENBANK;
+        else if (argv[1][1] == 'E' || argv[1][1] == 'e') intype = EMBL;
+        else if ((argv[1][1] == 'A' || argv[1][1] == 'a') && (argv[1][2] == 'E' || argv[1][2] == 'e')) intype = MACKE;
+        else if (argv[1][1] == 'S' || argv[1][1] == 's') intype = PROTEIN;
+        else throw_error(67, "UNKNOWN input file type");
 
         /* output file */
-        if ((argv[3][1] == 'G' || argv[3][1] == 'g')
-            && (argv[3][2] == 'E' || argv[3][2] == 'e'))
-            outtype = GENBANK;
-        else if ((argv[3][1] == 'E' || argv[3][1] == 'e'))
-            outtype = EMBL;
-        else if ((argv[3][1] == 'A' || argv[3][1] == 'a')
-                 && (argv[3][2] == 'E' || argv[3][2] == 'e'))
-            outtype = MACKE;
-        else if ((argv[3][1] == 'P' || argv[3][1] == 'p')
-                 && (argv[3][2] == 'a' || argv[3][2] == 'A'))
-            outtype = PAUP;
+        if ((argv[3][1] == 'G' || argv[3][1] == 'g') && (argv[3][2] == 'E' || argv[3][2] == 'e')) outtype = GENBANK;
+        else if ((argv[3][1] == 'E' || argv[3][1] == 'e')) outtype = EMBL;
+        else if ((argv[3][1] == 'A' || argv[3][1] == 'a') && (argv[3][2] == 'E' || argv[3][2] == 'e')) outtype = MACKE;
+        else if ((argv[3][1] == 'P' || argv[3][1] == 'p') && (argv[3][2] == 'a' || argv[3][2] == 'A')) outtype = PAUP;
         else if (!strncasecmp(argv[3] + 1, "ph", 2)) {
             if (!strcasecmp(argv[3] + 1, "phylip2")) {
                 outtype = PHYLIP2;
@@ -174,18 +159,10 @@ static int main_WRAPPED(int argc, char *argv[]) {
                 outtype = PHYLIP;
             }
         }
-        else if ((argv[3][1] == 'G' || argv[3][1] == 'g')
-                 && (argv[3][2] == 'C' || argv[3][2] == 'c'))
-            outtype = GCG;
-        else if ((argv[3][1] == 'P' || argv[3][1] == 'p')
-                 && (argv[3][2] == 'R' || argv[3][2] == 'r'))
-            outtype = PRINTABLE;
-        else if ((argv[3][1] == 'A' || argv[3][1] == 'a')
-                 && (argv[3][2] == 'L' || argv[3][2] == 'l'))
-            outtype = ALMA;
-        else
-            throw_error(68, "UNKNOWN output file file");
-    }                           /* command line */
+        else if ((argv[3][1] == 'G' || argv[3][1] == 'g') && (argv[3][2] == 'C' || argv[3][2] == 'c')) outtype = GCG;
+        else if ((argv[3][1] == 'P' || argv[3][1] == 'p') && (argv[3][2] == 'R' || argv[3][2] == 'r')) outtype = PRINTABLE;
+        else throw_error(68, "UNKNOWN output file file");
+    } 
 
     if (argc == 4) {            /* default output file */
         const char **argv_new = (const char **)calloc(sizeof(char *), 5);
@@ -316,9 +293,6 @@ void change_file_suffix(char *old_file, char *file_name, int type)
             break;
         case PRINTABLE:
             Catstr(file_name, ".prt");
-            break;
-        case ALMA:
-            Catstr(file_name, ".ALMA");
             break;
         default:
             Catstr(file_name, ".???");

@@ -18,8 +18,7 @@ void init_paup()
  *       Convert from some format to PAUP format.
  */
 void to_paup(char *inf, char *outf, int informat) {
-
-    if (informat != ALMA && informat != GENBANK && informat != EMBL && informat != PROTEIN && informat != MACKE) {
+    if (informat != GENBANK && informat != EMBL && informat != PROTEIN && informat != MACKE) {
         throw_conversion_not_supported(informat, PAUP);
     }
 
@@ -40,13 +39,7 @@ void to_paup(char *inf, char *outf, int informat) {
     paup_print_header(ofp);
     total_seq     = 0;
     do {
-        if (informat == ALMA) {
-            init_alma();
-            eof = alma_in(ifp);
-            if (eof == EOF) break;
-            alma_key_word(data.alma.id, 0, temp, TOKENNUM);
-        }
-        else if (informat == GENBANK) {
+        if (informat == GENBANK) {
             init_genbank();
             eof = genbank_in_locus(ifp);
             if (eof == EOF) break;
@@ -157,11 +150,7 @@ void to_paup_1x1(char *inf, char *outf, int informat) {
         first_line = 0;
         do {                    /* read in one sequence */
             init_paup();
-            if (informat == ALMA) {
-                init_alma();
-                eof = alma_in(ifp);
-            }
-            else if (informat == GENBANK) {
+            if (informat == GENBANK) {
                 init_genbank();
                 eof = genbank_in_locus(ifp);
             }
@@ -173,15 +162,11 @@ void to_paup_1x1(char *inf, char *outf, int informat) {
                 init_macke();
                 eof = macke_in_name(ifp);
             }
-            else
-                throw_error(127, "UNKNOWN input format when converting to PAUP format");
+            else throw_error(127, "UNKNOWN input format when converting to PAUP format");
 
-            if (eof == EOF)
-                break;
-            if (informat == ALMA) {
-                alma_key_word(data.alma.id, 0, temp, TOKENNUM);
-            }
-            else if (informat == GENBANK) {
+            if (eof == EOF) break;
+            
+            if (informat == GENBANK) {
                 genbank_key_word(data.gbk.locus, 0, temp, TOKENNUM);
             }
             else if (informat == EMBL || informat == PROTEIN) {

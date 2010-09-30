@@ -610,15 +610,13 @@ char *embl_origin(char *line, FILE_BUFFER fp) {
         for (index = 5; line[index] != '\n' && line[index] != '\0'; index++) {
             if (line[index] != ' ') {
                 if (data.seq_length >= data.max) {
-                    data.max += data.max/2;
+                    data.max += data.max/2+100;
                     data.sequence = Reallocspace(data.sequence, data.max);
                 }
-                else {
-                    data.sequence[data.seq_length++] = line[index];
-                }
+                data.sequence[data.seq_length++] = line[index];
+                data.sequence[data.seq_length] = '\0';
             }
         }
-        data.sequence[data.seq_length] = '\0';
     }
 
     return eof;

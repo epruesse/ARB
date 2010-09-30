@@ -19,7 +19,7 @@ void init_phylip()
  *      Convert from some format to PHYLIP format.
  */
 void to_phylip(char *inf, char *outf, int informat, int readstdin) {
-    if (informat != ALMA && informat != GENBANK && informat != EMBL && informat != PROTEIN && informat != MACKE) {
+    if (informat != GENBANK && informat != EMBL && informat != PROTEIN && informat != MACKE) {
         throw_conversion_not_supported(informat, PHYLIP);
     }
 
@@ -44,13 +44,7 @@ void to_phylip(char *inf, char *outf, int informat, int readstdin) {
     init_phylip();
     total_seq     = 0;
     do {
-        if (informat == ALMA) {
-            init_alma();
-            eof = alma_in(ifp);
-            if (eof == EOF) break;
-            alma_key_word(data.alma.id, 0, temp, TOKENNUM);
-        }
-        else if (informat == GENBANK) {
+        if (informat == GENBANK) {
             init_genbank();
             eof = genbank_in_locus(ifp);
             if (eof == EOF) break;
@@ -175,11 +169,7 @@ void to_phylip_1x1(char *inf, char *outf, int informat) {
         total_seq = 0;
         do {                    /* read in one sequence */
             init_phylip();
-            if (informat == ALMA) {
-                init_alma();
-                eof = alma_in(ifp);
-            }
-            else if (informat == GENBANK) {
+            if (informat == GENBANK) {
                 init_genbank();
                 eof = genbank_in_locus(ifp);
             }
@@ -191,14 +181,11 @@ void to_phylip_1x1(char *inf, char *outf, int informat) {
                 init_macke();
                 eof = macke_in_name(ifp);
             }
-            else
-                throw_error(128, "UNKNOWN input format when converting to PHYLIP format");
-            if (eof == EOF)
-                break;
-            if (informat == ALMA) {
-                alma_key_word(data.alma.id, 0, temp, TOKENNUM);
-            }
-            else if (informat == GENBANK) {
+            else throw_error(128, "UNKNOWN input format when converting to PHYLIP format");
+
+            if (eof == EOF) break;
+
+            if (informat == GENBANK) {
                 genbank_key_word(data.gbk.locus, 0, temp, TOKENNUM);
             }
             else if (informat == EMBL || informat == PROTEIN) {

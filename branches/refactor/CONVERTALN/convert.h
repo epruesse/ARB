@@ -17,7 +17,6 @@
 #define EMBL      'e'
 #define GCG       'c'
 #define PRINTABLE 'r'
-#define ALMA      'l'
 #define NBRF      'n'
 #define STADEN    's'
 
@@ -134,15 +133,6 @@ typedef struct {
 } Embl;
 
 typedef struct {
-    char *id;
-    char *filename;
-    int   format;               /* could be NBRF, UWGCG, RMBL, STADEN */
-    char  defgap;
-    int   num_of_sequence;      /* num of sequence after merging with gaps */
-    char *sequence;             /* sequence data after mergin with gaps */
-} Alma;
-
-typedef struct {
     char *id;                   /* locus */
     char *description;
 } Nbrf;
@@ -163,7 +153,6 @@ struct global_data {
     Macke     macke;            /* one Macke entry */
     Paup      paup;             /* one Paup entry */
     Embl      embl;
-    Alma      alma;
     Nbrf      nbrf;
 };
 

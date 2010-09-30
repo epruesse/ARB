@@ -11,28 +11,6 @@
 #endif
 
 
-/* alma.cxx */
-void init_alma(void);
-void alma_to_macke(char *inf, char *outf);
-void alma_to_genbank(char *inf, char *outf);
-char alma_in(FILE_BUFFER fp);
-int alma_key_word(char *line, int index, char *key, int length);
-void alma_one_entry(char *line, int index, char **datastring);
-char *alma_in_gaps(FILE_BUFFER fp);
-void alma_in_sequence(void);
-void nbrf_in(FILE_BUFFER fp);
-void gcg_in(FILE_BUFFER fp);
-void staden_in(FILE_BUFFER fp);
-int atom(void);
-void embl_to_alma(char *inf, char *outf);
-void genbank_to_alma(char *inf, char *outf);
-void macke_to_alma(char *inf, char *outf);
-int etoa(void);
-void alma_out_header(FILE *fp);
-FILE *alma_out(FILE *fp, int format);
-FILE *alma_out_entry_header(FILE *fp, char *entry_id, char *filename, int format_type);
-void alma_out_gaps(FILE *fp);
-
 /* convert.cxx */
 int realloc_sequence_data(int total_seqs);
 void free_sequence_data(int used_entries);

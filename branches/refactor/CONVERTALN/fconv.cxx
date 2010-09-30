@@ -5,10 +5,10 @@
 #include "convert.h"
 #include "global.h"
 #include "types.h"
+#include <static_assert.h>
 
 const char *format2name(int format_type) {
     switch (format_type) {
-        case ALMA:      return "ALMA";
         case EMBL:      return "EMBL";
         case GCG:       return "GCG";
         case GENBANK:   return "GENBANK";
@@ -51,17 +51,8 @@ static void convert_WRAPPED(char *inf, char *outf, int intype, int outype) {
 
     bool converted = true;
     switch (intype) {
-        case ALMA:
-            switch (outype) {
-                case GENBANK:   alma_to_genbank(inf, outf); break;
-                case MACKE:     alma_to_macke(inf, outf); break;
-                default: converted = false; break;
-            }
-            break;
-
         case EMBL:
             switch (outype) {
-                case ALMA:      embl_to_alma(inf, outf); break;
                 case EMBL:      embl_to_embl(inf, outf); break;
                 case GENBANK:   embl_to_genbank(inf, outf); break;
                 case MACKE:     embl_to_macke(inf, outf, EMBL); break;
@@ -72,7 +63,6 @@ static void convert_WRAPPED(char *inf, char *outf, int intype, int outype) {
 
         case GENBANK:
             switch (outype) {
-                case ALMA:      genbank_to_alma(inf, outf); break;
                 case EMBL:      genbank_to_embl(inf, outf); break;
                 case GENBANK:   genbank_to_genbank(inf, outf); break;
                 case MACKE:     genbank_to_macke(inf, outf); break;
@@ -82,7 +72,6 @@ static void convert_WRAPPED(char *inf, char *outf, int intype, int outype) {
 
         case MACKE:
             switch (outype) {
-                case ALMA:      macke_to_alma(inf, outf); break;
                 case EMBL:      macke_to_embl(inf, outf); break;
                 case GENBANK:   macke_to_genbank(inf, outf); break;
                 case PROTEIN:   macke_to_embl(inf, outf); break;
@@ -206,13 +195,6 @@ void init()
     data.embl.comments.seqinf.comp5 = ' ';
     data.embl.comments.seqinf.comp3 = ' ';
     data.embl.comments.others = NULL;
-    /* initial alma data */
-    data.alma.id = NULL;
-    data.alma.filename = NULL;
-    data.alma.format = UNKNOWN;
-    data.alma.defgap = '-';
-    data.alma.num_of_sequence = 0;
-    data.alma.sequence = NULL;
     /* initial NBRF data format */
     data.nbrf.id = NULL;
     data.nbrf.description = NULL;
@@ -258,7 +240,6 @@ struct FormatSpec {
 #define FORMATSPEC_GOT(tag,file) { tag, #tag, "impexp/" file ".eft.exported" }
 
 static FormatSpec format[] = {
-    FORMATSPEC_GOT(ALMA, "ae2"),
     FORMATSPEC_GOT(EMBL, "embl"),
     FORMATSPEC_GOT(GCG, "gcg"),
     FORMATSPEC_GOT(GENBANK, "genbank"),
@@ -274,7 +255,6 @@ static FormatSpec format[] = {
 static const int fcount = ARRAY_ELEMS(format);
 
 enum FormatNum { // same order as above
-    NUM_ALMA, 
     NUM_EMBL, 
     NUM_GCG, 
     NUM_GENBANK, 
@@ -283,14 +263,16 @@ enum FormatNum { // same order as above
     NUM_PAUP, 
     NUM_PHYLIP, 
     NUM_PHYLIP2, 
-    NUM_PRINTABLE, 
-    NUM_PROTEIN, 
-    NUM_STADEN, 
+    NUM_PRINTABLE,
+    NUM_PROTEIN,
+    NUM_STADEN,
+
+    FORMATNUM_COUNT,
 };
 
 struct Capabilities {
     bool supported;
-    bool haveInputData; 
+    bool haveInputData;
     bool emptyOutput;
     bool noOutput;
     bool crashes;
@@ -374,6 +356,7 @@ static void test_convert_by_format_num_WRAPPED(int from, int to) {
                 TEST_ASSERT_EQUAL(GB_size_of_file(toFile), 0);
             }
             else {                                                  
+                TEST_ASSERT_LOWER_EQUAL(10, GB_size_of_file(toFile)); // less than 10 bytes 
                 test_expected_conversion(toFile, NULL);
             }
             TEST_ASSERT_ZERO_OR_SHOW_ERRNO(unlink(toFile));
@@ -427,6 +410,8 @@ static void init_cap() {
 #define CRASHES(t1,t2)               cap[NUM_##t1][NUM_##t2].crashes     = true
 
 void TEST_converter() {
+    COMPILE_ASSERT(FORMATNUM_COUNT == fcount);
+
     init_cap();
 
     NOT_SUPPORTED(GENBANK, PROTEIN);
@@ -437,7 +422,6 @@ void TEST_converter() {
     NOT_SUPPORTED(MACKE, NBRF);
     NOT_SUPPORTED(MACKE, STADEN);
 
-    NOT_SUPPORTED(PHYLIP, ALMA);
     NOT_SUPPORTED(PHYLIP, EMBL);
     NOT_SUPPORTED(PHYLIP, GCG);
     NOT_SUPPORTED(PHYLIP, GENBANK);
@@ -448,7 +432,6 @@ void TEST_converter() {
     NOT_SUPPORTED(PHYLIP, PROTEIN);
     NOT_SUPPORTED(PHYLIP, STADEN);
     
-    NOT_SUPPORTED(PAUP, ALMA);
     NOT_SUPPORTED(PAUP, EMBL);
     NOT_SUPPORTED(PAUP, GCG);
     NOT_SUPPORTED(PAUP, GENBANK);
@@ -462,7 +445,6 @@ void TEST_converter() {
     NOT_SUPPORTED(EMBL, NBRF);
     NOT_SUPPORTED(EMBL, STADEN);
 
-    NOT_SUPPORTED(GCG, ALMA);
     NOT_SUPPORTED(GCG, EMBL);
     NOT_SUPPORTED(GCG, GENBANK);
     NOT_SUPPORTED(GCG, MACKE);
@@ -473,17 +455,7 @@ void TEST_converter() {
     NOT_SUPPORTED(GCG, PROTEIN);
     NOT_SUPPORTED(GCG, STADEN);
     
-    NOT_SUPPORTED(ALMA, EMBL);
-    NOT_SUPPORTED(ALMA, NBRF);
-    NOT_SUPPORTED(ALMA, PROTEIN);
-    NOT_SUPPORTED(ALMA, STADEN);
-    NOT_SUPPORTED(ALMA, GCG);
-
     // broken atm:
-
-    EMPTY_OUTFILE_CREATED(ALMA, GENBANK);
-    EMPTY_OUTFILE_CREATED(ALMA, MACKE);
-    EMPTY_OUTFILE_CREATED(ALMA, PRINTABLE);
 
     EMPTY_OUTFILE_CREATED(EMBL, GENBANK);
     EMPTY_OUTFILE_CREATED(EMBL, MACKE);
@@ -514,12 +486,6 @@ void TEST_converter() {
 
             if (me.shall_be_tested()) {
                 test_convert_by_format_num(from, to);
-                if (to == NUM_ALMA && cap[from][to].supported) {
-                    const char *additional_outfile = "MetMazei.EMBL";
-                    test_expected_conversion(additional_outfile, NAME(from));
-                    TEST_ASSERT_ZERO_OR_SHOW_ERRNO(unlink(additional_outfile));
-                }
-
                 tested++;
             }
 

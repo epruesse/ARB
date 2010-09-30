@@ -1,5 +1,4 @@
 OBJECTS= \
-	alma.o \
 	convert.o \
 	date.o \
 	embl.o \
@@ -50,19 +49,6 @@ depend.init:
 
 # Do not add dependencies manually - use 'make depend' in $ARBHOME
 # For formatting issues see SOURCE_TOOLS/fix_depends.pl
-
-alma.o: convert.h
-alma.o: global.h
-alma.o: prototypes.h
-alma.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
-alma.o: $(ARBHOME)/INCLUDE/arb_assert.h
-alma.o: $(ARBHOME)/INCLUDE/arb_core.h
-alma.o: $(ARBHOME)/INCLUDE/arbdb_base.h
-alma.o: $(ARBHOME)/INCLUDE/arbtools.h
-alma.o: $(ARBHOME)/INCLUDE/attributes.h
-alma.o: $(ARBHOME)/INCLUDE/dupstr.h
-alma.o: $(ARBHOME)/INCLUDE/FileBuffer.h
-alma.o: $(ARBHOME)/INCLUDE/test_global.h
 
 convert.o: convert.h
 convert.o: global.h
@@ -123,6 +109,7 @@ fconv.o: $(ARBHOME)/INCLUDE/attributes.h
 fconv.o: $(ARBHOME)/INCLUDE/dupstr.h
 fconv.o: $(ARBHOME)/INCLUDE/FileBuffer.h
 fconv.o: $(ARBHOME)/INCLUDE/smartptr.h
+fconv.o: $(ARBHOME)/INCLUDE/static_assert.h
 fconv.o: $(ARBHOME)/INCLUDE/test_global.h
 fconv.o: $(ARBHOME)/INCLUDE/test_unit.h
 

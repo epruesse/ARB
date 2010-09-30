@@ -9,7 +9,7 @@
  *       Convert from some format to PRINTABLE format.
  */
 void to_printable(char *inf, char *outf, int informat) {
-    if (informat != ALMA && informat != GENBANK && informat != EMBL && informat != PROTEIN && informat != MACKE) {
+    if (informat != GENBANK && informat != EMBL && informat != PROTEIN && informat != MACKE) {
         throw_conversion_not_supported(informat, PRINTABLE);
     }
     
@@ -29,11 +29,7 @@ void to_printable(char *inf, char *outf, int informat) {
     total_seq     = 0;
     base_nums     = NULL;
     do {
-        if (informat == ALMA) {
-            init_alma();
-            eof = alma_in(ifp);
-        }
-        else if (informat == GENBANK) {
+        if (informat == GENBANK) {
             init_genbank();
             eof = genbank_in_locus(ifp);
         }
@@ -45,14 +41,11 @@ void to_printable(char *inf, char *outf, int informat) {
             init_macke();
             eof = macke_in_name(ifp);
         }
-        else
-            throw_error(48, "UNKNOWN input format when converting to PRINTABLE format");
-        if (eof == EOF)
-            break;
-        if (informat == ALMA) {
-            alma_key_word(data.alma.id, 0, temp, TOKENNUM);
-        }
-        else if (informat == GENBANK) {
+        else throw_error(48, "UNKNOWN input format when converting to PRINTABLE format");
+
+        if (eof == EOF) break;
+        
+        if (informat == GENBANK) {
             genbank_key_word(data.gbk.locus, 0, temp, TOKENNUM);
         }
         else if (informat == EMBL || informat == PROTEIN) {
@@ -61,8 +54,8 @@ void to_printable(char *inf, char *outf, int informat) {
         else if (informat == MACKE) {
             Cpystr(temp, data.macke.seqabbr);
         }
-        else
-            throw_error(120, "UNKNOWN input format when converting to PRINTABLE format");
+        else throw_error(120, "UNKNOWN input format when converting to PRINTABLE format");
+        
         total_seq++;
 
         if ((name = Dupstr(temp)) == NULL && temp != NULL) {
@@ -151,11 +144,7 @@ void to_printable_1x1(char *inf, char *outf, int informat) {
         FILE_BUFFER_rewind(ifp);
         total_seq = 0;
         do {                    /* read in one sequence */
-            if (informat == ALMA) {
-                init_alma();
-                eof = alma_in(ifp);
-            }
-            else if (informat == GENBANK) {
+            if (informat == GENBANK) {
                 init_genbank();
                 eof = genbank_in_locus(ifp);
             }
@@ -167,14 +156,11 @@ void to_printable_1x1(char *inf, char *outf, int informat) {
                 init_macke();
                 eof = macke_in_name(ifp);
             }
-            else
-                throw_error(129, "UNKNOWN input format when converting to PRINTABLE format");
-            if (eof == EOF)
-                break;
-            if (informat == ALMA) {
-                alma_key_word(data.alma.id, 0, temp, TOKENNUM);
-            }
-            else if (informat == GENBANK) {
+            else throw_error(129, "UNKNOWN input format when converting to PRINTABLE format");
+
+            if (eof == EOF) break;
+            
+            if (informat == GENBANK) {
                 genbank_key_word(data.gbk.locus, 0, temp, TOKENNUM);
             }
             else if (informat == EMBL || informat == PROTEIN) {
