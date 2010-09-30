@@ -172,3 +172,10 @@ void FILE_BUFFER_back(FILE_BUFFER file_buffer, const char *backline) {
 void FILE_BUFFER_rewind(FILE_BUFFER file_buffer) {
     to_FileBuffer(file_buffer)->rewind();
 }
+
+const char *FILE_BUFFER_make_error(FILE_BUFFER file_buffer, bool show_name, const char *message) {
+    FileBuffer *fileBuffer = to_FileBuffer(file_buffer);
+    fileBuffer->showFilenameInLineError(show_name);
+    return fileBuffer->lineError(message).c_str();
+}
+
