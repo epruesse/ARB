@@ -738,7 +738,8 @@ GB_ERROR SEQIO_export_by_format(GBDATA *gb_main, int marked_only, AP_filter *fil
 
 // uncomment to auto-update exported files
 // (needed once after changing database or export formats)
-// #define TEST_AUTO_UPDATE 
+#define TEST_AUTO_UPDATE 
+#define TEST_AUTO_UPDATE_ONLY_MISSING // do auto-update only if file is missing 
 
 #define TEST_EXPORT_FORMAT(filename,load_complete_form)                 \
     do {                                                                \
@@ -787,7 +788,16 @@ void TEST_sequence_export() {
                 char *expected = GBS_global_string_copy("impexp/%s.exported", name);
 
 #if defined(TEST_AUTO_UPDATE)
+#if defined(TEST_AUTO_UPDATE_ONLY_MISSING)
+                if (GB_is_regularfile(expected)) {
+                    TEST_ASSERT_TEXTFILE_DIFFLINES_IGNORE_DATES(expected, outname, 0);
+                }
+                else {
+                    system(GBS_global_string("cp %s %s", outname, expected));
+                }
+#else
                 system(GBS_global_string("cp %s %s", outname, expected));
+#endif
 #else
                 TEST_ASSERT_TEXTFILE_DIFFLINES_IGNORE_DATES(expected, outname, 0);
                 // see ../../UNIT_TESTER/run/impexp
