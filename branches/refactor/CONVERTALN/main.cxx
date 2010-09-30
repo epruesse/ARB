@@ -236,7 +236,7 @@ static bool command_line_conversion(int argc, char** argv, int& intype, int& out
 }
 
 static void do_conversion(const char *inName, const char *ouName, int inType, int ouType) {
-#ifdef log
+#ifdef CALOG
     if (ouType != GCG)
         fprintf(stderr, "\n\nConvert file %s to file %s.\n", inName, ouName);
     else

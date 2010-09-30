@@ -33,10 +33,6 @@ void genbank_to_macke(char *inf, char *outf) {
     init_gm_data();
     macke_out_header(ofp);
 
-#ifdef log
-    fprintf(stderr, "Start converting...\n");
-#endif
-
     for (indi = 0; indi < 3; indi++) {
         FILE_BUFFER_rewind(ifp);
         init_seq_data();
@@ -60,13 +56,9 @@ void genbank_to_macke(char *inf, char *outf) {
                     default:;
                 }
             }
-            else
-                throw_error(7, "Conversion from genbank to macke fails");
+            else throw_error(7, "Conversion from genbank to macke fails");
+
             init_gm_data();
-#ifdef log
-            if ((data.numofseq % 100) == 0)
-                fprintf(stderr, "%d sequences have been processed\n", data.numofseq);
-#endif
         }
         total_num = data.numofseq;
         if (indi == 0) {
@@ -77,11 +69,7 @@ void genbank_to_macke(char *inf, char *outf) {
     }
 
     warning_out = 1;            /* resume warning messages */
-
-#ifdef log
-    fprintf(stderr, "Total %d sequences have been processed\n", total_num);
-#endif
-
+    log_processed(total_num);
 }
 
 /* --------------------------------------------------------------
@@ -585,10 +573,6 @@ void macke_to_genbank(char *inf, char *outf) {
     init_seq_data();
     init_gm_data();
 
-#ifdef log
-    fprintf(stderr, "Start converting...\n");
-#endif
-
     while (macke_in(ifp1, ifp2, ifp3) != EOF) {
         data.numofseq++;
         if (mtog())
@@ -596,18 +580,9 @@ void macke_to_genbank(char *inf, char *outf) {
         else
             throw_error(15, "Conversion from macke to genbank fails");
         init_gm_data();
-
-#ifdef log
-        if ((data.numofseq % 50) == 0)
-            fprintf(stderr, "%d sequences are converted...\n", data.numofseq);
-#endif
-
     }
 
-#ifdef log
-    fprintf(stderr, "Total %d sequences have been processed\n", data.numofseq);
-#endif
-
+    log_processed(data.numofseq);
 }
 
 /* ----------------------------------------------------------------

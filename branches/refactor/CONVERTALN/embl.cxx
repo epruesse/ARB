@@ -940,9 +940,7 @@ void embl_to_macke(char *inf, char *outf, int format) {
 
     warning_out = 1;
 
-#ifdef log
-    fprintf(stderr, "Total %d sequences have been processed\n", total_num);
-#endif
+    log_processed(total_num);
 }
 
 /* ------------------------------------------------------------
@@ -968,20 +966,13 @@ void embl_to_embl(char *inf, char *outf) {
     init_seq_data();
     init_embl();
 
-#ifdef log
-    fprintf(stderr, "Start converting...\n");
-#endif
-
     while (embl_in(ifp) != EOF) {
         data.numofseq++;
         embl_out(ofp);
         init_embl();
     }
 
-#ifdef log
-    fprintf(stderr, "Total %d sequences have been processed\n", data.numofseq);
-#endif
-
+    log_processed(data.numofseq);
 }
 
 /* -------------------------------------------------------------
@@ -998,10 +989,6 @@ void embl_to_genbank(char *inf, char *outf) {
     init_genbank();
     init_embl();
 
-#ifdef log
-    fprintf(stderr, "Start converting...\n");
-#endif
-
     while (embl_in(ifp) != EOF) {
         data.numofseq++;
         if (etog())
@@ -1010,16 +997,9 @@ void embl_to_genbank(char *inf, char *outf) {
             throw_error(32, "Conversion from macke to genbank fails");
         init_genbank();
         init_embl();
-#ifdef log
-        if ((data.numofseq % 50) == 0)
-            fprintf(stderr, "%d sequences are converted...\n", data.numofseq);
-#endif
-
     }
 
-#ifdef log
-    fprintf(stderr, "Total %d sequences have been processed\n", data.numofseq);
-#endif
+    log_processed(data.numofseq);
 }
 
 /* -------------------------------------------------------------
@@ -1304,10 +1284,7 @@ void genbank_to_embl(char *inf, char *outf) {
         init_embl();
     }
 
-#ifdef log
-    fprintf(stderr, "Total %d sequences have been processed\n", data.numofseq);
-#endif
-
+    log_processed(data.numofseq);
     destroy_FILE_BUFFER(ifp);
     fclose(ofp);
 }
@@ -1576,10 +1553,6 @@ void macke_to_embl(char *inf, char *outf) {
     init_macke();
     init_embl();
 
-#ifdef log
-    fprintf(stderr, "Start converting...\n");
-#endif
-
     while (macke_in(ifp1, ifp2, ifp3) != EOF) {
 
         data.numofseq++;
@@ -1596,18 +1569,9 @@ void macke_to_embl(char *inf, char *outf) {
         init_genbank();
         init_embl();
         init_macke();
-
-#ifdef log
-        if ((data.numofseq % 50) == 0)
-            fprintf(stderr, "%d sequences are converted...\n", data.numofseq);
-#endif
-
     }
 
-#ifdef log
-    fprintf(stderr, "Total %d sequences have been processed\n", data.numofseq);
-#endif
-
+    log_processed(data.numofseq);
 }
 
 /* --------------------------------------------------------------

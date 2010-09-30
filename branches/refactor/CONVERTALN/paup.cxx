@@ -105,10 +105,6 @@ void to_paup(char *inf, char *outf, int informat) {
             fprintf(ofp, "\n");
     }
 
-#ifdef log
-    fprintf(stderr, "Total %d sequences have been processed\n", total_seq);
-#endif
-
     fprintf(ofp, "      ;\nENDBLOCK;\n");
     /* rewrite output header */
     rewind(ofp);
@@ -121,6 +117,7 @@ void to_paup(char *inf, char *outf, int informat) {
     fprintf(ofp, "BEGIN DATA;\n   DIMENSIONS\n");
     fprintf(ofp, "      NTAX = %6d\n      NCHAR = %6d\n      ;\n", total_seq, maxsize);
 
+    log_processed(total_seq);
     destroy_FILE_BUFFER(ifp);
     fclose(ofp);
 }
@@ -202,10 +199,6 @@ void to_paup_1x1(char *inf, char *outf, int informat) {
             fprintf(ofp, "\n");
     }                           /* print block by block */
 
-#ifdef log
-    fprintf(stderr, "Total %d sequences have been processed\n", total_seq);
-#endif
-
     fprintf(ofp, "      ;\nENDBLOCK;\n");
     /* rewrite output header */
     rewind(ofp);
@@ -218,6 +211,7 @@ void to_paup_1x1(char *inf, char *outf, int informat) {
     fprintf(ofp, "BEGIN DATA;\n   DIMENSIONS\n");
     fprintf(ofp, "      NTAX = %6d\n      NCHAR = %6d\n      ;\n", total_seq, maxsize);
 
+    log_processed(total_seq);
     destroy_FILE_BUFFER(ifp);
     fclose(ofp);
 }

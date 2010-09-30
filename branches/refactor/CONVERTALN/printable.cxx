@@ -114,10 +114,7 @@ void to_printable(char *inf, char *outf, int informat) {
 
     Freespace((char **)&(base_nums));
 
-#ifdef log
-    fprintf(stderr, "Total %d sequences have been processed\n", total_seq);
-#endif
-
+    log_processed(total_seq);
     destroy_FILE_BUFFER(ifp);
     fclose(ofp);
 }
@@ -191,13 +188,9 @@ void to_printable_1x1(char *inf, char *outf, int informat) {
             fprintf(ofp, "\n\n");
     }                           /* print block by block */
 
+    log_processed(total_seq);
     destroy_FILE_BUFFER(ifp);
     fclose(ofp);
-
-#ifdef log
-    fprintf(stderr, "Total %d sequences have been processed\n", total_seq);
-#endif
-
 }
 
 /* ------------------------------------------------------------

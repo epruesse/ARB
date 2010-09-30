@@ -997,10 +997,7 @@ void genbank_to_genbank(char *inf, char *outf) {
         init_genbank();
     }
 
-#ifdef log
-    fprintf(stderr, "Total %d sequences have been processed\n", data.numofseq);
-#endif
-
+    log_processed(data.numofseq);
     destroy_FILE_BUFFER(ifp);
     fclose(ofp);
 }

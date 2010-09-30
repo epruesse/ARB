@@ -141,9 +141,7 @@ void to_phylip(char *inf, char *outf, int informat, int readstdin) {
         throw_errorf(142, "Failed to rewrite header (headersize differs: %i != %i)", headersize1, headersize2);
     }
 
-#ifdef log
-    fprintf(stderr, "Total %d sequences have been processed\n", total_seq);
-#endif
+    log_processed(total_seq);
 }
 
 /* ---------------------------------------------------------------
@@ -214,13 +212,9 @@ void to_phylip_1x1(char *inf, char *outf, int informat) {
     rewind(ofp);
     fprintf(ofp, "%4d %4d", total_seq, maxsize);
 
+    log_processed(total_seq);
     destroy_FILE_BUFFER(ifp);
     fclose(ofp);
-
-#ifdef log
-    fprintf(stderr, "Total %d sequences have been processed\n", total_seq);
-#endif
-
 }
 
 /* --------------------------------------------------------------

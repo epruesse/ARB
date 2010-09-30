@@ -37,6 +37,22 @@
 inline bool str_equal(const char *s1, const char *s2) { return strcmp(s1, s2) == 0; }
 inline bool str_iequal(const char *s1, const char *s2) { return strcasecmp(s1, s2) == 0; }
 
+// --------------------
+// Logging
+
+#if defined(DEBUG)
+#define CALOG // be more verbose in debugging mode
+#endif // DEBUG
+
+#if defined(CALOG)
+inline void log_processed(int seqCount) {
+    fprintf(stderr, "Total %d sequences have been processed\n", seqCount);
+}
+#else
+#define log_processed(xxx)
+#endif // CALOG
+
+
 #else
 #error global.h included twice
 #endif // GLOBAL_H
