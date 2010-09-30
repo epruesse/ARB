@@ -66,10 +66,10 @@ static void convert_WRAPPED(char *inf, char *outf, int intype, int outype) {
     switch (intype) {
         case EMBL:
             switch (outype) {
-                case EMBL:      embl_to_embl(inf, outf); break;
+                case EMBL:      
+                case PROTEIN:   embl_to_embl(inf, outf); break;
                 case GENBANK:   embl_to_genbank(inf, outf); break;
                 case MACKE:     embl_to_macke(inf, outf, EMBL); break;
-                case PROTEIN:   embl_to_embl(inf, outf); break;
                 default: converted = false; break;
             }
             break;
@@ -77,6 +77,7 @@ static void convert_WRAPPED(char *inf, char *outf, int intype, int outype) {
         case GENBANK:
             switch (outype) {
                 case EMBL:      genbank_to_embl(inf, outf); break;
+                    // PROTEIN is skipped here intentially (original code said: not supported by GENEBANK)
                 case GENBANK:   genbank_to_genbank(inf, outf); break;
                 case MACKE:     genbank_to_macke(inf, outf); break;
                 default: converted = false; break;
@@ -85,9 +86,9 @@ static void convert_WRAPPED(char *inf, char *outf, int intype, int outype) {
 
         case MACKE:
             switch (outype) {
-                case EMBL:      macke_to_embl(inf, outf); break;
-                case GENBANK:   macke_to_genbank(inf, outf); break;
+                case EMBL:      
                 case PROTEIN:   macke_to_embl(inf, outf); break;
+                case GENBANK:   macke_to_genbank(inf, outf); break;
                 default: converted = false; break;
             }
             break;
@@ -255,35 +256,43 @@ struct FormatSpec {
     const char *testfile; // existing testfile (or NULL)
 };
 
-#define FORMATSPEC____(tag) { tag, #tag, NULL }
-#define FORMATSPEC_GOT(tag,file) { tag, #tag, "impexp/" file ".eft.exported" }
+#define FORMATSPEC_OUT_ONLY(tag) { tag, #tag, NULL }
+#define FORMATSPEC_GOT______(tag,file) { tag, #tag, "impexp/" file ".eft.exported" }
+#define FORMATSPEC_GOT_PLAIN(tag,file) { tag, #tag, "impexp/" file }
 
-static FormatSpec format[] = {
-    FORMATSPEC_GOT(EMBL, "embl"),
-    FORMATSPEC_GOT(GCG, "gcg"),
-    FORMATSPEC_GOT(GENBANK, "genbank"),
-    FORMATSPEC_GOT(MACKE, "ae2"),
-    FORMATSPEC____(NBRF),
-    FORMATSPEC_GOT(PAUP, "paup"),
-    FORMATSPEC_GOT(PHYLIP, "phylip"),
-    FORMATSPEC____(PHYLIP2),
-    FORMATSPEC____(PRINTABLE),
-    FORMATSPEC____(PROTEIN), // SWISSPROT
-    FORMATSPEC____(STADEN),
+static FormatSpec format_spec[] = {
+    // valid according to main.cxx@known_in_type
+    FORMATSPEC_GOT______(GENBANK, "genbank"),
+    FORMATSPEC_GOT______(EMBL, "embl"),
+    FORMATSPEC_GOT______(MACKE, "ae2"),
+    FORMATSPEC_GOT_PLAIN(PROTEIN, "swissprot.input"), // SWISSPROT
+
+    // @@@ make these options for input format ? 
+    FORMATSPEC_GOT______(GCG, "gcg"),
+    FORMATSPEC_GOT______(PAUP, "paup"),
+    FORMATSPEC_GOT______(PHYLIP, "phylip"),
+
+    // no input format
+    FORMATSPEC_OUT_ONLY(PHYLIP2),
+    FORMATSPEC_OUT_ONLY(NBRF),
+    FORMATSPEC_OUT_ONLY(PRINTABLE),
+    FORMATSPEC_OUT_ONLY(STADEN),
 };
-static const int fcount = ARRAY_ELEMS(format);
+static const int fcount = ARRAY_ELEMS(format_spec);
 
 enum FormatNum { // same order as above
-    NUM_EMBL, 
-    NUM_GCG, 
-    NUM_GENBANK, 
-    NUM_MACKE, 
-    NUM_NBRF, 
-    NUM_PAUP, 
-    NUM_PHYLIP, 
-    NUM_PHYLIP2, 
-    NUM_PRINTABLE,
+    NUM_GENBANK,
+    NUM_EMBL,
+    NUM_MACKE,
     NUM_PROTEIN,
+
+    NUM_GCG,
+    NUM_PAUP,
+    NUM_PHYLIP,
+
+    NUM_PHYLIP2,
+    NUM_NBRF,
+    NUM_PRINTABLE,
     NUM_STADEN,
 
     FORMATNUM_COUNT,
@@ -314,9 +323,9 @@ struct Capabilities {
 static Capabilities cap[fcount][fcount];
 #define CAP(from,to) (cap[NUM_##from][NUM_##to])
 
-#define ID(f)    format[f].id
-#define NAME(f)  format[f].name
-#define INPUT(f) format[f].testfile
+#define ID(f)    format_spec[f].id
+#define NAME(f)  format_spec[f].name
+#define INPUT(f) format_spec[f].testfile
 
 static void test_expected_conversion(const char *file, const char *flavor) {
     char *expected;
@@ -357,15 +366,8 @@ static void test_convert_by_format_num_WRAPPED(int from, int to) {
     const char    *error = test_convert(INPUT(from), toFile, ID(from), ID(to));
     Capabilities&  me    = cap[from][to];
 
-    if (me.supported && error) {
-        TEST_ERROR("convert() reports error: '%s' (for supported conversion)", error);
-    }
-    if (!me.supported && !error) {
-        TEST_ERROR("No error for unsupported conversion '%s'", GBS_global_string("%s -> %s", NAME(from), NAME(to)));
-    }
-
-    TEST_ASSERT(me.supported == !error);
     if (me.supported) {
+        if (error) TEST_ERROR("convert() reports error: '%s' (for supported conversion)", error);
         if (me.noOutput) {
             TEST_ASSERT(!GB_is_regularfile(toFile));
         }
@@ -382,9 +384,12 @@ static void test_convert_by_format_num_WRAPPED(int from, int to) {
         }
     }
     else {
+        if (!error) TEST_ERROR("No error for unsupported conversion '%s'", GBS_global_string("%s -> %s", NAME(from), NAME(to)));
+        TEST_ASSERT(strstr(error, "supported")); // wring error
         TEST_ASSERT(!GB_is_regularfile(toFile)); // unsupported produced output
     }
-    
+    TEST_ASSERT(me.supported == !error);
+
     free(toFile);
 }
 
@@ -410,6 +415,7 @@ static void test_convert_by_format_num(int from, int to) {
     else {
         test_convert_by_format_num_WRAPPED(from, to);
     }
+    TEST_ANNOTATE_ASSERT(NULL);
 }
 
 static void init_cap() {
@@ -423,10 +429,24 @@ static void init_cap() {
     }
 }
 
-#define NOT_SUPPORTED(t1,t2)         cap[NUM_##t1][NUM_##t2].supported   = false
-#define NO_OUTFILE_CREATED(t1,t2)    cap[NUM_##t1][NUM_##t2].noOutput    = true
-#define EMPTY_OUTFILE_CREATED(t1,t2) cap[NUM_##t1][NUM_##t2].emptyOutput = true
-#define CRASHES(t1,t2)               cap[NUM_##t1][NUM_##t2].crashes     = true
+inline bool isInputFormat(int num) { return INPUT(num); }
+
+#define NOT_SUPPORTED(t1,t2)         TEST_ASSERT(isInputFormat(NUM_##t1)); cap[NUM_##t1][NUM_##t2].supported   = false
+#define NO_OUTFILE_CREATED(t1,t2)    TEST_ASSERT(isInputFormat(NUM_##t1)); cap[NUM_##t1][NUM_##t2].noOutput    = true
+#define EMPTY_OUTFILE_CREATED(t1,t2) TEST_ASSERT(isInputFormat(NUM_##t1)); cap[NUM_##t1][NUM_##t2].emptyOutput = true
+#define CRASHES(t1,t2)               TEST_ASSERT(isInputFormat(NUM_##t1)); cap[NUM_##t1][NUM_##t2].crashes     = true
+#define FCKDUP(t1,t2)                TEST_ASSERT(isInputFormat(NUM_##t1)); cap[NUM_##t1][NUM_##t2].broken      = true
+
+static int will_convert(int from) {
+    int will = 0;
+    for (int to = 0; to<fcount; to++) {
+        Capabilities& me = cap[from][to];
+        if (me.supported && me.shall_be_tested()) {
+            will++;
+        }
+    }
+    return will;
+}
 
 void TEST_0_converter() {
     COMPILE_ASSERT(FORMATNUM_COUNT == fcount);
@@ -473,7 +493,14 @@ void TEST_0_converter() {
     NOT_SUPPORTED(GCG, PRINTABLE);
     NOT_SUPPORTED(GCG, PROTEIN);
     NOT_SUPPORTED(GCG, STADEN);
-    
+
+    NOT_SUPPORTED(PROTEIN, GENBANK);
+    NOT_SUPPORTED(PROTEIN, EMBL);
+    NOT_SUPPORTED(PROTEIN, NBRF);
+    NOT_SUPPORTED(PROTEIN, STADEN);
+
+    FCKDUP(PROTEIN, MACKE);
+
     int possible     = 0;
     int tested       = 0;
     int unsupported  = 0;
@@ -485,6 +512,8 @@ void TEST_0_converter() {
     int emptyOutput  = 0;
 
     for (int from = 0; from<fcount; from++) {
+        TEST_ANNOTATE_ASSERT(GBS_global_string("while converting from '%s'", NAME(from)));
+        if (isInputFormat(from)) TEST_ASSERT_LOWER(0, will_convert(from));
         for (int to = 0; to<fcount; to++) {
             if (from == to) continue;
 

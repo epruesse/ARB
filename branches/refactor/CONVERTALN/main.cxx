@@ -18,7 +18,7 @@
 
 struct TypeSwitch { const char *switchtext; int format_num; };
 
-TypeSwitch known_in_type[] = {
+TypeSwitch known_in_type[] = { // see fconv.cxx@format_spec
     { "GenBank",   GENBANK },
     { "EMBL",      EMBL    },
     { "AE2",       MACKE   },
