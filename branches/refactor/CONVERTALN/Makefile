@@ -159,12 +159,14 @@ main.o: types.h
 main.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 main.o: $(ARBHOME)/INCLUDE/arb_assert.h
 main.o: $(ARBHOME)/INCLUDE/arb_core.h
+main.o: $(ARBHOME)/INCLUDE/arb_defs.h
 main.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 main.o: $(ARBHOME)/INCLUDE/arbtools.h
 main.o: $(ARBHOME)/INCLUDE/attributes.h
 main.o: $(ARBHOME)/INCLUDE/dupstr.h
 main.o: $(ARBHOME)/INCLUDE/FileBuffer.h
 main.o: $(ARBHOME)/INCLUDE/test_global.h
+main.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 mg.o: convert.h
 mg.o: global.h

@@ -127,10 +127,6 @@ int macke_in_one_line(char *string);
 void macke_out2(FILE *fp);
 
 /* main.cxx */
-int file_type(char *filename);
-int isnum(char *string);
-bool file_exists(char *file_name);
-void change_file_suffix(char *old_file, char *file_name, int type);
 
 /* mg.cxx */
 void init_gm_data(void);
