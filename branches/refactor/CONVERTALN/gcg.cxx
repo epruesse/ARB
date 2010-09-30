@@ -72,7 +72,7 @@ void to_gcg(char *inf, char *outf, int intype) {
                 }
             }
             else { /* EMBL or SwissProt */
-                if (intype != EMBL && intype != PROTEIN)
+                if (intype != EMBL && intype != SWISSPROT)
                     throw_conversion_not_supported(intype, GCG);
 
                 if (Lenstr(line) > 2 && line[0] == 'I' && line[1] == 'D') {

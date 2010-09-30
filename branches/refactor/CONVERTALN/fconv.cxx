@@ -14,11 +14,11 @@ const char *format2name(int format_type) {
         case GENBANK:   return "GENBANK";
         case MACKE:     return "MACKE";
         case NBRF:      return "NBRF";
-        case PAUP:      return "PAUP";
+        case NEXUS:     return "NEXUS";
         case PHYLIP2:   return "PHYLIP2";
         case PHYLIP:    return "PHYLIP";
         case PRINTABLE: return "PRINTABLE";
-        case PROTEIN:   return "SWISSPROT";
+        case SWISSPROT: return "SWISSPROT";
         case STADEN:    return "STADEN";
         default: ca_assert(0);
     }
@@ -67,7 +67,7 @@ static void convert_WRAPPED(char *inf, char *outf, int intype, int outype) {
         case EMBL:
             switch (outype) {
                 case EMBL:      
-                case PROTEIN:   embl_to_embl(inf, outf); break;
+                case SWISSPROT: embl_to_embl(inf, outf); break;
                 case GENBANK:   embl_to_genbank(inf, outf); break;
                 case MACKE:     embl_to_macke(inf, outf, EMBL); break;
                 default: converted = false; break;
@@ -77,7 +77,7 @@ static void convert_WRAPPED(char *inf, char *outf, int intype, int outype) {
         case GENBANK:
             switch (outype) {
                 case EMBL:      genbank_to_embl(inf, outf); break;
-                    // PROTEIN is skipped here intentially (original code said: not supported by GENEBANK)
+                    // SWISSPROT is skipped here intentially (original code said: not supported by GENEBANK)
                 case GENBANK:   genbank_to_genbank(inf, outf); break;
                 case MACKE:     genbank_to_macke(inf, outf); break;
                 default: converted = false; break;
@@ -87,15 +87,15 @@ static void convert_WRAPPED(char *inf, char *outf, int intype, int outype) {
         case MACKE:
             switch (outype) {
                 case EMBL:      
-                case PROTEIN:   macke_to_embl(inf, outf); break;
+                case SWISSPROT: macke_to_embl(inf, outf); break;
                 case GENBANK:   macke_to_genbank(inf, outf); break;
                 default: converted = false; break;
             }
             break;
 
-        case PROTEIN:
+        case SWISSPROT:
             switch (outype) {
-                case MACKE:     embl_to_macke(inf, outf, PROTEIN); break;
+                case MACKE:     embl_to_macke(inf, outf, SWISSPROT); break;
                 default: converted = false; break;
             }
             break;
@@ -107,7 +107,7 @@ static void convert_WRAPPED(char *inf, char *outf, int intype, int outype) {
         converted = true;
         switch (outype) {
             case GCG:       to_gcg(inf, outf, intype); break;
-            case PAUP:      to_paup(inf, outf, intype); break;
+            case NEXUS:     to_paup(inf, outf, intype); break;
             case PHYLIP:    to_phylip(inf, outf, intype, dd); break;
             case PRINTABLE: to_printable(inf, outf, intype); break;
             default: converted = false; break;
@@ -247,7 +247,7 @@ void init_seq_data()
 #include <test_unit.h>
 #include <arb_defs.h>
 
-#define TEST_AUTO_UPDATE
+// #define TEST_AUTO_UPDATE
 #define TEST_AUTO_UPDATE_ONLY_MISSING // do auto-update only if file is missing 
 
 struct FormatSpec {
@@ -265,11 +265,11 @@ static FormatSpec format_spec[] = {
     FORMATSPEC_GOT______(GENBANK, "genbank"),
     FORMATSPEC_GOT______(EMBL, "embl"),
     FORMATSPEC_GOT______(MACKE, "ae2"),
-    FORMATSPEC_GOT_PLAIN(PROTEIN, "swissprot.input"), // SWISSPROT
+    FORMATSPEC_GOT_PLAIN(SWISSPROT, "swissprot.input"), // SWISSPROT
 
     // @@@ make these options for input format ? 
     FORMATSPEC_GOT______(GCG, "gcg"),
-    FORMATSPEC_GOT______(PAUP, "paup"),
+    FORMATSPEC_GOT______(NEXUS, "nexus"),
     FORMATSPEC_GOT______(PHYLIP, "phylip"),
 
     // no input format
@@ -284,10 +284,10 @@ enum FormatNum { // same order as above
     NUM_GENBANK,
     NUM_EMBL,
     NUM_MACKE,
-    NUM_PROTEIN,
+    NUM_SWISSPROT,
 
     NUM_GCG,
-    NUM_PAUP,
+    NUM_NEXUS,
     NUM_PHYLIP,
 
     NUM_PHYLIP2,
@@ -453,7 +453,7 @@ void TEST_0_converter() {
 
     init_cap();
 
-    NOT_SUPPORTED(GENBANK, PROTEIN);
+    NOT_SUPPORTED(GENBANK, SWISSPROT);
 
     NOT_SUPPORTED(GENBANK, NBRF);
     NOT_SUPPORTED(GENBANK, STADEN);
@@ -466,20 +466,20 @@ void TEST_0_converter() {
     NOT_SUPPORTED(PHYLIP, GENBANK);
     NOT_SUPPORTED(PHYLIP, MACKE);
     NOT_SUPPORTED(PHYLIP, NBRF);
-    NOT_SUPPORTED(PHYLIP, PAUP);
+    NOT_SUPPORTED(PHYLIP, NEXUS);
     NOT_SUPPORTED(PHYLIP, PRINTABLE);
-    NOT_SUPPORTED(PHYLIP, PROTEIN);
+    NOT_SUPPORTED(PHYLIP, SWISSPROT);
     NOT_SUPPORTED(PHYLIP, STADEN);
     
-    NOT_SUPPORTED(PAUP, EMBL);
-    NOT_SUPPORTED(PAUP, GCG);
-    NOT_SUPPORTED(PAUP, GENBANK);
-    NOT_SUPPORTED(PAUP, MACKE);
-    NOT_SUPPORTED(PAUP, NBRF);
-    NOT_SUPPORTED(PAUP, PHYLIP);
-    NOT_SUPPORTED(PAUP, PRINTABLE);
-    NOT_SUPPORTED(PAUP, PROTEIN);
-    NOT_SUPPORTED(PAUP, STADEN);
+    NOT_SUPPORTED(NEXUS, EMBL);
+    NOT_SUPPORTED(NEXUS, GCG);
+    NOT_SUPPORTED(NEXUS, GENBANK);
+    NOT_SUPPORTED(NEXUS, MACKE);
+    NOT_SUPPORTED(NEXUS, NBRF);
+    NOT_SUPPORTED(NEXUS, PHYLIP);
+    NOT_SUPPORTED(NEXUS, PRINTABLE);
+    NOT_SUPPORTED(NEXUS, SWISSPROT);
+    NOT_SUPPORTED(NEXUS, STADEN);
 
     NOT_SUPPORTED(EMBL, NBRF);
     NOT_SUPPORTED(EMBL, STADEN);
@@ -488,18 +488,18 @@ void TEST_0_converter() {
     NOT_SUPPORTED(GCG, GENBANK);
     NOT_SUPPORTED(GCG, MACKE);
     NOT_SUPPORTED(GCG, NBRF);
-    NOT_SUPPORTED(GCG, PAUP);
+    NOT_SUPPORTED(GCG, NEXUS);
     NOT_SUPPORTED(GCG, PHYLIP);
     NOT_SUPPORTED(GCG, PRINTABLE);
-    NOT_SUPPORTED(GCG, PROTEIN);
+    NOT_SUPPORTED(GCG, SWISSPROT);
     NOT_SUPPORTED(GCG, STADEN);
 
-    NOT_SUPPORTED(PROTEIN, GENBANK);
-    NOT_SUPPORTED(PROTEIN, EMBL);
-    NOT_SUPPORTED(PROTEIN, NBRF);
-    NOT_SUPPORTED(PROTEIN, STADEN);
+    NOT_SUPPORTED(SWISSPROT, GENBANK);
+    NOT_SUPPORTED(SWISSPROT, EMBL);
+    NOT_SUPPORTED(SWISSPROT, NBRF);
+    NOT_SUPPORTED(SWISSPROT, STADEN);
 
-    FCKDUP(PROTEIN, MACKE);
+    FCKDUP(SWISSPROT, MACKE);
 
     int possible     = 0;
     int tested       = 0;

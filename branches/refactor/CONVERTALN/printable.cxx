@@ -9,7 +9,7 @@
  *       Convert from some format to PRINTABLE format.
  */
 void to_printable(char *inf, char *outf, int informat) {
-    if (informat != GENBANK && informat != EMBL && informat != PROTEIN && informat != MACKE) {
+    if (informat != GENBANK && informat != EMBL && informat != SWISSPROT && informat != MACKE) {
         throw_conversion_not_supported(informat, PRINTABLE);
     }
     
@@ -33,7 +33,7 @@ void to_printable(char *inf, char *outf, int informat) {
             init_genbank();
             eof = genbank_in_locus(ifp);
         }
-        else if (informat == EMBL || informat == PROTEIN) {
+        else if (informat == EMBL || informat == SWISSPROT) {
             init_embl();
             eof = embl_in_id(ifp);
         }
@@ -48,7 +48,7 @@ void to_printable(char *inf, char *outf, int informat) {
         if (informat == GENBANK) {
             genbank_key_word(data.gbk.locus, 0, temp, TOKENSIZE);
         }
-        else if (informat == EMBL || informat == PROTEIN) {
+        else if (informat == EMBL || informat == SWISSPROT) {
             embl_key_word(data.embl.id, 0, temp, TOKENSIZE);
         }
         else if (informat == MACKE) {
@@ -145,7 +145,7 @@ void to_printable_1x1(char *inf, char *outf, int informat) {
                 init_genbank();
                 eof = genbank_in_locus(ifp);
             }
-            else if (informat == EMBL || informat == PROTEIN) {
+            else if (informat == EMBL || informat == SWISSPROT) {
                 init_embl();
                 eof = embl_in_id(ifp);
             }
@@ -160,7 +160,7 @@ void to_printable_1x1(char *inf, char *outf, int informat) {
             if (informat == GENBANK) {
                 genbank_key_word(data.gbk.locus, 0, temp, TOKENSIZE);
             }
-            else if (informat == EMBL || informat == PROTEIN) {
+            else if (informat == EMBL || informat == SWISSPROT) {
                 embl_key_word(data.embl.id, 0, temp, TOKENSIZE);
             }
             else if (informat == MACKE) {

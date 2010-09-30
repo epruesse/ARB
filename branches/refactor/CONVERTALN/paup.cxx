@@ -15,11 +15,11 @@ void init_paup()
 
 /* -------------------------------------------------------------
  *   Function to_paup()
- *       Convert from some format to PAUP format.
+ *       Convert from some format to NEXUS format.
  */
 void to_paup(char *inf, char *outf, int informat) {
-    if (informat != GENBANK && informat != EMBL && informat != PROTEIN && informat != MACKE) {
-        throw_conversion_not_supported(informat, PAUP);
+    if (informat != GENBANK && informat != EMBL && informat != SWISSPROT && informat != MACKE) {
+        throw_conversion_not_supported(informat, NEXUS);
     }
 
     int maxsize, current, total_seq, first_line;
@@ -45,7 +45,7 @@ void to_paup(char *inf, char *outf, int informat) {
             if (eof == EOF) break;
             genbank_key_word(data.gbk.locus, 0, temp, TOKENSIZE); 
         }
-        else if (informat == EMBL || informat == PROTEIN) {
+        else if (informat == EMBL || informat == SWISSPROT) {
             init_embl();
             eof = embl_in_id(ifp);
             if (eof == EOF) break;
@@ -124,7 +124,7 @@ void to_paup(char *inf, char *outf, int informat) {
 
 /* ---------------------------------------------------------------
  *   Function to_paup_1x1()
- *       Convert from ALMA format to PAUP format,
+ *       Convert from ALMA format to NEXUS format,
  *           one seq by one seq.
  */
 void to_paup_1x1(char *inf, char *outf, int informat) {
@@ -151,7 +151,7 @@ void to_paup_1x1(char *inf, char *outf, int informat) {
                 init_genbank();
                 eof = genbank_in_locus(ifp);
             }
-            else if (informat == EMBL || informat == PROTEIN) {
+            else if (informat == EMBL || informat == SWISSPROT) {
                 init_embl();
                 eof = embl_in_id(ifp);
             }
@@ -159,21 +159,21 @@ void to_paup_1x1(char *inf, char *outf, int informat) {
                 init_macke();
                 eof = macke_in_name(ifp);
             }
-            else throw_error(127, "UNKNOWN input format when converting to PAUP format");
+            else throw_error(127, "UNKNOWN input format when converting to NEXUS format");
 
             if (eof == EOF) break;
             
             if (informat == GENBANK) {
                 genbank_key_word(data.gbk.locus, 0, temp, TOKENSIZE);
             }
-            else if (informat == EMBL || informat == PROTEIN) {
+            else if (informat == EMBL || informat == SWISSPROT) {
                 embl_key_word(data.embl.id, 0, temp, TOKENSIZE);
             }
             else if (informat == MACKE) {
                 macke_key_word(data.macke.name, 0, temp, TOKENSIZE);
             }
             else
-                throw_error(70, "UNKNOWN input format when converting to PAUP format");
+                throw_error(70, "UNKNOWN input format when converting to NEXUS format");
 
             Freespace(&name);
             name = Dupstr(temp);
@@ -218,7 +218,7 @@ void to_paup_1x1(char *inf, char *outf, int informat) {
 
 /* -----------------------------------------------------------
  *   Function paup_verify_name().
- *       Verify short_id in PAUP format.
+ *       Verify short_id in NEXUS format.
  */
 void paup_verify_name(char **string)
 {

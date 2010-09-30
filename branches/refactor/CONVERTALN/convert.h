@@ -10,10 +10,10 @@
 
 #define GENBANK   'g'
 #define MACKE     'm'
-#define PROTEIN   't'
+#define SWISSPROT 't'
 #define PHYLIP    'y'
 #define PHYLIP2   '2'
-#define PAUP      'p'
+#define NEXUS     'p'
 #define EMBL      'e'
 #define GCG       'c'
 #define PRINTABLE 'r'
@@ -148,7 +148,7 @@ struct global_data {
     char    **seqs;             /* array of sequence data */
     int      *lengths;          /* array of sequence lengths */
     int       allocated;        /* for how many sequences space has been allocated */
-    /* PAUP, PHYLIP, GCG, and PRINTABLE */
+    /* NEXUS, PHYLIP, GCG, and PRINTABLE */
     GenBank   gbk;              /* one GenBank entry */
     Macke     macke;            /* one Macke entry */
     Paup      paup;             /* one Paup entry */

@@ -19,17 +19,17 @@
 struct TypeSwitch { const char *switchtext; int format_num; };
 
 TypeSwitch known_in_type[] = { // see fconv.cxx@format_spec
-    { "GenBank",   GENBANK },
-    { "EMBL",      EMBL    },
-    { "AE2",       MACKE   },
-    { "SwissProt", PROTEIN },
+    { "GenBank",   GENBANK   },
+    { "EMBL",      EMBL      },
+    { "AE2",       MACKE     },
+    { "SwissProt", SWISSPROT },
 };
 
 TypeSwitch known_out_type[] = {
     { "GenBank",   GENBANK   },
     { "EMBL",      EMBL      },
     { "AE2",       MACKE     },
-    { "PAUP",      PAUP      },
+    { "NEXUS",     NEXUS     },
     { "PHYLIP",    PHYLIP    },
     { "PHYLIP2",   PHYLIP2   },
     { "GCG",       GCG       },
@@ -41,7 +41,7 @@ static void show_command_line_usage() {
           "  $ arb_convert_aln -INFMT input_file -OUTFMT output_file\n"
           "  where\n"
           "      INFMT  may be 'GenBank', 'EMBL', 'AE2' or 'SwissProt' and\n"
-          "      OUTFMT may be 'GenBank', 'EMBL', 'AE2', 'PAUP', 'PHYLIP', 'GCG' or 'Printable'\n"
+          "      OUTFMT may be 'GenBank', 'EMBL', 'AE2', 'NEXUS', 'PHYLIP', 'GCG' or 'Printable'\n"
           "  (Note: you may abbreviate the format names)\n"
           , stderr);
 }
@@ -78,8 +78,8 @@ static void change_file_suffix(char *old_file, char *file_name, int type) {
         case MACKE:
             Catstr(file_name, ".aln");
             break;
-        case PAUP:
-            Catstr(file_name, ".PAUP");
+        case NEXUS:
+            Catstr(file_name, ".NEXUS");
             break;
         case PHYLIP:
             Catstr(file_name, ".PHY");
@@ -128,7 +128,7 @@ static void ask_for_conversion_params(int& argc, char**& argv, int& intype, int&
         case '1': intype = GENBANK; break;
         case '2': intype = EMBL; break;
         case '3': intype = MACKE; break;
-        case '4': intype = PROTEIN; break;
+        case '4': intype = SWISSPROT; break;
         case '5': exit(0); // ok - interactive mode only
         default: throw_errorf(16, "Unknown input format selection '%s'", choice);
     }
@@ -148,7 +148,7 @@ static void ask_for_conversion_params(int& argc, char**& argv, int& intype, int&
           "  (1)  GenBank\n"
           "  (2)  EMBL\n"
           "  (3)  AE2 [default]\n"
-          "  (4)  PAUP\n"
+          "  (4)  NEXUS (Paup)\n"
           "  (5)  PHYLIP\n"
           "  (A)  PHYLIP2 (insert stdin in first line)\n"
           "  (6)  GCG\n"
@@ -162,7 +162,7 @@ static void ask_for_conversion_params(int& argc, char**& argv, int& intype, int&
         case '2': outtype = EMBL; break;
         case '\0': // [default]
         case '3': outtype = MACKE; break;
-        case '4': outtype = PAUP; break;
+        case '4': outtype = NEXUS; break;
         case '5': outtype = PHYLIP; break;
         case 'A': outtype = PHYLIP2; break;
         case '6': outtype = GCG; break;
@@ -291,15 +291,16 @@ void TEST_BASIC_switch_parsing() {
     TEST_ASSERT(strcasecmp_start("GenBank", "GenBank") == 0);
     TEST_ASSERT(strcasecmp_start("GEnbaNK", "genBANK") == 0);
     TEST_ASSERT(strcasecmp_start("Ge", "GenBank") == 0);
-    TEST_ASSERT(strcasecmp_start("GenBank", "PAUP") < 0);
-    TEST_ASSERT(strcasecmp_start("PAUP", "GenBank") > 0);
+    TEST_ASSERT(strcasecmp_start("GenBank", "NEXUS") < 0);
+    TEST_ASSERT(strcasecmp_start("NEXUS", "GenBank") > 0);
 
     TEST_ASSERT(!is_abbrev_switch("notAswitch", "notAswitch"));
     TEST_ASSERT(!is_abbrev_switch("-GenbankPlus", "Genbank"));
-    TEST_ASSERT(!is_abbrev_switch("-Ge", "PAUP"));
+    TEST_ASSERT(!is_abbrev_switch("-Ge", "NEXUS"));
+
     TEST_ASSERT(is_abbrev_switch("-Ge", "Genbank"));
-    TEST_ASSERT(is_abbrev_switch("-P", "PAUP"));
-    TEST_ASSERT(is_abbrev_switch("-PAUP", "PAUP"));
+    TEST_ASSERT(is_abbrev_switch("-N", "NEXUS"));
+    TEST_ASSERT(is_abbrev_switch("-NEXUS", "NEXUS"));
 
     TEST_ASSERT_EQUAL(parse_outtype("-PH"), PHYLIP);
     TEST_ASSERT_EQUAL(parse_outtype("-PHYLIP"), PHYLIP);

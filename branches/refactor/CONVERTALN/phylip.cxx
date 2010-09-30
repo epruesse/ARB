@@ -19,7 +19,7 @@ void init_phylip()
  *      Convert from some format to PHYLIP format.
  */
 void to_phylip(char *inf, char *outf, int informat, int readstdin) {
-    if (informat != GENBANK && informat != EMBL && informat != PROTEIN && informat != MACKE) {
+    if (informat != GENBANK && informat != EMBL && informat != SWISSPROT && informat != MACKE) {
         throw_conversion_not_supported(informat, PHYLIP);
     }
 
@@ -50,7 +50,7 @@ void to_phylip(char *inf, char *outf, int informat, int readstdin) {
             if (eof == EOF) break;
             genbank_key_word(data.gbk.locus, 0, temp, TOKENSIZE);
         }
-        else if (informat == EMBL || informat == PROTEIN) {
+        else if (informat == EMBL || informat == SWISSPROT) {
             init_embl();
             eof = embl_in_id(ifp);
             if (eof == EOF) break;
@@ -171,7 +171,7 @@ void to_phylip_1x1(char *inf, char *outf, int informat) {
                 init_genbank();
                 eof = genbank_in_locus(ifp);
             }
-            else if (informat == EMBL || informat == PROTEIN) {
+            else if (informat == EMBL || informat == SWISSPROT) {
                 init_embl();
                 eof = embl_in_id(ifp);
             }
@@ -186,7 +186,7 @@ void to_phylip_1x1(char *inf, char *outf, int informat) {
             if (informat == GENBANK) {
                 genbank_key_word(data.gbk.locus, 0, temp, TOKENSIZE);
             }
-            else if (informat == EMBL || informat == PROTEIN) {
+            else if (informat == EMBL || informat == SWISSPROT) {
                 embl_key_word(data.embl.id, 0, temp, TOKENSIZE);
             }
             else if (informat == MACKE) {

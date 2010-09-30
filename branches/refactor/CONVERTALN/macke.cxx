@@ -401,7 +401,7 @@ void macke_out0(FILE * fp, int format)
 {
     char token[TOKENSIZE], direction[TOKENSIZE];
 
-    if (format == PROTEIN) {
+    if (format == SWISSPROT) {
         Cpystr(token, "pro");
         Cpystr(direction, "n>c");
     }
