@@ -7,6 +7,7 @@
  *       Convert from whatever to GCG format.
  */
 
+#warning fix outfile handling in to_gcg() 
 void to_gcg(char *inf, char *outf, int intype) {
     FILE *IFP1, *IFP2, *IFP3;
     FILE_BUFFER ifp1 = 0, ifp2 = 0, ifp3 = 0;
@@ -39,7 +40,7 @@ void to_gcg(char *inf, char *outf, int intype) {
         for (; eof1 != NULL && (line1[0] == '#' && line1[1] == '='); eof1 = Fgetline(line1, LINESIZE, ifp1)) {
             macke_abbrev(line1, key, 2);
             Cpystr(temp, key);
-            ofp = open_output_or_die(outf);
+            ofp = open_output_or_die(outf); // @@@ always overwrites same outfile
             for (macke_abbrev(line2, name, 2);
                  eof2 != NULL && line2[0] == '#' && line2[1] == ':' && str_equal(name, key);
                  eof2 = Fgetline(line2, LINESIZE, ifp2), macke_abbrev(line2, name, 2))
@@ -49,6 +50,7 @@ void to_gcg(char *inf, char *outf, int intype) {
             eof3 = macke_origin(key, line3, ifp3);
             gcg_seq_out(ofp, key);
             fclose(ofp);
+            log_processed(1); 
             ofp = NULL;
             init_seq_data();
         }
@@ -88,6 +90,7 @@ void to_gcg(char *inf, char *outf, int intype) {
                 gcg_seq_out(ofp, key);
                 init_seq_data();
                 seqdata = 0;
+                log_processed(1); 
                 fclose(ofp);
                 ofp = NULL;
             }

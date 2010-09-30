@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include "convert.h"
 #include "global.h"
+#include "macke.h"
 
 extern int warning_out;
 
@@ -926,8 +927,8 @@ void embl_to_macke(char *inf, char *outf, int format) {
                     default:;
                 }
             }
-            else
-                throw_error(4, "Conversion from embl to macke fails");
+            else throw_error(4, "Conversion from embl to macke fails");
+
             init_em_data();
         }
         total_num = data.numofseq;
@@ -941,6 +942,7 @@ void embl_to_macke(char *inf, char *outf, int format) {
     warning_out = 1;
 
     log_processed(total_num);
+    fclose(ofp);
 }
 
 /* ------------------------------------------------------------
@@ -973,6 +975,7 @@ void embl_to_embl(char *inf, char *outf) {
     }
 
     log_processed(data.numofseq);
+    fclose(ofp);
 }
 
 /* -------------------------------------------------------------
@@ -995,11 +998,13 @@ void embl_to_genbank(char *inf, char *outf) {
             genbank_out(ofp);
         else
             throw_error(32, "Conversion from macke to genbank fails");
+
         init_genbank();
         init_embl();
     }
 
     log_processed(data.numofseq);
+    fclose(ofp);
 }
 
 /* -------------------------------------------------------------
@@ -1553,7 +1558,8 @@ void macke_to_embl(char *inf, char *outf) {
     init_macke();
     init_embl();
 
-    while (macke_in(ifp1, ifp2, ifp3) != EOF) {
+    MackeReader macke;
+    while (macke.in(ifp1, ifp2, ifp3) != EOF) {
 
         data.numofseq++;
 
@@ -1572,6 +1578,7 @@ void macke_to_embl(char *inf, char *outf) {
     }
 
     log_processed(data.numofseq);
+    fclose(ofp);
 }
 
 /* --------------------------------------------------------------

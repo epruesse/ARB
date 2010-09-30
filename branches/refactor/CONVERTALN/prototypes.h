@@ -69,6 +69,7 @@ int partial_mtoe(void);
 /* fconv.cxx */
 const char *format2name(int format_type);
 void throw_conversion_not_supported(int input_format, int output_format) __ATTR__NORETURN;
+void log_processed(int seqCount);
 void convert(const char *cinf, const char *coutf, int intype, int outype);
 void init(void);
 void init_seq_data(void);
@@ -110,7 +111,6 @@ void init_reference(Reference *ref, int flag);
 
 /* macke.cxx */
 void init_macke(void);
-char macke_in(FILE_BUFFER fp1, FILE_BUFFER fp2, FILE_BUFFER fp3);
 char *macke_one_entry_in(FILE_BUFFER fp, const char *key, char *oldname, char **var, char *line, int index);
 char *macke_continue_line(const char *key, char *oldname, char **var, char *line, FILE_BUFFER fp);
 char *macke_origin(char *key, char *line, FILE_BUFFER fp);

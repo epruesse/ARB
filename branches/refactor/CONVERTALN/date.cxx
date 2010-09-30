@@ -284,7 +284,7 @@ const char *gcg_date(const char *input) {
 // #define TEST_ASSERT_FIND_DATE(str,d,m,y) TEST_ASSERT_FIND_DATE_IMPL(str,d,m,y,TEST_ASSERT_EQUAL)
 
 
-void TEST_conv_date() {
+void TEST_BASIC_conv_date() {
     TEST_ASSERT_EQUAL(ismonth("Apr"), 4);
 
     // @@@ broken behavior (day completely broken, month contains day, year<100)

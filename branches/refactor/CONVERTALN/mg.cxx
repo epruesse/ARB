@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include "convert.h"
 #include "global.h"
+#include "macke.h"
 
 extern int warning_out;
 
@@ -68,8 +69,9 @@ void genbank_to_macke(char *inf, char *outf) {
         }
     }
 
-    warning_out = 1;            /* resume warning messages */
+    warning_out = 1; /* resume warning messages */
     log_processed(total_num);
+    fclose(ofp);
 }
 
 /* --------------------------------------------------------------
@@ -573,7 +575,8 @@ void macke_to_genbank(char *inf, char *outf) {
     init_seq_data();
     init_gm_data();
 
-    while (macke_in(ifp1, ifp2, ifp3) != EOF) {
+    MackeReader macke;
+    while (macke.in(ifp1, ifp2, ifp3) != EOF) {
         data.numofseq++;
         if (mtog())
             genbank_out(ofp);
@@ -583,6 +586,7 @@ void macke_to_genbank(char *inf, char *outf) {
     }
 
     log_processed(data.numofseq);
+    fclose(ofp);
 }
 
 /* ----------------------------------------------------------------

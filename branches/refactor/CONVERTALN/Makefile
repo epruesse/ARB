@@ -27,7 +27,7 @@ check_error_codes:
 	$(CPP) $(cflags) -c $< $(AINCLUDES) $(POST_COMPILE)
 
 proto:
-	../MAKEBIN/aisc_mkpt -G -A -w prototypes.h $(OBJECTS:.o=.cxx) >prototypes.h.tmp
+	../MAKEBIN/aisc_mkpt -P -G -A -w prototypes.h $(OBJECTS:.o=.cxx) >prototypes.h.tmp
 	../SOURCE_TOOLS/mv_if_diff prototypes.h.tmp prototypes.h
 
 clean:
@@ -79,6 +79,7 @@ date.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 embl.o: convert.h
 embl.o: global.h
+embl.o: macke.h
 embl.o: prototypes.h
 embl.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 embl.o: $(ARBHOME)/INCLUDE/arb_assert.h
@@ -141,6 +142,7 @@ genbank.o: $(ARBHOME)/INCLUDE/test_global.h
 
 macke.o: convert.h
 macke.o: global.h
+macke.o: macke.h
 macke.o: prototypes.h
 macke.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 macke.o: $(ARBHOME)/INCLUDE/arb_assert.h
@@ -170,6 +172,7 @@ main.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 mg.o: convert.h
 mg.o: global.h
+mg.o: macke.h
 mg.o: prototypes.h
 mg.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 mg.o: $(ARBHOME)/INCLUDE/arb_assert.h

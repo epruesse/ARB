@@ -3,6 +3,7 @@
 #include <stdio.h>
 #include "convert.h"
 #include "global.h"
+#include "macke.h"
 
 #define MACKELIMIT 10000
 
@@ -54,22 +55,21 @@ void init_macke()
  *  Function macke_in().
  *      Read in one sequence data from Macke file.
  */
-char macke_in(FILE_BUFFER fp1, FILE_BUFFER fp2, FILE_BUFFER fp3)
-{
-    static char  line1[LINESIZE];
-    static char  line2[LINESIZE];
-    static char  line3[LINESIZE];
-    static int   first_time = 1;
-    char         oldname[TOKENSIZE], name[TOKENSIZE];
-    char         key[TOKENSIZE];
-    char        *eof1, *eof2, *eof3;
-    int          numofrem   = 0;
-    int          index;
+
+char MackeReader::in(FILE_BUFFER fp1, FILE_BUFFER fp2, FILE_BUFFER fp3) {
+    char  line1[LINESIZE];
+    char  line2[LINESIZE];
+    char  line3[LINESIZE];
+    char  oldname[TOKENSIZE], name[TOKENSIZE];
+    char  key[TOKENSIZE];
+    char *eof1, *eof2, *eof3;
+    int   numofrem = 0;
+    int   index;
 
     /* file 1 points to seq. information */
     /* file 2 points to seq. data */
     /* file 3 points to seq. names */
-    if (first_time) {
+    if (firstRead) {
         /* skip to next "#:" line */
         for (eof1 = Fgetline(line1, LINESIZE, fp1); eof1 != NULL && (line1[0] != '#' || line1[1] != ':'); eof1 = Fgetline(line1, LINESIZE, fp1)) ;
 
@@ -80,7 +80,7 @@ char macke_in(FILE_BUFFER fp1, FILE_BUFFER fp2, FILE_BUFFER fp3)
         /* skip to "#=" lines */
         for (eof3 = Fgetline(line3, LINESIZE, fp3); eof3 != NULL && (line3[0] != '#' || line3[1] != '='); eof3 = Fgetline(line3, LINESIZE, fp3)) ;
 
-        first_time = 0;
+        firstRead = false;
     }
     else
         eof3 = Fgetline(line3, LINESIZE, fp3);

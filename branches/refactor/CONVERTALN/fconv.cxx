@@ -30,6 +30,19 @@ void throw_conversion_not_supported(int input_format, int output_format) { // __
                  format2name(input_format), format2name(output_format));
 }
 
+static int log_processed_counter = 0;
+
+void log_processed(int seqCount) {
+#if defined(CALOG)
+    fprintf(stderr, "Total %d sequences have been processed\n", seqCount);
+#endif // CALOG
+
+    log_processed_counter++;
+    if (seqCount == 0) {
+        throw_error(99, "No sequences have been processed");
+    }
+}
+
 /* -------------------------------------------------------------
  *      Function convert_WRAPPED().
  *              For given input file and  type, convert the file
@@ -105,11 +118,17 @@ static void convert_WRAPPED(char *inf, char *outf, int intype, int outype) {
     }
 }
 
+
 void convert(const char *cinf, const char *coutf, int intype, int outype) {
     char *inf  = strdup(cinf);
     char *outf = strdup(coutf);
 
+    int old_log_processed_counter = log_processed_counter;
     convert_WRAPPED(inf, outf, intype, outype);
+    if (log_processed_counter != (old_log_processed_counter+1)) {
+        ca_assert(log_processed_counter == (old_log_processed_counter+1));
+        throw_error(98, "internal error");
+    }
 
     free(outf);
     free(inf);
@@ -409,7 +428,7 @@ static void init_cap() {
 #define EMPTY_OUTFILE_CREATED(t1,t2) cap[NUM_##t1][NUM_##t2].emptyOutput = true
 #define CRASHES(t1,t2)               cap[NUM_##t1][NUM_##t2].crashes     = true
 
-void TEST_converter() {
+void TEST_0_converter() {
     COMPILE_ASSERT(FORMATNUM_COUNT == fcount);
 
     init_cap();
@@ -455,18 +474,6 @@ void TEST_converter() {
     NOT_SUPPORTED(GCG, PROTEIN);
     NOT_SUPPORTED(GCG, STADEN);
     
-    // broken atm:
-
-    EMPTY_OUTFILE_CREATED(EMBL, GENBANK);
-    EMPTY_OUTFILE_CREATED(EMBL, MACKE);
-    EMPTY_OUTFILE_CREATED(EMBL, PROTEIN);
-
-    EMPTY_OUTFILE_CREATED(GENBANK, MACKE);
-
-    EMPTY_OUTFILE_CREATED(MACKE, EMBL);
-    EMPTY_OUTFILE_CREATED(MACKE, GENBANK);
-    EMPTY_OUTFILE_CREATED(MACKE, PROTEIN);
-
     int possible     = 0;
     int tested       = 0;
     int unsupported  = 0;
