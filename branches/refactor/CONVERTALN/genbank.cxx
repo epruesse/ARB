@@ -318,7 +318,7 @@ char *genbank_reference(char *line, FILE_BUFFER fp)
     int   refnum;
     int   acount = 0, tcount = 0, jcount = 0, scount = 0;
 
-    sscanf(line + 12, "%d", &refnum);
+    ASSERT_RESULT(int, 1, sscanf(line + 12, "%d", &refnum));
     if (refnum <= data.gbk.numofref) {
         warningf(17, "Might redefine reference %d", refnum);
         eof = genbank_skip_unidentified(line, fp, 12);
@@ -463,7 +463,7 @@ const char *genbank_comments(char *line, FILE_BUFFER fp)
 
         }
         else if (str_equal(key, "5' end complete:")) {
-            sscanf(line + index, "%s", key);
+            scan_token_or_die(line + index, key, &fp);
             if (key[0] == 'Y')
                 data.gbk.comments.seqinf.comp5 = 'y';
             else
@@ -471,7 +471,7 @@ const char *genbank_comments(char *line, FILE_BUFFER fp)
             eof = Fgetline(line, LINESIZE, fp);
         }
         else if (str_equal(key, "3' end complete:")) {
-            sscanf(line + index, "%s", key);
+            scan_token_or_die(line + index, key, &fp);
             if (key[0] == 'Y')
                 data.gbk.comments.seqinf.comp3 = 'y';
             else

@@ -473,7 +473,7 @@ char *embl_comments(char *line, FILE_BUFFER fp) {
         }
         else if (str_equal(key, "5' end complete:")) {
 
-            sscanf(line + index, "%s", key);
+            scan_token_or_die(line + index, key, &fp);
             if (key[0] == 'Y')
                 data.embl.comments.seqinf.comp5 = 'y';
             else
@@ -484,7 +484,7 @@ char *embl_comments(char *line, FILE_BUFFER fp) {
         }
         else if (str_equal(key, "3' end complete:")) {
 
-            sscanf(line + index, "%s", key);
+            scan_token_or_die(line + index, key, &fp);
             if (key[0] == 'Y')
                 data.embl.comments.seqinf.comp3 = 'y';
             else
@@ -1020,7 +1020,7 @@ int etog() {
     if (Lenstr(data.embl.dr) > 1) {
         /* get short_id from DR line if there is RDP def. */
         Cpystr(t3, "dummy");
-        sscanf(data.embl.dr, "%s %s %s", t1, t2, t3);
+        ASSERT_RESULT(int, 3, sscanf(data.embl.dr, "%s %s %s", t1, t2, t3));
         if (str_equal(t1, "RDP;")) {
             if (!str_equal(t3, "dummy")) {
                 Cpystr(key, t3);
@@ -1090,16 +1090,16 @@ void etog_reference() {
 
     for (indi = 0; indi < data.embl.numofref; indi++) {
 
-        if (Lenstr(data.embl.reference[indi].processing) > 1) {
-            sscanf(data.embl.reference[indi].processing, "%d %d", &start, &end);
-            end *= -1;          /* will get negative from sscanf */
+        if (Lenstr(data.embl.reference[indi].processing) > 1 &&
+            sscanf(data.embl.reference[indi].processing, "%d %d", &start, &end) == 2)
+        {
+            end *= -1; /* will get negative from sscanf */
             sprintf(temp, "%d  (bases %d to %d)\n", (indi + 1), start, end);
-            data.gbk.reference[indi].ref = (char *)Dupstr(temp);
         }
         else {
             sprintf(temp, "%d\n", (indi + 1));
-            data.gbk.reference[indi].ref = (char *)Dupstr(temp);
         }
+        data.gbk.reference[indi].ref = (char *)Dupstr(temp);
 
         if (Lenstr(data.embl.reference[indi].title) > 1 && data.embl.reference[indi].title[0] != ';') {
 
@@ -1182,10 +1182,11 @@ char *etog_author(char *string) {
  */
 char *etog_journal(char *string) {
     int   indi, len, index;
-    char *journal, *new_journal;
+    char *journal;
+    char *new_journal = 0;
     char  token[TOKENSIZE];
 
-    sscanf(string, "%s", token);
+    scan_token_or_die(string, token, NULL);
     if (str_equal(token, "(in)") == 1 || str_equal(token, "Submitted") || str_equal(token, "Unpublished")) {
         /* remove '.' */
         string[Lenstr(string) - 2] = '\n';
@@ -1356,9 +1357,9 @@ int gtoe() {
     gtoe_reference();
 
     /* EMBL DR line */
-    sscanf(data.gbk.locus, "%s", token);        /* short_id */
+    scan_token_or_die(data.gbk.locus, token, NULL);        /* short_id */
     if (Lenstr(data.gbk.comments.seqinf.RDPid) > 1) {
-        sscanf(data.gbk.comments.seqinf.RDPid, "%s", rdpid);
+        scan_token_or_die(data.gbk.comments.seqinf.RDPid, rdpid, NULL);
         sprintf(temp, "RDP; %s; %s.\n", rdpid, token);
     }
     else
@@ -1404,7 +1405,7 @@ void gtoe_reference() {
         /* create processing information */
         start = end = 0;
         if (data.gbk.reference[indi].ref) {
-            sscanf(data.gbk.reference[indi].ref, "%d %s %d %s %d %s", &refnum, t1, &start, t2, &end, t3);
+            ASSERT_RESULT_LATER(int, 6, sscanf(data.gbk.reference[indi].ref, "%d %s %d %s %d %s", &refnum, t1, &start, t2, &end, t3));
         }
         else {
             start = 0;
@@ -1466,11 +1467,12 @@ char *gtoe_journal(char *string) {
     char token[TOKENSIZE], *journal;
     int  indi, indj, index, len;
 
-    sscanf(string, "%s", token);
-    if (str_equal(token, "(in)") == 1 || str_equal(token, "Unpublished") || str_equal(token, "Submitted")) {
-        journal = (char *)Dupstr(string);
-        Append_char(&journal, '.');
-        return (journal);
+    if (scan_token(string, token)) {
+        if (str_equal(token, "(in)") == 1 || str_equal(token, "Unpublished") || str_equal(token, "Submitted")) {
+            journal = (char *)Dupstr(string);
+            Append_char(&journal, '.');
+            return (journal);
+        }
     }
 
     journal = (char *)Dupstr(string);

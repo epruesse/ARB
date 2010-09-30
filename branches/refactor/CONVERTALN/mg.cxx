@@ -92,7 +92,7 @@ int gtom()
     if (Lenstr(data.gbk.organism) > 1)
         replace_entry(&(data.macke.name), data.gbk.organism);
     else if (Lenstr(data.gbk.definition) > 1) {
-        sscanf(data.gbk.definition, "%s %s", genus, species);
+        ASSERT_RESULT(int, 2, sscanf(data.gbk.definition, "%s %s", genus, species));
         if (species[Lenstr(species) - 1] == ';')
             species[Lenstr(species) - 1] = '\0';
         sprintf(temp, "%s %s\n", genus, species);
@@ -120,7 +120,7 @@ int gtom()
         replace_entry(&(data.macke.acs), data.gbk.comments.seqinf.gbkentry);
     else {
         if (Lenstr(data.gbk.accession) > 1 && !str_equal(data.gbk.accession, "No information\n")) {
-            sscanf(data.gbk.accession, "%s", buffer);
+            scan_token_or_die(data.gbk.accession, buffer, NULL);
             Catstr(buffer, "\n");
         }
         else
@@ -811,7 +811,7 @@ void mtog_decode_ref_and_remarks()
         else if (str_equal(key, "3' end complete")) {
 
             data.gbk.comments.seqinf.exist = 1;
-            sscanf(data.macke.remarks[indi] + indj, "%s", key);
+            scan_token_or_die(data.macke.remarks[indi] + indj, key, NULL);
             if (str_equal(key, "Yes"))
                 data.gbk.comments.seqinf.comp3 = 'y';
             else
@@ -821,7 +821,7 @@ void mtog_decode_ref_and_remarks()
         else if (str_equal(key, "5' end complete")) {
 
             data.gbk.comments.seqinf.exist = 1;
-            sscanf(data.macke.remarks[indi] + indj, "%s", key);
+            scan_token_or_die(data.macke.remarks[indi] + indj, key, NULL);
 
             if (str_equal(key, "Yes"))
                 data.gbk.comments.seqinf.comp5 = 'y';

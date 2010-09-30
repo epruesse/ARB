@@ -499,8 +499,6 @@ void TEST_0_converter() {
     NOT_SUPPORTED(SWISSPROT, NBRF);
     NOT_SUPPORTED(SWISSPROT, STADEN);
 
-    FCKDUP(SWISSPROT, MACKE);
-
     int possible     = 0;
     int tested       = 0;
     int unsupported  = 0;

@@ -174,6 +174,8 @@ void count_base(int *base_a, int *base_t, int *base_g, int *base_c, int *base_ot
 void replace_entry(char **string1, const char *string2);
 
 /* util.cxx */
+bool scan_token(const char *from, char *to) __ATTR__USERESULT;
+void scan_token_or_die(const char *from, char *to, FILE_BUFFER *fb);
 void Freespace(void *pointer);
 void throw_error(int error_num, const char *error_message) __ATTR__NORETURN;
 void throw_errorf(int error_num, const char *error_messagef, ...) __ATTR__FORMAT(2) __ATTR__NORETURN;

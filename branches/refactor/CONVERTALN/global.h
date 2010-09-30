@@ -37,13 +37,15 @@
 inline bool str_equal(const char *s1, const char *s2) { return strcmp(s1, s2) == 0; }
 inline bool str_iequal(const char *s1, const char *s2) { return strcasecmp(s1, s2) == 0; }
 
+// #define ASSERT_RESULT_LATER(t,v,f) ASSERT_RESULT(t,v,f) // later!
+#define ASSERT_RESULT_LATER(t,v,f) f
+
 // --------------------
 // Logging
 
 #if defined(DEBUG)
 #define CALOG // be more verbose in debugging mode
 #endif // DEBUG
-
 
 #else
 #error global.h included twice

@@ -10,6 +10,29 @@
 
 int warning_out = 1;
 
+bool scan_token(const char *from, char *to) { // __ATTR__USERESULT
+    return sscanf(from, "%s", to) == 1;
+}
+
+void scan_token_or_die(const char *from, char *to, FILE_BUFFER *fb) {
+    if (!scan_token(from, to)) {
+        const char *line_error;
+        if (fb) {
+            line_error = FILE_BUFFER_make_error(*fb, true, "expected a token, but found none");
+        }
+        else {
+            line_error = "expected a token, but found none (source location unknown)";
+        }
+
+#if defined(ASSERTION_USED)
+        fputs(line_error, stderr);
+        fputc('\n', stderr);
+        ca_assert(0);
+#endif // ASSERTION_USED
+        throw_error(88, line_error);
+    }
+}
+
 /* --------------------------------------------------------------- *
  *   Function Freespace().
  *   Free the pointer if not NULL.
