@@ -96,8 +96,8 @@ static void change_file_suffix(char *old_file, char *file_name, int type) {
 }
 
 static void ask_for_conversion_params(int& argc, char**& argv, int& intype, int& outtype) {
-    char temp[LINENUM];
-    char choice[LINENUM];
+    char temp[LINESIZE];
+    char choice[LINESIZE];
 
     fputs("---------------------------------------------------------------\n"
           "\n"
@@ -122,7 +122,7 @@ static void ask_for_conversion_params(int& argc, char**& argv, int& intype, int&
           "  ? "
           , stderr);
 
-    Getstr(choice, LINENUM);
+    Getstr(choice, LINESIZE);
     switch (choice[0]) {
         case '\0': // [default]
         case '1': intype = GENBANK; break;
@@ -135,7 +135,7 @@ static void ask_for_conversion_params(int& argc, char**& argv, int& intype, int&
     argv = (char **)calloc(1, sizeof(char *) * 5);
 
     fprintf(stderr, "\nInput file name? ");
-    Getstr(temp, LINENUM);
+    Getstr(temp, LINESIZE);
     argv[2] = Dupstr(temp);
 
     valid_name_or_die(temp);
@@ -156,7 +156,7 @@ static void ask_for_conversion_params(int& argc, char**& argv, int& intype, int&
           "  (8)  Quit\n"
           "  ? ", stderr);
 
-    Getstr(choice, LINENUM);
+    Getstr(choice, LINESIZE);
     switch (choice[0]) {
         case '1': outtype = GENBANK; break;
         case '2': outtype = EMBL; break;
@@ -173,7 +173,7 @@ static void ask_for_conversion_params(int& argc, char**& argv, int& intype, int&
     change_file_suffix(argv[2], temp, outtype);
     if (outtype != GCG) {
         fprintf(stderr, "\nOutput file name [%s]? ", temp);
-        Getstr(temp, LINENUM);
+        Getstr(temp, LINESIZE);
         if (Lenstr(temp) == 0)
             change_file_suffix(argv[2], temp, outtype);
     }

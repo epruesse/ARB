@@ -78,12 +78,12 @@ void genbank_to_macke(char *inf, char *outf) {
  */
 int gtom()
 {
-    char temp[LONGTEXT], buffer[TOKENNUM];
-    char genus[TOKENNUM], species[TOKENNUM];
+    char temp[LONGTEXT], buffer[TOKENSIZE];
+    char genus[TOKENSIZE], species[TOKENSIZE];
 
     /* copy seq abbr, assume every entry in gbk must end with \n\0 */
     /* no '\n' at the end of the string */
-    genbank_key_word(data.gbk.locus, 0, temp, TOKENNUM);
+    genbank_key_word(data.gbk.locus, 0, temp, TOKENSIZE);
     replace_entry(&(data.macke.seqabbr), temp);
 
     /* copy name and definition */
@@ -662,7 +662,7 @@ void mtog_decode_ref_and_remarks()
 
     int acount, tcount, jcount, rcount, scount;
 
-    char key[TOKENNUM], temp[LONGTEXT];
+    char key[TOKENSIZE], temp[LONGTEXT];
 
     data.gbk.numofref = acount = tcount = jcount = rcount = scount = 0;
 
@@ -698,7 +698,7 @@ void mtog_decode_ref_and_remarks()
         data.gbk.reference[tcount++].title = (char *)Dupstr(data.macke.title);
     }
     for (indi = 0; indi < data.macke.numofrem; indi++) {
-        indj = macke_key_word(data.macke.remarks[indi], 0, key, TOKENNUM);
+        indj = macke_key_word(data.macke.remarks[indi], 0, key, TOKENSIZE);
         if (str_equal(key, "KEYWORDS")) {
             mtog_copy_remark(&(data.gbk.keywords), &indi, indj);
 

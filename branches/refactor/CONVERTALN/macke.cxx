@@ -56,12 +56,12 @@ void init_macke()
  */
 char macke_in(FILE_BUFFER fp1, FILE_BUFFER fp2, FILE_BUFFER fp3)
 {
-    static char  line1[LINENUM];
-    static char  line2[LINENUM];
-    static char  line3[LINENUM];
+    static char  line1[LINESIZE];
+    static char  line2[LINESIZE];
+    static char  line3[LINESIZE];
     static int   first_time = 1;
-    char         oldname[TOKENNUM], name[TOKENNUM];
-    char         key[TOKENNUM];
+    char         oldname[TOKENSIZE], name[TOKENSIZE];
+    char         key[TOKENSIZE];
     char        *eof1, *eof2, *eof3;
     int          numofrem   = 0;
     int          index;
@@ -71,19 +71,19 @@ char macke_in(FILE_BUFFER fp1, FILE_BUFFER fp2, FILE_BUFFER fp3)
     /* file 3 points to seq. names */
     if (first_time) {
         /* skip to next "#:" line */
-        for (eof1 = Fgetline(line1, LINENUM, fp1); eof1 != NULL && (line1[0] != '#' || line1[1] != ':'); eof1 = Fgetline(line1, LINENUM, fp1)) ;
+        for (eof1 = Fgetline(line1, LINESIZE, fp1); eof1 != NULL && (line1[0] != '#' || line1[1] != ':'); eof1 = Fgetline(line1, LINESIZE, fp1)) ;
 
         /* skip all "#" lines to where seq. data is */
-        for (eof2 = Fgetline(line2, LINENUM, fp2);
-             eof2 != NULL && (line2[0] == '\n' || line2[0] == ' ' || line2[0] == '#'); eof2 = Fgetline(line2, LINENUM, fp2)) ;
+        for (eof2 = Fgetline(line2, LINESIZE, fp2);
+             eof2 != NULL && (line2[0] == '\n' || line2[0] == ' ' || line2[0] == '#'); eof2 = Fgetline(line2, LINESIZE, fp2)) ;
 
         /* skip to "#=" lines */
-        for (eof3 = Fgetline(line3, LINENUM, fp3); eof3 != NULL && (line3[0] != '#' || line3[1] != '='); eof3 = Fgetline(line3, LINENUM, fp3)) ;
+        for (eof3 = Fgetline(line3, LINESIZE, fp3); eof3 != NULL && (line3[0] != '#' || line3[1] != '='); eof3 = Fgetline(line3, LINESIZE, fp3)) ;
 
         first_time = 0;
     }
     else
-        eof3 = Fgetline(line3, LINENUM, fp3);
+        eof3 = Fgetline(line3, LINESIZE, fp3);
 
     /* end of reading seq names */
     if (line3[0] != '#' || line3[1] != '=')
@@ -91,7 +91,7 @@ char macke_in(FILE_BUFFER fp1, FILE_BUFFER fp2, FILE_BUFFER fp3)
 
     /* skip to next "#:" line or end of file */
     if (line1[0] != '#' || line1[1] != ':') {
-        for (; eof1 != NULL && (line1[0] != '#' || line1[1] != ':'); eof1 = Fgetline(line1, LINENUM, fp1)) ;
+        for (; eof1 != NULL && (line1[0] != '#' || line1[1] != ':'); eof1 = Fgetline(line1, LINESIZE, fp1)) ;
     }
 
     /* read in seq name */
@@ -143,11 +143,11 @@ char macke_in(FILE_BUFFER fp1, FILE_BUFFER fp2, FILE_BUFFER fp3)
         else if (str_equal(key, "rem")) {
             data.macke.remarks = (char **)Reallocspace((char *)data.macke.remarks, (unsigned)(sizeof(char *) * (numofrem + 1)));
             data.macke.remarks[numofrem++] = Dupstr(line1 + index);
-            eof1 = Fgetline(line1, LINENUM, fp1);
+            eof1 = Fgetline(line1, LINESIZE, fp1);
         }
         else {
             warningf(144, "Unidentified AE2 key word #%s#", key);
-            eof1 = Fgetline(line1, LINENUM, fp1);
+            eof1 = Fgetline(line1, LINESIZE, fp1);
         }
         if (eof1 != NULL && line1[0] == '#' && line1[1] == ':')
             index = macke_abbrev(line1, name, 2);
@@ -188,10 +188,10 @@ char
  */
 char *macke_continue_line(const char *key, char *oldname, char **var, char *line, FILE_BUFFER fp)
 {
-    char *eof, name[TOKENNUM], newkey[TOKENNUM];
+    char *eof, name[TOKENSIZE], newkey[TOKENSIZE];
     int   index;
 
-    for (eof = Fgetline(line, LINENUM, fp); eof != NULL; eof = Fgetline(line, LINENUM, fp)) {
+    for (eof = Fgetline(line, LINESIZE, fp); eof != NULL; eof = Fgetline(line, LINESIZE, fp)) {
         if (Lenstr(line) <= 1)
             continue;
 
@@ -218,7 +218,7 @@ char
 {
     int index, indj, seqnum;
 
-    char *eof, name[TOKENNUM], seq[LINENUM];
+    char *eof, name[TOKENSIZE], seq[LINESIZE];
 
     /* read in seq. data */
     data.seq_length = 0;
@@ -251,7 +251,7 @@ char
                     = seq[indj];
             }
         data.sequence[data.seq_length] = '\0';
-        eof = Fgetline(line, LINENUM, fp);
+        eof = Fgetline(line, LINESIZE, fp);
         if (eof != NULL)
             index = macke_abbrev(line, name, 0);
 
@@ -297,10 +297,10 @@ int macke_rem_continue_line(char **strings, int index)
  */
 char macke_in_name(FILE_BUFFER fp)
 {
-    static char  line[LINENUM];
+    static char  line[LINESIZE];
     static int   first_time = 1;
-    char         name[TOKENNUM];
-    char         seq[LINENUM];
+    char         name[TOKENSIZE];
+    char         seq[LINESIZE];
     char        *eof;
     int          numofrem   = 0, seqnum;
     int          index, indj;
@@ -309,7 +309,7 @@ char macke_in_name(FILE_BUFFER fp)
     if (first_time) {
 
         /* skip all "#" lines to where seq. data is */
-        for (eof = Fgetline(line, LINENUM, fp); eof != NULL && line[0] == '#'; eof = Fgetline(line, LINENUM, fp)) ;
+        for (eof = Fgetline(line, LINESIZE, fp); eof != NULL && line[0] == '#'; eof = Fgetline(line, LINESIZE, fp)) ;
 
         first_time = 0;
 
@@ -354,7 +354,7 @@ char macke_in_name(FILE_BUFFER fp)
         }
         data.sequence[data.seq_length] = '\0';
 
-        if ((eof = Fgetline(line, LINENUM, fp)) != NULL)
+        if ((eof = Fgetline(line, LINESIZE, fp)) != NULL)
             index = macke_abbrev(line, name, 0);
         else
             line[0] = EOF;
@@ -382,7 +382,7 @@ void macke_out_header(FILE * fp) {
  */
 void macke_out0(FILE * fp, int format)
 {
-    char token[TOKENNUM], direction[TOKENNUM];
+    char token[TOKENSIZE], direction[TOKENSIZE];
 
     if (format == PROTEIN) {
         Cpystr(token, "pro");
@@ -417,7 +417,7 @@ void macke_out0(FILE * fp, int format)
  */
 void macke_out1(FILE * fp)
 {
-    char temp[LINENUM];
+    char temp[LINESIZE];
     int  indi;
 
     if (Lenstr(data.macke.name) > 1) {
@@ -603,11 +603,11 @@ int macke_key_word(char *line, int index, char *key, int length)
  */
 int macke_in_one_line(char *string)
 {
-    char keyword[TOKENNUM];
+    char keyword[TOKENSIZE];
 
     int iskey;
 
-    macke_key_word(string, 0, keyword, TOKENNUM);
+    macke_key_word(string, 0, keyword, TOKENSIZE);
     iskey = 0;
     if (str_equal(keyword, "KEYWORDS"))
         iskey = 1;

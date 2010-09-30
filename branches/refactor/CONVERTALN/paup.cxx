@@ -24,7 +24,7 @@ void to_paup(char *inf, char *outf, int informat) {
 
     int maxsize, current, total_seq, first_line;
     int out_of_memory, indi;
-    char temp[TOKENNUM], eof;
+    char temp[TOKENSIZE], eof;
     char *name;
 
     FILE        *IFP = open_input_or_die(inf);
@@ -43,13 +43,13 @@ void to_paup(char *inf, char *outf, int informat) {
             init_genbank();
             eof = genbank_in_locus(ifp);
             if (eof == EOF) break;
-            genbank_key_word(data.gbk.locus, 0, temp, TOKENNUM); 
+            genbank_key_word(data.gbk.locus, 0, temp, TOKENSIZE); 
         }
         else if (informat == EMBL || informat == PROTEIN) {
             init_embl();
             eof = embl_in_id(ifp);
             if (eof == EOF) break;
-            embl_key_word(data.embl.id, 0, temp, TOKENNUM);
+            embl_key_word(data.embl.id, 0, temp, TOKENSIZE);
         }
         else if (informat == MACKE) {
             init_macke();
@@ -129,7 +129,7 @@ void to_paup(char *inf, char *outf, int informat) {
  */
 void to_paup_1x1(char *inf, char *outf, int informat) {
     int maxsize, current, total_seq, first_line;
-    char temp[TOKENNUM], eof;
+    char temp[TOKENSIZE], eof;
     char *name;
 
     FILE        *IFP = open_input_or_die(inf);
@@ -164,13 +164,13 @@ void to_paup_1x1(char *inf, char *outf, int informat) {
             if (eof == EOF) break;
             
             if (informat == GENBANK) {
-                genbank_key_word(data.gbk.locus, 0, temp, TOKENNUM);
+                genbank_key_word(data.gbk.locus, 0, temp, TOKENSIZE);
             }
             else if (informat == EMBL || informat == PROTEIN) {
-                embl_key_word(data.embl.id, 0, temp, TOKENNUM);
+                embl_key_word(data.embl.id, 0, temp, TOKENSIZE);
             }
             else if (informat == MACKE) {
-                macke_key_word(data.macke.name, 0, temp, TOKENNUM);
+                macke_key_word(data.macke.name, 0, temp, TOKENSIZE);
             }
             else
                 throw_error(70, "UNKNOWN input format when converting to PAUP format");
@@ -224,7 +224,7 @@ void paup_verify_name(char **string)
 {
     int indi, len, index;
 
-    char temp[TOKENNUM];
+    char temp[TOKENSIZE];
 
     for (indi = index = 0, len = Lenstr((*string)); indi < len && index == 0; indi++)
         if ((*string)[indi] == '*' || (*string)[indi] == '('

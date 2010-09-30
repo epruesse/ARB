@@ -81,19 +81,19 @@ void init_embl() {
  *              Read in one embl entry.
  */
 char embl_in(FILE_BUFFER fp) {
-    char  line[LINENUM], key[TOKENNUM];
+    char  line[LINESIZE], key[TOKENSIZE];
     char *eof, eoen;
     int   refnum;
 
     eoen = ' ';                 /* end-of-entry, set to be 'y' after '//' is read */
 
-    for (eof = Fgetline(line, LINENUM, fp); eof != NULL && eoen != 'y';) {
+    for (eof = Fgetline(line, LINESIZE, fp); eof != NULL && eoen != 'y';) {
         if (Lenstr(line) <= 1) {
-            eof = Fgetline(line, LINENUM, fp);
+            eof = Fgetline(line, LINESIZE, fp);
             continue;           /* empty line, skip */
         }
 
-        embl_key_word(line, 0, key, TOKENNUM);
+        embl_key_word(line, 0, key, TOKENSIZE);
         eoen = 'n';
 
         if (str_equal(key, "ID")) {
@@ -200,19 +200,19 @@ char embl_in(FILE_BUFFER fp) {
  *              Read in one embl entry.
  */
 char embl_in_id(FILE_BUFFER fp) {
-    char line[LINENUM], key[TOKENNUM];
+    char line[LINESIZE], key[TOKENSIZE];
     char *eof, eoen;
 
     eoen = ' ';
     /* end-of-entry, set to be 'y' after '//' is read */
 
-    for (eof = Fgetline(line, LINENUM, fp); eof != NULL && eoen != 'y';) {
+    for (eof = Fgetline(line, LINESIZE, fp); eof != NULL && eoen != 'y';) {
         if (Lenstr(line) <= 1) {
-            eof = Fgetline(line, LINENUM, fp);
+            eof = Fgetline(line, LINESIZE, fp);
             continue;           /* empty line, skip */
         }
 
-        embl_key_word(line, 0, key, TOKENNUM);
+        embl_key_word(line, 0, key, TOKENSIZE);
         eoen = 'n';
 
         if (str_equal(key, "ID")) {
@@ -286,15 +286,15 @@ int embl_check_blanks(char *line, int numb)
  */
 char *embl_continue_line(char *pattern, char **string, char *line, FILE_BUFFER fp) {
     int  ind;
-    char key[TOKENNUM], *eof, temp[LINENUM];
+    char key[TOKENSIZE], *eof, temp[LINESIZE];
 
     /* check continue lines */
-    for (eof = Fgetline(line, LINENUM, fp); eof != NULL; eof = Fgetline(line, LINENUM, fp)) {
+    for (eof = Fgetline(line, LINESIZE, fp); eof != NULL; eof = Fgetline(line, LINESIZE, fp)) {
 
         if (Lenstr(line) <= 1)
             continue;
 
-        embl_key_word(line, 0, key, TOKENNUM);
+        embl_key_word(line, 0, key, TOKENSIZE);
 
         if (!str_equal(pattern, key))
             break;
@@ -357,20 +357,20 @@ void embl_verify_title(int refnum) {
  */
 char *embl_date(char *line, FILE_BUFFER fp) {
     int   index;
-    char *eof, key[TOKENNUM];
+    char *eof, key[TOKENSIZE];
 
     index = Skip_white_space(line, p_nonkey_start);
     replace_entry(&(data.embl.dateu), line + index);
 
-    eof = Fgetline(line, LINENUM, fp);
-    embl_key_word(line, 0, key, TOKENNUM);
+    eof = Fgetline(line, LINESIZE, fp);
+    embl_key_word(line, 0, key, TOKENSIZE);
     if (str_equal(key, "DT")) {
         index = Skip_white_space(line, p_nonkey_start);
         replace_entry(&(data.embl.datec), line + index);
         /* skip the rest of DT lines */
         do {
-            eof = Fgetline(line, LINENUM, fp);
-            embl_key_word(line, 0, key, TOKENNUM);
+            eof = Fgetline(line, LINESIZE, fp);
+            embl_key_word(line, 0, key, TOKENSIZE);
         } while (eof != NULL && str_equal(key, "DT"));
         return (eof);
     }
@@ -409,7 +409,7 @@ char
         data.embl.reference[data.embl.numofref - 1].journal = Dupstr("");
         data.embl.reference[data.embl.numofref - 1].processing = Dupstr("");
     }
-    eof = Fgetline(line, LINENUM, fp);
+    eof = Fgetline(line, LINESIZE, fp);
     return (eof);
 }
 
@@ -420,7 +420,7 @@ char
 char *embl_comments(char *line, FILE_BUFFER fp) {
     int   index, offset;
     char *eof;
-    char  key[TOKENNUM];
+    char  key[TOKENSIZE];
 
     for (; line[0] == 'C' && line[1] == 'C';) {
 
@@ -478,7 +478,7 @@ char *embl_comments(char *line, FILE_BUFFER fp) {
             else
                 data.embl.comments.seqinf.comp5 = 'n';
 
-            eof = Fgetline(line, LINENUM, fp);
+            eof = Fgetline(line, LINESIZE, fp);
 
         }
         else if (str_equal(key, "3' end complete:")) {
@@ -489,7 +489,7 @@ char *embl_comments(char *line, FILE_BUFFER fp) {
             else
                 data.embl.comments.seqinf.comp3 = 'n';
 
-            eof = Fgetline(line, LINENUM, fp);
+            eof = Fgetline(line, LINESIZE, fp);
 
         }
         else if (str_equal(key, "Sequence information ")) {
@@ -497,7 +497,7 @@ char *embl_comments(char *line, FILE_BUFFER fp) {
             /* do nothing */
             data.embl.comments.seqinf.exist = 1;
 
-            eof = Fgetline(line, LINENUM, fp);
+            eof = Fgetline(line, LINESIZE, fp);
 
         }
         else if (str_equal(key, "Organism information")) {
@@ -505,7 +505,7 @@ char *embl_comments(char *line, FILE_BUFFER fp) {
             /* do nothing */
             data.embl.comments.orginf.exist = 1;
 
-            eof = Fgetline(line, LINENUM, fp);
+            eof = Fgetline(line, LINESIZE, fp);
 
         }
         else {                  /* other comments */
@@ -516,7 +516,7 @@ char *embl_comments(char *line, FILE_BUFFER fp) {
             }
             else
                 Append(&(data.embl.comments.others), line + 5);
-            eof = Fgetline(line, LINENUM, fp);
+            eof = Fgetline(line, LINESIZE, fp);
 
         }
     }
@@ -530,11 +530,11 @@ char *embl_comments(char *line, FILE_BUFFER fp) {
  */
 char *embl_skip_unidentified(char *pattern, char *line, FILE_BUFFER fp) {
     char *eof;
-    char  key[TOKENNUM];
+    char  key[TOKENSIZE];
 
     /* check continue lines */
-    for (eof = Fgetline(line, LINENUM, fp); eof != NULL; eof = Fgetline(line, LINENUM, fp)) {
-        embl_key_word(line, 0, key, TOKENNUM);
+    for (eof = Fgetline(line, LINESIZE, fp); eof != NULL; eof = Fgetline(line, LINESIZE, fp)) {
+        embl_key_word(line, 0, key, TOKENSIZE);
         if (!str_equal(key, pattern))
             break;
     }                           /* end of continue line checking */
@@ -574,14 +574,14 @@ int embl_comment_key(char *line, char *key)
  */
 char *embl_one_comment_entry(FILE_BUFFER fp, char **datastring, char *line, int start_index) {
     int   index;
-    char *eof, temp[LINENUM];
+    char *eof, temp[LINESIZE];
 
     index = Skip_white_space(line, start_index);
     replace_entry(datastring, line + index);
 
     /* check continue lines */
-    for (eof = Fgetline(line, LINENUM, fp);
-         eof != NULL && line[0] == 'C' && line[1] == 'C' && Blank_num(line + 2) >= COMMCNINDENT + COMMSKINDENT; eof = Fgetline(line, LINENUM, fp)) {
+    for (eof = Fgetline(line, LINESIZE, fp);
+         eof != NULL && line[0] == 'C' && line[1] == 'C' && Blank_num(line + 2) >= COMMCNINDENT + COMMSKINDENT; eof = Fgetline(line, LINESIZE, fp)) {
 
         /* remove end-of-line, if there is any */
         index = Skip_white_space(line, p_nonkey_start + COMMSKINDENT + COMMCNINDENT);
@@ -603,9 +603,9 @@ char *embl_origin(char *line, FILE_BUFFER fp) {
 
     data.seq_length = 0;
     /* read in whole sequence data */
-    for (eof = Fgetline(line, LINENUM, fp);
+    for (eof = Fgetline(line, LINESIZE, fp);
          eof != NULL && line[0] != '/' && line[1] != '/';
-         eof = Fgetline(line, LINENUM, fp))
+         eof = Fgetline(line, LINESIZE, fp))
     {
         for (index = 5; line[index] != '\n' && line[index] != '\0'; index++) {
             if (line[index] != ' ') {
@@ -1008,10 +1008,10 @@ void embl_to_genbank(char *inf, char *outf) {
  */
 int etog() {
     int  indi;
-    char key[TOKENNUM], temp[LONGTEXT];
-    char t1[TOKENNUM], t2[TOKENNUM], t3[TOKENNUM];
+    char key[TOKENSIZE], temp[LONGTEXT];
+    char t1[TOKENSIZE], t2[TOKENSIZE], t3[TOKENSIZE];
 
-    embl_key_word(data.embl.id, 0, key, TOKENNUM);
+    embl_key_word(data.embl.id, 0, key, TOKENSIZE);
     if (Lenstr(data.embl.dr) > 1) {
         /* get short_id from DR line if there is RDP def. */
         Cpystr(t3, "dummy");
@@ -1142,7 +1142,7 @@ void etog_reference() {
  */
 char *etog_author(char *string) {
     int  indi, indk, len, index;
-    char token[TOKENNUM], *author;
+    char token[TOKENSIZE], *author;
 
     author = (char *)Dupstr("");
     for (indi = index = 0, len = Lenstr(string) - 1; indi < len; indi++, index++) {
@@ -1178,7 +1178,7 @@ char *etog_author(char *string) {
 char *etog_journal(char *string) {
     int   indi, len, index;
     char *journal, *new_journal;
-    char  token[TOKENNUM];
+    char  token[TOKENSIZE];
 
     sscanf(string, "%s", token);
     if (str_equal(token, "(in)") == 1 || str_equal(token, "Submitted") || str_equal(token, "Unpublished")) {
@@ -1294,10 +1294,10 @@ void genbank_to_embl(char *inf, char *outf) {
  *              Genbank to EMBL.
  */
 int gtoe() {
-    char token[TOKENNUM], temp[LONGTEXT], rdpid[TOKENNUM];
+    char token[TOKENSIZE], temp[LONGTEXT], rdpid[TOKENSIZE];
     int  indi;
 
-    genbank_key_word(data.gbk.locus, 0, token, TOKENNUM);
+    genbank_key_word(data.gbk.locus, 0, token, TOKENSIZE);
     Cpystr(temp, token);
     /* Adjust short-id, EMBL short_id always upper case */
     Upper_case(temp);
@@ -1371,8 +1371,8 @@ int gtoe() {
  */
 void gtoe_reference() {
     int  indi, start, end, refnum;
-    char token[TOKENNUM];
-    char t1[TOKENNUM], t2[TOKENNUM], t3[TOKENNUM];
+    char token[TOKENSIZE];
+    char t1[TOKENSIZE], t2[TOKENSIZE], t3[TOKENSIZE];
 
     data.embl.numofref = data.gbk.numofref;
 
@@ -1458,7 +1458,7 @@ char *gtoe_author(char *author) {
  *              Convert GenBank journal to EMBL journal.
  */
 char *gtoe_journal(char *string) {
-    char token[TOKENNUM], *journal;
+    char token[TOKENSIZE], *journal;
     int  indi, indj, index, len;
 
     sscanf(string, "%s", token);

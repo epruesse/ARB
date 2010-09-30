@@ -25,7 +25,7 @@ void to_phylip(char *inf, char *outf, int informat, int readstdin) {
 
     int maxsize, current, total_seq;
     int out_of_memory, indi;
-    char temp[TOKENNUM], eof;
+    char temp[TOKENSIZE], eof;
     char *name;
 
     FILE        *IFP = open_input_or_die(inf);
@@ -48,13 +48,13 @@ void to_phylip(char *inf, char *outf, int informat, int readstdin) {
             init_genbank();
             eof = genbank_in_locus(ifp);
             if (eof == EOF) break;
-            genbank_key_word(data.gbk.locus, 0, temp, TOKENNUM);
+            genbank_key_word(data.gbk.locus, 0, temp, TOKENSIZE);
         }
         else if (informat == EMBL || informat == PROTEIN) {
             init_embl();
             eof = embl_in_id(ifp);
             if (eof == EOF) break;
-            embl_key_word(data.embl.id, 0, temp, TOKENNUM);
+            embl_key_word(data.embl.id, 0, temp, TOKENSIZE);
         }
         else if (informat == MACKE) {
             init_macke();
@@ -150,7 +150,7 @@ void to_phylip(char *inf, char *outf, int informat, int readstdin) {
  */
 void to_phylip_1x1(char *inf, char *outf, int informat) {
     int maxsize, current, total_seq;
-    char temp[TOKENNUM], eof;
+    char temp[TOKENSIZE], eof;
     char *name;
 
     FILE        *IFP = open_input_or_die(inf);
@@ -184,13 +184,13 @@ void to_phylip_1x1(char *inf, char *outf, int informat) {
             if (eof == EOF) break;
 
             if (informat == GENBANK) {
-                genbank_key_word(data.gbk.locus, 0, temp, TOKENNUM);
+                genbank_key_word(data.gbk.locus, 0, temp, TOKENSIZE);
             }
             else if (informat == EMBL || informat == PROTEIN) {
-                embl_key_word(data.embl.id, 0, temp, TOKENNUM);
+                embl_key_word(data.embl.id, 0, temp, TOKENSIZE);
             }
             else if (informat == MACKE) {
-                macke_key_word(data.macke.name, 0, temp, TOKENNUM);
+                macke_key_word(data.macke.name, 0, temp, TOKENSIZE);
             }
             else
                 throw_error(130, "UNKNOWN input format when converting to PHYLIP format");

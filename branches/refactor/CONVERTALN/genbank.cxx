@@ -71,20 +71,20 @@ void init_genbank() {
  *      Read in one genbank entry.
  */
 char genbank_in(FILE_BUFFER fp) {
-    char        line[LINENUM], key[TOKENNUM];
+    char        line[LINESIZE], key[TOKENSIZE];
     const char *eof;
     char        eoen;
 
     eoen = ' ';
     /* end-of-entry, set to be 'y' after '//' is read */
-    for (eof = Fgetline(line, LINENUM, fp); eof != NULL && eoen != 'y';) {
+    for (eof = Fgetline(line, LINESIZE, fp); eof != NULL && eoen != 'y';) {
 
         if (Lenstr(line) <= 1) {
-            eof = Fgetline(line, LINENUM, fp);
+            eof = Fgetline(line, LINESIZE, fp);
             continue;           /* empty line, skip */
         }
 
-        genbank_key_word(line, 0, key, TOKENNUM);
+        genbank_key_word(line, 0, key, TOKENSIZE);
 
         eoen = 'n';
 
@@ -231,11 +231,11 @@ char *genbank_continue_line(char **string, char *line, int numb, FILE_BUFFER fp)
 /* numb = number of blanks needed to define a continue line */
 {
     int   ind;
-    char *eof, temp[LINENUM];
+    char *eof, temp[LINESIZE];
 
     /* check continue lines */
-    for (eof = Fgetline(line, LINENUM, fp); eof != NULL && (genbank_check_blanks(line, numb)
-                                                            || line[0] == '\n'); eof = Fgetline(line, LINENUM, fp)) {
+    for (eof = Fgetline(line, LINESIZE, fp); eof != NULL && (genbank_check_blanks(line, numb)
+                                                            || line[0] == '\n'); eof = Fgetline(line, LINESIZE, fp)) {
 
         if (line[0] == '\n')
             continue;           /* empty line is allowed */
@@ -291,10 +291,10 @@ char *genbank_source(char *line, FILE_BUFFER fp)
 {
     int   index;
     char *eof;
-    char *dummy, key[TOKENNUM];
+    char *dummy, key[TOKENSIZE];
 
     eof = genbank_one_entry_in(&(data.gbk.source), line, fp);
-    genbank_key_word(line, 2, key, TOKENNUM);
+    genbank_key_word(line, 2, key, TOKENSIZE);
     if (str_equal(key, "ORGANISM")) {
         index = Skip_white_space(line, 12);
         data.gbk.organism = Dupstr(line + index);
@@ -314,7 +314,7 @@ char *genbank_reference(char *line, FILE_BUFFER fp)
 #define AUTH 0
 #define TIT  1
 #define JOUR 2
-    char *eof, key[TOKENNUM];
+    char *eof, key[TOKENSIZE];
     int   refnum;
     int   acount = 0, tcount = 0, jcount = 0, scount = 0;
 
@@ -333,7 +333,7 @@ char *genbank_reference(char *line, FILE_BUFFER fp)
     /* find the reference listings */
     for (; eof != NULL && line[0] == ' ' && line[1] == ' ';) {
         /* find the key word */
-        genbank_key_word(line, 2, key, TOKENNUM);
+        genbank_key_word(line, 2, key, TOKENSIZE);
         /* skip white space */
         if (str_equal(key, "AUTHORS")) {
             eof = genbank_one_entry_in(&(data.gbk.reference[refnum - 1].author), line, fp);
@@ -388,10 +388,10 @@ const char *genbank_comments(char *line, FILE_BUFFER fp)
 {
     int         index, indi, ptr;
     const char *eof;
-    char        key[TOKENNUM];
+    char        key[TOKENSIZE];
 
     if (Lenstr(line) <= 12) {
-        if ((eof = Fgetline(line, LINENUM, fp)) == NULL)
+        if ((eof = Fgetline(line, LINESIZE, fp)) == NULL)
             return (eof);
     }
     /* make up data to match the logic reasoning for next statement */
@@ -400,7 +400,7 @@ const char *genbank_comments(char *line, FILE_BUFFER fp)
 
     for (; eof != NULL && (genbank_check_blanks(line, 12) || line[0] == '\n');) {
         if (line[0] == '\n') {  /* skip empty line */
-            eof = Fgetline(line, LINENUM, fp);
+            eof = Fgetline(line, LINESIZE, fp);
             continue;
         }
 
@@ -408,13 +408,13 @@ const char *genbank_comments(char *line, FILE_BUFFER fp)
 
         index = Skip_white_space(line, index);
 #if defined(DEBUG)
-        if (index >= TOKENNUM) {
+        if (index >= TOKENSIZE) {
             printf("big index %i after Skip_white_space\n", index);
         }
 #endif /* DEBUG */
-        index = genbank_comment_subkey_word(line, index, key, TOKENNUM);
+        index = genbank_comment_subkey_word(line, index, key, TOKENSIZE);
 #if defined(DEBUG)
-        if (index >= TOKENNUM) {
+        if (index >= TOKENSIZE) {
             printf("big index %i after genbank_comment_subkey_word\n", index);
         }
 #endif /* DEBUG */
@@ -468,7 +468,7 @@ const char *genbank_comments(char *line, FILE_BUFFER fp)
                 data.gbk.comments.seqinf.comp5 = 'y';
             else
                 data.gbk.comments.seqinf.comp5 = 'n';
-            eof = Fgetline(line, LINENUM, fp);
+            eof = Fgetline(line, LINESIZE, fp);
         }
         else if (str_equal(key, "3' end complete:")) {
             sscanf(line + index, "%s", key);
@@ -476,17 +476,17 @@ const char *genbank_comments(char *line, FILE_BUFFER fp)
                 data.gbk.comments.seqinf.comp3 = 'y';
             else
                 data.gbk.comments.seqinf.comp3 = 'n';
-            eof = Fgetline(line, LINENUM, fp);
+            eof = Fgetline(line, LINESIZE, fp);
         }
         else if (str_equal(key, "Sequence information ")) {
             /* do nothing */
             data.gbk.comments.seqinf.exist = 1;
-            eof = Fgetline(line, LINENUM, fp);
+            eof = Fgetline(line, LINESIZE, fp);
         }
         else if (str_equal(key, "Organism information")) {
             /* do nothing */
             data.gbk.comments.orginf.exist = 1;
-            eof = Fgetline(line, LINENUM, fp);
+            eof = Fgetline(line, LINESIZE, fp);
         }
         else {                  /* other comments */
 
@@ -498,7 +498,7 @@ const char *genbank_comments(char *line, FILE_BUFFER fp)
                 Append(&(data.gbk.comments.others), line + ptr);
             }
 
-            eof = Fgetline(line, LINENUM, fp);
+            eof = Fgetline(line, LINESIZE, fp);
         }
     }                           /* for loop */
 
@@ -517,7 +517,7 @@ char *genbank_origin(char *line, FILE_BUFFER fp) {
     data.sequence[data.seq_length] = '\0';      // needed if sequence data is empty
 
     /* read in whole sequence data */
-    for (eof = Fgetline(line, LINENUM, fp); eof != NULL && line[0] != '/' && line[1] != '/'; eof = Fgetline(line, LINENUM, fp)) {
+    for (eof = Fgetline(line, LINESIZE, fp); eof != NULL && line[0] != '/' && line[1] != '/'; eof = Fgetline(line, LINESIZE, fp)) {
         /* empty line, skip */
         if (Lenstr(line) <= 1)
             continue;
@@ -550,7 +550,7 @@ char
 {
     char *eof;
 
-    for (eof = Fgetline(line, LINENUM, fp); eof != NULL && genbank_check_blanks(line, blank_num); eof = Fgetline(line, LINENUM, fp)) ;
+    for (eof = Fgetline(line, LINESIZE, fp); eof != NULL && genbank_check_blanks(line, blank_num); eof = Fgetline(line, LINESIZE, fp)) ;
 
     return (eof);
 }
@@ -642,12 +642,12 @@ void genbank_verify_keywords()
  */
 char genbank_in_locus(FILE_BUFFER fp)
 {
-    char  line[LINENUM], key[TOKENNUM];
+    char  line[LINESIZE], key[TOKENSIZE];
     char *eof, eoen;
 
     eoen = ' ';                 /* end-of-entry, set to be 'y' after '//' is read */
-    for (eof = Fgetline(line, LINENUM, fp); eof != NULL && eoen != 'y';) {
-        genbank_key_word(line, 0, key, TOKENNUM);
+    for (eof = Fgetline(line, LINESIZE, fp); eof != NULL && eoen != 'y';) {
+        genbank_key_word(line, 0, key, TOKENSIZE);
         if (str_equal(key, "ORIGIN")) {
             eof = genbank_origin(line, fp);
             eoen = 'y';
@@ -656,7 +656,7 @@ char genbank_in_locus(FILE_BUFFER fp)
             eof = genbank_one_entry_in(&data.gbk.locus, line, fp);
         }
         else
-            eof = Fgetline(line, LINENUM, fp);
+            eof = Fgetline(line, LINESIZE, fp);
     }                           /* for loop to read an entry line by line */
 
     if (eoen == 'n')

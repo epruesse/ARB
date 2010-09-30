@@ -10,8 +10,8 @@
 void to_gcg(char *inf, char *outf, int intype) {
     FILE *IFP1, *IFP2, *IFP3;
     FILE_BUFFER ifp1 = 0, ifp2 = 0, ifp3 = 0;
-    char temp[TOKENNUM], *eof, line[LINENUM], key[TOKENNUM];
-    char line1[LINENUM], line2[LINENUM], line3[LINENUM], name[LINENUM];
+    char temp[TOKENSIZE], *eof, line[LINESIZE], key[TOKENSIZE];
+    char line1[LINESIZE], line2[LINESIZE], line3[LINESIZE], name[LINESIZE];
     char *eof1, *eof2, *eof3;
     int seqdata;
 
@@ -30,19 +30,19 @@ void to_gcg(char *inf, char *outf, int intype) {
     FILE *ofp = NULL;
     if (intype == MACKE) {
         /* skip to #=; where seq. first appears */
-        for (eof1 = Fgetline(line1, LINENUM, ifp1); eof1 != NULL && (line1[0] != '#' || line1[1] != '='); eof1 = Fgetline(line1, LINENUM, ifp1)) ;
+        for (eof1 = Fgetline(line1, LINESIZE, ifp1); eof1 != NULL && (line1[0] != '#' || line1[1] != '='); eof1 = Fgetline(line1, LINESIZE, ifp1)) ;
         /* skip to #:; where the seq. information is */
-        for (eof2 = Fgetline(line2, LINENUM, ifp2); eof2 != NULL && (line2[0] != '#' || line2[1] != ':'); eof2 = Fgetline(line2, LINENUM, ifp2)) ;
+        for (eof2 = Fgetline(line2, LINESIZE, ifp2); eof2 != NULL && (line2[0] != '#' || line2[1] != ':'); eof2 = Fgetline(line2, LINESIZE, ifp2)) ;
         /* skip to where seq. data starts */
-        for (eof3 = Fgetline(line3, LINENUM, ifp3); eof3 != NULL && line3[0] == '#'; eof3 = Fgetline(line3, LINENUM, ifp3)) ;
+        for (eof3 = Fgetline(line3, LINESIZE, ifp3); eof3 != NULL && line3[0] == '#'; eof3 = Fgetline(line3, LINESIZE, ifp3)) ;
         /* for each seq. print out one gcg file. */
-        for (; eof1 != NULL && (line1[0] == '#' && line1[1] == '='); eof1 = Fgetline(line1, LINENUM, ifp1)) {
+        for (; eof1 != NULL && (line1[0] == '#' && line1[1] == '='); eof1 = Fgetline(line1, LINESIZE, ifp1)) {
             macke_abbrev(line1, key, 2);
             Cpystr(temp, key);
             ofp = open_output_or_die(outf);
             for (macke_abbrev(line2, name, 2);
                  eof2 != NULL && line2[0] == '#' && line2[1] == ':' && str_equal(name, key);
-                 eof2 = Fgetline(line2, LINENUM, ifp2), macke_abbrev(line2, name, 2))
+                 eof2 = Fgetline(line2, LINESIZE, ifp2), macke_abbrev(line2, name, 2))
             {
                 gcg_doc_out(line2, ofp);
             }
@@ -55,12 +55,12 @@ void to_gcg(char *inf, char *outf, int intype) {
     }
     else {
         seqdata = 0;            /* flag of doc or data */
-        eof = Fgetline(line, LINENUM, ifp1);
+        eof = Fgetline(line, LINESIZE, ifp1);
         while (eof != NULL) {
             if (intype == GENBANK) {
-                genbank_key_word(line, 0, temp, TOKENNUM);
+                genbank_key_word(line, 0, temp, TOKENSIZE);
                 if (str_equal(temp, "LOCUS")) {
-                    genbank_key_word(line + 12, 0, key, TOKENNUM);
+                    genbank_key_word(line + 12, 0, key, TOKENSIZE);
                     ofp = open_output_or_die(outf);
                 }
                 else if (str_equal(temp, "ORIGIN")) {
@@ -74,7 +74,7 @@ void to_gcg(char *inf, char *outf, int intype) {
                     throw_conversion_not_supported(intype, GCG);
 
                 if (Lenstr(line) > 2 && line[0] == 'I' && line[1] == 'D') {
-                    embl_key_word(line, 5, key, TOKENNUM);
+                    embl_key_word(line, 5, key, TOKENSIZE);
                     ofp = open_output_or_die(outf);
                 }
                 else if (Lenstr(line) > 1 && line[0] == 'S' && line[1] == 'Q') {
@@ -94,7 +94,7 @@ void to_gcg(char *inf, char *outf, int intype) {
             else {
                 gcg_doc_out(line, ofp);
             }
-            eof = Fgetline(line, LINENUM, ifp1);
+            eof = Fgetline(line, LINESIZE, ifp1);
         }
     }
 }
