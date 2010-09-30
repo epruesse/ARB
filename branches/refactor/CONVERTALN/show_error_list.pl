@@ -38,7 +38,7 @@ sub pad_locs() {
 }
 
 sub parse_errors() {
-  my $cmd = "grep -En 'throw_error|warning' *.cxx";
+  my $cmd = "grep -En 'throw_error|warning' *.cxx *.h";
   open(GREP,$cmd.'|') || die "failed to run '$cmd' (Reason: $!)";
  LINE: foreach (<GREP>) {
     chomp;
