@@ -109,7 +109,7 @@ namespace arb_test {
 
         void annotate(const char *annotation_) {
             unannotate();
-            annotation = strdup(annotation_);
+            annotation = annotation_ ? strdup(annotation_) : NULL;
         }
         static void assertfailmsg(const char *filename, int lineno, const char *condition) {
             FlushedOutput yes;
