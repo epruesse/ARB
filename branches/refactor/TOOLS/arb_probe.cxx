@@ -428,7 +428,7 @@ static void test_setup() {
     }
 }
 
-void TEST_SLOW_variable_defaults_in_server() {
+void NOTEST_SLOW_variable_defaults_in_server() {
     test_setup();
 
     const char *server_tag = GBS_ptserver_tag(TEST_SERVER_ID);
