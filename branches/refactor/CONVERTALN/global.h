@@ -38,6 +38,20 @@ inline bool str_equal(const char *s1, const char *s2) { return strcmp(s1, s2) ==
 inline bool str_iequal(const char *s1, const char *s2) { return strcasecmp(s1, s2) == 0; }
 
 // --------------------
+
+template<typename PRED>
+char *skipOverLinesThat(char *buffer, size_t buffersize, FILE_BUFFER& fb, PRED line_predicate) {
+    // returns a pointer to the first non-matching line or NULL
+    char *result;
+
+    for (result = Fgetline(buffer, buffersize, fb);
+         result && line_predicate(result);
+         result = Fgetline(buffer, buffersize, fb)) { }
+    
+    return result;
+}
+ 
+// --------------------
 // Logging
 
 #if defined(DEBUG)

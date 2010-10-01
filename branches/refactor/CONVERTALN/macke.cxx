@@ -86,16 +86,10 @@ char MackeReader::in() {
     /* file 3 points to seq. names */
     if (firstRead) {
         start_reading();
-    
-        /* skip to next "#:" line */
-        for (eof1 = Fgetline(line1, LINESIZE, fp1); eof1 != NULL && (line1[0] != '#' || line1[1] != ':'); eof1 = Fgetline(line1, LINESIZE, fp1)) ;
 
-        /* skip all "#" lines to where seq. data is */
-        for (eof2 = Fgetline(line2, LINESIZE, fp2);
-             eof2 != NULL && (line2[0] == '\n' || line2[0] == ' ' || line2[0] == '#'); eof2 = Fgetline(line2, LINESIZE, fp2)) ;
-
-        /* skip to "#=" lines */
-        for (eof3 = Fgetline(line3, LINESIZE, fp3); eof3 != NULL && (line3[0] != '#' || line3[1] != '='); eof3 = Fgetline(line3, LINESIZE, fp3)) ;
+        eof1 = skipOverLinesThat(line1, LINESIZE, fp1, Not(isMackeSeqInfo));   // skip to #:; where the seq. information is
+        eof2 = skipOverLinesThat(line2, LINESIZE, fp2, isMackeNonSeq);         // skip to where seq. data starts
+        eof3 = skipOverLinesThat(line3, LINESIZE, fp3, Not(isMackeSeqHeader)); // skip to #=; where seq. first appears
 
         firstRead = false;
     }
@@ -117,7 +111,7 @@ char MackeReader::in() {
     data.macke.seqabbr = Dupstr(oldname);
 
     /* read seq. information */
-    for (index = macke_abbrev(line1, name, 2); eof1 != NULL && line1[0] == '#' && line1[1] == ':' && str_equal(name, oldname);) {
+    for (index = macke_abbrev(line1, name, 2); eof1 != NULL && isMackeSeqInfo(line1) && str_equal(name, oldname); ) {
         index = macke_abbrev(line1, key, index);
         if (str_equal(key, "name")) {
             eof1 = macke_one_entry_in(fp1, "name", oldname, &(data.macke.name), line1, index);
@@ -166,7 +160,7 @@ char MackeReader::in() {
             warningf(144, "Unidentified AE2 key word #%s#", key);
             eof1 = Fgetline(line1, LINESIZE, fp1);
         }
-        if (eof1 != NULL && line1[0] == '#' && line1[1] == ':')
+        if (eof1 != NULL && isMackeSeqInfo(line1))
             index = macke_abbrev(line1, name, 2);
         else
             index = 0;
@@ -314,25 +308,22 @@ int macke_rem_continue_line(char **strings, int index)
  */
 char macke_in_name(FILE_BUFFER fp)
 {
-    static char  line[LINESIZE];
-    static int   first_time = 1;
-    char         name[TOKENSIZE];
-    char         seq[LINESIZE];
-    char        *eof;
-    int          numofrem   = 0, seqnum;
-    int          index, indj;
+    static char line[LINESIZE];
+#warning another function remembering it has been called (seems to be the last)
+    static int  first_time = 1;
+    char        name[TOKENSIZE];
+    char        seq[LINESIZE];
+    char       *eof;
+    int         numofrem   = 0, seqnum;
+    int         index, indj;
 
     /* skip other information, file index points to seq. data */
     if (first_time) {
-
-        /* skip all "#" lines to where seq. data is */
-        for (eof = Fgetline(line, LINESIZE, fp); eof != NULL && line[0] == '#'; eof = Fgetline(line, LINESIZE, fp)) ;
+        eof = skipOverLinesThat(line, LINESIZE, fp, isMackeHeader);        // skip all "#" lines to where seq. data is
 
         first_time = 0;
-
     }
     else if (line[0] == EOF) {
-
         line[0] = EOF + 1;
         first_time = 1;
         return (EOF);
@@ -348,25 +339,19 @@ char macke_in_name(FILE_BUFFER fp)
         ASSERT_RESULT(int, 2, sscanf(line + index, "%d%s", &seqnum, seq));
         for (indj = data.seq_length; indj < seqnum; indj++)
             if (data.seq_length < data.max)
-                data.sequence[data.seq_length++]
-                    = '.';
+                data.sequence[data.seq_length++] = '.';
             else {
                 data.max += 100;
-                data.sequence = (char *)Reallocspace(data.sequence, (unsigned)
-                                                     (sizeof(char) * data.max));
-                data.sequence[data.seq_length++]
-                    = '.';
+                data.sequence = (char *)Reallocspace(data.sequence, (unsigned) (sizeof(char) * data.max));
+                data.sequence[data.seq_length++] = '.';
             }
         for (indj = 0; seq[indj] != '\n' && seq[indj] != '\0'; indj++) {
             if (data.seq_length < data.max)
-                data.sequence[data.seq_length++]
-                    = seq[indj];
+                data.sequence[data.seq_length++] = seq[indj];
             else {
                 data.max += 100;
-                data.sequence = (char *)Reallocspace(data.sequence, (unsigned)
-                                                     (sizeof(char) * data.max));
-                data.sequence[data.seq_length++]
-                    = seq[indj];
+                data.sequence = (char *)Reallocspace(data.sequence, (unsigned) (sizeof(char) * data.max));
+                data.sequence[data.seq_length++] = seq[indj];
             }
         }
         data.sequence[data.seq_length] = '\0';

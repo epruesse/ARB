@@ -1,13 +1,14 @@
 #include <stdio.h>
 #include "convert.h"
 #include "global.h"
+#include "macke.h"
 
 /* ------------------------------------------------------------------
  *   Function to_gcg().
  *       Convert from whatever to GCG format.
  */
 
-#warning fix outfile handling in to_gcg() 
+#warning fix outfile handling in to_gcg()
 void to_gcg(char *inf, char *outf, int intype) {
     FILE *IFP1, *IFP2, *IFP3;
     FILE_BUFFER ifp1 = 0, ifp2 = 0, ifp3 = 0;
@@ -30,19 +31,17 @@ void to_gcg(char *inf, char *outf, int intype) {
     }
     FILE *ofp = NULL;
     if (intype == MACKE) {
-        /* skip to #=; where seq. first appears */
-        for (eof1 = Fgetline(line1, LINESIZE, ifp1); eof1 != NULL && (line1[0] != '#' || line1[1] != '='); eof1 = Fgetline(line1, LINESIZE, ifp1)) ;
-        /* skip to #:; where the seq. information is */
-        for (eof2 = Fgetline(line2, LINESIZE, ifp2); eof2 != NULL && (line2[0] != '#' || line2[1] != ':'); eof2 = Fgetline(line2, LINESIZE, ifp2)) ;
-        /* skip to where seq. data starts */
-        for (eof3 = Fgetline(line3, LINESIZE, ifp3); eof3 != NULL && line3[0] == '#'; eof3 = Fgetline(line3, LINESIZE, ifp3)) ;
+        eof1 = skipOverLinesThat(line1, LINESIZE, ifp1, Not(isMackeSeqHeader)); // skip to #=; where seq. first appears
+        eof2 = skipOverLinesThat(line2, LINESIZE, ifp2, Not(isMackeSeqInfo));   // skip to #:; where the seq. information is
+        eof3 = skipOverLinesThat(line3, LINESIZE, ifp3, isMackeHeader);         // skip to where seq. data starts
+
         /* for each seq. print out one gcg file. */
-        for (; eof1 != NULL && (line1[0] == '#' && line1[1] == '='); eof1 = Fgetline(line1, LINESIZE, ifp1)) {
+        for (; eof1 != NULL && isMackeSeqHeader(line1); eof1 = Fgetline(line1, LINESIZE, ifp1)) {
             macke_abbrev(line1, key, 2);
             Cpystr(temp, key);
             ofp = open_output_or_die(outf); // @@@ always overwrites same outfile
             for (macke_abbrev(line2, name, 2);
-                 eof2 != NULL && line2[0] == '#' && line2[1] == ':' && str_equal(name, key);
+                 eof2 != NULL && isMackeSeqInfo(line2) && str_equal(name, key);
                  eof2 = Fgetline(line2, LINESIZE, ifp2), macke_abbrev(line2, name, 2))
             {
                 gcg_doc_out(line2, ofp);

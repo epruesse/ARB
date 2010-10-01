@@ -117,6 +117,7 @@ fconv.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 gcg.o: convert.h
 gcg.o: global.h
+gcg.o: macke.h
 gcg.o: prototypes.h
 gcg.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 gcg.o: $(ARBHOME)/INCLUDE/arb_assert.h

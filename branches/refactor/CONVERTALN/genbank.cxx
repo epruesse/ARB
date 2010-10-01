@@ -205,8 +205,7 @@ int genbank_comment_subkey_word(char *line, int index, char *key, int length)
  *      Check if there is (numb) of blanks at beginning
  *          of line.
  */
-int genbank_check_blanks(char *line, int numb)
-{
+int genbank_check_blanks(char *line, int numb) {
     int blank = 1, indi, indk;
 
     for (indi = 0; blank && indi < numb; indi++) {
@@ -227,16 +226,16 @@ int genbank_check_blanks(char *line, int numb)
  *          of line, it is a continue line of the
  *          current command.
  */
-char *genbank_continue_line(char **string, char *line, int numb, FILE_BUFFER fp)
-/* numb = number of blanks needed to define a continue line */
-{
+char *genbank_continue_line(char **string, char *line, int numb, FILE_BUFFER fp) {
+    /* numb = number of blanks needed to define a continue line */
     int   ind;
     char *eof, temp[LINESIZE];
 
     /* check continue lines */
-    for (eof = Fgetline(line, LINESIZE, fp); eof != NULL && (genbank_check_blanks(line, numb)
-                                                            || line[0] == '\n'); eof = Fgetline(line, LINESIZE, fp)) {
-
+    for (eof = Fgetline(line, LINESIZE, fp);
+         eof != NULL && (genbank_check_blanks(line, numb) || line[0] == '\n');
+         eof = Fgetline(line, LINESIZE, fp))
+    {
         if (line[0] == '\n')
             continue;           /* empty line is allowed */
         /* remove end-of-line, if there is any */
@@ -545,13 +544,9 @@ char *genbank_origin(char *line, FILE_BUFFER fp) {
  *  Function genbank_skip_unidentified().
  *      Skip the lines of unidentified keyword.
  */
-char
- *genbank_skip_unidentified(char *line, FILE_BUFFER fp, int blank_num)
-{
+char *genbank_skip_unidentified(char *line, FILE_BUFFER fp, int blank_num) {
     char *eof;
-
     for (eof = Fgetline(line, LINESIZE, fp); eof != NULL && genbank_check_blanks(line, blank_num); eof = Fgetline(line, LINESIZE, fp)) ;
-
     return (eof);
 }
 

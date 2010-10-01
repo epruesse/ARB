@@ -415,7 +415,6 @@ static void test_convert_by_format_num(int from, int to) {
     else {
         test_convert_by_format_num_WRAPPED(from, to);
     }
-    TEST_ANNOTATE_ASSERT(NULL);
 }
 
 static void init_cap() {

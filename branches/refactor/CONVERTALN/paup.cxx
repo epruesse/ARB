@@ -220,31 +220,21 @@ void to_paup_1x1(char *inf, char *outf, int informat) {
  *   Function paup_verify_name().
  *       Verify short_id in NEXUS format.
  */
-void paup_verify_name(char **string)
-{
-    int indi, len, index;
-
-    char temp[TOKENSIZE];
-
-    for (indi = index = 0, len = Lenstr((*string)); indi < len && index == 0; indi++)
-        if ((*string)[indi] == '*' || (*string)[indi] == '('
-            || (*string)[indi] == ')' || (*string)[indi] == '{'
-            || (*string)[indi] == '/' || (*string)[indi] == ','
-            || (*string)[indi] == ';' || (*string)[indi] == '_'
-            || (*string)[indi] == '=' || (*string)[indi] == ':' || (*string)[indi] == '\\' || (*string)[indi] == '\'')
-            index = 1;
-
-    if (index == 0)
-        return;
-    else {
+void paup_verify_name(char **string) {
+    if (strpbrk(*string, "*(){/,;_=:\\\'")) {
+        char temp[TOKENSIZE];
         temp[0] = '\'';
-        for (indi = 0, index = 1; indi < len; indi++, index++) {
+
+        int len   = Lenstr(*string);
+        int indi  = 0;
+        int index = 1;
+        for (; indi < len; indi++, index++) {
             temp[index] = (*string)[indi];
-            if ((*string)[indi] == '\'')
-                temp[++index] = '\'';
+            if ((*string)[indi] == '\'') temp[++index] = '\'';
         }
         temp[index++] = '\'';
-        temp[index] = '\0';
+        temp[index]   = '\0';
+        
         Freespace(string);
         (*string) = (char *)Dupstr(temp);
     }
