@@ -37,9 +37,6 @@
 inline bool str_equal(const char *s1, const char *s2) { return strcmp(s1, s2) == 0; }
 inline bool str_iequal(const char *s1, const char *s2) { return strcasecmp(s1, s2) == 0; }
 
-// #define ASSERT_RESULT_LATER(t,ex,fun) ASSERT_RESULT(t,ex,fun) // later!
-#define ASSERT_RESULT_LATER(t,ex,fun) (fun)
-
 // --------------------
 // Logging
 

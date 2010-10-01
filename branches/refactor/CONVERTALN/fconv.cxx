@@ -448,7 +448,7 @@ static int will_convert(int from) {
     return will;
 }
 
-void TEST_0_converter() {
+void TEST_converter() {
     COMPILE_ASSERT(FORMATNUM_COUNT == fcount);
 
     init_cap();

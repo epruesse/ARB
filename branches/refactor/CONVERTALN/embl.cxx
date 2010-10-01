@@ -1180,48 +1180,81 @@ char *etog_author(char *string) {
  *      Function etog_journal().
  *              Convert jpurnal part from EMBL to GenBank format.
  */
-char *etog_journal(char *string) {
-    int   indi, len, index;
-    char *journal;
+char *etog_journal(const char *eJournal) {
     char *new_journal = 0;
     char  token[TOKENSIZE];
 
-    scan_token_or_die(string, token, NULL);
+    scan_token_or_die(eJournal, token, NULL);
     if (str_equal(token, "(in)") == 1 || str_equal(token, "Submitted") || str_equal(token, "Unpublished")) {
-        /* remove '.' */
-        string[Lenstr(string) - 2] = '\n';
-        string[Lenstr(string) - 1] = '\0';
-        new_journal = (char *)Dupstr(string);
-        string[Lenstr(string) - 1] = '.';
-        string[Lenstr(string)] = '\n';
-        return (new_journal);
+        /* remove trailing '.' */
+        int len     = Lenstr(eJournal);
+        ca_assert(eJournal[len-2] == '.');
+        new_journal = DupLenstr(eJournal, len-2);
+        Append(&new_journal, "\n");
     }
-    journal = (char *)Dupstr(string);
-    for (indi = 0, len = Lenstr(journal); indi < len; indi++) {
-        if (journal[indi] == ':') {
-            journal[indi] = '\0';
-            new_journal = (char *)Dupstr(journal);
-            journal[indi] = ':';
-            Append(&new_journal, ", ");
-            index = indi + 1;
+    else {
+        const char *colon = strchr(eJournal, ':');
+
+        if (colon) {
+            const char *p1 = strchr(colon+1, '(');
+            if (p1) {
+                const char *p2 = strchr(p1+1, ')');
+                if (p2 && strcmp(p2+1, ".\n") == 0) {
+                    new_journal = Reallocspace(new_journal, Lenstr(eJournal)+1+1);
+
+                    int l1 = colon-eJournal;
+                    int l2 = p1-colon-1;
+                    int l3 = p2-p1+1;
+
+                    char *pos = new_journal;
+
+                    memcpy(pos, eJournal, l1); pos += l1;
+                    memcpy(pos, ", ",     2);  pos += 2;
+                    memcpy(pos, colon+1,  l2); pos += l2;
+                    memcpy(pos, " ",      1);  pos += 1;
+                    memcpy(pos, p1,       l3); pos += l3;
+                    memcpy(pos, "\n",     2);  
+                }
+            }
         }
-        if (journal[indi] == '(') {
-            journal[indi] = '\0';
-            Append(&new_journal, journal + index);
-            Append(&new_journal, " ");
-            journal[indi] = '(';
-            index = indi;
-        }
-        if (journal[indi] == '.') {
-            journal[indi] = '\0';
-            Append(&new_journal, journal + index);
-            journal[indi] = '.';
+
+        if (!new_journal) {
+            warningf(148, "Removed unknown journal format: %s", eJournal);
+            new_journal = Dupstr("\n");
         }
     }
-    Freespace(&journal);
-    Append(&new_journal, "\n");
-    return (new_journal);
+
+    return new_journal;
 }
+
+// --------------------------------------------------------------------------------
+
+#if (UNIT_TESTS == 1)
+#include <test_unit.h>
+
+#define TEST_ASSERT_ETOG_JOURNAL_PARSES(i,o)              \
+    do {                                                  \
+        char *dup = strdup(i);                            \
+        TEST_ASSERT_EQUAL(etog_journal(dup), o);          \
+        free(dup);                                        \
+    } while(0)
+
+void TEST_BASIC_etog_journal() {
+    // behavior documented in r6943:
+    TEST_ASSERT_ETOG_JOURNAL_PARSES("Gene 134:283-287(1993).\n",
+                                    "Gene 134, 283-287 (1993)\n");
+    TEST_ASSERT_ETOG_JOURNAL_PARSES("J. Exp. Med. 179:1809-1821(1994).\n",
+                                    "J. Exp. Med. 179, 1809-1821 (1994)\n");
+    TEST_ASSERT_ETOG_JOURNAL_PARSES("Unpublished whatever.\n",
+                                    "Unpublished whatever\n");
+    TEST_ASSERT_ETOG_JOURNAL_PARSES("bla bla bla.\n",
+                                    "\n"); // skips if can't parse
+    TEST_ASSERT_ETOG_JOURNAL_PARSES("bla bla bla\n",
+                                    "\n");
+}
+
+#endif // UNIT_TESTS
+
 
 /* ---------------------------------------------------------------
  *      Function etog_comments().
@@ -1404,10 +1437,10 @@ void gtoe_reference() {
 
         /* create processing information */
         start = end = 0;
-        if (data.gbk.reference[indi].ref) {
-            ASSERT_RESULT_LATER(int, 6, sscanf(data.gbk.reference[indi].ref, "%d %s %d %s %d %s", &refnum, t1, &start, t2, &end, t3));
-        }
-        else {
+        
+        if (!data.gbk.reference[indi].ref ||
+            sscanf(data.gbk.reference[indi].ref, "%d %s %d %s %d %s", &refnum, t1, &start, t2, &end, t3) != 6)
+        {
             start = 0;
             end = 0;
         }

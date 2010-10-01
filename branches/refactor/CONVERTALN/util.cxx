@@ -175,6 +175,13 @@ char *Dupstr(const char *string)
     }
 }
 
+char *DupLenstr(const char *s, int len) {
+    char *result = (char*)malloc(len+1);
+    memcpy(result, s, len);
+    result[len]  = 0;
+    return result;
+}
+
 /* ------------------------------------------------------------
  *  Function Catstr().
  *      Append string s2 to string s1.

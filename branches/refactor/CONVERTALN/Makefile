@@ -90,6 +90,7 @@ embl.o: $(ARBHOME)/INCLUDE/attributes.h
 embl.o: $(ARBHOME)/INCLUDE/dupstr.h
 embl.o: $(ARBHOME)/INCLUDE/FileBuffer.h
 embl.o: $(ARBHOME)/INCLUDE/test_global.h
+embl.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 fconv.o: convert.h
 fconv.o: global.h
