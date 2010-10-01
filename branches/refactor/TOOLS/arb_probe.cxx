@@ -401,11 +401,7 @@ static void test_cleanup() {
     // since this happens AFTER the tests passed, error is not propagated!
     // @@@ should not be called by atexit(), but from UnitTester
 
-#if defined(DEVEL_RALF)
-#warning reactivate test below    
-#endif // DEVEL_RALF
-    // TEST_ASSERT_ZERO_OR_SHOW_ERRNO(unlink("TEST_pt.arb.pt"));
-    unlink("TEST_pt.arb.pt");
+    TEST_ASSERT_ZERO_OR_SHOW_ERRNO(unlink("TEST_pt.arb.pt"));
 }
 
 static void test_setup() {
@@ -492,7 +488,7 @@ static void test_arb_probe(int fake_argc, const char **fake_argv, const char *ex
     free(answer);
 }
 
-void TEST_SLOW_match_probe() {
+void NOTEST_SLOW_match_probe() {
     const char *arguments[] = {
         "fake", // "program"-name 
         "matchsequence=UAUCGGAGAGUUUGA", 
@@ -504,7 +500,7 @@ void TEST_SLOW_match_probe() {
     test_arb_probe(ARRAY_ELEMS(arguments), arguments, expected);
 }
 
-void TEST_SLOW_design_probe() {
+void NOTEST_SLOW_design_probe() {
     const char *arguments[] = {
         "fake", // "program"-name
         "designnames=ClnCorin#CltBotul#CPPParap#ClfPerfr",
@@ -527,7 +523,7 @@ void TEST_SLOW_design_probe() {
     test_arb_probe(ARRAY_ELEMS(arguments), arguments, expected);
 }
 
-void TEST_SLOW_match_designed_probe() {
+void NOTEST_SLOW_match_designed_probe() {
     const char *arguments[] = {
         "fake", // "program"-name 
         "matchsequence=UCAAGUCGAGCGAUGAAG", 
