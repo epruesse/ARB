@@ -111,17 +111,16 @@ namespace arb_test {
             unannotate();
             annotation = annotation_ ? strdup(annotation_) : NULL;
         }
+
+        static void print_annotation() {
+            char*& annotation = get_instance().annotation;
+            if (annotation) fprintf(stderr, " (%s)", annotation);
+        }
+
         static void assertfailmsg(const char *filename, int lineno, const char *condition) {
             FlushedOutput yes;
-
-            char*& annotation = get_instance().annotation;
-            if (annotation) {
-                fprintf(stderr, "%s:%i: Assertion '%s' failed (%s)", filename, lineno, condition, annotation);
-                // get_instance().unannotate(); // incompatible with crash tests
-            }
-            else {
-                fprintf(stderr, "%s:%i: Assertion '%s' failed", filename, lineno, condition);
-            }
+            fprintf(stderr, "%s:%i: Assertion '%s' failed", filename, lineno, condition);
+            print_annotation();
         }
     };
 

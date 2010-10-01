@@ -58,6 +58,7 @@ namespace arb_test {
             if (global.show_warnings) {
                 FlushedOutput yes;
                 VCOMPILERMSG(filename, lineno, "Warning", format);
+                GlobalTestData::print_annotation();
                 global.warnings++;
             }
         }
@@ -65,6 +66,7 @@ namespace arb_test {
             {
                 FlushedOutput yes;
                 VCOMPILERMSG(filename, lineno, "Error", format);
+                GlobalTestData::print_annotation();
             }
             TRIGGER_ASSERTION(); // fake an assertion failure
         }
@@ -73,6 +75,7 @@ namespace arb_test {
                 FlushedOutput yes;
                 VCOMPILERMSG(filename, lineno, "Error", format);
                 fprintf(stderr, " (errno=%i='%s')", errno, strerror(errno));
+                GlobalTestData::print_annotation();
             }
             TRIGGER_ASSERTION(); // fake an assertion failure
         }
