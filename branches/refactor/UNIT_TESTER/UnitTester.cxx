@@ -50,8 +50,9 @@ struct Globals {
     ~Globals() {
         free(runDir);
     }
-    
+
     inline void setup_test_precondition() {
+        TEST_ANNOTATE_ASSERT(NULL);
         TEST_ASSERT_ZERO_OR_SHOW_ERRNO(chdir(runDir));
     }
 };
