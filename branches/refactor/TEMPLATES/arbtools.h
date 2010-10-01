@@ -26,6 +26,23 @@ public:
 };
 
 
+template<typename T>
+class isBelow {
+    T t;
+public:
+    isBelow(T t_) : t(t_) {}
+    bool operator()(T o) { return o<t; }
+};
+
+template<typename T>
+class isAbove {
+    T t;
+public:
+    isAbove(T t_) : t(t_) {}
+    bool operator()(T o) { return o>t; }
+};
+
+
 #else
 #error arbtools.h included twice
 #endif // ARBTOOLS_H

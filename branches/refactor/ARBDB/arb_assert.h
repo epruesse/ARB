@@ -224,45 +224,32 @@ inline bool contradicted(bool hypo1, bool hypo2) { return !correlated(hypo1, hyp
 
 #ifdef ASSERTION_USED
 
-# define ASSERT_RESULT(Type, Expr, Expected) do {       \
+# define ASSERT_RESULT(Type, Expected, Expr) do {       \
         Type value = (Expr);                            \
         arb_assert(value == (Expected));                \
     } while (0)
 
-# define ASSERT_RESULT_BELOW(Type, Expr, Limit) do {    \
-        Type value = (Expr);                            \
-        arb_assert(value < (Limit));                    \
-    } while (0)
-
-# define ASSERT_RESULT_ABOVE(Type, Expr, Limit) do {    \
-        Type value = (Expr);                            \
-        arb_assert(value > (Limit));                    \
-    } while (0)
-    
-# define ASSERT_RESULT_PREDICATE(Expr, Pred) do {       \
+# define ASSERT_RESULT_PREDICATE(Pred, Expr) do {       \
         arb_assert(Pred(Expr));                         \
     } while (0)
 
 #else
 
-# define ASSERT_RESULT(Type, Expr, Expected) do {       \
+# define ASSERT_RESULT(Type, Expected, Expr) do {       \
         (void)Expr;                                     \
     } while(0)
 
-# define ASSERT_RESULT_PREDICATE(Expr, Pred) do {       \
+# define ASSERT_RESULT_PREDICATE(Pred, Expr) do {       \
         (void)Expr;                                     \
     } while(0)
-
-# define ASSERT_RESULT_BELOW(Type, Expr, Limit) ASSERT_RESULT(Type, Expr, 0)
-# define ASSERT_RESULT_ABOVE(Type, Expr, Limit) ASSERT_RESULT(Type, Expr, 0)
 
 #endif
 
-#define ASSERT_NULL_RESULT(ptrExpr) ASSERT_RESULT(const void*, ptrExpr, NULL)
-#define ASSERT_NO_ERROR(errorExpr)  ASSERT_RESULT(GB_ERROR, errorExpr, NULL)
+#define ASSERT_NULL_RESULT(ptrExpr) ASSERT_RESULT(const void*, NULL, ptrExpr)
+#define ASSERT_NO_ERROR(errorExpr)  ASSERT_RESULT(GB_ERROR, NULL, errorExpr)
 
-#define ASSERT_TRUE(boolExpr)  ASSERT_RESULT(bool, boolExpr, true)
-#define ASSERT_FALSE(boolExpr) ASSERT_RESULT(bool, boolExpr, false)
+#define ASSERT_TRUE(boolExpr)  ASSERT_RESULT(bool, true, boolExpr)
+#define ASSERT_FALSE(boolExpr) ASSERT_RESULT(bool, false, boolExpr)
 
 // ------------------------------------------------------------
 

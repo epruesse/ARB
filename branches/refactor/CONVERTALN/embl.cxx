@@ -1020,7 +1020,7 @@ int etog() {
     if (Lenstr(data.embl.dr) > 1) {
         /* get short_id from DR line if there is RDP def. */
         Cpystr(t3, "dummy");
-        ASSERT_RESULT(int, sscanf(data.embl.dr, "%s %s %s", t1, t2, t3), 3);
+        ASSERT_RESULT(int, 3, sscanf(data.embl.dr, "%s %s %s", t1, t2, t3));
         if (str_equal(t1, "RDP;")) {
             if (!str_equal(t3, "dummy")) {
                 Cpystr(key, t3);

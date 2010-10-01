@@ -244,7 +244,7 @@ char
     index = macke_abbrev(line, name, 0);
     eof = line;
     for (; eof != NULL && str_equal(key, name);) {
-        ASSERT_RESULT(int, sscanf(line + index, "%d%s", &seqnum, seq), 2);
+        ASSERT_RESULT(int, 2, sscanf(line + index, "%d%s", &seqnum, seq));
         for (indj = data.seq_length; indj < seqnum; indj++)
             if (indj < data.max)
                 data.sequence[data.seq_length++]
@@ -345,7 +345,7 @@ char macke_in_name(FILE_BUFFER fp)
     /* read in line by line */
     Freespace(&(data.macke.seqabbr));
     for (index = macke_abbrev(line, name, 0), data.macke.seqabbr = Dupstr(name); line[0] != EOF && str_equal(data.macke.seqabbr, name);) {
-        ASSERT_RESULT(int, sscanf(line + index, "%d%s", &seqnum, seq), 2);
+        ASSERT_RESULT(int, 2, sscanf(line + index, "%d%s", &seqnum, seq));
         for (indj = data.seq_length; indj < seqnum; indj++)
             if (data.seq_length < data.max)
                 data.sequence[data.seq_length++]
