@@ -92,7 +92,7 @@ int gtom()
     if (Lenstr(data.gbk.organism) > 1)
         replace_entry(&(data.macke.name), data.gbk.organism);
     else if (Lenstr(data.gbk.definition) > 1) {
-        ASSERT_RESULT(int, 2, sscanf(data.gbk.definition, "%s %s", genus, species));
+        ASSERT_RESULT(int, sscanf(data.gbk.definition, "%s %s", genus, species), 2);
         if (species[Lenstr(species) - 1] == ';')
             species[Lenstr(species) - 1] = '\0';
         sprintf(temp, "%s %s\n", genus, species);

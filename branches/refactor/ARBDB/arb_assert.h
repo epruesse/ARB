@@ -213,8 +213,14 @@ inline bool contradicted(bool hypo1, bool hypo2) { return !correlated(hypo1, hyp
 #endif
 
 // ------------------------------------------------------------
-// Assert specific result (DEBUG only) and silence __ATTR__USERESULT warnings.
-// The given 'Expr' is evaluated under all conditions! 
+// Assert specific result in DEBUG and silence __ATTR__USERESULT warnings in NDEBUG.
+// 
+// The value 'Expected' (or 'Limit') should be side-effect-free (it is only executed in DEBUG mode).
+// The given 'Expr' is evaluated under all conditions!
+// 
+// Important note:
+//      When you swap 'Expected' and 'Expr' by mistake,
+//      code working in DEBUG, may suddenly stop working in NDEBUG!
 
 #ifdef ASSERTION_USED
 

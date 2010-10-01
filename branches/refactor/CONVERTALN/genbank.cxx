@@ -318,7 +318,7 @@ char *genbank_reference(char *line, FILE_BUFFER fp)
     int   refnum;
     int   acount = 0, tcount = 0, jcount = 0, scount = 0;
 
-    ASSERT_RESULT(int, 1, sscanf(line + 12, "%d", &refnum));
+    ASSERT_RESULT(int, sscanf(line + 12, "%d", &refnum), 1);
     if (refnum <= data.gbk.numofref) {
         warningf(17, "Might redefine reference %d", refnum);
         eof = genbank_skip_unidentified(line, fp, 12);
