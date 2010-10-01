@@ -52,8 +52,10 @@ struct Globals {
     }
 
     inline void setup_test_precondition() {
-        TEST_ANNOTATE_ASSERT(NULL);
         TEST_ASSERT_ZERO_OR_SHOW_ERRNO(chdir(runDir));
+    }
+    inline void setup_test_postcondition() {
+        TEST_ANNOTATE_ASSERT(NULL);
     }
 };
 
@@ -281,6 +283,7 @@ size_t SimpleTester::perform_all() {
     for (size_t c = 0; c<count; ++c) {
         GLOBAL.setup_test_precondition();
         passed += perform(c);
+        GLOBAL.setup_test_postcondition();
     }
     return passed;
 }
