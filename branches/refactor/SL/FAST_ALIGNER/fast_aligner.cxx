@@ -2028,7 +2028,7 @@ ARB_ERROR Aligner::alignToReference(GBDATA *gb_toalign, const AlignmentReference
 
         if (continue_on_error) {
             if (error) {
-                aw_message(error.deliver());
+                GB_warning(error.deliver());
                 error = NULL;
             }
             error = GB_begin_transaction(gb_main); // re-open global transaction
@@ -3202,10 +3202,7 @@ struct test_alignment_data TestAlignmentData_checksumError[] = {
     { 0, "ThcCeler", "...G-GGG-C-G...CC-U---U--------GC--G--CGCAC-C-GG-C-GG-A--C------GG--C-UCAGU-A---AAG-UCGUAACAA-GG-UAG-CCGU-AGGGGAA-CCUA-CGGC-UCGAUCACCUCCU...." }, // next relative
 };
 
-void TEST_SLOW_Aligner_checksumError() {
-    // @@@ SLOW cause this often gets terminated in nightly builds
-    //     no idea why. normally it runs a few ms
-    
+void TEST_Aligner_checksumError() {
     // this produces an internal aligner error
     
     ARB_ERROR  error;

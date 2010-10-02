@@ -919,6 +919,7 @@ void aw_set_local_message() {
 
 
 void aw_message(const char *msg) {
+    aw_assert(!RUNNING_TEST()); // aw_message hangs when called from nightly builds
 #if defined(DEBUG)
     printf("aw_message: '%s'\n", msg);
 #endif // DEBUG
