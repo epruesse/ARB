@@ -423,7 +423,7 @@ endif
 		@echo ' rel_minor   - build a release (increases minor version number)'
 		@echo ' rel_major   - build a release (increases MAJOR version number)'
 		@echo ' tarfile     - make rebuild and create arb version tarfile ("tarfile_quick" to skip rebuild)'
-		@echo ' save        - save all basic ARB sources into arbsrc_DATE'
+		@echo ' save        - save all basic ARB sources into arbsrc_DATE ("testsave" to check filelist)'
 		@echo ' patch       - save svn diff to patchfile'
 		@echo ' source_doc  - create doxygen documentation'
 		@echo ' relocated   - rebuild partly (use when you have relocated ARBHOME)'
