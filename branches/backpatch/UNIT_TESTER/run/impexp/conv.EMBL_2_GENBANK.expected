@@ -1,0 +1,17 @@
+LOCUS       MetMazei  7165 bp    RNA             RNA       02-JAN-1910
+DEFINITION  Methanosarcina mazei
+ACCESSION   X69874;
+KEYWORDS    No information.
+SOURCE      Methanosarcina mazei
+  ORGANISM  Methanosarcina mazei
+REFERENCE   1
+  AUTHORS   No information
+  JOURNAL   No information
+  TITLE     No information
+  STANDARD  No information
+BASE COUNT      13 a     15 c     17 g     21 t     99 others
+ORIGIN
+        1 .......... .......... .AUUCUGGUU -----GA--U -CC-U-G-CC AG-AG-GU-U
+       61 -AC-U-GC-- U-AU-C--G- GU-GUUC--G C---C-U--A AGCCA-U-GC -G-AGU-CAU
+      121 -A-UGU---- -----A---- ---------- -......... .....
+//

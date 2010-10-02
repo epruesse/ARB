@@ -1,7 +1,130 @@
- MetMazei      0 .....................AUUCUGGUU-----GA--U-CC-U-G-CCAG-AG-GU-U-A
+ HSFAU         1 ttcctctttctcgactccatcttcgcggtagctgggaccgccgttcagtcgccaatatgcag
+ HSFAU1        1 ctaccattttccctctcgattctatatgtacactcgggacaagttctcctgatcgaaaacgg
 
 
- MetMazei     27 C-U-GC--U-AU-C--G-GU-GUUC--GC---C-U--AAGCCA-U-GC-G-AGU-CAU-A-U
+ HSFAU        63 ctctttgtccgcgcccaggagctacacaccttcgaggtgaccggccaggaaacggtcgccca
+ HSFAU1       63 caaaactaaggccccaagtaggaatgccttagttttcggggttaacaatgattaacactgag
 
 
- MetMazei     64 GU---------A---------------..............
+ HSFAU       125 gatcaaggctcatgtagcctcactggagggcattgccccggaagatcaagtcgtgctcctgg
+ HSFAU1      125 cctcacacccacgcgatgccctcagctcctcgctcagcgctctcaccaacagccgtagcccg
+
+
+ HSFAU       187 caggcgcgcccctggaggatgaggccactctgggccagtgcggggtggaggccctgactacc
+ HSFAU1      187 cagccccgctggacaccggttctccatccccgcagcgtagcccggaacatggtagctgccat
+
+
+ HSFAU       249 ctggaagtagcaggccgcatgcttggaggtaaagttcatggttccctggcccgtgctggaaa
+ HSFAU1      249 ctttacctgctacgccagccttctgtgcgcgcaactgtctggtcccgccccgtcctgcgcga
+
+
+ HSFAU       311 agtgagaggtcagactcctaaggtggccaaacaggagaagaagaagaagaagacaggtcggg
+ HSFAU1      311 gctgctgcccaggcaggttcgccggtgcgagcgtaaaggggcggagctaggactgccttggg
+
+
+ HSFAU       373 ctaagcggcggatgcagtacaaccggcgctttgtcaacgttgtgcccacctttggcaagaag
+ HSFAU1      373 cggtacaaatagcagggaaccgcgcggtcgctcagcagtgacgtgacacgcagcccacggtc
+
+
+ HSFAU       435 aagggccccaatgccaactcttaagtcttttgtaattctggctttctctaataaaaaagcca
+ HSFAU1      435 tgtactgacgcgccctcgcttcttcctctttctcgactccatcttcgcggtagctgggaccg
+
+
+ HSFAU       497 cttagttcagtcaaaaaaaaaa
+ HSFAU1      497 ccgttcaggtaagaatggggccttggctggatccgaagggcttgtagcaggttggctgcggg
+
+
+ HSFAU
+ HSFAU1      559 gtcagaaggcgcggggggaaccgaagaacggggcctgctccgtggccctgctccagtcccta
+
+
+ HSFAU
+ HSFAU1      621 tccgaactccttgggaggcactggccttccgcacgtgagccgccgcgaccaccatcccgtcg
+
+
+ HSFAU
+ HSFAU1      683 cgatcgtttctggaccgctttccactcccaaatctcctttatcccagagcatttcttggctt
+
+
+ HSFAU
+ HSFAU1      745 ctcttacaagccgtcttttctttactcagtcgccaatatgcagctctttgtccgcgcccagg
+
+
+ HSFAU
+ HSFAU1      807 agctacacaccttcgaggtgaccggccaggaaacggtcgcccagatcaaggtaaggctgctt
+
+
+ HSFAU
+ HSFAU1      869 ggtgcgccctgggttccattttcttgtgctcttcactctcgcggcccgagggaacgcttacg
+
+
+ HSFAU
+ HSFAU1      931 agccttatctttccctgtaggctcatgtagcctcactggagggcattgccccggaagatcaa
+
+
+ HSFAU
+ HSFAU1      993 gtcgtgctcctggcaggcgcgcccctggaggatgaggccactctgggccagtgcggggtgga
+
+
+ HSFAU
+ HSFAU1     1055 ggccctgactaccctggaagtagcaggccgcatgcttggaggtgagtgagagaggaatgttc
+
+
+ HSFAU
+ HSFAU1     1117 tttgaagtaccggtaagcgtctagtgagtgtggggtgcatagtcctgacagctgagtgtcac
+
+
+ HSFAU
+ HSFAU1     1179 acctatggtaatagagtacttctcactgtcttcagttcagagtgattcttcctgtttacatc
+
+
+ HSFAU
+ HSFAU1     1241 cctcatgttgaacacagacgtccatgggagactgagccagagtgtagttgtatttcagtcac
+
+
+ HSFAU
+ HSFAU1     1303 atcacgagatcctagtctggttatcagcttccacactaaaaattaggtcagaccaggcccca
+
+
+ HSFAU
+ HSFAU1     1365 aagtgctctataaattagaagctggaagatcctgaaatgaaacttaagatttcaaggtcaaa
+
+
+ HSFAU
+ HSFAU1     1427 tatctgcaactttgttctcattacctattgggcgcagcttctctttaaaggcttgaattgag
+
+
+ HSFAU
+ HSFAU1     1489 aaaagaggggttctgctgggtggcaccttcttgctcttacctgctggtgccttcctttccca
+
+
+ HSFAU
+ HSFAU1     1551 ctacaggtaaagtccatggttccctggcccgtgctggaaaagtgagaggtcagactcctaag
+
+
+ HSFAU
+ HSFAU1     1613 gtgagtgagagtattagtggtcatggtgttaggactttttttcctttcacagctaaaccaag
+
+
+ HSFAU
+ HSFAU1     1675 tccctgggctcttactcggtttgccttctccctccctggagatgagcctgagggaagggatg
+
+
+ HSFAU
+ HSFAU1     1737 ctaggtgtggaagacaggaaccagggcctgattaaccttcccttctccaggtggccaaacag
+
+
+ HSFAU
+ HSFAU1     1799 gagaagaagaagaagaagacaggtcgggctaagcggcggatgcagtacaaccggcgctttgt
+
+
+ HSFAU
+ HSFAU1     1861 caacgttgtgcccacctttggcaagaagaagggccccaatgccaactcttaagtcttttgta
+
+
+ HSFAU
+ HSFAU1     1923 attctggctttctctaataaaaaagccacttagttcagtcatcgcattgtttcatctttact
+
+
+ HSFAU
+ HSFAU1     1985 tgcaaggcctcagggagaggtgtgcttctcgg

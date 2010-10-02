@@ -95,7 +95,7 @@ void genbank_to_macke(char *inf, char *outf)
 #ifdef log
     fprintf(stderr, "Total %d sequences have been processed\n", total_num);
 #endif
-
+    fclose(ofp);
 }
 
 /* --------------------------------------------------------------
@@ -622,7 +622,8 @@ void macke_to_genbank(char *inf, char *outf)
     fprintf(stderr, "Start converting...\n");
 #endif
 
-    while (macke_in(ifp1, ifp2, ifp3) != EOF) {
+    int first_time = 1;
+    while (macke_in(ifp1, ifp2, ifp3, first_time) != EOF) {
         data.numofseq++;
         if (mtog())
             genbank_out(ofp);

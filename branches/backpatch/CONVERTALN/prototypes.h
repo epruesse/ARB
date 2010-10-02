@@ -125,7 +125,7 @@ void init_reference(Reference *ref, int flag);
 
 /* macke.cxx */
 void init_macke(void);
-char macke_in(FILE_BUFFER fp1, FILE_BUFFER fp2, FILE_BUFFER fp3);
+char macke_in(FILE_BUFFER fp1, FILE_BUFFER fp2, FILE_BUFFER fp3, int &first_time);
 char *macke_one_entry_in(FILE_BUFFER fp, const char *key, char *oldname, char **var, char *line, int index);
 char *macke_continue_line(const char *key, char *oldname, char **var, char *line, FILE_BUFFER fp);
 char *macke_origin(char *key, char *line, FILE_BUFFER fp);

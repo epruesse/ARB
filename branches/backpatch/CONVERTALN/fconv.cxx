@@ -291,7 +291,7 @@ void init_seq_data()
 #include <test_unit.h>
 #include <arb_defs.h>
 
-// #define TEST_AUTO_UPDATE
+#define TEST_AUTO_UPDATE
 
 struct FormatSpec {
     char        id; // GENBANK, MACKE, ...
@@ -301,12 +301,14 @@ struct FormatSpec {
 
 #define FORMATSPEC____(tag) { tag, #tag, NULL }
 #define FORMATSPEC_GOT(tag,file) { tag, #tag, "impexp/" file ".eft.exported" }
+#define FORMATSPEC_GOT_PLAIN(tag,file) { tag, #tag, "impexp/" file }
 
 static FormatSpec format[] = {
     FORMATSPEC_GOT(ALMA, "ae2"),
     FORMATSPEC_GOT(EMBL, "embl"),
     FORMATSPEC_GOT(GCG, "gcg"),
-    FORMATSPEC_GOT(GENBANK, "genbank"),
+    // FORMATSPEC_GOT(GENBANK, "genbank"),
+    FORMATSPEC_GOT_PLAIN(GENBANK, "genbank.input"),
     FORMATSPEC_GOT(MACKE, "ae2"),
     FORMATSPEC____(NBRF),
     FORMATSPEC_GOT(PAUP, "paup"),
@@ -387,8 +389,17 @@ static const char *test_convert(const char *inf, const char *outf, int intype, i
     return error;
 }
 
+static const char *hacked_name(int fmt) {
+    const char *name = NAME(fmt);
+
+    if (strcmp(name, "PROTEIN") == 0) return "SWISSPROT";
+    if (strcmp(name, "PAUP")    == 0) return "NEXUS";
+
+    return name;
+}
+
 static void test_convert_by_format_num_WRAPPED(int from, int to) {
-    char          *toFile       = GBS_global_string_copy("impexp/conv.%s_2_%s", NAME(from), NAME(to));
+    char          *toFile       = GBS_global_string_copy("impexp/conv.%s_2_%s", hacked_name(from), hacked_name(to));
     bool           test_outfile = true;
     const char    *error        = test_convert(INPUT(from), toFile, ID(from), ID(to));
     Capabilities&  me           = cap[from][to];
@@ -406,10 +417,12 @@ static void test_convert_by_format_num_WRAPPED(int from, int to) {
         }
         else {
             TEST_ASSERT(GB_is_regularfile(toFile));
+            fprintf(stderr, "toFile='%s'\n", toFile); fflush(stderr);
             if (me.emptyOutput) {
                 TEST_ASSERT_EQUAL(GB_size_of_file(toFile), 0);
             }
-            else {                                                  
+            else {
+                TEST_ASSERT(GB_size_of_file(toFile)>10);
                 TEST_EXPECTED_CONVERSION(toFile);                   
             }                                                       
             TEST_ASSERT_ZERO_OR_SHOW_ERRNO(unlink(toFile));         
@@ -522,16 +535,7 @@ void TEST_converter() {
     EMPTY_OUTFILE_CREATED(ALMA, GENBANK);
     EMPTY_OUTFILE_CREATED(ALMA, MACKE);
     EMPTY_OUTFILE_CREATED(ALMA, PRINTABLE);
-
-    EMPTY_OUTFILE_CREATED(EMBL, GENBANK);
-    EMPTY_OUTFILE_CREATED(EMBL, MACKE);
-    EMPTY_OUTFILE_CREATED(EMBL, PROTEIN);
-
-    EMPTY_OUTFILE_CREATED(GENBANK, MACKE);
-
-    EMPTY_OUTFILE_CREATED(MACKE, EMBL);
     EMPTY_OUTFILE_CREATED(MACKE, GENBANK);
-    EMPTY_OUTFILE_CREATED(MACKE, PROTEIN);
 
     int possible     = 0;
     int tested       = 0;

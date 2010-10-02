@@ -1,0 +1,55 @@
+LOCUS       HSFAU
+ACCESSION   X65923
+DEFINITION  H.sapiens fau mRNA
+BASE COUNT      125 a    139 c    148 g    106 t
+ORIGIN
+       1  ttcctctttc tcgactccat cttcgcggta gctgggaccg ccgttcagtc gccaatatgc
+      61  agctctttgt ccgcgcccag gagctacaca ccttcgaggt gaccggccag gaaacggtcg
+     121  cccagatcaa ggctcatgta gcctcactgg agggcattgc cccggaagat caagtcgtgc
+     181  tcctggcagg cgcgcccctg gaggatgagg ccactctggg ccagtgcggg gtggaggccc
+     241  tgactaccct ggaagtagca ggccgcatgc ttggaggtaa agttcatggt tccctggccc
+     301  gtgctggaaa agtgagaggt cagactccta aggtggccaa acaggagaag aagaagaaga
+     361  agacaggtcg ggctaagcgg cggatgcagt acaaccggcg ctttgtcaac gttgtgccca
+     421  cctttggcaa gaagaagggc cccaatgcca actcttaagt cttttgtaat tctggctttc
+     481  tctaataaaa aagccactta gttcagtcaa aaaaaaaa
+//
+LOCUS       HSFAU1
+ACCESSION   X65921
+DEFINITION  H.sapiens fau 1 gene
+BASE COUNT      421 a    562 c    538 g    495 t
+ORIGIN
+       1  ctaccatttt ccctctcgat tctatatgta cactcgggac aagttctcct gatcgaaaac
+      61  ggcaaaacta aggccccaag taggaatgcc ttagttttcg gggttaacaa tgattaacac
+     121  tgagcctcac acccacgcga tgccctcagc tcctcgctca gcgctctcac caacagccgt
+     181  agcccgcagc cccgctggac accggttctc catccccgca gcgtagcccg gaacatggta
+     241  gctgccatct ttacctgcta cgccagcctt ctgtgcgcgc aactgtctgg tcccgccccg
+     301  tcctgcgcga gctgctgccc aggcaggttc gccggtgcga gcgtaaaggg gcggagctag
+     361  gactgccttg ggcggtacaa atagcaggga accgcgcggt cgctcagcag tgacgtgaca
+     421  cgcagcccac ggtctgtact gacgcgccct cgcttcttcc tctttctcga ctccatcttc
+     481  gcggtagctg ggaccgccgt tcaggtaaga atggggcctt ggctggatcc gaagggcttg
+     541  tagcaggttg gctgcggggt cagaaggcgc ggggggaacc gaagaacggg gcctgctccg
+     601  tggccctgct ccagtcccta tccgaactcc ttgggaggca ctggccttcc gcacgtgagc
+     661  cgccgcgacc accatcccgt cgcgatcgtt tctggaccgc tttccactcc caaatctcct
+     721  ttatcccaga gcatttcttg gcttctctta caagccgtct tttctttact cagtcgccaa
+     781  tatgcagctc tttgtccgcg cccaggagct acacaccttc gaggtgaccg gccaggaaac
+     841  ggtcgcccag atcaaggtaa ggctgcttgg tgcgccctgg gttccatttt cttgtgctct
+     901  tcactctcgc ggcccgaggg aacgcttacg agccttatct ttccctgtag gctcatgtag
+     961  cctcactgga gggcattgcc ccggaagatc aagtcgtgct cctggcaggc gcgcccctgg
+    1021  aggatgaggc cactctgggc cagtgcgggg tggaggccct gactaccctg gaagtagcag
+    1081  gccgcatgct tggaggtgag tgagagagga atgttctttg aagtaccggt aagcgtctag
+    1141  tgagtgtggg gtgcatagtc ctgacagctg agtgtcacac ctatggtaat agagtacttc
+    1201  tcactgtctt cagttcagag tgattcttcc tgtttacatc cctcatgttg aacacagacg
+    1261  tccatgggag actgagccag agtgtagttg tatttcagtc acatcacgag atcctagtct
+    1321  ggttatcagc ttccacacta aaaattaggt cagaccaggc cccaaagtgc tctataaatt
+    1381  agaagctgga agatcctgaa atgaaactta agatttcaag gtcaaatatc tgcaactttg
+    1441  ttctcattac ctattgggcg cagcttctct ttaaaggctt gaattgagaa aagaggggtt
+    1501  ctgctgggtg gcaccttctt gctcttacct gctggtgcct tcctttccca ctacaggtaa
+    1561  agtccatggt tccctggccc gtgctggaaa agtgagaggt cagactccta aggtgagtga
+    1621  gagtattagt ggtcatggtg ttaggacttt ttttcctttc acagctaaac caagtccctg
+    1681  ggctcttact cggtttgcct tctccctccc tggagatgag cctgagggaa gggatgctag
+    1741  gtgtggaaga caggaaccag ggcctgatta accttccctt ctccaggtgg ccaaacagga
+    1801  gaagaagaag aagaagacag gtcgggctaa gcggcggatg cagtacaacc ggcgctttgt
+    1861  caacgttgtg cccacctttg gcaagaagaa gggccccaat gccaactctt aagtcttttg
+    1921  taattctggc tttctctaat aaaaaagcca cttagttcag tcatcgcatt gtttcatctt
+    1981  tacttgcaag gcctcaggga gaggtgtgct tctcgg
+//

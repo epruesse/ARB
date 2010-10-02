@@ -642,7 +642,9 @@ void macke_to_alma(char *inf, char *outf)
     init_embl();
     init_alma();
     alma_out_header(ofp);
-    while (macke_in(ifp1, ifp2, ifp3) != EOF) {
+
+    int first_time = 1;
+    while (macke_in(ifp1, ifp2, ifp3, first_time) != EOF) {
         if (data.numofseq > 0)
             fprintf(ofp, "\n");
         data.numofseq++;

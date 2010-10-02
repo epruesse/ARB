@@ -60,45 +60,26 @@ HOMOEF_R>    0
 HOMOEF_S>    0
 HOMOEF_T>    0
 NXT ENTRY>S
-ENTRY ID>MetMazei
-SEQUENCE>MetMazei.EMBL
+ENTRY ID>HSFAU
+SEQUENCE>HSFAU.EMBL
 FORMAT>EMBL
 ACCEPT>ALL
 DEFGAP>[-]
 PARAMS>1
 GAPS>
-   21    9 [-]
-    5    2 [-]
-    2    1 [-]
-    1    2 [-]
-    1    1 [-]
-    1    1 [-]
-    1    4 [-]
-    1    2 [-]
-    1    2 [-]
-    1    1 [-]
-    1    2 [-]
-    1    1 [-]
-    1    2 [-]
-    2    1 [-]
-    1    2 [-]
-    1    1 [-]
-    2    1 [-]
-    1    2 [-]
-    1    4 [-]
-    2    2 [-]
-    3    1 [-]
-    1    1 [-]
-    2    6 [-]
-    1    1 [-]
-    1    2 [-]
-    1    1 [-]
-    1    3 [-]
-    1    3 [-]
-    1    1 [-]
-    1    3 [-]
-    9    1 [-]
-   29    0 [-]
+    0  518 [-]
+   -1   -1 [-]
+END ENTRY>
+
+NXT ENTRY>S
+ENTRY ID>HSFAU1
+SEQUENCE>HSFAU1.EMBL
+FORMAT>EMBL
+ACCEPT>ALL
+DEFGAP>[-]
+PARAMS>1
+GAPS>
+    0 2016 [-]
    -1   -1 [-]
 END ENTRY>
 END FILE>
