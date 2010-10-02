@@ -1,19 +1,71 @@
 #-
 #-
 #-	editor
-#-	Thu Sep 30 13:43:07 2010
+#-	Sat Oct  2 19:08:41 2010
 #-
 #-
-#-	Reference sequence:  MetMazei
+#-	Reference sequence:  HSFAU
 #-	Attributes:
-#=		MetMazei	in  out  vis  prt   ord  dna  lin  5>3  func ref
+#=		HSFAU	 	in  out  vis  prt   ord  dna  lin  5>3  func ref
+#=		HSFAU1		in  out  vis  prt   ord  dna  lin  5>3  func
 #-
-#:MetMazei:name:Methanosarcina mazei.
-#:MetMazei:date:30-SEP-1910
-#:MetMazei:acs:X69874
-#:MetMazei:rem:ref:1
-#:MetMazei:rem:GenBank ACCESSION:X69874
-MetMazei     0 .....................AUUCUGGUU-----GA--U-CC-U-G-CC
-MetMazei    50 AG-AG-GU-U-AC-U-GC--U-AU-C--G-GU-GUUC--GC---C-U--A
-MetMazei   100 AGCCA-U-GC-G-AGU-CAU-A-UGU---------A--------------
-MetMazei   150 -..............
+#:HSFAU:name:H.sapiens fau
+#:HSFAU:date:02-JAN-1910
+#:HSFAU:acs:X65923
+#:HSFAU:rem:GenBank ACCESSION:X65923
+#:HSFAU1:name:H.sapiens fau
+#:HSFAU1:date:02-JAN-1910
+#:HSFAU1:acs:X65921
+#:HSFAU1:rem:GenBank ACCESSION:X65921
+HSFAU     0 ttcctctttctcgactccatcttcgcggtagctgggaccgccgttcagtc
+HSFAU    50 gccaatatgcagctctttgtccgcgcccaggagctacacaccttcgaggt
+HSFAU   100 gaccggccaggaaacggtcgcccagatcaaggctcatgtagcctcactgg
+HSFAU   150 agggcattgccccggaagatcaagtcgtgctcctggcaggcgcgcccctg
+HSFAU   200 gaggatgaggccactctgggccagtgcggggtggaggccctgactaccct
+HSFAU   250 ggaagtagcaggccgcatgcttggaggtaaagttcatggttccctggccc
+HSFAU   300 gtgctggaaaagtgagaggtcagactcctaaggtggccaaacaggagaag
+HSFAU   350 aagaagaagaagacaggtcgggctaagcggcggatgcagtacaaccggcg
+HSFAU   400 ctttgtcaacgttgtgcccacctttggcaagaagaagggccccaatgcca
+HSFAU   450 actcttaagtcttttgtaattctggctttctctaataaaaaagccactta
+HSFAU   500 gttcagtcaaaaaaaaaa
+HSFAU1     0 ctaccattttccctctcgattctatatgtacactcgggacaagttctcct
+HSFAU1    50 gatcgaaaacggcaaaactaaggccccaagtaggaatgccttagttttcg
+HSFAU1   100 gggttaacaatgattaacactgagcctcacacccacgcgatgccctcagc
+HSFAU1   150 tcctcgctcagcgctctcaccaacagccgtagcccgcagccccgctggac
+HSFAU1   200 accggttctccatccccgcagcgtagcccggaacatggtagctgccatct
+HSFAU1   250 ttacctgctacgccagccttctgtgcgcgcaactgtctggtcccgccccg
+HSFAU1   300 tcctgcgcgagctgctgcccaggcaggttcgccggtgcgagcgtaaaggg
+HSFAU1   350 gcggagctaggactgccttgggcggtacaaatagcagggaaccgcgcggt
+HSFAU1   400 cgctcagcagtgacgtgacacgcagcccacggtctgtactgacgcgccct
+HSFAU1   450 cgcttcttcctctttctcgactccatcttcgcggtagctgggaccgccgt
+HSFAU1   500 tcaggtaagaatggggccttggctggatccgaagggcttgtagcaggttg
+HSFAU1   550 gctgcggggtcagaaggcgcggggggaaccgaagaacggggcctgctccg
+HSFAU1   600 tggccctgctccagtccctatccgaactccttgggaggcactggccttcc
+HSFAU1   650 gcacgtgagccgccgcgaccaccatcccgtcgcgatcgtttctggaccgc
+HSFAU1   700 tttccactcccaaatctcctttatcccagagcatttcttggcttctctta
+HSFAU1   750 caagccgtcttttctttactcagtcgccaatatgcagctctttgtccgcg
+HSFAU1   800 cccaggagctacacaccttcgaggtgaccggccaggaaacggtcgcccag
+HSFAU1   850 atcaaggtaaggctgcttggtgcgccctgggttccattttcttgtgctct
+HSFAU1   900 tcactctcgcggcccgagggaacgcttacgagccttatctttccctgtag
+HSFAU1   950 gctcatgtagcctcactggagggcattgccccggaagatcaagtcgtgct
+HSFAU1  1000 cctggcaggcgcgcccctggaggatgaggccactctgggccagtgcgggg
+HSFAU1  1050 tggaggccctgactaccctggaagtagcaggccgcatgcttggaggtgag
+HSFAU1  1100 tgagagaggaatgttctttgaagtaccggtaagcgtctagtgagtgtggg
+HSFAU1  1150 gtgcatagtcctgacagctgagtgtcacacctatggtaatagagtacttc
+HSFAU1  1200 tcactgtcttcagttcagagtgattcttcctgtttacatccctcatgttg
+HSFAU1  1250 aacacagacgtccatgggagactgagccagagtgtagttgtatttcagtc
+HSFAU1  1300 acatcacgagatcctagtctggttatcagcttccacactaaaaattaggt
+HSFAU1  1350 cagaccaggccccaaagtgctctataaattagaagctggaagatcctgaa
+HSFAU1  1400 atgaaacttaagatttcaaggtcaaatatctgcaactttgttctcattac
+HSFAU1  1450 ctattgggcgcagcttctctttaaaggcttgaattgagaaaagaggggtt
+HSFAU1  1500 ctgctgggtggcaccttcttgctcttacctgctggtgccttcctttccca
+HSFAU1  1550 ctacaggtaaagtccatggttccctggcccgtgctggaaaagtgagaggt
+HSFAU1  1600 cagactcctaaggtgagtgagagtattagtggtcatggtgttaggacttt
+HSFAU1  1650 ttttcctttcacagctaaaccaagtccctgggctcttactcggtttgcct
+HSFAU1  1700 tctccctccctggagatgagcctgagggaagggatgctaggtgtggaaga
+HSFAU1  1750 caggaaccagggcctgattaaccttcccttctccaggtggccaaacagga
+HSFAU1  1800 gaagaagaagaagaagacaggtcgggctaagcggcggatgcagtacaacc
+HSFAU1  1850 ggcgctttgtcaacgttgtgcccacctttggcaagaagaagggccccaat
+HSFAU1  1900 gccaactcttaagtcttttgtaattctggctttctctaataaaaaagcca
+HSFAU1  1950 cttagttcagtcatcgcattgtttcatctttacttgcaaggcctcaggga
+HSFAU1  2000 gaggtgtgcttctcgg

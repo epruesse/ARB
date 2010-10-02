@@ -262,7 +262,8 @@ struct FormatSpec {
 
 static FormatSpec format_spec[] = {
     // valid according to main.cxx@known_in_type
-    FORMATSPEC_GOT______(GENBANK, "genbank"),
+    // FORMATSPEC_GOT______(GENBANK, "genbank"),
+    FORMATSPEC_GOT_PLAIN(GENBANK, "genbank.input"),
     FORMATSPEC_GOT______(EMBL, "embl"),
     FORMATSPEC_GOT______(MACKE, "ae2"),
     FORMATSPEC_GOT_PLAIN(SWISSPROT, "swissprot.input"), // SWISSPROT
@@ -497,6 +498,8 @@ void TEST_converter() {
     NOT_SUPPORTED(SWISSPROT, EMBL);
     NOT_SUPPORTED(SWISSPROT, NBRF);
     NOT_SUPPORTED(SWISSPROT, STADEN);
+
+    FCKDUP(GENBANK, GCG);
 
     int possible     = 0;
     int tested       = 0;
