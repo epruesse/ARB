@@ -59,12 +59,13 @@ char macke_in(FILE_BUFFER fp1, FILE_BUFFER fp2, FILE_BUFFER fp3, int& first_time
     static char  line1[LINENUM];
     static char  line2[LINENUM];
     static char  line3[LINENUM];
+    static char *eof1, *eof2, *eof3;
     // static int   first_time = 1;
-    char         oldname[TOKENNUM], name[TOKENNUM];
-    char         key[TOKENNUM], temp[LINENUM];
-    char        *eof1, *eof2, *eof3;
-    int          numofrem   = 0;
-    int          index;
+
+    char oldname[TOKENNUM], name[TOKENNUM];
+    char key[TOKENNUM], temp[LINENUM];
+    int  numofrem = 0;
+    int  index;
 
     /* file 1 points to seq. information */
     /* file 2 points to seq. data */
