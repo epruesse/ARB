@@ -305,11 +305,13 @@ struct FormatSpec {
 
 static FormatSpec format[] = {
     FORMATSPEC_GOT(ALMA, "ae2"),
-    FORMATSPEC_GOT(EMBL, "embl"),
+    // FORMATSPEC_GOT(EMBL, "embl"),
+    FORMATSPEC_GOT_PLAIN(EMBL, "embl.input"),
     FORMATSPEC_GOT(GCG, "gcg"),
     // FORMATSPEC_GOT(GENBANK, "genbank"),
     FORMATSPEC_GOT_PLAIN(GENBANK, "genbank.input"),
-    FORMATSPEC_GOT(MACKE, "ae2"),
+    // FORMATSPEC_GOT(MACKE, "ae2"),
+    FORMATSPEC_GOT_PLAIN(MACKE, "macke.input"),
     FORMATSPEC____(NBRF),
     FORMATSPEC_GOT(PAUP, "paup"),
     FORMATSPEC_GOT(PHYLIP, "phylip"),
@@ -366,11 +368,20 @@ static Capabilities cap[fcount][fcount];
 #define INPUT(f) format[f].testfile
 
 
+
 #ifdef TEST_AUTO_UPDATE
+
+inline bool missing_or_differs_by_more_than_date(const char *file, const char *expected) {
+    if (!GB_is_regularfile(expected)) return true;
+    return !GB_test_textfile_difflines(file, expected, 0, 1);
+}
+
 #define TEST_EXPECTED_CONVERSION(file)                                  \
     do {                                                                \
         char *expected = GBS_global_string_copy("%s.expected", file);   \
-        system(GBS_global_string("cp %s %s", file, expected));          \
+        if (missing_or_differs_by_more_than_date(file, expected)) {     \
+            system(GBS_global_string("cp %s %s", file, expected));      \
+        }                                                               \
         free(expected);                                                 \
     } while (0)
 #else
@@ -550,6 +561,7 @@ void TEST_converter() {
     for (int from = 0; from<fcount; from++) {
         for (int to = 0; to<fcount; to++) {
             if (from == to) continue;
+            if (from == NUM_ALMA || to == NUM_ALMA) continue;
 
             possible++;
             Capabilities& me = cap[from][to];
