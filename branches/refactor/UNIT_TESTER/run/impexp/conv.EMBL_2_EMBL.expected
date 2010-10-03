@@ -1,0 +1,57 @@
+ID   A1MVRNA2   standard; unassigned RNA; VRL; 2593 BP.
+XX
+AC   X01572; J02002; K02702;
+XX
+DT   07-NOV-1985 (Rel. 07, Created)
+DT   17-FEB-1997 (Rel. 50, Last updated, Version 6)
+XX
+DE   Alfalfa mosaic virus (A1M4) RNA 2
+XX
+KW   unidentified reading frame.
+XX
+OS   Alfalfa mosaic virus
+OC   No information.
+XX
+RN   [1]
+RP   1-2593
+RA   Cornelissen B.J., Brederode F.T.M., Veeneman G.H., van Boom J.H.,
+RA   Bol J.F.;
+RT   "Complete nucleotide sequence of alfalfa mosaic virus RNA 2";
+XX
+DR   GOA; P03593. SWISS-PROT; P03593; V90K_AMVLE.
+XX
+CC   Data kindly reviewed (30-JAN-1986) by J.F. Bol
+XX
+SQ   Sequence 295 BP; 74 A; 52 C; 56 G; 99 T; 14 other;
+     gtttttatct tttcgcgatt gaaaagataa gtttttcagt ttaatctttt caatatgttc
+     60actctttt gagatgtctc ggattcggtg ttaatgaacc tactaacact tcctcatcag
+     ag120tatgt tcccgagtat tccgttgaag agatttccaa cgaagtcgct gaactcgatt
+     cagtg180ga tccattattc caatgttaca aacatgtttt tgtatcattg atgctcgtaa
+     gaaagatg24 0actcaagct gccgaagact tcctcgagag ttttggggga ga281
+//
+ID   ER781674_1; parent: ER781674
+XX
+AC   ER781674;
+XX
+SQ   Sequence 367 BP; 51 A; 109 C; 124 G; 66 T; 17 other;
+     tggcgccgta gatgcagcgc gactggcccg gcttctcggc gtcgaggtac tgcgccacgg
+     60ccttggcg ctggccacgt ccgggcagac cacgatgctc ttgcgtgagc cggcgacgtg
+     ga120cgatg cccttggcca gttcgatcat cgtctggtcg ttggtgatcc gggcggcgat
+     ctcgg180cg tcggaatagt ccttctcgcc ggcctcgttc tccgccacgg tcagcgtgga
+     gaagtcga24 0tggagacgc ggacgaacgc ctgcttggcg gggcagagcc ataccgttgg
+     ccatgcctca c300aggatg tcgcggttga aggcgaggcc ctggaacagg ttggccatcg
+     ccac350
+//
+ID   AY704744_1; parent: AY704744
+XX
+AC   AY704744;
+XX
+SQ   Sequence 367 BP; 100 A; 75 C; 77 G; 98 T; 17 other;
+     gcatcgatga agaacgcagc gaaatgcgat aagtaatgtg aattgcagaa ttcagtgaat
+     60catcgaat ctttgaacgc acattgcgcc cattagtatt ctagtgggca tgcctgttcg
+     ag120cgtca tttcaaccct taagcttagc ttagtattgg gaatctgctt aaccgcagct
+     cctta180aa tctagttggc agagcacagc tgtactctga gcgtagtaat tcattatctc
+     gctttctg24 0aagacagtc gtacgatagc cacaaacttt gcatcttgca aactttttaa
+     tggttgacct c300ggatca ggtaggaata cccgctgaac ttaagcatat caataagcgg
+     agga350
+//

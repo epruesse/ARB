@@ -10,20 +10,17 @@ extern int warning_out;
  *      Function init_pm_data().
  *              Init macke and embl data.
  */
-void init_em_data()
+void reinit_em_data()
 {
-    init_macke();
-    init_embl();
+    reinit_macke();
+    reinit_embl();
 }
 
 /* ------------------------------------------------------------
- *      Function init_embl().
+ *      Function reinit_embl().
  *              Initialize embl entry.
  */
-void init_embl() {
-    int indi;
-
-    /* initialize embl format */
+void cleanup_embl() {
     Freespace(&(data.embl.id));
     Freespace(&(data.embl.dateu));
     Freespace(&(data.embl.datec));
@@ -32,7 +29,7 @@ void init_embl() {
     Freespace(&(data.embl.accession));
     Freespace(&(data.embl.keywords));
 
-    for (indi = 0; indi < data.embl.numofref; indi++) {
+    for (int indi = 0; indi < data.embl.numofref; indi++) {
         Freespace(&(data.embl.reference[indi].author));
         Freespace(&(data.embl.reference[indi].title));
         Freespace(&(data.embl.reference[indi].journal));
@@ -50,7 +47,11 @@ void init_embl() {
     Freespace(&(data.embl.comments.seqinf.gbkentry));
     Freespace(&(data.embl.comments.seqinf.methods));
     Freespace(&(data.embl.comments.others));
+}
 
+void reinit_embl() {
+    /* initialize embl format */
+    cleanup_embl();
     data.embl.id = Dupstr("\n");
     data.embl.dateu = Dupstr("\n");
     data.embl.datec = Dupstr("\n");
@@ -246,7 +247,7 @@ char embl_in_id(FILE_BUFFER fp) {
  *      Function embl_key_word().
  *              Get the key_word from line beginning at index.
  */
-void embl_key_word(char *line, int index, char *key, int length)
+void embl_key_word(const char *line, int index, char *key, int length) // @@@ similar to genbank_key_word and macke_key_word
 /* length = max size of key word */
 {
     int indi, indj;
@@ -330,13 +331,13 @@ char *embl_one_entry(char *line, FILE_BUFFER fp, char **entry, char *key) {
  *              Verify title.
  */
 void embl_verify_title(int refnum) {
-    int len;
-    char *temp;
+    int   len;
 
     Append_char(&(data.embl.reference[refnum].title), ';');
 
     len = Lenstr(data.embl.reference[refnum].title);
     if (len > 2 && (data.embl.reference[refnum].title[0] != '"' || data.embl.reference[refnum].title[len - 3] != '"')) {
+        char *temp = NULL;
         if (data.embl.reference[refnum].title[0] != '"')
             temp = (char *)Dupstr("\"");
         else
@@ -349,7 +350,9 @@ void embl_verify_title(int refnum) {
             Append_char(&temp, ';');
         }
         replace_entry(&(data.embl.reference[refnum].title), temp);
+        free(temp);
     }
+
 }
 
 /* --------------------------------------------------------------
@@ -900,13 +903,12 @@ void embl_to_macke(char *inf, char *outf, int format) {
     
     int indi, total_num;
 
-    init();
     /* macke format seq irrelevant header */
     macke_out_header(ofp);
     for (indi = 0; indi < 3; indi++) {
         FILE_BUFFER_rewind(ifp);
-        init_seq_data();
-        init_em_data();
+        reset_seq_data();
+        reinit_em_data();
         while (embl_in(ifp) != EOF) {
             data.numofseq++;
             if (etom()) {
@@ -929,7 +931,7 @@ void embl_to_macke(char *inf, char *outf, int format) {
             }
             else throw_error(4, "Conversion from embl to macke fails");
 
-            init_em_data();
+            reinit_em_data();
         }
         total_num = data.numofseq;
         if (indi == 0) {
@@ -943,6 +945,7 @@ void embl_to_macke(char *inf, char *outf, int format) {
 
     log_processed(total_num);
     fclose(ofp);
+    destroy_FILE_BUFFER(ifp);
 }
 
 /* ------------------------------------------------------------
@@ -950,9 +953,11 @@ void embl_to_macke(char *inf, char *outf, int format) {
  *              Convert from embl format to Macke format.
  */
 int etom() {
-    init_genbank();
-    if (etog()) return gtom();
-    return 0;
+    // Responsibility note: caller has to cleanup embl and macke data
+
+    int ok = etog() && gtom();
+    reinit_genbank(); // cleanup afterwards!
+    return ok;
 }
 
 /* -------------------------------------------------------------
@@ -964,18 +969,18 @@ void embl_to_embl(char *inf, char *outf) {
     FILE_BUFFER  ifp = create_FILE_BUFFER(inf, IFP);
     FILE        *ofp = open_output_or_die(outf);
 
-    init();
-    init_seq_data();
-    init_embl();
+    reset_seq_data();
+    reinit_embl();
 
     while (embl_in(ifp) != EOF) {
         data.numofseq++;
         embl_out(ofp);
-        init_embl();
+        reinit_embl();
     }
 
     log_processed(data.numofseq);
     fclose(ofp);
+    destroy_FILE_BUFFER(ifp);
 }
 
 /* -------------------------------------------------------------
@@ -987,10 +992,9 @@ void embl_to_genbank(char *inf, char *outf) {
     FILE_BUFFER  ifp = create_FILE_BUFFER(inf, IFP);
     FILE        *ofp = open_output_or_die(outf);
 
-    init();
-    init_seq_data();
-    init_genbank();
-    init_embl();
+    reset_seq_data();
+    reinit_genbank();
+    reinit_embl();
 
     while (embl_in(ifp) != EOF) {
         data.numofseq++;
@@ -999,12 +1003,13 @@ void embl_to_genbank(char *inf, char *outf) {
         else
             throw_error(32, "Conversion from macke to genbank fails");
 
-        init_genbank();
-        init_embl();
+        reinit_genbank();
+        reinit_embl();
     }
 
     log_processed(data.numofseq);
     fclose(ofp);
+    destroy_FILE_BUFFER(ifp);
 }
 
 /* -------------------------------------------------------------
@@ -1012,6 +1017,8 @@ void embl_to_genbank(char *inf, char *outf) {
  *              Convert from embl to genbank format.
  */
 int etog() {
+    // Responsibility note: caller has to cleanup embl and genbank data
+    
     int  indi;
     char key[TOKENSIZE], temp[LONGTEXT];
     char t1[TOKENSIZE], t2[TOKENSIZE], t3[TOKENSIZE];
@@ -1081,6 +1088,7 @@ int etog() {
  *      Function etog_reference().
  *              Convert reference from EMBL to GenBank format.
  */
+
 void etog_reference() {
     int indi, len, start, end;
     char temp[LONGTEXT];
@@ -1109,15 +1117,12 @@ void etog_reference() {
                 && data.embl.reference[indi].title[len - 2] == ';' && data.embl.reference[indi].title[len - 3] == '"') {
                 data.embl.reference[indi].title[len - 3] = '\n';
                 data.embl.reference[indi].title[len - 2] = '\0';
-                data.gbk.reference[indi].title = (char *)
-                    Dupstr(data.embl.reference[indi].title + 1);
+                data.gbk.reference[indi].title = Dupstr(data.embl.reference[indi].title + 1);
                 data.embl.reference[indi].title[len - 3] = '"';
                 data.embl.reference[indi].title[len - 2] = ';';
             }
             else
-                data.gbk.reference[indi].title = (char *)
-                    Dupstr(data.embl.reference[indi].title);
-
+                data.gbk.reference[indi].title = Dupstr(data.embl.reference[indi].title);
         }
         else
             data.gbk.reference[indi].title = (char *)Dupstr("\n");
@@ -1235,7 +1240,9 @@ char *etog_journal(const char *eJournal) {
 #define TEST_ASSERT_ETOG_JOURNAL_PARSES(i,o)              \
     do {                                                  \
         char *dup = strdup(i);                            \
-        TEST_ASSERT_EQUAL(etog_journal(dup), o);          \
+        char *res = etog_journal(dup);                    \
+        TEST_ASSERT_EQUAL(res, o);                        \
+        free(res);                                        \
         free(dup);                                        \
     } while(0)
 
@@ -1312,15 +1319,14 @@ void genbank_to_embl(char *inf, char *outf) {
     FILE_BUFFER  ifp = create_FILE_BUFFER(inf, IFP);
     FILE        *ofp = open_output_or_die(outf);
     
-    init();
-    init_genbank();
-    init_embl();
+    reinit_genbank();
+    reinit_embl();
     while (genbank_in(ifp) != EOF) {
         data.numofseq++;
         if (gtoe())
             embl_out(ofp);
-        init_genbank();
-        init_embl();
+        reinit_genbank();
+        reinit_embl();
     }
 
     log_processed(data.numofseq);
@@ -1332,7 +1338,10 @@ void genbank_to_embl(char *inf, char *outf) {
  *      Function gtoe().
  *              Genbank to EMBL.
  */
+
 int gtoe() {
+    // Responsibility note: caller has to cleanup genbank and embl data
+
     char token[TOKENSIZE], temp[LONGTEXT], rdpid[TOKENSIZE];
     int  indi;
 
@@ -1574,6 +1583,13 @@ void gtoe_comments() {
         replace_entry(&(data.embl.comments.others), data.gbk.comments.others);
 }
 
+int mtoe() {
+    // Responsibility note: caller has to cleanup macke and embl data
+    int ok = mtog() && gtoe() && partial_mtoe();
+    reinit_genbank();
+    return ok;
+}
+
 /* ---------------------------------------------------------------
  *      Function macke_to_embl().
  *              Convert from macke to EMBL.
@@ -1581,28 +1597,21 @@ void gtoe_comments() {
 void macke_to_embl(char *inf, char *outf) {
     FILE *ofp  = open_output_or_die(outf);
 
-    init();
-    init_seq_data();
-    init_genbank();
-    init_macke();
-    init_embl();
-
     MackeReader macke(inf);
-    while (macke.in() != EOF) {
+    while (macke.mackeIn() != EOF) {
         data.numofseq++;
 
         /* partial_mtoe() is particularly handling
          * subspecies information, not converting whole
          * macke format to embl */
 
-        if (mtog() && gtoe() && partial_mtoe())
+        if (mtoe())
             embl_out(ofp);
         else
             throw_error(14, "Conversion from macke to embl fails");
 
-        init_genbank();
-        init_embl();
-        init_macke();
+        reinit_embl();
+        reinit_macke();
     }
 
     log_processed(data.numofseq);

@@ -11,11 +11,7 @@
  *   Function init_mache().
  *   Initialize macke entry.
  */
-void init_macke()
-{
-    int indi;
-
-    /* initialize macke format */
+void cleanup_macke() {
     Freespace(&(data.macke.seqabbr));
     Freespace(&(data.macke.name));
     Freespace(&(data.macke.atcc));
@@ -24,7 +20,7 @@ void init_macke()
     Freespace(&(data.macke.nbk));
     Freespace(&(data.macke.acs));
     Freespace(&(data.macke.who));
-    for (indi = 0; indi < data.macke.numofrem; indi++) {
+    for (int indi = 0; indi < data.macke.numofrem; indi++) {
         Freespace(&(data.macke.remarks[indi]));
     }
     Freespace((char **)&(data.macke.remarks));
@@ -33,6 +29,11 @@ void init_macke()
     Freespace(&(data.macke.author));
     Freespace(&(data.macke.strain));
     Freespace(&(data.macke.subspecies));
+}
+
+void reinit_macke() {
+    /* initialize macke format */
+    cleanup_macke();
 
     data.macke.seqabbr = Dupstr("");
     data.macke.name = Dupstr("\n");
@@ -71,7 +72,7 @@ void MackeReader::stop_reading() {
     destroy_FILE_BUFFER(fp1);
 }
 
-char MackeReader::in() {
+char MackeReader::mackeIn() {
     char  oldname[TOKENSIZE], name[TOKENSIZE];
     char  key[TOKENSIZE];
     int   numofrem = 0;
@@ -97,8 +98,8 @@ char MackeReader::in() {
         return (EOF);
 
     /* skip to next "#:" line or end of file */
-    if (line1[0] != '#' || line1[1] != ':') {
-        for (; eof1 != NULL && (line1[0] != '#' || line1[1] != ':'); eof1 = Fgetline(line1, LINESIZE, fp1)) ;
+    if (!isMackeSeqInfo(line1)) {
+        eof1 = skipOverLinesThat(line1, LINESIZE, fp1, Not(isMackeSeqInfo));
     }
 
     /* read in seq name */
@@ -173,9 +174,7 @@ char MackeReader::in() {
  *  Function macke_one_entry_in().
  *      Get one Macke entry.
  */
-char
- *macke_one_entry_in(FILE_BUFFER fp, const char *key, char *oldname, char **var, char *line, int index)
-{
+char *macke_one_entry_in(FILE_BUFFER fp, const char *key, char *oldname, char **var, char *line, int index) {
     char *eof;
 
     if (Lenstr((*var)) > 1)

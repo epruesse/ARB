@@ -25,20 +25,20 @@ void to_printable(char *inf, char *outf, int informat) {
     maxsize       = 1;
     out_of_memory = 0;
     name          = NULL;
-    init();
+    // NOOP_global_data_was_previously_initialized_here();
     total_seq     = 0;
     base_nums     = NULL;
     do {
         if (informat == GENBANK) {
-            init_genbank();
+            reinit_genbank();
             eof = genbank_in_locus(ifp);
         }
         else if (informat == EMBL || informat == SWISSPROT) {
-            init_embl();
+            reinit_embl();
             eof = embl_in_id(ifp);
         }
         else if (informat == MACKE) {
-            init_macke();
+            reinit_macke();
             eof = macke_in_name(ifp);
         }
         else throw_error(48, "UNKNOWN input format when converting to PRINTABLE format");
@@ -115,6 +115,7 @@ void to_printable(char *inf, char *outf, int informat) {
     Freespace((char **)&(base_nums));
 
     log_processed(total_seq);
+    free_sequence_data(total_seq); 
     destroy_FILE_BUFFER(ifp);
     fclose(ofp);
 }
@@ -137,20 +138,20 @@ void to_printable_1x1(char *inf, char *outf, int informat) {
     current = 0;
     name = NULL;
     while (maxsize > current) {
-        init();
+        NOOP_global_data_was_previously_initialized_here();
         FILE_BUFFER_rewind(ifp);
         total_seq = 0;
         do {                    /* read in one sequence */
             if (informat == GENBANK) {
-                init_genbank();
+                reinit_genbank();
                 eof = genbank_in_locus(ifp);
             }
             else if (informat == EMBL || informat == SWISSPROT) {
-                init_embl();
+                reinit_embl();
                 eof = embl_in_id(ifp);
             }
             else if (informat == MACKE) {
-                init_macke();
+                reinit_macke();
                 eof = macke_in_name(ifp);
             }
             else throw_error(129, "UNKNOWN input format when converting to PRINTABLE format");

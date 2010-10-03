@@ -5,10 +5,10 @@
 #include <errno.h>
 
 /* ---------------------------------------------------------------
- *   Function init_phylip().
+ *   Function reinit_phylip().
  *       Initialize genbank entry.
  */
-void init_phylip()
+void reinit_phylip()
 {
 
 }
@@ -40,24 +40,24 @@ void to_phylip(char *inf, char *outf, int informat, int readstdin) {
     maxsize       = 1;
     out_of_memory = 0;
     name          = NULL;
-    init();
-    init_phylip();
+    // NOOP_global_data_was_previously_initialized_here();
+    reinit_phylip();
     total_seq     = 0;
     do {
         if (informat == GENBANK) {
-            init_genbank();
+            reinit_genbank();
             eof = genbank_in_locus(ifp);
             if (eof == EOF) break;
             genbank_key_word(data.gbk.locus, 0, temp, TOKENSIZE);
         }
         else if (informat == EMBL || informat == SWISSPROT) {
-            init_embl();
+            reinit_embl();
             eof = embl_in_id(ifp);
             if (eof == EOF) break;
             embl_key_word(data.embl.id, 0, temp, TOKENSIZE);
         }
         else if (informat == MACKE) {
-            init_macke();
+            reinit_macke();
             eof = macke_in_name(ifp);
             if (eof == EOF) break;
             Cpystr(temp, data.macke.seqabbr);
@@ -142,6 +142,7 @@ void to_phylip(char *inf, char *outf, int informat, int readstdin) {
     }
 
     log_processed(total_seq);
+    free_sequence_data(total_seq);
 }
 
 /* ---------------------------------------------------------------
@@ -162,21 +163,21 @@ void to_phylip_1x1(char *inf, char *outf, int informat) {
     name    = NULL;
     fprintf(ofp, "%4d %4d\n", maxsize, current);
     while (maxsize > current) {
-        init();
+        NOOP_global_data_was_previously_initialized_here();
         FILE_BUFFER_rewind(ifp);
         total_seq = 0;
         do {                    /* read in one sequence */
-            init_phylip();
+            reinit_phylip();
             if (informat == GENBANK) {
-                init_genbank();
+                reinit_genbank();
                 eof = genbank_in_locus(ifp);
             }
             else if (informat == EMBL || informat == SWISSPROT) {
-                init_embl();
+                reinit_embl();
                 eof = embl_in_id(ifp);
             }
             else if (informat == MACKE) {
-                init_macke();
+                reinit_macke();
                 eof = macke_in_name(ifp);
             }
             else throw_error(128, "UNKNOWN input format when converting to PHYLIP format");

@@ -119,6 +119,7 @@ gcg.o: convert.h
 gcg.o: global.h
 gcg.o: macke.h
 gcg.o: prototypes.h
+gcg.o: types.h
 gcg.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 gcg.o: $(ARBHOME)/INCLUDE/arb_assert.h
 gcg.o: $(ARBHOME)/INCLUDE/arb_core.h

@@ -3,10 +3,10 @@
 #include "global.h"
 
 /* ------------------------------------------------------------
- *   Function init_paup().
+ *   Function reinit_paup().
  *       Init. paup data.
  */
-void init_paup()
+void reinit_paup()
 {
     free_sequence_data(data.paup.ntax);
     data.paup.ntax = 0;
@@ -30,29 +30,32 @@ void to_paup(char *inf, char *outf, int informat) {
     FILE        *IFP = open_input_or_die(inf);
     FILE_BUFFER  ifp = create_FILE_BUFFER(inf, IFP);
     FILE        *ofp = open_output_or_die(outf);
-    
+
     maxsize       = 1;
     out_of_memory = 0;
     name          = NULL;
-    init();
-    init_paup();
+
+    // NOOP_global_data_was_previously_initialized_here();
+    reinit_paup();
+
     paup_print_header(ofp);
-    total_seq     = 0;
+    total_seq = 0;
+
     do {
         if (informat == GENBANK) {
-            init_genbank();
+            reinit_genbank();
             eof = genbank_in_locus(ifp);
             if (eof == EOF) break;
             genbank_key_word(data.gbk.locus, 0, temp, TOKENSIZE); 
         }
         else if (informat == EMBL || informat == SWISSPROT) {
-            init_embl();
+            reinit_embl();
             eof = embl_in_id(ifp);
             if (eof == EOF) break;
             embl_key_word(data.embl.id, 0, temp, TOKENSIZE);
         }
         else if (informat == MACKE) {
-            init_macke();
+            reinit_macke();
             eof = macke_in_name(ifp);
             if (eof == EOF) break;
             Cpystr(temp, data.macke.seqabbr); 
@@ -118,6 +121,7 @@ void to_paup(char *inf, char *outf, int informat) {
     fprintf(ofp, "      NTAX = %6d\n      NCHAR = %6d\n      ;\n", total_seq, maxsize);
 
     log_processed(total_seq);
+    free_sequence_data(total_seq);
     destroy_FILE_BUFFER(ifp);
     fclose(ofp);
 }
@@ -141,22 +145,22 @@ void to_paup_1x1(char *inf, char *outf, int informat) {
     name    = NULL;
     paup_print_header(ofp);
     while (maxsize > current) {
-        init();
+        NOOP_global_data_was_previously_initialized_here();
         FILE_BUFFER_rewind(ifp);
         total_seq = 0;
         first_line = 0;
         do {                    /* read in one sequence */
-            init_paup();
+            reinit_paup();
             if (informat == GENBANK) {
-                init_genbank();
+                reinit_genbank();
                 eof = genbank_in_locus(ifp);
             }
             else if (informat == EMBL || informat == SWISSPROT) {
-                init_embl();
+                reinit_embl();
                 eof = embl_in_id(ifp);
             }
             else if (informat == MACKE) {
-                init_macke();
+                reinit_macke();
                 eof = macke_in_name(ifp);
             }
             else throw_error(127, "UNKNOWN input format when converting to NEXUS format");

@@ -37,7 +37,7 @@ public:
         free(inName);
     }
 
-    char in();
+    char mackeIn();
 };
 
 inline bool isMackeHeader(const char *line)    { return line[0] == '#'; }

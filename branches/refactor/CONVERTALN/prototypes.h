@@ -27,11 +27,12 @@ const char *today_date(void);
 const char *gcg_date(const char *input);
 
 /* embl.cxx */
-void init_em_data(void);
-void init_embl(void);
+void reinit_em_data(void);
+void cleanup_embl(void);
+void reinit_embl(void);
 char embl_in(FILE_BUFFER fp);
 char embl_in_id(FILE_BUFFER fp);
-void embl_key_word(char *line, int index, char *key, int length);
+void embl_key_word(const char *line, int index, char *key, int length);
 int embl_check_blanks(char *line, int numb);
 char *embl_continue_line(char *pattern, char **string, char *line, FILE_BUFFER fp);
 char *embl_one_entry(char *line, FILE_BUFFER fp, char **entry, char *key);
@@ -63,6 +64,7 @@ void gtoe_reference(void);
 char *gtoe_author(char *author);
 char *gtoe_journal(char *string);
 void gtoe_comments(void);
+int mtoe(void);
 void macke_to_embl(char *inf, char *outf);
 int partial_mtoe(void);
 
@@ -70,23 +72,23 @@ int partial_mtoe(void);
 const char *format2name(int format_type);
 void throw_conversion_not_supported(int input_format, int output_format) __ATTR__NORETURN;
 void log_processed(int seqCount);
+void reset_seq_data(void);
 void convert(const char *cinf, const char *coutf, int intype, int outype);
-void init(void);
-void init_seq_data(void);
 
 /* gcg.cxx */
 void to_gcg(char *inf, char *outf, int intype);
-void gcg_seq_out(FILE *ofp, char *key);
-void gcg_doc_out(char *line, FILE *ofp);
+void gcg_seq_out(FILE *ofp, const char *key);
+void gcg_doc_out(const char *line, FILE *ofp);
 int checksum(char *string, int numofstr);
 void gcg_out_origin(FILE *fp);
 void gcg_output_filename(char *prefix, char *name);
 int gcg_seq_length(void);
 
 /* genbank.cxx */
-void init_genbank(void);
+void cleanup_genbank(void);
+void reinit_genbank(void);
 char genbank_in(FILE_BUFFER fp);
-void genbank_key_word(char *line, int index, char *key, int length);
+void genbank_key_word(const char *line, int index, char *key, int length);
 int genbank_comment_subkey_word(char *line, int index, char *key, int length);
 int genbank_check_blanks(char *line, int numb);
 char *genbank_continue_line(char **string, char *line, int numb, FILE_BUFFER fp);
@@ -107,10 +109,12 @@ void genbank_print_lines(FILE *fp, char *string, int flag, const char *separator
 void genbank_print_comment(FILE *fp, const char *key, char *string, int offset, int indent);
 void genbank_out_origin(FILE *fp);
 void genbank_to_genbank(char *inf, char *outf);
-void init_reference(Reference *ref, int flag);
+void cleanup_reference(Reference *ref);
+void reinit_reference(Reference *ref);
 
 /* macke.cxx */
-void init_macke(void);
+void cleanup_macke(void);
+void reinit_macke(void);
 char *macke_one_entry_in(FILE_BUFFER fp, const char *key, char *oldname, char **var, char *line, int index);
 char *macke_continue_line(const char *key, char *oldname, char **var, char *line, FILE_BUFFER fp);
 char *macke_origin(char *key, char *line, FILE_BUFFER fp);
@@ -129,7 +133,6 @@ void macke_out2(FILE *fp);
 /* main.cxx */
 
 /* mg.cxx */
-void init_gm_data(void);
 void genbank_to_macke(char *inf, char *outf);
 int gtom(void);
 void gtom_remarks(void);
@@ -151,7 +154,7 @@ void get_string(char *line, char *temp, int index);
 void get_atcc_string(char *line, char *temp, int index);
 
 /* paup.cxx */
-void init_paup(void);
+void reinit_paup(void);
 void to_paup(char *inf, char *outf, int informat);
 void to_paup_1x1(char *inf, char *outf, int informat);
 void paup_verify_name(char **string);
@@ -159,7 +162,7 @@ void paup_print_line(char *string, char *sequence, int seq_length, int index, in
 void paup_print_header(FILE *ofp);
 
 /* phylip.cxx */
-void init_phylip(void);
+void reinit_phylip(void);
 void to_phylip(char *inf, char *outf, int informat, int readstdin);
 void to_phylip_1x1(char *inf, char *outf, int informat);
 void phylip_print_line(char *name, char *sequence, int seq_length, int index, FILE *fp);

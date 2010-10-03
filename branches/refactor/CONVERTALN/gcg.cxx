@@ -2,104 +2,154 @@
 #include "convert.h"
 #include "global.h"
 #include "macke.h"
+#include "types.h"
 
 /* ------------------------------------------------------------------
  *   Function to_gcg().
  *       Convert from whatever to GCG format.
  */
 
-#warning fix outfile handling in to_gcg()
-void to_gcg(char *inf, char *outf, int intype) {
-    FILE *IFP1, *IFP2, *IFP3;
-    FILE_BUFFER ifp1 = 0, ifp2 = 0, ifp3 = 0;
-    char temp[TOKENSIZE], *eof, line[LINESIZE], key[TOKENSIZE];
-    char line1[LINESIZE], line2[LINESIZE], line3[LINESIZE], name[LINESIZE];
-    char *eof1, *eof2, *eof3;
-    int seqdata;
+class GcgWriter {
+    FILE *ofp;
+    char *species_name;
+    bool  seq_written; // if true, any further sequences are ignored
 
-    if (intype == MACKE) {
-        IFP1 = open_input_or_die(inf);
-        IFP2 = open_input_or_die(inf);
-        IFP3 = open_input_or_die(inf);
-        ifp1 = create_FILE_BUFFER(inf, IFP1);
-        ifp2 = create_FILE_BUFFER(inf, IFP2);
-        ifp3 = create_FILE_BUFFER(inf, IFP3);
+public:
+    GcgWriter(const char *outf)
+        : ofp(open_output_or_die(outf)),
+          seq_written(false)
+    {}
+    ~GcgWriter() {
+        if (!seq_written) throw_errorf(110, "No data written for species '%s'", species_name);
+        free(species_name);
+        fclose(ofp);
+        log_processed(1);
     }
-    else {
-        IFP1 = open_input_or_die(inf);
-        ifp1 = create_FILE_BUFFER(inf, IFP1);
+
+    void set_species_name(const char *next_name) {
+        if (!seq_written) species_name = Dupstr(next_name);
+        else warningf(111, "Species '%s' dropped (GCG allows only 1 seq per file)", next_name);
     }
+
+    void add_comment(const char *comment) {
+        if (!seq_written) gcg_doc_out(comment, ofp);
+    }
+
+    void write_seq_data() { // uses global data
+        if (!seq_written) {
+            gcg_seq_out(ofp, species_name);
+            seq_written = true;
+        }
+        reset_seq_data();
+    }
+};
+
+
+
+
+static void macke_to_gcg(char *inf, char *outf) {
+    // @@@ fix outfile handling - use GcgWriter!
+    // @@@ use MackeReader here? 
+    
+    FILE        *IFP1 = open_input_or_die(inf);
+    FILE        *IFP2 = open_input_or_die(inf);
+    FILE        *IFP3 = open_input_or_die(inf);
+    FILE_BUFFER  ifp1 = create_FILE_BUFFER(inf, IFP1);
+    FILE_BUFFER  ifp2 = create_FILE_BUFFER(inf, IFP2);
+    FILE_BUFFER  ifp3 = create_FILE_BUFFER(inf, IFP3);
+
     FILE *ofp = NULL;
-    if (intype == MACKE) {
-        eof1 = skipOverLinesThat(line1, LINESIZE, ifp1, Not(isMackeSeqHeader)); // skip to #=; where seq. first appears
-        eof2 = skipOverLinesThat(line2, LINESIZE, ifp2, Not(isMackeSeqInfo));   // skip to #:; where the seq. information is
-        eof3 = skipOverLinesThat(line3, LINESIZE, ifp3, isMackeHeader);         // skip to where seq. data starts
 
-        /* for each seq. print out one gcg file. */
-        for (; eof1 != NULL && isMackeSeqHeader(line1); eof1 = Fgetline(line1, LINESIZE, ifp1)) {
-            macke_abbrev(line1, key, 2);
-            Cpystr(temp, key);
-            ofp = open_output_or_die(outf); // @@@ always overwrites same outfile
-            for (macke_abbrev(line2, name, 2);
-                 eof2 != NULL && isMackeSeqInfo(line2) && str_equal(name, key);
-                 eof2 = Fgetline(line2, LINESIZE, ifp2), macke_abbrev(line2, name, 2))
-            {
-                gcg_doc_out(line2, ofp);
-            }
-            eof3 = macke_origin(key, line3, ifp3);
-            gcg_seq_out(ofp, key);
-            fclose(ofp);
-            log_processed(1); 
-            ofp = NULL;
-            init_seq_data();
-            break; // stop after first sequence (@@@ print warning)
+    char line1[LINESIZE], line2[LINESIZE], line3[LINESIZE];
+    char *eof1 = skipOverLinesThat(line1, LINESIZE, ifp1, Not(isMackeSeqHeader)); // skip to #=; where seq. first appears
+    char *eof2 = skipOverLinesThat(line2, LINESIZE, ifp2, Not(isMackeSeqInfo));   // skip to #:; where the seq. information is
+    char *eof3 = skipOverLinesThat(line3, LINESIZE, ifp3, isMackeHeader);         // skip to where seq. data starts
+
+    for (; eof1 != NULL && isMackeSeqHeader(line1); eof1 = Fgetline(line1, LINESIZE, ifp1)) {
+        char key[TOKENSIZE];
+        macke_abbrev(line1, key, 2);
+
+        char temp[TOKENSIZE];
+        Cpystr(temp, key);
+        ofp = open_output_or_die(outf);        // @@@ always overwrites same outfile
+
+        char name[LINESIZE];
+        for (macke_abbrev(line2, name, 2);
+             eof2 != NULL && isMackeSeqInfo(line2) && str_equal(name, key);
+             eof2  = Fgetline(line2, LINESIZE, ifp2), macke_abbrev(line2, name, 2))
+        {
+            gcg_doc_out(line2, ofp);
+        }
+        eof3 = macke_origin(key, line3, ifp3);
+        gcg_seq_out(ofp, key);
+        fclose(ofp);
+        log_processed(1);
+        ofp  = NULL;
+        reset_seq_data();
+        break; // can only handle 1 sequence!
+    }
+    destroy_FILE_BUFFER(ifp3);
+    destroy_FILE_BUFFER(ifp2);
+    destroy_FILE_BUFFER(ifp1);
+}
+
+static void genbank_to_gcg(char *inf, char *outf) {
+    GenbankReader inp(inf);
+    GcgWriter     out(outf);
+
+    for (; inp.line(); ++inp) {
+        const char *key = inp.get_key_word(0);
+
+        if (str_equal(key, "LOCUS")) {
+            out.set_species_name(inp.get_key_word(12));
+            out.add_comment(inp.line());
+        }
+        else if (str_equal(key, "ORIGIN")) {
+            out.add_comment(inp.line());
+            inp.read_sequence_data();
+            out.write_seq_data();
+        }
+        else {
+            out.add_comment(inp.line());
         }
     }
-    else {
-        seqdata = 0;            /* flag of doc or data */
-        eof = Fgetline(line, LINESIZE, ifp1);
-        while (eof != NULL) {
-            if (intype == GENBANK) {
-                genbank_key_word(line, 0, temp, TOKENSIZE);
-                if (str_equal(temp, "LOCUS")) {
-                    genbank_key_word(line + 12, 0, key, TOKENSIZE);
-                    ofp = open_output_or_die(outf);
-                }
-                else if (str_equal(temp, "ORIGIN")) {
-                    gcg_doc_out(line, ofp);
-                    seqdata = 1;
-                    eof = genbank_origin(line, ifp1);
-                }
-            }
-            else { /* EMBL or SwissProt */
-                if (intype != EMBL && intype != SWISSPROT)
-                    throw_conversion_not_supported(intype, GCG);
+}
 
-                if (Lenstr(line) > 2 && line[0] == 'I' && line[1] == 'D') {
-                    embl_key_word(line, 5, key, TOKENSIZE);
-                    ofp = open_output_or_die(outf);
-                }
-                else if (Lenstr(line) > 1 && line[0] == 'S' && line[1] == 'Q') {
-                    gcg_doc_out(line, ofp);
-                    seqdata = 1;
-                    eof = embl_origin(line, ifp1);
-                }
-            }
+static void embl_to_gcg(char *inf, char *outf) {
+    EmblSwissprotReader inp(inf);
+    GcgWriter           out(outf);
 
-            if (seqdata) {
-                gcg_seq_out(ofp, key);
-                init_seq_data();
-                seqdata = 0;
-                log_processed(1);
-                fclose(ofp);
-                ofp     = NULL;
-                break; // stop after first sequence (@@@ print warning)
-            }
-            else {
-                gcg_doc_out(line, ofp);
-            }
-            eof = Fgetline(line, LINESIZE, ifp1);
+    for (; inp.line(); ++inp) {
+        const char *key = inp.get_key_word(0);
+
+        if (str_equal(key, "ID")) {
+            out.set_species_name(inp.get_key_word(5));
+            out.add_comment(inp.line());
         }
+        else if (str_equal(key, "SQ")) {
+            out.add_comment(inp.line());
+            inp.read_sequence_data();
+            out.write_seq_data();
+            break;
+        }
+        else {
+            out.add_comment(inp.line());
+        }
+    }
+}
+
+void to_gcg(char *inf, char *outf, int intype) {
+    if (intype == MACKE) {
+        macke_to_gcg(inf, outf);
+    }
+    else if (intype == GENBANK) {
+        genbank_to_gcg(inf, outf);
+    }
+    else if (intype == EMBL || intype == SWISSPROT) {
+        embl_to_gcg(inf, outf);
+    }
+    else {
+        throw_conversion_not_supported(intype, GCG);
     }
 }
 
@@ -107,8 +157,12 @@ void to_gcg(char *inf, char *outf, int intype) {
  *   Function gcg_seq_out().
  *       Output sequence data in gcg format.
  */
-void gcg_seq_out(FILE * ofp, char *key) {
-    fprintf(ofp, "\n%s  Length: %d  %s  Type: N  Check: %d  ..\n\n", key, gcg_seq_length(), gcg_date(today_date()), checksum(data.sequence, data.seq_length));
+void gcg_seq_out(FILE * ofp, const char *key) {
+    fprintf(ofp, "\n%s  Length: %d  %s  Type: N  Check: %d  ..\n\n",
+            key,
+            gcg_seq_length(),
+            gcg_date(today_date()),
+            checksum(data.sequence, data.seq_length));
     gcg_out_origin(ofp);
 }
 
@@ -116,7 +170,7 @@ void gcg_seq_out(FILE * ofp, char *key) {
  *   Function gcg_doc_out().
  *       Output non-sequence data(document) of gcg format.
  */
-void gcg_doc_out(char *line, FILE * ofp) {
+void gcg_doc_out(const char *line, FILE * ofp) {
     int indi, len;
     int previous_is_dot;
 

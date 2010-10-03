@@ -8,20 +8,13 @@
 
 extern int warning_out;
 
-/* --------------------------------------------------------------
- *   Function init_gm_data().
- *   Initialize data structure of genbank and Macke formats.
- */
-void init_gm_data()
-{
-    init_macke();
-    init_genbank();
-}
-
 /* ----------------------------------------------------------
  *   Function genbank_to_macke().
  *   Convert from Genbank format to Macke format.
  */
+
+inline void reinit_macke_genbank() { reinit_macke(); reinit_genbank(); }
+ 
 void genbank_to_macke(char *inf, char *outf) {
     FILE        *IFP = open_input_or_die(inf);
     FILE_BUFFER  ifp = create_FILE_BUFFER(inf, IFP);
@@ -30,13 +23,11 @@ void genbank_to_macke(char *inf, char *outf) {
     int indi, total_num;
 
     /* seq irrelevant header */
-    init();
-    init_gm_data();
     macke_out_header(ofp);
 
     for (indi = 0; indi < 3; indi++) {
         FILE_BUFFER_rewind(ifp);
-        init_seq_data();
+        reset_seq_data();
         while (genbank_in(ifp) != EOF) {
             data.numofseq++;
             if (gtom()) {
@@ -59,7 +50,7 @@ void genbank_to_macke(char *inf, char *outf) {
             }
             else throw_error(7, "Conversion from genbank to macke fails");
 
-            init_gm_data();
+            reinit_macke_genbank();
         }
         total_num = data.numofseq;
         if (indi == 0) {
@@ -72,14 +63,16 @@ void genbank_to_macke(char *inf, char *outf) {
     warning_out = 1; /* resume warning messages */
     log_processed(total_num);
     fclose(ofp);
+    destroy_FILE_BUFFER(ifp);
 }
 
 /* --------------------------------------------------------------
  *   Function gtom().
  *       Convert from Genbank format to Macke format.
  */
-int gtom()
-{
+int gtom() {
+    // Responsibility note: caller has to cleanup genbank and macke data
+    
     char temp[LONGTEXT], buffer[TOKENSIZE];
     char genus[TOKENSIZE], species[TOKENSIZE];
 
@@ -109,7 +102,7 @@ int gtom()
 
     /* copy date---DD-MMM-YYYY\n\0  */
     if (Lenstr(data.gbk.locus) < 61) {
-        data.macke.date = Dupstr(genbank_date(today_date()));
+        replace_entry(&(data.macke.date), genbank_date(today_date()));
         Append(&(data.macke.date), "\n");
     }
     else
@@ -563,20 +556,18 @@ int num_of_remark()
  *       Convert from macke format to genbank format.
  */
 void macke_to_genbank(char *inf, char *outf) {
-    init();
-    init_seq_data();
-    init_gm_data();
+    reset_seq_data();
 
     MackeReader  macke(inf);
     FILE        *ofp = open_output_or_die(outf);
     
-    while (macke.in() != EOF) {
+    while (macke.mackeIn() != EOF) {
         data.numofseq++;
         if (mtog())
             genbank_out(ofp);
         else
             throw_error(15, "Conversion from macke to genbank fails");
-        init_gm_data();
+        reinit_macke_genbank();
     }
 
     log_processed(data.numofseq);
@@ -587,8 +578,9 @@ void macke_to_genbank(char *inf, char *outf) {
  *   Function mtog().
  *       Convert Macke format to Genbank format.
  */
-int mtog()
-{
+int mtog() {
+    // Responsibility note: caller has to cleanup macke and genbank data
+    
     int  indi;
     char temp[LONGTEXT];
 
@@ -649,51 +641,50 @@ int mtog()
     return (1);
 }
 
+inline void resize_references(Reference*& ref, int& size, int new_size) {
+    ca_assert(new_size>size);
+
+    ref = (Reference*)Reallocspace(ref, sizeof(Reference)*new_size);
+    for (int i = size; i<new_size; ++i) {
+        reinit_reference(&(ref[i]));
+    }
+    size = new_size;
+}
+
 /* ---------------------------------------------------------------
  *   Function mtog_decode_remarks().
  *       Decode remarks of Macke to GenBank format.
  */
-void mtog_decode_ref_and_remarks()
-{
-
+void mtog_decode_ref_and_remarks() {
     int indi, indj;
-
     int acount, tcount, jcount, rcount, scount;
-
     char key[TOKENSIZE], temp[LONGTEXT];
 
     data.gbk.numofref = acount = tcount = jcount = rcount = scount = 0;
 
     if (Lenstr(data.macke.author) > 1) {
         if ((acount + 1) > data.gbk.numofref) {
-            /* new reference */
-            data.gbk.reference = (Reference *) Reallocspace(data.gbk.reference, sizeof(Reference) * (acount + 1));
-            data.gbk.numofref = acount + 1;
-            init_reference(&(data.gbk.reference[acount]), AUTHOR);
+            resize_references(data.gbk.reference, data.gbk.numofref, acount+1);
         }
         else
             acount = data.gbk.numofref - 1;
-        data.gbk.reference[acount++].author = (char *)Dupstr(data.macke.author);
+        replace_entry(&(data.gbk.reference[acount++].author), data.macke.author);
     }
     if (Lenstr(data.macke.journal) > 1) {
         if ((jcount + 1) > data.gbk.numofref) {
-            data.gbk.reference = (Reference *) Reallocspace(data.gbk.reference, sizeof(Reference) * (jcount + 1));
-            data.gbk.numofref = jcount + 1;
-            init_reference(&(data.gbk.reference[jcount]), JOURNAL);
+            resize_references(data.gbk.reference, data.gbk.numofref, jcount+1);
         }
         else
             jcount = data.gbk.numofref - 1;
-        data.gbk.reference[jcount++].journal = (char *)Dupstr(data.macke.journal);
+        replace_entry(&(data.gbk.reference[jcount++].journal), data.macke.journal);
     }
     if (Lenstr(data.macke.title) > 1) {
         if ((tcount + 1) > data.gbk.numofref) {
-            data.gbk.reference = (Reference *) Reallocspace(data.gbk.reference, sizeof(Reference) * (tcount + 1));
-            data.gbk.numofref = tcount + 1;
-            init_reference(&(data.gbk.reference[tcount]), TITLE);
+            resize_references(data.gbk.reference, data.gbk.numofref, tcount+1);
         }
         else
             tcount = data.gbk.numofref - 1;
-        data.gbk.reference[tcount++].title = (char *)Dupstr(data.macke.title);
+        replace_entry(&(data.gbk.reference[tcount++].title), data.macke.title);
     }
     for (indi = 0; indi < data.macke.numofrem; indi++) {
         indj = macke_key_word(data.macke.remarks[indi], 0, key, TOKENSIZE);
@@ -710,61 +701,49 @@ void mtog_decode_ref_and_remarks()
         }
         else if (str_equal(key, "ref")) {
             if ((rcount + 1) > data.gbk.numofref) {
-                /* new reference */
-                data.gbk.reference = (Reference *)
-                    Reallocspace(data.gbk.reference, sizeof(Reference) * (rcount + 1));
-                data.gbk.numofref = rcount + 1;
-                init_reference(&(data.gbk.reference[rcount]), REF);
+                resize_references(data.gbk.reference, data.gbk.numofref, rcount+1);
             }
             else
                 rcount = data.gbk.numofref - 1;
+            Freespace(&(data.gbk.reference[rcount].ref));
             data.gbk.reference[rcount++].ref = macke_copyrem(data.macke.remarks, &indi, data.macke.numofrem, indj);
         }
         else if (str_equal(key, "auth")) {
             if ((acount + 1) > data.gbk.numofref) {
-                /* new reference */
-                data.gbk.reference = (Reference *)
-                    Reallocspace(data.gbk.reference, sizeof(Reference) * (acount + 1));
-                data.gbk.numofref = acount + 1;
-                init_reference(&(data.gbk.reference[acount]), AUTHOR);
+                resize_references(data.gbk.reference, data.gbk.numofref, acount+1);
             }
             else
                 acount = data.gbk.numofref - 1;
+            Freespace(&(data.gbk.reference[acount].author));
             data.gbk.reference[acount++].author = macke_copyrem(data.macke.remarks, &indi, data.macke.numofrem, indj);
         }
         else if (str_equal(key, "title")) {
             if ((tcount + 1) > data.gbk.numofref) {
-                data.gbk.reference = (Reference *)
-                    Reallocspace(data.gbk.reference, sizeof(Reference) * (tcount + 1));
-                data.gbk.numofref = tcount + 1;
-                init_reference(&(data.gbk.reference[tcount]), TITLE);
+                resize_references(data.gbk.reference, data.gbk.numofref, tcount+1);
             }
             else
                 tcount = data.gbk.numofref - 1;
+            Freespace(&(data.gbk.reference[tcount].title));
             data.gbk.reference[tcount++].title = macke_copyrem(data.macke.remarks, &indi, data.macke.numofrem, indj);
         }
         else if (str_equal(key, "jour")) {
             if ((jcount + 1) > data.gbk.numofref) {
-                data.gbk.reference = (Reference *)
-                    Reallocspace(data.gbk.reference, sizeof(Reference) * (jcount + 1));
-                data.gbk.numofref = jcount + 1;
-                init_reference(&(data.gbk.reference[jcount]), JOURNAL);
+                resize_references(data.gbk.reference, data.gbk.numofref, jcount+1);
             }
             else
                 jcount = data.gbk.numofref - 1;
+            Freespace(&(data.gbk.reference[jcount].journal));
             data.gbk.reference[jcount++].journal = macke_copyrem(data.macke.remarks, &indi, data.macke.numofrem, indj);
         }
         else if (str_equal(key, "standard")) {
             if ((scount + 1) > data.gbk.numofref) {
-                data.gbk.reference = (Reference *)
-                    Reallocspace(data.gbk.reference, sizeof(Reference) * (scount + 1));
-                data.gbk.numofref = scount + 1;
-                init_reference(&(data.gbk.reference[scount]), STANDARD);
+                resize_references(data.gbk.reference, data.gbk.numofref, scount+1);
             }
             else
                 scount = data.gbk.numofref - 1;
-            data.gbk.reference[scount++].standard = macke_copyrem(data.macke.remarks, &indi, data.macke.numofrem, indj);
 
+            Freespace(&(data.gbk.reference[scount].standard));
+            data.gbk.reference[scount++].standard = macke_copyrem(data.macke.remarks, &indi, data.macke.numofrem, indj);
         }
         else if (str_equal(key, "Source of strain")) {
 

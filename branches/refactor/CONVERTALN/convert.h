@@ -1,9 +1,5 @@
 /* data structure for each file format and sequences */
 
-#ifndef FILEBUFFER_H
-#include <FileBuffer.h>
-#endif
-
 #define INITSEQ 6000
 #define RNA     0
 #define NONRNA  1
@@ -137,24 +133,4 @@ typedef struct {
     char *description;
 } Nbrf;
 
-/* one sequence entry */
-struct global_data {
-    int       numofseq;         /* number of sequences */
-    int       seq_length;       /* sequence length */
-    int       max;
-    char     *sequence;         /* sequence data */
-    /* to read all the sequences into memory at one time */
-    char    **ids;              /* array of ids. */
-    char    **seqs;             /* array of sequence data */
-    int      *lengths;          /* array of sequence lengths */
-    int       allocated;        /* for how many sequences space has been allocated */
-    /* NEXUS, PHYLIP, GCG, and PRINTABLE */
-    GenBank   gbk;              /* one GenBank entry */
-    Macke     macke;            /* one Macke entry */
-    Paup      paup;             /* one Paup entry */
-    Embl      embl;
-    Nbrf      nbrf;
-};
-
-extern struct global_data data;
 

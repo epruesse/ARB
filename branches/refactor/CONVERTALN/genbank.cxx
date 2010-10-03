@@ -11,26 +11,18 @@
 extern int warning_out;
 
 /* ------------------------------------------------------------
- *  Function init_genbank().
+ *  Function reinit_genbank().
  *  Initialize genbank entry.
  */
-void init_genbank() {
-    int indi;
-
-    /* initialize genbank format */
-
+void cleanup_genbank() {
     Freespace(&(data.gbk.locus));
     Freespace(&(data.gbk.definition));
     Freespace(&(data.gbk.accession));
     Freespace(&(data.gbk.keywords));
     Freespace(&(data.gbk.source));
     Freespace(&(data.gbk.organism));
-    for (indi = 0; indi < data.gbk.numofref; indi++) {
-        Freespace(&(data.gbk.reference[indi].ref));
-        Freespace(&(data.gbk.reference[indi].author));
-        Freespace(&(data.gbk.reference[indi].title));
-        Freespace(&(data.gbk.reference[indi].journal));
-        Freespace(&(data.gbk.reference[indi].standard));
+    for (int indi = 0; indi < data.gbk.numofref; indi++) {
+        cleanup_reference(&data.gbk.reference[indi]);
     }
     Freespace((char **)&(data.gbk.reference));
     Freespace(&(data.gbk.comments.orginf.source));
@@ -43,6 +35,12 @@ void init_genbank() {
     Freespace(&(data.gbk.comments.seqinf.gbkentry));
     Freespace(&(data.gbk.comments.seqinf.methods));
     Freespace(&(data.gbk.comments.others));
+}
+
+void reinit_genbank() {
+    /* initialize genbank format */
+    cleanup_genbank();
+
     data.gbk.locus = Dupstr("\n");
     data.gbk.definition = Dupstr("\n");
     data.gbk.accession = Dupstr("\n");
@@ -158,7 +156,7 @@ char genbank_in(FILE_BUFFER fp) {
  *  Function genbank_key_word().
  *      Get the key_word from line beginning at index.
  */
-void genbank_key_word(char *line, int index, char *key, int length)
+void genbank_key_word(const char *line, int index, char *key, int length) // @@@ similar to embl_key_word and macke_key_word
 {
     int indi, indj;
 
@@ -167,10 +165,8 @@ void genbank_key_word(char *line, int index, char *key, int length)
         return;
     }
 
-    for (indi = index, indj = 0;
-         (index - indi) < length && line[indi] != ' ' && line[indi] != '\t' && line[indi] != '\n' && line[indi] != '\0' && indi < 12; indi++, indj++)
+    for (indi = index, indj = 0; (index - indi) < length && line[indi] != ' ' && line[indi] != '\t' && line[indi] != '\n' && line[indi] != '\0' && indi < 12; indi++, indj++)
         key[indj] = line[indi];
-
     key[indj] = '\0';
 }
 
@@ -326,7 +322,7 @@ char *genbank_reference(char *line, FILE_BUFFER fp)
         data.gbk.numofref = refnum;
         data.gbk.reference = (Reference *) Reallocspace((char *)data.gbk.reference, (unsigned)(sizeof(Reference) * (data.gbk.numofref)));
         /* initialize the buffer */
-        init_reference(&(data.gbk.reference[refnum - 1]), ALL);
+        reinit_reference(&(data.gbk.reference[refnum - 1]));
         eof = genbank_one_entry_in(&(data.gbk.reference[refnum - 1].ref), line, fp);
     }
     /* find the reference listings */
@@ -983,13 +979,12 @@ void genbank_to_genbank(char *inf, char *outf) {
     FILE        *IFP = open_input_or_die(inf);
     FILE_BUFFER  ifp = create_FILE_BUFFER(inf, IFP);
     FILE        *ofp = open_output_or_die(outf);
-    
-    init();
-    init_genbank();
+
+    reinit_genbank();
     while (genbank_in(ifp) != EOF) {
         data.numofseq++;
         genbank_out(ofp);
-        init_genbank();
+        reinit_genbank();
     }
 
     log_processed(data.numofseq);
@@ -998,19 +993,25 @@ void genbank_to_genbank(char *inf, char *outf) {
 }
 
 /* -----------------------------------------------------------
- *   Function init_reference().
+ *   Function CRAP_init_reference().
  *       Init. new reference record(init. value is "\n").
  */
-void init_reference(Reference * ref, int flag)
-{
-    if (flag == REF)
-        ref->ref = Dupstr("\n");
-    if (flag != AUTHOR)
-        ref->author = Dupstr("\n");
-    if (flag != JOURNAL)
-        ref->journal = Dupstr("\n");
-    if (flag != TITLE)
-        ref->title = Dupstr("\n");
-    if (flag != STANDARD)
-        ref->standard = Dupstr("\n");
+
+void cleanup_reference(Reference *ref) {
+    Freespace(&(ref->ref));
+    Freespace(&(ref->author));
+    Freespace(&(ref->journal));
+    Freespace(&(ref->title));
+    Freespace(&(ref->standard));
 }
+
+void reinit_reference(Reference *ref) {
+    cleanup_reference(ref);
+
+    ref->ref      = strdup("\n");
+    ref->author   = strdup("\n");
+    ref->journal  = strdup("\n");
+    ref->title    = strdup("\n");
+    ref->standard = strdup("\n");
+}
+

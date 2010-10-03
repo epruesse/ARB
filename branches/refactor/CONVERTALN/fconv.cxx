@@ -6,6 +6,7 @@
 #include "global.h"
 #include "types.h"
 #include <static_assert.h>
+#include <smartptr.h>
 
 const char *format2name(int format_type) {
     switch (format_type) {
@@ -122,120 +123,136 @@ static void convert_WRAPPED(char *inf, char *outf, int intype, int outype) {
     }
 }
 
-
-void convert(const char *cinf, const char *coutf, int intype, int outype) {
-    char *inf  = strdup(cinf);
-    char *outf = strdup(coutf);
-
-    convert_WRAPPED(inf, outf, intype, outype);
-
-    free(outf);
-    free(inf);
-}
-
-/* ------------------- COMMON SUBROUTINES ----------------------- */
-
-/* --------------------------------------------------------------
- *      Function init().
- *      Initialize data structure at the very beginning of running
- *              any program.
- */
-void init()
-{
+void global_data::setup() {
+    cleanup();
 
     /* initialize macke format */
-    data.macke.seqabbr = NULL;
-    data.macke.name = NULL;
-    data.macke.atcc = NULL;
-    data.macke.rna = NULL;
-    data.macke.date = NULL;
-    data.macke.nbk = NULL;
-    data.macke.acs = NULL;
-    data.macke.who = NULL;
-    data.macke.remarks = NULL;
-    data.macke.numofrem = 0;
+    data.macke.seqabbr    = NULL;
+    data.macke.name       = NULL;
+    data.macke.atcc       = NULL;
+    data.macke.rna        = NULL;
+    data.macke.date       = NULL;
+    data.macke.nbk        = NULL;
+    data.macke.acs        = NULL;
+    data.macke.who        = NULL;
+    data.macke.remarks    = NULL;
+    data.macke.numofrem   = 0;
     data.macke.rna_or_dna = 'd';
-    data.macke.journal = NULL;
-    data.macke.title = NULL;
-    data.macke.author = NULL;
-    data.macke.strain = NULL;
+    data.macke.journal    = NULL;
+    data.macke.title      = NULL;
+    data.macke.author     = NULL;
+    data.macke.strain     = NULL;
     data.macke.subspecies = NULL;
+
     /* initialize genbank format */
-    data.gbk.locus = NULL;
-    data.gbk.definition = NULL;
-    data.gbk.accession = NULL;
-    data.gbk.keywords = NULL;
-    data.gbk.source = NULL;
-    data.gbk.organism = NULL;
-    data.gbk.numofref = 0;
-    data.gbk.reference = NULL;
-    data.gbk.comments.orginf.exist = 0;
-    data.gbk.comments.orginf.source = NULL;
-    data.gbk.comments.orginf.cc = NULL;
+    data.gbk.locus                    = NULL;
+    data.gbk.definition               = NULL;
+    data.gbk.accession                = NULL;
+    data.gbk.keywords                 = NULL;
+    data.gbk.source                   = NULL;
+    data.gbk.organism                 = NULL;
+    data.gbk.numofref                 = 0;
+    data.gbk.reference                = NULL;
+    data.gbk.comments.orginf.exist    = 0;
+    data.gbk.comments.orginf.source   = NULL;
+    data.gbk.comments.orginf.cc       = NULL;
     data.gbk.comments.orginf.formname = NULL;
     data.gbk.comments.orginf.nickname = NULL;
     data.gbk.comments.orginf.commname = NULL;
-    data.gbk.comments.orginf.hostorg = NULL;
-    data.gbk.comments.seqinf.exist = 0;
-    data.gbk.comments.seqinf.RDPid = NULL;
+    data.gbk.comments.orginf.hostorg  = NULL;
+    data.gbk.comments.seqinf.exist    = 0;
+    data.gbk.comments.seqinf.RDPid    = NULL;
     data.gbk.comments.seqinf.gbkentry = NULL;
-    data.gbk.comments.seqinf.methods = NULL;
-    data.gbk.comments.seqinf.comp5 = ' ';
-    data.gbk.comments.seqinf.comp3 = ' ';
-    data.gbk.comments.others = NULL;
-    /* initialize paup format */
-    data.paup.ntax = 0;
+    data.gbk.comments.seqinf.methods  = NULL;
+    data.gbk.comments.seqinf.comp5    = ' ';
+    data.gbk.comments.seqinf.comp3    = ' ';
+    data.gbk.comments.others          = NULL;
+
+     /* initialize paup format */
+    data.paup.ntax   = 0;
     data.paup.equate = "~=.|><";
-    data.paup.gap = '-';
-    /* initial phylip data */
+    data.paup.gap    = '-';
+
+     /* initial phylip data */
     /* initial embl data */
-    data.embl.id = NULL;
-    data.embl.dateu = NULL;
-    data.embl.datec = NULL;
-    data.embl.description = NULL;
-    data.embl.os = NULL;
-    data.embl.accession = NULL;
-    data.embl.keywords = NULL;
-    data.embl.dr = NULL;
-    data.embl.numofref = 0;
-    data.embl.reference = NULL;
-    data.embl.comments.orginf.exist = 0;
-    data.embl.comments.orginf.source = NULL;
-    data.embl.comments.orginf.cc = NULL;
+    data.embl.id                       = NULL;
+    data.embl.dateu                    = NULL;
+    data.embl.datec                    = NULL;
+    data.embl.description              = NULL;
+    data.embl.os                       = NULL;
+    data.embl.accession                = NULL;
+    data.embl.keywords                 = NULL;
+    data.embl.dr                       = NULL;
+    data.embl.numofref                 = 0;
+    data.embl.reference                = NULL;
+    data.embl.comments.orginf.exist    = 0;
+    data.embl.comments.orginf.source   = NULL;
+    data.embl.comments.orginf.cc       = NULL;
     data.embl.comments.orginf.formname = NULL;
     data.embl.comments.orginf.nickname = NULL;
     data.embl.comments.orginf.commname = NULL;
-    data.embl.comments.orginf.hostorg = NULL;
-    data.embl.comments.seqinf.exist = 0;
-    data.embl.comments.seqinf.RDPid = NULL;
+    data.embl.comments.orginf.hostorg  = NULL;
+    data.embl.comments.seqinf.exist    = 0;
+    data.embl.comments.seqinf.RDPid    = NULL;
     data.embl.comments.seqinf.gbkentry = NULL;
-    data.embl.comments.seqinf.methods = NULL;
-    data.embl.comments.seqinf.comp5 = ' ';
-    data.embl.comments.seqinf.comp3 = ' ';
-    data.embl.comments.others = NULL;
-    /* initial NBRF data format */
-    data.nbrf.id = NULL;
-    data.nbrf.description = NULL;
-    /* initial sequence data */
-    data.numofseq = 0;
-    data.seq_length = 0;
-    data.max = INITSEQ;
-    data.sequence = (char *)calloc(1, (unsigned)(sizeof(char) * INITSEQ + 1));
+    data.embl.comments.seqinf.methods  = NULL;
+    data.embl.comments.seqinf.comp5    = ' ';
+    data.embl.comments.seqinf.comp3    = ' ';
+    data.embl.comments.others          = NULL;
 
-    data.ids = NULL;
-    data.seqs = NULL;
-    data.lengths = NULL;
+     /* initial NBRF data format */
+    data.nbrf.id          = NULL;
+    data.nbrf.description = NULL;
+    
+    /* initial sequence data */
+    data.numofseq   = 0;
+    data.seq_length = 0;
+    data.max        = INITSEQ;
+    data.sequence   = (char *)calloc(1, (unsigned)(sizeof(char) * INITSEQ + 1));
+
+    data.ids       = NULL;
+    data.seqs      = NULL;
+    data.lengths   = NULL;
     data.allocated = 0;
+    
+    initialized = true;
+}
+
+void global_data::cleanup() {
+    if (initialized) {
+        cleanup_macke();
+        cleanup_embl();
+        cleanup_genbank();
+
+        Freespace(&data.sequence);
+        Freespace(&data.gbk.comments.others);
+        Freespace(&data.gbk.reference);
+        Freespace(&data.gbk.definition);
+
+        initialized = false;
+    }
 }
 
 /* --------------------------------------------------------------
- *      Function init_seq_data().
+ *      Function reset_seq_data().
  *              Init. seq. data.
  */
-void init_seq_data()
+void reset_seq_data()
 {
     data.numofseq = 0;
     data.seq_length = 0;
+}
+
+void convert(const char *cinf, const char *coutf, int intype, int outype) {
+    SmartMallocPtr(char) inf  = strdup(cinf);
+    SmartMallocPtr(char) outf  = strdup(coutf);
+
+    struct DataHandler {
+        DataHandler() { data.setup(); }
+        ~DataHandler() { data.cleanup(); }
+    } handler;
+    
+    convert_WRAPPED(&*inf, &*outf, intype, outype);
 }
 
 // --------------------------------------------------------------------------------
@@ -244,9 +261,6 @@ void init_seq_data()
 #include <arbdbt.h> // before test_unit.h!
 #include <test_unit.h>
 #include <arb_defs.h>
-
-// #define TEST_AUTO_UPDATE
-#define TEST_AUTO_UPDATE_ONLY_MISSING // do auto-update only if file is missing
 
 struct FormatSpec {
     char        id;             // GENBANK, MACKE, ...
@@ -260,19 +274,17 @@ struct FormatSpec {
 #define FORMATSPEC_GOT_PLAIN(tag,file,seqcount) { tag, #tag, "impexp/" file, seqcount}
 
 static FormatSpec format_spec[] = {
-    // valid according to main.cxx@known_in_type
+    // input formats
     // FORMATSPEC_GOT______(GENBANK, "genbank"),
     FORMATSPEC_GOT_PLAIN(GENBANK, "genbank.input", 2),
     FORMATSPEC_GOT_PLAIN(EMBL, "embl.input", 3),
     FORMATSPEC_GOT_PLAIN(MACKE, "macke.input", 3),
     FORMATSPEC_GOT_PLAIN(SWISSPROT, "swissprot.input", 1), // SWISSPROT
 
-    // @@@ make these options for input format ? 
-    FORMATSPEC_GOT______(GCG, "gcg"),
-    FORMATSPEC_GOT______(NEXUS, "nexus"),
-    FORMATSPEC_GOT______(PHYLIP, "phylip"),
-
-    // no input format
+    // output formats
+    FORMATSPEC_OUT_ONLY(GCG),
+    FORMATSPEC_OUT_ONLY(NEXUS),
+    FORMATSPEC_OUT_ONLY(PHYLIP),
     FORMATSPEC_OUT_ONLY(PHYLIP2),
     FORMATSPEC_OUT_ONLY(NBRF),
     FORMATSPEC_OUT_ONLY(PRINTABLE),
@@ -328,28 +340,51 @@ static Capabilities cap[fcount][fcount];
 #define INPUT(f) format_spec[f].testfile
 #define EXSEQ(f) format_spec[f].sequence_count
 
+// ----------------------------------
+//      update .expected files ?
+
+// #define TEST_AUTO_UPDATE // never does update if undefined
+// #define UPDATE_ONLY_IF_MISSING 
+#define UPDATE_ONLY_IF_MORE_THAN_DATE_DIFFERS 
+
+inline bool more_than_date_differs(const char *file, const char *expected) {
+    return !GB_test_textfile_difflines(file, expected, 0, 1);
+}
+
+#if defined(TEST_AUTO_UPDATE)
+inline bool want_auto_update(const char *file, const char *expected) {
+    bool shall_update = true;
+
+    file     = file;
+    expected = expected;
+
+#if defined(UPDATE_ONLY_IF_MISSING)
+    shall_update = shall_update && !GB_is_regularfile(expected);
+#endif
+#if defined(UPDATE_ONLY_IF_MORE_THAN_DATE_DIFFERS)
+    shall_update = shall_update && more_than_date_differs(file, expected);
+#endif
+    return shall_update;
+}
+#else // !TEST_AUTO_UPDATE
+inline bool want_auto_update(const char */*file*/, const char */*expected*/) {
+    return false;
+}
+#endif 
+
 static void test_expected_conversion(const char *file, const char *flavor) {
     char *expected;
     if (flavor) expected = GBS_global_string_copy("%s.%s.expected", file, flavor);
     else expected = GBS_global_string_copy("%s.expected", file);
 
-#if defined(TEST_AUTO_UPDATE)
-#if defined(TEST_AUTO_UPDATE_ONLY_MISSING)
-    if (GB_is_regularfile(expected)) {
-        TEST_ASSERT_TEXTFILE_DIFFLINES_IGNORE_DATES(file, expected, 0);
-    }
-    else {
+    bool shall_update = want_auto_update(file, expected);
+    if (shall_update) {
+        // TEST_ASSERT(0); // completely avoid real update
         TEST_ASSERT_ZERO_OR_SHOW_ERRNO(system(GBS_global_string("cp %s %s", file, expected)));
     }
-#else
-    // TEST_AUTO_UPDATE && !TEST_AUTO_UPDATE_ONLY_MISSING
-    TEST_ASSERT_ZERO_OR_SHOW_ERRNO(system(GBS_global_string("cp %s %s", file, expected)));
-#endif
-#else
-    // !TEST_AUTO_UPDATE
-    TEST_ASSERT_TEXTFILE_DIFFLINES_IGNORE_DATES(file, expected, 0);
-#endif
-
+    else {
+        TEST_ASSERT(!more_than_date_differs(file, expected));
+    }
     free(expected);
 }
 
@@ -473,45 +508,17 @@ void TEST_converter() {
     NOT_SUPPORTED(MACKE, NBRF);
     NOT_SUPPORTED(MACKE, STADEN);
 
-    NOT_SUPPORTED(PHYLIP, EMBL);
-    NOT_SUPPORTED(PHYLIP, GCG);
-    NOT_SUPPORTED(PHYLIP, GENBANK);
-    NOT_SUPPORTED(PHYLIP, MACKE);
-    NOT_SUPPORTED(PHYLIP, NBRF);
-    NOT_SUPPORTED(PHYLIP, NEXUS);
-    NOT_SUPPORTED(PHYLIP, PRINTABLE);
-    NOT_SUPPORTED(PHYLIP, SWISSPROT);
-    NOT_SUPPORTED(PHYLIP, STADEN);
-    
-    NOT_SUPPORTED(NEXUS, EMBL);
-    NOT_SUPPORTED(NEXUS, GCG);
-    NOT_SUPPORTED(NEXUS, GENBANK);
-    NOT_SUPPORTED(NEXUS, MACKE);
-    NOT_SUPPORTED(NEXUS, NBRF);
-    NOT_SUPPORTED(NEXUS, PHYLIP);
-    NOT_SUPPORTED(NEXUS, PRINTABLE);
-    NOT_SUPPORTED(NEXUS, SWISSPROT);
-    NOT_SUPPORTED(NEXUS, STADEN);
-
     NOT_SUPPORTED(EMBL, NBRF);
     NOT_SUPPORTED(EMBL, STADEN);
-
-    NOT_SUPPORTED(GCG, EMBL);
-    NOT_SUPPORTED(GCG, GENBANK);
-    NOT_SUPPORTED(GCG, MACKE);
-    NOT_SUPPORTED(GCG, NBRF);
-    NOT_SUPPORTED(GCG, NEXUS);
-    NOT_SUPPORTED(GCG, PHYLIP);
-    NOT_SUPPORTED(GCG, PRINTABLE);
-    NOT_SUPPORTED(GCG, SWISSPROT);
-    NOT_SUPPORTED(GCG, STADEN);
 
     NOT_SUPPORTED(SWISSPROT, GENBANK);
     NOT_SUPPORTED(SWISSPROT, EMBL);
     NOT_SUPPORTED(SWISSPROT, NBRF);
     NOT_SUPPORTED(SWISSPROT, STADEN);
 
-    FCKDUP(GENBANK, GCG);
+    // unsupported self-conversions
+    NOT_SUPPORTED(MACKE, MACKE);
+    NOT_SUPPORTED(SWISSPROT, SWISSPROT);
 
     int possible     = 0;
     int tested       = 0;
@@ -525,10 +532,12 @@ void TEST_converter() {
 
     for (int from = 0; from<fcount; from++) {
         TEST_ANNOTATE_ASSERT(GBS_global_string("while converting from '%s'", NAME(from)));
-        if (isInputFormat(from)) TEST_ASSERT_LOWER(0, will_convert(from));
+        if (isInputFormat(from)) {
+            if (will_convert(from)<1) {
+                TEST_ERROR("Conversion from %s seems unsupported", NAME(from));
+            }
+        }
         for (int to = 0; to<fcount; to++) {
-            if (from == to) continue;
-
             possible++;
             Capabilities& me = cap[from][to];
 
