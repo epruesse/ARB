@@ -546,7 +546,6 @@ void TEST_converter() {
     EMPTY_OUTFILE_CREATED(ALMA, GENBANK);
     EMPTY_OUTFILE_CREATED(ALMA, MACKE);
     EMPTY_OUTFILE_CREATED(ALMA, PRINTABLE);
-    EMPTY_OUTFILE_CREATED(MACKE, GENBANK);
 
     int possible     = 0;
     int tested       = 0;

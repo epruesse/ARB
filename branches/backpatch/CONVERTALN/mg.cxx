@@ -641,7 +641,7 @@ void macke_to_genbank(char *inf, char *outf)
 #ifdef log
     fprintf(stderr, "Total %d sequences have been processed\n", data.numofseq);
 #endif
-
+    fclose(ofp);
 }
 
 /* ----------------------------------------------------------------
