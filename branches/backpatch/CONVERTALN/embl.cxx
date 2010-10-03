@@ -1543,6 +1543,7 @@ char *gtoe_journal(char *string) {
     char token[TOKENNUM], *journal;
     int  indi, indj, index, len;
 
+    token[0] = 0;
     sscanf(string, "%s", token);
     if (Cmpstr(token, "(in)") == EQ || Cmpstr(token, "Unpublished") == EQ || Cmpstr(token, "Submitted") == EQ) {
         journal = (char *)Dupstr(string);
