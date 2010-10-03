@@ -1,7 +1,28 @@
- MetMazei      0 .....................AUUCUGGUU-----GA--U-CC-U-G-CCAG-AG-GU-U-A
+ A1MVRNA2      1 gtttttatcttttcgcgattgaaaagataagtttttcagtttaatcttttcaatatgttc60
+ ER781674_1    1 tggcgccgtagatgcagcgcgactggcccggcttctcggcgtcgaggtactgcgccacgg60
+ AY704744_1    1 gcatcgatgaagaacgcagcgaaatgcgataagtaatgtgaattgcagaattcagtgaat60
 
 
- MetMazei     27 C-U-GC--U-AU-C--G-GU-GUUC--GC---C-U--AAGCCA-U-GC-G-AGU-CAU-A-U
+ A1MVRNA2     63 actcttttgagatgtctcggattcggtgttaatgaacctactaacacttcctcatcagag12
+ ER781674_1   63 ccttggcgctggccacgtccgggcagaccacgatgctcttgcgtgagccggcgacgtgga12
+ AY704744_1   63 catcgaatctttgaacgcacattgcgcccattagtattctagtgggcatgcctgttcgag12
 
 
- MetMazei     64 GU---------A---------------..............
+ A1MVRNA2    125 0tatgttcccgagtattccgttgaagagatttccaacgaagtcgctgaactcgattcagtg1
+ ER781674_1  125 0cgatgcccttggccagttcgatcatcgtctggtcgttggtgatccgggcggcgatctcgg1
+ AY704744_1  125 0cgtcatttcaacccttaagcttagcttagtattgggaatctgcttaaccgcagctcctta1
+
+
+ A1MVRNA2    187 80gatccattattccaatgttacaaacatgtttttgtatcattgatgctcgtaagaaagatg
+ ER781674_1  187 80cgtcggaatagtccttctcgccggcctcgttctccgccacggtcagcgtggagaagtcga
+ AY704744_1  187 80aatctagttggcagagcacagctgtactctgagcgtagtaattcattatctcgctttctg
+
+
+ A1MVRNA2    249 240actcaagctgccgaagacttcctcgagagttttgggggaga281
+ ER781674_1  249 240tggagacgcggacgaacgcctgcttggcggggcagagccataccgttggccatgcctca
+ AY704744_1  249 240aagacagtcgtacgatagccacaaactttgcatcttgcaaactttttaatggttgacct
+
+
+ A1MVRNA2
+ ER781674_1  311 c300aggatgtcgcggttgaaggcgaggccctggaacaggttggccatcgccac350
+ AY704744_1  311 c300ggatcaggtaggaatacccgctgaacttaagcatatcaataagcggagga350

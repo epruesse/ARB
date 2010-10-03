@@ -31,6 +31,7 @@ void throw_conversion_not_supported(int input_format, int output_format) { // __
 }
 
 static int log_processed_counter = 0;
+static int log_seq_counter       = 0;
 
 void log_processed(int seqCount) {
 #if defined(CALOG)
@@ -38,6 +39,8 @@ void log_processed(int seqCount) {
 #endif // CALOG
 
     log_processed_counter++;
+    log_seq_counter += seqCount; 
+
     if (seqCount == 0) {
         throw_error(99, "No sequences have been processed");
     }
@@ -124,12 +127,7 @@ void convert(const char *cinf, const char *coutf, int intype, int outype) {
     char *inf  = strdup(cinf);
     char *outf = strdup(coutf);
 
-    int old_log_processed_counter = log_processed_counter;
     convert_WRAPPED(inf, outf, intype, outype);
-    if (log_processed_counter != (old_log_processed_counter+1)) {
-        ca_assert(log_processed_counter == (old_log_processed_counter+1));
-        throw_error(98, "internal error");
-    }
 
     free(outf);
     free(inf);
@@ -248,25 +246,26 @@ void init_seq_data()
 #include <arb_defs.h>
 
 // #define TEST_AUTO_UPDATE
-#define TEST_AUTO_UPDATE_ONLY_MISSING // do auto-update only if file is missing 
+#define TEST_AUTO_UPDATE_ONLY_MISSING // do auto-update only if file is missing
 
 struct FormatSpec {
-    char        id; // GENBANK, MACKE, ...
+    char        id;             // GENBANK, MACKE, ...
     const char *name;
-    const char *testfile; // existing testfile (or NULL)
+    const char *testfile;       // existing testfile (or NULL)
+    int         sequence_count; // number of sequences in 'testfile'
 };
 
-#define FORMATSPEC_OUT_ONLY(tag) { tag, #tag, NULL }
-#define FORMATSPEC_GOT______(tag,file) { tag, #tag, "impexp/" file ".eft.exported" }
-#define FORMATSPEC_GOT_PLAIN(tag,file) { tag, #tag, "impexp/" file }
+#define FORMATSPEC_OUT_ONLY(tag)                { tag, #tag, NULL, 1 }
+#define FORMATSPEC_GOT______(tag,file)          { tag, #tag, "impexp/" file ".eft.exported", 1 }
+#define FORMATSPEC_GOT_PLAIN(tag,file,seqcount) { tag, #tag, "impexp/" file, seqcount}
 
 static FormatSpec format_spec[] = {
     // valid according to main.cxx@known_in_type
     // FORMATSPEC_GOT______(GENBANK, "genbank"),
-    FORMATSPEC_GOT_PLAIN(GENBANK, "genbank.input"),
-    FORMATSPEC_GOT______(EMBL, "embl"),
-    FORMATSPEC_GOT______(MACKE, "ae2"),
-    FORMATSPEC_GOT_PLAIN(SWISSPROT, "swissprot.input"), // SWISSPROT
+    FORMATSPEC_GOT_PLAIN(GENBANK, "genbank.input", 2),
+    FORMATSPEC_GOT_PLAIN(EMBL, "embl.input", 3),
+    FORMATSPEC_GOT_PLAIN(MACKE, "macke.input", 3),
+    FORMATSPEC_GOT_PLAIN(SWISSPROT, "swissprot.input", 1), // SWISSPROT
 
     // @@@ make these options for input format ? 
     FORMATSPEC_GOT______(GCG, "gcg"),
@@ -327,6 +326,7 @@ static Capabilities cap[fcount][fcount];
 #define ID(f)    format_spec[f].id
 #define NAME(f)  format_spec[f].name
 #define INPUT(f) format_spec[f].testfile
+#define EXSEQ(f) format_spec[f].sequence_count
 
 static void test_expected_conversion(const char *file, const char *flavor) {
     char *expected;
@@ -364,8 +364,17 @@ static void test_convert_by_format_num_WRAPPED(int from, int to) {
     char *toFile = GBS_global_string_copy("impexp/conv.%s_2_%s", NAME(from), NAME(to));
     if (GB_is_regularfile(toFile)) TEST_ASSERT_ZERO_OR_SHOW_ERRNO(unlink(toFile));
 
-    const char    *error = test_convert(INPUT(from), toFile, ID(from), ID(to));
-    Capabilities&  me    = cap[from][to];
+    int old_processed_counter = log_processed_counter;
+    int old_seq_counter       = log_seq_counter;
+
+    const char *error = test_convert(INPUT(from), toFile, ID(from), ID(to));
+
+    int converted_seqs = log_seq_counter-old_seq_counter;
+    int expected_seqs  = EXSEQ(from);
+    if (to == NUM_GCG) expected_seqs = 1; // we stop after first file (useless to generate numerous files)
+
+    Capabilities& me = cap[from][to];
+
 
     if (me.supported) {
         if (error) TEST_ERROR("convert() reports error: '%s' (for supported conversion)", error);
@@ -377,8 +386,11 @@ static void test_convert_by_format_num_WRAPPED(int from, int to) {
             if (me.emptyOutput) {
                 TEST_ASSERT_EQUAL(GB_size_of_file(toFile), 0);
             }
-            else {                                                  
-                TEST_ASSERT_LOWER_EQUAL(10, GB_size_of_file(toFile)); // less than 10 bytes 
+            else { // expecting conversion worked
+                TEST_ASSERT_EQUAL(converted_seqs, expected_seqs);
+                TEST_ASSERT_EQUAL(log_processed_counter, old_processed_counter+1);
+
+                TEST_ASSERT_LOWER_EQUAL(10, GB_size_of_file(toFile)); // less than 10 bytes
                 test_expected_conversion(toFile, NULL);
             }
             TEST_ASSERT_ZERO_OR_SHOW_ERRNO(unlink(toFile));

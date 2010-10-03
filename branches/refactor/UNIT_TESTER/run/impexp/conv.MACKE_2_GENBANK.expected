@@ -1,18 +1,69 @@
-LOCUS       MetMazei      165 bp    RNA             RNA       21-JAN-1910
-DEFINITION  Methanosarcina mazei..
-ACCESSION   X69874
+LOCUS       A1MVRNA2      295 bp    RNA             RNA       07-NOV-1985
+DEFINITION  Alfalfa mosaic virus; unidentified reading frame.
+ACCESSION   X01572; J02002; K02702;
+KEYWORDS    unidentified reading frame.
+SOURCE      Alfalfa mosaic virus.
+  ORGANISM  Alfalfa mosaic virus.
+REFERENCE   1  (bases 1 to 2593)
+  AUTHORS   Cornelissen,B.J., Brederode,F.T.M., Veeneman,G.H., van Boom,J .H.
+            and Bol,J.F.
+  TITLE     Complete nucleotide sequence of alfalfa mosaic virus RNA 2
+  JOURNAL   No information
+  STANDARD  No information
+COMMENTS    Sequence information (bases 1 to 295)
+              Corresponding GenBank entry: X01572;
+            Data kindly reviewed (30-JAN-1986) by J.F. Bol
+BASE COUNT      74 a     52 c     56 g     99 t     14 others
+ORIGIN
+        1 gtttttatct tttcgcgatt gaaaagataa gtttttcagt ttaatctttt caatatgttc
+       61 60actctttt gagatgtctc ggattcggtg ttaatgaacc tactaacact tcctcatcag
+      121 ag120tatgt tcccgagtat tccgttgaag agatttccaa cgaagtcgct gaactcgatt
+      181 cagtg180ga tccattattc caatgttaca aacatgtttt tgtatcattg atgctcgtaa
+      241 gaaagatg24 0actcaagct gccgaagact tcctcgagag ttttggggga ga281
+//
+LOCUS       ER781674_1    367 bp    RNA             RNA       03-JAN-1910
+DEFINITION  .
+ACCESSION   ER781674;
 KEYWORDS    No information.
-SOURCE      Methanosarcina mazei.
-  ORGANISM  Methanosarcina mazei.
+SOURCE      No information.
+  ORGANISM  No information.
 REFERENCE   1
   AUTHORS   No information
   JOURNAL   No information
+  TITLE     No information
   STANDARD  No information
-COMMENTS    Sequence information (bases 1 to 165)
-              Corresponding GenBank entry: X69874
-BASE COUNT      13 a     15 c     17 g     21 t     99 others
+COMMENTS    Sequence information (bases 1 to 367)
+              Corresponding GenBank entry: ER781674;
+BASE COUNT      51 a    109 c    124 g     66 t     17 others
 ORIGIN
-        1 .......... .......... .AUUCUGGUU -----GA--U -CC-U-G-CC AG-AG-GU-U
-       61 -AC-U-GC-- U-AU-C--G- GU-GUUC--G C---C-U--A AGCCA-U-GC -G-AGU-CAU
-      121 -A-UGU---- -----A---- ---------- -......... .....
+        1 tggcgccgta gatgcagcgc gactggcccg gcttctcggc gtcgaggtac tgcgccacgg
+       61 60ccttggcg ctggccacgt ccgggcagac cacgatgctc ttgcgtgagc cggcgacgtg
+      121 ga120cgatg cccttggcca gttcgatcat cgtctggtcg ttggtgatcc gggcggcgat
+      181 ctcgg180cg tcggaatagt ccttctcgcc ggcctcgttc tccgccacgg tcagcgtgga
+      241 gaagtcga24 0tggagacgc ggacgaacgc ctgcttggcg gggcagagcc ataccgttgg
+      301 ccatgcctca c300aggatg tcgcggttga aggcgaggcc ctggaacagg ttggccatcg
+      361 ccac350
+//
+LOCUS       AY704744_1    367 bp    RNA             RNA       03-JAN-1910
+DEFINITION  .
+ACCESSION   AY704744;
+KEYWORDS    No information.
+SOURCE      No information.
+  ORGANISM  No information.
+REFERENCE   1
+  AUTHORS   No information
+  JOURNAL   No information
+  TITLE     No information
+  STANDARD  No information
+COMMENTS    Sequence information (bases 1 to 367)
+              Corresponding GenBank entry: AY704744;
+BASE COUNT     100 a     75 c     77 g     98 t     17 others
+ORIGIN
+        1 gcatcgatga agaacgcagc gaaatgcgat aagtaatgtg aattgcagaa ttcagtgaat
+       61 60catcgaat ctttgaacgc acattgcgcc cattagtatt ctagtgggca tgcctgttcg
+      121 ag120cgtca tttcaaccct taagcttagc ttagtattgg gaatctgctt aaccgcagct
+      181 cctta180aa tctagttggc agagcacagc tgtactctga gcgtagtaat tcattatctc
+      241 gctttctg24 0aagacagtc gtacgatagc cacaaacttt gcatcttgca aactttttaa
+      301 tggttgacct c300ggatca ggtaggaata cccgctgaac ttaagcatat caataagcgg
+      361 agga350
 //

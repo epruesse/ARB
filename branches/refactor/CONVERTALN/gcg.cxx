@@ -52,6 +52,7 @@ void to_gcg(char *inf, char *outf, int intype) {
             log_processed(1); 
             ofp = NULL;
             init_seq_data();
+            break; // stop after first sequence (@@@ print warning)
         }
     }
     else {
@@ -89,9 +90,10 @@ void to_gcg(char *inf, char *outf, int intype) {
                 gcg_seq_out(ofp, key);
                 init_seq_data();
                 seqdata = 0;
-                log_processed(1); 
+                log_processed(1);
                 fclose(ofp);
-                ofp = NULL;
+                ofp     = NULL;
+                break; // stop after first sequence (@@@ print warning)
             }
             else {
                 gcg_doc_out(line, ofp);

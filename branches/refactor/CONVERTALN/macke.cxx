@@ -72,12 +72,8 @@ void MackeReader::stop_reading() {
 }
 
 char MackeReader::in() {
-    char  line1[LINESIZE];
-    char  line2[LINESIZE];
-    char  line3[LINESIZE];
     char  oldname[TOKENSIZE], name[TOKENSIZE];
     char  key[TOKENSIZE];
-    char *eof1, *eof2, *eof3;
     int   numofrem = 0;
     int   index;
 

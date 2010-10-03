@@ -18,6 +18,11 @@ class MackeReader {
 
     FILE        *IFP1, *IFP2, *IFP3;
     FILE_BUFFER  fp1, fp2, fp3;
+
+    char  line1[LINESIZE];
+    char  line2[LINESIZE];
+    char  line3[LINESIZE];
+    char *eof1, *eof2, *eof3;
     
     void start_reading();
     void stop_reading();

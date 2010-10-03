@@ -1,11 +1,24 @@
-#:MetMazei:name:Methanosarcina mazei.
-#:MetMazei:date:21-JAN-1910
-#:MetMazei:acs:X69874
-#:MetMazei:rem:ref:1
-#:MetMazei:rem:GenBank ACCESSION:X69874
+#:A1MVRNA2:name:Alfalfa mosaic virus
+#:A1MVRNA2:date:07-NOV-1985
+#:A1MVRNA2:acs:X01572;
+#:A1MVRNA2:auth:Cornelissen,B.J., Brederode,F.T.M., Veeneman,G.H., van Boom,J
+#:A1MVRNA2:auth:.H. and Bol,J.F.
+#:A1MVRNA2:title:Complete nucleotide sequence of alfalfa mosaic virus RNA 2
+#:A1MVRNA2:rem:ref:1  (bases 1 to 2593)
+#:A1MVRNA2:rem:KEYWORDS:unidentified reading frame.
+#:A1MVRNA2:rem:GenBank ACCESSION:X01572; J02002; K02702;
+#:A1MVRNA2:rem:Data kindly reviewed (30-JAN-1986) by J.F. Bol
 
-MetMazei  Length: 66  September 28, 2010  20:29:51  Type: N  Check: 2814  ..
+A1MVRNA2  Length: 295  October 3, 2010  12:08:14  Type: N  Check: 5931  ..
 
-       1  AUUCUGGUUG AUCCUGCCAG AGGUUACUGC UAUCGGUGUU CGCCUAAGCC 
+       1  gtttttatct tttcgcgatt gaaaagataa gtttttcagt ttaatctttt 
 
-      51  AUGCGAGUCA UAUGUA 
+      51  caatatgttc 60actctttt gagatgtctc ggattcggtg ttaatgaacc 
+
+     101  tactaacact tcctcatcag ag120tatgt tcccgagtat tccgttgaag 
+
+     151  agatttccaa cgaagtcgct gaactcgatt cagtg180ga tccattattc 
+
+     201  caatgttaca aacatgtttt tgtatcattg atgctcgtaa gaaagatg24 
+
+     251  0actcaagct gccgaagact tcctcgagag ttttggggga ga281 
