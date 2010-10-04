@@ -13,8 +13,7 @@
 
 struct global_data data;
 
-int realloc_sequence_data(int total_seqs)
-{
+int realloc_sequence_data(int total_seqs) {
     if (total_seqs > data.allocated) {
         data.allocated = (int)(data.allocated * 1.5) + 5;
 
@@ -29,8 +28,7 @@ int realloc_sequence_data(int total_seqs)
     return 1;                   // success
 }
 
-void free_sequence_data(int used_entries)
-{
+void free_sequence_data(int used_entries) {
     int indi;
 
     for (indi = 0; indi < used_entries; indi++) {

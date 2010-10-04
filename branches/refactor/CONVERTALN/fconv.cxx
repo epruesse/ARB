@@ -54,7 +54,7 @@ void log_processed(int seqCount) {
  *                      the out file.
  */
 
-static void convert_WRAPPED(char *inf, char *outf, int intype, int outype) {
+static void convert_WRAPPED(const char *inf, const char *outf, int intype, int outype) {
     int dd;                     /* copy stdin to outfile after first line */
 
     dd = 0;
@@ -237,8 +237,7 @@ void global_data::cleanup() {
  *      Function reset_seq_data().
  *              Init. seq. data.
  */
-void reset_seq_data()
-{
+void reset_seq_data() {
     data.numofseq = 0;
     data.seq_length = 0;
 }

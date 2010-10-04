@@ -35,21 +35,21 @@ void reinit_macke() {
     /* initialize macke format */
     cleanup_macke();
 
-    data.macke.seqabbr = Dupstr("");
-    data.macke.name = Dupstr("\n");
-    data.macke.atcc = Dupstr("\n");
-    data.macke.rna = Dupstr("\n");
-    data.macke.date = Dupstr("\n");
-    data.macke.nbk = Dupstr("\n");
-    data.macke.acs = Dupstr("\n");
-    data.macke.who = Dupstr("\n");
+    data.macke.seqabbr = strdup("");
+    data.macke.name = strdup("\n");
+    data.macke.atcc = strdup("\n");
+    data.macke.rna = strdup("\n");
+    data.macke.date = strdup("\n");
+    data.macke.nbk = strdup("\n");
+    data.macke.acs = strdup("\n");
+    data.macke.who = strdup("\n");
     data.macke.numofrem = 0;
     data.macke.rna_or_dna = 'd';
-    data.macke.journal = Dupstr("\n");
-    data.macke.title = Dupstr("\n");
-    data.macke.author = Dupstr("\n");
-    data.macke.strain = Dupstr("\n");
-    data.macke.subspecies = Dupstr("\n");
+    data.macke.journal = strdup("\n");
+    data.macke.title = strdup("\n");
+    data.macke.author = strdup("\n");
+    data.macke.strain = strdup("\n");
+    data.macke.subspecies = strdup("\n");
 }
 
 /* -------------------------------------------------------------
@@ -105,7 +105,7 @@ char MackeReader::mackeIn() {
     /* read in seq name */
     index = macke_abbrev(line3, oldname, 2);
     Freespace(&data.macke.seqabbr);
-    data.macke.seqabbr = Dupstr(oldname);
+    data.macke.seqabbr = str0dup(oldname);
 
     /* read seq. information */
     for (index = macke_abbrev(line1, name, 2); eof1 != NULL && isMackeSeqInfo(line1) && str_equal(name, oldname); ) {
@@ -150,7 +150,7 @@ char MackeReader::mackeIn() {
         }
         else if (str_equal(key, "rem")) {
             data.macke.remarks = (char **)Reallocspace((char *)data.macke.remarks, (unsigned)(sizeof(char *) * (numofrem + 1)));
-            data.macke.remarks[numofrem++] = Dupstr(line1 + index);
+            data.macke.remarks[numofrem++] = str0dup(line1 + index);
             eof1 = Fgetline(line1, LINESIZE, fp1);
         }
         else {
@@ -177,28 +177,26 @@ char MackeReader::mackeIn() {
 char *macke_one_entry_in(FILE_BUFFER fp, const char *key, char *oldname, char **var, char *line, int index) {
     char *eof;
 
-    if (Lenstr((*var)) > 1)
-        Append_rp_eoln(var, line + index);
+    if (str0len((*var)) > 1)
+        skip_eolnl_and_append_spaced(*var, line + index);
     else
         replace_entry(var, line + index);
 
-    eof = (char *)macke_continue_line(key, oldname, var, line, fp);
+    eof = macke_continue_line(key, oldname, var, line, fp);
 
     return (eof);
-
 }
 
 /* --------------------------------------------------------------
  *  Function macke_continue_line().
  *      Append macke continue line.
  */
-char *macke_continue_line(const char *key, char *oldname, char **var, char *line, FILE_BUFFER fp)
-{
+char *macke_continue_line(const char *key, char *oldname, char **var, char *line, FILE_BUFFER fp) {
     char *eof, name[TOKENSIZE], newkey[TOKENSIZE];
     int   index;
 
     for (eof = Fgetline(line, LINESIZE, fp); eof != NULL; eof = Fgetline(line, LINESIZE, fp)) {
-        if (Lenstr(line) <= 1)
+        if (str0len(line) <= 1)
             continue;
 
         index = macke_abbrev(line, name, 0);
@@ -209,7 +207,7 @@ char *macke_continue_line(const char *key, char *oldname, char **var, char *line
         if (!str_equal(newkey, key))
             break;
 
-        Append_rp_eoln(var, line + index);
+        skip_eolnl_and_append_spaced(*var, line + index);
     }
 
     return (eof);
@@ -219,9 +217,7 @@ char *macke_continue_line(const char *key, char *oldname, char **var, char *line
  *  Function macke_origin().
  *      Read in sequence data in macke file.
  */
-char
- *macke_origin(char *key, char *line, FILE_BUFFER fp)
-{
+char *macke_origin(char *key, char *line, FILE_BUFFER fp) {
     int index, indj, seqnum;
 
     char *eof, name[TOKENSIZE], seq[LINESIZE];
@@ -240,27 +236,21 @@ char
                     = '.';
             else {
                 data.max += 100;
-                data.sequence = (char *)Reallocspace(data.sequence, (unsigned)
-                                                     (sizeof(char) * data.max));
-                data.sequence[data.seq_length++]
-                    = '.';
+                data.sequence = Reallocspace(data.sequence, (unsigned) (sizeof(char) * data.max));
+                data.sequence[data.seq_length++] = '.';
             }
         for (indj = 0; seq[indj] != '\n' && seq[indj] != '\0'; indj++)
             if (data.seq_length < data.max)
-                data.sequence[data.seq_length++]
-                    = seq[indj];
+                data.sequence[data.seq_length++] = seq[indj];
             else {
                 data.max += 100;
-                data.sequence = (char *)Reallocspace(data.sequence, (unsigned)
-                                                     (sizeof(char) * data.max));
-                data.sequence[data.seq_length++]
-                    = seq[indj];
+                data.sequence = Reallocspace(data.sequence, (unsigned) (sizeof(char) * data.max));
+                data.sequence[data.seq_length++] = seq[indj];
             }
         data.sequence[data.seq_length] = '\0';
         eof = Fgetline(line, LINESIZE, fp);
         if (eof != NULL)
             index = macke_abbrev(line, name, 0);
-
     }                           /* reading seq loop */
 
     return (eof);
@@ -270,8 +260,7 @@ char
  *   Function macke_abbrev().
  *       Find the key in Macke line.
  */
-int macke_abbrev(char *line, char *key, int index)
-{
+int macke_abbrev(char *line, char *key, int index) {
     int indi;
 
     /* skip white space */
@@ -289,8 +278,7 @@ int macke_abbrev(char *line, char *key, int index)
  *       If there is 3 blanks at the beginning of the line,
  *           it is continued line.
  */
-int macke_rem_continue_line(char **strings, int index)
-{
+int macke_rem_continue_line(char **strings, int index) {
     if (strings[index][0] == ':' && strings[index][1] == ' ' && strings[index][2] == ' ')
         return (1);
     else
@@ -301,8 +289,7 @@ int macke_rem_continue_line(char **strings, int index)
  *   Function macke_in_name().
  *       Read in next sequence name and data only.
  */
-char macke_in_name(FILE_BUFFER fp)
-{
+char macke_in_name(FILE_BUFFER fp) {
     static char line[LINESIZE];
 #warning another function remembering it has been called (seems to be the last)
     static int  first_time = 1;
@@ -330,14 +317,14 @@ char macke_in_name(FILE_BUFFER fp)
 
     /* read in line by line */
     Freespace(&(data.macke.seqabbr));
-    for (index = macke_abbrev(line, name, 0), data.macke.seqabbr = Dupstr(name); line[0] != EOF && str_equal(data.macke.seqabbr, name);) {
+    for (index = macke_abbrev(line, name, 0), data.macke.seqabbr = str0dup(name); line[0] != EOF && str_equal(data.macke.seqabbr, name);) {
         ASSERT_RESULT(int, 2, sscanf(line + index, "%d%s", &seqnum, seq));
         for (indj = data.seq_length; indj < seqnum; indj++)
             if (data.seq_length < data.max)
                 data.sequence[data.seq_length++] = '.';
             else {
                 data.max += 100;
-                data.sequence = (char *)Reallocspace(data.sequence, (unsigned) (sizeof(char) * data.max));
+                data.sequence = Reallocspace(data.sequence, (unsigned) (sizeof(char) * data.max));
                 data.sequence[data.seq_length++] = '.';
             }
         for (indj = 0; seq[indj] != '\n' && seq[indj] != '\0'; indj++) {
@@ -345,7 +332,7 @@ char macke_in_name(FILE_BUFFER fp)
                 data.sequence[data.seq_length++] = seq[indj];
             else {
                 data.max += 100;
-                data.sequence = (char *)Reallocspace(data.sequence, (unsigned) (sizeof(char) * data.max));
+                data.sequence = Reallocspace(data.sequence, (unsigned) (sizeof(char) * data.max));
                 data.sequence[data.seq_length++] = seq[indj];
             }
         }
@@ -355,7 +342,6 @@ char macke_in_name(FILE_BUFFER fp)
             index = macke_abbrev(line, name, 0);
         else
             line[0] = EOF;
-
     }                           /* reading seq loop */
 
     return (EOF + 1);
@@ -377,32 +363,30 @@ void macke_out_header(FILE * fp) {
  *   Function macke_out0().
  *       Output the Macke format each sequence format.
  */
-void macke_out0(FILE * fp, int format)
-{
+void macke_out0(FILE * fp, int format) {
     char token[TOKENSIZE], direction[TOKENSIZE];
 
     if (format == SWISSPROT) {
-        Cpystr(token, "pro");
-        Cpystr(direction, "n>c");
+        strcpy(token, "pro");
+        strcpy(direction, "n>c");
     }
     else {
-        Cpystr(direction, "5>3");
+        strcpy(direction, "5>3");
         if (data.macke.rna_or_dna == 'r')
-            Cpystr(token, "rna");
+            strcpy(token, "rna");
         else
-            Cpystr(token, "dna");
+            strcpy(token, "dna");
     }
     if (data.numofseq == 1) {
         fprintf(fp, "#-\tReference sequence:  %s\n", data.macke.seqabbr);
         fprintf(fp, "#-\tAttributes:\n");
 
-        if (Lenstr(data.macke.seqabbr) < 8)
+        if (str0len(data.macke.seqabbr) < 8)
             fprintf(fp, "#=\t\t%s\t \tin  out  vis  prt   ord  %s  lin  %s  func ref\n", data.macke.seqabbr, token, direction);
         else
             fprintf(fp, "#=\t\t%s\tin  out  vis  prt   ord  %s  lin  %s  func ref\n", data.macke.seqabbr, token, direction);
-
     }
-    else if (Lenstr(data.macke.seqabbr) < 8)
+    else if (str0len(data.macke.seqabbr) < 8)
         fprintf(fp, "#=\t\t%s\t\tin  out  vis  prt   ord  %s  lin  %s  func\n", data.macke.seqabbr, token, direction);
     else
         fprintf(fp, "#=\t\t%s\tin  out  vis  prt   ord  %s  lin  %s  func\n", data.macke.seqabbr, token, direction);
@@ -412,58 +396,57 @@ void macke_out0(FILE * fp, int format)
  *   Function macke_out1().
  *       Output sequences information.
  */
-void macke_out1(FILE * fp)
-{
+void macke_out1(FILE * fp) {
     char temp[LINESIZE];
     int  indi;
 
-    if (Lenstr(data.macke.name) > 1) {
+    if (str0len(data.macke.name) > 1) {
         sprintf(temp, "#:%s:name:", data.macke.seqabbr);
         macke_print_line_78(fp, temp, data.macke.name);
     }
-    if (Lenstr(data.macke.strain) > 1) {
+    if (str0len(data.macke.strain) > 1) {
         sprintf(temp, "#:%s:strain:", data.macke.seqabbr);
         macke_print_line_78(fp, temp, data.macke.strain);
     }
-    if (Lenstr(data.macke.subspecies) > 1) {
+    if (str0len(data.macke.subspecies) > 1) {
         sprintf(temp, "#:%s:subsp:", data.macke.seqabbr);
         macke_print_line_78(fp, temp, data.macke.subspecies);
     }
-    if (Lenstr(data.macke.atcc) > 1) {
+    if (str0len(data.macke.atcc) > 1) {
         sprintf(temp, "#:%s:atcc:", data.macke.seqabbr);
         macke_print_line_78(fp, temp, data.macke.atcc);
     }
-    if (Lenstr(data.macke.rna) > 1) {
+    if (str0len(data.macke.rna) > 1) {
         /* old version entry */
         sprintf(temp, "#:%s:rna:", data.macke.seqabbr);
         macke_print_line_78(fp, temp, data.macke.rna);
     }
-    if (Lenstr(data.macke.date) > 1) {
+    if (str0len(data.macke.date) > 1) {
         sprintf(temp, "#:%s:date:", data.macke.seqabbr);
         macke_print_line_78(fp, temp, data.macke.date);
     }
-    if (Lenstr(data.macke.acs) > 1) {
+    if (str0len(data.macke.acs) > 1) {
         sprintf(temp, "#:%s:acs:", data.macke.seqabbr);
         macke_print_line_78(fp, temp, data.macke.acs);
     }
-    else if (Lenstr(data.macke.nbk) > 1) {
+    else if (str0len(data.macke.nbk) > 1) {
         /* old version entry */
         sprintf(temp, "#:%s:acs:", data.macke.seqabbr);
         macke_print_line_78(fp, temp, data.macke.nbk);
     }
-    if (Lenstr(data.macke.author) > 1) {
+    if (str0len(data.macke.author) > 1) {
         sprintf(temp, "#:%s:auth:", data.macke.seqabbr);
         macke_print_line_78(fp, temp, data.macke.author);
     }
-    if (Lenstr(data.macke.journal) > 1) {
+    if (str0len(data.macke.journal) > 1) {
         sprintf(temp, "#:%s:jour:", data.macke.seqabbr);
         macke_print_line_78(fp, temp, data.macke.journal);
     }
-    if (Lenstr(data.macke.title) > 1) {
+    if (str0len(data.macke.title) > 1) {
         sprintf(temp, "#:%s:title:", data.macke.seqabbr);
         macke_print_line_78(fp, temp, data.macke.title);
     }
-    if (Lenstr(data.macke.who) > 1) {
+    if (str0len(data.macke.who) > 1) {
         sprintf(temp, "#:%s:who:", data.macke.seqabbr);
         macke_print_line_78(fp, temp, data.macke.who);
     }
@@ -480,7 +463,6 @@ void macke_out1(FILE * fp)
 
         /* if GenBank entry comments */
         macke_print_keyword_rem(indi, fp);
-
     }                           /* for each remark */
 }
 
@@ -491,20 +473,19 @@ void macke_out1(FILE * fp)
  *       (Those keywords are defined in GenBank COMMENTS by
  *           RDP group)
  */
-void macke_print_keyword_rem(int index, FILE * fp)
-{
+void macke_print_keyword_rem(int index, FILE * fp) {
     int indj, indk, indl, lineno, len, maxc;
 
     lineno = 0;
-    len = Lenstr(data.macke.remarks[index]) - 1;
+    len = str0len(data.macke.remarks[index]) - 1;
     for (indj = 0; indj < len; indj += (indk + 1)) {
-        indk = maxc = MACKEMAXCHAR - 7 - Lenstr(data.macke.seqabbr);
+        indk = maxc = MACKEMAXCHAR - 7 - str0len(data.macke.seqabbr);
         if (lineno != 0)
             indk = maxc = maxc - 3;
-        if ((Lenstr(data.macke.remarks[index] + indj) - 1)
+        if ((str0len(data.macke.remarks[index] + indj) - 1)
             > maxc) {
             /* Search the last word */
-            for (indk = maxc - 1; indk >= 0 && !last_word(data.macke.remarks[index][indk + indj]); indk--) ;
+            for (indk = maxc - 1; indk >= 0 && is_word_char(data.macke.remarks[index][indk + indj]); indk--) ;
 
             if (lineno == 0) {
                 fprintf(fp, "#:%s:rem:", data.macke.seqabbr);
@@ -519,7 +500,6 @@ void macke_print_keyword_rem(int index, FILE * fp)
             if (data.macke.remarks[index][indj + indk] != ' ')
                 fprintf(fp, "%c", data.macke.remarks[index][indj + indk]);
             fprintf(fp, "\n");
-
         }
         else if (lineno == 0)
             fprintf(fp, "#:%s:rem:%s", data.macke.seqabbr, data.macke.remarks[index] + indj);
@@ -533,19 +513,16 @@ void macke_print_keyword_rem(int index, FILE * fp)
  *       print a macke line and wrap around line after
  *           78(MACKEMAXCHAR) column.
  */
-void macke_print_line_78(FILE * fp, char *line1, char *line2)
-{
+void macke_print_line_78(FILE * fp, char *line1, char *line2) {
     int len, indi, indj, indk, ibuf;
 
-    for (indi = 0, len = Lenstr(line2); indi < len; indi += indj) {
+    for (indi = 0, len = str0len(line2); indi < len; indi += indj) {
+        indj = 78 - str0len(line1);
 
-        indj = 78 - Lenstr(line1);
-
-        if ((Lenstr(line2 + indi)) > indj) {
-
+        if ((str0len(line2 + indi)) > indj) {
             ibuf = indj;
 
-            for (; indj > 0 && !last_word(line2[indi + indj]); indj--) ;
+            for (; indj > 0 && is_word_char(line2[indi + indj]); indj--) ;
 
             if (indj == 0)
                 indj = ibuf;
@@ -562,11 +539,9 @@ void macke_print_line_78(FILE * fp, char *line1, char *line2)
                 indj++;
 
             fprintf(fp, "\n");
-
         }
         else
             fprintf(fp, "%s%s", line1, line2 + indi);
-
     }                           /* for loop */
 }
 
@@ -574,8 +549,7 @@ void macke_print_line_78(FILE * fp, char *line1, char *line2)
  *   Function macke_key_word().
  *       Find the key in Macke line.
  */
-int macke_key_word(char *line, int index, char *key, int length)
-{
+int macke_key_word(char *line, int index, char *key, int length) {
     int indi;
 
     if (line == NULL) {
@@ -596,15 +570,14 @@ int macke_key_word(char *line, int index, char *key, int length)
 
 /* ------------------------------------------------------------
  *  Function macke_in_one_line().
- *      Check if string should be in one line.
+ *      Check if Str should be in one line.
  */
-int macke_in_one_line(char *string)
-{
+int macke_in_one_line(char *Str) {
     char keyword[TOKENSIZE];
 
     int iskey;
 
-    macke_key_word(string, 0, keyword, TOKENSIZE);
+    macke_key_word(Str, 0, keyword, TOKENSIZE);
     iskey = 0;
     if (str_equal(keyword, "KEYWORDS"))
         iskey = 1;
@@ -667,7 +640,6 @@ void macke_out2(FILE * fp) {
             indj = 0;
             fprintf(fp, "\n");
         }
-
     }                           /* every line */
 
     if (indj != 0)

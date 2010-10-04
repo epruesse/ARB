@@ -6,8 +6,7 @@
  *   Function reinit_paup().
  *       Init. paup data.
  */
-void reinit_paup()
-{
+void reinit_paup() {
     free_sequence_data(data.paup.ntax);
     data.paup.ntax = 0;
     data.paup.nchar = 0;
@@ -17,7 +16,7 @@ void reinit_paup()
  *   Function to_paup()
  *       Convert from some format to NEXUS format.
  */
-void to_paup(char *inf, char *outf, int informat) {
+void to_paup(const char *inf, const char *outf, int informat) {
     if (informat != GENBANK && informat != EMBL && informat != SWISSPROT && informat != MACKE) {
         throw_conversion_not_supported(informat, NEXUS);
     }
@@ -58,13 +57,13 @@ void to_paup(char *inf, char *outf, int informat) {
             reinit_macke();
             eof = macke_in_name(ifp);
             if (eof == EOF) break;
-            Cpystr(temp, data.macke.seqabbr); 
+            strcpy(temp, data.macke.seqabbr); 
         }
         else ca_assert(0);
 
         total_seq++;
 
-        if ((name = Dupstr(temp)) == NULL && temp != NULL) {
+        if ((name = str0dup(temp)) == NULL && temp != NULL) {
             out_of_memory = 1;
             break;
         }
@@ -78,8 +77,8 @@ void to_paup(char *inf, char *outf, int informat) {
         }
 
         data.ids[total_seq - 1] = name;
-        data.seqs[total_seq - 1] = (char *)Dupstr(data.sequence);
-        data.lengths[total_seq - 1] = Lenstr(data.sequence);
+        data.seqs[total_seq - 1] = str0dup(data.sequence);
+        data.lengths[total_seq - 1] = str0len(data.sequence);
     } while (!out_of_memory);
 
     if (out_of_memory) {
@@ -131,7 +130,7 @@ void to_paup(char *inf, char *outf, int informat) {
  *       Convert from ALMA format to NEXUS format,
  *           one seq by one seq.
  */
-void to_paup_1x1(char *inf, char *outf, int informat) {
+void to_paup_1x1(const char *inf, const char *outf, int informat) {
     int maxsize, current, total_seq, first_line;
     char temp[TOKENSIZE], eof;
     char *name;
@@ -180,7 +179,7 @@ void to_paup_1x1(char *inf, char *outf, int informat) {
                 throw_error(70, "UNKNOWN input format when converting to NEXUS format");
 
             Freespace(&name);
-            name = Dupstr(temp);
+            name = str0dup(temp);
             paup_verify_name(&name);
 
             if (data.seq_length > maxsize)
@@ -196,7 +195,6 @@ void to_paup_1x1(char *inf, char *outf, int informat) {
                 first_line++;
 
             total_seq++;
-
         } while (1);
         current += (SEQLINE - 10);
         if (maxsize > current)
@@ -224,23 +222,23 @@ void to_paup_1x1(char *inf, char *outf, int informat) {
  *   Function paup_verify_name().
  *       Verify short_id in NEXUS format.
  */
-void paup_verify_name(char **string) {
-    if (strpbrk(*string, "*(){/,;_=:\\\'")) {
+void paup_verify_name(char **Str) {
+    if (strpbrk(*Str, "*(){/,;_=:\\\'")) {
         char temp[TOKENSIZE];
         temp[0] = '\'';
 
-        int len   = Lenstr(*string);
+        int len   = str0len(*Str);
         int indi  = 0;
         int index = 1;
         for (; indi < len; indi++, index++) {
-            temp[index] = (*string)[indi];
-            if ((*string)[indi] == '\'') temp[++index] = '\'';
+            temp[index] = (*Str)[indi];
+            if ((*Str)[indi] == '\'') temp[++index] = '\'';
         }
         temp[index++] = '\'';
         temp[index]   = '\0';
         
-        Freespace(string);
-        (*string) = (char *)Dupstr(temp);
+        Freespace(Str);
+        (*Str) = str0dup(temp);
     }
 }
 
@@ -248,19 +246,18 @@ void paup_verify_name(char **string) {
  *  Function paup_print_line().
  *      print paup file.
  */
-void paup_print_line(char *string, char *sequence, int seq_length, int index, int first_line, FILE * fp)
-{
+void paup_print_line(char *Str, char *sequence, int seq_length, int index, int first_line, FILE * fp) {
     int indi, indj, length;
 
     length = SEQLINE - 10;
 
     fputs("      ", fp);
     /* truncate if length of seq ID is greater than 10 */
-    for (indi = 0; indi < 10 && string[indi]; indi++)
-        fputc(string[indi], fp);
+    for (indi = 0; indi < 10 && Str[indi]; indi++)
+        fputc(Str[indi], fp);
 
     if (seq_length == 0)
-        seq_length = Lenstr(sequence);
+        seq_length = str0len(sequence);
 
     if (index < seq_length) {
         for (; indi < 11; indi++)

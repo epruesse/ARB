@@ -8,7 +8,7 @@
  *   Function to_printable()
  *       Convert from some format to PRINTABLE format.
  */
-void to_printable(char *inf, char *outf, int informat) {
+void to_printable(const char *inf, const char *outf, int informat) {
     if (informat != GENBANK && informat != EMBL && informat != SWISSPROT && informat != MACKE) {
         throw_conversion_not_supported(informat, PRINTABLE);
     }
@@ -52,13 +52,13 @@ void to_printable(char *inf, char *outf, int informat) {
             embl_key_word(data.embl.id, 0, temp, TOKENSIZE);
         }
         else if (informat == MACKE) {
-            Cpystr(temp, data.macke.seqabbr);
+            strcpy(temp, data.macke.seqabbr);
         }
         else throw_error(120, "UNKNOWN input format when converting to PRINTABLE format");
         
         total_seq++;
 
-        if ((name = Dupstr(temp)) == NULL && temp != NULL) {
+        if ((name = str0dup(temp)) == NULL && temp != NULL) {
             out_of_memory = 1;
             break;
         }
@@ -77,10 +77,9 @@ void to_printable(char *inf, char *outf, int informat) {
         }
 
         data.ids[total_seq - 1] = name;
-        data.seqs[total_seq - 1] = (char *)Dupstr(data.sequence);
-        data.lengths[total_seq - 1] = Lenstr(data.sequence);
+        data.seqs[total_seq - 1] = str0dup(data.sequence);
+        data.lengths[total_seq - 1] = str0len(data.sequence);
         base_nums[total_seq - 1] = 0;
-
     } while (!out_of_memory);
 
     if (out_of_memory) {        /* cannot hold all seqs into mem. */
@@ -93,7 +92,7 @@ void to_printable(char *inf, char *outf, int informat) {
     current = 0;
     while (maxsize > current) {
         for (indi = 0; indi < total_seq; indi++) {
-            length = Lenstr(data.seqs[indi]);
+            length = str0len(data.seqs[indi]);
             for (index = base_count = 0; index < PRTLENGTH && (current + index) < length; index++)
                 if (data.seqs[indi][index + current] != '~' && data.seqs[indi][index + current] != '-' && data.seqs[indi][index + current] != '.')
                     base_count++;
@@ -124,7 +123,7 @@ void to_printable(char *inf, char *outf, int informat) {
  *   Function to_printable_1x1()
  *       Convert from one foramt to PRINTABLE format, one seq by one seq.
  */
-void to_printable_1x1(char *inf, char *outf, int informat) {
+void to_printable_1x1(const char *inf, const char *outf, int informat) {
     int maxsize, current, total_seq;
     int base_count, index;
     char temp[TOKENSIZE], eof;
@@ -170,7 +169,7 @@ void to_printable_1x1(char *inf, char *outf, int informat) {
             else
                 throw_error(131, "UNKNOWN input format when converting to PRINTABLE format");
             Freespace(&name);
-            name = Dupstr(temp);
+            name = str0dup(temp);
             if (data.seq_length > maxsize)
                 maxsize = data.seq_length;
             for (index = base_count = 0; index < current && index < data.seq_length; index++) {
@@ -198,12 +197,11 @@ void to_printable_1x1(char *inf, char *outf, int informat) {
  *   Function printable_print_line().
  *       print one printable line.
  */
-void printable_print_line(char *id, char *sequence, int start, int base_count, FILE * fp)
-{
+void printable_print_line(char *id, char *sequence, int start, int base_count, FILE * fp) {
     int indi, index, count, bnum, seq_length;
 
     fprintf(fp, " ");
-    if ((bnum = Lenstr(id)) > 10) {
+    if ((bnum = str0len(id)) > 10) {
         /* truncate if length of id is greater than 10 */
         for (indi = 0; indi < 10; indi++)
             fprintf(fp, "%c", id[indi]);
@@ -214,7 +212,7 @@ void printable_print_line(char *id, char *sequence, int start, int base_count, F
         bnum = 10 - bnum + 1;
     }
     /* fill in the blanks to make up 10 chars id spaces */
-    seq_length = Lenstr(sequence);
+    seq_length = str0len(sequence);
     if (start < seq_length)
         for (indi = 0; indi < bnum; indi++)
             fprintf(fp, " ");

@@ -37,8 +37,7 @@ void scan_token_or_die(const char *from, char *to, FILE_BUFFER *fb) {
  *   Function Freespace().
  *   Free the pointer if not NULL.
  */
-void Freespace(void *pointer)
-{
+void Freespace(void *pointer) {
     char **the_pointer = (char **)pointer;
 
     if ((*the_pointer) != NULL) {
@@ -122,8 +121,7 @@ void warningf(int warning_num, const char *warning_messagef, ...) { // __ATTR__F
  *       Realloc a continue space, expand or shrink the
  *       original space.
  */
-char *Reallocspace(void *block, unsigned int size)
-{
+char *Reallocspace(void *block, unsigned int size) {
     char *temp, answer;
 
     if ((block == NULL && size <= 0) || size <= 0)
@@ -147,77 +145,11 @@ char *Reallocspace(void *block, unsigned int size)
     return (temp);
 }
 
-/* -------------------------------------------------------------------
- *   Function Dupstr().
- *       Duplicate string and return the address of string.
- */
-char *Dupstr(const char *string)
-{
-    char     *temp, answer;
-    unsigned  size;
-
-    if (string == NULL)
-        return (NULL);
-    else {
-        size = strlen(string);
-        if ((temp = (char *)calloc(1, size + 1)) == NULL) {
-            const char *message = "Run out of memory (Dupstr)";
-            warning(888, message);
-            fprintf(stderr, "Are you converting to Paup or Phylip?(y/n) ");
-            scanf("%c", &answer);
-            if (answer == 'y') {
-                return (NULL);
-            }
-            throw_error(888, message);
-        }
-        strcpy(temp, string);
-        return (temp);
-    }
-}
-
-char *DupLenstr(const char *s, int len) {
-    char *result = (char*)malloc(len+1);
-    memcpy(result, s, len);
-    result[len]  = 0;
-    return result;
-}
-
-/* ------------------------------------------------------------
- *  Function Catstr().
- *      Append string s2 to string s1.
- */
-char *Catstr(char *s1, const char *s2)
-{
-    return ((char *)strcat(s1, s2));
-}
-
-/* ------------------------------------------------------------
- *   Function Lenstr().
- *       Length of the string s1.
- */
-int Lenstr(const char *s1)
-{
-    if (s1 == NULL)
-        return (0);
-    else
-        return (strlen(s1));
-}
-
-/* --------------------------------------------------------
- *  Function Cpystr().
- *      Copy string s2 to string s1.
- */
-void Cpystr(char *s1, const char *s2)
-{
-    strcpy(s1, s2);
-}
-
 /* ---------------------------------------------------------
  *   Function Skip_white_space().
- *       Skip white space from (index)th char of string line.
+ *       Skip white space from (index)th char of Str line.
  */
-int Skip_white_space(char *line, int index)
-{
+int Skip_white_space(char *line, int index) {
     /* skip white space */
 
     while (line[index] == ' ' || line[index] == '\t')
@@ -227,13 +159,12 @@ int Skip_white_space(char *line, int index)
 
 /* ----------------------------------------------------------------
  *   Function Reach_white_space().
- *       Reach the next available white space of string line.
+ *       Reach the next available white space of Str line.
  */
-int Reach_white_space(char *line, int index)
-{
+int Reach_white_space(char *line, int index) {
     int length;
 
-    length = Lenstr(line);
+    length = str0len(line);
 
     /* skip to white space */
     for (; line[index] != ' ' && line[index] != '\t' && index < length; index++) ;
@@ -247,8 +178,7 @@ int Reach_white_space(char *line, int index)
  *           overflow.
  */
 
-char *Fgetline(char *line, size_t maxread, FILE_BUFFER fb)
-{
+char *Fgetline(char *line, size_t maxread, FILE_BUFFER fb) {
     size_t len;
 
     const char *fullLine = FILE_BUFFER_read(fb, &len);
@@ -269,13 +199,10 @@ char *Fgetline(char *line, size_t maxread, FILE_BUFFER fb)
 
 /* ------------------------------------------------------------
  *   Function Getstr().
- *       Get input string from terminal.
+ *       Get input Str from terminal.
  */
-void Getstr(char *line, int linenum)
-{
-
+void Getstr(char *line, int linenum) {
     char c;
-
     int indi = 0;
 
     for (; (c = getchar()) != '\n' && indi < (linenum - 1); line[indi++] = c) ;
@@ -283,201 +210,65 @@ void Getstr(char *line, int linenum)
     line[indi] = '\0';
 }
 
-/* ----------------------------------------------------------------
- *   Function Append_char().
- *       Append a char before '\n' if there is no such char.
- *           (Assume there is '\n' at the end of string
- *           already and length of string except '\n' must
- *           greater than 1.)
- */
-void Append_char(char **string, char ch)
-{
-    char temp[10];
+inline void append_known_len(char*& string1, int len1, const char *string2, int len2) {
+    ca_assert(len2); // else no need to call, string1 already correct 
+    int newlen      = len1+len2;
+    string1         = Reallocspace(string1, newlen+1);
+    memcpy(string1+len1, string2, len2);
+    string1[newlen] = 0;
+}
 
-    if (Lenstr((*string)) <= 0 || (*string)[0] == '\n')
-        return;
+void terminate_with(char*& str, char ch) {
+    // append 'ch' to end of 'str' (before \n)
+    // - if it's not already there and
+    // - 'str' contains more than just '\n'
 
-    if ((*string)[Lenstr((*string)) - 2] != ch) {
-        sprintf(temp, "%c\n", ch);
-        Append_rm_eoln(string, temp);
+    int len = str0len(str);
+    if (!len) return; 
+    ca_assert(str[len-1] == '\n');
+    if (len == 1) return;
+    if (str[len-2] == ch) return;
+
+    char temp[] = { ch, '\n' };
+    append_known_len(str, len-1, temp, 2);
+}
+
+void skip_eolnl_and_append(char*& string1, const char *string2) {
+    int len1 = str0len(string1);
+    if (len1 && string1[len1-1] == '\n') len1--;
+    append_known_len(string1, len1, string2, str0len(string2));
+}
+
+void skip_eolnl_and_append_spaced(char*& string1, const char *string2) {
+    int len1 = str0len(string1);
+    if (len1 && string1[len1-1] == '\n') string1[len1-1] = ' ';
+    append_known_len(string1, len1, string2, str0len(string2));
+}
+
+void Append(char*& string1, const char *string2) {
+    int len2 = str0len(string2);
+    if (len2) append_known_len(string1, str0len(string1), string2, len2);
+}
+
+int find_pattern(const char *text, const char *pattern) {
+    // Return offset of 'pattern' in 'text' or -1
+    // (compares case insensitive)
+
+    if (!text || !pattern) return -1;
+
+    for (int t = 0; text[t]; ++t) {
+        bool mismatch = false;
+        for (int p = 0; !mismatch && pattern[p]; ++p) {
+            mismatch = tolower(text[t+p]) != tolower(pattern[p]);
+        }
+        if (!mismatch) return t;
     }
+    return -1;
 }
 
-/* ----------------------------------------------------------------
- *  Function Append_rm_eoln().
- *      Remove the eoln of string1 and then append string2
- *      to string1.
- */
-void Append_rm_eoln(char **string1, const char *string2)
-{
-    int length;
-
-    length = Lenstr(*string1);
-
-    if (((length > 1) && (*string1)[length - 1] == '\n') || (*string1)[0] == '\n')
-        length--;
-
-    (*string1) = (char *)Reallocspace((*string1), (unsigned int)(sizeof(char) * (Lenstr(string2) + length + 1)));
-
-    (*string1)[length] = '\0';
-
-    Catstr((*string1), string2);
+void upcase(char *str) {
+    // Capitalize all char in the str.
+    if (!str) return;
+    for (int i = 0; str[i]; ++i) str[i] = toupper(str[i]);
 }
 
-/* ----------------------------------------------------------------
- *   Function Append_rp_eoln().
- *       Replace the eoln by a blank in string1 and then append
- *       string2 to string1.
- */
-void Append_rp_eoln(char **string1, char *string2)
-{
-    int length;
-
-    length = Lenstr(*string1);
-    if ((length > 1) && (*string1)[length - 1] == '\n')
-        (*string1)[length - 1] = ' ';
-    (*string1) = (char *)Reallocspace((*string1), (unsigned int)(sizeof(char) * (Lenstr(string2) + Lenstr(*string1) + 1)));
-    (*string1)[length] = '\0';
-    Catstr((*string1), string2);
-}
-
-/* ----------------------------------------------------------------
- *   Function Append().
- *       Append string2 to string1.
- */
-void Append(char **string1, const char *string2)
-{
-    int length;
-
-    length = Lenstr(*string1);
-    if (length == 0 && Lenstr(string2) == 0)
-        return;
-
-    (*string1) = (char *)Reallocspace((*string1), (unsigned int)(sizeof(char) * (Lenstr(string2) + Lenstr(*string1) + 1)));
-    (*string1)[length] = '\0';
-
-    Catstr((*string1), string2);
-}
-
-/* ----------------------------------------------------------
- *   Function find_pattern()
- *   Return TRUE if the desired pattern in the input text
- */
-int find_pattern(const char *text, const char *pattern)
-{
-    int indi, index, indj;
-
-    int stop;
-
-    stop = Lenstr(text) - Lenstr(pattern) + 1;
-    for (indi = 0; indi < stop; indi++) {
-        index = -2;
-        for (indj = 0; index == -2 && pattern[indj] != '\0'; indj++)
-            if (same_char(text[indi + indj], pattern[indj]) == 0)
-                index = -1;
-        if (index == -2)
-            return (indi);
-        /* find PARTIALLY matched pattern */
-    }
-    return (-1);
-}
-
-/* --------------------------------------------------------------
- *   Function not_ending_mark().
- *       Return true if the char is not a '.' nor ';'.
- */
-int not_ending_mark(char ch)
-{
-    return ((ch != '.' && ch != ';'));
-}
-
-/* ----------------------------------------------------------------
- *   Function last_word().
- *       return true if the char is not white space.
- */
-int last_word(char ch)
-{
-    int is_lastword;
-
-    switch (ch) {
-        case ',':
-        case '.':
-        case ';':
-        case ' ':
-        case '?':
-        case ':':
-        case '!':
-        case ')':
-        case ']':
-        case '}':
-            is_lastword = 1;
-            break;
-        default:
-            is_lastword = 0;
-            break;
-    }
-    return (is_lastword);
-}
-
-/* ----------------------------------------------------------------
- *   Function is_separator().
- *       Return 1 if ch is a separator in string separators.
- */
-int is_separator(char ch, const char *separators)
-{
-    int indi, len, index;
-
-    for (indi = index = 0, len = Lenstr(separators); indi < len && index == 0; indi++)
-        if (ch == separators[indi])
-            index = 1;
-
-    return (index);
-}
-
-/* ------------------------------------------------------------
- *   Function same_char()
- *   Return TRUE if two characters are the same.
- *   case insensitive or not is decided by buffer.charcase.
- */
-int same_char(char ch1, char ch2)
-{
-    if (ch1 == ch2)
-        return (1);
-    if ((ch1 - 'a') >= 0)
-        ch1 = ch1 - 'a' + 'A';
-    if ((ch2 - 'a') >= 0)
-        ch2 = ch2 - 'a' + 'A';
-    if (ch1 == ch2)
-        return (1);
-    else
-        return (0);
-}
-
-/* --------------------------------------------------------------
- *   Function Upper_case().
- *       Capitalize all char in the string.
- */
-void Upper_case(char *string)
-{
-    int len, indi;
-
-    len = Lenstr(string);
-    for (indi = 0; indi < len; indi++) {
-        if (string[indi] >= 'a' && string[indi] <= 'z')
-            string[indi] = string[indi] - 'a' + 'A';
-    }
-}
-
-/* ---------------------------------------------------------------
- *   Function Blank_num().
- *       Count the number of blanks at the beginning of
- *           the string.
- */
-int Blank_num(char *string)
-{
-    int index;
-
-    for (index = 0; string[index] == ' '; index++) ;
-
-    return (index);
-}

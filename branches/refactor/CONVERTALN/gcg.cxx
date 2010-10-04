@@ -27,7 +27,7 @@ public:
     }
 
     void set_species_name(const char *next_name) {
-        if (!seq_written) species_name = Dupstr(next_name);
+        if (!seq_written) species_name = str0dup(next_name);
         else warningf(111, "Species '%s' dropped (GCG allows only 1 seq per file)", next_name);
     }
 
@@ -47,7 +47,7 @@ public:
 
 
 
-static void macke_to_gcg(char *inf, char *outf) {
+static void macke_to_gcg(const char *inf, const char *outf) {
     // @@@ fix outfile handling - use GcgWriter!
     // @@@ use MackeReader here? 
     
@@ -70,7 +70,7 @@ static void macke_to_gcg(char *inf, char *outf) {
         macke_abbrev(line1, key, 2);
 
         char temp[TOKENSIZE];
-        Cpystr(temp, key);
+        strcpy(temp, key);
         ofp = open_output_or_die(outf);        // @@@ always overwrites same outfile
 
         char name[LINESIZE];
@@ -93,7 +93,7 @@ static void macke_to_gcg(char *inf, char *outf) {
     destroy_FILE_BUFFER(ifp1);
 }
 
-static void genbank_to_gcg(char *inf, char *outf) {
+static void genbank_to_gcg(const char *inf, const char *outf) {
     GenbankReader inp(inf);
     GcgWriter     out(outf);
 
@@ -115,7 +115,7 @@ static void genbank_to_gcg(char *inf, char *outf) {
     }
 }
 
-static void embl_to_gcg(char *inf, char *outf) {
+static void embl_to_gcg(const char *inf, const char *outf) {
     EmblSwissprotReader inp(inf);
     GcgWriter           out(outf);
 
@@ -138,7 +138,7 @@ static void embl_to_gcg(char *inf, char *outf) {
     }
 }
 
-void to_gcg(char *inf, char *outf, int intype) {
+void to_gcg(const char *inf, const char *outf, int intype) {
     if (intype == MACKE) {
         macke_to_gcg(inf, outf);
     }
@@ -176,7 +176,7 @@ void gcg_doc_out(const char *line, FILE * ofp) {
 
     ca_assert(ofp);
 
-    for (indi = 0, len = Lenstr(line), previous_is_dot = 0; indi < len; indi++) {
+    for (indi = 0, len = str0len(line), previous_is_dot = 0; indi < len; indi++) {
         if (previous_is_dot) {
             if (line[indi] == '.')
                 fprintf(ofp, " ");
@@ -193,18 +193,17 @@ void gcg_doc_out(const char *line, FILE * ofp) {
  *   Function checksum().
  *       Calculate checksum for GCG format.
  */
-int checksum(char *string, int numofstr)
-{
+int checksum(char *Str, int numofstr) {
     int cksum = 0, indi, count = 0, charnum;
 
     for (indi = 0; indi < numofstr; indi++) {
-        if (string[indi] == '.' || string[indi] == '-' || string[indi] == '~')
+        if (Str[indi] == '.' || Str[indi] == '-' || Str[indi] == '~')
             continue;
         count++;
-        if (string[indi] >= 'a' && string[indi] <= 'z')
-            charnum = string[indi] - 'a' + 'A';
+        if (Str[indi] >= 'a' && Str[indi] <= 'z')
+            charnum = Str[indi] - 'a' + 'A';
         else
-            charnum = string[indi];
+            charnum = Str[indi];
         cksum = ((cksum + count * charnum) % 10000);
         if (count == 57)
             count = 0;
@@ -216,9 +215,7 @@ int checksum(char *string, int numofstr)
  *   Function gcg_out_origin().
  *       Output sequence data in gcg format.
  */
-void gcg_out_origin(FILE * fp)
-{
-
+void gcg_out_origin(FILE * fp) {
     int indi, indj, indk;
 
     for (indi = 0, indj = 0, indk = 1; indi < data.seq_length; indi++) {
@@ -245,11 +242,10 @@ void gcg_out_origin(FILE * fp)
  *       Get gcg output filename, convert all '.' to '_' and
  *           append ".RDP" as suffix.
  */
-void gcg_output_filename(char *prefix, char *name)
-{
+void gcg_output_filename(char *prefix, char *name) {
     int indi, len;
 
-    for (indi = 0, len = Lenstr(prefix); indi < len; indi++)
+    for (indi = 0, len = str0len(prefix); indi < len; indi++)
         if (prefix[indi] == '.')
             prefix[indi] = '_';
     sprintf(name, "%s.RDP", prefix);
@@ -259,9 +255,7 @@ void gcg_output_filename(char *prefix, char *name)
  *   Function gcg_seq_length().
  *       Calculate sequence length without gap.
  */
-int gcg_seq_length()
-{
-
+int gcg_seq_length() {
     int indi, len;
 
     for (indi = 0, len = data.seq_length; indi < data.seq_length; indi++)

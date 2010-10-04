@@ -34,10 +34,10 @@ static const char *Month[12] = {
  */
 const char *genbank_date(const char *other_date) {
     const char *result;
-    int         length = Lenstr(other_date);
+    int         length = str0len(other_date);
 
     if (other_date[length - 1] == '\n') {
-        char *dup     = Dupstr(other_date);
+        char *dup     = str0dup(other_date);
         dup[--length] = '\0';
         result        = genbank_date(dup);
         free(dup);
@@ -82,7 +82,7 @@ const char *genbank_date(const char *other_date) {
 
 /* -----------------------------------------------------------
  *   Function find_date().
- *       Find day, month, year from date string.
+ *       Find day, month, year from date Str.
  */
 void find_date(const char *date_string, int *month, int *day, int *year) {
     int index, indi, count, nums[3];
@@ -97,8 +97,8 @@ void find_date(const char *date_string, int *month, int *day, int *year) {
     else if (two_char(date_string, '-')) determ = '-';
 
     if (determ != ' ') {
-        for (indi = 0; indi <= Lenstr(date_string); indi++) {
-            if (date_string[indi] == determ || indi == Lenstr(date_string)) {
+        for (indi = 0; indi <= str0len(date_string); indi++) {
+            if (date_string[indi] == determ || indi == str0len(date_string)) {
                 token[index++] = '\0';
                 nums[count++] = atoi(token);
                 index = 0;
@@ -115,7 +115,7 @@ void find_date(const char *date_string, int *month, int *day, int *year) {
 
 /* ------------------------------------------------------------------
  *   Function two_char().
- *       Return true if string has two determinator char.
+ *       Return true if Str has two determinator char.
  */
 bool two_char(const char *str, char determ) {
     int count = 0;
@@ -125,12 +125,12 @@ bool two_char(const char *str, char determ) {
 
 /* -----------------------------------------------------------------
  *   Function find_date_long_term().
- *       Find day, month, year in the long term date string
+ *       Find day, month, year in the long term date Str
  *           like day-of-week, month, day, time, year.
  */
 void find_date_long_form(const char *date_string, int *month, int *day, int *year) {
     int nums[3] = { 0, 0, 0 };
-    int length = Lenstr(date_string);
+    int length = str0len(date_string);
 
     for (int indi = 0, index = 0; index <= length; index++) {
         char token[SIZE];
@@ -159,7 +159,7 @@ void find_date_long_form(const char *date_string, int *month, int *day, int *yea
 
 /* --------------------------------------------------------------------
  *   Function ismonth().
- *       Return [1..12] if the char string is one of 12 months.
+ *       Return [1..12] if the char Str is one of 12 months.
  *           Case insensitive.
  */
 int ismonth(const char *str) {
@@ -173,22 +173,22 @@ int ismonth(const char *str) {
 
 /* ------------------------------------------------------------------
  *   Function isdatenum().
- *       Return number of day or year the string represents.
+ *       Return number of day or year the Str represents.
  *           If not day or year, return 0.
  */
-int isdatenum(char *string) {
+int isdatenum(char *Str) {
     int length, num, indi;
 
-    length = Lenstr(string);
+    length = str0len(Str);
     if (length > 4 || length < 1)
         return (0);
     for (indi = 0, num = 1; indi < length && num == 1; indi++) {
-        if (!isdigit(string[indi])) {
+        if (!isdigit(Str[indi])) {
             num = 0;
         }
     }
     if (num == 1)
-        num = atoi(string);
+        num = atoi(Str);
     return (num);
 }
 
@@ -198,7 +198,7 @@ int isdatenum(char *string) {
  *           day(2 digits)-MONTH(in letters)-year(4 digits).
  */
 int is_genbank_date(const char *str) {
-    return Lenstr(str) >= 11 && str[2] == '-' && str[6] == '-';
+    return str0len(str) >= 11 && str[2] == '-' && str[6] == '-';
 }
 
 /* ----------------------------------------------------------------
@@ -212,7 +212,7 @@ const char *today_date() {
         struct timezone tzp;
         (void)gettimeofday(&tp, &tzp);
 
-        Cpystr(line, ctime(&(tp.tv_sec)));
+        strcpy(line, ctime(&(tp.tv_sec)));
 
         int len = strlen(line);
         if (line[len-1] == '\n') {

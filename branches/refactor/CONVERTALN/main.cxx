@@ -47,7 +47,7 @@ static void show_command_line_usage() {
 }
 
 static void valid_name_or_die(const char *file_name) {
-    if (Lenstr(file_name) <= 0) {
+    if (str0len(file_name) <= 0) {
         throw_errorf(152, "illegal file name: %s", file_name);
     }
 }
@@ -63,9 +63,9 @@ static void change_file_suffix(char *old_file, char *file_name, int type) {
     // Define the default file name by changing suffix.
     int indi, indj;
 
-    for (indi = Lenstr(old_file) - 1; indi >= 0 && old_file[indi] != '.'; indi--)
+    for (indi = str0len(old_file) - 1; indi >= 0 && old_file[indi] != '.'; indi--)
         if (indi == 0)
-            Cpystr(file_name, old_file);
+            strcpy(file_name, old_file);
         else {
             for (indj = 0; indj < (indi - 1); indj++)
                 file_name[indj] = old_file[indj];
@@ -73,25 +73,25 @@ static void change_file_suffix(char *old_file, char *file_name, int type) {
         }
     switch (type) {
         case GENBANK:
-            Catstr(file_name, ".GB");
+            strcat(file_name, ".GB");
             break;
         case MACKE:
-            Catstr(file_name, ".aln");
+            strcat(file_name, ".aln");
             break;
         case NEXUS:
-            Catstr(file_name, ".NEXUS");
+            strcat(file_name, ".NEXUS");
             break;
         case PHYLIP:
-            Catstr(file_name, ".PHY");
+            strcat(file_name, ".PHY");
             break;
         case EMBL:
-            Catstr(file_name, ".EMBL");
+            strcat(file_name, ".EMBL");
             break;
         case PRINTABLE:
-            Catstr(file_name, ".prt");
+            strcat(file_name, ".prt");
             break;
         default:
-            Catstr(file_name, ".???");
+            strcat(file_name, ".???");
     }
 }
 
@@ -136,7 +136,7 @@ static void ask_for_conversion_params(int& argc, char**& argv, int& intype, int&
 
     fprintf(stderr, "\nInput file name? ");
     Getstr(temp, LINESIZE);
-    argv[2] = Dupstr(temp);
+    argv[2] = str0dup(temp);
 
     valid_name_or_die(temp);
     if (!file_exists(temp)) throw_error(77, "Input file not found");
@@ -174,10 +174,10 @@ static void ask_for_conversion_params(int& argc, char**& argv, int& intype, int&
     if (outtype != GCG) {
         fprintf(stderr, "\nOutput file name [%s]? ", temp);
         Getstr(temp, LINESIZE);
-        if (Lenstr(temp) == 0)
+        if (str0len(temp) == 0)
             change_file_suffix(argv[2], temp, outtype);
     }
-    argv[4] = Dupstr(temp);
+    argv[4] = str0dup(temp);
     argc = 5;
 }
 

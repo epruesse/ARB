@@ -8,9 +8,8 @@
  *   Function reinit_phylip().
  *       Initialize genbank entry.
  */
-void reinit_phylip()
-{
-
+void reinit_phylip() {
+    // @@@ useless
 }
 
 
@@ -18,7 +17,7 @@ void reinit_phylip()
  *  Function to_phylip()
  *      Convert from some format to PHYLIP format.
  */
-void to_phylip(char *inf, char *outf, int informat, int readstdin) {
+void to_phylip(const char *inf, const char *outf, int informat, int readstdin) {
     if (informat != GENBANK && informat != EMBL && informat != SWISSPROT && informat != MACKE) {
         throw_conversion_not_supported(informat, PHYLIP);
     }
@@ -60,13 +59,13 @@ void to_phylip(char *inf, char *outf, int informat, int readstdin) {
             reinit_macke();
             eof = macke_in_name(ifp);
             if (eof == EOF) break;
-            Cpystr(temp, data.macke.seqabbr);
+            strcpy(temp, data.macke.seqabbr);
         }
         else ca_assert(0);
 
         total_seq++;
 
-        if ((name = Dupstr(temp)) == NULL && temp != NULL) {
+        if ((name = str0dup(temp)) == NULL && temp != NULL) {
             out_of_memory = 1;
             break;
         }
@@ -79,8 +78,8 @@ void to_phylip(char *inf, char *outf, int informat, int readstdin) {
         }
 
         data.ids[total_seq - 1] = name;
-        data.seqs[total_seq - 1] = (char *)Dupstr(data.sequence);
-        data.lengths[total_seq - 1] = Lenstr(data.sequence);
+        data.seqs[total_seq - 1] = str0dup(data.sequence);
+        data.lengths[total_seq - 1] = str0len(data.sequence);
     } while (!out_of_memory);
 
     if (out_of_memory) {        /* cannot hold all seqs into mem. */
@@ -107,7 +106,6 @@ void to_phylip(char *inf, char *outf, int informat, int readstdin) {
             }
             fputc(c, ofp);
         }
-
     }
     fprintf(ofp, "\n");
 
@@ -149,7 +147,7 @@ void to_phylip(char *inf, char *outf, int informat, int readstdin) {
  *   Function to_phylip_1x1()
  *       Convert from one format to PHYLIP format, one seq by one seq.
  */
-void to_phylip_1x1(char *inf, char *outf, int informat) {
+void to_phylip_1x1(const char *inf, const char *outf, int informat) {
     int maxsize, current, total_seq;
     char temp[TOKENSIZE], eof;
     char *name;
@@ -196,7 +194,7 @@ void to_phylip_1x1(char *inf, char *outf, int informat) {
             else
                 throw_error(130, "UNKNOWN input format when converting to PHYLIP format");
             Freespace(&name);
-            name = Dupstr(temp);
+            name = str0dup(temp);
             if (data.seq_length > maxsize)
                 maxsize = data.seq_length;
             phylip_print_line(name, data.sequence, 0, current, ofp);
@@ -222,12 +220,11 @@ void to_phylip_1x1(char *inf, char *outf, int informat) {
  *  Function phylip_print_line().
  *      Print phylip line.
  */
-void phylip_print_line(char *name, char *sequence, int seq_length, int index, FILE * fp)
-{
+void phylip_print_line(char *name, char *sequence, int seq_length, int index, FILE * fp) {
     int indi, indj, length, bnum;
 
     if (index == 0) {
-        if (Lenstr(name) > 10) {
+        if (str0len(name) > 10) {
             /* truncate id length of seq ID is greater than 10 */
             for (indi = 0; indi < 10; indi++)
                 fputc(name[indi], fp);
@@ -235,7 +232,7 @@ void phylip_print_line(char *name, char *sequence, int seq_length, int index, FI
         }
         else {
             fprintf(fp, "%s", name);
-            bnum = 10 - Lenstr(name) + 1;
+            bnum = 10 - str0len(name) + 1;
         }
         /* fill in blanks to make up 10 chars for ID. */
         for (indi = 0; indi < bnum; indi++)
@@ -248,7 +245,7 @@ void phylip_print_line(char *name, char *sequence, int seq_length, int index, FI
         length = SEQLINE;
 
     if (seq_length == 0)
-        seq_length = Lenstr(sequence);
+        seq_length = str0len(sequence);
     for (indi = indj = 0; indi < length; indi++) {
         if ((index + indi) < seq_length) {
             char c = sequence[index + indi];

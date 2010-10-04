@@ -89,6 +89,27 @@ inline void NOOP_global_data_was_previously_initialized_here() {
 inline bool str_equal(const char *s1, const char *s2) { return strcmp(s1, s2) == 0; }
 inline bool str_iequal(const char *s1, const char *s2) { return strcasecmp(s1, s2) == 0; }
 
+inline int str0len(const char *str) { return str ? strlen(str) : 0; }
+
+inline char *strndup(const char *str, int len) {
+    char *result = (char*)malloc(len+1);
+    memcpy(result, str, len);
+    result[len]  = 0;
+    return result;
+}
+
+inline char *str0dup(const char *str) {
+    if (!str) return NULL;
+    return strndup(str, strlen(str));
+}
+
+inline int count_spaces(const char *str) { return strspn(str, " "); }
+
+inline bool occurs_in(char ch, const char *in) { return strchr(in, ch) != 0; }
+
+inline bool is_end_mark(char ch) { return ch == '.' || ch == ';'; }
+inline bool is_word_char(char ch) { return !occurs_in(ch, ",.; ?:!)]}"); }
+
 // --------------------
 
 template<typename PRED>

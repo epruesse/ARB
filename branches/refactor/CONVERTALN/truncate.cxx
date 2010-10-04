@@ -9,8 +9,7 @@
     /*      Initially used for truncating line over 80 char.
     /*      of AE2 file.  Now might not be useful anymore...
 */
-void truncate_over_80(FILE * inf, FILE * outf)
-{
+void truncate_over_80(FILE * inf, FILE * outf) {
     char *eof, line[80], c;
 
     eof = fgets(line, 80, inf);
