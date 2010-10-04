@@ -224,10 +224,10 @@ void global_data::cleanup() {
         cleanup_embl();
         cleanup_genbank();
 
-        Freespace(&data.sequence);
-        Freespace(&data.gbk.comments.others);
-        Freespace(&data.gbk.reference);
-        Freespace(&data.gbk.definition);
+        freenull(data.sequence);
+        freenull(data.gbk.comments.others);
+        freenull(data.gbk.reference);
+        freenull(data.gbk.definition);
 
         initialized = false;
     }

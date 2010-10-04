@@ -20,32 +20,32 @@ void reinit_em_data() {
  *              Initialize embl entry.
  */
 void cleanup_embl() {
-    Freespace(&(data.embl.id));
-    Freespace(&(data.embl.dateu));
-    Freespace(&(data.embl.datec));
-    Freespace(&(data.embl.description));
-    Freespace(&(data.embl.os));
-    Freespace(&(data.embl.accession));
-    Freespace(&(data.embl.keywords));
+    freenull(data.embl.id);
+    freenull(data.embl.dateu);
+    freenull(data.embl.datec);
+    freenull(data.embl.description);
+    freenull(data.embl.os);
+    freenull(data.embl.accession);
+    freenull(data.embl.keywords);
 
     for (int indi = 0; indi < data.embl.numofref; indi++) {
-        Freespace(&(data.embl.reference[indi].author));
-        Freespace(&(data.embl.reference[indi].title));
-        Freespace(&(data.embl.reference[indi].journal));
-        Freespace(&(data.embl.reference[indi].processing));
+        freenull(data.embl.reference[indi].author);
+        freenull(data.embl.reference[indi].title);
+        freenull(data.embl.reference[indi].journal);
+        freenull(data.embl.reference[indi].processing);
     }
-    Freespace(&(data.embl.reference));
-    Freespace(&(data.embl.dr));
-    Freespace(&(data.embl.comments.orginf.source));
-    Freespace(&(data.embl.comments.orginf.cc));
-    Freespace(&(data.embl.comments.orginf.formname));
-    Freespace(&(data.embl.comments.orginf.nickname));
-    Freespace(&(data.embl.comments.orginf.commname));
-    Freespace(&(data.embl.comments.orginf.hostorg));
-    Freespace(&(data.embl.comments.seqinf.RDPid));
-    Freespace(&(data.embl.comments.seqinf.gbkentry));
-    Freespace(&(data.embl.comments.seqinf.methods));
-    Freespace(&(data.embl.comments.others));
+    freenull(data.embl.reference);
+    freenull(data.embl.dr);
+    freenull(data.embl.comments.orginf.source);
+    freenull(data.embl.comments.orginf.cc);
+    freenull(data.embl.comments.orginf.formname);
+    freenull(data.embl.comments.orginf.nickname);
+    freenull(data.embl.comments.orginf.commname);
+    freenull(data.embl.comments.orginf.hostorg);
+    freenull(data.embl.comments.seqinf.RDPid);
+    freenull(data.embl.comments.seqinf.gbkentry);
+    freenull(data.embl.comments.seqinf.methods);
+    freenull(data.embl.comments.others);
 }
 
 void reinit_embl() {
@@ -1407,7 +1407,7 @@ char *gtoe_author(char *author) {
         }
     }
 
-    Freespace(&auth);
+    freenull(auth);
     return (Str);
 }
 
@@ -1542,7 +1542,7 @@ int partial_mtoe() {
         }
         else {
             if (str0len(data.embl.comments.others) <= 1)
-                Freespace(&(data.embl.comments.others));
+                freenull(data.embl.comments.others);
             Append(data.embl.comments.others, "*source: strain=");
             Append(data.embl.comments.others, data.macke.strain);
             if (!is_end_mark(data.embl.comments.others[str0len(data.embl.comments.others) - 2])) {
@@ -1560,7 +1560,7 @@ int partial_mtoe() {
         }
         else {
             if (str0len(data.embl.comments.others) <= 1)
-                Freespace(&(data.embl.comments.others));
+                freenull(data.embl.comments.others);
 
             Append(data.embl.comments.others, "*source: subspecies=");
             Append(data.embl.comments.others, data.macke.subspecies);

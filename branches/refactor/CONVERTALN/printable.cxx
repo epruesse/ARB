@@ -111,7 +111,7 @@ void to_printable(const char *inf, const char *outf, int informat) {
             fprintf(ofp, "\n\n");
     }
 
-    Freespace((char **)&(base_nums));
+    freenull(base_nums);
 
     log_processed(total_seq);
     free_sequence_data(total_seq); 
@@ -168,7 +168,7 @@ void to_printable_1x1(const char *inf, const char *outf, int informat) {
             }
             else
                 throw_error(131, "UNKNOWN input format when converting to PRINTABLE format");
-            Freespace(&name);
+            freenull(name);
             name = str0dup(temp);
             if (data.seq_length > maxsize)
                 maxsize = data.seq_length;

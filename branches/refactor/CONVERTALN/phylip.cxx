@@ -193,7 +193,7 @@ void to_phylip_1x1(const char *inf, const char *outf, int informat) {
             }
             else
                 throw_error(130, "UNKNOWN input format when converting to PHYLIP format");
-            Freespace(&name);
+            freenull(name);
             name = str0dup(temp);
             if (data.seq_length > maxsize)
                 maxsize = data.seq_length;

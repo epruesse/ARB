@@ -15,26 +15,26 @@ extern int warning_out;
  *  Initialize genbank entry.
  */
 void cleanup_genbank() {
-    Freespace(&(data.gbk.locus));
-    Freespace(&(data.gbk.definition));
-    Freespace(&(data.gbk.accession));
-    Freespace(&(data.gbk.keywords));
-    Freespace(&(data.gbk.source));
-    Freespace(&(data.gbk.organism));
+    freenull(data.gbk.locus);
+    freenull(data.gbk.definition);
+    freenull(data.gbk.accession);
+    freenull(data.gbk.keywords);
+    freenull(data.gbk.source);
+    freenull(data.gbk.organism);
     for (int indi = 0; indi < data.gbk.numofref; indi++) {
         cleanup_reference(&data.gbk.reference[indi]);
     }
-    Freespace((char **)&(data.gbk.reference));
-    Freespace(&(data.gbk.comments.orginf.source));
-    Freespace(&(data.gbk.comments.orginf.cc));
-    Freespace(&(data.gbk.comments.orginf.formname));
-    Freespace(&(data.gbk.comments.orginf.nickname));
-    Freespace(&(data.gbk.comments.orginf.commname));
-    Freespace(&(data.gbk.comments.orginf.hostorg));
-    Freespace(&(data.gbk.comments.seqinf.RDPid));
-    Freespace(&(data.gbk.comments.seqinf.gbkentry));
-    Freespace(&(data.gbk.comments.seqinf.methods));
-    Freespace(&(data.gbk.comments.others));
+    freenull(data.gbk.reference);
+    freenull(data.gbk.comments.orginf.source);
+    freenull(data.gbk.comments.orginf.cc);
+    freenull(data.gbk.comments.orginf.formname);
+    freenull(data.gbk.comments.orginf.nickname);
+    freenull(data.gbk.comments.orginf.commname);
+    freenull(data.gbk.comments.orginf.hostorg);
+    freenull(data.gbk.comments.seqinf.RDPid);
+    freenull(data.gbk.comments.seqinf.gbkentry);
+    freenull(data.gbk.comments.seqinf.methods);
+    freenull(data.gbk.comments.others);
 }
 
 void reinit_genbank() {
@@ -240,7 +240,7 @@ char *genbank_one_entry_in(char*& datastring, char *line, FILE_BUFFER fp) {
     char *eof;
 
     index = Skip_white_space(line, 12);
-    Freespace(&datastring);
+    freenull(datastring);
     datastring = str0dup(line + index);
     eof = genbank_continue_line(datastring, line, 12, fp);
 
@@ -256,7 +256,7 @@ char *genbank_one_comment_entry(char*& datastring, char *line, int start_index, 
     char *eof;
 
     index = Skip_white_space(line, start_index);
-    Freespace(&datastring);
+    freenull(datastring);
     datastring = str0dup(line + index);
     eof = genbank_continue_line(datastring, line, 20, fp);
     return (eof);
@@ -279,7 +279,7 @@ char *genbank_source(char *line, FILE_BUFFER fp) {
         data.gbk.organism = str0dup(line + index);
         dummy = strdup("\n");
         eof = genbank_continue_line(dummy, line, 12, fp);
-        Freespace(&dummy);
+        freenull(dummy);
     }
     return (eof);
 }
@@ -935,11 +935,11 @@ void genbank_to_genbank(const char *inf, const char *outf) {
  */
 
 void cleanup_reference(Reference *ref) {
-    Freespace(&(ref->ref));
-    Freespace(&(ref->author));
-    Freespace(&(ref->journal));
-    Freespace(&(ref->title));
-    Freespace(&(ref->standard));
+    freenull(ref->ref);
+    freenull(ref->author);
+    freenull(ref->journal);
+    freenull(ref->title);
+    freenull(ref->standard);
 }
 
 void reinit_reference(Reference *ref) {

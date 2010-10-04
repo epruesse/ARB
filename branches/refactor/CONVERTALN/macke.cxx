@@ -12,23 +12,23 @@
  *   Initialize macke entry.
  */
 void cleanup_macke() {
-    Freespace(&(data.macke.seqabbr));
-    Freespace(&(data.macke.name));
-    Freespace(&(data.macke.atcc));
-    Freespace(&(data.macke.rna));
-    Freespace(&(data.macke.date));
-    Freespace(&(data.macke.nbk));
-    Freespace(&(data.macke.acs));
-    Freespace(&(data.macke.who));
+    freenull(data.macke.seqabbr);
+    freenull(data.macke.name);
+    freenull(data.macke.atcc);
+    freenull(data.macke.rna);
+    freenull(data.macke.date);
+    freenull(data.macke.nbk);
+    freenull(data.macke.acs);
+    freenull(data.macke.who);
     for (int indi = 0; indi < data.macke.numofrem; indi++) {
-        Freespace(&(data.macke.remarks[indi]));
+        freenull(data.macke.remarks[indi]);
     }
-    Freespace((char **)&(data.macke.remarks));
-    Freespace(&(data.macke.journal));
-    Freespace(&(data.macke.title));
-    Freespace(&(data.macke.author));
-    Freespace(&(data.macke.strain));
-    Freespace(&(data.macke.subspecies));
+    freenull(data.macke.remarks);
+    freenull(data.macke.journal);
+    freenull(data.macke.title);
+    freenull(data.macke.author);
+    freenull(data.macke.strain);
+    freenull(data.macke.subspecies);
 }
 
 void reinit_macke() {
@@ -104,7 +104,7 @@ char MackeReader::mackeIn() {
 
     /* read in seq name */
     index = macke_abbrev(line3, oldname, 2);
-    Freespace(&data.macke.seqabbr);
+    freenull(data.macke.seqabbr);
     data.macke.seqabbr = str0dup(oldname);
 
     /* read seq. information */
@@ -313,7 +313,7 @@ char macke_in_name(FILE_BUFFER fp) {
     data.seq_length = 0;
 
     /* read in line by line */
-    Freespace(&(data.macke.seqabbr));
+    freenull(data.macke.seqabbr);
     for (index = macke_abbrev(line, name, 0), data.macke.seqabbr = str0dup(name); line[0] != EOF && str_equal(data.macke.seqabbr, name);) {
         ASSERT_RESULT(int, 2, sscanf(line + index, "%d%s", &seqnum, seq));
         for (indj = data.seq_length; indj < seqnum; indj++)
@@ -352,8 +352,6 @@ void macke_out_header(FILE * fp) {
     fprintf(fp, "#-\n#-\n#-\teditor\n");
     const char *date = today_date();
     fprintf(fp, "#-\t%s\n#-\n#-\n", date);
-#warning next line crashes, but compiles w/o warning
-    // Freespace(&date);
 }
 
 /* ------------------------------------------------------------

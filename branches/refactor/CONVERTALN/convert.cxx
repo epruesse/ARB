@@ -32,12 +32,12 @@ void free_sequence_data(int used_entries) {
     int indi;
 
     for (indi = 0; indi < used_entries; indi++) {
-        Freespace(&(data.ids[indi]));
-        Freespace(&(data.seqs[indi]));
+        freenull(data.ids[indi]);
+        freenull(data.seqs[indi]);
     }
-    Freespace(&(data.ids));
-    Freespace(&(data.seqs));
-    Freespace(&(data.lengths));
+    freenull(data.ids);
+    freenull(data.seqs);
+    freenull(data.lengths);
 
     data.allocated = 0;
 }

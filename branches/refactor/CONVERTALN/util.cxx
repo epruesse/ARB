@@ -33,19 +33,6 @@ void scan_token_or_die(const char *from, char *to, FILE_BUFFER *fb) {
     }
 }
 
-/* --------------------------------------------------------------- *
- *   Function Freespace().
- *   Free the pointer if not NULL.
- */
-void Freespace(void *pointer) {
-    char **the_pointer = (char **)pointer;
-
-    if ((*the_pointer) != NULL) {
-        free((*the_pointer));
-    }
-    (*the_pointer) = NULL;
-}
-
 void throw_error(int error_num, const char *error_message) { // __ATTR__NORETURN
     throw Convaln_exception(error_num, error_message);
 }

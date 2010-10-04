@@ -178,7 +178,7 @@ void to_paup_1x1(const char *inf, const char *outf, int informat) {
             else
                 throw_error(70, "UNKNOWN input format when converting to NEXUS format");
 
-            Freespace(&name);
+            freenull(name);
             name = str0dup(temp);
             paup_verify_name(name);
 
@@ -237,7 +237,7 @@ void paup_verify_name(char*& Str) {
         temp[index++] = '\'';
         temp[index]   = '\0';
         
-        Freespace(&Str);
+        freenull(Str);
         Str = str0dup(temp);
     }
 }

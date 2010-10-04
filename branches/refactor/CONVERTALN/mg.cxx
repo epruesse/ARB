@@ -136,12 +136,12 @@ int gtom() {
     gtom_remarks();
 
     /* adjust the strain, subspecies, and atcc information */
-    Freespace(&(data.macke.strain));
+    freenull(data.macke.strain);
     data.macke.strain = genbank_get_strain();
-    Freespace(&(data.macke.subspecies));
+    freenull(data.macke.subspecies);
     data.macke.subspecies = genbank_get_subspecies();
     if (str0len(data.macke.atcc) <= 1) {
-        Freespace(&(data.macke.atcc));
+        freenull(data.macke.atcc);
         data.macke.atcc = genbank_get_atcc();
     }
 
@@ -602,7 +602,7 @@ int mtog() {
     }
     if (str0len(data.macke.acs) > 1) {
         /* #### not converted to accession but to comment gbkentry only, temporarily
-           Freespace(&(data.gbk.accession));
+           freenull(data.gbk.accession);
            data.gbk.accession = str0dup(data.macke.acs);
          */
         data.gbk.comments.seqinf.exist = 1;
@@ -610,7 +610,7 @@ int mtog() {
     }
     else if (str0len(data.macke.nbk) > 1) {
         /* #### not converted to accession but to comment gbkentry only, temp
-           Freespace(&(data.gbk.accession));
+           freenull(data.gbk.accession);
            data.gbk.accession = str0dup(data.macke.nbk);
          */
         data.gbk.comments.seqinf.exist = 1;
@@ -694,7 +694,7 @@ void mtog_decode_ref_and_remarks() {
             }
             else
                 rcount = data.gbk.numofref - 1;
-            Freespace(&(data.gbk.reference[rcount].ref));
+            freenull(data.gbk.reference[rcount].ref);
             data.gbk.reference[rcount++].ref = macke_copyrem(data.macke.remarks, &indi, data.macke.numofrem, indj);
         }
         else if (str_equal(key, "auth")) {
@@ -703,7 +703,7 @@ void mtog_decode_ref_and_remarks() {
             }
             else
                 acount = data.gbk.numofref - 1;
-            Freespace(&(data.gbk.reference[acount].author));
+            freenull(data.gbk.reference[acount].author);
             data.gbk.reference[acount++].author = macke_copyrem(data.macke.remarks, &indi, data.macke.numofrem, indj);
         }
         else if (str_equal(key, "title")) {
@@ -712,7 +712,7 @@ void mtog_decode_ref_and_remarks() {
             }
             else
                 tcount = data.gbk.numofref - 1;
-            Freespace(&(data.gbk.reference[tcount].title));
+            freenull(data.gbk.reference[tcount].title);
             data.gbk.reference[tcount++].title = macke_copyrem(data.macke.remarks, &indi, data.macke.numofrem, indj);
         }
         else if (str_equal(key, "jour")) {
@@ -721,7 +721,7 @@ void mtog_decode_ref_and_remarks() {
             }
             else
                 jcount = data.gbk.numofref - 1;
-            Freespace(&(data.gbk.reference[jcount].journal));
+            freenull(data.gbk.reference[jcount].journal);
             data.gbk.reference[jcount++].journal = macke_copyrem(data.macke.remarks, &indi, data.macke.numofrem, indj);
         }
         else if (str_equal(key, "standard")) {
@@ -731,7 +731,7 @@ void mtog_decode_ref_and_remarks() {
             else
                 scount = data.gbk.numofref - 1;
 
-            Freespace(&(data.gbk.reference[scount].standard));
+            freenull(data.gbk.reference[scount].standard);
             data.gbk.reference[scount++].standard = macke_copyrem(data.macke.remarks, &indi, data.macke.numofrem, indj);
         }
         else if (str_equal(key, "Source of strain")) {
@@ -794,7 +794,7 @@ void mtog_decode_ref_and_remarks() {
  *       Convert one remark back to GenBank format.
  */
 void mtog_copy_remark(char*& Str, int *indi, int indj) {
-    Freespace(&Str);
+    freenull(Str);
     Str = macke_copyrem(data.macke.remarks, indi, data.macke.numofrem, indj);
 }
 
