@@ -67,7 +67,7 @@ void to_paup(const char *inf, const char *outf, int informat) {
             out_of_memory = 1;
             break;
         }
-        paup_verify_name(&name);
+        paup_verify_name(name);
 
         if (data.seq_length > maxsize)
             maxsize = data.seq_length;
@@ -180,7 +180,7 @@ void to_paup_1x1(const char *inf, const char *outf, int informat) {
 
             Freespace(&name);
             name = str0dup(temp);
-            paup_verify_name(&name);
+            paup_verify_name(name);
 
             if (data.seq_length > maxsize)
                 maxsize = data.seq_length;
@@ -222,23 +222,23 @@ void to_paup_1x1(const char *inf, const char *outf, int informat) {
  *   Function paup_verify_name().
  *       Verify short_id in NEXUS format.
  */
-void paup_verify_name(char **Str) {
-    if (strpbrk(*Str, "*(){/,;_=:\\\'")) {
+void paup_verify_name(char*& Str) {
+    if (strpbrk(Str, "*(){/,;_=:\\\'")) {
         char temp[TOKENSIZE];
         temp[0] = '\'';
 
-        int len   = str0len(*Str);
+        int len   = str0len(Str);
         int indi  = 0;
         int index = 1;
         for (; indi < len; indi++, index++) {
-            temp[index] = (*Str)[indi];
-            if ((*Str)[indi] == '\'') temp[++index] = '\'';
+            temp[index] = Str[indi];
+            if (Str[indi] == '\'') temp[++index] = '\'';
         }
         temp[index++] = '\'';
         temp[index]   = '\0';
         
-        Freespace(Str);
-        (*Str) = str0dup(temp);
+        Freespace(&Str);
+        Str = str0dup(temp);
     }
 }
 

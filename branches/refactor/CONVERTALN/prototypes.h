@@ -34,15 +34,15 @@ char embl_in(FILE_BUFFER fp);
 char embl_in_id(FILE_BUFFER fp);
 void embl_key_word(const char *line, int index, char *key, int length);
 int embl_check_blanks(char *line, int numb);
-char *embl_continue_line(char *pattern, char **Str, char *line, FILE_BUFFER fp);
-char *embl_one_entry(char *line, FILE_BUFFER fp, char **entry, char *key);
+char *embl_continue_line(char *pattern, char *&Str, char *line, FILE_BUFFER fp);
+char *embl_one_entry(char *line, FILE_BUFFER fp, char *&entry, char *key);
 void embl_verify_title(int refnum);
 char *embl_date(char *line, FILE_BUFFER fp);
 char *embl_version(char *line, FILE_BUFFER fp);
 char *embl_comments(char *line, FILE_BUFFER fp);
 char *embl_skip_unidentified(char *pattern, char *line, FILE_BUFFER fp);
 int embl_comment_key(char *line, char *key);
-char *embl_one_comment_entry(FILE_BUFFER fp, char **datastring, char *line, int start_index);
+char *embl_one_comment_entry(FILE_BUFFER fp, char *&datastring, char *line, int start_index);
 char *embl_origin(char *line, FILE_BUFFER fp);
 void embl_out(FILE *fp);
 void embl_print_lines(FILE *fp, const char *key, char *Data, int flag, const char *separators);
@@ -91,9 +91,9 @@ char genbank_in(FILE_BUFFER fp);
 void genbank_key_word(const char *line, int index, char *key, int length);
 int genbank_comment_subkey_word(char *line, int index, char *key, int length);
 int genbank_check_blanks(char *line, int numb);
-char *genbank_continue_line(char **Str, char *line, int numb, FILE_BUFFER fp);
-char *genbank_one_entry_in(char **datastring, char *line, FILE_BUFFER fp);
-char *genbank_one_comment_entry(char **datastring, char *line, int start_index, FILE_BUFFER fp);
+char *genbank_continue_line(char *&Str, char *line, int numb, FILE_BUFFER fp);
+char *genbank_one_entry_in(char *&datastring, char *line, FILE_BUFFER fp);
+char *genbank_one_comment_entry(char *&datastring, char *line, int start_index, FILE_BUFFER fp);
 char *genbank_source(char *line, FILE_BUFFER fp);
 char *genbank_reference(char *line, FILE_BUFFER fp);
 const char *genbank_comments(char *line, FILE_BUFFER fp);
@@ -115,11 +115,11 @@ void reinit_reference(Reference *ref);
 /* macke.cxx */
 void cleanup_macke(void);
 void reinit_macke(void);
-char *macke_one_entry_in(FILE_BUFFER fp, const char *key, char *oldname, char **var, char *line, int index);
-char *macke_continue_line(const char *key, char *oldname, char **var, char *line, FILE_BUFFER fp);
+char *macke_one_entry_in(FILE_BUFFER fp, const char *key, char *oldname, char *&var, char *line, int index);
+char *macke_continue_line(const char *key, char *oldname, char *&var, char *line, FILE_BUFFER fp);
 char *macke_origin(char *key, char *line, FILE_BUFFER fp);
 int macke_abbrev(char *line, char *key, int index);
-int macke_rem_continue_line(char **strings, int index);
+bool macke_is_continued_remark(const char *str);
 char macke_in_name(FILE_BUFFER fp);
 void macke_out_header(FILE *fp);
 void macke_out0(FILE *fp, int format);
@@ -147,7 +147,7 @@ int num_of_remark(void);
 void macke_to_genbank(const char *inf, const char *outf);
 int mtog(void);
 void mtog_decode_ref_and_remarks(void);
-void mtog_copy_remark(char **Str, int *indi, int indj);
+void mtog_copy_remark(char *&Str, int *indi, int indj);
 char *macke_copyrem(char **strings, int *index, int maxline, int pointer);
 void mtog_genbank_def_and_source(void);
 void get_string(char *line, char *temp, int index);
@@ -157,7 +157,7 @@ void get_atcc_string(char *line, char *temp, int index);
 void reinit_paup(void);
 void to_paup(const char *inf, const char *outf, int informat);
 void to_paup_1x1(const char *inf, const char *outf, int informat);
-void paup_verify_name(char **Str);
+void paup_verify_name(char *&Str);
 void paup_print_line(char *Str, char *sequence, int seq_length, int index, int first_line, FILE *fp);
 void paup_print_header(FILE *ofp);
 
@@ -174,7 +174,7 @@ void printable_print_line(char *id, char *sequence, int start, int base_count, F
 
 /* routines.cxx */
 void count_base(int *base_a, int *base_t, int *base_g, int *base_c, int *base_other);
-void replace_entry(char **string1, const char *string2);
+void replace_entry(char *&string1, const char *string2);
 
 /* util.cxx */
 bool scan_token(const char *from, char *to) __ATTR__USERESULT;

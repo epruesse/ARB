@@ -79,38 +79,38 @@ int gtom() {
     /* copy seq abbr, assume every entry in gbk must end with \n\0 */
     /* no '\n' at the end of the string */
     genbank_key_word(data.gbk.locus, 0, temp, TOKENSIZE);
-    replace_entry(&(data.macke.seqabbr), temp);
+    replace_entry(data.macke.seqabbr, temp);
 
     /* copy name and definition */
     if (str0len(data.gbk.organism) > 1)
-        replace_entry(&(data.macke.name), data.gbk.organism);
+        replace_entry(data.macke.name, data.gbk.organism);
     else if (str0len(data.gbk.definition) > 1) {
         ASSERT_RESULT(int, 2, sscanf(data.gbk.definition, "%s %s", genus, species));
         if (species[str0len(species) - 1] == ';')
             species[str0len(species) - 1] = '\0';
         sprintf(temp, "%s %s\n", genus, species);
-        replace_entry(&(data.macke.name), temp);
+        replace_entry(data.macke.name, temp);
     }
 
     /* copy cc name and number */
     if (str0len(data.gbk.comments.orginf.cc) > 1)
-        replace_entry(&(data.macke.atcc), data.gbk.comments.orginf.cc);
+        replace_entry(data.macke.atcc, data.gbk.comments.orginf.cc);
 
     /* copy rna(methods) */
     if (str0len(data.gbk.comments.seqinf.methods) > 1)
-        replace_entry(&(data.macke.rna), data.gbk.comments.seqinf.methods);
+        replace_entry(data.macke.rna, data.gbk.comments.seqinf.methods);
 
     /* copy date---DD-MMM-YYYY\n\0  */
     if (str0len(data.gbk.locus) < 61) {
-        replace_entry(&(data.macke.date), genbank_date(today_date()));
+        replace_entry(data.macke.date, genbank_date(today_date()));
         Append(data.macke.date, "\n");
     }
     else
-        replace_entry(&(data.macke.date), data.gbk.locus + 50);
+        replace_entry(data.macke.date, data.gbk.locus + 50);
 
     /* copy genbank entry  (gbkentry has higher priority than gbk.accession) */
     if (str0len(data.gbk.comments.seqinf.gbkentry) > 1)
-        replace_entry(&(data.macke.acs), data.gbk.comments.seqinf.gbkentry);
+        replace_entry(data.macke.acs, data.gbk.comments.seqinf.gbkentry);
     else {
         if (str0len(data.gbk.accession) > 1 && !str_equal(data.gbk.accession, "No information\n")) {
             scan_token_or_die(data.gbk.accession, buffer, NULL);
@@ -118,19 +118,19 @@ int gtom() {
         }
         else
             strcpy(buffer, "\n");
-        replace_entry(&(data.macke.acs), buffer);
+        replace_entry(data.macke.acs, buffer);
     }
 
     /* copy the first reference from GenBank to Macke */
     if (data.gbk.numofref > 0) {
         if (str0len(data.gbk.reference[0].author) > 1)
-            replace_entry(&(data.macke.author), data.gbk.reference[0].author);
+            replace_entry(data.macke.author, data.gbk.reference[0].author);
 
         if (str0len(data.gbk.reference[0].journal) > 1)
-            replace_entry(&(data.macke.journal), data.gbk.reference[0].journal);
+            replace_entry(data.macke.journal, data.gbk.reference[0].journal);
 
         if (str0len(data.gbk.reference[0].title) > 1)
-            replace_entry(&(data.macke.title), data.gbk.reference[0].title);
+            replace_entry(data.macke.title, data.gbk.reference[0].title);
     }                           /* the rest of references are put into remarks, rem:..... */
 
     gtom_remarks();
@@ -586,11 +586,11 @@ int mtog() {
     else
         sprintf((temp + 10), "%7d bp    RNA             RNA       %s\n", data.seq_length, genbank_date(today_date()));
 
-    replace_entry(&(data.gbk.locus), temp);
+    replace_entry(data.gbk.locus, temp);
 
     /* GenBank ORGANISM */
     if (str0len(data.macke.name) > 1) {
-        replace_entry(&(data.gbk.organism), data.macke.name);
+        replace_entry(data.gbk.organism, data.macke.name);
 
         /* append a '.' at the end */
         terminate_with(data.gbk.organism, '.');
@@ -598,7 +598,7 @@ int mtog() {
 
     if (str0len(data.macke.rna) > 1) {
         data.gbk.comments.seqinf.exist = 1;
-        replace_entry(&(data.gbk.comments.seqinf.methods), data.macke.rna);
+        replace_entry(data.gbk.comments.seqinf.methods, data.macke.rna);
     }
     if (str0len(data.macke.acs) > 1) {
         /* #### not converted to accession but to comment gbkentry only, temporarily
@@ -606,7 +606,7 @@ int mtog() {
            data.gbk.accession = str0dup(data.macke.acs);
          */
         data.gbk.comments.seqinf.exist = 1;
-        replace_entry(&(data.gbk.comments.seqinf.gbkentry), data.macke.acs);
+        replace_entry(data.gbk.comments.seqinf.gbkentry, data.macke.acs);
     }
     else if (str0len(data.macke.nbk) > 1) {
         /* #### not converted to accession but to comment gbkentry only, temp
@@ -614,16 +614,16 @@ int mtog() {
            data.gbk.accession = str0dup(data.macke.nbk);
          */
         data.gbk.comments.seqinf.exist = 1;
-        replace_entry(&(data.gbk.comments.seqinf.gbkentry), data.macke.nbk);
+        replace_entry(data.gbk.comments.seqinf.gbkentry, data.macke.nbk);
     }
     if (str0len(data.macke.atcc) > 1) {
         data.gbk.comments.orginf.exist = 1;
-        replace_entry(&(data.gbk.comments.orginf.cc), data.macke.atcc);
+        replace_entry(data.gbk.comments.orginf.cc, data.macke.atcc);
     }
     mtog_decode_ref_and_remarks();
     /* final conversion of cc */
     if (str0len(data.gbk.comments.orginf.cc) <= 1 && str0len(data.macke.atcc) > 1) {
-        replace_entry(&(data.gbk.comments.orginf.cc), data.macke.atcc);
+        replace_entry(data.gbk.comments.orginf.cc, data.macke.atcc);
     }
 
     /* define GenBank DEFINITION, after GenBank KEYWORD is defined. */
@@ -659,7 +659,7 @@ void mtog_decode_ref_and_remarks() {
         }
         else
             acount = data.gbk.numofref - 1;
-        replace_entry(&(data.gbk.reference[acount++].author), data.macke.author);
+        replace_entry(data.gbk.reference[acount++].author, data.macke.author);
     }
     if (str0len(data.macke.journal) > 1) {
         if ((jcount + 1) > data.gbk.numofref) {
@@ -667,7 +667,7 @@ void mtog_decode_ref_and_remarks() {
         }
         else
             jcount = data.gbk.numofref - 1;
-        replace_entry(&(data.gbk.reference[jcount++].journal), data.macke.journal);
+        replace_entry(data.gbk.reference[jcount++].journal, data.macke.journal);
     }
     if (str0len(data.macke.title) > 1) {
         if ((tcount + 1) > data.gbk.numofref) {
@@ -675,18 +675,18 @@ void mtog_decode_ref_and_remarks() {
         }
         else
             tcount = data.gbk.numofref - 1;
-        replace_entry(&(data.gbk.reference[tcount++].title), data.macke.title);
+        replace_entry(data.gbk.reference[tcount++].title, data.macke.title);
     }
     for (indi = 0; indi < data.macke.numofrem; indi++) {
         indj = macke_key_word(data.macke.remarks[indi], 0, key, TOKENSIZE);
         if (str_equal(key, "KEYWORDS")) {
-            mtog_copy_remark(&(data.gbk.keywords), &indi, indj);
+            mtog_copy_remark(data.gbk.keywords, &indi, indj);
 
             /* append a '.' at the end */
             terminate_with(data.gbk.keywords, '.');
         }
         else if (str_equal(key, "GenBank ACCESSION")) {
-            mtog_copy_remark(&(data.gbk.accession), &indi, indj);
+            mtog_copy_remark(data.gbk.accession, &indi, indj);
         }
         else if (str_equal(key, "ref")) {
             if ((rcount + 1) > data.gbk.numofref) {
@@ -736,31 +736,31 @@ void mtog_decode_ref_and_remarks() {
         }
         else if (str_equal(key, "Source of strain")) {
             data.gbk.comments.orginf.exist = 1;
-            mtog_copy_remark(&(data.gbk.comments.orginf.source), &indi, indj);
+            mtog_copy_remark(data.gbk.comments.orginf.source, &indi, indj);
         }
         else if (str_equal(key, "Former name")) {
             data.gbk.comments.orginf.exist = 1;
-            mtog_copy_remark(&(data.gbk.comments.orginf.formname), &indi, indj);
+            mtog_copy_remark(data.gbk.comments.orginf.formname, &indi, indj);
         }
         else if (str_equal(key, "Alternate name")) {
             data.gbk.comments.orginf.exist = 1;
-            mtog_copy_remark(&(data.gbk.comments.orginf.nickname), &indi, indj);
+            mtog_copy_remark(data.gbk.comments.orginf.nickname, &indi, indj);
         }
         else if (str_equal(key, "Common name")) {
             data.gbk.comments.orginf.exist = 1;
-            mtog_copy_remark(&(data.gbk.comments.orginf.commname), &indi, indj);
+            mtog_copy_remark(data.gbk.comments.orginf.commname, &indi, indj);
         }
         else if (str_equal(key, "Host organism")) {
             data.gbk.comments.orginf.exist = 1;
-            mtog_copy_remark(&(data.gbk.comments.orginf.hostorg), &indi, indj);
+            mtog_copy_remark(data.gbk.comments.orginf.hostorg, &indi, indj);
         }
         else if (str_equal(key, "RDP ID")) {
             data.gbk.comments.seqinf.exist = 1;
-            mtog_copy_remark(&(data.gbk.comments.seqinf.RDPid), &indi, indj);
+            mtog_copy_remark(data.gbk.comments.seqinf.RDPid, &indi, indj);
         }
         else if (str_equal(key, "Sequencing methods")) {
             data.gbk.comments.seqinf.exist = 1;
-            mtog_copy_remark(&(data.gbk.comments.seqinf.methods), &indi, indj);
+            mtog_copy_remark(data.gbk.comments.seqinf.methods, &indi, indj);
         }
         else if (str_equal(key, "3' end complete")) {
             data.gbk.comments.seqinf.exist = 1;
@@ -793,9 +793,9 @@ void mtog_decode_ref_and_remarks() {
  *   Function mtog_copy_remark().
  *       Convert one remark back to GenBank format.
  */
-void mtog_copy_remark(char **Str, int *indi, int indj) {
-    Freespace(Str);
-    (*Str) = macke_copyrem(data.macke.remarks, indi, data.macke.numofrem, indj);
+void mtog_copy_remark(char*& Str, int *indi, int indj) {
+    Freespace(&Str);
+    Str = macke_copyrem(data.macke.remarks, indi, data.macke.numofrem, indj);
 }
 
 /* ------------------------------------------------------------------
@@ -807,7 +807,7 @@ char *macke_copyrem(char **strings, int *index, int maxline, int pointer) {
     int   indi;
 
     Str = str0dup(strings[(*index)] + pointer);
-    for (indi = (*index) + 1; indi < maxline && macke_rem_continue_line(strings, indi); indi++)
+    for (indi = (*index) + 1; indi < maxline && macke_is_continued_remark(strings[indi]); indi++)
         skip_eolnl_and_append_spaced(Str, strings[indi] + 3);
     (*index) = indi - 1;
     return (Str);
@@ -820,7 +820,7 @@ char *macke_copyrem(char **strings, int *index, int maxline, int pointer) {
  */
 void mtog_genbank_def_and_source() {
     if (str0len(data.macke.name) > 1)
-        replace_entry(&(data.gbk.definition), data.macke.name);
+        replace_entry(data.gbk.definition, data.macke.name);
 
     if (str0len(data.macke.subspecies) > 1) {
         if (str0len(data.gbk.definition) <= 1) {
@@ -846,7 +846,7 @@ void mtog_genbank_def_and_source() {
 
     /* create SOURCE line, temp. */
     if (str0len(data.gbk.definition) > 1) {
-        replace_entry(&(data.gbk.source), data.gbk.definition);
+        replace_entry(data.gbk.source, data.gbk.definition);
         terminate_with(data.gbk.source, '.');
     }
 

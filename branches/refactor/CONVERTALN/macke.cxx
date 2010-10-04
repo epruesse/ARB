@@ -111,42 +111,42 @@ char MackeReader::mackeIn() {
     for (index = macke_abbrev(line1, name, 2); eof1 != NULL && isMackeSeqInfo(line1) && str_equal(name, oldname); ) {
         index = macke_abbrev(line1, key, index);
         if (str_equal(key, "name")) {
-            eof1 = macke_one_entry_in(fp1, "name", oldname, &(data.macke.name), line1, index);
+            eof1 = macke_one_entry_in(fp1, "name", oldname, data.macke.name, line1, index);
         }
         else if (str_equal(key, "atcc")) {
-            eof1 = macke_one_entry_in(fp1, "atcc", oldname, &(data.macke.atcc), line1, index);
+            eof1 = macke_one_entry_in(fp1, "atcc", oldname, data.macke.atcc, line1, index);
         }
         else if (str_equal(key, "rna")) {
             /* old version entry */
-            eof1 = macke_one_entry_in(fp1, "rna", oldname, &(data.macke.rna), line1, index);
+            eof1 = macke_one_entry_in(fp1, "rna", oldname, data.macke.rna, line1, index);
         }
         else if (str_equal(key, "date")) {
-            eof1 = macke_one_entry_in(fp1, "date", oldname, &(data.macke.date), line1, index);
+            eof1 = macke_one_entry_in(fp1, "date", oldname, data.macke.date, line1, index);
         }
         else if (str_equal(key, "nbk")) {
             /* old version entry */
-            eof1 = macke_one_entry_in(fp1, "nbk", oldname, &(data.macke.nbk), line1, index);
+            eof1 = macke_one_entry_in(fp1, "nbk", oldname, data.macke.nbk, line1, index);
         }
         else if (str_equal(key, "acs")) {
-            eof1 = macke_one_entry_in(fp1, "acs", oldname, &(data.macke.acs), line1, index);
+            eof1 = macke_one_entry_in(fp1, "acs", oldname, data.macke.acs, line1, index);
         }
         else if (str_equal(key, "subsp")) {
-            eof1 = macke_one_entry_in(fp1, "subsp", oldname, &(data.macke.subspecies), line1, index);
+            eof1 = macke_one_entry_in(fp1, "subsp", oldname, data.macke.subspecies, line1, index);
         }
         else if (str_equal(key, "strain")) {
-            eof1 = macke_one_entry_in(fp1, "strain", oldname, &(data.macke.strain), line1, index);
+            eof1 = macke_one_entry_in(fp1, "strain", oldname, data.macke.strain, line1, index);
         }
         else if (str_equal(key, "auth")) {
-            eof1 = macke_one_entry_in(fp1, "auth", oldname, &(data.macke.author), line1, index);
+            eof1 = macke_one_entry_in(fp1, "auth", oldname, data.macke.author, line1, index);
         }
         else if (str_equal(key, "title")) {
-            eof1 = macke_one_entry_in(fp1, "title", oldname, &(data.macke.title), line1, index);
+            eof1 = macke_one_entry_in(fp1, "title", oldname, data.macke.title, line1, index);
         }
         else if (str_equal(key, "jour")) {
-            eof1 = macke_one_entry_in(fp1, "jour", oldname, &(data.macke.journal), line1, index);
+            eof1 = macke_one_entry_in(fp1, "jour", oldname, data.macke.journal, line1, index);
         }
         else if (str_equal(key, "who")) {
-            eof1 = macke_one_entry_in(fp1, "who", oldname, &(data.macke.who), line1, index);
+            eof1 = macke_one_entry_in(fp1, "who", oldname, data.macke.who, line1, index);
         }
         else if (str_equal(key, "rem")) {
             data.macke.remarks = (char **)Reallocspace((char *)data.macke.remarks, (unsigned)(sizeof(char *) * (numofrem + 1)));
@@ -174,11 +174,11 @@ char MackeReader::mackeIn() {
  *  Function macke_one_entry_in().
  *      Get one Macke entry.
  */
-char *macke_one_entry_in(FILE_BUFFER fp, const char *key, char *oldname, char **var, char *line, int index) {
+char *macke_one_entry_in(FILE_BUFFER fp, const char *key, char *oldname, char*& var, char *line, int index) {
     char *eof;
 
-    if (str0len((*var)) > 1)
-        skip_eolnl_and_append_spaced(*var, line + index);
+    if (str0len(var) > 1)
+        skip_eolnl_and_append_spaced(var, line + index);
     else
         replace_entry(var, line + index);
 
@@ -191,7 +191,7 @@ char *macke_one_entry_in(FILE_BUFFER fp, const char *key, char *oldname, char **
  *  Function macke_continue_line().
  *      Append macke continue line.
  */
-char *macke_continue_line(const char *key, char *oldname, char **var, char *line, FILE_BUFFER fp) {
+char *macke_continue_line(const char *key, char *oldname, char*& var, char *line, FILE_BUFFER fp) {
     char *eof, name[TOKENSIZE], newkey[TOKENSIZE];
     int   index;
 
@@ -207,7 +207,7 @@ char *macke_continue_line(const char *key, char *oldname, char **var, char *line
         if (!str_equal(newkey, key))
             break;
 
-        skip_eolnl_and_append_spaced(*var, line + index);
+        skip_eolnl_and_append_spaced(var, line + index);
     }
 
     return (eof);
@@ -274,15 +274,12 @@ int macke_abbrev(char *line, char *key, int index) {
 }
 
 /* --------------------------------------------------------------
- *   Function macke_rem_continue_line().
+ *   Function macke_is_continued_remark().
  *       If there is 3 blanks at the beginning of the line,
  *           it is continued line.
  */
-int macke_rem_continue_line(char **strings, int index) {
-    if (strings[index][0] == ':' && strings[index][1] == ' ' && strings[index][2] == ' ')
-        return (1);
-    else
-        return (0);
+bool macke_is_continued_remark(const char *str) {
+    return strcmp(str, ":  ") == 0;
 }
 
 /* -------------------------------------------------------------
