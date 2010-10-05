@@ -2,8 +2,8 @@ ID   HSFAU     preliminary; RNA; UNA; 518 BP.
 XX
 AC   X65923
 XX
-DT   02-JAN-1910 (Rel. 1, Last updated, Version 1)
-DT   02-JAN-1910 (Rel. 1, Created)
+DT   05-JAN-1910 (Rel. 1, Last updated, Version 1)
+DT   05-JAN-1910 (Rel. 1, Created)
 XX
 DE   H.sapiens fau mRNA.
 XX
@@ -26,10 +26,18 @@ ID   HSFAU1    preliminary; RNA; UNA; 2016 BP.
 XX
 AC   X65921
 XX
-DT   02-JAN-1910 (Rel. 1, Last updated, Version 1)
-DT   02-JAN-1910 (Rel. 1, Created)
+DT   05-JAN-1910 (Rel. 1, Last updated, Version 1)
+DT   05-JAN-1910 (Rel. 1, Created)
 XX
-DE   H.sapiens fau 1 gene.
+DE   H.sapiens fau 1 gene This is just a long text which overflows the
+DE   maximum line size allowed for EMBL files
+DE   This_is_just_another_long_text_which_overflows_the_maximum_line_size_
+DE   allowed_for_EMBL_files
+DE   ThisWordContainsExactlySixtyEightCharactersWhichIsTheLimitForconvert
+DE   ThisWordContainsExactlySixtyNineCharactersSoOneCharacterWillBeWrapped
+DE    ThisConverterLiesEverywhere!
+DE   ThisWordContainsExactlySeventyFourCharactersWhichIsRealTheLimitForEmb
+DE   lline.
 XX
 KW   .
 XX
