@@ -56,6 +56,8 @@ SQ   Sequence 2593 BP; 736 A; 533 C; 547 G; 777 T; 0 other;
 //
 ID   ER781674_1; parent: ER781674
 AC   ER781674;
+CC     5' end complete: Yes
+CC     3' end complete: No 
 FT   source          1..350
 FT                   /organism="uncultured desert soil virus"
 FT                   /environmental_sample
@@ -81,6 +83,8 @@ FT                   /isolate="OTU-ZY14"
 FT                   /mol_type="genomic DNA"
 FT                   /isolation_source="agricultural soil"
 FT                   /db_xref="taxon:167647"
+CC     5' end complete: No
+CC     3' end complete: Yes
 SQ   Sequence   350 BP;
      gcatcgatga agaacgcagc gaaatgcgat aagtaatgtg aattgcagaa ttcagtgaat        60
      catcgaatct ttgaacgcac attgcgccca ttagtattct agtgggcatg cctgttcgag       120

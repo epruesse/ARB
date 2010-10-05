@@ -9,6 +9,9 @@ REFERENCE   1
   JOURNAL   No information
   TITLE     No information
   STANDARD  No information
+COMMENTS    Sequence information (bases 1 to 518)
+              5' end complete: Yes
+              3' end complete: No
 BASE COUNT     125 a    139 c    148 g    106 t
 ORIGIN
         1 ttcctctttc tcgactccat cttcgcggta gctgggaccg ccgttcagtc gccaatatgc
@@ -41,6 +44,9 @@ REFERENCE   1
   JOURNAL   No information
   TITLE     No information
   STANDARD  No information
+COMMENTS    Sequence information (bases 1 to 2016)
+              5' end complete: No
+             3' end complete: Yes
 BASE COUNT     421 a    562 c    538 g    495 t
 ORIGIN
         1 ctaccatttt ccctctcgat tctatatgta cactcgggac aagttctcct gatcgaaaac

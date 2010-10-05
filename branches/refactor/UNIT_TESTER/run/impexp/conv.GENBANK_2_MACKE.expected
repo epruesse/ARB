@@ -1,7 +1,7 @@
 #-
 #-
 #-	editor
-#-	Sat Oct  2 19:08:41 2010
+#-	Tue Oct  5 20:03:06 2010
 #-
 #-
 #-	Reference sequence:  HSFAU
@@ -10,13 +10,17 @@
 #=		HSFAU1		in  out  vis  prt   ord  dna  lin  5>3  func
 #-
 #:HSFAU:name:H.sapiens fau
-#:HSFAU:date:02-JAN-1910
+#:HSFAU:date:05-JAN-1910
 #:HSFAU:acs:X65923
 #:HSFAU:rem:GenBank ACCESSION:X65923
+#:HSFAU:rem:3' end complete:  No
+#:HSFAU:rem:5' end complete:  Yes
 #:HSFAU1:name:H.sapiens fau
-#:HSFAU1:date:02-JAN-1910
+#:HSFAU1:date:05-JAN-1910
 #:HSFAU1:acs:X65921
 #:HSFAU1:rem:GenBank ACCESSION:X65921
+#:HSFAU1:rem:3' end complete:  Yes
+#:HSFAU1:rem:5' end complete:  No
 HSFAU     0 ttcctctttctcgactccatcttcgcggtagctgggaccgccgttcagtc
 HSFAU    50 gccaatatgcagctctttgtccgcgcccaggagctacacaccttcgaggt
 HSFAU   100 gaccggccaggaaacggtcgcccagatcaaggctcatgtagcctcactgg

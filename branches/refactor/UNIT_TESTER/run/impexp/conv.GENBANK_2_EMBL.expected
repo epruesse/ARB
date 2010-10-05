@@ -11,6 +11,9 @@ KW   .
 XX
 DR   RDP; HSFAU.
 XX
+CC   Sequence information (bases 1 to 518)
+CC     5' end complete: Yes
+CC     3' end complete: No
 SQ   Sequence 518 BP; 125 A; 139 C; 148 G; 106 T; 0 other;
      ttcctctttc tcgactccat cttcgcggta gctgggaccg ccgttcagtc gccaatatgc
      agctctttgt ccgcgcccag gagctacaca ccttcgaggt gaccggccag gaaacggtcg
@@ -43,6 +46,9 @@ KW   .
 XX
 DR   RDP; HSFAU1.
 XX
+CC   Sequence information (bases 1 to 2016)
+CC     5' end complete: No
+CC     3' end complete: Yes
 SQ   Sequence 2016 BP; 421 A; 562 C; 538 G; 495 T; 0 other;
      ctaccatttt ccctctcgat tctatatgta cactcgggac aagttctcct gatcgaaaac
      ggcaaaacta aggccccaag taggaatgcc ttagttttcg gggttaacaa tgattaacac

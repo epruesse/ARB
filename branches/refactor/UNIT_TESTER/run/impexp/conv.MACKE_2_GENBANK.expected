@@ -34,6 +34,8 @@ REFERENCE   1
   STANDARD  No information
 COMMENTS    Sequence information (bases 1 to 367)
               Corresponding GenBank entry: ER781674;
+              5' end complete: Yes
+              3' end complete: No
 BASE COUNT      51 a    109 c    124 g     66 t     17 others
 ORIGIN
         1 tggcgccgta gatgcagcgc gactggcccg gcttctcggc gtcgaggtac tgcgccacgg
@@ -57,6 +59,8 @@ REFERENCE   1
   STANDARD  No information
 COMMENTS    Sequence information (bases 1 to 367)
               Corresponding GenBank entry: AY704744;
+              5' end complete: No
+             3' end complete: Yes
 BASE COUNT     100 a     75 c     77 g     98 t     17 others
 ORIGIN
         1 gcatcgatga agaacgcagc gaaatgcgat aagtaatgtg aattgcagaa ttcagtgaat

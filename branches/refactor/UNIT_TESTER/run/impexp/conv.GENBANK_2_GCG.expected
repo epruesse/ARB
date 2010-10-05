@@ -1,10 +1,13 @@
 LOCUS       HSFAU
 ACCESSION   X65923
 DEFINITION  H.sapiens fau mRNA
+COMMENTS    Sequence information (bases 1 to 581)
+              5' end complete: Yes
+              3' end complete: No
 BASE COUNT      125 a    139 c    148 g    106 t
 ORIGIN
 
-HSFAU  Length: 518  October 3, 2010  12:37:24  Type: N  Check: 2981  ..
+HSFAU  Length: 518  October 5, 2010  20:08:50  Type: N  Check: 2981  ..
 
        1  ttcctctttc tcgactccat cttcgcggta gctgggaccg ccgttcagtc 
 

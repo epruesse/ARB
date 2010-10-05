@@ -46,6 +46,8 @@ DR   RDP; ER781674_1.
 XX
 CC   Sequence information (bases 1 to 367)
 CC     Corresponding GenBank entry: ER781674;
+CC     5' end complete: Yes
+CC     3' end complete: No
 SQ   Sequence 367 BP; 51 A; 109 C; 124 G; 66 T; 17 other;
      tggcgccgta gatgcagcgc gactggcccg gcttctcggc gtcgaggtac tgcgccacgg
      60ccttggcg ctggccacgt ccgggcagac cacgatgctc ttgcgtgagc cggcgacgtg
@@ -70,6 +72,8 @@ DR   RDP; AY704744_1.
 XX
 CC   Sequence information (bases 1 to 367)
 CC     Corresponding GenBank entry: AY704744;
+CC     5' end complete: No
+CC     3' end complete: Yes
 SQ   Sequence 367 BP; 100 A; 75 C; 77 G; 98 T; 17 other;
      gcatcgatga agaacgcagc gaaatgcgat aagtaatgtg aattgcagaa ttcagtgaat
      60catcgaat ctttgaacgc acattgcgcc cattagtatt ctagtgggca tgcctgttcg

@@ -23,9 +23,13 @@
 #:ER781674_173:date:03-JAN-1910
 #:ER781674_173:acs:ER781674;
 #:ER781674_173:rem:GenBank ACCESSION:ER781674;
+#:ER781674_173:rem:3' end complete:  No
+#:ER781674_173:rem:5' end complete:  Yes
 #:AY704744_173:date:03-JAN-1910
 #:AY704744_173:acs:AY704744;
 #:AY704744_173:rem:GenBank ACCESSION:AY704744;
+#:AY704744_173:rem:3' end complete:  Yes
+#:AY704744_173:rem:5' end complete:  No
 A1MVRNA2     0 gtttttatcttttcgcgattgaaaagataagtttttcagtttaatctttt
 A1MVRNA2    50 caatatgttc60actcttttgagatgtctcggattcggtgttaatgaacc
 A1MVRNA2   100 tactaacacttcctcatcagag120tatgttcccgagtattccgttgaag
