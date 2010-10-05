@@ -22,7 +22,16 @@ ORIGIN
       481 tctaataaaa aagccactta gttcagtcaa aaaaaaaa
 //
 LOCUS       HSFAU1
-DEFINITION  H.sapiens fau 1 gene.
+DEFINITION  H.sapiens fau 1 gene This is just a long text which overflows the
+            maximum line size allowed for EMBL files
+            This_is_just_another_long_text_which_overflows_the_maximum_line_siz
+            e_allowed_for_EMBL_files
+            ThisWordContainsExactlySixtyEightCharactersWhichIsTheLimitForconver
+            t
+            ThisWordContainsExactlySixtyNineCharactersSoOneCharacterWillBeWrapp
+            ed ThisConverterLiesEverywhere!
+            ThisWordContainsExactlySeventyFourCharactersWhichIsRealTheLimitForE
+            mblline.
 ACCESSION   X65921
 KEYWORDS    No information.
 SOURCE      No information.
