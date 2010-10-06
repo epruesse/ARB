@@ -150,7 +150,7 @@ my @used_when_matchesFull = (
                              qr/\/UNIT_TESTER\/run\/(TEST_.*|min_(bin|ascii))\.(arb|a00)$/o,
                              qr/\/UNIT_TESTER\/run\/.*\.expected$/o,
                              qr/\/UNIT_TESTER\/run\/impexp\/.*\.exported$/o,
-                             qr/\/UNIT_TESTER\/run\/impexp\/.*\.input$/o,
+                             qr/\/UNIT_TESTER\/run\/.*\.input$/o,
                              qr/^\.\/etc\//o,
                              qr/^\.\/lib\/arb_tcp_org\.dat$/o,
                              qr/^\.\/lib\/config\.[^\.]+$/io,
