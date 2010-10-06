@@ -1243,8 +1243,8 @@ char *etog_author(char *string) {
  *              Convert jpurnal part from EMBL to GenBank format.
  */
 char *etog_journal(char *string) {
-    int   indi, len, index;
-    char *journal, *new_journal;
+    int   indi, len, index = 0;
+    char *journal          = 0, *new_journal = 0;
     char  token[TOKENNUM];
 
     sscanf(string, "%s", token);
