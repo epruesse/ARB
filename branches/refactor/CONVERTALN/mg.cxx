@@ -637,7 +637,7 @@ inline void resize_references(Reference*& ref, int& size, int new_size) {
 
     ref = (Reference*)Reallocspace(ref, sizeof(Reference)*new_size);
     for (int i = size; i<new_size; ++i) {
-        reinit_reference(&(ref[i]));
+        init_reference(&(ref[i]));
     }
     size = new_size;
 }

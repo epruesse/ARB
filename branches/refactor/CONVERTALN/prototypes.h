@@ -110,6 +110,7 @@ void genbank_print_comment(FILE *fp, const char *key, char *Str, int offset, int
 void genbank_out_origin(FILE *fp);
 void genbank_to_genbank(const char *inf, const char *outf);
 void cleanup_reference(Reference *ref);
+void init_reference(Reference *ref);
 void reinit_reference(Reference *ref);
 
 /* macke.cxx */

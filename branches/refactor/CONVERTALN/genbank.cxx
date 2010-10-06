@@ -942,13 +942,16 @@ void cleanup_reference(Reference *ref) {
     freenull(ref->standard);
 }
 
-void reinit_reference(Reference *ref) {
-    cleanup_reference(ref);
-
+void init_reference(Reference *ref) {
     ref->ref      = strdup("\n");
     ref->author   = strdup("\n");
     ref->journal  = strdup("\n");
     ref->title    = strdup("\n");
     ref->standard = strdup("\n");
+}
+
+void reinit_reference(Reference *ref) {
+    cleanup_reference(ref);
+    init_reference(ref);
 }
 
