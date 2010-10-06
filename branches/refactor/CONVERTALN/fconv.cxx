@@ -277,7 +277,7 @@ static FormatSpec format_spec[] = {
     // FORMATSPEC_GOT______(GENBANK, "genbank"),
     FORMATSPEC_GOT_PLAIN(GENBANK, "genbank.input", 2),
     FORMATSPEC_GOT_PLAIN(EMBL, "embl.input", 4),
-    FORMATSPEC_GOT_PLAIN(MACKE, "macke.input", 3),
+    FORMATSPEC_GOT_PLAIN(MACKE, "macke.input", 4),
     FORMATSPEC_GOT_PLAIN(SWISSPROT, "swissprot.input", 1), // SWISSPROT
 
     // output formats

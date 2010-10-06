@@ -1,10 +1,10 @@
 #NEXUS
-[! RDP - the Ribosomal Database Project, (Sun Oct  3 11:07:02 2010).]
+[! RDP - the Ribosomal Database Project, (Wed Oct  6 18:30:42 2010).]
 [! To get started, send HELP to rdp@info.mcs.anl.gov ]
 BEGIN DATA;
    DIMENSIONS
-      NTAX =      3
-      NCHAR =    367
+      NTAX =      4
+      NCHAR =   1633
       ;
    FORMAT
       LABELPOS = LEFT
@@ -21,33 +21,166 @@ BEGIN DATA;
       A1MVRNA2   gtttttatct tttcgcgatt gaaaagataa gtttttcagt ttaatctttt [1 - 50]
       'ER781674_ tggcgccgta gatgcagcgc gactggcccg gcttctcggc gtcgaggtac
       'AY704744_ gcatcgatga agaacgcagc gaaatgcgat aagtaatgtg aattgcagaa
+      'Y15714;'  agagtttgat nngggctcag gatgaacgct ggcggcgtgc ctaatacatg
 
       A1MVRNA2   caatatgttc 60actctttt gagatgtctc ggattcggtg ttaatgaacc [51 - 100]
       'ER781674_ tgcgccacgg 60ccttggcg ctggccacgt ccgggcagac cacgatgctc
       'AY704744_ ttcagtgaat 60catcgaat ctttgaacgc acattgcgcc cattagtatt
+      'Y15714;'  caagtcgagc 60ggacagac gaggtgcttg cacctctgaa gtcagcggcg
 
       A1MVRNA2   tactaacact tcctcatcag ag120tatgt tcccgagtat tccgttgaag [101 - 150]
       'ER781674_ ttgcgtgagc cggcgacgtg ga120cgatg cccttggcca gttcgatcat
       'AY704744_ ctagtgggca tgcctgttcg ag120cgtca tttcaaccct taagcttagc
+      'Y15714;'  gacgggtgag taacacgtgg gt120aacct acctgtaaga ctgggataac
 
       A1MVRNA2   agatttccaa cgaagtcgct gaactcgatt cagtg180ga tccattattc [151 - 200]
       'ER781674_ cgtctggtcg ttggtgatcc gggcggcgat ctcgg180cg tcggaatagt
       'AY704744_ ttagtattgg gaatctgctt aaccgcagct cctta180aa tctagttggc
+      'Y15714;'  ttcgggaaac cggagctaat accggataat atttt180cc acctcatggt
 
       A1MVRNA2   caatgttaca aacatgtttt tgtatcattg atgctcgtaa gaaagatg24 [201 - 250]
       'ER781674_ ccttctcgcc ggcctcgttc tccgccacgg tcagcgtgga gaagtcga24
       'AY704744_ agagcacagc tgtactctga gcgtagtaat tcattatctc gctttctg24
+      'Y15714;'  ggaatagtga aagacggttt tgctgtcact tacagatgga cccgcggc24
 
       A1MVRNA2   0actcaagct gccgaagact tcctcgagag ttttggggga ga281 [251 - 295]
       'ER781674_ 0tggagacgc ggacgaacgc ctgcttggcg gggcagagcc ataccgttgg
       'AY704744_ 0aagacagtc gtacgatagc cacaaacttt gcatcttgca aactttttaa
+      'Y15714;'  0gcattagct agttggtgag gtaacggctc accaaggcga cgatgcgtag
 
       A1MVRNA2
       'ER781674_ ccatgcctca c300aggatg tcgcggttga aggcgaggcc ctggaacagg [301 - 350]
       'AY704744_ tggttgacct c300ggatca ggtaggaata cccgctgaac ttaagcatat
+      'Y15714;'  ccgacctgag a300gggtga tcggccacac tgggactgag acacggccca
 
       A1MVRNA2
       'ER781674_ ttggccatcg ccac350 [351 - 367]
       'AY704744_ caataagcgg agga350
+      'Y15714;'  gactcctacg ggaggcagca gtag360gga atcttccgca atggacgaaa
+
+      A1MVRNA2
+      'ER781674_
+      'AY704744_
+      'Y15714;'  gtctgacgga gcaacgccgc gtgagtgaag aaggtct420 tcggatcgta [401 - 450]
+
+      A1MVRNA2
+      'ER781674_
+      'AY704744_
+      'Y15714;'  aaactctgtt gtaagggaag aacaagtacg ttagtaactg aacgtacctt [451 - 500]
+
+      A1MVRNA2
+      'ER781674_
+      'AY704744_
+      'Y15714;'  480gacggta ccttaccaga aagccacggc taactacgtg ccagcagccg [501 - 550]
+
+      A1MVRNA2
+      'ER781674_
+      'AY704744_
+      'Y15714;'  cggtaatacg tag540gtgg caagcgttat ccggaattat tgggcgtaaa [551 - 600]
+
+      A1MVRNA2
+      'ER781674_
+      'AY704744_
+      'Y15714;'  gcgcgcgtag gcggtttctt aagtct600g atgtgaaagc ccccggctca [601 - 650]
+
+      A1MVRNA2
+      'ER781674_
+      'AY704744_
+      'Y15714;'  accggggagg gtcattggaa actgggagac ttgagtgca6 60gaagagga [651 - 700]
+
+      A1MVRNA2
+      'ER781674_
+      'AY704744_
+      'Y15714;'  gagtggaatt ccatgtgtag cggtgaaatg cgcagagata tggaggaaca [701 - 750]
+
+      A1MVRNA2
+      'ER781674_
+      'AY704744_
+      'Y15714;'  cc720agtgg cgaaggcggc tctctggtct gtaactgacg ctgaggtgcg [751 - 800]
+
+      A1MVRNA2
+      'ER781674_
+      'AY704744_
+      'Y15714;'  aaagcgtggg gatca780aa caggattaga taccctggta gtccacgccg [801 - 850]
+
+      A1MVRNA2
+      'ER781674_
+      'AY704744_
+      'Y15714;'  taaacgatga gtgctaagtg ttgggggg84 0tttccgccc ctcagtgctg [851 - 900]
+
+      A1MVRNA2
+      'ER781674_
+      'AY704744_
+      'Y15714;'  cagctaacgc attaagcact ccgcctgggg agtacggtcg c900aagact [901 - 950]
+
+      A1MVRNA2
+      'ER781674_
+      'AY704744_
+      'Y15714;'  gaaactcaaa ggaattgacg gggacccgca caagcggtgg agcatgtggt [951 - 1000]
+
+      A1MVRNA2
+      'ER781674_
+      'AY704744_
+      'Y15714;'  ttaa960ttc gaagcaacgc gaagaacctt accaaatctt gacatcctct [1001 - 1050]
+
+      A1MVRNA2
+      'ER781674_
+      'AY704744_
+      'Y15714;'  gacaactctg gagacag102 0agcgttccc cttcggggga cagagtgaca [1051 - 1100]
+
+      A1MVRNA2
+      'ER781674_
+      'AY704744_
+      'Y15714;'  ggtggtgcat ggttgtcgtc agctcgtgtc g1080tgaga tgttgggtta [1101 - 1150]
+
+      A1MVRNA2
+      'ER781674_
+      'AY704744_
+      'Y15714;'  agtcccgcaa cgagcgcaac ccttatcttt agttgccatc attca1140g [1151 - 1200]
+
+      A1MVRNA2
+      'ER781674_
+      'AY704744_
+      'Y15714;'  ttgggcactc tagagagact gccggtgaca aaccggagga aggtggggat [1201 - 1250]
+
+      A1MVRNA2
+      'ER781674_
+      'AY704744_
+      'Y15714;'  gacgtcaaa1 200tcatcat gccccttatg atttgggcta cacacgtgct [1251 - 1300]
+
+      A1MVRNA2
+      'ER781674_
+      'AY704744_
+      'Y15714;'  acaatggatg gtacaaaggg cag1260caa aaccgcgagg tcaagcaaat [1301 - 1350]
+
+      A1MVRNA2
+      'ER781674_
+      'AY704744_
+      'Y15714;'  cccataaaac cattctcagt tcggattgta gtctgca132 0actcgacta [1351 - 1400]
+
+      A1MVRNA2
+      'ER781674_
+      'AY704744_
+      'Y15714;'  catgaagctg gaatcgctag taatcgtaga tcagcatgct acggtgaata [1401 - 1450]
+
+      A1MVRNA2
+      'ER781674_
+      'AY704744_
+      'Y15714;'  c1380gttcc cgggtcttgt acacaccgcc cgtcacacca cgagagtttg [1451 - 1500]
+
+      A1MVRNA2
+      'ER781674_
+      'AY704744_
+      'Y15714;'  taacacccga agccg1440g tggagtaacc tttacaggag ctagccgtcg [1501 - 1550]
+
+      A1MVRNA2
+      'ER781674_
+      'AY704744_
+      'Y15714;'  aaggtgggac agatgattgg ggtgaagtc1 500gtaacaa ggtagccgta [1551 - 1600]
+
+      A1MVRNA2
+      'ER781674_
+      'AY704744_
+      'Y15714;'  tcggaaggtg cggctggatc acctccttt1 546 [1601 - 1633]
       ;
 ENDBLOCK;
