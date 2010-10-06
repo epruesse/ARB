@@ -279,7 +279,7 @@ int macke_abbrev(char *line, char *key, int index) {
  *           it is continued line.
  */
 bool macke_is_continued_remark(const char *str) {
-    return strcmp(str, ":  ") == 0;
+    return strncmp(str, ":  ", 3) == 0;
 }
 
 /* -------------------------------------------------------------
