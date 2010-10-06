@@ -1,7 +1,7 @@
 #-
 #-
 #-	editor
-#-	Tue Oct  5 20:03:06 2010
+#-	Wed Oct  6 17:41:05 2010
 #-
 #-
 #-	Reference sequence:  A1MVRNA2
@@ -9,6 +9,7 @@
 #=		A1MVRNA2	in  out  vis  prt   ord  dna  lin  5>3  func ref
 #=		ER781674_173	in  out  vis  prt   ord  dna  lin  5>3  func
 #=		AY704744_173	in  out  vis  prt   ord  dna  lin  5>3  func
+#=		Y15714;		in  out  vis  prt   ord  dna  lin  5>3  func
 #-
 #:A1MVRNA2:name:Alfalfa mosaic virus
 #:A1MVRNA2:date:07-NOV-1985
@@ -20,16 +21,36 @@
 #:A1MVRNA2:rem:KEYWORDS:unidentified reading frame.
 #:A1MVRNA2:rem:GenBank ACCESSION:X01572; J02002; K02702;
 #:A1MVRNA2:rem:Data kindly reviewed (30-JAN-1986) by J.F. Bol
-#:ER781674_173:date:05-JAN-1910
+#:ER781674_173:date:06-JAN-1910
 #:ER781674_173:acs:ER781674;
 #:ER781674_173:rem:GenBank ACCESSION:ER781674;
 #:ER781674_173:rem:3' end complete:  No
 #:ER781674_173:rem:5' end complete:  Yes
-#:AY704744_173:date:05-JAN-1910
+#:ER781674_173:rem:Next 2 lines are nonsense
+#:AY704744_173:date:06-JAN-1910
 #:AY704744_173:acs:AY704744;
 #:AY704744_173:rem:GenBank ACCESSION:AY704744;
 #:AY704744_173:rem:3' end complete:  Yes
 #:AY704744_173:rem:5' end complete:  No
+#:AY704744_173:rem:Next 2 lines are nonsense
+#:Y15714;:name:Macrococcus bovicus
+#:Y15714;:date:17-NOV-1998
+#:Y15714;:acs:Y15714;
+#:Y15714;:auth:Kloos,W.E., Ballard,D.N., George,C.G., Webster,J.A., Hubner,R.J
+#:Y15714;:auth:., Ludwig,W., Schleifer,K.H., Fiedler,F. and Schubert,K.
+#:Y15714;:jour:Int. J. Syst. Bacteriol. 48, 859-877 (1998)
+#:Y15714;:title:Delimiting the genus Staphylococcus through description of
+#:Y15714;:title:Macrococcus caseolyticus gen. nov., comb. nov. and the new
+#:Y15714;:title:species Macrococcus equipercicus sp. nov., Macrococcus bovicus
+#:Y15714;:title:sp. nov., and Macrococcus carouselicus sp. nov.
+#:Y15714;:rem:ref:1
+#:Y15714;:rem:ref:2  (bases 1 to 1546)
+#:Y15714;:rem:auth:Ludwig,W.
+#:Y15714;:rem:jour:Submitted (26-NOV-1997) to the EMBL/GenBank/DDBJ databases.
+#:Y15714;:rem::   W. Ludwig, Lehrstuhl fuer Mikrobiologie, Technische
+#:Y15714;:rem::  Universitaet Muenchen, Munich, FRG
+#:Y15714;:rem:KEYWORDS:16S ribosomal RNA; 16S rRNA gene.
+#:Y15714;:rem:GenBank ACCESSION:Y15714;
 A1MVRNA2     0 gtttttatcttttcgcgattgaaaagataagtttttcagtttaatctttt
 A1MVRNA2    50 caatatgttc60actcttttgagatgtctcggattcggtgttaatgaacc
 A1MVRNA2   100 tactaacacttcctcatcagag120tatgttcccgagtattccgttgaag
@@ -52,3 +73,36 @@ AY704744_173   200 agagcacagctgtactctgagcgtagtaattcattatctcgctttctg24
 AY704744_173   250 0aagacagtcgtacgatagccacaaactttgcatcttgcaaactttttaa
 AY704744_173   300 tggttgacctc300ggatcaggtaggaatacccgctgaacttaagcatat
 AY704744_173   350 caataagcggagga350
+Y15714;     0 agagtttgatnngggctcaggatgaacgctggcggcgtgcctaatacatg
+Y15714;    50 caagtcgagc60ggacagacgaggtgcttgcacctctgaagtcagcggcg
+Y15714;   100 gacgggtgagtaacacgtgggt120aacctacctgtaagactgggataac
+Y15714;   150 ttcgggaaaccggagctaataccggataatatttt180ccacctcatggt
+Y15714;   200 ggaatagtgaaagacggttttgctgtcacttacagatggacccgcggc24
+Y15714;   250 0gcattagctagttggtgaggtaacggctcaccaaggcgacgatgcgtag
+Y15714;   300 ccgacctgaga300gggtgatcggccacactgggactgagacacggccca
+Y15714;   350 gactcctacgggaggcagcagtag360ggaatcttccgcaatggacgaaa
+Y15714;   400 gtctgacggagcaacgccgcgtgagtgaagaaggtct420tcggatcgta
+Y15714;   450 aaactctgttgtaagggaagaacaagtacgttagtaactgaacgtacctt
+Y15714;   500 480gacggtaccttaccagaaagccacggctaactacgtgccagcagccg
+Y15714;   550 cggtaatacgtag540gtggcaagcgttatccggaattattgggcgtaaa
+Y15714;   600 gcgcgcgtaggcggtttcttaagtct600gatgtgaaagcccccggctca
+Y15714;   650 accggggagggtcattggaaactgggagacttgagtgca660gaagagga
+Y15714;   700 gagtggaattccatgtgtagcggtgaaatgcgcagagatatggaggaaca
+Y15714;   750 cc720agtggcgaaggcggctctctggtctgtaactgacgctgaggtgcg
+Y15714;   800 aaagcgtggggatca780aacaggattagataccctggtagtccacgccg
+Y15714;   850 taaacgatgagtgctaagtgttgggggg840tttccgcccctcagtgctg
+Y15714;   900 cagctaacgcattaagcactccgcctggggagtacggtcgc900aagact
+Y15714;   950 gaaactcaaaggaattgacggggacccgcacaagcggtggagcatgtggt
+Y15714;  1000 ttaa960ttcgaagcaacgcgaagaaccttaccaaatcttgacatcctct
+Y15714;  1050 gacaactctggagacag1020agcgttccccttcgggggacagagtgaca
+Y15714;  1100 ggtggtgcatggttgtcgtcagctcgtgtcg1080tgagatgttgggtta
+Y15714;  1150 agtcccgcaacgagcgcaacccttatctttagttgccatcattca1140g
+Y15714;  1200 ttgggcactctagagagactgccggtgacaaaccggaggaaggtggggat
+Y15714;  1250 gacgtcaaa1200tcatcatgccccttatgatttgggctacacacgtgct
+Y15714;  1300 acaatggatggtacaaagggcag1260caaaaccgcgaggtcaagcaaat
+Y15714;  1350 cccataaaaccattctcagttcggattgtagtctgca1320actcgacta
+Y15714;  1400 catgaagctggaatcgctagtaatcgtagatcagcatgctacggtgaata
+Y15714;  1450 c1380gttcccgggtcttgtacacaccgcccgtcacaccacgagagtttg
+Y15714;  1500 taacacccgaagccg1440gtggagtaacctttacaggagctagccgtcg
+Y15714;  1550 aaggtgggacagatgattggggtgaagtc1500gtaacaaggtagccgta
+Y15714;  1600 tcggaaggtgcggctggatcacctccttt1546

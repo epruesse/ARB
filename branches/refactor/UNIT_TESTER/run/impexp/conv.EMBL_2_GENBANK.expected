@@ -19,7 +19,7 @@ ORIGIN
       181 cagtg180ga tccattattc caatgttaca aacatgtttt tgtatcattg atgctcgtaa
       241 gaaagatg24 0actcaagct gccgaagact tcctcgagag ttttggggga ga281
 //
-LOCUS       ER781674_17367 bp    RNA             RNA       03-JAN-1910
+LOCUS       ER781674_17367 bp    RNA             RNA       06-JAN-1910
 DEFINITION  No information.
 ACCESSION   ER781674;
 KEYWORDS    No information.
@@ -30,6 +30,9 @@ REFERENCE   1
   JOURNAL   No information
   TITLE     No information
   STANDARD  No information
+COMMENTS                  5' end complete: Yes
+              3' end complete: No
+            Next 2 lines are nonsense
 BASE COUNT      51 a    109 c    124 g     66 t     17 others
 ORIGIN
         1 tggcgccgta gatgcagcgc gactggcccg gcttctcggc gtcgaggtac tgcgccacgg
@@ -40,7 +43,7 @@ ORIGIN
       301 ccatgcctca c300aggatg tcgcggttga aggcgaggcc ctggaacagg ttggccatcg
       361 ccac350
 //
-LOCUS       AY704744_17367 bp    RNA             RNA       03-JAN-1910
+LOCUS       AY704744_17367 bp    RNA             RNA       06-JAN-1910
 DEFINITION  No information.
 ACCESSION   AY704744;
 KEYWORDS    No information.
@@ -51,6 +54,9 @@ REFERENCE   1
   JOURNAL   No information
   TITLE     No information
   STANDARD  No information
+COMMENTS                  5' end complete: No
+             3' end complete: Yes
+            Next 2 lines are nonsense
 BASE COUNT     100 a     75 c     77 g     98 t     17 others
 ORIGIN
         1 gcatcgatga agaacgcagc gaaatgcgat aagtaatgtg aattgcagaa ttcagtgaat
@@ -60,4 +66,56 @@ ORIGIN
       241 gctttctg24 0aagacagtc gtacgatagc cacaaacttt gcatcttgca aactttttaa
       301 tggttgacct c300ggatca ggtaggaata cccgctgaac ttaagcatat caataagcgg
       361 agga350
+//
+LOCUS       Y15714;      1633 bp    RNA             RNA       17-NOV-1998
+DEFINITION  Macrococcus bovicus 16S rRNA gene.
+ACCESSION   Y15714;
+KEYWORDS    16S ribosomal RNA; 16S rRNA gene.
+SOURCE      Macrococcus bovicus
+  ORGANISM  Macrococcus bovicus
+REFERENCE   1
+  AUTHORS   Kloos,W.E., Ballard,D.N., George,C.G., Webster,J.A., Hubner,R.J.,
+            Ludwig,W., Schleifer,K.H., Fiedler,F. and Schubert,K.
+  TITLE     Delimiting the genus Staphylococcus through description of
+            Macrococcus caseolyticus gen. nov., comb. nov. and the new species
+            Macrococcus equipercicus sp. nov., Macrococcus bovicus sp. nov.,
+            and Macrococcus carouselicus sp. nov.
+  JOURNAL   Int. J. Syst. Bacteriol. 48, 859-877 (1998)
+  STANDARD  No information
+REFERENCE   2  (bases 1 to 1546)
+  AUTHORS   Ludwig,W.
+  JOURNAL   Submitted (26-NOV-1997) to the EMBL/GenBank/DDBJ databases. W.
+            Ludwig, Lehrstuhl fuer Mikrobiologie, Technische Universitaet
+            Muenchen, Munich, FRG
+  STANDARD  No information
+BASE COUNT     401 a    353 c    470 g    320 t     89 others
+ORIGIN
+        1 agagtttgat nngggctcag gatgaacgct ggcggcgtgc ctaatacatg caagtcgagc
+       61 60ggacagac gaggtgcttg cacctctgaa gtcagcggcg gacgggtgag taacacgtgg
+      121 gt120aacct acctgtaaga ctgggataac ttcgggaaac cggagctaat accggataat
+      181 atttt180cc acctcatggt ggaatagtga aagacggttt tgctgtcact tacagatgga
+      241 cccgcggc24 0gcattagct agttggtgag gtaacggctc accaaggcga cgatgcgtag
+      301 ccgacctgag a300gggtga tcggccacac tgggactgag acacggccca gactcctacg
+      361 ggaggcagca gtag360gga atcttccgca atggacgaaa gtctgacgga gcaacgccgc
+      421 gtgagtgaag aaggtct420 tcggatcgta aaactctgtt gtaagggaag aacaagtacg
+      481 ttagtaactg aacgtacctt 480gacggta ccttaccaga aagccacggc taactacgtg
+      541 ccagcagccg cggtaatacg tag540gtgg caagcgttat ccggaattat tgggcgtaaa
+      601 gcgcgcgtag gcggtttctt aagtct600g atgtgaaagc ccccggctca accggggagg
+      661 gtcattggaa actgggagac ttgagtgca6 60gaagagga gagtggaatt ccatgtgtag
+      721 cggtgaaatg cgcagagata tggaggaaca cc720agtgg cgaaggcggc tctctggtct
+      781 gtaactgacg ctgaggtgcg aaagcgtggg gatca780aa caggattaga taccctggta
+      841 gtccacgccg taaacgatga gtgctaagtg ttgggggg84 0tttccgccc ctcagtgctg
+      901 cagctaacgc attaagcact ccgcctgggg agtacggtcg c900aagact gaaactcaaa
+      961 ggaattgacg gggacccgca caagcggtgg agcatgtggt ttaa960ttc gaagcaacgc
+     1021 gaagaacctt accaaatctt gacatcctct gacaactctg gagacag102 0agcgttccc
+     1081 cttcggggga cagagtgaca ggtggtgcat ggttgtcgtc agctcgtgtc g1080tgaga
+     1141 tgttgggtta agtcccgcaa cgagcgcaac ccttatcttt agttgccatc attca1140g
+     1201 ttgggcactc tagagagact gccggtgaca aaccggagga aggtggggat gacgtcaaa1
+     1261 200tcatcat gccccttatg atttgggcta cacacgtgct acaatggatg gtacaaaggg
+     1321 cag1260caa aaccgcgagg tcaagcaaat cccataaaac cattctcagt tcggattgta
+     1381 gtctgca132 0actcgacta catgaagctg gaatcgctag taatcgtaga tcagcatgct
+     1441 acggtgaata c1380gttcc cgggtcttgt acacaccgcc cgtcacacca cgagagtttg
+     1501 taacacccga agccg1440g tggagtaacc tttacaggag ctagccgtcg aaggtgggac
+     1561 agatgattgg ggtgaagtc1 500gtaacaa ggtagccgta tcggaaggtg cggctggatc
+     1621 acctccttt1 546
 //

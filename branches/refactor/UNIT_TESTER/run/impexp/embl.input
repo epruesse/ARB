@@ -56,6 +56,7 @@ SQ   Sequence 2593 BP; 736 A; 533 C; 547 G; 777 T; 0 other;
 //
 ID   ER781674_1; parent: ER781674
 AC   ER781674;
+CC   Next 2 lines are nonsense
 CC     5' end complete: Yes
 CC     3' end complete: No 
 FT   source          1..350
@@ -83,6 +84,7 @@ FT                   /isolate="OTU-ZY14"
 FT                   /mol_type="genomic DNA"
 FT                   /isolation_source="agricultural soil"
 FT                   /db_xref="taxon:167647"
+CC   Next 2 lines are nonsense
 CC     5' end complete: No
 CC     3' end complete: Yes
 SQ   Sequence   350 BP;
@@ -93,3 +95,77 @@ SQ   Sequence   350 BP;
      aagacagtcg tacgatagcc acaaactttg catcttgcaa actttttaat ggttgacctc       300
      ggatcaggta ggaatacccg ctgaacttaa gcatatcaat aagcggagga                  350
 //
+ID   Y15714; SV 1; linear; genomic DNA; STD; PRO; 1546 BP.
+XX
+AC   Y15714;
+XX
+DT   17-NOV-1998 (Rel. 57, Created)
+DT   17-NOV-1998 (Rel. 57, Last updated, Version 1)
+XX
+DE   Macrococcus bovicus 16S rRNA gene
+XX
+KW   16S ribosomal RNA; 16S rRNA gene.
+XX
+OS   Macrococcus bovicus
+OC   Bacteria; Firmicutes; Bacillales; Macrococcus.
+XX
+RN   [1]
+RA   Kloos W.E., Ballard D.N., George C.G., Webster J.A., Hubner R.J.,
+RA   Ludwig W., Schleifer K.H., Fiedler F., Schubert K.;
+RT   "Delimiting the genus Staphylococcus through description of Macrococcus
+RT   caseolyticus gen. nov., comb. nov. and the new species Macrococcus
+RT   equipercicus sp. nov., Macrococcus bovicus sp. nov., and Macrococcus
+RT   carouselicus sp. nov.";
+RL   Int. J. Syst. Bacteriol. 48:859-877(1998).
+XX
+RN   [2]
+RP   1-1546
+RA   Ludwig W.;
+RT   ;
+RL   Submitted (26-NOV-1997) to the EMBL/GenBank/DDBJ databases.
+RL   W. Ludwig, Lehrstuhl fuer Mikrobiologie, Technische Universitaet Muenchen,
+RL   Munich, FRG
+XX
+DR   RFAM; RF00177; SSU_rRNA_5.
+DR   SILVA-SSU; Y15714.
+XX
+FH   Key             Location/Qualifiers
+FH
+FT   source          1..1546
+FT                   /organism="Macrococcus bovicus"
+FT                   /strain="L2F4"
+FT                   /mol_type="genomic DNA"
+FT                   /db_xref="taxon:69968"
+FT   rRNA            1..1546
+FT                   /gene="16S rRNA"
+FT                   /product="16S ribosomal RNA"
+XX
+SQ   Sequence 1546 BP; 401 A; 353 C; 470 G; 320 T; 2 other;
+     agagtttgat nngggctcag gatgaacgct ggcggcgtgc ctaatacatg caagtcgagc        60
+     ggacagacga ggtgcttgca cctctgaagt cagcggcgga cgggtgagta acacgtgggt       120
+     aacctacctg taagactggg ataacttcgg gaaaccggag ctaataccgg ataatatttt       180
+     ccacctcatg gtggaatagt gaaagacggt tttgctgtca cttacagatg gacccgcggc       240
+     gcattagcta gttggtgagg taacggctca ccaaggcgac gatgcgtagc cgacctgaga       300
+     gggtgatcgg ccacactggg actgagacac ggcccagact cctacgggag gcagcagtag       360
+     ggaatcttcc gcaatggacg aaagtctgac ggagcaacgc cgcgtgagtg aagaaggtct       420
+     tcggatcgta aaactctgtt gtaagggaag aacaagtacg ttagtaactg aacgtacctt       480
+     gacggtacct taccagaaag ccacggctaa ctacgtgcca gcagccgcgg taatacgtag       540
+     gtggcaagcg ttatccggaa ttattgggcg taaagcgcgc gtaggcggtt tcttaagtct       600
+     gatgtgaaag cccccggctc aaccggggag ggtcattgga aactgggaga cttgagtgca       660
+     gaagaggaga gtggaattcc atgtgtagcg gtgaaatgcg cagagatatg gaggaacacc       720
+     agtggcgaag gcggctctct ggtctgtaac tgacgctgag gtgcgaaagc gtggggatca       780
+     aacaggatta gataccctgg tagtccacgc cgtaaacgat gagtgctaag tgttgggggg       840
+     tttccgcccc tcagtgctgc agctaacgca ttaagcactc cgcctgggga gtacggtcgc       900
+     aagactgaaa ctcaaaggaa ttgacgggga cccgcacaag cggtggagca tgtggtttaa       960
+     ttcgaagcaa cgcgaagaac cttaccaaat cttgacatcc tctgacaact ctggagacag      1020
+     agcgttcccc ttcgggggac agagtgacag gtggtgcatg gttgtcgtca gctcgtgtcg      1080
+     tgagatgttg ggttaagtcc cgcaacgagc gcaaccctta tctttagttg ccatcattca      1140
+     gttgggcact ctagagagac tgccggtgac aaaccggagg aaggtgggga tgacgtcaaa      1200
+     tcatcatgcc ccttatgatt tgggctacac acgtgctaca atggatggta caaagggcag      1260
+     caaaaccgcg aggtcaagca aatcccataa aaccattctc agttcggatt gtagtctgca      1320
+     actcgactac atgaagctgg aatcgctagt aatcgtagat cagcatgcta cggtgaatac      1380
+     gttcccgggt cttgtacaca ccgcccgtca caccacgaga gtttgtaaca cccgaagccg      1440
+     gtggagtaac ctttacagga gctagccgtc gaaggtggga cagatgattg gggtgaagtc      1500
+     gtaacaaggt agccgtatcg gaaggtgcgg ctggatcacc tccttt                     1546
+//
+
