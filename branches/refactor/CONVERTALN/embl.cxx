@@ -669,7 +669,7 @@ void embl_print_lines(FILE * fp, const char *key, const char *Data, const WrapMo
             if (Data[continue_at] == ' ') continue_at++;
         }
 
-        if (Data[split_after] == ' ') split_after--;
+        if (occurs_in(Data[split_after], " \n")) split_after--;
 
         fputs(key, fp);
         fputs("   ", fp);
