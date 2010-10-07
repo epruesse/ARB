@@ -214,9 +214,17 @@ void global_data::setup() {
     data.seqs      = NULL;
     data.lengths   = NULL;
     data.allocated = 0;
-    
+
+#if (UNIT_TESTS==1)
+    data.test_counter = 0;
+#endif
+
     initialized = true;
 }
+
+#if (UNIT_TESTS==1)
+static int overall_test_counter = 0;
+#endif
 
 void global_data::cleanup() {
     if (initialized) {
@@ -230,6 +238,10 @@ void global_data::cleanup() {
         freenull(data.gbk.definition);
 
         initialized = false;
+
+#if (UNIT_TESTS==1)
+        overall_test_counter += data.test_counter; 
+#endif
     }
 }
 
@@ -584,6 +596,8 @@ void TEST_converter() {
     int max_untested = noInput+neverReturns+broken; // the 3 counters may overlop
 
     TEST_ASSERT_LOWER_EQUAL(untested, max_untested);
+
+    TEST_WARNING("Overall counter=%i", overall_test_counter);
 }
 
 #endif // UNIT_TESTS

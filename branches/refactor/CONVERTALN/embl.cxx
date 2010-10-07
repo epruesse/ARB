@@ -20,63 +20,80 @@ void reinit_em_data() {
  *              Initialize embl entry.
  */
 void cleanup_embl() {
-    freenull(data.embl.id);
-    freenull(data.embl.dateu);
-    freenull(data.embl.datec);
-    freenull(data.embl.description);
-    freenull(data.embl.os);
-    freenull(data.embl.accession);
-    freenull(data.embl.keywords);
+    Embl& embl = data.embl;
 
-    for (int indi = 0; indi < data.embl.numofref; indi++) {
-        freenull(data.embl.reference[indi].author);
-        freenull(data.embl.reference[indi].title);
-        freenull(data.embl.reference[indi].journal);
-        freenull(data.embl.reference[indi].processing);
+    freenull(embl.id);
+    freenull(embl.dateu);
+    freenull(embl.datec);
+    freenull(embl.description);
+    freenull(embl.os);
+    freenull(embl.accession);
+    freenull(embl.keywords);
+
+    for (int indi = 0; indi < embl.numofref; indi++) {
+        freenull(embl.reference[indi].author);
+        freenull(embl.reference[indi].title);
+        freenull(embl.reference[indi].journal);
+        freenull(embl.reference[indi].processing);
     }
-    freenull(data.embl.reference);
-    freenull(data.embl.dr);
-    freenull(data.embl.comments.orginf.source);
-    freenull(data.embl.comments.orginf.cc);
-    freenull(data.embl.comments.orginf.formname);
-    freenull(data.embl.comments.orginf.nickname);
-    freenull(data.embl.comments.orginf.commname);
-    freenull(data.embl.comments.orginf.hostorg);
-    freenull(data.embl.comments.seqinf.RDPid);
-    freenull(data.embl.comments.seqinf.gbkentry);
-    freenull(data.embl.comments.seqinf.methods);
-    freenull(data.embl.comments.others);
+    freenull(embl.reference);
+    freenull(embl.dr);
+
+    Comment& comments = embl.comments;
+
+    OrgInfo& orginf = comments.orginf;
+    freenull(orginf.source);
+    freenull(orginf.cc);
+    freenull(orginf.formname);
+    freenull(orginf.nickname);
+    freenull(orginf.commname);
+    freenull(orginf.hostorg);
+
+    SeqInfo& seqinf = comments.seqinf;
+    freenull(seqinf.RDPid);
+    freenull(seqinf.gbkentry);
+    freenull(seqinf.methods);
+
+    freenull(comments.others);
 }
 
 void reinit_embl() {
     /* initialize embl format */
     cleanup_embl();
-    
-    data.embl.id          = strdup("\n");
-    data.embl.dateu       = strdup("\n");
-    data.embl.datec       = strdup("\n");
-    data.embl.description = strdup("\n");
-    data.embl.os          = strdup("\n");
-    data.embl.accession   = strdup("\n");
-    data.embl.keywords    = strdup("\n");
-    data.embl.dr          = strdup("\n");
-    data.embl.numofref    = 0;
-    data.embl.reference   = NULL;
 
-    data.embl.comments.orginf.exist    = 0;
-    data.embl.comments.orginf.source   = strdup("\n");
-    data.embl.comments.orginf.cc       = strdup("\n");
-    data.embl.comments.orginf.formname = strdup("\n");
-    data.embl.comments.orginf.nickname = strdup("\n");
-    data.embl.comments.orginf.commname = strdup("\n");
-    data.embl.comments.orginf.hostorg  = strdup("\n");
-    data.embl.comments.seqinf.exist    = 0;
-    data.embl.comments.seqinf.RDPid    = strdup("\n");
-    data.embl.comments.seqinf.gbkentry = strdup("\n");
-    data.embl.comments.seqinf.methods  = strdup("\n");
-    data.embl.comments.others          = NULL;
-    data.embl.comments.seqinf.comp5    = ' ';
-    data.embl.comments.seqinf.comp3    = ' ';
+    Embl& embl = data.embl;
+    
+    embl.id          = no_content();
+    embl.dateu       = no_content();
+    embl.datec       = no_content();
+    embl.description = no_content();
+    embl.os          = no_content();
+    embl.accession   = no_content();
+    embl.keywords    = no_content();
+    embl.dr          = no_content();
+    embl.numofref    = 0;
+    embl.reference   = NULL;
+
+    Comment& comments = embl.comments;
+
+    OrgInfo& orginf = comments.orginf;
+    orginf.exist    = 0;
+    orginf.source   = no_content();
+    orginf.cc       = no_content();
+    orginf.formname = no_content();
+    orginf.nickname = no_content();
+    orginf.commname = no_content();
+    orginf.hostorg  = no_content();
+
+    SeqInfo& seqinf = comments.seqinf;
+    seqinf.exist    = 0;
+    seqinf.RDPid    = no_content();
+    seqinf.gbkentry = no_content();
+    seqinf.methods  = no_content();
+    seqinf.comp5    = ' ';
+    seqinf.comp3    = ' ';
+
+    comments.others = NULL;
 }
 
 /* ---------------------------------------------------------------
@@ -118,7 +135,7 @@ char embl_in(FILE_BUFFER fp) {
             eof = embl_one_entry(line, fp, data.embl.keywords, key);
 
             /* correct missing '.' */
-            if (str0len(data.embl.keywords) <= 1) replace_entry(data.embl.keywords, ".\n");
+            if (str0len(data.embl.keywords) <= 1) freedup(data.embl.keywords, ".\n");
             else terminate_with(data.embl.keywords, '.');
         }
         else if (str_equal(key, "DR")) {
@@ -286,7 +303,7 @@ char *embl_one_entry(char *line, FILE_BUFFER fp, char*& entry, char *key) {
     char *eof;
 
     index = Skip_white_space(line, p_nonkey_start);
-    replace_entry(entry, line + index);
+    freedup(entry, line + index);
     eof = embl_continue_line(key, entry, line, fp);
 
     return (eof);
@@ -315,7 +332,7 @@ void embl_verify_title(int refnum) {
             temp[len - 2] = '"';
             terminate_with(temp, ';');
         }
-        replace_entry(data.embl.reference[refnum].title, temp);
+        freedup(data.embl.reference[refnum].title, temp);
         free(temp);
     }
 }
@@ -329,13 +346,13 @@ char *embl_date(char *line, FILE_BUFFER fp) {
     char *eof, key[TOKENSIZE];
 
     index = Skip_white_space(line, p_nonkey_start);
-    replace_entry(data.embl.dateu, line + index);
+    freedup(data.embl.dateu, line + index);
 
     eof = Fgetline(line, LINESIZE, fp);
     embl_key_word(line, 0, key, TOKENSIZE);
     if (str_equal(key, "DT")) {
         index = Skip_white_space(line, p_nonkey_start);
-        replace_entry(data.embl.datec, line + index);
+        freedup(data.embl.datec, line + index);
         /* skip the rest of DT lines */
         do {
             eof = Fgetline(line, LINESIZE, fp);
@@ -452,7 +469,7 @@ char *embl_comments(char *line, FILE_BUFFER fp) {
         }
         else {                  /* other comments */
             if (data.embl.comments.others == NULL) {
-                data.embl.comments.others = str0dup(line + 5);
+                data.embl.comments.others = nulldup(line + 5);
             }
             else
                 Append(data.embl.comments.others, line + 5);
@@ -515,7 +532,7 @@ char *embl_one_comment_entry(FILE_BUFFER fp, char*& datastring, char *line, int 
     char *eof, temp[LINESIZE];
 
     index = Skip_white_space(line, start_index);
-    replace_entry(datastring, line + index);
+    freedup(datastring, line + index);
 
     /* check continue lines */
     for (eof = Fgetline(line, LINESIZE, fp);
@@ -558,59 +575,51 @@ char *embl_origin(char *line, FILE_BUFFER fp) {
     return eof;
 }
 
-/* ----------------------------------------------------------------
- *      Function embl_out().
- *              Output EMBL data.
- */
+static void embl_print_lines_if_content(FILE *fp, const char *key, const char *content, const WrapMode& wrapMode, bool followed_by_spacer) {
+    if (has_content(content)) {
+        embl_print_lines(fp, key, content, wrapMode);
+        followed_by_spacer && fputs("XX\n", fp);
+    }
+}
+
 void embl_out(FILE * fp) {
+    // Output EMBL data.
     int indi;
 
-    if (str0len(data.embl.id) > 1)
-        fprintf(fp, "ID   %sXX\n", data.embl.id);
-    if (str0len(data.embl.accession) > 1) {
-        embl_print_lines(fp, "AC", data.embl.accession, SEPNODEFINED, "");
-        fprintf(fp, "XX\n");
-    }
+    WrapMode wrapWords(true);
+    WrapMode neverWrap(false);
 
-    /* Date */
-    if (str0len(data.embl.dateu) > 1)
-        fprintf(fp, "DT   %s", data.embl.dateu);
-    if (str0len(data.embl.datec) > 1)
-        fprintf(fp, "DT   %sXX\n", data.embl.datec);
-    if (str0len(data.embl.description) > 1) {
-        embl_print_lines(fp, "DE", data.embl.description, SEPNODEFINED, "");
-        fprintf(fp, "XX\n");
-    }
+    embl_print_lines_if_content(fp, "ID", data.embl.id,          neverWrap,     true) ;
+    embl_print_lines_if_content(fp, "AC", data.embl.accession,   wrapWords,     true) ;
+    embl_print_lines_if_content(fp, "DT", data.embl.dateu,       neverWrap,     false);
+    embl_print_lines_if_content(fp, "DT", data.embl.datec,       neverWrap,     true) ;
+    // @@@ change behavior ? (print XX if any of the two DTs has been written)
+    embl_print_lines_if_content(fp, "DE", data.embl.description, wrapWords,     true) ;
+    embl_print_lines_if_content(fp, "KW", data.embl.keywords,    WrapMode(";"), true) ;
 
-    if (str0len(data.embl.keywords) > 1) {
-        embl_print_lines(fp, "KW", data.embl.keywords, SEPDEFINED, ";");
-        fprintf(fp, "XX\n");
-    }
-
-    if (str0len(data.embl.os) > 1) {
-        embl_print_lines(fp, "OS", data.embl.os, SEPNODEFINED, "");
+    if (has_content(data.embl.os)) {
+        embl_print_lines(fp, "OS", data.embl.os, wrapWords);
         fprintf(fp, "OC   No information.\n");
         fprintf(fp, "XX\n");
     }
 
-    /* Reference */
+    /* GenbankRef */
     for (indi = 0; indi < data.embl.numofref; indi++) {
+        const Emblref& ref = data.embl.reference[indi];
+
         fprintf(fp, "RN   [%d]\n", indi + 1);
-        if (str0len(data.embl.reference[indi].processing) > 1)
-            fprintf(fp, "RP   %s", data.embl.reference[indi].processing);
-        if (str0len(data.embl.reference[indi].author) > 1)
-            embl_print_lines(fp, "RA", data.embl.reference[indi].author, SEPDEFINED, ",");
-        if (str0len(data.embl.reference[indi].title) > 1)
-            embl_print_lines(fp, "RT", data.embl.reference[indi].title, SEPNODEFINED, "");
-        else
-            fprintf(fp, "RT   ;\n");
-        if (str0len(data.embl.reference[indi].journal) > 1)
-            embl_print_lines(fp, "RL", data.embl.reference[indi].journal, SEPNODEFINED, "");
+        embl_print_lines_if_content(fp, "RP", ref.processing, neverWrap, false);
+        embl_print_lines_if_content(fp, "RA", ref.author, WrapMode(","), false);
+
+        if (has_content(ref.title)) embl_print_lines(fp, "RT", ref.title, wrapWords);
+        else fprintf(fp, "RT   ;\n");
+        
+        embl_print_lines_if_content(fp, "RL", ref.journal, wrapWords, false);
         fprintf(fp, "XX\n");
     }
 
-    if (str0len(data.embl.dr) > 1) {
-        embl_print_lines(fp, "DR", data.embl.dr, SEPNODEFINED, "");
+    if (has_content(data.embl.dr)) {
+        embl_print_lines(fp, "DR", data.embl.dr, wrapWords);
         fprintf(fp, "XX\n");
     }
 
@@ -618,110 +627,102 @@ void embl_out(FILE * fp) {
     embl_out_origin(fp);
 }
 
-/* ----------------------------------------------------------------
- *      Function embl_print_lines().
- *              Print EMBL entry and wrap around if line over
- *                      EMBLMAXCHAR.
- */
-void embl_print_lines(FILE * fp, const char *key, char *Data, int flag, const char *separators) {
-    int indi, indj, indk, len;
+int WrapMode::wrap_pos(const char *str, int wrapCol) const {
+    // returns the first position lower equal 'wrapCol' after which splitting
+    // is possible (according to separators of WrapMode)
+    //
+    // returns 'wrapCol' if no such position exists (fallback)
+    //
+    // throws if WrapMode is disabled
 
-    int ibuf;
+    if (!allowed_to_wrap()) throw_errorf(50, "Oversized content - no wrapping allowed here (content='%s')", str);
 
-    len = str0len(Data) - 1;
-    /* indi: first char of the line */
-    /* indj: num of char, excluding the first char, of the line */
-    for (indi = 0; indi < len; indi += (indj + 1)) {
-        indj = EMBLMAXCHAR;
-        if ((str0len(Data + indi)) > EMBLMAXCHAR) {
-            ibuf = indj;
-
-            /* search for proper termination of a line */
-            if (flag) {
-                for (; indj > 0 && !occurs_in(Data[indi + indj], separators); indj--) ;
-            }
-            else {
-                for (; indj > 0 && is_word_char(Data[indi + indj]); indj--) ;
-            }
-            
-            if (indj == 0) indj = ibuf;
-            else if (Data[indi + indj + 1] == ' ') indj++;
-
-            fprintf(fp, "%s   ", key);
-            for (indk = 0; indk < indj; indk++) fprintf(fp, "%c", Data[indi + indk]);
-
-            /* leave out the last space, if there is any */
-            if (Data[indi + indj] != ' ') fprintf(fp, "%c", Data[indi + indj]);
-            fprintf(fp, "\n");
-        }
-        else
-            fprintf(fp, "%s   %s", key, Data + indi);
-    }
+    const char *wrapAfter = get_seps();
+    ca_assert(wrapAfter);
+    int i = wrapCol;
+    for (; i >= 0 && !occurs_in(str[i], wrapAfter); --i) {}
+    return i >= 0 ? i : wrapCol;
 }
 
-/* -------------------------------------------------------
- *      Function embl_out_comments().
- *              Print out the comments part of EMBL format.
- */
-void embl_out_comments(FILE * fp) {
-    int indi, len;
+int fputs_len(const char *str, int len, FILE *out) {
+    // like fputs(), but does not print more than 'len' characters
+    // returns number of chars written or EOF
+    for (int i = 0; i<len; ++i) {
+        if (!str[i]) return i;
+        if (fputc(str[i], out) == EOF) return EOF;
+    }
+    return len;
+}
 
+void embl_print_lines(FILE * fp, const char *key, const char *Data, const WrapMode& wrapMode) {
+    // Print EMBL entry and wrap around if line over EMBLMAXCHAR.
+    int len = strlen(Data)-1;
+
+    ca_assert(Data[len] == '\n');
+    while (len>EMBLMAXCHAR) {
+        int split_after = wrapMode.wrap_pos(Data, EMBLMAXCHAR);
+        ca_assert(split_after <= EMBLMAXCHAR);
+        int continue_at = split_after+1;
+
+        if (split_after != EMBLMAXCHAR) {
+            // @@@ remove condition above - just simulates bug from original version (which in this case left a space at start of the wrapped line)
+            if (Data[continue_at] == ' ') continue_at++;
+        }
+
+        if (Data[split_after] == ' ') split_after--;
+
+        fputs(key, fp);
+        fputs("   ", fp);
+        fputs_len(Data, split_after+1, fp);
+        fputc('\n', fp);
+
+        Data += continue_at;
+        len  -= continue_at; 
+
+        ca_assert(Data[len] == '\n');
+    }
+    ca_assert(Data[len] == '\n');
+
+    fputs(key, fp);
+    fputs("   ", fp);
+    fputs(Data, fp); // includes '\n'
+}
+
+inline void embl_print_comment_if_content(FILE * fp, const char *key, char *Str) {
+    if (has_content(Str)) embl_print_comment(fp, key, Str, COMMSKINDENT, COMMCNINDENT);
+}
+
+inline void embl_print_completeness(FILE *fp, char compX, char X) {
+    if (compX == ' ') return;
+    ca_assert(compX == 'y' || compX == 'n');
+    fprintf(fp, "CC     %c' end complete: %s\n", X, compX == 'y' ? "Yes" : "No");
+}
+
+void embl_out_comments(FILE * fp) {
+    // Print out the comments part of EMBL format.
     if (data.embl.comments.orginf.exist == 1) {
         fprintf(fp, "CC   Organism information\n");
 
-        if (str0len(data.embl.comments.orginf.source) > 1)
-            embl_print_comment(fp, "Source of strain: ", data.embl.comments.orginf.source, COMMSKINDENT, COMMCNINDENT);
-
-        if (str0len(data.embl.comments.orginf.cc) > 1)
-            embl_print_comment(fp, "Culture collection: ", data.embl.comments.orginf.cc, COMMSKINDENT, COMMCNINDENT);
-
-        if (str0len(data.embl.comments.orginf.formname) > 1)
-            embl_print_comment(fp, "Former name: ", data.embl.comments.orginf.formname, COMMSKINDENT, COMMCNINDENT);
-
-        if (str0len(data.embl.comments.orginf.nickname) > 1)
-            embl_print_comment(fp, "Alternate name: ", data.embl.comments.orginf.nickname, COMMSKINDENT, COMMCNINDENT);
-
-        if (str0len(data.embl.comments.orginf.commname) > 1)
-            embl_print_comment(fp, "Common name: ", data.embl.comments.orginf.commname, COMMSKINDENT, COMMCNINDENT);
-
-        if (str0len(data.embl.comments.orginf.hostorg) > 1)
-            embl_print_comment(fp, "Host organism: ", data.embl.comments.orginf.hostorg, COMMSKINDENT, COMMCNINDENT);
+        embl_print_comment_if_content(fp, "Source of strain: ",   data.embl.comments.orginf.source);
+        embl_print_comment_if_content(fp, "Culture collection: ", data.embl.comments.orginf.cc);
+        embl_print_comment_if_content(fp, "Former name: ",        data.embl.comments.orginf.formname);
+        embl_print_comment_if_content(fp, "Alternate name: ",     data.embl.comments.orginf.nickname);
+        embl_print_comment_if_content(fp, "Common name: ",        data.embl.comments.orginf.commname);
+        embl_print_comment_if_content(fp, "Host organism: ",      data.embl.comments.orginf.hostorg);
     }                           /* organism information */
 
     if (data.embl.comments.seqinf.exist == 1) {
         fprintf(fp, "CC   Sequence information (bases 1 to %d)\n", data.seq_length);
 
-        if (str0len(data.embl.comments.seqinf.RDPid) > 1)
-            embl_print_comment(fp, "RDP ID: ", data.embl.comments.seqinf.RDPid, COMMSKINDENT, COMMCNINDENT);
+        embl_print_comment_if_content(fp, "RDP ID: ",                      data.embl.comments.seqinf.RDPid);
+        embl_print_comment_if_content(fp, "Corresponding GenBank entry: ", data.embl.comments.seqinf.gbkentry);
+        embl_print_comment_if_content(fp, "Sequencing methods: ",          data.embl.comments.seqinf.methods);
 
-        if (str0len(data.embl.comments.seqinf.gbkentry) > 1)
-            embl_print_comment(fp, "Corresponding GenBank entry: ", data.embl.comments.seqinf.gbkentry, COMMSKINDENT, COMMCNINDENT);
-
-        if (str0len(data.embl.comments.seqinf.methods) > 1)
-            embl_print_comment(fp, "Sequencing methods: ", data.embl.comments.seqinf.methods, COMMSKINDENT, COMMCNINDENT);
-
-        if (data.embl.comments.seqinf.comp5 == 'n')
-            fprintf(fp, "CC     5' end complete: No\n");
-
-        else if (data.embl.comments.seqinf.comp5 == 'y')
-            fprintf(fp, "CC     5' end complete: Yes\n");
-
-        if (data.embl.comments.seqinf.comp3 == 'n')
-            fprintf(fp, "CC     3' end complete: No\n");
-
-        else if (data.embl.comments.seqinf.comp3 == 'y')
-            fprintf(fp, "CC     3' end complete: Yes\n");
-    }                           /* sequence information */
-
-    if (str0len(data.embl.comments.others) > 1) {
-        for (indi = 0, len = str0len(data.embl.comments.others); indi < len; indi++) {
-            if ((indi > 0 && data.embl.comments.others[indi - 1] == '\n')
-                || indi == 0)
-                fprintf(fp, "CC   ");
-            fprintf(fp, "%c", data.embl.comments.others[indi]);
-        }
-        fprintf(fp, "XX\n");
+        embl_print_completeness(fp, data.embl.comments.seqinf.comp5, '5');
+        embl_print_completeness(fp, data.embl.comments.seqinf.comp3, '3');
     }
+
+    embl_print_lines_if_content(fp, "CC", data.embl.comments.others, WrapMode("\n"), true);
 }
 
 /* --------------------------------------------------------------
@@ -753,6 +754,7 @@ void embl_print_comment(FILE * fp, const char *key, char *Str, int offset, int i
             fprintf(fp, "%s", key);
             first_time = 0;
         }
+        // @@@ use wrap_pos
         if (str0len(Str + indi) > indj) {
             /* search for proper termination of a line */
             for (; indj >= 0 && is_word_char(Str[indj + indi]); indj--) ;
@@ -942,7 +944,7 @@ int etog() {
     char t1[TOKENSIZE], t2[TOKENSIZE], t3[TOKENSIZE];
 
     embl_key_word(data.embl.id, 0, key, TOKENSIZE);
-    if (str0len(data.embl.dr) > 1) {
+    if (has_content(data.embl.dr)) {
         /* get short_id from DR line if there is RDP def. */
         strcpy(t3, "dummy");
         ASSERT_RESULT(int, 3, sscanf(data.embl.dr, "%s %s %s", t1, t2, t3));
@@ -959,63 +961,72 @@ int etog() {
 
     /* LOCUS */
     for (indi = str0len(temp); indi < 13; temp[indi++] = ' ') ;
-    if (str0len(data.embl.dateu) > 1) {
+#if 1
+    // @@@ use else-version when done with refactoring
+    // fixes two bugs in LOCUS line (id changed, wrong number of base positions)  
+    if (has_content(data.embl.dateu)) {
         sprintf((temp + 10), "%7d bp    RNA             RNA       %s\n", data.seq_length, genbank_date(data.embl.dateu));
     }
-    else
+    else {
         sprintf((temp + 10), "7%d bp    RNA             RNA       %s\n", data.seq_length, genbank_date(today_date()));
-    replace_entry(data.gbk.locus, temp);
+    }
+#else
+    {
+        const char *date = has_content(data.embl.dateu) ? data.embl.dateu : today_date();
+        sprintf((temp + 10), "%7d bp    RNA             RNA       %s\n",
+                data.seq_length,
+                genbank_date(date));
+    }
+#endif
+    freedup(data.gbk.locus, temp);
 
     /* DEFINITION */
-    if (str0len(data.embl.description) > 1) {
-        replace_entry(data.gbk.definition, data.embl.description);
+    if (has_content(data.embl.description)) {
+        freedup(data.gbk.definition, data.embl.description);
 
         /* must have a period at the end */
         terminate_with(data.gbk.definition, '.');
     }
 
     /* SOURCE and DEFINITION if not yet defined */
-    if (str0len(data.embl.os) > 1) {
-        replace_entry(data.gbk.source, data.embl.os);
-
-        replace_entry(data.gbk.organism, data.embl.os);
-
-        if (str0len(data.embl.description) <= 1) {
-            replace_entry(data.gbk.definition, data.embl.os);
+    if (has_content(data.embl.os)) {
+        freedup(data.gbk.source, data.embl.os);
+        freedup(data.gbk.organism, data.embl.os);
+        if (!has_content(data.embl.description)) {
+            freedup(data.gbk.definition, data.embl.os);
         }
     }
 
     /* COMMENT GenBank entry */
-    if (str0len(data.embl.accession) > 1)
-        replace_entry(data.gbk.accession, data.embl.accession);
+    freedup_if_content(data.gbk.accession, data.embl.accession);
+    if (has_content(data.embl.keywords) && data.embl.keywords[0] != '.') {
+        freedup(data.gbk.keywords, data.embl.keywords);
+    }
 
-    if (str0len(data.embl.keywords) > 1 && data.embl.keywords[0] != '.')
-        replace_entry(data.gbk.keywords, data.embl.keywords);
-
-    /* convert reference */
-    etog_reference();
-
-    /* convert comments */
-    etog_comments();
+    etog_convert_references();
+    etog_convert_comments();
 
     return (1);
 }
 
 /* ---------------------------------------------------------------------
- *      Function etog_reference().
+ *      Function etog_convert_references().
  *              Convert reference from EMBL to GenBank format.
  */
 
-void etog_reference() {
+void etog_convert_references() {
     int indi, len, start, end;
     char temp[LONGTEXT];
 
     data.gbk.numofref = data.embl.numofref;
-    data.gbk.reference = (Reference *) calloc(1, sizeof(Reference) * data.embl.numofref);
+    data.gbk.reference = (GenbankRef *) calloc(1, sizeof(GenbankRef) * data.embl.numofref);
 
     for (indi = 0; indi < data.embl.numofref; indi++) {
-        if (str0len(data.embl.reference[indi].processing) > 1 &&
-            sscanf(data.embl.reference[indi].processing, "%d %d", &start, &end) == 2)
+        const Emblref& ref = data.embl.reference[indi];
+        
+
+        if (has_content(ref.processing) &&
+            sscanf(ref.processing, "%d %d", &start, &end) == 2)
         {
             end *= -1; /* will get negative from sscanf */
             sprintf(temp, "%d  (bases %d to %d)\n", (indi + 1), start, end);
@@ -1023,41 +1034,37 @@ void etog_reference() {
         else {
             sprintf(temp, "%d\n", (indi + 1));
         }
-        data.gbk.reference[indi].ref = str0dup(temp);
+        data.gbk.reference[indi].ref = nulldup(temp);
 
-        if (str0len(data.embl.reference[indi].title) > 1 && data.embl.reference[indi].title[0] != ';') {
+        if (has_content(ref.title) && ref.title[0] != ';') {
             /* remove '"' and ';', if there is any */
-            len = str0len(data.embl.reference[indi].title);
-            if (len > 2 && data.embl.reference[indi].title[0] == '"'
-                && data.embl.reference[indi].title[len - 2] == ';' && data.embl.reference[indi].title[len - 3] == '"') {
-                data.embl.reference[indi].title[len - 3] = '\n';
-                data.embl.reference[indi].title[len - 2] = '\0';
-                data.gbk.reference[indi].title = str0dup(data.embl.reference[indi].title + 1);
-                data.embl.reference[indi].title[len - 3] = '"';
-                data.embl.reference[indi].title[len - 2] = ';';
+            len = str0len(ref.title);
+            if (len > 2 && ref.title[0] == '"'
+                && ref.title[len - 2] == ';' && ref.title[len - 3] == '"') {
+                ref.title[len - 3] = '\n';
+                ref.title[len - 2] = '\0';
+                data.gbk.reference[indi].title = nulldup(ref.title + 1);
+                ref.title[len - 3] = '"';
+                ref.title[len - 2] = ';';
             }
             else
-                data.gbk.reference[indi].title = str0dup(data.embl.reference[indi].title);
+                data.gbk.reference[indi].title = nulldup(ref.title);
         }
         else
-            data.gbk.reference[indi].title = strdup("\n");
+            data.gbk.reference[indi].title = no_content();
 
         /* GenBank AUTHOR */
-        if (str0len(data.embl.reference[indi].author) > 1)
-
-            data.gbk.reference[indi].author = etog_author(data.embl.reference[indi].author);
-
+        if (has_content(ref.author))
+            data.gbk.reference[indi].author = etog_author(ref.author);
         else
-            data.gbk.reference[indi].author = strdup("\n");
+            data.gbk.reference[indi].author = no_content();
 
-        if (str0len(data.embl.reference[indi].journal) > 1)
-
-            data.gbk.reference[indi].journal = etog_journal(data.embl.reference[indi].journal);
-
+        if (has_content(ref.journal))
+            data.gbk.reference[indi].journal = etog_journal(ref.journal);
         else
-            data.gbk.reference[indi].journal = strdup("\n");
+            data.gbk.reference[indi].journal = no_content();
 
-        data.gbk.reference[indi].standard = strdup("\n");
+        data.gbk.reference[indi].standard = no_content();
     }
 }
 
@@ -1140,7 +1147,7 @@ char *etog_journal(const char *eJournal) {
 
         if (!new_journal) {
             warningf(148, "Removed unknown journal format: %s", eJournal);
-            new_journal = strdup("\n");
+            new_journal = no_content();
         }
     }
 
@@ -1179,50 +1186,31 @@ void TEST_BASIC_etog_journal() {
 
 
 /* ---------------------------------------------------------------
- *      Function etog_comments().
+ *      Function etog_convert_comments().
  *              Convert comment part from EMBL to GenBank.
  */
-void etog_comments() {
+void etog_convert_comments() {
     /* RDP defined Organism Information comments */
     data.gbk.comments.orginf.exist = data.embl.comments.orginf.exist;
 
-    if (str0len(data.embl.comments.orginf.source) > 1)
-        replace_entry(data.gbk.comments.orginf.source, data.embl.comments.orginf.source);
-
-    if (str0len(data.embl.comments.orginf.cc) > 1)
-        replace_entry(data.gbk.comments.orginf.cc, data.embl.comments.orginf.cc);
-
-    if (str0len(data.embl.comments.orginf.formname) > 1)
-        replace_entry(data.gbk.comments.orginf.formname, data.embl.comments.orginf.formname);
-
-    if (str0len(data.embl.comments.orginf.nickname) > 1)
-        replace_entry(data.gbk.comments.orginf.nickname, data.embl.comments.orginf.nickname);
-
-    if (str0len(data.embl.comments.orginf.commname) > 1)
-        replace_entry(data.gbk.comments.orginf.commname, data.embl.comments.orginf.commname);
-
-    if (str0len(data.embl.comments.orginf.hostorg) > 1)
-        replace_entry(data.gbk.comments.orginf.hostorg, data.embl.comments.orginf.hostorg);
-
+    freedup_if_content(data.gbk.comments.orginf.source,   data.embl.comments.orginf.source);
+    freedup_if_content(data.gbk.comments.orginf.cc,       data.embl.comments.orginf.cc);
+    freedup_if_content(data.gbk.comments.orginf.formname, data.embl.comments.orginf.formname);
+    freedup_if_content(data.gbk.comments.orginf.nickname, data.embl.comments.orginf.nickname);
+    freedup_if_content(data.gbk.comments.orginf.commname, data.embl.comments.orginf.commname);
+    freedup_if_content(data.gbk.comments.orginf.hostorg,  data.embl.comments.orginf.hostorg);
     /* RDP defined Sequence Information comments */
     data.gbk.comments.seqinf.exist = data.embl.comments.seqinf.exist;
 
-    if (str0len(data.embl.comments.seqinf.RDPid) > 1)
-        replace_entry(data.gbk.comments.seqinf.RDPid, data.embl.comments.seqinf.RDPid);
-
-    if (str0len(data.embl.comments.seqinf.gbkentry) > 1)
-        replace_entry(data.gbk.comments.seqinf.gbkentry, data.embl.comments.seqinf.gbkentry);
-
-    if (str0len(data.embl.comments.seqinf.methods) > 1)
-        replace_entry(data.gbk.comments.seqinf.methods, data.embl.comments.seqinf.methods);
-
+    freedup_if_content(data.gbk.comments.seqinf.RDPid,    data.embl.comments.seqinf.RDPid);
+    freedup_if_content(data.gbk.comments.seqinf.gbkentry, data.embl.comments.seqinf.gbkentry);
+    freedup_if_content(data.gbk.comments.seqinf.methods,  data.embl.comments.seqinf.methods);
     data.gbk.comments.seqinf.comp5 = data.embl.comments.seqinf.comp5;
 
     data.gbk.comments.seqinf.comp3 = data.embl.comments.seqinf.comp3;
 
     /* other comments */
-    if (str0len(data.embl.comments.others) > 1)
-        replace_entry(data.gbk.comments.others, data.embl.comments.others);
+    freedup_if_content(data.gbk.comments.others, data.embl.comments.others);
 }
 
 /* ----------------------------------------------------------------
@@ -1271,12 +1259,12 @@ int gtoe() {
     for (; indi < 10; indi++)
         temp[indi] = ' ';
     sprintf(temp + 10, "preliminary; RNA; UNA; %d BP.\n", data.seq_length);
-    replace_entry(data.embl.id, temp);
+    freedup(data.embl.id, temp);
 
     /* accession number */
-    if (str0len(data.gbk.accession) > 1)
+    if (has_content(data.gbk.accession))
         /* take just the accession num, no version num. */
-        replace_entry(data.embl.accession, data.gbk.accession);
+        freedup(data.embl.accession, data.gbk.accession);
 
     /* date */
     if (str0len(data.gbk.locus) < 61) {
@@ -1288,38 +1276,34 @@ int gtoe() {
         token[11] = '\0';
     }
     sprintf(temp, "%s (Rel. 1, Last updated, Version 1)\n", token);
-    replace_entry(data.embl.dateu, temp);
+    freedup(data.embl.dateu, temp);
     sprintf(temp, "%s (Rel. 1, Created)\n", token);
-    replace_entry(data.embl.datec, temp);
+    freedup(data.embl.datec, temp);
 
     /* description */
-    if (str0len(data.gbk.definition) > 1)
-        replace_entry(data.embl.description, data.gbk.definition);
-
+    freedup_if_content(data.embl.description, data.gbk.definition);
     /* EMBL KW line */
-    if (str0len(data.gbk.keywords) > 1) {
-        replace_entry(data.embl.keywords, data.gbk.keywords);
+    if (has_content(data.gbk.keywords)) {
+        freedup(data.embl.keywords, data.gbk.keywords);
         terminate_with(data.embl.keywords, '.');
     }
     else
-        replace_entry(data.embl.keywords, ".\n");
+        freedup(data.embl.keywords, ".\n");
 
     /* EMBL OS line */
-    if (str0len(data.gbk.organism) > 1)
-        replace_entry(data.embl.os, data.gbk.organism);
-
+    freedup_if_content(data.embl.os, data.gbk.organism);
     /* reference */
     gtoe_reference();
 
     /* EMBL DR line */
     scan_token_or_die(data.gbk.locus, token, NULL);        /* short_id */
-    if (str0len(data.gbk.comments.seqinf.RDPid) > 1) {
+    if (has_content(data.gbk.comments.seqinf.RDPid)) {
         scan_token_or_die(data.gbk.comments.seqinf.RDPid, rdpid, NULL);
         sprintf(temp, "RDP; %s; %s.\n", rdpid, token);
     }
     else
         sprintf(temp, "RDP; %s.\n", token);
-    replace_entry(data.embl.dr, temp);
+    freedup(data.embl.dr, temp);
 
     gtoe_comments();
 
@@ -1332,7 +1316,6 @@ int gtoe() {
  */
 void gtoe_reference() {
     int  indi, start, end, refnum;
-    char token[TOKENSIZE];
     char t1[TOKENSIZE], t2[TOKENSIZE], t3[TOKENSIZE];
 
     data.embl.numofref = data.gbk.numofref;
@@ -1342,19 +1325,14 @@ void gtoe_reference() {
     }
 
     for (indi = 0; indi < data.gbk.numofref; indi++) {
-        data.embl.reference[indi].title = str0dup(data.gbk.reference[indi].title);
+        Emblref& ref = data.embl.reference[indi];
 
+        ref.title = nulldup(data.gbk.reference[indi].title);
         embl_verify_title(indi);
-
-        data.embl.reference[indi].journal = gtoe_journal(data.gbk.reference[indi].journal);
-
-        /* append a '.' if there is not any. */
-        terminate_with(data.embl.reference[indi].journal, '.');
-
-        data.embl.reference[indi].author = gtoe_author(data.gbk.reference[indi].author);
-
-        /* append a ';' if there is not any. */
-        terminate_with(data.embl.reference[indi].author, ';');
+        ref.journal = gtoe_journal(data.gbk.reference[indi].journal);
+        terminate_with(ref.journal, '.');
+        ref.author = gtoe_author(data.gbk.reference[indi].author);
+        terminate_with(ref.author, ';');
 
         /* create processing information */
         start = end = 0;
@@ -1367,11 +1345,12 @@ void gtoe_reference() {
         }
 
         if (start != 0 || end != 0) {
+            char token[TOKENSIZE];
             sprintf(token, "%d-%d\n", start, end);
-            data.embl.reference[indi].processing = str0dup(token);
+            ref.processing = nulldup(token);
         }
         else                    /* else change nothing about RP */
-            data.embl.reference[indi].processing = strdup("\n");
+            ref.processing = no_content();
     }                           /* for each reference */
 }
 
@@ -1384,16 +1363,16 @@ char *gtoe_author(char *author) {
     char *auth, *Str;
 
     /* replace " and " by ", " */
-    auth = str0dup(author);
+    auth = nulldup(author);
     if ((index = find_pattern(auth, " and ")) > 0) {
         auth[index] = '\0';
-        Str = str0dup(auth);
+        Str = nulldup(auth);
         auth[index] = ' ';      /* remove '\0' for free space later */
         Append(Str, ",");
         Append(Str, auth + index + 4);
     }
     else
-        Str = str0dup(author);
+        Str = nulldup(author);
 
     for (indi = 0, len = str0len(Str), odd = 1; indi < len; indi++) {
         if (Str[indi] == ',') {
@@ -1421,13 +1400,13 @@ char *gtoe_journal(char *Str) {
 
     if (scan_token(Str, token)) {
         if (str_equal(token, "(in)") == 1 || str_equal(token, "Unpublished") || str_equal(token, "Submitted")) {
-            journal = str0dup(Str);
+            journal = nulldup(Str);
             terminate_with(journal, '.');
             return (journal);
         }
     }
 
-    journal = str0dup(Str);
+    journal = nulldup(Str);
     for (indi = indj = index = 0, len = str0len(journal); indi < len; indi++, indj++) {
         if (journal[indi] == ',') {
             journal[indi] = ':';
@@ -1454,43 +1433,24 @@ void gtoe_comments() {
     /* RDP defined Organism Information comments */
     data.embl.comments.orginf.exist = data.gbk.comments.orginf.exist;
 
-    if (str0len(data.gbk.comments.orginf.source) > 1)
-        replace_entry(data.embl.comments.orginf.source, data.gbk.comments.orginf.source);
-
-    if (str0len(data.gbk.comments.orginf.cc) > 1)
-        replace_entry(data.embl.comments.orginf.cc, data.gbk.comments.orginf.cc);
-
-    if (str0len(data.gbk.comments.orginf.formname) > 1)
-        replace_entry(data.embl.comments.orginf.formname, data.gbk.comments.orginf.formname);
-
-    if (str0len(data.gbk.comments.orginf.nickname) > 1)
-        replace_entry(data.embl.comments.orginf.nickname, data.gbk.comments.orginf.nickname);
-
-    if (str0len(data.gbk.comments.orginf.commname) > 1)
-        replace_entry(data.embl.comments.orginf.commname, data.gbk.comments.orginf.commname);
-
-    if (str0len(data.gbk.comments.orginf.hostorg) > 1)
-        replace_entry(data.embl.comments.orginf.hostorg, data.gbk.comments.orginf.hostorg);
-
+    freedup_if_content(data.embl.comments.orginf.source,   data.gbk.comments.orginf.source);
+    freedup_if_content(data.embl.comments.orginf.cc,       data.gbk.comments.orginf.cc);
+    freedup_if_content(data.embl.comments.orginf.formname, data.gbk.comments.orginf.formname);
+    freedup_if_content(data.embl.comments.orginf.nickname, data.gbk.comments.orginf.nickname);
+    freedup_if_content(data.embl.comments.orginf.commname, data.gbk.comments.orginf.commname);
+    freedup_if_content(data.embl.comments.orginf.hostorg,  data.gbk.comments.orginf.hostorg);
     /* RDP defined Sequence Information comments */
     data.embl.comments.seqinf.exist = data.gbk.comments.seqinf.exist;
 
-    if (str0len(data.gbk.comments.seqinf.RDPid) > 1)
-        replace_entry(data.embl.comments.seqinf.RDPid, data.gbk.comments.seqinf.RDPid);
-
-    if (str0len(data.gbk.comments.seqinf.gbkentry) > 1)
-        replace_entry(data.embl.comments.seqinf.gbkentry, data.gbk.comments.seqinf.gbkentry);
-
-    if (str0len(data.gbk.comments.seqinf.methods) > 1)
-        replace_entry(data.embl.comments.seqinf.methods, data.gbk.comments.seqinf.methods);
-
+    freedup_if_content(data.embl.comments.seqinf.RDPid,    data.gbk.comments.seqinf.RDPid);
+    freedup_if_content(data.embl.comments.seqinf.gbkentry, data.gbk.comments.seqinf.gbkentry);
+    freedup_if_content(data.embl.comments.seqinf.methods,  data.gbk.comments.seqinf.methods);
     data.embl.comments.seqinf.comp5 = data.gbk.comments.seqinf.comp5;
 
     data.embl.comments.seqinf.comp3 = data.gbk.comments.seqinf.comp3;
 
     /* other comments */
-    if (str0len(data.gbk.comments.others) > 1)
-        replace_entry(data.embl.comments.others, data.gbk.comments.others);
+    freedup_if_content(data.embl.comments.others, data.gbk.comments.others);
 }
 
 int mtoe() {
@@ -1536,7 +1496,7 @@ void macke_to_embl(const char *inf, const char *outf) {
 int partial_mtoe() {
     int indj, indk;
 
-    if (str0len(data.macke.strain) > 1) {
+    if (has_content(data.macke.strain)) {
         if ((indj = find_pattern(data.embl.comments.others, "*source:")) >= 0 && (indk = find_pattern(data.embl.comments.others + indj, "strain=")) >= 0) {
             ;                   /* do nothing */
         }
@@ -1551,7 +1511,7 @@ int partial_mtoe() {
         }
     }
 
-    if (str0len(data.macke.subspecies) > 1) {
+    if (has_content(data.macke.subspecies)) {
         if ((indj = find_pattern(data.embl.comments.others, "*source:")) >= 0 &&
             ((indk = find_pattern(data.embl.comments.others + indj, "subspecies=")) >= 0 ||
              (indk = find_pattern(data.embl.comments.others + indj, "sub-species=")) >= 0 ||

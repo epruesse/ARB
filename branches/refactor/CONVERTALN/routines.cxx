@@ -35,12 +35,3 @@ void count_base(int *base_a, int *base_t, int *base_g, int *base_c, int *base_ot
         }
 }
 
-/* ------------------------------------------------------------------
- *   Function replace_entry().
- *       Free space of string1 and replace string1 by string2.
- */
-void replace_entry(char*& string1, const char *string2) {
-    ca_assert(string1 != string2);
-    freenull(string1);
-    string1 = str0dup(string2);
-}

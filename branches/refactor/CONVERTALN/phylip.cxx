@@ -65,7 +65,7 @@ void to_phylip(const char *inf, const char *outf, int informat, int readstdin) {
 
         total_seq++;
 
-        if ((name = str0dup(temp)) == NULL && temp != NULL) {
+        if ((name = nulldup(temp)) == NULL && temp != NULL) {
             out_of_memory = 1;
             break;
         }
@@ -78,7 +78,7 @@ void to_phylip(const char *inf, const char *outf, int informat, int readstdin) {
         }
 
         data.ids[total_seq - 1] = name;
-        data.seqs[total_seq - 1] = str0dup(data.sequence);
+        data.seqs[total_seq - 1] = nulldup(data.sequence);
         data.lengths[total_seq - 1] = str0len(data.sequence);
     } while (!out_of_memory);
 
@@ -193,8 +193,7 @@ void to_phylip_1x1(const char *inf, const char *outf, int informat) {
             }
             else
                 throw_error(130, "UNKNOWN input format when converting to PHYLIP format");
-            freenull(name);
-            name = str0dup(temp);
+            freedup(name, temp);
             if (data.seq_length > maxsize)
                 maxsize = data.seq_length;
             phylip_print_line(name, data.sequence, 0, current, ofp);

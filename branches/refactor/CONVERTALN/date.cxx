@@ -37,7 +37,7 @@ const char *genbank_date(const char *other_date) {
     int         length = str0len(other_date);
 
     if (other_date[length - 1] == '\n') {
-        char *dup     = str0dup(other_date);
+        char *dup     = nulldup(other_date);
         dup[--length] = '\0';
         result        = genbank_date(dup);
         free(dup);

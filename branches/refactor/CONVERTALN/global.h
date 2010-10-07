@@ -17,6 +17,9 @@
 #ifndef FILEBUFFER_H
 #include <FileBuffer.h>
 #endif
+
+class WrapMode;
+
 #ifndef PROTOTYPES_H
 #include "prototypes.h"
 #endif
@@ -31,11 +34,7 @@
 #define MACKEMAXCHAR   78 /* limit for each line */
 #define COMMSKINDENT   2 /* indent for subkey line of RDP defined comment */
 #define COMMCNINDENT   6 /* indent for continue line of RDP defined comment */
-#define SEPDEFINED     1 /* define a particular char as print line separator */
-#define SEPNODEFINED   0 /* no particular line separator is defined, use
-                            general rule to separate lines. */
 #define p_nonkey_start 5
-
 
 // --------------------
 
@@ -68,6 +67,10 @@ public:
     Paup      paup; /* one Paup entry */
     Embl      embl;
     Nbrf      nbrf;
+
+#if (UNIT_TESTS==1)
+    int test_counter;
+#endif
 };
 
 extern struct global_data data;
@@ -89,7 +92,10 @@ inline void NOOP_global_data_was_previously_initialized_here() {
 inline bool str_equal(const char *s1, const char *s2) { return strcmp(s1, s2) == 0; }
 inline bool str_iequal(const char *s1, const char *s2) { return strcasecmp(s1, s2) == 0; }
 
-inline int str0len(const char *str) { return str ? strlen(str) : 0; }
+inline int str0len(const char *str) {
+    data.test_counter++;
+    return str ? strlen(str) : 0;
+}
 
 inline char *strndup(const char *str, int len) {
     char *result = (char*)malloc(len+1);
@@ -98,17 +104,27 @@ inline char *strndup(const char *str, int len) {
     return result;
 }
 
-inline char *str0dup(const char *str) {
-    if (!str) return NULL;
-    return strndup(str, strlen(str));
-}
-
 inline int count_spaces(const char *str) { return strspn(str, " "); }
 
 inline bool occurs_in(char ch, const char *in) { return strchr(in, ch) != 0; }
 
 inline bool is_end_mark(char ch) { return ch == '.' || ch == ';'; }
-inline bool is_word_char(char ch) { return !occurs_in(ch, ",.; ?:!)]}"); }
+
+#define WORD_SEP ",.; ?:!)]}"
+
+inline bool is_word_char(char ch) { return !occurs_in(ch, WORD_SEP); }
+
+inline bool has_content(const char *field) { return field && (field[0] != 0 && field[1] != 0); }
+inline char *no_content() {
+    char *nothing = (char*)malloc(2);
+    nothing[0]    = '\n';
+    nothing[1]    = 0;
+    return nothing;
+}
+
+inline void freedup_if_content(char*& entry, const char *content) {
+    if (has_content(content)) freedup(entry, content);
+}
 
 // --------------------
 
@@ -126,6 +142,22 @@ char *skipOverLinesThat(char *buffer, size_t buffersize, FILE_BUFFER& fb, PRED l
 }
  
 // --------------------
+
+class WrapMode {
+    char *separators;
+public:
+    WrapMode(const char *separators_) : separators(nulldup(separators_)) {}
+    WrapMode(bool allowWrap) : separators(allowWrap ? strdup(WORD_SEP) : NULL) {} // true->wrap words, false->wrapping forbidden
+    ~WrapMode() { free(separators); }
+
+    bool allowed_to_wrap() const { return separators; }
+    const char *get_seps() const { ca_assert(allowed_to_wrap()); return separators; }
+
+    int wrap_pos(const char *str, int wrapCol) const;
+
+};
+
+// --------------------
 // Logging
 
 #if defined(DEBUG)
@@ -135,5 +167,7 @@ char *skipOverLinesThat(char *buffer, size_t buffersize, FILE_BUFFER& fb, PRED l
 #else
 #error global.h included twice
 #endif // GLOBAL_H
+
+
 
 

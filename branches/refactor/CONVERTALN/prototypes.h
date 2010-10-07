@@ -45,7 +45,8 @@ int embl_comment_key(char *line, char *key);
 char *embl_one_comment_entry(FILE_BUFFER fp, char *&datastring, char *line, int start_index);
 char *embl_origin(char *line, FILE_BUFFER fp);
 void embl_out(FILE *fp);
-void embl_print_lines(FILE *fp, const char *key, char *Data, int flag, const char *separators);
+int fputs_len(const char *str, int len, FILE *out);
+void embl_print_lines(FILE *fp, const char *key, const char *Data, const WrapMode &wrapMode);
 void embl_out_comments(FILE *fp);
 void embl_print_comment(FILE *fp, const char *key, char *Str, int offset, int indent);
 void embl_out_origin(FILE *fp);
@@ -54,10 +55,10 @@ int etom(void);
 void embl_to_embl(const char *inf, const char *outf);
 void embl_to_genbank(const char *inf, const char *outf);
 int etog(void);
-void etog_reference(void);
+void etog_convert_references(void);
 char *etog_author(char *Str);
 char *etog_journal(const char *eJournal);
-void etog_comments(void);
+void etog_convert_comments(void);
 void genbank_to_embl(const char *inf, const char *outf);
 int gtoe(void);
 void gtoe_reference(void);
@@ -85,6 +86,8 @@ void gcg_output_filename(char *prefix, char *name);
 int gcg_seq_length(void);
 
 /* genbank.cxx */
+void init_reference(GenbankRef &ref);
+void reinit_reference(GenbankRef &ref);
 void cleanup_genbank(void);
 void reinit_genbank(void);
 char genbank_in(FILE_BUFFER fp);
@@ -103,15 +106,12 @@ void genbank_verify_accession(void);
 void genbank_verify_keywords(void);
 char genbank_in_locus(FILE_BUFFER fp);
 void genbank_out(FILE *fp);
-void genbank_out_one_entry(FILE *fp, char *Str, const char *key, int flag, const char *patterns, int period);
+void genbank_out_one_entry(FILE *fp, char *Str, const char *key, const WrapMode &wrapMode, int period);
 void genbank_out_one_comment(FILE *fp, char *Str, const char *key, int skindent, int cnindent);
-void genbank_print_lines(FILE *fp, char *Str, int flag, const char *separators);
+void genbank_print_lines(FILE *fp, char *Str, const WrapMode &wrapMode);
 void genbank_print_comment(FILE *fp, const char *key, char *Str, int offset, int indent);
 void genbank_out_origin(FILE *fp);
 void genbank_to_genbank(const char *inf, const char *outf);
-void cleanup_reference(Reference *ref);
-void init_reference(Reference *ref);
-void reinit_reference(Reference *ref);
 
 /* macke.cxx */
 void cleanup_macke(void);
@@ -175,7 +175,6 @@ void printable_print_line(char *id, char *sequence, int start, int base_count, F
 
 /* routines.cxx */
 void count_base(int *base_a, int *base_t, int *base_g, int *base_c, int *base_other);
-void replace_entry(char *&string1, const char *string2);
 
 /* util.cxx */
 bool scan_token(const char *from, char *to) __ATTR__USERESULT;

@@ -26,16 +26,11 @@
 #define ALL      0
 
 #define SEQLINE 60
-/* GenBank data structure */
-typedef struct {
-    char *ref;
-    char *author;
-    char *title;
-    char *journal;
-    char *standard;
-} Reference;
 
-typedef struct {
+// -------------------------------
+//      Comment (Embl+GenBank)
+
+struct OrgInfo {
     int   exist;
     char *source;
     char *cc;
@@ -43,37 +38,74 @@ typedef struct {
     char *nickname;
     char *commname;
     char *hostorg;
-} Oinf;
+};
 
-typedef struct {
+struct SeqInfo {
     int   exist;
     char *RDPid;
     char *gbkentry;
     char *methods;
     char  comp5;                /* yes or no, y/n */
     char  comp3;                /* yes or no, y/n */
-} Sinf;
+};
 
-typedef struct {
-    Oinf  orginf;
-    Sinf  seqinf;
-    char *others;
-} Comment;
+struct Comment {
+    OrgInfo  orginf;
+    SeqInfo  seqinf;
+    char    *others;
+};
 
-typedef struct {
-    char      *locus;
-    char      *definition;
-    char      *accession;
-    char      *keywords;
-    char      *source;
-    char      *organism;
-    int        numofref;
-    Reference *reference;
-    Comment    comments;
-} GenBank;
+// -------------
+//      Embl
 
-/* Macke data structure */
-typedef struct {
+struct Emblref {
+    char *author;
+    char *title;
+    char *journal;
+    char *processing;
+};
+
+struct Embl {
+    char    *id;                /* entry name */
+    char    *dateu;             /* date of last updated */
+    char    *datec;             /* date of created */
+    char    *description;       /* description line (DE) */
+    char    *os;                /* Organism species */
+    char    *accession;         /* accession number(s) */
+    char    *keywords;          /* keyword */
+    int      numofref;          /* num. of reference */
+    Emblref *reference;
+    char    *dr;                /* database cross-reference */
+    Comment  comments;          /* comments */
+};
+
+// -----------------
+//      GenBank
+
+struct GenbankRef {
+    char *ref;
+    char *author;
+    char *title;
+    char *journal;
+    char *standard;
+};
+
+struct GenBank {
+    char       *locus;
+    char       *definition;
+    char       *accession;
+    char       *keywords;
+    char       *source;
+    char       *organism;
+    int         numofref;
+    GenbankRef *reference;
+    Comment     comments;
+};
+
+// --------------
+//      Macke
+
+struct Macke {
     char  *seqabbr;             /* seq. abbrev. */
     char  *name;                /* seq. full name */
     int    rna_or_dna;          /* rna or dna */
@@ -90,10 +122,12 @@ typedef struct {
     char  *subspecies;          /* subspecies */
     int    numofrem;            /* num. of remarks */
     char **remarks;             /* remarks */
-} Macke;
+};
 
-/* Paup data structure */
-typedef struct {
+// -------------
+//      Paup
+
+struct Paup {
     int         ntax;           /* number of sequences */
     int         nchar;          /* max number of chars per seq. */
     int         labelpos;       /* Label start from left or right */
@@ -105,32 +139,14 @@ typedef struct {
     int         gapmode;
     /* if sequence data is not too large, read into memory at once */
     /* otherwise, read in one by one. */
-} Paup;
+};
 
-typedef struct {
-    char *author;
-    char *title;
-    char *journal;
-    char *processing;
-} Emblref;
+// -------------
+//      Nbrf
 
-typedef struct {
-    char    *id;                /* entry name */
-    char    *dateu;             /* date of last updated */
-    char    *datec;             /* date of created */
-    char    *description;       /* description line (DE) */
-    char    *os;                /* Organism species */
-    char    *accession;         /* accession number(s) */
-    char    *keywords;          /* keyword */
-    int      numofref;          /* num. of reference */
-    Emblref *reference;
-    char    *dr;                /* database cross-reference */
-    Comment  comments;          /* comments */
-} Embl;
-
-typedef struct {
+struct Nbrf {
     char *id;                   /* locus */
     char *description;
-} Nbrf;
+};
 
 

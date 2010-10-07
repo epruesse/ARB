@@ -27,7 +27,7 @@ public:
     }
 
     void set_species_name(const char *next_name) {
-        if (!seq_written) species_name = str0dup(next_name);
+        if (!seq_written) species_name = nulldup(next_name);
         else warningf(111, "Species '%s' dropped (GCG allows only 1 seq per file)", next_name);
     }
 
@@ -65,13 +65,13 @@ static void macke_to_gcg(const char *inf, const char *outf) {
     char *eof2 = skipOverLinesThat(line2, LINESIZE, ifp2, Not(isMackeSeqInfo));   // skip to #:; where the seq. information is
     char *eof3 = skipOverLinesThat(line3, LINESIZE, ifp3, isMackeHeader);         // skip to where seq. data starts
 
-    for (; eof1 != NULL && isMackeSeqHeader(line1); eof1 = Fgetline(line1, LINESIZE, ifp1)) {
+    for (; eof1 != NULL && isMackeSeqHeader(line1); eof1 = Fgetline(line1, LINESIZE, ifp1)) { // @@@ loop no longer needed (see break below)
         char key[TOKENSIZE];
         macke_abbrev(line1, key, 2);
 
         char temp[TOKENSIZE];
         strcpy(temp, key);
-        ofp = open_output_or_die(outf);        // @@@ always overwrites same outfile
+        ofp = open_output_or_die(outf); 
 
         char name[LINESIZE];
         for (macke_abbrev(line2, name, 2);

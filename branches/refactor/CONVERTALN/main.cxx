@@ -136,7 +136,7 @@ static void ask_for_conversion_params(int& argc, char**& argv, int& intype, int&
 
     fprintf(stderr, "\nInput file name? ");
     Getstr(temp, LINESIZE);
-    argv[2] = str0dup(temp);
+    argv[2] = nulldup(temp);
 
     valid_name_or_die(temp);
     if (!file_exists(temp)) throw_error(77, "Input file not found");
@@ -177,7 +177,7 @@ static void ask_for_conversion_params(int& argc, char**& argv, int& intype, int&
         if (str0len(temp) == 0)
             change_file_suffix(argv[2], temp, outtype);
     }
-    argv[4] = str0dup(temp);
+    argv[4] = nulldup(temp);
     argc = 5;
 }
 

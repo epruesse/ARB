@@ -58,7 +58,7 @@ void to_printable(const char *inf, const char *outf, int informat) {
         
         total_seq++;
 
-        if ((name = str0dup(temp)) == NULL && temp != NULL) {
+        if ((name = nulldup(temp)) == NULL && temp != NULL) {
             out_of_memory = 1;
             break;
         }
@@ -77,7 +77,7 @@ void to_printable(const char *inf, const char *outf, int informat) {
         }
 
         data.ids[total_seq - 1] = name;
-        data.seqs[total_seq - 1] = str0dup(data.sequence);
+        data.seqs[total_seq - 1] = nulldup(data.sequence);
         data.lengths[total_seq - 1] = str0len(data.sequence);
         base_nums[total_seq - 1] = 0;
     } while (!out_of_memory);
@@ -168,8 +168,7 @@ void to_printable_1x1(const char *inf, const char *outf, int informat) {
             }
             else
                 throw_error(131, "UNKNOWN input format when converting to PRINTABLE format");
-            freenull(name);
-            name = str0dup(temp);
+            freedup(name, temp);
             if (data.seq_length > maxsize)
                 maxsize = data.seq_length;
             for (index = base_count = 0; index < current && index < data.seq_length; index++) {

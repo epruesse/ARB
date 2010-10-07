@@ -36,20 +36,20 @@ void reinit_macke() {
     cleanup_macke();
 
     data.macke.seqabbr = strdup("");
-    data.macke.name = strdup("\n");
-    data.macke.atcc = strdup("\n");
-    data.macke.rna = strdup("\n");
-    data.macke.date = strdup("\n");
-    data.macke.nbk = strdup("\n");
-    data.macke.acs = strdup("\n");
-    data.macke.who = strdup("\n");
+    data.macke.name = no_content();
+    data.macke.atcc = no_content();
+    data.macke.rna = no_content();
+    data.macke.date = no_content();
+    data.macke.nbk = no_content();
+    data.macke.acs = no_content();
+    data.macke.who = no_content();
     data.macke.numofrem = 0;
     data.macke.rna_or_dna = 'd';
-    data.macke.journal = strdup("\n");
-    data.macke.title = strdup("\n");
-    data.macke.author = strdup("\n");
-    data.macke.strain = strdup("\n");
-    data.macke.subspecies = strdup("\n");
+    data.macke.journal = no_content();
+    data.macke.title = no_content();
+    data.macke.author = no_content();
+    data.macke.strain = no_content();
+    data.macke.subspecies = no_content();
 }
 
 /* -------------------------------------------------------------
@@ -104,8 +104,7 @@ char MackeReader::mackeIn() {
 
     /* read in seq name */
     index = macke_abbrev(line3, oldname, 2);
-    freenull(data.macke.seqabbr);
-    data.macke.seqabbr = str0dup(oldname);
+    freedup(data.macke.seqabbr, oldname);
 
     /* read seq. information */
     for (index = macke_abbrev(line1, name, 2); eof1 != NULL && isMackeSeqInfo(line1) && str_equal(name, oldname); ) {
@@ -150,7 +149,7 @@ char MackeReader::mackeIn() {
         }
         else if (str_equal(key, "rem")) {
             data.macke.remarks = (char **)Reallocspace((char *)data.macke.remarks, (unsigned)(sizeof(char *) * (numofrem + 1)));
-            data.macke.remarks[numofrem++] = str0dup(line1 + index);
+            data.macke.remarks[numofrem++] = nulldup(line1 + index);
             eof1 = Fgetline(line1, LINESIZE, fp1);
         }
         else {
@@ -177,10 +176,10 @@ char MackeReader::mackeIn() {
 char *macke_one_entry_in(FILE_BUFFER fp, const char *key, char *oldname, char*& var, char *line, int index) {
     char *eof;
 
-    if (str0len(var) > 1)
+    if (has_content(var))
         skip_eolnl_and_append_spaced(var, line + index);
     else
-        replace_entry(var, line + index);
+        freedup(var, line + index);
 
     eof = macke_continue_line(key, oldname, var, line, fp);
 
@@ -314,7 +313,7 @@ char macke_in_name(FILE_BUFFER fp) {
 
     /* read in line by line */
     freenull(data.macke.seqabbr);
-    for (index = macke_abbrev(line, name, 0), data.macke.seqabbr = str0dup(name); line[0] != EOF && str_equal(data.macke.seqabbr, name);) {
+    for (index = macke_abbrev(line, name, 0), data.macke.seqabbr = nulldup(name); line[0] != EOF && str_equal(data.macke.seqabbr, name);) {
         ASSERT_RESULT(int, 2, sscanf(line + index, "%d%s", &seqnum, seq));
         for (indj = data.seq_length; indj < seqnum; indj++)
             if (data.seq_length < data.max)
@@ -395,53 +394,54 @@ void macke_out1(FILE * fp) {
     char temp[LINESIZE];
     int  indi;
 
-    if (str0len(data.macke.name) > 1) {
+    // @@@ dups below
+    if (has_content(data.macke.name)) {
         sprintf(temp, "#:%s:name:", data.macke.seqabbr);
         macke_print_line_78(fp, temp, data.macke.name);
     }
-    if (str0len(data.macke.strain) > 1) {
+    if (has_content(data.macke.strain)) {
         sprintf(temp, "#:%s:strain:", data.macke.seqabbr);
         macke_print_line_78(fp, temp, data.macke.strain);
     }
-    if (str0len(data.macke.subspecies) > 1) {
+    if (has_content(data.macke.subspecies)) {
         sprintf(temp, "#:%s:subsp:", data.macke.seqabbr);
         macke_print_line_78(fp, temp, data.macke.subspecies);
     }
-    if (str0len(data.macke.atcc) > 1) {
+    if (has_content(data.macke.atcc)) {
         sprintf(temp, "#:%s:atcc:", data.macke.seqabbr);
         macke_print_line_78(fp, temp, data.macke.atcc);
     }
-    if (str0len(data.macke.rna) > 1) {
+    if (has_content(data.macke.rna)) {
         /* old version entry */
         sprintf(temp, "#:%s:rna:", data.macke.seqabbr);
         macke_print_line_78(fp, temp, data.macke.rna);
     }
-    if (str0len(data.macke.date) > 1) {
+    if (has_content(data.macke.date)) {
         sprintf(temp, "#:%s:date:", data.macke.seqabbr);
         macke_print_line_78(fp, temp, data.macke.date);
     }
-    if (str0len(data.macke.acs) > 1) {
+    if (has_content(data.macke.acs)) {
         sprintf(temp, "#:%s:acs:", data.macke.seqabbr);
         macke_print_line_78(fp, temp, data.macke.acs);
     }
-    else if (str0len(data.macke.nbk) > 1) {
+    else if (has_content(data.macke.nbk)) {
         /* old version entry */
         sprintf(temp, "#:%s:acs:", data.macke.seqabbr);
         macke_print_line_78(fp, temp, data.macke.nbk);
     }
-    if (str0len(data.macke.author) > 1) {
+    if (has_content(data.macke.author)) {
         sprintf(temp, "#:%s:auth:", data.macke.seqabbr);
         macke_print_line_78(fp, temp, data.macke.author);
     }
-    if (str0len(data.macke.journal) > 1) {
+    if (has_content(data.macke.journal)) {
         sprintf(temp, "#:%s:jour:", data.macke.seqabbr);
         macke_print_line_78(fp, temp, data.macke.journal);
     }
-    if (str0len(data.macke.title) > 1) {
+    if (has_content(data.macke.title)) {
         sprintf(temp, "#:%s:title:", data.macke.seqabbr);
         macke_print_line_78(fp, temp, data.macke.title);
     }
-    if (str0len(data.macke.who) > 1) {
+    if (has_content(data.macke.who)) {
         sprintf(temp, "#:%s:who:", data.macke.seqabbr);
         macke_print_line_78(fp, temp, data.macke.who);
     }
@@ -480,6 +480,7 @@ void macke_print_keyword_rem(int index, FILE * fp) {
         if ((str0len(data.macke.remarks[index] + indj) - 1)
             > maxc) {
             /* Search the last word */
+            // @@@ use wrap_pos
             for (indk = maxc - 1; indk >= 0 && is_word_char(data.macke.remarks[index][indk + indj]); indk--) ;
 
             if (lineno == 0) {
@@ -517,6 +518,7 @@ void macke_print_line_78(FILE * fp, char *line1, char *line2) {
         if ((str0len(line2 + indi)) > indj) {
             ibuf = indj;
 
+            // @@@ use wrap_pos
             for (; indj > 0 && is_word_char(line2[indi + indj]); indj--) ;
 
             if (indj == 0)
