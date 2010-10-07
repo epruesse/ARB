@@ -83,7 +83,7 @@ void to_printable(const char *inf, const char *outf, int informat) {
     } while (!out_of_memory);
 
     if (out_of_memory) {        /* cannot hold all seqs into mem. */
-        fprintf(stderr, "Out of memory: Rerun the conversion sequence by sequence.\n");
+        fputs("Out of memory: Rerun the conversion sequence by sequence.\n", stderr);
         destroy_FILE_BUFFER(ifp);
         fclose(ofp);
         to_printable_1x1(inf, outf, informat);
@@ -108,7 +108,7 @@ void to_printable(const char *inf, const char *outf, int informat) {
         }
         current += PRTLENGTH;
         if (maxsize > current)
-            fprintf(ofp, "\n\n");
+            fputs("\n\n", ofp);
     }
 
     freenull(base_nums);
@@ -184,7 +184,7 @@ void to_printable_1x1(const char *inf, const char *outf, int informat) {
         } while (1);
         current += PRTLENGTH;
         if (maxsize > current)
-            fprintf(ofp, "\n\n");
+            fputs("\n\n", ofp);
     }                           /* print block by block */
 
     log_processed(total_seq);
@@ -199,30 +199,29 @@ void to_printable_1x1(const char *inf, const char *outf, int informat) {
 void printable_print_line(char *id, char *sequence, int start, int base_count, FILE * fp) {
     int indi, index, count, bnum, seq_length;
 
-    fprintf(fp, " ");
+    fputc(' ', fp);
     if ((bnum = str0len(id)) > 10) {
         /* truncate if length of id is greater than 10 */
-        for (indi = 0; indi < 10; indi++)
-            fprintf(fp, "%c", id[indi]);
+        for (indi = 0; indi < 10; indi++) fputc(id[indi], fp);
         bnum = 1;
     }
     else {
-        fprintf(fp, "%s", id);
+        fputs(id, fp);
         bnum = 10 - bnum + 1;
     }
     /* fill in the blanks to make up 10 chars id spaces */
     seq_length = str0len(sequence);
     if (start < seq_length)
         for (indi = 0; indi < bnum; indi++)
-            fprintf(fp, " ");
+            fputc(' ', fp);
     else {
-        fprintf(fp, "\n");
+        fputc('\n', fp);
         return;
     }
     fprintf(fp, "%4d ", base_count);
     for (index = start, count = 0; count < PRTLENGTH && index < seq_length; index++) {
-        fprintf(fp, "%c", sequence[index]);
+        fputc(sequence[index], fp);
         count++;
     }                           /* printout sequence data */
-    fprintf(fp, "\n");
+    fputc('\n', fp);
 }

@@ -134,7 +134,7 @@ static void ask_for_conversion_params(int& argc, char**& argv, int& intype, int&
     }
     argv = (char **)calloc(1, sizeof(char *) * 5);
 
-    fprintf(stderr, "\nInput file name? ");
+    fputs("\nInput file name? ", stderr);
     Getstr(temp, LINESIZE);
     argv[2] = nulldup(temp);
 

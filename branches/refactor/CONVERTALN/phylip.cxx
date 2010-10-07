@@ -83,7 +83,7 @@ void to_phylip(const char *inf, const char *outf, int informat, int readstdin) {
     } while (!out_of_memory);
 
     if (out_of_memory) {        /* cannot hold all seqs into mem. */
-        fprintf(stderr, "Out of memory: Rerun the conversion sequence by sequence.\n");
+        fputs("Out of memory: Rerun the conversion sequence by sequence.\n", stderr);
         destroy_FILE_BUFFER(ifp);
         fclose(ofp);
         to_phylip_1x1(inf, outf, informat);
@@ -107,7 +107,7 @@ void to_phylip(const char *inf, const char *outf, int informat, int readstdin) {
             fputc(c, ofp);
         }
     }
-    fprintf(ofp, "\n");
+    fputc('\n', ofp);
 
     while (maxsize > current) {
         for (indi = 0; indi < total_seq; indi++) {
@@ -118,7 +118,7 @@ void to_phylip(const char *inf, const char *outf, int informat, int readstdin) {
         else
             current += SEQLINE;
         if (maxsize > current)
-            fprintf(ofp, "\n");
+            fputc('\n', ofp);
     }
     /* rewrite output header */
     errno = 0;
@@ -204,7 +204,7 @@ void to_phylip_1x1(const char *inf, const char *outf, int informat) {
         else
             current += SEQLINE;
         if (maxsize > current)
-            fprintf(ofp, "\n");
+            fputc('\n', ofp);
     }                           /* print block by block */
 
     rewind(ofp);
@@ -230,7 +230,7 @@ void phylip_print_line(char *name, char *sequence, int seq_length, int index, FI
             bnum = 1;
         }
         else {
-            fprintf(fp, "%s", name);
+            fputs(name, fp);
             bnum = 10 - str0len(name) + 1;
         }
         /* fill in blanks to make up 10 chars for ID. */
@@ -261,5 +261,5 @@ void phylip_print_line(char *name, char *sequence, int seq_length, int index, FI
         else
             break;
     }
-    fprintf(fp, "\n");
+    fputc('\n', fp);
 }

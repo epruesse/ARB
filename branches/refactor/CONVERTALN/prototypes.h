@@ -107,9 +107,8 @@ void genbank_verify_keywords(void);
 char genbank_in_locus(FILE_BUFFER fp);
 void genbank_out(FILE *fp);
 void genbank_out_one_entry(FILE *fp, char *Str, const char *key, const WrapMode &wrapMode, int period);
-void genbank_out_one_comment(FILE *fp, char *Str, const char *key, int skindent, int cnindent);
 void genbank_print_lines(FILE *fp, char *Str, const WrapMode &wrapMode);
-void genbank_print_comment(FILE *fp, const char *key, char *Str, int offset, int indent);
+void genbank_print_comment(FILE *fp, char *Str, const char *key);
 void genbank_out_origin(FILE *fp);
 void genbank_to_genbank(const char *inf, const char *outf);
 

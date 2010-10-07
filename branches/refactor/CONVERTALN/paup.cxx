@@ -83,7 +83,7 @@ void to_paup(const char *inf, const char *outf, int informat) {
 
     if (out_of_memory) {
         /* cannot hold all seqs into mem. */
-        fprintf(stderr, "Out of memory: Rerun the conversion sequence by sequence.\n");
+        fputs("Out of memory: Rerun the conversion sequence by sequence.\n", stderr);
 
         destroy_FILE_BUFFER(ifp);
         fclose(ofp);
@@ -104,19 +104,19 @@ void to_paup(const char *inf, const char *outf, int informat) {
         }
         current += (SEQLINE - 10);
         if (maxsize > current)
-            fprintf(ofp, "\n");
+            fputc('\n', ofp);
     }
 
-    fprintf(ofp, "      ;\nENDBLOCK;\n");
+    fputs("      ;\nENDBLOCK;\n", ofp);
     /* rewrite output header */
     rewind(ofp);
-    fprintf(ofp, "#NEXUS\n");
+    fputs("#NEXUS\n", ofp);
 
     fprintf(ofp, "[! RDP - the Ribosomal Database Project, (%s).]\n", today_date());
 
-    fprintf(ofp, "[! To get started, send HELP to rdp@info.mcs.anl.gov ]\n");
+    fputs("[! To get started, send HELP to rdp@info.mcs.anl.gov ]\n", ofp);
 
-    fprintf(ofp, "BEGIN DATA;\n   DIMENSIONS\n");
+    fputs("BEGIN DATA;\n   DIMENSIONS\n", ofp);
     fprintf(ofp, "      NTAX = %6d\n      NCHAR = %6d\n      ;\n", total_seq, maxsize);
 
     log_processed(total_seq);
@@ -197,19 +197,19 @@ void to_paup_1x1(const char *inf, const char *outf, int informat) {
         } while (1);
         current += (SEQLINE - 10);
         if (maxsize > current)
-            fprintf(ofp, "\n");
+            fputc('\n', ofp);
     }                           /* print block by block */
 
-    fprintf(ofp, "      ;\nENDBLOCK;\n");
+    fputs("      ;\nENDBLOCK;\n", ofp);
     /* rewrite output header */
     rewind(ofp);
-    fprintf(ofp, "#NEXUS\n");
+    fputs("#NEXUS\n", ofp);
 
     fprintf(ofp, "[! RDP - the Ribosomal Database Project, (%s).]\n", today_date());
 
-    fprintf(ofp, "[! To get started, send HELP to rdp@info.mcs.anl.gov ]\n");
+    fputs("[! To get started, send HELP to rdp@info.mcs.anl.gov ]\n", ofp);
 
-    fprintf(ofp, "BEGIN DATA;\n   DIMENSIONS\n");
+    fputs("BEGIN DATA;\n   DIMENSIONS\n", ofp);
     fprintf(ofp, "      NTAX = %6d\n      NCHAR = %6d\n      ;\n", total_seq, maxsize);
 
     log_processed(total_seq);
@@ -286,13 +286,13 @@ void paup_print_line(char *Str, char *sequence, int seq_length, int index, int f
  *       Print out the header of each paup format.
  */
 void paup_print_header(FILE * ofp) {
-    fprintf(ofp, "#NEXUS\n");
+    fputs("#NEXUS\n", ofp);
     fprintf(ofp, "[! RDP - the Ribosomal Database Project, (%s).]\n", today_date());
-    fprintf(ofp, "[! To get started, send HELP to rdp@info.mcs.anl.gov ]\n");
-    fprintf(ofp, "BEGIN DATA;\n   DIMENSIONS\n");
-    fprintf(ofp, "      NTAX =       \n      NCHAR =       \n      ;\n");
-    fprintf(ofp, "   FORMAT\n      LABELPOS = LEFT\n");
+    fputs("[! To get started, send HELP to rdp@info.mcs.anl.gov ]\n", ofp);
+    fputs("BEGIN DATA;\n   DIMENSIONS\n", ofp);
+    fputs("      NTAX =       \n      NCHAR =       \n      ;\n", ofp);
+    fputs("   FORMAT\n      LABELPOS = LEFT\n", ofp);
     fprintf(ofp, "      MISSING = .\n      EQUATE = \"%s\"\n", data.paup.equate);
     fprintf(ofp, "      INTERLEAVE\n      DATATYPE = RNA\n      GAP = %c\n      ;\n", data.paup.gap);
-    fprintf(ofp, "   OPTIONS\n      GAPMODE = MISSING\n      ;\n   MATRIX\n");
+    fputs("   OPTIONS\n      GAPMODE = MISSING\n      ;\n   MATRIX\n", ofp);
 }

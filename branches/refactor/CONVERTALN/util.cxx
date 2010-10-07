@@ -122,7 +122,7 @@ char *Reallocspace(void *block, unsigned int size) {
     if (temp == NULL) {
         const char *message = "Run out of memory (Reallocspace)";
         warning(999, message);
-        fprintf(stderr, "Are you converting to Paup or Phylip?(y/n) ");
+        fputs("Are you converting to Paup or Phylip?(y/n) ", stderr);
         scanf("%c", &answer);
         if (answer == 'y') {
             return (NULL);

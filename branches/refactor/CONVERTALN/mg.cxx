@@ -54,7 +54,7 @@ void genbank_to_macke(const char *inf, const char *outf) {
         }
         total_num = data.numofseq;
         if (indi == 0) {
-            fprintf(ofp, "#-\n");
+            fputs("#-\n", ofp);
             /* no warning message for next loop */
             warning_out = 0;
         }

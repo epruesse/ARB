@@ -599,8 +599,8 @@ void embl_out(FILE * fp) {
 
     if (has_content(data.embl.os)) {
         embl_print_lines(fp, "OS", data.embl.os, wrapWords);
-        fprintf(fp, "OC   No information.\n");
-        fprintf(fp, "XX\n");
+        fputs("OC   No information.\n", fp);
+        fputs("XX\n", fp);
     }
 
     /* GenbankRef */
@@ -612,15 +612,15 @@ void embl_out(FILE * fp) {
         embl_print_lines_if_content(fp, "RA", ref.author, WrapMode(","), false);
 
         if (has_content(ref.title)) embl_print_lines(fp, "RT", ref.title, wrapWords);
-        else fprintf(fp, "RT   ;\n");
+        else fputs("RT   ;\n", fp);
         
         embl_print_lines_if_content(fp, "RL", ref.journal, wrapWords, false);
-        fprintf(fp, "XX\n");
+        fputs("XX\n", fp);
     }
 
     if (has_content(data.embl.dr)) {
         embl_print_lines(fp, "DR", data.embl.dr, wrapWords);
-        fprintf(fp, "XX\n");
+        fputs("XX\n", fp);
     }
 
     embl_out_comments(fp);
@@ -701,7 +701,7 @@ inline void embl_print_completeness(FILE *fp, char compX, char X) {
 void embl_out_comments(FILE * fp) {
     // Print out the comments part of EMBL format.
     if (data.embl.comments.orginf.exist == 1) {
-        fprintf(fp, "CC   Organism information\n");
+        fputs("CC   Organism information\n", fp);
 
         embl_print_comment_if_content(fp, "Source of strain: ",   data.embl.comments.orginf.source);
         embl_print_comment_if_content(fp, "Culture collection: ", data.embl.comments.orginf.cc);
@@ -742,16 +742,16 @@ void embl_print_comment(FILE * fp, const char *key, char *Str, int offset, int i
         else
             indj = EMBLMAXCHAR - offset - indent - 1;
 
-        fprintf(fp, "CC   ");
+        fputs("CC   ", fp);
 
         if (!first_time) {
             for (indl = 0; indl < (offset + indent); indl++)
-                fprintf(fp, " ");
+                fputc(' ', fp);
         }
         else {
             for (indl = 0; indl < offset; indl++)
-                fprintf(fp, " ");
-            fprintf(fp, "%s", key);
+                fputc(' ', fp);
+            fputs(key, fp);
             first_time = 0;
         }
         // @@@ use wrap_pos
@@ -765,16 +765,12 @@ void embl_print_comment(FILE * fp, const char *key, char *Str, int offset, int i
             else
                 indk = 0;
 
-            for (; indk < indj; indk++)
-                fprintf(fp, "%c", Str[indi + indk]);
-
-            /* leave out the last space, if there is any */
-            if (Str[indi + indj] != ' ')
-                fprintf(fp, "%c", Str[indi + indj]);
-            fprintf(fp, "\n");
+            for (; indk < indj; indk++) fputc(Str[indi + indk], fp);
+            if (Str[indi + indj] != ' ') fputc(Str[indi + indj], fp); /* leave out the last space, if there is any */
+            fputc('\n', fp);
         }
         else
-            fprintf(fp, "%s", Str + indi);
+            fputs(Str + indi, fp);
     }                           /* for each char */
 }
 
@@ -793,23 +789,21 @@ void embl_out_origin(FILE * fp) {
 
     for (indi = 0, indj = 0, indk = 1; indi < data.seq_length; indi++) {
         if ((indk % 60) == 1)
-            fprintf(fp, "     ");
-        fprintf(fp, "%c", data.sequence[indi]);
+            fputs("     ", fp);
+        fputc(data.sequence[indi], fp);
         indj++;
         if ((indk % 60) == 0) {
-            fprintf(fp, "\n");
+            fputc('\n', fp);
             indj = 0;
         }
         else if (indj == 10 && indi != (data.seq_length - 1)) {
-            fprintf(fp, " ");
+            fputc(' ', fp);
             indj = 0;
         }
         indk++;
     }
-    if ((indk % 60) == 1)
-        fprintf(fp, "//\n");
-    else
-        fprintf(fp, "\n//\n");
+    if ((indk % 60) != 1) fputc('\n', fp);
+    fputs("//\n", fp);
 }
 
 /* ----------------------------------------------------------
@@ -855,7 +849,7 @@ void embl_to_macke(const char *inf, const char *outf, int format) {
         }
         total_num = data.numofseq;
         if (indi == 0) {
-            fprintf(ofp, "#-\n");
+            fputs("#-\n", ofp);
             /* no warning messages for next loop */
             warning_out = 0;
         }

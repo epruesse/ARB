@@ -179,11 +179,11 @@ void gcg_doc_out(const char *line, FILE * ofp) {
     for (indi = 0, len = str0len(line), previous_is_dot = 0; indi < len; indi++) {
         if (previous_is_dot) {
             if (line[indi] == '.')
-                fprintf(ofp, " ");
+                fputc(' ', ofp);
             else
                 previous_is_dot = 0;
         }
-        fprintf(ofp, "%c", line[indi]);
+        fputc(line[indi], ofp);
         if (line[indi] == '.')
             previous_is_dot = 1;
     }
@@ -223,18 +223,18 @@ void gcg_out_origin(FILE * fp) {
             continue;
         if ((indk % 50) == 1)
             fprintf(fp, "%8d  ", indk);
-        fprintf(fp, "%c", data.sequence[indi]);
+        fputc(data.sequence[indi], fp);
         indj++;
         if (indj == 10) {
-            fprintf(fp, " ");
+            fputc(' ', fp);
             indj = 0;
         }
         if ((indk % 50) == 0)
-            fprintf(fp, "\n\n");
+            fputs("\n\n", fp);
         indk++;
     }
     if ((indk % 50) != 1)
-        fprintf(fp, " \n");
+        fputs(" \n", fp);
 }
 
 /* --------------------------------------------------------------

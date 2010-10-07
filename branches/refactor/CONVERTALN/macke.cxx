@@ -348,7 +348,7 @@ char macke_in_name(FILE_BUFFER fp) {
  *       Output the Macke format header.
  */
 void macke_out_header(FILE * fp) {
-    fprintf(fp, "#-\n#-\n#-\teditor\n");
+    fputs("#-\n#-\n#-\teditor\n", fp);
     const char *date = today_date();
     fprintf(fp, "#-\t%s\n#-\n#-\n", date);
 }
@@ -373,7 +373,7 @@ void macke_out0(FILE * fp, int format) {
     }
     if (data.numofseq == 1) {
         fprintf(fp, "#-\tReference sequence:  %s\n", data.macke.seqabbr);
-        fprintf(fp, "#-\tAttributes:\n");
+        fputs("#-\tAttributes:\n", fp);
 
         if (str0len(data.macke.seqabbr) < 8)
             fprintf(fp, "#=\t\t%s\t \tin  out  vis  prt   ord  %s  lin  %s  func ref\n", data.macke.seqabbr, token, direction);
@@ -394,7 +394,7 @@ void macke_out1(FILE * fp) {
     char temp[LINESIZE];
     int  indi;
 
-    // @@@ dups below
+    // @@@ DRY below
     if (has_content(data.macke.name)) {
         sprintf(temp, "#:%s:name:", data.macke.seqabbr);
         macke_print_line_78(fp, temp, data.macke.name);
@@ -490,12 +490,9 @@ void macke_print_keyword_rem(int index, FILE * fp) {
             else
                 fprintf(fp, "#:%s:rem::  ", data.macke.seqabbr);
 
-            for (indl = 0; indl < indk; indl++)
-                fprintf(fp, "%c", data.macke.remarks[index][indj + indl]);
-
-            if (data.macke.remarks[index][indj + indk] != ' ')
-                fprintf(fp, "%c", data.macke.remarks[index][indj + indk]);
-            fprintf(fp, "\n");
+            for (indl = 0; indl < indk; indl++) fputc(data.macke.remarks[index][indj + indl], fp);
+            if (data.macke.remarks[index][indj + indk] != ' ') fputc(data.macke.remarks[index][indj + indk], fp);
+            fputc('\n', fp);
         }
         else if (lineno == 0)
             fprintf(fp, "#:%s:rem:%s", data.macke.seqabbr, data.macke.remarks[index] + indj);
@@ -526,16 +523,15 @@ void macke_print_line_78(FILE * fp, char *line1, char *line2) {
             else if (line2[indi + indj + 1] == ' ')
                 indj++;
 
-            fprintf(fp, "%s", line1);
+            fputs(line1, fp);
 
-            for (indk = 0; indk < indj; indk++)
-                fprintf(fp, "%c", line2[indi + indk]);
+            for (indk = 0; indk < indj; indk++) fputc(line2[indi + indk], fp);
 
             /* print out the last char if it is not blank */
             if (line2[indi + indj] == ' ')
                 indj++;
 
-            fprintf(fp, "\n");
+            fputc('\n', fp);
         }
         else
             fprintf(fp, "%s%s", line1, line2 + indi);
@@ -635,11 +631,11 @@ void macke_out2(FILE * fp) {
         indj++;
         if (indj == 50) {
             indj = 0;
-            fprintf(fp, "\n");
+            fputc('\n', fp);
         }
     }                           /* every line */
 
     if (indj != 0)
-        fprintf(fp, "\n");
+        fputc('\n', fp);
     /* every sequence */
 }
