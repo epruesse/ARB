@@ -33,7 +33,29 @@ ID   ER781674_1; parent: ER781674
 XX
 AC   ER781674;
 XX
-CC   Next 2 lines are nonsense
+CC   Organism information
+CC     Source of strain: This is the content of the special entry
+CC           'Source of strain'
+CC     Former name: This is the content of the special entry 'Former
+CC           name'
+CC     Alternate name: This is the content of the special entry
+CC           'Alternate name'. It is quite long, since i need to test
+CC           some special entry which occupies many lines and when i say
+CC           many lines, i really mean at least five lines, so i could
+CC           not stop writing before i came here.
+CC     Common name: This is the content of the special entry 'Common
+CC           name'
+CC     Host organism: This is the content of the special entry 'Host
+CC           organism'
+CC   Sequence information (bases 1 to 367)
+CC     RDP ID: This is the content of the special entry 'RDP ID'
+CC     Corresponding GenBank entry: ER781674;
+CC     Sequencing methods: This is the content of the special entry
+CC           'Sequencing methods'
+CC     5' end complete: Yes
+CC     3' end complete: No
+CC   Organism and Sequence information have only been added for
+CC   test purposes. They are complete nonsense!
 XX
 SQ   Sequence 367 BP; 51 A; 109 C; 124 G; 66 T; 17 other;
      tggcgccgta gatgcagcgc gactggcccg gcttctcggc gtcgaggtac tgcgccacgg

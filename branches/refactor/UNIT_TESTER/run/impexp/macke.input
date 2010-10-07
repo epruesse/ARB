@@ -24,10 +24,30 @@
 #:ER781674_173:date:06-JAN-1910
 #:ER781674_173:acs:ER781674;
 #:ER781674_173:rem:GenBank ACCESSION:ER781674;
+#:ER781674_173:rna:This is the content of the special entry 'Sequencing
+#:ER781674_173:rna:methods'
+#:ER781674_173:rem:GenBank ACCESSION:ER781674;
+#:ER781674_173:rem:Source of strain:This is the content of the special entry
+#:ER781674_173:rem::  'Source of strain'
+#:ER781674_173:rem:Former name:This is the content of the special entry
+#:ER781674_173:rem::  'Former name'
+#:ER781674_173:rem:Alternate name:This is the content of the special entry
+#:ER781674_173:rem::  'Alternate name'. It is quite long, since i need to
+#:ER781674_173:rem::  test some special entry which occupies many lines and
+#:ER781674_173:rem::  when i say many lines, i really mean at least five
+#:ER781674_173:rem::  lines, so i could not stop writing before i came here.
+#:ER781674_173:rem:Common name:This is the content of the special entry
+#:ER781674_173:rem::  'Common name'
+#:ER781674_173:rem:Host organism:This is the content of the special entry
+#:ER781674_173:rem::  'Host organism'
+#:ER781674_173:rem:RDP ID:This is the content of the special entry 'RDP ID'
+#:ER781674_173:rem:Sequencing methods:This is the content of the special
+#:ER781674_173:rem::  entry 'Sequencing methods'
 #:ER781674_173:rem:3' end complete:  No
 #:ER781674_173:rem:5' end complete:  Yes
-#:ER781674_173:rem:Next 2 lines are nonsense
-#:AY704744_173:date:06-JAN-1910
+#:ER781674_173:rem:Organism and Sequence information have only been added for
+#:ER781674_173:rem:test purposes. They are complete nonsense!
+#:AY704744_173:date:03-JAN-1910
 #:AY704744_173:acs:AY704744;
 #:AY704744_173:rem:GenBank ACCESSION:AY704744;
 #:AY704744_173:rem:3' end complete:  Yes

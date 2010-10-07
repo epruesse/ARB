@@ -19,7 +19,7 @@ ORIGIN
       181 cagtg180ga tccattattc caatgttaca aacatgtttt tgtatcattg atgctcgtaa
       241 gaaagatg24 0actcaagct gccgaagact tcctcgagag ttttggggga ga281
 //
-LOCUS       ER781674_17367 bp    RNA             RNA       06-JAN-1910
+LOCUS       ER781674_17367 bp    RNA             RNA       07-JAN-1910
 DEFINITION  No information.
 ACCESSION   ER781674;
 KEYWORDS    No information.
@@ -30,9 +30,29 @@ REFERENCE   1
   JOURNAL   No information
   TITLE     No information
   STANDARD  No information
-COMMENTS                  5' end complete: Yes
+COMMENTS    Organism information
+              Source of strain: This is the content of the special entry
+                    'Source of strain'
+              Former name: This is the content of the special entry 'Former
+                    name'
+              Alternate name: This is the content of the special entry
+                    'Alternate name'. It is quite long, since i need to test
+                    some special entry which occupies many lines and when i
+                    say many lines, i really mean at least five lines, so i
+                    could not stop writing before i came here.
+              Common name: This is the content of the special entry 'Common
+                    name'
+              Host organism: This is the content of the special entry 'Host
+                    organism'
+            Sequence information (bases 1 to 367)
+              RDP ID: This is the content of the special entry 'RDP ID'
+              Corresponding GenBank entry: ER781674;
+              Sequencing methods: This is the content of the special entry
+                    'Sequencing methods'
+              5' end complete: Yes
               3' end complete: No
-            Next 2 lines are nonsense
+            Organism and Sequence information have only been added for
+            test purposes. They are complete nonsense!
 BASE COUNT      51 a    109 c    124 g     66 t     17 others
 ORIGIN
         1 tggcgccgta gatgcagcgc gactggcccg gcttctcggc gtcgaggtac tgcgccacgg
@@ -43,7 +63,7 @@ ORIGIN
       301 ccatgcctca c300aggatg tcgcggttga aggcgaggcc ctggaacagg ttggccatcg
       361 ccac350
 //
-LOCUS       AY704744_17367 bp    RNA             RNA       06-JAN-1910
+LOCUS       AY704744_17367 bp    RNA             RNA       07-JAN-1910
 DEFINITION  No information.
 ACCESSION   AY704744;
 KEYWORDS    No information.
