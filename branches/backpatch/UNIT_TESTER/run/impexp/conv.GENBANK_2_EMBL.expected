@@ -2,8 +2,8 @@ ID   HSFAU     preliminary; RNA; UNA; 518 BP.
 XX
 AC   X65923
 XX
-DT   05-JAN-1910 (Rel. 1, Last updated, Version 1)
-DT   05-JAN-1910 (Rel. 1, Created)
+DT   07-JAN-1910 (Rel. 1, Last updated, Version 1)
+DT   07-JAN-1910 (Rel. 1, Created)
 XX
 DE   H.sapiens fau mRNA.
 XX
@@ -26,8 +26,8 @@ ID   HSFAU1    preliminary; RNA; UNA; 2016 BP.
 XX
 AC   X65921
 XX
-DT   05-JAN-1910 (Rel. 1, Last updated, Version 1)
-DT   05-JAN-1910 (Rel. 1, Created)
+DT   07-JAN-1910 (Rel. 1, Last updated, Version 1)
+DT   07-JAN-1910 (Rel. 1, Created)
 XX
 DE   H.sapiens fau 1 gene This is just a long text which overflows the
 DE   maximum line size allowed for EMBL files
@@ -41,7 +41,31 @@ DE   lline.
 XX
 KW   .
 XX
-DR   RDP; HSFAU1.
+DR   RDP; This; HSFAU1.
+XX
+CC   Organism information
+CC     Source of strain: This is the content of the special entry
+CC           'Source of strain'
+CC     Former name: This is the content of the special entry 'Former
+CC           name'
+CC     Alternate name: This is the content of the special entry
+CC           'Alternate name'. It is quite long, since i need to test
+CC           some special entry which occupies many lines and when i say
+CC           many lines, i really mean at least five lines, so i could
+CC           not stop writing before i came here.
+CC     Common name: This is the content of the special entry 'Common
+CC           name'
+CC     Host organism: This is the content of the special entry 'Host
+CC           organism'
+CC   Sequence information (bases 1 to 2016)
+CC     RDP ID: This is the content of the special entry 'RDP ID'
+CC     Corresponding GenBank entry: X65921;
+CC     Sequencing methods: This is the content of the special entry
+CC           'Sequencing methods'
+CC     5' end complete: Yes
+CC     3' end complete: No
+CC   Organism and Sequence information have only been added for
+CC   test purposes. They are complete nonsense!
 XX
 SQ   Sequence 2016 BP; 421 A; 562 C; 538 G; 495 T; 0 other;
      ctaccatttt ccctctcgat tctatatgta cactcgggac aagttctcct gatcgaaaac

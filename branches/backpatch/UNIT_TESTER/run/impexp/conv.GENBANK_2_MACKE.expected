@@ -1,7 +1,7 @@
 #-
 #-
 #-	editor
-#-	Sat Oct  2 19:08:41 2010
+#-	Thu Oct  7 18:58:19 2010
 #-
 #-
 #-	Reference sequence:  HSFAU
@@ -10,13 +10,34 @@
 #=		HSFAU1		in  out  vis  prt   ord  dna  lin  5>3  func
 #-
 #:HSFAU:name:H.sapiens fau
-#:HSFAU:date:02-JAN-1910
+#:HSFAU:date:07-JAN-1910
 #:HSFAU:acs:X65923
 #:HSFAU:rem:GenBank ACCESSION:X65923
 #:HSFAU1:name:H.sapiens fau
-#:HSFAU1:date:02-JAN-1910
-#:HSFAU1:acs:X65921
+#:HSFAU1:rna:This is the content of the special entry 'Sequencing methods'
+#:HSFAU1:date:07-JAN-1910
+#:HSFAU1:acs:X65921;
 #:HSFAU1:rem:GenBank ACCESSION:X65921
+#:HSFAU1:rem:Source of strain:This is the content of the special entry
+#:HSFAU1:rem::  'Source of strain'
+#:HSFAU1:rem:Former name:This is the content of the special entry 'Former
+#:HSFAU1:rem::  name'
+#:HSFAU1:rem:Alternate name:This is the content of the special entry
+#:HSFAU1:rem::  'Alternate name'. It is quite long, since i need to test some
+#:HSFAU1:rem::  special entry which occupies many lines and when i say many
+#:HSFAU1:rem::  lines, i really mean at least five lines, so i could not stop
+#:HSFAU1:rem::  writing before i came here.
+#:HSFAU1:rem:Common name:This is the content of the special entry 'Common
+#:HSFAU1:rem::  name'
+#:HSFAU1:rem:Host organism:This is the content of the special entry 'Host
+#:HSFAU1:rem::  organism'
+#:HSFAU1:rem:RDP ID:This is the content of the special entry 'RDP ID'
+#:HSFAU1:rem:Sequencing methods:This is the content of the special entry
+#:HSFAU1:rem::  'Sequencing methods'
+#:HSFAU1:rem:3' end complete:  No
+#:HSFAU1:rem:5' end complete:  Yes
+#:HSFAU1:rem:Organism and Sequence information have only been added for
+#:HSFAU1:rem:test purposes. They are complete nonsense!
 HSFAU     0 ttcctctttctcgactccatcttcgcggtagctgggaccgccgttcagtc
 HSFAU    50 gccaatatgcagctctttgtccgcgcccaggagctacacaccttcgaggt
 HSFAU   100 gaccggccaggaaacggtcgcccagatcaaggctcatgtagcctcactgg

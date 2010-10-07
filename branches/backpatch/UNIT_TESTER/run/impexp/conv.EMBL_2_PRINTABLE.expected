@@ -1,28 +1,160 @@
  A1MVRNA2      1 gtttttatcttttcgcgattgaaaagataagtttttcagtttaatcttttcaatatgttc60
  ER781674_1    1 tggcgccgtagatgcagcgcgactggcccggcttctcggcgtcgaggtactgcgccacgg60
  AY704744_1    1 gcatcgatgaagaacgcagcgaaatgcgataagtaatgtgaattgcagaattcagtgaat60
+ Y15714;       1 agagtttgatnngggctcaggatgaacgctggcggcgtgcctaatacatgcaagtcgagc60
 
 
  A1MVRNA2     63 actcttttgagatgtctcggattcggtgttaatgaacctactaacacttcctcatcagag12
  ER781674_1   63 ccttggcgctggccacgtccgggcagaccacgatgctcttgcgtgagccggcgacgtgga12
  AY704744_1   63 catcgaatctttgaacgcacattgcgcccattagtattctagtgggcatgcctgttcgag12
+ Y15714;      63 ggacagacgaggtgcttgcacctctgaagtcagcggcggacgggtgagtaacacgtgggt12
 
 
  A1MVRNA2    125 0tatgttcccgagtattccgttgaagagatttccaacgaagtcgctgaactcgattcagtg1
  ER781674_1  125 0cgatgcccttggccagttcgatcatcgtctggtcgttggtgatccgggcggcgatctcgg1
  AY704744_1  125 0cgtcatttcaacccttaagcttagcttagtattgggaatctgcttaaccgcagctcctta1
+ Y15714;     125 0aacctacctgtaagactgggataacttcgggaaaccggagctaataccggataatatttt1
 
 
  A1MVRNA2    187 80gatccattattccaatgttacaaacatgtttttgtatcattgatgctcgtaagaaagatg
  ER781674_1  187 80cgtcggaatagtccttctcgccggcctcgttctccgccacggtcagcgtggagaagtcga
  AY704744_1  187 80aatctagttggcagagcacagctgtactctgagcgtagtaattcattatctcgctttctg
+ Y15714;     187 80ccacctcatggtggaatagtgaaagacggttttgctgtcacttacagatggacccgcggc
 
 
  A1MVRNA2    249 240actcaagctgccgaagacttcctcgagagttttgggggaga281
  ER781674_1  249 240tggagacgcggacgaacgcctgcttggcggggcagagccataccgttggccatgcctca
  AY704744_1  249 240aagacagtcgtacgatagccacaaactttgcatcttgcaaactttttaatggttgacct
+ Y15714;     249 240gcattagctagttggtgaggtaacggctcaccaaggcgacgatgcgtagccgacctgag
 
 
  A1MVRNA2
  ER781674_1  311 c300aggatgtcgcggttgaaggcgaggccctggaacaggttggccatcgccac350
  AY704744_1  311 c300ggatcaggtaggaatacccgctgaacttaagcatatcaataagcggagga350
+ Y15714;     311 a300gggtgatcggccacactgggactgagacacggcccagactcctacgggaggcagcagt
+
+
+ A1MVRNA2
+ ER781674_1
+ AY704744_1
+ Y15714;     373 ag360ggaatcttccgcaatggacgaaagtctgacggagcaacgccgcgtgagtgaagaagg
+
+
+ A1MVRNA2
+ ER781674_1
+ AY704744_1
+ Y15714;     435 tct420tcggatcgtaaaactctgttgtaagggaagaacaagtacgttagtaactgaacgta
+
+
+ A1MVRNA2
+ ER781674_1
+ AY704744_1
+ Y15714;     497 cctt480gacggtaccttaccagaaagccacggctaactacgtgccagcagccgcggtaata
+
+
+ A1MVRNA2
+ ER781674_1
+ AY704744_1
+ Y15714;     559 cgtag540gtggcaagcgttatccggaattattgggcgtaaagcgcgcgtaggcggtttctt
+
+
+ A1MVRNA2
+ ER781674_1
+ AY704744_1
+ Y15714;     621 aagtct600gatgtgaaagcccccggctcaaccggggagggtcattggaaactgggagactt
+
+
+ A1MVRNA2
+ ER781674_1
+ AY704744_1
+ Y15714;     683 gagtgca660gaagaggagagtggaattccatgtgtagcggtgaaatgcgcagagatatgga
+
+
+ A1MVRNA2
+ ER781674_1
+ AY704744_1
+ Y15714;     745 ggaacacc720agtggcgaaggcggctctctggtctgtaactgacgctgaggtgcgaaagcg
+
+
+ A1MVRNA2
+ ER781674_1
+ AY704744_1
+ Y15714;     807 tggggatca780aacaggattagataccctggtagtccacgccgtaaacgatgagtgctaag
+
+
+ A1MVRNA2
+ ER781674_1
+ AY704744_1
+ Y15714;     869 tgttgggggg840tttccgcccctcagtgctgcagctaacgcattaagcactccgcctgggg
+
+
+ A1MVRNA2
+ ER781674_1
+ AY704744_1
+ Y15714;     931 agtacggtcgc900aagactgaaactcaaaggaattgacggggacccgcacaagcggtggag
+
+
+ A1MVRNA2
+ ER781674_1
+ AY704744_1
+ Y15714;     993 catgtggtttaa960ttcgaagcaacgcgaagaaccttaccaaatcttgacatcctctgaca
+
+
+ A1MVRNA2
+ ER781674_1
+ AY704744_1
+ Y15714;    1055 actctggagacag1020agcgttccccttcgggggacagagtgacaggtggtgcatggttgt
+
+
+ A1MVRNA2
+ ER781674_1
+ AY704744_1
+ Y15714;    1117 cgtcagctcgtgtcg1080tgagatgttgggttaagtcccgcaacgagcgcaacccttatct
+
+
+ A1MVRNA2
+ ER781674_1
+ AY704744_1
+ Y15714;    1179 ttagttgccatcattca1140gttgggcactctagagagactgccggtgacaaaccggagga
+
+
+ A1MVRNA2
+ ER781674_1
+ AY704744_1
+ Y15714;    1241 aggtggggatgacgtcaaa1200tcatcatgccccttatgatttgggctacacacgtgctac
+
+
+ A1MVRNA2
+ ER781674_1
+ AY704744_1
+ Y15714;    1303 aatggatggtacaaagggcag1260caaaaccgcgaggtcaagcaaatcccataaaaccatt
+
+
+ A1MVRNA2
+ ER781674_1
+ AY704744_1
+ Y15714;    1365 ctcagttcggattgtagtctgca1320actcgactacatgaagctggaatcgctagtaatcg
+
+
+ A1MVRNA2
+ ER781674_1
+ AY704744_1
+ Y15714;    1427 tagatcagcatgctacggtgaatac1380gttcccgggtcttgtacacaccgcccgtcacac
+
+
+ A1MVRNA2
+ ER781674_1
+ AY704744_1
+ Y15714;    1489 cacgagagtttgtaacacccgaagccg1440gtggagtaacctttacaggagctagccgtcg
+
+
+ A1MVRNA2
+ ER781674_1
+ AY704744_1
+ Y15714;    1551 aaggtgggacagatgattggggtgaagtc1500gtaacaaggtagccgtatcggaaggtgcg
+
+
+ A1MVRNA2
+ ER781674_1
+ AY704744_1
+ Y15714;    1613 gctggatcacctccttt1546

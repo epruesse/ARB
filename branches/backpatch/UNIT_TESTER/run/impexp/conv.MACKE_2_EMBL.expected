@@ -35,17 +35,39 @@ ID   ER781674_ preliminary; RNA; UNA; 367 BP.
 XX
 AC   ER781674;
 XX
-DT   03-JAN-1910 (Rel. 1, Last updated, Version 1)
-DT   03-JAN-1910 (Rel. 1, Created)
+DT   06-JAN-1910 (Rel. 1, Last updated, Version 1)
+DT   06-JAN-1910 (Rel. 1, Created)
 XX
 DE   .
 XX
 KW   .
 XX
-DR   RDP; ER781674_1.
+DR   RDP; This; ER781674_1.
 XX
+CC   Organism information
+CC     Source of strain: This is the content of the special entry
+CC           'Source of strain'
+CC     Former name: This is the content of the special entry 'Former
+CC           name'
+CC     Alternate name: This is the content of the special entry
+CC           'Alternate name'. It is quite long, since i need to test
+CC           some special entry which occupies many lines and when i say
+CC           many lines, i really mean at least five lines, so i could
+CC           not stop writing before i came here.
+CC     Common name: This is the content of the special entry 'Common
+CC           name'
+CC     Host organism: This is the content of the special entry 'Host
+CC           organism'
 CC   Sequence information (bases 1 to 367)
+CC     RDP ID: This is the content of the special entry 'RDP ID'
 CC     Corresponding GenBank entry: ER781674;
+CC     Sequencing methods: This is the content of the special entry
+CC           'Sequencing methods'
+CC     5' end complete: Yes
+CC     3' end complete: No
+CC   Organism and Sequence information have only been added for
+CC   test purposes. They are complete nonsense!
+XX
 SQ   Sequence 367 BP; 51 A; 109 C; 124 G; 66 T; 17 other;
      tggcgccgta gatgcagcgc gactggcccg gcttctcggc gtcgaggtac tgcgccacgg
      60ccttggcg ctggccacgt ccgggcagac cacgatgctc ttgcgtgagc cggcgacgtg
@@ -70,6 +92,10 @@ DR   RDP; AY704744_1.
 XX
 CC   Sequence information (bases 1 to 367)
 CC     Corresponding GenBank entry: AY704744;
+CC     5' end complete: No
+CC     3' end complete: Yes
+CC   Next 2 lines are nonsense
+XX
 SQ   Sequence 367 BP; 100 A; 75 C; 77 G; 98 T; 17 other;
      gcatcgatga agaacgcagc gaaatgcgat aagtaatgtg aattgcagaa ttcagtgaat
      60catcgaat ctttgaacgc acattgcgcc cattagtatt ctagtgggca tgcctgttcg
@@ -78,4 +104,69 @@ SQ   Sequence 367 BP; 100 A; 75 C; 77 G; 98 T; 17 other;
      gctttctg24 0aagacagtc gtacgatagc cacaaacttt gcatcttgca aactttttaa
      tggttgacct c300ggatca ggtaggaata cccgctgaac ttaagcatat caataagcgg
      agga350
+//
+ID   Y15714;   preliminary; RNA; UNA; 1633 BP.
+XX
+AC   Y15714;
+XX
+DT   17-NOV-1998 (Rel. 1, Last updated, Version 1)
+DT   17-NOV-1998 (Rel. 1, Created)
+XX
+DE   Macrococcus bovicus; 16S ribosomal RNA; 16S rRNA gene.
+XX
+KW   16S ribosomal RNA; 16S rRNA gene.
+XX
+OS   Macrococcus bovicus.
+OC   No information.
+XX
+RN   [1]
+RA   Kloos W.E., Ballard D.N., George C.G., Webster J.A., Hubner R.J .,
+RA   Ludwig W., Schleifer K.H., Fiedler F., Schubert K.;
+RT   "Delimiting the genus Staphylococcus through description of
+RT   Macrococcus caseolyticus gen. nov., comb. nov. and the new species
+RT   Macrococcus equipercicus sp. nov., Macrococcus bovicus sp. nov., and
+RT   Macrococcus carouselicus sp. nov.";
+RL   Int. J. Syst. Bacteriol. 48:859-877(1998).
+XX
+RN   [2]
+RP   1-1546
+RA   Ludwig W.;
+RT   ;
+RL   Submitted (26-NOV-1997) to the EMBL/GenBank/DDBJ databases.  W.
+RL   Ludwig, Lehrstuhl fuer Mikrobiologie, Technische Universitaet
+RL   Muenchen, Munich, FRG.
+XX
+DR   RDP; Y15714;.
+XX
+CC   Sequence information (bases 1 to 1633)
+CC     Corresponding GenBank entry: Y15714;
+SQ   Sequence 1633 BP; 401 A; 353 C; 470 G; 320 T; 89 other;
+     agagtttgat nngggctcag gatgaacgct ggcggcgtgc ctaatacatg caagtcgagc
+     60ggacagac gaggtgcttg cacctctgaa gtcagcggcg gacgggtgag taacacgtgg
+     gt120aacct acctgtaaga ctgggataac ttcgggaaac cggagctaat accggataat
+     atttt180cc acctcatggt ggaatagtga aagacggttt tgctgtcact tacagatgga
+     cccgcggc24 0gcattagct agttggtgag gtaacggctc accaaggcga cgatgcgtag
+     ccgacctgag a300gggtga tcggccacac tgggactgag acacggccca gactcctacg
+     ggaggcagca gtag360gga atcttccgca atggacgaaa gtctgacgga gcaacgccgc
+     gtgagtgaag aaggtct420 tcggatcgta aaactctgtt gtaagggaag aacaagtacg
+     ttagtaactg aacgtacctt 480gacggta ccttaccaga aagccacggc taactacgtg
+     ccagcagccg cggtaatacg tag540gtgg caagcgttat ccggaattat tgggcgtaaa
+     gcgcgcgtag gcggtttctt aagtct600g atgtgaaagc ccccggctca accggggagg
+     gtcattggaa actgggagac ttgagtgca6 60gaagagga gagtggaatt ccatgtgtag
+     cggtgaaatg cgcagagata tggaggaaca cc720agtgg cgaaggcggc tctctggtct
+     gtaactgacg ctgaggtgcg aaagcgtggg gatca780aa caggattaga taccctggta
+     gtccacgccg taaacgatga gtgctaagtg ttgggggg84 0tttccgccc ctcagtgctg
+     cagctaacgc attaagcact ccgcctgggg agtacggtcg c900aagact gaaactcaaa
+     ggaattgacg gggacccgca caagcggtgg agcatgtggt ttaa960ttc gaagcaacgc
+     gaagaacctt accaaatctt gacatcctct gacaactctg gagacag102 0agcgttccc
+     cttcggggga cagagtgaca ggtggtgcat ggttgtcgtc agctcgtgtc g1080tgaga
+     tgttgggtta agtcccgcaa cgagcgcaac ccttatcttt agttgccatc attca1140g
+     ttgggcactc tagagagact gccggtgaca aaccggagga aggtggggat gacgtcaaa1
+     200tcatcat gccccttatg atttgggcta cacacgtgct acaatggatg gtacaaaggg
+     cag1260caa aaccgcgagg tcaagcaaat cccataaaac cattctcagt tcggattgta
+     gtctgca132 0actcgacta catgaagctg gaatcgctag taatcgtaga tcagcatgct
+     acggtgaata c1380gttcc cgggtcttgt acacaccgcc cgtcacacca cgagagtttg
+     taacacccga agccg1440g tggagtaacc tttacaggag ctagccgtcg aaggtgggac
+     agatgattgg ggtgaagtc1 500gtaacaa ggtagccgta tcggaaggtg cggctggatc
+     acctccttt1 546
 //
