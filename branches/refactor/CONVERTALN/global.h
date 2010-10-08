@@ -93,7 +93,9 @@ inline bool str_equal(const char *s1, const char *s2) { return strcmp(s1, s2) ==
 inline bool str_iequal(const char *s1, const char *s2) { return strcasecmp(s1, s2) == 0; }
 
 inline int str0len(const char *str) {
+#if UNIT_TESTS==1
     data.test_counter++;
+#endif
     return str ? strlen(str) : 0;
 }
 
