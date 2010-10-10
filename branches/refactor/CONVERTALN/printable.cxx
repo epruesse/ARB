@@ -81,7 +81,7 @@ void to_printable(const char *inf, const char *outf, int informat) {
         base_nums[total_seq - 1] = 0;
     } while (!out_of_memory);
 
-    if (out_of_memory) {        /* cannot hold all seqs into mem. */
+    if (out_of_memory) {        // cannot hold all seqs into mem. 
         fputs("Out of memory: Rerun the conversion sequence by sequence.\n", stderr);
         destroy_FILE_BUFFER(ifp);
         fclose(ofp);
@@ -96,7 +96,7 @@ void to_printable(const char *inf, const char *outf, int informat) {
                 if (data.seqs[indi][index + current] != '~' && data.seqs[indi][index + current] != '-' && data.seqs[indi][index + current] != '.')
                     base_count++;
 
-            /* check if the first char is base or not */
+            // check if the first char is base or not 
             if (current < length && data.seqs[indi][current] != '~' && data.seqs[indi][current] != '-' && data.seqs[indi][current] != '.')
                 start = base_nums[indi] + 1;
             else
@@ -139,7 +139,7 @@ void to_printable_1x1(const char *inf, const char *outf, int informat) {
         NOOP_global_data_was_previously_initialized_here();
         FILE_BUFFER_rewind(ifp);
         total_seq = 0;
-        do {                    /* read in one sequence */
+        do {                    // read in one sequence 
             if (informat == GENBANK) {
                 reinit_genbank();
                 eof = genbank_in_locus(ifp);
@@ -174,7 +174,7 @@ void to_printable_1x1(const char *inf, const char *outf, int informat) {
                 if (data.sequence[index] != '~' && data.sequence[index] != '.' && data.sequence[index] != '-')
                     base_count++;
             }
-            /* check if the first char is a base or not */
+            // check if the first char is a base or not 
             if (current < data.seq_length && data.sequence[current] != '~' && data.sequence[current] != '.' && data.sequence[current] != '-')
                 base_count++;
 
@@ -184,7 +184,7 @@ void to_printable_1x1(const char *inf, const char *outf, int informat) {
         current += PRTLENGTH;
         if (maxsize > current)
             fputs("\n\n", ofp);
-    }                           /* print block by block */
+    }                           // print block by block 
 
     log_processed(total_seq);
     destroy_FILE_BUFFER(ifp);
@@ -200,7 +200,7 @@ void printable_print_line(char *id, char *sequence, int start, int base_count, F
 
     fputc(' ', fp);
     if ((bnum = str0len(id)) > 10) {
-        /* truncate if length of id is greater than 10 */
+        // truncate if length of id is greater than 10 
         for (indi = 0; indi < 10; indi++) fputc(id[indi], fp);
         bnum = 1;
     }
@@ -208,7 +208,7 @@ void printable_print_line(char *id, char *sequence, int start, int base_count, F
         fputs(id, fp);
         bnum = 10 - bnum + 1;
     }
-    /* fill in the blanks to make up 10 chars id spaces */
+    // fill in the blanks to make up 10 chars id spaces 
     seq_length = str0len(sequence);
     if (start < seq_length)
         for (indi = 0; indi < bnum; indi++) fputc(' ', fp);
@@ -220,6 +220,6 @@ void printable_print_line(char *id, char *sequence, int start, int base_count, F
     for (index = start, count = 0; count < PRTLENGTH && index < seq_length; index++) {
         fputc(sequence[index], fp);
         count++;
-    }                           /* printout sequence data */
+    }                           // printout sequence data 
     fputc('\n', fp);
 }

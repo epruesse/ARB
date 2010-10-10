@@ -81,7 +81,7 @@ void to_phylip(const char *inf, const char *outf, int informat, int readstdin) {
         data.lengths[total_seq - 1] = str0len(data.sequence);
     } while (!out_of_memory);
 
-    if (out_of_memory) {        /* cannot hold all seqs into mem. */
+    if (out_of_memory) {        // cannot hold all seqs into mem. 
         fputs("Out of memory: Rerun the conversion sequence by sequence.\n", stderr);
         destroy_FILE_BUFFER(ifp);
         fclose(ofp);
@@ -98,7 +98,7 @@ void to_phylip(const char *inf, const char *outf, int informat, int readstdin) {
 
         while (1) {
             c = getchar();
-            if (c == EOF) break; /* read all from stdin now (not only one line) */
+            if (c == EOF) break; // read all from stdin now (not only one line) 
             if (!spaced) {
                 fputc(' ', ofp);
                 spaced = 1;
@@ -119,7 +119,7 @@ void to_phylip(const char *inf, const char *outf, int informat, int readstdin) {
         if (maxsize > current)
             fputc('\n', ofp);
     }
-    /* rewrite output header */
+    // rewrite output header 
     errno = 0;
     rewind(ofp);
     ca_assert(errno == 0);
@@ -163,7 +163,7 @@ void to_phylip_1x1(const char *inf, const char *outf, int informat) {
         NOOP_global_data_was_previously_initialized_here();
         FILE_BUFFER_rewind(ifp);
         total_seq = 0;
-        do {                    /* read in one sequence */
+        do {                    // read in one sequence 
             reinit_phylip();
             if (informat == GENBANK) {
                 reinit_genbank();
@@ -204,7 +204,7 @@ void to_phylip_1x1(const char *inf, const char *outf, int informat) {
             current += SEQLINE;
         if (maxsize > current)
             fputc('\n', ofp);
-    }                           /* print block by block */
+    }                           // print block by block 
 
     rewind(ofp);
     fprintf(ofp, "%4d %4d", total_seq, maxsize);
@@ -223,7 +223,7 @@ void phylip_print_line(char *name, char *sequence, int seq_length, int index, FI
 
     if (index == 0) {
         if (str0len(name) > 10) {
-            /* truncate id length of seq ID is greater than 10 */
+            // truncate id length of seq ID is greater than 10 
             for (indi = 0; indi < 10; indi++)
                 fputc(name[indi], fp);
             bnum = 1;
@@ -232,7 +232,7 @@ void phylip_print_line(char *name, char *sequence, int seq_length, int index, FI
             fputs(name, fp);
             bnum = 10 - str0len(name) + 1;
         }
-        /* fill in blanks to make up 10 chars for ID. */
+        // fill in blanks to make up 10 chars for ID. 
         for (indi = 0; indi < bnum; indi++) fputc(' ', fp);
         length = SEQLINE - 10;
     }

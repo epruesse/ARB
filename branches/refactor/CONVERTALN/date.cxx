@@ -134,7 +134,7 @@ void find_date_long_form(const char *date_string, int *month, int *day, int *yea
     for (int indi = 0, index = 0; index <= length; index++) {
         char token[SIZE];
         if ((index == length) || isspace(date_string[index]) || strchr("(),", date_string[index]) != 0) {
-            if (indi == 0) continue; /* empty token */
+            if (indi == 0) continue; // empty token 
             token[indi] = '\0';
 
             int num = ismonth(token);

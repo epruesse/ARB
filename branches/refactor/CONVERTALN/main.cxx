@@ -1,11 +1,11 @@
-/* ------------------------------------------------------------ */
-/*                                                              */
-/*  Format Conversion Program.                                  */
-/*                                                              */
-/*      Woese Lab., Dept. of Microbiology, UIUC                 */
-/*      Modified for use in ARB by ARB team                     */
-/*                                                              */
-/* ------------------------------------------------------------ */
+// ------------------------------------------------------------ 
+// 
+// Format Conversion Program.                                  
+// 
+// Woese Lab., Dept. of Microbiology, UIUC                 
+// Modified for use in ARB by ARB team                     
+// 
+// ------------------------------------------------------------ 
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -140,7 +140,7 @@ static void ask_for_conversion_params(int& argc, char**& argv, int& intype, int&
     valid_name_or_die(temp);
     if (!file_exists(temp)) throw_error(77, "Input file not found");
 
-    /* output file information */
+    // output file information 
     fputs("\n"
           "Select output format (<CR> means default)\n"
           "\n"
@@ -242,11 +242,11 @@ static void do_conversion(const char *inName, const char *ouName, int inType, in
         fprintf(stderr, "\n\nConvert file %s to GCG files\n", inName);
 #endif
 
-    /* check if output file exists and filename's validation */
+    // check if output file exists and filename's validation 
     valid_name_or_die(ouName);
     if (file_exists(ouName)) warningf(151, "Output file %s exists, will be overwritten.", ouName);
 
-    /* file format transfer... */
+    // file format transfer... 
     convert(inName, ouName, inType, ouType);
 }
 
@@ -259,7 +259,7 @@ int main(int argc, char *argv[]) {
         if (argc < 2) {
             ask_for_conversion_params(argc, argv, intype, outtype); // modifies argc/argv!
 
-            if (argc == 4) { /* default output file */
+            if (argc == 4) { // default output file 
                 const char **argv_new = (const char **)calloc(sizeof(char *), 5);
 
                 memcpy(argv_new, argv, sizeof(char *) * 4);

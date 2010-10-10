@@ -89,7 +89,7 @@ FILE *open_output_or_die(const char *filename) {
  *  Function warning()
  *      print out warning_message and continue execution.
  */
-/* ------------------------------------------------------------- */
+// ------------------------------------------------------------- 
 
 void warning(int warning_num, const char *warning_message) {
     if (warning_out)
@@ -147,7 +147,7 @@ char *Reallocspace(void *block, unsigned int size) {
  *       Skip white space from (index)th char of Str line.
  */
 int Skip_white_space(char *line, int index) {
-    /* skip white space */
+    // skip white space 
 
     while (line[index] == ' ' || line[index] == '\t')
         ++index;
@@ -163,7 +163,7 @@ int Reach_white_space(char *line, int index) {
 
     length = str0len(line);
 
-    /* skip to white space */
+    // skip to white space 
     for (; line[index] != ' ' && line[index] != '\t' && index < length; index++) {}
 
     return (index);

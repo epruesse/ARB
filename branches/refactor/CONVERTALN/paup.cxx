@@ -81,7 +81,7 @@ void to_paup(const char *inf, const char *outf, int informat) {
     } while (!out_of_memory);
 
     if (out_of_memory) {
-        /* cannot hold all seqs into mem. */
+        // cannot hold all seqs into mem. 
         fputs("Out of memory: Rerun the conversion sequence by sequence.\n", stderr);
 
         destroy_FILE_BUFFER(ifp);
@@ -97,7 +97,7 @@ void to_paup(const char *inf, const char *outf, int informat) {
                 first_line++;
             paup_print_line(data.ids[indi], data.seqs[indi], data.lengths[indi], current, (first_line == 1), ofp);
 
-            /* Avoid repeating */
+            // Avoid repeating 
             if (first_line == 1)
                 first_line++;
         }
@@ -107,7 +107,7 @@ void to_paup(const char *inf, const char *outf, int informat) {
     }
 
     fputs("      ;\nENDBLOCK;\n", ofp);
-    /* rewrite output header */
+    // rewrite output header 
     rewind(ofp);
     fputs("#NEXUS\n", ofp);
 
@@ -147,7 +147,7 @@ void to_paup_1x1(const char *inf, const char *outf, int informat) {
         FILE_BUFFER_rewind(ifp);
         total_seq = 0;
         first_line = 0;
-        do {                    /* read in one sequence */
+        do {                    // read in one sequence 
             reinit_paup();
             if (informat == GENBANK) {
                 reinit_genbank();
@@ -188,7 +188,7 @@ void to_paup_1x1(const char *inf, const char *outf, int informat) {
 
             paup_print_line(name, data.sequence, data.seq_length, current, (first_line == 1), ofp);
 
-            /* Avoid repeating */
+            // Avoid repeating 
             if (first_line == 1)
                 first_line++;
 
@@ -197,10 +197,10 @@ void to_paup_1x1(const char *inf, const char *outf, int informat) {
         current += (SEQLINE - 10);
         if (maxsize > current)
             fputc('\n', ofp);
-    }                           /* print block by block */
+    }                           // print block by block 
 
     fputs("      ;\nENDBLOCK;\n", ofp);
-    /* rewrite output header */
+    // rewrite output header 
     rewind(ofp);
     fputs("#NEXUS\n", ofp);
 
@@ -249,7 +249,7 @@ void paup_print_line(char *Str, char *sequence, int seq_length, int index, int f
     length = SEQLINE - 10;
 
     fputs("      ", fp);
-    /* truncate if length of seq ID is greater than 10 */
+    // truncate if length of seq ID is greater than 10 
     for (indi = 0; indi < 10 && Str[indi]; indi++)
         fputc(Str[indi], fp);
 

@@ -1,4 +1,4 @@
-/* -------------- genbank related subroutines ----------------- */
+// -------------- genbank related subroutines ----------------- 
 
 #include <stdio.h>
 #include <ctype.h>
@@ -84,7 +84,7 @@ void cleanup_genbank() {
 }
 
 void reinit_genbank() {
-    /* initialize genbank format */
+    // initialize genbank format 
     cleanup_genbank();
 
     GenBank& gbk = data.gbk;
@@ -110,11 +110,11 @@ char genbank_in(FILE_BUFFER fp) {
     char        eoen;
 
     eoen = ' ';
-    /* end-of-entry, set to be 'y' after '//' is read */
+    // end-of-entry, set to be 'y' after '//' is read 
     for (eof = Fgetline(line, LINESIZE, fp); eof != NULL && eoen != 'y';) {
         if (str0len(line) <= 1) {
             eof = Fgetline(line, LINESIZE, fp);
-            continue;           /* empty line, skip */
+            continue;           // empty line, skip 
         }
 
         genbank_key_word(line, 0, key, TOKENSIZE);
@@ -129,7 +129,7 @@ char genbank_in(FILE_BUFFER fp) {
         else if (str_equal(key, "DEFINITION")) {
             eof = genbank_one_entry_in(data.gbk.definition, line, fp);
 
-            /* correct missing '.' at the end */
+            // correct missing '.' at the end 
             terminate_with(data.gbk.definition, '.');
         }
         else if (str_equal(key, "ACCESSION")) {
@@ -142,7 +142,7 @@ char genbank_in(FILE_BUFFER fp) {
         }
         else if (str_equal(key, "SOURCE")) {
             eof = genbank_source(line, fp);
-            /* correct missing '.' at the end */
+            // correct missing '.' at the end 
             terminate_with(data.gbk.source, '.');
             terminate_with(data.gbk.organism, '.');
         }
@@ -159,13 +159,13 @@ char genbank_in(FILE_BUFFER fp) {
             eof = genbank_origin(line, fp);
             eoen = 'y';
         }
-        else {                  /* unidentified key word */
+        else {                  // unidentified key word 
             eof = genbank_skip_unidentified(line, fp, 2);
         }
         /* except "ORIGIN", at the end of all the other cases,
          * a new line has already read in, so no further read
          * is necessary */
-    }                           /* for loop to read an entry line by line */
+    }                           // for loop to read an entry line by line 
 
     if (eoen == 'n') {
         warning(86, "Reach EOF before sequence data is read.");
@@ -247,22 +247,22 @@ int genbank_check_blanks(char *line, int numb) {
  *          current command.
  */
 char *genbank_continue_line(char*& Str, char *line, int numb, FILE_BUFFER fp) {
-    /* numb = number of blanks needed to define a continue line */
+    // numb = number of blanks needed to define a continue line 
     int   ind;
     char *eof, temp[LINESIZE];
 
-    /* check continue lines */
+    // check continue lines 
     for (eof = Fgetline(line, LINESIZE, fp);
          eof != NULL && (genbank_check_blanks(line, numb) || line[0] == '\n');
          eof = Fgetline(line, LINESIZE, fp))
     {
         if (line[0] == '\n')
-            continue;           /* empty line is allowed */
-        /* remove end-of-line, if there is any */
+            continue;           // empty line is allowed 
+        // remove end-of-line, if there is any 
         ind = Skip_white_space(line, 0);
         strcpy(temp, (line + ind));
         skip_eolnl_and_append_spaced(Str, temp);
-    }                           /* end of continue line checking */
+    }                           // end of continue line checking 
 
     return (eof);
 }
@@ -327,19 +327,19 @@ char *genbank_reference(char *line, FILE_BUFFER fp) {
     else {
         data.gbk.numofref = refnum;
         data.gbk.reference = (GenbankRef *) Reallocspace((char *)data.gbk.reference, (unsigned)(sizeof(GenbankRef) * (data.gbk.numofref)));
-        /* initialize the buffer */
+        // initialize the buffer 
         init_reference(data.gbk.reference[refnum - 1]);
         eof = genbank_one_entry_in(data.gbk.reference[refnum - 1].ref, line, fp);
     }
-    /* find the reference listings */
+    // find the reference listings 
     for (; eof != NULL && line[0] == ' ' && line[1] == ' ';) {
-        /* find the key word */
+        // find the key word 
         genbank_key_word(line, 2, key, TOKENSIZE);
-        /* skip white space */
+        // skip white space 
         if (str_equal(key, "AUTHORS")) {
             eof = genbank_one_entry_in(data.gbk.reference[refnum - 1].author, line, fp);
 
-            /* add '.' if missing at the end */
+            // add '.' if missing at the end 
             terminate_with(data.gbk.reference[refnum - 1].author, '.');
 
             if (acount == 0) acount = 1;
@@ -374,7 +374,7 @@ char *genbank_reference(char *line, FILE_BUFFER fp) {
             warningf(18, "Unidentified REFERENCE subkeyword: %s#", key);
             eof = genbank_skip_unidentified(line, fp, GBINDENT);
         }
-    }                           /* for loop */
+    }                           // for loop 
     return (eof);
 }
 
@@ -391,7 +391,7 @@ const char *genbank_comments(char *line, FILE_BUFFER fp) {
         if ((eof = Fgetline(line, LINESIZE, fp)) == NULL)
             return (eof);
     }
-    /* make up data to match the logic reasoning for next statement */
+    // make up data to match the logic reasoning for next statement 
     for (indi = 0; indi < GBINDENT; line[indi++] = ' ') {}
     eof = "NONNULL";
 
@@ -399,7 +399,7 @@ const char *genbank_comments(char *line, FILE_BUFFER fp) {
     SeqInfo& seqinf = data.gbk.comments.seqinf;
 
     for (; eof != NULL && (genbank_check_blanks(line, GBINDENT) || line[0] == '\n');) {
-        if (line[0] == '\n') {  /* skip empty line */
+        if (line[0] == '\n') {  // skip empty line 
             eof = Fgetline(line, LINESIZE, fp);
             continue;
         }
@@ -411,13 +411,13 @@ const char *genbank_comments(char *line, FILE_BUFFER fp) {
         if (index >= TOKENSIZE) {
             printf("big index %i after Skip_white_space\n", index);
         }
-#endif /* DEBUG */
+#endif // DEBUG 
         index = genbank_comment_subkey_word(line, index, key, TOKENSIZE);
 #if defined(DEBUG)
         if (index >= TOKENSIZE) {
             printf("big index %i after genbank_comment_subkey_word\n", index);
         }
-#endif /* DEBUG */
+#endif // DEBUG 
 
         if (str_equal(key, "Source of strain:")) {
             eof = genbank_one_comment_entry(orginf.source, line, index, fp);
@@ -463,16 +463,16 @@ const char *genbank_comments(char *line, FILE_BUFFER fp) {
             eof = Fgetline(line, LINESIZE, fp);
         }
         else if (str_equal(key, "Sequence information ")) {
-            /* do nothing */
+            // do nothing 
             seqinf.exists = true;
             eof = Fgetline(line, LINESIZE, fp);
         }
         else if (str_equal(key, "Organism information")) {
-            /* do nothing */
+            // do nothing 
             orginf.exists = true;
             eof = Fgetline(line, LINESIZE, fp);
         }
-        else {                  /* other comments */
+        else {                  // other comments 
             ca_assert(ptr == GBINDENT);
             if (data.gbk.comments.others == NULL) {
                 data.gbk.comments.others = nulldup(line + ptr);
@@ -483,7 +483,7 @@ const char *genbank_comments(char *line, FILE_BUFFER fp) {
 
             eof = Fgetline(line, LINESIZE, fp);
         }
-    }                           /* for loop */
+    }                           // for loop 
 
     return (eof);
 }
@@ -499,9 +499,9 @@ char *genbank_origin(char *line, FILE_BUFFER fp) {
     data.seq_length = 0;
     data.sequence[data.seq_length] = '\0';      // needed if sequence data is empty
 
-    /* read in whole sequence data */
+    // read in whole sequence data 
     for (eof = Fgetline(line, LINESIZE, fp); eof != NULL && line[0] != '/' && line[1] != '/'; eof = Fgetline(line, LINESIZE, fp)) {
-        /* empty line, skip */
+        // empty line, skip 
         if (str0len(line) <= 1)
             continue;
         for (index = 9; line[index] != '\n' && line[index] != '\0'; index++) {
@@ -587,7 +587,7 @@ void genbank_verify_accession() {
                 break;
             default:;
         }
-    }                           /* check every char of ACCESSION line. */
+    }                           // check every char of ACCESSION line. 
 }
 
 /* ------------------------------------------------------------------
@@ -597,7 +597,7 @@ void genbank_verify_accession() {
 void genbank_verify_keywords() {
     int indi, count, len;
 
-    /* correct missing '.' at the end */
+    // correct missing '.' at the end 
     terminate_with(data.gbk.keywords, '.');
 
     for (indi = count = 0, len = str0len(data.gbk.keywords); indi < len; indi++)
@@ -621,7 +621,7 @@ char genbank_in_locus(FILE_BUFFER fp) {
     char  line[LINESIZE], key[TOKENSIZE];
     char *eof, eoen;
 
-    eoen = ' ';                 /* end-of-entry, set to be 'y' after '//' is read */
+    eoen = ' ';                 // end-of-entry, set to be 'y' after '//' is read 
     for (eof = Fgetline(line, LINESIZE, fp); eof != NULL && eoen != 'y';) {
         genbank_key_word(line, 0, key, TOKENSIZE);
         if (str_equal(key, "ORIGIN")) {
@@ -633,7 +633,7 @@ char genbank_in_locus(FILE_BUFFER fp) {
         }
         else
             eof = Fgetline(line, LINESIZE, fp);
-    }                           /* for loop to read an entry line by line */
+    }                           // for loop to read an entry line by line 
 
     if (eoen == 'n')
         throw_error(9, "Reach EOF before one entry is read");
@@ -724,7 +724,7 @@ void genbank_out(FILE * fp) {
 
             if (seqinf.exists || str0len(data.gbk.comments.others) > 0)
                 fputs("            ", fp);
-        }                       /* organism information */
+        }                       // organism information 
 
         if (seqinf.exists) {
             fprintf(fp, "Sequence information (bases 1 to %d)\n", data.seq_length);
@@ -742,7 +742,7 @@ void genbank_out(FILE * fp) {
         else if (seqinf.comp3 == 'y') fputs("             3' end complete: Yes\n", fp); // @@@ now you see the 'bug'
 
         // @@@ use wrapper for code below ? 
-        /* print GBINDENT spaces of the first line */
+        // print GBINDENT spaces of the first line 
         if (str0len(data.gbk.comments.others) > 0) {
             fputc_rep(' ', GBINDENT, fp);
         }
@@ -752,17 +752,17 @@ void genbank_out(FILE * fp) {
             for (indi = 0; indi < length; indi++) {
                 fputc(data.gbk.comments.others[indi], fp);
 
-                /* if another line, print GBINDENT spaces first */
+                // if another line, print GBINDENT spaces first 
                 if (data.gbk.comments.others[indi] == '\n' && data.gbk.comments.others[indi + 1] != '\0') {
                     fputc_rep(' ', GBINDENT, fp);
                 }
             }
-        }                       /* other comments */
-    }                           /* comment */
+        }                       // other comments 
+    }                           // comment 
 
     count_bases(&base_a, &base_t, &base_g, &base_c, &base_other);
 
-    /* don't write 0 others in this base line */
+    // don't write 0 others in this base line 
     if (base_other > 0)
         fprintf(fp, "BASE COUNT  %6d a %6d c %6d g %6d t %6d others\n", base_a, base_c, base_g, base_t, base_other);
     else
@@ -817,7 +817,7 @@ void genbank_out_origin(FILE * fp) {
         fputc(data.sequence[indi], fp);
         indj++;
 
-        /* blank space follows every 10 bases, but not before '\n' */
+        // blank space follows every 10 bases, but not before '\n' 
         if ((indk % 60) == 0) {
             fputc('\n', fp);
             indj = 0;

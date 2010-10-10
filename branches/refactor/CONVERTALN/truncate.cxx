@@ -3,7 +3,7 @@
 #include "global.h"
 
 
-/* ------------------------------------------------------------ */
+// ------------------------------------------------------------ 
 /*  Function truncate_over_80().
     /*      Initially used for truncating line over 80 char.
     /*      of AE2 file.  Now might not be useful anymore...

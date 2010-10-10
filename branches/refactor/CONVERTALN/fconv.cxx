@@ -1,4 +1,4 @@
-/* ------------- File format converting subroutine ------------- */
+// ------------- File format converting subroutine ------------- 
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -54,7 +54,7 @@ void log_processed(int seqCount) {
  */
 
 static void convert_WRAPPED(const char *inf, const char *outf, int intype, int outype) {
-    int dd;                     /* copy stdin to outfile after first line */
+    int dd;                     // copy stdin to outfile after first line 
 
     dd = 0;
     if (outype == PHYLIP2) {
@@ -125,7 +125,7 @@ static void convert_WRAPPED(const char *inf, const char *outf, int intype, int o
 void global_data::setup() {
     cleanup();
 
-    /* initialize macke format */
+    // initialize macke format 
     macke.seqabbr    = NULL;
     macke.name       = NULL;
     macke.atcc       = NULL;
@@ -143,7 +143,7 @@ void global_data::setup() {
     macke.strain     = NULL;
     macke.subspecies = NULL;
 
-    /* initialize genbank format */
+    // initialize genbank format 
     gbk.locus      = NULL;
     gbk.definition = NULL;
     gbk.accession  = NULL;
@@ -175,14 +175,14 @@ void global_data::setup() {
         }        
         comments.others = NULL;
     }
-    /* initialize paup format */
+    // initialize paup format 
     paup.ntax   = 0;
     paup.equate = "~=.|><";
     paup.gap    = '-';
 
-    /* initial phylip data */
+    // initial phylip data 
 
-    /* initial embl data */
+    // initial embl data 
     embl.id          = NULL;
     embl.dateu       = NULL;
     embl.datec       = NULL;
@@ -216,11 +216,11 @@ void global_data::setup() {
         }
         comments.others = NULL;
     }
-    /* initial NBRF data format */
+    // initial NBRF data format 
     nbrf.id          = NULL;
     nbrf.description = NULL;
     
-    /* initial sequence data */
+    // initial sequence data 
     numofseq   = 0;
     seq_length = 0;
     max        = INITSEQ;

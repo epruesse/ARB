@@ -1,13 +1,13 @@
-/* ================================================================ */
-/*                                                                  */
-/*   File      : convert.c                                          */
-/*   Purpose   : some helpers for global data handling              */
-/*                                                                  */
-/*   Coded by Ralf Westram (coder@reallysoft.de) in December 2006   */
-/*   Institute of Microbiology (Technical University Munich)        */
-/*   http://www.arb-home.de/                                        */
-/*                                                                  */
-/* ================================================================ */
+// ================================================================ 
+// 
+// File      : convert.c                                          
+// Purpose   : some helpers for global data handling              
+// 
+// Coded by Ralf Westram (coder@reallysoft.de) in December 2006   
+// Institute of Microbiology (Technical University Munich)        
+// http://www.arb-home.de/                                        
+// 
+// ================================================================ 
 
 #include "global.h"
 

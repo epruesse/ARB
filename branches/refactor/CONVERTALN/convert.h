@@ -1,7 +1,7 @@
 #ifndef CONVERT_H
 #define CONVERT_H
 
-/* data structure for each file format and sequences */
+// data structure for each file format and sequences 
 
 #define INITSEQ 6000
 #define RNA     0
@@ -48,8 +48,8 @@ struct SeqInfo {
     char *RDPid;
     char *gbkentry;
     char *methods;
-    char  comp5; /* yes or no, y/n */
-    char  comp3; /* yes or no, y/n */
+    char  comp5; // yes or no, y/n 
+    char  comp3; // yes or no, y/n 
 };
 
 struct Comments {
@@ -69,17 +69,17 @@ struct Emblref {
 };
 
 struct Embl {
-    char    *id;                /* entry name */
-    char    *dateu;             /* date of last updated */
-    char    *datec;             /* date of created */
-    char    *description;       /* description line (DE) */
-    char    *os;                /* Organism species */
-    char    *accession;         /* accession number(s) */
-    char    *keywords;          /* keyword */
-    int      numofref;          /* num. of reference */
+    char    *id;                // entry name 
+    char    *dateu;             // date of last updated 
+    char    *datec;             // date of created 
+    char    *description;       // description line (DE) 
+    char    *os;                // Organism species 
+    char    *accession;         // accession number(s) 
+    char    *keywords;          // keyword 
+    int      numofref;          // num. of reference 
     Emblref *reference;
-    char    *dr;                /* database cross-reference */
-    Comments  comments;          /* comments */
+    char    *dr;                // database cross-reference 
+    Comments  comments;          // comments 
 };
 
 // -----------------
@@ -116,46 +116,46 @@ struct GenBank {
 //      Macke
 
 struct Macke {
-    char  *seqabbr;             /* seq. abbrev. */
-    char  *name;                /* seq. full name */
-    int    rna_or_dna;          /* rna or dna */
-    char  *atcc;                /* CC# of seq. */
-    char  *rna;                 /* Sequence methods, old version entry */
-    char  *date;                /* date of modification */
-    char  *nbk;                 /* GenBank information -old version entry */
-    char  *acs;                 /* accession number */
-    char  *author;              /* author of the first reference */
-    char  *journal;             /* journal of the first reference */
-    char  *title;               /* title of the first reference */
-    char  *who;                 /* who key in the data */
-    char  *strain;              /* strain */
-    char  *subspecies;          /* subspecies */
-    int    numofrem;            /* num. of remarks */
-    char **remarks;             /* remarks */
+    char  *seqabbr;             // seq. abbrev. 
+    char  *name;                // seq. full name 
+    int    rna_or_dna;          // rna or dna 
+    char  *atcc;                // CC# of seq. 
+    char  *rna;                 // Sequence methods, old version entry 
+    char  *date;                // date of modification 
+    char  *nbk;                 // GenBank information -old version entry 
+    char  *acs;                 // accession number 
+    char  *author;              // author of the first reference 
+    char  *journal;             // journal of the first reference 
+    char  *title;               // title of the first reference 
+    char  *who;                 // who key in the data 
+    char  *strain;              // strain 
+    char  *subspecies;          // subspecies 
+    int    numofrem;            // num. of remarks 
+    char **remarks;             // remarks 
 };
 
 // -------------
 //      Paup
 
 struct Paup {
-    int         ntax;           /* number of sequences */
-    int         nchar;          /* max number of chars per seq. */
-    int         labelpos;       /* Label start from left or right */
+    int         ntax;           // number of sequences 
+    int         nchar;          // max number of chars per seq. 
+    int         labelpos;       // Label start from left or right 
     int         missing;
-    const char *equate;         /* equal meaning char */
-    int         interleave;     /* interleave or sequential */
-    int         datatype;       /* rna in this case */
-    char        gap;            /* char of gap, default is '-' */
+    const char *equate;         // equal meaning char 
+    int         interleave;     // interleave or sequential 
+    int         datatype;       // rna in this case 
+    char        gap;            // char of gap, default is '-' 
     int         gapmode;
-    /* if sequence data is not too large, read into memory at once */
-    /* otherwise, read in one by one. */
+    // if sequence data is not too large, read into memory at once 
+    // otherwise, read in one by one. 
 };
 
 // -------------
 //      Nbrf
 
 struct Nbrf {
-    char *id;                   /* locus */
+    char *id;                   // locus 
     char *description;
 };
 
@@ -173,19 +173,19 @@ public:
     void cleanup();
     void setup();
 
-    int       numofseq; /* number of sequences */
-    int       seq_length; /* sequence length */
+    int       numofseq; // number of sequences 
+    int       seq_length; // sequence length 
     int       max;
-    char     *sequence; /* sequence data */
-    /* to read all the sequences into memory at one time (yes great idea!) */
-    char    **ids; /* array of ids. */
-    char    **seqs; /* array of sequence data */
-    int      *lengths; /* array of sequence lengths */
-    int       allocated; /* for how many sequences space has been allocated */
-    /* NEXUS, PHYLIP, GCG, and PRINTABLE */
-    GenBank   gbk; /* one GenBank entry */
-    Macke     macke; /* one Macke entry */
-    Paup      paup; /* one Paup entry */
+    char     *sequence; // sequence data 
+    // to read all the sequences into memory at one time (yes great idea!) 
+    char    **ids; // array of ids. 
+    char    **seqs; // array of sequence data 
+    int      *lengths; // array of sequence lengths 
+    int       allocated; // for how many sequences space has been allocated 
+    // NEXUS, PHYLIP, GCG, and PRINTABLE 
+    GenBank   gbk; // one GenBank entry 
+    Macke     macke; // one Macke entry 
+    Paup      paup; // one Paup entry 
     Embl      embl;
     Nbrf      nbrf;
 };
