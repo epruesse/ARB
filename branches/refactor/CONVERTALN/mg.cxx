@@ -2,7 +2,6 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include "convert.h"
 #include "global.h"
 #include "macke.h"
 
@@ -33,18 +32,9 @@ void genbank_to_macke(const char *inf, const char *outf) {
             if (gtom()) {
                 /* convert from genbank form to macke form */
                 switch (indi) {
-                    case 0:
-                        /* output seq display format */
-                        macke_out0(ofp, GENBANK);
-                        break;
-                    case 1:
-                        /* output seq information */
-                        macke_out1(ofp);
-                        break;
-                    case 2:
-                        /* output seq data */
-                        macke_out2(ofp);
-                        break;
+                    case 0: macke_seq_display_out(ofp, GENBANK); break;
+                    case 1: macke_seq_info_out(ofp); break;
+                    case 2: macke_seq_data_out(ofp); break;
                     default:;
                 }
             }
@@ -72,42 +62,42 @@ void genbank_to_macke(const char *inf, const char *outf) {
  */
 int gtom() {
     // Responsibility note: caller has to cleanup genbank and macke data
-    
+
     char temp[LONGTEXT], buffer[TOKENSIZE];
     char genus[TOKENSIZE], species[TOKENSIZE];
 
+    GenBank& gbk = data.gbk;
+
     /* copy seq abbr, assume every entry in gbk must end with \n\0 */
     /* no '\n' at the end of the string */
-    genbank_key_word(data.gbk.locus, 0, temp, TOKENSIZE);
+    genbank_key_word(gbk.locus, 0, temp, TOKENSIZE);
     freedup(data.macke.seqabbr, temp);
 
     /* copy name and definition */
-    if (has_content(data.gbk.organism)) {
-        freedup(data.macke.name, data.gbk.organism);
+    if (has_content(gbk.organism)) {
+        freedup(data.macke.name, gbk.organism);
     }
-    else if (has_content(data.gbk.definition)) {
-        ASSERT_RESULT(int, 2, sscanf(data.gbk.definition, "%s %s", genus, species));
-        if (species[str0len(species) - 1] == ';')
-            species[str0len(species) - 1] = '\0';
-        sprintf(temp, "%s %s\n", genus, species);
-        freedup(data.macke.name, temp);
+    else if (has_content(gbk.definition)) {
+        ASSERT_RESULT(int, 2, sscanf(gbk.definition, "%s %s", genus, species));
+
+        int last = str0len(species)-1;
+        if (species[last] == ';') species[last] = '\0';
+
+        freeset(data.macke.name, strf("%s %s\n", genus, species));
+        
     }
 
-    freedup_if_content(data.macke.atcc, data.gbk.comments.orginf.cc); /* copy cc name and number */
-    freedup_if_content(data.macke.rna,  data.gbk.comments.seqinf.methods); /* copy rna(methods) */
-    if (str0len(data.gbk.locus) < 61) {
-        freedup(data.macke.date, genbank_date(today_date())); /* copy date---DD-MMM-YYYY\n\0  */
-        Append(data.macke.date, "\n");
-    }
-    else
-        freedup(data.macke.date, data.gbk.locus + 50);
+    freedup_if_content(data.macke.atcc, gbk.comments.orginf.cultcoll); /* copy cultcoll name and number */
+    freedup_if_content(data.macke.rna,  gbk.comments.seqinf.methods); /* copy rna(methods) */
+
+    freeset(data.macke.date, gbk.get_date()); Append(data.macke.date, "\n");
 
     /* copy genbank entry  (gbkentry has higher priority than gbk.accession) */
-    if (has_content(data.gbk.comments.seqinf.gbkentry))
-        freedup(data.macke.acs, data.gbk.comments.seqinf.gbkentry);
+    if (has_content(gbk.comments.seqinf.gbkentry))
+        freedup(data.macke.acs, gbk.comments.seqinf.gbkentry);
     else {
-        if (has_content(data.gbk.accession) && !str_equal(data.gbk.accession, "No information\n")) {
-            scan_token_or_die(data.gbk.accession, buffer, NULL);
+        if (has_content(gbk.accession) && !str_equal(gbk.accession, "No information\n")) {
+            scan_token_or_die(gbk.accession, buffer, NULL);
             strcat(buffer, "\n");
         }
         else
@@ -116,10 +106,10 @@ int gtom() {
     }
 
     /* copy the first reference from GenBank to Macke */
-    if (data.gbk.numofref > 0) {
-        freedup_if_content(data.macke.author,  data.gbk.reference[0].author);
-        freedup_if_content(data.macke.journal, data.gbk.reference[0].journal);
-        freedup_if_content(data.macke.title,   data.gbk.reference[0].title);
+    if (gbk.numofref > 0) {
+        freedup_if_content(data.macke.author,  gbk.reference[0].author);
+        freedup_if_content(data.macke.journal, gbk.reference[0].journal);
+        freedup_if_content(data.macke.title,   gbk.reference[0].title);
     }                           /* the rest of references are put into remarks, rem:..... */
 
     gtom_remarks();
@@ -143,73 +133,62 @@ void gtom_remarks() {
     int  indi, indj;
     char temp[LONGTEXT];
 
+    GenBank& gbk = data.gbk;
+
     /* remarks in Macke format */
     remnum = num_of_remark();
     data.macke.remarks = (char **)calloc(1, (unsigned)(sizeof(char *) * remnum));
     remnum = 0;
 
     /* REFERENCE the first reference */
-    if (data.gbk.numofref > 0)
-        gtom_copy_remark(data.gbk.reference[0].ref, "ref:", &remnum);
+    if (gbk.numofref > 0)
+        gtom_copy_remark(gbk.reference[0].ref, "ref:", &remnum);
 
     /* The rest of the REFERENCES */
-    for (indi = 1; indi < data.gbk.numofref; indi++) {
-        gtom_copy_remark(data.gbk.reference[indi].ref, "ref:", &remnum);
-        gtom_copy_remark(data.gbk.reference[indi].author, "auth:", &remnum);
-        gtom_copy_remark(data.gbk.reference[indi].journal, "jour:", &remnum);
-        gtom_copy_remark(data.gbk.reference[indi].title, "title:", &remnum);
-        gtom_copy_remark(data.gbk.reference[indi].standard, "standard:", &remnum);
+    for (indi = 1; indi < gbk.numofref; indi++) {
+        gtom_copy_remark(gbk.reference[indi].ref, "ref:", &remnum);
+        gtom_copy_remark(gbk.reference[indi].author, "auth:", &remnum);
+        gtom_copy_remark(gbk.reference[indi].journal, "jour:", &remnum);
+        gtom_copy_remark(gbk.reference[indi].title, "title:", &remnum);
+        gtom_copy_remark(gbk.reference[indi].standard, "standard:", &remnum);
     }                           /* loop for copying other reference */
 
-    /* copy keywords as remark */
-    gtom_copy_remark(data.gbk.keywords, "KEYWORDS:", &remnum);
+    OrgInfo& orginf = gbk.comments.orginf;
+    SeqInfo& seqinf = gbk.comments.seqinf;
 
-    /* copy accession as remark when genbank entry also exists. */
-    gtom_copy_remark(data.gbk.accession, "GenBank ACCESSION:", &remnum);
-
-    /* copy source of strain */
-    gtom_copy_remark(data.gbk.comments.orginf.source, "Source of strain:", &remnum);
-
-    /* copy former name */
-    gtom_copy_remark(data.gbk.comments.orginf.formname, "Former name:", &remnum);
-
-    /* copy alternate name */
-    gtom_copy_remark(data.gbk.comments.orginf.nickname, "Alternate name:", &remnum);
-
-    /* copy common name */
-    gtom_copy_remark(data.gbk.comments.orginf.commname, "Common name:", &remnum);
-
-    /* copy host organism */
-    gtom_copy_remark(data.gbk.comments.orginf.hostorg, "Host organism:", &remnum);
-
-    /* copy RDP ID */
-    gtom_copy_remark(data.gbk.comments.seqinf.RDPid, "RDP ID:", &remnum);
-
-    /* copy methods */
-    gtom_copy_remark(data.gbk.comments.seqinf.methods, "Sequencing methods:", &remnum);
+    
+    gtom_copy_remark(gbk.keywords, "KEYWORDS:", &remnum); // copy keywords as remark
+    gtom_copy_remark(gbk.accession, "GenBank ACCESSION:", &remnum); // copy accession as remark when genbank entry also exists.
+    gtom_copy_remark(orginf.source, "Source of strain:", &remnum); // copy source of strain
+    gtom_copy_remark(orginf.formname, "Former name:", &remnum); // copy former name
+    gtom_copy_remark(orginf.nickname, "Alternate name:", &remnum); // copy alternate name
+    gtom_copy_remark(orginf.commname, "Common name:", &remnum); // copy common name
+    gtom_copy_remark(orginf.hostorg, "Host organism:", &remnum); // copy host organism
+    gtom_copy_remark(seqinf.RDPid, "RDP ID:", &remnum); // copy RDP ID
+    gtom_copy_remark(seqinf.methods, "Sequencing methods:", &remnum); // copy methods
 
     /* copy 3' end complete */
-    if (data.gbk.comments.seqinf.comp3 != ' ') {
-        if (data.gbk.comments.seqinf.comp3 == 'y')
+    if (seqinf.comp3 != ' ') {
+        if (seqinf.comp3 == 'y')
             data.macke.remarks[remnum++] = strdup("3' end complete:  Yes\n");
         else
             data.macke.remarks[remnum++] = strdup("3' end complete:  No\n");
     }
 
     /* copy 5' end complete */
-    if (data.gbk.comments.seqinf.comp5 != ' ') {
-        if (data.gbk.comments.seqinf.comp5 == 'y')
+    if (seqinf.comp5 != ' ') {
+        if (seqinf.comp5 == 'y')
             data.macke.remarks[remnum++] = strdup("5' end complete:  Yes\n");
         else
             data.macke.remarks[remnum++] = strdup("5' end complete:  No\n");
     }
 
     /* other comments, not RDP DataBase specially defined */
-    if (str0len(data.gbk.comments.others) > 0) {
-        len = str0len(data.gbk.comments.others);
+    if (str0len(gbk.comments.others) > 0) {
+        len = str0len(gbk.comments.others);
         for (indi = 0, indj = 0; indi < len; indi++) {
-            temp[indj++] = data.gbk.comments.others[indi];
-            if (data.gbk.comments.others[indi] == '\n' || data.gbk.comments.others[indi] == '\0') {
+            temp[indj++] = gbk.comments.others[indi];
+            if (gbk.comments.others[indi] == '\n' || gbk.comments.others[indi] == '\0') {
                 temp[indj] = '\0';
                 data.macke.remarks[remnum++] = nulldup(temp);
 
@@ -329,7 +308,7 @@ char *genbank_get_subspecies() {
                 || (indk = find_pattern((data.gbk.comments.others + indj),
                                         "subspecies=")) >= 0 || (indk = find_pattern((data.gbk.comments.others + indj), "subsp.=")) >= 0) {
                 /* skip the key word */
-                for (indj += indk; data.gbk.comments.others[indj] != '='; indj++) ;
+                for (indj += indk; data.gbk.comments.others[indj] != '='; indj++) {}
                 indj++;
                 /* skip blank spaces */
                 indj = Skip_white_space(data.gbk.comments.others, indj);
@@ -475,57 +454,40 @@ int paren_string(char *Str, char *pstring, int index) {
  *       Count num of remarks needed in order to alloc spaces.
  */
 int num_of_remark() {
-    int remnum, indj, length;
-
-    remnum = 0;
     /* count references to be put into remarks */
-    if (data.gbk.numofref > 0 && has_content(data.gbk.reference[0].ref))
-        remnum++;
-    for (indj = 1; indj < data.gbk.numofref; indj++) {
-        if (has_content(data.gbk.reference[indj].ref))
-            remnum++;
-        if (has_content(data.gbk.reference[indj].journal))
-            remnum++;
-        if (has_content(data.gbk.reference[indj].author))
-            remnum++;
-        if (has_content(data.gbk.reference[indj].title))
-            remnum++;
-        if (has_content(data.gbk.reference[indj].standard))
-            remnum++;
-    }                           /* loop for copying other reference */
+    int      remnum = 0;
+    GenBank& gbk    = data.gbk;
+    if (gbk.numofref > 0 && has_content(gbk.reference[0].ref)) remnum++;
+    for (int indj = 1; indj < gbk.numofref; indj++) {
+        if (has_content(gbk.reference[indj].ref)) remnum++;
+        if (has_content(gbk.reference[indj].journal)) remnum++;
+        if (has_content(gbk.reference[indj].author)) remnum++;
+        if (has_content(gbk.reference[indj].title)) remnum++;
+        if (has_content(gbk.reference[indj].standard)) remnum++;
+    }
     /* count the other keyword in GenBank format to be put into remarks */
-    if (has_content(data.gbk.keywords))
-        remnum++;
-    if (has_content(data.gbk.accession))
-        remnum++;
-    if (has_content(data.gbk.comments.orginf.source))    /* Source of strain */
-        remnum++;
-    if (has_content(data.gbk.comments.orginf.formname))
-        remnum++;
-    if (has_content(data.gbk.comments.orginf.nickname))  /* Alternate name */
-        remnum++;
-    if (has_content(data.gbk.comments.orginf.commname))
-        remnum++;
-    if (has_content(data.gbk.comments.orginf.hostorg))   /* host organism */
-        remnum++;
-    if (has_content(data.gbk.comments.seqinf.RDPid))
-        remnum++;
-    if (has_content(data.gbk.comments.seqinf.methods))
-        remnum++;
-    if (data.gbk.comments.seqinf.comp3 != ' ')
-        remnum++;
-    if (data.gbk.comments.seqinf.comp5 != ' ')
-        remnum++;
+    if (has_content(gbk.keywords)) remnum++;
+    if (has_content(gbk.accession)) remnum++;
+    if (has_content(gbk.comments.orginf.source)) remnum++;
+    if (has_content(gbk.comments.orginf.formname)) remnum++;
+    if (has_content(gbk.comments.orginf.nickname)) remnum++;
+    if (has_content(gbk.comments.orginf.commname)) remnum++;
+    if (has_content(gbk.comments.orginf.hostorg)) remnum++;
+    if (has_content(gbk.comments.seqinf.RDPid)) remnum++;
+    if (has_content(gbk.comments.seqinf.methods)) remnum++;
+    if (gbk.comments.seqinf.comp3 != ' ') remnum++;
+    if (gbk.comments.seqinf.comp5 != ' ') remnum++;
+    
     /* counting other than specific keyword comments */
-    if (str0len(data.gbk.comments.others) > 0) {
-        length = str0len(data.gbk.comments.others);
-        for (indj = 0; indj < length; indj++) {
-            if (data.gbk.comments.others[indj] == '\n' || data.gbk.comments.others[indj] == '\0') {
+    int length = str0len(gbk.comments.others);
+    if (length > 0) {
+        for (int indj = 0; indj < length; indj++) {
+            if (gbk.comments.others[indj] == '\n' || gbk.comments.others[indj] == '\0') {
                 remnum++;
             }                   /* new remark line */
         }                       /* for loop to find other remarks */
     }                           /* other comments */
-    return (remnum);
+    return remnum;
 }
 
 /* -----------------------------------------------------------------
@@ -557,59 +519,62 @@ void macke_to_genbank(const char *inf, const char *outf) {
  */
 int mtog() {
     // Responsibility note: caller has to cleanup macke and genbank data
-    
+
     int  indi;
     char temp[LONGTEXT];
 
-    strcpy(temp, data.macke.seqabbr);
+    Macke&   macke = data.macke;
+    GenBank& gbk   = data.gbk;
 
-    for (indi = str0len(temp); indi < 13; temp[indi++] = ' ') ;
+    strcpy(temp, macke.seqabbr);
 
-    if (has_content(data.macke.date))
+    for (indi = str0len(temp); indi < 13; temp[indi++] = ' ') {}
 
-        sprintf((temp + 10), "%7d bp    RNA             RNA       %s\n", data.seq_length, genbank_date(data.macke.date));
+    if (has_content(macke.date))
+
+        sprintf((temp + 10), "%7d bp    RNA             RNA       %s\n", data.seq_length, genbank_date(macke.date));
 
     else
         sprintf((temp + 10), "%7d bp    RNA             RNA       %s\n", data.seq_length, genbank_date(today_date()));
 
-    freedup(data.gbk.locus, temp);
+    freedup(gbk.locus, temp);
 
     /* GenBank ORGANISM */
-    if (has_content(data.macke.name)) {
-        freedup(data.gbk.organism, data.macke.name);
+    if (has_content(macke.name)) {
+        freedup(gbk.organism, macke.name);
 
         /* append a '.' at the end */
-        terminate_with(data.gbk.organism, '.');
+        terminate_with(gbk.organism, '.');
     }
 
-    if (has_content(data.macke.rna)) {
-        data.gbk.comments.seqinf.exist = 1;
-        freedup(data.gbk.comments.seqinf.methods, data.macke.rna);
+    if (has_content(macke.rna)) {
+        gbk.comments.seqinf.exists = true;
+        freedup(gbk.comments.seqinf.methods, macke.rna);
     }
-    if (has_content(data.macke.acs)) {
+    if (has_content(macke.acs)) {
         /* #### not converted to accession but to comment gbkentry only, temporarily
-           freenull(data.gbk.accession);
-           data.gbk.accession = nulldup(data.macke.acs);
+           freenull(gbk.accession);
+           gbk.accession = nulldup(macke.acs);
          */
-        data.gbk.comments.seqinf.exist = 1;
-        freedup(data.gbk.comments.seqinf.gbkentry, data.macke.acs);
+        gbk.comments.seqinf.exists = true;
+        freedup(gbk.comments.seqinf.gbkentry, macke.acs);
     }
-    else if (has_content(data.macke.nbk)) {
+    else if (has_content(macke.nbk)) {
         /* #### not converted to accession but to comment gbkentry only, temp
-           freenull(data.gbk.accession);
-           data.gbk.accession = nulldup(data.macke.nbk);
+           freenull(gbk.accession);
+           gbk.accession = nulldup(macke.nbk);
          */
-        data.gbk.comments.seqinf.exist = 1;
-        freedup(data.gbk.comments.seqinf.gbkentry, data.macke.nbk);
+        gbk.comments.seqinf.exists = true;
+        freedup(gbk.comments.seqinf.gbkentry, macke.nbk);
     }
-    if (has_content(data.macke.atcc)) {
-        data.gbk.comments.orginf.exist = 1;
-        freedup(data.gbk.comments.orginf.cc, data.macke.atcc);
+    if (has_content(macke.atcc)) {
+        gbk.comments.orginf.exists = true;
+        freedup(gbk.comments.orginf.cultcoll, macke.atcc);
     }
     mtog_decode_ref_and_remarks();
-    /* final conversion of cc */
-    if (has_content(data.gbk.comments.orginf.cc) <= 1 && str0len(data.macke.atcc)) {
-        freedup(data.gbk.comments.orginf.cc, data.macke.atcc);
+    /* final conversion of cultcoll */
+    if (has_content(gbk.comments.orginf.cultcoll) <= 1 && str0len(macke.atcc)) {
+        freedup(gbk.comments.orginf.cultcoll, macke.atcc);
     }
 
     /* define GenBank DEFINITION, after GenBank KEYWORD is defined. */
@@ -701,40 +666,40 @@ void mtog_decode_ref_and_remarks() {
             mtog_copy_remark(gbk.accession, &indi, indj);
         }
         else if (str_equal(key, "Source of strain")) {
-            gbk.comments.orginf.exist = 1;
+            gbk.comments.orginf.exists = true;
             mtog_copy_remark(gbk.comments.orginf.source, &indi, indj);
         }
         else if (str_equal(key, "Former name")) {
-            gbk.comments.orginf.exist = 1;
+            gbk.comments.orginf.exists = true;
             mtog_copy_remark(gbk.comments.orginf.formname, &indi, indj);
         }
         else if (str_equal(key, "Alternate name")) {
-            gbk.comments.orginf.exist = 1;
+            gbk.comments.orginf.exists = true;
             mtog_copy_remark(gbk.comments.orginf.nickname, &indi, indj);
         }
         else if (str_equal(key, "Common name")) {
-            gbk.comments.orginf.exist = 1;
+            gbk.comments.orginf.exists = true;
             mtog_copy_remark(gbk.comments.orginf.commname, &indi, indj);
         }
         else if (str_equal(key, "Host organism")) {
-            gbk.comments.orginf.exist = 1;
+            gbk.comments.orginf.exists = true;
             mtog_copy_remark(gbk.comments.orginf.hostorg, &indi, indj);
         }
         else if (str_equal(key, "RDP ID")) {
-            gbk.comments.seqinf.exist = 1;
+            gbk.comments.seqinf.exists = true;
             mtog_copy_remark(gbk.comments.seqinf.RDPid, &indi, indj);
         }
         else if (str_equal(key, "Sequencing methods")) {
-            gbk.comments.seqinf.exist = 1;
+            gbk.comments.seqinf.exists = true;
             mtog_copy_remark(gbk.comments.seqinf.methods, &indi, indj);
         }
         else if (str_equal(key, "3' end complete")) {
-            gbk.comments.seqinf.exist = 1;
+            gbk.comments.seqinf.exists = true;
             scan_token_or_die(macke.remarks[indi] + indj, key, NULL);
             gbk.comments.seqinf.comp3 = str_equal(key, "Yes") ? 'y' : 'n';
         }
         else if (str_equal(key, "5' end complete")) {
-            gbk.comments.seqinf.exist = 1;
+            gbk.comments.seqinf.exists = true;
             scan_token_or_die(macke.remarks[indi] + indj, key, NULL);
             gbk.comments.seqinf.comp5 = str_equal(key, "Yes") ? 'y' : 'n';
         }

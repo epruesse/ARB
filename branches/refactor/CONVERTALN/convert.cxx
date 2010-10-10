@@ -8,7 +8,7 @@
 /*   http://www.arb-home.de/                                        */
 /*                                                                  */
 /* ================================================================ */
-#include "convert.h"
+
 #include "global.h"
 
 struct global_data data;

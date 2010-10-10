@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include "convert.h"
 #include "global.h"
 
 #include <errno.h>
@@ -234,8 +233,7 @@ void phylip_print_line(char *name, char *sequence, int seq_length, int index, FI
             bnum = 10 - str0len(name) + 1;
         }
         /* fill in blanks to make up 10 chars for ID. */
-        for (indi = 0; indi < bnum; indi++)
-            fputc(' ', fp);
+        for (indi = 0; indi < bnum; indi++) fputc(' ', fp);
         length = SEQLINE - 10;
     }
     else if (index >= data.seq_length)

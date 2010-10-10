@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include "convert.h"
 #include "global.h"
 
 #define PRTLENGTH   62
@@ -212,8 +211,7 @@ void printable_print_line(char *id, char *sequence, int start, int base_count, F
     /* fill in the blanks to make up 10 chars id spaces */
     seq_length = str0len(sequence);
     if (start < seq_length)
-        for (indi = 0; indi < bnum; indi++)
-            fputc(' ', fp);
+        for (indi = 0; indi < bnum; indi++) fputc(' ', fp);
     else {
         fputc('\n', fp);
         return;

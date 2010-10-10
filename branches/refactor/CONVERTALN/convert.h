@@ -1,3 +1,6 @@
+#ifndef CONVERT_H
+#define CONVERT_H
+
 /* data structure for each file format and sequences */
 
 #define INITSEQ 6000
@@ -28,12 +31,12 @@
 #define SEQLINE 60
 
 // -------------------------------
-//      Comment (Embl+GenBank)
+//      RDP-defined comments (Embl+GenBank)
 
 struct OrgInfo {
-    int   exist;
+    bool  exists;
     char *source;
-    char *cc;
+    char *cultcoll;
     char *formname;
     char *nickname;
     char *commname;
@@ -41,15 +44,15 @@ struct OrgInfo {
 };
 
 struct SeqInfo {
-    int   exist;
+    bool  exists;
     char *RDPid;
     char *gbkentry;
     char *methods;
-    char  comp5;                /* yes or no, y/n */
-    char  comp3;                /* yes or no, y/n */
+    char  comp5; /* yes or no, y/n */
+    char  comp3; /* yes or no, y/n */
 };
 
-struct Comment {
+struct Comments {
     OrgInfo  orginf;
     SeqInfo  seqinf;
     char    *others;
@@ -76,7 +79,7 @@ struct Embl {
     int      numofref;          /* num. of reference */
     Emblref *reference;
     char    *dr;                /* database cross-reference */
-    Comment  comments;          /* comments */
+    Comments  comments;          /* comments */
 };
 
 // -----------------
@@ -99,7 +102,14 @@ struct GenBank {
     char       *organism;
     int         numofref;
     GenbankRef *reference;
-    Comment     comments;
+    Comments    comments;
+
+    bool locus_contains_date() const { return str0len(locus) >= 60; }
+
+    char *get_date() {
+        if (locus_contains_date()) return strndup(locus+50, 11); 
+        return strdup(genbank_date(today_date()));
+    }
 };
 
 // --------------
@@ -149,4 +159,40 @@ struct Nbrf {
     char *description;
 };
 
+class global_data {
+    // - holds sequence data
+    // - holds additional data for various formats
 
+    bool initialized;
+
+public:
+    global_data() {
+        initialized   = false;
+    }
+
+    void cleanup();
+    void setup();
+
+    int       numofseq; /* number of sequences */
+    int       seq_length; /* sequence length */
+    int       max;
+    char     *sequence; /* sequence data */
+    /* to read all the sequences into memory at one time (yes great idea!) */
+    char    **ids; /* array of ids. */
+    char    **seqs; /* array of sequence data */
+    int      *lengths; /* array of sequence lengths */
+    int       allocated; /* for how many sequences space has been allocated */
+    /* NEXUS, PHYLIP, GCG, and PRINTABLE */
+    GenBank   gbk; /* one GenBank entry */
+    Macke     macke; /* one Macke entry */
+    Paup      paup; /* one Paup entry */
+    Embl      embl;
+    Nbrf      nbrf;
+};
+
+extern struct global_data data;
+
+
+#else
+#error convert.h included twice
+#endif // CONVERT_H

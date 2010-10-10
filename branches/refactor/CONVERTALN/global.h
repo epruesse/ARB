@@ -20,60 +20,57 @@
 
 class WrapMode;
 
+enum WrapBug {
+    // defines various wrapping bugs (produced by original code)
+    WRAP_CORRECTLY = 0,
+
+    // bit values:
+    WRAPBUG_WRAP_AT_SPACE   = 1,
+    WRAPBUG_WRAP_BEFORE_SEP = 2,
+    WRAPBUG_UNIDENTIFIED    = 4,
+};
+
+struct OrgInfo;
+struct SeqInfo;
+struct Comments;
+struct Emblref;
+struct Embl;
+struct GenbankRef;
+struct GenBank;
+struct Macke;
+struct Paup;
+struct Nbrf;
+
+
+
 #ifndef PROTOTYPES_H
 #include "prototypes.h"
 #endif
 
 #define ca_assert(cond) arb_assert(cond)
 
-#define LINESIZE       126
-#define LONGTEXT       5000
-#define TOKENSIZE      80
-#define GBMAXCHAR      66 /* exclude the keyword(12 chars) */
-#define EMBLMAXCHAR    68 /* exclude the keyword(6 chars) */
-#define MACKEMAXCHAR   78 /* limit for each line */
-#define COMMSKINDENT   2 /* indent for subkey line of RDP defined comment */
-#define COMMCNINDENT   6 /* indent for continue line of RDP defined comment */
+#define UNCOVERED() ca_assert(0)
+
+#define LINESIZE  126
+#define LONGTEXT  5000
+#define TOKENSIZE 80
+
+// max. length of lines
+#define EMBLMAXLINE  74
+#define GBMAXLINE    78
+#define MACKEMAXLINE 78
+
+// indentation to part behind key
+#define EMBLINDENT 5
+#define GBINDENT   12
+
+// indents for RDP-defined comments
+#define RDP_SUBKEY_INDENT    2
+#define RDP_CONTINUED_INDENT 6
+
 #define p_nonkey_start 5
 
 // --------------------
-
-class global_data {
-    // - holds sequence data
-    // - holds additional data for various formats
-
-    bool initialized;
-
-public:
-    global_data() {
-        initialized   = false;
-    }
-
-    void cleanup();
-    void setup();
-
-    int       numofseq; /* number of sequences */
-    int       seq_length; /* sequence length */
-    int       max;
-    char     *sequence; /* sequence data */
-    /* to read all the sequences into memory at one time (yes great idea!) */
-    char    **ids; /* array of ids. */
-    char    **seqs; /* array of sequence data */
-    int      *lengths; /* array of sequence lengths */
-    int       allocated; /* for how many sequences space has been allocated */
-    /* NEXUS, PHYLIP, GCG, and PRINTABLE */
-    GenBank   gbk; /* one GenBank entry */
-    Macke     macke; /* one Macke entry */
-    Paup      paup; /* one Paup entry */
-    Embl      embl;
-    Nbrf      nbrf;
-
-#if (UNIT_TESTS==1)
-    int test_counter;
-#endif
-};
-
-extern struct global_data data;
 
 inline void NOOP_global_data_was_previously_initialized_here() {
     // @@@ left this here cause it's called inside a loop from
@@ -89,13 +86,13 @@ inline void NOOP_global_data_was_previously_initialized_here() {
 
 // --------------------
 
+inline int min(int t1, int t2) { return t1<t2 ? t1 : t2; }
+inline int max(int t1, int t2) { return t1>t2 ? t1 : t2; }
+
 inline bool str_equal(const char *s1, const char *s2) { return strcmp(s1, s2) == 0; }
 inline bool str_iequal(const char *s1, const char *s2) { return strcasecmp(s1, s2) == 0; }
 
 inline int str0len(const char *str) {
-#if UNIT_TESTS==1
-    data.test_counter++;
-#endif
     return str ? strlen(str) : 0;
 }
 
@@ -158,6 +155,10 @@ public:
     int wrap_pos(const char *str, int wrapCol) const;
 
 };
+
+#ifndef CONVERT_H
+#include "convert.h"
+#endif
 
 // --------------------
 // Logging

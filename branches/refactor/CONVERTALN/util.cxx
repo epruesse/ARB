@@ -4,7 +4,6 @@
 #include <stdlib.h>
 #include <stdarg.h>
 #include <errno.h>
-#include "convert.h"
 #include "global.h"
 #include "types.h"
 
@@ -35,6 +34,17 @@ void scan_token_or_die(const char *from, char *to, FILE_BUFFER *fb) {
 
 void throw_error(int error_num, const char *error_message) { // __ATTR__NORETURN
     throw Convaln_exception(error_num, error_message);
+}
+
+char *strf(const char *format, ...) { // __ATTR__FORMAT(1)
+    va_list parg;
+    va_start(parg, format);
+    char    buffer[LINESIZE];
+    int     printed = vsprintf(buffer, format, parg);
+    ca_assert(printed <= LINESIZE);
+    va_end(parg);
+
+    return strndup(buffer, printed);
 }
 
 void throw_errorf(int error_num, const char *error_messagef, ...) { // __ATTR__FORMAT(2) __ATTR__NORETURN
@@ -154,7 +164,7 @@ int Reach_white_space(char *line, int index) {
     length = str0len(line);
 
     /* skip to white space */
-    for (; line[index] != ' ' && line[index] != '\t' && index < length; index++) ;
+    for (; line[index] != ' ' && line[index] != '\t' && index < length; index++) {}
 
     return (index);
 }
@@ -192,7 +202,7 @@ void Getstr(char *line, int linenum) {
     char c;
     int indi = 0;
 
-    for (; (c = getchar()) != '\n' && indi < (linenum - 1); line[indi++] = c) ;
+    for (; (c = getchar()) != '\n' && indi < (linenum - 1); line[indi++] = c) {}
 
     line[indi] = '\0';
 }
@@ -257,5 +267,21 @@ void upcase(char *str) {
     // Capitalize all char in the str.
     if (!str) return;
     for (int i = 0; str[i]; ++i) str[i] = toupper(str[i]);
+}
+
+void fputc_rep(char c, int repeat, FILE *fp) {
+    for (int r = 0; r<repeat; ++r) {
+        fputc(c, fp);
+    }
+}
+
+int fputs_len(const char *str, int len, FILE *out) {
+    // like fputs(), but does not print more than 'len' characters
+    // returns number of chars written or EOF
+    for (int i = 0; i<len; ++i) {
+        if (!str[i]) return i;
+        if (fputc(str[i], out) == EOF) return EOF;
+    }
+    return len;
 }
 

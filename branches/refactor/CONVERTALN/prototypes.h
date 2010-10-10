@@ -45,10 +45,9 @@ int embl_comment_key(char *line, char *key);
 char *embl_one_comment_entry(FILE_BUFFER fp, char *&datastring, char *line, int start_index);
 char *embl_origin(char *line, FILE_BUFFER fp);
 void embl_out(FILE *fp);
-int fputs_len(const char *str, int len, FILE *out);
-void embl_print_lines(FILE *fp, const char *key, const char *Data, const WrapMode &wrapMode);
+void embl_print_lines(FILE *fp, const char *key, const char *content, const WrapMode &wrapMode);
 void embl_out_comments(FILE *fp);
-void embl_print_comment(FILE *fp, const char *key, char *Str, int offset, int indent);
+void embl_print_comment_if_content(FILE *fp, const char *key, const char *content);
 void embl_out_origin(FILE *fp);
 void embl_to_macke(const char *inf, const char *outf, int format);
 int etom(void);
@@ -88,6 +87,8 @@ int gcg_seq_length(void);
 /* genbank.cxx */
 void init_reference(GenbankRef &ref);
 void reinit_reference(GenbankRef &ref);
+void init_comments(Comments &comments);
+void cleanup_comments(Comments &comments);
 void cleanup_genbank(void);
 void reinit_genbank(void);
 char genbank_in(FILE_BUFFER fp);
@@ -105,10 +106,11 @@ char *genbank_skip_unidentified(char *line, FILE_BUFFER fp, int blank_num);
 void genbank_verify_accession(void);
 void genbank_verify_keywords(void);
 char genbank_in_locus(FILE_BUFFER fp);
+void genbank_out_one_reference(FILE *fp, const GenbankRef &gbk_ref, int gbk_ref_num, bool SIMULATE_BUG);
 void genbank_out(FILE *fp);
-void genbank_out_one_entry(FILE *fp, char *Str, const char *key, const WrapMode &wrapMode, int period);
-void genbank_print_lines(FILE *fp, char *Str, const WrapMode &wrapMode);
-void genbank_print_comment(FILE *fp, char *Str, const char *key);
+void genbank_out_one_entry(FILE *fp, const char *key, const char *content, const WrapMode &wrapMode, int period);
+void genbank_print_lines(FILE *fp, const char *key, const char *content, const WrapMode &wrapMode);
+void genbank_print_comment_if_content(FILE *fp, const char *key, const char *content);
 void genbank_out_origin(FILE *fp);
 void genbank_to_genbank(const char *inf, const char *outf);
 
@@ -122,13 +124,13 @@ int macke_abbrev(char *line, char *key, int index);
 bool macke_is_continued_remark(const char *str);
 char macke_in_name(FILE_BUFFER fp);
 void macke_out_header(FILE *fp);
-void macke_out0(FILE *fp, int format);
-void macke_out1(FILE *fp);
+void macke_seq_display_out(FILE *fp, int format);
+void macke_seq_info_out(FILE *fp);
 void macke_print_keyword_rem(int index, FILE *fp);
-void macke_print_line_78(FILE *fp, char *line1, char *line2);
+void macke_print_line(FILE *fp, const char *prefix, const char *content);
 int macke_key_word(char *line, int index, char *key, int length);
 int macke_in_one_line(char *Str);
-void macke_out2(FILE *fp);
+void macke_seq_data_out(FILE *fp);
 
 /* main.cxx */
 
@@ -173,12 +175,14 @@ void to_printable_1x1(const char *inf, const char *outf, int informat);
 void printable_print_line(char *id, char *sequence, int start, int base_count, FILE *fp);
 
 /* routines.cxx */
-void count_base(int *base_a, int *base_t, int *base_g, int *base_c, int *base_other);
+void count_bases(int *base_a, int *base_t, int *base_g, int *base_c, int *base_other);
+void print_wrapped(FILE *fp, const char *first_prefix, const char *other_prefix, const char *content, const WrapMode &wrapMode, int max_width, WrapBug behavior);
 
 /* util.cxx */
 bool scan_token(const char *from, char *to) __ATTR__USERESULT;
 void scan_token_or_die(const char *from, char *to, FILE_BUFFER *fb);
 void throw_error(int error_num, const char *error_message) __ATTR__NORETURN;
+char *strf(const char *format, ...) __ATTR__FORMAT(1);
 void throw_errorf(int error_num, const char *error_messagef, ...) __ATTR__FORMAT(2) __ATTR__NORETURN;
 void throw_cant_open_input(const char *filename);
 void throw_cant_open_output(const char *filename);
@@ -197,6 +201,8 @@ void skip_eolnl_and_append_spaced(char *&string1, const char *string2);
 void Append(char *&string1, const char *string2);
 int find_pattern(const char *text, const char *pattern);
 void upcase(char *str);
+void fputc_rep(char c, int repeat, FILE *fp);
+int fputs_len(const char *str, int len, FILE *out);
 
 #else
 #error prototypes.h included twice

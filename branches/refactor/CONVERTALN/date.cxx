@@ -4,7 +4,6 @@
 #include <ctype.h>
 #include <time.h>
 #include <sys/time.h>
-#include "convert.h"
 #include "global.h"
 
 #define SIZE 128 // default buffer size for generated dates

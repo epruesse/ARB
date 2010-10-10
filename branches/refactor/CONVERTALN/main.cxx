@@ -11,7 +11,6 @@
 #include <stdlib.h>
 #include <ctype.h>
 #include <string.h>
-#include "convert.h"
 #include "global.h"
 #include "types.h"
 #include <arb_defs.h>

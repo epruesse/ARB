@@ -2,7 +2,6 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include "convert.h"
 #include "global.h"
 #include "types.h"
 #include <static_assert.h>
@@ -127,104 +126,113 @@ void global_data::setup() {
     cleanup();
 
     /* initialize macke format */
-    data.macke.seqabbr    = NULL;
-    data.macke.name       = NULL;
-    data.macke.atcc       = NULL;
-    data.macke.rna        = NULL;
-    data.macke.date       = NULL;
-    data.macke.nbk        = NULL;
-    data.macke.acs        = NULL;
-    data.macke.who        = NULL;
-    data.macke.remarks    = NULL;
-    data.macke.numofrem   = 0;
-    data.macke.rna_or_dna = 'd';
-    data.macke.journal    = NULL;
-    data.macke.title      = NULL;
-    data.macke.author     = NULL;
-    data.macke.strain     = NULL;
-    data.macke.subspecies = NULL;
+    macke.seqabbr    = NULL;
+    macke.name       = NULL;
+    macke.atcc       = NULL;
+    macke.rna        = NULL;
+    macke.date       = NULL;
+    macke.nbk        = NULL;
+    macke.acs        = NULL;
+    macke.who        = NULL;
+    macke.remarks    = NULL;
+    macke.numofrem   = 0;
+    macke.rna_or_dna = 'd';
+    macke.journal    = NULL;
+    macke.title      = NULL;
+    macke.author     = NULL;
+    macke.strain     = NULL;
+    macke.subspecies = NULL;
 
     /* initialize genbank format */
-    data.gbk.locus                    = NULL;
-    data.gbk.definition               = NULL;
-    data.gbk.accession                = NULL;
-    data.gbk.keywords                 = NULL;
-    data.gbk.source                   = NULL;
-    data.gbk.organism                 = NULL;
-    data.gbk.numofref                 = 0;
-    data.gbk.reference                = NULL;
-    data.gbk.comments.orginf.exist    = 0;
-    data.gbk.comments.orginf.source   = NULL;
-    data.gbk.comments.orginf.cc       = NULL;
-    data.gbk.comments.orginf.formname = NULL;
-    data.gbk.comments.orginf.nickname = NULL;
-    data.gbk.comments.orginf.commname = NULL;
-    data.gbk.comments.orginf.hostorg  = NULL;
-    data.gbk.comments.seqinf.exist    = 0;
-    data.gbk.comments.seqinf.RDPid    = NULL;
-    data.gbk.comments.seqinf.gbkentry = NULL;
-    data.gbk.comments.seqinf.methods  = NULL;
-    data.gbk.comments.seqinf.comp5    = ' ';
-    data.gbk.comments.seqinf.comp3    = ' ';
-    data.gbk.comments.others          = NULL;
+    gbk.locus      = NULL;
+    gbk.definition = NULL;
+    gbk.accession  = NULL;
+    gbk.keywords   = NULL;
+    gbk.source     = NULL;
+    gbk.organism   = NULL;
+    gbk.numofref   = 0;
+    gbk.reference  = NULL;
+    {
+        Comments& comments = gbk.comments;
+        {
+            OrgInfo& orginf = comments.orginf;
+            orginf.exists = false;
+            orginf.source   = NULL;
+            orginf.cultcoll = NULL;
+            orginf.formname = NULL;
+            orginf.nickname = NULL;
+            orginf.commname = NULL;
+            orginf.hostorg  = NULL;
+        }
+        {
+            SeqInfo& seqinf = comments.seqinf;
+            seqinf.exists = false;
+            seqinf.RDPid    = NULL;
+            seqinf.gbkentry = NULL;
+            seqinf.methods  = NULL;
+            seqinf.comp5    = ' ';
+            seqinf.comp3    = ' ';
+        }        
+        comments.others = NULL;
+    }
+    /* initialize paup format */
+    paup.ntax   = 0;
+    paup.equate = "~=.|><";
+    paup.gap    = '-';
 
-     /* initialize paup format */
-    data.paup.ntax   = 0;
-    data.paup.equate = "~=.|><";
-    data.paup.gap    = '-';
+    /* initial phylip data */
 
-     /* initial phylip data */
     /* initial embl data */
-    data.embl.id                       = NULL;
-    data.embl.dateu                    = NULL;
-    data.embl.datec                    = NULL;
-    data.embl.description              = NULL;
-    data.embl.os                       = NULL;
-    data.embl.accession                = NULL;
-    data.embl.keywords                 = NULL;
-    data.embl.dr                       = NULL;
-    data.embl.numofref                 = 0;
-    data.embl.reference                = NULL;
-    data.embl.comments.orginf.exist    = 0;
-    data.embl.comments.orginf.source   = NULL;
-    data.embl.comments.orginf.cc       = NULL;
-    data.embl.comments.orginf.formname = NULL;
-    data.embl.comments.orginf.nickname = NULL;
-    data.embl.comments.orginf.commname = NULL;
-    data.embl.comments.orginf.hostorg  = NULL;
-    data.embl.comments.seqinf.exist    = 0;
-    data.embl.comments.seqinf.RDPid    = NULL;
-    data.embl.comments.seqinf.gbkentry = NULL;
-    data.embl.comments.seqinf.methods  = NULL;
-    data.embl.comments.seqinf.comp5    = ' ';
-    data.embl.comments.seqinf.comp3    = ' ';
-    data.embl.comments.others          = NULL;
-
-     /* initial NBRF data format */
-    data.nbrf.id          = NULL;
-    data.nbrf.description = NULL;
+    embl.id          = NULL;
+    embl.dateu       = NULL;
+    embl.datec       = NULL;
+    embl.description = NULL;
+    embl.os          = NULL;
+    embl.accession   = NULL;
+    embl.keywords    = NULL;
+    embl.dr          = NULL;
+    embl.numofref    = 0;
+    embl.reference   = NULL;
+    {
+        Comments& comments = embl.comments;
+        {
+            OrgInfo& orginf = comments.orginf;
+            orginf.exists = false;
+            orginf.source   = NULL;
+            orginf.cultcoll = NULL;
+            orginf.formname = NULL;
+            orginf.nickname = NULL;
+            orginf.commname = NULL;
+            orginf.hostorg  = NULL;
+        }
+        {
+            SeqInfo& seqinf = comments.seqinf;
+            seqinf.exists = false;
+            seqinf.RDPid    = NULL;
+            seqinf.gbkentry = NULL;
+            seqinf.methods  = NULL;
+            seqinf.comp5    = ' ';
+            seqinf.comp3    = ' ';
+        }
+        comments.others = NULL;
+    }
+    /* initial NBRF data format */
+    nbrf.id          = NULL;
+    nbrf.description = NULL;
     
     /* initial sequence data */
-    data.numofseq   = 0;
-    data.seq_length = 0;
-    data.max        = INITSEQ;
-    data.sequence   = (char *)calloc(1, (unsigned)(sizeof(char) * INITSEQ + 1));
+    numofseq   = 0;
+    seq_length = 0;
+    max        = INITSEQ;
+    sequence   = (char *)calloc(1, (unsigned)(sizeof(char) * INITSEQ + 1));
 
-    data.ids       = NULL;
-    data.seqs      = NULL;
-    data.lengths   = NULL;
-    data.allocated = 0;
-
-#if (UNIT_TESTS==1)
-    data.test_counter = 0;
-#endif
+    ids       = NULL;
+    seqs      = NULL;
+    lengths   = NULL;
+    allocated = 0;
 
     initialized = true;
 }
-
-#if (UNIT_TESTS==1)
-static int overall_test_counter = 0;
-#endif
 
 void global_data::cleanup() {
     if (initialized) {
@@ -238,10 +246,6 @@ void global_data::cleanup() {
         freenull(data.gbk.definition);
 
         initialized = false;
-
-#if (UNIT_TESTS==1)
-        overall_test_counter += data.test_counter; 
-#endif
     }
 }
 
@@ -506,7 +510,7 @@ static int will_convert(int from) {
     return will;
 }
 
-void TEST_converter() {
+void TEST_0_converter() {
     COMPILE_ASSERT(FORMATNUM_COUNT == fcount);
 
     init_cap();
@@ -596,8 +600,6 @@ void TEST_converter() {
     int max_untested = noInput+neverReturns+broken; // the 3 counters may overlop
 
     TEST_ASSERT_LOWER_EQUAL(untested, max_untested);
-
-    TEST_WARNING("Overall counter=%i", overall_test_counter);
 }
 
 #endif // UNIT_TESTS

@@ -1,7 +1,6 @@
 /* -------------------- Macke related subroutines -------------- */
 
 #include <stdio.h>
-#include "convert.h"
 #include "global.h"
 #include "macke.h"
 
@@ -276,6 +275,10 @@ int macke_abbrev(char *line, char *key, int index) {
  *   Function macke_is_continued_remark().
  *       If there is 3 blanks at the beginning of the line,
  *           it is continued line.
+ *
+ * The comment above is lying:
+ *      The function always only tested for 2 spaces
+ *      and the converter only produced 2 spaces.
  */
 bool macke_is_continued_remark(const char *str) {
     return strncmp(str, ":  ", 3) == 0;
@@ -353,11 +356,9 @@ void macke_out_header(FILE * fp) {
     fprintf(fp, "#-\t%s\n#-\n#-\n", date);
 }
 
-/* ------------------------------------------------------------
- *   Function macke_out0().
- *       Output the Macke format each sequence format.
- */
-void macke_out0(FILE * fp, int format) {
+void macke_seq_display_out(FILE * fp, int format) {
+    // Output the Macke format each sequence format (wot?)
+    
     char token[TOKENSIZE], direction[TOKENSIZE];
 
     if (format == SWISSPROT) {
@@ -386,79 +387,50 @@ void macke_out0(FILE * fp, int format) {
         fprintf(fp, "#=\t\t%s\tin  out  vis  prt   ord  %s  lin  %s  func\n", data.macke.seqabbr, token, direction);
 }
 
-/* ---------------------------------------------------------------
- *   Function macke_out1().
- *       Output sequences information.
- */
-void macke_out1(FILE * fp) {
-    char temp[LINESIZE];
-    int  indi;
+static void macke_print_prefixed_line(FILE *fp, const char *tag, const char *content) {
+    ca_assert(has_content(content));
 
-    // @@@ DRY below
-    if (has_content(data.macke.name)) {
-        sprintf(temp, "#:%s:name:", data.macke.seqabbr);
-        macke_print_line_78(fp, temp, data.macke.name);
-    }
-    if (has_content(data.macke.strain)) {
-        sprintf(temp, "#:%s:strain:", data.macke.seqabbr);
-        macke_print_line_78(fp, temp, data.macke.strain);
-    }
-    if (has_content(data.macke.subspecies)) {
-        sprintf(temp, "#:%s:subsp:", data.macke.seqabbr);
-        macke_print_line_78(fp, temp, data.macke.subspecies);
-    }
-    if (has_content(data.macke.atcc)) {
-        sprintf(temp, "#:%s:atcc:", data.macke.seqabbr);
-        macke_print_line_78(fp, temp, data.macke.atcc);
-    }
-    if (has_content(data.macke.rna)) {
-        /* old version entry */
-        sprintf(temp, "#:%s:rna:", data.macke.seqabbr);
-        macke_print_line_78(fp, temp, data.macke.rna);
-    }
-    if (has_content(data.macke.date)) {
-        sprintf(temp, "#:%s:date:", data.macke.seqabbr);
-        macke_print_line_78(fp, temp, data.macke.date);
-    }
-    if (has_content(data.macke.acs)) {
-        sprintf(temp, "#:%s:acs:", data.macke.seqabbr);
-        macke_print_line_78(fp, temp, data.macke.acs);
-    }
-    else if (has_content(data.macke.nbk)) {
-        /* old version entry */
-        sprintf(temp, "#:%s:acs:", data.macke.seqabbr);
-        macke_print_line_78(fp, temp, data.macke.nbk);
-    }
-    if (has_content(data.macke.author)) {
-        sprintf(temp, "#:%s:auth:", data.macke.seqabbr);
-        macke_print_line_78(fp, temp, data.macke.author);
-    }
-    if (has_content(data.macke.journal)) {
-        sprintf(temp, "#:%s:jour:", data.macke.seqabbr);
-        macke_print_line_78(fp, temp, data.macke.journal);
-    }
-    if (has_content(data.macke.title)) {
-        sprintf(temp, "#:%s:title:", data.macke.seqabbr);
-        macke_print_line_78(fp, temp, data.macke.title);
-    }
-    if (has_content(data.macke.who)) {
-        sprintf(temp, "#:%s:who:", data.macke.seqabbr);
-        macke_print_line_78(fp, temp, data.macke.who);
-    }
+    char prefix[LINESIZE];
+    sprintf(prefix, "#:%s:%s:", data.macke.seqabbr, tag);
 
-    /* print out remarks, wrap around if more than 78 columns */
-    for (indi = 0; indi < data.macke.numofrem; indi++) {
+    macke_print_line(fp, prefix, content);
+}
+
+static bool macke_print_prefixed_line_if_content(FILE *fp, const char *tag, const char *content) {
+    if (!has_content(content)) return false;
+    macke_print_prefixed_line(fp, tag, content);
+    return true;
+}
+
+void macke_seq_info_out(FILE * fp) {
+    // Output sequence information
+    Macke& macke = data.macke;
+
+    macke_print_prefixed_line_if_content(fp, "name",   macke.name);
+    macke_print_prefixed_line_if_content(fp, "strain", macke.strain);
+    macke_print_prefixed_line_if_content(fp, "subsp",  macke.subspecies);
+    macke_print_prefixed_line_if_content(fp, "atcc",   macke.atcc);
+    macke_print_prefixed_line_if_content(fp, "rna",    macke.rna);        // old version entry
+    macke_print_prefixed_line_if_content(fp, "date",   macke.date);
+    macke_print_prefixed_line_if_content(fp, "acs",    macke.acs)
+        || macke_print_prefixed_line_if_content(fp, "acs", macke.nbk);    // old version entry
+    macke_print_prefixed_line_if_content(fp, "auth",   macke.author);
+    macke_print_prefixed_line_if_content(fp, "jour",   macke.journal);
+    macke_print_prefixed_line_if_content(fp, "title",  macke.title);
+    macke_print_prefixed_line_if_content(fp, "who",    macke.who);
+
+    /* print out remarks, wrap around if more than MACKEMAXLINE columns */
+    for (int indi = 0; indi < macke.numofrem; indi++) {
         /* Check if it is general comment or GenBank entry */
         /* if general comment, macke_in_one_line return(1). */
-        if (macke_in_one_line(data.macke.remarks[indi])) {
-            sprintf(temp, "#:%s:rem:", data.macke.seqabbr);
-            macke_print_line_78(fp, temp, data.macke.remarks[indi]);
-            continue;
+        if (macke_in_one_line(macke.remarks[indi])) {
+            macke_print_prefixed_line(fp, "rem", macke.remarks[indi]);
         }
-
-        /* if GenBank entry comments */
-        macke_print_keyword_rem(indi, fp);
-    }                           /* for each remark */
+        else {
+            /* if GenBank entry comments */
+            macke_print_keyword_rem(indi, fp);
+        }
+    } 
 }
 
 /* ----------------------------------------------------------------
@@ -468,74 +440,19 @@ void macke_out1(FILE * fp) {
  *       (Those keywords are defined in GenBank COMMENTS by
  *           RDP group)
  */
-void macke_print_keyword_rem(int index, FILE * fp) {
-    int indj, indk, indl, lineno, len, maxc;
-
-    lineno = 0;
-    len = str0len(data.macke.remarks[index]) - 1;
-    for (indj = 0; indj < len; indj += (indk + 1)) {
-        indk = maxc = MACKEMAXCHAR - 7 - str0len(data.macke.seqabbr);
-        if (lineno != 0)
-            indk = maxc = maxc - 3;
-        if ((str0len(data.macke.remarks[index] + indj) - 1)
-            > maxc) {
-            /* Search the last word */
-            // @@@ use wrap_pos
-            for (indk = maxc - 1; indk >= 0 && is_word_char(data.macke.remarks[index][indk + indj]); indk--) ;
-
-            if (lineno == 0) {
-                fprintf(fp, "#:%s:rem:", data.macke.seqabbr);
-                lineno++;
-            }
-            else
-                fprintf(fp, "#:%s:rem::  ", data.macke.seqabbr);
-
-            for (indl = 0; indl < indk; indl++) fputc(data.macke.remarks[index][indj + indl], fp);
-            if (data.macke.remarks[index][indj + indk] != ' ') fputc(data.macke.remarks[index][indj + indk], fp);
-            fputc('\n', fp);
-        }
-        else if (lineno == 0)
-            fprintf(fp, "#:%s:rem:%s", data.macke.seqabbr, data.macke.remarks[index] + indj);
-        else
-            fprintf(fp, "#:%s:rem::  %s", data.macke.seqabbr, data.macke.remarks[index] + indj);
-    }                           /* for every MACKEMAXCHAR columns */
+void macke_print_keyword_rem(int index, FILE * fp) { // @@@ WRAPPER
+    char first[LINESIZE]; sprintf(first, "#:%s:rem:", data.macke.seqabbr);
+    char other[LINESIZE]; sprintf(other, "%s:%*s", first, RDP_SUBKEY_INDENT, "");
+    const char *remark = data.macke.remarks[index];
+    
+    // print_wrapped(fp, first, other, remark, WrapMode(true), MACKEMAXLINE, false); // @@@ wanted correct behavior
+    print_wrapped(fp, first, other, remark, WrapMode(true), MACKEMAXLINE-1, WRAPBUG_WRAP_AT_SPACE); // works with testdata
 }
 
-/* ---------------------------------------------------------------
- *   Function macke_print_line_78().
- *       print a macke line and wrap around line after
- *           78(MACKEMAXCHAR) column.
- */
-void macke_print_line_78(FILE * fp, char *line1, char *line2) {
-    int len, indi, indj, indk, ibuf;
-
-    for (indi = 0, len = str0len(line2); indi < len; indi += indj) {
-        indj = 78 - str0len(line1);
-
-        if ((str0len(line2 + indi)) > indj) {
-            ibuf = indj;
-
-            // @@@ use wrap_pos
-            for (; indj > 0 && is_word_char(line2[indi + indj]); indj--) ;
-
-            if (indj == 0)
-                indj = ibuf;
-            else if (line2[indi + indj + 1] == ' ')
-                indj++;
-
-            fputs(line1, fp);
-
-            for (indk = 0; indk < indj; indk++) fputc(line2[indi + indk], fp);
-
-            /* print out the last char if it is not blank */
-            if (line2[indi + indj] == ' ')
-                indj++;
-
-            fputc('\n', fp);
-        }
-        else
-            fprintf(fp, "%s%s", line1, line2 + indi);
-    }                           /* for loop */
+void macke_print_line(FILE * fp, const char *prefix, const char *content) { // @@@ WRAPPER
+    // print a macke line and wrap around line after MACKEMAXLINE column.
+    // print_wrapped(fp, prefix, prefix, content, WrapMode(true), MACKEMAXLINE, false); // @@@ wanted
+    print_wrapped(fp, prefix, prefix, content, WrapMode(true), MACKEMAXLINE, WRAPBUG_WRAP_BEFORE_SEP); 
 }
 
 /* -----------------------------------------------------------
@@ -611,11 +528,8 @@ int macke_in_one_line(char *Str) {
         return (1);
 }
 
-/* --------------------------------------------------------------
- *   Function macke_out2().
- *       Output Macke format sequences data.
- */
-void macke_out2(FILE * fp) {
+void macke_seq_data_out(FILE * fp) {
+    // Output Macke format sequence data
     int indj, indk;
 
     if (data.seq_length > MACKELIMIT) {

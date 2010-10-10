@@ -1,5 +1,4 @@
 #include <stdio.h>
-#include "convert.h"
 #include "global.h"
 
 /* ------------------------------------------------------------
@@ -258,8 +257,7 @@ void paup_print_line(char *Str, char *sequence, int seq_length, int index, int f
         seq_length = str0len(sequence);
 
     if (index < seq_length) {
-        for (; indi < 11; indi++)
-            fputc(' ', fp);
+        for (; indi < 11; indi++) fputc(' ', fp);
 
         for (indi = indj = 0; indi < length; indi++) {
             if ((index + indi) < seq_length) {
