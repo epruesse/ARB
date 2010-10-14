@@ -266,20 +266,6 @@ void gcg_out_origin(const Seq& seq, FILE * fp) {
         fputs(" \n", fp);
 }
 
-/* --------------------------------------------------------------
- *   Function gcg_output_filename().
- *       Get gcg output filename, convert all '.' to '_' and
- *           append ".RDP" as suffix.
- */
-void gcg_output_filename(char *prefix, char *name) {
-    int indi, len;
-
-    for (indi = 0, len = str0len(prefix); indi < len; indi++)
-        if (prefix[indi] == '.')
-            prefix[indi] = '_';
-    sprintf(name, "%s.RDP", prefix);
-}
-
 /* ------------------------------------------------------------------
  *   Function gcg_seq_length().
  *       Calculate sequence length without gap.

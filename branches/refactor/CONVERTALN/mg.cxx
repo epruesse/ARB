@@ -603,21 +603,6 @@ void mtog_decode_ref_and_remarks(const Macke& macke, GenBank& gbk) {
 }
 
 /* ------------------------------------------------------------------
- *  Function macke_copyrem().
- *      uncode rem lines.
- */
-char *macke_copyrem(char **strings, int *index, int maxline, int pointer) {
-    char *Str;
-    int   indi;
-
-    Str = nulldup(strings[(*index)] + pointer);
-    for (indi = (*index) + 1; indi < maxline && macke_is_continued_remark(strings[indi]); indi++)
-        skip_eolnl_and_append_spaced(Str, strings[indi] + 3);
-    (*index) = indi - 1;
-    return (Str);
-}
-
-/* ------------------------------------------------------------------
  *   Function mtog_genbank_def_and_source().
  *       Define GenBank DEFINITION and SOURCE lines the way RDP
  *           group likes.

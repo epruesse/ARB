@@ -20,9 +20,7 @@ int WrapMode::wrap_pos(const char *str, int wrapCol) const {
     return i >= 0 ? i : wrapCol;
 }
 
-#warning make the following functions methods of WrapMode
-
-static const char *print_return_wrapped(FILE *fp, const char * const content, const int len, const WrapMode& wrapMode, const int rest_width, WrapBug behavior) {
+const char *WrapMode::print_return_wrapped(FILE *fp, const char * const content, const int len, const int rest_width, WrapBug behavior) const {
     // @@@ currently reproduces all bugs found in the previously six individual wrapping functions
 
     ca_assert(content[len] == '\n');
@@ -32,9 +30,9 @@ static const char *print_return_wrapped(FILE *fp, const char * const content, co
         return NULL; // no rest
     }
 
-    int split_after = wrapMode.wrap_pos(content, rest_width);
+    int split_after = wrap_pos(content, rest_width);
 
-    if (behavior&WRAPBUG_WRAP_AT_SPACE && split_after == 0) split_after = wrapMode.wrap_pos(content+1, rest_width-1)+1;
+    if (behavior&WRAPBUG_WRAP_AT_SPACE && split_after == 0) split_after = wrap_pos(content+1, rest_width-1)+1;
     if (behavior&WRAPBUG_WRAP_BEFORE_SEP && split_after>0) split_after--;
         
     ca_assert(split_after>0);
@@ -61,16 +59,14 @@ static const char *print_return_wrapped(FILE *fp, const char * const content, co
     return content+continue_at;
 }
 
-static void print_wrapped(FILE *fp, const char *first_prefix, const char *other_prefix, const char *content, const WrapMode& wrapMode, int max_width, WrapBug behavior) { // @@@ WRAPPER
-    // general function for line wrapping
-
+void WrapMode::print(FILE *fp, const char *first_prefix, const char *other_prefix, const char *content, int max_width, WrapBug behavior) const {
     ca_assert(has_content(content));
 
     int len        = strlen(content)-1;
     int prefix_len = strlen(first_prefix);
 
     fputs(first_prefix, fp);
-    const char *rest = print_return_wrapped(fp, content, len, wrapMode, max_width-prefix_len, behavior);
+    const char *rest = print_return_wrapped(fp, content, len, max_width-prefix_len, behavior);
 
     if (rest) {
         prefix_len = strlen(other_prefix);
@@ -80,14 +76,9 @@ static void print_wrapped(FILE *fp, const char *first_prefix, const char *other_
             content  = rest;
             
             fputs(other_prefix, fp);
-            rest = print_return_wrapped(fp, content, len, wrapMode, max_width-prefix_len, behavior);
+            rest = print_return_wrapped(fp, content, len, max_width-prefix_len, behavior);
         }
     }
-}
-
-
-void WrapMode::print(FILE *fp, const char *first_prefix, const char *other_prefix, const char *content, int max_width, WrapBug behavior) const {
-    print_wrapped(fp, first_prefix, other_prefix, content, *this, max_width, behavior);
 }
 
 

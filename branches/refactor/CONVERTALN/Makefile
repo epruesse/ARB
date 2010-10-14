@@ -290,21 +290,6 @@ reader.o: $(ARBHOME)/INCLUDE/FileBuffer.h
 reader.o: $(ARBHOME)/INCLUDE/smartptr.h
 reader.o: $(ARBHOME)/INCLUDE/test_global.h
 
-seq.o: fun.h
-seq.o: global.h
-seq.o: prototypes.h
-seq.o: seq.h
-seq.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
-seq.o: $(ARBHOME)/INCLUDE/arb_assert.h
-seq.o: $(ARBHOME)/INCLUDE/arb_core.h
-seq.o: $(ARBHOME)/INCLUDE/arbdb_base.h
-seq.o: $(ARBHOME)/INCLUDE/arbtools.h
-seq.o: $(ARBHOME)/INCLUDE/attributes.h
-seq.o: $(ARBHOME)/INCLUDE/dupstr.h
-seq.o: $(ARBHOME)/INCLUDE/FileBuffer.h
-seq.o: $(ARBHOME)/INCLUDE/smartptr.h
-seq.o: $(ARBHOME)/INCLUDE/test_global.h
-
 util.o: defs.h
 util.o: fun.h
 util.o: global.h

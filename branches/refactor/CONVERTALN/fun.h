@@ -4,7 +4,6 @@
 // forward decls for prototypes
 
 class Reader;
-class WrapMode;
 struct Embl;
 struct Emblref;
 struct GenBank;

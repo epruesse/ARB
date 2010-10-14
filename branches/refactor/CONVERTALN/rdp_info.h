@@ -80,8 +80,11 @@ struct RDP_comments {
     SeqInfo  seqinf;
     char    *others;
 
-    RDP_comments() { others = NULL; }
-    RDP_comments(const RDP_comments& other) { others = nulldup(other.others); }
+    RDP_comments() : others(NULL) {}
+    RDP_comments(const RDP_comments& from)
+        : orginf(from.orginf),
+          seqinf(from.seqinf),
+          others(nulldup(from.others)) {}
     ~RDP_comments() { freenull(others); }
     DECLARE_ASSIGNMENT_OPERATOR(RDP_comments);
 };

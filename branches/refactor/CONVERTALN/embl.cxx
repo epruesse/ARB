@@ -153,25 +153,6 @@ void embl_key_word(const char *line, int index, char *key, int length) {
     key[indj] = '\0';
 }
 
-/* ------------------------------------------------------------
- *      Function embl_check_blanks().
- *              Check if there is (numb) blanks at beginning of line.
- */
-int embl_check_blanks(char *line, int numb) {
-    int blank = 1, indi, indk;
-
-    for (indi = 0; blank && indi < numb; indi++) {
-        if (line[indi] != ' ' && line[indi] != '\t')
-            blank = 0;
-        if (line[indi] == '\t') {
-            indk = indi / 8 + 1;
-            indi = 8 * indk + 1;
-        }
-    }
-
-    return (blank);
-}
-
 /* ----------------------------------------------------------------
  *      Function embl_continue_line().
  *              if there are (numb) blanks at the beginning of line,
@@ -462,6 +443,17 @@ char *embl_origin(Seq& seq, char *line, FILE_BUFFER fp) { // @@@ use Reader
     return eof;
 }
 
+static void embl_print_lines(FILE * fp, const char *key, const char *content, const WrapMode& wrapMode) { // @@@ WRAPPER
+    // Print EMBL entry and wrap around if line over EMBLMAXLINE.
+    ca_assert(strlen(key) == 2);
+    
+    char prefix[TOKENSIZE];
+    sprintf(prefix, "%-*s", EMBLINDENT, key);
+
+    // wrapMode.print(fp, prefix, prefix, content, EMBLMAXLINE, true); // @@@ wanted
+    wrapMode.print(fp, prefix, prefix, content, EMBLMAXLINE-1, WRAPBUG_WRAP_AT_SPACE); // @@@ 2 BUGs
+}
+
 static void embl_print_lines_if_content(FILE *fp, const char *key, const char *content, const WrapMode& wrapMode, bool followed_by_spacer) {
     if (has_content(content)) {
         embl_print_lines(fp, key, content, wrapMode);
@@ -512,17 +504,6 @@ void embl_out(const Embl& embl, const Seq& seq, FILE * fp) {
 
     embl_out_comments(embl, seq, fp);
     embl_out_origin(seq, fp);
-}
-
-void embl_print_lines(FILE * fp, const char *key, const char *content, const WrapMode& wrapMode) { // @@@ WRAPPER
-    // Print EMBL entry and wrap around if line over EMBLMAXLINE.
-    ca_assert(strlen(key) == 2);
-    
-    char prefix[TOKENSIZE];
-    sprintf(prefix, "%-*s", EMBLINDENT, key);
-
-    // wrapMode.print(fp, prefix, prefix, content, EMBLMAXLINE, true); // @@@ wanted
-    wrapMode.print(fp, prefix, prefix, content, EMBLMAXLINE-1, WRAPBUG_WRAP_AT_SPACE); // @@@ 2 BUGs
 }
 
 inline void embl_print_completeness(FILE *fp, char compX, char X) {

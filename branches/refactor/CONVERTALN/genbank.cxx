@@ -537,6 +537,27 @@ char genbank_in_locus(GenBank& gbk, Seq& seq, FILE_BUFFER fp) {
         return (EOF + 1);
 }
 
+static void genbank_print_lines(FILE * fp, const char *key, const char *content, const WrapMode& wrapMode) { // @@@ WRAPPER
+    // Print one genbank line, wrap around if over column GBMAXLINE
+
+    ca_assert(strlen(key) == GBINDENT);
+    ca_assert(content[strlen(content)-1] == '\n');
+
+    wrapMode.print(fp, key, "            ", content, GBMAXLINE, WRAP_CORRECTLY);
+}
+
+static void genbank_out_one_entry(FILE * fp, const char *key, const char *content, const WrapMode& wrapMode, int period) {
+    /* Print out key and content if content length > 1
+     * otherwise print key and "No information" w/wo
+     * period at the end depending on flag period.
+     */
+
+    if (!has_content(content)) {
+        content = period ? "No information.\n" : "No information\n";
+    }
+    genbank_print_lines(fp, key, content, wrapMode);
+}
+
 void genbank_out_one_reference(FILE * fp, const GenbankRef& gbk_ref, int gbk_ref_num, bool SIMULATE_BUG) {
     WrapMode wrapWords(true);
 
@@ -658,27 +679,6 @@ void genbank_out(const GenBank& gbk, const Seq& seq, FILE * fp) {
         fputc('\n', fp);
     }
     genbank_out_origin(seq, fp);
-}
-
-void genbank_out_one_entry(FILE * fp, const char *key, const char *content, const WrapMode& wrapMode, int period) {
-    /* Print out key and content if content length > 1
-     * otherwise print key and "No information" w/wo
-     * period at the end depending on flag period.
-     */
-
-    if (!has_content(content)) {
-        content = period ? "No information.\n" : "No information\n";
-    }
-    genbank_print_lines(fp, key, content, wrapMode);
-}
-
-void genbank_print_lines(FILE * fp, const char *key, const char *content, const WrapMode& wrapMode) { // @@@ WRAPPER
-    // Print one genbank line, wrap around if over column GBMAXLINE
-
-    ca_assert(strlen(key) == GBINDENT);
-    ca_assert(content[strlen(content)-1] == '\n');
-
-    wrapMode.print(fp, key, "            ", content, GBMAXLINE, WRAP_CORRECTLY);
 }
 
 void genbank_print_comment_if_content(FILE * fp, const char *key, const char *content) { // @@@ WRAPPER
