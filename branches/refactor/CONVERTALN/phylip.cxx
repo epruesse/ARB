@@ -1,6 +1,8 @@
 #include "input_format.h"
 #include "ali.h"
 
+#include <cerrno>
+
 /* ---------------------------------------------------------------
  *  Function to_phylip()
  *      Convert from some format to PHYLIP format.

@@ -3,6 +3,10 @@
 #include "defs.h"
 #include "global.h"
 
+#include <cstdarg>
+#include <cerrno>
+
+
 bool scan_token(const char *from, char *to) { // __ATTR__USERESULT
     return sscanf(from, "%s", to) == 1;
 }
