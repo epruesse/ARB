@@ -5,7 +5,6 @@
 #include <stdarg.h>
 #include <errno.h>
 #include "global.h"
-#include "types.h"
 
 int warning_out = 1;
 
@@ -119,34 +118,28 @@ void warningf(int warning_num, const char *warning_messagef, ...) { // __ATTR__F
  *       original space.
  */
 char *Reallocspace(void *block, unsigned int size) {
-    char *temp, answer;
+    char *temp;
 
-    if ((block == NULL && size <= 0) || size <= 0)
-        return (NULL);
+    if (size <= 0) {
+        free(block);
+        return NULL;
+    }
+    
     if (block == NULL) {
         temp = (char *)calloc(1, size);
     }
     else {
         temp = (char *)realloc(block, size);
     }
-    if (temp == NULL) {
-        const char *message = "Run out of memory (Reallocspace)";
-        warning(999, message);
-        fputs("Are you converting to Paup or Phylip?(y/n) ", stderr);
-        scanf("%c", &answer);
-        if (answer == 'y') {
-            return (NULL);
-        }
-        throw_error(999, message);
-    }
-    return (temp);
+    if (!temp) throw_error(999, "Run out of memory (Reallocspace)");
+    return temp;
 }
 
 /* ---------------------------------------------------------
  *   Function Skip_white_space().
  *       Skip white space from (index)th char of Str line.
  */
-int Skip_white_space(char *line, int index) {
+int Skip_white_space(const char *line, int index) {
     // skip white space 
 
     while (line[index] == ' ' || line[index] == '\t')

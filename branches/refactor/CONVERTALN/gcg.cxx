@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include "global.h"
 #include "macke.h"
-#include "types.h"
 
 /* ------------------------------------------------------------------
  *   Function to_gcg().
@@ -27,24 +26,20 @@ public:
 
     void set_species_name(const char *next_name) {
         if (!seq_written) species_name = nulldup(next_name);
-        else warningf(111, "Species '%s' dropped (GCG allows only 1 seq per file)", next_name);
+        else warningf(111, "Species '%s' dropped (GCG allows only 1 sequence per file)", next_name);
     }
 
     void add_comment(const char *comment) {
         if (!seq_written) gcg_doc_out(comment, ofp);
     }
 
-    void write_seq_data() { // uses global data
+    void write_seq_data(const Seq& seq) {
         if (!seq_written) {
-            gcg_seq_out(ofp, species_name);
+            gcg_seq_out(seq, ofp, species_name);
             seq_written = true;
         }
-        reset_seq_data();
     }
 };
-
-
-
 
 static void macke_to_gcg(const char *inf, const char *outf) {
     // @@@ fix outfile handling - use GcgWriter!
@@ -60,9 +55,9 @@ static void macke_to_gcg(const char *inf, const char *outf) {
     FILE *ofp = NULL;
 
     char line1[LINESIZE], line2[LINESIZE], line3[LINESIZE];
-    char *eof1 = skipOverLinesThat(line1, LINESIZE, ifp1, Not(isMackeSeqHeader)); // skip to #=; where seq. first appears
-    char *eof2 = skipOverLinesThat(line2, LINESIZE, ifp2, Not(isMackeSeqInfo));   // skip to #:; where the seq. information is
-    char *eof3 = skipOverLinesThat(line3, LINESIZE, ifp3, isMackeHeader);         // skip to where seq. data starts
+    char *eof1 = skipOverLinesThat(line1, LINESIZE, ifp1, Not(isMackeSeqHeader)); // skip to #=; where sequence first appears
+    char *eof2 = skipOverLinesThat(line2, LINESIZE, ifp2, Not(isMackeSeqInfo));   // skip to #:; where the sequence information is
+    char *eof3 = skipOverLinesThat(line3, LINESIZE, ifp3, isMackeHeader);         // skip to where sequence data starts
 
     for (; eof1 != NULL && isMackeSeqHeader(line1); eof1 = Fgetline(line1, LINESIZE, ifp1)) { // @@@ loop no longer needed (see break below)
         char key[TOKENSIZE];
@@ -79,12 +74,12 @@ static void macke_to_gcg(const char *inf, const char *outf) {
         {
             gcg_doc_out(line2, ofp);
         }
-        eof3 = macke_origin(key, line3, ifp3);
-        gcg_seq_out(ofp, key);
+        Seq seq;
+        eof3 = macke_origin(seq, key, line3, ifp3);
+        gcg_seq_out(seq, ofp, key);
         fclose(ofp);
         log_processed(1);
         ofp  = NULL;
-        reset_seq_data();
         break; // can only handle 1 sequence!
     }
     destroy_FILE_BUFFER(ifp3);
@@ -105,8 +100,8 @@ static void genbank_to_gcg(const char *inf, const char *outf) {
         }
         else if (str_equal(key, "ORIGIN")) {
             out.add_comment(inp.line());
-            inp.read_sequence_data();
-            out.write_seq_data();
+            SeqPtr seq = inp.read_sequence_data();
+            out.write_seq_data(*seq);
         }
         else {
             out.add_comment(inp.line());
@@ -127,8 +122,8 @@ static void embl_to_gcg(const char *inf, const char *outf) {
         }
         else if (str_equal(key, "SQ")) {
             out.add_comment(inp.line());
-            inp.read_sequence_data();
-            out.write_seq_data();
+            SeqPtr seq = inp.read_sequence_data();
+            out.write_seq_data(*seq);
             break;
         }
         else {
@@ -138,6 +133,8 @@ static void embl_to_gcg(const char *inf, const char *outf) {
 }
 
 void to_gcg(const char *inf, const char *outf, int intype) {
+    // @@@ use InputFormat ? 
+    
     if (intype == MACKE) {
         macke_to_gcg(inf, outf);
     }
@@ -156,13 +153,13 @@ void to_gcg(const char *inf, const char *outf, int intype) {
  *   Function gcg_seq_out().
  *       Output sequence data in gcg format.
  */
-void gcg_seq_out(FILE * ofp, const char *key) {
+void gcg_seq_out(const Seq& seq, FILE * ofp, const char *key) {
     fprintf(ofp, "\n%s  Length: %d  %s  Type: N  Check: %d  ..\n\n",
             key,
-            gcg_seq_length(),
+            gcg_seq_length(seq),
             gcg_date(today_date()),
-            checksum(data.sequence, data.seq_length));
-    gcg_out_origin(ofp);
+            seq.checksum());
+    gcg_out_origin(seq, ofp);
 }
 
 /* --------------------------------------------------------------------
@@ -214,15 +211,16 @@ int checksum(char *Str, int numofstr) {
  *   Function gcg_out_origin().
  *       Output sequence data in gcg format.
  */
-void gcg_out_origin(FILE * fp) {
+void gcg_out_origin(const Seq& seq, FILE * fp) {
     int indi, indj, indk;
 
-    for (indi = 0, indj = 0, indk = 1; indi < data.seq_length; indi++) {
-        if (data.sequence[indi] == '.' || data.sequence[indi] == '~' || data.sequence[indi] == '-')
+    const char *sequence = seq.get_seq();
+    for (indi = 0, indj = 0, indk = 1; indi < seq.get_len(); indi++) {
+        if (sequence[indi] == '.' || sequence[indi] == '~' || sequence[indi] == '-')
             continue;
         if ((indk % 50) == 1)
             fprintf(fp, "%8d  ", indk);
-        fputc(data.sequence[indi], fp);
+        fputc(sequence[indi], fp);
         indj++;
         if (indj == 10) {
             fputc(' ', fp);
@@ -254,11 +252,12 @@ void gcg_output_filename(char *prefix, char *name) {
  *   Function gcg_seq_length().
  *       Calculate sequence length without gap.
  */
-int gcg_seq_length() {
+int gcg_seq_length(const Seq& seq) {
     int indi, len;
 
-    for (indi = 0, len = data.seq_length; indi < data.seq_length; indi++)
-        if (data.sequence[indi] == '.' || data.sequence[indi] == '-' || data.sequence[indi] == '~')
+    const char *sequence = seq.get_seq();
+    for (indi = 0, len = seq.get_len(); indi < seq.get_len(); indi++)
+        if (sequence[indi] == '.' || sequence[indi] == '-' || sequence[indi] == '~')
             len--;
 
     return (len);

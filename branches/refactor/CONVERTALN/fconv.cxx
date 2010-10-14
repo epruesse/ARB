@@ -3,9 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "global.h"
-#include "types.h"
 #include <static_assert.h>
-#include <smartptr.h>
 
 const char *format2name(int format_type) {
     switch (format_type) {
@@ -29,6 +27,11 @@ void throw_conversion_not_supported(int input_format, int output_format) { // __
     throw_errorf(90, "Conversion from %s to %s is not supported",
                  format2name(input_format), format2name(output_format));
 }
+void throw_conversion_failure(int input_format, int output_format) {
+    throw_errorf(91, "Conversion from %s to %s fails",
+                 format2name(input_format), format2name(output_format));
+}
+
 
 static int log_processed_counter = 0;
 static int log_seq_counter       = 0;
@@ -46,17 +49,11 @@ void log_processed(int seqCount) {
     }
 }
 
-/* -------------------------------------------------------------
- *      Function convert_WRAPPED().
- *              For given input file and  type, convert the file
- *                      to desired out type and save the result in
- *                      the out file.
- */
+void convert(const char *inf, const char *outf, int intype, int outype) {
+    // convert the file 'inf' (assuming it has type 'intype')
+    // to desired 'outype' and save the result in 'outf'.
 
-static void convert_WRAPPED(const char *inf, const char *outf, int intype, int outype) {
-    int dd;                     // copy stdin to outfile after first line 
-
-    dd = 0;
+    int dd = 0; // copy stdin to outfile after first line
     if (outype == PHYLIP2) {
         outype = PHYLIP;
         dd = 1;
@@ -120,154 +117,6 @@ static void convert_WRAPPED(const char *inf, const char *outf, int intype, int o
     if (!converted) {
         throw_conversion_not_supported(intype, outype);
     }
-}
-
-void global_data::setup() {
-    cleanup();
-
-    // initialize macke format 
-    macke.seqabbr    = NULL;
-    macke.name       = NULL;
-    macke.atcc       = NULL;
-    macke.rna        = NULL;
-    macke.date       = NULL;
-    macke.nbk        = NULL;
-    macke.acs        = NULL;
-    macke.who        = NULL;
-    macke.remarks    = NULL;
-    macke.numofrem   = 0;
-    macke.rna_or_dna = 'd';
-    macke.journal    = NULL;
-    macke.title      = NULL;
-    macke.author     = NULL;
-    macke.strain     = NULL;
-    macke.subspecies = NULL;
-
-    // initialize genbank format 
-    gbk.locus      = NULL;
-    gbk.definition = NULL;
-    gbk.accession  = NULL;
-    gbk.keywords   = NULL;
-    gbk.source     = NULL;
-    gbk.organism   = NULL;
-    gbk.numofref   = 0;
-    gbk.reference  = NULL;
-    {
-        Comments& comments = gbk.comments;
-        {
-            OrgInfo& orginf = comments.orginf;
-            orginf.exists = false;
-            orginf.source   = NULL;
-            orginf.cultcoll = NULL;
-            orginf.formname = NULL;
-            orginf.nickname = NULL;
-            orginf.commname = NULL;
-            orginf.hostorg  = NULL;
-        }
-        {
-            SeqInfo& seqinf = comments.seqinf;
-            seqinf.exists = false;
-            seqinf.RDPid    = NULL;
-            seqinf.gbkentry = NULL;
-            seqinf.methods  = NULL;
-            seqinf.comp5    = ' ';
-            seqinf.comp3    = ' ';
-        }        
-        comments.others = NULL;
-    }
-    // initialize paup format 
-    paup.ntax   = 0;
-    paup.equate = "~=.|><";
-    paup.gap    = '-';
-
-    // initial phylip data 
-
-    // initial embl data 
-    embl.id          = NULL;
-    embl.dateu       = NULL;
-    embl.datec       = NULL;
-    embl.description = NULL;
-    embl.os          = NULL;
-    embl.accession   = NULL;
-    embl.keywords    = NULL;
-    embl.dr          = NULL;
-    embl.numofref    = 0;
-    embl.reference   = NULL;
-    {
-        Comments& comments = embl.comments;
-        {
-            OrgInfo& orginf = comments.orginf;
-            orginf.exists = false;
-            orginf.source   = NULL;
-            orginf.cultcoll = NULL;
-            orginf.formname = NULL;
-            orginf.nickname = NULL;
-            orginf.commname = NULL;
-            orginf.hostorg  = NULL;
-        }
-        {
-            SeqInfo& seqinf = comments.seqinf;
-            seqinf.exists = false;
-            seqinf.RDPid    = NULL;
-            seqinf.gbkentry = NULL;
-            seqinf.methods  = NULL;
-            seqinf.comp5    = ' ';
-            seqinf.comp3    = ' ';
-        }
-        comments.others = NULL;
-    }
-    // initial NBRF data format 
-    nbrf.id          = NULL;
-    nbrf.description = NULL;
-    
-    // initial sequence data 
-    numofseq   = 0;
-    seq_length = 0;
-    max        = INITSEQ;
-    sequence   = (char *)calloc(1, (unsigned)(sizeof(char) * INITSEQ + 1));
-
-    ids       = NULL;
-    seqs      = NULL;
-    lengths   = NULL;
-    allocated = 0;
-
-    initialized = true;
-}
-
-void global_data::cleanup() {
-    if (initialized) {
-        cleanup_macke();
-        cleanup_embl();
-        cleanup_genbank();
-
-        freenull(data.sequence);
-        freenull(data.gbk.comments.others);
-        freenull(data.gbk.reference);
-        freenull(data.gbk.definition);
-
-        initialized = false;
-    }
-}
-
-/* --------------------------------------------------------------
- *      Function reset_seq_data().
- *              Init. seq. data.
- */
-void reset_seq_data() {
-    data.numofseq = 0;
-    data.seq_length = 0;
-}
-
-void convert(const char *cinf, const char *coutf, int intype, int outype) {
-    SmartMallocPtr(char) inf  = strdup(cinf);
-    SmartMallocPtr(char) outf  = strdup(coutf);
-
-    struct DataHandler {
-        DataHandler() { data.setup(); }
-        ~DataHandler() { data.cleanup(); }
-    } handler;
-    
-    convert_WRAPPED(&*inf, &*outf, intype, outype);
 }
 
 // --------------------------------------------------------------------------------

@@ -40,8 +40,9 @@ struct GenBank;
 struct Macke;
 struct Paup;
 struct Nbrf;
-
-
+struct Seq;
+struct Alignment;
+class Reader;
 
 #ifndef PROTOTYPES_H
 #include "prototypes.h"
@@ -69,20 +70,6 @@ struct Nbrf;
 #define RDP_CONTINUED_INDENT 6
 
 #define p_nonkey_start 5
-
-// --------------------
-
-inline void NOOP_global_data_was_previously_initialized_here() {
-    // @@@ left this here cause it's called inside a loop from
-    // to_paup_1x1(), to_phylip_1x1() and to_printable_1x1().
-    //
-    // these functions are just hackarounds. they try to avoid running
-    // out of memory, which is caused by holding all sequences in memory.
-    // Instead they should be written during read!
-
-    ca_assert(0); // yeah - i found a test-case for this!
-} 
-
 
 // --------------------
 

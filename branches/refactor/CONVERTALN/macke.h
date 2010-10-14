@@ -12,32 +12,39 @@
 #ifndef MACKE_H
 #define MACKE_H
 
-class MackeReader {
-    bool  firstRead;
-    char *inName;
+class MackeReader : public DataReader {
+    bool        firstRead;
+    char       *inName;
+    const char *seqabbr; // owner Macke.seqabbr (set by mackeIn())
 
-    FILE        *IFP1, *IFP2, *IFP3;
-    FILE_BUFFER  fp1, fp2, fp3;
-
-    char  line1[LINESIZE];
-    char  line2[LINESIZE];
-    char  line3[LINESIZE];
-    char *eof1, *eof2, *eof3;
-    
+    Reader *r1, *r2, *r3;
     void start_reading();
     void stop_reading();
 
 public:
+
     MackeReader(const char *inName_)
-        : firstRead(true), 
-          inName(strdup(inName_))
+        : firstRead(true),
+          inName(strdup(inName_)),
+          seqabbr(0),
+          r1(NULL), 
+          r2(NULL), 
+          r3(NULL) 
     {}
     ~MackeReader() {
         stop_reading();
         free(inName);
     }
 
-    char mackeIn();
+    bool mackeIn(Macke& macke);
+
+    SeqPtr read_sequence_data() {
+        SeqPtr seq = new Seq;
+
+        ca_assert(seqabbr);
+        macke_origin(*seq, seqabbr, *r2);
+        return seq;
+    }
 };
 
 inline bool isMackeHeader(const char *line)    { return line[0] == '#'; }

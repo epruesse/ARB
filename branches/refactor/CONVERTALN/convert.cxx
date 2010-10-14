@@ -11,33 +11,55 @@
 
 #include "global.h"
 
-struct global_data data;
 
-int realloc_sequence_data(int total_seqs) {
-    if (total_seqs > data.allocated) {
-        data.allocated = (int)(data.allocated * 1.5) + 5;
-
-        data.ids = (char **)Reallocspace((char *)data.ids, sizeof(char *) * data.allocated);
-        data.seqs = (char **)Reallocspace((char *)data.seqs, sizeof(char *) * data.allocated);
-        data.lengths = (int *)Reallocspace((char *)data.lengths, sizeof(int) * data.allocated);
-
-        if (!data.ids || !data.seqs || !data.lengths) {
-            return 0;           // failed
-        }
+SmartPtr<InputFormat> InputFormat::create(char informat) {
+    switch (informat) {
+        case GENBANK: return new GenBank;
+        case SWISSPROT:
+        case EMBL: return new Embl;
+        case MACKE: return new Macke;
+        default: ca_assert(0);
     }
-    return 1;                   // success
+    return NULL;
 }
 
-void free_sequence_data(int used_entries) {
-    int indi;
-
-    for (indi = 0; indi < used_entries; indi++) {
-        freenull(data.ids[indi]);
-        freenull(data.seqs[indi]);
+SeqPtr GenBank::get_data(FILE_BUFFER ifp) {
+    SeqPtr seq = new Seq;
+    char eof = genbank_in_locus(*this, *seq, ifp);
+    if (eof == EOF) {
+        seq.SetNull();
     }
-    freenull(data.ids);
-    freenull(data.seqs);
-    freenull(data.lengths);
+    else {
+        char temp[TOKENSIZE];
+        genbank_key_word(locus, 0, temp, TOKENSIZE);
+        seq->set_id(temp);
+    }
+    return seq;
+}
 
-    data.allocated = 0;
+SeqPtr Embl::get_data(FILE_BUFFER ifp) {
+    SeqPtr seq = new Seq;
+    char            eof      = embl_in_id(*this, *seq, ifp);
+
+    if (eof == EOF) {
+        seq.SetNull();
+    }
+    else {
+        char temp[TOKENSIZE];
+        embl_key_word(id, 0, temp, TOKENSIZE);
+        seq->set_id(temp);
+    }
+    return seq;
+}
+
+SeqPtr Macke::get_data(FILE_BUFFER ifp) {
+    SeqPtr seq = new Seq;
+    char eof = macke_in_name_and_data(*this, *seq, ifp);
+    if (eof == EOF) {
+        seq.SetNull();
+    }
+    else {
+        seq->set_id(seqabbr);
+    }
+    return seq;
 }

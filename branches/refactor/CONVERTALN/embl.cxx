@@ -5,72 +5,15 @@
 
 extern int warning_out;
 
-/* ----------------------------------------------------------
- *      Function init_pm_data().
- *              Init macke and embl data.
- */
-void reinit_em_data() {
-    reinit_macke();
-    reinit_embl();
-}
-
-/* ------------------------------------------------------------
- *      Function reinit_embl().
- *              Initialize embl entry.
- */
-void cleanup_embl() {
-    Embl& embl = data.embl;
-
-    freenull(embl.id);
-    freenull(embl.dateu);
-    freenull(embl.datec);
-    freenull(embl.description);
-    freenull(embl.os);
-    freenull(embl.accession);
-    freenull(embl.keywords);
-
-    for (int indi = 0; indi < embl.numofref; indi++) {
-        freenull(embl.reference[indi].author);
-        freenull(embl.reference[indi].title);
-        freenull(embl.reference[indi].journal);
-        freenull(embl.reference[indi].processing);
-    }
-    freenull(embl.reference);
-    freenull(embl.dr);
-
-    cleanup_comments(embl.comments);
-}
-
-void reinit_embl() {
-    // initialize embl format 
-    cleanup_embl();
-
-    Embl& embl = data.embl;
-    
-    embl.id          = no_content();
-    embl.dateu       = no_content();
-    embl.datec       = no_content();
-    embl.description = no_content();
-    embl.os          = no_content();
-    embl.accession   = no_content();
-    embl.keywords    = no_content();
-    embl.dr          = no_content();
-    embl.numofref    = 0;
-    embl.reference   = NULL;
-
-    init_comments(embl.comments);
-}
-
 /* ---------------------------------------------------------------
  *      Function embl_in().
  *              Read in one embl entry.
  */
-char embl_in(FILE_BUFFER fp) {
+char embl_in(Embl& embl, Seq& seq, FILE_BUFFER fp) { // @@@ use Reader
     char  line[LINESIZE], key[TOKENSIZE];
     char *eof, eoen;
-    int   refnum;
 
-    eoen = ' ';                 // end-of-entry, set to be 'y' after '//' is read 
+    eoen = ' ';                 // end-of-entry, set to be 'y' after '//' is read
 
     for (eof = Fgetline(line, LINESIZE, fp); eof != NULL && eoen != 'y';) {
         if (str0len(line) <= 1) {
@@ -82,59 +25,57 @@ char embl_in(FILE_BUFFER fp) {
         eoen = 'n';
 
         if (str_equal(key, "ID")) {
-            eof = embl_one_entry(line, fp, data.embl.id, key);
+            eof = embl_one_entry(line, fp, embl.id, key);
         }
         else if (str_equal(key, "DT")) {
-            eof = embl_date(line, fp);
+            eof = embl_date(embl, line, fp);
         }
         else if (str_equal(key, "DE")) {
-            eof = embl_one_entry(line, fp, data.embl.description, key);
+            eof = embl_one_entry(line, fp, embl.description, key);
         }
         else if (str_equal(key, "OS")) {
-            eof = embl_one_entry(line, fp, data.embl.os, key);
+            eof = embl_one_entry(line, fp, embl.os, key);
         }
         else if (str_equal(key, "AC")) {
-            eof = embl_one_entry(line, fp, data.embl.accession, key);
+            eof = embl_one_entry(line, fp, embl.accession, key);
         }
         else if (str_equal(key, "KW")) {
-            eof = embl_one_entry(line, fp, data.embl.keywords, key);
+            eof = embl_one_entry(line, fp, embl.keywords, key);
 
             // correct missing '.' 
-            if (str0len(data.embl.keywords) <= 1) freedup(data.embl.keywords, ".\n");
-            else terminate_with(data.embl.keywords, '.');
+            if (str0len(embl.keywords) <= 1) freedup(embl.keywords, ".\n");
+            else terminate_with(embl.keywords, '.');
         }
         else if (str_equal(key, "DR")) {
-            eof = embl_one_entry(line, fp, data.embl.dr, key);
+            eof = embl_one_entry(line, fp, embl.dr, key);
         }
         else if (str_equal(key, "RA")) {
-            refnum = data.embl.numofref - 1;
-            eof = embl_one_entry(line, fp, data.embl.reference[refnum].author, key);
-            terminate_with(data.embl.reference[refnum].author, ';');
+            Emblref& ref = embl.get_latest_ref();
+            eof          = embl_one_entry(line, fp, ref.author, key);
+            terminate_with(ref.author, ';');
         }
         else if (str_equal(key, "RT")) {
-            refnum = data.embl.numofref - 1;
-            eof = embl_one_entry(line, fp, data.embl.reference[refnum].title, key);
-
-            // Check missing '"' at the both ends 
-            embl_verify_title(refnum);
+            Emblref& ref = embl.get_latest_ref();
+            eof = embl_one_entry(line, fp, ref.title, key);
+            embl_correct_title(ref); 
         }
         else if (str_equal(key, "RL")) {
-            refnum = data.embl.numofref - 1;
-            eof = embl_one_entry(line, fp, data.embl.reference[refnum].journal, key);
-            terminate_with(data.embl.reference[refnum].journal, '.');
+            Emblref& ref = embl.get_latest_ref();
+            eof = embl_one_entry(line, fp, ref.journal, key);
+            terminate_with(ref.journal, '.');
         }
         else if (str_equal(key, "RP")) {
-            refnum = data.embl.numofref - 1;
-            eof = embl_one_entry(line, fp, data.embl.reference[refnum].processing, key);
+            Emblref& ref = embl.get_latest_ref();
+            eof = embl_one_entry(line, fp, ref.processing, key);
         }
         else if (str_equal(key, "RN")) {
-            eof = embl_version(line, fp);
+            eof = embl_version(embl, line, fp);
         }
         else if (str_equal(key, "CC")) {
-            eof = embl_comments(line, fp);
+            eof = embl_comments(embl, line, fp);
         }
         else if (str_equal(key, "SQ")) {
-            eof = embl_origin(line, fp);
+            eof = embl_origin(seq, line, fp);
             eoen = 'y';
         }
         else {                  // unidentified key word 
@@ -154,7 +95,7 @@ char embl_in(FILE_BUFFER fp) {
  *      Function embl_in_id().
  *              Read in one embl entry.
  */
-char embl_in_id(FILE_BUFFER fp) {
+char embl_in_id(Embl& embl, Seq& seq, FILE_BUFFER fp) { // @@@ use reader
     char line[LINESIZE], key[TOKENSIZE];
     char *eof, eoen;
 
@@ -171,10 +112,10 @@ char embl_in_id(FILE_BUFFER fp) {
         eoen = 'n';
 
         if (str_equal(key, "ID")) {
-            eof = embl_one_entry(line, fp, data.embl.id, key);
+            eof = embl_one_entry(line, fp, embl.id, key);
         }
         else if (str_equal(key, "SQ")) {
-            eof = embl_origin(line, fp);
+            eof = embl_origin(seq, line, fp);
             eoen = 'y';
         }
         else {                  // unidentified key word 
@@ -254,7 +195,7 @@ char *embl_continue_line(char *pattern, char*& Str, char *line, FILE_BUFFER fp) 
         ind = Skip_white_space(line, p_nonkey_start);
         strcpy(temp, (line + ind));
         skip_eolnl_and_append_spaced(Str, temp);
-    }                           // end of continue line checking 
+    }
 
     return (eof);
 }
@@ -274,30 +215,26 @@ char *embl_one_entry(char *line, FILE_BUFFER fp, char*& entry, char *key) {
     return (eof);
 }
 
-/* ---------------------------------------------------------------
- *      Function embl_verify_title().
- *              Verify title.
- */
-void embl_verify_title(int refnum) {
-    int   len;
+void embl_correct_title(Emblref& ref) {
+    // Check missing '"' at the both ends
+    
+    terminate_with(ref.title, ';');
 
-    terminate_with(data.embl.reference[refnum].title, ';');
-
-    len = str0len(data.embl.reference[refnum].title);
-    if (len > 2 && (data.embl.reference[refnum].title[0] != '"' || data.embl.reference[refnum].title[len - 3] != '"')) {
+    int len = str0len(ref.title);
+    if (len > 2 && (ref.title[0] != '"' || ref.title[len - 3] != '"')) {
         char *temp = NULL;
-        if (data.embl.reference[refnum].title[0] != '"')
+        if (ref.title[0] != '"')
             temp = strdup("\"");
         else
             temp = strdup("");
-        Append(temp, data.embl.reference[refnum].title);
-        if ((len > 2 && data.embl.reference[refnum].title[len - 3]
+        Append(temp, ref.title);
+        if ((len > 2 && ref.title[len - 3]
              != '"')) {
             len = str0len(temp);
             temp[len - 2] = '"';
             terminate_with(temp, ';');
         }
-        freedup(data.embl.reference[refnum].title, temp);
+        freedup(ref.title, temp);
         free(temp);
     }
 }
@@ -306,18 +243,18 @@ void embl_verify_title(int refnum) {
  *      Function embl_date().
  *              Read in embl DATE lines.
  */
-char *embl_date(char *line, FILE_BUFFER fp) {
+char *embl_date(Embl& embl, char *line, FILE_BUFFER fp) { // @@@ use Reader
     int   index;
     char *eof, key[TOKENSIZE];
 
     index = Skip_white_space(line, p_nonkey_start);
-    freedup(data.embl.dateu, line + index);
+    freedup(embl.dateu, line + index);
 
     eof = Fgetline(line, LINESIZE, fp);
     embl_key_word(line, 0, key, TOKENSIZE);
     if (str_equal(key, "DT")) {
         index = Skip_white_space(line, p_nonkey_start);
-        freedup(data.embl.datec, line + index);
+        freedup(embl.datec, line + index);
         // skip the rest of DT lines 
         do {
             eof = Fgetline(line, LINESIZE, fp);
@@ -336,28 +273,14 @@ char *embl_date(char *line, FILE_BUFFER fp) {
  *      Function embl_version().
  *              Read in embl RN lines.
  */
-char *embl_version(char *line, FILE_BUFFER fp) {
+char *embl_version(Embl& embl, char *line, FILE_BUFFER fp) { // @@@ use Reader
     int index;
-
     char *eof;
 
     index = Skip_white_space(line, p_nonkey_start);
-    if (data.embl.numofref == 0) {
-        data.embl.numofref = 1;
-        data.embl.reference = (Emblref *) calloc(1, sizeof(Emblref) * 1);
-        data.embl.reference[0].author = strdup("");
-        data.embl.reference[0].title = strdup("");
-        data.embl.reference[0].journal = strdup("");
-        data.embl.reference[0].processing = strdup("");
-    }
-    else {
-        data.embl.numofref++;
-        data.embl.reference = (Emblref *) Reallocspace(data.embl.reference, sizeof(Emblref) * (data.embl.numofref));
-        data.embl.reference[data.embl.numofref - 1].author = strdup("");
-        data.embl.reference[data.embl.numofref - 1].title = strdup("");
-        data.embl.reference[data.embl.numofref - 1].journal = strdup("");
-        data.embl.reference[data.embl.numofref - 1].processing = strdup("");
-    }
+    
+    embl.resize_refs(embl.get_refcount()+1);
+
     eof = Fgetline(line, LINESIZE, fp);
     return (eof);
 }
@@ -366,13 +289,13 @@ char *embl_version(char *line, FILE_BUFFER fp) {
  *      Function embl_comments().
  *              Read in embl comment lines.
  */
-char *embl_comments(char *line, FILE_BUFFER fp) {
+char *embl_comments(Embl& embl, char *line, FILE_BUFFER fp) { // @@@ use Reader
     int   index, offset;
     char *eof;
     char  key[TOKENSIZE];
 
-    OrgInfo& orginf = data.embl.comments.orginf;
-    SeqInfo& seqinf = data.embl.comments.seqinf;
+    OrgInfo& orginf = embl.comments.orginf;
+    SeqInfo& seqinf = embl.comments.seqinf;
 
     for (; line[0] == 'C' && line[1] == 'C';) {
         index = Skip_white_space(line, 5);
@@ -436,11 +359,11 @@ char *embl_comments(char *line, FILE_BUFFER fp) {
             eof = Fgetline(line, LINESIZE, fp);
         }
         else {                  // other comments 
-            if (data.embl.comments.others == NULL) {
-                data.embl.comments.others = nulldup(line + 5);
+            if (embl.comments.others == NULL) {
+                embl.comments.others = nulldup(line + 5);
             }
             else
-                Append(data.embl.comments.others, line + 5);
+                Append(embl.comments.others, line + 5);
             eof = Fgetline(line, LINESIZE, fp);
         }
     }
@@ -461,7 +384,7 @@ char *embl_skip_unidentified(char *pattern, char *line, FILE_BUFFER fp) {
         embl_key_word(line, 0, key, TOKENSIZE);
         if (!str_equal(key, pattern))
             break;
-    }                           // end of continue line checking 
+    }
     return (eof);
 }
 
@@ -509,7 +432,7 @@ char *embl_one_comment_entry(FILE_BUFFER fp, char*& datastring, char *line, int 
         index = Skip_white_space(line, p_nonkey_start + RDP_SUBKEY_INDENT + RDP_CONTINUED_INDENT);
         strcpy(temp, (line + index));
         skip_eolnl_and_append_spaced(datastring, temp);
-    }                           // end of continue line checking 
+    }
 
     return eof;
 }
@@ -518,24 +441,20 @@ char *embl_one_comment_entry(FILE_BUFFER fp, char*& datastring, char *line, int 
  *      Function embl_origin().
  *              Read in embl sequence data.
  */
-char *embl_origin(char *line, FILE_BUFFER fp) {
+char *embl_origin(Seq& seq, char *line, FILE_BUFFER fp) { // @@@ use Reader
     char *eof;
     int index;
 
-    data.seq_length = 0;
-    // read in whole sequence data 
+    ca_assert(seq.is_empty());
+    
+    // read in whole sequence data
     for (eof = Fgetline(line, LINESIZE, fp);
          eof != NULL && line[0] != '/' && line[1] != '/';
          eof = Fgetline(line, LINESIZE, fp))
     {
         for (index = 5; line[index] != '\n' && line[index] != '\0'; index++) {
             if (line[index] != ' ') {
-                if (data.seq_length >= data.max) {
-                    data.max += data.max/2+100;
-                    data.sequence = Reallocspace(data.sequence, data.max);
-                }
-                data.sequence[data.seq_length++] = line[index];
-                data.sequence[data.seq_length] = '\0';
+                seq.add(line[index]);
             }
         }
     }
@@ -550,30 +469,30 @@ static void embl_print_lines_if_content(FILE *fp, const char *key, const char *c
     }
 }
 
-void embl_out(FILE * fp) {
+void embl_out(const Embl& embl, const Seq& seq, FILE * fp) {
     // Output EMBL data.
     int indi;
 
     WrapMode wrapWords(true);
     WrapMode neverWrap(false);
 
-    embl_print_lines_if_content(fp, "ID", data.embl.id,          neverWrap,     true);
-    embl_print_lines_if_content(fp, "AC", data.embl.accession,   wrapWords,     true);
-    embl_print_lines_if_content(fp, "DT", data.embl.dateu,       neverWrap,     false);
-    embl_print_lines_if_content(fp, "DT", data.embl.datec,       neverWrap,     true);
+    embl_print_lines_if_content(fp, "ID", embl.id,          neverWrap,     true);
+    embl_print_lines_if_content(fp, "AC", embl.accession,   wrapWords,     true);
+    embl_print_lines_if_content(fp, "DT", embl.dateu,       neverWrap,     false);
+    embl_print_lines_if_content(fp, "DT", embl.datec,       neverWrap,     true);
     // @@@ change behavior ? (print XX if any of the two DTs has been written)
-    embl_print_lines_if_content(fp, "DE", data.embl.description, wrapWords,     true);
-    embl_print_lines_if_content(fp, "KW", data.embl.keywords,    WrapMode(";"), true);
+    embl_print_lines_if_content(fp, "DE", embl.description, wrapWords,     true);
+    embl_print_lines_if_content(fp, "KW", embl.keywords,    WrapMode(";"), true);
 
-    if (has_content(data.embl.os)) {
-        embl_print_lines(fp, "OS", data.embl.os, wrapWords);
+    if (has_content(embl.os)) {
+        embl_print_lines(fp, "OS", embl.os, wrapWords);
         fputs("OC   No information.\n", fp);
         fputs("XX\n", fp);
     }
 
     // GenbankRef 
-    for (indi = 0; indi < data.embl.numofref; indi++) {
-        const Emblref& ref = data.embl.reference[indi];
+    for (indi = 0; indi < embl.get_refcount(); indi++) {
+        const Emblref& ref = embl.get_ref(indi);
 
         fprintf(fp, "RN   [%d]\n", indi + 1);
         embl_print_lines_if_content(fp, "RP", ref.processing, neverWrap, false);
@@ -586,13 +505,13 @@ void embl_out(FILE * fp) {
         fputs("XX\n", fp);
     }
 
-    if (has_content(data.embl.dr)) {
-        embl_print_lines(fp, "DR", data.embl.dr, wrapWords);
+    if (has_content(embl.dr)) {
+        embl_print_lines(fp, "DR", embl.dr, wrapWords);
         fputs("XX\n", fp);
     }
 
-    embl_out_comments(fp);
-    embl_out_origin(fp);
+    embl_out_comments(embl, seq, fp);
+    embl_out_origin(seq, fp);
 }
 
 int WrapMode::wrap_pos(const char *str, int wrapCol) const {
@@ -633,10 +552,10 @@ inline void embl_print_completeness(FILE *fp, char compX, char X) {
     fprintf(fp, "CC     %c' end complete: %s\n", X, compX == 'y' ? "Yes" : "No");
 }
 
-void embl_out_comments(FILE * fp) {
+void embl_out_comments(const Embl& embl, const Seq& seq, FILE * fp) {
     // Print out the comments part of EMBL format.
 
-    OrgInfo& orginf = data.embl.comments.orginf;
+    const OrgInfo& orginf = embl.comments.orginf;
     if (orginf.exists) {
         fputs("CC   Organism information\n", fp);
 
@@ -646,11 +565,11 @@ void embl_out_comments(FILE * fp) {
         embl_print_comment_if_content(fp, "Alternate name: ",     orginf.nickname);
         embl_print_comment_if_content(fp, "Common name: ",        orginf.commname);
         embl_print_comment_if_content(fp, "Host organism: ",      orginf.hostorg);
-    }                           // organism information 
+    }
 
-    SeqInfo& seqinf = data.embl.comments.seqinf;
+    const SeqInfo& seqinf = embl.comments.seqinf;
     if (seqinf.exists) {
-        fprintf(fp, "CC   Sequence information (bases 1 to %d)\n", data.seq_length);
+        fprintf(fp, "CC   Sequence information (bases 1 to %d)\n", seq.get_len());
 
         embl_print_comment_if_content(fp, "RDP ID: ",                      seqinf.RDPid);
         embl_print_comment_if_content(fp, "Corresponding GenBank entry: ", seqinf.gbkentry);
@@ -660,7 +579,7 @@ void embl_out_comments(FILE * fp) {
         embl_print_completeness(fp, seqinf.comp3, '3');
     }
 
-    embl_print_lines_if_content(fp, "CC", data.embl.comments.others, WrapMode("\n"), true);
+    embl_print_lines_if_content(fp, "CC", embl.comments.others, WrapMode("\n"), true);
 }
 
 void embl_print_comment_if_content(FILE * fp, const char *key, const char *content) { // @@@ WRAPPER
@@ -678,25 +597,26 @@ void embl_print_comment_if_content(FILE * fp, const char *key, const char *conte
  *      Function embl_out_origin().
  *              Print out the sequence data of EMBL format.
  */
-void embl_out_origin(FILE * fp) {
+void embl_out_origin(const Seq& seq, FILE * fp) {
     int base_a, base_c, base_t, base_g, base_other;
     int indi, indj, indk;
 
-    // print seq data 
-    count_bases(&base_a, &base_t, &base_g, &base_c, &base_other);
+    // print sequence data 
+    count_bases(seq, &base_a, &base_t, &base_g, &base_c, &base_other);
 
-    fprintf(fp, "SQ   Sequence %d BP; %d A; %d C; %d G; %d T; %d other;\n", data.seq_length, base_a, base_c, base_g, base_t, base_other);
+    fprintf(fp, "SQ   Sequence %d BP; %d A; %d C; %d G; %d T; %d other;\n", seq.get_len(), base_a, base_c, base_g, base_t, base_other);
 
-    for (indi = 0, indj = 0, indk = 1; indi < data.seq_length; indi++) {
+    const char *sequence = seq.get_seq();
+    for (indi = 0, indj = 0, indk = 1; indi < seq.get_len(); indi++) {
         if ((indk % 60) == 1)
             fputs("     ", fp);
-        fputc(data.sequence[indi], fp);
+        fputc(sequence[indi], fp);
         indj++;
         if ((indk % 60) == 0) {
             fputc('\n', fp);
             indj = 0;
         }
-        else if (indj == 10 && indi != (data.seq_length - 1)) {
+        else if (indj == 10 && indi != (seq.get_len() - 1)) {
             fputc(' ', fp);
             indj = 0;
         }
@@ -714,38 +634,37 @@ void embl_to_macke(const char *inf, const char *outf, int format) {
     FILE        *IFP = open_input_or_die(inf);
     FILE_BUFFER  ifp = create_FILE_BUFFER(inf, IFP);
     FILE        *ofp = open_output_or_die(outf);
-    
-    int indi, total_num;
 
-    // macke format seq irrelevant header 
-    macke_out_header(ofp);
-    for (indi = 0; indi < 3; indi++) {
+    macke_out_header(ofp); // macke format sequence irrelevant header
+
+    int total_num;
+    for (int indi = 0; indi < 3; indi++) {
         FILE_BUFFER_rewind(ifp);
-        reset_seq_data();
-        reinit_em_data();
-        while (embl_in(ifp) != EOF) {
-            data.numofseq++;
-            if (etom()) {
-                // convert from embl form to macke form 
-                switch (indi) {
-                    case 0: macke_seq_display_out(ofp, format); break;
-                    case 1: macke_seq_info_out(ofp); break;
-                    case 2: macke_seq_data_out(ofp); break;
-                    default:;
-                }
-            }
-            else throw_error(4, "Conversion from embl to macke fails");
 
-            reinit_em_data();
+        int numofseq = 0;
+
+        while (1) {
+            Embl embl;
+            Seq  seq;
+            if (embl_in(embl, seq, ifp) == EOF) break;
+
+            numofseq++;
+            Macke macke;
+            if (!etom(embl, macke, seq)) throw_conversion_failure(EMBL, MACKE);
+            
+            switch (indi) {
+                case 0: macke_seq_display_out(macke, ofp, format, numofseq == 1); break;
+                case 1: macke_seq_info_out(macke, ofp); break;
+                case 2: macke_seq_data_out(seq, macke, ofp); break;
+                default:;
+            }
         }
-        total_num = data.numofseq;
+        total_num = numofseq;
         if (indi == 0) {
             fputs("#-\n", ofp);
-            // no warning messages for next loop 
-            warning_out = 0;
+            warning_out = 0; // no warning messages for next loop
         }
     }
-
     warning_out = 1;
 
     log_processed(total_num);
@@ -757,12 +676,9 @@ void embl_to_macke(const char *inf, const char *outf, int format) {
  *      Function etom().
  *              Convert from embl format to Macke format.
  */
-int etom() {
-    // Responsibility note: caller has to cleanup embl and macke data
-
-    int ok = etog() && gtom();
-    reinit_genbank(); // cleanup afterwards!
-    return ok;
+int etom(const Embl& embl, Macke& macke, const Seq& seq) { // __ATTR__USERESULT
+    GenBank gbk;
+    return etog(embl, gbk, seq) && gtom(gbk, macke);
 }
 
 /* -------------------------------------------------------------
@@ -770,20 +686,21 @@ int etom() {
  *              Print out EMBL data.
  */
 void embl_to_embl(const char *inf, const char *outf) {
-    FILE        *IFP = open_input_or_die(inf);
-    FILE_BUFFER  ifp = create_FILE_BUFFER(inf, IFP);
-    FILE        *ofp = open_output_or_die(outf);
+    FILE        *IFP      = open_input_or_die(inf);
+    FILE_BUFFER  ifp      = create_FILE_BUFFER(inf, IFP);
+    FILE        *ofp      = open_output_or_die(outf);
+    int          numofseq = 0;
 
-    reset_seq_data();
-    reinit_embl();
+    while (1) {
+        Embl embl;
+        Seq  seq;
+        if (embl_in(embl, seq, ifp) == EOF) break;
 
-    while (embl_in(ifp) != EOF) {
-        data.numofseq++;
-        embl_out(ofp);
-        reinit_embl();
+        numofseq++;
+        embl_out(embl, seq, ofp);
     }
 
-    log_processed(data.numofseq);
+    log_processed(numofseq);
     fclose(ofp);
     destroy_FILE_BUFFER(ifp);
 }
@@ -793,26 +710,23 @@ void embl_to_embl(const char *inf, const char *outf) {
  *              Convert from EMBL format to genbank format.
  */
 void embl_to_genbank(const char *inf, const char *outf) {
-    FILE        *IFP = open_input_or_die(inf);
-    FILE_BUFFER  ifp = create_FILE_BUFFER(inf, IFP);
-    FILE        *ofp = open_output_or_die(outf);
+    FILE        *IFP      = open_input_or_die(inf);
+    FILE_BUFFER  ifp      = create_FILE_BUFFER(inf, IFP);
+    FILE        *ofp      = open_output_or_die(outf);
+    int          numofseq = 0;
 
-    reset_seq_data();
-    reinit_genbank();
-    reinit_embl();
+    while (1) {
+        Embl embl;
+        Seq  seq;
+        if (embl_in(embl, seq, ifp) == EOF) break;
 
-    while (embl_in(ifp) != EOF) {
-        data.numofseq++;
-        if (etog())
-            genbank_out(ofp);
-        else
-            throw_error(32, "Conversion from macke to genbank fails");
-
-        reinit_genbank();
-        reinit_embl();
+        numofseq++;
+        GenBank gbk;
+        if (!etog(embl, gbk, seq)) throw_conversion_failure(MACKE, GENBANK);
+        genbank_out(gbk, seq, ofp);
     }
 
-    log_processed(data.numofseq);
+    log_processed(numofseq);
     fclose(ofp);
     destroy_FILE_BUFFER(ifp);
 }
@@ -821,18 +735,16 @@ void embl_to_genbank(const char *inf, const char *outf) {
  *      Function etog()
  *              Convert from embl to genbank format.
  */
-int etog() {
-    // Responsibility note: caller has to cleanup embl and genbank data
-    
-    int  indi;
-    char key[TOKENSIZE], temp[LONGTEXT];
-    char t1[TOKENSIZE], t2[TOKENSIZE], t3[TOKENSIZE];
+int etog(const Embl& embl, GenBank& gbk, const Seq& seq) {  // __ATTR__USERESULT
+    int      indi;
+    char     key[TOKENSIZE], temp[LONGTEXT];
+    char     t1[TOKENSIZE], t2[TOKENSIZE], t3[TOKENSIZE];
 
-    embl_key_word(data.embl.id, 0, key, TOKENSIZE);
-    if (has_content(data.embl.dr)) {
-        // get short_id from DR line if there is RDP def. 
+    embl_key_word(embl.id, 0, key, TOKENSIZE);
+    if (has_content(embl.dr)) {
+        // get short_id from DR line if there is RDP def.
         strcpy(t3, "dummy");
-        ASSERT_RESULT(int, 3, sscanf(data.embl.dr, "%s %s %s", t1, t2, t3));
+        ASSERT_RESULT(int, 3, sscanf(embl.dr, "%s %s %s", t1, t2, t3));
         if (str_equal(t1, "RDP;")) {
             if (!str_equal(t3, "dummy")) {
                 strcpy(key, t3);
@@ -849,47 +761,47 @@ int etog() {
 #if 1
     // @@@ use else-version when done with refactoring
     // fixes two bugs in LOCUS line (id changed, wrong number of base positions)  
-    if (has_content(data.embl.dateu)) {
-        sprintf((temp + 10), "%7d bp    RNA             RNA       %s\n", data.seq_length, genbank_date(data.embl.dateu));
+    if (has_content(embl.dateu)) {
+        sprintf((temp + 10), "%7d bp    RNA             RNA       %s\n", seq.get_len(), genbank_date(embl.dateu));
     }
     else {
-        sprintf((temp + 10), "7%d bp    RNA             RNA       %s\n", data.seq_length, genbank_date(today_date()));
+        sprintf((temp + 10), "7%d bp    RNA             RNA       %s\n", seq.get_len(), genbank_date(today_date()));
     }
 #else
     {
-        const char *date = has_content(data.embl.dateu) ? data.embl.dateu : today_date();
+        const char *date = has_content(embl.dateu) ? embl.dateu : today_date();
         sprintf((temp + 10), "%7d bp    RNA             RNA       %s\n",
-                data.seq_length,
+                seq.get_len(),
                 genbank_date(date));
     }
 #endif
-    freedup(data.gbk.locus, temp);
+    freedup(gbk.locus, temp);
 
     // DEFINITION 
-    if (has_content(data.embl.description)) {
-        freedup(data.gbk.definition, data.embl.description);
+    if (has_content(embl.description)) {
+        freedup(gbk.definition, embl.description);
 
         // must have a period at the end 
-        terminate_with(data.gbk.definition, '.');
+        terminate_with(gbk.definition, '.');
     }
 
     // SOURCE and DEFINITION if not yet defined 
-    if (has_content(data.embl.os)) {
-        freedup(data.gbk.source, data.embl.os);
-        freedup(data.gbk.organism, data.embl.os);
-        if (!has_content(data.embl.description)) {
-            freedup(data.gbk.definition, data.embl.os);
+    if (has_content(embl.os)) {
+        freedup(gbk.source, embl.os);
+        freedup(gbk.organism, embl.os);
+        if (!has_content(embl.description)) {
+            freedup(gbk.definition, embl.os);
         }
     }
 
     // COMMENT GenBank entry 
-    freedup_if_content(data.gbk.accession, data.embl.accession);
-    if (has_content(data.embl.keywords) && data.embl.keywords[0] != '.') {
-        freedup(data.gbk.keywords, data.embl.keywords);
+    freedup_if_content(gbk.accession, embl.accession);
+    if (has_content(embl.keywords) && embl.keywords[0] != '.') {
+        freedup(gbk.keywords, embl.keywords);
     }
 
-    etog_convert_references();
-    etog_convert_comments();
+    etog_convert_references(embl, gbk);
+    etog_convert_comments(embl, gbk);
 
     return (1);
 }
@@ -899,16 +811,15 @@ int etog() {
  *              Convert reference from EMBL to GenBank format.
  */
 
-void etog_convert_references() {
-    int indi, len, start, end;
+void etog_convert_references(const Embl& embl, GenBank& gbk) {
+    int  indi, len, start, end;
     char temp[LONGTEXT];
 
-    data.gbk.numofref = data.embl.numofref;
-    data.gbk.reference = (GenbankRef *) calloc(1, sizeof(GenbankRef) * data.embl.numofref);
+    gbk.resize_refs(embl.get_refcount());
 
-    for (indi = 0; indi < data.embl.numofref; indi++) {
-        const Emblref& ref = data.embl.reference[indi];
-        
+    for (indi = 0; indi < embl.get_refcount(); indi++) {
+        const Emblref& ref  = embl.get_ref(indi);
+        GenbankRef&    gref = gbk.get_ref(indi);
 
         if (has_content(ref.processing) &&
             sscanf(ref.processing, "%d %d", &start, &end) == 2)
@@ -919,37 +830,32 @@ void etog_convert_references() {
         else {
             sprintf(temp, "%d\n", (indi + 1));
         }
-        data.gbk.reference[indi].ref = nulldup(temp);
+
+        freedup(gref.ref, temp);
 
         if (has_content(ref.title) && ref.title[0] != ';') {
-            // remove '"' and ';', if there is any 
+            // remove '"' and ';', if there is any
             len = str0len(ref.title);
-            if (len > 2 && ref.title[0] == '"'
-                && ref.title[len - 2] == ';' && ref.title[len - 3] == '"') {
+            if (len > 2 && ref.title[0] == '"' && ref.title[len - 2] == ';' && ref.title[len - 3] == '"') {
                 ref.title[len - 3] = '\n';
                 ref.title[len - 2] = '\0';
-                data.gbk.reference[indi].title = nulldup(ref.title + 1);
+                freedup(gref.title, ref.title+1);
                 ref.title[len - 3] = '"';
                 ref.title[len - 2] = ';';
             }
-            else
-                data.gbk.reference[indi].title = nulldup(ref.title);
+            else {
+                freedup(gref.title, ref.title);
+            }
         }
-        else
-            data.gbk.reference[indi].title = no_content();
+        else {
+            freeset(gref.title, no_content());
+        }
 
-        // GenBank AUTHOR 
-        if (has_content(ref.author))
-            data.gbk.reference[indi].author = etog_author(ref.author);
-        else
-            data.gbk.reference[indi].author = no_content();
 
-        if (has_content(ref.journal))
-            data.gbk.reference[indi].journal = etog_journal(ref.journal);
-        else
-            data.gbk.reference[indi].journal = no_content();
+        freeset(gref.author, has_content(ref.author) ? etog_author(ref.author) : no_content());
+        freeset(gref.journal, has_content(ref.journal) ? etog_journal(ref.journal) : no_content());
 
-        data.gbk.reference[indi].standard = no_content();
+        freeset(gref.standard, no_content());
     }
 }
 
@@ -1074,10 +980,10 @@ void TEST_BASIC_etog_journal() {
  *      Function etog_convert_comments().
  *              Convert comment part from EMBL to GenBank.
  */
-void etog_convert_comments() {
-    // RDP defined Organism Information comments 
-    OrgInfo& eorginf = data.embl.comments.orginf;
-    OrgInfo& gorginf = data.gbk.comments.orginf;
+void etog_convert_comments(const Embl& embl, GenBank& gbk) {
+    // RDP defined Organism Information comments
+    const OrgInfo& eorginf = embl.comments.orginf;
+    OrgInfo&       gorginf = gbk.comments.orginf;
 
     gorginf.exists = eorginf.exists;
 
@@ -1088,10 +994,10 @@ void etog_convert_comments() {
     freedup_if_content(gorginf.commname, eorginf.commname);
     freedup_if_content(gorginf.hostorg,  eorginf.hostorg);
 
-     // RDP defined Sequence Information comments 
-    SeqInfo& eseqinf = data.embl.comments.seqinf;
-    SeqInfo& gseqinf = data.gbk.comments.seqinf;
-    
+    // RDP defined Sequence Information comments
+    const SeqInfo& eseqinf = embl.comments.seqinf;
+    SeqInfo&       gseqinf = gbk.comments.seqinf;
+
     gseqinf.exists = eseqinf.exists;
 
     freedup_if_content(gseqinf.RDPid,    eseqinf.RDPid);
@@ -1101,7 +1007,7 @@ void etog_convert_comments() {
     gseqinf.comp3 = eseqinf.comp3;
 
     // other comments 
-    freedup_if_content(data.gbk.comments.others, data.embl.comments.others);
+    freedup_if_content(gbk.comments.others, embl.comments.others);
 }
 
 /* ----------------------------------------------------------------
@@ -1109,31 +1015,30 @@ void etog_convert_comments() {
  *              Convert from genbank to EMBL.
  */
 void genbank_to_embl(const char *inf, const char *outf) {
-    FILE        *IFP = open_input_or_die(inf);
-    FILE_BUFFER  ifp = create_FILE_BUFFER(inf, IFP);
-    FILE        *ofp = open_output_or_die(outf);
-    
-    reinit_genbank();
-    reinit_embl();
-    while (genbank_in(ifp) != EOF) {
-        data.numofseq++;
-        if (gtoe())
-            embl_out(ofp);
-        reinit_genbank();
-        reinit_embl();
+    FILE        *IFP      = open_input_or_die(inf);
+    FILE_BUFFER  ifp      = create_FILE_BUFFER(inf, IFP);
+    FILE        *ofp      = open_output_or_die(outf);
+    int          numofseq = 0;
+
+    while (1) {
+        GenBank gbk;
+        Seq     seq;
+
+        if (genbank_in(gbk, seq, ifp) == EOF) break;
+        numofseq++;
+        
+        Embl embl;
+        if (!gtoe(gbk, embl, seq)) throw_conversion_failure(GENBANK, EMBL);
+        embl_out(embl, seq, ofp);
     }
 
-    log_processed(data.numofseq);
+    log_processed(numofseq);
     destroy_FILE_BUFFER(ifp);
     fclose(ofp);
 }
 
-int gtoe() {
+int gtoe(const GenBank& gbk, Embl& embl, const Seq& seq) { // __ATTR__USERESULT
     // Genbank to EMBL.
-    // Responsibility note: caller has to cleanup genbank and embl data
-
-    GenBank& gbk = data.gbk;
-
     {
         char temp[LONGTEXT];
         genbank_key_word(gbk.locus, 0, temp, TOKENSIZE);
@@ -1143,39 +1048,39 @@ int gtoe() {
         int indi = min(str0len(temp), 9);
         for (; indi < 10; indi++) temp[indi] = ' ';
 
-        sprintf(temp + 10, "preliminary; RNA; UNA; %d BP.\n", data.seq_length);
-        freedup(data.embl.id, temp);
+        sprintf(temp + 10, "preliminary; RNA; UNA; %d BP.\n", seq.get_len());
+        freedup(embl.id, temp);
     }
     
     // accession number 
     if (has_content(gbk.accession))
         // take just the accession num, no version num. 
-        freedup(data.embl.accession, gbk.accession);
+        freedup(embl.accession, gbk.accession);
 
     // date 
     {
         char *date = gbk.get_date();
 
-        freeset(data.embl.dateu, strf("%s (Rel. 1, Last updated, Version 1)\n", date));
-        freeset(data.embl.datec, strf("%s (Rel. 1, Created)\n", date));
+        freeset(embl.dateu, strf("%s (Rel. 1, Last updated, Version 1)\n", date));
+        freeset(embl.datec, strf("%s (Rel. 1, Created)\n", date));
 
         free(date);
     }
 
     // description 
-    freedup_if_content(data.embl.description, gbk.definition);
+    freedup_if_content(embl.description, gbk.definition);
     // EMBL KW line 
     if (has_content(gbk.keywords)) {
-        freedup(data.embl.keywords, gbk.keywords);
-        terminate_with(data.embl.keywords, '.');
+        freedup(embl.keywords, gbk.keywords);
+        terminate_with(embl.keywords, '.');
     }
     else {
-        freedup(data.embl.keywords, ".\n");
+        freedup(embl.keywords, ".\n");
     }
 
-    freedup_if_content(data.embl.os, gbk.organism); // EMBL OS line 
+    freedup_if_content(embl.os, gbk.organism); // EMBL OS line 
     // reference 
-    gtoe_reference();
+    gtoe_reference(gbk, embl);
 
     // EMBL DR line 
     {
@@ -1191,9 +1096,9 @@ int gtoe() {
         else {
             sprintf(temp, "RDP; %s.\n", token);
         }
-        freedup(data.embl.dr, temp);
+        freedup(embl.dr, temp);
     }
-    gtoe_comments();
+    gtoe_comments(gbk, embl);
 
     return (1);
 }
@@ -1202,34 +1107,35 @@ int gtoe() {
  *      Function gtoe_reference().
  *              Convert references from GenBank to EMBL.
  */
-void gtoe_reference() {
-    data.embl.numofref = data.gbk.numofref;
+void gtoe_reference(const GenBank& gbk, Embl& embl) {
 
-    if (data.gbk.numofref > 0) {
-        data.embl.reference = (Emblref *) malloc(sizeof(Emblref) * data.gbk.numofref);
+    if (gbk.get_refcount() > 0) {
+        embl.resize_refs(gbk.get_refcount());
     }
 
-    for (int indi = 0; indi < data.gbk.numofref; indi++) {
-        Emblref& ref = data.embl.reference[indi];
+    for (int indi = 0; indi < gbk.get_refcount(); indi++) {
+        Emblref&          ref  = embl.get_ref(indi);
+        const GenbankRef& gref = gbk.get_ref(indi);
 
-        ref.title = nulldup(data.gbk.reference[indi].title);
-        embl_verify_title(indi);
-        ref.journal = gtoe_journal(data.gbk.reference[indi].journal);
+        freedup(ref.title, gref.title);
+        embl_correct_title(ref);
+
+        freeset(ref.journal, gtoe_journal(gref.journal));
         terminate_with(ref.journal, '.');
-        ref.author = gtoe_author(data.gbk.reference[indi].author);
+        
+        freeset(ref.author, gtoe_author(gref.author));
         terminate_with(ref.author, ';');
 
-        // create processing information 
+        // create processing information
         int refnum, start = 0, end = 0;
         char t1[TOKENSIZE], t2[TOKENSIZE], t3[TOKENSIZE];
 
-        if (!data.gbk.reference[indi].ref ||
-            sscanf(data.gbk.reference[indi].ref, "%d %s %d %s %d %s", &refnum, t1, &start, t2, &end, t3) != 6)
-        {
+        if (!gref.ref || sscanf(gref.ref, "%d %s %d %s %d %s", &refnum, t1, &start, t2, &end, t3) != 6) {
             start = 0;
             end = 0;
         }
 
+        freenull(ref.processing);
         if (start || end) ref.processing = strf("%d-%d\n", start, end);
         else              ref.processing = no_content();
 
@@ -1311,10 +1217,10 @@ char *gtoe_journal(char *Str) {
  *      Function gtoe_comments().
  *              Convert comment part from GenBank to EMBL.
  */
-void gtoe_comments() {
-    // RDP defined Organism Information comments 
-    OrgInfo& eorginf = data.embl.comments.orginf;
-    OrgInfo& gorginf = data.gbk.comments.orginf;
+void gtoe_comments(const GenBank& gbk, Embl& embl) {
+    // RDP defined Organism Information comments
+    OrgInfo&       eorginf = embl.comments.orginf;
+    const OrgInfo& gorginf = gbk.comments.orginf;
 
     eorginf.exists = gorginf.exists;
 
@@ -1325,10 +1231,10 @@ void gtoe_comments() {
     freedup_if_content(eorginf.commname, gorginf.commname);
     freedup_if_content(eorginf.hostorg,  gorginf.hostorg);
 
-     // RDP defined Sequence Information comments 
-    SeqInfo& eseqinf = data.embl.comments.seqinf;
-    SeqInfo& gseqinf = data.gbk.comments.seqinf;
-    
+    // RDP defined Sequence Information comments
+    SeqInfo&       eseqinf = embl.comments.seqinf;
+    const SeqInfo& gseqinf = gbk.comments.seqinf;
+
     eseqinf.exists = gseqinf.exists;
 
     freedup_if_content(eseqinf.RDPid,    gseqinf.RDPid);
@@ -1338,14 +1244,12 @@ void gtoe_comments() {
     eseqinf.comp3 = gseqinf.comp3;
 
     // other comments 
-    freedup_if_content(data.embl.comments.others, data.gbk.comments.others);
+    freedup_if_content(embl.comments.others, gbk.comments.others);
 }
 
-int mtoe() {
-    // Responsibility note: caller has to cleanup macke and embl data
-    int ok = mtog() && gtoe() && partial_mtoe();
-    reinit_genbank();
-    return ok;
+int mtoe(const Macke& macke, Embl& embl, const Seq& seq) { // __ATTR__USERESULT
+    GenBank gbk;
+    return mtog(macke, gbk, seq) && gtoe(gbk, embl, seq) && partial_mtoe(macke, embl);
 }
 
 /* ---------------------------------------------------------------
@@ -1353,26 +1257,29 @@ int mtoe() {
  *              Convert from macke to EMBL.
  */
 void macke_to_embl(const char *inf, const char *outf) {
-    FILE *ofp  = open_output_or_die(outf);
+    FILE        *ofp      = open_output_or_die(outf);
+    MackeReader  mackeReader(inf);
+    int          numofseq = 0;
 
-    MackeReader macke(inf);
-    while (macke.mackeIn() != EOF) {
-        data.numofseq++;
+    while (1) {
+        Macke macke;
+        if (!mackeReader.mackeIn(macke)) break;
+
+        SeqPtr seq = mackeReader.read_sequence_data();
+        if (seq.isNull()) break;
+
+        Embl  embl;
+        numofseq++;
 
         /* partial_mtoe() is particularly handling
          * subspecies information, not converting whole
          * macke format to embl */
 
-        if (mtoe())
-            embl_out(ofp);
-        else
-            throw_error(14, "Conversion from macke to embl fails");
-
-        reinit_embl();
-        reinit_macke();
+        if (!mtoe(macke, embl, *seq)) throw_conversion_failure(MACKE, EMBL);
+        embl_out(embl, *seq, ofp);
     }
 
-    log_processed(data.numofseq);
+    log_processed(numofseq);
     fclose(ofp);
 }
 
@@ -1381,40 +1288,40 @@ void macke_to_embl(const char *inf, const char *outf) {
  *              Handle subspecies information when converting from
  *                      Macke to EMBL.
  */
-int partial_mtoe() {
+int partial_mtoe(const Macke& macke, Embl& embl) {
     int indj, indk;
 
-    if (has_content(data.macke.strain)) {
-        if ((indj = find_pattern(data.embl.comments.others, "*source:")) >= 0 && (indk = find_pattern(data.embl.comments.others + indj, "strain=")) >= 0) {
-            ;                   // do nothing 
+    if (has_content(macke.strain)) {
+        if ((indj = find_pattern(embl.comments.others, "*source:")) >= 0 && (indk = find_pattern(embl.comments.others + indj, "strain=")) >= 0) {
+            ;                   // do nothing
         }
         else {
-            if (str0len(data.embl.comments.others) <= 1)
-                freenull(data.embl.comments.others);
-            Append(data.embl.comments.others, "*source: strain=");
-            Append(data.embl.comments.others, data.macke.strain);
-            if (!is_end_mark(data.embl.comments.others[str0len(data.embl.comments.others) - 2])) {
-                skip_eolnl_and_append(data.embl.comments.others, ";\n");
+            if (str0len(embl.comments.others) <= 1)
+                freenull(embl.comments.others);
+            Append(embl.comments.others, "*source: strain=");
+            Append(embl.comments.others, macke.strain);
+            if (!is_end_mark(embl.comments.others[str0len(embl.comments.others) - 2])) {
+                skip_eolnl_and_append(embl.comments.others, ";\n");
             }
         }
     }
 
-    if (has_content(data.macke.subspecies)) {
-        if ((indj = find_pattern(data.embl.comments.others, "*source:")) >= 0 &&
-            ((indk = find_pattern(data.embl.comments.others + indj, "subspecies=")) >= 0 ||
-             (indk = find_pattern(data.embl.comments.others + indj, "sub-species=")) >= 0 ||
-             (indk = find_pattern(data.embl.comments.others + indj, "subsp.=")) >= 0)) {
+    if (has_content(macke.subspecies)) {
+        if ((indj = find_pattern(embl.comments.others, "*source:")) >= 0 &&
+            ((indk = find_pattern(embl.comments.others + indj, "subspecies=")) >= 0 ||
+             (indk = find_pattern(embl.comments.others + indj, "sub-species=")) >= 0 ||
+             (indk = find_pattern(embl.comments.others + indj, "subsp.=")) >= 0)) {
             ;                   // do nothing 
         }
         else {
-            if (str0len(data.embl.comments.others) <= 1)
-                freenull(data.embl.comments.others);
+            if (str0len(embl.comments.others) <= 1)
+                freenull(embl.comments.others);
 
-            Append(data.embl.comments.others, "*source: subspecies=");
-            Append(data.embl.comments.others, data.macke.subspecies);
+            Append(embl.comments.others, "*source: subspecies=");
+            Append(embl.comments.others, macke.subspecies);
 
-            if (!is_end_mark(data.embl.comments.others[str0len(data.embl.comments.others) - 2])) {
-                skip_eolnl_and_append(data.embl.comments.others, ";\n");
+            if (!is_end_mark(embl.comments.others[str0len(embl.comments.others) - 2])) {
+                skip_eolnl_and_append(embl.comments.others, ";\n");
             }
         }
     }

@@ -12,7 +12,6 @@
 #include <ctype.h>
 #include <string.h>
 #include "global.h"
-#include "types.h"
 #include <arb_defs.h>
 
 struct TypeSwitch { const char *switchtext; int format_num; };

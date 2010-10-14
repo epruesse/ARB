@@ -1,13 +1,15 @@
 #include <stdio.h>
 #include "global.h"
 
-void count_bases(int *base_a, int *base_t, int *base_g, int *base_c, int *base_other) {
+void count_bases(const Seq& seq, int *base_a, int *base_t, int *base_g, int *base_c, int *base_other) { // @@@ -> Seq
     // Count bases A, T, G, C and others
     int indi;
 
     (*base_a) = (*base_c) = (*base_t) = (*base_g) = (*base_other) = 0;
-    for (indi = 0; indi < data.seq_length; indi++)
-        switch (data.sequence[indi]) {
+
+    const char *sequence = seq.get_seq();
+    for (indi = 0; indi < seq.get_len(); indi++)
+        switch (sequence[indi]) {
             case 'a':
             case 'A':
                 (*base_a)++;

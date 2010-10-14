@@ -7,258 +7,186 @@
 #define MACKELIMIT 10000
 
 /* -------------------------------------------------------------
- *   Function init_mache().
- *   Initialize macke entry.
- */
-void cleanup_macke() {
-    freenull(data.macke.seqabbr);
-    freenull(data.macke.name);
-    freenull(data.macke.atcc);
-    freenull(data.macke.rna);
-    freenull(data.macke.date);
-    freenull(data.macke.nbk);
-    freenull(data.macke.acs);
-    freenull(data.macke.who);
-    for (int indi = 0; indi < data.macke.numofrem; indi++) {
-        freenull(data.macke.remarks[indi]);
-    }
-    freenull(data.macke.remarks);
-    freenull(data.macke.journal);
-    freenull(data.macke.title);
-    freenull(data.macke.author);
-    freenull(data.macke.strain);
-    freenull(data.macke.subspecies);
-}
-
-void reinit_macke() {
-    // initialize macke format 
-    cleanup_macke();
-
-    data.macke.seqabbr = strdup("");
-    data.macke.name = no_content();
-    data.macke.atcc = no_content();
-    data.macke.rna = no_content();
-    data.macke.date = no_content();
-    data.macke.nbk = no_content();
-    data.macke.acs = no_content();
-    data.macke.who = no_content();
-    data.macke.numofrem = 0;
-    data.macke.rna_or_dna = 'd';
-    data.macke.journal = no_content();
-    data.macke.title = no_content();
-    data.macke.author = no_content();
-    data.macke.strain = no_content();
-    data.macke.subspecies = no_content();
-}
-
-/* -------------------------------------------------------------
  *  Function macke_in().
  *      Read in one sequence data from Macke file.
  */
 
 void MackeReader::start_reading() {
-    IFP1 = open_input_or_die(inName);
-    IFP2 = open_input_or_die(inName);
-    IFP3 = open_input_or_die(inName);
-    fp1 = create_FILE_BUFFER(inName, IFP1);
-    fp2 = create_FILE_BUFFER(inName, IFP2);
-    fp3 = create_FILE_BUFFER(inName, IFP3);
+    r1 = new Reader(inName);
+    r2 = new Reader(inName);
+    r3 = new Reader(inName);
 }
 
 void MackeReader::stop_reading() {
-    destroy_FILE_BUFFER(fp3);
-    destroy_FILE_BUFFER(fp2);
-    destroy_FILE_BUFFER(fp1);
+    delete r3; r3 = NULL;
+    delete r2; r2 = NULL;
+    delete r1; r1 = NULL;
 }
 
-char MackeReader::mackeIn() {
-    char  oldname[TOKENSIZE], name[TOKENSIZE];
-    char  key[TOKENSIZE];
-    int   numofrem = 0;
-    int   index;
+bool MackeReader::mackeIn(Macke& macke) {
+    char oldname[TOKENSIZE], name[TOKENSIZE];
+    char key[TOKENSIZE];
+    int  index;
 
-    // file 1 points to seq. information 
-    // file 2 points to seq. data 
-    // file 3 points to seq. names 
+    // r1 points to sequence information
+    // r2 points to sequence data
+    // r3 points to sequence names
     if (firstRead) {
         start_reading();
 
-        eof1 = skipOverLinesThat(line1, LINESIZE, fp1, Not(isMackeSeqInfo));   // skip to #:; where the seq. information is
-        eof2 = skipOverLinesThat(line2, LINESIZE, fp2, isMackeNonSeq);         // skip to where seq. data starts
-        eof3 = skipOverLinesThat(line3, LINESIZE, fp3, Not(isMackeSeqHeader)); // skip to #=; where seq. first appears
+        r1->skipOverLinesThat(Not(isMackeSeqInfo));   // skip to #:; where the sequence information is
+        r2->skipOverLinesThat(isMackeNonSeq);         // skip to where sequence data starts
+        r3->skipOverLinesThat(Not(isMackeSeqHeader)); // skip to #=; where sequence first appears
 
         firstRead = false;
     }
-    else
-        eof3 = Fgetline(line3, LINESIZE, fp3);
-
-    // end of reading seq names 
-    if (line3[0] != '#' || line3[1] != '=')
-        return (EOF);
-
-    // skip to next "#:" line or end of file 
-    if (!isMackeSeqInfo(line1)) {
-        eof1 = skipOverLinesThat(line1, LINESIZE, fp1, Not(isMackeSeqInfo));
+    else {
+        ++(*r3);
     }
 
-    // read in seq name 
-    index = macke_abbrev(line3, oldname, 2);
-    freedup(data.macke.seqabbr, oldname);
+    if (!isMackeSeqHeader(r3->line())) return false;
 
-    // read seq. information 
-    for (index = macke_abbrev(line1, name, 2); eof1 != NULL && isMackeSeqInfo(line1) && str_equal(name, oldname); ) {
-        index = macke_abbrev(line1, key, index);
+    // skip to next "#:" line or end of file
+    r1->skipOverLinesThat(Not(isMackeSeqInfo));
+
+    // read in sequence name
+    index   = macke_abbrev(r3->line(), oldname, 2);
+    freedup(macke.seqabbr, oldname);
+    seqabbr = macke.seqabbr;
+
+    // read sequence information
+    for (index = macke_abbrev(r1->line(), name, 2);
+         r1->line() && isMackeSeqInfo(r1->line()) && str_equal(name, oldname);
+         )
+    {
+        index = macke_abbrev(r1->line(), key, index);
         if (str_equal(key, "name")) {
-            eof1 = macke_one_entry_in(fp1, "name", oldname, data.macke.name, line1, index);
+            macke_one_entry_in(*r1, "name", oldname, macke.name, index);
         }
         else if (str_equal(key, "atcc")) {
-            eof1 = macke_one_entry_in(fp1, "atcc", oldname, data.macke.atcc, line1, index);
+            macke_one_entry_in(*r1, "atcc", oldname, macke.atcc, index);
         }
         else if (str_equal(key, "rna")) {
             // old version entry 
-            eof1 = macke_one_entry_in(fp1, "rna", oldname, data.macke.rna, line1, index);
+            macke_one_entry_in(*r1, "rna", oldname, macke.rna, index);
         }
         else if (str_equal(key, "date")) {
-            eof1 = macke_one_entry_in(fp1, "date", oldname, data.macke.date, line1, index);
+            macke_one_entry_in(*r1, "date", oldname, macke.date, index);
         }
         else if (str_equal(key, "nbk")) {
             // old version entry 
-            eof1 = macke_one_entry_in(fp1, "nbk", oldname, data.macke.nbk, line1, index);
+            macke_one_entry_in(*r1, "nbk", oldname, macke.nbk, index);
         }
         else if (str_equal(key, "acs")) {
-            eof1 = macke_one_entry_in(fp1, "acs", oldname, data.macke.acs, line1, index);
+            macke_one_entry_in(*r1, "acs", oldname, macke.acs, index);
         }
         else if (str_equal(key, "subsp")) {
-            eof1 = macke_one_entry_in(fp1, "subsp", oldname, data.macke.subspecies, line1, index);
+            macke_one_entry_in(*r1, "subsp", oldname, macke.subspecies, index);
         }
         else if (str_equal(key, "strain")) {
-            eof1 = macke_one_entry_in(fp1, "strain", oldname, data.macke.strain, line1, index);
+            macke_one_entry_in(*r1, "strain", oldname, macke.strain, index);
         }
         else if (str_equal(key, "auth")) {
-            eof1 = macke_one_entry_in(fp1, "auth", oldname, data.macke.author, line1, index);
+            macke_one_entry_in(*r1, "auth", oldname, macke.author, index);
         }
         else if (str_equal(key, "title")) {
-            eof1 = macke_one_entry_in(fp1, "title", oldname, data.macke.title, line1, index);
+            macke_one_entry_in(*r1, "title", oldname, macke.title, index);
         }
         else if (str_equal(key, "jour")) {
-            eof1 = macke_one_entry_in(fp1, "jour", oldname, data.macke.journal, line1, index);
+            macke_one_entry_in(*r1, "jour", oldname, macke.journal, index);
         }
         else if (str_equal(key, "who")) {
-            eof1 = macke_one_entry_in(fp1, "who", oldname, data.macke.who, line1, index);
+            macke_one_entry_in(*r1, "who", oldname, macke.who, index);
         }
         else if (str_equal(key, "rem")) {
-            data.macke.remarks = (char **)Reallocspace((char *)data.macke.remarks, (unsigned)(sizeof(char *) * (numofrem + 1)));
-            data.macke.remarks[numofrem++] = nulldup(line1 + index);
-            eof1 = Fgetline(line1, LINESIZE, fp1);
+            macke.add_remark(r1->line()+index);
+            ++(*r1);
         }
         else {
             warningf(144, "Unidentified AE2 key word #%s#", key);
-            eof1 = Fgetline(line1, LINESIZE, fp1);
+            ++(*r1);
         }
-        if (eof1 != NULL && isMackeSeqInfo(line1))
-            index = macke_abbrev(line1, name, 2);
-        else
-            index = 0;
+        if (r1->line() && isMackeSeqInfo(r1->line())) index = macke_abbrev(r1->line(), name, 2);
+        else index = 0;
     }
-    data.macke.numofrem = numofrem;
 
-    // read in sequence data 
-    eof2 = macke_origin(oldname, line2, fp2);
-
-    return (EOF + 1);
+    return true;
 }
 
-/* -----------------------------------------------------------------
- *  Function macke_one_entry_in().
- *      Get one Macke entry.
- */
-char *macke_one_entry_in(FILE_BUFFER fp, const char *key, char *oldname, char*& var, char *line, int index) {
-    char *eof;
-
+void macke_one_entry_in(Reader& reader, const char *key, char *oldname, char*& var, int index) {
+    // Get one Macke entry.
     if (has_content(var))
-        skip_eolnl_and_append_spaced(var, line + index);
+        skip_eolnl_and_append_spaced(var, reader.line() + index);
     else
-        freedup(var, line + index);
+        freedup(var, reader.line() + index);
 
-    eof = macke_continue_line(key, oldname, var, line, fp);
-
-    return (eof);
+    macke_continue_line(key, oldname, var, reader);
 }
 
-/* --------------------------------------------------------------
- *  Function macke_continue_line().
- *      Append macke continue line.
- */
-char *macke_continue_line(const char *key, char *oldname, char*& var, char *line, FILE_BUFFER fp) {
-    char *eof, name[TOKENSIZE], newkey[TOKENSIZE];
-    int   index;
+void macke_continue_line(const char *key, char *oldname, char*& var, Reader& reader) {
+    // Append macke continue line.
 
-    for (eof = Fgetline(line, LINESIZE, fp); eof != NULL; eof = Fgetline(line, LINESIZE, fp)) {
-        if (str0len(line) <= 1)
-            continue;
+    for (++reader; reader.line(); ++reader) {
+        if (has_content(reader.line())) {
+            char name[TOKENSIZE];
+            int  index = macke_abbrev(reader.line(), name, 0);
 
-        index = macke_abbrev(line, name, 0);
-        if (!str_equal(name, oldname))
-            break;
+            if (!str_equal(name, oldname)) break;
 
-        index = macke_abbrev(line, newkey, index);
-        if (!str_equal(newkey, key))
-            break;
+            char newkey[TOKENSIZE];
+            index = macke_abbrev(reader.line(), newkey, index);
+            if (!str_equal(newkey, key)) break;
 
-        skip_eolnl_and_append_spaced(var, line + index);
+            skip_eolnl_and_append_spaced(var, reader.line() + index);
+        }
+    }
+}
+
+char *macke_origin(Seq& seq, const char *key, char *line, FILE_BUFFER fp) { // __ATTR__DEPRECATED
+    // Read in sequence data in macke file.
+    ca_assert(seq.is_empty());
+
+    char  name[TOKENSIZE];
+    int   index = macke_abbrev(line, name, 0);
+    char *eof   = line;
+
+    for (; eof != NULL && str_equal(key, name);) { // read in sequence data line by line
+        int seqnum;
+        char data[LINESIZE];
+        ASSERT_RESULT(int, 2, sscanf(line + index, "%d%s", &seqnum, data));
+        for (int indj = seq.get_len(); indj < seqnum; indj++) seq.add('.');
+        for (int indj = 0; data[indj] != '\n' && data[indj] != '\0'; indj++) seq.add(data[indj]);
+        eof                    = Fgetline(line, LINESIZE, fp);
+        if (eof != NULL) index = macke_abbrev(line, name, 0);
     }
 
-    return (eof);
+    return eof;
 }
+void macke_origin(Seq& seq, const char *key, Reader& reader) {
+    // Read in sequence data in macke file.
+    ca_assert(seq.is_empty());
 
-/* ----------------------------------------------------------------
- *  Function macke_origin().
- *      Read in sequence data in macke file.
- */
-char *macke_origin(char *key, char *line, FILE_BUFFER fp) {
-    int index, indj, seqnum;
+    for (; reader.line();) { // read in sequence data line by line
+        char name[TOKENSIZE];
+        int  index = macke_abbrev(reader.line(), name, 0);
 
-    char *eof, name[TOKENSIZE], seq[LINESIZE];
+        if (!str_equal(key, name)) break;
 
-    // read in seq. data 
-    data.seq_length = 0;
-    // read in line by line 
+        int  seqnum;
+        char data[LINESIZE];
+        ASSERT_RESULT(int, 2, sscanf(reader.line() + index, "%d%s", &seqnum, data));
+        for (int indj = seq.get_len(); indj < seqnum; indj++) seq.add('.');
+        for (int indj = 0; data[indj] != '\n' && data[indj] != '\0'; indj++) seq.add(data[indj]);
 
-    index = macke_abbrev(line, name, 0);
-    eof = line;
-    for (; eof != NULL && str_equal(key, name);) {
-        ASSERT_RESULT(int, 2, sscanf(line + index, "%d%s", &seqnum, seq));
-        for (indj = data.seq_length; indj < seqnum; indj++)
-            if (indj < data.max)
-                data.sequence[data.seq_length++]
-                    = '.';
-            else {
-                data.max += 100;
-                data.sequence = Reallocspace(data.sequence, (unsigned) (sizeof(char) * data.max));
-                data.sequence[data.seq_length++] = '.';
-            }
-        for (indj = 0; seq[indj] != '\n' && seq[indj] != '\0'; indj++)
-            if (data.seq_length < data.max)
-                data.sequence[data.seq_length++] = seq[indj];
-            else {
-                data.max += 100;
-                data.sequence = Reallocspace(data.sequence, (unsigned) (sizeof(char) * data.max));
-                data.sequence[data.seq_length++] = seq[indj];
-            }
-        data.sequence[data.seq_length] = '\0';
-        eof = Fgetline(line, LINESIZE, fp);
-        if (eof != NULL)
-            index = macke_abbrev(line, name, 0);
-    }                           // reading seq loop 
-
-    return (eof);
+        ++reader;
+    }
 }
 
 /* --------------------------------------------------------------
  *   Function macke_abbrev().
  *       Find the key in Macke line.
  */
-int macke_abbrev(char *line, char *key, int index) {
+int macke_abbrev(const char *line, char *key, int index) {
     int indi;
 
     // skip white space 
@@ -285,23 +213,22 @@ bool macke_is_continued_remark(const char *str) {
 }
 
 /* -------------------------------------------------------------
- *   Function macke_in_name().
+ *   Function macke_in_name_and_data().
  *       Read in next sequence name and data only.
  */
-char macke_in_name(FILE_BUFFER fp) {
+char macke_in_name_and_data(Macke& macke, Seq& seq, FILE_BUFFER fp) {
     static char line[LINESIZE];
-#warning another function remembering it has been called (seems to be the last)
-    static int  first_time = 1;
-    char        name[TOKENSIZE];
-    char        seq[LINESIZE];
-    char       *eof;
-    int         numofrem   = 0, seqnum;
-    int         index, indj;
+    static int  first_time = 1;  // @@@ use Reader to remember state ?
+    
+    char  name[TOKENSIZE];
+    char  data[LINESIZE];
+    char *eof;
+    int   seqnum;
+    int   index, indj;
 
-    // skip other information, file index points to seq. data 
+    // skip other information, file index points to sequence data
     if (first_time) {
-        eof = skipOverLinesThat(line, LINESIZE, fp, isMackeHeader);        // skip all "#" lines to where seq. data is
-
+        eof = skipOverLinesThat(line, LINESIZE, fp, isMackeHeader);        // skip all "#" lines to where sequence data is
         first_time = 0;
     }
     else if (line[0] == EOF) {
@@ -310,40 +237,26 @@ char macke_in_name(FILE_BUFFER fp) {
         return (EOF);
     }
 
-    // read in seq. data 
-    data.macke.numofrem = numofrem;
-    data.seq_length = 0;
+    ca_assert(seq.is_empty());
 
-    // read in line by line 
-    freenull(data.macke.seqabbr);
-    for (index = macke_abbrev(line, name, 0), data.macke.seqabbr = nulldup(name); line[0] != EOF && str_equal(data.macke.seqabbr, name);) {
-        ASSERT_RESULT(int, 2, sscanf(line + index, "%d%s", &seqnum, seq));
-        for (indj = data.seq_length; indj < seqnum; indj++)
-            if (data.seq_length < data.max)
-                data.sequence[data.seq_length++] = '.';
-            else {
-                data.max += 100;
-                data.sequence = Reallocspace(data.sequence, (unsigned) (sizeof(char) * data.max));
-                data.sequence[data.seq_length++] = '.';
-            }
-        for (indj = 0; seq[indj] != '\n' && seq[indj] != '\0'; indj++) {
-            if (data.seq_length < data.max)
-                data.sequence[data.seq_length++] = seq[indj];
-            else {
-                data.max += 100;
-                data.sequence = Reallocspace(data.sequence, (unsigned) (sizeof(char) * data.max));
-                data.sequence[data.seq_length++] = seq[indj];
-            }
+    // read in sequence data line by line
+    freenull(macke.seqabbr);
+    for (index = macke_abbrev(line, name, 0), macke.seqabbr = nulldup(name);
+         line[0] != EOF && str_equal(macke.seqabbr, name);
+         )
+    {
+        ASSERT_RESULT(int, 2, sscanf(line + index, "%d%s", &seqnum, data));
+        for (indj = seq.get_len(); indj < seqnum; indj++)
+            seq.add('.');
+        for (indj = 0; data[indj] != '\n' && data[indj] != '\0'; indj++) {
+            seq.add(data[indj]);
         }
-        data.sequence[data.seq_length] = '\0';
 
-        if ((eof = Fgetline(line, LINESIZE, fp)) != NULL)
-            index = macke_abbrev(line, name, 0);
-        else
-            line[0] = EOF;
-    }                           // reading seq loop 
+        if ((eof = Fgetline(line, LINESIZE, fp)) != NULL) index = macke_abbrev(line, name, 0);
+        else line[0] = EOF;
+    } 
 
-    return (EOF + 1);
+    return EOF + 1;
 }
 
 /* ------------------------------------------------------------
@@ -356,10 +269,10 @@ void macke_out_header(FILE * fp) {
     fprintf(fp, "#-\t%s\n#-\n#-\n", date);
 }
 
-void macke_seq_display_out(FILE * fp, int format) {
+void macke_seq_display_out(const Macke& macke, FILE * fp, int format, bool first_sequence) {
     // Output the Macke format each sequence format (wot?)
-    
-    char token[TOKENSIZE], direction[TOKENSIZE];
+
+    char   token[TOKENSIZE], direction[TOKENSIZE];
 
     if (format == SWISSPROT) {
         strcpy(token, "pro");
@@ -367,68 +280,67 @@ void macke_seq_display_out(FILE * fp, int format) {
     }
     else {
         strcpy(direction, "5>3");
-        if (data.macke.rna_or_dna == 'r')
+        if (macke.rna_or_dna == 'r')
             strcpy(token, "rna");
         else
             strcpy(token, "dna");
     }
-    if (data.numofseq == 1) {
-        fprintf(fp, "#-\tReference sequence:  %s\n", data.macke.seqabbr);
+    if (first_sequence) {
+        fprintf(fp, "#-\tReference sequence:  %s\n", macke.seqabbr);
         fputs("#-\tAttributes:\n", fp);
 
-        if (str0len(data.macke.seqabbr) < 8)
-            fprintf(fp, "#=\t\t%s\t \tin  out  vis  prt   ord  %s  lin  %s  func ref\n", data.macke.seqabbr, token, direction);
+        if (str0len(macke.seqabbr) < 8)
+            fprintf(fp, "#=\t\t%s\t \tin  out  vis  prt   ord  %s  lin  %s  func ref\n", macke.seqabbr, token, direction);
         else
-            fprintf(fp, "#=\t\t%s\tin  out  vis  prt   ord  %s  lin  %s  func ref\n", data.macke.seqabbr, token, direction);
+            fprintf(fp, "#=\t\t%s\tin  out  vis  prt   ord  %s  lin  %s  func ref\n", macke.seqabbr, token, direction);
     }
-    else if (str0len(data.macke.seqabbr) < 8)
-        fprintf(fp, "#=\t\t%s\t\tin  out  vis  prt   ord  %s  lin  %s  func\n", data.macke.seqabbr, token, direction);
+    else if (str0len(macke.seqabbr) < 8)
+        fprintf(fp, "#=\t\t%s\t\tin  out  vis  prt   ord  %s  lin  %s  func\n", macke.seqabbr, token, direction);
     else
-        fprintf(fp, "#=\t\t%s\tin  out  vis  prt   ord  %s  lin  %s  func\n", data.macke.seqabbr, token, direction);
+        fprintf(fp, "#=\t\t%s\tin  out  vis  prt   ord  %s  lin  %s  func\n", macke.seqabbr, token, direction);
 }
 
-static void macke_print_prefixed_line(FILE *fp, const char *tag, const char *content) {
+static void macke_print_prefixed_line(const Macke& macke, FILE *fp, const char *tag, const char *content) {
     ca_assert(has_content(content));
 
     char prefix[LINESIZE];
-    sprintf(prefix, "#:%s:%s:", data.macke.seqabbr, tag);
+    sprintf(prefix, "#:%s:%s:", macke.seqabbr, tag);
 
     macke_print_line(fp, prefix, content);
 }
 
-static bool macke_print_prefixed_line_if_content(FILE *fp, const char *tag, const char *content) {
+static bool macke_print_prefixed_line_if_content(const Macke& macke, FILE *fp, const char *tag, const char *content) {
     if (!has_content(content)) return false;
-    macke_print_prefixed_line(fp, tag, content);
+    macke_print_prefixed_line(macke, fp, tag, content);
     return true;
 }
 
-void macke_seq_info_out(FILE * fp) {
+void macke_seq_info_out(const Macke& macke, FILE * fp) {
     // Output sequence information
-    Macke& macke = data.macke;
 
-    macke_print_prefixed_line_if_content(fp, "name",   macke.name);
-    macke_print_prefixed_line_if_content(fp, "strain", macke.strain);
-    macke_print_prefixed_line_if_content(fp, "subsp",  macke.subspecies);
-    macke_print_prefixed_line_if_content(fp, "atcc",   macke.atcc);
-    macke_print_prefixed_line_if_content(fp, "rna",    macke.rna);        // old version entry
-    macke_print_prefixed_line_if_content(fp, "date",   macke.date);
-    macke_print_prefixed_line_if_content(fp, "acs",    macke.acs)
-        || macke_print_prefixed_line_if_content(fp, "acs", macke.nbk);    // old version entry
-    macke_print_prefixed_line_if_content(fp, "auth",   macke.author);
-    macke_print_prefixed_line_if_content(fp, "jour",   macke.journal);
-    macke_print_prefixed_line_if_content(fp, "title",  macke.title);
-    macke_print_prefixed_line_if_content(fp, "who",    macke.who);
+    macke_print_prefixed_line_if_content(macke, fp, "name",   macke.name);
+    macke_print_prefixed_line_if_content(macke, fp, "strain", macke.strain);
+    macke_print_prefixed_line_if_content(macke, fp, "subsp",  macke.subspecies);
+    macke_print_prefixed_line_if_content(macke, fp, "atcc",   macke.atcc);
+    macke_print_prefixed_line_if_content(macke, fp, "rna",    macke.rna);        // old version entry
+    macke_print_prefixed_line_if_content(macke, fp, "date",   macke.date);
+    macke_print_prefixed_line_if_content(macke, fp, "acs",    macke.acs)
+        || macke_print_prefixed_line_if_content(macke, fp, "acs", macke.nbk);    // old version entry
+    macke_print_prefixed_line_if_content(macke, fp, "auth",   macke.author);
+    macke_print_prefixed_line_if_content(macke, fp, "jour",   macke.journal);
+    macke_print_prefixed_line_if_content(macke, fp, "title",  macke.title);
+    macke_print_prefixed_line_if_content(macke, fp, "who",    macke.who);
 
     // print out remarks, wrap around if more than MACKEMAXLINE columns 
-    for (int indi = 0; indi < macke.numofrem; indi++) {
+    for (int indi = 0; indi < macke.get_rem_count(); indi++) {
         // Check if it is general comment or GenBank entry 
         // if general comment, macke_in_one_line return(1). 
-        if (macke_in_one_line(macke.remarks[indi])) {
-            macke_print_prefixed_line(fp, "rem", macke.remarks[indi]);
+        if (macke_in_one_line(macke.get_rem(indi))) {
+            macke_print_prefixed_line(macke, fp, "rem", macke.get_rem(indi));
         }
         else {
             // if GenBank entry comments 
-            macke_print_keyword_rem(indi, fp);
+            macke_print_keyword_rem(macke, indi, fp);
         }
     } 
 }
@@ -440,10 +352,10 @@ void macke_seq_info_out(FILE * fp) {
  *       (Those keywords are defined in GenBank COMMENTS by
  *           RDP group)
  */
-void macke_print_keyword_rem(int index, FILE * fp) { // @@@ WRAPPER
-    char first[LINESIZE]; sprintf(first, "#:%s:rem:", data.macke.seqabbr);
+void macke_print_keyword_rem(const Macke& macke, int index, FILE * fp) { // @@@ WRAPPER
+    char first[LINESIZE]; sprintf(first, "#:%s:rem:", macke.seqabbr);
     char other[LINESIZE]; sprintf(other, "%s:%*s", first, RDP_SUBKEY_INDENT, "");
-    const char *remark = data.macke.remarks[index];
+    const char *remark = macke.get_rem(index);
     
     // print_wrapped(fp, first, other, remark, WrapMode(true), MACKEMAXLINE, false); // @@@ wanted correct behavior
     print_wrapped(fp, first, other, remark, WrapMode(true), MACKEMAXLINE-1, WRAPBUG_WRAP_AT_SPACE); // works with testdata
@@ -459,7 +371,7 @@ void macke_print_line(FILE * fp, const char *prefix, const char *content) { // @
  *   Function macke_key_word().
  *       Find the key in Macke line.
  */
-int macke_key_word(char *line, int index, char *key, int length) {
+int macke_key_word(const char *line, int index, char *key, int length) {
     int indi;
 
     if (line == NULL) {
@@ -482,7 +394,7 @@ int macke_key_word(char *line, int index, char *key, int length) {
  *  Function macke_in_one_line().
  *      Check if Str should be in one line.
  */
-int macke_in_one_line(char *Str) {
+int macke_in_one_line(const char *Str) {
     char keyword[TOKENSIZE];
 
     int iskey;
@@ -528,26 +440,27 @@ int macke_in_one_line(char *Str) {
         return (1);
 }
 
-void macke_seq_data_out(FILE * fp) {
+void macke_seq_data_out(const Seq& seq, const Macke& macke, FILE * fp) {
     // Output Macke format sequence data
     int indj, indk;
 
-    if (data.seq_length > MACKELIMIT) {
-        warningf(145, "Length of sequence data is %d over AE2's limit %d.", data.seq_length, MACKELIMIT);
+    if (seq.get_len() > MACKELIMIT) {
+        warningf(145, "Length of sequence data is %d over AE2's limit %d.", seq.get_len(), MACKELIMIT);
     }
 
-    for (indk = indj = 0; indk < data.seq_length; indk++) {
+    const char *sequence = seq.get_seq();
+    for (indk = indj = 0; indk < seq.get_len(); indk++) {
         if (indj == 0)
-            fprintf(fp, "%s%6d ", data.macke.seqabbr, indk);
+            fprintf(fp, "%s%6d ", macke.seqabbr, indk);
 
-        fputc(data.sequence[indk], fp);
+        fputc(sequence[indk], fp);
 
         indj++;
         if (indj == 50) {
             indj = 0;
             fputc('\n', fp);
         }
-    }                           // every line 
+    }
 
     if (indj != 0)
         fputc('\n', fp);
