@@ -79,13 +79,17 @@ namespace arb_test {
         }
 
         static GlobalTestData *instance(bool erase) {
-            static GlobalTestData *data = 0; // singleton
+            static GlobalTestData *data = 0;             // singleton
             if (erase) {
                 delete data;
                 data = 0;
             }
-            else {
-                if (!data) data = new GlobalTestData;
+            else if (!data) {
+                static int allocation_count = 0;
+                arb_assert(allocation_count == 0); // allocating GlobalTestData twice is a bug!
+                allocation_count++;
+
+                data = new GlobalTestData;
             }
             return data;
         }
