@@ -1,11 +1,42 @@
-#include <stdio.h>
-#include "global.h"
+#include "reader.h"
 #include "macke.h"
 
 /* ------------------------------------------------------------------
  *   Function to_gcg().
  *       Convert from whatever to GCG format.
  */
+
+class GenbankReader : public Reader, public DataReader {
+public:
+    GenbankReader(const char *inf) : Reader(inf) {}
+
+    SeqPtr read_sequence_data() {
+        SeqPtr seq = new Seq;
+        eof = genbank_origin(*seq, linebuf, fbuf);
+        return seq;
+    }
+    const char *get_key_word(int offset) {
+        char key[TOKENSIZE];
+        genbank_key_word(line() + offset, 0, key, TOKENSIZE);
+        return shorttimecopy(key);
+    }
+};
+
+class EmblSwissprotReader : public Reader, public DataReader {
+public:
+    EmblSwissprotReader(const char *inf) : Reader(inf) {}
+
+    SeqPtr read_sequence_data() {
+        SeqPtr seq = new Seq;
+        eof = embl_origin(*seq, linebuf, fbuf);
+        return seq;
+    }
+    const char *get_key_word(int offset) {
+        char key[TOKENSIZE];
+        embl_key_word(line() + offset, 0, key, TOKENSIZE);
+        return shorttimecopy(key);
+    }
+};
 
 class GcgWriter {
     FILE *ofp;
@@ -133,8 +164,9 @@ static void embl_to_gcg(const char *inf, const char *outf) {
 }
 
 void to_gcg(const char *inf, const char *outf, int intype) {
-    // @@@ use InputFormat ? 
-    
+    // Convert from whatever to GCG format
+    // @@@ use InputFormat ?
+
     if (intype == MACKE) {
         macke_to_gcg(inf, outf);
     }

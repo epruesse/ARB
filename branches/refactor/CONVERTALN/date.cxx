@@ -1,10 +1,8 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
+#include "fun.h"
+#include "global.h"
+
 #include <time.h>
 #include <sys/time.h>
-#include "global.h"
 
 #define SIZE 128 // default buffer size for generated dates
 

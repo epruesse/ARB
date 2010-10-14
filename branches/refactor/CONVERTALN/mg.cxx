@@ -1,8 +1,6 @@
 // genbank and Macke converting program 
 
-#include <stdio.h>
-#include <stdlib.h>
-#include "global.h"
+#include "genbank.h"
 #include "macke.h"
 
 extern int warning_out;

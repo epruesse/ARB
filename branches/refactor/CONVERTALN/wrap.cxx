@@ -1,37 +1,26 @@
-#include <stdio.h>
-#include "global.h"
+#include "seq.h"
+#include "wrap.h"
 
-void count_bases(const Seq& seq, int *base_a, int *base_t, int *base_g, int *base_c, int *base_other) { // @@@ -> Seq
-    // Count bases A, T, G, C and others
-    int indi;
+int WrapMode::wrap_pos(const char *str, int wrapCol) const {
+    // returns the first position lower equal 'wrapCol' after which splitting
+    // is possible (according to separators of WrapMode)
+    //
+    // returns 'wrapCol' if no such position exists (fallback)
+    //
+    // throws if WrapMode is disabled
 
-    (*base_a) = (*base_c) = (*base_t) = (*base_g) = (*base_other) = 0;
+    if (!allowed_to_wrap()) throw_errorf(50, "Oversized content - no wrapping allowed here (content='%s')", str);
 
-    const char *sequence = seq.get_seq();
-    for (indi = 0; indi < seq.get_len(); indi++)
-        switch (sequence[indi]) {
-            case 'a':
-            case 'A':
-                (*base_a)++;
-                break;
-            case 't':
-            case 'T':
-            case 'u':
-            case 'U':
-                (*base_t)++;
-                break;
-            case 'g':
-            case 'G':
-                (*base_g)++;
-                break;
-            case 'c':
-            case 'C':
-                (*base_c)++;
-                break;
-            default:
-                (*base_other)++;
-        }
+    ca_assert(wrapCol <= (int)strlen(str)); // to short to wrap
+
+    const char *wrapAfter = get_seps();
+    ca_assert(wrapAfter);
+    int i = wrapCol;
+    for (; i >= 0 && !occurs_in(str[i], wrapAfter); --i) {}
+    return i >= 0 ? i : wrapCol;
 }
+
+#warning make the following functions methods of WrapMode
 
 static const char *print_return_wrapped(FILE *fp, const char * const content, const int len, const WrapMode& wrapMode, const int rest_width, WrapBug behavior) {
     // @@@ currently reproduces all bugs found in the previously six individual wrapping functions
@@ -72,7 +61,7 @@ static const char *print_return_wrapped(FILE *fp, const char * const content, co
     return content+continue_at;
 }
 
-void print_wrapped(FILE *fp, const char *first_prefix, const char *other_prefix, const char *content, const WrapMode& wrapMode, int max_width, WrapBug behavior) { // @@@ WRAPPER
+static void print_wrapped(FILE *fp, const char *first_prefix, const char *other_prefix, const char *content, const WrapMode& wrapMode, int max_width, WrapBug behavior) { // @@@ WRAPPER
     // general function for line wrapping
 
     ca_assert(has_content(content));
@@ -95,4 +84,10 @@ void print_wrapped(FILE *fp, const char *first_prefix, const char *other_prefix,
         }
     }
 }
+
+
+void WrapMode::print(FILE *fp, const char *first_prefix, const char *other_prefix, const char *content, int max_width, WrapBug behavior) const {
+    print_wrapped(fp, first_prefix, other_prefix, content, *this, max_width, behavior);
+}
+
 

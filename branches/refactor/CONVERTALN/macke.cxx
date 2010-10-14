@@ -1,8 +1,7 @@
 // -------------------- Macke related subroutines -------------- 
 
-#include <stdio.h>
-#include "global.h"
 #include "macke.h"
+#include "wrap.h"
 
 #define MACKELIMIT 10000
 
@@ -357,14 +356,14 @@ void macke_print_keyword_rem(const Macke& macke, int index, FILE * fp) { // @@@ 
     char other[LINESIZE]; sprintf(other, "%s:%*s", first, RDP_SUBKEY_INDENT, "");
     const char *remark = macke.get_rem(index);
     
-    // print_wrapped(fp, first, other, remark, WrapMode(true), MACKEMAXLINE, false); // @@@ wanted correct behavior
-    print_wrapped(fp, first, other, remark, WrapMode(true), MACKEMAXLINE-1, WRAPBUG_WRAP_AT_SPACE); // works with testdata
+    // WrapMode(true).print(fp, first, other, remark, MACKEMAXLINE, false); // @@@ wanted correct behavior
+    WrapMode(true).print(fp, first, other, remark, MACKEMAXLINE-1, WRAPBUG_WRAP_AT_SPACE); // works with testdata
 }
 
 void macke_print_line(FILE * fp, const char *prefix, const char *content) { // @@@ WRAPPER
     // print a macke line and wrap around line after MACKEMAXLINE column.
-    // print_wrapped(fp, prefix, prefix, content, WrapMode(true), MACKEMAXLINE, false); // @@@ wanted
-    print_wrapped(fp, prefix, prefix, content, WrapMode(true), MACKEMAXLINE, WRAPBUG_WRAP_BEFORE_SEP); 
+    // WrapMode(true).print(fp, prefix, prefix, content, MACKEMAXLINE, false); // @@@ wanted
+    WrapMode(true).print(fp, prefix, prefix, content, MACKEMAXLINE, WRAPBUG_WRAP_BEFORE_SEP); 
 }
 
 /* -----------------------------------------------------------

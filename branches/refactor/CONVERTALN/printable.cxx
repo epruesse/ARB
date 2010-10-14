@@ -1,5 +1,5 @@
-#include <stdio.h>
-#include "global.h"
+#include "input_format.h"
+#include "ali.h"
 
 #define PRTLENGTH   62
 

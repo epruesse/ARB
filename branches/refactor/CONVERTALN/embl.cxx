@@ -1,7 +1,7 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include "global.h"
+#include "embl.h"
+#include "genbank.h"
 #include "macke.h"
+#include "wrap.h"
 
 extern int warning_out;
 
@@ -514,27 +514,6 @@ void embl_out(const Embl& embl, const Seq& seq, FILE * fp) {
     embl_out_origin(seq, fp);
 }
 
-int WrapMode::wrap_pos(const char *str, int wrapCol) const {
-    // returns the first position lower equal 'wrapCol' after which splitting
-    // is possible (according to separators of WrapMode)
-    //
-    // returns 'wrapCol' if no such position exists (fallback)
-    //
-    // throws if WrapMode is disabled
-
-    if (!allowed_to_wrap()) throw_errorf(50, "Oversized content - no wrapping allowed here (content='%s')", str);
-
-    ca_assert(wrapCol <= (int)strlen(str)); // to short to wrap
-
-    const char *wrapAfter = get_seps();
-    ca_assert(wrapAfter);
-    int i = wrapCol;
-    for (; i >= 0 && !occurs_in(str[i], wrapAfter); --i) {}
-    return i >= 0 ? i : wrapCol;
-}
-
-
-
 void embl_print_lines(FILE * fp, const char *key, const char *content, const WrapMode& wrapMode) { // @@@ WRAPPER
     // Print EMBL entry and wrap around if line over EMBLMAXLINE.
     ca_assert(strlen(key) == 2);
@@ -542,8 +521,8 @@ void embl_print_lines(FILE * fp, const char *key, const char *content, const Wra
     char prefix[TOKENSIZE];
     sprintf(prefix, "%-*s", EMBLINDENT, key);
 
-    // print_wrapped(fp, prefix, prefix, content, wrapMode, EMBLMAXLINE, true); // @@@ wanted
-    print_wrapped(fp, prefix, prefix, content, wrapMode, EMBLMAXLINE-1, WRAPBUG_WRAP_AT_SPACE); // @@@ 2 BUGs
+    // wrapMode.print(fp, prefix, prefix, content, EMBLMAXLINE, true); // @@@ wanted
+    wrapMode.print(fp, prefix, prefix, content, EMBLMAXLINE-1, WRAPBUG_WRAP_AT_SPACE); // @@@ 2 BUGs
 }
 
 inline void embl_print_completeness(FILE *fp, char compX, char X) {
@@ -589,24 +568,25 @@ void embl_print_comment_if_content(FILE * fp, const char *key, const char *conte
 
     char first[LINESIZE]; sprintf(first, "CC%*s%s", (EMBLINDENT-2)+RDP_SUBKEY_INDENT, "", key);
     char other[LINESIZE]; sprintf(other, "CC%*s", (EMBLINDENT-2)+RDP_SUBKEY_INDENT+RDP_CONTINUED_INDENT, "");
-    // print_wrapped(fp, first, other, content, WrapMode(true), EMBLMAXLINE, false); // @@@ wanted
-    print_wrapped(fp, first, other, content, WrapMode(true), EMBLMAXLINE-2, WRAP_CORRECTLY); // @@@ 1 BUG
+    // WrapMode(true).print(fp, first, other, content, EMBLMAXLINE, false); // @@@ wanted
+    WrapMode(true).print(fp, first, other, content, EMBLMAXLINE-2, WRAP_CORRECTLY); // @@@ 1 BUG
 }
 
 /* -----------------------------------------------------
  *      Function embl_out_origin().
  *              Print out the sequence data of EMBL format.
  */
-void embl_out_origin(const Seq& seq, FILE * fp) {
-    int base_a, base_c, base_t, base_g, base_other;
-    int indi, indj, indk;
+void embl_out_origin(const Seq& seq, FILE *fp) {
 
-    // print sequence data 
-    count_bases(seq, &base_a, &base_t, &base_g, &base_c, &base_other);
+    // print sequence data
 
-    fprintf(fp, "SQ   Sequence %d BP; %d A; %d C; %d G; %d T; %d other;\n", seq.get_len(), base_a, base_c, base_g, base_t, base_other);
+    BaseCounts bases;
+    seq.count(bases);
+    fprintf(fp, "SQ   Sequence %d BP; %d A; %d C; %d G; %d T; %d other;\n",
+            seq.get_len(), bases.a, bases.c, bases.g, bases.t, bases.other);
 
     const char *sequence = seq.get_seq();
+    int indi, indj, indk;
     for (indi = 0, indj = 0, indk = 1; indi < seq.get_len(); indi++) {
         if ((indk % 60) == 1)
             fputs("     ", fp);

@@ -11,65 +11,24 @@
 #ifndef GLOBAL_H
 #define GLOBAL_H
 
-#ifndef _CPP_CSTDIO
-#include <cstdio>
-#endif
-#ifndef FILEBUFFER_H
-#include <FileBuffer.h>
-#endif
-
-class WrapMode;
-
-enum WrapBug {
-    // defines various wrapping bugs (produced by original code)
-    WRAP_CORRECTLY = 0,
-
-    // bit values:
-    WRAPBUG_WRAP_AT_SPACE   = 1,
-    WRAPBUG_WRAP_BEFORE_SEP = 2,
-    WRAPBUG_UNIDENTIFIED    = 4,
-};
-
-struct OrgInfo;
-struct SeqInfo;
-struct Comments;
-struct Emblref;
-struct Embl;
-struct GenbankRef;
-struct GenBank;
-struct Macke;
-struct Paup;
-struct Nbrf;
-struct Seq;
-struct Alignment;
-class Reader;
-
-#ifndef PROTOTYPES_H
-#include "prototypes.h"
+#ifndef ARB_ASSERT_H
+#include <arb_assert.h>
 #endif
 
 #define ca_assert(cond) arb_assert(cond)
+#define UNCOVERED()     ca_assert(0)
 
-#define UNCOVERED() ca_assert(0)
+// --------------------
 
-#define LINESIZE  126
-#define LONGTEXT  5000
-#define TOKENSIZE 80
+struct Convaln_exception {
+    int         error_code;
+    const char *error; // @@@ make this a copy
 
-// max. length of lines
-#define EMBLMAXLINE  74
-#define GBMAXLINE    78
-#define MACKEMAXLINE 78
-
-// indentation to part behind key
-#define EMBLINDENT 5
-#define GBINDENT   12
-
-// indents for RDP-defined comments
-#define RDP_SUBKEY_INDENT    2
-#define RDP_CONTINUED_INDENT 6
-
-#define p_nonkey_start 5
+    Convaln_exception(int error_code_, const char *error_)
+        : error_code(error_code_),
+          error(error_)
+    {}
+};
 
 // --------------------
 
@@ -112,47 +71,28 @@ inline void freedup_if_content(char*& entry, const char *content) {
     if (has_content(content)) freedup(entry, content);
 }
 
-// --------------------
-
-template<typename PRED>
-char *skipOverLinesThat(char *buffer, size_t buffersize, FILE_BUFFER& fb, PRED line_predicate) {
-    // returns a pointer to the first non-matching line or NULL
-    // @@@ WARNING: unconditionally skips the first line 
-    char *result;
-
-    for (result = Fgetline(buffer, buffersize, fb);
-         result && line_predicate(result);
-         result = Fgetline(buffer, buffersize, fb)) { }
-    
-    return result;
-}
- 
-// --------------------
-
-class WrapMode {
-    char *separators;
-public:
-    WrapMode(const char *separators_) : separators(nulldup(separators_)) {}
-    WrapMode(bool allowWrap) : separators(allowWrap ? strdup(WORD_SEP) : NULL) {} // true->wrap words, false->wrapping forbidden
-    ~WrapMode() { free(separators); }
-
-    bool allowed_to_wrap() const { return separators; }
-    const char *get_seps() const { ca_assert(allowed_to_wrap()); return separators; }
-
-    int wrap_pos(const char *str, int wrapCol) const;
-
-};
-
-#ifndef CONVERT_H
-#include "convert.h"
-#endif
 
 // --------------------
-// Logging
 
-#if defined(DEBUG)
-#define CALOG // be more verbose in debugging mode
-#endif // DEBUG
+#define INPLACE_RECONSTRUCT(type,this)          \
+    do {                                        \
+        (this)->~type();                        \
+        new(this) type();                       \
+    } while(0)
+
+#define INPLACE_COPY_RECONSTRUCT(type,this,other)       \
+    do {                                                \
+        (this)->~type();                                \
+        new(this) type(other);                          \
+    } while(0)
+
+#define DECLARE_ASSIGNMENT_OPERATOR(T)                  \
+    T& operator = (const T& other) {                    \
+        INPLACE_COPY_RECONSTRUCT(T, this, other);       \
+        return *this;                                   \
+    }
+
+// --------------------
 
 #else
 #error global.h included twice

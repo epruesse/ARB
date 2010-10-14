@@ -1,5 +1,6 @@
-#include <stdio.h>
-#include "global.h"
+#include "input_format.h"
+#include "paup.h"
+#include "ali.h"
 
 /* -------------------------------------------------------------
  *   Function to_paup()

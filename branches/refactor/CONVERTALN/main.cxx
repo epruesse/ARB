@@ -7,10 +7,8 @@
 // 
 // ------------------------------------------------------------ 
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <ctype.h>
-#include <string.h>
+#include "defs.h"
+#include "fun.h"
 #include "global.h"
 #include <arb_defs.h>
 

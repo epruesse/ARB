@@ -1,7 +1,5 @@
-#include <stdio.h>
-#include "global.h"
-
-#include <errno.h>
+#include "input_format.h"
+#include "ali.h"
 
 /* ---------------------------------------------------------------
  *  Function to_phylip()

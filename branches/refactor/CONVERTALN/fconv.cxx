@@ -1,7 +1,7 @@
-// ------------- File format converting subroutine ------------- 
+// ------------- File format converting subroutine -------------
 
-#include <stdio.h>
-#include <stdlib.h>
+#include "defs.h"
+#include "fun.h"
 #include "global.h"
 #include <static_assert.h>
 

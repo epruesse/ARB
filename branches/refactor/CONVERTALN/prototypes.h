@@ -153,10 +153,6 @@ void phylip_print_line(const char *name, const char *sequence, int seq_length, i
 void to_printable(const char *inf, const char *outf, int informat);
 void printable_print_line(const char *id, const char *sequence, int start, int base_count, FILE *fp);
 
-/* routines.cxx */
-void count_bases(const Seq &seq, int *base_a, int *base_t, int *base_g, int *base_c, int *base_other);
-void print_wrapped(FILE *fp, const char *first_prefix, const char *other_prefix, const char *content, const WrapMode &wrapMode, int max_width, WrapBug behavior);
-
 /* util.cxx */
 bool scan_token(const char *from, char *to) __ATTR__USERESULT;
 void scan_token_or_die(const char *from, char *to, FILE_BUFFER *fb);

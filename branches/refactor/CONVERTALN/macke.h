@@ -3,14 +3,123 @@
 //   File      : macke.h                                             //
 //   Purpose   :                                                     //
 //                                                                   //
-//   Coded by Ralf Westram (coder@reallysoft.de) in September 2010   //
-//   Institute of Microbiology (Technical University Munich)         //
-//   http://www.arb-home.de/                                         //
-//                                                                   //
 // ================================================================= //
 
 #ifndef MACKE_H
 #define MACKE_H
+
+#ifndef INPUT_FORMAT_H
+#include "input_format.h"
+#endif
+#ifndef READER_H
+#include "reader.h"
+#endif
+
+class Macke : public InputFormat {
+    int    numofrem;            // num. of remarks
+    char **remarks;             // remarks
+    int    allocated;
+
+public:
+
+    char  *seqabbr;             // sequence abbrev.
+    char  *name;                // sequence full name
+    int    rna_or_dna;          // rna or dna
+    char  *atcc;                // CC# of sequence
+    char  *rna;                 // Sequence methods, old version entry
+    char  *date;                // date of modification
+    char  *nbk;                 // GenBank information -old version entry
+    char  *acs;                 // accession number
+    char  *author;              // author of the first reference
+    char  *journal;             // journal of the first reference
+    char  *title;               // title of the first reference
+    char  *who;                 // who key in the data
+    char  *strain;              // strain
+    char  *subspecies;          // subspecies
+
+    Macke() {
+        seqabbr    = strdup("");
+        name       = no_content();
+        atcc       = no_content();
+        rna        = no_content();
+        date       = no_content();
+        nbk        = no_content();
+        acs        = no_content();
+        who        = no_content();
+        rna_or_dna = 'd'; // @@@ why ?
+        journal    = no_content();
+        title      = no_content();
+        author     = no_content();
+        strain     = no_content();
+        subspecies = no_content();
+
+        numofrem  = 0;
+        remarks   = NULL;
+        allocated = 0;
+    }
+    virtual ~Macke() {
+        freenull(seqabbr);
+        freenull(name);
+        freenull(atcc);
+        freenull(rna);
+        freenull(date);
+        freenull(nbk);
+        freenull(acs);
+        freenull(who);
+        for (int indi = 0; indi < numofrem; indi++) {
+            freenull(remarks[indi]);
+        }
+        freenull(remarks);
+        freenull(journal);
+        freenull(title);
+        freenull(author);
+        freenull(strain);
+        freenull(subspecies);
+    }
+
+    void add_remark_nocopy(char *rem) {
+        if (numofrem >= allocated) {
+            allocated = allocated*1.5+10;
+            remarks   = (char**)Reallocspace(remarks, sizeof(*remarks)*allocated);
+        }
+        ca_assert(allocated>numofrem);
+        remarks[numofrem++] = rem;
+    }
+    void add_remark(const char *rem) { add_remark_nocopy(nulldup(rem)); }
+    void add_remark(const char *key, const char *Str) {
+        char *rem = nulldup(key);
+        Append(rem, Str);
+        add_remark_nocopy(rem);
+    }
+
+    int get_rem_count() const { return numofrem; }
+    const char *get_rem(int idx) const {
+        ca_assert(idx<numofrem);
+        return remarks[idx];
+    }
+
+    void add_remark_if_content(const char *key, const char *Str) {
+        if (has_content(Str)) add_remark(key, Str);
+    }
+
+    char *copy_multi_rem(int& idx, int offset) const {
+        // create a heapcopy of a multiline-remark.
+        // increments 'idx' to the last line.
+        char *rem = nulldup(remarks[idx]+offset);
+        while (++idx<numofrem && macke_is_continued_remark(remarks[idx])) {
+            skip_eolnl_and_append_spaced(rem, remarks[idx]+3);
+        }
+        --idx;
+        return rem;
+    }
+    
+    // InputFormat interface
+    SeqPtr get_data(FILE_BUFFER ifp);
+    void reinit() { INPLACE_RECONSTRUCT(Macke, this); }
+};
+
+// --------------------
+//      MackeReader
 
 class MackeReader : public DataReader {
     bool        firstRead;

@@ -1,12 +1,7 @@
-#include <stdio.h>
-#include <string.h>
-#include <ctype.h>
-#include <stdlib.h>
-#include <stdarg.h>
-#include <errno.h>
+#include <FileBuffer.h>
+#include "fun.h"
+#include "defs.h"
 #include "global.h"
-
-int warning_out = 1;
 
 bool scan_token(const char *from, char *to) { // __ATTR__USERESULT
     return sscanf(from, "%s", to) == 1;
@@ -89,6 +84,8 @@ FILE *open_output_or_die(const char *filename) {
  *      print out warning_message and continue execution.
  */
 // ------------------------------------------------------------- 
+
+int warning_out = 1;
 
 void warning(int warning_num, const char *warning_message) {
     if (warning_out)

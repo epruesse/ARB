@@ -1,8 +1,7 @@
 // -------------- genbank related subroutines ----------------- 
 
-#include <stdio.h>
-#include <ctype.h>
-#include "global.h"
+#include "genbank.h"
+#include "wrap.h"
 
 #define NOPERIOD    0
 #define PERIOD      1
@@ -574,7 +573,6 @@ void genbank_out(const GenBank& gbk, const Seq& seq, FILE * fp) {
     // Output in a genbank format
 
     int      indi, length;
-    int      base_a, base_t, base_g, base_c, base_other;
     WrapMode wrapWords(true);
 
     genbank_out_one_entry(fp, "LOCUS       ", gbk.locus,      wrapWords,     NOPERIOD);
@@ -650,14 +648,15 @@ void genbank_out(const GenBank& gbk, const Seq& seq, FILE * fp) {
         }
     }
 
-    count_bases(seq, &base_a, &base_t, &base_g, &base_c, &base_other);
-
-    // don't write 0 others in this base line 
-    if (base_other > 0)
-        fprintf(fp, "BASE COUNT  %6d a %6d c %6d g %6d t %6d others\n", base_a, base_c, base_g, base_t, base_other);
-    else
-        fprintf(fp, "BASE COUNT  %6d a %6d c %6d g %6d t\n", base_a, base_c, base_g, base_t);
-
+    {
+        BaseCounts bases;
+        seq.count(bases);
+        fprintf(fp, "BASE COUNT  %6d a %6d c %6d g %6d t", bases.a, bases.c, bases.g, bases.t);
+        if (bases.other) { // don't write 0 others
+            fprintf(fp, " %6d others", bases.other);
+        }
+        fputc('\n', fp);
+    }
     genbank_out_origin(seq, fp);
 }
 
@@ -679,7 +678,7 @@ void genbank_print_lines(FILE * fp, const char *key, const char *content, const 
     ca_assert(strlen(key) == GBINDENT);
     ca_assert(content[strlen(content)-1] == '\n');
 
-    print_wrapped(fp, key, "            ", content, wrapMode, GBMAXLINE, WRAP_CORRECTLY);
+    wrapMode.print(fp, key, "            ", content, GBMAXLINE, WRAP_CORRECTLY);
 }
 
 void genbank_print_comment_if_content(FILE * fp, const char *key, const char *content) { // @@@ WRAPPER
@@ -689,7 +688,7 @@ void genbank_print_comment_if_content(FILE * fp, const char *key, const char *co
 
     char first[LINESIZE]; sprintf(first, "%*s%s", GBINDENT+RDP_SUBKEY_INDENT, "", key);
     char other[LINESIZE]; sprintf(other, "%*s", GBINDENT+RDP_SUBKEY_INDENT+RDP_CONTINUED_INDENT, "");
-    print_wrapped(fp, first, other, content, WrapMode(true), GBMAXLINE, WRAP_CORRECTLY);
+    WrapMode(true).print(fp, first, other, content, GBMAXLINE, WRAP_CORRECTLY);
 }
 
 /* ---------------------------------------------------------------
