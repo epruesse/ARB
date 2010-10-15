@@ -94,14 +94,16 @@ bool find_date(const char *date_string, int *month, int *day, int *year) { // __
     int count = 0;
     int index = 0;
 
-    for (int indi = 0; indi <= str0len(date_string); indi++) {
-        if (date_string[indi] == determ || indi == str0len(date_string)) {
+    int len = str0len(date_string);
+    for (int indi = 0; indi <= len; indi++) {
+        if (date_string[indi] == determ || indi == len) {
             token[index++] = '\0';
             nums[count++] = atoi(token);
             index = 0;
         }
-        else
+        else {
             token[index++] = date_string[indi];
+        }
     }
     *month = nums[0];
     *day   = nums[1];

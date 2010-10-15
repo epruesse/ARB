@@ -16,7 +16,7 @@ char embl_in(Embl& embl, Seq& seq, FILE_BUFFER fp) { // @@@ use Reader
     eoen = ' ';                 // end-of-entry, set to be 'y' after '//' is read
 
     for (eof = Fgetline(line, LINESIZE, fp); eof != NULL && eoen != 'y';) {
-        if (str0len(line) <= 1) {
+        if (!has_content(line)) {
             eof = Fgetline(line, LINESIZE, fp);
             continue;           // empty line, skip 
         }
@@ -43,7 +43,7 @@ char embl_in(Embl& embl, Seq& seq, FILE_BUFFER fp) { // @@@ use Reader
             eof = embl_one_entry(line, fp, embl.keywords, key);
 
             // correct missing '.' 
-            if (str0len(embl.keywords) <= 1) freedup(embl.keywords, ".\n");
+            if (!has_content(embl.keywords)) freedup(embl.keywords, ".\n");
             else terminate_with(embl.keywords, '.');
         }
         else if (str_equal(key, "DR")) {
@@ -104,7 +104,7 @@ char embl_in_id(Embl& embl, Seq& seq, FILE_BUFFER fp) { // @@@ use reader
     // end-of-entry, set to be 'y' after '//' is read 
 
     for (eof = Fgetline(line, LINESIZE, fp); eof != NULL && eoen != 'y';) {
-        if (str0len(line) <= 1) {
+        if (!has_content(line)) {
             eof = Fgetline(line, LINESIZE, fp);
             continue;           // empty line, skip 
         }
@@ -165,7 +165,7 @@ char *embl_continue_line(char *pattern, char*& Str, char *line, FILE_BUFFER fp) 
 
     // check continue lines 
     for (eof = Fgetline(line, LINESIZE, fp); eof != NULL; eof = Fgetline(line, LINESIZE, fp)) {
-        if (str0len(line) <= 1)
+        if (!has_content(line))
             continue;
 
         embl_key_word(line, 0, key, TOKENSIZE);
@@ -817,14 +817,10 @@ char *etog_author(char *Str) {
     for (indi = index = 0, len = str0len(Str) - 1; indi < len; indi++, index++) {
         if (Str[indi] == ',' || Str[indi] == ';') {
             token[index--] = '\0';
-            if (Str[indi] == ',') {
-                if (str0len(author) > 0)
-                    Append(author, ",");
+            if (has_content(author)) {
+                Append(author, (Str[indi] == ',') ? "," : " and");
             }
-            else if (str0len(author) > 0) {
-                Append(author, " and");
-            }
-            // search backward to find the first blank and replace the blank by ',' 
+            // search backward to find the first blank and replace the blank by ','
             for (indk = 0; index > 0 && indk == 0; index--)
                 if (token[index] == ' ') {
                     token[index] = ',';
@@ -1238,7 +1234,7 @@ int partial_mtoe(const Macke& macke, Embl& embl) {
         bool have_strain = ridx >= 0 && stristr(others+ridx, "strain=");
         
         if (!have_strain) {
-            if (str0len(others) <= 1) freenull(others);
+            if (!has_content(others)) freenull(others);
             Append(others, "*source: strain=");
             Append(others, macke.strain);
             if (!is_end_mark(others[str0len(others) - 2])) skip_eolnl_and_append(others, ";\n");
@@ -1250,7 +1246,7 @@ int partial_mtoe(const Macke& macke, Embl& embl) {
         bool have_subsp = ridx >= 0 && find_subspecies(others+ridx, '=') >= 0;
 
         if (!have_subsp) {
-            if (str0len(others) <= 1) freenull(others);
+            if (!has_content(others)) freenull(others);
             Append(others, "*source: subspecies=");
             Append(others, macke.subspecies);
             if (!is_end_mark(others[str0len(others) - 2])) skip_eolnl_and_append(others, ";\n");

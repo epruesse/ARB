@@ -20,7 +20,7 @@ char genbank_in(GenBank& gbk, Seq& seq, FILE_BUFFER fp) {
     eoen = ' ';
     // end-of-entry, set to be 'y' after '//' is read
     for (eof = Fgetline(line, LINESIZE, fp); eof != NULL && eoen != 'y';) {
-        if (str0len(line) <= 1) {
+        if (!has_content(line)) {
             eof = Fgetline(line, LINESIZE, fp);
             continue;           // empty line, skip 
         }
@@ -609,8 +609,10 @@ void genbank_out(const GenBank& gbk, const Seq& seq, FILE * fp) {
 
     if (orginf.exists ||
         seqinf.exists ||
-        str0len(gbk.comments.others) > 0)
+        has_content(gbk.comments.others))
     {
+        // @@@ code below is broken
+        // see ../UNIT_TESTER/run/impexp/conv.EMBL_2_GENBANK.expected@Next 
         fputs("COMMENTS    ", fp);
 
         if (orginf.exists) {
@@ -629,16 +631,16 @@ void genbank_out(const GenBank& gbk, const Seq& seq, FILE * fp) {
 
         if (seqinf.exists) {
             fprintf(fp, "Sequence information (bases 1 to %d)\n", seq.get_len());
-        }
 
-        genbank_print_comment_if_content(fp, "RDP ID: ",                      seqinf.RDPid);
-        genbank_print_comment_if_content(fp, "Corresponding GenBank entry: ", seqinf.gbkentry); // this field is used in ../lib/import/.rdp_old.ift
-        genbank_print_comment_if_content(fp, "Sequencing methods: ",          seqinf.methods);
+            genbank_print_comment_if_content(fp, "RDP ID: ",                      seqinf.RDPid);
+            genbank_print_comment_if_content(fp, "Corresponding GenBank entry: ", seqinf.gbkentry); // this field is used in ../lib/import/.rdp_old.ift
+            genbank_print_comment_if_content(fp, "Sequencing methods: ",          seqinf.methods);
+        }
 
         // @@@ DRY (when bug was removed):
         if      (seqinf.comp5 == 'n') fputs("              5' end complete: No\n", fp);
         else if (seqinf.comp5 == 'y') fputs("              5' end complete: Yes\n", fp);
-
+        
         if      (seqinf.comp3 == 'n') fputs("              3' end complete: No\n", fp);
         else if (seqinf.comp3 == 'y') fputs("             3' end complete: Yes\n", fp); // @@@ now you see the 'bug'
 

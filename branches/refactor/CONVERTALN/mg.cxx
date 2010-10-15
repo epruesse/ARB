@@ -56,6 +56,67 @@ void genbank_to_macke(const char *inf, const char *outf) {
     destroy_FILE_BUFFER(ifp);
 }
 
+static char *get_atcc(const Macke& macke, char *source) {
+    static int cc_num = 16;
+    static const char *CC[16] = {
+        "ATCC", "CCM", "CDC", "CIP", "CNCTC",
+        "DSM", "EPA", "JCM", "NADC", "NCDO", "NCTC", "NRCC",
+        "NRRL", "PCC", "USDA", "VPI"
+    };
+
+    int  indi, indj, index;
+    int  length;
+    char buffer[LONGTEXT], temp[LONGTEXT], pstring[LONGTEXT];
+    char atcc[LONGTEXT];
+
+    atcc[0] = '\0';
+    for (indi = 0; indi < cc_num; indi++) {
+        index = 0;
+        while ((index = paren_string(source, pstring, index)) > 0) {
+            if ((indj = find_pattern(pstring, CC[indi])) >= 0) {
+                // skip the key word 
+                indj += str0len(CC[indi]);
+                // skip blank spaces 
+                indj = Skip_white_space(pstring, indj);
+                // get strain 
+                get_atcc_string(pstring, buffer, indj);
+                sprintf(temp, "%s %s", CC[indi], buffer);
+                length = str0len(atcc);
+                if (length > 0) {
+                    atcc[length] = '\0';
+                    strcat(atcc, ", ");
+                }
+                strcat(atcc, temp);
+            }                   
+        }                       
+    }                           
+    // append eoln to the atcc string 
+    length = str0len(atcc);
+    if (macke.atcc) {
+        macke.atcc[length] = '\0';
+    }
+    strcat(atcc, "\n");
+    return (nulldup(atcc));
+}
+
+static char *genbank_get_atcc(const GenBank& gbk, const Macke& macke) {
+    // Get atcc from SOURCE line in Genbank data file.
+    char  temp[LONGTEXT];
+    char *atcc;
+
+    atcc = NULL;
+    // get culture collection #
+    if (has_content(gbk.source)) {
+        atcc = get_atcc(macke, gbk.source);
+    }
+    if (!has_content(atcc) && has_content(macke.strain)) {
+        // add () to macke strain to be processed correctly
+        sprintf(temp, "(%s)", macke.strain);
+        atcc = get_atcc(macke, temp);
+    }
+    return atcc;
+}
+
 int gtom(const GenBank& gbk, Macke& macke) { // __ATTR__USERESULT
     // Convert from Genbank format to Macke format.
     char temp[LONGTEXT], buffer[TOKENSIZE];
@@ -111,7 +172,7 @@ int gtom(const GenBank& gbk, Macke& macke) { // __ATTR__USERESULT
     // adjust the strain, subspecies, and atcc information 
     freeset(macke.strain,     genbank_get_strain(gbk));
     freeset(macke.subspecies, genbank_get_subspecies(gbk));
-    if (str0len(macke.atcc) <= 1) {
+    if (!has_content(macke.atcc)) {
         freeset(macke.atcc, genbank_get_atcc(gbk, macke));
     }
 
@@ -128,16 +189,13 @@ void add_35end_remark(Macke& macke, char end35, char yn) {
 
 void gtom_remarks(const GenBank& gbk, Macke& macke) {
     // Create Macke remarks.
-    int  len;
-    int  indi, indj;
-    char temp[LONGTEXT];
 
     // REFERENCE the first reference 
     if (gbk.get_refcount() > 0)
         macke.add_remark_if_content("ref:", gbk.get_ref(0).ref);
 
     // The rest of the REFERENCES 
-    for (indi = 1; indi < gbk.get_refcount(); indi++) {
+    for (int indi = 1; indi < gbk.get_refcount(); indi++) {
         macke.add_remark_if_content("ref:",      gbk.get_ref(indi).ref);
         macke.add_remark_if_content("auth:",     gbk.get_ref(indi).author);
         macke.add_remark_if_content("jour:",     gbk.get_ref(indi).journal);
@@ -162,9 +220,10 @@ void gtom_remarks(const GenBank& gbk, Macke& macke) {
     add_35end_remark(macke, '5', seqinf.comp5);
 
     // other comments, not RDP DataBase specially defined
-    if (str0len(gbk.comments.others) > 0) {
-        len = str0len(gbk.comments.others);
-        for (indi = 0, indj = 0; indi < len; indi++) {
+    int len = str0len(gbk.comments.others);
+    if (len > 0) {
+        for (int indi = 0, indj = 0; indi < len; indi++) {
+            char temp[LONGTEXT];
             temp[indj++] = gbk.comments.others[indi];
             if (gbk.comments.others[indi] == '\n' || gbk.comments.others[indi] == '\0') {
                 temp[indj]                 = '\0';
@@ -199,17 +258,44 @@ static void check_consistency(const char *what, char* const& var, const char *Ne
     }
 }
 
+static void get_string(char *temp, const char *line, int index) {
+    // Get the rest of the Str until reaching certain terminators,
+    // such as ';', ',', '.',...
+    // Always append "\n" at the end of the returned Str.
+
+    index = Skip_white_space(line, index);
+
+    int len       = str0len(line);
+    int paren_num = 0;
+    
+    int indk;
+    for (indk = 0; index < len; index++, indk++) {
+        temp[indk] = line[index];
+        if (temp[indk] == '(')
+            paren_num++;
+        if (temp[indk] == ')')
+            if (paren_num == 0)
+                break;
+            else
+                paren_num--;
+        else if (temp[indk] == '\n' || (paren_num == 0 && temp[indk] == ';'))
+            break;
+    }
+    if (indk > 1 && is_end_mark(temp[indk - 1]))
+        indk--;
+    temp[indk++] = '\n';
+    temp[indk] = '\0';
+}
+
 static void copy_subspecies_and_check_consistency(char* const& subspecies, const char *from, int indj) {
-    indj = Skip_white_space(from, indj);
     char temp[LONGTEXT];
-    get_string(from, temp, indj);
+    get_string(temp, from, indj);
     correct_subspecies(temp);
     check_consistency("subspecies", subspecies, temp);
 }
 static void copy_strain_and_check_consistency(char* const& strain, const char *from, int indj) {
-    indj = Skip_white_space(from, indj);
     char temp[LONGTEXT];
-    get_string(from, temp, indj);
+    get_string(temp, from, indj);
     check_consistency("strain", strain, temp);
 }
 
@@ -268,69 +354,6 @@ char *genbank_get_subspecies(const GenBank& gbk) {
     }
 
     return nulldup(subspecies);
-}
-
-char *genbank_get_atcc(const GenBank& gbk, const Macke& macke) {
-    // Get atcc from SOURCE line in Genbank data file.
-    char  temp[LONGTEXT];
-    char *atcc;
-
-    atcc = NULL;
-    // get culture collection #
-    if (has_content(gbk.source))
-        atcc = get_atcc(macke, gbk.source);
-    if (has_content(atcc) <= 1 && str0len(macke.strain)) {
-        // add () to macke strain to be processed correctly 
-        sprintf(temp, "(%s)", macke.strain);
-        atcc = get_atcc(macke, temp);
-    }
-    return (atcc);
-}
-
-// ------------------------------------------------------------------- 
-/*  Function get_atcc().
- */
-char *get_atcc(const Macke& macke, char *source) {
-    static int cc_num = 16;
-    static const char *CC[16] = {
-        "ATCC", "CCM", "CDC", "CIP", "CNCTC",
-        "DSM", "EPA", "JCM", "NADC", "NCDO", "NCTC", "NRCC",
-        "NRRL", "PCC", "USDA", "VPI"
-    };
-
-    int  indi, indj, index;
-    int  length;
-    char buffer[LONGTEXT], temp[LONGTEXT], pstring[LONGTEXT];
-    char atcc[LONGTEXT];
-
-    atcc[0] = '\0';
-    for (indi = 0; indi < cc_num; indi++) {
-        index = 0;
-        while ((index = paren_string(source, pstring, index)) > 0) {
-            if ((indj = find_pattern(pstring, CC[indi])) >= 0) {
-                // skip the key word 
-                indj += str0len(CC[indi]);
-                // skip blank spaces 
-                indj = Skip_white_space(pstring, indj);
-                // get strain 
-                get_atcc_string(pstring, buffer, indj);
-                sprintf(temp, "%s %s", CC[indi], buffer);
-                length = str0len(atcc);
-                if (length > 0) {
-                    atcc[length] = '\0';
-                    strcat(atcc, ", ");
-                }
-                strcat(atcc, temp);
-            }                   
-        }                       
-    }                           
-    // append eoln to the atcc string 
-    length = str0len(atcc);
-    if (macke.atcc) {
-        macke.atcc[length] = '\0';
-    }
-    strcat(atcc, "\n");
-    return (nulldup(atcc));
 }
 
 // ----------------------------------------------------------------- 
@@ -429,7 +452,7 @@ int mtog(const Macke& macke, GenBank& gbk, const Seq& seq) { // __ATTR__USERESUL
     }
     mtog_decode_ref_and_remarks(macke, gbk);
     // final conversion of cultcoll 
-    if (has_content(gbk.comments.orginf.cultcoll) <= 1 && str0len(macke.atcc)) {
+    if (!has_content(gbk.comments.orginf.cultcoll) && has_content(macke.atcc)) {
         freedup(gbk.comments.orginf.cultcoll, macke.atcc);
     }
 
@@ -557,7 +580,7 @@ void mtog_decode_ref_and_remarks(const Macke& macke, GenBank& gbk) {
 void mtog_genbank_def_and_source(const Macke& macke, GenBank& gbk) {
     freedup_if_content(gbk.definition, macke.name);
     if (has_content(macke.subspecies)) {
-        if (str0len(gbk.definition) <= 1) {
+        if (!has_content(gbk.definition)) {
             warning(22, "Genus and Species not defined");
             skip_eolnl_and_append(gbk.definition, "subsp. ");
         }
@@ -568,7 +591,7 @@ void mtog_genbank_def_and_source(const Macke& macke, GenBank& gbk) {
     }
 
     if (has_content(macke.strain)) {
-        if (str0len(gbk.definition) <= 1) {
+        if (!has_content(gbk.definition)) {
             warning(23, "Genus and Species and Subspecies not defined");
             skip_eolnl_and_append(gbk.definition, "str. ");
         }
@@ -594,35 +617,6 @@ void mtog_genbank_def_and_source(const Macke& macke, GenBank& gbk) {
     }
     else
         skip_eolnl_and_append(gbk.definition, ".\n");
-}
-
-/* -------------------------------------------------------------------
- *   Function get_string().
- *       Get the rest of the Str until reaching certain
- *           terminators, such as ';', ',', '.',...
- *       Always append "\n" at the end of the returned Str.
- */
-void get_string(const char *line, char *temp, int index) {
-    int indk, len, paren_num;
-
-    len = str0len(line);
-    paren_num = 0;
-    for (indk = 0; index < len; index++, indk++) {
-        temp[indk] = line[index];
-        if (temp[indk] == '(')
-            paren_num++;
-        if (temp[indk] == ')')
-            if (paren_num == 0)
-                break;
-            else
-                paren_num--;
-        else if (temp[indk] == '\n' || (paren_num == 0 && temp[indk] == ';'))
-            break;
-    }
-    if (indk > 1 && is_end_mark(temp[indk - 1]))
-        indk--;
-    temp[indk++] = '\n';
-    temp[indk] = '\0';
 }
 
 /* -------------------------------------------------------------------

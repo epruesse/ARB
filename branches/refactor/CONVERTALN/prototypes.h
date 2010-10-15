@@ -120,14 +120,11 @@ void add_35end_remark(Macke &macke, char end35, char yn);
 void gtom_remarks(const GenBank &gbk, Macke &macke);
 char *genbank_get_strain(const GenBank &gbk);
 char *genbank_get_subspecies(const GenBank &gbk);
-char *genbank_get_atcc(const GenBank &gbk, const Macke &macke);
-char *get_atcc(const Macke &macke, char *source);
 int paren_string(char *Str, char *pstring, int index);
 void macke_to_genbank(const char *inf, const char *outf);
 int mtog(const Macke &macke, GenBank &gbk, const Seq &seq) __ATTR__USERESULT;
 void mtog_decode_ref_and_remarks(const Macke &macke, GenBank &gbk);
 void mtog_genbank_def_and_source(const Macke &macke, GenBank &gbk);
-void get_string(const char *line, char *temp, int index);
 void get_atcc_string(char *line, char *temp, int index);
 
 /* paup.cxx */

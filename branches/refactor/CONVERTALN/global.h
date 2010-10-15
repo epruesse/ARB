@@ -64,7 +64,13 @@ inline bool is_end_mark(char ch) { return ch == '.' || ch == ';'; }
 
 inline bool is_word_char(char ch) { return !occurs_in(ch, WORD_SEP); }
 
-inline bool has_content(const char *field) { return field && (field[0] != 0 && field[1] != 0); }
+inline bool has_no_content(const char *field) {
+    return !field ||
+        !field[0] ||
+        (field[0] == '\n' && !field[1]);
+}
+inline bool has_content(const char *field) { return !has_no_content(field); }
+
 inline char *no_content() {
     char *nothing = (char*)malloc(2);
     nothing[0]    = '\n';
