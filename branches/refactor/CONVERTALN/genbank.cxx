@@ -595,7 +595,7 @@ void genbank_out(const GenBank& gbk, const Seq& seq, FILE * fp) {
     genbank_out_one_entry(fp, "SOURCE      ", gbk.source,     wrapWords,     PERIOD);
     genbank_out_one_entry(fp, "  ORGANISM  ", gbk.organism,   wrapWords,     PERIOD);
 
-    if (gbk.get_refcount() > 0) {
+    if (gbk.has_refs()) {
         for (indi = 0; indi < gbk.get_refcount(); indi++) {
             genbank_out_one_reference(fp, gbk.get_ref(indi), indi+1, true);
         }

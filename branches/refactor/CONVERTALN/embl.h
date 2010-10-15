@@ -38,20 +38,7 @@ struct Emblref {
     DECLARE_ASSIGNMENT_OPERATOR(Emblref);
 };
 
-class Embl : Noncopyable, public InputFormat {
-    Refs<Emblref> refs;
-
-public:
-
-    void reinit_refs() { INPLACE_RECONSTRUCT(Refs<Emblref>, &refs); }
-    void resize_refs(int new_size) { refs.resize(new_size); }
-    int get_refcount() const  { return refs.get_count(); }
-    
-    const Emblref& get_ref(int num) const { return refs.get_ref(num); }
-    const Emblref& get_latest_ref() const { return get_ref(get_refcount()-1); }
-    Emblref& get_ref(int num) { return refs.get_ref(num); }
-    Emblref& get_latest_ref() { return get_ref(get_refcount()-1); }
-
+struct Embl : public InputFormat, public RefContainer<Emblref> {
     char *id;                    // entry name
     char *dateu;                 // date of last updated
     char *datec;                 // date of created

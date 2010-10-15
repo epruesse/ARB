@@ -1,9 +1,9 @@
 #ifndef REFS_H
 #define REFS_H
 
-template <typename R>
+template <typename REF>
 class Refs : Noncopyable {
-    R   *ref;
+    REF   *ref;
     int  size;
 public: 
     Refs() {
@@ -17,7 +17,7 @@ public:
     void resize(int new_size) {
         ca_assert(new_size >= size);
         if (new_size>size) {
-            R *new_ref = new R[new_size];
+            REF *new_ref = new REF[new_size];
             for (int i = 0; i<size; ++i) {
                 new_ref[i] = ref[i];
             }
@@ -29,16 +29,32 @@ public:
 
     int get_count() const { return size; }
 
-    const R& get_ref(int num) const {
+    const REF& get_ref(int num) const {
         ca_assert(num >= 0);
         ca_assert(num < get_count());
         return ref[num];
     }
-    R& get_ref(int num) {
+    REF& get_ref(int num) {
         ca_assert(num >= 0);
         ca_assert(num < get_count());
         return ref[num];
     }
+};
+
+template<typename REF>
+class RefContainer {
+    Refs<REF> refs;
+
+public:
+    void reinit_refs() { INPLACE_RECONSTRUCT(Refs<REF>, &refs); }
+    void resize_refs(int new_size) { refs.resize(new_size); }
+    int get_refcount() const  { return refs.get_count(); }
+    bool has_refs() const  { return get_refcount() > 0; }
+    const REF& get_ref(int num) const { return refs.get_ref(num); }
+    const REF& get_latest_ref() const { return get_ref(get_refcount()-1); }
+    REF& get_ref(int num) { return refs.get_ref(num); }
+    REF& get_latest_ref() { return get_ref(get_refcount()-1); }
+    REF& get_new_ref() { resize_refs(get_refcount()+1); return get_latest_ref(); }
 };
 
 #else

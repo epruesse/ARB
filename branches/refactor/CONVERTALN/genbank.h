@@ -42,18 +42,7 @@ struct GenbankRef {
     DECLARE_ASSIGNMENT_OPERATOR(GenbankRef);
 };
 
-class GenBank : Noncopyable, public InputFormat {
-    Refs<GenbankRef> refs;
-
-public:
-    void reinit_refs() { INPLACE_RECONSTRUCT(Refs<GenbankRef>, &refs); }
-    void resize_refs(int new_size) { refs.resize(new_size); }
-    int get_refcount() const  { return refs.get_count(); }
-    const GenbankRef& get_ref(int num) const { return refs.get_ref(num); }
-    const GenbankRef& get_latest_ref() const { return get_ref(get_refcount()-1); }
-    GenbankRef& get_ref(int num) { return refs.get_ref(num); }
-    GenbankRef& get_latest_ref() { return get_ref(get_refcount()-1); }
-
+struct GenBank : public InputFormat, public RefContainer<GenbankRef> {
     char *locus;
     char *definition;
     char *accession;

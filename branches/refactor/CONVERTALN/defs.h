@@ -22,7 +22,6 @@
 #define TITLE    3
 #define STANDARD 4
 #define PROCESS  5
-#define REF      6
 #define ALL      0
 
 #define SEQLINE 60

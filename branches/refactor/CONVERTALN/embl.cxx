@@ -1050,8 +1050,7 @@ int gtoe(const GenBank& gbk, Embl& embl, const Seq& seq) { // __ATTR__USERESULT
  *              Convert references from GenBank to EMBL.
  */
 void gtoe_reference(const GenBank& gbk, Embl& embl) {
-
-    if (gbk.get_refcount() > 0) {
+    if (gbk.has_refs()) {
         embl.resize_refs(gbk.get_refcount());
     }
 

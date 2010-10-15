@@ -160,7 +160,7 @@ int gtom(const GenBank& gbk, Macke& macke) { // __ATTR__USERESULT
     }
 
     // copy the first reference from GenBank to Macke 
-    if (gbk.get_refcount() > 0) {
+    if (gbk.has_refs()) {
         freedup_if_content(macke.author,  gbk.get_ref(0).author);
         freedup_if_content(macke.journal, gbk.get_ref(0).journal);
         freedup_if_content(macke.title,   gbk.get_ref(0).title);
@@ -191,7 +191,7 @@ void gtom_remarks(const GenBank& gbk, Macke& macke) {
     // Create Macke remarks.
 
     // REFERENCE the first reference 
-    if (gbk.get_refcount() > 0)
+    if (gbk.has_refs())
         macke.add_remark_if_content("ref:", gbk.get_ref(0).ref);
 
     // The rest of the REFERENCES 
@@ -467,59 +467,33 @@ int mtog(const Macke& macke, GenBank& gbk, const Seq& seq) { // __ATTR__USERESUL
  *       Decode remarks of Macke to GenBank format.
  */
 void mtog_decode_ref_and_remarks(const Macke& macke, GenBank& gbk) {
-    int acount, tcount, jcount, rcount, scount;
-
     ca_assert(gbk.get_refcount() == 0);
-    acount = tcount = jcount = rcount = scount = 0;
+    
+    if (has_content(macke.author))  freedup(gbk.get_new_ref().author, macke.author);
+    if (has_content(macke.journal)) freedup(gbk.get_latest_ref().journal, macke.journal);
+    if (has_content(macke.title))   freedup(gbk.get_latest_ref().title, macke.title);
 
-
-    if (has_content(macke.author)) {
-        ca_assert(acount == gbk.get_refcount());
-        gbk.resize_refs(acount+1);
-        freedup(gbk.get_ref(acount++).author, macke.author);
-    }
-    if (has_content(macke.journal)) {
-        ca_assert(jcount <= gbk.get_refcount());
-        jcount = gbk.get_refcount() - 1;
-        freedup(gbk.get_ref(jcount++).journal, macke.journal);
-    }
-    if (has_content(macke.title)) {
-        ca_assert(tcount <= gbk.get_refcount());
-        tcount = gbk.get_refcount() - 1;
-        freedup(gbk.get_ref(tcount++).title, macke.title);
-    }
-
+    bool first_ref = true;
     for (int ridx = 0; ridx < macke.get_rem_count(); ridx++) {
         char key[TOKENSIZE];
         int offset = macke_key_word(macke.get_rem(ridx), 0, key, TOKENSIZE);
 
         if (str_equal(key, "ref")) {
-            ca_assert(rcount == gbk.get_refcount() || (rcount == 0 && gbk.get_refcount() == 1)); // 2nd is "delayed" ref in comment
-
-            if (rcount == gbk.get_refcount()) gbk.resize_refs(rcount+1);
-            else rcount = gbk.get_refcount() - 1;
-
-            freeset(gbk.get_ref(rcount++).ref, macke.copy_multi_rem(ridx, offset));
+            GenbankRef& ref = first_ref ? gbk.get_latest_ref() : gbk.get_new_ref();
+            freeset(ref.ref, macke.copy_multi_rem(ridx, offset));
+            first_ref = false;
         }
         else if (str_equal(key, "auth")) {
-            ca_assert(acount <= gbk.get_refcount());
-            acount = gbk.get_refcount() - 1;
-            freeset(gbk.get_ref(acount++).author, macke.copy_multi_rem(ridx, offset));
+            freeset(gbk.get_latest_ref().author, macke.copy_multi_rem(ridx, offset));
         }
         else if (str_equal(key, "title")) {
-            ca_assert(tcount <= gbk.get_refcount());
-            tcount = gbk.get_refcount() - 1;
-            freeset(gbk.get_ref(tcount++).title, macke.copy_multi_rem(ridx, offset));
+            freeset(gbk.get_latest_ref().title, macke.copy_multi_rem(ridx, offset));
         }
         else if (str_equal(key, "jour")) {
-            ca_assert(jcount <= gbk.get_refcount());
-            jcount = gbk.get_refcount() - 1;
-            freeset(gbk.get_ref(jcount++).journal, macke.copy_multi_rem(ridx, offset));
+            freeset(gbk.get_latest_ref().journal, macke.copy_multi_rem(ridx, offset));
         }
         else if (str_equal(key, "standard")) {
-            ca_assert(scount <= gbk.get_refcount());
-            scount = gbk.get_refcount() - 1;
-            freeset(gbk.get_ref(scount++).standard, macke.copy_multi_rem(ridx, offset));
+            freeset(gbk.get_latest_ref().standard, macke.copy_multi_rem(ridx, offset));
         }
         else if (str_equal(key, "KEYWORDS")) {
             freeset(gbk.keywords, macke.copy_multi_rem(ridx, offset));
