@@ -241,21 +241,7 @@ void Append(char*& string1, const char *string2) {
     if (len2) append_known_len(string1, str0len(string1), string2, len2);
 }
 
-int find_pattern(const char *text, const char *pattern) {
-    // Return offset of 'pattern' in 'text' or -1
-    // (compares case insensitive)
 
-    if (!text || !pattern) return -1;
-
-    for (int t = 0; text[t]; ++t) {
-        bool mismatch = false;
-        for (int p = 0; !mismatch && pattern[p]; ++p) {
-            mismatch = tolower(text[t+p]) != tolower(pattern[p]);
-        }
-        if (!mismatch) return t;
-    }
-    return -1;
-}
 
 void upcase(char *str) {
     // Capitalize all char in the str.
@@ -278,4 +264,95 @@ int fputs_len(const char *str, int len, FILE *out) {
     }
     return len;
 }
+
+// -------------------------
+//      pattern matching
+
+enum FindMode { FIND_START, FIND_SKIP_OVER };
+
+static int findPattern(const char *text, const char *pattern, FindMode mode) {
+    // Return offset of 'pattern' in 'text' or -1
+    // (compares case insensitive)
+    // return position after found 'pattern' in 'endPtr'
+
+    if (text && pattern) {
+        for (int t = 0; text[t]; ++t) {
+            bool mismatch = false;
+
+            int p = 0;
+            for (; !mismatch && pattern[p]; ++p) {
+                mismatch = tolower(text[t+p]) != tolower(pattern[p]);
+            }
+            if (!mismatch) {
+                switch (mode) {
+                    case FIND_START: return t;
+                    case FIND_SKIP_OVER: return t+p;
+                }
+                ca_assert(0);
+            }
+        }
+    }
+    return -1;
+}
+
+static int findMultipattern(const char *str, const char** const& pattern, char expect_behind, FindMode mode) {
+    // search 'str' for the occurrance of any 'pattern'
+    // if 'expect_behind' != 0 -> expect that char behind the found pattern
+
+    int offset = -1;
+
+    if (str) {
+        FindMode use = expect_behind ? FIND_SKIP_OVER : mode;
+        
+        int p;
+        for (p = 0; offset == -1 && pattern[p]; ++p) {
+            offset = findPattern(str, pattern[p], use);
+        }
+
+        if (offset != -1) {
+            if (expect_behind) {
+                if (str[offset] != expect_behind) { // mismatch
+                    offset = findMultipattern(str+offset, pattern, expect_behind, mode);
+                }
+                else {
+                    switch (mode) {
+                        case FIND_START:
+                            offset -= str0len(pattern[p]);
+                            ca_assert(offset >= 0);
+                            break;
+                        case FIND_SKIP_OVER:
+                            offset++;
+                            break;
+                    }
+                }
+            }
+        }
+    }
+    return offset;
+}
+
+static int findSubspecies(const char *str, char expect_behind, FindMode mode) {
+    const char *subspecies_pattern[] = { "subspecies", "sub-species", "subsp.", NULL };
+    return findMultipattern(str, subspecies_pattern, expect_behind, mode);
+}
+
+static int findStrain(const char *str, char expect_behind, FindMode mode) {
+    const char *strain_pattern[] = { "strain", "str.", NULL };
+    return findMultipattern(str, strain_pattern, expect_behind, mode);
+}
+
+int find_pattern(const char *text, const char *pattern) { return findPattern(text, pattern, FIND_START); }
+int skip_pattern(const char *text, const char *pattern) { return findPattern(text, pattern, FIND_SKIP_OVER); }
+
+int find_subspecies(const char *str, char expect_behind) { return findSubspecies(str, expect_behind, FIND_START); }
+int skip_subspecies(const char *str, char expect_behind) { return findSubspecies(str, expect_behind, FIND_SKIP_OVER); }
+
+int find_strain(const char *str, char expect_behind) { return findStrain(str, expect_behind, FIND_START); }
+int skip_strain(const char *str, char expect_behind) { return findStrain(str, expect_behind, FIND_SKIP_OVER); }
+
+const char *stristr(const char *str, const char *substring) {
+    int offset = find_pattern(str, substring);
+    return offset >= 0 ? str+offset : NULL;
+}
+
 

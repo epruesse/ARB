@@ -16,7 +16,12 @@
 #endif
 
 #define ca_assert(cond) arb_assert(cond)
-#define UNCOVERED()     ca_assert(0)
+
+#if defined(DEVEL_RALF)
+#define UNCOVERED() ca_assert(0)
+#else
+#define UNCOVERED()
+#endif
 
 // --------------------
 

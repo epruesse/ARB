@@ -69,7 +69,8 @@ char embl_in(Embl& embl, Seq& seq, FILE_BUFFER fp) { // @@@ use Reader
             eof = embl_one_entry(line, fp, ref.processing, key);
         }
         else if (str_equal(key, "RN")) {
-            eof = embl_version(embl, line, fp);
+            embl.resize_refs(embl.get_refcount()+1);
+            eof = Fgetline(line, LINESIZE, fp);
         }
         else if (str_equal(key, "CC")) {
             eof = embl_comments(embl, line, fp);
@@ -248,22 +249,6 @@ char *embl_date(Embl& embl, char *line, FILE_BUFFER fp) { // @@@ use Reader
         warning(33, "one DT line is missing");
         return (eof);
     }
-}
-
-/* --------------------------------------------------------------
- *      Function embl_version().
- *              Read in embl RN lines.
- */
-char *embl_version(Embl& embl, char *line, FILE_BUFFER fp) { // @@@ use Reader
-    int index;
-    char *eof;
-
-    index = Skip_white_space(line, p_nonkey_start);
-    
-    embl.resize_refs(embl.get_refcount()+1);
-
-    eof = Fgetline(line, LINESIZE, fp);
-    return (eof);
 }
 
 /* --------------------------------------------------------------
@@ -1244,46 +1229,31 @@ void macke_to_embl(const char *inf, const char *outf) {
     fclose(ofp);
 }
 
-/* --------------------------------------------------------------
- *      Function partial_mtoe().
- *              Handle subspecies information when converting from
- *                      Macke to EMBL.
- */
 int partial_mtoe(const Macke& macke, Embl& embl) {
-    int indj, indk;
+    // Handle subspecies information when converting from Macke to EMBL.
+    char*& others = embl.comments.others;
 
     if (has_content(macke.strain)) {
-        if ((indj = find_pattern(embl.comments.others, "*source:")) >= 0 && (indk = find_pattern(embl.comments.others + indj, "strain=")) >= 0) {
-            ;                   // do nothing
-        }
-        else {
-            if (str0len(embl.comments.others) <= 1)
-                freenull(embl.comments.others);
-            Append(embl.comments.others, "*source: strain=");
-            Append(embl.comments.others, macke.strain);
-            if (!is_end_mark(embl.comments.others[str0len(embl.comments.others) - 2])) {
-                skip_eolnl_and_append(embl.comments.others, ";\n");
-            }
+        int  ridx        = skip_pattern(others, "*source:");
+        bool have_strain = ridx >= 0 && stristr(others+ridx, "strain=");
+        
+        if (!have_strain) {
+            if (str0len(others) <= 1) freenull(others);
+            Append(others, "*source: strain=");
+            Append(others, macke.strain);
+            if (!is_end_mark(others[str0len(others) - 2])) skip_eolnl_and_append(others, ";\n");
         }
     }
 
     if (has_content(macke.subspecies)) {
-        if ((indj = find_pattern(embl.comments.others, "*source:")) >= 0 &&
-            ((indk = find_pattern(embl.comments.others + indj, "subspecies=")) >= 0 ||
-             (indk = find_pattern(embl.comments.others + indj, "sub-species=")) >= 0 ||
-             (indk = find_pattern(embl.comments.others + indj, "subsp.=")) >= 0)) {
-            ;                   // do nothing 
-        }
-        else {
-            if (str0len(embl.comments.others) <= 1)
-                freenull(embl.comments.others);
+        int  ridx       = skip_pattern(others, "*source:");
+        bool have_subsp = ridx >= 0 && find_subspecies(others+ridx, '=') >= 0;
 
-            Append(embl.comments.others, "*source: subspecies=");
-            Append(embl.comments.others, macke.subspecies);
-
-            if (!is_end_mark(embl.comments.others[str0len(embl.comments.others) - 2])) {
-                skip_eolnl_and_append(embl.comments.others, ";\n");
-            }
+        if (!have_subsp) {
+            if (str0len(others) <= 1) freenull(others);
+            Append(others, "*source: subspecies=");
+            Append(others, macke.subspecies);
+            if (!is_end_mark(others[str0len(others) - 2])) skip_eolnl_and_append(others, ";\n");
         }
     }
 

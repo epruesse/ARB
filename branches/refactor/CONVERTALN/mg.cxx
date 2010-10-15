@@ -175,152 +175,99 @@ void gtom_remarks(const GenBank& gbk, Macke& macke) {
     }
 }
 
-/* --------------------------------------------------------------------
- *   Function genbank_get_strain().
- *       Get strain from DEFINITION, COMMENT or SOURCE line in
- *       Genbank data file.
- */
-char *genbank_get_strain(const GenBank& gbk) {
-    int      indj, indk;
-    char     strain[LONGTEXT], temp[LONGTEXT];
-
-    strain[0] = '\0';
-    // get strain
-    if (has_content(gbk.comments.others)) {
-        if ((indj = find_pattern(gbk.comments.others, "*source:")) >= 0) {
-            if ((indk = find_pattern((gbk.comments.others + indj), "strain=")) >= 0) {
-                // skip blank spaces 
-                indj = Skip_white_space(gbk.comments.others, (indj + indk + 7));
-                // get strain 
-                get_string(gbk.comments.others, temp, indj);
-                strcpy(strain, temp);   // copy new strain 
-            }
-        }
-    }
-
-    if (has_content(gbk.definition)) {
-        if ((indj = find_pattern(gbk.definition, "str. ")) >= 0 || (indj = find_pattern(gbk.definition, "strain ")) >= 0) {
-            // skip the key word 
-            indj = Reach_white_space(gbk.definition, indj);
-            // skip blank spaces 
-            indj = Skip_white_space(gbk.definition, indj);
-            // get strain 
-            get_string(gbk.definition, temp, indj);
-            if (has_content(strain)) {
-                if (!str_equal(temp, strain)) {
-                    warningf(91, "Inconsistent strain definition in DEFINITION: %s and %s", temp, strain);
-                }
-            }
-            else
-                strcpy(strain, temp);   // get strain 
-        }
-    }
-
-    if (has_content(gbk.source)) {
-        if ((indj = find_pattern(gbk.source, "str. ")) >= 0 || (indj = find_pattern(gbk.source, "strain ")) >= 0) {
-            // skip the key word 
-            indj = Reach_white_space(gbk.source, indj);
-            // skip blank spaces 
-            indj = Skip_white_space(gbk.source, indj);
-            // get strain 
-            get_string(gbk.source, temp, indj);
-            if (has_content(strain)) {
-                if (!str_equal(temp, strain)) {
-                    warningf(92, "Inconsistent strain definition in SOURCE: %s and %s", temp, strain);
-                }
-            }
-            else
-                strcpy(strain, temp);
-            // check consistency of duplicated def 
-        }
-    }
-
-    return (nulldup(strain));
-}
-
-/* --------------------------------------------------------------------
- *   Function genbank_get_subspecies().
- *       Get subspecies information from SOURCE, DEFINITION, or
- *       COMMENT line of Genbank data file.
- */
-char *genbank_get_subspecies(const GenBank& gbk) {
-    int      indj, indk;
-    char     subspecies[LONGTEXT], temp[LONGTEXT];
-
-    subspecies[0] = '\0';
-    // get subspecies
-    if (has_content(gbk.definition)) {
-        if ((indj = find_pattern(gbk.definition, "subsp. ")) >= 0) {
-            // skip the key word 
-            indj = Reach_white_space(gbk.definition, indj);
-            // skip blank spaces 
-            indj = Skip_white_space(gbk.definition, indj);
-            // get subspecies 
-            get_string(gbk.definition, temp, indj);
-            correct_subspecies(temp);
-            strcpy(subspecies, temp);
-        }
-    }
-    if (has_content(gbk.comments.others)) {
-        if ((indj = find_pattern(gbk.comments.others, "*source:")) >= 0) {
-            if ((indk = find_pattern((gbk.comments.others + indj),
-                                     "sub-species=")) >= 0
-                || (indk = find_pattern((gbk.comments.others + indj),
-                                        "subspecies=")) >= 0 || (indk = find_pattern((gbk.comments.others + indj), "subsp.=")) >= 0) {
-                // skip the key word 
-                for (indj += indk; gbk.comments.others[indj] != '='; indj++) {}
-                indj++;
-                // skip blank spaces 
-                indj = Skip_white_space(gbk.comments.others, indj);
-                // get subspecies 
-                get_string(gbk.comments.others, temp, indj);
-                if (has_content(subspecies)) {
-                    if (!str_equal(temp, subspecies)) {
-                        warningf(20, "Inconsistent subspecies definition in COMMENTS *source: %s and %s", temp, subspecies);
-                    }
-                }
-                else
-                    strcpy(subspecies, temp);
-            }
-        }
-    }
-
-    if (has_content(gbk.source)) {
-        if ((indj = find_pattern(gbk.source, "subsp. ")) >= 0
-            || (indj = find_pattern(gbk.source, "subspecies ")) >= 0 || (indj = find_pattern(gbk.source, "sub-species ")) >= 0) {
-            // skip the key word 
-            indj = Reach_white_space(gbk.source, indj);
-            // skip blank spaces 
-            indj = Skip_white_space(gbk.source, indj);
-            // get subspecies 
-            get_string(gbk.source, temp, indj);
-            correct_subspecies(temp);
-            if (has_content(subspecies)) {
-                if (!str_equal(temp, subspecies)) {
-                    warningf(21, "Inconsistent subspecies definition in SOURCE: %s and %s", temp, subspecies);
-                }
-            }
-            else
-                strcpy(subspecies, temp);
-            // check consistency of duplicated def 
-        }
-    }
-
-    return (nulldup(subspecies));
-}
-
-/* ---------------------------------------------------------------
- *   Function correct_subspecies().
- *       Remove the strain information in subspecies which is
- *       sometime mistakenly written into it.
- */
-void correct_subspecies(char *subspecies) {
+static void correct_subspecies(char *subspecies) {
+    // Remove the strain information in subspecies which is sometime mistakenly written into it.
     int indj;
 
-    if ((indj = find_pattern(subspecies, "str\n")) >= 0 || (indj = find_pattern(subspecies, "str.")) >= 0 || (indj = find_pattern(subspecies, "strain")) >= 0) {
+    if ((indj = find_pattern(subspecies, "str\n")) >= 0 || (indj = find_strain(subspecies, 0)) >= 0) {
+        ca_assert(subspecies[indj-1] == ' '); // assume to overwrite a space
         subspecies[indj - 1] = '\n';
-        subspecies[indj] = '\0';
+        subspecies[indj]     = '\0';
     }
+}
+
+static void check_consistency(const char *what, char* const& var, const char *New) {
+    if (has_content(var)) {
+        if (!str_equal(var, New)) {
+            warningf(20, "Inconsistent %s definitions detected:\n"
+                     "    %s"
+                     "and %s", what, var, New);
+        }
+    }
+    else {
+        strcpy(var, New);
+    }
+}
+
+static void copy_subspecies_and_check_consistency(char* const& subspecies, const char *from, int indj) {
+    indj = Skip_white_space(from, indj);
+    char temp[LONGTEXT];
+    get_string(from, temp, indj);
+    correct_subspecies(temp);
+    check_consistency("subspecies", subspecies, temp);
+}
+static void copy_strain_and_check_consistency(char* const& strain, const char *from, int indj) {
+    indj = Skip_white_space(from, indj);
+    char temp[LONGTEXT];
+    get_string(from, temp, indj);
+    check_consistency("strain", strain, temp);
+}
+
+static void check_strain_from(char* const& strain, const char *from) {
+    if (has_content(from)) {
+        int indj = skip_strain(from, ' ');
+        if (indj >= 0) copy_strain_and_check_consistency(strain, from, indj);
+    }
+}
+
+char *genbank_get_strain(const GenBank& gbk) {
+    // Get strain from DEFINITION, COMMENT or SOURCE line in Genbank data file.
+    char strain[LONGTEXT];
+
+    strain[0] = '\0';
+
+    if (has_content(gbk.comments.others)) {
+        int indj = find_pattern(gbk.comments.others, "*source:");
+        if (indj >= 0) {
+            int indk = skip_pattern(gbk.comments.others + indj, "strain=");
+            if (indk >= 0) copy_strain_and_check_consistency(strain, gbk.comments.others, indj+indk);
+        }
+    }
+
+    check_strain_from(strain, gbk.definition);
+    check_strain_from(strain, gbk.source);
+
+    return nulldup(strain);
+}
+
+char *genbank_get_subspecies(const GenBank& gbk) {
+    // Get subspecies information from SOURCE, DEFINITION, or COMMENT line of Genbank data file.
+    int  indj;
+    char subspecies[LONGTEXT];
+
+    subspecies[0] = '\0';
+
+    if (has_content(gbk.definition)) {
+        if ((indj = skip_pattern(gbk.definition, "subsp. ")) >= 0) {
+            copy_subspecies_and_check_consistency(subspecies, gbk.definition, indj);
+        }
+    }
+    if (has_content(gbk.comments.others)) {
+        if ((indj = find_pattern(gbk.comments.others, "*source:")) >= 0) {
+            int indk = skip_subspecies(gbk.comments.others + indj, '=');
+            if (indk >= 0) {
+                copy_subspecies_and_check_consistency(subspecies, gbk.comments.others, indj+indk);
+            }
+        }
+    }
+
+    if (has_content(gbk.source)) {
+        if ((indj = skip_subspecies(gbk.source, ' ')) >= 0) {
+            copy_subspecies_and_check_consistency(subspecies, gbk.source, indj);
+        }
+    }
+
+    return nulldup(subspecies);
 }
 
 char *genbank_get_atcc(const GenBank& gbk, const Macke& macke) {
@@ -655,7 +602,7 @@ void mtog_genbank_def_and_source(const Macke& macke, GenBank& gbk) {
  *           terminators, such as ';', ',', '.',...
  *       Always append "\n" at the end of the returned Str.
  */
-void get_string(char *line, char *temp, int index) {
+void get_string(const char *line, char *temp, int index) {
     int indk, len, paren_num;
 
     len = str0len(line);

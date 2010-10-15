@@ -45,7 +45,7 @@ const char *genbank_date(const char *other_date) {
 
         int day, month, year;
         if (length <= 10 && length >= 6) {
-            find_date(other_date, &month, &day, &year);
+            ASSERT_RESULT(bool, true, find_date(other_date, &month, &day, &year));
         }
         else if (length > 10) {
             if (is_genbank_date(other_date)) {
@@ -81,33 +81,33 @@ const char *genbank_date(const char *other_date) {
  *   Function find_date().
  *       Find day, month, year from date Str.
  */
-void find_date(const char *date_string, int *month, int *day, int *year) {
-    int index, indi, count, nums[3];
-    char token[20], determ;
-
-    index = count = 0;
-    nums[0] = nums[1] = nums[2] = 0;
-    determ = ' ';
-
+bool find_date(const char *date_string, int *month, int *day, int *year) { // __ATTR__USERESULT
+    char determ = ' ';
     if      (two_char(date_string, '.')) determ = '.';
     else if (two_char(date_string, '/')) determ = '/';
     else if (two_char(date_string, '-')) determ = '-';
 
-    if (determ != ' ') {
-        for (indi = 0; indi <= str0len(date_string); indi++) {
-            if (date_string[indi] == determ || indi == str0len(date_string)) {
-                token[index++] = '\0';
-                nums[count++] = atoi(token);
-                index = 0;
-            }
-            else
-                token[index++] = date_string[indi];
+    if (determ == ' ') return false;
+
+    char token[20];
+    int nums[3] = { 0, 0, 0 };
+    int count = 0;
+    int index = 0;
+
+    for (int indi = 0; indi <= str0len(date_string); indi++) {
+        if (date_string[indi] == determ || indi == str0len(date_string)) {
+            token[index++] = '\0';
+            nums[count++] = atoi(token);
+            index = 0;
         }
-        *month = nums[0];
-        *day   = nums[1];
-        *year  = (nums[2] % 100);
-        return;
+        else
+            token[index++] = date_string[indi];
     }
+    *month = nums[0];
+    *day   = nums[1];
+    *year  = (nums[2] % 100);
+
+    return true;
 }
 
 /* ------------------------------------------------------------------
@@ -125,7 +125,7 @@ bool two_char(const char *str, char determ) {
  *       Find day, month, year in the long term date Str
  *           like day-of-week, month, day, time, year.
  */
-void find_date_long_form(const char *date_string, int *month, int *day, int *year) {
+bool find_date_long_form(const char *date_string, int *month, int *day, int *year) {
     int nums[3] = { 0, 0, 0 };
     int length = str0len(date_string);
 
@@ -152,6 +152,8 @@ void find_date_long_form(const char *date_string, int *month, int *day, int *yea
     *month = nums[0];
     *day   = nums[1];
     *year  = nums[2];
+
+    return true;
 }
 
 /* --------------------------------------------------------------------
@@ -268,7 +270,7 @@ const char *gcg_date(const char *input) {
         char *dup_ = strdup(input);                     \
         int   day_,month_,year_;                        \
                                                         \
-        finder(dup_, &month_, &day_, &year_);           \
+        ASSERT_RESULT(bool, true, finder(dup_, &month_, &day_, &year_)); \
         TEST_ASSERT_EQUAL(day_, d);                     \
         TEST_ASSERT_EQUAL(month_, m);                   \
         TEST_ASSERT_EQUAL(year_, y);                    \

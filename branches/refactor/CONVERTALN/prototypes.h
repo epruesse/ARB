@@ -13,9 +13,9 @@
 
 /* date.cxx */
 const char *genbank_date(const char *other_date);
-void find_date(const char *date_string, int *month, int *day, int *year);
+bool find_date(const char *date_string, int *month, int *day, int *year) __ATTR__USERESULT;
 bool two_char(const char *str, char determ);
-void find_date_long_form(const char *date_string, int *month, int *day, int *year);
+bool find_date_long_form(const char *date_string, int *month, int *day, int *year);
 int ismonth(const char *str);
 int isdatenum(char *Str);
 int is_genbank_date(const char *str);
@@ -30,7 +30,6 @@ char *embl_continue_line(char *pattern, char *&Str, char *line, FILE_BUFFER fp);
 char *embl_one_entry(char *line, FILE_BUFFER fp, char *&entry, char *key);
 void embl_correct_title(Emblref &ref);
 char *embl_date(Embl &embl, char *line, FILE_BUFFER fp);
-char *embl_version(Embl &embl, char *line, FILE_BUFFER fp);
 char *embl_comments(Embl &embl, char *line, FILE_BUFFER fp);
 char *embl_skip_unidentified(char *pattern, char *line, FILE_BUFFER fp);
 int embl_comment_key(char *line, char *key);
@@ -121,7 +120,6 @@ void add_35end_remark(Macke &macke, char end35, char yn);
 void gtom_remarks(const GenBank &gbk, Macke &macke);
 char *genbank_get_strain(const GenBank &gbk);
 char *genbank_get_subspecies(const GenBank &gbk);
-void correct_subspecies(char *subspecies);
 char *genbank_get_atcc(const GenBank &gbk, const Macke &macke);
 char *get_atcc(const Macke &macke, char *source);
 int paren_string(char *Str, char *pstring, int index);
@@ -129,7 +127,7 @@ void macke_to_genbank(const char *inf, const char *outf);
 int mtog(const Macke &macke, GenBank &gbk, const Seq &seq) __ATTR__USERESULT;
 void mtog_decode_ref_and_remarks(const Macke &macke, GenBank &gbk);
 void mtog_genbank_def_and_source(const Macke &macke, GenBank &gbk);
-void get_string(char *line, char *temp, int index);
+void get_string(const char *line, char *temp, int index);
 void get_atcc_string(char *line, char *temp, int index);
 
 /* paup.cxx */
@@ -167,10 +165,16 @@ void terminate_with(char *&str, char ch);
 void skip_eolnl_and_append(char *&string1, const char *string2);
 void skip_eolnl_and_append_spaced(char *&string1, const char *string2);
 void Append(char *&string1, const char *string2);
-int find_pattern(const char *text, const char *pattern);
 void upcase(char *str);
 void fputc_rep(char c, int repeat, FILE *fp);
 int fputs_len(const char *str, int len, FILE *out);
+int find_pattern(const char *text, const char *pattern);
+int skip_pattern(const char *text, const char *pattern);
+int find_subspecies(const char *str, char expect_behind);
+int skip_subspecies(const char *str, char expect_behind);
+int find_strain(const char *str, char expect_behind);
+int skip_strain(const char *str, char expect_behind);
+const char *stristr(const char *str, const char *substring);
 
 #else
 #error prototypes.h included twice
