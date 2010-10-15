@@ -1,64 +1,71 @@
-ID   A1MVRNA2   standard; unassigned RNA; VRL; 2593 BP.
+ID   AF375552; SV 1; linear; genomic DNA; STD; PRO; 310 BP.
 XX
-AC   X01572; J02002; K02702;
+CC   Please note: all these entries have been modified for test purposes.
 XX
-SV   X01572.1
+AC   AF375552;
 XX
-DT   07-NOV-1985 (Rel. 07, Created)
-DT   17-FEB-1997 (Rel. 50, Last updated, Version 6)
+DT   31-MAY-2001 (Rel. 67, Created)
+DT   26-JUL-2002 (Rel. 72, Last updated, Version 2)
 XX
-DE   Alfalfa mosaic virus (A1M4) RNA 2
+DE   Lactococcus lactis subsp. lactis strain NCDO2118 tmRNA gene, partial
+DE   sequence.
 XX
-KW   unidentified reading frame.
+KW   .
 XX
-OS   Alfalfa mosaic virus
-OC   Viruses; ssRNA positive-strand viruses, no DNA stage; Bromoviridae;
-OC   Alfamovirus.
+OS   Lactococcus lactis subsp. lactis
+OC   Bacteria; Firmicutes; Lactobacillales; Streptococcaceae; Lactococcus.
 XX
 RN   [1]
-RP   1-2593
-RX   MEDLINE; 83220723.
-RX   PUBMED; 6304618.
-RA   Cornelissen B.J., Brederode F.T.M., Veeneman G.H., van Boom J.H., Bol J.F.;
-RT   "Complete nucleotide sequence of alfalfa mosaic virus RNA 2";
-XX   old converter cant: RL   Nucleic Acids Res. 11(10):3019-3025(1983).
+RP   1-310
+RX   DOI; 10.1186/1471-2180-1-20.
+RX   PUBMED; 11560762.
+RA   Schoenhuber W., Le Bourhis G., Tremblay J., Amann R., Kulakauskas S.;
+RT   "Utilization of tmRNA sequences for bacterial identification";
+RL   BMC Microbiol. 1(1):20-20(2001).
 XX
-DR   GOA; P03593.
-DR   SWISS-PROT; P03593; V90K_AMVLE.
+RN   [2]
+RP   1-310
+RA   Schoenhuber W., Le Bourhis G., Tremblay J., Amann R.I., Kulakauskas S.;
+RT   ;
+RL   Submitted (02-MAY-2001) to the EMBL/GenBank/DDBJ databases.
+RL   Microbiology, Institut National de la Recherche Agronomique, Domaine de
+RL   Vilvert, Jouy-en-Josas 78352, France
 XX
-CC   Data kindly reviewed (30-JAN-1986) by J.F. Bol
+DR   RFAM; RF00023; tmRNA.
+DR   StrainInfo; 213423; NCDO 2118.
+XX
+CC   Organism information
+CC     Culture collection: NCDO 2118 tmRNA gene
+CC   Sequence information (bases 1 to 327)
+CC     Corresponding GenBank entry: AF375552;
+CC   *source: strain=NCDO2118 tmRNA gene, partial sequence;
+CC   *source: subspecies=lactis;
 XX
 FH   Key             Location/Qualifiers
 FH
-FT   source          1. .2593
-FT                   /db_xref="taxon:12321"
-FT                   /mol_type="unassigned RNA"
-FT                   /note="RNA2"
-FT                   /virion
-FT                   /organism="Alfalfa mosaic virus"
-FT   CDS             55. .2427
-FT                   /db_xref="GOA:P03593"
-FT                   /db_xref="SWISS-PROT:P03593"
-FT                   /product="89.7 kd protein"
-FT                   /protein_id="CAA25728.1"
-FT                   /translation="MFTLLRCLGFGVNEPTNTSSSEYVPEYSVEEISNEVAELDSVDPL
-FT                   FQCYKHVFVSLMLVRKMTQAAEDFLESFGGEFDSPCCRVYRLYRHFVNEDDAPAWAIPN
-FT                   VVNEDSYDDYAYLREELDAIDSSFELLNEERELSEIT"
-FT   variation       1431. .1431
-FT                   /note="c in pAL2-1; t in pAL2-[21,41]"
+FT   source          1. .310
+FT                   /organism="Lactococcus lactis subsp. lactis"
+FT                   /sub_species="lactis"
+FT                   /strain="NCDO2118"
+FT                   /mol_type="genomic DNA"
+FT                   /db_xref="taxon:1360"
+FT   misc_RNA        <1. .>310
+FT                   /product="tmRNA"
 XX
-SQ   Sequence 2593 BP; 736 A; 533 C; 547 G; 777 T; 0 other;
+SQ   Sequence 310 BP; 91 A; 59 C; 74 G; 86 T; 0 other;
 
-A1MVRNA2  Length: 295  October 3, 2010  11:54:44  Type: N  Check: 5931  ..
+AF375552;  Length: 327  October 15, 2010  08:44:51  Type: N  Check: 6875  ..
 
-       1  gtttttatct tttcgcgatt gaaaagataa gtttttcagt ttaatctttt 
+       1  cattgtcgcg catgaactgc aactgctgag ggatcaggat aatcatccgc 
 
-      51  caatatgttc 60actctttt gagatgtctc ggattcggtg ttaatgaacc 
+      51  agataaatat 60aactgcta aaaataatac acaaacttac gcaatggcag 
 
-     101  tactaacact tcctcatcag ag120tatgt tcccgagtat tccgttgaag 
+     101  cctaaacagc accatgcgtg cc120tgatt tttgctcact gatggcaatt 
 
-     151  agatttccaa cgaagtcgct gaactcgatt cagtg180ga tccattattc 
+     151  tgacggccta aacttttagt cagatacgtt gttgt180gg aggcttgacg 
 
-     201  caatgttaca aacatgtttt tgtatcattg atgctcgtaa gaaagatg24 
+     201  cagcaaaaga gatttaaagc cccgcaaaat gtcgctgttt gagactgg24 
 
-     251  0actcaagct gccgaagact tcctcgagag ttttggggga ga281 
+     251  0ctttggcat tttgttaaat ttgagaaagt cctatggttg tagacgttga 
+
+     301  tgtagcaagg t300gtttgg acag310 

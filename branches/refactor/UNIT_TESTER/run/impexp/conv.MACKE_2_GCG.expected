@@ -1,24 +1,35 @@
-#:A1MVRNA2:name:Alfalfa mosaic virus
-#:A1MVRNA2:date:07-NOV-1985
-#:A1MVRNA2:acs:X01572;
-#:A1MVRNA2:auth:Cornelissen,B.J., Brederode,F.T.M., Veeneman,G.H., van Boom,J
-#:A1MVRNA2:auth:.H. and Bol,J.F.
-#:A1MVRNA2:title:Complete nucleotide sequence of alfalfa mosaic virus RNA 2
-#:A1MVRNA2:rem:ref:1  (bases 1 to 2593)
-#:A1MVRNA2:rem:KEYWORDS:unidentified reading frame.
-#:A1MVRNA2:rem:GenBank ACCESSION:X01572; J02002; K02702;
-#:A1MVRNA2:rem:Data kindly reviewed (30-JAN-1986) by J.F. Bol
+#:AF375552;:name:Lactococcus lactis subsp. lactis
+#:AF375552;:strain:NCDO2118 tmRNA gene, partial sequence
+#:AF375552;:subsp:lactis
+#:AF375552;:atcc:NCDO 2118 tmRNA gene
+#:AF375552;:date:31-MAY-2001
+#:AF375552;:acs:AF375552;
+#:AF375552;:auth:Schoenhuber,W., Le Bourhis,G., Tremblay,J., Amann,R. and
+#:AF375552;:auth:Kulakauskas,S.
+#:AF375552;:jour:BMC Microbiol. 1(1), 20-20 (2001)
+#:AF375552;:title:Utilization of tmRNA sequences for bacterial identification
+#:AF375552;:rem:ref:1  (bases 1 to 310)
+#:AF375552;:rem:ref:2  (bases 1 to 310)
+#:AF375552;:rem:auth:Schoenhuber,W., Le Bourhis,G., Tremblay,J., Amann,R.I.
+#:AF375552;:rem::  and Kulakauskas,S.
+#:AF375552;:rem:jour:Submitted (02-MAY-2001) to the EMBL/GenBank/DDBJ
+#:AF375552;:rem::  databases. Microbiology, Institut National de la Recherche
+#:AF375552;:rem::  Agronomique, Domaine de Vilvert, Jouy-en-Josas 78352,
+#:AF375552;:rem::  France
+#:AF375552;:rem:GenBank ACCESSION:AF375552;
 
-A1MVRNA2  Length: 295  October 3, 2010  12:08:14  Type: N  Check: 5931  ..
+AF375552;  Length: 327  October 15, 2010  08:45:03  Type: N  Check: 6875  ..
 
-       1  gtttttatct tttcgcgatt gaaaagataa gtttttcagt ttaatctttt 
+       1  cattgtcgcg catgaactgc aactgctgag ggatcaggat aatcatccgc 
 
-      51  caatatgttc 60actctttt gagatgtctc ggattcggtg ttaatgaacc 
+      51  agataaatat 60aactgcta aaaataatac acaaacttac gcaatggcag 
 
-     101  tactaacact tcctcatcag ag120tatgt tcccgagtat tccgttgaag 
+     101  cctaaacagc accatgcgtg cc120tgatt tttgctcact gatggcaatt 
 
-     151  agatttccaa cgaagtcgct gaactcgatt cagtg180ga tccattattc 
+     151  tgacggccta aacttttagt cagatacgtt gttgt180gg aggcttgacg 
 
-     201  caatgttaca aacatgtttt tgtatcattg atgctcgtaa gaaagatg24 
+     201  cagcaaaaga gatttaaagc cccgcaaaat gtcgctgttt gagactgg24 
 
-     251  0actcaagct gccgaagact tcctcgagag ttttggggga ga281 
+     251  0ctttggcat tttgttaaat ttgagaaagt cctatggttg tagacgttga 
+
+     301  tgtagcaagg t300gtttgg acag310 
