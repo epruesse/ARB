@@ -148,31 +148,30 @@ int genbank_check_blanks(char *line, int numb) {
     return (blank);
 }
 
-/* ----------------------------------------------------------------
- *  Function genbank_continue_line().
- *      if there are (numb) of blanks at the beginning
- *          of line, it is a continue line of the
- *          current command.
- */
-char *genbank_continue_line(char*& Str, char *line, int numb, FILE_BUFFER fp) {
-    // numb = number of blanks needed to define a continue line 
-    int   ind;
-    char *eof, temp[LINESIZE];
+static char *genbank_continue_line(char*& Str, char *line, int numb, FILE_BUFFER fp) {
+    // if following line(s) are continued line(s), append them to 'Str'.
+    // if 'Str' is NULL, lines only get skipped.
+    // 'numb' = number of blanks needed at BOL to defined continued lines
 
-    // check continue lines 
+    char *eof;
+
+    // check continue lines
     for (eof = Fgetline(line, LINESIZE, fp);
          eof != NULL && (genbank_check_blanks(line, numb) || line[0] == '\n');
          eof = Fgetline(line, LINESIZE, fp))
     {
-        if (line[0] == '\n')
-            continue;           // empty line is allowed 
-        // remove end-of-line, if there is any 
-        ind = Skip_white_space(line, 0);
-        strcpy(temp, (line + ind));
-        skip_eolnl_and_append_spaced(Str, temp);
+        if (line[0] != '\n') { // empty line is allowed
+            if (Str) {
+                // remove end-of-line, if there is any
+                int  ind = Skip_white_space(line, 0);
+                char temp[LINESIZE];
+                strcpy(temp, (line + ind));
+                skip_eolnl_and_append_spaced(Str, temp);
+            }
+        }
     }
 
-    return (eof);
+    return eof;
 }
 
 /* ------------------------------------------------------------
@@ -193,24 +192,17 @@ char *genbank_one_comment_entry(char*& datastring, char *line, int start_index, 
     return genbank_continue_line(datastring, line, 20, fp);
 }
 
-/* --------------------------------------------------------------
- *  Function genbank_source()
- *      Read in genbank SOURCE lines and also ORGANISM
- *          lines.
- */
 char *genbank_source(GenBank& gbk, char *line, FILE_BUFFER fp) {
-    int   index;
-    char *eof;
-    char *dummy, key[TOKENSIZE];
-
-    eof = genbank_one_entry_in(gbk.source, line, fp);
+    // Read in genbank SOURCE lines and also ORGANISM lines.
+    char *eof = genbank_one_entry_in(gbk.source, line, fp);
+    char  key[TOKENSIZE];
     genbank_key_word(line, 2, key, TOKENSIZE);
     if (str_equal(key, "ORGANISM")) {
-        index = Skip_white_space(line, GBINDENT);
-        gbk.organism = nulldup(line + index);
-        dummy = no_content();
-        eof = genbank_continue_line(dummy, line, GBINDENT, fp);
-        freenull(dummy);
+        int indent = Skip_white_space(line, GBINDENT);
+        freedup(gbk.organism, line + indent);
+
+        char *skip_em = NULL;
+        eof           = genbank_continue_line(skip_em, line, GBINDENT, fp);
     }
     return (eof);
 }

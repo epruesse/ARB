@@ -79,7 +79,6 @@ char genbank_in(GenBank &gbk, Seq &seq, FILE_BUFFER fp);
 void genbank_key_word(const char *line, int index, char *key, int length);
 int genbank_comment_subkey_word(char *line, int index, char *key, int length);
 int genbank_check_blanks(char *line, int numb);
-char *genbank_continue_line(char *&Str, char *line, int numb, FILE_BUFFER fp);
 char *genbank_one_entry_in(char *&datastring, char *line, FILE_BUFFER fp);
 char *genbank_one_comment_entry(char *&datastring, char *line, int start_index, FILE_BUFFER fp);
 char *genbank_source(GenBank &gbk, char *line, FILE_BUFFER fp);
