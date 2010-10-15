@@ -1,16 +1,40 @@
 #-
 #-
 #-	editor
-#-	Thu Oct  7 18:58:18 2010
+#-	Fri Oct 15 08:22:19 2010
 #-
 #-
-#-	Reference sequence:  A1MVRNA2
+#-	Reference sequence:  AF375552;
 #-	Attributes:
-#=		A1MVRNA2	in  out  vis  prt   ord  dna  lin  5>3  func ref
+#=		AF375552;	in  out  vis  prt   ord  dna  lin  5>3  func ref
+#=		A1MVRNA2	in  out  vis  prt   ord  dna  lin  5>3  func
 #=		ER781674_173	in  out  vis  prt   ord  dna  lin  5>3  func
 #=		AY704744_173	in  out  vis  prt   ord  dna  lin  5>3  func
 #=		Y15714;		in  out  vis  prt   ord  dna  lin  5>3  func
 #-
+#:AF375552;:name:Lactococcus lactis subsp. lactis
+#:AF375552;:strain:NCDO2118 tmRNA gene, partial sequence
+#:AF375552;:subsp:lactis
+#:AF375552;:atcc:NCDO 2118 tmRNA gene
+#:AF375552;:date:31-MAY-2001
+#:AF375552;:acs:AF375552;
+#:AF375552;:auth:Schoenhuber,W., Le Bourhis,G., Tremblay,J., Amann,R. and
+#:AF375552;:auth:Kulakauskas,S.
+#:AF375552;:jour:BMC Microbiol. 1(1), 20-20 (2001)
+#:AF375552;:title:Utilization of tmRNA sequences for bacterial identification
+#:AF375552;:rem:ref:1  (bases 1 to 310)
+#:AF375552;:rem:ref:2  (bases 1 to 310)
+#:AF375552;:rem:auth:Schoenhuber,W., Le Bourhis,G., Tremblay,J., Amann,R.I.
+#:AF375552;:rem::  and Kulakauskas,S.
+#:AF375552;:rem:jour:Submitted (02-MAY-2001) to the EMBL/GenBank/DDBJ
+#:AF375552;:rem::  databases. Microbiology, Institut National de la Recherche
+#:AF375552;:rem::  Agronomique, Domaine de Vilvert, Jouy-en-Josas 78352,
+#:AF375552;:rem::  France
+#:AF375552;:rem:GenBank ACCESSION:AF375552;
+#:AF375552;:rem:Please note: all these entries have been modified for test
+#:AF375552;:rem:purposes.
+#:AF375552;:rem:*source: strain=NCDO2118 tmRNA gene, partial sequence;
+#:AF375552;:rem:*source: subspecies=lactis;
 #:A1MVRNA2:name:Alfalfa mosaic virus
 #:A1MVRNA2:date:07-NOV-1985
 #:A1MVRNA2:acs:X01572;
@@ -23,7 +47,7 @@
 #:A1MVRNA2:rem:Data kindly reviewed (30-JAN-1986) by J.F. Bol
 #:ER781674_173:rna:This is the content of the special entry 'Sequencing
 #:ER781674_173:rna:methods'
-#:ER781674_173:date:07-JAN-1910
+#:ER781674_173:date:15-JAN-1910
 #:ER781674_173:acs:ER781674;
 #:ER781674_173:rem:GenBank ACCESSION:ER781674;
 #:ER781674_173:rem:Source of strain:This is the content of the special entry
@@ -46,7 +70,7 @@
 #:ER781674_173:rem:5' end complete:  Yes
 #:ER781674_173:rem:Organism and Sequence information have only been added for
 #:ER781674_173:rem:test purposes. They are complete nonsense!
-#:AY704744_173:date:07-JAN-1910
+#:AY704744_173:date:15-JAN-1910
 #:AY704744_173:acs:AY704744;
 #:AY704744_173:rem:GenBank ACCESSION:AY704744;
 #:AY704744_173:rem:3' end complete:  Yes
@@ -70,6 +94,13 @@
 #:Y15714;:rem::  Universitaet Muenchen, Munich, FRG
 #:Y15714;:rem:KEYWORDS:16S ribosomal RNA; 16S rRNA gene.
 #:Y15714;:rem:GenBank ACCESSION:Y15714;
+AF375552;     0 cattgtcgcgcatgaactgcaactgctgagggatcaggataatcatccgc
+AF375552;    50 agataaatat60aactgctaaaaataatacacaaacttacgcaatggcag
+AF375552;   100 cctaaacagcaccatgcgtgcc120tgatttttgctcactgatggcaatt
+AF375552;   150 tgacggcctaaacttttagtcagatacgttgttgt180ggaggcttgacg
+AF375552;   200 cagcaaaagagatttaaagccccgcaaaatgtcgctgtttgagactgg24
+AF375552;   250 0ctttggcattttgttaaatttgagaaagtcctatggttgtagacgttga
+AF375552;   300 tgtagcaaggt300gtttggacag310
 A1MVRNA2     0 gtttttatcttttcgcgattgaaaagataagtttttcagtttaatctttt
 A1MVRNA2    50 caatatgttc60actcttttgagatgtctcggattcggtgttaatgaacc
 A1MVRNA2   100 tactaacacttcctcatcagag120tatgttcccgagtattccgttgaag

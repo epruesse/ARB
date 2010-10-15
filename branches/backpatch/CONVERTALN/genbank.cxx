@@ -1047,14 +1047,14 @@ void genbank_to_genbank(char *inf, char *outf)
  */
 void init_reference(Reference * ref, int flag)
 {
-    if (flag == REF)
-        ref->ref = Dupstr("\n");
+    if (flag == REF || flag == ALL)
+        ref->ref      = Dupstr("\n");
     if (flag != AUTHOR)
-        ref->author = Dupstr("\n");
+        ref->author   = Dupstr("\n");
     if (flag != JOURNAL)
-        ref->journal = Dupstr("\n");
+        ref->journal  = Dupstr("\n");
     if (flag != TITLE)
-        ref->title = Dupstr("\n");
+        ref->title    = Dupstr("\n");
     if (flag != STANDARD)
         ref->standard = Dupstr("\n");
 }

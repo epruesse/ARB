@@ -1,21 +1,47 @@
 #-
 #-
 #-	editor
-#-	Thu Oct  7 18:58:19 2010
+#-	Fri Oct 15 08:22:19 2010
 #-
 #-
-#-	Reference sequence:  HSFAU
+#-	Reference sequence:  AF375552;
 #-	Attributes:
-#=		HSFAU	 	in  out  vis  prt   ord  dna  lin  5>3  func ref
+#=		AF375552;	in  out  vis  prt   ord  dna  lin  5>3  func ref
+#=		HSFAU		in  out  vis  prt   ord  dna  lin  5>3  func
 #=		HSFAU1		in  out  vis  prt   ord  dna  lin  5>3  func
 #-
+#:AF375552;:name:Lactococcus lactis subsp. lactis.
+#:AF375552;:strain:NCDO2118 tmRNA gene, partial sequence
+#:AF375552;:subsp:lactis
+#:AF375552;:atcc:NCDO 2118 tmRNA gene
+#:AF375552;:date:31-MAY-2001
+#:AF375552;:acs:AF375552;
+#:AF375552;:auth:Schoenhuber,W., Le Bourhis,G., Tremblay,J., Amann,R. and
+#:AF375552;:auth:Kulakauskas,S.
+#:AF375552;:jour:BMC Microbiol. 1(1), 20-20 (2001)
+#:AF375552;:title:Utilization of tmRNA sequences for bacterial identification
+#:AF375552;:rem:ref:1  (bases 1 to 310)
+#:AF375552;:rem:ref:2  (bases 1 to 310)
+#:AF375552;:rem:auth:Schoenhuber,W., Le Bourhis,G., Tremblay,J., Amann,R.I.
+#:AF375552;:rem::  and Kulakauskas,S.
+#:AF375552;:rem:jour:Submitted (02-MAY-2001) to the EMBL/GenBank/DDBJ
+#:AF375552;:rem::  databases. Microbiology, Institut National de la Recherche
+#:AF375552;:rem::  Agronomique, Domaine de Vilvert, Jouy-en-Josas 78352,
+#:AF375552;:rem::  France
+#:AF375552;:rem:standard:No information
+#:AF375552;:rem:KEYWORDS:No information.
+#:AF375552;:rem:GenBank ACCESSION:AF3755 2;
+#:AF375552;:rem:Please note: all these entries have been modified for test
+#:AF375552;:rem:purposes.
+#:AF375552;:rem:*source: strain=NCDO2118 tmRNA gene, partial sequence;
+#:AF375552;:rem:*source: subspecies=lactis;
 #:HSFAU:name:H.sapiens fau
-#:HSFAU:date:07-JAN-1910
+#:HSFAU:date:15-JAN-1910
 #:HSFAU:acs:X65923
 #:HSFAU:rem:GenBank ACCESSION:X65923
 #:HSFAU1:name:H.sapiens fau
 #:HSFAU1:rna:This is the content of the special entry 'Sequencing methods'
-#:HSFAU1:date:07-JAN-1910
+#:HSFAU1:date:15-JAN-1910
 #:HSFAU1:acs:X65921;
 #:HSFAU1:rem:GenBank ACCESSION:X65921
 #:HSFAU1:rem:Source of strain:This is the content of the special entry
@@ -38,6 +64,13 @@
 #:HSFAU1:rem:5' end complete:  Yes
 #:HSFAU1:rem:Organism and Sequence information have only been added for
 #:HSFAU1:rem:test purposes. They are complete nonsense!
+AF375552;     0 cattgtcgcgcatgaactgcaactgctgagggatcaggataatcatccgc
+AF375552;    50 agataaatat60aactgctaaaaataatacacaaacttacgcaatggcag
+AF375552;   100 cctaaacagcaccatgcgtgcc120tgatttttgctcactgatggcaatt
+AF375552;   150 tgacggcctaaacttttagtcagatacgttgttgt180ggaggcttgacg
+AF375552;   200 cagcaaaagagatttaaagccccgcaaaatgtcgctgtttgagactgg24
+AF375552;   250 0ctttggcattttgttaaatttgagaaagtcctatggttgtagacgttga
+AF375552;   300 tgtagcaaggt300gtttggacag310
 HSFAU     0 ttcctctttctcgactccatcttcgcggtagctgggaccgccgttcagtc
 HSFAU    50 gccaatatgcagctctttgtccgcgcccaggagctacacaccttcgaggt
 HSFAU   100 gaccggccaggaaacggtcgcccagatcaaggctcatgtagcctcactgg

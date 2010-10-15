@@ -1,3 +1,37 @@
+LOCUS       AF375552;     327 bp    RNA             RNA       31-MAY-2001
+DEFINITION  Lactococcus lactis subsp. lactis subsp. lactis str. NCDO2118 tmRNA
+            gene, partial sequence.
+ACCESSION   AF375552;
+KEYWORDS    No information.
+SOURCE      Lactococcus lactis subsp. lactis subsp. lactis str. NCDO2118 tmRNA
+            gene, partial sequence.
+  ORGANISM  Lactococcus lactis subsp. lactis.
+REFERENCE   1  (bases 1 to 310)
+  AUTHORS   Schoenhuber,W., Le Bourhis,G., Tremblay,J., Amann,R. and
+            Kulakauskas,S.
+  TITLE     Utilization of tmRNA sequences for bacterial identification
+  JOURNAL   BMC Microbiol. 1(1), 20-20 (2001)
+  STANDARD  No information
+REFERENCE   2  (bases 1 to 310)
+  AUTHORS   Schoenhuber,W., Le Bourhis,G., Tremblay,J., Amann,R.I. and
+            Kulakauskas,S.
+  JOURNAL   Submitted (02-MAY-2001) to the EMBL/GenBank/DDBJ databases.
+            Microbiology, Institut National de la Recherche Agronomique,
+            Domaine de Vilvert, Jouy-en-Josas 78352, France
+  STANDARD  No information
+COMMENTS    Organism information
+              Culture collection: NCDO 2118 tmRNA gene
+            Sequence information (bases 1 to 327)
+              Corresponding GenBank entry: AF375552;
+BASE COUNT      91 a     59 c     74 g     86 t     17 others
+ORIGIN
+        1 cattgtcgcg catgaactgc aactgctgag ggatcaggat aatcatccgc agataaatat
+       61 60aactgcta aaaataatac acaaacttac gcaatggcag cctaaacagc accatgcgtg
+      121 cc120tgatt tttgctcact gatggcaatt tgacggccta aacttttagt cagatacgtt
+      181 gttgt180gg aggcttgacg cagcaaaaga gatttaaagc cccgcaaaat gtcgctgttt
+      241 gagactgg24 0ctttggcat tttgttaaat ttgagaaagt cctatggttg tagacgttga
+      301 tgtagcaagg t300gtttgg acag310
+//
 LOCUS       A1MVRNA2      295 bp    RNA             RNA       07-NOV-1985
 DEFINITION  Alfalfa mosaic virus; unidentified reading frame.
 ACCESSION   X01572; J02002; K02702;
@@ -21,7 +55,7 @@ ORIGIN
       181 cagtg180ga tccattattc caatgttaca aacatgtttt tgtatcattg atgctcgtaa
       241 gaaagatg24 0actcaagct gccgaagact tcctcgagag ttttggggga ga281
 //
-LOCUS       ER781674_1    367 bp    RNA             RNA       06-JAN-1910
+LOCUS       ER781674_1    367 bp    RNA             RNA       15-OCT-1910
 DEFINITION  .
 ACCESSION   ER781674;
 KEYWORDS    No information.
@@ -65,7 +99,7 @@ ORIGIN
       301 ccatgcctca c300aggatg tcgcggttga aggcgaggcc ctggaacagg ttggccatcg
       361 ccac350
 //
-LOCUS       AY704744_1    367 bp    RNA             RNA       03-JAN-1910
+LOCUS       AY704744_1    367 bp    RNA             RNA       15-OCT-1910
 DEFINITION  .
 ACCESSION   AY704744;
 KEYWORDS    No information.

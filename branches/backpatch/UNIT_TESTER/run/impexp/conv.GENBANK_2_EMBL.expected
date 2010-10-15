@@ -1,9 +1,58 @@
+ID   AF375552; preliminary; RNA; UNA; 327 BP.
+XX
+AC   AF3755 2;
+XX
+DT   31-MAY-2001 (Rel. 1, Last updated, Version 1)
+DT   31-MAY-2001 (Rel. 1, Created)
+XX
+DE   Lactococcus lactis subsp. lactis strain NCDO2118 tmRNA gene, partial
+DE   sequence.
+XX
+KW   No information.
+XX
+OS   Lactococcus lactis subsp. lactis.
+OC   No information.
+XX
+RN   [1]
+RP   1-310
+RA   Schoenhuber W., Le Bourhis G., Tremblay J., Amann R.,
+RA   Kulakauskas S.;
+RT   "Utilization of tmRNA sequences for bacterial identification";
+RL   BMC Microbiol. 1(1):20-20(2001).
+XX
+RN   [2]
+RP   1-310
+RA   Schoenhuber W., Le Bourhis G., Tremblay J., Amann R.I.,
+RA   Kulakauskas S.;
+RT   ;
+RL   Submitted (02-MAY-2001) to the EMBL/GenBank/DDBJ databases.
+RL   Microbiology, Institut National de la Recherche Agronomique, Domaine
+RL   de Vilvert, Jouy-en-Josas 78352, France.
+XX
+DR   RDP; AF375552;.
+XX
+CC   Organism information
+CC     Culture collection: NCDO 2118 tmRNA gene
+CC   Sequence information (bases 1 to 327)
+CC     Corresponding GenBank entry: AF375552;
+CC   Please note: all these entries have been modified for test purposes.
+CC   *source: strain=NCDO2118 tmRNA gene, partial sequence;
+CC   *source: subspecies=lactis;
+XX
+SQ   Sequence 327 BP; 91 A; 59 C; 74 G; 86 T; 17 other;
+     cattgtcgcg catgaactgc aactgctgag ggatcaggat aatcatccgc agataaatat
+     60aactgcta aaaataatac acaaacttac gcaatggcag cctaaacagc accatgcgtg
+     cc120tgatt tttgctcact gatggcaatt tgacggccta aacttttagt cagatacgtt
+     gttgt180gg aggcttgacg cagcaaaaga gatttaaagc cccgcaaaat gtcgctgttt
+     gagactgg24 0ctttggcat tttgttaaat ttgagaaagt cctatggttg tagacgttga
+     tgtagcaagg t300gtttgg acag310
+//
 ID   HSFAU     preliminary; RNA; UNA; 518 BP.
 XX
 AC   X65923
 XX
-DT   07-JAN-1910 (Rel. 1, Last updated, Version 1)
-DT   07-JAN-1910 (Rel. 1, Created)
+DT   15-JAN-1910 (Rel. 1, Last updated, Version 1)
+DT   15-JAN-1910 (Rel. 1, Created)
 XX
 DE   H.sapiens fau mRNA.
 XX
@@ -26,8 +75,8 @@ ID   HSFAU1    preliminary; RNA; UNA; 2016 BP.
 XX
 AC   X65921
 XX
-DT   07-JAN-1910 (Rel. 1, Last updated, Version 1)
-DT   07-JAN-1910 (Rel. 1, Created)
+DT   15-JAN-1910 (Rel. 1, Last updated, Version 1)
+DT   15-JAN-1910 (Rel. 1, Created)
 XX
 DE   H.sapiens fau 1 gene This is just a long text which overflows the
 DE   maximum line size allowed for EMBL files
