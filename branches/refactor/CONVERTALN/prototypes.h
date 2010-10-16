@@ -69,9 +69,7 @@ void convert(const char *inf, const char *outf, int intype, int outype);
 void to_gcg(const char *inf, const char *outf, int intype);
 void gcg_seq_out(const Seq &seq, FILE *ofp, const char *key);
 void gcg_doc_out(const char *line, FILE *ofp);
-int checksum(char *Str, int numofstr);
 void gcg_out_origin(const Seq &seq, FILE *fp);
-int gcg_seq_length(const Seq &seq);
 
 /* genbank.cxx */
 char genbank_in(GenBank &gbk, Seq &seq, FILE_BUFFER fp);
@@ -130,12 +128,12 @@ void get_atcc_string(char *line, char *temp, int index);
 /* paup.cxx */
 void to_paup(const char *inf, const char *outf, int informat);
 void paup_verify_name(char *&Str);
-void paup_print_line(const char *Str, const char *sequence, int seq_length, int index, int first_line, FILE *fp);
+void paup_print_line(const Seq &seq, int offset, int first_line, FILE *fp);
 void paup_print_header(const Paup &paup, FILE *ofp);
 
 /* phylip.cxx */
 void to_phylip(const char *inf, const char *outf, int informat, int readstdin);
-void phylip_print_line(const char *name, const char *sequence, int seq_length, int index, FILE *fp);
+void phylip_print_line(const Seq &seq, int index, FILE *fp);
 
 /* printable.cxx */
 void to_printable(const char *inf, const char *outf, int informat);

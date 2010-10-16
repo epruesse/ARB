@@ -41,10 +41,20 @@ class Seq {
 
     char *id;
     int   len;     // sequence length
-    char *seq;     // sequence data
     int   max;     // space allocated for 'sequence'
+    char *seq;     // sequence data
+
+    void zeroTerminate() { add(0); len--; }
 
 public:
+    Seq(const char *id_, const char *seq_, int len_)
+        : id(strdup(id_)),
+          len(len_),
+          max(len+1),
+          seq((char*)malloc(max))
+    {
+        memcpy(seq, seq_, len);
+    }
     Seq() {
         id  = NULL;
         len = 0;
@@ -68,23 +78,26 @@ public:
         }
         seq[len++] = c;
     }
-    void zeroTerminate() { add(0); len--; }
 
     int get_len() const { return len; }
     bool is_empty() const { return len == 0; }
 
     const char *get_seq() const {
-        if (max == len || seq[len]) { // not zero-terminated
-            const_cast<Seq*>(this)->zeroTerminate();
-        }
+        const_cast<Seq*>(this)->zeroTerminate();
         return seq;
     }
-
-    int checksum() const { return ::checksum(seq, len); }
 
     void count(BaseCounts& counter) const {
         for (int i = 0; i<len; ++i)
             counter.add(seq[i]);
+    }
+
+    int count_gaps() const {
+        int gaps = 0;
+        for (int i = 0; i<len; ++i) {
+            gaps += is_gapchar(seq[i]);
+        }
+        return gaps;
     }
 };
 typedef SmartPtr<Seq> SeqPtr;

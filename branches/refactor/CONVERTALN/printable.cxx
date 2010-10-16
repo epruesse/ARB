@@ -18,8 +18,9 @@ void to_printable(const char *inf, const char *outf, int informat) {
 
     Alignment ali;
     while (1) {
-        SmartPtr<InputFormat> in       = InputFormat::create(informat);
-        SeqPtr       seq = in->get_data(ifp);
+        SmartPtr<InputFormat> in = InputFormat::create(informat);
+        
+        SeqPtr seq = in->get_data(ifp);
         if (seq.isNull()) break;
         ali.add(seq);
     }
@@ -32,20 +33,22 @@ void to_printable(const char *inf, const char *outf, int informat) {
     int current = 0;
     while (maxsize > current) {
         for (int indi = 0; indi < total_seq; indi++) {
-            int length     = str0len(ali.get_seq(indi));
-            int base_count = 0;
+            const Seq&  seq        = ali.get(indi);
+            int         length     = seq.get_len();
+            const char *sequence   = seq.get_seq();
+            int         base_count = 0;
             for (int index = 0; index < PRTLENGTH && (current + index) < length; index++)
-                if (ali.get_seq(indi)[index + current] != '~' && ali.get_seq(indi)[index + current] != '-' && ali.get_seq(indi)[index + current] != '.')
+                if (!is_gapchar(sequence[index + current]))
                     base_count++;
 
             // check if the first char is base or not
             int   start;
-            if (current < length && ali.get_seq(indi)[current] != '~' && ali.get_seq(indi)[current] != '-' && ali.get_seq(indi)[current] != '.')
+            if (current < length && !is_gapchar(sequence[current]))
                 start = base_nums[indi] + 1;
             else
                 start = base_nums[indi];
 
-            printable_print_line(ali.get_id(indi), ali.get_seq(indi), current, start, ofp);
+            printable_print_line(seq.get_id(), seq.get_seq(), current, start, ofp);
             base_nums[indi] += base_count;
         }
         current += PRTLENGTH;
@@ -58,11 +61,8 @@ void to_printable(const char *inf, const char *outf, int informat) {
     fclose(ofp);
 }
 
-/* ------------------------------------------------------------
- *   Function printable_print_line().
- *       print one printable line.
- */
 void printable_print_line(const char *id, const char *sequence, int start, int base_count, FILE * fp) {
+    // print one printable line.
     int indi, index, count, bnum, seq_length;
 
     fputc(' ', fp);

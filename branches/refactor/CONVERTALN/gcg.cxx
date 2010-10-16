@@ -181,16 +181,27 @@ void to_gcg(const char *inf, const char *outf, int intype) {
     }
 }
 
-/* ----------------------------------------------------------------
- *   Function gcg_seq_out().
- *       Output sequence data in gcg format.
- */
+static int gcg_checksum(const char *Str, int numofstr) {
+    // Calculate gcg_checksum for GCG format.
+    int cksum = 0;
+    int count = 0;
+    for (int indi = 0; indi < numofstr; indi++) {
+        if (!is_gapchar(Str[indi])) {
+            count++;
+            cksum = ((cksum + count * toupper(Str[indi])) % 10000);
+            if (count == 57) count = 0;
+        }
+    }
+    return cksum;
+}
+
 void gcg_seq_out(const Seq& seq, FILE * ofp, const char *key) {
+    // Output sequence data in gcg format.
     fprintf(ofp, "\n%s  Length: %d  %s  Type: N  Check: %d  ..\n\n",
             key,
-            gcg_seq_length(seq),
+            seq.get_len()-seq.count_gaps(),
             gcg_date(today_date()),
-            seq.checksum());
+            gcg_checksum(seq.get_seq(), seq.get_len()));
     gcg_out_origin(seq, ofp);
 }
 
@@ -217,66 +228,27 @@ void gcg_doc_out(const char *line, FILE * ofp) {
     }
 }
 
-/* -----------------------------------------------------------------
- *   Function checksum().
- *       Calculate checksum for GCG format.
- */
-int checksum(char *Str, int numofstr) {
-    int cksum = 0, indi, count = 0, charnum;
-
-    for (indi = 0; indi < numofstr; indi++) {
-        if (Str[indi] == '.' || Str[indi] == '-' || Str[indi] == '~')
-            continue;
-        count++;
-        if (Str[indi] >= 'a' && Str[indi] <= 'z')
-            charnum = Str[indi] - 'a' + 'A';
-        else
-            charnum = Str[indi];
-        cksum = ((cksum + count * charnum) % 10000);
-        if (count == 57)
-            count = 0;
-    }
-    return (cksum);
-}
-
 /* --------------------------------------------------------------------
  *   Function gcg_out_origin().
  *       Output sequence data in gcg format.
  */
 void gcg_out_origin(const Seq& seq, FILE * fp) {
-    int indi, indj, indk;
-
+    int         indi, indj, indk;
     const char *sequence = seq.get_seq();
+
     for (indi = 0, indj = 0, indk = 1; indi < seq.get_len(); indi++) {
-        if (sequence[indi] == '.' || sequence[indi] == '~' || sequence[indi] == '-')
-            continue;
-        if ((indk % 50) == 1)
-            fprintf(fp, "%8d  ", indk);
-        fputc(sequence[indi], fp);
-        indj++;
-        if (indj == 10) {
-            fputc(' ', fp);
-            indj = 0;
+        if (!is_gapchar(sequence[indi])) {
+            if ((indk % 50) == 1) fprintf(fp, "%8d  ", indk);
+            fputc(sequence[indi], fp);
+            indj++;
+            if (indj == 10) {
+                fputc(' ', fp);
+                indj = 0;
+            }
+            if ((indk % 50) == 0) fputs("\n\n", fp);
+            indk++;
         }
-        if ((indk % 50) == 0)
-            fputs("\n\n", fp);
-        indk++;
     }
-    if ((indk % 50) != 1)
-        fputs(" \n", fp);
+    if ((indk % 50) != 1) fputs(" \n", fp);
 }
 
-/* ------------------------------------------------------------------
- *   Function gcg_seq_length().
- *       Calculate sequence length without gap.
- */
-int gcg_seq_length(const Seq& seq) {
-    int indi, len;
-
-    const char *sequence = seq.get_seq();
-    for (indi = 0, len = seq.get_len(); indi < seq.get_len(); indi++)
-        if (sequence[indi] == '.' || sequence[indi] == '-' || sequence[indi] == '~')
-            len--;
-
-    return (len);
-}

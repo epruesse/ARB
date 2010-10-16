@@ -50,7 +50,7 @@ void to_phylip(const char *inf, const char *outf, int informat, int readstdin) {
 
     while (maxsize > current) {
         for (int indi = 0; indi < total_seq; indi++) {
-            phylip_print_line(ali.get_id(indi), ali.get_seq(indi), ali.get_len(indi), current, ofp);
+            phylip_print_line(ali.get(indi), current, ofp);
         }
         if (current == 0)
             current += (SEQLINE - 10);
@@ -81,17 +81,15 @@ void to_phylip(const char *inf, const char *outf, int informat, int readstdin) {
     log_processed(total_seq);
 }
 
-/* --------------------------------------------------------------
- *  Function phylip_print_line().
- *      Print phylip line.
- */
-void phylip_print_line(const char *name, const char *sequence, int seq_length, int index, FILE * fp) {
-    ca_assert(seq_length>0);
+void phylip_print_line(const Seq& seq, int index, FILE * fp) {
+    // Print phylip line.
+    ca_assert(seq.get_len()>0);
 
     int length;
     if (index == 0) {
-        int bnum;
-        int nlen = str0len(name);
+        int         bnum;
+        const char *name = seq.get_id();
+        int         nlen = str0len(name);
         if (nlen > 10) {
             // truncate id length of sequence ID is greater than 10
             for (int indi = 0; indi < 10; indi++) fputc(name[indi], fp);
@@ -105,22 +103,23 @@ void phylip_print_line(const char *name, const char *sequence, int seq_length, i
         for (int indi = 0; indi < bnum; indi++) fputc(' ', fp);
         length = SEQLINE - 10;
     }
-    else if (index >= seq_length) {
+    else if (index >= seq.get_len()) {
         length = 0;
     }
     else {
         length = SEQLINE;
     }
 
+    const char *sequence = seq.get_seq();
     for (int indi = 0, indj = 0; indi < length; indi++) {
-        if ((index + indi) < seq_length) {
+        if ((index + indi) < seq.get_len()) {
             char c = sequence[index + indi];
 
             if (c == '.')
                 c = '?';
             fputc(c, fp);
             indj++;
-            if (indj == 10 && (index + indi) < (seq_length - 1) && indi < (length - 1)) {
+            if (indj == 10 && (index + indi) < (seq.get_len() - 1) && indi < (length - 1)) {
                 fputc(' ', fp);
                 indj = 0;
             }

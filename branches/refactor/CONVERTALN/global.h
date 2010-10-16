@@ -62,6 +62,7 @@ inline bool is_end_mark(char ch) { return ch == '.' || ch == ';'; }
 
 #define WORD_SEP ",.; ?:!)]}"
 
+inline bool is_gapchar(char ch) { return occurs_in(ch, "-.~"); }
 inline bool is_word_char(char ch) { return !occurs_in(ch, WORD_SEP); }
 
 inline bool has_no_content(const char *field) {

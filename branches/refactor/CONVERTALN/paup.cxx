@@ -42,7 +42,7 @@ void to_paup(const char *inf, const char *outf, int informat) {
         for (int indi = 0; indi < total_seq; indi++) {
             if (current < ali.get_len(indi))
                 first_line++;
-            paup_print_line(ali.get_id(indi), ali.get_seq(indi), ali.get_len(indi), current, (first_line == 1), ofp);
+            paup_print_line(ali.get(indi), current, (first_line == 1), ofp);
 
             // Avoid repeating 
             if (first_line == 1)
@@ -97,27 +97,27 @@ void paup_verify_name(char*& Str) {
  *  Function paup_print_line().
  *      print paup file.
  */
-void paup_print_line(const char *Str, const char *sequence, int seq_length, int index, int first_line, FILE * fp) {
-    int indi, indj, length;
-
-    length = SEQLINE - 10;
-
+void paup_print_line(const Seq& seq, int offset, int first_line, FILE * fp) {
+    int length = SEQLINE - 10;
     fputs("      ", fp);
-    // truncate if length of sequence ID is greater than 10 
-    for (indi = 0; indi < 10 && Str[indi]; indi++)
-        fputc(Str[indi], fp);
 
-    if (seq_length == 0)
-        seq_length = str0len(sequence);
+    int indi;
+    
+    const char *id = seq.get_id();
+    for (indi = 0; indi < 10 && id[indi]; indi++) // truncate id to 10 characters
+        fputc(id[indi], fp);
 
-    if (index < seq_length) {
+    if (offset < seq.get_len()) {
         for (; indi < 11; indi++) fputc(' ', fp);
 
+        const char *sequence = seq.get_seq();
+        
+        int indj = 0;
         for (indi = indj = 0; indi < length; indi++) {
-            if ((index + indi) < seq_length) {
-                fputc(sequence[index + indi], fp);
+            if ((offset + indi) < seq.get_len()) {
+                fputc(sequence[offset + indi], fp);
                 indj++;
-                if (indj == 10 && indi < (length - 1) && (indi + index) < (seq_length - 1)) {
+                if (indj == 10 && indi < (length - 1) && (indi + offset) < (seq.get_len() - 1)) {
                     fputc(' ', fp);
                     indj = 0;
                 }
@@ -128,7 +128,7 @@ void paup_print_line(const char *Str, const char *sequence, int seq_length, int 
     }
 
     if (first_line)
-        fprintf(fp, " [%d - %d]", index + 1, (index + indi));
+        fprintf(fp, " [%d - %d]", offset + 1, (offset + indi));
 
     fputc('\n', fp);
 }
