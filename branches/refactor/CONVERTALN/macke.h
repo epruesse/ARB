@@ -112,7 +112,7 @@ public:
         --idx;
         return rem;
     }
-    
+
     // InputFormat interface
     SeqPtr get_data(FILE_BUFFER ifp);
     void reinit() { INPLACE_RECONSTRUCT(Macke, this); }
@@ -136,9 +136,9 @@ public:
         : firstRead(true),
           inName(strdup(inName_)),
           seqabbr(0),
-          r1(NULL), 
-          r2(NULL), 
-          r3(NULL) 
+          r1(NULL),
+          r2(NULL),
+          r3(NULL)
     {}
     ~MackeReader() {
         stop_reading();
@@ -169,7 +169,6 @@ public:
     Not(LinePredicate p_) : p(p_) {}
     bool operator()(const char *line) { return !p(line); }
 };
-
 
 #else
 #error macke.h included twice

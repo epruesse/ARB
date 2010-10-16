@@ -5,7 +5,7 @@
 #include "global.h"
 #include <static_assert.h>
 
-const char *format2name(int format_type) {
+static const char *format2name(int format_type) {
     switch (format_type) {
         case EMBL:      return "EMBL";
         case GCG:       return "GCG";
@@ -32,7 +32,6 @@ void throw_conversion_failure(int input_format, int output_format) {
                  format2name(input_format), format2name(output_format));
 }
 
-
 static int log_processed_counter = 0;
 static int log_seq_counter       = 0;
 
@@ -42,7 +41,7 @@ void log_processed(int seqCount) {
 #endif // CALOG
 
     log_processed_counter++;
-    log_seq_counter += seqCount; 
+    log_seq_counter += seqCount;
 
     if (seqCount == 0) {
         throw_error(99, "No sequences have been processed");
@@ -66,7 +65,7 @@ void convert(const char *inf, const char *outf, int intype, int outype) {
     switch (intype) {
         case EMBL:
             switch (outype) {
-                case EMBL:      
+                case EMBL:
                 case SWISSPROT: embl_to_embl(inf, outf); break;
                 case GENBANK:   embl_to_genbank(inf, outf); break;
                 case MACKE:     embl_to_macke(inf, outf, EMBL); break;
@@ -86,7 +85,7 @@ void convert(const char *inf, const char *outf, int intype, int outype) {
 
         case MACKE:
             switch (outype) {
-                case EMBL:      
+                case EMBL:
                 case SWISSPROT: macke_to_embl(inf, outf); break;
                 case GENBANK:   macke_to_genbank(inf, outf); break;
                 default: converted = false; break;
@@ -185,11 +184,11 @@ struct Capabilities {
 
     Capabilities() :
         supported(true),
-        haveInputData(true), 
+        haveInputData(true),
         emptyOutput(false),
         noOutput(false),
         crashes(false),
-        neverReturns(false), 
+        neverReturns(false),
         broken(false)
     {}
 
@@ -208,8 +207,8 @@ static Capabilities cap[fcount][fcount];
 //      update .expected files ?
 
 // #define TEST_AUTO_UPDATE // never does update if undefined
-// #define UPDATE_ONLY_IF_MISSING 
-#define UPDATE_ONLY_IF_MORE_THAN_DATE_DIFFERS 
+// #define UPDATE_ONLY_IF_MISSING
+#define UPDATE_ONLY_IF_MORE_THAN_DATE_DIFFERS
 
 inline bool more_than_date_differs(const char *file, const char *expected) {
     return !GB_test_textfile_difflines(file, expected, 0, 1);
@@ -234,7 +233,7 @@ inline bool want_auto_update(const char *file, const char *expected) {
 inline bool want_auto_update(const char */*file*/, const char */*expected*/) {
     return false;
 }
-#endif 
+#endif
 
 static void test_expected_conversion(const char *file, const char *flavor) {
     char *expected;
@@ -274,7 +273,6 @@ static void test_convert_by_format_num_WRAPPED(int from, int to) {
 
     Capabilities& me = cap[from][to];
 
-
     if (me.supported) {
         if (error) TEST_ERROR("convert() reports error: '%s' (for supported conversion)", error);
         if (me.noOutput) {
@@ -304,7 +302,6 @@ static void test_convert_by_format_num_WRAPPED(int from, int to) {
 
     free(toFile);
 }
-
 
 #if defined(ENABLE_CRASH_TESTS)
 static int crash_from = -1;

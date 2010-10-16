@@ -6,7 +6,6 @@
 #include <cstdarg>
 #include <cerrno>
 
-
 bool scan_token(const char *from, char *to) { // __ATTR__USERESULT
     return sscanf(from, "%s", to) == 1;
 }
@@ -61,10 +60,10 @@ void throw_errorf(int error_num, const char *error_messagef, ...) { // __ATTR__F
     throw_error(error_num, buffer);
 }
 
-void throw_cant_open_input(const char *filename) {
+static void throw_cant_open_input(const char *filename) {
     throw_errorf(1, "can't read input file '%s' (Reason: %s)", filename, strerror(errno));
 }
-void throw_cant_open_output(const char *filename) {
+static void throw_cant_open_output(const char *filename) {
     throw_errorf(2, "can't write output file '%s' (Reason: %s)", filename, strerror(errno));
 }
 
@@ -83,15 +82,11 @@ FILE *open_output_or_die(const char *filename) {
     return out;
 }
 
-/* --------------------------------------------------------------
- *  Function warning()
- *      print out warning_message and continue execution.
- */
-// ------------------------------------------------------------- 
+// --------------------------------------------------------------------------------
 
 int warning_out = 1;
-
 void warning(int warning_num, const char *warning_message) {
+    // print out warning_message and continue execution.
     if (warning_out)
         fprintf(stderr, "WARNING(%d): %s\n", warning_num, warning_message);
 }
@@ -113,19 +108,15 @@ void warningf(int warning_num, const char *warning_messagef, ...) { // __ATTR__F
     }
 }
 
-/* ------------------------------------------------------------
- *   Function Reallocspace().
- *       Realloc a continue space, expand or shrink the
- *       original space.
- */
 char *Reallocspace(void *block, unsigned int size) {
+    // Realloc a continue space, expand or shrink the original space.
     char *temp;
 
     if (size <= 0) {
         free(block);
         return NULL;
     }
-    
+
     if (block == NULL) {
         temp = (char *)calloc(1, size);
     }
@@ -136,40 +127,16 @@ char *Reallocspace(void *block, unsigned int size) {
     return temp;
 }
 
-/* ---------------------------------------------------------
- *   Function Skip_white_space().
- *       Skip white space from (index)th char of Str line.
- */
 int Skip_white_space(const char *line, int index) {
-    // skip white space 
+    // Skip white space from (index)th char of Str line.
 
     while (line[index] == ' ' || line[index] == '\t')
         ++index;
     return (index);
 }
 
-/* ----------------------------------------------------------------
- *   Function Reach_white_space().
- *       Reach the next available white space of Str line.
- */
-int Reach_white_space(char *line, int index) {
-    int length;
-
-    length = str0len(line);
-
-    // skip to white space 
-    for (; line[index] != ' ' && line[index] != '\t' && index < length; index++) {}
-
-    return (index);
-}
-
-/* ---------------------------------------------------------------
- *   Function Fgetline().
- *       Get a line from assigned file, also checking for buffer
- *           overflow.
- */
-
 char *Fgetline(char *line, size_t maxread, FILE_BUFFER fb) {
+    // Get a line from assigned file, also checking for buffer overflow.
     size_t len;
 
     const char *fullLine = FILE_BUFFER_read(fb, &len);
@@ -188,13 +155,10 @@ char *Fgetline(char *line, size_t maxread, FILE_BUFFER fb) {
     return 0;
 }
 
-/* ------------------------------------------------------------
- *   Function Getstr().
- *       Get input Str from terminal.
- */
 void Getstr(char *line, int linenum) {
+    // Get input Str from terminal.
     char c;
-    int indi = 0;
+    int  indi = 0;
 
     for (; (c = getchar()) != '\n' && indi < (linenum - 1); line[indi++] = c) {}
 
@@ -202,7 +166,7 @@ void Getstr(char *line, int linenum) {
 }
 
 inline void append_known_len(char*& string1, int len1, const char *string2, int len2) {
-    ca_assert(len2); // else no need to call, string1 already correct 
+    ca_assert(len2); // else no need to call, string1 already correct
     int newlen      = len1+len2;
     string1         = Reallocspace(string1, newlen+1);
     memcpy(string1+len1, string2, len2);
@@ -215,7 +179,7 @@ void terminate_with(char*& str, char ch) {
     // - 'str' contains more than just '\n'
 
     int len = str0len(str);
-    if (!len) return; 
+    if (!len) return;
     ca_assert(str[len-1] == '\n');
     if (len == 1) return;
     if (str[len-2] == ch) return;
@@ -240,8 +204,6 @@ void Append(char*& string1, const char *string2) {
     int len2 = str0len(string2);
     if (len2) append_known_len(string1, str0len(string1), string2, len2);
 }
-
-
 
 void upcase(char *str) {
     // Capitalize all char in the str.
@@ -303,7 +265,7 @@ static int findMultipattern(const char *str, const char** const& pattern, char e
 
     if (str) {
         FindMode use = expect_behind ? FIND_SKIP_OVER : mode;
-        
+
         int p;
         for (p = 0; offset == -1 && pattern[p]; ++p) {
             offset = findPattern(str, pattern[p], use);
@@ -354,5 +316,4 @@ const char *stristr(const char *str, const char *substring) {
     int offset = find_pattern(str, substring);
     return offset >= 0 ? str+offset : NULL;
 }
-
 

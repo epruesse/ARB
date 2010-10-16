@@ -15,4 +15,3 @@ Reader::~Reader() {
     destroy_FILE_BUFFER(fbuf);
 }
 
-

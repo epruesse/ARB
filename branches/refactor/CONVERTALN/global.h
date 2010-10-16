@@ -83,7 +83,6 @@ inline void freedup_if_content(char*& entry, const char *content) {
     if (has_content(content)) freedup(entry, content);
 }
 
-
 // --------------------
 
 #define INPLACE_RECONSTRUCT(type,this)          \
@@ -109,7 +108,4 @@ inline void freedup_if_content(char*& entry, const char *content) {
 #else
 #error global.h included twice
 #endif // GLOBAL_H
-
-
-
 

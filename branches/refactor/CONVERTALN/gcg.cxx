@@ -1,11 +1,6 @@
 #include "reader.h"
 #include "macke.h"
 
-/* ------------------------------------------------------------------
- *   Function to_gcg().
- *       Convert from whatever to GCG format.
- */
-
 class GenbankReader : public Reader, public DataReader {
 public:
     GenbankReader(const char *inf) : Reader(inf) {}
@@ -38,6 +33,71 @@ public:
     }
 };
 
+static void gcg_doc_out(const char *line, FILE * ofp) {
+    // Output non-sequence data(document) of gcg format.
+    int indi, len;
+    int previous_is_dot;
+
+    ca_assert(ofp);
+
+    for (indi = 0, len = str0len(line), previous_is_dot = 0; indi < len; indi++) {
+        if (previous_is_dot) {
+            if (line[indi] == '.')
+                fputc(' ', ofp);
+            else
+                previous_is_dot = 0;
+        }
+        fputc(line[indi], ofp);
+        if (line[indi] == '.')
+            previous_is_dot = 1;
+    }
+}
+
+static int gcg_checksum(const char *Str, int numofstr) {
+    // Calculate gcg_checksum for GCG format.
+    int cksum = 0;
+    int count = 0;
+    for (int indi = 0; indi < numofstr; indi++) {
+        if (!is_gapchar(Str[indi])) {
+            count++;
+            cksum = ((cksum + count * toupper(Str[indi])) % 10000);
+            if (count == 57) count = 0;
+        }
+    }
+    return cksum;
+}
+
+static void gcg_out_origin(const Seq& seq, FILE * fp) {
+    // Output sequence data in gcg format.
+    int         indi, indj, indk;
+    const char *sequence = seq.get_seq();
+
+    for (indi = 0, indj = 0, indk = 1; indi < seq.get_len(); indi++) {
+        if (!is_gapchar(sequence[indi])) {
+            if ((indk % 50) == 1) fprintf(fp, "%8d  ", indk);
+            fputc(sequence[indi], fp);
+            indj++;
+            if (indj == 10) {
+                fputc(' ', fp);
+                indj = 0;
+            }
+            if ((indk % 50) == 0) fputs("\n\n", fp);
+            indk++;
+        }
+    }
+    if ((indk % 50) != 1) fputs(" \n", fp);
+}
+
+static void gcg_seq_out(const Seq& seq, FILE * ofp, const char *key) {
+    // Output sequence data in gcg format.
+    fprintf(ofp, "\n%s  Length: %d  %s  Type: N  Check: %d  ..\n\n",
+            key,
+            seq.get_len()-seq.count_gaps(),
+            gcg_date(today_date()),
+            gcg_checksum(seq.get_seq(), seq.get_len()));
+    gcg_out_origin(seq, ofp);
+}
+
 class GcgWriter {
     FILE *ofp;
     char *species_name;
@@ -46,6 +106,7 @@ class GcgWriter {
 public:
     GcgWriter(const char *outf)
         : ofp(open_output_or_die(outf)),
+          species_name(NULL),
           seq_written(false)
     {}
     ~GcgWriter() {
@@ -74,8 +135,8 @@ public:
 
 static void macke_to_gcg(const char *inf, const char *outf) {
     // @@@ fix outfile handling - use GcgWriter!
-    // @@@ use MackeReader here? 
-    
+    // @@@ use MackeReader here?
+
     FILE        *IFP1 = open_input_or_die(inf);
     FILE        *IFP2 = open_input_or_die(inf);
     FILE        *IFP3 = open_input_or_die(inf);
@@ -96,7 +157,7 @@ static void macke_to_gcg(const char *inf, const char *outf) {
 
         char temp[TOKENSIZE];
         strcpy(temp, key);
-        ofp = open_output_or_die(outf); 
+        ofp = open_output_or_die(outf);
 
         char name[LINESIZE];
         for (macke_abbrev(line2, name, 2);
@@ -179,76 +240,5 @@ void to_gcg(const char *inf, const char *outf, int intype) {
     else {
         throw_conversion_not_supported(intype, GCG);
     }
-}
-
-static int gcg_checksum(const char *Str, int numofstr) {
-    // Calculate gcg_checksum for GCG format.
-    int cksum = 0;
-    int count = 0;
-    for (int indi = 0; indi < numofstr; indi++) {
-        if (!is_gapchar(Str[indi])) {
-            count++;
-            cksum = ((cksum + count * toupper(Str[indi])) % 10000);
-            if (count == 57) count = 0;
-        }
-    }
-    return cksum;
-}
-
-void gcg_seq_out(const Seq& seq, FILE * ofp, const char *key) {
-    // Output sequence data in gcg format.
-    fprintf(ofp, "\n%s  Length: %d  %s  Type: N  Check: %d  ..\n\n",
-            key,
-            seq.get_len()-seq.count_gaps(),
-            gcg_date(today_date()),
-            gcg_checksum(seq.get_seq(), seq.get_len()));
-    gcg_out_origin(seq, ofp);
-}
-
-/* --------------------------------------------------------------------
- *   Function gcg_doc_out().
- *       Output non-sequence data(document) of gcg format.
- */
-void gcg_doc_out(const char *line, FILE * ofp) {
-    int indi, len;
-    int previous_is_dot;
-
-    ca_assert(ofp);
-
-    for (indi = 0, len = str0len(line), previous_is_dot = 0; indi < len; indi++) {
-        if (previous_is_dot) {
-            if (line[indi] == '.')
-                fputc(' ', ofp);
-            else
-                previous_is_dot = 0;
-        }
-        fputc(line[indi], ofp);
-        if (line[indi] == '.')
-            previous_is_dot = 1;
-    }
-}
-
-/* --------------------------------------------------------------------
- *   Function gcg_out_origin().
- *       Output sequence data in gcg format.
- */
-void gcg_out_origin(const Seq& seq, FILE * fp) {
-    int         indi, indj, indk;
-    const char *sequence = seq.get_seq();
-
-    for (indi = 0, indj = 0, indk = 1; indi < seq.get_len(); indi++) {
-        if (!is_gapchar(sequence[indi])) {
-            if ((indk % 50) == 1) fprintf(fp, "%8d  ", indk);
-            fputc(sequence[indi], fp);
-            indj++;
-            if (indj == 10) {
-                fputc(' ', fp);
-                indj = 0;
-            }
-            if ((indk % 50) == 0) fputs("\n\n", fp);
-            indk++;
-        }
-    }
-    if ((indk % 50) != 1) fputs(" \n", fp);
 }
 

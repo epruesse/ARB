@@ -2,11 +2,78 @@
 #include "paup.h"
 #include "ali.h"
 
-/* -------------------------------------------------------------
- *   Function to_paup()
- *       Convert from some format to NEXUS format.
- */
+static void paup_verify_name(char*& Str) {
+    // Verify short_id in NEXUS format.
+    if (strpbrk(Str, "*(){/,;_=:\\\'")) {
+        char temp[TOKENSIZE];
+        temp[0] = '\'';
+
+        int len   = str0len(Str);
+        int indi  = 0;
+        int index = 1;
+        for (; indi < len; indi++, index++) {
+            temp[index] = Str[indi];
+            if (Str[indi] == '\'') temp[++index] = '\'';
+        }
+        temp[index++] = '\'';
+        temp[index]   = '\0';
+
+        freedup(Str, temp);
+    }
+}
+
+static void paup_print_line(const Seq& seq, int offset, int first_line, FILE * fp) {
+    // print paup file.
+    int length = SEQLINE - 10;
+    fputs("      ", fp);
+
+    int indi;
+
+    const char *id = seq.get_id();
+    for (indi = 0; indi < 10 && id[indi]; indi++) // truncate id to 10 characters
+        fputc(id[indi], fp);
+
+    if (offset < seq.get_len()) {
+        for (; indi < 11; indi++) fputc(' ', fp);
+
+        const char *sequence = seq.get_seq();
+
+        int indj = 0;
+        for (indi = indj = 0; indi < length; indi++) {
+            if ((offset + indi) < seq.get_len()) {
+                fputc(sequence[offset + indi], fp);
+                indj++;
+                if (indj == 10 && indi < (length - 1) && (indi + offset) < (seq.get_len() - 1)) {
+                    fputc(' ', fp);
+                    indj = 0;
+                }
+            }
+            else
+                break;
+        }
+    }
+
+    if (first_line)
+        fprintf(fp, " [%d - %d]", offset + 1, (offset + indi));
+
+    fputc('\n', fp);
+}
+
+static void paup_print_header(const Paup& paup, FILE * ofp) {
+    // Print out the header of each paup format.
+    fputs("#NEXUS\n", ofp);
+    fprintf(ofp, "[! RDP - the Ribosomal Database Project, (%s).]\n", today_date());
+    fputs("[! To get started, send HELP to rdp@info.mcs.anl.gov ]\n", ofp);
+    fputs("BEGIN DATA;\n   DIMENSIONS\n", ofp);
+    fputs("      NTAX =       \n      NCHAR =       \n      ;\n", ofp);
+    fputs("   FORMAT\n      LABELPOS = LEFT\n", ofp);
+    fprintf(ofp, "      MISSING = .\n      EQUATE = \"%s\"\n", paup.equate);
+    fprintf(ofp, "      INTERLEAVE\n      DATATYPE = RNA\n      GAP = %c\n      ;\n", paup.gap);
+    fputs("   OPTIONS\n      GAPMODE = MISSING\n      ;\n   MATRIX\n", ofp);
+}
+
 void to_paup(const char *inf, const char *outf, int informat) {
+    // Convert from some format to NEXUS format.
     if (!InputFormat::is_known(informat)) {
         throw_conversion_not_supported(informat, NEXUS);
     }
@@ -44,7 +111,7 @@ void to_paup(const char *inf, const char *outf, int informat) {
                 first_line++;
             paup_print_line(ali.get(indi), current, (first_line == 1), ofp);
 
-            // Avoid repeating 
+            // Avoid repeating
             if (first_line == 1)
                 first_line++;
         }
@@ -54,7 +121,7 @@ void to_paup(const char *inf, const char *outf, int informat) {
     }
 
     fputs("      ;\nENDBLOCK;\n", ofp);
-    // rewrite output header 
+    // rewrite output header
     rewind(ofp);
     fputs("#NEXUS\n", ofp);
 
@@ -68,83 +135,4 @@ void to_paup(const char *inf, const char *outf, int informat) {
     log_processed(total_seq);
     destroy_FILE_BUFFER(ifp);
     fclose(ofp);
-}
-
-/* -----------------------------------------------------------
- *   Function paup_verify_name().
- *       Verify short_id in NEXUS format.
- */
-void paup_verify_name(char*& Str) {
-    if (strpbrk(Str, "*(){/,;_=:\\\'")) {
-        char temp[TOKENSIZE];
-        temp[0] = '\'';
-
-        int len   = str0len(Str);
-        int indi  = 0;
-        int index = 1;
-        for (; indi < len; indi++, index++) {
-            temp[index] = Str[indi];
-            if (Str[indi] == '\'') temp[++index] = '\'';
-        }
-        temp[index++] = '\'';
-        temp[index]   = '\0';
-        
-        freedup(Str, temp);
-    }
-}
-
-/* --------------------------------------------------------------
- *  Function paup_print_line().
- *      print paup file.
- */
-void paup_print_line(const Seq& seq, int offset, int first_line, FILE * fp) {
-    int length = SEQLINE - 10;
-    fputs("      ", fp);
-
-    int indi;
-    
-    const char *id = seq.get_id();
-    for (indi = 0; indi < 10 && id[indi]; indi++) // truncate id to 10 characters
-        fputc(id[indi], fp);
-
-    if (offset < seq.get_len()) {
-        for (; indi < 11; indi++) fputc(' ', fp);
-
-        const char *sequence = seq.get_seq();
-        
-        int indj = 0;
-        for (indi = indj = 0; indi < length; indi++) {
-            if ((offset + indi) < seq.get_len()) {
-                fputc(sequence[offset + indi], fp);
-                indj++;
-                if (indj == 10 && indi < (length - 1) && (indi + offset) < (seq.get_len() - 1)) {
-                    fputc(' ', fp);
-                    indj = 0;
-                }
-            }
-            else
-                break;
-        }
-    }
-
-    if (first_line)
-        fprintf(fp, " [%d - %d]", offset + 1, (offset + indi));
-
-    fputc('\n', fp);
-}
-
-/* ----------------------------------------------------------
- *   Function paup_print_header().
- *       Print out the header of each paup format.
- */
-void paup_print_header(const Paup& paup, FILE * ofp) {
-    fputs("#NEXUS\n", ofp);
-    fprintf(ofp, "[! RDP - the Ribosomal Database Project, (%s).]\n", today_date());
-    fputs("[! To get started, send HELP to rdp@info.mcs.anl.gov ]\n", ofp);
-    fputs("BEGIN DATA;\n   DIMENSIONS\n", ofp);
-    fputs("      NTAX =       \n      NCHAR =       \n      ;\n", ofp);
-    fputs("   FORMAT\n      LABELPOS = LEFT\n", ofp);
-    fprintf(ofp, "      MISSING = .\n      EQUATE = \"%s\"\n", paup.equate);
-    fprintf(ofp, "      INTERLEAVE\n      DATATYPE = RNA\n      GAP = %c\n      ;\n", paup.gap);
-    fputs("   OPTIONS\n      GAPMODE = MISSING\n      ;\n   MATRIX\n", ofp);
 }

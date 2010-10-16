@@ -1,16 +1,12 @@
-// genbank and Macke converting program 
+// genbank and Macke converting program
 
 #include "genbank.h"
 #include "macke.h"
 
 extern int warning_out;
 
-/* ----------------------------------------------------------
- *   Function genbank_to_macke().
- *   Convert from Genbank format to Macke format.
- */
-
 void genbank_to_macke(const char *inf, const char *outf) {
+    // Convert from Genbank format to Macke format.
     FILE        *IFP = open_input_or_die(inf);
     FILE_BUFFER  ifp = create_FILE_BUFFER(inf, IFP);
     FILE        *ofp = open_output_or_die(outf);
@@ -19,8 +15,6 @@ void genbank_to_macke(const char *inf, const char *outf) {
 
     // sequence irrelevant header
     macke_out_header(ofp);
-
-
 
     for (indi = 0; indi < 3; indi++) {
         FILE_BUFFER_rewind(ifp);
@@ -34,7 +28,7 @@ void genbank_to_macke(const char *inf, const char *outf) {
             numofseq++;
             Macke macke;
             if (!gtom(gbk, macke)) throw_conversion_failure(GENBANK, MACKE);
-            
+
             switch (indi) {
                 case 0: macke_seq_display_out(macke, ofp, GENBANK, numofseq == 1); break;
                 case 1: macke_seq_info_out(macke, ofp); break;
@@ -45,15 +39,53 @@ void genbank_to_macke(const char *inf, const char *outf) {
         total_num = numofseq;
         if (indi == 0) {
             fputs("#-\n", ofp);
-            // no warning message for next loop 
+            // no warning message for next loop
             warning_out = 0;
         }
     }
 
-    warning_out = 1; // resume warning messages 
+    warning_out = 1; // resume warning messages
     log_processed(total_num);
     fclose(ofp);
     destroy_FILE_BUFFER(ifp);
+}
+
+static int paren_string(char *Str, char *pstring, int index) {
+    int pcount = 0, len, indi;
+
+    for (indi = 0, len = str0len(Str); index < len; index++) {
+        if (pcount >= 1)
+            pstring[indi++] = Str[index];
+        if (Str[index] == '(')
+            pcount++;
+        if (Str[index] == ')')
+            pcount--;
+    }
+    if (indi == 0)
+        return (-1);
+    pstring[--indi] = '\0';
+    return (index);
+}
+
+static void get_atcc_string(char *line, char *temp, int index) {
+    // Get the rest of the Str until reaching certain terminators, such as ';', ',', '.',...
+    int indk, len, paren_num;
+
+    len = str0len(line);
+    paren_num = 0;
+    for (indk = 0; index < len; index++, indk++) {
+        temp[indk] = line[index];
+        if (temp[indk] == '(')
+            paren_num++;
+        if (temp[indk] == ')')
+            if (paren_num == 0)
+                break;
+            else
+                paren_num--;
+        else if (paren_num == 0 && (temp[indk] == ';' || temp[indk] == '.' || temp[indk] == ',' || temp[indk] == '/' || temp[indk] == '\n'))
+            break;
+    }
+    temp[indk] = '\0';
 }
 
 static char *get_atcc(const Macke& macke, char *source) {
@@ -74,11 +106,11 @@ static char *get_atcc(const Macke& macke, char *source) {
         index = 0;
         while ((index = paren_string(source, pstring, index)) > 0) {
             if ((indj = find_pattern(pstring, CC[indi])) >= 0) {
-                // skip the key word 
+                // skip the key word
                 indj += str0len(CC[indi]);
-                // skip blank spaces 
+                // skip blank spaces
                 indj = Skip_white_space(pstring, indj);
-                // get strain 
+                // get strain
                 get_atcc_string(pstring, buffer, indj);
                 sprintf(temp, "%s %s", CC[indi], buffer);
                 length = str0len(atcc);
@@ -87,10 +119,10 @@ static char *get_atcc(const Macke& macke, char *source) {
                     strcat(atcc, ", ");
                 }
                 strcat(atcc, temp);
-            }                   
-        }                       
-    }                           
-    // append eoln to the atcc string 
+            }
+        }
+    }
+    // append eoln to the atcc string
     length = str0len(atcc);
     if (macke.atcc) {
         macke.atcc[length] = '\0';
@@ -117,69 +149,7 @@ static char *genbank_get_atcc(const GenBank& gbk, const Macke& macke) {
     return atcc;
 }
 
-int gtom(const GenBank& gbk, Macke& macke) { // __ATTR__USERESULT
-    // Convert from Genbank format to Macke format.
-    char temp[LONGTEXT], buffer[TOKENSIZE];
-    char genus[TOKENSIZE], species[TOKENSIZE];
-
-    // copy sequence abbr, assume every entry in gbk must end with \n\0
-    // no '\n' at the end of the string
-    genbank_key_word(gbk.locus, 0, temp, TOKENSIZE);
-    freedup(macke.seqabbr, temp);
-
-    // copy name and definition 
-    if (has_content(gbk.organism)) {
-        freedup(macke.name, gbk.organism);
-    }
-    else if (has_content(gbk.definition)) {
-        ASSERT_RESULT(int, 2, sscanf(gbk.definition, "%s %s", genus, species));
-
-        int last = str0len(species)-1;
-        if (species[last] == ';') species[last] = '\0';
-
-        freeset(macke.name, strf("%s %s\n", genus, species));
-        
-    }
-
-    freedup_if_content(macke.atcc, gbk.comments.orginf.cultcoll); // copy cultcoll name and number 
-    freedup_if_content(macke.rna,  gbk.comments.seqinf.methods); // copy rna(methods) 
-
-    freeset(macke.date, gbk.get_date()); Append(macke.date, "\n");
-
-    // copy genbank entry  (gbkentry has higher priority than gbk.accession) 
-    if (has_content(gbk.comments.seqinf.gbkentry))
-        freedup(macke.acs, gbk.comments.seqinf.gbkentry);
-    else {
-        if (has_content(gbk.accession) && !str_equal(gbk.accession, "No information\n")) {
-            scan_token_or_die(gbk.accession, buffer, NULL);
-            strcat(buffer, "\n");
-        }
-        else
-            strcpy(buffer, "\n");
-        freedup(macke.acs, buffer);
-    }
-
-    // copy the first reference from GenBank to Macke 
-    if (gbk.has_refs()) {
-        freedup_if_content(macke.author,  gbk.get_ref(0).author);
-        freedup_if_content(macke.journal, gbk.get_ref(0).journal);
-        freedup_if_content(macke.title,   gbk.get_ref(0).title);
-    }
-    // the rest of references are put into remarks, rem:..... 
-
-    gtom_remarks(gbk, macke);
-
-    // adjust the strain, subspecies, and atcc information 
-    freeset(macke.strain,     genbank_get_strain(gbk));
-    freeset(macke.subspecies, genbank_get_subspecies(gbk));
-    if (!has_content(macke.atcc)) {
-        freeset(macke.atcc, genbank_get_atcc(gbk, macke));
-    }
-
-    return (1);
-}
-
-void add_35end_remark(Macke& macke, char end35, char yn) {
+static void add_35end_remark(Macke& macke, char end35, char yn) {
     if (yn == ' ') return;
 
     char *content = strf("%c' end complete:  %s\n", end35, yn == 'y' ? "Yes" : "No");
@@ -187,21 +157,21 @@ void add_35end_remark(Macke& macke, char end35, char yn) {
     free(content);
 }
 
-void gtom_remarks(const GenBank& gbk, Macke& macke) {
+static void gtom_remarks(const GenBank& gbk, Macke& macke) {
     // Create Macke remarks.
 
-    // REFERENCE the first reference 
+    // REFERENCE the first reference
     if (gbk.has_refs())
         macke.add_remark_if_content("ref:", gbk.get_ref(0).ref);
 
-    // The rest of the REFERENCES 
+    // The rest of the REFERENCES
     for (int indi = 1; indi < gbk.get_refcount(); indi++) {
         macke.add_remark_if_content("ref:",      gbk.get_ref(indi).ref);
         macke.add_remark_if_content("auth:",     gbk.get_ref(indi).author);
         macke.add_remark_if_content("jour:",     gbk.get_ref(indi).journal);
         macke.add_remark_if_content("title:",    gbk.get_ref(indi).title);
         macke.add_remark_if_content("standard:", gbk.get_ref(indi).standard);
-    } 
+    }
 
     const OrgInfo& orginf = gbk.comments.orginf;
     const SeqInfo& seqinf = gbk.comments.seqinf;
@@ -267,7 +237,7 @@ static void get_string(char *temp, const char *line, int index) {
 
     int len       = str0len(line);
     int paren_num = 0;
-    
+
     int indk;
     for (indk = 0; index < len; index++, indk++) {
         temp[indk] = line[index];
@@ -306,7 +276,7 @@ static void check_strain_from(char* const& strain, const char *from) {
     }
 }
 
-char *genbank_get_strain(const GenBank& gbk) {
+static char *genbank_get_strain(const GenBank& gbk) {
     // Get strain from DEFINITION, COMMENT or SOURCE line in Genbank data file.
     char strain[LONGTEXT];
 
@@ -326,7 +296,7 @@ char *genbank_get_strain(const GenBank& gbk) {
     return nulldup(strain);
 }
 
-char *genbank_get_subspecies(const GenBank& gbk) {
+static char *genbank_get_subspecies(const GenBank& gbk) {
     // Get subspecies information from SOURCE, DEFINITION, or COMMENT line of Genbank data file.
     int  indj;
     char subspecies[LONGTEXT];
@@ -356,31 +326,8 @@ char *genbank_get_subspecies(const GenBank& gbk) {
     return nulldup(subspecies);
 }
 
-// ----------------------------------------------------------------- 
-/*  Function paren_string()
- */
-int paren_string(char *Str, char *pstring, int index) {
-    int pcount = 0, len, indi;
-
-    for (indi = 0, len = str0len(Str); index < len; index++) {
-        if (pcount >= 1)
-            pstring[indi++] = Str[index];
-        if (Str[index] == '(')
-            pcount++;
-        if (Str[index] == ')')
-            pcount--;
-    }
-    if (indi == 0)
-        return (-1);
-    pstring[--indi] = '\0';
-    return (index);
-}
-
-/* -----------------------------------------------------------------
- *   Function macke_to_genbank().
- *       Convert from macke format to genbank format.
- */
 void macke_to_genbank(const char *inf, const char *outf) {
+    // Convert from macke format to genbank format.
     MackeReader  mackeReader(inf);
     FILE        *ofp      = open_output_or_die(outf);
     int          numofseq = 0;
@@ -402,73 +349,10 @@ void macke_to_genbank(const char *inf, const char *outf) {
     fclose(ofp);
 }
 
-int mtog(const Macke& macke, GenBank& gbk, const Seq& seq) { // __ATTR__USERESULT
-    // Convert Macke format to Genbank format.
-    int  indi;
-    char temp[LONGTEXT];
-
-    strcpy(temp, macke.seqabbr);
-
-    for (indi = str0len(temp); indi < 13; temp[indi++] = ' ') {}
-
-    if (has_content(macke.date))
-        sprintf((temp + 10), "%7d bp    RNA             RNA       %s\n", seq.get_len(), genbank_date(macke.date));
-    else
-        sprintf((temp + 10), "%7d bp    RNA             RNA       %s\n", seq.get_len(), genbank_date(today_date()));
-
-    freedup(gbk.locus, temp);
-
-    // GenBank ORGANISM 
-    if (has_content(macke.name)) {
-        freedup(gbk.organism, macke.name);
-
-        // append a '.' at the end 
-        terminate_with(gbk.organism, '.');
-    }
-
-    if (has_content(macke.rna)) {
-        gbk.comments.seqinf.exists = true;
-        freedup(gbk.comments.seqinf.methods, macke.rna);
-    }
-    if (has_content(macke.acs)) {
-        /* #### not converted to accession but to comment gbkentry only, temporarily
-           freenull(gbk.accession);
-           gbk.accession = nulldup(macke.acs);
-         */
-        gbk.comments.seqinf.exists = true;
-        freedup(gbk.comments.seqinf.gbkentry, macke.acs);
-    }
-    else if (has_content(macke.nbk)) {
-        /* #### not converted to accession but to comment gbkentry only, temp
-           freenull(gbk.accession);
-           gbk.accession = nulldup(macke.nbk);
-         */
-        gbk.comments.seqinf.exists = true;
-        freedup(gbk.comments.seqinf.gbkentry, macke.nbk);
-    }
-    if (has_content(macke.atcc)) {
-        gbk.comments.orginf.exists = true;
-        freedup(gbk.comments.orginf.cultcoll, macke.atcc);
-    }
-    mtog_decode_ref_and_remarks(macke, gbk);
-    // final conversion of cultcoll 
-    if (!has_content(gbk.comments.orginf.cultcoll) && has_content(macke.atcc)) {
-        freedup(gbk.comments.orginf.cultcoll, macke.atcc);
-    }
-
-    // define GenBank DEFINITION, after GenBank KEYWORD is defined. 
-    mtog_genbank_def_and_source(macke, gbk);
-
-    return (1);
-}
-
-/* ---------------------------------------------------------------
- *   Function mtog_decode_remarks().
- *       Decode remarks of Macke to GenBank format.
- */
-void mtog_decode_ref_and_remarks(const Macke& macke, GenBank& gbk) {
+static void mtog_decode_ref_and_remarks(const Macke& macke, GenBank& gbk) {
+    // Decode remarks of Macke to GenBank format.
     ca_assert(gbk.get_refcount() == 0);
-    
+
     if (has_content(macke.author))  freedup(gbk.get_new_ref().author, macke.author);
     if (has_content(macke.journal)) freedup(gbk.get_latest_ref().journal, macke.journal);
     if (has_content(macke.title))   freedup(gbk.get_latest_ref().title, macke.title);
@@ -546,12 +430,8 @@ void mtog_decode_ref_and_remarks(const Macke& macke, GenBank& gbk) {
     }
 }
 
-/* ------------------------------------------------------------------
- *   Function mtog_genbank_def_and_source().
- *       Define GenBank DEFINITION and SOURCE lines the way RDP
- *           group likes.
- */
-void mtog_genbank_def_and_source(const Macke& macke, GenBank& gbk) {
+static void mtog_genbank_def_and_source(const Macke& macke, GenBank& gbk) {
+    // Define GenBank DEFINITION and SOURCE lines the way RDP group likes.
     freedup_if_content(gbk.definition, macke.name);
     if (has_content(macke.subspecies)) {
         if (!has_content(gbk.definition)) {
@@ -575,45 +455,142 @@ void mtog_genbank_def_and_source(const Macke& macke, GenBank& gbk) {
         Append(gbk.definition, macke.strain);
     }
 
-    // create SOURCE line, temp. 
+    // create SOURCE line, temp.
     if (has_content(gbk.definition)) {
         freedup(gbk.source, gbk.definition);
         terminate_with(gbk.source, '.');
     }
 
-    // append keyword to definition, if there is keyword. 
+    // append keyword to definition, if there is keyword.
     if (has_content(gbk.keywords)) {
         if (has_content(gbk.definition))
             skip_eolnl_and_append(gbk.definition, "; \n");
 
-        // Here keywords must be ended by a '.' already 
+        // Here keywords must be ended by a '.' already
         skip_eolnl_and_append(gbk.definition, gbk.keywords);
     }
     else
         skip_eolnl_and_append(gbk.definition, ".\n");
 }
 
-/* -------------------------------------------------------------------
- *   Function get_atcc_string().
- *       Get the rest of the Str until reaching certain
- *           terminators, such as ';', ',', '.',...
- */
-void get_atcc_string(char *line, char *temp, int index) {
-    int indk, len, paren_num;
+int mtog(const Macke& macke, GenBank& gbk, const Seq& seq) { // __ATTR__USERESULT
+    // Convert Macke format to Genbank format.
+    int  indi;
+    char temp[LONGTEXT];
 
-    len = str0len(line);
-    paren_num = 0;
-    for (indk = 0; index < len; index++, indk++) {
-        temp[indk] = line[index];
-        if (temp[indk] == '(')
-            paren_num++;
-        if (temp[indk] == ')')
-            if (paren_num == 0)
-                break;
-            else
-                paren_num--;
-        else if (paren_num == 0 && (temp[indk] == ';' || temp[indk] == '.' || temp[indk] == ',' || temp[indk] == '/' || temp[indk] == '\n'))
-            break;
+    strcpy(temp, macke.seqabbr);
+
+    for (indi = str0len(temp); indi < 13; temp[indi++] = ' ') {}
+
+    if (has_content(macke.date))
+        sprintf((temp + 10), "%7d bp    RNA             RNA       %s\n", seq.get_len(), genbank_date(macke.date));
+    else
+        sprintf((temp + 10), "%7d bp    RNA             RNA       %s\n", seq.get_len(), genbank_date(today_date()));
+
+    freedup(gbk.locus, temp);
+
+    // GenBank ORGANISM
+    if (has_content(macke.name)) {
+        freedup(gbk.organism, macke.name);
+
+        // append a '.' at the end
+        terminate_with(gbk.organism, '.');
     }
-    temp[indk] = '\0';
+
+    if (has_content(macke.rna)) {
+        gbk.comments.seqinf.exists = true;
+        freedup(gbk.comments.seqinf.methods, macke.rna);
+    }
+    if (has_content(macke.acs)) {
+        /* #### not converted to accession but to comment gbkentry only, temporarily
+           freenull(gbk.accession);
+           gbk.accession = nulldup(macke.acs);
+         */
+        gbk.comments.seqinf.exists = true;
+        freedup(gbk.comments.seqinf.gbkentry, macke.acs);
+    }
+    else if (has_content(macke.nbk)) {
+        /* #### not converted to accession but to comment gbkentry only, temp
+           freenull(gbk.accession);
+           gbk.accession = nulldup(macke.nbk);
+         */
+        gbk.comments.seqinf.exists = true;
+        freedup(gbk.comments.seqinf.gbkentry, macke.nbk);
+    }
+    if (has_content(macke.atcc)) {
+        gbk.comments.orginf.exists = true;
+        freedup(gbk.comments.orginf.cultcoll, macke.atcc);
+    }
+    mtog_decode_ref_and_remarks(macke, gbk);
+    // final conversion of cultcoll
+    if (!has_content(gbk.comments.orginf.cultcoll) && has_content(macke.atcc)) {
+        freedup(gbk.comments.orginf.cultcoll, macke.atcc);
+    }
+
+    // define GenBank DEFINITION, after GenBank KEYWORD is defined.
+    mtog_genbank_def_and_source(macke, gbk);
+
+    return (1);
+}
+
+int gtom(const GenBank& gbk, Macke& macke) { // __ATTR__USERESULT
+    // Convert from Genbank format to Macke format.
+    char temp[LONGTEXT], buffer[TOKENSIZE];
+    char genus[TOKENSIZE], species[TOKENSIZE];
+
+    // copy sequence abbr, assume every entry in gbk must end with \n\0
+    // no '\n' at the end of the string
+    genbank_key_word(gbk.locus, 0, temp, TOKENSIZE);
+    freedup(macke.seqabbr, temp);
+
+    // copy name and definition
+    if (has_content(gbk.organism)) {
+        freedup(macke.name, gbk.organism);
+    }
+    else if (has_content(gbk.definition)) {
+        ASSERT_RESULT(int, 2, sscanf(gbk.definition, "%s %s", genus, species));
+
+        int last = str0len(species)-1;
+        if (species[last] == ';') species[last] = '\0';
+
+        freeset(macke.name, strf("%s %s\n", genus, species));
+
+    }
+
+    freedup_if_content(macke.atcc, gbk.comments.orginf.cultcoll); // copy cultcoll name and number
+    freedup_if_content(macke.rna,  gbk.comments.seqinf.methods); // copy rna(methods)
+
+    freeset(macke.date, gbk.get_date()); Append(macke.date, "\n");
+
+    // copy genbank entry  (gbkentry has higher priority than gbk.accession)
+    if (has_content(gbk.comments.seqinf.gbkentry))
+        freedup(macke.acs, gbk.comments.seqinf.gbkentry);
+    else {
+        if (has_content(gbk.accession) && !str_equal(gbk.accession, "No information\n")) {
+            scan_token_or_die(gbk.accession, buffer, NULL);
+            strcat(buffer, "\n");
+        }
+        else
+            strcpy(buffer, "\n");
+        freedup(macke.acs, buffer);
+    }
+
+    // copy the first reference from GenBank to Macke
+    if (gbk.has_refs()) {
+        freedup_if_content(macke.author,  gbk.get_ref(0).author);
+        freedup_if_content(macke.journal, gbk.get_ref(0).journal);
+        freedup_if_content(macke.title,   gbk.get_ref(0).title);
+    }
+    // the rest of references are put into remarks, rem:.....
+
+    gtom_remarks(gbk, macke);
+
+    // adjust the strain, subspecies, and atcc information
+    freeset(macke.strain,     genbank_get_strain(gbk));
+    freeset(macke.subspecies, genbank_get_subspecies(gbk));
+    if (!has_content(macke.atcc)) {
+        freeset(macke.atcc, genbank_get_atcc(gbk, macke));
+    }
+
+    return (1);
 }

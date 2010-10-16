@@ -3,11 +3,57 @@
 
 #include <cerrno>
 
-/* ---------------------------------------------------------------
- *  Function to_phylip()
- *      Convert from some format to PHYLIP format.
- */
+static void phylip_print_line(const Seq& seq, int index, FILE * fp) {
+    // Print phylip line.
+    ca_assert(seq.get_len()>0);
+
+    int length;
+    if (index == 0) {
+        int         bnum;
+        const char *name = seq.get_id();
+        int         nlen = str0len(name);
+        if (nlen > 10) {
+            // truncate id length of sequence ID is greater than 10
+            for (int indi = 0; indi < 10; indi++) fputc(name[indi], fp);
+            bnum = 1;
+        }
+        else {
+            fputs(name, fp);
+            bnum = 10 - nlen + 1;
+        }
+        // fill in blanks to make up 10 chars for ID.
+        for (int indi = 0; indi < bnum; indi++) fputc(' ', fp);
+        length = SEQLINE - 10;
+    }
+    else if (index >= seq.get_len()) {
+        length = 0;
+    }
+    else {
+        length = SEQLINE;
+    }
+
+    const char *sequence = seq.get_seq();
+    for (int indi = 0, indj = 0; indi < length; indi++) {
+        if ((index + indi) < seq.get_len()) {
+            char c = sequence[index + indi];
+
+            if (c == '.')
+                c = '?';
+            fputc(c, fp);
+            indj++;
+            if (indj == 10 && (index + indi) < (seq.get_len() - 1) && indi < (length - 1)) {
+                fputc(' ', fp);
+                indj = 0;
+            }
+        }
+        else
+            break;
+    }
+    fputc('\n', fp);
+}
+
 void to_phylip(const char *inf, const char *outf, int informat, int readstdin) {
+    // Convert from some format to PHYLIP format.
     if (!InputFormat::is_known(informat)) {
         throw_conversion_not_supported(informat, PHYLIP);
     }
@@ -38,7 +84,7 @@ void to_phylip(const char *inf, const char *outf, int informat, int readstdin) {
         int spaced = 0;
         while (1) {
             int c = getchar();
-            if (c == EOF) break; // read all from stdin now (not only one line) 
+            if (c == EOF) break; // read all from stdin now (not only one line)
             if (!spaced) {
                 fputc(' ', ofp);
                 spaced = 1;
@@ -59,7 +105,7 @@ void to_phylip(const char *inf, const char *outf, int informat, int readstdin) {
         if (maxsize > current)
             fputc('\n', ofp);
     }
-    // rewrite output header 
+    // rewrite output header
     errno = 0;
     rewind(ofp);
     ca_assert(errno == 0);
@@ -81,51 +127,3 @@ void to_phylip(const char *inf, const char *outf, int informat, int readstdin) {
     log_processed(total_seq);
 }
 
-void phylip_print_line(const Seq& seq, int index, FILE * fp) {
-    // Print phylip line.
-    ca_assert(seq.get_len()>0);
-
-    int length;
-    if (index == 0) {
-        int         bnum;
-        const char *name = seq.get_id();
-        int         nlen = str0len(name);
-        if (nlen > 10) {
-            // truncate id length of sequence ID is greater than 10
-            for (int indi = 0; indi < 10; indi++) fputc(name[indi], fp);
-            bnum = 1;
-        }
-        else {
-            fputs(name, fp);
-            bnum = 10 - nlen + 1;
-        }
-        // fill in blanks to make up 10 chars for ID. 
-        for (int indi = 0; indi < bnum; indi++) fputc(' ', fp);
-        length = SEQLINE - 10;
-    }
-    else if (index >= seq.get_len()) {
-        length = 0;
-    }
-    else {
-        length = SEQLINE;
-    }
-
-    const char *sequence = seq.get_seq();
-    for (int indi = 0, indj = 0; indi < length; indi++) {
-        if ((index + indi) < seq.get_len()) {
-            char c = sequence[index + indi];
-
-            if (c == '.')
-                c = '?';
-            fputc(c, fp);
-            indj++;
-            if (indj == 10 && (index + indi) < (seq.get_len() - 1) && indi < (length - 1)) {
-                fputc(' ', fp);
-                indj = 0;
-            }
-        }
-        else
-            break;
-    }
-    fputc('\n', fp);
-}

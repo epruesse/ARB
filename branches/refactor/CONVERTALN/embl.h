@@ -24,13 +24,13 @@ struct Emblref {
         processing = strdup("");
     }
     ~Emblref() {
-        freenull(author);    
+        freenull(author);
         freenull(journal);
         freenull(title);
         freenull(processing);
     }
     Emblref(const Emblref& other) {
-        freedup(author, other.author);    
+        freedup(author, other.author);
         freedup(journal, other.journal);
         freedup(title, other.title);
         freedup(processing, other.processing);

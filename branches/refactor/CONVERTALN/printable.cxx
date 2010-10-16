@@ -3,11 +3,38 @@
 
 #define PRTLENGTH   62
 
-/* ---------------------------------------------------------------
- *   Function to_printable()
- *       Convert from some format to PRINTABLE format.
- */
+static void printable_print_line(const char *id, const char *sequence, int start, int base_count, FILE * fp) {
+    // print one printable line.
+    int indi, index, count, bnum, seq_length;
+
+    fputc(' ', fp);
+    if ((bnum = str0len(id)) > 10) {
+        // truncate if length of id is greater than 10
+        for (indi = 0; indi < 10; indi++) fputc(id[indi], fp);
+        bnum = 1;
+    }
+    else {
+        fputs(id, fp);
+        bnum = 10 - bnum + 1;
+    }
+    // fill in the blanks to make up 10 chars id spaces
+    seq_length = str0len(sequence);
+    if (start < seq_length)
+        for (indi = 0; indi < bnum; indi++) fputc(' ', fp);
+    else {
+        fputc('\n', fp);
+        return;
+    }
+    fprintf(fp, "%4d ", base_count);
+    for (index = start, count = 0; count < PRTLENGTH && index < seq_length; index++) {
+        fputc(sequence[index], fp);
+        count++;
+    }
+    fputc('\n', fp);
+}
+
 void to_printable(const char *inf, const char *outf, int informat) {
+    // Convert from some format to PRINTABLE format.
     if (!InputFormat::is_known(informat)) {
         throw_conversion_not_supported(informat, PRINTABLE);
     }
@@ -19,7 +46,7 @@ void to_printable(const char *inf, const char *outf, int informat) {
     Alignment ali;
     while (1) {
         SmartPtr<InputFormat> in = InputFormat::create(informat);
-        
+
         SeqPtr seq = in->get_data(ifp);
         if (seq.isNull()) break;
         ali.add(seq);
@@ -61,32 +88,3 @@ void to_printable(const char *inf, const char *outf, int informat) {
     fclose(ofp);
 }
 
-void printable_print_line(const char *id, const char *sequence, int start, int base_count, FILE * fp) {
-    // print one printable line.
-    int indi, index, count, bnum, seq_length;
-
-    fputc(' ', fp);
-    if ((bnum = str0len(id)) > 10) {
-        // truncate if length of id is greater than 10 
-        for (indi = 0; indi < 10; indi++) fputc(id[indi], fp);
-        bnum = 1;
-    }
-    else {
-        fputs(id, fp);
-        bnum = 10 - bnum + 1;
-    }
-    // fill in the blanks to make up 10 chars id spaces 
-    seq_length = str0len(sequence);
-    if (start < seq_length)
-        for (indi = 0; indi < bnum; indi++) fputc(' ', fp);
-    else {
-        fputc('\n', fp);
-        return;
-    }
-    fprintf(fp, "%4d ", base_count);
-    for (index = start, count = 0; count < PRTLENGTH && index < seq_length; index++) {
-        fputc(sequence[index], fp);
-        count++;
-    }
-    fputc('\n', fp);
-}

@@ -5,7 +5,7 @@ template <typename REF>
 class Refs : Noncopyable {
     REF   *ref;
     int  size;
-public: 
+public:
     Refs() {
         ref  = NULL;
         size = 0;

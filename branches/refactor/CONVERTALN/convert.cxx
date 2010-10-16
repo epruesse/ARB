@@ -1,8 +1,8 @@
-// ================================================================ 
-// 
-// File      : convert.c                                          
-// Purpose   : some helpers for global data handling              
-// 
+// ================================================================
+//
+// File      : convert.c
+// Purpose   : some helpers for global data handling
+//
 // ================================================================
 
 #include "embl.h"

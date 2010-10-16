@@ -89,8 +89,6 @@ struct RDP_comments {
     DECLARE_ASSIGNMENT_OPERATOR(RDP_comments);
 };
 
-
-
 #else
 #error rdp_info.h included twice
 #endif // RDP_INFO_H

@@ -47,13 +47,13 @@ struct DataReader {
 template<typename PRED>
 char *skipOverLinesThat(char *buffer, size_t buffersize, FILE_BUFFER& fb, PRED line_predicate) {
     // returns a pointer to the first non-matching line or NULL
-    // @@@ WARNING: unconditionally skips the first line 
+    // @@@ WARNING: unconditionally skips the first line
     char *result;
 
     for (result = Fgetline(buffer, buffersize, fb);
          result && line_predicate(result);
          result = Fgetline(buffer, buffersize, fb)) { }
-    
+
     return result;
 }
 
@@ -63,7 +63,6 @@ inline const char *shorttimekeep(char *heapcopy) {
     return &*keep;
 }
 inline const char *shorttimecopy(const char *nocopy) { return shorttimekeep(nulldup(nocopy)); }
-
 
 #else
 #error reader.h included twice

@@ -34,7 +34,7 @@ const char *WrapMode::print_return_wrapped(FILE *fp, const char * const content,
 
     if (behavior&WRAPBUG_WRAP_AT_SPACE && split_after == 0) split_after = wrap_pos(content+1, rest_width-1)+1;
     if (behavior&WRAPBUG_WRAP_BEFORE_SEP && split_after>0) split_after--;
-        
+
     ca_assert(split_after>0);
     if ((behavior&WRAPBUG_WRAP_BEFORE_SEP) == 0 && occurs_in(content[split_after], " \n")) split_after--;
     ca_assert(split_after >= 0);
@@ -55,7 +55,7 @@ const char *WrapMode::print_return_wrapped(FILE *fp, const char * const content,
 
     ca_assert(content[len] == '\n');
     ca_assert(len>continue_at);
-    
+
     return content+continue_at;
 }
 
@@ -74,11 +74,10 @@ void WrapMode::print(FILE *fp, const char *first_prefix, const char *other_prefi
         while (rest) {
             len     -= rest-content;
             content  = rest;
-            
+
             fputs(other_prefix, fp);
             rest = print_return_wrapped(fp, content, len, max_width-prefix_len, behavior);
         }
     }
 }
-
 

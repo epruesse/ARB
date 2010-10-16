@@ -10,7 +10,7 @@
 
 class Alignment { // @@@ implement using SeqPtr-array
     std::vector<SeqPtr> seq;
-    
+
 public:
     int get_count() const { return seq.size(); }
     bool valid(int idx) const { return idx >= 0 && idx<get_count(); }

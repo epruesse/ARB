@@ -68,14 +68,14 @@ struct GenBank : public InputFormat, public RefContainer<GenbankRef> {
         freenull(source);
         freenull(organism);
     }
-    
+
     bool locus_contains_date() const { return str0len(locus) >= 60; }
 
     char *get_date() const {
         if (locus_contains_date()) return strndup(locus+50, 11);
         return strdup(genbank_date(today_date()));
     }
-    
+
     // InputFormat interface
     SeqPtr get_data(FILE_BUFFER ifp);
     void reinit() { INPLACE_RECONSTRUCT(GenBank, this); }
