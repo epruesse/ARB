@@ -21,21 +21,22 @@ void embl_in(Embl &embl, Seq &seq, Reader &reader);
 void embl_in_simple(Embl &embl, Seq &seq, Reader &reader);
 void embl_key_word(const char *line, int index, char *key, int length);
 void embl_origin(Seq &seq, Reader &reader);
-void embl_to_macke(const char *inf, const char *outf, int format);
+void embl_to_macke(const char *inf, const char *outf, Format inType);
 void embl_to_embl(const char *inf, const char *outf);
 void embl_to_genbank(const char *inf, const char *outf);
 void genbank_to_embl(const char *inf, const char *outf);
 void macke_to_embl(const char *inf, const char *outf);
 
 /* fconv.cxx */
-void throw_conversion_not_supported(int input_format, int output_format) __ATTR__NORETURN;
-void throw_conversion_failure(int input_format, int output_format);
-void throw_incomplete_entry(void);
+void throw_unsupported_input_format(Format inType) __ATTR__NORETURN;
+void throw_conversion_not_supported(Format inType, Format ouType) __ATTR__NORETURN;
+void throw_conversion_failure(Format inType, Format ouType) __ATTR__NORETURN;
+void throw_incomplete_entry(void) __ATTR__NORETURN;
 void log_processed(int seqCount);
-void convert(const char *inf, const char *outf, int intype, int outype);
+void convert(const char *inf, const char *outf, Format inType, Format ouType);
 
 /* gcg.cxx */
-void to_gcg(const char *inf, const char *outf, int intype);
+void to_gcg(const char *inf, const char *outf, Format inType);
 
 /* genbank.cxx */
 void genbank_key_word(const char *line, int index, char *key, int length);
@@ -55,7 +56,7 @@ int macke_abbrev(const char *line, char *key, int index);
 bool macke_is_continued_remark(const char *str);
 void macke_in_simple(Macke &macke, Seq &seq, Reader &reader);
 void macke_out_header(FILE *fp);
-void macke_seq_display_out(const Macke &macke, FILE *fp, int format, bool first_sequence);
+void macke_seq_display_out(const Macke &macke, FILE *fp, Format inType, bool first_sequence);
 void macke_seq_info_out(const Macke &macke, FILE *fp);
 int macke_key_word(const char *line, int index, char *key, int length);
 void macke_seq_data_out(const Seq &seq, const Macke &macke, FILE *fp);
@@ -69,13 +70,13 @@ int mtog(const Macke &macke, GenBank &gbk, const Seq &seq) __ATTR__USERESULT;
 int gtom(const GenBank &gbk, Macke &macke) __ATTR__USERESULT;
 
 /* paup.cxx */
-void to_paup(const char *inf, const char *outf, int informat);
+void to_paup(const char *inf, const char *outf, Format inType);
 
 /* phylip.cxx */
-void to_phylip(const char *inf, const char *outf, int informat, int readstdin);
+void to_phylip(const char *inf, const char *outf, Format inType, int readstdin);
 
 /* printable.cxx */
-void to_printable(const char *inf, const char *outf, int informat);
+void to_printable(const char *inf, const char *outf, Format inType);
 
 /* util.cxx */
 bool scan_token(char *to, const char *from) __ATTR__USERESULT;

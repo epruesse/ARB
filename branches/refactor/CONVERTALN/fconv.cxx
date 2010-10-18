@@ -5,8 +5,8 @@
 #include "global.h"
 #include <static_assert.h>
 
-static const char *format2name(int format_type) {
-    switch (format_type) {
+static const char *format2name(Format type) {
+    switch (type) {
         case EMBL:      return "EMBL";
         case GCG:       return "GCG";
         case GENBANK:   return "GENBANK";
@@ -18,20 +18,24 @@ static const char *format2name(int format_type) {
         case PRINTABLE: return "PRINTABLE";
         case SWISSPROT: return "SWISSPROT";
         case STADEN:    return "STADEN";
-        default: ca_assert(0);
+
+        case UNKNOWN: ca_assert(0);
     }
     return NULL;
 }
 
-void throw_conversion_not_supported(int input_format, int output_format) { // __ATTR__NORETURN
+void throw_unsupported_input_format(Format inType) {  // __ATTR__NORETURN
+    throw_errorf(92, "Unsupported input format %s", format2name(inType));
+}
+void throw_conversion_not_supported(Format inType, Format ouType) { // __ATTR__NORETURN
     throw_errorf(90, "Conversion from %s to %s is not supported",
-                 format2name(input_format), format2name(output_format));
+                 format2name(inType), format2name(ouType));
 }
-void throw_conversion_failure(int input_format, int output_format) {
+void throw_conversion_failure(Format inType, Format ouType) { // __ATTR__NORETURN 
     throw_errorf(91, "Conversion from %s to %s fails",
-                 format2name(input_format), format2name(output_format));
+                 format2name(inType), format2name(ouType));
 }
-void throw_incomplete_entry() {
+void throw_incomplete_entry() { // __ATTR__NORETURN
     throw_error(84, "Reached EOF before complete entry has been read");
 }
 
@@ -51,13 +55,13 @@ void log_processed(int seqCount) {
     }
 }
 
-void convert(const char *inf, const char *outf, int intype, int outype) {
-    // convert the file 'inf' (assuming it has type 'intype')
+void convert(const char *inf, const char *outf, Format inType, Format ouType) {
+    // convert the file 'inf' (assuming it has type 'inType')
     // to desired 'outype' and save the result in 'outf'.
 
     int dd = 0; // copy stdin to outfile after first line
-    if (outype == PHYLIP2) {
-        outype = PHYLIP;
+    if (ouType == PHYLIP2) {
+        ouType = PHYLIP;
         dd = 1;
     }
 
@@ -65,9 +69,9 @@ void convert(const char *inf, const char *outf, int intype, int outype) {
         throw_error(45, "Input file and output file must be different file");
 
     bool converted = true;
-    switch (intype) {
+    switch (inType) {
         case EMBL:
-            switch (outype) {
+            switch (ouType) {
                 case EMBL:
                 case SWISSPROT: embl_to_embl(inf, outf); break;
                 case GENBANK:   embl_to_genbank(inf, outf); break;
@@ -77,7 +81,7 @@ void convert(const char *inf, const char *outf, int intype, int outype) {
             break;
 
         case GENBANK:
-            switch (outype) {
+            switch (ouType) {
                 case EMBL:      genbank_to_embl(inf, outf); break;
                     // SWISSPROT is skipped here intentially (original code said: not supported by GENEBANK)
                 case GENBANK:   genbank_to_genbank(inf, outf); break;
@@ -87,7 +91,7 @@ void convert(const char *inf, const char *outf, int intype, int outype) {
             break;
 
         case MACKE:
-            switch (outype) {
+            switch (ouType) {
                 case EMBL:
                 case SWISSPROT: macke_to_embl(inf, outf); break;
                 case GENBANK:   macke_to_genbank(inf, outf); break;
@@ -96,7 +100,7 @@ void convert(const char *inf, const char *outf, int intype, int outype) {
             break;
 
         case SWISSPROT:
-            switch (outype) {
+            switch (ouType) {
                 case MACKE:     embl_to_macke(inf, outf, SWISSPROT); break;
                 default: converted = false; break;
             }
@@ -107,17 +111,17 @@ void convert(const char *inf, const char *outf, int intype, int outype) {
 
     if (!converted) {
         converted = true;
-        switch (outype) {
-            case GCG:       to_gcg(inf, outf, intype); break;
-            case NEXUS:     to_paup(inf, outf, intype); break;
-            case PHYLIP:    to_phylip(inf, outf, intype, dd); break;
-            case PRINTABLE: to_printable(inf, outf, intype); break;
+        switch (ouType) {
+            case GCG:       to_gcg(inf, outf, inType); break;
+            case NEXUS:     to_paup(inf, outf, inType); break;
+            case PHYLIP:    to_phylip(inf, outf, inType, dd); break;
+            case PRINTABLE: to_printable(inf, outf, inType); break;
             default: converted = false; break;
         }
     }
 
     if (!converted) {
-        throw_conversion_not_supported(intype, outype);
+        throw_conversion_not_supported(inType, ouType);
     }
 }
 
@@ -128,7 +132,7 @@ void convert(const char *inf, const char *outf, int intype, int outype) {
 #include <test_unit.h>
 
 struct FormatSpec {
-    char        id;             // GENBANK, MACKE, ...
+    Format  id;             // GENBANK, MACKE, ...
     const char *name;
     const char *testfile;       // existing testfile (or NULL)
     int         sequence_count; // number of sequences in 'testfile'
@@ -253,9 +257,9 @@ static void test_expected_conversion(const char *file, const char *flavor) {
     free(expected);
 }
 
-static const char *test_convert(const char *inf, const char *outf, int intype, int outype) {
+static const char *test_convert(const char *inf, const char *outf, Format inType, Format ouType) {
     const char *error = NULL;
-    try { convert(inf, outf, intype, outype); }
+    try { convert(inf, outf, inType, ouType); }
     catch (Convaln_exception& exc) { error = GBS_global_string("%s (#%i)", exc.get_msg(), exc.get_code()); }
     return error;
 }
@@ -339,7 +343,7 @@ static void init_cap() {
     }
 }
 
-inline bool isInputFormat(int num) { return INPUT(num); }
+inline bool isInputFormat(int num) { return INPUT(num); } // @@@ change ? 
 
 #define NOT_SUPPORTED(t1,t2)         TEST_ASSERT(isInputFormat(NUM_##t1)); cap[NUM_##t1][NUM_##t2].supported   = false
 #define NO_OUTFILE_CREATED(t1,t2)    TEST_ASSERT(isInputFormat(NUM_##t1)); cap[NUM_##t1][NUM_##t2].noOutput    = true

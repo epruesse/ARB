@@ -4,19 +4,6 @@
 #define RNA     0
 #define NONRNA  1
 
-#define GENBANK   'g'
-#define MACKE     'm'
-#define SWISSPROT 't'
-#define PHYLIP    'y'
-#define PHYLIP2   '2'
-#define NEXUS     'p'
-#define EMBL      'e'
-#define GCG       'c'
-#define PRINTABLE 'r'
-#define NBRF      'n'
-#define STADEN    's'
-
-#define UNKNOWN  (-1)
 #define AUTHOR   1
 #define JOURNAL  2
 #define TITLE    3

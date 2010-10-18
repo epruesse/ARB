@@ -34,10 +34,10 @@ static void printable_print_line(const char *id, const char *sequence, int start
     fputc('\n', fp);
 }
 
-void to_printable(const char *inf, const char *outf, int informat) {
+void to_printable(const char *inf, const char *outf, Format inType) {
     // Convert from some format to PRINTABLE format.
-    if (!InputFormat::is_known(informat)) {
-        throw_conversion_not_supported(informat, PRINTABLE);
+    if (!is_input_format(inType)) {
+        throw_conversion_not_supported(inType, PRINTABLE);
     }
 
     Reader reader(inf);
@@ -45,7 +45,7 @@ void to_printable(const char *inf, const char *outf, int informat) {
 
     Alignment ali;
     while (1) {
-        InputFormatPtr in  = InputFormat::create(informat);
+        InputFormatPtr in  = InputFormat::create(inType);
         SeqPtr         seq = in->read_data(reader);
 
         if (seq.isNull()) break;

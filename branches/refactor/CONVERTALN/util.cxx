@@ -51,10 +51,10 @@ void throw_errorf(int error_num, const char *error_messagef, ...) { // __ATTR__F
     throw_error(error_num, buffer);
 }
 
-static void throw_cant_open_input(const char *filename) {
+static void throw_cant_open_input(const char *filename) { // __ATTR__NORETURN
     throw_errorf(1, "can't read input file '%s' (Reason: %s)", filename, strerror(errno));
 }
-static void throw_cant_open_output(const char *filename) {
+static void throw_cant_open_output(const char *filename) { // __ATTR__NORETURN
     throw_errorf(2, "can't write output file '%s' (Reason: %s)", filename, strerror(errno));
 }
 

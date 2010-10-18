@@ -163,21 +163,18 @@ static void embl_to_gcg(const char *inf, const char *outf) {
     }
 }
 
-void to_gcg(const char *inf, const char *outf, int intype) {
+void to_gcg(const char *inf, const char *outf, Format inType) {
     // Convert from whatever to GCG format
     // @@@ use InputFormat ?
 
-    if (intype == MACKE) {
-        macke_to_gcg(inf, outf);
-    }
-    else if (intype == GENBANK) {
-        genbank_to_gcg(inf, outf);
-    }
-    else if (intype == EMBL || intype == SWISSPROT) {
-        embl_to_gcg(inf, outf);
-    }
-    else {
-        throw_conversion_not_supported(intype, GCG);
+    switch (inType) {
+        case MACKE:     macke_to_gcg(inf, outf); break;
+        case GENBANK:   genbank_to_gcg(inf, outf); break;
+        case EMBL:
+        case SWISSPROT: embl_to_gcg(inf, outf); break;
+        default:
+            throw_conversion_not_supported(inType, GCG);
+            break;
     }
 }
 

@@ -117,12 +117,11 @@ void macke_out_header(FILE * fp) {
     fprintf(fp, "#-\t%s\n#-\n#-\n", date);
 }
 
-void macke_seq_display_out(const Macke& macke, FILE * fp, int format, bool first_sequence) {
+void macke_seq_display_out(const Macke& macke, FILE * fp, Format inType, bool first_sequence) {
     // Output the Macke format each sequence format (wot?)
+    char token[TOKENSIZE], direction[TOKENSIZE];
 
-    char   token[TOKENSIZE], direction[TOKENSIZE];
-
-    if (format == SWISSPROT) {
+    if (inType == SWISSPROT) {
         strcpy(token, "pro");
         strcpy(direction, "n>c");
     }

@@ -696,7 +696,7 @@ STATIC_ATTRIBUTED(__ATTR__USERESULT, int etom(const Embl& embl, Macke& macke, co
     return etog(embl, gbk, seq) && gtom(gbk, macke);
 }
 
-void embl_to_macke(const char *inf, const char *outf, int format) {
+void embl_to_macke(const char *inf, const char *outf, Format inType) {
     // Convert from Embl format to Macke format.
     Reader reader(inf);
     FILE *ofp = open_output_or_die(outf);
@@ -719,7 +719,7 @@ void embl_to_macke(const char *inf, const char *outf, int format) {
             if (!etom(embl, macke, seq)) throw_conversion_failure(EMBL, MACKE);
 
             switch (indi) {
-                case 0: macke_seq_display_out(macke, ofp, format, numofseq == 1); break;
+                case 0: macke_seq_display_out(macke, ofp, inType, numofseq == 1); break;
                 case 1: macke_seq_info_out(macke, ofp); break;
                 case 2: macke_seq_data_out(seq, macke, ofp); break;
                 default:;

@@ -130,6 +130,8 @@ inline void freedup_if_content(char*& entry, const char *content) {
 
 #define lookup_keyword(keyword,table) ___lookup_keyword(keyword, table, ARRAY_ELEMS(table))
 
+inline bool is_input_format(Format inType) { return inType <= LAST_INPUT_FORMAT; }
+
 #else
 #error global.h included twice
 #endif // GLOBAL_H

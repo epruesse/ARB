@@ -53,10 +53,10 @@ static void phylip_print_line(const Seq& seq, int index, FILE * fp) {
     fputc('\n', fp);
 }
 
-void to_phylip(const char *inf, const char *outf, int informat, int readstdin) {
+void to_phylip(const char *inf, const char *outf, Format inType, int readstdin) {
     // Convert from some format to PHYLIP format.
-    if (!InputFormat::is_known(informat)) {
-        throw_conversion_not_supported(informat, PHYLIP);
+    if (!is_input_format(inType)) {
+        throw_conversion_not_supported(inType, PHYLIP);
     }
 
     Reader reader(inf);
@@ -69,7 +69,7 @@ void to_phylip(const char *inf, const char *outf, int informat, int readstdin) {
 
     Alignment ali;
     while(1) {
-        InputFormatPtr in  = InputFormat::create(informat);
+        InputFormatPtr in  = InputFormat::create(inType);
         SeqPtr         seq = in->read_data(reader);
         if (seq.isNull()) break;
         ali.add(seq);

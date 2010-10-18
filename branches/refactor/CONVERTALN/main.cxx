@@ -13,19 +13,13 @@
 
 Convaln_exception *Convaln_exception::thrown = NULL;
 
-struct TypeSwitch { const char *switchtext; int format_num; };
+struct TypeSwitch { const char *switchtext; Format format; };
 
-TypeSwitch known_in_type[] = { // see fconv.cxx@format_spec
+TypeSwitch convertible_type[] = { // see fconv.cxx@format_spec
     { "GenBank",   GENBANK   },
     { "EMBL",      EMBL      },
     { "AE2",       MACKE     },
     { "SwissProt", SWISSPROT },
-};
-
-TypeSwitch known_out_type[] = {
-    { "GenBank",   GENBANK   },
-    { "EMBL",      EMBL      },
-    { "AE2",       MACKE     },
     { "NEXUS",     NEXUS     },
     { "PHYLIP",    PHYLIP    },
     { "PHYLIP2",   PHYLIP2   },
@@ -92,7 +86,7 @@ static void change_file_suffix(char *old_file, char *file_name, int type) {
     }
 }
 
-static void ask_for_conversion_params(int& argc, char**& argv, int& intype, int& outtype) {
+static void ask_for_conversion_params(int& argc, char**& argv, Format& inType, Format& ouType) {
     char temp[LINESIZE];
     char choice[LINESIZE];
 
@@ -122,10 +116,10 @@ static void ask_for_conversion_params(int& argc, char**& argv, int& intype, int&
     Getstr(choice, LINESIZE);
     switch (choice[0]) {
         case '\0': // [default]
-        case '1': intype = GENBANK; break;
-        case '2': intype = EMBL; break;
-        case '3': intype = MACKE; break;
-        case '4': intype = SWISSPROT; break;
+        case '1': inType = GENBANK; break;
+        case '2': inType = EMBL; break;
+        case '3': inType = MACKE; break;
+        case '4': inType = SWISSPROT; break;
         case '5': exit(0); // ok - interactive mode only
         default: throw_errorf(16, "Unknown input format selection '%s'", choice);
     }
@@ -155,24 +149,24 @@ static void ask_for_conversion_params(int& argc, char**& argv, int& intype, int&
 
     Getstr(choice, LINESIZE);
     switch (choice[0]) {
-        case '1': outtype = GENBANK; break;
-        case '2': outtype = EMBL; break;
+        case '1': ouType = GENBANK; break;
+        case '2': ouType = EMBL; break;
         case '\0': // [default]
-        case '3': outtype = MACKE; break;
-        case '4': outtype = NEXUS; break;
-        case '5': outtype = PHYLIP; break;
-        case 'A': outtype = PHYLIP2; break;
-        case '6': outtype = GCG; break;
-        case '7': outtype = PRINTABLE; break;
+        case '3': ouType = MACKE; break;
+        case '4': ouType = NEXUS; break;
+        case '5': ouType = PHYLIP; break;
+        case 'A': ouType = PHYLIP2; break;
+        case '6': ouType = GCG; break;
+        case '7': ouType = PRINTABLE; break;
         case '8': exit(0); // ok - interactive mode only
         default: throw_errorf(66, "Unknown output format selection '%s'", choice);
     }
-    change_file_suffix(argv[2], temp, outtype);
-    if (outtype != GCG) {
+    change_file_suffix(argv[2], temp, ouType);
+    if (ouType != GCG) {
         fprintf(stderr, "\nOutput file name [%s]? ", temp);
         Getstr(temp, LINESIZE);
         if (str0len(temp) == 0)
-            change_file_suffix(argv[2], temp, outtype);
+            change_file_suffix(argv[2], temp, ouType);
     }
     argv[4] = nulldup(temp);
     argc = 5;
@@ -191,24 +185,25 @@ static bool is_abbrev_switch(const char *arg, const char *switchtext)  {
     return arg[0] == '-' && strcasecmp_start(arg+1, switchtext) == 0;
 }
 
-static int parse_type(const char *arg, const TypeSwitch*const& known_type, size_t count) {
-    for (size_t i = 0; i<count; ++i) {
-        const TypeSwitch& type = known_type[i];
+static Format parse_type(const char *arg) {
+    for (size_t i = 0; i<ARRAY_ELEMS(convertible_type); ++i) {
+        const TypeSwitch& type = convertible_type[i];
         if (is_abbrev_switch(arg, type.switchtext)) {
-            return type.format_num;
+            return type.format;
         }
     }
     return UNKNOWN;
 }
 
-static int parse_intype(const char *arg) {
-    int type = parse_type(arg, known_in_type, ARRAY_ELEMS(known_in_type));
+static Format parse_intype(const char *arg) {
+    Format type = parse_type(arg);
+    if (!is_input_format(type)) throw_errorf(65, "Unsupported input file type '%s'", arg);
     if (type == UNKNOWN) throw_errorf(67, "UNKNOWN input file type '%s'", arg);
     return type;
 }
 
-static int parse_outtype(const char *arg) {
-    int type = parse_type(arg, known_out_type, ARRAY_ELEMS(known_out_type));
+static Format parse_outtype(const char *arg) {
+    Format type = parse_type(arg);
     if (type == UNKNOWN) throw_errorf(68, "UNKNOWN output file type '%s'", arg);
     return type;
 }
@@ -216,7 +211,7 @@ static int parse_outtype(const char *arg) {
 static bool is_help_req(const char *arg) {
     return strcmp(arg, "-h") == 0 || strcmp(arg, "--help") == 0;
 }
-static bool command_line_conversion(int argc, char** argv, int& intype, int& outtype) {
+static bool command_line_conversion(int argc, char** argv, Format& inType, Format& ouType) {
     for (int c = 1; c<argc; c++) {
         if (is_help_req(argv[c])) {
             show_command_line_usage();
@@ -226,13 +221,13 @@ static bool command_line_conversion(int argc, char** argv, int& intype, int& out
 
     if (argc != 5) throw_errorf(69, "arb_convert_aln expects exactly 4 parameters (you specified %i). Try '--help'", argc-1);
 
-    intype  = parse_intype(argv[1]);
-    outtype = parse_outtype(argv[3]);
+    inType  = parse_intype(argv[1]);
+    ouType = parse_outtype(argv[3]);
 
     return true;
 }
 
-static void do_conversion(const char *inName, const char *ouName, int inType, int ouType) {
+static void do_conversion(const char *inName, const char *ouName, Format inType, Format ouType) {
 #ifdef CALOG
     if (ouType != GCG)
         fprintf(stderr, "\n\nConvert file %s to file %s.\n", inName, ouName);
@@ -251,11 +246,11 @@ static void do_conversion(const char *inName, const char *ouName, int inType, in
 int main(int argc, char *argv[]) {
     int exitcode = EXIT_SUCCESS;
     try {
-        int  intype  = UNKNOWN;
-        int  outtype = UNKNOWN;
+        Format inType = UNKNOWN;
+        Format ouType = UNKNOWN;
 
         if (argc < 2) {
-            ask_for_conversion_params(argc, argv, intype, outtype); // modifies argc/argv!
+            ask_for_conversion_params(argc, argv, inType, ouType); // modifies argc/argv!
 
             if (argc == 4) { // default output file
                 const char **argv_new = (const char **)calloc(sizeof(char *), 5);
@@ -264,11 +259,11 @@ int main(int argc, char *argv[]) {
                 argv_new[4] = "";
                 argv = (char **)argv_new;
             }
-            do_conversion(argv[2], argv[4], intype, outtype);
+            do_conversion(argv[2], argv[4], inType, ouType);
         }
         else {
-            if (command_line_conversion(argc, argv, intype, outtype)) {
-                do_conversion(argv[2], argv[4], intype, outtype);
+            if (command_line_conversion(argc, argv, inType, ouType)) {
+                do_conversion(argv[2], argv[4], inType, ouType);
             }
         }
     }

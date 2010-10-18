@@ -85,10 +85,10 @@ static void paup_print_header(const Paup& paup, FILE * ofp) {
     fputs("   OPTIONS\n      GAPMODE = MISSING\n      ;\n   MATRIX\n", ofp);
 }
 
-void to_paup(const char *inf, const char *outf, int informat) {
+void to_paup(const char *inf, const char *outf, Format inType) {
     // Convert from some format to NEXUS format.
-    if (!InputFormat::is_known(informat)) {
-        throw_conversion_not_supported(informat, NEXUS);
+    if (!is_input_format(inType)) {
+        throw_conversion_not_supported(inType, NEXUS);
     }
 
     Reader  reader(inf);
@@ -99,7 +99,7 @@ void to_paup(const char *inf, const char *outf, int informat) {
     paup_print_header(paup, ofp);
 
     while (1) {
-        InputFormatPtr in  = InputFormat::create(informat);
+        InputFormatPtr in  = InputFormat::create(inType);
         SeqPtr         seq = in->read_data(reader);
         if (seq.isNull()) break;
 

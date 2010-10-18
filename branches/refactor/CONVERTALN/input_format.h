@@ -15,10 +15,7 @@ struct InputFormat {
     virtual void reinit()                    = 0;
     virtual const char *get_id() const       = 0;
 
-    static SmartPtr<InputFormat> create(char informat);
-    static bool is_known(char informat) {
-        return informat == GENBANK || informat == EMBL || informat == SWISSPROT || informat == MACKE;
-    }
+    static SmartPtr<InputFormat> create(Format inType);
 };
 
 typedef SmartPtr<InputFormat> InputFormatPtr;

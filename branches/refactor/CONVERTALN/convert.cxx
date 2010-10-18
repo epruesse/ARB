@@ -9,8 +9,9 @@
 #include "genbank.h"
 #include "macke.h"
 
-InputFormatPtr InputFormat::create(char informat) {
-    switch (informat) {
+InputFormatPtr InputFormat::create(Format inType) {
+    ca_assert(is_input_format(inType));
+    switch (inType) {
         case GENBANK: return new GenBank;
         case SWISSPROT:
         case EMBL: return new Embl;
