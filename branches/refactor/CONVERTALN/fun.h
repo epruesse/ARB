@@ -13,12 +13,10 @@ enum Format {
 
     // output-only formats
     GCG,
-    NBRF,
     NEXUS,
     PHYLIP,
     PHYLIP2,
     PRINTABLE,
-    STADEN,
 
     UNKNOWN,
 };

@@ -11,13 +11,11 @@ static const char *format2name(Format type) {
         case GCG:       return "GCG";
         case GENBANK:   return "GENBANK";
         case MACKE:     return "MACKE";
-        case NBRF:      return "NBRF";
         case NEXUS:     return "NEXUS";
         case PHYLIP2:   return "PHYLIP2";
         case PHYLIP:    return "PHYLIP";
         case PRINTABLE: return "PRINTABLE";
         case SWISSPROT: return "SWISSPROT";
-        case STADEN:    return "STADEN";
 
         case UNKNOWN: ca_assert(0);
     }
@@ -155,9 +153,7 @@ static FormatSpec format_spec[] = {
     FORMATSPEC_OUT_ONLY(NEXUS),
     FORMATSPEC_OUT_ONLY(PHYLIP),
     FORMATSPEC_OUT_ONLY(PHYLIP2),
-    FORMATSPEC_OUT_ONLY(NBRF),
     FORMATSPEC_OUT_ONLY(PRINTABLE),
-    FORMATSPEC_OUT_ONLY(STADEN),
 };
 static const int fcount = ARRAY_ELEMS(format_spec);
 
@@ -172,9 +168,7 @@ enum FormatNum { // same order as above
     NUM_PHYLIP,
 
     NUM_PHYLIP2,
-    NUM_NBRF,
     NUM_PRINTABLE,
-    NUM_STADEN,
 
     FORMATNUM_COUNT,
 };
@@ -369,19 +363,8 @@ void TEST_0_converter() {
 
     NOT_SUPPORTED(GENBANK, SWISSPROT);
 
-    NOT_SUPPORTED(GENBANK, NBRF);
-    NOT_SUPPORTED(GENBANK, STADEN);
-
-    NOT_SUPPORTED(MACKE, NBRF);
-    NOT_SUPPORTED(MACKE, STADEN);
-
-    NOT_SUPPORTED(EMBL, NBRF);
-    NOT_SUPPORTED(EMBL, STADEN);
-
     NOT_SUPPORTED(SWISSPROT, GENBANK);
     NOT_SUPPORTED(SWISSPROT, EMBL);
-    NOT_SUPPORTED(SWISSPROT, NBRF);
-    NOT_SUPPORTED(SWISSPROT, STADEN);
 
     // unsupported self-conversions
     NOT_SUPPORTED(MACKE, MACKE);
