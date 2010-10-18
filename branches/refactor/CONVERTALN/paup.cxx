@@ -1,4 +1,5 @@
 #include "input_format.h"
+#include "reader.h"
 #include "paup.h"
 #include "ali.h"
 
@@ -59,13 +60,25 @@ static void paup_print_line(const Seq& seq, int offset, int first_line, FILE * f
     fputc('\n', fp);
 }
 
-static void paup_print_header(const Paup& paup, FILE * ofp) {
-    // Print out the header of each paup format.
+static void paup_print_headerstart(FILE *ofp) {
     fputs("#NEXUS\n", ofp);
     fprintf(ofp, "[! RDP - the Ribosomal Database Project, (%s).]\n", today_date());
     fputs("[! To get started, send HELP to rdp@info.mcs.anl.gov ]\n", ofp);
     fputs("BEGIN DATA;\n   DIMENSIONS\n", ofp);
-    fputs("      NTAX =       \n      NCHAR =       \n      ;\n", ofp);
+}
+
+static void paup_print_header_counters(FILE *ofp) {
+    fprintf(ofp, "      NTAX = %6s\n      NCHAR = %6s\n      ;\n", "", ""); 
+}
+static void paup_print_header_counters(FILE *ofp, int total_seq, int maxsize) {
+    fprintf(ofp, "      NTAX = %6d\n      NCHAR = %6d\n      ;\n", total_seq, maxsize);
+}
+
+static void paup_print_header(const Paup& paup, FILE * ofp) {
+    // Print out the header of each paup format.
+    paup_print_headerstart(ofp);
+    paup_print_header_counters(ofp);
+
     fputs("   FORMAT\n      LABELPOS = LEFT\n", ofp);
     fprintf(ofp, "      MISSING = .\n      EQUATE = \"%s\"\n", paup.equate);
     fprintf(ofp, "      INTERLEAVE\n      DATATYPE = RNA\n      GAP = %c\n      ;\n", paup.gap);
@@ -78,17 +91,16 @@ void to_paup(const char *inf, const char *outf, int informat) {
         throw_conversion_not_supported(informat, NEXUS);
     }
 
-    FILE        *IFP = open_input_or_die(inf);
-    FILE_BUFFER  ifp = create_FILE_BUFFER(inf, IFP);
-    FILE        *ofp = open_output_or_die(outf);
-
-    Paup paup;
+    Reader  reader(inf);
+    FILE   *ofp = open_output_or_die(outf);
+    Paup    paup;
+    Alignment ali;
+    
     paup_print_header(paup, ofp);
 
-    Alignment ali;
     while (1) {
-        SmartPtr<InputFormat> in       = InputFormat::create(informat);
-        SeqPtr       seq = in->get_data(ifp);
+        InputFormatPtr in  = InputFormat::create(informat);
+        SeqPtr         seq = in->read_data(reader);
         if (seq.isNull()) break;
 
         {
@@ -121,18 +133,12 @@ void to_paup(const char *inf, const char *outf, int informat) {
     }
 
     fputs("      ;\nENDBLOCK;\n", ofp);
+
     // rewrite output header
     rewind(ofp);
-    fputs("#NEXUS\n", ofp);
-
-    fprintf(ofp, "[! RDP - the Ribosomal Database Project, (%s).]\n", today_date());
-
-    fputs("[! To get started, send HELP to rdp@info.mcs.anl.gov ]\n", ofp);
-
-    fputs("BEGIN DATA;\n   DIMENSIONS\n", ofp);
-    fprintf(ofp, "      NTAX = %6d\n      NCHAR = %6d\n      ;\n", total_seq, maxsize);
+    paup_print_headerstart(ofp);
+    paup_print_header_counters(ofp, total_seq, maxsize);
 
     log_processed(total_seq);
-    destroy_FILE_BUFFER(ifp);
     fclose(ofp);
 }

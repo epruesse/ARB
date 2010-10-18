@@ -69,7 +69,7 @@ public:
     }
 
     void set_id(const char *id_) { freedup(id, id_); }
-    const char *get_id() const { return id; }
+    const char *get_id() const { ca_assert(id); return id; }
 
     void add(char c) {
         if (len >= max) {

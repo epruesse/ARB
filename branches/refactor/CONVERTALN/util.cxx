@@ -2,31 +2,22 @@
 #include "fun.h"
 #include "defs.h"
 #include "global.h"
+#include "reader.h"
 
 #include <cstdarg>
 #include <cerrno>
 
-bool scan_token(const char *from, char *to) { // __ATTR__USERESULT
+bool scan_token(char *to, const char *from) { // __ATTR__USERESULT
     return sscanf(from, "%s", to) == 1;
 }
 
-void scan_token_or_die(const char *from, char *to, FILE_BUFFER *fb) {
-    if (!scan_token(from, to)) {
-        const char *line_error;
-        if (fb) {
-            line_error = FILE_BUFFER_make_error(*fb, true, "expected a token, but found none");
-        }
-        else {
-            line_error = "expected a token, but found none (source location unknown)";
-        }
-
-#if defined(ASSERTION_USED)
-        fputs(line_error, stderr);
-        fputc('\n', stderr);
-        ca_assert(0);
-#endif // ASSERTION_USED
-        throw_error(88, line_error);
+void scan_token_or_die(char *to, const char *from) {
+    if (!scan_token(to, from)) {
+        throw_error(88, "expected to see a token here");
     }
+}
+void scan_token_or_die(char *to, Reader& reader, int offset) {
+    scan_token_or_die(to, reader.line()+offset);
 }
 
 void throw_error(int error_num, const char *error_message) { // __ATTR__NORETURN
@@ -315,5 +306,15 @@ int skip_strain(const char *str, char expect_behind) { return findStrain(str, ex
 const char *stristr(const char *str, const char *substring) {
     int offset = find_pattern(str, substring);
     return offset >= 0 ? str+offset : NULL;
+}
+
+int ___lookup_keyword(const char *keyword, const char * const *lookup_table, int lookup_table_size) {
+    // returns the index [0..n-1] of 'keyword' in lookup_table
+    // or -1 if not found.
+
+    for (int i = 0; i<lookup_table_size; ++i) {
+        if (str_equal(keyword, lookup_table[i])) return i;
+    }
+    return -1;
 }
 

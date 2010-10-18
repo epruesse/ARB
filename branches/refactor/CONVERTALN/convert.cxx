@@ -9,7 +9,7 @@
 #include "genbank.h"
 #include "macke.h"
 
-SmartPtr<InputFormat> InputFormat::create(char informat) {
+InputFormatPtr InputFormat::create(char informat) {
     switch (informat) {
         case GENBANK: return new GenBank;
         case SWISSPROT:
@@ -20,10 +20,10 @@ SmartPtr<InputFormat> InputFormat::create(char informat) {
     return NULL;
 }
 
-SeqPtr GenBank::get_data(FILE_BUFFER ifp) {
+SeqPtr GenBank::read_data(Reader& reader) {
     SeqPtr seq = new Seq;
-    char eof = genbank_in_locus(*this, *seq, ifp);
-    if (eof == EOF) {
+    genbank_in_simple(*this, *seq, reader);
+    if (reader.failed() || seq->is_empty()) {
         seq.SetNull();
     }
     else {
@@ -34,11 +34,11 @@ SeqPtr GenBank::get_data(FILE_BUFFER ifp) {
     return seq;
 }
 
-SeqPtr Embl::get_data(FILE_BUFFER ifp) {
+SeqPtr Embl::read_data(Reader& reader) {
     SeqPtr seq = new Seq;
-    char            eof      = embl_in_id(*this, *seq, ifp);
+    embl_in_simple(*this, *seq, reader);
 
-    if (eof == EOF) {
+    if (reader.failed() || seq->is_empty()) {
         seq.SetNull();
     }
     else {
@@ -49,10 +49,10 @@ SeqPtr Embl::get_data(FILE_BUFFER ifp) {
     return seq;
 }
 
-SeqPtr Macke::get_data(FILE_BUFFER ifp) {
+SeqPtr Macke::read_data(Reader& reader) {
     SeqPtr seq = new Seq;
-    char eof = macke_in_name_and_data(*this, *seq, ifp);
-    if (eof == EOF) {
+    macke_in_simple(*this, *seq, reader);
+    if (reader.failed() || seq->is_empty()) {
         seq.SetNull();
     }
     else {

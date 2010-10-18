@@ -10,6 +10,10 @@
 #ifndef REFS_H
 #include "refs.h"
 #endif
+#ifndef READER_H
+#include "reader.h"
+#endif
+
 
 struct GenbankRef {
     char *ref;
@@ -77,9 +81,31 @@ struct GenBank : public InputFormat, public RefContainer<GenbankRef> {
     }
 
     // InputFormat interface
-    SeqPtr get_data(FILE_BUFFER ifp);
+    SeqPtr read_data(Reader& reader);
     void reinit() { INPLACE_RECONSTRUCT(GenBank, this); }
+    const char *get_id() const { return locus; }
 };
+
+class GenbankReader : public Reader, public InputFormatReader {
+public:
+    GenbankReader(const char *inf) : Reader(inf) {}
+
+    bool read_seq_data(Seq& seq) {
+        genbank_origin(seq, *this);
+        return ok();
+    }
+    const char *get_key_word(int offset) {
+        char key[TOKENSIZE];
+        genbank_key_word(line() + offset, 0, key, TOKENSIZE);
+        return shorttimecopy(key);
+    }
+    bool read_one_entry(InputFormat& data, Seq& seq) __ATTR__USERESULT {
+        GenBank& gbk = reinterpret_cast<GenBank&>(data);
+        genbank_in(gbk, seq, *this);
+        return ok();
+    }
+};
+
 
 #else
 #error genbank.h included twice

@@ -3,6 +3,7 @@
 #include "macke.h"
 #include "wrap.h"
 
+
 #define MACKELIMIT 10000
 
 static void macke_continue_line(const char *key, char *oldname, char*& var, Reader& reader) {
@@ -32,27 +33,7 @@ static void macke_one_entry_in(Reader& reader, const char *key, char *oldname, c
 
     macke_continue_line(key, oldname, var, reader);
 }
-char *macke_origin(Seq& seq, const char *key, char *line, FILE_BUFFER fp) { // __ATTR__DEPRECATED
-    // Read in sequence data in macke file.
-    ca_assert(seq.is_empty());
-
-    char  name[TOKENSIZE];
-    int   index = macke_abbrev(line, name, 0);
-    char *eof   = line;
-
-    for (; eof != NULL && str_equal(key, name);) { // read in sequence data line by line
-        int seqnum;
-        char data[LINESIZE];
-        ASSERT_RESULT(int, 2, sscanf(line + index, "%d%s", &seqnum, data));
-        for (int indj = seq.get_len(); indj < seqnum; indj++) seq.add('.');
-        for (int indj = 0; data[indj] != '\n' && data[indj] != '\0'; indj++) seq.add(data[indj]);
-        eof                    = Fgetline(line, LINESIZE, fp);
-        if (eof != NULL) index = macke_abbrev(line, name, 0);
-    }
-
-    return eof;
-}
-void macke_origin(Seq& seq, const char *key, Reader& reader) {
+void macke_origin(Seq& seq, const char *key, Reader& reader) { 
     // Read in sequence data in macke file.
     ca_assert(seq.is_empty());
 
@@ -96,50 +77,39 @@ bool macke_is_continued_remark(const char *str) {
     return strncmp(str, ":  ", 3) == 0;
 }
 
-char macke_in_name_and_data(Macke& macke, Seq& seq, FILE_BUFFER fp) {
+void macke_in_simple(Macke& macke, Seq& seq, Reader& reader) {
     // Read in next sequence name and data only.
-    static char line[LINESIZE];
-    static int  first_time = 1;  // @@@ use Reader to remember state ?
-
-    char  name[TOKENSIZE];
-    char  data[LINESIZE];
-    char *eof;
-    int   seqnum;
-    int   index, indj;
-
-    // skip other information, file index points to sequence data
-    if (first_time) {
-        eof = skipOverLinesThat(line, LINESIZE, fp, isMackeHeader);        // skip all "#" lines to where sequence data is
-        first_time = 0;
-    }
-    else if (line[0] == EOF) {
-        line[0] = EOF + 1;
-        first_time = 1;
-        return (EOF);
-    }
+    // (sequence name is stored in 'macke.seqabbr')
 
     ca_assert(seq.is_empty());
+    freenull(macke.seqabbr);
+    
+    if (reader.line()) reader.skipOverLinesThat(isMackeHeader); // skip header
 
     // read in sequence data line by line
-    freenull(macke.seqabbr);
-    for (index = macke_abbrev(line, name, 0), macke.seqabbr = nulldup(name);
-         line[0] != EOF && str_equal(macke.seqabbr, name);
-         )
-    {
-        ASSERT_RESULT(int, 2, sscanf(line + index, "%d%s", &seqnum, data));
-        for (indj = seq.get_len(); indj < seqnum; indj++)
-            seq.add('.');
-        for (indj = 0; data[indj] != '\n' && data[indj] != '\0'; indj++) {
-            seq.add(data[indj]);
+    for (; reader.line() ;) {
+        int index;
+        {
+            char name[TOKENSIZE];
+            index = macke_abbrev(reader.line(), name, 0);
+            if (macke.seqabbr) {
+                if (!str_equal(macke.seqabbr, name)) break; // stop if reached different abbrev
+            }
+            else {
+                macke.seqabbr = nulldup(name);
+            }
+        }
+        {
+            int  seqnum;
+            char data[LINESIZE];
+            ASSERT_RESULT(int, 2, sscanf(reader.line() + index, "%d%s", &seqnum, data));
+            for (int indj = seq.get_len(); indj < seqnum; indj++) seq.add('.');
+            for (int indj = 0; data[indj] != '\n' && data[indj] != '\0'; indj++) seq.add(data[indj]);
         }
 
-        if ((eof = Fgetline(line, LINESIZE, fp)) != NULL) index = macke_abbrev(line, name, 0);
-        else line[0] = EOF;
+        ++reader;
     }
-
-    return EOF + 1;
 }
-
 void macke_out_header(FILE * fp) {
     // Output the Macke format header.
     fputs("#-\n#-\n#-\teditor\n", fp);
@@ -199,51 +169,29 @@ static bool macke_print_prefixed_line_if_content(const Macke& macke, FILE *fp, c
     return true;
 }
 
-static int macke_in_one_line(const char *Str) {
-    // Check if Str should be in one line.
+static const char *genbankEntryComments[] = {
+    "KEYWORDS",
+    "GenBank ACCESSION",
+    "auth",
+    "title",
+    "jour",
+    "standard",
+    "Source of strain",
+    "Former name",
+    "Alternate name",
+    "Common name",
+    "Host organism",
+    "RDP ID",
+    "Sequencing methods",
+    "3' end complete",
+    "5' end complete", 
+};
+
+static bool macke_is_genbank_entry_comment(const char *Str) {
     char keyword[TOKENSIZE];
-
-    int iskey;
-
     macke_key_word(Str, 0, keyword, TOKENSIZE);
-    iskey = 0;
-    if (str_equal(keyword, "KEYWORDS"))
-        iskey = 1;
-    else if (str_equal(keyword, "GenBank ACCESSION"))
-        iskey = 1;
-    else if (str_equal(keyword, "auth"))
-        iskey = 1;
-    else if (str_equal(keyword, "title"))
-        iskey = 1;
-    else if (str_equal(keyword, "jour"))
-        iskey = 1;
-    else if (str_equal(keyword, "standard"))
-        iskey = 1;
-    else if (str_equal(keyword, "Source of strain"))
-        iskey = 1;
-    else if (str_equal(keyword, "Former name"))
-        iskey = 1;
-    else if (str_equal(keyword, "Alternate name"))
-        iskey = 1;
-    else if (str_equal(keyword, "Common name"))
-        iskey = 1;
-    else if (str_equal(keyword, "Host organism"))
-        iskey = 1;
-    else if (str_equal(keyword, "RDP ID"))
-        iskey = 1;
-    else if (str_equal(keyword, "Sequencing methods"))
-        iskey = 1;
-    else if (str_equal(keyword, "3' end complete"))
-        iskey = 1;
-    else if (str_equal(keyword, "5' end complete"))
-        iskey = 1;
 
-    // is-key then could be more than one line
-    // otherwise, must be in one line
-    if (iskey)
-        return (0);
-    else
-        return (1);
+    return lookup_keyword(keyword, genbankEntryComments) >= 0;
 }
 
 static void macke_print_keyword_rem(const Macke& macke, int index, FILE * fp) { // @@@ WRAPPER
@@ -275,14 +223,11 @@ void macke_seq_info_out(const Macke& macke, FILE * fp) {
 
     // print out remarks, wrap around if more than MACKEMAXLINE columns
     for (int indi = 0; indi < macke.get_rem_count(); indi++) {
-        // Check if it is general comment or GenBank entry
-        // if general comment, macke_in_one_line return(1).
-        if (macke_in_one_line(macke.get_rem(indi))) {
-            macke_print_prefixed_line(macke, fp, "rem", macke.get_rem(indi));
-        }
-        else {
-            // if GenBank entry comments
+        if (macke_is_genbank_entry_comment(macke.get_rem(indi))) {
             macke_print_keyword_rem(macke, indi, fp);
+        }
+        else { // general comment
+            macke_print_prefixed_line(macke, fp, "rem", macke.get_rem(indi));
         }
     }
 }

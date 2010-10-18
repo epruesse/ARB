@@ -31,6 +31,9 @@ void throw_conversion_failure(int input_format, int output_format) {
     throw_errorf(91, "Conversion from %s to %s fails",
                  format2name(input_format), format2name(output_format));
 }
+void throw_incomplete_entry() {
+    throw_error(84, "Reached EOF before complete entry has been read");
+}
 
 static int log_processed_counter = 0;
 static int log_seq_counter       = 0;
@@ -123,7 +126,6 @@ void convert(const char *inf, const char *outf, int intype, int outype) {
 #if (UNIT_TESTS == 1)
 #include <arbdbt.h> // before test_unit.h!
 #include <test_unit.h>
-#include <arb_defs.h>
 
 struct FormatSpec {
     char        id;             // GENBANK, MACKE, ...
@@ -254,7 +256,7 @@ static void test_expected_conversion(const char *file, const char *flavor) {
 static const char *test_convert(const char *inf, const char *outf, int intype, int outype) {
     const char *error = NULL;
     try { convert(inf, outf, intype, outype); }
-    catch (Convaln_exception& exc) { error = GBS_global_string("%s (#%i)", exc.error, exc.error_code); }
+    catch (Convaln_exception& exc) { error = GBS_global_string("%s (#%i)", exc.get_msg(), exc.get_code()); }
     return error;
 }
 

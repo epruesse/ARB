@@ -1,4 +1,5 @@
 #include "input_format.h"
+#include "reader.h"
 #include "ali.h"
 
 #define PRTLENGTH   62
@@ -39,15 +40,14 @@ void to_printable(const char *inf, const char *outf, int informat) {
         throw_conversion_not_supported(informat, PRINTABLE);
     }
 
-    FILE        *IFP = open_input_or_die(inf);
-    FILE_BUFFER  ifp = create_FILE_BUFFER(inf, IFP);
-    FILE        *ofp = open_output_or_die(outf);
+    Reader reader(inf);
+    FILE *ofp = open_output_or_die(outf);
 
     Alignment ali;
     while (1) {
-        SmartPtr<InputFormat> in = InputFormat::create(informat);
+        InputFormatPtr in  = InputFormat::create(informat);
+        SeqPtr         seq = in->read_data(reader);
 
-        SeqPtr seq = in->get_data(ifp);
         if (seq.isNull()) break;
         ali.add(seq);
     }
@@ -84,7 +84,6 @@ void to_printable(const char *inf, const char *outf, int informat) {
     }
 
     log_processed(total_seq);
-    destroy_FILE_BUFFER(ifp);
     fclose(ofp);
 }
 

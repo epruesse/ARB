@@ -13,39 +13,77 @@
 #ifndef SEQ_H
 #include "seq.h"
 #endif
+#ifndef INPUT_FORMAT_H
+#include "input_format.h"
+#endif
 
-class Reader {
+
+class Reader : Noncopyable {
     FILE *fp;
 
-    void read() { eof = Fgetline(linebuf, LINESIZE, fbuf); }
+    char *curr;    // == NULL means "EOF reached"
+    bool  failure;
+
+    void reset() {
+        curr    = linebuf;
+        failure = false;
+    }
+
+    void set_curr(char *to) {
+        curr = to; // @@@ use as breakpoint
+    }
+
+    void read() {
+        if (!curr) {
+            failure = true; // read _beyond_ EOF
+        }
+        else {
+            ca_assert(!failure); // attempt to read after failure
+            char *next_line = Fgetline(linebuf, LINESIZE, fbuf);
+            set_curr(next_line);
+        }
+    }
+
 
 protected:
 
-    FILE_BUFFER  fbuf;
-    char         linebuf[LINESIZE];
-    char        *eof; // @@@ rename
+    FILE_BUFFER fbuf;
+    char        linebuf[LINESIZE];
 
 public:
     Reader(const char *inf);
     virtual ~Reader();
 
-    const char *line() const { return eof; }
-    Reader& operator++() { if (eof) read(); return *this; }
+#if 1
+#define FBUF_DEPR __ATTR__DEPRECATED    
+#else
+#define FBUF_DEPR     
+#endif
+    FILE_BUFFER getfilebuf() FBUF_DEPR { return fbuf; }
+    char *getlinebuf() FBUF_DEPR { return linebuf; }
+    void setcurr(char *curr_) FBUF_DEPR { set_curr(curr_); }
 
-    template<typename PRED>
-    void skipOverLinesThat(PRED match_condition) {
+    void rewind() { FILE_BUFFER_rewind(fbuf); reset(); read(); }
+
+    Reader& operator++() { read(); return *this; }
+
+    const char *line() const { return curr; }
+    char *line_WRITABLE() { return curr; }
+
+    bool failed() const { return failure; }
+    bool ok() const { return !failure; }
+
+    void abort() { failure = true; set_curr(NULL); }
+
+    template<class PRED>
+    void skipOverLinesThat(const PRED& match_condition) {
         while (match_condition(line()))
             ++(*this);
     }
 };
 
-struct DataReader {
-    virtual ~DataReader() {}
-    virtual SeqPtr read_sequence_data() = 0;
-};
-
 template<typename PRED>
-char *skipOverLinesThat(char *buffer, size_t buffersize, FILE_BUFFER& fb, PRED line_predicate) {
+char *skipOverLinesThat_DEPRECATED(char *buffer, size_t buffersize, FILE_BUFFER& fb, PRED line_predicate) {
     // returns a pointer to the first non-matching line or NULL
     // @@@ WARNING: unconditionally skips the first line
     char *result;
@@ -63,6 +101,13 @@ inline const char *shorttimekeep(char *heapcopy) {
     return &*keep;
 }
 inline const char *shorttimecopy(const char *nocopy) { return shorttimekeep(nulldup(nocopy)); }
+
+struct InputFormatReader {
+    virtual ~InputFormatReader() {}
+
+    virtual bool read_seq_data(Seq& seq) = 0;
+    virtual bool read_one_entry(InputFormat& data, Seq& seq) = 0;
+};
 
 #else
 #error reader.h included twice

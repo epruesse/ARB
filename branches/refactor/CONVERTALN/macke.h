@@ -8,9 +8,6 @@
 #ifndef MACKE_H
 #define MACKE_H
 
-#ifndef INPUT_FORMAT_H
-#include "input_format.h"
-#endif
 #ifndef READER_H
 #include "reader.h"
 #endif
@@ -114,14 +111,15 @@ public:
     }
 
     // InputFormat interface
-    SeqPtr get_data(FILE_BUFFER ifp);
+    SeqPtr read_data(Reader& reader);
     void reinit() { INPLACE_RECONSTRUCT(Macke, this); }
+    const char *get_id() const { return seqabbr; }
 };
 
 // --------------------
 //      MackeReader
 
-class MackeReader : public DataReader {
+class MackeReader : public InputFormatReader {
     bool        firstRead;
     char       *inName;
     const char *seqabbr; // owner Macke.seqabbr (set by mackeIn())
@@ -129,6 +127,8 @@ class MackeReader : public DataReader {
     Reader *r1, *r2, *r3;
     void start_reading();
     void stop_reading();
+
+    bool mackeIn(Macke& macke);
 
 public:
 
@@ -145,14 +145,15 @@ public:
         free(inName);
     }
 
-    bool mackeIn(Macke& macke);
-
-    SeqPtr read_sequence_data() {
-        SeqPtr seq = new Seq;
-
+    bool read_seq_data(Seq& seq) {
         ca_assert(seqabbr);
-        macke_origin(*seq, seqabbr, *r2);
-        return seq;
+        macke_origin(seq, seqabbr, *r2);
+        return r2->ok();
+    }
+
+    bool read_one_entry(InputFormat& data, Seq& seq) {
+        Macke& macke = reinterpret_cast<Macke&>(data);
+        return mackeIn(macke) && read_seq_data(seq);
     }
 };
 
@@ -167,7 +168,7 @@ class Not {
     LinePredicate p;
 public:
     Not(LinePredicate p_) : p(p_) {}
-    bool operator()(const char *line) { return !p(line); }
+    bool operator()(const char *line) const { return !p(line); }
 };
 
 #else

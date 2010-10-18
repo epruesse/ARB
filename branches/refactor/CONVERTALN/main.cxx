@@ -10,7 +10,8 @@
 #include "defs.h"
 #include "fun.h"
 #include "global.h"
-#include <arb_defs.h>
+
+Convaln_exception *Convaln_exception::thrown = NULL;
 
 struct TypeSwitch { const char *switchtext; int format_num; };
 
@@ -272,7 +273,7 @@ int main(int argc, char *argv[]) {
         }
     }
     catch (Convaln_exception& err) {
-        fprintf(stderr, "ERROR(%d): %s\n", err.error_code, err.error);
+        fprintf(stderr, "ERROR(%d): %s\n", err.get_code(), err.get_msg());
         exitcode = EXIT_FAILURE;
     }
     return exitcode;

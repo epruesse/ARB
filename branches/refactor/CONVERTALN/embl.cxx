@@ -5,67 +5,56 @@
 
 extern int warning_out;
 
-static char *embl_continue_line(char *pattern, char*& Str, char *line, FILE_BUFFER fp) {
+static void embl_continue_line(char *pattern, char*& Str, Reader& reader) {
     // if there are (numb) blanks at the beginning of line,
     // it is a continue line of the current command.
     int  ind;
-    char key[TOKENSIZE], *eof, temp[LINESIZE];
+    char key[TOKENSIZE], temp[LINESIZE];
 
     // check continue lines
-    for (eof = Fgetline(line, LINESIZE, fp); eof != NULL; eof = Fgetline(line, LINESIZE, fp)) {
-        if (!has_content(line))
-            continue;
+    for (++reader; reader.line(); ++reader) {
+        if (has_content(reader.line())) {
+            embl_key_word(reader.line(), 0, key, TOKENSIZE);
+            if (!str_equal(pattern, key)) break;
 
-        embl_key_word(line, 0, key, TOKENSIZE);
-
-        if (!str_equal(pattern, key))
-            break;
-
-        // remove end-of-line, if there is any
-        ind = Skip_white_space(line, p_nonkey_start);
-        strcpy(temp, (line + ind));
-        skip_eolnl_and_append_spaced(Str, temp);
+            // remove end-of-line, if there is any
+            ind = Skip_white_space(reader.line(), p_nonkey_start);
+            strcpy(temp, reader.line() + ind);
+            skip_eolnl_and_append_spaced(Str, temp);
+        }
     }
-
-    return (eof);
 }
 
-static char *embl_one_entry(char *line, FILE_BUFFER fp, char*& entry, char *key) {
+static void embl_one_entry(Reader& reader, char*& entry, char *key) {
     // Read in one embl entry lines.
-    int   index;
-    char *eof;
-
-    index = Skip_white_space(line, p_nonkey_start);
-    freedup(entry, line + index);
-    eof = embl_continue_line(key, entry, line, fp);
-
-    return (eof);
+    int index = Skip_white_space(reader.line(), p_nonkey_start);
+    freedup(entry, reader.line() + index);
+    embl_continue_line(key, entry, reader);
 }
 
-static char *embl_date(Embl& embl, char *line, FILE_BUFFER fp) { // @@@ use Reader
+static void embl_date(Embl& embl, Reader& reader) {
     // Read in embl DATE lines.
-    int   index;
-    char *eof, key[TOKENSIZE];
+    int index = Skip_white_space(reader.line(), p_nonkey_start);
+    freedup(embl.dateu, reader.line() + index);
 
-    index = Skip_white_space(line, p_nonkey_start);
-    freedup(embl.dateu, line + index);
+    ++reader;
 
-    eof = Fgetline(line, LINESIZE, fp);
-    embl_key_word(line, 0, key, TOKENSIZE);
+    char key[TOKENSIZE];
+    embl_key_word(reader.line(), 0, key, TOKENSIZE);
     if (str_equal(key, "DT")) {
-        index = Skip_white_space(line, p_nonkey_start);
-        freedup(embl.datec, line + index);
+        index = Skip_white_space(reader.line(), p_nonkey_start);
+        freedup(embl.datec, reader.line() + index);
         // skip the rest of DT lines
         do {
-            eof = Fgetline(line, LINESIZE, fp);
-            embl_key_word(line, 0, key, TOKENSIZE);
-        } while (eof != NULL && str_equal(key, "DT"));
-        return (eof);
+            ++reader;
+            if (!reader.line()) break;
+            embl_key_word(reader.line(), 0, key, TOKENSIZE);
+        }
+        while (str_equal(key, "DT"));
     }
     else {
         // always expect more than two DT lines
         warning(33, "one DT line is missing");
-        return (eof);
     }
 }
 
@@ -93,7 +82,7 @@ static void embl_correct_title(Emblref& ref) {
     }
 }
 
-static int embl_comment_key(char *line, char *key) {
+static int embl_comment_key(const char *line, char *key) {
     // Get the subkey_word in comment lines beginning at index.
     int indi, indj;
 
@@ -113,249 +102,201 @@ static int embl_comment_key(char *line, char *key) {
     return (indi + 1);
 }
 
-static char *embl_one_comment_entry(FILE_BUFFER fp, char*& datastring, char *line, int start_index) {
+inline bool is_embl_comment(const char *line) { return line && line[0] == 'C' && line[1] == 'C'; }
+
+static void embl_one_comment_entry(char*& datastring, int start_index, Reader& reader) {
     // Read in one embl sub-entry in comments lines.
-    // If not RDP defined comment, should not call this function.
-    int   index;
-    char *eof, temp[LINESIZE];
+    // If it's not a RDP defined comment, you should not call this function.
 
-    index = Skip_white_space(line, start_index);
-    freedup(datastring, line + index);
+    int index = Skip_white_space(reader.line(), start_index);
+    freedup(datastring, reader.line() + index);
 
-    // check continue lines
-    for (eof = Fgetline(line, LINESIZE, fp);
-         eof != NULL && line[0] == 'C' && line[1] == 'C' && count_spaces(line + 2) >= RDP_CONTINUED_INDENT + RDP_SUBKEY_INDENT; eof = Fgetline(line, LINESIZE, fp)) {
-        // remove end-of-line, if there is any
-        index = Skip_white_space(line, p_nonkey_start + RDP_SUBKEY_INDENT + RDP_CONTINUED_INDENT);
-        strcpy(temp, (line + index));
+    const int expectedIndent = RDP_CONTINUED_INDENT+RDP_SUBKEY_INDENT;
+
+    for (++reader;
+         is_embl_comment(reader.line()) && count_spaces(reader.line() + 2) >= expectedIndent;
+         ++reader)
+    {
+        index = Skip_white_space(reader.line(), p_nonkey_start + expectedIndent);
+        
+        char temp[LINESIZE];
+        strcpy(temp, reader.line() + index);
         skip_eolnl_and_append_spaced(datastring, temp);
     }
-
-    return eof;
 }
 
-static char *embl_comments(Embl& embl, char *line, FILE_BUFFER fp) { // @@@ use Reader
+static void embl_comments(Embl& embl, Reader& reader) {
     // Read in embl comment lines.
-    int   index, offset;
-    char *eof;
-    char  key[TOKENSIZE];
-
     OrgInfo& orginf = embl.comments.orginf;
     SeqInfo& seqinf = embl.comments.seqinf;
 
-    for (; line[0] == 'C' && line[1] == 'C';) {
-        index = Skip_white_space(line, 5);
-        offset = embl_comment_key(line + index, key);
-        index = Skip_white_space(line, index + offset);
-        if (str_equal(key, "Source of strain:")) {
-            eof = embl_one_comment_entry(fp, orginf.source, line, index);
-        }
-        else if (str_equal(key, "Culture collection:")) {
-            eof = embl_one_comment_entry(fp, orginf.cultcoll, line, index);
-        }
-        else if (str_equal(key, "Former name:")) {
-            eof = embl_one_comment_entry(fp, orginf.formname, line, index);
-        }
-        else if (str_equal(key, "Alternate name:")) {
-            eof = embl_one_comment_entry(fp, orginf.nickname, line, index);
-        }
-        else if (str_equal(key, "Common name:")) {
-            eof = embl_one_comment_entry(fp, orginf.commname, line, index);
-        }
-        else if (str_equal(key, "Host organism:")) {
-            eof = embl_one_comment_entry(fp, orginf.hostorg, line, index);
-        }
-        else if (str_equal(key, "RDP ID:")) {
-            eof = embl_one_comment_entry(fp, seqinf.RDPid, line, index);
-        }
-        else if (str_equal(key, "Corresponding GenBank entry:")) {
-            eof = embl_one_comment_entry(fp, seqinf.gbkentry, line, index);
-        }
-        else if (str_equal(key, "Sequencing methods:")) {
-            eof = embl_one_comment_entry(fp, seqinf.methods, line, index);
-        }
-        else if (str_equal(key, "5' end complete:")) {
-            scan_token_or_die(line + index, key, &fp);
-            if (key[0] == 'Y')
-                seqinf.comp5 = 'y';
-            else
-                seqinf.comp5 = 'n';
+    for (; is_embl_comment(reader.line()) ;) {
+        char key[TOKENSIZE];
+        int  index  = Skip_white_space(reader.line(), 5);
+        int  offset = embl_comment_key(reader.line() + index, key);
+        index       = Skip_white_space(reader.line(), index + offset);
 
-            eof = Fgetline(line, LINESIZE, fp);
+        if      (str_equal(key, "Source of strain:"))            embl_one_comment_entry(orginf.source, index, reader);
+        else if (str_equal(key, "Culture collection:"))          embl_one_comment_entry(orginf.cultcoll, index, reader);
+        else if (str_equal(key, "Former name:"))                 embl_one_comment_entry(orginf.formname, index, reader);
+        else if (str_equal(key, "Alternate name:"))              embl_one_comment_entry(orginf.nickname, index, reader);
+        else if (str_equal(key, "Common name:"))                 embl_one_comment_entry(orginf.commname, index, reader);
+        else if (str_equal(key, "Host organism:"))               embl_one_comment_entry(orginf.hostorg, index, reader);
+        else if (str_equal(key, "RDP ID:"))                      embl_one_comment_entry(seqinf.RDPid, index, reader);
+        else if (str_equal(key, "Corresponding GenBank entry:")) embl_one_comment_entry(seqinf.gbkentry, index, reader);
+        else if (str_equal(key, "Sequencing methods:"))          embl_one_comment_entry(seqinf.methods, index, reader);
+        else if (str_equal(key, "5' end complete:")) {
+            scan_token_or_die(key, reader, index);
+            if (key[0] == 'Y') seqinf.comp5 = 'y';
+            else               seqinf.comp5 = 'n';
+            ++reader;
         }
         else if (str_equal(key, "3' end complete:")) {
-            scan_token_or_die(line + index, key, &fp);
-            if (key[0] == 'Y')
-                seqinf.comp3 = 'y';
-            else
-                seqinf.comp3 = 'n';
-
-            eof = Fgetline(line, LINESIZE, fp);
+            scan_token_or_die(key, reader, index);
+            if (key[0] == 'Y') seqinf.comp3 = 'y';
+            else               seqinf.comp3 = 'n';
+            ++reader;
         }
         else if (str_equal(key, "Sequence information ")) {
-            // do nothing
             seqinf.exists = true;
-
-            eof = Fgetline(line, LINESIZE, fp);
+            ++reader;
         }
         else if (str_equal(key, "Organism information")) {
-            // do nothing
             orginf.exists = true;
-
-            eof = Fgetline(line, LINESIZE, fp);
+            ++reader;
         }
         else {                  // other comments
-            if (embl.comments.others == NULL) {
-                embl.comments.others = nulldup(line + 5);
-            }
-            else
-                Append(embl.comments.others, line + 5);
-            eof = Fgetline(line, LINESIZE, fp);
+            Append(embl.comments.others, reader.line() + 5);
+            ++reader;
         }
     }
-    return (eof);
 }
 
-static char *embl_skip_unidentified(char *pattern, char *line, FILE_BUFFER fp) {
+static void embl_skip_unidentified(char *pattern, Reader& reader) {
     // if there are (numb) blanks at the beginning of line,
     // it is a continue line of the current command.
-    char *eof;
-    char  key[TOKENSIZE];
 
-    // check continue lines
-    for (eof = Fgetline(line, LINESIZE, fp); eof != NULL; eof = Fgetline(line, LINESIZE, fp)) {
-        embl_key_word(line, 0, key, TOKENSIZE);
-        if (!str_equal(key, pattern))
-            break;
+    for (++reader; reader.line(); ++reader) {
+        char  key[TOKENSIZE];
+        embl_key_word(reader.line(), 0, key, TOKENSIZE);
+        if (!str_equal(key, pattern)) break;
     }
-    return (eof);
 }
 
-static char embl_in(Embl& embl, Seq& seq, FILE_BUFFER fp) { // @@@ use Reader
+void embl_in(Embl& embl, Seq& seq, Reader& reader) {
     // Read in one embl entry.
-    char  line[LINESIZE], key[TOKENSIZE];
-    char *eof, eoen;
 
-    eoen = ' ';                 // end-of-entry, set to be 'y' after '//' is read
+    EntryState state = ENTRY_NONE;
 
-    for (eof = Fgetline(line, LINESIZE, fp); eof != NULL && eoen != 'y';) {
-        if (!has_content(line)) {
-            eof = Fgetline(line, LINESIZE, fp);
+    for (; reader.line() && state != ENTRY_COMPLETED;) {
+        if (!has_content(reader.line())) {
+            ++reader;
+            ca_assert(reader.ok());
             continue;           // empty line, skip
         }
 
-        embl_key_word(line, 0, key, TOKENSIZE);
-        eoen = 'n';
+        char key[TOKENSIZE];
+        embl_key_word(reader.line(), 0, key, TOKENSIZE);
+        state = ENTRY_STARTED;
 
         if (str_equal(key, "ID")) {
-            eof = embl_one_entry(line, fp, embl.id, key);
+            embl_one_entry(reader, embl.id, key);
         }
         else if (str_equal(key, "DT")) {
-            eof = embl_date(embl, line, fp);
+            embl_date(embl, reader);
         }
         else if (str_equal(key, "DE")) {
-            eof = embl_one_entry(line, fp, embl.description, key);
+            embl_one_entry(reader, embl.description, key);
         }
         else if (str_equal(key, "OS")) {
-            eof = embl_one_entry(line, fp, embl.os, key);
+            embl_one_entry(reader, embl.os, key);
         }
         else if (str_equal(key, "AC")) {
-            eof = embl_one_entry(line, fp, embl.accession, key);
+            embl_one_entry(reader, embl.accession, key);
         }
         else if (str_equal(key, "KW")) {
-            eof = embl_one_entry(line, fp, embl.keywords, key);
+            embl_one_entry(reader, embl.keywords, key);
 
             // correct missing '.'
             if (!has_content(embl.keywords)) freedup(embl.keywords, ".\n");
             else terminate_with(embl.keywords, '.');
         }
         else if (str_equal(key, "DR")) {
-            eof = embl_one_entry(line, fp, embl.dr, key);
+            embl_one_entry(reader, embl.dr, key);
         }
         else if (str_equal(key, "RA")) {
             Emblref& ref = embl.get_latest_ref();
-            eof          = embl_one_entry(line, fp, ref.author, key);
+            embl_one_entry(reader, ref.author, key);
             terminate_with(ref.author, ';');
         }
         else if (str_equal(key, "RT")) {
             Emblref& ref = embl.get_latest_ref();
-            eof = embl_one_entry(line, fp, ref.title, key);
+            embl_one_entry(reader, ref.title, key);
             embl_correct_title(ref);
         }
         else if (str_equal(key, "RL")) {
             Emblref& ref = embl.get_latest_ref();
-            eof = embl_one_entry(line, fp, ref.journal, key);
+            embl_one_entry(reader, ref.journal, key);
             terminate_with(ref.journal, '.');
         }
         else if (str_equal(key, "RP")) {
             Emblref& ref = embl.get_latest_ref();
-            eof = embl_one_entry(line, fp, ref.processing, key);
+            embl_one_entry(reader, ref.processing, key);
         }
         else if (str_equal(key, "RN")) {
             embl.resize_refs(embl.get_refcount()+1);
-            eof = Fgetline(line, LINESIZE, fp);
+            ++reader;
         }
         else if (str_equal(key, "CC")) {
-            eof = embl_comments(embl, line, fp);
+            embl_comments(embl, reader);
         }
         else if (str_equal(key, "SQ")) {
-            eof = embl_origin(seq, line, fp);
-            eoen = 'y';
+            embl_origin(seq, reader);
+            state = ENTRY_COMPLETED;
         }
         else {                  // unidentified key word
-            eof = embl_skip_unidentified(key, line, fp);
+            embl_skip_unidentified(key, reader);
         }
         /* except "ORIGIN", at the end of all the other cases,
          * a new line has already read in, so no further read
          * is necessary */
+
+        ca_assert(reader.ok());
     }
-
-    if (eoen == 'n') throw_error(83, "Reached EOF before one entry has been read");
-
-    return eof ? EOF+1 : EOF;
+    ca_assert(reader.ok());
+    if (state == ENTRY_STARTED) throw_incomplete_entry();
+    ++reader;
 }
 
-char embl_in_id(Embl& embl, Seq& seq, FILE_BUFFER fp) { // @@@ use reader
+void embl_in_simple(Embl& embl, Seq& seq, Reader& reader) {
     // Read in one embl entry.
-    char  line[LINESIZE], key[TOKENSIZE];
-    char *eof, eoen;
+    char       key[TOKENSIZE];
+    EntryState state = ENTRY_NONE;
 
-    eoen = ' ';
-    // end-of-entry, set to be 'y' after '//' is read
+    for (; reader.line() && state != ENTRY_COMPLETED;) {
+        if (!has_content(reader.line())) { ++reader; continue; } // empty line, skip
 
-    for (eof = Fgetline(line, LINESIZE, fp); eof != NULL && eoen != 'y';) {
-        if (!has_content(line)) {
-            eof = Fgetline(line, LINESIZE, fp);
-            continue;           // empty line, skip
-        }
-
-        embl_key_word(line, 0, key, TOKENSIZE);
-        eoen = 'n';
+        embl_key_word(reader.line(), 0, key, TOKENSIZE);
+        state = ENTRY_STARTED;
 
         if (str_equal(key, "ID")) {
-            eof = embl_one_entry(line, fp, embl.id, key);
+            embl_one_entry(reader, embl.id, key);
         }
         else if (str_equal(key, "SQ")) {
-            eof = embl_origin(seq, line, fp);
-            eoen = 'y';
+            embl_origin(seq, reader);
+            state = ENTRY_COMPLETED;
         }
         else {                  // unidentified key word
-            eof = embl_skip_unidentified(key, line, fp);
+            embl_skip_unidentified(key, reader);
         }
         /* except "ORIGIN", at the end of all the other cases,
            a new line has already read in, so no further read
            is necessary */
     }
 
-    if (eoen == 'n')
-        throw_error(84, "Reach EOF before one entry is read");
-
-    if (eof == NULL)
-        return (EOF);
-    else
-        return (EOF + 1);
+    if (state == ENTRY_STARTED) throw_incomplete_entry();
+    ++reader;
 }
-
 void embl_key_word(const char *line, int index, char *key, int length) { // @@@ similar to genbank_key_word and macke_key_word
     // Get the key_word from line beginning at index.
     // length = max size of key word
@@ -370,28 +311,25 @@ void embl_key_word(const char *line, int index, char *key, int length) { // @@@ 
     key[indj] = '\0';
 }
 
-char *embl_origin(Seq& seq, char *line, FILE_BUFFER fp) { // @@@ use Reader
+void embl_origin(Seq& seq, Reader& reader) {
     // Read in embl sequence data.
-    char *eof;
-    int   index;
-
     ca_assert(seq.is_empty());
 
     // read in whole sequence data
-    for (eof = Fgetline(line, LINESIZE, fp);
-         eof != NULL && line[0] != '/' && line[1] != '/';
-         eof = Fgetline(line, LINESIZE, fp))
+    for (++reader;
+         reader.line() && !is_sequence_terminator(reader.line());
+         ++reader
+         )
     {
-        for (index = 5; line[index] != '\n' && line[index] != '\0'; index++) {
-            if (line[index] != ' ') {
-                seq.add(line[index]);
-            }
+        const char *line = reader.line();
+        char ch;
+        for (int idx = 5; (ch = line[idx]); ++idx) {
+            if (ch == ' ' || ch == '\n') continue;
+            seq.add(ch);
         }
     }
 
-    return eof;
 }
-
 static void embl_print_lines(FILE * fp, const char *key, const char *content, const WrapMode& wrapMode) { // @@@ WRAPPER
     // Print EMBL entry and wrap around if line over EMBLMAXLINE.
     ca_assert(strlen(key) == 2);
@@ -560,7 +498,7 @@ static char *etog_journal(const char *eJournal) {
     char *new_journal = 0;
     char  token[TOKENSIZE];
 
-    scan_token_or_die(eJournal, token, NULL);
+    scan_token_or_die(token, eJournal);
     if (str_equal(token, "(in)") == 1 || str_equal(token, "Submitted") || str_equal(token, "Unpublished")) {
         // remove trailing '.'
         int len     = str0len(eJournal);
@@ -757,24 +695,24 @@ STATIC_ATTRIBUTED(__ATTR__USERESULT, int etom(const Embl& embl, Macke& macke, co
     GenBank gbk;
     return etog(embl, gbk, seq) && gtom(gbk, macke);
 }
+
 void embl_to_macke(const char *inf, const char *outf, int format) {
     // Convert from Embl format to Macke format.
-    FILE        *IFP = open_input_or_die(inf);
-    FILE_BUFFER  ifp = create_FILE_BUFFER(inf, IFP);
-    FILE        *ofp = open_output_or_die(outf);
+    Reader reader(inf);
+    FILE *ofp = open_output_or_die(outf);
 
     macke_out_header(ofp); // macke format sequence irrelevant header
 
     int total_num;
     for (int indi = 0; indi < 3; indi++) {
-        FILE_BUFFER_rewind(ifp);
-
+        reader.rewind();
         int numofseq = 0;
 
         while (1) {
             Embl embl;
             Seq  seq;
-            if (embl_in(embl, seq, ifp) == EOF) break;
+            embl_in(embl, seq, reader);
+            if (reader.failed()) break;
 
             numofseq++;
             Macke macke;
@@ -797,20 +735,19 @@ void embl_to_macke(const char *inf, const char *outf, int format) {
 
     log_processed(total_num);
     fclose(ofp);
-    destroy_FILE_BUFFER(ifp);
 }
 
 void embl_to_embl(const char *inf, const char *outf) {
     // Print out EMBL data.
-    FILE        *IFP      = open_input_or_die(inf);
-    FILE_BUFFER  ifp      = create_FILE_BUFFER(inf, IFP);
-    FILE        *ofp      = open_output_or_die(outf);
-    int          numofseq = 0;
+    Reader reader(inf);
+    FILE *ofp      = open_output_or_die(outf);
+    int   numofseq = 0;
 
     while (1) {
         Embl embl;
         Seq  seq;
-        if (embl_in(embl, seq, ifp) == EOF) break;
+        embl_in(embl, seq, reader);
+        if (reader.failed()) break;
 
         numofseq++;
         embl_out(embl, seq, ofp);
@@ -818,20 +755,19 @@ void embl_to_embl(const char *inf, const char *outf) {
 
     log_processed(numofseq);
     fclose(ofp);
-    destroy_FILE_BUFFER(ifp);
 }
 
 void embl_to_genbank(const char *inf, const char *outf) {
     // Convert from EMBL format to genbank format.
-    FILE        *IFP      = open_input_or_die(inf);
-    FILE_BUFFER  ifp      = create_FILE_BUFFER(inf, IFP);
+    Reader reader(inf);
     FILE        *ofp      = open_output_or_die(outf);
     int          numofseq = 0;
 
     while (1) {
         Embl embl;
         Seq  seq;
-        if (embl_in(embl, seq, ifp) == EOF) break;
+        embl_in(embl, seq, reader);
+        if (reader.failed()) break;
 
         numofseq++;
         GenBank gbk;
@@ -841,7 +777,6 @@ void embl_to_genbank(const char *inf, const char *outf) {
 
     log_processed(numofseq);
     fclose(ofp);
-    destroy_FILE_BUFFER(ifp);
 }
 
 // --------------------------------------------------------------------------------
@@ -942,7 +877,7 @@ static char *gtoe_journal(char *Str) {
     char token[TOKENSIZE], *journal;
     int  indi, indj, index, len;
 
-    if (scan_token(Str, token)) {
+    if (scan_token(token, Str)) {
         if (str_equal(token, "(in)") == 1 || str_equal(token, "Unpublished") || str_equal(token, "Submitted")) {
             journal = nulldup(Str);
             terminate_with(journal, '.');
@@ -1052,10 +987,10 @@ STATIC_ATTRIBUTED(__ATTR__USERESULT, int gtoe(const GenBank& gbk, Embl& embl, co
         char token[TOKENSIZE];
         char temp[LONGTEXT];
 
-        scan_token_or_die(gbk.locus, token, NULL); // short_id
+        scan_token_or_die(token, gbk.locus); // short_id
         if (has_content(gbk.comments.seqinf.RDPid)) {
             char rdpid[TOKENSIZE];
-            scan_token_or_die(gbk.comments.seqinf.RDPid, rdpid, NULL);
+            scan_token_or_die(rdpid, gbk.comments.seqinf.RDPid);
             sprintf(temp, "RDP; %s; %s.\n", rdpid, token);
         }
         else {
@@ -1070,25 +1005,26 @@ STATIC_ATTRIBUTED(__ATTR__USERESULT, int gtoe(const GenBank& gbk, Embl& embl, co
 
 void genbank_to_embl(const char *inf, const char *outf) {
     // Convert from genbank to EMBL.
-    FILE        *IFP      = open_input_or_die(inf);
-    FILE_BUFFER  ifp      = create_FILE_BUFFER(inf, IFP);
-    FILE        *ofp      = open_output_or_die(outf);
-    int          numofseq = 0;
+    Reader  reader(inf);
+    FILE   *ofp      = open_output_or_die(outf);
+    int     numofseq = 0;
 
     while (1) {
         GenBank gbk;
         Seq     seq;
 
-        if (genbank_in(gbk, seq, ifp) == EOF) break;
+        genbank_in(gbk, seq, reader);
+        if (reader.failed()) break;
+
         numofseq++;
 
         Embl embl;
         if (!gtoe(gbk, embl, seq)) throw_conversion_failure(GENBANK, EMBL);
         embl_out(embl, seq, ofp);
+
     }
 
     log_processed(numofseq);
-    destroy_FILE_BUFFER(ifp);
     fclose(ofp);
 }
 
@@ -1135,21 +1071,20 @@ void macke_to_embl(const char *inf, const char *outf) {
     int          numofseq = 0;
 
     while (1) {
-        Macke macke;
-        if (!mackeReader.mackeIn(macke)) break;
+        Macke  macke;
+        Seq    seq;
 
-        SeqPtr seq = mackeReader.read_sequence_data();
-        if (seq.isNull()) break;
-
-        Embl  embl;
+        if (!mackeReader.read_one_entry(macke, seq)) break;
+        
+        Embl embl;
         numofseq++;
 
         /* partial_mtoe() is particularly handling
          * subspecies information, not converting whole
          * macke format to embl */
 
-        if (!mtoe(macke, embl, *seq)) throw_conversion_failure(MACKE, EMBL);
-        embl_out(embl, *seq, ofp);
+        if (!mtoe(macke, embl, seq)) throw_conversion_failure(MACKE, EMBL);
+        embl_out(embl, seq, ofp);
     }
 
     log_processed(numofseq);

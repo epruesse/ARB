@@ -1,37 +1,6 @@
-#include "reader.h"
+#include "genbank.h"
+#include "embl.h"
 #include "macke.h"
-
-class GenbankReader : public Reader, public DataReader {
-public:
-    GenbankReader(const char *inf) : Reader(inf) {}
-
-    SeqPtr read_sequence_data() {
-        SeqPtr seq = new Seq;
-        eof = genbank_origin(*seq, linebuf, fbuf);
-        return seq;
-    }
-    const char *get_key_word(int offset) {
-        char key[TOKENSIZE];
-        genbank_key_word(line() + offset, 0, key, TOKENSIZE);
-        return shorttimecopy(key);
-    }
-};
-
-class EmblSwissprotReader : public Reader, public DataReader {
-public:
-    EmblSwissprotReader(const char *inf) : Reader(inf) {}
-
-    SeqPtr read_sequence_data() {
-        SeqPtr seq = new Seq;
-        eof = embl_origin(*seq, linebuf, fbuf);
-        return seq;
-    }
-    const char *get_key_word(int offset) {
-        char key[TOKENSIZE];
-        embl_key_word(line() + offset, 0, key, TOKENSIZE);
-        return shorttimecopy(key);
-    }
-};
 
 static void gcg_doc_out(const char *line, FILE * ofp) {
     // Output non-sequence data(document) of gcg format.
@@ -134,49 +103,17 @@ public:
 };
 
 static void macke_to_gcg(const char *inf, const char *outf) {
-    // @@@ fix outfile handling - use GcgWriter!
-    // @@@ use MackeReader here?
+    MackeReader inp(inf);
+    Macke       macke;
+    Seq         seq;
 
-    FILE        *IFP1 = open_input_or_die(inf);
-    FILE        *IFP2 = open_input_or_die(inf);
-    FILE        *IFP3 = open_input_or_die(inf);
-    FILE_BUFFER  ifp1 = create_FILE_BUFFER(inf, IFP1);
-    FILE_BUFFER  ifp2 = create_FILE_BUFFER(inf, IFP2);
-    FILE_BUFFER  ifp3 = create_FILE_BUFFER(inf, IFP3);
-
-    FILE *ofp = NULL;
-
-    char line1[LINESIZE], line2[LINESIZE], line3[LINESIZE];
-    char *eof1 = skipOverLinesThat(line1, LINESIZE, ifp1, Not(isMackeSeqHeader)); // skip to #=; where sequence first appears
-    char *eof2 = skipOverLinesThat(line2, LINESIZE, ifp2, Not(isMackeSeqInfo));   // skip to #:; where the sequence information is
-    char *eof3 = skipOverLinesThat(line3, LINESIZE, ifp3, isMackeHeader);         // skip to where sequence data starts
-
-    for (; eof1 != NULL && isMackeSeqHeader(line1); eof1 = Fgetline(line1, LINESIZE, ifp1)) { // @@@ loop no longer needed (see break below)
-        char key[TOKENSIZE];
-        macke_abbrev(line1, key, 2);
-
-        char temp[TOKENSIZE];
-        strcpy(temp, key);
-        ofp = open_output_or_die(outf);
-
-        char name[LINESIZE];
-        for (macke_abbrev(line2, name, 2);
-             eof2 != NULL && isMackeSeqInfo(line2) && str_equal(name, key);
-             eof2  = Fgetline(line2, LINESIZE, ifp2), macke_abbrev(line2, name, 2))
-        {
-            gcg_doc_out(line2, ofp);
-        }
-        Seq seq;
-        eof3 = macke_origin(seq, key, line3, ifp3);
-        gcg_seq_out(seq, ofp, key);
-        fclose(ofp);
+    if (inp.read_one_entry(macke, seq)) {
+        FILE *ofp = open_output_or_die(outf);
+        macke_seq_info_out(macke, ofp);
+        gcg_seq_out(seq, ofp, macke.get_id());
         log_processed(1);
-        ofp  = NULL;
-        break; // can only handle 1 sequence!
+        fclose(ofp);
     }
-    destroy_FILE_BUFFER(ifp3);
-    destroy_FILE_BUFFER(ifp2);
-    destroy_FILE_BUFFER(ifp1);
 }
 
 static void genbank_to_gcg(const char *inf, const char *outf) {
@@ -192,8 +129,9 @@ static void genbank_to_gcg(const char *inf, const char *outf) {
         }
         else if (str_equal(key, "ORIGIN")) {
             out.add_comment(inp.line());
-            SeqPtr seq = inp.read_sequence_data();
-            out.write_seq_data(*seq);
+            Seq seq;
+            inp.read_seq_data(seq);
+            out.write_seq_data(seq);
         }
         else {
             out.add_comment(inp.line());
@@ -214,8 +152,9 @@ static void embl_to_gcg(const char *inf, const char *outf) {
         }
         else if (str_equal(key, "SQ")) {
             out.add_comment(inp.line());
-            SeqPtr seq = inp.read_sequence_data();
-            out.write_seq_data(*seq);
+            Seq seq;
+            inp.read_seq_data(seq);
+            out.write_seq_data(seq);
             break;
         }
         else {

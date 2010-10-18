@@ -72,9 +72,37 @@ struct Embl : public InputFormat, public RefContainer<Emblref> {
     }
 
     // InputFormat interface
-    SeqPtr get_data(FILE_BUFFER ifp);
+    SeqPtr read_data(Reader& reader);
     void reinit() { INPLACE_RECONSTRUCT(Embl, this); }
+    const char *get_id() const { return id; }
 };
+
+#ifndef READER_H
+#include "reader.h"
+#endif
+
+
+class EmblSwissprotReader : public Reader, public InputFormatReader {
+public:
+    EmblSwissprotReader(const char *inf) : Reader(inf) {}
+
+    bool read_seq_data(Seq& seq) {
+        embl_origin(seq, *this);
+        return ok();
+    }
+
+    const char *get_key_word(int offset) {
+        char key[TOKENSIZE];
+        embl_key_word(line() + offset, 0, key, TOKENSIZE);
+        return shorttimecopy(key);
+    }
+    bool read_one_entry(InputFormat& data, Seq& seq) {
+        Embl& embl = reinterpret_cast<Embl&>(data);
+        embl_in(embl, seq, *this);
+        return ok();
+    }
+};
+
 
 #else
 #error embl.h included twice

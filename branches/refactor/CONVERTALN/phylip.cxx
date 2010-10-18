@@ -1,4 +1,5 @@
 #include "input_format.h"
+#include "reader.h"
 #include "ali.h"
 
 #include <cerrno>
@@ -58,9 +59,8 @@ void to_phylip(const char *inf, const char *outf, int informat, int readstdin) {
         throw_conversion_not_supported(informat, PHYLIP);
     }
 
-    FILE        *IFP = open_input_or_die(inf);
-    FILE_BUFFER  ifp = create_FILE_BUFFER(inf, IFP);
-    FILE        *ofp = open_output_or_die(outf);
+    Reader reader(inf);
+    FILE *ofp = open_output_or_die(outf);
 
     if (ofp == stdout) {
         ca_assert(0); // can't use stdout (because rewind is used below)
@@ -69,8 +69,8 @@ void to_phylip(const char *inf, const char *outf, int informat, int readstdin) {
 
     Alignment ali;
     while(1) {
-        SmartPtr<InputFormat> in       = InputFormat::create(informat);
-        SeqPtr       seq = in->get_data(ifp);
+        InputFormatPtr in  = InputFormat::create(informat);
+        SeqPtr         seq = in->read_data(reader);
         if (seq.isNull()) break;
         ali.add(seq);
     }
@@ -116,7 +116,6 @@ void to_phylip(const char *inf, const char *outf, int informat, int readstdin) {
 
     int headersize2 = fprintf(ofp, "%8d %8d", total_seq, maxsize);
 
-    destroy_FILE_BUFFER(ifp);
     fclose(ofp);
 
     if (headersize1 != headersize2) {

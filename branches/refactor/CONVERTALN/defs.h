@@ -45,6 +45,12 @@
 
 #define p_nonkey_start 5
 
+enum EntryState {
+    ENTRY_NONE, 
+    ENTRY_STARTED, 
+    ENTRY_COMPLETED, 
+};
+
 // --------------------
 // Logging
 

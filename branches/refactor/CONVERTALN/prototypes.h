@@ -17,9 +17,10 @@ const char *today_date(void);
 const char *gcg_date(const char *input);
 
 /* embl.cxx */
-char embl_in_id(Embl &embl, Seq &seq, FILE_BUFFER fp);
+void embl_in(Embl &embl, Seq &seq, Reader &reader);
+void embl_in_simple(Embl &embl, Seq &seq, Reader &reader);
 void embl_key_word(const char *line, int index, char *key, int length);
-char *embl_origin(Seq &seq, char *line, FILE_BUFFER fp);
+void embl_origin(Seq &seq, Reader &reader);
 void embl_to_macke(const char *inf, const char *outf, int format);
 void embl_to_embl(const char *inf, const char *outf);
 void embl_to_genbank(const char *inf, const char *outf);
@@ -29,6 +30,7 @@ void macke_to_embl(const char *inf, const char *outf);
 /* fconv.cxx */
 void throw_conversion_not_supported(int input_format, int output_format) __ATTR__NORETURN;
 void throw_conversion_failure(int input_format, int output_format);
+void throw_incomplete_entry(void);
 void log_processed(int seqCount);
 void convert(const char *inf, const char *outf, int intype, int outype);
 
@@ -37,18 +39,21 @@ void to_gcg(const char *inf, const char *outf, int intype);
 
 /* genbank.cxx */
 void genbank_key_word(const char *line, int index, char *key, int length);
-char genbank_in(GenBank &gbk, Seq &seq, FILE_BUFFER fp);
-char *genbank_origin(Seq &seq, char *line, FILE_BUFFER fp);
-char genbank_in_locus(GenBank &gbk, Seq &seq, FILE_BUFFER fp);
+void genbank_one_entry_in(char *&datastring, Reader &reader);
+void genbank_source(GenBank &gbk, Reader &reader);
+void genbank_skip_unidentified(Reader &reader, int blank_num);
+void genbank_reference(GenBank &gbk, Reader &reader);
+void genbank_in(GenBank &gbk, Seq &seq, Reader &reader);
+void genbank_origin(Seq &seq, Reader &reader);
+void genbank_in_simple(GenBank &gbk, Seq &seq, Reader &reader);
 void genbank_out(const GenBank &gbk, const Seq &seq, FILE *fp);
 void genbank_to_genbank(const char *inf, const char *outf);
 
 /* macke.cxx */
-char *macke_origin(Seq &seq, const char *key, char *line, FILE_BUFFER fp) __ATTR__DEPRECATED;
 void macke_origin(Seq &seq, const char *key, Reader &reader);
 int macke_abbrev(const char *line, char *key, int index);
 bool macke_is_continued_remark(const char *str);
-char macke_in_name_and_data(Macke &macke, Seq &seq, FILE_BUFFER fp);
+void macke_in_simple(Macke &macke, Seq &seq, Reader &reader);
 void macke_out_header(FILE *fp);
 void macke_seq_display_out(const Macke &macke, FILE *fp, int format, bool first_sequence);
 void macke_seq_info_out(const Macke &macke, FILE *fp);
@@ -73,8 +78,9 @@ void to_phylip(const char *inf, const char *outf, int informat, int readstdin);
 void to_printable(const char *inf, const char *outf, int informat);
 
 /* util.cxx */
-bool scan_token(const char *from, char *to) __ATTR__USERESULT;
-void scan_token_or_die(const char *from, char *to, FILE_BUFFER *fb);
+bool scan_token(char *to, const char *from) __ATTR__USERESULT;
+void scan_token_or_die(char *to, const char *from);
+void scan_token_or_die(char *to, Reader &reader, int offset);
 void throw_error(int error_num, const char *error_message) __ATTR__NORETURN;
 char *strf(const char *format, ...) __ATTR__FORMAT(1);
 void throw_errorf(int error_num, const char *error_messagef, ...) __ATTR__FORMAT(2) __ATTR__NORETURN;
@@ -100,6 +106,7 @@ int skip_subspecies(const char *str, char expect_behind);
 int find_strain(const char *str, char expect_behind);
 int skip_strain(const char *str, char expect_behind);
 const char *stristr(const char *str, const char *substring);
+int ___lookup_keyword(const char *keyword, const char *const *lookup_table, int lookup_table_size);
 
 #else
 #error prototypes.h included twice

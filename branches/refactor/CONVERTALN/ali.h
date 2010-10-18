@@ -8,7 +8,7 @@
 #include <vector>
 #endif
 
-class Alignment { // @@@ implement using SeqPtr-array
+class Alignment {
     std::vector<SeqPtr> seq;
 
 public:

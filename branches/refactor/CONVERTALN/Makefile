@@ -16,7 +16,7 @@ proto:
 	../SOURCE_TOOLS/mv_if_diff prototypes.h.tmp prototypes.h
 
 clean:
-	rm -f $(OBJECTS) $(BINARY)
+	rm -f *.o $(BINARY)
 
 DEPENDS = $(OBJECTS:.o=.depend)
 depends: $(DEPENDS)
@@ -50,6 +50,7 @@ convert.o: seq.h
 convert.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 convert.o: $(ARBHOME)/INCLUDE/arb_assert.h
 convert.o: $(ARBHOME)/INCLUDE/arb_core.h
+convert.o: $(ARBHOME)/INCLUDE/arb_defs.h
 convert.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 convert.o: $(ARBHOME)/INCLUDE/arbtools.h
 convert.o: $(ARBHOME)/INCLUDE/attributes.h
@@ -64,6 +65,7 @@ date.o: prototypes.h
 date.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 date.o: $(ARBHOME)/INCLUDE/arb_assert.h
 date.o: $(ARBHOME)/INCLUDE/arb_core.h
+date.o: $(ARBHOME)/INCLUDE/arb_defs.h
 date.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 date.o: $(ARBHOME)/INCLUDE/arbtools.h
 date.o: $(ARBHOME)/INCLUDE/attributes.h
@@ -88,6 +90,7 @@ embl.o: wrap.h
 embl.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 embl.o: $(ARBHOME)/INCLUDE/arb_assert.h
 embl.o: $(ARBHOME)/INCLUDE/arb_core.h
+embl.o: $(ARBHOME)/INCLUDE/arb_defs.h
 embl.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 embl.o: $(ARBHOME)/INCLUDE/arbtools.h
 embl.o: $(ARBHOME)/INCLUDE/attributes.h
@@ -121,16 +124,21 @@ fconv.o: $(ARBHOME)/INCLUDE/test_global.h
 fconv.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 gcg.o: defs.h
+gcg.o: embl.h
 gcg.o: fun.h
+gcg.o: genbank.h
 gcg.o: global.h
 gcg.o: input_format.h
 gcg.o: macke.h
 gcg.o: prototypes.h
+gcg.o: rdp_info.h
 gcg.o: reader.h
+gcg.o: refs.h
 gcg.o: seq.h
 gcg.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 gcg.o: $(ARBHOME)/INCLUDE/arb_assert.h
 gcg.o: $(ARBHOME)/INCLUDE/arb_core.h
+gcg.o: $(ARBHOME)/INCLUDE/arb_defs.h
 gcg.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 gcg.o: $(ARBHOME)/INCLUDE/arbtools.h
 gcg.o: $(ARBHOME)/INCLUDE/attributes.h
@@ -146,12 +154,14 @@ genbank.o: global.h
 genbank.o: input_format.h
 genbank.o: prototypes.h
 genbank.o: rdp_info.h
+genbank.o: reader.h
 genbank.o: refs.h
 genbank.o: seq.h
 genbank.o: wrap.h
 genbank.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 genbank.o: $(ARBHOME)/INCLUDE/arb_assert.h
 genbank.o: $(ARBHOME)/INCLUDE/arb_core.h
+genbank.o: $(ARBHOME)/INCLUDE/arb_defs.h
 genbank.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 genbank.o: $(ARBHOME)/INCLUDE/arbtools.h
 genbank.o: $(ARBHOME)/INCLUDE/attributes.h
@@ -172,6 +182,7 @@ macke.o: wrap.h
 macke.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 macke.o: $(ARBHOME)/INCLUDE/arb_assert.h
 macke.o: $(ARBHOME)/INCLUDE/arb_core.h
+macke.o: $(ARBHOME)/INCLUDE/arb_defs.h
 macke.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 macke.o: $(ARBHOME)/INCLUDE/arbtools.h
 macke.o: $(ARBHOME)/INCLUDE/attributes.h
@@ -210,6 +221,7 @@ mg.o: seq.h
 mg.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 mg.o: $(ARBHOME)/INCLUDE/arb_assert.h
 mg.o: $(ARBHOME)/INCLUDE/arb_core.h
+mg.o: $(ARBHOME)/INCLUDE/arb_defs.h
 mg.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 mg.o: $(ARBHOME)/INCLUDE/arbtools.h
 mg.o: $(ARBHOME)/INCLUDE/attributes.h
@@ -225,10 +237,12 @@ paup.o: global.h
 paup.o: input_format.h
 paup.o: paup.h
 paup.o: prototypes.h
+paup.o: reader.h
 paup.o: seq.h
 paup.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 paup.o: $(ARBHOME)/INCLUDE/arb_assert.h
 paup.o: $(ARBHOME)/INCLUDE/arb_core.h
+paup.o: $(ARBHOME)/INCLUDE/arb_defs.h
 paup.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 paup.o: $(ARBHOME)/INCLUDE/arbtools.h
 paup.o: $(ARBHOME)/INCLUDE/attributes.h
@@ -243,10 +257,12 @@ phylip.o: fun.h
 phylip.o: global.h
 phylip.o: input_format.h
 phylip.o: prototypes.h
+phylip.o: reader.h
 phylip.o: seq.h
 phylip.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 phylip.o: $(ARBHOME)/INCLUDE/arb_assert.h
 phylip.o: $(ARBHOME)/INCLUDE/arb_core.h
+phylip.o: $(ARBHOME)/INCLUDE/arb_defs.h
 phylip.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 phylip.o: $(ARBHOME)/INCLUDE/arbtools.h
 phylip.o: $(ARBHOME)/INCLUDE/attributes.h
@@ -261,10 +277,12 @@ printable.o: fun.h
 printable.o: global.h
 printable.o: input_format.h
 printable.o: prototypes.h
+printable.o: reader.h
 printable.o: seq.h
 printable.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 printable.o: $(ARBHOME)/INCLUDE/arb_assert.h
 printable.o: $(ARBHOME)/INCLUDE/arb_core.h
+printable.o: $(ARBHOME)/INCLUDE/arb_defs.h
 printable.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 printable.o: $(ARBHOME)/INCLUDE/arbtools.h
 printable.o: $(ARBHOME)/INCLUDE/attributes.h
@@ -276,12 +294,14 @@ printable.o: $(ARBHOME)/INCLUDE/test_global.h
 reader.o: defs.h
 reader.o: fun.h
 reader.o: global.h
+reader.o: input_format.h
 reader.o: prototypes.h
 reader.o: reader.h
 reader.o: seq.h
 reader.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 reader.o: $(ARBHOME)/INCLUDE/arb_assert.h
 reader.o: $(ARBHOME)/INCLUDE/arb_core.h
+reader.o: $(ARBHOME)/INCLUDE/arb_defs.h
 reader.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 reader.o: $(ARBHOME)/INCLUDE/arbtools.h
 reader.o: $(ARBHOME)/INCLUDE/attributes.h
@@ -293,15 +313,20 @@ reader.o: $(ARBHOME)/INCLUDE/test_global.h
 util.o: defs.h
 util.o: fun.h
 util.o: global.h
+util.o: input_format.h
 util.o: prototypes.h
+util.o: reader.h
+util.o: seq.h
 util.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 util.o: $(ARBHOME)/INCLUDE/arb_assert.h
 util.o: $(ARBHOME)/INCLUDE/arb_core.h
+util.o: $(ARBHOME)/INCLUDE/arb_defs.h
 util.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 util.o: $(ARBHOME)/INCLUDE/arbtools.h
 util.o: $(ARBHOME)/INCLUDE/attributes.h
 util.o: $(ARBHOME)/INCLUDE/dupstr.h
 util.o: $(ARBHOME)/INCLUDE/FileBuffer.h
+util.o: $(ARBHOME)/INCLUDE/smartptr.h
 util.o: $(ARBHOME)/INCLUDE/test_global.h
 
 wrap.o: fun.h
@@ -312,6 +337,7 @@ wrap.o: wrap.h
 wrap.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 wrap.o: $(ARBHOME)/INCLUDE/arb_assert.h
 wrap.o: $(ARBHOME)/INCLUDE/arb_core.h
+wrap.o: $(ARBHOME)/INCLUDE/arb_defs.h
 wrap.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 wrap.o: $(ARBHOME)/INCLUDE/arbtools.h
 wrap.o: $(ARBHOME)/INCLUDE/attributes.h

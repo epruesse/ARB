@@ -14,6 +14,10 @@
 #ifndef ARB_ASSERT_H
 #include <arb_assert.h>
 #endif
+#ifndef ARB_DEFS_H
+#include <arb_defs.h>
+#endif
+
 
 #define ca_assert(cond) arb_assert(cond)
 
@@ -25,14 +29,31 @@
 
 // --------------------
 
-struct Convaln_exception {
-    int         error_code;
-    const char *error; // @@@ make this a copy
+class Convaln_exception {
+    static Convaln_exception *thrown;
 
-    Convaln_exception(int error_code_, const char *error_)
-        : error_code(error_code_),
-          error(error_)
-    {}
+    int           code;
+    mutable char *msg;
+
+public:
+    Convaln_exception(int error_code, const char *error_msg)
+        : code(error_code),
+          msg(strdup(error_msg))
+    {
+        ca_assert(!thrown); // 2 exceptions at the same time ? very exceptional! :)
+        thrown = this;
+    }
+    ~Convaln_exception() {
+        ca_assert(thrown);
+        thrown = NULL;
+        free(msg);
+    }
+
+    int get_code() const { return code; }
+    const char *get_msg() const { return msg; }
+    void replace_msg(const char *new_msg) const { freedup(msg, new_msg); }
+
+    static const Convaln_exception *exception_thrown() { return thrown; }
 };
 
 // --------------------
@@ -59,6 +80,8 @@ inline int count_spaces(const char *str) { return strspn(str, " "); }
 inline bool occurs_in(char ch, const char *in) { return strchr(in, ch) != 0; }
 
 inline bool is_end_mark(char ch) { return ch == '.' || ch == ';'; }
+
+inline bool is_sequence_terminator(const char *str) { return str[0] == '/' && str[1] == '/'; }
 
 #define WORD_SEP ",.; ?:!)]}"
 
@@ -104,6 +127,8 @@ inline void freedup_if_content(char*& entry, const char *content) {
     }
 
 // --------------------
+
+#define lookup_keyword(keyword,table) ___lookup_keyword(keyword, table, ARRAY_ELEMS(table))
 
 #else
 #error global.h included twice

@@ -10,14 +10,18 @@
 
 struct InputFormat {
     virtual ~InputFormat() {}
-    virtual SeqPtr get_data(FILE_BUFFER ifp) = 0;
-    virtual void reinit() = 0;
+
+    virtual SeqPtr read_data(Reader& reader) = 0;
+    virtual void reinit()                    = 0;
+    virtual const char *get_id() const       = 0;
 
     static SmartPtr<InputFormat> create(char informat);
     static bool is_known(char informat) {
         return informat == GENBANK || informat == EMBL || informat == SWISSPROT || informat == MACKE;
     }
 };
+
+typedef SmartPtr<InputFormat> InputFormatPtr;
 
 #else
 #error input_format.h included twice

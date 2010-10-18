@@ -7,9 +7,8 @@ extern int warning_out;
 
 void genbank_to_macke(const char *inf, const char *outf) {
     // Convert from Genbank format to Macke format.
-    FILE        *IFP = open_input_or_die(inf);
-    FILE_BUFFER  ifp = create_FILE_BUFFER(inf, IFP);
-    FILE        *ofp = open_output_or_die(outf);
+    Reader  reader(inf);
+    FILE   *ofp = open_output_or_die(outf);
 
     int indi, total_num;
 
@@ -17,13 +16,14 @@ void genbank_to_macke(const char *inf, const char *outf) {
     macke_out_header(ofp);
 
     for (indi = 0; indi < 3; indi++) {
-        FILE_BUFFER_rewind(ifp);
+        reader.rewind();
 
         int numofseq = 0;
         while (1) {
             GenBank gbk;
             Seq     seq;
-            if (genbank_in(gbk, seq, ifp) == EOF) break;
+            genbank_in(gbk, seq, reader);
+            if (reader.failed()) break;
 
             numofseq++;
             Macke macke;
@@ -39,15 +39,13 @@ void genbank_to_macke(const char *inf, const char *outf) {
         total_num = numofseq;
         if (indi == 0) {
             fputs("#-\n", ofp);
-            // no warning message for next loop
-            warning_out = 0;
+            warning_out = 0; // no warning message for next loop
         }
     }
 
     warning_out = 1; // resume warning messages
     log_processed(total_num);
     fclose(ofp);
-    destroy_FILE_BUFFER(ifp);
 }
 
 static int paren_string(char *Str, char *pstring, int index) {
@@ -333,15 +331,14 @@ void macke_to_genbank(const char *inf, const char *outf) {
     int          numofseq = 0;
 
     while (1) {
-        Macke macke;
-        if (!mackeReader.mackeIn(macke)) break;
+        Macke   macke;
+        Seq     seq;
 
-        SeqPtr seq = mackeReader.read_sequence_data();
-        if (seq.isNull()) break;
-
+        if (!mackeReader.read_one_entry(macke, seq)) break;
+        
         GenBank gbk;
-        if (!mtog(macke, gbk, *seq)) throw_conversion_failure(MACKE, GENBANK);
-        genbank_out(gbk, *seq, ofp);
+        if (!mtog(macke, gbk, seq)) throw_conversion_failure(MACKE, GENBANK);
+        genbank_out(gbk, seq, ofp);
         numofseq++;
     }
 
@@ -416,12 +413,12 @@ static void mtog_decode_ref_and_remarks(const Macke& macke, GenBank& gbk) {
         }
         else if (str_equal(key, "3' end complete")) {
             gbk.comments.seqinf.exists = true;
-            scan_token_or_die(macke.get_rem(ridx) + offset, key, NULL);
+            scan_token_or_die(key, macke.get_rem(ridx) + offset);
             gbk.comments.seqinf.comp3 = str_equal(key, "Yes") ? 'y' : 'n';
         }
         else if (str_equal(key, "5' end complete")) {
             gbk.comments.seqinf.exists = true;
-            scan_token_or_die(macke.get_rem(ridx) + offset, key, NULL);
+            scan_token_or_die(key, macke.get_rem(ridx) + offset);
             gbk.comments.seqinf.comp5 = str_equal(key, "Yes") ? 'y' : 'n';
         }
         else { // other (non-interpreted) comments
@@ -567,7 +564,7 @@ int gtom(const GenBank& gbk, Macke& macke) { // __ATTR__USERESULT
         freedup(macke.acs, gbk.comments.seqinf.gbkentry);
     else {
         if (has_content(gbk.accession) && !str_equal(gbk.accession, "No information\n")) {
-            scan_token_or_die(gbk.accession, buffer, NULL);
+            scan_token_or_die(buffer, gbk.accession);
             strcat(buffer, "\n");
         }
         else
