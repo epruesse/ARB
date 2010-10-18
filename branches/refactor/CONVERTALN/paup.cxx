@@ -23,29 +23,29 @@ static void paup_verify_name(char*& Str) {
     }
 }
 
-static void paup_print_line(const Seq& seq, int offset, int first_line, FILE * fp) {
+static void paup_print_line(const Seq& seq, int offset, int first_line, Writer& write) {
     // print paup file.
     int length = SEQLINE - 10;
-    fputs("      ", fp);
+    write.out("      ");
 
     int indi;
 
     const char *id = seq.get_id();
     for (indi = 0; indi < 10 && id[indi]; indi++) // truncate id to 10 characters
-        fputc(id[indi], fp);
+        write.out(id[indi]);
 
     if (offset < seq.get_len()) {
-        for (; indi < 11; indi++) fputc(' ', fp);
+        for (; indi < 11; indi++) write.out(' ');
 
         const char *sequence = seq.get_seq();
 
         int indj = 0;
         for (indi = indj = 0; indi < length; indi++) {
             if ((offset + indi) < seq.get_len()) {
-                fputc(sequence[offset + indi], fp);
+                write.out(sequence[offset + indi]);
                 indj++;
                 if (indj == 10 && indi < (length - 1) && (indi + offset) < (seq.get_len() - 1)) {
-                    fputc(' ', fp);
+                    write.out(' ');
                     indj = 0;
                 }
             }
@@ -55,34 +55,34 @@ static void paup_print_line(const Seq& seq, int offset, int first_line, FILE * f
     }
 
     if (first_line)
-        fprintf(fp, " [%d - %d]", offset + 1, (offset + indi));
+        write.outf(" [%d - %d]", offset + 1, (offset + indi));
 
-    fputc('\n', fp);
+    write.out('\n');
 }
 
-static void paup_print_headerstart(FILE *ofp) {
-    fputs("#NEXUS\n", ofp);
-    fprintf(ofp, "[! RDP - the Ribosomal Database Project, (%s).]\n", today_date());
-    fputs("[! To get started, send HELP to rdp@info.mcs.anl.gov ]\n", ofp);
-    fputs("BEGIN DATA;\n   DIMENSIONS\n", ofp);
+static void paup_print_headerstart(Writer& write) {
+    write.out("#NEXUS\n");
+    write.outf("[! RDP - the Ribosomal Database Project, (%s).]\n", today_date());
+    write.out("[! To get started, send HELP to rdp@info.mcs.anl.gov ]\n");
+    write.out("BEGIN DATA;\n   DIMENSIONS\n");
 }
 
-static void paup_print_header_counters(FILE *ofp) {
-    fprintf(ofp, "      NTAX = %6s\n      NCHAR = %6s\n      ;\n", "", ""); 
+static void paup_print_header_counters(Writer& write) {
+    write.outf("      NTAX = %6s\n      NCHAR = %6s\n      ;\n", "", ""); 
 }
-static void paup_print_header_counters(FILE *ofp, int total_seq, int maxsize) {
-    fprintf(ofp, "      NTAX = %6d\n      NCHAR = %6d\n      ;\n", total_seq, maxsize);
+static void paup_print_header_counters(Writer& write, int total_seq, int maxsize) {
+    write.outf("      NTAX = %6d\n      NCHAR = %6d\n      ;\n", total_seq, maxsize);
 }
 
-static void paup_print_header(const Paup& paup, FILE * ofp) {
+static void paup_print_header(const Paup& paup, Writer& write) {
     // Print out the header of each paup format.
-    paup_print_headerstart(ofp);
-    paup_print_header_counters(ofp);
+    paup_print_headerstart(write);
+    paup_print_header_counters(write);
 
-    fputs("   FORMAT\n      LABELPOS = LEFT\n", ofp);
-    fprintf(ofp, "      MISSING = .\n      EQUATE = \"%s\"\n", paup.equate);
-    fprintf(ofp, "      INTERLEAVE\n      DATATYPE = RNA\n      GAP = %c\n      ;\n", paup.gap);
-    fputs("   OPTIONS\n      GAPMODE = MISSING\n      ;\n   MATRIX\n", ofp);
+    write.out("   FORMAT\n      LABELPOS = LEFT\n");
+    write.outf("      MISSING = .\n      EQUATE = \"%s\"\n", paup.equate);
+    write.outf("      INTERLEAVE\n      DATATYPE = RNA\n      GAP = %c\n      ;\n", paup.gap);
+    write.out("   OPTIONS\n      GAPMODE = MISSING\n      ;\n   MATRIX\n");
 }
 
 void to_paup(const char *inf, const char *outf, Format inType) {
@@ -96,7 +96,7 @@ void to_paup(const char *inf, const char *outf, Format inType) {
     Paup      paup;
     Alignment ali;
 
-    paup_print_header(paup, write.get_FILE());
+    paup_print_header(paup, write);
 
     while (1) {
         InputFormatPtr in  = InputFormat::create(inType);
@@ -121,23 +121,22 @@ void to_paup(const char *inf, const char *outf, Format inType) {
         for (int indi = 0; indi < total_seq; indi++) {
             if (current < ali.get_len(indi))
                 first_line++;
-            paup_print_line(ali.get(indi), current, (first_line == 1), write.get_FILE());
+            paup_print_line(ali.get(indi), current, (first_line == 1), write);
 
             // Avoid repeating
             if (first_line == 1)
                 first_line++;
         }
         current += (SEQLINE - 10);
-        if (maxsize > current)
-            fputc('\n', write.get_FILE());
+        if (maxsize > current) write.out('\n');
     }
 
-    fputs("      ;\nENDBLOCK;\n", write.get_FILE());
+    write.out("      ;\nENDBLOCK;\n");
 
     // rewrite output header
     rewind(write.get_FILE());
-    paup_print_headerstart(write.get_FILE());
-    paup_print_header_counters(write.get_FILE(), total_seq, maxsize);
+    paup_print_headerstart(write);
+    paup_print_header_counters(write, total_seq, maxsize);
 
     write.seq_done(ali.get_count());
 }

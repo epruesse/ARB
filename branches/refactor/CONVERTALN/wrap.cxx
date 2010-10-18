@@ -1,5 +1,6 @@
 #include "seq.h"
 #include "wrap.h"
+#include "reader.h"
 
 int WrapMode::wrap_pos(const char *str, int wrapCol) const {
     // returns the first position lower equal 'wrapCol' after which splitting
@@ -20,13 +21,13 @@ int WrapMode::wrap_pos(const char *str, int wrapCol) const {
     return i >= 0 ? i : wrapCol;
 }
 
-const char *WrapMode::print_return_wrapped(FILE *fp, const char * const content, const int len, const int rest_width, WrapBug behavior) const {
+const char *WrapMode::print_return_wrapped(Writer& write, const char * const content, const int len, const int rest_width, WrapBug behavior) const {
     // @@@ currently reproduces all bugs found in the previously six individual wrapping functions
 
     ca_assert(content[len] == '\n');
 
     if (len<(rest_width+1)) {
-        fputs(content, fp);
+        write.out(content);
         return NULL; // no rest
     }
 
@@ -50,8 +51,8 @@ const char *WrapMode::print_return_wrapped(FILE *fp, const char * const content,
     if (behavior&WRAPBUG_WRAP_BEFORE_SEP && content[split_after+1] == ' ' && content[split_after+2] == ' ') split_after++;
 
     ca_assert(content[split_after] != '\n');
-    fputs_len(content, split_after+1, fp);
-    fputc('\n', fp);
+    fputs_len(content, split_after+1, write);
+    write.out('\n');
 
     ca_assert(content[len] == '\n');
     ca_assert(len>continue_at);
@@ -59,14 +60,14 @@ const char *WrapMode::print_return_wrapped(FILE *fp, const char * const content,
     return content+continue_at;
 }
 
-void WrapMode::print(FILE *fp, const char *first_prefix, const char *other_prefix, const char *content, int max_width, WrapBug behavior) const {
+void WrapMode::print(Writer& write, const char *first_prefix, const char *other_prefix, const char *content, int max_width, WrapBug behavior) const {
     ca_assert(has_content(content));
 
     int len        = strlen(content)-1;
     int prefix_len = strlen(first_prefix);
 
-    fputs(first_prefix, fp);
-    const char *rest = print_return_wrapped(fp, content, len, max_width-prefix_len, behavior);
+    write.out(first_prefix);
+    const char *rest = print_return_wrapped(write, content, len, max_width-prefix_len, behavior);
 
     if (rest) {
         prefix_len = strlen(other_prefix);
@@ -75,8 +76,8 @@ void WrapMode::print(FILE *fp, const char *first_prefix, const char *other_prefi
             len     -= rest-content;
             content  = rest;
 
-            fputs(other_prefix, fp);
-            rest = print_return_wrapped(fp, content, len, max_width-prefix_len, behavior);
+            write.out(other_prefix);
+            rest = print_return_wrapped(write, content, len, max_width-prefix_len, behavior);
         }
     }
 }

@@ -47,7 +47,7 @@ void genbank_reference(GenBank &gbk, Reader &reader);
 void genbank_in(GenBank &gbk, Seq &seq, Reader &reader);
 void genbank_origin(Seq &seq, Reader &reader);
 void genbank_in_simple(GenBank &gbk, Seq &seq, Reader &reader);
-void genbank_out(const GenBank &gbk, const Seq &seq, FILE *fp);
+void genbank_out(const GenBank &gbk, const Seq &seq, Writer &write);
 void genbank_to_genbank(const char *inf, const char *outf);
 
 /* macke.cxx */
@@ -55,12 +55,11 @@ void macke_origin(Seq &seq, const char *key, Reader &reader);
 int macke_abbrev(const char *line, char *key, int index);
 bool macke_is_continued_remark(const char *str);
 void macke_in_simple(Macke &macke, Seq &seq, Reader &reader);
-void macke_out_header(FILE *fp);
-void macke_seq_display_out(const Macke &macke, FILE *fp, Format inType, bool first_sequence);
-void macke_seq_info_out(const Macke &macke, FILE *fp);
+void macke_out_header(Writer &write);
+void macke_seq_display_out(const Macke &macke, Writer &write, Format inType, bool first_sequence);
 void macke_seq_info_out(const Macke &macke, Writer &write);
 int macke_key_word(const char *line, int index, char *key, int length);
-void macke_seq_data_out(const Seq &seq, const Macke &macke, FILE *fp);
+void macke_seq_data_out(const Seq &seq, const Macke &macke, Writer &write);
 
 /* main.cxx */
 
@@ -99,8 +98,8 @@ void skip_eolnl_and_append(char *&string1, const char *string2);
 void skip_eolnl_and_append_spaced(char *&string1, const char *string2);
 void Append(char *&string1, const char *string2);
 void upcase(char *str);
-void fputc_rep(char c, int repeat, FILE *fp);
-int fputs_len(const char *str, int len, FILE *out);
+void fputc_rep(char c, int repeat, Writer &write);
+int fputs_len(const char *str, int len, Writer &write);
 int find_pattern(const char *text, const char *pattern);
 int skip_pattern(const char *text, const char *pattern);
 int find_subspecies(const char *str, char expect_behind);

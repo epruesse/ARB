@@ -128,7 +128,7 @@ public:
 
     void out(const char *text);
     void out(char ch);
-    void outf(const char *format, ...) __ATTR__FORMAT(2);
+    int outf(const char *format, ...) __ATTR__FORMAT(2);
 };
 
 #else

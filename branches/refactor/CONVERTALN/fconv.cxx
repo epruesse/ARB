@@ -306,8 +306,6 @@ static void test_convert_by_format_num_WRAPPED(int from, int to) {
         fromFile = "general/text.input";
         error = test_convert(fromFile, toFile, TYPE(from), TYPE(to));
         TEST_ASSERT(error); 
-
-        fprintf(stderr, "empty-error: %s\n", error);
     }
 
     free(toFile);

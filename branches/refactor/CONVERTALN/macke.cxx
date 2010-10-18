@@ -112,14 +112,14 @@ void macke_in_simple(Macke& macke, Seq& seq, Reader& reader) {
         }
     }
 }
-void macke_out_header(FILE * fp) {
+void macke_out_header(Writer& write) {
     // Output the Macke format header.
-    fputs("#-\n#-\n#-\teditor\n", fp);
+    write.out("#-\n#-\n#-\teditor\n");
     const char *date = today_date();
-    fprintf(fp, "#-\t%s\n#-\n#-\n", date);
+    write.outf("#-\t%s\n#-\n#-\n", date);
 }
 
-void macke_seq_display_out(const Macke& macke, FILE * fp, Format inType, bool first_sequence) {
+void macke_seq_display_out(const Macke& macke, Writer& write, Format inType, bool first_sequence) {
     // Output the Macke format each sequence format (wot?)
     char token[TOKENSIZE], direction[TOKENSIZE];
 
@@ -135,38 +135,38 @@ void macke_seq_display_out(const Macke& macke, FILE * fp, Format inType, bool fi
             strcpy(token, "dna");
     }
     if (first_sequence) {
-        fprintf(fp, "#-\tReference sequence:  %s\n", macke.seqabbr);
-        fputs("#-\tAttributes:\n", fp);
+        write.outf("#-\tReference sequence:  %s\n", macke.seqabbr);
+        write.out("#-\tAttributes:\n");
 
         if (str0len(macke.seqabbr) < 8)
-            fprintf(fp, "#=\t\t%s\t \tin  out  vis  prt   ord  %s  lin  %s  func ref\n", macke.seqabbr, token, direction);
+            write.outf("#=\t\t%s\t \tin  out  vis  prt   ord  %s  lin  %s  func ref\n", macke.seqabbr, token, direction);
         else
-            fprintf(fp, "#=\t\t%s\tin  out  vis  prt   ord  %s  lin  %s  func ref\n", macke.seqabbr, token, direction);
+            write.outf("#=\t\t%s\tin  out  vis  prt   ord  %s  lin  %s  func ref\n", macke.seqabbr, token, direction);
     }
     else if (str0len(macke.seqabbr) < 8)
-        fprintf(fp, "#=\t\t%s\t\tin  out  vis  prt   ord  %s  lin  %s  func\n", macke.seqabbr, token, direction);
+        write.outf("#=\t\t%s\t\tin  out  vis  prt   ord  %s  lin  %s  func\n", macke.seqabbr, token, direction);
     else
-        fprintf(fp, "#=\t\t%s\tin  out  vis  prt   ord  %s  lin  %s  func\n", macke.seqabbr, token, direction);
+        write.outf("#=\t\t%s\tin  out  vis  prt   ord  %s  lin  %s  func\n", macke.seqabbr, token, direction);
 }
 
-static void macke_print_line(FILE * fp, const char *prefix, const char *content) { // @@@ WRAPPER
+static void macke_print_line(Writer& write, const char *prefix, const char *content) { // @@@ WRAPPER
     // print a macke line and wrap around line after MACKEMAXLINE column.
-    // WrapMode(true).print(fp, prefix, prefix, content, MACKEMAXLINE, false); // @@@ wanted
-    WrapMode(true).print(fp, prefix, prefix, content, MACKEMAXLINE, WRAPBUG_WRAP_BEFORE_SEP);
+    // WrapMode(true).print(write, prefix, prefix, content, MACKEMAXLINE, false); // @@@ wanted
+    WrapMode(true).print(write, prefix, prefix, content, MACKEMAXLINE, WRAPBUG_WRAP_BEFORE_SEP);
 }
 
-static void macke_print_prefixed_line(const Macke& macke, FILE *fp, const char *tag, const char *content) {
+static void macke_print_prefixed_line(const Macke& macke, Writer& write, const char *tag, const char *content) {
     ca_assert(has_content(content));
 
     char prefix[LINESIZE];
     sprintf(prefix, "#:%s:%s:", macke.seqabbr, tag);
 
-    macke_print_line(fp, prefix, content);
+    macke_print_line(write, prefix, content);
 }
 
-static bool macke_print_prefixed_line_if_content(const Macke& macke, FILE *fp, const char *tag, const char *content) {
+static bool macke_print_prefixed_line_if_content(const Macke& macke, Writer& write, const char *tag, const char *content) {
     if (!has_content(content)) return false;
-    macke_print_prefixed_line(macke, fp, tag, content);
+    macke_print_prefixed_line(macke, write, tag, content);
     return true;
 }
 
@@ -195,45 +195,42 @@ static bool macke_is_genbank_entry_comment(const char *Str) {
     return lookup_keyword(keyword, genbankEntryComments) >= 0;
 }
 
-static void macke_print_keyword_rem(const Macke& macke, int index, FILE * fp) { // @@@ WRAPPER
+static void macke_print_keyword_rem(const Macke& macke, int index, Writer& write) { // @@@ WRAPPER
     // Print out keyworded remark line in Macke file with wrap around functionality.
     // (Those keywords are defined in GenBank COMMENTS by RDP group)
     char first[LINESIZE]; sprintf(first, "#:%s:rem:", macke.seqabbr);
     char other[LINESIZE]; sprintf(other, "%s:%*s", first, RDP_SUBKEY_INDENT, "");
     const char *remark = macke.get_rem(index);
 
-    // WrapMode(true).print(fp, first, other, remark, MACKEMAXLINE, false); // @@@ wanted correct behavior
-    WrapMode(true).print(fp, first, other, remark, MACKEMAXLINE-1, WRAPBUG_WRAP_AT_SPACE); // works with testdata
+    // WrapMode(true).print(write, first, other, remark, MACKEMAXLINE, false); // @@@ wanted correct behavior
+    WrapMode(true).print(write, first, other, remark, MACKEMAXLINE-1, WRAPBUG_WRAP_AT_SPACE); // works with testdata
 }
 
-void macke_seq_info_out(const Macke& macke, FILE * fp) {
+void macke_seq_info_out(const Macke& macke, Writer& write) {
     // Output sequence information
 
-    macke_print_prefixed_line_if_content(macke, fp, "name",   macke.name);
-    macke_print_prefixed_line_if_content(macke, fp, "strain", macke.strain);
-    macke_print_prefixed_line_if_content(macke, fp, "subsp",  macke.subspecies);
-    macke_print_prefixed_line_if_content(macke, fp, "atcc",   macke.atcc);
-    macke_print_prefixed_line_if_content(macke, fp, "rna",    macke.rna);        // old version entry
-    macke_print_prefixed_line_if_content(macke, fp, "date",   macke.date);
-    macke_print_prefixed_line_if_content(macke, fp, "acs",    macke.acs)
-        || macke_print_prefixed_line_if_content(macke, fp, "acs", macke.nbk);    // old version entry
-    macke_print_prefixed_line_if_content(macke, fp, "auth",   macke.author);
-    macke_print_prefixed_line_if_content(macke, fp, "jour",   macke.journal);
-    macke_print_prefixed_line_if_content(macke, fp, "title",  macke.title);
-    macke_print_prefixed_line_if_content(macke, fp, "who",    macke.who);
+    macke_print_prefixed_line_if_content(macke, write, "name",   macke.name);
+    macke_print_prefixed_line_if_content(macke, write, "strain", macke.strain);
+    macke_print_prefixed_line_if_content(macke, write, "subsp",  macke.subspecies);
+    macke_print_prefixed_line_if_content(macke, write, "atcc",   macke.atcc);
+    macke_print_prefixed_line_if_content(macke, write, "rna",    macke.rna);        // old version entry
+    macke_print_prefixed_line_if_content(macke, write, "date",   macke.date);
+    macke_print_prefixed_line_if_content(macke, write, "acs",    macke.acs)
+        || macke_print_prefixed_line_if_content(macke, write, "acs", macke.nbk);    // old version entry
+    macke_print_prefixed_line_if_content(macke, write, "auth",   macke.author);
+    macke_print_prefixed_line_if_content(macke, write, "jour",   macke.journal);
+    macke_print_prefixed_line_if_content(macke, write, "title",  macke.title);
+    macke_print_prefixed_line_if_content(macke, write, "who",    macke.who);
 
     // print out remarks, wrap around if more than MACKEMAXLINE columns
     for (int indi = 0; indi < macke.get_rem_count(); indi++) {
         if (macke_is_genbank_entry_comment(macke.get_rem(indi))) {
-            macke_print_keyword_rem(macke, indi, fp);
+            macke_print_keyword_rem(macke, indi, write);
         }
         else { // general comment
-            macke_print_prefixed_line(macke, fp, "rem", macke.get_rem(indi));
+            macke_print_prefixed_line(macke, write, "rem", macke.get_rem(indi));
         }
     }
-}
-void macke_seq_info_out(const Macke& macke, Writer& write) {
-    macke_seq_info_out(macke, write.get_FILE());
 }
 
 int macke_key_word(const char *line, int index, char *key, int length) {
@@ -256,7 +253,7 @@ int macke_key_word(const char *line, int index, char *key, int length) {
     return (indi + 1);
 }
 
-void macke_seq_data_out(const Seq& seq, const Macke& macke, FILE * fp) {
+void macke_seq_data_out(const Seq& seq, const Macke& macke, Writer& write) {
     // Output Macke format sequence data
     int indj, indk;
 
@@ -267,19 +264,19 @@ void macke_seq_data_out(const Seq& seq, const Macke& macke, FILE * fp) {
     const char *sequence = seq.get_seq();
     for (indk = indj = 0; indk < seq.get_len(); indk++) {
         if (indj == 0)
-            fprintf(fp, "%s%6d ", macke.seqabbr, indk);
+            write.outf("%s%6d ", macke.seqabbr, indk);
 
-        fputc(sequence[indk], fp);
+        write.out(sequence[indk]);
 
         indj++;
         if (indj == 50) {
             indj = 0;
-            fputc('\n', fp);
+            write.out('\n');
         }
     }
 
     if (indj != 0)
-        fputc('\n', fp);
+        write.out('\n');
     // every sequence
 }
 

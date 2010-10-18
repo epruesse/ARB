@@ -329,9 +329,12 @@ util.o: $(ARBHOME)/INCLUDE/FileBuffer.h
 util.o: $(ARBHOME)/INCLUDE/smartptr.h
 util.o: $(ARBHOME)/INCLUDE/test_global.h
 
+wrap.o: defs.h
 wrap.o: fun.h
 wrap.o: global.h
+wrap.o: input_format.h
 wrap.o: prototypes.h
+wrap.o: reader.h
 wrap.o: seq.h
 wrap.o: wrap.h
 wrap.o: $(ARBHOME)/INCLUDE/ad_k_prot.h

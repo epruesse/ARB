@@ -202,18 +202,18 @@ void upcase(char *str) {
     for (int i = 0; str[i]; ++i) str[i] = toupper(str[i]);
 }
 
-void fputc_rep(char c, int repeat, FILE *fp) {
+void fputc_rep(char c, int repeat, Writer& write) {
     for (int r = 0; r<repeat; ++r) {
-        fputc(c, fp);
+        write.out(c);
     }
 }
 
-int fputs_len(const char *str, int len, FILE *out) {
+int fputs_len(const char *str, int len, Writer& write) {
     // like fputs(), but does not print more than 'len' characters
     // returns number of chars written or EOF
     for (int i = 0; i<len; ++i) {
         if (!str[i]) return i;
-        if (fputc(str[i], out) == EOF) return EOF;
+        if (fputc(str[i], write.get_FILE()) == EOF) return EOF;
     }
     return len;
 }

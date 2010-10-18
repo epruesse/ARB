@@ -4,7 +4,7 @@
 
 #include <cerrno>
 
-static void phylip_print_line(const Seq& seq, int index, FILE * fp) {
+static void phylip_print_line(const Seq& seq, int index, Writer& write) {
     // Print phylip line.
     ca_assert(seq.get_len()>0);
 
@@ -15,15 +15,15 @@ static void phylip_print_line(const Seq& seq, int index, FILE * fp) {
         int         nlen = str0len(name);
         if (nlen > 10) {
             // truncate id length of sequence ID is greater than 10
-            for (int indi = 0; indi < 10; indi++) fputc(name[indi], fp);
+            for (int indi = 0; indi < 10; indi++) write.out(name[indi]);
             bnum = 1;
         }
         else {
-            fputs(name, fp);
+            write.out(name);
             bnum = 10 - nlen + 1;
         }
         // fill in blanks to make up 10 chars for ID.
-        for (int indi = 0; indi < bnum; indi++) fputc(' ', fp);
+        for (int indi = 0; indi < bnum; indi++) write.out(' ');
         length = SEQLINE - 10;
     }
     else if (index >= seq.get_len()) {
@@ -40,17 +40,17 @@ static void phylip_print_line(const Seq& seq, int index, FILE * fp) {
 
             if (c == '.')
                 c = '?';
-            fputc(c, fp);
+            write.out(c);
             indj++;
             if (indj == 10 && (index + indi) < (seq.get_len() - 1) && indi < (length - 1)) {
-                fputc(' ', fp);
+                write.out(' ');
                 indj = 0;
             }
         }
         else
             break;
     }
-    fputc('\n', fp);
+    write.out('\n');
 }
 
 void to_phylip(const char *inf, const char *outf, Format inType, int readstdin) {
@@ -78,7 +78,7 @@ void to_phylip(const char *inf, const char *outf, Format inType, int readstdin) 
     int maxsize     = ali.get_max_len();
     int total_seq   = ali.get_count();
     int current     = 0;
-    int headersize1 = fprintf(write.get_FILE(), "%8d %8d", maxsize, current);
+    int headersize1 = write.outf("%8d %8d", maxsize, current);
 
     if (readstdin) {
         int spaced = 0;
@@ -86,24 +86,24 @@ void to_phylip(const char *inf, const char *outf, Format inType, int readstdin) 
             int c = getchar();
             if (c == EOF) break; // read all from stdin now (not only one line)
             if (!spaced) {
-                fputc(' ', write.get_FILE());
+                write.out(' ');
                 spaced = 1;
             }
-            fputc(c, write.get_FILE());
+            write.out(c);
         }
     }
-    fputc('\n', write.get_FILE());
+    write.out('\n');
 
     while (maxsize > current) {
         for (int indi = 0; indi < total_seq; indi++) {
-            phylip_print_line(ali.get(indi), current, write.get_FILE());
+            phylip_print_line(ali.get(indi), current, write);
         }
         if (current == 0)
             current += (SEQLINE - 10);
         else
             current += SEQLINE;
         if (maxsize > current)
-            fputc('\n', write.get_FILE());
+            write.out('\n');
     }
     // rewrite output header
     errno = 0;
@@ -114,7 +114,7 @@ void to_phylip(const char *inf, const char *outf, Format inType, int readstdin) 
         throw_errorf(141, "Failed to rewind file (errno=%i)", errno);
     }
 
-    int headersize2 = fprintf(write.get_FILE(), "%8d %8d", total_seq, maxsize);
+    int headersize2 = write.outf("%8d %8d", total_seq, maxsize);
 
     if (headersize1 != headersize2) {
         ca_assert(0);

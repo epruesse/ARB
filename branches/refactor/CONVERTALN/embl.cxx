@@ -330,141 +330,141 @@ void embl_origin(Seq& seq, Reader& reader) {
     }
 
 }
-static void embl_print_lines(FILE * fp, const char *key, const char *content, const WrapMode& wrapMode) { // @@@ WRAPPER
+static void embl_print_lines(Writer& write, const char *key, const char *content, const WrapMode& wrapMode) { // @@@ WRAPPER
     // Print EMBL entry and wrap around if line over EMBLMAXLINE.
     ca_assert(strlen(key) == 2);
 
     char prefix[TOKENSIZE];
     sprintf(prefix, "%-*s", EMBLINDENT, key);
 
-    // wrapMode.print(fp, prefix, prefix, content, EMBLMAXLINE, true); // @@@ wanted
-    wrapMode.print(fp, prefix, prefix, content, EMBLMAXLINE-1, WRAPBUG_WRAP_AT_SPACE); // @@@ 2 BUGs
+    // wrapMode.print(write, prefix, prefix, content, EMBLMAXLINE, true); // @@@ wanted
+    wrapMode.print(write, prefix, prefix, content, EMBLMAXLINE-1, WRAPBUG_WRAP_AT_SPACE); // @@@ 2 BUGs
 }
 
-static void embl_print_lines_if_content(FILE *fp, const char *key, const char *content, const WrapMode& wrapMode, bool followed_by_spacer) {
+static void embl_print_lines_if_content(Writer& write, const char *key, const char *content, const WrapMode& wrapMode, bool followed_by_spacer) {
     if (has_content(content)) {
-        embl_print_lines(fp, key, content, wrapMode);
-        followed_by_spacer && fputs("XX\n", fp);
+        embl_print_lines(write, key, content, wrapMode);
+        if (followed_by_spacer) write.out("XX\n");
     }
 }
 
-static void embl_print_comment_if_content(FILE * fp, const char *key, const char *content) { // @@@ WRAPPER
+static void embl_print_comment_if_content(Writer& write, const char *key, const char *content) { // @@@ WRAPPER
     // Print one embl comment line, wrap around
 
     if (!has_content(content)) return;
 
     char first[LINESIZE]; sprintf(first, "CC%*s%s", (EMBLINDENT-2)+RDP_SUBKEY_INDENT, "", key);
     char other[LINESIZE]; sprintf(other, "CC%*s", (EMBLINDENT-2)+RDP_SUBKEY_INDENT+RDP_CONTINUED_INDENT, "");
-    // WrapMode(true).print(fp, first, other, content, EMBLMAXLINE, false); // @@@ wanted
-    WrapMode(true).print(fp, first, other, content, EMBLMAXLINE-2, WRAP_CORRECTLY); // @@@ 1 BUG
+    // WrapMode(true).print(write, first, other, content, EMBLMAXLINE, false); // @@@ wanted
+    WrapMode(true).print(write, first, other, content, EMBLMAXLINE-2, WRAP_CORRECTLY); // @@@ 1 BUG
 }
 
-inline void embl_print_completeness(FILE *fp, char compX, char X) {
+inline void embl_print_completeness(Writer& write, char compX, char X) {
     if (compX == ' ') return;
     ca_assert(compX == 'y' || compX == 'n');
-    fprintf(fp, "CC     %c' end complete: %s\n", X, compX == 'y' ? "Yes" : "No");
+    write.outf("CC     %c' end complete: %s\n", X, compX == 'y' ? "Yes" : "No");
 }
 
-static void embl_out_comments(const Embl& embl, const Seq& seq, FILE * fp) {
+static void embl_out_comments(const Embl& embl, const Seq& seq, Writer& write) {
     // Print out the comments part of EMBL format.
 
     const OrgInfo& orginf = embl.comments.orginf;
     if (orginf.exists) {
-        fputs("CC   Organism information\n", fp);
+        write.out("CC   Organism information\n");
 
-        embl_print_comment_if_content(fp, "Source of strain: ",   orginf.source);
-        embl_print_comment_if_content(fp, "Culture collection: ", orginf.cultcoll);
-        embl_print_comment_if_content(fp, "Former name: ",        orginf.formname);
-        embl_print_comment_if_content(fp, "Alternate name: ",     orginf.nickname);
-        embl_print_comment_if_content(fp, "Common name: ",        orginf.commname);
-        embl_print_comment_if_content(fp, "Host organism: ",      orginf.hostorg);
+        embl_print_comment_if_content(write, "Source of strain: ",   orginf.source);
+        embl_print_comment_if_content(write, "Culture collection: ", orginf.cultcoll);
+        embl_print_comment_if_content(write, "Former name: ",        orginf.formname);
+        embl_print_comment_if_content(write, "Alternate name: ",     orginf.nickname);
+        embl_print_comment_if_content(write, "Common name: ",        orginf.commname);
+        embl_print_comment_if_content(write, "Host organism: ",      orginf.hostorg);
     }
 
     const SeqInfo& seqinf = embl.comments.seqinf;
     if (seqinf.exists) {
-        fprintf(fp, "CC   Sequence information (bases 1 to %d)\n", seq.get_len());
+        write.outf("CC   Sequence information (bases 1 to %d)\n", seq.get_len());
 
-        embl_print_comment_if_content(fp, "RDP ID: ",                      seqinf.RDPid);
-        embl_print_comment_if_content(fp, "Corresponding GenBank entry: ", seqinf.gbkentry);
-        embl_print_comment_if_content(fp, "Sequencing methods: ",          seqinf.methods);
+        embl_print_comment_if_content(write, "RDP ID: ",                      seqinf.RDPid);
+        embl_print_comment_if_content(write, "Corresponding GenBank entry: ", seqinf.gbkentry);
+        embl_print_comment_if_content(write, "Sequencing methods: ",          seqinf.methods);
 
-        embl_print_completeness(fp, seqinf.comp5, '5');
-        embl_print_completeness(fp, seqinf.comp3, '3');
+        embl_print_completeness(write, seqinf.comp5, '5');
+        embl_print_completeness(write, seqinf.comp3, '3');
     }
 
-    embl_print_lines_if_content(fp, "CC", embl.comments.others, WrapMode("\n"), true);
+    embl_print_lines_if_content(write, "CC", embl.comments.others, WrapMode("\n"), true);
 }
 
-static void embl_out_origin(const Seq& seq, FILE *fp) {
+static void embl_out_origin(const Seq& seq, Writer& write) {
     // Print out the sequence data of EMBL format.
     BaseCounts bases;
     seq.count(bases);
-    fprintf(fp, "SQ   Sequence %d BP; %d A; %d C; %d G; %d T; %d other;\n",
-            seq.get_len(), bases.a, bases.c, bases.g, bases.t, bases.other);
+    write.outf("SQ   Sequence %d BP; %d A; %d C; %d G; %d T; %d other;\n",
+               seq.get_len(), bases.a, bases.c, bases.g, bases.t, bases.other);
 
     const char *sequence = seq.get_seq();
     int indi, indj, indk;
     for (indi = 0, indj = 0, indk = 1; indi < seq.get_len(); indi++) {
         if ((indk % 60) == 1)
-            fputs("     ", fp);
-        fputc(sequence[indi], fp);
+            write.out("     ");
+        write.out(sequence[indi]);
         indj++;
         if ((indk % 60) == 0) {
-            fputc('\n', fp);
+            write.out('\n');
             indj = 0;
         }
         else if (indj == 10 && indi != (seq.get_len() - 1)) {
-            fputc(' ', fp);
+            write.out(' ');
             indj = 0;
         }
         indk++;
     }
-    if ((indk % 60) != 1) fputc('\n', fp);
-    fputs("//\n", fp);
+    if ((indk % 60) != 1) write.out('\n');
+    write.out("//\n");
 }
-static void embl_out(const Embl& embl, const Seq& seq, FILE * fp) {
+static void embl_out(const Embl& embl, const Seq& seq, Writer& write) {
     // Output EMBL data.
     int indi;
 
     WrapMode wrapWords(true);
     WrapMode neverWrap(false);
 
-    embl_print_lines_if_content(fp, "ID", embl.id,          neverWrap,     true);
-    embl_print_lines_if_content(fp, "AC", embl.accession,   wrapWords,     true);
-    embl_print_lines_if_content(fp, "DT", embl.dateu,       neverWrap,     false);
-    embl_print_lines_if_content(fp, "DT", embl.datec,       neverWrap,     true);
+    embl_print_lines_if_content(write, "ID", embl.id,          neverWrap,     true);
+    embl_print_lines_if_content(write, "AC", embl.accession,   wrapWords,     true);
+    embl_print_lines_if_content(write, "DT", embl.dateu,       neverWrap,     false);
+    embl_print_lines_if_content(write, "DT", embl.datec,       neverWrap,     true);
     // @@@ change behavior ? (print XX if any of the two DTs has been written)
-    embl_print_lines_if_content(fp, "DE", embl.description, wrapWords,     true);
-    embl_print_lines_if_content(fp, "KW", embl.keywords,    WrapMode(";"), true);
+    embl_print_lines_if_content(write, "DE", embl.description, wrapWords,     true);
+    embl_print_lines_if_content(write, "KW", embl.keywords,    WrapMode(";"), true);
 
     if (has_content(embl.os)) {
-        embl_print_lines(fp, "OS", embl.os, wrapWords);
-        fputs("OC   No information.\n", fp);
-        fputs("XX\n", fp);
+        embl_print_lines(write, "OS", embl.os, wrapWords);
+        write.out("OC   No information.\n");
+        write.out("XX\n");
     }
 
     // GenbankRef
     for (indi = 0; indi < embl.get_refcount(); indi++) {
         const Emblref& ref = embl.get_ref(indi);
 
-        fprintf(fp, "RN   [%d]\n", indi + 1);
-        embl_print_lines_if_content(fp, "RP", ref.processing, neverWrap, false);
-        embl_print_lines_if_content(fp, "RA", ref.author, WrapMode(","), false);
+        write.outf("RN   [%d]\n", indi + 1);
+        embl_print_lines_if_content(write, "RP", ref.processing, neverWrap, false);
+        embl_print_lines_if_content(write, "RA", ref.author, WrapMode(","), false);
 
-        if (has_content(ref.title)) embl_print_lines(fp, "RT", ref.title, wrapWords);
-        else fputs("RT   ;\n", fp);
+        if (has_content(ref.title)) embl_print_lines(write, "RT", ref.title, wrapWords);
+        else write.out("RT   ;\n");
 
-        embl_print_lines_if_content(fp, "RL", ref.journal, wrapWords, false);
-        fputs("XX\n", fp);
+        embl_print_lines_if_content(write, "RL", ref.journal, wrapWords, false);
+        write.out("XX\n");
     }
 
     if (has_content(embl.dr)) {
-        embl_print_lines(fp, "DR", embl.dr, wrapWords);
-        fputs("XX\n", fp);
+        embl_print_lines(write, "DR", embl.dr, wrapWords);
+        write.out("XX\n");
     }
 
-    embl_out_comments(embl, seq, fp);
-    embl_out_origin(seq, fp);
+    embl_out_comments(embl, seq, write);
+    embl_out_origin(seq, write);
 }
 static char *etog_author(char *Str) {
     // Convert EMBL author format to Genbank author format.
@@ -701,7 +701,7 @@ void embl_to_macke(const char *inf, const char *outf, Format inType) {
     Reader reader(inf);
     Writer write(outf);
 
-    macke_out_header(write.get_FILE()); // macke format sequence irrelevant header
+    macke_out_header(write); // macke format sequence irrelevant header
 
     for (int indi = 0; indi < 3; indi++) {
         reader.rewind();
@@ -718,17 +718,17 @@ void embl_to_macke(const char *inf, const char *outf, Format inType) {
             if (!etom(embl, macke, seq)) throw_conversion_failure(EMBL, MACKE);
 
             switch (indi) {
-                case 0: macke_seq_display_out(macke, write.get_FILE(), inType, numofseq == 1); break;
-                case 1: macke_seq_info_out(macke, write.get_FILE()); break;
+                case 0: macke_seq_display_out(macke, write, inType, numofseq == 1); break;
+                case 1: macke_seq_info_out(macke, write); break;
                 case 2:
-                    macke_seq_data_out(seq, macke, write.get_FILE());
+                    macke_seq_data_out(seq, macke, write);
                     write.seq_done();
                     break;
                 default:;
             }
         }
         if (indi == 0) {
-            fputs("#-\n", write.get_FILE());
+            write.out("#-\n");
             warning_out = 0; // no warning messages for next loop
         }
     }
@@ -746,7 +746,7 @@ void embl_to_embl(const char *inf, const char *outf) {
         embl_in(embl, seq, reader);
         if (reader.failed()) break;
 
-        embl_out(embl, seq, write.get_FILE());
+        embl_out(embl, seq, write);
         write.seq_done();
     }
 }
@@ -764,7 +764,7 @@ void embl_to_genbank(const char *inf, const char *outf) {
 
         GenBank gbk;
         if (!etog(embl, gbk, seq)) throw_conversion_failure(MACKE, GENBANK);
-        genbank_out(gbk, seq, write.get_FILE());
+        genbank_out(gbk, seq, write);
         write.seq_done();
     }
 }
@@ -1007,7 +1007,7 @@ void genbank_to_embl(const char *inf, const char *outf) {
 
         Embl embl;
         if (!gtoe(gbk, embl, seq)) throw_conversion_failure(GENBANK, EMBL);
-        embl_out(embl, seq, write.get_FILE());
+        embl_out(embl, seq, write);
         write.seq_done();
     }
 }
@@ -1066,7 +1066,7 @@ void macke_to_embl(const char *inf, const char *outf) {
 
         Embl embl;
         if (!mtoe(macke, embl, seq)) throw_conversion_failure(MACKE, EMBL);
-        embl_out(embl, seq, write.get_FILE());
+        embl_out(embl, seq, write);
         write.seq_done();
     }
 }

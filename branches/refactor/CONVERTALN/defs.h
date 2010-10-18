@@ -42,7 +42,7 @@ enum EntryState {
 // Logging
 
 #if defined(DEBUG)
-#define CALOG // be more verbose in debugging mode
+// #define CALOG // be more verbose in debugging mode
 #endif // DEBUG
 
 #else

@@ -64,12 +64,13 @@ void Writer::out(const char *text) {
     if (fputs(text, ofp) == EOF) throw_write_error();
 }
 
-void Writer::outf(const char *format, ...) {
+int Writer::outf(const char *format, ...) {
     va_list parg;
     va_start(parg, format);
     int     printed = vfprintf(ofp, format, parg);
     va_end(parg);
     if (printed<0) throw_write_error();
+    return printed;
 }
 
 

@@ -13,7 +13,7 @@ void genbank_to_macke(const char *inf, const char *outf) {
     int indi, total_num;
 
     // sequence irrelevant header
-    macke_out_header(write.get_FILE());
+    macke_out_header(write);
 
     for (indi = 0; indi < 3; indi++) {
         reader.rewind();
@@ -30,10 +30,10 @@ void genbank_to_macke(const char *inf, const char *outf) {
             if (!gtom(gbk, macke)) throw_conversion_failure(GENBANK, MACKE);
 
             switch (indi) {
-                case 0: macke_seq_display_out(macke, write.get_FILE(), GENBANK, numofseq == 1); break;
-                case 1: macke_seq_info_out(macke, write.get_FILE()); break;
+                case 0: macke_seq_display_out(macke, write, GENBANK, numofseq == 1); break;
+                case 1: macke_seq_info_out(macke, write); break;
                 case 2:
-                    macke_seq_data_out(seq, macke, write.get_FILE());
+                    macke_seq_data_out(seq, macke, write);
                     write.seq_done();
                     break;
                 default:;
@@ -41,7 +41,7 @@ void genbank_to_macke(const char *inf, const char *outf) {
         }
         total_num = numofseq;
         if (indi == 0) {
-            fputs("#-\n", write.get_FILE());
+            write.out("#-\n");
             warning_out = 0; // no warning message for next loop
         }
     }
@@ -338,7 +338,7 @@ void macke_to_genbank(const char *inf, const char *outf) {
 
         GenBank gbk;
         if (!mtog(macke, gbk, seq)) throw_conversion_failure(MACKE, GENBANK);
-        genbank_out(gbk, seq, write.get_FILE());
+        genbank_out(gbk, seq, write);
         write.seq_done();
     }
 }
