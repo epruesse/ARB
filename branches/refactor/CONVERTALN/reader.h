@@ -20,7 +20,6 @@
 
 class Reader : Noncopyable {
     FILE *fp;
-
     char *curr;    // == NULL means "EOF reached"
     bool  failure;
 
@@ -77,7 +76,7 @@ public:
 
     template<class PRED>
     void skipOverLinesThat(const PRED& match_condition) {
-        while (match_condition(line()))
+        while (line() && match_condition(line()))
             ++(*this);
     }
 };
@@ -107,6 +106,29 @@ struct InputFormatReader {
 
     virtual bool read_seq_data(Seq& seq) = 0;
     virtual bool read_one_entry(InputFormat& data, Seq& seq) = 0;
+};
+
+// --------------------------------------------------------------------------------
+
+class Writer : Noncopyable {
+    FILE *ofp;
+    char *filename;
+    int   written; // count written sequences
+
+public:
+    Writer(const char *outf);
+    ~Writer();
+
+    FILE *get_FILE() { return ofp; }
+
+    bool ok() const { return ofp != NULL; }
+    void throw_write_error();
+    void seq_done() { ++written; }
+    void seq_done(int count) { ca_assert(count >= 0); written += count; }
+
+    void out(const char *text);
+    void out(char ch);
+    void outf(const char *format, ...) __ATTR__FORMAT(2);
 };
 
 #else

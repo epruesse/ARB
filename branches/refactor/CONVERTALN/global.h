@@ -53,6 +53,11 @@ public:
     const char *get_msg() const { return msg; }
     void replace_msg(const char *new_msg) const { freedup(msg, new_msg); }
 
+    void catched() {
+        ca_assert(thrown == this);
+        thrown = NULL;
+    }
+
     static const Convaln_exception *exception_thrown() { return thrown; }
 };
 

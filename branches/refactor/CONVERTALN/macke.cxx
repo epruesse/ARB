@@ -84,10 +84,12 @@ void macke_in_simple(Macke& macke, Seq& seq, Reader& reader) {
     ca_assert(seq.is_empty());
     freenull(macke.seqabbr);
     
-    if (reader.line()) reader.skipOverLinesThat(isMackeHeader); // skip header
+    reader.skipOverLinesThat(isMackeHeader); // skip header
 
     // read in sequence data line by line
-    for (; reader.line() ;) {
+    for (; reader.line() ; ++reader) {
+        if (!has_content(reader.line())) continue;
+        
         int index;
         {
             char name[TOKENSIZE];
@@ -102,12 +104,12 @@ void macke_in_simple(Macke& macke, Seq& seq, Reader& reader) {
         {
             int  seqnum;
             char data[LINESIZE];
-            ASSERT_RESULT(int, 2, sscanf(reader.line() + index, "%d%s", &seqnum, data));
+            int  scanned = sscanf(reader.line() + index, "%d%s", &seqnum, data);
+            if (scanned != 2) throw_errorf(80, "Failed to parse '%s'", reader.line());
+            
             for (int indj = seq.get_len(); indj < seqnum; indj++) seq.add('.');
             for (int indj = 0; data[indj] != '\n' && data[indj] != '\0'; indj++) seq.add(data[indj]);
         }
-
-        ++reader;
     }
 }
 void macke_out_header(FILE * fp) {
@@ -230,6 +232,9 @@ void macke_seq_info_out(const Macke& macke, FILE * fp) {
         }
     }
 }
+void macke_seq_info_out(const Macke& macke, Writer& write) {
+    macke_seq_info_out(macke, write.get_FILE());
+}
 
 int macke_key_word(const char *line, int index, char *key, int length) {
     // Find the key in Macke line.
@@ -285,8 +290,21 @@ void MackeReader::start_reading() {
 }
 
 void MackeReader::stop_reading() {
+    char                    *org_msg = NULL;
+    const Convaln_exception *exc     = Convaln_exception::exception_thrown();
+
+    if (exc) {
+        // avoid that all 3 readers decorate the error
+        org_msg = strdup(exc->get_msg());
+    }
     delete r3; r3 = NULL;
     delete r2; r2 = NULL;
+
+    if (exc) {
+        exc->replace_msg(org_msg);
+        free(org_msg);
+    }
+
     delete r1; r1 = NULL;
 }
 
@@ -312,7 +330,7 @@ bool MackeReader::mackeIn(Macke& macke) {
         ++(*r3);
     }
 
-    if (!isMackeSeqHeader(r3->line())) return false;
+    if (!r3->line() || !isMackeSeqHeader(r3->line())) return false;
 
     // skip to next "#:" line or end of file
     r1->skipOverLinesThat(Not(isMackeSeqInfo));

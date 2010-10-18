@@ -92,6 +92,7 @@ public:
 
     bool read_seq_data(Seq& seq) {
         genbank_origin(seq, *this);
+        if (seq.is_empty()) abort();
         return ok();
     }
     const char *get_key_word(int offset) {
@@ -102,6 +103,7 @@ public:
     bool read_one_entry(InputFormat& data, Seq& seq) __ATTR__USERESULT {
         GenBank& gbk = reinterpret_cast<GenBank&>(data);
         genbank_in(gbk, seq, *this);
+        if (seq.is_empty()) abort();
         return ok();
     }
 };

@@ -2,21 +2,21 @@
 #include "embl.h"
 #include "macke.h"
 
-static void gcg_doc_out(const char *line, FILE * ofp) {
+static void gcg_doc_out(const char *line, Writer& writer) {
     // Output non-sequence data(document) of gcg format.
     int indi, len;
     int previous_is_dot;
 
-    ca_assert(ofp);
+    ca_assert(writer.ok());
 
     for (indi = 0, len = str0len(line), previous_is_dot = 0; indi < len; indi++) {
         if (previous_is_dot) {
             if (line[indi] == '.')
-                fputc(' ', ofp);
+                writer.out(' ');
             else
                 previous_is_dot = 0;
         }
-        fputc(line[indi], ofp);
+        writer.out(line[indi]);
         if (line[indi] == '.')
             previous_is_dot = 1;
     }
@@ -36,53 +36,50 @@ static int gcg_checksum(const char *Str, int numofstr) {
     return cksum;
 }
 
-static void gcg_out_origin(const Seq& seq, FILE * fp) {
+static void gcg_out_origin(const Seq& seq, Writer& write) {
     // Output sequence data in gcg format.
     int         indi, indj, indk;
     const char *sequence = seq.get_seq();
 
     for (indi = 0, indj = 0, indk = 1; indi < seq.get_len(); indi++) {
         if (!is_gapchar(sequence[indi])) {
-            if ((indk % 50) == 1) fprintf(fp, "%8d  ", indk);
-            fputc(sequence[indi], fp);
+            if ((indk % 50) == 1) write.outf("%8d  ", indk);
+            write.out(sequence[indi]);
             indj++;
             if (indj == 10) {
-                fputc(' ', fp);
+                write.out(' ');
                 indj = 0;
             }
-            if ((indk % 50) == 0) fputs("\n\n", fp);
+            if ((indk % 50) == 0) write.out("\n\n");
             indk++;
         }
     }
-    if ((indk % 50) != 1) fputs(" \n", fp);
+    if ((indk % 50) != 1) write.out(" \n");
 }
 
-static void gcg_seq_out(const Seq& seq, FILE * ofp, const char *key) {
+static void gcg_seq_out(const Seq& seq, Writer& write, const char *key) {
     // Output sequence data in gcg format.
-    fprintf(ofp, "\n%s  Length: %d  %s  Type: N  Check: %d  ..\n\n",
+    write.outf("\n%s  Length: %d  %s  Type: N  Check: %d  ..\n\n",
             key,
             seq.get_len()-seq.count_gaps(),
             gcg_date(today_date()),
             gcg_checksum(seq.get_seq(), seq.get_len()));
-    gcg_out_origin(seq, ofp);
+    gcg_out_origin(seq, write);
 }
 
-class GcgWriter {
-    FILE *ofp;
+class GcgWriter : public Writer {
     char *species_name;
     bool  seq_written; // if true, any further sequences are ignored
 
 public:
-    GcgWriter(const char *outf)
-        : ofp(open_output_or_die(outf)),
+    GcgWriter(const char *outname) 
+        : Writer(outname), 
           species_name(NULL),
           seq_written(false)
     {}
     ~GcgWriter() {
-        if (!seq_written) throw_errorf(110, "No data written for species '%s'", species_name);
         free(species_name);
-        fclose(ofp);
-        log_processed(1);
+        Writer::seq_done(seq_written);
     }
 
     void set_species_name(const char *next_name) {
@@ -91,12 +88,13 @@ public:
     }
 
     void add_comment(const char *comment) {
-        if (!seq_written) gcg_doc_out(comment, ofp);
+        if (!seq_written) gcg_doc_out(comment, *this);
     }
 
     void write_seq_data(const Seq& seq) {
         if (!seq_written) {
-            gcg_seq_out(seq, ofp, species_name);
+            ca_assert(species_name); // you have to call set_species_name() before!
+            gcg_seq_out(seq, *this, species_name);
             seq_written = true;
         }
     }
@@ -107,12 +105,12 @@ static void macke_to_gcg(const char *inf, const char *outf) {
     Macke       macke;
     Seq         seq;
 
+    GcgWriter out(outf);
+
     if (inp.read_one_entry(macke, seq)) {
-        FILE *ofp = open_output_or_die(outf);
-        macke_seq_info_out(macke, ofp);
-        gcg_seq_out(seq, ofp, macke.get_id());
-        log_processed(1);
-        fclose(ofp);
+        out.set_species_name(macke.get_id());
+        macke_seq_info_out(macke, out);
+        out.write_seq_data(seq);
     }
 }
 
@@ -131,6 +129,8 @@ static void genbank_to_gcg(const char *inf, const char *outf) {
             out.add_comment(inp.line());
             Seq seq;
             inp.read_seq_data(seq);
+
+            if (inp.failed()) break;
             out.write_seq_data(seq);
         }
         else {

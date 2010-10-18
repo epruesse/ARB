@@ -41,7 +41,7 @@ void to_printable(const char *inf, const char *outf, Format inType) {
     }
 
     Reader reader(inf);
-    FILE *ofp = open_output_or_die(outf);
+    Writer write(outf);
 
     Alignment ali;
     while (1) {
@@ -75,15 +75,14 @@ void to_printable(const char *inf, const char *outf, Format inType) {
             else
                 start = base_nums[indi];
 
-            printable_print_line(seq.get_id(), seq.get_seq(), current, start, ofp);
+            printable_print_line(seq.get_id(), seq.get_seq(), current, start, write.get_FILE());
             base_nums[indi] += base_count;
         }
         current += PRTLENGTH;
         if (maxsize > current)
-            fputs("\n\n", ofp);
+            fputs("\n\n", write.get_FILE());
     }
 
-    log_processed(total_seq);
-    fclose(ofp);
+    write.seq_done(ali.get_count());
 }
 

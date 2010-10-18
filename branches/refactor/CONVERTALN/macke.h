@@ -130,6 +130,15 @@ class MackeReader : public InputFormatReader {
 
     bool mackeIn(Macke& macke);
 
+    void abort() {
+        r1->abort();
+        r2->abort();
+        r3->abort();
+    }
+    bool ok() {
+        return r1->ok() && r2->ok() && r3->ok();
+    }
+
 public:
 
     MackeReader(const char *inName_)
@@ -148,12 +157,14 @@ public:
     bool read_seq_data(Seq& seq) {
         ca_assert(seqabbr);
         macke_origin(seq, seqabbr, *r2);
+        if (seq.is_empty()) abort();
         return r2->ok();
     }
 
     bool read_one_entry(InputFormat& data, Seq& seq) {
         Macke& macke = reinterpret_cast<Macke&>(data);
-        return mackeIn(macke) && read_seq_data(seq);
+        if (!mackeIn(macke) || !read_seq_data(seq)) abort();
+        return ok();
     }
 };
 

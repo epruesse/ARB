@@ -7,13 +7,13 @@ extern int warning_out;
 
 void genbank_to_macke(const char *inf, const char *outf) {
     // Convert from Genbank format to Macke format.
-    Reader  reader(inf);
-    FILE   *ofp = open_output_or_die(outf);
+    Reader reader(inf);
+    Writer write(outf);
 
     int indi, total_num;
 
     // sequence irrelevant header
-    macke_out_header(ofp);
+    macke_out_header(write.get_FILE());
 
     for (indi = 0; indi < 3; indi++) {
         reader.rewind();
@@ -30,22 +30,23 @@ void genbank_to_macke(const char *inf, const char *outf) {
             if (!gtom(gbk, macke)) throw_conversion_failure(GENBANK, MACKE);
 
             switch (indi) {
-                case 0: macke_seq_display_out(macke, ofp, GENBANK, numofseq == 1); break;
-                case 1: macke_seq_info_out(macke, ofp); break;
-                case 2: macke_seq_data_out(seq, macke, ofp); break;
+                case 0: macke_seq_display_out(macke, write.get_FILE(), GENBANK, numofseq == 1); break;
+                case 1: macke_seq_info_out(macke, write.get_FILE()); break;
+                case 2:
+                    macke_seq_data_out(seq, macke, write.get_FILE());
+                    write.seq_done();
+                    break;
                 default:;
             }
         }
         total_num = numofseq;
         if (indi == 0) {
-            fputs("#-\n", ofp);
+            fputs("#-\n", write.get_FILE());
             warning_out = 0; // no warning message for next loop
         }
     }
 
     warning_out = 1; // resume warning messages
-    log_processed(total_num);
-    fclose(ofp);
 }
 
 static int paren_string(char *Str, char *pstring, int index) {
@@ -326,24 +327,20 @@ static char *genbank_get_subspecies(const GenBank& gbk) {
 
 void macke_to_genbank(const char *inf, const char *outf) {
     // Convert from macke format to genbank format.
-    MackeReader  mackeReader(inf);
-    FILE        *ofp      = open_output_or_die(outf);
-    int          numofseq = 0;
+    MackeReader mackeReader(inf);
+    Writer      write(outf);
 
     while (1) {
         Macke   macke;
         Seq     seq;
 
         if (!mackeReader.read_one_entry(macke, seq)) break;
-        
+
         GenBank gbk;
         if (!mtog(macke, gbk, seq)) throw_conversion_failure(MACKE, GENBANK);
-        genbank_out(gbk, seq, ofp);
-        numofseq++;
+        genbank_out(gbk, seq, write.get_FILE());
+        write.seq_done();
     }
-
-    log_processed(numofseq);
-    fclose(ofp);
 }
 
 static void mtog_decode_ref_and_remarks(const Macke& macke, GenBank& gbk) {

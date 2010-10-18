@@ -699,11 +699,10 @@ STATIC_ATTRIBUTED(__ATTR__USERESULT, int etom(const Embl& embl, Macke& macke, co
 void embl_to_macke(const char *inf, const char *outf, Format inType) {
     // Convert from Embl format to Macke format.
     Reader reader(inf);
-    FILE *ofp = open_output_or_die(outf);
+    Writer write(outf);
 
-    macke_out_header(ofp); // macke format sequence irrelevant header
+    macke_out_header(write.get_FILE()); // macke format sequence irrelevant header
 
-    int total_num;
     for (int indi = 0; indi < 3; indi++) {
         reader.rewind();
         int numofseq = 0;
@@ -719,29 +718,27 @@ void embl_to_macke(const char *inf, const char *outf, Format inType) {
             if (!etom(embl, macke, seq)) throw_conversion_failure(EMBL, MACKE);
 
             switch (indi) {
-                case 0: macke_seq_display_out(macke, ofp, inType, numofseq == 1); break;
-                case 1: macke_seq_info_out(macke, ofp); break;
-                case 2: macke_seq_data_out(seq, macke, ofp); break;
+                case 0: macke_seq_display_out(macke, write.get_FILE(), inType, numofseq == 1); break;
+                case 1: macke_seq_info_out(macke, write.get_FILE()); break;
+                case 2:
+                    macke_seq_data_out(seq, macke, write.get_FILE());
+                    write.seq_done();
+                    break;
                 default:;
             }
         }
-        total_num = numofseq;
         if (indi == 0) {
-            fputs("#-\n", ofp);
+            fputs("#-\n", write.get_FILE());
             warning_out = 0; // no warning messages for next loop
         }
     }
     warning_out = 1;
-
-    log_processed(total_num);
-    fclose(ofp);
 }
 
 void embl_to_embl(const char *inf, const char *outf) {
     // Print out EMBL data.
     Reader reader(inf);
-    FILE *ofp      = open_output_or_die(outf);
-    int   numofseq = 0;
+    Writer write(outf);
 
     while (1) {
         Embl embl;
@@ -749,19 +746,15 @@ void embl_to_embl(const char *inf, const char *outf) {
         embl_in(embl, seq, reader);
         if (reader.failed()) break;
 
-        numofseq++;
-        embl_out(embl, seq, ofp);
+        embl_out(embl, seq, write.get_FILE());
+        write.seq_done();
     }
-
-    log_processed(numofseq);
-    fclose(ofp);
 }
 
 void embl_to_genbank(const char *inf, const char *outf) {
     // Convert from EMBL format to genbank format.
     Reader reader(inf);
-    FILE        *ofp      = open_output_or_die(outf);
-    int          numofseq = 0;
+    Writer write(outf);
 
     while (1) {
         Embl embl;
@@ -769,14 +762,11 @@ void embl_to_genbank(const char *inf, const char *outf) {
         embl_in(embl, seq, reader);
         if (reader.failed()) break;
 
-        numofseq++;
         GenBank gbk;
         if (!etog(embl, gbk, seq)) throw_conversion_failure(MACKE, GENBANK);
-        genbank_out(gbk, seq, ofp);
+        genbank_out(gbk, seq, write.get_FILE());
+        write.seq_done();
     }
-
-    log_processed(numofseq);
-    fclose(ofp);
 }
 
 // --------------------------------------------------------------------------------
@@ -1005,9 +995,8 @@ STATIC_ATTRIBUTED(__ATTR__USERESULT, int gtoe(const GenBank& gbk, Embl& embl, co
 
 void genbank_to_embl(const char *inf, const char *outf) {
     // Convert from genbank to EMBL.
-    Reader  reader(inf);
-    FILE   *ofp      = open_output_or_die(outf);
-    int     numofseq = 0;
+    Reader reader(inf);
+    Writer write(outf);
 
     while (1) {
         GenBank gbk;
@@ -1016,16 +1005,11 @@ void genbank_to_embl(const char *inf, const char *outf) {
         genbank_in(gbk, seq, reader);
         if (reader.failed()) break;
 
-        numofseq++;
-
         Embl embl;
         if (!gtoe(gbk, embl, seq)) throw_conversion_failure(GENBANK, EMBL);
-        embl_out(embl, seq, ofp);
-
+        embl_out(embl, seq, write.get_FILE());
+        write.seq_done();
     }
-
-    log_processed(numofseq);
-    fclose(ofp);
 }
 
 static int partial_mtoe(const Macke& macke, Embl& embl) {
@@ -1066,28 +1050,24 @@ STATIC_ATTRIBUTED(__ATTR__USERESULT, int mtoe(const Macke& macke, Embl& embl, co
 
 void macke_to_embl(const char *inf, const char *outf) {
     // Convert from macke to EMBL.
-    FILE        *ofp      = open_output_or_die(outf);
-    MackeReader  mackeReader(inf);
-    int          numofseq = 0;
+    MackeReader mackeReader(inf);
+    Writer      write(outf);
 
     while (1) {
         Macke  macke;
         Seq    seq;
 
         if (!mackeReader.read_one_entry(macke, seq)) break;
-        
-        Embl embl;
-        numofseq++;
 
+        // @@@ where does this strange comment come from:
         /* partial_mtoe() is particularly handling
          * subspecies information, not converting whole
          * macke format to embl */
 
+        Embl embl;
         if (!mtoe(macke, embl, seq)) throw_conversion_failure(MACKE, EMBL);
-        embl_out(embl, seq, ofp);
+        embl_out(embl, seq, write.get_FILE());
+        write.seq_done();
     }
-
-    log_processed(numofseq);
-    fclose(ofp);
 }
 

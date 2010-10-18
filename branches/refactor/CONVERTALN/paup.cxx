@@ -91,12 +91,12 @@ void to_paup(const char *inf, const char *outf, Format inType) {
         throw_conversion_not_supported(inType, NEXUS);
     }
 
-    Reader  reader(inf);
-    FILE   *ofp = open_output_or_die(outf);
-    Paup    paup;
+    Reader    reader(inf);
+    Writer    write(outf);
+    Paup      paup;
     Alignment ali;
-    
-    paup_print_header(paup, ofp);
+
+    paup_print_header(paup, write.get_FILE());
 
     while (1) {
         InputFormatPtr in  = InputFormat::create(inType);
@@ -121,7 +121,7 @@ void to_paup(const char *inf, const char *outf, Format inType) {
         for (int indi = 0; indi < total_seq; indi++) {
             if (current < ali.get_len(indi))
                 first_line++;
-            paup_print_line(ali.get(indi), current, (first_line == 1), ofp);
+            paup_print_line(ali.get(indi), current, (first_line == 1), write.get_FILE());
 
             // Avoid repeating
             if (first_line == 1)
@@ -129,16 +129,15 @@ void to_paup(const char *inf, const char *outf, Format inType) {
         }
         current += (SEQLINE - 10);
         if (maxsize > current)
-            fputc('\n', ofp);
+            fputc('\n', write.get_FILE());
     }
 
-    fputs("      ;\nENDBLOCK;\n", ofp);
+    fputs("      ;\nENDBLOCK;\n", write.get_FILE());
 
     // rewrite output header
-    rewind(ofp);
-    paup_print_headerstart(ofp);
-    paup_print_header_counters(ofp, total_seq, maxsize);
+    rewind(write.get_FILE());
+    paup_print_headerstart(write.get_FILE());
+    paup_print_header_counters(write.get_FILE(), total_seq, maxsize);
 
-    log_processed(total_seq);
-    fclose(ofp);
+    write.seq_done(ali.get_count());
 }

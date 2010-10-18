@@ -587,9 +587,8 @@ void genbank_out(const GenBank& gbk, const Seq& seq, FILE * fp) {
 
 void genbank_to_genbank(const char *inf, const char *outf) {
     // Convert from genbank to genbank.
-    Reader  reader(inf);
-    FILE   *ofp      = open_output_or_die(outf);
-    int     numofseq = 0;
+    Reader reader(inf);
+    Writer write(outf);
 
     while (1) {
         GenBank gbk;
@@ -597,11 +596,8 @@ void genbank_to_genbank(const char *inf, const char *outf) {
         genbank_in(gbk, seq, reader);
         if (reader.failed()) break;
 
-        numofseq++;
-        genbank_out(gbk, seq, ofp);
+        genbank_out(gbk, seq, write.get_FILE());
+        write.seq_done();
     }
-
-    log_processed(numofseq);
-    fclose(ofp);
 }
 

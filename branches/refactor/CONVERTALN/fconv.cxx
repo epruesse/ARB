@@ -47,10 +47,6 @@ void log_processed(int seqCount) {
 
     log_processed_counter++;
     log_seq_counter += seqCount;
-
-    if (seqCount == 0) {
-        throw_error(99, "No sequences have been processed");
-    }
 }
 
 void convert(const char *inf, const char *outf, Format inType, Format ouType) {
@@ -64,7 +60,7 @@ void convert(const char *inf, const char *outf, Format inType, Format ouType) {
     }
 
     if (str_equal(inf, outf))
-        throw_error(45, "Input file and output file must be different file");
+        throw_error(30, "Input file and output file must be different file");
 
     bool converted = true;
     switch (inType) {
@@ -130,7 +126,7 @@ void convert(const char *inf, const char *outf, Format inType, Format ouType) {
 #include <test_unit.h>
 
 struct FormatSpec {
-    Format  id;             // GENBANK, MACKE, ...
+    Format      type;           // GENBANK, MACKE, ...
     const char *name;
     const char *testfile;       // existing testfile (or NULL)
     int         sequence_count; // number of sequences in 'testfile'
@@ -198,7 +194,7 @@ struct Capabilities {
 static Capabilities cap[fcount][fcount];
 #define CAP(from,to) (cap[NUM_##from][NUM_##to])
 
-#define ID(f)    format_spec[f].id
+#define TYPE(f)  format_spec[f].type
 #define NAME(f)  format_spec[f].name
 #define INPUT(f) format_spec[f].testfile
 #define EXSEQ(f) format_spec[f].sequence_count
@@ -265,7 +261,7 @@ static void test_convert_by_format_num_WRAPPED(int from, int to) {
     int old_processed_counter = log_processed_counter;
     int old_seq_counter       = log_seq_counter;
 
-    const char *error = test_convert(INPUT(from), toFile, ID(from), ID(to));
+    const char *error = test_convert(INPUT(from), toFile, TYPE(from), TYPE(to));
 
     int converted_seqs = log_seq_counter-old_seq_counter;
     int expected_seqs  = EXSEQ(from);
@@ -299,6 +295,20 @@ static void test_convert_by_format_num_WRAPPED(int from, int to) {
         TEST_ASSERT(!GB_is_regularfile(toFile)); // unsupported produced output
     }
     TEST_ASSERT(me.supported == !error);
+
+    {
+        // test if conversion from empty and text file fails
+
+        const char *fromFile = "general/empty.input";
+        error                = test_convert(fromFile, toFile, TYPE(from), TYPE(to));
+        TEST_ASSERT(error);
+
+        fromFile = "general/text.input";
+        error = test_convert(fromFile, toFile, TYPE(from), TYPE(to));
+        TEST_ASSERT(error); 
+
+        fprintf(stderr, "empty-error: %s\n", error);
+    }
 
     free(toFile);
 }

@@ -22,6 +22,8 @@ enum Format {
 };
 
 class Reader;
+class Writer;
+
 struct Embl;
 struct Emblref;
 struct GenBank;

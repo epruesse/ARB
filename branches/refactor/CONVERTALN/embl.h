@@ -88,6 +88,7 @@ public:
 
     bool read_seq_data(Seq& seq) {
         embl_origin(seq, *this);
+        if (seq.is_empty()) abort();
         return ok();
     }
 
@@ -99,6 +100,7 @@ public:
     bool read_one_entry(InputFormat& data, Seq& seq) {
         Embl& embl = reinterpret_cast<Embl&>(data);
         embl_in(embl, seq, *this);
+        if (seq.is_empty()) abort();
         return ok();
     }
 };

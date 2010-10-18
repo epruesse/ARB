@@ -58,6 +58,7 @@ void macke_in_simple(Macke &macke, Seq &seq, Reader &reader);
 void macke_out_header(FILE *fp);
 void macke_seq_display_out(const Macke &macke, FILE *fp, Format inType, bool first_sequence);
 void macke_seq_info_out(const Macke &macke, FILE *fp);
+void macke_seq_info_out(const Macke &macke, Writer &write);
 int macke_key_word(const char *line, int index, char *key, int length);
 void macke_seq_data_out(const Seq &seq, const Macke &macke, FILE *fp);
 
