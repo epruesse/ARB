@@ -176,6 +176,9 @@ void FILE_BUFFER_rewind(FILE_BUFFER file_buffer) {
 const char *FILE_BUFFER_make_error(FILE_BUFFER file_buffer, bool show_name, const char *message) {
     FileBuffer *fileBuffer = to_FileBuffer(file_buffer);
     fileBuffer->showFilenameInLineError(show_name);
-    return fileBuffer->lineError(message).c_str();
+
+    static string keep;
+    keep = fileBuffer->lineError(message);
+    return keep.c_str();
 }
 
