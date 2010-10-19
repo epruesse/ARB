@@ -12,7 +12,7 @@
 #ifndef SEC_ABSPOS_HXX
 #define SEC_ABSPOS_HXX
 
-#ifndef _CPP_CSTDIO
+#ifndef _GLIBCXX_CSTDIO
 #include <cstdio>
 #endif
 #ifndef ARBTOOLS_H

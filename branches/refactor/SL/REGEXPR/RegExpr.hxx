@@ -20,7 +20,7 @@
 #endif
 #define re_assert(cond) arb_assert(cond)
 
-#ifndef _CPP_STRING
+#ifndef _GLIBCXX_STRING
 #include <string>
 #endif
 

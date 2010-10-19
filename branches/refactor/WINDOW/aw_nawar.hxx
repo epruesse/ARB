@@ -14,7 +14,7 @@
 #ifndef CB_H
 #include <cb.h>
 #endif
-#ifndef _CPP_CSTDDEF
+#ifndef _GLIBCXX_CSTDDEF
 #include <cstddef>
 #endif
 

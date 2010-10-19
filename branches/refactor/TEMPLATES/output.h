@@ -15,7 +15,7 @@
 #ifndef OUTPUT_H
 #define OUTPUT_H
 
-#ifndef _CPP_CSTDARG
+#ifndef _GLIBCXX_CSTDARG
 #include <cstdarg>
 #endif
 #ifndef ATTRIBUTES_H

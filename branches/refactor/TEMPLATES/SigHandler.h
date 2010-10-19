@@ -23,10 +23,10 @@
 typedef void (*SigHandler)(int);
 #endif
 
-#ifndef _CPP_CSTDIO
+#ifndef _GLIBCXX_CSTDIO
 #include <cstdio>
 #endif
-#ifndef _CPP_CERRNO
+#ifndef _GLIBCXX_CERRNO
 #include <cerrno>
 #endif
 

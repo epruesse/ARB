@@ -11,7 +11,7 @@
 #ifndef AWTI_IMP_LOCAL_HXX
 #define AWTI_IMP_LOCAL_HXX
 
-#ifndef _CPP_STRING
+#ifndef _GLIBCXX_STRING
 #include <string>
 #endif
 

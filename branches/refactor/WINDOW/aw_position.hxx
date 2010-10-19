@@ -18,7 +18,7 @@
 #ifndef ARB_ASSERT_H
 #include <arb_assert.h>
 #endif
-#ifndef _CPP_CMATH
+#ifndef _GLIBCXX_CMATH
 #include <cmath>
 #endif
 

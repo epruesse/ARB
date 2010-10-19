@@ -12,7 +12,7 @@
 #ifndef UNITTESTER_HXX
 #define UNITTESTER_HXX
 
-#ifndef _CPP_CSTDLIB
+#ifndef _GLIBCXX_CSTDLIB
 #include <cstdlib>
 #endif
 

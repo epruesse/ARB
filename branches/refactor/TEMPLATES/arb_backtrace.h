@@ -14,10 +14,10 @@
 
 #define MAX_BACKTRACE 66
 
-#ifndef _CPP_CSTDLIB
+#ifndef _GLIBCXX_CSTDLIB
 #include <cstdlib>
 #endif
-#ifndef _CPP_CSTDIO
+#ifndef _GLIBCXX_CSTDIO
 #include <cstdio>
 #endif
 #ifndef _EXECINFO_H

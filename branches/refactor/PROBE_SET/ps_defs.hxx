@@ -1,16 +1,16 @@
 #ifndef PS_DEFS_HXX
 #define PS_DEFS_HXX
 
-#ifndef _CPP_MAP
+#ifndef _GLIBCXX_MAP
 #include <map>
 #endif
-#ifndef _CPP_SET
+#ifndef _GLIBCXX_SET
 #include <set>
 #endif
-#ifndef _CPP_VECTOR
+#ifndef _GLIBCXX_VECTOR
 #include <vector>
 #endif
-#ifndef _CPP_STRING
+#ifndef _GLIBCXX_STRING
 #include <string>
 #endif
 

@@ -16,10 +16,10 @@
 #ifndef SQ_GROUPDATA_H
 #define SQ_GROUPDATA_H
 
-#ifndef _CPP_CSTDDEF
+#ifndef _GLIBCXX_CSTDDEF
 # include <cstddef>
 #endif
-#ifndef _CPP_IOSTREAM
+#ifndef _GLIBCXX_IOSTREAM
 # include <iostream>
 #endif
 

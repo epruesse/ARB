@@ -14,7 +14,7 @@
 #ifndef ARBDB_BASE_H
 #include <arbdb_base.h>
 #endif
-#ifndef _CPP_ALGORITHM
+#ifndef _GLIBCXX_ALGORITHM
 #include <algorithm>
 #endif
 

@@ -15,7 +15,7 @@
 #ifndef ARB_ASSERT_H
 #include <arb_assert.h>
 #endif
-#ifndef _CPP_CSTDARG
+#ifndef _GLIBCXX_CSTDARG
 #include <cstdarg>
 #endif
 #ifndef ERRNO_H

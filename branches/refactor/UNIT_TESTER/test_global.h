@@ -14,20 +14,16 @@
 #define TEST_GLOBAL_H
 
 // do not include here - just test
-// insert includes at ../INCLUDE/arb_assert.h@_CPP_CSTDARG
-// #ifndef _CPP_CSTDARG
+// insert includes at ../INCLUDE/arb_assert.h@WhyIncludeHere
 #ifndef _STDARG_H
 #error Need cstdarg included
 #endif
-// #ifndef _CPP_CSTDIO
 #ifndef _STDIO_H
 #error Need cstdio included
 #endif
-// #ifndef _CPP_CERRNO
 #ifndef _ERRNO_H
 #error Need cerrno included
 #endif
-// #ifndef _CPP_CSTRING
 #ifndef _STRING_H
 #error Need cstring included
 #endif

@@ -11,7 +11,7 @@
 #ifndef DEFS_H
 #define DEFS_H
 
-#ifndef _CPP_STRING
+#ifndef _GLIBCXX_STRING
 #include <string>
 #endif
 

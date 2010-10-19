@@ -15,7 +15,7 @@
 #ifndef AWT_INPUT_MASK_HXX
 #define AWT_INPUT_MASK_HXX
 
-#ifndef _CPP_STRING
+#ifndef _GLIBCXX_STRING
 #include <string>
 #endif
 #ifndef AWT_HXX

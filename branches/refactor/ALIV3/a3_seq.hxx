@@ -14,7 +14,7 @@
 #ifndef A3_TYPES_H
 #include "a3_types.h"
 #endif
-#ifndef _CPP_CSTRING
+#ifndef _GLIBCXX_CSTRING
 #include <cstring>
 #endif
 
