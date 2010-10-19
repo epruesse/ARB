@@ -13,17 +13,23 @@
 #ifndef TEST_GLOBAL_H
 #define TEST_GLOBAL_H
 
-#ifndef _CPP_CSTDARG
-#include <cstdarg>
+// do not include here - just test
+// insert includes at ../INCLUDE/arb_assert.h@_CPP_CSTDARG
+// #ifndef _CPP_CSTDARG
+#ifndef _STDARG_H
+#error Need cstdarg included
 #endif
-#ifndef _CPP_CSTDIO
-#include <cstdio>
+// #ifndef _CPP_CSTDIO
+#ifndef _STDIO_H
+#error Need cstdio included
 #endif
-#ifndef _CPP_CERRNO
-#include <cerrno>
+// #ifndef _CPP_CERRNO
+#ifndef _ERRNO_H
+#error Need cerrno included
 #endif
-#ifndef _CPP_CSTRING
-#include <cstring>
+// #ifndef _CPP_CSTRING
+#ifndef _STRING_H
+#error Need cstring included
 #endif
 
 #if (UNIT_TESTS == 1)
