@@ -1,7 +1,7 @@
-#ifndef __SIMCFG_H
-#define __SIMCFG_H
+#ifndef SIMCFG_H
+#define SIMCFG_H
 
-#ifndef __DEFINES_H
+#ifndef DEFINES_H
 #include "defines.h"
 #endif
 

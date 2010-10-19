@@ -1,7 +1,7 @@
-#ifndef __BASE_H
-#define __BASE_H
+#ifndef BASE_H
+#define BASE_H
 
-#ifndef __DEFINES_H
+#ifndef DEFINES_H
 #include "defines.h"
 #endif
 
