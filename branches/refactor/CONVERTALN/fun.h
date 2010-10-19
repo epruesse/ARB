@@ -21,6 +21,8 @@ enum Format {
     UNKNOWN,
 };
 
+inline bool is_input_format(Format inType) { return inType <= LAST_INPUT_FORMAT; }
+
 class Reader;
 class Writer;
 
@@ -31,6 +33,10 @@ struct GenbankRef;
 struct Macke;
 struct Paup;
 struct Seq;
+
+struct RDP_comments;
+
+typedef void (*RDP_comment_parser)(char*& datastring, int start_index, Reader& reader);
 
 #ifndef FILEBUFFER_H
 #include <FileBuffer.h>

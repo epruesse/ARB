@@ -127,8 +127,6 @@ static void embl_one_comment_entry(char*& datastring, int start_index, Reader& r
 
 static void embl_comments(Embl& embl, Reader& reader) {
     // Read in embl comment lines.
-    OrgInfo& orginf = embl.comments.orginf;
-    SeqInfo& seqinf = embl.comments.seqinf;
 
     for (; is_embl_comment(reader.line()) ;) {
         char key[TOKENSIZE];
@@ -136,37 +134,12 @@ static void embl_comments(Embl& embl, Reader& reader) {
         int  offset = embl_comment_key(reader.line() + index, key);
         index       = Skip_white_space(reader.line(), index + offset);
 
-        if      (str_equal(key, "Source of strain:"))            embl_one_comment_entry(orginf.source, index, reader);
-        else if (str_equal(key, "Culture collection:"))          embl_one_comment_entry(orginf.cultcoll, index, reader);
-        else if (str_equal(key, "Former name:"))                 embl_one_comment_entry(orginf.formname, index, reader);
-        else if (str_equal(key, "Alternate name:"))              embl_one_comment_entry(orginf.nickname, index, reader);
-        else if (str_equal(key, "Common name:"))                 embl_one_comment_entry(orginf.commname, index, reader);
-        else if (str_equal(key, "Host organism:"))               embl_one_comment_entry(orginf.hostorg, index, reader);
-        else if (str_equal(key, "RDP ID:"))                      embl_one_comment_entry(seqinf.RDPid, index, reader);
-        else if (str_equal(key, "Corresponding GenBank entry:")) embl_one_comment_entry(seqinf.gbkentry, index, reader);
-        else if (str_equal(key, "Sequencing methods:"))          embl_one_comment_entry(seqinf.methods, index, reader);
-        else if (str_equal(key, "5' end complete:")) {
-            scan_token_or_die(key, reader, index);
-            if (key[0] == 'Y') seqinf.comp5 = 'y';
-            else               seqinf.comp5 = 'n';
-            ++reader;
-        }
-        else if (str_equal(key, "3' end complete:")) {
-            scan_token_or_die(key, reader, index);
-            if (key[0] == 'Y') seqinf.comp3 = 'y';
-            else               seqinf.comp3 = 'n';
-            ++reader;
-        }
-        else if (str_equal(key, "Sequence information ")) {
-            seqinf.exists = true;
-            ++reader;
-        }
-        else if (str_equal(key, "Organism information")) {
-            orginf.exists = true;
-            ++reader;
-        }
-        else {                  // other comments
-            Append(embl.comments.others, reader.line() + 5);
+        RDP_comment_parser one_comment_entry = embl_one_comment_entry;
+        RDP_comments&      comments          = embl.comments;
+
+        if (!parse_RDP_comment(comments, one_comment_entry, key, index, reader)) {
+            // other comments
+            Append(comments.others, reader.line() + 5);
             ++reader;
         }
     }

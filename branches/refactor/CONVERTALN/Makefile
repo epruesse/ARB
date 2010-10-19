@@ -291,6 +291,26 @@ printable.o: $(ARBHOME)/INCLUDE/FileBuffer.h
 printable.o: $(ARBHOME)/INCLUDE/smartptr.h
 printable.o: $(ARBHOME)/INCLUDE/test_global.h
 
+rdp_info.o: defs.h
+rdp_info.o: fun.h
+rdp_info.o: global.h
+rdp_info.o: input_format.h
+rdp_info.o: prototypes.h
+rdp_info.o: rdp_info.h
+rdp_info.o: reader.h
+rdp_info.o: seq.h
+rdp_info.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
+rdp_info.o: $(ARBHOME)/INCLUDE/arb_assert.h
+rdp_info.o: $(ARBHOME)/INCLUDE/arb_core.h
+rdp_info.o: $(ARBHOME)/INCLUDE/arb_defs.h
+rdp_info.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+rdp_info.o: $(ARBHOME)/INCLUDE/arbtools.h
+rdp_info.o: $(ARBHOME)/INCLUDE/attributes.h
+rdp_info.o: $(ARBHOME)/INCLUDE/dupstr.h
+rdp_info.o: $(ARBHOME)/INCLUDE/FileBuffer.h
+rdp_info.o: $(ARBHOME)/INCLUDE/smartptr.h
+rdp_info.o: $(ARBHOME)/INCLUDE/test_global.h
+
 reader.o: defs.h
 reader.o: fun.h
 reader.o: global.h

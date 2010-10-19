@@ -1,6 +1,13 @@
 #ifndef RDP_INFO_H
 #define RDP_INFO_H
 
+#ifndef GLOBAL_H
+#include "global.h"
+#endif
+#ifndef FUN_H
+#include "fun.h"
+#endif
+
 // -------------------------------
 //      RDP-defined comments (Embl+GenBank)
 
@@ -86,6 +93,7 @@ struct RDP_comments {
           seqinf(from.seqinf),
           others(nulldup(from.others)) {}
     ~RDP_comments() { freenull(others); }
+
     DECLARE_ASSIGNMENT_OPERATOR(RDP_comments);
 };
 

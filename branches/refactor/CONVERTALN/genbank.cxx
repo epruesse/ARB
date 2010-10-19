@@ -165,7 +165,6 @@ void genbank_reference(GenBank& gbk, Reader& reader) {
 
 static void genbank_comments(GenBank& gbk, Reader& reader) {
     // Read in genbank COMMENTS lines.
-    int  index, indi, ptr;
     char key[TOKENSIZE];
 
     if (str0len(reader.line()) <= GBINDENT) {
@@ -173,10 +172,8 @@ static void genbank_comments(GenBank& gbk, Reader& reader) {
         if (!reader.line()) return;
     }
     // make up data to match the logic reasoning for next statement
-    for (indi = 0; indi < GBINDENT; reader.line_WRITABLE()[indi++] = ' ') {}
+    for (int indi = 0; indi < GBINDENT; reader.line_WRITABLE()[indi++] = ' ') {}
 
-    OrgInfo& orginf = gbk.comments.orginf;
-    SeqInfo& seqinf = gbk.comments.seqinf;
 
     for (; reader.line() && (genbank_check_blanks(reader.line(), GBINDENT) || reader.line()[0] == '\n');) {
         if (reader.line()[0] == '\n') {  // skip empty line
@@ -184,46 +181,18 @@ static void genbank_comments(GenBank& gbk, Reader& reader) {
             continue;
         }
 
-        ptr = index = GBINDENT;
-
-        index = Skip_white_space(reader.line(), index);
+        int index = Skip_white_space(reader.line(), GBINDENT);
         ca_assert(index<TOKENSIZE); // buffer overflow ?
         
         index = genbank_comment_subkey_word(reader.line(), index, key, TOKENSIZE);
         ca_assert(index<TOKENSIZE); // buffer overflow ?
 
-        if      (str_equal(key, "Source of strain:"))            genbank_one_comment_entry(orginf.source,   index, reader);
-        else if (str_equal(key, "Culture collection:"))          genbank_one_comment_entry(orginf.cultcoll, index, reader);
-        else if (str_equal(key, "Former name:"))                 genbank_one_comment_entry(orginf.formname, index, reader);
-        else if (str_equal(key, "Alternate name:"))              genbank_one_comment_entry(orginf.nickname, index, reader);
-        else if (str_equal(key, "Common name:"))                 genbank_one_comment_entry(orginf.commname, index, reader);
-        else if (str_equal(key, "Host organism:"))               genbank_one_comment_entry(orginf.hostorg,  index, reader);
-        else if (str_equal(key, "RDP ID:"))                      genbank_one_comment_entry(seqinf.RDPid,    index, reader);
-        else if (str_equal(key, "Corresponding GenBank entry:")) genbank_one_comment_entry(seqinf.gbkentry, index, reader);
-        else if (str_equal(key, "Sequencing methods:"))          genbank_one_comment_entry(seqinf.methods,  index, reader);
-        else if (str_equal(key, "5' end complete:")) {
-            scan_token_or_die(key, reader, index);
-            if (key[0] == 'Y')  seqinf.comp5 = 'y';
-            else                seqinf.comp5 = 'n';
-            ++reader;
-        }
-        else if (str_equal(key, "3' end complete:")) {
-            scan_token_or_die(key, reader, index);
-            if (key[0] == 'Y')  seqinf.comp3 = 'y';
-            else                seqinf.comp3 = 'n';
-            ++reader;
-        }
-        else if (str_equal(key, "Sequence information ")) {
-            seqinf.exists = true;
-            ++reader;
-        }
-        else if (str_equal(key, "Organism information")) {
-            orginf.exists = true;
-            ++reader;
-        }
-        else {                  // other comments
-            ca_assert(ptr == GBINDENT);
-            Append(gbk.comments.others, reader.line() + ptr);
+        RDP_comment_parser one_comment_entry = genbank_one_comment_entry;
+        RDP_comments&      comments          = gbk.comments;
+
+        if (!parse_RDP_comment(comments, one_comment_entry, key, index, reader)) {
+            // other comments
+            Append(comments.others, reader.line() + GBINDENT);
             ++reader;
         }
     }
@@ -557,7 +526,7 @@ void genbank_out(const GenBank& gbk, const Seq& seq, Writer& write) {
         // @@@ use wrapper for code below ?
         // print GBINDENT spaces of the first line
         if (str0len(gbk.comments.others) > 0) {
-            fputc_rep(' ', GBINDENT, write);
+            write.repeated(' ', GBINDENT);
         }
 
         if (str0len(gbk.comments.others) > 0) {
@@ -567,7 +536,7 @@ void genbank_out(const GenBank& gbk, const Seq& seq, Writer& write) {
 
                 // if another line, print GBINDENT spaces first
                 if (gbk.comments.others[indi] == '\n' && gbk.comments.others[indi + 1] != '\0') {
-                    fputc_rep(' ', GBINDENT, write);
+                    write.repeated(' ', GBINDENT);
                 }
             }
         }

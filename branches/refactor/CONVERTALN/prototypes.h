@@ -78,6 +78,9 @@ void to_phylip(const char *inf, const char *outf, Format inType, int readstdin);
 /* printable.cxx */
 void to_printable(const char *inf, const char *outf, Format inType);
 
+/* rdp_info.cxx */
+bool parse_RDP_comment(RDP_comments &comments, RDP_comment_parser one_comment_entry, const char *key, int index, Reader &reader);
+
 /* util.cxx */
 bool scan_token(char *to, const char *from) __ATTR__USERESULT;
 void scan_token_or_die(char *to, const char *from);
@@ -98,7 +101,6 @@ void skip_eolnl_and_append(char *&string1, const char *string2);
 void skip_eolnl_and_append_spaced(char *&string1, const char *string2);
 void Append(char *&string1, const char *string2);
 void upcase(char *str);
-void fputc_rep(char c, int repeat, Writer &write);
 int fputs_len(const char *str, int len, Writer &write);
 int find_pattern(const char *text, const char *pattern);
 int skip_pattern(const char *text, const char *pattern);

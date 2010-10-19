@@ -128,6 +128,7 @@ public:
 
     void out(const char *text);
     void out(char ch);
+    void repeated(char ch, int repeat) { while (repeat--) out(ch); }
     int outf(const char *format, ...) __ATTR__FORMAT(2);
 };
 
