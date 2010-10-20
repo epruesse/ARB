@@ -374,7 +374,7 @@ static void genbank_print_lines(Writer& write, const char *key, const char *cont
     ca_assert(strlen(key) == GBINDENT);
     ca_assert(content[strlen(content)-1] == '\n');
 
-    wrapMode.print(write, key, "            ", content, GBMAXLINE, WRAP_CORRECTLY);
+    wrapMode.print(write, key, "            ", content, GBMAXLINE);
 }
 
 static void genbank_out_one_entry(Writer& write, const char *key, const char *content, const WrapMode& wrapMode, int period) {
@@ -428,7 +428,7 @@ static void genbank_print_comment_if_content(Writer& write, const char *key, con
 
     char first[LINESIZE]; sprintf(first, "%*s%s", GBINDENT+RDP_SUBKEY_INDENT, "", key);
     char other[LINESIZE]; sprintf(other, "%*s", GBINDENT+RDP_SUBKEY_INDENT+RDP_CONTINUED_INDENT, "");
-    WrapMode(true).print(write, first, other, content, GBMAXLINE, WRAP_CORRECTLY);
+    WrapMode(true).print(write, first, other, content, GBMAXLINE);
 }
 
 static void genbank_out_origin(const Seq& seq, Writer& write) {

@@ -15,8 +15,7 @@ OC   No information.
 XX
 RN   [1]
 RP   1-310
-RA   Schoenhuber W., Le Bourhis G., Tremblay J., Amann R.,
-RA   Kulakauskas S.;
+RA   Schoenhuber W., Le Bourhis G., Tremblay J., Amann R., Kulakauskas S.;
 RT   "Utilization of tmRNA sequences for bacterial identification";
 RL   BMC Microbiol. 1(1):20-20(2001).
 XX
@@ -83,17 +82,15 @@ XX
 AC   ER781674;
 XX
 CC   Organism information
-CC     Source of strain: This is the content of the special entry
-CC           'Source of strain'
-CC     Former name: This is the content of the special entry 'Former
-CC           name'
-CC     Alternate name: This is the content of the special entry
-CC           'Alternate name'. It is quite long, since i need to test
-CC           some special entry which occupies many lines and when i say
-CC           many lines, i really mean at least five lines, so i could
-CC           not stop writing before i came here.
-CC     Common name: This is the content of the special entry 'Common
-CC           name'
+CC     Source of strain: This is the content of the special entry 'Source
+CC           of strain'
+CC     Former name: This is the content of the special entry 'Former name'
+CC     Alternate name: This is the content of the special entry 'Alternate
+CC           name'. It is quite long, since i need to test some special
+CC           entry which occupies many lines and when i say many lines, i
+CC           really mean at least five lines, so i could not stop writing
+CC           before i came here.
+CC     Common name: This is the content of the special entry 'Common name'
 CC     Host organism: This is the content of the special entry 'Host
 CC           organism'
 CC   Sequence information (bases 1 to 367)
@@ -157,9 +154,9 @@ RN   [2]
 RP   1-1546
 RA   Ludwig W.;
 RT   ;
-RL   Submitted (26-NOV-1997) to the EMBL/GenBank/DDBJ databases. W.
-RL   Ludwig, Lehrstuhl fuer Mikrobiologie, Technische Universitaet
-RL   Muenchen, Munich, FRG.
+RL   Submitted (26-NOV-1997) to the EMBL/GenBank/DDBJ databases. W. Ludwig,
+RL   Lehrstuhl fuer Mikrobiologie, Technische Universitaet Muenchen,
+RL   Munich, FRG.
 XX
 DR   RFAM; RF00177; SSU_rRNA_5. SILVA-SSU; Y15714.
 XX

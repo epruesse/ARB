@@ -21,9 +21,7 @@ int WrapMode::wrap_pos(const char *str, int wrapCol) const {
     return i >= 0 ? i : wrapCol;
 }
 
-const char *WrapMode::print_return_wrapped(Writer& write, const char * const content, const int len, const int rest_width, WrapBug behavior) const {
-    // @@@ currently reproduces all bugs found in the previously six individual wrapping functions
-
+const char *WrapMode::print_return_wrapped(Writer& write, const char * const content, const int len, const int rest_width) const {
     ca_assert(content[len] == '\n');
 
     if (len<(rest_width+1)) {
@@ -33,22 +31,12 @@ const char *WrapMode::print_return_wrapped(Writer& write, const char * const con
 
     int split_after = wrap_pos(content, rest_width);
 
-    if (behavior&WRAPBUG_WRAP_AT_SPACE && split_after == 0) split_after = wrap_pos(content+1, rest_width-1)+1;
-    if (behavior&WRAPBUG_WRAP_BEFORE_SEP && split_after>0) split_after--;
-
     ca_assert(split_after>0);
-    if ((behavior&WRAPBUG_WRAP_BEFORE_SEP) == 0 && occurs_in(content[split_after], " \n")) split_after--;
+    if (occurs_in(content[split_after], " \n")) split_after--;
     ca_assert(split_after >= 0);
 
     int continue_at = split_after+1;
-    if (behavior&WRAPBUG_WRAP_AT_SPACE && split_after == rest_width) {
-        // don't correct 'continue_at' in this case to emulate existing bug
-    }
-    else {
-        while (occurs_in(content[continue_at], " \n")) continue_at++;
-    }
-
-    if (behavior&WRAPBUG_WRAP_BEFORE_SEP && content[split_after+1] == ' ' && content[split_after+2] == ' ') split_after++;
+    while (occurs_in(content[continue_at], " \n")) continue_at++;
 
     ca_assert(content[split_after] != '\n');
     fputs_len(content, split_after+1, write);
@@ -60,14 +48,14 @@ const char *WrapMode::print_return_wrapped(Writer& write, const char * const con
     return content+continue_at;
 }
 
-void WrapMode::print(Writer& write, const char *first_prefix, const char *other_prefix, const char *content, int max_width, WrapBug behavior) const {
+void WrapMode::print(Writer& write, const char *first_prefix, const char *other_prefix, const char *content, int max_width) const {
     ca_assert(has_content(content));
 
     int len        = strlen(content)-1;
     int prefix_len = strlen(first_prefix);
 
     write.out(first_prefix);
-    const char *rest = print_return_wrapped(write, content, len, max_width-prefix_len, behavior);
+    const char *rest = print_return_wrapped(write, content, len, max_width-prefix_len);
 
     if (rest) {
         prefix_len = strlen(other_prefix);
@@ -77,7 +65,7 @@ void WrapMode::print(Writer& write, const char *first_prefix, const char *other_
             content  = rest;
 
             write.out(other_prefix);
-            rest = print_return_wrapped(write, content, len, max_width-prefix_len, behavior);
+            rest = print_return_wrapped(write, content, len, max_width-prefix_len);
         }
     }
 }

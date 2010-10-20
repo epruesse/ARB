@@ -1,7 +1,7 @@
 #-
 #-
 #-	editor
-#-	Thu Sep 30 23:23:19 2010
+#-	Wed Oct 20 22:10:54 2010
 #-
 #-
 #-	Reference sequence:  MA32_HUMAN
@@ -50,23 +50,23 @@
 #:MA32_HUMAN:rem:    ENSURING THE ACCURACY OF SPLICING AND REGULATING
 #:MA32_HUMAN:rem:ALTERNATIVE
 #:MA32_HUMAN:rem:    SPLICING.
-#:MA32_HUMAN:rem:-------------------------------------------------------------
-#:MA32_HUMAN:rem:-------------
+#:MA32_HUMAN:rem:--------------------------------------------------------------
+#:MA32_HUMAN:rem:------------
 #:MA32_HUMAN:rem:This SWISS-PROT entry is copyright. It is produced through a
 #:MA32_HUMAN:rem:collaboration
 #:MA32_HUMAN:rem:between  the Swiss Institute of Bioinformatics  and the  EMBL
 #:MA32_HUMAN:rem:outstation -
 #:MA32_HUMAN:rem:the European Bioinformatics Institute.  There are no 
 #:MA32_HUMAN:rem:restrictions on  its
-#:MA32_HUMAN:rem:use  by  non-profit  institutions as long  as its content  is 
+#:MA32_HUMAN:rem:use  by  non-profit  institutions as long  as its content  is
 #:MA32_HUMAN:rem:in  no  way
 #:MA32_HUMAN:rem:modified and this statement is not removed.  Usage  by  and
 #:MA32_HUMAN:rem:for commercial
-#:MA32_HUMAN:rem:entities requires a license agreement (See http://www.isb-sib
-#:MA32_HUMAN:rem:.ch/announce/
+#:MA32_HUMAN:rem:entities requires a license agreement (See http://www.isb-sib.
+#:MA32_HUMAN:rem:ch/announce/
 #:MA32_HUMAN:rem:or send an email to license@isb-sib.ch).
-#:MA32_HUMAN:rem:-------------------------------------------------------------
-#:MA32_HUMAN:rem:-------------
+#:MA32_HUMAN:rem:--------------------------------------------------------------
+#:MA32_HUMAN:rem:------------
 MA32_HUMAN     0 MLPLLRCVPRVLGSSVAGLRAAAPASPFRQLLQPAPRLCTRPFGLLSVRA
 MA32_HUMAN    50 GSERRPGLLRPRGPCACGCGCGSLHTDGDKAFVDFLSDEIKEERKIQKHK
 MA32_HUMAN   100 TLPKMSGGWELELNGTEAKLVRKVAGEKITVTFNINNSIPPTFDGEEEPS

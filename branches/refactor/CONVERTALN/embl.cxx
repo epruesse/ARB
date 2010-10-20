@@ -310,8 +310,7 @@ static void embl_print_lines(Writer& write, const char *key, const char *content
     char prefix[TOKENSIZE];
     sprintf(prefix, "%-*s", EMBLINDENT, key);
 
-    // wrapMode.print(write, prefix, prefix, content, EMBLMAXLINE, true); // @@@ wanted
-    wrapMode.print(write, prefix, prefix, content, EMBLMAXLINE-1, WRAPBUG_WRAP_AT_SPACE); // @@@ 2 BUGs
+    wrapMode.print(write, prefix, prefix, content, EMBLMAXLINE);
 }
 
 static void embl_print_lines_if_content(Writer& write, const char *key, const char *content, const WrapMode& wrapMode, bool followed_by_spacer) {
@@ -328,8 +327,7 @@ static void embl_print_comment_if_content(Writer& write, const char *key, const 
 
     char first[LINESIZE]; sprintf(first, "CC%*s%s", (EMBLINDENT-2)+RDP_SUBKEY_INDENT, "", key);
     char other[LINESIZE]; sprintf(other, "CC%*s", (EMBLINDENT-2)+RDP_SUBKEY_INDENT+RDP_CONTINUED_INDENT, "");
-    // WrapMode(true).print(write, first, other, content, EMBLMAXLINE, false); // @@@ wanted
-    WrapMode(true).print(write, first, other, content, EMBLMAXLINE-2, WRAP_CORRECTLY); // @@@ 1 BUG
+    WrapMode(true).print(write, first, other, content, EMBLMAXLINE);
 }
 
 inline void embl_print_completeness(Writer& write, char compX, char X) {

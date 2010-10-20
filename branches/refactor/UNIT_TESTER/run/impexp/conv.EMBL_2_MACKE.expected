@@ -1,7 +1,7 @@
 #-
 #-
 #-	editor
-#-	Fri Oct 15 08:22:19 2010
+#-	Wed Oct 20 22:10:54 2010
 #-
 #-
 #-	Reference sequence:  AF375552;
@@ -38,8 +38,8 @@
 #:A1MVRNA2:name:Alfalfa mosaic virus
 #:A1MVRNA2:date:07-NOV-1985
 #:A1MVRNA2:acs:X01572;
-#:A1MVRNA2:auth:Cornelissen,B.J., Brederode,F.T.M., Veeneman,G.H., van Boom,J
-#:A1MVRNA2:auth:.H. and Bol,J.F.
+#:A1MVRNA2:auth:Cornelissen,B.J., Brederode,F.T.M., Veeneman,G.H., van Boom,J.
+#:A1MVRNA2:auth:H. and Bol,J.F.
 #:A1MVRNA2:title:Complete nucleotide sequence of alfalfa mosaic virus RNA 2
 #:A1MVRNA2:rem:ref:1  (bases 1 to 2593)
 #:A1MVRNA2:rem:KEYWORDS:unidentified reading frame.
@@ -47,7 +47,7 @@
 #:A1MVRNA2:rem:Data kindly reviewed (30-JAN-1986) by J.F. Bol
 #:ER781674_173:rna:This is the content of the special entry 'Sequencing
 #:ER781674_173:rna:methods'
-#:ER781674_173:date:15-JAN-1910
+#:ER781674_173:date:20-OCT-1910
 #:ER781674_173:acs:ER781674;
 #:ER781674_173:rem:GenBank ACCESSION:ER781674;
 #:ER781674_173:rem:Source of strain:This is the content of the special entry
@@ -55,22 +55,22 @@
 #:ER781674_173:rem:Former name:This is the content of the special entry
 #:ER781674_173:rem::  'Former name'
 #:ER781674_173:rem:Alternate name:This is the content of the special entry
-#:ER781674_173:rem::  'Alternate name'. It is quite long, since i need to
-#:ER781674_173:rem::  test some special entry which occupies many lines and
-#:ER781674_173:rem::  when i say many lines, i really mean at least five
-#:ER781674_173:rem::  lines, so i could not stop writing before i came here.
+#:ER781674_173:rem::  'Alternate name'. It is quite long, since i need to test
+#:ER781674_173:rem::  some special entry which occupies many lines and when i
+#:ER781674_173:rem::  say many lines, i really mean at least five lines, so i
+#:ER781674_173:rem::  could not stop writing before i came here.
 #:ER781674_173:rem:Common name:This is the content of the special entry
 #:ER781674_173:rem::  'Common name'
 #:ER781674_173:rem:Host organism:This is the content of the special entry
 #:ER781674_173:rem::  'Host organism'
 #:ER781674_173:rem:RDP ID:This is the content of the special entry 'RDP ID'
-#:ER781674_173:rem:Sequencing methods:This is the content of the special
-#:ER781674_173:rem::  entry 'Sequencing methods'
+#:ER781674_173:rem:Sequencing methods:This is the content of the special entry
+#:ER781674_173:rem::  'Sequencing methods'
 #:ER781674_173:rem:3' end complete:  No
 #:ER781674_173:rem:5' end complete:  Yes
 #:ER781674_173:rem:Organism and Sequence information have only been added for
 #:ER781674_173:rem:test purposes. They are complete nonsense!
-#:AY704744_173:date:15-JAN-1910
+#:AY704744_173:date:20-OCT-1910
 #:AY704744_173:acs:AY704744;
 #:AY704744_173:rem:GenBank ACCESSION:AY704744;
 #:AY704744_173:rem:3' end complete:  Yes
@@ -79,8 +79,8 @@
 #:Y15714;:name:Macrococcus bovicus
 #:Y15714;:date:17-NOV-1998
 #:Y15714;:acs:Y15714;
-#:Y15714;:auth:Kloos,W.E., Ballard,D.N., George,C.G., Webster,J.A., Hubner,R.J
-#:Y15714;:auth:., Ludwig,W., Schleifer,K.H., Fiedler,F. and Schubert,K.
+#:Y15714;:auth:Kloos,W.E., Ballard,D.N., George,C.G., Webster,J.A., Hubner,R.J.
+#:Y15714;:auth:, Ludwig,W., Schleifer,K.H., Fiedler,F. and Schubert,K.
 #:Y15714;:jour:Int. J. Syst. Bacteriol. 48, 859-877 (1998)
 #:Y15714;:title:Delimiting the genus Staphylococcus through description of
 #:Y15714;:title:Macrococcus caseolyticus gen. nov., comb. nov. and the new
@@ -90,7 +90,7 @@
 #:Y15714;:rem:ref:2  (bases 1 to 1546)
 #:Y15714;:rem:auth:Ludwig,W.
 #:Y15714;:rem:jour:Submitted (26-NOV-1997) to the EMBL/GenBank/DDBJ databases.
-#:Y15714;:rem::   W. Ludwig, Lehrstuhl fuer Mikrobiologie, Technische
+#:Y15714;:rem::  W. Ludwig, Lehrstuhl fuer Mikrobiologie, Technische
 #:Y15714;:rem::  Universitaet Muenchen, Munich, FRG
 #:Y15714;:rem:KEYWORDS:16S ribosomal RNA; 16S rRNA gene.
 #:Y15714;:rem:GenBank ACCESSION:Y15714;

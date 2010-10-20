@@ -151,8 +151,7 @@ void macke_seq_display_out(const Macke& macke, Writer& write, Format inType, boo
 
 static void macke_print_line(Writer& write, const char *prefix, const char *content) { // @@@ WRAPPER
     // print a macke line and wrap around line after MACKEMAXLINE column.
-    // WrapMode(true).print(write, prefix, prefix, content, MACKEMAXLINE, false); // @@@ wanted
-    WrapMode(true).print(write, prefix, prefix, content, MACKEMAXLINE, WRAPBUG_WRAP_BEFORE_SEP);
+    WrapMode(true).print(write, prefix, prefix, content, MACKEMAXLINE);
 }
 
 static void macke_print_prefixed_line(const Macke& macke, Writer& write, const char *tag, const char *content) {
@@ -202,8 +201,7 @@ static void macke_print_keyword_rem(const Macke& macke, int index, Writer& write
     char other[LINESIZE]; sprintf(other, "%s:%*s", first, RDP_SUBKEY_INDENT, "");
     const char *remark = macke.get_rem(index);
 
-    // WrapMode(true).print(write, first, other, remark, MACKEMAXLINE, false); // @@@ wanted correct behavior
-    WrapMode(true).print(write, first, other, remark, MACKEMAXLINE-1, WRAPBUG_WRAP_AT_SPACE); // works with testdata
+    WrapMode(true).print(write, first, other, remark, MACKEMAXLINE);
 }
 
 void macke_seq_info_out(const Macke& macke, Writer& write) {
