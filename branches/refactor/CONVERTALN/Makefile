@@ -42,6 +42,7 @@ convert.o: genbank.h
 convert.o: global.h
 convert.o: input_format.h
 convert.o: macke.h
+convert.o: parser.h
 convert.o: prototypes.h
 convert.o: rdp_info.h
 convert.o: reader.h
@@ -82,6 +83,7 @@ embl.o: genbank.h
 embl.o: global.h
 embl.o: input_format.h
 embl.o: macke.h
+embl.o: parser.h
 embl.o: prototypes.h
 embl.o: rdp_info.h
 embl.o: reader.h
@@ -131,6 +133,7 @@ gcg.o: genbank.h
 gcg.o: global.h
 gcg.o: input_format.h
 gcg.o: macke.h
+gcg.o: parser.h
 gcg.o: prototypes.h
 gcg.o: rdp_info.h
 gcg.o: reader.h
@@ -153,6 +156,7 @@ genbank.o: fun.h
 genbank.o: genbank.h
 genbank.o: global.h
 genbank.o: input_format.h
+genbank.o: parser.h
 genbank.o: prototypes.h
 genbank.o: rdp_info.h
 genbank.o: reader.h
@@ -176,6 +180,7 @@ macke.o: fun.h
 macke.o: global.h
 macke.o: input_format.h
 macke.o: macke.h
+macke.o: parser.h
 macke.o: prototypes.h
 macke.o: reader.h
 macke.o: seq.h
@@ -215,6 +220,7 @@ mg.o: genbank.h
 mg.o: global.h
 mg.o: input_format.h
 mg.o: macke.h
+mg.o: parser.h
 mg.o: prototypes.h
 mg.o: rdp_info.h
 mg.o: reader.h
@@ -331,6 +337,25 @@ reader.o: $(ARBHOME)/INCLUDE/dupstr.h
 reader.o: $(ARBHOME)/INCLUDE/FileBuffer.h
 reader.o: $(ARBHOME)/INCLUDE/smartptr.h
 reader.o: $(ARBHOME)/INCLUDE/test_global.h
+
+seq.o: defs.h
+seq.o: fun.h
+seq.o: global.h
+seq.o: input_format.h
+seq.o: prototypes.h
+seq.o: reader.h
+seq.o: seq.h
+seq.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
+seq.o: $(ARBHOME)/INCLUDE/arb_assert.h
+seq.o: $(ARBHOME)/INCLUDE/arb_core.h
+seq.o: $(ARBHOME)/INCLUDE/arb_defs.h
+seq.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+seq.o: $(ARBHOME)/INCLUDE/arbtools.h
+seq.o: $(ARBHOME)/INCLUDE/attributes.h
+seq.o: $(ARBHOME)/INCLUDE/dupstr.h
+seq.o: $(ARBHOME)/INCLUDE/FileBuffer.h
+seq.o: $(ARBHOME)/INCLUDE/smartptr.h
+seq.o: $(ARBHOME)/INCLUDE/test_global.h
 
 util.o: defs.h
 util.o: fun.h

@@ -32,7 +32,7 @@ Reader::~Reader() {
 
 // --------------------------------------------------------------------------------
 
-Writer::Writer(const char *outname)
+FileWriter::FileWriter(const char *outname)
     : ofp(NULL),
       filename(NULL),
       written(0)
@@ -40,7 +40,7 @@ Writer::Writer(const char *outname)
     ofp      = open_output_or_die(outname);
     filename = strdup(outname);
 }
-Writer::~Writer() {
+FileWriter::~FileWriter() {
     bool fine      = ofp && !Convaln_exception::exception_thrown();
     bool die_empty = fine && !written;
 
@@ -53,24 +53,43 @@ Writer::~Writer() {
     log_processed(written);
 }
 
-void Writer::throw_write_error() {
-    throw_errorf(41, "Write error: %s(=%i) while writing to %s",
-                 strerror(errno), errno, filename);
+void Writer::throw_write_error() const {
+    throw_errorf(41, "Write error: %s(=%i) while writing %s",
+                 strerror(errno), errno, name());
 }
-void Writer::out(char ch) {
+void FileWriter::out(char ch) {
     if (fputc(ch, ofp) == EOF) throw_write_error();
 }
-void Writer::out(const char *text) {
+void FileWriter::out(const char *text) {
     if (fputs(text, ofp) == EOF) throw_write_error();
 }
 
-int Writer::outf(const char *format, ...) {
+int FileWriter::outf(const char *format, ...) {
     va_list parg;
     va_start(parg, format);
     int     printed = vfprintf(ofp, format, parg);
     va_end(parg);
     if (printed<0) throw_write_error();
     return printed;
+}
+
+int Writer::outf(const char *format, ...) {
+    va_list parg;
+    va_start(parg, format);
+    char    buffer[LINESIZE];
+    int     printed = vsprintf(buffer, format, parg);
+    ca_assert(printed <= LINESIZE);
+    va_end(parg);
+
+    out(buffer);
+    return printed;
+}
+
+void Writer::out(const char *text) {
+    int i = 0;
+    while (text[i]) {
+        out(text[i++]);
+    }
 }
 
 

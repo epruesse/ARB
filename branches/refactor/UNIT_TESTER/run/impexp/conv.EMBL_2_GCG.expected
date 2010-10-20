@@ -1,7 +1,5 @@
 ID   AF375552; SV 1; linear; genomic DNA; STD; PRO; 310 BP.
 XX
-CC   Please note: all these entries have been modified for test purposes.
-XX
 AC   AF375552;
 XX
 DT   31-MAY-2001 (Rel. 67, Created)
@@ -13,48 +11,35 @@ XX
 KW   .
 XX
 OS   Lactococcus lactis subsp. lactis
-OC   Bacteria; Firmicutes; Lactobacillales; Streptococcaceae; Lactococcus.
+OC   No information.
 XX
 RN   [1]
 RP   1-310
-RX   DOI; 10.1186/1471-2180-1-20.
-RX   PUBMED; 11560762.
 RA   Schoenhuber W., Le Bourhis G., Tremblay J., Amann R., Kulakauskas S.;
 RT   "Utilization of tmRNA sequences for bacterial identification";
 RL   BMC Microbiol. 1(1):20-20(2001).
 XX
 RN   [2]
 RP   1-310
-RA   Schoenhuber W., Le Bourhis G., Tremblay J., Amann R.I., Kulakauskas S.;
+RA   Schoenhuber W., Le Bourhis G., Tremblay J., Amann R.I.,
+RA   Kulakauskas S.;
 RT   ;
 RL   Submitted (02-MAY-2001) to the EMBL/GenBank/DDBJ databases.
-RL   Microbiology, Institut National de la Recherche Agronomique, Domaine de
-RL   Vilvert, Jouy-en-Josas 78352, France
+RL   Microbiology, Institut National de la Recherche Agronomique, Domaine
+RL   de Vilvert, Jouy-en-Josas 78352, France.
 XX
-DR   RFAM; RF00023; tmRNA.
-DR   StrainInfo; 213423; NCDO 2118.
+DR   RFAM; RF00023; tmRNA. StrainInfo; 213423; NCDO 2118.
 XX
 CC   Organism information
 CC     Culture collection: NCDO 2118 tmRNA gene
 CC   Sequence information (bases 1 to 327)
 CC     Corresponding GenBank entry: AF375552;
+CC   Please note: all these entries have been modified for test purposes.
 CC   *source: strain=NCDO2118 tmRNA gene, partial sequence;
 CC   *source: subspecies=lactis;
 XX
-FH   Key             Location/Qualifiers
-FH
-FT   source          1. .310
-FT                   /organism="Lactococcus lactis subsp. lactis"
-FT                   /sub_species="lactis"
-FT                   /strain="NCDO2118"
-FT                   /mol_type="genomic DNA"
-FT                   /db_xref="taxon:1360"
-FT   misc_RNA        <1. .>310
-FT                   /product="tmRNA"
-XX
-SQ   Sequence 310 BP; 91 A; 59 C; 74 G; 86 T; 0 other;
 
-AF375552;  Length: 327  October 15, 2010  08:44:51  Type: N  Check: 6875  ..
+AF375552;  Length: 327  October 20, 2010  20:08:40  Type: N  Check: 6875  ..
 
        1  cattgtcgcg catgaactgc aactgctgag ggatcaggat aatcatccgc 
 

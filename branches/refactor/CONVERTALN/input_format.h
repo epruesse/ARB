@@ -8,12 +8,21 @@
 #include "defs.h"
 #endif
 
-struct InputFormat {
-    virtual ~InputFormat() {}
+class InputFormat {
+    mutable char *id; // id of entry (=short-name)
+
+public:
+    InputFormat() : id(NULL) {}
+    virtual ~InputFormat() { freenull(id); }
 
     virtual SeqPtr read_data(Reader& reader) = 0;
     virtual void reinit()                    = 0;
-    virtual const char *get_id() const       = 0;
+    virtual char *create_id() const    = 0;
+
+    const char *get_id() const {
+        if (!id) id = create_id();
+        return id;
+    }
 
     static SmartPtr<InputFormat> create(Format inType);
 };

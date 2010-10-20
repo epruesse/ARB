@@ -182,7 +182,9 @@ void terminate_with(char*& str, char ch) {
 void skip_eolnl_and_append(char*& string1, const char *string2) {
     int len1 = str0len(string1);
     if (len1 && string1[len1-1] == '\n') len1--;
-    append_known_len(string1, len1, string2, str0len(string2));
+    int len2 = str0len(string2);
+    if (len2) append_known_len(string1, len1, string2, len2);
+    else { string1[len1] = 0; }
 }
 
 void skip_eolnl_and_append_spaced(char*& string1, const char *string2) {
@@ -207,10 +209,10 @@ void upcase(char *str) {
 
 int fputs_len(const char *str, int len, Writer& write) {
     // like fputs(), but does not print more than 'len' characters
-    // returns number of chars written or EOF
+    // returns number of chars written or throws write error
     for (int i = 0; i<len; ++i) {
         if (!str[i]) return i;
-        if (fputc(str[i], write.get_FILE()) == EOF) return EOF;
+        write.out(str[i]);
     }
     return len;
 }

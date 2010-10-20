@@ -85,31 +85,37 @@ static void paup_print_header(const Paup& paup, Writer& write) {
     write.out("   OPTIONS\n      GAPMODE = MISSING\n      ;\n   MATRIX\n");
 }
 
+void read_alignment(Alignment& ali, Format inType, Reader& reader) {
+    while (1) {
+        InputFormatPtr in  = InputFormat::create(inType);
+        SeqPtr         seq = in->read_data(reader);
+
+        if (seq.isNull()) break;
+        ali.add(seq);
+    }
+}
+
 void to_paup(const char *inf, const char *outf, Format inType) {
     // Convert from some format to NEXUS format.
     if (!is_input_format(inType)) {
         throw_conversion_not_supported(inType, NEXUS);
     }
 
-    Reader    reader(inf);
-    Writer    write(outf);
-    Paup      paup;
-    Alignment ali;
+    Reader     reader(inf);
+    FileWriter write(outf);
+    Paup       paup;
 
     paup_print_header(paup, write);
 
-    while (1) {
-        InputFormatPtr in  = InputFormat::create(inType);
-        SeqPtr         seq = in->read_data(reader);
-        if (seq.isNull()) break;
+    Alignment ali;
+    read_alignment(ali, inType, reader);
 
-        {
-            char *name = strdup(seq->get_id());
-            paup_verify_name(name);
-            seq->set_id(name);
-            free(name);
-        }
-        ali.add(seq);
+    for (int i = 0; i<ali.get_count(); ++i) {
+        SeqPtr  seq  = ali.getSeqPtr(i);
+        char   *name = strdup(seq->get_id());
+        paup_verify_name(name);
+        seq->set_id(name);
+        free(name);
     }
 
     int maxsize   = ali.get_max_len();

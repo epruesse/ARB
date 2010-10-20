@@ -1,17 +1,14 @@
 #ifndef GENBANK_H
 #define GENBANK_H
 
-#ifndef INPUT_FORMAT_H
-#include "input_format.h"
-#endif
-#ifndef RDP_INFO_H
-#include "rdp_info.h"
-#endif
 #ifndef REFS_H
 #include "refs.h"
 #endif
 #ifndef READER_H
 #include "reader.h"
+#endif
+#ifndef PARSER_H
+#include "parser.h"
 #endif
 
 
@@ -46,7 +43,13 @@ struct GenbankRef {
     DECLARE_ASSIGNMENT_OPERATOR(GenbankRef);
 };
 
-struct GenBank : public InputFormat, public RefContainer<GenbankRef> {
+class GenBank : public InputFormat, public RefContainer<GenbankRef> {
+    char *create_id() const {
+        char buf[TOKENSIZE];
+        genbank_key_word(locus, 0, buf, TOKENSIZE);
+        return strdup(buf);
+    }
+public:
     char *locus;
     char *definition;
     char *accession;
@@ -83,18 +86,13 @@ struct GenBank : public InputFormat, public RefContainer<GenbankRef> {
     // InputFormat interface
     SeqPtr read_data(Reader& reader);
     void reinit() { INPLACE_RECONSTRUCT(GenBank, this); }
-    const char *get_id() const { return locus; }
+
 };
 
 class GenbankReader : public Reader, public InputFormatReader {
 public:
     GenbankReader(const char *inf) : Reader(inf) {}
 
-    bool read_seq_data(Seq& seq) {
-        genbank_origin(seq, *this);
-        if (seq.is_empty()) abort();
-        return ok();
-    }
     const char *get_key_word(int offset) {
         char key[TOKENSIZE];
         genbank_key_word(line() + offset, 0, key, TOKENSIZE);
@@ -106,6 +104,33 @@ public:
         if (seq.is_empty()) abort();
         return ok();
     }
+};
+
+// ----------------------
+//      GenbankParser
+
+class GenbankParser : public Parser {
+    virtual void parse_keyed_section(const char *key) = 0;
+protected:
+    GenBank& gbk;
+    void parse_common_section(const char *key);
+
+public:
+    GenbankParser(GenBank& gbk_, Seq& seq_, Reader& reader_) : Parser(seq_, reader_), gbk(gbk_) {}
+
+    void parse_section();
+};
+class GenbankFullParser : public GenbankParser {
+    void parse_keyed_section(const char *key);
+
+public:
+    GenbankFullParser(GenBank& gbk_, Seq& seq_, Reader& reader_) : GenbankParser(gbk_, seq_, reader_) {}
+};
+
+class GenbankSimpleParser : public GenbankParser {
+    void parse_keyed_section(const char *key);
+public:
+    GenbankSimpleParser(GenBank& gbk_, Seq& seq_, Reader& reader_) : GenbankParser(gbk_, seq_, reader_) {}
 };
 
 

@@ -17,10 +17,12 @@ const char *today_date(void);
 const char *gcg_date(const char *input);
 
 /* embl.cxx */
+int comment_subkey(const char *line, char *key);
 void embl_in(Embl &embl, Seq &seq, Reader &reader);
 void embl_in_simple(Embl &embl, Seq &seq, Reader &reader);
 void embl_key_word(const char *line, int index, char *key, int length);
 void embl_origin(Seq &seq, Reader &reader);
+void embl_out_header(const Embl &embl, const Seq &seq, Writer &write);
 void embl_to_macke(const char *inf, const char *outf, Format inType);
 void embl_to_embl(const char *inf, const char *outf);
 void embl_to_genbank(const char *inf, const char *outf);
@@ -45,13 +47,15 @@ void genbank_source(GenBank &gbk, Reader &reader);
 void genbank_skip_unidentified(Reader &reader, int blank_num);
 void genbank_reference(GenBank &gbk, Reader &reader);
 void genbank_in(GenBank &gbk, Seq &seq, Reader &reader);
-void genbank_origin(Seq &seq, Reader &reader);
 void genbank_in_simple(GenBank &gbk, Seq &seq, Reader &reader);
+void genbank_origin(Seq &seq, Reader &reader);
+void genbank_out_header(const GenBank &gbk, const Seq &seq, Writer &write);
+void genbank_out_base_count(const Seq &seq, Writer &write);
 void genbank_out(const GenBank &gbk, const Seq &seq, Writer &write);
 void genbank_to_genbank(const char *inf, const char *outf);
 
 /* macke.cxx */
-void macke_origin(Seq &seq, const char *key, Reader &reader);
+void macke_origin(Seq &seq, char *&seqabbr, Reader &reader);
 int macke_abbrev(const char *line, char *key, int index);
 bool macke_is_continued_remark(const char *str);
 void macke_in_simple(Macke &macke, Seq &seq, Reader &reader);
@@ -70,6 +74,7 @@ int mtog(const Macke &macke, GenBank &gbk, const Seq &seq) __ATTR__USERESULT;
 int gtom(const GenBank &gbk, Macke &macke) __ATTR__USERESULT;
 
 /* paup.cxx */
+void read_alignment(Alignment &ali, Format inType, Reader &reader);
 void to_paup(const char *inf, const char *outf, Format inType);
 
 /* phylip.cxx */

@@ -22,27 +22,6 @@ void genbank_key_word(const char *line, int index, char *key, int length) { // @
     key[indj] = '\0';
 }
 
-static int genbank_comment_subkey_word(const char *line, int index, char *key, int length) {
-    // Get the subkey_word in comment lines beginning at index.
-    int indi, indj;
-
-    if (line == NULL) {
-        key[0] = '\0';
-        return (index);
-    }
-
-    for (indi = index, indj = 0;
-         (index - indi) < length && line[indi] != ':' && line[indi] != '\t' && line[indi] != '\n' && line[indi] != '\0' && line[indi] != '('; indi++, indj++) {
-        key[indj] = line[indi];
-    }
-
-    if (line[indi] == ':')
-        key[indj++] = ':';
-    key[indj] = '\0';
-
-    return (indi + 1);
-}
-
 static int genbank_check_blanks(const char *line, int numb) {
     // Check if there is (numb) of blanks at beginning of line.
     int blank = 1, indi, indk;
@@ -184,7 +163,7 @@ static void genbank_comments(GenBank& gbk, Reader& reader) {
         int index = Skip_white_space(reader.line(), GBINDENT);
         ca_assert(index<TOKENSIZE); // buffer overflow ?
         
-        index = genbank_comment_subkey_word(reader.line(), index, key, TOKENSIZE);
+        index += comment_subkey(reader.line()+index, key);
         ca_assert(index<TOKENSIZE); // buffer overflow ?
 
         RDP_comment_parser one_comment_entry = genbank_one_comment_entry;
@@ -255,66 +234,73 @@ static void genbank_verify_keywords(GenBank& gbk) {
         warning(141, "No more than one period is allowed in KEYWORDS line.");
     }
 }
+void GenbankParser::parse_section() {
+    char key[TOKENSIZE];
+    genbank_key_word(reader.line(), 0, key, TOKENSIZE);
+    state = ENTRY_STARTED;
+    parse_keyed_section(key);
+}
+void GenbankParser::parse_common_section(const char *key) {
+    if (str_equal(key, "ORIGIN")) {
+        genbank_origin(seq, reader);
+        state = ENTRY_COMPLETED;
+    }
+    else if (str_equal(key, "LOCUS")) {
+        genbank_one_entry_in(gbk.locus, reader);
+        if (!gbk.locus_contains_date())
+            warning(14, "LOCUS data might be incomplete");
+    }
+    else {
+        genbank_skip_unidentified(reader, 2);
+    }
+}
+
+
+
+void GenbankFullParser::parse_keyed_section(const char *key) {
+    if (str_equal(key, "DEFINITION")) {
+        genbank_one_entry_in(gbk.definition, reader);
+        terminate_with(gbk.definition, '.'); // correct missing '.' at the end
+    }
+    else if (str_equal(key, "ACCESSION")) {
+        genbank_one_entry_in(gbk.accession, reader);
+        genbank_verify_accession(gbk);
+    }
+    else if (str_equal(key, "KEYWORDS")) {
+        genbank_one_entry_in(gbk.keywords, reader);
+        genbank_verify_keywords(gbk);
+    }
+    else if (str_equal(key, "SOURCE")) {
+        genbank_source(gbk, reader);
+        terminate_with(gbk.source, '.'); // correct missing '.' at the end
+        terminate_with(gbk.organism, '.');
+    }
+    else if (str_equal(key, "REFERENCE")) {
+        genbank_reference(gbk, reader);
+    }
+    else if (str_equal(key, "COMMENTS")) {
+        genbank_comments(gbk, reader);
+    }
+    else if (str_equal(key, "COMMENT")) {
+        genbank_comments(gbk, reader);
+    }
+    else {
+        parse_common_section(key);
+    }
+}
+
+void GenbankSimpleParser::parse_keyed_section(const char *key) {
+    parse_common_section(key);
+}
+
 void genbank_in(GenBank& gbk, Seq& seq, Reader& reader) {
     // Read in one genbank entry.
-    char       key[TOKENSIZE];
-    EntryState state = ENTRY_NONE;
+    GenbankFullParser(gbk, seq, reader).parse_entry();
+}
 
-    for (; reader.line() && state != ENTRY_COMPLETED; ) {
-        if (!has_content(reader.line())) { ++reader; continue; } // empty line, skip
-
-        genbank_key_word(reader.line(), 0, key, TOKENSIZE);
-        state = ENTRY_STARTED;
-
-        if (str_equal(key, "LOCUS")) {
-            genbank_one_entry_in(gbk.locus, reader);
-            if (!gbk.locus_contains_date())
-                warning(14, "LOCUS data might be incomplete");
-        }
-        else if (str_equal(key, "DEFINITION")) {
-            genbank_one_entry_in(gbk.definition, reader);
-
-            // correct missing '.' at the end
-            terminate_with(gbk.definition, '.');
-        }
-        else if (str_equal(key, "ACCESSION")) {
-            genbank_one_entry_in(gbk.accession, reader);
-            genbank_verify_accession(gbk);
-        }
-        else if (str_equal(key, "KEYWORDS")) {
-            genbank_one_entry_in(gbk.keywords, reader);
-            genbank_verify_keywords(gbk);
-        }
-        else if (str_equal(key, "SOURCE")) {
-            genbank_source(gbk, reader);
-            // correct missing '.' at the end
-            terminate_with(gbk.source, '.');
-            terminate_with(gbk.organism, '.');
-        }
-        else if (str_equal(key, "REFERENCE")) {
-            genbank_reference(gbk, reader);
-        }
-        else if (str_equal(key, "COMMENTS")) {
-            genbank_comments(gbk, reader);
-        }
-        else if (str_equal(key, "COMMENT")) {
-            genbank_comments(gbk, reader);
-        }
-        else if (str_equal(key, "ORIGIN")) {
-            genbank_origin(seq, reader);
-            state = ENTRY_COMPLETED;
-        }
-        else {                  // unidentified key word
-            genbank_skip_unidentified(reader, 2);
-        }
-        /* except "ORIGIN", at the end of all the other cases,
-         * a new line has already read in, so no further read
-         * is necessary */
-    }
-
-    if (state == ENTRY_STARTED) throw_incomplete_entry();
-
-    ++reader;
+void genbank_in_simple(GenBank& gbk, Seq& seq, Reader& reader) {
+    // Read in next genbank locus and sequence only.
+    GenbankSimpleParser(gbk, seq, reader).parse_entry();
 }
 
 void genbank_origin(Seq& seq, Reader& reader) {
@@ -330,33 +316,6 @@ void genbank_origin(Seq& seq, Reader& reader) {
             }
         }
     }
-}
-
-void genbank_in_simple(GenBank& gbk, Seq& seq, Reader& reader) {
-    // Read in next genbank locus and sequence only.
-    // For use of converting to simple format(read in only simple
-    // information instead of whole records).
-    char        key[TOKENSIZE];
-    EntryState  state = ENTRY_NONE;
-
-    for (; reader.line() && state != ENTRY_COMPLETED;) {
-        if (!has_content(reader.line())) { ++reader; continue; } // empty line, skip @@@ enable later
-        genbank_key_word(reader.line(), 0, key, TOKENSIZE);
-        state = ENTRY_STARTED;
-        if (str_equal(key, "ORIGIN")) {
-            genbank_origin(seq, reader);
-            state = ENTRY_COMPLETED;
-        }
-        else if (str_equal(key, "LOCUS")) {
-            genbank_one_entry_in(gbk.locus, reader);
-        }
-        else {
-            ++reader;
-        }
-    }
-
-    if (state == ENTRY_STARTED) throw_incomplete_entry();
-    ++reader;
 }
 
 static void genbank_print_lines(Writer& write, const char *key, const char *content, const WrapMode& wrapMode) { // @@@ WRAPPER
@@ -424,37 +383,10 @@ static void genbank_print_comment_if_content(Writer& write, const char *key, con
 
 static void genbank_out_origin(const Seq& seq, Writer& write) {
     // Output sequence data in genbank format.
-    int indi, indj, indk;
-
-    write.out("ORIGIN\n");
-
-    const char *sequence = seq.get_seq();
-    for (indi = 0, indj = 0, indk = 1; indi < seq.get_len(); indi++) {
-        if ((indk % 60) == 1)
-            write.outf("   %6d ", indk);
-        write.out(sequence[indi]);
-        indj++;
-
-        // blank space follows every 10 bases, but not before '\n'
-        if ((indk % 60) == 0) {
-            write.out('\n');
-            indj = 0;
-        }
-        else if (indj == 10 && indi != (seq.get_len() - 1)) {
-            write.out(' ');
-            indj = 0;
-        }
-        indk++;
-    }
-
-    if ((indk % 60) != 1)
-        write.out('\n');
-    write.out("//\n");
+    seq.out(write, GENBANK);
 }
 
-void genbank_out(const GenBank& gbk, const Seq& seq, Writer& write) {
-    // Output in a genbank format
-
+void genbank_out_header(const GenBank& gbk, const Seq& seq, Writer& write) {
     int      indi;
     WrapMode wrapWords(true);
 
@@ -532,23 +464,31 @@ void genbank_out(const GenBank& gbk, const Seq& seq, Writer& write) {
             }
         }
     }
+}
 
-    {
-        BaseCounts bases;
-        seq.count(bases);
-        write.outf("BASE COUNT  %6d a %6d c %6d g %6d t", bases.a, bases.c, bases.g, bases.t);
-        if (bases.other) { // don't write 0 others
-            write.outf(" %6d others", bases.other);
-        }
-        write.out('\n');
+void genbank_out_base_count(const Seq& seq, Writer& write) {
+    BaseCounts bases;
+    seq.count(bases);
+    write.outf("BASE COUNT  %6d a %6d c %6d g %6d t", bases.a, bases.c, bases.g, bases.t);
+    if (bases.other) { // don't write 0 others
+        write.outf(" %6d others", bases.other);
     }
+    write.out('\n');
+}
+
+void genbank_out(const GenBank& gbk, const Seq& seq, Writer& write) {
+    // Output in a genbank format
+
+    genbank_out_header(gbk, seq, write);
+    genbank_out_base_count(seq, write);
+    write.out("ORIGIN\n");
     genbank_out_origin(seq, write);
 }
 
 void genbank_to_genbank(const char *inf, const char *outf) {
     // Convert from genbank to genbank.
-    Reader reader(inf);
-    Writer write(outf);
+    Reader     reader(inf);
+    FileWriter write(outf);
 
     while (1) {
         GenBank gbk;

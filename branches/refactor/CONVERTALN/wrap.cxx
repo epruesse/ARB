@@ -34,16 +34,17 @@ const char *WrapMode::print_return_wrapped(Writer& write, const char * const con
     ca_assert(split_after>0);
     if (occurs_in(content[split_after], " \n")) split_after--;
     ca_assert(split_after >= 0);
+    ca_assert(split_after <= len);
 
     int continue_at = split_after+1;
-    while (occurs_in(content[continue_at], " \n")) continue_at++;
+    while (continue_at < len && occurs_in(content[continue_at], " \n")) continue_at++;
 
     ca_assert(content[split_after] != '\n');
     fputs_len(content, split_after+1, write);
     write.out('\n');
 
     ca_assert(content[len] == '\n');
-    ca_assert(len>continue_at);
+    ca_assert(len >= continue_at);
 
     return content+continue_at;
 }

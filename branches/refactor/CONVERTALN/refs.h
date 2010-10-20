@@ -1,6 +1,13 @@
 #ifndef REFS_H
 #define REFS_H
 
+#ifndef INPUT_FORMAT_H
+#include "input_format.h"
+#endif
+#ifndef RDP_INFO_H
+#include "rdp_info.h"
+#endif
+
 template <typename REF>
 class Refs : Noncopyable {
     REF   *ref;

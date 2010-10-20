@@ -17,6 +17,8 @@ class Macke : public InputFormat {
     char **remarks;             // remarks
     int    allocated;
 
+    char *create_id() const { return strdup(seqabbr); }
+    
 public:
 
     char  *seqabbr;             // sequence abbrev.
@@ -120,9 +122,10 @@ public:
 //      MackeReader
 
 class MackeReader : public InputFormatReader {
-    bool        firstRead;
-    char       *inName;
-    const char *seqabbr; // owner Macke.seqabbr (set by mackeIn())
+    bool    firstRead;
+    char   *inName;
+    char*&  seqabbr; // = Macke.seqabbr
+    char   *dummy;
 
     Reader *r1, *r2, *r3;
     void start_reading();
@@ -139,12 +142,20 @@ class MackeReader : public InputFormatReader {
         return r1->ok() && r2->ok() && r3->ok();
     }
 
+    bool read_seq_data(Seq& seq) {
+        ca_assert(seqabbr);
+        macke_origin(seq, seqabbr, *r2);
+        if (seq.is_empty()) abort();
+        return r2->ok();
+    }
+
 public:
 
     MackeReader(const char *inName_)
         : firstRead(true),
           inName(strdup(inName_)),
-          seqabbr(0),
+          seqabbr(dummy),
+          dummy(NULL), 
           r1(NULL),
           r2(NULL),
           r3(NULL)
@@ -152,13 +163,6 @@ public:
     ~MackeReader() {
         stop_reading();
         free(inName);
-    }
-
-    bool read_seq_data(Seq& seq) {
-        ca_assert(seqabbr);
-        macke_origin(seq, seqabbr, *r2);
-        if (seq.is_empty()) abort();
-        return r2->ok();
     }
 
     bool read_one_entry(InputFormat& data, Seq& seq) {

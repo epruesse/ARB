@@ -53,15 +53,6 @@ public:
     Reader(const char *inf);
     virtual ~Reader();
 
-#if 1
-#define FBUF_DEPR __ATTR__DEPRECATED    
-#else
-#define FBUF_DEPR     
-#endif
-    FILE_BUFFER getfilebuf() FBUF_DEPR { return fbuf; }
-    char *getlinebuf() FBUF_DEPR { return linebuf; }
-    void setcurr(char *curr_) FBUF_DEPR { set_curr(curr_); }
-
     void rewind() { FILE_BUFFER_rewind(fbuf); reset(); read(); }
 
     Reader& operator++() { read(); return *this; }
@@ -81,19 +72,6 @@ public:
     }
 };
 
-template<typename PRED>
-char *skipOverLinesThat_DEPRECATED(char *buffer, size_t buffersize, FILE_BUFFER& fb, PRED line_predicate) {
-    // returns a pointer to the first non-matching line or NULL
-    // @@@ WARNING: unconditionally skips the first line
-    char *result;
-
-    for (result = Fgetline(buffer, buffersize, fb);
-         result && line_predicate(result);
-         result = Fgetline(buffer, buffersize, fb)) { }
-
-    return result;
-}
-
 inline const char *shorttimekeep(char *heapcopy) {
     static SmartCharPtr keep;
     keep = heapcopy;
@@ -103,33 +81,47 @@ inline const char *shorttimecopy(const char *nocopy) { return shorttimekeep(null
 
 struct InputFormatReader {
     virtual ~InputFormatReader() {}
-
-    virtual bool read_seq_data(Seq& seq) = 0;
     virtual bool read_one_entry(InputFormat& data, Seq& seq) = 0;
 };
 
 // --------------------------------------------------------------------------------
 
-class Writer : Noncopyable {
+class Writer {
+public:
+    Writer() {}
+    virtual ~Writer() {}
+
+    virtual bool ok() const            = 0;
+    virtual void out(char ch)          = 0;
+    virtual const char *name() const   = 0;
+
+    virtual void throw_write_error() const;
+    virtual void out(const char *text);
+    virtual int outf(const char *format, ...) __ATTR__FORMAT(2);
+
+    void repeated(char ch, int repeat) { while (repeat--) out(ch); }
+};
+
+class FileWriter : public Writer {
     FILE *ofp;
     char *filename;
     int   written; // count written sequences
 
 public:
-    Writer(const char *outf);
-    ~Writer();
+    FileWriter(const char *outf);
+    ~FileWriter();
 
     FILE *get_FILE() { return ofp; }
 
     bool ok() const { return ofp != NULL; }
-    void throw_write_error();
+    void out(char ch);
+    void out(const char *text);
+    const char *name() const { return filename; }
+    
+    int outf(const char *format, ...) __ATTR__FORMAT(2);
+
     void seq_done() { ++written; }
     void seq_done(int count) { ca_assert(count >= 0); written += count; }
-
-    void out(const char *text);
-    void out(char ch);
-    void repeated(char ch, int repeat) { while (repeat--) out(ch); }
-    int outf(const char *format, ...) __ATTR__FORMAT(2);
 };
 
 #else

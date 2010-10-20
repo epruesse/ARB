@@ -4,9 +4,6 @@
 #ifndef FUN_H
 #include "fun.h"
 #endif
-#ifndef SMARTPTR_H
-#include <smartptr.h>
-#endif
 #ifndef GLOBAL_H
 #include "global.h"
 #endif
@@ -99,6 +96,8 @@ public:
         }
         return gaps;
     }
+
+    void out(Writer& write, Format outType) const;
 };
 typedef SmartPtr<Seq> SeqPtr;
 

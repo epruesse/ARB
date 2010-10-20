@@ -1,6 +1,6 @@
 // ================================================================
 //
-// File      : convert.c
+// File      : convert.cxx
 // Purpose   : some helpers for global data handling
 //
 // ================================================================
@@ -44,7 +44,7 @@ SeqPtr Embl::read_data(Reader& reader) {
     }
     else {
         char temp[TOKENSIZE];
-        embl_key_word(id, 0, temp, TOKENSIZE);
+        embl_key_word(ID, 0, temp, TOKENSIZE);
         seq->set_id(temp);
     }
     return seq;

@@ -1,14 +1,14 @@
 #ifndef EMBL_H
 #define EMBL_H
 
-#ifndef INPUT_FORMAT_H
-#include "input_format.h"
-#endif
-#ifndef RDP_INFO_H
-#include "rdp_info.h"
-#endif
 #ifndef REFS_H
 #include "refs.h"
+#endif
+#ifndef READER_H
+#include "reader.h"
+#endif
+#ifndef PARSER_H
+#include "parser.h"
 #endif
 
 struct Emblref {
@@ -38,8 +38,15 @@ struct Emblref {
     DECLARE_ASSIGNMENT_OPERATOR(Emblref);
 };
 
-struct Embl : public InputFormat, public RefContainer<Emblref> {
-    char *id;                    // entry name
+class Embl : public InputFormat, public RefContainer<Emblref> {
+    char *create_id() const {
+        char buf[TOKENSIZE];
+        embl_key_word(ID, 0, buf, TOKENSIZE);
+        return strdup(buf);
+    }
+    
+public:
+    char *ID;                    // entry name
     char *dateu;                 // date of last updated
     char *datec;                 // date of created
     char *description;           // description line (DE)
@@ -51,7 +58,7 @@ struct Embl : public InputFormat, public RefContainer<Emblref> {
     RDP_comments  comments;          // comments
 
     Embl() {
-        id          = no_content();
+        ID          = no_content();
         dateu       = no_content();
         datec       = no_content();
         description = no_content();
@@ -61,7 +68,7 @@ struct Embl : public InputFormat, public RefContainer<Emblref> {
         dr          = no_content();
     }
     virtual ~Embl() {
-        freenull(id);
+        freenull(ID);
         freenull(dateu);
         freenull(datec);
         freenull(description);
@@ -74,23 +81,14 @@ struct Embl : public InputFormat, public RefContainer<Emblref> {
     // InputFormat interface
     SeqPtr read_data(Reader& reader);
     void reinit() { INPLACE_RECONSTRUCT(Embl, this); }
-    const char *get_id() const { return id; }
+
 };
 
-#ifndef READER_H
-#include "reader.h"
-#endif
 
 
 class EmblSwissprotReader : public Reader, public InputFormatReader {
 public:
     EmblSwissprotReader(const char *inf) : Reader(inf) {}
-
-    bool read_seq_data(Seq& seq) {
-        embl_origin(seq, *this);
-        if (seq.is_empty()) abort();
-        return ok();
-    }
 
     const char *get_key_word(int offset) {
         char key[TOKENSIZE];
@@ -103,6 +101,31 @@ public:
         if (seq.is_empty()) abort();
         return ok();
     }
+};
+
+// -------------------
+//      EmblParser
+
+class EmblParser: public Parser {
+    virtual void parse_keyed_section(const char *key) = 0;
+protected:
+    Embl& embl;
+    void parse_common_section(const char *key);
+public:
+    EmblParser(Embl& embl_, Seq& seq_, Reader& reader_) : Parser(seq_, reader_), embl(embl_) {}
+    void parse_section();
+};
+
+class EmblFullParser: public EmblParser {
+    void parse_keyed_section(const char *key);
+public:
+    EmblFullParser(Embl& embl_, Seq& seq_, Reader& reader_) : EmblParser(embl_, seq_, reader_) {}
+};
+
+class EmblSimpleParser: public EmblParser {
+    void parse_keyed_section(const char *key) { parse_common_section(key); }
+public:
+    EmblSimpleParser(Embl& embl_, Seq& seq_, Reader& reader_) : EmblParser(embl_, seq_, reader_) {}
 };
 
 

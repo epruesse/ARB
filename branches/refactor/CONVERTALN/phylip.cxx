@@ -59,8 +59,8 @@ void to_phylip(const char *inf, const char *outf, Format inType, int readstdin) 
         throw_conversion_not_supported(inType, PHYLIP);
     }
 
-    Reader reader(inf);
-    Writer write(outf);
+    Reader     reader(inf);
+    FileWriter write(outf);
 
     if (write.get_FILE() == stdout) {
         ca_assert(0); // can't use stdout (because rewind is used below)
@@ -68,12 +68,7 @@ void to_phylip(const char *inf, const char *outf, Format inType, int readstdin) 
     }
 
     Alignment ali;
-    while(1) {
-        InputFormatPtr in  = InputFormat::create(inType);
-        SeqPtr         seq = in->read_data(reader);
-        if (seq.isNull()) break;
-        ali.add(seq);
-    }
+    read_alignment(ali, inType, reader);
 
     int maxsize     = ali.get_max_len();
     int total_seq   = ali.get_count();

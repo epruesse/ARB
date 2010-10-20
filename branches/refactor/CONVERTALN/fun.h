@@ -33,6 +33,7 @@ struct GenbankRef;
 struct Macke;
 struct Paup;
 struct Seq;
+struct Alignment;
 
 struct RDP_comments;
 

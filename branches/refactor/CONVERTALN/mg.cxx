@@ -7,10 +7,11 @@ extern int warning_out;
 
 void genbank_to_macke(const char *inf, const char *outf) {
     // Convert from Genbank format to Macke format.
-    Reader reader(inf);
-    Writer write(outf);
+    Format     inType = GENBANK;
+    Reader     reader(inf);
+    FileWriter write(outf);
 
-    int indi, total_num;
+    int indi;
 
     // sequence irrelevant header
     macke_out_header(write);
@@ -27,10 +28,10 @@ void genbank_to_macke(const char *inf, const char *outf) {
 
             numofseq++;
             Macke macke;
-            if (!gtom(gbk, macke)) throw_conversion_failure(GENBANK, MACKE);
+            if (!gtom(gbk, macke)) throw_conversion_failure(inType, MACKE);
 
             switch (indi) {
-                case 0: macke_seq_display_out(macke, write, GENBANK, numofseq == 1); break;
+                case 0: macke_seq_display_out(macke, write, inType, numofseq == 1); break;
                 case 1: macke_seq_info_out(macke, write); break;
                 case 2:
                     macke_seq_data_out(seq, macke, write);
@@ -39,7 +40,6 @@ void genbank_to_macke(const char *inf, const char *outf) {
                 default:;
             }
         }
-        total_num = numofseq;
         if (indi == 0) {
             write.out("#-\n");
             warning_out = 0; // no warning message for next loop
@@ -49,29 +49,32 @@ void genbank_to_macke(const char *inf, const char *outf) {
     warning_out = 1; // resume warning messages
 }
 
-static int paren_string(char *Str, char *pstring, int index) {
-    int pcount = 0, len, indi;
+static int paren_string(char *line, char *pstring, int index) {
+    int len       = str0len(line);
+    int paren_num = 0;
+    int indk;
 
-    for (indi = 0, len = str0len(Str); index < len; index++) {
-        if (pcount >= 1)
-            pstring[indi++] = Str[index];
-        if (Str[index] == '(')
-            pcount++;
-        if (Str[index] == ')')
-            pcount--;
+    for (indk = 0; index < len; index++) {
+        if (paren_num >= 1)
+            pstring[indk++] = line[index];
+        if (line[index] == '(')
+            paren_num++;
+        if (line[index] == ')')
+            paren_num--;
     }
-    if (indi == 0)
+    if (indk == 0)
         return (-1);
-    pstring[--indi] = '\0';
+    pstring[--indk] = '\0';
     return (index);
 }
 
-static void get_atcc_string(char *line, char *temp, int index) {
-    // Get the rest of the Str until reaching certain terminators, such as ';', ',', '.',...
-    int indk, len, paren_num;
+static void get_atcc_string(const char *line, char *temp, int index) {
+    // Get the rest of the line until reaching certain terminators, such as ';', ',', '.',...
 
-    len = str0len(line);
-    paren_num = 0;
+    int len       = str0len(line);
+    int paren_num = 0;
+    int indk;
+
     for (indk = 0; index < len; index++, indk++) {
         temp[indk] = line[index];
         if (temp[indk] == '(')
@@ -228,16 +231,16 @@ static void check_consistency(const char *what, char* const& var, const char *Ne
 }
 
 static void get_string(char *temp, const char *line, int index) {
-    // Get the rest of the Str until reaching certain terminators,
+    // Get the rest of the line until reaching certain terminators,
     // such as ';', ',', '.',...
-    // Always append "\n" at the end of the returned Str.
+    // Always append "\n" at the end of the result.
 
     index = Skip_white_space(line, index);
 
     int len       = str0len(line);
     int paren_num = 0;
-
     int indk;
+
     for (indk = 0; index < len; index++, indk++) {
         temp[indk] = line[index];
         if (temp[indk] == '(')
@@ -328,7 +331,7 @@ static char *genbank_get_subspecies(const GenBank& gbk) {
 void macke_to_genbank(const char *inf, const char *outf) {
     // Convert from macke format to genbank format.
     MackeReader mackeReader(inf);
-    Writer      write(outf);
+    FileWriter  write(outf);
 
     while (1) {
         Macke   macke;

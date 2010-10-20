@@ -2,6 +2,7 @@
 
 #include "macke.h"
 #include "wrap.h"
+#include "parser.h"
 
 
 #define MACKELIMIT 10000
@@ -33,24 +34,36 @@ static void macke_one_entry_in(Reader& reader, const char *key, char *oldname, c
 
     macke_continue_line(key, oldname, var, reader);
 }
-void macke_origin(Seq& seq, const char *key, Reader& reader) { 
-    // Read in sequence data in macke file.
-    ca_assert(seq.is_empty());
 
-    for (; reader.line();) { // read in sequence data line by line
+static void macke_read_seq(Seq& seq, char*& seqabbr, Reader& reader) {
+    ca_assert(seq.is_empty());
+    for (; reader.line(); ++reader) { // read in sequence data line by line
+        if (!has_content(reader.line())) continue;
+
         char name[TOKENSIZE];
         int  index = macke_abbrev(reader.line(), name, 0);
 
-        if (!str_equal(key, name)) break;
+        if (seqabbr) {
+            if (!str_equal(seqabbr, name)) break; // stop if reached different abbrev
+        }
+        else {
+            seqabbr = nulldup(name);
+        }
 
         int  seqnum;
         char data[LINESIZE];
-        ASSERT_RESULT(int, 2, sscanf(reader.line() + index, "%d%s", &seqnum, data));
+        int scanned = sscanf(reader.line() + index, "%d%s", &seqnum, data);
+        if (scanned != 2) throw_errorf(80, "Failed to parse '%s'", reader.line());
+
         for (int indj = seq.get_len(); indj < seqnum; indj++) seq.add('.');
         for (int indj = 0; data[indj] != '\n' && data[indj] != '\0'; indj++) seq.add(data[indj]);
-
-        ++reader;
     }
+}
+
+void macke_origin(Seq& seq, char*& seqabbr, Reader& reader) {
+    // Read in sequence data in macke file.
+    ca_assert(seqabbr);                   // = macke.seqabbr
+    macke_read_seq(seq, seqabbr, reader);
 }
 
 int macke_abbrev(const char *line, char *key, int index) {
@@ -80,37 +93,11 @@ bool macke_is_continued_remark(const char *str) {
 void macke_in_simple(Macke& macke, Seq& seq, Reader& reader) {
     // Read in next sequence name and data only.
     // (sequence name is stored in 'macke.seqabbr')
-
-    ca_assert(seq.is_empty());
-    freenull(macke.seqabbr);
-    
     reader.skipOverLinesThat(isMackeHeader); // skip header
 
-    // read in sequence data line by line
-    for (; reader.line() ; ++reader) {
-        if (!has_content(reader.line())) continue;
-        
-        int index;
-        {
-            char name[TOKENSIZE];
-            index = macke_abbrev(reader.line(), name, 0);
-            if (macke.seqabbr) {
-                if (!str_equal(macke.seqabbr, name)) break; // stop if reached different abbrev
-            }
-            else {
-                macke.seqabbr = nulldup(name);
-            }
-        }
-        {
-            int  seqnum;
-            char data[LINESIZE];
-            int  scanned = sscanf(reader.line() + index, "%d%s", &seqnum, data);
-            if (scanned != 2) throw_errorf(80, "Failed to parse '%s'", reader.line());
-            
-            for (int indj = seq.get_len(); indj < seqnum; indj++) seq.add('.');
-            for (int indj = 0; data[indj] != '\n' && data[indj] != '\0'; indj++) seq.add(data[indj]);
-        }
-    }
+    char*&seqabbr = macke.seqabbr;
+    freenull(seqabbr);
+    macke_read_seq(seq, seqabbr, reader);
 }
 void macke_out_header(Writer& write) {
     // Output the Macke format header.
@@ -302,6 +289,18 @@ void MackeReader::stop_reading() {
 
     delete r1; r1 = NULL;
 }
+
+class MackeParser: public Parser {
+    Macke& macke;
+
+public:
+    MackeParser(Macke& macke_, Seq& seq_, Reader& reader_) : Parser(seq_, reader_), macke(macke_) {}
+
+    void parse_section() {
+        ca_assert(0); // @@@ unused yet
+    }
+};
+
 
 bool MackeReader::mackeIn(Macke& macke) {
     // Read in one sequence data from Macke file.

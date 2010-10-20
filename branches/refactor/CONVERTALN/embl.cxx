@@ -5,7 +5,7 @@
 
 extern int warning_out;
 
-static void embl_continue_line(char *pattern, char*& Str, Reader& reader) {
+static void embl_continue_line(const char *pattern, char*& Str, Reader& reader) {
     // if there are (numb) blanks at the beginning of line,
     // it is a continue line of the current command.
     int  ind;
@@ -25,7 +25,7 @@ static void embl_continue_line(char *pattern, char*& Str, Reader& reader) {
     }
 }
 
-static void embl_one_entry(Reader& reader, char*& entry, char *key) {
+static void embl_one_entry(Reader& reader, char*& entry, const char *key) {
     // Read in one embl entry lines.
     int index = Skip_white_space(reader.line(), p_nonkey_start);
     freedup(entry, reader.line() + index);
@@ -82,24 +82,23 @@ static void embl_correct_title(Emblref& ref) {
     }
 }
 
-static int embl_comment_key(const char *line, char *key) {
-    // Get the subkey_word in comment lines beginning at index.
-    int indi, indj;
-
-    if (line == NULL) {
+int comment_subkey(const char *line, char *key) {
+    // Get the subkey_word from a comment line
+    if (!line) {
         key[0] = '\0';
         return (0);
     }
 
-    for (indi = indj = 0; line[indi] != ':' && line[indi] != '\t' && line[indi] != '\n' && line[indi] != '\0' && line[indi] != '('; indi++, indj++)
-        key[indj] = line[indi];
+    int indi;
+    for (indi = 0; line[indi] && !occurs_in(line[indi], ":\t\n("); indi++) {
+        key[indi] = line[indi];
+    }
 
-    if (line[indi] == ':')
-        key[indj++] = ':';
-
+    int indj = indi;
+    if (line[indj] == ':') key[indj++] = ':';
     key[indj] = '\0';
 
-    return (indi + 1);
+    return indi + 1;
 }
 
 inline bool is_embl_comment(const char *line) { return line && line[0] == 'C' && line[1] == 'C'; }
@@ -131,7 +130,7 @@ static void embl_comments(Embl& embl, Reader& reader) {
     for (; is_embl_comment(reader.line()) ;) {
         char key[TOKENSIZE];
         int  index  = Skip_white_space(reader.line(), 5);
-        int  offset = embl_comment_key(reader.line() + index, key);
+        int  offset = comment_subkey(reader.line() + index, key);
         index       = Skip_white_space(reader.line(), index + offset);
 
         RDP_comment_parser one_comment_entry = embl_one_comment_entry;
@@ -145,7 +144,7 @@ static void embl_comments(Embl& embl, Reader& reader) {
     }
 }
 
-static void embl_skip_unidentified(char *pattern, Reader& reader) {
+static void embl_skip_unidentified(const char *pattern, Reader& reader) {
     // if there are (numb) blanks at the beginning of line,
     // it is a continue line of the current command.
 
@@ -156,120 +155,87 @@ static void embl_skip_unidentified(char *pattern, Reader& reader) {
     }
 }
 
+void EmblParser::parse_section() {
+    char key[TOKENSIZE];
+    embl_key_word(reader.line(), 0, key, TOKENSIZE);
+    state = ENTRY_STARTED;
+    parse_keyed_section(key);
+}
+
+void EmblFullParser::parse_keyed_section(const char *key) {
+    if (str_equal(key, "DT")) {
+        embl_date(embl, reader);
+    }
+    else if (str_equal(key, "DE")) {
+        embl_one_entry(reader, embl.description, key);
+    }
+    else if (str_equal(key, "OS")) {
+        embl_one_entry(reader, embl.os, key);
+    }
+    else if (str_equal(key, "AC")) {
+        embl_one_entry(reader, embl.accession, key);
+    }
+    else if (str_equal(key, "KW")) {
+        embl_one_entry(reader, embl.keywords, key);
+
+        // correct missing '.'
+        if (!has_content(embl.keywords)) freedup(embl.keywords, ".\n");
+        else terminate_with(embl.keywords, '.');
+    }
+    else if (str_equal(key, "DR")) {
+        embl_one_entry(reader, embl.dr, key);
+    }
+    else if (str_equal(key, "RA")) {
+        Emblref& ref = embl.get_latest_ref();
+        embl_one_entry(reader, ref.author, key);
+        terminate_with(ref.author, ';');
+    }
+    else if (str_equal(key, "RT")) {
+        Emblref& ref = embl.get_latest_ref();
+        embl_one_entry(reader, ref.title, key);
+        embl_correct_title(ref);
+    }
+    else if (str_equal(key, "RL")) {
+        Emblref& ref = embl.get_latest_ref();
+        embl_one_entry(reader, ref.journal, key);
+        terminate_with(ref.journal, '.');
+    }
+    else if (str_equal(key, "RP")) {
+        Emblref& ref = embl.get_latest_ref();
+        embl_one_entry(reader, ref.processing, key);
+    }
+    else if (str_equal(key, "RN")) {
+        embl.resize_refs(embl.get_refcount()+1);
+        ++reader;
+    }
+    else if (str_equal(key, "CC")) {
+        embl_comments(embl, reader);
+    }
+    else {
+        parse_common_section(key);
+    }
+}
+
+void EmblParser::parse_common_section(const char *key) {
+    if (str_equal(key, "ID")) {
+        embl_one_entry(reader, embl.ID, key);
+    }
+    else if (str_equal(key, "SQ")) {
+        embl_origin(seq, reader);
+        state = ENTRY_COMPLETED;
+    }
+    else {
+        embl_skip_unidentified(key, reader);
+    }
+}
+
 void embl_in(Embl& embl, Seq& seq, Reader& reader) {
-    // Read in one embl entry.
-
-    EntryState state = ENTRY_NONE;
-
-    for (; reader.line() && state != ENTRY_COMPLETED;) {
-        if (!has_content(reader.line())) {
-            ++reader;
-            ca_assert(reader.ok());
-            continue;           // empty line, skip
-        }
-
-        char key[TOKENSIZE];
-        embl_key_word(reader.line(), 0, key, TOKENSIZE);
-        state = ENTRY_STARTED;
-
-        if (str_equal(key, "ID")) {
-            embl_one_entry(reader, embl.id, key);
-        }
-        else if (str_equal(key, "DT")) {
-            embl_date(embl, reader);
-        }
-        else if (str_equal(key, "DE")) {
-            embl_one_entry(reader, embl.description, key);
-        }
-        else if (str_equal(key, "OS")) {
-            embl_one_entry(reader, embl.os, key);
-        }
-        else if (str_equal(key, "AC")) {
-            embl_one_entry(reader, embl.accession, key);
-        }
-        else if (str_equal(key, "KW")) {
-            embl_one_entry(reader, embl.keywords, key);
-
-            // correct missing '.'
-            if (!has_content(embl.keywords)) freedup(embl.keywords, ".\n");
-            else terminate_with(embl.keywords, '.');
-        }
-        else if (str_equal(key, "DR")) {
-            embl_one_entry(reader, embl.dr, key);
-        }
-        else if (str_equal(key, "RA")) {
-            Emblref& ref = embl.get_latest_ref();
-            embl_one_entry(reader, ref.author, key);
-            terminate_with(ref.author, ';');
-        }
-        else if (str_equal(key, "RT")) {
-            Emblref& ref = embl.get_latest_ref();
-            embl_one_entry(reader, ref.title, key);
-            embl_correct_title(ref);
-        }
-        else if (str_equal(key, "RL")) {
-            Emblref& ref = embl.get_latest_ref();
-            embl_one_entry(reader, ref.journal, key);
-            terminate_with(ref.journal, '.');
-        }
-        else if (str_equal(key, "RP")) {
-            Emblref& ref = embl.get_latest_ref();
-            embl_one_entry(reader, ref.processing, key);
-        }
-        else if (str_equal(key, "RN")) {
-            embl.resize_refs(embl.get_refcount()+1);
-            ++reader;
-        }
-        else if (str_equal(key, "CC")) {
-            embl_comments(embl, reader);
-        }
-        else if (str_equal(key, "SQ")) {
-            embl_origin(seq, reader);
-            state = ENTRY_COMPLETED;
-        }
-        else {                  // unidentified key word
-            embl_skip_unidentified(key, reader);
-        }
-        /* except "ORIGIN", at the end of all the other cases,
-         * a new line has already read in, so no further read
-         * is necessary */
-
-        ca_assert(reader.ok());
-    }
-    ca_assert(reader.ok());
-    if (state == ENTRY_STARTED) throw_incomplete_entry();
-    ++reader;
+    EmblFullParser(embl, seq, reader).parse_entry(); // Read in one embl entry.
 }
-
 void embl_in_simple(Embl& embl, Seq& seq, Reader& reader) {
-    // Read in one embl entry.
-    char       key[TOKENSIZE];
-    EntryState state = ENTRY_NONE;
-
-    for (; reader.line() && state != ENTRY_COMPLETED;) {
-        if (!has_content(reader.line())) { ++reader; continue; } // empty line, skip
-
-        embl_key_word(reader.line(), 0, key, TOKENSIZE);
-        state = ENTRY_STARTED;
-
-        if (str_equal(key, "ID")) {
-            embl_one_entry(reader, embl.id, key);
-        }
-        else if (str_equal(key, "SQ")) {
-            embl_origin(seq, reader);
-            state = ENTRY_COMPLETED;
-        }
-        else {                  // unidentified key word
-            embl_skip_unidentified(key, reader);
-        }
-        /* except "ORIGIN", at the end of all the other cases,
-           a new line has already read in, so no further read
-           is necessary */
-    }
-
-    if (state == ENTRY_STARTED) throw_incomplete_entry();
-    ++reader;
+    EmblSimpleParser(embl, seq, reader).parse_entry(); // Read in one embl entry.
 }
+
 void embl_key_word(const char *line, int index, char *key, int length) { // @@@ similar to genbank_key_word and macke_key_word
     // Get the key_word from line beginning at index.
     // length = max size of key word
@@ -373,34 +339,14 @@ static void embl_out_origin(const Seq& seq, Writer& write) {
     write.outf("SQ   Sequence %d BP; %d A; %d C; %d G; %d T; %d other;\n",
                seq.get_len(), bases.a, bases.c, bases.g, bases.t, bases.other);
 
-    const char *sequence = seq.get_seq();
-    int indi, indj, indk;
-    for (indi = 0, indj = 0, indk = 1; indi < seq.get_len(); indi++) {
-        if ((indk % 60) == 1)
-            write.out("     ");
-        write.out(sequence[indi]);
-        indj++;
-        if ((indk % 60) == 0) {
-            write.out('\n');
-            indj = 0;
-        }
-        else if (indj == 10 && indi != (seq.get_len() - 1)) {
-            write.out(' ');
-            indj = 0;
-        }
-        indk++;
-    }
-    if ((indk % 60) != 1) write.out('\n');
-    write.out("//\n");
+    seq.out(write, EMBL);
 }
-static void embl_out(const Embl& embl, const Seq& seq, Writer& write) {
-    // Output EMBL data.
-    int indi;
 
+void embl_out_header(const Embl& embl, const Seq& seq, Writer& write) {
     WrapMode wrapWords(true);
     WrapMode neverWrap(false);
 
-    embl_print_lines_if_content(write, "ID", embl.id,          neverWrap,     true);
+    embl_print_lines_if_content(write, "ID", embl.ID,          neverWrap,     true);
     embl_print_lines_if_content(write, "AC", embl.accession,   wrapWords,     true);
     embl_print_lines_if_content(write, "DT", embl.dateu,       neverWrap,     false);
     embl_print_lines_if_content(write, "DT", embl.datec,       neverWrap,     true);
@@ -415,7 +361,7 @@ static void embl_out(const Embl& embl, const Seq& seq, Writer& write) {
     }
 
     // GenbankRef
-    for (indi = 0; indi < embl.get_refcount(); indi++) {
+    for (int indi = 0; indi < embl.get_refcount(); indi++) {
         const Emblref& ref = embl.get_ref(indi);
 
         write.outf("RN   [%d]\n", indi + 1);
@@ -435,8 +381,14 @@ static void embl_out(const Embl& embl, const Seq& seq, Writer& write) {
     }
 
     embl_out_comments(embl, seq, write);
+}
+
+static void embl_out(const Embl& embl, const Seq& seq, Writer& write) {
+    // Output EMBL data.
+    embl_out_header(embl, seq, write);
     embl_out_origin(seq, write);
 }
+
 static char *etog_author(char *Str) {
     // Convert EMBL author format to Genbank author format.
     int  indi, indk, len, index;
@@ -595,7 +547,7 @@ STATIC_ATTRIBUTED(__ATTR__USERESULT, int etog(const Embl& embl, GenBank& gbk, co
     char key[TOKENSIZE], temp[LONGTEXT];
     char t1[TOKENSIZE], t2[TOKENSIZE], t3[TOKENSIZE];
 
-    embl_key_word(embl.id, 0, key, TOKENSIZE);
+    embl_key_word(embl.ID, 0, key, TOKENSIZE);
     if (has_content(embl.dr)) {
         // get short_id from DR line if there is RDP def.
         strcpy(t3, "dummy");
@@ -670,7 +622,7 @@ STATIC_ATTRIBUTED(__ATTR__USERESULT, int etom(const Embl& embl, Macke& macke, co
 void embl_to_macke(const char *inf, const char *outf, Format inType) {
     // Convert from Embl format to Macke format.
     Reader reader(inf);
-    Writer write(outf);
+    FileWriter write(outf);
 
     macke_out_header(write); // macke format sequence irrelevant header
 
@@ -686,7 +638,7 @@ void embl_to_macke(const char *inf, const char *outf, Format inType) {
 
             numofseq++;
             Macke macke;
-            if (!etom(embl, macke, seq)) throw_conversion_failure(EMBL, MACKE);
+            if (!etom(embl, macke, seq)) throw_conversion_failure(inType, MACKE);
 
             switch (indi) {
                 case 0: macke_seq_display_out(macke, write, inType, numofseq == 1); break;
@@ -708,8 +660,8 @@ void embl_to_macke(const char *inf, const char *outf, Format inType) {
 
 void embl_to_embl(const char *inf, const char *outf) {
     // Print out EMBL data.
-    Reader reader(inf);
-    Writer write(outf);
+    Reader     reader(inf);
+    FileWriter write(outf);
 
     while (1) {
         Embl embl;
@@ -725,7 +677,7 @@ void embl_to_embl(const char *inf, const char *outf) {
 void embl_to_genbank(const char *inf, const char *outf) {
     // Convert from EMBL format to genbank format.
     Reader reader(inf);
-    Writer write(outf);
+    FileWriter write(outf);
 
     while (1) {
         Embl embl;
@@ -734,7 +686,7 @@ void embl_to_genbank(const char *inf, const char *outf) {
         if (reader.failed()) break;
 
         GenBank gbk;
-        if (!etog(embl, gbk, seq)) throw_conversion_failure(MACKE, GENBANK);
+        if (!etog(embl, gbk, seq)) throw_conversion_failure(EMBL, GENBANK);
         genbank_out(gbk, seq, write);
         write.seq_done();
     }
@@ -902,15 +854,14 @@ STATIC_ATTRIBUTED(__ATTR__USERESULT, int gtoe(const GenBank& gbk, Embl& embl, co
     // Genbank to EMBL.
     {
         char temp[LONGTEXT];
-        genbank_key_word(gbk.locus, 0, temp, TOKENSIZE);
-        // Adjust short-id, EMBL short_id always upper case
-        upcase(temp);
+        strcpy(temp, gbk.get_id());
 
-        int indi = min(str0len(temp), 9);
-        for (; indi < 10; indi++) temp[indi] = ' ';
+        upcase(temp); // Adjust short-id, EMBL short_id always upper case
+        for (int indi = min(str0len(temp), 9); indi < 10; indi++)
+            temp[indi] = ' ';
 
         sprintf(temp + 10, "preliminary; RNA; UNA; %d BP.\n", seq.get_len());
-        freedup(embl.id, temp);
+        freedup(embl.ID, temp);
     }
 
     // accession number
@@ -966,8 +917,8 @@ STATIC_ATTRIBUTED(__ATTR__USERESULT, int gtoe(const GenBank& gbk, Embl& embl, co
 
 void genbank_to_embl(const char *inf, const char *outf) {
     // Convert from genbank to EMBL.
-    Reader reader(inf);
-    Writer write(outf);
+    Reader     reader(inf);
+    FileWriter write(outf);
 
     while (1) {
         GenBank gbk;
@@ -1022,7 +973,7 @@ STATIC_ATTRIBUTED(__ATTR__USERESULT, int mtoe(const Macke& macke, Embl& embl, co
 void macke_to_embl(const char *inf, const char *outf) {
     // Convert from macke to EMBL.
     MackeReader mackeReader(inf);
-    Writer      write(outf);
+    FileWriter  write(outf);
 
     while (1) {
         Macke  macke;
@@ -1030,15 +981,11 @@ void macke_to_embl(const char *inf, const char *outf) {
 
         if (!mackeReader.read_one_entry(macke, seq)) break;
 
-        // @@@ where does this strange comment come from:
-        /* partial_mtoe() is particularly handling
-         * subspecies information, not converting whole
-         * macke format to embl */
-
         Embl embl;
         if (!mtoe(macke, embl, seq)) throw_conversion_failure(MACKE, EMBL);
         embl_out(embl, seq, write);
         write.seq_done();
     }
 }
+
 

@@ -67,19 +67,44 @@ static void gcg_seq_out(const Seq& seq, Writer& write, const char *key) {
     gcg_out_origin(seq, write);
 }
 
-class GcgWriter : public Writer {
+class GcgWriter;
+
+class GcgCommentWriter : public Writer {
+    GcgWriter& gcg_writer;
+
+    char linebuf[LINESIZE];
+    int  used;
+public:
+    GcgCommentWriter(GcgWriter& gcg_writer_)
+        : gcg_writer(gcg_writer_),
+          used(0)
+    {}
+    ~GcgCommentWriter() {
+        ca_assert(used == 0); // trailing \n has not been written
+    }
+
+    bool ok() const { return true; }
+    void throw_write_error() { ca_assert(0); }
+    void out(char ch);
+    const char *name() const { return "comment-writer"; }
+};
+
+class GcgWriter : public FileWriter {
     char *species_name;
-    bool  seq_written; // if true, any further sequences are ignored
+    bool  seq_written;             // if true, any further sequences are ignored
+
+    GcgCommentWriter writer;
 
 public:
-    GcgWriter(const char *outname) 
-        : Writer(outname), 
+    GcgWriter(const char *outname)
+        : FileWriter(outname),
           species_name(NULL),
-          seq_written(false)
+          seq_written(false),
+          writer(*this)
     {}
     ~GcgWriter() {
         free(species_name);
-        Writer::seq_done(seq_written);
+        FileWriter::seq_done(seq_written);
     }
 
     void set_species_name(const char *next_name) {
@@ -91,6 +116,11 @@ public:
         if (!seq_written) gcg_doc_out(comment, *this);
     }
 
+    Writer& comment_writer() {
+        ca_assert(!seq_written);
+        return writer;
+    }
+
     void write_seq_data(const Seq& seq) {
         if (!seq_written) {
             ca_assert(species_name); // you have to call set_species_name() before!
@@ -100,14 +130,24 @@ public:
     }
 };
 
+void GcgCommentWriter::out(char ch) {
+    linebuf[used++] = ch;
+    ca_assert(used<LINESIZE);
+    if (ch == '\n') {
+        linebuf[used] = 0;
+        gcg_writer.add_comment(linebuf);
+        used = 0;
+    }
+}
+
 static void macke_to_gcg(const char *inf, const char *outf) {
-    MackeReader inp(inf);
+    MackeReader reader(inf);
     Macke       macke;
     Seq         seq;
 
     GcgWriter out(outf);
 
-    if (inp.read_one_entry(macke, seq)) {
+    if (reader.read_one_entry(macke, seq)) {
         out.set_species_name(macke.get_id());
         macke_seq_info_out(macke, out);
         out.write_seq_data(seq);
@@ -115,52 +155,35 @@ static void macke_to_gcg(const char *inf, const char *outf) {
 }
 
 static void genbank_to_gcg(const char *inf, const char *outf) {
-    GenbankReader inp(inf);
-    GcgWriter     out(outf);
+    GenbankReader reader(inf);
+    GcgWriter     write(outf);
 
-    for (; inp.line(); ++inp) {
-        const char *key = inp.get_key_word(0);
+    GenBank gbk;
+    Seq     seq;
+        
+    GenbankFullParser(gbk, seq, reader).parse_entry();
+    if (reader.failed()) return;
 
-        if (str_equal(key, "LOCUS")) {
-            out.set_species_name(inp.get_key_word(12));
-            out.add_comment(inp.line());
-        }
-        else if (str_equal(key, "ORIGIN")) {
-            out.add_comment(inp.line());
-            Seq seq;
-            inp.read_seq_data(seq);
-
-            if (inp.failed()) break;
-            out.write_seq_data(seq);
-        }
-        else {
-            out.add_comment(inp.line());
-        }
-    }
+    genbank_out_header(gbk, seq, write.comment_writer());
+    genbank_out_base_count(seq, write.comment_writer());
+    write.out("ORIGIN\n");
+    write.set_species_name(gbk.get_id());
+    write.write_seq_data(seq);
 }
 
 static void embl_to_gcg(const char *inf, const char *outf) {
-    EmblSwissprotReader inp(inf);
-    GcgWriter           out(outf);
+    EmblSwissprotReader reader(inf);
+    GcgWriter           write(outf);
 
-    for (; inp.line(); ++inp) {
-        const char *key = inp.get_key_word(0);
+    Embl embl;
+    Seq  seq;
 
-        if (str_equal(key, "ID")) {
-            out.set_species_name(inp.get_key_word(5));
-            out.add_comment(inp.line());
-        }
-        else if (str_equal(key, "SQ")) {
-            out.add_comment(inp.line());
-            Seq seq;
-            inp.read_seq_data(seq);
-            out.write_seq_data(seq);
-            break;
-        }
-        else {
-            out.add_comment(inp.line());
-        }
-    }
+    EmblFullParser(embl, seq, reader).parse_entry();
+    if (reader.failed()) return;
+
+    embl_out_header(embl, seq, write);
+    write.set_species_name(embl.get_id());
+    write.write_seq_data(seq);
 }
 
 void to_gcg(const char *inf, const char *outf, Format inType) {
@@ -177,4 +200,5 @@ void to_gcg(const char *inf, const char *outf, Format inType) {
             break;
     }
 }
+
 

@@ -15,14 +15,9 @@ public:
     int get_count() const { return seq.size(); }
     bool valid(int idx) const { return idx >= 0 && idx<get_count(); }
 
-    const char *get_id(int idx)  const __ATTR__DEPRECATED { ca_assert(valid(idx)); return seq[idx]->get_id(); }
-    const char *get_seq(int idx) const __ATTR__DEPRECATED { ca_assert(valid(idx)); return seq[idx]->get_seq(); }
-    int get_len(int idx)         const { ca_assert(valid(idx)); return seq[idx]->get_len(); }
-
-    const Seq& get(int idx) const {
-        ca_assert(valid(idx));
-        return *(seq[idx]);
-    }
+    int get_len(int idx) const { ca_assert(valid(idx)); return seq[idx]->get_len(); }
+    const Seq& get(int idx) const { ca_assert(valid(idx)); return *(seq[idx]); }
+    SeqPtr getSeqPtr(int idx) { ca_assert(valid(idx)); return seq[idx]; }
 
     int get_max_len() const {
         int maxlen = -1;
