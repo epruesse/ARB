@@ -17,7 +17,9 @@
 #ifndef ARB_DEFS_H
 #include <arb_defs.h>
 #endif
-
+#ifndef SMARTPTR_H
+#include <smartptr.h>
+#endif
 
 #define ca_assert(cond) arb_assert(cond)
 
@@ -26,6 +28,8 @@
 #else
 #define UNCOVERED()
 #endif
+
+typedef SmartMallocPtr(char) SmartCharPtr;
 
 // --------------------
 

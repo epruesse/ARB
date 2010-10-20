@@ -198,54 +198,45 @@ static void genbank_comments(GenBank& gbk, Reader& reader) {
     }
 }
 
+inline bool valid_acc_char(char ch) { return isalnum(ch) || ch == '_'; }
+
 static void genbank_verify_accession(GenBank& gbk) {
     // Verify accession information.
-    int indi, len, count, remainder;
+    if (str_equal(gbk.accession, "No information\n")) return; // @@@ really allow this ? 
 
-    if (str_equal(gbk.accession, "No information\n"))
-        return;
-    len = str0len(gbk.accession);
-    if ((len % 7) != 0) {
-        if (warning_out) fprintf(stderr, "\nACCESSION: %s", gbk.accession);
-        warning(136, "Each accession number should be a six-character identifier.");
-    }
-    for (indi = count = 0; indi < len - 1; indi++) {
-        remainder = indi % 7;
-        switch (remainder) {
-            case 0:
-                count++;
-                if (count > 9) {
-                    if (warning_out) fprintf(stderr, "\nACCESSION: %s", gbk.accession);
-                    warning(137, "No more than 9 accession numbers are allowed in ACCESSION line.");
-                    gbk.accession[indi - 1] = '\n';
-                    gbk.accession[indi] = '\0';
-                    gbk.accession = Reallocspace(gbk.accession, (unsigned)(sizeof(char) * indi));
-                    return;
+    char         *new_acc = NULL;
+    const char   *sep     = " \t\n;";
+    SmartCharPtr  req_fail;
+    SmartCharPtr  copy    = strdup(gbk.accession);
+    int           count   = 0;
+
+    for (char *acc = strtok(&*copy, sep); acc && req_fail.isNull(); acc = strtok(NULL, sep)) {
+        count++;
+        if (!isalpha(acc[0])) req_fail = strdup("has to start with a letter");
+        else {
+            for (int i = 0; acc[i]; ++i) {
+                if (!valid_acc_char(acc[i])) {
+                    req_fail = strf("invalid char '%c'", acc[i]);
+                    break;
                 }
-                if (!isalpha(gbk.accession[indi])) {
-                    warningf(138, "The %d(th) accession number must start with a letter.", count);
-                }
-                break;
-            case 1:
-            case 2:
-            case 3:
-            case 4:
-            case 5:
-                if (!isdigit(gbk.accession[indi])) {
-                    warningf(140, "The last 5 characters of the %d(th) accession number should be all digits.", count);
-                }
-                break;
-            case 6:
-                if ((indi != (len - 1) && gbk.accession[indi] != ' ')
-                    || (indi == (len - 1) && gbk.accession[indi] != '\n')) {
-                    if (warning_out) fprintf(stderr, "\nACCESSION: %s", gbk.accession);
-                    warning(139, "Accession numbers should be separated by a space.");
-                    gbk.accession[indi] = ' ';
-                }
-                break;
-            default:;
+            }
         }
+
+        if (new_acc) Append(new_acc, ' ');
+        Append(new_acc, acc);
     }
+
+    if (req_fail.isNull() && count>9) {
+        req_fail = strf("No more than 9 accession number allowed (found %i)", count);
+    }
+
+    if (!req_fail.isNull()) {
+        skip_eolnl_and_append(gbk.accession, "");
+        throw_errorf(15, "Invalid accession number '%s' (%s)", gbk.accession, &*req_fail);
+    }
+
+    Append(new_acc, '\n');
+    freeset(gbk.accession, new_acc);
 }
 static void genbank_verify_keywords(GenBank& gbk) {
     // Verify keywords.

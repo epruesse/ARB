@@ -195,6 +195,9 @@ void Append(char*& string1, const char *string2) {
     int len2 = str0len(string2);
     if (len2) append_known_len(string1, str0len(string1), string2, len2);
 }
+void Append(char*& string1, char ch) {
+    append_known_len(string1, str0len(string1), &ch, 1);
+}
 
 void upcase(char *str) {
     // Capitalize all char in the str.

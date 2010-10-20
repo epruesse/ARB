@@ -95,7 +95,7 @@ char *skipOverLinesThat_DEPRECATED(char *buffer, size_t buffersize, FILE_BUFFER&
 }
 
 inline const char *shorttimekeep(char *heapcopy) {
-    static SmartMallocPtr(char) keep;
+    static SmartCharPtr keep;
     keep = heapcopy;
     return &*keep;
 }

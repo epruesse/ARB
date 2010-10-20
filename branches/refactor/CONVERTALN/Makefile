@@ -71,6 +71,7 @@ date.o: $(ARBHOME)/INCLUDE/arbtools.h
 date.o: $(ARBHOME)/INCLUDE/attributes.h
 date.o: $(ARBHOME)/INCLUDE/dupstr.h
 date.o: $(ARBHOME)/INCLUDE/FileBuffer.h
+date.o: $(ARBHOME)/INCLUDE/smartptr.h
 date.o: $(ARBHOME)/INCLUDE/test_global.h
 date.o: $(ARBHOME)/INCLUDE/test_unit.h
 
@@ -204,6 +205,7 @@ main.o: $(ARBHOME)/INCLUDE/arbtools.h
 main.o: $(ARBHOME)/INCLUDE/attributes.h
 main.o: $(ARBHOME)/INCLUDE/dupstr.h
 main.o: $(ARBHOME)/INCLUDE/FileBuffer.h
+main.o: $(ARBHOME)/INCLUDE/smartptr.h
 main.o: $(ARBHOME)/INCLUDE/test_global.h
 main.o: $(ARBHOME)/INCLUDE/test_unit.h
 

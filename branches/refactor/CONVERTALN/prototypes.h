@@ -100,6 +100,7 @@ void terminate_with(char *&str, char ch);
 void skip_eolnl_and_append(char *&string1, const char *string2);
 void skip_eolnl_and_append_spaced(char *&string1, const char *string2);
 void Append(char *&string1, const char *string2);
+void Append(char *&string1, char ch);
 void upcase(char *str);
 int fputs_len(const char *str, int len, Writer &write);
 int find_pattern(const char *text, const char *pattern);

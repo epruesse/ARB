@@ -1,7 +1,7 @@
 #-
 #-
 #-	editor
-#-	Wed Oct 20 22:10:54 2010
+#-	Wed Oct 20 22:37:13 2010
 #-
 #-
 #-	Reference sequence:  AF375552;
@@ -30,7 +30,7 @@
 #:AF375552;:rem::  France
 #:AF375552;:rem:standard:No information
 #:AF375552;:rem:KEYWORDS:No information.
-#:AF375552;:rem:GenBank ACCESSION:AF3755 2;
+#:AF375552;:rem:GenBank ACCESSION:AF375552
 #:AF375552;:rem:Please note: all these entries have been modified for test
 #:AF375552;:rem:purposes.
 #:AF375552;:rem:*source: strain=NCDO2118 tmRNA gene, partial sequence;
