@@ -15,7 +15,7 @@
 #include "di_awars.hxx"
 
 #include <AP_filter.hxx>
-#include <AP_seq_simple_pro.hxx>
+#include <AP_seq_protein.hxx>
 #include <AP_seq_dna.hxx>
 
 #include <awt_sel_boxes.hxx>
@@ -162,7 +162,7 @@ static void calculate_clusters(AW_window *aww) {
             AliView *aliview = global_data->weighted_filter.create_aliview(use);
 
             AP_sequence *seq = GBT_is_alignment_protein(gb_main, use)
-                ? (AP_sequence*)new AP_sequence_simple_protein(aliview)
+                ? (AP_sequence*)new AP_sequence_protein(aliview)
                 : new AP_sequence_parsimony(aliview);
 
             AP_FLOAT maxDistance    = aw_root->awar(AWAR_CLUSTER_MAXDIST)->read_float();
