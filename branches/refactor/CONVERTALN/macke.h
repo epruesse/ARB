@@ -19,6 +19,24 @@ class Macke : public InputFormat {
 
     char *create_id() const { return strdup(seqabbr); }
     
+    void add_remark_nocopy(char *rem) {
+        if (numofrem >= allocated) {
+            allocated = allocated*1.5+10;
+            remarks   = (char**)Reallocspace(remarks, sizeof(*remarks)*allocated);
+        }
+        ca_assert(allocated>numofrem);
+        remarks[numofrem++] = rem;
+    }
+
+    void add_remark_if_content(const char *key, const char *Str) {
+        if (has_content(Str)) add_remark(key, Str);
+    }
+    void add_remarks_from(const GenbankRef& ref);
+    void add_remarks_from(const RDP_comments& comments);
+    void add_remarks_from(const OrgInfo& orginf);
+    void add_remarks_from(const SeqInfo& seqinf);
+    void add_35end_remark(char end35, char yn);
+    
 public:
 
     char  *seqabbr;             // sequence abbrev.
@@ -76,14 +94,6 @@ public:
         freenull(subspecies);
     }
 
-    void add_remark_nocopy(char *rem) {
-        if (numofrem >= allocated) {
-            allocated = allocated*1.5+10;
-            remarks   = (char**)Reallocspace(remarks, sizeof(*remarks)*allocated);
-        }
-        ca_assert(allocated>numofrem);
-        remarks[numofrem++] = rem;
-    }
     void add_remark(const char *rem) { add_remark_nocopy(nulldup(rem)); }
     void add_remark(const char *key, const char *Str) {
         char *rem = nulldup(key);
@@ -96,11 +106,6 @@ public:
         ca_assert(idx<numofrem);
         return remarks[idx];
     }
-
-    void add_remark_if_content(const char *key, const char *Str) {
-        if (has_content(Str)) add_remark(key, Str);
-    }
-
     char *copy_multi_rem(int& idx, int offset) const {
         // create a heapcopy of a multiline-remark.
         // increments 'idx' to the last line.
@@ -111,7 +116,8 @@ public:
         --idx;
         return rem;
     }
-
+    void add_remarks_from(const GenBank& gbk);
+    
     // InputFormat interface
     SeqPtr read_data(Reader& reader);
     void reinit() { INPLACE_RECONSTRUCT(Macke, this); }

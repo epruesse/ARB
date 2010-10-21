@@ -1,15 +1,17 @@
 #include "reader.h"
 
 Reader::Reader(const char *inf)
-    : fp(NULL),
+    : fp(fopen(inf, "rt")),
+      file(inf, fp), 
       curr(NULL),
-      failure(false),
-      fbuf(NULL)
+      failure(false)
 {
     reset();
     try {
-        fp   = open_input_or_die(inf);
-        fbuf = create_FILE_BUFFER(inf, fp);
+        if (!fp) {
+            throw_errorf(1, "can't read input file '%s' (Reason: %s)", inf, strerror(errno));
+        }
+        file.showFilenameInLineError(true);
         read();
     }
     catch (Convaln_exception& exc) {
@@ -22,13 +24,34 @@ Reader::Reader(const char *inf)
 Reader::~Reader() {
     // if kicked by exception, decorate error-msg with current reader position
     if (const Convaln_exception *exc = Convaln_exception::exception_thrown()) {
-        if (fbuf) {
-            const char *new_msg = FILE_BUFFER_make_error(fbuf, true, exc->get_msg());
-            exc->replace_msg(new_msg);
+        exc->replace_msg(file.lineError(exc->get_msg()).c_str());
+    }
+}
+
+void Reader::read() {
+    if (!curr) {
+        failure = true; // read _beyond_ EOF
+    }
+    else {
+        ca_assert(!failure); // attempt to read after failure
+
+        string next_line;
+        if (!file.getLine(next_line)) {
+            curr = NULL;
+        }
+        else {
+            size_t len = next_line.length();
+
+            if (len >= (LINESIZE-1)) throw_errorf(148, "Line too long: %s", next_line.c_str());
+            memcpy(linebuf, next_line.c_str(), len);
+            linebuf[len]     = '\n';
+            linebuf[len + 1] = 0;
+
+            curr = linebuf;
         }
     }
-    if (fbuf) destroy_FILE_BUFFER(fbuf);
 }
+
 
 // --------------------------------------------------------------------------------
 
@@ -37,7 +60,10 @@ FileWriter::FileWriter(const char *outname)
       filename(NULL),
       written(0)
 {
-    ofp      = open_output_or_die(outname);
+    ofp = fopen(outname, "wt");
+    if (!ofp) {
+        throw_errorf(2, "can't write output file '%s' (Reason: %s)", outname, strerror(errno));
+    }
     filename = strdup(outname);
 }
 FileWriter::~FileWriter() {
@@ -91,6 +117,4 @@ void Writer::out(const char *text) {
         out(text[i++]);
     }
 }
-
-
 

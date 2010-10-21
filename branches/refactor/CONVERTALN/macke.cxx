@@ -3,6 +3,7 @@
 #include "macke.h"
 #include "wrap.h"
 #include "parser.h"
+#include "rdp_info.h"
 
 
 #define MACKELIMIT 10000

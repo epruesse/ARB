@@ -621,7 +621,7 @@ STATIC_ATTRIBUTED(__ATTR__USERESULT, int etom(const Embl& embl, Macke& macke, co
 
 void embl_to_macke(const char *inf, const char *outf, Format inType) {
     // Convert from Embl format to Macke format.
-    Reader reader(inf);
+    Reader     reader(inf);
     FileWriter write(outf);
 
     macke_out_header(write); // macke format sequence irrelevant header
@@ -676,7 +676,7 @@ void embl_to_embl(const char *inf, const char *outf) {
 
 void embl_to_genbank(const char *inf, const char *outf) {
     // Convert from EMBL format to genbank format.
-    Reader reader(inf);
+    Reader     reader(inf);
     FileWriter write(outf);
 
     while (1) {

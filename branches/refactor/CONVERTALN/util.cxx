@@ -51,28 +51,6 @@ void throw_errorf(int error_num, const char *error_messagef, ...) { // __ATTR__F
     throw_error(error_num, buffer);
 }
 
-static void throw_cant_open_input(const char *filename) { // __ATTR__NORETURN
-    throw_errorf(1, "can't read input file '%s' (Reason: %s)", filename, strerror(errno));
-}
-static void throw_cant_open_output(const char *filename) { // __ATTR__NORETURN
-    throw_errorf(2, "can't write output file '%s' (Reason: %s)", filename, strerror(errno));
-}
-
-FILE *open_input_or_die(const char *filename) {
-    FILE *in = fopen(filename, "rt");
-    if (!in) throw_cant_open_input(filename);
-    return in;
-}
-FILE *open_output_or_die(const char *filename) {
-    FILE *out;
-    if (!filename[0]) out = stdout; // empty filename -> stdout
-    else {
-        out = fopen(filename, "wt");
-        if (!out) throw_cant_open_output(filename);
-    }
-    return out;
-}
-
 // --------------------------------------------------------------------------------
 
 int warning_out = 1;
@@ -124,26 +102,6 @@ int Skip_white_space(const char *line, int index) {
     while (line[index] == ' ' || line[index] == '\t')
         ++index;
     return (index);
-}
-
-char *Fgetline(char *line, size_t maxread, FILE_BUFFER fb) {
-    // Get a line from assigned file, also checking for buffer overflow.
-    size_t len;
-
-    const char *fullLine = FILE_BUFFER_read(fb, &len);
-
-    if (!fullLine)
-        return 0;
-
-    if (len <= (maxread - 2)) {
-        memcpy(line, fullLine, len);
-        line[len] = '\n';
-        line[len + 1] = 0;
-        return line;
-    }
-
-    fprintf(stderr, "Error(148): OVERFLOW LINE: %s\n", fullLine);
-    return 0;
 }
 
 void Getstr(char *line, int linenum) {

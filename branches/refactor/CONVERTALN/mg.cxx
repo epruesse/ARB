@@ -151,59 +151,72 @@ static char *genbank_get_atcc(const GenBank& gbk, const Macke& macke) {
     return atcc;
 }
 
-static void add_35end_remark(Macke& macke, char end35, char yn) {
+void Macke::add_35end_remark(char end35, char yn) {
     if (yn == ' ') return;
 
     char *content = strf("%c' end complete:  %s\n", end35, yn == 'y' ? "Yes" : "No");
-    macke.add_remark(content);
+    add_remark(content);
     free(content);
 }
 
-static void gtom_remarks(const GenBank& gbk, Macke& macke) {
+void Macke::add_remarks_from(const GenbankRef& ref) {
+    add_remark_if_content("ref:",      ref.ref);
+    add_remark_if_content("auth:",     ref.author);
+    add_remark_if_content("jour:",     ref.journal);
+    add_remark_if_content("title:",    ref.title);
+    add_remark_if_content("standard:", ref.standard);
+}
+
+void Macke::add_remarks_from(const OrgInfo& orginf) {
+    add_remark_if_content("Source of strain:",   orginf.source);       // copy source of strain
+    add_remark_if_content("Former name:",        orginf.formname);     // copy former name
+    add_remark_if_content("Alternate name:",     orginf.nickname);     // copy alternate name
+    add_remark_if_content("Common name:",        orginf.commname);     // copy common name
+    add_remark_if_content("Host organism:",      orginf.hostorg);      // copy host organism
+}
+
+void Macke::add_remarks_from(const RDP_comments& comments) {
+    add_remarks_from(comments.orginf);
+    add_remarks_from(comments.seqinf);
+    
+    // other comments, not RDP DataBase specially defined
+    int len = str0len(comments.others);
+    if (len > 0) {
+        for (int indi = 0, indj = 0; indi < len; indi++) {
+            char temp[LONGTEXT];
+            temp[indj++] = comments.others[indi];
+            if (comments.others[indi] == '\n' || comments.others[indi] == '\0') {
+                temp[indj] = '\0';
+                add_remark(temp);
+                indj       = 0;
+            }
+        }
+    }
+}
+
+void Macke::add_remarks_from(const SeqInfo& seqinf) {
+    add_remark_if_content("RDP ID:",             seqinf.RDPid);        // copy RDP ID
+    add_remark_if_content("Sequencing methods:", seqinf.methods);      // copy methods
+
+    add_35end_remark('3', seqinf.comp3);
+    add_35end_remark('5', seqinf.comp5);
+}
+
+void Macke::add_remarks_from(const GenBank& gbk) {
     // Create Macke remarks.
 
     // REFERENCE the first reference
     if (gbk.has_refs())
-        macke.add_remark_if_content("ref:", gbk.get_ref(0).ref);
+        add_remark_if_content("ref:", gbk.get_ref(0).ref);
 
     // The rest of the REFERENCES
     for (int indi = 1; indi < gbk.get_refcount(); indi++) {
-        macke.add_remark_if_content("ref:",      gbk.get_ref(indi).ref);
-        macke.add_remark_if_content("auth:",     gbk.get_ref(indi).author);
-        macke.add_remark_if_content("jour:",     gbk.get_ref(indi).journal);
-        macke.add_remark_if_content("title:",    gbk.get_ref(indi).title);
-        macke.add_remark_if_content("standard:", gbk.get_ref(indi).standard);
+        add_remarks_from(gbk.get_ref(indi));
     }
 
-    const OrgInfo& orginf = gbk.comments.orginf;
-    const SeqInfo& seqinf = gbk.comments.seqinf;
-
-    macke.add_remark_if_content("KEYWORDS:",           gbk.keywords);        // copy keywords as remark
-    macke.add_remark_if_content("GenBank ACCESSION:",  gbk.accession);       // copy accession as remark when genbank entry also exists.
-    macke.add_remark_if_content("Source of strain:",   orginf.source);       // copy source of strain
-    macke.add_remark_if_content("Former name:",        orginf.formname);     // copy former name
-    macke.add_remark_if_content("Alternate name:",     orginf.nickname);     // copy alternate name
-    macke.add_remark_if_content("Common name:",        orginf.commname);     // copy common name
-    macke.add_remark_if_content("Host organism:",      orginf.hostorg);      // copy host organism
-    macke.add_remark_if_content("RDP ID:",             seqinf.RDPid);        // copy RDP ID
-    macke.add_remark_if_content("Sequencing methods:", seqinf.methods);      // copy methods
-
-    add_35end_remark(macke, '3', seqinf.comp3);
-    add_35end_remark(macke, '5', seqinf.comp5);
-
-    // other comments, not RDP DataBase specially defined
-    int len = str0len(gbk.comments.others);
-    if (len > 0) {
-        for (int indi = 0, indj = 0; indi < len; indi++) {
-            char temp[LONGTEXT];
-            temp[indj++] = gbk.comments.others[indi];
-            if (gbk.comments.others[indi] == '\n' || gbk.comments.others[indi] == '\0') {
-                temp[indj]                 = '\0';
-                macke.add_remark(temp);
-                indj = 0;
-            }
-        }
-    }
+    add_remark_if_content("KEYWORDS:",           gbk.keywords);        // copy keywords as remark
+    add_remark_if_content("GenBank ACCESSION:",  gbk.accession);       // copy accession as remark when genbank entry also exists.
+    add_remarks_from(gbk.comments);
 }
 
 static void correct_subspecies(char *subspecies) {
@@ -579,8 +592,7 @@ int gtom(const GenBank& gbk, Macke& macke) { // __ATTR__USERESULT
         freedup_if_content(macke.title,   gbk.get_ref(0).title);
     }
     // the rest of references are put into remarks, rem:.....
-
-    gtom_remarks(gbk, macke);
+    macke.add_remarks_from(gbk);
 
     // adjust the strain, subspecies, and atcc information
     freeset(macke.strain,     genbank_get_strain(gbk));

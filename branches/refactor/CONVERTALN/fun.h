@@ -36,6 +36,8 @@ struct Seq;
 struct Alignment;
 
 struct RDP_comments;
+struct OrgInfo;
+struct SeqInfo;
 
 typedef void (*RDP_comment_parser)(char*& datastring, int start_index, Reader& reader);
 

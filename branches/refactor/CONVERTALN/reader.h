@@ -19,51 +19,39 @@
 
 
 class Reader : Noncopyable {
-    FILE *fp;
-    char *curr;    // == NULL means "EOF reached"
-    bool  failure;
+    FILE       *fp;
+    FileBuffer  file;
+    char        linebuf[LINESIZE];
+    const char *curr;     // == NULL means "EOF reached"
+    bool        failure;
 
     void reset() {
         curr    = linebuf;
         failure = false;
     }
 
-    void set_curr(char *to) {
-        curr = to; // @@@ use as breakpoint
-    }
-
-    void read() {
-        if (!curr) {
-            failure = true; // read _beyond_ EOF
-        }
-        else {
-            ca_assert(!failure); // attempt to read after failure
-            char *next_line = Fgetline(linebuf, LINESIZE, fbuf);
-            set_curr(next_line);
-        }
-    }
-
-
-protected:
-
-    FILE_BUFFER fbuf;
-    char        linebuf[LINESIZE];
+    void read();
 
 public:
     Reader(const char *inf);
     virtual ~Reader();
 
-    void rewind() { FILE_BUFFER_rewind(fbuf); reset(); read(); }
+    void rewind() { file.rewind(); reset(); read(); }
 
     Reader& operator++() { read(); return *this; }
 
     const char *line() const { return curr; }
-    char *line_WRITABLE() { return curr; }
+
+    void set_line(const char *new_line)  {
+        ca_assert(new_line);
+        ca_assert(strlen(new_line)<LINESIZE);
+        strcpy(linebuf, new_line);
+    }
 
     bool failed() const { return failure; }
     bool ok() const { return !failure; }
 
-    void abort() { failure = true; set_curr(NULL); }
+    void abort() { failure = true; curr = NULL; }
 
     template<class PRED>
     void skipOverLinesThat(const PRED& match_condition) {

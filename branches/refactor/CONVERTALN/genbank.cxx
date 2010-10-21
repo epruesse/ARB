@@ -150,8 +150,15 @@ static void genbank_comments(GenBank& gbk, Reader& reader) {
         ++reader;
         if (!reader.line()) return;
     }
-    // make up data to match the logic reasoning for next statement
-    for (int indi = 0; indi < GBINDENT; reader.line_WRITABLE()[indi++] = ' ') {}
+
+    // replace keyword with spaces
+    // => identical format for 1st and following lines.
+    {
+        char *line = strdup(reader.line());
+        for (int indi = 0; indi < GBINDENT; line[indi++] = ' ') {}
+        reader.set_line(line);
+        free(line);
+    }
 
 
     for (; reader.line() && (genbank_check_blanks(reader.line(), GBINDENT) || reader.line()[0] == '\n');) {

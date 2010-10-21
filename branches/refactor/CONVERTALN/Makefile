@@ -182,6 +182,7 @@ macke.o: input_format.h
 macke.o: macke.h
 macke.o: parser.h
 macke.o: prototypes.h
+macke.o: rdp_info.h
 macke.o: reader.h
 macke.o: seq.h
 macke.o: wrap.h
