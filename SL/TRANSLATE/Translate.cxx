@@ -66,7 +66,7 @@ GB_ERROR AWT_getTranslationInfo(GBDATA *gb_item, int& arb_transl_table, int& cod
         }
         else if (arb_transl_table != -1) {
             // default to codon_start 1
-            error = GBT_write_int(gb_item, "codon_start", 1);
+            error = GBT_write_string(gb_item, "codon_start", "1");
             if (!error) codon_start = 0; // internal value is 0..2
         }
     }
