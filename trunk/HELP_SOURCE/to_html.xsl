@@ -255,13 +255,19 @@
 
 
   <xsl:template match="LINK" mode="link-recursion">
+    <xsl:variable name="quoted">
+      <xsl:choose>
+        <xsl:when test="@quoted='0'">0</xsl:when>
+        <xsl:otherwise>1</xsl:otherwise>
+      </xsl:choose>
+    </xsl:variable>
     <xsl:choose>
       <xsl:when test="@type='hlp' or @type='ps' or @type='pdf'">
         <xsl:call-template name="link-to-document">
           <xsl:with-param name="doc" select="@dest"/>
           <xsl:with-param name="type" select="@type"/>
           <xsl:with-param name="missing" select="@missing"/>
-          <xsl:with-param name="quote" select="1"/>
+          <xsl:with-param name="quote" select="$quoted"/>
         </xsl:call-template>
       </xsl:when>
       <xsl:when test="@type='www'">
@@ -395,11 +401,12 @@
             </TD>
             <TD valign="top" align="right">
               <FONT size="-1">
-                More documentation can be found on the
+                <NOBR>More docs on the
                 <xsl:call-template name="insert-link">
                   <xsl:with-param name="linktext" select="'ARB website'"/>
                   <xsl:with-param name="address" select="'http://rtfm.arb-home.de/'"/>
-                </xsl:call-template>.<BR/>
+                </xsl:call-template>.</NOBR><BR/>
+                See also <A href="{concat($rootpath,'aaa_help_index')}.html">index</A> of helppages.<BR/>
                 Last update on <xsl:value-of select="$date"/>.
               </FONT>
             </TD>

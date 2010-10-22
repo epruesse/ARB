@@ -52,3 +52,4 @@
 <!ATTLIST LINK type (hlp|ps|pdf|email|www) #REQUIRED>
 <!ATTLIST LINK source_line CDATA #IMPLIED > <!--line no in source file-->
 <!ATTLIST LINK missing (0|1) #IMPLIED > <!--set to 1 if destination is missing (used for internal links only)-->
+<!ATTLIST LINK quoted (0|1) #IMPLIED > <!--set to 0 to avoid quoting of title-->
