@@ -406,7 +406,7 @@
                   <xsl:with-param name="linktext" select="'ARB website'"/>
                   <xsl:with-param name="address" select="'http://rtfm.arb-home.de/'"/>
                 </xsl:call-template>.</NOBR><BR/>
-                See also <A href="{concat($rootpath,'aaa_help_index')}.html">index</A> of helppages.<BR/>
+                See also <A href="{concat($rootpath,'help_index')}.html">index</A> of helppages.<BR/>
                 Last update on <xsl:value-of select="$date"/>.
               </FONT>
             </TD>

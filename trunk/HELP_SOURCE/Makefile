@@ -13,7 +13,7 @@ HLP_GENERATED=genhelp
 XML_LOCATION=Xml
 HTML_LOCATION=../lib/help_html
 HLP_DEST=../lib/help
-HELP_INDEX_NAME = aaa_help_index
+HELP_INDEX_NAME = help_index
 
 # needed tools:
 TOOL_OBJECTS = \
@@ -94,12 +94,7 @@ XML=$(XML_TMP2:$(HLP_GENERATED)/%=$(XML_LOCATION)/%)
 XML_DEPEND=xml.stamp# xml files are rebuild if this stamp is recreated
 DTD=arb_help.dtd
 
-# @@@ reactivate again:
-$(XML) : $(XML_DEPEND)  $(QUIETLY)
-#$(XML) :  $(QUIETLY)
-
-#$(XML) : $(XML_DEPEND) Makefile $(QUIETLY)
-
+$(XML) : $(XML_DEPEND) Makefile $(QUIETLY)
 
 $(HELP_INDEX_XML): $(OLD_HELP_ALL) $(XML) ./generate_index.pl Makefile 
 	./generate_index.pl $(HELP_INDEX_NAME).xml $(XML_LOCATION) > $(HELP_INDEX_XML)
