@@ -201,7 +201,6 @@ public:
 
     size_t StartLineno() const { return start_lineno; }
     void set_StartLineno(size_t start_lineno_) { start_lineno = start_lineno_; }
-
 };
 
 
@@ -261,6 +260,7 @@ private:
     Links         auto_references;
     Section       title;
     NamedSections sections;
+    string        inputfile;
 
 public:
     Helpfile() : title(-1U) {}
@@ -269,6 +269,8 @@ public:
     void readHelp(istream& in, const string& filename);
     void writeXML(FILE *out, const string& page_name);
     void extractInternalLinks();
+
+    const Section& get_title() const { return title; }
 };
 
 inline bool isWhite(char c) { return c == ' '; }
@@ -377,7 +379,7 @@ static void parseSection(Section& sec, const char *line, int indentation, Reader
 
     pushParagraph(sec, paragraph);
 
-    if (sec.Content().size()>0) {
+    if (sec.Content().size()>0 && indentation>0) {
         string spaces;
         spaces.reserve(indentation);
         spaces.append(indentation, ' ');
@@ -423,7 +425,10 @@ inline void check_duplicates(const string& link, const Links& uplinks, const Lin
 }
 
 void Helpfile::readHelp(istream& in, const string& filename) {
-    Reader      read(in);
+    Reader read(in);
+
+    inputfile = filename; // remember file read (for comment)
+
     const char *line;
     const char *name_only = strrchr(filename.c_str(), '/');
 
@@ -467,7 +472,8 @@ void Helpfile::readHelp(istream& in, const string& filename) {
                 }
                 else if (keyword == "TITLE") {
                     rest = eatWhite(rest);
-                    parseSection(title, rest, rest-line, read);
+                    // parseSection(title, rest, rest-line, read);
+                    parseSection(title, rest, 0, read);
 
                     if (title.Content().empty()) throw "empty TITLE not allowed";
 
@@ -1177,6 +1183,7 @@ void Helpfile::writeXML(FILE *out, const string& page_name) {
 #endif // DUMP_DATA
 
     XML_Document xml("PAGE", "arb_help.dtd", out);
+
     xml.skip_empty_tags       = true;
     xml.indentation_per_level = 2;
     
@@ -1187,10 +1194,14 @@ void Helpfile::writeXML(FILE *out, const string& page_name) {
     xml.getRoot().add_attribute("edit_warning", "release"); // inserts a different edit warning into release version
 #endif // DEBUG
 
+    {
+        XML_Comment(string("automatically generated from ../")+inputfile+' ');
+    }
+
     create_top_links(uplinks, "UP");
     create_top_links(references, "SUB");
     create_top_links(auto_references, "SUB");
-
+    
     {
         XML_Tag title_tag("TITLE");
         Strings& T = title.Content();
@@ -1370,5 +1381,4 @@ int main(int argc, char *argv[]) {
 
     return EXIT_FAILURE;
 }
-
 

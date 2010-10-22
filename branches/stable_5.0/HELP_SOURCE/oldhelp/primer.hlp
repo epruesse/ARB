@@ -10,10 +10,12 @@ UP	glossary.hlp
 #************* Title of helpfile !! and start of real helpfile ********
 TITLE		Primer Design
 
-                @@@ sorry - need translation into english 
 
 
-DESCRIPTION	nur markierte Sequencen
+DESCRIPTION
+                @@@ need translation into english 
+
+                nur markierte Sequencen
 		Daten muessen aligned sein,
 		sucht alignmentabschnitte mit moeglichst wenig verschiedenen
 		Kombinationen
