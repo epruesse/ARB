@@ -201,7 +201,6 @@ public:
 
     size_t StartLineno() const { return start_lineno; }
     void set_StartLineno(size_t start_lineno_) { start_lineno = start_lineno_; }
-
 };
 
 
@@ -269,6 +268,8 @@ public:
     void readHelp(istream& in, const string& filename);
     void writeXML(FILE *out, const string& page_name);
     void extractInternalLinks();
+
+    const Section& get_title() const { return title; }
 };
 
 inline bool isWhite(char c) { return c == ' '; }
@@ -380,7 +381,7 @@ static void parseSection(Section& sec, const char *line, int indentation, Reader
 
     pushParagraph(sec, paragraph);
 
-    if (sec.Content().size()>0) {
+    if (sec.Content().size()>0 && indentation>0) {
         string spaces;
         spaces.reserve(indentation);
         spaces.append(indentation, ' ');
@@ -468,7 +469,8 @@ void Helpfile::readHelp(istream& in, const string& filename) {
                 }
                 else if (keyword == "TITLE") {
                     rest = eatWhite(rest);
-                    parseSection(title, rest, rest-line, read);
+                    // parseSection(title, rest, rest-line, read);
+                    parseSection(title, rest, 0, read);
 
                     if (title.Content().empty()) throw "empty TITLE not allowed";
 
@@ -1363,3 +1365,24 @@ int main(int argc, char *argv[]) {
 }
 
 
+// --------------------------------------------------------------------------------
+
+#if (UNIT_TESTS == 1)
+#include <test_unit.h>
+
+void TEST_hlp2xml_conversion() {
+    // oldhelp/ad_align.hlp
+    string   arb_help = "../../HELP_SOURCE/oldhelp/ad_align.hlp";
+    ifstream in(arb_help.c_str());
+
+    Helpfile help;
+    help.readHelp(in, arb_help);
+
+    Section        title   = help.get_title();
+    const Strings& strings = title.Content();
+
+    TEST_ASSERT_EQUAL(strings.front().c_str(), "Alignment Administration");
+    TEST_ASSERT(strings.size() == 1);
+}
+
+#endif // UNIT_TESTS
