@@ -14,10 +14,6 @@ XML_LOCATION=Xml
 HTML_LOCATION=../lib/help_html
 HLP_DEST=../lib/help
 
-# choose conversion mode:
-CONVERT_FROM_OLD_HELP=1# WARNING! If set to 1 => overwrites XML-Files (that IS intended for now!)
-# if set to 0 the helpfiles in oldhelp are ignored and only XML is used as source (not intended for now)
-
 # needed tools:
 TOOL_OBJECTS = \
 	 arb_help2xml.o
@@ -33,10 +29,8 @@ VALIDATE = $(QUIETLY) XMLLINT
 # --------------------------------------------------------------------------------
 
 all: date generated dirs tools nonhlp_formats delzerohtml
-ifeq ($(CONVERT_FROM_OLD_HELP),1)
 		@echo --------------------------------------------------- [old hlp 2 xml]
 		time $(MAKE) xml
-endif
 		@echo --------------------------------------------------- [xml 2 hlp]
 		time $(MAKE) help
 		$(MAKE) $(HLP_DEST)/FORM.hlp
@@ -72,8 +66,6 @@ generated:
 		(cd $(HLP_GENERATED);$(MAKE) all)
 
 # --------------------------------------------------------------------------------
-
-ifeq ($(CONVERT_FROM_OLD_HELP),1)
 
 #OLD_HELP= oldhelp/importift.hlp
 OLD_HELP_ALL= \
@@ -125,11 +117,6 @@ $(XML_LOCATION)/%.xml : $(HLP_GENERATED)/%.hlp $(DTD)
 		@arb_help2xml $< $@
 		@$(VALIDATE) $@
 
-else
-
-XML=$(wildcard $(XML_LOCATION)/*.xml $(XML_LOCATION)/prompt/*.xml)
-
-endif
 
 HTML_TMP=$(XML:%.xml=%.html)
 HTML=$(HTML_TMP:$(XML_LOCATION)/%=$(HTML_LOCATION)/%)
@@ -233,9 +220,7 @@ clean:
 		rm -f $(TOOL_OBJECTS) $(BINARIES)
 		rm -f $(HTML_IDX) `find $(HLP_DEST) -name "*.hlp"`
 		rm -f html.list `find $(HTML_LOCATION) -name "*.html"`
-ifeq ($(CONVERT_FROM_OLD_HELP),1)
 		rm -f $(XML_DEPEND) dummy `find $(XML_LOCATION) -name "*.xml"`
-endif
 		$(MAKE) -C $(HLP_GENERATED) clean
 
 # --------------------------------------------------------------------------------
