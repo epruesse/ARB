@@ -13,6 +13,7 @@ HLP_GENERATED=genhelp
 XML_LOCATION=Xml
 HTML_LOCATION=../lib/help_html
 HLP_DEST=../lib/help
+HELP_INDEX_NAME = aaa_help_index
 
 # needed tools:
 TOOL_OBJECTS = \
@@ -36,7 +37,6 @@ all: date generated dirs tools nonhlp_formats delzerohtml
 		$(MAKE) $(HLP_DEST)/FORM.hlp
 		@echo --------------------------------------------------- [xml 2 html]
 		time $(MAKE) html
-		$(MAKE) html_index
 
 $(HLP_DEST)/FORM.hlp: $(HLP_SOURCE)/FORM.hlp
 		cp -p $< $@
@@ -67,6 +67,8 @@ generated:
 
 # --------------------------------------------------------------------------------
 
+HELP_INDEX_XML = $(XML_LOCATION)/$(HELP_INDEX_NAME).xml
+
 #OLD_HELP= oldhelp/importift.hlp
 OLD_HELP_ALL= \
 		$(HLP_SOURCE)/arb.hlp \
@@ -87,16 +89,22 @@ endif
 
 XML_TMP=$(OLD_HELP:%.hlp=%.xml)
 XML_TMP2=$(XML_TMP:$(HLP_SOURCE)/%=$(XML_LOCATION)/%)
-XML=$(XML_TMP2:$(HLP_GENERATED)/%=$(XML_LOCATION)/%)
+XML=$(XML_TMP2:$(HLP_GENERATED)/%=$(XML_LOCATION)/%) 
 
 XML_DEPEND=xml.stamp# xml files are rebuild if this stamp is recreated
 DTD=arb_help.dtd
 
+# @@@ reactivate again:
 $(XML) : $(XML_DEPEND)  $(QUIETLY)
+#$(XML) :  $(QUIETLY)
 
 #$(XML) : $(XML_DEPEND) Makefile $(QUIETLY)
 
-xml : $(XML)
+
+$(HELP_INDEX_XML): $(OLD_HELP_ALL) $(XML) ./generate_index.pl Makefile 
+	./generate_index.pl $(HELP_INDEX_NAME).xml $(XML_LOCATION) > $(HELP_INDEX_XML)
+
+xml : $(XML) $(HELP_INDEX_XML)
 
 dump:
 		echo $(XML)
@@ -106,7 +114,7 @@ $(XML_LOCATION)/%.xml : $(HLP_SOURCE)/%.hlp $(DTD)
 				( echo $<:1: exists twice -- only one existence allowed; \
 				  echo $(HLP_GENERATED)/$(<F):1: other occurrence \
 				  && false )
-		@arb_help2xml $< $@
+		@$(HELP2XML) $< $@
 		@$(VALIDATE) $@
 
 $(XML_LOCATION)/%.xml : $(HLP_GENERATED)/%.hlp $(DTD)
@@ -114,12 +122,13 @@ $(XML_LOCATION)/%.xml : $(HLP_GENERATED)/%.hlp $(DTD)
 				( echo $<:1: exists twice -- only one existence allowed; \
 				  echo $(HLP_SOURCE)/$(<F):1: other occurrence \
 				  && false )
-		@arb_help2xml $< $@
+		@$(HELP2XML) $< $@
 		@$(VALIDATE) $@
 
+$(HTML_LOCATION)/help_index.html : $(HELP_INDEX_XML)
 
-HTML_TMP=$(XML:%.xml=%.html)
-HTML=$(HTML_TMP:$(XML_LOCATION)/%=$(HTML_LOCATION)/%)
+HTML_TMP=$(XML:%.xml=%.html) 
+HTML=$(HTML_TMP:$(XML_LOCATION)/%=$(HTML_LOCATION)/%) 
 
 HELP_TMP=$(XML:%.xml=%.hlp)
 HELP=$(HELP_TMP:$(XML_LOCATION)/%=$(HLP_DEST)/%)
@@ -193,35 +202,18 @@ $(HTML_LOCATION)/%.html : $(XML_LOCATION)/%.xml
 
 # --------------------------------------------------------------------------------
 
-HTML_IDX = _index.html
-
-html.list: $(HTML)
-		@find $(HTML_LOCATION) -name "*.html" >$@
-
-$(HTML_IDX) : html.list
-		@echo '<HTML><HEAD><TITLE>Arb-Help Index</TITLE></HEAD>' >$@
-		@echo '<BODY>' >>$@
-		@cat $< |  sed -e 's/^\(.*\)$$/<A href="\1">\1<\/A> /'  >>$@
-		@echo '</BODY></HTML>' >>$@
-
-# --------------------------------------------------------------------------------
-
-html : $(HTML) google_logo
-
-html_index : $(HTML_IDX)
-
-# --------------------------------------------------------------------------------
+html : $(HTML) google_logo $(HTML_LOCATION)/$(HELP_INDEX_NAME).html
 
 help : $(HELP)
 
 # --------------------------------------------------------------------------------
 
 clean:
-		rm -f $(TOOL_OBJECTS) $(BINARIES)
-		rm -f $(HTML_IDX) `find $(HLP_DEST) -name "*.hlp"`
-		rm -f html.list `find $(HTML_LOCATION) -name "*.html"`
-		rm -f $(XML_DEPEND) dummy `find $(XML_LOCATION) -name "*.xml"`
-		$(MAKE) -C $(HLP_GENERATED) clean
+	rm -f $(TOOL_OBJECTS) $(BINARIES)
+	rm -f `find $(HLP_DEST) -name "*.hlp"`
+	rm -f `find $(HTML_LOCATION) -name "*.html"`
+	rm -f $(XML_DEPEND) dummy `find $(XML_LOCATION) -name "*.xml"`
+	$(MAKE) -C $(HLP_GENERATED) clean
 
 # --------------------------------------------------------------------------------
 
@@ -264,4 +256,5 @@ arb_help2xml.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 arb_help2xml.o: $(ARBHOME)/INCLUDE/attributes.h
 arb_help2xml.o: $(ARBHOME)/INCLUDE/dupstr.h
 arb_help2xml.o: $(ARBHOME)/INCLUDE/test_global.h
+arb_help2xml.o: $(ARBHOME)/INCLUDE/test_unit.h
 arb_help2xml.o: $(ARBHOME)/INCLUDE/xml.hxx

@@ -9,7 +9,6 @@ UP	glossary.hlp
 
 
 TITLE		Column Statistic (Prototype)
-		Detailed column statistic (see below)
 
 OCCURRENCE	ARB EDITOR
 
@@ -38,7 +37,7 @@ WARNINGS	This is only a prototype, don't expect something perfect.
 BUGS		The colors are not set correctly by default.
 		The program can only be started once.
 
-SECTION         DETAILED COLUMN STATISTIC
+SECTION         Detailed column statistic
 
                 This special mode displays 4 rows below the sequence containing
 		the likelihood of each base character.

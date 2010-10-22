@@ -8,7 +8,7 @@ UP	glossary.hlp
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
 #************* Title of helpfile !! and start of real helpfile ********
-TITLE		'Island Hopper'
+TITLE		Island Hopper
 
 OCCURRENCE	ARB_EDIT4/Edit/Integrated Aligners
 

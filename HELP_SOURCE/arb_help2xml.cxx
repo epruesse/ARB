@@ -260,6 +260,7 @@ private:
     Links         auto_references;
     Section       title;
     NamedSections sections;
+    string        inputfile;
 
 public:
     Helpfile() : title(-1U) {}
@@ -425,7 +426,10 @@ inline void check_duplicates(const string& link, const Links& uplinks, const Lin
 }
 
 void Helpfile::readHelp(istream& in, const string& filename) {
-    Reader      read(in);
+    Reader read(in);
+
+    inputfile = filename; // remember file read (for comment)
+
     const char *line;
     const char *name_only = strrchr(filename.c_str(), '/');
 
@@ -1172,6 +1176,7 @@ void Helpfile::writeXML(FILE *out, const string& page_name) {
 #endif // DUMP_DATA
 
     XML_Document xml("PAGE", "arb_help.dtd", out);
+
     xml.skip_empty_tags       = true;
     xml.indentation_per_level = 2;
 
@@ -1182,10 +1187,14 @@ void Helpfile::writeXML(FILE *out, const string& page_name) {
     xml.getRoot().add_attribute("edit_warning", "release"); // inserts a different edit warning into release version
 #endif // DEBUG
 
+    {
+        XML_Comment(string("automatically generated from ../")+inputfile+' ');
+    }
+
     create_top_links(uplinks, "UP");
     create_top_links(references, "SUB");
     create_top_links(auto_references, "SUB");
-
+    
     {
         XML_Tag title_tag("TITLE");
         Strings& T = title.Content();

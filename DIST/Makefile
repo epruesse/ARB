@@ -50,7 +50,7 @@ DI_clusters.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 DI_clusters.o: $(ARBHOME)/INCLUDE/AliView.hxx
 DI_clusters.o: $(ARBHOME)/INCLUDE/AP_filter.hxx
 DI_clusters.o: $(ARBHOME)/INCLUDE/AP_seq_dna.hxx
-DI_clusters.o: $(ARBHOME)/INCLUDE/AP_seq_simple_pro.hxx
+DI_clusters.o: $(ARBHOME)/INCLUDE/AP_seq_protein.hxx
 DI_clusters.o: $(ARBHOME)/INCLUDE/AP_sequence.hxx
 DI_clusters.o: $(ARBHOME)/INCLUDE/arb_assert.h
 DI_clusters.o: $(ARBHOME)/INCLUDE/arb_core.h

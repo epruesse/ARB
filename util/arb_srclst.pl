@@ -56,8 +56,6 @@ my %skipped_files = map { $_ => 1; } (
                                       'ChangeLog',
                                       'ARB_GDEmenus',
                                       'makeloc.here',
-                                      'helpfiles.lst',
-                                      '_index.html',
                                       'nt_date.h',
                                       'TAGS',
                                      );
