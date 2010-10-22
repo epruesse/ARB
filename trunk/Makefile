@@ -1585,6 +1585,7 @@ UNITS_TESTED = \
 	SL/PRONUC/PRONUC.test \
 	TOOLS/arb_probe.test \
 	WINDOW/WINDOW.test \
+	HELP_SOURCE/arb_help2xml.test \
 
 TESTED_UNITS_MANUAL = \
 	$(UNITS_TRY_FIX) \

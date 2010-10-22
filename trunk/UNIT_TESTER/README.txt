@@ -26,6 +26,8 @@ How to use ARB unit testing
        - they have to start with 'TEST_' and
        - need to be visible at global scope.
 
+   (see also 'Building tests' at end of file)
+
 
    Test result:
 
@@ -124,3 +126,12 @@ How to use ARB unit testing
 
    After DELETE_PATCHES_AFTER seconds the patch will be deleted automatically
    (see Makefile.setup).
+
+7. Building tests
+
+   To build and execute a test-executable for a previously untested subdir
+   the following steps are necessary:
+
+   - add the test to the list of performed tests in ../Makefile@UNITS_TESTED
+   - if the test subject is a shared library, be sure to mention it a Makefile.test@SHAREDLIBS
+   - if the test subject is an executable, be sure to mention it a Makefile.test@EXEOBJDIRS
