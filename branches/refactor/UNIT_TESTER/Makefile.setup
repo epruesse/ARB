@@ -2,7 +2,7 @@
 
 # ---------- Debugging
 DEADLOCKGUARD=1# install guard to avoid deadlocks (SVN default!)
-DEADLOCKGUARD=0# dont install guard (needed to debug in gdb)
+#DEADLOCKGUARD=0# dont install guard (needed to debug in gdb)
 
 # also see test_unit.h@ENABLE_CRASH_TESTS
 
@@ -10,14 +10,14 @@ DEADLOCKGUARD=0# dont install guard (needed to debug in gdb)
 # @@@ valgrind makes tests fail atm
 # (most likely two pt-servers try to start parallel on the same port)
 VALGRIND=0# only test
-VALGRIND=1# run valgrind after sucessful test
+#VALGRIND=1# run valgrind after sucessful test
 #VALGRIND=2# run valgrind before test (useful if test traps w/o any helpful information)
 
 # also see test_unit.h@ENABLE_CRASH_TESTS
 
 # ---------- Leak checking needs VALGRIND!=0
 CHECK_LEAKS=0# check no leaks
-CHECK_LEAKS=1# check definite leaks
+#CHECK_LEAKS=1# check definite leaks
 #CHECK_LEAKS=2# check reachable leaks
 
 # ---------- restrict tests to modules matching regexpr 'RESTRICT_MODULE': 
@@ -32,7 +32,7 @@ RESTRICT_LIB=# run all tests
 #RESTRICT_LIB=ARBDB
 #RESTRICT_LIB=AWT
 #RESTRICT_LIB=AWTC
-RESTRICT_LIB=CONVERTALN
+#RESTRICT_LIB=CONVERTALN
 #RESTRICT_LIB=FAST_ALIGNER
 #RESTRICT_LIB=MERGE
 #RESTRICT_LIB=mkptypes
