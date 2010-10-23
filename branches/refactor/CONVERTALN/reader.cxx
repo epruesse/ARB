@@ -26,6 +26,9 @@ Reader::~Reader() {
     if (const Convaln_exception *exc = Convaln_exception::exception_thrown()) {
         exc->replace_msg(file.lineError(exc->get_msg()).c_str());
     }
+    else {
+        ca_assert(!curr); // reader did NOT read till EOF, why ? 
+    }
 }
 
 void Reader::read() {
@@ -74,7 +77,9 @@ FileWriter::~FileWriter() {
     if (!fine || die_empty) unlink(filename);
     free(filename);
 
-    if (die_empty) throw_errorf(42, "No sequence has been written");
+    if (die_empty) {
+        throw_errorf(42, "No sequence has been written");
+    }
 
     log_processed(written);
 }
@@ -85,9 +90,6 @@ void Writer::throw_write_error() const {
 }
 void FileWriter::out(char ch) {
     if (fputc(ch, ofp) == EOF) throw_write_error();
-}
-void FileWriter::out(const char *text) {
-    if (fputs(text, ofp) == EOF) throw_write_error();
 }
 
 int FileWriter::outf(const char *format, ...) {
@@ -111,10 +113,11 @@ int Writer::outf(const char *format, ...) {
     return printed;
 }
 
-void Writer::out(const char *text) {
+int Writer::out(const char *text) {
     int i = 0;
     while (text[i]) {
         out(text[i++]);
     }
+    return i;
 }
 

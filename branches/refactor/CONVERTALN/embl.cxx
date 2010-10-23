@@ -3,8 +3,6 @@
 #include "macke.h"
 #include "wrap.h"
 
-extern int warning_out;
-
 static void embl_continue_line(const char *pattern, char*& Str, Reader& reader) {
     // if there are (numb) blanks at the beginning of line,
     // it is a continue line of the current command.
@@ -162,8 +160,11 @@ void EmblParser::parse_section() {
     parse_keyed_section(key);
 }
 
-void EmblFullParser::parse_keyed_section(const char *key) {
-    if (str_equal(key, "DT")) {
+void EmblParser::parse_keyed_section(const char *key) {
+    if (str_equal(key, "ID")) {
+        embl_one_entry(reader, embl.ID, key);
+    }
+    else if (str_equal(key, "DT")) {
         embl_date(embl, reader);
     }
     else if (str_equal(key, "DE")) {
@@ -211,15 +212,6 @@ void EmblFullParser::parse_keyed_section(const char *key) {
     else if (str_equal(key, "CC")) {
         embl_comments(embl, reader);
     }
-    else {
-        parse_common_section(key);
-    }
-}
-
-void EmblParser::parse_common_section(const char *key) {
-    if (str_equal(key, "ID")) {
-        embl_one_entry(reader, embl.ID, key);
-    }
     else if (str_equal(key, "SQ")) {
         embl_origin(seq, reader);
         state = ENTRY_COMPLETED;
@@ -227,13 +219,6 @@ void EmblParser::parse_common_section(const char *key) {
     else {
         embl_skip_unidentified(key, reader);
     }
-}
-
-void embl_in(Embl& embl, Seq& seq, Reader& reader) {
-    EmblFullParser(embl, seq, reader).parse_entry(); // Read in one embl entry.
-}
-void embl_in_simple(Embl& embl, Seq& seq, Reader& reader) {
-    EmblSimpleParser(embl, seq, reader).parse_entry(); // Read in one embl entry.
 }
 
 void embl_key_word(const char *line, int index, char *key, int length) { // @@@ similar to genbank_key_word and macke_key_word
@@ -245,8 +230,12 @@ void embl_key_word(const char *line, int index, char *key, int length) { // @@@ 
         key[0] = '\0';
         return;
     }
-    for (indi = index, indj = 0; (index - indi) < length && line[indi] != ' ' && line[indi] != '\t' && line[indi] != '\n' && line[indi] != '\0'; indi++, indj++)
+    for (indi = index, indj = 0;
+         (index - indi) < length && line[indi] && !occurs_in(line[indi], " \t\n");
+         indi++, indj++)
+    {
         key[indj] = line[indi];
+    }
     key[indj] = '\0';
 }
 
@@ -383,7 +372,7 @@ void embl_out_header(const Embl& embl, const Seq& seq, Writer& write) {
     embl_out_comments(embl, seq, write);
 }
 
-static void embl_out(const Embl& embl, const Seq& seq, Writer& write) {
+void embl_out(const Embl& embl, const Seq& seq, Writer& write) {
     // Output EMBL data.
     embl_out_header(embl, seq, write);
     embl_out_origin(seq, write);
@@ -541,7 +530,8 @@ static void etog_convert_comments(const Embl& embl, GenBank& gbk) {
     // other comments
     freedup_if_content(gbk.comments.others, embl.comments.others);
 }
-STATIC_ATTRIBUTED(__ATTR__USERESULT, int etog(const Embl& embl, GenBank& gbk, const Seq& seq)) {
+
+int etog(const Embl& embl, GenBank& gbk, const Seq& seq) { // __ATTR__USERESULT
     // Convert from embl to genbank format.
     int  indi;
     char key[TOKENSIZE], temp[LONGTEXT];
@@ -613,83 +603,10 @@ STATIC_ATTRIBUTED(__ATTR__USERESULT, int etog(const Embl& embl, GenBank& gbk, co
     return (1);
 }
 
-STATIC_ATTRIBUTED(__ATTR__USERESULT, int etom(const Embl& embl, Macke& macke, const Seq& seq)) {
+int etom(const Embl& embl, Macke& macke, const Seq& seq) { // __ATTR__USERESULT
     // Convert from embl format to Macke format.
     GenBank gbk;
     return etog(embl, gbk, seq) && gtom(gbk, macke);
-}
-
-void embl_to_macke(const char *inf, const char *outf, Format inType) {
-    // Convert from Embl format to Macke format.
-    Reader     reader(inf);
-    FileWriter write(outf);
-
-    macke_out_header(write); // macke format sequence irrelevant header
-
-    for (int indi = 0; indi < 3; indi++) {
-        reader.rewind();
-        int numofseq = 0;
-
-        while (1) {
-            Embl embl;
-            Seq  seq;
-            embl_in(embl, seq, reader);
-            if (reader.failed()) break;
-
-            numofseq++;
-            Macke macke;
-            if (!etom(embl, macke, seq)) throw_conversion_failure(inType, MACKE);
-
-            switch (indi) {
-                case 0: macke_seq_display_out(macke, write, inType, numofseq == 1); break;
-                case 1: macke_seq_info_out(macke, write); break;
-                case 2:
-                    macke_seq_data_out(seq, macke, write);
-                    write.seq_done();
-                    break;
-                default:;
-            }
-        }
-        if (indi == 0) {
-            write.out("#-\n");
-            warning_out = 0; // no warning messages for next loop
-        }
-    }
-    warning_out = 1;
-}
-
-void embl_to_embl(const char *inf, const char *outf) {
-    // Print out EMBL data.
-    Reader     reader(inf);
-    FileWriter write(outf);
-
-    while (1) {
-        Embl embl;
-        Seq  seq;
-        embl_in(embl, seq, reader);
-        if (reader.failed()) break;
-
-        embl_out(embl, seq, write);
-        write.seq_done();
-    }
-}
-
-void embl_to_genbank(const char *inf, const char *outf) {
-    // Convert from EMBL format to genbank format.
-    Reader     reader(inf);
-    FileWriter write(outf);
-
-    while (1) {
-        Embl embl;
-        Seq  seq;
-        embl_in(embl, seq, reader);
-        if (reader.failed()) break;
-
-        GenBank gbk;
-        if (!etog(embl, gbk, seq)) throw_conversion_failure(EMBL, GENBANK);
-        genbank_out(gbk, seq, write);
-        write.seq_done();
-    }
 }
 
 // --------------------------------------------------------------------------------
@@ -850,7 +767,8 @@ static void gtoe_reference(const GenBank& gbk, Embl& embl) {
 
     }
 }
-STATIC_ATTRIBUTED(__ATTR__USERESULT, int gtoe(const GenBank& gbk, Embl& embl, const Seq& seq)) {
+
+int gtoe(const GenBank& gbk, Embl& embl, const Seq& seq) { // __ATTR__USERESULT
     // Genbank to EMBL.
     {
         char temp[LONGTEXT];
@@ -915,25 +833,6 @@ STATIC_ATTRIBUTED(__ATTR__USERESULT, int gtoe(const GenBank& gbk, Embl& embl, co
     return (1);
 }
 
-void genbank_to_embl(const char *inf, const char *outf) {
-    // Convert from genbank to EMBL.
-    Reader     reader(inf);
-    FileWriter write(outf);
-
-    while (1) {
-        GenBank gbk;
-        Seq     seq;
-
-        genbank_in(gbk, seq, reader);
-        if (reader.failed()) break;
-
-        Embl embl;
-        if (!gtoe(gbk, embl, seq)) throw_conversion_failure(GENBANK, EMBL);
-        embl_out(embl, seq, write);
-        write.seq_done();
-    }
-}
-
 static int partial_mtoe(const Macke& macke, Embl& embl) {
     // Handle subspecies information when converting from Macke to EMBL.
     char*& others = embl.comments.others;
@@ -965,27 +864,13 @@ static int partial_mtoe(const Macke& macke, Embl& embl) {
     return (1);
 }
 
-STATIC_ATTRIBUTED(__ATTR__USERESULT, int mtoe(const Macke& macke, Embl& embl, const Seq& seq)) {
+int mtoe(const Macke& macke, Embl& embl, const Seq& seq) { // __ATTR__USERESULT
     GenBank gbk;
     return mtog(macke, gbk, seq) && gtoe(gbk, embl, seq) && partial_mtoe(macke, embl);
 }
 
-void macke_to_embl(const char *inf, const char *outf) {
-    // Convert from macke to EMBL.
-    MackeReader mackeReader(inf);
-    FileWriter  write(outf);
-
-    while (1) {
-        Macke  macke;
-        Seq    seq;
-
-        if (!mackeReader.read_one_entry(macke, seq)) break;
-
-        Embl embl;
-        if (!mtoe(macke, embl, seq)) throw_conversion_failure(MACKE, EMBL);
-        embl_out(embl, seq, write);
-        write.seq_done();
-    }
+bool EmblSwissprotReader::read_one_entry(Seq& seq) {
+    data.reinit();
+    if (!EmblParser(data, seq, *this).parse_entry()) abort();
+    return ok();
 }
-
-

@@ -69,37 +69,15 @@ void macke_origin(Seq& seq, char*& seqabbr, Reader& reader) {
 
 int macke_abbrev(const char *line, char *key, int index) {
     // Find the key in Macke line.
-    int indi;
-
-    // skip white space
-    index = Skip_white_space(line, index);
-
-    for (indi = index; line[indi] != ' ' && line[indi] != ':' && line[indi] != '\t' && line[indi] != '\n' && line[indi] != '\0'; indi++)
-        key[indi - index] = line[indi];
-
-    key[indi - index] = '\0';
-    return (indi + 1);
+    int i = Skip_white_space(line, index);
+    int k = 0;
+    while (line[i] && !occurs_in(line[i], " :\t\n")) {
+        key[k++] = line[i++];
+    }
+    key[k] = 0;
+    return i+1;
 }
 
-bool macke_is_continued_remark(const char *str) {
-    /* If there is 3 blanks at the beginning of the line, it is continued line.
-     *
-     * The comment above is lying:
-     *      The function always only tested for 2 spaces
-     *      and the converter only produced 2 spaces.
-     */
-    return strncmp(str, ":  ", 3) == 0;
-}
-
-void macke_in_simple(Macke& macke, Seq& seq, Reader& reader) {
-    // Read in next sequence name and data only.
-    // (sequence name is stored in 'macke.seqabbr')
-    reader.skipOverLinesThat(isMackeHeader); // skip header
-
-    char*&seqabbr = macke.seqabbr;
-    freenull(seqabbr);
-    macke_read_seq(seq, seqabbr, reader);
-}
 void macke_out_header(Writer& write) {
     // Output the Macke format header.
     write.out("#-\n#-\n#-\teditor\n");
@@ -109,32 +87,24 @@ void macke_out_header(Writer& write) {
 
 void macke_seq_display_out(const Macke& macke, Writer& write, Format inType, bool first_sequence) {
     // Output the Macke format each sequence format (wot?)
-    char token[TOKENSIZE], direction[TOKENSIZE];
-
-    if (inType == SWISSPROT) {
-        strcpy(token, "pro");
-        strcpy(direction, "n>c");
-    }
-    else {
-        strcpy(direction, "5>3");
-        if (macke.rna_or_dna == 'r')
-            strcpy(token, "rna");
-        else
-            strcpy(token, "dna");
-    }
     if (first_sequence) {
         write.outf("#-\tReference sequence:  %s\n", macke.seqabbr);
         write.out("#-\tAttributes:\n");
-
-        if (str0len(macke.seqabbr) < 8)
-            write.outf("#=\t\t%s\t \tin  out  vis  prt   ord  %s  lin  %s  func ref\n", macke.seqabbr, token, direction);
-        else
-            write.outf("#=\t\t%s\tin  out  vis  prt   ord  %s  lin  %s  func ref\n", macke.seqabbr, token, direction);
     }
-    else if (str0len(macke.seqabbr) < 8)
-        write.outf("#=\t\t%s\t\tin  out  vis  prt   ord  %s  lin  %s  func\n", macke.seqabbr, token, direction);
-    else
-        write.outf("#=\t\t%s\tin  out  vis  prt   ord  %s  lin  %s  func\n", macke.seqabbr, token, direction);
+
+    write.out("#=\t\t");
+    if (write.out(macke.seqabbr)<8) write.out('\t');
+    write.out("\tin  out  vis  prt   ord  ");
+    if (inType == SWISSPROT) {
+        write.out("pro  lin  n>c");
+    }
+    else {
+        write.out(macke.rna_or_dna == 'r' ? "rna" : "dna");
+        write.out("  lin  5>3");
+    }
+    write.out("  func");
+    if (first_sequence) write.out(" ref");
+    write.out('\n');
 }
 
 static void macke_print_line(Writer& write, const char *prefix, const char *content) { // @@@ WRAPPER
@@ -266,13 +236,25 @@ void macke_seq_data_out(const Seq& seq, const Macke& macke, Writer& write) {
     // every sequence
 }
 
-void MackeReader::start_reading() {
-    r1 = new Reader(inName);
-    r2 = new Reader(inName);
-    r3 = new Reader(inName);
+void MackeReader::read_to_start() {
+    r1->skipOverLinesThat(Not(isMackeSeqInfo));   // skip to #:; where the sequence information is
+    r2->skipOverLinesThat(isMackeNonSeq);         // skip to where sequence data starts
+    r3->skipOverLinesThat(Not(isMackeSeqHeader)); // skip to #=; where sequence first appears
 }
 
-void MackeReader::stop_reading() {
+
+MackeReader::MackeReader(const char *inName_)
+    : inName(strdup(inName_)),
+      seqabbr(dummy),
+      dummy(NULL), 
+      r1(new Reader(inName)),
+      r2(new Reader(inName)),
+      r3(new Reader(inName))
+{
+    read_to_start();
+}
+
+MackeReader::~MackeReader() {
     char                    *org_msg = NULL;
     const Convaln_exception *exc     = Convaln_exception::exception_thrown();
 
@@ -289,6 +271,7 @@ void MackeReader::stop_reading() {
     }
 
     delete r1; r1 = NULL;
+    free(inName);
 }
 
 class MackeParser: public Parser {
@@ -303,7 +286,7 @@ public:
 };
 
 
-bool MackeReader::mackeIn(Macke& macke) {
+bool MackeReader::macke_in(Macke& macke) {
     // Read in one sequence data from Macke file.
     char oldname[TOKENSIZE], name[TOKENSIZE];
     char key[TOKENSIZE];
@@ -312,18 +295,6 @@ bool MackeReader::mackeIn(Macke& macke) {
     // r1 points to sequence information
     // r2 points to sequence data
     // r3 points to sequence names
-    if (firstRead) {
-        start_reading();
-
-        r1->skipOverLinesThat(Not(isMackeSeqInfo));   // skip to #:; where the sequence information is
-        r2->skipOverLinesThat(isMackeNonSeq);         // skip to where sequence data starts
-        r3->skipOverLinesThat(Not(isMackeSeqHeader)); // skip to #=; where sequence first appears
-
-        firstRead = false;
-    }
-    else {
-        ++(*r3);
-    }
 
     if (!r3->line() || !isMackeSeqHeader(r3->line())) return false;
 
@@ -391,6 +362,16 @@ bool MackeReader::mackeIn(Macke& macke) {
         else index = 0;
     }
 
+    ++(*r3);
+    
     return true;
 }
+
+bool MackeReader::read_one_entry(Seq& seq) {
+    data.reinit();
+    if (!macke_in(data) || !read_seq_data(seq)) abort();
+    seq.set_id(data.get_id());
+    return ok();
+}
+
 

@@ -339,6 +339,7 @@ reader.o: $(ARBHOME)/INCLUDE/FileBuffer.h
 reader.o: $(ARBHOME)/INCLUDE/smartptr.h
 reader.o: $(ARBHOME)/INCLUDE/test_global.h
 
+seq.o: ali.h
 seq.o: defs.h
 seq.o: fun.h
 seq.o: global.h

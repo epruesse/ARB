@@ -76,55 +76,39 @@ public:
     }
 
     // InputFormat interface
-    SeqPtr read_data(Reader& reader);
     void reinit() { INPLACE_RECONSTRUCT(Embl, this); }
-
+    Format format() const { return EMBL; }
 };
 
 
 
-class EmblSwissprotReader : public Reader, public InputFormatReader {
+class EmblSwissprotReader : public SimpleFormatReader {
+    Embl data;
 public:
-    EmblSwissprotReader(const char *inf) : Reader(inf) {}
+    EmblSwissprotReader(const char *inf) : SimpleFormatReader(inf) {}
 
     const char *get_key_word(int offset) {
         char key[TOKENSIZE];
         embl_key_word(line() + offset, 0, key, TOKENSIZE);
         return shorttimecopy(key);
     }
-    bool read_one_entry(InputFormat& data, Seq& seq) {
-        Embl& embl = reinterpret_cast<Embl&>(data);
-        embl_in(embl, seq, *this);
-        if (seq.is_empty()) abort();
-        return ok();
-    }
+    bool read_one_entry(Seq& seq) __ATTR__USERESULT;
+    InputFormat& get_data() { return data; }
 };
 
 // -------------------
 //      EmblParser
 
 class EmblParser: public Parser {
-    virtual void parse_keyed_section(const char *key) = 0;
-protected:
     Embl& embl;
-    void parse_common_section(const char *key);
+    
+    void parse_keyed_section(const char *key);
 public:
     EmblParser(Embl& embl_, Seq& seq_, Reader& reader_) : Parser(seq_, reader_), embl(embl_) {}
     void parse_section();
+    
+    const Embl& get_data() const { return embl; }
 };
-
-class EmblFullParser: public EmblParser {
-    void parse_keyed_section(const char *key);
-public:
-    EmblFullParser(Embl& embl_, Seq& seq_, Reader& reader_) : EmblParser(embl_, seq_, reader_) {}
-};
-
-class EmblSimpleParser: public EmblParser {
-    void parse_keyed_section(const char *key) { parse_common_section(key); }
-public:
-    EmblSimpleParser(Embl& embl_, Seq& seq_, Reader& reader_) : EmblParser(embl_, seq_, reader_) {}
-};
-
 
 #else
 #error embl.h included twice

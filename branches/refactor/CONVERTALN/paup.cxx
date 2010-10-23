@@ -85,36 +85,26 @@ static void paup_print_header(const Paup& paup, Writer& write) {
     write.out("   OPTIONS\n      GAPMODE = MISSING\n      ;\n   MATRIX\n");
 }
 
-void read_alignment(Alignment& ali, Format inType, Reader& reader) {
-    while (1) {
-        InputFormatPtr in  = InputFormat::create(inType);
-        SeqPtr         seq = in->read_data(reader);
-
-        if (seq.isNull()) break;
-        ali.add(seq);
-    }
-}
-
 void to_paup(const char *inf, const char *outf, Format inType) {
     // Convert from some format to NEXUS format.
     if (!is_input_format(inType)) {
         throw_conversion_not_supported(inType, NEXUS);
     }
 
-    Reader     reader(inf);
     FileWriter write(outf);
     Paup       paup;
 
     paup_print_header(paup, write);
 
     Alignment ali;
-    read_alignment(ali, inType, reader);
+    read_alignment(ali, inType, inf);
 
     for (int i = 0; i<ali.get_count(); ++i) {
         SeqPtr  seq  = ali.getSeqPtr(i);
         char   *name = strdup(seq->get_id());
         paup_verify_name(name);
-        seq->set_id(name);
+        seq->replace_id(name);
+        ca_assert(seq->get_id());
         free(name);
     }
 

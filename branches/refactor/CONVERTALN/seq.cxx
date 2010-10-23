@@ -6,6 +6,7 @@
 // =============================================================== //
 
 #include "seq.h"
+#include "ali.h"
 #include "reader.h"
 
 void Seq::out(Writer& write, Format outType) const {
@@ -41,3 +42,14 @@ void Seq::out(Writer& write, Format outType) const {
         write.out('\n');
     write.out("//\n");
 }
+
+void read_alignment(Alignment& ali, Format inType, const char *inf) {
+    FormatReaderPtr reader = FormatReader::create(inType, inf);
+    while (1) {
+        SeqPtr seq = new Seq;
+        if (!reader->read_one_entry(*seq)) break;
+        ali.add(seq);
+    }
+}
+
+

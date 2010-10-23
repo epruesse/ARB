@@ -28,9 +28,12 @@ class Writer;
 
 struct Embl;
 struct Emblref;
+struct EmblSwissprotReader;
 struct GenBank;
 struct GenbankRef;
+struct GenbankReader;
 struct Macke;
+struct MackeReader;
 struct Paup;
 struct Seq;
 struct Alignment;

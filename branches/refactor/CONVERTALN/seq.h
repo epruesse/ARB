@@ -65,8 +65,19 @@ public:
         freenull(seq);
     }
 
-    void set_id(const char *id_) { freedup(id, id_); }
-    const char *get_id() const { ca_assert(id); return id; }
+    void set_id(const char *id_) {
+        ca_assert(!id);
+        ca_assert(id_);
+        freedup(id, id_);
+    }
+    void replace_id(const char *id_) {
+        freenull(id);
+        set_id(id_);
+    }
+    const char *get_id() const {
+        ca_assert(id);
+        return id;
+    }
 
     void add(char c) {
         if (len >= max) {

@@ -53,14 +53,15 @@ void throw_errorf(int error_num, const char *error_messagef, ...) { // __ATTR__F
 
 // --------------------------------------------------------------------------------
 
-int warning_out = 1;
+bool Warnings::show_warnings = true;
+
 void warning(int warning_num, const char *warning_message) {
     // print out warning_message and continue execution.
-    if (warning_out)
+    if (Warnings::shown())
         fprintf(stderr, "WARNING(%d): %s\n", warning_num, warning_message);
 }
 void warningf(int warning_num, const char *warning_messagef, ...) { // __ATTR__FORMAT(2)
-    if (warning_out) {
+    if (Warnings::shown()) {
         va_list parg;
         va_start(parg, warning_messagef);
 

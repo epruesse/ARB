@@ -40,11 +40,10 @@ void to_printable(const char *inf, const char *outf, Format inType) {
         throw_conversion_not_supported(inType, PRINTABLE);
     }
 
-    Reader     reader(inf);
     FileWriter write(outf);
 
     Alignment ali;
-    read_alignment(ali, inType, reader);
+    read_alignment(ali, inType, inf);
 
     int total_seq = ali.get_count();
     int maxsize   = ali.get_max_len();

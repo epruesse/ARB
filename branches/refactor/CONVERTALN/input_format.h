@@ -8,26 +8,34 @@
 #include "defs.h"
 #endif
 
-class InputFormat {
+class FormatReader;
+
+class OutputFormat {
+public:
+    virtual ~OutputFormat() { }
+    virtual Format format() const = 0;
+};
+
+// all input formats have to be output formats:
+class InputFormat : public OutputFormat {
     mutable char *id; // id of entry (=short-name)
 
+    virtual char *create_id() const = 0;
 public:
     InputFormat() : id(NULL) {}
     virtual ~InputFormat() { freenull(id); }
 
-    virtual SeqPtr read_data(Reader& reader) = 0;
-    virtual void reinit()                    = 0;
-    virtual char *create_id() const    = 0;
+    virtual void reinit()           = 0;
+    virtual Format format() const   = 0;
 
     const char *get_id() const {
         if (!id) id = create_id();
         return id;
     }
-
-    static SmartPtr<InputFormat> create(Format inType);
 };
 
 typedef SmartPtr<InputFormat> InputFormatPtr;
+typedef SmartPtr<OutputFormat> OutputFormatPtr;
 
 #else
 #error input_format.h included twice

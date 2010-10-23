@@ -81,55 +81,37 @@ public:
     }
 
     // InputFormat interface
-    SeqPtr read_data(Reader& reader);
     void reinit() { INPLACE_RECONSTRUCT(GenBank, this); }
-
+    Format format() const { return GENBANK; }
 };
 
-class GenbankReader : public Reader, public InputFormatReader {
+class GenbankReader : public SimpleFormatReader {
+    GenBank data;
 public:
-    GenbankReader(const char *inf) : Reader(inf) {}
+    GenbankReader(const char *inf) : SimpleFormatReader(inf) {}
 
     const char *get_key_word(int offset) {
         char key[TOKENSIZE];
         genbank_key_word(line() + offset, 0, key, TOKENSIZE);
         return shorttimecopy(key);
     }
-    bool read_one_entry(InputFormat& data, Seq& seq) __ATTR__USERESULT {
-        GenBank& gbk = reinterpret_cast<GenBank&>(data);
-        genbank_in(gbk, seq, *this);
-        if (seq.is_empty()) abort();
-        return ok();
-    }
+    bool read_one_entry(Seq& seq) __ATTR__USERESULT;
+    InputFormat& get_data() { return data; }
 };
 
 // ----------------------
 //      GenbankParser
 
 class GenbankParser : public Parser {
-    virtual void parse_keyed_section(const char *key) = 0;
-protected:
     GenBank& gbk;
-    void parse_common_section(const char *key);
 
+    void parse_keyed_section(const char *key);
 public:
-    GenbankParser(GenBank& gbk_, Seq& seq_, Reader& reader_) : Parser(seq_, reader_), gbk(gbk_) {}
-
+    GenbankParser(GenBank& gbk_, Seq& seq_, GenbankReader& reader_) : Parser(seq_, reader_), gbk(gbk_) {}
     void parse_section();
-};
-class GenbankFullParser : public GenbankParser {
-    void parse_keyed_section(const char *key);
 
-public:
-    GenbankFullParser(GenBank& gbk_, Seq& seq_, Reader& reader_) : GenbankParser(gbk_, seq_, reader_) {}
+    const GenBank& get_data() const { return gbk; }
 };
-
-class GenbankSimpleParser : public GenbankParser {
-    void parse_keyed_section(const char *key);
-public:
-    GenbankSimpleParser(GenBank& gbk_, Seq& seq_, Reader& reader_) : GenbankParser(gbk_, seq_, reader_) {}
-};
-
 
 #else
 #error genbank.h included twice

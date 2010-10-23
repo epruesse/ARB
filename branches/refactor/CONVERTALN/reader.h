@@ -52,6 +52,7 @@ public:
     bool ok() const { return !failure; }
 
     void abort() { failure = true; curr = NULL; }
+    void ignore_rest_of_file() { curr = NULL; }
 
     template<class PRED>
     void skipOverLinesThat(const PRED& match_condition) {
@@ -67,9 +68,24 @@ inline const char *shorttimekeep(char *heapcopy) {
 }
 inline const char *shorttimecopy(const char *nocopy) { return shorttimekeep(nulldup(nocopy)); }
 
-struct InputFormatReader {
-    virtual ~InputFormatReader() {}
-    virtual bool read_one_entry(InputFormat& data, Seq& seq) = 0;
+struct FormatReader {
+    virtual ~FormatReader() {}
+    virtual bool read_one_entry(Seq& seq) __ATTR__USERESULT = 0;
+    virtual bool failed() const = 0;
+    virtual void ignore_rest_of_file() = 0;
+    virtual void rewind() = 0;
+    virtual InputFormat& get_data() = 0;
+
+    static SmartPtr<FormatReader> create(Format inType, const char *inf);
+};
+
+typedef SmartPtr<FormatReader> FormatReaderPtr;
+
+struct SimpleFormatReader : public Reader, public FormatReader {
+    SimpleFormatReader(const char *inf) : Reader(inf) {}
+    bool failed() const { return Reader::failed(); }
+    void ignore_rest_of_file() { Reader::ignore_rest_of_file(); }
+    void rewind() { Reader::rewind(); }
 };
 
 // --------------------------------------------------------------------------------
@@ -79,12 +95,12 @@ public:
     Writer() {}
     virtual ~Writer() {}
 
-    virtual bool ok() const            = 0;
-    virtual void out(char ch)          = 0;
-    virtual const char *name() const   = 0;
+    virtual bool ok() const          = 0;
+    virtual void out(char ch)        = 0;
+    virtual const char *name() const = 0;
 
     virtual void throw_write_error() const;
-    virtual void out(const char *text);
+    virtual int out(const char *text);
     virtual int outf(const char *format, ...) __ATTR__FORMAT(2);
 
     void repeated(char ch, int repeat) { while (repeat--) out(ch); }
@@ -103,9 +119,9 @@ public:
 
     bool ok() const { return ofp != NULL; }
     void out(char ch);
-    void out(const char *text);
     const char *name() const { return filename; }
-    
+
+    int out(const char *text) { return Writer::out(text); }
     int outf(const char *format, ...) __ATTR__FORMAT(2);
 
     void seq_done() { ++written; }

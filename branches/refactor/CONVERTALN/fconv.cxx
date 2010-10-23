@@ -22,9 +22,6 @@ static const char *format2name(Format type) {
     return NULL;
 }
 
-void throw_unsupported_input_format(Format inType) {  // __ATTR__NORETURN
-    throw_errorf(92, "Unsupported input format %s", format2name(inType));
-}
 void throw_conversion_not_supported(Format inType, Format ouType) { // __ATTR__NORETURN
     throw_errorf(90, "Conversion from %s to %s is not supported",
                  format2name(inType), format2name(ouType));
@@ -33,6 +30,14 @@ void throw_conversion_failure(Format inType, Format ouType) { // __ATTR__NORETUR
     throw_errorf(91, "Conversion from %s to %s fails",
                  format2name(inType), format2name(ouType));
 }
+void throw_conversion_not_implemented(Format inType, Format ouType) { // __ATTR__NORETURN 
+    throw_errorf(92, "Conversion from %s to %s is not implemented (but is expected to be here)",
+                 format2name(inType), format2name(ouType));
+}
+void throw_unsupported_input_format(Format inType) {  // __ATTR__NORETURN
+    throw_errorf(93, "Unsupported input format %s", format2name(inType));
+}
+
 void throw_incomplete_entry() { // __ATTR__NORETURN
     throw_error(84, "Reached EOF before complete entry has been read");
 }
@@ -49,81 +54,15 @@ void log_processed(int seqCount) {
     log_seq_counter += seqCount;
 }
 
-void convert(const char *inf, const char *outf, Format inType, Format ouType) {
-    // convert the file 'inf' (assuming it has type 'inType')
-    // to desired 'outype' and save the result in 'outf'.
 
-    int dd = 0; // copy stdin to outfile after first line
-    if (ouType == PHYLIP2) {
-        ouType = PHYLIP;
-        dd = 1;
-    }
-
-    if (str_equal(inf, outf))
-        throw_error(30, "Input file and output file must be different file");
-
-    bool converted = true;
-    switch (inType) {
-        case EMBL:
-            switch (ouType) {
-                case EMBL:
-                case SWISSPROT: embl_to_embl(inf, outf); break;
-                case GENBANK:   embl_to_genbank(inf, outf); break;
-                case MACKE:     embl_to_macke(inf, outf, EMBL); break;
-                default: converted = false; break;
-            }
-            break;
-
-        case GENBANK:
-            switch (ouType) {
-                case EMBL:      genbank_to_embl(inf, outf); break;
-                    // SWISSPROT is skipped here intentially (original code said: not supported by GENEBANK)
-                case GENBANK:   genbank_to_genbank(inf, outf); break;
-                case MACKE:     genbank_to_macke(inf, outf); break;
-                default: converted = false; break;
-            }
-            break;
-
-        case MACKE:
-            switch (ouType) {
-                case EMBL:
-                case SWISSPROT: macke_to_embl(inf, outf); break;
-                case GENBANK:   macke_to_genbank(inf, outf); break;
-                default: converted = false; break;
-            }
-            break;
-
-        case SWISSPROT:
-            switch (ouType) {
-                case MACKE:     embl_to_macke(inf, outf, SWISSPROT); break;
-                default: converted = false; break;
-            }
-            break;
-
-        default: converted = false; break;
-    }
-
-    if (!converted) {
-        converted = true;
-        switch (ouType) {
-            case GCG:       to_gcg(inf, outf, inType); break;
-            case NEXUS:     to_paup(inf, outf, inType); break;
-            case PHYLIP:    to_phylip(inf, outf, inType, dd); break;
-            case PRINTABLE: to_printable(inf, outf, inType); break;
-            default: converted = false; break;
-        }
-    }
-
-    if (!converted) {
-        throw_conversion_not_supported(inType, ouType);
-    }
-}
 
 // --------------------------------------------------------------------------------
 
 #if (UNIT_TESTS == 1)
 #include <arbdbt.h> // before test_unit.h!
 #include <test_unit.h>
+
+#define TEST_THROW // comment out to temp. disable intentional throws
 
 struct FormatSpec {
     Format      type;           // GENBANK, MACKE, ...
@@ -171,24 +110,20 @@ enum FormatNum { // same order as above
 
 struct Capabilities {
     bool supported;
-    bool haveInputData;
-    bool emptyOutput;
-    bool noOutput;
-    bool crashes;
     bool neverReturns;
-    bool broken; // is some other way
 
     Capabilities() :
         supported(true),
-        haveInputData(true),
-        emptyOutput(false),
-        noOutput(false),
-        crashes(false),
-        neverReturns(false),
-        broken(false)
+        neverReturns(false)
     {}
 
-    bool shall_be_tested() { return haveInputData && !(neverReturns || broken); }
+    bool shall_be_tested() {
+#if defined(TEST_THROW)
+        return !neverReturns;
+#else // !defined(TEST_THROW)
+        return supported && !neverReturns;
+#endif
+    }
 };
 
 static Capabilities cap[fcount][fcount];
@@ -249,12 +184,12 @@ static void test_expected_conversion(const char *file, const char *flavor) {
 
 static const char *test_convert(const char *inf, const char *outf, Format inType, Format ouType) {
     const char *error = NULL;
-    try { convert(inf, outf, inType, ouType); }
+    try { convert(inf ? inf : "infilename", outf ? outf : "outfilename", inType, ouType); }
     catch (Convaln_exception& exc) { error = GBS_global_string("%s (#%i)", exc.get_msg(), exc.get_code()); }
     return error;
 }
 
-static void test_convert_by_format_num_WRAPPED(int from, int to) {
+static void test_convert_by_format_num(int from, int to) {
     char *toFile = GBS_global_string_copy("impexp/conv.%s_2_%s", NAME(from), NAME(to));
     if (GB_is_regularfile(toFile)) TEST_ASSERT_ZERO_OR_SHOW_ERRNO(unlink(toFile));
 
@@ -271,23 +206,13 @@ static void test_convert_by_format_num_WRAPPED(int from, int to) {
 
     if (me.supported) {
         if (error) TEST_ERROR("convert() reports error: '%s' (for supported conversion)", error);
-        if (me.noOutput) {
-            TEST_ASSERT(!GB_is_regularfile(toFile));
-        }
-        else {
-            TEST_ASSERT(GB_is_regularfile(toFile));
-            if (me.emptyOutput) {
-                TEST_ASSERT_EQUAL(GB_size_of_file(toFile), 0);
-            }
-            else { // expecting conversion worked
-                TEST_ASSERT_EQUAL(converted_seqs, expected_seqs);
-                TEST_ASSERT_EQUAL(log_processed_counter, old_processed_counter+1);
+        TEST_ASSERT(GB_is_regularfile(toFile));
+        TEST_ASSERT_EQUAL(converted_seqs, expected_seqs);
+        TEST_ASSERT_EQUAL(log_processed_counter, old_processed_counter+1);
 
-                TEST_ASSERT_LOWER_EQUAL(10, GB_size_of_file(toFile)); // less than 10 bytes
-                test_expected_conversion(toFile, NULL);
-            }
-            TEST_ASSERT_ZERO_OR_SHOW_ERRNO(unlink(toFile));
-        }
+        TEST_ASSERT_LOWER_EQUAL(10, GB_size_of_file(toFile)); // less than 10 bytes
+        test_expected_conversion(toFile, NULL);
+        TEST_ASSERT_ZERO_OR_SHOW_ERRNO(unlink(toFile));
     }
     else {
         if (!error) TEST_ERROR("No error for unsupported conversion '%s'", GBS_global_string("%s -> %s", NAME(from), NAME(to)));
@@ -296,43 +221,25 @@ static void test_convert_by_format_num_WRAPPED(int from, int to) {
     }
     TEST_ASSERT(me.supported == !error);
 
+#if defined(TEST_THROW)
     {
         // test if conversion from empty and text file fails
 
         const char *fromFile = "general/empty.input";
-        error                = test_convert(fromFile, toFile, TYPE(from), TYPE(to));
+        
+        error = test_convert(fromFile, toFile, TYPE(from), TYPE(to));
         TEST_ASSERT(error);
 
         fromFile = "general/text.input";
         error = test_convert(fromFile, toFile, TYPE(from), TYPE(to));
         TEST_ASSERT(error); 
     }
+#endif
 
     free(toFile);
 }
 
-#if defined(ENABLE_CRASH_TESTS)
-static int crash_from = -1;
-static int crash_to   = -1;
-
-static void crash_convert() {
-    test_convert_by_format_num_WRAPPED(crash_from, crash_to);
-}
-#endif // ENABLE_CRASH_TESTS
-
-static void test_convert_by_format_num(int from, int to) {
-    TEST_ANNOTATE_ASSERT(GBS_global_string("while converting %s -> %s", NAME(from), NAME(to)));
-    if (cap[from][to].crashes) {
-#if defined(ENABLE_CRASH_TESTS)
-        crash_from = from;
-        crash_to   = to;
-        TEST_ASSERT_SEGFAULT(crash_convert);
-#endif // ENABLE_CRASH_TESTS
-    }
-    else {
-        test_convert_by_format_num_WRAPPED(from, to);
-    }
-}
+inline bool isInputFormat(int num) { return is_input_format(TYPE(num)); }
 
 static void init_cap() {
     for (int from = 0; from<fcount; from++) {
@@ -340,18 +247,12 @@ static void init_cap() {
             Capabilities& me = cap[from][to];
 
             if (to == NUM_PHYLIP2) me.neverReturns = true;
-            if (!INPUT(from)) me.haveInputData     = false;
+            if (!isInputFormat(from)) me.supported = false;
         }
     }
 }
 
-inline bool isInputFormat(int num) { return INPUT(num); } // @@@ change ? 
-
-#define NOT_SUPPORTED(t1,t2)         TEST_ASSERT(isInputFormat(NUM_##t1)); cap[NUM_##t1][NUM_##t2].supported   = false
-#define NO_OUTFILE_CREATED(t1,t2)    TEST_ASSERT(isInputFormat(NUM_##t1)); cap[NUM_##t1][NUM_##t2].noOutput    = true
-#define EMPTY_OUTFILE_CREATED(t1,t2) TEST_ASSERT(isInputFormat(NUM_##t1)); cap[NUM_##t1][NUM_##t2].emptyOutput = true
-#define CRASHES(t1,t2)               TEST_ASSERT(isInputFormat(NUM_##t1)); cap[NUM_##t1][NUM_##t2].crashes     = true
-#define FCKDUP(t1,t2)                TEST_ASSERT(isInputFormat(NUM_##t1)); cap[NUM_##t1][NUM_##t2].broken      = true
+#define NOT_SUPPORTED(t1,t2) TEST_ASSERT(isInputFormat(NUM_##t1)); cap[NUM_##t1][NUM_##t2].supported = false
 
 static int will_convert(int from) {
     int will = 0;
@@ -370,23 +271,14 @@ void TEST_0_converter() {
     init_cap();
 
     NOT_SUPPORTED(GENBANK, SWISSPROT);
-
+    NOT_SUPPORTED(EMBL, SWISSPROT);
     NOT_SUPPORTED(SWISSPROT, GENBANK);
     NOT_SUPPORTED(SWISSPROT, EMBL);
-
-    // unsupported self-conversions
-    NOT_SUPPORTED(MACKE, MACKE);
-    NOT_SUPPORTED(SWISSPROT, SWISSPROT);
-
+    
     int possible     = 0;
     int tested       = 0;
     int unsupported  = 0;
-    int crash        = 0;
     int neverReturns = 0;
-    int broken       = 0;
-    int noInput      = 0;
-    int noOutput     = 0;
-    int emptyOutput  = 0;
 
     for (int from = 0; from<fcount; from++) {
         TEST_ANNOTATE_ASSERT(GBS_global_string("while converting from '%s'", NAME(from)));
@@ -396,21 +288,19 @@ void TEST_0_converter() {
             }
         }
         for (int to = 0; to<fcount; to++) {
+            if (from == to) continue; // @@@ skip self-conversions atm
+
             possible++;
             Capabilities& me = cap[from][to];
 
             if (me.shall_be_tested()) {
+                TEST_ANNOTATE_ASSERT(GBS_global_string("while converting %s -> %s", NAME(from), NAME(to)));
                 test_convert_by_format_num(from, to);
                 tested++;
             }
 
             unsupported  += !me.supported;
-            crash        += me.crashes;
             neverReturns += me.neverReturns;
-            broken       += me.broken;
-            noInput      += !me.haveInputData;
-            noOutput     += me.noOutput;
-            emptyOutput  += me.emptyOutput;
         }
     }
 
@@ -420,29 +310,17 @@ void TEST_0_converter() {
             " - conversions:  %3i (possible)\n"
             " - unsupported:  %3i\n"
             " - tested:       %3i\n"
-            " - crash:        %3i\n"
             " - neverReturns: %3i (would never return - not checked)\n"
-            " - noInputFile:  %3i\n"
-            " - noOutput:     %3i\n"
-            " - emptyOutput:  %3i\n"
-            " - broken:       %3i (in some other way)\n"
             " - converted:    %3i\n",
             fcount,
             possible,
             unsupported,
             tested,
-            crash,
             neverReturns,
-            noInput,
-            noOutput,
-            emptyOutput,
-            broken,
-            tested-(emptyOutput+noOutput+unsupported));
+            tested-unsupported);
 
-    int untested     = possible - tested;
-    int max_untested = noInput+neverReturns+broken; // the 3 counters may overlop
-
-    TEST_ASSERT_LOWER_EQUAL(untested, max_untested);
+    int untested = possible - tested;
+    TEST_ASSERT_EQUAL(untested, neverReturns);
 }
 
 #endif // UNIT_TESTS

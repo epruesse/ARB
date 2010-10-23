@@ -1,12 +1,12 @@
 #-
 #-
 #-	editor
-#-	Wed Oct 20 22:10:54 2010
+#-	Sat Oct 23 01:43:05 2010
 #-
 #-
 #-	Reference sequence:  MA32_HUMAN
 #-	Attributes:
-#=		MA32_HUMAN	in  out  vis  prt   ord  pro  lin  n>c  func ref
+#=		MA32_HUMAN	in  out  vis  prt   ord  dna  lin  5>3  func ref
 #-
 #:MA32_HUMAN:name:Homo sapiens (Human).
 #:MA32_HUMAN:date:01-FEB-1995

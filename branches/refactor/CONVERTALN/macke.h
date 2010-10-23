@@ -36,6 +36,16 @@ class Macke : public InputFormat {
     void add_remarks_from(const OrgInfo& orginf);
     void add_remarks_from(const SeqInfo& seqinf);
     void add_35end_remark(char end35, char yn);
+
+    static bool macke_is_continued_remark(const char *str) {
+        /* If there is 3 blanks at the beginning of the line, it is continued line.
+         *
+         * The comment above is lying:
+         *      The function always only tested for 2 spaces
+         *      and the converter only produced 2 spaces.
+         */
+        return strncmp(str, ":  ", 3) == 0;
+    }
     
 public:
 
@@ -119,25 +129,24 @@ public:
     void add_remarks_from(const GenBank& gbk);
     
     // InputFormat interface
-    SeqPtr read_data(Reader& reader);
     void reinit() { INPLACE_RECONSTRUCT(Macke, this); }
     const char *get_id() const { return seqabbr; }
+    Format format() const { return MACKE; }
 };
 
 // --------------------
 //      MackeReader
 
-class MackeReader : public InputFormatReader {
-    bool    firstRead;
+class MackeReader : public FormatReader {
+    Macke data;
+
     char   *inName;
     char*&  seqabbr; // = Macke.seqabbr
     char   *dummy;
 
     Reader *r1, *r2, *r3;
-    void start_reading();
-    void stop_reading();
 
-    bool mackeIn(Macke& macke);
+    bool macke_in(Macke& macke);
 
     void abort() {
         r1->abort();
@@ -155,26 +164,22 @@ class MackeReader : public InputFormatReader {
         return r2->ok();
     }
 
+    void read_to_start();
+    
 public:
 
-    MackeReader(const char *inName_)
-        : firstRead(true),
-          inName(strdup(inName_)),
-          seqabbr(dummy),
-          dummy(NULL), 
-          r1(NULL),
-          r2(NULL),
-          r3(NULL)
-    {}
-    ~MackeReader() {
-        stop_reading();
-        free(inName);
-    }
+    MackeReader(const char *inName_);
+    ~MackeReader();
 
-    bool read_one_entry(InputFormat& data, Seq& seq) {
-        Macke& macke = reinterpret_cast<Macke&>(data);
-        if (!mackeIn(macke) || !read_seq_data(seq)) abort();
-        return ok();
+    bool read_one_entry(Seq& seq) __ATTR__USERESULT;
+    bool failed() const { return r1->failed() || r2->failed() || r3->failed(); }
+    void ignore_rest_of_file() { r1->ignore_rest_of_file(); r2->ignore_rest_of_file(); r3->ignore_rest_of_file(); }
+    InputFormat& get_data() { return data; }
+    void rewind() {
+        r1->rewind();
+        r2->rewind();
+        r3->rewind();
+        read_to_start();
     }
 };
 

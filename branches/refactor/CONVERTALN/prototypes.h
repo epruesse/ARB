@@ -11,6 +11,9 @@
 #endif
 
 
+/* convert.cxx */
+void convert(const char *inf, const char *outf, Format inType, Format ouType);
+
 /* date.cxx */
 const char *genbank_date(const char *other_date);
 const char *today_date(void);
@@ -18,24 +21,22 @@ const char *gcg_date(const char *input);
 
 /* embl.cxx */
 int comment_subkey(const char *line, char *key);
-void embl_in(Embl &embl, Seq &seq, Reader &reader);
-void embl_in_simple(Embl &embl, Seq &seq, Reader &reader);
 void embl_key_word(const char *line, int index, char *key, int length);
 void embl_origin(Seq &seq, Reader &reader);
 void embl_out_header(const Embl &embl, const Seq &seq, Writer &write);
-void embl_to_macke(const char *inf, const char *outf, Format inType);
-void embl_to_embl(const char *inf, const char *outf);
-void embl_to_genbank(const char *inf, const char *outf);
-void genbank_to_embl(const char *inf, const char *outf);
-void macke_to_embl(const char *inf, const char *outf);
+void embl_out(const Embl &embl, const Seq &seq, Writer &write);
+int etog(const Embl &embl, GenBank &gbk, const Seq &seq) __ATTR__USERESULT;
+int etom(const Embl &embl, Macke &macke, const Seq &seq) __ATTR__USERESULT;
+int gtoe(const GenBank &gbk, Embl &embl, const Seq &seq) __ATTR__USERESULT;
+int mtoe(const Macke &macke, Embl &embl, const Seq &seq) __ATTR__USERESULT;
 
 /* fconv.cxx */
-void throw_unsupported_input_format(Format inType) __ATTR__NORETURN;
 void throw_conversion_not_supported(Format inType, Format ouType) __ATTR__NORETURN;
 void throw_conversion_failure(Format inType, Format ouType) __ATTR__NORETURN;
+void throw_conversion_not_implemented(Format inType, Format ouType) __ATTR__NORETURN;
+void throw_unsupported_input_format(Format inType) __ATTR__NORETURN;
 void throw_incomplete_entry(void) __ATTR__NORETURN;
 void log_processed(int seqCount);
-void convert(const char *inf, const char *outf, Format inType, Format ouType);
 
 /* gcg.cxx */
 void to_gcg(const char *inf, const char *outf, Format inType);
@@ -46,19 +47,14 @@ void genbank_one_entry_in(char *&datastring, Reader &reader);
 void genbank_source(GenBank &gbk, Reader &reader);
 void genbank_skip_unidentified(Reader &reader, int blank_num);
 void genbank_reference(GenBank &gbk, Reader &reader);
-void genbank_in(GenBank &gbk, Seq &seq, Reader &reader);
-void genbank_in_simple(GenBank &gbk, Seq &seq, Reader &reader);
 void genbank_origin(Seq &seq, Reader &reader);
 void genbank_out_header(const GenBank &gbk, const Seq &seq, Writer &write);
 void genbank_out_base_count(const Seq &seq, Writer &write);
 void genbank_out(const GenBank &gbk, const Seq &seq, Writer &write);
-void genbank_to_genbank(const char *inf, const char *outf);
 
 /* macke.cxx */
 void macke_origin(Seq &seq, char *&seqabbr, Reader &reader);
 int macke_abbrev(const char *line, char *key, int index);
-bool macke_is_continued_remark(const char *str);
-void macke_in_simple(Macke &macke, Seq &seq, Reader &reader);
 void macke_out_header(Writer &write);
 void macke_seq_display_out(const Macke &macke, Writer &write, Format inType, bool first_sequence);
 void macke_seq_info_out(const Macke &macke, Writer &write);
@@ -68,13 +64,10 @@ void macke_seq_data_out(const Seq &seq, const Macke &macke, Writer &write);
 /* main.cxx */
 
 /* mg.cxx */
-void genbank_to_macke(const char *inf, const char *outf);
-void macke_to_genbank(const char *inf, const char *outf);
 int mtog(const Macke &macke, GenBank &gbk, const Seq &seq) __ATTR__USERESULT;
 int gtom(const GenBank &gbk, Macke &macke) __ATTR__USERESULT;
 
 /* paup.cxx */
-void read_alignment(Alignment &ali, Format inType, Reader &reader);
 void to_paup(const char *inf, const char *outf, Format inType);
 
 /* phylip.cxx */
@@ -85,6 +78,9 @@ void to_printable(const char *inf, const char *outf, Format inType);
 
 /* rdp_info.cxx */
 bool parse_RDP_comment(RDP_comments &comments, RDP_comment_parser one_comment_entry, const char *key, int index, Reader &reader);
+
+/* seq.cxx */
+void read_alignment(Alignment &ali, Format inType, const char *inf);
 
 /* util.cxx */
 bool scan_token(char *to, const char *from) __ATTR__USERESULT;

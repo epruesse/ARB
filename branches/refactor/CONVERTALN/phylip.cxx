@@ -59,7 +59,6 @@ void to_phylip(const char *inf, const char *outf, Format inType, int readstdin) 
         throw_conversion_not_supported(inType, PHYLIP);
     }
 
-    Reader     reader(inf);
     FileWriter write(outf);
 
     if (write.get_FILE() == stdout) {
@@ -68,7 +67,7 @@ void to_phylip(const char *inf, const char *outf, Format inType, int readstdin) 
     }
 
     Alignment ali;
-    read_alignment(ali, inType, reader);
+    read_alignment(ali, inType, inf);
 
     int maxsize     = ali.get_max_len();
     int total_seq   = ali.get_count();

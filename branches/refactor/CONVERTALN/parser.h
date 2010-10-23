@@ -18,15 +18,16 @@ protected:
     EntryState state;
     Seq&       seq;
     Reader&    reader;
+
 public:
     Parser(Seq& seq_, Reader& reader_)
-        : state(ENTRY_NONE), 
+        : state(ENTRY_NONE),
           seq(seq_),
           reader(reader_)
     {}
     virtual ~Parser() {}
 
-    void parse_entry() {
+    bool parse_entry() __ATTR__USERESULT {
         state = ENTRY_NONE;
 
         for (; reader.line() && state != ENTRY_COMPLETED;) {
@@ -37,9 +38,13 @@ public:
 
         if (state == ENTRY_STARTED) throw_incomplete_entry();
         ++reader;
+
+        seq.set_id(get_data().get_id());
+        return state == ENTRY_COMPLETED;
     }
 
     virtual void parse_section() = 0;
+    virtual const InputFormat& get_data() const = 0;
 };
 
 

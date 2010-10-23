@@ -17,9 +17,13 @@
 #ifndef ARB_DEFS_H
 #include <arb_defs.h>
 #endif
+#ifndef ARBTOOLS_H
+#include <arbtools.h>
+#endif
 #ifndef SMARTPTR_H
 #include <smartptr.h>
 #endif
+
 
 #define ca_assert(cond) arb_assert(cond)
 
@@ -67,6 +71,22 @@ public:
 
 // --------------------
 
+class Warnings : Noncopyable {
+    static bool show_warnings;
+    bool        old_state;
+public:
+    static bool shown() { return show_warnings; }
+    
+    Warnings() {
+        old_state     = shown();
+        show_warnings = false;
+    }
+    ~Warnings() { show_warnings = old_state; }
+};
+
+
+// --------------------
+
 inline int min(int t1, int t2) { return t1<t2 ? t1 : t2; }
 inline int max(int t1, int t2) { return t1>t2 ? t1 : t2; }
 
@@ -86,7 +106,7 @@ inline char *strndup(const char *str, int len) {
 
 inline int count_spaces(const char *str) { return strspn(str, " "); }
 
-inline bool occurs_in(char ch, const char *in) { return strchr(in, ch) != 0; }
+inline bool occurs_in(char ch, const char *in) { ca_assert(ch != 0); return strchr(in, ch) != 0; }
 
 inline bool is_end_mark(char ch) { return ch == '.' || ch == ';'; }
 

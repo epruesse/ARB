@@ -3,52 +3,6 @@
 #include "genbank.h"
 #include "macke.h"
 
-extern int warning_out;
-
-void genbank_to_macke(const char *inf, const char *outf) {
-    // Convert from Genbank format to Macke format.
-    Format     inType = GENBANK;
-    Reader     reader(inf);
-    FileWriter write(outf);
-
-    int indi;
-
-    // sequence irrelevant header
-    macke_out_header(write);
-
-    for (indi = 0; indi < 3; indi++) {
-        reader.rewind();
-
-        int numofseq = 0;
-        while (1) {
-            GenBank gbk;
-            Seq     seq;
-            genbank_in(gbk, seq, reader);
-            if (reader.failed()) break;
-
-            numofseq++;
-            Macke macke;
-            if (!gtom(gbk, macke)) throw_conversion_failure(inType, MACKE);
-
-            switch (indi) {
-                case 0: macke_seq_display_out(macke, write, inType, numofseq == 1); break;
-                case 1: macke_seq_info_out(macke, write); break;
-                case 2:
-                    macke_seq_data_out(seq, macke, write);
-                    write.seq_done();
-                    break;
-                default:;
-            }
-        }
-        if (indi == 0) {
-            write.out("#-\n");
-            warning_out = 0; // no warning message for next loop
-        }
-    }
-
-    warning_out = 1; // resume warning messages
-}
-
 static int paren_string(char *line, char *pstring, int index) {
     int len       = str0len(line);
     int paren_num = 0;
@@ -339,24 +293,6 @@ static char *genbank_get_subspecies(const GenBank& gbk) {
     }
 
     return nulldup(subspecies);
-}
-
-void macke_to_genbank(const char *inf, const char *outf) {
-    // Convert from macke format to genbank format.
-    MackeReader mackeReader(inf);
-    FileWriter  write(outf);
-
-    while (1) {
-        Macke   macke;
-        Seq     seq;
-
-        if (!mackeReader.read_one_entry(macke, seq)) break;
-
-        GenBank gbk;
-        if (!mtog(macke, gbk, seq)) throw_conversion_failure(MACKE, GENBANK);
-        genbank_out(gbk, seq, write);
-        write.seq_done();
-    }
 }
 
 static void mtog_decode_ref_and_remarks(const Macke& macke, GenBank& gbk) {

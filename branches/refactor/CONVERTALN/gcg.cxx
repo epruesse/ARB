@@ -142,33 +142,38 @@ void GcgCommentWriter::out(char ch) {
 
 static void macke_to_gcg(const char *inf, const char *outf) {
     MackeReader reader(inf);
-    Macke       macke;
-    Seq         seq;
+    GcgWriter   out(outf);
 
-    GcgWriter out(outf);
+    Seq seq;
+    if (!reader.read_one_entry(seq)) return;
 
-    if (reader.read_one_entry(macke, seq)) {
-        out.set_species_name(macke.get_id());
-        macke_seq_info_out(macke, out);
-        out.write_seq_data(seq);
-    }
+    Macke& macke = dynamic_cast<Macke&>(reader.get_data());
+    out.set_species_name(macke.get_id());
+    macke_seq_info_out(macke, out);
+    out.write_seq_data(seq);
+
+    reader.ignore_rest_of_file();
 }
 
 static void genbank_to_gcg(const char *inf, const char *outf) {
-    GenbankReader reader(inf);
-    GcgWriter     write(outf);
+    FormatReaderPtr reader = FormatReader::create(GENBANK, inf);
+    GcgWriter       write(outf);
 
     GenBank gbk;
     Seq     seq;
-        
-    GenbankFullParser(gbk, seq, reader).parse_entry();
-    if (reader.failed()) return;
+
+    {
+        GenbankReader& greader = dynamic_cast<GenbankReader&>(*reader);
+        if (!GenbankParser(gbk, seq, greader).parse_entry()) return;
+    }
 
     genbank_out_header(gbk, seq, write.comment_writer());
     genbank_out_base_count(seq, write.comment_writer());
     write.out("ORIGIN\n");
     write.set_species_name(gbk.get_id());
     write.write_seq_data(seq);
+
+    reader->ignore_rest_of_file();
 }
 
 static void embl_to_gcg(const char *inf, const char *outf) {
@@ -178,12 +183,13 @@ static void embl_to_gcg(const char *inf, const char *outf) {
     Embl embl;
     Seq  seq;
 
-    EmblFullParser(embl, seq, reader).parse_entry();
-    if (reader.failed()) return;
+    if (!EmblParser(embl, seq, reader).parse_entry()) return;
 
     embl_out_header(embl, seq, write);
     write.set_species_name(embl.get_id());
     write.write_seq_data(seq);
+    
+    reader.ignore_rest_of_file();
 }
 
 void to_gcg(const char *inf, const char *outf, Format inType) {

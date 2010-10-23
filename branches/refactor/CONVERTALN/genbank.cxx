@@ -6,8 +6,6 @@
 #define NOPERIOD    0
 #define PERIOD      1
 
-extern int warning_out;
-
 void genbank_key_word(const char *line, int index, char *key, int length) { // @@@ similar to embl_key_word and macke_key_word
     // Get the key_word from line beginning at index.
     int indi, indj;
@@ -17,8 +15,12 @@ void genbank_key_word(const char *line, int index, char *key, int length) { // @
         return;
     }
 
-    for (indi = index, indj = 0; (index - indi) < length && line[indi] != ' ' && line[indi] != '\t' && line[indi] != '\n' && line[indi] != '\0' && indi < GBINDENT; indi++, indj++)
+    for (indi = index, indj = 0;
+         (index - indi) < length && line[indi] && !occurs_in(line[indi], " \t\n") && indi < GBINDENT;
+         indi++, indj++)
+    {
         key[indj] = line[indi];
+    }
     key[indj] = '\0';
 }
 
@@ -236,7 +238,8 @@ static void genbank_verify_keywords(GenBank& gbk) {
             count++;
 
     if (count != 1) {
-        if (warning_out)
+        // @@@ raise error here ? 
+        if (Warnings::shown())
             fprintf(stderr, "\nKEYWORDS: %s", gbk.keywords);
         warning(141, "No more than one period is allowed in KEYWORDS line.");
     }
@@ -247,25 +250,14 @@ void GenbankParser::parse_section() {
     state = ENTRY_STARTED;
     parse_keyed_section(key);
 }
-void GenbankParser::parse_common_section(const char *key) {
-    if (str_equal(key, "ORIGIN")) {
-        genbank_origin(seq, reader);
-        state = ENTRY_COMPLETED;
-    }
-    else if (str_equal(key, "LOCUS")) {
+
+void GenbankParser::parse_keyed_section(const char *key) {
+    if (str_equal(key, "LOCUS")) {
         genbank_one_entry_in(gbk.locus, reader);
         if (!gbk.locus_contains_date())
             warning(14, "LOCUS data might be incomplete");
     }
-    else {
-        genbank_skip_unidentified(reader, 2);
-    }
-}
-
-
-
-void GenbankFullParser::parse_keyed_section(const char *key) {
-    if (str_equal(key, "DEFINITION")) {
+    else if (str_equal(key, "DEFINITION")) {
         genbank_one_entry_in(gbk.definition, reader);
         terminate_with(gbk.definition, '.'); // correct missing '.' at the end
     }
@@ -291,23 +283,13 @@ void GenbankFullParser::parse_keyed_section(const char *key) {
     else if (str_equal(key, "COMMENT")) {
         genbank_comments(gbk, reader);
     }
-    else {
-        parse_common_section(key);
+    else if (str_equal(key, "ORIGIN")) {
+        genbank_origin(seq, reader);
+        state = ENTRY_COMPLETED;
     }
-}
-
-void GenbankSimpleParser::parse_keyed_section(const char *key) {
-    parse_common_section(key);
-}
-
-void genbank_in(GenBank& gbk, Seq& seq, Reader& reader) {
-    // Read in one genbank entry.
-    GenbankFullParser(gbk, seq, reader).parse_entry();
-}
-
-void genbank_in_simple(GenBank& gbk, Seq& seq, Reader& reader) {
-    // Read in next genbank locus and sequence only.
-    GenbankSimpleParser(gbk, seq, reader).parse_entry();
+    else {
+        genbank_skip_unidentified(reader, 2);
+    }
 }
 
 void genbank_origin(Seq& seq, Reader& reader) {
@@ -492,19 +474,8 @@ void genbank_out(const GenBank& gbk, const Seq& seq, Writer& write) {
     genbank_out_origin(seq, write);
 }
 
-void genbank_to_genbank(const char *inf, const char *outf) {
-    // Convert from genbank to genbank.
-    Reader     reader(inf);
-    FileWriter write(outf);
-
-    while (1) {
-        GenBank gbk;
-        Seq     seq;
-        genbank_in(gbk, seq, reader);
-        if (reader.failed()) break;
-
-        genbank_out(gbk, seq, write);
-        write.seq_done();
-    }
+bool GenbankReader::read_one_entry(Seq& seq) {
+    data.reinit();
+    if (!GenbankParser(data, seq, *this).parse_entry()) abort();
+    return ok();
 }
-
