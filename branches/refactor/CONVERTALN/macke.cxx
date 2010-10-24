@@ -68,14 +68,11 @@ void macke_origin(Seq& seq, char*& seqabbr, Reader& reader) {
 }
 
 int macke_abbrev(const char *line, char *key, int index) {
-    // Find the key in Macke line.
-    int i = Skip_white_space(line, index);
-    int k = 0;
-    while (line[i] && !occurs_in(line[i], " :\t\n")) {
-        key[k++] = line[i++];
-    }
-    key[k] = 0;
-    return i+1;
+    // Get the key from a macke line.
+    // returns index behind delimiting ':'
+    index   = Skip_white_space(line, index);
+    int len = parse_key_word(line+index, key, " :\t\n");
+    return index+len+1;
 }
 
 void macke_out_header(Writer& write) {
@@ -147,7 +144,7 @@ static const char *genbankEntryComments[] = {
 
 static bool macke_is_genbank_entry_comment(const char *Str) {
     char keyword[TOKENSIZE];
-    macke_key_word(Str, 0, keyword, TOKENSIZE);
+    macke_key_word(Str, 0, keyword);
 
     return lookup_keyword(keyword, genbankEntryComments) >= 0;
 }
@@ -189,24 +186,11 @@ void macke_seq_info_out(const Macke& macke, Writer& write) {
     }
 }
 
-int macke_key_word(const char *line, int index, char *key, int length) {
+int macke_key_word(const char *line, int index, char *key) {
     // Find the key in Macke line.
-    int indi;
-
-    if (line == NULL) {
-        key[0] = '\0';
-        return (index);
-    }
-
-    // skip white space
-    index = Skip_white_space(line, index);
-
-    for (indi = index; (indi - index) < (length - 1) && line[indi] != ':' && line[indi] != '\n' && line[indi] != '\0'; indi++)
-        key[indi - index] = line[indi];
-
-    key[indi - index] = '\0';
-
-    return (indi + 1);
+    // return position behind ':' delimiter
+    int len = parse_key_word(line+index, key, ":\n");
+    return len ? index+len+1 : index; 
 }
 
 void macke_seq_data_out(const Seq& seq, const Macke& macke, Writer& write) {

@@ -131,8 +131,10 @@ inline char *no_content() {
     return nothing;
 }
 
-inline void freedup_if_content(char*& entry, const char *content) {
-    if (has_content(content)) freedup(entry, content);
+inline bool copy_content(char*& entry, const char *content) {
+    bool copy = has_content(content);
+    if (copy) freedup(entry, content);
+    return copy;
 }
 
 // --------------------

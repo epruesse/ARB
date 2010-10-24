@@ -12,7 +12,7 @@ static void embl_continue_line(const char *pattern, char*& Str, Reader& reader) 
     // check continue lines
     for (++reader; reader.line(); ++reader) {
         if (has_content(reader.line())) {
-            embl_key_word(reader.line(), 0, key, TOKENSIZE);
+            embl_key_word(reader.line(), 0, key);
             if (!str_equal(pattern, key)) break;
 
             // remove end-of-line, if there is any
@@ -38,7 +38,7 @@ static void embl_date(Embl& embl, Reader& reader) {
     ++reader;
 
     char key[TOKENSIZE];
-    embl_key_word(reader.line(), 0, key, TOKENSIZE);
+    embl_key_word(reader.line(), 0, key);
     if (str_equal(key, "DT")) {
         index = Skip_white_space(reader.line(), p_nonkey_start);
         freedup(embl.datec, reader.line() + index);
@@ -46,7 +46,7 @@ static void embl_date(Embl& embl, Reader& reader) {
         do {
             ++reader;
             if (!reader.line()) break;
-            embl_key_word(reader.line(), 0, key, TOKENSIZE);
+            embl_key_word(reader.line(), 0, key);
         }
         while (str_equal(key, "DT"));
     }
@@ -81,22 +81,15 @@ static void embl_correct_title(Emblref& ref) {
 }
 
 int comment_subkey(const char *line, char *key) {
-    // Get the subkey_word from a comment line
-    if (!line) {
-        key[0] = '\0';
-        return (0);
+    // Get the subkey-word (including delimiting ':') from a comment line
+    int len = parse_key_word(line, key, ":\t\n(");
+    if (!len) return 0;
+
+    if (line[len] == ':') {
+        key[len]   = ':';
+        key[len+1] = 0;
     }
-
-    int indi;
-    for (indi = 0; line[indi] && !occurs_in(line[indi], ":\t\n("); indi++) {
-        key[indi] = line[indi];
-    }
-
-    int indj = indi;
-    if (line[indj] == ':') key[indj++] = ':';
-    key[indj] = '\0';
-
-    return indi + 1;
+    return len+1;
 }
 
 inline bool is_embl_comment(const char *line) { return line && line[0] == 'C' && line[1] == 'C'; }
@@ -148,14 +141,14 @@ static void embl_skip_unidentified(const char *pattern, Reader& reader) {
 
     for (++reader; reader.line(); ++reader) {
         char  key[TOKENSIZE];
-        embl_key_word(reader.line(), 0, key, TOKENSIZE);
+        embl_key_word(reader.line(), 0, key);
         if (!str_equal(key, pattern)) break;
     }
 }
 
 void EmblParser::parse_section() {
     char key[TOKENSIZE];
-    embl_key_word(reader.line(), 0, key, TOKENSIZE);
+    embl_key_word(reader.line(), 0, key);
     state = ENTRY_STARTED;
     parse_keyed_section(key);
 }
@@ -221,22 +214,8 @@ void EmblParser::parse_keyed_section(const char *key) {
     }
 }
 
-void embl_key_word(const char *line, int index, char *key, int length) { // @@@ similar to genbank_key_word and macke_key_word
-    // Get the key_word from line beginning at index.
-    // length = max size of key word
-    int indi, indj;
-
-    if (line == NULL) {
-        key[0] = '\0';
-        return;
-    }
-    for (indi = index, indj = 0;
-         (index - indi) < length && line[indi] && !occurs_in(line[indi], " \t\n");
-         indi++, indj++)
-    {
-        key[indj] = line[indi];
-    }
-    key[indj] = '\0';
+void embl_key_word(const char *line, int index, char *key) { 
+    parse_key_word(line+index, key, " \t\n");
 }
 
 void embl_origin(Seq& seq, Reader& reader) {
@@ -295,7 +274,7 @@ static void embl_out_comments(const Embl& embl, const Seq& seq, Writer& write) {
     // Print out the comments part of EMBL format.
 
     const OrgInfo& orginf = embl.comments.orginf;
-    if (orginf.exists) {
+    if (orginf.exists()) {
         write.out("CC   Organism information\n");
 
         embl_print_comment_if_content(write, "Source of strain: ",   orginf.source);
@@ -307,7 +286,7 @@ static void embl_out_comments(const Embl& embl, const Seq& seq, Writer& write) {
     }
 
     const SeqInfo& seqinf = embl.comments.seqinf;
-    if (seqinf.exists) {
+    if (seqinf.exists()) {
         write.outf("CC   Sequence information (bases 1 to %d)\n", seq.get_len());
 
         embl_print_comment_if_content(write, "RDP ID: ",                      seqinf.RDPid);
@@ -499,37 +478,6 @@ static void etog_convert_references(const Embl& embl, GenBank& gbk) {
         freeset(gref.standard, no_content());
     }
 }
-static void etog_convert_comments(const Embl& embl, GenBank& gbk) {
-    // Convert comment part from EMBL to GenBank.
-
-    // RDP defined Organism Information comments
-    const OrgInfo& eorginf = embl.comments.orginf;
-    OrgInfo&       gorginf = gbk.comments.orginf;
-
-    gorginf.exists = eorginf.exists;
-
-    freedup_if_content(gorginf.source,   eorginf.source);
-    freedup_if_content(gorginf.cultcoll, eorginf.cultcoll);
-    freedup_if_content(gorginf.formname, eorginf.formname);
-    freedup_if_content(gorginf.nickname, eorginf.nickname);
-    freedup_if_content(gorginf.commname, eorginf.commname);
-    freedup_if_content(gorginf.hostorg,  eorginf.hostorg);
-
-    // RDP defined Sequence Information comments
-    const SeqInfo& eseqinf = embl.comments.seqinf;
-    SeqInfo&       gseqinf = gbk.comments.seqinf;
-
-    gseqinf.exists = eseqinf.exists;
-
-    freedup_if_content(gseqinf.RDPid,    eseqinf.RDPid);
-    freedup_if_content(gseqinf.gbkentry, eseqinf.gbkentry);
-    freedup_if_content(gseqinf.methods,  eseqinf.methods);
-    gseqinf.comp5 = eseqinf.comp5;
-    gseqinf.comp3 = eseqinf.comp3;
-
-    // other comments
-    freedup_if_content(gbk.comments.others, embl.comments.others);
-}
 
 int etog(const Embl& embl, GenBank& gbk, const Seq& seq) { // __ATTR__USERESULT
     // Convert from embl to genbank format.
@@ -537,7 +485,7 @@ int etog(const Embl& embl, GenBank& gbk, const Seq& seq) { // __ATTR__USERESULT
     char key[TOKENSIZE], temp[LONGTEXT];
     char t1[TOKENSIZE], t2[TOKENSIZE], t3[TOKENSIZE];
 
-    embl_key_word(embl.ID, 0, key, TOKENSIZE);
+    embl_key_word(embl.ID, 0, key);
     if (has_content(embl.dr)) {
         // get short_id from DR line if there is RDP def.
         strcpy(t3, "dummy");
@@ -575,16 +523,10 @@ int etog(const Embl& embl, GenBank& gbk, const Seq& seq) { // __ATTR__USERESULT
     freedup(gbk.locus, temp);
 
     // DEFINITION
-    if (has_content(embl.description)) {
-        freedup(gbk.definition, embl.description);
-
-        // must have a period at the end
-        terminate_with(gbk.definition, '.');
-    }
-
+    if (copy_content(gbk.definition, embl.description)) terminate_with(gbk.definition, '.');
+    
     // SOURCE and DEFINITION if not yet defined
-    if (has_content(embl.os)) {
-        freedup(gbk.source, embl.os);
+    if (copy_content(gbk.source, embl.os)) {
         freedup(gbk.organism, embl.os);
         if (!has_content(embl.description)) {
             freedup(gbk.definition, embl.os);
@@ -592,13 +534,13 @@ int etog(const Embl& embl, GenBank& gbk, const Seq& seq) { // __ATTR__USERESULT
     }
 
     // COMMENT GenBank entry
-    freedup_if_content(gbk.accession, embl.accession);
+    copy_content(gbk.accession, embl.accession);
     if (has_content(embl.keywords) && embl.keywords[0] != '.') {
         freedup(gbk.keywords, embl.keywords);
     }
 
     etog_convert_references(embl, gbk);
-    etog_convert_comments(embl, gbk);
+    gbk.comments.set_content_from(embl.comments); 
 
     return (1);
 }
@@ -639,37 +581,6 @@ void TEST_BASIC_etog_journal() {
 
 #endif // UNIT_TESTS
 
-static void gtoe_comments(const GenBank& gbk, Embl& embl) {
-    // Convert comment part from GenBank to EMBL.
-
-    // RDP defined Organism Information comments
-    OrgInfo&       eorginf = embl.comments.orginf;
-    const OrgInfo& gorginf = gbk.comments.orginf;
-
-    eorginf.exists = gorginf.exists;
-
-    freedup_if_content(eorginf.source,   gorginf.source);
-    freedup_if_content(eorginf.cultcoll, gorginf.cultcoll);
-    freedup_if_content(eorginf.formname, gorginf.formname);
-    freedup_if_content(eorginf.nickname, gorginf.nickname);
-    freedup_if_content(eorginf.commname, gorginf.commname);
-    freedup_if_content(eorginf.hostorg,  gorginf.hostorg);
-
-    // RDP defined Sequence Information comments
-    SeqInfo&       eseqinf = embl.comments.seqinf;
-    const SeqInfo& gseqinf = gbk.comments.seqinf;
-
-    eseqinf.exists = gseqinf.exists;
-
-    freedup_if_content(eseqinf.RDPid,    gseqinf.RDPid);
-    freedup_if_content(eseqinf.gbkentry, gseqinf.gbkentry);
-    freedup_if_content(eseqinf.methods,  gseqinf.methods);
-    eseqinf.comp5 = gseqinf.comp5;
-    eseqinf.comp3 = gseqinf.comp3;
-
-    // other comments
-    freedup_if_content(embl.comments.others, gbk.comments.others);
-}
 static char *gtoe_author(char *author) {
     // Convert GenBank author to EMBL author.
     int   indi, len, index, odd;
@@ -798,17 +709,16 @@ int gtoe(const GenBank& gbk, Embl& embl, const Seq& seq) { // __ATTR__USERESULT
     }
 
     // description
-    freedup_if_content(embl.description, gbk.definition);
+    copy_content(embl.description, gbk.definition);
     // EMBL KW line
-    if (has_content(gbk.keywords)) {
-        freedup(embl.keywords, gbk.keywords);
+    if (copy_content(embl.keywords, gbk.keywords)) {
         terminate_with(embl.keywords, '.');
     }
     else {
         freedup(embl.keywords, ".\n");
     }
 
-    freedup_if_content(embl.os, gbk.organism); // EMBL OS line
+    copy_content(embl.os, gbk.organism); // EMBL OS line
     // reference
     gtoe_reference(gbk, embl);
 
@@ -828,7 +738,7 @@ int gtoe(const GenBank& gbk, Embl& embl, const Seq& seq) { // __ATTR__USERESULT
         }
         freedup(embl.dr, temp);
     }
-    gtoe_comments(gbk, embl);
+    embl.comments.set_content_from(gbk.comments);
 
     return (1);
 }

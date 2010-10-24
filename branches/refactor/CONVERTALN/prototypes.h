@@ -21,7 +21,7 @@ const char *gcg_date(const char *input);
 
 /* embl.cxx */
 int comment_subkey(const char *line, char *key);
-void embl_key_word(const char *line, int index, char *key, int length);
+void embl_key_word(const char *line, int index, char *key);
 void embl_origin(Seq &seq, Reader &reader);
 void embl_out_header(const Embl &embl, const Seq &seq, Writer &write);
 void embl_out(const Embl &embl, const Seq &seq, Writer &write);
@@ -42,7 +42,7 @@ void log_processed(int seqCount);
 void to_gcg(const char *inf, const char *outf, Format inType);
 
 /* genbank.cxx */
-void genbank_key_word(const char *line, int index, char *key, int length);
+void genbank_key_word(const char *line, int index, char *key);
 void genbank_one_entry_in(char *&datastring, Reader &reader);
 void genbank_source(GenBank &gbk, Reader &reader);
 void genbank_skip_unidentified(Reader &reader, int blank_num);
@@ -58,7 +58,7 @@ int macke_abbrev(const char *line, char *key, int index);
 void macke_out_header(Writer &write);
 void macke_seq_display_out(const Macke &macke, Writer &write, Format inType, bool first_sequence);
 void macke_seq_info_out(const Macke &macke, Writer &write);
-int macke_key_word(const char *line, int index, char *key, int length);
+int macke_key_word(const char *line, int index, char *key);
 void macke_seq_data_out(const Seq &seq, const Macke &macke, Writer &write);
 
 /* main.cxx */
@@ -109,6 +109,7 @@ int find_strain(const char *str, char expect_behind);
 int skip_strain(const char *str, char expect_behind);
 const char *stristr(const char *str, const char *substring);
 int ___lookup_keyword(const char *keyword, const char *const *lookup_table, int lookup_table_size);
+int parse_key_word(const char *line, char *key, const char *separator);
 
 #else
 #error prototypes.h included twice

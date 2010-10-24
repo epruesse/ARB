@@ -36,14 +36,8 @@ bool parse_RDP_comment(RDP_comments& comments, RDP_comment_parser one_comment_en
         else                 seqinf.comp3 = 'n';
         ++reader;
     }
-    else if (str_equal(key, "Sequence information ")) {
-        seqinf.exists = true;
-        ++reader;
-    }
-    else if (str_equal(key, "Organism information")) {
-        orginf.exists = true;
-        ++reader;
-    }
+    else if (str_equal(key, "Sequence information ")) ++reader;
+    else if (str_equal(key, "Organism information")) ++reader;
     else {
         return false;
     }

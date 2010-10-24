@@ -38,7 +38,7 @@ struct Emblref {
 class Embl : public InputFormat, public RefContainer<Emblref> {
     char *create_id() const {
         char buf[TOKENSIZE];
-        embl_key_word(ID, 0, buf, TOKENSIZE);
+        embl_key_word(ID, 0, buf);
         return strdup(buf);
     }
     
@@ -89,7 +89,7 @@ public:
 
     const char *get_key_word(int offset) {
         char key[TOKENSIZE];
-        embl_key_word(line() + offset, 0, key, TOKENSIZE);
+        embl_key_word(line() + offset, 0, key);
         return shorttimecopy(key);
     }
     bool read_one_entry(Seq& seq) __ATTR__USERESULT;

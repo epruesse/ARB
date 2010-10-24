@@ -43,7 +43,7 @@ struct GenbankRef {
 class GenBank : public InputFormat, public RefContainer<GenbankRef> {
     char *create_id() const {
         char buf[TOKENSIZE];
-        genbank_key_word(locus, 0, buf, TOKENSIZE);
+        genbank_key_word(locus, 0, buf);
         return strdup(buf);
     }
 public:
@@ -92,7 +92,7 @@ public:
 
     const char *get_key_word(int offset) {
         char key[TOKENSIZE];
-        genbank_key_word(line() + offset, 0, key, TOKENSIZE);
+        genbank_key_word(line() + offset, 0, key);
         return shorttimecopy(key);
     }
     bool read_one_entry(Seq& seq) __ATTR__USERESULT;

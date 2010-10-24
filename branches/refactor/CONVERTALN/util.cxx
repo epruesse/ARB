@@ -276,3 +276,19 @@ int ___lookup_keyword(const char *keyword, const char * const *lookup_table, int
     return -1;
 }
 
+int parse_key_word(const char *line, char *key, const char *separator) {
+    // Copy keyword starting at position 'index' of 'line' delimited by 'separator' into 'key'.
+    // Do not copy more than 'TOKENSIZE-1' characters.
+    // Returns length of keyword.
+
+    int k = 0;
+    if (line) {
+        while (k<(TOKENSIZE-1) && line[k] && !occurs_in(line[k], separator)) {
+            key[k] = line[k];
+            ++k;
+        }
+    }
+    key[k] = 0;
+    return k;
+}
+

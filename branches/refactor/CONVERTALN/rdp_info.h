@@ -11,8 +11,7 @@
 // -------------------------------
 //      RDP-defined comments (Embl+GenBank)
 
-struct OrgInfo {
-    bool  exists;
+struct OrgInfo : Noncopyable {
     char *source;
     char *cultcoll;
     char *formname;
@@ -21,7 +20,6 @@ struct OrgInfo {
     char *hostorg;
 
     OrgInfo() {
-        exists = false;
         source   = no_content();
         cultcoll = no_content();
         formname = no_content();
@@ -37,20 +35,27 @@ struct OrgInfo {
         freenull(commname);
         freenull(hostorg);
     }
-    OrgInfo(const OrgInfo& other) {
-        exists   = other.exists;
-        source   = nulldup(other.source);
-        cultcoll = nulldup(other.cultcoll);
-        formname = nulldup(other.formname);
-        nickname = nulldup(other.nickname);
-        commname = nulldup(other.commname);
-        hostorg  = nulldup(other.hostorg);
+
+    void set_content_from(const OrgInfo& other) {
+        copy_content(source, other.source);
+        copy_content(cultcoll, other.cultcoll);
+        copy_content(formname, other.formname);
+        copy_content(nickname, other.nickname);
+        copy_content(commname, other.commname);
+        copy_content(hostorg, other.hostorg);
     }
-    DECLARE_ASSIGNMENT_OPERATOR(OrgInfo);
+
+    bool exists() const {
+        return (has_content(source) ||
+                has_content(cultcoll) ||
+                has_content(formname) ||
+                has_content(nickname) ||
+                has_content(commname) ||
+                has_content(hostorg));
+    }
 };
 
-struct SeqInfo {
-    bool exists;
+struct SeqInfo : Noncopyable {
     char comp3;  // yes or no, y/n
     char comp5;  // yes or no, y/n
 
@@ -59,7 +64,6 @@ struct SeqInfo {
     char *methods;
 
     SeqInfo() {
-        exists   = false;
         comp3    = ' ';
         comp5    = ' ';
         RDPid    = no_content();
@@ -71,15 +75,19 @@ struct SeqInfo {
         freenull(gbkentry);
         freenull(methods);
     }
-    SeqInfo(const SeqInfo& other) {
-        exists   = other.exists;
-        comp3    = other.comp3;
-        comp5    = other.comp5;
-        RDPid    = nulldup(other.RDPid);
-        gbkentry = nulldup(other.gbkentry);
-        methods  = nulldup(other.methods);
+    void set_content_from(const SeqInfo& other) {
+        comp3 = other.comp3;
+        comp5 = other.comp5;
+        copy_content(RDPid, other.RDPid);
+        copy_content(gbkentry, other.gbkentry);
+        copy_content(methods, other.methods);
     }
-    DECLARE_ASSIGNMENT_OPERATOR(SeqInfo);
+    bool exists() const {
+        // @@@ as well check comp3/5
+        return (has_content(RDPid)    ||
+                has_content(gbkentry) ||
+                has_content(methods));
+    }
 };
 
 struct RDP_comments {
@@ -88,13 +96,14 @@ struct RDP_comments {
     char    *others;
 
     RDP_comments() : others(NULL) {}
-    RDP_comments(const RDP_comments& from)
-        : orginf(from.orginf),
-          seqinf(from.seqinf),
-          others(nulldup(from.others)) {}
     ~RDP_comments() { freenull(others); }
 
-    DECLARE_ASSIGNMENT_OPERATOR(RDP_comments);
+    void set_content_from(const RDP_comments& other) {
+        orginf.set_content_from(other.orginf);
+        seqinf.set_content_from(other.seqinf);
+        copy_content(others, other.others);
+    }
+    bool exists() const { return orginf.exists() || seqinf.exists() || has_content(others); }
 };
 
 #else

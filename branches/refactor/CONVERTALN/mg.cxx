@@ -304,9 +304,14 @@ static void mtog_decode_ref_and_remarks(const Macke& macke, GenBank& gbk) {
     if (has_content(macke.title))   freedup(gbk.get_latest_ref().title, macke.title);
 
     bool first_ref = true;
+
+    RDP_comments& comments = gbk.comments;
+    OrgInfo&      orginf   = comments.orginf;
+    SeqInfo&      seqinf   = comments.seqinf;
+
     for (int ridx = 0; ridx < macke.get_rem_count(); ridx++) {
         char key[TOKENSIZE];
-        int offset = macke_key_word(macke.get_rem(ridx), 0, key, TOKENSIZE);
+        int offset = macke_key_word(macke.get_rem(ridx), 0, key);
 
         if (str_equal(key, "ref")) {
             GenbankRef& ref = first_ref ? gbk.get_latest_ref() : gbk.get_new_ref();
@@ -333,52 +338,43 @@ static void mtog_decode_ref_and_remarks(const Macke& macke, GenBank& gbk) {
             freeset(gbk.accession, macke.copy_multi_rem(ridx, offset));
         }
         else if (str_equal(key, "Source of strain")) {
-            gbk.comments.orginf.exists = true;
-            freeset(gbk.comments.orginf.source, macke.copy_multi_rem(ridx, offset));
+            freeset(orginf.source, macke.copy_multi_rem(ridx, offset));
         }
         else if (str_equal(key, "Former name")) {
-            gbk.comments.orginf.exists = true;
-            freeset(gbk.comments.orginf.formname, macke.copy_multi_rem(ridx, offset));
+            freeset(orginf.formname, macke.copy_multi_rem(ridx, offset));
         }
         else if (str_equal(key, "Alternate name")) {
-            gbk.comments.orginf.exists = true;
-            freeset(gbk.comments.orginf.nickname, macke.copy_multi_rem(ridx, offset));
+            freeset(orginf.nickname, macke.copy_multi_rem(ridx, offset));
         }
         else if (str_equal(key, "Common name")) {
-            gbk.comments.orginf.exists = true;
-            freeset(gbk.comments.orginf.commname, macke.copy_multi_rem(ridx, offset));
+            freeset(orginf.commname, macke.copy_multi_rem(ridx, offset));
         }
         else if (str_equal(key, "Host organism")) {
-            gbk.comments.orginf.exists = true;
-            freeset(gbk.comments.orginf.hostorg, macke.copy_multi_rem(ridx, offset));
+            freeset(orginf.hostorg, macke.copy_multi_rem(ridx, offset));
         }
         else if (str_equal(key, "RDP ID")) {
-            gbk.comments.seqinf.exists = true;
-            freeset(gbk.comments.seqinf.RDPid, macke.copy_multi_rem(ridx, offset));
+            freeset(seqinf.RDPid, macke.copy_multi_rem(ridx, offset));
         }
         else if (str_equal(key, "Sequencing methods")) {
-            gbk.comments.seqinf.exists = true;
-            freeset(gbk.comments.seqinf.methods, macke.copy_multi_rem(ridx, offset));
+            freeset(seqinf.methods, macke.copy_multi_rem(ridx, offset));
         }
         else if (str_equal(key, "3' end complete")) {
-            gbk.comments.seqinf.exists = true;
             scan_token_or_die(key, macke.get_rem(ridx) + offset);
-            gbk.comments.seqinf.comp3 = str_equal(key, "Yes") ? 'y' : 'n';
+            seqinf.comp3 = str_equal(key, "Yes") ? 'y' : 'n';
         }
         else if (str_equal(key, "5' end complete")) {
-            gbk.comments.seqinf.exists = true;
             scan_token_or_die(key, macke.get_rem(ridx) + offset);
-            gbk.comments.seqinf.comp5 = str_equal(key, "Yes") ? 'y' : 'n';
+            seqinf.comp5 = str_equal(key, "Yes") ? 'y' : 'n';
         }
         else { // other (non-interpreted) comments
-            Append(gbk.comments.others, macke.get_rem(ridx));
+            Append(comments.others, macke.get_rem(ridx));
         }
     }
 }
 
 static void mtog_genbank_def_and_source(const Macke& macke, GenBank& gbk) {
     // Define GenBank DEFINITION and SOURCE lines the way RDP group likes.
-    freedup_if_content(gbk.definition, macke.name);
+    copy_content(gbk.definition, macke.name);
     if (has_content(macke.subspecies)) {
         if (!has_content(gbk.definition)) {
             warning(22, "Genus and Species not defined");
@@ -402,10 +398,7 @@ static void mtog_genbank_def_and_source(const Macke& macke, GenBank& gbk) {
     }
 
     // create SOURCE line, temp.
-    if (has_content(gbk.definition)) {
-        freedup(gbk.source, gbk.definition);
-        terminate_with(gbk.source, '.');
-    }
+    if (copy_content(gbk.source, gbk.definition)) terminate_with(gbk.source, '.');
 
     // append keyword to definition, if there is keyword.
     if (has_content(gbk.keywords)) {
@@ -436,42 +429,22 @@ int mtog(const Macke& macke, GenBank& gbk, const Seq& seq) { // __ATTR__USERESUL
     freedup(gbk.locus, temp);
 
     // GenBank ORGANISM
-    if (has_content(macke.name)) {
-        freedup(gbk.organism, macke.name);
+    if (copy_content(gbk.organism, macke.name)) terminate_with(gbk.organism, '.');
 
-        // append a '.' at the end
-        terminate_with(gbk.organism, '.');
-    }
+    RDP_comments& comments = gbk.comments;
+    OrgInfo& orginf = comments.orginf;
+    SeqInfo& seqinf = comments.seqinf;
 
-    if (has_content(macke.rna)) {
-        gbk.comments.seqinf.exists = true;
-        freedup(gbk.comments.seqinf.methods, macke.rna);
-    }
-    if (has_content(macke.acs)) {
-        /* #### not converted to accession but to comment gbkentry only, temporarily
-           freenull(gbk.accession);
-           gbk.accession = nulldup(macke.acs);
-         */
-        gbk.comments.seqinf.exists = true;
-        freedup(gbk.comments.seqinf.gbkentry, macke.acs);
-    }
-    else if (has_content(macke.nbk)) {
-        /* #### not converted to accession but to comment gbkentry only, temp
-           freenull(gbk.accession);
-           gbk.accession = nulldup(macke.nbk);
-         */
-        gbk.comments.seqinf.exists = true;
-        freedup(gbk.comments.seqinf.gbkentry, macke.nbk);
-    }
-    if (has_content(macke.atcc)) {
-        gbk.comments.orginf.exists = true;
-        freedup(gbk.comments.orginf.cultcoll, macke.atcc);
-    }
+    copy_content(seqinf.methods, macke.rna);
+
+    if (!copy_content(seqinf.gbkentry, macke.acs))
+        copy_content(seqinf.gbkentry, macke.nbk);
+
+    copy_content(orginf.cultcoll, macke.atcc);
     mtog_decode_ref_and_remarks(macke, gbk);
+    
     // final conversion of cultcoll
-    if (!has_content(gbk.comments.orginf.cultcoll) && has_content(macke.atcc)) {
-        freedup(gbk.comments.orginf.cultcoll, macke.atcc);
-    }
+    if (!has_content(orginf.cultcoll)) copy_content(orginf.cultcoll, macke.atcc);
 
     // define GenBank DEFINITION, after GenBank KEYWORD is defined.
     mtog_genbank_def_and_source(macke, gbk);
@@ -486,46 +459,44 @@ int gtom(const GenBank& gbk, Macke& macke) { // __ATTR__USERESULT
 
     // copy sequence abbr, assume every entry in gbk must end with \n\0
     // no '\n' at the end of the string
-    genbank_key_word(gbk.locus, 0, temp, TOKENSIZE);
+    genbank_key_word(gbk.locus, 0, temp);
     freedup(macke.seqabbr, temp);
 
     // copy name and definition
-    if (has_content(gbk.organism)) {
-        freedup(macke.name, gbk.organism);
-    }
-    else if (has_content(gbk.definition)) {
+    if (!copy_content(macke.name, gbk.organism) && has_content(gbk.definition)) {
         ASSERT_RESULT(int, 2, sscanf(gbk.definition, "%s %s", genus, species));
 
         int last = str0len(species)-1;
         if (species[last] == ';') species[last] = '\0';
 
         freeset(macke.name, strf("%s %s\n", genus, species));
-
     }
 
-    freedup_if_content(macke.atcc, gbk.comments.orginf.cultcoll); // copy cultcoll name and number
-    freedup_if_content(macke.rna,  gbk.comments.seqinf.methods); // copy rna(methods)
+    const OrgInfo& orginf = gbk.comments.orginf;
+    const SeqInfo& seqinf = gbk.comments.seqinf;
+
+    copy_content(macke.atcc, orginf.cultcoll); // copy cultcoll name and number
+    copy_content(macke.rna,  seqinf.methods); // copy rna(methods)
 
     freeset(macke.date, gbk.get_date()); Append(macke.date, "\n");
 
     // copy genbank entry  (gbkentry has higher priority than gbk.accession)
-    if (has_content(gbk.comments.seqinf.gbkentry))
-        freedup(macke.acs, gbk.comments.seqinf.gbkentry);
-    else {
+    if (!copy_content(macke.acs, seqinf.gbkentry)) {
         if (has_content(gbk.accession) && !str_equal(gbk.accession, "No information\n")) {
             scan_token_or_die(buffer, gbk.accession);
             strcat(buffer, "\n");
         }
-        else
+        else {
             strcpy(buffer, "\n");
+        }
         freedup(macke.acs, buffer);
     }
 
     // copy the first reference from GenBank to Macke
     if (gbk.has_refs()) {
-        freedup_if_content(macke.author,  gbk.get_ref(0).author);
-        freedup_if_content(macke.journal, gbk.get_ref(0).journal);
-        freedup_if_content(macke.title,   gbk.get_ref(0).title);
+        copy_content(macke.author,  gbk.get_ref(0).author);
+        copy_content(macke.journal, gbk.get_ref(0).journal);
+        copy_content(macke.title,   gbk.get_ref(0).title);
     }
     // the rest of references are put into remarks, rem:.....
     macke.add_remarks_from(gbk);

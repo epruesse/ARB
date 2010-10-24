@@ -6,22 +6,12 @@
 #define NOPERIOD    0
 #define PERIOD      1
 
-void genbank_key_word(const char *line, int index, char *key, int length) { // @@@ similar to embl_key_word and macke_key_word
-    // Get the key_word from line beginning at index.
-    int indi, indj;
-
-    if (line == NULL) {
-        key[0] = '\0';
-        return;
+void genbank_key_word(const char *line, int index, char *key) {
+    ca_assert((GBINDENT-index) >= 0);
+    int len = parse_key_word(line+index, key, " \t\n");
+    if ((index+len) >= GBINDENT) {
+        key[GBINDENT-index] = 0;
     }
-
-    for (indi = index, indj = 0;
-         (index - indi) < length && line[indi] && !occurs_in(line[indi], " \t\n") && indi < GBINDENT;
-         indi++, indj++)
-    {
-        key[indj] = line[indi];
-    }
-    key[indj] = '\0';
 }
 
 static int genbank_check_blanks(const char *line, int numb) {
@@ -77,7 +67,7 @@ void genbank_source(GenBank& gbk, Reader& reader) {
     // Read in genbank SOURCE lines and also ORGANISM lines.
     genbank_one_entry_in(gbk.source, reader);
     char  key[TOKENSIZE];
-    genbank_key_word(reader.line(), 2, key, TOKENSIZE);
+    genbank_key_word(reader.line(), 2, key);
     if (str_equal(key, "ORGANISM")) {
         int indent = Skip_white_space(reader.line(), GBINDENT);
         freedup(gbk.organism, reader.line() + indent);
@@ -119,7 +109,7 @@ void genbank_reference(GenBank& gbk, Reader& reader) {
     
     for (; reader.line() && reader.line()[0] == ' ' && reader.line()[1] == ' ';) {
         char key[TOKENSIZE];
-        genbank_key_word(reader.line(), 2, key, TOKENSIZE);
+        genbank_key_word(reader.line(), 2, key);
         if (str_equal(key, "AUTHORS")) {
             if (has_content(ref.author)) warningf(10, "AUTHORS of REFERENCE %d is redefined", refnum);
             genbank_one_entry_in(ref.author, reader);
@@ -246,7 +236,7 @@ static void genbank_verify_keywords(GenBank& gbk) {
 }
 void GenbankParser::parse_section() {
     char key[TOKENSIZE];
-    genbank_key_word(reader.line(), 0, key, TOKENSIZE);
+    genbank_key_word(reader.line(), 0, key);
     state = ENTRY_STARTED;
     parse_keyed_section(key);
 }
@@ -395,18 +385,16 @@ void genbank_out_header(const GenBank& gbk, const Seq& seq, Writer& write) {
         genbank_out_one_reference(write, GenbankRef(), 1, false);
     }
 
-    const OrgInfo& orginf = gbk.comments.orginf;
-    const SeqInfo& seqinf = gbk.comments.seqinf;
+    const RDP_comments& comments = gbk.comments;
+    const OrgInfo&      orginf   = comments.orginf;
+    const SeqInfo&      seqinf   = comments.seqinf;
 
-    if (orginf.exists ||
-        seqinf.exists ||
-        has_content(gbk.comments.others))
-    {
+    if (comments.exists()) {
         // @@@ code below is broken
         // see ../UNIT_TESTER/run/impexp/conv.EMBL_2_GENBANK.expected@Next
         write.out("COMMENTS    ");
 
-        if (orginf.exists) {
+        if (orginf.exists()) {
             write.out("Organism information\n");
 
             genbank_print_comment_if_content(write, "Source of strain: ",   orginf.source);
@@ -416,11 +404,11 @@ void genbank_out_header(const GenBank& gbk, const Seq& seq, Writer& write) {
             genbank_print_comment_if_content(write, "Common name: ",        orginf.commname);
             genbank_print_comment_if_content(write, "Host organism: ",      orginf.hostorg);
 
-            if (seqinf.exists || str0len(gbk.comments.others) > 0)
+            if (seqinf.exists() || str0len(comments.others) > 0)
                 write.out("            ");
         }
 
-        if (seqinf.exists) {
+        if (seqinf.exists()) {
             write.outf("Sequence information (bases 1 to %d)\n", seq.get_len());
 
             genbank_print_comment_if_content(write, "RDP ID: ",                      seqinf.RDPid);
@@ -437,17 +425,17 @@ void genbank_out_header(const GenBank& gbk, const Seq& seq, Writer& write) {
 
         // @@@ use wrapper for code below ?
         // print GBINDENT spaces of the first line
-        if (str0len(gbk.comments.others) > 0) {
+        if (str0len(comments.others) > 0) {
             write.repeated(' ', GBINDENT);
         }
 
-        if (str0len(gbk.comments.others) > 0) {
-            int length = str0len(gbk.comments.others);
+        if (str0len(comments.others) > 0) {
+            int length = str0len(comments.others);
             for (indi = 0; indi < length; indi++) {
-                write.out(gbk.comments.others[indi]);
+                write.out(comments.others[indi]);
 
                 // if another line, print GBINDENT spaces first
-                if (gbk.comments.others[indi] == '\n' && gbk.comments.others[indi + 1] != '\0') {
+                if (comments.others[indi] == '\n' && comments.others[indi + 1] != '\0') {
                     write.repeated(' ', GBINDENT);
                 }
             }
