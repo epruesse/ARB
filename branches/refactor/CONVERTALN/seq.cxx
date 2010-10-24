@@ -20,7 +20,7 @@ void Seq::out(Writer& write, Format outType) const {
             switch (outType) {
                 case EMBL: write.out("     "); break;
                 case GENBANK: write.outf("   %6d ", indk); break;
-                default: ca_assert(0); break; 
+                default: ca_assert(0); break;
             }
         }
         write.out(sequence[indi]);

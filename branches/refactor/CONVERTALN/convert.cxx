@@ -22,7 +22,7 @@ FormatReaderPtr FormatReader::create(Format inType, const char *inf) {
 
 class ConvertibleData {
     const InputFormat& in;
-    
+
     mutable OutputFormatPtr embl;
     mutable OutputFormatPtr gbk;
     mutable OutputFormatPtr macke;
@@ -45,7 +45,7 @@ const Embl& ConvertibleData::to_embl(const Seq& seq) const {
     if (inType == EMBL) return dynamic_cast<const Embl&>(in);
 
     embl = new Embl;
-    
+
     bool ok = true;
     switch (inType) {
         case GENBANK: ok = gtoe(dynamic_cast<const GenBank&>(in), dynamic_cast<Embl&>(*embl), seq); break;
@@ -64,7 +64,7 @@ const GenBank& ConvertibleData::to_genbank(const Seq& seq) const {
     if (inType == GENBANK) return dynamic_cast<const GenBank&>(in);
 
     gbk = new GenBank;
-    
+
     bool ok = true;
     switch (inType) {
         case EMBL:  ok = etog(dynamic_cast<const Embl&>(in), dynamic_cast<GenBank&>(*gbk), seq); break;
@@ -83,7 +83,7 @@ const Macke& ConvertibleData::to_macke(const Seq& seq) const {
     if (inType == MACKE) return dynamic_cast<const Macke&>(in);
 
     macke = new Macke;
-    
+
     bool ok = true;
     switch (inType) {
         case EMBL:    ok = etom(dynamic_cast<const Embl&>(in), dynamic_cast<Macke&>(*macke), seq); break;
@@ -166,7 +166,7 @@ void convert(const char *inf, const char *outf, Format inType, Format ouType) {
     switch (ouType) {
         case EMBL:
         case SWISSPROT:
-        case GENBANK:  {
+        case GENBANK: {
             if ((inType == GENBANK   && ouType == SWISSPROT) ||
                 (inType == SWISSPROT && ouType == GENBANK) ||
                 (inType == EMBL      && ouType == SWISSPROT) ||
@@ -196,7 +196,7 @@ void convert(const char *inf, const char *outf, Format inType, Format ouType) {
         case NEXUS:     to_paup(inf, outf, inType); break;
         case PHYLIP:    to_phylip(inf, outf, inType, dd); break;
         case PRINTABLE: to_printable(inf, outf, inType); break;
-            
+
         default: converted = false; break;
     }
     if (!converted) {

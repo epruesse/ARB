@@ -238,17 +238,17 @@ const char *gcg_date(const char *input) {
 #define TEST_ASSERT_FIND_ANYDATE(input,d,m,y,finder)    \
     do {                                                \
         char *dup_ = strdup(input);                     \
-        int   day_,month_,year_;                        \
+        int   day_, month_, year_;                      \
                                                         \
         ASSERT_RESULT(bool, true, finder(dup_, &month_, &day_, &year_)); \
         TEST_ASSERT_EQUAL(day_, d);                     \
         TEST_ASSERT_EQUAL(month_, m);                   \
         TEST_ASSERT_EQUAL(year_, y);                    \
         free(dup_);                                     \
-    } while(0)
+    } while (0)
 
-#define TEST_ASSERT_FIND_____DATE(input,d,m,y) TEST_ASSERT_FIND_ANYDATE(input,d,m,y,find_date)
-#define TEST_ASSERT_FIND_LONGDATE(input,d,m,y) TEST_ASSERT_FIND_ANYDATE(input,d,m,y,find_date_long_form)
+#define TEST_ASSERT_FIND_____DATE(input,d,m,y) TEST_ASSERT_FIND_ANYDATE(input, d, m, y, find_date)
+#define TEST_ASSERT_FIND_LONGDATE(input,d,m,y) TEST_ASSERT_FIND_ANYDATE(input, d, m, y, find_date_long_form)
 
 // #define TEST_ASSERT_FIND_DATE(str,d,m,y) TEST_ASSERT_FIND_DATE_IMPL(str,d,m,y,TEST_ASSERT_EQUAL)
 

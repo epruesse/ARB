@@ -76,7 +76,7 @@ class Warnings : Noncopyable {
     bool        old_state;
 public:
     static bool shown() { return show_warnings; }
-    
+
     Warnings() {
         old_state     = shown();
         show_warnings = false;

@@ -2,7 +2,7 @@
 
 Reader::Reader(const char *inf)
     : fp(fopen(inf, "rt")),
-      file(inf, fp), 
+      file(inf, fp),
       curr(NULL),
       failure(false)
 {
@@ -27,7 +27,7 @@ Reader::~Reader() {
         exc->replace_msg(file.lineError(exc->get_msg()).c_str());
     }
     else {
-        ca_assert(!curr); // reader did NOT read till EOF, why ? 
+        ca_assert(!curr); // reader did NOT read till EOF, why ?
     }
 }
 

@@ -108,7 +108,7 @@ static void embl_one_comment_entry(char*& datastring, int start_index, Reader& r
          ++reader)
     {
         index = Skip_white_space(reader.line(), p_nonkey_start + expectedIndent);
-        
+
         char temp[LINESIZE];
         strcpy(temp, reader.line() + index);
         skip_eolnl_and_append_spaced(datastring, temp);
@@ -118,7 +118,7 @@ static void embl_one_comment_entry(char*& datastring, int start_index, Reader& r
 static void embl_comments(Embl& embl, Reader& reader) {
     // Read in embl comment lines.
 
-    for (; is_embl_comment(reader.line()) ;) {
+    for (; is_embl_comment(reader.line());) {
         char key[TOKENSIZE];
         int  index  = Skip_white_space(reader.line(), 5);
         int  offset = comment_subkey(reader.line() + index, key);
@@ -214,7 +214,7 @@ void EmblParser::parse_keyed_section(const char *key) {
     }
 }
 
-void embl_key_word(const char *line, int index, char *key) { 
+void embl_key_word(const char *line, int index, char *key) {
     parse_key_word(line+index, key, " \t\n");
 }
 
@@ -237,7 +237,7 @@ void embl_origin(Seq& seq, Reader& reader) {
     }
 
 }
-static void embl_print_lines(Writer& write, const char *key, const char *content, const WrapMode& wrapMode) { // @@@ WRAPPER
+static void embl_print_lines(Writer& write, const char *key, const char *content, const WrapMode& wrapMode) {
     // Print EMBL entry and wrap around if line over EMBLMAXLINE.
     ca_assert(strlen(key) == 2);
 
@@ -254,7 +254,7 @@ static void embl_print_lines_if_content(Writer& write, const char *key, const ch
     }
 }
 
-static void embl_print_comment_if_content(Writer& write, const char *key, const char *content) { // @@@ WRAPPER
+static void embl_print_comment_if_content(Writer& write, const char *key, const char *content) {
     // Print one embl comment line, wrap around
 
     if (!has_content(content)) return;
@@ -524,7 +524,7 @@ int etog(const Embl& embl, GenBank& gbk, const Seq& seq) { // __ATTR__USERESULT
 
     // DEFINITION
     if (copy_content(gbk.definition, embl.description)) terminate_with(gbk.definition, '.');
-    
+
     // SOURCE and DEFINITION if not yet defined
     if (copy_content(gbk.source, embl.os)) {
         freedup(gbk.organism, embl.os);
@@ -540,7 +540,7 @@ int etog(const Embl& embl, GenBank& gbk, const Seq& seq) { // __ATTR__USERESULT
     }
 
     etog_convert_references(embl, gbk);
-    gbk.comments.set_content_from(embl.comments); 
+    gbk.comments.set_content_from(embl.comments);
 
     return (1);
 }
@@ -563,7 +563,7 @@ int etom(const Embl& embl, Macke& macke, const Seq& seq) { // __ATTR__USERESULT
         TEST_ASSERT_EQUAL(res, o);                        \
         free(res);                                        \
         free(dup);                                        \
-    } while(0)
+    } while (0)
 
 void TEST_BASIC_etog_journal() {
     // behavior documented in r6943:

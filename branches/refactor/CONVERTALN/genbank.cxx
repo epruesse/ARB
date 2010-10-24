@@ -52,7 +52,7 @@ static void genbank_continue_line(char*& Str, int numb, Reader& reader) {
     }
 }
 
-void genbank_one_entry_in(char*& datastring, Reader& reader) { 
+void genbank_one_entry_in(char*& datastring, Reader& reader) {
     freedup(datastring, reader.line()+Skip_white_space(reader.line(), GBINDENT));
     return genbank_continue_line(datastring, GBINDENT, reader);
 }
@@ -106,7 +106,7 @@ void genbank_reference(GenBank& gbk, Reader& reader) {
     }
 
     GenbankRef& ref = gbk.get_latest_ref();
-    
+
     for (; reader.line() && reader.line()[0] == ' ' && reader.line()[1] == ' ';) {
         char key[TOKENSIZE];
         genbank_key_word(reader.line(), 2, key);
@@ -161,7 +161,7 @@ static void genbank_comments(GenBank& gbk, Reader& reader) {
 
         int index = Skip_white_space(reader.line(), GBINDENT);
         ca_assert(index<TOKENSIZE); // buffer overflow ?
-        
+
         index += comment_subkey(reader.line()+index, key);
         ca_assert(index<TOKENSIZE); // buffer overflow ?
 
@@ -180,7 +180,7 @@ inline bool valid_acc_char(char ch) { return isalnum(ch) || ch == '_'; }
 
 static void genbank_verify_accession(GenBank& gbk) {
     // Verify accession information.
-    if (str_equal(gbk.accession, "No information\n")) return; // @@@ really allow this ? 
+    if (str_equal(gbk.accession, "No information\n")) return; // @@@ really allow this ?
 
     char         *new_acc = NULL;
     const char   *sep     = " \t\n;";
@@ -228,7 +228,7 @@ static void genbank_verify_keywords(GenBank& gbk) {
             count++;
 
     if (count != 1) {
-        // @@@ raise error here ? 
+        // @@@ raise error here ?
         if (Warnings::shown())
             fprintf(stderr, "\nKEYWORDS: %s", gbk.keywords);
         warning(141, "No more than one period is allowed in KEYWORDS line.");
@@ -297,7 +297,7 @@ void genbank_origin(Seq& seq, Reader& reader) {
     }
 }
 
-static void genbank_print_lines(Writer& write, const char *key, const char *content, const WrapMode& wrapMode) { // @@@ WRAPPER
+static void genbank_print_lines(Writer& write, const char *key, const char *content, const WrapMode& wrapMode) {
     // Print one genbank line, wrap around if over column GBMAXLINE
 
     ca_assert(strlen(key) == GBINDENT);
@@ -350,7 +350,7 @@ static void genbank_out_one_reference(Writer& write, const GenbankRef& gbk_ref, 
     genbank_out_one_entry(write, "  STANDARD  ", gbk_ref.standard, wrapWords, NOPERIOD);
 }
 
-static void genbank_print_comment_if_content(Writer& write, const char *key, const char *content) { // @@@ WRAPPER
+static void genbank_print_comment_if_content(Writer& write, const char *key, const char *content) {
     // Print one genbank line, wrap around if over column GBMAXLINE
 
     if (!has_content(content)) return;

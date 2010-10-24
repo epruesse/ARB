@@ -26,11 +26,11 @@ void throw_conversion_not_supported(Format inType, Format ouType) { // __ATTR__N
     throw_errorf(90, "Conversion from %s to %s is not supported",
                  format2name(inType), format2name(ouType));
 }
-void throw_conversion_failure(Format inType, Format ouType) { // __ATTR__NORETURN 
+void throw_conversion_failure(Format inType, Format ouType) { // __ATTR__NORETURN
     throw_errorf(91, "Conversion from %s to %s fails",
                  format2name(inType), format2name(ouType));
 }
-void throw_conversion_not_implemented(Format inType, Format ouType) { // __ATTR__NORETURN 
+void throw_conversion_not_implemented(Format inType, Format ouType) { // __ATTR__NORETURN
     throw_errorf(92, "Conversion from %s to %s is not implemented (but is expected to be here)",
                  format2name(inType), format2name(ouType));
 }
@@ -54,8 +54,6 @@ void log_processed(int seqCount) {
     log_seq_counter += seqCount;
 }
 
-
-
 // --------------------------------------------------------------------------------
 
 #if (UNIT_TESTS == 1)
@@ -73,7 +71,7 @@ struct FormatSpec {
 
 #define FORMATSPEC_OUT_ONLY(tag)                { tag, #tag, NULL, 1 }
 #define FORMATSPEC_GOT______(tag,file)          { tag, #tag, "impexp/" file ".eft.exported", 1 }
-#define FORMATSPEC_GOT_PLAIN(tag,file,seqcount) { tag, #tag, "impexp/" file, seqcount}
+#define FORMATSPEC_GOT_PLAIN(tag,file,seqcount) { tag, #tag, "impexp/" file, seqcount }
 
 static FormatSpec format_spec[] = {
     // input formats
@@ -161,7 +159,7 @@ inline bool want_auto_update(const char *file, const char *expected) {
     return shall_update;
 }
 #else // !TEST_AUTO_UPDATE
-inline bool want_auto_update(const char */*file*/, const char */*expected*/) {
+inline bool want_auto_update(const char * /* file */, const char * /* expected */) {
     return false;
 }
 #endif
@@ -226,13 +224,13 @@ static void test_convert_by_format_num(int from, int to) {
         // test if conversion from empty and text file fails
 
         const char *fromFile = "general/empty.input";
-        
+
         error = test_convert(fromFile, toFile, TYPE(from), TYPE(to));
         TEST_ASSERT(error);
 
         fromFile = "general/text.input";
         error = test_convert(fromFile, toFile, TYPE(from), TYPE(to));
-        TEST_ASSERT(error); 
+        TEST_ASSERT(error);
     }
 #endif
 
@@ -274,7 +272,7 @@ void TEST_0_converter() {
     NOT_SUPPORTED(EMBL, SWISSPROT);
     NOT_SUPPORTED(SWISSPROT, GENBANK);
     NOT_SUPPORTED(SWISSPROT, EMBL);
-    
+
     int possible     = 0;
     int tested       = 0;
     int unsupported  = 0;

@@ -188,7 +188,7 @@ static void embl_to_gcg(const char *inf, const char *outf) {
     embl_out_header(embl, seq, write);
     write.set_species_name(embl.get_id());
     write.write_seq_data(seq);
-    
+
     reader.ignore_rest_of_file();
 }
 

@@ -12,7 +12,7 @@
 bool parse_RDP_comment(RDP_comments& comments, RDP_comment_parser one_comment_entry, const char *key, int index, Reader& reader) {
     OrgInfo& orginf = comments.orginf;
     SeqInfo& seqinf = comments.seqinf;
-        
+
     if      (str_equal(key, "Source of strain:"))            one_comment_entry(orginf.source,   index, reader);
     else if (str_equal(key, "Culture collection:"))          one_comment_entry(orginf.cultcoll, index, reader);
     else if (str_equal(key, "Former name:"))                 one_comment_entry(orginf.formname, index, reader);

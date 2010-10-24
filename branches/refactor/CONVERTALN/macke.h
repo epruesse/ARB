@@ -18,7 +18,7 @@ class Macke : public InputFormat {
     int    allocated;
 
     char *create_id() const { return strdup(seqabbr); }
-    
+
     void add_remark_nocopy(char *rem) {
         if (numofrem >= allocated) {
             allocated = allocated*1.5+10;
@@ -46,7 +46,7 @@ class Macke : public InputFormat {
          */
         return strncmp(str, ":  ", 3) == 0;
     }
-    
+
 public:
 
     char  *seqabbr;             // sequence abbrev.
@@ -127,7 +127,7 @@ public:
         return rem;
     }
     void add_remarks_from(const GenBank& gbk);
-    
+
     // InputFormat interface
     void reinit() { INPLACE_RECONSTRUCT(Macke, this); }
     const char *get_id() const { return seqabbr; }
@@ -165,7 +165,7 @@ class MackeReader : public FormatReader {
     }
 
     void read_to_start();
-    
+
 public:
 
     MackeReader(const char *inName_);

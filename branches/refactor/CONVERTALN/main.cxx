@@ -181,7 +181,7 @@ static int strcasecmp_start(const char *s1, const char *s2) {
     return cmp;
 }
 
-static bool is_abbrev_switch(const char *arg, const char *switchtext)  {
+static bool is_abbrev_switch(const char *arg, const char *switchtext) {
     return arg[0] == '-' && strcasecmp_start(arg+1, switchtext) == 0;
 }
 

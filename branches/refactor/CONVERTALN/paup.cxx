@@ -68,7 +68,7 @@ static void paup_print_headerstart(Writer& write) {
 }
 
 static void paup_print_header_counters(Writer& write) {
-    write.outf("      NTAX = %6s\n      NCHAR = %6s\n      ;\n", "", ""); 
+    write.outf("      NTAX = %6s\n      NCHAR = %6s\n      ;\n", "", "");
 }
 static void paup_print_header_counters(Writer& write, int total_seq, int maxsize) {
     write.outf("      NTAX = %6d\n      NCHAR = %6d\n      ;\n", total_seq, maxsize);

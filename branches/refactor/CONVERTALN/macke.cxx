@@ -104,7 +104,7 @@ void macke_seq_display_out(const Macke& macke, Writer& write, Format inType, boo
     write.out('\n');
 }
 
-static void macke_print_line(Writer& write, const char *prefix, const char *content) { // @@@ WRAPPER
+static void macke_print_line(Writer& write, const char *prefix, const char *content) {
     // print a macke line and wrap around line after MACKEMAXLINE column.
     WrapMode(true).print(write, prefix, prefix, content, MACKEMAXLINE);
 }
@@ -139,7 +139,7 @@ static const char *genbankEntryComments[] = {
     "RDP ID",
     "Sequencing methods",
     "3' end complete",
-    "5' end complete", 
+    "5' end complete",
 };
 
 static bool macke_is_genbank_entry_comment(const char *Str) {
@@ -149,7 +149,7 @@ static bool macke_is_genbank_entry_comment(const char *Str) {
     return lookup_keyword(keyword, genbankEntryComments) >= 0;
 }
 
-static void macke_print_keyword_rem(const Macke& macke, int index, Writer& write) { // @@@ WRAPPER
+static void macke_print_keyword_rem(const Macke& macke, int index, Writer& write) {
     // Print out keyworded remark line in Macke file with wrap around functionality.
     // (Those keywords are defined in GenBank COMMENTS by RDP group)
     char first[LINESIZE]; sprintf(first, "#:%s:rem:", macke.seqabbr);
@@ -190,7 +190,7 @@ int macke_key_word(const char *line, int index, char *key) {
     // Find the key in Macke line.
     // return position behind ':' delimiter
     int len = parse_key_word(line+index, key, ":\n");
-    return len ? index+len+1 : index; 
+    return len ? index+len+1 : index;
 }
 
 void macke_seq_data_out(const Seq& seq, const Macke& macke, Writer& write) {
@@ -230,7 +230,7 @@ void MackeReader::read_to_start() {
 MackeReader::MackeReader(const char *inName_)
     : inName(strdup(inName_)),
       seqabbr(dummy),
-      dummy(NULL), 
+      dummy(NULL),
       r1(new Reader(inName)),
       r2(new Reader(inName)),
       r3(new Reader(inName))
@@ -258,7 +258,7 @@ MackeReader::~MackeReader() {
     free(inName);
 }
 
-class MackeParser: public Parser {
+class MackeParser : public Parser {
     Macke& macke;
 
 public:
@@ -347,7 +347,7 @@ bool MackeReader::macke_in(Macke& macke) {
     }
 
     ++(*r3);
-    
+
     return true;
 }
 

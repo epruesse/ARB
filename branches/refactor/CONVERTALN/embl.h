@@ -41,7 +41,7 @@ class Embl : public InputFormat, public RefContainer<Emblref> {
         embl_key_word(ID, 0, buf);
         return strdup(buf);
     }
-    
+
 public:
     char *ID;                    // entry name
     char *dateu;                 // date of last updated
@@ -80,8 +80,6 @@ public:
     Format format() const { return EMBL; }
 };
 
-
-
 class EmblSwissprotReader : public SimpleFormatReader {
     Embl data;
 public:
@@ -96,17 +94,14 @@ public:
     InputFormat& get_data() { return data; }
 };
 
-// -------------------
-//      EmblParser
-
 class EmblParser: public Parser {
     Embl& embl;
-    
+
     void parse_keyed_section(const char *key);
 public:
     EmblParser(Embl& embl_, Seq& seq_, Reader& reader_) : Parser(seq_, reader_), embl(embl_) {}
     void parse_section();
-    
+
     const Embl& get_data() const { return embl; }
 };
 

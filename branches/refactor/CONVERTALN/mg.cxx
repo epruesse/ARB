@@ -132,7 +132,7 @@ void Macke::add_remarks_from(const OrgInfo& orginf) {
 void Macke::add_remarks_from(const RDP_comments& comments) {
     add_remarks_from(comments.orginf);
     add_remarks_from(comments.seqinf);
-    
+
     // other comments, not RDP DataBase specially defined
     int len = str0len(comments.others);
     if (len > 0) {
@@ -442,7 +442,7 @@ int mtog(const Macke& macke, GenBank& gbk, const Seq& seq) { // __ATTR__USERESUL
 
     copy_content(orginf.cultcoll, macke.atcc);
     mtog_decode_ref_and_remarks(macke, gbk);
-    
+
     // final conversion of cultcoll
     if (!has_content(orginf.cultcoll)) copy_content(orginf.cultcoll, macke.atcc);
 
