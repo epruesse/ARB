@@ -1,7 +1,7 @@
 #-
 #-
 #-	editor
-#-	Wed Oct 20 22:37:13 2010
+#-	Sun Oct 24 21:41:53 2010
 #-
 #-
 #-	Reference sequence:  AF375552;
@@ -36,12 +36,12 @@
 #:AF375552;:rem:*source: strain=NCDO2118 tmRNA gene, partial sequence;
 #:AF375552;:rem:*source: subspecies=lactis;
 #:HSFAU:name:H.sapiens fau
-#:HSFAU:date:20-OCT-1910
+#:HSFAU:date:24-OCT-2010
 #:HSFAU:acs:X65923
 #:HSFAU:rem:GenBank ACCESSION:X65923
 #:HSFAU1:name:H.sapiens fau
 #:HSFAU1:rna:This is the content of the special entry 'Sequencing methods'
-#:HSFAU1:date:20-OCT-1910
+#:HSFAU1:date:24-OCT-2010
 #:HSFAU1:acs:X65921;
 #:HSFAU1:rem:GenBank ACCESSION:X65921
 #:HSFAU1:rem:Source of strain:This is the content of the special entry 'Source

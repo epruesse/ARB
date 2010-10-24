@@ -29,6 +29,17 @@ inline bool two_char(const char *str, char determ) {
     return count;
 }
 
+inline int ismonth(const char *str) {
+    // Return [1..12] if the char Str is one of 12 months. Case insensitive.
+    for (int i = 0; i<12; i++) {
+        if (str_iequal(str, MON[i])) {
+            return i+1;
+        }
+    }
+    return 0;
+}
+
+
 STATIC_ATTRIBUTED(__ATTR__USERESULT, bool find_date(const char *date_string, int *month, int *day, int *year)) {
     // Find day, month, year from date Str.
     char determ                                 = ' ';
@@ -47,28 +58,23 @@ STATIC_ATTRIBUTED(__ATTR__USERESULT, bool find_date(const char *date_string, int
     for (int indi = 0; indi <= len; indi++) {
         if (date_string[indi] == determ || indi == len) {
             token[index++] = '\0';
-            nums[count++] = atoi(token);
+            if (count == 1) {
+                nums[count++] = ismonth(token);
+            }
+            else {
+                nums[count++] = atoi(token);
+            }
             index = 0;
         }
         else {
             token[index++] = date_string[indi];
         }
     }
-    *month = nums[0];
-    *day   = nums[1];
-    *year  = (nums[2] % 100);
+    *day   = nums[0];
+    *month = nums[1];
+    *year  = nums[2];
 
     return true;
-}
-
-inline int ismonth(const char *str) {
-    // Return [1..12] if the char Str is one of 12 months. Case insensitive.
-    for (int i = 0; i<12; i++) {
-        if (str_iequal(str, MON[i])) {
-            return i+1;
-        }
-    }
-    return 0;
 }
 
 static int isdatenum(char *Str) {
@@ -89,10 +95,25 @@ static int isdatenum(char *Str) {
     return (num);
 }
 
-static bool find_date_long_form(const char *date_string, int *month, int *day, int *year) {
+class SetOnce {
+    int  num_;
+    bool set_;
+    bool is_set() const { return set_; }
+public:
+    SetOnce() : num_(-1), set_(false) {}
+
+    bool operator!() const { return !set_; }
+
+    int value() const { ca_assert(is_set()); return num_; }
+    void set(int val) { ca_assert(!is_set()); num_ = val; set_ = true; }
+    void replace(int val) { ca_assert(is_set()); num_ = val; }
+};
+
+STATIC_ATTRIBUTED(__ATTR__USERESULT, bool find_date_long_form(const char *date_string, int *monthPtr, int *dayPtr, int *yearPtr)) {
     // Find day, month, year in the long term date Str like day-of-week, month, day, time, year.
-    int nums[3] = { 0, 0, 0 };
-    int length = str0len(date_string);
+
+    int     length = str0len(date_string);
+    SetOnce day, month, year;
 
     for (int indi = 0, index = 0; index <= length; index++) {
         char token[SIZE];
@@ -101,22 +122,28 @@ static bool find_date_long_form(const char *date_string, int *month, int *day, i
             token[indi] = '\0';
 
             int num = ismonth(token);
-            if (num>0 && nums[0] == 0) {
-                nums[0] = num;
+            if (num>0) {
+                if (!month) month.set(num);
+                else if (!day) {
+                    day.set(month.value()); // day has been misinterpreted as month
+                    month.replace(num);
+                }
             }
             else if ((num = isdatenum(token)) > 0) {
-                if (nums[0] == 0 && num < 12)           nums[0] = num;
-                else if (nums[1] == 0 && num < 31)      nums[1] = num;
-                else if (nums[2] == 0)                  nums[2] = (num % 100);
+                if      (!month && num < 12) { month.set(num); }
+                else if (!day   && num < 31) { day.set(num); }
+                else if (!year)              { year.set(num); }
             }
             indi = 0;
         }
         else token[indi++] = date_string[index];
     }
 
-    *month = nums[0];
-    *day   = nums[1];
-    *year  = nums[2];
+    if (!day || !month || !year) return false;
+
+    *monthPtr = month.value();
+    *dayPtr   = day.value();
+    *yearPtr  = year.value();
 
     return true;
 }
@@ -142,20 +169,20 @@ const char *genbank_date(const char *other_date) {
         static char gdate[SIZE];
         gdate[0] = 0;
 
-        int day, month, year;
-        if (length <= 10 && length >= 6) {
-            ASSERT_RESULT(bool, true, find_date(other_date, &month, &day, &year));
-        }
-        else if (length > 10) {
+        int  day, month, year;
+        bool ok = false;
+        if (length > 10) {
             if (is_genbank_date(other_date)) {
                 strncpy(gdate, other_date, 11);
                 gdate[11] = 0;
+                ok        = true;
             }
-            else {
-                find_date_long_form(other_date, &month, &day, &year);
-            }
+            else ok = find_date_long_form(other_date, &month, &day, &year);
         }
-        else {
+
+        if (!ok) ok = find_date(other_date, &month, &day, &year);
+
+        if (!ok) {
             warningf(146, "Unknown date format: %s, cannot convert.", other_date);
             strcpy(gdate, ERROR_DATE);
         }
@@ -166,7 +193,8 @@ const char *genbank_date(const char *other_date) {
                 strcpy(gdate, ERROR_DATE);
             }
             else {
-                sprintf(gdate, "%02d-%s-19%d", day, MON[month - 1], year);
+                if (year<100) year += 1900;
+                sprintf(gdate, "%02d-%s-%d", day, MON[month - 1], year);
             }
         }
 
@@ -235,16 +263,25 @@ const char *gcg_date(const char *input) {
 #define TEST_ASSERT_GCG_DATE(input,expect)             TEST_ASSERT_CONVERT(input, expect, gcg_date, TEST_ASSERT_EQUAL)
 #define TEST_ASSERT_GCG_DATE__BROKEN(input,expect)     TEST_ASSERT_CONVERT(input, expect, gcg_date, TEST_ASSERT_EQUAL__BROKEN)
 
-#define TEST_ASSERT_FIND_ANYDATE(input,d,m,y,finder)    \
-    do {                                                \
-        char *dup_ = strdup(input);                     \
-        int   day_, month_, year_;                      \
-                                                        \
-        ASSERT_RESULT(bool, true, finder(dup_, &month_, &day_, &year_)); \
-        TEST_ASSERT_EQUAL(day_, d);                     \
-        TEST_ASSERT_EQUAL(month_, m);                   \
-        TEST_ASSERT_EQUAL(year_, y);                    \
-        free(dup_);                                     \
+#define TEST_ASSERT_INVALID_ANYDATE(input,finder)                       \
+    do {                                                                \
+        int   day_, month_, year_;                                      \
+        ASSERT_RESULT(bool, false,                                      \
+                      finder(input, &month_, &day_, &year_));           \
+    } while(0)
+
+#define TEST_ASSERT_INVALID_LONGDATE(input) TEST_ASSERT_INVALID_ANYDATE(input, find_date_long_form)
+
+#define TEST_ASSERT_FIND_ANYDATE(input,d,m,y,finder) \
+    do {                                                        \
+        char *dup_ = strdup(input);                             \
+        int   day_, month_, year_;                              \
+        ASSERT_RESULT(bool, true,                               \
+                      finder(dup_, &month_, &day_, &year_));    \
+        TEST_ASSERT_EQUAL(day_, d);                             \
+        TEST_ASSERT_EQUAL(month_, m);                           \
+        TEST_ASSERT_EQUAL(year_, y);                            \
+        free(dup_);                                             \
     } while (0)
 
 #define TEST_ASSERT_FIND_____DATE(input,d,m,y) TEST_ASSERT_FIND_ANYDATE(input, d, m, y, find_date)
@@ -255,51 +292,45 @@ const char *gcg_date(const char *input) {
 void TEST_BASIC_conv_date() {
     TEST_ASSERT_EQUAL(ismonth("Apr"), 4);
 
-    // @@@ broken behavior (day completely broken, month contains day, year<100)
-    TEST_ASSERT_FIND_____DATE("19-APR-99", 0, 19, 99);
-    TEST_ASSERT_FIND_____DATE("22-JUN-65", 0, 22, 65);
-    TEST_ASSERT_FIND_____DATE("5-SEP-10", 0, 5, 10);
-    TEST_ASSERT_FIND_____DATE("05-SEP-10", 0, 5, 10);
+    TEST_ASSERT_FIND_____DATE("19-APR-99", 19, 4, 99);
+    TEST_ASSERT_FIND_____DATE("22-JUN-65", 22, 6, 65);
+    TEST_ASSERT_FIND_____DATE("5-SEP-10",   5, 9, 10);
+    TEST_ASSERT_FIND_____DATE("05-SEP-10",  5, 9, 10);
 
-    TEST_ASSERT_FIND_____DATE("19-APR-1999", 0, 19, 99);
-    TEST_ASSERT_FIND_____DATE("22-JUN-1965", 0, 22, 65); // test date b4 epoch
-    TEST_ASSERT_FIND_____DATE("5-SEP-2010", 0, 5, 10);
-    TEST_ASSERT_FIND_____DATE("05-SEP-2010", 0, 5, 10);
-
-    MISSING_TEST(correct behavior);
-    // TEST_ASSERT_FIND_____DATE("19-APR-1999", 19, 4, 1999);
-    // TEST_ASSERT_FIND_____DATE("22-SEP-2010", 22, 9, 2010);
+    TEST_ASSERT_FIND_____DATE("19-APR-1999", 19, 4, 1999);
+    TEST_ASSERT_FIND_____DATE("22-JUN-1965", 22, 6, 1965); // test date b4 epoch
+    TEST_ASSERT_FIND_____DATE("5-SEP-2010",   5, 9, 2010);
+    TEST_ASSERT_FIND_____DATE("05-SEP-2010",  5, 9, 2010);
 
     // --------------------
 
-    // @@@ broken behavior (month completely broken, year<100)
+    TEST_ASSERT_FIND_LONGDATE("05 Sep 2010",  5, 9, 2010);
+    TEST_ASSERT_FIND_LONGDATE("Sep, 05 2010",  5, 9, 2010);
+    TEST_ASSERT_FIND_LONGDATE("Sep 05 2010",  5, 9, 2010);
+
     TEST_ASSERT_FIND_LONGDATE("Mon Apr 19 25:46:19 CEST 99", 19, 4, 99);
     TEST_ASSERT_FIND_LONGDATE("Tue Jun 22 05:11:00 CEST 65", 22, 6, 65);
-    TEST_ASSERT_FIND_LONGDATE("Wed Sep 5 19:46:25 CEST 10", 5, 9, 10);
-    TEST_ASSERT_FIND_LONGDATE("Wed Sep 05 19:46:25 CEST 10", 5, 9, 10);
+    TEST_ASSERT_FIND_LONGDATE("Wed Sep 5 19:46:25 CEST 10",   5, 9, 10);
+    TEST_ASSERT_FIND_LONGDATE("Wed Sep 05 19:46:25 CEST 10",  5, 9, 10);
 
-    TEST_ASSERT_FIND_LONGDATE("Mon Apr 19 25:46:19 CEST 1999", 19, 4, 99);
-    TEST_ASSERT_FIND_LONGDATE("Tue Jun 22 05:11:00 CEST 1965", 22, 6, 65);
-    TEST_ASSERT_FIND_LONGDATE("Wed Sep 5 19:46:25 CEST 2010", 5, 9, 10);
-    TEST_ASSERT_FIND_LONGDATE("Wed Sep 05 19:46:25 CEST 2010", 5, 9, 10);
-
-    MISSING_TEST(correct behavior);
-    // TEST_ASSERT_FIND_LONGDATE("Mon Apr 19 25:46:19 CEST 1999", 19, 4, 1999);
-    // TEST_ASSERT_FIND_LONGDATE("Wed Sep 22 19:46:25 CEST 2010", 22, 9, 2010);
+    TEST_ASSERT_FIND_LONGDATE("Mon Apr 19 25:46:19 CEST 1999", 19, 4, 1999);
+    TEST_ASSERT_FIND_LONGDATE("Tue Jun 22 05:11:00 CEST 1965", 22, 6, 1965);
+    TEST_ASSERT_FIND_LONGDATE("Wed Sep 5 19:46:25 CEST 2010",   5, 9, 2010);
+    TEST_ASSERT_FIND_LONGDATE("Wed Sep 05 19:46:25 CEST 2010",  5, 9, 2010);
 
     // --------------------
 
     TEST_ASSERT_GENBANK_DATE("19 Apr 1999", "19-APR-1999");
     TEST_ASSERT_GENBANK_DATE("19-APR-1999", "19-APR-1999");
     TEST_ASSERT_GENBANK_DATE("22-JUN-1965", "22-JUN-1965");
-    TEST_ASSERT_GENBANK_DATE("5-SEP-2010", ERROR_DATE);
+    TEST_ASSERT_GENBANK_DATE("5-SEP-2010", "05-SEP-2010");
     TEST_ASSERT_GENBANK_DATE("05-SEP-2010", "05-SEP-2010");
     TEST_ASSERT_GENBANK_DATE("crap", ERROR_DATE);
 
-    TEST_ASSERT_GENBANK_DATE        ("Mon Apr 19 25:46:19 CEST 1999", "19-APR-1999");
-    TEST_ASSERT_GENBANK_DATE        ("Tue Jun 22 05:11:00 CEST 1965", "22-JUN-1965");
-    TEST_ASSERT_GENBANK_DATE__BROKEN("Wed Sep 5 19:46:25 CEST 2010",  "05-SEP-2010");
-    TEST_ASSERT_GENBANK_DATE__BROKEN("Wed Sep 05 19:46:25 CEST 2010", "05-SEP-2010");
+    TEST_ASSERT_GENBANK_DATE("Mon Apr 19 25:46:19 CEST 1999", "19-APR-1999");
+    TEST_ASSERT_GENBANK_DATE("Tue Jun 22 05:11:00 CEST 1965", "22-JUN-1965");
+    TEST_ASSERT_GENBANK_DATE("Wed Sep 5 19:46:25 CEST 2010",  "05-SEP-2010");
+    TEST_ASSERT_GENBANK_DATE("Wed Sep 05 19:46:25 CEST 2010", "05-SEP-2010");
 
     // --------------------
 
@@ -307,7 +338,7 @@ void TEST_BASIC_conv_date() {
 
     TEST_ASSERT_GCG_DATE("Mon Apr 19 25:46:19 1999", "April 19, 1999  25:46:19");
     TEST_ASSERT_GCG_DATE("Tue Jun 22 05:11:00 1965", "June 22, 1965  05:11:00");
-    TEST_ASSERT_GCG_DATE("Wed Sep 5 19:46:25 2010", "September 5, 2010  19:46:25");
+    TEST_ASSERT_GCG_DATE("Wed Sep 5 19:46:25 2010",  "September 5, 2010  19:46:25");
     TEST_ASSERT_GCG_DATE("Wed Sep 05 19:46:25 2010", "September 5, 2010  19:46:25");
 
     TEST_ASSERT(gcg_date(today_date())); // currently gcg_date is only used like this
