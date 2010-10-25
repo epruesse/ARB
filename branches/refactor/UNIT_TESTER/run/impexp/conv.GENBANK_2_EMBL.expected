@@ -1,4 +1,4 @@
-ID   AF375552; preliminary; RNA; UNA; 327 BP.
+ID   AF375552; preliminary; RNA; UNA; 310 BP.
 XX
 AC   AF375552
 XX
@@ -32,26 +32,26 @@ DR   RDP; AF375552;.
 XX
 CC   Organism information
 CC     Culture collection: NCDO 2118 tmRNA gene
-CC   Sequence information (bases 1 to 327)
+CC   Sequence information (bases 1 to 310)
 CC     Corresponding GenBank entry: AF375552;
 CC   Please note: all these entries have been modified for test purposes.
 CC   *source: strain=NCDO2118 tmRNA gene, partial sequence;
 CC   *source: subspecies=lactis;
 XX
-SQ   Sequence 327 BP; 91 A; 59 C; 74 G; 86 T; 17 other;
+SQ   Sequence 310 BP; 91 A; 59 C; 74 G; 86 T; 0 other;
      cattgtcgcg catgaactgc aactgctgag ggatcaggat aatcatccgc agataaatat
-     60aactgcta aaaataatac acaaacttac gcaatggcag cctaaacagc accatgcgtg
-     cc120tgatt tttgctcact gatggcaatt tgacggccta aacttttagt cagatacgtt
-     gttgt180gg aggcttgacg cagcaaaaga gatttaaagc cccgcaaaat gtcgctgttt
-     gagactgg24 0ctttggcat tttgttaaat ttgagaaagt cctatggttg tagacgttga
-     tgtagcaagg t300gtttgg acag310
+     aactgctaaa aataatacac aaacttacgc aatggcagcc taaacagcac catgcgtgcc
+     tgatttttgc tcactgatgg caatttgacg gcctaaactt ttagtcagat acgttgttgt
+     ggaggcttga cgcagcaaaa gagatttaaa gccccgcaaa atgtcgctgt ttgagactgg
+     ctttggcatt ttgttaaatt tgagaaagtc ctatggttgt agacgttgat gtagcaaggt
+     gtttggacag
 //
 ID   HSFAU     preliminary; RNA; UNA; 518 BP.
 XX
 AC   X65923
 XX
-DT   24-OCT-2010 (Rel. 1, Last updated, Version 1)
-DT   24-OCT-2010 (Rel. 1, Created)
+DT   25-OCT-2010 (Rel. 1, Last updated, Version 1)
+DT   25-OCT-2010 (Rel. 1, Created)
 XX
 DE   H.sapiens fau mRNA.
 XX
@@ -74,8 +74,8 @@ ID   HSFAU1    preliminary; RNA; UNA; 2016 BP.
 XX
 AC   X65921
 XX
-DT   24-OCT-2010 (Rel. 1, Last updated, Version 1)
-DT   24-OCT-2010 (Rel. 1, Created)
+DT   25-OCT-2010 (Rel. 1, Last updated, Version 1)
+DT   25-OCT-2010 (Rel. 1, Created)
 XX
 DE   H.sapiens fau 1 gene This is just a long text which overflows the
 DE   maximum line size allowed for EMBL files

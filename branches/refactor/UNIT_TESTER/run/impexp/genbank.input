@@ -20,19 +20,19 @@ REFERENCE   2  (bases 1 to 310)
   STANDARD  No information
 COMMENTS    Organism information
               Culture collection: NCDO 2118 tmRNA gene
-            Sequence information (bases 1 to 327)
+            Sequence information (bases 1 to 310)
               Corresponding GenBank entry: AF375552;
             Please note: all these entries have been modified for test purposes.
             *source: strain=NCDO2118 tmRNA gene, partial sequence;
             *source: subspecies=lactis;
-BASE COUNT      91 a     59 c     74 g     86 t     17 others
+BASE COUNT      91 a     59 c     74 g     86 t
 ORIGIN
         1 cattgtcgcg catgaactgc aactgctgag ggatcaggat aatcatccgc agataaatat
-       61 60aactgcta aaaataatac acaaacttac gcaatggcag cctaaacagc accatgcgtg
-      121 cc120tgatt tttgctcact gatggcaatt tgacggccta aacttttagt cagatacgtt
-      181 gttgt180gg aggcttgacg cagcaaaaga gatttaaagc cccgcaaaat gtcgctgttt
-      241 gagactgg24 0ctttggcat tttgttaaat ttgagaaagt cctatggttg tagacgttga
-      301 tgtagcaagg t300gtttgg acag310
+       61 aactgctaaa aataatacac aaacttacgc aatggcagcc taaacagcac catgcgtgcc
+      121 tgatttttgc tcactgatgg caatttgacg gcctaaactt ttagtcagat acgttgttgt
+      181 ggaggcttga cgcagcaaaa gagatttaaa gccccgcaaa atgtcgctgt ttgagactgg
+      241 ctttggcatt ttgttaaatt tgagaaagtc ctatggttgt agacgttgat gtagcaaggt
+      301 gtttggacag
 //
 LOCUS       HSFAU
 ACCESSION   X65923

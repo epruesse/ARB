@@ -1,7 +1,7 @@
 #-
 #-
 #-	editor
-#-	Sun Oct 24 21:41:53 2010
+#-	Mon Oct 25 12:13:24 2010
 #-
 #-
 #-	Reference sequence:  AF375552;
@@ -36,12 +36,12 @@
 #:AF375552;:rem:*source: strain=NCDO2118 tmRNA gene, partial sequence;
 #:AF375552;:rem:*source: subspecies=lactis;
 #:HSFAU:name:H.sapiens fau
-#:HSFAU:date:24-OCT-2010
+#:HSFAU:date:25-OCT-2010
 #:HSFAU:acs:X65923
 #:HSFAU:rem:GenBank ACCESSION:X65923
 #:HSFAU1:name:H.sapiens fau
 #:HSFAU1:rna:This is the content of the special entry 'Sequencing methods'
-#:HSFAU1:date:24-OCT-2010
+#:HSFAU1:date:25-OCT-2010
 #:HSFAU1:acs:X65921;
 #:HSFAU1:rem:GenBank ACCESSION:X65921
 #:HSFAU1:rem:Source of strain:This is the content of the special entry 'Source
@@ -65,12 +65,12 @@
 #:HSFAU1:rem:Organism and Sequence information have only been added for
 #:HSFAU1:rem:test purposes. They are complete nonsense!
 AF375552;     0 cattgtcgcgcatgaactgcaactgctgagggatcaggataatcatccgc
-AF375552;    50 agataaatat60aactgctaaaaataatacacaaacttacgcaatggcag
-AF375552;   100 cctaaacagcaccatgcgtgcc120tgatttttgctcactgatggcaatt
-AF375552;   150 tgacggcctaaacttttagtcagatacgttgttgt180ggaggcttgacg
-AF375552;   200 cagcaaaagagatttaaagccccgcaaaatgtcgctgtttgagactgg24
-AF375552;   250 0ctttggcattttgttaaatttgagaaagtcctatggttgtagacgttga
-AF375552;   300 tgtagcaaggt300gtttggacag310
+AF375552;    50 agataaatataactgctaaaaataatacacaaacttacgcaatggcagcc
+AF375552;   100 taaacagcaccatgcgtgcctgatttttgctcactgatggcaatttgacg
+AF375552;   150 gcctaaacttttagtcagatacgttgttgtggaggcttgacgcagcaaaa
+AF375552;   200 gagatttaaagccccgcaaaatgtcgctgtttgagactggctttggcatt
+AF375552;   250 ttgttaaatttgagaaagtcctatggttgtagacgttgatgtagcaaggt
+AF375552;   300 gtttggacag
 HSFAU     0 ttcctctttctcgactccatcttcgcggtagctgggaccgccgttcagtc
 HSFAU    50 gccaatatgcagctctttgtccgcgcccaggagctacacaccttcgaggt
 HSFAU   100 gaccggccaggaaacggtcgcccagatcaaggctcatgtagcctcactgg

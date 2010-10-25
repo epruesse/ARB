@@ -1,5 +1,5 @@
 #NEXUS
-[! RDP - the Ribosomal Database Project, (Fri Oct 15 08:22:20 2010).]
+[! RDP - the Ribosomal Database Project, (Mon Oct 25 12:13:24 2010).]
 [! To get started, send HELP to rdp@info.mcs.anl.gov ]
 BEGIN DATA;
    DIMENSIONS
@@ -22,27 +22,27 @@ BEGIN DATA;
       HSFAU      ttcctctttc tcgactccat cttcgcggta gctgggaccg ccgttcagtc
       HSFAU1     ctaccatttt ccctctcgat tctatatgta cactcgggac aagttctcct
 
-      'AF375552; agataaatat 60aactgcta aaaataatac acaaacttac gcaatggcag [51 - 100]
+      'AF375552; agataaatat aactgctaaa aataatacac aaacttacgc aatggcagcc [51 - 100]
       HSFAU      gccaatatgc agctctttgt ccgcgcccag gagctacaca ccttcgaggt
       HSFAU1     gatcgaaaac ggcaaaacta aggccccaag taggaatgcc ttagttttcg
 
-      'AF375552; cctaaacagc accatgcgtg cc120tgatt tttgctcact gatggcaatt [101 - 150]
+      'AF375552; taaacagcac catgcgtgcc tgatttttgc tcactgatgg caatttgacg [101 - 150]
       HSFAU      gaccggccag gaaacggtcg cccagatcaa ggctcatgta gcctcactgg
       HSFAU1     gggttaacaa tgattaacac tgagcctcac acccacgcga tgccctcagc
 
-      'AF375552; tgacggccta aacttttagt cagatacgtt gttgt180gg aggcttgacg [151 - 200]
+      'AF375552; gcctaaactt ttagtcagat acgttgttgt ggaggcttga cgcagcaaaa [151 - 200]
       HSFAU      agggcattgc cccggaagat caagtcgtgc tcctggcagg cgcgcccctg
       HSFAU1     tcctcgctca gcgctctcac caacagccgt agcccgcagc cccgctggac
 
-      'AF375552; cagcaaaaga gatttaaagc cccgcaaaat gtcgctgttt gagactgg24 [201 - 250]
+      'AF375552; gagatttaaa gccccgcaaa atgtcgctgt ttgagactgg ctttggcatt [201 - 250]
       HSFAU      gaggatgagg ccactctggg ccagtgcggg gtggaggccc tgactaccct
       HSFAU1     accggttctc catccccgca gcgtagcccg gaacatggta gctgccatct
 
-      'AF375552; 0ctttggcat tttgttaaat ttgagaaagt cctatggttg tagacgttga [251 - 300]
+      'AF375552; ttgttaaatt tgagaaagtc ctatggttgt agacgttgat gtagcaaggt [251 - 300]
       HSFAU      ggaagtagca ggccgcatgc ttggaggtaa agttcatggt tccctggccc
       HSFAU1     ttacctgcta cgccagcctt ctgtgcgcgc aactgtctgg tcccgccccg
 
-      'AF375552; tgtagcaagg t300gtttgg acag310 [301 - 327]
+      'AF375552; gtttggacag [301 - 310]
       HSFAU      gtgctggaaa agtgagaggt cagactccta aggtggccaa acaggagaag
       HSFAU1     tcctgcgcga gctgctgccc aggcaggttc gccggtgcga gcgtaaaggg
 
