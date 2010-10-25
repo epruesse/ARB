@@ -11,7 +11,7 @@
 #ifndef ALI_SEQUENCE_HXX
 #define ALI_SEQUENCE_HXX
 
-#ifndef _CPP_CSTRING
+#ifndef _GLIBCXX_CSTRING
 #include <cstring>
 #endif
 #ifndef ALI_MISC_HXX

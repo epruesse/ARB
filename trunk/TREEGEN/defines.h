@@ -1,10 +1,9 @@
-#ifndef __DEFINES_H
-#define __DEFINES_H
+#ifndef DEFINES_H
+#define DEFINES_H
 
-#ifndef __STDIO_H
+#ifndef _STDIO_H
 #include <stdio.h>
 #endif
-
 #ifndef ATTRIBUTES_H
 #include <attributes.h>
 #endif

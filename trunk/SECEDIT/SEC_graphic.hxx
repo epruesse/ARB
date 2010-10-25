@@ -12,7 +12,7 @@
 #ifndef SEC_GRAPHIC_HXX
 #define SEC_GRAPHIC_HXX
 
-#ifndef _CPP_CCTYPE
+#ifndef _GLIBCXX_CCTYPE
 #include <cctype>
 #endif
 #ifndef AWT_CANVAS_HXX

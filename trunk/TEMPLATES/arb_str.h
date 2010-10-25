@@ -12,10 +12,10 @@
 #ifndef ARB_STR_H
 #define ARB_STR_H
 
-#ifndef _CPP_CSTDDEF
+#ifndef _GLIBCXX_CSTDDEF
 #include <cstddef>
 #endif
-#ifndef _CPP_CCTYPE
+#ifndef _GLIBCXX_CCTYPE
 #include <cctype>
 #endif
 

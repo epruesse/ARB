@@ -28,13 +28,13 @@
 #include <aw_root.hxx>
 #endif
 
-#ifndef _CPP_MAP
+#ifndef _GLIBCXX_MAP
 #include <map>
 #endif
-#ifndef _CPP_LIST
+#ifndef _GLIBCXX_LIST
 #include <list>
 #endif
-#ifndef _CPP_VECTOR
+#ifndef _GLIBCXX_VECTOR
 #include <vector>
 #endif
 

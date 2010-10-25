@@ -25,7 +25,7 @@
 #ifndef ED4_SEARCH_HXX
 #include "ed4_search.hxx"
 #endif
-#ifndef _CPP_SET
+#ifndef _GLIBCXX_SET
 #include <set>
 #endif
 

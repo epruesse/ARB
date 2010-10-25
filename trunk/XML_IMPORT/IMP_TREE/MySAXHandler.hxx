@@ -1,7 +1,7 @@
 #include <xercesc/sax2/DefaultHandler.hpp>
 #include <xercesc/framework/XMLFormatter.hpp>
 
-XERCES_CPP_NAMESPACE_USE
+XERCES_GLIBCXX_NAMESPACE_USE
 
 class MySAXHandler : public DefaultHandler, private XMLFormatTarget
 {

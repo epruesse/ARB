@@ -1,12 +1,6 @@
-#ifndef __RNS_H
 #include "rns.h"
-#endif
-#ifndef __TIME_H
 #include <time.h>
-#endif
-#ifndef __STDLIB_H
 #include <stdlib.h>
-#endif
 
 /* --------------------------------------------------------------------------- */
 /*      int main(int argc, str argv[]) */

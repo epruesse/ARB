@@ -12,7 +12,7 @@
 #ifndef SEC_DRAWN_POS_HXX
 #define SEC_DRAWN_POS_HXX
 
-#ifndef _CPP_MAP
+#ifndef _GLIBCXX_MAP
 #include <map>
 #endif
 #ifndef AW_POSITION_HXX

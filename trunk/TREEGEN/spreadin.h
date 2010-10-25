@@ -1,7 +1,7 @@
-#ifndef __SPREADIN_H
-#define __SPREADIN_H
+#ifndef SPREADIN_H
+#define SPREADIN_H
 
-#ifndef __DEFINES_H
+#ifndef DEFINES_H
 #include "defines.h"
 #endif
 

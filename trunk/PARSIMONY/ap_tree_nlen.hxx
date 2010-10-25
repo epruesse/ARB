@@ -12,10 +12,10 @@
 #ifndef AP_TREE_NLEN_HXX
 #define AP_TREE_NLEN_HXX
 
-#ifndef _CPP_IOSTREAM
+#ifndef _GLIBCXX_IOSTREAM
 #include <iostream>
 #endif
-#ifndef _CPP_CLIMITS
+#ifndef _GLIBCXX_CLIMITS
 #include <climits>
 #endif
 #ifndef AP_MAIN_HXX

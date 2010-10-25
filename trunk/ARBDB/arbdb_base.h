@@ -13,7 +13,7 @@
 #ifndef ARBDB_BASE_H
 #define ARBDB_BASE_H
 
-#ifndef _CPP_CSTDIO
+#ifndef _GLIBCXX_CSTDIO
 #include <cstdio>
 #endif
 

@@ -11,10 +11,10 @@
 #ifndef ALI_MISC_HXX
 #define ALI_MISC_HXX
 
-#ifndef _CPP_CSTDIO
+#ifndef _GLIBCXX_CSTDIO
 #include <cstdio>
 #endif
-#ifndef _CPP_CSTDLIB
+#ifndef _GLIBCXX_CSTDLIB
 #include <cstdlib>
 #endif
 #ifndef _UNISTD_H

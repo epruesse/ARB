@@ -1,7 +1,7 @@
 #ifndef PRD_GLOBALS_HXX
 #define PRD_GLOBALS_HXX
 
-#ifndef _CPP_CLIMITS
+#ifndef _GLIBCXX_CLIMITS
 #include <climits>
 #endif
 #ifndef ARB_ASSERT_H

@@ -1,7 +1,7 @@
-#ifndef __FRAND_H
-#define __FRAND_H
+#ifndef FRAND_H
+#define FRAND_H
 
-#ifndef __DEFINES_H
+#ifndef DEFINES_H
 #include "defines.h"
 #endif
 

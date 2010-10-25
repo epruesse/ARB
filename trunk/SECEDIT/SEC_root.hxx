@@ -11,7 +11,7 @@
 #ifndef SEC_ROOT_HXX
 #define SEC_ROOT_HXX
 
-#ifndef _CPP_IOSFWD
+#ifndef _GLIBCXX_IOSFWD
 #include <iosfwd>
 #endif
 

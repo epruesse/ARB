@@ -19,7 +19,7 @@
 #include "ps_bitmap.hxx"
 #endif
 
-#ifndef _CPP_CLIMITS
+#ifndef _GLIBCXX_CLIMITS
 #include <climits>
 #endif
 

@@ -1,13 +1,13 @@
-#ifndef __RNS_H
-#define __RNS_H
+#ifndef RNS_H
+#define RNS_H
 
-#ifndef __BASE_H
+#ifndef BASE_H
 #include "base.h"
 #endif
-#ifndef __SIMCFG_H
+#ifndef SIMCFG_H
 #include "simcfg.h"
 #endif
-#ifndef __FRAND_H
+#ifndef FRAND_H
 #include "frand.h"
 #endif
 
