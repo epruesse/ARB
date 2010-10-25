@@ -11,6 +11,7 @@
 
 #include "seq_search.hxx"
 
+#include <arbdbt.h>
 #include <cstdarg>
 #include <climits>
 #include <cctype>
@@ -28,7 +29,7 @@ void messagef(const char *format, ...)
     fa_assert(chars<MESSAGE_BUFFERSIZE);
 
     va_end(argp);
-    aw_message(buffer);
+    GB_warning(buffer);
 }
 
 void Points::append(Points *neu) {

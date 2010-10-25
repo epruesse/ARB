@@ -165,9 +165,11 @@ UnitTestResult execute_guarded_ClientCode(UnitTest_function fun, long *duration_
     }
     else { // normal execution
         GLOBAL.inside_test = true;
+
         gettimeofday((timeval*)&t1, NULL);
 
         arb_test::test_data().assertion_failed = false;
+        arb_test::test_data().running_test = true;
 
         // Note: fun() may do several ugly things, e.g.
         // - segfault                           (handled)

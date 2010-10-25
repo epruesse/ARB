@@ -200,6 +200,8 @@
 #ifndef TEST_GLOBAL_H
 #include <test_global.h> // overrides arb_assert()!
 #endif
+#else
+#define RUNNING_TEST() false
 #endif
 
 // ------------------------------------------------------------
