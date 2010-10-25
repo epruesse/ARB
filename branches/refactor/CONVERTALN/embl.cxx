@@ -229,13 +229,13 @@ void embl_origin(Seq& seq, Reader& reader) {
          )
     {
         const char *line = reader.line();
-        char ch;
-        for (int idx = 5; (ch = line[idx]); ++idx) {
+        for (int idx = 5; line[idx]; ++idx) {
+            char ch = line[idx];
             if (ch == ' ' || ch == '\n') continue;
+            if (idx>70) continue;
             seq.add(ch);
         }
     }
-
 }
 static void embl_print_lines(Writer& write, const char *key, const char *content, const WrapMode& wrapMode) {
     // Print EMBL entry and wrap around if line over EMBLMAXLINE.

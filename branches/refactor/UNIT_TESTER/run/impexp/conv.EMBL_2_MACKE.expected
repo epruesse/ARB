@@ -1,7 +1,7 @@
 #-
 #-
 #-	editor
-#-	Sun Oct 24 21:52:26 2010
+#-	Mon Oct 25 12:26:33 2010
 #-
 #-
 #-	Reference sequence:  AF375552;
@@ -46,7 +46,7 @@
 #:A1MVRNA2:rem:GenBank ACCESSION:X01572; J02002; K02702;
 #:A1MVRNA2:rem:Data kindly reviewed (30-JAN-1986) by J.F. Bol
 #:ER781674_1:rna:This is the content of the special entry 'Sequencing methods'
-#:ER781674_1:date:24-OCT-2010
+#:ER781674_1:date:25-OCT-2010
 #:ER781674_1:acs:ER781674;
 #:ER781674_1:rem:GenBank ACCESSION:ER781674;
 #:ER781674_1:rem:Source of strain:This is the content of the special entry
@@ -69,7 +69,7 @@
 #:ER781674_1:rem:5' end complete:  Yes
 #:ER781674_1:rem:Organism and Sequence information have only been added for
 #:ER781674_1:rem:test purposes. They are complete nonsense!
-#:AY704744_1:date:24-OCT-2010
+#:AY704744_1:date:25-OCT-2010
 #:AY704744_1:acs:AY704744;
 #:AY704744_1:rem:GenBank ACCESSION:AY704744;
 #:AY704744_1:rem:3' end complete:  Yes
@@ -94,64 +94,60 @@
 #:Y15714;:rem:KEYWORDS:16S ribosomal RNA; 16S rRNA gene.
 #:Y15714;:rem:GenBank ACCESSION:Y15714;
 AF375552;     0 cattgtcgcgcatgaactgcaactgctgagggatcaggataatcatccgc
-AF375552;    50 agataaatat60aactgctaaaaataatacacaaacttacgcaatggcag
-AF375552;   100 cctaaacagcaccatgcgtgcc120tgatttttgctcactgatggcaatt
-AF375552;   150 tgacggcctaaacttttagtcagatacgttgttgt180ggaggcttgacg
-AF375552;   200 cagcaaaagagatttaaagccccgcaaaatgtcgctgtttgagactgg24
-AF375552;   250 0ctttggcattttgttaaatttgagaaagtcctatggttgtagacgttga
-AF375552;   300 tgtagcaaggt300gtttggacag310
+AF375552;    50 agataaatataactgctaaaaataatacacaaacttacgcaatggcagcc
+AF375552;   100 taaacagcaccatgcgtgcctgatttttgctcactgatggcaatttgacg
+AF375552;   150 gcctaaacttttagtcagatacgttgttgtggaggcttgacgcagcaaaa
+AF375552;   200 gagatttaaagccccgcaaaatgtcgctgtttgagactggctttggcatt
+AF375552;   250 ttgttaaatttgagaaagtcctatggttgtagacgttgatgtagcaaggt
+AF375552;   300 gtttggacag
 A1MVRNA2     0 gtttttatcttttcgcgattgaaaagataagtttttcagtttaatctttt
-A1MVRNA2    50 caatatgttc60actcttttgagatgtctcggattcggtgttaatgaacc
-A1MVRNA2   100 tactaacacttcctcatcagag120tatgttcccgagtattccgttgaag
-A1MVRNA2   150 agatttccaacgaagtcgctgaactcgattcagtg180gatccattattc
-A1MVRNA2   200 caatgttacaaacatgtttttgtatcattgatgctcgtaagaaagatg24
-A1MVRNA2   250 0actcaagctgccgaagacttcctcgagagttttgggggaga281
+A1MVRNA2    50 caatatgttcactcttttgagatgtctcggattcggtgttaatgaaccta
+A1MVRNA2   100 ctaacacttcctcatcagagtatgttcccgagtattccgttgaagagatt
+A1MVRNA2   150 tccaacgaagtcgctgaactcgattcagtggatccattattccaatgtta
+A1MVRNA2   200 caaacatgtttttgtatcattgatgctcgtaagaaagatgactcaagctg
+A1MVRNA2   250 ccgaagacttcctcgagagttttgggggaga
 ER781674_1     0 tggcgccgtagatgcagcgcgactggcccggcttctcggcgtcgaggtac
-ER781674_1    50 tgcgccacgg60ccttggcgctggccacgtccgggcagaccacgatgctc
-ER781674_1   100 ttgcgtgagccggcgacgtgga120cgatgcccttggccagttcgatcat
-ER781674_1   150 cgtctggtcgttggtgatccgggcggcgatctcgg180cgtcggaatagt
-ER781674_1   200 ccttctcgccggcctcgttctccgccacggtcagcgtggagaagtcga24
-ER781674_1   250 0tggagacgcggacgaacgcctgcttggcggggcagagccataccgttgg
-ER781674_1   300 ccatgcctcac300aggatgtcgcggttgaaggcgaggccctggaacagg
-ER781674_1   350 ttggccatcgccac350
+ER781674_1    50 tgcgccacggccttggcgctggccacgtccgggcagaccacgatgctctt
+ER781674_1   100 gcgtgagccggcgacgtggacgatgcccttggccagttcgatcatcgtct
+ER781674_1   150 ggtcgttggtgatccgggcggcgatctcggcgtcggaatagtccttctcg
+ER781674_1   200 ccggcctcgttctccgccacggtcagcgtggagaagtcgatggagacgcg
+ER781674_1   250 gacgaacgcctgcttggcggggcagagccataccgttggccatgcctcac
+ER781674_1   300 aggatgtcgcggttgaaggcgaggccctggaacaggttggccatcgccac
 AY704744_1     0 gcatcgatgaagaacgcagcgaaatgcgataagtaatgtgaattgcagaa
-AY704744_1    50 ttcagtgaat60catcgaatctttgaacgcacattgcgcccattagtatt
-AY704744_1   100 ctagtgggcatgcctgttcgag120cgtcatttcaacccttaagcttagc
-AY704744_1   150 ttagtattgggaatctgcttaaccgcagctcctta180aatctagttggc
-AY704744_1   200 agagcacagctgtactctgagcgtagtaattcattatctcgctttctg24
-AY704744_1   250 0aagacagtcgtacgatagccacaaactttgcatcttgcaaactttttaa
-AY704744_1   300 tggttgacctc300ggatcaggtaggaatacccgctgaacttaagcatat
-AY704744_1   350 caataagcggagga350
+AY704744_1    50 ttcagtgaatcatcgaatctttgaacgcacattgcgcccattagtattct
+AY704744_1   100 agtgggcatgcctgttcgagcgtcatttcaacccttaagcttagcttagt
+AY704744_1   150 attgggaatctgcttaaccgcagctccttaaatctagttggcagagcaca
+AY704744_1   200 gctgtactctgagcgtagtaattcattatctcgctttctgaagacagtcg
+AY704744_1   250 tacgatagccacaaactttgcatcttgcaaactttttaatggttgacctc
+AY704744_1   300 ggatcaggtaggaatacccgctgaacttaagcatatcaataagcggagga
 Y15714;     0 agagtttgatnngggctcaggatgaacgctggcggcgtgcctaatacatg
-Y15714;    50 caagtcgagc60ggacagacgaggtgcttgcacctctgaagtcagcggcg
-Y15714;   100 gacgggtgagtaacacgtgggt120aacctacctgtaagactgggataac
-Y15714;   150 ttcgggaaaccggagctaataccggataatatttt180ccacctcatggt
-Y15714;   200 ggaatagtgaaagacggttttgctgtcacttacagatggacccgcggc24
-Y15714;   250 0gcattagctagttggtgaggtaacggctcaccaaggcgacgatgcgtag
-Y15714;   300 ccgacctgaga300gggtgatcggccacactgggactgagacacggccca
-Y15714;   350 gactcctacgggaggcagcagtag360ggaatcttccgcaatggacgaaa
-Y15714;   400 gtctgacggagcaacgccgcgtgagtgaagaaggtct420tcggatcgta
-Y15714;   450 aaactctgttgtaagggaagaacaagtacgttagtaactgaacgtacctt
-Y15714;   500 480gacggtaccttaccagaaagccacggctaactacgtgccagcagccg
-Y15714;   550 cggtaatacgtag540gtggcaagcgttatccggaattattgggcgtaaa
-Y15714;   600 gcgcgcgtaggcggtttcttaagtct600gatgtgaaagcccccggctca
-Y15714;   650 accggggagggtcattggaaactgggagacttgagtgca660gaagagga
-Y15714;   700 gagtggaattccatgtgtagcggtgaaatgcgcagagatatggaggaaca
-Y15714;   750 cc720agtggcgaaggcggctctctggtctgtaactgacgctgaggtgcg
-Y15714;   800 aaagcgtggggatca780aacaggattagataccctggtagtccacgccg
-Y15714;   850 taaacgatgagtgctaagtgttgggggg840tttccgcccctcagtgctg
-Y15714;   900 cagctaacgcattaagcactccgcctggggagtacggtcgc900aagact
-Y15714;   950 gaaactcaaaggaattgacggggacccgcacaagcggtggagcatgtggt
-Y15714;  1000 ttaa960ttcgaagcaacgcgaagaaccttaccaaatcttgacatcctct
-Y15714;  1050 gacaactctggagacag1020agcgttccccttcgggggacagagtgaca
-Y15714;  1100 ggtggtgcatggttgtcgtcagctcgtgtcg1080tgagatgttgggtta
-Y15714;  1150 agtcccgcaacgagcgcaacccttatctttagttgccatcattca1140g
-Y15714;  1200 ttgggcactctagagagactgccggtgacaaaccggaggaaggtggggat
-Y15714;  1250 gacgtcaaa1200tcatcatgccccttatgatttgggctacacacgtgct
-Y15714;  1300 acaatggatggtacaaagggcag1260caaaaccgcgaggtcaagcaaat
-Y15714;  1350 cccataaaaccattctcagttcggattgtagtctgca1320actcgacta
-Y15714;  1400 catgaagctggaatcgctagtaatcgtagatcagcatgctacggtgaata
-Y15714;  1450 c1380gttcccgggtcttgtacacaccgcccgtcacaccacgagagtttg
-Y15714;  1500 taacacccgaagccg1440gtggagtaacctttacaggagctagccgtcg
-Y15714;  1550 aaggtgggacagatgattggggtgaagtc1500gtaacaaggtagccgta
-Y15714;  1600 tcggaaggtgcggctggatcacctccttt1546
+Y15714;    50 caagtcgagcggacagacgaggtgcttgcacctctgaagtcagcggcgga
+Y15714;   100 cgggtgagtaacacgtgggtaacctacctgtaagactgggataacttcgg
+Y15714;   150 gaaaccggagctaataccggataatattttccacctcatggtggaatagt
+Y15714;   200 gaaagacggttttgctgtcacttacagatggacccgcggcgcattagcta
+Y15714;   250 gttggtgaggtaacggctcaccaaggcgacgatgcgtagccgacctgaga
+Y15714;   300 gggtgatcggccacactgggactgagacacggcccagactcctacgggag
+Y15714;   350 gcagcagtagggaatcttccgcaatggacgaaagtctgacggagcaacgc
+Y15714;   400 cgcgtgagtgaagaaggtcttcggatcgtaaaactctgttgtaagggaag
+Y15714;   450 aacaagtacgttagtaactgaacgtaccttgacggtaccttaccagaaag
+Y15714;   500 ccacggctaactacgtgccagcagccgcggtaatacgtaggtggcaagcg
+Y15714;   550 ttatccggaattattgggcgtaaagcgcgcgtaggcggtttcttaagtct
+Y15714;   600 gatgtgaaagcccccggctcaaccggggagggtcattggaaactgggaga
+Y15714;   650 cttgagtgcagaagaggagagtggaattccatgtgtagcggtgaaatgcg
+Y15714;   700 cagagatatggaggaacaccagtggcgaaggcggctctctggtctgtaac
+Y15714;   750 tgacgctgaggtgcgaaagcgtggggatcaaacaggattagataccctgg
+Y15714;   800 tagtccacgccgtaaacgatgagtgctaagtgttggggggtttccgcccc
+Y15714;   850 tcagtgctgcagctaacgcattaagcactccgcctggggagtacggtcgc
+Y15714;   900 aagactgaaactcaaaggaattgacggggacccgcacaagcggtggagca
+Y15714;   950 tgtggtttaattcgaagcaacgcgaagaaccttaccaaatcttgacatcc
+Y15714;  1000 tctgacaactctggagacagagcgttccccttcgggggacagagtgacag
+Y15714;  1050 gtggtgcatggttgtcgtcagctcgtgtcgtgagatgttgggttaagtcc
+Y15714;  1100 cgcaacgagcgcaacccttatctttagttgccatcattcagttgggcact
+Y15714;  1150 ctagagagactgccggtgacaaaccggaggaaggtggggatgacgtcaaa
+Y15714;  1200 tcatcatgccccttatgatttgggctacacacgtgctacaatggatggta
+Y15714;  1250 caaagggcagcaaaaccgcgaggtcaagcaaatcccataaaaccattctc
+Y15714;  1300 agttcggattgtagtctgcaactcgactacatgaagctggaatcgctagt
+Y15714;  1350 aatcgtagatcagcatgctacggtgaatacgttcccgggtcttgtacaca
+Y15714;  1400 ccgcccgtcacaccacgagagtttgtaacacccgaagccggtggagtaac
+Y15714;  1450 ctttacaggagctagccgtcgaaggtgggacagatgattggggtgaagtc
+Y15714;  1500 gtaacaaggtagccgtatcggaaggtgcggctggatcacctccttt

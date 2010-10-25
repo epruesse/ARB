@@ -32,25 +32,25 @@ DR   RFAM; RF00023; tmRNA. StrainInfo; 213423; NCDO 2118.
 XX
 CC   Organism information
 CC     Culture collection: NCDO 2118 tmRNA gene
-CC   Sequence information (bases 1 to 327)
+CC   Sequence information (bases 1 to 310)
 CC     Corresponding GenBank entry: AF375552;
 CC   Please note: all these entries have been modified for test purposes.
 CC   *source: strain=NCDO2118 tmRNA gene, partial sequence;
 CC   *source: subspecies=lactis;
 XX
 
-AF375552;  Length: 327  October 20, 2010  20:08:40  Type: N  Check: 6875  ..
+AF375552;  Length: 310  October 25, 2010  12:26:33  Type: N  Check: 3578  ..
 
        1  cattgtcgcg catgaactgc aactgctgag ggatcaggat aatcatccgc 
 
-      51  agataaatat 60aactgcta aaaataatac acaaacttac gcaatggcag 
+      51  agataaatat aactgctaaa aataatacac aaacttacgc aatggcagcc 
 
-     101  cctaaacagc accatgcgtg cc120tgatt tttgctcact gatggcaatt 
+     101  taaacagcac catgcgtgcc tgatttttgc tcactgatgg caatttgacg 
 
-     151  tgacggccta aacttttagt cagatacgtt gttgt180gg aggcttgacg 
+     151  gcctaaactt ttagtcagat acgttgttgt ggaggcttga cgcagcaaaa 
 
-     201  cagcaaaaga gatttaaagc cccgcaaaat gtcgctgttt gagactgg24 
+     201  gagatttaaa gccccgcaaa atgtcgctgt ttgagactgg ctttggcatt 
 
-     251  0ctttggcat tttgttaaat ttgagaaagt cctatggttg tagacgttga 
+     251  ttgttaaatt tgagaaagtc ctatggttgt agacgttgat gtagcaaggt 
 
-     301  tgtagcaagg t300gtttgg acag310 
+     301  gtttggacag  

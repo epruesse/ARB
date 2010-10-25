@@ -7,6 +7,10 @@
 #ifndef GLOBAL_H
 #include "global.h"
 #endif
+#ifndef _GLIBCXX_CCTYPE
+#include <cctype>
+#endif
+
 
 #define INITSEQ 6000
 
@@ -43,6 +47,16 @@ class Seq {
 
     void zeroTerminate() { add(0); len--; }
 
+    static void check_valid(char ch) {
+        if (isalpha(ch) || is_gapchar(ch)) return;
+        throw_errorf(43, "Invalid character '%c' in sequence data", ch);
+    }
+    static void check_valid(const char *s, int len) {
+        for (int i = 0; i<len; ++i) {
+            check_valid(s[i]);
+        }
+    }
+
 public:
     Seq(const char *id_, const char *seq_, int len_)
         : id(strdup(id_)),
@@ -51,6 +65,7 @@ public:
           seq((char*)malloc(max))
     {
         memcpy(seq, seq_, len);
+        check_valid(seq, len);
     }
     Seq() {
         id  = NULL;
@@ -80,6 +95,7 @@ public:
     }
 
     void add(char c) {
+        if (c) check_valid(c);
         if (len >= max) {
             max      = max*1.5+100;
             seq = (char*)Reallocspace(seq, max);
