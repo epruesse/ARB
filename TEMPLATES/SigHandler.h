@@ -60,7 +60,13 @@ inline SigHandler install_SigHandler(int sig, SigHandler handler, const char *co
 
 inline void uninstall_SigHandler(int sig, SigHandler handler, SigHandler old_handler, const char *context, const char *signame) {
     if (old_handler != SIG_ERR) {                   // do not try to uninstall if installation failed
-        ASSERT_RESULT(SigHandler, install_SigHandler(sig, old_handler, context, signame), handler);
+        SigHandler uninstalled_handler = install_SigHandler(sig, old_handler, context, signame);
+
+        if (uninstalled_handler != SIG_IGN) {
+            // if signal occurred, handler might have been reset to SIG_IGN
+            // (this behavior is implementation defined)
+            arb_assert(uninstalled_handler == handler);
+        }
     }
 }
 
