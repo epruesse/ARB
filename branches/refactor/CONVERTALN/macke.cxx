@@ -233,28 +233,26 @@ MackeReader::MackeReader(const char *inName_)
       dummy(NULL),
       r1(new Reader(inName)),
       r2(new Reader(inName)),
-      r3(new Reader(inName))
+      r3(new Reader(inName)),
+      using_reader(&r1)
 {
     read_to_start();
 }
 
 MackeReader::~MackeReader() {
-    char                    *org_msg = NULL;
+    char                    *msg = NULL;
     const Convaln_exception *exc     = Convaln_exception::exception_thrown();
 
-    if (exc) {
-        // avoid that all 3 readers decorate the error
-        org_msg = strdup(exc->get_msg());
-    }
+    ca_assert(using_reader);
+    delete *using_reader; *using_reader = NULL;
+
+    // avoid that all 3 readers decorate the error
+    if (exc) msg = strdup(exc->get_msg());
     delete r3; r3 = NULL;
     delete r2; r2 = NULL;
-
-    if (exc) {
-        exc->replace_msg(org_msg);
-        free(org_msg);
-    }
-
     delete r1; r1 = NULL;
+    if (exc) { exc->replace_msg(msg); free(msg); }
+
     free(inName);
 }
 
@@ -280,17 +278,21 @@ bool MackeReader::macke_in(Macke& macke) {
     // r2 points to sequence data
     // r3 points to sequence names
 
+    usingReader(r3);
     if (!r3->line() || !isMackeSeqHeader(r3->line())) return false;
 
     // skip to next "#:" line or end of file
+    usingReader(r1);
     r1->skipOverLinesThat(Not(isMackeSeqInfo));
 
     // read in sequence name
+    usingReader(r3);
     index   = macke_abbrev(r3->line(), oldname, 2);
     freedup(macke.seqabbr, oldname);
     seqabbr = macke.seqabbr;
 
     // read sequence information
+    usingReader(r1);
     for (index = macke_abbrev(r1->line(), name, 2);
          r1->line() && isMackeSeqInfo(r1->line()) && str_equal(name, oldname);
          )

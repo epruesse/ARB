@@ -144,7 +144,12 @@ class MackeReader : public FormatReader {
     char*&  seqabbr; // = Macke.seqabbr
     char   *dummy;
 
-    Reader *r1, *r2, *r3;
+    Reader  *r1, *r2, *r3;
+    Reader **using_reader; // r1, r2 or r3
+
+    void usingReader(Reader*& r) {
+        using_reader = &r;
+    }
 
     bool macke_in(Macke& macke);
 
@@ -159,6 +164,7 @@ class MackeReader : public FormatReader {
 
     bool read_seq_data(Seq& seq) {
         ca_assert(seqabbr);
+        usingReader(r2);
         macke_origin(seq, seqabbr, *r2);
         if (seq.is_empty()) abort();
         return r2->ok();
