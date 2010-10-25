@@ -2028,7 +2028,7 @@ ARB_ERROR Aligner::alignToReference(GBDATA *gb_toalign, const AlignmentReference
 
         if (continue_on_error) {
             if (error) {
-                aw_message(error.deliver());
+                GB_warning(error.deliver());
                 error = NULL;
             }
             error = GB_begin_transaction(gb_main); // re-open global transaction

@@ -73,6 +73,7 @@ namespace arb_test {
             : annotation(NULL),
               show_warnings(true),
               assertion_failed(false),
+              running_test(false),
               warnings(0)
         {}
         ~GlobalTestData() {
@@ -105,7 +106,7 @@ namespace arb_test {
     public:
         bool show_warnings;
         bool assertion_failed;
-
+        bool running_test;
 
         // counters
         size_t warnings;
@@ -135,17 +136,17 @@ namespace arb_test {
 
 // --------------------------------------------------------------------------------
 
-#define TEST_ANNOTATE_ASSERT(annotation) arb_test::test_data().annotate(annotation) 
+#define TEST_ANNOTATE_ASSERT(annotation) arb_test::test_data().annotate(annotation)
+#define RUNNING_TEST()                   arb_test::test_data().running_test
 
 // special assert for unit tests (additionally to SEGV it sets a global flag)
-# define test_assert(cond)                      \
+#define test_assert(cond)                       \
     do {                                        \
         if (!(cond)) {                          \
             PRINT_ASSERTION_FAILED_MSG(cond);   \
             TRIGGER_ASSERTION();                \
         }                                       \
     } while(0)
-
 
 // redefine arb_assert with test_assert when compiling for unit tests
 # if defined(ASSERTION_USED)
