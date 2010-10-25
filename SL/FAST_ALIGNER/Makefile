@@ -104,10 +104,15 @@ fast_aligner.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 seq_search.o: seq_search.hxx
 seq_search.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
+seq_search.o: $(ARBHOME)/INCLUDE/ad_prot.h
+seq_search.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 seq_search.o: $(ARBHOME)/INCLUDE/arb_assert.h
 seq_search.o: $(ARBHOME)/INCLUDE/arb_core.h
 seq_search.o: $(ARBHOME)/INCLUDE/arb_error.h
+seq_search.o: $(ARBHOME)/INCLUDE/arbdb.h
 seq_search.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+seq_search.o: $(ARBHOME)/INCLUDE/arbdbt.h
+seq_search.o: $(ARBHOME)/INCLUDE/arbtools.h
 seq_search.o: $(ARBHOME)/INCLUDE/attributes.h
 seq_search.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 seq_search.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
