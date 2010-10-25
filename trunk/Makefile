@@ -866,6 +866,20 @@ $(PARSIMONY): $(ARCHS_PARSIMONY:.a=.dummy) shared_libs
 		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_PARSIMONY) $(GUI_LIBS) $(EXECLIBS) ; \
 		)
 
+#*********************************** arb_convert_aln **************************************
+CONVERT_ALN = bin/arb_convert_aln
+ARCHS_CONVERT_ALN =	\
+		CONVERTALN/CONVERTALN.a \
+		SL/FILE_BUFFER/FILE_BUFFER.a \
+
+
+$(CONVERT_ALN) :  $(ARCHS_CONVERT_ALN:.a=.dummy)
+	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_CONVERT_ALN) || ( \
+		echo Link $@ ; \
+		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_CONVERT_ALN) $(EXECLIBS)" ; \
+		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARBDB_LIB) $(ARCHS_CONVERT_ALN) $(EXECLIBS) ; \
+		)
+
 #*********************************** arb_treegen **************************************
 TREEGEN = bin/arb_treegen
 ARCHS_TREEGEN =	\
@@ -1287,9 +1301,8 @@ gde:		GDE/GDE.dummy
 GDE:		gde
 agde: 		ARB_GDE/ARB_GDE.dummy
 tools:		shared_libs SL/SL.dummy TOOLS/TOOLS.dummy
-convert:	SL/FILE_BUFFER/FILE_BUFFER.dummy shared_libs
-	$(MAKE) CONVERTALN/CONVERTALN.dummy
 
+convert:	$(CONVERT_ALN)
 readseq:	READSEQ/READSEQ.dummy
 
 #***************************************************************************************
@@ -1585,6 +1598,7 @@ UNITS_TESTED = \
 	TOOLS/arb_probe.test \
 	WINDOW/WINDOW.test \
 	HELP_SOURCE/arb_help2xml.test \
+	CONVERTALN/CONVERTALN.test \
 	SL/SEQIO/SEQIO.test \
 
 TESTED_UNITS_MANUAL = \
@@ -1628,7 +1642,14 @@ unit_tests: test_base clean_coverage_results
 	@echo "fake[1]: Leaving directory \`$(ARBHOME)/UNIT_TESTER'"
 	@$(TEST_RUN_SUITE) cleanup
 
-ut: unit_tests
+ut:
+ifeq ($(UNIT_TESTS),1)
+	@echo $(MAKE) unit_tests
+	@$(MAKE) unit_tests
+else
+	@echo "Not compiled with unit tests"
+endif
+
 
 aut:
 	@$(TEST_RUN_SUITE) unskip

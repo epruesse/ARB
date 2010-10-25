@@ -1,287 +1,347 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
-#include <time.h>
-#include <sys/time.h>
-#include "convert.h"
+#include "fun.h"
 #include "global.h"
 
-#define SIZE    128
-static const char *mon[12] = {
-    "JAN", "FEB", "MAR", "APR", "MAY", "JUN",
-    "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"
+#include <time.h>
+#include <sys/time.h>
+
+#define SIZE 128 // default buffer size for generated dates
+
+static const char *ERROR_DATE = "\?\?-\?\?\?-\?\?\?\?";
+
+static const char *MON[12] = {
+    "JAN", "FEB", "MAR",
+    "APR", "MAY", "JUN",
+    "JUL", "AUG", "SEP",
+    "OCT", "NOV", "DEC"
 };
 
-/* --------------------------------------------------------------------
- *   Function genbank_date().
- *       Convert the date to be in genbank date form.
- */
-char *genbank_date(char *other_date)
-{
-    char *gdate, temp[SIZE];
-    int   day, month, year;
-    int   length;
+static const char *Month[12] = {
+    "January", "February", "March",
+    "April",   "May",      "June",
+    "July",    "August",   "September",
+    "October", "November", "December"
+};
 
-    length = Lenstr(other_date);
-    if (other_date[length - 1] == '\n') {
-        length--;
-        other_date[length] = '\0';
-    }
-
-    if (length <= 10 && length >= 6) {
-        find_date(other_date, &month, &day, &year);
-    }
-    else if (length > 10) {
-        if (is_genbank_date(other_date)) {
-            if (Lenstr(other_date) > 11)
-                other_date[11] = '\0';
-            gdate = Dupstr(other_date);
-            return (gdate);
-        }
-        else
-            find_date_long_form(other_date, &month, &day, &year);
-    }
-    else {
-        sprintf(temp, "Unknown date format: %s, cannot convert.\n", other_date);
-        warning(146, temp);
-        return (Dupstr("\?\?-\?\?\?-\?\?\?\?"));
-    }
-    if (day <= 0 || month <= 0 || year <= 0 || day > 31 || month > 12) {
-        sprintf(temp, "Wrong date format: %s\n", other_date);
-        warning(147, temp);
-        return (Dupstr("\?\?-\?\?\?-\?\?\?\?"));
-    }
-    if (day < 10)
-        sprintf(temp, "0%d-%s-19%d", day, mon[month - 1], year);
-    else
-        sprintf(temp, "%d-%s-19%d", day, mon[month - 1], year);
-    gdate = (char *)Dupstr(temp);
-    return (gdate);
-
-}
-
-/* -----------------------------------------------------------
- *   Function find_date().
- *       Find day, month, year from date string.
- */
-void find_date(char *date_string, int *month, int *day, int *year)
-{
-    int index, indi, count, nums[3];
-
-    char token[20], determ;
-
-    index = count = 0;
-    nums[0] = nums[1] = nums[2] = 0;
-    determ = ' ';
-
-    if (two_char(date_string, '.'))
-        determ = '.';
-    else if (two_char(date_string, '/'))
-        determ = '/';
-    else if (two_char(date_string, '-'))
-        determ = '-';
-
-    if (determ != ' ') {
-        for (indi = 0; indi <= Lenstr(date_string); indi++) {
-            if (date_string[indi] == determ || indi == Lenstr(date_string)) {
-                token[index++] = '\0';
-                nums[count++] = atoi(token);
-                index = 0;
-            }
-            else
-                token[index++] = date_string[indi];
-        }
-        *month = nums[0];
-        *day = nums[1];
-        *year = (nums[2] % 100);
-        return;
-    }
-}
-
-/* ------------------------------------------------------------------
- *   Function two_char().
- *       Return true if string has two determinator char.
- */
-bool two_char(char *str, char determ)
-{
+inline bool two_char(const char *str, char determ) {
+    // Return true if Str has two determinator char.
     int count = 0;
-
-    int len = Lenstr(str);
-
-    for (int indi = 0; indi < len; indi++)
-        if (str[indi] == determ)
-            count++;
-
-    return count == 2;
+    for (const char *d = strchr(str, determ); d; d = strchr(d+1, determ)) count++;
+    return count;
 }
 
-/* -----------------------------------------------------------------
- *   Function find_date_long_term().
- *       Find day, month, year in the long term date string
- *           like day-of-week, month, day, time, year.
- */
-void find_date_long_form(char *date_string, int *month, int *day, int *year)
-{
-    int indi, index, length, nums[3], num;
-
-    char token[SIZE];
-
-    nums[0] = nums[1] = nums[2] = 0;
-    length = Lenstr(date_string);
-    for (indi = 0, index = 0; index <= length; index++) {
-        if (index == length || date_string[index] == ' '
-            || date_string[index] == '\0' || date_string[index] == '\n'
-            || date_string[index] == '\t' || date_string[index] == '(' || date_string[index] == ')' || date_string[index] == ',') {
-            if (indi == 0)
-                continue;       /* empty token */
-            token[indi] = '\0';
-            if ((num = ismonth(token)) > 0 && nums[0] == 0)
-                nums[0] = num;
-            else if ((num = isdatenum(token)) > 0) {
-                if (nums[0] == 0 && num < 12)
-                    nums[0] = num;
-                else if (nums[1] == 0 && num < 31)
-                    nums[1] = num;
-                else if (nums[2] == 0)
-                    nums[2] = (num % 100);
-            }
-            indi = 0;
+inline int ismonth(const char *str) {
+    // Return [1..12] if the char Str is one of 12 months. Case insensitive.
+    for (int i = 0; i<12; i++) {
+        if (str_iequal(str, MON[i])) {
+            return i+1;
         }
-        else
-            token[indi++] = date_string[index];
     }
-    *month = nums[0];
-    *day = nums[1];
-    *year = nums[2];
-    return;
+    return 0;
 }
 
-/* --------------------------------------------------------------------
- *   Function ismonth().
- *       Return true if the char string is one of 12 months.
- *           Case insensitive.
- */
-int ismonth(char *string)
-{
-    int num = 0;
 
-    if (Cmpcasestr(string, "JAN") == 0)
-        num = 1;
-    else if (Cmpcasestr(string, "FEB") == 0)
-        num = 2;
-    else if (Cmpcasestr(string, "MAR") == 0)
-        num = 3;
-    else if (Cmpcasestr(string, "APR") == 0)
-        num = 4;
-    else if (Cmpcasestr(string, "MAY") == 0)
-        num = 5;
-    else if (Cmpcasestr(string, "JUN") == 0)
-        num = 6;
-    else if (Cmpcasestr(string, "JUL") == 0)
-        num = 7;
-    else if (Cmpcasestr(string, "AUG") == 0)
-        num = 8;
-    else if (Cmpcasestr(string, "SEP") == 0)
-        num = 9;
-    else if (Cmpcasestr(string, "OCT") == 0)
-        num = 10;
-    else if (Cmpcasestr(string, "NOV") == 0)
-        num = 11;
-    else if (Cmpcasestr(string, "DEC") == 0)
-        num = 12;
-    return (num);
+STATIC_ATTRIBUTED(__ATTR__USERESULT, bool find_date(const char *date_string, int *month, int *day, int *year)) {
+    // Find day, month, year from date Str.
+    char determ                                 = ' ';
+    if      (two_char(date_string, '.')) determ = '.';
+    else if (two_char(date_string, '/')) determ = '/';
+    else if (two_char(date_string, '-')) determ = '-';
+
+    if (determ == ' ') return false;
+
+    char token[20];
+    int nums[3] = { 0, 0, 0 };
+    int count = 0;
+    int index = 0;
+
+    int len = str0len(date_string);
+    for (int indi = 0; indi <= len; indi++) {
+        if (date_string[indi] == determ || indi == len) {
+            token[index++] = '\0';
+            if (count == 1) {
+                nums[count++] = ismonth(token);
+            }
+            else {
+                nums[count++] = atoi(token);
+            }
+            index = 0;
+        }
+        else {
+            token[index++] = date_string[indi];
+        }
+    }
+    *day   = nums[0];
+    *month = nums[1];
+    *year  = nums[2];
+
+    return true;
 }
 
-/* ------------------------------------------------------------------
- *   Function isdatenum().
- *       Return number of day or year the string represents.
- *           If not day or year, return 0.
- */
-int isdatenum(char *string)
-{
+static int isdatenum(char *Str) {
+    // Return number of day or year the Str represents.
+    // If not day or year, return 0.
     int length, num, indi;
 
-    length = Lenstr(string);
+    length = str0len(Str);
     if (length > 4 || length < 1)
         return (0);
     for (indi = 0, num = 1; indi < length && num == 1; indi++) {
-        if (!isdigit(string[indi])) {
+        if (!isdigit(Str[indi])) {
             num = 0;
         }
     }
     if (num == 1)
-        num = atoi(string);
+        num = atoi(Str);
     return (num);
 }
 
-/* ------------------------------------------------------------------
- *   Function is_genbank_date().
- *       Return true if it is genbank form of date, which is
- *           day(2 digits)-MONTH(in letters)-year(4 digits).
- */
-int is_genbank_date(char *string) {
-    if (Lenstr(string) >= 11 && string[2] == '-' && string[6] == '-')
-        return (1);
-    else
-        return (0);
+class SetOnce {
+    int  num_;
+    bool set_;
+    bool is_set() const { return set_; }
+public:
+    SetOnce() : num_(-1), set_(false) {}
+
+    bool operator!() const { return !set_; }
+
+    int value() const { ca_assert(is_set()); return num_; }
+    void set(int val) { ca_assert(!is_set()); num_ = val; set_ = true; }
+    void replace(int val) { ca_assert(is_set()); num_ = val; }
+};
+
+STATIC_ATTRIBUTED(__ATTR__USERESULT, bool find_date_long_form(const char *date_string, int *monthPtr, int *dayPtr, int *yearPtr)) {
+    // Find day, month, year in the long term date Str like day-of-week, month, day, time, year.
+
+    int     length = str0len(date_string);
+    SetOnce day, month, year;
+
+    for (int indi = 0, index = 0; index <= length; index++) {
+        char token[SIZE];
+        if ((index == length) || isspace(date_string[index]) || strchr("(),", date_string[index]) != 0) {
+            if (indi == 0) continue; // empty token
+            token[indi] = '\0';
+
+            int num = ismonth(token);
+            if (num>0) {
+                if (!month) month.set(num);
+                else if (!day) {
+                    day.set(month.value()); // day has been misinterpreted as month
+                    month.replace(num);
+                }
+            }
+            else if ((num = isdatenum(token)) > 0) {
+                if      (!month && num < 12) { month.set(num); }
+                else if (!day   && num < 31) { day.set(num); }
+                else if (!year)              { year.set(num); }
+            }
+            indi = 0;
+        }
+        else token[indi++] = date_string[index];
+    }
+
+    if (!day || !month || !year) return false;
+
+    *monthPtr = month.value();
+    *dayPtr   = day.value();
+    *yearPtr  = year.value();
+
+    return true;
 }
 
-/* ----------------------------------------------------------------
- *   Function today_date().
- *       Get today's date.
- */
-char *today_date() {
-    struct timeval  tp;
-    struct timezone tzp;
-    char            line[SIZE], *return_value;
-
-    (void)gettimeofday(&tp, &tzp);
-
-    Cpystr(line, ctime(&(tp.tv_sec)));
-
-    return_value = Dupstr(line);
-
-    return (return_value);
+inline bool is_genbank_date(const char *str) {
+    // Return true if it is genbank form of date,
+    // which is day(2 digits)-MONTH(in letters)-year(4 digits).
+    return str0len(str) >= 11 && str[2] == '-' && str[6] == '-';
 }
 
-/* ---------------------------------------------------------------
- *   Function gcg_date().
- *       Create gcg format of date.
- */
-char *gcg_date(char *date_string) {
-    static char date[128], temp[128], time[128];
-    int day, year;
+const char *genbank_date(const char *other_date) {
+    // Convert the date to be in genbank date form.
+    const char *result;
+    int         length = str0len(other_date);
 
-    temp[0] = '\0';
-    date_string[7] = '\0';
-    if (Cmpstr("Jan", date_string + 4) == 1)
-        Catstr(temp, "January");
-    else if (Cmpstr("Feb", date_string + 4) == 1)
-        Catstr(temp, "February");
-    else if (Cmpstr("Mar", date_string + 4) == 1)
-        Catstr(temp, "March");
-    else if (Cmpstr("Apr", date_string + 4) == 1)
-        Catstr(temp, "April");
-    else if (Cmpstr("May", date_string + 4) == 1)
-        Catstr(temp, "May");
-    else if (Cmpstr("Jun", date_string + 4) == 1)
-        Catstr(temp, "June");
-    else if (Cmpstr("Jul", date_string + 4) == 1)
-        Catstr(temp, "July");
-    else if (Cmpstr("Aug", date_string + 4) == 1)
-        Catstr(temp, "August");
-    else if (Cmpstr("Sep", date_string + 4) == 1)
-        Catstr(temp, "September");
-    else if (Cmpstr("Oct", date_string + 4) == 1)
-        Catstr(temp, "October");
-    else if (Cmpstr("Nov", date_string + 4) == 1)
-        Catstr(temp, "November");
-    else if (Cmpstr("Dec", date_string + 4) == 1)
-        Catstr(temp, "December");
+    if (other_date[length - 1] == '\n') {
+        char *dup     = nulldup(other_date);
+        dup[--length] = '\0';
+        result        = genbank_date(dup);
+        free(dup);
+    }
+    else {
+        static char gdate[SIZE];
+        gdate[0] = 0;
 
-    sscanf(date_string + 8, "%d %s %d", &day, time, &year);
-    sprintf(date, "%s %d, %d  %s", temp, day, year, time);
+        int  day, month, year;
+        bool ok = false;
+        if (length > 10) {
+            if (is_genbank_date(other_date)) {
+                strncpy(gdate, other_date, 11);
+                gdate[11] = 0;
+                ok        = true;
+            }
+            else ok = find_date_long_form(other_date, &month, &day, &year);
+        }
 
-    return (date);
+        if (!ok) ok = find_date(other_date, &month, &day, &year);
+
+        if (!ok) {
+            warningf(146, "Unknown date format: %s, cannot convert.", other_date);
+            strcpy(gdate, ERROR_DATE);
+        }
+
+        if (!gdate[0]) {
+            if (day <= 0 || month <= 0 || year <= 0 || day > 31 || month > 12) {
+                warningf(147, "Wrong date format: %s", other_date);
+                strcpy(gdate, ERROR_DATE);
+            }
+            else {
+                if (year<100) year += 1900;
+                sprintf(gdate, "%02d-%s-%d", day, MON[month - 1], year);
+            }
+        }
+
+        ca_assert(gdate[0]);
+        result = gdate;
+    }
+    return result;
 }
+
+const char *today_date() {
+    // Get today's date.
+    static char line[SIZE] = "";
+    if (!line[0]) {
+        struct timeval  tp;
+        struct timezone tzp;
+        (void)gettimeofday(&tp, &tzp);
+
+        strcpy(line, ctime(&(tp.tv_sec)));
+
+        int len = strlen(line);
+        if (line[len-1] == '\n') {
+            line[len-1] = 0;
+        }
+    }
+    return line;
+}
+
+const char *gcg_date(const char *input) {
+    // Create gcg format of date.
+    static char date[SIZE];
+
+    ca_assert(strlen(input) >= 8);
+
+    const int MONTH_POS = 4;
+    const int MONTH_LEN = 3;
+    const int DAY_POS = MONTH_POS+MONTH_LEN+1;
+
+    const char *monthname = "";
+    {
+        char part[MONTH_LEN+1];
+        memcpy(part, input+MONTH_POS, MONTH_LEN);
+        part[MONTH_LEN] = 0;
+
+        int month = ismonth(part);
+        if (month) monthname = Month[month-1];
+    }
+
+    char time[SIZE];
+    int  day, year;
+    int  scanned = sscanf(input+DAY_POS, "%d %s %d", &day, time, &year);
+    ca_assert(scanned == 3);
+
+    sprintf(date, "%s %d, %d  %s", monthname, day, year, time);
+    return date;
+}
+
+// --------------------------------------------------------------------------------
+
+#if (UNIT_TESTS == 1)
+#include <test_unit.h>
+
+#define TEST_ASSERT_CONVERT(input,expect,CONVERT,ASSERTION) ASSERTION(CONVERT(input), expect);
+
+#define TEST_ASSERT_GENBANK_DATE(input,expect)         TEST_ASSERT_CONVERT(input, expect, genbank_date, TEST_ASSERT_EQUAL)
+#define TEST_ASSERT_GENBANK_DATE__BROKEN(input,expect) TEST_ASSERT_CONVERT(input, expect, genbank_date, TEST_ASSERT_EQUAL__BROKEN)
+#define TEST_ASSERT_GCG_DATE(input,expect)             TEST_ASSERT_CONVERT(input, expect, gcg_date, TEST_ASSERT_EQUAL)
+#define TEST_ASSERT_GCG_DATE__BROKEN(input,expect)     TEST_ASSERT_CONVERT(input, expect, gcg_date, TEST_ASSERT_EQUAL__BROKEN)
+
+#define TEST_ASSERT_INVALID_ANYDATE(input,finder)                       \
+    do {                                                                \
+        int   day_, month_, year_;                                      \
+        ASSERT_RESULT(bool, false,                                      \
+                      finder(input, &month_, &day_, &year_));           \
+    } while(0)
+
+#define TEST_ASSERT_INVALID_LONGDATE(input) TEST_ASSERT_INVALID_ANYDATE(input, find_date_long_form)
+
+#define TEST_ASSERT_FIND_ANYDATE(input,d,m,y,finder) \
+    do {                                                        \
+        char *dup_ = strdup(input);                             \
+        int   day_, month_, year_;                              \
+        ASSERT_RESULT(bool, true,                               \
+                      finder(dup_, &month_, &day_, &year_));    \
+        TEST_ASSERT_EQUAL(day_, d);                             \
+        TEST_ASSERT_EQUAL(month_, m);                           \
+        TEST_ASSERT_EQUAL(year_, y);                            \
+        free(dup_);                                             \
+    } while (0)
+
+#define TEST_ASSERT_FIND_____DATE(input,d,m,y) TEST_ASSERT_FIND_ANYDATE(input, d, m, y, find_date)
+#define TEST_ASSERT_FIND_LONGDATE(input,d,m,y) TEST_ASSERT_FIND_ANYDATE(input, d, m, y, find_date_long_form)
+
+// #define TEST_ASSERT_FIND_DATE(str,d,m,y) TEST_ASSERT_FIND_DATE_IMPL(str,d,m,y,TEST_ASSERT_EQUAL)
+
+void TEST_BASIC_conv_date() {
+    TEST_ASSERT_EQUAL(ismonth("Apr"), 4);
+
+    TEST_ASSERT_FIND_____DATE("19-APR-99", 19, 4, 99);
+    TEST_ASSERT_FIND_____DATE("22-JUN-65", 22, 6, 65);
+    TEST_ASSERT_FIND_____DATE("5-SEP-10",   5, 9, 10);
+    TEST_ASSERT_FIND_____DATE("05-SEP-10",  5, 9, 10);
+
+    TEST_ASSERT_FIND_____DATE("19-APR-1999", 19, 4, 1999);
+    TEST_ASSERT_FIND_____DATE("22-JUN-1965", 22, 6, 1965); // test date b4 epoch
+    TEST_ASSERT_FIND_____DATE("5-SEP-2010",   5, 9, 2010);
+    TEST_ASSERT_FIND_____DATE("05-SEP-2010",  5, 9, 2010);
+
+    // --------------------
+
+    TEST_ASSERT_FIND_LONGDATE("05 Sep 2010",  5, 9, 2010);
+    TEST_ASSERT_FIND_LONGDATE("Sep, 05 2010",  5, 9, 2010);
+    TEST_ASSERT_FIND_LONGDATE("Sep 05 2010",  5, 9, 2010);
+
+    TEST_ASSERT_FIND_LONGDATE("Mon Apr 19 25:46:19 CEST 99", 19, 4, 99);
+    TEST_ASSERT_FIND_LONGDATE("Tue Jun 22 05:11:00 CEST 65", 22, 6, 65);
+    TEST_ASSERT_FIND_LONGDATE("Wed Sep 5 19:46:25 CEST 10",   5, 9, 10);
+    TEST_ASSERT_FIND_LONGDATE("Wed Sep 05 19:46:25 CEST 10",  5, 9, 10);
+
+    TEST_ASSERT_FIND_LONGDATE("Mon Apr 19 25:46:19 CEST 1999", 19, 4, 1999);
+    TEST_ASSERT_FIND_LONGDATE("Tue Jun 22 05:11:00 CEST 1965", 22, 6, 1965);
+    TEST_ASSERT_FIND_LONGDATE("Wed Sep 5 19:46:25 CEST 2010",   5, 9, 2010);
+    TEST_ASSERT_FIND_LONGDATE("Wed Sep 05 19:46:25 CEST 2010",  5, 9, 2010);
+
+    // --------------------
+
+    TEST_ASSERT_GENBANK_DATE("19 Apr 1999", "19-APR-1999");
+    TEST_ASSERT_GENBANK_DATE("19-APR-1999", "19-APR-1999");
+    TEST_ASSERT_GENBANK_DATE("22-JUN-1965", "22-JUN-1965");
+    TEST_ASSERT_GENBANK_DATE("5-SEP-2010", "05-SEP-2010");
+    TEST_ASSERT_GENBANK_DATE("05-SEP-2010", "05-SEP-2010");
+    TEST_ASSERT_GENBANK_DATE("crap", ERROR_DATE);
+
+    TEST_ASSERT_GENBANK_DATE("Mon Apr 19 25:46:19 CEST 1999", "19-APR-1999");
+    TEST_ASSERT_GENBANK_DATE("Tue Jun 22 05:11:00 CEST 1965", "22-JUN-1965");
+    TEST_ASSERT_GENBANK_DATE("Wed Sep 5 19:46:25 CEST 2010",  "05-SEP-2010");
+    TEST_ASSERT_GENBANK_DATE("Wed Sep 05 19:46:25 CEST 2010", "05-SEP-2010");
+
+    // --------------------
+
+    TEST_ASSERT_GCG_DATE("Mon Apr 19 25:46:19 99", "April 19, 99  25:46:19");
+
+    TEST_ASSERT_GCG_DATE("Mon Apr 19 25:46:19 1999", "April 19, 1999  25:46:19");
+    TEST_ASSERT_GCG_DATE("Tue Jun 22 05:11:00 1965", "June 22, 1965  05:11:00");
+    TEST_ASSERT_GCG_DATE("Wed Sep 5 19:46:25 2010",  "September 5, 2010  19:46:25");
+    TEST_ASSERT_GCG_DATE("Wed Sep 05 19:46:25 2010", "September 5, 2010  19:46:25");
+
+    TEST_ASSERT(gcg_date(today_date())); // currently gcg_date is only used like this
+}
+
+#endif // UNIT_TESTS

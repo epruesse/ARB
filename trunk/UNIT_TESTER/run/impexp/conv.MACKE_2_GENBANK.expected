@@ -1,0 +1,183 @@
+LOCUS       AF375552;     310 bp    RNA             RNA       31-MAY-2001
+DEFINITION  Lactococcus lactis subsp. lactis subsp. lactis str. NCDO2118 tmRNA
+            gene, partial sequence.
+ACCESSION   AF375552;
+KEYWORDS    No information.
+SOURCE      Lactococcus lactis subsp. lactis subsp. lactis str. NCDO2118 tmRNA
+            gene, partial sequence.
+  ORGANISM  Lactococcus lactis subsp. lactis.
+REFERENCE   1  (bases 1 to 310)
+  AUTHORS   Schoenhuber,W., Le Bourhis,G., Tremblay,J., Amann,R. and
+            Kulakauskas,S.
+  JOURNAL   BMC Microbiol. 1(1), 20-20 (2001)
+  TITLE     Utilization of tmRNA sequences for bacterial identification
+  STANDARD  No information
+REFERENCE   2  (bases 1 to 310)
+  AUTHORS   Schoenhuber,W., Le Bourhis,G., Tremblay,J., Amann,R.I. and
+            Kulakauskas,S.
+  JOURNAL   Submitted (02-MAY-2001) to the EMBL/GenBank/DDBJ databases.
+            Microbiology, Institut National de la Recherche Agronomique,
+            Domaine de Vilvert, Jouy-en-Josas 78352, France
+  TITLE     No information
+  STANDARD  No information
+COMMENTS    Organism information
+              Culture collection: NCDO 2118 tmRNA gene
+            Sequence information (bases 1 to 310)
+              Corresponding GenBank entry: AF375552;
+            Please note: all these entries have been modified for test
+            purposes.
+            *source: strain=NCDO2118 tmRNA gene, partial sequence;
+            *source: subspecies=lactis;
+BASE COUNT      91 a     59 c     74 g     86 t
+ORIGIN
+        1 cattgtcgcg catgaactgc aactgctgag ggatcaggat aatcatccgc agataaatat
+       61 aactgctaaa aataatacac aaacttacgc aatggcagcc taaacagcac catgcgtgcc
+      121 tgatttttgc tcactgatgg caatttgacg gcctaaactt ttagtcagat acgttgttgt
+      181 ggaggcttga cgcagcaaaa gagatttaaa gccccgcaaa atgtcgctgt ttgagactgg
+      241 ctttggcatt ttgttaaatt tgagaaagtc ctatggttgt agacgttgat gtagcaaggt
+      301 gtttggacag
+//
+LOCUS       A1MVRNA2      281 bp    RNA             RNA       07-NOV-1985
+DEFINITION  Alfalfa mosaic virus; unidentified reading frame.
+ACCESSION   X01572; J02002; K02702;
+KEYWORDS    unidentified reading frame.
+SOURCE      Alfalfa mosaic virus.
+  ORGANISM  Alfalfa mosaic virus.
+REFERENCE   1  (bases 1 to 2593)
+  AUTHORS   Cornelissen,B.J., Brederode,F.T.M., Veeneman,G.H., van Boom,J. H.
+            and Bol,J.F.
+  JOURNAL   No information
+  TITLE     Complete nucleotide sequence of alfalfa mosaic virus RNA 2
+  STANDARD  No information
+COMMENTS    Sequence information (bases 1 to 281)
+              Corresponding GenBank entry: X01572;
+            Data kindly reviewed (30-JAN-1986) by J.F. Bol
+BASE COUNT      74 a     52 c     56 g     99 t
+ORIGIN
+        1 gtttttatct tttcgcgatt gaaaagataa gtttttcagt ttaatctttt caatatgttc
+       61 actcttttga gatgtctcgg attcggtgtt aatgaaccta ctaacacttc ctcatcagag
+      121 tatgttcccg agtattccgt tgaagagatt tccaacgaag tcgctgaact cgattcagtg
+      181 gatccattat tccaatgtta caaacatgtt tttgtatcat tgatgctcgt aagaaagatg
+      241 actcaagctg ccgaagactt cctcgagagt tttgggggag a
+//
+LOCUS       ER781674_1    350 bp    RNA             RNA       25-OCT-2010
+DEFINITION  .
+ACCESSION   ER781674;
+KEYWORDS    No information.
+SOURCE      No information.
+  ORGANISM  No information.
+REFERENCE   1
+  AUTHORS   No information
+  JOURNAL   No information
+  TITLE     No information
+  STANDARD  No information
+COMMENTS    Organism information
+              Source of strain: This is the content of the special entry
+                    'Source of strain'
+              Former name: This is the content of the special entry 'Former
+                    name'
+              Alternate name: This is the content of the special entry
+                    'Alternate name'. It is quite long, since i need to test
+                    some special entry which occupies many lines and when i
+                    say many lines, i really mean at least five lines, so i
+                    could not stop writing before i came here.
+              Common name: This is the content of the special entry 'Common
+                    name'
+              Host organism: This is the content of the special entry 'Host
+                    organism'
+            Sequence information (bases 1 to 350)
+              RDP ID: This is the content of the special entry 'RDP ID'
+              Corresponding GenBank entry: ER781674;
+              Sequencing methods: This is the content of the special entry
+                    'Sequencing methods'
+              5' end complete: Yes
+              3' end complete: No
+            Organism and Sequence information have only been added for
+            test purposes. They are complete nonsense!
+BASE COUNT      51 a    109 c    124 g     66 t
+ORIGIN
+        1 tggcgccgta gatgcagcgc gactggcccg gcttctcggc gtcgaggtac tgcgccacgg
+       61 ccttggcgct ggccacgtcc gggcagacca cgatgctctt gcgtgagccg gcgacgtgga
+      121 cgatgccctt ggccagttcg atcatcgtct ggtcgttggt gatccgggcg gcgatctcgg
+      181 cgtcggaata gtccttctcg ccggcctcgt tctccgccac ggtcagcgtg gagaagtcga
+      241 tggagacgcg gacgaacgcc tgcttggcgg ggcagagcca taccgttggc catgcctcac
+      301 aggatgtcgc ggttgaaggc gaggccctgg aacaggttgg ccatcgccac
+//
+LOCUS       AY704744_1    350 bp    RNA             RNA       25-OCT-2010
+DEFINITION  .
+ACCESSION   AY704744;
+KEYWORDS    No information.
+SOURCE      No information.
+  ORGANISM  No information.
+REFERENCE   1
+  AUTHORS   No information
+  JOURNAL   No information
+  TITLE     No information
+  STANDARD  No information
+COMMENTS    Sequence information (bases 1 to 350)
+              Corresponding GenBank entry: AY704744;
+              5' end complete: No
+              3' end complete: Yes
+            Next 2 lines are nonsense
+BASE COUNT     100 a     75 c     77 g     98 t
+ORIGIN
+        1 gcatcgatga agaacgcagc gaaatgcgat aagtaatgtg aattgcagaa ttcagtgaat
+       61 catcgaatct ttgaacgcac attgcgccca ttagtattct agtgggcatg cctgttcgag
+      121 cgtcatttca acccttaagc ttagcttagt attgggaatc tgcttaaccg cagctcctta
+      181 aatctagttg gcagagcaca gctgtactct gagcgtagta attcattatc tcgctttctg
+      241 aagacagtcg tacgatagcc acaaactttg catcttgcaa actttttaat ggttgacctc
+      301 ggatcaggta ggaatacccg ctgaacttaa gcatatcaat aagcggagga
+//
+LOCUS       Y15714;      1546 bp    RNA             RNA       17-NOV-1998
+DEFINITION  Macrococcus bovicus; 16S ribosomal RNA; 16S rRNA gene.
+ACCESSION   Y15714;
+KEYWORDS    16S ribosomal RNA; 16S rRNA gene.
+SOURCE      Macrococcus bovicus.
+  ORGANISM  Macrococcus bovicus.
+REFERENCE   1
+  AUTHORS   Kloos,W.E., Ballard,D.N., George,C.G., Webster,J.A., Hubner,R.J. ,
+            Ludwig,W., Schleifer,K.H., Fiedler,F. and Schubert,K.
+  JOURNAL   Int. J. Syst. Bacteriol. 48, 859-877 (1998)
+  TITLE     Delimiting the genus Staphylococcus through description of
+            Macrococcus caseolyticus gen. nov., comb. nov. and the new species
+            Macrococcus equipercicus sp. nov., Macrococcus bovicus sp. nov.,
+            and Macrococcus carouselicus sp. nov.
+  STANDARD  No information
+REFERENCE   2  (bases 1 to 1546)
+  AUTHORS   Ludwig,W.
+  JOURNAL   Submitted (26-NOV-1997) to the EMBL/GenBank/DDBJ databases. W.
+            Ludwig, Lehrstuhl fuer Mikrobiologie, Technische Universitaet
+            Muenchen, Munich, FRG
+  TITLE     No information
+  STANDARD  No information
+COMMENTS    Sequence information (bases 1 to 1546)
+              Corresponding GenBank entry: Y15714;
+BASE COUNT     401 a    353 c    470 g    320 t      2 others
+ORIGIN
+        1 agagtttgat nngggctcag gatgaacgct ggcggcgtgc ctaatacatg caagtcgagc
+       61 ggacagacga ggtgcttgca cctctgaagt cagcggcgga cgggtgagta acacgtgggt
+      121 aacctacctg taagactggg ataacttcgg gaaaccggag ctaataccgg ataatatttt
+      181 ccacctcatg gtggaatagt gaaagacggt tttgctgtca cttacagatg gacccgcggc
+      241 gcattagcta gttggtgagg taacggctca ccaaggcgac gatgcgtagc cgacctgaga
+      301 gggtgatcgg ccacactggg actgagacac ggcccagact cctacgggag gcagcagtag
+      361 ggaatcttcc gcaatggacg aaagtctgac ggagcaacgc cgcgtgagtg aagaaggtct
+      421 tcggatcgta aaactctgtt gtaagggaag aacaagtacg ttagtaactg aacgtacctt
+      481 gacggtacct taccagaaag ccacggctaa ctacgtgcca gcagccgcgg taatacgtag
+      541 gtggcaagcg ttatccggaa ttattgggcg taaagcgcgc gtaggcggtt tcttaagtct
+      601 gatgtgaaag cccccggctc aaccggggag ggtcattgga aactgggaga cttgagtgca
+      661 gaagaggaga gtggaattcc atgtgtagcg gtgaaatgcg cagagatatg gaggaacacc
+      721 agtggcgaag gcggctctct ggtctgtaac tgacgctgag gtgcgaaagc gtggggatca
+      781 aacaggatta gataccctgg tagtccacgc cgtaaacgat gagtgctaag tgttgggggg
+      841 tttccgcccc tcagtgctgc agctaacgca ttaagcactc cgcctgggga gtacggtcgc
+      901 aagactgaaa ctcaaaggaa ttgacgggga cccgcacaag cggtggagca tgtggtttaa
+      961 ttcgaagcaa cgcgaagaac cttaccaaat cttgacatcc tctgacaact ctggagacag
+     1021 agcgttcccc ttcgggggac agagtgacag gtggtgcatg gttgtcgtca gctcgtgtcg
+     1081 tgagatgttg ggttaagtcc cgcaacgagc gcaaccctta tctttagttg ccatcattca
+     1141 gttgggcact ctagagagac tgccggtgac aaaccggagg aaggtgggga tgacgtcaaa
+     1201 tcatcatgcc ccttatgatt tgggctacac acgtgctaca atggatggta caaagggcag
+     1261 caaaaccgcg aggtcaagca aatcccataa aaccattctc agttcggatt gtagtctgca
+     1321 actcgactac atgaagctgg aatcgctagt aatcgtagat cagcatgcta cggtgaatac
+     1381 gttcccgggt cttgtacaca ccgcccgtca caccacgaga gtttgtaaca cccgaagccg
+     1441 gtggagtaac ctttacagga gctagccgtc gaaggtggga cagatgattg gggtgaagtc
+     1501 gtaacaaggt agccgtatcg gaaggtgcgg ctggatcacc tccttt
+//

@@ -1,275 +1,322 @@
-/* ------------- File format converting subroutine ------------- */
+// ------------- File format converting subroutine -------------
 
-#include <stdio.h>
-#include <stdlib.h>
-#include "convert.h"
+#include "defs.h"
+#include "fun.h"
 #include "global.h"
+#include <static_assert.h>
 
-/* -------------------------------------------------------------
- *      Function convert().
- *              For given input file and  type, convert the file
- *                      to desired out type and save the result in
- *                      the out file.
- */
-void convert(char *inf, char *outf, int intype, int outype)
-{
-    int dd;                     /* copy stdin to outfile after first line */
+static const char *format2name(Format type) {
+    switch (type) {
+        case EMBL:      return "EMBL";
+        case GCG:       return "GCG";
+        case GENBANK:   return "GENBANK";
+        case MACKE:     return "MACKE";
+        case NEXUS:     return "NEXUS";
+        case PHYLIP2:   return "PHYLIP2";
+        case PHYLIP:    return "PHYLIP";
+        case PRINTABLE: return "PRINTABLE";
+        case SWISSPROT: return "SWISSPROT";
 
-    dd = 0;
-    if (outype == PHYLIP2) {
-        outype = PHYLIP;
-        dd = 1;
+        case UNKNOWN: ca_assert(0);
     }
-
-    if (Cmpstr(inf, outf) == EQ)
-        error(45, "Input file and output file must be different file.\n");
-    if (intype == GENBANK && outype == MACKE) {
-        genbank_to_macke(inf, outf);
-    }
-    else if (intype == GENBANK && outype == GENBANK) {
-        genbank_to_genbank(inf, outf);
-    }
-    else if (intype == GENBANK && outype == PAUP) {
-        to_paup(inf, outf, GENBANK);
-    }
-    else if (intype == GENBANK && outype == PHYLIP) {
-        to_phylip(inf, outf, GENBANK, dd);
-    }
-    else if (intype == GENBANK && outype == PROTEIN) {
-        error(69, "Sorry, cannot convert from GENBANK to SWISSPROT, Exit");
-    }
-    else if (intype == GENBANK && outype == EMBL) {
-        genbank_to_embl(inf, outf);
-    }
-    else if (intype == GENBANK && outype == PRINTABLE) {
-        to_printable(inf, outf, GENBANK);
-    }
-    else if (intype == GENBANK && outype == ALMA) {
-        genbank_to_alma(inf, outf);
-    }
-    else if (intype == MACKE && outype == GENBANK) {
-        macke_to_genbank(inf, outf);
-    }
-    else if (intype == MACKE && outype == PAUP) {
-        to_paup(inf, outf, MACKE);
-    }
-    else if (intype == MACKE && outype == PHYLIP) {
-        to_phylip(inf, outf, MACKE, dd);
-    }
-    else if (intype == MACKE && outype == PROTEIN) {
-        macke_to_embl(inf, outf);
-    }
-    else if (intype == MACKE && outype == EMBL) {
-        macke_to_embl(inf, outf);
-    }
-    else if (intype == MACKE && outype == PRINTABLE) {
-        to_printable(inf, outf, MACKE);
-    }
-    else if (intype == MACKE && outype == ALMA) {
-        macke_to_alma(inf, outf);
-    }
-    else if (intype == PAUP && outype == GENBANK) {
-        error(6, "Sorry, cannot convert from Paup to GENBANK, Exit.\n");
-    }
-    else if (intype == PAUP && outype == MACKE) {
-        error(81, "Sorry, cannot convert from Paup to AE2, Exit.\n");
-    }
-    else if (intype == PAUP && outype == PHYLIP) {
-        error(8, "Sorry, cannot convert from Paup to Phylip, Exit.\n");
-    }
-    else if (intype == PAUP && outype == PROTEIN) {
-        error(71, "Sorry, cannot convert from Paup to SWISSPROT, Exit.");
-    }
-    else if (intype == PAUP && outype == EMBL) {
-        error(78, "Sorry, cannot convert from Paup to SWISSPROT, Exit.");
-    }
-    else if (intype == PHYLIP && outype == GENBANK) {
-        error(85, "Sorry, cannot convert from Phylip to GenBank, Exit.\n");
-    }
-    else if (intype == PHYLIP && outype == MACKE) {
-        error(88, "Sorry, cannot convert from Phylip to AE2, Exit.\n");
-    }
-    else if (intype == PHYLIP && outype == PAUP) {
-        error(89, "Sorry, cannot convert from Phylip to Paup, Exit.\n");
-    }
-    else if (intype == PHYLIP && outype == PROTEIN) {
-        error(72, "Sorry, cannot convert from Phylip to SWISSPROT, Exit.\n");
-    }
-    else if (intype == PHYLIP && outype == EMBL) {
-        error(79, "Sorry, cannot convert from Phylip to SWISSPROT, Exit.\n");
-    }
-    else if (intype == PROTEIN && outype == MACKE) {
-        embl_to_macke(inf, outf, PROTEIN);
-    }
-    else if (intype == PROTEIN && outype == GENBANK) {
-        error(78, "GenBank doesn't maintain protein data.");
-    }
-    else if (intype == PROTEIN && outype == PAUP) {
-        to_paup(inf, outf, PROTEIN);
-    }
-    else if (intype == PROTEIN && outype == PHYLIP) {
-        to_phylip(inf, outf, PROTEIN, dd);
-    }
-    else if (intype == PROTEIN && outype == EMBL) {
-        error(58, "EMBL doesn't maintain protein data.");
-    }
-    else if (intype == PROTEIN && outype == PRINTABLE) {
-        to_printable(inf, outf, PROTEIN);
-    }
-    else if (intype == EMBL && outype == EMBL) {
-        embl_to_embl(inf, outf);
-    }
-    else if (intype == EMBL && outype == GENBANK) {
-        embl_to_genbank(inf, outf);
-    }
-    else if (intype == EMBL && outype == MACKE) {
-        embl_to_macke(inf, outf, EMBL);
-    }
-    else if (intype == EMBL && outype == PROTEIN) {
-        embl_to_embl(inf, outf);
-    }
-    else if (intype == EMBL && outype == PAUP) {
-        to_paup(inf, outf, EMBL);
-    }
-    else if (intype == EMBL && outype == PHYLIP) {
-        to_phylip(inf, outf, EMBL, dd);
-    }
-    else if (intype == EMBL && outype == PRINTABLE) {
-        to_printable(inf, outf, EMBL);
-    }
-    else if (intype == EMBL && outype == ALMA) {
-        embl_to_alma(inf, outf);
-    }
-    else if (intype == ALMA && outype == MACKE) {
-        alma_to_macke(inf, outf);
-    }
-    else if (intype == ALMA && outype == GENBANK) {
-        alma_to_genbank(inf, outf);
-    }
-    else if (intype == ALMA && outype == PAUP) {
-        to_paup(inf, outf, ALMA);
-    }
-    else if (intype == ALMA && outype == PHYLIP) {
-        to_phylip(inf, outf, ALMA, dd);
-    }
-    else if (intype == ALMA && outype == PRINTABLE) {
-        to_printable(inf, outf, ALMA);
-    }
-    else if (outype == GCG) {
-        to_gcg(intype, inf);
-    }
-    else
-        error(90, "Unidentified input type or output type, Exit\n");
+    return NULL;
 }
 
-/* ------------------- COMMON SUBROUTINES ----------------------- */
-
-/* --------------------------------------------------------------
- *      Function init().
- *      Initialize data structure at the very beginning of running
- *              any program.
- */
-void init()
-{
-
-    /* initialize macke format */
-    data.macke.seqabbr = NULL;
-    data.macke.name = NULL;
-    data.macke.atcc = NULL;
-    data.macke.rna = NULL;
-    data.macke.date = NULL;
-    data.macke.nbk = NULL;
-    data.macke.acs = NULL;
-    data.macke.who = NULL;
-    data.macke.remarks = NULL;
-    data.macke.numofrem = 0;
-    data.macke.rna_or_dna = 'd';
-    data.macke.journal = NULL;
-    data.macke.title = NULL;
-    data.macke.author = NULL;
-    data.macke.strain = NULL;
-    data.macke.subspecies = NULL;
-    /* initialize genbank format */
-    data.gbk.locus = NULL;
-    data.gbk.definition = NULL;
-    data.gbk.accession = NULL;
-    data.gbk.keywords = NULL;
-    data.gbk.source = NULL;
-    data.gbk.organism = NULL;
-    data.gbk.numofref = 0;
-    data.gbk.reference = NULL;
-    data.gbk.comments.orginf.exist = 0;
-    data.gbk.comments.orginf.source = NULL;
-    data.gbk.comments.orginf.cc = NULL;
-    data.gbk.comments.orginf.formname = NULL;
-    data.gbk.comments.orginf.nickname = NULL;
-    data.gbk.comments.orginf.commname = NULL;
-    data.gbk.comments.orginf.hostorg = NULL;
-    data.gbk.comments.seqinf.exist = 0;
-    data.gbk.comments.seqinf.RDPid = NULL;
-    data.gbk.comments.seqinf.gbkentry = NULL;
-    data.gbk.comments.seqinf.methods = NULL;
-    data.gbk.comments.seqinf.comp5 = ' ';
-    data.gbk.comments.seqinf.comp3 = ' ';
-    data.gbk.comments.others = NULL;
-    /* initialize paup format */
-    data.paup.ntax = 0;
-    data.paup.equate = "~=.|><";
-    data.paup.gap = '-';
-    /* initial phylip data */
-    /* initial embl data */
-    data.embl.id = NULL;
-    data.embl.dateu = NULL;
-    data.embl.datec = NULL;
-    data.embl.description = NULL;
-    data.embl.os = NULL;
-    data.embl.accession = NULL;
-    data.embl.keywords = NULL;
-    data.embl.dr = NULL;
-    data.embl.numofref = 0;
-    data.embl.reference = NULL;
-    data.embl.comments.orginf.exist = 0;
-    data.embl.comments.orginf.source = NULL;
-    data.embl.comments.orginf.cc = NULL;
-    data.embl.comments.orginf.formname = NULL;
-    data.embl.comments.orginf.nickname = NULL;
-    data.embl.comments.orginf.commname = NULL;
-    data.embl.comments.orginf.hostorg = NULL;
-    data.embl.comments.seqinf.exist = 0;
-    data.embl.comments.seqinf.RDPid = NULL;
-    data.embl.comments.seqinf.gbkentry = NULL;
-    data.embl.comments.seqinf.methods = NULL;
-    data.embl.comments.seqinf.comp5 = ' ';
-    data.embl.comments.seqinf.comp3 = ' ';
-    data.embl.comments.others = NULL;
-    /* initial alma data */
-    data.alma.id = NULL;
-    data.alma.filename = NULL;
-    data.alma.format = UNKNOWN;
-    data.alma.defgap = '-';
-    data.alma.num_of_sequence = 0;
-    data.alma.sequence = NULL;
-    /* initial NBRF data format */
-    data.nbrf.id = NULL;
-    data.nbrf.description = NULL;
-    /* initial sequence data */
-    data.numofseq = 0;
-    data.seq_length = 0;
-    data.max = INITSEQ;
-    data.sequence = (char *)calloc(1, (unsigned)(sizeof(char) * INITSEQ + 1));
-
-    data.ids = NULL;
-    data.seqs = NULL;
-    data.lengths = NULL;
-    data.allocated = 0;
+void throw_conversion_not_supported(Format inType, Format ouType) { // __ATTR__NORETURN
+    throw_errorf(90, "Conversion from %s to %s is not supported",
+                 format2name(inType), format2name(ouType));
+}
+void throw_conversion_failure(Format inType, Format ouType) { // __ATTR__NORETURN
+    throw_errorf(91, "Conversion from %s to %s fails",
+                 format2name(inType), format2name(ouType));
+}
+void throw_conversion_not_implemented(Format inType, Format ouType) { // __ATTR__NORETURN
+    throw_errorf(92, "Conversion from %s to %s is not implemented (but is expected to be here)",
+                 format2name(inType), format2name(ouType));
+}
+void throw_unsupported_input_format(Format inType) {  // __ATTR__NORETURN
+    throw_errorf(93, "Unsupported input format %s", format2name(inType));
 }
 
-/* --------------------------------------------------------------
- *      Function init_seq_data().
- *              Init. seq. data.
- */
-void init_seq_data()
-{
-    data.numofseq = 0;
-    data.seq_length = 0;
+void throw_incomplete_entry() { // __ATTR__NORETURN
+    throw_error(84, "Reached EOF before complete entry has been read");
 }
+
+static int log_processed_counter = 0;
+static int log_seq_counter       = 0;
+
+void log_processed(int seqCount) {
+#if defined(CALOG)
+    fprintf(stderr, "Total %d sequences have been processed\n", seqCount);
+#endif // CALOG
+
+    log_processed_counter++;
+    log_seq_counter += seqCount;
+}
+
+// --------------------------------------------------------------------------------
+
+#if (UNIT_TESTS == 1)
+#include <arbdbt.h> // before test_unit.h!
+#include <test_unit.h>
+
+#define TEST_THROW // comment out to temp. disable intentional throws
+
+struct FormatSpec {
+    Format      type;           // GENBANK, MACKE, ...
+    const char *name;
+    const char *testfile;       // existing testfile (or NULL)
+    int         sequence_count; // number of sequences in 'testfile'
+};
+
+#define FORMATSPEC_OUT_ONLY(tag)                { tag, #tag, NULL, 1 }
+#define FORMATSPEC_GOT______(tag,file)          { tag, #tag, "impexp/" file ".eft.exported", 1 }
+#define FORMATSPEC_GOT_PLAIN(tag,file,seqcount) { tag, #tag, "impexp/" file, seqcount }
+
+static FormatSpec format_spec[] = {
+    // input formats
+    // FORMATSPEC_GOT______(GENBANK, "genbank"),
+    FORMATSPEC_GOT_PLAIN(GENBANK, "genbank.input", 3),
+    FORMATSPEC_GOT_PLAIN(EMBL, "embl.input", 5),
+    FORMATSPEC_GOT_PLAIN(MACKE, "macke.input", 5),
+    FORMATSPEC_GOT_PLAIN(SWISSPROT, "swissprot.input", 1), // SWISSPROT
+
+    // output formats
+    FORMATSPEC_OUT_ONLY(GCG),
+    FORMATSPEC_OUT_ONLY(NEXUS),
+    FORMATSPEC_OUT_ONLY(PHYLIP),
+    FORMATSPEC_OUT_ONLY(PHYLIP2),
+    FORMATSPEC_OUT_ONLY(PRINTABLE),
+};
+static const int fcount = ARRAY_ELEMS(format_spec);
+
+enum FormatNum { // same order as above
+    NUM_GENBANK,
+    NUM_EMBL,
+    NUM_MACKE,
+    NUM_SWISSPROT,
+
+    NUM_GCG,
+    NUM_NEXUS,
+    NUM_PHYLIP,
+
+    NUM_PHYLIP2,
+    NUM_PRINTABLE,
+
+    FORMATNUM_COUNT,
+};
+
+struct Capabilities {
+    bool supported;
+    bool neverReturns;
+
+    Capabilities() :
+        supported(true),
+        neverReturns(false)
+    {}
+
+    bool shall_be_tested() {
+#if defined(TEST_THROW)
+        return !neverReturns;
+#else // !defined(TEST_THROW)
+        return supported && !neverReturns;
+#endif
+    }
+};
+
+static Capabilities cap[fcount][fcount];
+#define CAP(from,to) (cap[NUM_##from][NUM_##to])
+
+#define TYPE(f)  format_spec[f].type
+#define NAME(f)  format_spec[f].name
+#define INPUT(f) format_spec[f].testfile
+#define EXSEQ(f) format_spec[f].sequence_count
+
+// ----------------------------------
+//      update .expected files ?
+
+// #define TEST_AUTO_UPDATE // never does update if undefined
+// #define UPDATE_ONLY_IF_MISSING
+#define UPDATE_ONLY_IF_MORE_THAN_DATE_DIFFERS
+
+inline bool more_than_date_differs(const char *file, const char *expected) {
+    return !GB_test_textfile_difflines(file, expected, 0, 1);
+}
+
+#if defined(TEST_AUTO_UPDATE)
+inline bool want_auto_update(const char *file, const char *expected) {
+    bool shall_update = true;
+
+    file     = file;
+    expected = expected;
+
+#if defined(UPDATE_ONLY_IF_MISSING)
+    shall_update = shall_update && !GB_is_regularfile(expected);
+#endif
+#if defined(UPDATE_ONLY_IF_MORE_THAN_DATE_DIFFERS)
+    shall_update = shall_update && more_than_date_differs(file, expected);
+#endif
+    return shall_update;
+}
+#else // !TEST_AUTO_UPDATE
+inline bool want_auto_update(const char * /* file */, const char * /* expected */) {
+    return false;
+}
+#endif
+
+static void test_expected_conversion(const char *file, const char *flavor) {
+    char *expected;
+    if (flavor) expected = GBS_global_string_copy("%s.%s.expected", file, flavor);
+    else expected = GBS_global_string_copy("%s.expected", file);
+
+    bool shall_update = want_auto_update(file, expected);
+    if (shall_update) {
+        // TEST_ASSERT(0); // completely avoid real update
+        TEST_ASSERT_ZERO_OR_SHOW_ERRNO(system(GBS_global_string("cp %s %s", file, expected)));
+    }
+    else {
+        TEST_ASSERT(!more_than_date_differs(file, expected));
+    }
+    free(expected);
+}
+
+static const char *test_convert(const char *inf, const char *outf, Format inType, Format ouType) {
+    const char *error = NULL;
+    try { convert(inf ? inf : "infilename", outf ? outf : "outfilename", inType, ouType); }
+    catch (Convaln_exception& exc) { error = GBS_global_string("%s (#%i)", exc.get_msg(), exc.get_code()); }
+    return error;
+}
+
+static void test_convert_by_format_num(int from, int to) {
+    char *toFile = GBS_global_string_copy("impexp/conv.%s_2_%s", NAME(from), NAME(to));
+    if (GB_is_regularfile(toFile)) TEST_ASSERT_ZERO_OR_SHOW_ERRNO(unlink(toFile));
+
+    int old_processed_counter = log_processed_counter;
+    int old_seq_counter       = log_seq_counter;
+
+    const char *error = test_convert(INPUT(from), toFile, TYPE(from), TYPE(to));
+
+    int converted_seqs = log_seq_counter-old_seq_counter;
+    int expected_seqs  = EXSEQ(from);
+    if (to == NUM_GCG) expected_seqs = 1; // we stop after first file (useless to generate numerous files)
+
+    Capabilities& me = cap[from][to];
+
+    if (me.supported) {
+        if (error) TEST_ERROR("convert() reports error: '%s' (for supported conversion)", error);
+        TEST_ASSERT(GB_is_regularfile(toFile));
+        TEST_ASSERT_EQUAL(converted_seqs, expected_seqs);
+        TEST_ASSERT_EQUAL(log_processed_counter, old_processed_counter+1);
+
+        TEST_ASSERT_LOWER_EQUAL(10, GB_size_of_file(toFile)); // less than 10 bytes
+        test_expected_conversion(toFile, NULL);
+        TEST_ASSERT_ZERO_OR_SHOW_ERRNO(unlink(toFile));
+    }
+    else {
+        if (!error) TEST_ERROR("No error for unsupported conversion '%s'", GBS_global_string("%s -> %s", NAME(from), NAME(to)));
+        TEST_ASSERT(strstr(error, "supported")); // wring error
+        TEST_ASSERT(!GB_is_regularfile(toFile)); // unsupported produced output
+    }
+    TEST_ASSERT(me.supported == !error);
+
+#if defined(TEST_THROW)
+    {
+        // test if conversion from empty and text file fails
+
+        const char *fromFile = "general/empty.input";
+
+        error = test_convert(fromFile, toFile, TYPE(from), TYPE(to));
+        TEST_ASSERT(error);
+
+        fromFile = "general/text.input";
+        error = test_convert(fromFile, toFile, TYPE(from), TYPE(to));
+        TEST_ASSERT(error);
+    }
+#endif
+
+    free(toFile);
+}
+
+inline bool isInputFormat(int num) { return is_input_format(TYPE(num)); }
+
+static void init_cap() {
+    for (int from = 0; from<fcount; from++) {
+        for (int to = 0; to<fcount; to++) {
+            Capabilities& me = cap[from][to];
+
+            if (to == NUM_PHYLIP2) me.neverReturns = true;
+            if (!isInputFormat(from)) me.supported = false;
+        }
+    }
+}
+
+#define NOT_SUPPORTED(t1,t2) TEST_ASSERT(isInputFormat(NUM_##t1)); cap[NUM_##t1][NUM_##t2].supported = false
+
+static int will_convert(int from) {
+    int will = 0;
+    for (int to = 0; to<fcount; to++) {
+        Capabilities& me = cap[from][to];
+        if (me.supported && me.shall_be_tested()) {
+            will++;
+        }
+    }
+    return will;
+}
+
+void TEST_converter() {
+    COMPILE_ASSERT(FORMATNUM_COUNT == fcount);
+
+    init_cap();
+
+    NOT_SUPPORTED(GENBANK, SWISSPROT);
+    NOT_SUPPORTED(EMBL, SWISSPROT);
+    NOT_SUPPORTED(SWISSPROT, GENBANK);
+    NOT_SUPPORTED(SWISSPROT, EMBL);
+
+    int possible     = 0;
+    int tested       = 0;
+    int unsupported  = 0;
+    int neverReturns = 0;
+
+    for (int from = 0; from<fcount; from++) {
+        TEST_ANNOTATE_ASSERT(GBS_global_string("while converting from '%s'", NAME(from)));
+        if (isInputFormat(from)) {
+            if (will_convert(from)<1) {
+                TEST_ERROR("Conversion from %s seems unsupported", NAME(from));
+            }
+        }
+        for (int to = 0; to<fcount; to++) {
+            possible++;
+            Capabilities& me = cap[from][to];
+
+            if (me.shall_be_tested()) {
+                TEST_ANNOTATE_ASSERT(GBS_global_string("while converting %s -> %s", NAME(from), NAME(to)));
+                test_convert_by_format_num(from, to);
+                tested++;
+            }
+
+            unsupported  += !me.supported;
+            neverReturns += me.neverReturns;
+        }
+    }
+
+    fprintf(stderr,
+            "Conversion test summary:\n"
+            " - formats:      %3i\n"
+            " - conversions:  %3i (possible)\n"
+            " - unsupported:  %3i\n"
+            " - tested:       %3i\n"
+            " - neverReturns: %3i (would never return - not checked)\n"
+            " - converted:    %3i\n",
+            fcount,
+            possible,
+            unsupported,
+            tested,
+            neverReturns,
+            tested-unsupported);
+
+    int untested = possible - tested;
+    TEST_ASSERT_EQUAL(untested, neverReturns);
+}
+
+#endif // UNIT_TESTS
