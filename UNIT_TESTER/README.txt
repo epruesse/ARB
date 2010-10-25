@@ -4,9 +4,12 @@ How to use ARB unit testing
 
 1. Invocation
 
+   Edit config.makefile. Set UNIT_TESTS to 1
+
    cd $ARBHOME
    make unit_tests
 
+   'make all' runs tests as well ('make build' doesn't)
 
 2. Add unit test code
 
@@ -71,9 +74,18 @@ How to use ARB unit testing
       Exceptions:
       - If test name starts with 'TEST_###' (where ### are digits), it declares a test with priority ###.
         The default priority is 100. Lower numbers mean higher priority, i.e. start more early. 
-      - If test name starts with 'TEST_SLOW' the test is executed after all other tests.
-        These is meant to indicate "slow" tests (i.e. tests which need more than a second to execute).
-        The priority of slow tests is '900'.
+      - Other predefined priorities are
+        - TEST_BASIC_ (=20)
+        - TEST_EARLY_ (=50)
+        - TEST_SLOW_  (=900)
+
+        TEST_SLOW_... is meant to indicate "slow" tests (i.e. tests which need more than
+        a second to execute).
+
+   Order of test units:
+
+      Tests from each unit (aka library) run consecutive.
+      The order of the units is defined in ARB Makefile.
 
 
 3. Valgrinding test code
@@ -119,7 +131,16 @@ How to use ARB unit testing
 
    Set 'RESTRICT_LIB=lib1:lib2' to test only a few libs.
 
-6. Auto-patch generation
+
+   Slow tests ('TEST_SLOW_...'; see above) will only run every 15 minutes.
+
+
+6. Global test environment
+
+   @@@ Not in SVN yet
+
+
+7. Auto-patch generation
 
    Whenever unit tests complete successfully, a patch (svn diff) is generated and
    stored inside $ARBHOME/patches.arb/
@@ -127,7 +148,7 @@ How to use ARB unit testing
    After DELETE_PATCHES_AFTER seconds the patch will be deleted automatically
    (see Makefile.setup).
 
-7. Building tests
+8. Building tests
 
    To build and execute a test-executable for a previously untested subdir
    the following steps are necessary:
