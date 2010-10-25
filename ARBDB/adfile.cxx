@@ -450,25 +450,40 @@ class DiffLines {
     Lines added_lines;
     Lines deleted_lines;
 
-public:
-    DiffLines() {}
+    LinesIter added_last_checked;
+    LinesIter deleted_last_checked;
 
-    void add(const char *diffline) {
+    static LinesIter next(LinesIter iter) { advance(iter, 1); return iter; }
+    static LinesIter last(Lines& lines) { return (++lines.rbegin()).base(); }
+
+    void set_checked() {
+        added_last_checked   = last(added_lines);
+        deleted_last_checked = last(deleted_lines);
+    }
+
+public:
+    DiffLines() { set_checked(); }
+
+    bool add(const char *diffline) {
+        bool did_add = true;
         switch (diffline[0]) {
             case '-': deleted_lines.push_back(diffline); break;
             case '+': added_lines.push_back(diffline); break;
+            default : did_add = false; break;
         }
         // fputs(diffline, stdout); // uncomment to show all difflines
+        return did_add;
     }
 
     int added() const  { return added_lines.size(); }
     int deleted() const  { return deleted_lines.size(); }
 
     void remove_accepted_lines(const difflineMode& mode) {
-        LinesIter d    = deleted_lines.begin();
+        LinesIter d    = next(deleted_last_checked);
         LinesIter dEnd = deleted_lines.end();
-        LinesIter a    = added_lines.begin();
+        LinesIter a    = next(added_last_checked);
         LinesIter aEnd = added_lines.end();
+
 
         while (d != dEnd && a != aEnd) {
             if (test_accept_diff_lines(d->c_str(), a->c_str(), mode)) {
@@ -480,12 +495,11 @@ public:
                 ++a;
             }
         }
+        set_checked();
     }
 
-    void print(FILE *out) const {
-        LinesCIter d    = deleted_lines.begin();
+    void print_from(FILE *out, LinesCIter a, LinesCIter d) const {
         LinesCIter dEnd = deleted_lines.end();
-        LinesCIter a    = added_lines.begin();
         LinesCIter aEnd = added_lines.end();
 
         while (d != dEnd && a != aEnd) {
@@ -494,6 +508,12 @@ public:
         }
         while (d != dEnd) { fputs(d->c_str(), out); ++d; }
         while (a != aEnd) { fputs(a->c_str(), out); ++a; }
+    }
+    
+    void print(FILE *out) const {
+        LinesCIter d = deleted_lines.begin();
+        LinesCIter a = added_lines.begin();
+        print_from(out, a, d);
     }
 };
 
@@ -510,9 +530,12 @@ bool GB_test_textfile_difflines(const char *file1, const char *file2, int expect
 
         if (diffout) {
 #define BUFSIZE 5000
-            char      *buffer = (char*)malloc(BUFSIZE);
-            bool       inHunk = false;
-            DiffLines  diff_lines;
+            char         *buffer = (char*)malloc(BUFSIZE);
+            bool          inHunk = false;
+            DiffLines     diff_lines;
+            difflineMode  mode(special_mode);
+
+            TEST_ASSERT_NO_ERROR(mode.get_error());
 
             while (!feof(diffout)) {
                 char *line = fgets(buffer, BUFSIZE, diffout);
@@ -521,20 +544,17 @@ bool GB_test_textfile_difflines(const char *file1, const char *file2, int expect
                 size_t len = strlen(line);
                 test_assert(line && len<(BUFSIZE-1)); // increase BUFSIZE
 
-                if (strncmp(line, "@@", 2) == 0) {
-                    inHunk = true;
-                }
+                bool remove_now = true;
+                if (strncmp(line, "@@", 2) == 0) inHunk = true;
                 else if (!inHunk && strncmp(line, "Index: ", 7) == 0) inHunk = false;
                 else if (inHunk) {
-                    diff_lines.add(line);
+                    remove_now = !diff_lines.add(line);
                 }
+
+                if (remove_now) diff_lines.remove_accepted_lines(mode);
             }
 
-            if (diff_lines.added() && diff_lines.deleted() && special_mode) {
-                difflineMode mode(special_mode);
-                TEST_ASSERT_NO_ERROR(mode.get_error());
-                diff_lines.remove_accepted_lines(mode);
-            }
+            diff_lines.remove_accepted_lines(mode);
 
             int added   = diff_lines.added();
             int deleted = diff_lines.deleted();
@@ -641,6 +661,27 @@ bool GB_test_files_equal(const char *file1, const char *file2) {
     return !error;
 }
 
+void TEST_diff_files() {
+    const char *file              = "diff/base.input";
+    const char *file_swapped      = "diff/swapped.input";
+    const char *file_date_swapped = "diff/date_swapped.input";
+    const char *file_date_changed = "diff/date_changed.input";
+
+    TEST_ASSERT(GB_test_textfile_difflines(file, file, 0, 0)); // check identity
+
+    // check if swapped lines are detected properly
+    TEST_ASSERT(GB_test_textfile_difflines(file, file_swapped, 1, 0));
+    TEST_ASSERT(GB_test_textfile_difflines(file, file_swapped, 1, 1));
+    TEST_ASSERT(GB_test_textfile_difflines(file, file_date_swapped, 3, 0));
+    TEST_ASSERT(GB_test_textfile_difflines(file, file_date_swapped, 3, 1));
+
+    TEST_ASSERT(GB_test_textfile_difflines(file, file_date_changed, 0, 1));
+    TEST_ASSERT(GB_test_textfile_difflines(file, file_date_changed, 6, 0));
+    
+    TEST_ASSERT(GB_test_textfile_difflines(file_date_swapped, file_date_changed, 6, 0));
+    TEST_ASSERT(GB_test_textfile_difflines(file_date_swapped, file_date_changed, 0, 1));
+}
+
 // --------------------------------------------------------------------------------
 // tests for global code included from central ARB headers (located in $ARBHOME/TEMPLATES)
 // @@@ should go to ARB_CORE library later
@@ -686,7 +727,5 @@ void TEST_logic() {
         }
     }
 }
-
-
 
 #endif // UNIT_TESTS
