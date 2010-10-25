@@ -8,8 +8,8 @@ SOURCE      Lactococcus lactis subsp. lactis
 REFERENCE   1  (bases 1 to 310)
   AUTHORS   Schoenhuber,W., Le Bourhis,G., Tremblay,J., Amann,R. and
             Kulakauskas,S.
-  TITLE     Utilization of tmRNA sequences for bacterial identification
   JOURNAL   BMC Microbiol. 1(1), 20-20 (2001)
+  TITLE     Utilization of tmRNA sequences for bacterial identification
   STANDARD  No information
 REFERENCE   2  (bases 1 to 310)
   AUTHORS   Schoenhuber,W., Le Bourhis,G., Tremblay,J., Amann,R.I. and
@@ -17,6 +17,7 @@ REFERENCE   2  (bases 1 to 310)
   JOURNAL   Submitted (02-MAY-2001) to the EMBL/GenBank/DDBJ databases.
             Microbiology, Institut National de la Recherche Agronomique,
             Domaine de Vilvert, Jouy-en-Josas 78352, France
+  TITLE     No information
   STANDARD  No information
 COMMENTS    Organism information
               Culture collection: NCDO 2118 tmRNA gene
@@ -43,8 +44,8 @@ SOURCE      Alfalfa mosaic virus
 REFERENCE   1  (bases 1 to 2593)
   AUTHORS   Cornelissen,B.J., Brederode,F.T.M., Veeneman,G.H., van Boom,J.H.
             and Bol,J.F.
-  TITLE     Complete nucleotide sequence of alfalfa mosaic virus RNA 2
   JOURNAL   No information
+  TITLE     Complete nucleotide sequence of alfalfa mosaic virus RNA 2
   STANDARD  No information
 COMMENTS                Data kindly reviewed (30-JAN-1986) by J.F. Bol
 BASE COUNT      74 a     52 c     56 g     99 t     14 others
@@ -55,7 +56,7 @@ ORIGIN
       181 cagtg180ga tccattattc caatgttaca aacatgtttt tgtatcattg atgctcgtaa
       241 gaaagatg24 0actcaagct gccgaagact tcctcgagag ttttggggga ga281
 //
-LOCUS       ER781674_17367 bp    RNA             RNA       24-OCT-2010
+LOCUS       ER781674_1    367 bp    RNA             RNA       25-OCT-2010
 DEFINITION  No information.
 ACCESSION   ER781674;
 KEYWORDS    No information.
@@ -99,7 +100,7 @@ ORIGIN
       301 ccatgcctca c300aggatg tcgcggttga aggcgaggcc ctggaacagg ttggccatcg
       361 ccac350
 //
-LOCUS       AY704744_17367 bp    RNA             RNA       24-OCT-2010
+LOCUS       AY704744_1    367 bp    RNA             RNA       25-OCT-2010
 DEFINITION  No information.
 ACCESSION   AY704744;
 KEYWORDS    No information.
@@ -110,8 +111,9 @@ REFERENCE   1
   JOURNAL   No information
   TITLE     No information
   STANDARD  No information
-COMMENTS                  5' end complete: No
-             3' end complete: Yes
+COMMENTS    Sequence information (bases 1 to 367)
+              5' end complete: No
+              3' end complete: Yes
             Next 2 lines are nonsense
 BASE COUNT     100 a     75 c     77 g     98 t     17 others
 ORIGIN
@@ -132,17 +134,18 @@ SOURCE      Macrococcus bovicus
 REFERENCE   1
   AUTHORS   Kloos,W.E., Ballard,D.N., George,C.G., Webster,J.A., Hubner,R.J.,
             Ludwig,W., Schleifer,K.H., Fiedler,F. and Schubert,K.
+  JOURNAL   Int. J. Syst. Bacteriol. 48, 859-877 (1998)
   TITLE     Delimiting the genus Staphylococcus through description of
             Macrococcus caseolyticus gen. nov., comb. nov. and the new species
             Macrococcus equipercicus sp. nov., Macrococcus bovicus sp. nov.,
             and Macrococcus carouselicus sp. nov.
-  JOURNAL   Int. J. Syst. Bacteriol. 48, 859-877 (1998)
   STANDARD  No information
 REFERENCE   2  (bases 1 to 1546)
   AUTHORS   Ludwig,W.
   JOURNAL   Submitted (26-NOV-1997) to the EMBL/GenBank/DDBJ databases. W.
             Ludwig, Lehrstuhl fuer Mikrobiologie, Technische Universitaet
             Muenchen, Munich, FRG
+  TITLE     No information
   STANDARD  No information
 BASE COUNT     401 a    353 c    470 g    320 t     89 others
 ORIGIN

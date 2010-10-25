@@ -247,11 +247,13 @@ static void embl_print_lines(Writer& write, const char *key, const char *content
     wrapMode.print(write, prefix, prefix, content, EMBLMAXLINE);
 }
 
-static void embl_print_lines_if_content(Writer& write, const char *key, const char *content, const WrapMode& wrapMode, bool followed_by_spacer) {
+static bool embl_print_lines_if_content(Writer& write, const char *key, const char *content, const WrapMode& wrapMode, bool followed_by_spacer) {
     if (has_content(content)) {
         embl_print_lines(write, key, content, wrapMode);
         if (followed_by_spacer) write.out("XX\n");
+        return true;
     }
+    return false;
 }
 
 static void embl_print_comment_if_content(Writer& write, const char *key, const char *content) {
@@ -314,11 +316,15 @@ void embl_out_header(const Embl& embl, const Seq& seq, Writer& write) {
     WrapMode wrapWords(true);
     WrapMode neverWrap(false);
 
-    embl_print_lines_if_content(write, "ID", embl.ID,          neverWrap,     true);
-    embl_print_lines_if_content(write, "AC", embl.accession,   wrapWords,     true);
-    embl_print_lines_if_content(write, "DT", embl.dateu,       neverWrap,     false);
-    embl_print_lines_if_content(write, "DT", embl.datec,       neverWrap,     true);
-    // @@@ change behavior ? (print XX if any of the two DTs has been written)
+    embl_print_lines_if_content(write, "ID", embl.ID,        neverWrap, true);
+    embl_print_lines_if_content(write, "AC", embl.accession, wrapWords, true);
+
+    {
+        bool dt1 = embl_print_lines_if_content(write, "DT", embl.dateu, neverWrap, false);
+        bool dt2 = embl_print_lines_if_content(write, "DT", embl.datec, neverWrap, false);
+        if (dt1 || dt2) write.out("XX\n");
+    }
+
     embl_print_lines_if_content(write, "DE", embl.description, wrapWords,     true);
     embl_print_lines_if_content(write, "KW", embl.keywords,    WrapMode(";"), true);
 
@@ -503,23 +509,12 @@ int etog(const Embl& embl, GenBank& gbk, const Seq& seq) { // __ATTR__USERESULT
 
     // LOCUS
     for (indi = str0len(temp); indi < 13; temp[indi++] = ' ') {}
-#if 1
-    // @@@ use else-version when done with refactoring
-    // fixes two bugs in LOCUS line (id changed, wrong number of base positions)
-    if (has_content(embl.dateu)) {
-        sprintf((temp + 10), "%7d bp    RNA             RNA       %s\n", seq.get_len(), genbank_date(embl.dateu));
-    }
-    else {
-        sprintf((temp + 10), "7%d bp    RNA             RNA       %s\n", seq.get_len(), genbank_date(today_date()));
-    }
-#else
     {
         const char *date = has_content(embl.dateu) ? embl.dateu : today_date();
         sprintf((temp + 10), "%7d bp    RNA             RNA       %s\n",
                 seq.get_len(),
                 genbank_date(date));
     }
-#endif
     freedup(gbk.locus, temp);
 
     // DEFINITION

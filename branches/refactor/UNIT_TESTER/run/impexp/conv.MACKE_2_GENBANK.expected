@@ -9,8 +9,8 @@ SOURCE      Lactococcus lactis subsp. lactis subsp. lactis str. NCDO2118 tmRNA
 REFERENCE   1  (bases 1 to 310)
   AUTHORS   Schoenhuber,W., Le Bourhis,G., Tremblay,J., Amann,R. and
             Kulakauskas,S.
-  TITLE     Utilization of tmRNA sequences for bacterial identification
   JOURNAL   BMC Microbiol. 1(1), 20-20 (2001)
+  TITLE     Utilization of tmRNA sequences for bacterial identification
   STANDARD  No information
 REFERENCE   2  (bases 1 to 310)
   AUTHORS   Schoenhuber,W., Le Bourhis,G., Tremblay,J., Amann,R.I. and
@@ -18,6 +18,7 @@ REFERENCE   2  (bases 1 to 310)
   JOURNAL   Submitted (02-MAY-2001) to the EMBL/GenBank/DDBJ databases.
             Microbiology, Institut National de la Recherche Agronomique,
             Domaine de Vilvert, Jouy-en-Josas 78352, France
+  TITLE     No information
   STANDARD  No information
 COMMENTS    Organism information
               Culture collection: NCDO 2118 tmRNA gene
@@ -41,8 +42,8 @@ SOURCE      Alfalfa mosaic virus.
 REFERENCE   1  (bases 1 to 2593)
   AUTHORS   Cornelissen,B.J., Brederode,F.T.M., Veeneman,G.H., van Boom,J .H.
             and Bol,J.F.
-  TITLE     Complete nucleotide sequence of alfalfa mosaic virus RNA 2
   JOURNAL   No information
+  TITLE     Complete nucleotide sequence of alfalfa mosaic virus RNA 2
   STANDARD  No information
 COMMENTS    Sequence information (bases 1 to 295)
               Corresponding GenBank entry: X01572;
@@ -113,7 +114,7 @@ REFERENCE   1
 COMMENTS    Sequence information (bases 1 to 367)
               Corresponding GenBank entry: AY704744;
               5' end complete: No
-             3' end complete: Yes
+              3' end complete: Yes
             Next 2 lines are nonsense
 BASE COUNT     100 a     75 c     77 g     98 t     17 others
 ORIGIN
@@ -134,17 +135,18 @@ SOURCE      Macrococcus bovicus.
 REFERENCE   1
   AUTHORS   Kloos,W.E., Ballard,D.N., George,C.G., Webster,J.A., Hubner,R.J .,
             Ludwig,W., Schleifer,K.H., Fiedler,F. and Schubert,K.
+  JOURNAL   Int. J. Syst. Bacteriol. 48, 859-877 (1998)
   TITLE     Delimiting the genus Staphylococcus through description of
             Macrococcus caseolyticus gen. nov., comb. nov. and the new species
             Macrococcus equipercicus sp. nov., Macrococcus bovicus sp. nov.,
             and Macrococcus carouselicus sp. nov.
-  JOURNAL   Int. J. Syst. Bacteriol. 48, 859-877 (1998)
   STANDARD  No information
 REFERENCE   2  (bases 1 to 1546)
   AUTHORS   Ludwig,W.
   JOURNAL   Submitted (26-NOV-1997) to the EMBL/GenBank/DDBJ databases.  W.
             Ludwig, Lehrstuhl fuer Mikrobiologie, Technische Universitaet
             Muenchen, Munich, FRG
+  TITLE     No information
   STANDARD  No information
 COMMENTS    Sequence information (bases 1 to 1633)
               Corresponding GenBank entry: Y15714;

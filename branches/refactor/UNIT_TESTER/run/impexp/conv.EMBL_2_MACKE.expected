@@ -1,15 +1,15 @@
 #-
 #-
 #-	editor
-#-	Sun Oct 24 21:41:53 2010
+#-	Sun Oct 24 21:52:26 2010
 #-
 #-
 #-	Reference sequence:  AF375552;
 #-	Attributes:
 #=		AF375552;	in  out  vis  prt   ord  dna  lin  5>3  func ref
 #=		A1MVRNA2	in  out  vis  prt   ord  dna  lin  5>3  func
-#=		ER781674_173	in  out  vis  prt   ord  dna  lin  5>3  func
-#=		AY704744_173	in  out  vis  prt   ord  dna  lin  5>3  func
+#=		ER781674_1	in  out  vis  prt   ord  dna  lin  5>3  func
+#=		AY704744_1	in  out  vis  prt   ord  dna  lin  5>3  func
 #=		Y15714;		in  out  vis  prt   ord  dna  lin  5>3  func
 #-
 #:AF375552;:name:Lactococcus lactis subsp. lactis
@@ -45,37 +45,36 @@
 #:A1MVRNA2:rem:KEYWORDS:unidentified reading frame.
 #:A1MVRNA2:rem:GenBank ACCESSION:X01572; J02002; K02702;
 #:A1MVRNA2:rem:Data kindly reviewed (30-JAN-1986) by J.F. Bol
-#:ER781674_173:rna:This is the content of the special entry 'Sequencing
-#:ER781674_173:rna:methods'
-#:ER781674_173:date:24-OCT-2010
-#:ER781674_173:acs:ER781674;
-#:ER781674_173:rem:GenBank ACCESSION:ER781674;
-#:ER781674_173:rem:Source of strain:This is the content of the special entry
-#:ER781674_173:rem::  'Source of strain'
-#:ER781674_173:rem:Former name:This is the content of the special entry
-#:ER781674_173:rem::  'Former name'
-#:ER781674_173:rem:Alternate name:This is the content of the special entry
-#:ER781674_173:rem::  'Alternate name'. It is quite long, since i need to test
-#:ER781674_173:rem::  some special entry which occupies many lines and when i
-#:ER781674_173:rem::  say many lines, i really mean at least five lines, so i
-#:ER781674_173:rem::  could not stop writing before i came here.
-#:ER781674_173:rem:Common name:This is the content of the special entry
-#:ER781674_173:rem::  'Common name'
-#:ER781674_173:rem:Host organism:This is the content of the special entry
-#:ER781674_173:rem::  'Host organism'
-#:ER781674_173:rem:RDP ID:This is the content of the special entry 'RDP ID'
-#:ER781674_173:rem:Sequencing methods:This is the content of the special entry
-#:ER781674_173:rem::  'Sequencing methods'
-#:ER781674_173:rem:3' end complete:  No
-#:ER781674_173:rem:5' end complete:  Yes
-#:ER781674_173:rem:Organism and Sequence information have only been added for
-#:ER781674_173:rem:test purposes. They are complete nonsense!
-#:AY704744_173:date:24-OCT-2010
-#:AY704744_173:acs:AY704744;
-#:AY704744_173:rem:GenBank ACCESSION:AY704744;
-#:AY704744_173:rem:3' end complete:  Yes
-#:AY704744_173:rem:5' end complete:  No
-#:AY704744_173:rem:Next 2 lines are nonsense
+#:ER781674_1:rna:This is the content of the special entry 'Sequencing methods'
+#:ER781674_1:date:24-OCT-2010
+#:ER781674_1:acs:ER781674;
+#:ER781674_1:rem:GenBank ACCESSION:ER781674;
+#:ER781674_1:rem:Source of strain:This is the content of the special entry
+#:ER781674_1:rem::  'Source of strain'
+#:ER781674_1:rem:Former name:This is the content of the special entry 'Former
+#:ER781674_1:rem::  name'
+#:ER781674_1:rem:Alternate name:This is the content of the special entry
+#:ER781674_1:rem::  'Alternate name'. It is quite long, since i need to test
+#:ER781674_1:rem::  some special entry which occupies many lines and when i
+#:ER781674_1:rem::  say many lines, i really mean at least five lines, so i
+#:ER781674_1:rem::  could not stop writing before i came here.
+#:ER781674_1:rem:Common name:This is the content of the special entry 'Common
+#:ER781674_1:rem::  name'
+#:ER781674_1:rem:Host organism:This is the content of the special entry 'Host
+#:ER781674_1:rem::  organism'
+#:ER781674_1:rem:RDP ID:This is the content of the special entry 'RDP ID'
+#:ER781674_1:rem:Sequencing methods:This is the content of the special entry
+#:ER781674_1:rem::  'Sequencing methods'
+#:ER781674_1:rem:3' end complete:  No
+#:ER781674_1:rem:5' end complete:  Yes
+#:ER781674_1:rem:Organism and Sequence information have only been added for
+#:ER781674_1:rem:test purposes. They are complete nonsense!
+#:AY704744_1:date:24-OCT-2010
+#:AY704744_1:acs:AY704744;
+#:AY704744_1:rem:GenBank ACCESSION:AY704744;
+#:AY704744_1:rem:3' end complete:  Yes
+#:AY704744_1:rem:5' end complete:  No
+#:AY704744_1:rem:Next 2 lines are nonsense
 #:Y15714;:name:Macrococcus bovicus
 #:Y15714;:date:17-NOV-1998
 #:Y15714;:acs:Y15714;
@@ -107,22 +106,22 @@ A1MVRNA2   100 tactaacacttcctcatcagag120tatgttcccgagtattccgttgaag
 A1MVRNA2   150 agatttccaacgaagtcgctgaactcgattcagtg180gatccattattc
 A1MVRNA2   200 caatgttacaaacatgtttttgtatcattgatgctcgtaagaaagatg24
 A1MVRNA2   250 0actcaagctgccgaagacttcctcgagagttttgggggaga281
-ER781674_173     0 tggcgccgtagatgcagcgcgactggcccggcttctcggcgtcgaggtac
-ER781674_173    50 tgcgccacgg60ccttggcgctggccacgtccgggcagaccacgatgctc
-ER781674_173   100 ttgcgtgagccggcgacgtgga120cgatgcccttggccagttcgatcat
-ER781674_173   150 cgtctggtcgttggtgatccgggcggcgatctcgg180cgtcggaatagt
-ER781674_173   200 ccttctcgccggcctcgttctccgccacggtcagcgtggagaagtcga24
-ER781674_173   250 0tggagacgcggacgaacgcctgcttggcggggcagagccataccgttgg
-ER781674_173   300 ccatgcctcac300aggatgtcgcggttgaaggcgaggccctggaacagg
-ER781674_173   350 ttggccatcgccac350
-AY704744_173     0 gcatcgatgaagaacgcagcgaaatgcgataagtaatgtgaattgcagaa
-AY704744_173    50 ttcagtgaat60catcgaatctttgaacgcacattgcgcccattagtatt
-AY704744_173   100 ctagtgggcatgcctgttcgag120cgtcatttcaacccttaagcttagc
-AY704744_173   150 ttagtattgggaatctgcttaaccgcagctcctta180aatctagttggc
-AY704744_173   200 agagcacagctgtactctgagcgtagtaattcattatctcgctttctg24
-AY704744_173   250 0aagacagtcgtacgatagccacaaactttgcatcttgcaaactttttaa
-AY704744_173   300 tggttgacctc300ggatcaggtaggaatacccgctgaacttaagcatat
-AY704744_173   350 caataagcggagga350
+ER781674_1     0 tggcgccgtagatgcagcgcgactggcccggcttctcggcgtcgaggtac
+ER781674_1    50 tgcgccacgg60ccttggcgctggccacgtccgggcagaccacgatgctc
+ER781674_1   100 ttgcgtgagccggcgacgtgga120cgatgcccttggccagttcgatcat
+ER781674_1   150 cgtctggtcgttggtgatccgggcggcgatctcgg180cgtcggaatagt
+ER781674_1   200 ccttctcgccggcctcgttctccgccacggtcagcgtggagaagtcga24
+ER781674_1   250 0tggagacgcggacgaacgcctgcttggcggggcagagccataccgttgg
+ER781674_1   300 ccatgcctcac300aggatgtcgcggttgaaggcgaggccctggaacagg
+ER781674_1   350 ttggccatcgccac350
+AY704744_1     0 gcatcgatgaagaacgcagcgaaatgcgataagtaatgtgaattgcagaa
+AY704744_1    50 ttcagtgaat60catcgaatctttgaacgcacattgcgcccattagtatt
+AY704744_1   100 ctagtgggcatgcctgttcgag120cgtcatttcaacccttaagcttagc
+AY704744_1   150 ttagtattgggaatctgcttaaccgcagctcctta180aatctagttggc
+AY704744_1   200 agagcacagctgtactctgagcgtagtaattcattatctcgctttctg24
+AY704744_1   250 0aagacagtcgtacgatagccacaaactttgcatcttgcaaactttttaa
+AY704744_1   300 tggttgacctc300ggatcaggtaggaatacccgctgaacttaagcatat
+AY704744_1   350 caataagcggagga350
 Y15714;     0 agagtttgatnngggctcaggatgaacgctggcggcgtgcctaatacatg
 Y15714;    50 caagtcgagc60ggacagacgaggtgcttgcacctctgaagtcagcggcg
 Y15714;   100 gacgggtgagtaacacgtgggt120aacctacctgtaagactgggataac

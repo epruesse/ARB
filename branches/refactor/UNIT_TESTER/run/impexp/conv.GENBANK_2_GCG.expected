@@ -8,8 +8,8 @@ SOURCE      Lactococcus lactis subsp. lactis.
 REFERENCE   1  (bases 1 to 310)
   AUTHORS   Schoenhuber,W., Le Bourhis,G., Tremblay,J., Amann,R. and
             Kulakauskas,S.
-  TITLE     Utilization of tmRNA sequences for bacterial identification
   JOURNAL   BMC Microbiol. 1(1), 20-20 (2001)
+  TITLE     Utilization of tmRNA sequences for bacterial identification
   STANDARD  No information
 REFERENCE   2  (bases 1 to 310)
   AUTHORS   Schoenhuber,W., Le Bourhis,G., Tremblay,J., Amann,R.I. and
@@ -17,6 +17,7 @@ REFERENCE   2  (bases 1 to 310)
   JOURNAL   Submitted (02-MAY-2001) to the EMBL/GenBank/DDBJ databases.
             Microbiology, Institut National de la Recherche Agronomique,
             Domaine de Vilvert, Jouy-en-Josas 78352, France
+  TITLE     No information
   STANDARD  No information
 COMMENTS    Organism information
               Culture collection: NCDO 2118 tmRNA gene
@@ -28,7 +29,7 @@ COMMENTS    Organism information
 BASE COUNT      91 a     59 c     74 g     86 t     17 others
 ORIGIN
 
-AF375552;  Length: 327  October 20, 2010  20:08:40  Type: N  Check: 6875  ..
+AF375552;  Length: 327  October 25, 2010  07:56:48  Type: N  Check: 6875  ..
 
        1  cattgtcgcg catgaactgc aactgctgag ggatcaggat aatcatccgc 
 

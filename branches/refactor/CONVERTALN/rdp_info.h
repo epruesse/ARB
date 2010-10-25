@@ -83,10 +83,12 @@ struct SeqInfo : Noncopyable {
         copy_content(methods, other.methods);
     }
     bool exists() const {
-        // @@@ as well check comp3/5
-        return (has_content(RDPid)    ||
-                has_content(gbkentry) ||
-                has_content(methods));
+        return
+            comp3 != ' ' ||
+            comp5 != ' ' ||
+            has_content(RDPid)    ||
+            has_content(gbkentry) ||
+            has_content(methods);
     }
 };
 

@@ -73,7 +73,7 @@ public:
         nbk        = no_content();
         acs        = no_content();
         who        = no_content();
-        rna_or_dna = 'd'; // @@@ why ?
+        rna_or_dna = 'd'; // @@@ why? (never is changed anywhere)
         journal    = no_content();
         title      = no_content();
         author     = no_content();

@@ -318,7 +318,7 @@ static void genbank_out_one_entry(Writer& write, const char *key, const char *co
     genbank_print_lines(write, key, content, wrapMode);
 }
 
-static void genbank_out_one_reference(Writer& write, const GenbankRef& gbk_ref, int gbk_ref_num, bool SIMULATE_BUG) {
+static void genbank_out_one_reference(Writer& write, const GenbankRef& gbk_ref, int gbk_ref_num) {
     WrapMode wrapWords(true);
 
     {
@@ -333,20 +333,8 @@ static void genbank_out_one_reference(Writer& write, const GenbankRef& gbk_ref, 
     }
 
     genbank_out_one_entry(write, "  AUTHORS   ", gbk_ref.author, WrapMode(" "), NOPERIOD);
-
-    if (SIMULATE_BUG) { // @@@
-        // skip title completely, if there is no information
-        if (has_content(gbk_ref.title)) {
-            genbank_out_one_entry(write, "  TITLE     ", gbk_ref.title, wrapWords, NOPERIOD);
-        }
-        genbank_out_one_entry(write, "  JOURNAL   ", gbk_ref.journal, wrapWords, NOPERIOD);
-    }
-    else {
-        // print title also, if there is no information (like other fields here)
-        genbank_out_one_entry(write, "  JOURNAL   ", gbk_ref.journal, wrapWords, NOPERIOD);
-        genbank_out_one_entry(write, "  TITLE     ", gbk_ref.title, wrapWords, NOPERIOD);
-    }
-
+    genbank_out_one_entry(write, "  JOURNAL   ", gbk_ref.journal, wrapWords, NOPERIOD);
+    genbank_out_one_entry(write, "  TITLE     ", gbk_ref.title, wrapWords, NOPERIOD);
     genbank_out_one_entry(write, "  STANDARD  ", gbk_ref.standard, wrapWords, NOPERIOD);
 }
 
@@ -360,9 +348,15 @@ static void genbank_print_comment_if_content(Writer& write, const char *key, con
     WrapMode(true).print(write, first, other, content, GBMAXLINE);
 }
 
-static void genbank_out_origin(const Seq& seq, Writer& write) {
+static void genbank_out_origin(const Seq& seq, Writer& write) { // @@@ inline method
     // Output sequence data in genbank format.
     seq.out(write, GENBANK);
+}
+
+inline void genbank_print_completeness(Writer& write, char compX, char X) {
+    if (compX == ' ') return;
+    ca_assert(compX == 'y' || compX == 'n');
+    write.outf("              %c' end complete: %s\n", X, compX == 'y' ? "Yes" : "No");
 }
 
 void genbank_out_header(const GenBank& gbk, const Seq& seq, Writer& write) {
@@ -378,11 +372,11 @@ void genbank_out_header(const GenBank& gbk, const Seq& seq, Writer& write) {
 
     if (gbk.has_refs()) {
         for (indi = 0; indi < gbk.get_refcount(); indi++) {
-            genbank_out_one_reference(write, gbk.get_ref(indi), indi+1, true);
+            genbank_out_one_reference(write, gbk.get_ref(indi), indi+1);
         }
     }
     else {
-        genbank_out_one_reference(write, GenbankRef(), 1, false);
+        genbank_out_one_reference(write, GenbankRef(), 1);
     }
 
     const RDP_comments& comments = gbk.comments;
@@ -390,8 +384,6 @@ void genbank_out_header(const GenBank& gbk, const Seq& seq, Writer& write) {
     const SeqInfo&      seqinf   = comments.seqinf;
 
     if (comments.exists()) {
-        // @@@ code below is broken
-        // see ../UNIT_TESTER/run/impexp/conv.EMBL_2_GENBANK.expected@Next
         write.out("COMMENTS    ");
 
         if (orginf.exists()) {
@@ -414,14 +406,10 @@ void genbank_out_header(const GenBank& gbk, const Seq& seq, Writer& write) {
             genbank_print_comment_if_content(write, "RDP ID: ",                      seqinf.RDPid);
             genbank_print_comment_if_content(write, "Corresponding GenBank entry: ", seqinf.gbkentry); // this field is used in ../lib/import/.rdp_old.ift
             genbank_print_comment_if_content(write, "Sequencing methods: ",          seqinf.methods);
+
+            genbank_print_completeness(write, seqinf.comp5, '5');
+            genbank_print_completeness(write, seqinf.comp3, '3');
         }
-
-        // @@@ DRY (when bug was removed):
-        if      (seqinf.comp5 == 'n') write.out("              5' end complete: No\n");
-        else if (seqinf.comp5 == 'y') write.out("              5' end complete: Yes\n");
-
-        if      (seqinf.comp3 == 'n') write.out("              3' end complete: No\n");
-        else if (seqinf.comp3 == 'y') write.out("             3' end complete: Yes\n"); // @@@ now you see the 'bug'
 
         // @@@ use wrapper for code below ?
         // print GBINDENT spaces of the first line
