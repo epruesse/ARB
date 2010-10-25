@@ -4,7 +4,7 @@
 #ifndef SEQ_H
 #include "seq.h"
 #endif
-#ifndef _CPP_VECTOR
+#ifndef _GLIBCXX_VECTOR
 #include <vector>
 #endif
 
