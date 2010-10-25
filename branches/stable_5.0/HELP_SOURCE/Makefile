@@ -207,7 +207,8 @@ clean:
 	rm -f $(TOOL_OBJECTS) $(BINARIES)
 	rm -f `find $(HLP_DEST) -name "*.hlp"`
 	rm -f `find $(HTML_LOCATION) -name "*.html"`
-	rm -f $(XML_DEPEND) dummy `find $(XML_LOCATION) -name "*.xml"`
+	rm -f $(XML_DEPEND) dummy _index.html
+	rm -f `find $(XML_LOCATION) -name "*.xml"`
 	$(MAKE) -C $(HLP_GENERATED) clean
 
 # --------------------------------------------------------------------------------
