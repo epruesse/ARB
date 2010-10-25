@@ -116,6 +116,9 @@ ID   AY704744_1; parent: AY704744
 XX
 AC   AY704744;
 XX
+CC   Sequence information (bases 1 to 367)
+CC     5' end complete: No
+CC     3' end complete: Yes
 CC   Next 2 lines are nonsense
 XX
 SQ   Sequence 367 BP; 100 A; 75 C; 77 G; 98 T; 17 other;

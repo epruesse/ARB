@@ -286,8 +286,6 @@ void TEST_converter() {
             }
         }
         for (int to = 0; to<fcount; to++) {
-            if (from == to) continue; // @@@ skip self-conversions atm
-
             possible++;
             Capabilities& me = cap[from][to];
 
