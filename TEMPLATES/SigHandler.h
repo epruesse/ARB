@@ -80,7 +80,7 @@ inline SigHandler install_SigHandler(int sig, SigHandler handler) {
 }
 inline void uninstall_SigHandler(int sig, SigHandler handler, SigHandler old_handler) {
     if (old_handler != SIG_ERR) {
-        ASSERT_RESULT(SigHandler, signal(sig, old_handler), handler);
+        ASSERT_RESULT(SigHandler, handler, signal(sig, old_handler));
     }
 }
 

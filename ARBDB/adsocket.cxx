@@ -309,7 +309,7 @@ gbcmc_comm *gbcmc_open(const char *path) {
         }
         return 0;
     }
-    ASSERT_RESULT_PREDICATE(INSTALL_SIGHANDLER(SIGPIPE, gbcmc_suppress_sigpipe, "gbcmc_open"), is_default_or_ignore_sighandler);
+    ASSERT_RESULT_PREDICATE(is_default_or_ignore_sighandler, INSTALL_SIGHANDLER(SIGPIPE, gbcmc_suppress_sigpipe, "gbcmc_open"));
     gb_local->iamclient = 1;
     return link;
 }
