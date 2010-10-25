@@ -119,7 +119,7 @@ public:
     AW_awar *unmap();           /* map to original address */
 
 #if defined(ASSERTION_USED)
-    bool is_valid() const { return !!gb_var == !!gb_origin;; } // both or none NULL
+    bool is_valid() const { return correlated(gb_var, gb_origin); } // both or none NULL
 #endif // ASSERTION_USED
 
     void get(char **p_string)  { freeset(*p_string, read_string()); } /* deletes existing targets !!! */

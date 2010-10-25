@@ -15,6 +15,9 @@
 #include <unistd.h>
 #include <sys/stat.h>
 
+#include <list>
+#include <string>
+
 #include "gb_local.h"
 #include "gb_load.h"
 
@@ -321,3 +324,369 @@ char **GBS_read_dir(const char *dir, const char *mask) {
     return names;
 }
 
+// --------------------------------------------------------------------------------
+
+#if (UNIT_TESTS == 1)
+#include <test_unit.h>
+
+// GB_test_textfile_difflines + GB_test_files_equal are helper functions used
+// by unit tests.
+//
+// @@@ GB_test_textfile_difflines + GB_test_files_equal -> ARBCORE
+
+#define MAX_REGS 13
+
+class difflineMode {
+    int               mode;
+    GBS_regex        *reg[MAX_REGS];
+    const char       *replace[MAX_REGS];
+    int               count;
+    mutable GB_ERROR  error;
+
+    void add(const char *regEx, GB_CASE case_flag, const char *replacement) {
+        if (!error) {
+            gb_assert(count<MAX_REGS);
+            reg[count] = GBS_compile_regexpr(regEx, case_flag, &error);
+            if (!error) {
+                replace[count] = replacement;
+                count++;
+            }
+        }
+    }
+
+public:
+    difflineMode(int mode_)
+        : mode(mode_),
+          count(0),
+          error(NULL)
+    {
+        memset(reg, 0, sizeof(reg));
+        switch (mode) {
+            case 0: break;
+            case 1:  {
+                add("[0-9]{2}:[0-9]{2}:[0-9]{2}", GB_MIND_CASE, "<TIME>");
+
+                add("(Mon|Tue|Wed|Thu|Fri|Sat|Sun)", GB_IGNORE_CASE, "<DOW>");
+                add("(January|February|March|April|May|June|July|August|September|October|November|December)", GB_IGNORE_CASE, "<Month>");
+                add("(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)", GB_IGNORE_CASE, "<MON>");
+
+                add("<MON>[ -][0-9]{4}",   GB_IGNORE_CASE, "<MON> <YEAR>");
+                add("<Month>[ -][0-9]{4}", GB_IGNORE_CASE, "<Month> <YEAR>");
+
+                add("<TIME>[ -][0-9]{4}",  GB_IGNORE_CASE, "<TIME> <YEAR>");
+
+                add("<MON>[ -][0-9 ]?[0-9]",   GB_IGNORE_CASE, "<MON> <DAY>");
+                add("<Month>[ -][0-9 ]?[0-9]", GB_IGNORE_CASE, "<Month> <DAY>");
+
+                add("[0-9]{2}[ -]<MON>",   GB_IGNORE_CASE, "<DAY> <MON>");
+                add("[0-9]{2}[ -]<Month>", GB_IGNORE_CASE, "<DAY> <Month>");
+                
+                add("<DAY>, [0-9]{4}", GB_IGNORE_CASE, "<DAY> <YEAR>");
+                break;
+            }
+            default: gb_assert(0); break;
+        }
+    }
+    ~difflineMode() {
+        for (int i = 0; i<count; ++i) {
+            GBS_free_regexpr(reg[i]);
+            reg[i] = NULL;
+        }
+    }
+
+    const char *get_error() const { return error; }
+    int get_count() const { return count; }
+
+    void replaceAll(char*& str) const {
+        for (int i = 0; i<count; ++i) {
+            size_t      matchlen;
+            const char *matched = GBS_regmatch_compiled(str, reg[i], &matchlen);
+
+            if (matched) {
+                char       *prefix = GB_strpartdup(str, matched-1);
+                const char *suffix = matched+matchlen;
+
+                freeset(str, GBS_global_string_copy("%s%s%s", prefix, replace[i], suffix));
+                free(prefix);
+            }
+        }
+    }
+    void replaceAll(char*& str1, char*& str2) const { replaceAll(str1); replaceAll(str2); }
+};
+
+static void cutEOL(char *s) {
+    char *lf      = strchr(s, '\n');
+    if (lf) lf[0] = 0;
+}
+
+static bool test_accept_diff_lines(const char *line1, const char *line2, const difflineMode& mode) {
+    if (*line1++ != '-') return false;
+    if (*line2++ != '+') return false;
+
+    char *dup1 = strdup(line1);
+    char *dup2 = strdup(line2);
+
+    cutEOL(dup1); // side-effect: accepts missing trailing newline
+    cutEOL(dup2);
+
+    mode.replaceAll(dup1, dup2);
+
+    bool equalNow = strcmp(dup1, dup2) == 0;
+#if defined(DEBUG)
+    // printf("dup1='%s'\ndup2='%s'\n", dup1, dup2); // uncomment this line to trace replaces
+#endif // DEBUG
+
+    free(dup2);
+    free(dup1);
+
+    return equalNow;
+}
+
+class DiffLines {
+    typedef std::list<std::string> Lines;
+    typedef Lines::iterator        LinesIter;
+    typedef Lines::const_iterator  LinesCIter;
+
+    Lines added_lines;
+    Lines deleted_lines;
+
+public:
+    DiffLines() {}
+
+    void add(const char *diffline) {
+        switch (diffline[0]) {
+            case '-': deleted_lines.push_back(diffline); break;
+            case '+': added_lines.push_back(diffline); break;
+        }
+        // fputs(diffline, stdout); // uncomment to show all difflines
+    }
+
+    int added() const  { return added_lines.size(); }
+    int deleted() const  { return deleted_lines.size(); }
+
+    void remove_accepted_lines(const difflineMode& mode) {
+        LinesIter d    = deleted_lines.begin();
+        LinesIter dEnd = deleted_lines.end();
+        LinesIter a    = added_lines.begin();
+        LinesIter aEnd = added_lines.end();
+
+        while (d != dEnd && a != aEnd) {
+            if (test_accept_diff_lines(d->c_str(), a->c_str(), mode)) {
+                d = deleted_lines.erase(d);
+                a = added_lines.erase(a);
+            }
+            else {
+                ++d;
+                ++a;
+            }
+        }
+    }
+
+    void print(FILE *out) const {
+        LinesCIter d    = deleted_lines.begin();
+        LinesCIter dEnd = deleted_lines.end();
+        LinesCIter a    = added_lines.begin();
+        LinesCIter aEnd = added_lines.end();
+
+        while (d != dEnd && a != aEnd) {
+            fputs(d->c_str(), out); ++d;
+            fputs(a->c_str(), out); ++a;
+        }
+        while (d != dEnd) { fputs(d->c_str(), out); ++d; }
+        while (a != aEnd) { fputs(a->c_str(), out); ++a; }
+    }
+};
+
+
+bool GB_test_textfile_difflines(const char *file1, const char *file2, int expected_difflines, int special_mode) {
+    // special_mode: 0 = none, 1 = accept date and time changes as equal
+    const char *error   = NULL;
+
+    if      (!GB_is_regularfile(file1)) error = GBS_global_string("No such file '%s'", file1);
+    else if (!GB_is_regularfile(file2)) error = GBS_global_string("No such file '%s'", file2);
+    else {
+        char *cmd     = GBS_global_string_copy("/usr/bin/diff --unified %s %s", file1, file2);
+        FILE *diffout = popen(cmd, "r");
+
+        if (diffout) {
+#define BUFSIZE 5000
+            char      *buffer = (char*)malloc(BUFSIZE);
+            bool       inHunk = false;
+            DiffLines  diff_lines;
+
+            while (!feof(diffout)) {
+                char *line = fgets(buffer, BUFSIZE, diffout);
+                if (!line) break;
+
+                size_t len = strlen(line);
+                test_assert(line && len<(BUFSIZE-1)); // increase BUFSIZE
+
+                if (strncmp(line, "@@", 2) == 0) {
+                    inHunk = true;
+                }
+                else if (!inHunk && strncmp(line, "Index: ", 7) == 0) inHunk = false;
+                else if (inHunk) {
+                    diff_lines.add(line);
+                }
+            }
+
+            if (diff_lines.added() && diff_lines.deleted() && special_mode) {
+                difflineMode mode(special_mode);
+                TEST_ASSERT_NO_ERROR(mode.get_error());
+                diff_lines.remove_accepted_lines(mode);
+            }
+
+            int added   = diff_lines.added();
+            int deleted = diff_lines.deleted();
+
+            if (added != deleted) {
+                error = GBS_global_string("added lines (=%i) differ from deleted lines(=%i)", added, deleted);
+            }
+            else if (added != expected_difflines) {
+                error = GBS_global_string("files differ in %i lines (expected=%i)", added, expected_difflines);
+            }
+            if (error) {
+                fputs("Different lines:\n", stdout);
+                diff_lines.print(stdout);
+                fputc('\n', stdout);
+            }
+
+            free(buffer);
+            IF_ASSERTION_USED(int err =) pclose(diffout);
+            gb_assert(err != -1);
+#undef BUFSIZE
+        }
+        else {
+            error = GBS_global_string("failed to run diff (%s)", cmd);
+        }
+        free(cmd);
+    }
+    // return result;
+    if (error) printf("GB_test_textfile_difflines(%s, %s) fails: %s\n", file1, file2, error);
+    return !error;
+}
+
+bool GB_test_files_equal(const char *file1, const char *file2) {
+    const char        *error = NULL;
+    FILE              *fp1   = fopen(file1, "rb");
+
+    if (!fp1) {
+        printf("can't open '%s'\n", file1);
+        error = "i/o error";
+    }
+    else {
+        FILE *fp2 = fopen(file2, "rb");
+        if (!fp2) {
+            printf("can't open '%s'\n", file2);
+            error = "i/o error";
+        }
+        else {
+            const int      BLOCKSIZE    = 4096;
+            unsigned char *buf1         = (unsigned char*)malloc(BLOCKSIZE);
+            unsigned char *buf2         = (unsigned char*)malloc(BLOCKSIZE);
+            int            equal_bytes  = 0;
+
+            while (!error) {
+                int read1  = fread(buf1, 1, BLOCKSIZE, fp1);
+                int read2  = fread(buf2, 1, BLOCKSIZE, fp2);
+                int common = read1<read2 ? read1 : read2;
+
+                if (!common) {
+                    if (read1 != read2) error = "filesize differs";
+                    break;
+                }
+
+                if (memcmp(buf1, buf2, common) == 0) {
+                    equal_bytes += common;
+                }
+                else {
+                    int x = 0;
+                    while (buf1[x] == buf2[x]) {
+                        x++;
+                        equal_bytes++;
+                    }
+                    error = "content differs";
+
+                    // x is the position inside the current block
+                    const int DUMP       = 7;
+                    int       y1         = x >= DUMP ? x-DUMP : 0;
+                    int       y2         = (x+DUMP)>common ? common : (x+DUMP);
+                    int       blockstart = equal_bytes-x;
+
+                    for (int y = y1; y <= y2; y++) {
+                        fprintf(stderr, "[0x%04x]", blockstart+y);
+                        arb_test::print_pair(buf1[y], buf2[y]);
+                        fputc(' ', stderr);
+                        arb_test::print_hex_pair(buf1[y], buf2[y]);
+                        if (x == y) fputs("                     <- diff", stderr);
+                        fputc('\n', stderr);
+                    }
+                    if (y2 == common) {
+                        fputs("[end of block - truncated]\n", stderr);
+                    }
+                }
+            }
+
+            if (error) printf("test_files_equal: equal_bytes=%i\n", equal_bytes);
+            test_assert(error || equal_bytes); // comparing empty files is nonsense
+
+            free(buf2);
+            free(buf1);
+            fclose(fp2);
+        }
+        fclose(fp1);
+    }
+
+    if (error) printf("test_files_equal(%s, %s) fails: %s\n", file1, file2, error);
+    return !error;
+}
+
+// --------------------------------------------------------------------------------
+// tests for global code included from central ARB headers (located in $ARBHOME/TEMPLATES)
+// @@@ should go to ARB_CORE library later
+
+void TEST_logic() {
+#define FOR_ANY_BOOL(name) for (int name = 0; name<2; ++name)
+
+    TEST_ASSERT(implicated(true, true));
+    // for (int any = 0; any<2; ++any) {
+    FOR_ANY_BOOL(any) {
+        TEST_ASSERT(implicated(false, any)); // "..aus Falschem folgt Beliebiges.."
+        TEST_ASSERT(implicated(any, any));
+
+        TEST_ASSERT( correlated(any, any));
+        TEST_ASSERT(!correlated(any, !any));
+        TEST_ASSERT(!contradicted(any, any));
+        TEST_ASSERT( contradicted(any, !any));
+    }
+
+    TEST_ASSERT(correlated(false, false));
+
+    TEST_ASSERT(contradicted(true, false));
+    TEST_ASSERT(contradicted(false, true));
+
+    FOR_ANY_BOOL(kermitIsFrog) {
+        FOR_ANY_BOOL(kermitIsGreen) {
+            bool allFrogsAreGreen  = implicated(kermitIsFrog, kermitIsGreen);
+            bool onlyFrogsAreGreen = implicated(kermitIsGreen, kermitIsFrog);
+
+            TEST_ASSERT(implicated( kermitIsFrog  && allFrogsAreGreen,  kermitIsGreen));
+            TEST_ASSERT(implicated(!kermitIsGreen && allFrogsAreGreen, !kermitIsFrog));
+
+            TEST_ASSERT(implicated( kermitIsGreen && onlyFrogsAreGreen,  kermitIsFrog));
+            TEST_ASSERT(implicated(!kermitIsFrog  && onlyFrogsAreGreen, !kermitIsGreen));
+
+            TEST_ASSERT(implicated(kermitIsFrog  && !kermitIsGreen, !allFrogsAreGreen));
+            TEST_ASSERT(implicated(kermitIsGreen && !kermitIsFrog,  !onlyFrogsAreGreen));
+
+            TEST_ASSERT(correlated(
+                                  correlated(kermitIsGreen, kermitIsFrog), 
+                                  allFrogsAreGreen && onlyFrogsAreGreen
+                                  ));
+        }
+    }
+}
+
+
+
+#endif // UNIT_TESTS

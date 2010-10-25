@@ -23,6 +23,7 @@ SKIPPED_SLOW:=$(shell (test -f skipslow.stamp && ls -1 skipslow.stamp))
 ifneq ('$(SKIPPED_SLOW)','')
 PATCHNAMESUFFIX:=$(PATCHNAMESUFFIX)__SLOW_skipped
 endif
+PATCHNAMESUFFIX:=$(subst :,_,$(PATCHNAMESUFFIX))
 
 # -------------------- targets
 

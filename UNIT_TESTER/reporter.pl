@@ -130,15 +130,58 @@ sub slow_note() {
   return (shall_run_slow() ? "" : " (slow tests skipped)");
 }
 
+my $BigOk = <<EndOk;
+  __  __ _    _  _
+ /  \\(  / )  (_)( \\
+(  O ))  (    _  ) )
+ \\__/(__\\_)  (_)(_/
+EndOk
+
+my $BigFailed = <<EndFailed;
+ ____  __   __  __    ____  ____   _
+(  __)/ _\\ (  )(  )  (  __)(    \\ / \\
+ ) _)/    \\ )( / (_/\\ ) _)  ) D ( \\_/
+(__) \\_/\\_/(__)\\____/(____)(____/ (_)
+EndFailed
+
+
 sub print_summary() {
   print "\n-------------------- [ Unit-test summary ] --------------------\n";
-  print sprintf(" Tests   : %4i\n", $tests);
-  print sprintf(" Skipped : %4i =%s%s\n", $skipped, percent($skipped,$tests), slow_note());
-  print sprintf(" Passed  : %4i =%s\n", $passed, percent($passed,$tests));
-  print sprintf(" Failed  : %4i =%s\n", $failed, percent($failed,$tests));
-  print sprintf(" Elapsed : %4i ms\n", $elapsed);
-  print sprintf(" Crashed : %4i units\n", $crashed);
-  print sprintf(" Warnings: %4i\n", $warnings);
+
+  my @summary = ();
+
+  push @summary, sprintf(" Tests   : %4i", $tests);
+  push @summary, sprintf(" Skipped : %4i =%s%s", $skipped, percent($skipped,$tests), slow_note());
+  push @summary, sprintf(" Passed  : %4i =%s", $passed, percent($passed,$tests));
+  push @summary, sprintf(" Failed  : %4i =%s", $failed, percent($failed,$tests));
+  push @summary, sprintf(" Elapsed : %4i ms", $elapsed);
+  push @summary, sprintf(" Crashed : %4i units", $crashed);
+  push @summary, sprintf(" Warnings: %4i", $warnings);
+
+  my @big;
+  my $Big = $failed ? $BigFailed : $BigOk;
+  @big= split '\n', $Big;
+
+  my $col = 0;
+  for (my $i=0; $i<scalar(@big); $i++) {
+    my $len = length($summary[$i]);
+    if ($len>$col) { $col = $len; }
+  }
+
+  $col += 6; # add horizontal offset
+
+  my $vOffset = scalar(@summary) - scalar(@big);
+  if ($vOffset<0) { $vOffset = 0; }
+
+  for (my $i=0; $i<scalar(@big); $i++) {
+    my $j = $i+$vOffset;
+    my $padded = $summary[$j];
+    my $len = length($padded);
+    while ($len<$col) { $padded .= ' '; $len++; }
+    $summary[$j] = $padded.$big[$i];
+  }
+
+  foreach (@summary) { print $_."\n"; }
 }
 
 sub do_report() {

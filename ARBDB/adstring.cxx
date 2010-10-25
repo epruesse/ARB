@@ -1242,7 +1242,7 @@ GB_ERROR gbcm_test_address(long *address, long key) {
     // ----------------------------------------
 
     suppress_sigsegv = false;
-    gb_assert(!trapped || trapped == 667);
+    gb_assert(implicated(trapped, trapped == 667));
 
     GB_ERROR error = NULL;
     if (segv_occurred) {
@@ -1336,7 +1336,7 @@ bool GBK_raises_SIGSEGV(void (*cb)(void), bool result_in_valgrind) {
                 }
             }
             suppress_sigsegv = false;
-            gb_assert(!trapped || trapped == 667);
+            gb_assert(implicated(trapped, trapped == 667));
         }
         // end of critical section
         // ----------------------------------------

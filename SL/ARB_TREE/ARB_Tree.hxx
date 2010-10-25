@@ -53,7 +53,7 @@ class ARB_tree_root : public Noncopyable {
 
 protected:
     void set_gb_tree(GBDATA *gbTree) {
-        at_assert(!gb_tree || gb_tree == gbTree);
+        at_assert(implicated(gb_tree, gb_tree == gbTree));
         at_assert(tree_name);
         gb_tree = gbTree;
     }

@@ -495,6 +495,7 @@ static GB_ERROR XML_recursive(GBDATA *gbd) {
                 char *content = GB_read_as_string(gbd);
                 if (content) {
                     XML_Text text(content);
+                    free(content);
                 }
                 else {
                     tag->add_attribute("error", "unsavable");
@@ -600,12 +601,9 @@ static GB_ERROR export_format_single(const char *db_name, const char *formname, 
                     }
                     xml->add_attribute("export_date", GB_date_string());
                     {
-                        char *fulldtd = AW_unfold_path("lib/dtd", "ARBHOME");
-                        XML_Comment rem(GBS_global_string("There's a basic version of ARB_seq_export.dtd in %s\n"
-                                                          "but you might need to expand it by yourself,\n"
-                                                          "because the ARB-database may contain any kind of fields.",
-                                                          fulldtd));
-                        free(fulldtd);
+                        XML_Comment rem("There is a basic version of ARB_seq_export.dtd in $ARBHOME/lib/dtd\n"
+                                        "but you might need to expand it by yourself,\n"
+                                        "because the ARB-database may contain any kind of fields.");
                     }
                 }
 
@@ -732,3 +730,90 @@ GB_ERROR SEQIO_export_by_format(GBDATA *gb_main, int marked_only, AP_filter *fil
 
     return error;
 }
+
+// --------------------------------------------------------------------------------
+
+#if (UNIT_TESTS == 1)
+#include <test_unit.h>
+
+// uncomment to auto-update exported files
+// (needed once after changing database or export formats)
+#define TEST_AUTO_UPDATE 
+#define TEST_AUTO_UPDATE_ONLY_MISSING // do auto-update only if file is missing 
+
+#define TEST_EXPORT_FORMAT(filename,load_complete_form)                 \
+    do {                                                                \
+        export_format efo;                                              \
+        TEST_ASSERT_NO_ERROR(read_export_format((&efo),                 \
+                                                filename,               \
+                                                load_complete_form));   \
+    } while(0)                                                          \
+
+void TEST_sequence_export() {
+    GBDATA  *gb_main    = GB_open("TEST_loadsave.arb", "r");
+    char    *export_dir = nulldup(GB_path_in_ARBLIB("export", NULL));
+    char   **eft        = GBS_read_dir(export_dir, "*.eft");
+
+    AP_filter *filter = NULL;
+    {
+        GB_transaction ta(gb_main);
+
+        char   *ali    = GBT_get_default_alignment(gb_main);
+        size_t  alilen = GBT_get_alignment_len(gb_main, ali);
+        filter         = new AP_filter(alilen);
+
+        GBT_mark_all(gb_main, 0);
+        GBDATA *gb_species = GBT_find_species(gb_main, "MetMazei");
+        TEST_ASSERT(gb_species);
+
+        GB_write_flag(gb_species, 1); // mark
+        free(ali);
+    }
+    for (int e = 0; eft[e]; ++e) {
+        for (int complete = 0; complete <= 1; ++complete) {
+            TEST_EXPORT_FORMAT(eft[e], complete);
+            if (complete) {
+                const char *outname      = "impexp/exported";
+                char       *used_outname = NULL;
+
+                {
+                    GB_transaction ta(gb_main);
+                    TEST_ASSERT_NO_ERROR(SEQIO_export_by_format(gb_main, 1, filter, 0, 0, "DBname", eft[e], outname, 0, &used_outname));
+                }
+
+                const char *name = strrchr(eft[e], '/');
+                TEST_ASSERT(name); 
+                name++;
+
+                char *expected = GBS_global_string_copy("impexp/%s.exported", name);
+
+#if defined(TEST_AUTO_UPDATE)
+#if defined(TEST_AUTO_UPDATE_ONLY_MISSING)
+                if (GB_is_regularfile(expected)) {
+                    TEST_ASSERT_TEXTFILE_DIFFLINES_IGNORE_DATES(expected, outname, 0);
+                }
+                else {
+                    system(GBS_global_string("cp %s %s", outname, expected));
+                }
+#else
+                system(GBS_global_string("cp %s %s", outname, expected));
+#endif
+#else
+                TEST_ASSERT_TEXTFILE_DIFFLINES_IGNORE_DATES(expected, outname, 0);
+                // see ../../UNIT_TESTER/run/impexp
+#endif // TEST_AUTO_UPDATE
+                TEST_ASSERT_ZERO_OR_SHOW_ERRNO(unlink(outname));
+
+                free(expected);
+                free(used_outname);
+            }
+        }
+    }
+
+    delete filter;
+    GBT_free_names(eft);
+    free(export_dir);
+    GB_close(gb_main);
+}
+
+#endif // UNIT_TESTS

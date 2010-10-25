@@ -62,3 +62,4 @@ UnitTester.o: UnitTester.hxx
 UnitTester.o: $(ARBHOME)/INCLUDE/arb_assert.h
 UnitTester.o: $(ARBHOME)/INCLUDE/arb_backtrace.h
 UnitTester.o: $(ARBHOME)/INCLUDE/SigHandler.h
+UnitTester.o: $(ARBHOME)/INCLUDE/valgrind.h
