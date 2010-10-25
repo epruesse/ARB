@@ -3,7 +3,7 @@ species_data		%% (%
 	species		:5000	%% (%
 		name		:7600	"MetMazei"
 		ali_16s			%% (%
-			data		:7000	".....................AUUCUGGUU-----GA--U-CC-U-G-CCAG-AG-GU-U-AC-U-GC--U-AU-C--G-GU-GUUC--GC---C-U--AAGCCA-U-GC-G-AGU-CAU-A-UGU---------A---------------............."
+			data		:7000	".....................AUUCUGGUU-----GA--U-CC-U-G-CCAG-AG-GU-U-AC-U-GC--U-AU-C--G-GU-GUUC--GC---C-U--AAGCCA-U-GC-G-AGU-CAU-A-UGU---------A---------------.............."
 			%) /*ali_16s*/
 
 		acc			"X69874"
@@ -57,7 +57,7 @@ presets			%% (%
 
 	alignment		%% (%
 		alignment_name		"ali_16s"
-		alignment_len		%i 14610
+		alignment_len		%i 165
 		aligned			%i 1
 		alignment_write_security		%i 5
 		alignment_type		"rna"
@@ -95,12 +95,3 @@ mixed_types		%% (%
 
 description		"User text"
 genom_db		%i 0
-tmp			%% (%
-	message			%% (%
-		pending			%% (%
-			%) /*pending*/
-
-		%) /*message*/
-
-	%) /*tmp*/
-

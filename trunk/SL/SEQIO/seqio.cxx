@@ -98,7 +98,7 @@ bool SEQIO_read_string_pair(FILE *in, char *&s1, char *&s2, size_t& lineNr) {
         }
     } while (res && !s1);                           // read until EOF or something found
 
-    sio_assert(!res == !s1);
+    sio_assert(correlated(res, s1));
 
     return res;
 }

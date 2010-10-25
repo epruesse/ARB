@@ -374,6 +374,7 @@ adfile.o: $(ARBHOME)/INCLUDE/attributes.h
 adfile.o: $(ARBHOME)/INCLUDE/dupstr.h
 adfile.o: $(ARBHOME)/INCLUDE/smartptr.h
 adfile.o: $(ARBHOME)/INCLUDE/test_global.h
+adfile.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 adGene.o: ad_k_prot.h
 adGene.o: ad_prot.h

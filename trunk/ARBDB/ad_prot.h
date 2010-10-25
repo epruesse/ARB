@@ -210,6 +210,8 @@ char *GB_find_all_files(const char *dir, const char *mask, bool filename_only);
 char *GB_find_latest_file(const char *dir, const char *mask);
 char *GBS_find_lib_file(const char *filename, const char *libprefix, bool warn_when_not_found);
 char **GBS_read_dir(const char *dir, const char *mask);
+bool GB_test_textfile_difflines(const char *file1, const char *file2, int expected_difflines, int special_mode);
+bool GB_test_files_equal(const char *file1, const char *file2);
 
 /* adsystem.cxx */
 DictData *GB_get_dictionary(GBDATA *gb_main, const char *key);

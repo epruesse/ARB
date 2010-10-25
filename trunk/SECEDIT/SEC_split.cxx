@@ -203,7 +203,7 @@ inline SEC_segment *findSegmentContaining(SEC_root *root, int start, int end, GB
             }
         }
     }
-    sec_assert(!start_segment != !error); // either start_segment or error
+    sec_assert(contradicted(start_segment, error));
     return start_segment;
 }
 

@@ -54,6 +54,7 @@ seq_export.o: $(ARBHOME)/INCLUDE/attributes.h
 seq_export.o: $(ARBHOME)/INCLUDE/dupstr.h
 seq_export.o: $(ARBHOME)/INCLUDE/smartptr.h
 seq_export.o: $(ARBHOME)/INCLUDE/test_global.h
+seq_export.o: $(ARBHOME)/INCLUDE/test_unit.h
 seq_export.o: $(ARBHOME)/INCLUDE/xml.hxx
 
 seqio.o: seqio.hxx

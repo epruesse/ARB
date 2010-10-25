@@ -949,7 +949,7 @@ GB_ERROR GB_write_pntr(GBDATA *gbd, const char *s, long bytes_size, long stored_
     long          memsize;
     GB_TYPES      type = GB_TYPE(gbd);
 
-    gb_assert(type != GB_STRING || (stored_size == bytes_size-1)); // size constraint for strings not fulfilled!
+    gb_assert(implicated(type == GB_STRING, stored_size == bytes_size-1)); // size constraint for strings not fulfilled!
 
     gb_free_cache(Main, gbd);
     gb_save_extern_data_in_ts(gbd);

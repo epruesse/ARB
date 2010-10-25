@@ -20,14 +20,15 @@ my @commands = (
                 'mv',
                 'perl',
                 'rm',
-                'xmllint',
-                'xsltproc',
                 'sed',
                 'sort',
                 'tar',
                 'test',
+                'time',
                 'touch',
                 'uniq',
+                'xmllint',
+                'xsltproc',
                );
 
 sub findPath($\@) {
