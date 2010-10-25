@@ -45,4 +45,5 @@ FileBuffer.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 FileBuffer.o: $(ARBHOME)/INCLUDE/arbtools.h
 FileBuffer.o: $(ARBHOME)/INCLUDE/attributes.h
 FileBuffer.o: $(ARBHOME)/INCLUDE/dupstr.h
+FileBuffer.o: $(ARBHOME)/INCLUDE/smartptr.h
 FileBuffer.o: $(ARBHOME)/INCLUDE/test_global.h

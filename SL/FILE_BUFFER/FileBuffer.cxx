@@ -15,6 +15,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <cerrno>
+#include <smartptr.h>
 
 using namespace std;
 
@@ -84,7 +85,7 @@ bool FileBuffer::getLine_intern(string& line)
 }
 
 string FileBuffer::lineError(const string& msg) const {
-    static char   *buffer;
+    static SmartMallocPtr(char) buffer;
     static size_t  allocated = 0;
 
     size_t len;
@@ -97,7 +98,6 @@ string FileBuffer::lineError(const string& msg) const {
 
     if (len>allocated) {
         allocated = len;
-        free(buffer);
         buffer    = (char*)malloc(allocated);
     }
 
@@ -105,18 +105,18 @@ string FileBuffer::lineError(const string& msg) const {
 #if defined(ASSERTION_USED)
         int printed =
 #endif // ASSERTION_USED
-            sprintf(buffer, "%s:%zu: %s", filename.c_str(), lineNumber, msg.c_str());
+            sprintf(&*buffer, "%s:%zu: %s", filename.c_str(), lineNumber, msg.c_str());
         fb_assert((size_t)printed < allocated);
     }
     else {
 #if defined(ASSERTION_USED)
         int printed =
 #endif // ASSERTION_USED
-            sprintf(buffer, "while reading line #%zu:\n%s", lineNumber, msg.c_str());
+            sprintf(&*buffer, "while reading line #%zu:\n%s", lineNumber, msg.c_str());
         fb_assert((size_t)printed < allocated);
     }
 
-    return buffer;
+    return &*buffer;
 }
 
 void FileBuffer::rewind() {
@@ -172,3 +172,13 @@ void FILE_BUFFER_back(FILE_BUFFER file_buffer, const char *backline) {
 void FILE_BUFFER_rewind(FILE_BUFFER file_buffer) {
     to_FileBuffer(file_buffer)->rewind();
 }
+
+const char *FILE_BUFFER_make_error(FILE_BUFFER file_buffer, bool show_name, const char *message) {
+    FileBuffer *fileBuffer = to_FileBuffer(file_buffer);
+    fileBuffer->showFilenameInLineError(show_name);
+
+    static string keep;
+    keep = fileBuffer->lineError(message);
+    return keep.c_str();
+}
+
