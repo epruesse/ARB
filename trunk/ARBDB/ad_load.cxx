@@ -1461,7 +1461,7 @@ GBDATA *GB_login(const char *cpath, const char *opent, const char *user) {
 
     if (strchr(opent, 'R')) Main->allow_corrupt_file_recovery = 1;
 
-    ASSERT_RESULT(long, gb_create_key(Main, "main", false), 0);
+    ASSERT_RESULT(long, 0, gb_create_key(Main, "main", false));
 
     Main->dummy_father            = gb_make_container(NULL, NULL, -1, 0); // create "main"
     Main->dummy_father->main_idx  = gb_make_main_idx(Main);

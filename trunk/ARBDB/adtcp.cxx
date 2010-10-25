@@ -320,7 +320,8 @@ const char *GBS_ptserver_tag(int id) {
     gb_assert(id >= 0);
     const int   MAXIDSIZE = 30;
     static char server_tag[MAXIDSIZE];
-    ASSERT_RESULT_BELOW(int, sprintf(server_tag, "ARB_PT_SERVER%i", id), MAXIDSIZE);
+    // ASSERT_RESULT_BELOW(int, sprintf(server_tag, "ARB_PT_SERVER%i", id), MAXIDSIZE);
+    ASSERT_RESULT_PREDICATE(isBelow<int>(MAXIDSIZE), sprintf(server_tag, "ARB_PT_SERVER%i", id));
     return server_tag;
 }
 
