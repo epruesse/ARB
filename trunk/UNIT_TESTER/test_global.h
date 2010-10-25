@@ -68,36 +68,63 @@ namespace arb_test {
 
     class GlobalTestData {
         GlobalTestData()
-            : show_warnings(true),
+            : annotation(NULL),
+              show_warnings(true),
               assertion_failed(false),
               warnings(0)
         {}
+        ~GlobalTestData() {
+            unannotate();
+        }
 
         static GlobalTestData *instance(bool erase) {
-            static GlobalTestData *data = 0; // singleton
+            static GlobalTestData *data = 0;             // singleton
             if (erase) {
                 delete data;
                 data = 0;
             }
-            else {
-                if (!data) data = new GlobalTestData;
+            else if (!data) {
+                static int allocation_count = 0;
+                arb_assert(allocation_count == 0); // allocating GlobalTestData twice is a bug!
+                allocation_count++;
+
+                data = new GlobalTestData;
             }
             return data;
+        }
+
+        char *annotation; // shown in assertion-failure message
+
+        void unannotate() {
+            free(annotation);
+            annotation = NULL;
         }
 
     public:
         bool show_warnings;
         bool assertion_failed;
 
+
         // counters
         size_t warnings;
 
         static GlobalTestData& get_instance() { return *instance(false); }
         static void erase_instance() { instance(true); }
-        
+
+        void annotate(const char *annotation_) {
+            unannotate();
+            annotation = annotation_ ? strdup(annotation_) : NULL;
+        }
+
+        static void print_annotation() {
+            char*& annotation = get_instance().annotation;
+            if (annotation) fprintf(stderr, " (%s)", annotation);
+        }
+
         static void assertfailmsg(const char *filename, int lineno, const char *condition) {
             FlushedOutput yes;
             fprintf(stderr, "%s:%i: Assertion '%s' failed", filename, lineno, condition);
+            print_annotation();
         }
     };
 
@@ -105,6 +132,8 @@ namespace arb_test {
 };
 
 // --------------------------------------------------------------------------------
+
+#define TEST_ANNOTATE_ASSERT(annotation) arb_test::test_data().annotate(annotation) 
 
 // special assert for unit tests (additionally to SEGV it sets a global flag)
 # define test_assert(cond)                      \

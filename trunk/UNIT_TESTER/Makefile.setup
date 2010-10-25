@@ -1,14 +1,23 @@
-# ---------- setup unit tests
+# ---------- setup file for unit tests
 
+# ---------- Debugging
+DEADLOCKGUARD=1# install guard to avoid deadlocks (SVN default!)
+#DEADLOCKGUARD=0# dont install guard (needed to debug in gdb)
+
+# also see test_unit.h@ENABLE_CRASH_TESTS
+
+# ---------- Valgrind
 # @@@ valgrind makes tests fail atm
 # (most likely two pt-servers try to start parallel on the same port)
 VALGRIND=0# only test
 #VALGRIND=1# run valgrind after sucessful test
 #VALGRIND=2# run valgrind before test (useful if test traps w/o any helpful information)
 
+# also see test_unit.h@ENABLE_CRASH_TESTS
+
 # ---------- Leak checking needs VALGRIND!=0
-#CHECK_LEAKS=0# check no leaks
-CHECK_LEAKS=1# check definite leaks
+CHECK_LEAKS=0# check no leaks
+#CHECK_LEAKS=1# check definite leaks
 #CHECK_LEAKS=2# check reachable leaks
 
 # ---------- restrict tests to modules matching regexpr 'RESTRICT_MODULE': 
@@ -19,20 +28,24 @@ RESTRICT_MODULE='.'
 # (empty=no restriction, ':'-separated list of allowed test-names)
 #
 RESTRICT_LIB=# run all tests
+
 #RESTRICT_LIB=NOSUCHLIB# run no tests (useful to generates patch on successful compilation)
 #RESTRICT_LIB=arb_help2xml
+#RESTRICT_LIB=ARBDB
 #RESTRICT_LIB=AWT
 #RESTRICT_LIB=AWTC
-#RESTRICT_LIB=mkptypes
-#RESTRICT_LIB=SEQIO
-#RESTRICT_LIB=ARBDB
+#RESTRICT_LIB=CONVERTALN
 #RESTRICT_LIB=FAST_ALIGNER
 #RESTRICT_LIB=MERGE
+#RESTRICT_LIB=mkptypes
+#RESTRICT_LIB=SEQIO
+
+#RESTRICT_LIB=SEQIO:CONVERTALN
 #RESTRICT_LIB=client:arb_probe:AWTC
 
 # ---------- slow tests 
-#SKIP_SLOW=0# always run all tests
-SKIP_SLOW=15# skip slow tests (run only every SKIP_SLOW minutes)
+SKIP_SLOW=0# always run all tests
+#SKIP_SLOW=15# skip slow tests (run only every SKIP_SLOW minutes)
 
 # ---------- warnings?
 #WARN_LEVEL=0# disable warnings 

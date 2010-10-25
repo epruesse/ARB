@@ -58,23 +58,47 @@ namespace arb_test {
             if (global.show_warnings) {
                 FlushedOutput yes;
                 VCOMPILERMSG(filename, lineno, "Warning", format);
+                GlobalTestData::print_annotation();
                 global.warnings++;
             }
         }
         static void errorf(const char *filename, int lineno, const char *format, ...) __attribute__((format(printf, 3, 4))) {
-            FlushedOutput yes;
-            VCOMPILERMSG(filename, lineno, "Error", format);
+            {
+                FlushedOutput yes;
+                VCOMPILERMSG(filename, lineno, "Error", format);
+                GlobalTestData::print_annotation();
+            }
             TRIGGER_ASSERTION(); // fake an assertion failure
         }
         static void ioerrorf(const char *filename, int lineno, const char *format, ...) __attribute__((format(printf, 3, 4))) {
-            FlushedOutput yes;
-            VCOMPILERMSG(filename, lineno, "Error", format);
-            fprintf(stderr, " (errno=%i='%s')", errno, strerror(errno));
+            {
+                FlushedOutput yes;
+                VCOMPILERMSG(filename, lineno, "Error", format);
+                fprintf(stderr, " (errno=%i='%s')", errno, strerror(errno));
+                GlobalTestData::print_annotation();
+            }
             TRIGGER_ASSERTION(); // fake an assertion failure
         }
 #undef VPRINTFORMAT
 #undef VCOMPILERMSG
 #undef WITHVALISTFROM
+
+        static void print_readable_string(const char *s, FILE *out) {
+            if (s) {
+                fputc('\"', out);
+                for (int i_ = 0; s[i_]; ++i_) {
+                    switch (s[i_]) {
+                        case '\n': fputs("\\n", out); break;
+                        case '\t': fputs("\\t", out); break;
+                        default: fputc(s[i_], out); break;
+                    }
+                }
+                fputc('\"', out);
+            }
+            else {
+                fputs("(null)", out);
+            }
+        }
     };
 
     inline void print(int i)                 { fprintf(stderr, "%i", i); }
@@ -83,7 +107,7 @@ namespace arb_test {
     inline void print(long L)                { fprintf(stderr, "%li", L); }
     inline void print_hex(long L)            { fprintf(stderr, "0x%lx", L); }
 
-    inline void print(const char *s)         { fprintf(stderr, "\"%s\"", s); }
+    inline void print(const char *s)         { StaticCode::print_readable_string(s, stderr); }
     // no print_hex for strings
 
     inline void print(size_t z)              { fprintf(stderr, "%zu", z); }
