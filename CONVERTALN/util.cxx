@@ -1,428 +1,294 @@
-#include <stdio.h>
-#include <string.h>
-#include <ctype.h>
-#include <stdlib.h>
-#include "convert.h"
+#include <FileBuffer.h>
+#include "fun.h"
+#include "defs.h"
 #include "global.h"
+#include "reader.h"
 
-int warning_out = 1;
+#include <cstdarg>
+#include <cerrno>
 
-/* --------------------------------------------------------------
- *   Function Cmpstr().
- *       Compare string s1 and string s2, if eq. return 1
- *           else return 0.
- */
-int Cmpcasestr(const char *s1, const char *s2)
-{
-    int indi;
-
-    for (indi = 0; s1[indi] != '\0' && s2[indi] != '\0'; indi++)
-        if (!same_char(s1[indi], s2[indi]))
-            return (0);
-
-    return (same_char(s1[indi], s2[indi]));
+bool scan_token(char *to, const char *from) { // __ATTR__USERESULT
+    return sscanf(from, "%s", to) == 1;
 }
 
-/* --------------------------------------------------------------
- *   Function Cmpstr().
- *       Compare string s1 and string s2, if eq. return 1
- *           else return 0.
- */
-int Cmpstr(const char *s1, const char *s2)
-{
-    if (strcmp(s1, s2) == 0)
-        return (1);
-    else
-        return (0);
-}
-
-/* --------------------------------------------------------------- *
- *   Function Freespace().
- *   Free the pointer if not NULL.
- */
-void Freespace(void *pointer)
-{
-    char **the_pointer = (char **)pointer;
-
-    if ((*the_pointer) != NULL) {
-        free((*the_pointer));
+void scan_token_or_die(char *to, const char *from) {
+    if (!scan_token(to, from)) {
+        throw_error(88, "expected to see a token here");
     }
-    (*the_pointer) = NULL;
+}
+void scan_token_or_die(char *to, Reader& reader, int offset) {
+    scan_token_or_die(to, reader.line()+offset);
 }
 
-/* ---------------------------------------------------------------
- *   Function error()
- *   Syntax error in prolog input file, print out error and exit.
- */
-void error(int error_num, const char *error_message)
-{
-    fprintf(stderr, "ERROR(%d): %s\n", error_num, error_message);
-    exit(error_num);
+void throw_error(int error_num, const char *error_message) { // __ATTR__NORETURN
+    throw Convaln_exception(error_num, error_message);
 }
 
-/* --------------------------------------------------------------
- *  Function warning()
- *      print out warning_message and continue execution.
- */
-/* ------------------------------------------------------------- */
-void warning(int warning_num, const char *warning_message)
-{
-    if (warning_out)
+char *strf(const char *format, ...) { // __ATTR__FORMAT(1)
+    va_list parg;
+    va_start(parg, format);
+    char    buffer[LINESIZE];
+    int     printed = vsprintf(buffer, format, parg);
+    ca_assert(printed <= LINESIZE);
+    va_end(parg);
+
+    return strndup(buffer, printed);
+}
+
+void throw_errorf(int error_num, const char *error_messagef, ...) { // __ATTR__FORMAT(2) __ATTR__NORETURN
+    va_list parg;
+    va_start(parg, error_messagef);
+
+    const int   BUFSIZE = 1000;
+    static char buffer[BUFSIZE];
+    int         printed = vsprintf(buffer, error_messagef, parg);
+
+    va_end(parg);
+
+    if (printed >= BUFSIZE) {
+        throw_errorf(998, "Internal buffer overflow (while formatting error #%i '%s')", error_num, error_messagef);
+    }
+    throw_error(error_num, buffer);
+}
+
+// --------------------------------------------------------------------------------
+
+bool Warnings::show_warnings = true;
+
+void warning(int warning_num, const char *warning_message) {
+    // print out warning_message and continue execution.
+    if (Warnings::shown())
         fprintf(stderr, "WARNING(%d): %s\n", warning_num, warning_message);
 }
+void warningf(int warning_num, const char *warning_messagef, ...) { // __ATTR__FORMAT(2)
+    if (Warnings::shown()) {
+        va_list parg;
+        va_start(parg, warning_messagef);
 
-/* ------------------------------------------------------------
- *   Function Reallocspace().
- *       Realloc a continue space, expand or shrink the
- *       original space.
- */
-char *Reallocspace(void *block, unsigned int size)
-{
-    char *temp, answer;
+        const int   BUFSIZE = 1000;
+        static char buffer[BUFSIZE];
+        int         printed = vsprintf(buffer, warning_messagef, parg);
 
-    if ((block == NULL && size <= 0) || size <= 0)
-        return (NULL);
+        va_end(parg);
+
+        if (printed >= BUFSIZE) {
+            throw_errorf(997, "Internal buffer overflow (while formatting warning #%i '%s')", warning_num, warning_messagef);
+        }
+        warning(warning_num, buffer);
+    }
+}
+
+char *Reallocspace(void *block, unsigned int size) {
+    // Realloc a continue space, expand or shrink the original space.
+    char *temp;
+
+    if (size <= 0) {
+        free(block);
+        return NULL;
+    }
+
     if (block == NULL) {
         temp = (char *)calloc(1, size);
     }
     else {
         temp = (char *)realloc(block, size);
     }
-    if (temp == NULL) {
-        warning(999, "Run out of memory");
-        fprintf(stderr, "Are you converting to Paup or Phylip?(y/n) ");
-        scanf("%c", &answer);
-        if (answer == 'y')
-            return (NULL);
-        else
-            exit(999);
-    }
-    return (temp);
+    if (!temp) throw_error(999, "Run out of memory (Reallocspace)");
+    return temp;
 }
 
-/* -------------------------------------------------------------------
- *   Function Dupstr().
- *       Duplicate string and return the address of string.
- */
-char *Dupstr(const char *string)
-{
-    char     *temp, answer;
-    unsigned  size;
-
-    if (string == NULL)
-        return (NULL);
-    else {
-        size = strlen(string);
-        if ((temp = (char *)calloc(1, size + 1)) == NULL) {
-            warning(888, "Run out of memory");
-            fprintf(stderr, "Are you converting to Paup or Phylip?(y/n) ");
-            scanf("%c", &answer);
-            if (answer == 'y')
-                return (NULL);
-            else
-                exit(888);
-        }
-        strcpy(temp, string);
-        return (temp);
-    }
-}
-
-/* ------------------------------------------------------------
- *  Function Catstr().
- *      Append string s2 to string s1.
- */
-char *Catstr(char *s1, const char *s2)
-{
-    return ((char *)strcat(s1, s2));
-}
-
-/* ------------------------------------------------------------
- *   Function Lenstr().
- *       Length of the string s1.
- */
-int Lenstr(const char *s1)
-{
-    if (s1 == NULL)
-        return (0);
-    else
-        return (strlen(s1));
-}
-
-/* --------------------------------------------------------
- *  Function Cpystr().
- *      Copy string s2 to string s1.
- */
-void Cpystr(char *s1, const char *s2)
-{
-    strcpy(s1, s2);
-}
-
-/* ---------------------------------------------------------
- *   Function Skip_white_space().
- *       Skip white space from (index)th char of string line.
- */
-int Skip_white_space(char *line, int index)
-{
-    /* skip white space */
+int Skip_white_space(const char *line, int index) {
+    // Skip white space from (index)th char of Str line.
 
     while (line[index] == ' ' || line[index] == '\t')
         ++index;
     return (index);
 }
 
-/* ----------------------------------------------------------------
- *   Function Reach_white_space().
- *       Reach the next available white space of string line.
- */
-int Reach_white_space(char *line, int index)
-{
-    int length;
-
-    length = Lenstr(line);
-
-    /* skip to white space */
-    for (; line[index] != ' ' && line[index] != '\t' && index < length; index++) ;
-
-    return (index);
-}
-
-/* ---------------------------------------------------------------
- *   Function Fgetline().
- *       Get a line from assigned file, also checking for buffer
- *           overflow.
- */
-
-char *Fgetline(char *line, size_t maxread, FILE_BUFFER fb)
-{
-    size_t len;
-
-    const char *fullLine = FILE_BUFFER_read(fb, &len);
-
-    if (!fullLine)
-        return 0;
-
-    if (len <= (maxread - 2)) {
-        memcpy(line, fullLine, len);
-        line[len] = '\n';
-        line[len + 1] = 0;
-        return line;
-    }
-
-    fprintf(stderr, "Error(148): OVERFLOW LINE: %s\n", fullLine);
-    return 0;
-}
-
-/* ------------------------------------------------------------
- *   Function Getstr().
- *       Get input string from terminal.
- */
-void Getstr(char *line, int linenum)
-{
-
+void Getstr(char *line, int linenum) {
+    // Get input Str from terminal.
     char c;
+    int  indi = 0;
 
-    int indi = 0;
-
-    for (; (c = getchar()) != '\n' && indi < (linenum - 1); line[indi++] = c) ;
+    for (; (c = getchar()) != '\n' && indi < (linenum - 1); line[indi++] = c) {}
 
     line[indi] = '\0';
 }
 
-/* ----------------------------------------------------------------
- *   Function Append_char().
- *       Append a char before '\n' if there is no such char.
- *           (Assume there is '\n' at the end of string
- *           already and length of string except '\n' must
- *           greater than 1.)
- */
-void Append_char(char **string, char ch)
-{
-    char temp[10];
+inline void append_known_len(char*& string1, int len1, const char *string2, int len2) {
+    ca_assert(len2); // else no need to call, string1 already correct
+    int newlen      = len1+len2;
+    string1         = Reallocspace(string1, newlen+1);
+    memcpy(string1+len1, string2, len2);
+    string1[newlen] = 0;
+}
 
-    if (Lenstr((*string)) <= 0 || (*string)[0] == '\n')
-        return;
+void terminate_with(char*& str, char ch) {
+    // append 'ch' to end of 'str' (before \n)
+    // - if it's not already there and
+    // - 'str' contains more than just '\n'
 
-    if ((*string)[Lenstr((*string)) - 2] != ch) {
-        sprintf(temp, "%c\n", ch);
-        Append_rm_eoln(string, temp);
+    int len = str0len(str);
+    if (!len) return;
+    ca_assert(str[len-1] == '\n');
+    if (len == 1) return;
+    if (str[len-2] == ch) return;
+
+    char temp[] = { ch, '\n' };
+    append_known_len(str, len-1, temp, 2);
+}
+
+void skip_eolnl_and_append(char*& string1, const char *string2) {
+    int len1 = str0len(string1);
+    if (len1 && string1[len1-1] == '\n') len1--;
+    int len2 = str0len(string2);
+    if (len2) append_known_len(string1, len1, string2, len2);
+    else { string1[len1] = 0; }
+}
+
+void skip_eolnl_and_append_spaced(char*& string1, const char *string2) {
+    int len1 = str0len(string1);
+    if (len1 && string1[len1-1] == '\n') string1[len1-1] = ' ';
+    append_known_len(string1, len1, string2, str0len(string2));
+}
+
+void Append(char*& string1, const char *string2) {
+    int len2 = str0len(string2);
+    if (len2) append_known_len(string1, str0len(string1), string2, len2);
+}
+void Append(char*& string1, char ch) {
+    append_known_len(string1, str0len(string1), &ch, 1);
+}
+
+void upcase(char *str) {
+    // Capitalize all char in the str.
+    if (!str) return;
+    for (int i = 0; str[i]; ++i) str[i] = toupper(str[i]);
+}
+
+int fputs_len(const char *str, int len, Writer& write) {
+    // like fputs(), but does not print more than 'len' characters
+    // returns number of chars written or throws write error
+    for (int i = 0; i<len; ++i) {
+        if (!str[i]) return i;
+        write.out(str[i]);
     }
+    return len;
 }
 
-/* ----------------------------------------------------------------
- *  Function Append_rm_eoln().
- *      Remove the eoln of string1 and then append string2
- *      to string1.
- */
-void Append_rm_eoln(char **string1, const char *string2)
-{
-    int length;
+// -------------------------
+//      pattern matching
 
-    length = Lenstr(*string1);
+enum FindMode { FIND_START, FIND_SKIP_OVER };
 
-    if (((length > 1) && (*string1)[length - 1] == '\n') || (*string1)[0] == '\n')
-        length--;
+static int findPattern(const char *text, const char *pattern, FindMode mode) {
+    // Return offset of 'pattern' in 'text' or -1
+    // (compares case insensitive)
+    // return position after found 'pattern' in 'endPtr'
 
-    (*string1) = (char *)Reallocspace((*string1), (unsigned int)(sizeof(char) * (Lenstr(string2) + length + 1)));
+    if (text && pattern) {
+        for (int t = 0; text[t]; ++t) {
+            bool mismatch = false;
 
-    (*string1)[length] = '\0';
-
-    Catstr((*string1), string2);
-}
-
-/* ----------------------------------------------------------------
- *   Function Append_rp_eoln().
- *       Replace the eoln by a blank in string1 and then append
- *       string2 to string1.
- */
-void Append_rp_eoln(char **string1, char *string2)
-{
-    int length;
-
-    length = Lenstr(*string1);
-    if ((length > 1) && (*string1)[length - 1] == '\n')
-        (*string1)[length - 1] = ' ';
-    (*string1) = (char *)Reallocspace((*string1), (unsigned int)(sizeof(char) * (Lenstr(string2) + Lenstr(*string1) + 1)));
-    (*string1)[length] = '\0';
-    Catstr((*string1), string2);
-}
-
-/* ----------------------------------------------------------------
- *   Function Append().
- *       Append string2 to string1.
- */
-void Append(char **string1, const char *string2)
-{
-    int length;
-
-    length = Lenstr(*string1);
-    if (length == 0 && Lenstr(string2) == 0)
-        return;
-
-    (*string1) = (char *)Reallocspace((*string1), (unsigned int)(sizeof(char) * (Lenstr(string2) + Lenstr(*string1) + 1)));
-    (*string1)[length] = '\0';
-
-    Catstr((*string1), string2);
-}
-
-/* ----------------------------------------------------------
- *   Function find_pattern()
- *   Return TRUE if the desired pattern in the input text
- */
-int find_pattern(const char *text, const char *pattern)
-{
-    int indi, index, indj;
-
-    int stop;
-
-    stop = Lenstr(text) - Lenstr(pattern) + 1;
-    for (indi = 0; indi < stop; indi++) {
-        index = -2;
-        for (indj = 0; index == -2 && pattern[indj] != '\0'; indj++)
-            if (same_char(text[indi + indj], pattern[indj]) == 0)
-                index = -1;
-        if (index == -2)
-            return (indi);
-        /* find PARTIALLY matched pattern */
+            int p = 0;
+            for (; !mismatch && pattern[p]; ++p) {
+                mismatch = tolower(text[t+p]) != tolower(pattern[p]);
+            }
+            if (!mismatch) {
+                switch (mode) {
+                    case FIND_START: return t;
+                    case FIND_SKIP_OVER: return t+p;
+                }
+                ca_assert(0);
+            }
+        }
     }
-    return (-1);
+    return -1;
 }
 
-/* --------------------------------------------------------------
- *   Function not_ending_mark().
- *       Return true if the char is not a '.' nor ';'.
- */
-int not_ending_mark(char ch)
-{
-    return ((ch != '.' && ch != ';'));
-}
+static int findMultipattern(const char *str, const char** const& pattern, char expect_behind, FindMode mode) {
+    // search 'str' for the occurrance of any 'pattern'
+    // if 'expect_behind' != 0 -> expect that char behind the found pattern
 
-/* ----------------------------------------------------------------
- *   Function last_word().
- *       return true if the char is not white space.
- */
-int last_word(char ch)
-{
-    int is_lastword;
+    int offset = -1;
 
-    switch (ch) {
-        case ',':
-        case '.':
-        case ';':
-        case ' ':
-        case '?':
-        case ':':
-        case '!':
-        case ')':
-        case ']':
-        case '}':
-            is_lastword = 1;
-            break;
-        default:
-            is_lastword = 0;
-            break;
+    if (str) {
+        FindMode use = expect_behind ? FIND_SKIP_OVER : mode;
+
+        int p;
+        for (p = 0; offset == -1 && pattern[p]; ++p) {
+            offset = findPattern(str, pattern[p], use);
+        }
+
+        if (offset != -1) {
+            if (expect_behind) {
+                if (str[offset] != expect_behind) { // mismatch
+                    offset = findMultipattern(str+offset, pattern, expect_behind, mode);
+                }
+                else {
+                    switch (mode) {
+                        case FIND_START:
+                            offset -= str0len(pattern[p]);
+                            ca_assert(offset >= 0);
+                            break;
+                        case FIND_SKIP_OVER:
+                            offset++;
+                            break;
+                    }
+                }
+            }
+        }
     }
-    return (is_lastword);
+    return offset;
 }
 
-/* ----------------------------------------------------------------
- *   Function is_separator().
- *       Return 1 if ch is a separator in string separators.
- */
-int is_separator(char ch, const char *separators)
-{
-    int indi, len, index;
-
-    for (indi = index = 0, len = Lenstr(separators); indi < len && index == 0; indi++)
-        if (ch == separators[indi])
-            index = 1;
-
-    return (index);
+static int findSubspecies(const char *str, char expect_behind, FindMode mode) {
+    const char *subspecies_pattern[] = { "subspecies", "sub-species", "subsp.", NULL };
+    return findMultipattern(str, subspecies_pattern, expect_behind, mode);
 }
 
-/* ------------------------------------------------------------
- *   Function same_char()
- *   Return TRUE if two characters are the same.
- *   case insensitive or not is decided by buffer.charcase.
- */
-int same_char(char ch1, char ch2)
-{
-    if (ch1 == ch2)
-        return (1);
-    if ((ch1 - 'a') >= 0)
-        ch1 = ch1 - 'a' + 'A';
-    if ((ch2 - 'a') >= 0)
-        ch2 = ch2 - 'a' + 'A';
-    if (ch1 == ch2)
-        return (1);
-    else
-        return (0);
+static int findStrain(const char *str, char expect_behind, FindMode mode) {
+    const char *strain_pattern[] = { "strain", "str.", NULL };
+    return findMultipattern(str, strain_pattern, expect_behind, mode);
 }
 
-/* --------------------------------------------------------------
- *   Function Upper_case().
- *       Capitalize all char in the string.
- */
-void Upper_case(char *string)
-{
-    int len, indi;
+int find_pattern(const char *text, const char *pattern) { return findPattern(text, pattern, FIND_START); }
+int skip_pattern(const char *text, const char *pattern) { return findPattern(text, pattern, FIND_SKIP_OVER); }
 
-    len = Lenstr(string);
-    for (indi = 0; indi < len; indi++) {
-        if (string[indi] >= 'a' && string[indi] <= 'z')
-            string[indi] = string[indi] - 'a' + 'A';
+int find_subspecies(const char *str, char expect_behind) { return findSubspecies(str, expect_behind, FIND_START); }
+int skip_subspecies(const char *str, char expect_behind) { return findSubspecies(str, expect_behind, FIND_SKIP_OVER); }
+
+int find_strain(const char *str, char expect_behind) { return findStrain(str, expect_behind, FIND_START); }
+int skip_strain(const char *str, char expect_behind) { return findStrain(str, expect_behind, FIND_SKIP_OVER); }
+
+const char *stristr(const char *str, const char *substring) {
+    int offset = find_pattern(str, substring);
+    return offset >= 0 ? str+offset : NULL;
+}
+
+int ___lookup_keyword(const char *keyword, const char * const *lookup_table, int lookup_table_size) {
+    // returns the index [0..n-1] of 'keyword' in lookup_table
+    // or -1 if not found.
+
+    for (int i = 0; i<lookup_table_size; ++i) {
+        if (str_equal(keyword, lookup_table[i])) return i;
     }
+    return -1;
 }
 
-/* ---------------------------------------------------------------
- *   Function Blank_num().
- *       Count the number of blanks at the beginning of
- *           the string.
- */
-int Blank_num(char *string)
-{
-    int index;
+int parse_key_word(const char *line, char *key, const char *separator) {
+    // Copy keyword starting at position 'index' of 'line' delimited by 'separator' into 'key'.
+    // Do not copy more than 'TOKENSIZE-1' characters.
+    // Returns length of keyword.
 
-    for (index = 0; string[index] == ' '; index++) ;
-
-    return (index);
+    int k = 0;
+    if (line) {
+        while (k<(TOKENSIZE-1) && line[k] && !occurs_in(line[k], separator)) {
+            key[k] = line[k];
+            ++k;
+        }
+    }
+    key[k] = 0;
+    return k;
 }
+

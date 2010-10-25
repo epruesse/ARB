@@ -5,219 +5,111 @@
 #ifndef PROTOTYPES_H
 #define PROTOTYPES_H
 
+/* define ARB attributes: */
+#ifndef ATTRIBUTES_H
+# include <attributes.h>
+#endif
 
-/* alma.cxx */
-void init_alma(void);
-void alma_to_macke(char *inf, char *outf);
-void alma_to_genbank(char *inf, char *outf);
-char alma_in(FILE_BUFFER fp);
-int alma_key_word(char *line, int index, char *key, int length);
-void alma_one_entry(char *line, int index, char **datastring);
-char *alma_in_gaps(FILE_BUFFER fp);
-void alma_in_sequence(void);
-void nbrf_in(FILE_BUFFER fp);
-void gcg_in(FILE_BUFFER fp);
-void staden_in(FILE_BUFFER fp);
-int atom(void);
-void embl_to_alma(char *inf, char *outf);
-void genbank_to_alma(char *inf, char *outf);
-void macke_to_alma(char *inf, char *outf);
-int etoa(void);
-void alma_out_header(FILE *fp);
-FILE *alma_out(FILE *fp, int format);
-FILE *alma_out_entry_header(FILE *fp, char *entry_id, char *filename, int format_type);
-void alma_out_gaps(FILE *fp);
 
 /* convert.cxx */
-int realloc_sequence_data(int total_seqs);
-void free_sequence_data(int used_entries);
+void convert(const char *inf, const char *outf, Format inType, Format ouType);
 
 /* date.cxx */
-char *genbank_date(char *other_date);
-void find_date(char *date_string, int *month, int *day, int *year);
-bool two_char(char *str, char determ);
-void find_date_long_form(char *date_string, int *month, int *day, int *year);
-int ismonth(char *string);
-int isdatenum(char *string);
-int is_genbank_date(char *string);
-char *today_date(void);
-char *gcg_date(char *date_string);
+const char *genbank_date(const char *other_date);
+const char *today_date(void);
+const char *gcg_date(const char *input);
 
 /* embl.cxx */
-void init_em_data(void);
-void init_embl(void);
-char embl_in(FILE_BUFFER fp);
-char embl_in_id(FILE_BUFFER fp);
-void embl_key_word(char *line, int index, char *key, int length);
-int embl_check_blanks(char *line, int numb);
-char *embl_continue_line(char *pattern, char **string, char *line, FILE_BUFFER fp);
-char *embl_one_entry(char *line, FILE_BUFFER fp, char **entry, char *key);
-void embl_verify_title(int refnum);
-char *embl_date(char *line, FILE_BUFFER fp);
-char *embl_version(char *line, FILE_BUFFER fp);
-char *embl_comments(char *line, FILE_BUFFER fp);
-char *embl_skip_unidentified(char *pattern, char *line, FILE_BUFFER fp);
-int embl_comment_key(char *line, char *key);
-char *embl_one_comment_entry(FILE_BUFFER fp, char **datastring, char *line, int start_index);
-char *embl_origin(char *line, FILE_BUFFER fp);
-void embl_out(FILE *fp);
-void embl_print_lines(FILE *fp, const char *key, char *Data, int flag, const char *separators);
-void embl_out_comments(FILE *fp);
-void embl_print_comment(FILE *fp, const char *key, char *string, int offset, int indent);
-void embl_out_origin(FILE *fp);
-void embl_to_macke(char *inf, char *outf, int format);
-int etom(void);
-void embl_to_embl(char *inf, char *outf);
-void embl_to_genbank(char *inf, char *outf);
-int etog(void);
-void etog_reference(void);
-char *etog_author(char *string);
-char *etog_journal(char *string);
-void etog_comments(void);
-void genbank_to_embl(char *inf, char *outf);
-int gtoe(void);
-void gtoe_reference(void);
-char *gtoe_author(char *author);
-char *gtoe_journal(char *string);
-void gtoe_comments(void);
-void macke_to_embl(char *inf, char *outf);
-int partial_mtoe(void);
+int comment_subkey(const char *line, char *key);
+void embl_key_word(const char *line, int index, char *key);
+void embl_origin(Seq &seq, Reader &reader);
+void embl_out_header(const Embl &embl, const Seq &seq, Writer &write);
+void embl_out(const Embl &embl, const Seq &seq, Writer &write);
+int etog(const Embl &embl, GenBank &gbk, const Seq &seq) __ATTR__USERESULT;
+int etom(const Embl &embl, Macke &macke, const Seq &seq) __ATTR__USERESULT;
+int gtoe(const GenBank &gbk, Embl &embl, const Seq &seq) __ATTR__USERESULT;
+int mtoe(const Macke &macke, Embl &embl, const Seq &seq) __ATTR__USERESULT;
 
 /* fconv.cxx */
-void convert(char *inf, char *outf, int intype, int outype);
-void init(void);
-void init_seq_data(void);
+void throw_conversion_not_supported(Format inType, Format ouType) __ATTR__NORETURN;
+void throw_conversion_failure(Format inType, Format ouType) __ATTR__NORETURN;
+void throw_conversion_not_implemented(Format inType, Format ouType) __ATTR__NORETURN;
+void throw_unsupported_input_format(Format inType) __ATTR__NORETURN;
+void throw_incomplete_entry(void) __ATTR__NORETURN;
+void log_processed(int seqCount);
 
 /* gcg.cxx */
-void to_gcg(int intype, char *inf);
-void gcg_seq_out(FILE *ofp, char *key);
-void gcg_doc_out(char *line, FILE *ofp);
-int checksum(char *string, int numofstr);
-void gcg_out_origin(FILE *fp);
-void gcg_output_filename(char *prefix, char *name);
-int gcg_seq_length(void);
+void to_gcg(const char *inf, const char *outf, Format inType);
 
 /* genbank.cxx */
-void init_genbank(void);
-char genbank_in(FILE_BUFFER fp);
-void genbank_key_word(char *line, int index, char *key, int length);
-int genbank_comment_subkey_word(char *line, int index, char *key, int length);
-int genbank_check_blanks(char *line, int numb);
-char *genbank_continue_line(char **string, char *line, int numb, FILE_BUFFER fp);
-char *genbank_one_entry_in(char **datastring, char *line, FILE_BUFFER fp);
-char *genbank_one_comment_entry(char **datastring, char *line, int start_index, FILE_BUFFER fp);
-char *genbank_source(char *line, FILE_BUFFER fp);
-char *genbank_reference(char *line, FILE_BUFFER fp);
-const char *genbank_comments(char *line, FILE_BUFFER fp);
-char *genbank_origin(char *line, FILE_BUFFER fp);
-char *genbank_skip_unidentified(char *line, FILE_BUFFER fp, int blank_num);
-void genbank_verify_accession(void);
-void genbank_verify_keywords(void);
-char genbank_in_locus(FILE_BUFFER fp);
-void genbank_out(FILE *fp);
-void genbank_out_one_entry(FILE *fp, char *string, const char *key, int flag, const char *patterns, int period);
-void genbank_out_one_comment(FILE *fp, char *string, const char *key, int skindent, int cnindent);
-void genbank_print_lines(FILE *fp, char *string, int flag, const char *separators);
-void genbank_print_comment(FILE *fp, const char *key, char *string, int offset, int indent);
-void genbank_out_origin(FILE *fp);
-void genbank_to_genbank(char *inf, char *outf);
-void init_reference(Reference *ref, int flag);
+void genbank_key_word(const char *line, int index, char *key);
+void genbank_one_entry_in(char *&datastring, Reader &reader);
+void genbank_source(GenBank &gbk, Reader &reader);
+void genbank_skip_unidentified(Reader &reader, int blank_num);
+void genbank_reference(GenBank &gbk, Reader &reader);
+void genbank_origin(Seq &seq, Reader &reader);
+void genbank_out_header(const GenBank &gbk, const Seq &seq, Writer &write);
+void genbank_out_base_count(const Seq &seq, Writer &write);
+void genbank_out(const GenBank &gbk, const Seq &seq, Writer &write);
 
 /* macke.cxx */
-void init_macke(void);
-char macke_in(FILE_BUFFER fp1, FILE_BUFFER fp2, FILE_BUFFER fp3);
-char *macke_one_entry_in(FILE_BUFFER fp, const char *key, char *oldname, char **var, char *line, int index);
-char *macke_continue_line(const char *key, char *oldname, char **var, char *line, FILE_BUFFER fp);
-char *macke_origin(char *key, char *line, FILE_BUFFER fp);
-int macke_abbrev(char *line, char *key, int index);
-int macke_rem_continue_line(char **strings, int index);
-char macke_in_name(FILE_BUFFER fp);
-void macke_out_header(FILE *fp);
-void macke_out0(FILE *fp, int format);
-void macke_out1(FILE *fp);
-void macke_print_keyword_rem(int index, FILE *fp);
-void macke_print_line_78(FILE *fp, char *line1, char *line2);
-int macke_key_word(char *line, int index, char *key, int length);
-int macke_in_one_line(char *string);
-void macke_out2(FILE *fp);
+void macke_origin(Seq &seq, char *&seqabbr, Reader &reader);
+int macke_abbrev(const char *line, char *key, int index);
+void macke_out_header(Writer &write);
+void macke_seq_display_out(const Macke &macke, Writer &write, Format inType, bool first_sequence);
+void macke_seq_info_out(const Macke &macke, Writer &write);
+int macke_key_word(const char *line, int index, char *key);
+void macke_seq_data_out(const Seq &seq, const Macke &macke, Writer &write);
 
 /* main.cxx */
-int file_type(char *filename);
-int isnum(char *string);
-int file_exist(char *file_name);
-void change_file_suffix(char *old_file, char *file_name, int type);
 
 /* mg.cxx */
-void init_gm_data(void);
-void genbank_to_macke(char *inf, char *outf);
-int gtom(void);
-void gtom_remarks(void);
-void gtom_copy_remark(char *string, const char *key, int *remnum);
-char *genbank_get_strain(void);
-char *genbank_get_subspecies(void);
-void correct_subspecies(char *subspecies);
-char *genbank_get_atcc(void);
-char *get_atcc(char *source);
-int paren_string(char *string, char *pstring, int index);
-int num_of_remark(void);
-void macke_to_genbank(char *inf, char *outf);
-int mtog(void);
-void mtog_decode_ref_and_remarks(void);
-void mtog_copy_remark(char **string, int *indi, int indj);
-char *macke_copyrem(char **strings, int *index, int maxline, int pointer);
-void mtog_genbank_def_and_source(void);
-void get_string(char *line, char *temp, int index);
-void get_atcc_string(char *line, char *temp, int index);
+int mtog(const Macke &macke, GenBank &gbk, const Seq &seq) __ATTR__USERESULT;
+int gtom(const GenBank &gbk, Macke &macke) __ATTR__USERESULT;
 
 /* paup.cxx */
-void init_paup(void);
-void to_paup(char *inf, char *outf, int informat);
-void to_paup_1x1(char *inf, char *outf, int informat);
-void paup_verify_name(char **string);
-void paup_print_line(char *string, char *sequence, int seq_length, int index, int first_line, FILE *fp);
-void paup_print_header(FILE *ofp);
+void to_paup(const char *inf, const char *outf, Format inType);
 
 /* phylip.cxx */
-void init_phylip(void);
-void to_phylip(char *inf, char *outf, int informat, int readstdin);
-void to_phylip_1x1(char *inf, char *outf, int informat);
-void phylip_print_line(char *name, char *sequence, int seq_length, int index, FILE *fp);
+void to_phylip(const char *inf, const char *outf, Format inType, int readstdin);
 
 /* printable.cxx */
-void to_printable(char *inf, char *outf, int informat);
-void to_printable_1x1(char *inf, char *outf, int informat);
-void printable_print_line(char *id, char *sequence, int start, int base_count, FILE *fp);
+void to_printable(const char *inf, const char *outf, Format inType);
 
-/* routines.cxx */
-void count_base(int *base_a, int *base_t, int *base_g, int *base_c, int *base_other);
-void replace_entry(char **string1, const char *string2);
+/* rdp_info.cxx */
+bool parse_RDP_comment(RDP_comments &comments, RDP_comment_parser one_comment_entry, const char *key, int index, Reader &reader);
+
+/* seq.cxx */
+void read_alignment(Alignment &ali, Format inType, const char *inf);
 
 /* util.cxx */
-int Cmpcasestr(const char *s1, const char *s2);
-int Cmpstr(const char *s1, const char *s2);
-void Freespace(void *pointer);
-void error(int error_num, const char *error_message);
+bool scan_token(char *to, const char *from) __ATTR__USERESULT;
+void scan_token_or_die(char *to, const char *from);
+void scan_token_or_die(char *to, Reader &reader, int offset);
+void throw_error(int error_num, const char *error_message) __ATTR__NORETURN;
+char *strf(const char *format, ...) __ATTR__FORMAT(1);
+void throw_errorf(int error_num, const char *error_messagef, ...) __ATTR__FORMAT(2) __ATTR__NORETURN;
 void warning(int warning_num, const char *warning_message);
+void warningf(int warning_num, const char *warning_messagef, ...) __ATTR__FORMAT(2);
 char *Reallocspace(void *block, unsigned int size);
-char *Dupstr(const char *string);
-char *Catstr(char *s1, const char *s2);
-int Lenstr(const char *s1);
-void Cpystr(char *s1, const char *s2);
-int Skip_white_space(char *line, int index);
-int Reach_white_space(char *line, int index);
-char *Fgetline(char *line, size_t maxread, FILE_BUFFER fb);
+int Skip_white_space(const char *line, int index);
 void Getstr(char *line, int linenum);
-void Append_char(char **string, char ch);
-void Append_rm_eoln(char **string1, const char *string2);
-void Append_rp_eoln(char **string1, char *string2);
-void Append(char **string1, const char *string2);
+void terminate_with(char *&str, char ch);
+void skip_eolnl_and_append(char *&string1, const char *string2);
+void skip_eolnl_and_append_spaced(char *&string1, const char *string2);
+void Append(char *&string1, const char *string2);
+void Append(char *&string1, char ch);
+void upcase(char *str);
+int fputs_len(const char *str, int len, Writer &write);
 int find_pattern(const char *text, const char *pattern);
-int not_ending_mark(char ch);
-int last_word(char ch);
-int is_separator(char ch, const char *separators);
-int same_char(char ch1, char ch2);
-void Upper_case(char *string);
-int Blank_num(char *string);
+int skip_pattern(const char *text, const char *pattern);
+int find_subspecies(const char *str, char expect_behind);
+int skip_subspecies(const char *str, char expect_behind);
+int find_strain(const char *str, char expect_behind);
+int skip_strain(const char *str, char expect_behind);
+const char *stristr(const char *str, const char *substring);
+int ___lookup_keyword(const char *keyword, const char *const *lookup_table, int lookup_table_size);
+int parse_key_word(const char *line, char *key, const char *separator);
 
 #else
 #error prototypes.h included twice

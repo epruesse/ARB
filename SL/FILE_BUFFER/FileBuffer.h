@@ -20,19 +20,6 @@
 #endif
 
 // --------------------------------------------------------------------------------
-// c-interface
-
-struct ClassFileBuffer;
-typedef struct ClassFileBuffer *FILE_BUFFER;
-
-FILE_BUFFER  create_FILE_BUFFER(const char *filename, FILE *in);
-void         destroy_FILE_BUFFER(FILE_BUFFER file_buffer);
-const char  *FILE_BUFFER_read(FILE_BUFFER file_buffer, size_t *lengthPtr);
-void         FILE_BUFFER_back(FILE_BUFFER file_buffer, const char *backline);
-void         FILE_BUFFER_rewind(FILE_BUFFER file_buffer);
-const char  *FILE_BUFFER_make_error(FILE_BUFFER file_buffer, bool show_name, const char *message);
-
-// --------------------------------------------------------------------------------
 // c++-interface
 
 #ifdef __cplusplus
