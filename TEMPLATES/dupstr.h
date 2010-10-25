@@ -27,10 +27,10 @@
  */
 
 
-#ifndef _CPP_CSTRING
+#ifndef _GLIBCXX_CSTRING
 #include <cstring>
 #endif
-#ifndef _CPP_CSTDLIB
+#ifndef _GLIBCXX_CSTDLIB
 #include <cstdlib>
 #endif
 

@@ -15,6 +15,24 @@
 #ifndef ARB_ASSERT_H
 #define ARB_ASSERT_H
 
+// [WhyIncludeHere]
+// need to include all headers needed for unit-tests here [sic]
+// if only included inside test_global.h, developing with active unit-tests
+// will always break non-unit-test-builds.
+
+#ifndef _STDARG_H
+#include <stdarg.h>
+#endif
+#ifndef _STDIO_H
+#include <stdio.h>
+#endif
+#ifndef _ERRNO_H
+#include <errno.h>
+#endif
+#ifndef _STRING_H
+#include <string.h>
+#endif
+
 /* ------------------------------------------------------------
  * Define SIMPLE_ARB_ASSERT before including this header
  * to avoid ARBDB dependency!

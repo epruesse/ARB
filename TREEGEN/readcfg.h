@@ -1,7 +1,7 @@
-#ifndef __READCFG_H
-#define __READCFG_H
+#ifndef READCFG_H
+#define READCFG_H
 
-#ifndef __DEFINES_H
+#ifndef DEFINES_H
 #include "defines.h"
 #endif
 

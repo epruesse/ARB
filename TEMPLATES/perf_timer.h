@@ -13,13 +13,13 @@
 #ifndef PERF_TIMER_H
 #define PERF_TIMER_H
 
-#ifndef _CPP_STRING
+#ifndef _GLIBCXX_STRING
 #include <string>
 #endif
-#ifndef _CPP_CSTDIO
+#ifndef _GLIBCXX_CSTDIO
 #include <cstdio>
 #endif
-#ifndef _CPP_CTIME
+#ifndef _GLIBCXX_CTIME
 #include <ctime>
 #endif
 

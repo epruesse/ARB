@@ -14,10 +14,10 @@
 #ifndef TYPES_H
 #include "types.h"
 #endif
-#ifndef _CPP_CCTYPE
+#ifndef _GLIBCXX_CCTYPE
 #include <cctype>
 #endif
-#ifndef _CPP_ALGORITHM
+#ifndef _GLIBCXX_ALGORITHM
 #include <algorithm>
 #endif
 

@@ -15,7 +15,7 @@
 #ifndef FILEBUFFER_H
 #define FILEBUFFER_H
 
-#ifndef _CPP_CSTDIO
+#ifndef _GLIBCXX_CSTDIO
 #include <cstdio>
 #endif
 
@@ -40,7 +40,7 @@ const char  *FILE_BUFFER_make_error(FILE_BUFFER file_buffer, bool show_name, con
 #ifndef ARBTOOLS_H
 #include <arbtools.h>
 #endif
-#ifndef _CPP_STRING
+#ifndef _GLIBCXX_STRING
 #include <string>
 #endif
 #ifndef ARB_ASSERT_H

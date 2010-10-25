@@ -1,10 +1,10 @@
 #ifndef SAIPROBEVISUALIZATION_HXX
 #define SAIPROBEVISUALIZATION_HXX
 
-#ifndef _CPP_CCTYPE
+#ifndef _GLIBCXX_CCTYPE
 #include <cctype>
 #endif
-#ifndef _CPP_VECTOR
+#ifndef _GLIBCXX_VECTOR
 #include <vector>
 #endif
 #ifndef AWT_CANVAS_HXX

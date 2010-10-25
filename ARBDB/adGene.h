@@ -12,7 +12,7 @@
 #ifndef ADGENE_H
 #define ADGENE_H
 
-#ifndef _CPP_CSTDLIB
+#ifndef _GLIBCXX_CSTDLIB
 #include <cstdlib>
 #endif
 

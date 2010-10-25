@@ -11,7 +11,7 @@
 #ifndef GB_LOCALDATA_H
 #define GB_LOCALDATA_H
 
-#ifndef _CPP_CSTDDEF
+#ifndef _GLIBCXX_CSTDDEF
 #include <cstddef>
 #endif
 

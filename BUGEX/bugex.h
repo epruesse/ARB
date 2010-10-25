@@ -73,7 +73,7 @@
 
 #if defined(BUGEX_DUMPS)
 
-#ifndef _CPP_CCTYPE
+#ifndef _GLIBCXX_CCTYPE
 #include <cctype>
 #endif
 

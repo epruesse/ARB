@@ -19,10 +19,10 @@
 #include <aw_base.hxx>
 #endif
 
-#ifndef _CPP_SET
+#ifndef _GLIBCXX_SET
 #include <set>
 #endif
-#ifndef _CPP_STRING
+#ifndef _GLIBCXX_STRING
 #include <string>
 #endif
 

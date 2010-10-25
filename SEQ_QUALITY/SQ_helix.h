@@ -12,10 +12,10 @@
 //                                                                       //
 //  ==================================================================== //
 
-#ifndef _CPP_STRING
+#ifndef _GLIBCXX_STRING
 #include <string>
 #endif
-#ifndef _CPP_MAP
+#ifndef _GLIBCXX_MAP
 #include <map>
 #endif
 
