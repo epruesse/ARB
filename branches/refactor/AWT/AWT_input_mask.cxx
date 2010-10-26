@@ -931,7 +931,7 @@ inline const char *inputMaskDir(bool local) {
     }
 
     static char *global_mask_dir;
-    if (!global_mask_dir) global_mask_dir = AW_unfold_path("ARBHOME", "lib/inputMasks");
+    if (!global_mask_dir) global_mask_dir = strdup(GB_path_in_ARBLIB("inputMasks"));
     return global_mask_dir;
 }
 

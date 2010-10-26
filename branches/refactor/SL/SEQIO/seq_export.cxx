@@ -78,7 +78,7 @@ static GB_ERROR read_export_format(export_format *efo, const char *file, bool lo
         error = "No export format selected";
     }
     else {
-        char *fullfile = nulldup(GB_unfold_path("ARBHOME", file));
+        char *fullfile = nulldup(GB_path_in_ARBHOME(file));
         FILE *in       = fopen(fullfile, "r");
 
         if (!in) error = GB_export_IO_error("reading export form", fullfile);

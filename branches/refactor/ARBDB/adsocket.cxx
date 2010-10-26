@@ -1486,11 +1486,9 @@ void TEST_paths() {
     TEST_ASSERT_EQUAL(GB_unfold_path("HOME", somefile), GB_concat_path(home, somefile));
 
     TEST_ASSERT_EQUAL(GB_unfold_path(arbhome, somefile), GB_concat_path(arbhome, somefile));
-    TEST_ASSERT_EQUAL(GB_unfold_path("ARBHOME", somefile), GB_concat_path(arbhome, somefile));
+    TEST_ASSERT_EQUAL(GB_path_in_ARBHOME(somefile), GB_concat_path(arbhome, somefile));
 
-    TEST_ASSERT_EQUAL(GB_unfold_path("ARBHOME", "Makefile"), GB_path_in_ARBHOME("Makefile"));
-    TEST_ASSERT_EQUAL(GB_unfold_path("ARBHOME", "lib/help"), GB_path_in_ARBHOME("lib", "help"));
-    TEST_ASSERT_EQUAL(GB_unfold_path("ARBHOME", "lib/help"), GB_path_in_ARBLIB("help"));
+    TEST_ASSERT_EQUAL(GB_path_in_ARBLIB("help"), GB_path_in_ARBHOME("lib", "help"));
 
     free(arbhome);
     free(home);

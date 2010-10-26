@@ -718,7 +718,7 @@ void TEST_path_unfolding() {
         gb_getenv_hook old = GB_install_getenv_hook(expand_symbolic_directories);
 
         TEST_ASSERT_EQUAL(GB_getenv("PWD"), currDir);
-        TEST_ASSERT_EQUAL(GB_getenv("PT_SERVER_HOME"), GB_path_in_ARBHOME("lib/pts"));
+        TEST_ASSERT_EQUAL(GB_getenv("PT_SERVER_HOME"), GB_path_in_ARBLIB("pts"));
         TEST_ASSERT_EQUAL(GB_getenv("ARBHOME"), GB_getenvARBHOME());
         TEST_ASSERT_EQUAL(GB_getenv("ARB_NONEXISTING_ENVAR"), NULL);
 
