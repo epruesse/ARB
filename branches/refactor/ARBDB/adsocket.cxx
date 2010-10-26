@@ -1046,7 +1046,23 @@ GB_CSTR GB_getenvHTMLDOCPATH() {
 
 }
 
+static gb_getenv_hook getenv_hook = NULL;
+
+NOT4PERL gb_getenv_hook GB_install_getenv_hook(gb_getenv_hook hook) {
+    // Install 'hook' to be called by GB_getenv().
+    // If the 'hook' returns NULL, normal expansion takes place.
+    // Otherwise GB_getenv() returns result from 'hook'
+
+    gb_getenv_hook oldHook = getenv_hook;
+    getenv_hook            = hook;
+    return oldHook;
+}
+
 GB_CSTR GB_getenv(const char *env) {
+    if (getenv_hook) {
+        const char *result = getenv_hook(env);
+        if (result) return result;
+    }
     if (strncmp(env, "ARB", 3) == 0) {
 
         // doc in ../HELP_SOURCE/oldhelp/arb_envar.hlp
@@ -1231,6 +1247,19 @@ GB_CSTR GB_concat_full_path(const char *anypath_left, const char *anypath_right)
 
     if (result) result = GB_get_full_path(result);
     return result;
+}
+
+inline bool is_absolute_path(const char *path) { return path[0] == '/' || path[0] == '~'; }
+
+GB_CSTR GB_unfold_path(const char *path, const char *pwd_envar) {
+    if (is_absolute_path(path)) {
+        return GB_get_full_path(path);
+    }
+    else {
+        const char *pwd = GB_getenv(pwd_envar);
+        if (!pwd) pwd   = GB_getcwd();
+        return GB_concat_full_path(pwd, path);
+    }
 }
 
 GB_CSTR GB_path_in_ARBHOME(const char *relative_path_left, const char *anypath_right) {

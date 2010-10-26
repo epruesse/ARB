@@ -14,17 +14,6 @@
 
 #define sio_assert(cond) arb_assert(cond)
 
-#if defined(DEVEL_RALF)
-#warning AW_unfold_path -> GB_unfold_path
-#endif // DEVEL_RALF
-
-char *AW_unfold_path(const char *path, const char *pwd_envar) {
-    //! create a full path
-
-     if (path[0] == '/' || path[0] == '~') return strdup(GB_get_full_path(path));
-     return strdup(GB_concat_full_path(GB_getenv(pwd_envar), path));
-}
-
 char *SEQIO_fgets(char *s, int size, FILE *stream) {
     // same as fgets but also works with file in MacOS format
     int i;

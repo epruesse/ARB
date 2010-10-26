@@ -56,7 +56,7 @@ struct File_selection {                            // for fileselection
     bool leave_wildcards;
 };
 
-static GB_CSTR get_base_directory(const char *pwd_envar) {
+static GB_CSTR expand_symbolic_directories(const char *pwd_envar) { 
     GB_CSTR res;
 
     if (strcmp(pwd_envar, "PWD") == 0) {
@@ -66,14 +66,19 @@ static GB_CSTR get_base_directory(const char *pwd_envar) {
         res = GB_path_in_ARBLIB("pts", NULL);
     }
     else {
-        res = GB_getenv(pwd_envar);
-        if (!res) res = GB_getcwd(); // fallback to current working dir
+        res = NULL;
     }
 
     return res;
 }
 
-
+char *AW_unfold_path(const char *path, const char *pwd_envar) {
+    //! create a full path
+    gb_getenv_hook  oldHook = GB_install_getenv_hook(expand_symbolic_directories);
+    char           *result  = nulldup(GB_unfold_path(path, pwd_envar));
+    GB_install_getenv_hook(oldHook);
+    return result;
+}
 
 static GB_CSTR get_suffix(GB_CSTR fullpath) { // returns pointer behind '.' of suffix (or NULL if no suffix found)
     GB_CSTR dot = strrchr(fullpath, '.');
@@ -122,13 +127,6 @@ static char *set_suffix(const char *name, const char *suffix) {
     return GBS_strclose(out);
 }
 
-
-char *AW_unfold_path(const char *path, const char *pwd_envar) {
-    //! create a full path
-
-    if (path[0] == '/' || path[0] == '~') return strdup(GB_get_full_path(path));
-    return strdup(GB_concat_full_path(get_base_directory(pwd_envar), path));
-}
 
 inline const char *valid_path(const char *path) { return path[0] ? path : "."; }
 
@@ -258,7 +256,7 @@ static void show_soft_link(AW_window *aws, AW_selection_list *sel_id, const char
     // adds a soft link (e.g. ARBMACROHOME or ARB_WORKDIR) into file selection box
     // if content of 'envar' matches 'cwd' nothing is inserted
 
-    const char *expanded_dir = get_base_directory(envar);
+    const char *expanded_dir = expand_symbolic_directories(envar);
     string      edir(expanded_dir);
 
     if (unDup.not_seen_yet(edir)) {
@@ -696,6 +694,41 @@ char *AW_get_selected_fullname(AW_root *awr, const char *awar_prefix) {
 void AW_refresh_fileselection(AW_root *awr, const char *awar_prefix) {
     // call optionally to force instant refresh
     // (automatic refresh is done every SELBOX_AUTOREFRESH_FREQUENCY)
-    
+
     awr->awar(GBS_global_string("%s/directory", awar_prefix))->touch();
 }
+
+// --------------------------------------------------------------------------------
+
+#if (UNIT_TESTS == 1)
+#include <test_unit.h>
+
+#define TEST_ASSERT_EQUAL_DUPPED(cs1, cs2)                              \
+    do {                                                                \
+        char *s1, *s2;                                                  \
+        TEST_ASSERT_EQUAL(s1 = (cs1), s2 = (cs2));                      \
+        free(s1);                                                       \
+        free(s2);                                                       \
+    } while(0)                                                          \
+
+void TEST_path_unfolding() {
+    const char *currDir = GB_getcwd();
+    {
+        gb_getenv_hook old = GB_install_getenv_hook(expand_symbolic_directories);
+
+        TEST_ASSERT_EQUAL(GB_getenv("PWD"), currDir);
+        TEST_ASSERT_EQUAL(GB_getenv("PT_SERVER_HOME"), GB_path_in_ARBHOME(NULL, "lib/pts"));
+        TEST_ASSERT_EQUAL(GB_getenv("ARBHOME"), GB_getenvARBHOME());
+        TEST_ASSERT_EQUAL(GB_getenv("ARB_NONEXISTING_ENVAR"), NULL);
+
+        GB_install_getenv_hook(old);
+    }
+
+    TEST_ASSERT_EQUAL_DUPPED(AW_unfold_path("/bin", "PWD"), strdup("/bin"));
+    TEST_ASSERT_EQUAL_DUPPED(AW_unfold_path("../tests", "PWD"), strdup(GB_path_in_ARBHOME(NULL, "UNIT_TESTER/tests")));
+    TEST_ASSERT_EQUAL_DUPPED(AW_unfold_path("../arb_tcp.dat", "PT_SERVER_HOME"), strdup(GB_path_in_ARBLIB(NULL, "arb_tcp.dat")));
+    TEST_ASSERT_EQUAL_DUPPED(AW_unfold_path(".", "ARB_NONEXISTING_ENVAR"), strdup(currDir));
+}
+
+#endif // UNIT_TESTS
+

@@ -71,9 +71,6 @@ export_format::~export_format() {
     free(form);
 }
 
-#warning remove this prototype
-char *AW_unfold_path(const char *path, const char *pwd_envar = "PWD");
-
 static GB_ERROR read_export_format(export_format *efo, const char *file, bool load_complete_form) {
     GB_ERROR error = 0;
 
@@ -81,7 +78,7 @@ static GB_ERROR read_export_format(export_format *efo, const char *file, bool lo
         error = "No export format selected";
     }
     else {
-        char *fullfile = AW_unfold_path(file, "ARBHOME");
+        char *fullfile = nulldup(GB_unfold_path(file, "ARBHOME"));
         FILE *in       = fopen(fullfile, "r");
 
         if (!in) error = GB_export_IO_error("reading export form", fullfile);

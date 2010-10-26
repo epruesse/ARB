@@ -1586,18 +1586,18 @@ UNITS_UNTESTABLE_ATM = \
 
 # for the moment, put all units containing tests into UNITS_TESTED:
 UNITS_TESTED = \
-	WINDOW/WINDOW.test \
 	SL/PRONUC/PRONUC.test \
 	AISC_MKPTPS/mkptypes.test \
 	TOOLS/arb_probe.test \
 	AWTC/AWTC.test \
 	SL/FAST_ALIGNER/FAST_ALIGNER.test \
 	MULTI_PROBE/MULTI_PROBE.test \
-	ARBDB/ARBDB.test \
 	MERGE/MERGE.test \
 	EDIT4/EDIT4.test \
 	CONVERTALN/CONVERTALN.test \
 	SL/SEQIO/SEQIO.test \
+	WINDOW/WINDOW.test \
+	ARBDB/ARBDB.test \
 
 TESTED_UNITS_MANUAL = \
 	$(UNITS_TRY_FIX) \

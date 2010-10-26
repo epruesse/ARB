@@ -235,6 +235,7 @@ AW_file_selection.o: $(ARBHOME)/INCLUDE/cb.h
 AW_file_selection.o: $(ARBHOME)/INCLUDE/dupstr.h
 AW_file_selection.o: $(ARBHOME)/INCLUDE/smartptr.h
 AW_file_selection.o: $(ARBHOME)/INCLUDE/test_global.h
+AW_file_selection.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 AW_font_group.o: aw_base.hxx
 AW_font_group.o: aw_device.hxx

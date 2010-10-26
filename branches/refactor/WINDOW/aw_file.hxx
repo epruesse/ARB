@@ -16,7 +16,7 @@
 #include "aw_base.hxx"
 #endif
 
-char *AW_unfold_path(const char *path, const char *pwd_envar = "PWD");
+char *AW_unfold_path(const char *path, const char *pwd_envar);
 char *AW_extract_directory(const char *path);
 
 // -----------------------------
