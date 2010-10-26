@@ -185,7 +185,7 @@ static GB_ERROR read_import_format(const char *fullfile, input_format_struct *if
 }
 
 GB_ERROR awtc_read_import_format(const char *file) {
-    char *fullfile = AW_unfold_path(file, "ARBHOME");
+    char *fullfile = AW_unfold_path("ARBHOME", file);
 
     delete awtcig.ifo;
     awtcig.ifo = new input_format_struct;

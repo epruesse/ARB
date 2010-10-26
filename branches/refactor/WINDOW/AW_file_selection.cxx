@@ -72,10 +72,10 @@ static GB_CSTR expand_symbolic_directories(const char *pwd_envar) {
     return res;
 }
 
-char *AW_unfold_path(const char *path, const char *pwd_envar) {
+char *AW_unfold_path(const char *pwd_envar, const char *path) {
     //! create a full path
     gb_getenv_hook  oldHook = GB_install_getenv_hook(expand_symbolic_directories);
-    char           *result  = nulldup(GB_unfold_path(path, pwd_envar));
+    char           *result  = nulldup(GB_unfold_path(pwd_envar, path));
     GB_install_getenv_hook(oldHook);
     return result;
 }
@@ -271,7 +271,7 @@ static void fill_fileselection_cb(void */*dummy*/, File_selection *cbs) {
     cbs->aws->clear_selection_list(cbs->id);
 
     char *diru    = aw_root->awar(cbs->def_dir)->read_string();
-    char *fulldir = AW_unfold_path(diru, cbs->pwd);
+    char *fulldir = AW_unfold_path(cbs->pwd, diru);
     char *filter  = aw_root->awar(cbs->def_filter)->read_string();
     char *name    = aw_root->awar(cbs->def_name)->read_string();
 
@@ -444,7 +444,7 @@ static void fileselection_filename_changed_cb(void *, File_selection *cbs) {
                 else {
                     char *fulldir = 0;
 
-                    if (dir[0] == '.') fulldir = AW_unfold_path(dir, cbs->pwd);
+                    if (dir[0] == '.') fulldir = AW_unfold_path(cbs->pwd, dir);
                     else fulldir               = strdup(GB_get_full_path(dir));
 
                     newName = strdup(GB_concat_full_path(fulldir, fname));
@@ -724,10 +724,10 @@ void TEST_path_unfolding() {
         GB_install_getenv_hook(old);
     }
 
-    TEST_ASSERT_EQUAL_DUPPED(AW_unfold_path("/bin", "PWD"), strdup("/bin"));
-    TEST_ASSERT_EQUAL_DUPPED(AW_unfold_path("../tests", "PWD"), strdup(GB_path_in_ARBHOME(NULL, "UNIT_TESTER/tests")));
-    TEST_ASSERT_EQUAL_DUPPED(AW_unfold_path("../arb_tcp.dat", "PT_SERVER_HOME"), strdup(GB_path_in_ARBLIB(NULL, "arb_tcp.dat")));
-    TEST_ASSERT_EQUAL_DUPPED(AW_unfold_path(".", "ARB_NONEXISTING_ENVAR"), strdup(currDir));
+    TEST_ASSERT_EQUAL_DUPPED(AW_unfold_path("PWD", "/bin"), strdup("/bin"));
+    TEST_ASSERT_EQUAL_DUPPED(AW_unfold_path("PWD", "../tests"), strdup(GB_path_in_ARBHOME(NULL, "UNIT_TESTER/tests")));
+    TEST_ASSERT_EQUAL_DUPPED(AW_unfold_path("PT_SERVER_HOME", "../arb_tcp.dat"), strdup(GB_path_in_ARBLIB(NULL, "arb_tcp.dat")));
+    TEST_ASSERT_EQUAL_DUPPED(AW_unfold_path("ARB_NONEXISTING_ENVAR", "."), strdup(currDir));
 }
 
 #endif // UNIT_TESTS

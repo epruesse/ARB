@@ -298,7 +298,7 @@ void AWT_create_select_srtaci_window(AW_window *aww, AW_CL awar_acisrt, AW_CL /*
 
         aws->at("box");
         AW_selection_list*  id = aws->create_selection_list(AWAR_SELECT_ACISRT_PRE);
-        char *filename = AW_unfold_path("lib/sellists/srt_aci*.sellst", "ARBHOME");
+        char *filename = AW_unfold_path("ARBHOME", "lib/sellists/srt_aci*.sellst");
         GB_ERROR error = aws->load_selection_list(id, filename);
         free(filename);
         if (error) aw_message(error);

@@ -2242,13 +2242,13 @@ AW_window *create_awt_open_parser(AW_root *aw_root, DbQuery *cbs)
     char *filename = 0;
     switch (cbs->selector->type) {
     case AWT_QUERY_ITEM_SPECIES:
-        filename = AW_unfold_path("lib/sellists/mod_fields*.sellst", "ARBHOME");
+        filename = AW_unfold_path("ARBHOME", "lib/sellists/mod_fields*.sellst");
         break;
     case AWT_QUERY_ITEM_GENES:
-        filename = AW_unfold_path("lib/sellists/mod_gene_fields*.sellst", "ARBHOME");
+        filename = AW_unfold_path("ARBHOME", "lib/sellists/mod_gene_fields*.sellst");
         break;
     case AWT_QUERY_ITEM_EXPERIMENTS:
-        filename = AW_unfold_path("lib/sellists/mod_experiment_fields*.sellst", "ARBHOME");
+        filename = AW_unfold_path("ARBHOME", "lib/sellists/mod_experiment_fields*.sellst");
         break;
     default:
         awt_assert(0);

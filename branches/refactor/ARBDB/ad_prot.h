@@ -508,7 +508,7 @@ GB_CSTR GB_append_suffix(const char *name, const char *suffix);
 GB_CSTR GB_get_full_path(const char *anypath);
 GB_CSTR GB_concat_path(GB_CSTR anypath_left, GB_CSTR anypath_right);
 GB_CSTR GB_concat_full_path(const char *anypath_left, const char *anypath_right);
-GB_CSTR GB_unfold_path(const char *path, const char *pwd_envar);
+GB_CSTR GB_unfold_path(const char *pwd_envar, const char *path);
 GB_CSTR GB_path_in_ARBHOME(const char *relative_path_left, const char *anypath_right);
 GB_CSTR GB_path_in_ARBLIB(const char *relative_path_left, const char *anypath_right);
 FILE *GB_fopen_tempfile(const char *filename, const char *fmode, char **res_fullname);

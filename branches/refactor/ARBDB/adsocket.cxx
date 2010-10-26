@@ -1251,7 +1251,7 @@ GB_CSTR GB_concat_full_path(const char *anypath_left, const char *anypath_right)
 
 inline bool is_absolute_path(const char *path) { return path[0] == '/' || path[0] == '~'; }
 
-GB_CSTR GB_unfold_path(const char *path, const char *pwd_envar) {
+GB_CSTR GB_unfold_path(const char *pwd_envar, const char *path) {
     if (is_absolute_path(path)) {
         return GB_get_full_path(path);
     }
