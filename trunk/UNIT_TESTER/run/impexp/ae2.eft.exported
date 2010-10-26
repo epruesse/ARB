@@ -1,7 +1,7 @@
 #-
 #-
 #-	editor
-#-	Tue Sep 21 10:55:44 2010
+#-	Tue Oct 26 09:45:54 2010
 #-
 #-
 #-	Reference sequence:  MetMazei
@@ -9,7 +9,7 @@
 #=		MetMazei	in  out  vis  prt   ord  dna  lin  5>3  func ref
 #-
 #:MetMazei:name:Methanosarcina mazei.
-#:MetMazei:date:21-JAN-1910
+#:MetMazei:date:26-OCT-2010
 #:MetMazei:acs:X69874
 #:MetMazei:rem:ref:1
 #:MetMazei:rem:GenBank ACCESSION:X69874
