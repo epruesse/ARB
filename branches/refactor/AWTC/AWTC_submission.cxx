@@ -256,7 +256,7 @@ AW_window *AWTC_create_submission_window(AW_root *root, AW_CL cl_gbmain) {
     aws->create_input_field(AWAR_SPECIES_NAME, 12);
 
     aws->at("submission");
-    char **submits = GBS_read_dir(GB_path_in_ARBLIB("submit", NULL), NULL);
+    char **submits = GBS_read_dir(GB_path_in_ARBLIB("submit"), NULL);
     if (submits) {
         aws->create_option_menu("submission/source", "Select a Form", "s");
         for (char **submit = submits; *submit; submit++) {

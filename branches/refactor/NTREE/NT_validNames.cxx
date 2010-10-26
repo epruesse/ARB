@@ -61,7 +61,7 @@ void NT_importValidNames(AW_window*, AW_CL, AW_CL) {
     StrL                   fileContent;
 
     // Load LoVPBN (List of Validly Published Bacterial Names)
-    const char *fileName = GB_path_in_ARBLIB("LoVPBN.txt", NULL);
+    const char *fileName = GB_path_in_ARBLIB("LoVPBN.txt");
 
     DescList myDescs;
 

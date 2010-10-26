@@ -947,7 +947,7 @@ GB_CSTR GB_getenvARBMACRO() {
     static const char *am = 0;
     if (!am) {
         am          = getenv_existing_directory("ARBMACRO"); // doc in ../HELP_SOURCE/oldhelp/arb_envar.hlp@ARBMACRO
-        if (!am) am = strdup(GB_path_in_ARBLIB("macros", NULL));
+        if (!am) am = strdup(GB_path_in_ARBLIB("macros"));
     }
     return am;
 }
@@ -1030,7 +1030,7 @@ GB_CSTR GB_getenvDOCPATH() {
     if (!dp) {
         char *res = getenv_existing_directory("ARB_DOC"); // doc in ../HELP_SOURCE/oldhelp/arb_envar.hlp@ARB_DOC
         if (res) dp = res;
-        else     dp = strdup(GB_path_in_ARBLIB("help", NULL));
+        else     dp = strdup(GB_path_in_ARBLIB("help"));
     }
     return dp;
 }
@@ -1040,7 +1040,7 @@ GB_CSTR GB_getenvHTMLDOCPATH() {
     if (!dp) {
         char *res = getenv_existing_directory("ARB_HTMLDOC"); // doc in ../HELP_SOURCE/oldhelp/arb_envar.hlp@ARB_HTMLDOC
         if (res) dp = res;
-        else     dp = strdup(GB_path_in_ARBLIB("help_html", NULL));
+        else     dp = strdup(GB_path_in_ARBLIB("help_html"));
     }
     return dp;
 
@@ -1262,22 +1262,17 @@ GB_CSTR GB_unfold_path(const char *pwd_envar, const char *path) {
     }
 }
 
-GB_CSTR GB_path_in_ARBHOME(const char *relative_path_left, const char *anypath_right) {
-    if (anypath_right) {
-        return GB_concat_full_path(GB_concat_path(GB_getenvARBHOME(), relative_path_left), anypath_right);
-    }
-    else {
-        return GB_concat_full_path(GB_getenvARBHOME(), relative_path_left);
-    }
+GB_CSTR GB_path_in_ARBHOME(const char *relative_path) {
+    return GB_unfold_path("ARBHOME", relative_path);
 }
-
+GB_CSTR GB_path_in_ARBLIB(const char *relative_path) {
+    return GB_path_in_ARBHOME("lib", relative_path);
+}
+GB_CSTR GB_path_in_ARBHOME(const char *relative_path_left, const char *anypath_right) {
+    return GB_path_in_ARBHOME(GB_concat_path(relative_path_left, anypath_right));
+}
 GB_CSTR GB_path_in_ARBLIB(const char *relative_path_left, const char *anypath_right) {
-    if (anypath_right) {
-        return GB_path_in_ARBHOME(GB_concat_path("lib", relative_path_left), anypath_right);
-    }
-    else {
-        return GB_path_in_ARBHOME("lib", relative_path_left);
-    }
+    return GB_path_in_ARBLIB(GB_concat_path(relative_path_left, anypath_right));
 }
 
 #ifdef P_tmpdir
@@ -1476,6 +1471,29 @@ void TEST_gbcm_get_m_id() {
     // @@@ no idea what "*" is used for, so the following tests are only descriptive!
     TEST_ASSERT(gbcm_get_m_id_TESTER("*whatever:bar").parsed("bar", -1));
     TEST_ASSERT(gbcm_get_m_id_TESTER("*:bar").parsed("bar", -1));
+}
+
+void TEST_paths() {
+    char        *home     = strdup(GB_getenvHOME());
+    char        *arbhome  = strdup(GB_getenvARBHOME());
+    const char*  somefile = "s-o-m-e-f-i-l-e";
+
+    TEST_ASSERT_EQUAL(GB_concat_path("a", NULL), "a");
+    TEST_ASSERT_EQUAL(GB_concat_path(NULL, "b"), "b");
+    TEST_ASSERT_EQUAL(GB_concat_path("a", "b"), "a/b");
+
+    TEST_ASSERT_EQUAL(GB_unfold_path(home, somefile), GB_concat_path(home, somefile));
+    TEST_ASSERT_EQUAL(GB_unfold_path("HOME", somefile), GB_concat_path(home, somefile));
+
+    TEST_ASSERT_EQUAL(GB_unfold_path(arbhome, somefile), GB_concat_path(arbhome, somefile));
+    TEST_ASSERT_EQUAL(GB_unfold_path("ARBHOME", somefile), GB_concat_path(arbhome, somefile));
+
+    TEST_ASSERT_EQUAL(GB_unfold_path("ARBHOME", "Makefile"), GB_path_in_ARBHOME("Makefile"));
+    TEST_ASSERT_EQUAL(GB_unfold_path("ARBHOME", "lib/help"), GB_path_in_ARBHOME("lib", "help"));
+    TEST_ASSERT_EQUAL(GB_unfold_path("ARBHOME", "lib/help"), GB_path_in_ARBLIB("help"));
+
+    free(arbhome);
+    free(home);
 }
 
 #endif

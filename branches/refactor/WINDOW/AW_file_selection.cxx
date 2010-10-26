@@ -63,7 +63,7 @@ static GB_CSTR expand_symbolic_directories(const char *pwd_envar) {
         res = GB_getcwd();
     }
     else if (strcmp(pwd_envar, "PT_SERVER_HOME") == 0) {
-        res = GB_path_in_ARBLIB("pts", NULL);
+        res = GB_path_in_ARBLIB("pts");
     }
     else {
         res = NULL;
@@ -718,7 +718,7 @@ void TEST_path_unfolding() {
         gb_getenv_hook old = GB_install_getenv_hook(expand_symbolic_directories);
 
         TEST_ASSERT_EQUAL(GB_getenv("PWD"), currDir);
-        TEST_ASSERT_EQUAL(GB_getenv("PT_SERVER_HOME"), GB_path_in_ARBHOME(NULL, "lib/pts"));
+        TEST_ASSERT_EQUAL(GB_getenv("PT_SERVER_HOME"), GB_path_in_ARBHOME("lib/pts"));
         TEST_ASSERT_EQUAL(GB_getenv("ARBHOME"), GB_getenvARBHOME());
         TEST_ASSERT_EQUAL(GB_getenv("ARB_NONEXISTING_ENVAR"), NULL);
 
@@ -726,8 +726,8 @@ void TEST_path_unfolding() {
     }
 
     TEST_ASSERT_EQUAL_DUPPED(AW_unfold_path("PWD", "/bin"), strdup("/bin"));
-    TEST_ASSERT_EQUAL_DUPPED(AW_unfold_path("PWD", "../tests"), strdup(GB_path_in_ARBHOME(NULL, "UNIT_TESTER/tests")));
-    TEST_ASSERT_EQUAL_DUPPED(AW_unfold_path("PT_SERVER_HOME", "../arb_tcp.dat"), strdup(GB_path_in_ARBLIB(NULL, "arb_tcp.dat")));
+    TEST_ASSERT_EQUAL_DUPPED(AW_unfold_path("PWD", "../tests"), strdup(GB_path_in_ARBHOME("UNIT_TESTER/tests")));
+    TEST_ASSERT_EQUAL_DUPPED(AW_unfold_path("PT_SERVER_HOME", "../arb_tcp.dat"), strdup(GB_path_in_ARBLIB("arb_tcp.dat")));
     TEST_ASSERT_EQUAL_DUPPED(AW_unfold_path("ARB_NONEXISTING_ENVAR", "."), strdup(currDir));
 }
 

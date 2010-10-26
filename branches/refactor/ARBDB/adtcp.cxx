@@ -433,7 +433,7 @@ const char * const *GBS_get_arb_tcp_entries(const char *matching) {
 const char *GBS_ptserver_logname() {
     static char *serverlog = 0;
     if (!serverlog) {
-        serverlog = nulldup(GB_path_in_ARBLIB("pts/ptserver.log", NULL));
+        serverlog = nulldup(GB_path_in_ARBLIB("pts/ptserver.log"));
         gb_assert(serverlog);
     }
     return serverlog;

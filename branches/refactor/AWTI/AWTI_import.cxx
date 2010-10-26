@@ -260,7 +260,7 @@ input_format_struct::~input_format_struct() {
 
 void awtc_check_input_format(AW_window *aww) {
     AW_root   *root  = aww->get_root();
-    char     **files = GBS_read_dir(GB_path_in_ARBLIB("import", NULL), "*.ift");
+    char     **files = GBS_read_dir(GB_path_in_ARBLIB("import"), "*.ift");
     char       buffer[AWTC_IMPORT_CHECK_BUFFER_SIZE+10];
     GB_ERROR   error = 0;
 
@@ -1227,7 +1227,7 @@ GBDATA *open_AWTC_import_window(AW_root *awr, const char *defname, bool do_exit,
     awtcig.doExit = do_exit; // change/set behavior of CLOSE button
 
     AW_create_fileselection_awars(awr, AWAR_FILE_BASE, ".", "", defname);
-    AW_create_fileselection_awars(awr, AWAR_FORM, GB_path_in_ARBLIB("import", NULL), ".ift", "*");
+    AW_create_fileselection_awars(awr, AWAR_FORM, GB_path_in_ARBLIB("import"), ".ift", "*");
 
     awr->awar_string(AWAR_ALI, "dummy"); // these defaults are never used
     awr->awar_string(AWAR_ALI_TYPE, "dummy"); // they are overwritten by AWTC_import_set_ali_and_type

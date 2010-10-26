@@ -748,7 +748,7 @@ GB_ERROR SEQIO_export_by_format(GBDATA *gb_main, int marked_only, AP_filter *fil
 
 void TEST_sequence_export() {
     GBDATA  *gb_main    = GB_open("TEST_loadsave.arb", "r");
-    char    *export_dir = nulldup(GB_path_in_ARBLIB("export", NULL));
+    char    *export_dir = nulldup(GB_path_in_ARBLIB("export"));
     char   **eft        = GBS_read_dir(export_dir, "*.eft");
 
     AP_filter *filter = NULL;
