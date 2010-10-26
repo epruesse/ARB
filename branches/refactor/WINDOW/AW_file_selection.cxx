@@ -256,8 +256,9 @@ static void show_soft_link(AW_window *aws, AW_selection_list *sel_id, const char
     // adds a soft link (e.g. ARBMACROHOME or ARB_WORKDIR) into file selection box
     // if content of 'envar' matches 'cwd' nothing is inserted
 
-    const char *expanded_dir = expand_symbolic_directories(envar);
-    string      edir(expanded_dir);
+    const char *expanded_dir        = expand_symbolic_directories(envar);
+    if (!expanded_dir) expanded_dir = GB_getenv(envar);
+    string edir(expanded_dir);
 
     if (unDup.not_seen_yet(edir)) {
         unDup.register_directory(edir);
