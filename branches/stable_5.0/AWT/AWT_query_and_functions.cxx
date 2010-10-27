@@ -1154,8 +1154,8 @@ static void awt_do_query(void *dummy, struct adaqbsstruct *cbs, AW_CL cl_ext_que
                                 awt_query_field_type  match_field = this_query->get_match_field();
                                 bool                  this_hit    = (match_field == AQFT_ALL_FIELDS);
 
-                                char *data = gb_key ? GB_read_as_string(gb_key) : strdup(""); // assume "" for explicit fields that don't exist
-                                awt_assert(data);
+                                char *data       = gb_key ? GB_read_as_string(gb_key) : strdup(""); // assume "" for explicit fields that don't exist
+                                if (!data) error = GB_await_error();
 
                                 while (data) {
                                     awt_assert(ext_query == AWT_EXT_QUERY_NONE);
@@ -1260,7 +1260,12 @@ static void awt_do_query(void *dummy, struct adaqbsstruct *cbs, AW_CL cl_ext_que
                     }
                     else CLEAR_QUERIED(gb_item, cbs);
 
-                    if (aw_status(searched_count++/double(item_count))) error = "aborted";
+                    if (error) {
+                        error = GB_failedTo_error("query", GBT_get_name(gb_item), error);
+                    }
+                    else {
+                        if (aw_status(searched_count++/double(item_count))) error = "aborted";
+                    }
                 }
             }
         }
