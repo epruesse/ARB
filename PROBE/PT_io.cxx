@@ -173,17 +173,22 @@ int probe_compress_sequence(char *seq, int seqsize)
 }
 
 static char *probe_read_string_append_point(GBDATA *gb_data, int *psize) {
-    long len = GB_read_string_count(gb_data);
+    long  len  = GB_read_string_count(gb_data);
     char *data = GB_read_string(gb_data);
 
-    if (data[len - 1] != '.') {
-        char *buffer = (char *) malloc(len + 2);
-        strcpy(buffer, data);
-        buffer[len++] = '.';
-        buffer[len] = 0;
-        freeset(data, buffer);
+    if (data) {
+        if (data[len - 1] != '.') {
+            char *buffer = (char *) malloc(len + 2);
+            strcpy(buffer, data);
+            buffer[len++] = '.';
+            buffer[len] = 0;
+            freeset(data, buffer);
+        }
+        *psize = len;
     }
-    *psize = len;
+    else {
+        *psize = 0;
+    }
     return data;
 }
 
@@ -252,24 +257,31 @@ void probe_read_alignments() {
                 data_missing++;
             }
             else {
-                {
-                    int   hsize;
-                    char *data = probe_read_string_append_point(gb_data, &hsize);
+                int   hsize;
+                char *data = probe_read_string_append_point(gb_data, &hsize);
+
+                if (!data) {
+                    GB_ERROR error = GB_await_error();
+                    fprintf(stderr, "Could not read data in '%s' for species '%s'\n(Reason: %s)\n",
+                            psg.alignment_name, pid.name, error);
+                    data_missing++;
+                }
+                else {
                     pid.checksum = GB_checksum(data, hsize, 1, ".-");
-                    int   size = probe_compress_sequence(data, hsize);
+                    int size     = probe_compress_sequence(data, hsize);
 
                     pid.data = GB_memdup(data, size);
                     pid.size = size;
+                    
+                    count ++;
+                    if (count%10 == 0) {
+                        if (count%500) fputc('.', stdout);
+                        else printf(".%6i (%5.1f%%)\n", count, ((double)count/species_count)*100);
+                        fflush(stdout);
+                    }
 
-                    free(data);
                 }
-
-                count ++;
-                if (count%10 == 0) {
-                    if (count%500) fputc('.', stdout);
-                    else printf(".%6i (%5.1f%%)\n", count, ((double)count/species_count)*100);
-                    fflush(stdout);
-                }
+                free(data);
             }
         }
     }
