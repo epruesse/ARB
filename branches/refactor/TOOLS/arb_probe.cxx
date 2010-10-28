@@ -379,56 +379,16 @@ int main(int argc, const char ** argv) {
 #if (UNIT_TESTS == 1)
 
 #include <test_unit.h>
-#include <unistd.h>
-
-#define TEST_REBUILD_PTSERVER // test rebuild of pt-server (slow but complete)
-
-static void test_ptserver_activate(bool start) {
-    const char *server_tag = GBS_ptserver_tag(TEST_SERVER_ID);
-    if (start) {
-        TEST_ASSERT_NO_ERROR(arb_look_and_start_server(AISC_MAGIC_NUMBER, server_tag, 0));
-    }
-    else { // stop
-        GB_ERROR kill_error = arb_look_and_kill_server(AISC_MAGIC_NUMBER, server_tag);
-        if (kill_error) TEST_ASSERT_EQUAL(kill_error, "Server is not running");
-    }
-}
-
-static void test_cleanup() {
-    test_ptserver_activate(false);
-
-    // currently terminates the test-program cause we are outside any guarded region
-    // since this happens AFTER the tests passed, error is not propagated!
-    // @@@ should not be called by atexit(), but from UnitTester
-
-    TEST_ASSERT_ZERO_OR_SHOW_ERRNO(unlink("TEST_pt.arb.pt"));
-}
 
 static void test_setup() {
     static bool setup = false;
-
     if (!setup) {
-        // first kill pt-server (otherwise we may test an outdated pt-server)
-        test_ptserver_activate(false);
-        
-#ifdef TEST_REBUILD_PTSERVER
-        TEST_ASSERT_NO_ERROR(GB_system("touch TEST_pt.arb"));                            // force rebuild
-#else
-        TEST_ASSERT_NO_ERROR(GB_system("cp -p TEST_pt.arb.pt.expected TEST_pt.arb.pt")); // use default
-#endif
-
-        test_ptserver_activate(true);
-
-#ifdef TEST_REBUILD_PTSERVER
-        TEST_ASSERT_FILES_EQUAL("TEST_pt.arb.pt.expected", "TEST_pt.arb.pt");
-        TEST_ASSERT(GB_time_of_file("TEST_pt.arb.pt") >= GB_time_of_file("TEST_pt.arb"));
-#endif
+        TEST_SETUP_GLOBAL_ENVIRONMENT("ptserver"); // first call will recreate the test pt-server
         setup = true;
-        atexit(test_cleanup);
     }
 }
 
-void NOTEST_SLOW_variable_defaults_in_server() {
+void TEST_SLOW_variable_defaults_in_server() {
     test_setup();
 
     const char *server_tag = GBS_ptserver_tag(TEST_SERVER_ID);
@@ -488,7 +448,7 @@ static void test_arb_probe(int fake_argc, const char **fake_argv, const char *ex
     free(answer);
 }
 
-void NOTEST_SLOW_match_probe() {
+void TEST_SLOW_match_probe() {
     const char *arguments[] = {
         "fake", // "program"-name 
         "matchsequence=UAUCGGAGAGUUUGA", 
@@ -500,7 +460,7 @@ void NOTEST_SLOW_match_probe() {
     test_arb_probe(ARRAY_ELEMS(arguments), arguments, expected);
 }
 
-void NOTEST_SLOW_design_probe() {
+void TEST_SLOW_design_probe() {
     const char *arguments[] = {
         "fake", // "program"-name
         "designnames=ClnCorin#CltBotul#CPPParap#ClfPerfr",
@@ -523,7 +483,7 @@ void NOTEST_SLOW_design_probe() {
     test_arb_probe(ARRAY_ELEMS(arguments), arguments, expected);
 }
 
-void NOTEST_SLOW_match_designed_probe() {
+void TEST_SLOW_match_designed_probe() {
     const char *arguments[] = {
         "fake", // "program"-name 
         "matchsequence=UCAAGUCGAGCGAUGAAG", 
