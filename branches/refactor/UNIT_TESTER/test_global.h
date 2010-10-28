@@ -54,10 +54,10 @@
     } while(0)
 # endif
 
-# define TRIGGER_ASSERTION()                            \
-    do {                                                \
-        SET_ASSERTION_FAILED_FLAG();                    \
-        ARB_SIGSEGV(0);                                 \
+# define TRIGGER_ASSERTION(backtrace)           \
+    do {                                        \
+        SET_ASSERTION_FAILED_FLAG();            \
+        ARB_SIGSEGV(backtrace);                 \
     } while(0)
 
 namespace arb_test {
@@ -145,21 +145,26 @@ namespace arb_test {
 #define RUNNING_TEST()                   arb_test::test_data().running_test
 
 // special assert for unit tests (additionally to SEGV it sets a global flag)
-#define test_assert(cond)                       \
+#define test_assert(cond,backtrace)             \
     do {                                        \
         if (!(cond)) {                          \
             PRINT_ASSERTION_FAILED_MSG(cond);   \
-            TRIGGER_ASSERTION();                \
+            TRIGGER_ASSERTION(backtrace);       \
         }                                       \
     } while(0)
 
-// redefine arb_assert with test_assert when compiling for unit tests
+// Redefine arb_assert with test_assert when compiling for unit tests.
+// 
+// Always request a backtrace because these assertions are unexpected and
+// might require to recompile tests w/o deadlockguard just to determine
+// the callers (using a debugger).
+
 # if defined(ASSERTION_USED)
 #  undef arb_assert
-#  define arb_assert(cond) test_assert(cond)
+#  define arb_assert(cond) test_assert(cond, true)
 # endif
 
-#define UNCOVERED() test_assert(arb_test::test_data().not_covered_by_test())
+#define UNCOVERED() test_assert(arb_test::test_data().not_covered_by_test(), false)
 // the opposite (i.e. COVERED()) would be quite nice, but is not trivial or even impossible
 
 #else // UNIT_TESTS != 1

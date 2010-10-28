@@ -56,6 +56,7 @@ TestEnvironment.o: test_unit.h
 TestEnvironment.o: UnitTester.hxx
 TestEnvironment.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 TestEnvironment.o: $(ARBHOME)/INCLUDE/ad_prot.h
+TestEnvironment.o: $(ARBHOME)/INCLUDE/aisc_global.h
 TestEnvironment.o: $(ARBHOME)/INCLUDE/arb_assert.h
 TestEnvironment.o: $(ARBHOME)/INCLUDE/arb_defs.h
 TestEnvironment.o: $(ARBHOME)/INCLUDE/arb_error.h
@@ -64,7 +65,12 @@ TestEnvironment.o: $(ARBHOME)/INCLUDE/arbdb.h
 TestEnvironment.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 TestEnvironment.o: $(ARBHOME)/INCLUDE/arbtools.h
 TestEnvironment.o: $(ARBHOME)/INCLUDE/attributes.h
+TestEnvironment.o: $(ARBHOME)/INCLUDE/bytestring.h
+TestEnvironment.o: $(ARBHOME)/INCLUDE/client.h
+TestEnvironment.o: $(ARBHOME)/INCLUDE/client_types.h
 TestEnvironment.o: $(ARBHOME)/INCLUDE/dupstr.h
+TestEnvironment.o: $(ARBHOME)/INCLUDE/PT_com.h
+TestEnvironment.o: $(ARBHOME)/INCLUDE/servercntrl.h
 TestEnvironment.o: $(ARBHOME)/INCLUDE/smartptr.h
 
 UnitTester.o: test_global.h

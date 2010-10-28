@@ -542,7 +542,7 @@ bool GB_test_textfile_difflines(const char *file1, const char *file2, int expect
                 if (!line) break;
 
                 size_t len = strlen(line);
-                test_assert(line && len<(BUFSIZE-1)); // increase BUFSIZE
+                gb_assert(line && len<(BUFSIZE-1)); // increase BUFSIZE
 
                 bool remove_now = true;
                 if (strncmp(line, "@@", 2) == 0) inHunk = true;
@@ -648,7 +648,7 @@ bool GB_test_files_equal(const char *file1, const char *file2) {
             }
 
             if (error) printf("test_files_equal: equal_bytes=%i\n", equal_bytes);
-            test_assert(error || equal_bytes); // comparing empty files is nonsense
+            gb_assert(error || equal_bytes); // comparing empty files is nonsense
 
             free(buf2);
             free(buf1);
