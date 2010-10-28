@@ -138,8 +138,6 @@ public:
 // -----------------
 //      ptserver
 
-#define TEST_REBUILD_PTSERVER // test rebuild of pt-server
-
 static void test_ptserver_activate(bool start) {
     const char *server_tag = GBS_ptserver_tag(TEST_SERVER_ID);
     if (start) {
@@ -160,20 +158,11 @@ static Error ptserver(Mode mode) {
 
     switch (mode) {
         case SETUP: {
-            // first kill pt-server (otherwise we may test an outdated pt-server)
-            test_ptserver_activate(false);
-        
-#ifdef TEST_REBUILD_PTSERVER
-            TEST_ASSERT_NO_ERROR(GB_system("touch TEST_pt.arb"));                            // force rebuild
-#else
-            TEST_ASSERT_NO_ERROR(GB_system("cp -p TEST_pt.arb.pt.expected TEST_pt.arb.pt")); // use prebuild ptserver db
-#endif
+            test_ptserver_activate(false);                        // first kill pt-server (otherwise we may test an outdated pt-server)
+            TEST_ASSERT_NO_ERROR(GB_system("touch TEST_pt.arb")); // force rebuild
             test_ptserver_activate(true);
-
-#ifdef TEST_REBUILD_PTSERVER
             TEST_ASSERT_FILES_EQUAL("TEST_pt.arb.pt.expected", "TEST_pt.arb.pt");
             TEST_ASSERT(GB_time_of_file("TEST_pt.arb.pt") >= GB_time_of_file("TEST_pt.arb"));
-#endif
             break;
         }
         case CLEAN: {
