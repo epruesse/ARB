@@ -189,7 +189,7 @@ static void fill_fileselection_recursive(const char *fulldir, int skipleft, cons
         char       *fullname;
 
         if (strlen(fulldir)) fullname = strdup(GB_concat_full_path(fulldir, entry));
-        else fullname                 = strdup(GB_get_full_path(entry));
+        else fullname                 = strdup(GB_canonical_path(entry));
 
         if (AW_is_dir(fullname)) {
             if (!(entry[0] == '.' && (!DIR_show_hidden || entry[1] == 0 || (entry[1] == '.' && entry[2] == 0)))) { // skip "." and ".." and dotdirs if requested
@@ -435,7 +435,7 @@ static void fileselection_filename_changed_cb(void *, File_selection *cbs) {
         char *dir     = aw_root->awar(cbs->def_dir)->read_string();
 
         if (fname[0] == '/' || fname[0] == '~') {
-            newName = strdup(GB_get_full_path(fname));
+            newName = strdup(GB_canonical_path(fname));
         }
         else {
             if (dir[0]) {
@@ -446,14 +446,14 @@ static void fileselection_filename_changed_cb(void *, File_selection *cbs) {
                     char *fulldir = 0;
 
                     if (dir[0] == '.') fulldir = AW_unfold_path(cbs->pwd, dir);
-                    else fulldir               = strdup(GB_get_full_path(dir));
+                    else fulldir               = strdup(dir);
 
                     newName = strdup(GB_concat_full_path(fulldir, fname));
                     free(fulldir);
                 }
             }
             else {
-                newName = strdup(GB_get_full_path(fname));
+                newName = AW_unfold_path(cbs->pwd, fname);
             }
         }
 
