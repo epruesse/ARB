@@ -128,6 +128,7 @@ ad_spec.o: $(ARBHOME)/INCLUDE/AP_Tree.hxx
 ad_spec.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ad_spec.o: $(ARBHOME)/INCLUDE/arb_core.h
 ad_spec.o: $(ARBHOME)/INCLUDE/arb_error.h
+ad_spec.o: $(ARBHOME)/INCLUDE/arb_str.h
 ad_spec.o: $(ARBHOME)/INCLUDE/ARB_Tree.hxx
 ad_spec.o: $(ARBHOME)/INCLUDE/arbdb.h
 ad_spec.o: $(ARBHOME)/INCLUDE/arbdb_base.h

@@ -24,6 +24,7 @@
 #include <aw_detach.hxx>
 #include <aw_msg.hxx>
 #include <aw_status.hxx>
+#include <arb_str.h>
 
 #include <cctype>
 
@@ -92,8 +93,6 @@ static void move_species_to_extended(AW_window *aww) {
 static const char * const SAI_COUNTED_CHARS = "COUNTED_CHARS";
 
 void NT_count_different_chars(AW_window *, AW_CL cl_gb_main, AW_CL) {
-    const unsigned char  MAXLETTER  = ('Z'-'A'+1);
-
     ARB_ERROR  error;
     GBDATA    *gb_main = (GBDATA*)cl_gb_main;
 
@@ -103,29 +102,16 @@ void NT_count_different_chars(AW_window *, AW_CL cl_gb_main, AW_CL) {
     int   alignment_len  = GBT_get_alignment_len(gb_main, alignment_name);
     int   is_amino       = GBT_is_alignment_protein(gb_main, alignment_name);
 
-    char filter[256];
-    if (is_amino) {
-        memset(filter, 1, 256);
-        filter[(unsigned char)'B'] = 0;
-        filter[(unsigned char)'J'] = 0;
-        filter[(unsigned char)'O'] = 0;
-        filter[(unsigned char)'U'] = 0;
-        filter[(unsigned char)'Z'] = 0;
-    }
-    else {
-        memset(filter, 0, 256);
-        filter[(unsigned char)'A'] = 1;
-        filter[(unsigned char)'C'] = 1;
-        filter[(unsigned char)'G'] = 1;
-        filter[(unsigned char)'T'] = 1;
-        filter[(unsigned char)'U'] = 1;
-    }
-
     if (!error) {
-        // malloc and clear arrays for counting characters (only letters)
-        int *counters[MAXLETTER];
-        for (int i=0; i<MAXLETTER; i++) counters[i] = (int *)calloc(sizeof(int), alignment_len);
+        const int MAXLETTER   = 256;
+        const int FIRSTLETTER = 0;
 
+        bool occurs[MAXLETTER][alignment_len];
+        for (int i = 0; i<MAXLETTER; ++i) {
+            for (int j = 0; j<alignment_len; ++j) {
+                occurs[i][j] = false;
+            }
+        }
 
         // loop over all marked species
         {
@@ -143,15 +129,13 @@ void NT_count_different_chars(AW_window *, AW_CL cl_gb_main, AW_CL) {
                 if (gb_ali) {
                     GBDATA *gb_data = GB_entry(gb_ali, "data");
                     if (gb_data) {
-                        const char *seq = GB_read_char_pntr(gb_data);
-                        if (!seq) continue;
+                        const char * const seq = GB_read_char_pntr(gb_data);
+                        if (seq) {
+                            for (int i=0; i< alignment_len; ++i) {
+                                unsigned char c = seq[i];
+                                if (!c) break;
 
-                        unsigned char c;
-                        for (int i=0; (i< alignment_len) && (c = *(seq)); i++, seq++) {
-                            if (!isalpha(c)) continue;
-                            c = toupper(c);
-                            if (filter[c]) {
-                                counters[c - 'A'][i] ++;
+                                occurs[c-FIRSTLETTER][i] = true;
                             }
                         }
                     }
@@ -163,14 +147,22 @@ void NT_count_different_chars(AW_window *, AW_CL cl_gb_main, AW_CL) {
         }
 
         if (!error) {
-            char *result = (char *)calloc(sizeof(char), alignment_len + 1);
+
+            char filter[256];
+            if (is_amino) for (int c = 0; c<256; ++c) filter[c] = isupper(c) && (strchr("BJOUZ", c) == 0);
+            else          for (int c = 0; c<256; ++c) filter[c] = (strchr("ACGTU", c) != 0);
+
+            char result[alignment_len+1];
             for (int i=0; i<alignment_len; i++) {
                 int sum = 0;
-                for (int l = 0; l < MAXLETTER; l++) {
-                    if (counters[l][i]>0) sum++;
+                for (int c = 'A'; c < 'Z'; ++c) {
+                    if (filter[c]) {
+                        sum += (occurs[c][i] || occurs[tolower(c)][i]);
+                    }
                 }
                 result[i] = sum<10 ? '0'+sum : 'A'-10+sum;
             }
+            result[alignment_len] = 0;
 
             {
                 GBDATA *gb_sai     = GBT_find_or_create_SAI(gb_main, SAI_COUNTED_CHARS);
@@ -181,10 +173,7 @@ void NT_count_different_chars(AW_window *, AW_CL cl_gb_main, AW_CL) {
                     else    error       = GB_write_string(gb_data, result);
                 }
             }
-            free(result);
         }
-
-        for (int i=0; i<MAXLETTER; i++) free(counters[i]);
     }
 
     GB_end_transaction_show_error(gb_main, error, aw_message);

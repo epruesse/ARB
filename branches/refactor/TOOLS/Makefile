@@ -59,6 +59,9 @@ clean:
 	rm -f $(BINARIES)
 	rm -f $(OBJECTS)
 
+proto:
+	@echo "Nothing todo for proto in TOOLS"
+
 depends:
 	$(MAKE) "DEBUG=1" depends_debug
 
