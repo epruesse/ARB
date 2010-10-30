@@ -25,11 +25,11 @@ extern GBDATA *GLOBAL_gb_main;
 
 void nt_seq_load_cb(AW_root *awr, AW_CL, AW_CL) {
     GLOBAL_gb_dest    = GLOBAL_gb_main;
-    AW_window *aww    = ad_create_query_window(awr);
-    ad_unquery_all();
+    AW_window *aww    = NTX_create_query_window(awr);
+    NT_unquery_all();
     GB_ERROR   error  = MG_simple_merge(awr);
     if (!error) error = NT_format_all_alignments(GLOBAL_gb_main);
-    ad_query_update_list();
+    NT_query_update_list();
     if (!error) aww->activate();
 }
 
