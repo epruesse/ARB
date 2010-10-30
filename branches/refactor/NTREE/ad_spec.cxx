@@ -25,6 +25,9 @@
 #include <aw_msg.hxx>
 #include <aw_status.hxx>
 
+#include <cctype>
+
+
 #define nt_assert(bed) arb_assert(bed)
 
 extern GBDATA *GLOBAL_gb_main;
@@ -84,6 +87,106 @@ static void move_species_to_extended(AW_window *aww) {
     }
     GB_end_transaction_show_error(GLOBAL_gb_main, error, aw_message);
     free(source);
+}
+
+void NT_count_different_chars(AW_window *, AW_CL cl_gb_main, AW_CL) {
+    const unsigned char  MAXLETTER  = ('Z'-'A'+1);
+    const char          *SAI_NAME = "COUNTED_CHARS";
+
+    ARB_ERROR  error;
+    GBDATA    *gb_main = (GBDATA*)cl_gb_main;
+
+    error = GB_begin_transaction(gb_main);                      // open transaction
+
+    char *alignment_name = GBT_get_default_alignment(gb_main);  // info about sequences
+    int   alignment_len  = GBT_get_alignment_len(gb_main, alignment_name);
+    int   is_amino       = GBT_is_alignment_protein(gb_main, alignment_name);
+
+    char filter[256];
+    if (is_amino) {
+        memset(filter, 1, 256);
+        filter[(unsigned char)'B'] = 0;
+        filter[(unsigned char)'J'] = 0;
+        filter[(unsigned char)'O'] = 0;
+        filter[(unsigned char)'U'] = 0;
+        filter[(unsigned char)'Z'] = 0;
+    }
+    else {
+        memset(filter, 0, 256);
+        filter[(unsigned char)'A'] = 1;
+        filter[(unsigned char)'C'] = 1;
+        filter[(unsigned char)'G'] = 1;
+        filter[(unsigned char)'T'] = 1;
+        filter[(unsigned char)'U'] = 1;
+    }
+
+    if (!error) {
+        // malloc and clear arrays for counting characters (only letters)
+        int *counters[MAXLETTER];
+        for (int i=0; i<MAXLETTER; i++) counters[i] = (int *)calloc(sizeof(int), alignment_len);
+
+
+        // loop over all marked species
+        {
+            aw_openstatus("Counting characters");
+            aw_status(0.0);
+            
+            int               all_marked = GBT_count_marked_species(gb_main);
+            aw_status_counter progress(all_marked);
+
+            for (GBDATA *gb_species = GBT_first_marked_species(gb_main);
+                 gb_species && !error;
+                 gb_species = GBT_next_marked_species(gb_species))
+            {
+                GBDATA *gb_ali = GB_entry(gb_species, alignment_name); // search the sequence database entry ( ali_xxx/data )
+                if (gb_ali) {
+                    GBDATA *gb_data = GB_entry(gb_ali, "data");
+                    if (gb_data) {
+                        const char *seq = GB_read_char_pntr(gb_data);
+                        if (!seq) continue;
+
+                        unsigned char c;
+                        for (int i=0; (i< alignment_len) && (c = *(seq)); i++, seq++) {
+                            if (!isalpha(c)) continue;
+                            c = toupper(c);
+                            if (filter[c]) {
+                                counters[c - 'A'][i] ++;
+                            }
+                        }
+                    }
+                }
+                progress.inc();
+            }
+
+            aw_closestatus();
+        }
+
+        if (!error) {
+            char *result = (char *)calloc(sizeof(char), alignment_len + 1);
+            for (int i=0; i<alignment_len; i++) {
+                int sum = 0;
+                for (int l = 0; l < MAXLETTER; l++) {
+                    if (counters[l][i]>0) sum++;
+                }
+                result[i] = sum<10 ? '0'+sum : 'A'-10+sum;
+            }
+            // save result as SAI COUNTED_CHARS
+            {
+                GBDATA *gb_sai     = GBT_find_or_create_SAI(gb_main, SAI_NAME);
+                if (!gb_sai) error = GB_await_error();
+                else {
+                    GBDATA *gb_data     = GBT_add_data(gb_sai, alignment_name, "data", GB_STRING);
+                    if (!gb_data) error = GB_await_error();
+                    else    error       = GB_write_string(gb_data, result);
+                }
+            }
+            free(result);
+        }
+
+        for (int i=0; i<MAXLETTER; i++) free(counters[i]);
+    }
+
+    GB_end_transaction_show_error(gb_main, error, aw_message);
 }
 
 void NT_create_sai_from_pfold(AW_window *aww, AW_CL ntw, AW_CL) {

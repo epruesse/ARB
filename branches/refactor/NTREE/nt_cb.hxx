@@ -30,7 +30,6 @@ AW_window *NT_open_select_tree_window(AW_root *awr, char *awar_tree);
 void NT_select_last_tree(AW_window *aww, char *awar_tree);
 AW_window *NT_open_select_alignment_window(AW_root *awr);
 void NT_system_cb(AW_window *aww, AW_CL command, AW_CL auto_help_file);
-void NT_system_cb2(AW_window *aww, AW_CL command, AW_CL auto_help_file);
 
 /* NT_extern.cxx */
 void nt_test_ascii_print(AW_window *aww);
