@@ -162,6 +162,7 @@ ad_spec.o: $(ARBHOME)/INCLUDE/dupstr.h
 ad_spec.o: $(ARBHOME)/INCLUDE/probe_design.hxx
 ad_spec.o: $(ARBHOME)/INCLUDE/smartptr.h
 ad_spec.o: $(ARBHOME)/INCLUDE/test_global.h
+ad_spec.o: $(ARBHOME)/INCLUDE/test_unit.h
 ad_spec.o: $(ARBHOME)/INCLUDE/TreeDisplay.hxx
 
 ad_transpro.o: nt_internal.h

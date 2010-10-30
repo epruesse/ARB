@@ -1565,7 +1565,6 @@ UNITS_WORKING = \
 	PGT/PGT.test \
 	PARSIMONY/PARSIMONY.test \
 	TREEGEN/TREEGEN.test \
-	NTREE/NTREE.test \
 	NAMES/NAMES.test \
 	PROBE/PROBE.test \
 	DBSERVER/DBSERVER.test \
@@ -1589,6 +1588,7 @@ UNITS_UNTESTABLE_ATM = \
 
 # for the moment, put all units containing tests into UNITS_TESTED:
 UNITS_TESTED = \
+	NTREE/NTREE.test \
 	SL/PRONUC/PRONUC.test \
 	AISC_MKPTPS/mkptypes.test \
 	TOOLS/arb_probe.test \
