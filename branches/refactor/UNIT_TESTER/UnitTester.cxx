@@ -19,6 +19,7 @@
 #include <climits>
 
 #include <sys/time.h>
+#include <sys/stat.h>
 
 #define SIMPLE_ARB_ASSERT
 #include <test_unit.h>
@@ -209,7 +210,62 @@ inline bool kill_verbose(pid_t pid, int sig, const char *signame) {
     return result == 0;
 }
 
-UnitTestResult execute_guarded(UnitTest_function fun, long *duration_usec, long max_allowed_duration_ms) {
+// set by TestEnvironment.cxx@ANY_SETUP
+static const char * const any_setup_flag = "../" FLAGS_DIR "/" ANY_SETUP "." FLAGS_EXT;
+
+static bool been_inside_environment() {
+    struct stat stt;
+    return stat(any_setup_flag, &stt) == 0 && S_ISREG(stt.st_mode);
+    // dups GB_is_regularfile("any_setup")
+}
+static void reset_been_inside_environment() {
+    if (been_inside_environment()) {
+        TEST_ASSERT_ZERO_OR_SHOW_ERRNO(unlink(any_setup_flag));
+    }
+}
+
+void sleepms(long ms) {
+    int  seconds = ms/1000;
+    long rest_ms = ms - seconds*1000;
+
+    if (seconds) sleep(seconds);
+    usleep(rest_ms*1000);
+}
+
+#if (DEADLOCKGUARD == 1)
+static void deadlockguard(long max_allowed_duration_ms, bool detect_environment_calls) {
+    // this function is completely incompatible with debuggers
+    sleepms(max_allowed_duration_ms);
+
+    if (detect_environment_calls && been_inside_environment()) {
+        fprintf(stderr, "[test_environment has been called. Added %li ms tolerance]\n", MAX_EXEC_MS_ENV);
+        fflush(stderr);
+        sleepms(MAX_EXEC_MS_ENV);
+        max_allowed_duration_ms += MAX_EXEC_MS_ENV;
+    }
+
+    const long aBIT = 50*1000; // µs
+
+    fprintf(stderr,
+            "[deadlockguard woke up after %li ms]\n"
+            "[interrupting possibly deadlocked test]\n",
+            max_allowed_duration_ms); fflush(stderr);
+    kill_verbose(GLOBAL.pid, SIGINT, "SIGINT");
+    usleep(aBIT); // give parent a chance to kill me
+
+    fprintf(stderr, "[test still running -> terminate]\n"); fflush(stderr);
+    kill_verbose(GLOBAL.pid, SIGTERM, "SIGTERM");
+    usleep(aBIT); // give parent a chance to kill me
+
+    fprintf(stderr, "[still running -> kill]\n"); fflush(stderr);
+    kill_verbose(GLOBAL.pid, SIGKILL, "SIGKILL"); // commit suicide
+    // parent had his chance
+    fprintf(stderr, "[still alive after suicide -> perplexed]\n"); fflush(stderr);
+    exit(EXIT_FAILURE);
+}
+#endif
+
+UnitTestResult execute_guarded(UnitTest_function fun, long *duration_usec, long max_allowed_duration_ms, bool detect_environment_calls) {
     if (GLOBAL.running_on_valgrind) max_allowed_duration_ms *= 4;
     UnitTestResult result;
 
@@ -222,32 +278,10 @@ UnitTestResult execute_guarded(UnitTest_function fun, long *duration_usec, long 
     }
     else { // child
 #if (DEADLOCKGUARD == 1)
-        // the following section is completely incompatible with debuggers
-        int  seconds = max_allowed_duration_ms/1000;
-        long rest_ms = max_allowed_duration_ms - seconds*1000;
-
-        sleep(seconds);
-        usleep(rest_ms*1000);
-
-        const long aBIT = 50*1000; // µs
-        
-        fprintf(stderr,
-                "[deadlock-guard woke up after %li ms]\n"
-                "[interrupting possibly deadlocked test]\n",
-                max_allowed_duration_ms); fflush(stderr);
-        kill_verbose(GLOBAL.pid, SIGINT, "SIGINT");
-        usleep(aBIT); // give parent a chance to kill me
-
-        fprintf(stderr, "[test still running -> terminate]\n"); fflush(stderr);
-        kill_verbose(GLOBAL.pid, SIGTERM, "SIGTERM");
-        usleep(aBIT); // give parent a chance to kill me
-
-        fprintf(stderr, "[still running -> kill]\n"); fflush(stderr);
-        kill_verbose(GLOBAL.pid, SIGKILL, "SIGKILL"); // commit suicide
-        // parent had his chance
-        fprintf(stderr, "[still alive after suicide -> perplexed]\n"); fflush(stderr);
-#else        
+        deadlockguard(max_allowed_duration_ms, detect_environment_calls);
+#else
 #warning DEADLOCKGUARD has been disabled (not default!)
+        detect_environment_calls = detect_environment_calls; // dont warn
 #endif
         exit(EXIT_FAILURE);
     }
@@ -301,10 +335,12 @@ bool SimpleTester::perform(size_t which) {
     const UnitTest_simple& test = tests[which];
     UnitTest_function      fun  = test.fun;
 
+    reset_been_inside_environment();
+
     bool           marked_as_slow   = strlen(test.name) >= 10 && memcmp(test.name, "TEST_SLOW_", 10) == 0;
     long           duration_usec;
     const long     abort_after_ms   = marked_as_slow ? MAX_EXEC_MS_SLOW : MAX_EXEC_MS_NORMAL;
-    UnitTestResult result           = execute_guarded(fun, &duration_usec, abort_after_ms);
+    UnitTestResult result           = execute_guarded(fun, &duration_usec, abort_after_ms, true); // <--- call test
     double         duration_ms_this = duration_usec/1000.0;
 
     duration_ms += duration_ms_this;
