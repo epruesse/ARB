@@ -1435,7 +1435,8 @@ AW_window *NTX_create_query_window(AW_root *aw_root)
 
 void TEST_count_chars() {
     for (int prot = 0; prot<2; ++prot) {
-        GBDATA *gb_main = GB_open(prot ? "prot.arb" : "nuc.arb", "rw");
+        GBDATA *gb_main;
+        TEST_ASSERT_RESULT__NOERROREXPORTED(gb_main = GB_open(prot ? "TEST_prot.arb" : "TEST_nuc.arb", "rw"));
 
         GBT_mark_all(gb_main, 1);
         NT_count_different_chars(NULL, (AW_CL)gb_main, 0);
