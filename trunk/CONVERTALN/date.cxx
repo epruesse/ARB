@@ -22,6 +22,12 @@ static const char *Month[12] = {
     "October", "November", "December"
 };
 
+static unsigned char days_in_month[12+1] = {
+    -1, 
+    31, 29, 31, 30, 31, 30,
+    31, 31, 30, 31, 30, 31
+};
+
 inline bool two_char(const char *str, char determ) {
     // Return true if Str has two determinator char.
     int count = 0;
@@ -130,16 +136,17 @@ STATIC_ATTRIBUTED(__ATTR__USERESULT, bool find_date_long_form(const char *date_s
                 }
             }
             else if ((num = isdatenum(token)) > 0) {
-                if      (!month && num < 12) { month.set(num); }
-                else if (!day   && num < 31) { day.set(num); }
-                else if (!year)              { year.set(num); }
+                if      (!month && num <= 12) { month.set(num); }
+                else if (!day   && num <= 31) { day.set(num); }
+                else if (!year)               { year.set(num); }
             }
             indi = 0;
         }
         else token[indi++] = date_string[index];
     }
 
-    if (!day || !month || !year) return false;
+    if (!day || !month || !year ||
+        day.value()>days_in_month[month.value()]) return false;
 
     *monthPtr = month.value();
     *dayPtr   = day.value();
@@ -188,7 +195,7 @@ const char *genbank_date(const char *other_date) {
         }
 
         if (!gdate[0]) {
-            if (day <= 0 || month <= 0 || year <= 0 || day > 31 || month > 12) {
+            if (day <= 0 || month <= 0 || year <= 0 || month > 12 || day > days_in_month[month]) {
                 warningf(147, "Wrong date format: %s", other_date);
                 strcpy(gdate, ERROR_DATE);
             }
@@ -317,6 +324,9 @@ void TEST_BASIC_conv_date() {
     TEST_ASSERT_FIND_LONGDATE("Tue Jun 22 05:11:00 CEST 1965", 22, 6, 1965);
     TEST_ASSERT_FIND_LONGDATE("Wed Sep 5 19:46:25 CEST 2010",   5, 9, 2010);
     TEST_ASSERT_FIND_LONGDATE("Wed Sep 05 19:46:25 CEST 2010",  5, 9, 2010);
+    TEST_ASSERT_FIND_LONGDATE("Wed Sep 05 19:46:25 2010",  5, 9, 2010);
+    
+    TEST_ASSERT_FIND_LONGDATE("Sun Oct 31 08:37:14 2010",  31, 10, 2010);
 
     // --------------------
 
@@ -331,6 +341,24 @@ void TEST_BASIC_conv_date() {
     TEST_ASSERT_GENBANK_DATE("Tue Jun 22 05:11:00 CEST 1965", "22-JUN-1965");
     TEST_ASSERT_GENBANK_DATE("Wed Sep 5 19:46:25 CEST 2010",  "05-SEP-2010");
     TEST_ASSERT_GENBANK_DATE("Wed Sep 05 19:46:25 CEST 2010", "05-SEP-2010");
+    TEST_ASSERT_GENBANK_DATE("Wed Sep 31 19:46:25 CEST 2010", ERROR_DATE);
+
+    TEST_ASSERT_GENBANK_DATE("Sun Oct 31 08:37:14 2010", "31-OCT-2010");
+    TEST_ASSERT_GENBANK_DATE("Sun 10 31 08:37:14 2010", "31-OCT-2010");
+    TEST_ASSERT_GENBANK_DATE("Sun 31 10 08:37:14 2010", "31-OCT-2010");
+    TEST_ASSERT_GENBANK_DATE("Sun Oct 32 08:37:14 2010", ERROR_DATE);
+    
+    TEST_ASSERT_GENBANK_DATE("Fri Dec 31 08:37:14 2010", "31-DEC-2010");
+    TEST_ASSERT_GENBANK_DATE("Fri 12 31 08:37:14 2010", "31-DEC-2010");
+    TEST_ASSERT_GENBANK_DATE("Fri 31 12 08:37:14 2010", "31-DEC-2010");
+    TEST_ASSERT_GENBANK_DATE("Fri 13 31 08:37:14 2010", ERROR_DATE);
+    TEST_ASSERT_GENBANK_DATE("Fri 31 13 08:37:14 2010", ERROR_DATE);
+
+    TEST_ASSERT_GENBANK_DATE("Tue Feb 28 08:37:14 2011", "28-FEB-2011");
+    TEST_ASSERT_GENBANK_DATE("Tue Feb 29 08:37:14 2011", "29-FEB-2011"); // existance not checked
+    TEST_ASSERT_GENBANK_DATE("Tue Feb 30 08:37:14 2011", ERROR_DATE); // existance not checked
+
+    TEST_ASSERT_DIFFERENT(genbank_date(today_date()), ERROR_DATE);
 
     // --------------------
 
