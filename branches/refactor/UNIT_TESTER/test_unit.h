@@ -127,10 +127,10 @@ namespace arb_test {
     // dont dup size_t:
 #ifdef ARB_64
     inline void print(unsigned u)            { fprintf(stderr, "%u", u); }
-    inline void print_hex(unsigned u)        { fprintf(stderr, "0x%ux", u); }
+    inline void print_hex(unsigned u)        { fprintf(stderr, "0x%x", u); }
 #else
     inline void print(long unsigned u)       { fprintf(stderr, "%lu", u); }
-    inline void print_hex(long unsigned u)   { fprintf(stderr, "0x%lux", u); }
+    inline void print_hex(long unsigned u)   { fprintf(stderr, "0x%lx", u); }
 #endif
 
     template <typename T1, typename T2> inline void print_pair(T1 t1, T2 t2) {
