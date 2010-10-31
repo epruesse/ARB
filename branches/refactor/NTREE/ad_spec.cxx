@@ -92,7 +92,7 @@ static void move_species_to_extended(AW_window *aww) {
 
 static const char * const SAI_COUNTED_CHARS = "COUNTED_CHARS";
 
-void NT_count_different_chars(AW_window *, AW_CL cl_gb_main, AW_CL) {
+void NT_count_different_chars(AW_window *, AW_CL cl_gb_main, AW_CL use_status) {
     ARB_ERROR  error;
     GBDATA    *gb_main = (GBDATA*)cl_gb_main;
 
@@ -115,11 +115,13 @@ void NT_count_different_chars(AW_window *, AW_CL cl_gb_main, AW_CL) {
 
         // loop over all marked species
         {
-            aw_openstatus("Counting characters");
-            aw_status(0.0);
-            
-            int               all_marked = GBT_count_marked_species(gb_main);
-            aw_status_counter progress(all_marked);
+            if (use_status) {
+                aw_openstatus("Counting characters");
+                aw_status(0.0);
+            }
+
+            int                all_marked = GBT_count_marked_species(gb_main);
+            aw_status_counter *progress   = use_status ? new aw_status_counter(all_marked) : NULL;
 
             for (GBDATA *gb_species = GBT_first_marked_species(gb_main);
                  gb_species && !error;
@@ -140,10 +142,13 @@ void NT_count_different_chars(AW_window *, AW_CL cl_gb_main, AW_CL) {
                         }
                     }
                 }
-                progress.inc();
+                if (progress) progress->inc();
             }
 
-            aw_closestatus();
+            if (use_status) {
+                delete progress;
+                aw_closestatus();
+            }
         }
 
         if (!error) {
