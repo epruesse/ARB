@@ -82,6 +82,7 @@
 
 #define __ATTR__PURE       __attribute__((pure))
 #define __ATTR__DEPRECATED __attribute__((deprecated))
+#define __ATTR__DEPRECATED_LATER
 #define __ATTR__CONST      __attribute__((const))
 #define __ATTR__NORETURN   __attribute__((noreturn))
 

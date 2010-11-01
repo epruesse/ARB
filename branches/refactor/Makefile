@@ -581,7 +581,8 @@ checks: check_setup check_tabs
 
 # end test section ------------------------------
 
-ARBDB_LIB=-lARBDB
+CORE_LIB=-lCORE
+ARBDB_LIB=-lARBDB $(CORE_LIB)
 
 LIBS = $(ARBDB_LIB) $(SYSLIBS)
 GUI_LIBS = $(LIBS) -lWINDOW -lAWT $(XLIBS)
@@ -638,6 +639,7 @@ ARCHS = \
 			AISC_MKPTPS/dummy.a \
 			ALIV3/ALIV3.a \
 			ARBDB/libARBDB.a \
+			CORE/libCORE.a \
 			ARB_GDE/ARB_GDE.a \
 			AWT/libAWT.a \
 			AWTC/AWTC.a \
@@ -1002,7 +1004,7 @@ $(ALIV3): $(ARCHS_ALIV3:.a=.dummy) shared_libs
 
 #***********************************	SHARED LIBRARIES SECTION  **************************************
 
-shared_libs: db aw awt
+shared_libs: core db aw awt
 		@echo -------------------- Updating shared libraries
 		$(MAKE) libs
 
@@ -1013,7 +1015,8 @@ addlibs:
 				"link_static=$(LINK_STATIC)" \
 	)
 
-libs:   lib/libARBDB.$(SHARED_LIB_SUFFIX) \
+libs:   lib/libCORE.$(SHARED_LIB_SUFFIX) \
+	lib/libARBDB.$(SHARED_LIB_SUFFIX) \
 	lib/libWINDOW.$(SHARED_LIB_SUFFIX) \
 	lib/libAWT.$(SHARED_LIB_SUFFIX)
 
@@ -1158,6 +1161,7 @@ help:   HELP_SOURCE/HELP_SOURCE.dummy
 HELP_SOURCE/HELP_SOURCE.dummy: xml menus# need to create some files in GDE-subtree first
 
 db:	ARBDB/libARBDB.dummy
+core:	CORE/libCORE.dummy
 aw:	WINDOW/libWINDOW.dummy
 awt:	AWT/libAWT.dummy
 awtc:	AWTC/AWTC.dummy
@@ -1602,6 +1606,7 @@ UNITS_TESTED = \
 	CONVERTALN/CONVERTALN.test \
 	SL/SEQIO/SEQIO.test \
 	WINDOW/WINDOW.test \
+	CORE/CORE.test \
 	ARBDB/ARBDB.test \
 
 TESTED_UNITS_MANUAL = \

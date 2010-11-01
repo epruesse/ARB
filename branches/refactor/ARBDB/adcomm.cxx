@@ -25,6 +25,7 @@
 #include "gb_localdata.h"
 
 #include <SigHandler.h>
+#include <arb_signal.h>
 
 static GBCM_ServerResult gbcms_talking(int con, long *hs, void *sin);
 
@@ -324,7 +325,7 @@ static GB_ERROR gbcm_write_bin(int socket, GBDATA *gbd, long *buffer, long mode,
 
 #define RETURN_SERVER_FAULT_ON_BAD_ADDRESS(ptr)                         \
     do {                                                                \
-        GB_ERROR error = gbcm_test_address((long*)(ptr), GBTUM_MAGIC_NUMBER); \
+        GB_ERROR error = GBK_test_address((long*)(ptr), GBTUM_MAGIC_NUMBER); \
         if (error) {                                                    \
             GB_warningf("%s (%s, #%i)", error, __FILE__, __LINE__);     \
             return GBCM_SERVER_FAULT;                                   \

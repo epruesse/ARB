@@ -14,7 +14,9 @@
 #ifndef AW_WINDOW_HXX
 #include "aw_window.hxx"
 #endif
-
+#ifndef ATTRIBUTES_H
+#include <attributes.h>
+#endif
 
 #define AWP_COLORNAME_TEMPLATE "GCS/%s/MANAGE_GCS/%s/colorname"
 #define AWP_FONTNAME_TEMPLATE "GCS/%s/MANAGE_GCS/%s/font"

@@ -10,6 +10,9 @@
 #ifndef CB_H
 #include <cb.h>
 #endif
+#ifndef ATTRIBUTES_H
+#include <attributes.h>
+#endif
 
 #ifndef aw_assert
 #define aw_assert(bed) arb_assert(bed)
@@ -63,6 +66,7 @@ class  AW_root_Motif;
 class  AW_awar;
 struct AW_buttons_struct;
 class  AW_root_cblist;
+class  GB_HASH;
 
 typedef enum {
     NO_EVENT     = 0,

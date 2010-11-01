@@ -16,11 +16,13 @@
 #ifndef _GLIBCXX_CSTDIO
 #include <cstdio>
 #endif
+#ifndef ARB_CORE_H
+#include <arb_core.h>
+#endif
 
 #define NOT4PERL                                    // function definitions starting with NOT4PERL are not included into the ARB-perl-interface
 
 typedef const char *GB_CSTR;                        // read-only
-typedef const char *GB_ERROR;                       // memory managed by ARBDB
 typedef char       *GB_BUFFER;                      // points to a piece of mem (writeable, but don't free!)*/
 typedef const char *GB_CBUFFER;                     // points to a piece of mem (readable only)*/
 
@@ -53,13 +55,6 @@ enum GB_alignment_type {
     GB_AT_DNA,      // Nucleotide sequence (T)
     GB_AT_AA,       // AminoAcid
 };
-
-#ifndef DUPSTR_H
-#include <dupstr.h>
-#endif
-#ifndef AD_K_PROT_H
-#include <ad_k_prot.h>
-#endif
 
 #else
 #error arbdb_base.h included twice

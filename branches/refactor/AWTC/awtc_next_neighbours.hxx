@@ -14,6 +14,9 @@
 #ifndef ARBDB_BASE_H
 #include <arbdb_base.h>
 #endif
+#ifndef ATTRIBUTES_H
+#include <attributes.h>
+#endif
 
 class FamilyList {
     // list is sorted either by 'matches' or 'rel_matches' (descending)

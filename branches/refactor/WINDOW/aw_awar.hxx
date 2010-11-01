@@ -24,6 +24,10 @@
 #ifndef ARB_ASSERT_H
 #include <arb_assert.h>
 #endif
+#ifndef ATTRIBUTES_H
+#include <attributes.h>
+#endif
+
 
 
 // --------------
