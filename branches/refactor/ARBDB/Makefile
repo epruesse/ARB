@@ -80,7 +80,7 @@ tlpro: $(GB_T:.o=.cxx)
 global_proto: pro ppro tpro 
 
 pro: $(GB_O:.o=.cxx)
-	../MAKEBIN/aisc_mkpt -c "ARB database interface" -G -P -A -w ad_prot.h -F ^GB_,^GEN_,^EXP_,^GBS_,^GBT_,^GBCM $^ >ad_prot.h.tmp
+	../MAKEBIN/aisc_mkpt -c "ARB database interface" -G -P -A -w ad_prot.h -F ^GB_,^GEN_,^EXP_,^GBS_,^GBT_,^GBCM,^GBC_ $^ >ad_prot.h.tmp
 	../SOURCE_TOOLS/mv_if_diff ad_prot.h.tmp ad_prot.h
 
 ppro: $(GB_O:.o=.cxx)

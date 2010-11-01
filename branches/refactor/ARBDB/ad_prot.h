@@ -130,6 +130,9 @@ int GB_random(int range);
 /* adoptimize.cxx */
 GB_ERROR GB_optimize(GBDATA *gb_main);
 
+/* adperl.cxx */
+GB_ERROR GBC_await_error(void);
+
 /* adsort.cxx */
 void GB_sort(void **array, size_t first, size_t behind_last, gb_compare_function compare, void *client_data);
 int GB_string_comparator(const void *v0, const void *v1, void *);

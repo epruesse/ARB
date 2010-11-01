@@ -234,3 +234,14 @@ GB_alignment_type GBP_charPtr_2_GB_alignment_type(const char *ali_type) {
     known_enum found  = string2enum_or_die("alignment-type", ali_type, (enum2string)GBP_GB_alignment_type_2_charPtr, start);
     return found.ali_type;
 }
+
+// -----------------------------------------
+//      wrap functions moved to CORE lib
+//
+// As long as CORE lib is not xsub'd, we use wrappers for some
+// functions used in perl
+
+GB_ERROR GBC_await_error() {
+    return GB_await_error();
+}
+

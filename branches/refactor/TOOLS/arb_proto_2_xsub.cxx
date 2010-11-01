@@ -722,7 +722,7 @@ void xsubGenerator::generate_xsub(const Prototype& prototype) {
     string         function_prefix = prefix_before(c_function_name, '_');
     Package       *package         = NULL;
 
-    if (function_prefix == "GB") {
+    if (function_prefix == "GB" || function_prefix == "GBC") {
         package = &arb;
     }
     else if (function_prefix == "GBT" || function_prefix == "GEN") {
