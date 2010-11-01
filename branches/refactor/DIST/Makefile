@@ -44,7 +44,6 @@ DI_clusters.o: di_awars.hxx
 DI_clusters.o: di_clusters.hxx
 DI_clusters.o: di_clustertree.hxx
 DI_clusters.o: di_foundclusters.hxx
-DI_clusters.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 DI_clusters.o: $(ARBHOME)/INCLUDE/ad_prot.h
 DI_clusters.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 DI_clusters.o: $(ARBHOME)/INCLUDE/AliView.hxx
@@ -55,6 +54,9 @@ DI_clusters.o: $(ARBHOME)/INCLUDE/AP_sequence.hxx
 DI_clusters.o: $(ARBHOME)/INCLUDE/arb_assert.h
 DI_clusters.o: $(ARBHOME)/INCLUDE/arb_core.h
 DI_clusters.o: $(ARBHOME)/INCLUDE/arb_error.h
+DI_clusters.o: $(ARBHOME)/INCLUDE/arb_handlers.h
+DI_clusters.o: $(ARBHOME)/INCLUDE/arb_msg.h
+DI_clusters.o: $(ARBHOME)/INCLUDE/arb_string.h
 DI_clusters.o: $(ARBHOME)/INCLUDE/ARB_Tree.hxx
 DI_clusters.o: $(ARBHOME)/INCLUDE/arbdb.h
 DI_clusters.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -78,7 +80,6 @@ DI_clusters.o: $(ARBHOME)/INCLUDE/smartptr.h
 DI_clusters.o: $(ARBHOME)/INCLUDE/test_global.h
 
 DI_clustertree.o: di_clustertree.hxx
-DI_clustertree.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 DI_clustertree.o: $(ARBHOME)/INCLUDE/ad_prot.h
 DI_clustertree.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 DI_clustertree.o: $(ARBHOME)/INCLUDE/AliView.hxx
@@ -86,6 +87,9 @@ DI_clustertree.o: $(ARBHOME)/INCLUDE/AP_sequence.hxx
 DI_clustertree.o: $(ARBHOME)/INCLUDE/arb_assert.h
 DI_clustertree.o: $(ARBHOME)/INCLUDE/arb_core.h
 DI_clustertree.o: $(ARBHOME)/INCLUDE/arb_error.h
+DI_clustertree.o: $(ARBHOME)/INCLUDE/arb_handlers.h
+DI_clustertree.o: $(ARBHOME)/INCLUDE/arb_msg.h
+DI_clustertree.o: $(ARBHOME)/INCLUDE/arb_string.h
 DI_clustertree.o: $(ARBHOME)/INCLUDE/ARB_Tree.hxx
 DI_clustertree.o: $(ARBHOME)/INCLUDE/arbdb.h
 DI_clustertree.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -99,7 +103,6 @@ DI_clustertree.o: $(ARBHOME)/INCLUDE/smartptr.h
 DI_clustertree.o: $(ARBHOME)/INCLUDE/test_global.h
 
 DI_compress_matrix.o: di_matr.hxx
-DI_compress_matrix.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 DI_compress_matrix.o: $(ARBHOME)/INCLUDE/ad_prot.h
 DI_compress_matrix.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 DI_compress_matrix.o: $(ARBHOME)/INCLUDE/AliView.hxx
@@ -110,6 +113,9 @@ DI_compress_matrix.o: $(ARBHOME)/INCLUDE/AP_Tree.hxx
 DI_compress_matrix.o: $(ARBHOME)/INCLUDE/arb_assert.h
 DI_compress_matrix.o: $(ARBHOME)/INCLUDE/arb_core.h
 DI_compress_matrix.o: $(ARBHOME)/INCLUDE/arb_error.h
+DI_compress_matrix.o: $(ARBHOME)/INCLUDE/arb_handlers.h
+DI_compress_matrix.o: $(ARBHOME)/INCLUDE/arb_msg.h
+DI_compress_matrix.o: $(ARBHOME)/INCLUDE/arb_string.h
 DI_compress_matrix.o: $(ARBHOME)/INCLUDE/ARB_Tree.hxx
 DI_compress_matrix.o: $(ARBHOME)/INCLUDE/arbdb.h
 DI_compress_matrix.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -125,7 +131,6 @@ DI_compress_matrix.o: $(ARBHOME)/INCLUDE/test_global.h
 
 DI_foundclusters.o: di_clustertree.hxx
 DI_foundclusters.o: di_foundclusters.hxx
-DI_foundclusters.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/ad_prot.h
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/AliView.hxx
@@ -133,6 +138,9 @@ DI_foundclusters.o: $(ARBHOME)/INCLUDE/AP_sequence.hxx
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/arb_assert.h
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/arb_core.h
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/arb_error.h
+DI_foundclusters.o: $(ARBHOME)/INCLUDE/arb_handlers.h
+DI_foundclusters.o: $(ARBHOME)/INCLUDE/arb_msg.h
+DI_foundclusters.o: $(ARBHOME)/INCLUDE/arb_string.h
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/ARB_Tree.hxx
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/arbdb.h
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -148,11 +156,13 @@ DI_foundclusters.o: $(ARBHOME)/INCLUDE/gui_aliview.hxx
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/smartptr.h
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/test_global.h
 
-DI_main.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 DI_main.o: $(ARBHOME)/INCLUDE/ad_prot.h
 DI_main.o: $(ARBHOME)/INCLUDE/arb_assert.h
 DI_main.o: $(ARBHOME)/INCLUDE/arb_core.h
 DI_main.o: $(ARBHOME)/INCLUDE/arb_error.h
+DI_main.o: $(ARBHOME)/INCLUDE/arb_handlers.h
+DI_main.o: $(ARBHOME)/INCLUDE/arb_msg.h
+DI_main.o: $(ARBHOME)/INCLUDE/arb_string.h
 DI_main.o: $(ARBHOME)/INCLUDE/arbdb.h
 DI_main.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 DI_main.o: $(ARBHOME)/INCLUDE/arbtools.h
@@ -180,7 +190,6 @@ DI_matr.o: di_matr.hxx
 DI_matr.o: di_protdist.hxx
 DI_matr.o: di_view_matrix.hxx
 DI_matr.o: dist.hxx
-DI_matr.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 DI_matr.o: $(ARBHOME)/INCLUDE/ad_prot.h
 DI_matr.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 DI_matr.o: $(ARBHOME)/INCLUDE/AliView.hxx
@@ -194,6 +203,9 @@ DI_matr.o: $(ARBHOME)/INCLUDE/AP_Tree.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/arb_assert.h
 DI_matr.o: $(ARBHOME)/INCLUDE/arb_core.h
 DI_matr.o: $(ARBHOME)/INCLUDE/arb_error.h
+DI_matr.o: $(ARBHOME)/INCLUDE/arb_handlers.h
+DI_matr.o: $(ARBHOME)/INCLUDE/arb_msg.h
+DI_matr.o: $(ARBHOME)/INCLUDE/arb_string.h
 DI_matr.o: $(ARBHOME)/INCLUDE/ARB_Tree.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/arbdb.h
 DI_matr.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -228,7 +240,6 @@ DI_matr.o: $(ARBHOME)/INCLUDE/test_global.h
 
 DI_mldist.o: di_matr.hxx
 DI_mldist.o: di_mldist.hxx
-DI_mldist.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 DI_mldist.o: $(ARBHOME)/INCLUDE/ad_prot.h
 DI_mldist.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 DI_mldist.o: $(ARBHOME)/INCLUDE/AliView.hxx
@@ -240,6 +251,9 @@ DI_mldist.o: $(ARBHOME)/INCLUDE/AP_Tree.hxx
 DI_mldist.o: $(ARBHOME)/INCLUDE/arb_assert.h
 DI_mldist.o: $(ARBHOME)/INCLUDE/arb_core.h
 DI_mldist.o: $(ARBHOME)/INCLUDE/arb_error.h
+DI_mldist.o: $(ARBHOME)/INCLUDE/arb_handlers.h
+DI_mldist.o: $(ARBHOME)/INCLUDE/arb_msg.h
+DI_mldist.o: $(ARBHOME)/INCLUDE/arb_string.h
 DI_mldist.o: $(ARBHOME)/INCLUDE/ARB_Tree.hxx
 DI_mldist.o: $(ARBHOME)/INCLUDE/arbdb.h
 DI_mldist.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -257,7 +271,6 @@ DI_mldist.o: $(ARBHOME)/INCLUDE/test_global.h
 
 DI_protdist.o: di_matr.hxx
 DI_protdist.o: di_protdist.hxx
-DI_protdist.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 DI_protdist.o: $(ARBHOME)/INCLUDE/ad_prot.h
 DI_protdist.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 DI_protdist.o: $(ARBHOME)/INCLUDE/AliView.hxx
@@ -269,6 +282,9 @@ DI_protdist.o: $(ARBHOME)/INCLUDE/AP_Tree.hxx
 DI_protdist.o: $(ARBHOME)/INCLUDE/arb_assert.h
 DI_protdist.o: $(ARBHOME)/INCLUDE/arb_core.h
 DI_protdist.o: $(ARBHOME)/INCLUDE/arb_error.h
+DI_protdist.o: $(ARBHOME)/INCLUDE/arb_handlers.h
+DI_protdist.o: $(ARBHOME)/INCLUDE/arb_msg.h
+DI_protdist.o: $(ARBHOME)/INCLUDE/arb_string.h
 DI_protdist.o: $(ARBHOME)/INCLUDE/ARB_Tree.hxx
 DI_protdist.o: $(ARBHOME)/INCLUDE/arbdb.h
 DI_protdist.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -285,7 +301,6 @@ DI_protdist.o: $(ARBHOME)/INCLUDE/smartptr.h
 DI_protdist.o: $(ARBHOME)/INCLUDE/test_global.h
 
 DI_save_matr.o: di_matr.hxx
-DI_save_matr.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 DI_save_matr.o: $(ARBHOME)/INCLUDE/ad_prot.h
 DI_save_matr.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 DI_save_matr.o: $(ARBHOME)/INCLUDE/AliView.hxx
@@ -296,6 +311,9 @@ DI_save_matr.o: $(ARBHOME)/INCLUDE/AP_Tree.hxx
 DI_save_matr.o: $(ARBHOME)/INCLUDE/arb_assert.h
 DI_save_matr.o: $(ARBHOME)/INCLUDE/arb_core.h
 DI_save_matr.o: $(ARBHOME)/INCLUDE/arb_error.h
+DI_save_matr.o: $(ARBHOME)/INCLUDE/arb_handlers.h
+DI_save_matr.o: $(ARBHOME)/INCLUDE/arb_msg.h
+DI_save_matr.o: $(ARBHOME)/INCLUDE/arb_string.h
 DI_save_matr.o: $(ARBHOME)/INCLUDE/ARB_Tree.hxx
 DI_save_matr.o: $(ARBHOME)/INCLUDE/arbdb.h
 DI_save_matr.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -313,7 +331,6 @@ DI_save_matr.o: $(ARBHOME)/INCLUDE/test_global.h
 DI_view_matrix.o: di_matr.hxx
 DI_view_matrix.o: di_view_matrix.hxx
 DI_view_matrix.o: dist.hxx
-DI_view_matrix.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/ad_prot.h
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/AliView.hxx
@@ -324,6 +341,9 @@ DI_view_matrix.o: $(ARBHOME)/INCLUDE/AP_Tree.hxx
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/arb_assert.h
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/arb_core.h
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/arb_error.h
+DI_view_matrix.o: $(ARBHOME)/INCLUDE/arb_handlers.h
+DI_view_matrix.o: $(ARBHOME)/INCLUDE/arb_msg.h
+DI_view_matrix.o: $(ARBHOME)/INCLUDE/arb_string.h
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/ARB_Tree.hxx
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/arbdb.h
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -349,7 +369,6 @@ DI_view_matrix.o: $(ARBHOME)/INCLUDE/smartptr.h
 DI_view_matrix.o: $(ARBHOME)/INCLUDE/test_global.h
 
 distanalyse.o: di_matr.hxx
-distanalyse.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 distanalyse.o: $(ARBHOME)/INCLUDE/ad_prot.h
 distanalyse.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 distanalyse.o: $(ARBHOME)/INCLUDE/AliView.hxx
@@ -362,6 +381,9 @@ distanalyse.o: $(ARBHOME)/INCLUDE/AP_Tree.hxx
 distanalyse.o: $(ARBHOME)/INCLUDE/arb_assert.h
 distanalyse.o: $(ARBHOME)/INCLUDE/arb_core.h
 distanalyse.o: $(ARBHOME)/INCLUDE/arb_error.h
+distanalyse.o: $(ARBHOME)/INCLUDE/arb_handlers.h
+distanalyse.o: $(ARBHOME)/INCLUDE/arb_msg.h
+distanalyse.o: $(ARBHOME)/INCLUDE/arb_string.h
 distanalyse.o: $(ARBHOME)/INCLUDE/ARB_Tree.hxx
 distanalyse.o: $(ARBHOME)/INCLUDE/arbdb.h
 distanalyse.o: $(ARBHOME)/INCLUDE/arbdb_base.h

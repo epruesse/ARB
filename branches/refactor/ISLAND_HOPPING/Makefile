@@ -43,11 +43,8 @@ island_hopping.o: defs.h
 island_hopping.o: i-hopper.h
 island_hopping.o: island_hopping.h
 island_hopping.o: mem.h
-island_hopping.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 island_hopping.o: $(ARBHOME)/INCLUDE/arb_assert.h
 island_hopping.o: $(ARBHOME)/INCLUDE/arb_core.h
-island_hopping.o: $(ARBHOME)/INCLUDE/arbdb_base.h
-island_hopping.o: $(ARBHOME)/INCLUDE/attributes.h
 island_hopping.o: $(ARBHOME)/INCLUDE/dupstr.h
 island_hopping.o: $(ARBHOME)/INCLUDE/test_global.h
 

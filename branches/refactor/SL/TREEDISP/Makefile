@@ -44,7 +44,6 @@ depend.init:
 # For formatting issues see SOURCE_TOOLS/fix_depends.pl
 
 irstree_display.o: TreeDisplay.hxx
-irstree_display.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 irstree_display.o: $(ARBHOME)/INCLUDE/ad_prot.h
 irstree_display.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 irstree_display.o: $(ARBHOME)/INCLUDE/AliView.hxx
@@ -53,6 +52,9 @@ irstree_display.o: $(ARBHOME)/INCLUDE/AP_Tree.hxx
 irstree_display.o: $(ARBHOME)/INCLUDE/arb_assert.h
 irstree_display.o: $(ARBHOME)/INCLUDE/arb_core.h
 irstree_display.o: $(ARBHOME)/INCLUDE/arb_error.h
+irstree_display.o: $(ARBHOME)/INCLUDE/arb_handlers.h
+irstree_display.o: $(ARBHOME)/INCLUDE/arb_msg.h
+irstree_display.o: $(ARBHOME)/INCLUDE/arb_string.h
 irstree_display.o: $(ARBHOME)/INCLUDE/ARB_Tree.hxx
 irstree_display.o: $(ARBHOME)/INCLUDE/arbdb.h
 irstree_display.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -77,7 +79,6 @@ irstree_display.o: $(ARBHOME)/INCLUDE/test_global.h
 
 TreeCallbacks.o: TreeCallbacks.hxx
 TreeCallbacks.o: TreeDisplay.hxx
-TreeCallbacks.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/ad_prot.h
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/AliView.hxx
@@ -86,6 +87,9 @@ TreeCallbacks.o: $(ARBHOME)/INCLUDE/AP_Tree.hxx
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/arb_assert.h
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/arb_core.h
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/arb_error.h
+TreeCallbacks.o: $(ARBHOME)/INCLUDE/arb_handlers.h
+TreeCallbacks.o: $(ARBHOME)/INCLUDE/arb_msg.h
+TreeCallbacks.o: $(ARBHOME)/INCLUDE/arb_string.h
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/ARB_Tree.hxx
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/arbdb.h
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -112,7 +116,6 @@ TreeCallbacks.o: $(ARBHOME)/INCLUDE/smartptr.h
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/test_global.h
 
 TreeDisplay.o: TreeDisplay.hxx
-TreeDisplay.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/ad_prot.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/AliView.hxx
@@ -121,6 +124,9 @@ TreeDisplay.o: $(ARBHOME)/INCLUDE/AP_Tree.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/arb_assert.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/arb_core.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/arb_error.h
+TreeDisplay.o: $(ARBHOME)/INCLUDE/arb_handlers.h
+TreeDisplay.o: $(ARBHOME)/INCLUDE/arb_msg.h
+TreeDisplay.o: $(ARBHOME)/INCLUDE/arb_string.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/ARB_Tree.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/arbdb.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/arbdb_base.h
