@@ -56,7 +56,6 @@ PRD_Design.o: $(ARBHOME)/INCLUDE/ad_prot.h
 PRD_Design.o: $(ARBHOME)/INCLUDE/arb_assert.h
 PRD_Design.o: $(ARBHOME)/INCLUDE/arb_core.h
 PRD_Design.o: $(ARBHOME)/INCLUDE/arb_error.h
-PRD_Design.o: $(ARBHOME)/INCLUDE/arb_handlers.h
 PRD_Design.o: $(ARBHOME)/INCLUDE/arb_msg.h
 PRD_Design.o: $(ARBHOME)/INCLUDE/arb_string.h
 PRD_Design.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -127,7 +126,6 @@ primer_design.o: $(ARBHOME)/INCLUDE/adGene.h
 primer_design.o: $(ARBHOME)/INCLUDE/arb_assert.h
 primer_design.o: $(ARBHOME)/INCLUDE/arb_core.h
 primer_design.o: $(ARBHOME)/INCLUDE/arb_error.h
-primer_design.o: $(ARBHOME)/INCLUDE/arb_handlers.h
 primer_design.o: $(ARBHOME)/INCLUDE/arb_msg.h
 primer_design.o: $(ARBHOME)/INCLUDE/arb_string.h
 primer_design.o: $(ARBHOME)/INCLUDE/arbdb.h

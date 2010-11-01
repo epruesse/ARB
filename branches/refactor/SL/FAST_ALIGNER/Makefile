@@ -55,7 +55,6 @@ constructSequence.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 constructSequence.o: $(ARBHOME)/INCLUDE/arb_assert.h
 constructSequence.o: $(ARBHOME)/INCLUDE/arb_core.h
 constructSequence.o: $(ARBHOME)/INCLUDE/arb_error.h
-constructSequence.o: $(ARBHOME)/INCLUDE/arb_handlers.h
 constructSequence.o: $(ARBHOME)/INCLUDE/arb_msg.h
 constructSequence.o: $(ARBHOME)/INCLUDE/arb_string.h
 constructSequence.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -112,7 +111,6 @@ seq_search.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 seq_search.o: $(ARBHOME)/INCLUDE/arb_assert.h
 seq_search.o: $(ARBHOME)/INCLUDE/arb_core.h
 seq_search.o: $(ARBHOME)/INCLUDE/arb_error.h
-seq_search.o: $(ARBHOME)/INCLUDE/arb_handlers.h
 seq_search.o: $(ARBHOME)/INCLUDE/arb_msg.h
 seq_search.o: $(ARBHOME)/INCLUDE/arb_string.h
 seq_search.o: $(ARBHOME)/INCLUDE/arbdb.h

@@ -130,7 +130,6 @@ ps_arb2asciipaths.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ps_arb2asciipaths.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ps_arb2asciipaths.o: $(ARBHOME)/INCLUDE/arb_core.h
 ps_arb2asciipaths.o: $(ARBHOME)/INCLUDE/arb_error.h
-ps_arb2asciipaths.o: $(ARBHOME)/INCLUDE/arb_handlers.h
 ps_arb2asciipaths.o: $(ARBHOME)/INCLUDE/arb_msg.h
 ps_arb2asciipaths.o: $(ARBHOME)/INCLUDE/arb_string.h
 ps_arb2asciipaths.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -151,7 +150,6 @@ ps_convert_db.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ps_convert_db.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ps_convert_db.o: $(ARBHOME)/INCLUDE/arb_core.h
 ps_convert_db.o: $(ARBHOME)/INCLUDE/arb_error.h
-ps_convert_db.o: $(ARBHOME)/INCLUDE/arb_handlers.h
 ps_convert_db.o: $(ARBHOME)/INCLUDE/arb_msg.h
 ps_convert_db.o: $(ARBHOME)/INCLUDE/arb_string.h
 ps_convert_db.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -222,7 +220,6 @@ ps_get_probes.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ps_get_probes.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ps_get_probes.o: $(ARBHOME)/INCLUDE/arb_core.h
 ps_get_probes.o: $(ARBHOME)/INCLUDE/arb_error.h
-ps_get_probes.o: $(ARBHOME)/INCLUDE/arb_handlers.h
 ps_get_probes.o: $(ARBHOME)/INCLUDE/arb_msg.h
 ps_get_probes.o: $(ARBHOME)/INCLUDE/arb_string.h
 ps_get_probes.o: $(ARBHOME)/INCLUDE/arbdb.h

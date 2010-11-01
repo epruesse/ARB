@@ -66,7 +66,6 @@ DBwriter.o: $(ARBHOME)/INCLUDE/adGene.h
 DBwriter.o: $(ARBHOME)/INCLUDE/arb_assert.h
 DBwriter.o: $(ARBHOME)/INCLUDE/arb_core.h
 DBwriter.o: $(ARBHOME)/INCLUDE/arb_error.h
-DBwriter.o: $(ARBHOME)/INCLUDE/arb_handlers.h
 DBwriter.o: $(ARBHOME)/INCLUDE/arb_msg.h
 DBwriter.o: $(ARBHOME)/INCLUDE/arb_string.h
 DBwriter.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -111,7 +110,6 @@ GenomeImport.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 GenomeImport.o: $(ARBHOME)/INCLUDE/arb_assert.h
 GenomeImport.o: $(ARBHOME)/INCLUDE/arb_core.h
 GenomeImport.o: $(ARBHOME)/INCLUDE/arb_error.h
-GenomeImport.o: $(ARBHOME)/INCLUDE/arb_handlers.h
 GenomeImport.o: $(ARBHOME)/INCLUDE/arb_msg.h
 GenomeImport.o: $(ARBHOME)/INCLUDE/arb_string.h
 GenomeImport.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -142,7 +140,6 @@ Importer.o: $(ARBHOME)/INCLUDE/ad_prot.h
 Importer.o: $(ARBHOME)/INCLUDE/arb_assert.h
 Importer.o: $(ARBHOME)/INCLUDE/arb_core.h
 Importer.o: $(ARBHOME)/INCLUDE/arb_error.h
-Importer.o: $(ARBHOME)/INCLUDE/arb_handlers.h
 Importer.o: $(ARBHOME)/INCLUDE/arb_msg.h
 Importer.o: $(ARBHOME)/INCLUDE/arb_string.h
 Importer.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -163,7 +160,6 @@ Location.o: $(ARBHOME)/INCLUDE/adGene.h
 Location.o: $(ARBHOME)/INCLUDE/arb_assert.h
 Location.o: $(ARBHOME)/INCLUDE/arb_core.h
 Location.o: $(ARBHOME)/INCLUDE/arb_error.h
-Location.o: $(ARBHOME)/INCLUDE/arb_handlers.h
 Location.o: $(ARBHOME)/INCLUDE/arb_msg.h
 Location.o: $(ARBHOME)/INCLUDE/arb_string.h
 Location.o: $(ARBHOME)/INCLUDE/arbdb.h

@@ -45,7 +45,6 @@ seq_export.o: $(ARBHOME)/INCLUDE/AP_filter.hxx
 seq_export.o: $(ARBHOME)/INCLUDE/arb_assert.h
 seq_export.o: $(ARBHOME)/INCLUDE/arb_core.h
 seq_export.o: $(ARBHOME)/INCLUDE/arb_error.h
-seq_export.o: $(ARBHOME)/INCLUDE/arb_handlers.h
 seq_export.o: $(ARBHOME)/INCLUDE/arb_msg.h
 seq_export.o: $(ARBHOME)/INCLUDE/arb_string.h
 seq_export.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -64,7 +63,6 @@ seqio.o: $(ARBHOME)/INCLUDE/ad_prot.h
 seqio.o: $(ARBHOME)/INCLUDE/arb_assert.h
 seqio.o: $(ARBHOME)/INCLUDE/arb_core.h
 seqio.o: $(ARBHOME)/INCLUDE/arb_error.h
-seqio.o: $(ARBHOME)/INCLUDE/arb_handlers.h
 seqio.o: $(ARBHOME)/INCLUDE/arb_msg.h
 seqio.o: $(ARBHOME)/INCLUDE/arb_string.h
 seqio.o: $(ARBHOME)/INCLUDE/arbdb.h

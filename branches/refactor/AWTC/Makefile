@@ -35,7 +35,6 @@ AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/aisc_global.h
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/arb_core.h
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/arb_error.h
-AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/arb_handlers.h
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/arb_string.h
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -63,7 +62,6 @@ AWTC_submission.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AWTC_submission.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWTC_submission.o: $(ARBHOME)/INCLUDE/arb_core.h
 AWTC_submission.o: $(ARBHOME)/INCLUDE/arb_error.h
-AWTC_submission.o: $(ARBHOME)/INCLUDE/arb_handlers.h
 AWTC_submission.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AWTC_submission.o: $(ARBHOME)/INCLUDE/arb_string.h
 AWTC_submission.o: $(ARBHOME)/INCLUDE/arbdb.h

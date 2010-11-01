@@ -49,7 +49,6 @@ a3.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 a3.o: $(ARBHOME)/INCLUDE/arb_assert.h
 a3.o: $(ARBHOME)/INCLUDE/arb_core.h
 a3.o: $(ARBHOME)/INCLUDE/arb_error.h
-a3.o: $(ARBHOME)/INCLUDE/arb_handlers.h
 a3.o: $(ARBHOME)/INCLUDE/arb_msg.h
 a3.o: $(ARBHOME)/INCLUDE/arb_string.h
 a3.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -75,7 +74,6 @@ a3_arbdb.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 a3_arbdb.o: $(ARBHOME)/INCLUDE/arb_assert.h
 a3_arbdb.o: $(ARBHOME)/INCLUDE/arb_core.h
 a3_arbdb.o: $(ARBHOME)/INCLUDE/arb_error.h
-a3_arbdb.o: $(ARBHOME)/INCLUDE/arb_handlers.h
 a3_arbdb.o: $(ARBHOME)/INCLUDE/arb_msg.h
 a3_arbdb.o: $(ARBHOME)/INCLUDE/arb_string.h
 a3_arbdb.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -121,7 +119,6 @@ a3_seq.o: $(ARBHOME)/INCLUDE/ad_prot.h
 a3_seq.o: $(ARBHOME)/INCLUDE/arb_assert.h
 a3_seq.o: $(ARBHOME)/INCLUDE/arb_core.h
 a3_seq.o: $(ARBHOME)/INCLUDE/arb_error.h
-a3_seq.o: $(ARBHOME)/INCLUDE/arb_handlers.h
 a3_seq.o: $(ARBHOME)/INCLUDE/arb_msg.h
 a3_seq.o: $(ARBHOME)/INCLUDE/arb_str.h
 a3_seq.o: $(ARBHOME)/INCLUDE/arb_string.h

@@ -54,7 +54,6 @@ AWT_asciiprint.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AWT_asciiprint.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWT_asciiprint.o: $(ARBHOME)/INCLUDE/arb_core.h
 AWT_asciiprint.o: $(ARBHOME)/INCLUDE/arb_error.h
-AWT_asciiprint.o: $(ARBHOME)/INCLUDE/arb_handlers.h
 AWT_asciiprint.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AWT_asciiprint.o: $(ARBHOME)/INCLUDE/arb_string.h
 AWT_asciiprint.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -78,7 +77,6 @@ AWT_attributes.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AWT_attributes.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWT_attributes.o: $(ARBHOME)/INCLUDE/arb_core.h
 AWT_attributes.o: $(ARBHOME)/INCLUDE/arb_error.h
-AWT_attributes.o: $(ARBHOME)/INCLUDE/arb_handlers.h
 AWT_attributes.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AWT_attributes.o: $(ARBHOME)/INCLUDE/arb_string.h
 AWT_attributes.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -97,7 +95,6 @@ AWT_canio.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AWT_canio.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWT_canio.o: $(ARBHOME)/INCLUDE/arb_core.h
 AWT_canio.o: $(ARBHOME)/INCLUDE/arb_error.h
-AWT_canio.o: $(ARBHOME)/INCLUDE/arb_handlers.h
 AWT_canio.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AWT_canio.o: $(ARBHOME)/INCLUDE/arb_string.h
 AWT_canio.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -127,7 +124,6 @@ AWT_canvas.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AWT_canvas.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWT_canvas.o: $(ARBHOME)/INCLUDE/arb_core.h
 AWT_canvas.o: $(ARBHOME)/INCLUDE/arb_error.h
-AWT_canvas.o: $(ARBHOME)/INCLUDE/arb_handlers.h
 AWT_canvas.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AWT_canvas.o: $(ARBHOME)/INCLUDE/arb_string.h
 AWT_canvas.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -154,7 +150,6 @@ AWT_changekey.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AWT_changekey.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWT_changekey.o: $(ARBHOME)/INCLUDE/arb_core.h
 AWT_changekey.o: $(ARBHOME)/INCLUDE/arb_error.h
-AWT_changekey.o: $(ARBHOME)/INCLUDE/arb_handlers.h
 AWT_changekey.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AWT_changekey.o: $(ARBHOME)/INCLUDE/arb_string.h
 AWT_changekey.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -179,7 +174,6 @@ AWT_config_manager.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AWT_config_manager.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWT_config_manager.o: $(ARBHOME)/INCLUDE/arb_core.h
 AWT_config_manager.o: $(ARBHOME)/INCLUDE/arb_error.h
-AWT_config_manager.o: $(ARBHOME)/INCLUDE/arb_handlers.h
 AWT_config_manager.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AWT_config_manager.o: $(ARBHOME)/INCLUDE/arb_string.h
 AWT_config_manager.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -206,7 +200,6 @@ AWT_db_browser.o: $(ARBHOME)/INCLUDE/AP_Tree.hxx
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/arb_core.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/arb_error.h
-AWT_db_browser.o: $(ARBHOME)/INCLUDE/arb_handlers.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/arb_str.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/arb_string.h
@@ -241,7 +234,6 @@ AWT_input_mask.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AWT_input_mask.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWT_input_mask.o: $(ARBHOME)/INCLUDE/arb_core.h
 AWT_input_mask.o: $(ARBHOME)/INCLUDE/arb_error.h
-AWT_input_mask.o: $(ARBHOME)/INCLUDE/arb_handlers.h
 AWT_input_mask.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AWT_input_mask.o: $(ARBHOME)/INCLUDE/arb_string.h
 AWT_input_mask.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -269,7 +261,6 @@ AWT_item_sel_list.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AWT_item_sel_list.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWT_item_sel_list.o: $(ARBHOME)/INCLUDE/arb_core.h
 AWT_item_sel_list.o: $(ARBHOME)/INCLUDE/arb_error.h
-AWT_item_sel_list.o: $(ARBHOME)/INCLUDE/arb_handlers.h
 AWT_item_sel_list.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AWT_item_sel_list.o: $(ARBHOME)/INCLUDE/arb_string.h
 AWT_item_sel_list.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -293,7 +284,6 @@ AWT_macro.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AWT_macro.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWT_macro.o: $(ARBHOME)/INCLUDE/arb_core.h
 AWT_macro.o: $(ARBHOME)/INCLUDE/arb_error.h
-AWT_macro.o: $(ARBHOME)/INCLUDE/arb_handlers.h
 AWT_macro.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AWT_macro.o: $(ARBHOME)/INCLUDE/arb_string.h
 AWT_macro.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -339,7 +329,6 @@ AWT_nds.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AWT_nds.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWT_nds.o: $(ARBHOME)/INCLUDE/arb_core.h
 AWT_nds.o: $(ARBHOME)/INCLUDE/arb_error.h
-AWT_nds.o: $(ARBHOME)/INCLUDE/arb_handlers.h
 AWT_nds.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AWT_nds.o: $(ARBHOME)/INCLUDE/arb_string.h
 AWT_nds.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -369,7 +358,6 @@ AWT_query_and_functions.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AWT_query_and_functions.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWT_query_and_functions.o: $(ARBHOME)/INCLUDE/arb_core.h
 AWT_query_and_functions.o: $(ARBHOME)/INCLUDE/arb_error.h
-AWT_query_and_functions.o: $(ARBHOME)/INCLUDE/arb_handlers.h
 AWT_query_and_functions.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AWT_query_and_functions.o: $(ARBHOME)/INCLUDE/arb_string.h
 AWT_query_and_functions.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -403,7 +391,6 @@ AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/arb_core.h
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/arb_error.h
-AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/arb_handlers.h
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/arb_string.h
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -432,7 +419,6 @@ AWT_seq_colors.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AWT_seq_colors.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWT_seq_colors.o: $(ARBHOME)/INCLUDE/arb_core.h
 AWT_seq_colors.o: $(ARBHOME)/INCLUDE/arb_error.h
-AWT_seq_colors.o: $(ARBHOME)/INCLUDE/arb_handlers.h
 AWT_seq_colors.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AWT_seq_colors.o: $(ARBHOME)/INCLUDE/arb_string.h
 AWT_seq_colors.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -459,7 +445,6 @@ AWT_tables.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AWT_tables.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWT_tables.o: $(ARBHOME)/INCLUDE/arb_core.h
 AWT_tables.o: $(ARBHOME)/INCLUDE/arb_error.h
-AWT_tables.o: $(ARBHOME)/INCLUDE/arb_handlers.h
 AWT_tables.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AWT_tables.o: $(ARBHOME)/INCLUDE/arb_string.h
 AWT_tables.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -488,7 +473,6 @@ AWT_www.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWT_www.o: $(ARBHOME)/INCLUDE/arb_core.h
 AWT_www.o: $(ARBHOME)/INCLUDE/arb_defs.h
 AWT_www.o: $(ARBHOME)/INCLUDE/arb_error.h
-AWT_www.o: $(ARBHOME)/INCLUDE/arb_handlers.h
 AWT_www.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AWT_www.o: $(ARBHOME)/INCLUDE/arb_str.h
 AWT_www.o: $(ARBHOME)/INCLUDE/arb_string.h

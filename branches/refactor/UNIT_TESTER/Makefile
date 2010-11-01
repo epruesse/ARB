@@ -60,7 +60,6 @@ TestEnvironment.o: $(ARBHOME)/INCLUDE/arb_assert.h
 TestEnvironment.o: $(ARBHOME)/INCLUDE/arb_core.h
 TestEnvironment.o: $(ARBHOME)/INCLUDE/arb_defs.h
 TestEnvironment.o: $(ARBHOME)/INCLUDE/arb_error.h
-TestEnvironment.o: $(ARBHOME)/INCLUDE/arb_handlers.h
 TestEnvironment.o: $(ARBHOME)/INCLUDE/arb_msg.h
 TestEnvironment.o: $(ARBHOME)/INCLUDE/arb_str.h
 TestEnvironment.o: $(ARBHOME)/INCLUDE/arb_string.h

@@ -125,7 +125,6 @@ ad_config.o: gb_local.h
 ad_config.o: gb_prot.h
 ad_config.o: $(ARBHOME)/INCLUDE/arb_core.h
 ad_config.o: $(ARBHOME)/INCLUDE/arb_error.h
-ad_config.o: $(ARBHOME)/INCLUDE/arb_handlers.h
 ad_config.o: $(ARBHOME)/INCLUDE/arb_msg.h
 ad_config.o: $(ARBHOME)/INCLUDE/arb_string.h
 ad_config.o: $(ARBHOME)/INCLUDE/arbtools.h
@@ -152,7 +151,6 @@ ad_core.o: gb_ts.h
 ad_core.o: gb_tune.h
 ad_core.o: $(ARBHOME)/INCLUDE/arb_core.h
 ad_core.o: $(ARBHOME)/INCLUDE/arb_error.h
-ad_core.o: $(ARBHOME)/INCLUDE/arb_handlers.h
 ad_core.o: $(ARBHOME)/INCLUDE/arb_msg.h
 ad_core.o: $(ARBHOME)/INCLUDE/arb_string.h
 ad_core.o: $(ARBHOME)/INCLUDE/arbtools.h
@@ -181,7 +179,6 @@ ad_load.o: gb_storage.h
 ad_load.o: gb_tune.h
 ad_load.o: $(ARBHOME)/INCLUDE/arb_core.h
 ad_load.o: $(ARBHOME)/INCLUDE/arb_error.h
-ad_load.o: $(ARBHOME)/INCLUDE/arb_handlers.h
 ad_load.o: $(ARBHOME)/INCLUDE/arb_msg.h
 ad_load.o: $(ARBHOME)/INCLUDE/arb_string.h
 ad_load.o: $(ARBHOME)/INCLUDE/arbtools.h
@@ -208,7 +205,6 @@ ad_save_load.o: gb_storage.h
 ad_save_load.o: gb_tune.h
 ad_save_load.o: $(ARBHOME)/INCLUDE/arb_core.h
 ad_save_load.o: $(ARBHOME)/INCLUDE/arb_error.h
-ad_save_load.o: $(ARBHOME)/INCLUDE/arb_handlers.h
 ad_save_load.o: $(ARBHOME)/INCLUDE/arb_msg.h
 ad_save_load.o: $(ARBHOME)/INCLUDE/arb_string.h
 ad_save_load.o: $(ARBHOME)/INCLUDE/arbtools.h
@@ -229,7 +225,6 @@ adali.o: gb_local.h
 adali.o: gb_prot.h
 adali.o: $(ARBHOME)/INCLUDE/arb_core.h
 adali.o: $(ARBHOME)/INCLUDE/arb_error.h
-adali.o: $(ARBHOME)/INCLUDE/arb_handlers.h
 adali.o: $(ARBHOME)/INCLUDE/arb_msg.h
 adali.o: $(ARBHOME)/INCLUDE/arb_string.h
 adali.o: $(ARBHOME)/INCLUDE/arbtools.h
@@ -253,7 +248,6 @@ adcache.o: gb_storage.h
 adcache.o: gb_tune.h
 adcache.o: $(ARBHOME)/INCLUDE/arb_core.h
 adcache.o: $(ARBHOME)/INCLUDE/arb_error.h
-adcache.o: $(ARBHOME)/INCLUDE/arb_handlers.h
 adcache.o: $(ARBHOME)/INCLUDE/arb_msg.h
 adcache.o: $(ARBHOME)/INCLUDE/arb_string.h
 adcache.o: $(ARBHOME)/INCLUDE/arbtools.h
@@ -272,7 +266,6 @@ adChangeKey.o: gb_local.h
 adChangeKey.o: gb_prot.h
 adChangeKey.o: $(ARBHOME)/INCLUDE/arb_core.h
 adChangeKey.o: $(ARBHOME)/INCLUDE/arb_error.h
-adChangeKey.o: $(ARBHOME)/INCLUDE/arb_handlers.h
 adChangeKey.o: $(ARBHOME)/INCLUDE/arb_msg.h
 adChangeKey.o: $(ARBHOME)/INCLUDE/arb_string.h
 adChangeKey.o: $(ARBHOME)/INCLUDE/arbtools.h
@@ -292,7 +285,6 @@ adcolumns.o: gb_local.h
 adcolumns.o: gb_prot.h
 adcolumns.o: $(ARBHOME)/INCLUDE/arb_core.h
 adcolumns.o: $(ARBHOME)/INCLUDE/arb_error.h
-adcolumns.o: $(ARBHOME)/INCLUDE/arb_handlers.h
 adcolumns.o: $(ARBHOME)/INCLUDE/arb_msg.h
 adcolumns.o: $(ARBHOME)/INCLUDE/arb_string.h
 adcolumns.o: $(ARBHOME)/INCLUDE/arbtools.h
@@ -318,7 +310,6 @@ adcomm.o: gb_storage.h
 adcomm.o: gb_tune.h
 adcomm.o: $(ARBHOME)/INCLUDE/arb_core.h
 adcomm.o: $(ARBHOME)/INCLUDE/arb_error.h
-adcomm.o: $(ARBHOME)/INCLUDE/arb_handlers.h
 adcomm.o: $(ARBHOME)/INCLUDE/arb_msg.h
 adcomm.o: $(ARBHOME)/INCLUDE/arb_signal.h
 adcomm.o: $(ARBHOME)/INCLUDE/arb_string.h
@@ -349,7 +340,6 @@ adcompr.o: gb_t_prot.h
 adcompr.o: gb_tune.h
 adcompr.o: $(ARBHOME)/INCLUDE/arb_core.h
 adcompr.o: $(ARBHOME)/INCLUDE/arb_error.h
-adcompr.o: $(ARBHOME)/INCLUDE/arb_handlers.h
 adcompr.o: $(ARBHOME)/INCLUDE/arb_msg.h
 adcompr.o: $(ARBHOME)/INCLUDE/arb_string.h
 adcompr.o: $(ARBHOME)/INCLUDE/arbtools.h
@@ -369,7 +359,6 @@ adExperiment.o: gb_local.h
 adExperiment.o: gb_prot.h
 adExperiment.o: $(ARBHOME)/INCLUDE/arb_core.h
 adExperiment.o: $(ARBHOME)/INCLUDE/arb_error.h
-adExperiment.o: $(ARBHOME)/INCLUDE/arb_handlers.h
 adExperiment.o: $(ARBHOME)/INCLUDE/arb_msg.h
 adExperiment.o: $(ARBHOME)/INCLUDE/arb_string.h
 adExperiment.o: $(ARBHOME)/INCLUDE/arbtools.h
@@ -387,7 +376,6 @@ adfile.o: gb_local.h
 adfile.o: gb_prot.h
 adfile.o: $(ARBHOME)/INCLUDE/arb_core.h
 adfile.o: $(ARBHOME)/INCLUDE/arb_error.h
-adfile.o: $(ARBHOME)/INCLUDE/arb_handlers.h
 adfile.o: $(ARBHOME)/INCLUDE/arb_msg.h
 adfile.o: $(ARBHOME)/INCLUDE/arb_string.h
 adfile.o: $(ARBHOME)/INCLUDE/arbtools.h
@@ -408,7 +396,6 @@ adGene.o: gb_local.h
 adGene.o: gb_prot.h
 adGene.o: $(ARBHOME)/INCLUDE/arb_core.h
 adGene.o: $(ARBHOME)/INCLUDE/arb_error.h
-adGene.o: $(ARBHOME)/INCLUDE/arb_handlers.h
 adGene.o: $(ARBHOME)/INCLUDE/arb_msg.h
 adGene.o: $(ARBHOME)/INCLUDE/arb_string.h
 adGene.o: $(ARBHOME)/INCLUDE/arbtools.h
@@ -430,7 +417,6 @@ adhash.o: gb_prot.h
 adhash.o: gb_tune.h
 adhash.o: $(ARBHOME)/INCLUDE/arb_core.h
 adhash.o: $(ARBHOME)/INCLUDE/arb_error.h
-adhash.o: $(ARBHOME)/INCLUDE/arb_handlers.h
 adhash.o: $(ARBHOME)/INCLUDE/arb_msg.h
 adhash.o: $(ARBHOME)/INCLUDE/arb_string.h
 adhash.o: $(ARBHOME)/INCLUDE/arbtools.h
@@ -450,7 +436,6 @@ adhashtools.o: gb_local.h
 adhashtools.o: gb_prot.h
 adhashtools.o: $(ARBHOME)/INCLUDE/arb_core.h
 adhashtools.o: $(ARBHOME)/INCLUDE/arb_error.h
-adhashtools.o: $(ARBHOME)/INCLUDE/arb_handlers.h
 adhashtools.o: $(ARBHOME)/INCLUDE/arb_msg.h
 adhashtools.o: $(ARBHOME)/INCLUDE/arb_string.h
 adhashtools.o: $(ARBHOME)/INCLUDE/arbtools.h
@@ -478,7 +463,6 @@ adindex.o: gb_tune.h
 adindex.o: gb_undo.h
 adindex.o: $(ARBHOME)/INCLUDE/arb_core.h
 adindex.o: $(ARBHOME)/INCLUDE/arb_error.h
-adindex.o: $(ARBHOME)/INCLUDE/arb_handlers.h
 adindex.o: $(ARBHOME)/INCLUDE/arb_msg.h
 adindex.o: $(ARBHOME)/INCLUDE/arb_string.h
 adindex.o: $(ARBHOME)/INCLUDE/arbtools.h
@@ -497,7 +481,6 @@ aditem.o: gb_local.h
 aditem.o: gb_prot.h
 aditem.o: $(ARBHOME)/INCLUDE/arb_core.h
 aditem.o: $(ARBHOME)/INCLUDE/arb_error.h
-aditem.o: $(ARBHOME)/INCLUDE/arb_handlers.h
 aditem.o: $(ARBHOME)/INCLUDE/arb_msg.h
 aditem.o: $(ARBHOME)/INCLUDE/arb_string.h
 aditem.o: $(ARBHOME)/INCLUDE/arbtools.h
@@ -526,7 +509,6 @@ adlang1.o: gb_tune.h
 adlang1.o: $(ARBHOME)/INCLUDE/arb_core.h
 adlang1.o: $(ARBHOME)/INCLUDE/arb_defs.h
 adlang1.o: $(ARBHOME)/INCLUDE/arb_error.h
-adlang1.o: $(ARBHOME)/INCLUDE/arb_handlers.h
 adlang1.o: $(ARBHOME)/INCLUDE/arb_msg.h
 adlang1.o: $(ARBHOME)/INCLUDE/arb_string.h
 adlang1.o: $(ARBHOME)/INCLUDE/arbtools.h
@@ -547,7 +529,6 @@ adlink.o: gb_memory.h
 adlink.o: gb_prot.h
 adlink.o: $(ARBHOME)/INCLUDE/arb_core.h
 adlink.o: $(ARBHOME)/INCLUDE/arb_error.h
-adlink.o: $(ARBHOME)/INCLUDE/arb_handlers.h
 adlink.o: $(ARBHOME)/INCLUDE/arb_msg.h
 adlink.o: $(ARBHOME)/INCLUDE/arb_string.h
 adlink.o: $(ARBHOME)/INCLUDE/arbtools.h
@@ -571,7 +552,6 @@ admalloc.o: gb_storage.h
 admalloc.o: gb_tune.h
 admalloc.o: $(ARBHOME)/INCLUDE/arb_core.h
 admalloc.o: $(ARBHOME)/INCLUDE/arb_error.h
-admalloc.o: $(ARBHOME)/INCLUDE/arb_handlers.h
 admalloc.o: $(ARBHOME)/INCLUDE/arb_msg.h
 admalloc.o: $(ARBHOME)/INCLUDE/arb_string.h
 admalloc.o: $(ARBHOME)/INCLUDE/arbtools.h
@@ -597,7 +577,6 @@ admap.o: gb_storage.h
 admap.o: gb_tune.h
 admap.o: $(ARBHOME)/INCLUDE/arb_core.h
 admap.o: $(ARBHOME)/INCLUDE/arb_error.h
-admap.o: $(ARBHOME)/INCLUDE/arb_handlers.h
 admap.o: $(ARBHOME)/INCLUDE/arb_msg.h
 admap.o: $(ARBHOME)/INCLUDE/arb_string.h
 admap.o: $(ARBHOME)/INCLUDE/arbtools.h
@@ -615,7 +594,6 @@ admatch.o: gb_local.h
 admatch.o: gb_prot.h
 admatch.o: $(ARBHOME)/INCLUDE/arb_core.h
 admatch.o: $(ARBHOME)/INCLUDE/arb_error.h
-admatch.o: $(ARBHOME)/INCLUDE/arb_handlers.h
 admatch.o: $(ARBHOME)/INCLUDE/arb_msg.h
 admatch.o: $(ARBHOME)/INCLUDE/arb_string.h
 admatch.o: $(ARBHOME)/INCLUDE/arbtools.h
@@ -632,7 +610,6 @@ admath.o: gb_local.h
 admath.o: gb_prot.h
 admath.o: $(ARBHOME)/INCLUDE/arb_core.h
 admath.o: $(ARBHOME)/INCLUDE/arb_error.h
-admath.o: $(ARBHOME)/INCLUDE/arb_handlers.h
 admath.o: $(ARBHOME)/INCLUDE/arb_msg.h
 admath.o: $(ARBHOME)/INCLUDE/arb_string.h
 admath.o: $(ARBHOME)/INCLUDE/arbtools.h
@@ -652,7 +629,6 @@ adname.o: gb_local.h
 adname.o: gb_prot.h
 adname.o: $(ARBHOME)/INCLUDE/arb_core.h
 adname.o: $(ARBHOME)/INCLUDE/arb_error.h
-adname.o: $(ARBHOME)/INCLUDE/arb_handlers.h
 adname.o: $(ARBHOME)/INCLUDE/arb_msg.h
 adname.o: $(ARBHOME)/INCLUDE/arb_string.h
 adname.o: $(ARBHOME)/INCLUDE/arbtools.h
@@ -680,7 +656,6 @@ adoptimize.o: gb_storage.h
 adoptimize.o: gb_tune.h
 adoptimize.o: $(ARBHOME)/INCLUDE/arb_core.h
 adoptimize.o: $(ARBHOME)/INCLUDE/arb_error.h
-adoptimize.o: $(ARBHOME)/INCLUDE/arb_handlers.h
 adoptimize.o: $(ARBHOME)/INCLUDE/arb_msg.h
 adoptimize.o: $(ARBHOME)/INCLUDE/arb_string.h
 adoptimize.o: $(ARBHOME)/INCLUDE/arbtools.h
@@ -697,7 +672,6 @@ adperl.o: gb_local.h
 adperl.o: gb_prot.h
 adperl.o: $(ARBHOME)/INCLUDE/arb_core.h
 adperl.o: $(ARBHOME)/INCLUDE/arb_error.h
-adperl.o: $(ARBHOME)/INCLUDE/arb_handlers.h
 adperl.o: $(ARBHOME)/INCLUDE/arb_msg.h
 adperl.o: $(ARBHOME)/INCLUDE/arb_string.h
 adperl.o: $(ARBHOME)/INCLUDE/arbtools.h
@@ -725,7 +699,6 @@ adquery.o: gb_ta.h
 adquery.o: gb_tune.h
 adquery.o: $(ARBHOME)/INCLUDE/arb_core.h
 adquery.o: $(ARBHOME)/INCLUDE/arb_error.h
-adquery.o: $(ARBHOME)/INCLUDE/arb_handlers.h
 adquery.o: $(ARBHOME)/INCLUDE/arb_msg.h
 adquery.o: $(ARBHOME)/INCLUDE/arb_string.h
 adquery.o: $(ARBHOME)/INCLUDE/arbtools.h
@@ -742,7 +715,6 @@ adRevCompl.o: arbdb_base.h
 adRevCompl.o: arbdbt.h
 adRevCompl.o: $(ARBHOME)/INCLUDE/arb_core.h
 adRevCompl.o: $(ARBHOME)/INCLUDE/arb_error.h
-adRevCompl.o: $(ARBHOME)/INCLUDE/arb_handlers.h
 adRevCompl.o: $(ARBHOME)/INCLUDE/arb_msg.h
 adRevCompl.o: $(ARBHOME)/INCLUDE/arb_string.h
 adRevCompl.o: $(ARBHOME)/INCLUDE/arbtools.h
@@ -767,7 +739,6 @@ adseqcompr.o: gb_prot.h
 adseqcompr.o: gb_tune.h
 adseqcompr.o: $(ARBHOME)/INCLUDE/arb_core.h
 adseqcompr.o: $(ARBHOME)/INCLUDE/arb_error.h
-adseqcompr.o: $(ARBHOME)/INCLUDE/arb_handlers.h
 adseqcompr.o: $(ARBHOME)/INCLUDE/arb_msg.h
 adseqcompr.o: $(ARBHOME)/INCLUDE/arb_string.h
 adseqcompr.o: $(ARBHOME)/INCLUDE/arbtools.h
@@ -789,7 +760,6 @@ adsocket.o: gb_memory.h
 adsocket.o: gb_prot.h
 adsocket.o: $(ARBHOME)/INCLUDE/arb_core.h
 adsocket.o: $(ARBHOME)/INCLUDE/arb_error.h
-adsocket.o: $(ARBHOME)/INCLUDE/arb_handlers.h
 adsocket.o: $(ARBHOME)/INCLUDE/arb_msg.h
 adsocket.o: $(ARBHOME)/INCLUDE/arb_string.h
 adsocket.o: $(ARBHOME)/INCLUDE/arbtools.h
@@ -806,7 +776,6 @@ adsort.o: arbdb.h
 adsort.o: arbdb_base.h
 adsort.o: $(ARBHOME)/INCLUDE/arb_core.h
 adsort.o: $(ARBHOME)/INCLUDE/arb_error.h
-adsort.o: $(ARBHOME)/INCLUDE/arb_handlers.h
 adsort.o: $(ARBHOME)/INCLUDE/arb_msg.h
 adsort.o: $(ARBHOME)/INCLUDE/arb_string.h
 adsort.o: $(ARBHOME)/INCLUDE/arbtools.h
@@ -830,7 +799,6 @@ adstring.o: gb_tune.h
 adstring.o: $(ARBHOME)/INCLUDE/arb_backtrace.h
 adstring.o: $(ARBHOME)/INCLUDE/arb_core.h
 adstring.o: $(ARBHOME)/INCLUDE/arb_error.h
-adstring.o: $(ARBHOME)/INCLUDE/arb_handlers.h
 adstring.o: $(ARBHOME)/INCLUDE/arb_msg.h
 adstring.o: $(ARBHOME)/INCLUDE/arb_string.h
 adstring.o: $(ARBHOME)/INCLUDE/arbtools.h
@@ -859,7 +827,6 @@ adsystem.o: gb_prot.h
 adsystem.o: gb_tune.h
 adsystem.o: $(ARBHOME)/INCLUDE/arb_core.h
 adsystem.o: $(ARBHOME)/INCLUDE/arb_error.h
-adsystem.o: $(ARBHOME)/INCLUDE/arb_handlers.h
 adsystem.o: $(ARBHOME)/INCLUDE/arb_msg.h
 adsystem.o: $(ARBHOME)/INCLUDE/arb_string.h
 adsystem.o: $(ARBHOME)/INCLUDE/arbtools.h
@@ -881,7 +848,6 @@ adtables.o: gb_memory.h
 adtables.o: gb_prot.h
 adtables.o: $(ARBHOME)/INCLUDE/arb_core.h
 adtables.o: $(ARBHOME)/INCLUDE/arb_error.h
-adtables.o: $(ARBHOME)/INCLUDE/arb_handlers.h
 adtables.o: $(ARBHOME)/INCLUDE/arb_msg.h
 adtables.o: $(ARBHOME)/INCLUDE/arb_string.h
 adtables.o: $(ARBHOME)/INCLUDE/arbtools.h
@@ -900,7 +866,6 @@ adtcp.o: gb_local.h
 adtcp.o: gb_prot.h
 adtcp.o: $(ARBHOME)/INCLUDE/arb_core.h
 adtcp.o: $(ARBHOME)/INCLUDE/arb_error.h
-adtcp.o: $(ARBHOME)/INCLUDE/arb_handlers.h
 adtcp.o: $(ARBHOME)/INCLUDE/arb_msg.h
 adtcp.o: $(ARBHOME)/INCLUDE/arb_str.h
 adtcp.o: $(ARBHOME)/INCLUDE/arb_string.h
@@ -926,7 +891,6 @@ adTest.o: gb_storage.h
 adTest.o: gb_tune.h
 adTest.o: $(ARBHOME)/INCLUDE/arb_core.h
 adTest.o: $(ARBHOME)/INCLUDE/arb_error.h
-adTest.o: $(ARBHOME)/INCLUDE/arb_handlers.h
 adTest.o: $(ARBHOME)/INCLUDE/arb_msg.h
 adTest.o: $(ARBHOME)/INCLUDE/arb_string.h
 adTest.o: $(ARBHOME)/INCLUDE/arbtools.h
@@ -948,7 +912,6 @@ adtools.o: gb_memory.h
 adtools.o: gb_prot.h
 adtools.o: $(ARBHOME)/INCLUDE/arb_core.h
 adtools.o: $(ARBHOME)/INCLUDE/arb_error.h
-adtools.o: $(ARBHOME)/INCLUDE/arb_handlers.h
 adtools.o: $(ARBHOME)/INCLUDE/arb_msg.h
 adtools.o: $(ARBHOME)/INCLUDE/arb_str.h
 adtools.o: $(ARBHOME)/INCLUDE/arb_string.h
@@ -969,7 +932,6 @@ adtree.o: gb_local.h
 adtree.o: gb_prot.h
 adtree.o: $(ARBHOME)/INCLUDE/arb_core.h
 adtree.o: $(ARBHOME)/INCLUDE/arb_error.h
-adtree.o: $(ARBHOME)/INCLUDE/arb_handlers.h
 adtree.o: $(ARBHOME)/INCLUDE/arb_msg.h
 adtree.o: $(ARBHOME)/INCLUDE/arb_string.h
 adtree.o: $(ARBHOME)/INCLUDE/arbtools.h
@@ -1001,7 +963,6 @@ arbdb.o: gb_ts.h
 arbdb.o: gb_tune.h
 arbdb.o: $(ARBHOME)/INCLUDE/arb_core.h
 arbdb.o: $(ARBHOME)/INCLUDE/arb_error.h
-arbdb.o: $(ARBHOME)/INCLUDE/arb_handlers.h
 arbdb.o: $(ARBHOME)/INCLUDE/arb_msg.h
 arbdb.o: $(ARBHOME)/INCLUDE/arb_string.h
 arbdb.o: $(ARBHOME)/INCLUDE/arbtools.h
@@ -1018,7 +979,6 @@ arbdbpp.o: gb_local.h
 arbdbpp.o: gb_prot.h
 arbdbpp.o: $(ARBHOME)/INCLUDE/arb_core.h
 arbdbpp.o: $(ARBHOME)/INCLUDE/arb_error.h
-arbdbpp.o: $(ARBHOME)/INCLUDE/arb_handlers.h
 arbdbpp.o: $(ARBHOME)/INCLUDE/arb_msg.h
 arbdbpp.o: $(ARBHOME)/INCLUDE/arb_string.h
 arbdbpp.o: $(ARBHOME)/INCLUDE/arbtools.h

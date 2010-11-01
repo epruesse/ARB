@@ -44,7 +44,6 @@ AW_names_admin.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AW_names_admin.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_names_admin.o: $(ARBHOME)/INCLUDE/arb_core.h
 AW_names_admin.o: $(ARBHOME)/INCLUDE/arb_error.h
-AW_names_admin.o: $(ARBHOME)/INCLUDE/arb_handlers.h
 AW_names_admin.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AW_names_admin.o: $(ARBHOME)/INCLUDE/arb_string.h
 AW_names_admin.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -73,7 +72,6 @@ AW_rename.o: $(ARBHOME)/INCLUDE/aisc_global.h
 AW_rename.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_rename.o: $(ARBHOME)/INCLUDE/arb_core.h
 AW_rename.o: $(ARBHOME)/INCLUDE/arb_error.h
-AW_rename.o: $(ARBHOME)/INCLUDE/arb_handlers.h
 AW_rename.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AW_rename.o: $(ARBHOME)/INCLUDE/arb_string.h
 AW_rename.o: $(ARBHOME)/INCLUDE/arbdb.h

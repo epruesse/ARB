@@ -117,7 +117,6 @@ MP_mo_liste.o: $(ARBHOME)/INCLUDE/aisc_global.h
 MP_mo_liste.o: $(ARBHOME)/INCLUDE/arb_assert.h
 MP_mo_liste.o: $(ARBHOME)/INCLUDE/arb_core.h
 MP_mo_liste.o: $(ARBHOME)/INCLUDE/arb_error.h
-MP_mo_liste.o: $(ARBHOME)/INCLUDE/arb_handlers.h
 MP_mo_liste.o: $(ARBHOME)/INCLUDE/arb_msg.h
 MP_mo_liste.o: $(ARBHOME)/INCLUDE/arb_string.h
 MP_mo_liste.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -153,7 +152,6 @@ MP_noclass.o: $(ARBHOME)/INCLUDE/AP_Tree.hxx
 MP_noclass.o: $(ARBHOME)/INCLUDE/arb_assert.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/arb_core.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/arb_error.h
-MP_noclass.o: $(ARBHOME)/INCLUDE/arb_handlers.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/arb_msg.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/arb_string.h
 MP_noclass.o: $(ARBHOME)/INCLUDE/ARB_Tree.hxx
@@ -271,7 +269,6 @@ MP_sonde.o: $(ARBHOME)/INCLUDE/aisc_global.h
 MP_sonde.o: $(ARBHOME)/INCLUDE/arb_assert.h
 MP_sonde.o: $(ARBHOME)/INCLUDE/arb_core.h
 MP_sonde.o: $(ARBHOME)/INCLUDE/arb_error.h
-MP_sonde.o: $(ARBHOME)/INCLUDE/arb_handlers.h
 MP_sonde.o: $(ARBHOME)/INCLUDE/arb_msg.h
 MP_sonde.o: $(ARBHOME)/INCLUDE/arb_string.h
 MP_sonde.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -304,7 +301,6 @@ MP_sondentopf.o: $(ARBHOME)/INCLUDE/AP_Tree.hxx
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/arb_assert.h
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/arb_core.h
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/arb_error.h
-MP_sondentopf.o: $(ARBHOME)/INCLUDE/arb_handlers.h
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/arb_msg.h
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/arb_string.h
 MP_sondentopf.o: $(ARBHOME)/INCLUDE/ARB_Tree.hxx
@@ -334,7 +330,6 @@ MP_Window.o: $(ARBHOME)/INCLUDE/ad_prot.h
 MP_Window.o: $(ARBHOME)/INCLUDE/arb_assert.h
 MP_Window.o: $(ARBHOME)/INCLUDE/arb_core.h
 MP_Window.o: $(ARBHOME)/INCLUDE/arb_error.h
-MP_Window.o: $(ARBHOME)/INCLUDE/arb_handlers.h
 MP_Window.o: $(ARBHOME)/INCLUDE/arb_msg.h
 MP_Window.o: $(ARBHOME)/INCLUDE/arb_string.h
 MP_Window.o: $(ARBHOME)/INCLUDE/arbdb.h

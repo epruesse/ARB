@@ -38,7 +38,6 @@ SQ_ambiguities.o: $(ARBHOME)/INCLUDE/ad_prot.h
 SQ_ambiguities.o: $(ARBHOME)/INCLUDE/arb_assert.h
 SQ_ambiguities.o: $(ARBHOME)/INCLUDE/arb_core.h
 SQ_ambiguities.o: $(ARBHOME)/INCLUDE/arb_error.h
-SQ_ambiguities.o: $(ARBHOME)/INCLUDE/arb_handlers.h
 SQ_ambiguities.o: $(ARBHOME)/INCLUDE/arb_msg.h
 SQ_ambiguities.o: $(ARBHOME)/INCLUDE/arb_string.h
 SQ_ambiguities.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -60,7 +59,6 @@ SQ_functions.o: $(ARBHOME)/INCLUDE/AP_filter.hxx
 SQ_functions.o: $(ARBHOME)/INCLUDE/arb_assert.h
 SQ_functions.o: $(ARBHOME)/INCLUDE/arb_core.h
 SQ_functions.o: $(ARBHOME)/INCLUDE/arb_error.h
-SQ_functions.o: $(ARBHOME)/INCLUDE/arb_handlers.h
 SQ_functions.o: $(ARBHOME)/INCLUDE/arb_msg.h
 SQ_functions.o: $(ARBHOME)/INCLUDE/arb_string.h
 SQ_functions.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -93,7 +91,6 @@ SQ_main.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 SQ_main.o: $(ARBHOME)/INCLUDE/arb_assert.h
 SQ_main.o: $(ARBHOME)/INCLUDE/arb_core.h
 SQ_main.o: $(ARBHOME)/INCLUDE/arb_error.h
-SQ_main.o: $(ARBHOME)/INCLUDE/arb_handlers.h
 SQ_main.o: $(ARBHOME)/INCLUDE/arb_msg.h
 SQ_main.o: $(ARBHOME)/INCLUDE/arb_string.h
 SQ_main.o: $(ARBHOME)/INCLUDE/arbdb.h

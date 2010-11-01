@@ -46,7 +46,6 @@ AWT_filter.o: $(ARBHOME)/INCLUDE/AP_filter.hxx
 AWT_filter.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWT_filter.o: $(ARBHOME)/INCLUDE/arb_core.h
 AWT_filter.o: $(ARBHOME)/INCLUDE/arb_error.h
-AWT_filter.o: $(ARBHOME)/INCLUDE/arb_handlers.h
 AWT_filter.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AWT_filter.o: $(ARBHOME)/INCLUDE/arb_string.h
 AWT_filter.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -74,7 +73,6 @@ ColumnStat.o: $(ARBHOME)/INCLUDE/AP_filter.hxx
 ColumnStat.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ColumnStat.o: $(ARBHOME)/INCLUDE/arb_core.h
 ColumnStat.o: $(ARBHOME)/INCLUDE/arb_error.h
-ColumnStat.o: $(ARBHOME)/INCLUDE/arb_handlers.h
 ColumnStat.o: $(ARBHOME)/INCLUDE/arb_msg.h
 ColumnStat.o: $(ARBHOME)/INCLUDE/arb_string.h
 ColumnStat.o: $(ARBHOME)/INCLUDE/arbdb.h

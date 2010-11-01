@@ -41,7 +41,6 @@ BI_helix.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 BI_helix.o: $(ARBHOME)/INCLUDE/arb_assert.h
 BI_helix.o: $(ARBHOME)/INCLUDE/arb_core.h
 BI_helix.o: $(ARBHOME)/INCLUDE/arb_error.h
-BI_helix.o: $(ARBHOME)/INCLUDE/arb_handlers.h
 BI_helix.o: $(ARBHOME)/INCLUDE/arb_msg.h
 BI_helix.o: $(ARBHOME)/INCLUDE/arb_string.h
 BI_helix.o: $(ARBHOME)/INCLUDE/arbdb.h

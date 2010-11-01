@@ -55,7 +55,6 @@ arb_interface.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 arb_interface.o: $(ARBHOME)/INCLUDE/arb_assert.h
 arb_interface.o: $(ARBHOME)/INCLUDE/arb_core.h
 arb_interface.o: $(ARBHOME)/INCLUDE/arb_error.h
-arb_interface.o: $(ARBHOME)/INCLUDE/arb_handlers.h
 arb_interface.o: $(ARBHOME)/INCLUDE/arb_msg.h
 arb_interface.o: $(ARBHOME)/INCLUDE/arb_string.h
 arb_interface.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -77,7 +76,6 @@ config_dialog.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 config_dialog.o: $(ARBHOME)/INCLUDE/arb_assert.h
 config_dialog.o: $(ARBHOME)/INCLUDE/arb_core.h
 config_dialog.o: $(ARBHOME)/INCLUDE/arb_error.h
-config_dialog.o: $(ARBHOME)/INCLUDE/arb_handlers.h
 config_dialog.o: $(ARBHOME)/INCLUDE/arb_msg.h
 config_dialog.o: $(ARBHOME)/INCLUDE/arb_string.h
 config_dialog.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -95,7 +93,6 @@ dialog.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 dialog.o: $(ARBHOME)/INCLUDE/arb_assert.h
 dialog.o: $(ARBHOME)/INCLUDE/arb_core.h
 dialog.o: $(ARBHOME)/INCLUDE/arb_error.h
-dialog.o: $(ARBHOME)/INCLUDE/arb_handlers.h
 dialog.o: $(ARBHOME)/INCLUDE/arb_msg.h
 dialog.o: $(ARBHOME)/INCLUDE/arb_string.h
 dialog.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -115,7 +112,6 @@ entry_sel_dialog.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 entry_sel_dialog.o: $(ARBHOME)/INCLUDE/arb_assert.h
 entry_sel_dialog.o: $(ARBHOME)/INCLUDE/arb_core.h
 entry_sel_dialog.o: $(ARBHOME)/INCLUDE/arb_error.h
-entry_sel_dialog.o: $(ARBHOME)/INCLUDE/arb_handlers.h
 entry_sel_dialog.o: $(ARBHOME)/INCLUDE/arb_msg.h
 entry_sel_dialog.o: $(ARBHOME)/INCLUDE/arb_string.h
 entry_sel_dialog.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -134,7 +130,6 @@ file_import.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 file_import.o: $(ARBHOME)/INCLUDE/arb_assert.h
 file_import.o: $(ARBHOME)/INCLUDE/arb_core.h
 file_import.o: $(ARBHOME)/INCLUDE/arb_error.h
-file_import.o: $(ARBHOME)/INCLUDE/arb_handlers.h
 file_import.o: $(ARBHOME)/INCLUDE/arb_msg.h
 file_import.o: $(ARBHOME)/INCLUDE/arb_string.h
 file_import.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -161,7 +156,6 @@ image_dialog.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 image_dialog.o: $(ARBHOME)/INCLUDE/arb_assert.h
 image_dialog.o: $(ARBHOME)/INCLUDE/arb_core.h
 image_dialog.o: $(ARBHOME)/INCLUDE/arb_error.h
-image_dialog.o: $(ARBHOME)/INCLUDE/arb_handlers.h
 image_dialog.o: $(ARBHOME)/INCLUDE/arb_msg.h
 image_dialog.o: $(ARBHOME)/INCLUDE/arb_string.h
 image_dialog.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -184,7 +178,6 @@ import_dialog.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 import_dialog.o: $(ARBHOME)/INCLUDE/arb_assert.h
 import_dialog.o: $(ARBHOME)/INCLUDE/arb_core.h
 import_dialog.o: $(ARBHOME)/INCLUDE/arb_error.h
-import_dialog.o: $(ARBHOME)/INCLUDE/arb_handlers.h
 import_dialog.o: $(ARBHOME)/INCLUDE/arb_msg.h
 import_dialog.o: $(ARBHOME)/INCLUDE/arb_string.h
 import_dialog.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -208,7 +201,6 @@ main.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 main.o: $(ARBHOME)/INCLUDE/arb_assert.h
 main.o: $(ARBHOME)/INCLUDE/arb_core.h
 main.o: $(ARBHOME)/INCLUDE/arb_error.h
-main.o: $(ARBHOME)/INCLUDE/arb_handlers.h
 main.o: $(ARBHOME)/INCLUDE/arb_msg.h
 main.o: $(ARBHOME)/INCLUDE/arb_string.h
 main.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -236,7 +228,6 @@ main_dialog.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 main_dialog.o: $(ARBHOME)/INCLUDE/arb_assert.h
 main_dialog.o: $(ARBHOME)/INCLUDE/arb_core.h
 main_dialog.o: $(ARBHOME)/INCLUDE/arb_error.h
-main_dialog.o: $(ARBHOME)/INCLUDE/arb_handlers.h
 main_dialog.o: $(ARBHOME)/INCLUDE/arb_msg.h
 main_dialog.o: $(ARBHOME)/INCLUDE/arb_string.h
 main_dialog.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -262,7 +253,6 @@ selection_dialog.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 selection_dialog.o: $(ARBHOME)/INCLUDE/arb_assert.h
 selection_dialog.o: $(ARBHOME)/INCLUDE/arb_core.h
 selection_dialog.o: $(ARBHOME)/INCLUDE/arb_error.h
-selection_dialog.o: $(ARBHOME)/INCLUDE/arb_handlers.h
 selection_dialog.o: $(ARBHOME)/INCLUDE/arb_msg.h
 selection_dialog.o: $(ARBHOME)/INCLUDE/arb_string.h
 selection_dialog.o: $(ARBHOME)/INCLUDE/arbdb.h
