@@ -27,6 +27,7 @@
 #include <arbdbt.h>
 
 #include <arb_defs.h>
+#include <arb_handlers.h>
 
 #include <cctype>
 #include <cmath>

@@ -8,8 +8,8 @@
 //                                                                 //
 // =============================================================== //
 
-
 #include <arbdb.h>
+#include <arb_handlers.h>
 
 static void to_stderr(const char *msg) {
     fprintf(stderr, "arb_2_ascii: %s\n", msg);

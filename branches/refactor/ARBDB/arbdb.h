@@ -140,9 +140,6 @@ public:
 #ifndef ARB_STRING_H
 #include <arb_string.h>
 #endif
-#ifndef ARB_HANDLERS_H
-#include <arb_handlers.h>
-#endif
 
 // ----------------------------------------------------
 //      const wrappers for functions from ad_prot.h
