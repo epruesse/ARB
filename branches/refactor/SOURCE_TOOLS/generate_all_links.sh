@@ -197,7 +197,6 @@ symlink_file ../AISC_COM/C/server.h INCLUDE/server.h &&
 symlink_file ../AISC_COM/C/struct_man.h INCLUDE/struct_man.h &&
 symlink_file ../ARBDB/adGene.h INCLUDE/adGene.h &&
 symlink_file ../ARBDB/ad_config.h INCLUDE/ad_config.h &&
-symlink_file ../ARBDB/ad_k_prot.h INCLUDE/ad_k_prot.h &&
 symlink_file ../ARBDB/ad_prot.h INCLUDE/ad_prot.h &&
 symlink_file ../ARBDB/ad_p_prot.h INCLUDE/ad_p_prot.h &&
 symlink_file ../ARBDB/ad_t_prot.h INCLUDE/ad_t_prot.h &&
@@ -232,6 +231,7 @@ symlink_file ../CORE/arb_msg.h INCLUDE/arb_msg.h &&
 symlink_file ../CORE/arb_signal.h INCLUDE/arb_signal.h &&
 symlink_file ../CORE/arb_string.h INCLUDE/arb_string.h &&
 symlink_file ../CORE/arb_handlers.h INCLUDE/arb_handlers.h &&
+symlink_file ../CORE/arb_progress.h INCLUDE/arb_progress.h &&
 symlink_file ../DIST/dist.hxx INCLUDE/dist.hxx &&
 symlink_file ../EDIT4/ed4_extern.hxx INCLUDE/ed4_extern.hxx &&
 symlink_file ../EDIT4/ed4_plugins.hxx INCLUDE/ed4_plugins.hxx &&
