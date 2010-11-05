@@ -25,6 +25,7 @@
 #include <aw_msg.hxx>
 #include <aw_status.hxx>
 #include <arb_str.h>
+#include <arb_defs.h>
 
 #include <cctype>
 
@@ -1432,8 +1433,28 @@ AW_window *NTX_create_query_window(AW_root *aw_root)
 
 #if (UNIT_TESTS == 1)
 #include <test_unit.h>
+#include <arb_unit_test.h>
+
+static uint32_t counted_chars_checksum(GBDATA *gb_main)  {
+    GB_transaction ta(gb_main);
+
+    GBDATA *gb_sai;
+    GBDATA *gb_ali;
+    GBDATA *gb_counted_chars;
+
+    char *ali_name = GBT_get_default_alignment(gb_main);
+
+    TEST_ASSERT_RESULT__NOERROREXPORTED(gb_sai = GBT_expect_SAI(gb_main, SAI_COUNTED_CHARS));
+    TEST_ASSERT_RESULT__NOERROREXPORTED(gb_ali = GB_entry(gb_sai, ali_name));
+    TEST_ASSERT_RESULT__NOERROREXPORTED(gb_counted_chars = GB_entry(gb_ali, "data"));
+
+    const char *data = GB_read_char_pntr(gb_counted_chars);
+    return GBS_checksum(data, 0, NULL);
+}
 
 void TEST_count_chars() {
+    // calculate SAI for test DBs
+    
     for (int prot = 0; prot<2; ++prot) {
         GBDATA *gb_main;
         TEST_ASSERT_RESULT__NOERROREXPORTED(gb_main = GB_open(prot ? "TEST_prot.arb" : "TEST_nuc.arb", "rw"));
@@ -1441,23 +1462,56 @@ void TEST_count_chars() {
         GBT_mark_all(gb_main, 1);
         NT_count_different_chars(NULL, (AW_CL)gb_main, 0);
 
-        {
-            GB_transaction ta(gb_main);
+        uint32_t expected = prot ? 0x4fa63fa0 : 0xefb05e4e;
+        TEST_ASSERT_EQUAL(counted_chars_checksum(gb_main), expected);
 
-            GBDATA *gb_sai;
-            GBDATA *gb_ali;
-            GBDATA *gb_counted_chars;
+        GB_close(gb_main);
+    }
+}
+void TEST_SLOW_count_chars() {
+    // calculate a real big test alignment
+    // 
+    // the difference to TEST_count_chars() is just in size of alignment.
+    // NT_count_different_chars() crashes for big alignments when running in gdb 
+    {
+        arb_unit_test::test_alignment_data data_source[] = {
+            { 1, "s1", "ACGT" },
+            { 1, "s2", "ACGTN" },
+            { 1, "s3", "NANNAN" },
+            { 1, "s4", "GATTACA" },
+        };
 
-            char *ali_name = GBT_get_default_alignment(gb_main);
+        const int alilen = 50000;
+        const int count  = ARRAY_ELEMS(data_source);
 
-            TEST_ASSERT_RESULT__NOERROREXPORTED(gb_sai = GBT_expect_SAI(gb_main, SAI_COUNTED_CHARS));
-            TEST_ASSERT_RESULT__NOERROREXPORTED(gb_ali = GB_entry(gb_sai, ali_name));
-            TEST_ASSERT_RESULT__NOERROREXPORTED(gb_counted_chars = GB_entry(gb_ali, "data"));
+        char *longSeq[count];
+        for (int c = 0; c<count; ++c) {
+            char *dest = longSeq[c] = (char*)malloc(alilen+1);
 
-            const char *data     = GB_read_char_pntr(gb_counted_chars);
-            uint32_t    expected = prot ? 0x4fa63fa0 : 0xefb05e4e;
+            const char *source = data_source[c].data;
+            int         len    = strlen(source);
 
-            TEST_ASSERT_EQUAL(GBS_checksum(data, 0, NULL), expected);
+            for (int p = 0; p<alilen; ++p) {
+                dest[p] = source[p%len];
+            }
+            dest[alilen] = 0;
+            
+            data_source[c].data = dest;
+        }
+
+        ARB_ERROR  error;
+        GBDATA    *gb_main = TEST_CREATE_DB(error, "ali_test", data_source, false);
+
+        TEST_ASSERT_NO_ERROR(error.deliver());
+
+        NT_count_different_chars(NULL, (AW_CL)gb_main, 0);
+
+        // TEST_ASSERT_EQUAL(counted_chars_checksum(gb_main), 0x1d34a14f);
+        // TEST_ASSERT_EQUAL(counted_chars_checksum(gb_main), 0x609d788b);
+        TEST_ASSERT_EQUAL(counted_chars_checksum(gb_main), 0xccdfa527);
+
+        for (int c = 0; c<count; ++c) {
+            free(longSeq[c]);
         }
 
         GB_close(gb_main);
