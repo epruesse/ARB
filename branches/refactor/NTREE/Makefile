@@ -128,11 +128,13 @@ ad_spec.o: $(ARBHOME)/INCLUDE/AP_sequence.hxx
 ad_spec.o: $(ARBHOME)/INCLUDE/AP_Tree.hxx
 ad_spec.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ad_spec.o: $(ARBHOME)/INCLUDE/arb_core.h
+ad_spec.o: $(ARBHOME)/INCLUDE/arb_defs.h
 ad_spec.o: $(ARBHOME)/INCLUDE/arb_error.h
 ad_spec.o: $(ARBHOME)/INCLUDE/arb_msg.h
 ad_spec.o: $(ARBHOME)/INCLUDE/arb_str.h
 ad_spec.o: $(ARBHOME)/INCLUDE/arb_string.h
 ad_spec.o: $(ARBHOME)/INCLUDE/ARB_Tree.hxx
+ad_spec.o: $(ARBHOME)/INCLUDE/arb_unit_test.h
 ad_spec.o: $(ARBHOME)/INCLUDE/arbdb.h
 ad_spec.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 ad_spec.o: $(ARBHOME)/INCLUDE/arbdbt.h
