@@ -94,6 +94,7 @@ static void move_species_to_extended(AW_window *aww) {
 static const char * const SAI_COUNTED_CHARS = "COUNTED_CHARS";
 
 void NT_count_different_chars(AW_window *, AW_CL cl_gb_main, AW_CL use_status) {
+    // @@@ extract algorithm
     ARB_ERROR  error;
     GBDATA    *gb_main = (GBDATA*)cl_gb_main;
 
@@ -107,10 +108,12 @@ void NT_count_different_chars(AW_window *, AW_CL cl_gb_main, AW_CL use_status) {
         const int MAXLETTER   = 256;
         const int FIRSTLETTER = 0;
 
-        bool occurs[MAXLETTER][alignment_len];
+        typedef bool letterOccurs[MAXLETTER];
+
+        letterOccurs *occurs = (letterOccurs*)malloc(sizeof(*occurs)*alignment_len);
         for (int i = 0; i<MAXLETTER; ++i) {
-            for (int j = 0; j<alignment_len; ++j) {
-                occurs[i][j] = false;
+            for (int p = 0; p<alignment_len; ++p) {
+                occurs[p][i] = false;
             }
         }
 
@@ -138,7 +141,7 @@ void NT_count_different_chars(AW_window *, AW_CL cl_gb_main, AW_CL use_status) {
                                 unsigned char c = seq[i];
                                 if (!c) break;
 
-                                occurs[c-FIRSTLETTER][i] = true;
+                                occurs[i][c-FIRSTLETTER] = true;
                             }
                         }
                     }
@@ -163,7 +166,7 @@ void NT_count_different_chars(AW_window *, AW_CL cl_gb_main, AW_CL use_status) {
                 int sum = 0;
                 for (int c = 'A'; c < 'Z'; ++c) {
                     if (filter[c]) {
-                        sum += (occurs[c][i] || occurs[tolower(c)][i]);
+                        sum += (occurs[i][c] || occurs[i][tolower(c)]);
                     }
                 }
                 result[i] = sum<10 ? '0'+sum : 'A'-10+sum;
@@ -180,6 +183,8 @@ void NT_count_different_chars(AW_window *, AW_CL cl_gb_main, AW_CL use_status) {
                 }
             }
         }
+
+        free(occurs);
     }
 
     GB_end_transaction_show_error(gb_main, error, aw_message);
