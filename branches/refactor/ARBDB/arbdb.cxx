@@ -1521,9 +1521,9 @@ GB_ERROR GB_delete(GBDATA *source) {
     gb_main = GB_get_root(source);
 
     if (source->flags.compressed_data) {
-        gb_set_compression_mask(gb_main, 0); // disable compression
+        bool was_allowed = GB_allow_compression(gb_main, false);
         gb_set_compression(source); // write data w/o compression (otherwise GB_read_old_value... won't work)
-        gb_set_compression_mask(gb_main, -1); // allow all types of compressions
+        GB_allow_compression(gb_main, was_allowed);
     }
 
     {
@@ -1763,9 +1763,12 @@ GB_ERROR gb_set_compression(GBDATA *source)
     return 0;
 }
 
-void gb_set_compression_mask(GBDATA *gb_main, GB_COMPRESSION_MASK disable_compression) {
-    GB_MAIN_TYPE *Main     = GB_MAIN(gb_main);
-    Main->compression_mask = disable_compression;
+bool GB_allow_compression(GBDATA *gb_main, bool allow_compression) {
+    GB_MAIN_TYPE *Main      = GB_MAIN(gb_main);
+    int           prev_mask = Main->compression_mask;
+    Main->compression_mask  = allow_compression ? -1 : 0;
+
+    return prev_mask == 0 ? false : true;
 }
 
 // --------------------------

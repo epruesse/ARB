@@ -313,9 +313,9 @@ static GB_ERROR gbt_write_tree(GBDATA *gb_main, GBDATA *gb_tree, const char *tre
                 t_size = gbt_write_tree_rek_new(tree, ctree, GBT_PUT_DATA); // write into buffer
                 *(t_size) = 0;
 
-                gb_set_compression_mask(gb_main, 0); // no more compressions
-                error = GBT_write_string(gb_tree, "tree", ctree);
-                gb_set_compression_mask(gb_main, -1); // again allow all types of compression
+                bool was_allowed = GB_allow_compression(gb_main, false);
+                error            = GBT_write_string(gb_tree, "tree", ctree);
+                GB_allow_compression(gb_main, was_allowed);
                 free(ctree);
             }
         }
