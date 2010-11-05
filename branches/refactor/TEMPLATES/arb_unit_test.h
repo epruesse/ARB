@@ -22,9 +22,11 @@ namespace arb_unit_test {
         const char *data;
     };
 
-    inline GBDATA *test_create_DB(ARB_ERROR& error, const char *test_aliname, test_alignment_data *ali_data, int species_count) {
+    inline GBDATA *test_create_DB(ARB_ERROR& error, const char *test_aliname, test_alignment_data *ali_data, int species_count, bool use_compression) {
         GBDATA *gb_main = GB_open("nodb.arb", "crw");
         error           = GB_push_transaction(gb_main);
+
+        GB_allow_compression(gb_main, use_compression);
 
         if (!error) {
             GBDATA *gb_species_data     = GB_search(gb_main, "species_data", GB_CREATE_CONTAINER);
@@ -47,6 +49,7 @@ namespace arb_unit_test {
                         }
                     }
                 }
+                if (!error) error = GBT_set_default_alignment(gb_main, test_aliname);
             }
         }
 
@@ -55,8 +58,11 @@ namespace arb_unit_test {
         return gb_main;
     }
 
-#define TEST_SPECIES_COUNT(test_ali_data)                ARRAY_ELEMS(test_ali_data)
-#define TEST_CREATE_DB(error,test_aliname,test_ali_data) test_create_DB(error, test_aliname, test_ali_data, TEST_SPECIES_COUNT(test_ali_data))
+#define TEST_SPECIES_COUNT(test_ali_data) ARRAY_ELEMS(test_ali_data)
+
+#define TEST_CREATE_DB(error,test_aliname,test_ali_data,compress)       \
+    arb_unit_test::test_create_DB(error, test_aliname, test_ali_data,   \
+                                  TEST_SPECIES_COUNT(test_ali_data), compress)
 
 };
 

@@ -3032,7 +3032,7 @@ void TEST_Aligner_TargetAndReferenceHandling() {
     // performs some alignments to check logic of target and reference handling
     
     ARB_ERROR  error;
-    GBDATA    *gb_main = TEST_CREATE_DB(error, test_aliname, TestAlignmentData_TargetAndReferenceHandling);
+    GBDATA    *gb_main = TEST_CREATE_DB(error, test_aliname, TestAlignmentData_TargetAndReferenceHandling, false);
 
     TEST_ASSERT_EQUAL(error.deliver(), NULL);
 
@@ -3167,7 +3167,7 @@ void TEST_Aligner_checksumError() {
     // this produces an internal aligner error
     
     ARB_ERROR  error;
-    GBDATA    *gb_main = TEST_CREATE_DB(error, test_aliname, TestAlignmentData_checksumError);
+    GBDATA    *gb_main = TEST_CREATE_DB(error, test_aliname, TestAlignmentData_checksumError, false);
 
     SearchRelativeParams search_relative_params(new FakeFamilyFinder(gb_main, test_aliname, false, 8),
                                                 test_aliname,
