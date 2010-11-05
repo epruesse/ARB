@@ -187,6 +187,8 @@ void NT_count_different_chars(AW_window *, AW_CL cl_gb_main, AW_CL use_status) {
         free(occurs);
     }
 
+    free(alignment_name);
+
     GB_end_transaction_show_error(gb_main, error, aw_message);
 }
 
@@ -1454,6 +1456,9 @@ static uint32_t counted_chars_checksum(GBDATA *gb_main)  {
     TEST_ASSERT_RESULT__NOERROREXPORTED(gb_counted_chars = GB_entry(gb_ali, "data"));
 
     const char *data = GB_read_char_pntr(gb_counted_chars);
+
+    free(ali_name);
+
     return GBS_checksum(data, 0, NULL);
 }
 
