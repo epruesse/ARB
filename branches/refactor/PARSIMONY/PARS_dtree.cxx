@@ -471,7 +471,7 @@ void AWT_graphic_parsimony::command(AW_device *device, AWT_COMMAND_MODE cmd, int
 
     if (recalc_branch_lengths) {
         int abort_flag = false;
-        rootEdge()->nni_rek(false, abort_flag, -1, false, AP_BL_BL_ONLY);
+        rootEdge()->nni_rek(false, abort_flag, -1, false, AP_BL_BL_ONLY, NULL);
 
         beautify_tree = true; // beautify after recalc_branch_lengths
     }

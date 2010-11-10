@@ -189,7 +189,7 @@ static long insert_species_in_tree_test(const char *key, long val, void *cd_isit
             sprintf(buf, "Pre-optimize (pars=%f)", best_val);
 
             aw_status(buf);
-            this_val = rootEdge()->nni_rek(false, isits->abort_flag, -1);
+            this_val = rootEdge()->nni_rek(false, isits->abort_flag, -1, false, AP_BL_NNI_ONLY, NULL);
             if (this_val<best_val) {
                 best_val = this_val;
                 cnt      = 0;
@@ -307,7 +307,7 @@ static long insert_species_in_tree_test(const char *key, long val, void *cd_isit
         e->dumpNNI = 1;
         e->distInsertBorder = e->distanceToBorder(INT_MAX, (AP_tree_nlen*)leaf);
         e->basesChanged = baseDiff;
-        e->nni_rek(false, isits->abort_flag, deep);
+        e->nni_rek(false, isits->abort_flag, deep, false, AP_BL_NNI_ONLY, NULL);
         e->dumpNNI = 0;
     }
 
@@ -577,12 +577,12 @@ static void nt_add(AW_window *, AWT_canvas *ntw, AddWhat what, bool quick, int t
         }
         if (!quick) {
             aw_status("final optimization");
-            rootEdge()->nni_rek(false, isits.abort_flag, -1, false, AP_BL_NNI_ONLY);
+            rootEdge()->nni_rek(false, isits.abort_flag, -1, false, AP_BL_NNI_ONLY, NULL);
         }
 
         if (rootNode()) {
             aw_status("Calculating Branch lengths");
-            rootEdge()->nni_rek(false, isits.abort_flag, -1, false, AP_BL_BL_ONLY);
+            rootEdge()->nni_rek(false, isits.abort_flag, -1, false, AP_BL_BL_ONLY, NULL);
 
             ASSERT_VALID_TREE(rootNode());
             rootNode()->compute_tree(GLOBAL_gb_main);
@@ -1032,7 +1032,7 @@ static void NT_partial_add(AW_window *aww, AW_CL cl_ntw, AW_CL) {
 static void NT_branch_lengths(AW_window *, AWT_canvas *ntw) {
     aw_openstatus("Calculating Branch Lengths");
     int abort_flag = false;
-    rootEdge()->nni_rek(false, abort_flag, -1, false, AP_BL_BL_ONLY);
+    rootEdge()->nni_rek(false, abort_flag, -1, false, AP_BL_BL_ONLY, NULL);
 
     aw_closestatus();
     AWT_TREE(ntw)->resort_tree(0);
@@ -1044,7 +1044,7 @@ static void NT_bootstrap(AW_window *, AWT_canvas *ntw, AW_CL limit_only) {
     aw_openstatus("Calculating Bootstrap Limit");
     int abort_flag = false;
     rootEdge()->nni_rek(false, abort_flag, -1, false,
-                        AP_BL_MODE((limit_only ? AP_BL_BOOTSTRAP_LIMIT : AP_BL_BOOTSTRAP_ESTIMATE)|AP_BL_BL_ONLY));
+                        AP_BL_MODE((limit_only ? AP_BL_BOOTSTRAP_LIMIT : AP_BL_BOOTSTRAP_ESTIMATE)|AP_BL_BL_ONLY), NULL);
     aw_closestatus();
 
     AWT_TREE(ntw)->resort_tree(0);
@@ -1062,7 +1062,7 @@ static void NT_optimize(AW_window *, AWT_canvas *ntw)
 
     aw_openstatus("Calculating Branch Lengths");
     int abort_flag = false;
-    rootEdge()->nni_rek(false, abort_flag, -1, false, AP_BL_BL_ONLY);
+    rootEdge()->nni_rek(false, abort_flag, -1, false, AP_BL_BL_ONLY, NULL);
     AWT_TREE(ntw)->resort_tree(0);
     rootNode()->compute_tree(GLOBAL_gb_main);
     aw_closestatus();
@@ -1080,13 +1080,13 @@ static void NT_recursiveNNI(AW_window *, AWT_canvas *ntw)
     aw_status(GBS_global_string("Old parsimony: %f", thisPars));
     while (thisPars!=lastPars && !abort_flag) {
         lastPars    = thisPars;
-        thisPars    = rootEdge()->nni_rek(false, abort_flag, -1, true);
+        thisPars    = rootEdge()->nni_rek(false, abort_flag, -1, true, AP_BL_NNI_ONLY, NULL);
         abort_flag |= aw_status(GBS_global_string("New Parsimony: %f", thisPars));
     }
 
     aw_status("Calculating Branch Lengths");
     abort_flag = false;
-    rootEdge()->nni_rek(false, abort_flag, -1, false, AP_BL_BL_ONLY);
+    rootEdge()->nni_rek(false, abort_flag, -1, false, AP_BL_BL_ONLY, NULL);
 
     AWT_TREE(ntw)->resort_tree(0);
     rootNode()->compute_tree(GLOBAL_gb_main);
