@@ -36,22 +36,16 @@ const int  HEIGHT = 12; // 12 can be devided by 2, 3, 4 (so subtitles tend to be
 const int  WIDTH  = 70;
 const char CHAR   = '.';
 
-#if defined(DEBUG)
-static int openCount        = 0;
-static int set_gauge_called = 0;
-#endif
-
 class BasicStatus {
+    static int openCount;
+
     char       *subtitle;
     int         printed;
     const char *cursor;
 
 public:
     void open(const char *title) {
-#if defined(DEBUG)
         arb_assert(++openCount <= 1);
-        set_gauge_called = 0;
-#endif
         
         printf("Progress: %s\n", title);
         printed  = 0;
@@ -61,19 +55,12 @@ public:
     void close() {
         freenull(subtitle);
         printf("[done]\n");
-#if defined(DEBUG)
-        printf("set_gauge_called=%i\n", set_gauge_called);
-        arb_assert(set_gauge_called<1000); // crazy caller ? 
         arb_assert(--openCount >= 0);
-#endif
         fflush(stdout);
     }
 
     ~BasicStatus() {
-#if defined(DEBUG)
-        if (openCount)
-#endif
-            close();
+        if (openCount) close();
     }
 
     int next_LF() const { return printed-printed%WIDTH+WIDTH; }
@@ -92,10 +79,7 @@ public:
         }
     }
     void set_gauge(double gauge) {
-#if defined(DEBUG)
         arb_assert(openCount == 1);
-        set_gauge_called++;
-#endif
 
         int wanted = int(gauge*WIDTH*HEIGHT);
         int nextLF = next_LF();
@@ -122,6 +106,7 @@ public:
         }
     }
 };
+int BasicStatus::openCount = 0;
 
 static BasicStatus status;
 
