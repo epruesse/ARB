@@ -292,3 +292,23 @@ int parse_key_word(const char *line, char *key, const char *separator) {
     return k;
 }
 
+// ----------------------
+//      FormattedFile
+
+FormattedFile::FormattedFile(const char *Name, Format Type)
+    : name_(strdup(Name)),
+      type_(Type)
+{}
+FormattedFile::~FormattedFile() {
+    free(name_);
+}
+
+void FormattedFile::init(const char *Name, Format Type) {
+    ca_assert(!name_); // do not init twice
+    ca_assert(Name);
+    ca_assert(Type != UNKNOWN);
+
+    name_ = nulldup(Name);
+    type_ = Type;
+}
+

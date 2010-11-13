@@ -34,16 +34,16 @@ static void printable_print_line(const char *id, const char *sequence, int start
     write.out('\n');
 }
 
-void to_printable(const char *inf, const char *outf, Format inType) {
+void to_printable(const FormattedFile& in, const char *outf) {
     // Convert from some format to PRINTABLE format.
-    if (!is_input_format(inType)) {
-        throw_conversion_not_supported(inType, PRINTABLE);
+    if (!is_input_format(in.type())) {
+        throw_conversion_not_supported(in.type(), PRINTABLE);
     }
 
     FileWriter write(outf);
 
     Alignment ali;
-    read_alignment(ali, inType, inf);
+    read_alignment(ali, in);
 
     int total_seq = ali.get_count();
     int maxsize   = ali.get_max_len();
