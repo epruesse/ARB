@@ -247,10 +247,12 @@ public:
     const arb_progress& operator++() { inc(); return *this; } // ++progress
 
     void done() { used->done(); } // set "done" (aka 100%). Useful when exiting some loop early
+#if defined(DUMP_PROGRESS)
     void dump() {
         fprintf(stderr, "--------------------\n");
         used->dump();
     }
+#endif
     void force_update() { used->force_update(); }
 };
 
