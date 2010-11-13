@@ -286,6 +286,7 @@ adcolumns.o: gb_prot.h
 adcolumns.o: $(ARBHOME)/INCLUDE/arb_core.h
 adcolumns.o: $(ARBHOME)/INCLUDE/arb_error.h
 adcolumns.o: $(ARBHOME)/INCLUDE/arb_msg.h
+adcolumns.o: $(ARBHOME)/INCLUDE/arb_progress.h
 adcolumns.o: $(ARBHOME)/INCLUDE/arb_string.h
 adcolumns.o: $(ARBHOME)/INCLUDE/arbtools.h
 adcolumns.o: $(ARBHOME)/INCLUDE/attributes.h
@@ -510,6 +511,7 @@ adlang1.o: $(ARBHOME)/INCLUDE/arb_core.h
 adlang1.o: $(ARBHOME)/INCLUDE/arb_defs.h
 adlang1.o: $(ARBHOME)/INCLUDE/arb_error.h
 adlang1.o: $(ARBHOME)/INCLUDE/arb_msg.h
+adlang1.o: $(ARBHOME)/INCLUDE/arb_str.h
 adlang1.o: $(ARBHOME)/INCLUDE/arb_string.h
 adlang1.o: $(ARBHOME)/INCLUDE/arbtools.h
 adlang1.o: $(ARBHOME)/INCLUDE/attributes.h
@@ -630,6 +632,7 @@ adname.o: gb_prot.h
 adname.o: $(ARBHOME)/INCLUDE/arb_core.h
 adname.o: $(ARBHOME)/INCLUDE/arb_error.h
 adname.o: $(ARBHOME)/INCLUDE/arb_msg.h
+adname.o: $(ARBHOME)/INCLUDE/arb_progress.h
 adname.o: $(ARBHOME)/INCLUDE/arb_string.h
 adname.o: $(ARBHOME)/INCLUDE/arbtools.h
 adname.o: $(ARBHOME)/INCLUDE/attributes.h
@@ -657,6 +660,7 @@ adoptimize.o: gb_tune.h
 adoptimize.o: $(ARBHOME)/INCLUDE/arb_core.h
 adoptimize.o: $(ARBHOME)/INCLUDE/arb_error.h
 adoptimize.o: $(ARBHOME)/INCLUDE/arb_msg.h
+adoptimize.o: $(ARBHOME)/INCLUDE/arb_progress.h
 adoptimize.o: $(ARBHOME)/INCLUDE/arb_string.h
 adoptimize.o: $(ARBHOME)/INCLUDE/arbtools.h
 adoptimize.o: $(ARBHOME)/INCLUDE/attributes.h
@@ -740,6 +744,7 @@ adseqcompr.o: gb_tune.h
 adseqcompr.o: $(ARBHOME)/INCLUDE/arb_core.h
 adseqcompr.o: $(ARBHOME)/INCLUDE/arb_error.h
 adseqcompr.o: $(ARBHOME)/INCLUDE/arb_msg.h
+adseqcompr.o: $(ARBHOME)/INCLUDE/arb_progress.h
 adseqcompr.o: $(ARBHOME)/INCLUDE/arb_string.h
 adseqcompr.o: $(ARBHOME)/INCLUDE/arbtools.h
 adseqcompr.o: $(ARBHOME)/INCLUDE/attributes.h
@@ -933,6 +938,7 @@ adtree.o: gb_prot.h
 adtree.o: $(ARBHOME)/INCLUDE/arb_core.h
 adtree.o: $(ARBHOME)/INCLUDE/arb_error.h
 adtree.o: $(ARBHOME)/INCLUDE/arb_msg.h
+adtree.o: $(ARBHOME)/INCLUDE/arb_progress.h
 adtree.o: $(ARBHOME)/INCLUDE/arb_string.h
 adtree.o: $(ARBHOME)/INCLUDE/arbtools.h
 adtree.o: $(ARBHOME)/INCLUDE/attributes.h

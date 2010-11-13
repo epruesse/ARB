@@ -11,18 +11,19 @@
 #include "nt_tree_cmp.hxx"
 #include <AP_Tree.hxx>
 #include <aw_msg.hxx>
-#include <aw_status.hxx>
+#include <arb_progress.h>
 #include <string>
 
 #define nt_assert(bed) arb_assert(bed)
 
 using namespace std;
 
-AWT_species_set_root::AWT_species_set_root(GBDATA *gb_maini, long nspeciesi) {
+AWT_species_set_root::AWT_species_set_root(GBDATA *gb_maini, long nspeciesi, arb_progress *progress_) {
     memset((char *)this, 0, sizeof(*this));
-    gb_main = gb_maini;
+    gb_main  = gb_maini;
     nspecies = nspeciesi;
-    sets = (AWT_species_set **)GB_calloc(sizeof(AWT_species_set *), (size_t)(nspecies*2+1));
+    progress = progress_;
+    sets     = (AWT_species_set **)GB_calloc(sizeof(AWT_species_set *), (size_t)(nspecies*2+1));
 
     int i;
     for (i=0; i<256; i++) {
@@ -161,34 +162,45 @@ AWT_species_set *AWT_species_set_root::find_best_matches_info(AP_tree *tree_sour
      * matching node in dest_tree (meaning searching ssr->sets)
      * If a match is found, set ssr->sets to this match)
      */
-    AWT_species_set *ss;
+    AWT_species_set *ss = NULL;
     if (tree_source->is_leaf) {
-        aw_status(this->status++/(double)this->mstatus);
         ss = new AWT_species_set(tree_source, this, tree_source->name);
-        return ss;
-    }
-    aw_status(this->status++/(double)this->mstatus);
-    AWT_species_set *ls = find_best_matches_info(tree_source->get_leftson(), log, compare_node_info);
-    AWT_species_set *rs = find_best_matches_info(tree_source->get_rightson(), log, compare_node_info);
-
-    ss = new AWT_species_set(tree_source, this, ls, rs); // Generate new bitstring
-    if (compare_node_info) {
-        int mismatches = this->search(ss, log); // Search optimal position
-        delete ss->node->remark_branch;
-        ss->node->remark_branch = 0;
-        if (mismatches) {
-            char remark[20];
-            sprintf(remark, "# %i", mismatches); // the #-sign is important (otherwise TREE_write_Newick will not work correctly)
-            ss->node->remark_branch = strdup(remark);
-        }
     }
     else {
-        if (tree_source->name) {
-            this->search(ss, log);      // Search optimal position
+        AWT_species_set *ls = NULL;
+        AWT_species_set *rs = NULL;
+
+        ls         = find_best_matches_info(tree_source->get_leftson(), log, compare_node_info);
+        if (ls) rs = find_best_matches_info(tree_source->get_rightson(), log, compare_node_info);
+
+        if (rs) {
+            ss = new AWT_species_set(tree_source, this, ls, rs); // Generate new bitstring
+            if (compare_node_info) {
+                int mismatches = this->search(ss, log); // Search optimal position
+                delete ss->node->remark_branch;
+                ss->node->remark_branch = 0;
+                if (mismatches) {
+                    char remark[20];
+                    sprintf(remark, "# %i", mismatches); // the #-sign is important (otherwise TREE_write_Newick will not work correctly)
+                    ss->node->remark_branch = strdup(remark);
+                }
+            }
+            else {
+                if (tree_source->name) {
+                    this->search(ss, log);      // Search optimal position
+                }
+            }
+        }
+        delete rs;
+        delete ls;
+    }
+    if (ss) {
+        progress->inc();
+        if (progress->aborted()) {
+            delete ss;
+            ss = NULL;
         }
     }
-    delete rs;
-    delete ls;
     return ss;                  // return bitstring for this node
 }
 
@@ -258,6 +270,11 @@ GB_ERROR AWT_species_set_root::copy_node_information(FILE *log, bool delete_old_
     return error;
 }
 
+void AWT_species_set_root::finish(GB_ERROR& error) {
+    if (!error) error = progress->error_if_aborted();
+    progress->done();
+}
+
 void AWT_move_info(GBDATA *gb_main, const char *tree_source, const char *tree_dest, const char *log_file, bool compare_node_info, bool delete_old_nodes, bool nodes_with_marked_only) {
     GB_ERROR  error = 0;
     FILE     *log   = 0;
@@ -279,55 +296,65 @@ void AWT_move_info(GBDATA *gb_main, const char *tree_source, const char *tree_de
     AP_tree_root rsource(new AliView(gb_main), AP_tree(0), NULL, false);
     AP_tree_root rdest  (new AliView(gb_main), AP_tree(0), NULL, false);
 
-    aw_openstatus("Comparing Topologies");
+    arb_progress progress("Comparing Topologies");
 
-    aw_status("Load Tree 1");
     error             = rsource.loadFromDB(tree_source);
     if (!error) error = rsource.linkToDB(0, 0);
     if (!error) {
-        aw_status("Load Tree 2");
         error             = rdest.loadFromDB(tree_dest);
         if (!error) error = rdest.linkToDB(0, 0);
         if (!error) {
             AP_tree *source = rsource.get_root_node();
             AP_tree *dest   = rdest.get_root_node();
 
-            long                  nspecies = dest->arb_tree_leafsum2();
-            AWT_species_set_root *ssr      = new AWT_species_set_root(gb_main, nspecies);
+            long nspecies     = dest->arb_tree_leafsum2();
+            long source_leafs = source->arb_tree_leafsum2();
+            long source_nodes = source_leafs*2-1;
 
-            aw_status("Building Search Table for Tree 2");
+            arb_progress compare_progress(source_nodes);
+            compare_progress.subtitle("Comparing both trees");
+
+            AWT_species_set_root *ssr = new AWT_species_set_root(gb_main, nspecies, &compare_progress);
+
             ssr->move_tree_2_ssr(dest);
 
-            aw_status("Compare Both Trees");
-            ssr->mstatus = source->arb_tree_leafsum2() * 2;
-            ssr->status  = 0;
-
-            if (ssr->mstatus < 2) error = GB_export_error("Destination tree has less than 3 species");
+            if (source_leafs < 3) error = GB_export_error("Destination tree has less than 3 species");
             else {
-                AWT_species_set *root_setl = ssr->find_best_matches_info(source->get_leftson(),  log, compare_node_info);
-                AWT_species_set *root_setr = ssr->find_best_matches_info(source->get_rightson(), log, compare_node_info);
+                AWT_species_set *root_setl = NULL;
+                AWT_species_set *root_setr = NULL;
 
-                if (!compare_node_info) {
-                    aw_status("Copy Node Information");
-                    ssr->copy_node_information(log, delete_old_nodes, nodes_with_marked_only);
+                root_setl = ssr->find_best_matches_info(source->get_leftson(),  log, compare_node_info);
+                if (root_setl) root_setr = ssr->find_best_matches_info(source->get_rightson(), log, compare_node_info);
+
+                if (root_setr) {
+                    if (!compare_node_info) {
+                        compare_progress.subtitle("Copying node information");
+                        ssr->copy_node_information(log, delete_old_nodes, nodes_with_marked_only);
+                    }
+
+                    long             dummy         = 0;
+                    AWT_species_set *new_root_setl = ssr->search(root_setl, &dummy);
+                    AWT_species_set *new_root_setr = ssr->search(root_setr, &dummy);
+                    AP_tree         *new_rootl     = (AP_tree *) new_root_setl->node;
+                    AP_tree         *new_rootr     = (AP_tree *) new_root_setr->node;
+
+                    new_rootl->set_root(); // set root correctly
+                    new_rootr->set_root(); // set root correctly
+
+                    compare_progress.subtitle("Saving trees");
+
+                    AP_tree *root = new_rootr->get_root_node();
+
+                    error             = GBT_write_tree(gb_main, rdest.get_gb_tree(), 0, root->get_gbt_tree());
+                    if (!error) error = GBT_write_tree(gb_main, rsource.get_gb_tree(), 0, source->get_gbt_tree());
                 }
 
-                long             dummy         = 0;
-                AWT_species_set *new_root_setl = ssr->search(root_setl, &dummy);
-                AWT_species_set *new_root_setr = ssr->search(root_setr, &dummy);
-                AP_tree         *new_rootl     = (AP_tree *) new_root_setl->node;
-                AP_tree         *new_rootr     = (AP_tree *) new_root_setr->node;
-
-                new_rootl->set_root(); // set root correctly
-                new_rootr->set_root(); // set root correctly
-
-                aw_status("Save Tree");
-
-                AP_tree *root = new_rootr->get_root_node();
-
-                error             = GBT_write_tree(gb_main, rdest.get_gb_tree(), 0, root->get_gbt_tree());
-                if (!error) error = GBT_write_tree(gb_main, rsource.get_gb_tree(), 0, source->get_gbt_tree());
+                delete root_setl;
+                delete root_setr;
             }
+
+            ssr->finish(error);
+            delete ssr;
         }
     }
 
@@ -335,8 +362,6 @@ void AWT_move_info(GBDATA *gb_main, const char *tree_source, const char *tree_de
         if (error) fprintf(log, "\nError: %s\n", error);       // write error to log as well
         fclose(log);
     }
-
-    aw_closestatus();
 
     GB_end_transaction_show_error(gb_main, error, aw_message);
 }

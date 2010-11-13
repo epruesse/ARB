@@ -24,7 +24,7 @@
 #include <aw_edit.hxx>
 #include <aw_file.hxx>
 #include <aw_msg.hxx>
-#include <aw_status.hxx>
+#include <arb_progress.h>
 #include <aw_root.hxx>
 
 #include <adGene.h>
@@ -53,7 +53,7 @@ GB_ERROR NT_format_all_alignments(GBDATA *gb_main) {
     GB_push_transaction(gb_main);
     GB_push_my_security(gb_main);
 
-    aw_status("Checking alignments");
+    arb_progress progress("Formatting alignments", GBT_count_alignments(gb_main));
     err = GBT_check_data(gb_main, 0);
 
     AW_repeated_question  question;
@@ -61,7 +61,10 @@ GB_ERROR NT_format_all_alignments(GBDATA *gb_main) {
 
     question.add_help("prompt/format_alignments.hlp");
 
-    for (GBDATA *gb_ali = GB_entry(gb_presets, "alignment"); gb_ali && !err; gb_ali = GB_nextEntry(gb_ali)) {
+    for (GBDATA *gb_ali = GB_entry(gb_presets, "alignment");
+         gb_ali && !err;
+         gb_ali = GB_nextEntry(gb_ali))
+    {
         GBDATA *gb_aligned = GB_search(gb_ali, "aligned", GB_INT);
 
         if (GB_read_int(gb_aligned) == 0) { // sequences in alignment are not formatted
@@ -121,12 +124,12 @@ GB_ERROR NT_format_all_alignments(GBDATA *gb_main) {
                 }
             }
             if (!err && perform_format) {
-                aw_status(GBS_global_string("Formatting '%s'", ali_name));
                 GB_push_my_security(gb_main);
                 err = GBT_format_alignment(gb_main, ali_name);
                 GB_pop_my_security(gb_main);
             }
         }
+        progress.inc_and_check_user_abort(err);
     }
 
     GB_pop_my_security(gb_main);
@@ -137,17 +140,13 @@ GB_ERROR NT_format_all_alignments(GBDATA *gb_main) {
 
 // --------------------------------------------------------------------------------
 
-
-
-// called once on ARB_NTREE startup
-//
 static GB_ERROR nt_check_database_consistency() {
-    aw_openstatus("Checking database...");
+    // called once on ARB_NTREE startup
+    arb_progress("Checking consistency");
 
-    GB_ERROR err = NT_format_all_alignments(GLOBAL_gb_main);
+    GB_ERROR err  = NT_format_all_alignments(GLOBAL_gb_main);
     if (!err) err = NT_repair_DB(GLOBAL_gb_main);
 
-    aw_closestatus();
     return err;
 }
 

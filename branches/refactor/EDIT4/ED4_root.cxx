@@ -32,7 +32,7 @@
 #include <aw_awars.hxx>
 #include <aw_preset.hxx>
 #include <aw_msg.hxx>
-#include <aw_status.hxx>
+#include <arb_progress.h>
 #include <aw_root.hxx>
 #include <arb_version.h>
 #include <arbdbt.h>
@@ -438,7 +438,7 @@ ED4_returncode ED4_root::create_hierarchy(char *area_string_middle, char *area_s
     total_no_of_groups += group_count;
     total_no_of_species += species_count;
 
-    aw_status_counter species_progress(total_no_of_species);
+    arb_progress startup_progress("EDIT4 startup");
 
     GB_push_transaction(GLOBAL_gb_main);
 
@@ -485,121 +485,118 @@ ED4_returncode ED4_root::create_hierarchy(char *area_string_middle, char *area_s
         // ********** Top Area beginning **********
 
         {
-            ED4_area_manager *top_area_manager = new ED4_area_manager("Top_Area_Manager", 0, y, 0, 0, device_manager);
-            device_manager->children->append_member(top_area_manager);
-            top_area_man = top_area_manager;
-
-            top_spacer_terminal = new ED4_spacer_terminal("Top_Spacer",   0, 0, 100, 10, top_area_manager);
-            top_area_manager->children->append_member(top_spacer_terminal);
-
-            top_multi_species_manager = new ED4_multi_species_manager("Top_MultiSpecies_Manager", x, 0, 0, 0, top_area_manager);
-            top_area_manager->children->append_member(top_multi_species_manager);
-
-            top_multi_spacer_terminal_beg = new ED4_spacer_terminal("Top_Multi_Spacer_Terminal_Beg", 0, 0, 0, 3, top_multi_species_manager);
-            top_multi_species_manager->children->append_member(top_multi_spacer_terminal_beg);
-
-            y+=3;
-
-
-            aw_openstatus("Reading species from database");
-            aw_status((double)0);
-
-            reference = new AWT_reference(GLOBAL_gb_main);
-            database->scan_string(top_multi_species_manager, ref_terminals.get_ref_sequence_info(), ref_terminals.get_ref_sequence(),
-                                  area_string_top, &index, &y, species_progress);
-            GB_pop_transaction(GLOBAL_gb_main);
-
-            const int TOP_MID_LINE_HEIGHT   = 3;
-            int       TOP_MID_SPACER_HEIGHT = font_group.get_max_height()-TOP_MID_LINE_HEIGHT;
-
-            top_mid_line_terminal = new ED4_line_terminal("Top_Mid_Line_Terminal", 0, y, 0, TOP_MID_LINE_HEIGHT, device_manager);    // width will be set below
-            device_manager->children->append_member(top_mid_line_terminal);
-
-            y += TOP_MID_LINE_HEIGHT;
-
-
-            top_mid_spacer_terminal = new ED4_spacer_terminal("Top_Middle_Spacer", 0, y, 880, TOP_MID_SPACER_HEIGHT,   device_manager);
-            device_manager->children->append_member(top_mid_spacer_terminal);
-
-            // needed to avoid text-clipping problems:
-            main_manager->set_top_middle_spacer_terminal(top_mid_spacer_terminal);
-            main_manager->set_top_middle_line_terminal(top_mid_line_terminal);
-
-            y += TOP_MID_SPACER_HEIGHT; // add top-mid_spacer_terminal height
-
-            top_multi_species_manager->generate_id_for_groups();
-        }
-
-        // ********** Top Area end **********
-
-
-        // ********** Middle Area beginning **********
-
-        {
-            middle_area_manager = new ED4_area_manager("Middle_Area_Manager", 0, y, 0, 0, device_manager);
-            device_manager->children->append_member(middle_area_manager);
-            middle_area_man = middle_area_manager;
-
-            tree_terminal = new ED4_tree_terminal("Tree", 0, 0, 2, change, middle_area_manager);
-            middle_area_manager->children->append_member(tree_terminal);
-
-            mid_multi_species_manager = new ED4_multi_species_manager("Middle_MultiSpecies_Manager", x, 0, 0, 0, middle_area_manager);
-            middle_area_manager->children->append_member(mid_multi_species_manager);
-
-            mid_multi_spacer_terminal_beg = new ED4_spacer_terminal("Mid_Multi_Spacer_Terminal_Beg", 0, 0, 0, 3, mid_multi_species_manager);
-            mid_multi_species_manager->children->append_member(mid_multi_spacer_terminal_beg);
-
-            y+=3;               // dummy height, to create a dummy layout ( to preserve order of objects )
-
-            scroll_links.link_for_ver_slider = middle_area_manager;
-
-            help = y;
-            index = 0;
+            arb_progress species_progress("Loading species", total_no_of_species);
             {
-                GB_transaction dummy(GLOBAL_gb_main);
-                database->scan_string(mid_multi_species_manager, ref_terminals.get_ref_sequence_info(), ref_terminals.get_ref_sequence(),
-                                      area_string_middle, &index, &y, species_progress);
+                ED4_area_manager *top_area_manager = new ED4_area_manager("Top_Area_Manager", 0, y, 0, 0, device_manager);
+                device_manager->children->append_member(top_area_manager);
+                top_area_man = top_area_manager;
+
+                top_spacer_terminal = new ED4_spacer_terminal("Top_Spacer",   0, 0, 100, 10, top_area_manager);
+                top_area_manager->children->append_member(top_spacer_terminal);
+
+                top_multi_species_manager = new ED4_multi_species_manager("Top_MultiSpecies_Manager", x, 0, 0, 0, top_area_manager);
+                top_area_manager->children->append_member(top_multi_species_manager);
+
+                top_multi_spacer_terminal_beg = new ED4_spacer_terminal("Top_Multi_Spacer_Terminal_Beg", 0, 0, 0, 3, top_multi_species_manager);
+                top_multi_species_manager->children->append_member(top_multi_spacer_terminal_beg);
+
+                y+=3;
+
+                reference = new AWT_reference(GLOBAL_gb_main);
+                database->scan_string(top_multi_species_manager, ref_terminals.get_ref_sequence_info(), ref_terminals.get_ref_sequence(),
+                                      area_string_top, &index, &y, species_progress);
+                GB_pop_transaction(GLOBAL_gb_main);
+
+                const int TOP_MID_LINE_HEIGHT   = 3;
+                int       TOP_MID_SPACER_HEIGHT = font_group.get_max_height()-TOP_MID_LINE_HEIGHT;
+
+                top_mid_line_terminal = new ED4_line_terminal("Top_Mid_Line_Terminal", 0, y, 0, TOP_MID_LINE_HEIGHT, device_manager);    // width will be set below
+                device_manager->children->append_member(top_mid_line_terminal);
+
+                y += TOP_MID_LINE_HEIGHT;
+
+
+                top_mid_spacer_terminal = new ED4_spacer_terminal("Top_Middle_Spacer", 0, y, 880, TOP_MID_SPACER_HEIGHT,   device_manager);
+                device_manager->children->append_member(top_mid_spacer_terminal);
+
+                // needed to avoid text-clipping problems:
+                main_manager->set_top_middle_spacer_terminal(top_mid_spacer_terminal);
+                main_manager->set_top_middle_line_terminal(top_mid_line_terminal);
+
+                y += TOP_MID_SPACER_HEIGHT; // add top-mid_spacer_terminal height
+
+                top_multi_species_manager->generate_id_for_groups();
             }
 
-            aw_closestatus();
+            // ********** Top Area end **********
+
+
+            // ********** Middle Area beginning **********
 
             {
-                ED4_spacer_terminal *mid_bot_spacer_terminal = new ED4_spacer_terminal("Middle_Bot_Spacer_Terminal", 0, y, 880, 10, device_manager);
-                device_manager->children->append_member(mid_bot_spacer_terminal);
+                middle_area_manager = new ED4_area_manager("Middle_Area_Manager", 0, y, 0, 0, device_manager);
+                device_manager->children->append_member(middle_area_manager);
+                middle_area_man = middle_area_manager;
+
+                tree_terminal = new ED4_tree_terminal("Tree", 0, 0, 2, change, middle_area_manager);
+                middle_area_manager->children->append_member(tree_terminal);
+
+                mid_multi_species_manager = new ED4_multi_species_manager("Middle_MultiSpecies_Manager", x, 0, 0, 0, middle_area_manager);
+                middle_area_manager->children->append_member(mid_multi_species_manager);
+
+                mid_multi_spacer_terminal_beg = new ED4_spacer_terminal("Mid_Multi_Spacer_Terminal_Beg", 0, 0, 0, 3, mid_multi_species_manager);
+                mid_multi_species_manager->children->append_member(mid_multi_spacer_terminal_beg);
+
+                y+=3;               // dummy height, to create a dummy layout ( to preserve order of objects )
+
+                scroll_links.link_for_ver_slider = middle_area_manager;
+
+                help = y;
+                index = 0;
+                {
+                    GB_transaction dummy(GLOBAL_gb_main);
+                    database->scan_string(mid_multi_species_manager, ref_terminals.get_ref_sequence_info(), ref_terminals.get_ref_sequence(),
+                                          area_string_middle, &index, &y, species_progress);
+                }
+
+                {
+                    ED4_spacer_terminal *mid_bot_spacer_terminal = new ED4_spacer_terminal("Middle_Bot_Spacer_Terminal", 0, y, 880, 10, device_manager);
+                    device_manager->children->append_member(mid_bot_spacer_terminal);
+                }
+
+                tree_terminal->extension.size[HEIGHT] = y - help;
+
+                mid_multi_species_manager->generate_id_for_groups();
+                y += 10;                                                // add top-mid_spacer_terminal height
+
+                mid_bot_line_terminal = new ED4_line_terminal("Mid_Bot_Line_Terminal", 0, y, 0, 3, device_manager);    // width will be set below
+                device_manager->children->append_member(mid_bot_line_terminal);
+                y += 3;
+
+                total_bottom_spacer = new ED4_spacer_terminal("Total_Bottom_Spacer_terminal", 0, y, 0, 10000, device_manager);
+                device_manager->children->append_member(total_bottom_spacer);
+                y += 10000;
             }
 
-            tree_terminal->extension.size[HEIGHT] = y - help;
+            // ********** Middle Area end **********
 
-            mid_multi_species_manager->generate_id_for_groups();
-            y += 10;                                                // add top-mid_spacer_terminal height
+            if (scroll_links.link_for_hor_slider) {
+                long ext_width = long(scroll_links.link_for_hor_slider->extension.size[WIDTH]);
 
-            mid_bot_line_terminal = new ED4_line_terminal("Mid_Bot_Line_Terminal", 0, y, 0, 3, device_manager);    // width will be set below
-            device_manager->children->append_member(mid_bot_line_terminal);
-            y += 3;
+                top_multi_spacer_terminal_beg->extension.size[WIDTH] = ext_width + MAXSPECIESWIDTH + SEQUENCEINFOSIZE;
+                mid_multi_spacer_terminal_beg->extension.size[WIDTH] = ext_width + MAXSPECIESWIDTH + SEQUENCEINFOSIZE;
+                total_bottom_spacer->extension.size[WIDTH] = ext_width + MAXSPECIESWIDTH + SEQUENCEINFOSIZE;
 
-            total_bottom_spacer = new ED4_spacer_terminal("Total_Bottom_Spacer_terminal", 0, y, 0, 10000, device_manager);
-            device_manager->children->append_member(total_bottom_spacer);
-            y += 10000;
+                top_mid_line_terminal->extension.size[WIDTH] = ext_width + TREETERMINALSIZE + MAXSPECIESWIDTH + SEQUENCEINFOSIZE;
+                mid_bot_line_terminal->extension.size[WIDTH] = ext_width + TREETERMINALSIZE + MAXSPECIESWIDTH + SEQUENCEINFOSIZE;
+
+            }
+
+            tree_terminal->set_links(NULL, mid_multi_species_manager);                          // set links
+            top_spacer_terminal->set_links(tree_terminal, top_multi_species_manager);
+            top_mid_spacer_terminal->set_links(middle_area_manager, NULL);
+            total_bottom_spacer->set_links(mid_bot_line_terminal, 0);
         }
-
-        // ********** Middle Area end **********
-
-        if (scroll_links.link_for_hor_slider) {
-            long ext_width = long(scroll_links.link_for_hor_slider->extension.size[WIDTH]);
-
-            top_multi_spacer_terminal_beg->extension.size[WIDTH] = ext_width + MAXSPECIESWIDTH + SEQUENCEINFOSIZE;
-            mid_multi_spacer_terminal_beg->extension.size[WIDTH] = ext_width + MAXSPECIESWIDTH + SEQUENCEINFOSIZE;
-            total_bottom_spacer->extension.size[WIDTH] = ext_width + MAXSPECIESWIDTH + SEQUENCEINFOSIZE;
-
-            top_mid_line_terminal->extension.size[WIDTH] = ext_width + TREETERMINALSIZE + MAXSPECIESWIDTH + SEQUENCEINFOSIZE;
-            mid_bot_line_terminal->extension.size[WIDTH] = ext_width + TREETERMINALSIZE + MAXSPECIESWIDTH + SEQUENCEINFOSIZE;
-
-        }
-
-        tree_terminal->set_links(NULL, mid_multi_species_manager);                          // set links
-        top_spacer_terminal->set_links(tree_terminal, top_multi_species_manager);
-        top_mid_spacer_terminal->set_links(middle_area_manager, NULL);
-        total_bottom_spacer->set_links(mid_bot_line_terminal, 0);
     }
 
     first_window->update_window_coords();
@@ -608,15 +605,11 @@ ED4_returncode ED4_root::create_hierarchy(char *area_string_middle, char *area_s
 
     // build consensi
     {
-        aw_openstatus("Initializing consensi");
-        aw_status((double)0);
+        arb_progress consensi_progress("Initializing consensi", total_no_of_species+total_no_of_groups+1); // 1 is root_group_man
 
-        aw_status_counter progress(total_no_of_groups+1); // 1 is root_group_man
-
-        root_group_man->create_consensus(root_group_man, &progress);
+        root_group_man->create_consensus(root_group_man, &consensi_progress);
         e4_assert(root_group_man->table().ok());
-
-        aw_closestatus();
+        consensi_progress.done(); // if there is a "top"-group, progress increment is one to low
     }
 
     root_group_man->remap()->mark_compile_needed_force();

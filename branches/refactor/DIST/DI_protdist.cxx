@@ -11,7 +11,7 @@
 #include "di_protdist.hxx"
 #include "di_matr.hxx"
 #include <aw_msg.hxx>
-#include <aw_status.hxx>
+#include <arb_progress.h>
 #include <cmath>
 
 #define di_assert(cond) arb_assert(cond)
@@ -656,25 +656,21 @@ void di_protdist::build_akt_predikt(double tt)
 
 }
 
-const char *di_protdist::makedists(bool *aborted_flag) {
+GB_ERROR di_protdist::makedists(bool *aborted_flag) {
     /* compute the distances.
      * sets 'aborted_flag' to true, if it is non-NULL and user aborts the calculation
      */
-    long            i, j, k, m, n, iterations;
-    double          delta, slope, curv;
-    int             b1=0, b2=0;
-    double              tt=0;
-    int         pos;
+    long   i, j, k, m, n, iterations;
+    double delta, slope, curv;
+    int    b1 = 0, b2=0;
+    double tt = 0;
+    int    pos;
+
+    arb_progress progress("Calculating distances", (spp*(spp+1))/2);
+    GB_ERROR     error = NULL;
 
     for (i = 0; i < spp; i++) {
         matrix->set(i, i, 0.0);
-        {
-            double gauge = (double)i/(double)spp;
-            if (aw_status(gauge*gauge)) {
-                if (aborted_flag) *aborted_flag = true;
-                return "Aborted by user";
-            }
-        }
         {
             /* move all unknown characters to del */
             ap_pro *seq1 = entries[i]->sequence_protein->get_sequence();
@@ -787,9 +783,11 @@ const char *di_protdist::makedists(bool *aborted_flag) {
                 }
             }
             matrix->set(i, j, fracchange * tt);
+            progress.inc_and_check_user_abort(error);
         }
     }
-    return 0;
+    if (aborted_flag && error) *aborted_flag = true;
+    return error;
 }
 
 

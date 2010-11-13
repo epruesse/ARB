@@ -26,7 +26,7 @@
 #include <aw_preset.hxx>
 #include <aw_awar.hxx>
 #include <aw_msg.hxx>
-#include <aw_status.hxx>
+#include <arb_progress.h>
 #include <aw_root.hxx>
 
 AP_tree_nlen *PARS_global::get_root_node() {
@@ -66,8 +66,6 @@ void PARS_tree_init(AWT_graphic_tree *agt) {
 
     agt->tree_static->set_root_changed_callback(AWT_graphic_parsimony_root_changed, agt);
 }
-
-static int ap_global_abort_flag;
 
 double funktion_quadratisch(double x, double *param_list, int param_anz) {
     AP_FLOAT ergebnis;
@@ -144,27 +142,19 @@ void PARS_kernighan_cb(AP_tree *tree) {
 
 
     i = 0;
-    aw_openstatus("KL Optimizer");
-    {
-        char buffer[100];
-        sprintf(buffer, "Old Parsimony: %f", pars_start);
-        aw_status(buffer);
-    }
-    int abort_flag = false;
+    arb_progress progress(anzahl);
+
+    progress.subtitle(GBS_global_string("Old Parsimony: %.1f", pars_start));
 
     GB_pop_transaction(GLOBAL_gb_main);
 
-    for (i=0; i<anzahl && ! abort_flag; i++) {
-        abort_flag |= aw_status(i/(double)anzahl);
-        if (abort_flag) break;
-
+    for (i=0; i<anzahl && !progress.aborted(); i++) {
         AP_tree_nlen *tree_elem = (AP_tree_nlen *)list[i];
 
-        if (tree_elem->gr.hidden ||
-            (tree_elem->father && tree_elem->get_father()->gr.hidden)) {
-            continue;   // within a folded group
-        }
-        {
+        bool in_folded_group = tree_elem->gr.hidden ||
+            (tree_elem->father && tree_elem->get_father()->gr.hidden);
+
+        if (!in_folded_group) {
             bool better_tree_found = false;
             ap_main->push();
             display_clear(funktion, param_list, param_anz, (int)pars_start, (int)rek_deep_max);
@@ -178,45 +168,48 @@ void PARS_kernighan_cb(AP_tree *tree) {
             if (better_tree_found) {
                 ap_main->clear();
                 pars_start =  GLOBAL_PARS->get_root_node()->costs();
-                char buffer[100];
-                sprintf(buffer, "New Parsimony: %f", pars_start);
-                abort_flag |= aw_status(buffer);
+                progress.subtitle(GBS_global_string("New parsimony: %.1f (gain: %.1f)", pars_start, pars_prev-pars_start));
             }
             else {
                 ap_main->pop();
             }
         }
+        progress.inc();
     }
-    aw_closestatus();
     delete list;
-    ap_global_abort_flag |= abort_flag;
     printf("Combines: %li\n", AP_sequence::combine_count()-prevCombineCount);
 }
 
-void PARS_optimizer_cb(AP_tree *tree) {
+void PARS_optimizer_cb(AP_tree *tree, arb_progress& progress) {
     AWT_graphic_tree *agt          = GLOBAL_PARS->tree;
     AP_tree          *oldrootleft  = agt->get_root_node()->get_leftson();
     AP_tree          *oldrootright = agt->get_root_node()->get_rightson();
 
-    for (ap_global_abort_flag = 0; !ap_global_abort_flag;) {
-        AP_FLOAT old_pars = DOWNCAST(AP_tree_nlen*, agt->get_root_node())->costs();
+    AP_FLOAT org_pars  = DOWNCAST(AP_tree_nlen*, agt->get_root_node())->costs();
+    AP_FLOAT prev_pars = org_pars;
 
-        AP_FLOAT this_pars = ((AP_tree_nlen *)tree)->nn_interchange_rek(true, ap_global_abort_flag, -1, AP_BL_NNI_ONLY, false);
-        if (ap_global_abort_flag) break;
+    progress.subtitle(GBS_global_string("Old parsimony: %.1f", org_pars));
 
-        if (old_pars != this_pars) { // NNI found better tree
-            continue;
+    while (!progress.aborted()) {
+        AP_FLOAT nni_pars = ((AP_tree_nlen *)tree)->nn_interchange_rek(-1, AP_BL_NNI_ONLY, false);
+
+        if (nni_pars == prev_pars) { // NNI did not reduce costs -> kern-lin
+            PARS_kernighan_cb(tree);
+            AP_FLOAT ker_pars = DOWNCAST(AP_tree_nlen*, agt->get_root_node())->costs();
+            
+            if (ker_pars == prev_pars) break; // kern-lin did not improve tree -> done
+            prev_pars = ker_pars;
         }
-
-        PARS_kernighan_cb(tree);
-        if (old_pars == DOWNCAST(AP_tree_nlen*, agt->get_root_node())->costs()) {
-            ap_global_abort_flag = 1;
+        else {
+            prev_pars = nni_pars;
         }
+        progress.subtitle(GBS_global_string("New parsimony: %.1f (gain: %.1f)", prev_pars, org_pars-prev_pars));
     }
+
     if (oldrootleft->father == oldrootright) oldrootleft->set_root();
     else oldrootright->set_root();
+
     DOWNCAST(AP_tree_nlen*, agt->get_root_node())->costs();
-    aw_closestatus();
 }
 
 AWT_graphic_parsimony::AWT_graphic_parsimony(AW_root *root, GBDATA *gb_main_, AD_map_viewer_cb map_viewer_cb_)
@@ -385,27 +378,31 @@ void AWT_graphic_parsimony::command(AW_device *device, AWT_COMMAND_MODE cmd, int
                 switch (button) {
                     case AWT_M_LEFT: {
                         if (cl->exists) {
-                            at                   = (AP_tree *)cl->client_data1;
-                            ap_global_abort_flag = false;
+                            arb_progress progress("NNI optimize subtree");
+
+                            at                = (AP_tree *)cl->client_data1;
                             AP_tree_nlen *atn = DOWNCAST(AP_tree_nlen*, at);
-                            atn->nn_interchange_rek(true, ap_global_abort_flag, -1, AP_BL_NNI_ONLY, false);
+                            atn->nn_interchange_rek(-1, AP_BL_NNI_ONLY, false);
+
                             exports.refresh = 1;
                             exports.save    = 1;
+
                             ASSERT_VALID_TREE(get_root_node());
                             recalc_branch_lengths = true;
                         }
                         break;
                     }
                     case AWT_M_RIGHT: {
-                        long          prevCombineCount = AP_sequence::combine_count();
-                        ap_global_abort_flag           = false;
-                        AP_tree_nlen *atn              = DOWNCAST(AP_tree_nlen*, get_root_node());
-
-                        atn->nn_interchange_rek(true, ap_global_abort_flag, -1, AP_BL_NNI_ONLY, false);
+                        arb_progress progress("NNI optimize tree");
+                        long         prevCombineCount = AP_sequence::combine_count();
+                        
+                        AP_tree_nlen *atn = DOWNCAST(AP_tree_nlen*, get_root_node());
+                        atn->nn_interchange_rek(-1, AP_BL_NNI_ONLY, false);
                         printf("Combines: %li\n", AP_sequence::combine_count()-prevCombineCount);
 
-                        exports.refresh       = 1;
-                        exports.save          = 1;
+                        exports.refresh = 1;
+                        exports.save    = 1;
+
                         ASSERT_VALID_TREE(get_root_node());
                         recalc_branch_lengths = true;
                         break;
@@ -419,21 +416,25 @@ void AWT_graphic_parsimony::command(AW_device *device, AWT_COMMAND_MODE cmd, int
                 GB_pop_transaction(gb_main);
                 switch (button) {
                     case AWT_M_LEFT:
-                        if (!cl->exists) break;
-                        at = (AP_tree *)cl->client_data1;
-                        PARS_kernighan_cb(at);
-                        this->exports.refresh = 1;
-                        this->exports.save = 1;
-                        ASSERT_VALID_TREE(get_root_node());
-                        recalc_branch_lengths = true;
+                        if (cl->exists) {
+                            arb_progress progress("Kernighan-Lin optimize subtree");
+                            at = (AP_tree *)cl->client_data1;
+                            PARS_kernighan_cb(at);
+                            this->exports.refresh = 1;
+                            this->exports.save = 1;
+                            ASSERT_VALID_TREE(get_root_node());
+                            recalc_branch_lengths = true;
+                        }
                         break;
-                    case AWT_M_RIGHT:
+                    case AWT_M_RIGHT: {
+                        arb_progress progress("Kernighan-Lin optimize tree");
                         PARS_kernighan_cb(get_root_node());
                         this->exports.refresh = 1;
                         this->exports.save = 1;
                         ASSERT_VALID_TREE(get_root_node());
                         recalc_branch_lengths = true;
                         break;
+                    }
                 }
                 GB_begin_transaction(gb_main);
             }
@@ -443,21 +444,28 @@ void AWT_graphic_parsimony::command(AW_device *device, AWT_COMMAND_MODE cmd, int
                 GB_pop_transaction(gb_main);
                 switch (button) {
                     case AWT_M_LEFT:
-                        if (!cl->exists) break;
-                        at = (AP_tree *)cl->client_data1;
-                        if (at) PARS_optimizer_cb(at);
+                        if (cl->exists) {
+                            arb_progress progress("Optimizing subtree");
+
+                            at = (AP_tree *)cl->client_data1;
+                            
+                            if (at) PARS_optimizer_cb(at, progress);
+                            this->exports.refresh = 1;
+                            this->exports.save    = 1;
+                            ASSERT_VALID_TREE(get_root_node());
+                            recalc_branch_lengths = true;
+                        }
+                        break;
+                    case AWT_M_RIGHT: {
+                        arb_progress progress("Optimizing tree");
+                        
+                        PARS_optimizer_cb(get_root_node(), progress);
                         this->exports.refresh = 1;
-                        this->exports.save = 1;
+                        this->exports.save    = 1;
                         ASSERT_VALID_TREE(get_root_node());
                         recalc_branch_lengths = true;
                         break;
-                    case AWT_M_RIGHT:
-                        PARS_optimizer_cb(get_root_node());
-                        this->exports.refresh = 1;
-                        this->exports.save = 1;
-                        ASSERT_VALID_TREE(get_root_node());
-                        recalc_branch_lengths = true;
-                        break;
+                    }
                 }
                 GB_begin_transaction(gb_main);
             }
@@ -470,8 +478,8 @@ void AWT_graphic_parsimony::command(AW_device *device, AWT_COMMAND_MODE cmd, int
     }
 
     if (recalc_branch_lengths) {
-        int abort_flag = false;
-        rootEdge()->nni_rek(false, abort_flag, -1, false, AP_BL_BL_ONLY, NULL);
+        arb_progress progress("Recalculating branch lengths");
+        rootEdge()->calc_branchlengths();
 
         beautify_tree = true; // beautify after recalc_branch_lengths
     }

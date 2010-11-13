@@ -23,7 +23,7 @@
 #include <aw_awars.hxx>
 #include <aw_detach.hxx>
 #include <aw_msg.hxx>
-#include <aw_status.hxx>
+#include <arb_progress.h>
 #include <arb_str.h>
 #include <arb_defs.h>
 
@@ -93,8 +93,8 @@ static void move_species_to_extended(AW_window *aww) {
 
 static const char * const SAI_COUNTED_CHARS = "COUNTED_CHARS";
 
-void NT_count_different_chars(AW_window *, AW_CL cl_gb_main, AW_CL use_status) {
-    // @@@ extract algorithm
+void NT_count_different_chars(AW_window *, AW_CL cl_gb_main, AW_CL) {
+    // @@@ extract algorithm and call extracted from testcode
     ARB_ERROR  error;
     GBDATA    *gb_main = (GBDATA*)cl_gb_main;
 
@@ -119,13 +119,8 @@ void NT_count_different_chars(AW_window *, AW_CL cl_gb_main, AW_CL use_status) {
 
         // loop over all marked species
         {
-            if (use_status) {
-                aw_openstatus("Counting characters");
-                aw_status(0.0);
-            }
-
-            int                all_marked = GBT_count_marked_species(gb_main);
-            aw_status_counter *progress   = use_status ? new aw_status_counter(all_marked) : NULL;
+            int          all_marked = GBT_count_marked_species(gb_main);
+            arb_progress progress("Counting different characters", all_marked);
 
             for (GBDATA *gb_species = GBT_first_marked_species(gb_main);
                  gb_species && !error;
@@ -146,12 +141,7 @@ void NT_count_different_chars(AW_window *, AW_CL cl_gb_main, AW_CL use_status) {
                         }
                     }
                 }
-                if (progress) progress->inc();
-            }
-
-            if (use_status) {
-                delete progress;
-                aw_closestatus();
+                progress.inc_and_check_user_abort(error);
             }
         }
 
@@ -426,12 +416,9 @@ static void ad_species_rename_cb(AW_window *aww, AW_CL, AW_CL) {
             }
             if (!error) {
                 if (aw_ask_sure("Do you want to re-create the 'name' field?")) {
-                    aw_openstatus("Recreating species name");
-                    aw_status("");
-                    aw_status(0.0);
-                    error = AWTC_recreate_name(gb_species, true);
+                    arb_progress progress("Recreating species name", 1);
+                    error = AWTC_recreate_name(gb_species);
                     if (!error) aw_root->awar(AWAR_SPECIES_NAME)->write_string(GBT_read_name(gb_species)); // set focus
-                    aw_closestatus();
                 }
             }
 
@@ -944,7 +931,6 @@ static void awtc_nn_search_all_listed(AW_window *aww, AW_CL _cbs) {
     if (!dest_type) {
         error = GB_export_error("Please select a valid field");
     }
-    long max = awt_count_queried_items(cbs, AWT_QUERY_ALL_SPECIES);
 
     if (strcmp(dest_field, "name")==0) {
         int answer = aw_question("CAUTION! This will destroy all name-fields of the listed species.\n",
@@ -955,9 +941,10 @@ static void awtc_nn_search_all_listed(AW_window *aww, AW_CL _cbs) {
         }
     }
 
-    aw_openstatus("Searching next neighbours");
+    long         max = awt_count_queried_items(cbs, AWT_QUERY_ALL_SPECIES);
+    arb_progress progress("Searching next neighbours", max);
+    progress.auto_subtitles("Species");
 
-    long           count          = 0;
     int            pts            = aw_root->awar(AWAR_PROBE_ADMIN_PT_SERVER)->read_int();
     char          *ali_name       = aw_root->awar(AWAR_DEFAULT_ALIGNMENT)->read_string();
     int            oligo_len      = aw_root->awar(AWAR_NN_OLIGO_LEN)->read_int();
@@ -975,19 +962,8 @@ static void awtc_nn_search_all_listed(AW_window *aww, AW_CL _cbs) {
     {
         if (!IS_QUERIED(gb_species, cbs)) continue;
 
-        count++;
-        if ((count%10) == 0) {
-            GBDATA *gb_name = GB_search(gb_species, "name", GB_STRING);
-            aw_status(GBS_global_string("Species '%s' (%li:%li)", GB_read_char_pntr(gb_name), count, max));
-        }
-
         GBDATA *gb_data = GBT_read_sequence(gb_species, ali_name);
-        if (!gb_data) continue;
-
-        if (aw_status(count/(double)max)) {
-            error = "operation aborted";
-        }
-        else {
+        if (gb_data) {
             char            *sequence = GB_read_string(gb_data);
             PT_FamilyFinder  ff(GLOBAL_gb_main, pts, oligo_len, mismatches, fast_mode, rel_matches);
 
@@ -1039,8 +1015,8 @@ static void awtc_nn_search_all_listed(AW_window *aww, AW_CL _cbs) {
             }
             free(sequence);
         }
+        progress.inc_and_check_user_abort(error);
     }
-    aw_closestatus();
     GB_end_transaction_show_error(GLOBAL_gb_main, error, aw_message);
     free(dest_field);
     free(ali_name);
@@ -1464,7 +1440,8 @@ static uint32_t counted_chars_checksum(GBDATA *gb_main)  {
 
 void TEST_count_chars() {
     // calculate SAI for test DBs
-    
+
+    arb_suppress_progress silence;
     for (int prot = 0; prot<2; ++prot) {
         GBDATA *gb_main;
         TEST_ASSERT_RESULT__NOERROREXPORTED(gb_main = GB_open(prot ? "TEST_prot.arb" : "TEST_nuc.arb", "rw"));
@@ -1483,6 +1460,7 @@ void TEST_SLOW_count_chars() {
     // 
     // the difference to TEST_count_chars() is just in size of alignment.
     // NT_count_different_chars() crashes for big alignments when running in gdb 
+    arb_suppress_progress silence;
     {
         arb_unit_test::test_alignment_data data_source[] = {
             { 1, "s1", "ACGT" },

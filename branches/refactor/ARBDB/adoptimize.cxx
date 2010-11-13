@@ -15,6 +15,7 @@
 
 #include "gb_compress.h"
 #include "gb_dict.h"
+#include "arb_progress.h"
 
 #if defined(DEBUG)
 // #define TEST_DICT
@@ -2427,7 +2428,8 @@ GB_ERROR gb_create_dictionaries(GB_MAIN_TYPE *Main, long maxmem) {
         // only create dictionary for index selected above (no loop)
 #else
         // create dictionaries for all indices (this is the normal operation)
-        for (idx = gbdByKey_cnt-1; idx >= 1 && !error; --idx)
+        arb_progress progress("Optimizing key data", gbdByKey_cnt);
+        for (idx = gbdByKey_cnt-1; idx >= 1 && !error; --idx, progress.inc_and_check_user_abort(error))
 #endif
 
         {
@@ -2445,7 +2447,6 @@ GB_ERROR gb_create_dictionaries(GB_MAIN_TYPE *Main, long maxmem) {
 #endif                          // TEST_SOME
 
 #ifndef TEST_ONE
-            GB_status(idx/(double)gbdByKey_cnt);
             if (!gbk[idx].cnt) continue; // there are no entries with this quark
 
             type = GB_TYPE(gbk[idx].gbds[0]);

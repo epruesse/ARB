@@ -17,7 +17,7 @@
 #include <aw_awars.hxx>
 #include <aw_root.hxx>
 #include <aw_msg.hxx>
-#include <aw_status.hxx>
+#include <arb_progress.h>
 
 #include <arbdbt.h>
 
@@ -168,8 +168,16 @@ char *GBS_diff_strings(char *str1, char * &str2, char *exclude, long ToUpper, lo
     return 0;
 }
 
-#undef IS_QUERIED
-#define IS_QUERIED(gb_species) (1 & GB_read_usr_private(gb_species))
+int mg_count_queried(GBDATA *gb_main) {
+    int queried  = 0;
+    for (GBDATA *gb_spec = GBT_first_species(gb_main);
+         gb_spec;
+         gb_spec = GBT_next_species(gb_spec))
+    {
+        if (IS_QUERIED_SPECIES(gb_spec)) queried++;
+    }
+    return queried;
+}
 
 void mg_check_field_cb(AW_window *aww) {
     AW_root  *root    = aww->get_root();
@@ -188,7 +196,6 @@ void mg_check_field_cb(AW_window *aww) {
         error = "Please select a dest field";
     }
     else {
-        aw_openstatus("Checking fields");
         error = GB_begin_transaction(GLOBAL_gb_merge);
 
         if (!error) {
@@ -200,16 +207,8 @@ void mg_check_field_cb(AW_window *aww) {
             GBDATA *gb_species1;
             GBDATA *gb_species2;
 
-            int     sum_species   = 0;
-            int     species_count = 0;
-
             // First step: count selected species
-            for (gb_species1 = GBT_first_species_rel_species_data(gb_species_data1);
-                 gb_species1 && !error;
-                 gb_species1 = GBT_next_species(gb_species1))
-            {
-                if (IS_QUERIED(gb_species1)) sum_species++;
-            }
+            arb_progress progress("Checking fields", mg_count_queried(GLOBAL_gb_merge));
 
             // Delete all 'dest' fields in gb_database 2
             for (gb_species2 = GBT_first_species_rel_species_data(gb_species_data2);
@@ -230,10 +229,7 @@ void mg_check_field_cb(AW_window *aww) {
                 }
 
                 if (!error) {
-                    if (IS_QUERIED(gb_species1)) {
-                        species_count++;
-                        if ((species_count & 0xf) == 0) aw_status(species_count / (double)sum_species);
-
+                    if (IS_QUERIED_SPECIES(gb_species1)) {
                         const char *name1 = GBT_read_name(gb_species1);
                         gb_species2       = GB_find_string(gb_species_data2, "name", name1, GB_IGNORE_CASE, SEARCH_GRANDCHILD);
                         if (!gb_species2) {
@@ -276,11 +272,11 @@ void mg_check_field_cb(AW_window *aww) {
                             free(s2);
                             free(s1);
                         }
+                        progress.inc_and_check_user_abort(error);
                     }
                 }
             }
 
-            aw_closestatus();
             error = GB_end_transaction(GLOBAL_gb_merge, error);
             error = GB_end_transaction(GLOBAL_gb_dest, error);
         }

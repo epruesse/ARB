@@ -10,7 +10,7 @@
 // =============================================================== //
 
 #include "di_clustertree.hxx"
-#include <aw_status.hxx>
+#include <arb_progress.h>
 #include <set>
 #include <cmath>
 #include <limits>
@@ -76,9 +76,8 @@ GB_ERROR ClusterTreeRoot::find_clusters() {
     printf("Possible clusters: %zu\n", root->get_cluster_count());
 #endif // DEBUG
 
-    aw_status_counter cluster_progress(root->get_cluster_count());
-    aw_openstatus("Searching clusters");
-    aw_status(0.0);
+    arb_progress cluster_progress(root->get_cluster_count());
+    cluster_progress.auto_subtitles("Cluster");
 
     GB_ERROR error = NULL;
 
@@ -116,8 +115,6 @@ GB_ERROR ClusterTreeRoot::find_clusters() {
 
 #endif                                              // DEBUG
     }
-
-    aw_closestatus();
 
     return error;
 }
@@ -181,7 +178,7 @@ void ClusterTree::init_tree() {
     cl_assert(state != CS_UNKNOWN);
 }
 
-void ClusterTree::detect_clusters(aw_status_counter& progress) {
+void ClusterTree::detect_clusters(arb_progress& progress) {
     if (state == CS_MAYBE_CLUSTER) {
         cl_assert(!is_leaf);
 
@@ -271,7 +268,7 @@ void ClusterTree::detect_clusters(aw_status_counter& progress) {
         rson->oblivion(false);
 
         progress.inc();
-        if (progress.aborted_by_user()) throw "aborted on userrequest";
+        if (progress.aborted()) throw "aborted on userrequest";
     }
 
     cl_assert(state != CS_MAYBE_CLUSTER);

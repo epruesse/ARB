@@ -86,7 +86,6 @@ arb_2_ascii.o: $(ARBHOME)/INCLUDE/ad_prot.h
 arb_2_ascii.o: $(ARBHOME)/INCLUDE/arb_assert.h
 arb_2_ascii.o: $(ARBHOME)/INCLUDE/arb_core.h
 arb_2_ascii.o: $(ARBHOME)/INCLUDE/arb_error.h
-arb_2_ascii.o: $(ARBHOME)/INCLUDE/arb_handlers.h
 arb_2_ascii.o: $(ARBHOME)/INCLUDE/arb_msg.h
 arb_2_ascii.o: $(ARBHOME)/INCLUDE/arb_string.h
 arb_2_ascii.o: $(ARBHOME)/INCLUDE/arbdb.h

@@ -74,6 +74,8 @@ typedef enum {
     KEY_RELEASED = 3
 } AW_ProcessEventType;
 
+void aw_initstatus(); 
+
 class AW_root {
     AW_default         application_database;
     AW_buttons_struct *button_sens_list;

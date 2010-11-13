@@ -18,7 +18,7 @@
 #include <aw_awar.hxx>
 #include <AW_rename.hxx>
 #include <aw_msg.hxx>
-#include <aw_status.hxx>
+#include <arb_progress.h>
 #include <aw_root.hxx>
 #include <GenomeImport.h>
 #include <GEN.hxx>
@@ -390,7 +390,7 @@ static int awtc_next_file() {
                 char *srt = GBS_global_string_copy("$<=%s:$>=%s", origin_file_name, mid_file_name);
                 char *sys = GBS_string_eval(awtcig.ifo2->system, srt, 0);
 
-                aw_status(GBS_global_string("exec '%s'", awtcig.ifo2->system));
+                arb_progress::show_comment(GBS_global_string("exec '%s'", awtcig.ifo2->system));
 
                 error                        = GB_system(sys);
                 if (!error) origin_file_name = mid_file_name;
@@ -418,7 +418,7 @@ static int awtc_next_file() {
                 char *srt = GBS_global_string_copy("$<=%s:$>=%s", origin_file_name, dest_file_name);
                 char *sys = GBS_string_eval(awtcig.ifo->system, srt, 0);
 
-                aw_status(GBS_global_string("Converting File %s", awtcig.ifo->system));
+                arb_progress::show_comment(GBS_global_string("Converting File %s", awtcig.ifo->system));
 
                 error                        = GB_system(sys);
                 if (!error) origin_file_name = dest_file_name;
@@ -703,9 +703,9 @@ GB_ERROR awtc_read_data(char *ali_name, int security_write)
         SetVariables variables(ifo->global_variables);
 
         counter++;
-        sprintf(text, "Reading species %i", counter);
         if (counter % 10 == 0) {
-            if (aw_status(text)) break;
+            sprintf(text, "Reading species %i", counter);
+            arb_progress::show_comment(text);
         }
 
         gb_species = GB_create_container(gb_species_data, "species");
@@ -956,7 +956,7 @@ void AWTC_import_go_cb(AW_window *aww) // Import sequences into new or existing 
                 // to avoid that all imports are undone by transaction abort happening in case of error
                 GB_commit_transaction(GB_MAIN);
 
-                aw_openstatus("Reading input files");
+                arb_progress progress("Reading input files", count);
 
                 for (int curr = 0; !error && fnames[curr]; ++curr) {
                     GB_ERROR error_this_file =  0;
@@ -964,7 +964,7 @@ void AWTC_import_go_cb(AW_window *aww) // Import sequences into new or existing 
                     GB_begin_transaction(GB_MAIN);
                     {
                         const char *lslash = strrchr(fnames[curr], '/');
-                        aw_status(GBS_global_string("%i/%i: %s", curr+1, count, lslash ? lslash+1 : fnames[curr]));
+                        progress.subtitle(GBS_global_string("%i/%i: %s", curr+1, count, lslash ? lslash+1 : fnames[curr]));
                     }
 
 #if defined(DEBUG)
@@ -984,7 +984,7 @@ void AWTC_import_go_cb(AW_window *aww) // Import sequences into new or existing 
                         failed_imports++;
                     }
 
-                    aw_status((curr+1)/double(count));
+                    progress.inc_and_check_user_abort(error);
                 }
 
                 if (!successfull_imports) {
@@ -993,8 +993,6 @@ void AWTC_import_go_cb(AW_window *aww) // Import sequences into new or existing 
                 else {
                     GB_warningf("%i of %i files were imported with success", successfull_imports, (successfull_imports+failed_imports));
                 }
-
-                aw_closestatus();
 
                 // now open another transaction to "undo" the transaction close above
                 GB_begin_transaction(GB_MAIN);
@@ -1046,13 +1044,10 @@ void AWTC_import_go_cb(AW_window *aww) // Import sequences into new or existing 
                 error = GB_export_error("Cannot find selected file(s)");
             }
 
-            bool status_open = false;
             if (!error) {
-                aw_openstatus("Reading input files");
-                status_open = true;
+                arb_progress progress("Reading input files");
 
                 error = awtc_read_data(ali_name, ali_protection);
-
                 if (error) {
                     error = GBS_global_string("Error: %s\nwhile reading file %s", error, awtcig.current_file[-1]);
                 }
@@ -1077,8 +1072,6 @@ void AWTC_import_go_cb(AW_window *aww) // Import sequences into new or existing 
             GBT_free_names(awtcig.filenames);
             awtcig.filenames    = 0;
             awtcig.current_file = 0;
-
-            if (status_open) aw_closestatus();
         }
     }
     free(ali_name);
@@ -1100,34 +1093,33 @@ void AWTC_import_go_cb(AW_window *aww) // Import sequences into new or existing 
     else {
         aww->hide(); // import window stays open in case of error
 
-        aw_openstatus("Checking and Scanning database");
-        aw_status("Pass 1: Check entries");
+        arb_progress progress("Checking and Scanning database", 2+ask_generate_names); // 2 or 3 passes
+        progress.subtitle("Pass 1: Check entries");
 
         // scan for hidden/unknown fields :
         awt_selection_list_rescan(GB_MAIN, AWT_NDS_FILTER, AWT_RS_UPDATE_FIELDS);
         if (is_genom_db) awt_gene_field_selection_list_rescan(GB_MAIN, AWT_NDS_FILTER, AWT_RS_UPDATE_FIELDS);
 
         GBT_mark_all(GB_MAIN, 1);
-        sleep(1);
-        aw_status("Pass 2: Check sequence lengths");
+        progress.inc();
+        progress.subtitle("Pass 2: Check sequence lengths");
         GBT_check_data(GB_MAIN, 0);
-        sleep(1);
 
         GB_commit_transaction(GB_MAIN);
+        progress.inc();
 
         if (ask_generate_names) {
             if (aw_question("You may generate short names using the full_name and accession entry of the species",
                             "Generate new short names (recommended),Use found names")==0)
             {
-                aw_status("Pass 3: Generate unique names");
+                progress.subtitle("Pass 3: Generate unique names");
                 error = AW_select_nameserver(GB_MAIN, awtcig.gb_other_main);
                 if (!error) {
-                    error = AWTC_pars_names(GB_MAIN, 1);
+                    error = AWTC_pars_names(GB_MAIN);
                 }
             }
+            progress.inc();
         }
-
-        aw_closestatus();
     }
 
     if (error) aw_message(error);
@@ -1174,15 +1166,18 @@ void AWTC_import_set_ali_and_type(AW_root *awr, const char *ali_name, const char
     awar_type->write_string(ali_type);
 
     if (last_valid_gbmain) { // detect default write protection for alignment
-        GB_transaction  ta(last_valid_gbmain);
-        GBDATA         *gb_ali            = GBT_get_alignment(last_valid_gbmain, ali_name);
-        int             protection_to_use = 4; // default protection
+        GB_transaction ta(last_valid_gbmain);
+        GBDATA *gb_ali            = GBT_get_alignment(last_valid_gbmain, ali_name);
+        int     protection_to_use = 4;         // default protection
 
         if (gb_ali) {
             GBDATA *gb_write_security = GB_entry(gb_ali, "alignment_write_security");
             if (gb_write_security) {
                 protection_to_use = GB_read_int(gb_write_security);
             }
+        }
+        else {
+            GB_clear_error();
         }
         awr->awar(AWAR_ALI_PROTECTION)->write_int(protection_to_use);
     }

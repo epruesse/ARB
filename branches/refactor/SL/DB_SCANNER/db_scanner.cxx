@@ -17,7 +17,7 @@
 #include <aw_awars.hxx>
 #include <aw_select.hxx>
 #include <aw_msg.hxx>
-#include <aw_status.hxx>
+#include <arb_progress.h>
 #include <aw_root.hxx>
 
 #include <arb_str.h>
@@ -163,8 +163,8 @@ static void editfield_value_changed(void *, db_scanner_data *cbs)
                 const ad_item_selector *selector = cbs->selector;
 
                 if (selector->type == AWT_QUERY_ITEM_SPECIES) { // species
+                    arb_progress progress("Renaming species");
                     char *name = nulldup(GBT_read_name(cbs->gb_user));
-                    aw_openstatus("Renaming species");
 
                     if (strlen(value)) {
                         GBT_begin_rename_session(cbs->gb_main, 0);
@@ -172,13 +172,12 @@ static void editfield_value_changed(void *, db_scanner_data *cbs)
                         error = GBT_rename_species(name, value, false);
 
                         if (error) GBT_abort_rename_session();
-                        else GBT_commit_rename_session(aw_status, aw_status);
+                        else error = GBT_commit_rename_session();
                     }
                     else {
-                        error = AWTC_recreate_name(cbs->gb_user, true);
+                        error = AWTC_recreate_name(cbs->gb_user);
                     }
 
-                    aw_closestatus();
                     free(name);
                 }
                 else { // non-species (gene, experiment, etc.)

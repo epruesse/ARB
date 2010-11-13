@@ -48,7 +48,7 @@
 
 #include <awt_sel_boxes.hxx>
 #include <aw_window.hxx>
-#include <aw_status.hxx>
+#include <arb_progress.h>
 #include <aw_root.hxx>
 #include <aw_msg.hxx>
 #include <aw_awar.hxx>
@@ -106,7 +106,7 @@ void CON_evaluatestatistic(char   *&result, int **statistic, char **groupflags,
     int highestfr, highestgr;
     long numentries;
 
-    aw_status("calculating result");
+    arb_progress progress("calculating result", alignlength);
 
     result=(char *)GB_calloc(alignlength+1, 1);
 
@@ -115,61 +115,63 @@ void CON_evaluatestatistic(char   *&result, int **statistic, char **groupflags,
         for (row=0; statistic[row]; row++) numentries+=statistic[row][column];
         if (numentries==0) {
             result[column]='.';
-            continue;
         }
+        else {
+            if (numentries-statistic[0][column]==0) {
+                result[column]='='; // 100 per cent `-` -> `=` 
+            }
+            else {
+                if (!countgap) {
+                    numentries -= statistic[0][column];
+                    statistic[0][column]=0;
+                }
 
-        if (numentries-statistic[0][column]==0) {
-            result[column]='=';
-            continue;   /* 100 per cent `-` -> `=` */
-        }
+                if ((statistic[0][column]*100/numentries)>gapbound) {
+                    result[column]='-';
+                }
+                else {
+                    for (j=0; j<numgroups; j++) {
+                        groupfr[j]=0;
+                    }
 
-        if (!countgap) {
-            numentries -= statistic[0][column];
-            statistic[0][column]=0;
-        }
+                    row=0;
+                    while (statistic[row]) {
+                        if ((statistic[row][column]*100.0)>=fconsidbound*numentries) {
+                            for (j=numgroups-1; j>=0; j--) {
+                                if (groupflags[j][row]) {
+                                    groupfr[j] += statistic[row][column];
+                                }
+                            }
+                        }
+                        row++;
+                    }
 
-        if ((statistic[0][column]*100/numentries)>gapbound) {
-            result[column]='-';
-            continue;
-        }
+                    highestfr=0;
+                    highestgr=0;
+                    for (j=0; j<numgroups; j++) {
+                        if (groupfr[j] > highestfr) {
+                            highestfr=groupfr[j];
+                            highestgr=j;
+                        }
+                    }
 
-        for (j=0; j<numgroups; j++) {
-            groupfr[j]=0;
-        }
-
-        row=0;
-        while (statistic[row]) {
-            if ((statistic[row][column]*100.0)>=fconsidbound*numentries) {
-                for (j=numgroups-1; j>=0; j--) {
-                    if (groupflags[j][row]) {
-                        groupfr[j] += statistic[row][column];
+                    if ((highestfr*100.0/numentries)>=fupper) {
+                        result[column]=groupnames[highestgr];
+                    }
+                    else if ((highestfr*100/numentries)>=lower) {
+                        char c=groupnames[highestgr];
+                        if (c>='A' && c<='Z') {
+                            c=c-'A'+'a';
+                        }
+                        result[column]=c;
+                    }
+                    else {
+                        result[column]='.';
                     }
                 }
             }
-            row++;
         }
-
-        highestfr=0; highestgr=0;
-        for (j=0; j<numgroups; j++) {
-            if (groupfr[j] > highestfr) {
-                highestfr=groupfr[j];
-                highestgr=j;
-            }
-        }
-
-        if ((highestfr*100.0/numentries)>=fupper) {
-            result[column]=groupnames[highestgr];
-        }
-        else if ((highestfr*100/numentries)>=lower) {
-            char c=groupnames[highestgr];
-            if (c>='A' && c<='Z') {
-                c=c-'A'+'a';
-            }
-            result[column]=c;
-        }
-        else {
-            result[column]='.';
-        }
+        ++progress;
     }
 }
 
@@ -292,14 +294,15 @@ long CON_makestatistic(int **statistic, int *convtable, char *align, int onlymar
     GBDATA *gb_species, *alidata;
     int i, nrofspecies=0;
 
-    aw_status("reading database");
-
     if (onlymarked) {
         nrofspecies = GBT_count_marked_species(GLOBAL_gb_main);
     }
     else {
         nrofspecies = GBT_get_species_count(GLOBAL_gb_main);
     }
+
+    arb_progress progress(nrofspecies);
+    progress.auto_subtitles("Examining sequence");
 
     if (onlymarked) {
         gb_species = GBT_first_marked_species(GLOBAL_gb_main);
@@ -308,15 +311,11 @@ long CON_makestatistic(int **statistic, int *convtable, char *align, int onlymar
         gb_species = GBT_first_species(GLOBAL_gb_main);
     }
 
-    long count = 0;
-    while (gb_species)
-    {
-        if ((alidata=GBT_read_sequence(gb_species, align)))
-        {
+    while (gb_species) {
+        if ((alidata=GBT_read_sequence(gb_species, align))) {
             unsigned char        c;
             const unsigned char *data = (const unsigned char *)GB_read_char_pntr(alidata);
 
-            aw_status((double)count++/(double)nrofspecies);
             i = 0;
             while ((c=data[i])) {
                 if ((c=='-') || ((c>='a')&&(c<='z')) || ((c>='A')&&(c<='Z'))
@@ -333,6 +332,7 @@ long CON_makestatistic(int **statistic, int *convtable, char *align, int onlymar
         else {
             gb_species = GBT_next_species(gb_species);
         }
+        ++progress;
     }
     return (nrofspecies);
 }
@@ -638,7 +638,8 @@ void CON_calculate_cb(AW_window *aw)
         CON_maketables(convtable, statistic, maxalignlen, isamino);
 
         /* filling the statistic table */
-        aw_openstatus("Consensus");
+        arb_progress progress("Calculating consensus");
+
         long   nrofspecies = CON_makestatistic(statistic, convtable, align, onlymarked);
         double fupper      = awr->awar("con/fupper")->read_float();
         int    lower       = (int)awr->awar("con/lower")->read_int();
@@ -693,7 +694,6 @@ void CON_calculate_cb(AW_window *aw)
             for (int i=0; i<MAX_GROUPS; i++) free(groupflags[i]);
         }
 
-        aw_closestatus();
         CON_cleartables(statistic, isamino);
     }
 
@@ -928,7 +928,7 @@ void CON_calc_max_freq_cb(AW_window *aw) {
     }
     isamino = GBT_is_alignment_protein(GLOBAL_gb_main, align);
 
-    aw_openstatus("Max. Frequency");
+    arb_progress progress("Calculating max. frequency");
     long nrofspecies;
 
     CON_maketables(convtable, statistic, maxalignlen, isamino);
@@ -981,7 +981,6 @@ void CON_calc_max_freq_cb(AW_window *aw) {
     GB_pop_transaction(GLOBAL_gb_main);
 
     CON_cleartables(statistic, isamino);
-    aw_closestatus();
     free(align);
     if (error) aw_message(error);
 }

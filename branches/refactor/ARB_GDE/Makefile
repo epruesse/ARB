@@ -88,6 +88,7 @@ GDE_arbdb_io.o: $(ARBHOME)/INCLUDE/arb_assert.h
 GDE_arbdb_io.o: $(ARBHOME)/INCLUDE/arb_core.h
 GDE_arbdb_io.o: $(ARBHOME)/INCLUDE/arb_error.h
 GDE_arbdb_io.o: $(ARBHOME)/INCLUDE/arb_msg.h
+GDE_arbdb_io.o: $(ARBHOME)/INCLUDE/arb_progress.h
 GDE_arbdb_io.o: $(ARBHOME)/INCLUDE/arb_string.h
 GDE_arbdb_io.o: $(ARBHOME)/INCLUDE/arbdb.h
 GDE_arbdb_io.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -99,7 +100,6 @@ GDE_arbdb_io.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 GDE_arbdb_io.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 GDE_arbdb_io.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 GDE_arbdb_io.o: $(ARBHOME)/INCLUDE/AW_rename.hxx
-GDE_arbdb_io.o: $(ARBHOME)/INCLUDE/aw_status.hxx
 GDE_arbdb_io.o: $(ARBHOME)/INCLUDE/cb.h
 GDE_arbdb_io.o: $(ARBHOME)/INCLUDE/dupstr.h
 GDE_arbdb_io.o: $(ARBHOME)/INCLUDE/smartptr.h
@@ -118,6 +118,7 @@ GDE_event.o: $(ARBHOME)/INCLUDE/arb_assert.h
 GDE_event.o: $(ARBHOME)/INCLUDE/arb_core.h
 GDE_event.o: $(ARBHOME)/INCLUDE/arb_error.h
 GDE_event.o: $(ARBHOME)/INCLUDE/arb_msg.h
+GDE_event.o: $(ARBHOME)/INCLUDE/arb_progress.h
 GDE_event.o: $(ARBHOME)/INCLUDE/arb_string.h
 GDE_event.o: $(ARBHOME)/INCLUDE/arbdb.h
 GDE_event.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -129,7 +130,6 @@ GDE_event.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 GDE_event.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 GDE_event.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 GDE_event.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-GDE_event.o: $(ARBHOME)/INCLUDE/aw_status.hxx
 GDE_event.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 GDE_event.o: $(ARBHOME)/INCLUDE/awt_filter.hxx
 GDE_event.o: $(ARBHOME)/INCLUDE/cb.h

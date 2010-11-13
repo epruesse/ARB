@@ -83,7 +83,6 @@ MG_alignment.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 MG_alignment.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 MG_alignment.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 MG_alignment.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-MG_alignment.o: $(ARBHOME)/INCLUDE/aw_status.hxx
 MG_alignment.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 MG_alignment.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 MG_alignment.o: $(ARBHOME)/INCLUDE/cb.h
@@ -99,6 +98,7 @@ MG_checkfield.o: $(ARBHOME)/INCLUDE/arb_assert.h
 MG_checkfield.o: $(ARBHOME)/INCLUDE/arb_core.h
 MG_checkfield.o: $(ARBHOME)/INCLUDE/arb_error.h
 MG_checkfield.o: $(ARBHOME)/INCLUDE/arb_msg.h
+MG_checkfield.o: $(ARBHOME)/INCLUDE/arb_progress.h
 MG_checkfield.o: $(ARBHOME)/INCLUDE/arb_string.h
 MG_checkfield.o: $(ARBHOME)/INCLUDE/arbdb.h
 MG_checkfield.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -112,7 +112,6 @@ MG_checkfield.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 MG_checkfield.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 MG_checkfield.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 MG_checkfield.o: $(ARBHOME)/INCLUDE/aw_select.hxx
-MG_checkfield.o: $(ARBHOME)/INCLUDE/aw_status.hxx
 MG_checkfield.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 MG_checkfield.o: $(ARBHOME)/INCLUDE/awt.hxx
 MG_checkfield.o: $(ARBHOME)/INCLUDE/awt_item_sel_list.hxx
@@ -215,6 +214,7 @@ MG_main.o: $(ARBHOME)/INCLUDE/arb_assert.h
 MG_main.o: $(ARBHOME)/INCLUDE/arb_core.h
 MG_main.o: $(ARBHOME)/INCLUDE/arb_error.h
 MG_main.o: $(ARBHOME)/INCLUDE/arb_msg.h
+MG_main.o: $(ARBHOME)/INCLUDE/arb_progress.h
 MG_main.o: $(ARBHOME)/INCLUDE/arb_string.h
 MG_main.o: $(ARBHOME)/INCLUDE/arbdb.h
 MG_main.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -230,7 +230,6 @@ MG_main.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 MG_main.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
 MG_main.o: $(ARBHOME)/INCLUDE/AW_rename.hxx
 MG_main.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-MG_main.o: $(ARBHOME)/INCLUDE/aw_status.hxx
 MG_main.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 MG_main.o: $(ARBHOME)/INCLUDE/awt.hxx
 MG_main.o: $(ARBHOME)/INCLUDE/cb.h
@@ -246,6 +245,7 @@ MG_names.o: $(ARBHOME)/INCLUDE/arb_assert.h
 MG_names.o: $(ARBHOME)/INCLUDE/arb_core.h
 MG_names.o: $(ARBHOME)/INCLUDE/arb_error.h
 MG_names.o: $(ARBHOME)/INCLUDE/arb_msg.h
+MG_names.o: $(ARBHOME)/INCLUDE/arb_progress.h
 MG_names.o: $(ARBHOME)/INCLUDE/arb_string.h
 MG_names.o: $(ARBHOME)/INCLUDE/arbdb.h
 MG_names.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -258,7 +258,6 @@ MG_names.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 MG_names.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 MG_names.o: $(ARBHOME)/INCLUDE/AW_rename.hxx
 MG_names.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-MG_names.o: $(ARBHOME)/INCLUDE/aw_status.hxx
 MG_names.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 MG_names.o: $(ARBHOME)/INCLUDE/cb.h
 MG_names.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -274,6 +273,7 @@ MG_preserves.o: $(ARBHOME)/INCLUDE/arb_assert.h
 MG_preserves.o: $(ARBHOME)/INCLUDE/arb_core.h
 MG_preserves.o: $(ARBHOME)/INCLUDE/arb_error.h
 MG_preserves.o: $(ARBHOME)/INCLUDE/arb_msg.h
+MG_preserves.o: $(ARBHOME)/INCLUDE/arb_progress.h
 MG_preserves.o: $(ARBHOME)/INCLUDE/arb_string.h
 MG_preserves.o: $(ARBHOME)/INCLUDE/arbdb.h
 MG_preserves.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -286,7 +286,6 @@ MG_preserves.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 MG_preserves.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 MG_preserves.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 MG_preserves.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-MG_preserves.o: $(ARBHOME)/INCLUDE/aw_status.hxx
 MG_preserves.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 MG_preserves.o: $(ARBHOME)/INCLUDE/awt.hxx
 MG_preserves.o: $(ARBHOME)/INCLUDE/cb.h
@@ -303,6 +302,7 @@ MG_species.o: $(ARBHOME)/INCLUDE/arb_assert.h
 MG_species.o: $(ARBHOME)/INCLUDE/arb_core.h
 MG_species.o: $(ARBHOME)/INCLUDE/arb_error.h
 MG_species.o: $(ARBHOME)/INCLUDE/arb_msg.h
+MG_species.o: $(ARBHOME)/INCLUDE/arb_progress.h
 MG_species.o: $(ARBHOME)/INCLUDE/arb_str.h
 MG_species.o: $(ARBHOME)/INCLUDE/arb_string.h
 MG_species.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -318,7 +318,6 @@ MG_species.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 MG_species.o: $(ARBHOME)/INCLUDE/AW_rename.hxx
 MG_species.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 MG_species.o: $(ARBHOME)/INCLUDE/aw_select.hxx
-MG_species.o: $(ARBHOME)/INCLUDE/aw_status.hxx
 MG_species.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 MG_species.o: $(ARBHOME)/INCLUDE/awt.hxx
 MG_species.o: $(ARBHOME)/INCLUDE/awt_item_sel_list.hxx

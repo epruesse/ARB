@@ -11,6 +11,7 @@
 #include "MP_probe.hxx"
 #include "MP_externs.hxx"
 #include "MultiProbe.hxx"
+#include <arb_progress.h>
 
 bool Stop_evaluation = false;
 
@@ -49,8 +50,9 @@ void Generation::calc_fitness(int flag, double old_avg_fit)     // reoulette_whe
 {
     double  fitness = 0;
     double  dummy = 0;
-
     int     i;
+
+    arb_progress progress(probe_combi_array_length);
 
     for (i=0; i<probe_combi_array_length; i++)
     {
@@ -66,12 +68,13 @@ void Generation::calc_fitness(int flag, double old_avg_fit)     // reoulette_whe
         else if (dummy > max_fit)
             max_fit = dummy;
 
-        if (!MP_check_status(generation_counter, old_avg_fit, min_fit, max_fit))       // Berechnungen abbrechen
+        if (MP_aborted(generation_counter, old_avg_fit, min_fit, max_fit, progress))       // Berechnungen abbrechen
         {
             Stop_evaluation = true;
             probe_combi_array_length = i-1;
             return;
         }
+        progress.inc();
     }
 
     if (flag == NO_GENETIC_ALG)             // wenn kein gen. ALgorithmus verwendet wird, dann

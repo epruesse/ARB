@@ -17,7 +17,7 @@
 #include <aw_file.hxx>
 #include <aw_window.hxx>
 #include <aw_msg.hxx>
-#include <aw_status.hxx>
+#include <arb_progress.h>
 #include <aw_root.hxx>
 #include <arbdbt.h>
 #include <arb_str.h>
@@ -39,7 +39,7 @@ void AWTC_export_go_cb(AW_window *aww, AW_CL cl_gb_main, AW_CL res_from_awt_crea
     GB_transaction    dummy(gb_main);
     adfiltercbstruct *acbs    = (adfiltercbstruct*)res_from_awt_create_select_filter;
 
-    aw_openstatus("Exporting data");
+    arb_progress progress("Exporting data");
 
     AW_root  *awr            = aww->get_root();
     char     *formname       = awr->awar(AWAR_EXPORT_FORM"/file_name")->read_string();
@@ -58,7 +58,6 @@ void AWTC_export_go_cb(AW_window *aww, AW_CL cl_gb_main, AW_CL res_from_awt_crea
     error = SEQIO_export_by_format(gb_main, marked_only, filter, cut_stop_codon, compress,
                                    db_name, formname, outname, multiple, &real_outname);
     free(db_name);
-    aw_closestatus();
     if (error) aw_message(error);
 
     if (real_outname) awr->awar(AWAR_EXPORT_FILE"/file_name")->write_string(real_outname);

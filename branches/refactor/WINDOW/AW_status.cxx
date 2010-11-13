@@ -55,7 +55,7 @@ using namespace std;
 
 #endif // DEBUG
 
-enum {
+enum StatusCommand {
     // messages send from status-process to main-process :
     AW_STATUS_OK    = 0,
     AW_STATUS_ABORT = 1,
@@ -63,6 +63,7 @@ enum {
     AW_STATUS_CMD_INIT,
     AW_STATUS_CMD_OPEN,
     AW_STATUS_CMD_CLOSE,
+    AW_STATUS_CMD_NEW_TITLE,
     AW_STATUS_CMD_TEXT,
     AW_STATUS_CMD_GAUGE,
     AW_STATUS_CMD_MESSAGE
@@ -73,7 +74,7 @@ enum {
 struct aw_stg_struct {
     int        fd_to[2];
     int        fd_from[2];
-    int        mode;
+    bool       mode;
     int        hide;
     int        hide_delay;                          // in seconds
     pid_t      pid;
@@ -280,6 +281,7 @@ static int aw_status_read_command(int fd, int poll_flag, char*& str, int *gaugeP
 
     if (cmd == AW_STATUS_CMD_TEXT ||
             cmd == AW_STATUS_CMD_OPEN ||
+            cmd == AW_STATUS_CMD_NEW_TITLE ||
             cmd == AW_STATUS_CMD_MESSAGE) {
         char *p = buffer;
         int c;
@@ -634,6 +636,16 @@ static void aw_status_timer_listen_event(AW_root *awr, AW_CL, AW_CL)
                 awr->awar(AWAR_STATUS_TEXT)->write_string(str);
                 break;
 
+            case AW_STATUS_CMD_NEW_TITLE:
+#if defined(TRACE_STATUS)
+                fprintf(stderr, "received AW_STATUS_CMD_NEW_TITLE\n"); fflush(stdout);
+#endif // TRACE_STATUS
+#if defined(ARB_LOGGING)
+                aw_status_append_to_log(str);
+#endif // ARB_LOGGING
+                awr->awar(AWAR_STATUS_TITLE)->write_string(str);
+                break;
+
             case AW_STATUS_CMD_GAUGE: {
 #if defined(TRACE_STATUS)
                 fprintf(stderr, "received AW_STATUS_CMD_GAUGE\n"); fflush(stdout);
@@ -751,6 +763,9 @@ static void create_status_awars(AW_root *aw_root) {
 }
 
 void aw_initstatus() {
+    // fork status window.
+    // Note: call this function once as early as possible
+    
     aw_assert(aw_stg.pid == 0);                     // do not init status twice!
     aw_assert(!AW_root::SINGLETON);                 // aw_initstatus has to be called before constructing AW_root
     aw_assert(GB_open_DBs() == 0);                  // aw_initstatus has to be called before opening the first ARB-DB
@@ -851,8 +866,14 @@ void aw_initstatus() {
     }
 }
 
-
-
+static void status_write_cmd_and_text(StatusCommand cmd, const char *text, int textlen) {
+    aw_status_write(aw_stg.fd_to[1], cmd);
+    safe_write(aw_stg.fd_to[1], text, textlen+1);
+}
+static void status_write_cmd_and_text(StatusCommand cmd, const char *text) {
+    if (!text) text = "";
+    status_write_cmd_and_text(cmd, text, strlen(text));
+}
 
 void aw_openstatus(const char *title)
 {
@@ -861,27 +882,24 @@ void aw_openstatus(const char *title)
         aw_stg.status_initialized = true;
         aw_status_write(aw_stg.fd_to[1], AW_STATUS_CMD_INIT);
     }
-    aw_status_write(aw_stg.fd_to[1], AW_STATUS_CMD_OPEN);
-    safe_write(aw_stg.fd_to[1], title, strlen(title)+1);
+    status_write_cmd_and_text(AW_STATUS_CMD_OPEN, title);
 }
 
-void aw_closestatus()
-{
+void aw_closestatus() {
     aw_status_write(aw_stg.fd_to[1], AW_STATUS_CMD_CLOSE);
 }
 
-int aw_status(const char *text) {
-    if (!text) text = "";
-
-    aw_status_write(aw_stg.fd_to[1], AW_STATUS_CMD_TEXT);
-    int len = strlen(text)+1;
-
-    safe_write(aw_stg.fd_to[1], text, len);
-
-    return aw_status();
+bool AW_status(const char *text) {
+    status_write_cmd_and_text(AW_STATUS_CMD_TEXT, text);
+    return AW_status();
 }
 
-int aw_status(double gauge) {
+bool aw_status_title(const char *new_title) {
+    status_write_cmd_and_text(AW_STATUS_CMD_NEW_TITLE, new_title);
+    return AW_status();
+}
+
+bool AW_status(double gauge) {
     static int last_val = -1;
     int        val      = (int)(gauge*AW_GAUGE_GRANULARITY);
 
@@ -893,10 +911,10 @@ int aw_status(double gauge) {
         }
         last_val = val;
     }
-    return aw_status();
+    return AW_status();
 }
 
-int aw_status() {
+bool AW_status() {
     char *str = 0;
     int cmd;
     if (aw_stg.mode == AW_STATUS_ABORT) return AW_STATUS_ABORT;
@@ -931,9 +949,7 @@ void aw_message(const char *msg) {
             aw_stg.status_initialized = true;
             aw_status_write(aw_stg.fd_to[1], AW_STATUS_CMD_INIT);
         }
-        aw_status_write(aw_stg.fd_to[1], AW_STATUS_CMD_MESSAGE);
-        int len = strlen(msg)+1;
-        safe_write(aw_stg.fd_to[1], msg, len);
+        status_write_cmd_and_text(AW_STATUS_CMD_MESSAGE, msg);
     }
 }
 

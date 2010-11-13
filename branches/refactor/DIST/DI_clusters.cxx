@@ -23,7 +23,7 @@
 #include <aw_window.hxx>
 #include <aw_awars.hxx>
 #include <aw_msg.hxx>
-#include <aw_status.hxx>
+#include <arb_progress.h>
 #include <aw_root.hxx>
 
 using namespace std;
@@ -151,6 +151,8 @@ static void calculate_clusters(AW_window *aww) {
     GBDATA   *gb_main = global_data->get_gb_main();
     GB_ERROR  error   = NULL;
 
+    arb_progress progress("Detecting clusters");
+
     // calculate ClusterTree
     ClusterTreeRoot *tree = NULL;
     {
@@ -174,7 +176,7 @@ static void calculate_clusters(AW_window *aww) {
             free(use);
         }
 
-        aw_openstatus("Loading tree");
+        progress.subtitle("Loading tree");
         {
             char *tree_name = aw_root->awar(AWAR_DIST_TREE_CURR_NAME)->read_string();
             error           = tree->loadFromDB(tree_name);
@@ -182,7 +184,6 @@ static void calculate_clusters(AW_window *aww) {
         }
 
         if (!error) error = tree->linkToDB(0, 0);
-        aw_closestatus();
     }
 
     if (!error) {

@@ -45,6 +45,7 @@ ST_ml.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ST_ml.o: $(ARBHOME)/INCLUDE/arb_core.h
 ST_ml.o: $(ARBHOME)/INCLUDE/arb_error.h
 ST_ml.o: $(ARBHOME)/INCLUDE/arb_msg.h
+ST_ml.o: $(ARBHOME)/INCLUDE/arb_progress.h
 ST_ml.o: $(ARBHOME)/INCLUDE/arb_string.h
 ST_ml.o: $(ARBHOME)/INCLUDE/ARB_Tree.hxx
 ST_ml.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -54,7 +55,6 @@ ST_ml.o: $(ARBHOME)/INCLUDE/arbtools.h
 ST_ml.o: $(ARBHOME)/INCLUDE/attributes.h
 ST_ml.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 ST_ml.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
-ST_ml.o: $(ARBHOME)/INCLUDE/aw_status.hxx
 ST_ml.o: $(ARBHOME)/INCLUDE/ColumnStat.hxx
 ST_ml.o: $(ARBHOME)/INCLUDE/downcast.h
 ST_ml.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -75,6 +75,7 @@ ST_quality.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ST_quality.o: $(ARBHOME)/INCLUDE/arb_core.h
 ST_quality.o: $(ARBHOME)/INCLUDE/arb_error.h
 ST_quality.o: $(ARBHOME)/INCLUDE/arb_msg.h
+ST_quality.o: $(ARBHOME)/INCLUDE/arb_progress.h
 ST_quality.o: $(ARBHOME)/INCLUDE/arb_string.h
 ST_quality.o: $(ARBHOME)/INCLUDE/arbdb.h
 ST_quality.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -85,7 +86,6 @@ ST_quality.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 ST_quality.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
 ST_quality.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 ST_quality.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
-ST_quality.o: $(ARBHOME)/INCLUDE/aw_status.hxx
 ST_quality.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ST_quality.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 ST_quality.o: $(ARBHOME)/INCLUDE/cb.h

@@ -14,7 +14,7 @@
 #include <aw_root.hxx>
 #include <aw_awar.hxx>
 #include <aw_msg.hxx>
-#include <aw_status.hxx>
+#include <arb_progress.h>
 
 // --------------------------------------------------------------------------------
 
@@ -122,11 +122,9 @@ GB_ERROR MG_expect_renamed() {
 // --------------------------------------------------------------------------------
 
 static GB_ERROR renameDB(const char *which, GBDATA *gb_db, bool allowDups) {
-    aw_openstatus(GBS_global_string("Generating new names in %s database", which));
-    aw_status("Contacting name server");
-
-    bool     isDuplicatesWarning;
-    GB_ERROR error = AWTC_pars_names(gb_db, 1, &isDuplicatesWarning);
+    arb_progress progress(GBS_global_string("Generating new names in %s database", which));
+    bool         isDuplicatesWarning;
+    GB_ERROR     error = AWTC_pars_names(gb_db, &isDuplicatesWarning);
 
     if (error) {
         error = GBS_global_string("While renaming %s DB:\n%s", which, error);
@@ -137,7 +135,6 @@ static GB_ERROR renameDB(const char *which, GBDATA *gb_db, bool allowDups) {
         }
     }
 
-    aw_closestatus();
     return error;
 }
 

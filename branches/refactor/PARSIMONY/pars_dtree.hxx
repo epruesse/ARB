@@ -15,6 +15,7 @@
 #include <TreeDisplay.hxx>
 #endif
 
+class arb_progress;
 
 class AWT_graphic_parsimony : public AWT_graphic_tree {
     virtual AW_gc_manager init_devices(AW_window *, AW_device *, AWT_canvas *ntw, AW_CL cd2);
@@ -34,7 +35,7 @@ public:
 };
 
 void PARS_tree_init(AWT_graphic_tree *agt);
-void PARS_optimizer_cb(AP_tree *tree);
+void PARS_optimizer_cb(AP_tree *tree, arb_progress& progress);
 
 #else
 #error pars_dtree.hxx included twice

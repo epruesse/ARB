@@ -10,6 +10,7 @@
 
 #include <arbdbt.h>
 #include <adGene.h>
+#include <arb_progress.h>
 
 #include "gb_local.h"
 
@@ -272,18 +273,17 @@ static GB_ERROR gbt_insert_character_item(GBDATA *gb_item, enum insDelTarget ite
 }
 
 static GB_ERROR gbt_insert_character(GBDATA *gb_item_data, const char *item_field, enum insDelTarget item_type, const insDel_params *params) {
-    GBDATA   *gb_item;
-    GB_ERROR  error      = 0;
-    long      item_count = GB_number_of_subentries(gb_item_data);
-    long      count      = 0;
+    GBDATA       *gb_item;
+    GB_ERROR      error      = 0;
+    long          item_count = GB_number_of_subentries(gb_item_data);
+    arb_progress  progress(item_field, item_count);
 
     for (gb_item = GB_entry(gb_item_data, item_field);
          gb_item && !error;
          gb_item = GB_nextEntry(gb_item))
     {
         error = gbt_insert_character_item(gb_item, item_type, params);
-        count++;
-        GB_status((double)count/item_count);
+        progress.inc_and_check_user_abort(error);
     }
     return error;
 }
@@ -291,13 +291,14 @@ static GB_ERROR gbt_insert_character(GBDATA *gb_item_data, const char *item_fiel
 static GB_ERROR gbt_insert_character_secstructs(GBDATA *gb_secstructs, const insDel_params *params) {
     GB_ERROR  error  = 0;
     GBDATA   *gb_ali = GB_entry(gb_secstructs, params->ali_name);
+    
     if (gb_ali) {
-        long    item_count = GB_number_of_subentries(gb_ali)-1;
-        long    count      = 0;
-        GBDATA *gb_item;
+        long item_count = GB_number_of_subentries(gb_ali)-1;
 
         if (item_count<1) item_count = 1;
+        arb_progress progress("secstructs", item_count);
 
+        GBDATA *gb_item;
         for (gb_item = GB_entry(gb_ali, "struct");
              gb_item && !error;
              gb_item = GB_nextEntry(gb_item))
@@ -310,8 +311,7 @@ static GB_ERROR gbt_insert_character_secstructs(GBDATA *gb_secstructs, const ins
                     error = GBS_global_string("%s '%s': %s", targetType[IDT_SECSTRUCT], item_name, error);
                 }
             }
-            count++;
-            GB_status((double)count/item_count);
+            progress.inc_and_check_user_abort(error);
         }
     }
     return error;
@@ -334,6 +334,7 @@ static GB_ERROR GBT_check_lengths(GBDATA *Main, const char *alignment_name) {
         GBDATA *gb_name = GB_find_string(gb_ali, "alignment_name", alignment_name, GB_IGNORE_CASE, SEARCH_CHILD);
 
         if (gb_name) {
+            arb_progress progress(3); // SAI, species and secstructs
             GBDATA *gb_len = GB_entry(gb_ali, "alignment_len");
 
             params.ali_name = GB_read_string(gb_name);

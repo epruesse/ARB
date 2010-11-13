@@ -224,6 +224,7 @@ GEN_map.o: $(ARBHOME)/INCLUDE/arb_assert.h
 GEN_map.o: $(ARBHOME)/INCLUDE/arb_core.h
 GEN_map.o: $(ARBHOME)/INCLUDE/arb_error.h
 GEN_map.o: $(ARBHOME)/INCLUDE/arb_msg.h
+GEN_map.o: $(ARBHOME)/INCLUDE/arb_progress.h
 GEN_map.o: $(ARBHOME)/INCLUDE/arb_string.h
 GEN_map.o: $(ARBHOME)/INCLUDE/arbdb.h
 GEN_map.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -242,7 +243,6 @@ GEN_map.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
 GEN_map.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 GEN_map.o: $(ARBHOME)/INCLUDE/AW_rename.hxx
 GEN_map.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-GEN_map.o: $(ARBHOME)/INCLUDE/aw_status.hxx
 GEN_map.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 GEN_map.o: $(ARBHOME)/INCLUDE/awt.hxx
 GEN_map.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx

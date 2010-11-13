@@ -21,7 +21,7 @@
 #include <aw_awars.hxx>
 #include <aw_window.hxx>
 #include <aw_msg.hxx>
-#include <aw_status.hxx>
+#include <arb_progress.h>
 #include <aw_root.hxx>
 
 #include <arbdbt.h>
@@ -88,11 +88,6 @@ void create_primer_design_variables(AW_root *aw_root, AW_default aw_def, AW_defa
     aw_root->awar_string(AWAR_PRIMER_TARGET_STRING,                  "", global);
 }
 
-
-inline int prd_aw_status(const char *s) { return aw_status(s); }
-inline int prd_aw_status(double d) { return aw_status(d); }
-
-
 static void primer_design_event_go(AW_window *aww, AW_CL cl_gb_main) {
     AW_root  *root     = aww->get_root();
     GB_ERROR  error    = 0;
@@ -129,7 +124,7 @@ static void primer_design_event_go(AW_window *aww, AW_CL cl_gb_main) {
     }
 
     if (!error) {
-        aw_openstatus("Search PCR primer pairs");
+        arb_progress progress("Searching PCR primer pairs");
         PrimerDesign *PD =
             new PrimerDesign(sequence, length,
                              Range(root->awar(AWAR_PRIMER_DESIGN_LEFT_POS)->read_int(),  root->awar(AWAR_PRIMER_DESIGN_LEFT_LENGTH)->read_int()),
@@ -144,8 +139,6 @@ static void primer_design_event_go(AW_window *aww, AW_CL cl_gb_main) {
                              (float)root->awar(AWAR_PRIMER_DESIGN_GC_FACTOR)->read_int()/100,
                              (float)root->awar(AWAR_PRIMER_DESIGN_TEMP_FACTOR)->read_int()/100
                              );
-
-        PD->set_status_callbacks(prd_aw_status, prd_aw_status);
 
         try {
 #ifdef DEBUG
@@ -207,8 +200,6 @@ static void primer_design_event_go(AW_window *aww, AW_CL cl_gb_main) {
     }
     if (sequence) free(sequence);
     if (error) aw_message(error);
-
-    aw_closestatus();
 }
 
 

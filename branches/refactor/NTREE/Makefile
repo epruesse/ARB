@@ -131,6 +131,7 @@ ad_spec.o: $(ARBHOME)/INCLUDE/arb_core.h
 ad_spec.o: $(ARBHOME)/INCLUDE/arb_defs.h
 ad_spec.o: $(ARBHOME)/INCLUDE/arb_error.h
 ad_spec.o: $(ARBHOME)/INCLUDE/arb_msg.h
+ad_spec.o: $(ARBHOME)/INCLUDE/arb_progress.h
 ad_spec.o: $(ARBHOME)/INCLUDE/arb_str.h
 ad_spec.o: $(ARBHOME)/INCLUDE/arb_string.h
 ad_spec.o: $(ARBHOME)/INCLUDE/ARB_Tree.hxx
@@ -152,7 +153,6 @@ ad_spec.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 ad_spec.o: $(ARBHOME)/INCLUDE/AW_rename.hxx
 ad_spec.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 ad_spec.o: $(ARBHOME)/INCLUDE/aw_select.hxx
-ad_spec.o: $(ARBHOME)/INCLUDE/aw_status.hxx
 ad_spec.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ad_spec.o: $(ARBHOME)/INCLUDE/awt.hxx
 ad_spec.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
@@ -180,6 +180,7 @@ ad_transpro.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ad_transpro.o: $(ARBHOME)/INCLUDE/arb_core.h
 ad_transpro.o: $(ARBHOME)/INCLUDE/arb_error.h
 ad_transpro.o: $(ARBHOME)/INCLUDE/arb_msg.h
+ad_transpro.o: $(ARBHOME)/INCLUDE/arb_progress.h
 ad_transpro.o: $(ARBHOME)/INCLUDE/arb_string.h
 ad_transpro.o: $(ARBHOME)/INCLUDE/arbdb.h
 ad_transpro.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -192,7 +193,6 @@ ad_transpro.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 ad_transpro.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ad_transpro.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 ad_transpro.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-ad_transpro.o: $(ARBHOME)/INCLUDE/aw_status.hxx
 ad_transpro.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ad_transpro.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 ad_transpro.o: $(ARBHOME)/INCLUDE/cb.h
@@ -239,6 +239,7 @@ AP_consensus.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AP_consensus.o: $(ARBHOME)/INCLUDE/arb_core.h
 AP_consensus.o: $(ARBHOME)/INCLUDE/arb_error.h
 AP_consensus.o: $(ARBHOME)/INCLUDE/arb_msg.h
+AP_consensus.o: $(ARBHOME)/INCLUDE/arb_progress.h
 AP_consensus.o: $(ARBHOME)/INCLUDE/arb_string.h
 AP_consensus.o: $(ARBHOME)/INCLUDE/arbdb.h
 AP_consensus.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -250,7 +251,6 @@ AP_consensus.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AP_consensus.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AP_consensus.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 AP_consensus.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-AP_consensus.o: $(ARBHOME)/INCLUDE/aw_status.hxx
 AP_consensus.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AP_consensus.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 AP_consensus.o: $(ARBHOME)/INCLUDE/cb.h
@@ -290,6 +290,7 @@ AP_cprofile.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AP_cprofile.o: $(ARBHOME)/INCLUDE/arb_core.h
 AP_cprofile.o: $(ARBHOME)/INCLUDE/arb_error.h
 AP_cprofile.o: $(ARBHOME)/INCLUDE/arb_msg.h
+AP_cprofile.o: $(ARBHOME)/INCLUDE/arb_progress.h
 AP_cprofile.o: $(ARBHOME)/INCLUDE/arb_string.h
 AP_cprofile.o: $(ARBHOME)/INCLUDE/arbdb.h
 AP_cprofile.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -305,7 +306,6 @@ AP_cprofile.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AP_cprofile.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 AP_cprofile.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AP_cprofile.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-AP_cprofile.o: $(ARBHOME)/INCLUDE/aw_status.hxx
 AP_cprofile.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AP_cprofile.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 AP_cprofile.o: $(ARBHOME)/INCLUDE/cb.h
@@ -321,6 +321,7 @@ AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/arb_core.h
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/arb_error.h
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/arb_msg.h
+AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/arb_progress.h
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/arb_string.h
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/arbdb.h
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -332,7 +333,6 @@ AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/aw_status.hxx
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 AP_pos_var_pars.o: $(ARBHOME)/INCLUDE/cb.h
@@ -408,6 +408,7 @@ NT_concatenate.o: $(ARBHOME)/INCLUDE/arb_assert.h
 NT_concatenate.o: $(ARBHOME)/INCLUDE/arb_core.h
 NT_concatenate.o: $(ARBHOME)/INCLUDE/arb_error.h
 NT_concatenate.o: $(ARBHOME)/INCLUDE/arb_msg.h
+NT_concatenate.o: $(ARBHOME)/INCLUDE/arb_progress.h
 NT_concatenate.o: $(ARBHOME)/INCLUDE/arb_string.h
 NT_concatenate.o: $(ARBHOME)/INCLUDE/arbdb.h
 NT_concatenate.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -439,6 +440,7 @@ NT_dbrepair.o: $(ARBHOME)/INCLUDE/arb_assert.h
 NT_dbrepair.o: $(ARBHOME)/INCLUDE/arb_core.h
 NT_dbrepair.o: $(ARBHOME)/INCLUDE/arb_error.h
 NT_dbrepair.o: $(ARBHOME)/INCLUDE/arb_msg.h
+NT_dbrepair.o: $(ARBHOME)/INCLUDE/arb_progress.h
 NT_dbrepair.o: $(ARBHOME)/INCLUDE/arb_str.h
 NT_dbrepair.o: $(ARBHOME)/INCLUDE/arb_string.h
 NT_dbrepair.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -451,7 +453,6 @@ NT_dbrepair.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 NT_dbrepair.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 NT_dbrepair.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 NT_dbrepair.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-NT_dbrepair.o: $(ARBHOME)/INCLUDE/aw_status.hxx
 NT_dbrepair.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 NT_dbrepair.o: $(ARBHOME)/INCLUDE/awt.hxx
 NT_dbrepair.o: $(ARBHOME)/INCLUDE/cb.h
@@ -506,6 +507,7 @@ NT_extern.o: $(ARBHOME)/INCLUDE/arb_build.h
 NT_extern.o: $(ARBHOME)/INCLUDE/arb_core.h
 NT_extern.o: $(ARBHOME)/INCLUDE/arb_error.h
 NT_extern.o: $(ARBHOME)/INCLUDE/arb_msg.h
+NT_extern.o: $(ARBHOME)/INCLUDE/arb_progress.h
 NT_extern.o: $(ARBHOME)/INCLUDE/arb_string.h
 NT_extern.o: $(ARBHOME)/INCLUDE/ARB_Tree.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/arb_version.h
@@ -527,7 +529,6 @@ NT_extern.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/AW_rename.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-NT_extern.o: $(ARBHOME)/INCLUDE/aw_status.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/awt.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
@@ -617,6 +618,7 @@ NT_join.o: $(ARBHOME)/INCLUDE/arb_assert.h
 NT_join.o: $(ARBHOME)/INCLUDE/arb_core.h
 NT_join.o: $(ARBHOME)/INCLUDE/arb_error.h
 NT_join.o: $(ARBHOME)/INCLUDE/arb_msg.h
+NT_join.o: $(ARBHOME)/INCLUDE/arb_progress.h
 NT_join.o: $(ARBHOME)/INCLUDE/arb_string.h
 NT_join.o: $(ARBHOME)/INCLUDE/arbdb.h
 NT_join.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -630,7 +632,6 @@ NT_join.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 NT_join.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 NT_join.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 NT_join.o: $(ARBHOME)/INCLUDE/aw_select.hxx
-NT_join.o: $(ARBHOME)/INCLUDE/aw_status.hxx
 NT_join.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 NT_join.o: $(ARBHOME)/INCLUDE/awt.hxx
 NT_join.o: $(ARBHOME)/INCLUDE/awt_item_sel_list.hxx
@@ -655,6 +656,7 @@ NT_main.o: $(ARBHOME)/INCLUDE/arb_build.h
 NT_main.o: $(ARBHOME)/INCLUDE/arb_core.h
 NT_main.o: $(ARBHOME)/INCLUDE/arb_error.h
 NT_main.o: $(ARBHOME)/INCLUDE/arb_msg.h
+NT_main.o: $(ARBHOME)/INCLUDE/arb_progress.h
 NT_main.o: $(ARBHOME)/INCLUDE/arb_string.h
 NT_main.o: $(ARBHOME)/INCLUDE/ARB_Tree.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/arb_version.h
@@ -676,7 +678,6 @@ NT_main.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-NT_main.o: $(ARBHOME)/INCLUDE/aw_status.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/awt.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
@@ -698,6 +699,7 @@ NT_sort.o: $(ARBHOME)/INCLUDE/arb_assert.h
 NT_sort.o: $(ARBHOME)/INCLUDE/arb_core.h
 NT_sort.o: $(ARBHOME)/INCLUDE/arb_error.h
 NT_sort.o: $(ARBHOME)/INCLUDE/arb_msg.h
+NT_sort.o: $(ARBHOME)/INCLUDE/arb_progress.h
 NT_sort.o: $(ARBHOME)/INCLUDE/arb_string.h
 NT_sort.o: $(ARBHOME)/INCLUDE/arbdb.h
 NT_sort.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -710,7 +712,6 @@ NT_sort.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 NT_sort.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 NT_sort.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 NT_sort.o: $(ARBHOME)/INCLUDE/aw_select.hxx
-NT_sort.o: $(ARBHOME)/INCLUDE/aw_status.hxx
 NT_sort.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 NT_sort.o: $(ARBHOME)/INCLUDE/awt.hxx
 NT_sort.o: $(ARBHOME)/INCLUDE/awt_item_sel_list.hxx
@@ -726,6 +727,7 @@ NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/arb_assert.h
 NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/arb_core.h
 NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/arb_error.h
 NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/arb_msg.h
+NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/arb_progress.h
 NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/arb_string.h
 NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/arbdb.h
 NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -737,7 +739,6 @@ NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/aw_status.hxx
 NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 NT_trackAliChanges.o: $(ARBHOME)/INCLUDE/cb.h
@@ -755,6 +756,7 @@ NT_tree_cmp.o: $(ARBHOME)/INCLUDE/arb_assert.h
 NT_tree_cmp.o: $(ARBHOME)/INCLUDE/arb_core.h
 NT_tree_cmp.o: $(ARBHOME)/INCLUDE/arb_error.h
 NT_tree_cmp.o: $(ARBHOME)/INCLUDE/arb_msg.h
+NT_tree_cmp.o: $(ARBHOME)/INCLUDE/arb_progress.h
 NT_tree_cmp.o: $(ARBHOME)/INCLUDE/arb_string.h
 NT_tree_cmp.o: $(ARBHOME)/INCLUDE/ARB_Tree.hxx
 NT_tree_cmp.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -765,7 +767,6 @@ NT_tree_cmp.o: $(ARBHOME)/INCLUDE/attributes.h
 NT_tree_cmp.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 NT_tree_cmp.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 NT_tree_cmp.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
-NT_tree_cmp.o: $(ARBHOME)/INCLUDE/aw_status.hxx
 NT_tree_cmp.o: $(ARBHOME)/INCLUDE/downcast.h
 NT_tree_cmp.o: $(ARBHOME)/INCLUDE/dupstr.h
 NT_tree_cmp.o: $(ARBHOME)/INCLUDE/smartptr.h

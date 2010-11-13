@@ -154,18 +154,6 @@ private:
     void             calcGCandAT        (int &GC_, int &AT_, Node *start_at_);
     double           evaluatePair       (Item *one_, Item *two_);
     void             insertPair         (double rating_, Item *one_, Item *two_);
-
-    int (*show_status_txt)(const char *msg);
-    int (*show_status_double)(double gauge);
-
-    inline int show_status(const char *msg) { return show_status_txt ? show_status_txt(msg) : 0; }
-    inline int show_status(double gauge) { return show_status_double ? show_status_double(gauge) : 0; }
-
-public:
-    void set_status_callbacks(int (*show_txt)(const char*), int (*show_double)(double)) {
-        show_status_txt    = show_txt;
-        show_status_double = show_double;
-    }
 };
 
 #else

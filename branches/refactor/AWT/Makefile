@@ -96,6 +96,7 @@ AWT_canio.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWT_canio.o: $(ARBHOME)/INCLUDE/arb_core.h
 AWT_canio.o: $(ARBHOME)/INCLUDE/arb_error.h
 AWT_canio.o: $(ARBHOME)/INCLUDE/arb_msg.h
+AWT_canio.o: $(ARBHOME)/INCLUDE/arb_progress.h
 AWT_canio.o: $(ARBHOME)/INCLUDE/arb_string.h
 AWT_canio.o: $(ARBHOME)/INCLUDE/arbdb.h
 AWT_canio.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -110,7 +111,6 @@ AWT_canio.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AWT_canio.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 AWT_canio.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AWT_canio.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-AWT_canio.o: $(ARBHOME)/INCLUDE/aw_status.hxx
 AWT_canio.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AWT_canio.o: $(ARBHOME)/INCLUDE/cb.h
 AWT_canio.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -359,6 +359,7 @@ AWT_query_and_functions.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWT_query_and_functions.o: $(ARBHOME)/INCLUDE/arb_core.h
 AWT_query_and_functions.o: $(ARBHOME)/INCLUDE/arb_error.h
 AWT_query_and_functions.o: $(ARBHOME)/INCLUDE/arb_msg.h
+AWT_query_and_functions.o: $(ARBHOME)/INCLUDE/arb_progress.h
 AWT_query_and_functions.o: $(ARBHOME)/INCLUDE/arb_string.h
 AWT_query_and_functions.o: $(ARBHOME)/INCLUDE/arbdb.h
 AWT_query_and_functions.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -375,7 +376,6 @@ AWT_query_and_functions.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AWT_query_and_functions.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 AWT_query_and_functions.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWT_query_and_functions.o: $(ARBHOME)/INCLUDE/aw_select.hxx
-AWT_query_and_functions.o: $(ARBHOME)/INCLUDE/aw_status.hxx
 AWT_query_and_functions.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AWT_query_and_functions.o: $(ARBHOME)/INCLUDE/cb.h
 AWT_query_and_functions.o: $(ARBHOME)/INCLUDE/dupstr.h

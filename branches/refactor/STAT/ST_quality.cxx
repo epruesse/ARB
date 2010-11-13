@@ -16,7 +16,7 @@
 #include <BI_helix.hxx>
 #include <AP_filter.hxx>
 #include <aw_awars.hxx>
-#include <aw_status.hxx>
+#include <arb_progress.h>
 #include <arbdbt.h>
 
 #include <cctype>
@@ -243,47 +243,42 @@ GB_ERROR st_ml_check_sequence_quality(GBDATA     *gb_main, const char *tree_name
 #warning parameter 'alignment_name' can be retrieved from WeightedFilter (as soon as automatic mapping works for filters)    
 #endif // DEVEL_RALF
     ST_ML    st_ml(gb_main);
-    GB_ERROR error = st_ml.init_st_ml(tree_name, alignment_name, 0, marked_only, colstat, true, weighted_filter);
+    GB_ERROR error = st_ml.init_st_ml(tree_name, alignment_name, 0, marked_only, colstat, weighted_filter);
+    arb_progress glob_progress("Sequence Quality Check");
 
     if (!error) {
-        GB_HASH *species_to_info_hash = GBS_create_dynaval_hash(GBT_get_species_count(gb_main), GB_IGNORE_CASE, destroy_ColumnQualityInfo);
-        GB_CSTR *snames               = GBT_get_names_of_species_in_tree(st_ml.get_gbt_tree());
+        GB_HASH *species2info = GBS_create_dynaval_hash(GBT_get_species_count(gb_main), GB_IGNORE_CASE, destroy_ColumnQualityInfo);
+        size_t   species_count;
+        GB_CSTR *snames               = GBT_get_names_of_species_in_tree(st_ml.get_gbt_tree(), &species_count);
+        int      seq_len              = st_ml.get_filtered_length();
+        size_t   parts                = (seq_len-1)/ST_MAX_SEQ_PART+1;
 
-        aw_openstatus("Sequence Quality Check");
-        aw_status(0.0);
+        {
+            arb_progress add_progress("Calculating stat", parts*species_count);
 
-        int    seq_len       = st_ml.get_filtered_length();
-        size_t parts         = (seq_len-1)/ST_MAX_SEQ_PART+1;
-        size_t species_count = 0;
-        while (snames[species_count]) ++species_count;
+            for (int pos = 0; pos < seq_len && !error; pos += ST_MAX_SEQ_PART) {
+                int end                = pos + ST_MAX_SEQ_PART - 1;
+                if (end > seq_len) end = seq_len;
 
-        aw_status_counter progress(parts*species_count);
-
-        for (int pos = 0; pos < seq_len && !progress.aborted_by_user(); pos += ST_MAX_SEQ_PART) {
-            int end                = pos + ST_MAX_SEQ_PART - 1;
-            if (end > seq_len) end = seq_len;
-
-            for (GB_CSTR *pspecies_name = snames; *pspecies_name; pspecies_name++) {
-                st_ml_add_sequence_part_to_stat(&st_ml, colstat, *pspecies_name, seq_len, bucket_size, species_to_info_hash, pos, end);
-                progress.inc();
+                for (GB_CSTR *pspecies_name = snames; *pspecies_name && !error; pspecies_name++) {
+                    st_ml_add_sequence_part_to_stat(&st_ml, colstat, *pspecies_name, seq_len, bucket_size, species2info, pos, end);
+                    add_progress.inc_and_check_user_abort(error);
+                }
             }
         }
 
-        if (!error && !progress.aborted_by_user()) {
-            aw_status("Generating Result String");
-            progress.restart(species_count);
+        if (!error) {
+            arb_progress     res_progress("Calculating result", species_count);
             const AP_filter *filter = st_ml.get_filter();
-            for (GB_CSTR *pspecies_name = snames; *pspecies_name && !error && !progress.aborted_by_user(); pspecies_name++) {
-                error = st_ml_add_quality_string_to_species(gb_main, filter, alignment_name, *pspecies_name, bucket_size, species_to_info_hash, report, dest_field);
-                progress.inc();
+
+            for (GB_CSTR *pspecies_name = snames; *pspecies_name && !error; pspecies_name++) {
+                error = st_ml_add_quality_string_to_species(gb_main, filter, alignment_name, *pspecies_name, bucket_size, species2info, report, dest_field);
+                res_progress.inc_and_check_user_abort(error);
             }
         }
 
-        if (!error && progress.aborted_by_user()) error = "Aborted by user";
-
-        aw_closestatus();
         free(snames);
-        GBS_free_hash(species_to_info_hash);
+        GBS_free_hash(species2info);
     }
 
     return error;

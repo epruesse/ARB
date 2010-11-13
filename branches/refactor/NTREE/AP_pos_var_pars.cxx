@@ -13,7 +13,7 @@
 #include <AP_pro_a_nucs.hxx>
 #include <awt_sel_boxes.hxx>
 #include <aw_window.hxx>
-#include <aw_status.hxx>
+#include <arb_progress.h>
 #include <aw_root.hxx>
 #include <aw_awar.hxx>
 #include <aw_msg.hxx>
@@ -29,23 +29,24 @@ extern GBDATA *GLOBAL_gb_main;
 
 AP_pos_var::AP_pos_var(GBDATA *gb_maini, char *ali_namei, long ali_leni, int isdna, char *tree_namei) {
     memset((char  *)this, 0, sizeof(AP_pos_var));
-    this->gb_main   = gb_maini;
-    this->ali_name  = strdup(ali_namei);
-    this->is_dna    = isdna;
-    this->ali_len   = ali_leni;
-    this->tree_name = strdup(tree_namei);
+    gb_main   = gb_maini;
+    ali_name  = strdup(ali_namei);
+    is_dna    = isdna;
+    ali_len   = ali_leni;
+    tree_name = strdup(tree_namei);
+    progress  = NULL;
 }
 
 AP_pos_var::~AP_pos_var() {
+    delete progress;
     free(ali_name);
     free(tree_name);
     free(transitions);
     free(transversions);
-    int i;
-    for (i=0; i<256; i++) free(frequencies[i]);
+    for (int i=0; i<256; i++) free(frequencies[i]);
 }
 
-long    AP_pos_var::getsize(GBT_TREE *tree) {
+long AP_pos_var::getsize(GBT_TREE *tree) {
     if (!tree) return 0;
     if (tree->is_leaf) return 1;
     return getsize(tree->leftson) + getsize(tree->rightson) + 1;
@@ -53,74 +54,72 @@ long    AP_pos_var::getsize(GBT_TREE *tree) {
 
 const char *AP_pos_var::parsimony(GBT_TREE *tree, GB_UINT4 *bases, GB_UINT4 *tbases) {
     GB_ERROR error = 0;
-    timer ++;
-    long i;
-    long l, r;
 
     if (tree->is_leaf) {
-        unsigned char *sequence;
-        long           seq_len = ali_len;
-        if (!tree->gb_node) return 0; // zombie
+        if (tree->gb_node) {
+            GBDATA *gb_data = GBT_read_sequence(tree->gb_node, ali_name);
+            if (gb_data) {
+                long seq_len = ali_len;
+                if (GB_read_string_count(gb_data) < seq_len) {
+                    seq_len = GB_read_string_count(gb_data);
+                }
 
-        GBDATA *gb_data = GBT_read_sequence(tree->gb_node, ali_name);
-        if (!gb_data) return 0; // no sequence
-        if (GB_read_string_count(gb_data) < seq_len)
-            seq_len     = GB_read_string_count(gb_data);
-        sequence        = (unsigned char*)GB_read_char_pntr(gb_data);
+                unsigned char *sequence = (unsigned char*)GB_read_char_pntr(gb_data);
+                for (long i = 0; i< seq_len; i++) {
+                    long L = char_2_freq[sequence[i]];
+                    if (L) {
+                        ap_assert(frequencies[L]);
+                        frequencies[L][i]++;
+                    }
+                }
 
-        for (i = 0; i< seq_len; i++) {
-            l = char_2_freq[sequence[i]];
-            if (l) {
-                ap_assert(frequencies[l]);
-                frequencies[l][i]++;
-            }
-        }
-
-        if (bases) {
-            for (i = 0; i< seq_len; i++) bases[i] = char_2_transition[sequence[i]];
-        }
-        if (tbases) {
-            for (i = 0; i< seq_len; i++) tbases[i] = char_2_transversion[sequence[i]];
-        }
-        return 0;
-    }
-    if (aw_status(timer/(double)treesize)) return "Operation aborted";
-
-    GB_UINT4 *ls = (GB_UINT4 *)calloc(sizeof(GB_UINT4), (int)ali_len);
-    GB_UINT4 *rs = (GB_UINT4 *)calloc(sizeof(GB_UINT4), (int)ali_len);
-    GB_UINT4 *lts = (GB_UINT4 *)calloc(sizeof(GB_UINT4), (int)ali_len);
-    GB_UINT4 *rts = (GB_UINT4 *)calloc(sizeof(GB_UINT4), (int)ali_len);
-
-    if (!error) error = this->parsimony(tree->leftson, ls, lts);
-    if (!error) error = this->parsimony(tree->rightson, rs, rts);
-    if (!error) {
-        for (i=0; i< ali_len; i++) {
-            l = ls[i];
-            r = rs[i];
-            if (l & r) {
-                if (bases) bases[i] = l&r;
-            }
-            else {
-                transitions[i] ++;
-                if (bases) bases[i] = l|r;
-            }
-            l = lts[i];
-            r = rts[i];
-            if (l & r) {
-                if (tbases) tbases[i] = l&r;
-            }
-            else {
-                transversions[i] ++;
-                if (tbases) tbases[i] = l|r;
+                if (bases) {
+                    for (long i = 0; i< seq_len; i++) bases[i] = char_2_transition[sequence[i]];
+                }
+                if (tbases) {
+                    for (long i = 0; i< seq_len; i++) tbases[i] = char_2_transversion[sequence[i]];
+                }
             }
         }
     }
+    else {
+        GB_UINT4 *ls  = (GB_UINT4 *)calloc(sizeof(GB_UINT4), (int)ali_len);
+        GB_UINT4 *rs  = (GB_UINT4 *)calloc(sizeof(GB_UINT4), (int)ali_len);
+        GB_UINT4 *lts = (GB_UINT4 *)calloc(sizeof(GB_UINT4), (int)ali_len);
+        GB_UINT4 *rts = (GB_UINT4 *)calloc(sizeof(GB_UINT4), (int)ali_len);
 
-    free(lts);
-    free(rts);
+        if (!error) error = this->parsimony(tree->leftson, ls, lts);
+        if (!error) error = this->parsimony(tree->rightson, rs, rts);
+        if (!error) {
+            for (long i=0; i< ali_len; i++) {
+                long l = ls[i];
+                long r = rs[i];
+                if (l & r) {
+                    if (bases) bases[i] = l&r;
+                }
+                else {
+                    transitions[i] ++;
+                    if (bases) bases[i] = l|r;
+                }
+                l = lts[i];
+                r = rts[i];
+                if (l & r) {
+                    if (tbases) tbases[i] = l&r;
+                }
+                else {
+                    transversions[i] ++;
+                    if (tbases) tbases[i] = l|r;
+                }
+            }
+        }
 
-    free(ls);
-    free(rs);
+        free(lts);
+        free(rts);
+
+        free(ls);
+        free(rs);
+    }
+    progress->inc_and_check_user_abort(error);
     return error;
 }
 
@@ -165,8 +164,8 @@ GB_ERROR AP_pos_var::retrieve(GBT_TREE *tree) {
             if (base) char_2_freq[i] = toupper(i);
         }
     }
-    this->treesize = this->getsize(tree);
-    this->timer = 0;
+    treesize = getsize(tree);
+    progress = new arb_progress(treesize);
 
     for (i=0; i<256; i++) {
         int j;
@@ -304,8 +303,8 @@ void AP_calc_pos_var_pars(AW_window *aww) {
     char           *tree_name;
     GB_ERROR        error = 0;
 
-    aw_openstatus("Calculating positional variability");
-    aw_status("Loading Tree");
+    arb_progress progress("Calculating positional variability");
+    progress.subtitle("Loading Tree");
     GBT_TREE *tree;
     {           // get tree
         tree_name = root->awar(AWAR_PVP_TREE)->read_string();
@@ -319,7 +318,7 @@ void AP_calc_pos_var_pars(AW_window *aww) {
     }
 
     if (!error) {
-        aw_status("Counting Mutations");
+        progress.subtitle("Counting mutations");
 
         char *ali_name = GBT_get_default_alignment(GLOBAL_gb_main);
         long  ali_len  = GBT_get_alignment_len(GLOBAL_gb_main, ali_name);
@@ -344,8 +343,6 @@ void AP_calc_pos_var_pars(AW_window *aww) {
 
     if (tree) GBT_delete_tree(tree);
     free(tree_name);
-
-    aw_closestatus();
 
     if (error) aw_message(error);
     return;

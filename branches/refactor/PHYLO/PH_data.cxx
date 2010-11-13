@@ -12,7 +12,7 @@
 #include "phylo.hxx"
 #include <arbdbt.h>
 #include <aw_awar.hxx>
-#include <aw_status.hxx>
+#include <arb_progress.h>
 #include <aw_root.hxx>
 
 PHDATA::PHDATA(AW_root *awr) {
@@ -146,10 +146,11 @@ GB_ERROR PHDATA::calculate_matrix(const char * /* cancel */, double /* alpha */,
     char        all_chars[100], *sequence_bufferi, *sequence_bufferj;
     bool        compare[256];
     AP_FLOAT    number_of_comparisons;
-    double      gauge;
     bool        bases_used = true;                      // rna oder dna sequence : nur zum testen und Entwicklung
 
     if (!PHDATA::ROOT) return "nothing loaded yet";
+
+    arb_progress progress("Calculating matrix", (nentries*(nentries+1))/2);
 
     aw_root = PH_used_windows::windowList->phylo_main_window->get_root();
     if (bases_used) {
@@ -250,15 +251,12 @@ GB_ERROR PHDATA::calculate_matrix(const char * /* cancel */, double /* alpha */,
 
 
     // counting routine
-    aw_openstatus("Calculating Matrix");
-    aw_status("Calculate the matrix");
     sequence_bufferi = 0;
     sequence_bufferj = 0;
     GB_transaction dummy(PHDATA::ROOT->gb_main);
 
+    GB_ERROR error = 0;
     for (i = 0; i < long(nentries); i++) {
-        gauge = (double) i / (double) nentries;
-        if (aw_status(gauge * gauge)) return 0;
         delete sequence_bufferi;
         sequence_bufferi = GB_read_string(hash_elements[i]->gb_species_data_ptr);
         for (j = i + 1; j < long(nentries); j++) {
@@ -279,11 +277,16 @@ GB_ERROR PHDATA::calculate_matrix(const char * /* cancel */, double /* alpha */,
             if (number_of_comparisons) {
                 matrix->set(i, j, (matrix->get(i, j) / number_of_comparisons));
             }
+            progress.inc_and_check_user_abort(error);
         }
     }
     delete sequence_bufferi;
-    delete          sequence_bufferj;
-    aw_closestatus();
+    delete sequence_bufferj;
 
-    return 0;
+    if (error) {
+        delete matrix;
+        matrix = NULL;
+    }
+
+    return error;
 }
