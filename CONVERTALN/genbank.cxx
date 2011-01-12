@@ -89,7 +89,8 @@ public:
 void genbank_skip_unidentified(Reader& reader, int blank_num) {
     // Skip the lines of unidentified keyword.
     ++reader;
-    reader.skipOverLinesThat(startsWithBlanks(blank_num));
+    startsWithBlanks num_blanks(blank_num);
+    reader.skipOverLinesThat(num_blanks);
 }
 
 void genbank_reference(GenBank& gbk, Reader& reader) {
