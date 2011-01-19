@@ -274,7 +274,7 @@ static void GDE_export(NA_Alignment *dataset, char *align, long oldnumelements) 
         REJECT_CHANGE_ALL = 3
     } change_mode = ACCEPT_CHANGE;
 
-    arb_progress progress("importing", dataset->numelements-oldnumelements);
+    arb_progress progress("importing", dataset->numelements-oldnumelements+1); // +1 avoids zero-progress
     for (i = oldnumelements; !error && i < dataset->numelements; i++) {
         NA_Sequence *sequ = dataset->element+i;
         int seqtyp, issame = 0;
@@ -460,6 +460,8 @@ static void GDE_export(NA_Alignment *dataset, char *align, long oldnumelements) 
 
         free(dummy);
     }
+
+    progress.done();
 
     GB_end_transaction_show_error(db_access.gb_main, error, aw_message);
     if (isdefaultalign) free(align);
