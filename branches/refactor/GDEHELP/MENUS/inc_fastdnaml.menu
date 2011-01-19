@@ -7,7 +7,7 @@ itemmethod:(/bin/rm -f outfile infile treefile ;\
             arb_export_tree $TREE >>infile;\
             RUN_IN_WINDOW((time arb_fastdnaml $PROGRAM;\
                            $DISPLAY_FUNC));\
-            rm in1 )&
+            /bin/rm -f in1 )&
 itemhelp:dnaml.help
 
 arg:RATES
