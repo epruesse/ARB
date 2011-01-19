@@ -22,6 +22,7 @@ TypeSwitch convertible_type[] = { // see fconv.cxx@format_spec
     { "SwissProt", SWISSPROT },
     { "NEXUS",     NEXUS     },
     { "PHYLIP",    PHYLIP    },
+    { "FASTDNAML", FASTDNAML },
     { "GCG",       GCG       },
     { "PRINTABLE", PRINTABLE },
 };
@@ -31,8 +32,9 @@ static void show_command_line_usage() {
           "  $ arb_convert_aln -INFMT input_file -OUTFMT output_file\n"
           "  where\n"
           "      INFMT  may be 'GenBank', 'EMBL', 'AE2' or 'SwissProt' and\n"
-          "      OUTFMT may be 'GenBank', 'EMBL', 'AE2', 'NEXUS', 'PHYLIP', 'GCG' or 'Printable'\n"
+          "      OUTFMT may be 'GenBank', 'EMBL', 'AE2', 'NEXUS', 'PHYLIP', 'FASTDNAML', 'GCG' or 'Printable'\n"
           "  (Note: you may abbreviate the format names)\n"
+          "  FASTDNAML writes a PHYLIP file with content from STDIN appended at end of first line (used for arb_fastdnaml).\n"
           , stderr);
 }
 

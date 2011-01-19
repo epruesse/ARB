@@ -15,6 +15,7 @@ enum Format {
     GCG,
     NEXUS,
     PHYLIP,
+    FASTDNAML,
     PRINTABLE,
 
     UNKNOWN,

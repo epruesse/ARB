@@ -71,7 +71,7 @@ int gtom(const GenBank &gbk, Macke &macke) __ATTR__USERESULT;
 void to_paup(const FormattedFile &in, const char *outf);
 
 /* phylip.cxx */
-void to_phylip(const FormattedFile &in, const char *outf);
+void to_phylip(const FormattedFile &in, const char *outf, bool for_fastdnaml);
 
 /* printable.cxx */
 void to_printable(const FormattedFile &in, const char *outf);

@@ -187,7 +187,8 @@ void convert(const FormattedFile& in, const FormattedFile& out) {
         case MACKE:     to_macke(in, out.name()); break;
         case GCG:       to_gcg(in, out.name()); break;
         case NEXUS:     to_paup(in, out.name()); break;
-        case PHYLIP:    to_phylip(in, out.name()); break;
+        case PHYLIP:    to_phylip(in, out.name(), false); break;
+        case FASTDNAML: to_phylip(in, out.name(), true); break;
         case PRINTABLE: to_printable(in, out.name()); break;
 
         default: converted = false; break;

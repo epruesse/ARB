@@ -13,6 +13,7 @@ static const char *format2name(Format type) {
         case MACKE:     return "MACKE";
         case NEXUS:     return "NEXUS";
         case PHYLIP:    return "PHYLIP";
+        case FASTDNAML: return "FASTDNAML";
         case PRINTABLE: return "PRINTABLE";
         case SWISSPROT: return "SWISSPROT";
 
