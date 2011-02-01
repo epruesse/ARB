@@ -80,7 +80,7 @@ static const char *export_tree_node_print(GBDATA *gb_main, FILE *out, GBT_TREE *
     if (pretty) indentTo(indent, out);
 
     if (tree->is_leaf) {
-        if (node_gen) buf = node_gen->gen(gb_main, tree->gb_node, MNTN_COMPRESSED, tree, tree_name);
+        if (node_gen) buf = node_gen->gen(gb_main, tree->gb_node, NDS_OUTPUT_LEAFTEXT, tree, tree_name);
         else          buf = tree->name;
 
         export_tree_label(buf, out, qmode);
@@ -151,7 +151,7 @@ static const char *export_tree_node_print_xml(GBDATA *gb_main, GBT_TREE *tree, d
 
         item_tag.add_attribute("itemname",
                                node_gen
-                               ? node_gen->gen(gb_main, tree->gb_node, MNTN_COMPRESSED, tree, tree_name)
+                               ? node_gen->gen(gb_main, tree->gb_node, NDS_OUTPUT_LEAFTEXT, tree, tree_name)
                                : tree->name);
 
         item_tag.add_attribute("length", GBS_global_string("%.5f", my_length));
@@ -174,7 +174,7 @@ static const char *export_tree_node_print_xml(GBDATA *gb_main, GBT_TREE *tree, d
         if (tree->name) {
             const char *buf;
 
-            if (node_gen) buf = node_gen->gen(gb_main, tree->gb_node, MNTN_COMPRESSED, tree, tree_name);
+            if (node_gen) buf = node_gen->gen(gb_main, tree->gb_node, NDS_OUTPUT_LEAFTEXT, tree, tree_name);
             else          buf = tree->name;
 
             tree_assert(buf);

@@ -85,14 +85,14 @@ void export_nds_cb(AW_window *aww, AW_CL print_flag) {
         return;
     }
     make_node_text_init(GLOBAL_gb_main);
-    int   tabbed    = aw_root->awar(AWAR_EXPORT_NDS"/tabbed")->read_int();
-    char *tree_name = aw_root->awar(AWAR_TREE)->read_string();
+    NDS_Type  nds_type  = (NDS_Type)aw_root->awar(AWAR_EXPORT_NDS_SEPARATOR)->read_int();
+    char     *tree_name = aw_root->awar(AWAR_TREE)->read_string();
 
     for (gb_species = GBT_first_marked_species(GLOBAL_gb_main);
          gb_species;
          gb_species = GBT_next_marked_species(gb_species))
     {
-        buf = make_node_text_nds(GLOBAL_gb_main, gb_species, (tabbed ? MNTN_TABBED : MNTN_SPACED), 0, tree_name);
+        buf = make_node_text_nds(GLOBAL_gb_main, gb_species, nds_type, 0, tree_name);
         fprintf(out, "%s\n", buf);
     }
     AW_refresh_fileselection(aw_root, AWAR_EXPORT_NDS);
@@ -131,8 +131,12 @@ AW_window *create_nds_export_window(AW_root *root) {
     aws->create_button("PRINT", "PRINT", "P");
 
     aws->at("toggle1");
-    aws->label("Use TABs for columns");
-    aws->create_toggle(AWAR_EXPORT_NDS"/tabbed");
+    aws->label("Column output");
+    aws->create_option_menu(AWAR_EXPORT_NDS_SEPARATOR);
+    aws->insert_default_option("Space padded",    "S", NDS_OUTPUT_SPACE_PADDED);
+    aws->insert_option        ("TAB separated",   "T", NDS_OUTPUT_TAB_SEPARATED);
+    aws->insert_option        ("Comma separated", "C", NDS_OUTPUT_COMMA_SEPARATED);
+    aws->update_option_menu();
 
     AW_create_fileselection(aws, AWAR_EXPORT_NDS);
 
@@ -142,7 +146,7 @@ AW_window *create_nds_export_window(AW_root *root) {
 void create_export_nds_awars(AW_root *awr, AW_default def)
 {
     AW_create_fileselection_awars(awr, AWAR_EXPORT_NDS, "", ".nds", "export.nds", def);
-    awr->awar_int(AWAR_EXPORT_NDS"/tabbed", 0, def);
+    awr->awar_int(AWAR_EXPORT_NDS_SEPARATOR, NDS_OUTPUT_SPACE_PADDED, def);
 }
 
 static void AWAR_INFO_BUTTON_TEXT_change_cb(AW_root *awr) {

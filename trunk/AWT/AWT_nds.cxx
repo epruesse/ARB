@@ -576,10 +576,6 @@ void make_node_text_init(GBDATA *gb_main) {
     awt_nds_ms->count       = count;
 }
 
-#if defined(DEBUG)
-// #define QUOTE_NDS_STRING
-#endif // DEBUG
-
 const char *make_node_text_nds(GBDATA *gb_main, GBDATA * gbd, NDS_Type mode, GBT_TREE *species, const char *tree_name) {
     awt_nds_ms->init_buffer();
 
@@ -589,10 +585,6 @@ const char *make_node_text_nds(GBDATA *gb_main, GBDATA * gbd, NDS_Type mode, GBT
         sprintf(awt_nds_ms->buf, "<%s>", species->name); // zombie
         return awt_nds_ms->buf;
     }
-
-#if defined(QUOTE_NDS_STRING)
-    awt_nds_ms->append('\'');
-#endif // QUOTE_NDS_STRING
 
     bool field_was_printed = false;
     bool is_leaf           = species ? species->is_leaf : true;
@@ -629,7 +621,7 @@ const char *make_node_text_nds(GBDATA *gb_main, GBDATA * gbd, NDS_Type mode, GBT
 
                         case GB_FLOAT: {
                             const char *format = "%5.4f";
-                            if (mode == MNTN_TABBED) { // '.' -> ','
+                            if (mode == NDS_OUTPUT_TAB_SEPARATED) { // '.' -> ','
                                 char *dotted  = GBS_global_string_copy(format, GB_read_float(gbe));
                                 char *dot     = strchr(dotted, '.');
                                 if (dot) *dot = ',';
@@ -668,23 +660,23 @@ const char *make_node_text_nds(GBDATA *gb_main, GBDATA * gbd, NDS_Type mode, GBT
             }
         }
 
-        bool skip_display = (mode == MNTN_COMPRESSED && str[0] == 0);
+        bool skip_display = (mode == NDS_OUTPUT_LEAFTEXT && str[0] == 0);
         if (!skip_display) {
             switch (mode) {
-                case MNTN_COMPRESSED:
+                case NDS_OUTPUT_LEAFTEXT:
                     if (!field_was_printed) break; // no comma no space if nothing printed yet
                     awt_nds_ms->append(','); // separate single fields by comma in compressed mode
                     // fall-through
-                case MNTN_SPACED:
+                case NDS_OUTPUT_SPACE_PADDED:
                     awt_nds_ms->append(' '); // print at least one space if not using tabs
                     break;
 
-                case MNTN_TABBED:
-                    if (i != 0) awt_nds_ms->append('\t'); // tabbed output for star-calc/excel/...
+                case NDS_OUTPUT_COMMA_SEPARATED:
+                    if (i != 0) awt_nds_ms->append(','); // CSV output for star-calc/excel/...
                     break;
 
-                default:
-                    awt_assert(0);
+                case NDS_OUTPUT_TAB_SEPARATED:
+                    if (i != 0) awt_nds_ms->append('\t'); // tabbed output for star-calc/excel/...
                     break;
             }
 
@@ -697,7 +689,7 @@ const char *make_node_text_nds(GBDATA *gb_main, GBDATA * gbd, NDS_Type mode, GBT
                 str_len      = nds_len;
             }
 
-            if (mode == MNTN_SPACED) { // may need alignment
+            if (mode == NDS_OUTPUT_SPACE_PADDED) { // may need alignment
                 const char *spaced = GBS_global_string((align_left ? "%-*s" : "%*s"), nds_len, str);
                 awt_nds_ms->append(spaced, nds_len);
             }
@@ -714,10 +706,6 @@ const char *make_node_text_nds(GBDATA *gb_main, GBDATA * gbd, NDS_Type mode, GBT
 
         free(str);
     }
-
-#if defined(QUOTE_NDS_STRING)
-    awt_nds_ms->append('\'');
-#endif // QUOTE_NDS_STRING
 
     return awt_nds_ms->get_buffer();
 }
