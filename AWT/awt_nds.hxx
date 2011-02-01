@@ -24,9 +24,10 @@ struct GBT_TREE;
 #define AWAR_SELECT_ACISRT_PRE "tmp/acisrt/select_pre"
 
 enum NDS_Type {
-    MNTN_COMPRESSED = 0,                            // compress info (no tabbing, separate single fields by comma)
-    MNTN_SPACED     = 1,                            // format info (using spaces)
-    MNTN_TABBED     = 2                             // format info (using 1 tab per column - for easy import into star-calc, excel, etc. )
+    NDS_OUTPUT_LEAFTEXT        = 0,   // compress info (no tabbing, separate single fields by comma, completely skip empty fields)
+    NDS_OUTPUT_SPACE_PADDED    = 1,   // format info (using spaces)
+    NDS_OUTPUT_TAB_SEPARATED   = 2,   // format info (using 1 tab per column - for easy import into star-calc, excel, etc. )
+    NDS_OUTPUT_COMMA_SEPARATED = 3,   // like NDS_OUTPUT_TAB_SEPARATED, but using commas
 };
 
 const char *make_node_text_nds(GBDATA *gb_main, GBDATA * gbd, NDS_Type format, GBT_TREE *species, const char *tree_name);
