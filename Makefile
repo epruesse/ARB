@@ -50,8 +50,6 @@ GCC:=gcc
 GPP:=g++ 
 CPPreal:=cpp
 
-
-
 # ---------------------- compiler version detection
 
 # supported compiler versions:
