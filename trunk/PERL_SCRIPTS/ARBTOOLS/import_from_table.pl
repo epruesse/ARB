@@ -46,6 +46,7 @@ sub usage($) {
         "--overwrite      overwrite 'field' specified via --write (default: abort if 'field' exists)\n".
         "--skip-unknown   silently skip rows that don't match any species (default: abort if no match found)\n".
         "--marked-only    only write to marked species (default: all species)\n".
+        "--mark           mark species to which field has been imported (unmarks rest)\n".
         "--as-integer     use INTEGER database-type for field (default: STRING)\n"
        );
 
@@ -90,12 +91,13 @@ sub parse_row($\@) {
 
 sub main() {
   my $datafile;
-  my $database     = ":";
+  my $database     = ':';
   my $database_out;
 
   my ($matchcolumn,$matchfield);
   my ($writecolumn,$writefield);
-  my ($skip_unknown,$overwrite) = (0,0);
+  my ($skip_unknown,$overwrite,$marked_only,$mark) = (0,0,0,0);
+  my $int_type = 0;
 
   my @no_option = ();
 
@@ -107,8 +109,9 @@ sub main() {
       elsif ($arg eq '--csv') { $reg_row = $reg_row_COMMA; }
       elsif ($arg eq '--overwrite') { $overwrite = 1; }
       elsif ($arg eq '--skip-unknown') { $skip_unknown = 1; }
-      elsif ($arg eq '--marked-only') { die "$arg not implemented"; }
-      elsif ($arg eq '--as-integer') { die "$arg not implemented"; }
+      elsif ($arg eq '--marked-only') { $marked_only = 1; }
+      elsif ($arg eq '--mark') { $mark = 1; }
+      elsif ($arg eq '--as-integer') { $int_type = 1; }
       else { push @no_option, $arg; }
     }
 
@@ -144,10 +147,8 @@ sub main() {
     while (defined($line=<TABLE>)) {
       eval {
         chomp $line;
-        # print "line='$line'\n";
         my @row = ();
         parse_row($line,@row);
-        # foreach (@row) { print "row='$_'\n"; }
 
         my $relems = scalar(@row);
         if ($relems<$min_elems) { die "need at least $min_elems columns per table-line (seen $relems)\n"; }
@@ -168,25 +169,43 @@ sub main() {
     dieOnError(ARB::begin_transaction($gb_main), 'begin_transaction');
 
     eval {
-      my %written = (); # key=matchvalue, value=1
+      my %written = (); # key=matchvalue, value: 1=written, 2=skipped cause not marked
       for (my $gb_species = BIO::first_species($gb_main);
            $gb_species;
            $gb_species = BIO::next_species($gb_species)) {
         eval {
           my $species_value = BIO::read_as_string($gb_species, $matchfield);
+          my $wanted_mark = 0;
           if ($species_value) {
-            if (exists $write_table{$species_value}) { # found species to handle
-              my $existing_entry = BIO::read_as_string($gb_species, $writefield);
-              if ($existing_entry and not $overwrite) {
-                die "already has an existing field '$writefield'.\n".
-                  "Use --overwrite to allow replacement.\n";
+            if (exists $write_table{$species_value}) { # found species matching table entry
+              if ($marked_only==1 and ARB::read_flag($gb_species)==0) {
+                $written{$species_value} = 2;
               }
-              BIO::write_string($gb_species, $writefield, $write_table{$species_value});
-              $written{$species_value} = 1;
+              else {
+                my $existing_entry = BIO::read_as_string($gb_species, $writefield);
+                if ($existing_entry and not $overwrite) {
+                  die "already has an existing field '$writefield'.\n".
+                    "Use --overwrite to allow replacement.\n";
+                }
+                my $error = undef;
+                if ($int_type==1) {
+                  $error = BIO::write_int($gb_species, $writefield, int($write_table{$species_value}));
+                }
+                else {
+                  $error = BIO::write_string($gb_species, $writefield, $write_table{$species_value});
+                }
+                if ($error) { die $error; }
+                $wanted_mark = 1;
+                $written{$species_value} = 1;
+              }
             }
           }
           else {
             die "No such DB-entry '$matchfield'\n";
+          }
+          if ($mark==1) {
+            my $error = ARB::write_flag($gb_species,$wanted_mark);
+            if ($error) { die $error; }
           }
         };
         if ($@) {
@@ -194,25 +213,43 @@ sub main() {
           die "species '$name': $@";
         }
       }
-      my $not_found = 0;
-      my $what = $skip_unknown ? 'Warning' : 'Error';
-      foreach (keys %write_table) {
-        if (not exists $written{$_}) {
+      my $not_found  = 0;
+      my $not_marked = 0;
+      {
+        my %missing = ();
+        my $what = $skip_unknown ? 'Warning' : 'Error';
+        foreach (keys %write_table) {
+          my $wr = $written{$_};
+          if (not defined $wr) {
+            $missing{$_} = 1;
+            $not_found++;
+          }
+          elsif ($wr==2) { # was not marked
+            $not_marked++;
+          }
+        }
+        foreach (sort { $source_line{$a} <=> $source_line{$b}; } keys %missing) {
           print "$what: Found no matching species for line ".$source_line{$_}." ($matchfield='$_')\n";
-          $not_found++;
         }
       }
       if ($not_found>0 and $skip_unknown==0) {
         die "Failed to find $not_found species - aborting.\n".
           "(Note: use --skip-unknown to allow unknown references)\n";
       }
-      print "Entries written: ".scalar(keys %written)."\n";
+      print "\nEntries imported: ".(scalar(keys %written)-$not_marked)."\n";
+      if ($not_found>0) { print "Unmatched (skipped) entries: $not_found\n"; }
+      if ($not_marked>0) { print "Entries not imported because species were not marked: $not_marked\n"; }
     };
     if ($@) {
       ARB::abort_transaction($gb_main);
       die $@;
     }
     ARB::commit_transaction($gb_main);
+    if ($database ne ':') { # database has been loaded
+      print "Saving modified database to '$database_out'\n";
+      my $error = ARB::save_as($gb_main, $database_out, "b");
+      if ($error) { die $error; }
+    }
     ARB::close($gb_main);
   };
   if ($@) {
