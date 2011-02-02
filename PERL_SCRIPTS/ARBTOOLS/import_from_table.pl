@@ -24,7 +24,7 @@ use tools;
 sub usage($) {
   my ($error) = @_;
   print(
-        "Usage: perl import_from_table.pl --select CF --write CF [options] datafile [database outdb]\n".
+        "Usage: perl import_from_table.pl --match CF --write CF [options] datafile [database outdb]\n".
         "\n".
         "Imports one column from the calc-sheet 'datafile' into an ARB database.\n".
         "\n".
