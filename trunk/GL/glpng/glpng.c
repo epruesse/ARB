@@ -36,6 +36,12 @@
 #include <math.h>
 #include <png.h>
 
+#if 0
+#define PNG_CHECK_SIG(header,size) png_check_sig(header,size) // old libpng
+#else
+#define PNG_CHECK_SIG(header,size) (png_sig_cmp(header,0,size)==0)
+#endif
+
 /* Used to decide if GL/gl.h supports the paletted extension */
 #ifdef GL_COLOR_INDEX1_EXT
 #define SUPPORTS_PALETTE_EXT
@@ -277,7 +283,7 @@ int APIENTRY pngLoadRawF(FILE *fp, pngRawInfo *pinfo) {
     if (pinfo == NULL) return 0;
 
     fread(header, 1, 8, fp);
-    if (!png_check_sig(header, 8)) return 0;
+    if (!PNG_CHECK_SIG(header, 8)) return 0;
 
     png = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
     info = png_create_info_struct(png);
@@ -383,7 +389,7 @@ int APIENTRY pngLoadF(FILE *fp, int mipmap, int trans, pngInfo *pinfo) {
     png_uint_32 i;
 
     fread(header, 1, 8, fp);
-    if (!png_check_sig(header, 8)) return 0;
+    if (!PNG_CHECK_SIG(header, 8)) return 0;
 
     png = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
     info = png_create_info_struct(png);
