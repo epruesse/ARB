@@ -213,6 +213,7 @@ dyhfjtt.o: $(ARBHOME)/INCLUDE/test_global.h
 getseq.o: ../../INCLUDE/arb_assert.h
 getseq.o: matrixut.h
 getseq.o: molphy.h
+getseq.o: prot_tml.h
 getseq.o: protml.h
 getseq.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -250,6 +251,7 @@ njmtree.o: $(ARBHOME)/INCLUDE/test_global.h
 njtree.o: ../../INCLUDE/arb_assert.h
 njtree.o: matrixut.h
 njtree.o: molphy.h
+njtree.o: prot_tml.h
 njtree.o: protml.h
 njtree.o: $(ARBHOME)/INCLUDE/test_global.h
 

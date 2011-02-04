@@ -42,6 +42,7 @@
 #define CHOICE_TREE    0x6
 #define CHOICE_SAI     0x7
 #define CHOICE_WEIGHTS 0x8
+#define FILE_SELECTOR  0x9
 
 // File Formats
 #define GDE         0x100

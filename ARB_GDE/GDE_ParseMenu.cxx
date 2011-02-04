@@ -210,9 +210,8 @@ void ParseMenu()
 
             int arglen = -1;
             if (strncmp(temp, "text", (arglen = 4)) == 0) {
-                thisarg->type      = TEXTFIELD;
-                thisarg->textvalue = (char*)calloc(GBUFSIZ, sizeof(char));
-                if (thisarg->textvalue == NULL) Error("Out of memory");
+                thisarg->type         = TEXTFIELD;
+                freedup(thisarg->textvalue, "");
 
                 if (temp[arglen] == 0) thisarg->textwidth = TEXTFIELDWIDTH; // only 'text'
                 else {
@@ -227,13 +226,17 @@ void ParseMenu()
                     }
                 }
             }
-            else if (strcmp(temp, "choice_list") == 0) thisarg->type=CHOICE_LIST;
-            else if (strcmp(temp, "choice_menu") == 0) thisarg->type=CHOICE_MENU;
-            else if (strcmp(temp, "chooser")   == 0) thisarg->type=CHOOSER;
-            else if (strcmp(temp, "tree")      == 0) thisarg->type=CHOICE_TREE;
-            else if (strcmp(temp, "sai")       == 0) thisarg->type=CHOICE_SAI;
-            else if (strcmp(temp, "weights")   == 0) thisarg->type=CHOICE_WEIGHTS;
-            else if (strcmp(temp, "slider")    == 0) thisarg->type=SLIDER;
+            else if (strcmp(temp, "choice_list") == 0) thisarg->type = CHOICE_LIST;
+            else if (strcmp(temp, "choice_menu") == 0) thisarg->type = CHOICE_MENU;
+            else if (strcmp(temp, "chooser")     == 0) thisarg->type = CHOOSER;
+            else if (strcmp(temp, "filename")    == 0) {
+                thisarg->type = FILE_SELECTOR;
+                freedup(thisarg->textvalue, "");
+            }
+            else if (strcmp(temp, "sai")         == 0) thisarg->type = CHOICE_SAI;
+            else if (strcmp(temp, "slider")      == 0) thisarg->type = SLIDER;
+            else if (strcmp(temp, "tree")        == 0) thisarg->type = CHOICE_TREE;
+            else if (strcmp(temp, "weights")     == 0) thisarg->type = CHOICE_WEIGHTS;
             else {
                 sprintf(head, "Unknown argtype '%s'", temp);
                 Error(head);
@@ -246,7 +249,7 @@ void ParseMenu()
         else if (Find(in_line, "argtext:"))
         {
             crop(in_line, head, temp);
-            (void)strcpy(thisarg->textvalue, temp);
+            freedup(thisarg->textvalue, temp);
         }
         /* arglabel: Text label displayed in the dialog box for
          *           this argument. It should be a descriptive label.
@@ -311,7 +314,7 @@ void ParseMenu()
         {
             crop(in_line, head, temp);
             if (thisarg->type == TEXT) {
-                strcpy(thisarg->textvalue, temp);
+                freedup(thisarg->textvalue, temp);
             }
             else {
                 (void)sscanf(temp, "%lf", &(thisarg->fvalue));
