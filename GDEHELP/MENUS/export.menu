@@ -24,7 +24,7 @@ argchoice:PAUP/NEXUS:paup
 argchoice:Pretty:pretty -nametop -nameleft=3 -numright -nameright -numtop
 
 arg:OUTPUTFILE
-argtype:text
+argtype:filename
 arglabel:Save as?
 
 in:in1

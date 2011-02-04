@@ -5,8 +5,8 @@ itemmethod:arb_readseq $INPUTFILE -a -f2 > OUTPUTFILE
 itemhelp:readseq.help
 
 arg:INPUTFILE
-argtype:text
-arglabel:Name of foreign file?
+argtype:filename
+arglabel:Name of file to import
 
 out:OUTPUTFILE
 outformat:genbank
