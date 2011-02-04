@@ -1,11 +1,11 @@
-UP	arb.hlp
-UP	agde.hlp
-UP	glossary.hlp
-UP	save.hlp
+UP      arb.hlp
+UP      agde.hlp
+UP      glossary.hlp
+UP      save.hlp
 
-TITLE		GDE menus
+TITLE           GDE menus
 
-DESCRIPTION	ARB uses the GDE menus to plugin external tools 
+DESCRIPTION     ARB uses the GDE menus to plugin external tools 
 
                 This helpfile contains parts of the original GDE helpfile
                 and has been  slightly modified to fit to the way
@@ -53,113 +53,132 @@ SECTION Using the GDE menus
                 itemhelp:help_file  Help file (either full path, or in $ARBHOME/lib/help)
                 itemmethod:         Unix command
 
-        The item method command is a bit more involved, it
+        The itemmethod command is a bit more involved, it
         is the Unix command that will actually run the
-        external program intended. It is one line long, and
-        can be up to 256 characters in length. It can have
-        embedded variable names (starting with a '$') that
-        will be replaced with appropriate values later on. It
-        can consist of multiple Unix commands separated by
-        semi-colons (;), and may contain shell scripts and
-        background processes as well as simple command
-        names. Examples will be given later.
+        external program intended.
+
+        It is one line long, and can be up to 256 characters in
+        length. It can have embedded variable names (starting
+        with a '$') that will be replaced with appropriate values
+        later on.
+
+        It can consist of multiple Unix commands separated by
+        semi-colons (;) and may contain shell scripts and
+        background processes as well as simple command names. If
+        one of the commands needs access to the running ARB, the
+        whole command should be run asynchronously, i.e. be run
+        using '( command ) &'. Otherwise the command may lock.
+
 
         The keywords for phase two are:
 
             arg:argument_variable_name
 
-            		Name of this variable. It will appear
-            		in the itemmethod: line with a dollar
-            		sign ($) in front of it.
+                        Name of this variable. It will appear
+                        in the itemmethod: line with a dollar
+                        sign ($) in front of it.
 
-            argtype:slider,chooser,choice_menu or text
+            argtype:TYPE
+                        The type of graphic object
+                        representing this argument.
 
-            		The type of graphic object
-            		representing this argument.
+                        Known types are
+
+                              choice_list
+                              choice_menu
+                              chooser
+                              filename
+                              sai
+                              slider
+                              text
+                              tree
+                              weights
 
             arglabel:descriptive label
 
-            		A short description of what this
-            		argument represents
+                        A short description of what this
+                        argument represents
 
             argmin:minimum_value (integer)
 
-            		Used for sliders.
+                        Used for sliders.
 
             argmax:maximum_value (integer)
 
-            		Used for sliders.
+                        Used for sliders.
 
             argvalue:default_value (integer)
 
-            		It is the numeric value associated with
-            		sliders or the default choice in
-            		choosers, choice_menus, and choice_lists
-            		(the first choice is 0, the second is 1 etc.)
+                        It is the numeric value associated with
+                        sliders or the default choice in
+                        choosers, choice_menus, and choice_lists
+                        (the first choice is 0, the second is 1 etc.)
 
             argtext:default value
 
-            		Used for text fields.
+                        text: Default value
+                        filename: default extension
+                        
 
             argchoice:displayed value:passed value
 
-            		Used for choosers and
-            		choice_menus. The first value is
-            		displayed on screen, and the second
-            		value is passed to the itemmethod
-            		line.
+                        Used for choosers and
+                        choice_menus. The first value is
+                        displayed on screen, and the second
+                        value is passed to the itemmethod
+                        line.
 
         The keywords for phase three are as follows:
 
             in:input_file
 
-            		GDE will replace this name with a
-            		randomly generated temporary file
-            		name. It will then write the selected
-            		data out to this file.
+                        GDE will replace this name with a
+                        randomly generated temporary file
+                        name. It will then write the selected
+                        data out to this file.
 
             informat:file_format
 
-            		Write data to this file for input to
-            		this function. Currently support
-            		values are Genbank, and flat.
+                        Write data to this file for input to
+                        this function. Currently support
+                        values are Genbank, and flat.
 
             inmask:
 
-            		This data can be controlled by a
-            		selection mask.
+                        This data can be controlled by a
+                        selection mask.
 
             insave:
 
-            		Do not remove this file after running
-            		the external function. This is useful
-            		for functions put in the background.
+                        Do not remove this file after running
+                        the external function. This is useful
+                        for functions put in the background.
 
             out:output_file
 
-            		GDE will replace this name with a
-            		randomly generated temporary file
-            		name. It is up to the external function
-            		to fill this file with any results that
-            		might be read back into the GDE.
+                        GDE will replace this name with a
+                        randomly generated temporary file
+                        name. It is up to the external function
+                        to fill this file with any results that
+                        might be read back into the GDE.
 
             outformat:file_format
 
-            		The data in the output file will be in
-            		this format. Currently support
-            		values are colormask, Genbank, and
-            		flat.
+                        The data in the output file will be in
+                        this format. Currently support
+                        values are colormask, Genbank, and
+                        flat.
 
             outsave:
 
-            		Do not remove this file after reading.
-            		This is useful for background tasks.
+                        Do not remove this file after reading.
+                        This is useful for background tasks.
 
             outoverwrite:
 
-            		Overwrite existing sequences in the current
-            		GDE window. Currently supported with
-            		"gde" format only.
+                        Overwrite existing sequences in the current
+                        GDE window. Currently supported with
+                        "gde" format only.
 
 
         Here is a sample dialog box, and it's entry in the

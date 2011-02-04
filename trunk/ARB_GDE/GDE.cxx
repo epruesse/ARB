@@ -4,6 +4,7 @@
 #include <aw_window.hxx>
 #include <aw_msg.hxx>
 #include <aw_awar.hxx>
+#include <aw_file.hxx>
 #include <aw_root.hxx>
 #include <awt_sel_boxes.hxx>
 #include <awt_filter.hxx>
@@ -38,12 +39,12 @@ static void GDE_showhelp_cb(AW_window *aw, GmenuItem *gmenuitem, AW_CL /* cd */)
     }
 }
 
-char *GDE_makeawarname(GmenuItem *gmenuitem, long i) {
+static char *GDE_makeawarname_in(GmenuItem *gmenuitem, long i, const char *awar_root) {
     char *gmenu_label     = GBS_string_2_key(gmenuitem->parent_menu->label);
     char *gmenuitem_label = GBS_string_2_key(gmenuitem->label);
     char *arg             = GBS_string_2_key(gmenuitem->arg[i].symbol);
 
-    char *name = GBS_global_string_copy("gde/%s/%s/%s", gmenu_label, gmenuitem_label, arg);
+    char *name = GBS_global_string_copy("%s/%s/%s/%s", awar_root, gmenu_label, gmenuitem_label, arg);
 
     free(gmenu_label);
     free(gmenuitem_label);
@@ -51,6 +52,9 @@ char *GDE_makeawarname(GmenuItem *gmenuitem, long i) {
 
     return name;
 }
+
+char *GDE_makeawarname(GmenuItem *gmenuitem, long i) { return GDE_makeawarname_in(gmenuitem, i, "gde"); }
+char *GDE_maketmpawarname(GmenuItem *gmenuitem, long i) { return GDE_makeawarname_in(gmenuitem, i, "tmp/gde"); }
 
 static void GDE_slide_awar_int_cb(AW_window *aws, AW_CL cl_awar_name, AW_CL cd_diff)
 {
@@ -112,7 +116,41 @@ static char *gde_filter_weights(GBDATA *gb_sai, AW_CL) {
 
 }
 
+static AW_window *GDE_create_filename_browser_window(AW_root *aw_root, const char *awar_prefix) {
+    AW_window_simple *aws = new AW_window_simple;
 
+    {
+        char *wid = GBS_string_2_key(awar_prefix);
+        aws->init(aw_root, wid, "Browse file");
+        free(wid);
+    }
+    aws->load_xfig("sel_box.fig");
+
+    aws->at("close");
+    aws->callback((AW_CB0) AW_POPDOWN);
+    aws->create_button("CLOSE", "CLOSE", "C");
+
+    AW_create_fileselection(aws, awar_prefix);
+
+    return aws;
+}
+
+static void GDE_popup_filename_browser(AW_window *aw, AW_CL cl_menuitem, AW_CL cl_idx) {
+    GmenuItem *gmenuitem = (GmenuItem*)cl_menuitem;
+    int        idx       = cl_idx;
+    char      *base_awar = GDE_maketmpawarname(gmenuitem, idx);
+
+    static GB_HASH *popup_hash  = NULL;
+    if (!popup_hash) popup_hash = GBS_create_hash(20, GB_MIND_CASE);
+
+    AW_window *aw_browser = (AW_window*)GBS_read_hash(popup_hash, base_awar);
+    if (!aw_browser) {
+        aw_browser = GDE_create_filename_browser_window(aw->get_root(), base_awar);
+        GBS_write_hash(popup_hash, base_awar, (long)aw_browser);
+    }
+    aw_browser->activate();
+    free(base_awar);
+}
 
 static AW_window *GDE_menuitem_cb(AW_root *aw_root, GmenuItem *gmenuitem) {
 #define BUFSIZE 200
@@ -245,20 +283,20 @@ static AW_window *GDE_menuitem_cb(AW_root *aw_root, GmenuItem *gmenuitem) {
         aws->auto_space(0, 0);
 
         for (i=0; i<gmenuitem->numargs; i++) {
-            GmenuItemArg itemarg=gmenuitem->arg[i];
+            GmenuItemArg itemarg = gmenuitem->arg[i];
 
             if (itemarg.type==SLIDER) {
                 char *newawar=GDE_makeawarname(gmenuitem, i);
-                if (int(gmenuitem->arg[i].fvalue) == gmenuitem->arg[i].fvalue &&
-                     int(gmenuitem->arg[i].min) == gmenuitem->arg[i].min &&
-                     int(gmenuitem->arg[i].max) == gmenuitem->arg[i].max) {
-                    aw_root->awar_int(newawar, (long)gmenuitem->arg[i].fvalue, AW_ROOT_DEFAULT);
+                if (int(itemarg.fvalue) == itemarg.fvalue &&
+                     int(itemarg.min) == itemarg.min &&
+                     int(itemarg.max) == itemarg.max) {
+                    aw_root->awar_int(newawar, (long)itemarg.fvalue, AW_ROOT_DEFAULT);
                 }
                 else {
-                    aw_root->awar_float(newawar, gmenuitem->arg[i].fvalue, AW_ROOT_DEFAULT);
+                    aw_root->awar_float(newawar, itemarg.fvalue, AW_ROOT_DEFAULT);
                 }
-                aw_root->awar(newawar)->set_minmax(gmenuitem->arg[i].min, gmenuitem->arg[i].max);
-                aws->label(gmenuitem->arg[i].label);
+                aw_root->awar(newawar)->set_minmax(itemarg.min, itemarg.max);
+                aws->label(itemarg.label);
                 GDE_create_infieldwithpm(aws, newawar, SLIDERWIDTH);
                 // maybe bound checking //
                 free(newawar);
@@ -270,7 +308,7 @@ static AW_window *GDE_menuitem_cb(AW_root *aw_root, GmenuItem *gmenuitem) {
                 char    *curr_value       = curr_awar->read_string();
                 bool     curr_value_legal = false;
 
-                aws->label(gmenuitem->arg[i].label);
+                aws->label(itemarg.label);
                 if ((strcasecmp(itemarg.choice[0].label, "no") == 0) ||
                     (strcasecmp(itemarg.choice[0].label, "yes") == 0))
                 {
@@ -302,7 +340,7 @@ static AW_window *GDE_menuitem_cb(AW_root *aw_root, GmenuItem *gmenuitem) {
                 char    *curr_value       = curr_awar->read_string();
                 bool     curr_value_legal = false;
 
-                aws->label(gmenuitem->arg[i].label);
+                aws->label(itemarg.label);
                 aws->create_option_menu(newawar, NULL, "");
 
                 for (long j=0; j<itemarg.numchoices; j++) {
@@ -318,15 +356,29 @@ static AW_window *GDE_menuitem_cb(AW_root *aw_root, GmenuItem *gmenuitem) {
                 char *defopt  = itemarg.textvalue;
                 char *newawar = GDE_makeawarname(gmenuitem, i);
                 aw_root->awar_string(newawar, defopt, AW_ROOT_DEFAULT);
-                aws->label(gmenuitem->arg[i].label);
-                aws->create_input_field(newawar, itemarg.textwidth /* TEXTFIELDWIDTH */);
+                aws->label(itemarg.label);
+                aws->create_input_field(newawar, itemarg.textwidth);  /* TEXTFIELDWIDTH */
                 free(newawar);
+            }
+            else if (itemarg.type==FILE_SELECTOR) {
+                char *base_awar = GDE_maketmpawarname(gmenuitem, i);
+                char *name_awar = GBS_global_string_copy("%s/file_name", base_awar);
+
+                AW_create_fileselection_awars(aw_root, base_awar, "", itemarg.textvalue, "");
+
+                aws->label(itemarg.label);
+                aws->create_input_field(name_awar, 40);
+                aws->callback(GDE_popup_filename_browser, (AW_CL)gmenuitem, (AW_CL)i);
+                aws->create_button("", "Browse");
+
+                free(name_awar);
+                free(base_awar);
             }
             else if (itemarg.type==CHOICE_TREE) {
                 char *defopt=itemarg.textvalue;
                 char *newawar=GDE_makeawarname(gmenuitem, i);
                 aw_root->awar_string(newawar, defopt, AW_ROOT_DEFAULT);
-                aws->label(gmenuitem->arg[i].label);
+                aws->label(itemarg.label);
                 awt_create_selection_list_on_trees(db_access.gb_main, aws, newawar);
                 free(newawar);
             }
@@ -334,7 +386,7 @@ static AW_window *GDE_menuitem_cb(AW_root *aw_root, GmenuItem *gmenuitem) {
                 char *defopt=itemarg.textvalue;
                 char *newawar=GDE_makeawarname(gmenuitem, i);
                 aw_root->awar_string(newawar, defopt, AW_ROOT_DEFAULT);
-                aws->label(gmenuitem->arg[i].label);
+                aws->label(itemarg.label);
                 awt_create_selection_list_on_extendeds(db_access.gb_main, aws, newawar);
                 free(newawar);
             }
@@ -342,7 +394,7 @@ static AW_window *GDE_menuitem_cb(AW_root *aw_root, GmenuItem *gmenuitem) {
                 char *defopt=itemarg.textvalue;
                 char *newawar=GDE_makeawarname(gmenuitem, i);
                 aw_root->awar_string(newawar, defopt, AW_ROOT_DEFAULT);
-                aws->label(gmenuitem->arg[i].label);
+                aws->label(itemarg.label);
                 void *id = awt_create_selection_list_on_extendeds(db_access.gb_main, aws, newawar, gde_filter_weights);
                 free(newawar);
                 aw_root->awar(AWAR_GDE_ALIGNMENT)->add_callback((AW_RCB1)awt_create_selection_list_on_extendeds_update, (AW_CL)id);

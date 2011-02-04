@@ -64,6 +64,7 @@ GDE.o: $(ARBHOME)/INCLUDE/arbtools.h
 GDE.o: $(ARBHOME)/INCLUDE/attributes.h
 GDE.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 GDE.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+GDE.o: $(ARBHOME)/INCLUDE/aw_file.hxx
 GDE.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 GDE.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 GDE.o: $(ARBHOME)/INCLUDE/aw_root.hxx
@@ -123,6 +124,7 @@ GDE_event.o: $(ARBHOME)/INCLUDE/arbtools.h
 GDE_event.o: $(ARBHOME)/INCLUDE/attributes.h
 GDE_event.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 GDE_event.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+GDE_event.o: $(ARBHOME)/INCLUDE/aw_file.hxx
 GDE_event.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 GDE_event.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 GDE_event.o: $(ARBHOME)/INCLUDE/aw_root.hxx

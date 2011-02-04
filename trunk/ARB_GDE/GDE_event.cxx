@@ -6,6 +6,7 @@
 #include <aw_root.hxx>
 #include <aw_awar.hxx>
 #include <aw_msg.hxx>
+#include <aw_file.hxx>
 #include <aw_status.hxx>
 #include <AP_filter.hxx>
 
@@ -79,17 +80,19 @@ static char *ReplaceArgs(AW_root *awr, char *Action, GmenuItem *gmenuitem, int n
     int i, newlen, type;
     symbol = gmenuitem->arg[number].symbol;
     type = gmenuitem->arg[number].type;
-    if ((type == SLIDER))
-    {
+    if ((type == SLIDER)) {
         char *awarname = GDE_makeawarname(gmenuitem, number);
-        textvalue      = (char*)malloc(GBUFSIZ);
-        char *awalue   = awr->awar(awarname)->read_as_string();
-        sprintf(textvalue, "%s", awalue);
-        free(awalue);
+        textvalue      = awr->awar(awarname)->read_as_string();
+        free(awarname);
+    }
+    else if (type == FILE_SELECTOR) {
+        char *awar_base = GDE_maketmpawarname(gmenuitem, number);
+        textvalue  = AW_get_selected_fullname(awr, awar_base);
+        free(awar_base);
     }
     else if ((type == CHOOSER) ||
-            (type == CHOICE_TREE) ||
-            (type == CHOICE_SAI) ||
+             (type == CHOICE_TREE) ||
+             (type == CHOICE_SAI) ||
             (type == CHOICE_MENU) ||
             (type == CHOICE_LIST) ||
             (type == CHOICE_WEIGHTS) ||
@@ -236,6 +239,8 @@ static void GDE_export(NA_Alignment *dataset, char *align, long oldnumelements) 
     long isdefaultalign = 0;
 
     if (maxalignlen <= 0 && !error) {
+        GB_clear_error(); // clear "alignment not found" error
+    
         align             = GBT_get_default_alignment(gb_main);
         if (!align) error = GB_await_error();
         else {
