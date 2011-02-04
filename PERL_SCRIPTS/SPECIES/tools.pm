@@ -31,7 +31,7 @@ use ARB;
 
 sub dieOnError($$) {
   my ($err,$where) = @_;
-  if ($err) { die "Error at $where: $err"; }
+  if ($err) { die "Error at $where: $err\n"; }
 }
 
 sub expectError($) {

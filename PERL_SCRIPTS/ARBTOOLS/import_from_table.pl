@@ -10,6 +10,9 @@
 #                                                                 #
 # =============================================================== #
 
+use strict;
+use warnings;
+
 BEGIN {
   if (not exists $ENV{'ARBHOME'}) { die "Environment variable \$ARBHOME has to be defined"; }
   my $arbhome = $ENV{'ARBHOME'};
@@ -74,14 +77,21 @@ sub parse_CF($$) {
   return ($column,$field);
 }
 
-my $reg_row_TAB   = qr/^([^\t]+)\t/;
-my $reg_row_COMMA = qr/^([^,]+),/;
-my $reg_row       = $reg_row_TAB;
+my $reg_column1 = undef;
+my $reg_column2 = undef;
+
+sub set_separator($) {
+  my ($sep) = @_;
+  my $rex1 = "^([^$sep\"]+)$sep"; # plain column
+  my $rex2 = "^\"([^\"]+)\"$sep"; # quoted column
+  $reg_column1 = qr/$rex1/;
+  $reg_column2 = qr/$rex2/;
+}
 
 sub parse_row($\@) {
   my ($line,$column_r) = @_;
   @$column_r = ();
-  while ($line =~ $reg_row) {
+  while (($line =~ $reg_column1) or ($line =~ $reg_column2)) {
     my ($col,$rest) = ($1,$');
     push @$column_r, $col;
     $line = $rest;
@@ -89,6 +99,7 @@ sub parse_row($\@) {
   push @$column_r, $line;
 }
 
+my $inform_ARB = 0;
 sub main() {
   my $datafile;
   my $database     = ':';
@@ -101,12 +112,14 @@ sub main() {
 
   my @no_option = ();
 
+  set_separator("\t");
+
   eval {
     while (scalar(@ARGV)>0) {
       my $arg = shift @ARGV;
       if    ($arg eq '--match') { ($matchcolumn,$matchfield) = parse_CF($arg, shift @ARGV); }
       elsif ($arg eq '--write') { ($writecolumn,$writefield) = parse_CF($arg, shift @ARGV); }
-      elsif ($arg eq '--csv') { $reg_row = $reg_row_COMMA; }
+      elsif ($arg eq '--csv') { set_separator(','); }
       elsif ($arg eq '--overwrite') { $overwrite = 1; }
       elsif ($arg eq '--skip-unknown') { $skip_unknown = 1; }
       elsif ($arg eq '--marked-only') { $marked_only = 1; }
@@ -134,9 +147,17 @@ sub main() {
     usage($@);
   }
 
-  open(TABLE,'<'.$datafile) || die "can't open '$datafile' (Reason: $!)\n";
   my $gb_main = ARB::open($database, "rw");
-  $gb_main || expectError('db connect (no running ARB or wrong name specified?)');
+  if ($database eq ':') {
+    if ($gb_main) { $inform_ARB = 1; }
+    else { expectError('db connect (no running ARB)'); }
+  }
+  else {
+    $gb_main || expectError('db connect (wrong \'database\' specified?)');
+  }
+
+  if (not -f $datafile) { die "No such file '$datafile'\n"; }
+  open(TABLE,'<'.$datafile) || die "can't open '$datafile' (Reason: $!)\n";
 
   my %write_table = (); # key=matchvalue, value=writevalue
   my %source_line = (); # key=matchvalue, value=source-linenumber
@@ -151,7 +172,10 @@ sub main() {
         parse_row($line,@row);
 
         my $relems = scalar(@row);
-        if ($relems<$min_elems) { die "need at least $min_elems columns per table-line (seen $relems)\n"; }
+        if ($relems<$min_elems) {
+          die "need at least $min_elems columns per table-line\n".
+            "(seen only $relems column. Maybe wrong separator chosen?)\n";
+        }
 
         my $matchvalue = $row[$matchcolumn-1];
         my $writevalue = $row[$writecolumn-1];
@@ -167,6 +191,8 @@ sub main() {
 
     # match and write to species
     dieOnError(ARB::begin_transaction($gb_main), 'begin_transaction');
+
+    my $report = '';
 
     eval {
       my %written = (); # key=matchvalue, value: 1=written, 2=skipped cause not marked
@@ -236,9 +262,11 @@ sub main() {
         die "Failed to find $not_found species - aborting.\n".
           "(Note: use --skip-unknown to allow unknown references)\n";
       }
-      print "\nEntries imported: ".(scalar(keys %written)-$not_marked)."\n";
-      if ($not_found>0) { print "Unmatched (skipped) entries: $not_found\n"; }
-      if ($not_marked>0) { print "Entries not imported because species were not marked: $not_marked\n"; }
+      $report = "Entries imported: ".(scalar(keys %written)-$not_marked)."\n";
+      if ($not_found>0) { $report .= "Unmatched (skipped) entries: $not_found\n"; }
+      if ($not_marked>0) { $report .= "Entries not imported because species were not marked: $not_marked\n"; }
+
+      print "\n".$report;
     };
     if ($@) {
       ARB::abort_transaction($gb_main);
@@ -251,6 +279,11 @@ sub main() {
       if ($error) { die $error; }
     }
     ARB::close($gb_main);
+
+    if ($inform_ARB==1) {
+      $report =~ s/\n$//;
+      `arb_message "$report"`;
+    }
   };
   if ($@) {
     ARB::close($gb_main);
@@ -263,7 +296,12 @@ eval {
   main();
 };
 if ($@) {
-  print "Error in import_from_table.pl: $@";
+  my $error = "Error in import_from_table.pl: $@";
+  print $error;
+  if ($inform_ARB==1) {
+    $error =~ s/: /:\n/g;       # wrap error to multiple lines for ARB
+    `arb_message "$error";`;
+  }
   exit(-1);
 }
 exit(0);

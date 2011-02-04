@@ -1189,7 +1189,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone) {
                 AWMIMT("export_to_ARB", "Export seq/tree/SAI's to new ARB database", "A", "arb_ntree.hlp",      AWM_ALL, (AW_CB)NT_system_cb, (AW_CL)"arb_ntree -export &", 0);
                 AWMIMT("export_seqs",   "Export sequences to foreign format",        "f", "arb_export.hlp",     AWM_ALL, AW_POPUP,            (AW_CL)open_AWTC_export_window, (AW_CL)GLOBAL_gb_main);
                 GDE_load_menu(awm, AWM_ALL, "Export");
-                AWMIMT("export_nds",    "Export fields using NDS",                   "N", "arb_export_nds.hlp", AWM_ALL, AW_POPUP,            (AW_CL)create_nds_export_window, 0);
+                AWMIMT("export_nds",    "Export fields (to calc-sheet using NDS)",   "N", "arb_export_nds.hlp", AWM_ALL, AW_POPUP,            (AW_CL)create_nds_export_window, 0);
             }
             awm->close_sub_menu();
             SEP________________________SEP();
