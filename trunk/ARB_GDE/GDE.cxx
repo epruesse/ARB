@@ -27,6 +27,12 @@ char GDEBLANK[] = "\0";
 
 #define SLIDERWIDTH 5           // input field width for numbers
 
+struct gde_iteminfo {
+    GmenuItem *item;
+    int        idx;
+    gde_iteminfo(GmenuItem *item_, int idx_) : item(item_), idx(idx_) {}
+};
+
 static void GDE_showhelp_cb(AW_window *aw, GmenuItem *gmenuitem, AW_CL /* cd */) {
     const char *help_file = gmenuitem->help;
     if (help_file) {
@@ -116,12 +122,12 @@ static char *gde_filter_weights(GBDATA *gb_sai, AW_CL) {
 
 }
 
-static AW_window *GDE_create_filename_browser_window(AW_root *aw_root, const char *awar_prefix) {
+static AW_window *GDE_create_filename_browser_window(AW_root *aw_root, const char *awar_prefix, const char *title) {
     AW_window_simple *aws = new AW_window_simple;
 
     {
         char *wid = GBS_string_2_key(awar_prefix);
-        aws->init(aw_root, wid, "Browse file");
+        aws->init(aw_root, wid, title);
         free(wid);
     }
     aws->load_xfig("sel_box.fig");
@@ -135,17 +141,19 @@ static AW_window *GDE_create_filename_browser_window(AW_root *aw_root, const cha
     return aws;
 }
 
-static void GDE_popup_filename_browser(AW_window *aw, AW_CL cl_menuitem, AW_CL cl_idx) {
-    GmenuItem *gmenuitem = (GmenuItem*)cl_menuitem;
-    int        idx       = cl_idx;
-    char      *base_awar = GDE_maketmpawarname(gmenuitem, idx);
+static void GDE_popup_filename_browser(AW_window *aw, AW_CL cl_iteminfo, AW_CL cl_title) {
+    gde_iteminfo *info         = (gde_iteminfo*)cl_iteminfo;
+    GmenuItem    *gmenuitem    = info->item;
+    int           idx          = info->idx;
+    char         *base_awar    = GDE_maketmpawarname(gmenuitem, idx);
 
     static GB_HASH *popup_hash  = NULL;
     if (!popup_hash) popup_hash = GBS_create_hash(20, GB_MIND_CASE);
 
     AW_window *aw_browser = (AW_window*)GBS_read_hash(popup_hash, base_awar);
     if (!aw_browser) {
-        aw_browser = GDE_create_filename_browser_window(aw->get_root(), base_awar);
+        const char *title = (const char *)cl_title;
+        aw_browser        = GDE_create_filename_browser_window(aw->get_root(), base_awar, title);
         GBS_write_hash(popup_hash, base_awar, (long)aw_browser);
     }
     aw_browser->activate();
@@ -368,7 +376,7 @@ static AW_window *GDE_menuitem_cb(AW_root *aw_root, GmenuItem *gmenuitem) {
 
                 aws->label(itemarg.label);
                 aws->create_input_field(name_awar, 40);
-                aws->callback(GDE_popup_filename_browser, (AW_CL)gmenuitem, (AW_CL)i);
+                aws->callback(GDE_popup_filename_browser, (AW_CL)new gde_iteminfo(gmenuitem, i), (AW_CL)strdup(itemarg.label));
                 aws->create_button("", "Browse");
 
                 free(name_awar);
