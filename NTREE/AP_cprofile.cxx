@@ -691,9 +691,11 @@ static void CPRO_memrequirement_cb(AW_root *aw_root)
         return;
     }
 
-    long len=GBT_get_alignment_len(GLOBAL_gb_main, align);
+    long len = GBT_get_alignment_len(GLOBAL_gb_main, align);
 
     if (len<=0) {
+        GB_clear_error(); // dont warn about wrong alignment name
+        
         GB_pop_transaction(GLOBAL_gb_main);
         aw_root->awar("tmp/cpro/mempartition")->write_string("???");
         aw_root->awar("tmp/cpro/memstatistic")->write_string("???");
