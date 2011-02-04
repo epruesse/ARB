@@ -391,9 +391,9 @@ AW_window *awt_create_select_filter_win(AW_root *aw_root, AW_CL res_of_create_se
 AP_filter *awt_get_filter(AW_root *aw_root, adfiltercbstruct *acbs) {
     AP_filter *filter = NULL;
 
-    awt_assert(aw_root == acbs->awr);               // @@@ if this doesnt fail, remove aw_root from params
-
     if (acbs) {
+        awt_assert(aw_root == acbs->awr);               // @@@ if this doesnt fail, remove aw_root from params
+        
         GB_push_transaction(acbs->gb_main);
 
         char *filter_string = aw_root->awar(acbs->def_filter)->read_string();
@@ -416,7 +416,7 @@ AP_filter *awt_get_filter(AW_root *aw_root, adfiltercbstruct *acbs) {
         GB_pop_transaction(acbs->gb_main);
     }
 
-    if (!filter) filter = new AP_filter("", "0", 10);
+    if (!filter) filter = new AP_filter("", "0", 10); // dummy filter
     return filter;
 }
 
