@@ -22,7 +22,6 @@ To install a precompiled ARB
 4b. Otherwise use your package manager to install the
     software that is needed to run ARB:
 
-- xview
 - (open)motif
 - bash
 - libpng
@@ -117,7 +116,6 @@ Additional software that is needed to compile ARB:
 - expat, xmllint, sablotron 0.82-1.0 [needed for target 'help' only]
 - openmotif, openmotif-devel
 - xaw???
-- xview-devel
 - libtiff-devel
 - java 1.3.1 or above [needed for arb_probe_library only]
 - lynx
