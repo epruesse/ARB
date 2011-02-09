@@ -8,16 +8,6 @@ ARCHS_ALL = \
 	PHYML/PHYML.dummy \
 
 # --------------------------------------------------------------------------------
-# All packages using xview go here:
-
-#ARCHS_XVIEW = \
-
-# deprecated:
-#	CORE/CORE.dummy \
-#	HGL_SRC/HGL_SRC.dummy
-#	LOOPTOOL/LOOPTOOL.dummy
-
-# --------------------------------------------------------------------------------
 # If a package is available as debian package it should go here
 # 
 # Note: I'm not sure whether this is a good idea. Due to limited manpower it often takes
