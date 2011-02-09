@@ -47,7 +47,12 @@ void Reader::read() {
         else {
             size_t len = next_line.length();
 
-            if (len >= (LINESIZE-1)) throw_errorf(148, "Line too long: %s", next_line.c_str());
+            if (len >= (LINESIZE-1)) {
+                char lbuf[200];
+                memcpy(lbuf, next_line.c_str(), 200-4);
+                strcpy(lbuf+200-4, "...");
+                throw_errorf(148, "Line too long: '%s'", lbuf);
+            }
             memcpy(linebuf, next_line.c_str(), len);
             linebuf[len]     = '\n';
             linebuf[len + 1] = 0;
