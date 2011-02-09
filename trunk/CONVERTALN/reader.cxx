@@ -2,7 +2,7 @@
 
 Reader::Reader(const char *inf)
     : fp(fopen(inf, "rt")),
-      file(inf, fp),
+      file(NULL), 
       curr(NULL),
       failure(false)
 {
@@ -11,7 +11,8 @@ Reader::Reader(const char *inf)
         if (!fp) {
             throw_errorf(1, "can't read input file '%s' (Reason: %s)", inf, strerror(errno));
         }
-        file.showFilenameInLineError(true);
+        file = new FileBuffer(inf, fp);
+        file->showFilenameInLineError(true);
         read();
     }
     catch (Convaln_exception& exc) {
@@ -24,11 +25,12 @@ Reader::Reader(const char *inf)
 Reader::~Reader() {
     // if kicked by exception, decorate error-msg with current reader position
     if (const Convaln_exception *exc = Convaln_exception::exception_thrown()) {
-        exc->replace_msg(file.lineError(exc->get_msg()).c_str());
+        exc->replace_msg(file->lineError(exc->get_msg()).c_str());
     }
     else {
         ca_assert(!curr); // reader did NOT read till EOF, why ?
     }
+    delete file;
 }
 
 void Reader::read() {
@@ -39,7 +41,7 @@ void Reader::read() {
         ca_assert(!failure); // attempt to read after failure
 
         string next_line;
-        if (!file.getLine(next_line)) {
+        if (!file->getLine(next_line)) {
             curr = NULL;
         }
         else {
