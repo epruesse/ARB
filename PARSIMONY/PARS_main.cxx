@@ -1317,21 +1317,24 @@ static void pars_start_cb(AW_window *aw_parent, AW_CL cd_weightedFilter, AW_CL c
         GB_ERROR error = 0;
 
         aw_openstatus("load tree");
-        NT_reload_tree_event(awr, ntw);             // load first tree
+        NT_reload_tree_event(awr, ntw, 0);             // load tree (but do not expose - first zombies need to be removed)
         if (!GLOBAL_PARS->tree->get_root_node()) {
             error = "I cannot load the selected tree";
         }
         else {
             AP_tree_edge::initialize(rootNode());   // builds edges
-            GLOBAL_PARS->tree->tree_static->remove_leafs(AWT_REMOVE_DELETED);
+            long removed = GLOBAL_PARS->tree->tree_static->remove_leafs(AWT_REMOVE_DELETED);
 
             PARS_tree_init(GLOBAL_PARS->tree);
-            GLOBAL_PARS->tree->tree_static->remove_leafs(AWT_REMOVE_DELETED | AWT_REMOVE_NO_SEQUENCE);
+            removed += GLOBAL_PARS->tree->tree_static->remove_leafs(AWT_REMOVE_DELETED | AWT_REMOVE_NO_SEQUENCE);
 
             if (!GLOBAL_PARS->tree->get_root_node()) {
                 const char *aliname = GLOBAL_PARS->tree->tree_static->get_aliview()->get_aliname();
                 error               = GBS_global_string("Less than 2 species contain data in '%s'\n"
                                                         "Tree vanished", aliname);
+            }
+            else if (removed) {
+                aw_message(GBS_global_string("Removed %i leafs (zombies or species w/o data in alignment)", removed));
             }
 
             error = GB_end_transaction(ntw->gb_main, error);

@@ -1038,7 +1038,7 @@ void AP_tree::buildBranchList(AP_tree **&list, long &num, bool create_terminal_b
 }
 
 
-void AP_tree_root::remove_leafs(int awt_remove_type) {
+long AP_tree_root::remove_leafs(int awt_remove_type) {
     // may remove the complete tree (if awt_remove_type does not contain AWT_REMOVE_BUT_DONT_FREE)
 
     ASSERT_VALID_TREE(get_root_node());
@@ -1047,10 +1047,10 @@ void AP_tree_root::remove_leafs(int awt_remove_type) {
     long      count;
     get_root_node()->buildLeafList(list, count);
 
-    long           i;
     GB_transaction ta(get_gb_main());
+    long removed = 0;
 
-    for (i=0; i<count; i++) {
+    for (long i=0; i<count; i++) {
         bool     removeNode = false;
         AP_tree *leaf       = list[i];
 
@@ -1071,6 +1071,7 @@ void AP_tree_root::remove_leafs(int awt_remove_type) {
 
         if (removeNode) {
             list[i]->remove();
+            removed++;
             if (!(awt_remove_type & AWT_REMOVE_BUT_DONT_FREE)) {
                 delete list[i]->father;
             }
@@ -1085,6 +1086,7 @@ void AP_tree_root::remove_leafs(int awt_remove_type) {
 #if defined(CHECK_TREE_STRUCTURE)
     if (get_root_node()) ASSERT_VALID_TREE(get_root_node());
 #endif // CHECK_TREE_STRUCTURE
+    return removed;
 }
 
 // ----------------------------

@@ -784,7 +784,7 @@ inline const char *plural(int val) {
     return "s"+(val == 1);
 }
 
-void NT_reload_tree_event(AW_root *awr, AWT_canvas *ntw) {
+void NT_reload_tree_event(AW_root *awr, AWT_canvas *ntw, AW_CL expose) {
     GB_push_transaction(ntw->gb_main);
     char     *tree_name = awr->awar(ntw->user_awar)->read_string();
     GB_ERROR  error     = ntw->tree_disp->load(ntw->gb_main, tree_name, 0, 0);
@@ -809,8 +809,10 @@ void NT_reload_tree_event(AW_root *awr, AWT_canvas *ntw) {
         }
     }
     free(tree_name);
-    ntw->zoom_reset();
-    AWT_expose_cb(0, ntw, 0);
+    if (expose) {
+        ntw->zoom_reset();
+        AWT_expose_cb(0, ntw, 0);
+    }
     GB_pop_transaction(ntw->gb_main);
 }
 
