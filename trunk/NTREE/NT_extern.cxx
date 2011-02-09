@@ -1115,14 +1115,14 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone) {
 
         if (existing_tree_name) {
             awr->awar(awar_tree)->write_string(existing_tree_name);
-            NT_reload_tree_event(awr, ntw); // load first tree
+            NT_reload_tree_event(awr, ntw, 1); // load first tree
         }
         else {
             AW_advice("Your database contains no tree.", AW_ADVICE_TOGGLE|AW_ADVICE_HELP, 0, "no_tree.hlp");
             GLOBAL_NT.tree->set_tree_type(AP_LIST_NDS); // no tree -> show NDS list
         }
 
-        awr->awar(awar_tree)->add_callback((AW_RCB)NT_reload_tree_event, (AW_CL)ntw, 0);
+        awr->awar(awar_tree)->add_callback((AW_RCB)NT_reload_tree_event, (AW_CL)ntw, 1);
 
         free(existing_tree_name);
         free(tree_name);

@@ -47,7 +47,7 @@ void NT_move_boot_branch P_((AW_window *, AW_CL cl_ntw, AW_CL cl_direction));
 void NT_scale_tree P_((AW_window *, AW_CL cl_ntw, AW_CL dummy_1x));
 void NT_jump_cb P_((AW_window *, AWT_canvas *ntw, AW_CL auto_expand_groups));
 void NT_jump_cb_auto P_((AW_window *dummy, AWT_canvas *ntw));
-void NT_reload_tree_event P_((AW_root *awr, AWT_canvas *ntw));
+void NT_reload_tree_event P_((AW_root *awr, AWT_canvas *ntw, AW_CL expose));
 void NT_recompute_cb P_((AW_window *, AWT_canvas *ntw, AW_CL cl2));
 void NT_remove_species_in_tree_from_hash P_((AP_tree *tree, GB_HASH *hash));
 
