@@ -20,7 +20,7 @@
 
 class Reader : Noncopyable {
     FILE       *fp;
-    FileBuffer  file;
+    FileBuffer *file;
     char        linebuf[LINESIZE];
     const char *curr;     // == NULL means "EOF reached"
     bool        failure;
@@ -36,7 +36,7 @@ public:
     Reader(const char *inf);
     virtual ~Reader();
 
-    void rewind() { file.rewind(); reset(); read(); }
+    void rewind() { file->rewind(); reset(); read(); }
 
     Reader& operator++() { read(); return *this; }
 
