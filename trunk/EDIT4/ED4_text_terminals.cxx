@@ -61,11 +61,9 @@ ED4_returncode ED4_consensus_sequence_terminal::draw(int /* only_text */)
     }
 #endif // DEBUG
 
-    const ED4_remap *rm = ED4_ROOT->root_group_man->remap();
-    rm->clip_screen_range(&left_index, &right_index);
-
     if (right_index<0 || left_index<0) {
-        e4_assert(left_index == -1 && right_index <= 0); // no update intervall
+        e4_assert(MAXSEQUENCECHARACTERLENGTH == 0 || // allow missing update interval when no seqdata is present
+                  (left_index == -1 && right_index <= 0)); // no update interval
 
         const char *no_data = "No consensus data";
         size_t      len     = strlen(no_data);
@@ -79,6 +77,9 @@ ED4_returncode ED4_consensus_sequence_terminal::draw(int /* only_text */)
         right_index = buffer_size-1;
     }
     else {
+        const ED4_remap *rm = ED4_ROOT->root_group_man->remap();
+        rm->clip_screen_range(&left_index, &right_index);
+
         int seq_start = rm->screen_to_sequence(left_index);
         int seq_end   = rm->screen_to_sequence(right_index);
 
