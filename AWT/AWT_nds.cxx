@@ -576,6 +576,12 @@ void make_node_text_init(GBDATA *gb_main) {
     awt_nds_ms->count       = count;
 }
 
+static char *quoted_if_containing_separator(const char *text, char separator) {
+    bool contains_separator = strchr(text, separator) != NULL;
+    if (!contains_separator) return NULL;
+    return GBS_global_string_copy("\"%s\"", text);
+}
+
 const char *make_node_text_nds(GBDATA *gb_main, GBDATA * gbd, NDS_Type mode, GBT_TREE *species, const char *tree_name) {
     awt_nds_ms->init_buffer();
 
@@ -656,9 +662,33 @@ const char *make_node_text_nds(GBDATA *gb_main, GBDATA * gbd, NDS_Type mode, GBT
             const char *aci_srt = awt_nds_ms->parsing[i];
             if (aci_srt) {
                 char *aci_result = GB_command_interpreter(gb_main, str, aci_srt, gbd, tree_name);
-                freeset(str, aci_result ? aci_result : GBS_global_string_copy("<error: %s>", GB_await_error()));
+                if (!aci_result) {
+                    aci_result = GBS_global_string_copy("<error: %s>", GB_await_error());
+                }
+                freeset(str, aci_result);
             }
         }
+
+        // quote string, if it contains separator
+        {
+            char *quoted = NULL;
+            switch (mode) {
+                case NDS_OUTPUT_COMMA_SEPARATED:
+                    quoted = quoted_if_containing_separator(str, ',');
+                    break;
+                        
+                case NDS_OUTPUT_TAB_SEPARATED:
+                    quoted = quoted_if_containing_separator(str, '\t');
+                    break;
+
+                case NDS_OUTPUT_LEAFTEXT:
+                case NDS_OUTPUT_SPACE_PADDED:
+                    break;
+            }
+                
+            if (quoted) freeset(str, quoted);
+        }
+        
 
         bool skip_display = (mode == NDS_OUTPUT_LEAFTEXT && str[0] == 0);
         if (!skip_display) {
@@ -683,18 +713,29 @@ const char *make_node_text_nds(GBDATA *gb_main, GBDATA * gbd, NDS_Type mode, GBT
             field_was_printed = true;
 
             int str_len = strlen(str);
-            int nds_len = awt_nds_ms->lengths[i];
-            if (str_len>nds_len) { // string is too long -> shorten
-                str[nds_len] = 0;
-                str_len      = nds_len;
-            }
+            switch (mode) {
+                case NDS_OUTPUT_TAB_SEPARATED:
+                case NDS_OUTPUT_COMMA_SEPARATED:
+                    awt_nds_ms->append(str, str_len);
+                    break;
 
-            if (mode == NDS_OUTPUT_SPACE_PADDED) { // may need alignment
-                const char *spaced = GBS_global_string((align_left ? "%-*s" : "%*s"), nds_len, str);
-                awt_nds_ms->append(spaced, nds_len);
-            }
-            else {
-                awt_nds_ms->append(str, str_len);
+                case NDS_OUTPUT_LEAFTEXT:
+                case NDS_OUTPUT_SPACE_PADDED: {
+                    int nds_len = awt_nds_ms->lengths[i];
+                    if (str_len>nds_len) { // string is too long -> shorten
+                        str[nds_len] = 0;
+                        str_len      = nds_len;
+                    }
+
+                    if (mode == NDS_OUTPUT_SPACE_PADDED) { // may need alignment
+                        const char *spaced = GBS_global_string((align_left ? "%-*s" : "%*s"), nds_len, str);
+                        awt_nds_ms->append(spaced, nds_len);
+                    }
+                    else {
+                        awt_assert(mode == NDS_OUTPUT_LEAFTEXT);
+                        awt_nds_ms->append(str, str_len);
+                    }
+                }
             }
         }
 
