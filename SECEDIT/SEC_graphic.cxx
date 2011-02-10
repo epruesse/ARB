@@ -682,8 +682,8 @@ GB_ERROR SEC_graphic::load(GBDATA *, const char *, AW_CL, AW_CL) {
     }
 
     // set structure-change-callbacks:
-    GB_add_callback(gb_struct, GB_CB_ALL, (GB_CB)SEC_structure_changed_cb, (int *)this);
-    GB_add_callback(gb_struct_ref, GB_CB_ALL, (GB_CB)SEC_structure_changed_cb, (int *)this);
+    if (gb_struct)     GB_add_callback(gb_struct, GB_CB_ALL, (GB_CB)SEC_structure_changed_cb, (int *)this);
+    if (gb_struct_ref) GB_add_callback(gb_struct_ref, GB_CB_ALL, (GB_CB)SEC_structure_changed_cb, (int *)this);
 
     return err;
 }
