@@ -208,17 +208,17 @@ static int InsertDatainGDE(NA_Alignment *dataset, GBDATA **the_species, unsigned
             this_elem->attr = DEFAULT_X_ATTR;
             this_elem->gb_species = gb_species;
 
-            strncpy_terminate(this_elem->short_name, GB_read_char_pntr(gb_name), 32);
+            strncpy_terminate(this_elem->short_name, GB_read_char_pntr(gb_name), SIZE_SHORT_NAME);
 
             if (AWTC_name_quality(this_elem->short_name) != 0) bad_names++;
 
             gbd = GB_entry(gb_species, "author");
-            if (gbd)    strncpy_terminate(this_elem->authority, GB_read_char_pntr(gbd), 80);
+            if (gbd)    strncpy_terminate(this_elem->authority, GB_read_char_pntr(gbd), SIZE_AUTHORITY);
             gbd = GB_entry(gb_species, "full_name");
-            if (gbd)    strncpy_terminate(this_elem->seq_name, GB_read_char_pntr(gbd), 80);
+            if (gbd)    strncpy_terminate(this_elem->seq_name, GB_read_char_pntr(gbd), SIZE_SEQ_NAME);
             gbd = GB_entry(gb_species, "acc");
             if (gbd) {
-                strncpy_terminate(this_elem->id, GB_read_char_pntr(gbd), 80);
+                strncpy_terminate(this_elem->id, GB_read_char_pntr(gbd), SIZE_ID);
             }
             {
                 AppendNA((NA_Base *)sequfilt[number], strlen((const char *)sequfilt[number]), this_elem);
@@ -252,7 +252,7 @@ static int InsertDatainGDE(NA_Alignment *dataset, GBDATA **the_species, unsigned
             this_elem->attr = DEFAULT_X_ATTR;
             this_elem->gb_species = 0;
 
-            strncpy(this_elem->short_name, (char*)species_name, 32);
+            strncpy(this_elem->short_name, (char*)species_name, SIZE_SHORT_NAME);
             if (AWTC_name_quality(this_elem->short_name) != 0) bad_names++;
 
             this_elem->authority[0] = 0;

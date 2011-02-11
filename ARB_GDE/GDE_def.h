@@ -145,17 +145,26 @@ typedef struct {
     int      maxlen;
 } GMask;
 
+
+// sizes for fields (including terminating zero byte)
+#define SIZE_FIELD_GENBANK 80
+#define SIZE_ID            SIZE_FIELD_GENBANK
+#define SIZE_SEQ_NAME      SIZE_FIELD_GENBANK
+#define SIZE_SHORT_NAME    32
+#define SIZE_DESCRIPTION   SIZE_FIELD_GENBANK
+#define SIZE_AUTHORITY     SIZE_FIELD_GENBANK
+
 typedef struct NA_SeqStruct
 {
-    char  id[80];               /* sequence id (ACCESSION) */
-    char  seq_name[80];         /* Sequence name (ORGANISM) */
-    char  short_name[32];       /* Name (LOCUS) */
+    char  id[SIZE_ID];                  /* sequence id (ACCESSION) */
+    char  seq_name[SIZE_SEQ_NAME];      /* Sequence name (ORGANISM) */
+    char  short_name[SIZE_SHORT_NAME];  /* Name (LOCUS) */
     char  barcode[80];
     char  contig[80];
     char  membrane[80];
-    char  description[80];      /* Description (DEFINITION) */
-    char  authority[80];        /* Author (or creator) */
-    char *comments;             /* Stuff we can't parse */
+    char  description[SIZE_DESCRIPTION];/* Description (DEFINITION) */
+    char  authority[SIZE_AUTHORITY];    /* Author (or creator) */
+    char *comments;                     /* Stuff we can't parse */
     int   comments_len, comments_maxlen;
 
     NA_Base      *sequence;     /* List of bases */
