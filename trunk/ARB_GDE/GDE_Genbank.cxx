@@ -133,7 +133,7 @@ void ReadGen(char *filename, NA_Alignment *dataset, int type)
             else
                 InitNASeq(this_elem, DNA);
 
-            strncpy_terminate(this_elem->short_name, fields[1], 32);
+            strncpy_terminate(this_elem->short_name, fields[1], SIZE_SHORT_NAME);
             AsciiTime(&(this_elem->t_stamp.origin), fields[n-1]);
             this_elem->attr = DEFAULT_X_ATTR;
 
@@ -144,16 +144,16 @@ void ReadGen(char *filename, NA_Alignment *dataset, int type)
             genclen = 0;
         }
         else if (Find(in_line, "DEFINITION"))
-            strncpy_terminate(this_elem->description, in_line+12, 80);
+            strncpy_terminate(this_elem->description, in_line+12, SIZE_DESCRIPTION);
 
         else if (Find(in_line, "AUTHOR"))
-            strncpy_terminate(this_elem->authority, in_line+12, 80);
+            strncpy_terminate(this_elem->authority, in_line+12, SIZE_AUTHORITY);
 
         else if (Find(in_line, "  ORGANISM"))
-            strncpy_terminate(this_elem->seq_name, in_line+12, 80);
+            strncpy_terminate(this_elem->seq_name, in_line+12, SIZE_SEQ_NAME);
 
         else if (Find(in_line, "ACCESSION"))
-            strncpy_terminate(this_elem->id, in_line+12, 80); 
+            strncpy_terminate(this_elem->id, in_line+12, SIZE_ID); 
 
         else if (Find(in_line, "ORIGIN"))
         {
