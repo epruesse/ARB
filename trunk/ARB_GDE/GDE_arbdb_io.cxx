@@ -31,6 +31,21 @@ static int Arbdb_get_curelem(NA_Alignment *dataset)
 
 extern int Default_PROColor_LKUP[], Default_NAColor_LKUP[];
 
+static void set_constant_fields(NA_Sequence *this_elem) {
+    this_elem->attr            = DEFAULT_X_ATTR;
+    this_elem->comments        = strdup("no comments");
+    this_elem->comments_maxlen = 1 + (this_elem->comments_len = strlen(this_elem->comments));
+    this_elem->elementtype     = TEXT;
+    this_elem->rmatrix         = NULL;
+    this_elem->tmatrix         = NULL;
+    this_elem->col_lut         = Default_PROColor_LKUP;
+}
+
+static void AppendNA_and_free(NA_Sequence *this_elem, uchar *& sequfilt) {
+    AppendNA((NA_Base *)sequfilt, strlen((const char *)sequfilt), this_elem);
+    freenull(sequfilt);
+}
+
 static int InsertDatainGDE(NA_Alignment *dataset, GBDATA **the_species, unsigned char **the_names,
                            unsigned char **the_sequences, unsigned long numberspecies,
                            unsigned long maxalignlen, const AP_filter *filter, GapCompression compress,
@@ -196,44 +211,32 @@ static int InsertDatainGDE(NA_Alignment *dataset, GBDATA **the_species, unsigned
     if (the_species) {
         for (gb_species = the_species[number]; gb_species; gb_species = the_species[++number]) {
             if ((number/10)*10==number) {
-                if (aw_status((double)number/(double)numberspecies)) {
-                    return 1;
-                }
+                if (aw_status((double)number/(double)numberspecies)) return 1;
             }
-            gb_name = GB_entry(gb_species, "name");
 
-            curelem = Arbdb_get_curelem(dataset);
+            curelem   = Arbdb_get_curelem(dataset);
             this_elem = &(dataset->element[curelem]);
+
             InitNASeq(this_elem, RNA);
-            this_elem->attr = DEFAULT_X_ATTR;
             this_elem->gb_species = gb_species;
 
-            strncpy_terminate(this_elem->short_name, GB_read_char_pntr(gb_name), SIZE_SHORT_NAME);
+#define GET_FIELD_CONTENT(fieldname,buffer,bufsize) do {                \
+                gbd = GB_entry(gb_species, fieldname);                  \
+                if (gbd) {                                              \
+                    const char *val = GB_read_char_pntr(gbd);           \
+                    strncpy_terminate(buffer, val, bufsize);            \
+                }                                                       \
+                else buffer[0] = 0;                                     \
+            } while(0)
+
+            GET_FIELD_CONTENT("name",      this_elem->short_name, SIZE_SHORT_NAME);
+            GET_FIELD_CONTENT("author",    this_elem->authority,  SIZE_AUTHORITY);
+            GET_FIELD_CONTENT("full_name", this_elem->seq_name,   SIZE_SEQ_NAME);
+            GET_FIELD_CONTENT("acc",       this_elem->id,         SIZE_ID);
 
             if (AWTC_name_quality(this_elem->short_name) != 0) bad_names++;
-
-            gbd = GB_entry(gb_species, "author");
-            if (gbd)    strncpy_terminate(this_elem->authority, GB_read_char_pntr(gbd), SIZE_AUTHORITY);
-            gbd = GB_entry(gb_species, "full_name");
-            if (gbd)    strncpy_terminate(this_elem->seq_name, GB_read_char_pntr(gbd), SIZE_SEQ_NAME);
-            gbd = GB_entry(gb_species, "acc");
-            if (gbd) {
-                strncpy_terminate(this_elem->id, GB_read_char_pntr(gbd), SIZE_ID);
-            }
-            {
-                AppendNA((NA_Base *)sequfilt[number], strlen((const char *)sequfilt[number]), this_elem);
-                freenull(sequfilt[number]);
-            }
-
-            this_elem->comments = strdup("no comments");
-            this_elem->comments_maxlen = 1 + (this_elem->comments_len = strlen(this_elem->comments));
-
-            {
-                this_elem->elementtype = TEXT;
-                this_elem->rmatrix = NULL;
-                this_elem->tmatrix = NULL;
-                this_elem->col_lut = Default_PROColor_LKUP;
-            }
+            AppendNA_and_free(this_elem, sequfilt[number]);
+            set_constant_fields(this_elem);
         }
     }
     else {      // use the_names
@@ -241,38 +244,23 @@ static int InsertDatainGDE(NA_Alignment *dataset, GBDATA **the_species, unsigned
 
         for (species_name=the_names[number]; species_name; species_name=the_names[++number]) {
             if ((number/10)*10==number) {
-                if (aw_status((double)number/(double)numberspecies)) {
-                    return 1;
-                }
+                if (aw_status((double)number/(double)numberspecies)) return 1;
             }
 
-            curelem = Arbdb_get_curelem(dataset);
+            curelem   = Arbdb_get_curelem(dataset);
             this_elem = &(dataset->element[curelem]);
+
             InitNASeq(this_elem, RNA);
-            this_elem->attr = DEFAULT_X_ATTR;
             this_elem->gb_species = 0;
 
             strncpy(this_elem->short_name, (char*)species_name, SIZE_SHORT_NAME);
-            if (AWTC_name_quality(this_elem->short_name) != 0) bad_names++;
-
             this_elem->authority[0] = 0;
-            this_elem->seq_name[0] = 0;
-            this_elem->id[0] = 0;
+            this_elem->seq_name[0]  = 0;
+            this_elem->id[0]        = 0;
 
-            {
-                AppendNA((NA_Base *)sequfilt[number], strlen((const char *)sequfilt[number]), this_elem);
-                delete sequfilt[number]; sequfilt[number] = 0;
-            }
-
-            this_elem->comments = strdup("no comments");
-            this_elem->comments_maxlen = 1 + (this_elem->comments_len = strlen(this_elem->comments));
-
-            {
-                this_elem->elementtype = TEXT;
-                this_elem->rmatrix = NULL;
-                this_elem->tmatrix = NULL;
-                this_elem->col_lut = Default_PROColor_LKUP;
-            }
+            if (AWTC_name_quality(this_elem->short_name) != 0) bad_names++;
+            AppendNA_and_free(this_elem, sequfilt[number]);
+            set_constant_fields(this_elem);
         }
     }
 
