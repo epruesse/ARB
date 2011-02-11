@@ -208,17 +208,17 @@ static int InsertDatainGDE(NA_Alignment *dataset, GBDATA **the_species, unsigned
             this_elem->attr = DEFAULT_X_ATTR;
             this_elem->gb_species = gb_species;
 
-            strncpy(this_elem->short_name, GB_read_char_pntr(gb_name), 31);
+            strncpy_terminate(this_elem->short_name, GB_read_char_pntr(gb_name), 32);
 
             if (AWTC_name_quality(this_elem->short_name) != 0) bad_names++;
 
             gbd = GB_entry(gb_species, "author");
-            if (gbd)    strncpy(this_elem->authority, GB_read_char_pntr(gbd), 79);
+            if (gbd)    strncpy_terminate(this_elem->authority, GB_read_char_pntr(gbd), 80);
             gbd = GB_entry(gb_species, "full_name");
-            if (gbd)    strncpy(this_elem->seq_name, GB_read_char_pntr(gbd), 79);
+            if (gbd)    strncpy_terminate(this_elem->seq_name, GB_read_char_pntr(gbd), 80);
             gbd = GB_entry(gb_species, "acc");
             if (gbd) {
-                strncpy(this_elem->id, GB_read_char_pntr(gbd), 79);
+                strncpy_terminate(this_elem->id, GB_read_char_pntr(gbd), 80);
             }
             {
                 AppendNA((NA_Base *)sequfilt[number], strlen((const char *)sequfilt[number]), this_elem);
@@ -252,7 +252,7 @@ static int InsertDatainGDE(NA_Alignment *dataset, GBDATA **the_species, unsigned
             this_elem->attr = DEFAULT_X_ATTR;
             this_elem->gb_species = 0;
 
-            strncpy((char*)this_elem->short_name, (char*)species_name, 31);
+            strncpy(this_elem->short_name, (char*)species_name, 32);
             if (AWTC_name_quality(this_elem->short_name) != 0) bad_names++;
 
             this_elem->authority[0] = 0;
@@ -396,7 +396,7 @@ int ReadArbdb(NA_Alignment *dataset, bool marked, AP_filter *filter, GapCompress
         const char *data = GB_read_char_pntr(GBT_read_sequence(the_species[i], dataset->alignment_name));
         int size = strlen(data);
         if (size > maxalignlen) size = (int)maxalignlen;
-        strncpy(the_sequences[i], data, size);
+        strncpy_terminate(the_sequences[i], data, size+1);
     }
     InsertDatainGDE(dataset, the_species, 0, (unsigned char **)the_sequences, numberspecies, maxalignlen, filter, compress, cutoff_stop_codon);
     for (i=0; i<numberspecies; i++) {

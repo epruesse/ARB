@@ -466,9 +466,9 @@ void ReadGDE(char *filename, NA_Alignment *dataset, int type)
         else if (Find2(line, "}")==0)
         {
             if (this_elem->id[0] == '\0')
-                strncpy(this_elem->id, uniqueID(), 79);
+                strncpy_terminate(this_elem->id, uniqueID(), 80);
             if (this_elem->short_name[0] == '\0')
-                strncpy(this_elem->short_name, this_elem->id, 79);
+                strncpy_terminate(this_elem->short_name, this_elem->id, 80);
             if (this_elem->seqlen == 0)
                 this_elem->protect =
                     PROT_BASE_CHANGES+

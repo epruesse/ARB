@@ -9,6 +9,8 @@
  * All rights reserved.
  */
 
+#define gde_assert(bed) arb_assert(bed)
+ 
 #define TRUTH   1
 #define JUSTICE 2
 #define BEAUTY  3
@@ -143,7 +145,6 @@ typedef struct {
     int      maxlen;
 } GMask;
 
-
 typedef struct NA_SeqStruct
 {
     char  id[80];               /* sequence id (ACCESSION) */
@@ -218,6 +219,13 @@ typedef struct
 extern NA_Alignment *DataSet;
 
 #define getcmask(a, b) (b < ((a)->offset)) ? 0 : ((a)->cmask[(b-(a)->offset)])
+
+inline void strncpy_terminate(char *dest, const char *source, size_t dest_size) {
+    // like strncpy, but also writes terminating zero byte
+    // 'dest_size' is overall 'dest'-buffersize (incl. zero terminator)
+    strncpy(dest, source, dest_size-1);
+    dest[dest_size-1] = 0;
+}
 
 #else
 #error GDE_def.h included twice
