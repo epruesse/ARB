@@ -15,8 +15,6 @@
 #include "GDE_def.h"
 #endif
 
-#define gde_assert(bed) arb_assert(bed)
-
 typedef struct GargChoicetype
 {
     char *label;                /* name for display in dialog box */

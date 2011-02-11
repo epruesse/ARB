@@ -63,8 +63,6 @@ static void AsciiTime(void *b, char *asciitime)
 }
 // ENDARB
 
-
-
 void ReadGen(char *filename, NA_Alignment *dataset, int type)
 {
     int     done               = FALSE;
@@ -135,7 +133,7 @@ void ReadGen(char *filename, NA_Alignment *dataset, int type)
             else
                 InitNASeq(this_elem, DNA);
 
-            strncpy(this_elem->short_name, fields[1], 31);
+            strncpy_terminate(this_elem->short_name, fields[1], 32);
             AsciiTime(&(this_elem->t_stamp.origin), fields[n-1]);
             this_elem->attr = DEFAULT_X_ATTR;
 
@@ -146,16 +144,16 @@ void ReadGen(char *filename, NA_Alignment *dataset, int type)
             genclen = 0;
         }
         else if (Find(in_line, "DEFINITION"))
-            strncpy(this_elem->description, &(in_line[12]), 79);
+            strncpy_terminate(this_elem->description, in_line+12, 80);
 
         else if (Find(in_line, "AUTHOR"))
-            strncpy(this_elem->authority, &(in_line[12]), 79);
+            strncpy_terminate(this_elem->authority, in_line+12, 80);
 
         else if (Find(in_line, "  ORGANISM"))
-            strncpy(this_elem->seq_name, &(in_line[12]), 79);
+            strncpy_terminate(this_elem->seq_name, in_line+12, 80);
 
         else if (Find(in_line, "ACCESSION"))
-            strncpy(this_elem->id, &(in_line[12]), 79);
+            strncpy_terminate(this_elem->id, in_line+12, 80); 
 
         else if (Find(in_line, "ORIGIN"))
         {

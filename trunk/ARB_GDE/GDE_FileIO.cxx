@@ -166,7 +166,7 @@ static void ReadNA_Flat(char *filename, char *dataset, int type)
             this_elem = &(data->element[curelem]);
             if (in_line[strlen(in_line)-1] == '\n')
                 in_line[strlen(in_line)-1] = '\0';
-            strncpy(this_elem->short_name, (char*)&(in_line[1]), 31);
+            strncpy_terminate(this_elem->short_name, in_line+1, 32);
             this_elem->offset = offset;
         }
         else if (in_line[0] != '\n')
@@ -580,13 +580,10 @@ void Warning(const char *s) {
 }
 
 
-void InitNASeq(NA_Sequence *seq, int type)
-{
-
-
+void InitNASeq(NA_Sequence *seq, int type) {
     SetTime(&(seq->t_stamp.origin));
     SetTime(&(seq->t_stamp.modify));
-    strncpy(seq->id, uniqueID(), 79);
+    strncpy_terminate(seq->id, uniqueID(), 80);
     seq->seq_name[0] = '\0';
     seq->barcode[0] = '\0';
     seq->contig[0] = '\0';
