@@ -482,7 +482,7 @@ static void gb_write_rek(FILE *out, GBCONTAINER *gbc, long deep, long big_hunk) 
                 fprintf(out, "%%F\t%s\n", s);
                 break;
             case GB_DB:
-                fprintf(out, "%%%% (%%\n");
+                fprintf(out, "%%%c (%%\n", GB_read_flag(gb) ? '$' : '%');
                 gb_write_rek(out, (GBCONTAINER *)gb, deep + 1, big_hunk);
                 for (i=deep+1; i--;) putc('\t', out);
                 fprintf(out, "%%) /*%s*/\n\n", GB_KEY(gb));
@@ -1336,9 +1336,9 @@ void TEST_SLOW_loadsave() {
     TEST_ASSERT_RESULT__NOERROREXPORTED(gb_asc = GB_open(asc_db, "rw"));
 
 #if defined(TEST_AUTO_UPDATE)
-    TEST_ASSERT_NO_ERROR(GB_save_as(gb_asc, bin_db, "b")); 
+    TEST_ASSERT_NO_ERROR(GB_save_as(gb_asc, bin_db, "b"));
 #endif // TEST_AUTO_UPDATE
-    
+
     GBDATA *gb_bin;
     TEST_ASSERT_RESULT__NOERROREXPORTED(gb_bin = GB_open(bin_db, "rw"));
 
