@@ -342,6 +342,8 @@ void enter_stage_1_build_tree(PT_main * main, char *tname) {
     GB_ERROR sm_error = GB_set_mode_of_file(tname, 00666);
     if (sm_error) GB_warning(sm_error);
 
+    free(t2name);
+
     psg.pt = pt;
 }
 

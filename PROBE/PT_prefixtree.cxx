@@ -540,10 +540,11 @@ long PTD_write_chain_to_disk(FILE * out, PTM2 *ptmain, POS_TREE * node, long pos
     PT_READ_PNTR(data, first_entry);
     int n_entries = ptd_count_chain_entries((char *)first_entry);
     {
-        char **entry_tab = (char **)GB_calloc(sizeof(char *), n_entries);
-        ptd_set_chain_references((char *)first_entry, entry_tab);
-        ptd_write_chain_entries(out, &pos, ptmain, entry_tab, n_entries, mainapos);
-        delete entry_tab;
+        char **entry_tab = (char **) GB_calloc(sizeof(char *), n_entries);
+        ptd_set_chain_references((char *) first_entry, entry_tab);
+        ptd_write_chain_entries(out, &pos, ptmain, entry_tab, n_entries,
+                mainapos);
+        free(entry_tab);
     }
     putc(PT_CHAIN_END, out);
     pos++;
