@@ -1,6 +1,6 @@
 /*ARBDB ASCII*/
 species_data		%% (%
-	species		:5000	%% (%
+	species		:5000	%$ (%
 		name		:7600	"MetMazei"
 		ali_16s			%% (%
 			data		:7000	".....................AUUCUGGUU-----GA--U-CC-U-G-CCAG-AG-GU-U-AC-U-GC--U-AU-C--G-GU-GUUC--GC---C-U--AAGCCA-U-GC-G-AGU-CAU-A-UGU---------A---------------.............."

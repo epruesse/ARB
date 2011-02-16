@@ -334,7 +334,7 @@ char *getLine(Reader *r) {
  * V3  May read from stdin. Skipped support for old ASCII format.
  */
 
-static char *getToken(char **line) {
+static const char *getToken(char **line) {
     char *token  = *line;
     (*line)     += strcspn(*line, " \t");
 
@@ -407,7 +407,7 @@ static GB_ERROR gb_parse_ascii_rek(Reader *r, GBCONTAINER *gb_parent, const char
                 error = "expected '*/'";
             }
             else { // real content
-                char *name = getToken(&line);
+                const char *name = getToken(&line);
 
                 if (name[0] == '%' && name[1] == ')' && !name[2]) { // close container
                     if (!parent_name) {
@@ -435,7 +435,7 @@ static GB_ERROR gb_parse_ascii_rek(Reader *r, GBCONTAINER *gb_parent, const char
                     }
                 }
                 else {
-                    char *protection = 0;
+                    const char *protection = NULL;
                     if (line[0] == ':') {           // protection level
                         protection = getToken(&line);
                     }
@@ -444,24 +444,26 @@ static GB_ERROR gb_parse_ascii_rek(Reader *r, GBCONTAINER *gb_parent, const char
                     if (line[0] == '%') {
                         readAsString = false;
 
-                        char *type   = getToken(&line);
+                        const char *type = getToken(&line);
 
                         if (type[1] == 0 || type[2] != 0) {
                             error = GBS_global_string("Syntax error in type '%s' (expected %% and 1 more character)", type);
                         }
                         else {
-                            if (type[1] == '%') {   // container
+                            if (type[1] == '%' || type[1] == '$') {   // container
                                 if (line[0] == '(' && line[1] == '%') {
                                     char        *cont_name = strdup(name);
                                     GBCONTAINER *gbc       = gb_make_container(gb_parent, cont_name, -1, 0);
 
-                                    protection = protection ? strdup(protection) : 0;
-                                    error      = gb_parse_ascii_rek(r, gbc, cont_name);
-                                    // caution: most buffer variables are invalidated NOW!
+                                    char *protection_copy = nulldup(protection);
+                                    bool  marked          = type[1] == '$';
+                                    error                 = gb_parse_ascii_rek(r, gbc, cont_name);
+                                    // CAUTION: most buffer variables are invalidated NOW!!!
 
-                                    if (!error) error = set_protection_level(Main, (GBDATA*)gbc, protection);
+                                    if (!error) error = set_protection_level(Main, (GBDATA*)gbc, protection_copy);
+                                    if (marked) GB_write_flag((GBDATA*)gbc, 1);
 
-                                    free(protection);
+                                    free(protection_copy);
                                     free(cont_name);
                                 }
                                 else {
