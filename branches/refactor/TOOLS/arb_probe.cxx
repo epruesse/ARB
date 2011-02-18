@@ -69,14 +69,12 @@ static void aw_message(const char *error) {
     printf("%s\n", error);
 }
 
-static const char *AP_probe_pt_look_for_server() {
+static const char *AP_probe_pt_look_for_server(ARB_ERROR& error) {
     const char *server_tag = GBS_ptserver_tag(P.SERVERID);
-    GB_ERROR    error      = arb_look_and_start_server(AISC_MAGIC_NUMBER, server_tag, 0);
 
-    if (error) {
-        aw_message(error);
-        return 0;
-    }
+    error = arb_look_and_start_server(AISC_MAGIC_NUMBER, server_tag, 0);
+    if (error) return NULL;
+    
     return GBS_read_arb_tcp(server_tag);
 }
 
@@ -88,25 +86,25 @@ static int probe_design_send_data(T_PT_PDC  pdc) {
     return 0;
 }
 
-static char *AP_probe_design_event() {
+static char *AP_probe_design_event(ARB_ERROR& error) {
     T_PT_PDC     pdc;
     T_PT_TPROBE  tprobe;
     bytestring   bs;
     char        *match_info;
 
     {
-        const char *servername = AP_probe_pt_look_for_server();
-
+        const char *servername = AP_probe_pt_look_for_server(error);
         if (!servername) return NULL;
+
         pd_gl.link = (aisc_com *)aisc_open(servername, &pd_gl.com, AISC_MAGIC_NUMBER);
     }
 
     if (!pd_gl.link) {
-        aw_message ("Cannot contact Probe bank server ");
+        error = "Cannot contact PT_SERVER [1]";
         return NULL;
     }
     if (init_local_com_struct()) {
-        aw_message ("Cannot contact Probe bank server (2)");
+        error = "Cannot contact PT_SERVER [2]";
         return NULL;
     }
 
@@ -130,9 +128,10 @@ static char *AP_probe_design_event() {
              NULL);
 
     if (probe_design_send_data(pdc)) {
-        aw_message ("Connection to PT_SERVER lost (1)");
+        error = "Connection to PT_SERVER lost (1)";
         return NULL;
     }
+
     apd_sequence *s;
     for (s = P.sequence; s; s = s->next) {
         bytestring bs_seq;
@@ -196,24 +195,23 @@ static char *AP_probe_design_event() {
     return GBS_strclose(outstr);
 }
 
-static char *AP_probe_match_event() {
+static char *AP_probe_match_event(ARB_ERROR& error) {
     T_PT_MATCHLIST  match_list;
     char           *probe = 0;
-    char           *locs_error;
 
     {
-        const char *servername = AP_probe_pt_look_for_server();
-
+        const char *servername = AP_probe_pt_look_for_server(error);
         if (!servername) return NULL;
+
         pd_gl.link = (aisc_com *)aisc_open(servername, &pd_gl.com, AISC_MAGIC_NUMBER);
     }
 
     if (!pd_gl.link) {
-        aw_message ("Cannot contact Probe bank server ");
+        error = "Cannot contact PT_SERVER [1]";
         return NULL;
     }
     if (init_local_com_struct()) {
-        aw_message ("Cannot contact Probe bank server (2)");
+        error = "Cannot contact PT_SERVER [2]";
         return NULL;
     }
 
@@ -226,23 +224,25 @@ static char *AP_probe_match_event() {
                   LOCS_SEARCHMATCH,             P.SEQUENCE,
                   NULL)) {
         free(probe);
-        aw_message ("Connection to PT_SERVER lost (2)");
+        error = "Connection to PT_SERVER lost (1)";
         return NULL;
     }
 
     long match_list_cnt;
+    
     bytestring bs;
     bs.data = 0;
-    aisc_get(pd_gl.link, PT_LOCS, pd_gl.locs,
-              LOCS_MATCH_LIST,  &match_list,
-              LOCS_MATCH_LIST_CNT,  &match_list_cnt,
-              LOCS_MATCH_STRING,    &bs,
-              LOCS_ERROR,       &locs_error,
-              NULL);
-    if (*locs_error) {
-        aw_message(locs_error);
+    {
+        char *locs_error;
+        aisc_get(pd_gl.link, PT_LOCS, pd_gl.locs,
+                 LOCS_MATCH_LIST,      &match_list,
+                 LOCS_MATCH_LIST_CNT,  &match_list_cnt,
+                 LOCS_MATCH_STRING,    &bs,
+                 LOCS_ERROR,           &locs_error,
+                 NULL);
+        if (*locs_error) error = locs_error;
+        free(locs_error);
     }
-    free(locs_error);
     aisc_close(pd_gl.link);
 
     return bs.data; // freed by caller
@@ -312,11 +312,20 @@ static const char *getString(const char *param, const char *val, const char *des
 static int parseCommandLine(int argc, const char ** argv) {
     pargc = argc;
     pargv = argv;
-    
+
     if (argc<=1) helpflag = 1;
     else helpflag         = 0;
 
-    P.SERVERID = getInt("serverid", 0, 0, 100, "Server Id, look into $ARBHOME/lib/arb_tcp.dat");
+#if UNIT_TESTS==1
+    const int minServerID   = TEST_SERVER_ID;
+#else // !UNIT_TESTS == 1
+    const int minServerID   = 0;
+#endif
+
+    P.SERVERID = getInt("serverid", 0, minServerID, 100, "Server Id, look into $ARBHOME/lib/arb_tcp.dat");
+#if UNIT_TESTS==1
+    if (P.SERVERID<0) { arb_assert(P.SERVERID == TEST_SERVER_ID); }
+#endif
 
     P.DESIGNCPLIPOUTPUT = getInt("designmaxhits", 100, 10, 10000, "Maximum Number of Probe Design Suggestions");
     P.DESINGNAMES       = getString("designnames", "",      "List of short names separated by '#'");
@@ -353,13 +362,13 @@ static int parseCommandLine(int argc, const char ** argv) {
     return !helpflag;
 }
 
-static char *execute() {
+static char *execute(ARB_ERROR& error) {
     char *answer;
     if (*P.DESINGNAMES || P.sequence) {
-        answer = AP_probe_design_event();
+        answer = AP_probe_design_event(error);
     }
     else {
-        answer = AP_probe_match_event();
+        answer = AP_probe_match_event(error);
     }
     return answer;
 }
@@ -367,9 +376,23 @@ static char *execute() {
 int main(int argc, const char ** argv) {
     bool ok = parseCommandLine(argc, argv);
     if (ok) {
-        char *answer = execute();
-        fputs(answer, stdout);
-        free(answer);
+        ARB_ERROR  error;
+        char      *answer = execute(error);
+
+        arb_assert(contradicted(answer, error));
+        
+        if (!answer) {
+            fprintf(stderr,
+                    "arb_probe: Failed to process your request\n"
+                    "           Reason: %s",
+                    error.deliver());
+            ok = false;
+        }
+        else {
+            fputs(answer, stdout);
+            free(answer);
+            error.expect_no_error();
+        }
     }
     return ok ? EXIT_SUCCESS : EXIT_FAILURE;
 }
@@ -440,11 +463,16 @@ void TEST_SLOW_variable_defaults_in_server() {
 
 static void test_arb_probe(int fake_argc, const char **fake_argv, const char *expected) {
     test_setup();
-    
+
     TEST_ASSERT_EQUAL(true, parseCommandLine(fake_argc, fake_argv));
-    P.SERVERID   = TEST_SERVER_ID; // use test pt_server
-    char *answer = execute();
+    P.SERVERID = TEST_SERVER_ID;        // use test pt_server
+
+    ARB_ERROR  error;
+    char      *answer = execute(error);
+
+    TEST_ASSERT_NO_ERROR(error.deliver());
     TEST_ASSERT_EQUAL(answer, expected);
+
     free(answer);
 }
 
