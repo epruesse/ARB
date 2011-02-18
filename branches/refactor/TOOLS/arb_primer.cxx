@@ -35,60 +35,66 @@ struct arb_prm_struct {
 } aprm;
 
 
-void arb_prm_menu()
-{
+GB_ERROR arb_prm_menu() {
     char **alignment_name;
     int i;
     printf(" Please select an Alignment:\n");
     for (alignment_name = aprm.alignment_names, i=1;
             *alignment_name;
-            alignment_name++, i++) {
+         alignment_name++, i++) {
         printf("%i: %s\n", i, *alignment_name);
     }
     aprm.max_name = i;
     fgets(aprm.buffer, PRM_BUFFERSIZE, stdin);
-    i = atoi(aprm.buffer);
+    i             = atoi(aprm.buffer);
+
+    GB_ERROR error = NULL;
     if ((i<1) || (i>=aprm.max_name)) {
-        printf ("ERROR: select %i out of range\n", i);
-        exit(-1);
+        error = GBS_global_string("selection %i out of range", i);
     }
-    aprm.source = aprm.alignment_names[i-1];
-    printf("This module will search for primers for all positions.\n"
-            "   The best result is one primer for all (marked) taxa , the worst case\n"
-            "   are n primers for n taxa.\n"
-            "   Please specify the maximum number of primers:\n"
-            );
-    fgets(aprm.buffer, PRM_BUFFERSIZE, stdin);
-    i = atoi(aprm.buffer);
-    aprm.prmanz = i;
-    printf("Select minimum length of a primer, the maximum will be (minimum + %i)\n",
-            ADD_LEN);
-    fgets(aprm.buffer, PRM_BUFFERSIZE, stdin);
-    i = atoi(aprm.buffer);
-    if ((i<4) || (i>30)) {
-        printf ("ERROR: select %i out of range\n", i);
-        exit(-1);
-    }
-    aprm.prmlen = i;
+    else {
+        aprm.source = aprm.alignment_names[i-1];
+        printf("This module will search for primers for all positions.\n"
+               "   The best result is one primer for all (marked) taxa , the worst case\n"
+               "   are n primers for n taxa.\n"
+               "   Please specify the maximum number of primers:\n"
+               );
+        fgets(aprm.buffer, PRM_BUFFERSIZE, stdin);
+        i           = atoi(aprm.buffer);
+        aprm.prmanz = i;
+        printf("Select minimum length of a primer, the maximum will be (minimum + %i)\n",
+               ADD_LEN);
+        fgets(aprm.buffer, PRM_BUFFERSIZE, stdin);
+        i           = atoi(aprm.buffer);
+        if ((i<4) || (i>30)) {
+            error = GBS_global_string("selection %i out of range", i);
+        }
+        else {
+            aprm.prmlen = i;
 
-    printf("There may be short sequences or/and deletes in full sequences\n"
-            "   So a primer normally does not match all sequences\n"
-            "   Specify minimum percentage of species (0-100 %%):\n");
-    fgets(aprm.buffer, PRM_BUFFERSIZE, stdin);
-    i = atoi(aprm.buffer);
-    if ((i<1) || (i>100)) {
-        printf ("ERROR: select %i out of range\n", i);
-        exit(-1);
-    }
-    aprm.prmsmin = i;
+            printf("There may be short sequences or/and deletes in full sequences\n"
+                   "   So a primer normally does not match all sequences\n"
+                   "   Specify minimum percentage of species (0-100 %%):\n");
+            fgets(aprm.buffer, PRM_BUFFERSIZE, stdin);
+            i = atoi(aprm.buffer);
+            if ((i<1) || (i>100)) {
+                error = GBS_global_string("selection %i out of range", i);
+            }
+            else {
+                aprm.prmsmin = i;
 
-    printf("Write output to file (enter \"\" to write to screen)\n");
-    fgets(aprm.buffer, PRM_BUFFERSIZE, stdin);
-    aprm.outname = strdup(aprm.buffer);
+                printf("Write output to file (enter \"\" to write to screen)\n");
+                fgets(aprm.buffer, PRM_BUFFERSIZE, stdin);
+                char *lf = strchr(aprm.buffer, '\n');
+                if (lf) lf[0] = 0; // remove linefeed from filename 
+                aprm.outname = strdup(aprm.buffer);
+            }
+        }
+    }
+    return error;
 }
 
-char *arb_prm_read(int /* prmanz */)
-{
+GB_ERROR arb_prm_read(int /* prmanz */) {
     GBDATA     *gb_presets;
     GBDATA     *gb_source;
     GBDATA     *gb_species;
@@ -141,9 +147,9 @@ char *arb_prm_read(int /* prmanz */)
     printf("%i taxa read\n", sp_count);
     aprm.sp_count = sp_count;
     if (sp_count == 0) {
-        exit(0);
+        return "No marked taxa found";
     }
-    return 0;
+    return NULL;
 }
 
 long arb_count_keys(const char * /* key */, long val, void *)
@@ -271,44 +277,64 @@ void arb_prm_primer(int /* prmanz */)
 
 }
 
-int main(int argc, char ** /* argv */)
-{
-    char *error;
-    const char *path;
-    if (argc != 1) {
-        fprintf(stderr, "no parameters\n");
-        printf(" Converts RNA or DNA Data to Pro\n");
-        exit(-1);
-    }
-    path = ":";
-    aprm.gb_main = GB_open(path, "r");
-    if (!aprm.gb_main) {
-        fprintf(stderr, "ERROR cannot find server\n");
-        exit(-1);
-    }
-    GB_begin_transaction(aprm.gb_main);
-    aprm.alignment_names = GBT_get_alignment_names(aprm.gb_main);
-    GB_commit_transaction(aprm.gb_main);
-    arb_prm_menu();
-    GB_begin_transaction(aprm.gb_main);
-    error = arb_prm_read(aprm.prmanz);
-    if (error) {
-        printf("ERROR: %s\n", error);
-        exit(0);
-    }
-    GB_commit_transaction(aprm.gb_main);
-    if (strlen(aprm.outname)) {
-        aprm.out = fopen(aprm.outname, "w");
-        if (!aprm.out) {
-            printf("Cannot open outfile\n");
-            exit (-1);
+int main(int argc, char **argv) {
+    const char *path  = NULL;
+
+    while (argc >= 2) {
+        if (strcmp(argv[1], "--help") == 0) {
+            fprintf(stderr,
+                    "Usage: arb_primer [dbname]\n"
+                    "Searches sequencing primers\n");
+            return EXIT_FAILURE;
         }
-        arb_prm_primer(aprm.prmanz);
-        fclose(aprm.out);
+        path = argv[1];
+        argv++; argc--;
+    }
+
+    if (!path) path = ":";
+
+    GB_ERROR error = NULL;
+    aprm.gb_main   = GB_open(path, "r");
+    if (!aprm.gb_main) {
+        error = GBS_global_string("Can't open db '%s' (Reason: %s)", path, GB_await_error());
     }
     else {
-        aprm.out = stdout;
-        arb_prm_primer(aprm.prmanz);
+        GB_begin_transaction(aprm.gb_main);
+        aprm.alignment_names = GBT_get_alignment_names(aprm.gb_main);
+        GB_commit_transaction(aprm.gb_main);
+
+        error = arb_prm_menu();
+
+        if (!error) {
+            GB_begin_transaction(aprm.gb_main);
+            error = arb_prm_read(aprm.prmanz);
+            if (!error) {
+                GB_commit_transaction(aprm.gb_main);
+                if (strlen(aprm.outname)) {
+                    aprm.out = fopen(aprm.outname, "w");
+                    if (!aprm.out) {
+                        error = GB_IO_error("writing", aprm.outname);
+                    }
+                    else {
+                        arb_prm_primer(aprm.prmanz);
+                        fclose(aprm.out);
+                    }
+                }
+                else {
+                    aprm.out = stdout;
+                    arb_prm_primer(aprm.prmanz);
+                }
+            }
+            else {
+                GB_abort_transaction(aprm.gb_main);
+            }
+        }
+        GB_close(aprm.gb_main);
     }
-    return 0;
+
+    if (error) {
+        fprintf(stderr, "Error in arb_primer: %s\n", error);
+        return EXIT_FAILURE;
+    }
+    return EXIT_SUCCESS;
 }
