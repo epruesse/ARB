@@ -59,6 +59,7 @@ char *pt_init_main_struct P_((PT_main *main, char *filename));
 extern "C" int server_shutdown P_((PT_main *pm, aisc_string passwd));
 extern "C" int broadcast P_((PT_main *main, int dummy));
 void PT_init_psg P_((void));
+void clean_before_exit P_((void));
 void PT_init_map P_((void));
 
 /* PT_match.cxx */
@@ -85,6 +86,8 @@ void ptnd_new_match P_((PT_local *locs, char *probestring));
 
 /* PT_prefixtree.cxx */
 void PT_init_count_bits P_((void));
+void PTM_add_alloc P_((void *ptr));
+void PTM_finally_free_all_mem P_((void));
 char *PTM_get_mem P_((int size));
 int PTM_destroy_mem P_((void));
 void PTM_free_mem P_((char *data, int size));

@@ -12,6 +12,8 @@
 #include <PT_server_prototypes.h>
 #include "pt_prototypes.h"
 
+#include <BI_helix.hxx>
+
 #include <arbdbt.h>
 #include <servercntrl.h>
 #include <server.h>
@@ -25,7 +27,6 @@
 #define TIME_OUT 1000*60*60*24
 
 struct probe_struct_global  psg;
-char                       *pt_error_buffer = new char[1024];
 ULONG                       physical_memory = 0;
 
 // globals of gene-pt-server
@@ -106,6 +107,41 @@ inline bool copy_to_buf(const char *start, const char *behindEnd, int MAXLEN, ch
     memcpy(destBuf, start, len);
     destBuf[len] = 0;
     return true;
+}
+
+/*!
+ * Function frees some of the memory allocated by the pt-server.
+ * (--> Less warnings in valgrind checks...)
+ */
+void clean_before_exit() {
+    // Clean-up the PT-Servers data arrays...
+    int count = GB_number_of_subentries(psg.gb_species_data);
+    for (int i = 0; i < count; ++i) {
+        free(psg.data[i].data);
+        free(psg.data[i].name);
+        free(psg.data[i].fullname);
+    }
+    free(psg.data);
+
+    // Clean-up the PT-Servers name hash...
+    GBS_free_hash(psg.namehash);
+
+    // Clean-up the PT-Servers allocated memory...
+    PTM_finally_free_all_mem();
+
+    // General ARB clean-up & close
+    GB_close(psg.gb_main);
+
+    // Free the e-coli helix stuff...
+    free(psg.ecoli);
+    delete psg.bi_ecoli;
+    delete psg.pos_to_weight;
+
+    // Free alignment name
+    free(psg.alignment_name);
+
+    // Free ptmain...
+    free(psg.ptmain);
 }
 
 static void parse_names_into_gene_struct(const char *map_str, gene_struct_list& listOfGenes) {
@@ -281,6 +317,11 @@ int main(int argc, char **argv)
             free(msg);
         }
 
+        /* CLEAN-UP */
+        free(tname);
+        destroy_PT_main(aisc_main);
+        free_arb_params(params);
+        clean_before_exit();
         exit(EXIT_SUCCESS);
     }
     if (!strcmp(command_flag, "-QUERY")) {
@@ -293,6 +334,12 @@ int main(int argc, char **argv)
         printf("Tree loaded - performing checks..\n");
         PT_debug_tree();
         printf("Checks done");
+
+        /* CLEAN-UP */
+        free(tname);
+        destroy_PT_main(aisc_main);
+        free_arb_params(params);
+        clean_before_exit();
         exit(EXIT_SUCCESS);
     }
     psg.link = (aisc_com *) aisc_open(name, &psg.main, AISC_MAGIC_NUMBER);

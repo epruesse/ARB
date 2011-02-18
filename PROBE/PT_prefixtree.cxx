@@ -36,6 +36,34 @@ void PT_init_count_bits() {
     }
 }
 
+void PTM_add_alloc(void *ptr) {
+    if (PTM.alloc_counter == PTM.alloc_array_size) {
+        if (PTM.alloc_array_size == 0)
+            PTM.alloc_array_size = 1;
+
+        PTM.alloc_array_size = PTM.alloc_array_size * 2;
+        void **new_array = (void **) malloc(PTM.alloc_array_size
+                * sizeof(void*));
+
+        if (!new_array)
+            abort();
+
+        void *old_array = PTM.alloc_ptr;
+        memcpy(new_array, old_array, PTM.alloc_counter * sizeof(void*));
+        PTM.alloc_ptr = new_array;
+        free(old_array);
+    }
+    PTM.alloc_ptr[PTM.alloc_counter++] = ptr;
+}
+
+void PTM_finally_free_all_mem() {
+    for (unsigned long i = 0; i < PTM.alloc_counter; ++i)
+        free(PTM.alloc_ptr[i]);
+    PTM.alloc_counter = 0;
+    PTM.alloc_array_size = 0;
+    free(PTM.alloc_ptr);
+}
+
 char *PTM_get_mem(int size) {
     //! allocate 'size' bytes
 
@@ -45,7 +73,9 @@ char *PTM_get_mem(int size) {
 
     nsize = (size + (PTM_ALIGNED - 1)) & (-PTM_ALIGNED);
     if (nsize > PTM_MAX_SIZE) {
-        return (char *) calloc(1, size);
+        void * ptr = calloc(1, size);
+        PTM_add_alloc(ptr);
+        return (char *) ptr;
     }
     pos = nsize >> PTM_LD_ALIGNED;
 
@@ -69,6 +99,7 @@ char *PTM_get_mem(int size) {
             }
             ++less;
 #endif
+            PTM_add_alloc(PTM.data);
         }
         erg = PTM.data;
         PTM.data += nsize;
@@ -147,6 +178,11 @@ PTM2 *PT_init() {
         else                       PTM.flag_2_type[i] = PT_NT_UNDEF;
     }
     PT_init_count_bits();
+
+    PTM.alloc_ptr = NULL;
+    PTM.alloc_counter = 0;
+    PTM.alloc_array_size = 0;
+
     return ptmain;
 }
 
