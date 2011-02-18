@@ -31,6 +31,10 @@ extern struct PTM_struct {
     long          debug[PTM_MAX_TABLES+1];
 #endif
     PT_NODE_TYPE  flag_2_type[256];
+    //
+    void **alloc_ptr;
+    unsigned long alloc_counter;
+    unsigned long alloc_array_size;
 } PTM;
 
 extern char PT_count_bits[PT_B_MAX+1][256]; // returns how many bits are set
@@ -358,7 +362,7 @@ inline char *PT_WRITE_CHAIN_ENTRY(const char * const ptr, const int mainapos, in
     if (apos == mainapos) isapos = 0; else isapos = 0x80;
 
     if (rpos < 0x3fff) {        // write the rpos
-           // 0x7fff, mit der rpos vorher verglichen wurde war zu groß
+           // 0x7fff, mit der rpos vorher verglichen wurde war zu gross
         PT_WRITE_SHORT(wcep, rpos);
         *wcep |= isapos;
         wcep += 2;

@@ -58,7 +58,6 @@ enum PT_MATCH_TYPE {
 
 extern ULONG physical_memory;
 struct Hs_struct;
-extern char *pt_error_buffer;
 
 typedef enum type_types_type {
     t_int    = 1,

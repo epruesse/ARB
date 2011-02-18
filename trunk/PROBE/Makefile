@@ -174,6 +174,7 @@ PT_main.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 PT_main.o: $(ARBHOME)/INCLUDE/arbdbt.h
 PT_main.o: $(ARBHOME)/INCLUDE/arbtools.h
 PT_main.o: $(ARBHOME)/INCLUDE/attributes.h
+PT_main.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 PT_main.o: $(ARBHOME)/INCLUDE/bytestring.h
 PT_main.o: $(ARBHOME)/INCLUDE/client.h
 PT_main.o: $(ARBHOME)/INCLUDE/client_types.h
