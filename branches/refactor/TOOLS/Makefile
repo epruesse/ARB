@@ -293,6 +293,7 @@ arb_read_tree.o: $(ARBHOME)/INCLUDE/ad_prot.h
 arb_read_tree.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 arb_read_tree.o: $(ARBHOME)/INCLUDE/arb_assert.h
 arb_read_tree.o: $(ARBHOME)/INCLUDE/arb_core.h
+arb_read_tree.o: $(ARBHOME)/INCLUDE/arb_defs.h
 arb_read_tree.o: $(ARBHOME)/INCLUDE/arb_error.h
 arb_read_tree.o: $(ARBHOME)/INCLUDE/arb_msg.h
 arb_read_tree.o: $(ARBHOME)/INCLUDE/arb_string.h

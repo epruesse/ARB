@@ -10,6 +10,7 @@
 
 #include <TreeRead.h>
 #include <arbdbt.h>
+#include <arb_defs.h>
 #include <ctime>
 
 // add_bootstrap interprets the length of the branches as bootstrap value
@@ -17,7 +18,7 @@
 //
 // 'hundred' specifies which value represents 100%
 
-void add_bootstrap(GBT_TREE *node, double hundred) {
+static void add_bootstrap(GBT_TREE *node, double hundred) {
     if (node->is_leaf) {
         freenull(node->remark_branch);
         return;
@@ -44,177 +45,258 @@ void add_bootstrap(GBT_TREE *node, double hundred) {
     add_bootstrap(node->rightson, hundred);
 }
 
-STATIC_ATTRIBUTED(__ATTR__NORETURN, void abort_with_usage(GBDATA *gb_main, const char *error)) {
-    printf("Usage: arb_read_tree [-scale factor] [-consense #ofTrees] tree_name treefile [comment] [-commentFromFile file]\n");
-    if (error) {
-        printf("Error: %s\n", error);
-        GBT_message(gb_main, GBS_global_string("Error running arb_read_tree (%s)", error));
+static void show_message(GBDATA *gb_main, const char *msg) {
+    if (gb_main) {
+        GBT_message(gb_main, msg);
     }
-    exit(-1);
+    else {
+        fflush(stdout);
+        printf("arb_read_tree: %s\n", msg);
+    }
+}
+static void show_error(GBDATA *gb_main, GB_ERROR error) {
+    if (error) show_message(gb_main, GBS_global_string("Error running arb_read_tree (%s)", error));
 }
 
-int main(int argc, char **argv)
-{
-    GBDATA *gb_main = GB_open(":", "r");
-    if (!gb_main) {
-        printf("arb_read_tree: Error: you have to start an arbdb server first\n");
-        return -1;
-    }
+static void error_with_usage(GBDATA *gb_main, GB_ERROR error) {
+    fputs("Usage: arb_read_tree [options] tree_name treefile [comment]\n"
+          "Available options:\n"
+          "    -db database savename    specify database and savename (default is 'running ARB')\n"
+          "    -scale factor            scale branchlengths by 'factor'\n"
+          "    -consense numberOfTrees  reinterpret branchlengths as consense values\n"
+          "    -commentFromFile file    read tree comment from 'file'\n"
+          , stdout);
 
-#define SHIFT_ARGS(off) do { argc -= off; argv += off; } while (0)
+    show_error(gb_main, error);
+}
 
-    SHIFT_ARGS(1);              // position onto first argument
+struct parameters {
+    const char *dbname;
+    const char *dbsavename;
+    const char *tree_name;
+    const char *treefilename;
+    const char *comment;
+    const char *commentFile;
+    
+    bool   scale;
+    double scale_factor;
 
-    bool   scale        = false;
-    double scale_factor = 0.0;
+    bool consense;
+    int  calculated_trees;
 
-    if (argc>0 && strcmp("-scale", argv[0]) == 0) {
-        scale = true;
-        if (argc<2) abort_with_usage(gb_main, "-scale expects a 2nd argument (scale factor)");
-        scale_factor = atof(argv[1]);
-        SHIFT_ARGS(2);
-    }
-
-    bool consense         = false;
-    int  calculated_trees = 0;
-
-    if (argc>0 && strcmp("-consense", argv[0]) == 0) {
-        consense = true;
-        if (argc<2) abort_with_usage(gb_main, "-consense expects a 2nd argument (number of trees)");
-
-        calculated_trees = atoi(argv[1]);
-        if (calculated_trees < 1) {
-            abort_with_usage(gb_main, GBS_global_string("Illegal # of trees (%i) for -consense", calculated_trees));
-        }
-
-        SHIFT_ARGS(2);
-    }
-
-    if (!argc) abort_with_usage(gb_main, "Missing argument 'tree_name'");
-    const char *tree_name = argv[0];
-    SHIFT_ARGS(1);
-
-    if (!argc) abort_with_usage(gb_main, "Missing argument 'treefile'");
-    const char *filename = argv[0];
-    SHIFT_ARGS(1);
-
-    const char *comment = 0;
-    if (argc>0) {
-        comment = argv[0];
-        SHIFT_ARGS(1);
-    }
-
-    const char *commentFile = 0;
-    if (argc>0 && strcmp("-commentFromFile", argv[0]) == 0) {
-        if (argc<2) abort_with_usage(gb_main, "-commentFromFile expects a 2nd argument (file containing comment)");
-        commentFile = argv[1];
-        SHIFT_ARGS(2);
-    }
-
-    // end of argument parsing!
-    if (argc>0) abort_with_usage(gb_main, GBS_global_string("unexpected argument(s): %s ..", argv[0]));
-
-    // --------------------------------------------------------------------------------
-
-    char *comment_from_file = 0;
-    if (commentFile) {
-        comment_from_file = GB_read_file(commentFile);
-        if (!comment_from_file) {
-            comment_from_file = GBS_global_string_copy("Error reading from comment-file '%s':\n%s", commentFile, GB_await_error());
-        }
-    }
-
-    char *comment_from_treefile = 0;
-    GBT_message(gb_main, GBS_global_string("Reading tree from '%s' ..", filename));
-
-    GB_ERROR  error = 0;
-    GBT_TREE *tree;
+    parameters()
+        : dbname(":"),
+          dbsavename(NULL),
+          tree_name(NULL),
+          treefilename(NULL),
+          comment(NULL),
+          commentFile(NULL),
+          scale(false),
+          scale_factor(0.0),
+          consense(false),
+          calculated_trees(0)
     {
-        char *scaleWarning = 0;
-
-        tree = TREE_load(filename, sizeof(GBT_TREE), &comment_from_treefile, (consense||scale) ? 0 : 1, &scaleWarning);
-        if (!tree) {
-            error = GB_await_error();
-        }
-        else {
-            if (scaleWarning) {
-                GBT_message(gb_main, scaleWarning);
-                free(scaleWarning);
-            }
-        }
     }
+    
+#define SHIFT_ARGS(off) do { argc -= off; argv += off; } while (0)
+#define SHIFT_NONSWITCHES(off) do { nonSwitches -= off; nonSwitch += off; } while (0)
 
-    if (!error) {
-        if (scale) {
-            GBT_message(gb_main, GBS_global_string("Scaling branch lengths by factor %f.", scale_factor));
-            TREE_scale(tree, scale_factor, 1.0);
-        }
+    GB_ERROR scan(int argc, char **argv) {
+        GB_ERROR error = NULL;
 
-        if (consense) {
-            if (calculated_trees < 1) {
-                error = "Minimum for -consense is 1";
+        const char  *nonSwitch_buf[20];
+        const char **nonSwitch   = nonSwitch_buf;
+        int          nonSwitches = 0;
+
+        SHIFT_ARGS(1);              // position onto first argument
+
+        while (argc>0 && !error) {
+            if (strcmp("-scale", argv[0]) == 0) {
+                scale = true;
+                if (argc<2) error = "-scale expects a 2nd argument (scale factor)";
+                else {
+                    scale_factor = atof(argv[1]);
+                    SHIFT_ARGS(2);
+                }
+            }
+            else if (strcmp("-consense", argv[0]) == 0) {
+                consense = true;
+                if (argc<2) error = "-consense expects a 2nd argument (number of trees)";
+                else {
+                    calculated_trees = atoi(argv[1]);
+                    if (calculated_trees < 1) {
+                        error = GBS_global_string("Illegal # of trees (%i) for -consense (minimum is 1)", calculated_trees);
+                    }
+                    else SHIFT_ARGS(2);
+                }
+            }
+            else if (strcmp("-commentFromFile", argv[0]) == 0) {
+                if (argc<2) error = "-commentFromFile expects a 2nd argument (file containing comment)";
+                else {
+                    commentFile = argv[1];
+                    SHIFT_ARGS(2);
+                }
+            }
+            else if (strcmp("-db", argv[0]) == 0) {
+                if (argc<3) error = "-db expects two arguments (database and savename)";
+                else {
+                    dbname     = argv[1];
+                    dbsavename = argv[2];
+                    SHIFT_ARGS(3);
+                }
             }
             else {
-                GBT_message(gb_main, GBS_global_string("Reinterpreting branch lengths as consense values (%i trees).", calculated_trees));
-                add_bootstrap(tree, calculated_trees);
+                nonSwitch[nonSwitches++] = argv[0];
+                SHIFT_ARGS(1);
             }
         }
-    }
-
-    if (!error) {
-        error = GB_begin_transaction(gb_main);
-
-        if (!error && tree->is_leaf) error = "Cannot load tree (need at least 2 leafs)";
-        if (!error) error                  = GBT_write_tree(gb_main, 0, tree_name, tree);
 
         if (!error) {
-            // write tree comment:
-            const char *datestring;
-            {
-                time_t date;
-                if (time(&date) == -1) datestring = "<Error calculating time>";
-                else datestring = ctime(&date);
+            if (!nonSwitches) error = "Missing argument 'tree_name'";
+            else {
+                tree_name = nonSwitch[0];
+                SHIFT_NONSWITCHES(1);
             }
+        }
+        if (!error) {
+            if (!nonSwitches) error = "Missing argument 'treefile'";
+            else {
+                treefilename = nonSwitch[0];
+                SHIFT_NONSWITCHES(1);
+            }
+        }
+        if (!error && nonSwitches>0) {
+            comment = nonSwitch[0];
+            SHIFT_NONSWITCHES(1);
+        }
 
-            char *load_info = GBS_global_string_copy("Tree loaded from '%s' on %s", filename, datestring);
+        if (!error && nonSwitches>0) {
+            error = GBS_global_string("unexpected argument(s): %s ..", nonSwitch[0]);
+        }
+        return error;
+    }
+};
 
-#define COMMENT_SOURCES 4
-            const char *comments[COMMENT_SOURCES] = {
-                comment,
-                comment_from_file,
-                comment_from_treefile,
-                load_info,
-            };
+int main(int argc, char **argv) {
+    parameters param;
+    GB_ERROR error = param.scan(argc, argv);
 
-            GBS_strstruct *buf   = GBS_stropen(5000);
-            bool           empty = true;
+    GBDATA *gb_main      = NULL;
+    GBDATA *gb_msg_main  = NULL;
+    bool    connectToArb = strcmp(param.dbname, ":") == 0;
 
-            for (int c = 0; c<COMMENT_SOURCES; c++) {
-                if (comments[c]) {
-                    if (!empty) GBS_chrcat(buf, '\n');
-                    GBS_strcat(buf, comments[c]);
-                    empty = false;
+    if (!error || connectToArb) {
+        gb_main                       = GB_open(param.dbname, connectToArb ? "r" : "rw");
+        if (connectToArb) gb_msg_main = gb_main;
+    }
+
+    if (error) error_with_usage(gb_main, error);
+    else {
+        if (!gb_main) {
+            if (connectToArb) error = "you have to start an arbdb server first";
+            else error = GBS_global_string("can't open db (Reason: %s)", GB_await_error());
+        }
+
+        char     *comment_from_file     = 0;
+        char     *comment_from_treefile = 0;
+        GBT_TREE *tree                  = 0;
+
+        if (!error) {
+            if (param.commentFile) {
+                comment_from_file = GB_read_file(param.commentFile);
+                if (!comment_from_file) {
+                    comment_from_file = GBS_global_string_copy("Error reading from comment-file '%s':\n%s", param.commentFile, GB_await_error());
                 }
             }
 
-            char *cmt = GBS_strclose(buf);
+            show_message(gb_msg_main, GBS_global_string("Reading tree from '%s' ..", param.treefilename));
+            {
+                char *scaleWarning = 0;
 
-            error = GBT_write_tree_rem(gb_main, tree_name, cmt);
-
-            free(cmt);
-            free(load_info);
+                tree = TREE_load(param.treefilename, sizeof(GBT_TREE), &comment_from_treefile, (param.consense||param.scale) ? 0 : 1, &scaleWarning);
+                if (!tree) error = GB_await_error();
+                else {
+                    if (scaleWarning) {
+                        show_message(gb_msg_main, scaleWarning);
+                        free(scaleWarning);
+                    }
+                }
+            }
         }
 
-        error = GB_end_transaction(gb_main, error);
+        if (!error) {
+            if (param.scale) {
+                show_message(gb_msg_main, GBS_global_string("Scaling branch lengths by factor %f", param.scale_factor));
+                TREE_scale(tree, param.scale_factor, 1.0);
+            }
+
+            if (param.consense) {
+                if (param.calculated_trees < 1) {
+                    error = "Minimum for -consense is 1";
+                }
+                else {
+                    show_message(gb_msg_main, GBS_global_string("Reinterpreting branch lengths as consense values (%i trees)", param.calculated_trees));
+                    add_bootstrap(tree, param.calculated_trees);
+                }
+            }
+        }
+
+        if (!error) {
+            error = GB_begin_transaction(gb_main);
+
+            if (!error && tree->is_leaf) error = "Cannot load tree (need at least 2 leafs)";
+            if (!error) error                  = GBT_write_tree(gb_main, 0, param.tree_name, tree);
+
+            if (!error) {
+                // write tree comment:
+                const char *datestring;
+                {
+                    time_t date;
+                    if (time(&date) == -1) datestring = "<Error calculating time>";
+                    else datestring = ctime(&date);
+                }
+
+                const char *comments[] = {
+                    param.comment,
+                    comment_from_file,
+                    comment_from_treefile,
+                };
+
+                GBS_strstruct *buf   = GBS_stropen(5000);
+                bool           empty = true;
+
+                for (size_t c = 0; c<ARRAY_ELEMS(comments); c++) {
+                    if (comments[c]) {
+                        if (!empty) GBS_chrcat(buf, '\n');
+                        GBS_strcat(buf, comments[c]);
+                        empty = false;
+                    }
+                }
+
+                char *cmt = GBS_strclose(buf);
+
+                error = GBT_write_tree_rem(gb_main, param.tree_name, cmt);
+
+                free(cmt);
+            }
+
+            error = GB_end_transaction(gb_main, error);
+        }
+
+        if (error) show_error(gb_main, error);
+        else       show_message(gb_msg_main, GBS_global_string("Tree %s read into the database", param.tree_name));
+        
+        free(comment_from_file);
+        free(comment_from_treefile);
     }
 
-    if (error) GBT_message(gb_main, error);
-    else GBT_message(gb_main, GBS_global_string("Tree %s read into the database", tree_name));
-
-    GB_close(gb_main);
-
-    free(comment_from_file);
-    free(comment_from_treefile);
+    if (gb_main) {
+        if (!error && !connectToArb) {
+            error = GB_save_as(gb_main, param.dbsavename, "a");
+            if (error) show_error(gb_main, error);
+        }
+        GB_close(gb_main);
+    }
 
     return error ? EXIT_FAILURE : EXIT_SUCCESS;
 }
