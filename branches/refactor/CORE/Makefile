@@ -69,7 +69,6 @@ arb_progress.o: $(ARBHOME)/INCLUDE/attributes.h
 arb_progress.o: $(ARBHOME)/INCLUDE/dupstr.h
 arb_progress.o: $(ARBHOME)/INCLUDE/smartptr.h
 arb_progress.o: $(ARBHOME)/INCLUDE/test_global.h
-arb_progress.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 arb_signal.o: arb_core.h
 arb_signal.o: arb_msg.h

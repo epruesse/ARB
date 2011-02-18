@@ -1548,6 +1548,7 @@ GBDATA *GB_login(const char *cpath, const char *opent, const char *user) {
                     if (i) {
                         if (Main->allow_corrupt_file_recovery) {
                             GB_print_error();
+                            GB_clear_error();
                         }
                         else {
                             gbd   = 0;
