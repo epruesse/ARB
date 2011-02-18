@@ -15,7 +15,6 @@ TOOLS := \
 	arb_proto_2_xsub \
 	arb_read_tree \
 	arb_replace \
-	arb_swap_rnastr \
 
 ifeq ($(DEBUG),1)
 # add all arb*test*.c[xx] files
@@ -320,22 +319,6 @@ arb_replace.o: $(ARBHOME)/INCLUDE/attributes.h
 arb_replace.o: $(ARBHOME)/INCLUDE/dupstr.h
 arb_replace.o: $(ARBHOME)/INCLUDE/smartptr.h
 arb_replace.o: $(ARBHOME)/INCLUDE/test_global.h
-
-arb_swap_rnastr.o: $(ARBHOME)/INCLUDE/ad_prot.h
-arb_swap_rnastr.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
-arb_swap_rnastr.o: $(ARBHOME)/INCLUDE/arb_assert.h
-arb_swap_rnastr.o: $(ARBHOME)/INCLUDE/arb_core.h
-arb_swap_rnastr.o: $(ARBHOME)/INCLUDE/arb_error.h
-arb_swap_rnastr.o: $(ARBHOME)/INCLUDE/arb_msg.h
-arb_swap_rnastr.o: $(ARBHOME)/INCLUDE/arb_string.h
-arb_swap_rnastr.o: $(ARBHOME)/INCLUDE/arbdb.h
-arb_swap_rnastr.o: $(ARBHOME)/INCLUDE/arbdb_base.h
-arb_swap_rnastr.o: $(ARBHOME)/INCLUDE/arbdbt.h
-arb_swap_rnastr.o: $(ARBHOME)/INCLUDE/arbtools.h
-arb_swap_rnastr.o: $(ARBHOME)/INCLUDE/attributes.h
-arb_swap_rnastr.o: $(ARBHOME)/INCLUDE/dupstr.h
-arb_swap_rnastr.o: $(ARBHOME)/INCLUDE/smartptr.h
-arb_swap_rnastr.o: $(ARBHOME)/INCLUDE/test_global.h
 
 arb_test.o: $(ARBHOME)/INCLUDE/ad_prot.h
 arb_test.o: $(ARBHOME)/INCLUDE/arb_assert.h
