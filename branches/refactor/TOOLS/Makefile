@@ -20,6 +20,10 @@ ifeq ($(DEBUG),1)
 # add all arb*test*.c[xx] files
 TOOLS += $(subst .c,,$(wildcard arb*test*.c))
 TOOLS += $(subst .cxx,,$(wildcard arb*test*.cxx))
+else
+ifeq ($(UNIT_TESTS),1)
+TOOLS += arb_test
+endif
 endif
 
 LIB_ARBDB            := $(LIBPATH) $(ARBDB_LIB)
@@ -322,15 +326,23 @@ arb_replace.o: $(ARBHOME)/INCLUDE/smartptr.h
 arb_replace.o: $(ARBHOME)/INCLUDE/test_global.h
 
 arb_test.o: $(ARBHOME)/INCLUDE/ad_prot.h
+arb_test.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 arb_test.o: $(ARBHOME)/INCLUDE/arb_assert.h
 arb_test.o: $(ARBHOME)/INCLUDE/arb_core.h
+arb_test.o: $(ARBHOME)/INCLUDE/arb_defs.h
 arb_test.o: $(ARBHOME)/INCLUDE/arb_error.h
 arb_test.o: $(ARBHOME)/INCLUDE/arb_msg.h
 arb_test.o: $(ARBHOME)/INCLUDE/arb_string.h
 arb_test.o: $(ARBHOME)/INCLUDE/arbdb.h
 arb_test.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+arb_test.o: $(ARBHOME)/INCLUDE/arbdbt.h
 arb_test.o: $(ARBHOME)/INCLUDE/arbtools.h
 arb_test.o: $(ARBHOME)/INCLUDE/attributes.h
+arb_test.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
+arb_test.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
+arb_test.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+arb_test.o: $(ARBHOME)/INCLUDE/cb.h
 arb_test.o: $(ARBHOME)/INCLUDE/dupstr.h
 arb_test.o: $(ARBHOME)/INCLUDE/smartptr.h
 arb_test.o: $(ARBHOME)/INCLUDE/test_global.h
+arb_test.o: $(ARBHOME)/INCLUDE/test_unit.h
