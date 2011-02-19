@@ -129,34 +129,36 @@ inline size_t count_gaps_and_dots(const char *seq, int seqsize) {
     return count;
 }
 
-int probe_compress_sequence(char *seq, int seqsize)
-{
-    static uchar *tab = 0;
-    if (!tab) {
-        tab = (uchar *)malloc(256);
+int probe_compress_sequence(char *seq, int seqsize) {
+    static SmartMallocPtr(uchar) smart_tab;
+    uchar *tab = NULL;
+    if (smart_tab.isNull()) {
+        tab = (uchar *) malloc(256);
         memset(tab, PT_N, 256);
-
         tab['A'] = tab['a'] = PT_A;
         tab['C'] = tab['c'] = PT_C;
         tab['G'] = tab['g'] = PT_G;
         tab['T'] = tab['t'] = PT_T;
         tab['U'] = tab['u'] = PT_T;
         tab['.'] = PT_QU;
-        tab[0]   = PT_B_UNDEF;
+        tab[0] = PT_B_UNDEF;
+        smart_tab = tab;
     }
 
-    char   *dest   = seq;
-    size_t  offset = 0;
+    tab = &*smart_tab;
+    char *dest = seq;
+    size_t offset = 0;
 
     while (seq[offset]) {
-        offset += count_gaps(seq+offset, seqsize-offset); // skip over gaps
+        offset += count_gaps(seq + offset, seqsize - offset); // skip over gaps
 
         uchar c = tab[safeCharIndex(seq[offset++])];
-        if (c == PT_B_UNDEF) break;                 // already seen terminal zerobyte
+        if (c == PT_B_UNDEF)
+            break; // already seen terminal zerobyte
 
         *dest++ = c;
-        if (c == PT_QU) {                           // TODO: *seq = '.' ???
-            offset += count_gaps_and_dots(seq+offset, seqsize-offset); // skip over gaps and dots
+        if (c == PT_QU) { // TODO: *seq = '.' ???
+            offset += count_gaps_and_dots(seq + offset, seqsize - offset); // skip over gaps and dots
             // dest[-1] = PT_N; // @@@ uncomment this to handle '.' like 'N' (experimental!!!)
         }
     }
@@ -166,10 +168,10 @@ int probe_compress_sequence(char *seq, int seqsize)
     }
 
 #ifdef ARB_64
-    pt_assert(!((dest - seq) & 0xffffffff00000000));    // must fit into 32 bit
+    pt_assert(!((dest - seq) & 0xffffffff00000000)); // must fit into 32 bit
 #endif
 
-    return dest-seq;
+    return dest - seq;
 }
 
 static char *probe_read_string_append_point(GBDATA *gb_data, int *psize) {
