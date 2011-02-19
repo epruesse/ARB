@@ -131,6 +131,7 @@ void clean_before_exit() {
 
     // General ARB clean-up & close
     GB_close(psg.gb_main);
+    destroy_PT_main(aisc_main);
 
     // Free the e-coli helix stuff...
     free(psg.ecoli);
@@ -319,7 +320,6 @@ int main(int argc, char **argv)
 
         /* CLEAN-UP */
         free(tname);
-        destroy_PT_main(aisc_main);
         free_arb_params(params);
         clean_before_exit();
         exit(EXIT_SUCCESS);
@@ -337,7 +337,6 @@ int main(int argc, char **argv)
 
         /* CLEAN-UP */
         free(tname);
-        destroy_PT_main(aisc_main);
         free_arb_params(params);
         clean_before_exit();
         exit(EXIT_SUCCESS);
@@ -347,7 +346,7 @@ int main(int argc, char **argv)
         if (strcmp(command_flag, "-look") == 0) {
             exit(EXIT_SUCCESS); // already another server
         }
-        printf("There is another activ server. I try to kill him...\n");
+        printf("There is another active server. I will try to kill it...\n");
         aisc_nput(psg.link, PT_MAIN, psg.main,
                   MAIN_SHUTDOWN, "47@#34543df43%&3667gh",
                   NULL);

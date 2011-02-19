@@ -431,12 +431,11 @@ const char * const *GBS_get_arb_tcp_entries(const char *matching) {
 //      pt server related
 
 const char *GBS_ptserver_logname() {
-    static char *serverlog = 0;
-    if (!serverlog) {
+    static SmartMallocPtr(char) serverlog;
+    if (serverlog.isNull())
         serverlog = nulldup(GB_path_in_ARBLIB("pts/ptserver.log", NULL));
-        gb_assert(serverlog);
-    }
-    return serverlog;
+    // Caution! 'serverlog' is returned as 'const char *'.
+    return &*serverlog;
 }
 
 void GBS_add_ptserver_logentry(const char *entry) {
