@@ -245,10 +245,6 @@ static GBDATA *create_gene_species(GBDATA *gb_species_data2, const char *interna
                 if (!error) {
                     names[static_internal_name] = strdup(long_name);
                     error = GBT_write_int(gb_species2, "abspos", abspos);
-#if defined(DEBUG)
-                    // store realname for debugging purposes
-                    if (!error) error = GBT_write_string(gb_species2, "realname_debug", long_name);
-#endif // DEBUG
                 }
             }
         }
