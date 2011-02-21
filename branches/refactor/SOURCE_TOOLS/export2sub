@@ -30,4 +30,5 @@ export SEP
 export NODIR
 
 export ARBDB_LIB
+export UNIT_TESTS
 
