@@ -96,14 +96,18 @@ void PT_exit_psg() {
     if (psg_initialized) {
         if (psg.gb_main) {
             GB_close(psg.gb_main);
-            psg.gb_main         = NULL;;
-            psg.gb_species_data = NULL;;
-            psg.gb_sai_data     = NULL;;
+            psg.gb_main         = NULL;
+            psg.gb_species_data = NULL;
+            psg.gb_sai_data     = NULL;
+        }
+        if (psg.gb_shell) {
+            delete psg.gb_shell;
+            psg.gb_shell = NULL;
         }
     }
 }
 
-void PT_exit(int exitcode) { 
+void PT_exit(int exitcode) {
     // unique exit point to ensure cleanup
     if (psg_initialized) PT_exit_psg();
     exit(exitcode);
