@@ -1442,6 +1442,8 @@ void TEST_count_chars() {
     // calculate SAI for test DBs
 
     arb_suppress_progress silence;
+    GB_shell              shell;
+
     for (int prot = 0; prot<2; ++prot) {
         GBDATA *gb_main;
         TEST_ASSERT_RESULT__NOERROREXPORTED(gb_main = GB_open(prot ? "TEST_prot.arb" : "TEST_nuc.arb", "rw"));
@@ -1457,10 +1459,11 @@ void TEST_count_chars() {
 }
 void TEST_SLOW_count_chars() {
     // calculate a real big test alignment
-    // 
+    //
     // the difference to TEST_count_chars() is just in size of alignment.
-    // NT_count_different_chars() crashes for big alignments when running in gdb 
+    // NT_count_different_chars() crashes for big alignments when running in gdb
     arb_suppress_progress silence;
+    GB_shell              shell;
     {
         arb_unit_test::test_alignment_data data_source[] = {
             { 1, "s1", "ACGT" },

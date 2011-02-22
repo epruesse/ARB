@@ -3020,6 +3020,7 @@ struct arb_unit_test::test_alignment_data TestAlignmentData_TargetAndReferenceHa
 void TEST_Aligner_TargetAndReferenceHandling() {
     // performs some alignments to check logic of target and reference handling
     
+    GB_shell   shell;
     ARB_ERROR  error;
     GBDATA    *gb_main = TEST_CREATE_DB(error, test_aliname, TestAlignmentData_TargetAndReferenceHandling, false);
 
@@ -3155,7 +3156,8 @@ struct arb_unit_test::test_alignment_data TestAlignmentData_checksumError[] = {
 
 void TEST_Aligner_checksumError() {
     // this produces an internal aligner error
-    
+
+    GB_shell   shell;
     ARB_ERROR  error;
     GBDATA    *gb_main = TEST_CREATE_DB(error, test_aliname, TestAlignmentData_checksumError, false);
 

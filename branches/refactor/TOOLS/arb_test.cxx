@@ -66,8 +66,9 @@ void TEST_arb_primer() {
 }
 
 static GB_ERROR removeVaryingDateFromTreeRemarks(const char *dbname) {
-    GB_ERROR  error   = NULL;
-    GBDATA   *gb_main = GB_open(dbname, "rw");
+    GB_ERROR  error     = NULL;
+    GB_shell  shell;
+    GBDATA   *gb_main   = GB_open(dbname, "rw");
     if (!gb_main) error = GB_await_error();
     else {
         {
