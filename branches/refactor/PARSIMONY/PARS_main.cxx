@@ -1655,6 +1655,7 @@ void PARS_map_viewer(GBDATA *gb_species, AD_MAP_VIEWER_TYPE vtype) {
 int main(int argc, char **argv) {
     aw_initstatus();
 
+    GB_shell shell;
     AW_root *aw_root      = AWT_create_root(".arb_prop/pars.arb", "ARB_PARS");
     AD_map_viewer_aw_root = aw_root;
 
