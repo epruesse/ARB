@@ -1593,7 +1593,7 @@ class TestFile {
         if (out) fclose(out);
         return out;
     }
-    void create() { ASSERT_RESULT(bool, open("w"), true); }
+    void create() { ASSERT_RESULT(bool, true, open("w")); }
     void unlink() { ::unlink(name); }
 public:
     TestFile(const char *name_) : name(name_) { create(); }
