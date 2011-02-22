@@ -22,6 +22,7 @@ class mainDialog : public MDialog
 {
     public:
         mainDialog(Widget);
+        ~mainDialog();
         void ARB_callback();
         void openImportCallback(Widget, XtPointer);
         void openImageCallback(Widget, XtPointer);

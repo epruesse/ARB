@@ -103,7 +103,9 @@ class mainDialog;
 class imageDialog;
 
 void add_mainDialog_callback (const char *awar, void(*cb)( GBDATA *, mainDialog *,  GB_CB_TYPE), mainDialog *md);
+void del_mainDialog_callback (const char *awar, void(*cb)( GBDATA *, mainDialog *,  GB_CB_TYPE), mainDialog *md);
 void add_imageDialog_callback(const char *awar, void(*cb)( GBDATA *, imageDialog *, GB_CB_TYPE), imageDialog *id);
+void del_imageDialog_callback(const char *awar, void(*cb)( GBDATA *, imageDialog *, GB_CB_TYPE), imageDialog *id);
 
 //
 void checkCreateAWARS();
