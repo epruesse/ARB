@@ -127,6 +127,15 @@ public:
     ARB_ERROR close(ARB_ERROR& error);              // abort transaction if error (e.g.: 'return ta.close(error);')
 };
 
+class GB_shell {
+    // initialize and cleanup module ARBDB
+    // No database usage is possible when no GB_shell exists!
+public: 
+    GB_shell();
+    ~GB_shell();
+
+    static void ensure_inside();
+};
 
 // --------------------------------------------
 //      include generated public prototypes
