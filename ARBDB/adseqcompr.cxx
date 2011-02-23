@@ -9,6 +9,7 @@
 // =============================================================== //
 
 #include <arbdbt.h>
+#include <arb_progress.h>
 
 #include "gb_key.h"
 
@@ -168,14 +169,7 @@ void g_b_put_sequences_in_container(CompressionTree *ctree, Sequence *seqs, Mast
     }
 }
 
-void g_b_create_master(CompressionTree *node, Sequence *seqs, MasterSequence **masters,
-                       int masterCount, int *builtMasters, int my_master,
-                       const char *ali_name, long seq_len, int *aborted)
-{
-    if (*aborted) {
-        return;
-    }
-
+void g_b_create_master(CompressionTree *node, Sequence *seqs, MasterSequence **masters, int my_master, const char *ali_name, long seq_len, arb_progress& progress) {
     if (node->is_leaf) {
         if (node->index >= 0) {
             GBDATA *gb_data = GBT_read_sequence(node->gb_node, ali_name);
@@ -185,13 +179,15 @@ void g_b_create_master(CompressionTree *node, Sequence *seqs, MasterSequence **m
         }
     }
     else {
+        if (progress.aborted()) return;
+        
         if (node->index>=0) {
             masters[node->index]->master = my_master;
             my_master = node->index;
         }
-        g_b_create_master(node->leftson, seqs, masters, masterCount, builtMasters, my_master, ali_name, seq_len, aborted);
-        g_b_create_master(node->rightson, seqs, masters, masterCount, builtMasters, my_master, ali_name, seq_len, aborted);
-        if (node->index>=0 && !*aborted) { // build me
+        g_b_create_master(node->leftson, seqs, masters, my_master, ali_name, seq_len, progress);
+        g_b_create_master(node->rightson, seqs, masters, my_master, ali_name, seq_len, progress);
+        if (node->index>=0 && !progress.aborted()) { // build me
             char      *data;
             Consensus *gcon = g_b_new_Consensus(seq_len);
 
@@ -206,8 +202,7 @@ void g_b_create_master(CompressionTree *node, Sequence *seqs, MasterSequence **m
             g_b_delete_Consensus(gcon);
             free(data);
 
-            (*builtMasters)++;
-            *aborted |= GB_status(*builtMasters/(double)masterCount);
+            ++progress;
         }
     }
 }
@@ -432,13 +427,12 @@ static GB_ERROR compress_sequence_tree(GBDATA *gb_main, CompressionTree *tree, c
             error = "Tree is empty";
         }
         else {
+            arb_progress tree_progress("Compressing sequences", 4);
+            
             // Distribute masters in tree
             int mastercount   = 0;
             int max_compSteps = 0; // in one branch
             int seqcount      = 0;
-
-            GB_status("Create master sequences");
-            GB_status(0.0);
 
             init_indices_and_count_sons(tree, &seqcount, ali_name);
             if (!seqcount) {
@@ -526,21 +520,21 @@ static GB_ERROR compress_sequence_tree(GBDATA *gb_main, CompressionTree *tree, c
                         masters[si]->gbd = gb_create(gb_master_ali, "@master", GB_STRING);
                     }
                     seqs = (Sequence *)GB_calloc(sizeof(*seqs), leafcount);
-                    {
-                        int builtMasters = 0;
-                        int aborted      = 0;
-                        GB_status(GBS_global_string("Building %i master sequences", mastercount));
-                        g_b_create_master(tree, seqs, masters, mastercount, &builtMasters, -1, ali_name, ali_len, &aborted);
-                        if (aborted) error = "User abort";
+
+                    if (!error) {
+                        arb_progress progress("Building master sequences", mastercount);
+                        g_b_create_master(tree, seqs, masters, -1, ali_name, ali_len, progress);
+                        
+                        error = progress.error_if_aborted();
                     }
                 }
+                tree_progress.inc_and_check_user_abort(error);
 
                 // Compress sequences in tree
                 if (!error) {
-                    GB_status(GBS_global_string("Compressing %i sequences in tree", seqcount));
-                    GB_status(0.0);
+                    arb_progress progress("Compressing sequences in tree", seqcount);
 
-                    for (si=0; si<seqcount; si++) {
+                    for (si=0; si<seqcount && !error; si++) {
                         int             mi     = seqs[si].master;
                         MasterSequence *master = masters[mi];
                         GBDATA         *gbd    = seqs[si].gbd;
@@ -568,20 +562,17 @@ static GB_ERROR compress_sequence_tree(GBDATA *gb_main, CompressionTree *tree, c
                             free(seq);
                         }
 
-                        if (GB_status((si+1)/(double)seqcount)) {
-                            error = "User abort";
-                            break;
-                        }
+                        progress.inc_and_check_user_abort(error);
                     }
                 }
+                tree_progress.inc_and_check_user_abort(error);
 
                 // Compress rest of sequences
                 if (!error) {
                     int pass; // pass 1 : count species to compress, pass 2 : compress species
                     int speciesNotInTree = 0;
 
-                    GB_status("Compressing sequences NOT in tree");
-                    GB_status(0.0);
+                    SmartPtr<arb_progress> progress;
 
                     for (pass = 1; pass <= 2; ++pass) {
                         GBDATA *gb_species_data = GB_search(gb_main, "species_data", GB_CREATE_CONTAINER);
@@ -612,25 +603,19 @@ static GB_ERROR compress_sequence_tree(GBDATA *gb_main, CompressionTree *tree, c
                                 sumnew += size;
                                 sumorg += seq_len;
 
-                                if (GB_status(count/(double)speciesNotInTree)) {
-                                    error = "User abort";
-                                    break;
-                                }
+                                progress->inc_and_check_user_abort(error);
                             }
                         }
                         if (pass == 1) {
                             speciesNotInTree = count;
-                            if (GB_status(GBS_global_string("Compressing %i sequences NOT in tree", speciesNotInTree))) {
-                                error = "User abort";
-                                break;
-                            }
+                            progress = new arb_progress("Compressing sequences NOT in tree", speciesNotInTree);
                         }
                     }
                 }
+                tree_progress.inc_and_check_user_abort(error);
 
                 if (!error) {
-                    GB_status(GBS_global_string("Compressing %i master-sequences", mastercount));
-                    GB_status(0.0);
+                    arb_progress progress("Compressing master-sequences", mastercount);
 
                     // Compress all masters
                     for (si=0; si<mastercount; si++) {
@@ -663,10 +648,7 @@ static GB_ERROR compress_sequence_tree(GBDATA *gb_main, CompressionTree *tree, c
                                 free(seqm);
                             }
 
-                            if (GB_status((si+1)/(double)mastercount)) {
-                                error = "User abort";
-                                break;
-                            }
+                            progress.inc_and_check_user_abort(error);
                         }
                         else { // count size of top master
                             GBDATA *gbd  = masters[si]->gbd;
@@ -704,7 +686,7 @@ static GB_ERROR compress_sequence_tree(GBDATA *gb_main, CompressionTree *tree, c
                         free(sizeOrg);
                     }
                 }
-
+                tree_progress.inc_and_check_user_abort(error);
 
                 if (!error) {
                     if (old_gb_master_ali) {

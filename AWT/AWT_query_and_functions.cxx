@@ -18,7 +18,7 @@
 #include <aw_file.hxx>
 #include <aw_msg.hxx>
 #include <aw_awars.hxx>
-#include <aw_status.hxx>
+#include <arb_progress.h>
 #include <aw_root.hxx>
 
 #include <arbdbt.h>
@@ -115,7 +115,7 @@ long awt_count_queried_items(DbQuery *cbs, AWT_QUERY_RANGE range) {
 #warning replace awt_count_items by "method" of selector
 #endif // DEVEL_RALF
 
-static int awt_count_items(DbQuery *cbs, AWT_QUERY_RANGE range) {
+static int awt_count_items(DbQuery *cbs, AWT_QUERY_RANGE range, AWT_QUERY_MODES mode) {
     int                     count    = 0;
     GBDATA                 *gb_main  = cbs->gb_main;
     const ad_item_selector *selector = cbs->selector;
@@ -129,7 +129,11 @@ static int awt_count_items(DbQuery *cbs, AWT_QUERY_RANGE range) {
              gb_item;
              gb_item = selector->get_next_item(gb_item))
         {
-            count++;
+            switch (mode) {
+                case AWT_QUERY_GENERATE: ++count; break;
+                case AWT_QUERY_ENLARGE:  count += !IS_QUERIED(gb_item, cbs); break;
+                case AWT_QUERY_REDUCE:   count +=  IS_QUERIED(gb_item, cbs); break;
+            }
         }
     }
     return count;
@@ -997,11 +1001,8 @@ static void awt_do_query(void *, DbQuery *cbs, AW_CL cl_ext_query) {
     GB_ERROR error = query.getError();
 
     if (!error) {
-        size_t   item_count     = awt_count_items(cbs, range);
-        size_t   searched_count = 0;
-
-        aw_openstatus("Searching");
-        aw_status(0.0);
+        size_t       item_count = awt_count_items(cbs, range, mode);
+        arb_progress progress("Searching", item_count);
 
         if (cbs->gb_ref && // merge tool only
             (ext_query == AWT_EXT_QUERY_COMPARE_LINES || ext_query == AWT_EXT_QUERY_COMPARE_WORDS))
@@ -1078,7 +1079,7 @@ static void awt_do_query(void *, DbQuery *cbs, AW_CL cl_ext_query) {
                         free(data);
                     }
 
-                    if (aw_status(searched_count++/double(item_count))) error = "aborted";
+                    progress.inc_and_check_user_abort(error);
                 }
             }
 
@@ -1255,13 +1256,11 @@ static void awt_do_query(void *, DbQuery *cbs, AW_CL cl_ext_query) {
                         error = GB_failedTo_error("query", GBT_get_name(gb_item), error);
                     }
                     else {
-                        if (aw_status(searched_count++/double(item_count))) error = "aborted";
+                        progress.inc_and_check_user_abort(error);
                     }
                 }
             }
         }
-
-        aw_closestatus();
     }
 
     if (!error) error = query.getError(); // check for query error
@@ -1565,7 +1564,6 @@ void awt_do_pars_list(void *, DbQuery *cbs) {
         }
 
         if (!error) {
-            long  count  = 0;
             long  ncount = cbs->aws->get_root()->awar(cbs->awar_count)->read_int();
             char *deftag = cbs->aws->get_root()->awar(cbs->awar_deftag)->read_string();
             char *tag    = cbs->aws->get_root()->awar(cbs->awar_tag)->read_string();
@@ -1578,8 +1576,7 @@ void awt_do_pars_list(void *, DbQuery *cbs) {
             }
             int double_pars = cbs->aws->get_root()->awar(cbs->awar_double_pars)->read_int();
 
-            aw_openstatus("Pars Fields");
-
+            arb_progress     progress("Parse fields", ncount);
             AW_root         *aw_root = cbs->aws->get_root();
             AWT_QUERY_RANGE  range   = (AWT_QUERY_RANGE)aw_root->awar(cbs->awar_where)->read_int();
 
@@ -1592,10 +1589,6 @@ void awt_do_pars_list(void *, DbQuery *cbs) {
                      gb_item = cbs->selector->get_next_item(gb_item))
                 {
                     if (IS_QUERIED(gb_item, cbs)) {
-                        if (aw_status((count++)/(double)ncount)) {
-                            error = "Aborted by user";
-                            break;
-                        }
                         GBDATA *gb_new = GB_search(gb_item, key, GB_FIND);
                         char   *str    = gb_new ? GB_read_as_string(gb_new) : strdup("");
                         char   *parsed = 0;
@@ -1630,12 +1623,11 @@ void awt_do_pars_list(void *, DbQuery *cbs) {
                             free(parsed);
                         }
                         free(str);
+                        progress.inc_and_check_user_abort(error);
                     }
                 }
             }
 
-
-            aw_closestatus();
             delete tag;
             free(deftag);
         }
@@ -2590,7 +2582,7 @@ DbQuery *awt_create_query_box(AW_window *aws, awt_query_struct *awtqs, const cha
     cbs->species_name           = strdup(awtqs->species_name);
     cbs->tree_name              = awtqs->tree_name ? aw_root->awar(awtqs->tree_name)->read_string() : 0;
     cbs->selector               = awtqs->selector;
-    cbs->hit_description        = GBS_create_hash(awt_count_items(cbs, AWT_QUERY_ALL_SPECIES), GB_IGNORE_CASE);
+    cbs->hit_description        = GBS_create_hash(awt_count_items(cbs, AWT_QUERY_ALL_SPECIES, AWT_QUERY_GENERATE), GB_IGNORE_CASE);
 
     GB_push_transaction(gb_main);
 

@@ -55,6 +55,7 @@ DI_clusters.o: $(ARBHOME)/INCLUDE/arb_assert.h
 DI_clusters.o: $(ARBHOME)/INCLUDE/arb_core.h
 DI_clusters.o: $(ARBHOME)/INCLUDE/arb_error.h
 DI_clusters.o: $(ARBHOME)/INCLUDE/arb_msg.h
+DI_clusters.o: $(ARBHOME)/INCLUDE/arb_progress.h
 DI_clusters.o: $(ARBHOME)/INCLUDE/arb_string.h
 DI_clusters.o: $(ARBHOME)/INCLUDE/ARB_Tree.hxx
 DI_clusters.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -68,7 +69,6 @@ DI_clusters.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 DI_clusters.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 DI_clusters.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 DI_clusters.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-DI_clusters.o: $(ARBHOME)/INCLUDE/aw_status.hxx
 DI_clusters.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 DI_clusters.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 DI_clusters.o: $(ARBHOME)/INCLUDE/cb.h
@@ -87,6 +87,7 @@ DI_clustertree.o: $(ARBHOME)/INCLUDE/arb_assert.h
 DI_clustertree.o: $(ARBHOME)/INCLUDE/arb_core.h
 DI_clustertree.o: $(ARBHOME)/INCLUDE/arb_error.h
 DI_clustertree.o: $(ARBHOME)/INCLUDE/arb_msg.h
+DI_clustertree.o: $(ARBHOME)/INCLUDE/arb_progress.h
 DI_clustertree.o: $(ARBHOME)/INCLUDE/arb_string.h
 DI_clustertree.o: $(ARBHOME)/INCLUDE/ARB_Tree.hxx
 DI_clustertree.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -94,7 +95,6 @@ DI_clustertree.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 DI_clustertree.o: $(ARBHOME)/INCLUDE/arbdbt.h
 DI_clustertree.o: $(ARBHOME)/INCLUDE/arbtools.h
 DI_clustertree.o: $(ARBHOME)/INCLUDE/attributes.h
-DI_clustertree.o: $(ARBHOME)/INCLUDE/aw_status.hxx
 DI_clustertree.o: $(ARBHOME)/INCLUDE/downcast.h
 DI_clustertree.o: $(ARBHOME)/INCLUDE/dupstr.h
 DI_clustertree.o: $(ARBHOME)/INCLUDE/smartptr.h
@@ -169,7 +169,6 @@ DI_main.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 DI_main.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 DI_main.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
 DI_main.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-DI_main.o: $(ARBHOME)/INCLUDE/aw_status.hxx
 DI_main.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 DI_main.o: $(ARBHOME)/INCLUDE/awt.hxx
 DI_main.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
@@ -199,6 +198,7 @@ DI_matr.o: $(ARBHOME)/INCLUDE/arb_assert.h
 DI_matr.o: $(ARBHOME)/INCLUDE/arb_core.h
 DI_matr.o: $(ARBHOME)/INCLUDE/arb_error.h
 DI_matr.o: $(ARBHOME)/INCLUDE/arb_msg.h
+DI_matr.o: $(ARBHOME)/INCLUDE/arb_progress.h
 DI_matr.o: $(ARBHOME)/INCLUDE/arb_string.h
 DI_matr.o: $(ARBHOME)/INCLUDE/ARB_Tree.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -215,7 +215,6 @@ DI_matr.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-DI_matr.o: $(ARBHOME)/INCLUDE/aw_status.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/awt.hxx
 DI_matr.o: $(ARBHOME)/INCLUDE/awt_filter.hxx
@@ -246,6 +245,7 @@ DI_mldist.o: $(ARBHOME)/INCLUDE/arb_assert.h
 DI_mldist.o: $(ARBHOME)/INCLUDE/arb_core.h
 DI_mldist.o: $(ARBHOME)/INCLUDE/arb_error.h
 DI_mldist.o: $(ARBHOME)/INCLUDE/arb_msg.h
+DI_mldist.o: $(ARBHOME)/INCLUDE/arb_progress.h
 DI_mldist.o: $(ARBHOME)/INCLUDE/arb_string.h
 DI_mldist.o: $(ARBHOME)/INCLUDE/ARB_Tree.hxx
 DI_mldist.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -256,7 +256,6 @@ DI_mldist.o: $(ARBHOME)/INCLUDE/attributes.h
 DI_mldist.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 DI_mldist.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 DI_mldist.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
-DI_mldist.o: $(ARBHOME)/INCLUDE/aw_status.hxx
 DI_mldist.o: $(ARBHOME)/INCLUDE/downcast.h
 DI_mldist.o: $(ARBHOME)/INCLUDE/dupstr.h
 DI_mldist.o: $(ARBHOME)/INCLUDE/smartptr.h
@@ -276,6 +275,7 @@ DI_protdist.o: $(ARBHOME)/INCLUDE/arb_assert.h
 DI_protdist.o: $(ARBHOME)/INCLUDE/arb_core.h
 DI_protdist.o: $(ARBHOME)/INCLUDE/arb_error.h
 DI_protdist.o: $(ARBHOME)/INCLUDE/arb_msg.h
+DI_protdist.o: $(ARBHOME)/INCLUDE/arb_progress.h
 DI_protdist.o: $(ARBHOME)/INCLUDE/arb_string.h
 DI_protdist.o: $(ARBHOME)/INCLUDE/ARB_Tree.hxx
 DI_protdist.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -286,7 +286,6 @@ DI_protdist.o: $(ARBHOME)/INCLUDE/attributes.h
 DI_protdist.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 DI_protdist.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 DI_protdist.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
-DI_protdist.o: $(ARBHOME)/INCLUDE/aw_status.hxx
 DI_protdist.o: $(ARBHOME)/INCLUDE/downcast.h
 DI_protdist.o: $(ARBHOME)/INCLUDE/dupstr.h
 DI_protdist.o: $(ARBHOME)/INCLUDE/smartptr.h

@@ -26,7 +26,7 @@
 #include <awt_seq_colors.hxx>
 #include <aw_awars.hxx>
 #include <aw_msg.hxx>
-#include <aw_status.hxx>
+#include <arb_progress.h>
 #include <aw_root.hxx>
 
 #include <cctype>
@@ -1869,7 +1869,7 @@ static void create_new_species(AW_window * /* aww */, AW_CL cl_creation_mode) {
                 error = "It's no good idea to create the short-name for a new species using the nameserver! (has no acc yet)";
             }
             else {
-                error = AWTC_generate_one_name(GLOBAL_gb_main, new_species_full_name, acc, addid, new_species_name, true, true);
+                error = AWTC_generate_one_name(GLOBAL_gb_main, new_species_full_name, acc, addid, new_species_name);
                 if (!error) {   // name was created
                     if (!nameIsUnique(new_species_name, gb_species_data)) {
                         if (!existingNames) existingNames = new UniqueNameDetector(gb_species_data);
@@ -1922,8 +1922,6 @@ static void create_new_species(AW_window * /* aww */, AW_CL cl_creation_mode) {
                         ED4_group_manager *group_man = cursor_terminal->get_parent(ED4_L_GROUP)->to_group_manager();
                         SpeciesMergeList   sml       = 0; // list of species in group
 
-                        aw_openstatus("Merging fields");
-
                         error = group_man->route_down_hierarchy(add_species_to_merge_list, (AW_CL)&sml, (AW_CL)gb_species_data);
                         if (!error && !sml) {
                             error = "Please choose a none empty group!";
@@ -1943,7 +1941,9 @@ static void create_new_species(AW_window * /* aww */, AW_CL cl_creation_mode) {
                             int               doneLen    = strlen(doneFields);
                             SpeciesMergeList  sl         = sml;
                             int               sl_length  = SpeciesMergeListLength(sml);
-                            int              *fieldStat  = new int[sl_length]; // 0 = not used yet ; -1 = don't has field ; 1..n = field content, same number means same content
+                            int              *fieldStat  = new int[sl_length];         // 0 = not used yet ; -1 = don't has field ; 1..n = field content, same number means same content
+
+                            arb_progress progress("Merging fields", sl_length);
 
                             while (sl && !error) { // with all species do..
                                 char *newFields = GB_get_subfields(sl->species);
@@ -1963,7 +1963,6 @@ static void create_new_species(AW_window * /* aww */, AW_CL cl_creation_mode) {
                                         e4_assert(fieldEnd[0]==';');
                                         fieldEnd[0] = 0;
 
-                                        aw_status(fieldName);
                                         GBDATA *gb_field = GB_search(sl->species, fieldName, GB_FIND);
                                         e4_assert(gb_field); // field has to exist, cause it was found before
 
@@ -2111,13 +2110,12 @@ static void create_new_species(AW_window * /* aww */, AW_CL cl_creation_mode) {
                                 }
                                 free(newFields);
                                 sl = sl->next;
-                                if (aw_status() == 1) error = "Aborted by user";
+                                progress.inc_and_check_user_abort(error);
                             }
                             free(doneFields);
                             free(fieldStat);
                         }
                         freeSpeciesMergeList(sml); sml = 0;
-                        aw_closestatus();
                     }
                 }
                 else { // copy species or create from consensus (copy fields from one species)

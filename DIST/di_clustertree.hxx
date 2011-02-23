@@ -34,7 +34,7 @@
 
 class AP_sequence;
 class ClusterTree;
-class aw_status_counter;
+class arb_progress;
 
 enum ClusterState {
     CS_UNKNOWN       = 0,                           // initial state
@@ -181,7 +181,7 @@ public:
     ClusterState get_state() const { return state; }
 
     void init_tree();
-    void detect_clusters(aw_status_counter& progress);
+    void detect_clusters(arb_progress& progress);
 
     const NodeValues *get_branch_depths() {
         if (!branchDepths) calc_branch_depths();

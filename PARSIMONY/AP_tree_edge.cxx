@@ -12,7 +12,7 @@
 #include "ap_tree_nlen.hxx"
 
 #include <AP_filter.hxx>
-#include <aw_status.hxx>
+#include <arb_progress.h>
 
 #include <cmath>
 #include <iomanip>
@@ -679,18 +679,12 @@ void ap_check_leaf_bl(AP_tree_nlen *node) {
     }
 }
 
-#if defined(DEVEL_RALF)
-#warning fix interfaces of AP_tree_nlen::nn_interchange_rek and AP_tree_edge::nni_rek (use a struct as param)
-#endif // DEVEL_RALF
-AP_FLOAT AP_tree_edge::nni_rek(bool useStatus, int &Abort, int deep, bool skip_hidden,
-                               AP_BL_MODE mode, AP_tree_nlen *skipNode)
-{
+AP_FLOAT AP_tree_edge::nni_rek(int deep, bool skip_hidden, AP_BL_MODE mode, AP_tree_nlen *skipNode) {
     if (!rootNode())        return 0.0;
     if (rootNode()->is_leaf)    return rootNode()->costs();
 
     AP_tree_edge *oldRootEdge = rootEdge();
 
-    if (useStatus) aw_openstatus("Recursive NNI");
     if (deep>=0) set_root();
 
     AP_FLOAT old_parsimony = rootNode()->costs();
@@ -698,9 +692,10 @@ AP_FLOAT AP_tree_edge::nni_rek(bool useStatus, int &Abort, int deep, bool skip_h
 
     buildChain(deep, skip_hidden, 0, skipNode);
     long cs = sizeofChain();
+    arb_progress progress(cs*2);
     AP_tree_edge *follow;
-    long count = 0;
-    { // set all branch lengths to undef
+    {
+        // set all branch lengths to undef
         for (follow = this; follow; follow = follow->next) {
             follow->node[0]->leftlen          = ap_undef_bl;
             follow->node[0]->rightlen         = ap_undef_bl;
@@ -713,9 +708,7 @@ AP_FLOAT AP_tree_edge::nni_rek(bool useStatus, int &Abort, int deep, bool skip_h
         rootNode()->rightlen = ap_undef_bl *.5;
     }
 
-    if (useStatus) aw_status(0.0);
-
-    for (follow = this; follow && Abort == 0; follow = follow->next) {
+    for (follow = this; follow && !progress.aborted(); follow = follow->next) {
         AP_tree_nlen *son = follow->sonNode();
         AP_tree_nlen *fath = son;
 
@@ -740,23 +733,16 @@ AP_FLOAT AP_tree_edge::nni_rek(bool useStatus, int &Abort, int deep, bool skip_h
             new_parsimony = follow->nni(new_parsimony, mode);
         }
 
-        if (useStatus ? aw_status(++count/(double)cs) : aw_status()) { Abort = 1; break; }
+        progress.inc();
     }
 
-    if (useStatus) {
-        aw_status("Recalc modified branches");
-        aw_status(0.0);
-        count = 0;
-    }
-
-    for (follow = this; follow && Abort == 0; follow = follow->next) {
+    for (follow = this; follow && !progress.aborted(); follow = follow->next) {
         ap_check_leaf_bl(follow->node[0]);
         ap_check_leaf_bl(follow->node[1]);
-        if (useStatus ? aw_status(++count/(double)cs) : aw_status()) { Abort = 1; break; }
+        progress.inc();
     }
     oldRootEdge->set_root();
     new_parsimony = rootNode()->costs();
-    if (useStatus) aw_closestatus();
 
     return new_parsimony;
 }

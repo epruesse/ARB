@@ -2,7 +2,7 @@
 #include "GDE_proto.h"
 
 #include <aw_msg.hxx>
-#include <aw_status.hxx>
+#include <arb_progress.h>
 #include <AW_rename.hxx>
 #include <AP_filter.hxx>
 #include <aw_awars.hxx>
@@ -208,12 +208,10 @@ static int InsertDatainGDE(NA_Alignment *dataset, GBDATA **the_species, unsigned
     int  curelem;
     int  bad_names = 0;
 
+    arb_progress progress("Read data from DB", numberspecies);
+    GB_ERROR     error = 0;
     if (the_species) {
-        for (gb_species = the_species[number]; gb_species; gb_species = the_species[++number]) {
-            if ((number/10)*10==number) {
-                if (aw_status((double)number/(double)numberspecies)) return 1;
-            }
-
+        for (gb_species = the_species[number]; gb_species && !error; gb_species = the_species[++number]) {
             curelem   = Arbdb_get_curelem(dataset);
             this_elem = &(dataset->element[curelem]);
 
@@ -237,16 +235,13 @@ static int InsertDatainGDE(NA_Alignment *dataset, GBDATA **the_species, unsigned
             if (AWTC_name_quality(this_elem->short_name) != 0) bad_names++;
             AppendNA_and_free(this_elem, sequfilt[number]);
             set_constant_fields(this_elem);
+            progress.inc_and_check_user_abort(error);
         }
     }
     else {      // use the_names
         unsigned char *species_name;
 
-        for (species_name=the_names[number]; species_name; species_name=the_names[++number]) {
-            if ((number/10)*10==number) {
-                if (aw_status((double)number/(double)numberspecies)) return 1;
-            }
-
+        for (species_name=the_names[number]; species_name && !error; species_name=the_names[++number]) {
             curelem   = Arbdb_get_curelem(dataset);
             this_elem = &(dataset->element[curelem]);
 
@@ -261,30 +256,39 @@ static int InsertDatainGDE(NA_Alignment *dataset, GBDATA **the_species, unsigned
             if (AWTC_name_quality(this_elem->short_name) != 0) bad_names++;
             AppendNA_and_free(this_elem, sequfilt[number]);
             set_constant_fields(this_elem);
+            progress.inc_and_check_user_abort(error);
         }
     }
 
-    if (bad_names) {
-        aw_message(GBS_global_string("Problematic names found: %i\n"
-                                     "External program call may fail or produce invalid results.\n"
-                                     "You might want to use 'Generate new names' and read the associated help.",
-                                     bad_names));
-    }
-
-    {
-        unsigned long i;
-        for (i=0; i<dataset->numelements; i++) {
-            dataset->maxlen = MAX(dataset->maxlen,
-                                  dataset->element[i].seqlen+dataset->element[i].offset);
+    if (!error) {
+        if (bad_names) {
+            aw_message(GBS_global_string("Problematic names found: %i\n"
+                                         "External program call may fail or produce invalid results.\n"
+                                         "You might want to use 'Generate new names' and read the associated help.",
+                                         bad_names));
         }
-        for (i=0; i<numberspecies; i++)
+
         {
-            delete sequfilt[i];
+            unsigned long i;
+            for (i=0; i<dataset->numelements; i++) {
+                dataset->maxlen = MAX(dataset->maxlen,
+                                      dataset->element[i].seqlen+dataset->element[i].offset);
+            }
+            for (i=0; i<numberspecies; i++)
+            {
+                delete sequfilt[i];
+            }
+            free(sequfilt);
         }
-        free(sequfilt);
     }
+
     delete allocatedFilter;
+    if (error) {
+        aw_message(error);
+        return 1; // = aborted
+    }
     return 0;
+
 }
 
 void ReadArbdb_plain(char */*filename*/, NA_Alignment *dataset, int /*type*/) {

@@ -858,24 +858,21 @@ AP_FLOAT AP_tree_nlen::costs(char *mutPerSite) {
     return mutation_rate;
 }
 
-#if defined(DEVEL_RALF)
-#warning fix interfaces of AP_tree_nlen::nn_interchange_rek and AP_tree_edge::nni_rek (use a struct as param)
-#endif // DEVEL_RALF
-AP_FLOAT AP_tree_nlen::nn_interchange_rek(bool openclosestatus, int &Abort, int deep, AP_BL_MODE mode, bool skip_hidden)
+AP_FLOAT AP_tree_nlen::nn_interchange_rek(int deep, AP_BL_MODE mode, bool skip_hidden)
 {
     if (!father)
     {
-        return rootEdge()->nni_rek(openclosestatus, Abort, deep, skip_hidden, mode, NULL);
+        return rootEdge()->nni_rek(deep, skip_hidden, mode, NULL);
     }
 
     if (!father->father)
     {
         AP_tree_edge *e = rootEdge();
 
-        return e->nni_rek(openclosestatus, Abort, deep, skip_hidden, mode, e->otherNode(this));
+        return e->nni_rek(deep, skip_hidden, mode, e->otherNode(this));
     }
 
-    return edgeTo(get_father())->nni_rek(openclosestatus, Abort, deep, skip_hidden, mode, get_father());
+    return edgeTo(get_father())->nni_rek(deep, skip_hidden, mode, get_father());
 }
 
 

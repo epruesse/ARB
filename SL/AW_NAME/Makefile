@@ -73,6 +73,7 @@ AW_rename.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_rename.o: $(ARBHOME)/INCLUDE/arb_core.h
 AW_rename.o: $(ARBHOME)/INCLUDE/arb_error.h
 AW_rename.o: $(ARBHOME)/INCLUDE/arb_msg.h
+AW_rename.o: $(ARBHOME)/INCLUDE/arb_progress.h
 AW_rename.o: $(ARBHOME)/INCLUDE/arb_string.h
 AW_rename.o: $(ARBHOME)/INCLUDE/arbdb.h
 AW_rename.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -85,7 +86,6 @@ AW_rename.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AW_rename.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AW_rename.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 AW_rename.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-AW_rename.o: $(ARBHOME)/INCLUDE/aw_status.hxx
 AW_rename.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AW_rename.o: $(ARBHOME)/INCLUDE/bytestring.h
 AW_rename.o: $(ARBHOME)/INCLUDE/cb.h

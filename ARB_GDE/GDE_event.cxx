@@ -7,7 +7,7 @@
 #include <aw_awar.hxx>
 #include <aw_msg.hxx>
 #include <aw_file.hxx>
-#include <aw_status.hxx>
+#include <arb_progress.h>
 #include <AP_filter.hxx>
 
 #include <set>
@@ -279,6 +279,7 @@ static void GDE_export(NA_Alignment *dataset, char *align, long oldnumelements) 
         REJECT_CHANGE_ALL = 3
     } change_mode = ACCEPT_CHANGE;
 
+    arb_progress progress("importing", dataset->numelements-oldnumelements+1); // +1 avoids zero-progress
     for (i = oldnumelements; !error && i < dataset->numelements; i++) {
         NA_Sequence *sequ = dataset->element+i;
         int seqtyp, issame = 0;
@@ -417,6 +418,7 @@ static void GDE_export(NA_Alignment *dataset, char *align, long oldnumelements) 
             }
         }
         free(savename);
+        progress.inc_and_check_user_abort(error);
     }
 
     /* colormasks */
@@ -464,6 +466,8 @@ static void GDE_export(NA_Alignment *dataset, char *align, long oldnumelements) 
         free(dummy);
     }
 
+    progress.done();
+
     GB_end_transaction_show_error(db_access.gb_main, error, aw_message);
     if (isdefaultalign) free(align);
 }
@@ -487,12 +491,8 @@ void GDE_startaction_cb(AW_window *aw, GmenuItem *gmenuitem, AW_CL /*cd*/) {
     char           *alignment_name    = strdup("ali_unknown");
     bool            marked            = (aw_root->awar(AWAR_GDE_SPECIES)->read_int() != 0);
     long            cutoff_stop_codon = aw_root->awar(AWAR_GDE_CUTOFF_STOPCODON)->read_int();
-
-    GmenuItem *current_item;
-    current_item=gmenuitem;
-
-    aw_openstatus(current_item->label);
-    aw_status((double)0);
+    GmenuItem      *current_item      = gmenuitem;
+    arb_progress    progress(current_item->label);
 
     int   j;
     bool  flag;
@@ -508,7 +508,7 @@ void GDE_startaction_cb(AW_window *aw, GmenuItem *gmenuitem, AW_CL /*cd*/) {
         freeset(DataSet->alignment_name, GBT_get_default_alignment(DataSet->gb_main));
         freedup(alignment_name, DataSet->alignment_name);
 
-        aw_status("reading database");
+        progress.subtitle("reading database");
         if (db_access.get_sequences) {
             stop = ReadArbdb2(DataSet, filter2, compress, cutoff_stop_codon);
         }
@@ -576,7 +576,7 @@ void GDE_startaction_cb(AW_window *aw, GmenuItem *gmenuitem, AW_CL /*cd*/) {
         Action = ReplaceString(Action, "$FILTER", filter_name);
 
         // call and go...
-        aw_status("calling external program");
+        progress.subtitle("calling external program");
         printf("Action: %s\n", Action);
         system(Action);
         free(Action);
@@ -629,11 +629,7 @@ void GDE_startaction_cb(AW_window *aw, GmenuItem *gmenuitem, AW_CL /*cd*/) {
             }
         }
 
-        aw_closestatus();
         GDE_export(DataSet, alignment_name, oldnumelements);
-    }
-    else {
-        aw_closestatus();
     }
 
     free(alignment_name);

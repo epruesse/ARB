@@ -11,6 +11,10 @@
 #ifndef DI_MLDIST_HXX
 #define DI_MLDIST_HXX
 
+#ifndef ARB_CORE_H
+#include <arb_core.h>
+#endif
+
 const int DI_ML_RESOLUTION   = 1000; // max res
 const int DI_ML_MAX_DIST     = 10; // max dist
 const int DI_ML_MAX_MAT_SIZE = 16;
@@ -75,7 +79,7 @@ public:
     di_mldist(long nentries, DI_ENTRY **entries, long seq_len, AP_smatrix *matrixi);
     ~di_mldist();
 
-    const char *makedists(bool *aborted_flag);    // calculate the distance matrix
+    GB_ERROR makedists(bool *aborted_flag);    // calculate the distance matrix
 };
 
 #else

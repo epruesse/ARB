@@ -39,6 +39,7 @@ AWTI_export.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWTI_export.o: $(ARBHOME)/INCLUDE/arb_core.h
 AWTI_export.o: $(ARBHOME)/INCLUDE/arb_error.h
 AWTI_export.o: $(ARBHOME)/INCLUDE/arb_msg.h
+AWTI_export.o: $(ARBHOME)/INCLUDE/arb_progress.h
 AWTI_export.o: $(ARBHOME)/INCLUDE/arb_str.h
 AWTI_export.o: $(ARBHOME)/INCLUDE/arb_string.h
 AWTI_export.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -53,7 +54,6 @@ AWTI_export.o: $(ARBHOME)/INCLUDE/aw_file.hxx
 AWTI_export.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AWTI_export.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 AWTI_export.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-AWTI_export.o: $(ARBHOME)/INCLUDE/aw_status.hxx
 AWTI_export.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AWTI_export.o: $(ARBHOME)/INCLUDE/awt_filter.hxx
 AWTI_export.o: $(ARBHOME)/INCLUDE/cb.h
@@ -71,6 +71,7 @@ AWTI_import.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWTI_import.o: $(ARBHOME)/INCLUDE/arb_core.h
 AWTI_import.o: $(ARBHOME)/INCLUDE/arb_error.h
 AWTI_import.o: $(ARBHOME)/INCLUDE/arb_msg.h
+AWTI_import.o: $(ARBHOME)/INCLUDE/arb_progress.h
 AWTI_import.o: $(ARBHOME)/INCLUDE/arb_string.h
 AWTI_import.o: $(ARBHOME)/INCLUDE/arbdb.h
 AWTI_import.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -86,7 +87,6 @@ AWTI_import.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/AW_rename.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/aw_select.hxx
-AWTI_import.o: $(ARBHOME)/INCLUDE/aw_status.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/awt.hxx
 AWTI_import.o: $(ARBHOME)/INCLUDE/awt_item_sel_list.hxx

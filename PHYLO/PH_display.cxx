@@ -211,6 +211,8 @@ void PH_display::display()       // draw area
     float *markerline = PHDATA::ROOT->markerline;
 
     if (!device) return;
+    if (!markerline) return;
+    
     GB_transaction dummy(PHDATA::ROOT->gb_main);
     switch (display_what) // be careful: text origin is lower left
     {

@@ -10,18 +10,13 @@ $(MAIN): $(OBJECTS)
 .cxx.o:
 	$(CPPLIB) $(cflags) -c $< $(AINCLUDES) $(POST_COMPILE)
 
-.cxx.genh:
-	../MAKEBIN/aisc_mkpt -P -G -A -w $(subst .genh,.h,$@) $< > $@
-
-.genh.h:
-	../SOURCE_TOOLS/mv_if_diff $< $@
-
-GENERATED_HEADERS=\
-	arb_msg.h \
-	arb_string.h \
-	arb_signal.h \
-
-proto: $(GENERATED_HEADERS)
+proto: 
+	../MAKEBIN/aisc_mkpt -P -G -A -w arb_msg.h    arb_msg.cxx    > arb_msg.genh
+	../MAKEBIN/aisc_mkpt -P -G -A -w arb_string.h arb_string.cxx > arb_string.genh
+	../MAKEBIN/aisc_mkpt -P -G -A -w arb_signal.h arb_signal.cxx > arb_signal.genh
+	../SOURCE_TOOLS/mv_if_diff arb_msg.genh    arb_msg.h
+	../SOURCE_TOOLS/mv_if_diff arb_string.genh arb_string.h
+	../SOURCE_TOOLS/mv_if_diff arb_signal.genh arb_signal.h
 
 clean:
 	rm -f $(OBJECTS) *.a *.so
@@ -45,13 +40,17 @@ depend.init:
 
 arb_handlers.o: arb_core.h
 arb_handlers.o: arb_handlers.h
+arb_handlers.o: arb_msg.h
+arb_handlers.o: $(ARBHOME)/INCLUDE/arb_assert.h
+arb_handlers.o: $(ARBHOME)/INCLUDE/attributes.h
 arb_handlers.o: $(ARBHOME)/INCLUDE/dupstr.h
+arb_handlers.o: $(ARBHOME)/INCLUDE/smartptr.h
+arb_handlers.o: $(ARBHOME)/INCLUDE/test_global.h
 
 arb_msg.o: arb_core.h
 arb_msg.o: arb_handlers.h
 arb_msg.o: arb_msg.h
 arb_msg.o: arb_string.h
-arb_msg.o: core.h
 arb_msg.o: $(ARBHOME)/INCLUDE/arb_assert.h
 arb_msg.o: $(ARBHOME)/INCLUDE/arb_backtrace.h
 arb_msg.o: $(ARBHOME)/INCLUDE/attributes.h
@@ -60,11 +59,16 @@ arb_msg.o: $(ARBHOME)/INCLUDE/smartptr.h
 arb_msg.o: $(ARBHOME)/INCLUDE/test_global.h
 
 arb_progress.o: arb_core.h
+arb_progress.o: arb_handlers.h
+arb_progress.o: arb_msg.h
 arb_progress.o: arb_progress.h
 arb_progress.o: $(ARBHOME)/INCLUDE/arb_assert.h
+arb_progress.o: $(ARBHOME)/INCLUDE/arb_error.h
+arb_progress.o: $(ARBHOME)/INCLUDE/arbtools.h
+arb_progress.o: $(ARBHOME)/INCLUDE/attributes.h
 arb_progress.o: $(ARBHOME)/INCLUDE/dupstr.h
+arb_progress.o: $(ARBHOME)/INCLUDE/smartptr.h
 arb_progress.o: $(ARBHOME)/INCLUDE/test_global.h
-arb_progress.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 arb_signal.o: arb_core.h
 arb_signal.o: arb_msg.h

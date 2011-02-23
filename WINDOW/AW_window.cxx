@@ -1378,10 +1378,32 @@ static void aw_root_create_color_map(AW_root *root) {
 
 }
 
-static void aw_message_dump_stderr(const char *msg) {
+static void dump_stdout(const char *msg) {
+    fprintf(stdout, "ARB: %s\n", msg);
+}
+static void aw_message_and_dump_stderr(const char *msg) {
+    fflush(stdout);
     fprintf(stderr, "ARB: %s\n", msg); // print to console as well
+    fflush(stderr);
     aw_message(msg);
 }
+
+static arb_status_implementation AW_status_impl = {
+    AST_RANDOM, 
+    aw_openstatus,
+    aw_closestatus,
+    aw_status_title, // set_title
+    AW_status, // set_subtitle
+    AW_status, // set_gauge
+    AW_status, // user_abort
+};
+
+static arb_handlers aw_handlers = {
+    aw_message_and_dump_stderr,
+    aw_message,
+    dump_stdout,
+    AW_status_impl, 
+};
 
 void AW_root::init_root(const char *programname, bool no_exit) {
     // initialize ARB X application
@@ -1399,11 +1421,8 @@ void AW_root::init_root(const char *programname, bool no_exit) {
     }
     fallback_resources[i] = 0;
 
-    GB_install_error_handler(aw_message_dump_stderr);
-    GB_install_warning(aw_message);
-    GB_install_information(NULL);                   // NULL means -> write to stdout only
-    GB_install_status(aw_status, aw_status);
-
+    ARB_install_handlers(aw_handlers);
+    
     // @@@ FIXME: the next line hangs if program runs inside debugger
     p_r->toplevel_widget = XtOpenApplication(&(p_r->context), programname,
             NULL, 0, // XrmOptionDescRec+numOpts

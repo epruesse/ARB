@@ -9,11 +9,6 @@
 // =============================================================== //
 
 #include <arbdb.h>
-#include <arb_handlers.h>
-
-static void to_stderr(const char *msg) {
-    fprintf(stderr, "arb_2_ascii: %s\n", msg);
-}
 
 int main(int argc, char **argv) {
     GB_ERROR error = 0;
@@ -49,9 +44,7 @@ int main(int argc, char **argv) {
             out       = argv[2];
 
             if (!out || strcmp(out, "-") == 0) {
-                saveflags      = "aS";
-                GB_install_information(to_stderr);
-                GB_install_warning(to_stderr);
+                saveflags = "aS";
             }
         }
 

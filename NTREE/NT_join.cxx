@@ -14,7 +14,7 @@
 #include <aw_awars.hxx>
 #include <aw_root.hxx>
 #include <aw_msg.hxx>
-#include <aw_status.hxx>
+#include <arb_progress.h>
 #include <arbdbt.h>
 
 #define nt_assert(bed) arb_assert(bed)
@@ -113,10 +113,9 @@ void species_rename_join(AW_window *aww) {
 
     if (!error) {
         GB_HASH *hash = GBS_create_hash(1000, GB_MIND_CASE);
-        aw_openstatus("Joining species");
-
-        long maxs = GBT_count_marked_species(GLOBAL_gb_main);
-        long cnt  = 0;
+        long     maxs = GBT_count_marked_species(GLOBAL_gb_main);
+        
+        arb_progress progress("Joining species", maxs);
 
         GBDATA *gb_next = 0;
         for (GBDATA *gb_species = GBT_first_marked_species(GLOBAL_gb_main);
@@ -124,8 +123,6 @@ void species_rename_join(AW_window *aww) {
              gb_species = gb_next)
         {
             gb_next = GBT_next_marked_species(gb_species);
-
-            aw_status(++cnt/(double)maxs);
 
             GBDATA *gb_field = GB_entry(gb_species, field);
             if (gb_field) {
@@ -140,9 +137,9 @@ void species_rename_join(AW_window *aww) {
                     if (!error) error = GB_delete(gb_species);
                 }
             }
+            progress.inc_and_check_user_abort(error);
         }
 
-        aw_closestatus();
         GBS_free_hash(hash);
     }
     GB_end_transaction_show_error(GLOBAL_gb_main, error, aw_message);

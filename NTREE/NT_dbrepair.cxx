@@ -19,7 +19,7 @@
 #include <EXP.hxx>
 #include <aw_color_groups.hxx>
 #include <aw_msg.hxx>
-#include <aw_status.hxx>
+#include <arb_progress.h>
 #include <aw_root.hxx>
 
 #include <arb_str.h>
@@ -106,10 +106,8 @@ public:
                        GB_ERROR& error)
     {
         if (!error && !was_performed(check_name)) {
-            aw_status(check_name.c_str());
-            aw_status(0.0);
+            arb_progress progress(check_name.c_str());
             error = do_check(gb_main, species_count, sai_count);
-            aw_status(1.0);
             if (!error) register_as_performed(check_name);
         }
     }
@@ -192,10 +190,11 @@ void CheckedConsistencies::perform_item_checks(GB_ERROR& error) {
 
 static GB_ERROR NT_fix_gene_data(GBDATA *gb_main, size_t species_count, size_t /* sai_count */) {
     GB_transaction ta(gb_main);
-    size_t         deleted_gene_datas   = 0;
-    size_t         generated_gene_datas = 0;
-    GB_ERROR       error                = 0;
-    size_t         count                = 0;
+    arb_progress   progress(species_count);
+
+    size_t   deleted_gene_datas   = 0;
+    size_t   generated_gene_datas = 0;
+    GB_ERROR error                = 0;
 
     for (GBDATA *gb_species = GBT_first_species(gb_main);
          gb_species && !error;
@@ -223,7 +222,7 @@ static GB_ERROR NT_fix_gene_data(GBDATA *gb_main, size_t species_count, size_t /
             }
         }
 
-        aw_status(double(++count)/species_count);
+        progress.inc_and_check_user_abort(error);
     }
 
     if (!error) {
@@ -267,14 +266,13 @@ static GB_ERROR NT_convert_gene_locations(GBDATA *gb_main, size_t species_count,
 
     typedef vector<GBDATA*> GBvec;
     GBvec                   toDelete;
-    size_t                  count = 0;
 
+    arb_progress progress(species_count);
+    
     for (GBDATA *gb_organism = GEN_first_organism(gb_main);
          gb_organism && !error;
          gb_organism = GEN_next_organism(gb_organism))
     {
-
-
         GBDATA *gb_gene_data = GEN_find_gene_data(gb_organism);
         nt_assert(gb_gene_data);
         if (gb_gene_data) {
@@ -448,7 +446,7 @@ static GB_ERROR NT_convert_gene_locations(GBDATA *gb_main, size_t species_count,
             }
         }
 
-        aw_status(double(++count)/species_count);
+        progress.inc_and_check_user_abort(error);
     }
 
     if (!error) {
@@ -473,12 +471,12 @@ static GB_ERROR NT_convert_gene_locations(GBDATA *gb_main, size_t species_count,
 static GB_ERROR NT_del_mark_move_REF(GBDATA *gb_main, size_t species_count, size_t sai_count) {
     GB_transaction ta(gb_main);
     GB_ERROR       error   = 0;
-    size_t         count   = 0;
     size_t         all     = species_count+sai_count;
     size_t         removed = 0;
 
     // delete 'mark' entries from all alignments of species/SAIs
 
+    arb_progress progress(all);
     char **ali_names = GBT_get_alignment_names(gb_main);
 
     for (int pass = 0; pass < 2 && !error; ++pass) {
@@ -497,7 +495,7 @@ static GB_ERROR NT_del_mark_move_REF(GBDATA *gb_main, size_t species_count, size
                 }
             }
 
-            aw_status(double(++count)/all);
+            progress.inc_and_check_user_abort(error);
         }
     }
 
@@ -772,9 +770,6 @@ static GB_ERROR NT_fix_dict_compress(GBDATA *gb_main, size_t, size_t) {
 
     Dict::gb_main = gb_main;
 
-    aw_status(STATUS_PREFIX "init");
-    aw_status(0.0);
-
     if (!gb_key_data) {
         error = "No @key_data found.. DB corrupted?";
     }
@@ -793,25 +788,27 @@ static GB_ERROR NT_fix_dict_compress(GBDATA *gb_main, size_t, size_t) {
 
         if (!error) {
             // check which keys are compressed
-            int cnt            = 0;
-            aw_status(STATUS_PREFIX "search compression");
-            aw_status(0.0);
-            for (Keys::iterator ki = keys.begin(); ki != keys.end(); ++ki) {
-                KeyInfoPtr k = ki->second;
-                k->testCompressed(gb_main);
-                aw_status(++cnt/double(affectedKeys));
+
+            {
+                arb_progress progress(STATUS_PREFIX "search compressed data", affectedKeys);
+
+                for (Keys::iterator ki = keys.begin(); ki != keys.end(); ++ki) {
+                    KeyInfoPtr k = ki->second;
+                    k->testCompressed(gb_main);
+                    ++progress;
+                }
             }
 
             // test which key/dict combinations work
-            aw_status(STATUS_PREFIX "test compression");
-            aw_status(0.0);
-            cnt              = 0;
-            int combinations = 0; // possible key/dict combinations
+            int combinations = 0;          // possible key/dict combinations
 
             DictMap   use;      // keyname -> dictionary (which dictionary to use)
             StringSet multiDecompressible; // keys which can be decompressed with multiple dictionaries
 
             for (int pass = 1; pass <= 2; ++pass) {
+                arb_progress *progress  = NULL;
+                if (pass == 2 && combinations) progress = new arb_progress(STATUS_PREFIX "test compression", combinations);
+
                 for (Dicts::iterator di = dicts.begin(); di != dicts.end(); ++di) {
                     DictPtr d = *di;
 
@@ -833,12 +830,13 @@ static GB_ERROR NT_fix_dict_compress(GBDATA *gb_main, size_t, size_t) {
                                             multiDecompressible.insert(keyname);
                                         }
                                     }
-                                    aw_status(++cnt/double(combinations));
+                                    ++(*progress);
                                     break;
                             }
                         }
                     }
                 }
+                delete progress;
             }
 
             StringSet notDecompressible; // keys which can be decompressed with none of the dictionaries
@@ -861,9 +859,7 @@ static GB_ERROR NT_fix_dict_compress(GBDATA *gb_main, size_t, size_t) {
                 aw_message(GBS_global_string("Detected corrupted dictionary compression\n"
                                              "Data of %i DB-keys is lost and will be deleted", nd_count));
 
-                aw_status(STATUS_PREFIX "deleting corrupt data");
-                aw_status(0.0);
-                cnt = 0;
+                arb_progress progress(STATUS_PREFIX "deleting corrupt data", nd_count);
 
                 StringSet deletedData;
                 long      deleted    = 0;
@@ -873,7 +869,7 @@ static GB_ERROR NT_fix_dict_compress(GBDATA *gb_main, size_t, size_t) {
                     const string& keyname    = *ki;
 
                     error = deleteDataOfKey(gb_main, GB_key_2_quark(gb_main, keyname.c_str()), deletedData, deleted, notDeleted);
-                    aw_status(++cnt/double(nd_count));
+                    ++progress;
                 }
 
                 if (!error) {
@@ -1059,9 +1055,8 @@ void NT_rerepair_DB(AW_window*, AW_CL cl_gbmain, AW_CL) {
         err = check.forgetDoneChecks();
     }
     if (!err) {
-        aw_openstatus("DB-Repair");
+        arb_progress progress("DB-Repair");
         err = NT_repair_DB(gb_main);
-        aw_closestatus();
     }
 
     if (err) aw_message(err);

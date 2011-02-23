@@ -37,7 +37,7 @@ MO_Liste::~MO_Liste()
         laenge--;
     }
     delete [] mo_liste;
-    GBS_free_hash(hashptr);
+    if (hashptr) GBS_free_hash(hashptr);
 }
 
 

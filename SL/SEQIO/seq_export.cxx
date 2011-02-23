@@ -13,6 +13,7 @@
 #include <AP_filter.hxx>
 #include <arbdbt.h>
 #include <xml.hxx>
+#include <arb_progress.h>
 
 #define sio_assert(cond) arb_assert(cond)
 
@@ -287,16 +288,7 @@ GB_ERROR export_sequence_data::detectVerticalGaps() {
         memcpy(gap_column, filterpos_2_seqpos, gap_columns*sizeof(*gap_column));
         gap_column[gap_columns] = max_ali_len;
 
-        size_t spec_count  = count_species();
-        size_t stat_update = spec_count/1000;
-
-        if (stat_update == 0) stat_update = 1;
-
-        size_t count         = 0;
-        size_t next_stat     = count+stat_update;
-
-        GB_status("Calculating vertical gaps");
-        GB_status(0.0);
+        arb_progress progress("Calculating vertical gaps", count_species());
 
         for (GBDATA *gb_species = first_species();
              gb_species && !err;
@@ -320,14 +312,8 @@ GB_ERROR export_sequence_data::detectVerticalGaps() {
                 sio_assert(gap_columns >= skipped_columns);
                 gap_columns            -= skipped_columns;
             }
-            ++count;
-            if (count >= next_stat) {
-                if (GB_status(count/double(spec_count))) err = "User abort";
-                next_stat = count+stat_update;
-            }
+            progress.inc_and_check_user_abort(err);
         }
-
-        GB_status(1.0);
 
         if (!err) {
             columns       = filter->get_filtered_length() - gap_columns;
@@ -566,16 +552,15 @@ static GB_ERROR export_format_single(const char *db_name, const char *formname, 
             if (!error) {
                 sio_assert(GB_is_privatefile(intermediate_export, false));
 
-                GB_status(GBS_global_string("Converting to %s", efo.suffix));
+                GB_informationf("Converting to %s", efo.suffix);
 
                 char *srt = GBS_global_string_copy("$<=%s:$>=%s", intermediate_export, *resulting_outname);
                 char *sys = GBS_string_eval(efo.system, srt, 0);
 
-                GB_status(GBS_global_string("exec '%s'", efo.system));
+                GB_informationf("exec '%s'", efo.system);
                 error = GB_system(sys);
 
                 GB_unlink_or_warn(intermediate_export, &error);
-                GB_status(1 - double(export_depth-1)/export_depth_max);
 
                 free(sys);
                 free(srt);
@@ -588,8 +573,18 @@ static GB_ERROR export_format_single(const char *db_name, const char *formname, 
             else {
                 XML_Document *xml = 0;
 
-                GB_status("Saving data");
                 export_depth_max = export_depth;
+
+                int allCount    = 0;
+                for (GBDATA *gb_species = esd->first_species();
+                     gb_species && !error;
+                     gb_species = esd->next_species(gb_species))
+                {
+                    allCount++;
+                }
+
+                arb_progress progress(allCount);
+                progress.auto_subtitles("Saving species");
 
                 if (efo.export_mode == EXPORT_XML) {
                     xml = new XML_Document("ARB_SEQ_EXPORT", "arb_seq_export.dtd", out);
@@ -604,20 +599,10 @@ static GB_ERROR export_format_single(const char *db_name, const char *formname, 
                     }
                 }
 
-                int allCount    = 0;
                 for (GBDATA *gb_species = esd->first_species();
                      gb_species && !error;
                      gb_species = esd->next_species(gb_species))
                 {
-                    allCount++;
-                }
-
-                int count       = 0;
-                for (GBDATA *gb_species = esd->first_species();
-                     gb_species && !error;
-                     gb_species = esd->next_species(gb_species))
-                {
-                    GB_status(GBS_global_string("Saving species %i/%i", ++count, allCount));
                     switch (efo.export_mode) {
                         case EXPORT_USING_FORM:
                             error = export_species_using_form(out, gb_species, efo.form);
@@ -631,7 +616,7 @@ static GB_ERROR export_format_single(const char *db_name, const char *formname, 
                             sio_assert(0);
                             break;
                     }
-                    GB_status(double(count)/allCount);
+                    progress.inc_and_check_user_abort(error);
                 }
 
                 delete xml;
@@ -655,16 +640,12 @@ static GB_ERROR export_format_single(const char *db_name, const char *formname, 
 static GB_ERROR export_format_multiple(const char* dbname, const char *formname, const char *outname, bool multiple, char **resulting_outname) {
     GB_ERROR error = 0;
 
-    GB_status(0.0);
-
     if (multiple) {
         char *path, *name, *suffix;
         GB_split_full_path(outname, &path, NULL, &name, &suffix);
-
         *resulting_outname = NULL;
 
-        size_t species_count = esd->count_species();
-        size_t count         = 0;
+        arb_progress progress("Exporting data", esd->count_species());
 
         for (GBDATA *gb_species = esd->first_species();
              gb_species && !error;
@@ -674,7 +655,7 @@ static GB_ERROR export_format_multiple(const char* dbname, const char *formname,
             if (!species_name) error = "Can't export unnamed species";
             else {
                 const char *fname = GB_append_suffix(GBS_global_string("%s_%s", name, species_name), suffix);
-                GB_status(fname);
+                progress.subtitle(fname);
 
                 char *oname = strdup(GB_concat_path(path, fname));
                 char *res_oname;
@@ -682,8 +663,6 @@ static GB_ERROR export_format_multiple(const char* dbname, const char *formname,
                 esd->set_single_mode(gb_species); // means: only export 'gb_species'
                 error = export_format_single(dbname, formname, oname, &res_oname);
                 esd->set_single_mode(NULL);
-
-                GB_status(++count/double(species_count));
 
                 if (!*resulting_outname || // not set yet
                     (res_oname && strcmp(*resulting_outname, res_oname)>0)) // or smaller than set one
@@ -694,6 +673,8 @@ static GB_ERROR export_format_multiple(const char* dbname, const char *formname,
                 free(res_oname);
                 free(oname);
             }
+
+            progress.inc_and_check_user_abort(error);
         }
 
         free(suffix);
@@ -701,6 +682,7 @@ static GB_ERROR export_format_multiple(const char* dbname, const char *formname,
         free(path);
     }
     else {
+        arb_progress progress("Exporting data");
         error = export_format_single(dbname, formname, outname, resulting_outname);
     }
 
@@ -747,6 +729,7 @@ GB_ERROR SEQIO_export_by_format(GBDATA *gb_main, int marked_only, AP_filter *fil
     } while(0)                                                          \
 
 void TEST_sequence_export() {
+    arb_suppress_progress silence;
     GBDATA  *gb_main    = GB_open("TEST_loadsave.arb", "r");
     char    *export_dir = nulldup(GB_path_in_ARBLIB("export"));
     char   **eft        = GBS_read_dir(export_dir, "*.eft");

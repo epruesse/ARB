@@ -14,7 +14,7 @@
 #include <awt_item_sel_list.hxx>
 #include <awt.hxx>
 #include <aw_awar.hxx>
-#include <aw_status.hxx>
+#include <arb_progress.h>
 #include <aw_msg.hxx>
 #include <aw_root.hxx>
 #include <arbdbt.h>
@@ -134,25 +134,28 @@ GB_ERROR NT_resort_data_base(GBT_TREE *tree, const char *key1, const char *key2,
 }
 
 void NT_resort_data_by_phylogeny(AW_window *, AW_CL, AW_CL) {
-    aw_openstatus("resorting data");
-    GB_ERROR error = 0;
-    GBT_TREE *tree = nt_get_current_tree_root();
-    if (!tree) error = "Please select/build a tree first";
-    if (!error) error = NT_resort_data_base(tree, 0, 0, 0);
-    aw_closestatus();
-    if (error) aw_message(error);
+    arb_progress  progress("Sorting data");
+    GB_ERROR      error = 0;
+    GBT_TREE     *tree  = nt_get_current_tree_root();
 
+    if (!tree)  error = "Please select/build a tree first";
+    if (!error) error = NT_resort_data_base(tree, 0, 0, 0);
+    if (error) aw_message(error);
 }
 
 void NT_resort_data_by_user_criteria(AW_window *aw) {
-    aw_openstatus("resorting data");
-    GB_ERROR error = 0;
+    arb_progress progress("Sorting data");
+    
     char *s1 = aw->get_root()->awar("ad_tree/sort_1")->read_string();
     char *s2 = aw->get_root()->awar("ad_tree/sort_2")->read_string();
     char *s3 = aw->get_root()->awar("ad_tree/sort_3")->read_string();
-    if (!error) error = NT_resort_data_base(0, s1, s2, s3);
-    aw_closestatus();
+
+    GB_ERROR error = NT_resort_data_base(0, s1, s2, s3);
     if (error) aw_message(error);
+
+    free(s3);
+    free(s2);
+    free(s1);
 }
 
 void NT_build_resort_awars(AW_root *awr, AW_default aw_def) {

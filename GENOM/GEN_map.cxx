@@ -24,7 +24,7 @@
 #include <AW_rename.hxx>
 #include <awt_input_mask.hxx>
 #include <aw_msg.hxx>
-#include <aw_status.hxx>
+#include <arb_progress.h>
 #include <aw_root.hxx>
 #include <adGene.h>
 
@@ -676,28 +676,23 @@ static AW_repeated_question *ask_about_existing_gene_species = 0;
 static AW_repeated_question *ask_to_overwrite_alignment      = 0;
 
 struct EG2PS_data {
-    // used for status:
-    int count;
-    int marked_genes;
-
+    arb_progress        progress;
     GBDATA             *gb_species_data;
     char               *ali;
     UniqueNameDetector  existing;
     GB_HASH            *pseudo_hash;
-
-    int  duplicateSpecies;      // counts created gene-species with identical ACC
-    bool nameProblem;           // nameserver and DB disagree about names
+    int                 duplicateSpecies; // counts created gene-species with identical ACC
+    bool                nameProblem; // nameserver and DB disagree about names
 
     EG2PS_data(const char *ali_, GBDATA *gb_species_data_, int marked_genes_)
-        : count(0)
-        , marked_genes(marked_genes_)
-        , gb_species_data(gb_species_data_)
-        , ali(strdup(ali_))
-        , existing(gb_species_data, marked_genes)
-        , duplicateSpecies(0)
-        , nameProblem(false)
+        : progress(marked_genes_), 
+          gb_species_data(gb_species_data_), 
+          ali(strdup(ali_)), 
+          existing(gb_species_data, marked_genes_), 
+          duplicateSpecies(0), 
+          nameProblem(false)
     {
-        pseudo_hash = GEN_create_pseudo_species_hash(GB_get_root(gb_species_data), marked_genes);
+        pseudo_hash = GEN_create_pseudo_species_hash(GB_get_root(gb_species_data), marked_genes_);
     }
 
     ~EG2PS_data() {
@@ -802,7 +797,7 @@ static void gen_extract_gene_2_pseudoSpecies(GBDATA *gb_species, GBDATA *gb_gene
         if (!error) {
             if (create_new_gene_species) {
                 if (!short_name) { // create a new name
-                    error = AWTC_generate_one_name(gb_main, full_name, acc, 0, short_name, false, false);
+                    error = AWTC_generate_one_name(gb_main, full_name, acc, 0, short_name);
                     if (!error) { // name has been created
                         if (eg2ps->existing.name_known(short_name)) { // nameserver-generated name is already in use
                             const char *other_acc    = readACC(eg2ps->gb_species_data, short_name);
@@ -924,9 +919,7 @@ static void do_mark_command_for_one_species(int imode, GBDATA *gb_species, AW_CL
                 if (mark_flag) {
                     EG2PS_data *eg2ps = (EG2PS_data*)cl_user;
                     gen_extract_gene_2_pseudoSpecies(gb_species, gb_gene, eg2ps);
-                    if ((++eg2ps->count)%10 == 0) {
-                        aw_status(eg2ps->count/double(eg2ps->marked_genes));
-                    }
+                    eg2ps->progress.inc();
                 }
                 break;
             }
@@ -1121,7 +1114,7 @@ static void gene_extract_cb(AW_window *aww, AW_CL cl_GEN_extract_mode_param) {
         ask_about_existing_gene_species = new AW_repeated_question();
         ask_to_overwrite_alignment      = new AW_repeated_question();
 
-        aw_openstatus("Extracting pseudo-species");
+        arb_progress progress("Extracting pseudo-species");
         {
             EG2PS_data *eg2ps = 0;
             {
@@ -1138,7 +1131,6 @@ static void gene_extract_cb(AW_window *aww, AW_CL cl_GEN_extract_mode_param) {
             GEN_perform_command(aww, gb_main, param->get_perform_mode(), do_mark_command_for_one_species, GEN_EXTRACT_MARKED, (AW_CL)eg2ps);
             delete eg2ps;
         }
-        aw_closestatus();
 
         delete ask_to_overwrite_alignment;
         delete ask_about_existing_gene_species;

@@ -175,7 +175,7 @@ private:
     int             pool_length,
         max_init_pop_combis;
     Generation          *act_generation,
-        *child_generation;
+        *child_generation; // @@@ can be removed
     List<result_struct>     *computation_result_list;
 
 public:

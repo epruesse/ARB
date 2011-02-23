@@ -11,6 +11,7 @@
 #include <cctype>
 
 #include <arbdbt.h>
+#include <arb_progress.h>
 #include <ad_config.h>
 
 #include "gb_local.h"
@@ -157,8 +158,10 @@ GB_ERROR gbt_rename_tree_rek(GBT_TREE *tree, int tree_index) {
     return 0;
 }
 
-GB_ERROR GBT_commit_rename_session(int (*show_status)(double gauge), int (*show_status_text)(const char *)) {
-    // goes to header: __ATTR__USERESULT
+GB_ERROR GBT_commit_rename_session() { // goes to header: __ATTR__USERESULT
+    arb_progress commit_progress("Renaming name references", 3);
+    commit_progress.allow_title_reuse();
+
     GB_ERROR error = 0;
 
     // rename species in trees
@@ -170,25 +173,34 @@ GB_ERROR GBT_commit_rename_session(int (*show_status)(double gauge), int (*show_
             int count;
             gb_assert(tree_count); // otherwise tree_names should be zero
 
-            if (show_status_text) show_status_text(GBS_global_string("Renaming species in %i tree%c", tree_count, "s"[tree_count<2]));
-            if (show_status) show_status(0.0);
+            arb_progress progress(GBS_global_string("Renaming species in %i tree%c", tree_count, "s"[tree_count<2]),
+                                  tree_count*3);
 
-            for (count = 0; count<tree_count; ++count) {
+            for (count = 0; count<tree_count && !error; ++count) {
                 char     *tname = tree_names[count];
                 GBT_TREE *tree  = GBT_read_tree(NameSession.gb_main, tname, -sizeof(GBT_TREE));
+                ++progress;
 
                 if (tree) {
                     currentTreeName = tname; // provide tree name (used for error message)
                     gbt_rename_tree_rek(tree, count+1);
                     currentTreeName = 0;
 
+                    ++progress;
+
                     GBT_write_tree(NameSession.gb_main, 0, tname, tree);
                     GBT_delete_tree(tree);
+                    
+                    progress.inc_and_check_user_abort(error);
                 }
-                if (show_status) show_status((double)(count+1)/tree_count);
+                else {
+                    ++progress;
+                    ++progress;
+                }
             }
             GBT_free_names(tree_names);
         }
+        commit_progress.inc_and_check_user_abort(error);
     }
     // rename configurations
     if (!error) {
@@ -199,8 +211,7 @@ GB_ERROR GBT_commit_rename_session(int (*show_status)(double gauge), int (*show_
             int count;
             gb_assert(config_count); // otherwise config_names should be zero
 
-            if (show_status_text) show_status_text(GBS_global_string("Renaming species in %i config%c", config_count, "s"[config_count<2]));
-            if (show_status) show_status(0.0);
+            arb_progress progress(GBS_global_string("Renaming species in %i config%c", config_count, "s"[config_count<2]), config_count);
 
             for (count = 0; !error && count<config_count; ++count) {
                 GBT_config *config = GBT_load_configuration_data(NameSession.gb_main, config_names[count], &error);
@@ -240,11 +251,12 @@ GB_ERROR GBT_commit_rename_session(int (*show_status)(double gauge), int (*show_
                         error = GBT_save_configuration_data(config, NameSession.gb_main, config_names[count]);
                     }
                 }
-                if (show_status) show_status((double)(count+1)/config_count);
+                progress.inc_and_check_user_abort(error);
             }
             GBT_free_names(config_names);
         }
     }
+    commit_progress.inc_and_check_user_abort(error);
 
     // rename links in pseudo-species
     if (!error && GEN_is_genome_db(NameSession.gb_main, -1)) {
@@ -264,6 +276,7 @@ GB_ERROR GBT_commit_rename_session(int (*show_status)(double gauge), int (*show_
             }
         }
     }
+    commit_progress.inc_and_check_user_abort(error);
 
     gbt_free_rename_session_data();
 

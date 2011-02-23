@@ -12,6 +12,7 @@
 #include "PRD_Design.hxx"
 #include "PRD_SequenceIterator.hxx"
 #include "PRD_SearchFIFO.hxx"
+#include <arb_progress.h>
 
 #include <iostream>
 
@@ -39,9 +40,6 @@ void PrimerDesign::init (const char *sequence_, long int seqLength_,
     list1     = 0;
     list2     = 0;
     pairs     = 0;
-
-    show_status_txt    = 0;
-    show_status_double = 0;
 
     setPositionalParameters (pos1_, pos2_, length_, distance_);
     setConditionalParameters(ratio_, temperature_, min_dist_to_next_, expand_IUPAC_Codes_, max_count_primerpairs_, GC_factor_, temp_factor_);
@@ -178,17 +176,15 @@ void PrimerDesign::run (int print_stages_)
     printf("sizeof(Node) = %zu\n", sizeof(Node));
 #endif // DEBUG
 
-    show_status("searching possible primers");
     buildPrimerTrees();
     if (error) return;
     if (print_stages_ & PRINT_RAW_TREES) printPrimerTrees();
 
-    show_status("match possible primers vs. sequence");
     matchSequenceAgainstPrimerTrees();
     if (error) return;
     if (print_stages_ & PRINT_MATCHED_TREES) printPrimerTrees();
 
-    show_status("evaluating primer pairs"); show_status(0.0);
+    arb_progress::show_comment("evaluating primer pairs");
     convertTreesToLists();
     if (error) return;
     if (print_stages_ & PRINT_PRIMER_LISTS) printPrimerLists();
@@ -275,6 +271,9 @@ void PrimerDesign::clearTree (Node *start, int left_, int right_)
 
 void PrimerDesign::buildPrimerTrees ()
 {
+    arb_progress progress("searching possible primers",
+                          primer1.max()+primer2.max()-2*primer_length.min());
+
 #if defined(DEBUG)
     primer1.print("buildPrimerTrees : pos1\t\t", "\n");
     primer2.print("buildPrimerTrees : pos2\t\t", "\n");
@@ -313,15 +312,10 @@ void PrimerDesign::buildPrimerTrees ()
     //
     // build first tree
     //
-    long int primer1_length = primer1.max()-primer1.min()+1;
-    show_status("searching possible primers -- left");
-
     for (PRD_Sequence_Pos start_pos = primer1.min();
           (start_pos < primer1.max()-primer_length.min()) && (sequence[start_pos] != '\x00');
-          start_pos++) {
-
-        show_status((double)(start_pos-primer1.min())/primer1_length/2);
-
+          start_pos++)
+    {
         // start iterator at new position
         sequence_iterator->restart(start_pos, primer1.max(), primer_length.max(), SequenceIterator::FORWARD);
         sequence_iterator->nextBase();
@@ -345,6 +339,7 @@ void PrimerDesign::buildPrimerTrees ()
         }
 
         offset++;
+        progress.inc();
     }
 
     //
@@ -354,7 +349,6 @@ void PrimerDesign::buildPrimerTrees ()
     printf ("           %li nodes left (%li primers)   %li nodes right (%li primers)\n", total_node_counter_left, primer_node_counter_left, total_node_counter_right, primer_node_counter_right);
     printf ("           clearing left tree\n");
 #endif
-    show_status("clearing left primertree");
     clearTree(root1, 1, 0);
 #if defined(DEBUG)
     printf ("           %li nodes left (%li primers)   %li nodes right (%li primers)\n", total_node_counter_left, primer_node_counter_left, total_node_counter_right, primer_node_counter_right);
@@ -376,15 +370,10 @@ void PrimerDesign::buildPrimerTrees ()
     //
     // build second tree
     //
-    long int primer2_length = primer2.max()-primer2.min()+1;
-    show_status("searching possible primers -- right");
-
     for (PRD_Sequence_Pos start_pos = primer2.min();
           (start_pos < primer2.max()-primer_length.min()) && (sequence[start_pos] != '\x00');
-          start_pos++) {
-
-        show_status((double)(start_pos-primer2.min())/primer2_length/2+0.5);
-
+          start_pos++)
+    {
         // start iterator at new position
         sequence_iterator->restart(start_pos, primer2.max(), primer_length.max(), SequenceIterator::FORWARD);
         sequence_iterator->nextBase();
@@ -408,7 +397,9 @@ void PrimerDesign::buildPrimerTrees ()
         }
 
         offset++;
+        progress.inc();
     }
+    progress.done();
 
     if (!treeContainsPrimer(root2)) {
         error = "no primer in right range found .. maybe only spaces in that range ?";
@@ -423,7 +414,6 @@ void PrimerDesign::buildPrimerTrees ()
     printf ("           %li nodes left (%li primers)   %li nodes right (%li primers)\n", total_node_counter_left, primer_node_counter_left, total_node_counter_right, primer_node_counter_right);
     printf ("           clearing right tree\n");
 #endif
-    show_status("clearing right primertree");
     clearTree(root2, 0, 1);
 #if defined(DEBUG)
     printf ("           %li nodes left (%li primers)   %li nodes right (%li primers)\n", total_node_counter_left, primer_node_counter_left, total_node_counter_right, primer_node_counter_right);
@@ -495,14 +485,13 @@ void PrimerDesign::matchSequenceAgainstPrimerTrees()
     printf("root2 : [C %p, G %p, A %p, TU %p]\n", root2->child[0], root2->child[1], root2->child[2], root2->child[3]);
 #endif
 
-    show_status("match possible primers vs. seq. (forward)");
-    base    = sequence_iterator->nextBase();
+    arb_progress progress(seqLength);
+
+    progress.subtitle("match possible primers vs. seq. (forward)");
+
+    base = sequence_iterator->nextBase();
     while (base != SequenceIterator::EOS) {
         pos = sequence_iterator->pos;
-
-        if ((pos&0x7f) == 0) {
-            show_status((double)pos/seqLength/2);
-        }
 
         // tree/fifo 1
         if (primer1.includes(pos)) {     // flush fifo1 if in range of Primer 1
@@ -530,20 +519,17 @@ void PrimerDesign::matchSequenceAgainstPrimerTrees()
 
         // get next base in sequence
         base = sequence_iterator->nextBase();
+        progress.inc();
     }
 
     sequence_iterator->restart(pos, 0, SequenceIterator::IGNORE, SequenceIterator::BACKWARD);
     fifo1->flush();
     fifo2->flush();
 
-    show_status("match possible primers vs. seq. (backward)");
+    progress.subtitle("match possible primers vs. seq. (backward)");
     base = INVERT.BASE[sequence_iterator->nextBase()];
     while (base != SequenceIterator::EOS) {
         pos = sequence_iterator->pos;
-
-        if ((pos&0x7f) == 0) {
-            show_status((double)(seqLength-pos)/seqLength/2+0.5);
-        }
 
         // tree/fifo 1
         if (primer1.includes(pos)) {     // flush fifo1 if in range of Primer 1
@@ -571,7 +557,9 @@ void PrimerDesign::matchSequenceAgainstPrimerTrees()
 
         // get next base in sequence
         base = INVERT.BASE[sequence_iterator->nextBase()];
+        progress.inc();
     }
+    progress.done();
 
     delete fifo1;
     delete fifo2;
@@ -923,22 +911,17 @@ void PrimerDesign::evaluatePrimerPairs ()
     printf ("evaluatePrimerPairs : ...\ninsertPair : [index], rating\n");
 #endif
 
-    show_status("evaluating primer pairs");
     int list1_elems = 0;
-    int elems       = 0;
     while (one) {
         list1_elems++;
         one = one->next;
     }
     one = list1;
 
+    arb_progress progress("evaluating primer pairs", list1_elems);
     // outer loop <= > run through list1
     while (one != NULL)
     {
-        show_status(GBS_global_string("evaluating primer pairs (%6.3f)", pairs[0].rating));
-        show_status((double)elems/list1_elems);
-        elems++;
-
         // inner loop <= > run through list2
         two            = list2;
         while (two != NULL)
@@ -960,6 +943,7 @@ void PrimerDesign::evaluatePrimerPairs ()
 
         // next in outer loop
         one = one->next;
+        progress.inc();
     }
 
     if (counter == 0) error = "no primer pair could be found, sorry :(";

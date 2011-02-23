@@ -2,7 +2,7 @@
 #include <aw_preset.hxx>
 #include <aw_awar.hxx>
 #include <aw_msg.hxx>
-#include <aw_status.hxx>
+#include <arb_progress.h>
 #include <aw_root.hxx>
 
 #include <ed4_extern.hxx>
@@ -915,7 +915,7 @@ void ED4_sequence_terminal_basic::calc_update_intervall(long *left_index, long *
     if (*left_index < 0) *left_index                             = 0;
 }
 
-void ED4_manager::create_consensus(ED4_group_manager *upper_group_manager, aw_status_counter *progress) {
+void ED4_manager::create_consensus(ED4_group_manager *upper_group_manager, arb_progress *progress) {
     // creates consensus
     // is called by group manager
 
@@ -927,10 +927,7 @@ void ED4_manager::create_consensus(ED4_group_manager *upper_group_manager, aw_st
         group_manager->table().init(MAXSEQUENCECHARACTERLENGTH);
         group_manager_for_child = group_manager;
 
-        if (progress) {
-            progress->inc();
-            if (progress->aborted_by_user()) ED4_exit();
-        }
+        if (progress) progress->inc();
     }
     int i;
     for (i=0; i<children->members(); i++) {
@@ -946,6 +943,8 @@ void ED4_manager::create_consensus(ED4_group_manager *upper_group_manager, aw_st
                 group_manager_for_child->table().add(db_pointer, db_pointer_len);
                 e4_assert(!group_manager_for_child->table().empty());
                 free(db_pointer);
+
+                if (progress) progress->inc();
             }
         }
         else if (member->is_group_manager()) {

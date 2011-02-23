@@ -44,7 +44,7 @@ void MG_create_db_dependent_rename_awars(AW_root *aw_root, GBDATA *gb_merge, GBD
 void     MG_set_renamed(bool renamed, AW_root *aw_root, const char *reason);
 GB_ERROR MG_expect_renamed();
 
-int MG_copy_and_check_alignments(AW_window *aww, int show_status);
+int MG_copy_and_check_alignments(AW_window *aww);
 
 // export of gene-species:
 
@@ -56,6 +56,9 @@ GB_ERROR   MG_export_fields(AW_root *aw_root, GBDATA *gb_source, GBDATA *gb_dest
 #define AWAR_REMAP_ENABLE       "merge/remap_enable"
 
 #define AWAR_MERGE_GENE_SPECIES_BASE "merge/gene_species/"
+
+#define IS_QUERIED_SPECIES(gb_species) (1 & GB_read_usr_private(gb_species))
+int mg_count_queried(GBDATA *gb_main);
 
 const char *MG_left_AWAR_SPECIES_NAME();
 const char *MG_right_AWAR_SPECIES_NAME();

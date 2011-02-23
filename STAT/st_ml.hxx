@@ -173,7 +173,6 @@ public:
                         const char           *species_names, // 0 -> all [marked] species (else species_names is a (char)1 separated list of species)
                         int                   marked_only,
                         ColumnStat           *colstat,
-                        bool                  show_status,
                         const WeightedFilter *weighted_filter) __ATTR__USERESULT;
 
     const AP_filter *get_filter() const;

@@ -23,13 +23,15 @@ class AW_root;
 
 AW_window *AP_open_pos_var_pars_window(AW_root *root);
 
+class arb_progress;
+
 class AP_pos_var {
     GBDATA        *gb_main;
-    long           timer;       // for the status box
-    long           treesize;    // max value for slider
+    long           treesize;         // max value for slider
+    arb_progress  *progress;
     GB_UINT4      *frequencies[256]; // count every occurrence
-    GB_UINT4      *transitions; // minimum transitions
-    GB_UINT4      *transversions; // minimum transversions (dna only)
+    GB_UINT4      *transitions;      // minimum transitions
+    GB_UINT4      *transversions;    // minimum transversions (dna only)
     unsigned char  char_2_freq[256]; // mapper (~ toupper)
     long           char_2_transition[256]; // a->1 c->2 g->4 ...
     long           char_2_transversion[256]; // y->1 r->2

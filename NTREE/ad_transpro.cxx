@@ -18,7 +18,7 @@
 #include <aw_window.hxx>
 #include <aw_root.hxx>
 #include <aw_msg.hxx>
-#include <aw_status.hxx>
+#include <arb_progress.h>
 #include <arbdbt.h>
 #include <cctype>
 
@@ -79,10 +79,7 @@ static GB_ERROR arb_r2a(GBDATA *gb_main, bool use_entries, bool save_entries, in
     int selected_ttable     = -1;
 
     if (!error) {
-        aw_openstatus("Translating");
-
-        int spec_count = GBT_get_species_count(gb_main);
-        int spec_i     = 0;
+        arb_progress progress("Translating", GBT_count_marked_species(gb_main));
 
         bool table_used[AWT_CODON_TABLES];
         memset(table_used, 0, sizeof(table_used));
@@ -138,42 +135,39 @@ static GB_ERROR arb_r2a(GBDATA *gb_main, bool use_entries, bool save_entries, in
                     startpos = sp_codon_start;
                 }
 
-                if (aw_status(double(spec_i++)/double(spec_count))) {
-                    error = "Aborted by user";
-                }
+                GBDATA *gb_source = GB_entry(gb_species, ali_source);
+                if (!gb_source) { ++no_data; }
                 else {
-                    GBDATA *gb_source = GB_entry(gb_species, ali_source);
-                    if (!gb_source) { ++no_data; continue; }
-
                     GBDATA *gb_source_data = GB_entry(gb_source, "data");
-                    if (!gb_source_data) { ++no_data; continue; }
+                    if (!gb_source_data) { ++no_data; }
+                    else {
+                        char *data = GB_read_string(gb_source_data);
+                        if (!data) {
+                            GB_print_error(); // cannot read data (ignore species)
+                            ++no_data;
+                        }
+                        else {
+                            if (!found_transl_info) ++spec_no_transl_info; // count species with missing info
 
-                    char *data = GB_read_string(gb_source_data);
-                    if (!data) {
-                        GB_print_error(); // cannot read data (ignore species)
-                        ++no_data;
-                        continue;
+                            stops += AWT_pro_a_nucs_convert(table, data, GB_read_string_count(gb_source_data), startpos, translate_all, false, false, 0); // do the translation
+                            ++count;
+
+                            GBDATA *gb_dest_data     = GBT_add_data(gb_species, ali_dest, "data", GB_STRING);
+                            if (!gb_dest_data) error = GB_await_error();
+                            else    error            = GB_write_string(gb_dest_data, data);
+
+
+                            if (!error && save_entries && !found_transl_info) {
+                                error = AWT_saveTranslationInfo(gb_species, selected_ttable, startpos);
+                            }
+                            
+                            free(data);
+                        }
                     }
-
-                    if (!found_transl_info) ++spec_no_transl_info; // count species with missing info
-
-                    stops += AWT_pro_a_nucs_convert(table, data, GB_read_string_count(gb_source_data), startpos, translate_all, false, false, 0); // do the translation
-                    ++count;
-
-                    GBDATA *gb_dest_data     = GBT_add_data(gb_species, ali_dest, "data", GB_STRING);
-                    if (!gb_dest_data) error = GB_await_error();
-                    else    error            = GB_write_string(gb_dest_data, data);
-
-                    free(data);
                 }
-
-                if (!error && save_entries && !found_transl_info) {
-                    error = AWT_saveTranslationInfo(gb_species, selected_ttable, startpos);
-                }
+                progress.inc_and_check_user_abort(error);
             }
         }
-
-        aw_closestatus();
     }
 
     if (!error) {
@@ -352,18 +346,15 @@ GB_ERROR arb_transdna(GBDATA *gb_main, char *ali_source, char *ali_dest, long *n
     long     max_wanted_ali_len = 0;
     GB_ERROR error              = 0;
 
-    aw_openstatus("Re-aligner");
+    arb_progress progress("Re-aligner", GBT_count_marked_species(gb_main));
+    progress.auto_subtitles("Re-aligning species");
 
-    int no_of_marked_species    = GBT_count_marked_species(gb_main);
-    int no_of_realigned_species = 0;
-    int ignore_fail_pos         = 0;
+    int ignore_fail_pos = 0;
 
     for (GBDATA *gb_species = GBT_first_marked_species(gb_main);
          !error && gb_species;
          gb_species = GBT_next_marked_species(gb_species))
     {
-        aw_status(GBS_global_string("Re-aligning #%i of %i ...", no_of_realigned_species+1, no_of_marked_species));
-
         gb_source              = GB_entry(gb_species, ali_source); if (!gb_source)      continue;
         GBDATA *gb_source_data = GB_entry(gb_source,  "data");     if (!gb_source_data) continue;
         gb_dest                = GB_entry(gb_species, ali_dest);   if (!gb_dest)        continue;
@@ -656,10 +647,8 @@ GB_ERROR arb_transdna(GBDATA *gb_main, char *ali_source, char *ali_dest, long *n
         free(dest);
         free(source);
 
-        no_of_realigned_species++;
-        GB_status(double(no_of_realigned_species)/double(no_of_marked_species));
+        progress.inc_and_check_user_abort(error);
     }
-    aw_closestatus();
 
     if (max_wanted_ali_len>0) {
         if (neededLength) *neededLength = max_wanted_ali_len;

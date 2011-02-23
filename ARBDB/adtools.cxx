@@ -437,6 +437,12 @@ void GBT_free_names(char **names) {
     }
 }
 
+size_t GBT_count_names(const char **names) {
+    size_t count = 0;
+    if (names) while (names[count]) ++count;
+    return count;
+}
+
 
 char *GBT_read_string(GBDATA *gb_container, const char *fieldpath) {
     /*! Read value from database field (of type GB_STRING)

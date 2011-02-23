@@ -60,6 +60,7 @@ SQ_functions.o: $(ARBHOME)/INCLUDE/arb_assert.h
 SQ_functions.o: $(ARBHOME)/INCLUDE/arb_core.h
 SQ_functions.o: $(ARBHOME)/INCLUDE/arb_error.h
 SQ_functions.o: $(ARBHOME)/INCLUDE/arb_msg.h
+SQ_functions.o: $(ARBHOME)/INCLUDE/arb_progress.h
 SQ_functions.o: $(ARBHOME)/INCLUDE/arb_string.h
 SQ_functions.o: $(ARBHOME)/INCLUDE/arbdb.h
 SQ_functions.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -69,7 +70,6 @@ SQ_functions.o: $(ARBHOME)/INCLUDE/attributes.h
 SQ_functions.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 SQ_functions.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 SQ_functions.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
-SQ_functions.o: $(ARBHOME)/INCLUDE/aw_status.hxx
 SQ_functions.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 SQ_functions.o: $(ARBHOME)/INCLUDE/awt.hxx
 SQ_functions.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
@@ -92,6 +92,7 @@ SQ_main.o: $(ARBHOME)/INCLUDE/arb_assert.h
 SQ_main.o: $(ARBHOME)/INCLUDE/arb_core.h
 SQ_main.o: $(ARBHOME)/INCLUDE/arb_error.h
 SQ_main.o: $(ARBHOME)/INCLUDE/arb_msg.h
+SQ_main.o: $(ARBHOME)/INCLUDE/arb_progress.h
 SQ_main.o: $(ARBHOME)/INCLUDE/arb_string.h
 SQ_main.o: $(ARBHOME)/INCLUDE/arbdb.h
 SQ_main.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -104,7 +105,6 @@ SQ_main.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 SQ_main.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 SQ_main.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 SQ_main.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-SQ_main.o: $(ARBHOME)/INCLUDE/aw_status.hxx
 SQ_main.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 SQ_main.o: $(ARBHOME)/INCLUDE/awt.hxx
 SQ_main.o: $(ARBHOME)/INCLUDE/awt_filter.hxx

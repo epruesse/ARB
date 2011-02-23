@@ -40,6 +40,7 @@ PH_data.o: $(ARBHOME)/INCLUDE/arb_assert.h
 PH_data.o: $(ARBHOME)/INCLUDE/arb_core.h
 PH_data.o: $(ARBHOME)/INCLUDE/arb_error.h
 PH_data.o: $(ARBHOME)/INCLUDE/arb_msg.h
+PH_data.o: $(ARBHOME)/INCLUDE/arb_progress.h
 PH_data.o: $(ARBHOME)/INCLUDE/arb_string.h
 PH_data.o: $(ARBHOME)/INCLUDE/arbdb.h
 PH_data.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -50,7 +51,6 @@ PH_data.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 PH_data.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 PH_data.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 PH_data.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-PH_data.o: $(ARBHOME)/INCLUDE/aw_status.hxx
 PH_data.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 PH_data.o: $(ARBHOME)/INCLUDE/cb.h
 PH_data.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -95,6 +95,7 @@ PH_filt.o: $(ARBHOME)/INCLUDE/arb_assert.h
 PH_filt.o: $(ARBHOME)/INCLUDE/arb_core.h
 PH_filt.o: $(ARBHOME)/INCLUDE/arb_error.h
 PH_filt.o: $(ARBHOME)/INCLUDE/arb_msg.h
+PH_filt.o: $(ARBHOME)/INCLUDE/arb_progress.h
 PH_filt.o: $(ARBHOME)/INCLUDE/arb_string.h
 PH_filt.o: $(ARBHOME)/INCLUDE/arbdb.h
 PH_filt.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -105,7 +106,6 @@ PH_filt.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 PH_filt.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 PH_filt.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 PH_filt.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-PH_filt.o: $(ARBHOME)/INCLUDE/aw_status.hxx
 PH_filt.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 PH_filt.o: $(ARBHOME)/INCLUDE/cb.h
 PH_filt.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -137,7 +137,6 @@ PH_main.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 PH_main.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 PH_main.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
 PH_main.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-PH_main.o: $(ARBHOME)/INCLUDE/aw_status.hxx
 PH_main.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 PH_main.o: $(ARBHOME)/INCLUDE/awt.hxx
 PH_main.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx

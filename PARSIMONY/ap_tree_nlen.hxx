@@ -106,9 +106,7 @@ public:
     // tree optimization methods:
     void parsimony_rek(char *mutPerSite = NULL);
 
-    AP_FLOAT nn_interchange_rek(bool        openclosestatus,
-                                int        &abort,
-                                int         deep,   // -1 means: do whole subtree
+    AP_FLOAT nn_interchange_rek(int         deep,   // -1 means: do whole subtree
                                 AP_BL_MODE  mode,
                                 bool        skip_hidden);
 
@@ -239,12 +237,9 @@ public:
 
     // tree optimization:
 
-    AP_FLOAT nni_rek(bool          openclosestatus,
-                     int&          Abort,
-                     int           deep,
-                     bool          skip_hidden,
-                     AP_BL_MODE    mode,
-                     AP_tree_nlen *skipNode);
+    AP_FLOAT nni_rek(int deep, bool skip_hidden, AP_BL_MODE mode, AP_tree_nlen *skipNode);
+
+    AP_FLOAT calc_branchlengths() { return nni_rek(-1, false, AP_BL_BL_ONLY, NULL); }
 
     AP_FLOAT nni_mutPerSite(AP_FLOAT pars_one, AP_BL_MODE mode, MutationsPerSite *mps);
     AP_FLOAT nni(AP_FLOAT pars_one, AP_BL_MODE mode) { return nni_mutPerSite(pars_one, mode, NULL); }

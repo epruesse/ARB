@@ -14,7 +14,7 @@
 
 #include <aw_window.hxx>
 #include <aw_msg.hxx>
-#include <aw_status.hxx>
+#include <arb_progress.h>
 
 #include <ctime>
 
@@ -36,37 +36,35 @@ void ProbeValuation::evolution()
         return;
     }
 
-    MP_check_status(0, 0.0, 0.0, 0.0);
 
+    long max_generation = moeglichkeiten/(3*MAXPOPULATION)-1;
+
+    mp_assert(max_generation>1);
+    arb_progress progress(max_generation);
+    MP_aborted(0, 0.0, 0.0, 0.0, progress);
+    
     // hier beginnt der genetische Algorithmus
-    do
-    {
+    do {
         act_generation->calc_fitness(0, avg_fit);       // hier wird auch init_roulette_wheel gemacht
         avg_fit = act_generation->get_avg_fit();
 
-        if (avg_fit == 0 && !Stop_evaluation)
-        {
-            aw_message("Please choose better Probes!");
-            return;
+        if (!Stop_evaluation) {
+            if (avg_fit == 0) {
+                aw_message("Please choose better Probes!");
+                return;
+            }
+            child_generation = act_generation->create_next_generation();
+            delete act_generation; act_generation = NULL;
+
+            child_generation->check_for_results();
+
+            act_generation = child_generation;  // zum testen hier nur generierung einer Generation
+            progress.inc();
         }
-
-        if (Stop_evaluation)            // Abgebrochen durch Benutzer
-        {
-            Stop_evaluation = false;
-            act_generation->check_for_results();
-            return;
-        }
-
-        child_generation = act_generation->create_next_generation();
-        delete act_generation;
-        act_generation = NULL;
-
-
-        child_generation->check_for_results();
-
-        act_generation = child_generation;  // zum testen hier nur generierung einer Generation
     }
-    while (moeglichkeiten/3 > act_generation->get_generation() * MAXPOPULATION) ; // hier abbruchbedingung
+    while (act_generation->get_generation() <= max_generation && !Stop_evaluation) ; // hier abbruchbedingung
+
+    Stop_evaluation = false;
 
     // Abbruchbedingung deshalb, weil der genetische Alg. keinesfalls mehr Versuche
     // benoetigt als sequentielles probieren. Hier: Annahme, dass er max.
@@ -193,7 +191,6 @@ void ProbeValuation::init_valuation()
         if (mp_main->get_stc())
             delete mp_main->get_stc();
 
-        aw_status("Starting computation");
         mp_main->set_stc(new ST_Container(MAXSONDENHASHSIZE));
     }
 

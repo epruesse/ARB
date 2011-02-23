@@ -39,9 +39,9 @@ GB_ERROR AW_select_nameserver(GBDATA *gb_main, GBDATA *gb_other_main);
 // --------------------------------------------------------------------------------
 
 char     *AWTC_create_numbered_suffix(GB_HASH *species_name_hash, const char *shortname, GB_ERROR& warning);
-GB_ERROR  AWTC_pars_names(GBDATA *gb_main, int update_status = 0, bool *isWarning = 0);
-GB_ERROR  AWTC_generate_one_name(GBDATA *gb_main, const char *full_name, const char *acc, const char *addid, char*& new_name, bool openstatus, bool showstatus);
-GB_ERROR  AWTC_recreate_name(GBDATA *gb_main, bool update_status);
+GB_ERROR  AWTC_pars_names(GBDATA *gb_main, bool *isWarning = 0);
+GB_ERROR  AWTC_generate_one_name(GBDATA *gb_main, const char *full_name, const char *acc, const char *addid, char*& new_name);
+GB_ERROR  AWTC_recreate_name(GBDATA *gb_main);
 
 // return name of additional field used for species identification
 // (-> para 'addid' in AWTC_generate_one_name)

@@ -69,6 +69,7 @@ ED4_base.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ED4_base.o: $(ARBHOME)/INCLUDE/arb_core.h
 ED4_base.o: $(ARBHOME)/INCLUDE/arb_error.h
 ED4_base.o: $(ARBHOME)/INCLUDE/arb_msg.h
+ED4_base.o: $(ARBHOME)/INCLUDE/arb_progress.h
 ED4_base.o: $(ARBHOME)/INCLUDE/arb_string.h
 ED4_base.o: $(ARBHOME)/INCLUDE/arbdb.h
 ED4_base.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -85,7 +86,6 @@ ED4_base.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 ED4_base.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 ED4_base.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
 ED4_base.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-ED4_base.o: $(ARBHOME)/INCLUDE/aw_status.hxx
 ED4_base.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ED4_base.o: $(ARBHOME)/INCLUDE/cb.h
 ED4_base.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -142,6 +142,7 @@ ED4_cursor.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ED4_cursor.o: $(ARBHOME)/INCLUDE/arb_core.h
 ED4_cursor.o: $(ARBHOME)/INCLUDE/arb_error.h
 ED4_cursor.o: $(ARBHOME)/INCLUDE/arb_msg.h
+ED4_cursor.o: $(ARBHOME)/INCLUDE/arb_progress.h
 ED4_cursor.o: $(ARBHOME)/INCLUDE/arb_string.h
 ED4_cursor.o: $(ARBHOME)/INCLUDE/arbdb.h
 ED4_cursor.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -159,7 +160,6 @@ ED4_cursor.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 ED4_cursor.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 ED4_cursor.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 ED4_cursor.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-ED4_cursor.o: $(ARBHOME)/INCLUDE/aw_status.hxx
 ED4_cursor.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ED4_cursor.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 ED4_cursor.o: $(ARBHOME)/INCLUDE/cb.h
@@ -317,7 +317,6 @@ ED4_main.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 ED4_main.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 ED4_main.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
 ED4_main.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-ED4_main.o: $(ARBHOME)/INCLUDE/aw_status.hxx
 ED4_main.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ED4_main.o: $(ARBHOME)/INCLUDE/awt.hxx
 ED4_main.o: $(ARBHOME)/INCLUDE/awt_map_key.hxx
@@ -493,6 +492,7 @@ ED4_no_class.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ED4_no_class.o: $(ARBHOME)/INCLUDE/arb_core.h
 ED4_no_class.o: $(ARBHOME)/INCLUDE/arb_error.h
 ED4_no_class.o: $(ARBHOME)/INCLUDE/arb_msg.h
+ED4_no_class.o: $(ARBHOME)/INCLUDE/arb_progress.h
 ED4_no_class.o: $(ARBHOME)/INCLUDE/arb_string.h
 ED4_no_class.o: $(ARBHOME)/INCLUDE/arbdb.h
 ED4_no_class.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -512,7 +512,6 @@ ED4_no_class.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/AW_rename.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/aw_select.hxx
-ED4_no_class.o: $(ARBHOME)/INCLUDE/aw_status.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/awt.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/awt_item_sel_list.hxx
@@ -648,6 +647,7 @@ ED4_root.o: $(ARBHOME)/INCLUDE/arb_build.h
 ED4_root.o: $(ARBHOME)/INCLUDE/arb_core.h
 ED4_root.o: $(ARBHOME)/INCLUDE/arb_error.h
 ED4_root.o: $(ARBHOME)/INCLUDE/arb_msg.h
+ED4_root.o: $(ARBHOME)/INCLUDE/arb_progress.h
 ED4_root.o: $(ARBHOME)/INCLUDE/arb_string.h
 ED4_root.o: $(ARBHOME)/INCLUDE/arb_version.h
 ED4_root.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -667,7 +667,6 @@ ED4_root.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 ED4_root.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 ED4_root.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
 ED4_root.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-ED4_root.o: $(ARBHOME)/INCLUDE/aw_status.hxx
 ED4_root.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ED4_root.o: $(ARBHOME)/INCLUDE/awt.hxx
 ED4_root.o: $(ARBHOME)/INCLUDE/awt_map_key.hxx
@@ -908,6 +907,7 @@ EDB_root_bact.o: $(ARBHOME)/INCLUDE/arb_assert.h
 EDB_root_bact.o: $(ARBHOME)/INCLUDE/arb_core.h
 EDB_root_bact.o: $(ARBHOME)/INCLUDE/arb_error.h
 EDB_root_bact.o: $(ARBHOME)/INCLUDE/arb_msg.h
+EDB_root_bact.o: $(ARBHOME)/INCLUDE/arb_progress.h
 EDB_root_bact.o: $(ARBHOME)/INCLUDE/arb_string.h
 EDB_root_bact.o: $(ARBHOME)/INCLUDE/arbdb.h
 EDB_root_bact.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -921,7 +921,6 @@ EDB_root_bact.o: $(ARBHOME)/INCLUDE/aw_font_group.hxx
 EDB_root_bact.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 EDB_root_bact.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 EDB_root_bact.o: $(ARBHOME)/INCLUDE/aw_position.hxx
-EDB_root_bact.o: $(ARBHOME)/INCLUDE/aw_status.hxx
 EDB_root_bact.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 EDB_root_bact.o: $(ARBHOME)/INCLUDE/dupstr.h
 EDB_root_bact.o: $(ARBHOME)/INCLUDE/smartptr.h
