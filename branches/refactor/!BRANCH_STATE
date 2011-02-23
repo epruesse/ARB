@@ -32,96 +32,34 @@ performed merges
                 6951 -> 7047
                 6940 6942 -> 7048 
                 7005 [in trunk - merged manually into one of the prev changesets]
+                6754 6755 6756 7069 -> 7171
+                6787 6803 6941 6944 6947 7064 7065 -> 7172
+                6763 -> 7174
+                7056 -> 7175
+                7067 -> 7176
+                7054 7055 7057 7058 7059 7062 -> 7177
+                7066 -> 7177
+                7068 -> 7179
+                7070 -> 7180
+                7074 -> 7181
+                7080 7081 7083 7090 7091 -> 7182
+                7084 7086 7087 7088 -> 7183
+                7071 7072 7073 7075 7078 7079 7082 7092 7094 7095 -> 7184
+                7096 -> 7185
+                7097 7098 7100 7101 7102 7103 7105 -> 7186
+                7099 7106 7107 -> 7187
+                7149 7154 7160 -> 7188
+                7108 7146 7147 7148 7150 7151 7152 7153 7155 7156 7161 7162 7163 -> 7189
+                7164 7165 7166 7167 7168 7169 7170 -> 7190
 
-        i hate merging!
+        skipped patches (depends, already there, this file, ...)
+
+                6790 6792 6793 6797 6805 6807 6818 6825 6846 6859 6953 7050 7063
+                7077 7085 7089 7093 7145 7157
 
         not merged yet:
         BRANCH->HEAD
 
-                6754 AISC
-                6755 pt
-                6756 pt
-                6763 test
-                6787 pt
-                6790 _____skip
-                6792 _____skip
-                6793 _____skip
-                6797 _____skip
-                6803 test (PT)
-                6805 _____skip
-                6807 _____skip
-                6818 _____skip
-                6825 _____skip
-                6846 _____skip
-                6859 _____skip
-                6941 <careful> disables some unit tests 
-                6944 <careful> disables some unit tests
-                6947 <careful> disables some unit tests
-                6953 _____skip
+        --- current try above
 
-                7050 _____skip
-                7054 unfold_path
-                7055 unfold_path
-                7056 UNCOVERED
-                7057 unfold_path (fix)
-                7058 unfold_path
-                7059 unfold_path
-                7062 unfold_path
-                7063 make
-                7064 test_environment (related to 6810 and pt patches above)
-                7065 test_environment
-                7066 make
-                7067 unit_tests
-                7068 demangle_backtraces
-                7069 pt (removed multiple exit points)
-                7070 NTREE/GENOM interface
-                7071 arb_count_chars (-> NTREE)
-                7072 arb_count_chars (help)
-                7073 arb_count_chars (test)
-                7074 typo
-                7075 arb_count_chars (refactor)
-                7077 _____skip (came from trunk)
-                7078 arb_count_chars (status related)
-                7079 arb_count_chars (DBs renamed)
-                7080 test_environment (timeouts)
-                7081 unit_tests (format)
-                7082 arb_count_chars (checksum)
-                7083 arb_unit_test.h
-                7084 libCORE
-                7085 _____skip (depends)
-                7086 libCORE (link fix)
-                7087 libCORE (perl fix)
-                7088 libCORE (include)
-                7089 _____skip (depends)
-                7090 GB_allow_compression
-                7091 TEST_CREATE_DB (allow compression)
-                7092 countchars (stackbug, added test)
-                7093 _____skip (depends)
-                7094 countchars (fixed stackbug using heap)
-                7095 countchars (memleaks)
-                7096 nni (removed default parameters)
-                7097 arb_progress
-                7098 arb_progress
-                7099 arb_convert_aln (drop -phylip2)
-                7100 arb_progress (suppress)
-                7101 arb_progress (removed tests - only needed for rewrite)
-                7102 arb_progress (BasicStatus fix) 
-                7103 arb_progress (ptserver)
-                7105 arb_progress (avoid zero progress)
-                7106 arb_convert_aln (undrop -phylip2 as -fastdnaml)
-                7107 arb_convert_aln (fixed calls)
-                7108 toolTests
-                7145 _____skip (came from trunk)
-                7146 toolTests
-                7147 toolTests
-                7148 toolTests
-                7149 smallfix
-                7150 toolTests
-                7151 toolTests
-                7152 toolTests
-                7153 toolTests
-                7154 unit_tests
-                7155 toolTests
-                7156 toolTests
-
-        not reviewed: 7157:HEAD
+        not reviewed: 7171:HEAD
