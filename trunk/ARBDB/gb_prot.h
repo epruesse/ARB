@@ -101,7 +101,6 @@ GB_ERROR gb_create_dictionaries(GB_MAIN_TYPE *Main, long maxmem);
 void gbs_uppercase(char *str);
 void gbs_memcopy(char *dest, const char *source, long len);
 char *gbs_add_path(char *path, char *name);
-GB_ERROR gbcm_test_address(long *address, long key);
 
 /* adfile.cxx */
 GB_ERROR gb_scan_directory(char *basename, gb_scandir *sd) __ATTR__USERESULT;

@@ -123,9 +123,6 @@
 #ifndef ARB_CORE_H
 #include <arb_core.h>
 #endif
-#ifndef AD_K_PROT_H
-#error "header dependencies broken (missing prototypes from ad_k_prot.h)"
-#endif
 
 #define ARB_SIGSEGV(backtrace) do {                             \
         if (backtrace) GBK_dump_backtrace(NULL, "ARB_SIGSEGV"); \
@@ -293,9 +290,9 @@ inline bool contradicted(bool hypo1, bool hypo2) { return !correlated(hypo1, hyp
 // ------------------------------------------------------------
 
 #if !defined(SIMPLE_ARB_ASSERT)
-# ifndef ARBDB_BASE_H
-#  include <arbdb_base.h>
-# endif
+#ifndef ARB_CORE_H
+#include <arb_core.h>
+#endif
 #endif // SIMPLE_ARB_ASSERT
 
 #else

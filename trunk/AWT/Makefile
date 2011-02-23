@@ -49,12 +49,13 @@ depend.init:
 
 AWT_asciiprint.o: awt.hxx
 AWT_asciiprint.o: awt_asciiprint.hxx
-AWT_asciiprint.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 AWT_asciiprint.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AWT_asciiprint.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AWT_asciiprint.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWT_asciiprint.o: $(ARBHOME)/INCLUDE/arb_core.h
 AWT_asciiprint.o: $(ARBHOME)/INCLUDE/arb_error.h
+AWT_asciiprint.o: $(ARBHOME)/INCLUDE/arb_msg.h
+AWT_asciiprint.o: $(ARBHOME)/INCLUDE/arb_string.h
 AWT_asciiprint.o: $(ARBHOME)/INCLUDE/arbdb.h
 AWT_asciiprint.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AWT_asciiprint.o: $(ARBHOME)/INCLUDE/arbdbt.h
@@ -72,11 +73,12 @@ AWT_asciiprint.o: $(ARBHOME)/INCLUDE/smartptr.h
 AWT_asciiprint.o: $(ARBHOME)/INCLUDE/test_global.h
 
 AWT_attributes.o: awt_attributes.hxx
-AWT_attributes.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 AWT_attributes.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AWT_attributes.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWT_attributes.o: $(ARBHOME)/INCLUDE/arb_core.h
 AWT_attributes.o: $(ARBHOME)/INCLUDE/arb_error.h
+AWT_attributes.o: $(ARBHOME)/INCLUDE/arb_msg.h
+AWT_attributes.o: $(ARBHOME)/INCLUDE/arb_string.h
 AWT_attributes.o: $(ARBHOME)/INCLUDE/arbdb.h
 AWT_attributes.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AWT_attributes.o: $(ARBHOME)/INCLUDE/arbtools.h
@@ -88,12 +90,13 @@ AWT_attributes.o: $(ARBHOME)/INCLUDE/smartptr.h
 AWT_attributes.o: $(ARBHOME)/INCLUDE/test_global.h
 
 AWT_canio.o: awt_canvas.hxx
-AWT_canio.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 AWT_canio.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AWT_canio.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AWT_canio.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWT_canio.o: $(ARBHOME)/INCLUDE/arb_core.h
 AWT_canio.o: $(ARBHOME)/INCLUDE/arb_error.h
+AWT_canio.o: $(ARBHOME)/INCLUDE/arb_msg.h
+AWT_canio.o: $(ARBHOME)/INCLUDE/arb_string.h
 AWT_canio.o: $(ARBHOME)/INCLUDE/arbdb.h
 AWT_canio.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AWT_canio.o: $(ARBHOME)/INCLUDE/arbdbt.h
@@ -116,12 +119,13 @@ AWT_canio.o: $(ARBHOME)/INCLUDE/test_global.h
 
 AWT_canvas.o: awt.hxx
 AWT_canvas.o: awt_canvas.hxx
-AWT_canvas.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 AWT_canvas.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AWT_canvas.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AWT_canvas.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWT_canvas.o: $(ARBHOME)/INCLUDE/arb_core.h
 AWT_canvas.o: $(ARBHOME)/INCLUDE/arb_error.h
+AWT_canvas.o: $(ARBHOME)/INCLUDE/arb_msg.h
+AWT_canvas.o: $(ARBHOME)/INCLUDE/arb_string.h
 AWT_canvas.o: $(ARBHOME)/INCLUDE/arbdb.h
 AWT_canvas.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AWT_canvas.o: $(ARBHOME)/INCLUDE/arbdbt.h
@@ -141,12 +145,13 @@ AWT_canvas.o: $(ARBHOME)/INCLUDE/test_global.h
 
 AWT_changekey.o: awt.hxx
 AWT_changekey.o: awt_item_sel_list.hxx
-AWT_changekey.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 AWT_changekey.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AWT_changekey.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AWT_changekey.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWT_changekey.o: $(ARBHOME)/INCLUDE/arb_core.h
 AWT_changekey.o: $(ARBHOME)/INCLUDE/arb_error.h
+AWT_changekey.o: $(ARBHOME)/INCLUDE/arb_msg.h
+AWT_changekey.o: $(ARBHOME)/INCLUDE/arb_string.h
 AWT_changekey.o: $(ARBHOME)/INCLUDE/arbdb.h
 AWT_changekey.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AWT_changekey.o: $(ARBHOME)/INCLUDE/arbdbt.h
@@ -165,11 +170,12 @@ AWT_changekey.o: $(ARBHOME)/INCLUDE/test_global.h
 
 AWT_config_manager.o: awt.hxx
 AWT_config_manager.o: awt_config_manager.hxx
-AWT_config_manager.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 AWT_config_manager.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AWT_config_manager.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWT_config_manager.o: $(ARBHOME)/INCLUDE/arb_core.h
 AWT_config_manager.o: $(ARBHOME)/INCLUDE/arb_error.h
+AWT_config_manager.o: $(ARBHOME)/INCLUDE/arb_msg.h
+AWT_config_manager.o: $(ARBHOME)/INCLUDE/arb_string.h
 AWT_config_manager.o: $(ARBHOME)/INCLUDE/arbdb.h
 AWT_config_manager.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AWT_config_manager.o: $(ARBHOME)/INCLUDE/arbtools.h
@@ -186,7 +192,6 @@ AWT_config_manager.o: $(ARBHOME)/INCLUDE/smartptr.h
 AWT_config_manager.o: $(ARBHOME)/INCLUDE/test_global.h
 
 AWT_db_browser.o: awt.hxx
-AWT_db_browser.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/AliView.hxx
@@ -195,7 +200,9 @@ AWT_db_browser.o: $(ARBHOME)/INCLUDE/AP_Tree.hxx
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/arb_core.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/arb_error.h
+AWT_db_browser.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/arb_str.h
+AWT_db_browser.o: $(ARBHOME)/INCLUDE/arb_string.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/ARB_Tree.hxx
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/arbdb.h
 AWT_db_browser.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -222,12 +229,13 @@ AWT_input_mask.o: awt_hotkeys.hxx
 AWT_input_mask.o: awt_input_mask.hxx
 AWT_input_mask.o: awt_input_mask_internal.hxx
 AWT_input_mask.o: awt_www.hxx
-AWT_input_mask.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 AWT_input_mask.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AWT_input_mask.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AWT_input_mask.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWT_input_mask.o: $(ARBHOME)/INCLUDE/arb_core.h
 AWT_input_mask.o: $(ARBHOME)/INCLUDE/arb_error.h
+AWT_input_mask.o: $(ARBHOME)/INCLUDE/arb_msg.h
+AWT_input_mask.o: $(ARBHOME)/INCLUDE/arb_string.h
 AWT_input_mask.o: $(ARBHOME)/INCLUDE/arbdb.h
 AWT_input_mask.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AWT_input_mask.o: $(ARBHOME)/INCLUDE/arbdbt.h
@@ -248,12 +256,13 @@ AWT_input_mask.o: $(ARBHOME)/INCLUDE/test_global.h
 
 AWT_item_sel_list.o: awt.hxx
 AWT_item_sel_list.o: awt_item_sel_list.hxx
-AWT_item_sel_list.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 AWT_item_sel_list.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AWT_item_sel_list.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AWT_item_sel_list.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWT_item_sel_list.o: $(ARBHOME)/INCLUDE/arb_core.h
 AWT_item_sel_list.o: $(ARBHOME)/INCLUDE/arb_error.h
+AWT_item_sel_list.o: $(ARBHOME)/INCLUDE/arb_msg.h
+AWT_item_sel_list.o: $(ARBHOME)/INCLUDE/arb_string.h
 AWT_item_sel_list.o: $(ARBHOME)/INCLUDE/arbdb.h
 AWT_item_sel_list.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AWT_item_sel_list.o: $(ARBHOME)/INCLUDE/arbdbt.h
@@ -271,11 +280,12 @@ AWT_item_sel_list.o: $(ARBHOME)/INCLUDE/smartptr.h
 AWT_item_sel_list.o: $(ARBHOME)/INCLUDE/test_global.h
 
 AWT_macro.o: awt_macro.hxx
-AWT_macro.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 AWT_macro.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AWT_macro.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWT_macro.o: $(ARBHOME)/INCLUDE/arb_core.h
 AWT_macro.o: $(ARBHOME)/INCLUDE/arb_error.h
+AWT_macro.o: $(ARBHOME)/INCLUDE/arb_msg.h
+AWT_macro.o: $(ARBHOME)/INCLUDE/arb_string.h
 AWT_macro.o: $(ARBHOME)/INCLUDE/arbdb.h
 AWT_macro.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AWT_macro.o: $(ARBHOME)/INCLUDE/arbtools.h
@@ -294,7 +304,6 @@ AWT_macro.o: $(ARBHOME)/INCLUDE/smartptr.h
 AWT_macro.o: $(ARBHOME)/INCLUDE/test_global.h
 
 AWT_map_key.o: awt_map_key.hxx
-AWT_map_key.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 AWT_map_key.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWT_map_key.o: $(ARBHOME)/INCLUDE/arb_core.h
 AWT_map_key.o: $(ARBHOME)/INCLUDE/arb_error.h
@@ -315,12 +324,13 @@ AWT_nds.o: awt.hxx
 AWT_nds.o: awt_config_manager.hxx
 AWT_nds.o: awt_nds.hxx
 AWT_nds.o: awt_sel_boxes.hxx
-AWT_nds.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 AWT_nds.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AWT_nds.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AWT_nds.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWT_nds.o: $(ARBHOME)/INCLUDE/arb_core.h
 AWT_nds.o: $(ARBHOME)/INCLUDE/arb_error.h
+AWT_nds.o: $(ARBHOME)/INCLUDE/arb_msg.h
+AWT_nds.o: $(ARBHOME)/INCLUDE/arb_string.h
 AWT_nds.o: $(ARBHOME)/INCLUDE/arbdb.h
 AWT_nds.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AWT_nds.o: $(ARBHOME)/INCLUDE/arbdbt.h
@@ -343,12 +353,13 @@ AWT_query_and_functions.o: awt.hxx
 AWT_query_and_functions.o: awt_config_manager.hxx
 AWT_query_and_functions.o: awt_item_sel_list.hxx
 AWT_query_and_functions.o: awtlocal.hxx
-AWT_query_and_functions.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 AWT_query_and_functions.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AWT_query_and_functions.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AWT_query_and_functions.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWT_query_and_functions.o: $(ARBHOME)/INCLUDE/arb_core.h
 AWT_query_and_functions.o: $(ARBHOME)/INCLUDE/arb_error.h
+AWT_query_and_functions.o: $(ARBHOME)/INCLUDE/arb_msg.h
+AWT_query_and_functions.o: $(ARBHOME)/INCLUDE/arb_string.h
 AWT_query_and_functions.o: $(ARBHOME)/INCLUDE/arbdb.h
 AWT_query_and_functions.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AWT_query_and_functions.o: $(ARBHOME)/INCLUDE/arbdbt.h
@@ -375,12 +386,13 @@ AWT_sel_boxes.o: awt.hxx
 AWT_sel_boxes.o: awt_item_sel_list.hxx
 AWT_sel_boxes.o: awt_sel_boxes.hxx
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/ad_config.h
-AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/arb_core.h
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/arb_error.h
+AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/arb_msg.h
+AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/arb_string.h
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/arbdb.h
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/arbdbt.h
@@ -402,12 +414,13 @@ AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/test_global.h
 
 AWT_seq_colors.o: awt.hxx
 AWT_seq_colors.o: awt_seq_colors.hxx
-AWT_seq_colors.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 AWT_seq_colors.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AWT_seq_colors.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AWT_seq_colors.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWT_seq_colors.o: $(ARBHOME)/INCLUDE/arb_core.h
 AWT_seq_colors.o: $(ARBHOME)/INCLUDE/arb_error.h
+AWT_seq_colors.o: $(ARBHOME)/INCLUDE/arb_msg.h
+AWT_seq_colors.o: $(ARBHOME)/INCLUDE/arb_string.h
 AWT_seq_colors.o: $(ARBHOME)/INCLUDE/arbdb.h
 AWT_seq_colors.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AWT_seq_colors.o: $(ARBHOME)/INCLUDE/arbdbt.h
@@ -427,12 +440,13 @@ AWT_seq_colors.o: $(ARBHOME)/INCLUDE/test_global.h
 AWT_tables.o: awt.hxx
 AWT_tables.o: awt_sel_boxes.hxx
 AWT_tables.o: awtlocal.hxx
-AWT_tables.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 AWT_tables.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AWT_tables.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AWT_tables.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWT_tables.o: $(ARBHOME)/INCLUDE/arb_core.h
 AWT_tables.o: $(ARBHOME)/INCLUDE/arb_error.h
+AWT_tables.o: $(ARBHOME)/INCLUDE/arb_msg.h
+AWT_tables.o: $(ARBHOME)/INCLUDE/arb_string.h
 AWT_tables.o: $(ARBHOME)/INCLUDE/arbdb.h
 AWT_tables.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AWT_tables.o: $(ARBHOME)/INCLUDE/arbdbt.h
@@ -453,14 +467,15 @@ AWT_tables.o: $(ARBHOME)/INCLUDE/test_global.h
 
 AWT_www.o: awt.hxx
 AWT_www.o: awt_config_manager.hxx
-AWT_www.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 AWT_www.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AWT_www.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AWT_www.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWT_www.o: $(ARBHOME)/INCLUDE/arb_core.h
 AWT_www.o: $(ARBHOME)/INCLUDE/arb_defs.h
 AWT_www.o: $(ARBHOME)/INCLUDE/arb_error.h
+AWT_www.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AWT_www.o: $(ARBHOME)/INCLUDE/arb_str.h
+AWT_www.o: $(ARBHOME)/INCLUDE/arb_string.h
 AWT_www.o: $(ARBHOME)/INCLUDE/arbdb.h
 AWT_www.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AWT_www.o: $(ARBHOME)/INCLUDE/arbdbt.h

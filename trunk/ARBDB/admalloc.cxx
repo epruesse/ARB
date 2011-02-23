@@ -115,21 +115,6 @@ NOT4PERL void *GB_calloc(unsigned int nelem, unsigned int elsize)
     return mem;
 }
 
-char *GB_strduplen(const char *p, unsigned len) {
-    // fast replacement for strdup, if len is known
-    if (p) {
-        char *neu;
-
-        gb_assert(strlen(p) == len);
-        // Note: Common reason for failure: a zero-char was manually printed by a GBS_global_string...-function
-
-        neu = (char*)malloc(len+1);
-        memcpy(neu, p, len+1);
-        return neu;
-    }
-    return 0;
-}
-
 char *GB_strpartdup(const char *start, const char *end) {
     /* strdup of a part of a string (including 'start' and 'end')
      * 'end' may point behind end of string -> copy only till zero byte

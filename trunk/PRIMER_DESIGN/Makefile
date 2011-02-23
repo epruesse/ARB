@@ -52,11 +52,12 @@ PRD_Design.o: PRD_Pair.hxx
 PRD_Design.o: PRD_Range.hxx
 PRD_Design.o: PRD_SearchFIFO.hxx
 PRD_Design.o: PRD_SequenceIterator.hxx
-PRD_Design.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 PRD_Design.o: $(ARBHOME)/INCLUDE/ad_prot.h
 PRD_Design.o: $(ARBHOME)/INCLUDE/arb_assert.h
 PRD_Design.o: $(ARBHOME)/INCLUDE/arb_core.h
 PRD_Design.o: $(ARBHOME)/INCLUDE/arb_error.h
+PRD_Design.o: $(ARBHOME)/INCLUDE/arb_msg.h
+PRD_Design.o: $(ARBHOME)/INCLUDE/arb_string.h
 PRD_Design.o: $(ARBHOME)/INCLUDE/arbdb.h
 PRD_Design.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 PRD_Design.o: $(ARBHOME)/INCLUDE/arbtools.h
@@ -68,42 +69,30 @@ PRD_Design.o: $(ARBHOME)/INCLUDE/test_global.h
 PRD_Item.o: PRD_Globals.hxx
 PRD_Item.o: PRD_Item.hxx
 PRD_Item.o: PRD_SequenceIterator.hxx
-PRD_Item.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 PRD_Item.o: $(ARBHOME)/INCLUDE/arb_assert.h
 PRD_Item.o: $(ARBHOME)/INCLUDE/arb_core.h
-PRD_Item.o: $(ARBHOME)/INCLUDE/arbdb_base.h
-PRD_Item.o: $(ARBHOME)/INCLUDE/attributes.h
 PRD_Item.o: $(ARBHOME)/INCLUDE/dupstr.h
 PRD_Item.o: $(ARBHOME)/INCLUDE/test_global.h
 
 PRD_Node.o: PRD_Globals.hxx
 PRD_Node.o: PRD_Node.hxx
-PRD_Node.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 PRD_Node.o: $(ARBHOME)/INCLUDE/arb_assert.h
 PRD_Node.o: $(ARBHOME)/INCLUDE/arb_core.h
-PRD_Node.o: $(ARBHOME)/INCLUDE/arbdb_base.h
-PRD_Node.o: $(ARBHOME)/INCLUDE/attributes.h
 PRD_Node.o: $(ARBHOME)/INCLUDE/dupstr.h
 PRD_Node.o: $(ARBHOME)/INCLUDE/test_global.h
 
 PRD_Pair.o: PRD_Globals.hxx
 PRD_Pair.o: PRD_Item.hxx
 PRD_Pair.o: PRD_Pair.hxx
-PRD_Pair.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 PRD_Pair.o: $(ARBHOME)/INCLUDE/arb_assert.h
 PRD_Pair.o: $(ARBHOME)/INCLUDE/arb_core.h
-PRD_Pair.o: $(ARBHOME)/INCLUDE/arbdb_base.h
-PRD_Pair.o: $(ARBHOME)/INCLUDE/attributes.h
 PRD_Pair.o: $(ARBHOME)/INCLUDE/dupstr.h
 PRD_Pair.o: $(ARBHOME)/INCLUDE/test_global.h
 
 PRD_Range.o: PRD_Globals.hxx
 PRD_Range.o: PRD_Range.hxx
-PRD_Range.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 PRD_Range.o: $(ARBHOME)/INCLUDE/arb_assert.h
 PRD_Range.o: $(ARBHOME)/INCLUDE/arb_core.h
-PRD_Range.o: $(ARBHOME)/INCLUDE/arbdb_base.h
-PRD_Range.o: $(ARBHOME)/INCLUDE/attributes.h
 PRD_Range.o: $(ARBHOME)/INCLUDE/dupstr.h
 PRD_Range.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -111,21 +100,15 @@ PRD_SearchFIFO.o: PRD_Globals.hxx
 PRD_SearchFIFO.o: PRD_Node.hxx
 PRD_SearchFIFO.o: PRD_Range.hxx
 PRD_SearchFIFO.o: PRD_SearchFIFO.hxx
-PRD_SearchFIFO.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 PRD_SearchFIFO.o: $(ARBHOME)/INCLUDE/arb_assert.h
 PRD_SearchFIFO.o: $(ARBHOME)/INCLUDE/arb_core.h
-PRD_SearchFIFO.o: $(ARBHOME)/INCLUDE/arbdb_base.h
-PRD_SearchFIFO.o: $(ARBHOME)/INCLUDE/attributes.h
 PRD_SearchFIFO.o: $(ARBHOME)/INCLUDE/dupstr.h
 PRD_SearchFIFO.o: $(ARBHOME)/INCLUDE/test_global.h
 
 PRD_SequenceIterator.o: PRD_Globals.hxx
 PRD_SequenceIterator.o: PRD_SequenceIterator.hxx
-PRD_SequenceIterator.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 PRD_SequenceIterator.o: $(ARBHOME)/INCLUDE/arb_assert.h
 PRD_SequenceIterator.o: $(ARBHOME)/INCLUDE/arb_core.h
-PRD_SequenceIterator.o: $(ARBHOME)/INCLUDE/arbdb_base.h
-PRD_SequenceIterator.o: $(ARBHOME)/INCLUDE/attributes.h
 PRD_SequenceIterator.o: $(ARBHOME)/INCLUDE/dupstr.h
 PRD_SequenceIterator.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -137,13 +120,14 @@ primer_design.o: PRD_Pair.hxx
 primer_design.o: PRD_Range.hxx
 primer_design.o: PRD_SequenceIterator.hxx
 primer_design.o: primer_design.hxx
-primer_design.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 primer_design.o: $(ARBHOME)/INCLUDE/ad_prot.h
 primer_design.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 primer_design.o: $(ARBHOME)/INCLUDE/adGene.h
 primer_design.o: $(ARBHOME)/INCLUDE/arb_assert.h
 primer_design.o: $(ARBHOME)/INCLUDE/arb_core.h
 primer_design.o: $(ARBHOME)/INCLUDE/arb_error.h
+primer_design.o: $(ARBHOME)/INCLUDE/arb_msg.h
+primer_design.o: $(ARBHOME)/INCLUDE/arb_string.h
 primer_design.o: $(ARBHOME)/INCLUDE/arbdb.h
 primer_design.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 primer_design.o: $(ARBHOME)/INCLUDE/arbdbt.h

@@ -39,12 +39,13 @@ depend.init:
 # For formatting issues see SOURCE_TOOLS/fix_depends.pl
 
 AW_names_admin.o: AW_rename.hxx
-AW_names_admin.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 AW_names_admin.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AW_names_admin.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AW_names_admin.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_names_admin.o: $(ARBHOME)/INCLUDE/arb_core.h
 AW_names_admin.o: $(ARBHOME)/INCLUDE/arb_error.h
+AW_names_admin.o: $(ARBHOME)/INCLUDE/arb_msg.h
+AW_names_admin.o: $(ARBHOME)/INCLUDE/arb_string.h
 AW_names_admin.o: $(ARBHOME)/INCLUDE/arbdb.h
 AW_names_admin.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AW_names_admin.o: $(ARBHOME)/INCLUDE/arbdbt.h
@@ -65,13 +66,14 @@ AW_names_admin.o: $(ARBHOME)/INCLUDE/smartptr.h
 AW_names_admin.o: $(ARBHOME)/INCLUDE/test_global.h
 
 AW_rename.o: AW_rename.hxx
-AW_rename.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 AW_rename.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AW_rename.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AW_rename.o: $(ARBHOME)/INCLUDE/aisc_global.h
 AW_rename.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_rename.o: $(ARBHOME)/INCLUDE/arb_core.h
 AW_rename.o: $(ARBHOME)/INCLUDE/arb_error.h
+AW_rename.o: $(ARBHOME)/INCLUDE/arb_msg.h
+AW_rename.o: $(ARBHOME)/INCLUDE/arb_string.h
 AW_rename.o: $(ARBHOME)/INCLUDE/arbdb.h
 AW_rename.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AW_rename.o: $(ARBHOME)/INCLUDE/arbdbt.h

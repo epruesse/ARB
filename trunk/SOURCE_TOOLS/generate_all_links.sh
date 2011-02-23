@@ -37,14 +37,30 @@ may_create_link() {
     fi
 }
 
-create_symlink() {
+assert_links_to_target() {
+    # $1 target
+    # $2 link
+    local LINKTARGET=`readlink -f $2`
+    local LINKDIR=`dirname $2`
+    local TARGET=`readlink -f $LINKDIR/$1`
+
+    [ "$LINKTARGET" = "$TARGET" ] || (finderr $2 "$2 links not to $TARGET")
+}
+
+create_symlink_unverified() {
     # $1 target
     # $2 link
     test -h $2 || ln -sf $1 $2 || finderr $2 "Failed to link '$1->$2'"
 }
 
+create_symlink() {
+    # $1 target
+    # $2 link
+    create_symlink_unverified $1 $2 && assert_links_to_target $1 $2
+}
+
 symlink_maybe_no_target() {
-    may_create_link $2 0 && create_symlink $1 $2
+    may_create_link $2 0 && create_symlink_unverified $1 $2
 }
 
 symlink_typed() {
@@ -108,6 +124,7 @@ makedir lib/help &&
 
 # Liblink
 
+symlink_maybe_no_target ../CORE/libCORE.so LIBLINK/libCORE.so &&
 symlink_maybe_no_target ../ARBDB/libARBDB.so LIBLINK/libARBDB.so &&
 symlink_maybe_no_target ../AWT/libAWT.so LIBLINK/libAWT.so &&
 symlink_maybe_no_target ../WINDOW/libWINDOW.so LIBLINK/libWINDOW.so &&
@@ -136,9 +153,9 @@ symlink_maybe_no_target GENH/aisc.h               PROBE_COM/PT_server.h &&
 
 # TEMPLATES directory
 
+symlink_file ../TEMPLATES/SuppressOutput.h INCLUDE/SuppressOutput.h &&
 symlink_file ../TEMPLATES/SigHandler.h INCLUDE/SigHandler.h &&
 symlink_file ../TEMPLATES/arb_backtrace.h INCLUDE/arb_backtrace.h &&
-symlink_file ../TEMPLATES/arb_core.h INCLUDE/arb_core.h &&
 symlink_file ../TEMPLATES/arb_debug.h INCLUDE/arb_debug.h &&
 symlink_file ../TEMPLATES/arb_defs.h INCLUDE/arb_defs.h &&
 symlink_file ../TEMPLATES/arb_error.h INCLUDE/arb_error.h &&
@@ -180,7 +197,6 @@ symlink_file ../AISC_COM/C/server.h INCLUDE/server.h &&
 symlink_file ../AISC_COM/C/struct_man.h INCLUDE/struct_man.h &&
 symlink_file ../ARBDB/adGene.h INCLUDE/adGene.h &&
 symlink_file ../ARBDB/ad_config.h INCLUDE/ad_config.h &&
-symlink_file ../ARBDB/ad_k_prot.h INCLUDE/ad_k_prot.h &&
 symlink_file ../ARBDB/ad_prot.h INCLUDE/ad_prot.h &&
 symlink_file ../ARBDB/ad_p_prot.h INCLUDE/ad_p_prot.h &&
 symlink_file ../ARBDB/ad_t_prot.h INCLUDE/ad_t_prot.h &&
@@ -210,6 +226,12 @@ symlink_file ../AWTI/awti_export.hxx INCLUDE/awti_export.hxx &&
 symlink_file ../AWTI/awti_import.hxx INCLUDE/awti_import.hxx &&
 symlink_file ../BUGEX/bugex.h INCLUDE/bugex.h &&
 symlink_file ../CONSENSUS_TREE/CT_ctree.hxx INCLUDE/CT_ctree.hxx &&
+symlink_file ../CORE/arb_core.h INCLUDE/arb_core.h &&
+symlink_file ../CORE/arb_msg.h INCLUDE/arb_msg.h &&
+symlink_file ../CORE/arb_signal.h INCLUDE/arb_signal.h &&
+symlink_file ../CORE/arb_string.h INCLUDE/arb_string.h &&
+symlink_file ../CORE/arb_handlers.h INCLUDE/arb_handlers.h &&
+symlink_file ../CORE/arb_progress.h INCLUDE/arb_progress.h &&
 symlink_file ../DIST/dist.hxx INCLUDE/dist.hxx &&
 symlink_file ../EDIT4/ed4_extern.hxx INCLUDE/ed4_extern.hxx &&
 symlink_file ../EDIT4/ed4_plugins.hxx INCLUDE/ed4_plugins.hxx &&

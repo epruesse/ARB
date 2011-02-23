@@ -33,12 +33,13 @@ depend.init:
 # For formatting issues see SOURCE_TOOLS/fix_depends.pl
 
 servercntrl.o: servercntrl.h
-servercntrl.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 servercntrl.o: $(ARBHOME)/INCLUDE/ad_prot.h
 servercntrl.o: $(ARBHOME)/INCLUDE/aisc_global.h
 servercntrl.o: $(ARBHOME)/INCLUDE/arb_assert.h
 servercntrl.o: $(ARBHOME)/INCLUDE/arb_core.h
 servercntrl.o: $(ARBHOME)/INCLUDE/arb_error.h
+servercntrl.o: $(ARBHOME)/INCLUDE/arb_msg.h
+servercntrl.o: $(ARBHOME)/INCLUDE/arb_string.h
 servercntrl.o: $(ARBHOME)/INCLUDE/arbdb.h
 servercntrl.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 servercntrl.o: $(ARBHOME)/INCLUDE/arbtools.h

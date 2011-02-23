@@ -108,12 +108,6 @@ typedef GBDATA* (*GB_Link_Follower)(GBDATA *GB_root, GBDATA *GB_elem, const char
 
 typedef int (*gb_compare_function)(const void *p0, const void *p1, void *client_data);
 
-typedef void (*gb_error_handler_type)(const char *msg);
-typedef void (*gb_warning_func_type)(const char *msg);
-typedef void (*gb_information_func_type)(const char *msg);
-typedef int (*gb_status_gauge_func_type)(double val);
-typedef int (*gb_status_msg_func_type)(const char *val);
-
 typedef const char *(*gb_getenv_hook)(const char *varname);
 
 // -----------------------
@@ -138,6 +132,14 @@ public:
 //      include generated public prototypes
 
 #include <ad_prot.h>
+
+// to avoid arb-wide changes atm include some headers from CORE lib
+#ifndef ARB_MSG_H
+#include <arb_msg.h>
+#endif
+#ifndef ARB_STRING_H
+#include <arb_string.h>
+#endif
 
 // ----------------------------------------------------
 //      const wrappers for functions from ad_prot.h

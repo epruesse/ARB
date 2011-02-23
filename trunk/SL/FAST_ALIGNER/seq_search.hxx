@@ -21,7 +21,9 @@
 #ifndef AW_MSG_HXX
 #include <aw_msg.hxx>
 #endif
-
+#ifndef ATTRIBUTES_H
+#include <attributes.h>
+#endif
 
 #define fa_assert(bed) arb_assert(bed)
 

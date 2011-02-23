@@ -30,11 +30,12 @@ depend.init:
 # Do not add dependencies manually - use 'make depend' in $ARBHOME
 # For formatting issues see SOURCE_TOOLS/fix_depends.pl
 
-WETC_main.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 WETC_main.o: $(ARBHOME)/INCLUDE/ad_prot.h
 WETC_main.o: $(ARBHOME)/INCLUDE/arb_assert.h
 WETC_main.o: $(ARBHOME)/INCLUDE/arb_core.h
 WETC_main.o: $(ARBHOME)/INCLUDE/arb_error.h
+WETC_main.o: $(ARBHOME)/INCLUDE/arb_msg.h
+WETC_main.o: $(ARBHOME)/INCLUDE/arb_string.h
 WETC_main.o: $(ARBHOME)/INCLUDE/arbdb.h
 WETC_main.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 WETC_main.o: $(ARBHOME)/INCLUDE/arbtools.h

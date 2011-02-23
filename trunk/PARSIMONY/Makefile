@@ -30,7 +30,6 @@ depend.init:
 
 AP_buffer.o: AP_buffer.hxx
 AP_buffer.o: AP_error.hxx
-AP_buffer.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 AP_buffer.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AP_buffer.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AP_buffer.o: $(ARBHOME)/INCLUDE/AliView.hxx
@@ -39,6 +38,8 @@ AP_buffer.o: $(ARBHOME)/INCLUDE/AP_Tree.hxx
 AP_buffer.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AP_buffer.o: $(ARBHOME)/INCLUDE/arb_core.h
 AP_buffer.o: $(ARBHOME)/INCLUDE/arb_error.h
+AP_buffer.o: $(ARBHOME)/INCLUDE/arb_msg.h
+AP_buffer.o: $(ARBHOME)/INCLUDE/arb_string.h
 AP_buffer.o: $(ARBHOME)/INCLUDE/ARB_Tree.hxx
 AP_buffer.o: $(ARBHOME)/INCLUDE/arbdb.h
 AP_buffer.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -56,7 +57,6 @@ AP_main.o: AP_buffer.hxx
 AP_main.o: AP_error.hxx
 AP_main.o: ap_main.hxx
 AP_main.o: ap_tree_nlen.hxx
-AP_main.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 AP_main.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AP_main.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AP_main.o: $(ARBHOME)/INCLUDE/AliView.hxx
@@ -65,6 +65,8 @@ AP_main.o: $(ARBHOME)/INCLUDE/AP_Tree.hxx
 AP_main.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AP_main.o: $(ARBHOME)/INCLUDE/arb_core.h
 AP_main.o: $(ARBHOME)/INCLUDE/arb_error.h
+AP_main.o: $(ARBHOME)/INCLUDE/arb_msg.h
+AP_main.o: $(ARBHOME)/INCLUDE/arb_string.h
 AP_main.o: $(ARBHOME)/INCLUDE/ARB_Tree.hxx
 AP_main.o: $(ARBHOME)/INCLUDE/arbdb.h
 AP_main.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -87,7 +89,6 @@ AP_main.o: $(ARBHOME)/INCLUDE/TreeDisplay.hxx
 AP_tree_edge.o: AP_buffer.hxx
 AP_tree_edge.o: ap_main.hxx
 AP_tree_edge.o: ap_tree_nlen.hxx
-AP_tree_edge.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/AliView.hxx
@@ -97,6 +98,8 @@ AP_tree_edge.o: $(ARBHOME)/INCLUDE/AP_Tree.hxx
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/arb_core.h
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/arb_error.h
+AP_tree_edge.o: $(ARBHOME)/INCLUDE/arb_msg.h
+AP_tree_edge.o: $(ARBHOME)/INCLUDE/arb_string.h
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/ARB_Tree.hxx
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/arbdb.h
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -115,7 +118,6 @@ AP_tree_nlen.o: AP_buffer.hxx
 AP_tree_nlen.o: ap_main.hxx
 AP_tree_nlen.o: ap_tree_nlen.hxx
 AP_tree_nlen.o: pars_debug.hxx
-AP_tree_nlen.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/AliView.hxx
@@ -125,6 +127,8 @@ AP_tree_nlen.o: $(ARBHOME)/INCLUDE/AP_Tree.hxx
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/arb_core.h
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/arb_error.h
+AP_tree_nlen.o: $(ARBHOME)/INCLUDE/arb_msg.h
+AP_tree_nlen.o: $(ARBHOME)/INCLUDE/arb_string.h
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/ARB_Tree.hxx
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/arbdb.h
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -141,11 +145,12 @@ AP_tree_nlen.o: $(ARBHOME)/INCLUDE/smartptr.h
 AP_tree_nlen.o: $(ARBHOME)/INCLUDE/test_global.h
 
 PARS_debug.o: pars_debug.hxx
-PARS_debug.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 PARS_debug.o: $(ARBHOME)/INCLUDE/ad_prot.h
 PARS_debug.o: $(ARBHOME)/INCLUDE/arb_assert.h
 PARS_debug.o: $(ARBHOME)/INCLUDE/arb_core.h
 PARS_debug.o: $(ARBHOME)/INCLUDE/arb_error.h
+PARS_debug.o: $(ARBHOME)/INCLUDE/arb_msg.h
+PARS_debug.o: $(ARBHOME)/INCLUDE/arb_string.h
 PARS_debug.o: $(ARBHOME)/INCLUDE/arbdb.h
 PARS_debug.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 PARS_debug.o: $(ARBHOME)/INCLUDE/arbtools.h
@@ -163,7 +168,6 @@ PARS_dtree.o: ap_tree_nlen.hxx
 PARS_dtree.o: pars_debug.hxx
 PARS_dtree.o: pars_dtree.hxx
 PARS_dtree.o: pars_main.hxx
-PARS_dtree.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 PARS_dtree.o: $(ARBHOME)/INCLUDE/ad_prot.h
 PARS_dtree.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 PARS_dtree.o: $(ARBHOME)/INCLUDE/AliView.hxx
@@ -175,6 +179,8 @@ PARS_dtree.o: $(ARBHOME)/INCLUDE/AP_Tree.hxx
 PARS_dtree.o: $(ARBHOME)/INCLUDE/arb_assert.h
 PARS_dtree.o: $(ARBHOME)/INCLUDE/arb_core.h
 PARS_dtree.o: $(ARBHOME)/INCLUDE/arb_error.h
+PARS_dtree.o: $(ARBHOME)/INCLUDE/arb_msg.h
+PARS_dtree.o: $(ARBHOME)/INCLUDE/arb_string.h
 PARS_dtree.o: $(ARBHOME)/INCLUDE/ARB_Tree.hxx
 PARS_dtree.o: $(ARBHOME)/INCLUDE/arbdb.h
 PARS_dtree.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -205,11 +211,9 @@ PARS_dtree.o: $(ARBHOME)/INCLUDE/test_global.h
 PARS_dtree.o: $(ARBHOME)/INCLUDE/TreeDisplay.hxx
 
 PARS_klprops.o: pars_klprops.hxx
-PARS_klprops.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 PARS_klprops.o: $(ARBHOME)/INCLUDE/arb_assert.h
 PARS_klprops.o: $(ARBHOME)/INCLUDE/arb_core.h
 PARS_klprops.o: $(ARBHOME)/INCLUDE/arbdb_base.h
-PARS_klprops.o: $(ARBHOME)/INCLUDE/attributes.h
 PARS_klprops.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 PARS_klprops.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 PARS_klprops.o: $(ARBHOME)/INCLUDE/aw_window.hxx
@@ -222,7 +226,6 @@ PARS_main.o: ap_tree_nlen.hxx
 PARS_main.o: pars_dtree.hxx
 PARS_main.o: pars_klprops.hxx
 PARS_main.o: pars_main.hxx
-PARS_main.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 PARS_main.o: $(ARBHOME)/INCLUDE/ad_prot.h
 PARS_main.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 PARS_main.o: $(ARBHOME)/INCLUDE/AliView.hxx
@@ -231,6 +234,8 @@ PARS_main.o: $(ARBHOME)/INCLUDE/AP_Tree.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/arb_assert.h
 PARS_main.o: $(ARBHOME)/INCLUDE/arb_core.h
 PARS_main.o: $(ARBHOME)/INCLUDE/arb_error.h
+PARS_main.o: $(ARBHOME)/INCLUDE/arb_msg.h
+PARS_main.o: $(ARBHOME)/INCLUDE/arb_string.h
 PARS_main.o: $(ARBHOME)/INCLUDE/ARB_Tree.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/arbdb.h
 PARS_main.o: $(ARBHOME)/INCLUDE/arbdb_base.h

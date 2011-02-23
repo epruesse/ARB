@@ -103,7 +103,6 @@ GB_ERROR GB_install_link_follower(GBDATA *gb_main, const char *link_type, GB_Lin
 
 /* admalloc.cxx */
 NOT4PERL void *GB_calloc(unsigned int nelem, unsigned int elsize);
-char *GB_strduplen(const char *p, unsigned len);
 char *GB_strpartdup(const char *start, const char *end);
 char *GB_strndup(const char *start, int len);
 NOT4PERL void *GB_recalloc(void *ptr, unsigned int oelem, unsigned int nelem, unsigned int elsize);
@@ -131,28 +130,15 @@ int GB_random(int range);
 /* adoptimize.cxx */
 GB_ERROR GB_optimize(GBDATA *gb_main);
 
+/* adperl.cxx */
+GB_ERROR GBC_await_error(void);
+
 /* adsort.cxx */
 void GB_sort(void **array, size_t first, size_t behind_last, gb_compare_function compare, void *client_data);
 int GB_string_comparator(const void *v0, const void *v1, void *);
 
 /* adstring.cxx */
 void GB_raise_critical_error(const char *msg);
-GB_ERROR GB_export_error(const char *error);
-GB_ERROR GB_export_errorf(const char *templat, ...) __ATTR__FORMAT(1) __ATTR__DEPRECATED;
-GB_ERROR GB_IO_error(const char *action, const char *filename);
-GB_ERROR GB_export_IO_error(const char *action, const char *filename) __ATTR__DEPRECATED;
-NOT4PERL GB_ERROR GB_print_error(void);
-NOT4PERL GB_ERROR GB_get_error(void) __ATTR__DEPRECATED;
-bool GB_have_error(void);
-GB_ERROR GB_await_error(void);
-void GB_clear_error(void);
-GB_ERROR GB_failedTo_error(const char *do_something, const char *special, GB_ERROR error);
-GB_ERROR GB_append_exportedError(GB_ERROR error);
-void GBS_reuse_buffer(GB_CSTR global_buffer);
-GB_CSTR GBS_global_string(const char *templat, ...) __ATTR__FORMAT(1);
-char *GBS_global_string_copy(const char *templat, ...) __ATTR__FORMAT(1);
-const char *GBS_global_string_to_buffer(char *buffer, size_t bufsize, const char *templat, ...) __ATTR__FORMAT(3);
-size_t GBS_last_global_string_size(void);
 char *GBS_string_2_key_with_exclusions(const char *str, const char *additional);
 char *GBS_string_2_key(const char *str);
 char *GB_memdup(const char *source, size_t len);
@@ -181,18 +167,6 @@ uint32_t GB_checksum(const char *seq, long length, int ignore_case, const char *
 uint32_t GBS_checksum(const char *seq, int ignore_case, const char *exclude);
 char *GBS_extract_words(const char *source, const char *chars, float minlen, bool sort_output);
 size_t GBS_shorten_repeated_data(char *data);
-NOT4PERL void GB_install_error_handler(gb_error_handler_type aw_message_handler);
-void GB_internal_error(const char *message);
-void GB_internal_errorf(const char *templat, ...) __ATTR__FORMAT(1);
-void GB_warning(const char *message);
-void GB_warningf(const char *templat, ...) __ATTR__FORMAT(1);
-NOT4PERL void GB_install_warning(gb_warning_func_type warn);
-void GB_information(const char *message);
-void GB_informationf(const char *templat, ...) __ATTR__FORMAT(1);
-NOT4PERL void GB_install_information(gb_information_func_type info);
-int GB_status(double val);
-int GB_status(const char *message);
-NOT4PERL void GB_install_status(gb_status_gauge_func_type gauge_fun, gb_status_msg_func_type msg_fun);
 char *GBS_merge_tagged_strings(const char *s1, const char *tag1, const char *replace1, const char *s2, const char *tag2, const char *replace2);
 char *GBS_string_eval_tagged_string(GBDATA *gb_main, const char *s, const char *dt, const char *tag, const char *srt, const char *aci, GBDATA *gbd);
 char *GB_read_as_tagged_string(GBDATA *gbd, const char *tagi);

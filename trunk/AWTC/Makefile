@@ -29,13 +29,14 @@ depend.init:
 # For formatting issues see SOURCE_TOOLS/fix_depends.pl
 
 AWTC_next_neighbours.o: awtc_next_neighbours.hxx
-AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/aisc_global.h
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/arb_core.h
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/arb_error.h
+AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/arb_msg.h
+AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/arb_string.h
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/arbdb.h
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/arbdbt.h
@@ -56,12 +57,13 @@ AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/smartptr.h
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/test_global.h
 AWTC_next_neighbours.o: $(ARBHOME)/INCLUDE/test_unit.h
 
-AWTC_submission.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 AWTC_submission.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AWTC_submission.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AWTC_submission.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWTC_submission.o: $(ARBHOME)/INCLUDE/arb_core.h
 AWTC_submission.o: $(ARBHOME)/INCLUDE/arb_error.h
+AWTC_submission.o: $(ARBHOME)/INCLUDE/arb_msg.h
+AWTC_submission.o: $(ARBHOME)/INCLUDE/arb_string.h
 AWTC_submission.o: $(ARBHOME)/INCLUDE/arbdb.h
 AWTC_submission.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AWTC_submission.o: $(ARBHOME)/INCLUDE/arbdbt.h

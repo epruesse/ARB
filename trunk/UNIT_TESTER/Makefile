@@ -54,13 +54,15 @@ depend.init:
 TestEnvironment.o: test_global.h
 TestEnvironment.o: test_unit.h
 TestEnvironment.o: UnitTester.hxx
-TestEnvironment.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 TestEnvironment.o: $(ARBHOME)/INCLUDE/ad_prot.h
 TestEnvironment.o: $(ARBHOME)/INCLUDE/aisc_global.h
 TestEnvironment.o: $(ARBHOME)/INCLUDE/arb_assert.h
+TestEnvironment.o: $(ARBHOME)/INCLUDE/arb_core.h
 TestEnvironment.o: $(ARBHOME)/INCLUDE/arb_defs.h
 TestEnvironment.o: $(ARBHOME)/INCLUDE/arb_error.h
+TestEnvironment.o: $(ARBHOME)/INCLUDE/arb_msg.h
 TestEnvironment.o: $(ARBHOME)/INCLUDE/arb_str.h
+TestEnvironment.o: $(ARBHOME)/INCLUDE/arb_string.h
 TestEnvironment.o: $(ARBHOME)/INCLUDE/arbdb.h
 TestEnvironment.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 TestEnvironment.o: $(ARBHOME)/INCLUDE/arbtools.h
