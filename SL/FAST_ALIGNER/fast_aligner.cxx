@@ -27,6 +27,7 @@
 #include <arbdbt.h>
 
 #include <arb_defs.h>
+#include <arb_handlers.h>
 
 #include <cctype>
 #include <cmath>
@@ -1322,7 +1323,7 @@ static ARB_ERROR alignCompactedTo(CompactedSubSequence     *toAlignSequence,
     return error;
 }
 
-ARB_ERROR FastAligner_delete_temp_entries(GBDATA *gb_species, GB_CSTR alignment) {
+ARB_ERROR FastAligner_delete_temp_entries(GBDATA *gb_species, const char *alignment) {
     fa_assert(gb_species);
     fa_assert(alignment);
 

@@ -29,7 +29,6 @@ depend.init:
 probe_design.o: probe_design.hxx
 probe_design.o: probe_match_parser.hxx
 probe_design.o: SaiProbeVisualization.hxx
-probe_design.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 probe_design.o: $(ARBHOME)/INCLUDE/ad_prot.h
 probe_design.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 probe_design.o: $(ARBHOME)/INCLUDE/adGene.h
@@ -40,6 +39,8 @@ probe_design.o: $(ARBHOME)/INCLUDE/AP_Tree.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/arb_assert.h
 probe_design.o: $(ARBHOME)/INCLUDE/arb_core.h
 probe_design.o: $(ARBHOME)/INCLUDE/arb_error.h
+probe_design.o: $(ARBHOME)/INCLUDE/arb_msg.h
+probe_design.o: $(ARBHOME)/INCLUDE/arb_string.h
 probe_design.o: $(ARBHOME)/INCLUDE/ARB_Tree.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/arbdb.h
 probe_design.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -79,12 +80,13 @@ probe_design.o: $(ARBHOME)/INCLUDE/TreeCallbacks.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/TreeDisplay.hxx
 
 probe_match_parser.o: probe_match_parser.hxx
-probe_match_parser.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 probe_match_parser.o: $(ARBHOME)/INCLUDE/ad_prot.h
 probe_match_parser.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 probe_match_parser.o: $(ARBHOME)/INCLUDE/arb_assert.h
 probe_match_parser.o: $(ARBHOME)/INCLUDE/arb_core.h
 probe_match_parser.o: $(ARBHOME)/INCLUDE/arb_error.h
+probe_match_parser.o: $(ARBHOME)/INCLUDE/arb_msg.h
+probe_match_parser.o: $(ARBHOME)/INCLUDE/arb_string.h
 probe_match_parser.o: $(ARBHOME)/INCLUDE/arbdb.h
 probe_match_parser.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 probe_match_parser.o: $(ARBHOME)/INCLUDE/arbdbt.h
@@ -96,12 +98,13 @@ probe_match_parser.o: $(ARBHOME)/INCLUDE/test_global.h
 
 SaiProbeVisualization.o: probe_match_parser.hxx
 SaiProbeVisualization.o: SaiProbeVisualization.hxx
-SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/ad_prot.h
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/arb_assert.h
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/arb_core.h
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/arb_error.h
+SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/arb_msg.h
+SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/arb_string.h
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/arbdb.h
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 SaiProbeVisualization.o: $(ARBHOME)/INCLUDE/arbdbt.h

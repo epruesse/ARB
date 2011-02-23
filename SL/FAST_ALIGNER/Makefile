@@ -37,7 +37,6 @@ depend.init:
 
 ClustalV.o: ClustalV.hxx
 ClustalV.o: seq_search.hxx
-ClustalV.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 ClustalV.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ClustalV.o: $(ARBHOME)/INCLUDE/arb_core.h
 ClustalV.o: $(ARBHOME)/INCLUDE/arb_error.h
@@ -51,12 +50,13 @@ ClustalV.o: $(ARBHOME)/INCLUDE/test_global.h
 
 constructSequence.o: constructSequence.hxx
 constructSequence.o: seq_search.hxx
-constructSequence.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 constructSequence.o: $(ARBHOME)/INCLUDE/ad_prot.h
 constructSequence.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 constructSequence.o: $(ARBHOME)/INCLUDE/arb_assert.h
 constructSequence.o: $(ARBHOME)/INCLUDE/arb_core.h
 constructSequence.o: $(ARBHOME)/INCLUDE/arb_error.h
+constructSequence.o: $(ARBHOME)/INCLUDE/arb_msg.h
+constructSequence.o: $(ARBHOME)/INCLUDE/arb_string.h
 constructSequence.o: $(ARBHOME)/INCLUDE/arbdb.h
 constructSequence.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 constructSequence.o: $(ARBHOME)/INCLUDE/arbdbt.h
@@ -73,13 +73,15 @@ constructSequence.o: $(ARBHOME)/INCLUDE/test_global.h
 fast_aligner.o: ClustalV.hxx
 fast_aligner.o: fast_aligner.hxx
 fast_aligner.o: seq_search.hxx
-fast_aligner.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 fast_aligner.o: $(ARBHOME)/INCLUDE/ad_prot.h
 fast_aligner.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 fast_aligner.o: $(ARBHOME)/INCLUDE/arb_assert.h
 fast_aligner.o: $(ARBHOME)/INCLUDE/arb_core.h
 fast_aligner.o: $(ARBHOME)/INCLUDE/arb_defs.h
 fast_aligner.o: $(ARBHOME)/INCLUDE/arb_error.h
+fast_aligner.o: $(ARBHOME)/INCLUDE/arb_handlers.h
+fast_aligner.o: $(ARBHOME)/INCLUDE/arb_msg.h
+fast_aligner.o: $(ARBHOME)/INCLUDE/arb_string.h
 fast_aligner.o: $(ARBHOME)/INCLUDE/arb_unit_test.h
 fast_aligner.o: $(ARBHOME)/INCLUDE/arbdb.h
 fast_aligner.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -104,12 +106,13 @@ fast_aligner.o: $(ARBHOME)/INCLUDE/test_global.h
 fast_aligner.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 seq_search.o: seq_search.hxx
-seq_search.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 seq_search.o: $(ARBHOME)/INCLUDE/ad_prot.h
 seq_search.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 seq_search.o: $(ARBHOME)/INCLUDE/arb_assert.h
 seq_search.o: $(ARBHOME)/INCLUDE/arb_core.h
 seq_search.o: $(ARBHOME)/INCLUDE/arb_error.h
+seq_search.o: $(ARBHOME)/INCLUDE/arb_msg.h
+seq_search.o: $(ARBHOME)/INCLUDE/arb_string.h
 seq_search.o: $(ARBHOME)/INCLUDE/arbdb.h
 seq_search.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 seq_search.o: $(ARBHOME)/INCLUDE/arbdbt.h

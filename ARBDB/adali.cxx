@@ -561,7 +561,7 @@ GB_ERROR GBT_rename_alignment(GBDATA *gbMain, const char *source, const char *de
 //      alignment related item functions
 
 NOT4PERL GBDATA *GBT_add_data(GBDATA *species, const char *ali_name, const char *key, GB_TYPES type) {
-    // goes to header: __ATTR__DEPRECATED
+    // goes to header: __ATTR__DEPRECATED_LATER
 
     /* replace this function by GBT_create_sequence_data
      * the same as GB_search(species, 'ali_name/key', GB_CREATE)

@@ -28,6 +28,9 @@
 #ifndef _GLIBCXX_SET
 #include <set>
 #endif
+#ifndef ATTRIBUTES_H
+#include <attributes.h>
+#endif
 
 #define ed4_beep() do { fputc(char(7), stdout); fflush(stdout); } while (0)
 

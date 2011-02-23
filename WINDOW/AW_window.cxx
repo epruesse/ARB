@@ -26,6 +26,7 @@
 #include "aw_root.hxx"
 
 #include <arbdbt.h>
+#include <arb_handlers.h>
 
 #include <X11/keysym.h>
 #include <X11/Xutil.h>

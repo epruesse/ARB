@@ -17,6 +17,9 @@
 #ifndef _GLIBCXX_ALGORITHM
 #include <algorithm>
 #endif
+#ifndef ATTRIBUTES_H
+#include <attributes.h>
+#endif
 
 #define st_assert(cond) arb_assert(cond)
 

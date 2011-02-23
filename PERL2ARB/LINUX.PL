@@ -13,15 +13,17 @@ if ($args!=2) {
 my $cflags = shift @ARGV;
 my $lflags = shift @ARGV;
 
+use arb_common;
+
 WriteMakefile(
-              'NAME'         => 'ARB',
-              'VERSION_FROM' => 'ARB.pm',
+              'NAME'         => $arb_common::name,
+              'VERSION_FROM' => $arb_common::version_from,
               'CC'           => 'g++',
               'CCFLAGS'      => $cflags,
               'LD'           => 'g++ '.$lflags,
               'DEFINE'       => '',
-              'INC'          => '-I../INCLUDE',
-              'LIBS'         => '-L../ARBDB -lARBDB -lstdc++',
+              'INC'          => $arb_common::inc,
+              'LIBS'         => $arb_common::libs,
              );
 
 
