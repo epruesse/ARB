@@ -33,7 +33,8 @@ struct UnitTester {
     UnitTester(const char *libname, const UnitTest_simple *simple_tests, int warn_level, size_t skippedTests);
 };
 
-UnitTestResult execute_guarded(UnitTest_function fun, long *duration_usec, long max_allowed_duration_ms);
+UnitTestResult execute_guarded(UnitTest_function fun, long *duration_usec, long max_allowed_duration_ms, bool detect_environment_calls);
+void sleepms(long ms);
 
 // ------------------------------
 //      execution time limits
@@ -44,6 +45,10 @@ const long MAX_EXEC_MS_NORMAL = WHATS_SLOW * 3;      // kill with segfault after
 const long MAX_EXEC_MS_SLOW   = WHATS_SLOW * 7;      // same for slow tests
 const long MAX_EXEC_MS_ENV    = WHATS_SLOW * 15;     // same for environment setup/cleanup
 
+#define FLAGS_DIR "flags"
+#define FLAGS_EXT "flag"
+
+#define ANY_SETUP "any_setup"
 
 #else
 #error UnitTester.hxx included twice

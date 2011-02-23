@@ -319,6 +319,7 @@ GB_ERROR GB_delete(GBDATA *source);
 GB_ERROR GB_copy(GBDATA *dest, GBDATA *source);
 GB_ERROR GB_copy_with_protection(GBDATA *dest, GBDATA *source, bool copy_all_protections);
 char *GB_get_subfields(GBDATA *gbd);
+bool GB_allow_compression(GBDATA *gb_main, bool allow_compression);
 GB_ERROR GB_set_temporary(GBDATA *gbd);
 GB_ERROR GB_clear_temporary(GBDATA *gbd);
 bool GB_is_temporary(GBDATA *gbd);

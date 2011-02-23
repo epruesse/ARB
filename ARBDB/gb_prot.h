@@ -129,7 +129,6 @@ GBDATA *gb_create_container(GBDATA *father, const char *key);
 void gb_rename(GBCONTAINER *gbc, const char *new_key);
 GB_ERROR gb_delete_force(GBDATA *source);
 GB_ERROR gb_set_compression(GBDATA *source);
-void gb_set_compression_mask(GBDATA *gb_main, GB_COMPRESSION_MASK disable_compression);
 GB_ERROR gb_init_transaction(GBCONTAINER *gbd);
 void gb_add_changed_callback_list(GBDATA *gbd, gb_transaction_save *old, GB_CB_TYPE gbtype, GB_CB func, int *clientdata);
 void gb_add_delete_callback_list(GBDATA *gbd, gb_transaction_save *old, GB_CB func, int *clientdata);
