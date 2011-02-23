@@ -120,7 +120,7 @@ static void UNITTEST_sigsegv_handler(int sig) {
 
             default:
                 trap_code = TRAP_UNEXPECTED;
-                test_assert(0);
+                TEST_ASSERT(0);
                 break;
         }
         siglongjmp(UNITTEST_return_after_segv, trap_code); // suppress signal

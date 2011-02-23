@@ -37,6 +37,8 @@
  *
  */
 
+#define TEST_ASSERT(cond) test_assert(cond, false)
+
 namespace arb_test {
 
     class StaticCode {
@@ -71,7 +73,7 @@ namespace arb_test {
                 VCOMPILERMSG(filename, lineno, "Error", format);
                 GlobalTestData::print_annotation();
             }
-            TRIGGER_ASSERTION(); // fake an assertion failure
+            TRIGGER_ASSERTION(false); // fake an assertion failure
         }
         static void ioerrorf(const char *filename, int lineno, const char *format, ...) __attribute__((format(printf, 3, 4))) {
             {
@@ -80,7 +82,7 @@ namespace arb_test {
                 fprintf(stderr, " (errno=%i='%s')", errno, strerror(errno));
                 GlobalTestData::print_annotation();
             }
-            TRIGGER_ASSERTION(); // fake an assertion failure
+            TRIGGER_ASSERTION(false); // fake an assertion failure
         }
 #undef VPRINTFORMAT
 #undef VCOMPILERMSG
@@ -250,10 +252,10 @@ namespace arb_test {
 #endif
     
 #define ACCEPT_NULLPTR_ARGUMENTS(FUN,TYPE)         \
-    template<> inline bool FUN<>(TYPE p1, NULLPTR p2) { test_assert(!p2); return FUN((const TYPE)p1, (const TYPE)p2); } \
-        template<> inline bool FUN<>(const TYPE p1, NULLPTR p2) { test_assert(!p2); return FUN((const TYPE)p1, (const TYPE)p2); } \
-        template<> inline bool FUN<>(NULLPTR p1, TYPE p2) { test_assert(!p1); return FUN((const TYPE)p1, (const TYPE)p2); } \
-        template<> inline bool FUN<>(NULLPTR p1, const TYPE p2) { test_assert(!p1); return FUN((const TYPE)p1, (const TYPE)p2); }
+    template<> inline bool FUN<>(TYPE p1, NULLPTR p2) { TEST_ASSERT(!p2); return FUN((const TYPE)p1, (const TYPE)p2); } \
+        template<> inline bool FUN<>(const TYPE p1, NULLPTR p2) { TEST_ASSERT(!p2); return FUN((const TYPE)p1, (const TYPE)p2); } \
+        template<> inline bool FUN<>(NULLPTR p1, TYPE p2) { TEST_ASSERT(!p1); return FUN((const TYPE)p1, (const TYPE)p2); } \
+        template<> inline bool FUN<>(NULLPTR p1, const TYPE p2) { TEST_ASSERT(!p1); return FUN((const TYPE)p1, (const TYPE)p2); }
 
     ACCEPT_NULLPTR_ARGUMENTS(test_equal, char*);
     ACCEPT_NULLPTR_ARGUMENTS(test_different, char*);
@@ -338,7 +340,7 @@ namespace arb_test {
                 }
 
                 if (error) StaticCode::printf("files_are_equal: equal_bytes=%i\n", equal_bytes);
-                test_assert(error || equal_bytes); // comparing empty files is nonsense
+                test_assert(error || equal_bytes, true); // comparing empty files is nonsense
 
                 free(buf2);
                 free(buf1);
@@ -362,8 +364,6 @@ namespace arb_test {
 #define TEST_IOERROR(format,strarg)         arb_test::StaticCode::ioerrorf(__FILE__, __LINE__, format, (strarg))
 
 // --------------------------------------------------------------------------------
-
-#define TEST_ASSERT(cond) test_assert(cond)
 
 #define TEST_ASSERT__BROKEN(cond)                                       \
     do {                                                                \
