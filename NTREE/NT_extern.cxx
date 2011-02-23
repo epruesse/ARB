@@ -203,7 +203,7 @@ void nt_create_all_awars(AW_root *awr, AW_default def) {
     create_probe_design_variables(awr, def, GLOBAL_gb_main);
     create_primer_design_variables(awr, def, GLOBAL_gb_main);
     create_trees_var(awr, def);
-    create_species_var(awr, def);
+    NT_create_species_var(awr, def);
     create_consensus_var(awr, def);
     GDE_create_var(awr, def, GLOBAL_gb_main);
     create_cprofile_var(awr, def);
@@ -1222,7 +1222,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone) {
         // ----------------
         awm->create_menu("Species", "c", AWM_ALL);
         {
-            AWMIMT("species_search", "Search and query",    "q", "sp_search.hlp", AWM_ALL, AW_POPUP,                (AW_CL)ad_create_query_window, 0);
+            AWMIMT("species_search", "Search and query",    "q", "sp_search.hlp", AWM_ALL, AW_POPUP,                (AW_CL)NTX_create_query_window, 0);
             AWMIMT("species_info",   "Species information", "i", "sp_info.hlp",   AWM_ALL, NT_popup_species_window, (AW_CL)GLOBAL_gb_main,         0);
 
             SEP________________________SEP();
@@ -1234,7 +1234,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone) {
             SEP________________________SEP();
 
             awm->insert_sub_menu("Database fields admin", "f");
-            ad_spec_create_field_items(awm);
+            NT_spec_create_field_items(awm);
             awm->close_sub_menu();
             NT_create_mask_submenu(awm);
 
@@ -1332,7 +1332,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone) {
                 AWMIMT("sai_consensus", "Consensus",                                                    "C", "consensus.hlp",    AWM_ALL, AW_POPUP,                     (AW_CL)AP_open_con_expert_window,   0);
                 AWMIMT("pos_var_pars",  "Positional variability + Column statistic (parsimony method)", "a", "pos_var_pars.hlp", AWM_ALL, AW_POPUP,                     (AW_CL)AP_open_pos_var_pars_window, 0);
                 AWMIMT("arb_phyl",      "Filter by base frequency",                                     "F", "phylo.hlp",        AWM_ALL, (AW_CB)NT_system_cb,          (AW_CL)"arb_phylo &",               0);
-                AWMIMT("sai_pfold",     "Protein secondary structure (field \"sec_struct\")",           "P", "pfold.hlp",        AWM_EXP, (AW_CB)create_sai_from_pfold, (AW_CL)ntw,                         0);
+                AWMIMT("sai_pfold",     "Protein secondary structure (field \"sec_struct\")",           "P", "pfold.hlp",        AWM_EXP, NT_create_sai_from_pfold, (AW_CL)ntw,                         0);
 
                 GDE_load_menu(awm, AWM_EXP, "SAI");
             }
@@ -1340,9 +1340,9 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone) {
 
             awm->insert_sub_menu("Other functions", "O");
             {
-                AWMIMT("pos_var_dist",          "Positional variability (distance method)",     "P", "pos_variability.ps", AWM_EXP, AW_POPUP,      (AW_CL)AP_open_cprofile_window,            0);
-                AWMIMT("count_different_chars", "Count different chars/column",                 "C", "count_chars.hlp",    AWM_EXP, NT_system_cb2, (AW_CL)"arb_count_chars",                  0);
-                AWMIMT("export_pos_var",        "Export Column Statistic (GNUPLOT format)",     "E", "csp_2_gnuplot.hlp",  AWM_ALL, AW_POPUP,      (AW_CL)NT_create_colstat_2_gnuplot_window, 0);
+                AWMIMT("pos_var_dist",          "Positional variability (distance method)",     "P", "pos_variability.ps", AWM_EXP, AW_POPUP, (AW_CL)AP_open_cprofile_window, 0);
+                AWMIMT("count_different_chars", "Count different chars/column",                 "C", "count_chars.hlp",    AWM_EXP, NT_system_cb2, (AW_CL)"arb_count_chars", 0);
+                AWMIMT("export_pos_var",        "Export Column Statistic (GNUPLOT format)",     "E", "csp_2_gnuplot.hlp",  AWM_ALL, AW_POPUP, (AW_CL)NT_create_colstat_2_gnuplot_window, 0);
             }
             awm->close_sub_menu();
         }
@@ -1749,7 +1749,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone) {
     awm->button_length(7);
 
     awm->at(db_searchx, first_liney);
-    awm->callback(AW_POPUP, (AW_CL)ad_create_query_window, 0);
+    awm->callback(AW_POPUP, (AW_CL)NTX_create_query_window, 0);
     awm->help_text("sp_search.hlp");
     awm->create_button("SEARCH",  "Search");
 

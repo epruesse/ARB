@@ -1451,7 +1451,7 @@ static AW_window *GEN_create_organism_colorize_window(AW_root *aw_root, AW_CL cl
 
 void GEN_popup_organism_window(AW_window *aww, AW_CL cl_gb_main, AW_CL) {
     // used to avoid that the organisms info window is stored in a menu (or with a button)
-    AW_window *aws = NT_create_organism_window(aww->get_root(), cl_gb_main);
+    AW_window *aws = NTX_create_organism_window(aww->get_root(), cl_gb_main);
     aws->activate();
 }
 
@@ -1690,7 +1690,7 @@ void GEN_map_window::init(AW_root *awr, GBDATA *gb_main) {
 
     at(gene_x, first_line_y);
     help_text("organism_search.hlp");
-    callback(AW_POPUP, (AW_CL)ad_create_query_window, 0);  // @@@ hier sollte eine Art "Organism-Search" verwendet werden (AWT_organism_selector anpassen)
+    callback(AW_POPUP, (AW_CL)NTX_create_query_window, 0);  // @@@ hier sollte eine Art "Organism-Search" verwendet werden (AWT_organism_selector anpassen)
     create_button("SEARCH_ORGANISM", AWAR_LOCAL_ORGANISM_NAME(window_nr));
 
     at(gene_x, second_line_y);

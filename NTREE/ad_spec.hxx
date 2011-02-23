@@ -30,22 +30,8 @@
 #include <awt.hxx>
 #endif
 
-
-void       create_species_var(AW_root *aw_root, AW_default aw_def);
-AW_window *NT_create_species_window(AW_root *aw_root, AW_CL cl_gb_main);
-AW_window *NT_create_organism_window(AW_root *aw_root, AW_CL cl_gb_main);
-AW_window *ad_create_query_window(AW_root *aw_root);
-void       ad_unquery_all();
-void       ad_query_update_list();
-void       ad_spec_create_field_items(AW_window *aws);
-void       create_sai_from_pfold(AW_window *aww, AW_CL ntw, AW_CL);
-
-AW_window *NT_create_ad_list_reorder(AW_root *root, AW_CL cl_item_selector);
-AW_window *NT_create_ad_field_delete(AW_root *root, AW_CL cl_item_selector);
-AW_window *NT_create_ad_field_create(AW_root *root, AW_CL cl_item_selector);
-AW_window *NT_create_ad_field_convert(AW_root *root, AW_CL cl_item_selector);
-
-void NT_detach_information_window(AW_window *aww, AW_CL cl_pointer_to_aww, AW_CL cl_Awar_Callback_Info);
+AW_window *NTX_create_organism_window(AW_root *aw_root, AW_CL cl_gb_main);
+AW_window *NTX_create_query_window(AW_root *aw_root);
 
 #else
 #error ad_spec.hxx included twice

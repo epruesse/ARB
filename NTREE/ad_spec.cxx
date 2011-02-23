@@ -42,8 +42,7 @@ extern GBDATA *GLOBAL_gb_main;
 #define AWAR_NN_SCORED_ENTRIES AWAR_NN_BASE "scored_entries"
 #define AWAR_NN_MIN_SCORE      AWAR_NN_BASE "min_score"
 
-void create_species_var(AW_root *aw_root, AW_default aw_def)
-{
+void NT_create_species_var(AW_root *aw_root, AW_default aw_def) {
     aw_root->awar_string(AWAR_SPECIES_DEST,         "",        aw_def);
     aw_root->awar_string(AWAR_SPECIES_INFO,         "",        aw_def);
     aw_root->awar_string(AWAR_SPECIES_KEY,          "",        aw_def);
@@ -87,7 +86,7 @@ static void move_species_to_extended(AW_window *aww) {
     free(source);
 }
 
-void create_sai_from_pfold(AW_window *aww, AW_CL ntw, AW_CL) {
+void NT_create_sai_from_pfold(AW_window *aww, AW_CL ntw, AW_CL) {
     /*! \brief Creates an SAI from protein secondary structure of a selected species.
      *
      *  \param[in] aww AW_window
@@ -809,7 +808,7 @@ AW_window *NT_create_ad_field_convert(AW_root *root, AW_CL cl_item_selector) {
     return (AW_window*)aws;
 }
 
-void ad_spec_create_field_items(AW_window *aws) {
+void NT_spec_create_field_items(AW_window *aws) {
     aws->insert_menu_topic("spec_reorder_fields", "Reorder fields ...",     "R", "spaf_reorder.hlp", AWM_ALL, AW_POPUP, (AW_CL)NT_create_ad_list_reorder, (AW_CL)&AWT_species_selector);
     aws->insert_menu_topic("spec_delete_field",   "Delete/Hide fields ...", "D", "spaf_delete.hlp",  AWM_EXP, AW_POPUP, (AW_CL)NT_create_ad_field_delete, (AW_CL)&AWT_species_selector);
     aws->insert_menu_topic("spec_create_field",   "Create fields ...",      "C", "spaf_create.hlp",  AWM_ALL, AW_POPUP, (AW_CL)NT_create_ad_field_create, (AW_CL)&AWT_species_selector);
@@ -1208,7 +1207,7 @@ static AW_window *create_speciesOrganismWindow(AW_root *aw_root, GBDATA *gb_main
         aws->create_button("CLOSE", "CLOSE", "C");
 
         aws->at("search");
-        aws->callback(AW_POPUP, (AW_CL)ad_create_query_window, 0);
+        aws->callback(AW_POPUP, (AW_CL)NTX_create_query_window, 0);
         aws->create_button("SEARCH", "SEARCH", "S");
 
         aws->at("help");
@@ -1231,7 +1230,7 @@ static AW_window *create_speciesOrganismWindow(AW_root *aw_root, GBDATA *gb_main
         aws->insert_separator();
 
         aws->create_menu("FIELDS", "F", AWM_ALL);
-        ad_spec_create_field_items(aws);
+        NT_spec_create_field_items(aws);
 
         {
             const char         *awar_name = (bool)organismWindow ? AWAR_ORGANISM_NAME : AWAR_SPECIES_NAME;
@@ -1257,21 +1256,21 @@ static AW_window *create_speciesOrganismWindow(AW_root *aw_root, GBDATA *gb_main
 AW_window *NT_create_species_window(AW_root *aw_root, AW_CL cl_gb_main) {
     return create_speciesOrganismWindow(aw_root, (GBDATA*)cl_gb_main, false);
 }
-AW_window *NT_create_organism_window(AW_root *aw_root, AW_CL cl_gb_main) {
+AW_window *NTX_create_organism_window(AW_root *aw_root, AW_CL cl_gb_main) {
     return create_speciesOrganismWindow(aw_root, (GBDATA*)cl_gb_main, true);
 }
 
 AW_CL ad_query_global_cbs = 0;
 
-void ad_unquery_all() {
+void NT_unquery_all() {
     awt_unquery_all(0, (DbQuery *)ad_query_global_cbs);
 }
 
-void ad_query_update_list() {
+void NT_query_update_list() {
     awt_query_update_list(NULL, (DbQuery *)ad_query_global_cbs);
 }
 
-AW_window *ad_create_query_window(AW_root *aw_root)
+AW_window *NTX_create_query_window(AW_root *aw_root)
 {
     static AW_window_simple_menu *aws = 0;
     if (aws) {

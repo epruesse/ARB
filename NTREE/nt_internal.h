@@ -128,13 +128,17 @@ AW_window *NT_create_alignment_window(AW_root *root, AW_CL popmedown);
 AW_window *NT_create_extendeds_window(AW_root *aw_root);
 
 /* ad_spec.cxx */
+void NT_create_species_var(AW_root *aw_root, AW_default aw_def);
+void NT_create_sai_from_pfold(AW_window *aww, AW_CL ntw, AW_CL dummy_1x);
 AW_window *NT_create_ad_list_reorder(AW_root *root, AW_CL cl_item_selector);
 AW_window *NT_create_ad_field_delete(AW_root *root, AW_CL cl_item_selector);
 AW_window *NT_create_ad_field_create(AW_root *root, AW_CL cl_item_selector);
 AW_window *NT_create_ad_field_convert(AW_root *root, AW_CL cl_item_selector);
+void NT_spec_create_field_items(AW_window *aws);
 void NT_detach_information_window(AW_window *aww, AW_CL cl_pointer_to_aww, AW_CL cl_AW_detach_information);
 AW_window *NT_create_species_window(AW_root *aw_root, AW_CL cl_gb_main);
-AW_window *NT_create_organism_window(AW_root *aw_root, AW_CL cl_gb_main);
+void NT_unquery_all(void);
+void NT_query_update_list(void);
 
 /* ad_transpro.cxx */
 AW_window *NT_create_dna_2_pro_window(AW_root *root);
