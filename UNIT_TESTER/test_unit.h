@@ -558,25 +558,30 @@ namespace arb_test {
     }
 };
 
-#define TEST_ASSERT_FILES_EQUAL(f1,f2)         TEST_ASSERT(arb_test::test_files_equal(f1,f2))
-#define TEST_ASSERT_FILES_EQUAL__BROKEN(f1,f2) TEST_ASSERT__BROKEN(arb_test::test_files_equal(f1,f2))
-
 #define TEST_ASSERT_TEXTFILE_DIFFLINES(f1,f2,diff)         TEST_ASSERT(arb_test::test_textfile_difflines(f1,f2, diff))
 #define TEST_ASSERT_TEXTFILE_DIFFLINES__BROKEN(f1,f2,diff) TEST_ASSERT__BROKEN(arb_test::test_textfile_difflines(f1,f2, diff))
 
 #define TEST_ASSERT_TEXTFILE_DIFFLINES_IGNORE_DATES(f1,f2,diff)         TEST_ASSERT(arb_test::test_textfile_difflines_ignoreDates(f1,f2, diff))
 #define TEST_ASSERT_TEXTFILE_DIFFLINES_IGNORE_DATES__BROKEN(f1,f2,diff) TEST_ASSERT__BROKEN(arb_test::test_textfile_difflines_ignoreDates(f1,f2, diff))
 
+#define TEST_ASSERT_FILES_EQUAL(f1,f2)         TEST_ASSERT(arb_test::test_files_equal(f1,f2))
+#define TEST_ASSERT_FILES_EQUAL__BROKEN(f1,f2) TEST_ASSERT__BROKEN(arb_test::test_files_equal(f1,f2))
+
+#define TEST_ASSERT_TEXTFILES_EQUAL(f1,f2)         TEST_ASSERT_TEXTFILE_DIFFLINES(f1,f2,0)
+#define TEST_ASSERT_TEXTFILES_EQUAL__BROKEN(f1,f2) TEST_ASSERT_TEXTFILE_DIFFLINES__BROKEN(f1,f2,0)
+
 #else
 
 #define WARN_MISS_ADPROT() need_include__ad_prot_h__BEFORE__test_unit_h
 
-#define TEST_ASSERT_FILES_EQUAL(f1,f2)                                  WARN_MISS_ADPROT()
-#define TEST_ASSERT_FILES_EQUAL__BROKEN(f1,f2)                          WARN_MISS_ADPROT()
 #define TEST_ASSERT_TEXTFILE_DIFFLINES(f1,f2,diff)                      WARN_MISS_ADPROT()
 #define TEST_ASSERT_TEXTFILE_DIFFLINES__BROKEN(f1,f2,diff)              WARN_MISS_ADPROT()
 #define TEST_ASSERT_TEXTFILE_DIFFLINES_IGNORE_DATES(f1,f2,diff)         WARN_MISS_ADPROT()
 #define TEST_ASSERT_TEXTFILE_DIFFLINES_IGNORE_DATES__BROKEN(f1,f2,diff) WARN_MISS_ADPROT()
+#define TEST_ASSERT_FILES_EQUAL(f1,f2)                                  WARN_MISS_ADPROT()
+#define TEST_ASSERT_FILES_EQUAL__BROKEN(f1,f2)                          WARN_MISS_ADPROT()
+#define TEST_ASSERT_TEXTFILES_EQUAL(f1,f2)                              WARN_MISS_ADPROT()
+#define TEST_ASSERT_TEXTFILES_EQUAL__BROKEN(f1,f2)                      WARN_MISS_ADPROT()
 
 #endif // AD_PROT_H
 

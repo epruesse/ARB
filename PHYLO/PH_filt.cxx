@@ -300,7 +300,7 @@ float *PH_filter::calculate_column_homology() {
     }
 
     GB_ERROR error = NULL;
-    {
+    if (PHDATA::ROOT->nentries) {
         arb_progress progress("Counting", PHDATA::ROOT->nentries);
         // counting routine
         for (i=0; i<long(PHDATA::ROOT->nentries) && !error; i++) {
