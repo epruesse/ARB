@@ -414,7 +414,8 @@ first_target:
 ifeq ($(UNIT_TESTS),1)
 		@echo ' unit_tests   - only run tests'
 endif
-		@echo ' modified     - rebuild files modified in svn checkout (touches files!)'
+		@echo ' modified     - rebuild files modified in svn checkout (does touch)'
+		@echo ' touch        - touch files modified in svn checkout'
 		@echo ''
 		@echo 'Internal maintenance:'
 		@echo ''
@@ -1210,8 +1211,10 @@ up_internal: depends proto tags valgrind_update
 
 #********************************************************************************
 
-modified:
+touch:
 	SOURCE_TOOLS/touch_modified.pl
+
+modified: touch
 	$(MAKE) all
 
 #********************************************************************************
