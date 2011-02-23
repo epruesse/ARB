@@ -25,6 +25,8 @@
 ****************************************************************************/
 class CMain
 {
+    GB_shell shell;
+    
     public:
         CMain();
         ~CMain();
@@ -60,11 +62,11 @@ CMain::CMain()
 ****************************************************************************/
 CMain::~CMain()
 {
-    // CLOSE CONNECTIONS IF THEY ARE STILL OPEN
-    DB_Disconnect();
-
     // DESTRUCT MAIN DIALOG CLASS (IF NOT ALREADY HAPPENED!?)
     if(m_maindialog) delete m_maindialog;
+
+    // CLOSE CONNECTIONS IF THEY ARE STILL OPEN
+    DB_Disconnect();
 
     // DESTROY TOP WIDGET
     if(m_topwidget) XtDestroyWidget(m_topwidget);
@@ -171,8 +173,8 @@ int CMain::Run(int argc, char **argv)
     // ENTER THE MAIN APPLICATION LOOP (WAIT FOR EVENTS)
     MainLoop();
 
-    // DISCONNECT THE ARB CONNECTION
-    DB_Disconnect();
+    // // DISCONNECT THE ARB CONNECTION
+    // DB_Disconnect(); // @@@ done by dtor only (pending callbacks!)
 
     return 0;
 }
@@ -184,12 +186,11 @@ int CMain::Run(int argc, char **argv)
 int main(int argc, char **argv)
 {
     // CREATE THE PGT MAIN EVENT HANDLER
-    CMain *cmain= new CMain();
+    CMain cmain;
 
     // RUN PGT MAIN EVENT HANDLER
-    int retVal= cmain->Run(argc, argv);
+    int retVal= cmain.Run(argc, argv);
 
-    // DELETE MAIN HANDLER CLASS AND EXIT WITH RETURN VALUE 'retVal'
-    delete cmain;
+    // EXIT WITH RETURN VALUE 'retVal'
     return retVal;
 }

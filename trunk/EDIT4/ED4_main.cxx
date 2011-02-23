@@ -483,8 +483,7 @@ const char *ED4_propertyName(int mode) {
     return result;
 }
 
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv) {
     const char *data_path = ":";
     const char *err = NULL;
     char *config_name = NULL;
@@ -525,6 +524,7 @@ int main(int argc, char **argv)
 
     aw_initstatus();
 
+    GB_shell shell;
     GLOBAL_gb_main = GB_open(data_path, "rwt");
     if (!GLOBAL_gb_main)
     {

@@ -294,6 +294,7 @@ int main(int argc, char **argv) {
     if (!path) path = ":";
 
     GB_ERROR error = NULL;
+    GB_shell shell;
     aprm.gb_main   = GB_open(path, "r");
     if (!aprm.gb_main) {
         error = GBS_global_string("Can't open db '%s' (Reason: %s)", path, GB_await_error());

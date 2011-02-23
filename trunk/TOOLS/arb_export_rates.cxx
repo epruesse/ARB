@@ -75,7 +75,8 @@ int main(int argc, char **argv) {
     }
 
     if (!error) {
-        GBDATA *gb_main = GBT_open(dbname, "r", 0);
+        GB_shell  shell;
+        GBDATA   *gb_main = GBT_open(dbname, "r", 0);
         if (!gb_main) {
             error = GB_await_error();
         }

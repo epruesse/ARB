@@ -64,7 +64,8 @@ int main(int argc, char **argv)
         char *out = ci >= argc ? in : argv[ci++];
 
         printf("Reading database...\n");
-        GBDATA *gb_main = GBT_open(in, rtype, 0);
+        GB_shell  shell;
+        GBDATA   *gb_main = GBT_open(in, rtype, 0);
         if (!gb_main) {
             error = GB_await_error();
         }

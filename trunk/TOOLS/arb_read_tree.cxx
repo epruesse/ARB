@@ -181,9 +181,10 @@ int main(int argc, char **argv) {
     parameters param;
     GB_ERROR error = param.scan(argc, argv);
 
-    GBDATA *gb_main      = NULL;
-    GBDATA *gb_msg_main  = NULL;
-    bool    connectToArb = strcmp(param.dbname, ":") == 0;
+    GBDATA   *gb_main      = NULL;
+    GBDATA   *gb_msg_main  = NULL;
+    bool      connectToArb = strcmp(param.dbname, ":") == 0;
+    GB_shell  shell;
 
     if (!error || connectToArb) {
         gb_main                       = GB_open(param.dbname, connectToArb ? "r" : "rw");

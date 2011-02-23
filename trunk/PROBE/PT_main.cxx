@@ -105,9 +105,14 @@ void PT_exit_psg() {
             free(psg.data);
 
             GB_close(psg.gb_main);
-            psg.gb_main         = NULL;;
-            psg.gb_species_data = NULL;;
-            psg.gb_sai_data     = NULL;;
+            psg.gb_main         = NULL;
+            psg.gb_species_data = NULL;
+            psg.gb_sai_data     = NULL;
+        }
+        
+        if (psg.gb_shell) {
+            delete psg.gb_shell;
+            psg.gb_shell = NULL;
         }
 
         if (psg.namehash) GBS_free_hash(psg.namehash);
@@ -124,7 +129,7 @@ void PT_exit_psg() {
     }
 }
 
-void PT_exit(int exitcode) { 
+void PT_exit(int exitcode) {
     // unique exit point to ensure cleanup
     if (psg_initialized) PT_exit_psg();
     if (aisc_main) destroy_PT_main(aisc_main);

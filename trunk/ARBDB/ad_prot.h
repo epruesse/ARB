@@ -218,6 +218,7 @@ GB_BUFFER GB_give_buffer2(long size);
 int GB_is_in_buffer(GB_CBUFFER ptr);
 char *GB_check_out_buffer(GB_CBUFFER buffer);
 GB_BUFFER GB_give_other_buffer(GB_CBUFFER buffer, long size);
+void GB_atexit(void (*exitfun)());
 void GB_exit_gb(void);
 void GB_init_gb(void);
 int GB_open_DBs(void);

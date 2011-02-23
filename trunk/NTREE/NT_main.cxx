@@ -390,6 +390,7 @@ int main(int argc, char **argv) {
     aw_initstatus();
     GB_set_verbose();
 
+    GB_shell shell;
     AW_root *aw_root = AWT_create_root(".arb_prop/ntree.arb", "ARB_NT");
 
     GLOBAL_NT.awr = aw_root;

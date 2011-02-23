@@ -139,7 +139,6 @@ imageDialog::imageDialog(MDialog *d) : MDialog(d)
     getSettings();
 
     // ADD ARB AWAR CALLBACKS
-
     add_imageDialog_callback(AWAR_PROTEIN_NAME,   static_ARB_protein_callback, this);
     add_imageDialog_callback(AWAR_GENE_NAME,      static_ARB_gene_callback,    this);
     add_imageDialog_callback(AWAR_CONFIG_CHANGED, static_PGT_config_callback,  this);
@@ -151,6 +150,11 @@ imageDialog::imageDialog(MDialog *d) : MDialog(d)
  ****************************************************************************/
 imageDialog::~imageDialog()
 {
+    // DEL ARB AWAR CALLBACKS
+    del_imageDialog_callback(AWAR_PROTEIN_NAME,   static_ARB_protein_callback, this);
+    del_imageDialog_callback(AWAR_GENE_NAME,      static_ARB_gene_callback,    this);
+    del_imageDialog_callback(AWAR_CONFIG_CHANGED, static_PGT_config_callback,  this);
+    
     // FREE CLASS MEMBER STRINGS
     if(m_species) free(m_species);
     if(m_experiment) free(m_experiment);
