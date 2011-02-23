@@ -1178,15 +1178,15 @@ class BackTraceInfo *GBK_get_backtrace(size_t skipFramesAtBottom) {
     return new BackTraceInfo(skipFramesAtBottom);
 }
 void GBK_dump_former_backtrace(class BackTraceInfo *trace, FILE *out, GB_CSTR message) {
-    trace->dump(out, message);
+    demangle_backtrace(*trace, out, message);
 }
+
 void GBK_free_backtrace(class BackTraceInfo *trace) {
     delete trace;
 }
 
 void GBK_dump_backtrace(FILE *out, GB_CSTR message) {
-    BackTraceInfo trace(0);
-    trace.dump(out ? out : stderr, message);
+    demangle_backtrace(BackTraceInfo(1), out ? out : stderr, message);
 }
 
 // -----------------------
@@ -1326,6 +1326,10 @@ bool GBK_raises_SIGSEGV(void (*cb)(void), bool result_in_valgrind) {
             volatile int trapped;
             {
                 volatile SuppressOutput toConsole;           // comment-out this line to show console output of 'cb'
+
+                int old_suppression       = BackTraceInfo::suppress();
+                BackTraceInfo::suppress() = true;
+
                 trapped = sigsetjmp(return_after_segv, 1);
 
                 if (!trapped) {                     // normal execution
@@ -1334,6 +1338,7 @@ bool GBK_raises_SIGSEGV(void (*cb)(void), bool result_in_valgrind) {
                 else {
                     segv_occurred = true;
                 }
+                BackTraceInfo::suppress() = old_suppression;
             }
             suppress_sigsegv = false;
             gb_assert(implicated(trapped, trapped == 667));

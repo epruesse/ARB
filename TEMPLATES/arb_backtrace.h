@@ -29,9 +29,16 @@
 
 class BackTraceInfo {
     void   **array;
-    size_t  size;
+    size_t   size;
+
 public:
-    BackTraceInfo(size_t skipFramesAtBottom) {
+
+    static bool& suppress() {
+        static bool suppress_ = false;
+        return suppress_;
+    }
+
+    explicit BackTraceInfo(size_t skipFramesAtBottom) {
         void *tmp[MAX_BACKTRACE];
         size = backtrace(tmp, MAX_BACKTRACE);
 
@@ -45,15 +52,37 @@ public:
     }
     ~BackTraceInfo() { free(array); }
 
-    void dump(FILE *out, const char *message) {
-        // print out all the frames to out
-        fprintf(out, "\n-------------------- ARB-backtrace '%s':\n", message);
+    bool dump(FILE *out, const char *message) const {
+        // print out all the stack frames to 'out'
+        // return true on success.
+
+        if (fprintf(out, "\n-------------------- ARB-backtrace '%s':\n", message) < 0) return false;
+        fflush(out);
         backtrace_symbols_fd(array, size, fileno(out));
         if (size == MAX_BACKTRACE) fputs("[stack truncated to avoid deadlock]\n", out);
         fputs("-------------------- End of backtrace\n", out);
-        fflush(out);
+        return fflush(out) == 0;
     }
 };
+
+inline void demangle_backtrace(const class BackTraceInfo& trace, FILE *out, const char *message) {
+    static bool filtfailed = false;
+
+    if (!BackTraceInfo::suppress()) {
+        if (!filtfailed) {
+            // @@@ Warning: this branch ignores parameter 'out'
+            FILE *filt = popen("/usr/bin/c++filt", "w");
+            if (filt) {
+                filtfailed   = !trace.dump(filt, message);
+                int exitcode = pclose(filt);
+                if (exitcode != 0 && !filtfailed) filtfailed = true;
+            }
+            else filtfailed = true;
+        }
+        if (filtfailed) trace.dump(out, message);
+    }
+}
+
 
 
 #else

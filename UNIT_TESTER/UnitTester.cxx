@@ -99,23 +99,26 @@ enum TrapCode {
 
 static void UNITTEST_sigsegv_handler(int sig) {
     if (GLOBAL.inside_test) {
-        int trap_code;
+        int  trap_code;
+        const char *backtrace_cause = NULL;
         switch (sig) {
-            case SIGSEGV:
+            case SIGSEGV: {
                 trap_code = TRAP_SEGV;
-                if (!arb_test::test_data().assertion_failed) { // not caused by assertion
-                    BackTraceInfo(0).dump(stderr, "Catched SIGSEGV not caused by assertion");
+                
+                arb_test::GlobalTestData& test_data = arb_test::test_data();
+                if (!test_data.assertion_failed) { // not caused by assertion
+                    backtrace_cause = "Catched SIGSEGV not caused by assertion";
                 }
                 break;
-                
+            }
             case SIGINT:
                 trap_code = TRAP_INT;
-                BackTraceInfo(0).dump(stderr, "Catched SIGINT (deadlock in test function?)");
+                backtrace_cause = "Catched SIGINT (deadlock in test function?)";
                 break;
 
             case SIGTERM:
                 trap_code = TRAP_TERM;
-                BackTraceInfo(0).dump(stderr, "Catched SIGTERM (deadlock in uninterruptable test function?)");
+                backtrace_cause = "Catched SIGTERM (deadlock in uninterruptable test function?)";
                 break;
 
             default:
@@ -123,6 +126,7 @@ static void UNITTEST_sigsegv_handler(int sig) {
                 TEST_ASSERT(0);
                 break;
         }
+        if (backtrace_cause) demangle_backtrace(BackTraceInfo(0), stderr, backtrace_cause);
         siglongjmp(UNITTEST_return_after_segv, trap_code); // suppress signal
     }
 
