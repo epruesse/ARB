@@ -43,8 +43,8 @@ void Seq::out(Writer& write, Format outType) const {
     write.out("//\n");
 }
 
-void read_alignment(Alignment& ali, Format inType, const char *inf) {
-    FormatReaderPtr reader = FormatReader::create(inType, inf);
+void read_alignment(Alignment& ali, const FormattedFile& in) {
+    FormatReaderPtr reader = FormatReader::create(in);
     while (1) {
         SeqPtr seq = new Seq;
         if (!reader->read_one_entry(*seq)) break;

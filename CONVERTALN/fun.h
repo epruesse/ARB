@@ -15,7 +15,7 @@ enum Format {
     GCG,
     NEXUS,
     PHYLIP,
-    PHYLIP2,
+    FASTDNAML,
     PRINTABLE,
 
     UNKNOWN,
@@ -44,10 +44,23 @@ struct SeqInfo;
 
 typedef void (*RDP_comment_parser)(char*& datastring, int start_index, Reader& reader);
 
+class FormattedFile {
+    char   *name_;
+    Format  type_;
+public:
+    FormattedFile() : name_(0), type_(UNKNOWN) {}
+    FormattedFile(const char *Name, Format Type);
+    ~FormattedFile();
+
+    void init(const char *Name, Format Type);
+
+    const char *name() const { return name_; }
+    Format type() const { return type_; }
+};
+
 #ifndef FILEBUFFER_H
 #include <FileBuffer.h>
 #endif
-
 #ifndef PROTOTYPES_H
 #include "prototypes.h"
 #endif
@@ -55,3 +68,4 @@ typedef void (*RDP_comment_parser)(char*& datastring, int start_index, Reader& r
 #else
 #error fun.h included twice
 #endif // FUN_H
+

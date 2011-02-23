@@ -9,13 +9,13 @@
 #include "genbank.h"
 #include "macke.h"
 
-FormatReaderPtr FormatReader::create(Format inType, const char *inf) {
-    switch (inType) {
-        case GENBANK:   return new GenbankReader(inf);
+FormatReaderPtr FormatReader::create(const FormattedFile& in) {
+    switch (in.type()) {
+        case GENBANK:   return new GenbankReader(in.name());
         case SWISSPROT:
-        case EMBL:      return new EmblSwissprotReader(inf);
-        case MACKE:     return new MackeReader(inf);
-        default: throw_unsupported_input_format(inType);
+        case EMBL:      return new EmblSwissprotReader(in.name());
+        case MACKE:     return new MackeReader(in.name());
+        default: throw_unsupported_input_format(in.type());
     }
     return NULL;
 }
@@ -123,8 +123,8 @@ static void write_to_macke(FileWriter& write, const ConvertibleData& data, const
     }
 }
 
-static void to_macke(const char *inf, Format inType, const char *outf) {
-    FormatReaderPtr    reader = FormatReader::create(inType, inf);
+static void to_macke(const FormattedFile& in, const char *outf) {
+    FormatReaderPtr    reader = FormatReader::create(in);
     FileWriter         write(outf);
     SmartPtr<Warnings> suppress;
 
@@ -149,26 +149,19 @@ static void to_macke(const char *inf, Format inType, const char *outf) {
     }
 }
 
-void convert(const char *inf, const char *outf, Format inType, Format ouType) {
-    // convert the file 'inf' (assuming it has type 'inType')
-    // to desired 'outype' and save the result in 'outf'.
-
-    int dd = 0; // copy stdin to outfile after first line
-    if (ouType == PHYLIP2) {
-        ouType = PHYLIP;
-        dd = 1;
-    }
-
-    if (str_equal(inf, outf))
+void convert(const FormattedFile& in, const FormattedFile& out) {
+    if (str_equal(in.name(), out.name()))
         throw_error(30, "Input file and output file must be different file");
 
     bool converted = true;
-    switch (ouType) {
+    switch (out.type()) {
         case EMBL:
         case SWISSPROT:
         case GENBANK: {
+            Format inType = in.type();
+            Format ouType = out.type();
             if ((inType == GENBANK   && ouType == SWISSPROT) ||
-                (inType == SWISSPROT && ouType == GENBANK) ||
+                (inType == SWISSPROT && ouType == GENBANK)   ||
                 (inType == EMBL      && ouType == SWISSPROT) ||
                 (inType == SWISSPROT && ouType == EMBL))
             {
@@ -176,8 +169,8 @@ void convert(const char *inf, const char *outf, Format inType, Format ouType) {
                 break;
             }
 
-            FormatReaderPtr reader = FormatReader::create(inType, inf);
-            FileWriter      write(outf);
+            FormatReaderPtr reader = FormatReader::create(in);
+            FileWriter      write(out.name());
 
             while (1) {
                 Seq seq;
@@ -191,16 +184,17 @@ void convert(const char *inf, const char *outf, Format inType, Format ouType) {
             }
             break;
         }
-        case MACKE:     to_macke(inf, inType, outf); break;
-        case GCG:       to_gcg(inf, outf, inType); break;
-        case NEXUS:     to_paup(inf, outf, inType); break;
-        case PHYLIP:    to_phylip(inf, outf, inType, dd); break;
-        case PRINTABLE: to_printable(inf, outf, inType); break;
+        case MACKE:     to_macke(in, out.name()); break;
+        case GCG:       to_gcg(in, out.name()); break;
+        case NEXUS:     to_paup(in, out.name()); break;
+        case PHYLIP:    to_phylip(in, out.name(), false); break;
+        case FASTDNAML: to_phylip(in, out.name(), true); break;
+        case PRINTABLE: to_printable(in, out.name()); break;
 
         default: converted = false; break;
     }
     if (!converted) {
-        throw_conversion_not_supported(inType, ouType);
+        throw_conversion_not_supported(in.type(), out.type());
     }
 }
 

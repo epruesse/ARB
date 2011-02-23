@@ -156,7 +156,7 @@ static void macke_to_gcg(const char *inf, const char *outf) {
 }
 
 static void genbank_to_gcg(const char *inf, const char *outf) {
-    FormatReaderPtr reader = FormatReader::create(GENBANK, inf);
+    FormatReaderPtr reader = FormatReader::create(FormattedFile(inf, GENBANK));
     GcgWriter       write(outf);
 
     GenBank gbk;
@@ -192,17 +192,17 @@ static void embl_to_gcg(const char *inf, const char *outf) {
     reader.ignore_rest_of_file();
 }
 
-void to_gcg(const char *inf, const char *outf, Format inType) {
+void to_gcg(const FormattedFile& in, const char *outf) {
     // Convert from whatever to GCG format
     // @@@ use InputFormat ?
 
-    switch (inType) {
-        case MACKE:     macke_to_gcg(inf, outf); break;
-        case GENBANK:   genbank_to_gcg(inf, outf); break;
+    switch (in.type()) {
+        case MACKE:     macke_to_gcg(in.name(), outf); break;
+        case GENBANK:   genbank_to_gcg(in.name(), outf); break;
         case EMBL:
-        case SWISSPROT: embl_to_gcg(inf, outf); break;
+        case SWISSPROT: embl_to_gcg(in.name(), outf); break;
         default:
-            throw_conversion_not_supported(inType, GCG);
+            throw_conversion_not_supported(in.type(), GCG);
             break;
     }
 }
