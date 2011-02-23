@@ -27,7 +27,10 @@ PATCHNAMESUFFIX:=$(subst :,_,$(PATCHNAMESUFFIX))
 
 # -------------------- targets
 
-tests_passed:
+cleanup_environment:
+	./test_environment clean
+
+tests_passed: cleanup_environment
 	@$(TEST_REPORTER) report $(TEST_LOG_DIR) $(SKIP_SLOW)
 
 update_patches_if_passed: tests_passed

@@ -21,6 +21,9 @@
 #ifndef _STDIO_H
 #error Need cstdio included
 #endif
+#ifndef _STDLIB_H
+#error Need cstdlib included
+#endif
 #ifndef _ERRNO_H
 #error Need cerrno included
 #endif
