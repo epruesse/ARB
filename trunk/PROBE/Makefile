@@ -24,7 +24,7 @@ $(MAIN): $(OBJECTS)
 	$(CPP) $(cflags) -c $<  $(CPPINCLUDES) $(POST_COMPILE)
 
 proto:
-	../MAKEBIN/aisc_mkpt -E -w pt_prototypes.h $(OBJECTS:.o=.cxx) probe_tree.hxx >pt_prototypes.h.tmp
+	../MAKEBIN/aisc_mkpt -G -E -w pt_prototypes.h $(OBJECTS:.o=.cxx) probe_tree.hxx >pt_prototypes.h.tmp
 	../SOURCE_TOOLS/mv_if_diff pt_prototypes.h.tmp pt_prototypes.h
 
 clean:
@@ -138,6 +138,7 @@ PT_findEx.o: $(ARBHOME)/INCLUDE/static_assert.h
 PT_findEx.o: $(ARBHOME)/INCLUDE/test_global.h
 
 PT_io.o: probe.h
+PT_io.o: pt_prototypes.h
 PT_io.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 PT_io.o: $(ARBHOME)/INCLUDE/ad_prot.h
 PT_io.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
@@ -241,6 +242,7 @@ PT_new_design.o: $(ARBHOME)/INCLUDE/test_global.h
 
 PT_prefixtree.o: probe.h
 PT_prefixtree.o: probe_tree.hxx
+PT_prefixtree.o: pt_prototypes.h
 PT_prefixtree.o: $(ARBHOME)/INCLUDE/ad_k_prot.h
 PT_prefixtree.o: $(ARBHOME)/INCLUDE/ad_prot.h
 PT_prefixtree.o: $(ARBHOME)/INCLUDE/aisc_global.h

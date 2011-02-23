@@ -213,6 +213,7 @@ char *aisc_client_get_hostname() {
 }
 
 const char *aisc_client_get_m_id(const char *path, char **m_name, int *id) {
+    // Warning: duplicated in server.c@aisc_get_m_id 
     char           *p;
     char           *mn;
     int             i;
@@ -272,6 +273,11 @@ static const char *aisc_client_open_socket(const char *path, int delay, int do_c
     FILE           *test;
 
     err = aisc_client_get_m_id(path, &mach_name, &socket_id);
+
+    // @@@ mem assigned to mach_name is leaked often
+    // @@@ refactor aisc_client_open_socket -> one exit point
+    // @@@ note that the code is nearly duplicated in server.c@aisc_open_socket
+
     if (err) {
         if (mach_name) free(mach_name);
         return err;

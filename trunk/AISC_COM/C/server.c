@@ -252,11 +252,17 @@ static char *aisc_get_hostname() {
     return hn;
 }
 
-static const char *aisc_get_m_id(const char *path, char **m_name, int *id)
-{
-    char           *p;
-    char           *mn;
-    int             i;
+#if defined(DEVEL_RALF)
+#warning DRY client.c vs server.c (->clientserver.c).
+/* e.g. aisc_get_m_id and aisc_client_get_m_id
+ * aisc_get_hostname() / aisc_client_get_hostname()
+ * aisc_open_socket() / aisc_client_open_socket()
+ * etc.
+ */
+#endif
+
+static const char *aisc_get_m_id(const char *path, char **m_name, int *id) {
+    // Warning: duplicated in client.c@aisc_client_get_m_id
     if (!path) {
         return "OPEN_ARB_DB_CLIENT ERROR: missing hostname:socketid";
     }
@@ -264,7 +270,8 @@ static const char *aisc_get_m_id(const char *path, char **m_name, int *id)
         path = (char *)getenv("SOCKET");
         if (!path) return "environment socket not found";
     }
-    p = (char *) strchr(path, ':');
+    
+    const char *p = strchr(path, ':');
     if (path[0] == '*' || path[0] == ':') {     /* UNIX MODE */
         char buffer[128];
         if (!p) {
@@ -283,15 +290,16 @@ static const char *aisc_get_m_id(const char *path, char **m_name, int *id)
     if (!p) {
         return "OPEN_ARB_DB_CLIENT ERROR: missing ':' in netname:socketid";
     }
-    mn = (char *) calloc(sizeof(char), p - path + 1);
-    strncpy(mn, path, p - path);
-    if (!strcmp(mn, "localhost")) {
-        free(mn);
-        mn = strdup(aisc_get_hostname());
-    }
 
+    char *mn = (char *) calloc(sizeof(char), p - path + 1);
+    strncpy(mn, path, p - path);
+
+    if (strcmp(mn, "localhost") == 0) {
+        freedup(mn, aisc_get_hostname());
+    }
     *m_name = mn;
-    i = atoi(p + 1);
+
+    int i = atoi(p + 1);
     if ((i < 1024) || (i > 4096)) {
         return "OPEN_ARB_DB_CLIENT ERROR: socketnumber not in [1024..4095]";
     }
@@ -301,16 +309,20 @@ static const char *aisc_get_m_id(const char *path, char **m_name, int *id)
 
 
 static const char *aisc_open_socket(const char *path, int delay, int do_connect, int *psocket, char **unix_name) {
-
-    char buffer[128];
-    struct in_addr addr;        /* union -> u_long  */
+    char            buffer[128];
+    struct in_addr  addr;       /* union -> u_long  */
     struct hostent *he;
-    const char *err;
-    static int socket_id;
-    static char *mach_name;
-    FILE *test;
+    const char     *err;
+    static int      socket_id;
+    char           *mach_name = NULL;
+    FILE           *test;
 
     err = aisc_get_m_id(path, &mach_name, &socket_id);
+    
+    // @@@ mem assigned to mach_name is leaked often
+    // @@@ refactor aisc_open_socket -> one exit point
+    // @@@ note that the code is nearly duplicated in client.c@aisc_client_open_socket
+
     if (err) {
         return err;
     }
@@ -348,7 +360,6 @@ static const char *aisc_open_socket(const char *path, int delay, int do_connect,
             setsockopt(*psocket, IPPROTO_TCP, TCP_NODELAY, (char *)&optval, 4);
         }
         *unix_name = 0;
-        return 0;
     }
     else {
         struct sockaddr_un so_ad;
@@ -388,9 +399,11 @@ static const char *aisc_open_socket(const char *path, int delay, int do_connect,
             }
             if (chmod(mach_name, 0777)) return "Cannot change mode of socket";
         }
-        *unix_name = mach_name;
-        return 0;
+
+        reassign(*unix_name, mach_name);
     }
+    free(mach_name);
+    return 0;
 }
 
 Hs_struct *open_aisc_server(const char *path, int timeout, int fork) {
@@ -1411,8 +1424,7 @@ Hs_struct *aisc_accept_calls(Hs_struct *hs)
     return hs;
 }
 
-void aisc_server_shutdown_and_exit(Hs_struct *hs, int exitcode) {
-    /* goes to header: __ATTR__NORETURN  */
+void aisc_server_shutdown(Hs_struct *hs) {
     Socinf *si;
 
     for (si=hs->soci; si; si=si->next) {
@@ -1422,9 +1434,16 @@ void aisc_server_shutdown_and_exit(Hs_struct *hs, int exitcode) {
     shutdown(hs->hso, 2);
     close(hs->hso);
     if (hs->unix_name) unlink(hs->unix_name);
+}
 
+void aisc_server_shutdown_and_exit(Hs_struct *hs, int exitcode) {
+    /* goes to header:
+     * __ATTR__NORETURN
+     * __ATTR__DEPRECATED cause it hides a call to exit() inside a library
+     */
+
+    aisc_server_shutdown(hs);
     printf("Server terminates with code %i.\n", exitcode);
-
     exit(exitcode);
 }
 
