@@ -12,8 +12,8 @@ static const char *format2name(Format type) {
         case GENBANK:   return "GENBANK";
         case MACKE:     return "MACKE";
         case NEXUS:     return "NEXUS";
-        case PHYLIP2:   return "PHYLIP2";
         case PHYLIP:    return "PHYLIP";
+        case FASTDNAML: return "FASTDNAML";
         case PRINTABLE: return "PRINTABLE";
         case SWISSPROT: return "SWISSPROT";
 
@@ -85,7 +85,6 @@ static FormatSpec format_spec[] = {
     FORMATSPEC_OUT_ONLY(GCG),
     FORMATSPEC_OUT_ONLY(NEXUS),
     FORMATSPEC_OUT_ONLY(PHYLIP),
-    FORMATSPEC_OUT_ONLY(PHYLIP2),
     FORMATSPEC_OUT_ONLY(PRINTABLE),
 };
 static const int fcount = ARRAY_ELEMS(format_spec);
@@ -100,7 +99,6 @@ enum FormatNum { // same order as above
     NUM_NEXUS,
     NUM_PHYLIP,
 
-    NUM_PHYLIP2,
     NUM_PRINTABLE,
 
     FORMATNUM_COUNT,
@@ -182,7 +180,10 @@ static void test_expected_conversion(const char *file, const char *flavor) {
 
 static const char *test_convert(const char *inf, const char *outf, Format inType, Format ouType) {
     const char *error = NULL;
-    try { convert(inf ? inf : "infilename", outf ? outf : "outfilename", inType, ouType); }
+    try {
+        convert(FormattedFile(inf ? inf : "infilename", inType),
+                FormattedFile(outf ? outf : "outfilename", ouType));
+    }
     catch (Convaln_exception& exc) { error = GBS_global_string("%s (#%i)", exc.get_msg(), exc.get_code()); }
     return error;
 }
@@ -243,8 +244,6 @@ static void init_cap() {
     for (int from = 0; from<fcount; from++) {
         for (int to = 0; to<fcount; to++) {
             Capabilities& me = cap[from][to];
-
-            if (to == NUM_PHYLIP2) me.neverReturns = true;
             if (!isInputFormat(from)) me.supported = false;
         }
     }

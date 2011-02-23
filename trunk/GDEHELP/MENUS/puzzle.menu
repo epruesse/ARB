@@ -1,7 +1,7 @@
 item:TREEPUZZLE ...
 itemmeta: T
 itemmethod:(GOTO_LOCAL_DIR; \
-            arb_convert_aln -GenBank in1 -phylip2 infile;\
+            arb_convert_aln -GenBank in1 -phylip infile;\
             RUN_IN_WINDOW((puzzle;$DISPLAY_FUNC));\
             RM_LOCAL_FILES(in1 outdist) )&
 itemhelp:treepuzzle.help

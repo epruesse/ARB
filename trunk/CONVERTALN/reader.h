@@ -76,7 +76,7 @@ struct FormatReader {
     virtual void rewind() = 0;
     virtual InputFormat& get_data() = 0;
 
-    static SmartPtr<FormatReader> create(Format inType, const char *inf);
+    static SmartPtr<FormatReader> create(const FormattedFile& in);
 };
 
 typedef SmartPtr<FormatReader> FormatReaderPtr;

@@ -12,7 +12,7 @@
 
 
 /* convert.cxx */
-void convert(const char *inf, const char *outf, Format inType, Format ouType);
+void convert(const FormattedFile &in, const FormattedFile &out);
 
 /* date.cxx */
 const char *genbank_date(const char *other_date);
@@ -39,7 +39,7 @@ void throw_incomplete_entry(void) __ATTR__NORETURN;
 void log_processed(int seqCount);
 
 /* gcg.cxx */
-void to_gcg(const char *inf, const char *outf, Format inType);
+void to_gcg(const FormattedFile &in, const char *outf);
 
 /* genbank.cxx */
 void genbank_key_word(const char *line, int index, char *key);
@@ -68,19 +68,19 @@ int mtog(const Macke &macke, GenBank &gbk, const Seq &seq) __ATTR__USERESULT;
 int gtom(const GenBank &gbk, Macke &macke) __ATTR__USERESULT;
 
 /* paup.cxx */
-void to_paup(const char *inf, const char *outf, Format inType);
+void to_paup(const FormattedFile &in, const char *outf);
 
 /* phylip.cxx */
-void to_phylip(const char *inf, const char *outf, Format inType, int readstdin);
+void to_phylip(const FormattedFile &in, const char *outf, bool for_fastdnaml);
 
 /* printable.cxx */
-void to_printable(const char *inf, const char *outf, Format inType);
+void to_printable(const FormattedFile &in, const char *outf);
 
 /* rdp_info.cxx */
 bool parse_RDP_comment(RDP_comments &comments, RDP_comment_parser one_comment_entry, const char *key, int index, Reader &reader);
 
 /* seq.cxx */
-void read_alignment(Alignment &ali, Format inType, const char *inf);
+void read_alignment(Alignment &ali, const FormattedFile &in);
 
 /* util.cxx */
 bool scan_token(char *to, const char *from) __ATTR__USERESULT;

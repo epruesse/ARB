@@ -22,7 +22,7 @@ TypeSwitch convertible_type[] = { // see fconv.cxx@format_spec
     { "SwissProt", SWISSPROT },
     { "NEXUS",     NEXUS     },
     { "PHYLIP",    PHYLIP    },
-    { "PHYLIP2",   PHYLIP2   },
+    { "FASTDNAML", FASTDNAML },
     { "GCG",       GCG       },
     { "PRINTABLE", PRINTABLE },
 };
@@ -32,8 +32,9 @@ static void show_command_line_usage() {
           "  $ arb_convert_aln -INFMT input_file -OUTFMT output_file\n"
           "  where\n"
           "      INFMT  may be 'GenBank', 'EMBL', 'AE2' or 'SwissProt' and\n"
-          "      OUTFMT may be 'GenBank', 'EMBL', 'AE2', 'NEXUS', 'PHYLIP', 'GCG' or 'Printable'\n"
+          "      OUTFMT may be 'GenBank', 'EMBL', 'AE2', 'NEXUS', 'PHYLIP', 'FASTDNAML', 'GCG' or 'Printable'\n"
           "  (Note: you may abbreviate the format names)\n"
+          "  FASTDNAML writes a PHYLIP file with content from STDIN appended at end of first line (used for arb_fastdnaml).\n"
           , stderr);
 }
 
@@ -50,7 +51,7 @@ static bool file_exists(const char *file_name) {
     return exists;
 }
 
-static void change_file_suffix(char *old_file, char *file_name, int type) {
+static void change_file_suffix(const char *old_file, char *file_name, int type) {
     // Define the default file name by changing suffix.
     int indi, indj;
 
@@ -86,7 +87,7 @@ static void change_file_suffix(char *old_file, char *file_name, int type) {
     }
 }
 
-static void ask_for_conversion_params(int& argc, char**& argv, Format& inType, Format& ouType) {
+static void ask_for_conversion_params(FormattedFile& in, FormattedFile& out) {
     char temp[LINESIZE];
     char choice[LINESIZE];
 
@@ -114,20 +115,22 @@ static void ask_for_conversion_params(int& argc, char**& argv, Format& inType, F
           , stderr);
 
     Getstr(choice, LINESIZE);
-    switch (choice[0]) {
-        case '\0': // [default]
-        case '1': inType = GENBANK; break;
-        case '2': inType = EMBL; break;
-        case '3': inType = MACKE; break;
-        case '4': inType = SWISSPROT; break;
-        case '5': exit(0); // ok - interactive mode only
-        default: throw_errorf(16, "Unknown input format selection '%s'", choice);
-    }
-    argv = (char **)calloc(1, sizeof(char *) * 5);
+    {
+        Format inType = UNKNOWN;
+        switch (choice[0]) {
+            case '\0': // [default]
+            case '1': inType = GENBANK; break;
+            case '2': inType = EMBL; break;
+            case '3': inType = MACKE; break;
+            case '4': inType = SWISSPROT; break;
+            case '5': exit(0); // ok - interactive mode only
+            default: throw_errorf(16, "Unknown input format selection '%s'", choice);
+        }
 
-    fputs("\nInput file name? ", stderr);
-    Getstr(temp, LINESIZE);
-    argv[2] = nulldup(temp);
+        fputs("\nInput file name? ", stderr);
+        Getstr(temp, LINESIZE);
+        in.init(temp, inType);
+    }
 
     valid_name_or_die(temp);
     if (!file_exists(temp)) throw_error(77, "Input file not found");
@@ -141,35 +144,35 @@ static void ask_for_conversion_params(int& argc, char**& argv, Format& inType, F
           "  (3)  AE2 [default]\n"
           "  (4)  NEXUS (Paup)\n"
           "  (5)  PHYLIP\n"
-          "  (A)  PHYLIP2 (insert stdin in first line)\n"
           "  (6)  GCG\n"
           "  (7)  Printable\n"
           "  (8)  Quit\n"
           "  ? ", stderr);
 
     Getstr(choice, LINESIZE);
-    switch (choice[0]) {
-        case '1': ouType = GENBANK; break;
-        case '2': ouType = EMBL; break;
-        case '\0': // [default]
-        case '3': ouType = MACKE; break;
-        case '4': ouType = NEXUS; break;
-        case '5': ouType = PHYLIP; break;
-        case 'A': ouType = PHYLIP2; break;
-        case '6': ouType = GCG; break;
-        case '7': ouType = PRINTABLE; break;
-        case '8': exit(0); // ok - interactive mode only
-        default: throw_errorf(66, "Unknown output format selection '%s'", choice);
+    {
+        Format ouType = UNKNOWN;
+        switch (choice[0]) {
+            case '1': ouType = GENBANK; break;
+            case '2': ouType = EMBL; break;
+            case '\0': // [default]
+            case '3': ouType = MACKE; break;
+            case '4': ouType = NEXUS; break;
+            case '5': ouType = PHYLIP; break;
+            case '6': ouType = GCG; break;
+            case '7': ouType = PRINTABLE; break;
+            case '8': exit(0); // ok - interactive mode only
+            default: throw_errorf(66, "Unknown output format selection '%s'", choice);
+        }
+        change_file_suffix(in.name(), temp, ouType);
+        if (ouType != GCG) {
+            fprintf(stderr, "\nOutput file name [%s]? ", temp);
+            Getstr(temp, LINESIZE);
+            if (str0len(temp) == 0)
+                change_file_suffix(in.name(), temp, ouType);
+        }
+        out.init(temp, ouType);
     }
-    change_file_suffix(argv[2], temp, ouType);
-    if (ouType != GCG) {
-        fprintf(stderr, "\nOutput file name [%s]? ", temp);
-        Getstr(temp, LINESIZE);
-        if (str0len(temp) == 0)
-            change_file_suffix(argv[2], temp, ouType);
-    }
-    argv[4] = nulldup(temp);
-    argc = 5;
 }
 
 static int strcasecmp_start(const char *s1, const char *s2) {
@@ -211,7 +214,7 @@ static Format parse_outtype(const char *arg) {
 static bool is_help_req(const char *arg) {
     return strcmp(arg, "-h") == 0 || strcmp(arg, "--help") == 0;
 }
-static bool command_line_conversion(int argc, char** argv, Format& inType, Format& ouType) {
+static bool command_line_conversion(int argc, char** argv, FormattedFile& in, FormattedFile& out) {
     for (int c = 1; c<argc; c++) {
         if (is_help_req(argv[c])) {
             show_command_line_usage();
@@ -221,49 +224,38 @@ static bool command_line_conversion(int argc, char** argv, Format& inType, Forma
 
     if (argc != 5) throw_errorf(69, "arb_convert_aln expects exactly 4 parameters (you specified %i). Try '--help'", argc-1);
 
-    inType  = parse_intype(argv[1]);
-    ouType = parse_outtype(argv[3]);
+    in.init(argv[2], parse_intype(argv[1]));
+    out.init(argv[4], parse_outtype(argv[3]));
 
     return true;
 }
 
-static void do_conversion(const char *inName, const char *ouName, Format inType, Format ouType) {
+static void do_conversion(const FormattedFile& in, const FormattedFile& out) {
 #ifdef CALOG
-    if (ouType != GCG)
-        fprintf(stderr, "\n\nConvert file %s to file %s.\n", inName, ouName);
-    else
-        fprintf(stderr, "\n\nConvert file %s to GCG files\n", inName);
+    fprintf(stderr, "\n\nConvert file %s to file %s.\n", in.name(), out.name());
 #endif
 
     // check if output file exists and filename's validation
-    valid_name_or_die(ouName);
-    if (file_exists(ouName)) warningf(151, "Output file %s exists, will be overwritten.", ouName);
+    valid_name_or_die(out.name());
+    if (file_exists(out.name())) warningf(151, "Output file %s exists, will be overwritten.", out.name());
 
     // file format transfer...
-    convert(inName, ouName, inType, ouType);
+    convert(in, out);
 }
 
 int main(int argc, char *argv[]) {
     int exitcode = EXIT_SUCCESS;
     try {
-        Format inType = UNKNOWN;
-        Format ouType = UNKNOWN;
+        FormattedFile in;
+        FormattedFile out;
 
         if (argc < 2) {
-            ask_for_conversion_params(argc, argv, inType, ouType); // modifies argc/argv!
-
-            if (argc == 4) { // default output file
-                const char **argv_new = (const char **)calloc(sizeof(char *), 5);
-
-                memcpy(argv_new, argv, sizeof(char *) * 4);
-                argv_new[4] = "";
-                argv = (char **)argv_new;
-            }
-            do_conversion(argv[2], argv[4], inType, ouType);
+            ask_for_conversion_params(in, out); 
+            do_conversion(in, out);
         }
         else {
-            if (command_line_conversion(argc, argv, inType, ouType)) {
-                do_conversion(argv[2], argv[4], inType, ouType);
+            if (command_line_conversion(argc, argv, in, out)) {
+                do_conversion(in, out);
             }
         }
     }
@@ -296,7 +288,6 @@ void TEST_BASIC_switch_parsing() {
 
     TEST_ASSERT_EQUAL(parse_outtype("-PH"), PHYLIP);
     TEST_ASSERT_EQUAL(parse_outtype("-PHYLIP"), PHYLIP);
-    TEST_ASSERT_EQUAL(parse_outtype("-PHYLIP2"), PHYLIP2);
     TEST_ASSERT_EQUAL(parse_outtype("-phylip"), PHYLIP);
 }
 

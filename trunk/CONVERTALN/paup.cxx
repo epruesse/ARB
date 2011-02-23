@@ -85,10 +85,10 @@ static void paup_print_header(const Paup& paup, Writer& write) {
     write.out("   OPTIONS\n      GAPMODE = MISSING\n      ;\n   MATRIX\n");
 }
 
-void to_paup(const char *inf, const char *outf, Format inType) {
+void to_paup(const FormattedFile& in, const char *outf) {
     // Convert from some format to NEXUS format.
-    if (!is_input_format(inType)) {
-        throw_conversion_not_supported(inType, NEXUS);
+    if (!is_input_format(in.type())) {
+        throw_conversion_not_supported(in.type(), NEXUS);
     }
 
     FileWriter write(outf);
@@ -97,7 +97,7 @@ void to_paup(const char *inf, const char *outf, Format inType) {
     paup_print_header(paup, write);
 
     Alignment ali;
-    read_alignment(ali, inType, inf);
+    read_alignment(ali, in);
 
     for (int i = 0; i<ali.get_count(); ++i) {
         SeqPtr  seq  = ali.getSeqPtr(i);
