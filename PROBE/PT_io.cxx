@@ -10,6 +10,7 @@
 
 
 #include "probe.h"
+#include "pt_prototypes.h"
 
 #include <arbdbt.h>
 #include <BI_helix.hxx>
@@ -69,31 +70,28 @@ void PT_base_2_string(char *id_string, long len) {
     *dest = '\0';
 }
 
-void probe_read_data_base(char *name)
-{
-    GBDATA *gb_main;
-    GBDATA *gb_species_data;
-
+ARB_ERROR probe_read_data_base(const char *name) { // goes to header: __ATTR__USERESULT
+    ARB_ERROR error;
     GB_set_verbose();
-#if defined(DEVEL_RALF)
-#warning gb_main should be closed
-#endif // DEVEL_RALF
-    gb_main = GB_open(name, "r");
-    if (!gb_main) {
-        printf("Error reading file %s\n", name);
-        exit(EXIT_FAILURE);
-    }
-    GB_begin_transaction(gb_main);
-    gb_species_data = GB_entry(gb_main, "species_data");
-    if (!gb_species_data) {
-        printf("Database %s is empty\n", name);
-        exit(EXIT_FAILURE);
-    }
-    psg.gb_main         = gb_main;
-    psg.gb_species_data = gb_species_data;
-    psg.gb_sai_data     = GBT_get_SAI_data(gb_main);
 
-    GB_commit_transaction(gb_main);
+    GBDATA *gb_main     = GB_open(name, "r");
+    if (!gb_main) error = GB_await_error();
+    else {
+        error = GB_begin_transaction(gb_main);
+        if (!error) {
+            GBDATA *gb_species_data = GB_entry(gb_main, "species_data");
+            if (!gb_species_data) {
+                error = GBS_global_string("Database %s is empty (no species_data)", name);
+            }
+            else {
+                psg.gb_main         = gb_main;
+                psg.gb_species_data = gb_species_data;
+                psg.gb_sai_data     = GBT_get_SAI_data(gb_main);
+            }
+        }
+        error = GB_end_transaction(gb_main, error);
+    }
+    return error;
 }
 
 inline size_t count_uint_32(uint32_t *seq, size_t seqsize, uint32_t cmp) {

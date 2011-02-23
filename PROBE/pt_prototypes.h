@@ -15,12 +15,17 @@
 # error P_ already defined elsewhere
 #endif
 
+/* define ARB attributes: */
+#ifndef ATTRIBUTES_H
+# include <attributes.h>
+#endif
+
 
 /* PT_buildtree.cxx */
 POS_TREE *build_pos_tree P_((POS_TREE *pt, int anfangs_pos, int apos, int RNS_nr, unsigned int end));
-long PTD_save_partial_tree P_((FILE *out, PTM2 *ptmain, POS_TREE *node, char *partstring, int partsize, long pos, long *ppos));
-void enter_stage_1_build_tree P_((PT_main *main, char *tname));
-void enter_stage_3_load_tree P_((PT_main *main, char *tname));
+long PTD_save_partial_tree P_((FILE *out, PTM2 *ptmain, POS_TREE *node, char *partstring, int partsize, long pos, long *ppos, ARB_ERROR &error));
+ARB_ERROR enter_stage_1_build_tree P_((PT_main *, char *tname)) __ATTR__USERESULT;
+ARB_ERROR enter_stage_3_load_tree P_((PT_main *, const char *tname)) __ATTR__USERESULT;
 void PT_analyse_tree P_((POS_TREE *pt, int height));
 void PT_debug_tree P_((void));
 
@@ -46,7 +51,7 @@ extern "C" int PT_find_exProb P_((PT_exProb *pep));
 /* PT_io.cxx */
 int compress_data P_((char *probestring));
 void PT_base_2_string P_((char *id_string, long len));
-void probe_read_data_base P_((char *name));
+ARB_ERROR probe_read_data_base P_((const char *name)) __ATTR__USERESULT;
 int probe_compress_sequence P_((char *seq, int seqsize));
 char *probe_read_alignment P_((int j, int *psize));
 void probe_read_alignments P_((void));
@@ -55,12 +60,13 @@ long PT_abs_2_rel P_((long pos));
 long PT_rel_2_abs P_((long pos));
 
 /* PT_main.cxx */
-char *pt_init_main_struct P_((PT_main *main, char *filename));
+ARB_ERROR pt_init_main_struct P_((PT_main *, const char *filename)) __ATTR__USERESULT;
 extern "C" int server_shutdown P_((PT_main *pm, aisc_string passwd));
-extern "C" int broadcast P_((PT_main *main, int dummy));
+extern "C" int broadcast P_((PT_main *main, int dummy_1x));
 void PT_init_psg P_((void));
-void clean_before_exit P_((void));
-void PT_init_map P_((void));
+void PT_exit_psg P_((void));
+void PT_exit P_((int exitcode));
+GB_ERROR PT_init_map P_((void)) __ATTR__USERESULT;
 
 /* PT_match.cxx */
 int read_names_and_pos P_((PT_local *locs, POS_TREE *pt));
@@ -107,12 +113,12 @@ void PTD_set_object_to_saved_status P_((POS_TREE *node, long pos, int size));
 long PTD_write_tip_to_disk P_((FILE *out, PTM2 *, POS_TREE *node, long pos));
 int ptd_count_chain_entries P_((char *entry));
 void ptd_set_chain_references P_((char *entry, char **entry_tab));
-void ptd_write_chain_entries P_((FILE *out, long *ppos, PTM2 *, char **entry_tab, int n_entries, int mainapos));
-long PTD_write_chain_to_disk P_((FILE *out, PTM2 *ptmain, POS_TREE *node, long pos));
+ARB_ERROR ptd_write_chain_entries P_((FILE *out, long *ppos, PTM2 *, char **entry_tab, int n_entries, int mainapos)) __ATTR__USERESULT;
+long PTD_write_chain_to_disk P_((FILE *out, PTM2 *ptmain, POS_TREE *node, long pos, ARB_ERROR &error));
 void PTD_debug_nodes P_((void));
 long PTD_write_node_to_disk P_((FILE *out, PTM2 *ptmain, POS_TREE *node, long *r_poss, long pos));
-long PTD_write_leafs_to_disk P_((FILE *out, PTM2 *ptmain, POS_TREE *node, long pos, long *pnodepos, int *pblock));
-void PTD_read_leafs_from_disk P_((char *fname, PTM2 *ptmain, POS_TREE **pnode));
+long PTD_write_leafs_to_disk P_((FILE *out, PTM2 *ptmain, POS_TREE *node, long pos, long *pnodepos, int *pblock, ARB_ERROR &error));
+ARB_ERROR PTD_read_leafs_from_disk P_((const char *fname, PTM2 *ptmain, POS_TREE **pnode)) __ATTR__USERESULT;
 
 /* probe_tree.hxx */
 template <typename T >int PT_read_chain P_((PTM2 *ptmain, POS_TREE *node, T func));

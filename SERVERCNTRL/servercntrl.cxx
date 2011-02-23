@@ -342,10 +342,10 @@ arb_params *arb_trace_argv(int *argc, char **argv)
                     break;
                 }
                 case 'r': erg->read_only     = 1; break;
-                case 'J': free(erg->job_server); erg->job_server = strdup(argv[s]+2); break;
-                case 'D': free(erg->db_server);  erg->db_server  = strdup(argv[s]+2); break;
-                case 'M': free(erg->mgr_server); erg->mgr_server = strdup(argv[s]+2); break;
-                case 'P': free(erg->pt_server);  erg->pt_server  = strdup(argv[s]+2); break;
+                case 'J': freedup(erg->job_server, argv[s]+2); break;
+                case 'D': freedup(erg->db_server, argv[s]+2); break;
+                case 'M': freedup(erg->mgr_server, argv[s]+2); break;
+                case 'P': freedup(erg->pt_server, argv[s]+2); break;
                 case 'T': {
                     char *ipport = argv[s]+2;
                     if (ipport[0] == ':' &&

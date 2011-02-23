@@ -39,17 +39,17 @@ gene_struct_index_internal gene_struct_internal2arb; // sorted by internal name
 // ----------------------
 //      Communication
 
-char *pt_init_main_struct(PT_main *main, char *filename)
-{
-    main               = main;
-    probe_read_data_base(filename);
-    GB_begin_transaction(psg.gb_main);
-    psg.alignment_name = GBT_get_default_alignment(psg.gb_main);
-    GB_commit_transaction(psg.gb_main);
-    printf("Building PT-Server for alignment '%s'...\n", psg.alignment_name);
-    probe_read_alignments();
-    PT_build_species_hash();
-    return 0;
+ARB_ERROR pt_init_main_struct(PT_main *, const char *filename) { // __ATTR__USERESULT
+    ARB_ERROR error = probe_read_data_base(filename);
+    if (!error) {
+        GB_begin_transaction(psg.gb_main);
+        psg.alignment_name = GBT_get_default_alignment(psg.gb_main);
+        GB_commit_transaction(psg.gb_main);
+        printf("Building PT-Server for alignment '%s'...\n", psg.alignment_name);
+        probe_read_alignments();
+        PT_build_species_hash();
+    }
+    return error;
 }
 
 PT_main *aisc_main; // muss so heissen
@@ -58,28 +58,78 @@ extern "C" int server_shutdown(PT_main *pm, aisc_string passwd) {
     // password check
     pm = pm;
     if (strcmp(passwd, "47@#34543df43%&3667gh")) return 1;
-    printf("\nI got the shutdown message.\n");
+    fprintf(stderr, "\nARB_PT_SERVER: received shutdown message\n");
 
     // shutdown clients
-    aisc_broadcast(psg.com_so, 0,
-                   "SERVER UPDATE BY ADMINISTRATOR!\nYou'll get the latest version. Your screen information will be lost, sorry!");
+    aisc_broadcast(psg.com_so, 0, "Used PT-server has been shut down");
+
     // shutdown server
-    aisc_server_shutdown_and_exit(psg.com_so, EXIT_SUCCESS); // never returns
-    return 0;
-}
-extern "C" int broadcast(PT_main *main, int dummy)
-{
-    aisc_broadcast(psg.com_so, main->m_type, main->m_text);
-    dummy = dummy;
+    aisc_server_shutdown(psg.com_so);
+    PT_exit(EXIT_SUCCESS); // never returns
     return 0;
 }
 
+extern "C" int broadcast(PT_main *main, int) {
+    aisc_broadcast(psg.com_so, main->m_type, main->m_text);
+    return 0;
+}
+
+// ----------------------------------------------
+//      global data initialization / cleanup
+
+static bool psg_initialized = false;
 void PT_init_psg() {
+    pt_assert(!psg_initialized);
     memset((char *)&psg, 0, sizeof(psg));
     int i;
     for (i=0; i<256; i++) {
         psg.complement[i] = PT_complement(i);
     }
+    psg_initialized = true;
+}
+
+void PT_exit_psg() {
+    static bool executed = false;
+    pt_assert(!executed);
+    executed             = true;
+
+    pt_assert(psg_initialized);
+    if (psg_initialized) {
+        if (psg.gb_main) {
+            int count = GB_number_of_subentries(psg.gb_species_data);
+            for (int i = 0; i < count; ++i) {
+                free(psg.data[i].data);
+                free(psg.data[i].name);
+                free(psg.data[i].fullname);
+            }
+            free(psg.data);
+
+            GB_close(psg.gb_main);
+            psg.gb_main         = NULL;;
+            psg.gb_species_data = NULL;;
+            psg.gb_sai_data     = NULL;;
+        }
+
+        if (psg.namehash) GBS_free_hash(psg.namehash);
+
+        free(psg.ecoli);
+        delete psg.bi_ecoli;
+        delete psg.pos_to_weight;
+        free(psg.alignment_name);
+        free(psg.ptmain);
+        free(psg.com_so);
+
+        memset((char *)&psg, 0, sizeof(psg)); 
+        psg_initialized = false;
+    }
+}
+
+void PT_exit(int exitcode) { 
+    // unique exit point to ensure cleanup
+    if (psg_initialized) PT_exit_psg();
+    if (aisc_main) destroy_PT_main(aisc_main);
+    PTM_finally_free_all_mem();
+    exit(exitcode);
 }
 
 // ------------------------------------------------------------------------------ name mapping
@@ -109,43 +159,7 @@ inline bool copy_to_buf(const char *start, const char *behindEnd, int MAXLEN, ch
     return true;
 }
 
-/*!
- * Function frees some of the memory allocated by the pt-server.
- * (--> Less warnings in valgrind checks...)
- */
-void clean_before_exit() {
-    // Clean-up the PT-Servers data arrays...
-    int count = GB_number_of_subentries(psg.gb_species_data);
-    for (int i = 0; i < count; ++i) {
-        free(psg.data[i].data);
-        free(psg.data[i].name);
-        free(psg.data[i].fullname);
-    }
-    free(psg.data);
-
-    // Clean-up the PT-Servers name hash...
-    GBS_free_hash(psg.namehash);
-
-    // Clean-up the PT-Servers allocated memory...
-    PTM_finally_free_all_mem();
-
-    // General ARB clean-up & close
-    GB_close(psg.gb_main);
-    destroy_PT_main(aisc_main);
-
-    // Free the e-coli helix stuff...
-    free(psg.ecoli);
-    delete psg.bi_ecoli;
-    delete psg.pos_to_weight;
-
-    // Free alignment name
-    free(psg.alignment_name);
-
-    // Free ptmain...
-    free(psg.ptmain);
-}
-
-static void parse_names_into_gene_struct(const char *map_str, gene_struct_list& listOfGenes) {
+STATIC_ATTRIBUTED(__ATTR__USERESULT, ARB_ERROR parse_names_into_gene_struct(const char *map_str, gene_struct_list& listOfGenes)) {
 #define MAX_INAME_LEN 30
 #define MAX_ONAME_LEN 30
 #define MAX_GNAME_LEN 1024
@@ -154,7 +168,7 @@ static void parse_names_into_gene_struct(const char *map_str, gene_struct_list& 
     char oname[MAX_ONAME_LEN+1]; // organism name
     char gname[MAX_GNAME_LEN+1]; // gene name
 
-    const char *err = 0;
+    ARB_ERROR err;
 
     while (*map_str) {
         const char *sep1 = strchr(map_str, ';');
@@ -183,243 +197,273 @@ static void parse_names_into_gene_struct(const char *map_str, gene_struct_list& 
         map_str = sep3+1;
     }
 
-    if (err) {
-        printf("Error parsing name-mapping (%s)\n", err);
-        exit(EXIT_FAILURE);
-    }
+    if (err) err = GBS_global_string("while parsing name-mapping: %s\n", err.deliver());
 
+    return err;
 }
 
-void PT_init_map() {
-    GB_push_transaction(psg.gb_main);
-    GBDATA *map_ptr_idp = GB_entry(psg.gb_main, "gene_map");
+GB_ERROR PT_init_map() { // goes to header: __ATTR__USERESULT
+    GB_ERROR error = GB_push_transaction(psg.gb_main);
+    if (!error) {
+        GBDATA *gb_gene_map = GB_entry(psg.gb_main, "gene_map");
 
-    if (map_ptr_idp != NULL) {
-        gene_flag               = 1;
-        GBDATA     *map_ptr_str = GB_entry(map_ptr_idp, "map_string");
-        const char *map_str     = GB_read_char_pntr(map_ptr_str);
+        if (gb_gene_map) {
+            gene_flag = 1;
+            
+            GBDATA     *map_ptr_str = GB_entry(gb_gene_map, "map_string");
+            const char *map_str     = GB_read_char_pntr(map_ptr_str);
 
-        parse_names_into_gene_struct(map_str, all_gene_structs);
+            parse_names_into_gene_struct(map_str, all_gene_structs);
 
-        // build indices :
-        gene_struct_list::const_iterator end = all_gene_structs.end();
+            // build indices :
+            gene_struct_list::const_iterator end = all_gene_structs.end();
 
-        for (gene_struct_list::const_iterator gs = all_gene_structs.begin(); gs != end; ++gs) {
-            if (gene_struct_internal2arb.find(&*gs) != gene_struct_internal2arb.end()) {
-                fprintf(stderr, "  Duplicated internal entry for '%s'\n", gs->get_internal_gene_name());
+            for (gene_struct_list::const_iterator gs = all_gene_structs.begin(); gs != end; ++gs) {
+                if (gene_struct_internal2arb.find(&*gs) != gene_struct_internal2arb.end()) {
+                    fprintf(stderr, "  Duplicated internal entry for '%s'\n", gs->get_internal_gene_name());
+                }
+                gene_struct_internal2arb.insert(&*gs);
+                if (gene_struct_arb2internal.find(&*gs) != gene_struct_arb2internal.end()) {
+                    fprintf(stderr, "  Duplicated entry for '%s/%s'\n", gs->get_arb_species_name(), gs->get_arb_gene_name());
+                }
+                gene_struct_arb2internal.insert(&*gs);
             }
-            gene_struct_internal2arb.insert(&*gs);
-            if (gene_struct_arb2internal.find(&*gs) != gene_struct_arb2internal.end()) {
-                fprintf(stderr, "  Duplicated entry for '%s/%s'\n", gs->get_arb_species_name(), gs->get_arb_gene_name());
-            }
-            gene_struct_arb2internal.insert(&*gs);
-        }
 
-        size_t list_size = all_gene_structs.size();
-        bool   err       = false;
-        if (list_size == 0) {
-            fprintf(stderr, "Internal error - empty name map.\n");
-            err = true;
+            size_t list_size = all_gene_structs.size();
+            if (list_size == 0) {
+                error = "name map is empty";
+            }
+            else if (gene_struct_arb2internal.size() != list_size) {
+                size_t dups = list_size-gene_struct_arb2internal.size();
+                error       = GBS_global_string("detected %zi duplicated 'species/gene' combinations in name mapping", dups);
+            }
         }
         else {
-            fprintf(stderr, "Name map size = %zu\n", list_size);
-        }
-        if (gene_struct_arb2internal.size() != list_size) {
-            fprintf(stderr, "Internal error - detected %zi duplicated 'species/gene' combinations in name mapping.\n",
-                    list_size-gene_struct_arb2internal.size());
-            err = true;
-        }
-        if (gene_struct_internal2arb.size() != list_size) {
-            fprintf(stderr, "Internal error - detected %zi duplicated internal gene name in name mapping.\n",
-                    list_size-gene_struct_internal2arb.size());
-            err = true;
-        }
-        if (err) {
-            fprintf(stderr, "Sorry - PT server cannot start.\n");
-            exit(EXIT_FAILURE);
+            gene_flag = 0;
         }
     }
-    else {
-        gene_flag = 0;
-    }
-    GB_pop_transaction(psg.gb_main);
+
+    return GB_end_transaction(psg.gb_main, error);
 }
 
 extern int aisc_core_on_error;
 
-int main(int argc, char **argv)
-{
-    int          i;
-    Hs_struct   *so;
-    const char  *name;
-    char        *error;
-    char        *aname, *tname;
-    struct stat  s_source, s_dest;
-    int          build_flag;
-    arb_params  *params;
-    char        *command_flag;
-
-    params             = arb_trace_argv(&argc, argv);
-    PT_init_psg();
-    GB_install_pid(0);          // not arb_clean able
+static void initGlobals() {
     aisc_core_on_error = 0;
-    physical_memory    = GB_get_physical_memory();
+
+    physical_memory = GB_get_physical_memory();
 #if defined(DEBUG)
     printf("physical_memory=%lu k (%lu Mb)\n", physical_memory, physical_memory/1024UL);
 #endif // DEBUG
+}
 
-    // try to connect to a already running PT server
-    if ((argc>2)                         ||
-        ((argc<2) && !params->db_server) ||
-        (argc >= 2 && strcmp(argv[1], "--help") == 0))
-    {
-        printf("Syntax: %s [-look/-build/-kill/-QUERY] -Dfile.arb -TSocketid\n", argv[0]);
-        exit(EXIT_FAILURE);
-    }
-    if (argc==2) {
-        command_flag = argv[1];
-    }
-    else {
-        static char flag[] = "-boot";
-        command_flag = flag;
-    }
+STATIC_ATTRIBUTED(__ATTR__USERESULT, ARB_ERROR start_pt_server(const char *socket_name, const char *arbdb_name, const char *pt_name, const char *exename)) {
+    ARB_ERROR error;
 
-    if (!(name = params->tcp)) {
-        if (!(name=GBS_read_arb_tcp("ARB_PT_SERVER0"))) {
-            GB_print_error();
-            exit(EXIT_FAILURE);
-        }
-    }
-
-    aisc_main = create_PT_main();
-
-    aname = params->db_server;
-    tname = GBS_global_string_copy("%s.pt", aname);
-
-    if (!strcmp(command_flag, "-build")) {  // build command
-        if ((error = pt_init_main_struct(aisc_main, params->db_server)))
-        {
-            printf("PT_SERVER: Gave up:\nERROR: %s\n", error);
-            exit(EXIT_FAILURE);
-        }
-        enter_stage_1_build_tree(aisc_main, tname);
-
-        {
-            char *msg = GBS_global_string_copy("PT_SERVER database \"%s\" has been created.", params->db_server);
-            puts(msg);
-            GBS_add_ptserver_logentry(msg);
-
-            char *command = GBS_global_string_copy("arb_message '%s'", msg);
-
-            if (system(command) != 0) {
-                fprintf(stderr, "Failed to run '%s'\n", command);
-            }
-            free(command);
-            free(msg);
-        }
-
-        /* CLEAN-UP */
-        free(tname);
-        free_arb_params(params);
-        clean_before_exit();
-        exit(EXIT_SUCCESS);
-    }
-    if (!strcmp(command_flag, "-QUERY")) {
-        if ((error = pt_init_main_struct(aisc_main, params->db_server)))
-        {
-            printf("PT_SERVER: Gave up:\nERROR: %s\n", error);
-            exit(EXIT_FAILURE);
-        }
-        enter_stage_3_load_tree(aisc_main, tname); // now stage 3
-        printf("Tree loaded - performing checks..\n");
-        PT_debug_tree();
-        printf("Checks done");
-
-        /* CLEAN-UP */
-        free(tname);
-        free_arb_params(params);
-        clean_before_exit();
-        exit(EXIT_SUCCESS);
-    }
-    psg.link = (aisc_com *) aisc_open(name, &psg.main, AISC_MAGIC_NUMBER);
-    if (psg.link) {
-        if (strcmp(command_flag, "-look") == 0) {
-            exit(EXIT_SUCCESS); // already another server
-        }
-        printf("There is another active server. I will try to kill it...\n");
-        aisc_nput(psg.link, PT_MAIN, psg.main,
-                  MAIN_SHUTDOWN, "47@#34543df43%&3667gh",
-                  NULL);
-        aisc_close(psg.link); psg.link      = 0;
-    }
-    if (strcmp(command_flag, "-kill") == 0) {
-        exit(EXIT_SUCCESS);
-    }
-    printf("\nTUM POS_TREE SERVER (Oliver Strunk) V 1.0 (C) 1993 \ninitializing:\n");
-    printf("open connection...\n");
+    fputs("\n"
+          "TUM POS_TREE SERVER (Oliver Strunk) V 1.0 (C) 1993 \n"
+          "initializing:\n"
+          "- opening connection...\n", stdout);
     sleep(1);
-    for (i = 0, so = 0; (i < MAX_TRY) && (!so); i++) {
-        so = open_aisc_server(name, TIME_OUT, 0);
-        if (!so)
+    
+    Hs_struct *so = NULL;
+    for (int i = 0; (i < MAX_TRY) && (!so); i++) {
+        so = open_aisc_server(socket_name, TIME_OUT, 0);
+        if (!so) {
+            fputs("  Cannot bind to socket (retry in 10 seconds)\n", stdout);
             sleep(10);
+        }
     }
-    if (!so) {
-        printf("PT_SERVER: Gave up on opening the communication socket!\n");
-        exit(EXIT_FAILURE);
-    }
-    psg.com_so = so;
 
-    if (stat(aname, &s_source)) {
-        printf("PT_SERVER error while stat source %s\n", aname);
-        aisc_server_shutdown_and_exit(so, EXIT_FAILURE); // never returns
-    }
-    build_flag = 0;
-    if (stat(tname, &s_dest)) {
-        build_flag = 1;
-    }
+    if (!so) error = "can't bind to socket";
     else {
-        if ((s_source.st_mtime>s_dest.st_mtime) || (s_dest.st_size == 0)) {
-            printf("PT_SERVER: Source %s has been modified more recently than %s\n", aname, tname);
-            build_flag = 1;
+        psg.com_so = so;
+
+        struct stat arbdb_stat;
+        if (stat(arbdb_name, &arbdb_stat)) {
+            error = GB_IO_error("stat", arbdb_name);
+            error = GBS_global_string("Source DB missing (%s)", error.deliver());
         }
+        if (!error) {
+            const char *update_reason = NULL;
+
+            {
+                struct stat pt_stat;
+                if (stat(pt_name, &pt_stat)) {
+                    update_reason = GB_IO_error("stat", pt_name);
+                }
+                else if (arbdb_stat.st_mtime > pt_stat.st_mtime) {
+                    update_reason = GBS_global_string("'%s' has been modified more recently than '%s'", arbdb_name, pt_name);
+                }
+                else if (pt_stat.st_size == 0) {
+                    update_reason = GBS_global_string("'%s' is empty", pt_name);
+                }
+            }
+
+            if (update_reason) {
+                printf("- updating postree (Reason: %s)", update_reason);
+                error = GB_system(GBS_global_string("%s -build -D%s", exename, arbdb_name));
+                if (error) error = GBS_global_string("Failed to update postree (Reason: %s)", error.deliver());
+            }
+        }
+        if (!error) {
+            // init server main struct
+            fputs("- init internal structs...\n", stdout);
+            {
+                void *reserved_for_mmap = NULL;
+                long  size_of_file      = GB_size_of_file(pt_name);
+                if (size_of_file > 0) {
+                    reserved_for_mmap = malloc(size_of_file);
+                    if (!reserved_for_mmap) {
+                        error = GBS_global_string("cannot reserve enough memory to map postree (needed=%li)", size_of_file);
+                    }
+                }
+
+                if (!error) error = pt_init_main_struct(aisc_main, arbdb_name);
+                free(reserved_for_mmap);
+            }
+
+            if (!error) error = enter_stage_3_load_tree(aisc_main, pt_name);
+            if (!error) error = PT_init_map();
+            
+            if (!error) {
+                // all ok -> main "loop"
+                printf("ok, server is running.\n");             // do NOT change or remove! others depend on it
+                fflush(stdout);
+                aisc_accept_calls(so);
+            }
+        }
+        aisc_server_shutdown(so);
     }
-    if (build_flag) {
-        char buf[256];
-        sprintf(buf, "%s -build -D%s", argv[0], params->db_server);
-        printf("Executing '%s'\n", buf);
-        if (system(buf) != 0) {
-            printf("Error building pt-server.\n");
-            exit(EXIT_FAILURE);
+    return error;
+}
+
+STATIC_ATTRIBUTED(__ATTR__USERESULT, ARB_ERROR run_command(const char *exename, const char *command, const arb_params *params)) {
+    ARB_ERROR error;
+
+    // check that arb_pt_server knows its socket
+    const char *socket_name = params->tcp;
+    if (!socket_name) {
+        socket_name = GBS_read_arb_tcp("ARB_PT_SERVER0");
+        if (!socket_name) {
+            error = GB_await_error();
+            error = GBS_global_string("Don't know which socket to use (Reason: %s)", error.deliver());
         }
     }
 
-    // init server main struct
-    printf("Init internal structs...\n");
-    {
-        void *reserved_for_mmap = NULL;
-        long  size_of_file      = GB_size_of_file(tname);
-        if (size_of_file > 0) {
-            reserved_for_mmap = malloc(size_of_file);
-            if (!reserved_for_mmap) {
-                printf("Can't reserve enough memory to map pt file!\n");
-                exit(EXIT_FAILURE);
+    if (!error) {
+        char *pt_name = GBS_global_string_copy("%s.pt", params->db_server);
+
+        if (strcmp(command, "-build") == 0) {  // build command
+            error = pt_init_main_struct(aisc_main, params->db_server);
+            if (error) error = GBS_global_string("Gave up (Reason: %s)", error.deliver());
+            else {
+                error = enter_stage_1_build_tree(aisc_main, pt_name);
+                if (error) {
+                    error = GBS_global_string("Failed to build index (Reason: %s)", error.deliver());
+                }
+                else {
+                    char *msg = GBS_global_string_copy("PT_SERVER database \"%s\" has been created.", params->db_server);
+                    puts(msg);
+                    GBS_add_ptserver_logentry(msg);
+
+                    char *msg_command        = GBS_global_string_copy("arb_message '%s'", msg);
+                    if (system(msg_command) != 0) fprintf(stderr, "Failed to run '%s'\n", msg_command);
+                    free(msg_command);
+
+                    free(msg);
+                }
+            }
+        }
+        else if (strcmp(command, "-QUERY") == 0) {
+            error = pt_init_main_struct(aisc_main, params->db_server);
+            if (error) error = GBS_global_string("Gave up (Reason: %s)", error.deliver());
+            else {
+                error = enter_stage_3_load_tree(aisc_main, pt_name); // now stage 3
+                if (!error) {
+                    printf("Tree loaded - performing checks..\n");
+                    PT_debug_tree();
+                    printf("Checks done");
+                }
+            }
+        }
+        else {
+            psg.link = (aisc_com *) aisc_open(socket_name, &psg.main, AISC_MAGIC_NUMBER);
+
+            bool running = psg.link;
+            bool kill    = false;
+            bool start   = false;
+
+            if      (strcmp(command, "-look") == 0) { start = !running; }
+            else if (strcmp(command, "-boot") == 0) { kill  = running; start = true; }
+            else if (strcmp(command, "-kill") == 0) { kill  = running; }
+            else { error = GBS_global_string("Unknown command '%s'", command); }
+
+            if (!error) {
+                if (kill) {
+                    pt_assert(running);
+                    fputs("There is another activ server. Sending shutdown message..\n", stderr);
+                    if (aisc_nput(psg.link, PT_MAIN, psg.main, MAIN_SHUTDOWN, "47@#34543df43%&3667gh", NULL)) {
+                        fprintf(stderr,
+                                "%s: Warning: Problem connecting to the running %s\n"
+                                "             You might need to kill it manually to ensure proper operation\n",
+                                exename, exename);
+                    }
+                    aisc_close(psg.link);
+                    psg.link = 0;
+                }
+
+                if (start) {
+                    error = start_pt_server(socket_name, params->db_server, pt_name, exename); // @@@ does not always return - fix! (see also server_shutdown())
+                }
             }
         }
 
-        if ((error = pt_init_main_struct(aisc_main, params->db_server)))
-        {
-            printf("PT_SERVER: Gave up:\nERROR: %s\n", error);
-            aisc_server_shutdown_and_exit(so, EXIT_FAILURE); // never returns
-        }
-        if (reserved_for_mmap) free(reserved_for_mmap);
+        free(pt_name);
     }
-    enter_stage_3_load_tree(aisc_main, tname);
 
-    PT_init_map();
+    return error;
+}
 
-    // all ok -> main "loop"
-    printf("ok, server is running.\n"); // do NOT change or remove! others depend on it 
-    fflush(stdout);
-    aisc_accept_calls(so);
-    aisc_server_shutdown_and_exit(so, EXIT_SUCCESS); // never returns
+int main(int argc, char **argv) {
+    int         exitcode = EXIT_SUCCESS;
+    arb_params *params   = arb_trace_argv(&argc, argv);
+    const char *exename  = argv[0];
+
+    PT_init_psg();
+    GB_install_pid(0);          // not arb_clean able
+    initGlobals();
+
+    // parse arguments
+    char *command = NULL;
+    {
+        if ((argc>2)                         ||
+            ((argc<2) && !params->db_server) ||
+            (argc >= 2 && strcmp(argv[1], "--help") == 0))
+        {
+            fprintf(stderr, "Syntax: %s [-look/-build/-kill/-QUERY/-boot] -Dfile.arb -TSocketid\n", exename);
+            exitcode = EXIT_FAILURE;
+        }
+        else {
+            if (argc==2) command = strdup(argv[1]);
+            else command         = strdup("-boot");
+        }
+    }
+
+    if (!command) {
+        fprintf(stderr, "%s: Error: No command specified on command line", exename);
+    }
+    else {
+        aisc_main = create_PT_main();
+
+        GB_ERROR error = run_command(exename, command, params).deliver();
+        if (error) {
+            fprintf(stderr, "%s: Error: %s\n", exename, error);
+            exitcode = EXIT_FAILURE;
+        }
+        free(command);
+    }
+
+    free_arb_params(params);
+    PT_exit(exitcode);
 }

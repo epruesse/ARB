@@ -10,6 +10,7 @@
 
 #include "probe.h"
 #include "probe_tree.hxx"
+#include "pt_prototypes.h"
 
 #include <sys/types.h>
 #include <sys/mman.h>
@@ -519,40 +520,47 @@ void ptd_set_chain_references(char *entry, char **entry_tab) {
     }
 }
 
-void ptd_write_chain_entries(FILE * out, long *ppos, PTM2 * /* ptmain */, char ** entry_tab,  int n_entries, int mainapos) {
-    static char buffer[100];
-    int name;
-    int rpos;
-    int apos;
-    int lastname = 0;
-    while (n_entries>0) {
+ARB_ERROR ptd_write_chain_entries(FILE * out, long *ppos, PTM2 * /* ptmain */, char ** entry_tab,  int n_entries, int mainapos) { // __ATTR__USERESULT
+    ARB_ERROR   error;
+    int         lastname = 0;
+    
+    while (n_entries>0 && !error) {
         char *entry = entry_tab[n_entries-1];
         n_entries --;
         char *rp = entry;
         rp += sizeof(PT_PNTR);
 
+        int name;
+        int rpos;
+        int apos;
         PT_READ_NAT(rp, name);
         PT_READ_NAT(rp, rpos);
         PT_READ_NAT(rp, apos);
         if (name < lastname) {
-            fprintf(stderr, "Chain Error name order error %i < %i\n", name, lastname);
-            return;
+            error = GBS_global_string("Chain Error: name order error %i < %i\n", name, lastname);
         }
-        char *wp = buffer;
-        wp = PT_WRITE_CHAIN_ENTRY(wp, mainapos, name-lastname, apos, rpos);
-        int size = wp -buffer;
-        if (1 != fwrite(buffer, size, 1, out)) {
-            fprintf(stderr, "Write Error (Disc Full ?\?\?)\n");
-            exit(EXIT_FAILURE);
+        else {
+            static char  buffer[100];
+            char        *wp   = buffer;
+            wp                = PT_WRITE_CHAIN_ENTRY(wp, mainapos, name-lastname, apos, rpos);
+            int          size = wp -buffer;
+
+            if (1 != fwrite(buffer, size, 1, out)) {
+                error = GB_IO_error("writing chains to", "ptserver-index");
+            }
+            else {
+                *ppos    += size;
+                PTM_free_mem(entry, rp-entry);
+                lastname  = name;
+            }
         }
-        *ppos += size;
-        PTM_free_mem(entry, rp-entry);
-        lastname = name;
     }
+
+    return error;
 }
 
 
-long PTD_write_chain_to_disk(FILE * out, PTM2 *ptmain, POS_TREE * node, long pos) {
+long PTD_write_chain_to_disk(FILE * out, PTM2 *ptmain, POS_TREE * node, long pos, ARB_ERROR& error) {
     char *data;
     long oldpos = pos;
     putc(node->flags, out);         // save type
@@ -576,10 +584,9 @@ long PTD_write_chain_to_disk(FILE * out, PTM2 *ptmain, POS_TREE * node, long pos
     PT_READ_PNTR(data, first_entry);
     int n_entries = ptd_count_chain_entries((char *)first_entry);
     {
-        char **entry_tab = (char **) GB_calloc(sizeof(char *), n_entries);
-        ptd_set_chain_references((char *) first_entry, entry_tab);
-        ptd_write_chain_entries(out, &pos, ptmain, entry_tab, n_entries,
-                mainapos);
+        char **entry_tab = (char **)GB_calloc(sizeof(char *), n_entries);
+        ptd_set_chain_references((char *)first_entry, entry_tab);
+        error = ptd_write_chain_entries(out, &pos, ptmain, entry_tab, n_entries, mainapos);
         free(entry_tab);
     }
     putc(PT_CHAIN_END, out);
@@ -645,7 +652,7 @@ long PTD_write_node_to_disk(FILE * out, PTM2 *ptmain, POS_TREE * node, long *r_p
             }
             mysize += sizeof(PT_PNTR);
             if (PT_GET_TYPE(sons) != PT_NT_SAVED) {
-                GBK_terminate("Internal Error: Son not saved: There is no help");
+                GBK_terminate("Internal Error: Son not saved");
             }
             if ((sons->flags & 0xf) == 0) {
                 PT_READ_INT((&sons->data)+sizeof(PT_PNTR), memsize);
@@ -782,8 +789,7 @@ long PTD_write_node_to_disk(FILE * out, PTM2 *ptmain, POS_TREE * node, long *r_p
     return pos;
 }
 
-long PTD_write_leafs_to_disk(FILE * out, PTM2 *ptmain, POS_TREE * node, long pos, long *pnodepos, int *pblock)
-{
+long PTD_write_leafs_to_disk(FILE * out, PTM2 *ptmain, POS_TREE * node, long pos, long *pnodepos, int *pblock, ARB_ERROR& error) {
     // returns new pos when son is written 0 otherwise
     // pnodepos is set to last object
 
@@ -802,21 +808,20 @@ long PTD_write_leafs_to_disk(FILE * out, PTM2 *ptmain, POS_TREE * node, long pos
     }
     else if (type == PT_NT_LEAF) {
         *pnodepos = pos;
-        pos = (long)PTD_write_tip_to_disk(out, ptmain, node, pos);
+        pos = PTD_write_tip_to_disk(out, ptmain, node, pos);
     }
     else if (type == PT_NT_CHAIN) {
         *pnodepos = pos;
-        pos = (long)PTD_write_chain_to_disk(out, ptmain, node, pos);
+        pos = PTD_write_chain_to_disk(out, ptmain, node, pos, error);
     }
     else if (type == PT_NT_NODE) {
         block[0] = 0;
         o_pos = pos;
-        for (i = PT_QU; i < PT_B_MAX; i++) {    // save all sons
+        for (i = PT_QU; i < PT_B_MAX && !error; i++) {    // save all sons
             sons = PT_read_son(ptmain, node, (enum PT_bases_enum)i);
             r_poss[i] = 0;
             if (sons) {
-                r_pos = PTD_write_leafs_to_disk(out, ptmain, sons, pos,
-                                                &(r_poss[i]), &(block[0]));
+                r_pos = PTD_write_leafs_to_disk(out, ptmain, sons, pos, &(r_poss[i]), &(block[0]), error);
                 if (r_pos>pos) {        // really saved ????
                     son_size[i] = r_pos-pos;
                     pos = r_pos;
@@ -838,10 +843,10 @@ long PTD_write_leafs_to_disk(FILE * out, PTM2 *ptmain, POS_TREE * node, long pos
         }
         else {          // now i can write my data
             *pnodepos = pos;
-            pos = PTD_write_node_to_disk(out, ptmain, node, r_poss, pos);
+            if (!error) pos = PTD_write_node_to_disk(out, ptmain, node, r_poss, pos);
         }
     }
-    pt_assert(pos >= 0);
+    pt_assert(pos >= 0 || error);
     return pos;
 }
 
@@ -849,7 +854,7 @@ long PTD_write_leafs_to_disk(FILE * out, PTM2 *ptmain, POS_TREE * node, long pos
 //      functions for stage 2-3: load
 
 
-void PTD_read_leafs_from_disk(char *fname, PTM2 *ptmain, POS_TREE **pnode) {
+ARB_ERROR PTD_read_leafs_from_disk(const char *fname, PTM2 *ptmain, POS_TREE **pnode) { // __ATTR__USERESULT
     GB_ERROR  error  = NULL;
     char     *buffer = GB_map_file(fname, 0);
 
@@ -923,10 +928,6 @@ void PTD_read_leafs_from_disk(char *fname, PTM2 *ptmain, POS_TREE **pnode) {
         }
     }
 
-    if (error) {
-        fprintf(stderr, "PT_SERVER-Error: %s\n", error);
-        exit(EXIT_FAILURE);
-    }
-
+    return error;
 }
 
