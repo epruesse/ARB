@@ -29,7 +29,7 @@ using namespace std;
 // --------------------------------------------------------------------------------
 
 #if defined(DEVEL_RALF)
-#warning replace all occurrances of AD_F_ALL by AWM_ALL
+#warning replace all occurrences of AD_F_ALL by AWM_ALL
 #endif // DEVEL_RALF
 
 #define AD_F_ALL AWM_ALL

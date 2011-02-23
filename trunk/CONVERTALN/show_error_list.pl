@@ -3,7 +3,7 @@
 use strict;
 use warnings;
 
-# ID is just a counter through all error occurrances
+# ID is just a counter through all error occurrences
 
 my %loc = (); # key=ID content=location
 my %num = (); # key=ID content=errornumber
@@ -98,7 +98,7 @@ sub show_by_msg() {
 
 sub show_duplicates() {
   my @ID = sort { $num{$a} <=> $num{$b}; } keys %num;
-  my %seen = (); # key=num, value=ID of 1st occurrance
+  my %seen = (); # key=num, value=ID of 1st occurrence
   my $err_count = 0;
 
   foreach $ID (@ID) {

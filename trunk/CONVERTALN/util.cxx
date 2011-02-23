@@ -207,7 +207,7 @@ static int findPattern(const char *text, const char *pattern, FindMode mode) {
 }
 
 static int findMultipattern(const char *str, const char** const& pattern, char expect_behind, FindMode mode) {
-    // search 'str' for the occurrance of any 'pattern'
+    // search 'str' for the occurrence of any 'pattern'
     // if 'expect_behind' != 0 -> expect that char behind the found pattern
 
     int offset = -1;
