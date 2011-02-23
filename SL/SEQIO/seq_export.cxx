@@ -71,9 +71,6 @@ export_format::~export_format() {
     free(form);
 }
 
-#warning remove this prototype
-char *AW_unfold_path(const char *path, const char *pwd_envar = "PWD");
-
 static GB_ERROR read_export_format(export_format *efo, const char *file, bool load_complete_form) {
     GB_ERROR error = 0;
 
@@ -81,7 +78,7 @@ static GB_ERROR read_export_format(export_format *efo, const char *file, bool lo
         error = "No export format selected";
     }
     else {
-        char *fullfile = AW_unfold_path(file, "ARBHOME");
+        char *fullfile = nulldup(GB_path_in_ARBHOME(file));
         FILE *in       = fopen(fullfile, "r");
 
         if (!in) error = GB_export_IO_error("reading export form", fullfile);
@@ -751,7 +748,7 @@ GB_ERROR SEQIO_export_by_format(GBDATA *gb_main, int marked_only, AP_filter *fil
 
 void TEST_sequence_export() {
     GBDATA  *gb_main    = GB_open("TEST_loadsave.arb", "r");
-    char    *export_dir = nulldup(GB_path_in_ARBLIB("export", NULL));
+    char    *export_dir = nulldup(GB_path_in_ARBLIB("export"));
     char   **eft        = GBS_read_dir(export_dir, "*.eft");
 
     AP_filter *filter = NULL;

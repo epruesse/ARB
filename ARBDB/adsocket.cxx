@@ -13,6 +13,7 @@
 #include <cerrno>
 #include <climits>
 #include <cstdarg>
+#include <cctype>
 
 #include <netdb.h>
 #include <netinet/tcp.h>
@@ -947,7 +948,7 @@ GB_CSTR GB_getenvARBMACRO() {
     static const char *am = 0;
     if (!am) {
         am          = getenv_existing_directory("ARBMACRO"); // doc in ../HELP_SOURCE/oldhelp/arb_envar.hlp@ARBMACRO
-        if (!am) am = strdup(GB_path_in_ARBLIB("macros", NULL));
+        if (!am) am = strdup(GB_path_in_ARBLIB("macros"));
     }
     return am;
 }
@@ -1030,7 +1031,7 @@ GB_CSTR GB_getenvDOCPATH() {
     if (!dp) {
         char *res = getenv_existing_directory("ARB_DOC"); // doc in ../HELP_SOURCE/oldhelp/arb_envar.hlp@ARB_DOC
         if (res) dp = res;
-        else     dp = strdup(GB_path_in_ARBLIB("help", NULL));
+        else     dp = strdup(GB_path_in_ARBLIB("help"));
     }
     return dp;
 }
@@ -1040,13 +1041,29 @@ GB_CSTR GB_getenvHTMLDOCPATH() {
     if (!dp) {
         char *res = getenv_existing_directory("ARB_HTMLDOC"); // doc in ../HELP_SOURCE/oldhelp/arb_envar.hlp@ARB_HTMLDOC
         if (res) dp = res;
-        else     dp = strdup(GB_path_in_ARBLIB("help_html", NULL));
+        else     dp = strdup(GB_path_in_ARBLIB("help_html"));
     }
     return dp;
 
 }
 
+static gb_getenv_hook getenv_hook = NULL;
+
+NOT4PERL gb_getenv_hook GB_install_getenv_hook(gb_getenv_hook hook) {
+    // Install 'hook' to be called by GB_getenv().
+    // If the 'hook' returns NULL, normal expansion takes place.
+    // Otherwise GB_getenv() returns result from 'hook'
+
+    gb_getenv_hook oldHook = getenv_hook;
+    getenv_hook            = hook;
+    return oldHook;
+}
+
 GB_CSTR GB_getenv(const char *env) {
+    if (getenv_hook) {
+        const char *result = getenv_hook(env);
+        if (result) return result;
+    }
     if (strncmp(env, "ARB", 3) == 0) {
 
         // doc in ../HELP_SOURCE/oldhelp/arb_envar.hlp
@@ -1171,8 +1188,12 @@ GB_CSTR GB_append_suffix(const char *name, const char *suffix) {
     return result;
 }
 
-GB_CSTR GB_get_full_path(const char *anypath) {
-    // expands '~' '..' etc in 'anypath'
+GB_CSTR GB_canonical_path(const char *anypath) {
+    // expands '~' '..' symbolic links etc in 'anypath'.
+    // 
+    // Never returns NULL (if called correctly)
+    // Instead might return non-canonical path (when a directory
+    // in 'anypath' does not exist)
 
     GB_CSTR result = NULL;
     if (!anypath) {
@@ -1182,18 +1203,34 @@ GB_CSTR GB_get_full_path(const char *anypath) {
         GB_export_errorf("Path too long (> %i chars)", PATH_MAX-1);
     }
     else {
-        path_toggle = 1-path_toggle; // use 2 buffers in turn
-        result = path_buf[path_toggle];
-
-        if (strncmp(anypath, "~/", 2) == 0) {
+        if (anypath[0] == '~' && (!anypath[1] || anypath[1] == '/')) {
             GB_CSTR home    = GB_getenvHOME();
-            GB_CSTR newpath = GBS_global_string("%s%s", home, anypath+1);
-            realpath(newpath, path_buf[path_toggle]);
-            GBS_reuse_buffer(newpath);
+            GB_CSTR homeexp = GBS_global_string("%s%s", home, anypath+1);
+            result          = GB_canonical_path(homeexp);
+            GBS_reuse_buffer(homeexp);
         }
         else {
-            realpath(anypath, path_buf[path_toggle]);
+            result = realpath(anypath, path_buf[1-path_toggle]);
+            if (result) {
+                path_toggle = 1-path_toggle;
+            }
+            else { // realpath failed, content of path_buf[path_toggle] is UNDEFINED!
+                char *dir, *fullname;
+                GB_split_full_path(anypath, &dir, &fullname, NULL, NULL);
+
+                gb_assert(dir);                       // maybe you'd like to use GB_unfold_path()
+                gb_assert(strcmp(dir, anypath) != 0); // avoid deadlock
+
+                const char *canonical_dir = GB_canonical_path(dir);
+                gb_assert(canonical_dir);
+
+                result = GB_concat_path(canonical_dir, fullname);
+
+                free(dir);
+                free(fullname);
+            }
         }
+        gb_assert(result);
     }
     return result;
 }
@@ -1202,7 +1239,8 @@ GB_CSTR GB_concat_path(GB_CSTR anypath_left, GB_CSTR anypath_right) {
     // concats left and right part of a path.
     // '/' is inserted in-between
     //
-    // if one of the arguments is NULL = > returns the other argument
+    // if one of the arguments is NULL => returns the other argument
+    // if both arguments are NULL      => return NULL (@@@ maybe forbid?)
 
     GB_CSTR result = NULL;
 
@@ -1223,32 +1261,53 @@ GB_CSTR GB_concat_path(GB_CSTR anypath_left, GB_CSTR anypath_right) {
 }
 
 GB_CSTR GB_concat_full_path(const char *anypath_left, const char *anypath_right) {
-    // like GB_concat_path(), but returns the full path
+    // like GB_concat_path(), but returns the canonical path
     GB_CSTR result = GB_concat_path(anypath_left, anypath_right);
 
-    gb_assert(result != anypath_left);
+    gb_assert(result != anypath_left); // consider using GB_canonical_path() directly
     gb_assert(result != anypath_right);
 
-    if (result) result = GB_get_full_path(result);
+    if (result) result = GB_canonical_path(result);
     return result;
 }
 
-GB_CSTR GB_path_in_ARBHOME(const char *relative_path_left, const char *anypath_right) {
-    if (anypath_right) {
-        return GB_concat_full_path(GB_concat_path(GB_getenvARBHOME(), relative_path_left), anypath_right);
+inline bool is_absolute_path(const char *path) { return path[0] == '/' || path[0] == '~'; }
+inline bool is_name_of_envvar(const char *name) {
+    for (int i = 0; name[i]; ++i) {
+        if (isalnum(name[i]) || name[i] == '_') continue;
+        return false;
     }
-    else {
-        return GB_concat_full_path(GB_getenvARBHOME(), relative_path_left);
-    }
+    return true;
 }
 
+GB_CSTR GB_unfold_path(const char *pwd_envar, const char *path) {
+    // If 'path' is an absolute path, return canonical path.
+    // 
+    // Otherwise unfolds relative 'path' using content of environment
+    // variable 'pwd_envar' as start directory.
+    // If environment variable is not defined, fall-back to current directory
+
+    gb_assert(is_name_of_envvar(pwd_envar));
+    if (is_absolute_path(path)) {
+        return GB_canonical_path(path);
+    }
+
+    const char *pwd = GB_getenv(pwd_envar);
+    if (!pwd) pwd = GB_getcwd(); // @@@ really wanted ?
+    return GB_concat_full_path(pwd, path);
+}
+
+GB_CSTR GB_path_in_ARBHOME(const char *relative_path) {
+    return GB_unfold_path("ARBHOME", relative_path);
+}
+GB_CSTR GB_path_in_ARBLIB(const char *relative_path) {
+    return GB_path_in_ARBHOME("lib", relative_path);
+}
+GB_CSTR GB_path_in_ARBHOME(const char *relative_path_left, const char *anypath_right) {
+    return GB_path_in_ARBHOME(GB_concat_path(relative_path_left, anypath_right));
+}
 GB_CSTR GB_path_in_ARBLIB(const char *relative_path_left, const char *anypath_right) {
-    if (anypath_right) {
-        return GB_path_in_ARBHOME(GB_concat_path("lib", relative_path_left), anypath_right);
-    }
-    else {
-        return GB_path_in_ARBHOME("lib", relative_path_left);
-    }
+    return GB_path_in_ARBLIB(GB_concat_path(relative_path_left, anypath_right));
 }
 
 #ifdef P_tmpdir
@@ -1447,6 +1506,80 @@ void TEST_gbcm_get_m_id() {
     // @@@ no idea what "*" is used for, so the following tests are only descriptive!
     TEST_ASSERT(gbcm_get_m_id_TESTER("*whatever:bar").parsed("bar", -1));
     TEST_ASSERT(gbcm_get_m_id_TESTER("*:bar").parsed("bar", -1));
+}
+
+#define TEST_ASSERT_IS_CANONICAL(file)                  \
+    do {                                                \
+        char *dup = strdup(file);                       \
+        TEST_ASSERT_EQUAL(GB_canonical_path(dup), dup); \
+        free(dup);                                      \
+    } while(0)
+
+#define TEST_ASSERT_CANONICAL_TO(not_cano,cano)                         \
+    do {                                                                \
+        char *arb_not_cano = strdup(GB_concat_path(arbhome, not_cano)); \
+        char *arb_cano     = strdup(GB_concat_path(arbhome, cano));     \
+        TEST_ASSERT_EQUAL(GB_canonical_path(arb_not_cano), arb_cano);   \
+        free(arb_cano);                                                 \
+        free(arb_not_cano);                                             \
+    } while (0)
+
+void TEST_paths() {
+
+    // test GB_concat_path
+    TEST_ASSERT_EQUAL(GB_concat_path("a", NULL), "a");
+    TEST_ASSERT_EQUAL(GB_concat_path(NULL, "b"), "b");
+    TEST_ASSERT_EQUAL(GB_concat_path("a", "b"), "a/b");
+
+    {
+        char        *arbhome    = strdup(GB_getenvARBHOME());
+        const char*  nosuchfile = "nosuchfile";
+        const char*  somefile   = "arb_README.txt";
+
+        char *somefile_in_arbhome   = strdup(GB_concat_path(arbhome, somefile));
+        char *nosuchfile_in_arbhome = strdup(GB_concat_path(arbhome, nosuchfile));
+        char *nosuchpath_in_arbhome = strdup(GB_concat_path(arbhome, "nosuchpath"));
+        char *file_in_nosuchpath    = strdup(GB_concat_path(nosuchpath_in_arbhome, "whatever"));
+
+        TEST_ASSERT(!GB_is_directory(nosuchpath_in_arbhome));
+
+        // test GB_get_full_path
+        TEST_ASSERT_IS_CANONICAL(somefile_in_arbhome);
+        TEST_ASSERT_IS_CANONICAL(nosuchpath_in_arbhome);
+        TEST_ASSERT_IS_CANONICAL(file_in_nosuchpath);
+
+        TEST_ASSERT_CANONICAL_TO("./WINDOW/./../ARBDB/./arbdb.h",     "ARBDB/arbdb.h"); // test parent-path
+        TEST_ASSERT_CANONICAL_TO("INCLUDE/arbdb.h",                   "ARBDB/arbdb.h"); // test symbolic link to file
+        TEST_ASSERT_CANONICAL_TO("NAMES_COM/AISC/aisc.pa",            "AISC_COM/AISC/aisc.pa"); // test symbolic link to directory
+        TEST_ASSERT_CANONICAL_TO("./NAMES_COM/AISC/..",               "AISC_COM"); // test parent-path through links
+        TEST_ASSERT_CANONICAL_TO("./WINDOW/./../ARBDB/../nosuchpath", "nosuchpath");
+        TEST_ASSERT_CANONICAL_TO("./WINDOW/./../nosuchpath/../ARBDB", "nosuchpath/../ARBDB"); // cannot resolve through non-existing paths!
+
+        // test GB_unfold_path
+        TEST_ASSERT_EQUAL(GB_unfold_path("ARBHOME", somefile), somefile_in_arbhome);
+        TEST_ASSERT_EQUAL(GB_unfold_path("ARBHOME", nosuchfile), nosuchfile_in_arbhome);
+
+        char *inhome = strdup(GB_unfold_path("HOME", "whatever"));
+        TEST_ASSERT_EQUAL(inhome, GB_canonical_path("~/whatever"));
+        free(inhome);
+
+        // test unfolding absolute paths (HOME is ignored)
+        TEST_ASSERT_EQUAL(GB_unfold_path("HOME", arbhome), arbhome);
+        TEST_ASSERT_EQUAL(GB_unfold_path("HOME", somefile_in_arbhome), somefile_in_arbhome);
+        TEST_ASSERT_EQUAL(GB_unfold_path("HOME", nosuchfile_in_arbhome), nosuchfile_in_arbhome);
+
+        // test GB_path_in_ARBHOME
+        TEST_ASSERT_EQUAL(GB_path_in_ARBHOME(somefile), somefile_in_arbhome);
+        TEST_ASSERT_EQUAL(GB_path_in_ARBHOME(nosuchfile), nosuchfile_in_arbhome);
+
+        free(file_in_nosuchpath);
+        free(nosuchpath_in_arbhome);
+        free(nosuchfile_in_arbhome);
+        free(somefile_in_arbhome);
+        free(arbhome);
+    }
+
+    TEST_ASSERT_EQUAL(GB_path_in_ARBLIB("help"), GB_path_in_ARBHOME("lib", "help"));
 }
 
 #endif

@@ -2244,31 +2244,25 @@ AW_window *create_awt_open_parser(AW_root *aw_root, DbQuery *cbs)
     aws->at("pre");
     AW_selection_list *id = aws->create_selection_list(cbs->awar_parspredefined);
 
-    char *filename = 0;
+    const char *sellst = NULL;
     switch (cbs->selector->type) {
-    case AWT_QUERY_ITEM_SPECIES:
-        filename = AW_unfold_path("lib/sellists/mod_fields*.sellst", "ARBHOME");
-        break;
-    case AWT_QUERY_ITEM_GENES:
-        filename = AW_unfold_path("lib/sellists/mod_gene_fields*.sellst", "ARBHOME");
-        break;
-    case AWT_QUERY_ITEM_EXPERIMENTS:
-        filename = AW_unfold_path("lib/sellists/mod_experiment_fields*.sellst", "ARBHOME");
-        break;
-    default:
-        awt_assert(0);
-        break;
+        case AWT_QUERY_ITEM_SPECIES:     sellst = "mod_fields*.sellst"; break;
+        case AWT_QUERY_ITEM_GENES:       sellst = "mod_gene_fields*.sellst"; break;
+        case AWT_QUERY_ITEM_EXPERIMENTS: sellst = "mod_experiment_fields*.sellst"; break;
+        default: awt_assert(0); break;
     }
 
-    GB_ERROR error = filename ? aws->load_selection_list(id, filename) : "No default selection list for query-type";
-    free(filename);
+    GB_ERROR error = sellst
+        ? aws->load_selection_list(id, GB_path_in_ARBLIB("sellists", sellst))
+        : "No default selection list for query-type";
+
     if (error) {
         aw_message(error);
     }
     else {
         aws->get_root()->awar(cbs->awar_parspredefined)->add_callback((AW_RCB1)awt_predef_prg, (AW_CL)cbs);
     }
-    return (AW_window *)aws;
+    return aws;
 }
 
 void awt_do_set_list(void *, DbQuery *cbs, long append) {

@@ -483,7 +483,7 @@ int main(int argc, char **argv) {
 
         if (load_file_err) {
             int   answer    = -1;
-            char *full_path = AW_unfold_path(db_server);
+            char *full_path = AW_unfold_path("PWD", db_server);
 
             printf("load_file_err='%s'\n", load_file_err);
 

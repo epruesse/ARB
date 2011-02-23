@@ -114,6 +114,8 @@ typedef void (*gb_information_func_type)(const char *msg);
 typedef int (*gb_status_gauge_func_type)(double val);
 typedef int (*gb_status_msg_func_type)(const char *val);
 
+typedef const char *(*gb_getenv_hook)(const char *varname);
+
 // -----------------------
 //      GB_transaction
 

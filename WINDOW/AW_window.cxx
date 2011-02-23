@@ -1836,7 +1836,7 @@ static Pixmap getIcon(Screen *screen, const char *iconName, Pixel foreground, Pi
     Pixmap pixmap = GBS_read_hash(icon_hash, iconName);
 
     if (!pixmap && iconName) {
-        const char *iconpath = GB_path_in_ARBLIB("pixmaps/icons", NULL);
+        const char *iconpath = GB_path_in_ARBLIB("pixmaps/icons");
         const char *iconFile = existingPixmap(iconpath, iconName);
 
         if (iconFile) {
