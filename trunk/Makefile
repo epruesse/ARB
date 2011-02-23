@@ -422,7 +422,7 @@ endif
 		@echo ' rel_minor   - build a release (increases minor version number)'
 		@echo ' rel_major   - build a release (increases MAJOR version number)'
 		@echo ' tarfile     - make rebuild and create arb version tarfile ("tarfile_quick" to skip rebuild)'
-		@echo ' save        - save all basic ARB sources into arbsrc_DATE ("testsave" to check filelist)'
+		@echo ' save        - save all basic ARB sources into arbsrc_DATE ("savetest" to check filelist)'
 		@echo ' patch       - save svn diff to patchfile'
 		@echo ' source_doc  - create doxygen documentation'
 		@echo ' relocated   - rebuild partly (use when you have relocated ARBHOME)'
@@ -1457,8 +1457,10 @@ patch:
 	SOURCE_TOOLS/arb_create_patch.sh arbPatch
 
 # test early whether save will work
-testsave:
+savetest:
 	@util/arb_srclst.pl >/dev/null
+
+testsave: savetest
 
 sourcetarfile: rmbak
 	util/arb_save
@@ -1568,7 +1570,6 @@ UNITS_WORKING = \
 	PGT/PGT.test \
 	PARSIMONY/PARSIMONY.test \
 	TREEGEN/TREEGEN.test \
-	NTREE/NTREE.test \
 	NAMES/NAMES.test \
 	PROBE/PROBE.test \
 	DBSERVER/DBSERVER.test \
@@ -1592,6 +1593,7 @@ UNITS_UNTESTABLE_ATM = \
 
 # for the moment, put all units containing tests into UNITS_TESTED:
 UNITS_TESTED = \
+	NTREE/NTREE.test \
 	AISC_MKPTPS/mkptypes.test \
 	ARBDB/ARBDB.test \
 	AWTC/AWTC.test \

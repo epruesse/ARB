@@ -4,7 +4,6 @@ TOOLS := \
 	arb_2_ascii \
 	arb_2_bin \
 	arb_a2ps \
-	arb_count_chars \
 	arb_dnarates \
 	arb_export_rates \
 	arb_export_tree \
@@ -60,6 +59,9 @@ clean:
 	rm -f $(BINARIES)
 	rm -f $(OBJECTS)
 
+proto:
+	@echo "Nothing todo for proto in TOOLS"
+
 depends:
 	$(MAKE) "DEBUG=1" depends_debug
 
@@ -110,22 +112,6 @@ arb_2_bin.o: $(ARBHOME)/INCLUDE/attributes.h
 arb_2_bin.o: $(ARBHOME)/INCLUDE/dupstr.h
 arb_2_bin.o: $(ARBHOME)/INCLUDE/smartptr.h
 arb_2_bin.o: $(ARBHOME)/INCLUDE/test_global.h
-
-arb_count_chars.o: $(ARBHOME)/INCLUDE/ad_prot.h
-arb_count_chars.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
-arb_count_chars.o: $(ARBHOME)/INCLUDE/arb_assert.h
-arb_count_chars.o: $(ARBHOME)/INCLUDE/arb_core.h
-arb_count_chars.o: $(ARBHOME)/INCLUDE/arb_error.h
-arb_count_chars.o: $(ARBHOME)/INCLUDE/arb_msg.h
-arb_count_chars.o: $(ARBHOME)/INCLUDE/arb_string.h
-arb_count_chars.o: $(ARBHOME)/INCLUDE/arbdb.h
-arb_count_chars.o: $(ARBHOME)/INCLUDE/arbdb_base.h
-arb_count_chars.o: $(ARBHOME)/INCLUDE/arbdbt.h
-arb_count_chars.o: $(ARBHOME)/INCLUDE/arbtools.h
-arb_count_chars.o: $(ARBHOME)/INCLUDE/attributes.h
-arb_count_chars.o: $(ARBHOME)/INCLUDE/dupstr.h
-arb_count_chars.o: $(ARBHOME)/INCLUDE/smartptr.h
-arb_count_chars.o: $(ARBHOME)/INCLUDE/test_global.h
 
 arb_dnarates.o: DNAml_rates_1_0.h
 arb_dnarates.o: $(ARBHOME)/INCLUDE/ad_prot.h
