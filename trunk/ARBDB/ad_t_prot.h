@@ -78,7 +78,7 @@ GBDATA **GBT_gen_species_array(GBDATA *gb_main, long *pspeccnt);
 GB_ERROR GBT_begin_rename_session(GBDATA *gb_main, int all_flag);
 GB_ERROR GBT_rename_species(const char *oldname, const char *newname, bool ignore_protection);
 GB_ERROR GBT_abort_rename_session(void);
-GB_ERROR GBT_commit_rename_session(int (*show_status)(double gauge), int (*show_status_text)(const char *)) __ATTR__USERESULT;
+GB_ERROR GBT_commit_rename_session(void) __ATTR__USERESULT;
 
 /* adseqcompr.cxx */
 GB_ERROR GBT_compress_sequence_tree2(GBDATA *gb_main, const char *tree_name, const char *ali_name) __ATTR__USERESULT;
@@ -122,6 +122,7 @@ void GBT_names_erase(char **names, int index);
 void GBT_names_add(char **&names, int insert_before, const char *name);
 void GBT_names_move(char **names, int old_index, int new_index);
 void GBT_free_names(char **names);
+size_t GBT_count_names(const char **names);
 char *GBT_read_string(GBDATA *gb_container, const char *fieldpath);
 char *GBT_read_as_string(GBDATA *gb_container, const char *fieldpath);
 const char *GBT_read_char_pntr(GBDATA *gb_container, const char *fieldpath);
@@ -168,10 +169,11 @@ GB_ERROR GBT_check_tree_name(const char *tree_name);
 char **GBT_get_tree_names_and_count(GBDATA *Main, int *countPtr);
 char **GBT_get_tree_names(GBDATA *Main);
 char *GBT_get_name_of_next_tree(GBDATA *gb_main, const char *tree_name);
-GB_CSTR *GBT_get_names_of_species_in_tree(const GBT_TREE *tree);
+GB_CSTR *GBT_get_names_of_species_in_tree(const GBT_TREE *tree, size_t *count);
 char *GBT_existing_tree(GBDATA *gb_main, const char *tree_name);
 
 /* adali.cxx */
+int GBT_count_alignments(GBDATA *gb_main);
 GB_ERROR GBT_check_data(GBDATA *Main, const char *alignment_name);
 char **GBT_get_alignment_names(GBDATA *gbd);
 GB_ERROR GBT_check_alignment_name(const char *alignment_name);

@@ -14,7 +14,7 @@
 #include <ColumnStat.hxx>
 #include <AP_filter.hxx>
 #include <AP_Tree.hxx>
-#include <aw_status.hxx>
+#include <arb_progress.h>
 #include <gui_aliview.hxx>
 
 #include <cctype>
@@ -470,7 +470,7 @@ inline GB_ERROR tree_size_ok(AP_tree_root *tree_root) {
 
 GB_ERROR ST_ML::init_st_ml(const char *tree_name, const char *alignment_namei,
                            const char *species_names, int marked_only,
-                           ColumnStat *colstat, bool show_status, const WeightedFilter *weighted_filter)
+                           ColumnStat *colstat, const WeightedFilter *weighted_filter)
 {
     /*! this is the real constructor, call only once */
 
@@ -481,8 +481,7 @@ GB_ERROR ST_ML::init_st_ml(const char *tree_name, const char *alignment_namei,
     }
     else {
         GB_transaction ta(gb_main);
-
-        if (show_status) aw_openstatus("Activating column statistic");
+        arb_progress progress("Activating column statistic");
 
         column_stat                = colstat;
         GB_ERROR column_stat_error = column_stat->calculate(NULL);
@@ -515,10 +514,8 @@ GB_ERROR ST_ML::init_st_ml(const char *tree_name, const char *alignment_namei,
                 // do not delete 'aliview' or 'seq_templ' (they belong to 'tree_root' now)
             }
 
-            if (show_status) aw_status("load tree");
             tree_root->loadFromDB(tree_name);       // tree is not linked!
 
-            if (show_status) aw_status("link tree");
             {
                 size_t species_in_tree = count_species_in_tree();
                 hash_2_ap_tree         = GBS_create_hash(species_in_tree, GB_MIND_CASE);
@@ -543,12 +540,11 @@ GB_ERROR ST_ML::init_st_ml(const char *tree_name, const char *alignment_namei,
                     GBS_hash_do_loop(hash_2_ap_tree, delete_species, this);
                     GBS_free_hash(keep_species_hash);
                     keep_species_hash = 0;
-                    GBT_link_tree(tree_root->get_root_node()->get_gbt_tree(), gb_main, show_status, 0, 0);
+                    GBT_link_tree(tree_root->get_root_node()->get_gbt_tree(), gb_main, true, 0, 0);
                 }
             }
             else {                                  // keep marked/all
-                GBT_link_tree(tree_root->get_root_node()->get_gbt_tree(), gb_main, show_status, 0, 0);
-                aw_status("clean tree");
+                GBT_link_tree(tree_root->get_root_node()->get_gbt_tree(), gb_main, true, 0, 0);
                 tree_root->remove_leafs((marked_only ? AWT_REMOVE_NOT_MARKED : 0)|AWT_REMOVE_DELETED);
 
                 error = tree_size_ok(tree_root);
@@ -558,7 +554,7 @@ GB_ERROR ST_ML::init_st_ml(const char *tree_name, const char *alignment_namei,
             if (!error) {
                 // calc frequencies
 
-                if (show_status) aw_status("calculating frequencies");
+                progress.subtitle("calculating frequencies");
 
                 size_t filtered_length = get_filtered_length();
                 if (!column_stat_error) {
@@ -596,8 +592,6 @@ GB_ERROR ST_ML::init_st_ml(const char *tree_name, const char *alignment_namei,
             freenull(alignment_name);
             error = ta.close(error);
         }
-
-        if (show_status) aw_closestatus();
     }
     return error;
 }

@@ -19,7 +19,7 @@
 #include <aw_awars.hxx>
 #include <aw_root.hxx>
 #include <aw_msg.hxx>
-#include <aw_status.hxx>
+#include <arb_progress.h>
 #include <arbdbt.h>
 
 #include <set>
@@ -183,14 +183,11 @@ typedef set< SmartPtr<Candidate> > Candidates;
 
 // add all candidate species to 'candidates'
 static void find_species_candidates(Candidates& candidates, const char *const *ali_names) {
-    aw_status("Examining species (kill to stop)");
-    aw_status(0.0);
-
     // collect names of all species in source database
-    GB_HASH *src_species = GBT_create_species_hash(GLOBAL_gb_merge);
-    long     src_count   = GBS_hash_count_elems(src_species);
-    long     found       = 0;
-    bool     aborted     = false;
+    GB_HASH      *src_species = GBT_create_species_hash(GLOBAL_gb_merge);
+    long          src_count   = GBS_hash_count_elems(src_species);
+    arb_progress  progress("Examining species", src_count);
+    bool          aborted     = false;
 
     // find existing species in destination database
     for (GBDATA *gb_dst_species = GBT_first_species(GLOBAL_gb_dest);
@@ -212,24 +209,19 @@ static void find_species_candidates(Candidates& candidates, const char *const *a
                 delete cand;
             }
 
-            ++found;
-            aw_status(double(found)/src_count);
-            aborted = aw_status() != 0; // test user abort
+            progress.inc();
+            aborted = progress.aborted();
         }
     }
 
     GBS_free_hash(src_species);
 }
 
-// add all candidate SAIs to 'candidates'
 static void find_SAI_candidates(Candidates& candidates, const char *const *ali_names) {
-    aw_status("Examining SAIs");
-    aw_status(0.0);
-
-    // collect names of all SAIs in source database
-    GB_HASH *src_SAIs  = GBT_create_SAI_hash(GLOBAL_gb_merge);
-    long     src_count = GBS_hash_count_elems(src_SAIs);
-    long     found       = 0;
+    // add all candidate SAIs to 'candidates'
+    GB_HASH      *src_SAIs  = GBT_create_SAI_hash(GLOBAL_gb_merge);
+    long          src_count = GBS_hash_count_elems(src_SAIs);
+    arb_progress  progress("Examining SAIs", src_count);
 
     // find existing SAIs in destination database
     for (GBDATA *gb_dst_SAI = GBT_first_SAI(GLOBAL_gb_dest);
@@ -251,8 +243,7 @@ static void find_SAI_candidates(Candidates& candidates, const char *const *ali_n
                 delete cand;
             }
 
-            ++found;
-            aw_status(double(found)/src_count);
+            progress.inc();
         }
     }
 
@@ -273,7 +264,7 @@ static void calculate_preserves_cb(AW_window *, AW_CL cl_para) {
     char       *ali     = aw_root->awar(AWAR_REMAP_ALIGNMENT)->read_string();
     Candidates  candidates;
 
-    aw_openstatus("Searching candidates");
+    arb_progress("Searching candidates");
 
     // add candidates
     if (0 == strcmp(ali, "All")) {
@@ -304,8 +295,6 @@ static void calculate_preserves_cb(AW_window *, AW_CL cl_para) {
         aww->insert_selection(id, shown.c_str(), name.c_str());
     }
     free(ali);
-
-    aw_closestatus();
 
     aww->update_selection_list(id);
 }

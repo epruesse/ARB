@@ -15,8 +15,6 @@
 #include <arb_backtrace.h>
 #include <smartptr.h>
 #include <arb_handlers.h>
-#include "core.h"
-
  
 /* AISC_MKPT_PROMOTE:#ifndef _GLIBCXX_CSTDLIB */
 // AISC_MKPT_PROMOTE:#include <cstdlib>
@@ -300,7 +298,7 @@ GB_ERROR GB_IO_error(const char *action, const char *filename) {
 }
 
 GB_ERROR GB_export_IO_error(const char *action, const char *filename) {
-    // goes to header: __ATTR__DEPRECATED
+    // goes to header: __ATTR__DEPRECATED_LATER
     return GB_export_error(GB_IO_error(action, filename));
 }
 
@@ -310,7 +308,7 @@ GB_ERROR GB_export_IO_error(const char *action, const char *filename) {
 
 
 GB_ERROR GB_print_error() {
-    // goes to header: __XATTR__DEPRECATED
+    // goes to header: __ATTR__DEPRECATED_LATER
     if (GB_error_buffer) {
         fflush(stdout);
         fprintf(stderr, "%s\n", GB_error_buffer);
@@ -319,7 +317,7 @@ GB_ERROR GB_print_error() {
 }
 
 GB_ERROR GB_get_error() {
-    // goes to header: __ATTR__DEPRECATED
+    // goes to header: __ATTR__DEPRECATED_LATER
 
     /* This function is deprecated.
      * Instead use either
@@ -409,10 +407,10 @@ void GB_internal_error(const char *message) {
      */
 
     char *full_message = GBS_global_string_copy("Internal ARB Error: %s", message);
-    gb_error_handler(full_message);
-    gb_error_handler("ARB is most likely unstable now (due to this error).\n"
-                     "If you've made changes to the database, consider to save it using a different name.\n"
-                     "Try to fix the cause of the error and restart ARB.");
+    active_arb_handlers->show_error(full_message);
+    active_arb_handlers->show_error("ARB is most likely unstable now (due to this error).\n"
+                                    "If you've made changes to the database, consider to save it using a different name.\n"
+                                    "Try to fix the cause of the error and restart ARB.");
 
 #ifdef ASSERTION_USED
     fputs(full_message, stderr);
@@ -465,14 +463,7 @@ void GB_warning(const char *message) {
     /* If program uses GUI, the message is printed via aw_message, otherwise it goes to stdout
      * see also : GB_information
      */
-
-    if (gb_warning_func) {
-        gb_warning_func(message);
-    }
-    else {
-        fputs(message, stdout);
-        fputc('\n', stdout);
-    }
+    active_arb_handlers->show_warning(message);
 }
 void GB_warningf(const char *templat, ...) {
     // goes to header: __ATTR__FORMAT(1)
@@ -488,13 +479,7 @@ void GB_warningf(const char *templat, ...) {
 }
 
 void GB_information(const char *message) {
-    if (gb_information_func) {
-        gb_information_func(message);
-    }
-    else {
-        fputs(message, stdout);
-        fputc('\n', stdout);
-    }
+    active_arb_handlers->show_message(message);
 }
 void GB_informationf(const char *templat, ...) {
     // goes to header: __ATTR__FORMAT(1)
@@ -511,46 +496,5 @@ void GB_informationf(const char *templat, ...) {
 
     GB_information(message);
     free(message);
-}
-
-int GB_status(double val) {
-    int result = 0;
-
-    /* if program uses GUI this uses aw_status(),
-     * otherwise it uses simple status to stdout
-     *
-     * return value : 0 = ok, 1 = userAbort
-     */
-
-    if (gb_status_gauge_func) {
-        result = gb_status_gauge_func(val);
-    }
-    else {
-        char buffer[100];
-        int i;
-        static int lastv = 0;
-        int v = (int)(val*80);
-        if (v == lastv) return 0;
-        lastv = v;
-        for (i=0; i<v; i++) buffer[i] = '+';
-        for (; i<80; i++) buffer[i] = '-';
-        buffer[i] = 0;
-        fprintf(stdout, "%s\n", buffer);
-    }
-    return result;
-}
-
-int GB_status(const char *message) {
-    int result = 0;
-
-    if (gb_status_msg_func) {
-        result = gb_status_msg_func(message);
-    }
-    else {
-        fputs(message, stdout);
-        fputc('\n', stdout);
-    }
-
-    return result;
 }
 

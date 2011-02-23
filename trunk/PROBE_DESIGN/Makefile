@@ -40,6 +40,7 @@ probe_design.o: $(ARBHOME)/INCLUDE/arb_assert.h
 probe_design.o: $(ARBHOME)/INCLUDE/arb_core.h
 probe_design.o: $(ARBHOME)/INCLUDE/arb_error.h
 probe_design.o: $(ARBHOME)/INCLUDE/arb_msg.h
+probe_design.o: $(ARBHOME)/INCLUDE/arb_progress.h
 probe_design.o: $(ARBHOME)/INCLUDE/arb_string.h
 probe_design.o: $(ARBHOME)/INCLUDE/ARB_Tree.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -59,7 +60,6 @@ probe_design.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_select.hxx
-probe_design.o: $(ARBHOME)/INCLUDE/aw_status.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/awt_config_manager.hxx

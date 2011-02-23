@@ -45,7 +45,7 @@
 #include <aw_file.hxx>
 #include <aw_window.hxx>
 #include <aw_msg.hxx>
-#include <aw_status.hxx>
+#include <arb_progress.h>
 #include <aw_root.hxx>
 #include <aw_device.hxx>
 
@@ -144,17 +144,17 @@ static void CPRO_readandallocate(char **&speciesdata, GBDATA **&speciesdatabase,
     GBDATA *gb_species_data = GB_search(GLOBAL_gb_main, "species_data", GB_FIND);
     GBDATA *gb_species;
 
-    aw_status("reading database");
-
-    long nrofspecies=0;
-    gb_species = GBT_first_species_rel_species_data(gb_species_data);
-    while (gb_species)
     {
-        if (GBT_read_sequence(gb_species, align)) {
-            nrofspecies++; }
-        gb_species = GBT_next_species(gb_species);
+        long nrofspecies=0;
+        gb_species = GBT_first_species_rel_species_data(gb_species_data);
+        while (gb_species)
+        {
+            if (GBT_read_sequence(gb_species, align)) {
+                nrofspecies++; }
+            gb_species = GBT_next_species(gb_species);
+        }
+        CPRO.numspecies=nrofspecies;
     }
-    CPRO.numspecies=nrofspecies;
 
     speciesdata=(char **)calloc((size_t)CPRO.numspecies, sizeof(char *));
     CPRO.agonist=(char *)calloc((size_t)CPRO.numspecies, sizeof(char));
@@ -164,11 +164,9 @@ static void CPRO_readandallocate(char **&speciesdata, GBDATA **&speciesdatabase,
 
     long countspecies=0;
     gb_species = GBT_first_species_rel_species_data(gb_species_data);
-    while (gb_species)
-    {
-        if ((alidata=GBT_read_sequence(gb_species, align)))
-        {
-            speciesdatabase[countspecies++]=alidata;
+    while (gb_species) {
+        if ((alidata=GBT_read_sequence(gb_species, align))) {
+            speciesdatabase[countspecies++] = alidata;
         }
         gb_species = GBT_next_species(gb_species);
     }
@@ -482,44 +480,33 @@ static char CPRO_makestatistic(char **speciesdata, GBDATA **speciesdatabase, uns
     long widthmatrix    = CPRO.partition;
     long n              = CPRO.numspecies;
     long comparesneeded = n*n;
-    long compares       = 0;
     long numofsegments  = CPRO.numspecies/widthmatrix + 1;
-    long segmentx       = 0, segmenty=0, elemx=0, elemy=0;
-    long elemx1         = 0, elemx2=0, elemy1=0, elemy2=0;
 
-    if (CPRO.result[which_statistic].statisticexists)
-    {
+    if (CPRO.result[which_statistic].statisticexists) {
         CPRO_freestatistic(which_statistic);
     }
     else CPRO.result[which_statistic].statisticexists=1;
 
     CPRO_allocstatistic(which_statistic);
 
-    aw_status("calculating");
+    arb_progress progress("calculating matrix", comparesneeded);
+    bool         aborted = false;
 
-    for (segmentx=0; segmentx<numofsegments; segmentx++)
-    {
-        elemx1=widthmatrix*segmentx;
-        elemx2=widthmatrix*(segmentx+1)-1;
-        for (segmenty=0; segmenty<numofsegments; segmenty++)
-        {
-            elemy1=widthmatrix*segmenty;
-            elemy2=widthmatrix*(segmenty+1)-1;
+    for (long segmentx=0; segmentx<numofsegments && !aborted; segmentx++) {
+        long elemx1 = widthmatrix*segmentx;
+        long elemx2 = widthmatrix*(segmentx+1)-1;
+
+        for (long segmenty=0; segmenty<numofsegments && !aborted; segmenty++) {
+            long elemy1 = widthmatrix*segmenty;
+            long elemy2 = widthmatrix*(segmenty+1)-1;
+            
             CPRO_readneededdata(speciesdata, speciesdatabase, elemx1, elemx2, elemy1, elemy2, which_statistic);
-            for (elemx=elemx1; elemx<=elemx2; elemx++)
-            {
-                for (elemy=elemy1; elemy<=elemy2; elemy++)
-                {
-                    if ((elemy<CPRO.numspecies)&&(elemx<CPRO.numspecies))
-                    {
-                        CPRO_entryinstatistic(speciesdata,
-                                              elemx, elemy, which_statistic);
-                        compares++;
-                        if (((compares/30)*30)==compares)
-                        {
-                            if (aw_status((double)compares
-                                         /(double)comparesneeded))  return (0);
-                        }
+            for (long elemx=elemx1; elemx<=elemx2 && !aborted; elemx++) {
+                for (long elemy=elemy1; elemy<=elemy2 && !aborted; elemy++) {
+                    if ((elemy<CPRO.numspecies)&&(elemx<CPRO.numspecies)) {
+                        CPRO_entryinstatistic(speciesdata, elemx, elemy, which_statistic);
+                        ++progress;
+                        aborted = progress.aborted();
                     }
                 }
             }
@@ -599,6 +586,7 @@ static void CPRO_calculate_cb(AW_window *aw, AW_CL which_statistic)
 
     CPRO.result[which_statistic].maxalignlen = GBT_get_alignment_len(GLOBAL_gb_main, align);
     if (CPRO.result[which_statistic].maxalignlen<=0) {
+        GB_clear_error();
         GB_pop_transaction(GLOBAL_gb_main);
         aw_message("Error: Select an alignment !");
         delete   align;
@@ -606,7 +594,7 @@ static void CPRO_calculate_cb(AW_window *aw, AW_CL which_statistic)
     }
 
     char isamino = GBT_is_alignment_protein(GLOBAL_gb_main, align);
-    aw_openstatus("calculating"); aw_status((double)0);
+    arb_progress progress("Calculating conservation profile");
 
     GBDATA **speciesdatabase; // array of GBDATA-pointers to the species
     char **speciesdata; // array of pointers to strings that hold data of species
@@ -628,11 +616,9 @@ static void CPRO_calculate_cb(AW_window *aw, AW_CL which_statistic)
     CPRO.distancecorrection=(CPRO.result[which_statistic].ratio+1)*2.0/3.0;
 
     /* fill the CPRO.statistic table */
-    char success=CPRO_makestatistic(speciesdata, speciesdatabase, (char)which_statistic);
+    CPRO_makestatistic(speciesdata, speciesdatabase, (char)which_statistic);
     // GBUSE(success);
     CPRO_workupstatistic((char)which_statistic);
-
-    aw_closestatus();
 
     CPRO_deallocate(speciesdata, speciesdatabase);
     free(align);
@@ -648,18 +634,22 @@ static void CPRO_calculate_cb(AW_window *aw, AW_CL which_statistic)
 
 static void CPRO_memrequirement_cb(AW_root *aw_root)
 {
-    char *align=aw_root->awar("cpro/alignment")->read_string();
-    char *marked=aw_root->awar("cpro/which_species")->read_string();
-    char versus=0; /* all vs all */
-    if (!(strcmp("marked", marked))) versus=1;
-    if (!(strcmp("markedall", marked))) versus=2;
-    free(marked);
-    CPRO.partition=aw_root->awar("cpro/partition")->read_int();
-    if (CPRO.partition<=0) CPRO.partition=1;
-    long resolution=aw_root->awar("cpro/resolution")->read_int();
-    if (resolution<=0) resolution=1;
+    char  versus = 0; /* all vs all */
+    {
+        char *marked = aw_root->awar("cpro/which_species")->read_string();
+        
+        if (!(strcmp("marked", marked))) versus    = 1;
+        if (!(strcmp("markedall", marked))) versus = 2;
+        free(marked);
+    }
+
+    CPRO.partition  = aw_root->awar("cpro/partition")->read_int();
+    long resolution = aw_root->awar("cpro/resolution")->read_int();
+
+    if (CPRO.partition<=0) CPRO.partition = 1;
+    if (resolution<=0) resolution         = 1;
+
     char buf[80];
-    GB_ERROR faultmessage;
 
     aw_root->awar("tmp/cpro/which1")->write_string(CPRO.result[0].which_species);
     aw_root->awar("tmp/cpro/which2")->write_string(CPRO.result[1].which_species);
@@ -685,39 +675,30 @@ static void CPRO_memrequirement_cb(AW_root *aw_root)
         aw_root->awar("tmp/cpro/memfor2")->write_string(buf);
     }
 
-    if ((faultmessage=GB_push_transaction(GLOBAL_gb_main))) {
-        aw_question(faultmessage, "OK,EXIT");
+    long len;
+    {
+        GB_transaction ta(GLOBAL_gb_main);
+        char *align  = aw_root->awar("cpro/alignment")->read_string();
+    
+        len = GBT_get_alignment_len(GLOBAL_gb_main, align);
         free(align);
-        return;
     }
-
-    long len = GBT_get_alignment_len(GLOBAL_gb_main, align);
 
     if (len<=0) {
-        GB_clear_error(); // dont warn about wrong alignment name
-        
-        GB_pop_transaction(GLOBAL_gb_main);
+        GB_clear_error();
         aw_root->awar("tmp/cpro/mempartition")->write_string("???");
         aw_root->awar("tmp/cpro/memstatistic")->write_string("???");
-        free(align);
-        return;
     }
+    else {
+        long mem;
 
-    long mem;
+        mem=CPRO.partition*len*2;    // *2, because of row and column in matrix
+        sprintf(buf, "%li KB", long(mem/1024));
+        aw_root->awar("tmp/cpro/mempartition")->write_string(buf);
 
-    mem=CPRO.partition*len*2;    // *2, because of row and column in matrix
-    sprintf(buf, "%li KB", long(mem/1024));
-    aw_root->awar("tmp/cpro/mempartition")->write_string(buf);
-
-    mem+=resolution*3*sizeof(STATTYPE)*len;
-    sprintf(buf, "%li KB", long(mem/1024));
-    aw_root->awar("tmp/cpro/memstatistic")->write_string(buf);
-
-    free(align);
-    if ((faultmessage=GB_pop_transaction(GLOBAL_gb_main)))
-    {
-        aw_question(faultmessage, "OK,EXIT");
-        return;
+        mem+=resolution*3*sizeof(STATTYPE)*len;
+        sprintf(buf, "%li KB", long(mem/1024));
+        aw_root->awar("tmp/cpro/memstatistic")->write_string(buf);
     }
 }
 
@@ -1343,7 +1324,7 @@ void CPRO_condense_cb(AW_window *aw, AW_CL which_statistic)
         return;
     }
 
-    aw_openstatus("condense statistic"); aw_status((double)0);
+    arb_progress progress("condense statistic", maxcol);
 
     char *result=(char *)calloc((unsigned int)maxcol+1, 1);
 
@@ -1352,7 +1333,6 @@ void CPRO_condense_cb(AW_window *aw, AW_CL which_statistic)
     char steps;
     for (long column=0; column<maxcol; column++)
     {
-        if (((column/100)*100)==column) aw_status((double)column/(double)maxcol);
         maximum=CPRO_getmaximum(column, transversion, (char)which_statistic, mode);
         if (maximum<-100.0) result[column]='.';
         else if (maximum<=0.0) result[column]='-';
@@ -1366,12 +1346,11 @@ void CPRO_condense_cb(AW_window *aw, AW_CL which_statistic)
                 reachedhalf-=firstreachedstep;
             result[column]+=steps;
         }
+        ++progress;
     }
 
     GB_ERROR error = 0;
     char *align=CPRO.result[which_statistic].alignname;
-
-    aw_status("exporting result");
 
     GB_begin_transaction(GLOBAL_gb_main);
 
@@ -1391,7 +1370,6 @@ void CPRO_condense_cb(AW_window *aw, AW_CL which_statistic)
     GBDATA *gb_data = GBT_add_data(gb_extended, align, "data", GB_STRING);
 
     error = GB_write_string(gb_data, result);
-    aw_closestatus();
     GB_end_transaction_show_error(GLOBAL_gb_main, error, aw_message);
 
     free(result);

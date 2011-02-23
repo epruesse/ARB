@@ -43,7 +43,7 @@
 #include <aw_awars.hxx>
 #include <aw_file.hxx>
 #include <aw_msg.hxx>
-#include <aw_status.hxx>
+#include <arb_progress.h>
 #include <aw_root.hxx>
 
 #include <arb_version.h>
@@ -337,37 +337,34 @@ AW_window *NT_create_save_quick_as(AW_root *aw_root, char *base_name)
 }
 
 void NT_database_optimization(AW_window *aww) {
-    GB_ERROR error = 0;
+    arb_progress progress("Optimizing database", 2);
+
     GB_push_my_security(GLOBAL_gb_main);
+    GB_ERROR error = GB_begin_transaction(GLOBAL_gb_main);
+    if (!error) {
+        char         **ali_names = GBT_get_alignment_names(GLOBAL_gb_main);
+        arb_progress   ali_progress("Optimizing sequence data", GBT_count_names(ali_names));
 
-    {
-        aw_openstatus("Optimizing sequence data");
+        ali_progress.allow_title_reuse();
 
-        error = GB_begin_transaction(GLOBAL_gb_main);
+        error = GBT_check_data(GLOBAL_gb_main, 0);
+        error = GB_end_transaction(GLOBAL_gb_main, error);
+
         if (!error) {
-            char **ali_names = GBT_get_alignment_names(GLOBAL_gb_main);
-
-            aw_status("Checking Sequence Lengths");
-            error = GBT_check_data(GLOBAL_gb_main, 0);
-            error = GB_end_transaction(GLOBAL_gb_main, error);
-
-            if (!error) {
-                char *tree_name = aww->get_root()->awar("tmp/nt/arbdb/optimize_tree_name")->read_string();
-                for (char **ali_name = ali_names; !error && *ali_name; ali_name++) {
-                    aw_status(*ali_name);
-                    error = GBT_compress_sequence_tree2(GLOBAL_gb_main, tree_name, *ali_name);
-                }
-                free(tree_name);
+            char *tree_name = aww->get_root()->awar("tmp/nt/arbdb/optimize_tree_name")->read_string();
+            for (char **ali_name = ali_names; !error && *ali_name; ali_name++) {
+                error = GBT_compress_sequence_tree2(GLOBAL_gb_main, tree_name, *ali_name);
+                ali_progress.inc_and_check_user_abort(error);
             }
-            GBT_free_names(ali_names);
+            free(tree_name);
         }
-        aw_closestatus();
+        GBT_free_names(ali_names);
     }
+    progress.inc_and_check_user_abort(error);
 
     if (!error) {
-        aw_openstatus("Optimizing non-sequence data");
         error = GB_optimize(GLOBAL_gb_main);
-        aw_closestatus();
+        progress.inc_and_check_user_abort(error);
     }
 
     GB_pop_my_security(GLOBAL_gb_main);
@@ -1001,19 +998,18 @@ void NT_alltree_remove_leafs(AW_window *, AW_CL cl_mode, AW_CL cl_gb_main) {
     GBDATA               *gb_main = (GBDATA*)cl_gb_main;
     GBT_TREE_REMOVE_TYPE  mode    = (GBT_TREE_REMOVE_TYPE)cl_mode;
 
+    GB_ERROR       error = 0;
     GB_transaction ta(gb_main);
 
     int    treeCount;
     char **tree_names = GBT_get_tree_names_and_count(gb_main, &treeCount);
 
     if (tree_names) {
-        aw_openstatus("Deleting from trees");
-        GB_HASH *species_hash = GBT_create_species_hash(gb_main);
+        arb_progress  progress("Deleting from trees", treeCount);
+        GB_HASH      *species_hash = GBT_create_species_hash(gb_main);
 
-        for (int t = 0; t<treeCount; t++) {
-            GB_ERROR  error = 0;
-            aw_status(t/double(treeCount));
-            aw_status(tree_names[t]);
+        for (int t = 0; t<treeCount && !error; t++) {
+            progress.subtitle(tree_names[t]);
             GBT_TREE *tree = GBT_read_tree(gb_main, tree_names[t], -sizeof(GBT_TREE));
             if (!tree) {
                 aw_message(GBS_global_string("Can't load tree '%s' - skipped", tree_names[t]));
@@ -1042,14 +1038,14 @@ void NT_alltree_remove_leafs(AW_window *, AW_CL cl_mode, AW_CL cl_gb_main) {
                     GBT_delete_tree(tree);
                 }
             }
-            if (error) aw_message(error);
+            progress.inc_and_check_user_abort(error);
         }
-        aw_status(1.0);
 
         GBT_free_names(tree_names);
         GBS_free_hash(species_hash);
-        aw_closestatus();
     }
+
+    aw_message_if(ta.close(error));
 }
 
 GBT_TREE *nt_get_current_tree_root() {
@@ -1341,7 +1337,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone) {
             awm->insert_sub_menu("Other functions", "O");
             {
                 AWMIMT("pos_var_dist",          "Positional variability (distance method)",     "P", "pos_variability.ps", AWM_EXP, AW_POPUP, (AW_CL)AP_open_cprofile_window, 0);
-                AWMIMT("count_different_chars", "Count different chars/column",                 "C", "count_chars.hlp",    AWM_EXP, NT_count_different_chars, (AW_CL)GLOBAL_gb_main, 1);
+                AWMIMT("count_different_chars", "Count different chars/column",                 "C", "count_chars.hlp",    AWM_EXP, NT_count_different_chars, (AW_CL)GLOBAL_gb_main, 0);
                 AWMIMT("export_pos_var",        "Export Column Statistic (GNUPLOT format)",     "E", "csp_2_gnuplot.hlp",  AWM_ALL, AW_POPUP, (AW_CL)NT_create_colstat_2_gnuplot_window, 0);
             }
             awm->close_sub_menu();

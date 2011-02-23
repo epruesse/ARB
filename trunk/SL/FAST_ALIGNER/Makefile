@@ -79,8 +79,8 @@ fast_aligner.o: $(ARBHOME)/INCLUDE/arb_assert.h
 fast_aligner.o: $(ARBHOME)/INCLUDE/arb_core.h
 fast_aligner.o: $(ARBHOME)/INCLUDE/arb_defs.h
 fast_aligner.o: $(ARBHOME)/INCLUDE/arb_error.h
-fast_aligner.o: $(ARBHOME)/INCLUDE/arb_handlers.h
 fast_aligner.o: $(ARBHOME)/INCLUDE/arb_msg.h
+fast_aligner.o: $(ARBHOME)/INCLUDE/arb_progress.h
 fast_aligner.o: $(ARBHOME)/INCLUDE/arb_string.h
 fast_aligner.o: $(ARBHOME)/INCLUDE/arb_unit_test.h
 fast_aligner.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -94,7 +94,6 @@ fast_aligner.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-fast_aligner.o: $(ARBHOME)/INCLUDE/aw_status.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 fast_aligner.o: $(ARBHOME)/INCLUDE/awtc_next_neighbours.hxx

@@ -13,7 +13,7 @@
 
 #include <AP_seq_simple_pro.hxx>
 #include <aw_msg.hxx>
-#include <aw_status.hxx>
+#include <arb_progress.h>
 
 #include <cmath>
 
@@ -211,24 +211,20 @@ void di_mldist::build_akt_predikt(double tt)
 
 }
 
-const char *di_mldist::makedists(bool *aborted_flag)
+GB_ERROR di_mldist::makedists(bool *aborted_flag)
 {
     /* compute the distances */
-    long            i, j, k, iterations;
-    double          delta, slope, curv;
-    int             b1=0, b2=0;
-    double              tt=0;
-    int         pos;
+    long   i, j, k, iterations;
+    double delta, slope, curv;
+    int    b1 = 0, b2=0;
+    double tt = 0;
+    int    pos;
+
+    arb_progress progress("Calculating distances", (spp*(spp+1))/2);
+    GB_ERROR     error = NULL;
 
     for (i = 0; i < spp; i++) {
         matrix->set(i, i, 0.0);
-        {
-            double gauge = (double)i/(double)spp;
-            if (aw_status(gauge*gauge)) {
-                if (aborted_flag) *aborted_flag = true;
-                return "Aborted by user";
-            }
-        }
         {
             /* move all unknown characters to del */
             ap_pro *seq = entries[i]->sequence_protein->get_sequence();
@@ -292,10 +288,14 @@ const char *di_mldist::makedists(bool *aborted_flag)
                     if (tt < 0) tt = 0;
                 }
             } while (iterations < 20);
+
+            progress.inc_and_check_user_abort(error);
         }
         matrix->set(i, j, fracchange * tt);
     }
-    return 0;
+
+    if (aborted_flag && error) *aborted_flag = true;
+    return error;
 }
 
 

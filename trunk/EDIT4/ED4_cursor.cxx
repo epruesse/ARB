@@ -5,7 +5,7 @@
 #include <aw_awars.hxx>
 #include <AW_helix.hxx>
 #include <aw_msg.hxx>
-#include <aw_status.hxx>
+#include <arb_progress.h>
 #include <aw_root.hxx>
 
 #include <ed4_extern.hxx>
@@ -600,9 +600,7 @@ void ED4_init_notFoundMessage() {
 void ED4_finish_and_show_notFoundMessage() {
     if (not_found_counter != 0) {
         if (not_found_counter>MAX_SHOWN_MISSING_SPECIES) {
-            GBS_strcat(not_found_message,
-                       GBS_global_string("(skipped display of %zu more species)\n",
-                                         not_found_counter-MAX_SHOWN_MISSING_SPECIES));
+            GBS_strcat(not_found_message, GBS_global_string("(skipped display of %zu more species)\n", not_found_counter-MAX_SHOWN_MISSING_SPECIES));
         }
         char *out_message = GBS_strclose(not_found_message);
         aw_message(out_message);
@@ -698,28 +696,25 @@ void ED4_get_marked_from_menu(AW_window *, AW_CL, AW_CL) {
     int marked = GBT_count_marked_species(GLOBAL_gb_main);
 
     if (marked) {
-        GBDATA                    *gb_species          = GBT_first_marked_species(GLOBAL_gb_main);
-        int                        count               = 0;
-        char                      *buffer              = new char[BUFFERSIZE+1];
-        char                      *bp                  = buffer;
+        GBDATA *gb_species = GBT_first_marked_species(GLOBAL_gb_main);
+        char   *buffer     = new char[BUFFERSIZE+1];
+        char   *bp         = buffer;
+
         ED4_multi_species_manager *insert_into_manager = ED4_new_species_multi_species_manager();
         ED4_group_manager         *group_man           = insert_into_manager->get_parent(ED4_L_GROUP)->to_group_manager();
-        int                        group_depth         = insert_into_manager->calc_group_depth();
-        int                        index               = 0;
-        ED4_index                  y                   = 0;
-        ED4_index                  lot                 = 0;
-        int                        inserted            = 0;
-        char                      *default_alignment   = GBT_get_default_alignment(GLOBAL_gb_main);
 
-        aw_openstatus("ARB_EDIT4");
-        aw_status("Loading species...");
+        int        group_depth       = insert_into_manager->calc_group_depth();
+        int        index             = 0;
+        ED4_index  y                 = 0;
+        ED4_index  lot               = 0;
+        int        inserted          = 0;
+        char      *default_alignment = GBT_get_default_alignment(GLOBAL_gb_main);
+
+        arb_progress progress("Loading species", marked);
 
         ED4_init_notFoundMessage();
 
         while (gb_species) {
-            count++;
-            GB_status(double(count)/double(marked));
-
             const char *name = GBT_read_name(gb_species);
             ED4_species_name_terminal *name_term = ED4_find_species_name_terminal(name);
 
@@ -756,6 +751,7 @@ void ED4_get_marked_from_menu(AW_window *, AW_CL, AW_CL) {
                 inserted++;
             }
             gb_species = GBT_next_marked_species(gb_species);
+            progress.inc();
         }
 
         if (bp>buffer) {
@@ -765,7 +761,6 @@ void ED4_get_marked_from_menu(AW_window *, AW_CL, AW_CL) {
                                              buffer, &index, &y, 0, &lot, group_depth, NULL);
         }
 
-        aw_closestatus();
         aw_message(GBS_global_string("Loaded %i of %i marked species.", inserted, marked));
 
         ED4_finish_and_show_notFoundMessage();

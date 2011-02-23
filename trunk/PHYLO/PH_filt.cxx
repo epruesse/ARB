@@ -12,7 +12,7 @@
 #include "phwin.hxx"
 #include <arbdbt.h>
 #include <aw_awar.hxx>
-#include <aw_status.hxx>
+#include <arb_progress.h>
 #include <aw_root.hxx>
 #include <cctype>
 
@@ -94,12 +94,13 @@ float *PH_filter::calculate_column_homology() {
     unsigned char *sequence_buffer;
     AW_root       *aw_root;
     float         *mline = 0;
-    double         gauge;
 
     if (!PHDATA::ROOT) return 0;                    // nothing loaded yet
 
+    arb_progress filt_progress("Calculating filter");
+    
     GB_transaction dummy(PHDATA::ROOT->gb_main);
-    bool isNUC = true;     // rna oder dna sequence : nur zum testen und Entwicklung
+    bool           isNUC = true; // rna oder dna sequence : nur zum testen und Entwicklung
     if (GBT_is_alignment_protein(PHDATA::ROOT->gb_main, PHDATA::ROOT->use)) {
         isNUC = false;
     }
@@ -298,50 +299,52 @@ float *PH_filter::calculate_column_homology() {
         default: ph_assert(0); break;  // illegal value!
     }
 
-    aw_openstatus("Calculating Filter");
-    aw_status("Counting");
-    // counting routine
-    for (i=0; i<long(PHDATA::ROOT->nentries); i++) {
-        gauge = (double)i/(double)PHDATA::ROOT->nentries;
-        if (aw_status(gauge*gauge)) return 0;
-        sequence_buffer = (unsigned char*)GB_read_char_pntr(PHDATA::ROOT->hash_elements[i]->gb_species_data_ptr);
-        long send = stopcol;
-        long slen = GB_read_string_count(PHDATA::ROOT->hash_elements[i]->gb_species_data_ptr);
-        if (slen< send) send = slen;
-        for (j=startcol; j<send; j++) {
-            if (mask[sequence_buffer[j]]) {
-                chars_counted[j-startcol][reference_table[sequence_buffer[j]]]++;
+    GB_ERROR error = NULL;
+    {
+        arb_progress progress("Counting", PHDATA::ROOT->nentries);
+        // counting routine
+        for (i=0; i<long(PHDATA::ROOT->nentries) && !error; i++) {
+            sequence_buffer = (unsigned char*)GB_read_char_pntr(PHDATA::ROOT->hash_elements[i]->gb_species_data_ptr);
+            long send = stopcol;
+            long slen = GB_read_string_count(PHDATA::ROOT->hash_elements[i]->gb_species_data_ptr);
+            if (slen< send) send = slen;
+            for (j=startcol; j<send; j++) {
+                if (mask[sequence_buffer[j]]) {
+                    chars_counted[j-startcol][reference_table[sequence_buffer[j]]]++;
+                }
+                else {
+                    chars_counted[j-startcol][num_all_chars+1]++;
+                }
             }
-            else {
-                chars_counted[j-startcol][num_all_chars+1]++;
-            }
+            progress.inc_and_check_user_abort(error);
         }
     }
-
-    // calculate similarity
-    aw_status("Calculate similarity");
-    for (i=0; i<len; i++) {
-        if (aw_status(i/(double)len)) return 0;
-        if (chars_counted[i][num_all_chars]==0) // else: forget whole column
-        {
-            max=0; max_char=' ';
-            for (j=0; get_maximum_from[j]!='\0'; j++) {
-                if (max<chars_counted[i][reference_table[(unsigned char)get_maximum_from[j]]]) {
-                    max_char = get_maximum_from[j];
-                    max      = chars_counted[i][reference_table[(unsigned char)max_char]];
+    if (!error) {
+        // calculate similarity
+        arb_progress progress("Calculate similarity", len);
+        for (i=0; i<len && !error; i++) {
+            if (chars_counted[i][num_all_chars]==0) // else: forget whole column
+            {
+                max=0; max_char=' ';
+                for (j=0; get_maximum_from[j]!='\0'; j++) {
+                    if (max<chars_counted[i][reference_table[(unsigned char)get_maximum_from[j]]]) {
+                        max_char = get_maximum_from[j];
+                        max      = chars_counted[i][reference_table[(unsigned char)max_char]];
+                    }
+                }
+                if ((max!=0) && !strchr(delete_when_max, max_char)) {
+                    // delete SKIP_COLUMN_IF_MAX classes for counting
+                    for (j=0; delete_when_max[j]!='\0'; j++) {
+                        chars_counted[i][num_all_chars+1] += chars_counted[i][reference_table[(unsigned char)delete_when_max[j]]];
+                        chars_counted[i][reference_table[(unsigned char)delete_when_max[j]]]=0;
+                    }
+                    mline[i+startcol] = (max/
+                                         ((float) PHDATA::ROOT->nentries -
+                                          (float) chars_counted[i][num_all_chars+1]))*100.0;
+                    // (maximum in column / number of counted positions) * 100
                 }
             }
-            if ((max!=0) && !strchr(delete_when_max, max_char)) {
-                // delete SKIP_COLUMN_IF_MAX classes for counting
-                for (j=0; delete_when_max[j]!='\0'; j++) {
-                    chars_counted[i][num_all_chars+1] += chars_counted[i][reference_table[(unsigned char)delete_when_max[j]]];
-                    chars_counted[i][reference_table[(unsigned char)delete_when_max[j]]]=0;
-                }
-                mline[i+startcol] = (max/
-                                     ((float) PHDATA::ROOT->nentries -
-                                      (float) chars_counted[i][num_all_chars+1]))*100.0;
-                // (maximum in column / number of counted positions) * 100
-            }
+            progress.inc_and_check_user_abort(error);
         }
     }
 
@@ -349,16 +352,21 @@ float *PH_filter::calculate_column_homology() {
         free(chars_counted[i]);
     }
     free(chars_counted);
-    aw_closestatus();
 
-    char *filt=(char *)calloc((int) PHDATA::ROOT->get_seq_len()+1, sizeof(char));
-    for (i=0; i<PHDATA::ROOT->get_seq_len(); i++)
-        filt[i]=((options_vector[OPT_MIN_HOM]<=mline[i])&&(options_vector[OPT_MAX_HOM]>=mline[i])) ? '1' : '0';
-    filt[i]='\0';
-    aw_root->awar("phyl/filter/filter")->write_string(filt);
-    free(filt);
+    if (!error) {
+        char *filt=(char *)calloc((int) PHDATA::ROOT->get_seq_len()+1, sizeof(char));
+        for (i=0; i<PHDATA::ROOT->get_seq_len(); i++)
+            filt[i]=((options_vector[OPT_MIN_HOM]<=mline[i])&&(options_vector[OPT_MAX_HOM]>=mline[i])) ? '1' : '0';
+        filt[i]='\0';
+        aw_root->awar("phyl/filter/filter")->write_string(filt);
+        free(filt);
 
-    return mline;
+        return mline;
+    }
+    else {
+        delete mline;
+        return 0;
+    }
 }
 
 

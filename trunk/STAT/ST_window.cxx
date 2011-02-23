@@ -47,7 +47,7 @@ static void st_ok_cb(AW_window *aww, AW_CL cl_st_ml) {
 
     GB_ERROR error = GB_push_transaction(st_ml->get_gb_main());
     if (!error) {
-        error = st_ml->init_st_ml(tree_name, alignment_name, NULL, marked_only, st_ml->get_column_statistic(), true, NULL);
+        error = st_ml->init_st_ml(tree_name, alignment_name, NULL, marked_only, st_ml->get_column_statistic(), NULL);
         if (!error) st_ml->do_refresh();
     }
 

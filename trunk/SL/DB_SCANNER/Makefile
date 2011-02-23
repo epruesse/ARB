@@ -42,6 +42,7 @@ db_scanner.o: $(ARBHOME)/INCLUDE/arb_assert.h
 db_scanner.o: $(ARBHOME)/INCLUDE/arb_core.h
 db_scanner.o: $(ARBHOME)/INCLUDE/arb_error.h
 db_scanner.o: $(ARBHOME)/INCLUDE/arb_msg.h
+db_scanner.o: $(ARBHOME)/INCLUDE/arb_progress.h
 db_scanner.o: $(ARBHOME)/INCLUDE/arb_str.h
 db_scanner.o: $(ARBHOME)/INCLUDE/arb_string.h
 db_scanner.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -57,7 +58,6 @@ db_scanner.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 db_scanner.o: $(ARBHOME)/INCLUDE/AW_rename.hxx
 db_scanner.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 db_scanner.o: $(ARBHOME)/INCLUDE/aw_select.hxx
-db_scanner.o: $(ARBHOME)/INCLUDE/aw_status.hxx
 db_scanner.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 db_scanner.o: $(ARBHOME)/INCLUDE/awt.hxx
 db_scanner.o: $(ARBHOME)/INCLUDE/cb.h

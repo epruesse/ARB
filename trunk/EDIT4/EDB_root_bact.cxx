@@ -12,7 +12,7 @@
 #include "ed4_class.hxx"
 
 #include <aw_msg.hxx>
-#include <aw_status.hxx>
+#include <arb_progress.h>
 #include <arbdbt.h>
 #include <ad_config.h>
 
@@ -327,7 +327,7 @@ ED4_returncode  EDB_root_bact::fill_species(ED4_multi_species_manager  *multi_sp
                                             ED4_index                   actual_local_position,
                                             ED4_index                  *length_of_terminals, /* height of terminals is meant */
                                             int                         group_depth,
-                                            aw_status_counter          *progress)
+                                            arb_progress               *progress)
 {
 #define SHIPSIZE 1024
 
@@ -397,7 +397,7 @@ ED4_returncode  EDB_root_bact::fill_species(ED4_multi_species_manager  *multi_sp
 
             if (progress) {
                 progress->inc();
-                if (progress->aborted_by_user()) ED4_exit();
+                if (progress->aborted()) ED4_exit();
             }
 
             fill_data(multi_species_manager, ref_sequence_info_terminal, ref_sequence_terminal, ship /* species name */,
@@ -422,7 +422,7 @@ ED4_index EDB_root_bact::scan_string(ED4_multi_species_manager  *parent,
                                      char                       *str,
                                      int                        *index,
                                      ED4_index                  *y,
-                                     aw_status_counter&          progress)
+                                     arb_progress&               progress)
 {
     ED4_multi_species_manager *multi_species_manager = NULL;
     ED4_bracket_terminal      *bracket_terminal      = NULL;

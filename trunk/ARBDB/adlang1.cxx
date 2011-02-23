@@ -19,6 +19,7 @@
 
 #include <static_assert.h>
 #include <arb_defs.h>
+#include <arb_str.h>
 
 #define AWAR_TREE_REFRESH "tmp/focus/tree_refresh" // touch this awar to refresh the tree display
 
@@ -688,17 +689,16 @@ static GB_ERROR gbl_len(GBL_command_arguments *args)
     else option = args->vparam[0].str;
     if (args->cparam>=2) return "len syntax: len[(\"characters not to count\")]";
 
-    for (i=0; i<256; i++) {
-        if (strchr(option, i)) tab[i] = 0;
-        else tab[i] = 1;
-    }
+    for (i = 0; i<256; ++i) tab[i] = 1;
+    for (i = 0; option[i]; ++i) tab[safeCharIndex(option[i])] = 0;
+
     GBL_CHECK_FREE_PARAM(*args->coutput, args->cinput);
     for (i=0; i<args->cinput; i++) {       // go through all orig streams
         char *p;
         long sum = 0;                   // count frequencies
         p = args->vinput[i].str;
         while (*p) {
-            sum += tab[(unsigned int)*(p++)];
+            sum += tab[safeCharIndex(*(p++))];
         }
         PASS_2_OUT(args, GBS_global_string_copy("%li", sum));
     }

@@ -17,7 +17,7 @@
 #include <awt_item_sel_list.hxx>
 #include <aw_awars.hxx>
 #include <aw_msg.hxx>
-#include <aw_status.hxx>
+#include <arb_progress.h>
 #include <aw_root.hxx>
 #include <arb_str.h>
 
@@ -197,7 +197,7 @@ static bool adaption_enabled(AW_root *awr) {
 }
 
 void MG_transfer_selected_species(AW_window *aww) {
-    if (MG_copy_and_check_alignments(aww, 0) != 0) return;
+    if (MG_copy_and_check_alignments(aww) != 0) return;
 
     AW_root  *aw_root = aww->get_root();
     char     *source  = aw_root->awar(AWAR_SPECIES1)->read_string();
@@ -207,7 +207,7 @@ void MG_transfer_selected_species(AW_window *aww) {
         error = "Please select a species in the left list";
     }
     else {
-        aw_openstatus("Transferring selected species");
+        arb_progress progress("Transferring selected species");
 
         error             = GB_begin_transaction(GLOBAL_gb_merge);
         if (!error) error = GB_begin_transaction(GLOBAL_gb_dest);
@@ -233,21 +233,15 @@ void MG_transfer_selected_species(AW_window *aww) {
 
         error = GB_end_transaction(GLOBAL_gb_merge, error);
         error = GB_end_transaction(GLOBAL_gb_dest, error);
-
-        aw_closestatus();
     }
 
     if (error) aw_message(error);
 }
 
-#undef IS_QUERIED
-#define IS_QUERIED(gb_species) (1 & GB_read_usr_private(gb_species))
-
 void MG_transfer_species_list(AW_window *aww) {
-    if (MG_copy_and_check_alignments(aww, 0) != 0) return;
+    if (MG_copy_and_check_alignments(aww) != 0) return;
 
     GB_ERROR error = NULL;
-    aw_openstatus("Transferring species");
     GB_begin_transaction(GLOBAL_gb_merge);
     GB_begin_transaction(GLOBAL_gb_dest);
 
@@ -262,15 +256,13 @@ void MG_transfer_species_list(AW_window *aww) {
     MG_remaps  rm(GLOBAL_gb_merge, GLOBAL_gb_dest, adaption_enabled(aw_root), get_reference_species_names(aw_root));
 
     GBDATA *gb_species1;
-    int     queried = 0;
-    int     count   = 0;
-
-    for (gb_species1 = GBT_first_species(GLOBAL_gb_merge); gb_species1; gb_species1 = GBT_next_species(gb_species1)) {
-        if (IS_QUERIED(gb_species1)) queried++;
-    }
-
-    for (gb_species1 = GBT_first_species(GLOBAL_gb_merge); gb_species1; gb_species1 = GBT_next_species(gb_species1)) {
-        if (IS_QUERIED(gb_species1)) {
+    arb_progress progress("Transferring listed species", mg_count_queried(GLOBAL_gb_merge));
+    
+    for (gb_species1 = GBT_first_species(GLOBAL_gb_merge);
+         gb_species1;
+         gb_species1 = GBT_next_species(gb_species1))
+    {
+        if (IS_QUERIED_SPECIES(gb_species1)) {
             GBDATA *gb_species_data2 = GB_search(GLOBAL_gb_dest, "species_data", GB_CREATE_CONTAINER);
 
             error = MG_transfer_one_species(aw_root, rm,
@@ -279,7 +271,8 @@ void MG_transfer_species_list(AW_window *aww) {
                                             gb_species1, NULL,
                                             source_organism_hash, dest_species_hash,
                                             error_suppressor);
-            aw_status(++count/double(queried));
+
+            progress.inc_and_check_user_abort(error);
         }
     }
 
@@ -291,12 +284,10 @@ void MG_transfer_species_list(AW_window *aww) {
 
     error = GB_end_transaction(GLOBAL_gb_merge, error);
     GB_end_transaction_show_error(GLOBAL_gb_dest, error, aw_message);
-
-    aw_closestatus();
 }
 
 void MG_transfer_fields_cb(AW_window *aww) {
-    if (MG_copy_and_check_alignments(aww, 0) != 0) return;
+    if (MG_copy_and_check_alignments(aww) != 0) return;
 
     char     *field  = aww->get_root()->awar(AWAR_FIELD1)->read_string();
     long      append = aww->get_root()->awar(AWAR_APPEND)->read_int();
@@ -309,12 +300,13 @@ void MG_transfer_fields_cb(AW_window *aww) {
         error = "Transferring the 'name' field is forbidden";
     }
     else {
-        aw_openstatus("Transferring fields");
         GB_begin_transaction(GLOBAL_gb_merge);
         GB_begin_transaction(GLOBAL_gb_dest);
 
         GBDATA *gb_dest_species_data  = GB_search(GLOBAL_gb_dest, "species_data", GB_CREATE_CONTAINER);
         bool    transfer_of_alignment = GBS_string_matches(field, "ali_*/data", GB_MIND_CASE);
+
+        arb_progress progress("Transferring fields of listed", mg_count_queried(GLOBAL_gb_merge));
 
         AW_root   *aw_root = aww->get_root();
         MG_remaps  rm(GLOBAL_gb_merge, GLOBAL_gb_dest, adaption_enabled(aw_root), get_reference_species_names(aw_root));
@@ -323,7 +315,7 @@ void MG_transfer_fields_cb(AW_window *aww) {
              gb_species1 && !error;
              gb_species1 = GBT_next_species(gb_species1))
         {
-            if (IS_QUERIED(gb_species1)) {
+            if (IS_QUERIED_SPECIES(gb_species1)) {
                 const char *name1       = GBT_read_name(gb_species1);
                 GBDATA     *gb_species2 = GB_find_string(gb_dest_species_data, "name", name1, GB_IGNORE_CASE, SEARCH_GRANDCHILD);
 
@@ -385,6 +377,7 @@ void MG_transfer_fields_cb(AW_window *aww) {
                         }
                     }
                 }
+                progress.inc_and_check_user_abort(error);
             }
         }
 
@@ -392,7 +385,6 @@ void MG_transfer_fields_cb(AW_window *aww) {
 
         error = GB_end_transaction(GLOBAL_gb_merge, error);
         error = GB_end_transaction(GLOBAL_gb_dest, error);
-        aw_closestatus();
     }
 
     if (error) aw_message(error);
@@ -432,7 +424,7 @@ AW_window *MG_transfer_fields(AW_root *aw_root)
 }
 
 void MG_move_field_cb(AW_window *aww) {
-    if (MG_copy_and_check_alignments(aww, 0) != 0) return;
+    if (MG_copy_and_check_alignments(aww) != 0) return;
 
     AW_root  *aw_root = aww->get_root();
     char     *field   = aww->get_root()->awar(AWAR_FIELD1)->read_string();
@@ -445,7 +437,7 @@ void MG_move_field_cb(AW_window *aww) {
         error = "You are not allowed to transfer the 'name' field";
     }
     else {
-        aw_openstatus("Cross Move field");
+        arb_progress progress("Cross Move field");
         error             = GB_begin_transaction(GLOBAL_gb_merge);
         if (!error) error = GB_begin_transaction(GLOBAL_gb_dest);
 
@@ -499,8 +491,6 @@ void MG_move_field_cb(AW_window *aww) {
 
         error = GB_end_transaction(GLOBAL_gb_merge, error);
         error = GB_end_transaction(GLOBAL_gb_dest, error);
-
-        aw_closestatus();
     }
 
     if (error) aw_message(error);
@@ -550,6 +540,8 @@ void MG_merge_tagged_field_cb(AW_window *aww) {
         char    *tag2     = awr->awar(AWAR_TAG2)->read_string();
         char    *tag_del1 = awr->awar(AWAR_TAG_DEL1)->read_string();
 
+        arb_progress progress("Merging tagged fields", mg_count_queried(GLOBAL_gb_merge));
+        
         GBDATA *gb_dest_species_data     = GB_search(GLOBAL_gb_dest, "species_data", GB_CREATE_CONTAINER);
         if (!gb_dest_species_data) error = GB_await_error();
         else {
@@ -557,7 +549,7 @@ void MG_merge_tagged_field_cb(AW_window *aww) {
                  gb_species1 && !error;
                  gb_species1 = GBT_next_species(gb_species1))
             {
-                if (IS_QUERIED(gb_species1)) {
+                if (IS_QUERIED_SPECIES(gb_species1)) {
                     char *name       = GBT_read_string(gb_species1, "name");
                     if (!name) error = GB_await_error();
                     else {
@@ -578,6 +570,7 @@ void MG_merge_tagged_field_cb(AW_window *aww) {
                         }
                     }
                     free(name);
+                    progress.inc_and_check_user_abort(error);
                 }
             }
         }

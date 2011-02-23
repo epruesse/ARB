@@ -9,85 +9,281 @@
 //                                                                  //
 // ================================================================ //
 
-#include "arb_progress.h"
-#include <cstdio>
+#include <arb_progress.h>
+#include <arb_handlers.h>
+#include <arb_msg.h>
+#include <algorithm>
+
+// ----------------
+//      counter
+
+struct null_counter: public arb_progress_counter {
+    null_counter(arb_parent_progress *progress_) : arb_progress_counter(progress_) {}
+
+    void inc() {}
+    void implicit_inc() {}
+    void done() {}
+    void restart(int) {}
+    void force_update() {}
+    void auto_subtitles(const char *) {}
+    bool has_auto_subtitles() { return false; }
+    void child_updates_gauge(double ) {
+        arb_assert(0); // wont
+    }
+
+#if defined(DUMP_PROGRESS)
+    void dump() {
+        fprintf(stderr, "null_counter\n");
+    }
+#endif
+
+    arb_progress_counter* clone(arb_parent_progress *parent_, int ) const { return new null_counter(parent_); }
+};
+
+struct no_counter : public null_counter {
+    no_counter(arb_parent_progress *progress_) : null_counter(progress_) {}
+    void inc() {
+        arb_assert(0); // this is no_counter - so explicit inc() is prohibited!
+    }
+    void child_updates_gauge(double gauge) { progress->update_gauge(gauge); }
+    
+#if defined(DUMP_PROGRESS)
+    void dump() {
+        fprintf(stderr, "no_counter (=wrapper)\n");
+    }
+#endif
+};
+
+class concrete_counter: public arb_progress_counter {
+    int     explicit_counter; // incremented by calls to inc() etc.
+    int     implicit_counter; // incremented by child_done()
+    int     maxcount;         // == 0 -> does not really count (just a wrapper for child progresses)
+    double  autoUpdateEvery;
+    double  nextAutoUpdate;
+    char   *auto_subtitle_prefix;
+    int     last_auto_counter;
+
+    int dispositive_counter() const { return std::max(implicit_counter, explicit_counter); }
+
+    void init(int overallCount) {
+        arb_assert(overallCount>0);
+
+        implicit_counter  = 0;
+        explicit_counter  = 0;
+        maxcount          = overallCount;
+        autoUpdateEvery   = overallCount/500.0; // update status approx. 500 times
+        nextAutoUpdate    = 0;
+    }
+
+    bool refresh_if_needed(double my_counter) {
+        if (my_counter<nextAutoUpdate) return false;
+        progress->update_gauge(my_counter/maxcount);
+        if (auto_subtitle_prefix) {
+            int count = int(my_counter+1);
+            if (count>last_auto_counter) {
+                const char *autosub = GBS_global_string("%s #%i/%i", auto_subtitle_prefix, count, maxcount);
+                progress->set_text(LEVEL_SUBTITLE, autosub);
+                last_auto_counter   = count;
+            }
+        }
+        nextAutoUpdate += autoUpdateEvery;
+        return true;
+    }
+    void update_display_if_needed() {
+        int dcount = dispositive_counter();
+        arb_assert(dcount <= maxcount);
+        refresh_if_needed(dcount);
+    }
+
+    void force_update() {
+        int oldNext    = nextAutoUpdate;;
+        nextAutoUpdate = 0;
+        update_display_if_needed();
+        nextAutoUpdate = oldNext;
+    }
+
+public:
+    concrete_counter(arb_parent_progress *parent, int overall_count)
+        : arb_progress_counter(parent),
+          auto_subtitle_prefix(NULL),
+          last_auto_counter(0)
+    {
+        arb_assert(overall_count>0);
+        init(overall_count);
+    }
+    ~concrete_counter() {
+        free(auto_subtitle_prefix);
+#if defined(TEST_COUNTERS)
+        if (!progress->accept_invalid_counters) {
+            arb_assert(implicit_counter || explicit_counter); // progress was never incremented
+            
+            arb_assert(implicit_counter <= maxcount); // overflow
+            arb_assert(explicit_counter <= maxcount); // overflow
+
+            arb_assert(dispositive_counter() == maxcount); // progress did not finish
+        }
+#endif
+    }
+
+#if defined(DUMP_PROGRESS)
+    void dump() {
+        fprintf(stderr,
+                "concrete_counter: explicit=%i, implicit=%i, maxcount=%i\n", 
+                explicit_counter, implicit_counter, maxcount);
+    }
+#endif
+
+    void auto_subtitles(const char *prefix) {
+        arb_assert(!auto_subtitle_prefix);
+        freedup(auto_subtitle_prefix, prefix);
+        force_update();
+    }
+    bool has_auto_subtitles() { return auto_subtitle_prefix; }
+
+    void inc()          { explicit_counter += 1; update_display_if_needed(); }
+    void implicit_inc() { implicit_counter += 1; update_display_if_needed(); }
+    
+    void done() {
+        implicit_counter = explicit_counter = maxcount;
+        force_update();
+    }
+
+    void restart(int overallCount) {
+        init(overallCount);
+        force_update();
+    }
+
+    arb_progress_counter* clone(arb_parent_progress *parent, int overall_count) const{
+        return new concrete_counter(parent, overall_count);
+    }
+    void child_updates_gauge(double child_gauge) {
+        refresh_if_needed(dispositive_counter()+child_gauge);
+    }
+};
+
+// -----------------
+//      progress
 
 
-// -------------------------
-//      ARB_basic_status
+class child_progress : public arb_parent_progress {
+    arb_parent_progress *parent;
 
-const int  HEIGHT = 10;
-const int  WIDTH = 70;
-const char CHAR  = '.';
+public:
+    child_progress(arb_parent_progress *parent_, const char *title, int overall_count)
+        : arb_parent_progress(overall_count
+                              ? (arb_progress_counter*)new concrete_counter(this, overall_count)
+                              : (arb_progress_counter*)new no_counter(this),
+                              title),
+          parent(parent_)
+    {
+        set_text(LEVEL_TITLE, title);
+#if defined(DUMP_PROGRESS)
+        freedup(name, GBS_global_string("child: %s", title));
+#endif
+    }
+    ~child_progress() {
+        parent->child_terminated();
+    }
 
-static int printed = 0;
+    SmartPtr<arb_parent_progress> create_child_progress(const char *title, int overall_count) {
+        return new child_progress(this, title, overall_count);
+    }
 
-static void basic_openstatus(const char *title) {
-    printf("Progress: %s\n", title);
-    printed = 0;
-}
-static void basic_closestatus() {
-    printf("[done]\n");
-}
-static bool basic_set_subtitle(const char *) { return false; }
-static bool basic_set_gauge(double gauge) {
-    int wanted = int(gauge*WIDTH*HEIGHT);
-    int nextLF = printed-printed%WIDTH+WIDTH;
-    while (printed<wanted) {
-        fputc(CHAR, stdout);
-        printed++;
-        if (printed == nextLF) {
-            printf(" [%5.1f%%]\n", printed*100.0/(WIDTH*HEIGHT));
-            nextLF = printed-printed%WIDTH+WIDTH;
+#if defined(DUMP_PROGRESS)
+    void dump() {
+        arb_parent_progress::dump();
+        fprintf(stderr, "is child of\n");
+        parent->dump();
+    }
+#endif
+
+    bool aborted() const { return parent->aborted(); }
+    void set_text(int level, const char *text) { parent->child_sets_text(level+has_title-1, text); }
+    
+    void update_gauge(double gauge) { parent->child_updates_gauge(gauge); }
+};
+
+class initial_progress: public arb_parent_progress {
+    bool user_abort;
+    
+public:
+    initial_progress(const char *title, arb_progress_counter *counter_)
+        : arb_parent_progress(counter_, title),
+          user_abort(false)
+    {
+        arb_assert(title); // initial progress should have a title
+        impl->openstatus(title);
+#if defined(DUMP_PROGRESS)
+        freedup(name, GBS_global_string("initial: %s", title));
+#endif
+    }
+    ~initial_progress() {
+        update_gauge(1.0); // due to numeric issues it often only counts up to 99.999%
+        impl->closestatus();
+    }
+
+    SmartPtr<arb_parent_progress> create_child_progress(const char *title, int overall_count) {
+        return new child_progress(this, title, overall_count);
+    }
+
+    bool aborted() const { return user_abort; }
+    void set_text(int level, const char *text) {
+        if (!text) return;
+        switch (level+has_title-1) {
+            case LEVEL_TITLE: impl->set_title(text); break;
+            case LEVEL_SUBTITLE: impl->set_subtitle(text); break;
         }
     }
-    return false;
-}
-static bool basic_user_abort() { return false; }
 
-arb_status_implementation ARB_basic_status = {
-    basic_openstatus, 
-    basic_closestatus, 
-    basic_set_subtitle, 
-    basic_set_gauge, 
-    basic_user_abort
+    void update_gauge(double gauge) { user_abort = impl->set_gauge(gauge); }
 };
 
-// ------------------------
-//      ARB_null_status
-
-static void null_openstatus(const char *) {}
-static void null_closestatus() {}
-static bool null_set_subtitle(const char *) { return false; }
-static bool null_set_gauge(double ) { return false; }
-static bool null_user_abort() { return false; }
-
-arb_status_implementation ARB_null_status = {
-    null_openstatus, 
-    null_closestatus, 
-    null_set_subtitle,
-    null_set_gauge,
-    null_user_abort
+struct initial_wrapping_progress: public initial_progress {
+    initial_wrapping_progress(const char *title)
+        : initial_progress(title, new no_counter(this)) {}
+};
+struct initial_counting_progress : public initial_progress {
+    initial_counting_progress(const char *title, int overall_count)
+        : initial_progress(title, new concrete_counter(this, overall_count)) {}
 };
 
-// ---------------------
-//      arb_progress
-
-arb_status_implementation  *arb_progress::impl = &ARB_basic_status;
-arb_progress::arb_progress *opened             = NULL;
-
-// --------------------------------------------------------------------------------
-
-#if (UNIT_TESTS == 1)
-#include <test_unit.h>
-
-void TEST_arb_progress() {
-    arb_progress outer("outer", 100);
-    for (int i = 0; i<100; ++i) {
-        ++outer;
+class null_progress: public arb_parent_progress {
+public:
+    null_progress(arb_progress_counter *counter_)
+        : arb_parent_progress(counter_, false)
+    {
+#if defined(DUMP_PROGRESS)
+        freedup(name, "null_progress");
+#endif
     }
+
+    SmartPtr<arb_parent_progress> create_child_progress(const char*, int overall_count) {
+        return new null_progress(clone_counter(overall_count));
+    }
+    bool aborted() const { return false; }
+    void set_text(int,const char*) {}
+    void update_gauge(double) {}
+};
+
+// -------------------------
+//      progress factory
+
+arb_parent_progress       *arb_parent_progress::recent = NULL;
+arb_status_implementation *arb_parent_progress::impl   = NULL; // defines implementation to display status
+
+SmartPtr<arb_parent_progress> arb_parent_progress::create(const char *title, int overall_count) {
+    if (recent) {
+        return recent->create_child_progress(title, overall_count);
+    }
+
+    impl = &active_arb_handlers->status;
+
+    if (overall_count == 0) return new initial_wrapping_progress(title);
+    return new initial_counting_progress(title, overall_count);
+
 }
 
-#endif // UNIT_TESTS
-
+SmartPtr<arb_parent_progress> arb_parent_progress::create_suppressor() {
+    return new null_progress(new null_counter(NULL));
+}
 

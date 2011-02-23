@@ -13,7 +13,7 @@
 #include <aw_file.hxx>
 #include <aw_awar.hxx>
 #include <aw_msg.hxx>
-#include <aw_status.hxx>
+#include <arb_progress.h>
 #include <aw_root.hxx>
 #include <arbdbt.h>
 
@@ -410,14 +410,14 @@ void AWT_print_tree_to_printer(AW_window *aww, AW_CL cl_ntw) {
             free(name);
         }
 
-        aw_openstatus("Printing");
+        arb_progress progress("Printing");
 
         if (!xfig) error = GB_await_error();
         else {
             device->reset();
             ntw->init_device(device);  // draw screen
 
-            aw_status("Get Picture Size");
+            progress.subtitle("Get Picture Size");
             device->reset();
 
             device->set_color_mode(awr->awar(AWAR_PRINT_TREE_COLOR)->read_int() == 1);
@@ -449,7 +449,7 @@ void AWT_print_tree_to_printer(AW_window *aww, AW_CL cl_ntw) {
             }
 
             // ----------------------------------------
-            aw_status("Exporting Data");
+            progress.subtitle("Exporting Data");
 
             device->set_filter(awr->awar(AWAR_PRINT_TREE_HANDLES)->read_int()
                                ? AW_PRINTER | AW_PRINTER_EXT
@@ -461,7 +461,7 @@ void AWT_print_tree_to_printer(AW_window *aww, AW_CL cl_ntw) {
             awt_assert(GB_is_privatefile(xfig, true));
 
             // ----------------------------------------
-            aw_status("Converting to Postscript");
+            progress.subtitle("Converting to Postscript");
 
             {
                 bool   landscape     = awr->awar(AWAR_PRINT_TREE_LANDSCAPE)->read_int();
@@ -483,7 +483,7 @@ void AWT_print_tree_to_printer(AW_window *aww, AW_CL cl_ntw) {
             awt_assert(printdest == PDEST_POSTSCRIPT || GB_is_privatefile(dest, false));
 
             if (!error) {
-                aw_status("Printing");
+                progress.subtitle("Printing");
 
                 switch (printdest) {
                     case PDEST_PREVIEW: {
@@ -505,7 +505,6 @@ void AWT_print_tree_to_printer(AW_window *aww, AW_CL cl_ntw) {
                 }
             }
         }
-        aw_closestatus();
         if (xfig) {
             GB_unlink_or_warn(xfig, &error);
             free(xfig);

@@ -14,7 +14,7 @@
 #include <aw_window.hxx>
 #include <aw_root.hxx>
 #include <aw_msg.hxx>
-#include <aw_status.hxx>
+#include <arb_progress.h>
 
 #include <names_client.h>
 #include <servercntrl.h>
@@ -200,6 +200,8 @@ public:
     }
 
     GB_ERROR connect(GBDATA *gb_main) {
+        arb_progress::show_comment("Connecting to name server");
+
         GB_ERROR err = 0;
         if (!link) {
             const char *add_field = AW_get_nameserver_addid(gb_main);
@@ -302,7 +304,7 @@ GB_ERROR AW_test_nameserver(GBDATA *gb_main) {
 
 // --------------------------------------------------------------------------------
 
-GB_ERROR AWTC_generate_one_name(GBDATA *gb_main, const char *full_name, const char *acc, const char *addid, char*& new_name, bool openstatus, bool showstatus) {
+GB_ERROR AWTC_generate_one_name(GBDATA *gb_main, const char *full_name, const char *acc, const char *addid, char*& new_name) {
     // create a unique short name for 'full_name'
     // the result is written into 'new_name' (as malloc-copy)
     // if fails: GB_ERROR!=0 && new_name==0
@@ -311,20 +313,11 @@ GB_ERROR AWTC_generate_one_name(GBDATA *gb_main, const char *full_name, const ch
     new_name = 0;
     if (!acc) acc = "";
 
-    if (openstatus) {
-        aw_openstatus(GBS_global_string("Short name for '%s'", full_name));
-        showstatus = true;
-    }
-
-    if (showstatus) {
-        aw_status("Connecting to name server");
-        aw_status((double)0);
-    }
+    arb_progress progress("Generating short name");
 
     GB_ERROR err = name_server.connect(gb_main);
     if (err) return err;
 
-    if (showstatus) aw_status("Generating name");
     static char *shrt = 0;
     if (strlen(full_name)) {
         if (aisc_nput(name_server.getLink(), AN_LOCAL, name_server.getLocs(),
@@ -355,24 +348,16 @@ GB_ERROR AWTC_generate_one_name(GBDATA *gb_main, const char *full_name, const ch
         }
     }
 
-    if (openstatus) aw_closestatus();
     name_server.disconnect();
 
     return err;
 }
 
-GB_ERROR AWTC_recreate_name(GBDATA *gb_species, bool update_status) {
-    GBDATA   *gb_main = GB_get_root(gb_species);
-
-    if (update_status) {
-        aw_status("Connecting to name server");
-        aw_status((double)0);
-    }
-
-    GB_ERROR error = name_server.connect(gb_main);
+GB_ERROR AWTC_recreate_name(GBDATA *gb_species) {
+    GBDATA       *gb_main = GB_get_root(gb_species);
+    arb_progress  progress("Recreating name");
+    GB_ERROR      error   = name_server.connect(gb_main);
     if (!error) {
-        if (update_status) aw_status("Generating name");
-
         const char *add_field = AW_get_nameserver_addid(gb_main);
         char       *ali_name  = GBT_get_default_alignment(gb_main);
 
@@ -428,10 +413,7 @@ GB_ERROR AWTC_recreate_name(GBDATA *gb_species, bool update_status) {
             }
 
             if (error) GBT_abort_rename_session();
-            else {
-                if (update_status) GBT_commit_rename_session(aw_status, aw_status);
-                else GBT_commit_rename_session(0, 0);
-            }
+            else error = GBT_commit_rename_session();
         }
 
         free(shrt);
@@ -461,86 +443,80 @@ char *AWTC_create_numbered_suffix(GB_HASH *species_name_hash, const char *shortn
     return newshort;
 }
 
-GB_ERROR AWTC_pars_names(GBDATA *gb_main, int update_status, bool *isWarningPtr)
+GB_ERROR AWTC_pars_names(GBDATA *gb_main, bool *isWarningPtr)
 // rename species according to name_server
 // 'isWarning' is set to true, in case of duplicates-warning
 {
-    GB_ERROR err       = name_server.connect(gb_main);
+    arb_progress gen_progress("Generating new names", 2);
+    GB_ERROR err = name_server.connect(gb_main);
     bool     isWarning = false;
+
 
     if (!err) {
         err = GBT_begin_rename_session(gb_main, 1);
         if (!err) {
             char     *ali_name = GBT_get_default_alignment(gb_main);
-            GB_HASH  *hash     = GBS_create_hash(GBT_get_species_count(gb_main), GB_IGNORE_CASE);
+            long      spcount  = GBT_get_species_count(gb_main);
+            GB_HASH  *hash     = GBS_create_hash(spcount, GB_IGNORE_CASE);
             GB_ERROR  warning  = 0;
-            long      spcount  = 0;
-            long      count    = 0;
-
-            if (update_status) {
-                aw_status("Renaming");
-                spcount = GBT_get_species_count(gb_main);
-            }
-
-            const char *add_field = AW_get_nameserver_addid(gb_main);
-
-            for (GBDATA *gb_species = GBT_first_species(gb_main);
-                 gb_species && !err;
-                 gb_species = GBT_next_species(gb_species))
             {
-                if (update_status) aw_status(count++/(double)spcount);
+                arb_progress progress("Renaming species", spcount);
+                const char *add_field = AW_get_nameserver_addid(gb_main);
 
-                GBDATA *gb_name      = GB_entry(gb_species, "name");
-                GBDATA *gb_full_name = GB_entry(gb_species, "full_name");
-                GBDATA *gb_acc       = GBT_gen_accession_number(gb_species, ali_name);
-                GBDATA *gb_addfield  = add_field[0] ? GB_entry(gb_species, add_field) : 0;
+                for (GBDATA *gb_species = GBT_first_species(gb_main);
+                     gb_species && !err;
+                     gb_species = GBT_next_species(gb_species))
+                {
+                    GBDATA *gb_name      = GB_entry(gb_species, "name");
+                    GBDATA *gb_full_name = GB_entry(gb_species, "full_name");
+                    GBDATA *gb_acc       = GBT_gen_accession_number(gb_species, ali_name);
+                    GBDATA *gb_addfield  = add_field[0] ? GB_entry(gb_species, add_field) : 0;
 
-                char *name      = gb_name      ? GB_read_string   (gb_name)     : strdup("");
-                char *full_name = gb_full_name ? GB_read_string   (gb_full_name) : strdup("");
-                char *acc       = gb_acc       ? GB_read_string   (gb_acc)      : strdup("");
-                char *addid     = gb_addfield  ? GB_read_as_string(gb_addfield) : strdup(""); // empty value will be set to default by nameserver
+                    char *name      = gb_name      ? GB_read_string   (gb_name)     : strdup("");
+                    char *full_name = gb_full_name ? GB_read_string   (gb_full_name) : strdup("");
+                    char *acc       = gb_acc       ? GB_read_string   (gb_acc)      : strdup("");
+                    char *addid     = gb_addfield  ? GB_read_as_string(gb_addfield) : strdup(""); // empty value will be set to default by nameserver
 
-                char *shrt = 0;
+                    char *shrt = 0;
 
-                if (full_name[0] || acc[0] || addid[0]) {
-                    if (aisc_nput(name_server.getLink(), AN_LOCAL, name_server.getLocs(),
-                                  LOCAL_FULL_NAME,  full_name,
-                                  LOCAL_ACCESSION,  acc,
-                                  LOCAL_ADDID,      addid,
-                                  LOCAL_ADVICE,     name,
-                                  NULL)) {
-                        err = "Connection Problems with the NAME_SERVER";
+                    if (full_name[0] || acc[0] || addid[0]) {
+                        if (aisc_nput(name_server.getLink(), AN_LOCAL, name_server.getLocs(),
+                                      LOCAL_FULL_NAME,  full_name,
+                                      LOCAL_ACCESSION,  acc,
+                                      LOCAL_ADDID,      addid,
+                                      LOCAL_ADVICE,     name,
+                                      NULL)) {
+                            err = "Connection Problems with the NAME_SERVER";
+                        }
+                        if (aisc_get(name_server.getLink(), AN_LOCAL, name_server.getLocs(),
+                                     LOCAL_GET_SHORT,   &shrt,
+                                     NULL)) {
+                            err = "Connection Problems with the NAME_SERVER";
+                        }
                     }
-                    if (aisc_get(name_server.getLink(), AN_LOCAL, name_server.getLocs(),
-                                 LOCAL_GET_SHORT,   &shrt,
-                                 NULL)) {
-                        err = "Connection Problems with the NAME_SERVER";
+                    else {
+                        shrt = strdup(name);
                     }
-                }
-                else {
-                    shrt = strdup(name);
-                }
-                if (!err) {
-                    char *newshrt = AWTC_create_numbered_suffix(hash, shrt, warning);
-                    if (newshrt) freeset(shrt, newshrt);
+                    if (!err) {
+                        char *newshrt = AWTC_create_numbered_suffix(hash, shrt, warning);
+                        if (newshrt) freeset(shrt, newshrt);
 
-                    GBS_incr_hash(hash, shrt);
-                    err = GBT_rename_species(name, shrt, true);
-                }
+                        GBS_incr_hash(hash, shrt);
+                        err = GBT_rename_species(name, shrt, true);
+                    }
 
-                free(shrt);
-                free(addid);
-                free(acc);
-                free(full_name);
-                free(name);
+                    free(shrt);
+                    free(addid);
+                    free(acc);
+                    free(full_name);
+                    free(name);
+
+                    progress.inc_and_check_user_abort(err);
+                }
             }
 
-            if (err) {
-                GBT_abort_rename_session();
-            }
-            else {
-                err = GBT_commit_rename_session(aw_status, aw_status);
-            }
+            if (err) GBT_abort_rename_session();
+            else err = GBT_commit_rename_session();
 
             GBS_free_hash(hash);
             free(ali_name);
@@ -560,12 +536,8 @@ GB_ERROR AWTC_pars_names(GBDATA *gb_main, int update_status, bool *isWarningPtr)
 
 
 void awt_rename_cb(AW_window *aww, GBDATA *gb_main) {
-    aw_openstatus("Generating new names");
-    aw_status("Contacting name server");
-    GB_ERROR error     = AWTC_pars_names(gb_main, 1);
-    aw_closestatus();
+    GB_ERROR error = AWTC_pars_names(gb_main);
     if (error) aw_message(error);
-
     aww->get_root()->awar(AWAR_TREE_REFRESH)->touch();
 }
 

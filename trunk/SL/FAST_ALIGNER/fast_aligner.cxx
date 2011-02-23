@@ -21,13 +21,12 @@
 
 #include <aw_window.hxx>
 #include <aw_awars.hxx>
-#include <aw_status.hxx>
 #include <aw_root.hxx>
 
 #include <arbdbt.h>
 
 #include <arb_defs.h>
-#include <arb_handlers.h>
+#include <arb_progress.h>
 
 #include <cctype>
 #include <cmath>
@@ -1167,20 +1166,11 @@ static ARB_ERROR alignCompactedTo(CompactedSubSequence     *toAlignSequence,
     FastAlignReport report(master_name, ali_params.showGapsMessages);
 
     {
-        const char *to_align_name = read_name(gb_toAlign);
-        const char *align_to_name = read_name(gb_alignTo);
-
-        const char *stat_buf = GBS_global_string("Aligning #%i:%i %s (to %s)",
-                                                 currentSequenceNumber, overallSequenceNumber,
-                                                 to_align_name, align_to_name);
-
         static GBDATA *last_gb_toAlign = 0;
         if (gb_toAlign!=last_gb_toAlign) {
             last_gb_toAlign = gb_toAlign;
             currentSequenceNumber++;
         }
-
-        GB_status(stat_buf);
     }
 
 #ifdef TRACE_COMPRESSED_ALIGNMENT
@@ -1519,7 +1509,6 @@ static ARB_ERROR alignToNextRelative(SearchRelativeParams&  relSearch,
             // find relatives
             FamilyFinder *familyFinder = relSearch.getFamilyFinder();
 
-            GB_status("Searching relatives");
             error = familyFinder->searchFamily(toAlignExpSequence, FF_FORWARD, relativesToTest+1);
 
             double bestScore = 0;
@@ -2064,39 +2053,42 @@ ARB_ERROR Aligner::alignTargetsToReference(const AlignmentReference& ref, GBDATA
         }
         case FA_MARKED: { // align all marked sequences
             int     count      = GBT_count_marked_species(gb_main);
-            int     done       = 0;
             GBDATA *gb_species = GBT_first_marked_species_rel_species_data(gb_species_data);
+
+            arb_progress progress("Aligning marked species", count);
+            progress.auto_subtitles("Species");
 
             currentSequenceNumber = 1;
             overallSequenceNumber = count;
 
             while (gb_species && !error) {
-                error = alignToReference(gb_species, ref);
-                done++;
-                GB_status(double(done)/double(count));
+                error      = alignToReference(gb_species, ref);
+                progress.inc_and_check_user_abort(error);
                 gb_species = GBT_next_marked_species(gb_species);
             }
             break;
         }
         case FA_SELECTED: { // align all selected species
             int     count;
-            int     done       = 0;
             GBDATA *gb_species = get_first_selected_species(&count);
 
+            
             currentSequenceNumber = 1;
             overallSequenceNumber = count;
 
             if (!gb_species) {
                 aw_message("There is no selected species!");
             }
+            else {
+                arb_progress progress("Aligning selected species", count);
+                progress.auto_subtitles("Species");
 
-            while (gb_species && !error) {
-                error = alignToReference(gb_species, ref);
-                done++;
-                GB_status(double(done)/double(count));
-                gb_species = get_next_selected_species();
+                while (gb_species && !error) {
+                    error      = alignToReference(gb_species, ref);
+                    progress.inc_and_check_user_abort(error);
+                    gb_species = get_next_selected_species();
+                }
             }
-
             break;
         }
     }
@@ -2397,14 +2389,16 @@ void FastAligner_start(AW_window *aw, AW_CL cl_AlignDataAccess) {
         };
 
         {
-            aw_openstatus("FastAligner");
+            arb_progress progress("FastAligner");
+            progress.allow_title_reuse();
+
             Aligner aligner(gb_main,
                             alignWhat,
                             editor_alignment,
                             toalign,
                             get_first_selected_species,
                             get_next_selected_species,
-                                
+
                             reference,
                             get_consensus ? data_access->get_group_consensus : NULL,
                             relSearch,
@@ -2415,7 +2409,6 @@ void FastAligner_start(AW_window *aw, AW_CL cl_AlignDataAccess) {
                             root->awar(FA_AWAR_CONTINUE_ON_ERROR)->read_int(),
                             (FA_errorAction)root->awar(FA_AWAR_ACTION_ON_ERROR)->read_int());
             error = aligner.run();
-            aw_closestatus();
         }
 
         free(pt_server_alignment);
@@ -2997,12 +2990,8 @@ static char *fake_get_consensus(const char*, int, int) {
     return strdup(get_aligned_data_of(selection_fake_gb_main, "s1"));
 }
 
-static int fake_status_gauge(double) { return 0; }
-static int fake_status_msg(const char*) { return 0; }
-
 void test_install_fakes(GBDATA *gb_main) {
     selection_fake_gb_main = gb_main;
-    GB_install_status(fake_status_gauge, fake_status_msg);
 }
 
 
@@ -3041,6 +3030,7 @@ void TEST_Aligner_TargetAndReferenceHandling() {
                                                 2);
 
     test_install_fakes(gb_main);
+    arb_suppress_progress silence;
 
     // bool cont_on_err    = true;
     bool cont_on_err = false;
@@ -3177,6 +3167,7 @@ void TEST_SLOW_Aligner_checksumError() {
                                                 10); // use up to 10 relatives
 
     test_install_fakes(gb_main);
+    arb_suppress_progress silence;
 
     bool cont_on_err = true;
     if (!error) {

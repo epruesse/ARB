@@ -18,7 +18,7 @@
 #include <aw_awars.hxx>
 #include <aw_file.hxx>
 #include <aw_msg.hxx>
-#include <aw_status.hxx>
+#include <arb_progress.h>
 #include <aw_root.hxx>
 
 
@@ -80,16 +80,18 @@ void MG_save_cb(AW_window *aww)
 {
     char *name = aww->get_root()->awar(AWAR_MAIN_DB"/file_name")->read_string();
     char *type = aww->get_root()->awar(AWAR_MAIN_DB"/type")->read_string();
-    aw_openstatus("Saving database");
+
+    arb_progress progress("Saving database");
     GB_begin_transaction(GLOBAL_gb_dest);
     GBT_check_data(GLOBAL_gb_dest, 0);
     GB_commit_transaction(GLOBAL_gb_dest);
+    
     GB_ERROR error = GB_save(GLOBAL_gb_dest, name, type);
-    aw_closestatus();
     if (error) aw_message(error);
     else AW_refresh_fileselection(aww->get_root(), AWAR_MAIN_DB);
-    delete name;
-    delete type;
+
+    free(type);
+    free(name);
 }
 
 AW_window *MG_save_result_cb(AW_root *aw_root, char *base_name)
@@ -132,16 +134,17 @@ AW_window *MG_save_result_cb(AW_root *aw_root, char *base_name)
 
 void MG_save_quick_result_cb(AW_window *aww) {
     char *name = aww->get_root()->awar(AWAR_MAIN_DB"/file_name")->read_string();
-    aw_openstatus("Saving database");
+
+    arb_progress progress("Saving database");
     GB_begin_transaction(GLOBAL_gb_dest);
     GBT_check_data(GLOBAL_gb_dest, 0);
     GB_commit_transaction(GLOBAL_gb_dest);
+    
     GB_ERROR error = GB_save_quick_as(GLOBAL_gb_dest, name);
-    aw_closestatus();
     if (error) aw_message(error);
     else AW_refresh_fileselection(aww->get_root(), AWAR_MAIN_DB);
-    delete name;
-    return;
+
+    free(name);
 }
 
 static void MG_create_db_dependent_awars(AW_root *aw_root, GBDATA *gb_merge, GBDATA *gb_dest) {
@@ -307,13 +310,13 @@ void MG_start_cb(AW_window *aww)
             error = GBS_global_string("Cannot find DB I '%s'", merge);
         }
         else {
-            aw_openstatus("Loading databases");
+            arb_progress progress("Loading databases");
 
 #if defined(DEVEL_RALF)
 #warning where are GLOBAL_gb_merge / GLOBAL_gb_dest closed ?
 #warning when closing them, call AWT_browser_forget_db as well
 #endif // DEVEL_RALF
-            aw_status("DATABASE I");
+            progress.subtitle("DATABASE I");
             GLOBAL_gb_merge             = GBT_open(merge, "rw", "$(ARBHOME)/lib/pts/*");
             if (!GLOBAL_gb_merge) error = GB_await_error();
             else {
@@ -321,7 +324,7 @@ void MG_start_cb(AW_window *aww)
                 AWT_announce_db_to_browser(GLOBAL_gb_merge, GBS_global_string("Database I (source; %s)", merge));
 #endif // DEBUG
 
-                aw_status("DATABASE II");
+                progress.subtitle("DATABASE II");
 
                 char       *main      = awr->awar(AWAR_MAIN_DB"/file_name")->read_string();
                 const char *open_mode = 0;
@@ -346,7 +349,6 @@ void MG_start_cb(AW_window *aww)
                 }
                 free(main);
             }
-            aw_closestatus();
         }
         free(merge);
     }

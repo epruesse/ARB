@@ -57,6 +57,7 @@ PRD_Design.o: $(ARBHOME)/INCLUDE/arb_assert.h
 PRD_Design.o: $(ARBHOME)/INCLUDE/arb_core.h
 PRD_Design.o: $(ARBHOME)/INCLUDE/arb_error.h
 PRD_Design.o: $(ARBHOME)/INCLUDE/arb_msg.h
+PRD_Design.o: $(ARBHOME)/INCLUDE/arb_progress.h
 PRD_Design.o: $(ARBHOME)/INCLUDE/arb_string.h
 PRD_Design.o: $(ARBHOME)/INCLUDE/arbdb.h
 PRD_Design.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -127,6 +128,7 @@ primer_design.o: $(ARBHOME)/INCLUDE/arb_assert.h
 primer_design.o: $(ARBHOME)/INCLUDE/arb_core.h
 primer_design.o: $(ARBHOME)/INCLUDE/arb_error.h
 primer_design.o: $(ARBHOME)/INCLUDE/arb_msg.h
+primer_design.o: $(ARBHOME)/INCLUDE/arb_progress.h
 primer_design.o: $(ARBHOME)/INCLUDE/arb_string.h
 primer_design.o: $(ARBHOME)/INCLUDE/arbdb.h
 primer_design.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -139,7 +141,6 @@ primer_design.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 primer_design.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 primer_design.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 primer_design.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-primer_design.o: $(ARBHOME)/INCLUDE/aw_status.hxx
 primer_design.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 primer_design.o: $(ARBHOME)/INCLUDE/awt_config_manager.hxx
 primer_design.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx

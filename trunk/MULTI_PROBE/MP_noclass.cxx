@@ -16,7 +16,7 @@
 #include <awt.hxx>
 #include <aw_select.hxx>
 #include <aw_msg.hxx>
-#include <aw_status.hxx>
+#include <arb_progress.h>
 #include <aw_root.hxx>
 #include <TreeCallbacks.hxx>
 #include <client.h>
@@ -199,7 +199,7 @@ void MP_popup_result_window(AW_window */*aww*/) {
     init_system3_tab();
 }
 
-bool MP_check_status(int gen_cnt, double avg_fit, double min_fit, double max_fit) {
+bool MP_aborted(int gen_cnt, double avg_fit, double min_fit, double max_fit, arb_progress& progress) {
     char view_text[150];
 
     if (gen_cnt == 0)
@@ -207,13 +207,8 @@ bool MP_check_status(int gen_cnt, double avg_fit, double min_fit, double max_fit
     else
         sprintf(view_text, "Gen:%d Avg:%5i Min:%5i Max:%5i", gen_cnt, int(avg_fit), int(min_fit), int(max_fit));
 
-    if (aw_status(view_text) == 1)
-    {
-        aw_closestatus();
-        return false;                   // Berechnungen abbrechen !!!!!!
-    }
-
-    return true;
+    progress.subtitle(view_text);
+    return progress.aborted();
 }
 
 void init_system3_tab()
@@ -346,7 +341,7 @@ void MP_compute(AW_window *aww, AW_CL cl_gb_main) {
     bew_array       = new int[selected_probes_count];
     single_mismatch = new int[selected_probes_count];
 
-    aw_openstatus("Computing multiprobes");
+    arb_progress progress("Computing multiprobes");
 
     while ((ptr2 = (char *)aww->get_list_entry_char_value()))
     {
@@ -376,9 +371,7 @@ void MP_compute(AW_window *aww, AW_CL cl_gb_main) {
 
     mp_main->destroy_probe_eval();
 
-    aw_closestatus();
     aww2->activate();
-
 }
 
 void MP_take_manual_sequence(AW_window */*aww*/) {

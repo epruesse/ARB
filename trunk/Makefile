@@ -1577,6 +1577,7 @@ UNITS_WORKING = \
 	$(RNA3D_TEST) \
 	SERVERCNTRL/SERVERCNTRL.test \
 	AWT/AWT.test \
+	CORE/CORE.test \
 
 # untestable units
 
@@ -1608,7 +1609,6 @@ UNITS_TESTED = \
 	HELP_SOURCE/arb_help2xml.test \
 	CONVERTALN/CONVERTALN.test \
 	SL/SEQIO/SEQIO.test \
-	CORE/CORE.test \
 
 TESTED_UNITS_MANUAL = \
 	$(UNITS_TRY_FIX) \

@@ -28,6 +28,17 @@ static long check_for_species_without_data(const char *species_name, long value,
 #warning GBT_check_data ignores given 'alignment_name' if we have a default alignment. seems wrong!
 #endif // DEVEL_RALF
 
+int GBT_count_alignments(GBDATA *gb_main) {
+    int     count      = 0;
+    GBDATA *gb_presets = GBT_find_or_create(gb_main, "presets", 7);
+    for (GBDATA *gb_ali = GB_entry(gb_presets, "alignment");
+         gb_ali;
+         gb_ali = GB_nextEntry(gb_ali))
+    {
+        ++count;
+    }
+    return count;
+}
 
 GB_ERROR GBT_check_data(GBDATA *Main, const char *alignment_name) {
     /* alignment_name

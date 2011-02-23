@@ -15,6 +15,7 @@
 #include <arbdbt.h>
 #include <BI_helix.hxx>
 #include <arb_str.h>
+#include <arb_progress.h>
 
 int compress_data(char *probestring) {
     /*! change a sequence with normal bases the PT_? format and delete all other signs */
@@ -224,70 +225,67 @@ void probe_read_alignments() {
     }
 
     int count = GB_number_of_subentries(psg.gb_species_data);
-
+    
     psg.data       = (probe_input_data *)calloc(sizeof(probe_input_data), count);
     psg.data_count = 0;
 
-    printf("Database contains %i species.\nPreparing sequence data:\n", count);
+    int data_missing = 0;
 
-    int data_missing  = 0;
-    int species_count = count;
-
-    count = 0;
-
-    for (GBDATA *gb_species = GBT_first_species_rel_species_data(psg.gb_species_data);
-         gb_species;
-         gb_species = GBT_next_species(gb_species))
+    printf("Database contains %i species\n", count);
     {
-        probe_input_data& pid = psg.data[count];
+        arb_progress progress("Preparing sequence data", count);
+        count = 0;
 
-        pid.name     = strdup(GBT_read_name(gb_species));
-        pid.fullname = GBT_read_string(gb_species, "full_name");
+        for (GBDATA *gb_species = GBT_first_species_rel_species_data(psg.gb_species_data);
+             gb_species;
+             gb_species = GBT_next_species(gb_species))
+        {
+            probe_input_data& pid = psg.data[count];
 
-        if (!pid.fullname) pid.fullname = strdup("");
+            pid.name     = strdup(GBT_read_name(gb_species));
+            pid.fullname = GBT_read_string(gb_species, "full_name");
 
-        pid.is_group = 1;
-        pid.gbd      = gb_species;
+            if (!pid.fullname) pid.fullname = strdup("");
 
-        GBDATA *gb_ali = GB_entry(gb_species, psg.alignment_name);
-        if (gb_ali) {
-            GBDATA *gb_data = GB_entry(gb_ali, "data");
-            if (!gb_data) {
-                fprintf(stderr, "Species '%s' has no data in '%s'\n", pid.name, psg.alignment_name);
-                data_missing++;
-            }
-            else {
-                int   hsize;
-                char *data = probe_read_string_append_point(gb_data, &hsize);
+            pid.is_group = 1;
+            pid.gbd      = gb_species;
 
-                if (!data) {
-                    GB_ERROR error = GB_await_error();
-                    fprintf(stderr, "Could not read data in '%s' for species '%s'\n(Reason: %s)\n",
-                            psg.alignment_name, pid.name, error);
+            GBDATA *gb_ali = GB_entry(gb_species, psg.alignment_name);
+            if (gb_ali) {
+                GBDATA *gb_data = GB_entry(gb_ali, "data");
+                if (!gb_data) {
+                    fprintf(stderr, "Species '%s' has no data in '%s'\n", pid.name, psg.alignment_name);
                     data_missing++;
                 }
                 else {
-                    pid.checksum = GB_checksum(data, hsize, 1, ".-");
-                    int size     = probe_compress_sequence(data, hsize);
+                    int   hsize;
+                    char *data = probe_read_string_append_point(gb_data, &hsize);
 
-                    pid.data = GB_memdup(data, size);
-                    pid.size = size;
-                    
-                    count ++;
-                    if (count%10 == 0) {
-                        if (count%500) fputc('.', stdout);
-                        else printf(".%6i (%5.1f%%)\n", count, ((double)count/species_count)*100);
-                        fflush(stdout);
+                    if (!data) {
+                        GB_ERROR error = GB_await_error();
+                        fprintf(stderr, "Could not read data in '%s' for species '%s'\n(Reason: %s)\n",
+                                psg.alignment_name, pid.name, error);
+                        data_missing++;
                     }
+                    else {
+                        pid.checksum = GB_checksum(data, hsize, 1, ".-");
+                        int   size = probe_compress_sequence(data, hsize);
 
+                        pid.data = GB_memdup(data, size);
+                        pid.size = size;
+
+                        free(data);
+                    }
+                    
+                    count++;
+                    progress.inc();
                 }
-                free(data);
             }
         }
-    }
 
-    psg.data_count = count;
-    GB_commit_transaction(psg.gb_main);
+        psg.data_count = count;
+        GB_commit_transaction(psg.gb_main);
+    }
 
     if (data_missing) {
         printf("\n%i species were ignored because of missing data.\n", data_missing);

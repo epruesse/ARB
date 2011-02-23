@@ -28,7 +28,7 @@
 #include <aw_edit.hxx>
 #include <aw_select.hxx>
 #include <aw_msg.hxx>
-#include <aw_status.hxx>
+#include <arb_progress.h>
 #include <aw_root.hxx>
 #include <adGene.h>
 
@@ -390,8 +390,8 @@ void probe_design_event(AW_window *aww, AW_CL cl_gb_main) {
     GB_ERROR     error   = 0;
     GBDATA      *gb_main = (GBDATA*)cl_gb_main;
 
-    aw_openstatus("Probe Design");
-    aw_status("Search a free running server");
+    arb_progress progress("Probe design");
+    progress.subtitle("Connecting PT-server");
 
     {
         const char *servername = PD_probe_pt_look_for_server(root, gb_main, error);
@@ -422,11 +422,10 @@ void probe_design_event(AW_window *aww, AW_CL cl_gb_main) {
 
     if (error) {
         aw_message(error);
-        aw_closestatus();
         return;
     }
 
-    aw_status("Start probe design (Cannot be stopped)");
+    progress.subtitle("probe design running");
 
     aisc_create(pd_gl.link, PT_LOCS, pd_gl.locs,
                 LOCS_PROBE_DESIGN_CONFIG, PT_PDC,   &pdc,
@@ -446,7 +445,6 @@ void probe_design_event(AW_window *aww, AW_CL cl_gb_main) {
 
     if (probe_design_send_data(root, pdc)) {
         aw_message ("Connection to PT_SERVER lost (1)");
-        aw_closestatus();
         return;
     }
 
@@ -462,7 +460,6 @@ void probe_design_event(AW_window *aww, AW_CL cl_gb_main) {
                  PDC_UNKNOWN_NAMES, &unknown_names,
                  NULL)) {
         aw_message ("Connection to PT_SERVER lost (1)");
-        aw_closestatus();
         return;
     }
 
@@ -527,7 +524,7 @@ void probe_design_event(AW_window *aww, AW_CL cl_gb_main) {
                  PDC_GO, 0,
                  NULL);
 
-        aw_status("Read the results from the server");
+        progress.subtitle("Reading results from server");
         {
             char *locs_error = 0;
             if (aisc_get(pd_gl.link, PT_LOCS, pd_gl.locs, LOCS_ERROR, &locs_error, NULL)) {
@@ -637,7 +634,6 @@ void probe_design_event(AW_window *aww, AW_CL cl_gb_main) {
     }
 
     aisc_close(pd_gl.link); pd_gl.link = 0;
-    aw_closestatus();
     return;
 }
 
@@ -657,6 +653,8 @@ void probe_match_event(AW_window *aww, AW_CL cl_ProbeMatchEventParam) {
 
         if (!gb_main) { error = "Internal error (gb_main unknown)"; }
 
+        SmartPtr<arb_progress> progress;
+        
         if (!error) {
             const char *servername = PD_probe_pt_look_for_server(root, gb_main, error);
 
@@ -671,8 +669,8 @@ void probe_match_event(AW_window *aww, AW_CL cl_ProbeMatchEventParam) {
                 }
 
                 if (show_status) {
-                    aw_openstatus("Probe Match");
-                    aw_status("Open Connection");
+                    progress = new arb_progress("Probe match");
+                    progress->subtitle("Connecting PT-server");
                 }
 
                 pd_gl.link = (aisc_com *)aisc_open(servername, &pd_gl.com, AISC_MAGIC_NUMBER);
@@ -681,7 +679,6 @@ void probe_match_event(AW_window *aww, AW_CL cl_ProbeMatchEventParam) {
         }
 
         if (!error) {
-            if (show_status) aw_status("Initialize Server");
             if (init_local_com_struct()) error = "Cannot contact PT-server (2)";
 
             if (!error) {
@@ -693,7 +690,7 @@ void probe_match_event(AW_window *aww, AW_CL cl_ProbeMatchEventParam) {
         char *probe = root->awar(AWAR_TARGET_STRING)->read_string();
 
         if (!error) {
-            if (show_status) aw_status("Start Probe Match");
+            if (show_status) progress->subtitle("Probe match running");
 
             if (aisc_nput(pd_gl.link, PT_LOCS, pd_gl.locs,
                           LOCS_MATCH_REVERSED,       root->awar(AWAR_PD_MATCH_COMPLEMENT)->read_int(),
@@ -722,7 +719,7 @@ void probe_match_event(AW_window *aww, AW_CL cl_ProbeMatchEventParam) {
 
         long matches_truncated = 0;
         if (!error) {
-            if (show_status) aw_status("Read the Results");
+            if (show_status) progress->subtitle("Reading results");
 
             T_PT_MATCHLIST  match_list;
             long            match_list_cnt    = 0;
@@ -759,8 +756,6 @@ void probe_match_event(AW_window *aww, AW_CL cl_ProbeMatchEventParam) {
         long unknown_gene_count    = 0;
 
         if (!error) {
-            if (show_status) aw_status("Parse the Results");
-
             char        toksep[2]  = { 1, 0 };
             char       *strtok_ptr = 0; // stores strtok position
             const char *hinfo      = strtok_r(bs.data, toksep, &strtok_ptr);
@@ -796,7 +791,7 @@ void probe_match_event(AW_window *aww, AW_CL cl_ProbeMatchEventParam) {
 
             GBDATA *gb_species_data = GB_search(gb_main, "species_data", GB_CREATE_CONTAINER);
             if (mark && !error) {
-                if (show_status) aw_status(gene_flag ? "Unmarking all species and genes" : "Unmarking all species");
+                if (show_status) progress->subtitle(gene_flag ? "Unmarking all species and genes" : "Unmarking all species");
                 for (GBDATA *gb_species = GBT_first_marked_species_rel_species_data(gb_species_data);
                      gb_species;
                      gb_species = GBT_next_marked_species(gb_species))
@@ -823,7 +818,7 @@ void probe_match_event(AW_window *aww, AW_CL cl_ProbeMatchEventParam) {
                 }
             }
             if (write_2_tmp && !error) {
-                if (show_status) aw_status("Deleting old 'tmp' fields");
+                if (show_status) progress->subtitle("Deleting old 'tmp' fields");
                 for (GBDATA *gb_species = GBT_first_species_rel_species_data(gb_species_data);
                      gb_species;
                      gb_species = GBT_next_species(gb_species))
@@ -845,7 +840,7 @@ void probe_match_event(AW_window *aww, AW_CL cl_ProbeMatchEventParam) {
             // read results from pt-server :
 
             if (!error) {
-                if (show_status) aw_status("Parsing results..");
+                if (show_status) progress->subtitle("Parsing results");
 
                 g_spd->probeSpecies.clear();
                 g_spd->probeSeq.clear();
@@ -1002,12 +997,8 @@ void probe_match_event(AW_window *aww, AW_CL cl_ProbeMatchEventParam) {
             else        last_line                 = "****** End of List *******";
 
             aww->insert_default_selection(selection_id, last_line, "");
-
-            if (show_status) aw_status("Formatting output");
             aww->update_selection_list(selection_id);
         }
-
-        if (show_status) aw_closestatus();
 
         free(bs.data);
         free(probe);
@@ -1028,18 +1019,13 @@ static void probe_match_all_event(AW_window *aww, AW_CL cl_iselection_id, AW_CL 
     char              *target_string = root->awar(AWAR_TARGET_STRING)->read_string();
 
     aww->init_list_entry_iterator(iselection_id); // init
-    aw_openstatus("Matching all resolved strings");
 
-    size_t string_count = iselection_id->size();
-    size_t local_count = 0;
-
+    arb_progress progress("Matching all resolved strings", iselection_id->size());
+    
+    bool got_result = false;
     for (;;) {
         const char *entry = aww->get_list_entry_char_value();
         if (!entry) break;
-
-        double percent = local_count++/double(string_count);
-        aw_status(GBS_global_string("Match string %zu of %zu", local_count, string_count));
-        aw_status(percent);
 
         root->awar(AWAR_TARGET_STRING)->write_string(entry); // probe match
         int counter = -1;
@@ -1050,14 +1036,15 @@ static void probe_match_all_event(AW_window *aww, AW_CL cl_iselection_id, AW_CL 
         char *buffer = new char[strlen(entry)+10]; // write # of matched to list entries
         sprintf(buffer, "%5i %s", counter, entry);
         aww->set_list_entry_displayed(buffer);
+        got_result   = true;
         delete buffer;
 
         aww->iterate_list_entry(1); // iterate
+        progress.inc();
+        
     }
 
-    aw_closestatus();
-
-    if (local_count) {
+    if (got_result) {
         aww->sort_selection_list(iselection_id, 1, 1);
         aww->update_selection_list(iselection_id);
         root->awar(AWAR_TARGET_STRING)->write_string(target_string);
@@ -1626,13 +1613,9 @@ AW_window *create_probe_match_window(AW_root *root, AW_CL cl_gb_main) {
 
 static void pd_start_pt_server(AW_window *aww, AW_CL cl_gb_main) {
     const char *server_tag = GBS_ptserver_tag(aww->get_root()->awar(AWAR_PROBE_ADMIN_PT_SERVER)->read_int());
-    
-    aw_openstatus("Start a server");
-    aw_status("Look for server or start one");
-    
+    arb_progress progress("Connecting PT-server");
     GB_ERROR error = arb_look_and_start_server(AISC_MAGIC_NUMBER, server_tag, (GBDATA*)cl_gb_main);
     if (error) aw_message(error);
-    aw_closestatus();
 }
 
 void pd_kill_pt_server(AW_window *aww, AW_CL kill_all)
@@ -1651,26 +1634,29 @@ void pd_kill_pt_server(AW_window *aww, AW_CL kill_all)
             min = max = aww->get_root()->awar(AWAR_PROBE_ADMIN_PT_SERVER)->read_int(); // selected server
         }
 
-        aw_openstatus("Stopping PT-servers..");
+        arb_progress progress("Stopping PT-servers..", max-min+1);
+        GB_ERROR     error = NULL;
 
-        for (int i = min; i <= max;  i++) {
+        for (int i = min; i <= max && !error;  i++) {
             char *choice = GBS_ptserver_id_to_choice(i, 0);
             if (!choice) {
-                aw_message(GB_await_error());
-                break;
+                error = GB_await_error();
             }
+            else {
+                progress.subtitle(GBS_global_string("Trying to stop '%s'", choice));
 
-            aw_status(GBS_global_string("Trying to stop '%s'", choice));
+                const char *server_tag = GBS_ptserver_tag(i);
+                GB_ERROR    kill_error = arb_look_and_kill_server(AISC_MAGIC_NUMBER, server_tag);
 
-            const char *server_tag = GBS_ptserver_tag(i);
-            GB_ERROR    error      = arb_look_and_kill_server(AISC_MAGIC_NUMBER, server_tag);
+                if (kill_error) aw_message(GBS_global_string("Could not stop '%s' (Reason: %s)", choice, kill_error));
+                else aw_message(GBS_global_string("Stopped '%s'", choice));
 
-            if (error) aw_message(GBS_global_string("Could not stop '%s' (Reason: %s)", choice, error));
-            else aw_message(GBS_global_string("Stopped '%s'", choice));
-
-            free(choice);
+                free(choice);
+            }
+            progress.inc_and_check_user_abort(error);
         }
-        aw_closestatus();
+        progress.done();
+        if (error) aw_message(error);
     }
 }
 
@@ -1731,8 +1717,8 @@ static void pd_export_pt_server(AW_window *aww, AW_CL cl_gb_main) {
                     "        quitting this program won't affect the server",
                     "Cancel,Do it"))
     {
-        aw_openstatus("Updating PT-server");
-        aw_status("Stopping PT-server");
+        arb_progress progress("Updating PT-server");
+        progress.subtitle("Stopping PT-server");
         arb_look_and_kill_server(AISC_MAGIC_NUMBER, server_tag);
 
         const char *ipPort = GBS_read_arb_tcp(server_tag);
@@ -1745,7 +1731,7 @@ static void pd_export_pt_server(AW_window *aww, AW_CL cl_gb_main) {
             free(db_name);
         }
 
-        aw_status("Exporting the database");
+        progress.subtitle("Exporting the database");
         {
             const char *mode = "bfm"; // save PT-server database with Fastload file
 
@@ -1755,7 +1741,7 @@ static void pd_export_pt_server(AW_window *aww, AW_CL cl_gb_main) {
 
                 if (!error) {
                     // convert database (genes -> species)
-                    aw_status("Preparing DB for gene PT server");
+                    progress.subtitle("Preparing DB for gene PT server");
                     GBS_add_ptserver_logentry("Preparing DB for gene PT server");
                     char *command = GBS_global_string_copy("$ARBHOME/bin/arb_gene_probe %s %s", temp_server_name, file);
                     printf("Executing '%s'\n", command);
@@ -1784,11 +1770,9 @@ static void pd_export_pt_server(AW_window *aww, AW_CL cl_gb_main) {
         }
 
         if (!error) {
-            aw_status("Start PT-server (builds in background)");
+            progress.subtitle("Start PT-server (builds in background)");
             error = arb_start_server(server_tag, gb_main, 1);
         }
-        aw_closestatus();
-
     }
     if (error) aw_message(error);
 }

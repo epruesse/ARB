@@ -128,7 +128,7 @@ AW_window *NT_create_extendeds_window(AW_root *aw_root);
 
 /* ad_spec.cxx */
 void NT_create_species_var(AW_root *aw_root, AW_default aw_def);
-void NT_count_different_chars(AW_window *, AW_CL cl_gb_main, AW_CL use_status);
+void NT_count_different_chars(AW_window *, AW_CL cl_gb_main, AW_CL dummy_1x);
 void NT_create_sai_from_pfold(AW_window *aww, AW_CL ntw, AW_CL dummy_1x);
 AW_window *NT_create_ad_list_reorder(AW_root *root, AW_CL cl_item_selector);
 AW_window *NT_create_ad_field_delete(AW_root *root, AW_CL cl_item_selector);

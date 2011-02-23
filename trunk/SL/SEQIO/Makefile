@@ -46,6 +46,7 @@ seq_export.o: $(ARBHOME)/INCLUDE/arb_assert.h
 seq_export.o: $(ARBHOME)/INCLUDE/arb_core.h
 seq_export.o: $(ARBHOME)/INCLUDE/arb_error.h
 seq_export.o: $(ARBHOME)/INCLUDE/arb_msg.h
+seq_export.o: $(ARBHOME)/INCLUDE/arb_progress.h
 seq_export.o: $(ARBHOME)/INCLUDE/arb_string.h
 seq_export.o: $(ARBHOME)/INCLUDE/arbdb.h
 seq_export.o: $(ARBHOME)/INCLUDE/arbdb_base.h

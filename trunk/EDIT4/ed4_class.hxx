@@ -81,7 +81,7 @@ class AWT_reference;
 class AWT_seq_colors;
 class BI_ecoli_ref;
 class AW_helix;
-class aw_status_counter;
+class arb_progress;
 class ST_ML;
 class ed_key;
 
@@ -106,7 +106,7 @@ public:
                                 ED4_index                   actual_local_position,
                                 ED4_index                  *length_of_terminals,
                                 int                         group_depth,
-                                aw_status_counter          *progress);
+                                arb_progress               *progress);
 
     ED4_returncode fill_data(ED4_multi_species_manager  *multi_species_manager,
                              ED4_sequence_info_terminal *ref_sequence_info_terminal,
@@ -133,7 +133,7 @@ public:
                           char                       *string,
                           int                        *index,
                           ED4_index                  *y,
-                          aw_status_counter&          progress);
+                          arb_progress&               progress);
 
     ED4_returncode create_group_header(ED4_multi_species_manager   *parent,
                                        ED4_sequence_info_terminal  *ref_sequence_info_terminal,
@@ -890,7 +890,7 @@ public:
     virtual ED4_returncode  calc_size_requested_by_parent();
     virtual ED4_returncode  move_requested_by_parent(ED4_move_info *mi);
 
-    void create_consensus(ED4_group_manager *upper_group_manager, aw_status_counter *progress);
+    void create_consensus(ED4_group_manager *upper_group_manager, arb_progress *progress);
 
     virtual ARB_ERROR route_down_hierarchy(ED4_cb cb, AW_CL cd1, AW_CL cd2);
     virtual ARB_ERROR route_down_hierarchy(ED4_cb1 cb, AW_CL cd) { return route_down_hierarchy(ED4_cb(cb), cd, NULL); }

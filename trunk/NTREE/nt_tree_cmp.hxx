@@ -17,6 +17,7 @@
 
 class AP_tree;
 class AWT_species_set;
+class arb_progress;
 
 class AWT_species_set_root {
     long              species_counter;
@@ -24,15 +25,15 @@ class AWT_species_set_root {
     AWT_species_set **sets;
     int               diff_bits[256];
 
+    arb_progress *progress;
+
 public:
-    long     mstatus;
-    long     status;            // temporary variables for status
     long     nspecies;
     GBDATA  *gb_main;
     GB_HASH *species_hash;
 
     // REAL PUBLIC
-    AWT_species_set_root(GBDATA *gb_main, long nspecies);
+    AWT_species_set_root(GBDATA *gb_main, long nspecies, arb_progress *progress_);
     ~AWT_species_set_root();
 
     void             add(const char *species_name);                                                // max nspecies
@@ -42,6 +43,8 @@ public:
     GB_ERROR         copy_node_information(FILE *log, bool delete_old_nodes, bool nodes_with_marked_only);
     AWT_species_set *find_best_matches_info(AP_tree *tree_source, FILE *log, bool setinner_node);
     AWT_species_set *move_tree_2_ssr(AP_tree *node);
+
+    void finish(GB_ERROR& error);
 };
 
 

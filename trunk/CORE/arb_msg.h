@@ -29,9 +29,9 @@ GB_ERROR GBK_assert_msg(const char *assertion, const char *file, int linenr);
 GB_ERROR GB_export_error(const char *error);
 GB_ERROR GB_export_errorf(const char *templat, ...) __ATTR__FORMAT(1) __ATTR__DEPRECATED_LATER;
 GB_ERROR GB_IO_error(const char *action, const char *filename);
-GB_ERROR GB_export_IO_error(const char *action, const char *filename) __ATTR__DEPRECATED;
-GB_ERROR GB_print_error(void);
-GB_ERROR GB_get_error(void) __ATTR__DEPRECATED;
+GB_ERROR GB_export_IO_error(const char *action, const char *filename) __ATTR__DEPRECATED_LATER;
+GB_ERROR GB_print_error(void) __ATTR__DEPRECATED_LATER;
+GB_ERROR GB_get_error(void) __ATTR__DEPRECATED_LATER;
 bool GB_have_error(void);
 GB_ERROR GB_await_error(void);
 void GB_clear_error(void);
@@ -49,8 +49,6 @@ void GB_warning(const char *message);
 void GB_warningf(const char *templat, ...) __ATTR__FORMAT(1);
 void GB_information(const char *message);
 void GB_informationf(const char *templat, ...) __ATTR__FORMAT(1);
-int GB_status(double val);
-int GB_status(const char *message);
 
 #else
 #error arb_msg.h included twice

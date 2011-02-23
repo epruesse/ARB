@@ -99,6 +99,7 @@ AP_tree_edge.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/arb_core.h
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/arb_error.h
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/arb_msg.h
+AP_tree_edge.o: $(ARBHOME)/INCLUDE/arb_progress.h
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/arb_string.h
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/ARB_Tree.hxx
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -108,7 +109,6 @@ AP_tree_edge.o: $(ARBHOME)/INCLUDE/arbtools.h
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/attributes.h
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
-AP_tree_edge.o: $(ARBHOME)/INCLUDE/aw_status.hxx
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/downcast.h
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/dupstr.h
 AP_tree_edge.o: $(ARBHOME)/INCLUDE/smartptr.h
@@ -180,6 +180,7 @@ PARS_dtree.o: $(ARBHOME)/INCLUDE/arb_assert.h
 PARS_dtree.o: $(ARBHOME)/INCLUDE/arb_core.h
 PARS_dtree.o: $(ARBHOME)/INCLUDE/arb_error.h
 PARS_dtree.o: $(ARBHOME)/INCLUDE/arb_msg.h
+PARS_dtree.o: $(ARBHOME)/INCLUDE/arb_progress.h
 PARS_dtree.o: $(ARBHOME)/INCLUDE/arb_string.h
 PARS_dtree.o: $(ARBHOME)/INCLUDE/ARB_Tree.hxx
 PARS_dtree.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -196,7 +197,6 @@ PARS_dtree.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 PARS_dtree.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 PARS_dtree.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
 PARS_dtree.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-PARS_dtree.o: $(ARBHOME)/INCLUDE/aw_status.hxx
 PARS_dtree.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 PARS_dtree.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 PARS_dtree.o: $(ARBHOME)/INCLUDE/awt_filter.hxx
@@ -235,6 +235,7 @@ PARS_main.o: $(ARBHOME)/INCLUDE/arb_assert.h
 PARS_main.o: $(ARBHOME)/INCLUDE/arb_core.h
 PARS_main.o: $(ARBHOME)/INCLUDE/arb_error.h
 PARS_main.o: $(ARBHOME)/INCLUDE/arb_msg.h
+PARS_main.o: $(ARBHOME)/INCLUDE/arb_progress.h
 PARS_main.o: $(ARBHOME)/INCLUDE/arb_string.h
 PARS_main.o: $(ARBHOME)/INCLUDE/ARB_Tree.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -252,7 +253,6 @@ PARS_main.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-PARS_main.o: $(ARBHOME)/INCLUDE/aw_status.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/awt.hxx
 PARS_main.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx

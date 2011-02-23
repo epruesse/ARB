@@ -31,7 +31,7 @@
 #include <aw_awars.hxx>
 #include <aw_file.hxx>
 #include <aw_msg.hxx>
-#include <aw_status.hxx>
+#include <arb_progress.h>
 #include <aw_root.hxx>
 
 #include <gui_aliview.hxx>
@@ -281,7 +281,7 @@ char *DI_MATRIX::load(LoadWhat what, GB_CSTR sort_tree_name, bool show_warnings,
         }
     }
     else {
-        species_in_sort_tree = GBT_get_names_of_species_in_tree(sort_tree);
+        species_in_sort_tree = GBT_get_names_of_species_in_tree(sort_tree, NULL);
 
         {
             GB_NUMHASH *shallLoad = 0;
@@ -460,20 +460,21 @@ GB_ERROR DI_MATRIX::calculate_rates(DI_MUT_MATR &hrates, DI_MUT_MATR &nrates, DI
     if (nentries<=1) {
         return "There are no species selected";
     }
-    long row, col, pos, s_len;
 
-    const unsigned char *seq1, *seq2;
-    s_len = aliview->get_length();
+    arb_progress progress("rates", (nentries*(nentries+1))/2);
+    GB_ERROR     error = NULL;
+
+    long s_len = aliview->get_length();
+
     this->clear(hrates);
     this->clear(nrates);
     this->clear(pairs);
-    for (row = 0; row<nentries; row++) {
-        double gauge = (double)row/(double)nentries;
-        if (aw_status(gauge*gauge)) return "Aborted by user";
-        for (col=0; col<row; col++) {
-            seq1 = entries[row]->sequence_parsimony->get_usequence();
-            seq2 = entries[col]->sequence_parsimony->get_usequence();
-            for (pos = 0; pos < s_len; pos++) {
+
+    for (long row = 0; row<nentries && !error; row++) {
+        for (long col=0; col<row; col++) {
+            const unsigned char *seq1 = entries[row]->sequence_parsimony->get_usequence();
+            const unsigned char *seq2 = entries[col]->sequence_parsimony->get_usequence();
+            for (long pos = 0; pos < s_len; pos++) {
                 if (filter[pos]>=0) {
                     hrates[*seq1][*seq2]++;
                 }
@@ -482,17 +483,18 @@ GB_ERROR DI_MATRIX::calculate_rates(DI_MUT_MATR &hrates, DI_MUT_MATR &nrates, DI
                 }
                 seq1++; seq2++;
             }
+            progress.inc_and_check_user_abort(error);
         }
     }
-    for (row = 0; row<nentries; row++) {
-        seq1 = entries[row]->sequence_parsimony->get_usequence();
-        for (pos = 0; pos < s_len; pos++) {
+    for (long row = 0; row<nentries; row++) {
+        const unsigned char *seq1 = entries[row]->sequence_parsimony->get_usequence();
+        for (long pos = 0; pos < s_len; pos++) {
             if (filter[pos]>=0) {
                 pairs[seq1[pos]][seq1[filter[pos]]]++;
             }
         }
     }
-    return 0;
+    return error;
 }
 
 // ----------------------------------------------------------------
@@ -510,8 +512,7 @@ GB_ERROR DI_MATRIX::haeschoe(const char *path, bool update_status) {
             error = GB_await_error();
         }
         else {
-            aw_openstatus("Calculating Distance Matrix");
-            aw_status("Calculating global rate matrix");
+            arb_progress progress("Calculating distance matrix");
 
             fprintf(out, "Pairs in helical regions:\n");
             long *filter = create_helix_filter(helix, aliview->get_filter());
@@ -537,19 +538,11 @@ GB_ERROR DI_MATRIX::haeschoe(const char *path, bool update_status) {
 
                 for (pos = 0; pos<MAXDISTDEBUG; pos++) distdebug[pos] = 0.0;
 
-                for (row = 0; row<nentries; row++) {
-                    if (nentries > 100 || ((row&0xf) == 0)) {
-                        if (update_status) {
-                            double gauge = (double)row/(double)nentries;
-                            if (aw_status(gauge*gauge)) {
-                                error = "Aborted by user";
-                                break;
-                            }
-                        }
-                    }
+                arb_progress dist_progress("distance", (nentries*(nentries+1))/2);
+                for (row = 0; row<nentries && !error; row++) {
                     fprintf (out, "\n%s  ", entries[row]->name);
 
-                    for (col=0; col<row; col++) {
+                    for (col=0; col<row && !error; col++) {
                         const unsigned char *seq1, *seq2;
 
                         seq1 = entries[row]->sequence_parsimony->get_usequence();
@@ -582,6 +575,7 @@ GB_ERROR DI_MATRIX::haeschoe(const char *path, bool update_status) {
                         if (all>100) {
                             distdebug[dist*MAXDISTDEBUG/all] = (double)hdist/(double)hall2;
                         }
+                        dist_progress.inc_and_check_user_abort(error);
                     }
                 }
 
@@ -597,7 +591,6 @@ GB_ERROR DI_MATRIX::haeschoe(const char *path, bool update_status) {
                 }
             }
             
-            aw_closestatus();
             fclose(out);
         }
     }
@@ -694,18 +687,10 @@ GB_ERROR DI_MATRIX::calculate(AW_root *awr, char *cancel, double /* alpha */, DI
         default:    break;
     };
 
-    for (row = 0; row<nentries; row++) {
-        if (nentries > 100 || ((row&0xf) == 0)) {
-            if (update_status) {
-                double gauge = (double)row/(double)nentries;
-                if (aw_status(gauge*gauge)) {
-                    aw_closestatus();
-                    if (aborted_flag) *aborted_flag = true;
-                    return "Aborted by user";
-                }
-            }
-        }
-        for (col=0; col<=row; col++) {
+    arb_progress progress("Calculating distance matrix", (nentries*(nentries+1))/2);
+    GB_ERROR     error = NULL;
+    for (row = 0; row<nentries && !error; row++) {
+        for (col=0; col<=row && !error; col++) {
             columns = 0;
             
             const unsigned char *seq1 = entries[row]->sequence_parsimony->get_usequence();
@@ -849,9 +834,11 @@ GB_ERROR DI_MATRIX::calculate(AW_root *awr, char *cancel, double /* alpha */, DI
                 }
                 default:;
             }   /* switch */
+            progress.inc_and_check_user_abort(error);
         }
     }
-    return 0;
+    if (aborted_flag && progress.aborted()) *aborted_flag = true;
+    return error;
 }
 
 GB_ERROR DI_MATRIX::calculate_pro(DI_TRANSFORMATION transformation, bool *aborted_flag) {
@@ -905,11 +892,8 @@ STATIC_ATTRIBUTED(__ATTR__USERESULT, GB_ERROR di_calculate_matrix(AW_window *aww
         aw_message("Please select a valid alignment");
         return "Error";
     }
-    if (!bootstrap_flag) {
-        aw_openstatus("Calculating Matrix");
-        aw_status("Read the database");
-    }
-
+    arb_progress progress("Calculating matrix");
+    
     char *cancel = aw_root->awar(AWAR_DIST_CANCEL_CHARS)->read_string();
 
     AliView *aliview = weighted_filter->create_aliview(use);
@@ -928,7 +912,7 @@ STATIC_ATTRIBUTED(__ATTR__USERESULT, GB_ERROR di_calculate_matrix(AW_window *aww
         free(sort_tree_name);
         GB_pop_transaction(GLOBAL_gb_main);
         bool aborted = false;
-        if (aw_status()) {
+        if (progress.aborted()) {
             phm->unload();
             error   = "Aborted by user";
             aborted = true;
@@ -939,7 +923,6 @@ STATIC_ATTRIBUTED(__ATTR__USERESULT, GB_ERROR di_calculate_matrix(AW_window *aww
             if (phm->is_AA) error = phm->calculate_pro(trans, &aborted);
             else error            = phm->calculate(aw_root, cancel, 0.0, trans, &aborted, !bootstrap_flag);
         }
-        if (!bootstrap_flag) aw_closestatus();
         delete DI_MATRIX::ROOT;
 
         if (aborted) {
@@ -1001,16 +984,13 @@ static void di_mark_by_distance(AW_window *aww, AW_CL cl_weightedFilter) {
                 AliView           *aliview         = weighted_filter->create_aliview(use);
 
                 if (!error) {
-                    aw_openstatus("Mark species by distance");
-                    aw_status("Calculating distances");
-                    aw_status(0.0);
-
                     DI_MATRIX *old_root = DI_MATRIX::ROOT;
                     DI_MATRIX::ROOT = 0;
 
-                    size_t speciesCount = GBT_get_species_count(GLOBAL_gb_main);
-                    size_t count        = 0;
-                    bool markedSelected = false;
+                    size_t speciesCount   = GBT_get_species_count(GLOBAL_gb_main);
+                    bool   markedSelected = false;
+
+                    arb_progress progress("Mark species by distance", speciesCount);
 
                     for (GBDATA *gb_species = GBT_first_species(GLOBAL_gb_main);
                          gb_species && !error;
@@ -1042,13 +1022,11 @@ static void di_mark_by_distance(AW_window *aww, AW_CL cl_weightedFilter) {
                         }
 
                         delete phm;
-                        aw_status(++count/(double)speciesCount);
+                        progress.inc_and_check_user_abort(error);
                     }
 
                     di_assert(DI_MATRIX::ROOT == 0);
                     DI_MATRIX::ROOT = old_root;
-
-                    aw_closestatus();
                 }
 
                 delete aliview;
@@ -1179,20 +1157,6 @@ static const char *enum_trans_to_string[] = {
     "max ml"
 };
 
-static int di_calculate_tree_show_status(int loop_count, int bootstrap_count) {
-    // returns value of aw_status()
-    int result = 0;
-    if (bootstrap_count) {
-        result = aw_status(GBS_global_string("Tree #%i of %i", loop_count, bootstrap_count));
-        if (!result) result = aw_status(loop_count/double(bootstrap_count));
-    }
-    else {
-        result = aw_status(GBS_global_string("Tree #%i of %u", loop_count, UINT_MAX));
-        if (!result) result = aw_status(loop_count/double(UINT_MAX));
-    }
-    return result;
-}
-
 static void di_calculate_tree_cb(AW_window *aww, AW_CL cl_weightedFilter, AW_CL bootstrap_flag)
 {
     AW_root   *aw_root         = aww->get_root();
@@ -1200,7 +1164,6 @@ static void di_calculate_tree_cb(AW_window *aww, AW_CL cl_weightedFilter, AW_CL 
     GBT_TREE  *tree            = 0;
     char     **all_names       = 0;
     int        loop_count      = 0;
-    bool       close_stat      = false;
     int        bootstrap_count = aw_root->awar(AWAR_DIST_BOOTSTRAP_COUNT)->read_int();
 
     {
@@ -1209,29 +1172,25 @@ static void di_calculate_tree_cb(AW_window *aww, AW_CL cl_weightedFilter, AW_CL 
         free(tree_name);
     }
 
-    int starttime        = time(0);
-    int trees_per_second = -1;
-    int last_status_upd  = 0;
-
     WeightedFilter *weighted_filter = (WeightedFilter*)cl_weightedFilter;
 
-    if (!error) {
-        {
-            const char *stat_msg = 0;
-            if (bootstrap_flag) {
-                if (bootstrap_count) stat_msg = "Calculating bootstrap trees";
-                else stat_msg = "Calculating bootstrap trees (KILL to stop)";
-            }
-            else stat_msg = "Calculating tree";
+    SmartPtr<arb_progress> progress;
 
-            aw_openstatus(stat_msg);
-            close_stat = true;
+    if (!error) {
+        if (bootstrap_flag) {
+            if (bootstrap_count) {
+                progress = new arb_progress("Calculating bootstrap trees", bootstrap_count);
+            }
+            else {
+                progress = new arb_progress("Calculating bootstrap trees (KILL to stop)", INT_MAX);
+            }
+            progress->auto_subtitles("tree");
+        }
+        else {
+            progress = new arb_progress("Calculating tree");
         }
 
         if (bootstrap_flag) {
-            loop_count++;
-            di_calculate_tree_show_status(loop_count, bootstrap_count);
-
             di_assert(DI_MATRIX::ROOT == 0);
 
             error = di_calculate_matrix(aww, weighted_filter, bootstrap_flag, true, NULL);
@@ -1248,35 +1207,13 @@ static void di_calculate_tree_cb(AW_window *aww, AW_CL cl_weightedFilter, AW_CL 
                     ctree_init(matr->nentries, all_names);
                 }
             }
+            loop_count++;
+            progress->inc();
         }
     }
 
     do {
         if (error) break;
-
-        if (bootstrap_flag) {
-            bool show_update = true;
-            if (trees_per_second == -1) {
-                int timediff = time(0)-starttime;
-                if (timediff>10) {
-                    trees_per_second = loop_count/timediff;
-                }
-            }
-            else {
-                if ((loop_count-last_status_upd) < trees_per_second) {
-                    show_update = false; // do not update more often than once a second
-                }
-            }
-
-            loop_count++;
-            if (show_update) { // max. once per second
-                if (di_calculate_tree_show_status(loop_count, bootstrap_count)) {
-                    break; // user abort
-                }
-                last_status_upd = loop_count;
-            }
-
-        }
 
         delete DI_MATRIX::ROOT;
         DI_MATRIX::ROOT = 0;
@@ -1303,9 +1240,19 @@ static void di_calculate_tree_cb(AW_window *aww, AW_CL cl_weightedFilter, AW_CL 
         if (bootstrap_flag) {
             insert_ctree(tree, 1);
             GBT_delete_tree(tree); tree = 0;
+            loop_count++;
+            progress->inc();
+            if (!bootstrap_count) {
+                int        t     = time(0);
+                static int tlast = 0;
+
+                if (t>tlast) {
+                    progress->force_update();
+                    tlast = t;
+                }
+            }
         }
         free(names);
-
     } while (bootstrap_flag && loop_count != bootstrap_count);
 
     if (!error) {
@@ -1330,8 +1277,7 @@ static void di_calculate_tree_cb(AW_window *aww, AW_CL cl_weightedFilter, AW_CL 
 
     if (tree) GBT_delete_tree(tree);
 
-    if (close_stat) aw_closestatus();
-    aw_status();                      // remove 'abort' flag
+    // aw_status(); // remove 'abort' flag (@@@ got no equiv for arb_progress yet. really needed?)
 
     if (bootstrap_flag) {
         if (all_names) GBT_free_names(all_names);
@@ -1345,6 +1291,7 @@ static void di_calculate_tree_cb(AW_window *aww, AW_CL cl_weightedFilter, AW_CL 
     delete DI_MATRIX::ROOT; DI_MATRIX::ROOT = 0;
 
     if (error) aw_message(error);
+    progress->done();
 }
 
 
@@ -1356,8 +1303,9 @@ static void di_autodetect_callback(AW_window *aww)
         DI_MATRIX::ROOT = 0;
     }
     AW_root *aw_root = aww->get_root();
-    char    *use = aw_root->awar(AWAR_DIST_ALIGNMENT)->read_string();
-    long ali_len = GBT_get_alignment_len(GLOBAL_gb_main, use);
+    char    *use     = aw_root->awar(AWAR_DIST_ALIGNMENT)->read_string();
+    long     ali_len = GBT_get_alignment_len(GLOBAL_gb_main, use);
+
     if (ali_len<=0) {
         GB_pop_transaction(GLOBAL_gb_main);
         delete use;
@@ -1365,11 +1313,10 @@ static void di_autodetect_callback(AW_window *aww)
         return;
     }
 
-    aw_openstatus("Analyzing data...");
-    aw_status("Read the database");
+    arb_progress progress("Analyzing data");
 
-    char    *filter_str = aw_root->awar(AWAR_DIST_FILTER_FILTER)->read_string();
-    char    *cancel = aw_root->awar(AWAR_DIST_CANCEL_CHARS)->read_string();
+    char *filter_str = aw_root->awar(AWAR_DIST_FILTER_FILTER)->read_string();
+    char *cancel     = aw_root->awar(AWAR_DIST_CANCEL_CHARS)->read_string();
 
     AliView *aliview;
     {
@@ -1409,14 +1356,12 @@ static void di_autodetect_callback(AW_window *aww)
     free(sort_tree_name);
     GB_pop_transaction(GLOBAL_gb_main);
 
-    aw_status("Search Correction");
+    progress.subtitle("Search Correction");
 
     DI_TRANSFORMATION trans;
     trans = (DI_TRANSFORMATION)aw_root->awar(AWAR_DIST_CORR_TRANS)->read_int();
 
     phm->analyse();
-    aw_closestatus();
-
     delete phm;
 
     free(load_what);

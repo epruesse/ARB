@@ -9,6 +9,7 @@
 // =============================================================== //
 
 #include <arbdbt.h>
+#include <arb_progress.h>
 #include "gb_local.h"
 
 #define GBT_PUT_DATA 1
@@ -581,22 +582,16 @@ size_t GBT_count_leafs(const GBT_TREE *tree) {
 //      link the tree tips to the database
 
 struct link_tree_data {
-    GB_HASH *species_hash;
-    GB_HASH *seen_species;                          // used to count duplicates
-    int      nodes;                                 // if != 0 -> update status
-    int      counter;
-    int      zombies;                               // counts zombies
-    int      duplicates;                            // counts duplicates
+    GB_HASH      *species_hash;
+    GB_HASH      *seen_species;                     // used to count duplicates
+    arb_progress *progress;
+    int           zombies;                          // counts zombies
+    int           duplicates;                       // counts duplicates
 };
 
 static GB_ERROR gbt_link_tree_to_hash_rek(GBT_TREE *tree, link_tree_data *ltd) {
     GB_ERROR error = 0;
     if (tree->is_leaf) {
-        if (ltd->nodes) { // update status?
-            ltd->counter++;
-            GB_status(ltd->counter/(double)ltd->nodes);
-        }
-
         tree->gb_node = 0;
         if (tree->name) {
             GBDATA *gbd = (GBDATA*)GBS_read_hash(ltd->species_hash, tree->name);
@@ -608,6 +603,8 @@ static GB_ERROR gbt_link_tree_to_hash_rek(GBT_TREE *tree, link_tree_data *ltd) {
                 else GBS_write_hash(ltd->seen_species, tree->name, 1);
             }
         }
+
+        if (ltd->progress) ++(*ltd->progress);
     }
     else {
         error = gbt_link_tree_to_hash_rek(tree->leftson, ltd);
@@ -629,21 +626,21 @@ GB_ERROR GBT_link_tree_using_species_hash(GBT_TREE *tree, bool show_status, GB_H
     ltd.seen_species = leafs ? GBS_create_hash(leafs, GB_IGNORE_CASE) : 0;
     ltd.zombies      = 0;
     ltd.duplicates   = 0;
-    ltd.counter      = 0;
 
     if (show_status) {
-        GB_status("Relinking tree to database");
-        ltd.nodes = leafs;
+        ltd.progress = new arb_progress("Relinking tree to database", leafs);
     }
     else {
-        ltd.nodes = 0;
+        ltd.progress = NULL;
     }
 
     error = gbt_link_tree_to_hash_rek(tree, &ltd);
     if (ltd.seen_species) GBS_free_hash(ltd.seen_species);
 
-    if (zombies) *zombies = ltd.zombies;
+    if (zombies) *zombies       = ltd.zombies;
     if (duplicates) *duplicates = ltd.duplicates;
+
+    delete ltd.progress;
 
     return error;
 }
@@ -851,14 +848,18 @@ static GB_CSTR *fill_species_name_array(GB_CSTR *current, const GBT_TREE *tree) 
     return current;
 }
 
-GB_CSTR *GBT_get_names_of_species_in_tree(const GBT_TREE *tree) {
+GB_CSTR *GBT_get_names_of_species_in_tree(const GBT_TREE *tree, size_t *count) {
     /* creates an array of all species names in a tree,
      * The names are not allocated (so they may change as side effect of renaming species) */
 
-    size_t size = GBT_count_leafs(tree);
+    size_t   size   = GBT_count_leafs(tree);
     GB_CSTR *result = (GB_CSTR *)GB_calloc(sizeof(char *), size + 1);
+    
     IF_ASSERTION_USED(GB_CSTR *check =) fill_species_name_array(result, tree);
     gb_assert(check - size == result);
+
+    if (count) *count = size;
+
     return result;
 }
 
