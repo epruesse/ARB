@@ -114,6 +114,8 @@ namespace arb_test {
         // counters
         size_t warnings;
 
+        bool not_covered_by_test() const { return !running_test; }
+
         static GlobalTestData& get_instance() { return *instance(false); }
         static void erase_instance() { instance(true); }
 
@@ -156,6 +158,9 @@ namespace arb_test {
 #  undef arb_assert
 #  define arb_assert(cond) test_assert(cond)
 # endif
+
+#define UNCOVERED() test_assert(arb_test::test_data().not_covered_by_test())
+// the opposite (i.e. COVERED()) would be quite nice, but is not trivial or even impossible
 
 #else // UNIT_TESTS != 1
 #error test_global.h may only be included if UNIT_TESTS is 1
