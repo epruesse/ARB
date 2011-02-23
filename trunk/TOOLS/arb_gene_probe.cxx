@@ -245,10 +245,6 @@ static GBDATA *create_gene_species(GBDATA *gb_species_data2, const char *interna
                 if (!error) {
                     names[static_internal_name] = strdup(long_name);
                     error = GBT_write_int(gb_species2, "abspos", abspos);
-#if defined(DEBUG)
-                    // store realname for debugging purposes
-                    if (!error) error = GBT_write_string(gb_species2, "realname_debug", long_name);
-#endif // DEBUG
                 }
             }
         }
@@ -493,7 +489,10 @@ int main(int argc, char* argv[]) {
         GBDATA *gb_species_data     = GB_entry(gb_main, "species_data");
         GBDATA *gb_species_data_new = GB_create_container(gb_main, "species_data"); // introducing a second 'species_data' container
 
-        if (!gb_species_data || ! gb_species_data_new) {
+        if (!gb_species_data) {
+            error = "database does not contains any species";
+        }
+        else if (!gb_species_data_new) {
             error = GB_await_error();
         }
 
@@ -518,7 +517,7 @@ int main(int argc, char* argv[]) {
         if (non_ali_genom_species) {
             printf("%i species had no alignment in '" GENOM_ALIGNMENT "' and have been skipped.\n", non_ali_genom_species);
         }
-        if (ali_genom_species == 0) {
+        if (!error && ali_genom_species == 0) {
             error = "no species with data in alignment '" GENOM_ALIGNMENT "' were found";
         }
 

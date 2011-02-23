@@ -1594,6 +1594,7 @@ UNITS_UNTESTABLE_ATM = \
 
 # for the moment, put all units containing tests into UNITS_TESTED:
 UNITS_TESTED = \
+	TOOLS/arb_test.test \
 	NTREE/NTREE.test \
 	AISC_MKPTPS/mkptypes.test \
 	ARBDB/ARBDB.test \
