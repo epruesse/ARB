@@ -275,6 +275,14 @@ inline bool contradicted(bool hypo1, bool hypo2) { return !correlated(hypo1, hyp
 #define ASSERT_FALSE(boolExpr) ASSERT_RESULT(bool, false, boolExpr)
 
 // ------------------------------------------------------------
+// UNCOVERED is used to document/test missing test coverage
+// see ../INCLUDE/test_global.h@UNCOVERED
+
+#ifndef UNCOVERED
+#define UNCOVERED()
+#endif
+
+// ------------------------------------------------------------
 
 #ifdef DEVEL_RELEASE
 # ifdef ASSERTION_USED
