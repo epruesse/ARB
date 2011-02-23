@@ -5,9 +5,7 @@
  *    1 gives new version
  */
 
-#define UseStdin         1
-#define Debug            1
-#define DebugData        0
+#define Debug 1
 
 /*  Program constants and parameters  */
 

@@ -81,23 +81,11 @@ char
 *y[maxsp+1];                    /*  sequence data array */
 
 
-#if UseStdin       /*  Use standard input */
-#  define  INFILE  stdin
-#else              /*  Use file named "infile" */
-#  define  INFILE  fp
-FILE  *fp;
-#endif
-
-#if DebugData
-FILE *debug;
-#endif
-
-
 /* ======================================================================= */
 /*                              PROGRAM                                  */
 /* ======================================================================= */
 
-void getnums() {
+void getnums(FILE *INFILE) {
     /* input number of species, number of sites */
     printf("\n%s, version %s, %s\n\n",
            programName,
@@ -118,7 +106,7 @@ void getnums() {
         anerror = true;
     }
     else if (numsp < 4) {
-        printf("ERROR: Too few species\n");
+        printf("ERROR: Too few species (need at least 4)\n");
         anerror = true;
     }
 
@@ -171,7 +159,7 @@ int itobase36(int i) {
 }
 
 
-int findch(int c) {
+int findch(int c, FILE *INFILE) {
     int ch;
 
     while ((ch = getc(INFILE)) != EOF && ch != c) ;
@@ -179,7 +167,7 @@ int findch(int c) {
 }
 
 
-void inputweights() {
+void inputweights(FILE *INFILE) {
     /* input the character weights 0, 1, 2 ... 9, A, B, ... Y, Z */
     int i, ch, wi;
 
@@ -199,14 +187,14 @@ void inputweights() {
         }
     }
 
-    if (findch('\n') == EOF) {      /* skip to end of line */
+    if (findch('\n', INFILE) == EOF) {      /* skip to end of line */
         printf("ERROR: Missing newline at end of weight data\n");
         anerror = true;
     }
 }
 
 
-void getoptions() {
+void getoptions(FILE *INFILE) {
     int  ch, i, extranum;
 
     categs      =     0;  /*  Number of rate categories */
@@ -259,7 +247,7 @@ void getoptions() {
                     printf("ERROR: Unexpected Categories data\n");
                     anerror = true;
                 }
-                else if (fscanf(INFILE, "%d", &categs) != 1 || findch('\n')==EOF) {
+                else if (fscanf(INFILE, "%d", &categs) != 1 || findch('\n', INFILE)==EOF) {
                     printf("ERROR: Problem reading number of rate categories\n");
                     anerror = true;
                 }
@@ -274,7 +262,7 @@ void getoptions() {
                     printf("ERROR: Unexpected Min informative residues data\n");
                     anerror = true;
                 }
-                else if (fscanf(INFILE, "%d", &mininfo)!=1 || findch('\n')==EOF) {
+                else if (fscanf(INFILE, "%d", &mininfo)!=1 || findch('\n', INFILE)==EOF) {
                     printf("ERROR: Problem reading min informative residues\n");
                     anerror = true;
                 }
@@ -290,7 +278,7 @@ void getoptions() {
                     printf("ERROR: Unexpected Transition/transversion data\n");
                     anerror = true;
                 }
-                else if (fscanf(INFILE, "%lf", &ttratio)!=1 || findch('\n')==EOF) {
+                else if (fscanf(INFILE, "%lf", &ttratio)!=1 || findch('\n', INFILE)==EOF) {
                     printf("ERROR: Problem reading transition/transversion data\n");
                     anerror = true;
                 }
@@ -302,7 +290,7 @@ void getoptions() {
                     anerror = true;
                 }
                 else {
-                    inputweights();
+                    inputweights(INFILE);
                 }
                 break;
 
@@ -349,7 +337,7 @@ void getoptions() {
 }
 
 
-void getbasefreqs() {
+void getbasefreqs(FILE *INFILE) {
     double  suma, sumb;
 
     if (freqsfrom)  printf("Empirical ");
@@ -357,7 +345,7 @@ void getbasefreqs() {
 
     if (! freqsfrom) {
         if (fscanf(INFILE, "%lf%lf%lf%lf", &freqa, &freqc, &freqg, &freqt) != 4
-            || findch('\n') == EOF) {
+            || findch('\n', INFILE) == EOF) {
             printf("ERROR: Problem reading user base frequencies\n");
             anerror = true;
         }
@@ -484,7 +472,7 @@ void freeTree(tree *tr) {
 }
 
 
-void getdata(tree *tr) {
+void getdata(tree *tr, FILE *INFILE) {
      /* read sequences */
     int  i, j, k, l, basesread, basesnew, ch;
     int  meaning[256];          /*  meaning of input characters */
@@ -792,18 +780,18 @@ void empiricalfreqs(tree *tr) {
 }
 
 
-void getinput(tree *tr) {
-    getnums();                        if (anerror) return;
-    getoptions();                     if (anerror) return;
-    if (! freqsfrom) getbasefreqs();  if (anerror) return;
-    getyspace();                      if (anerror) return;
-    setuptree(tr, numsp);             if (anerror) return;
-    getdata (tr);                     if (anerror) return;
-    makeweights();                    if (anerror) return;
-    makevalues (tr);                  if (anerror) return;
+void getinput(tree *tr, FILE *INFILE) {
+    getnums(INFILE);                      if (anerror) return;
+    getoptions(INFILE);                   if (anerror) return;
+    if (!freqsfrom) getbasefreqs(INFILE); if (anerror) return;
+    getyspace();                          if (anerror) return;
+    setuptree(tr, numsp);                 if (anerror) return;
+    getdata(tr, INFILE);                  if (anerror) return;
+    makeweights();                        if (anerror) return;
+    makevalues (tr);                      if (anerror) return;
     if (freqsfrom) {
-        empiricalfreqs (tr);            if (anerror) return;
-        getbasefreqs();
+        empiricalfreqs (tr);              if (anerror) return;
+        getbasefreqs(INFILE);
     }
 }
 
@@ -1077,14 +1065,14 @@ void initrav(nodeptr p) {
 /*                         Read a tree from a file                       */
 /* ======================================================================= */
 
-int treeFinishCom() {
+int treeFinishCom(FILE *INFILE) {
     int  ch;
     bool inquote;
 
     inquote = false;
     while ((ch = getc(INFILE)) != EOF && (inquote || ch != ']')) {
         if (ch == '[' && ! inquote) {             /* comment; find its end */
-            if ((ch = treeFinishCom()) == EOF)  break;
+            if ((ch = treeFinishCom(INFILE)) == EOF)  break;
         }
         else if (ch == '\'') inquote = ! inquote;  /* start or end of quote */
     }
@@ -1093,14 +1081,14 @@ int treeFinishCom() {
 }
 
 
-int treeGetCh() {
+int treeGetCh(FILE *INFILE) {
     /* get next nonblank, noncomment character */
     int  ch;
 
     while ((ch = getc(INFILE)) != EOF) {
         if (white(ch)) ;
         else if (ch == '[') {                   /* comment; find its end */
-            if ((ch = treeFinishCom()) == EOF)  break;
+            if ((ch = treeFinishCom(INFILE)) == EOF)  break;
         }
         else  break;
     }
@@ -1108,11 +1096,11 @@ int treeGetCh() {
     return  ch;
 }
 
-void treeFlushLabel() {
+void treeFlushLabel(FILE *INFILE) {
     int  ch;
     bool done;
 
-    if ((ch = treeGetCh()) == EOF)  return;
+    if ((ch = treeGetCh(INFILE)) == EOF)  return;
     done = (ch == ':' || ch == ',' || ch == ')'  || ch == '[' || ch == ';');
 
     if (!done) {
@@ -1121,7 +1109,7 @@ void treeFlushLabel() {
 
         while (! done) {
             if (quoted) {
-                if ((ch = findch('\'')) == EOF)  return;      /* find close quote */
+                if ((ch = findch('\'', INFILE)) == EOF)  return;      /* find close quote */
                 ch = getc(INFILE);                            /* check next char */
                 if (ch != '\'') done = true;                  /* not doubled quote */
             }
@@ -1137,7 +1125,7 @@ void treeFlushLabel() {
 }
 
 
-int findTipName(tree *tr, int ch) {
+int findTipName(tree *tr, int ch, FILE *INFILE) {
     nodeptr  q;
     char    *nameptr, str[nmlngth+1];
     int      i, n;
@@ -1200,12 +1188,12 @@ int findTipName(tree *tr, int ch) {
 }
 
 
-double processLength() {
+double processLength(FILE *INFILE) {
     double  branch;
     int     ch;
     char    string[41];
 
-    ch = treeGetCh();                            /*  Skip comments */
+    ch = treeGetCh(INFILE);                            /*  Skip comments */
     if (ch != EOF)  (void) ungetc(ch, INFILE);
 
     if (fscanf(INFILE, "%lf", &branch) != 1) {
@@ -1219,20 +1207,20 @@ double processLength() {
 }
 
 
-void treeFlushLen() {
+void treeFlushLen(FILE *INFILE) {
     int  ch;
 
-    if ((ch = treeGetCh()) == ':')
-        (void) processLength();
+    if ((ch = treeGetCh(INFILE)) == ':')
+        (void) processLength(INFILE);
     else if (ch != EOF)
         (void) ungetc(ch, INFILE);
 }
 
 
-void treeNeedCh(int c1, const char *where) {
+void treeNeedCh(int c1, const char *where, FILE *INFILE) {
     int c2, i;
 
-    if ((c2 = treeGetCh()) == c1)  return;
+    if ((c2 = treeGetCh(INFILE)) == c1)  return;
 
     printf("ERROR: Missing '%c' %s tree; ", c1, where);
     if (c2 == EOF)
@@ -1246,12 +1234,12 @@ void treeNeedCh(int c1, const char *where) {
     anerror = true;
 }
 
-void addElementLen(tree *tr, nodeptr p) {
+void addElementLen(tree *tr, nodeptr p, FILE *INFILE) {
     double   z, branch;
     nodeptr  q;
     int      n, ch;
 
-    if ((ch = treeGetCh()) == '(') {     /*  A new internal node */
+    if ((ch = treeGetCh(INFILE)) == '(') {     /*  A new internal node */
         n = (tr->nextnode)++;
         if (n > 2*(tr->mxtips) - 2) {
             if (tr->rooted || n > 2*(tr->mxtips) - 1) {
@@ -1266,24 +1254,24 @@ void addElementLen(tree *tr, nodeptr p) {
         }
         q = tr->nodep[n];
         assert(q);
-        addElementLen(tr, q->next);        if (anerror)  return;
-        treeNeedCh(',', "in");             if (anerror)  return;
+        addElementLen(tr, q->next, INFILE);       if (anerror)  return;
+        treeNeedCh(',', "in", INFILE);            if (anerror)  return;
         assert(q->next);
-        addElementLen(tr, q->next->next);  if (anerror)  return;
-        treeNeedCh(')', "in");             if (anerror)  return;
-        treeFlushLabel();                  if (anerror)  return;
+        addElementLen(tr, q->next->next, INFILE); if (anerror)  return;
+        treeNeedCh(')', "in", INFILE);            if (anerror)  return;
+        treeFlushLabel(INFILE);                   if (anerror)  return;
     }
 
     else {                               /*  A new tip */
-        n = findTipName(tr, ch);
+        n = findTipName(tr, ch, INFILE);
         if (n <= 0) { anerror = true; return; }
         q = tr->nodep[n];
         if (tr->start->number > n)  tr->start = q;
         (tr->ntips)++;
     }
 
-    treeNeedCh(':', "in");             if (anerror)  return;
-    branch = processLength();          if (anerror)  return;
+    treeNeedCh(':', "in", INFILE);     if (anerror)  return;
+    branch = processLength(INFILE);    if (anerror)  return;
     z = exp(-branch / fracchange);
     if (z > zmax)  z = zmax;
     hookup(p, q, z);
@@ -1327,7 +1315,7 @@ void uprootTree(tree *tr, nodeptr p) {
 }
 
 
-void treeReadLen(tree *tr) {
+void treeReadLen(tree *tr, FILE *INFILE) {
     nodeptr  p;
     int  i, ch;
 
@@ -1340,13 +1328,13 @@ void treeReadLen(tree *tr) {
     tr->rooted      = false;
 
     p = tr->nodep[(tr->nextnode)++];
-    treeNeedCh('(', "at start of");                  if (anerror)  return;
-    addElementLen(tr, p);                            if (anerror)  return;
-    treeNeedCh(',', "in");                           if (anerror)  return;
-    addElementLen(tr, p->next);                      if (anerror)  return;
+    treeNeedCh('(', "at start of", INFILE);          if (anerror)  return;
+    addElementLen(tr, p, INFILE);                    if (anerror)  return;
+    treeNeedCh(',', "in", INFILE);                   if (anerror)  return;
+    addElementLen(tr, p->next, INFILE);              if (anerror)  return;
     if (! tr->rooted) {
-        if ((ch = treeGetCh()) == ',') {        /*  An unrooted format */
-            addElementLen(tr, p->next->next);            if (anerror)  return;
+        if ((ch = treeGetCh(INFILE)) == ',') {        /*  An unrooted format */
+            addElementLen(tr, p->next->next, INFILE); if (anerror) return;
         }
         else {                                  /*  A rooted format */
             p->next->next->back = (nodeptr) NULL;
@@ -1354,16 +1342,16 @@ void treeReadLen(tree *tr) {
             if (ch != EOF)  (void) ungetc(ch, INFILE);
         }
     }
-    treeNeedCh(')', "in");
+    treeNeedCh(')', "in", INFILE);
     if (anerror) {
         printf("(This error also happens if the last species in the tree is unmarked)\n");
         return;
     }
 
 
-    treeFlushLabel();                                if (anerror)  return;
-    treeFlushLen();                                  if (anerror)  return;
-    treeNeedCh(';', "at end of");                    if (anerror)  return;
+    treeFlushLabel(INFILE);               if (anerror)  return;
+    treeFlushLen(INFILE);                 if (anerror)  return;
+    treeNeedCh(';', "at end of", INFILE); if (anerror)  return;
 
     if (tr->rooted)  uprootTree(tr, p->next->next);  if (anerror)  return;
     tr->start = p->next->next->back;  /* This is start used by treeString */
@@ -1664,13 +1652,39 @@ GBDATA *gb_main;
 void getArbFilter() {
     /*! Get the calling filter, needed to expand weights afterwards */
     GB_begin_transaction(gb_main);
-    arb_filter = GBT_read_string(gb_main, AWAR_GDE_EXPORT_FILTER);
+    arb_filter     = GBT_read_string(gb_main, AWAR_GDE_EXPORT_FILTER);
     alignment_name = GBT_get_default_alignment(gb_main);
     GB_commit_transaction(gb_main);
 }
 
+static int get_next_SAI_count() {
+    GBDATA *gb_sai_count = GB_search(gb_main, "arb_dnarates/sai_count", GB_FIND);
+    if (!gb_sai_count) {
+        gb_sai_count = GB_search(gb_main, "arb_dnarates/sai_count", GB_INT);
+    }
+    int count = GB_read_int(gb_sai_count);
+    count++;
+    GB_write_int(gb_sai_count, count);
+    return count;
+}
+
+static GBDATA *create_next_SAI() {
+    GBDATA *gb_sai = NULL;
+    char    sai_name[100];
+
+    while (1) {
+        sprintf(sai_name, "POS_VAR_BY_ML_%i", get_next_SAI_count());
+        gb_sai = GBT_find_SAI(gb_main, sai_name);
+        if (!gb_sai) { // sai_name is not used yet
+            gb_sai = GBT_find_or_create_SAI(gb_main, sai_name);
+            printf("Writing '%s'\n", sai_name);
+            break; 
+        }
+    }
+    return gb_sai;
+}
+
 void writeToArb() {
-    char    sai_name[1024];
     char    type_info[1024];
     char    category_string[1024];
     char   *p;
@@ -1679,15 +1693,11 @@ void writeToArb() {
     int     ali_pos;
     float  *rates;              /* rates to export */
     char   *cats;               /* categories */
-    GBDATA *gb_sai;
     GBDATA *gb_data;
 
 
     GB_begin_transaction(gb_main);
 
-    /* First create new SAI */
-    sprintf(sai_name, "POS_VAR_BY_ML_%i", getpid());
-    printf("Writing '%s'\n", sai_name);
     ali_len = GBT_get_alignment_len(gb_main, alignment_name);
     cats    = (char *)GB_calloc(ali_len, sizeof(char));
     rates   = (float *)GB_calloc(ali_len, sizeof(float));
@@ -1728,29 +1738,45 @@ void writeToArb() {
 
 
     sprintf(type_info, "PVML: Positional Variability by ML (Olsen)");
-    gb_sai = GBT_find_or_create_SAI(gb_main, sai_name);
-    if (!gb_sai) {
-        fprintf(stderr, "Error: %s\n", GB_await_error());
-    }
-    else {
-        gb_data = GBT_add_data(gb_sai, alignment_name, "rates", GB_FLOATS);
-        GB_write_floats(gb_data, rates, ali_len);
-        gb_data = GBT_add_data(gb_sai, alignment_name, "data", GB_STRING);
-        GB_write_string(gb_data, cats);
-        gb_data = GBT_add_data(gb_sai, alignment_name, "_CATEGORIES", GB_STRING);
-        GB_write_string(gb_data, category_string);
-        gb_data = GBT_add_data(gb_sai, alignment_name, "_TYPE", GB_STRING);
-        GB_write_string(gb_data, type_info);
+
+    {
+        GBDATA *gb_sai = create_next_SAI();
+        if (!gb_sai) {
+            fprintf(stderr, "Error: %s\n", GB_await_error());
+        }
+        else {
+            gb_data = GBT_add_data(gb_sai, alignment_name, "rates", GB_FLOATS);
+            GB_write_floats(gb_data, rates, ali_len);
+            gb_data = GBT_add_data(gb_sai, alignment_name, "data", GB_STRING);
+            GB_write_string(gb_data, cats);
+            gb_data = GBT_add_data(gb_sai, alignment_name, "_CATEGORIES", GB_STRING);
+            GB_write_string(gb_data, category_string);
+            gb_data = GBT_add_data(gb_sai, alignment_name, "_TYPE", GB_STRING);
+            GB_write_string(gb_data, type_info);
+        }
     }
 
     GB_commit_transaction(gb_main);
+    }
+
+void openArb(const char *dbname) {
+    gb_main = GB_open(dbname, "rw");
+    if (!gb_main) {
+        if (strcmp(dbname, ":") == 0) {
+            GB_warning("Cannot find ARB server");
+        }
+        else {
+            GB_warningf("Cannot open DB '%s'", dbname); 
+        }
+        exit(EXIT_FAILURE);
+    }
 }
 
-void openArb() {
-    gb_main = GB_open(":", "rw");
-    if (!gb_main) {
-        GB_warning("Cannot find ARB server");
-        exit(-1);
+void saveArb(const char *saveAs) {
+    GB_ERROR error = GB_save(gb_main, saveAs, "a");
+    if (error) {
+        GB_warningf("Error saving '%s': %s", saveAs, error);
+        exit(EXIT_FAILURE);
     }
 }
 
@@ -1848,18 +1874,18 @@ void summarize(int treenum) {
             if (outfile) {
                 wrfile(outfile, sites, categs, weight, categrate, sitecateg);
                 (void) fclose(outfile);
-                printf("Weights and categories also writen to %s\n\n", filename);
+                printf("Weights and categories also written to %s\n\n", filename);
             }
         }
     }
 }
 
 
-void makeUserRates(tree *tr) {
+void makeUserRates(tree *tr, FILE *INFILE) {
     double  tree_length;
     int     numtrees, which, i;
 
-    if (fscanf(INFILE, "%d", &numtrees) != 1 || findch('\n') == EOF) {
+    if (fscanf(INFILE, "%d", &numtrees) != 1 || findch('\n', INFILE) == EOF) {
         printf("ERROR: Problem reading number of user trees\n");
         anerror = true;
         return;
@@ -1869,7 +1895,10 @@ void makeUserRates(tree *tr) {
 
     for (which = 1; which <= numtrees; which++) {
         for (i = 0; i < endsite; i++)  patrate[i] = 1.0;
-        treeReadLen(tr);                                 if (anerror) break;
+        
+        treeReadLen(tr, INFILE);
+        if (anerror) break;
+
         tree_length = treeLength(tr);
 
         printf("%d taxon user-supplied tree read\n\n", tr->ntips);
@@ -1883,49 +1912,79 @@ void makeUserRates(tree *tr) {
 
 }
 
+inline bool is_char(const char *name, char c) { return name[0] == c && !name[1]; }
+inline bool wantSTDIN(const char *iname) { return is_char(iname, '-'); }
 
-int main() {
+int main(int argc, char *argv[]) {
     /* Maximum Likelihood Site Rate */
-    tree   curtree, *tr;
+    const char *dbname     = ":";
+    const char *dbsavename = NULL;
+    bool        help       = false;
+    const char *error      = NULL;
+    const char *inputname  = NULL;
+    FILE       *infile     = NULL;
 
-#   if DebugData
-    debug = fopen("ml_rates.debug", "w");
-#   endif
+    switch (argc) {
+        case 3: error = "'dbname' may only be used together with 'dbsavename'"; break;
+            
+        case 4:
+            dbname             = argv[2];
+            dbsavename         = argv[3];
+            // fall-through
+        case 2:
+            inputname          = argv[1];
+            infile             = wantSTDIN(inputname) ? stdin : fopen(inputname, "rt");
+            if (!infile) error = GB_IO_error("reading", inputname);
+            break;
 
-#   if ! UseStdin
-    fp = fopen("infile", "rt");
-#   endif
+        case 0:
+        case 1: error = "missing arguments"; break;
 
-#if defined(DEBUG)
-    {
-        int i;
-        for (i = 0; i<(2*maxsp-1); ++i) {
-            curtree.nodep[i] = 0;
-        }
+        default : error = "too many arguments"; break;
     }
-#endif /* DEBUG */
 
-    openArb();
-    getArbFilter();
+    if (error) {
+        fprintf(stderr, "arb_dnarates: Error: %s\n", error);
+        help = true;
+    }
 
-    tr = & curtree;
-    getinput(tr);                               if (anerror)  return 1;
-    linkxarray(3, 3, & freextip, & usedxtip);   if (anerror)  return 1;
-    setupnodex(tr);                             if (anerror)  return 1;
-    makeUserRates(tr);                          if (anerror)  return 1;
+    if (help) {
+        fputs("Usage: arb_dnarates input [dbname dbsavename]\n"
+              "       Expects phylip sequence data as 'input'.\n"
+              "       Reads from STDIN if 'input' is '-'.\n"
+              "       (e.g. cat data.phyl | arb_dnarates - ...\n"
+              "          or arb_dnarates data.phyl ...)\n"
+              "       Expects a 'dbname' or a running ARB DB server.\n"
+              "       - Reads " AWAR_GDE_EXPORT_FILTER " from server.\n"
+              "       - Saves calculated SAI to server (POS_VAR_BY_ML_...)\n"
+              "       Using 'dbname' does only make sense for unittests!\n"
+              , stderr);
+        exit(EXIT_FAILURE);
+    }
 
-    writeToArb();
-    closeArb();
+    // using arb_dnarates only makes sense with a running db server
+    // (because result is written there)
+    openArb(dbname);
+    getArbFilter(); // Note: expects AWAR_GDE_EXPORT_FILTER in running db server
 
-    freeTree(tr);
+    {
+        tree curtree;
+        for (int i = 0; i<(2*maxsp-1); ++i) curtree.nodep[i] = 0;
 
-#   if ! UseStdin
-    (void) fclose(fp);
-#   endif
+        tree *tr = &curtree;
+        getinput(tr, infile);                       if (anerror)  return 1;
+        linkxarray(3, 3, & freextip, & usedxtip);   if (anerror)  return 1;
+        setupnodex(tr);                             if (anerror)  return 1;
+        makeUserRates(tr, infile);                  if (anerror)  return 1;
 
-#   if DebugData
-    fclose(debug);
-#   endif
+        writeToArb();
+        if (dbsavename) saveArb(dbsavename);
+        closeArb();
 
-    return 0;
+        freeTree(tr);
+    }
+
+    if (wantSTDIN(inputname)) fclose(infile);
+
+    return EXIT_SUCCESS;
 }
