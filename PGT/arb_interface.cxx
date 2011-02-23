@@ -762,7 +762,7 @@ char *get_config_AWAR() { return get_AWAR(AWAR_CONFIG_CHANGED); }
 
 
 /****************************************************************************
-*  ADD A CALLBACK TO AN ARB CONTAINER
+*  ADD/REMOVE CALLBACKS TO/FROM ARB CONTAINER
 ****************************************************************************/
 static void add_callback(const char *ARB_path, GB_CB callback, int *caller)
 {
@@ -775,6 +775,17 @@ static void add_callback(const char *ARB_path, GB_CB callback, int *caller)
 
     ARB_commit_transaction();
 }
+static void remove_callback(const char *ARB_path, GB_CB callback, int *caller)
+{
+    GBDATA *gb_data= get_gbData();
+
+    ARB_begin_transaction();
+
+    GBDATA *gb_field = GB_search(gb_data, ARB_path, GB_FIND);
+    if (gb_field) GB_remove_callback(gb_field, GB_CB_ALL, callback, caller);
+
+    ARB_commit_transaction();
+}
 
 
 /****************************************************************************
@@ -784,9 +795,15 @@ static void add_callback(const char *ARB_path, GB_CB callback, int *caller)
 void add_mainDialog_callback(const char *awar, void (*cb)(GBDATA *, mainDialog *, GB_CB_TYPE), mainDialog *md) {
     add_callback(awar, (GB_CB)cb, (int*)md);
 }
+void del_mainDialog_callback(const char *awar, void (*cb)(GBDATA *, mainDialog *, GB_CB_TYPE), mainDialog *md) {
+    remove_callback(awar, (GB_CB)cb, (int*)md);
+}
 
 void add_imageDialog_callback(const char *awar, void (*cb)(GBDATA *, imageDialog *, GB_CB_TYPE), imageDialog *id) {
     add_callback(awar, (GB_CB)cb, (int*)id);
+}
+void del_imageDialog_callback(const char *awar, void (*cb)(GBDATA *, imageDialog *, GB_CB_TYPE), imageDialog *id) {
+    remove_callback(awar, (GB_CB)cb, (int*)id);
 }
 
 /****************************************************************************

@@ -31,8 +31,11 @@ enum ARB_TRANS_TYPE {
     ARB_TRANS
 };
 
+struct gb_exitfun;
+
 struct gb_local_data {
     // global data structure used for all open databases
+    // @@@ could be moved into GB_shell
 
     gb_buffer  buf1, buf2;
     char      *write_buffer;
@@ -57,6 +60,8 @@ struct gb_local_data {
 
     int openedDBs; 
     int closedDBs;
+
+    gb_exitfun *atgbexit;
 };
 
 extern gb_local_data *gb_local;

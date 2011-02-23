@@ -800,6 +800,7 @@ void aw_initstatus() {
 
         aw_stg.is_child = true; // mark as child
 
+        GB_shell shell;
         AW_root *aw_root = new AW_root(".arb_prop/status.arb", "ARB_STATUS", true);
         create_status_awars(aw_root);
 

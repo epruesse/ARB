@@ -1317,6 +1317,7 @@ static GB_ERROR modify_db(GBDATA *gb_main) {
 #define TEST_loadsave_CLEANUP() TEST_ASSERT(system("rm -f [ab]2[ab]*.* master.* slave.* renamed.* fast.* fast2b.* TEST_loadsave.ARF") == 0)
 
 void TEST_SLOW_loadsave() {
+    GB_shell shell;
     TEST_loadsave_CLEANUP();
 
     // test non-existing DB
@@ -1473,9 +1474,10 @@ inline bool quicksaves_range(int from, int to) { return is_first_quicksave(from)
 
 void TEST_SLOW_quicksave_names() {
     // check quicksave delete and wrap around
-
     TEST_quicksave_CLEANUP();
     const char *bname = "min_bin.arb";
+
+    GB_shell shell;
     
 #if 0
     {

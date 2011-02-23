@@ -53,6 +53,13 @@ mainDialog::mainDialog(Widget p)
     add_mainDialog_callback(AWAR_PROTEIN_NAME,    static_main_ARB_callback, this);
 }
 
+mainDialog::~mainDialog() {
+    // DEL ARB AWAR CALLBACKS
+    del_mainDialog_callback(AWAR_SPECIES_NAME,    static_main_ARB_callback, this);
+    del_mainDialog_callback(AWAR_EXPERIMENT_NAME, static_main_ARB_callback, this);
+    del_mainDialog_callback(AWAR_PROTEOM_NAME,    static_main_ARB_callback, this);
+    del_mainDialog_callback(AWAR_PROTEIN_NAME,    static_main_ARB_callback, this);
+}
 
 /****************************************************************************
 *  MAIN DIALOG - CREATE WINDOW

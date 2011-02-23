@@ -11,17 +11,14 @@
 
 #include <arbdbt.h>
 
-int main(int argc, char **argv)
-{
+int main(int argc, char **argv) {
     if (argc == 1) {
         fprintf(stderr, "Usage: arb_message \"the message\"\n");
-        return -1;
+        return EXIT_FAILURE;
     }
 
     const char *progname = argv[0];
-    if (!progname || progname[0] == 0) {
-        progname = "arb_message";
-    }
+    if (!progname || progname[0] == 0) progname = "arb_message";
 
     char *the_message  = strdup(argv[1]);
     char *unencoded_lf = 0;
@@ -30,14 +27,17 @@ int main(int argc, char **argv)
         strcpy(unencoded_lf+1, unencoded_lf+2);
     }
 
-    GBDATA *gb_main = GB_open(":", "r");
-    if (!gb_main) {
-        fprintf(stderr, "%s: %s\n", progname, the_message);
-    }
-    else {
-        GBT_message(gb_main, the_message);
-        GB_close(gb_main);
+    {
+        GB_shell shell;
+        GBDATA *gb_main = GB_open(":", "r");
+        if (!gb_main) {
+            fprintf(stderr, "%s: %s\n", progname, the_message);
+        }
+        else {
+            GBT_message(gb_main, the_message);
+            GB_close(gb_main);
+        }
     }
     free(the_message);
-    return 0;
+    return EXIT_SUCCESS;
 }

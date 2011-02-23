@@ -546,6 +546,7 @@ int main(int argc, char **argv) {
 
     aw_initstatus();
 
+    GB_shell shell;
     AW_root  *aw_root = AWT_create_root(".arb_prop/phylo.arb", "ARB_PHYLO");
     PH_root  *ph_root = new PH_root;
     GB_ERROR  error   = ph_root->open(db_server);

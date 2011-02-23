@@ -478,6 +478,7 @@ int main(int argc, char* argv[]) {
     printf("Converting '%s' -> '%s' ..\n", inputname, outputname);
 
     GB_ERROR  error   = 0;
+    GB_shell  shell;
     GBDATA   *gb_main = GB_open(inputname, "rw"); // rootzeiger wird gesetzt
     if (!gb_main) {
         error = GBS_global_string("Database '%s' not found", inputname);

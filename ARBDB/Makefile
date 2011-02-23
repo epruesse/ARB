@@ -976,6 +976,7 @@ arbdb.o: $(ARBHOME)/INCLUDE/attributes.h
 arbdb.o: $(ARBHOME)/INCLUDE/dupstr.h
 arbdb.o: $(ARBHOME)/INCLUDE/smartptr.h
 arbdb.o: $(ARBHOME)/INCLUDE/test_global.h
+arbdb.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 arbdbpp.o: ad_prot.h
 arbdbpp.o: arb_assert.h

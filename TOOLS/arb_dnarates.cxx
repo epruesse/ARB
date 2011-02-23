@@ -1964,6 +1964,7 @@ int main(int argc, char *argv[]) {
 
     // using arb_dnarates only makes sense with a running db server
     // (because result is written there)
+    GB_shell shell;
     openArb(dbname);
     getArbFilter(); // Note: expects AWAR_GDE_EXPORT_FILTER in running db server
 

@@ -1390,6 +1390,8 @@ static long exit_remove_file(const char *file, long, void *) {
 static void exit_removal() {
     if (files_to_remove_on_exit) {
         GBS_hash_do_loop(files_to_remove_on_exit, exit_remove_file, NULL);
+        GBS_free_hash(files_to_remove_on_exit);
+        files_to_remove_on_exit = NULL;
     }
 }
 void GB_remove_on_exit(const char *filename) {
@@ -1397,7 +1399,7 @@ void GB_remove_on_exit(const char *filename) {
 
     if (!files_to_remove_on_exit) {
         files_to_remove_on_exit = GBS_create_hash(20, GB_MIND_CASE);
-        atexit(exit_removal);
+        GB_atexit(exit_removal);
     }
     GBS_write_hash(files_to_remove_on_exit, filename, 1);
 }
@@ -1582,4 +1584,43 @@ void TEST_paths() {
     TEST_ASSERT_EQUAL(GB_path_in_ARBLIB("help"), GB_path_in_ARBHOME("lib", "help"));
 }
 
+// ----------------------------------------
+
+class TestFile {
+    const char *name;
+    bool open(const char *mode) {
+        FILE *out = fopen(name, mode);
+        if (out) fclose(out);
+        return out;
+    }
+    void create() { ASSERT_RESULT(bool, true, open("w")); }
+    void unlink() { ::unlink(name); }
+public:
+    TestFile(const char *name_) : name(name_) { create(); }
+    ~TestFile() { if (exists()) unlink(); }
+    const char *get_name() const { return name; }
+    bool exists() { return open("r"); }
+};
+
+void TEST_GB_remove_on_exit() {
+    {
+        // first test class TestFile
+        TestFile file("test1");
+        TEST_ASSERT(file.exists());
+        TEST_ASSERT(TestFile(file.get_name()).exists()); // removes the file
+        TEST_ASSERT(!file.exists());
+    }
+
+    TestFile t("test1");
+    {
+        GB_shell shell;
+        GBDATA *gb_main = GB_open("no.arb", "c");
+
+        GB_remove_on_exit(t.get_name());
+        GB_close(gb_main);
+    }
+    TEST_ASSERT(!t.exists());
+}
+
 #endif
+

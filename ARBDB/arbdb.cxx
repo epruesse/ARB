@@ -320,9 +320,39 @@ unsigned char GB_BIT_compress_data[] = {
     0
 };
 
+struct gb_exitfun {
+    void (*exitfun)();
+    gb_exitfun *next;
+};
+
+void GB_atexit(void (*exitfun)()) {
+    // called when GB_shell is destroyed (use similar to atexit()) 
+    //
+    // Since the program does not neccessarily terminated, your code calling
+    // GB_atexit() may run multiple times. Make sure everything is completely reset by your 'exitfun'
+
+    gb_exitfun *fun = new gb_exitfun;
+    fun->exitfun    = exitfun;
+
+    fun->next          = gb_local->atgbexit;
+    gb_local->atgbexit = fun;
+}
+
+static void run_and_destroy_exit_functions(gb_exitfun *fun) {
+    if (fun) {
+        fun->exitfun();
+        run_and_destroy_exit_functions(fun->next);
+        delete fun;
+    }
+}
+
 void GB_exit_gb() {
+    GB_shell::ensure_inside();
+
     if (gb_local) {
         gb_assert(gb_local->openedDBs == gb_local->closedDBs);
+
+        run_and_destroy_exit_functions(gb_local->atgbexit);
 
         free(gb_local->bitcompress);
         gb_free_compress_tree(gb_local->bituncompress);
@@ -338,7 +368,35 @@ void GB_exit_gb() {
     }
 }
 
+// -----------------
+//      GB_shell
+
+
+static GB_shell *inside_shell = NULL;
+
+GB_shell::GB_shell() {
+    if (inside_shell) GBK_terminate("only one GB_shell allowed");
+    inside_shell = this;
+}
+GB_shell::~GB_shell() {
+    gb_assert(inside_shell == this);
+    GB_exit_gb();
+    inside_shell = NULL;
+}
+void GB_shell::ensure_inside()  { if (!inside_shell) GBK_terminate("Not inside GB_shell"); }
+
+struct GB_test_shell_closed {
+    ~GB_test_shell_closed() {
+        if (inside_shell) {
+            inside_shell->~GB_shell(); // call dtor
+        }
+    }
+};
+static GB_test_shell_closed test;
+
 void GB_init_gb() {
+    GB_shell::ensure_inside();
+
     if (!gb_local) {
         GBK_install_SIGSEGV_handler(true);          // never uninstalled
 
@@ -360,12 +418,13 @@ void GB_init_gb() {
         gb_local->openedDBs = 0;
         gb_local->closedDBs = 0;
 
+        gb_local->atgbexit = NULL;
+
 #ifdef ARBDB_SIZEDEBUG
         arbdb_stat = (long *)GB_calloc(sizeof(long), 1000);
 #endif
-
-        atexit(GB_exit_gb);
     }
+
 }
 
 int GB_open_DBs() {
@@ -2802,3 +2861,24 @@ long GB_number_of_subentries(GBDATA *gbd)
     return subentries;
 }
 
+// --------------------------------------------------------------------------------
+
+#if (UNIT_TESTS == 1)
+
+#include <test_unit.h>
+
+static void test_another_shell() { delete new GB_shell; }
+static void test_opendb() { GB_close(GB_open("no.arb", "c")); }
+
+void TEST_GB_shell() {
+    {
+        GB_shell *shell = new GB_shell;
+        TEST_ASSERT_SEGFAULT(test_another_shell);
+        test_opendb(); // no SEGV here
+        delete shell;
+    }
+
+    TEST_ASSERT_SEGFAULT(test_opendb); // should be impossible to open db w/o shell
+}
+
+#endif

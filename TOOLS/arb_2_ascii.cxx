@@ -48,6 +48,7 @@ int main(int argc, char **argv) {
             }
         }
 
+        GB_shell  shell;
         GBDATA   *gb_main = GB_open(in, readflags);
         if (!gb_main) {
             error = GB_await_error();
