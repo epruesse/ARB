@@ -865,7 +865,7 @@ AP_FLOAT AP_tree_nlen::nn_interchange_rek(bool openclosestatus, int &Abort, int 
 {
     if (!father)
     {
-        return rootEdge()->nni_rek(openclosestatus, Abort, deep, skip_hidden, mode);
+        return rootEdge()->nni_rek(openclosestatus, Abort, deep, skip_hidden, mode, NULL);
     }
 
     if (!father->father)

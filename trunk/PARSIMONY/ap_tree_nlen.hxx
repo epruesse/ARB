@@ -242,9 +242,9 @@ public:
     AP_FLOAT nni_rek(bool          openclosestatus,
                      int&          Abort,
                      int           deep,
-                     bool          skip_hidden = false,
-                     AP_BL_MODE    mode        = AP_BL_NNI_ONLY,
-                     AP_tree_nlen *skipNode    = NULL);
+                     bool          skip_hidden,
+                     AP_BL_MODE    mode,
+                     AP_tree_nlen *skipNode);
 
     AP_FLOAT nni_mutPerSite(AP_FLOAT pars_one, AP_BL_MODE mode, MutationsPerSite *mps);
     AP_FLOAT nni(AP_FLOAT pars_one, AP_BL_MODE mode) { return nni_mutPerSite(pars_one, mode, NULL); }
