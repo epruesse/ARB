@@ -26,6 +26,9 @@
 
 #define env_assert(cond) arb_assert(cond)
 
+// #define SIMULATE_ENVSETUP_TIMEOUT // makes tests fail
+// #define SIMULATE_ENVSETUP_SLOW_OVERTIME // should not make tests fail
+
 using namespace arb_test;
 using namespace std;
 
@@ -53,7 +56,7 @@ static const char *unitTesterDir() {
 static const char *flagDir() {
     static SmartMallocPtr(char) flag_dir;
     if (flag_dir.isNull()) {
-        flag_dir = strdup(GB_concat_full_path(unitTesterDir(), "flags"));
+        flag_dir = strdup(GB_concat_full_path(unitTesterDir(), FLAGS_DIR));
     }
     return &*flag_dir;
 }
@@ -65,28 +68,31 @@ static const char *runDir() {
     return &*run_dir;
 }
 
-// --------------------------
+// -----------------------
+//      PersistantFlag
 
 class PersistantFlag {
     // persistant flags keep their value even if the program is restarted(!)
-    
-    string name;
-    bool   value;
+
+    string       name;
+    mutable bool value; // has to be mutable to support volatile behavior
+    bool         is_volatile;
 
     const char *flagFileName() const {
-        return GB_concat_full_path(flagDir(), GBS_global_string("%s.flag", name.c_str()));
+        return GB_concat_full_path(flagDir(), GBS_global_string("%s." FLAGS_EXT, name.c_str()));
     }
 
     bool flagFileExists() const { return GB_is_regularfile(flagFileName()); }
 
     void createFlagFile() const {
-        const char *fname = flagFileName();
-        FILE       *fp    = fopen(fname, "w");
+        const char *flagfile = flagFileName();
+        FILE       *fp       = fopen(flagfile, "w");
         if (!fp) {
-            TEST_ASSERT_NO_ERROR(GB_IO_error("creating flag", fname));
+            GB_ERROR error = GB_IO_error("creating flag", flagfile);
+            StaticCode::errorf(__FILE__, __LINE__, "%s\n", error);
         }
         fclose(fp);
-        TEST_ASSERT(flagFileExists());
+        env_assert(flagFileExists());
     }
     void removeFlagFile() const {
         const char *flagfile = flagFileName();
@@ -94,8 +100,12 @@ class PersistantFlag {
         if (!flagFileExists()) {
             GBK_dump_backtrace(stderr, "tried to remove non-existing flagfile");
         }
-        TEST_ASSERT_ZERO_OR_SHOW_ERRNO(unlink(flagfile));
-        TEST_ASSERT(!flagFileExists());
+        int res = unlink(flagfile);
+        if (res != 0) {
+            GB_ERROR error = GB_IO_error("unlinking", flagfile);
+            StaticCode::errorf(__FILE__, __LINE__, "%s\n", error);
+        }
+        env_assert(!flagFileExists());
     }
     void updateFlagFile() const {
         if (value) createFlagFile();
@@ -105,22 +115,33 @@ class PersistantFlag {
 public:
     PersistantFlag(const char *name_)
         : name(name_),
-          value(flagFileExists())
+          value(flagFileExists()), 
+          is_volatile(false)
+    {}
+    PersistantFlag(const char *name_, bool is_volatile_)
+        : name(name_),
+          value(flagFileExists()),
+          is_volatile(is_volatile_)
     {}
     ~PersistantFlag() {
-        TEST_ASSERT(flagFileExists() == value);
+        if (flagFileExists() != bool(*this)) {
+            StaticCode::printf("Mismatch between internal value(=%i) and flagfile='%s'\n", int(value), name.c_str());
+        }
+        env_assert(flagFileExists() == value);
     }
-    operator bool() const { return value; }
+    operator bool() const {
+        if (is_volatile) value = flagFileExists();
+        return value;
+    }
+
     bool operator = (bool b) {
-        if (b != value) {
+        if (b != bool(*this)) {
             value = b;
             updateFlagFile();
         }
         return value;
     }
 };
-
-
 
 // --------------------------------------------------------------------------------
 // add environment setup/cleanup functions here (and add name to environments[] below)
@@ -134,7 +155,7 @@ public:
 // Note: you cannot simply share data between different modes since they are
 //       executed in different instances of the executable 'test_environment'!
 //
-//       Use 'PersistantFlag' to share bools between instances.  
+//       Use 'PersistantFlag' to share bools between instances.
 // --------------------------------------------------------------------------------
 
 // -----------------
@@ -189,6 +210,8 @@ static Mode            wrapped_mode  = UNKNOWN;
 static const char     *wrapped_error = NULL;
 void wrapped() { wrapped_error = wrapped_cb(wrapped_mode); }
 
+static PersistantFlag any_setup(ANY_SETUP, true); // tested and removed by UnitTester.cxx@ANY_SETUP
+
 class FunInfo {
     Environment_cb cb;
     string         name;
@@ -197,6 +220,8 @@ class FunInfo {
     Error set_to(Mode mode) {
         StaticCode::printf("[%s environment '%s' START]\n", mode_command[mode], get_name());
 
+        any_setup = true;
+
         wrapped_cb    = cb;
         wrapped_mode  = mode;
         wrapped_error = NULL;
@@ -204,7 +229,7 @@ class FunInfo {
         chdir(runDir());
 
         long            duration;
-        UnitTestResult  guard_says = execute_guarded(wrapped, &duration, MAX_EXEC_MS_ENV);
+        UnitTestResult  guard_says = execute_guarded(wrapped, &duration, MAX_EXEC_MS_ENV, false);
         const char     *error      = NULL;
 
         switch (guard_says) {
@@ -231,6 +256,18 @@ class FunInfo {
         }
         else {
             is_setup = (mode == SETUP);
+#if defined(SIMULATE_ENVSETUP_TIMEOUT)
+            if (mode == SETUP) {
+                StaticCode::printf("[simulating a timeout during SETUP]\n");
+                sleepms(MAX_EXEC_MS_ENV+MAX_EXEC_MS_SLOW+100); // simulate a timeout
+            }
+#endif
+#if defined(SIMULATE_ENVSETUP_SLOW_OVERTIME)
+            if (mode == SETUP) {
+                StaticCode::printf("[simulating overtime during SETUP]\n");
+                sleepms(MAX_EXEC_MS_SLOW+100); // simulate overtime
+            }
+#endif
         }
 
         StaticCode::printf("[%s environment '%s' END]\n", mode_command[mode], get_name());
@@ -322,6 +359,7 @@ int main(int argc, char* argv[]) {
         else {
             if (argc == 2) {
                 error = set_all_modules_to(mode);
+                if (mode == CLEAN) any_setup = false; // reset during final environment cleanup
             }
             else {
                 const char *modulearg = argv[2];

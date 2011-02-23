@@ -2931,49 +2931,9 @@ public:
 // ----------------------------
 //      test_alignment_data
 
-struct test_alignment_data {
-    int         mark;
-    const char *name;
-    const char *data;
-};
+#include <arb_unit_test.h>
 
 static const char *test_aliname = "ali_test";
-
-static GBDATA *test_create_DB(ARB_ERROR& error, test_alignment_data *ali_data, int species_count) {
-    GBDATA *gb_main = GB_open("nodb.arb", "crw");
-    error           = GB_push_transaction(gb_main);
-
-    if (!error) {
-        GBDATA *gb_species_data     = GB_search(gb_main, "species_data", GB_CREATE_CONTAINER);
-        if (!gb_species_data) error = GB_await_error();
-        else {
-            long    ali_len          = strlen(ali_data[0].data);
-            GBDATA *gb_alignment     = GBT_create_alignment(gb_main, test_aliname, ali_len, 1, 0, "rna");
-            if (!gb_alignment) error = GB_await_error();
-            else {
-                for (int sp = 0; sp<species_count && !error; ++sp) {
-                    test_alignment_data&  species    = ali_data[sp];
-                    GBDATA               *gb_species = GBT_find_or_create_species(gb_main, species.name);
-                    if (!gb_species) error           = GB_await_error();
-                    else {
-                        GB_write_flag(gb_species, species.mark);
-
-                        GBDATA *gb_data     = GBT_add_data(gb_species, test_aliname, "data", GB_STRING);
-                        if (!gb_data) error = GB_await_error();
-                        else    error       = GB_write_string(gb_data, species.data);
-                    }
-                }
-            }
-        }
-    }
-
-    error = GB_pop_transaction(gb_main);
-
-    return gb_main;
-}
-
-#define TEST_SPECIES_COUNT(test_ali_data)   ARRAY_ELEMS(test_ali_data)
-#define TEST_CREATE_DB(error,test_ali_data) test_create_DB(error, test_ali_data, TEST_SPECIES_COUNT(test_ali_data))
 
 static const char *get_aligned_data_of(GBDATA *gb_main, const char *species_name) {
     GB_transaction  ta(gb_main);
@@ -3056,7 +3016,7 @@ static AlignParams test_ali_params = {
 
 // ----------------------------------------
 
-struct test_alignment_data TestAlignmentData_TargetAndReferenceHandling[] = {
+struct arb_unit_test::test_alignment_data TestAlignmentData_TargetAndReferenceHandling[] = {
     { 0, "s1", ".........A--UCU-C------C-U-AAACC-CA-A-C-C-G-UAG-UUC--------GAA-U-UGAGG-AC--U-GUAA-CU-C..........." }, // reference
     { 0, "s2", "AUCUCCUAAACCCAACCGUAGUUCGAAUUGAGGACUGUAACUC......................................................" }, // align single sequence (same data as reference)
     { 1, "m1", "UAGAGGAUUUGGGUUGGCAUCAAGCUUAACUCCUGACAUUGAG......................................................" }, // align marked sequences.. (complement of reference)
@@ -3071,7 +3031,7 @@ void TEST_Aligner_TargetAndReferenceHandling() {
     // performs some alignments to check logic of target and reference handling
     
     ARB_ERROR  error;
-    GBDATA    *gb_main = TEST_CREATE_DB(error, TestAlignmentData_TargetAndReferenceHandling);
+    GBDATA    *gb_main = TEST_CREATE_DB(error, test_aliname, TestAlignmentData_TargetAndReferenceHandling, false);
 
     TEST_ASSERT_EQUAL(error.deliver(), NULL);
 
@@ -3194,7 +3154,7 @@ void TEST_Aligner_TargetAndReferenceHandling() {
 
 // ----------------------------------------
 
-struct test_alignment_data TestAlignmentData_checksumError[] = {
+struct arb_unit_test::test_alignment_data TestAlignmentData_checksumError[] = {
     { 0, "MtnK1722", "...G-GGC-C-G............CCC-GG--------CAAUGGGGGCGGCCCGGCGGAC----GG--C-UCAGU-A---AAG-UCGUAACAA-GG-UAG-CCGU-AGGGGAA-CCUG-CGGC-UGGAUCACCUCC....." }, // gets aligned
     { 0, "MhnFormi", "...A-CGA-U-C------------CUUCGG--------GGUCG-U-GG-C-GU-A--C------GG--C-UCAGU-A---AAG-UCGUAACAA-GG-UAG-CCGU-AGGGGAA-CCUG-CGGC-UGGAUCACCUCCU...." }, // 1st relative
     { 0, "MhnT1916", "...A-CGA-A-C------------CUU-GU--------GUUCG-U-GG-C-GA-A--C------GG--C-UCAGU-A---AAG-UCGUAACAA-GG-UAG-CCGU-AGGGGAA-CCUG-CGGC-UGGAUCACCUCCU...." }, // next relative
@@ -3209,7 +3169,7 @@ void TEST_SLOW_Aligner_checksumError() {
     // this produces an internal aligner error
     
     ARB_ERROR  error;
-    GBDATA    *gb_main = TEST_CREATE_DB(error, TestAlignmentData_checksumError);
+    GBDATA    *gb_main = TEST_CREATE_DB(error, test_aliname, TestAlignmentData_checksumError, false);
 
     SearchRelativeParams search_relative_params(new FakeFamilyFinder(gb_main, test_aliname, false, 8),
                                                 test_aliname,
