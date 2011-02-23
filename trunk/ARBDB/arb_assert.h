@@ -26,6 +26,9 @@
 #ifndef _STDIO_H
 #include <stdio.h>
 #endif
+#ifndef _STDLIB_H
+#include <stdlib.h>
+#endif
 #ifndef _ERRNO_H
 #include <errno.h>
 #endif

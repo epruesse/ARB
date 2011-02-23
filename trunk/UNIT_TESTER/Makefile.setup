@@ -44,12 +44,12 @@ RESTRICT_LIB=# run all tests
 #RESTRICT_LIB=client:arb_probe:AWTC
 
 # ---------- slow tests 
-SKIP_SLOW=0# always run all tests
-#SKIP_SLOW=15# skip slow tests (run only every SKIP_SLOW minutes)
+SKIP_SLOW=15# skip slow tests (run only every SKIP_SLOW minutes)
+#SKIP_SLOW=0# always run all tests
 
 # ---------- warnings?
-#WARN_LEVEL=0# disable warnings 
 WARN_LEVEL=1# enable warnings (recommended)
+#WARN_LEVEL=0# disable warnings 
 
 # ---------- unit tests create a patch each time tests pass ok
 # PATCHES_KEEP_HOURS and PATCHES_MIN_KEPT define when patches are removed again 

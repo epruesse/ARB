@@ -380,19 +380,16 @@ int main(int argc, const char ** argv) {
 
 #include <test_unit.h>
 
-static void test_ensure_newest_ptserver() {
-    static bool killed = false;
-
-    if (!killed) {
-        // first kill pt-server (otherwise we may test an outdated pt-server)
-        const char *server_tag = GBS_ptserver_tag(TEST_SERVER_ID);
-        TEST_ASSERT_NO_ERROR(arb_look_and_start_server(AISC_MAGIC_NUMBER, server_tag, 0));
-        killed = true;
+static void test_setup() {
+    static bool setup = false;
+    if (!setup) {
+        TEST_SETUP_GLOBAL_ENVIRONMENT("ptserver"); // first call will recreate the test pt-server
+        setup = true;
     }
 }
 
 void TEST_SLOW_variable_defaults_in_server() {
-    test_ensure_newest_ptserver();
+    test_setup();
 
     const char *server_tag = GBS_ptserver_tag(TEST_SERVER_ID);
     TEST_ASSERT_NO_ERROR(arb_look_and_start_server(AISC_MAGIC_NUMBER, server_tag, 0));
@@ -442,7 +439,7 @@ void TEST_SLOW_variable_defaults_in_server() {
 //      test probe design / match
 
 static void test_arb_probe(int fake_argc, const char **fake_argv, const char *expected) {
-    test_ensure_newest_ptserver();
+    test_setup();
     
     TEST_ASSERT_EQUAL(true, parseCommandLine(fake_argc, fake_argv));
     P.SERVERID   = TEST_SERVER_ID; // use test pt_server

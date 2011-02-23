@@ -305,6 +305,8 @@ void AWTC_create_common_next_neighbour_fields(AW_window *aws) {
 #include <test_unit.h>
 
 void TEST_SLOW_PT_FamilyFinder() {
+    TEST_SETUP_GLOBAL_ENVIRONMENT("ptserver");
+    
     GBDATA *gb_main = GB_open("no.arb", "c");
 
     for (int relativeMatches = 0; relativeMatches <= 1; ++relativeMatches) {
