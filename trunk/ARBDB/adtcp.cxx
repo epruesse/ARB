@@ -433,7 +433,7 @@ const char * const *GBS_get_arb_tcp_entries(const char *matching) {
 const char *GBS_ptserver_logname() {
     static SmartMallocPtr(char) serverlog;
     if (serverlog.isNull())
-        serverlog = nulldup(GB_path_in_ARBLIB("pts/ptserver.log", NULL));
+        serverlog = nulldup(GB_path_in_ARBLIB("pts/ptserver.log"));
     // Caution! 'serverlog' is returned as 'const char *'.
     return &*serverlog;
 }

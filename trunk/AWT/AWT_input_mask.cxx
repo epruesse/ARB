@@ -926,12 +926,12 @@ static string scan_identifier(const string& line, size_t& scan_pos, GB_ERROR& er
 inline const char *inputMaskDir(bool local) {
     if (local) {
         static char *local_mask_dir;
-        if (!local_mask_dir) local_mask_dir = AW_unfold_path(".arb_prop/inputMasks", "HOME");
+        if (!local_mask_dir) local_mask_dir = AW_unfold_path("HOME", ".arb_prop/inputMasks");
         return local_mask_dir;
     }
 
     static char *global_mask_dir;
-    if (!global_mask_dir) global_mask_dir = AW_unfold_path("lib/inputMasks", "ARBHOME");
+    if (!global_mask_dir) global_mask_dir = strdup(GB_path_in_ARBLIB("inputMasks"));
     return global_mask_dir;
 }
 

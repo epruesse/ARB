@@ -56,24 +56,29 @@ struct File_selection {                            // for fileselection
     bool leave_wildcards;
 };
 
-static GB_CSTR get_base_directory(const char *pwd_envar) {
+static GB_CSTR expand_symbolic_directories(const char *pwd_envar) { 
     GB_CSTR res;
 
     if (strcmp(pwd_envar, "PWD") == 0) {
         res = GB_getcwd();
     }
     else if (strcmp(pwd_envar, "PT_SERVER_HOME") == 0) {
-        res = GB_path_in_ARBLIB("pts", NULL);
+        res = GB_path_in_ARBLIB("pts");
     }
     else {
-        res = GB_getenv(pwd_envar);
-        if (!res) res = GB_getcwd(); // fallback to current working dir
+        res = NULL;
     }
 
     return res;
 }
 
-
+char *AW_unfold_path(const char *pwd_envar, const char *path) {
+    //! create a full path
+    gb_getenv_hook  oldHook = GB_install_getenv_hook(expand_symbolic_directories);
+    char           *result  = nulldup(GB_unfold_path(pwd_envar, path));
+    GB_install_getenv_hook(oldHook);
+    return result;
+}
 
 static GB_CSTR get_suffix(GB_CSTR fullpath) { // returns pointer behind '.' of suffix (or NULL if no suffix found)
     GB_CSTR dot = strrchr(fullpath, '.');
@@ -122,13 +127,6 @@ static char *set_suffix(const char *name, const char *suffix) {
     return GBS_strclose(out);
 }
 
-
-char *AW_unfold_path(const char *path, const char *pwd_envar) {
-    //! create a full path
-
-    if (path[0] == '/' || path[0] == '~') return strdup(GB_get_full_path(path));
-    return strdup(GB_concat_full_path(get_base_directory(pwd_envar), path));
-}
 
 inline const char *valid_path(const char *path) { return path[0] ? path : "."; }
 
@@ -191,7 +189,7 @@ static void fill_fileselection_recursive(const char *fulldir, int skipleft, cons
         char       *fullname;
 
         if (strlen(fulldir)) fullname = strdup(GB_concat_full_path(fulldir, entry));
-        else fullname                 = strdup(GB_get_full_path(entry));
+        else fullname                 = strdup(GB_canonical_path(entry));
 
         if (AW_is_dir(fullname)) {
             if (!(entry[0] == '.' && (!DIR_show_hidden || entry[1] == 0 || (entry[1] == '.' && entry[2] == 0)))) { // skip "." and ".." and dotdirs if requested
@@ -258,8 +256,9 @@ static void show_soft_link(AW_window *aws, AW_selection_list *sel_id, const char
     // adds a soft link (e.g. ARBMACROHOME or ARB_WORKDIR) into file selection box
     // if content of 'envar' matches 'cwd' nothing is inserted
 
-    const char *expanded_dir = get_base_directory(envar);
-    string      edir(expanded_dir);
+    const char *expanded_dir        = expand_symbolic_directories(envar);
+    if (!expanded_dir) expanded_dir = GB_getenv(envar);
+    string edir(expanded_dir);
 
     if (unDup.not_seen_yet(edir)) {
         unDup.register_directory(edir);
@@ -273,7 +272,7 @@ static void fill_fileselection_cb(void */*dummy*/, File_selection *cbs) {
     cbs->aws->clear_selection_list(cbs->id);
 
     char *diru    = aw_root->awar(cbs->def_dir)->read_string();
-    char *fulldir = AW_unfold_path(diru, cbs->pwd);
+    char *fulldir = AW_unfold_path(cbs->pwd, diru);
     char *filter  = aw_root->awar(cbs->def_filter)->read_string();
     char *name    = aw_root->awar(cbs->def_name)->read_string();
 
@@ -436,7 +435,7 @@ static void fileselection_filename_changed_cb(void *, File_selection *cbs) {
         char *dir     = aw_root->awar(cbs->def_dir)->read_string();
 
         if (fname[0] == '/' || fname[0] == '~') {
-            newName = strdup(GB_get_full_path(fname));
+            newName = strdup(GB_canonical_path(fname));
         }
         else {
             if (dir[0]) {
@@ -446,15 +445,15 @@ static void fileselection_filename_changed_cb(void *, File_selection *cbs) {
                 else {
                     char *fulldir = 0;
 
-                    if (dir[0] == '.') fulldir = AW_unfold_path(dir, cbs->pwd);
-                    else fulldir               = strdup(GB_get_full_path(dir));
+                    if (dir[0] == '.') fulldir = AW_unfold_path(cbs->pwd, dir);
+                    else fulldir               = strdup(dir);
 
                     newName = strdup(GB_concat_full_path(fulldir, fname));
                     free(fulldir);
                 }
             }
             else {
-                newName = strdup(GB_get_full_path(fname));
+                newName = AW_unfold_path(cbs->pwd, fname);
             }
         }
 
@@ -696,6 +695,41 @@ char *AW_get_selected_fullname(AW_root *awr, const char *awar_prefix) {
 void AW_refresh_fileselection(AW_root *awr, const char *awar_prefix) {
     // call optionally to force instant refresh
     // (automatic refresh is done every SELBOX_AUTOREFRESH_FREQUENCY)
-    
+
     awr->awar(GBS_global_string("%s/directory", awar_prefix))->touch();
 }
+
+// --------------------------------------------------------------------------------
+
+#if (UNIT_TESTS == 1)
+#include <test_unit.h>
+
+#define TEST_ASSERT_EQUAL_DUPPED(cs1, cs2)                              \
+    do {                                                                \
+        char *s1, *s2;                                                  \
+        TEST_ASSERT_EQUAL(s1 = (cs1), s2 = (cs2));                      \
+        free(s1);                                                       \
+        free(s2);                                                       \
+    } while(0)                                                          \
+
+void TEST_path_unfolding() {
+    const char *currDir = GB_getcwd();
+    {
+        gb_getenv_hook old = GB_install_getenv_hook(expand_symbolic_directories);
+
+        TEST_ASSERT_EQUAL(GB_getenv("PWD"), currDir);
+        TEST_ASSERT_EQUAL(GB_getenv("PT_SERVER_HOME"), GB_path_in_ARBLIB("pts"));
+        TEST_ASSERT_EQUAL(GB_getenv("ARBHOME"), GB_getenvARBHOME());
+        TEST_ASSERT_EQUAL(GB_getenv("ARB_NONEXISTING_ENVAR"), NULL);
+
+        GB_install_getenv_hook(old);
+    }
+
+    TEST_ASSERT_EQUAL_DUPPED(AW_unfold_path("PWD", "/bin"), strdup("/bin"));
+    TEST_ASSERT_EQUAL_DUPPED(AW_unfold_path("PWD", "../tests"), strdup(GB_path_in_ARBHOME("UNIT_TESTER/tests")));
+    TEST_ASSERT_EQUAL_DUPPED(AW_unfold_path("PT_SERVER_HOME", "../arb_tcp.dat"), strdup(GB_path_in_ARBLIB("arb_tcp.dat")));
+    TEST_ASSERT_EQUAL_DUPPED(AW_unfold_path("ARB_NONEXISTING_ENVAR", "."), strdup(currDir));
+}
+
+#endif // UNIT_TESTS
+

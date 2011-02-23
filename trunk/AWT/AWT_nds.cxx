@@ -297,10 +297,8 @@ void AWT_create_select_srtaci_window(AW_window *aww, AW_CL awar_acisrt, AW_CL /*
         aws->create_button("HELP", "HELP", "H");
 
         aws->at("box");
-        AW_selection_list*  id = aws->create_selection_list(AWAR_SELECT_ACISRT_PRE);
-        char *filename = AW_unfold_path("lib/sellists/srt_aci*.sellst", "ARBHOME");
-        GB_ERROR error = aws->load_selection_list(id, filename);
-        free(filename);
+        AW_selection_list* id    = aws->create_selection_list(AWAR_SELECT_ACISRT_PRE);
+        GB_ERROR           error = aws->load_selection_list(id, GB_path_in_ARBLIB("sellists/srt_aci*.sellst"));
         if (error) aw_message(error);
 
         aws->at("field");
