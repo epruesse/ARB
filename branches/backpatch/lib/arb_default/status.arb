@@ -1,6 +1,0 @@
-window	:0000	%% (%
-	font	:0000		        "9x15bold"
-	foreground	:0000		"Black"
-	background	:0000		"#FF8"
-	%) /*window*/
-
