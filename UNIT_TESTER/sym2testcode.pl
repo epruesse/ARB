@@ -67,7 +67,7 @@ sub fail_if_no_tests_defined($) {
       die "expected exactly one line from grep (got $lineCount)\n".
         "grep-cmd was '$cmd'";
     }
-    die "sym2testcode.pl: won't generated useless test code\n";
+    die "sym2testcode.pl: won't generate useless test code\n";
   }
 
   return $active; # return number of active tests

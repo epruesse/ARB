@@ -24,6 +24,8 @@
 #include <string>
 #include <unistd.h>
 
+#define env_assert(cond) arb_assert(cond)
+
 using namespace arb_test;
 using namespace std;
 
@@ -171,7 +173,7 @@ static Error ptserver(Mode mode) {
             break;
         }
         case UNKNOWN:
-            test_assert(0);
+            env_assert(0);
             break;
     }
 
