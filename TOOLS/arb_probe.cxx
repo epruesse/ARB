@@ -429,10 +429,17 @@ void TEST_SLOW_variable_defaults_in_server() {
 
     {
 #define LOCAL(rvar) (prev_read_##rvar)
+
+        
+#define FREE_LOCAL_long(rvar) 
+#define FREE_LOCAL_charp(rvar) free(LOCAL(rvar)) 
+#define FREE_LOCAL(type,rvar) FREE_LOCAL_##type(rvar)
+
 #define TEST__READ(type,rvar,expected)                                  \
         do {                                                            \
             TEST_ASSERT_ZERO(aisc_get(link, PT_LOCS, locs, rvar, &(LOCAL(rvar)), NULL)); \
             TEST_ASSERT_EQUAL(LOCAL(rvar), expected);                   \
+            FREE_LOCAL(type,rvar);                                      \
         } while(0)
 #define TEST_WRITE(type,rvar,val)                                       \
         TEST_ASSERT_ZERO(aisc_put(link, PT_LOCS, locs, rvar, (type)val, NULL))
@@ -441,18 +448,20 @@ void TEST_SLOW_variable_defaults_in_server() {
             TEST_WRITE(type, rvar, val);        \
             TEST__READ(type, rvar, val);        \
         } while(0)
-#define TEST_DEFAULT_CHANGE(type,remote_variable,default_value,other_value) \
+#define TEST_DEFAULT_CHANGE(ctype,type,remote_variable,default_value,other_value) \
         do {                                                            \
-            const type DEFAULT_VALUE = default_value;                   \
-            const type OTHER_VALUE   = other_value;                     \
+            ctype DEFAULT_VALUE = default_value;                   \
+            ctype OTHER_VALUE   = other_value;                     \
             type LOCAL(remote_variable);                                \
             TEST__READ(type, remote_variable, DEFAULT_VALUE);           \
             TEST_CHANGE(type, remote_variable, OTHER_VALUE);            \
             TEST_CHANGE(type, remote_variable, DEFAULT_VALUE);          \
         } while(0)
 
-        TEST_DEFAULT_CHANGE(long, LOCS_FF_PROBE_LEN, 12, 67);
-        TEST_DEFAULT_CHANGE(char*, LOCS_LOGINTIME, "notime", "sometime");
+        TEST_DEFAULT_CHANGE(const long, long, LOCS_FF_PROBE_LEN, 12, 67);
+        typedef char *charp;
+        typedef const char *ccharp;
+        TEST_DEFAULT_CHANGE(ccharp, charp, LOCS_LOGINTIME, "notime", "sometime");
     }
 
     TEST_ASSERT_ZERO(aisc_close(link));

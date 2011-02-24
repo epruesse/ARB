@@ -95,6 +95,7 @@ static GB_ERROR removeVaryingDateFromTreeRemarks(const char *dbname) {
                             strcpy(found+truncate_offset, "<date removed for testing>");
                             error                  = GB_write_string(gb_remark, remark);
                         }
+                        free(remark);
                     }
                 }
             }
@@ -151,6 +152,7 @@ void TEST_SLOW_arb_read_tree() {
         TEST_RUN_TOOL(GBS_global_string("arb_replace %s %s", args, tmpfile)); \
         TEST_ASSERT_TEXTFILES_EQUAL(tmpfile, expected);                 \
         TEST_ASSERT_ZERO_OR_SHOW_ERRNO(GB_unlink(tmpfile));             \
+        free(tmpfile);                                                  \
     } while(0)
 
 void TEST_arb_replace() {
