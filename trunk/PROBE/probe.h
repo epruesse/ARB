@@ -160,6 +160,42 @@ struct probe_statistic_struct {
 
 class BI_ecoli_ref;
 
+class MostUsedPos {
+    int pos;
+    int used;
+
+    MostUsedPos *next;
+
+    void swapWith(MostUsedPos *other) {
+        std::swap(pos, other->pos);
+        std::swap(used, other->used);
+    }
+
+public:
+    MostUsedPos() : pos(0), used(0), next(NULL) { }
+    MostUsedPos(int p) : pos(p), used(1), next(NULL) { }
+    ~MostUsedPos() { delete next; }
+
+    void clear() {
+        pos  = 0;
+        used = 0;
+        delete next;
+        next = NULL;
+    }
+
+    void announce(int p) {
+        if (p == pos) used++;
+        else {
+            if (next) next->announce(p);
+            else next = new MostUsedPos(p);
+            if (next->used>used) swapWith(next);
+        }
+    }
+
+
+    int get_most_used() const { return pos; }
+};
+
 extern struct probe_struct_global {
     GB_shell *gb_shell;
     GBDATA   *gb_main;                              // ARBDB interface
@@ -190,7 +226,8 @@ extern struct probe_struct_global {
     int deep;                                       // for probe matching
     int height;
     int length;
-    int apos;
+    
+    MostUsedPos abs_pos;
 
     int sort_by;
 
