@@ -42,13 +42,16 @@ public:
         void *tmp[MAX_BACKTRACE];
         size = backtrace(tmp, MAX_BACKTRACE);
 
-        size_t ssize = skipFramesAtBottom*sizeof(*array);
-        size_t msize = size*sizeof(*array) - ssize;
+        size_t wantedFrames = size-skipFramesAtBottom;
 
-        arb_assert(msize>0);
-        
+        arb_assert(wantedFrames>0); // skipped more than all frames
+
+        size_t msize = wantedFrames*sizeof(*array);
+
         array = (void**)malloc(msize);
         memcpy(array, tmp+skipFramesAtBottom, msize);
+
+        size = wantedFrames;
     }
     ~BackTraceInfo() { free(array); }
 
