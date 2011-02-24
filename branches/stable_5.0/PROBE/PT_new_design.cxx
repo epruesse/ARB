@@ -197,7 +197,7 @@ double ptnd_check_split(PT_pdc *pdc, char *probe, int pos, char ref) {
 struct ptnd_chain_count_mishits {
     int operator()(int name, int apos, int rpos) {
         char *probe = psg.probe;
-        if (apos>psg.apos) psg.apos = apos;
+        psg.abs_pos.announce(apos);
         if (psg.data[name].is_group) return 0;              /* dont count group or neverminds */
         if (probe) {
             rpos+=psg.height;
@@ -224,7 +224,7 @@ static int ptnd_count_mishits2(POS_TREE *pt)
     if (PT_read_type(pt) == PT_NT_LEAF) {
         name = PT_read_name(psg.ptmain,pt);
         int apos = PT_read_apos(psg.ptmain,pt);
-        if (apos>psg.apos) psg.apos = apos;
+        psg.abs_pos.announce(apos);
         if (!psg.data[name].is_group)   return 1;
         return 0;
     }else if (PT_read_type(pt) == PT_NT_CHAIN) {
@@ -405,13 +405,14 @@ static void ptnd_first_check(PT_pdc *pdc)       /* checks the direkt mishits */
                 tprobe;
                 tprobe = tprobe_next ) {
         tprobe_next = tprobe->next;
-        psg.apos = 0;
+        psg.abs_pos.clear();
         tprobe->mishit = ptnd_count_mishits(tprobe->sequence,psg.pt,0);
-        tprobe->apos = psg.apos;
+        tprobe->apos = psg.abs_pos.get_most_used();
         if (tprobe->mishit > pdc->mishit) {
             destroy_PT_tprobes(tprobe);
         }
     }
+    psg.abs_pos.clear();
 }
 /***********************************************************************
                         Check the probes Position
