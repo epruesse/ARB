@@ -314,8 +314,8 @@ void TEST_SLOW_PT_FamilyFinder() {
         for (int fastMode = 0; fastMode <= 1; ++fastMode) {
             PT_FamilyFinder ff(gb_main, TEST_SERVER_ID, 18, 1, fastMode, relativeMatches);
             
-            // sequence of 'BcSSSS00' in TEST_pt.arb:
-            const char *sequence = "UUUAUCGGAGAGUUUGAUCAAGUCGAGCGGACAGAUGGGAGCUUGCUCCCUGAUGUUAGCGGCGGACGGACUCCGGGAAACCGGGGCUAAUACCGGAUGGUGAUGAUUGGGGUGAAGUCGUAACAAGGUAGCCGUAUCGGAAGGUGCGGCUGGAUCACCUCCUUUCU";
+            // sequence of 'LgtLytic' in TEST_pt.arb:
+            const char *sequence = "AGAGUUUGAUCAAGUCGAACGGCAGCACAGUCUAGCUUGCUAGACGGGUGGCGAGUGGCGAACGGACUUGGGGAAACUCAAGCUAAUACCGCAUAAUCAUGACUGGGGUGAAGUCGUAACAAGGUAGCCGUAGGGGAACCUGCGGCUGGAUCACCUCCUN";
 
             TEST_ASSERT_NO_ERROR(ff.searchFamily(sequence, FF_FORWARD, 4));
 
@@ -332,32 +332,32 @@ void TEST_SLOW_PT_FamilyFinder() {
             TEST_ASSERT(fm);
 
             if (fastMode == 0) { // full-search
-                TEST_ASSERT_NEXT_RELATIVE("BcSSSS00", 150, 0.993377);
-                TEST_ASSERT_NEXT_RELATIVE("Bl0LLL00",  65, 0.488722);
+                TEST_ASSERT_NEXT_RELATIVE("LgtLytic", 142, 0.986111);
 
                 if (relativeMatches == 0) {
-                    TEST_ASSERT_NEXT_RELATIVE("ClfPerfr",  24, 0.160000);
-                    TEST_ASSERT_NEXT_RELATIVE("Stsssola",  23, 0.161972);
+                    TEST_ASSERT_NEXT_RELATIVE("HllHalod",  48, 0.335664);
+                    TEST_ASSERT_NEXT_RELATIVE("PbrPropi",  47, 0.330986);
+                    TEST_ASSERT_NEXT_RELATIVE("PslFlave",  47, 0.340580);
                     TEST_ASSERT(!fm); // checked all?
                 }
                 else {
-                    TEST_ASSERT_NEXT_RELATIVE("Stsssola",  23, 0.161972);
-                    TEST_ASSERT_NEXT_RELATIVE("ClfPerfr",  24, 0.160000);
+                    TEST_ASSERT_NEXT_RELATIVE("PslFlave",  47, 0.340580);
+                    TEST_ASSERT_NEXT_RELATIVE("HllHalod",  48, 0.335664);
+                    TEST_ASSERT_NEXT_RELATIVE("PbrPropi",  47, 0.330986);
                     TEST_ASSERT(!fm); // checked all?
                 }
             }
             else { // fast-search 
-                TEST_ASSERT_NEXT_RELATIVE("BcSSSS00", 34, 0.225166);
-                TEST_ASSERT_NEXT_RELATIVE("Bl0LLL00", 18, 0.135338);
+                TEST_ASSERT_NEXT_RELATIVE("LgtLytic", 40, 0.277778);
+                TEST_ASSERT_NEXT_RELATIVE("PtVVVulg", 15, 0.104167);
+                TEST_ASSERT_NEXT_RELATIVE("PslFlave", 14, 0.101449);
 
                 if (relativeMatches == 0) {
-                    TEST_ASSERT_NEXT_RELATIVE("DcdNodos",  6, 0.041096);
-                    TEST_ASSERT_NEXT_RELATIVE("LgtLytic",  6, 0.041379);
+                    TEST_ASSERT_NEXT_RELATIVE("DcdNodos", 14, 0.097222);
                     TEST_ASSERT(!fm); // checked all?
                 }
                 else {
-                    TEST_ASSERT_NEXT_RELATIVE("PslFlave",  6, 0.043478);
-                    TEST_ASSERT_NEXT_RELATIVE("HllHalod",  6, 0.041958);
+                    TEST_ASSERT_NEXT_RELATIVE("Stsssola", 14, 0.098592);
                     TEST_ASSERT(!fm); // checked all? 
                 }
             }
