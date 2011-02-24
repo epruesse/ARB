@@ -258,12 +258,15 @@ static void show_soft_link(AW_window *aws, AW_selection_list *sel_id, const char
 
     const char *expanded_dir        = expand_symbolic_directories(envar);
     if (!expanded_dir) expanded_dir = GB_getenv(envar);
-    string edir(expanded_dir);
 
-    if (unDup.not_seen_yet(edir)) {
-        unDup.register_directory(edir);
-        const char *entry = GBS_global_string("$ %-18s(%s)", GBS_global_string("'%s'", envar), expanded_dir);
-        aws->insert_selection(sel_id, entry, expanded_dir);
+    if (expanded_dir) {
+        string edir(expanded_dir);
+
+        if (unDup.not_seen_yet(edir)) {
+            unDup.register_directory(edir);
+            const char *entry = GBS_global_string("$ %-18s(%s)", GBS_global_string("'%s'", envar), expanded_dir);
+            aws->insert_selection(sel_id, entry, expanded_dir);
+        }
     }
 }
 
