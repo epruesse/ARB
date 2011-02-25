@@ -592,7 +592,7 @@ DEST_BIN = bin
 
 AINCLUDES := -I. -I$(ARBHOME)/INCLUDE $(XINCLUDES)
 CPPINCLUDES := -I. -I$(ARBHOME)/INCLUDE $(XINCLUDES)
-MAKEDEPENDFLAGS := -- $(cflags) -- -DARB_OPENGL -DUNIT_TESTS=1 -D__cplusplus -I. -Y$(ARBHOME)/INCLUDE
+MAKEDEPENDFLAGS := -- $(cflags) -- -DARB_OPENGL -DUNIT_TESTS -D__cplusplus -I. -Y$(ARBHOME)/INCLUDE
 
 ifeq ($(VTABLE_INFRONTOF_CLASS),1)
 # Some code in ARB depends on the location of the vtable pointer

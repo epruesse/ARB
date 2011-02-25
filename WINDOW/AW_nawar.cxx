@@ -757,7 +757,7 @@ void AW_create_fileselection_awars(AW_root *awr, const char *awar_base,
 
 // --------------------------------------------------------------------------------
 
-#if (UNIT_TESTS == 1)
+#ifdef UNIT_TESTS
 #include <test_unit.h>
 
 static int test_cb1_called;

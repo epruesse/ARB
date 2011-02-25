@@ -56,7 +56,7 @@ void log_processed(int seqCount) {
 
 // --------------------------------------------------------------------------------
 
-#if (UNIT_TESTS == 1)
+#ifdef UNIT_TESTS
 #include <arbdbt.h> // before test_unit.h!
 #include <test_unit.h>
 

@@ -558,7 +558,7 @@ void GBS_erase_hash(GB_HASH *hs) {
         double mean_access = GBS_hash_mean_access_costs(hs);
         if (mean_access > 1.5) { // every 2nd access is a collision - increase hash size?
             dump_access("hash-size-warning", hs, mean_access);
-#if defined(DEVEL_RALF) && !(UNIT_TESTS == 1)
+#if defined(DEVEL_RALF) && !defined(UNIT_TESTS)
             gb_assert(mean_access<2.0);             // hash with 50% speed or less
 #endif // DEVEL_RALF
         }
@@ -918,7 +918,7 @@ void GBS_free_numhash(GB_NUMHASH *hs) {
 
 // --------------------------------------------------------------------------------
 
-#if (UNIT_TESTS == 1)
+#ifdef UNIT_TESTS
 
 #include <test_unit.h>
 

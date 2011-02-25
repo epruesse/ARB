@@ -260,7 +260,7 @@ const char *gcg_date(const char *input) {
 
 // --------------------------------------------------------------------------------
 
-#if (UNIT_TESTS == 1)
+#ifdef UNIT_TESTS
 #include <test_unit.h>
 
 #define TEST_ASSERT_CONVERT(input,expect,CONVERT,ASSERTION) ASSERTION(CONVERT(input), expect);

@@ -712,7 +712,7 @@ void gbm_debug_mem() {
 
 // --------------------------------------------------------------------------------
 
-#if (UNIT_TESTS == 1) && 0
+#if defined(UNIT_TESTS) && 0
 
 #include <test_unit.h>
 

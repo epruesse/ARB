@@ -316,14 +316,14 @@ static int parseCommandLine(int argc, const char ** argv) {
     if (argc<=1) helpflag = 1;
     else helpflag         = 0;
 
-#if UNIT_TESTS==1
+#ifdef UNIT_TESTS
     const int minServerID   = TEST_SERVER_ID;
-#else // !UNIT_TESTS == 1
+#else // !UNIT_TESTS
     const int minServerID   = 0;
 #endif
 
     P.SERVERID = getInt("serverid", 0, minServerID, 100, "Server Id, look into $ARBHOME/lib/arb_tcp.dat");
-#if UNIT_TESTS==1
+#ifdef UNIT_TESTS
     if (P.SERVERID<0) { arb_assert(P.SERVERID == TEST_SERVER_ID); }
 #endif
 
@@ -399,7 +399,7 @@ int main(int argc, const char ** argv) {
 
 // --------------------------------------------------------------------------------
 
-#if (UNIT_TESTS == 1)
+#ifdef UNIT_TESTS
 
 #include <test_unit.h>
 

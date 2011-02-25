@@ -300,7 +300,7 @@ void AWTC_create_common_next_neighbour_fields(AW_window *aws) {
 
 // --------------------------------------------------------------------------------
 
-#if (UNIT_TESTS == 1)
+#ifdef UNIT_TESTS
 
 #include <test_unit.h>
 

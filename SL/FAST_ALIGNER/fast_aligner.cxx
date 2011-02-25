@@ -2753,7 +2753,7 @@ AW_window *FastAligner_create_window(AW_root *root, const AlignDataAccess *data_
 
 // --------------------------------------------------------------------------------
 
-#if (UNIT_TESTS == 1)
+#ifdef UNIT_TESTS
 
 #include <test_unit.h>
 

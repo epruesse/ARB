@@ -195,7 +195,7 @@ void GB_free_dictionary(DictData *dd);
 /* adtcp.cxx */
 const char *GBS_scan_arb_tcp_param(const char *ipPort, const char *wantedParam);
 
-#if (UNIT_TESTS == 1)
+#ifdef UNIT_TESTS
 #define TEST_SERVER_ID (-666)
 #endif
 

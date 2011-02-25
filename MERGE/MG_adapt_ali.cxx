@@ -732,7 +732,7 @@ GB_ERROR MG_transfer_all_alignments(MG_remaps *remaps, GBDATA *source_species, G
 
 // --------------------------------------------------------------------------------
 
-#if (UNIT_TESTS == 1)
+#ifdef UNIT_TESTS
 
 #include <test_unit.h>
 

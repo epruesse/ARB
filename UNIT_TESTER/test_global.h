@@ -31,7 +31,7 @@
 #error Need cstring included
 #endif
 
-#if (UNIT_TESTS == 1)
+#ifdef UNIT_TESTS
 
 # if defined(DEVEL_RELEASE)
 #  error Unit testing not allowed in release
@@ -167,8 +167,8 @@ namespace arb_test {
 #define UNCOVERED() test_assert(arb_test::test_data().not_covered_by_test(), false)
 // the opposite (i.e. COVERED()) would be quite nice, but is not trivial or even impossible
 
-#else // UNIT_TESTS != 1
-#error test_global.h may only be included if UNIT_TESTS is 1
+#else // !UNIT_TESTS 
+#error test_global.h may only be included if UNIT_TESTS is defined
 #endif
 
 #else

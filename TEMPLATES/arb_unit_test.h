@@ -12,7 +12,7 @@
 #ifndef ARB_UNIT_TEST_H
 #define ARB_UNIT_TEST_H
 
-#if (UNIT_TESTS==1)
+#ifdef UNIT_TESTS
 
 namespace arb_unit_test {
 

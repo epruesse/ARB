@@ -1288,7 +1288,7 @@ void GB_disable_path(GBDATA *gbd, const char *path) {
 
 // --------------------------------------------------------------------------------
 
-#if (UNIT_TESTS == 1)
+#ifdef UNIT_TESTS
 
 #include <test_unit.h>
 
