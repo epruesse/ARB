@@ -1439,7 +1439,7 @@ void GB_split_full_path(const char *fullpath, char **res_dir, char **res_fullnam
 
 // --------------------------------------------------------------------------------
 
-#if (UNIT_TESTS == 1)
+#ifdef UNIT_TESTS
 
 #include <test_unit.h>
 

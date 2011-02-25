@@ -704,7 +704,7 @@ void AW_refresh_fileselection(AW_root *awr, const char *awar_prefix) {
 
 // --------------------------------------------------------------------------------
 
-#if (UNIT_TESTS == 1)
+#ifdef UNIT_TESTS
 #include <test_unit.h>
 
 #define TEST_ASSERT_EQUAL_DUPPED(cs1, cs2)                              \

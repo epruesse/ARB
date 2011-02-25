@@ -28,7 +28,7 @@ void GB_set_verbose() {
 // ---------------------------------------------------
 //      helper code to read ascii file in portions
 
-#if (UNIT_TESTS == 1)
+#ifdef UNIT_TESTS
 #define READING_BUFFER_SIZE 100
 #else
 #define READING_BUFFER_SIZE (1024*32)
@@ -1679,7 +1679,7 @@ GBDATA *GB_open(const char *path, const char *opent)
 
 // --------------------------------------------------------------------------------
 
-#if (UNIT_TESTS == 1)
+#ifdef UNIT_TESTS
 
 #include <test_unit.h>
 

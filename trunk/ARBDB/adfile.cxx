@@ -326,7 +326,7 @@ char **GBS_read_dir(const char *dir, const char *mask) {
 
 // --------------------------------------------------------------------------------
 
-#if (UNIT_TESTS == 1)
+#ifdef UNIT_TESTS
 #include <test_unit.h>
 
 // GB_test_textfile_difflines + GB_test_files_equal are helper functions used

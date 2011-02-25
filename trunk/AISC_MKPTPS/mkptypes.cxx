@@ -1712,7 +1712,7 @@ static void Version() {
 
 // --------------------------------------------------------------------------------
 
-#if (UNIT_TESTS == 1)
+#ifdef UNIT_TESTS
 
 #include <test_unit.h>
 

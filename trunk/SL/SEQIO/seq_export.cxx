@@ -712,7 +712,7 @@ GB_ERROR SEQIO_export_by_format(GBDATA *gb_main, int marked_only, AP_filter *fil
 
 // --------------------------------------------------------------------------------
 
-#if (UNIT_TESTS == 1)
+#ifdef UNIT_TESTS
 #include <test_unit.h>
 
 // uncomment to auto-update exported files

@@ -548,7 +548,7 @@ int etom(const Embl& embl, Macke& macke, const Seq& seq) { // __ATTR__USERESULT
 
 // --------------------------------------------------------------------------------
 
-#if (UNIT_TESTS == 1)
+#ifdef UNIT_TESTS
 #include <test_unit.h>
 
 #define TEST_ASSERT_ETOG_JOURNAL_PARSES(i,o)              \

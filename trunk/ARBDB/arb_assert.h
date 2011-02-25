@@ -196,7 +196,7 @@
 
 // ------------------------------------------------------------
 
-#if (UNIT_TESTS == 1)
+#ifdef UNIT_TESTS
 #ifndef TEST_GLOBAL_H
 #include <test_global.h> // overrides arb_assert()!
 #endif

@@ -263,7 +263,7 @@ const char* iupac::decode(char iupac, GB_alignment_type ali, int decode_amino_iu
 
 // --------------------------------------------------------------------------------
 
-#if (UNIT_TESTS == 1)
+#ifdef UNIT_TESTS
 
 #include <test_unit.h>
 

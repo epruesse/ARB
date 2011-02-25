@@ -2863,7 +2863,7 @@ long GB_number_of_subentries(GBDATA *gbd)
 
 // --------------------------------------------------------------------------------
 
-#if (UNIT_TESTS == 1)
+#ifdef UNIT_TESTS
 
 #include <test_unit.h>
 

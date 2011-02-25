@@ -1414,7 +1414,7 @@ AW_window *NTX_create_query_window(AW_root *aw_root)
 
 // --------------------------------------------------------------------------------
 
-#if (UNIT_TESTS == 1)
+#ifdef UNIT_TESTS
 #include <test_unit.h>
 #include <arb_unit_test.h>
 

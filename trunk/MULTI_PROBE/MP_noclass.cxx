@@ -953,7 +953,7 @@ int MP_probe_design_send_data(T_PT_PDC  pdc)
 
 // --------------------------------------------------------------------------------
 
-#if (UNIT_TESTS == 1)
+#ifdef UNIT_TESTS
 
 #include <test_unit.h>
 

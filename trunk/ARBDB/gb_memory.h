@@ -11,8 +11,7 @@
 #ifndef GB_MEMORY_H
 #define GB_MEMORY_H
 
-#if defined(DEBUG) && (UNIT_TESTS == 0) // use this to run tests on mapfiles
-// #if defined(DEBUG)
+#if defined(DEBUG)
 #define MEMORY_TEST 1
 // MEMORY_TEST == 1 uses malloc and normal pointers for internal ARBDB memory
 // -> memory checkers like valgrand work
@@ -23,6 +22,13 @@
 // -> memory checkers like valgrand won't be very useful
 // -> debugging is difficult, cause it's difficult to follow pointers
 // -> DB loads w/o delay, cause it's mmap'ped into memory
+#endif
+
+#if defined(UNIT_TESTS)
+#undef MEMORY_TEST
+#define MEMORY_TEST 0 // test mmapped-DB version in unittests
+// #define MEMORY_TEST 1 // test DEBUG DB version in unittests
+#warning unit-tests fail with MEMORY_TEST == 1!
 #endif
 
 struct gb_if_entries;

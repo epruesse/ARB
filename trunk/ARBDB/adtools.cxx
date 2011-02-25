@@ -1100,7 +1100,7 @@ GB_ERROR GB_notify(GBDATA *gb_main, int id, const char *message) {
 
 // --------------------------------------------------------------------------------
 
-#if (UNIT_TESTS == 1)
+#ifdef UNIT_TESTS
 
 #include <test_unit.h>
 
