@@ -33,7 +33,19 @@ static int gene_counter          = 0; // pre-incremented counters
 static int splitted_gene_counter = 0;
 static int intergene_counter     = 0;
 
-static map<const char *, char *> names;
+struct nameOrder {
+    bool operator()(const char *name1, const char *name2) {
+        // Normally it is sufficient to have any order, as long as it is strict.
+        // But for UNIT_TESTS we need a reproducable order, which does not
+        // depend on memory layout of DB elements.
+#if defined(UNIT_TESTS)
+        return strcmp(name1, name2)<0; // slow, determined by species names
+#else
+        return (name1-name2)<0;        // fast, but depends on memory layout (e.g. on MEMORY_TEST in gb_memory.h)
+#endif
+    }
+};
+static map<const char *, char *, nameOrder> names;
 
 // --------------------------------------------------------------------------------
 
@@ -567,6 +579,8 @@ int main(int argc, char* argv[]) {
             GBDATA *gb_gene_map     = GB_create_container(gb_main, "gene_map");
             if (!gb_gene_map) error = GB_await_error();
             else    error           = GBT_write_string(gb_gene_map, "map_string", map_string);
+
+            delete [] map_string;
         }
 
         if (!error) {
