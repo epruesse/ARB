@@ -28,7 +28,6 @@
 #undef MEMORY_TEST
 #define MEMORY_TEST 0 // test mmapped-DB version in unittests
 // #define MEMORY_TEST 1 // test DEBUG DB version in unittests
-#warning unit-tests fail with MEMORY_TEST == 1!
 #endif
 
 struct gb_if_entries;
