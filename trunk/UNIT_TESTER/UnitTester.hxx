@@ -44,6 +44,7 @@ const long WHATS_SLOW = 1000;         // ms
 const long MAX_EXEC_MS_NORMAL = WHATS_SLOW * 3;      // kill with segfault after time passed
 const long MAX_EXEC_MS_SLOW   = WHATS_SLOW * 7;      // same for slow tests
 const long MAX_EXEC_MS_ENV    = WHATS_SLOW * 15;     // same for environment setup/cleanup
+const long MAX_EXEC_MS_VGSYS  = WHATS_SLOW * 60;     // same for valgrinded system calls
 
 #define FLAGS_DIR "flags"
 #define FLAGS_EXT "flag"

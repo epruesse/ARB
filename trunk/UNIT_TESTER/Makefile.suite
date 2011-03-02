@@ -29,6 +29,9 @@ PATCHNAMESUFFIX:=$(subst :,_,$(PATCHNAMESUFFIX))
 
 cleanup_environment:
 	./test_environment clean
+ifneq ($(VALGRIND),0)
+	./valgrind/arb_valgrind_logged WAIT
+endif
 
 tests_passed: cleanup_environment
 	@$(TEST_REPORTER) report $(TEST_LOG_DIR) $(SKIP_SLOW)
@@ -42,6 +45,9 @@ unskip:
 
 init:
 	@echo "$(SEP) Running unit tests"
+ifneq ($(VALGRIND),0)
+	./valgrind/arb_valgrind_logged INIT $(VALGRIND) $(CHECK_LEAKS)
+endif
 	@$(TEST_REPORTER) init $(TEST_LOG_DIR) $(SKIP_SLOW)
 
 cleanup: update_patches_if_passed

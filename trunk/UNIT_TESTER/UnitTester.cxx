@@ -24,6 +24,7 @@
 #define SIMPLE_ARB_ASSERT
 #include <test_unit.h>
 #include <arb_backtrace.h>
+#include <ut_valgrinded.h>
 #include <valgrind.h>
 #define ut_assert(cond) arb_assert(cond)
 
@@ -224,6 +225,15 @@ static void reset_been_inside_environment() {
     }
 }
 
+static bool did_valgrinded_syscall() {
+    return utvg::flag_exists(UTVG_ANY_SYSCALL);
+}
+static void reset_did_valgrinded_syscall() {
+    if (did_valgrinded_syscall()) {
+        TEST_ASSERT_ZERO_OR_SHOW_ERRNO(unlink(utvg::flag_name(UTVG_ANY_SYSCALL)));
+    }
+}
+
 void sleepms(long ms) {
     int  seconds = ms/1000;
     long rest_ms = ms - seconds*1000;
@@ -244,6 +254,13 @@ static void deadlockguard(long max_allowed_duration_ms, bool detect_environment_
         max_allowed_duration_ms += MAX_EXEC_MS_ENV;
     }
 
+    if (did_valgrinded_syscall()) {
+        fprintf(stderr, "[valgrinded system call detected. Added %li ms tolerance]\n", MAX_EXEC_MS_VGSYS);
+        fflush(stderr);
+        sleepms(MAX_EXEC_MS_VGSYS);
+        max_allowed_duration_ms += MAX_EXEC_MS_VGSYS;
+    }
+    
     const long aBIT = 50*1000; // µs
 
     fprintf(stderr,
@@ -336,6 +353,7 @@ bool SimpleTester::perform(size_t which) {
     UnitTest_function      fun  = test.fun;
 
     reset_been_inside_environment();
+    reset_did_valgrinded_syscall();
 
     bool           marked_as_slow   = strlen(test.name) >= 10 && memcmp(test.name, "TEST_SLOW_", 10) == 0;
     long           duration_usec;

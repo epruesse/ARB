@@ -53,3 +53,4 @@ servercntrl.o: $(ARBHOME)/INCLUDE/SigHandler.h
 servercntrl.o: $(ARBHOME)/INCLUDE/smartptr.h
 servercntrl.o: $(ARBHOME)/INCLUDE/test_global.h
 servercntrl.o: $(ARBHOME)/INCLUDE/test_unit.h
+servercntrl.o: $(ARBHOME)/INCLUDE/ut_valgrinded.h
