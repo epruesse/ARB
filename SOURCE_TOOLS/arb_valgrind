@@ -14,6 +14,7 @@ if [ -z $1 ] ; then
     echo '    -l [-r]        turn on leak-checking (-r for reachable blocks)'
     echo '    -A             show known boring errors (most Xt/Motif-related)'
     echo '    -q             quiet'
+    echo '    -L <file>      log stdout to <file> (does not work with -D)'
     echo '    -D             run gdb on error'
     echo ''
     echo ''
@@ -57,6 +58,7 @@ else
     TOOL='--tool=memcheck'
     ATTACH=''
     QUIET=''
+    LOG_STDOUT=''
 
     if [ ! -f $LIST ] ; then
         UPDATE=1
@@ -69,44 +71,49 @@ else
 
         while [ $SCAN_ARGS = 1 ] ; do
             SCAN_ARGS=0
-            if [ $1 = '-m' ] ; then
+            if [ "$1" = "-m" ] ; then
                 TOOL='--tool=massif'
                 shift 1
                 SCAN_ARGS=1
             fi
-            if [ $1 = '-c' ] ; then
+            if [ "$1" = "-c" ] ; then
                 CALLERS=$2
                 shift 2
                 SCAN_ARGS=1
             fi
-            if [ $1 = '-f' ] ; then
+            if [ "$1" = "-f" ] ; then
                 FILTER=$2
                 shift 2
                 SCAN_ARGS=1
             fi
-            if [ $1 = '-l' ] ; then
+            if [ "$1" = "-l" ] ; then
                 LEAK_CHECK="$LEAK_CHECK --leak-check=yes --leak-resolution=high"
                 shift 1
                 SCAN_ARGS=1
             fi
-            if [ $1 = '-r' ] ; then
+            if [ "$1" = "-r" ] ; then
                 LEAK_CHECK="$LEAK_CHECK --show-reachable=yes"
                 shift 1
                 SCAN_ARGS=1
             fi
-            if [ $1 = '-A' ] ; then
+            if [ "$1" = "-A" ] ; then
                 SUPPX=''
                 shift 1
                 SCAN_ARGS=1
             fi
-            if [ $1 = '-q' ] ; then
+            if [ "$1" = "-q" ] ; then
                 QUIET='--quiet'
                 shift 1
                 SCAN_ARGS=1
             fi
-            if [ $1 = '-D' ] ; then
+            if [ "$1" = "-D" ] ; then
                 ATTACH='--db-attach=yes'
                 shift 1
+                SCAN_ARGS=1
+            fi
+            if [ "$1" = "-L" ] ; then
+                LOG_STDOUT=$2
+                shift 2
                 SCAN_ARGS=1
             fi
         done
@@ -132,12 +139,15 @@ else
         echo "CALLERS='$CALLERS'"
         echo "FILTER ='$FILTER'"
         VG_CALLERS=$[$CALLERS+5]
-        COMMAND="valgrind $QUIET $TOOL -v --error-limit=no --num-callers=$VG_CALLERS $SHOW_REACHABLE $LEAK_CHECK $ATTACH $*"
+        VG_CMD="valgrind $QUIET $TOOL -v --error-limit=no --num-callers=$VG_CALLERS $SHOW_REACHABLE $LEAK_CHECK $ATTACH"
         echo "COMMAND='$COMMAND'"
         if [ "$ATTACH" = "" ]; then
-            $COMMAND 2>&1 >/tmp/arb_valgrind_$USER.stdout | $DIR/valgrind2grep $CALLERS "$FILTER" $SUPPX
+            if [ -z "$LOG_STDOUT" ]; then
+                LOG_STDOUT=/tmp/arb_valgrind_$USER_$$.stdout
+            fi
+            $VG_CMD "$@" 2>&1 >$LOG_STDOUT | $DIR/valgrind2grep $CALLERS "$FILTER" $SUPPX
         else
-            $COMMAND
+            $VG_CMD "$@"
         fi
         echo 'valgrind done.'
     fi

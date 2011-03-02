@@ -13,8 +13,10 @@
 #include <client_privat.h>
 #include <client.h>
 #include <arbdb.h>
+#include <ut_valgrinded.h>
 
 #include <unistd.h>
+
 
 /* The following lines go to servercntrl.h
  * edit here, not there!!
@@ -84,7 +86,7 @@ char *prefixSSH(const char *host, const char *command, int async) {
 GB_ERROR arb_start_server(const char *arb_tcp_env, GBDATA *gbmain, int do_sleep)
 {
     const char *tcp_id;
-    GB_ERROR error = 0;
+    GB_ERROR    error = 0;
 
     if (!(tcp_id = GBS_read_arb_tcp(arb_tcp_env))) {
         error = GB_export_errorf("Entry '%s' in $(ARBHOME)/lib/arb_tcp.dat not found", arb_tcp_env);
@@ -133,6 +135,7 @@ GB_ERROR arb_start_server(const char *arb_tcp_env, GBDATA *gbmain, int do_sleep)
 
             if (*tcp_id == ':') { /* local mode */
                 command = GBS_global_string_copy("%s %s -T%s &", server, serverparams, tcp_id);
+                make_valgrinded_call(command);
             }
             else {
                 const char *port = strchr(tcp_id, ':');
@@ -142,7 +145,7 @@ GB_ERROR arb_start_server(const char *arb_tcp_env, GBDATA *gbmain, int do_sleep)
                 }
                 else {
                     char *remoteCommand = GBS_global_string_copy("$ARBHOME/bin/%s %s -T%s", server, serverparams, port);
-
+                    make_valgrinded_call(remoteCommand);
                     command = prefixSSH(tcp_id, remoteCommand, 1);
                     free(remoteCommand);
                 }
@@ -387,7 +390,9 @@ void free_arb_params(arb_params *params) {
 
 // --------------------------------------------------------------------------------
 
-#ifdef UNIT_TESTS
+#if defined(UNIT_TESTS) 
+
+// If you need tests in AISC_COM/C/client.c, put them here instead.
 
 #include <test_unit.h>
 

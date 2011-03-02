@@ -22,11 +22,24 @@ int main(int, char **) {
 
 #ifdef UNIT_TESTS
 #include <test_unit.h>
+#include <ut_valgrinded.h>
 
 // --------------------------------------------------------------------------------
 
-#define RUN_TOOL(cmdline)      GB_system(cmdline)
-#define TEST_RUN_TOOL(cmdline) TEST_ASSERT_NO_ERROR(RUN_TOOL(cmdline))
+
+inline GB_ERROR valgrinded_system(const char *cmdline) {
+    char     *cmddup = strdup(cmdline);
+    make_valgrinded_call(cmddup);
+    GB_ERROR  error  = GB_system(cmddup);
+    free(cmddup);
+    return error;
+}
+
+#define RUN_TOOL(cmdline)                valgrinded_system(cmdline)
+#define RUN_TOOL_NEVER_VALGRIND(cmdline) GB_system(cmdline)
+
+#define TEST_RUN_TOOL(cmdline)                TEST_ASSERT_NO_ERROR(RUN_TOOL(cmdline))
+#define TEST_RUN_TOOL_NEVER_VALGRIND(cmdline) TEST_ASSERT_NO_ERROR(RUN_TOOL_NEVER_VALGRIND(cmdline))
 
 void TEST_ascii_2_bin_2_ascii() {
     const char *ascii_ORG = "TEST_loadsave_ascii.arb";
@@ -133,7 +146,7 @@ void TEST_SLOW_arb_read_tree() {
         char       *treename  = GBS_global_string_copy("tree_%s", basename);
 
         TEST_RUN_TOOL(GBS_global_string("arb_read_tree -db %s %s %s %s \"test %s\" %s",
-                                        dbin, dbout, treename, treefile, basename, extraArgs));
+                                                   dbin, dbout, treename, treefile, basename, extraArgs));
 
         dbin = dbout; // use out-db from previous loop ( = write all trees into one db)
 
@@ -148,7 +161,7 @@ void TEST_SLOW_arb_read_tree() {
 
 #define TEST_ARB_REPLACE(infile,expected,args) do {                     \
         char *tmpfile = GBS_global_string_copy("%s.tmp", expected);     \
-        TEST_RUN_TOOL(GBS_global_string("cp %s %s", infile, tmpfile));  \
+        TEST_RUN_TOOL_NEVER_VALGRIND(GBS_global_string("cp %s %s", infile, tmpfile));  \
         TEST_RUN_TOOL(GBS_global_string("arb_replace %s %s", args, tmpfile)); \
         TEST_ASSERT_TEXTFILES_EQUAL(tmpfile, expected);                 \
         TEST_ASSERT_ZERO_OR_SHOW_ERRNO(GB_unlink(tmpfile));             \
@@ -185,7 +198,7 @@ class CommandOutput {
         return content;
     }
 public:
-    CommandOutput(const char *command)
+    CommandOutput(const char *command, bool try_valgrind)
         : stdoutput(NULL), stderrput(NULL), error(NULL)
     {
         char *escaped = GBS_string_eval(command, "'=\\\\'", NULL);
@@ -193,6 +206,8 @@ public:
             appendError(GB_await_error());
         }
         else {
+            if (try_valgrind) make_valgrinded_call(escaped);
+
             char *cmd = GBS_global_string_copy("bash -c '%s >stdout.log 2>stderr.log'", escaped);
 
             appendError(GB_system(cmd));
@@ -204,9 +219,10 @@ public:
         }
         if (error) {
             printf("command '%s'\n"
+                   "escaped command '%s'\n"
                    "stdout='%s'\n"
                    "stderr='%s'\n", 
-                   command, stdoutput, stderrput);
+                   command, escaped, stdoutput, stderrput);
         }
     }
     ~CommandOutput() {
@@ -233,7 +249,7 @@ static bool test_strcontains(const char *str, const char *part)  {
 
 #define TEST_OUTPUT_EQUALS(cmd, expected_std, expected_err)             \
     do {                                                                \
-        CommandOutput out(cmd);                                         \
+        CommandOutput out(cmd, expected_err == NULL);                   \
         TEST_ASSERT_NO_ERROR(out.get_error());                          \
         if (expected_std) { TEST_ASSERT_EQUAL(out.get_stdoutput(), expected_std); } \
         if (expected_err) { TEST_ASSERT_EQUAL(out.get_stderrput(), expected_err); } \
@@ -241,7 +257,7 @@ static bool test_strcontains(const char *str, const char *part)  {
 
 #define TEST_OUTPUT_CONTAINS(cmd, expected_std, expected_err)           \
     do {                                                                \
-        CommandOutput out(cmd);                                         \
+        CommandOutput out(cmd, expected_err == NULL);                   \
         TEST_ASSERT_NO_ERROR(out.get_error());                          \
         if (expected_std) { TEST_ASSERT_CONTAINS(out.get_stdoutput(), expected_std); } \
         if (expected_err) { TEST_ASSERT_CONTAINS(out.get_stderrput(), expected_err); } \
@@ -249,10 +265,10 @@ static bool test_strcontains(const char *str, const char *part)  {
 
 #define TEST_OUTPUT_HAS_CHECKSUM(cmd, checksum)                         \
     do {                                                                \
-        CommandOutput out(cmd);                                         \
+        CommandOutput out(cmd, false);                                  \
         TEST_ASSERT_NO_ERROR(out.get_error());                          \
-        uint32_t css = GBS_checksum(out.get_stdoutput(), false, "");    \
-        uint32_t cse = GBS_checksum(out.get_stderrput(), false, "");    \
+        uint32_t      css = GBS_checksum(out.get_stdoutput(), false, ""); \
+        uint32_t      cse = GBS_checksum(out.get_stderrput(), false, ""); \
         TEST_ASSERT_EQUAL(css^cse, uint32_t(checksum));                 \
     } while(0)
 

@@ -23,7 +23,7 @@ $(MAIN): $(TESTER_OBJECTS) test_environment
 
 $(CPP_OBJECTS): Makefile.setup Makefile
 
-test_environment: $(ENVIRONMENT_OBJECTS) $(TESTER_OBJECTS)
+test_environment: $(ENVIRONMENT_OBJECTS) $(TESTER_OBJECTS) $(TEST_ENVIRONMENT_LIBS)
 	$(LINK_EXECUTABLE) test_environment $(ENVIRONMENT_OBJECTS) $(TESTER_OBJECTS) $(LIBPATH) $(ARBDB_LIB) $(TEST_ENVIRONMENT_LIBS)
 
 .cxx.o:
@@ -80,5 +80,10 @@ UnitTester.o: test_unit.h
 UnitTester.o: UnitTester.hxx
 UnitTester.o: $(ARBHOME)/INCLUDE/arb_assert.h
 UnitTester.o: $(ARBHOME)/INCLUDE/arb_backtrace.h
+UnitTester.o: $(ARBHOME)/INCLUDE/arb_core.h
+UnitTester.o: $(ARBHOME)/INCLUDE/arb_msg.h
+UnitTester.o: $(ARBHOME)/INCLUDE/attributes.h
+UnitTester.o: $(ARBHOME)/INCLUDE/dupstr.h
 UnitTester.o: $(ARBHOME)/INCLUDE/SigHandler.h
+UnitTester.o: $(ARBHOME)/INCLUDE/ut_valgrinded.h
 UnitTester.o: $(ARBHOME)/INCLUDE/valgrind.h

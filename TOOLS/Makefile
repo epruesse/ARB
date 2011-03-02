@@ -346,3 +346,4 @@ arb_test.o: $(ARBHOME)/INCLUDE/dupstr.h
 arb_test.o: $(ARBHOME)/INCLUDE/smartptr.h
 arb_test.o: $(ARBHOME)/INCLUDE/test_global.h
 arb_test.o: $(ARBHOME)/INCLUDE/test_unit.h
+arb_test.o: $(ARBHOME)/INCLUDE/ut_valgrinded.h
