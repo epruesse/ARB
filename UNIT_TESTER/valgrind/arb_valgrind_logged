@@ -73,7 +73,7 @@ INIT() {
     local CHECK_LEAKS=$2
 
     remove_flags
-    if [ "$VALGRIND" == "1" ]; then
+    if [ "$VALGRIND" == "E" ]; then
         touch $BASEDIR/flag.valgrind
         if [ "$CHECK_LEAKS" == "1" ]; then
             touch $BASEDIR/flag.valgrind.leaks

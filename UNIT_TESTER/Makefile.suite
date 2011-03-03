@@ -27,9 +27,11 @@ PATCHNAMESUFFIX:=$(subst :,_,$(PATCHNAMESUFFIX))
 
 # -------------------- targets
 
+VALGRIND_EXTERNAL=$(findstring E,$(VALGRIND))
+
 cleanup_environment:
 	./test_environment clean
-ifneq ($(VALGRIND),0)
+ifeq ($(VALGRIND_EXTERNAL),E)
 	./valgrind/arb_valgrind_logged WAIT
 endif
 
@@ -45,9 +47,9 @@ unskip:
 
 init:
 	@echo "$(SEP) Running unit tests"
-ifneq ($(VALGRIND),0)
-	./valgrind/arb_valgrind_logged INIT $(VALGRIND) $(CHECK_LEAKS)
-endif
+#ifeq ($(VALGRIND_EXTERNAL),E)
+	./valgrind/arb_valgrind_logged INIT "$(VALGRIND_EXTERNAL)" $(CHECK_LEAKS)
+#endif
 	@$(TEST_REPORTER) init $(TEST_LOG_DIR) $(SKIP_SLOW)
 
 cleanup: update_patches_if_passed
