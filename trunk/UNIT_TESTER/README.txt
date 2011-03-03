@@ -92,21 +92,31 @@ How to use ARB unit testing
 
    If you set
 
-      VALGRIND=1
+      VALGRIND=A
 
    in UNIT_TESTER/Makefile.setup, valgrind will be started on the test-binary after the normal
    unit tests passed with success.
    Valgrind errors/warnings will not raise an error or abort testing.
 
+
    If you set
 
-      VALGRIND=2
+      VALGRIND=B
 
    valgrind will be started BEFORE running tests.
    Useful if test fail unexpectedly and you suspect a memory bug.
 
    See also ENABLE_CRASH_TESTS in test_unit.h (all crash tests are reported by valgrind)
 
+
+   If you set
+
+      VALGRIND=E
+
+   some external tools like arb_pt_server will be spawned valgrinded and the generated
+   reports will be printed on test termination.
+
+   Any combination of the above works as well.
 
 4. Check test-coverage
 

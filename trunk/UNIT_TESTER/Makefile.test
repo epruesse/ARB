@@ -127,8 +127,8 @@ dump:
 	@echo "LINKLIST       ='$(LINKLIST)'"
 	@echo "LINKDEPS       ='$(LINKDEPS)'"
 
-valgrind:
-	echo "Valgrinding.."
+do_valgrind:
+	@echo "Valgrinding $(TEST_EXE)"
 	$(ARBHOME)/SOURCE_TOOLS/arb_valgrind -q $(LEAKS) -c 15 $(TEST_EXE)
 
 show_test_header:
@@ -137,8 +137,8 @@ show_test_header:
 
 perform_test: $(TEST_EXE)
 	@echo "fake[2]: Entering directory \`$(FULLUNITDIR)'"
-ifeq ($(VALGRIND),2)
-	$(MAKE) -f Makefile.test valgrind
+ifeq ($(findstring B,$(VALGRIND)),B)
+	$(MAKE) -f Makefile.test do_valgrind
 endif
 	$(TEST_EXE) 
 ifeq ($(COVERAGE),1)
@@ -146,8 +146,8 @@ ifeq ($(COVERAGE),1)
 	./gcov2msg.sh $(FULLUNITDIR) $(UNITLIBNAME)
 	@echo "-------------------- test-coverage for $(UNITLIBNAME) [end]"
 endif
-ifeq ($(VALGRIND),1)
-	$(MAKE) -f Makefile.test valgrind
+ifeq ($(findstring A,$(VALGRIND)),A)
+	$(MAKE) -f Makefile.test do_valgrind
 endif
 	@echo "fake[2]: Leaving directory \`$(FULLUNITDIR)'"
 

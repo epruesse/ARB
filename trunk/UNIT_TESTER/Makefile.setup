@@ -9,11 +9,14 @@ DEADLOCKGUARD=1# install guard to avoid deadlocks (SVN default!)
 # ---------- Valgrind
 # @@@ valgrind makes tests fail atm
 # (most likely two pt-servers try to start parallel on the same port)
-VALGRIND=0# only test
-#VALGRIND=1# run valgrind after sucessful test
-#VALGRIND=2# run valgrind before test (useful if test traps w/o any helpful information)
+VALGRIND=# do not valgrind anything
+#VALGRIND=A# run valgrind after sucessful test
+#VALGRIND=B# run valgrind before test (useful if test traps w/o any helpful information)
+#VALGRIND=E# run external tools in valgrind (must be coded; look for make_valgrinded_call())
+#VALGRIND=AE# valgrind after tests and external tools
 
 # also see test_unit.h@ENABLE_CRASH_TESTS
+# also see ../TEMPLATES/ut_valgrinded.h@VALGRIND_ONLY_SOME
 
 # ---------- Leak checking needs VALGRIND!=0
 CHECK_LEAKS=0# check no leaks
@@ -42,6 +45,7 @@ RESTRICT_LIB=# run all tests
 #RESTRICT_LIB=SEQIO
 #RESTRICT_LIB=CORE
 #RESTRICT_LIB=arb_probe:arb_test
+#RESTRICT_LIB=arb_test
 
 #RESTRICT_LIB=SEQIO:CONVERTALN
 #RESTRICT_LIB=client:arb_probe:AWTC
