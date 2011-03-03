@@ -33,6 +33,8 @@
 
 #include <arb_assert.h>
 #include <SigHandler.h>
+#include <arb_cs.h>
+
 
 #define aisc_assert(cond) arb_assert(cond)
 
@@ -318,10 +320,11 @@ static const char *aisc_open_socket(const char *path, int delay, int do_connect,
     FILE           *test;
 
     err = aisc_get_m_id(path, &mach_name, &socket_id);
-    
+
     // @@@ mem assigned to mach_name is leaked often
     // @@@ refactor aisc_open_socket -> one exit point
     // @@@ note that the code is nearly duplicated in client.c@aisc_client_open_socket
+    // @@@ a good place for DRYed code would be ../../CORE/arb_cs.cxx
 
     if (err) {
         return err;
@@ -333,10 +336,10 @@ static const char *aisc_open_socket(const char *path, int delay, int do_connect,
         if (*psocket <= 0) {
             return "CANNOT CREATE SOCKET";
         }
-        if (!(he = gethostbyname(mach_name))) {
-            sprintf(buffer, "Unknown host: %s", mach_name);
-            return (char *)strdup(buffer);
-        }
+
+        arb_gethostbyname(mach_name, he, err);
+        if (err) return err;
+
         /* simply take first address */
         addr.s_addr = *(int *) (he->h_addr);
         so_ad.sin_addr = addr;
