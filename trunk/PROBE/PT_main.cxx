@@ -119,7 +119,7 @@ void PT_exit_psg() {
 
         free(psg.ecoli);
         delete psg.bi_ecoli;
-        delete psg.pos_to_weight;
+        delete [] psg.pos_to_weight;
         free(psg.alignment_name);
         free(psg.ptmain);
         free(psg.com_so);
@@ -131,8 +131,8 @@ void PT_exit_psg() {
 
 void PT_exit(int exitcode) {
     // unique exit point to ensure cleanup
-    if (psg_initialized) PT_exit_psg();
     if (aisc_main) destroy_PT_main(aisc_main);
+    if (psg_initialized) PT_exit_psg();
     PTM_finally_free_all_mem();
     exit(exitcode);
 }
