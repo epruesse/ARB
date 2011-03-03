@@ -423,7 +423,7 @@ extern "C" int aisc_close(aisc_com *link) {
             link->aisc_mes_buffer[1] = 0;
             link->aisc_mes_buffer[2] = 0;
             aisc_c_write(link->socket, (char *)(link->aisc_mes_buffer), 3 * sizeof(long));
-            shutdown(link->socket, 2);
+            shutdown(link->socket, SHUT_RDWR);
             close(link->socket);
             link->socket = 0;
         }
