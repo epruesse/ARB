@@ -368,7 +368,8 @@ bool SimpleTester::perform(size_t which) {
         case TEST_OK:
             if (duration_ms_this >= WHATS_SLOW) {                    // long test duration
                 if (!marked_as_slow) {
-                    if (!GLOBAL.running_on_valgrind) {
+                    bool accept_slow = GLOBAL.running_on_valgrind || did_valgrinded_syscall();
+                    if (!accept_slow) {
                         fprintf(stderr, "%s: Warning: Name of slow tests shall start with TEST_SLOW_ (it'll be run after other tests)\n",
                                 test.location);
                     }
