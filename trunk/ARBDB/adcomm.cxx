@@ -221,10 +221,10 @@ void GBCMS_shutdown(GBDATA *gbd) {
         Socinf         *si;
 
         for (si=hs->soci; si; si=si->next) {
-            shutdown(si->socket, 2);  // 2 = both dir
+            shutdown(si->socket, SHUT_RDWR);
             close(si->socket);
         }
-        shutdown(hs->hso, 2);
+        shutdown(hs->hso, SHUT_RDWR);
 
         if (hs->unix_name) {
             unlink(hs->unix_name);
