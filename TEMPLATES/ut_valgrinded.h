@@ -58,17 +58,31 @@ namespace utvg {
         }
     };
 
+    inline void touch(const char *file) {
+        FILE *out = fopen(file, "w");
+        fclose(out);
+    }
 };
 
 inline void make_valgrinded_call(char *&command) {
     using namespace utvg;
-    valgrind_info valgrind;
+    static valgrind_info valgrind;
     if (valgrind.wanted) {
+// #define VALGRIND_ONLY_SOME
+#if defined(VALGRIND_ONLY_SOME)
+        bool perform_valgrind = false;
+
+        perform_valgrind = perform_valgrind || strstr(command, "arb_pt_server");
+        perform_valgrind = perform_valgrind || strstr(command, "arb_primer");
+
+        if (!perform_valgrind) return;
+#endif
+
         const char *switches           = valgrind.leaks ? (valgrind.reachable ? "-l -r" : "-l") : "";
         char       *valgrinded_command = GBS_global_string_copy("$ARBHOME/UNIT_TESTER/valgrind/arb_valgrind_logged CALL %s -c 15 %s", switches, command);
         freeset(command, valgrinded_command);
 
-        system(GBS_global_string("touch %s", flag_name(UTVG_ANY_SYSCALL)));
+        touch(flag_name(UTVG_ANY_SYSCALL));
     }
 }
 
