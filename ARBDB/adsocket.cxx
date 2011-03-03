@@ -24,6 +24,8 @@
 #include <sys/time.h>
 #include <sys/un.h>
 
+#include <arb_cs.h>
+
 #include "gb_comm.h"
 #include "gb_data.h"
 #include "gb_localdata.h"
@@ -218,11 +220,9 @@ GB_ERROR gbcm_open_socket(const char *path, long delay2, long do_connect, int *p
         if (*psocket <= 0) {
             return "CANNOT CREATE SOCKET";
         }
-        he = gethostbyname(mach_name[0]);
 
-        if (!he) {
-            return "Unknown host";
-        }
+        arb_gethostbyname(mach_name[0], he, err);
+        if (err) return err;
 
         // simply take first address
         addr.s_addr = *(long *) (he->h_addr);

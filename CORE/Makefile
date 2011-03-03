@@ -38,6 +38,12 @@ depend.init:
 # Do not add dependencies manually - use 'make depend' in $ARBHOME
 # For formatting issues see SOURCE_TOOLS/fix_depends.pl
 
+arb_cs.o: arb_core.h
+arb_cs.o: arb_cs.h
+arb_cs.o: arb_msg.h
+arb_cs.o: $(ARBHOME)/INCLUDE/attributes.h
+arb_cs.o: $(ARBHOME)/INCLUDE/dupstr.h
+
 arb_handlers.o: arb_core.h
 arb_handlers.o: arb_handlers.h
 arb_handlers.o: arb_msg.h

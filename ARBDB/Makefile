@@ -764,6 +764,7 @@ adsocket.o: gb_main.h
 adsocket.o: gb_memory.h
 adsocket.o: gb_prot.h
 adsocket.o: $(ARBHOME)/INCLUDE/arb_core.h
+adsocket.o: $(ARBHOME)/INCLUDE/arb_cs.h
 adsocket.o: $(ARBHOME)/INCLUDE/arb_error.h
 adsocket.o: $(ARBHOME)/INCLUDE/arb_msg.h
 adsocket.o: $(ARBHOME)/INCLUDE/arb_string.h

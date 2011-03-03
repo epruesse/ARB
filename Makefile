@@ -1226,9 +1226,11 @@ modified: touch
 depends:
 	$(MAKE) comtools 
 	@echo "$(SEP) Partially build com interface"
+	-rm PROBE_COM/.depends
+	-rm NAMES_COM/.depends
+	-rm PERL2ARB/.depends
 	$(MAKE) PROBE_COM/PROBE_COM.depends
 	$(MAKE) NAMES_COM/NAMES_COM.depends
-	-rm PERL2ARB/.depends
 	@echo $(SEP) Updating dependencies
 	$(MAKE) $(ARCHS:.a=.depends) \
 			HELP_SOURCE/HELP_SOURCE.depends \

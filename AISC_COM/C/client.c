@@ -16,6 +16,8 @@
 #include <unistd.h>
 #include <cstdarg>
 
+#include <arb_cs.h>
+
 #include "client_privat.h"
 #include "client.h"
 
@@ -289,10 +291,10 @@ static const char *aisc_client_open_socket(const char *path, int delay, int do_c
         if (*psocket <= 0) {
             return "CANNOT CREATE SOCKET";
         }
-        if (!(he = gethostbyname(mach_name))) {
-            sprintf(buffer, "Unknown host: %s", mach_name);
+        arb_gethostbyname(mach_name, he, err);
+        if (err) {
             free(mach_name);
-            return (char *)strdup(buffer);
+            return err;
         }
         /* simply take first address  */
         free(mach_name); mach_name = 0;
