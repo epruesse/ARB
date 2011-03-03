@@ -399,6 +399,10 @@ extern "C" aisc_com *aisc_open(const char *path, long *mgr, long magic) {
         freenull(unix_name);
     }
     if (err) {
+        if (link->socket) {
+            shutdown(link->socket, SHUT_RDWR);
+            close(link->socket);
+        }
         free(link);
         if (*err) PRTERR("ARB_DB_CLIENT_OPEN");
         return 0;
