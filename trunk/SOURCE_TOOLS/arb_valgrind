@@ -87,7 +87,9 @@ else
                 SCAN_ARGS=1
             fi
             if [ "$1" = "-l" ] ; then
-                LEAK_CHECK="$LEAK_CHECK --leak-check=yes --leak-resolution=high"
+                LEAK_CHECK="$LEAK_CHECK --leak-check=yes"
+                # LEAK_CHECK="$LEAK_CHECK --leak-resolution=high"
+                LEAK_CHECK="$LEAK_CHECK --leak-resolution=med"
                 shift 1
                 SCAN_ARGS=1
             fi
@@ -139,8 +141,13 @@ else
         echo "CALLERS='$CALLERS'"
         echo "FILTER ='$FILTER'"
         VG_CALLERS=$[$CALLERS+5]
-        VG_CMD="valgrind $QUIET $TOOL -v --error-limit=no --num-callers=$VG_CALLERS $SHOW_REACHABLE $LEAK_CHECK $ATTACH"
-        echo "COMMAND='$COMMAND'"
+        VG_OPTS=""
+        VG_OPTS="$VG_OPTS --error-limit=yes"
+        # VG_OPTS="$VG_OPTS --track-origins=yes" # ulalala ... eats MUUUUCH memory 
+        VG_OPTS="$VG_OPTS --track-fds=yes" # track filedescriptors open on exit
+        VG_OPTS="$VG_OPTS --show-below-main=yes" # valgrind below main (e.g. in static initialization)
+        VG_CMD="valgrind $QUIET $TOOL -v $VG_OPTS --num-callers=$VG_CALLERS $SHOW_REACHABLE $LEAK_CHECK $ATTACH"
+        echo "VG_CMD='$VG_CMD $@'"
         if [ "$ATTACH" = "" ]; then
             if [ -z "$LOG_STDOUT" ]; then
                 LOG_STDOUT=/tmp/arb_valgrind_$USER_$$.stdout
