@@ -136,12 +136,17 @@ GB_ERROR arb_prm_read(int /* prmanz */) {
             size = GB_read_string_count(gb_source_data);
             for (i=0; i<size; i++) {
                 c = hdata[i];
-                if ((c>='a') && (c<='z'))
+                if ((c>='a') && (c<='z')) {
                     data[i] = c-'a'+'A';
-                else
+                }
+                else {
                     data[i] = c;
+                }
             }
-            for (i=i;  i < aprm.al_len; i++) data[i] = '.';
+            for (; i<aprm.al_len; i++) {
+                data[i] = '.';
+            }
+            data[i] = 0;
         }
     }
     printf("%i taxa read\n", sp_count);
@@ -184,7 +189,10 @@ int primer_print(char *dest, char * source, int size)
     c = *(source++);
     if (!is_base(c)) return 1;
     while (size) {
-        while (!is_base(c)) c=*(source++);
+        while (!is_base(c)) {
+            c = *(source++);
+            if (!c) return 1;
+        }
         if (c == 'N' || c == 'n') return 1;
         *(dest++) = c;
         size--;
@@ -194,6 +202,7 @@ int primer_print(char *dest, char * source, int size)
     *dest = 0;
     return 0;
 }
+
 
 long arb_reduce_primer_len(const char *key, long val, void *)
 {
@@ -220,7 +229,7 @@ void arb_prm_primer(int /* prmanz */)
     int     *best_primer_new;
     int     *best_primer_swap;
 
-    prmlen = aprm.prmlen + ADD_LEN;
+    prmlen = aprm.prmlen + ADD_LEN + 1;
 
     buffer = (char *) calloc(sizeof(char), prmlen + 1);
     best_primer_cnt = (int *)calloc(prmlen+1, sizeof(int));
