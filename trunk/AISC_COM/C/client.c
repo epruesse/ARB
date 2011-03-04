@@ -204,16 +204,6 @@ int aisc_check_error(aisc_com * link)
     return 0;
 }
 
-char *aisc_client_get_hostname() {
-    static char *hn = 0;
-    if (!hn) {
-        char buffer[4096];
-        gethostname(buffer, 4095);
-        hn = strdup(buffer);
-    }
-    return hn;
-}
-
 const char *aisc_client_get_m_id(const char *path, char **m_name, int *id) {
     // Warning: duplicated in server.c@aisc_get_m_id 
     char           *p;
@@ -252,12 +242,10 @@ const char *aisc_client_get_m_id(const char *path, char **m_name, int *id) {
     /* @@@ falls hier in mn ein der Bereich von path bis p stehen soll, fehlt eine abschliesende 0 am String-Ende
        auf jeden Fall erzeugt der folgende strcmp einen (rui) */
 
-    if (!strcmp(mn, "localhost")) {
-        free(mn);
-        mn = strdup(aisc_client_get_hostname());
-    }
+    if (strcmp(mn, "localhost") == 0) freedup(mn, arb_gethostname());
+
     *m_name = mn;
-    i = atoi(p + 1);
+    i       = atoi(p + 1);
     if ((i < 1024) || (i > 32000)) {
         return "OPEN_ARB_DB_CLIENT ERROR: socketnumber not in [1024..32000]";
     }

@@ -30,7 +30,6 @@ int aisc_c_write P_((int socket, char *ptr, int size));
 int aisc_c_send_bytes_queue P_((aisc_com *link));
 int aisc_add_message_queue P_((aisc_com *link, long size));
 int aisc_check_error P_((aisc_com *link));
-char *aisc_client_get_hostname P_((void));
 const char *aisc_client_get_m_id P_((const char *path, char **m_name, int *id));
 void *aisc_init_client P_((aisc_com *link));
 extern "C" aisc_com *aisc_open P_((const char *path, long *mgr, long magic));

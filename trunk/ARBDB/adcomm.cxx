@@ -1957,17 +1957,6 @@ GB_ERROR gbcm_logout(GB_MAIN_TYPE *Main, const char *loginname) {
     return GB_export_errorf("User '%s' not logged in", loginname);
 }
 
-
-GB_CSTR GB_get_hostname() {
-    static char *hn = 0;
-    if (!hn) {
-        char buffer[4096];
-        gethostname(buffer, 4095);
-        hn = strdup(buffer);
-    }
-    return hn;
-}
-
 GB_ERROR GB_install_pid(int mode) {
     /* tell the arb_clean script what programs are running.
      * mode == 1 -> install

@@ -195,6 +195,7 @@ PT_main.o: $(ARBHOME)/INCLUDE/servercntrl.h
 PT_main.o: $(ARBHOME)/INCLUDE/smartptr.h
 PT_main.o: $(ARBHOME)/INCLUDE/struct_man.h
 PT_main.o: $(ARBHOME)/INCLUDE/test_global.h
+PT_main.o: $(ARBHOME)/INCLUDE/ut_valgrinded.h
 
 PT_match.o: probe.h
 PT_match.o: probe_tree.hxx
