@@ -19,6 +19,7 @@
 #include <server.h>
 #include <client.h>
 #include <struct_man.h>
+#include <ut_valgrinded.h>
 
 #include <unistd.h>
 #include <sys/stat.h>
@@ -307,7 +308,10 @@ STATIC_ATTRIBUTED(__ATTR__USERESULT, ARB_ERROR start_pt_server(const char *socke
 
             if (update_reason) {
                 printf("- updating postree (Reason: %s)", update_reason);
-                error = GB_system(GBS_global_string("%s -build -D%s", exename, arbdb_name));
+                char *build_cmd  = GBS_global_string_copy("%s -build -D%s", exename, arbdb_name);
+                make_valgrinded_call(build_cmd);
+                error            = GB_system(build_cmd);
+                free(build_cmd);
                 if (error) error = GBS_global_string("Failed to update postree (Reason: %s)", error.deliver());
             }
         }
