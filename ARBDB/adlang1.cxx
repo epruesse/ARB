@@ -549,7 +549,17 @@ static GB_ERROR gbl_eval(GBL_command_arguments *args) {
     return error;
 }
 
-static GB_HASH *definedCommands = 0;
+class DefinedCommands {
+    GB_HASH *cmds;
+public:
+    DefinedCommands() { cmds = GBS_create_dynaval_hash(100, GB_MIND_CASE, GBS_dynaval_free); }
+    ~DefinedCommands() { GBS_free_hash(cmds); }
+
+    void set(const char *name, char* cmd) { GBS_dynaval_free(GBS_write_hash(cmds, name, (long)cmd)); } // takes ownership of 'cmd'!
+    const char *get(const char *name) const { return (const char *)GBS_read_hash(cmds, name); }
+};
+
+static DefinedCommands defined_commands;
 
 static GB_ERROR gbl_define(GBL_command_arguments *args) {
     GB_ERROR error = 0;
@@ -560,13 +570,8 @@ static GB_ERROR gbl_define(GBL_command_arguments *args) {
     else {
         const char *name = args->vparam[0].str;
         char       *cmd  = unEscapeString(args->vparam[1].str);
-        char       *oldcmd;
 
-        if (!definedCommands) definedCommands = GBS_create_hash(100, GB_MIND_CASE);
-
-        oldcmd = (char*)GBS_read_hash(definedCommands, name);
-        if (oldcmd) free(oldcmd);
-        GBS_write_hash(definedCommands, name, (long)cmd);
+        defined_commands.set(name, cmd);
 
         if (GB_get_ACISRT_trace()) {
             printf("defining command '%s'='%s'\n", name, cmd);
@@ -584,9 +589,8 @@ static GB_ERROR gbl_do(GBL_command_arguments *args) {
     }
     else {
         const char *name = args->vparam[0].str;
-        const char *cmd  = 0;
+        const char *cmd  = defined_commands.get(name);
 
-        if (definedCommands) cmd = (const char*)GBS_read_hash(definedCommands, name);
         if (!cmd) {
             error = GBS_global_string("Can't do undefined command '%s' - use define(%s, ...) first", name, name);
         }
