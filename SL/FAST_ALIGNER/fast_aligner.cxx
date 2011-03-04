@@ -1020,29 +1020,8 @@ ARB_ERROR FastSearchSequence::fast_align(const CompactedSubSequence& slaveSequen
 #undef SCORE_LEFT
 #undef SCORE_RIGHT
 
-static long calcSequenceChecksum(const char *data, int length)
-{
-    static char *gaps;
-
-    if (!gaps)
-    {
-        gaps = (char*)malloc(257);
-
-        int c = 1;
-        int cnt = 0;
-
-        while (c<256)
-        {
-            if (is_gap(toupper(c)))
-                gaps[cnt++] = c;
-            c++;
-        }
-
-        gaps[cnt] = 0;
-    }
-
-    long sum = GB_checksum(data, length, 1, gaps);
-    return sum;
+inline long calcSequenceChecksum(const char *data, long length) {
+    return GB_checksum(data, length, 1, GAP_CHARS);
 }
 
 static CompactedSubSequence *readCompactedSequence(GBDATA      *gb_species,
