@@ -987,6 +987,7 @@ static void ptnd_build_tprobes(PT_pdc *pdc, int group_count) {
         GBS_free_hash(hash_outer);
         PT_inc_base_string_count(partstring, PT_A, PT_B_MAX, partsize);
     }
+    delete [] group_idx;
 #if defined(DEBUG)
     GBS_print_hash_statistic_summary("outer");
 #endif // DEBUG

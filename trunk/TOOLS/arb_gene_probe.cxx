@@ -14,6 +14,7 @@
 #include <map>
 #include <list>
 #include <set>
+#include <string>
 
 #include <unistd.h>
 #include <sys/types.h>
@@ -45,7 +46,9 @@ struct nameOrder {
 #endif
     }
 };
-static map<const char *, char *, nameOrder> names;
+
+typedef map<const char *, string, nameOrder> FullNameMap;
+static FullNameMap names;
 
 // --------------------------------------------------------------------------------
 
@@ -255,7 +258,7 @@ static GBDATA *create_gene_species(GBDATA *gb_species_data2, const char *interna
                 const char *static_internal_name = GB_read_char_pntr(gb_name); // use static copy from db as map-index (internal_name is temporary)
                 error                            = create_data_entry(gb_species2, sequence, length);
                 if (!error) {
-                    names[static_internal_name] = strdup(long_name);
+                    names[static_internal_name] = long_name;
                     error = GBT_write_int(gb_species2, "abspos", abspos);
                 }
             }
@@ -548,12 +551,12 @@ int main(int argc, char* argv[]) {
             // create map-string
             char* map_string;
             {
-                map<const char*, char*>::iterator NameEnd = names.end();
-                map<const char*, char*>::iterator NameIter;
+                FullNameMap::iterator NameEnd = names.end();
+                FullNameMap::iterator NameIter;
 
                 size_t mapsize = 0;
                 for (NameIter = names.begin(); NameIter != NameEnd; ++NameIter) {
-                    mapsize += strlen(NameIter->first)+strlen(NameIter->second)+2;
+                    mapsize += strlen(NameIter->first)+NameIter->second.length()+2;
                 }
 
                 map_string  = new char[mapsize+1];
@@ -561,13 +564,13 @@ int main(int argc, char* argv[]) {
 
                 for (NameIter = names.begin(); NameIter != NameEnd; ++NameIter) {
                     int len1 = strlen(NameIter->first);
-                    int len2 = strlen(NameIter->second);
+                    int len2 = NameIter->second.length();
 
                     memcpy(map_string+moff, NameIter->first, len1);
                     map_string[moff+len1]  = ';';
                     moff                  += len1+1;
 
-                    memcpy(map_string+moff, NameIter->second, len2);
+                    memcpy(map_string+moff, NameIter->second.c_str(), len2);
                     map_string[moff+len2]  = ';';
                     moff                  += len2+1;
                 }
