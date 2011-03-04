@@ -1,0 +1,15 @@
+AUTODETECT      "DNASIS*"
+        #Global settings:
+KEYWIDTH        5
+
+BEGIN   "DNASIS*"
+
+
+SEQUENCEAFTER   "SEQ*"
+SEQUENCESRT     " ="
+SEQUENCEEND     "//"
+
+# DONT_GEN_NAMES
+CREATE_ACC_FROM_SEQUENCE
+
+END     "//"

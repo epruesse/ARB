@@ -1,0 +1,42 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+#SUB	subtopic.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		ARB_SECEDIT shortcut keys
+
+OCCURRENCE	ARB_SECEDIT
+
+DESCRIPTION     The following keys are available in ARB_SECEDIT:
+
+                LEFT/RIGHT    move cursor to the previous/next displayed position
+
+                b             toggles display of bonds
+                B             toggles display of base chars
+                k             toggles display of structure skeleton
+
+                c             toggles cursor annotation
+                h             toggles helix number annotation
+                e             toggles ecoli position annotation
+
+                s             toggles SAI visualization
+                r             toggles EDIT4 search result visualization
+
+                E             toggles display of all ecoli positions
+                H             toggles display of all binding helix positions
+
+                t             toggles between multiple structure versions
+
+NOTES		All other keys are forwarded to ARB_EDIT4, so you can edit or align the
+                primary structure etc.
+
+EXAMPLES	None
+
+WARNINGS	None
+
+BUGS		No bugs known

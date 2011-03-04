@@ -1,0 +1,16 @@
+----------------
+Scripts in util:
+----------------
+
+arb_compress                    make tar archive of all ARB binaries
+arb_save                        cpio and gzip all ARB source into arbsrc* (used by main Makefile)
+
+arb_test_compresssion           test compression and ascii/bin compatibility
+
+
+----------
+Internals:
+----------
+
+arb_srclst.pl                   used by arb_save to generated list of ARB source files
+

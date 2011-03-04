@@ -1,0 +1,38 @@
+AUTODETECT      "*Model 4000*Sample Notepad*\n..*"
+                #Global settings:
+KEYWIDTH        0
+FILETAG                         "WL"
+
+BEGIN           "*Sample Notepad*"
+
+
+MATCH           "               organism: *"
+                SRT             "organism\: *=*1"
+                WRITE           "full_name"
+
+MATCH           "               strain: *"
+                TAG             "WL"
+                SRT             "strain\: *=*1"
+                WRITE           "strain"
+
+MATCH           "               source: *"
+                TAG             "WL"
+                SRT             "source\: *=*1"
+                WRITE           "lab"
+
+MATCH           "               gene: *"
+                TAG             "WL"
+                SRT             "gene\: *=*1"
+                WRITE           "gene"
+
+MATCH           "               primer: *"
+                TAG             "WL"
+                SRT             "primer\: *=*1"
+                WRITE           "primer"
+
+SEQUENCEAFTER   ".."
+SEQUENCEEND     "//"
+
+END             "//"
+
+CREATE_ACC_FROM_SEQUENCE
