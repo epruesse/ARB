@@ -366,7 +366,7 @@ bool SimpleTester::perform(size_t which) {
 
     switch (result) {
         case TEST_OK:
-            if (duration_ms_this >= WHATS_SLOW) {                    // long test duration
+            if (duration_ms_this >= WARN_SLOW_ABOVE_MS) {                    // long test duration
                 if (!marked_as_slow) {
                     bool accept_slow = GLOBAL.running_on_valgrind || did_valgrinded_syscall();
                     if (!accept_slow) {
