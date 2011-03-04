@@ -39,12 +39,14 @@ void sleepms(long ms);
 // ------------------------------
 //      execution time limits
 
-const long WHATS_SLOW = 1000;         // ms
+const long SECONDS = 1000;
 
-const long MAX_EXEC_MS_NORMAL = WHATS_SLOW * 3;      // kill with segfault after time passed
-const long MAX_EXEC_MS_SLOW   = WHATS_SLOW * 7;      // same for slow tests
-const long MAX_EXEC_MS_ENV    = WHATS_SLOW * 15;     // same for environment setup/cleanup
-const long MAX_EXEC_MS_VGSYS  = WHATS_SLOW * 60;     // same for valgrinded system calls
+const long MAX_EXEC_MS_NORMAL = 3 * SECONDS;        // kill with segfault after time passed
+const long MAX_EXEC_MS_SLOW   = 7 * SECONDS;        // same for slow tests
+const long MAX_EXEC_MS_ENV    = 15 * SECONDS;       // same for environment setup/cleanup
+const long MAX_EXEC_MS_VGSYS  = 21 * SECONDS;       // same for valgrinded system calls (especially pt_server)
+
+const long WARN_SLOW_ABOVE_MS = 1 * SECONDS;        // when too warn about slow test
 
 #define FLAGS_DIR "flags"
 #define FLAGS_EXT "flag"
