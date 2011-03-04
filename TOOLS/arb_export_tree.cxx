@@ -73,6 +73,7 @@ int main(int argc, char **argv) {
                     GBT_TREE *tree = GBT_read_tree(gb_main, tree_name, - sizeof(GBT_TREE));
                     if (tree) {
                         error = TREE_export_tree(gb_main, real_STDOUT, tree, trifurcated, branchlens, doublequotes);
+                        GBT_delete_tree(tree);
                     }
                     else if (tree_name[0] && strcmp(tree_name, "????") != 0) {
                         // ignore tree names '????' and '' (no error, just export empty tree)

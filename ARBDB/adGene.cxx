@@ -198,6 +198,11 @@ void GEN_free_position(GEN_position *pos) {
     lastFreedPosition = pos;
 }
 
+static struct GEN_position_mem_handler {
+    ~GEN_position_mem_handler() { GEN_free_position(NULL); }
+} GEN_position_dealloc;
+
+
 static void clearParseTable(char **parseTable, int parts) {
     int p;
     free(parseTable[0]);
