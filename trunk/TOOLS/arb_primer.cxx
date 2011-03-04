@@ -24,7 +24,6 @@ struct arb_prm_struct {
     int       prmanz;
     int       prmlen;
     int       prmsmin;
-    GB_HASH  *hash;
     char    **data;
     int       sp_count;
     int       key_cnt;
@@ -32,6 +31,19 @@ struct arb_prm_struct {
     int       reduce;
     FILE     *out;
     char     *outname;
+
+    arb_prm_struct() {
+        memset(this, 0, sizeof(*this));
+    }
+    ~arb_prm_struct() {
+        GBT_free_names(alignment_names);
+        if (data) {
+            for (int i = 0; i<sp_count; ++i) free(data[i]);
+            free(data);
+        }
+        free(outname);
+    }
+
 } aprm;
 
 
@@ -204,14 +216,15 @@ int primer_print(char *dest, char * source, int size)
 }
 
 
-long arb_reduce_primer_len(const char *key, long val, void *)
-{
-    static char buffer[256];
-    int size = strlen(key)-aprm.reduce;
+long arb_reduce_primer_len(const char *key, long val, void *cl_hash) {
+    GB_HASH* hash = (GB_HASH*)cl_hash;
+    char     buffer[256];
+    int      size = strlen(key)-aprm.reduce;
+
     strncpy(buffer, key, size);
     buffer[size] = 0;
-    val += GBS_read_hash(aprm.hash, buffer);
-    GBS_write_hash(aprm.hash, buffer, val);
+    val += GBS_read_hash(hash, buffer);
+    GBS_write_hash(hash, buffer, val);
     return val;
 }
 
@@ -250,7 +263,6 @@ void arb_prm_primer(int /* prmanz */)
         if (pspecies*100 >= aprm.prmsmin * aprm.sp_count) {     /* reduce primer length */
             for (hash = mhash; prmlen >= aprm.prmlen; prmlen-=aprm.reduce) {
                 hash = GBS_create_hash(aprm.prmanz, GB_MIND_CASE);
-                aprm.hash = hash;
 
                 aprm.key_cnt = 0;
                 aprm.one_key_cnt = 0;
@@ -269,7 +281,7 @@ void arb_prm_primer(int /* prmanz */)
                     aprm.key_cnt/=4;
                     aprm.reduce++;
                 }
-                GBS_hash_do_loop(mhash, arb_reduce_primer_len, NULL);
+                GBS_hash_do_loop(mhash, arb_reduce_primer_len, hash);
                 GBS_free_hash(mhash);
                 mhash = hash;
             }
