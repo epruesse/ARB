@@ -303,10 +303,12 @@ const char *GBS_scan_arb_tcp_param(const char *ipPort, const char *wantedParam) 
 
 const char *GBS_nameserver_tag(const char *add_field) {
     if (add_field && add_field[0]) {
-        static char *tag = NULL;
-        freeset(tag, GBS_global_string_copy("ARB_NAME_SERVER_%s", add_field));
+        char *tag = GBS_global_string_copy("ARB_NAME_SERVER_%s", add_field);
         ARB_strupper(tag);
-        return tag;
+
+        static SmartMallocPtr(char) stag;
+        stag = tag;
+        return &*stag;
     }
     return "ARB_NAME_SERVER";
 }
