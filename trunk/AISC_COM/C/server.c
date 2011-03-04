@@ -407,8 +407,9 @@ Hs_struct *open_aisc_server(const char *path, int timeout, int fork) {
     hs->fork = fork;
     err = aisc_open_socket(path, TCP_NODELAY, 0, &so, &hs->unix_name);
     if (err) {
-        if (*err)
-            printf("%s\n", err);
+        if (*err) printf("Error in open_aisc_server: %s\n", err);
+        shutdown(so, SHUT_RDWR);
+        close(so);
         return 0;
     }
 
@@ -420,7 +421,7 @@ Hs_struct *open_aisc_server(const char *path, int timeout, int fork) {
     aisc_server_bytes_last  = 0;
     /* simply take first address */
     if (listen(so, MAX_QUEUE_LEN) < 0) {
-        printf("AISC_SERVER_ERROR could not listen (server) %i\n", errno);
+        printf("Error in open_aisc_server: could not listen (errno=%i)\n", errno);
         return NULL;
     }
     i = 0;
