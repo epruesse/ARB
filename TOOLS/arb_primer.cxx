@@ -284,6 +284,9 @@ void arb_prm_primer(int /* prmanz */)
         mhash = 0;
     }
 
+    free(best_primer_new);
+    free(best_primer_cnt);
+    free(buffer);
 }
 
 int main(int argc, char **argv) {
