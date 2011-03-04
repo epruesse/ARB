@@ -82,11 +82,13 @@ typedef enum {
 //! Awars for the match type; binds the #PFOLD_MATCH_TYPE to the corresponding awar name.
 extern name_value_pair pfold_match_type_awars[];
 
+#define PFOLD_PAIRS 6
+
 //! Match pair definition (see #PFOLD_MATCH_TYPE) as used for match methods #SECSTRUCT_SECSTRUCT and #SECSTRUCT_SEQUENCE_PREDICT in ED4_pfold_calculate_secstruct_match().
-extern char *pfold_pairs[6];
+extern char *pfold_pairs[PFOLD_PAIRS];
 
 //! Symbols for the match quality (defined by #PFOLD_MATCH_TYPE) as used for match methods #SECSTRUCT_SECSTRUCT and #SECSTRUCT_SEQUENCE_PREDICT in ED4_pfold_calculate_secstruct_match().
-extern char *pfold_pair_chars[6];
+extern char *pfold_pair_chars[PFOLD_PAIRS];
 
 /*! \brief Symbols for the match quality as used for match method
  *         #SECSTRUCT_SEQUENCE in ED4_pfold_calculate_secstruct_match().

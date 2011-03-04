@@ -46,7 +46,7 @@ name_value_pair pfold_match_type_awars[] = {
 };
 
 //! Symbols for the match quality (defined by #PFOLD_MATCH_TYPE) as used for match methods #SECSTRUCT_SECSTRUCT and #SECSTRUCT_SEQUENCE_PREDICT in ED4_pfold_calculate_secstruct_match().
-char *pfold_pair_chars[6] = {
+char *pfold_pair_chars[PFOLD_PAIRS] = {
     strdup(" "), // STRUCT_PERFECT_MATCH
     strdup("-"), // STRUCT_GOOD_MATCH
     strdup("~"), // STRUCT_MEDIUM_MATCH
@@ -56,7 +56,7 @@ char *pfold_pair_chars[6] = {
 };
 
 //! Match pair definition (see #PFOLD_MATCH_TYPE) as used for match methods #SECSTRUCT_SECSTRUCT and #SECSTRUCT_SEQUENCE_PREDICT in ED4_pfold_calculate_secstruct_match().
-char *pfold_pairs[6] = {
+char *pfold_pairs[PFOLD_PAIRS] = {
     strdup("HH GG II TT EE BB SS -- -. .."),          // STRUCT_PERFECT_MATCH
     strdup("HG HI HS EB ES TS H- G- I- T- E- B- S-"), // STRUCT_GOOD_MATCH
     strdup("HT GT IT"),                               // STRUCT_MEDIUM_MATCH
@@ -64,6 +64,15 @@ char *pfold_pairs[6] = {
     strdup("EH BH EG EI"),                            // STRUCT_NO_MATCH
     strdup("")                                        // STRUCT_UNKNOWN
 };
+
+static struct pfold_mem_handler {
+    ~pfold_mem_handler() {
+        for (int i = 0; i<PFOLD_PAIRS; ++i) {
+            freenull(pfold_pairs[i]);
+            freenull(pfold_pair_chars[i]);
+        }
+    }
+} pfold_dealloc;
 
 // --------------------------------------------------------------------------------
 
@@ -99,15 +108,15 @@ static int *char2AA = 0;
 static char structure_chars[3] = { 'H', 'E', 'T' };
 
 //! Amino acids that break a certain structure (#ALPHA_HELIX or #BETA_SHEET) as used in ED4_pfold_extend_nucleation_sites().
-static char *structure_breaker[2] = {
-        strdup("NYPG"),
-        strdup("PDESGK")
+static const char *structure_breaker[2] = {
+        "NYPG",
+        "PDESGK"
 };
 
 //! Amino acids that are indifferent for a certain structure (#ALPHA_HELIX or #BETA_SHEET) as used in ED4_pfold_extend_nucleation_sites().
-static char *structure_indifferent[2] = {
-        strdup("RTSC"),
-        strdup("RNHA")
+static const char *structure_indifferent[2] = {
+        "RTSC",
+        "RNHA"
 };
 
 //! Awars for the match method; binds the #PFOLD_MATCH_METHOD to the corresponding name that is used to create the menu in ED4_pfold_create_props_window().
