@@ -243,21 +243,9 @@ static const char *aisc_get_object_attribute(long i, long j)
     return aisc_attribute_names_list[i][j];
 }
 
-
-static char *aisc_get_hostname() {
-    static char *hn = 0;
-    if (!hn) {
-        char buffer[4096];
-        gethostname(buffer, 4095);
-        hn = strdup(buffer);
-    }
-    return hn;
-}
-
 #if defined(DEVEL_RALF)
 #warning DRY client.c vs server.c (->clientserver.c).
 /* e.g. aisc_get_m_id and aisc_client_get_m_id
- * aisc_get_hostname() / aisc_client_get_hostname()
  * aisc_open_socket() / aisc_client_open_socket()
  * etc.
  */
@@ -296,9 +284,7 @@ static const char *aisc_get_m_id(const char *path, char **m_name, int *id) {
     char *mn = (char *) calloc(sizeof(char), p - path + 1);
     strncpy(mn, path, p - path);
 
-    if (strcmp(mn, "localhost") == 0) {
-        freedup(mn, aisc_get_hostname());
-    }
+    if (strcmp(mn, "localhost") == 0) freedup(mn, arb_gethostname());
     *m_name = mn;
 
     int i = atoi(p + 1);

@@ -41,8 +41,11 @@ depend.init:
 arb_cs.o: arb_core.h
 arb_cs.o: arb_cs.h
 arb_cs.o: arb_msg.h
+arb_cs.o: $(ARBHOME)/INCLUDE/arb_assert.h
 arb_cs.o: $(ARBHOME)/INCLUDE/attributes.h
 arb_cs.o: $(ARBHOME)/INCLUDE/dupstr.h
+arb_cs.o: $(ARBHOME)/INCLUDE/smartptr.h
+arb_cs.o: $(ARBHOME)/INCLUDE/test_global.h
 
 arb_handlers.o: arb_core.h
 arb_handlers.o: arb_handlers.h

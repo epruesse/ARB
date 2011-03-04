@@ -11,6 +11,8 @@
 
 #include "arb_cs.h"
 #include "arb_msg.h"
+#include <smartptr.h>
+#include <unistd.h>
 #include <netdb.h>
 
 void arb_gethostbyname(const char *name, struct hostent *& he, GB_ERROR& err) {
@@ -27,4 +29,13 @@ void arb_gethostbyname(const char *name, struct hostent *& he, GB_ERROR& err) {
     }
 }
 
+const char *arb_gethostname() {
+    static SmartMallocPtr(char) hostname;
+    if (hostname.isNull()) {
+        char buffer[4096];
+        gethostname(buffer, 4095);
+        hostname = strdup(buffer);
+    }
+    return &*hostname;
+}
 

@@ -767,6 +767,7 @@ adsocket.o: $(ARBHOME)/INCLUDE/arb_core.h
 adsocket.o: $(ARBHOME)/INCLUDE/arb_cs.h
 adsocket.o: $(ARBHOME)/INCLUDE/arb_error.h
 adsocket.o: $(ARBHOME)/INCLUDE/arb_msg.h
+adsocket.o: $(ARBHOME)/INCLUDE/arb_str.h
 adsocket.o: $(ARBHOME)/INCLUDE/arb_string.h
 adsocket.o: $(ARBHOME)/INCLUDE/arbtools.h
 adsocket.o: $(ARBHOME)/INCLUDE/attributes.h

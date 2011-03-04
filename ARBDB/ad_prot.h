@@ -47,7 +47,6 @@ bool GB_is_client(GBDATA *gbd);
 GBDATA *GBCMC_find(GBDATA *gbd, const char *key, GB_TYPES type, const char *str, GB_CASE case_sens, GB_SEARCH_TYPE gbs);
 int GBCMC_system(GBDATA *gbd, const char *ss) __ATTR__USERESULT;
 GB_ERROR GB_tell_server_dont_wait(GBDATA *gbd);
-GB_CSTR GB_get_hostname(void);
 GB_ERROR GB_install_pid(int mode);
 const char *GB_date_string(void);
 
@@ -478,7 +477,7 @@ GB_CSTR GB_getenvDOCPATH(void);
 GB_CSTR GB_getenvHTMLDOCPATH(void);
 NOT4PERL gb_getenv_hook GB_install_getenv_hook(gb_getenv_hook hook);
 GB_CSTR GB_getenv(const char *env);
-int GB_host_is_local(const char *hostname);
+bool GB_host_is_local(const char *hostname);
 GB_ULONG GB_get_physical_memory(void);
 GB_CSTR GB_append_suffix(const char *name, const char *suffix);
 GB_CSTR GB_canonical_path(const char *anypath);

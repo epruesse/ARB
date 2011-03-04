@@ -25,6 +25,7 @@
 #include <sys/un.h>
 
 #include <arb_cs.h>
+#include <arb_str.h>
 
 #include "gb_comm.h"
 #include "gb_data.h"
@@ -1085,14 +1086,12 @@ GB_CSTR GB_getenv(const char *env) {
     return getenv_ignore_empty(env);
 }
 
-
-
-int GB_host_is_local(const char *hostname) {
-    // returns 1 if host is local
-    if (strcmp(hostname, "localhost")      == 0) return 1;
-    if (strcmp(hostname, GB_get_hostname()) == 0) return 1;
-    if (strstr(hostname, "127.0.0.")       == hostname) return 1;
-    return 0;
+bool GB_host_is_local(const char *hostname) {
+    // returns true if host is local
+    return
+        ARB_stricmp(hostname, "localhost")       == 0 ||
+        ARB_strscmp(hostname, "127.0.0.")        == 0 ||
+        ARB_stricmp(hostname, arb_gethostname()) == 0;
 }
 
 #define MIN(a, b) (((a)<(b)) ? (a) : (b))

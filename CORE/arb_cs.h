@@ -17,6 +17,7 @@
 #endif
 
 void arb_gethostbyname(const char *name, struct hostent *& he, GB_ERROR& err);
+const char *arb_gethostname();
 
 #else
 #error arb_cs.h included twice
