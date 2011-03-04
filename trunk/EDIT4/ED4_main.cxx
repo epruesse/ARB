@@ -442,6 +442,7 @@ static void ed4_create_all_awars(AW_root *root, const char *config_name) {
         int pt;
         char awar[256];
         for (int i = 0; pfold_match_type_awars[i].name; i++) {
+            e4_assert(i<PFOLD_PAIRS);
             pt = pfold_match_type_awars[i].value;
             sprintf(awar, PFOLD_AWAR_PAIR_TEMPLATE, pfold_match_type_awars[i].name);
             root->awar_string(awar, pfold_pairs[pt])->add_target_var(&pfold_pairs[pt]);
