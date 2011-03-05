@@ -547,11 +547,11 @@ void GBS_strcat(GBS_strstruct *strstr, const char *ptr) {
     strstr->cat(ptr);
 }
 
-void GBS_strnprintf(GBS_strstruct *strstr, long len, const char *templat, ...) {
+void GBS_strnprintf(GBS_strstruct *strstr, long maxlen, const char *templat, ...) {
     // goes to header: __ATTR__FORMAT(3)
     va_list parg;
     va_start(parg, templat);
-    strstr->vprintf(len+2, templat, parg);
+    strstr->vprintf(maxlen+2, templat, parg);
 }
 
 void GBS_chrcat(GBS_strstruct *strstr, char ch) {
