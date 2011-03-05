@@ -34,12 +34,11 @@ struct mark_all_matches_chain_handle {
 static int mark_all_matches(POS_TREE *pt,
                             char     *probe,
                             int       length,
-                            int       mismatches,
                             int       height,
-                            int       max_mismatches)
+                            int       accept_mismatches)
 {
     /*! Increment match_count for every match */
-    if (pt == NULL || mismatches > max_mismatches) {
+    if (pt == NULL || accept_mismatches<0) {
         return 0;
     }
 
@@ -51,19 +50,20 @@ static int mark_all_matches(POS_TREE *pt,
             int ref_name = PT_read_name(psg.ptmain, pt);
 
             // Check rest of probe
-            while (*probe && mismatches <= max_mismatches) {
+            while (*probe && accept_mismatches >= 0) {
                 if (*probe != psg.data[ref_name].data[ref_pos+height]) {
-                    mismatches++;
+                    accept_mismatches--;
                 }
                 probe++;
                 height++;
             }
             // Increment count if probe matches
-            if (mismatches <= max_mismatches) {
+            if (accept_mismatches >= 0) {
                 psg.data[ref_name].stat.match_count++;
             }
         }
         else { // type_of_node == CHAIN
+            pt_assert(type_of_node == PT_NT_CHAIN);
             PT_read_chain(psg.ptmain, pt, mark_all_matches_chain_handle());
         }
     }
@@ -74,17 +74,14 @@ static int mark_all_matches(POS_TREE *pt,
             if (pt_son) {
                 if (*probe) {
                     if (*probe != base) {
-                        mark_all_matches(pt_son, probe+1, length,
-                                         mismatches + 1, height + 1, max_mismatches);
+                        mark_all_matches(pt_son, probe+1, length, height + 1, accept_mismatches-1);
                     }
                     else {
-                        mark_all_matches(pt_son, probe+1, length,
-                                         mismatches, height + 1, max_mismatches);
+                        mark_all_matches(pt_son, probe+1, length, height + 1, accept_mismatches);
                     }
                 }
                 else {
-                    mark_all_matches(pt_son, probe, length,
-                                     mismatches, height + 1, max_mismatches);
+                    mark_all_matches(pt_son, probe, length, height + 1, accept_mismatches);
                 }
             }
         }
@@ -245,7 +242,7 @@ extern "C" int ff_find_family(PT_local *locs, bytestring *species) {
                     char *last_probe = sequence+sequence_len-probe_len;
                     for (char *probe = sequence; probe < last_probe; ++probe) {
                         if (probe_is_ok(probe, probe_len, first_c, second_c)) {
-                            mark_all_matches(psg.pt, probe, probe_len, 0, 0, mismatch_nr);
+                            mark_all_matches(psg.pt, probe, probe_len, 0, mismatch_nr);
                         }
                     }
                 }
