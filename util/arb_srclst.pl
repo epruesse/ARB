@@ -157,6 +157,7 @@ my @used_when_matchesFull = (
                              qr/\/UNIT_TESTER\/run\/.*\.in$/o,
                              qr/\/UNIT_TESTER\/run\/.*\.out$/o,
                              qr/\/UNIT_TESTER\/run\/.*\.tree$/o,
+                             qr/\/UNIT_TESTER\/valgrind\/arb_valgrind_logged$/o,
                              qr/^\.\/etc\//o,
                              qr/^\.\/lib\/arb_tcp_org\.dat$/o,
                              qr/^\.\/lib\/config\.[^\.]+$/io,
