@@ -30,7 +30,7 @@ void arb_gethostbyname(const char *name, struct hostent *& he, GB_ERROR& err) {
 }
 
 const char *arb_gethostname() {
-    static SmartMallocPtr(char) hostname;
+    static SmartCharPtr hostname;
     if (hostname.isNull()) {
         char buffer[4096];
         gethostname(buffer, 4095);

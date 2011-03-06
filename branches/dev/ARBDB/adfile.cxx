@@ -26,10 +26,7 @@
 GB_CSTR GB_getcwd() {
     // get the current working directory
     // (directory from which application has been started)
-
-    static SmartMallocPtr(char) lastcwd;
-    if (lastcwd.isNull()) lastcwd = (char *)getcwd(0, FILE_PATH_MAX);
-    return &*lastcwd;
+    RETURN_ONETIME_ALLOC(getcwd(0, FILE_PATH_MAX));
 }
 
 GB_ERROR gb_scan_directory(char *basename, gb_scandir *sd) { // goes to header: __ATTR__USERESULT

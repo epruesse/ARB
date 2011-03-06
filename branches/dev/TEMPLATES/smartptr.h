@@ -50,8 +50,7 @@
 // typedef SmartArrayPtr(std::string) StringArrayPtr;
 // StringArrayPtr strings = new std::string[100];       // will be deallocated using delete []
 //
-// typedef SmartMallocPtr(char) CharPtr;
-// CharPtr cp = strdup("hello world");                  // will be deallocated using free()
+// SmartCharPtr cp = strdup("hello world");             // will be deallocated using free()
 //
 // typedef SmartCustomPtr(GEN_position, GEN_free_position) GEN_position_Ptr;
 // GEN_position_Ptr gp = GEN_new_position(5, false); // will be deallocated using GEN_free_position()
@@ -155,7 +154,7 @@ public:
 
     Counted(T *p) : counter(0), pointer(p) {
         DUMP_SMART_PTRS_DO(fprintf(stderr, "pointer %p now controlled by Counted\n", getPointer()));
-        tpl_assert(p);
+        tpl_assert(p); // if you like to assign NULL, consider using SmartPtr::assign
     }
 #ifdef DEBUG
     ~Counted() {
@@ -229,12 +228,12 @@ public:
         object = other.object;
         return *this;
     }
-
+    
     const T *operator->() const { tpl_assert(object); return object->getPointer(); }
     T *operator->() { tpl_assert(object); return object->getPointer(); }
 
     const T& operator*() const { tpl_assert(object); return *(object->getPointer()); }
-    T& operator*() { tpl_assert(object); return *(object->getPointer()); }
+    T& operator*() { tpl_assert(object); return *(object->getPointer()); } // Note: to deref a NULL-SmartPtr, use SmartPtr::content()
 
     /*! test if SmartPtr is NULL */
     bool isNull() const { return object == 0; }
@@ -244,6 +243,20 @@ public:
 
     /*! set SmartPtr to NULL */
     void SetNull() { Unbind(); }
+
+    /*! set SmartPtr to new content or NULL */
+    void assign(T *p) {
+        Unbind();
+        if (p) {
+            object = new C(p);
+            object->new_reference();
+        }
+    }
+
+    /*! convert SmartPtr to plain old pointer (also works if isNull()) */
+    const T* content() const {
+        return object ? object->getPointer() : NULL;
+    }
 
     SmartPtr<T, C> deep_copy() const {
         /*! create a deep copy of the object pointed to by the smart pointer.
@@ -278,6 +291,21 @@ template <class T, class C> bool operator==(const SmartPtr<T, C>& s1, const Smar
 template <class T, class C> bool operator!=(const SmartPtr<T, C>& s1, const SmartPtr<T, C>& s2) {
     return !s1.sameObject(s2);
 }
+
+// --------------------------
+//      convenience decls
+
+typedef SmartMallocPtr(char) SmartCharPtr;
+
+#define RETURN_LOCAL_ALLOC(mallocation)                         \
+    static SmartMallocPtr(typeof(*mallocation)) static_ptr;     \
+    static_ptr.assign(mallocation);                             \
+    return static_ptr.content();
+
+#define RETURN_ONETIME_ALLOC(allocated)                         \
+    static SmartMallocPtr(typeof(*allocated)) static_ptr;       \
+    if (static_ptr.isNull()) { static_ptr = allocated; }        \
+    return static_ptr.content();
 
 #else
 #error smartptr.h included twice

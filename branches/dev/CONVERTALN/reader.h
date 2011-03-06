@@ -61,11 +61,7 @@ public:
     }
 };
 
-inline const char *shorttimekeep(char *heapcopy) {
-    static SmartCharPtr keep;
-    keep = heapcopy;
-    return &*keep;
-}
+inline const char *shorttimekeep(char *heapcopy) { RETURN_LOCAL_ALLOC(heapcopy); }
 inline const char *shorttimecopy(const char *nocopy) { return shorttimekeep(nulldup(nocopy)); }
 
 struct FormatReader {
