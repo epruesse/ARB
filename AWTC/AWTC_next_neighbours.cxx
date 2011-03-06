@@ -259,10 +259,7 @@ const char *PT_FamilyFinder::results2string() {
         GBS_strnprintf(out, 100, "%s/%li/%3.5f,", fl->name, fl->matches, fl->rel_matches*100);
     }
     GBS_str_cut_tail(out, 1);
-
-    static SmartMallocPtr(char) res;
-    res = GBS_strclose(out);
-    return &*res;
+    RETURN_LOCAL_ALLOC(GBS_strclose(out));
 }
 
 void AWTC_create_common_next_neighbour_vars(AW_root *aw_root) {
