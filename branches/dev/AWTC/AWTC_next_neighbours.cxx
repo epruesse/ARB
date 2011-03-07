@@ -315,26 +315,31 @@ void TEST_SLOW_PT_FamilyFinder() {
     for (int relativeMatches = 0; relativeMatches <= 1; ++relativeMatches) {
         for (int fastMode = 0; fastMode <= 1; ++fastMode) {
             PT_FamilyFinder ff(gb_main, TEST_SERVER_ID, 18, 1, fastMode, relativeMatches);
-            
+
             // sequence of 'LgtLytic' in TEST_pt.arb:
             const char *sequence = "AGAGUUUGAUCAAGUCGAACGGCAGCACAGUCUAGCUUGCUAGACGGGUGGCGAGUGGCGAACGGACUUGGGGAAACUCAAGCUAAUACCGCAUAAUCAUGACUGGGGUGAAGUCGUAACAAGGUAGCCGUAGGGGAACCUGCGGCUGGAUCACCUCCUN";
+
+            // len: 160 bp
+            // Ns: 1 bp
+            // oligolen: 18bp
+            // max. possible matches: len-oligolen+1-Ns = 160-18+1-1 = 142
 
             TEST_ASSERT_NO_ERROR(ff.searchFamily(sequence, FF_FORWARD, 4));
 
             if (fastMode == 0) { // full-search
                 if (relativeMatches == 0) {
-                    TEST_ASSERT_EQUAL(ff.results2string(), "LgtLytic/142/98.61111,HllHalod/48/33.56643,PbrPropi/47/33.09859,PslFlave/47/34.05797");
+                    TEST_ASSERT_EQUAL(ff.results2string(), "LgtLytic/142/98.61111,HllHalod/60/41.95804,AclPleur/54/37.50000,PbrPropi/51/35.91549");
                 }
                 else {
-                    TEST_ASSERT_EQUAL(ff.results2string(), "LgtLytic/142/98.61111,PslFlave/47/34.05797,HllHalod/48/33.56643,PbrPropi/47/33.09859");
+                    TEST_ASSERT_EQUAL(ff.results2string(), "LgtLytic/142/98.61111,HllHalod/60/41.95804,AclPleur/54/37.50000,PbrPropi/51/35.91549");
                 }
             }
             else { // fast-search 
                 if (relativeMatches == 0) {
-                    TEST_ASSERT_EQUAL(ff.results2string(), "LgtLytic/40/27.77778,PtVVVulg/15/10.41667,PslFlave/14/10.14493,DcdNodos/14/9.72222");
+                    TEST_ASSERT_EQUAL(ff.results2string(), "LgtLytic/40/27.77778,HllHalod/18/12.58741,AclPleur/17/11.80556,PtVVVulg/15/10.41667");
                 }
                 else {
-                    TEST_ASSERT_EQUAL(ff.results2string(), "LgtLytic/40/27.77778,PtVVVulg/15/10.41667,PslFlave/14/10.14493,Stsssola/14/9.85915");
+                    TEST_ASSERT_EQUAL(ff.results2string(), "LgtLytic/40/27.77778,HllHalod/18/12.58741,AclPleur/17/11.80556,PtVVVulg/15/10.41667");
                 }
             }
         }
