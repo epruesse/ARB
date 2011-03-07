@@ -131,6 +131,7 @@ How to use ARB unit testing
 
    call 'make clean_coverage_results' to get rid of .cov files
 
+   (see also showCoverageForAll in gcov2msg.pl)
 
 5. Running only some tests
 
