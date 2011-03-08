@@ -121,7 +121,7 @@ long PTD_write_leafs_to_disk P_((FILE *out, PTM2 *ptmain, POS_TREE *node, long p
 ARB_ERROR PTD_read_leafs_from_disk P_((const char *fname, PTM2 *ptmain, POS_TREE **pnode)) __ATTR__USERESULT;
 
 /* probe_tree.hxx */
-template <typename T >int PT_read_chain P_((PTM2 *ptmain, POS_TREE *node, T func));
+template <typename T >int PT_forwhole_chain P_((PTM2 *ptmain, POS_TREE *node, T func));
 
 #undef P_
 
