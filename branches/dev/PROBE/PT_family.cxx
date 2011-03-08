@@ -22,126 +22,134 @@
 // overloaded functions to avoid problems with type-punning:
 inline void aisc_link(dll_public *dll, PT_family_list *family)   { aisc_link(reinterpret_cast<dllpublic_ext*>(dll), reinterpret_cast<dllheader_ext*>(family)); }
 
-class MatchMarker { // @@@ quite useless class atm - will be filled later
-public:
-    MatchMarker() {}
+class ProbeTraversal {
+    const char *probe;
+    int         height;
+    int         needed_positions;
+    int         accept_mismatches;
 
-    void mark_all(POS_TREE *pt, const char *probe, int needed_positions, int height, int accept_mismatches);
-};
+    bool at_end() const { return *probe == PT_QU; }
 
-class mark_all_matches_chain_handle {
-    int         start_needed_positions;
-    int         start_accept_mismatches;
-    int         start_height;
-    const char *start_probe;
+    bool too_many_mismatches() const { return accept_mismatches<0; }
 
-public:
+    bool did_match() const { return needed_positions <= 0 && !too_many_mismatches(); }
+    bool need_match() const { return needed_positions > 0 && !too_many_mismatches(); }
+    bool shall_match() const { return need_match() && !at_end(); }
 
-    mark_all_matches_chain_handle(int         needed_positions,
-                                  int         accept_mismatches,
-                                  int         height,
-                                  const char *probe)
-        : start_needed_positions(needed_positions),
-          start_accept_mismatches(accept_mismatches),
-          start_height(height),
-          start_probe(probe)
-    {
+    void match_one_char(char c) {
+        // @@@ cant assert that NOW (first need to fix bug marked below)
+        // pt_assert(shall_match()); // avoid unneeded calls 
+        
+        if (*probe++ != c) accept_mismatches--;
+        needed_positions--;
+        height++;
     }
 
-    int operator()(int name, int apos, int rpos) {
-        /*! Increment match_count for a matched chain */
+    void inc_match_count(int name) const {
+        ++psg.data[name].stat.match_count;
+    }
 
-        int         needed_positions  = start_needed_positions;
-        int         accept_mismatches = start_accept_mismatches;
-        int         height            = start_height;
-        const char *probe             = start_probe;
-
-        while (*probe && accept_mismatches >= 0 && needed_positions>0) {
-            if (*probe != psg.data[name].data[rpos+height]) {
-                accept_mismatches--;
-            }
-                probe++;
-                height++;
-                needed_positions--;
+    void match_rest_and_mark(int name, int apos, int rpos) {
+        pt_assert(shall_match());
+        do match_one_char(psg.data[name].data[rpos+height]);
+        while (shall_match());
+        if (did_match()) inc_match_count(name);
+    }
+    
+    void mark_matching_leaf(int name, int apos, int rpos) const {
+        if (did_match()) inc_match_count(name);
+        else if (shall_match()) {
+            ProbeTraversal(*this).match_rest_and_mark(name, apos, rpos);
         }
+    }
 
-        // Increment count if probe matches
-        if (accept_mismatches >= 0 && needed_positions <= 0) {
-            psg.data[name].stat.match_count++;
-        }
+    void mark_all(POS_TREE *pt) const;
+    
+public:
+
+    ProbeTraversal(const char *probe_, int needed_positions_, int accept_mismatches_)
+        : probe(probe_),
+          height(0),
+          needed_positions(needed_positions_),
+          accept_mismatches(accept_mismatches_)
+    { }
+
+    void mark_matching(POS_TREE *pt) const;
+
+    int operator()(int name, int apos, int rpos) const { 
+        /*! Increment match_count for a matched chain (PT_read_chain interface) */
+        mark_matching_leaf(name, apos, rpos);
         return 0;
     }
 };
 
-void MatchMarker::mark_all(POS_TREE *pt, const char *probe, int needed_positions, int height, int accept_mismatches) {
-    /*! Traverse pos(sub)tree and increment match_count for each match of 'probe' */
+void ProbeTraversal::mark_matching(POS_TREE *pt) const {
+    /*! Traverse pos(sub)tree through matching branches and increment 'match_count' */
 
-    if (pt == NULL || accept_mismatches<0) {
-        // pt_assert(0); // COVERED!
-        return;
-    }
+    pt_assert(pt);
+    pt_assert(!too_many_mismatches());
 
     int type_of_node = PT_read_type(pt);
     if (type_of_node != PT_NT_NODE) {
-        // Found unique solution
         if (type_of_node == PT_NT_LEAF) {
-            int rpos = PT_read_rpos(psg.ptmain, pt);
             int name = PT_read_name(psg.ptmain, pt);
-
-            // Check rest of probe
-            while (*probe && accept_mismatches >= 0 && needed_positions>0) {
-                if (*probe != psg.data[name].data[rpos+height]) {
-                    accept_mismatches--;
-                }
-                probe++;
-                height++;
-                needed_positions--;
-                // pt_assert(0); // !COVERED
-            }
-
-            // Increment count if probe matches
-            if (accept_mismatches >= 0 && needed_positions <= 0) {
-                // pt_assert(0); // !COVERED
-                psg.data[name].stat.match_count++;
-            }
+            int apos = PT_read_apos(psg.ptmain, pt);
+            int rpos = PT_read_rpos(psg.ptmain, pt);
+            
+            mark_matching_leaf(name, apos, rpos);
         }
         else { // type_of_node == CHAIN
-            // pt_assert(0); // !COVERED
             pt_assert(type_of_node == PT_NT_CHAIN);
-            mark_all_matches_chain_handle chain_handler(needed_positions, accept_mismatches, height, probe);
-            PT_read_chain(psg.ptmain, pt, chain_handler);
+            PT_read_chain(psg.ptmain, pt, *this);
         }
     }
-    else {
-        // type_of_node == PT_NT_NODE
+    else { // type_of_node == PT_NT_NODE
         for (int base = PT_N; base < PT_B_MAX; base++) {
             POS_TREE *pt_son = PT_read_son(psg.ptmain, pt, (PT_BASES)base);
             if (pt_son) {
-                if (*probe != PT_QU) {
-                    if (*probe != base) {
-                        // pt_assert(0); // !COVERED
-                        mark_all(pt_son, probe+1, needed_positions-1, height + 1, accept_mismatches-1);
-                    }
-                    else {
-                        // pt_assert(0); // !COVERED
-                        mark_all(pt_son, probe+1, needed_positions-1, height + 1, accept_mismatches);
-                    }
+                if (!at_end()) {
+                    // @@@ here's another bug:
+                    // when already have enough positions, mismatches have to be ignored
+                    // (happens for probes shorter than tree depth)
+                    // commented code fixes the bug
+
+                    // if (did_match()) {
+                    // mark_all(pt_son);
+                    // }
+                    // else {
+                        ProbeTraversal subTail(*this);
+                        subTail.match_one_char(base);
+                        if (!subTail.too_many_mismatches()) {
+                            subTail.mark_matching(pt_son);
+                        }
+                    // }
                 }
                 else {
                     // probe contains a '.'
                     // (only true for right end of sequence, other probes have been skipped by probe_is_ok)
-
-                    // pt_assert(0); // !COVERED
-                    if (needed_positions <= 0) {
-                        // if already matched -> simply traverse down and mark all leaf and chain-members
-                        // pt_assert(0); // !COVERED
-                        mark_all(pt_son, probe, needed_positions, height + 1, accept_mismatches);
-                    }
+                    if (did_match()) mark_all(pt_son);
                 }
             }
         }
     }
 }
+
+void ProbeTraversal::mark_all(POS_TREE *pt) const {
+    pt_assert(pt);
+    pt_assert(did_match());
+
+    int type_of_node = PT_read_type(pt);
+    if (type_of_node == PT_NT_NODE) {
+        for (int base = PT_N; base < PT_B_MAX; base++) {
+            POS_TREE *pt_son = PT_read_son(psg.ptmain, pt, (PT_BASES)base);
+            if (pt_son) mark_all(pt_son);
+        }
+    }
+    else {
+        mark_matching(pt); // does some unneeded checks, but is better than code-dup
+    }
+}
+
 
 static void clear_statistic() {
     /*! Clear all information in psg.data[i].stat */
@@ -296,8 +304,7 @@ extern "C" int ff_find_family(PT_local *locs, bytestring *species) {
                     char *last_probe = sequence+sequence_len-probe_len;
                     for (char *probe = sequence; probe < last_probe; ++probe) {
                         if (probe_is_ok(probe, probe_len, first_c, second_c)) {
-                            MatchMarker mm;
-                            mm.mark_all(psg.pt, probe, probe_len, 0, mismatch_nr);
+                            ProbeTraversal(probe, probe_len, mismatch_nr).mark_matching(psg.pt);
                         }
                     }
                 }
