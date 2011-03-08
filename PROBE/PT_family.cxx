@@ -34,10 +34,10 @@ class ProbeTraversal {
 
     bool did_match() const { return needed_positions <= 0 && !too_many_mismatches(); }
     bool need_match() const { return needed_positions > 0 && !too_many_mismatches(); }
-    bool shall_match() const { return need_match() && !at_end(); }
+    bool match_possible() const { return need_match() && !at_end(); }
 
     void match_one_char(char c) {
-        pt_assert(shall_match()); // avoid unneeded calls 
+        pt_assert(match_possible()); // avoid unneeded calls 
         
         if (*probe++ != c) accept_mismatches--;
         needed_positions--;
@@ -49,21 +49,12 @@ class ProbeTraversal {
     }
 
     void match_rest_and_mark(const DataLoc& loc) {
-        pt_assert(shall_match());
-        do match_one_char(psg.data[loc.name].data[loc.rpos+height]);
-        while (shall_match());
+        do match_one_char(psg.data[loc.name].data[loc.rpos+height]); while (match_possible());
         if (did_match()) inc_match_count(loc.name);
-    }
-    
-    void mark_matching_leaf(const DataLoc& loc) const {
-        if (did_match()) inc_match_count(loc.name);
-        else if (shall_match()) {
-            ProbeTraversal(*this).match_rest_and_mark(loc);
-        }
     }
 
     void mark_all(POS_TREE *pt) const;
-    
+
 public:
 
     ProbeTraversal(const char *probe_, int needed_positions_, int accept_mismatches_)
@@ -76,8 +67,11 @@ public:
     void mark_matching(POS_TREE *pt) const;
 
     int operator()(const DataLoc& loc) const { 
-        /*! Increment match_count for a matched chain (PT_forwhole_chain interface) */
-        mark_matching_leaf(loc);
+        /*! Increment match_count for matched postree-tips */
+        if (did_match()) inc_match_count(loc.name);
+        else if (match_possible()) {
+            ProbeTraversal(*this).match_rest_and_mark(loc);
+        }
         return 0;
     }
 };
@@ -87,53 +81,39 @@ void ProbeTraversal::mark_matching(POS_TREE *pt) const {
 
     pt_assert(pt);
     pt_assert(!too_many_mismatches());
+    pt_assert(!did_match()); 
 
-    int type_of_node = PT_read_type(pt);
-    if (type_of_node != PT_NT_NODE) {
-        if (type_of_node == PT_NT_LEAF) {
-            mark_matching_leaf(DataLoc(psg.ptmain, pt));
-        }
-        else { // type_of_node == CHAIN
-            pt_assert(type_of_node == PT_NT_CHAIN);
-            PT_forwhole_chain(psg.ptmain, pt, *this);
-        }
-    }
-    else { // type_of_node == PT_NT_NODE
-        pt_assert(!did_match()); // may only be asserted in this branch, cause if-branch is misused by mark_all()
-
+    if (PT_read_type(pt) == PT_NT_NODE) {
         for (int base = PT_N; base < PT_B_MAX; base++) {
             POS_TREE *pt_son = PT_read_son(psg.ptmain, pt, (PT_BASES)base);
-            if (pt_son) {
-                if (!at_end()) {
-                    ProbeTraversal subTail(*this);
-                    subTail.match_one_char(base);
-                    if (!subTail.too_many_mismatches()) {
-                        if (subTail.did_match()) {
-                            subTail.mark_all(pt_son);
-                        }
-                        else {
-                            subTail.mark_matching(pt_son);
-                        }
-                    }
+            if (pt_son && !at_end()) {
+                ProbeTraversal sub(*this);
+                sub.match_one_char(base);
+                if (!sub.too_many_mismatches()) {
+                    if (sub.did_match()) sub.mark_all(pt_son);
+                    else sub.mark_matching(pt_son);
                 }
             }
         }
+    }
+    else {
+        PT_withall_tips(psg.ptmain, pt, *this); // calls operator() 
     }
 }
 
 void ProbeTraversal::mark_all(POS_TREE *pt) const {
     pt_assert(pt);
+    pt_assert(!too_many_mismatches());
     pt_assert(did_match());
 
-    int type_of_node = PT_read_type(pt);
-    if (type_of_node == PT_NT_NODE) {
+    if (PT_read_type(pt) == PT_NT_NODE) {
         for (int base = PT_N; base < PT_B_MAX; base++) {
             POS_TREE *pt_son = PT_read_son(psg.ptmain, pt, (PT_BASES)base);
             if (pt_son) mark_all(pt_son);
         }
     }
     else {
-        mark_matching(pt); // does some unneeded checks, but is better than code-dup
+        PT_withall_tips(psg.ptmain, pt, *this); // calls operator() 
     }
 }
 

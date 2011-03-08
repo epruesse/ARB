@@ -588,6 +588,18 @@ int PT_forwhole_chain(PTM2 *ptmain, POS_TREE *node, T func) {
     return error;
 }
 
+template<typename T>
+int PT_withall_tips(PTM2 *ptmain, POS_TREE *node, T func) {
+    // like PT_forwhole_chain, but also can handle leafs
+    PT_NODE_TYPE type = PT_read_type(node);
+    if (type == PT_NT_LEAF) {
+        return func(DataLoc(ptmain, node));
+    }
+
+    pt_assert(type == PT_NT_CHAIN);
+    return PT_forwhole_chain(ptmain, node, func);
+}
+
 struct PTD_chain_print {
     int operator()(const DataLoc& loc) {
         printf("          name %6i apos %6i  rpos %i\n", loc.name, loc.apos, loc.rpos);
