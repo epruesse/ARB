@@ -48,17 +48,17 @@ class ProbeTraversal {
         ++psg.data[name].stat.match_count;
     }
 
-    void match_rest_and_mark(int name, int apos, int rpos) {
+    void match_rest_and_mark(const DataLoc& loc) {
         pt_assert(shall_match());
-        do match_one_char(psg.data[name].data[rpos+height]);
+        do match_one_char(psg.data[loc.name].data[loc.rpos+height]);
         while (shall_match());
-        if (did_match()) inc_match_count(name);
+        if (did_match()) inc_match_count(loc.name);
     }
     
-    void mark_matching_leaf(int name, int apos, int rpos) const {
-        if (did_match()) inc_match_count(name);
+    void mark_matching_leaf(const DataLoc& loc) const {
+        if (did_match()) inc_match_count(loc.name);
         else if (shall_match()) {
-            ProbeTraversal(*this).match_rest_and_mark(name, apos, rpos);
+            ProbeTraversal(*this).match_rest_and_mark(loc);
         }
     }
 
@@ -75,9 +75,9 @@ public:
 
     void mark_matching(POS_TREE *pt) const;
 
-    int operator()(int name, int apos, int rpos) const { 
-        /*! Increment match_count for a matched chain (PT_read_chain interface) */
-        mark_matching_leaf(name, apos, rpos);
+    int operator()(const DataLoc& loc) const { 
+        /*! Increment match_count for a matched chain (PT_forwhole_chain interface) */
+        mark_matching_leaf(loc);
         return 0;
     }
 };
@@ -91,15 +91,11 @@ void ProbeTraversal::mark_matching(POS_TREE *pt) const {
     int type_of_node = PT_read_type(pt);
     if (type_of_node != PT_NT_NODE) {
         if (type_of_node == PT_NT_LEAF) {
-            int name = PT_read_name(psg.ptmain, pt);
-            int apos = PT_read_apos(psg.ptmain, pt);
-            int rpos = PT_read_rpos(psg.ptmain, pt);
-            
-            mark_matching_leaf(name, apos, rpos);
+            mark_matching_leaf(DataLoc(psg.ptmain, pt));
         }
         else { // type_of_node == CHAIN
             pt_assert(type_of_node == PT_NT_CHAIN);
-            PT_read_chain(psg.ptmain, pt, *this);
+            PT_forwhole_chain(psg.ptmain, pt, *this);
         }
     }
     else { // type_of_node == PT_NT_NODE

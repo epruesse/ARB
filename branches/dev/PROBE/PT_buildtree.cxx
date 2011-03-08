@@ -395,18 +395,15 @@ struct PT_debug {
     int chaincount;
     } *ptds;
 
-struct PT_chain_debug {
-  int operator() (int name, int apos, int rpos)
-    {
-    psg.height++;
-    name = name;
-    apos = apos;
-    rpos = rpos;
-    return 0;
-}
+struct PT_chain_count {
+    int operator() (const DataLoc&) {
+        psg.height++;
+        return 0;
+    }
 };
+
 void PT_analyse_tree(POS_TREE *pt, int height)
-    {
+{
     PT_NODE_TYPE type;
     POS_TREE *pt_help;
     int i;
@@ -431,14 +428,14 @@ void PT_analyse_tree(POS_TREE *pt, int height)
         default:
             ptds->chains[height]++;
             psg.height = 0;
-            PT_read_chain(psg.ptmain, pt, PT_chain_debug());
+            PT_forwhole_chain(psg.ptmain, pt, PT_chain_count());
             if (psg.height >= DEBUG_MAX_CHAIN_SIZE) psg.height = DEBUG_MAX_CHAIN_SIZE;
             ptds->chainsizes[psg.height][height]++;
             ptds->chainsizes2[psg.height]++;
             ptds->chaincount++;
             if (ptds->chaincount<20) {
                 printf("\n\n\n\n");
-                PT_read_chain(psg.ptmain, pt, PTD_chain_print());
+                PT_forwhole_chain(psg.ptmain, pt, PTD_chain_print());
             }
             break;
     };

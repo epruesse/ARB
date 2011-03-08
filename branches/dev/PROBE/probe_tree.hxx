@@ -146,7 +146,7 @@ only few functions can be used, when the tree is reloaded (stage 3):
     PT_read_son
     PT_read_xpos
     PT_read_name
-    PT_read_chain
+    PT_forwhole_chain
 */
 #endif
 
@@ -287,13 +287,13 @@ COMPILE_ASSERT(sizeof(void*) == sizeof(unsigned int));
 
 
 inline const char *PT_READ_CHAIN_ENTRY(const char* ptr, int mainapos, int *name, int *apos, int *rpos) {
-    unsigned int rcei;
-    unsigned char *rcep = (unsigned char*)ptr;
-    int isapos;
-
+    // Caution: 'name' has to be initialized before first call and shall not be modified between calls
+ 
     *apos = 0;
     *rpos = 0;
-    rcei = (*rcep);
+    
+    unsigned char *rcep = (unsigned char*)ptr;
+    unsigned int   rcei = (*rcep);
 
     if (rcei==PT_CHAIN_END) {
         *name = -1;
@@ -312,9 +312,10 @@ inline const char *PT_READ_CHAIN_ENTRY(const char* ptr, int mainapos, int *name,
             rcei &= 0x7f; rcep++;
         }
         *name += rcei;
-        rcei = (*rcep);
-        if (rcei&0x80) isapos = 1;
-        else isapos = 0;
+        rcei   = (*rcep);
+
+        bool isapos = rcei&0x80;
+
         if (rcei&0x40) {
             PT_READ_INT(rcep, rcei); rcep+=4; rcei &= 0x3fffffff;
         }
@@ -535,15 +536,39 @@ inline int PT_read_apos(PTM2 *ptmain, POS_TREE *node)
     return i;
 }
 
-template<typename T>
-int PT_read_chain(PTM2 *ptmain, POS_TREE *node, T func)
-{
-    int pos, apos, rpos;
-    int cname;
-    int error;
-    const char *data;
+struct DataLoc {
+    int name;
+    int apos;
+    int rpos;
 
-    data = (&node->data) + ptmain->mode;
+    void init(const char ** data, int pos) {
+        *data = PT_READ_CHAIN_ENTRY(*data, pos, &name, &apos, &rpos);
+    }
+    void init(PTM2 *ptmain, POS_TREE *pt) {
+        pt_assert(PT_read_type(pt) == PT_NT_LEAF);
+
+        name = PT_read_name(ptmain, pt);
+        apos = PT_read_apos(ptmain, pt);
+        rpos = PT_read_rpos(ptmain, pt);
+    }
+
+    DataLoc(int name_, int apos_, int rpos_) : name(name_), apos(apos_), rpos(rpos_) {}
+    DataLoc(const char ** data, int pos) {
+        name = 0;
+        init(data, pos);
+    }
+    DataLoc(PTM2 *ptmain, POS_TREE *pt) {
+        init(ptmain, pt);
+    }
+};
+
+template<typename T>
+int PT_forwhole_chain(PTM2 *ptmain, POS_TREE *node, T func) {
+    pt_assert(PT_read_type(node) == PT_NT_CHAIN);
+
+    const char *data = (&node->data) + ptmain->mode;
+    int         pos;
+
     if (node->flags&1) {
         PT_READ_INT(data, pos);
         data += 4;
@@ -552,22 +577,20 @@ int PT_read_chain(PTM2 *ptmain, POS_TREE *node, T func)
         PT_READ_SHORT(data, pos);
         data += 2;
     }
-    error = 0;
-    cname = 0;
-    while (cname>=0) {
-        data = PT_READ_CHAIN_ENTRY(data, pos, &cname, &apos, &rpos);
-        if (cname>=0) {
-            error = func(cname, apos, rpos);
-            if (error) return error;
-        }
+
+    int     error = 0;
+    DataLoc location(&data, pos);
+    while (location.name>=0) {
+        error = func(location);
+        if (error) break;
+        location.init(&data, pos);
     }
     return error;
 }
 
 struct PTD_chain_print {
-    int operator()(int name, int apos, int rpos)
-    {
-        printf("          name %6i apos %6i  rpos %i\n", name, apos, rpos);
+    int operator()(const DataLoc& loc) {
+        printf("          name %6i apos %6i  rpos %i\n", loc.name, loc.apos, loc.rpos);
         return 0;
     }
 };
