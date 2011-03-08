@@ -327,20 +327,10 @@ void TEST_SLOW_PT_FamilyFinder() {
             TEST_ASSERT_NO_ERROR(ff.searchFamily(sequence, FF_FORWARD, 4));
 
             if (fastMode == 0) { // full-search
-                if (relativeMatches == 0) {
-                    TEST_ASSERT_EQUAL(ff.results2string(), "LgtLytic/142/98.61111,HllHalod/60/41.95804,AclPleur/54/37.50000,PbrPropi/51/35.91549");
-                }
-                else {
-                    TEST_ASSERT_EQUAL(ff.results2string(), "LgtLytic/142/98.61111,HllHalod/60/41.95804,AclPleur/54/37.50000,PbrPropi/51/35.91549");
-                }
+                TEST_ASSERT_EQUAL(ff.results2string(), "LgtLytic/142/98.61111,HllHalod/62/43.35664,AclPleur/59/40.97222,PtVVVulg/52/36.11111");
             }
             else { // fast-search 
-                if (relativeMatches == 0) {
-                    TEST_ASSERT_EQUAL(ff.results2string(), "LgtLytic/40/27.77778,HllHalod/18/12.58741,AclPleur/17/11.80556,PtVVVulg/15/10.41667");
-                }
-                else {
-                    TEST_ASSERT_EQUAL(ff.results2string(), "LgtLytic/40/27.77778,HllHalod/18/12.58741,AclPleur/17/11.80556,PtVVVulg/15/10.41667");
-                }
+                TEST_ASSERT_EQUAL(ff.results2string(), "LgtLytic/40/27.77778,HllHalod/18/12.58741,AclPleur/17/11.80556,VbhChole/15/10.41667");
             }
         }
     }

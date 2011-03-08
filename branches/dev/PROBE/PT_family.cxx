@@ -37,8 +37,7 @@ class ProbeTraversal {
     bool shall_match() const { return need_match() && !at_end(); }
 
     void match_one_char(char c) {
-        // @@@ cant assert that NOW (first need to fix bug marked below)
-        // pt_assert(shall_match()); // avoid unneeded calls 
+        pt_assert(shall_match()); // avoid unneeded calls 
         
         if (*probe++ != c) accept_mismatches--;
         needed_positions--;
@@ -108,21 +107,14 @@ void ProbeTraversal::mark_matching(POS_TREE *pt) const {
             POS_TREE *pt_son = PT_read_son(psg.ptmain, pt, (PT_BASES)base);
             if (pt_son) {
                 if (!at_end()) {
-                    // @@@ here's another bug:
-                    // when already have enough positions, mismatches have to be ignored
-                    // (happens for probes shorter than tree depth)
-                    // commented code fixes the bug
-
-                    // if (did_match()) {
-                    // mark_all(pt_son);
-                    // }
-                    // else {
+                    if (did_match()) mark_all(pt_son);
+                    else {
                         ProbeTraversal subTail(*this);
                         subTail.match_one_char(base);
                         if (!subTail.too_many_mismatches()) {
                             subTail.mark_matching(pt_son);
                         }
-                    // }
+                    }
                 }
                 else {
                     // probe contains a '.'
