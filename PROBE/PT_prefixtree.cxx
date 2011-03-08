@@ -206,7 +206,7 @@ int PTD(POS_TREE * node) {
             break;
         case PT_NT_CHAIN:
             printf("chain:\n");
-            PT_read_chain(ptmain, node, PTD_chain_print());
+            PT_forwhole_chain(ptmain, node, PTD_chain_print());
             break;
         case PT_NT_SAVED:
             printf("saved:\n");
