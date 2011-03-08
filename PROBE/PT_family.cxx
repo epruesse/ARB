@@ -103,23 +103,22 @@ void ProbeTraversal::mark_matching(POS_TREE *pt) const {
         }
     }
     else { // type_of_node == PT_NT_NODE
+        pt_assert(!did_match()); // may only be asserted in this branch, cause if-branch is misused by mark_all()
+
         for (int base = PT_N; base < PT_B_MAX; base++) {
             POS_TREE *pt_son = PT_read_son(psg.ptmain, pt, (PT_BASES)base);
             if (pt_son) {
                 if (!at_end()) {
-                    if (did_match()) mark_all(pt_son);
-                    else {
-                        ProbeTraversal subTail(*this);
-                        subTail.match_one_char(base);
-                        if (!subTail.too_many_mismatches()) {
+                    ProbeTraversal subTail(*this);
+                    subTail.match_one_char(base);
+                    if (!subTail.too_many_mismatches()) {
+                        if (subTail.did_match()) {
+                            subTail.mark_all(pt_son);
+                        }
+                        else {
                             subTail.mark_matching(pt_son);
                         }
                     }
-                }
-                else {
-                    // probe contains a '.'
-                    // (only true for right end of sequence, other probes have been skipped by probe_is_ok)
-                    if (did_match()) mark_all(pt_son);
                 }
             }
         }
