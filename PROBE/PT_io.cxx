@@ -196,8 +196,10 @@ static char *probe_read_string_append_point(GBDATA *gb_data, int *psize) {
 }
 
 char *probe_read_alignment(int j, int *psize) {
-    char   *buffer = 0;
-    GBDATA *gb_ali = GB_entry(psg.data[j].gbd, psg.alignment_name);
+    char           *buffer     = 0;
+    GBDATA         *gb_species = psg.data[j].gbd;
+    GB_transaction  ta(gb_species);
+    GBDATA         *gb_ali     = GB_entry(gb_species, psg.alignment_name);
 
     if (gb_ali) {
         GBDATA *gb_data = GB_entry(gb_ali, "data");
