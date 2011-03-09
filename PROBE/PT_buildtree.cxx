@@ -10,7 +10,7 @@
 
 #include "probe.h"
 #include <PT_server_prototypes.h>
-#include "probe_tree.hxx"
+#include "probe_tree.h"
 #include "pt_prototypes.h"
 
 #include <unistd.h>

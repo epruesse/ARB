@@ -10,7 +10,7 @@
 // ============================================================= //
 
 #include "probe.h"
-#include "probe_tree.hxx"
+#include "probe_tree.h"
 #include "pt_prototypes.h"
 
 #if defined(DEBUG)

@@ -12,7 +12,7 @@
 #include "probe.h"
 #include <PT_server_prototypes.h>
 #include <struct_man.h>
-#include "probe_tree.hxx"
+#include "probe_tree.h"
 #include <arbdbt.h>
 #include <arb_str.h>
 

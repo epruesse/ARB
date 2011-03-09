@@ -122,7 +122,7 @@ void PT_dump_tree_statistics P_((void));
 void PT_dump_POS_TREE_recursive P_((POS_TREE *pt, const char *prefix));
 void PT_dump_POS_TREE P_((POS_TREE *IF_DEBUG (node)));
 
-/* probe_tree.hxx */
+/* probe_tree.h */
 template <typename T >int PT_forwhole_chain P_((PTM2 *ptmain, POS_TREE *node, T func));
 template <typename T >int PT_withall_tips P_((PTM2 *ptmain, POS_TREE *node, T func));
 

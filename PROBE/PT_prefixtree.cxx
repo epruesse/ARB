@@ -9,7 +9,7 @@
 // =============================================================== //
 
 #include "probe.h"
-#include "probe_tree.hxx"
+#include "probe_tree.h"
 #include "pt_prototypes.h"
 
 #include <sys/types.h>
