@@ -1,3 +1,16 @@
+// ============================================================= //
+//                                                               //
+//   File      : probe_tree.h                                    //
+//   Purpose   :                                                 //
+//                                                               //
+//   Institute of Microbiology (Technical University Munich)     //
+//   http://www.arb-home.de/                                     //
+//                                                               //
+// ============================================================= //
+
+#ifndef PROBE_TREE_H
+#define PROBE_TREE_H
+
 #if defined(DARWIN)
 #include <krb5.h>
 #else
@@ -6,6 +19,9 @@
 
 #ifndef STATIC_ASSERT_H
 #include <static_assert.h>
+#endif
+#ifndef PROBE_H
+#include "probe.h"
 #endif
 
 #define PTM_magic             0xf4
@@ -560,6 +576,13 @@ struct DataLoc {
     DataLoc(PTM2 *ptmain, POS_TREE *pt) {
         init(ptmain, pt);
     }
+
+#if defined(DEBUG)
+    void dump(FILE *fp) const {
+        fprintf(fp, "          apos=%6i  rpos=%6i  name=%6i='%s'\n", apos, rpos, name, psg.data[name].name);
+        fflush(fp);
+    }
+#endif
 };
 
 template<typename T>
@@ -600,9 +623,10 @@ int PT_withall_tips(PTM2 *ptmain, POS_TREE *node, T func) {
     return PT_forwhole_chain(ptmain, node, func);
 }
 
-struct PTD_chain_print {
-    int operator()(const DataLoc& loc) {
-        printf("          name %6i apos %6i  rpos %i\n", loc.name, loc.apos, loc.rpos);
-        return 0;
-    }
-};
+#if defined(DEBUG)
+struct PTD_chain_print { int operator()(const DataLoc& loc) { loc.dump(stdout); return 0; } };
+#endif
+
+#else
+#error probe_tree.h included twice
+#endif // PROBE_TREE_H
