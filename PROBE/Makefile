@@ -10,6 +10,7 @@ CPP_OBJECTS = \
 	PT_match.o \
 	PT_new_design.o \
 	PT_prefixtree.o \
+	PT_debug.o \
 
 C_OBJECTS = # BI_helix.o
 OBJECTS = $(CPP_OBJECTS) $(C_OBJECTS)
