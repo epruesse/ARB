@@ -71,6 +71,28 @@ PT_buildtree.o: $(ARBHOME)/INCLUDE/smartptr.h
 PT_buildtree.o: $(ARBHOME)/INCLUDE/static_assert.h
 PT_buildtree.o: $(ARBHOME)/INCLUDE/test_global.h
 
+PT_debug.o: probe.h
+PT_debug.o: probe_tree.hxx
+PT_debug.o: pt_prototypes.h
+PT_debug.o: $(ARBHOME)/INCLUDE/ad_prot.h
+PT_debug.o: $(ARBHOME)/INCLUDE/aisc_global.h
+PT_debug.o: $(ARBHOME)/INCLUDE/arb_assert.h
+PT_debug.o: $(ARBHOME)/INCLUDE/arb_core.h
+PT_debug.o: $(ARBHOME)/INCLUDE/arb_error.h
+PT_debug.o: $(ARBHOME)/INCLUDE/arb_msg.h
+PT_debug.o: $(ARBHOME)/INCLUDE/arb_string.h
+PT_debug.o: $(ARBHOME)/INCLUDE/arbdb.h
+PT_debug.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+PT_debug.o: $(ARBHOME)/INCLUDE/arbtools.h
+PT_debug.o: $(ARBHOME)/INCLUDE/attributes.h
+PT_debug.o: $(ARBHOME)/INCLUDE/bytestring.h
+PT_debug.o: $(ARBHOME)/INCLUDE/dupstr.h
+PT_debug.o: $(ARBHOME)/INCLUDE/PT_com.h
+PT_debug.o: $(ARBHOME)/INCLUDE/PT_server.h
+PT_debug.o: $(ARBHOME)/INCLUDE/smartptr.h
+PT_debug.o: $(ARBHOME)/INCLUDE/static_assert.h
+PT_debug.o: $(ARBHOME)/INCLUDE/test_global.h
+
 PT_etc.o: probe.h
 PT_etc.o: pt_prototypes.h
 PT_etc.o: $(ARBHOME)/INCLUDE/ad_prot.h
