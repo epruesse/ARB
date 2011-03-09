@@ -389,11 +389,13 @@ STATIC_ATTRIBUTED(__ATTR__USERESULT, ARB_ERROR run_command(const char *exename, 
             if (error) error = GBS_global_string("Gave up (Reason: %s)", error.deliver());
             else {
                 error = enter_stage_3_load_tree(aisc_main, pt_name); // now stage 3
+#if defined(DEBUG)
                 if (!error) {
                     printf("Tree loaded - performing checks..\n");
-                    PT_debug_tree();
+                    PT_dump_tree_statistics();
                     printf("Checks done");
                 }
+#endif
             }
         }
         else {

@@ -162,63 +162,6 @@ int read_names_and_pos(PT_local *locs, POS_TREE *pt) {
     return 0;
 }
 
-#if defined(DEBUG)
-
-inline char PT_BASES_2_char(PT_BASES i) {
-    static char buffer[] = "x";
-
-    buffer[0] = i;
-    PT_base_2_string(buffer, 1);
-
-    return buffer[0];
-}
-
-class PT_dump_leaf {
-    const char *prefix;
-public:
-    PT_dump_leaf(const char *Prefix) : prefix(Prefix) {}
-
-    int operator()(const DataLoc& leaf) {
-        struct probe_input_data& data = psg.data[leaf.name];
-
-        PT_BASES b = (PT_BASES)data.data[leaf.rpos];
-
-        printf("%s[%c] %s apos=%i rpos=%i\n", prefix, PT_BASES_2_char(b), data.name, leaf.apos, leaf.rpos);
-        return 0;
-    }
-};
-
-static void dump_POS_TREE(POS_TREE *pt, const char *prefix = "") {
-    switch (PT_read_type(pt)) {
-        case PT_NT_NODE:
-            for (int i = PT_N; i<PT_B_MAX; i++) {
-                PT_BASES  b   = PT_BASES(i);
-                POS_TREE *son = PT_read_son(psg.ptmain, pt, b);
-                if (son) {
-                    char *subPrefix = GBS_global_string_copy("%s%c", prefix, PT_BASES_2_char(b));
-                    dump_POS_TREE(son, subPrefix);
-                    free(subPrefix);
-                }
-            }
-            break;
-        case PT_NT_LEAF: {
-            PT_dump_leaf dump_leaf(prefix);
-            dump_leaf(DataLoc(psg.ptmain, pt));
-            break;
-        }
-        case PT_NT_CHAIN:
-            PT_forwhole_chain(psg.ptmain, pt, PT_dump_leaf(prefix));
-            break;
-        default:
-            printf("%s [unhandled]\n", prefix);
-            pt_assert(0);
-            break;
-    }
-}
-
-#endif // DEBUG
-
-
 int get_info_about_probe(PT_local *locs, char *probe, POS_TREE *pt, int mismatches, double wmismatches, int N_mismatches, int height) {
     /*! search down the tree to find matching species for the given probe */
 
