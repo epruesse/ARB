@@ -25,7 +25,7 @@ $(MAIN): $(OBJECTS)
 	$(CPP) $(cflags) -c $<  $(CPPINCLUDES) $(POST_COMPILE)
 
 proto:
-	../MAKEBIN/aisc_mkpt -G -E -w pt_prototypes.h $(OBJECTS:.o=.cxx) probe_tree.hxx >pt_prototypes.h.tmp
+	../MAKEBIN/aisc_mkpt -G -E -w pt_prototypes.h $(OBJECTS:.o=.cxx) probe_tree.h >pt_prototypes.h.tmp
 	../SOURCE_TOOLS/mv_if_diff pt_prototypes.h.tmp pt_prototypes.h
 
 clean:
@@ -49,7 +49,7 @@ depend.init:
 # For formatting issues see SOURCE_TOOLS/fix_depends.pl
 
 PT_buildtree.o: probe.h
-PT_buildtree.o: probe_tree.hxx
+PT_buildtree.o: probe_tree.h
 PT_buildtree.o: pt_prototypes.h
 PT_buildtree.o: $(ARBHOME)/INCLUDE/ad_prot.h
 PT_buildtree.o: $(ARBHOME)/INCLUDE/aisc_global.h
@@ -72,7 +72,7 @@ PT_buildtree.o: $(ARBHOME)/INCLUDE/static_assert.h
 PT_buildtree.o: $(ARBHOME)/INCLUDE/test_global.h
 
 PT_debug.o: probe.h
-PT_debug.o: probe_tree.hxx
+PT_debug.o: probe_tree.h
 PT_debug.o: pt_prototypes.h
 PT_debug.o: $(ARBHOME)/INCLUDE/ad_prot.h
 PT_debug.o: $(ARBHOME)/INCLUDE/aisc_global.h
@@ -116,7 +116,7 @@ PT_etc.o: $(ARBHOME)/INCLUDE/struct_man.h
 PT_etc.o: $(ARBHOME)/INCLUDE/test_global.h
 
 PT_family.o: probe.h
-PT_family.o: probe_tree.hxx
+PT_family.o: probe_tree.h
 PT_family.o: pt_prototypes.h
 PT_family.o: $(ARBHOME)/INCLUDE/ad_prot.h
 PT_family.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
@@ -142,7 +142,7 @@ PT_family.o: $(ARBHOME)/INCLUDE/struct_man.h
 PT_family.o: $(ARBHOME)/INCLUDE/test_global.h
 
 PT_findEx.o: probe.h
-PT_findEx.o: probe_tree.hxx
+PT_findEx.o: probe_tree.h
 PT_findEx.o: pt_prototypes.h
 PT_findEx.o: $(ARBHOME)/INCLUDE/ad_prot.h
 PT_findEx.o: $(ARBHOME)/INCLUDE/aisc_global.h
@@ -221,7 +221,7 @@ PT_main.o: $(ARBHOME)/INCLUDE/test_global.h
 PT_main.o: $(ARBHOME)/INCLUDE/ut_valgrinded.h
 
 PT_match.o: probe.h
-PT_match.o: probe_tree.hxx
+PT_match.o: probe_tree.h
 PT_match.o: pt_prototypes.h
 PT_match.o: $(ARBHOME)/INCLUDE/ad_prot.h
 PT_match.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
@@ -247,7 +247,7 @@ PT_match.o: $(ARBHOME)/INCLUDE/struct_man.h
 PT_match.o: $(ARBHOME)/INCLUDE/test_global.h
 
 PT_new_design.o: probe.h
-PT_new_design.o: probe_tree.hxx
+PT_new_design.o: probe_tree.h
 PT_new_design.o: pt_prototypes.h
 PT_new_design.o: $(ARBHOME)/INCLUDE/ad_prot.h
 PT_new_design.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
@@ -274,7 +274,7 @@ PT_new_design.o: $(ARBHOME)/INCLUDE/struct_man.h
 PT_new_design.o: $(ARBHOME)/INCLUDE/test_global.h
 
 PT_prefixtree.o: probe.h
-PT_prefixtree.o: probe_tree.hxx
+PT_prefixtree.o: probe_tree.h
 PT_prefixtree.o: pt_prototypes.h
 PT_prefixtree.o: $(ARBHOME)/INCLUDE/ad_prot.h
 PT_prefixtree.o: $(ARBHOME)/INCLUDE/aisc_global.h

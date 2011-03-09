@@ -11,7 +11,7 @@
 #include "probe.h"
 #include <struct_man.h>
 #include <PT_server_prototypes.h>
-#include "probe_tree.hxx"
+#include "probe_tree.h"
 #include "pt_prototypes.h"
 
 #include <arbdbt.h>
