@@ -57,10 +57,21 @@ protected:
 #warning change real_hits back to int when aisc_get() has been made failsafe
 #endif // DEVEL_RALF
     long real_hits;
+    long start_pos;
+    long end_pos;
 
 public:
     FamilyFinder(bool rel_matches_);
     virtual ~FamilyFinder();
+
+    void restrict_2_region(int start, int end) {
+        // Restrict oligo search to region [ start end ].
+        // Only oligos which are completely inside that region are used for calculating relationship.
+        // Has to be called b4 calling searchFamily.
+        start_pos = start;
+        end_pos   = end;
+    }
+    void unrestrict() { restrict_2_region(-1, -1); }
 
     virtual GB_ERROR searchFamily(const char *sequence, FF_complement compl_mode, int max_results) = 0;
 
