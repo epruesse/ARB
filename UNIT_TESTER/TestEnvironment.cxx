@@ -38,34 +38,21 @@ static const char *mode_command[] = { NULL, "setup", "clean" }; // same order as
 typedef GB_ERROR Error;
 
 static const char *upcase(const char *str) {
-    static  SmartMallocPtr(char) dup = strdup(str);
-    char   *result                   = &*dup;
-    ARB_strupper(result);
-    return result; // leak
+    char *upstr = strdup(str);
+    ARB_strupper(upstr);
+    RETURN_LOCAL_ALLOC(upstr);
 }
 
 #define WARN_NOT_IMPLEMENTED(fun,mode) TEST_WARNING2("%s(%s) does nothing", #fun, upcase(mode_command[mode]));
 
 static const char *unitTesterDir() {
-    static SmartMallocPtr(char) unit_tester_dir;
-    if (unit_tester_dir.isNull()) {
-        unit_tester_dir = strdup(GB_concat_full_path(GB_getenvARBHOME(), "UNIT_TESTER"));
-    }
-    return &*unit_tester_dir;
+    RETURN_ONETIME_ALLOC(strdup(GB_concat_full_path(GB_getenvARBHOME(), "UNIT_TESTER")));
 }
 static const char *flagDir() {
-    static SmartMallocPtr(char) flag_dir;
-    if (flag_dir.isNull()) {
-        flag_dir = strdup(GB_concat_full_path(unitTesterDir(), FLAGS_DIR));
-    }
-    return &*flag_dir;
+    RETURN_ONETIME_ALLOC(strdup(GB_concat_full_path(unitTesterDir(), FLAGS_DIR)));
 }
 static const char *runDir() {
-    static SmartMallocPtr(char) run_dir;
-    if (run_dir.isNull()) {
-        run_dir = strdup(GB_concat_full_path(unitTesterDir(), "run"));
-    }
-    return &*run_dir;
+    RETURN_ONETIME_ALLOC(strdup(GB_concat_full_path(unitTesterDir(), "run")));
 }
 
 // -----------------------

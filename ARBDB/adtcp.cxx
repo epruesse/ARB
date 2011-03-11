@@ -305,10 +305,7 @@ const char *GBS_nameserver_tag(const char *add_field) {
     if (add_field && add_field[0]) {
         char *tag = GBS_global_string_copy("ARB_NAME_SERVER_%s", add_field);
         ARB_strupper(tag);
-
-        static SmartMallocPtr(char) stag;
-        stag = tag;
-        return &*stag;
+        RETURN_LOCAL_ALLOC(tag);
     }
     return "ARB_NAME_SERVER";
 }
@@ -433,11 +430,7 @@ const char * const *GBS_get_arb_tcp_entries(const char *matching) {
 //      pt server related
 
 const char *GBS_ptserver_logname() {
-    static SmartMallocPtr(char) serverlog;
-    if (serverlog.isNull())
-        serverlog = nulldup(GB_path_in_ARBLIB("pts/ptserver.log"));
-    // Caution! 'serverlog' is returned as 'const char *'.
-    return &*serverlog;
+    RETURN_ONETIME_ALLOC(nulldup(GB_path_in_ARBLIB("pts/ptserver.log")));
 }
 
 void GBS_add_ptserver_logentry(const char *entry) {
