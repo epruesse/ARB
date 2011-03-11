@@ -1505,6 +1505,7 @@ void ED4_base_position::calc4base(const ED4_base *base)
     }
     else {
         seq = base->resolve_pointer_to_string_copy(&len);
+        e4_assert((int)strlen(seq) == len);
     }
 
     e4_assert(seq);
@@ -1536,13 +1537,15 @@ void ED4_base_position::calc4base(const ED4_base *base)
         delete[] pos;
     }
 
+    abs_len = len;
+
     free(seq);
 }
 int ED4_base_position::get_base_position(const ED4_base *base, int sequence_position)
 {
     if (!base) return 0;
-    if (base!=calced4base) calc4base(base);
-
+    set_base(base);
+    
     if (count==0) return 0;
     if (sequence_position>seq_pos[count-1]) return count;
 
@@ -1569,7 +1572,8 @@ int ED4_base_position::get_base_position(const ED4_base *base, int sequence_posi
 int ED4_base_position::get_sequence_position(const ED4_base *base, int base_pos)
 {
     if (!base) return 0;
-    if (base!=calced4base) calc4base(base);
+    set_base(base);
+    if (base_pos<0) return 0; // previously undefined behavior
     return base_pos<count ? seq_pos[base_pos] : seq_pos[count-1]+1;
 }
 
@@ -1698,3 +1702,163 @@ void ED4_change_cursor(AW_window * /* aww */, AW_CL /* cd1 */, AW_CL /* cd2 */) 
 
     cursor->changeType((ED4_CursorType)((typ+1)%ED4_CURSOR_TYPES));
 }
+
+// --------------------------------------------------------------------------------
+
+#ifdef UNIT_TESTS
+#include <test_unit.h>
+
+class fake_man_4test : public ED4_species_manager {
+public:
+    fake_man_4test()
+        : ED4_species_manager("fake", 0, 0, 0, 0, NULL, false)
+    {
+    }
+};
+class fake_base_4test : public ED4_base {
+    const char *seq;
+    int         size;
+public:
+    fake_base_4test(fake_man_4test *fake_man, const char *seq_, int size_)
+        : ED4_base("fake", 0, 0, 0, 0, fake_man),
+          seq(seq_),
+          size(size_)
+    {}
+
+    int get_length() const { return size; }
+    char *resolve_pointer_to_string_copy(int *len) const { *len = size; return strdup(seq); }
+
+    void dump(size_t) const {}
+    ED4_returncode Show(int, int) { return ED4_R_OK; }
+    ED4_returncode Resize() { return ED4_R_OK; }
+    short int calc_bounding_box() { return -1; }
+    ED4_returncode set_refresh(int) { return ED4_R_OK; }
+    ED4_returncode resize_requested_by_child() { return ED4_R_OK; }
+    ED4_returncode resize_requested_by_parent() { return ED4_R_OK; }
+    ED4_returncode delete_requested_by_parent() { return ED4_R_OK; }
+    ED4_returncode delete_requested_children() { return ED4_R_OK; }
+    ED4_returncode calc_size_requested_by_parent() { return ED4_R_OK; }
+    ED4_returncode move_requested_by_parent(ED4_move_info*) { return ED4_R_OK; }
+    ED4_returncode move_requested_by_child(ED4_move_info*) { return ED4_R_OK; }
+    ED4_returncode handle_move(ED4_move_info*) { return ED4_R_OK; }
+    ED4_base* search_ID(const char*) { return NULL; }
+    ED4_base* get_competent_child(AW_pos, AW_pos, ED4_properties) { return NULL; }
+    ED4_base* get_competent_clicked_child(AW_pos, AW_pos, ED4_properties) { return NULL; }
+};
+
+struct test_absrel {
+    bool torel;
+    test_absrel(bool r) : torel(r) {}
+    virtual ~test_absrel() {}
+
+    virtual int a2r(int a) const = 0;
+    virtual int r2a(int r) const = 0;
+    
+    virtual int abs_size() const = 0;
+    virtual int rel_size() const = 0;
+
+    int gen(int i) const { return torel ? a2r(i) : r2a(i); }
+    int get_size() const { return torel ? abs_size() : rel_size(); }
+
+    char *genResult() const {
+        const int  BUFFERSIZE = 1024;
+        char       buffer[BUFFERSIZE];
+        char      *cursor     = buffer;
+        int        size       = get_size();
+
+        for (int i = -1; i<size+2; ++i) {
+            int o = gen(i);
+
+            if (i<0 || i >= size) {
+                const char *br = GBS_global_string("[%i]", o);
+                cursor += sprintf(cursor, "%5s", br);
+            }
+            else {
+                cursor += sprintf(cursor, "%3i", o);
+            }
+        }
+        TEST_ASSERT((cursor-buffer)<BUFFERSIZE);
+        return strdup(buffer);
+    }
+};
+
+struct test_ecoli : public test_absrel {
+    BI_ecoli_ref& eref;
+    test_ecoli(BI_ecoli_ref& b, bool to_rel) : test_absrel(to_rel), eref(b) {}
+    int a2r(int a) const { return eref.abs_2_rel(a); }
+    int r2a(int r) const { return eref.rel_2_abs(r); }
+    int abs_size() const { return eref.abs_count(); }
+    int rel_size() const { return eref.base_count(); }
+};
+
+struct test_basepos : public test_absrel {
+    fake_base_4test&   base;
+    ED4_base_position& bpos;
+    test_basepos(fake_base_4test& base_, ED4_base_position& bpos_, bool to_rel)
+        : test_absrel(to_rel), base(base_), bpos(bpos_) {}
+    int a2r(int a) const { return bpos.get_base_position(&base, a); }
+    int r2a(int r) const { return bpos.get_sequence_position(&base, r); }
+    int abs_size() const { return bpos.get_abs_len(&base); }
+    int rel_size() const { return bpos.get_base_count(&base); }
+};
+
+#define TEST_ABSREL_EQUALS(tester,expected) do {        \
+        char *res = tester.genResult();                 \
+        TEST_ASSERT_EQUAL(res,expected);                \
+        free(res);                                      \
+    } while(0)
+
+#define TEST_ECOLIREF_EQUALS(data,alen,a2r,r2a) do {            \
+        BI_ecoli_ref eref;                                      \
+        eref.init(data,alen);                                   \
+        TEST_ABSREL_EQUALS(test_ecoli(eref, true), a2r);        \
+        TEST_ABSREL_EQUALS(test_ecoli(eref, false), r2a);       \
+    } while(0)
+
+
+#define TEST_BASE_POS_EQUALS(data,a2r,r2a) do {                         \
+        fake_man_4test man;                                             \
+        fake_base_4test base(&man, data, strlen(data));                 \
+        {                                                               \
+            ED4_base_position bpos;                                     \
+            TEST_ABSREL_EQUALS(test_basepos(base, bpos, true), a2r);    \
+            TEST_ABSREL_EQUALS(test_basepos(base, bpos, false), r2a);   \
+        }                                                               \
+    } while(0)
+
+void TEST_BI_ecoli_ref() {
+    TEST_ECOLIREF_EQUALS("-.AC-G-T-.", 12,
+                         "  [4]  0  0  0  1  2  2  3  3  4  4  4  4  [4]  [4]", // abs -> rel
+                         "  [7]  2  3  5  7  [7]  [7]");                        // rel -> abs
+
+    TEST_ECOLIREF_EQUALS("A",   1, "  [0]  0  [0]  [0]",       "  [0]  0  [0]  [0]");
+    TEST_ECOLIREF_EQUALS("A",   2, "  [1]  0  1  [1]  [1]",    "  [0]  0  [0]  [0]");
+
+    TEST_ECOLIREF_EQUALS("A-",  2, "  [1]  0  1  [1]  [1]",    "  [0]  0  [0]  [0]");
+    TEST_ECOLIREF_EQUALS("-A",  2, "  [0]  0  0  [0]  [0]",    "  [1]  1  [1]  [1]");
+
+    TEST_ECOLIREF_EQUALS("A--", 3, "  [1]  0  1  1  [1]  [1]", "  [0]  0  [0]  [0]");
+    TEST_ECOLIREF_EQUALS("-A-", 3, "  [1]  0  0  1  [1]  [1]", "  [1]  1  [1]  [1]");
+    TEST_ECOLIREF_EQUALS("--A", 3, "  [0]  0  0  0  [0]  [0]", "  [2]  2  [2]  [2]");
+}
+
+void TEST_ED4_base_position() {
+    ED4_ROOT = NULL;
+    ED4_init_is_align_character(".-");
+
+    TEST_BASE_POS_EQUALS("-.AC-G-T-.",
+                         "  [0]  0  0  0  1  2  2  3  3  4  4  [4]  [4]",        // abs -> rel
+                         "  [0]  2  3  5  7  [8]  [8]");                         // rel -> abs
+
+    TEST_BASE_POS_EQUALS("A",   "  [0]  0  [1]  [1]",       "  [0]  0  [1]  [1]");
+
+    TEST_BASE_POS_EQUALS("A-",  "  [0]  0  1  [1]  [1]",    "  [0]  0  [1]  [1]");
+    TEST_BASE_POS_EQUALS("-A",  "  [0]  0  0  [1]  [1]",    "  [0]  1  [2]  [2]");
+    
+    TEST_BASE_POS_EQUALS("A--", "  [0]  0  1  1  [1]  [1]", "  [0]  0  [1]  [1]");
+    TEST_BASE_POS_EQUALS("-A-", "  [0]  0  0  1  [1]  [1]", "  [0]  1  [2]  [2]");
+    TEST_BASE_POS_EQUALS("--A", "  [0]  0  0  0  [1]  [1]", "  [0]  2  [3]  [3]");
+}
+
+#endif // UNIT_TESTS
+

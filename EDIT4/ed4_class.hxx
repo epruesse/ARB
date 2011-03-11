@@ -253,10 +253,13 @@ class ED4_base_position {
     const ED4_base *calced4base;
     int      *seq_pos;
     int       count;
+    int       abs_len;
 
     void calc4base(const ED4_base *base);
 
     ED4_base_position(const ED4_base_position&); // copy-constructor not allowed
+
+    void set_base(const ED4_base *base) { if (calced4base != base) calc4base(base); }
 
 public:
 
@@ -268,6 +271,8 @@ public:
     int get_base_position(const ED4_base *base, int sequence_position);
     int get_sequence_position(const ED4_base *base, int base_position);
 
+    int get_base_count(const ED4_base *base) { set_base(base); return count; }
+    int get_abs_len(const ED4_base *base) { set_base(base); return abs_len; }
 };
 
 class ED4_CursorShape;
