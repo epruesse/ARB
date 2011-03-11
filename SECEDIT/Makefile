@@ -106,6 +106,7 @@ SEC_db.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 SEC_db.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 SEC_db.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 SEC_db.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
+SEC_db.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
 SEC_db.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 SEC_db.o: $(ARBHOME)/INCLUDE/cb.h
 SEC_db.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -149,6 +150,7 @@ SEC_graphic.o: $(ARBHOME)/INCLUDE/aw_preset.hxx
 SEC_graphic.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 SEC_graphic.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 SEC_graphic.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
+SEC_graphic.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
 SEC_graphic.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 SEC_graphic.o: $(ARBHOME)/INCLUDE/cb.h
 SEC_graphic.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -165,6 +167,7 @@ SEC_helix.o: SEC_helix.hxx
 SEC_helix.o: SEC_root.hxx
 SEC_helix.o: secedit_extern.hxx
 SEC_helix.o: $(ARBHOME)/INCLUDE/ad_prot.h
+SEC_helix.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 SEC_helix.o: $(ARBHOME)/INCLUDE/arb_assert.h
 SEC_helix.o: $(ARBHOME)/INCLUDE/arb_core.h
 SEC_helix.o: $(ARBHOME)/INCLUDE/arb_error.h
@@ -172,12 +175,14 @@ SEC_helix.o: $(ARBHOME)/INCLUDE/arb_msg.h
 SEC_helix.o: $(ARBHOME)/INCLUDE/arb_string.h
 SEC_helix.o: $(ARBHOME)/INCLUDE/arbdb.h
 SEC_helix.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+SEC_helix.o: $(ARBHOME)/INCLUDE/arbdbt.h
 SEC_helix.o: $(ARBHOME)/INCLUDE/arbtools.h
 SEC_helix.o: $(ARBHOME)/INCLUDE/attributes.h
 SEC_helix.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 SEC_helix.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 SEC_helix.o: $(ARBHOME)/INCLUDE/aw_font_group.hxx
 SEC_helix.o: $(ARBHOME)/INCLUDE/aw_position.hxx
+SEC_helix.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
 SEC_helix.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 SEC_helix.o: $(ARBHOME)/INCLUDE/dupstr.h
 SEC_helix.o: $(ARBHOME)/INCLUDE/ed4_plugins.hxx
@@ -192,6 +197,7 @@ SEC_io.o: SEC_iter.hxx
 SEC_io.o: SEC_root.hxx
 SEC_io.o: secedit_extern.hxx
 SEC_io.o: $(ARBHOME)/INCLUDE/ad_prot.h
+SEC_io.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 SEC_io.o: $(ARBHOME)/INCLUDE/arb_assert.h
 SEC_io.o: $(ARBHOME)/INCLUDE/arb_core.h
 SEC_io.o: $(ARBHOME)/INCLUDE/arb_error.h
@@ -199,12 +205,14 @@ SEC_io.o: $(ARBHOME)/INCLUDE/arb_msg.h
 SEC_io.o: $(ARBHOME)/INCLUDE/arb_string.h
 SEC_io.o: $(ARBHOME)/INCLUDE/arbdb.h
 SEC_io.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+SEC_io.o: $(ARBHOME)/INCLUDE/arbdbt.h
 SEC_io.o: $(ARBHOME)/INCLUDE/arbtools.h
 SEC_io.o: $(ARBHOME)/INCLUDE/attributes.h
 SEC_io.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 SEC_io.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 SEC_io.o: $(ARBHOME)/INCLUDE/aw_font_group.hxx
 SEC_io.o: $(ARBHOME)/INCLUDE/aw_position.hxx
+SEC_io.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
 SEC_io.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 SEC_io.o: $(ARBHOME)/INCLUDE/dupstr.h
 SEC_io.o: $(ARBHOME)/INCLUDE/ed4_plugins.hxx
@@ -219,6 +227,7 @@ SEC_layout.o: SEC_iter.hxx
 SEC_layout.o: SEC_root.hxx
 SEC_layout.o: secedit_extern.hxx
 SEC_layout.o: $(ARBHOME)/INCLUDE/ad_prot.h
+SEC_layout.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 SEC_layout.o: $(ARBHOME)/INCLUDE/arb_assert.h
 SEC_layout.o: $(ARBHOME)/INCLUDE/arb_core.h
 SEC_layout.o: $(ARBHOME)/INCLUDE/arb_error.h
@@ -226,12 +235,14 @@ SEC_layout.o: $(ARBHOME)/INCLUDE/arb_msg.h
 SEC_layout.o: $(ARBHOME)/INCLUDE/arb_string.h
 SEC_layout.o: $(ARBHOME)/INCLUDE/arbdb.h
 SEC_layout.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+SEC_layout.o: $(ARBHOME)/INCLUDE/arbdbt.h
 SEC_layout.o: $(ARBHOME)/INCLUDE/arbtools.h
 SEC_layout.o: $(ARBHOME)/INCLUDE/attributes.h
 SEC_layout.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 SEC_layout.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 SEC_layout.o: $(ARBHOME)/INCLUDE/aw_font_group.hxx
 SEC_layout.o: $(ARBHOME)/INCLUDE/aw_position.hxx
+SEC_layout.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
 SEC_layout.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 SEC_layout.o: $(ARBHOME)/INCLUDE/dupstr.h
 SEC_layout.o: $(ARBHOME)/INCLUDE/ed4_plugins.hxx
@@ -274,6 +285,7 @@ SEC_main.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/awt.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
+SEC_main.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 SEC_main.o: $(ARBHOME)/INCLUDE/cb.h
 SEC_main.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -294,6 +306,7 @@ SEC_paint.o: SEC_root.hxx
 SEC_paint.o: SEC_toggle.hxx
 SEC_paint.o: secedit_extern.hxx
 SEC_paint.o: $(ARBHOME)/INCLUDE/ad_prot.h
+SEC_paint.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 SEC_paint.o: $(ARBHOME)/INCLUDE/arb_assert.h
 SEC_paint.o: $(ARBHOME)/INCLUDE/arb_core.h
 SEC_paint.o: $(ARBHOME)/INCLUDE/arb_error.h
@@ -301,6 +314,7 @@ SEC_paint.o: $(ARBHOME)/INCLUDE/arb_msg.h
 SEC_paint.o: $(ARBHOME)/INCLUDE/arb_string.h
 SEC_paint.o: $(ARBHOME)/INCLUDE/arbdb.h
 SEC_paint.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+SEC_paint.o: $(ARBHOME)/INCLUDE/arbdbt.h
 SEC_paint.o: $(ARBHOME)/INCLUDE/arbtools.h
 SEC_paint.o: $(ARBHOME)/INCLUDE/attributes.h
 SEC_paint.o: $(ARBHOME)/INCLUDE/aw_base.hxx
@@ -312,6 +326,7 @@ SEC_paint.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 SEC_paint.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 SEC_paint.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 SEC_paint.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
+SEC_paint.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
 SEC_paint.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 SEC_paint.o: $(ARBHOME)/INCLUDE/dupstr.h
 SEC_paint.o: $(ARBHOME)/INCLUDE/ed4_extern.hxx
@@ -328,6 +343,7 @@ SEC_read.o: SEC_iter.hxx
 SEC_read.o: SEC_root.hxx
 SEC_read.o: secedit_extern.hxx
 SEC_read.o: $(ARBHOME)/INCLUDE/ad_prot.h
+SEC_read.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 SEC_read.o: $(ARBHOME)/INCLUDE/arb_assert.h
 SEC_read.o: $(ARBHOME)/INCLUDE/arb_core.h
 SEC_read.o: $(ARBHOME)/INCLUDE/arb_error.h
@@ -335,12 +351,14 @@ SEC_read.o: $(ARBHOME)/INCLUDE/arb_msg.h
 SEC_read.o: $(ARBHOME)/INCLUDE/arb_string.h
 SEC_read.o: $(ARBHOME)/INCLUDE/arbdb.h
 SEC_read.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+SEC_read.o: $(ARBHOME)/INCLUDE/arbdbt.h
 SEC_read.o: $(ARBHOME)/INCLUDE/arbtools.h
 SEC_read.o: $(ARBHOME)/INCLUDE/attributes.h
 SEC_read.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 SEC_read.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 SEC_read.o: $(ARBHOME)/INCLUDE/aw_font_group.hxx
 SEC_read.o: $(ARBHOME)/INCLUDE/aw_position.hxx
+SEC_read.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
 SEC_read.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 SEC_read.o: $(ARBHOME)/INCLUDE/dupstr.h
 SEC_read.o: $(ARBHOME)/INCLUDE/ed4_plugins.hxx
@@ -356,6 +374,7 @@ SEC_split.o: SEC_iter.hxx
 SEC_split.o: SEC_root.hxx
 SEC_split.o: secedit_extern.hxx
 SEC_split.o: $(ARBHOME)/INCLUDE/ad_prot.h
+SEC_split.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 SEC_split.o: $(ARBHOME)/INCLUDE/arb_assert.h
 SEC_split.o: $(ARBHOME)/INCLUDE/arb_core.h
 SEC_split.o: $(ARBHOME)/INCLUDE/arb_error.h
@@ -363,12 +382,14 @@ SEC_split.o: $(ARBHOME)/INCLUDE/arb_msg.h
 SEC_split.o: $(ARBHOME)/INCLUDE/arb_string.h
 SEC_split.o: $(ARBHOME)/INCLUDE/arbdb.h
 SEC_split.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+SEC_split.o: $(ARBHOME)/INCLUDE/arbdbt.h
 SEC_split.o: $(ARBHOME)/INCLUDE/arbtools.h
 SEC_split.o: $(ARBHOME)/INCLUDE/attributes.h
 SEC_split.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 SEC_split.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 SEC_split.o: $(ARBHOME)/INCLUDE/aw_font_group.hxx
 SEC_split.o: $(ARBHOME)/INCLUDE/aw_position.hxx
+SEC_split.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
 SEC_split.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 SEC_split.o: $(ARBHOME)/INCLUDE/dupstr.h
 SEC_split.o: $(ARBHOME)/INCLUDE/ed4_plugins.hxx
@@ -383,6 +404,7 @@ SEC_structure.o: SEC_iter.hxx
 SEC_structure.o: SEC_root.hxx
 SEC_structure.o: secedit_extern.hxx
 SEC_structure.o: $(ARBHOME)/INCLUDE/ad_prot.h
+SEC_structure.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 SEC_structure.o: $(ARBHOME)/INCLUDE/arb_assert.h
 SEC_structure.o: $(ARBHOME)/INCLUDE/arb_core.h
 SEC_structure.o: $(ARBHOME)/INCLUDE/arb_error.h
@@ -390,12 +412,14 @@ SEC_structure.o: $(ARBHOME)/INCLUDE/arb_msg.h
 SEC_structure.o: $(ARBHOME)/INCLUDE/arb_string.h
 SEC_structure.o: $(ARBHOME)/INCLUDE/arbdb.h
 SEC_structure.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+SEC_structure.o: $(ARBHOME)/INCLUDE/arbdbt.h
 SEC_structure.o: $(ARBHOME)/INCLUDE/arbtools.h
 SEC_structure.o: $(ARBHOME)/INCLUDE/attributes.h
 SEC_structure.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 SEC_structure.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 SEC_structure.o: $(ARBHOME)/INCLUDE/aw_font_group.hxx
 SEC_structure.o: $(ARBHOME)/INCLUDE/aw_position.hxx
+SEC_structure.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
 SEC_structure.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 SEC_structure.o: $(ARBHOME)/INCLUDE/dupstr.h
 SEC_structure.o: $(ARBHOME)/INCLUDE/ed4_plugins.hxx

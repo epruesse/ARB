@@ -4,6 +4,7 @@
 #include <arbdbt.h>
 #include <aw_awars.hxx>
 #include <AW_helix.hxx>
+#include <BI_basepos.hxx>
 #include <aw_msg.hxx>
 #include <arb_progress.h>
 #include <aw_root.hxx>
@@ -15,6 +16,7 @@
 #include "ed4_tools.hxx"
 #include "ed4_awars.hxx"
 #include "ed4_ProteinViewer.hxx"
+
 
 /* --------------------------------------------------------------------------------
    CursorShape

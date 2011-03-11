@@ -24,8 +24,6 @@
 #include <aw_msg.hxx>
 #include <aw_root.hxx>
 
-#include <arbdbt.h>
-
 #ifndef sec_assert // happens in NDEBUG mode
 #define sec_assert(cond) arb_assert(cond)
 #endif

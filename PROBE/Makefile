@@ -183,7 +183,7 @@ PT_io.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 PT_io.o: $(ARBHOME)/INCLUDE/arbdbt.h
 PT_io.o: $(ARBHOME)/INCLUDE/arbtools.h
 PT_io.o: $(ARBHOME)/INCLUDE/attributes.h
-PT_io.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
+PT_io.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
 PT_io.o: $(ARBHOME)/INCLUDE/bytestring.h
 PT_io.o: $(ARBHOME)/INCLUDE/dupstr.h
 PT_io.o: $(ARBHOME)/INCLUDE/PT_com.h

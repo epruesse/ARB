@@ -19,6 +19,7 @@
 #include <ad_config.h>
 #include <st_window.hxx>
 #include <AW_helix.hxx>
+#include <BI_basepos.hxx>
 #include <AW_rename.hxx>
 #include <awt.hxx>
 #include <awt_item_sel_list.hxx>

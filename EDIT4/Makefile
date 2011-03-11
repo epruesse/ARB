@@ -161,11 +161,13 @@ ED4_cursor.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 ED4_cursor.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 ED4_cursor.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 ED4_cursor.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+ED4_cursor.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
 ED4_cursor.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 ED4_cursor.o: $(ARBHOME)/INCLUDE/cb.h
 ED4_cursor.o: $(ARBHOME)/INCLUDE/dupstr.h
 ED4_cursor.o: $(ARBHOME)/INCLUDE/smartptr.h
 ED4_cursor.o: $(ARBHOME)/INCLUDE/test_global.h
+ED4_cursor.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 ED4_dots.o: ed4_class.hxx
 ED4_dots.o: ed4_defs.hxx
@@ -517,6 +519,7 @@ ED4_no_class.o: $(ARBHOME)/INCLUDE/awt.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/awt_item_sel_list.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/awt_seq_colors.hxx
+ED4_no_class.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 ED4_no_class.o: $(ARBHOME)/INCLUDE/cb.h
 ED4_no_class.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -671,6 +674,7 @@ ED4_root.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 ED4_root.o: $(ARBHOME)/INCLUDE/awt.hxx
 ED4_root.o: $(ARBHOME)/INCLUDE/awt_map_key.hxx
 ED4_root.o: $(ARBHOME)/INCLUDE/awt_seq_colors.hxx
+ED4_root.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
 ED4_root.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
 ED4_root.o: $(ARBHOME)/INCLUDE/cb.h
 ED4_root.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -767,6 +771,7 @@ ED4_text_terminals.o: ed4_ProteinViewer.hxx
 ED4_text_terminals.o: ed4_search.hxx
 ED4_text_terminals.o: ed4_visualizeSAI.hxx
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/ad_prot.h
+ED4_text_terminals.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/arb_core.h
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/arb_error.h
@@ -775,6 +780,7 @@ ED4_text_terminals.o: $(ARBHOME)/INCLUDE/arb_str.h
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/arb_string.h
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/arbdb.h
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+ED4_text_terminals.o: $(ARBHOME)/INCLUDE/arbdbt.h
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/arbtools.h
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/attributes.h
 ED4_text_terminals.o: $(ARBHOME)/INCLUDE/aw_awar.hxx

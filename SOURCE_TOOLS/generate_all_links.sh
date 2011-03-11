@@ -264,6 +264,7 @@ symlink_file ../SL/GUI_ALIVIEW/ColumnStat.hxx INCLUDE/ColumnStat.hxx &&
 symlink_file ../SL/GUI_ALIVIEW/awt_filter.hxx INCLUDE/awt_filter.hxx &&
 symlink_file ../SL/GUI_ALIVIEW/gui_aliview.hxx INCLUDE/gui_aliview.hxx &&
 symlink_file ../SL/HELIX/BI_helix.hxx INCLUDE/BI_helix.hxx &&
+symlink_file ../SL/HELIX/BI_basepos.hxx INCLUDE/BI_basepos.hxx &&
 symlink_file ../SL/MATRIX/AP_matrix.hxx INCLUDE/AP_matrix.hxx &&
 symlink_file ../SL/NEIGHBOURJOIN/neighbourjoin.hxx INCLUDE/neighbourjoin.hxx &&
 symlink_file ../SL/PRONUC/AP_codon_table.hxx INCLUDE/AP_codon_table.hxx &&
