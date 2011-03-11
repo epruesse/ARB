@@ -11,9 +11,13 @@
 #ifndef BI_BASEPOS_HXX
 #define BI_BASEPOS_HXX
 
-#ifndef ARBDBT_H
-#include <arbdbt.h>
+#ifndef ARBDB_BASE_H
+#include <arbdb_base.h>
 #endif
+#ifndef ARB_ASSERT_H
+#include <arb_assert.h>
+#endif
+
 
 #ifndef bi_assert
 #define bi_assert(bed) arb_assert(bed)

@@ -128,7 +128,6 @@ RNA3D_OpenGLEngine.o: RNA3D_Renderer.hxx
 RNA3D_OpenGLEngine.o: RNA3D_StructureData.hxx
 RNA3D_OpenGLEngine.o: RNA3D_Textures.hxx
 RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/ad_prot.h
-RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/arb_assert.h
 RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/arb_core.h
 RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/arb_error.h
@@ -136,7 +135,6 @@ RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/arb_msg.h
 RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/arb_string.h
 RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/arbdb.h
 RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/arbdb_base.h
-RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/arbdbt.h
 RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/arbtools.h
 RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/attributes.h
 RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
