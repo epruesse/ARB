@@ -136,6 +136,7 @@ public:
     }
 
     size_t base_count() const { return relLen; }
+    size_t abs_count() const { return absLen; }
 };
 
 

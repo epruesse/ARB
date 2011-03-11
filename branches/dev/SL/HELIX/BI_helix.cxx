@@ -433,6 +433,9 @@ const char *BI_ecoli_ref::init(const char *seq, size_t size) {
         rel2abs[relLen] = i;
         if (i<sl && !isGap(seq[i])) ++relLen;
     }
+
+    bi_assert(relLen>0); // otherwise BI_ecoli_ref behaves completely wrong
+
     return 0;
 }
 
@@ -469,3 +472,4 @@ const char *BI_ecoli_ref::init(GBDATA *gb_main) {
 
     return err;
 }
+
