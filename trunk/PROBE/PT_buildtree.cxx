@@ -10,7 +10,7 @@
 
 #include "probe.h"
 #include <PT_server_prototypes.h>
-#include "probe_tree.hxx"
+#include "probe_tree.h"
 #include "pt_prototypes.h"
 
 #include <unistd.h>
@@ -382,106 +382,3 @@ ARB_ERROR enter_stage_3_load_tree(PT_main *, const char *tname) { // __ATTR__USE
     return error;
 }
 
-#define DEBUG_MAX_CHAIN_SIZE 1000
-#define DEBUG_TREE_DEEP PT_POS_TREE_HEIGHT+50
-
-struct PT_debug {
-    int chainsizes[DEBUG_MAX_CHAIN_SIZE][DEBUG_TREE_DEEP];
-    int chainsizes2[DEBUG_MAX_CHAIN_SIZE];
-    int splits[DEBUG_TREE_DEEP][PT_B_MAX];
-    int nodes[DEBUG_TREE_DEEP];
-    int tips[DEBUG_TREE_DEEP];
-    int chains[DEBUG_TREE_DEEP];
-    int chaincount;
-    } *ptds;
-
-struct PT_chain_debug {
-  int operator() (int name, int apos, int rpos)
-    {
-    psg.height++;
-    name = name;
-    apos = apos;
-    rpos = rpos;
-    return 0;
-}
-};
-void PT_analyse_tree(POS_TREE *pt, int height)
-    {
-    PT_NODE_TYPE type;
-    POS_TREE *pt_help;
-    int i;
-    int basecnt;
-    type = PT_read_type(pt);
-    switch (type) {
-        case PT_NT_NODE:
-            ptds->nodes[height]++;
-            basecnt = 0;
-            for (i=PT_QU; i<PT_B_MAX; i++) {
-                if ((pt_help = PT_read_son(psg.ptmain, pt, (PT_BASES)i)))
-                {
-                    basecnt++;
-                    PT_analyse_tree(pt_help, height+1);
-                };
-            }
-            ptds->splits[height][basecnt]++;
-            break;
-        case PT_NT_LEAF:
-            ptds->tips[height]++;
-            break;
-        default:
-            ptds->chains[height]++;
-            psg.height = 0;
-            PT_read_chain(psg.ptmain, pt, PT_chain_debug());
-            if (psg.height >= DEBUG_MAX_CHAIN_SIZE) psg.height = DEBUG_MAX_CHAIN_SIZE;
-            ptds->chainsizes[psg.height][height]++;
-            ptds->chainsizes2[psg.height]++;
-            ptds->chaincount++;
-            if (ptds->chaincount<20) {
-                printf("\n\n\n\n");
-                PT_read_chain(psg.ptmain, pt, PTD_chain_print());
-            }
-            break;
-    };
-}
-
-void PT_debug_tree()        // show various debug information about the tree
-    {
-    ptds = (PT_debug *)calloc(sizeof(PT_debug), 1);
-    PT_analyse_tree(psg.pt, 0);
-    int i, j, k;
-    int sum = 0;            // sum of chains
-    for (i=0; i<DEBUG_TREE_DEEP; i++) {
-        k = ptds->nodes[i];
-        if (k) {
-            sum += k;
-            printf("nodes at deep %i: %i        sum %i\t\t", i, k, sum);
-            for (j=0; j<PT_B_MAX; j++) {
-                k =     ptds->splits[i][j];
-                printf("%i:%i\t", j, k);
-            }
-            printf("\n");
-        }
-    }
-    sum = 0;
-    for (i=0; i<DEBUG_TREE_DEEP; i++) {
-        k = ptds->tips[i];
-        sum += k;
-        if (k)  printf("tips at deep %i: %i     sum %i\n", i, k, sum);
-    }
-    sum = 0;
-    for (i=0; i<DEBUG_TREE_DEEP; i++) {
-        k = ptds->chains[i];
-        if (k) {
-            sum += k;
-            printf("chains at deep %i: %i       sum %i\n", i, k, sum);
-        }
-    }
-    sum = 0;
-    int sume = 0;           // sum of chain entries
-    for (i=0; i<DEBUG_MAX_CHAIN_SIZE; i++) {
-            k =     ptds->chainsizes2[i];
-            sum += k;
-            sume += i*k;
-            if (k) printf("chain of size %i occur %i    sc %i   sce %i\n", i, k, sum, sume);
-    }
-}

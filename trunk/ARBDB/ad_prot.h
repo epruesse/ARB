@@ -155,7 +155,7 @@ long GBS_memoffset(GBS_strstruct *strstr);
 void GBS_str_cut_tail(GBS_strstruct *strstr, size_t byte_count);
 void GBS_strncat(GBS_strstruct *strstr, const char *ptr, size_t len);
 void GBS_strcat(GBS_strstruct *strstr, const char *ptr);
-void GBS_strnprintf(GBS_strstruct *strstr, long len, const char *templat, ...) __ATTR__FORMAT(3);
+void GBS_strnprintf(GBS_strstruct *strstr, long maxlen, const char *templat, ...) __ATTR__FORMAT(3);
 void GBS_chrcat(GBS_strstruct *strstr, char ch);
 void GBS_chrncat(GBS_strstruct *strstr, char ch, size_t n);
 void GBS_intcat(GBS_strstruct *strstr, long val);

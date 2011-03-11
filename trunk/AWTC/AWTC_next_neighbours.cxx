@@ -233,13 +233,6 @@ GB_ERROR PT_FamilyFinder::retrieve_family(const char *sequence, FF_complement co
     return error;
 }
 
-void PT_FamilyFinder::print() {
-    FamilyList *fl;
-    for (fl = family_list; fl;  fl = fl->next) {
-        printf("%s %li\n", fl->name, fl->matches);
-    }
-}
-
 GB_ERROR PT_FamilyFinder::searchFamily(const char *sequence, FF_complement compl_mode, int max_results) {
     // searches the PT-server for species related to 'sequence'.
     //
@@ -258,6 +251,15 @@ GB_ERROR PT_FamilyFinder::searchFamily(const char *sequence, FF_complement compl
     }
     close();
     return error;
+}
+
+const char *PT_FamilyFinder::results2string() {
+    GBS_strstruct *out = GBS_stropen(1000);
+    for (FamilyList *fl = family_list; fl; fl = fl->next) {
+        GBS_strnprintf(out, 100, "%s/%li/%3.5f,", fl->name, fl->matches, fl->rel_matches*100);
+    }
+    GBS_str_cut_tail(out, 1);
+    RETURN_LOCAL_ALLOC(GBS_strclose(out));
 }
 
 void AWTC_create_common_next_neighbour_vars(AW_root *aw_root) {
@@ -313,53 +315,22 @@ void TEST_SLOW_PT_FamilyFinder() {
     for (int relativeMatches = 0; relativeMatches <= 1; ++relativeMatches) {
         for (int fastMode = 0; fastMode <= 1; ++fastMode) {
             PT_FamilyFinder ff(gb_main, TEST_SERVER_ID, 18, 1, fastMode, relativeMatches);
-            
+
             // sequence of 'LgtLytic' in TEST_pt.arb:
             const char *sequence = "AGAGUUUGAUCAAGUCGAACGGCAGCACAGUCUAGCUUGCUAGACGGGUGGCGAGUGGCGAACGGACUUGGGGAAACUCAAGCUAAUACCGCAUAAUCAUGACUGGGGUGAAGUCGUAACAAGGUAGCCGUAGGGGAACCUGCGGCUGGAUCACCUCCUN";
 
+            // len: 160 bp
+            // Ns: 1 bp
+            // oligolen: 18bp
+            // max. possible matches: len-oligolen+1-Ns = 160-18+1-1 = 142
+
             TEST_ASSERT_NO_ERROR(ff.searchFamily(sequence, FF_FORWARD, 4));
 
-#define TEST_ASSERT_NEXT_RELATIVE(NAME, MATCHES, REL_MATCHES)           \
-            do {                                                        \
-                TEST_ASSERT(fm);                                        \
-                TEST_ASSERT((arb_test::test_equal(fm->name, NAME) +     \
-                             arb_test::test_equal(fm->matches, MATCHES) + \
-                             arb_test::test_equal(fm->rel_matches, REL_MATCHES)) == 3); \
-                fm = fm->next;                                          \
-            } while(0)
-
-            const FamilyList *fm = ff.getFamilyList();
-            TEST_ASSERT(fm);
-
             if (fastMode == 0) { // full-search
-                TEST_ASSERT_NEXT_RELATIVE("LgtLytic", 142, 0.986111);
-
-                if (relativeMatches == 0) {
-                    TEST_ASSERT_NEXT_RELATIVE("HllHalod",  48, 0.335664);
-                    TEST_ASSERT_NEXT_RELATIVE("PbrPropi",  47, 0.330986);
-                    TEST_ASSERT_NEXT_RELATIVE("PslFlave",  47, 0.340580);
-                    TEST_ASSERT(!fm); // checked all?
-                }
-                else {
-                    TEST_ASSERT_NEXT_RELATIVE("PslFlave",  47, 0.340580);
-                    TEST_ASSERT_NEXT_RELATIVE("HllHalod",  48, 0.335664);
-                    TEST_ASSERT_NEXT_RELATIVE("PbrPropi",  47, 0.330986);
-                    TEST_ASSERT(!fm); // checked all?
-                }
+                TEST_ASSERT_EQUAL(ff.results2string(), "LgtLytic/142/98.61111,HllHalod/62/43.35664,AclPleur/59/40.97222,PtVVVulg/52/36.11111");
             }
             else { // fast-search 
-                TEST_ASSERT_NEXT_RELATIVE("LgtLytic", 40, 0.277778);
-                TEST_ASSERT_NEXT_RELATIVE("PtVVVulg", 15, 0.104167);
-                TEST_ASSERT_NEXT_RELATIVE("PslFlave", 14, 0.101449);
-
-                if (relativeMatches == 0) {
-                    TEST_ASSERT_NEXT_RELATIVE("DcdNodos", 14, 0.097222);
-                    TEST_ASSERT(!fm); // checked all?
-                }
-                else {
-                    TEST_ASSERT_NEXT_RELATIVE("Stsssola", 14, 0.098592);
-                    TEST_ASSERT(!fm); // checked all? 
-                }
+                TEST_ASSERT_EQUAL(ff.results2string(), "LgtLytic/40/27.77778,HllHalod/18/12.58741,AclPleur/17/11.80556,VbhChole/15/10.41667");
             }
         }
     }
