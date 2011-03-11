@@ -13,7 +13,7 @@
 #include "pt_prototypes.h"
 
 #include <arbdbt.h>
-#include <BI_helix.hxx>
+#include <BI_basepos.hxx>
 #include <arb_str.h>
 #include <arb_progress.h>
 

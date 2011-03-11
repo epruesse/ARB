@@ -31,6 +31,9 @@
 #ifndef SECEDIT_EXTERN_HXX
 #include "secedit_extern.hxx"
 #endif
+#ifndef BI_HELIX_HXX
+#include <BI_helix.hxx>
+#endif
 
 using namespace AW;
 

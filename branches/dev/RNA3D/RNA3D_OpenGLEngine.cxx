@@ -12,7 +12,7 @@
 
 #include <aw_root.hxx>
 #include <aw_awars.hxx>
-#include <BI_helix.hxx>
+#include <BI_basepos.hxx>
 
 #include <GL/aw_window_ogl.hxx>
 

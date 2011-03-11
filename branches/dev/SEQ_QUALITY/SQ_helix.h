@@ -25,6 +25,9 @@
 #ifndef AP_FILTER_HXX
 #include <AP_filter.hxx>
 #endif
+#ifndef ARBDB_H
+#include <arbdb.h>
+#endif
 
 
 class SQ_helix {

@@ -24,6 +24,7 @@
 #include <ed4_extern.hxx>
 #include <fast_aligner.hxx>
 #include <AW_helix.hxx>
+#include <BI_basepos.hxx>
 #include <st_window.hxx>
 #include <gde.hxx>
 #include <awt.hxx>
@@ -35,7 +36,6 @@
 #include <arb_progress.h>
 #include <aw_root.hxx>
 #include <arb_version.h>
-#include <arbdbt.h>
 
 #include <cctype>
 
