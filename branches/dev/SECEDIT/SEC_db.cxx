@@ -19,6 +19,7 @@
 #include <aw_msg.hxx>
 #include <aw_root.hxx>
 #include <ed4_extern.hxx>
+#include <arbdbt.h>
 
 using namespace std;
 

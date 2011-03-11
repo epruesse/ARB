@@ -10,6 +10,7 @@
 
 #include "BI_basepos.hxx"
 
+#include <arbdbt.h>
 
 
 

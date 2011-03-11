@@ -36,6 +36,7 @@
 #include <arb_progress.h>
 #include <aw_root.hxx>
 #include <arb_version.h>
+#include <arbdbt.h>
 
 #include <cctype>
 

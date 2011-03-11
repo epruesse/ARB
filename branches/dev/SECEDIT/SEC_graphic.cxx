@@ -20,6 +20,7 @@
 #include <aw_preset.hxx>
 #include <aw_msg.hxx>
 #include <aw_root.hxx>
+#include <arbdbt.h>
 
 #include <vector>
 
