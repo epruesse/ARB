@@ -916,7 +916,7 @@ GB_CSTR GB_getenvUSER() {
 
 
 GB_CSTR GB_getenvHOME() {
-    static SmartMallocPtr(char) Home;
+    static SmartCharPtr Home;
     if (Home.isNull()) {
         char *home = getenv_existing_directory("HOME");
         if (!home) {
@@ -932,7 +932,7 @@ GB_CSTR GB_getenvHOME() {
 }
 
 GB_CSTR GB_getenvARBHOME() {
-    static SmartMallocPtr(char) Arbhome;
+    static SmartCharPtr Arbhome;
     if (Arbhome.isNull()) {
         char *arbhome = getenv_existing_directory("ARBHOME"); // doc in ../HELP_SOURCE/oldhelp/arb_envar.hlp@ARBHOME
         if (!arbhome) {

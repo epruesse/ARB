@@ -170,12 +170,8 @@ const char *GB_get_db_path(GBDATA *gbd) {
 
     if (gb_father) {
         const char *father_path = GB_get_db_path(gb_father);
-
-        static SmartMallocPtr(char) result;         // careful! used recursively
-        char *key = GB_KEY(gbd);
-        result    = GBS_global_string_copy("%s/%s", father_path, key ? key : "<gbmain>");
-
-        return &*result;
+        char       *key         = GB_KEY(gbd);
+        RETURN_LOCAL_ALLOC(GBS_global_string_copy("%s/%s", father_path, key ? key : "<gbmain>"));
     }
     return "";
 }

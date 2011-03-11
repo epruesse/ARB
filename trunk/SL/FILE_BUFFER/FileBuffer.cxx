@@ -85,7 +85,7 @@ bool FileBuffer::getLine_intern(string& line)
 }
 
 string FileBuffer::lineError(const string& msg) const {
-    static SmartMallocPtr(char) buffer;
+    static SmartCharPtr buffer;
     static size_t  allocated = 0;
 
     size_t len;

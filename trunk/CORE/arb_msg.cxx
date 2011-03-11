@@ -334,7 +334,7 @@ bool GB_have_error() {
 
 GB_ERROR GB_await_error() {
     if (GB_error_buffer) {
-        static SmartMallocPtr(char) err;
+        static SmartCharPtr err;
         err             = GB_error_buffer;
         GB_error_buffer = NULL;
         return &*err;

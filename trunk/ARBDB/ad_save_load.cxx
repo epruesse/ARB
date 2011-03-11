@@ -37,8 +37,6 @@ char *gb_findExtension(char *path) {
  * functions or to dup the string before using the second instance
  */
 
-typedef SmartMallocPtr(char) SmartCharPtr;
- 
 inline char *STATIC_BUFFER(SmartCharPtr& strvar, int minlen) {
     gb_assert(minlen > 0);
     if (strvar.isNull() || (strlen(&*strvar) < (size_t)(minlen-1))) {

@@ -27,8 +27,6 @@
 
 #define ca_assert(cond) arb_assert(cond)
 
-typedef SmartMallocPtr(char) SmartCharPtr;
-
 // --------------------
 
 class Convaln_exception {
