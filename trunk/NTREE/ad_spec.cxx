@@ -26,6 +26,7 @@
 #include <arb_progress.h>
 #include <arb_str.h>
 #include <arb_defs.h>
+#include <probe_design.hxx>
 
 #include <cctype>
 
@@ -46,6 +47,8 @@ extern GBDATA *GLOBAL_gb_main;
 #define AWAR_NN_WANTED_ENTRIES AWAR_NN_BASE "wanted_entries"
 #define AWAR_NN_SCORED_ENTRIES AWAR_NN_BASE "scored_entries"
 #define AWAR_NN_MIN_SCORE      AWAR_NN_BASE "min_score"
+#define AWAR_NN_RANGE_START    AWAR_NN_BASE "range_start"
+#define AWAR_NN_RANGE_END      AWAR_NN_BASE "range_end"
 
 void NT_create_species_var(AW_root *aw_root, AW_default aw_def) {
     aw_root->awar_string(AWAR_SPECIES_DEST,         "",        aw_def);
@@ -914,7 +917,42 @@ void NT_spec_create_field_items(AW_window *aws) {
     aws->insert_menu_topic("spec_refresh_fields",      "Refresh fields (both)", "f", "scandb.hlp", AWM_ALL, (AW_CB)awt_selection_list_update_cb,        (AW_CL)GLOBAL_gb_main, AWT_NDS_FILTER);
 }
 
-#include <probe_design.hxx>
+inline int get_and_fix_range_from_awar(AW_awar *awar) {
+    const char *input = awar->read_char_pntr();
+    int         bpos = atoi(input);
+    int         ipos;
+
+    if (bpos>0) {
+        awar->write_string(GBS_global_string("%i", bpos));
+        // ipos = bio2info(bpos);
+        ipos = bpos-1;
+    }
+    else {
+        ipos = -1;
+        awar->write_string("");
+    }
+    return ipos;
+}
+
+static TargetRange get_nn_range_from_awars(AW_root *aw_root) {
+    int start = get_and_fix_range_from_awar(aw_root->awar(AWAR_NN_RANGE_START));
+    int end   = get_and_fix_range_from_awar(aw_root->awar(AWAR_NN_RANGE_END));
+
+    return TargetRange(start, end);
+}
+
+static char *read_sequence_region(GBDATA *gb_data, TargetRange& range) {
+    const char *cdata  = GB_read_char_pntr(gb_data);
+    int         seqlen = GB_read_count(gb_data);
+    range.fit(seqlen);
+    int   len  = range.length();
+    char *part = (char*)malloc(len+1);
+
+    memcpy(part, cdata+range.first_pos(), len);
+    part[len] = 0;
+
+    return part;
+}
 
 static void awtc_nn_search_all_listed(AW_window *aww, AW_CL _cbs) {
     DbQuery *cbs = (DbQuery *)_cbs;
@@ -956,6 +994,8 @@ static void awtc_nn_search_all_listed(AW_window *aww, AW_CL _cbs) {
     bool           scored_entries = aw_root->awar(AWAR_NN_SCORED_ENTRIES)->read_int();
     int            min_score      = aw_root->awar(AWAR_NN_MIN_SCORE)->read_int();
 
+    TargetRange org_range = get_nn_range_from_awars(aw_root);
+
     for (GBDATA *gb_species = GBT_first_species(GLOBAL_gb_main);
          !error && gb_species;
          gb_species = GBT_next_species(gb_species))
@@ -964,8 +1004,11 @@ static void awtc_nn_search_all_listed(AW_window *aww, AW_CL _cbs) {
 
         GBDATA *gb_data = GBT_read_sequence(gb_species, ali_name);
         if (gb_data) {
-            char            *sequence = GB_read_string(gb_data);
+            TargetRange      range    = org_range; // modified by read_sequence_region
+            char            *sequence = read_sequence_region(gb_data, range);
             PT_FamilyFinder  ff(GLOBAL_gb_main, pts, oligo_len, mismatches, fast_mode, rel_matches);
+
+            ff.restrict_2_region(range);
 
             error = ff.searchFamily(sequence, compl_mode, wanted_entries);
             if (!error) {
@@ -1023,9 +1066,10 @@ static void awtc_nn_search_all_listed(AW_window *aww, AW_CL _cbs) {
 }
 
 static void awtc_nn_search(AW_window *aww, AW_CL id) {
-    AW_root  *aw_root  = aww->get_root();
-    GB_ERROR  error    = 0;
-    char     *sequence = 0;
+    AW_root     *aw_root  = aww->get_root();
+    GB_ERROR     error    = 0;
+    TargetRange  range    = get_nn_range_from_awars(aw_root);
+    char        *sequence = 0;
     {
         GB_transaction ta(GLOBAL_gb_main);
 
@@ -1040,7 +1084,7 @@ static void awtc_nn_search(AW_window *aww, AW_CL id) {
             GBDATA *gb_data  = GBT_read_sequence(gb_species, ali_name);
 
             if (gb_data) {
-                sequence = GB_read_string(gb_data);
+                sequence = read_sequence_region(gb_data, range);
             }
             else {
                 error = GBS_global_string("Species '%s' has no sequence '%s'", sel_species, ali_name);
@@ -1056,7 +1100,10 @@ static void awtc_nn_search(AW_window *aww, AW_CL id) {
     bool fast_mode   = aw_root->awar(AWAR_NN_FAST_MODE)->read_int();
     bool rel_matches = aw_root->awar(AWAR_NN_REL_MATCHES)->read_int();
 
+
     PT_FamilyFinder ff(GLOBAL_gb_main, pts, oligo_len, mismatches, fast_mode, rel_matches);
+
+    ff.restrict_2_region(range);
 
     int max_hits = 0; // max wanted hits
 
@@ -1133,6 +1180,9 @@ static void create_next_neighbours_vars(AW_root *aw_root) {
         aw_root->awar_int(AWAR_NN_SCORED_ENTRIES, 1);
         aw_root->awar_int(AWAR_NN_MIN_SCORE,      80);
 
+        aw_root->awar_string(AWAR_NN_RANGE_START, "");
+        aw_root->awar_string(AWAR_NN_RANGE_END,   "");
+
         AWTC_create_common_next_neighbour_vars(aw_root);
 
         created = true;
@@ -1145,6 +1195,12 @@ static void create_common_next_neighbour_fields(AW_window *aws) {
 
     AWTC_create_common_next_neighbour_fields(aws);
 
+    aws->auto_space(5, 5);
+    
+    aws->at("range");
+    aws->create_input_field(AWAR_NN_RANGE_START, 6);
+    aws->create_input_field(AWAR_NN_RANGE_END,   6);
+    
     aws->at("compl");
     aws->create_option_menu(AWAR_NN_COMPLEMENT, 0, 0);
     aws->insert_default_option("forward",            "", FF_FORWARD);

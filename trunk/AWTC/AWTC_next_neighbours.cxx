@@ -19,8 +19,6 @@
 
 #include <climits>
 
-#define awtc_assert(bed) arb_assert(bed)
-
 void awtc_ff_message(const char *msg) {
     GB_warning(msg);
 }
@@ -42,7 +40,7 @@ FamilyList::~FamilyList() {
 }
 
 FamilyList *FamilyList::insertSortedBy_matches(FamilyList *other) {
-    awtc_assert(next == NULL);                      // only insert unlinked instace!
+    ff_assert(next == NULL); // only insert unlinked instace!
 
     if (!other) {
         return this;
@@ -61,7 +59,7 @@ FamilyList *FamilyList::insertSortedBy_matches(FamilyList *other) {
 }
 
 FamilyList *FamilyList::insertSortedBy_rel_matches(FamilyList *other) {
-    awtc_assert(next == NULL);                      // only insert unlinked instace!
+    ff_assert(next == NULL); // only insert unlinked instace!
 
     if (rel_matches >= other->rel_matches) {
         next = other;
@@ -80,10 +78,11 @@ FamilyList *FamilyList::insertSortedBy_rel_matches(FamilyList *other) {
 //      FamilyFinder
 
 FamilyFinder::FamilyFinder(bool rel_matches_)
-    : rel_matches(rel_matches_), 
+    : rel_matches(rel_matches_),
       family_list(NULL),
       hits_truncated(false),
-      real_hits(-1)
+      real_hits(-1),
+      range(-1, -1)
 {
 }
 
@@ -137,7 +136,7 @@ GB_ERROR PT_FamilyFinder::init_communication() {
 GB_ERROR PT_FamilyFinder::open(const char *servername) {
     GB_ERROR error = 0;
     
-    awtc_assert(!com && !link);
+    ff_assert(!com && !link);
 
     if (arb_look_and_start_server(AISC_MAGIC_NUMBER, servername, gb_main)) {
         error = "Cannot contact PT  server";
@@ -152,7 +151,7 @@ GB_ERROR PT_FamilyFinder::open(const char *servername) {
         }
     }
 
-    awtc_assert(error || (com && link));
+    ff_assert(error || (com && link));
     
     return error;
 }
@@ -190,7 +189,9 @@ GB_ERROR PT_FamilyFinder::retrieve_family(const char *sequence, FF_complement co
                      LOCS_FF_SORT_TYPE,       long(uses_rel_matches()), // 0: matches, 1: relative matches (0 hardcoded till July 2008)
                      LOCS_FF_SORT_MAX,        long(max_results),      // speed up family sorting (only sort retrieved results)
                      LOCS_FF_COMPLEMENT,      long(compl_mode),       // any combination of: 1 = forward, 2 = reverse, 4 = reverse-complement, 8 = complement (1 hardcoded in PT-Server till July 2008)
-                     LOCS_FF_FIND_FAMILY,     &bs,
+                     LOCS_RANGE_STARTPOS,     long(range.get_start()),
+                     LOCS_RANGE_ENDPOS,       long(range.get_end()),
+                     LOCS_FF_FIND_FAMILY,     &bs, // RPC (has to be last parameter!)
                      NULL))
         {
             error = "Communication error with PT server ('retrieve_family')";
@@ -314,23 +315,49 @@ void TEST_SLOW_PT_FamilyFinder() {
 
     for (int relativeMatches = 0; relativeMatches <= 1; ++relativeMatches) {
         for (int fastMode = 0; fastMode <= 1; ++fastMode) {
-            PT_FamilyFinder ff(gb_main, TEST_SERVER_ID, 18, 1, fastMode, relativeMatches);
+            for (int partial = 0; partial <= 1; ++partial) {
+                PT_FamilyFinder ff(gb_main, TEST_SERVER_ID, partial ? 10 : 18, 1, fastMode, relativeMatches);
 
-            // sequence of 'LgtLytic' in TEST_pt.arb:
-            const char *sequence = "AGAGUUUGAUCAAGUCGAACGGCAGCACAGUCUAGCUUGCUAGACGGGUGGCGAGUGGCGAACGGACUUGGGGAAACUCAAGCUAAUACCGCAUAAUCAUGACUGGGGUGAAGUCGUAACAAGGUAGCCGUAGGGGAACCUGCGGCUGGAUCACCUCCUN";
+                // database: ../UNIT_TESTER/run/TEST_pt.arb
 
-            // len: 160 bp
-            // Ns: 1 bp
-            // oligolen: 18bp
-            // max. possible matches: len-oligolen+1-Ns = 160-18+1-1 = 142
+                const char *sequence;
+                if (partial) {
+                    ff.restrict_2_region(TargetRange(39, 91)); // alignment range of bases 30-69 of sequence of 'LgtLytic' 
+                    sequence = "UCUAGCUUGCUAGACGGGUGGCGAG" "GGUAACCGUAGGGGA"; // bases 30-54 of sequence of 'LgtLytic' + 15 bases from 'DcdNodos' (outside region)
+                }
+                else {
+                    // sequence of 'LgtLytic' in TEST_pt.arb:
+                    sequence = "AGAGUUUGAUCAAGUCGAACGGCAGCACAGUCUAGCUUGCUAGACGGGUGGCGAGUGGCGAACGGACUUGGGGAAACUCAAGCUAAUACCGCAUAAUCAUGACUGGGGUGAAGUCGUAACAAGGUAGCCGUAGGGGAACCUGCGGCUGGAUCACCUCCUN";
+                }
 
-            TEST_ASSERT_NO_ERROR(ff.searchFamily(sequence, FF_FORWARD, 4));
+                TEST_ASSERT_NO_ERROR(ff.searchFamily(sequence, FF_FORWARD, 4));
 
-            if (fastMode == 0) { // full-search
-                TEST_ASSERT_EQUAL(ff.results2string(), "LgtLytic/142/98.61111,HllHalod/62/43.35664,AclPleur/59/40.97222,PtVVVulg/52/36.11111");
-            }
-            else { // fast-search 
-                TEST_ASSERT_EQUAL(ff.results2string(), "LgtLytic/40/27.77778,HllHalod/18/12.58741,AclPleur/17/11.80556,VbhChole/15/10.41667");
+                if (partial) {
+                    // len: 40 bp (-15 bp)
+                    // Ns: 0 bp
+                    // oligolen: 10bp
+                    // est. matches: len-oligolen+1-Ns = 40-15-10+1-0 = 16
+
+                    if (fastMode == 0) { // full-search
+                        TEST_ASSERT_EQUAL(ff.results2string(), "LgtLytic/19/59.37500,VblVulni/5/15.62500,VbhChole/4/12.50000,DcdNodos/4/12.50000");
+                    }
+                    else { // fast-search
+                        TEST_ASSERT_EQUAL(ff.results2string(), "LgtLytic/3/9.37500,VblVulni/1/3.12500,FrhhPhil/1/3.12500,DcdNodos/1/3.12500");
+                    }
+                }
+                else {
+                    // len: 160 bp
+                    // Ns: 1 bp
+                    // oligolen: 18bp
+                    // est. matches: len-oligolen+1-Ns = 160-18+1-1 = 142
+
+                    if (fastMode == 0) { // full-search
+                        TEST_ASSERT_EQUAL(ff.results2string(), "LgtLytic/142/98.61111,HllHalod/62/43.35664,AclPleur/59/40.97222,PtVVVulg/52/36.11111");
+                    }
+                    else { // fast-search
+                        TEST_ASSERT_EQUAL(ff.results2string(), "LgtLytic/40/27.77778,HllHalod/18/12.58741,AclPleur/17/11.80556,VbhChole/15/10.41667");
+                    }
+                }
             }
         }
     }

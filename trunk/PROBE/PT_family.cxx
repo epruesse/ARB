@@ -8,21 +8,29 @@
 //                                                                 //
 // =============================================================== //
 
-#include "probe.h"
-#include <struct_man.h>
-#include <PT_server_prototypes.h>
-#include "probe_tree.h"
+#include "PT_rangeCheck.h"
 #include "pt_prototypes.h"
 
+#include <struct_man.h>
+#include <PT_server_prototypes.h>
 #include <arbdbt.h>
 
 #include <algorithm>
-
 
 // overloaded functions to avoid problems with type-punning:
 inline void aisc_link(dll_public *dll, PT_family_list *family)   { aisc_link(reinterpret_cast<dllpublic_ext*>(dll), reinterpret_cast<dllheader_ext*>(family)); }
 
 class ProbeTraversal {
+    static Range range;
+
+    static void count_match(const DataLoc& match) {
+        if (range.contains(match)) {
+            ++psg.data[match.name].stat.match_count;
+        }
+    }
+
+    // ----------------------------------------
+    
     const char *probe;
     int         height;
     int         needed_positions;
@@ -44,19 +52,22 @@ class ProbeTraversal {
         height++;
     }
 
-    void inc_match_count(int name) const {
-        ++psg.data[name].stat.match_count;
-    }
-
     void match_rest_and_mark(const DataLoc& loc) {
         do match_one_char(psg.data[loc.name].data[loc.rpos+height]); while (match_possible());
-        if (did_match()) inc_match_count(loc.name);
+        if (did_match()) count_match(loc);
     }
 
     void mark_all(POS_TREE *pt) const;
 
 public:
 
+    static void restrictMatchesToRegion(int start, int end, int probe_len) {
+        range  = Range(start, end, probe_len);
+    }
+    static void unrestrictMatchesToRegion() {
+        range  = Range(-1, -1, -1);
+    }
+    
     ProbeTraversal(const char *probe_, int needed_positions_, int accept_mismatches_)
         : probe(probe_),
           height(0),
@@ -68,13 +79,15 @@ public:
 
     int operator()(const DataLoc& loc) const { 
         /*! Increment match_count for matched postree-tips */
-        if (did_match()) inc_match_count(loc.name);
+        if (did_match()) count_match(loc);
         else if (match_possible()) {
             ProbeTraversal(*this).match_rest_and_mark(loc);
         }
         return 0;
     }
 };
+
+Range ProbeTraversal::range(-1, -1, -1);
 
 void ProbeTraversal::mark_matching(POS_TREE *pt) const {
     /*! Traverse pos(sub)tree through matching branches and increment 'match_count' */
@@ -251,6 +264,8 @@ extern "C" int ff_find_family(PT_local *locs, bytestring *species) {
     // if ff_find_type > 0 -> search only probes starting with 'A' (quick but less accurate)
     char last_first_c = locs->ff_find_type ? PT_A : PT_T;
 
+    ProbeTraversal::restrictMatchesToRegion(locs->range_start, locs->range_end, probe_len);
+
     // Note: code depends on order of ../AWTC/awtc_next_neighbours.hxx@FF_complement_dep
     for (int cmode = 1; cmode <= 8; cmode *= 2) {
         switch (cmode) {
@@ -282,6 +297,8 @@ extern "C" int ff_find_family(PT_local *locs, bytestring *species) {
     make_match_statistic(locs->ff_pr_len, sequence_len);
     make_PT_family_list(locs);
 
+    ProbeTraversal::unrestrictMatchesToRegion();
+    
     free(species->data);
     return 0;
 }
