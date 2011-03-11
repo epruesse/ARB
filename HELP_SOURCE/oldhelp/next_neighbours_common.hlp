@@ -96,6 +96,11 @@ SECTION         PARAMETERS
 
                        Note: Not available for EDIT4 aligner.
 
+                Target range:
+
+                       Restrict the alignment range in which oligos may match.
+                       Hits outside that range will not be considered.
+
 NOTES		None
 
 EXAMPLES	None

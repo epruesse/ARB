@@ -11,6 +11,7 @@ CPP_OBJECTS = \
 	PT_new_design.o \
 	PT_prefixtree.o \
 	PT_debug.o \
+	PT_rangeCheck.o \
 
 C_OBJECTS = # BI_helix.o
 OBJECTS = $(CPP_OBJECTS) $(C_OBJECTS)
@@ -118,6 +119,7 @@ PT_etc.o: $(ARBHOME)/INCLUDE/test_global.h
 PT_family.o: probe.h
 PT_family.o: probe_tree.h
 PT_family.o: pt_prototypes.h
+PT_family.o: PT_rangeCheck.h
 PT_family.o: $(ARBHOME)/INCLUDE/ad_prot.h
 PT_family.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 PT_family.o: $(ARBHOME)/INCLUDE/aisc_global.h
@@ -294,3 +296,26 @@ PT_prefixtree.o: $(ARBHOME)/INCLUDE/PT_server.h
 PT_prefixtree.o: $(ARBHOME)/INCLUDE/smartptr.h
 PT_prefixtree.o: $(ARBHOME)/INCLUDE/static_assert.h
 PT_prefixtree.o: $(ARBHOME)/INCLUDE/test_global.h
+
+PT_rangeCheck.o: probe.h
+PT_rangeCheck.o: probe_tree.h
+PT_rangeCheck.o: pt_prototypes.h
+PT_rangeCheck.o: PT_rangeCheck.h
+PT_rangeCheck.o: $(ARBHOME)/INCLUDE/ad_prot.h
+PT_rangeCheck.o: $(ARBHOME)/INCLUDE/aisc_global.h
+PT_rangeCheck.o: $(ARBHOME)/INCLUDE/arb_assert.h
+PT_rangeCheck.o: $(ARBHOME)/INCLUDE/arb_core.h
+PT_rangeCheck.o: $(ARBHOME)/INCLUDE/arb_error.h
+PT_rangeCheck.o: $(ARBHOME)/INCLUDE/arb_msg.h
+PT_rangeCheck.o: $(ARBHOME)/INCLUDE/arb_string.h
+PT_rangeCheck.o: $(ARBHOME)/INCLUDE/arbdb.h
+PT_rangeCheck.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+PT_rangeCheck.o: $(ARBHOME)/INCLUDE/arbtools.h
+PT_rangeCheck.o: $(ARBHOME)/INCLUDE/attributes.h
+PT_rangeCheck.o: $(ARBHOME)/INCLUDE/bytestring.h
+PT_rangeCheck.o: $(ARBHOME)/INCLUDE/dupstr.h
+PT_rangeCheck.o: $(ARBHOME)/INCLUDE/PT_com.h
+PT_rangeCheck.o: $(ARBHOME)/INCLUDE/PT_server.h
+PT_rangeCheck.o: $(ARBHOME)/INCLUDE/smartptr.h
+PT_rangeCheck.o: $(ARBHOME)/INCLUDE/static_assert.h
+PT_rangeCheck.o: $(ARBHOME)/INCLUDE/test_global.h
