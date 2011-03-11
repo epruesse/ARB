@@ -26,8 +26,6 @@ POS_TREE *build_pos_tree P_((POS_TREE *pt, int anfangs_pos, int apos, int RNS_nr
 long PTD_save_partial_tree P_((FILE *out, PTM2 *ptmain, POS_TREE *node, char *partstring, int partsize, long pos, long *ppos, ARB_ERROR &error));
 ARB_ERROR enter_stage_1_build_tree P_((PT_main *, char *tname)) __ATTR__USERESULT;
 ARB_ERROR enter_stage_3_load_tree P_((PT_main *, const char *tname)) __ATTR__USERESULT;
-void PT_analyse_tree P_((POS_TREE *pt, int height));
-void PT_debug_tree P_((void));
 
 /* PT_etc.cxx */
 void set_table_for_PT_N_mis P_((void));
@@ -99,7 +97,6 @@ int PTM_destroy_mem P_((void));
 void PTM_free_mem P_((char *data, int size));
 void PTM_debug_mem P_((void));
 PTM2 *PT_init P_((void));
-int PTD P_((POS_TREE *node));
 void PT_change_father P_((POS_TREE *father, POS_TREE *source, POS_TREE *dest));
 POS_TREE *PT_add_to_chain P_((PTM2 *ptmain, POS_TREE *node, int name, int apos, int rpos));
 POS_TREE *PT_change_leaf_to_node P_((PTM2 *, POS_TREE *node));
@@ -120,8 +117,14 @@ long PTD_write_node_to_disk P_((FILE *out, PTM2 *ptmain, POS_TREE *node, long *r
 long PTD_write_leafs_to_disk P_((FILE *out, PTM2 *ptmain, POS_TREE *node, long pos, long *pnodepos, int *pblock, ARB_ERROR &error));
 ARB_ERROR PTD_read_leafs_from_disk P_((const char *fname, PTM2 *ptmain, POS_TREE **pnode)) __ATTR__USERESULT;
 
-/* probe_tree.hxx */
-template <typename T >int PT_read_chain P_((PTM2 *ptmain, POS_TREE *node, T func));
+/* PT_debug.cxx */
+void PT_dump_tree_statistics P_((void));
+void PT_dump_POS_TREE_recursive P_((POS_TREE *pt, const char *prefix));
+void PT_dump_POS_TREE P_((POS_TREE *IF_DEBUG (node)));
+
+/* probe_tree.h */
+template <typename T >int PT_forwhole_chain P_((PTM2 *ptmain, POS_TREE *node, T func));
+template <typename T >int PT_withall_tips P_((PTM2 *ptmain, POS_TREE *node, T func));
 
 #undef P_
 

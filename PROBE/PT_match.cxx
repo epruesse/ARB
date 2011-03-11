@@ -12,7 +12,7 @@
 #include <PT_server_prototypes.h>
 #include <struct_man.h>
 
-#include "probe_tree.hxx"
+#include "probe_tree.h"
 #include "pt_prototypes.h"
 
 #include <arbdbt.h>
@@ -37,12 +37,12 @@ static double ptnd_get_wmismatch(PT_pdc *pdc, char *probe, int pos, char ref)
     return (max_bind - new_bind);
 }
 
-struct PT_chain_print {
+struct PT_store_match_in {
     PT_local* ilocs;
 
-    PT_chain_print(PT_local* locs) : ilocs(locs) {}
+    PT_store_match_in(PT_local* locs) : ilocs(locs) {}
 
-    int operator()(int name, int apos, int rpos) {
+    int operator()(const DataLoc& matchLoc) {
         // if chain is reached copy data in locs structure
 
         PT_probematch *ml;
@@ -57,11 +57,14 @@ struct PT_chain_print {
         int            ref;
         int            pos;
         if (psg.probe) {
-            pos = rpos+psg.height;
+            // @@@ code here is a duplicate of code in get_info_about_probe (PT_NT_LEAF-branch)
+            pos = matchLoc.rpos+psg.height;
             height = psg.height;
-            while ((base=probe[height]) && (ref = psg.data[name].data[pos])) {
-                if (ref == PT_N || base == PT_N)
+            while ((base=probe[height]) && (ref = psg.data[matchLoc.name].data[pos])) {
+                if (ref == PT_N || base == PT_N) {
+                    // @@@ Warning: dupped code also counts PT_QU as mismatch!
                     N_mismatches++;
+                }
                 else
                     if (ref != base) {
                         mismatches++;
@@ -84,12 +87,13 @@ struct PT_chain_print {
             }
         }
 
+        // @@@ dupped code from read_names_and_pos (PT_NT_LEAF-branch)
         ml = create_PT_probematch();
 
-        ml->name         = name;
-        ml->b_pos        = apos;
+        ml->name         = matchLoc.name;
+        ml->b_pos        = matchLoc.apos;
         ml->g_pos        = -1;
-        ml->rpos         = rpos;
+        ml->rpos         = matchLoc.rpos;
         ml->wmismatches  = wmismatches;
         ml->mismatches   = mismatches;
         ml->N_mismatches = N_mismatches;
@@ -121,6 +125,7 @@ int read_names_and_pos(PT_local *locs, POS_TREE *pt) {
         pos  = PT_read_apos(psg.ptmain, pt);
         rpos = PT_read_rpos(psg.ptmain, pt);
 
+        // @@@ dupped code from PT_store_match_in::operator()
         ml = create_PT_probematch();
 
         ml->name         = name;
@@ -136,10 +141,11 @@ int read_names_and_pos(PT_local *locs, POS_TREE *pt) {
         aisc_link(&locs->ppm, ml);
 
         return 0;
-    } else
+    }
+    else {
         if (PT_read_type(pt) == PT_NT_CHAIN) {
             psg.probe = 0;
-            if (PT_read_chain(psg.ptmain, pt, PT_chain_print(locs))) {
+            if (PT_forwhole_chain(psg.ptmain, pt, PT_store_match_in(locs))) {
                 error = 1;
                 return 1;
             }
@@ -152,69 +158,9 @@ int read_names_and_pos(PT_local *locs, POS_TREE *pt) {
 
             return 0;
         }
+    }
     return 0;
 }
-
-#if defined(DEBUG)
-
-inline char PT_BASES_2_char(PT_BASES i) {
-    static char buffer[] = "x";
-
-    buffer[0] = i;
-    PT_base_2_string(buffer, 1);
-
-    return buffer[0];
-}
-
-class PT_dump_leaf {
-    const char *prefix;
-public:
-    PT_dump_leaf(const char *Prefix) : prefix(Prefix) {}
-    int operator()(int name, int apos, int rpos) {
-        struct probe_input_data& data = psg.data[name];
-
-        PT_BASES b = (PT_BASES)data.data[rpos];
-
-        printf("%s[%c] %s apos=%i rpos=%i\n", prefix, PT_BASES_2_char(b), data.name, apos, rpos);
-        return 0;
-    }
-};
-
-static void dump_POS_TREE(POS_TREE *pt, const char *prefix = "") {
-    switch (PT_read_type(pt)) {
-        case PT_NT_NODE:
-            for (int i = PT_N; i<PT_B_MAX; i++) {
-                PT_BASES  b   = PT_BASES(i);
-                POS_TREE *son = PT_read_son(psg.ptmain, pt, b);
-                if (son) {
-                    char *subPrefix = GBS_global_string_copy("%s%c", prefix, PT_BASES_2_char(b));
-                    dump_POS_TREE(son, subPrefix);
-                    free(subPrefix);
-                }
-            }
-            break;
-        case PT_NT_LEAF: {
-            int name = PT_read_name(psg.ptmain, pt);
-            int apos = PT_read_apos(psg.ptmain, pt);
-            int rpos = PT_read_rpos(psg.ptmain, pt);
-
-            PT_dump_leaf leaf(prefix);
-            leaf(name, apos, rpos);
-
-            break;
-        }
-        case PT_NT_CHAIN:
-            PT_read_chain(psg.ptmain, pt, PT_dump_leaf(prefix));
-            break;
-        default:
-            printf("%s [unhandled]\n", prefix);
-            pt_assert(0);
-            break;
-    }
-}
-
-#endif // DEBUG
-
 
 int get_info_about_probe(PT_local *locs, char *probe, POS_TREE *pt, int mismatches, double wmismatches, int N_mismatches, int height) {
     /*! search down the tree to find matching species for the given probe */
@@ -270,8 +216,12 @@ int get_info_about_probe(PT_local *locs, char *probe, POS_TREE *pt, int mismatch
     psg.N_mismatches = N_mismatches;
     if (probe[height]) {
         if (PT_read_type(pt) == PT_NT_LEAF) {
-            pos = PT_read_rpos(psg.ptmain, pt) + height;
+            // @@@ code here is duplicate of code in PT_store_match_in::operator()
+
+            pos  = PT_read_rpos(psg.ptmain, pt) + height;
             name = PT_read_name(psg.ptmain, pt);
+
+            // @@@ recursive use of strlen with constant result (argh!)
             if (pos + (int)(strlen(probe+height)) >= psg.data[name].size)       // end of sequence
                 return 0;
 
@@ -296,7 +246,7 @@ int get_info_about_probe(PT_local *locs, char *probe, POS_TREE *pt, int mismatch
         else {                // chain
             psg.probe = probe;
             psg.height = height;
-            PT_read_chain(psg.ptmain, pt, PT_chain_print(locs));
+            PT_forwhole_chain(psg.ptmain, pt, PT_store_match_in(locs)); // @@@ why ignore result
             return 0;
         }
         if (locs->sort_by != PT_MATCH_TYPE_INTEGER) {

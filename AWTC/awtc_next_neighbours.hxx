@@ -95,7 +95,7 @@ public:
 
     GB_ERROR searchFamily(const char *sequence, FF_complement compl_mode, int max_results) __ATTR__USERESULT;
 
-    void print();
+    const char *results2string();
 };
 
 // --------------------------------------------------------------------------------

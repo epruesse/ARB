@@ -9,7 +9,7 @@
 // =============================================================== //
 
 #include "probe.h"
-#include "probe_tree.hxx"
+#include "probe_tree.h"
 #include "pt_prototypes.h"
 
 #include <sys/types.h>
@@ -185,37 +185,6 @@ PTM2 *PT_init() {
     PTM.alloc_array_size = 0;
 
     return ptmain;
-}
-
-int PTD(POS_TREE * node) {
-    // Debug function for all stages
-    long             i;
-    PTM2        *ptmain = psg.ptmain;
-    if (!node) printf("Zero node\n");
-    PT_READ_PNTR(&node->data, i);
-    printf("node father 0x%lx\n", i);
-    switch (PT_read_type(node)) {
-        case PT_NT_LEAF:
-            printf("leaf %i:%i,%i\n", PT_read_name(ptmain, node),
-                   PT_read_rpos(ptmain, node), PT_read_apos(ptmain, node));
-            break;
-        case PT_NT_NODE:
-            for (i = 0; i < PT_B_MAX; i++) {
-                printf("%6li:0x%p\n", i, PT_read_son(ptmain, node, (enum PT_bases_enum)i));
-            }
-            break;
-        case PT_NT_CHAIN:
-            printf("chain:\n");
-            PT_read_chain(ptmain, node, PTD_chain_print());
-            break;
-        case PT_NT_SAVED:
-            printf("saved:\n");
-            break;
-        default:
-            printf("?????\n");
-            break;
-    }
-    return 0;
 }
 
 // ------------------------------

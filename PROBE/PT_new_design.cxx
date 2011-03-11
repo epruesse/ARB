@@ -12,7 +12,7 @@
 #include "probe.h"
 #include <PT_server_prototypes.h>
 #include <struct_man.h>
-#include "probe_tree.hxx"
+#include "probe_tree.h"
 #include <arbdbt.h>
 #include <arb_str.h>
 
@@ -188,17 +188,22 @@ double ptnd_check_split(PT_pdc *pdc, char *probe, int pos, char ref) {
 //      primary search for probes
 
 struct ptnd_chain_count_mishits {
-    int operator()(int name, int apos, int rpos) {
+    int operator()(const DataLoc& probeLoc) {
         // count all mishits for a probe
+
+        // @@@ dupped code is in ptnd_count_mishits and ptnd_count_mishits2
         char *probe = psg.probe;
-        psg.abs_pos.announce(apos);
-        if (psg.data[name].is_group) return 0;              // don't count group or neverminds
+        psg.abs_pos.announce(probeLoc.apos);
+
+        const probe_input_data& pid = psg.data[probeLoc.name];
+
+        if (pid.is_group) return 0;              // don't count group or neverminds
         if (probe) {
-            rpos+=psg.height;
-            while (*probe && psg.data[name].data[rpos]) {
-                if (psg.data[name].data[rpos] != *(probe))
-                    return 0;
-                probe++; rpos++;
+            int rpos = probeLoc.rpos + psg.height;
+            while (*probe && pid.data[rpos]) {
+                if (pid.data[rpos] != *(probe)) return 0;
+                probe++;
+                rpos++;
             }
         }
         ptnd.mishits++;
@@ -215,8 +220,10 @@ static int ptnd_count_mishits2(POS_TREE *pt) {
     if (pt == NULL)
         return 0;
     if (PT_read_type(pt) == PT_NT_LEAF) {
-        name = PT_read_name(psg.ptmain, pt);
+        name     = PT_read_name(psg.ptmain, pt);
         int apos = PT_read_apos(psg.ptmain, pt);
+
+        // @@@ dupped code from ptnd_chain_count_mishits::operator():
         psg.abs_pos.announce(apos);
         if (!psg.data[name].is_group)   return 1;
         return 0;
@@ -224,7 +231,7 @@ static int ptnd_count_mishits2(POS_TREE *pt) {
     else if (PT_read_type(pt) == PT_NT_CHAIN) {
         psg.probe = 0;
         ptnd.mishits = 0;
-        PT_read_chain(psg.ptmain, pt, ptnd_chain_count_mishits());
+        PT_forwhole_chain(psg.ptmain, pt, ptnd_chain_count_mishits());
         return ptnd.mishits;
     }
     else {
@@ -375,8 +382,10 @@ static int ptnd_count_mishits(char *probe, POS_TREE *pt, int height) {
     }
     if (*probe) {
         if (PT_read_type(pt) == PT_NT_LEAF) {
-            pos = PT_read_rpos(psg.ptmain, pt) + height;
+            pos  = PT_read_rpos(psg.ptmain, pt) + height;
             name = PT_read_name(psg.ptmain, pt);
+
+            // @@@ dupped code from ptnd_chain_count_mishits::operator()
             if (pos + (int)(strlen(probe)) >= psg.data[name].size)              // after end
                 return 0;
 
@@ -389,7 +398,7 @@ static int ptnd_count_mishits(char *probe, POS_TREE *pt, int height) {
             psg.probe = probe;
             psg.height = height;
             ptnd.mishits = 0;
-            PT_read_chain(psg.ptmain, pt, ptnd_chain_count_mishits());
+            PT_forwhole_chain(psg.ptmain, pt, ptnd_chain_count_mishits());
             return ptnd.mishits;
         }
     }
@@ -577,7 +586,7 @@ static void ptnd_remove_duplicated_probepart(PT_pdc *pdc)
 }
 
 static void ptnd_check_part_inc_dt(PT_pdc *pdc, PT_probeparts *parts,
-                                   int name, int apos, int rpos,
+                                   const DataLoc& matchLoc,
                                    double dt, double sum_bonds)
 {
     /*! test the probe parts, search the longest non mismatch string */
@@ -592,12 +601,12 @@ static void ptnd_check_part_inc_dt(PT_pdc *pdc, PT_probeparts *parts,
 
     if ((start = parts->start)) {               // look backwards
         probe = parts->source->sequence;
-        pos = rpos-1;
+        pos = matchLoc.rpos-1;
         start--;                        // test the base left of start
         split = 0;
         while (start>=0) {
             if (pos<0) break;   // out of sight
-            h = ptnd_check_split(ptnd.pdc, probe, start, psg.data[name].data[pos]);
+            h = ptnd_check_split(ptnd.pdc, probe, start, psg.data[matchLoc.name].data[pos]);
             if (h>0.0 && !split)        return; // there is a longer part matching this
             dt -= h;
             start --;
@@ -614,19 +623,19 @@ static void ptnd_check_part_inc_dt(PT_pdc *pdc, PT_probeparts *parts,
     tprobe->perc[pos] ++;
     if (ptnd.new_match) {                       // save the result in probematch
         PT_probematch *match;
-        if (psg.data[name].match) {
-            if (psg.data[name].match->dt < ndt) return;
+        if (psg.data[matchLoc.name].match) {
+            if (psg.data[matchLoc.name].match->dt < ndt) return;
             // there is a better hit for that sequence
-            match = psg.data[name].match;
+            match = psg.data[matchLoc.name].match;
         }
         else {
             match = create_PT_probematch();
             aisc_link(&ptnd.locs->ppm, match);
-            psg.data[name].match = match;
+            psg.data[matchLoc.name].match = match;
         }
-        match->name = name;
-        match->b_pos = apos - parts->start;     // that's not correct !!!
-        match->rpos = rpos-parts->start;
+        match->name = matchLoc.name;
+        match->b_pos = matchLoc.apos - parts->start;     // that's not correct !!!
+        match->rpos = matchLoc.rpos-parts->start;
         match->N_mismatches = -1;       // there are no mismatches in this mode
         match->mismatches = -1;
         match->wmismatches = dt;        // only weighted mismatches (maybe)
@@ -648,37 +657,37 @@ static int ptnd_check_inc_mode(PT_pdc *pdc, PT_probeparts *parts, double dt, dou
 }
 
 struct ptnd_chain_check_part {
-  ptnd_chain_check_part(int s) : split(s) {}
-  int split;
-  int operator() (int name, int apos, int rpos)
-{
-    char   *probe  = psg.probe;
-    int     height = psg.height;
-    double  sbond  = ptnd.sum_bonds;
-    double  dt     = ptnd.dt;
-    double  h      = 1.0;
-    int     pos;
-    int     base;
+    int split;
 
-    if (!ptnd.new_match && psg.data[name].is_group) return 0;           // don't count group or neverminds
-    if (probe) {
-        pos = rpos+psg.height;
-        while (probe[height] && (base = psg.data[name].data[pos])) {
-            if (!split && (h = ptnd_check_split(ptnd.pdc, probe, height,
-                                                base) < 0.0)) {
-                dt -= h;
-                split = 1;
+    ptnd_chain_check_part(int s) : split(s) {}
+    
+    int operator() (const DataLoc& partLoc) {
+        char   *probe  = psg.probe;
+        int     height = psg.height;
+        double  sbond  = ptnd.sum_bonds;
+        double  dt     = ptnd.dt;
+        double  h      = 1.0;
+        int     pos;
+        int     base;
+
+        if (!ptnd.new_match && psg.data[partLoc.name].is_group) return 0;           // don't count group or neverminds
+        if (probe) {
+            pos = partLoc.rpos+psg.height;
+            while (probe[height] && (base = psg.data[partLoc.name].data[pos])) {
+                if (!split && (h = ptnd_check_split(ptnd.pdc, probe, height, base) < 0.0)) {
+                    dt -= h;
+                    split = 1;
+                }
+                else {
+                    dt += h;
+                    sbond += ptnd_check_max_bond(ptnd.pdc, probe[height]) - h;
+                }
+                height++; pos++;
             }
-            else {
-                dt += h;
-                sbond += ptnd_check_max_bond(ptnd.pdc, probe[height]) - h;
-            }
-            height++; pos++;
         }
+        ptnd_check_part_inc_dt(ptnd.pdc, ptnd.parts, partLoc, dt, sbond);
+        return 0;
     }
-    ptnd_check_part_inc_dt(ptnd.pdc, ptnd.parts, name, apos, rpos, dt, sbond);
-    return 0;
-}
 };
 
 static void ptnd_check_part_all(POS_TREE *pt, double dt, double sum_bonds) {
@@ -692,18 +701,18 @@ static void ptnd_check_part_all(POS_TREE *pt, double dt, double sum_bonds) {
     if (pt == NULL)
         return;
     if (PT_read_type(pt) == PT_NT_LEAF) {
+        // @@@ dupped code is in ptnd_chain_check_part::operator()
         name = PT_read_name(psg.ptmain, pt);
-        if (!ptnd.new_match && psg.data[name].is_group)         return;
+        if (!ptnd.new_match && psg.data[name].is_group) return;
         rpos = PT_read_rpos(psg.ptmain, pt);
         apos = PT_read_apos(psg.ptmain, pt);
-        ptnd_check_part_inc_dt(ptnd.pdc, ptnd.parts,
-                                name, apos, rpos, dt, sum_bonds);
+        ptnd_check_part_inc_dt(ptnd.pdc, ptnd.parts, DataLoc(name, apos, rpos), dt, sum_bonds);
     }
     else if (PT_read_type(pt) == PT_NT_CHAIN) {
         psg.probe = 0;
         ptnd.dt = dt;
         ptnd.sum_bonds = sum_bonds;
-        PT_read_chain(psg.ptmain, pt, ptnd_chain_check_part(0));
+        PT_forwhole_chain(psg.ptmain, pt, ptnd_chain_check_part(0));
     }
     else {
         for (base = PT_QU; base< PT_B_MAX; base++) {
@@ -757,6 +766,7 @@ static void ptnd_check_part(char *probe, POS_TREE *pt, int  height, double dt, d
     }
     if (probe[height]) {
         if (PT_read_type(pt) == PT_NT_LEAF) {
+            // @@@ dupped code is in ptnd_chain_check_part::operator()
             name = PT_read_name(psg.ptmain, pt);
             if (!ptnd.new_match && psg.data[name].is_group)     return;
             rpos = PT_read_rpos(psg.ptmain, pt);
@@ -779,8 +789,7 @@ static void ptnd_check_part(char *probe, POS_TREE *pt, int  height, double dt, d
                 }
                 height++; pos++;
             }
-            ptnd_check_part_inc_dt(ptnd.pdc, ptnd.parts,
-                                        name, apos, rpos, dt, sum_bonds);
+            ptnd_check_part_inc_dt(ptnd.pdc, ptnd.parts, DataLoc(name, apos, rpos), dt, sum_bonds);
             return;
         }
         else {                // chain
@@ -788,7 +797,7 @@ static void ptnd_check_part(char *probe, POS_TREE *pt, int  height, double dt, d
             psg.height = height;
             ptnd.dt = dt;
             ptnd.sum_bonds = sum_bonds;
-            PT_read_chain(psg.ptmain, pt, ptnd_chain_check_part(split));
+            PT_forwhole_chain(psg.ptmain, pt, ptnd_chain_check_part(split));
             return;
         }
     }
