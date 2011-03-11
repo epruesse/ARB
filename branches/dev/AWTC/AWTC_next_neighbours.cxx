@@ -19,8 +19,6 @@
 
 #include <climits>
 
-#define awtc_assert(bed) arb_assert(bed)
-
 void awtc_ff_message(const char *msg) {
     GB_warning(msg);
 }
@@ -42,7 +40,7 @@ FamilyList::~FamilyList() {
 }
 
 FamilyList *FamilyList::insertSortedBy_matches(FamilyList *other) {
-    awtc_assert(next == NULL);                      // only insert unlinked instace!
+    ff_assert(next == NULL); // only insert unlinked instace!
 
     if (!other) {
         return this;
@@ -61,7 +59,7 @@ FamilyList *FamilyList::insertSortedBy_matches(FamilyList *other) {
 }
 
 FamilyList *FamilyList::insertSortedBy_rel_matches(FamilyList *other) {
-    awtc_assert(next == NULL);                      // only insert unlinked instace!
+    ff_assert(next == NULL); // only insert unlinked instace!
 
     if (rel_matches >= other->rel_matches) {
         next = other;
@@ -80,12 +78,11 @@ FamilyList *FamilyList::insertSortedBy_rel_matches(FamilyList *other) {
 //      FamilyFinder
 
 FamilyFinder::FamilyFinder(bool rel_matches_)
-    : rel_matches(rel_matches_), 
+    : rel_matches(rel_matches_),
       family_list(NULL),
       hits_truncated(false),
       real_hits(-1),
-      start_pos(-1), 
-      end_pos(-1) 
+      range(-1, -1)
 {
 }
 
@@ -139,7 +136,7 @@ GB_ERROR PT_FamilyFinder::init_communication() {
 GB_ERROR PT_FamilyFinder::open(const char *servername) {
     GB_ERROR error = 0;
     
-    awtc_assert(!com && !link);
+    ff_assert(!com && !link);
 
     if (arb_look_and_start_server(AISC_MAGIC_NUMBER, servername, gb_main)) {
         error = "Cannot contact PT  server";
@@ -154,7 +151,7 @@ GB_ERROR PT_FamilyFinder::open(const char *servername) {
         }
     }
 
-    awtc_assert(error || (com && link));
+    ff_assert(error || (com && link));
     
     return error;
 }
@@ -192,8 +189,8 @@ GB_ERROR PT_FamilyFinder::retrieve_family(const char *sequence, FF_complement co
                      LOCS_FF_SORT_TYPE,       long(uses_rel_matches()), // 0: matches, 1: relative matches (0 hardcoded till July 2008)
                      LOCS_FF_SORT_MAX,        long(max_results),      // speed up family sorting (only sort retrieved results)
                      LOCS_FF_COMPLEMENT,      long(compl_mode),       // any combination of: 1 = forward, 2 = reverse, 4 = reverse-complement, 8 = complement (1 hardcoded in PT-Server till July 2008)
-                     LOCS_RANGE_STARTPOS,     long(start_pos),
-                     LOCS_RANGE_ENDPOS,       long(end_pos),
+                     LOCS_RANGE_STARTPOS,     long(range.get_start()),
+                     LOCS_RANGE_ENDPOS,       long(range.get_end()),
                      LOCS_FF_FIND_FAMILY,     &bs, // RPC (has to be last parameter!)
                      NULL))
         {
@@ -325,7 +322,7 @@ void TEST_SLOW_PT_FamilyFinder() {
 
                 const char *sequence;
                 if (partial) {
-                    ff.restrict_2_region(39, 91); // alignment range of bases 30-69 of sequence of 'LgtLytic' 
+                    ff.restrict_2_region(TargetRange(39, 91)); // alignment range of bases 30-69 of sequence of 'LgtLytic' 
                     sequence = "UCUAGCUUGCUAGACGGGUGGCGAG" "GGUAACCGUAGGGGA"; // bases 30-54 of sequence of 'LgtLytic' + 15 bases from 'DcdNodos' (outside region)
                 }
                 else {
