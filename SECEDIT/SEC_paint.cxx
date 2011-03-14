@@ -20,6 +20,8 @@
 
 #include <ed4_extern.hxx>
 
+#include <arb_defs.h>
+
 #include <iostream>
 #include <sstream>
 
@@ -250,9 +252,9 @@ void SEC_root::paintEcoliPositions(AW_device *device) {
     paintPosAnnotation(device, SEC_GC_ECOLI, size_t(abspos), "1", true, true);
 
     const BI_ecoli_ref *ecoli = db->ecoli();
-    for (size_t ep = 99; ep < ecoli->base_count(); ep += 100) {
+    for (size_t ep = bio2info(100); ep < ecoli->base_count(); ep += 100) {
         abspos = ecoli->rel_2_abs(ep);
-        paintPosAnnotation(device, SEC_GC_ECOLI, size_t(abspos), GBS_global_string("%zu", ep+1), true, true);
+        paintPosAnnotation(device, SEC_GC_ECOLI, size_t(abspos), GBS_global_string("%i", info2bio(ep)), true, true);
     }
 }
 
@@ -1088,29 +1090,29 @@ GB_ERROR SEC_root::paint(AW_device *device) {
 
 
             int cursor_gc  = -1;
-            int cursor_pos = -1;
+            int disp_pos = -1;
 
             switch (displayParams.show_curpos) {
                 case SHOW_ABS_CURPOS:
-                    cursor_gc  = SEC_GC_CURSOR;
-                    cursor_pos = curAbs+1; // show absolute position starting with 1
+                    cursor_gc = SEC_GC_CURSOR;
+                    disp_pos  = info2bio(curAbs);
                     break;
                 case SHOW_BASE_CURPOS:
-                    cursor_gc  = SEC_GC_DEFAULT;
-                    cursor_pos = host().get_base_position(curAbs)+1; // show base position starting with 1
+                    cursor_gc = SEC_GC_DEFAULT;
+                    disp_pos  = host().get_base_position(curAbs+1); // show bases up to cursorpos (inclusive)
                     break;
                 case SHOW_ECOLI_CURPOS: {
-                    cursor_gc  = SEC_GC_ECOLI;
-                    cursor_pos = db->ecoli()->abs_2_rel(curAbs)+1; // show ecoli base position starting with 1
+                    cursor_gc = SEC_GC_ECOLI;
+                    disp_pos  = db->ecoli()->abs_2_rel(curAbs+1); // show ecoli base position (inclusive cursorpos)
                     break;
                 }
                 case SHOW_NO_CURPOS:
-                    cursor_gc        = -1;
+                    cursor_gc = -1;
                     break;
             }
 
             if (cursor_gc >= 0) {
-                paintPosAnnotation(device, cursor_gc, curAbs, GBS_global_string("%u", cursor_pos), true, true);
+                paintPosAnnotation(device, cursor_gc, curAbs, GBS_global_string("%u", disp_pos), true, true);
             }
         }
     }

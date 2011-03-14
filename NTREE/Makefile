@@ -178,6 +178,7 @@ ad_transpro.o: $(ARBHOME)/INCLUDE/AP_codon_table.hxx
 ad_transpro.o: $(ARBHOME)/INCLUDE/AP_pro_a_nucs.hxx
 ad_transpro.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ad_transpro.o: $(ARBHOME)/INCLUDE/arb_core.h
+ad_transpro.o: $(ARBHOME)/INCLUDE/arb_defs.h
 ad_transpro.o: $(ARBHOME)/INCLUDE/arb_error.h
 ad_transpro.o: $(ARBHOME)/INCLUDE/arb_msg.h
 ad_transpro.o: $(ARBHOME)/INCLUDE/arb_progress.h
@@ -288,6 +289,7 @@ AP_cprofile.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AP_cprofile.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AP_cprofile.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AP_cprofile.o: $(ARBHOME)/INCLUDE/arb_core.h
+AP_cprofile.o: $(ARBHOME)/INCLUDE/arb_defs.h
 AP_cprofile.o: $(ARBHOME)/INCLUDE/arb_error.h
 AP_cprofile.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AP_cprofile.o: $(ARBHOME)/INCLUDE/arb_progress.h
@@ -592,6 +594,7 @@ NT_ins_col.o: $(ARBHOME)/INCLUDE/ad_prot.h
 NT_ins_col.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 NT_ins_col.o: $(ARBHOME)/INCLUDE/arb_assert.h
 NT_ins_col.o: $(ARBHOME)/INCLUDE/arb_core.h
+NT_ins_col.o: $(ARBHOME)/INCLUDE/arb_defs.h
 NT_ins_col.o: $(ARBHOME)/INCLUDE/arb_error.h
 NT_ins_col.o: $(ARBHOME)/INCLUDE/arb_msg.h
 NT_ins_col.o: $(ARBHOME)/INCLUDE/arb_string.h

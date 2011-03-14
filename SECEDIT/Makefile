@@ -85,6 +85,7 @@ SEC_db.o: $(ARBHOME)/INCLUDE/ad_prot.h
 SEC_db.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 SEC_db.o: $(ARBHOME)/INCLUDE/arb_assert.h
 SEC_db.o: $(ARBHOME)/INCLUDE/arb_core.h
+SEC_db.o: $(ARBHOME)/INCLUDE/arb_defs.h
 SEC_db.o: $(ARBHOME)/INCLUDE/arb_error.h
 SEC_db.o: $(ARBHOME)/INCLUDE/arb_msg.h
 SEC_db.o: $(ARBHOME)/INCLUDE/arb_string.h
@@ -288,6 +289,7 @@ SEC_paint.o: secedit_extern.hxx
 SEC_paint.o: $(ARBHOME)/INCLUDE/ad_prot.h
 SEC_paint.o: $(ARBHOME)/INCLUDE/arb_assert.h
 SEC_paint.o: $(ARBHOME)/INCLUDE/arb_core.h
+SEC_paint.o: $(ARBHOME)/INCLUDE/arb_defs.h
 SEC_paint.o: $(ARBHOME)/INCLUDE/arb_error.h
 SEC_paint.o: $(ARBHOME)/INCLUDE/arb_msg.h
 SEC_paint.o: $(ARBHOME)/INCLUDE/arb_string.h

@@ -142,6 +142,7 @@ ED4_cursor.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ED4_cursor.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 ED4_cursor.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ED4_cursor.o: $(ARBHOME)/INCLUDE/arb_core.h
+ED4_cursor.o: $(ARBHOME)/INCLUDE/arb_defs.h
 ED4_cursor.o: $(ARBHOME)/INCLUDE/arb_error.h
 ED4_cursor.o: $(ARBHOME)/INCLUDE/arb_msg.h
 ED4_cursor.o: $(ARBHOME)/INCLUDE/arb_progress.h
@@ -306,6 +307,7 @@ ED4_main.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 ED4_main.o: $(ARBHOME)/INCLUDE/AP_pro_a_nucs.hxx
 ED4_main.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ED4_main.o: $(ARBHOME)/INCLUDE/arb_core.h
+ED4_main.o: $(ARBHOME)/INCLUDE/arb_defs.h
 ED4_main.o: $(ARBHOME)/INCLUDE/arb_error.h
 ED4_main.o: $(ARBHOME)/INCLUDE/arb_msg.h
 ED4_main.o: $(ARBHOME)/INCLUDE/arb_string.h
@@ -504,6 +506,7 @@ ED4_no_class.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ED4_no_class.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 ED4_no_class.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ED4_no_class.o: $(ARBHOME)/INCLUDE/arb_core.h
+ED4_no_class.o: $(ARBHOME)/INCLUDE/arb_defs.h
 ED4_no_class.o: $(ARBHOME)/INCLUDE/arb_error.h
 ED4_no_class.o: $(ARBHOME)/INCLUDE/arb_msg.h
 ED4_no_class.o: $(ARBHOME)/INCLUDE/arb_progress.h

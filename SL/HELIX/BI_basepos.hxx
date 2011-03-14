@@ -55,6 +55,7 @@ public:
 
     size_t abs_2_rel(size_t abs) const {
         // returns the number of base characters in range [0..abs-1]!
+        // (i.e. result is in [0..bases])
         // 'abs' has to be in range [0..abs_count()]
 
         bi_assert(gotData());

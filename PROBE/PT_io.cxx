@@ -327,7 +327,3 @@ long PT_abs_2_rel(long pos) {
     return psg.bi_ecoli->abs_2_rel(pos);
 }
 
-long PT_rel_2_abs(long pos) {
-    if (!psg.ecoli) return pos;
-    return psg.bi_ecoli->rel_2_abs(pos);
-}

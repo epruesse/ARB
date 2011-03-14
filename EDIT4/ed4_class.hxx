@@ -38,6 +38,12 @@
 
 #define ed4_beep() do { fputc(char(7), stdout); fflush(stdout); } while (0)
 
+enum PositionType {
+    ED4_POS_CURSOR, 
+    ED4_POS_ECOLI, 
+    ED4_POS_BASE, 
+};
+    
 // ****************************************
 // needed prototypes, definitions below
 // ****************************************
@@ -1799,7 +1805,7 @@ void        ED4_store_curpos        (AW_window *aww, AW_CL cd1, AW_CL cd2);
 void        ED4_restore_curpos      (AW_window *aww, AW_CL cd1, AW_CL cd2);
 void        ED4_clear_stored_curpos     (AW_window *aww, AW_CL cd1, AW_CL cd2);
 void        ED4_helix_jump_opposite     (AW_window *aww, AW_CL /* cd1 */, AW_CL /* cd2 */);
-void        ED4_jump_to_cursor_position (AW_window *aww, char *awar_name, bool callback_flag);
+void        ED4_jump_to_cursor_position (AW_window *aww, AW_CL cl_awar_name, AW_CL cl_pos_type);
 void        ED4_remote_set_cursor_cb    (AW_root *awr, AW_CL, AW_CL);
 void        ED4_change_cursor       (AW_window * /* aww */, AW_CL /* cd1 */, AW_CL /* cd2 */);
 void        ED4_set_reference_species   (AW_window *aww, AW_CL cd1, AW_CL cd2);

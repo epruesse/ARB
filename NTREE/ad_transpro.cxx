@@ -21,6 +21,7 @@
 #include <arb_progress.h>
 #include <arbdbt.h>
 #include <cctype>
+#include <arb_defs.h>
 
 #define nt_assert(bed) arb_assert(bed)
 
@@ -205,7 +206,7 @@ static GB_ERROR arb_r2a(GBDATA *gb_main, bool use_entries, bool save_entries, in
 #define AWAR_TRANSPRO_PREFIX "transpro/"
 #define AWAR_TRANSPRO_SOURCE AWAR_TRANSPRO_PREFIX "source"
 #define AWAR_TRANSPRO_DEST   AWAR_TRANSPRO_PREFIX "dest"
-#define AWAR_TRANSPRO_POS    AWAR_TRANSPRO_PREFIX "pos"
+#define AWAR_TRANSPRO_POS    AWAR_TRANSPRO_PREFIX "pos" // [0..N-1]
 #define AWAR_TRANSPRO_MODE   AWAR_TRANSPRO_PREFIX "mode"
 #define AWAR_TRANSPRO_XSTART AWAR_TRANSPRO_PREFIX "xstart"
 #define AWAR_TRANSPRO_WRITE  AWAR_TRANSPRO_PREFIX "write"
@@ -235,7 +236,7 @@ void transpro_event(AW_window *aww) {
 }
 
 void nt_trans_cursorpos_changed(AW_root *awr) {
-    int pos = awr->awar(AWAR_CURSOR_POSITION)->read_int()-1;
+    int pos = bio2info(awr->awar(AWAR_CURSOR_POSITION)->read_int());
     pos = pos % 3;
     awr->awar(AWAR_TRANSPRO_POS)->write_int(pos);
 }
@@ -278,9 +279,10 @@ AW_window *NT_create_dna_2_pro_window(AW_root *root) {
 
     aws->at("pos");
     aws->create_option_menu(AWAR_TRANSPRO_POS, 0, "");
-    aws->insert_option("1", "1", 0);
-    aws->insert_option("2", "2", 1);
-    aws->insert_option("3", "3", 2);
+    for (int p = 1; p <= 3; ++p) {
+        char label[2] = { p+'0', 0 };
+        aws->insert_option(label, label, bio2info(p));
+    }
     aws->update_option_menu();
     aws->get_root()->awar_int(AWAR_CURSOR_POSITION)->add_callback(nt_trans_cursorpos_changed);
 

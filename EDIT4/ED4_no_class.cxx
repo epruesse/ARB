@@ -29,6 +29,8 @@
 #include <arb_progress.h>
 #include <aw_root.hxx>
 
+#include <arb_defs.h>
+
 #include <cctype>
 
 
@@ -665,28 +667,45 @@ void ED4_remote_set_cursor_cb(AW_root *awr, AW_CL /* cd1 */, AW_CL /* cd2 */)
     }
 }
 
-void ED4_jump_to_cursor_position(AW_window *aww, char *awar_name, bool /* callback_flag */)           // callback function
-{
+void ED4_jump_to_cursor_position(AW_window *aww, AW_CL cl_awar_name, AW_CL cl_pos_type) {
+    const char   *awar_name = (const char *)cl_awar_name;
+    PositionType  posType   = (PositionType)cl_pos_type;
     ED4_ROOT->use_window(aww);
 
     ED4_cursor *cursor = &ED4_ROOT->get_ed4w()->cursor;
     GB_ERROR    error  = 0;
 
     long pos = aww->get_root()->awar(awar_name)->read_int();
-    if (pos>0) pos--;                               // user->real position (userpos is 1..n)
+    
+    if (pos>0) pos = bio2info(pos);
 
-    ED4_remap *remap  = ED4_ROOT->root_group_man->remap();
-    long       max    = remap->screen_to_sequence(remap->get_max_screen_pos());
-    if (pos > max) pos = max;
+    switch (posType) {
+        case ED4_POS_CURSOR: {
+            e4_assert(strcmp(awar_name, ED4_ROOT->get_ed4w()->awar_path_for_cursor)==0);
+            break;
+        }
+        case ED4_POS_ECOLI: {
+            e4_assert(strcmp(awar_name, ED4_ROOT->get_ed4w()->awar_path_for_Ecoli)==0);
+            BI_ecoli_ref *ecoli = ED4_ROOT->ecoli_ref;
 
-    if (strcmp(awar_name, ED4_ROOT->get_ed4w()->awar_path_for_Ecoli)==0) { // callback from ecoli
-        BI_ecoli_ref *ecoli = ED4_ROOT->ecoli_ref;
-
-        if (ecoli->gotData()) pos = ecoli->rel_2_abs(pos);
-        else error = "No ecoli reference";
+            if (ecoli->gotData()) pos = ecoli->rel_2_abs(pos);
+            else error = "No ecoli reference";
+            break;
+        }
+        case ED4_POS_BASE: {
+            e4_assert(strcmp(awar_name, ED4_ROOT->get_ed4w()->awar_path_for_basePos)==0);
+            pos = cursor->base2sequence_position(pos); 
+            break;
+        }
     }
-    else if (strcmp(awar_name, ED4_ROOT->get_ed4w()->awar_path_for_basePos)==0) { // callback from basePos
-        pos = cursor->base2sequence_position(pos);
+
+    // now position is absolute [0..N-1]
+
+    // limit to screen
+    {
+        ED4_remap *remap  = ED4_ROOT->root_group_man->remap();
+        long       max    = remap->screen_to_sequence(remap->get_max_screen_pos());
+        if (pos > max) pos = max;
     }
 
     if (error) {

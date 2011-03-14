@@ -50,6 +50,7 @@
 #include <aw_device.hxx>
 
 #include <arbdbt.h>
+#include <arb_defs.h>
 
 #include <iostream>
 #include <cmath>
@@ -101,7 +102,7 @@ struct CPRO_struct {
                                  // member
     float grouprate;           // ratio between transitions and transversions
     float distancecorrection;  // results out of grouprate
-    long column;               // column of alignment that is shown
+    long column;               // column of alignment that is shown [1..N]
     float maxdistance;         // statistic shows up to this point of distance
     long gridhorizontal;       // grid over statistic
     long gridvertical;         // -^-
@@ -710,7 +711,7 @@ void create_cprofile_var(AW_root *aw_root, AW_default aw_def)
     aw_root->awar_string("cpro/countgaps", "", aw_def);
     aw_root->awar_string("cpro/condensename", "PVD", aw_def);
     aw_root->awar_float("cpro/transratio", 0.5, aw_def);
-    aw_root->awar_int(AWAR_CURSOR_POSITION, 1, GLOBAL_gb_main);
+    aw_root->awar_int(AWAR_CURSOR_POSITION, info2bio(0), GLOBAL_gb_main);
     aw_root->awar_int("cpro/maxdistance", 100, aw_def);
     aw_root->awar_int("cpro/resolution", 100, aw_def);
     aw_root->awar_int("cpro/partition", 100, aw_def);
@@ -935,23 +936,19 @@ void CPRO_drawstatistic (AW_device *device, unsigned char which_statistic)
 
     long firstx;
     for (firstx=0;
-        firstx<CPRO.result[which_statistic].resolution*CPRO.maxdistance;
-        firstx++)
+         firstx<CPRO.result[which_statistic].resolution*CPRO.maxdistance;
+         firstx++)
     {
-        CPRO_getfromstatistic(equal, ingroup, (long)firstx, CPRO.column-1,
-                              which_statistic, mode);
-        accu=CPRO_statisticaccumulation((long)firstx,
-                                        CPRO.column-1, which_statistic);
-        if (accu>=(float)CPRO.leastaccu)
-        {
+        CPRO_getfromstatistic(equal, ingroup, (long)firstx, bio2info(CPRO.column), which_statistic, mode);
+        accu = CPRO_statisticaccumulation((long)firstx, bio2info(CPRO.column), which_statistic);
+        if (accu>=(float)CPRO.leastaccu) {
             xpos=(float)firstx*step/CPRO.maxdistance+leftfirst;
             ypos=topfirst+equal*highfirst;
 
             // do not draw outside canvas-box
             if (xpos+linelength > leftfirst+widthfirst+1) continue;
 
-            confidinterval=highfirst*
-                CPRO_confidinterval(firstx, CPRO.column-1, which_statistic, mode);
+            confidinterval = highfirst * CPRO_confidinterval(firstx, bio2info(CPRO.column), which_statistic, mode);
 
             ytop=ypos-confidinterval;
             if (ytop>=topfirst) {
@@ -989,14 +986,11 @@ void CPRO_drawstatistic (AW_device *device, unsigned char which_statistic)
     device->text(GC_black, "  pairs", leftsecond-50, topsecond+10*3, 0, 1, 0, 0);
 
     /* fill second box */
-    for (firstx=0; firstx<(long)widthsecond; firstx++)
-    {
-        resaccu=CPRO_statisticaccumulation(
-                                           (long)(firstx*CPRO.result[which_statistic].resolution
-                                                  /widthsecond*CPRO.maxdistance), CPRO.column-1, which_statistic);
-        rate=1.0-(sqrt(resaccu)/sqrt(CPRO.result[which_statistic].maxaccu));
-        device->line(GC_black, firstx+leftsecond, topsecond+rate*highsecond,
-                     firstx+leftsecond, topsecond+highsecond, 1, 0, 0);
+    for (firstx=0; firstx<(long)widthsecond; firstx++) {
+        long res = firstx*CPRO.result[which_statistic].resolution /widthsecond*CPRO.maxdistance;
+        resaccu  = CPRO_statisticaccumulation(res, bio2info(CPRO.column), which_statistic);
+        rate     = 1.0-(sqrt(resaccu)/sqrt(CPRO.result[which_statistic].maxaccu));
+        device->line(GC_black, firstx+leftsecond, topsecond+rate*highsecond, firstx+leftsecond, topsecond+highsecond, 1, 0, 0);
     }
 }
 
@@ -1041,16 +1035,14 @@ static void CPRO_column_cb(AW_root *awr, AW_window *aws, AW_CL which_statistic)
     CPRO_expose_cb(aws, which_statistic, 0);
 }
 
-void CPRO_columnminus_cb(AW_window *aws)
-{
-    AW_root *awr = aws->get_root();
-    if (CPRO.column>1) awr->awar(AWAR_CURSOR_POSITION)->write_int(CPRO.column-1);
+void CPRO_columnminus_cb(AW_window *aws) {
+    if (CPRO.column>1) {
+        aws->get_root()->awar(AWAR_CURSOR_POSITION)->write_int(CPRO.column-1);
+    }
 }
 
-void CPRO_columnplus_cb(AW_window *aws, AW_CL /* which_statistic */, AW_CL)
-{
-    AW_root *awr = aws->get_root();
-    awr->awar(AWAR_CURSOR_POSITION)->write_int(CPRO.column+1);
+void CPRO_columnplus_cb(AW_window *aws, AW_CL /* which_statistic */, AW_CL) {
+    aws->get_root()->awar(AWAR_CURSOR_POSITION)->write_int(CPRO.column+1);
 }
 
 void CPRO_savestatistic_cb(AW_window *aw, AW_CL which_statistic)
