@@ -224,11 +224,7 @@ void SEC_db_interface::reload_ecoli(const SEC_dbcb *cb) {
         ecoli_seq = new SEC_seq_data(gb_ecoli, aliname, cb);
         Ecoli = new BI_ecoli_ref;
 
-        GB_ERROR error = Ecoli->init(ecoli_seq->sequence(), ecoli_seq->length());
-        if (error) {
-            error = ta.close(error);
-            aw_message(error);
-        }
+        Ecoli->init(ecoli_seq->sequence(), ecoli_seq->length());
     }
     else {
         ecoli_seq = 0;
