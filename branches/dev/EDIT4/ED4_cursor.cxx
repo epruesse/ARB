@@ -1846,6 +1846,13 @@ void TEST_BI_ecoli_ref() {
 
 void TEST_ED4_base_position() {
     ED4_ROOT = NULL;
+
+    ED4_init_is_align_character("-"); // count '.' as base
+
+    TEST_BASE_POS_EQUALS("-.AC-G-T-.",
+                         "  [0]  0  0  1  2  3  3  4  4  5  5  6  [6]", // abs -> rel
+                         "  [0]  1  2  3  5  7  9 [10]");               // rel -> abs
+
     ED4_init_is_align_character(".-");
 
     TEST_BASE_POS_EQUALS("-.AC-G-T-.",
