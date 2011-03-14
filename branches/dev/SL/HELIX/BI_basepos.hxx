@@ -22,6 +22,8 @@
 #define bi_assert(bed) arb_assert(bed)
 #endif
 
+typedef bool (*is_gap_fun)(char);
+
 class BasePosition {
     size_t absLen;
     size_t baseCount;
@@ -43,6 +45,7 @@ class BasePosition {
 
 public:
     void initialize(const char *seq, size_t size);
+    void initialize(const char *seq, size_t size, is_gap_fun is_gap);
 
     BasePosition() { setup(); }
     BasePosition(const char *seq, size_t size) { setup(); initialize(seq, size); }

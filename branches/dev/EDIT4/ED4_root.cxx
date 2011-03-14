@@ -24,7 +24,6 @@
 #include <ed4_extern.hxx>
 #include <fast_aligner.hxx>
 #include <AW_helix.hxx>
-#include <BI_basepos.hxx>
 #include <st_window.hxx>
 #include <gde.hxx>
 #include <awt.hxx>
