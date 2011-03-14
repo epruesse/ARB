@@ -15,6 +15,7 @@
 #include "probe_tree.h"
 #include <arbdbt.h>
 #include <arb_str.h>
+#include <arb_defs.h>
 
 #ifdef P_
 #error P_ already defined
@@ -258,59 +259,58 @@ extern "C" char *get_design_info(PT_tprobes  *tprobe)
     sprintf(p, "%-*s", pdc->probelen+1, probe);
     p += strlen(p);
 
-    int apos = tprobe->apos;
-    int c    = 0;
-    int cs   = '=';
-    { // search nearest hit
-        for (c=0; c<ALPHA_SIZE; c++) {
-            if (!pdc->pos_groups[c]) { // new group
-                pdc->pos_groups[c] = tprobe->apos;
-                break;
-            }
-            int dist = tprobe->apos - pdc->pos_groups[c];
-            if (dist<0) dist = -dist;
-            if (dist < pdc->probelen) {
-                apos = tprobe->apos - pdc->pos_groups[c];
-                if (apos > 0) {
-                    cs = '+';
+    {
+        int apos = info2bio(tprobe->apos);
+        int c    = 0;
+        int cs   = '=';
+
+    
+        { // search nearest hit
+            for (c=0; c<ALPHA_SIZE; c++) {
+                if (!pdc->pos_groups[c]) { // new group
+                    pdc->pos_groups[c] = apos;
+                    break;
                 }
-                else {
-                    apos = -apos; cs = '-';
+                int dist = apos - pdc->pos_groups[c];
+                if (dist<0) dist = -dist;
+                if (dist < pdc->probelen) {
+                    apos = apos - pdc->pos_groups[c];
+                    if (apos > 0) {
+                        cs = '+';
+                        break;
+                    }
+                    cs = '-';
+                    apos = -apos;
+                    break;
                 }
-                break;
             }
         }
+
+        // le apos ecol
+        p += sprintf(p, "%2i %c%c%6i %4li ", tprobe->seq_len, c+'A', cs,
+                     apos,
+                     PT_abs_2_rel(tprobe->apos+1)); // ecoli-bases inclusive apos ("bases before apos+1")
     }
-
-    // le apos ecol
-    sprintf(p, "%2i %c%c%6i %4li ", tprobe->seq_len, c+'A', cs, apos, PT_abs_2_rel(tprobe->apos));
-    p += strlen(p);
-
     // grps
-    sprintf(p, "%4i ", tprobe->groupsize);
-    p += strlen(p);
+    p += sprintf(p, "%4i ", tprobe->groupsize);
 
     // G+C
-    sprintf(p, "%-4.1f ", ((double)pt_get_gc_content(tprobe->sequence))/tprobe->seq_len*100.0);
-    p += strlen(p);
+    p += sprintf(p, "%-4.1f ", ((double)pt_get_gc_content(tprobe->sequence))/tprobe->seq_len*100.0);
 
     // 4GC+2AT
-    sprintf(p, "%-7.1f ", pt_get_temperature(tprobe->sequence));
-    p += strlen(p);
+    p += sprintf(p, "%-7.1f ", pt_get_temperature(tprobe->sequence));
 
     // probe string
-    probe = reverse_probe(tprobe->sequence, 0);
+    probe  = reverse_probe(tprobe->sequence, 0);
     complement_probe(probe, 0);
     PT_base_2_string(probe, 0); // convert probe to real ASCII
-    sprintf(p, "%-*s |", pdc->probelen, probe);
+    p     += sprintf(p, "%-*s |", pdc->probelen, probe);
     free(probe);
-    p += strlen(p);
 
     // non-group hits by temp. decrease
     for (sum=i=0; i<PERC_SIZE; i++) {
         sum += tprobe->perc[i];
-        sprintf(p, "%3i,", sum);
-        p += strlen(p);
+        p   += sprintf(p, "%3i,", sum);
     }
 
     return buffer;
@@ -432,7 +432,7 @@ static void ptnd_check_position(PT_pdc *pdc) {
                 tprobe;
                 tprobe = tprobe_next) {
         tprobe_next = tprobe->next;
-        long relpos = PT_abs_2_rel(tprobe->apos);
+        long relpos = PT_abs_2_rel(tprobe->apos); // @@@ needs fix
         if (relpos < pdc->minpos || relpos > pdc->maxpos) {
             destroy_PT_tprobes(tprobe);
         }
