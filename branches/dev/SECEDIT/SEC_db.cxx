@@ -21,6 +21,8 @@
 #include <ed4_extern.hxx>
 #include <arbdbt.h>
 
+#include <arb_defs.h>
+
 using namespace std;
 
 // ----------------------------------
@@ -310,7 +312,7 @@ void SEC_root::set_cursor(int abspos, bool performRefresh) {
 
 void SEC_db_interface::cursor_changed(const SEC_dbcb *) {
     SEC_root *root    = secroot();
-    int       seq_pos = aw_root->awar_int(AWAR_CURSOR_POSITION)->read_int()-1; // sequence position is starting with 1
+    int       seq_pos = bio2info(aw_root->awar_int(AWAR_CURSOR_POSITION)->read_int());
 
     root->set_cursor(seq_pos, perform_refresh);
 }

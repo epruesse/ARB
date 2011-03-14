@@ -18,7 +18,7 @@
 #include "ed4_ProteinViewer.hxx"
 
 #include <arb_str.h>
-
+#include <arb_defs.h>
 
 /* --------------------------------------------------------------------------------
    CursorShape
@@ -862,9 +862,9 @@ void ED4_cursor::updateAwars()
 
     // update awars for cursor position:
 
-    aw_root->awar(win->awar_path_for_cursor)->write_int(seq_pos+1);
+    aw_root->awar(win->awar_path_for_cursor)->write_int(info2bio(seq_pos));
     if (ED4_update_global_cursor_awars_allowed) {
-        aw_root->awar(AWAR_CURSOR_POSITION)->write_int(seq_pos+1);      // this supports last cursor position for all applications
+        aw_root->awar(AWAR_CURSOR_POSITION)->write_int(info2bio(seq_pos)); // update ARB-global cursor position
     }
 
     // look if we have a commented search result under the cursor:
@@ -890,13 +890,13 @@ void ED4_cursor::updateAwars()
 
     BI_ecoli_ref *ecoli = ED4_ROOT->ecoli_ref;
     if (ecoli->gotData()) {
-        long ecoli_pos = ecoli->abs_2_rel(seq_pos);
-        aw_root->awar(win->awar_path_for_Ecoli)->write_int(ecoli_pos+1);
+        long ecoli_pos = ecoli->abs_2_rel(seq_pos+1); // inclusive position behind cursor
+        aw_root->awar(win->awar_path_for_Ecoli)->write_int(ecoli_pos);
     }
 
     // update awar for base position:
 
-    int base_pos = base_position.get_base_position(owner_of_cursor, seq_pos+1);
+    int base_pos = base_position.get_base_position(owner_of_cursor, seq_pos+1); // inclusive position behind cursor
     aw_root->awar(win->awar_path_for_basePos)->write_int(base_pos); // update awar for base position
 
     // update awar for IUPAC:

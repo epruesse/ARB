@@ -30,7 +30,7 @@ struct ED4_plugin_host {
     virtual const char *get_SAI_background(int start, int end) const    = 0; // get SAI background color
     virtual const char *get_search_background(int start, int end) const = 0; // get background color of search hits
 
-    virtual int get_base_position(int seq_position) const = 0; // transform seq-pos(gaps) to base-pos(nogaps)
+    virtual int get_base_position(int seq_position) const = 0; // transform seq-pos(gaps, [0..N]!) to base-pos(nogaps, [0..N]!) 
 
     virtual void forward_event(AW_event *event) const = 0; // all events not handled by SECEDIT are forwarded here
 

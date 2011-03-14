@@ -38,7 +38,7 @@
 /* local awars for edit and edit4: */
 
 #define AWAR_SPECIES_NAME_LOCAL    "tmp/edit/species_name" /* string: name of selected species */
-#define AWAR_CURSOR_POSITION_LOCAL "tmp/edit/cursor_position" /* int: position in sequence */
+#define AWAR_CURSOR_POSITION_LOCAL "tmp/edit/cursor_position" /* int: position in sequence [0..N-1] */
 #define AWAR_EDITOR_ALIGNMENT      "tmp/edit/alignment" /* string: alignment used by editor */
 
 /* global awars */
