@@ -1760,7 +1760,7 @@ struct test_absrel {
     virtual int rel_size() const = 0;
 
     int gen(int i) const { return torel ? a2r(i) : r2a(i); }
-    int get_size() const { return torel ? abs_size() : rel_size(); }
+    int get_size() const { return torel ? abs_size()+1 : rel_size(); }
 
     char *genResult() const {
         const int  BUFFERSIZE = 1024;
@@ -1768,7 +1768,7 @@ struct test_absrel {
         char      *cursor     = buffer;
         int        size       = get_size();
 
-        for (int i = -1; i<size+2; ++i) {
+        for (int i = -1; i<size+1; ++i) {
             int o = gen(i);
 
             if (i<0 || i >= size) {
@@ -1829,19 +1829,19 @@ struct test_basepos : public test_absrel {
     } while(0)
 
 void TEST_BI_ecoli_ref() {
-    TEST_ECOLIREF_EQUALS("-.AC-G-T-.", 12,
-                         "  [4]  0  0  0  1  2  2  3  3  4  4  4  4  [4]  [4]", // abs -> rel
-                         "  [7]  2  3  5  7  [7]  [7]");                        // rel -> abs
+    TEST_ECOLIREF_EQUALS("-.AC-G-T-.", 10,
+                         "  [4]  0  0  0  1  2  2  3  3  4  4  4  [4]", // abs -> rel
+                         "  [7]  2  3  5  7  [7]");                     // rel -> abs
 
-    TEST_ECOLIREF_EQUALS("A",   1, "  [0]  0  [0]  [0]",       "  [0]  0  [0]  [0]");
-    TEST_ECOLIREF_EQUALS("A",   2, "  [1]  0  1  [1]  [1]",    "  [0]  0  [0]  [0]");
+    TEST_ECOLIREF_EQUALS("A",   1, "  [0]  0  0  [0]",       "  [0]  0  [0]");
+    TEST_ECOLIREF_EQUALS("A",   2, "  [1]  0  1  1  [1]",    "  [0]  0  [0]");
 
-    TEST_ECOLIREF_EQUALS("A-",  2, "  [1]  0  1  [1]  [1]",    "  [0]  0  [0]  [0]");
-    TEST_ECOLIREF_EQUALS("-A",  2, "  [0]  0  0  [0]  [0]",    "  [1]  1  [1]  [1]");
+    TEST_ECOLIREF_EQUALS("A-",  2, "  [1]  0  1  1  [1]",    "  [0]  0  [0]");
+    TEST_ECOLIREF_EQUALS("-A",  2, "  [0]  0  0  0  [0]",    "  [1]  1  [1]");
 
-    TEST_ECOLIREF_EQUALS("A--", 3, "  [1]  0  1  1  [1]  [1]", "  [0]  0  [0]  [0]");
-    TEST_ECOLIREF_EQUALS("-A-", 3, "  [1]  0  0  1  [1]  [1]", "  [1]  1  [1]  [1]");
-    TEST_ECOLIREF_EQUALS("--A", 3, "  [0]  0  0  0  [0]  [0]", "  [2]  2  [2]  [2]");
+    TEST_ECOLIREF_EQUALS("A--", 3, "  [1]  0  1  1  1  [1]", "  [0]  0  [0]");
+    TEST_ECOLIREF_EQUALS("-A-", 3, "  [1]  0  0  1  1  [1]", "  [1]  1  [1]");
+    TEST_ECOLIREF_EQUALS("--A", 3, "  [0]  0  0  0  0  [0]", "  [2]  2  [2]");
 }
 
 void TEST_ED4_base_position() {
@@ -1849,17 +1849,17 @@ void TEST_ED4_base_position() {
     ED4_init_is_align_character(".-");
 
     TEST_BASE_POS_EQUALS("-.AC-G-T-.",
-                         "  [0]  0  0  0  1  2  2  3  3  4  4  [4]  [4]",        // abs -> rel
-                         "  [0]  2  3  5  7  [8]  [8]");                         // rel -> abs
+                         "  [0]  0  0  0  1  2  2  3  3  4  4  4  [4]", // abs -> rel
+                         "  [0]  2  3  5  7  [8]");                     // rel -> abs
 
-    TEST_BASE_POS_EQUALS("A",   "  [0]  0  [1]  [1]",       "  [0]  0  [1]  [1]");
+    TEST_BASE_POS_EQUALS("A",   "  [0]  0  1  [1]",       "  [0]  0  [1]");
 
-    TEST_BASE_POS_EQUALS("A-",  "  [0]  0  1  [1]  [1]",    "  [0]  0  [1]  [1]");
-    TEST_BASE_POS_EQUALS("-A",  "  [0]  0  0  [1]  [1]",    "  [0]  1  [2]  [2]");
+    TEST_BASE_POS_EQUALS("A-",  "  [0]  0  1  1  [1]",    "  [0]  0  [1]");
+    TEST_BASE_POS_EQUALS("-A",  "  [0]  0  0  1  [1]",    "  [0]  1  [2]");
     
-    TEST_BASE_POS_EQUALS("A--", "  [0]  0  1  1  [1]  [1]", "  [0]  0  [1]  [1]");
-    TEST_BASE_POS_EQUALS("-A-", "  [0]  0  0  1  [1]  [1]", "  [0]  1  [2]  [2]");
-    TEST_BASE_POS_EQUALS("--A", "  [0]  0  0  0  [1]  [1]", "  [0]  2  [3]  [3]");
+    TEST_BASE_POS_EQUALS("A--", "  [0]  0  1  1  1  [1]", "  [0]  0  [1]");
+    TEST_BASE_POS_EQUALS("-A-", "  [0]  0  0  1  1  [1]", "  [0]  1  [2]");
+    TEST_BASE_POS_EQUALS("--A", "  [0]  0  0  0  1  [1]", "  [0]  2  [3]");
 }
 
 #endif // UNIT_TESTS
