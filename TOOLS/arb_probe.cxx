@@ -492,7 +492,7 @@ void TEST_SLOW_match_probe() {
     };
     const char *expected =
         "    name---- fullname mis N_mis wmis pos rev          'UAUCGGAGAGUUUGA'\1"
-        "BcSSSS00\1" "  BcSSSS00            0     0  0.0   2 0   .......UU-===============-UCAAGUCGA\1";
+        "BcSSSS00\1" "  BcSSSS00            0     0  0.0   3 0   .......UU-===============-UCAAGUCGA\1";
 
     test_arb_probe(ARRAY_ELEMS(arguments), arguments, expected);
 }
@@ -527,10 +527,10 @@ void TEST_SLOW_match_designed_probe() {
     };
     const char *expected =
     "    name---- fullname mis N_mis wmis pos rev          'UCAAGUCGAGCGAUGAAG'\1"
-    "ClnCorin\1" "  ClnCorin            0     0  0.0  17 0   .GAGUUUGA-==================-UUCCUUCGG\1"
-    "CltBotul\1" "  CltBotul            0     0  0.0  17 0   ........A-==================-CUUCUUCGG\1"
-    "CPPParap\1" "  CPPParap            0     0  0.0  17 0   AGAGUUUGA-==================-UUCCUUCGG\1"
-    "ClfPerfr\1" "  ClfPerfr            0     0  0.0  17 0   AGAGUUUGA-==================-UUUCCUUCG\1";
+    "ClnCorin\1" "  ClnCorin            0     0  0.0  18 0   .GAGUUUGA-==================-UUCCUUCGG\1"
+    "CltBotul\1" "  CltBotul            0     0  0.0  18 0   ........A-==================-CUUCUUCGG\1"
+    "CPPParap\1" "  CPPParap            0     0  0.0  18 0   AGAGUUUGA-==================-UUCCUUCGG\1"
+    "ClfPerfr\1" "  ClfPerfr            0     0  0.0  18 0   AGAGUUUGA-==================-UUUCCUUCG\1";
 
     test_arb_probe(ARRAY_ELEMS(arguments), arguments, expected);
 }

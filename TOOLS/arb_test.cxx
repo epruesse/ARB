@@ -299,7 +299,7 @@ void TEST_SLOW_arb_probe() {
 
                        "    name---- fullname mis N_mis wmis pos rev          'UAUCGGAGAGUUUGA'"
                        "BcSSSS00"
-                       "  BcSSSS00            0     0  0.0   2 0   .......UU-===============-UCAAGUCGA"
+                       "  BcSSSS00            0     0  0.0   3 0   .......UU-===============-UCAAGUCGA"
                        );
 
     TEST_STDOUT_EQUALS("arb_probe"

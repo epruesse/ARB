@@ -230,6 +230,7 @@ PT_match.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 PT_match.o: $(ARBHOME)/INCLUDE/aisc_global.h
 PT_match.o: $(ARBHOME)/INCLUDE/arb_assert.h
 PT_match.o: $(ARBHOME)/INCLUDE/arb_core.h
+PT_match.o: $(ARBHOME)/INCLUDE/arb_defs.h
 PT_match.o: $(ARBHOME)/INCLUDE/arb_error.h
 PT_match.o: $(ARBHOME)/INCLUDE/arb_msg.h
 PT_match.o: $(ARBHOME)/INCLUDE/arb_string.h
