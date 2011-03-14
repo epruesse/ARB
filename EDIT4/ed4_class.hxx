@@ -31,6 +31,10 @@
 #ifndef ATTRIBUTES_H
 #include <attributes.h>
 #endif
+#ifndef BI_BASEPOS_HXX
+#include <BI_basepos.hxx>
+#endif
+
 
 #define ed4_beep() do { fputc(char(7), stdout); fflush(stdout); } while (0)
 
@@ -249,16 +253,11 @@ public:
     ~ED4_list();
 };
 
-class ED4_base_position {
+class ED4_base_position : private BasePosition {
     const ED4_base *calced4base;
-    int      *seq_pos;
-    int       count;
-    int       abs_len;
 
     void calc4base(const ED4_base *base);
-
     ED4_base_position(const ED4_base_position&); // copy-constructor not allowed
-
     void set_base(const ED4_base *base) { if (calced4base != base) calc4base(base); }
 
 public:
@@ -271,8 +270,8 @@ public:
     int get_base_position(const ED4_base *base, int sequence_position);
     int get_sequence_position(const ED4_base *base, int base_position);
 
-    int get_base_count(const ED4_base *base) { set_base(base); return count; }
-    int get_abs_len(const ED4_base *base) { set_base(base); return abs_len; }
+    int get_base_count(const ED4_base *base) { set_base(base); return base_count(); }
+    int get_abs_len(const ED4_base *base) { set_base(base); return abs_count(); }
 };
 
 class ED4_CursorShape;

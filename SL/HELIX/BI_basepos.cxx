@@ -11,22 +11,31 @@
 #include "BI_basepos.hxx"
 
 #include <arbdbt.h>
+#include <arb_str.h>
 
-inline bool isGap(char c) { return c == '-' || c == '.'; }
+
+static bool is_Gap(char c) { return c == '-' || c == '.'; }
 
 // ---------------------
 //      BasePosition
 
 void BasePosition::initialize(const char *seq, size_t size) {
+    initialize(seq, size, is_Gap);
+}
+
+void BasePosition::initialize(const char *seq, size_t size, is_gap_fun is_gap) {
     cleanup();
 
     absLen  = size;
     abs2rel = new size_t[absLen+1];
 
+    bool isGap[256];
+    for (int c = 0; c<256; ++c) isGap[c] = is_gap(c);
+
     size_t i;
     for (i = 0; seq[i] && i<size; ++i) {
         abs2rel[i] = baseCount;
-        if (!isGap(seq[i])) ++baseCount;
+        if (!isGap[safeCharIndex(seq[i])]) ++baseCount;
     }
     bi_assert(!seq[i]); // strlen(seq) > size (illegal)
     bi_assert(baseCount);
