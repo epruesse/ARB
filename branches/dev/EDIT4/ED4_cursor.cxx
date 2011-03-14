@@ -1833,15 +1833,15 @@ void TEST_BI_ecoli_ref() {
                          "  [4]  0  0  0  1  2  2  3  3  4  4  4  [4]", // abs -> rel
                          "  [7]  2  3  5  7  [7]");                     // rel -> abs
 
-    TEST_ECOLIREF_EQUALS("A",   1, "  [0]  0  0  [0]",       "  [0]  0  [0]");
+    TEST_ECOLIREF_EQUALS("A",   1, "  [1]  0  1  [1]",       "  [0]  0  [0]");
     TEST_ECOLIREF_EQUALS("A",   2, "  [1]  0  1  1  [1]",    "  [0]  0  [0]");
 
     TEST_ECOLIREF_EQUALS("A-",  2, "  [1]  0  1  1  [1]",    "  [0]  0  [0]");
-    TEST_ECOLIREF_EQUALS("-A",  2, "  [0]  0  0  0  [0]",    "  [1]  1  [1]");
+    TEST_ECOLIREF_EQUALS("-A",  2, "  [1]  0  0  1  [1]",    "  [1]  1  [1]");
 
     TEST_ECOLIREF_EQUALS("A--", 3, "  [1]  0  1  1  1  [1]", "  [0]  0  [0]");
     TEST_ECOLIREF_EQUALS("-A-", 3, "  [1]  0  0  1  1  [1]", "  [1]  1  [1]");
-    TEST_ECOLIREF_EQUALS("--A", 3, "  [0]  0  0  0  0  [0]", "  [2]  2  [2]");
+    TEST_ECOLIREF_EQUALS("--A", 3, "  [1]  0  0  0  1  [1]", "  [2]  2  [2]");
 }
 
 void TEST_ED4_base_position() {

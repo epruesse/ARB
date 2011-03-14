@@ -12,51 +12,55 @@
 
 #include <arbdbt.h>
 
-
-
-/*!*************************************************************************************
-*******         Reference to abs pos                    ********
-****************************************************************************************/
-void BI_ecoli_ref::bi_exit() {
-    delete [] abs2rel;
-    delete [] rel2abs;
-    abs2rel = 0;
-    rel2abs = 0;
-}
-
-BI_ecoli_ref::BI_ecoli_ref() {
-    memset((char *)this, 0, sizeof(BI_ecoli_ref));
-}
-
-BI_ecoli_ref::~BI_ecoli_ref() {
-    bi_exit();
-}
-
 inline bool isGap(char c) { return c == '-' || c == '.'; }
 
-const char *BI_ecoli_ref::init(const char *seq, size_t size) {
-    bi_exit();
+// ---------------------
+//      BasePosition
 
-    abs2rel = new size_t[size];
-    rel2abs = new size_t[size];
-    memset((char *)rel2abs, 0, (size_t)(sizeof(*rel2abs)*size));
+void BasePosition::initialize(const char *seq, size_t size) {
+    cleanup();
 
-    relLen = 0;
-    absLen = size;
+    absLen  = size;
+    abs2rel = new size_t[absLen+1];
+
     size_t i;
-    size_t sl = strlen(seq);
-    for (i=0; i<size; i++) {
-        abs2rel[i]      = relLen;
-        rel2abs[relLen] = i;
-        if (i<sl && !isGap(seq[i])) ++relLen;
+    for (i = 0; seq[i] && i<size; ++i) {
+        abs2rel[i] = baseCount;
+        if (!isGap(seq[i])) ++baseCount;
+    }
+    bi_assert(!seq[i]); // strlen(seq) > size (illegal)
+    bi_assert(baseCount);
+
+    for (; i <= size; ++i) {
+        abs2rel[i] = baseCount;
     }
 
-    bi_assert(relLen>0); // otherwise BI_ecoli_ref behaves completely wrong
-
-    return 0;
+    rel2abs = new size_t[baseCount+1];
+    for (i = size; i>0; --i) {
+        size_t rel = abs2rel[i];
+        if (rel) {
+            rel2abs[rel-1] = i-1;
+        }
+    }
 }
 
-const char *BI_ecoli_ref::init(GBDATA *gb_main, char *alignment_name, char *ref_name) {
+// ---------------------
+//      BI_ecoli_ref
+
+GB_ERROR BI_ecoli_ref::init(GBDATA *gb_main) {
+    GB_transaction ta(gb_main);
+
+    char     *ref = GBT_get_default_ref(gb_main);
+    char     *use = GBT_get_default_alignment(gb_main);
+    GB_ERROR  err = init(gb_main, use, ref);
+
+    free(ref);
+    free(use);
+
+    return err;
+}
+
+GB_ERROR BI_ecoli_ref::init(GBDATA *gb_main, char *alignment_name, char *ref_name) {
     GB_transaction ta(gb_main);
 
     GB_ERROR err  = 0;
@@ -70,26 +74,16 @@ const char *BI_ecoli_ref::init(GBDATA *gb_main, char *alignment_name, char *ref_
             GBDATA *gb_ref   = GBT_read_sequence(gb_ref_con, alignment_name);
             if (!gb_ref) err = GBS_global_string("Your SAI '%s' has no sequence '%s/data'", ref_name, alignment_name);
             else {
-                err = init(GB_read_char_pntr(gb_ref), size);
+                const char *data = GB_read_char_pntr(gb_ref);
+                if (!data) {
+                    err = GB_await_error();
+                }
+                else {
+                    init(data, size);
+                }
             }
         }
     }
     return err;
 }
-
-const char *BI_ecoli_ref::init(GBDATA *gb_main) {
-    GB_transaction ta(gb_main);
-
-    char     *ref = GBT_get_default_ref(gb_main);
-    char     *use = GBT_get_default_alignment(gb_main);
-    GB_ERROR  err = init(gb_main, use, ref);
-
-    free(ref);
-    free(use);
-
-    return err;
-}
-
-
-
 

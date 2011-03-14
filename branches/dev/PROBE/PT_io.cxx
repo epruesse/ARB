@@ -316,14 +316,8 @@ void PT_build_species_hash() {
 
     if (psg.ecoli) {
         BI_ecoli_ref *ref = new BI_ecoli_ref;
-        const char *error = ref->init(psg.ecoli, strlen(psg.ecoli));
-        if (error) {
-            delete psg.ecoli;
-            psg.ecoli = 0;
-        }
-        else {
-            psg.bi_ecoli = ref;
-        }
+        ref->init(psg.ecoli, strlen(psg.ecoli));
+        psg.bi_ecoli = ref;
     }
 }
 
