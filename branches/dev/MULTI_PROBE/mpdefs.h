@@ -57,7 +57,10 @@ struct apd_sequence {
 extern struct Params {
     int   DESIGNCPLIPOUTPUT;
     int   SERVERID;
-    char *DESINGNAMES;
+    char *DESIGNNAMES;
+#if defined(DEVEL_RALF)
+#warning DRY (DESIGNNAMES is completely unused)
+#endif
     int   DESIGNPROBELENGTH;
     char *DESIGNSEQUENCE;
 
