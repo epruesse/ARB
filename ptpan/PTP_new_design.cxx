@@ -127,7 +127,7 @@ extern "C" char *get_design_hinfo(PT_tprobes  *tprobe)
     pdc->probelen,
     pdc->mintemp,pdc->maxtemp,
     pdc->min_gc*100.0, pdc->max_gc*100.0,
-    pdc->minpos, pdc->maxpos,
+    pdc->min_ecolipos, pdc->max_ecolipos,
     pdc->mishit, pdc->mintarget*100.0);
     outptr += strlen(buffer);
     srcptr = (STRPTR) "Target";

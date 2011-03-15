@@ -120,8 +120,8 @@ PT_pdc, PDC,    12,     (~ The new probe design ~), {
     double,         min_gc,         t,      ,       MINGC,          25,     .3,                     (~the minimum GC content~);
     double,         max_gc,         t,      ,       MAXGC,          26,     1.0,                    (~the maximum GC content~);
     double,         maxbonds,       t,      ,       MAXBOND,        27,     4.0,                    (~The maximum of hairpin bonds~);
-    int,            minpos,         t,      ,       MINPOS,         30,     0,                      (~the minimum position~);
-    int,            maxpos,         t,      ,       MAXPOS,         31,     100000,                 (~the maximum position~);
+    int,            min_ecolipos,   t,      ,       MIN_ECOLIPOS,   30,     -1,                     (~the minimum ecoli position [1..N]. -1 means 'no restriction' ~);
+    int,            max_ecolipos,   t,      ,       MAX_ECOLIPOS,   31,     -1,                     (~the maximum ecoli position [1..N]. -1 means 'no restriction' ~);
     double,         mintarget,      t,      ,       MINTARGETS,     35,     .7,                     (~the minimum targets for a group of species~);
     int,            mishit,         t,      ,       MISHIT,         36,     0,                      (~the maximum mis hits~);
     int,            clipresult,     t,      ,       CLIPRESULT,     40,     40,                     (~Clip the Result list~);

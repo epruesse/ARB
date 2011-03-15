@@ -311,7 +311,7 @@ void TEST_SLOW_arb_probe() {
                        "Length of probe      18\n"
                        "Temperature        [ 0.0 -400.0]\n"
                        "GC-Content         [30.0 -80.0]\n"
-                       "E.Coli Position    [   0 -10000]\n"
+                       "E.Coli Position    [any]\n"
                        "Max Non Group Hits     0\n"
                        "Min Group Hits       100%\n"
                        "Target             le     apos ecol grps  G+C 4GC+2AT Probe sequence     | Decrease T by n*.3C -> probe matches n non group species\n"
