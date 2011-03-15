@@ -49,39 +49,6 @@ struct MP_list_elem
     MP_list_elem *next;
 };
 
-struct apd_sequence {
-    apd_sequence *next;
-    char         *sequence;
-};
-
-extern struct Params {
-    int   DESIGNCPLIPOUTPUT;
-    int   SERVERID;
-    char *DESIGNNAMES;
-#if defined(DEVEL_RALF)
-#warning DRY (DESIGNNAMES is completely unused)
-#endif
-    int   DESIGNPROBELENGTH;
-    char *DESIGNSEQUENCE;
-
-    int   MINTEMP;
-    int   MAXTEMP;
-    int   MINGC;
-    int   MAXGC;
-    int   MAXBOND;
-    int   MINPOS;
-    int   MAXPOS;
-    int   MISHIT;
-    int   MINTARGETS;
-    char *SEQUENCE;
-    int   MISMATCHES;
-    int   COMPLEMENT;
-    int   WEIGHTED;
-
-    apd_sequence *sequence;
-} P;
-
-
 extern struct mp_gl_struct {
     aisc_com  *link;
     T_PT_LOCS  locs;
