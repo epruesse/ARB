@@ -578,7 +578,7 @@ void TEST_SLOW_design_probe() {
         "Y=125"
         "Z=176"
         "D-2H+1"
-        "? 104"
+        "a=104"
         "H-1L+1";
 
     TEST_ARB_PROBE_FILT(ARRAY_ELEMS(arguments_loc), arguments_loc, extract_locations, expected_loc);
