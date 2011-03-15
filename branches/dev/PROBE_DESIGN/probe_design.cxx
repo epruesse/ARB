@@ -54,17 +54,17 @@
 // probe design awars
 
 #define AWAR_PD_DESIGN_CLIPRESULT "probe_design/CLIPRESULT" // 'length of output' (how many probes will get designed)
-#define AWAR_PD_DESIGN_MISHIT     "probe_design/MISHIT" // 'non group hits'
-#define AWAR_PD_DESIGN_MAXBOND    "probe_design/MAXBOND" // max hairpinbonds ?
+#define AWAR_PD_DESIGN_MISHIT     "probe_design/MISHIT"     // 'non group hits'
+#define AWAR_PD_DESIGN_MAXBOND    "probe_design/MAXBOND"    // max hairpinbonds ?
 #define AWAR_PD_DESIGN_MINTARGETS "probe_design/MINTARGETS" // 'min. group hits (%)'
 
 #define AWAR_PD_DESIGN_PROBELENGTH  "probe_design/PROBELENGTH" // length of probe
-#define AWAR_PD_DESIGN_MIN_TEMP     "probe_design/MINTEMP" // temperature (min)
-#define AWAR_PD_DESIGN_MAX_TEMP     "probe_design/MAXTEMP" // temperature (max)
-#define AWAR_PD_DESIGN_MIN_GC       "probe_design/MINGC" // GC content (min)
-#define AWAR_PD_DESIGN_MAX_GC       "probe_design/MAXGC" // GC content (max)
-#define AWAR_PD_DESIGN_MIN_ECOLIPOS "probe_design/MINPOS" // ecolipos (min)
-#define AWAR_PD_DESIGN_MAX_ECOLIPOS "probe_design/MAXPOS" // ecolipos (max)
+#define AWAR_PD_DESIGN_MIN_TEMP     "probe_design/MINTEMP"     // temperature (min)
+#define AWAR_PD_DESIGN_MAX_TEMP     "probe_design/MAXTEMP"     // temperature (max)
+#define AWAR_PD_DESIGN_MIN_GC       "probe_design/MINGC"       // GC content (min)
+#define AWAR_PD_DESIGN_MAX_GC       "probe_design/MAXGC"       // GC content (max)
+#define AWAR_PD_DESIGN_MIN_ECOLIPOS "probe_design/MINECOLI"    // ecolipos (min)
+#define AWAR_PD_DESIGN_MAX_ECOLIPOS "probe_design/MAXECOLI"    // ecolipos (max)
 
 #define AWAR_PD_DESIGN_GENE "probe_design/gene" // generate probes for genes ?
 
@@ -380,6 +380,11 @@ int probe_design_send_data(AW_root *root, T_PT_PDC  pdc)
     return 0;
 }
 
+static int ecolipos2int(const char *awar_val) {
+    int i = atoi(awar_val);
+    return i>0 ? i : -1;
+}
+
 void probe_design_event(AW_window *aww, AW_CL cl_gb_main) {
     AW_root     *root    = aww->get_root();
     T_PT_PDC     pdc;
@@ -437,9 +442,9 @@ void probe_design_event(AW_window *aww, AW_CL cl_gb_main) {
                 PDC_MAXBOND,    (double)root->awar(AWAR_PD_DESIGN_MAXBOND)->read_int(),
                 NULL);
     aisc_put(pd_gl.link, PT_PDC, pdc,
-             PDC_MINPOS,    root->awar(AWAR_PD_DESIGN_MIN_ECOLIPOS)->read_int(),
-             PDC_MAXPOS,    root->awar(AWAR_PD_DESIGN_MAX_ECOLIPOS)->read_int(),
-             PDC_MISHIT,    root->awar(AWAR_PD_DESIGN_MISHIT)->read_int(),
+             PDC_MIN_ECOLIPOS,  (long)ecolipos2int(root->awar(AWAR_PD_DESIGN_MIN_ECOLIPOS)->read_char_pntr()),
+             PDC_MAX_ECOLIPOS,  (long)ecolipos2int(root->awar(AWAR_PD_DESIGN_MAX_ECOLIPOS)->read_char_pntr()),
+             PDC_MISHIT,        root->awar(AWAR_PD_DESIGN_MISHIT)->read_int(),
              PDC_MINTARGETS,    (double)root->awar(AWAR_PD_DESIGN_MINTARGETS)->read_float()/100.0,
              NULL);
 
@@ -1120,8 +1125,9 @@ void create_probe_design_variables(AW_root *root, AW_default db1, AW_default glo
     root->awar_float(AWAR_PD_DESIGN_MAX_TEMP,     100.0,  db1)->set_minmax(0,  1000);
     root->awar_float(AWAR_PD_DESIGN_MIN_GC,       50.0,   db1)->set_minmax(0,  100);
     root->awar_float(AWAR_PD_DESIGN_MAX_GC,       100.0,  db1)->set_minmax(0,  100);
-    root->awar_int  (AWAR_PD_DESIGN_MIN_ECOLIPOS, 0,      db1)->set_minmax(0,  1000000);
-    root->awar_int  (AWAR_PD_DESIGN_MAX_ECOLIPOS, 100000, db1)->set_minmax(0,  1000000);
+
+    root->awar_string(AWAR_PD_DESIGN_MIN_ECOLIPOS, "", db1);
+    root->awar_string(AWAR_PD_DESIGN_MAX_ECOLIPOS, "", db1);
 
     root->awar_int(AWAR_PT_SERVER,      0, db1);
     root->awar_int(AWAR_PD_DESIGN_GENE, 0, db1);

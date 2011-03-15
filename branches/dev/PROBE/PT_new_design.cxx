@@ -329,19 +329,42 @@ extern "C" char *get_design_hinfo(PT_tprobes  *tprobe) {
         return (char*)"Sorry, there are no probes for your selection !!!";
     }
     pdc = (PT_pdc *)tprobe->mh.parent->parent;
-    sprintf(buffer,
-            "Probe design Parameters:\n"
-            "Length of probe    %4i\n"
-            "Temperature        [%4.1f -%4.1f]\n"
-            "GC-Content         [%4.1f -%4.1f]\n"
-            "E.Coli Position    [%4i -%4i]\n"
-            "Max Non Group Hits  %4i\n"
-            "Min Group Hits      %4.0f%%\n",
-            pdc->probelen,
-            pdc->mintemp, pdc->maxtemp,
-            pdc->min_gc*100.0, pdc->max_gc*100.0,
-            pdc->minpos, pdc->maxpos,
-            pdc->mishit, pdc->mintarget*100.0);
+
+    {
+        char *ecolipos = NULL;
+        if (pdc->min_ecolipos == -1) {
+            if (pdc->max_ecolipos == -1) {
+                ecolipos = strdup("any");
+            }
+            else {
+                ecolipos = GBS_global_string_copy("<= %i", pdc->max_ecolipos);
+            }
+        }
+        else {
+            if (pdc->max_ecolipos == -1) {
+                ecolipos = GBS_global_string_copy(">= %i", pdc->min_ecolipos);
+            }
+            else {
+                ecolipos = GBS_global_string_copy("%4i -%4i", pdc->min_ecolipos, pdc->max_ecolipos);
+            }
+        }
+
+        sprintf(buffer,
+                "Probe design Parameters:\n"
+                "Length of probe    %4i\n"
+                "Temperature        [%4.1f -%4.1f]\n"
+                "GC-Content         [%4.1f -%4.1f]\n"
+                "E.Coli Position    [%s]\n"
+                "Max Non Group Hits  %4i\n"
+                "Min Group Hits      %4.0f%%\n",
+                pdc->probelen,
+                pdc->mintemp, pdc->maxtemp,
+                pdc->min_gc*100.0, pdc->max_gc*100.0,
+                ecolipos,
+                pdc->mishit, pdc->mintarget*100.0);
+
+        free(ecolipos);
+    }
 
     s += strlen(s);
 
@@ -425,15 +448,13 @@ static void ptnd_first_check(PT_pdc *pdc) {
 
 static void ptnd_check_position(PT_pdc *pdc) {
     /*! Check the probes position. */
-    PT_tprobes  *tprobe, *tprobe_next;
-    if (pdc->minpos == pdc->maxpos) return;
+    PT_tprobes *tprobe, *tprobe_next;
+    // if (pdc->min_ecolipos == pdc->max_ecolipos) return; // @@@ wtf was this for?  
 
-    for (tprobe = pdc->tprobes;
-                tprobe;
-                tprobe = tprobe_next) {
+    for (tprobe = pdc->tprobes; tprobe; tprobe = tprobe_next) {
         tprobe_next = tprobe->next;
-        long relpos = PT_abs_2_rel(tprobe->apos); // @@@ needs fix
-        if (relpos < pdc->minpos || relpos > pdc->maxpos) {
+        long relpos = PT_abs_2_rel(tprobe->apos+1);
+        if (relpos < pdc->min_ecolipos || (relpos > pdc->max_ecolipos && pdc->max_ecolipos != -1)) {
             destroy_PT_tprobes(tprobe);
         }
     }
