@@ -33,7 +33,6 @@ static int   system3_tab_size = 0;
 
 unsigned char **hamming_tab   = NULL;
 bool            new_pt_server = true;
-struct Params   P;
 
 long k_aus_n(int k, int n) {
     int a = n, b = 1, i;
@@ -940,15 +939,6 @@ const char *MP_probe_pt_look_for_server() {
         return 0;
     }
     return GBS_read_arb_tcp(server_tag);
-}
-
-
-int MP_probe_design_send_data(T_PT_PDC  pdc)
-{
-    if (aisc_put(mp_pd_gl.link, PT_PDC, pdc,
-                 PDC_CLIPRESULT,    P.DESIGNCPLIPOUTPUT,
-                 NULL)) return 1;
-    return 0;
 }
 
 // --------------------------------------------------------------------------------
