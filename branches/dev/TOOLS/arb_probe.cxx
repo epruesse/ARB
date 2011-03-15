@@ -20,7 +20,7 @@ struct apd_sequence {
 };
 
 struct Params {
-    int         DESIGNCPLIPOUTPUT;
+    int         DESIGNCLIPOUTPUT;
     int         SERVERID;
     const char *DESIGNNAMES;
     int         DESIGNPROBELENGTH;
@@ -78,14 +78,6 @@ static const char *AP_probe_pt_look_for_server(ARB_ERROR& error) {
     return GBS_read_arb_tcp(server_tag);
 }
 
-
-static int probe_design_send_data(T_PT_PDC  pdc) {
-    if (aisc_put(pd_gl.link, PT_PDC, pdc, PDC_CLIPRESULT, P.DESIGNCPLIPOUTPUT, NULL))
-        return 1;
-
-    return 0;
-}
-
 static char *AP_probe_design_event(ARB_ERROR& error) {
     T_PT_PDC     pdc;
     T_PT_TPROBE  tprobe;
@@ -121,16 +113,13 @@ static char *AP_probe_design_event(ARB_ERROR& error) {
                 PDC_MAXBOND,     (double)P.MAXBOND,
                 NULL);
 
-    aisc_put(pd_gl.link, PT_PDC, pdc,
-             PDC_MIN_ECOLIPOS,  (long)P.MINPOS,
-             PDC_MAX_ECOLIPOS,  (long)P.MAXPOS,
-             PDC_MISHIT,        (long)P.MISHIT,
-             PDC_MINTARGETS,    P.MINTARGETS/100.0,
-             NULL);
-
-
-
-    if (probe_design_send_data(pdc)) {
+    if (aisc_put(pd_gl.link, PT_PDC, pdc,
+                 PDC_MIN_ECOLIPOS,  (long)P.MINPOS,
+                 PDC_MAX_ECOLIPOS,  (long)P.MAXPOS,
+                 PDC_MISHIT,        (long)P.MISHIT,
+                 PDC_MINTARGETS,    P.MINTARGETS/100.0,
+                 PDC_CLIPRESULT,    (long)P.DESIGNCLIPOUTPUT, 
+                 NULL) != 0) {
         error = "Connection to PT_SERVER lost (1)";
         return NULL;
     }
@@ -330,7 +319,7 @@ static int parseCommandLine(int argc, const char ** argv) {
     if (P.SERVERID<0) { arb_assert(P.SERVERID == TEST_SERVER_ID); }
 #endif
 
-    P.DESIGNCPLIPOUTPUT = getInt("designmaxhits", 100, 10, 10000, "Maximum Number of Probe Design Suggestions");
+    P.DESIGNCLIPOUTPUT = getInt("designmaxhits", 100, 10, 10000, "Maximum Number of Probe Design Suggestions");
     P.DESIGNNAMES       = getString("designnames", "",      "List of short names separated by '#'");
     P.sequence          = 0;
     while  ((P.DESIGNSEQUENCE = getString("designsequence", 0,      "Additional Sequences, will be added to the target group"))) {
