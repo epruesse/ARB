@@ -39,7 +39,7 @@
 #define ed4_beep() do { fputc(char(7), stdout); fflush(stdout); } while (0)
 
 enum PositionType {
-    ED4_POS_CURSOR, 
+    ED4_POS_SEQUENCE, 
     ED4_POS_ECOLI, 
     ED4_POS_BASE, 
 };
