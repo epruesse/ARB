@@ -17,12 +17,6 @@
 
 #include <cmath>
 
-extern int MP_probe_design_send_data(T_PT_PDC  pdc);
-
-
-// ###########################################################################
-// ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~Methoden Sonde ~~~~~~~~~~~~~~~~~~~~~~
-
 Sonde::Sonde(char* bezeichner, int allowed_mis, double outside_mis)
 {
     kennung = strdup(bezeichner);
@@ -81,7 +75,6 @@ MO_Mismatch** Sonde::get_matching_species(bool match_kompl, int match_weight, in
     if (servername) {
         char           *match_name, *match_mismatches, *match_wmismatches;
         char            toksep[2];
-        T_PT_PDC        pdc;
         T_PT_MATCHLIST  match_list;
         char           *probe    = NULL;
         char           *locs_error;
@@ -97,13 +90,6 @@ MO_Mismatch** Sonde::get_matching_species(bool match_kompl, int match_weight, in
         }
         if (MP_init_local_com_struct()) {
             aw_message ("Cannot contact Probe bank server (2)");
-            return NULL;
-        }
-
-        aisc_create(mp_pd_gl.link, PT_LOCS, mp_pd_gl.locs, LOCS_PROBE_DESIGN_CONFIG, PT_PDC, &pdc,  NULL);
-
-        if (MP_probe_design_send_data(pdc)) {
-            aw_message ("Connection to PT_SERVER lost (3)");
             return NULL;
         }
 

@@ -586,13 +586,13 @@ ED4_window::ED4_window(AW_window *window)
     is_hidden = false;
 
     sprintf(awar_path_for_cursor, AWAR_EDIT_SEQ_POSITION, id);
-    ED4_ROOT->aw_root->awar_int(awar_path_for_cursor, 0, AW_ROOT_DEFAULT)->set_minmax(0, MAX_POSSIBLE_SEQ_LENGTH);
+    ED4_ROOT->aw_root->awar_int(awar_path_for_cursor, 0, AW_ROOT_DEFAULT);
 
     sprintf(awar_path_for_Ecoli, AWAR_EDIT_ECOLI_POSITION, id);
-    ED4_ROOT->aw_root->awar_int(awar_path_for_Ecoli, 0, AW_ROOT_DEFAULT)->set_minmax(0, MAX_POSSIBLE_SEQ_LENGTH);
+    ED4_ROOT->aw_root->awar_int(awar_path_for_Ecoli, 0, AW_ROOT_DEFAULT);
 
     sprintf(awar_path_for_basePos, AWAR_EDIT_BASE_POSITION, id);
-    ED4_ROOT->aw_root->awar_int(awar_path_for_basePos, 0, AW_ROOT_DEFAULT)->set_minmax(0, MAX_POSSIBLE_SEQ_LENGTH);
+    ED4_ROOT->aw_root->awar_int(awar_path_for_basePos, 0, AW_ROOT_DEFAULT);
 
     sprintf(awar_path_for_IUPAC, AWAR_EDIT_IUPAC, id);
     ED4_ROOT->aw_root->awar_string(awar_path_for_IUPAC, ED4_IUPAC_EMPTY, AW_ROOT_DEFAULT);
