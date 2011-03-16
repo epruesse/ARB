@@ -14,6 +14,7 @@
 #include "probe_match_parser.hxx"
 
 #include <arbdbt.h>
+#include <arb_defs.h>
 
 #include <cctype>
 #include <map>
@@ -194,7 +195,7 @@ int ParsedProbeMatch::get_position() const {
     int c1, c2;
     if (parser.getColumnRange("pos", &c1, &c2)) {
         char *content = strpartdup(match, c1, c2);
-        int   pos     = atoi(content);
+        int   pos     = bio2info(atoi(content));
         free(content);
         return pos;
     }

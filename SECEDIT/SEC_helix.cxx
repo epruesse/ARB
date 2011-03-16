@@ -11,6 +11,7 @@
 
 #include "SEC_root.hxx"
 #include "SEC_helix.hxx"
+#include <arbdbt.h>
 
 using namespace std;
 

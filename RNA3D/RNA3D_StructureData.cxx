@@ -15,7 +15,7 @@
 #include <aw_root.hxx>
 #include <ed4_extern.hxx>
 #include <ed4_plugins.hxx>
-#include <BI_helix.hxx>
+#include <BI_basepos.hxx>
 
 
 #define COLORLINK (ED4_G_SBACK_0 - RNA3D_GC_SBACK_0)  // to link to the colors defined in primary editor ed4_defs.hxx

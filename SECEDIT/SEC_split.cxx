@@ -12,6 +12,7 @@
 #include "SEC_root.hxx"
 #include "SEC_drawn_pos.hxx"
 #include "SEC_iter.hxx"
+#include <arb_msg.h>
 
 using namespace std;
 

@@ -12,7 +12,7 @@
 
 #include <aw_root.hxx>
 #include <aw_awars.hxx>
-#include <BI_helix.hxx>
+#include <BI_basepos.hxx>
 
 #include <GL/aw_window_ogl.hxx>
 
@@ -408,7 +408,7 @@ void CursorPositionChanged_CB(AW_root *awr) {
 
     if (RNA3D->bEColiRefInitialized) {
         long iCursorPos = awr->awar(AWAR_CURSOR_POSITION)->read_int();
-        long EColiPos   = RNA3D->cStructure->EColiRef->abs_2_rel(iCursorPos);
+        long EColiPos   = RNA3D->cStructure->EColiRef->abs_2_rel(iCursorPos); // @@@ calls abs_2_rel with biopos (1..N)! this is wrong
 
         if (!bCursorPosDispListCreated) {
             RNA3D->cStructure->GenerateCursorPositionDispList(EColiPos);

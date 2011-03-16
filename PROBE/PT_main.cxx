@@ -12,7 +12,7 @@
 #include <PT_server_prototypes.h>
 #include "pt_prototypes.h"
 
-#include <BI_helix.hxx>
+#include <BI_basepos.hxx>
 
 #include <arbdbt.h>
 #include <servercntrl.h>

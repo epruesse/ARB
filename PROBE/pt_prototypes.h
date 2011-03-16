@@ -55,7 +55,6 @@ char *probe_read_alignment P_((int j, int *psize));
 void probe_read_alignments P_((void));
 void PT_build_species_hash P_((void));
 long PT_abs_2_rel P_((long pos));
-long PT_rel_2_abs P_((long pos));
 
 /* PT_main.cxx */
 ARB_ERROR pt_init_main_struct P_((PT_main *, const char *filename)) __ATTR__USERESULT;

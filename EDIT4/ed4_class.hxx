@@ -31,9 +31,19 @@
 #ifndef ATTRIBUTES_H
 #include <attributes.h>
 #endif
+#ifndef BI_BASEPOS_HXX
+#include <BI_basepos.hxx>
+#endif
+
 
 #define ed4_beep() do { fputc(char(7), stdout); fflush(stdout); } while (0)
 
+enum PositionType {
+    ED4_POS_CURSOR, 
+    ED4_POS_ECOLI, 
+    ED4_POS_BASE, 
+};
+    
 // ****************************************
 // needed prototypes, definitions below
 // ****************************************
@@ -249,14 +259,12 @@ public:
     ~ED4_list();
 };
 
-class ED4_base_position {
+class ED4_base_position : private BasePosition {
     const ED4_base *calced4base;
-    int      *seq_pos;
-    int       count;
 
     void calc4base(const ED4_base *base);
-
     ED4_base_position(const ED4_base_position&); // copy-constructor not allowed
+    void set_base(const ED4_base *base) { if (calced4base != base) calc4base(base); }
 
 public:
 
@@ -268,6 +276,8 @@ public:
     int get_base_position(const ED4_base *base, int sequence_position);
     int get_sequence_position(const ED4_base *base, int base_position);
 
+    int get_base_count(const ED4_base *base) { set_base(base); return base_count(); }
+    int get_abs_len(const ED4_base *base) { set_base(base); return abs_count(); }
 };
 
 class ED4_CursorShape;
@@ -1795,7 +1805,7 @@ void        ED4_store_curpos        (AW_window *aww, AW_CL cd1, AW_CL cd2);
 void        ED4_restore_curpos      (AW_window *aww, AW_CL cd1, AW_CL cd2);
 void        ED4_clear_stored_curpos     (AW_window *aww, AW_CL cd1, AW_CL cd2);
 void        ED4_helix_jump_opposite     (AW_window *aww, AW_CL /* cd1 */, AW_CL /* cd2 */);
-void        ED4_jump_to_cursor_position (AW_window *aww, char *awar_name, bool callback_flag);
+void        ED4_jump_to_cursor_position (AW_window *aww, AW_CL cl_awar_name, AW_CL cl_pos_type);
 void        ED4_remote_set_cursor_cb    (AW_root *awr, AW_CL, AW_CL);
 void        ED4_change_cursor       (AW_window * /* aww */, AW_CL /* cd1 */, AW_CL /* cd2 */);
 void        ED4_set_reference_species   (AW_window *aww, AW_CL cd1, AW_CL cd2);

@@ -29,11 +29,15 @@
 #include <awt_seq_colors.hxx>
 #include <awt_map_key.hxx>
 #include <awt.hxx>
+
 #include <aw_preset.hxx>
 #include <aw_awars.hxx>
 #include <aw_msg.hxx>
 #include <aw_root.hxx>
+
 #include <arbdbt.h>
+
+#include <arb_defs.h>
 
 AW_HEADER_MAIN
 
@@ -345,7 +349,7 @@ static void ed4_create_mainDB_awars(AW_root *root, const char *config_name) {
 
     root->awar_string(AWAR_ITARGET_STRING, "", GLOBAL_gb_main);
 
-    root->awar_int(AWAR_CURSOR_POSITION,       1, GLOBAL_gb_main);
+    root->awar_int(AWAR_CURSOR_POSITION,       info2bio(0), GLOBAL_gb_main);
     root->awar_int(AWAR_CURSOR_POSITION_LOCAL, 0, GLOBAL_gb_main);
     root->awar_int(AWAR_SET_CURSOR_POSITION,   1, GLOBAL_gb_main);
 

@@ -183,7 +183,7 @@ PT_io.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 PT_io.o: $(ARBHOME)/INCLUDE/arbdbt.h
 PT_io.o: $(ARBHOME)/INCLUDE/arbtools.h
 PT_io.o: $(ARBHOME)/INCLUDE/attributes.h
-PT_io.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
+PT_io.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
 PT_io.o: $(ARBHOME)/INCLUDE/bytestring.h
 PT_io.o: $(ARBHOME)/INCLUDE/dupstr.h
 PT_io.o: $(ARBHOME)/INCLUDE/PT_com.h
@@ -207,7 +207,7 @@ PT_main.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 PT_main.o: $(ARBHOME)/INCLUDE/arbdbt.h
 PT_main.o: $(ARBHOME)/INCLUDE/arbtools.h
 PT_main.o: $(ARBHOME)/INCLUDE/attributes.h
-PT_main.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
+PT_main.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
 PT_main.o: $(ARBHOME)/INCLUDE/bytestring.h
 PT_main.o: $(ARBHOME)/INCLUDE/client.h
 PT_main.o: $(ARBHOME)/INCLUDE/client_types.h
@@ -230,6 +230,7 @@ PT_match.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 PT_match.o: $(ARBHOME)/INCLUDE/aisc_global.h
 PT_match.o: $(ARBHOME)/INCLUDE/arb_assert.h
 PT_match.o: $(ARBHOME)/INCLUDE/arb_core.h
+PT_match.o: $(ARBHOME)/INCLUDE/arb_defs.h
 PT_match.o: $(ARBHOME)/INCLUDE/arb_error.h
 PT_match.o: $(ARBHOME)/INCLUDE/arb_msg.h
 PT_match.o: $(ARBHOME)/INCLUDE/arb_string.h
@@ -256,6 +257,7 @@ PT_new_design.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 PT_new_design.o: $(ARBHOME)/INCLUDE/aisc_global.h
 PT_new_design.o: $(ARBHOME)/INCLUDE/arb_assert.h
 PT_new_design.o: $(ARBHOME)/INCLUDE/arb_core.h
+PT_new_design.o: $(ARBHOME)/INCLUDE/arb_defs.h
 PT_new_design.o: $(ARBHOME)/INCLUDE/arb_error.h
 PT_new_design.o: $(ARBHOME)/INCLUDE/arb_msg.h
 PT_new_design.o: $(ARBHOME)/INCLUDE/arb_str.h

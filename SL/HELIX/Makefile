@@ -3,7 +3,7 @@
 .SUFFIXES: .o .c .cxx .depend
 
 C_OBJECTS = 
-CPP_OBJECTS = BI_helix.o
+CPP_OBJECTS = BI_helix.o BI_basepos.o
 OBJECTS=$(C_OBJECTS) $(CPP_OBJECTS)
 
 $(MAIN): $(OBJECTS)
@@ -34,6 +34,24 @@ depend.init:
 
 # Do not add dependencies manually - use 'make depend' in $ARBHOME
 # For formatting issues see SOURCE_TOOLS/fix_depends.pl
+
+BI_basepos.o: BI_basepos.hxx
+BI_basepos.o: $(ARBHOME)/INCLUDE/ad_prot.h
+BI_basepos.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+BI_basepos.o: $(ARBHOME)/INCLUDE/arb_assert.h
+BI_basepos.o: $(ARBHOME)/INCLUDE/arb_core.h
+BI_basepos.o: $(ARBHOME)/INCLUDE/arb_error.h
+BI_basepos.o: $(ARBHOME)/INCLUDE/arb_msg.h
+BI_basepos.o: $(ARBHOME)/INCLUDE/arb_str.h
+BI_basepos.o: $(ARBHOME)/INCLUDE/arb_string.h
+BI_basepos.o: $(ARBHOME)/INCLUDE/arbdb.h
+BI_basepos.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+BI_basepos.o: $(ARBHOME)/INCLUDE/arbdbt.h
+BI_basepos.o: $(ARBHOME)/INCLUDE/arbtools.h
+BI_basepos.o: $(ARBHOME)/INCLUDE/attributes.h
+BI_basepos.o: $(ARBHOME)/INCLUDE/dupstr.h
+BI_basepos.o: $(ARBHOME)/INCLUDE/smartptr.h
+BI_basepos.o: $(ARBHOME)/INCLUDE/test_global.h
 
 BI_helix.o: BI_helix.hxx
 BI_helix.o: $(ARBHOME)/INCLUDE/ad_prot.h

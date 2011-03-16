@@ -30,6 +30,7 @@
 #include <awt_attributes.hxx>
 #include <st_window.hxx>
 #include <arb_str.h>
+#include <arbdbt.h>
 
 #include <iostream>
 

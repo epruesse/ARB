@@ -18,8 +18,10 @@
 #include <aw_file.hxx>
 #include <aw_msg.hxx>
 #include <aw_root.hxx>
-#include <arbdbt.h>
 #include <ed4_extern.hxx>
+#include <arbdbt.h>
+
+#include <arb_defs.h>
 
 using namespace std;
 
@@ -224,11 +226,7 @@ void SEC_db_interface::reload_ecoli(const SEC_dbcb *cb) {
         ecoli_seq = new SEC_seq_data(gb_ecoli, aliname, cb);
         Ecoli = new BI_ecoli_ref;
 
-        GB_ERROR error = Ecoli->init(ecoli_seq->sequence(), ecoli_seq->length());
-        if (error) {
-            error = ta.close(error);
-            aw_message(error);
-        }
+        Ecoli->init(ecoli_seq->sequence(), ecoli_seq->length());
     }
     else {
         ecoli_seq = 0;
@@ -314,7 +312,7 @@ void SEC_root::set_cursor(int abspos, bool performRefresh) {
 
 void SEC_db_interface::cursor_changed(const SEC_dbcb *) {
     SEC_root *root    = secroot();
-    int       seq_pos = aw_root->awar_int(AWAR_CURSOR_POSITION)->read_int()-1; // sequence position is starting with 1
+    int       seq_pos = bio2info(aw_root->awar_int(AWAR_CURSOR_POSITION)->read_int());
 
     root->set_cursor(seq_pos, perform_refresh);
 }

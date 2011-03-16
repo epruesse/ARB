@@ -13,7 +13,7 @@
 #include "pt_prototypes.h"
 
 #include <arbdbt.h>
-#include <BI_helix.hxx>
+#include <BI_basepos.hxx>
 #include <arb_str.h>
 #include <arb_progress.h>
 
@@ -316,14 +316,8 @@ void PT_build_species_hash() {
 
     if (psg.ecoli) {
         BI_ecoli_ref *ref = new BI_ecoli_ref;
-        const char *error = ref->init(psg.ecoli, strlen(psg.ecoli));
-        if (error) {
-            delete psg.ecoli;
-            psg.ecoli = 0;
-        }
-        else {
-            psg.bi_ecoli = ref;
-        }
+        ref->init(psg.ecoli, strlen(psg.ecoli));
+        psg.bi_ecoli = ref;
     }
 }
 
@@ -333,7 +327,3 @@ long PT_abs_2_rel(long pos) {
     return psg.bi_ecoli->abs_2_rel(pos);
 }
 
-long PT_rel_2_abs(long pos) {
-    if (!psg.ecoli) return pos;
-    return psg.bi_ecoli->rel_2_abs(pos);
-}
