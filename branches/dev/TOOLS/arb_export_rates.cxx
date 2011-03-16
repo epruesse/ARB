@@ -10,6 +10,7 @@
 
 #include <arbdbt.h>
 #include <aw_awars.hxx>
+#include <arb_str.h>
 
 /* Input: SAI name from CL
  *        fastdnaml-args from CL
@@ -194,11 +195,11 @@ int main(int argc, char **argv) {
                 double rate = 1.0;
 
                 for (i = '1'; i <= '9'; i++) {
-                    weight[i] = GBS_global_string_copy(" %i", int(rate*MIO));
+                    weight[i] = GBS_global_string_copy(" %i", int(rate*MIO+0.5));
                     rate *= CATSCALE;
                 }
                 for (i = 'A'; i <= 'Z'; i++) {
-                    weight[i] = GBS_global_string_copy(" %i", int(rate*MIO));
+                    weight[i] = GBS_global_string_copy(" %i", int(rate*MIO+0.5));
                     rate *= CATSCALE;
                 }
 
@@ -209,7 +210,7 @@ int main(int argc, char **argv) {
 
                     seq_len = ali_len;
 
-                    freedup(weight[int('1')], " 1");
+                    freedup(weight[safeCharIndex('1')], " 1");
                 }
 
                 for (i=0; i<seq_len; i++) {
@@ -226,7 +227,7 @@ int main(int argc, char **argv) {
 
                 for (; i<ali_len; i++) {
                     if (i>filter_len || filter[i] != '0') {
-                        fputs(weight[int('1')], stdout);
+                        fputs(weight[safeCharIndex('1')], stdout);
                         if (++cnt>30) {
                             fputc('\n', stdout);
                             cnt = 0;
