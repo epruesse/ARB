@@ -59,8 +59,17 @@ DESCRIPTION	The editor allows you to view and modify the sequences of 'marked
 			These 3 positions and the IUPAC-display refer to the position
 			RIGHT of the cursor.
 
-			Position counting now starts with 1 (too many people were
-			confused about position counting starting at position 0).
+			'Position' counts from 1 to "alignment length".
+
+                        The 'Ecoli'- and 'Base'-position count from zero to "number of bases".
+
+                        - Zero means your cursor is left of the first base (and not AT the first base).
+                        - X means your cursor is AT or BEHIND base number X (but in front of base number X+1)
+
+                        By changing the value of one of these fields, the cursor will
+                        be repositioned. Negative values are possible - in that case
+                        the position will be calculated from the right end (e.g. -1 in
+                        'Base' field means 'position onto base')
 
 	Moving entries:
 

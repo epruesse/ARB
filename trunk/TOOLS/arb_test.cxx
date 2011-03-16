@@ -344,7 +344,7 @@ void TEST_arb_export_rates() {
     // - move that test to broken revision.
 
     TEST_OUTPUT_HAS_CHECKSUM("arb_export_rates -d " RATES_DB " POS_VAR_BY_PARSIMONY", 0xc75a5fad);
-    TEST_OUTPUT_HAS_CHECKSUM("arb_export_rates -d " RATES_DB " -r POS_VAR_BY_PARSIMONY", 0xb375ecc6);
+    TEST_OUTPUT_HAS_CHECKSUM("arb_export_rates -d " RATES_DB " -r POS_VAR_BY_PARSIMONY", 0xd69fb01e);
     TEST_OUTPUT_HAS_CHECKSUM("arb_export_rates -d " RATES_DB " -r \"\"", 0xad0461ce);
 }
 
