@@ -329,7 +329,7 @@ static int parseCommandLine(int argc, const char ** argv) {
         s->sequence      = P.DESIGNSEQUENCE;
         P.DESIGNSEQUENCE = 0;
     }
-    P.DESIGNPROBELENGTH = getInt("designprobelength", 18, 10, 100, "Length of probe");
+    P.DESIGNPROBELENGTH = getInt("designprobelength", 18, 2, 100, "Length of probe");
     P.MINTEMP           = getInt("designmintemp", 0, 0, 400, "Minimum melting temperature of probe");
     P.MAXTEMP           = getInt("designmaxtemp", 400, 0, 400, "Maximum melting temperature of probe");
     P.MINGC             = getInt("designmingc", 30, 0, 100, "Minimum gc content");
@@ -462,21 +462,29 @@ void TEST_SLOW_variable_defaults_in_server() {
 // ----------------------------------
 //      test probe design / match
 
-static void test_arb_probe(int fake_argc, const char **fake_argv, const char *expected) {
-    test_setup();
+#define TEST_PART1(fake_argc,fake_argv)                                 \
+    test_setup();                                                       \
+    TEST_ASSERT_EQUAL(true, parseCommandLine(fake_argc, fake_argv));    \
+    P.SERVERID = TEST_SERVER_ID;                                        \
+    ARB_ERROR  error;                                                   \
+    char      *answer = execute(error);                                 \
+    TEST_ASSERT_NO_ERROR(error.deliver());                              \
 
-    TEST_ASSERT_EQUAL(true, parseCommandLine(fake_argc, fake_argv));
-    P.SERVERID = TEST_SERVER_ID;        // use test pt_server
 
-    ARB_ERROR  error;
-    char      *answer = execute(error);
+#define TEST_ARB_PROBE(fake_argc,fake_argv,expected) do {               \
+        TEST_PART1(fake_argc,fake_argv);                                \
+        TEST_ASSERT_EQUAL(answer, expected);                            \
+        free(answer);                                                   \
+    } while(0)
 
-    TEST_ASSERT_NO_ERROR(error.deliver());
-    TEST_ASSERT_EQUAL(answer, expected);
-
-    free(answer);
-}
-
+#define TEST_ARB_PROBE_FILT(fake_argc,fake_argv,filter,expected) do {   \
+        TEST_PART1(fake_argc,fake_argv);                                \
+        char  *filtered   = filter(answer);                             \
+        TEST_ASSERT_EQUAL(filtered, expected);                          \
+        free(filtered);                                                 \
+        free(answer);                                                   \
+    } while(0)
+    
 void TEST_SLOW_match_probe() {
     const char *arguments[] = {
         "fake", // "program"-name 
@@ -486,7 +494,39 @@ void TEST_SLOW_match_probe() {
         "    name---- fullname mis N_mis wmis pos rev          'UAUCGGAGAGUUUGA'\1"
         "BcSSSS00\1" "  BcSSSS00            0     0  0.0   3 0   .......UU-===============-UCAAGUCGA\1";
 
-    test_arb_probe(ARRAY_ELEMS(arguments), arguments, expected);
+    TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expected);
+}
+
+static char *extract_locations(const char *probe_design_result) {
+    const char *Target = strstr(probe_design_result, "\nTarget");
+    if (Target) {
+        const char *designed = strchr(Target+7, '\n');
+        if (designed) {
+            ++designed;
+            char *result = strdup("");
+
+            while (designed) {
+                const char *eol       = strchr(designed, '\n');
+                const char *space1    = strchr(designed, ' ');          if (!space1) break; // 1st space between probe and len
+                const char *nonspace  = space1+strspn(space1, " ");     if (!nonspace) break;
+                const char *space2    = strchr(nonspace, ' ');          if (!space2) break; // 1st space between len and "X="
+                const char *nonspace2 = space2+strspn(space2, " ");     if (!nonspace2) break;
+                const char *space3    = strchr(nonspace2, ' ');         if (!space3) break; // 1st space between "X=" and abs
+                const char *nonspace3 = space3+strspn(space3, " ");     if (!nonspace3) break;
+                const char *space4    = strchr(nonspace3, ' ');         if (!space4) break; // 1st space between abs and rest
+
+                char *abs = GB_strpartdup(nonspace3, space4-1);
+
+                freeset(result, GBS_global_string_copy("%s%c%c%s", result, space2[1], space2[2], abs));
+                free(abs);
+
+                designed = eol ? eol+1 : NULL;
+            }
+
+            return result;
+        }
+    }
+    return strdup("can't extract");
 }
 
 void TEST_SLOW_design_probe() {
@@ -509,7 +549,34 @@ void TEST_SLOW_design_probe() {
         "UCAAGUCGAGCGAUGAAG 18 B=    18   18    4 50.0 54.0    CUUCAUCGCUCGACUUGA |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n"
         "AUCAAGUCGAGCGAUGAA 18 B-     1   17    4 44.4 52.0    UUCAUCGCUCGACUUGAU |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  1,  2,  3,\n";
 
-    test_arb_probe(ARRAY_ELEMS(arguments), arguments, expected);
+    TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expected);
+
+    // ------------------------------------------------------
+    //      design MANY probes to test location specifier
+
+    {
+        char *positions = extract_locations(expected);
+        TEST_ASSERT_EQUAL(positions, "A=94A+1B=18B-1");
+        free(positions);
+    }
+
+    const char *arguments_loc[] = {
+        "fake", // "program"-name
+        // "designnames=Stsssola#Stsssola", // @@@ crashes the ptserver
+        "designnames=CPPParap#PsAAAA00",
+        "designmintargets=50", // hit at least 1 of the 2 targets
+        "designmingc=0", "designmaxgc=100", // allow all GCs
+        "designmishit=99999",  // allow enough outgroup hits
+        "designmaxhits=99999", // do not limit results
+        "designprobelength=3",
+    };
+
+    const char *expected_loc = 
+        "A=96B=141C=20D=107B+1E=110F=84G=9H=150I=145C+1D+1J=17K=122L=72C-1M=33N=114E+1O=163"
+        "P=24E+2F+1Q=138R=54O+1S=49A-1T=87G+1J-1N-1U=79F+2U-1V=129I+2H-2C+2W=12D-1D+2C-2R+1"
+        "P-1J-2O+2V-2X=92W+2W+1Y=125Z=176D-2H+1a=104H-1L+1";
+
+    TEST_ARB_PROBE_FILT(ARRAY_ELEMS(arguments_loc), arguments_loc, extract_locations, expected_loc);
 }
 
 void TEST_SLOW_match_designed_probe() {
@@ -524,7 +591,7 @@ void TEST_SLOW_match_designed_probe() {
     "CPPParap\1" "  CPPParap            0     0  0.0  18 0   AGAGUUUGA-==================-UUCCUUCGG\1"
     "ClfPerfr\1" "  ClfPerfr            0     0  0.0  18 0   AGAGUUUGA-==================-UUUCCUUCG\1";
 
-    test_arb_probe(ARRAY_ELEMS(arguments), arguments, expected);
+    TEST_ARB_PROBE(ARRAY_ELEMS(arguments), arguments, expected);
 }
 
 

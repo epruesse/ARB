@@ -19,7 +19,7 @@ DATA {
 @CONST,         @VALUE,         @DOCU;
 LIST_SIZE,      20,             (~Size of I_STR Buffer~);
 PERC_SIZE,      20,             (~How many centigrades to look~);
-ALPHA_SIZE,     24,             (~24 letters~);
+ALPHA_SIZE,     52,             (~26 BIG, 26 small letters~);
 DOMAIN_MIN_LENGTH, 8,           (~Minimum length of a domain~);
 PT_PART_DEEP,   2,              (~The Deep of the Partitions~);
 

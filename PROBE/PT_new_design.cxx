@@ -242,6 +242,20 @@ static int ptnd_count_mishits2(POS_TREE *pt) {
         return mishits;
     }
 }
+
+inline char hitgroup_idx2char(int idx) {
+    const int firstSmall = ALPHA_SIZE/2;
+    int c;
+    if (idx >= firstSmall) {
+        c = 'a'+(idx-firstSmall);
+    }
+    else {
+        c = 'A'+idx;
+    }
+    pt_assert(isalpha(c));
+    return c;
+}
+
 extern "C" char *get_design_info(PT_tprobes  *tprobe)
 {
     char   *buffer = (char *)GB_give_buffer(2000);
@@ -261,33 +275,40 @@ extern "C" char *get_design_info(PT_tprobes  *tprobe)
 
     {
         int apos = info2bio(tprobe->apos);
-        int c    = 0;
-        int cs   = '=';
+        int c;
+        int cs   = 0;
 
-    
-        { // search nearest hit
-            for (c=0; c<ALPHA_SIZE; c++) {
-                if (!pdc->pos_groups[c]) { // new group
-                    pdc->pos_groups[c] = apos;
+        // search nearest previous hit
+        for (c=0; c<ALPHA_SIZE; c++) {
+            if (!pdc->pos_groups[c]) { // new group
+                pdc->pos_groups[c] = apos;
+                cs                 = '=';
+                break;
+            }
+            int dist = abs(apos - pdc->pos_groups[c]);
+            if (dist < pdc->probelen) {
+                apos = apos - pdc->pos_groups[c];
+                if (apos > 0) {
+                    cs = '+';
                     break;
                 }
-                int dist = apos - pdc->pos_groups[c];
-                if (dist<0) dist = -dist;
-                if (dist < pdc->probelen) {
-                    apos = apos - pdc->pos_groups[c];
-                    if (apos > 0) {
-                        cs = '+';
-                        break;
-                    }
-                    cs = '-';
-                    apos = -apos;
-                    break;
-                }
+                cs = '-';
+                apos = -apos;
+                break;
             }
         }
 
+        if (cs) {
+            c  = hitgroup_idx2char(c);
+        }
+        else {
+            // ran out of pos_groups
+            c  = '?';
+            cs = ' ';
+        }
+
         // le apos ecol
-        p += sprintf(p, "%2i %c%c%6i %4li ", tprobe->seq_len, c+'A', cs,
+        p += sprintf(p, "%2i %c%c%6i %4li ", tprobe->seq_len, c, cs,
                      apos,
                      PT_abs_2_rel(tprobe->apos+1)); // ecoli-bases inclusive apos ("bases before apos+1")
     }
