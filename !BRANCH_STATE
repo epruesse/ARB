@@ -3,6 +3,8 @@ performed merges in this branch
 
         FullSync @ 7222 (created)
         FullSync @ 7276 (all merged to trunk)
+        FullSync @ 7281 sync with trunk using:
+                svn diff --old=svn+ssh://westram@menuett.mikro.biologie.tu-muenchen.de/menuett1/repository/ARB/branches/dev --new=svn+ssh://westram@menuett.mikro.biologie.tu-muenchen.de/menuett1/repository/ARB/trunk | patch -p0 --force
 
     HEAD->BRANCH
 
