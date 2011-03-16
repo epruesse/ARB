@@ -1484,6 +1484,7 @@ void ED4_base_position::invalidate() {
 }
 
 static bool is_gap(char c) { return ED4_is_align_character[safeCharIndex(c)]; }
+static bool is_consensus_gap(char c) { return ED4_is_align_character[safeCharIndex(c)] || c == '='; }
 
 void ED4_base_position::calc4base(const ED4_base *base)
 {
@@ -1500,20 +1501,23 @@ void ED4_base_position::calc4base(const ED4_base *base)
 
     species_manager->add_sequence_changed_cb(ed4_bp_sequence_changed_cb, (AW_CL)this);
 
+    bool (*is_gap_fun)(char);
     if (species_manager->flag.is_consensus) {
         ED4_group_manager *group_manager = base->get_parent(ED4_L_GROUP)->to_group_manager();
 
-        seq = group_manager->table().build_consensus_string();
-        len = strlen(seq);
+        seq        = group_manager->table().build_consensus_string();
+        len        = strlen(seq);
+        is_gap_fun = is_consensus_gap;
     }
     else {
         seq = base->resolve_pointer_to_string_copy(&len);
         e4_assert((int)strlen(seq) == len);
+        is_gap_fun = is_gap;
     }
 
     e4_assert(seq);
 
-    initialize(seq, len, is_gap);
+    initialize(seq, len, is_gap_fun);
     calced4base = base;
 
     free(seq);
