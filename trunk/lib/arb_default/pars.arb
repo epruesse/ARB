@@ -1,0 +1,84 @@
+/*ARBDB ASCII*/
+window	%% (%
+	font		"8x13bold"
+	background		"#cececc"
+	foreground		"Black"
+	color_1		"red"
+	color_2		"green"
+	color_3		"blue"
+	windows	%% (%
+		SET_PARSIMONY_OPTIONS	%% (%
+			width	%i 320
+			height	%i 325
+			posx	%i 61
+			posy	%i 106
+			%) /*SET_PARSIMONY_OPTIONS*/
+
+		ARB_PARSIMONY	%% (%
+			width	%i 629
+			height	%i 543
+			posx	%i 465
+			posy	%i 208
+			%) /*ARB_PARSIMONY*/
+
+		EXPORT_TREE_TO_FILE	%% (%
+			width	%i 400
+			height	%i 470
+			posx	%i 532
+			posy	%i 310
+			%) /*EXPORT_TREE_TO_FILE*/
+
+		WINDOW_PROPERTIES	%% (%
+			width	%i 596
+			height	%i 332
+			posx	%i 511
+			posy	%i 288
+			%) /*WINDOW_PROPERTIES*/
+
+		SAVE_ARB_DB	%% (%
+			width	%i 360
+			height	%i 190
+			posx	%i 567
+			posy	%i 338
+			%) /*SAVE_ARB_DB*/
+
+		NDS	%% (%
+			width	%i 710
+			height	%i 373
+			posx	%i 9
+			posy	%i 318
+			%) /*NDS*/
+
+		Kernighan_Lin_Properties	%% (%
+			width	%i 440
+			height	%i 635
+			posx	%i 597
+			posy	%i 138
+			%) /*Kernighan_Lin_Properties*/
+
+		COLORS_AND_FONTS	%% (%
+			width	%i 794
+			height	%i 328
+			posx	%i 110
+			posy	%i 0
+			%) /*COLORS_AND_FONTS*/
+
+		%) /*windows*/
+
+	ARB_PARSIMONY	%% (%
+		horizontal_page_increment	%i 50
+		vertical_page_increment	%i 50
+		scroll_delay_vertical	%i 20
+		scroll_delay_horizontal	%i 20
+		scroll_width_horizontal	%i 9
+		scroll_width_vertical	%i 20
+		%) /*ARB_PARSIMONY*/
+
+	%) /*window*/
+
+
+focus	%% (%
+	tree_name		"tree_main"
+	%) /*focus*/
+
+

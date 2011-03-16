@@ -1,0 +1,32 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+#SUB	subtopic.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		Count different chars/column
+
+OCCURRENCE	ARB_NT/SAI/Other functions/Count different chars/column
+
+DESCRIPTION     For each column in the alignment of the marked species,
+                count the number of different base characters occurring.
+
+                Write result as SAI 'COUNTED_CHARS' with the following
+                interpretation:
+
+                        '0'       empty column
+                        '1'       only 1 base in this column (conserved column)
+                        '2'..'9'  2..9   different bases occurred
+                        'A'..'Z'  10..25 different bases occurred
+
+NOTES		None
+
+EXAMPLES	None
+
+WARNINGS	None
+
+BUGS		No bugs known
