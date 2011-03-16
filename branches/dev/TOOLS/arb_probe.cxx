@@ -574,12 +574,7 @@ void TEST_SLOW_design_probe() {
     const char *expected_loc = 
         "A=96B=141C=20D=107B+1E=110F=84G=9H=150I=145C+1D+1J=17K=122L=72C-1M=33N=114E+1O=163"
         "P=24E+2F+1Q=138R=54O+1S=49A-1T=87G+1J-1N-1U=79F+2U-1V=129I+2H-2C+2W=12D-1D+2C-2R+1"
-        "P-1J-2O+2V-2X=92W+2W+1"
-        "Y=125"
-        "Z=176"
-        "D-2H+1"
-        "a=104"
-        "H-1L+1";
+        "P-1J-2O+2V-2X=92W+2W+1Y=125Z=176D-2H+1a=104H-1L+1";
 
     TEST_ARB_PROBE_FILT(ARRAY_ELEMS(arguments_loc), arguments_loc, extract_locations, expected_loc);
 }
