@@ -2,6 +2,7 @@
 performed merges in this branch
 
         FullSync @ 7222 (created)
+        FullSync @ 7276 (all merged to trunk)
 
     HEAD->BRANCH
 
@@ -12,13 +13,18 @@ performed merges in this branch
                 7227 7228 -> 7246
                 7225 7226 7233 7229 7230 7231 7232 7234 7235 7236 7237 7238 7239 7240 7241 -> 7247
                 7242 7243 7245 -> 7248
+                7244 7250 7251 7252 7253 7254 7255 7257 7258 7259 7260 7261 7271 -> 7272
+                7262 7264 -> 7274
+                7265 7266 7267 7268 -> 7275
+                7263 7269 7270 7273 -> 7276
 
     skipped patches (depends, already there, this file, ...)
+
+                7249 this file
+                7256 depends
 
     not merged yet:
 
         --- current try above
 
-                7244 position tests
-
-    not reviewed: 7248:HEAD
+    not reviewed: 7277:HEAD
