@@ -1,5 +1,0 @@
-# libraries needed to link against AWTC/AWTC.a
-
-SERVERCNTRL/SERVERCNTRL.a
-WINDOW/libWINDOW.so
-

@@ -1,4 +1,0 @@
-# libraries needed to link against NAMES_COM/server.a
-
-PROBE_COM/client.a # always use PROBE_COM/client.a (never NAMES_COM/client.a)
-
