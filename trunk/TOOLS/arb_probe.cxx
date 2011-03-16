@@ -20,9 +20,9 @@ struct apd_sequence {
 };
 
 struct Params {
-    int         DESIGNCPLIPOUTPUT;
+    int         DESIGNCLIPOUTPUT;
     int         SERVERID;
-    const char *DESINGNAMES;
+    const char *DESIGNNAMES;
     int         DESIGNPROBELENGTH;
     const char *DESIGNSEQUENCE;
 
@@ -78,14 +78,6 @@ static const char *AP_probe_pt_look_for_server(ARB_ERROR& error) {
     return GBS_read_arb_tcp(server_tag);
 }
 
-
-static int probe_design_send_data(T_PT_PDC  pdc) {
-    if (aisc_put(pd_gl.link, PT_PDC, pdc, PDC_CLIPRESULT, P.DESIGNCPLIPOUTPUT, NULL))
-        return 1;
-
-    return 0;
-}
-
 static char *AP_probe_design_event(ARB_ERROR& error) {
     T_PT_PDC     pdc;
     T_PT_TPROBE  tprobe;
@@ -108,7 +100,7 @@ static char *AP_probe_design_event(ARB_ERROR& error) {
         return NULL;
     }
 
-    bs.data = (char*)(P.DESINGNAMES);
+    bs.data = (char*)(P.DESIGNNAMES);
     bs.size = strlen(bs.data)+1;
 
     aisc_create(pd_gl.link, PT_LOCS, pd_gl.locs,
@@ -121,16 +113,13 @@ static char *AP_probe_design_event(ARB_ERROR& error) {
                 PDC_MAXBOND,     (double)P.MAXBOND,
                 NULL);
 
-    aisc_put(pd_gl.link, PT_PDC, pdc,
-             PDC_MIN_ECOLIPOS,  (long)P.MINPOS,
-             PDC_MAX_ECOLIPOS,  (long)P.MAXPOS,
-             PDC_MISHIT,        (long)P.MISHIT,
-             PDC_MINTARGETS,    P.MINTARGETS/100.0,
-             NULL);
-
-
-
-    if (probe_design_send_data(pdc)) {
+    if (aisc_put(pd_gl.link, PT_PDC, pdc,
+                 PDC_MIN_ECOLIPOS,  (long)P.MINPOS,
+                 PDC_MAX_ECOLIPOS,  (long)P.MAXPOS,
+                 PDC_MISHIT,        (long)P.MISHIT,
+                 PDC_MINTARGETS,    P.MINTARGETS/100.0,
+                 PDC_CLIPRESULT,    (long)P.DESIGNCLIPOUTPUT, 
+                 NULL) != 0) {
         error = "Connection to PT_SERVER lost (1)";
         return NULL;
     }
@@ -330,8 +319,8 @@ static int parseCommandLine(int argc, const char ** argv) {
     if (P.SERVERID<0) { arb_assert(P.SERVERID == TEST_SERVER_ID); }
 #endif
 
-    P.DESIGNCPLIPOUTPUT = getInt("designmaxhits", 100, 10, 10000, "Maximum Number of Probe Design Suggestions");
-    P.DESINGNAMES       = getString("designnames", "",      "List of short names separated by '#'");
+    P.DESIGNCLIPOUTPUT = getInt("designmaxhits", 100, 10, 10000, "Maximum Number of Probe Design Suggestions");
+    P.DESIGNNAMES       = getString("designnames", "",      "List of short names separated by '#'");
     P.sequence          = 0;
     while  ((P.DESIGNSEQUENCE = getString("designsequence", 0,      "Additional Sequences, will be added to the target group"))) {
         apd_sequence *s  = new apd_sequence;
@@ -343,12 +332,12 @@ static int parseCommandLine(int argc, const char ** argv) {
     P.DESIGNPROBELENGTH = getInt("designprobelength", 18, 10, 100, "Length of probe");
     P.MINTEMP           = getInt("designmintemp", 0, 0, 400, "Minimum melting temperature of probe");
     P.MAXTEMP           = getInt("designmaxtemp", 400, 0, 400, "Maximum melting temperature of probe");
-    P.MINGC             = getInt("desingmingc", 30, 0, 100, "Minimum gc content");
-    P.MAXGC             = getInt("desingmaxgc", 80, 0, 100, "Maximum gc content");
-    P.MAXBOND           = getInt("desingmaxbond", 0, 0, 10, "Not implemented");
+    P.MINGC             = getInt("designmingc", 30, 0, 100, "Minimum gc content");
+    P.MAXGC             = getInt("designmaxgc", 80, 0, 100, "Maximum gc content");
+    P.MAXBOND           = getInt("designmaxbond", 0, 0, 10, "Not implemented");
 
-    P.MINPOS = getInt("desingminpos", -1, -1, INT_MAX, "Minimum ecoli position (-1=none)");
-    P.MAXPOS = getInt("desingmaxpos", -1, -1, INT_MAX, "Maximum ecoli position (-1=none)");
+    P.MINPOS = getInt("designminpos", -1, -1, INT_MAX, "Minimum ecoli position (-1=none)");
+    P.MAXPOS = getInt("designmaxpos", -1, -1, INT_MAX, "Maximum ecoli position (-1=none)");
 
     P.MISHIT     = getInt("designmishit", 0, 0, 10000, "Number of allowed hits outside the selected group");
     P.MINTARGETS = getInt("designmintargets", 50, 0, 100, "Minimum percentage of hits within the selected species");
@@ -367,7 +356,7 @@ static int parseCommandLine(int argc, const char ** argv) {
 
 static char *execute(ARB_ERROR& error) {
     char *answer;
-    if (*P.DESINGNAMES || P.sequence) {
+    if (*P.DESIGNNAMES || P.sequence) {
         answer = AP_probe_design_event(error);
     }
     else {
