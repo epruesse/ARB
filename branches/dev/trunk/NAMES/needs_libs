@@ -1,0 +1,7 @@
+# libraries needed to link against NAMES/NAMES.a
+
+NAMES_COM/server.a
+SERVERCNTRL/SERVERCNTRL.a
+# NAMES_COM/client.a # connects to self?
+
+

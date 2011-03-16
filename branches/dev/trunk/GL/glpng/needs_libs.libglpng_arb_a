@@ -1,0 +1,7 @@
+# libraries needed to link against GL/glpng/libglpng.a
+
+$(GL_PNGLIBS_SYS)
+$(GL_LIBS_SYS)
+
+
+
