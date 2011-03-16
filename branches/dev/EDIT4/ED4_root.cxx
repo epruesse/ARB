@@ -1663,7 +1663,7 @@ ED4_returncode ED4_root::generate_window(AW_device **device,    ED4_window **new
     awmm->at("helixnrTxt"); awmm->create_button(0, "Helix#");
 
     awmm->at("pos");
-    awmm->callback((AW_CB)ED4_jump_to_cursor_position, (AW_CL) get_ed4w()->awar_path_for_cursor, AW_CL(ED4_POS_CURSOR));
+    awmm->callback((AW_CB)ED4_jump_to_cursor_position, (AW_CL) get_ed4w()->awar_path_for_cursor, AW_CL(ED4_POS_SEQUENCE));
     awmm->create_input_field(get_ed4w()->awar_path_for_cursor, 7);
 
     awmm->at("ecoli");
