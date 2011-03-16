@@ -15,6 +15,7 @@
 #include "probe_tree.h"
 #include <arbdbt.h>
 #include <arb_str.h>
+#include <arb_defs.h>
 
 #ifdef P_
 #error P_ already defined
@@ -258,59 +259,58 @@ extern "C" char *get_design_info(PT_tprobes  *tprobe)
     sprintf(p, "%-*s", pdc->probelen+1, probe);
     p += strlen(p);
 
-    int apos = tprobe->apos;
-    int c    = 0;
-    int cs   = '=';
-    { // search nearest hit
-        for (c=0; c<ALPHA_SIZE; c++) {
-            if (!pdc->pos_groups[c]) { // new group
-                pdc->pos_groups[c] = tprobe->apos;
-                break;
-            }
-            int dist = tprobe->apos - pdc->pos_groups[c];
-            if (dist<0) dist = -dist;
-            if (dist < pdc->probelen) {
-                apos = tprobe->apos - pdc->pos_groups[c];
-                if (apos > 0) {
-                    cs = '+';
+    {
+        int apos = info2bio(tprobe->apos);
+        int c    = 0;
+        int cs   = '=';
+
+    
+        { // search nearest hit
+            for (c=0; c<ALPHA_SIZE; c++) {
+                if (!pdc->pos_groups[c]) { // new group
+                    pdc->pos_groups[c] = apos;
+                    break;
                 }
-                else {
-                    apos = -apos; cs = '-';
+                int dist = apos - pdc->pos_groups[c];
+                if (dist<0) dist = -dist;
+                if (dist < pdc->probelen) {
+                    apos = apos - pdc->pos_groups[c];
+                    if (apos > 0) {
+                        cs = '+';
+                        break;
+                    }
+                    cs = '-';
+                    apos = -apos;
+                    break;
                 }
-                break;
             }
         }
+
+        // le apos ecol
+        p += sprintf(p, "%2i %c%c%6i %4li ", tprobe->seq_len, c+'A', cs,
+                     apos,
+                     PT_abs_2_rel(tprobe->apos+1)); // ecoli-bases inclusive apos ("bases before apos+1")
     }
-
-    // le apos ecol
-    sprintf(p, "%2i %c%c%6i %4li ", tprobe->seq_len, c+'A', cs, apos, PT_abs_2_rel(tprobe->apos));
-    p += strlen(p);
-
     // grps
-    sprintf(p, "%4i ", tprobe->groupsize);
-    p += strlen(p);
+    p += sprintf(p, "%4i ", tprobe->groupsize);
 
     // G+C
-    sprintf(p, "%-4.1f ", ((double)pt_get_gc_content(tprobe->sequence))/tprobe->seq_len*100.0);
-    p += strlen(p);
+    p += sprintf(p, "%-4.1f ", ((double)pt_get_gc_content(tprobe->sequence))/tprobe->seq_len*100.0);
 
     // 4GC+2AT
-    sprintf(p, "%-7.1f ", pt_get_temperature(tprobe->sequence));
-    p += strlen(p);
+    p += sprintf(p, "%-7.1f ", pt_get_temperature(tprobe->sequence));
 
     // probe string
-    probe = reverse_probe(tprobe->sequence, 0);
+    probe  = reverse_probe(tprobe->sequence, 0);
     complement_probe(probe, 0);
     PT_base_2_string(probe, 0); // convert probe to real ASCII
-    sprintf(p, "%-*s |", pdc->probelen, probe);
+    p     += sprintf(p, "%-*s |", pdc->probelen, probe);
     free(probe);
-    p += strlen(p);
 
     // non-group hits by temp. decrease
     for (sum=i=0; i<PERC_SIZE; i++) {
         sum += tprobe->perc[i];
-        sprintf(p, "%3i,", sum);
-        p += strlen(p);
+        p   += sprintf(p, "%3i,", sum);
     }
 
     return buffer;
@@ -329,19 +329,42 @@ extern "C" char *get_design_hinfo(PT_tprobes  *tprobe) {
         return (char*)"Sorry, there are no probes for your selection !!!";
     }
     pdc = (PT_pdc *)tprobe->mh.parent->parent;
-    sprintf(buffer,
-            "Probe design Parameters:\n"
-            "Length of probe    %4i\n"
-            "Temperature        [%4.1f -%4.1f]\n"
-            "GC-Content         [%4.1f -%4.1f]\n"
-            "E.Coli Position    [%4i -%4i]\n"
-            "Max Non Group Hits  %4i\n"
-            "Min Group Hits      %4.0f%%\n",
-            pdc->probelen,
-            pdc->mintemp, pdc->maxtemp,
-            pdc->min_gc*100.0, pdc->max_gc*100.0,
-            pdc->minpos, pdc->maxpos,
-            pdc->mishit, pdc->mintarget*100.0);
+
+    {
+        char *ecolipos = NULL;
+        if (pdc->min_ecolipos == -1) {
+            if (pdc->max_ecolipos == -1) {
+                ecolipos = strdup("any");
+            }
+            else {
+                ecolipos = GBS_global_string_copy("<= %i", pdc->max_ecolipos);
+            }
+        }
+        else {
+            if (pdc->max_ecolipos == -1) {
+                ecolipos = GBS_global_string_copy(">= %i", pdc->min_ecolipos);
+            }
+            else {
+                ecolipos = GBS_global_string_copy("%4i -%4i", pdc->min_ecolipos, pdc->max_ecolipos);
+            }
+        }
+
+        sprintf(buffer,
+                "Probe design Parameters:\n"
+                "Length of probe    %4i\n"
+                "Temperature        [%4.1f -%4.1f]\n"
+                "GC-Content         [%4.1f -%4.1f]\n"
+                "E.Coli Position    [%s]\n"
+                "Max Non Group Hits  %4i\n"
+                "Min Group Hits      %4.0f%%\n",
+                pdc->probelen,
+                pdc->mintemp, pdc->maxtemp,
+                pdc->min_gc*100.0, pdc->max_gc*100.0,
+                ecolipos,
+                pdc->mishit, pdc->mintarget*100.0);
+
+        free(ecolipos);
+    }
 
     s += strlen(s);
 
@@ -425,15 +448,13 @@ static void ptnd_first_check(PT_pdc *pdc) {
 
 static void ptnd_check_position(PT_pdc *pdc) {
     /*! Check the probes position. */
-    PT_tprobes  *tprobe, *tprobe_next;
-    if (pdc->minpos == pdc->maxpos) return;
+    PT_tprobes *tprobe, *tprobe_next;
+    // if (pdc->min_ecolipos == pdc->max_ecolipos) return; // @@@ wtf was this for?  
 
-    for (tprobe = pdc->tprobes;
-                tprobe;
-                tprobe = tprobe_next) {
+    for (tprobe = pdc->tprobes; tprobe; tprobe = tprobe_next) {
         tprobe_next = tprobe->next;
-        long relpos = PT_abs_2_rel(tprobe->apos);
-        if (relpos < pdc->minpos || relpos > pdc->maxpos) {
+        long relpos = PT_abs_2_rel(tprobe->apos+1);
+        if (relpos < pdc->min_ecolipos || (relpos > pdc->max_ecolipos && pdc->max_ecolipos != -1)) {
             destroy_PT_tprobes(tprobe);
         }
     }

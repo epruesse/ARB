@@ -4,6 +4,7 @@
 #include <arbdbt.h>
 #include <aw_awars.hxx>
 #include <AW_helix.hxx>
+#include <BI_basepos.hxx>
 #include <aw_msg.hxx>
 #include <arb_progress.h>
 #include <aw_root.hxx>
@@ -15,6 +16,9 @@
 #include "ed4_tools.hxx"
 #include "ed4_awars.hxx"
 #include "ed4_ProteinViewer.hxx"
+
+#include <arb_str.h>
+#include <arb_defs.h>
 
 /* --------------------------------------------------------------------------------
    CursorShape
@@ -858,9 +862,9 @@ void ED4_cursor::updateAwars()
 
     // update awars for cursor position:
 
-    aw_root->awar(win->awar_path_for_cursor)->write_int(seq_pos+1);
+    aw_root->awar(win->awar_path_for_cursor)->write_int(info2bio(seq_pos));
     if (ED4_update_global_cursor_awars_allowed) {
-        aw_root->awar(AWAR_CURSOR_POSITION)->write_int(seq_pos+1);      // this supports last cursor position for all applications
+        aw_root->awar(AWAR_CURSOR_POSITION)->write_int(info2bio(seq_pos)); // update ARB-global cursor position
     }
 
     // look if we have a commented search result under the cursor:
@@ -886,13 +890,13 @@ void ED4_cursor::updateAwars()
 
     BI_ecoli_ref *ecoli = ED4_ROOT->ecoli_ref;
     if (ecoli->gotData()) {
-        long ecoli_pos = ecoli->abs_2_rel(seq_pos);
-        aw_root->awar(win->awar_path_for_Ecoli)->write_int(ecoli_pos+1);
+        long ecoli_pos = ecoli->abs_2_rel(seq_pos+1); // inclusive position behind cursor
+        aw_root->awar(win->awar_path_for_Ecoli)->write_int(ecoli_pos);
     }
 
     // update awar for base position:
 
-    int base_pos = base_position.get_base_position(owner_of_cursor, seq_pos+1);
+    int base_pos = base_position.get_base_position(owner_of_cursor, seq_pos+1); // inclusive position behind cursor
     aw_root->awar(win->awar_path_for_basePos)->write_int(base_pos); // update awar for base position
 
     // update awar for IUPAC:
@@ -1458,14 +1462,11 @@ ED4_terminal *ED4_cursor::get_upper_lower_cursor_pos(ED4_manager *starting_point
 
 ED4_base_position::ED4_base_position()
     : calced4base(0)
-    , seq_pos(0)
-    , count(0)
 {
 }
 
 ED4_base_position::~ED4_base_position() {
     invalidate();
-    delete [] seq_pos;
 }
 
 static void ed4_bp_sequence_changed_cb(ED4_species_manager *, AW_CL cl_base_pos) {
@@ -1482,6 +1483,9 @@ void ED4_base_position::invalidate() {
     }
 }
 
+static bool is_gap(char c) { return ED4_is_align_character[safeCharIndex(c)]; }
+static bool is_consensus_gap(char c) { return ED4_is_align_character[safeCharIndex(c)] || c == '='; }
+
 void ED4_base_position::calc4base(const ED4_base *base)
 {
     e4_assert(base);
@@ -1497,80 +1501,36 @@ void ED4_base_position::calc4base(const ED4_base *base)
 
     species_manager->add_sequence_changed_cb(ed4_bp_sequence_changed_cb, (AW_CL)this);
 
+    bool (*is_gap_fun)(char);
     if (species_manager->flag.is_consensus) {
         ED4_group_manager *group_manager = base->get_parent(ED4_L_GROUP)->to_group_manager();
 
-        seq = group_manager->table().build_consensus_string();
-        len = strlen(seq);
+        seq        = group_manager->table().build_consensus_string();
+        len        = strlen(seq);
+        is_gap_fun = is_consensus_gap;
     }
     else {
         seq = base->resolve_pointer_to_string_copy(&len);
+        e4_assert((int)strlen(seq) == len);
+        is_gap_fun = is_gap;
     }
 
     e4_assert(seq);
 
-    delete [] seq_pos;
+    initialize(seq, len, is_gap_fun);
     calced4base = base;
-
-    {
-        int *pos = new int[len];
-        int p;
-
-        count = 0;
-        for (p=0; p<len; p++) {
-            if (!ADPP_IS_ALIGN_CHARACTER(seq[p])) {
-                pos[count++] = p;
-            }
-        }
-
-        if (count) {
-            seq_pos = new int[count];
-            for (p=0; p<count; p++) {
-                seq_pos[p] = pos[p];
-            }
-        }
-        else {
-            seq_pos = 0;
-        }
-
-        delete[] pos;
-    }
 
     free(seq);
 }
-int ED4_base_position::get_base_position(const ED4_base *base, int sequence_position)
-{
+int ED4_base_position::get_base_position(const ED4_base *base, int sequence_position) {
     if (!base) return 0;
-    if (base!=calced4base) calc4base(base);
-
-    if (count==0) return 0;
-    if (sequence_position>seq_pos[count-1]) return count;
-
-    int h = count-1,
-        l = 0;
-
-    while (1)
-    {
-        int m = (l+h)/2;
-
-        if (seq_pos[m]==sequence_position) {
-            return m;
-        }
-        else {
-            if (l==h) break;
-
-            if (sequence_position<seq_pos[m]) h = m;
-            else                              l = m+1;
-        }
-    }
-
-    return l;
+    set_base(base);
+    return abs_2_rel(sequence_position);
 }
-int ED4_base_position::get_sequence_position(const ED4_base *base, int base_pos)
-{
+int ED4_base_position::get_sequence_position(const ED4_base *base, int base_pos) {
     if (!base) return 0;
-    if (base!=calced4base) calc4base(base);
-    return base_pos<count ? seq_pos[base_pos] : seq_pos[count-1]+1;
+    set_base(base);
+    return rel_2_abs(base_pos);
 }
 
 /* --------------------------------------------------------------------------------
@@ -1698,3 +1658,170 @@ void ED4_change_cursor(AW_window * /* aww */, AW_CL /* cd1 */, AW_CL /* cd2 */) 
 
     cursor->changeType((ED4_CursorType)((typ+1)%ED4_CURSOR_TYPES));
 }
+
+// --------------------------------------------------------------------------------
+
+#ifdef UNIT_TESTS
+#include <test_unit.h>
+
+class fake_man_4test : public ED4_species_manager {
+public:
+    fake_man_4test()
+        : ED4_species_manager("fake", 0, 0, 0, 0, NULL, false)
+    {
+    }
+};
+class fake_base_4test : public ED4_base {
+    const char *seq;
+    int         size;
+public:
+    fake_base_4test(fake_man_4test *fake_man, const char *seq_, int size_)
+        : ED4_base("fake", 0, 0, 0, 0, fake_man),
+          seq(seq_),
+          size(size_)
+    {}
+
+    int get_length() const { return size; }
+    char *resolve_pointer_to_string_copy(int *len) const { *len = size; return strdup(seq); }
+
+    void dump(size_t) const {}
+    ED4_returncode Show(int, int) { return ED4_R_OK; }
+    ED4_returncode Resize() { return ED4_R_OK; }
+    short int calc_bounding_box() { return -1; }
+    ED4_returncode set_refresh(int) { return ED4_R_OK; }
+    ED4_returncode resize_requested_by_child() { return ED4_R_OK; }
+    ED4_returncode resize_requested_by_parent() { return ED4_R_OK; }
+    ED4_returncode delete_requested_by_parent() { return ED4_R_OK; }
+    ED4_returncode delete_requested_children() { return ED4_R_OK; }
+    ED4_returncode calc_size_requested_by_parent() { return ED4_R_OK; }
+    ED4_returncode move_requested_by_parent(ED4_move_info*) { return ED4_R_OK; }
+    ED4_returncode move_requested_by_child(ED4_move_info*) { return ED4_R_OK; }
+    ED4_returncode handle_move(ED4_move_info*) { return ED4_R_OK; }
+    ED4_base* search_ID(const char*) { return NULL; }
+    ED4_base* get_competent_child(AW_pos, AW_pos, ED4_properties) { return NULL; }
+    ED4_base* get_competent_clicked_child(AW_pos, AW_pos, ED4_properties) { return NULL; }
+};
+
+struct test_absrel {
+    bool torel;
+    test_absrel(bool r) : torel(r) {}
+    virtual ~test_absrel() {}
+
+    virtual int a2r(int a) const = 0;
+    virtual int r2a(int r) const = 0;
+    
+    virtual int abs_size() const = 0;
+    virtual int rel_size() const = 0;
+
+    int gen(int i) const { return torel ? a2r(i) : r2a(i); }
+    int get_size() const { return torel ? abs_size()+1 : rel_size(); }
+
+    char *genResult() const {
+        const int  BUFFERSIZE = 1024;
+        char       buffer[BUFFERSIZE];
+        char      *cursor     = buffer;
+        int        size       = get_size();
+
+        for (int i = -1; i<size+1; ++i) {
+            int o = gen(i);
+
+            if (i<0 || i >= size) {
+                const char *br = GBS_global_string("[%i]", o);
+                cursor += sprintf(cursor, "%5s", br);
+            }
+            else {
+                cursor += sprintf(cursor, "%3i", o);
+            }
+        }
+        TEST_ASSERT((cursor-buffer)<BUFFERSIZE);
+        return strdup(buffer);
+    }
+};
+
+struct test_ecoli : public test_absrel {
+    BI_ecoli_ref& eref;
+    test_ecoli(BI_ecoli_ref& b, bool to_rel) : test_absrel(to_rel), eref(b) {}
+    int a2r(int a) const { return eref.abs_2_rel(a); }
+    int r2a(int r) const { return eref.rel_2_abs(r); }
+    int abs_size() const { return eref.abs_count(); }
+    int rel_size() const { return eref.base_count(); }
+};
+
+struct test_basepos : public test_absrel {
+    fake_base_4test&   base;
+    ED4_base_position& bpos;
+    test_basepos(fake_base_4test& base_, ED4_base_position& bpos_, bool to_rel)
+        : test_absrel(to_rel), base(base_), bpos(bpos_) {}
+    int a2r(int a) const { return bpos.get_base_position(&base, a); }
+    int r2a(int r) const { return bpos.get_sequence_position(&base, r); }
+    int abs_size() const { return bpos.get_abs_len(&base); }
+    int rel_size() const { return bpos.get_base_count(&base); }
+};
+
+#define TEST_ABSREL_EQUALS(tester,expected) do {        \
+        char *res = tester.genResult();                 \
+        TEST_ASSERT_EQUAL(res,expected);                \
+        free(res);                                      \
+    } while(0)
+
+#define TEST_ECOLIREF_EQUALS(data,alen,a2r,r2a) do {            \
+        BI_ecoli_ref eref;                                      \
+        eref.init(data,alen);                                   \
+        TEST_ABSREL_EQUALS(test_ecoli(eref, true), a2r);        \
+        TEST_ABSREL_EQUALS(test_ecoli(eref, false), r2a);       \
+    } while(0)
+
+
+#define TEST_BASE_POS_EQUALS(data,a2r,r2a) do {                         \
+        fake_man_4test man;                                             \
+        fake_base_4test base(&man, data, strlen(data));                 \
+        {                                                               \
+            ED4_base_position bpos;                                     \
+            TEST_ABSREL_EQUALS(test_basepos(base, bpos, true), a2r);    \
+            TEST_ABSREL_EQUALS(test_basepos(base, bpos, false), r2a);   \
+        }                                                               \
+    } while(0)
+
+void TEST_BI_ecoli_ref() {
+    TEST_ECOLIREF_EQUALS("-.AC-G-T-.", 10,
+                         "  [4]  0  0  0  1  2  2  3  3  4  4  4  [4]", // abs -> rel
+                         "  [7]  2  3  5  7  [7]");                     // rel -> abs
+
+    TEST_ECOLIREF_EQUALS("A",   1, "  [1]  0  1  [1]",       "  [0]  0  [0]");
+    TEST_ECOLIREF_EQUALS("A",   2, "  [1]  0  1  1  [1]",    "  [0]  0  [0]");
+
+    TEST_ECOLIREF_EQUALS("A-",  2, "  [1]  0  1  1  [1]",    "  [0]  0  [0]");
+    TEST_ECOLIREF_EQUALS("-A",  2, "  [1]  0  0  1  [1]",    "  [1]  1  [1]");
+
+    TEST_ECOLIREF_EQUALS("A--", 3, "  [1]  0  1  1  1  [1]", "  [0]  0  [0]");
+    TEST_ECOLIREF_EQUALS("-A-", 3, "  [1]  0  0  1  1  [1]", "  [1]  1  [1]");
+    TEST_ECOLIREF_EQUALS("--A", 3, "  [1]  0  0  0  1  [1]", "  [2]  2  [2]");
+}
+
+void TEST_ED4_base_position() {
+    ED4_ROOT = NULL;
+    ED4_init_is_align_character("-"); // count '.' as base
+
+    TEST_BASE_POS_EQUALS("-.AC-G-T-.",
+                         "  [6]  0  0  1  2  3  3  4  4  5  5  6  [6]", // abs -> rel
+                         "  [9]  1  2  3  5  7  9  [9]");               // rel -> abs
+
+    // ------------------------------
+    ED4_init_is_align_character(".-");
+
+    TEST_BASE_POS_EQUALS("-.AC-G-T-.",
+                         "  [4]  0  0  0  1  2  2  3  3  4  4  4  [4]", // abs -> rel
+                         "  [7]  2  3  5  7  [7]");                     // rel -> abs
+    
+    TEST_BASE_POS_EQUALS("A",   "  [1]  0  1  [1]",       "  [0]  0  [0]");
+
+    TEST_BASE_POS_EQUALS("A-",  "  [1]  0  1  1  [1]",    "  [0]  0  [0]");
+    TEST_BASE_POS_EQUALS("-A",  "  [1]  0  0  1  [1]",    "  [1]  1  [1]");
+    
+    TEST_BASE_POS_EQUALS("A--", "  [1]  0  1  1  1  [1]", "  [0]  0  [0]");
+    TEST_BASE_POS_EQUALS("-A-", "  [1]  0  0  1  1  [1]", "  [1]  1  [1]");
+    TEST_BASE_POS_EQUALS("--A", "  [1]  0  0  0  1  [1]", "  [2]  2  [2]");
+}
+
+#endif // UNIT_TESTS
+

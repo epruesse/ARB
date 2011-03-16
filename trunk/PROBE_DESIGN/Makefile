@@ -84,6 +84,7 @@ probe_match_parser.o: $(ARBHOME)/INCLUDE/ad_prot.h
 probe_match_parser.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 probe_match_parser.o: $(ARBHOME)/INCLUDE/arb_assert.h
 probe_match_parser.o: $(ARBHOME)/INCLUDE/arb_core.h
+probe_match_parser.o: $(ARBHOME)/INCLUDE/arb_defs.h
 probe_match_parser.o: $(ARBHOME)/INCLUDE/arb_error.h
 probe_match_parser.o: $(ARBHOME)/INCLUDE/arb_msg.h
 probe_match_parser.o: $(ARBHOME)/INCLUDE/arb_string.h

@@ -37,6 +37,7 @@ depend.init:
 
 AW_helix.o: AW_helix.hxx
 AW_helix.o: $(ARBHOME)/INCLUDE/ad_prot.h
+AW_helix.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AW_helix.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_helix.o: $(ARBHOME)/INCLUDE/arb_core.h
 AW_helix.o: $(ARBHOME)/INCLUDE/arb_error.h
@@ -44,6 +45,7 @@ AW_helix.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AW_helix.o: $(ARBHOME)/INCLUDE/arb_string.h
 AW_helix.o: $(ARBHOME)/INCLUDE/arbdb.h
 AW_helix.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+AW_helix.o: $(ARBHOME)/INCLUDE/arbdbt.h
 AW_helix.o: $(ARBHOME)/INCLUDE/arbtools.h
 AW_helix.o: $(ARBHOME)/INCLUDE/attributes.h
 AW_helix.o: $(ARBHOME)/INCLUDE/aw_awar.hxx

@@ -13,25 +13,24 @@
 #include <aw_root.hxx>
 #include <aw_awars.hxx>
 #include <aw_msg.hxx>
+#include <arb_defs.h>
 
 #define nt_assert(bed) arb_assert(bed)
 
 extern GBDATA *GLOBAL_gb_main;     /* muss existieren */
 
-void create_insertchar_variables(AW_root *root, AW_default db1)
-{
-    root->awar_int   (AWAR_CURSOR_POSITION,    0,  GLOBAL_gb_main);
+void create_insertchar_variables(AW_root *root, AW_default db1) {
+    root->awar_int   (AWAR_CURSOR_POSITION,    info2bio(0),  GLOBAL_gb_main);
     root->awar_int   ("insertchar/nchar",      0,  db1)->set_minmax(0, 999000);
     root->awar_string("insertchar/characters", "", db1);
 }
 
-void awt_inserchar_event(AW_window *aws, AW_CL awcl_mode)
-{
+void awt_inserchar_event(AW_window *aws, AW_CL awcl_mode) {
     int mode = (int)awcl_mode; // 1 = insert, -1 = delete
     nt_assert(mode == -1 || mode == 1);
 
     AW_root *root    = aws->get_root();
-    long     pos     = root->awar(AWAR_CURSOR_POSITION)->read_int()-1;
+    long     pos     = bio2info(root->awar(AWAR_CURSOR_POSITION)->read_int());
     long     nchar   = root->awar("insertchar/nchar")->read_int() * mode;
     char    *deletes = root->awar("insertchar/characters")->read_string();
 
@@ -75,7 +74,7 @@ AW_window *create_insertchar_window(AW_root *root, AW_default /*def*/) {
 
     aws->at("pos");
     aws->label("Sequence Position");
-    aws->create_input_field(AWAR_CURSOR_POSITION, 6); // @@@ mit EDIT4-Cursor-position linken
+    aws->create_input_field(AWAR_CURSOR_POSITION, 6);
 
     aws->at("len");
     aws->label("How many Characters");

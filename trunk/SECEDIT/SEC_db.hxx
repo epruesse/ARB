@@ -12,8 +12,8 @@
 #ifndef SEC_DB_HXX
 #define SEC_DB_HXX
 
-#ifndef BI_HELIX_HXX
-#include <BI_helix.hxx>
+#ifndef BI_BASEPOS_HXX
+#include <BI_basepos.hxx>
 #endif
 
 #ifndef SEC_DEFS_HXX

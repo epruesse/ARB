@@ -120,12 +120,15 @@ static char *AP_probe_design_event(ARB_ERROR& error) {
                 PDC_MAXGC,       P.MAXGC/100.0,
                 PDC_MAXBOND,     (double)P.MAXBOND,
                 NULL);
+
     aisc_put(pd_gl.link, PT_PDC, pdc,
-             PDC_MINPOS,    P.MINPOS,
-             PDC_MAXPOS,    P.MAXPOS,
-             PDC_MISHIT,    P.MISHIT,
+             PDC_MIN_ECOLIPOS,  (long)P.MINPOS,
+             PDC_MAX_ECOLIPOS,  (long)P.MAXPOS,
+             PDC_MISHIT,        (long)P.MISHIT,
              PDC_MINTARGETS,    P.MINTARGETS/100.0,
              NULL);
+
+
 
     if (probe_design_send_data(pdc)) {
         error = "Connection to PT_SERVER lost (1)";
@@ -344,8 +347,8 @@ static int parseCommandLine(int argc, const char ** argv) {
     P.MAXGC             = getInt("desingmaxgc", 80, 0, 100, "Maximum gc content");
     P.MAXBOND           = getInt("desingmaxbond", 0, 0, 10, "Not implemented");
 
-    P.MINPOS = getInt("desingminpos", 0, 0, 10000, "Minimum ecoli position");
-    P.MAXPOS = getInt("desingmaxpos", 10000, 0, 10000, "Maximum ecoli position");
+    P.MINPOS = getInt("desingminpos", -1, -1, INT_MAX, "Minimum ecoli position (-1=none)");
+    P.MAXPOS = getInt("desingmaxpos", -1, -1, INT_MAX, "Maximum ecoli position (-1=none)");
 
     P.MISHIT     = getInt("designmishit", 0, 0, 10000, "Number of allowed hits outside the selected group");
     P.MINTARGETS = getInt("designmintargets", 50, 0, 100, "Minimum percentage of hits within the selected species");
@@ -492,7 +495,7 @@ void TEST_SLOW_match_probe() {
     };
     const char *expected =
         "    name---- fullname mis N_mis wmis pos rev          'UAUCGGAGAGUUUGA'\1"
-        "BcSSSS00\1" "  BcSSSS00            0     0  0.0   2 0   .......UU-===============-UCAAGUCGA\1";
+        "BcSSSS00\1" "  BcSSSS00            0     0  0.0   3 0   .......UU-===============-UCAAGUCGA\1";
 
     test_arb_probe(ARRAY_ELEMS(arguments), arguments, expected);
 }
@@ -508,14 +511,14 @@ void TEST_SLOW_design_probe() {
         "Length of probe      18\n"
         "Temperature        [ 0.0 -400.0]\n"
         "GC-Content         [30.0 -80.0]\n"
-        "E.Coli Position    [   0 -10000]\n"
+        "E.Coli Position    [any]\n"
         "Max Non Group Hits     0\n"
         "Min Group Hits       100%\n"
         "Target             le     apos ecol grps  G+C 4GC+2AT Probe sequence     | Decrease T by n*.3C -> probe matches n non group species\n"
-        "CGAAAGGAAGAUUAAUAC 18 A=    93   93    4 33.3 48.0    GUAUUAAUCUUCCUUUCG |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n"
-        "GAAAGGAAGAUUAAUACC 18 A+     1   94    4 33.3 48.0    GGUAUUAAUCUUCCUUUC |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n"
-        "UCAAGUCGAGCGAUGAAG 18 B=    17   17    4 50.0 54.0    CUUCAUCGCUCGACUUGA |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n"
-        "AUCAAGUCGAGCGAUGAA 18 B-     1   16    4 44.4 52.0    UUCAUCGCUCGACUUGAU |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  1,  2,  3,\n";
+        "CGAAAGGAAGAUUAAUAC 18 A=    94   94    4 33.3 48.0    GUAUUAAUCUUCCUUUCG |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n"
+        "GAAAGGAAGAUUAAUACC 18 A+     1   95    4 33.3 48.0    GGUAUUAAUCUUCCUUUC |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n"
+        "UCAAGUCGAGCGAUGAAG 18 B=    18   18    4 50.0 54.0    CUUCAUCGCUCGACUUGA |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,\n"
+        "AUCAAGUCGAGCGAUGAA 18 B-     1   17    4 44.4 52.0    UUCAUCGCUCGACUUGAU |  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  0,  1,  1,  2,  3,\n";
 
     test_arb_probe(ARRAY_ELEMS(arguments), arguments, expected);
 }
@@ -527,10 +530,10 @@ void TEST_SLOW_match_designed_probe() {
     };
     const char *expected =
     "    name---- fullname mis N_mis wmis pos rev          'UCAAGUCGAGCGAUGAAG'\1"
-    "ClnCorin\1" "  ClnCorin            0     0  0.0  17 0   .GAGUUUGA-==================-UUCCUUCGG\1"
-    "CltBotul\1" "  CltBotul            0     0  0.0  17 0   ........A-==================-CUUCUUCGG\1"
-    "CPPParap\1" "  CPPParap            0     0  0.0  17 0   AGAGUUUGA-==================-UUCCUUCGG\1"
-    "ClfPerfr\1" "  ClfPerfr            0     0  0.0  17 0   AGAGUUUGA-==================-UUUCCUUCG\1";
+    "ClnCorin\1" "  ClnCorin            0     0  0.0  18 0   .GAGUUUGA-==================-UUCCUUCGG\1"
+    "CltBotul\1" "  CltBotul            0     0  0.0  18 0   ........A-==================-CUUCUUCGG\1"
+    "CPPParap\1" "  CPPParap            0     0  0.0  18 0   AGAGUUUGA-==================-UUCCUUCGG\1"
+    "ClfPerfr\1" "  ClfPerfr            0     0  0.0  18 0   AGAGUUUGA-==================-UUUCCUUCG\1";
 
     test_arb_probe(ARRAY_ELEMS(arguments), arguments, expected);
 }

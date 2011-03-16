@@ -16,6 +16,7 @@
 #include <aw_window.hxx>
 #include <aw_awar.hxx>
 #include <aw_device.hxx>
+#include <arbdbt.h>
 #include <cctype>
 
 #define HELIX_AWAR_ENABLE          "Helix/enable"

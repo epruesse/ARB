@@ -12,6 +12,7 @@
 #include <sstream>
 #include "SEC_root.hxx"
 #include "SEC_iter.hxx"
+#include <arb_msg.h>
 
 #define BUFFER_SIZE 1000
 

@@ -146,7 +146,7 @@ RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
-RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
+RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
 RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/cb.h
 RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/dupstr.h
 RNA3D_OpenGLEngine.o: $(ARBHOME)/INCLUDE/GL/aw_window_ogl.hxx
@@ -241,7 +241,7 @@ RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
-RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/BI_helix.hxx
+RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/BI_basepos.hxx
 RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/cb.h
 RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/dupstr.h
 RNA3D_StructureData.o: $(ARBHOME)/INCLUDE/ed4_extern.hxx
