@@ -242,6 +242,8 @@ GB_ERROR PT_FamilyFinder::searchFamily(const char *sequence, FF_complement compl
     //
     // 'max_results' limits the length of the generated result list (low scores deleted first)
     //               if < 1 -> don't limit
+    //
+    // When using restrict_2_region(), only pass the corresponding part via 'sequence' (not the full alignment)
 
     GB_ERROR error = open(GBS_ptserver_tag(server_id));
     if (!error) {

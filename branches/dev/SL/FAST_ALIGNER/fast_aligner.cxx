@@ -89,6 +89,10 @@ struct AlignParams {
     bool      showGapsMessages; // display messages about missing gaps in master?
     int       firstColumn;      // first column of range to be aligned (0..len-1)
     int       lastColumn;       // last column of range to be aligned (0..len-1, -1 = (len-1))
+
+    TargetRange get_TargetRange() const {
+        return TargetRange(firstColumn, lastColumn);
+    }
 };
 
 struct SearchRelativeParams {
@@ -1488,6 +1492,8 @@ static ARB_ERROR alignToNextRelative(SearchRelativeParams&  relSearch,
             // find relatives
             FamilyFinder *familyFinder = relSearch.getFamilyFinder();
 
+            // @@@ restrict to TargetRange of FamilyFinder
+            
             error = familyFinder->searchFamily(toAlignExpSequence, FF_FORWARD, relativesToTest+1);
 
             double bestScore = 0;
@@ -1521,6 +1527,8 @@ static ARB_ERROR alignToNextRelative(SearchRelativeParams&  relSearch,
             }
 
             if (!error && turnAllowed != FA_TURN_NEVER) {               // test if mirrored sequence has better relatives
+                // @@@ does not make sense when using TargetRange!!!
+                
                 char   *mirroredSequence  = strdup(toAlignExpSequence);
                 long    length            = strlen(mirroredSequence);
                 double  bestMirroredScore = 0;
@@ -2880,6 +2888,7 @@ public:
             if (oligos_counted.find(name) == oligos_counted.end()) {
                 GBDATA     *gb_data  = GBT_read_sequence(gb_species, ali_name.c_str());
                 const char *spec_seq = GB_read_char_pntr(gb_data);
+                // @@@ restrict oligo counting to TargetRange of FamilyFinder
                 oligos_counted[name] = OligoCounter(spec_seq, oligo_len);
             }
 
@@ -2942,6 +2951,22 @@ static const char *get_used_rels_for(GBDATA *gb_main, const char *species_name) 
     return result;
 }
 
+static GB_ERROR forget_used_relatives(GBDATA *gb_main) {
+    GB_ERROR       error = NULL;
+    GB_transaction ta(gb_main);
+    for (GBDATA *gb_species = GBT_first_species(gb_main);
+         gb_species && !error;
+         gb_species = GBT_next_species(gb_species))
+    {
+        GBDATA *gb_used_rels = GB_search(gb_species, "used_rels", GB_FIND);
+        if (gb_used_rels) {
+            error = GB_delete(gb_used_rels);
+        }
+    }
+    return error;
+}
+
+
 #define ALIGNED_DATA_OF(name) get_aligned_data_of(gb_main, name)
 #define USED_RELS_FOR(name)   get_used_rels_for(gb_main, name)
 
@@ -2981,6 +3006,13 @@ static AlignParams test_ali_params = {
     false, // showGapsMessages
     0,     // firstColumn
     -1,    // lastColumn
+};
+
+static AlignParams test_ali_params_partial = {
+    FA_NO_REPORT,
+    false, // showGapsMessages
+    25,    // firstColumn
+    60,    // lastColumn
 };
 
 // ----------------------------------------
@@ -3097,29 +3129,127 @@ void TEST_Aligner_TargetAndReferenceHandling() {
         TEST_ASSERT(!cont_on_err || GBT_count_marked_species(gb_main) == 1);
     }
     
-    TEST_ASSERT_EQUAL(        ALIGNED_DATA_OF("s2"), ".........A--UCU-C------C-U-AAACC-CA-A-C-C-G-UAG-UUC--------GAA-U-UGAGG-AC--U-GUAA-CU-C...........");
+    TEST_ASSERT_EQUAL(ALIGNED_DATA_OF("s2"), ".........A--UCU-C------C-U-AAACC-CA-A-C-C-G-UAG-UUC--------GAA-U-UGAGG-AC--U-GUAA-CU-C...........");
 
-    TEST_ASSERT_EQUAL(        ALIGNED_DATA_OF("m1"), ".......UAG--AGG-A------U-U-UGGGU-UG-G-C-A-U-CAA-GCU--------UAA-C-UCCUG-AC--A-UUGAG...............");
-    TEST_ASSERT_EQUAL(        ALIGNED_DATA_OF("m2"), "..............U-C------C-U-AAACC-CA-A-C-C-G-UAG-UUC--------GAA-U-UGAGG-AC--U-GUAA................");
-    TEST_ASSERT_EQUAL(        ALIGNED_DATA_OF("m3"), "..............A-U------C-U-AAACC-CA-A-C-C-G-UAG-UUC--------GAA-U-UGAGG-AC--U-G----CU-C...........");
+    TEST_ASSERT_EQUAL(ALIGNED_DATA_OF("m1"), ".......UAG--AGG-A------U-U-UGGGU-UG-G-C-A-U-CAA-GCU--------UAA-C-UCCUG-AC--A-UUGAG...............");
+    TEST_ASSERT_EQUAL(ALIGNED_DATA_OF("m2"), "..............U-C------C-U-AAACC-CA-A-C-C-G-UAG-UUC--------GAA-U-UGAGG-AC--U-GUAA................");
+    TEST_ASSERT_EQUAL(ALIGNED_DATA_OF("m3"), "..............A-U------C-U-AAACC-CA-A-C-C-G-UAG-UUC--------GAA-U-UGAGG-AC--U-G----CU-C...........");
 
-    TEST_ASSERT_EQUAL(        ALIGNED_DATA_OF("c1"), ".........A--UCU-C------C-U-AAACC-CA-A-C-C-------------------AA-U-UGAGG-AC--U-GUAA-CU-C...........");
-    TEST_ASSERT_EQUAL(        ALIGNED_DATA_OF("c2"), ".........A--UCU-C------C-U-AA---------C-C-G-UAG-UUC------------C-CCGAA-AC--U-GUAA-CU-C...........");
+    TEST_ASSERT_EQUAL(ALIGNED_DATA_OF("c1"), ".........A--UCU-C------C-U-AAACC-CA-A-C-C-------------------AA-U-UGAGG-AC--U-GUAA-CU-C...........");
+    TEST_ASSERT_EQUAL(ALIGNED_DATA_OF("c2"), ".........A--UCU-C------C-U-AA---------C-C-G-UAG-UUC------------C-CCGAA-AC--U-GUAA-CU-C...........");
 
-    TEST_ASSERT_EQUAL(        ALIGNED_DATA_OF("r1"), ".........A--UCU-C------C-U-AAACC-CA-A-C-C-G-UAG-UUCCCC-----GAA-U-UGAGG-AC--U-GUAA-CU-C..........."); // here sequence shall be turned!
+    TEST_ASSERT_EQUAL(ALIGNED_DATA_OF("r1"), ".........A--UCU-C------C-U-AAACC-CA-A-C-C-G-UAG-UUCCCC-----GAA-U-UGAGG-AC--U-GUAA-CU-C..........."); // here sequence shall be turned!
 
-    {
-        GB_transaction ta(gb_main);
-        GBDATA     *gb_r1        = GBT_find_species(gb_main, "r1");
-        GBDATA     *gb_used_rels = GB_search(gb_r1, "used_rels", GB_FIND);
-        const char *used_rels    = GB_read_char_pntr(gb_used_rels);
-
-        TEST_ASSERT_EQUAL(used_rels, "s2:43, s1:1");
-    }
 
     TEST_ASSERT_EQUAL(USED_RELS_FOR("r1"), "s2:43, s1:1");
 
-    
+    // ----------------------------------------------
+    //      now align all others vs next relative
+
+    search_relative_params.maxRelatives = 5;
+    TEST_ASSERT_NO_ERROR(forget_used_relatives(gb_main));
+
+    int species_count = ARRAY_ELEMS(TestAlignmentData_TargetAndReferenceHandling);
+    for (int sp = 0; sp<species_count; ++sp) {
+        const char *name = TestAlignmentData_TargetAndReferenceHandling[sp].name;
+        if (strcmp(name, "r1") != 0) { // skip "r1" (already done above)
+            Aligner aligner(gb_main,
+                            FA_CURRENT,
+                            test_aliname,
+                            name,                       // toalign
+                            NULL,                       // get_first_selected_species
+                            NULL,                       // get_next_selected_species
+                            NULL,                       // reference species
+                            NULL,                       // get_consensus
+                            search_relative_params,     // relative search
+                            FA_TURN_NEVER,
+                            test_ali_params,
+                            0,
+                            cont_on_err,
+                            FA_MARK_ALIGNED);
+
+            error = aligner.run();
+            TEST_ASSERT_EQUAL(error.deliver(), NULL);
+
+            TEST_ASSERT(!cont_on_err || GBT_count_marked_species(gb_main) == 1);
+        }
+    }
+
+    TEST_ASSERT_EQUAL(USED_RELS_FOR("s1"), "s2");
+    TEST_ASSERT_EQUAL(USED_RELS_FOR("s2"), "s1"); // same as done manually
+    TEST_ASSERT_EQUAL(USED_RELS_FOR("m1"), "r1:42");
+    TEST_ASSERT_EQUAL(USED_RELS_FOR("m2"), "s2");
+    TEST_ASSERT_EQUAL(USED_RELS_FOR("m3"), "m2");
+    TEST_ASSERT_EQUAL(USED_RELS_FOR("c1"), "r1");
+    TEST_ASSERT_EQUAL(USED_RELS_FOR("c2"), "r1");
+
+    //                                       range aligned below (see test_ali_params_partial)
+    //                                       "-------------------------XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX------------------------------------"
+    TEST_ASSERT_EQUAL(ALIGNED_DATA_OF("s1"), ".........A--UCU-C------C-U-AAACC-CA-A-C-C-G-UAG-UUC--------GAA-U-UGAGG-AC--U-GUAA-CU-C..........."); // 1st aligning of 's1'
+    TEST_ASSERT_EQUAL(ALIGNED_DATA_OF("s2"), ".........A--UCU-C------C-U-AAACC-CA-A-C-C-G-UAG-UUC--------GAA-U-UGAGG-AC--U-GUAA-CU-C..........."); // same_as_above (again aligned vs 's1')
+
+    TEST_ASSERT_EQUAL(ALIGNED_DATA_OF("m1"), ".........U--AGA-G------G---AUUUG-GG-U-U-G-G-CAU-CAAGCU-----UAA-C-UCCUG-AC--A-UUGAG---------------"); // changed; @@@ bug: no dots at end
+    TEST_ASSERT_EQUAL(ALIGNED_DATA_OF("m2"), "..............U-C------C-U-AAACC-CA-A-C-C-G-UAG-UUC--------GAA-U-UGAGG-AC--U-GUAA................"); // same_as_above (1st align vs 's1', 2nd align vs 's2' which is same)
+    TEST_ASSERT_EQUAL(ALIGNED_DATA_OF("m3"), "..............A-U------C-U-AAACC-CA-A-C-C-G-UAG-UUC--------GAA-U-UGAGG-AC--U-GCUC................"); // changed
+
+    TEST_ASSERT_EQUAL(ALIGNED_DATA_OF("c1"), ".........A--UCU-C------C-U-AAACC-CA-A-C-C-------------------AA-U-UGAGG-AC--U-GUAA-CU-C..........."); // same_as_above
+    TEST_ASSERT_EQUAL(ALIGNED_DATA_OF("c2"), ".........A--UCU-C------C-U--------A-A-C-C-G-UAG-UUCCCC-----GA--------A-AC--U-GUAA-CU-C..........."); // changed
+
+    // --------------------------------------
+    //      test partial relative search
+
+    TargetRange range = test_ali_params_partial.get_TargetRange();
+    search_relative_params.getFamilyFinder()->restrict_2_region(range);
+    TEST_ASSERT_NO_ERROR(forget_used_relatives(gb_main));
+
+    for (int sp = 0; sp<species_count; ++sp) {
+        const char *name = TestAlignmentData_TargetAndReferenceHandling[sp].name;
+        Aligner aligner(gb_main,
+                        FA_CURRENT,
+                        test_aliname,
+                        name,                       // toalign
+                        NULL,                       // get_first_selected_species
+                        NULL,                       // get_next_selected_species
+                        NULL,                       // reference species
+                        NULL,                       // get_consensus
+                        search_relative_params,     // relative search
+                        FA_TURN_NEVER,
+                        test_ali_params_partial,
+                        0,
+                        cont_on_err,
+                        FA_MARK_ALIGNED);
+
+        error = aligner.run();
+        TEST_ASSERT_EQUAL(error.deliver(), NULL);
+
+        TEST_ASSERT(!cont_on_err || GBT_count_marked_species(gb_main) == 1);
+    }
+
+    TEST_ASSERT_EQUAL(USED_RELS_FOR("s1"), "s2");
+    TEST_ASSERT_EQUAL(USED_RELS_FOR("s2"), "s1");
+    TEST_ASSERT_EQUAL(USED_RELS_FOR("m1"), "r1"); // differs
+    TEST_ASSERT_EQUAL(USED_RELS_FOR("m2"), "s2");
+    TEST_ASSERT_EQUAL(USED_RELS_FOR("m3"), "m2");
+    TEST_ASSERT_EQUAL(USED_RELS_FOR("c1"), "r1");
+    TEST_ASSERT_EQUAL(USED_RELS_FOR("c2"), "r1");
+    TEST_ASSERT_EQUAL(USED_RELS_FOR("r1"), "s2:20");
+
+    //                                       aligned range (see test_ali_params_partial)
+    //                                       "-------------------------XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX------------------------------------"
+    TEST_ASSERT_EQUAL(ALIGNED_DATA_OF("s1"), ".........A--UCU-C------C-U-AAACC-CA-A-C-C-G-UAG-UUC--------GAA-U-UGAGG-AC--U-GUAA-CU-C..........."); // same_as_above
+    TEST_ASSERT_EQUAL(ALIGNED_DATA_OF("s2"), ".........A--UCU-C------C-U-AAACC-CA-A-C-C-G-UAG-UUC--------GAA-U-UGAGG-AC--U-GUAA-CU-C..........."); // same_as_above
+
+    // T_ASSERT_EQUAL(ALIGNED_DATA_OF("m1"), ".........U--AGA-G------G---AUUUG-GG-U-U-G-G-CAU-CAAGCU-----UAA-C-UCCUG-AC--A-UUGAG---------------"); // prev_result
+    TEST_ASSERT_EQUAL(ALIGNED_DATA_OF("m1"), ".........U--AGA-G------G-A-UU-UG-GG-U-U-G-G-CAU-CAAGCU-----UAA-C-UCCUG-AC--A-UUGAG---------------"); // changed 
+    TEST_ASSERT_EQUAL(ALIGNED_DATA_OF("m2"), "..............U-C------C-U-AAACC-CA-A-C-C-G-UAG-UUC--------GAA-U-UGAGG-AC--U-GUAA................"); // same_as_above
+    TEST_ASSERT_EQUAL(ALIGNED_DATA_OF("m3"), "..............A-U------C-U-AAACC-CA-A-C-C-G-UAG-UUC--------GAA-U-UGAGG-AC--U-GCUC................"); // same_as_above
+
+    TEST_ASSERT_EQUAL(ALIGNED_DATA_OF("c1"), ".........A--UCU-C------C-U-AAACC-CA-A-C-C-------------------AA-U-UGAGG-AC--U-GUAA-CU-C..........."); // same_as_above
+    // T_ASSERT_EQUAL(ALIGNED_DATA_OF("c2"), ".........A--UCU-C------C-U--------A-A-C-C-G-UAG-UUCCCC-----GA--------A-AC--U-GUAA-CU-C..........."); // prev_result
+    TEST_ASSERT_EQUAL(ALIGNED_DATA_OF("c2"), ".........A--UCU-C------C---------UA-A-C-C-G-UAG-UUCCCC-----GA--------A-AC--U-GUAA-CU-C..........."); // changed 
+
+    TEST_ASSERT_EQUAL(ALIGNED_DATA_OF("r1"), ".........A--UCU-C------C-U-AAACC-CA-A-C-C-G-UAG-UUCCCC-----GAA-U-UGAGG-AC--U-GUAA-CU-C..........."); // same_as_above
+
     GB_close(gb_main);
 }
 
