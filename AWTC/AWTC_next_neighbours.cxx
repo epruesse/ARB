@@ -19,6 +19,23 @@
 
 #include <climits>
 
+// --------------------
+//      TargetRange
+
+void TargetRange::copy_corresponding_part(char *dest, const char *source, size_t source_len) const {
+    ff_assert(source_len == strlen(source));
+
+    int size   = length(source_len);
+    memcpy(dest, source+first_pos(), size);
+    dest[size] = 0;
+}
+
+char *TargetRange::dup_corresponding_part(const char *source, size_t source_len) const {
+    char *dup = (char*)malloc(length(source_len)+1);
+    copy_corresponding_part(dup, source, source_len);
+    return dup;
+}
+
 void awtc_ff_message(const char *msg) {
     GB_warning(msg);
 }
@@ -367,4 +384,26 @@ void TEST_SLOW_PT_FamilyFinder() {
     GB_close(gb_main);
 }
 
+void TEST_TargetRange() {
+    char          dest[100];
+    const char   *source     = "0123456789";
+    const size_t  source_len = strlen(source);
+
+    TargetRange(-1, 2).copy_corresponding_part(dest, source, source_len);
+    TEST_ASSERT_EQUAL(dest, "012");
+
+    TargetRange(2, 5).copy_corresponding_part(dest, source, source_len);
+    TEST_ASSERT_EQUAL(dest, "2345");
+
+    TargetRange(7, -1).copy_corresponding_part(dest, source, source_len);
+    TEST_ASSERT_EQUAL(dest, "789");
+
+    TargetRange(9, 1000).copy_corresponding_part(dest, source, source_len);
+    TEST_ASSERT_EQUAL(dest, "9");
+    
+    TargetRange(900, 1000).copy_corresponding_part(dest, source, source_len);
+    TEST_ASSERT_EQUAL(dest, "");
+}
+
 #endif
+
