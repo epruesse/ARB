@@ -940,7 +940,7 @@ char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *comma
             for (; (c = *s1); s1++) {
                 if (c=='\\') {
                     *(s2++) = c;
-                    if (!(c=*s1)) { break; }
+                    if (!(c=*++s1)) { break; }
                     *(s2++) = c;
                     continue;
                 }
@@ -1007,8 +1007,9 @@ char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *comma
                 out[argcout++].str = strdup(s1+1);
             }
             else {
-                int argcparam = 0;
-                char *bracket = strchr(s1, '(');
+                int   argcparam = 0;
+                char *bracket   = strchr(s1, '(');
+
                 if (bracket) {      // I got the parameter list
                     int slen;
                     *(bracket++) = 0;
@@ -1180,12 +1181,16 @@ char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *comma
 #include <test_unit.h>
 #include <arbdbt.h>
 
-#define TEST_CI(input,cmd,expected) do {                               \
-        char *result; \
+#define TEST_CI__INTERNAL(input,cmd,expected,TEST_RESULT) do {          \
+        char *result;                                                   \
         TEST_ASSERT_RESULT__NOERROREXPORTED(result = GB_command_interpreter(gb_main, input, cmd, gb_data, NULL)); \
-        TEST_ASSERT_EQUAL(result,expected);                             \
+        TEST_RESULT(result,expected);                                   \
         free(result);                                                   \
     } while(0)
+
+
+#define TEST_CI(input,cmd,expected)         TEST_CI__INTERNAL(input,cmd,expected,TEST_ASSERT_EQUAL)
+#define TEST_CI__BROKEN(input,cmd,expected) TEST_CI__INTERNAL(input,cmd,expected,TEST_ASSERT_EQUAL__BROKEN)
 
 #define TEST_CI_ERROR(input,cmd,error_expected) do {                    \
         char *result = GB_command_interpreter(gb_main, input, cmd, gb_data, NULL); \
@@ -1227,9 +1232,10 @@ void TEST_GB_command_interpreter() {
         TEST_CI("bla",    "|count(\"\\a\")",    "1");   // escaped character
 
         // escaping (@@@ wrong behavior?)
-        TEST_CI("b\\a",   "|count(\\a)",    "2");   // i would expect '1' as result (the 'a'), but it counts '\\' and 'a'
-        TEST_CI("b\\a",   "|contains(\\)",    "0"); // searches for 2 backslashes (should search for one)
-        TEST_CI("b\\a",   "|contains(\"\\\\\")",    "0"); // searches for 2 backslashes
+        TEST_CI("b\\a",   "|count(\\a)",         "2"); // i would expect '1' as result (the 'a'), but it counts '\\' and 'a'
+        TEST_CI("b\\a",   "|contains(\"\\\\\")", "0"); // searches for 2 backslashes(ok)
+        TEST_CI__BROKEN("b\\a", "|contains(\\)", "1"); // searches for 1 backslash (ok), but reports two hits instead of one
+        TEST_CI__BROKEN("b\\\\a", "|contains(\"\\\\\")", "1"); // searches for 2 backslashes (ok), but reports two hits instead of one
         TEST_CI_ERROR("b\\a", "|contains(\"\\\")", "ARB ERROR: unbalanced '\"' in '|contains(\"\\\")'"); // raises error (should searches for 1 backslash)
 
         // error cases
