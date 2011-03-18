@@ -949,6 +949,7 @@ char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *comma
                     const char *hp = gbs_search_second_x(s1+1);
                     if (!hp) {
                         GB_export_errorf("unbalanced '\"' in '%s'", commands);
+                        free(buffer);
                         return NULL;
                     }
                     while (s1 <= hp) *(s2++) = *(s1++);
@@ -1041,7 +1042,6 @@ char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *comma
                             in[argcparam++].str = strdup(p1);
                         }
                     }
-                    if (error) break;
                 }
                 if (!error && (bracket || *s1)) {
                     char *p = s1;

@@ -147,19 +147,20 @@ const char *GBS_unwrap_regexpr(const char *regexpr_in_slashes, GB_CASE *case_fla
         if (regexpr_in_slashes[0] == '/' && end[-1] == '/') {
             gb_assert(*error == NULL);
 
-            static char   *result_buffer = 0;
-            static size_t  max_len    = 0;
+            static SmartCharPtr result_buffer_ptr;
+            static size_t       max_len = 0;
 
             size_t len = end-regexpr_in_slashes-2;
             gb_assert(len>0); // don't accept empty expression
 
             if (len>max_len) {
-                max_len = len*3/2;
-                freeset(result_buffer, (char*)malloc(max_len+1));
+                max_len           = len*3/2;
+                result_buffer_ptr = (char*)malloc(max_len+1);
             }
 
+            char *result_buffer = &*result_buffer_ptr;
             memcpy(result_buffer, regexpr_in_slashes+1, len);
-            result_buffer[len] = 0;
+            result_buffer[len]  = 0;
 
             result = result_buffer;
         }
