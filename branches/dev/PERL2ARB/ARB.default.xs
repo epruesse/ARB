@@ -18,6 +18,8 @@
 #include "ad_p_prot.h"
 #include "ARB_ext.c"
 
+static GB_shell shell;
+
 /* --------------------------------------------------------------------------------
  * if you get errors about undefined functions like
  *
