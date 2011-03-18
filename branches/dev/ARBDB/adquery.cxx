@@ -866,16 +866,10 @@ char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *comma
      * if first character is == '/' run regexpr
      * else command interpreter
      */
-    int           strmalloc = 0;
-    int           len;
-    char         *buffer;
-    GB_ERROR      error;
-    int           i;
-    int           argcinput;
-    int           argcparam;
-    int           argcout;
-    char         *bracket;
-    GB_MAIN_TYPE *Main      = GB_MAIN(gb_main);
+
+    int strmalloc = 0;
+
+    GB_MAIN_TYPE *Main = GB_MAIN(gb_main);
 
     GBL morig[GBL_MAX_ARGUMENTS];
     GBL min[GBL_MAX_ARGUMENTS];
@@ -932,8 +926,8 @@ char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *comma
     // ********************** init *******************
 
     gb_local->gbl.gb_main = gb_main;
-    len = strlen(commands)+1;
-    buffer = strdup(commands);
+
+    char *buffer = strdup(commands);
 
     // ********************** remove all spaces and tabs *******************
     {
@@ -980,9 +974,9 @@ char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *comma
         orig[0].str = strdup(str);
     }
 
-    argcinput = 1;
-    argcout   = 0;
-    error     = 0;
+    int      argcinput = 1;
+    int      argcout   = 0;
+    GB_ERROR error     = NULL;
     {
         char *s1, *s2;
         s1 = buffer;
@@ -1013,8 +1007,8 @@ char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *comma
                 out[argcout++].str = strdup(s1+1);
             }
             else {
-                argcparam = 0;
-                bracket = strchr(s1, '(');
+                int argcparam = 0;
+                char *bracket = strchr(s1, '(');
                 if (bracket) {      // I got the parameter list
                     int slen;
                     *(bracket++) = 0;
@@ -1120,7 +1114,7 @@ char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *comma
                     }
                 }
 
-                for (i=0; i<argcparam; i++) {   // free intermediate arguments
+                for (int i=0; i<argcparam; i++) {   // free intermediate arguments
                     if (in[i].str) free(in[i].str);
                 }
             }
@@ -1129,7 +1123,7 @@ char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *comma
 
             if (separator == '|') {         // swap in and out in pipes
                 GBL *h;
-                for (i=0; i<argcinput; i++) {
+                for (int i=0; i<argcinput; i++) {
                     if (orig[i].str)    free(orig[i].str);
                 }
                 memset((char*)orig, 0, sizeof(GBL)*GBL_MAX_ARGUMENTS);
@@ -1145,7 +1139,7 @@ char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *comma
 
         }
     }
-    for (i=0; i<argcinput; i++) {
+    for (int i=0; i<argcinput; i++) {
         if (orig[i].str) free(orig[i].str);
     }
 
@@ -1159,7 +1153,7 @@ char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *comma
         }
         else {             // concatenate output strings
             GBS_strstruct *strstruct = GBS_stropen(1000);
-            for (i=0; i<argcout; i++) {
+            for (int i=0; i<argcout; i++) {
                 if (out[i].str) {
                     GBS_strcat(strstruct, out[i].str);
                     free(out[i].str);
