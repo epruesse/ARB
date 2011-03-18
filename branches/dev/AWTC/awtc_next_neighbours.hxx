@@ -20,7 +20,9 @@
 #ifndef ARB_ASSERT_H
 #include <arb_assert.h>
 #endif
-
+#ifndef _GLIBCXX_ALGORITHM
+#include <algorithm>
+#endif
 
 #define ff_assert(bed) arb_assert(bed)
 
@@ -52,42 +54,38 @@ enum FF_complement {
     // do NOT change the order here w/o fixing ../PROBE/PT_family.cxx@FF_complement_dep
 };
 
-class TargetRange {
+class TargetRange { // @@@ move somewhere else, if needed independently from FamilyFinder
     int start; // -1 == unlimited
     int end;   // -1 == unlimited
 
-    int fit_len; // -1 == not fitted yet
-
-    void fit_border(int& i) const { if (i != -1 && i >= fit_len) i = fit_len-1; }
-    int ensure_fitted(int i) const {
-        if (i == -1) return -1;
-        ff_assert(fit_len != -1);
-        return i;
-    }
-
 public:
-    TargetRange(int start_, int end_) : start(start_), end(end_), fit_len(-1) {
+    TargetRange() : start(-1), end(-1) {}
+    TargetRange(int start_, int end_) : start(start_), end(end_) {
         ff_assert(start >= -1);
         ff_assert(end >= -1);
-    }
-
-    void fit(int seq_len) {
-        ff_assert(fit_len == -1); // can't fit twice
-        fit_len = seq_len;
-        fit_border(start);
-        fit_border(end);
     }
 
     int get_start() const { return start; }
     int get_end() const { return end; }
 
     int first_pos() const  { return start == -1 ? 0 : start; }
-    int last_pos() const  { return end == -1 ? 0 : ensure_fitted(end); }
+    int last_pos(const int global_len) const {
+        const int max_global_pos = global_len-1;
+        return end == -1 ? max_global_pos : std::min(end, max_global_pos);
+    }
 
-    int length() const {
-        int len = last_pos()-first_pos()+1;
+    int length(size_t global_len) const {
+        int len = last_pos(global_len)-first_pos()+1;
         return len<0 ? 0 : len;
     }
+
+    bool is_restricted() const { return start != -1 || end != -1; }
+
+    void copy_corresponding_part(char *dest, const char *source, size_t source_len) const;
+    char *dup_corresponding_part(const char *source, size_t source_len) const __ATTR__USERESULT;
+
+    bool operator == (const TargetRange& other) const { return start == other.start && end == other.end; }
+    bool operator != (const TargetRange& other) const { return !(*this == other); }
 };
 
 
@@ -118,6 +116,7 @@ public:
     }
 
     void unrestrict() { range = TargetRange(-1, -1); }
+    const TargetRange& get_TargetRange() const { return range; }
 
     virtual GB_ERROR searchFamily(const char *sequence, FF_complement compl_mode, int max_results) = 0;
 
