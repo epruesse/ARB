@@ -1005,6 +1005,7 @@ char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *comma
             if (*s1 == '"') {           // copy "text" to out
                 char *end = gbs_search_second_x(s1+1);
                 if (!end) {
+                    UNCOVERED(); // seems unreachable (balancing is already ensured by gbs_search_next_separator)
                     error = "Missing second '\"'";
                     break;
                 }
@@ -1179,3 +1180,85 @@ char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *comma
     return NULL;
 }
 
+// --------------------------------------------------------------------------------
+
+#ifdef UNIT_TESTS
+#include <test_unit.h>
+#include <arbdbt.h>
+
+#define TEST_CI(input,cmd,expected) do {                               \
+        char *result; \
+        TEST_ASSERT_RESULT__NOERROREXPORTED(result = GB_command_interpreter(gb_main, input, cmd, gb_data, NULL)); \
+        TEST_ASSERT_EQUAL(result,expected);                             \
+        free(result);                                                   \
+    } while(0)
+
+#define TEST_CI_ERROR(input,cmd,error_expected) do {                    \
+        char *result = GB_command_interpreter(gb_main, input, cmd, gb_data, NULL); \
+        if (result) {                                                   \
+            TEST_WARNING("Expected no result (got '%s')", result);      \
+            free(result);                                               \
+        }                                                               \
+        TEST_ASSERT_EQUAL(GB_await_error(),error_expected);             \
+        free(result);                                                   \
+    } while(0)
+
+void TEST_GB_command_interpreter() {
+    GB_shell  shell;
+    GBDATA   *gb_main = GB_open("TEST_nuc.arb", "rw"); // ../UNIT_TESTER/run/TEST_nuc.arb
+
+    GBT_set_default_alignment(gb_main, "ali_16s"); // for sequence ACI command (@@@ really needed ? )
+
+    GB_set_ACISRT_trace(1); // used to detect coverage
+    {
+        GB_transaction  ta(gb_main);
+        GBDATA         *gb_data = GBT_find_species(gb_main, "LcbReu40"); 
+
+        // TEST_CI("", "|sequence|command(/^(\\.*[A,T,G,C])/\\1/)", "bla"); // @@@ glibc (invalid free)
+        // TEST_CI("", "|sequence|command(/^\(\\.*[A,T,G,C])/)", ""); // @@@ buffer overflow (valgrind)
+        // TEST_CI("", "|sequence|command(/^(\\.*[A,T,G,C])/)", ""); // @@@ buffer overflow (valgrind)
+
+        TEST_CI("bla", "", "bla"); // noop
+        
+        TEST_CI("bla", ":a=u", "blu"); // simple SRT
+
+        TEST_CI("bla",    "/a/u/",   "blu"); // simple regExp replace
+        TEST_CI("blabla", "/l.*b/",  "lab"); // simple regExp match
+        TEST_CI("blabla", "/b.b/",   ""); // simple regExp match (failing)
+
+        TEST_CI("blabla", "|coUNT(ab)",         "4");   // simple ACI
+        TEST_CI("l",      "|\"b\";dd;\"a\"|dd", "bla"); // ACI with muliple streams
+        TEST_CI("bla",    "|count(\"\")",       "0");   // empty parameter
+        TEST_CI("b a",    "|count(\" \")",      "1");   // space in quotes
+        TEST_CI("bla",    "|count(\"\\a\")",    "1");   // escaped character
+
+        // escaping (@@@ wrong behavior?)
+        TEST_CI("b\\a",   "|count(\\a)",    "2");   // i would expect '1' as result (the 'a'), but it counts '\\' and 'a'
+        TEST_CI("b\\a",   "|contains(\\)",    "0"); // searches for 2 backslashes (should search for one)
+        TEST_CI("b\\a",   "|contains(\"\\\\\")",    "0"); // searches for 2 backslashes
+        TEST_CI_ERROR("b\\a", "|contains(\"\\\")", "ARB ERROR: unbalanced '\"' in '|contains(\"\\\")'"); // raises error (should searches for 1 backslash)
+
+        // error cases
+        TEST_CI_ERROR("", "nocmd",          "ARB ERROR: Command 'nocmd' failed:\nReason: Unknown command 'nocmd'");
+        TEST_CI_ERROR("", "|nocmd",         "ARB ERROR: Command '|nocmd' failed:\nReason: Unknown command 'nocmd'");
+        TEST_CI_ERROR("", "count(a,b)",     "ARB ERROR: Command 'count(a,b)' failed:\nReason: while applying 'count(a,b)'\nto '':\ncount syntax: count(\"characters to count\")");
+        TEST_CI_ERROR("", "count(a,b",      "ARB ERROR: Command 'count(a,b' failed:\nReason: Missing ')'");
+        TEST_CI_ERROR("", "count(a,\"b)",   "ARB ERROR: unbalanced '\"' in 'count(a,\"b)'");
+        TEST_CI_ERROR("", "count(a,\"b)\"", "ARB ERROR: Command 'count(a,\"b)\"' failed:\nReason: Missing ')'");
+        TEST_CI_ERROR("", "dd;dd|count",    "ARB ERROR: Command 'dd;dd|count' failed:\nReason: while applying 'count'\nto ';':\ncount syntax: count(\"characters to count\")");
+        TEST_CI_ERROR("", "|count(\"a\"x)", "ARB ERROR: Command '|count(\"a\"x)' failed:\nReason: Missing '\"'"); 
+        TEST_CI_ERROR("", "|count(\"a)",    "ARB ERROR: unbalanced '\"' in '|count(\"a)'"); 
+
+        gb_data = GB_entry(gb_data, "full_name"); // execute ACI on 'full_name' from here on ------------------------------
+
+        TEST_CI(NULL, "", "Lactobacillus reuteri"); // noop
+        TEST_CI(NULL, "|len", "21");
+
+        gb_data = NULL;
+        TEST_CI_ERROR(NULL, "", "ARB ERROR: ACI: no input streams found"); 
+    }
+
+    GB_close(gb_main);
+}
+
+#endif // UNIT_TESTS
