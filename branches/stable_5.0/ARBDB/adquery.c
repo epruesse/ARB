@@ -937,7 +937,7 @@ char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *comma
             for (; (c= *s1); s1++){
                 if (c=='\\') {
                     *(s2++) = c;
-                    if (!(c=*s1)) { break; }
+                    if (!(c=*++s1)) { break; }
                     *(s2++) = c;
                     continue;
                 }
