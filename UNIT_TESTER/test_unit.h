@@ -89,12 +89,15 @@ namespace arb_test {
 #undef WITHVALISTFROM
 
         static void print_readable_string(const char *s, FILE *out) {
+            // quote like C does!
             if (s) {
                 fputc('\"', out);
                 for (int i_ = 0; s[i_]; ++i_) {
                     switch (s[i_]) {
                         case '\n': fputs("\\n", out); break;
                         case '\t': fputs("\\t", out); break;
+                        case '\"': fputs("\\\"", out); break;
+                        case '\\': fputs("\\\\", out); break;
                         default: fputc(s[i_], out); break;
                     }
                 }

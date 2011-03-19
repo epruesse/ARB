@@ -887,17 +887,15 @@ void ED4_cursor::updateAwars()
     }
 
     // update awar for ecoli position:
-
     BI_ecoli_ref *ecoli = ED4_ROOT->ecoli_ref;
     if (ecoli->gotData()) {
-        long ecoli_pos = ecoli->abs_2_rel(seq_pos+1); // inclusive position behind cursor
+        int ecoli_pos = ecoli->abs_2_rel(seq_pos+1); // inclusive position behind cursor
         aw_root->awar(win->awar_path_for_Ecoli)->write_int(ecoli_pos);
     }
 
     // update awar for base position:
-
     int base_pos = base_position.get_base_position(owner_of_cursor, seq_pos+1); // inclusive position behind cursor
-    aw_root->awar(win->awar_path_for_basePos)->write_int(base_pos); // update awar for base position
+    aw_root->awar(win->awar_path_for_basePos)->write_int(base_pos);
 
     // update awar for IUPAC:
 
