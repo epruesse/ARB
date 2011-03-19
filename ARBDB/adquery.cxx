@@ -856,71 +856,19 @@ static const char *shortenLongString(const char *str, size_t wanted_len) {
     return result;
 }
 
-char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *commands, GBDATA *gbd, const char *default_tree_name) {
-    /* simple command interpreter returns NULL on error (which should be exported in that case)
-     * if first character is == ':' run string parser
-     * if first character is == '/' run regexpr
-     * else command interpreter
-     */
-
-    int strmalloc = 0;
-
+char *GBS_apply_ACI(GBDATA *gb_main, const char *commands, const char *str, GBDATA *gbd, const char *default_tree_name) {
+    int trace = GB_get_ACISRT_trace();
+    
     GB_MAIN_TYPE *Main = GB_MAIN(gb_main);
 
     GBL morig[GBL_MAX_ARGUMENTS];
     GBL min[GBL_MAX_ARGUMENTS];
     GBL mout[GBL_MAX_ARGUMENTS];
 
-    GBL *orig  = & morig[0];
-    GBL *in    = & min[0];
-    GBL *out   = & mout[0];
-    int  trace = GB_get_ACISRT_trace();
-
-    if (!str) {
-        if (!gbd) {
-            GB_export_error("ACI: no input streams found");
-            return NULL;
-        }
-        str = GB_read_as_string(gbd);
-        strmalloc = 1;
-    }
-
-    if (trace) {
-        printf("GB_command_interpreter: str='%s'\n"
-               "                        command='%s'\n", str, commands);
-    }
-
-    if (!commands || !commands[0]) { // empty command -> do not modify string
-        if (!strmalloc) return strdup(str);
-        return (char *)str;
-    }
-
-    if (commands[0] == ':') { // ':' -> string parser
-        return GBS_string_eval(str, commands+1, gbd);
-    }
-
-    if (commands[0] == '/') { // regular expression
-        GB_ERROR  err    = 0;
-        char     *result = GBS_regreplace(str, commands, &err);
-
-        if (!result) {
-            if (strcmp(err, "Missing '/' between search and replace string") == 0) {
-                // if GBS_regreplace didn't find a third '/' -> silently use GBS_regmatch:
-                size_t matchlen;
-                err    = 0;
-                const char *matched = GBS_regmatch(str, commands, &matchlen, &err);
-
-                if (matched) result   = GB_strndup(matched, matchlen);
-                else if (!err) result = strdup("");
-            }
-
-            if (!result && err) result = GBS_global_string_copy("<Error: %s>", err);
-        }
-        return result;
-    }
-
-    // ********************** init *******************
-
+    GBL *orig = & morig[0];
+    GBL *in   = & min[0];
+    GBL *out  = & mout[0];
+    
     gb_local->gbl.gb_main = gb_main;
 
     char *buffer = strdup(commands);
@@ -964,12 +912,7 @@ char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *comma
     memset((char *)in, 0, sizeof(GBL)*GBL_MAX_ARGUMENTS);
     memset((char *)out, 0, sizeof(GBL)*GBL_MAX_ARGUMENTS);
 
-    if (strmalloc) {
-        orig[0].str = (char *)str;
-    }
-    else {
-        orig[0].str = strdup(str);
-    }
+    orig[0].str = strdup(str);
 
     int      argcinput = 1;
     int      argcout   = 0;
@@ -1170,6 +1113,59 @@ char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *comma
     return NULL;
 }
 
+char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *commands, GBDATA *gbd, const char *default_tree_name) {
+    /* simple command interpreter returns NULL on error (which should be exported in that case)
+     * if first character is == ':' run string parser
+     * if first character is == '/' run regexpr
+     * else run ACI
+     */
+
+    int trace = GB_get_ACISRT_trace();
+
+    if (!str) {
+        if (!gbd) {
+            GB_export_error("ACI: no input streams found");
+            return NULL;
+        }
+        str = GB_read_char_pntr(gbd);
+    }
+
+    if (trace) {
+        printf("GB_command_interpreter: str='%s'\n"
+               "                        command='%s'\n", str, commands);
+    }
+
+    if (!commands || !commands[0]) { // empty command -> do not modify string
+        return strdup(str);
+    }
+
+    if (commands[0] == ':') { // ':' -> string parser
+        return GBS_string_eval(str, commands+1, gbd);
+    }
+
+    if (commands[0] == '/') { // regular expression
+        GB_ERROR  err    = 0;
+        char     *result = GBS_regreplace(str, commands, &err);
+
+        if (!result) {
+            if (strcmp(err, "Missing '/' between search and replace string") == 0) {
+                // if GBS_regreplace didn't find a third '/' -> silently use GBS_regmatch:
+                size_t matchlen;
+                err    = 0;
+                const char *matched = GBS_regmatch(str, commands, &matchlen, &err);
+
+                if (matched) result   = GB_strndup(matched, matchlen);
+                else if (!err) result = strdup("");
+            }
+
+            if (!result && err) result = GBS_global_string_copy("<Error: %s>", err);
+        }
+        return result;
+    }
+
+    return GBS_apply_ACI(gb_main, commands, str, gbd, default_tree_name);
+}
+
 // --------------------------------------------------------------------------------
 
 #ifdef UNIT_TESTS
@@ -1270,6 +1266,8 @@ void TEST_GB_command_interpreter() {
 
         TEST_CI(NULL, "", "Lactobacillus reuteri"); // noop
         TEST_CI(NULL, "|len", "21");
+        TEST_CI(NULL, ":tobac=", "Lacillus reuteri");
+        TEST_CI(NULL, "/ba.*us/B/", "LactoB reuteri");
 
         gb_data = NULL;
         TEST_CI_ERROR(NULL, "", "ARB ERROR: ACI: no input streams found"); 
