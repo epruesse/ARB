@@ -1213,10 +1213,6 @@ void TEST_GB_command_interpreter() {
         GB_transaction  ta(gb_main);
         GBDATA         *gb_data = GBT_find_species(gb_main, "LcbReu40"); 
 
-        // TEST_CI("", "|sequence|command(/^(\\.*[A,T,G,C])/\\1/)", "bla"); // @@@ glibc (invalid free)
-        // TEST_CI("", "|sequence|command(/^\(\\.*[A,T,G,C])/)", ""); // @@@ buffer overflow (valgrind)
-        // TEST_CI("", "|sequence|command(/^(\\.*[A,T,G,C])/)", ""); // @@@ buffer overflow (valgrind)
-
         TEST_CI("bla", "", "bla"); // noop
         
         TEST_CI("bla", ":a=u", "blu"); // simple SRT
@@ -1237,6 +1233,31 @@ void TEST_GB_command_interpreter() {
         TEST_CI__BROKEN("b\\a", "|contains(\\)", "1"); // searches for 1 backslash (ok), but reports two hits instead of one
         TEST_CI__BROKEN("b\\\\a", "|contains(\"\\\\\")", "1"); // searches for 2 backslashes (ok), but reports two hits instead of one
         TEST_CI_ERROR("b\\a", "|contains(\"\\\")", "ARB ERROR: unbalanced '\"' in '|contains(\"\\\")'"); // raises error (should searches for 1 backslash)
+
+        // test binary ops
+        TEST_CI("", "\"5\";\"7\"|minus", "-2");
+        TEST_CI("", "\"5\"|minus(\"7\")", "-2");
+        TEST_CI("", "|minus(\"\"5\"\", \"\"7\"\")", "-2"); // @@@ syntax needed here 'minus(""5"", ""7"")' is broken - need to unescape correctly after parsing parameters!
+
+#define ACI_SPLIT "|split(\",\",0)"
+#define ACI_MERGE "|merge(\",\")"
+#define WITH_SPLITTED(aci) ACI_SPLIT aci ACI_MERGE
+
+        TEST_CI("ab,bcb,abac", WITH_SPLITTED(""),                           "ab,bcb,abac");
+        TEST_CI("ab,bcb,abac", WITH_SPLITTED("|len"),                       "2,3,4");
+        TEST_CI("ab,bcb,abac", WITH_SPLITTED("|count(a)"),                  "1,0,2");
+        TEST_CI("ab,bcb,abac", WITH_SPLITTED("|minus(len,count(a))"),       "1,3,2");
+        TEST_CI("ab,bcb,abac", WITH_SPLITTED("|minus(\"\"5\"\",count(a))"), "4,5,3"); // @@@ escaping broken here as well
+
+        // test other recursive uses of GB_command_interpreter
+        TEST_CI("one", "|dd;\"two\";dd|command(\"dd;\"_\";dd;\"-\"\")", "one_one-two_two-one_one-");
+        TEST_CI("", "|sequence|command(\"/^([\\\\.-]*)[A-Z].*/\\\\1/\")|len", "9"); // count gaps at start of sequence
+        TEST_CI("one", "|dd;dd|eval(\"\"up\";\"per\"|merge\")", "ONEONE");
+        TEST_CI("1,2,3", WITH_SPLITTED("|select(\"\",  \"\"one\"\", \"\"two\"\", \"\"three\"\")"), "one,two,three");
+
+#undef WITH_SPLITTED
+#undef ACI_MERGE
+#undef ACI_SPLIT
 
         // error cases
         TEST_CI_ERROR("", "nocmd",          "ARB ERROR: Command 'nocmd' failed:\nReason: Unknown command 'nocmd'");
