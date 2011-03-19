@@ -924,8 +924,7 @@ inline int get_and_fix_range_from_awar(AW_awar *awar) {
 
     if (bpos>0) {
         awar->write_string(GBS_global_string("%i", bpos));
-        // ipos = bio2info(bpos);
-        ipos = bpos-1;
+        ipos = bio2info(bpos);
     }
     else {
         ipos = -1;
