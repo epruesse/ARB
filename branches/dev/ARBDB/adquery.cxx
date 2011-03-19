@@ -856,10 +856,6 @@ static const char *shortenLongString(const char *str, size_t wanted_len) {
     return result;
 }
 
-#if defined(DEVEL_RALF)
-#warning rewrite GB_command_interpreter (error+ressource handling)
-#endif // DEVEL_RALF
-
 char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *commands, GBDATA *gbd, const char *default_tree_name) {
     /* simple command interpreter returns NULL on error (which should be exported in that case)
      * if first character is == ':' run string parser
@@ -1059,16 +1055,15 @@ char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *comma
                         error = GBS_global_string("Unknown command '%s'", s1);
                     }
                     else {
-                        GBL_command_arguments args;
-                        args.gb_ref            = gbd;
-                        args.default_tree_name = default_tree_name;
-                        args.command           = s1;
-                        args.cinput            = argcinput;
-                        args.vinput            = orig;
-                        args.cparam            = argcparam;
-                        args.vparam            = in;
-                        args.coutput           = &argcout;
-                        args.voutput           = &out;
+                        GBL_command_arguments args(gbd, default_tree_name);
+                        
+                        args.command = s1;
+                        args.cinput  = argcinput;
+                        args.vinput  = orig;
+                        args.cparam  = argcparam;
+                        args.vparam  = in;
+                        args.coutput = &argcout;
+                        args.voutput = &out;
 
                         if (trace) {
                             printf("-----------------------\nExecution of command '%s':\n", args.command);
@@ -1179,7 +1174,6 @@ char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *comma
 
 #ifdef UNIT_TESTS
 #include <test_unit.h>
-#include <arbdbt.h>
 
 #define TEST_CI__INTERNAL(input,cmd,expected,TEST_RESULT) do {          \
         char *result;                                                   \
@@ -1208,7 +1202,9 @@ void TEST_GB_command_interpreter() {
 
     GBT_set_default_alignment(gb_main, "ali_16s"); // for sequence ACI command (@@@ really needed ? )
 
-    GB_set_ACISRT_trace(1); // used to detect coverage
+#if 0
+    GB_set_ACISRT_trace(1); // used to detect coverage and for debugging purposes
+#endif
     {
         GB_transaction  ta(gb_main);
         GBDATA         *gb_data = GBT_find_species(gb_main, "LcbReu40"); 
