@@ -23,10 +23,12 @@
 //      TargetRange
 
 void TargetRange::copy_corresponding_part(char *dest, const char *source, size_t source_len) const {
+    // dest and source may overlap
+
     ff_assert(source_len == strlen(source));
 
     int size   = length(source_len);
-    memcpy(dest, source+first_pos(), size);
+    memmove(dest, source+first_pos(), size);
     dest[size] = 0;
 }
 
@@ -400,9 +402,18 @@ void TEST_TargetRange() {
 
     TargetRange(9, 1000).copy_corresponding_part(dest, source, source_len);
     TEST_ASSERT_EQUAL(dest, "9");
-    
+
     TargetRange(900, 1000).copy_corresponding_part(dest, source, source_len);
     TEST_ASSERT_EQUAL(dest, "");
+
+    // make sure dest and source may overlap:
+    strcpy(dest, source);
+    TargetRange(-1, -1).copy_corresponding_part(dest+1, dest, source_len);
+    TEST_ASSERT_EQUAL(dest+1, source);
+
+    strcpy(dest, source);
+    TargetRange(-1, -1).copy_corresponding_part(dest, dest+1, source_len-1);
+    TEST_ASSERT_EQUAL(dest, source+1);
 }
 
 #endif
