@@ -2854,11 +2854,12 @@ void TEST_OligoCounter() {
 //      FakeFamilyFinder
 
 class FakeFamilyFinder: public FamilyFinder {
-    // used by unit tests to detect next relatives instead of asking the pt-server 
+    // used by unit tests to detect next relatives instead of asking the pt-server
 
     GBDATA                    *gb_main;
     string                     ali_name;
     map<string, OligoCounter>  oligos_counted;      // key = species name
+    TargetRange                counted_for_range;
     size_t                     oligo_len;
 
 public:
@@ -2870,15 +2871,27 @@ public:
     {}
 
     GB_ERROR searchFamily(const char *sequence, FF_complement compl_mode, int max_results) {
+        // 'sequence' has to contain full sequence or part corresponding to 'range'
+
         TEST_ASSERT(compl_mode == FF_FORWARD); // not fit for other modes
 
         delete_family_list();
-
+        
         OligoCounter seq_oligo_count(sequence, oligo_len);
 
+        if (range != counted_for_range) {
+            oligos_counted.clear(); // forget results for different range
+            counted_for_range = range;
+        }
+
+        char *buffer     = 0;
+        int   buffersize = 0;
+
+        bool partial_match = range.is_restricted();
+
         GB_transaction ta(gb_main);
-        
-        int results = 0;
+        int            results = 0;
+
         for (GBDATA *gb_species = GBT_first_species(gb_main);
              gb_species && results<max_results;
              gb_species = GBT_next_species(gb_species))
@@ -2887,8 +2900,23 @@ public:
             if (oligos_counted.find(name) == oligos_counted.end()) {
                 GBDATA     *gb_data  = GBT_read_sequence(gb_species, ali_name.c_str());
                 const char *spec_seq = GB_read_char_pntr(gb_data);
-                // @@@ restrict oligo counting to TargetRange of FamilyFinder
-                oligos_counted[name] = OligoCounter(spec_seq, oligo_len);
+
+                if (partial_match) {
+                    int spec_seq_len = GB_read_count(gb_data);
+                    int range_len    = range.length(spec_seq_len);
+
+                    if (buffersize<range_len) {
+                        delete [] buffer;
+                        buffersize = range_len;
+                        buffer     = new char[buffersize+1];
+                    }
+
+                    range.copy_corresponding_part(buffer, spec_seq, spec_seq_len);
+                    oligos_counted[name] = OligoCounter(buffer, oligo_len);
+                }
+                else {
+                    oligos_counted[name] = OligoCounter(spec_seq, oligo_len);
+                }
             }
 
             const OligoCounter& spec_oligo_count = oligos_counted[name];
@@ -2904,6 +2932,8 @@ public:
             family_list = newMember->insertSortedBy_matches(family_list);
             results++;
         }
+
+        delete [] buffer;
 
         return NULL;
     }
@@ -3224,14 +3254,14 @@ void TEST_Aligner_TargetAndReferenceHandling() {
         TEST_ASSERT(!cont_on_err || GBT_count_marked_species(gb_main) == 1);
     }
 
-    TEST_ASSERT_EQUAL(USED_RELS_FOR("s1"), "s2");
-    TEST_ASSERT_EQUAL(USED_RELS_FOR("s2"), "s1");
+    TEST_ASSERT_EQUAL(USED_RELS_FOR("s1"), "m3");
+    TEST_ASSERT_EQUAL(USED_RELS_FOR("s2"), "m3");
     TEST_ASSERT_EQUAL(USED_RELS_FOR("m1"), "r1"); // differs
-    TEST_ASSERT_EQUAL(USED_RELS_FOR("m2"), "s2");
+    TEST_ASSERT_EQUAL(USED_RELS_FOR("m2"), "m3");
     TEST_ASSERT_EQUAL(USED_RELS_FOR("m3"), "m2");
     TEST_ASSERT_EQUAL(USED_RELS_FOR("c1"), "r1");
     TEST_ASSERT_EQUAL(USED_RELS_FOR("c2"), "r1");
-    TEST_ASSERT_EQUAL(USED_RELS_FOR("r1"), "s2:20");
+    TEST_ASSERT_EQUAL(USED_RELS_FOR("r1"), "m3:20, c2:3");
 
     //                                       aligned range (see test_ali_params_partial)
     //                                       "-------------------------XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX------------------------------------"
