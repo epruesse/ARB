@@ -199,19 +199,21 @@ FastSearchSequence::~FastSearchSequence() {
 
 void AlignBuffer::correctUnalignedPositions()
 {
-    long off = 0;
+    long off  = 0;
     long rest = used;
 
-    while (rest)
-    {
-        char *found = (char*)memchr(myQuality+off, '?', rest);  // search for next '?' in myQuality
-        if (!found || (found-myQuality)>=rest) break;
+    while (rest) {
+        const char *qual  = quality();
+        char       *found = (char*)memchr(qual+off, '?', rest); // search for next '?' in myQuality
+        
+        if (!found || (found-qual) >= rest) break;
 
         long cnt;
-        for (cnt=0; found[cnt]=='?'; cnt++) found[cnt]='+';     // count # of unaligned positions and change them to '+'
+        for (cnt=0; found[cnt]=='?'; cnt++) found[cnt] = '+';   // count # of unaligned positions and change them to '+'
+
         long from  = found-myQuality;
-        long b_off = from-1;                                    // position before unaligned positions
-        long a_off = from+cnt;                                  // positions after unaligned positions
+        long b_off = from-1;   // position before unaligned positions
+        long a_off = from+cnt; // positions after unaligned positions
 
         long before, after;
         for (before=0; b_off>=0 && isGlobalGap(b_off); before++, b_off--) ;             // count free positions before unaligned positions
