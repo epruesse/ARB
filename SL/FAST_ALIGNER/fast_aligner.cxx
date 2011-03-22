@@ -1062,9 +1062,8 @@ static CompactedSubSequence *readCompactedSequence(GBDATA      *gb_species,
                 firstColumn--;
             }
             if (lastColumn!=-1) {
-                while (lastColumn<(length+1) && is_gap(data[lastColumn+1])) {
-                    lastColumn++;
-                }
+                while (lastColumn<(length-1) && is_gap(data[lastColumn+1])) lastColumn++;
+                fa_assert(lastColumn<length);
             }
 
             partData = data+firstColumn;
