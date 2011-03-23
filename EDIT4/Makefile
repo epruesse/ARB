@@ -172,6 +172,7 @@ ED4_cursor.o: $(ARBHOME)/INCLUDE/cb.h
 ED4_cursor.o: $(ARBHOME)/INCLUDE/dupstr.h
 ED4_cursor.o: $(ARBHOME)/INCLUDE/smartptr.h
 ED4_cursor.o: $(ARBHOME)/INCLUDE/test_global.h
+ED4_cursor.o: $(ARBHOME)/INCLUDE/test_helpers.h
 ED4_cursor.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 ED4_dots.o: ed4_class.hxx
