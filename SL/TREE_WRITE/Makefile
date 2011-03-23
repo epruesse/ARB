@@ -42,6 +42,7 @@ TreeWrite.o: $(ARBHOME)/INCLUDE/arb_assert.h
 TreeWrite.o: $(ARBHOME)/INCLUDE/arb_core.h
 TreeWrite.o: $(ARBHOME)/INCLUDE/arb_error.h
 TreeWrite.o: $(ARBHOME)/INCLUDE/arb_msg.h
+TreeWrite.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 TreeWrite.o: $(ARBHOME)/INCLUDE/arb_string.h
 TreeWrite.o: $(ARBHOME)/INCLUDE/arbdb.h
 TreeWrite.o: $(ARBHOME)/INCLUDE/arbdb_base.h

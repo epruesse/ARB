@@ -22,6 +22,7 @@
 #include <aw_root.hxx>
 
 #include <arbdbt.h>
+#include <arb_strbuf.h>
 
 #include <list>
 #include <string>

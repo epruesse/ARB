@@ -13,6 +13,8 @@
 
 /* arb_string.cxx */
 char *GB_strduplen(const char *p, unsigned len);
+char *GB_strpartdup(const char *start, const char *end);
+char *GB_strndup(const char *start, int len);
 
 #else
 #error arb_string.h included twice

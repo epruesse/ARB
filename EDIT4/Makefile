@@ -147,6 +147,7 @@ ED4_cursor.o: $(ARBHOME)/INCLUDE/arb_error.h
 ED4_cursor.o: $(ARBHOME)/INCLUDE/arb_msg.h
 ED4_cursor.o: $(ARBHOME)/INCLUDE/arb_progress.h
 ED4_cursor.o: $(ARBHOME)/INCLUDE/arb_str.h
+ED4_cursor.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 ED4_cursor.o: $(ARBHOME)/INCLUDE/arb_string.h
 ED4_cursor.o: $(ARBHOME)/INCLUDE/arbdb.h
 ED4_cursor.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -441,6 +442,7 @@ ED4_naligner.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ED4_naligner.o: $(ARBHOME)/INCLUDE/arb_core.h
 ED4_naligner.o: $(ARBHOME)/INCLUDE/arb_error.h
 ED4_naligner.o: $(ARBHOME)/INCLUDE/arb_msg.h
+ED4_naligner.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 ED4_naligner.o: $(ARBHOME)/INCLUDE/arb_string.h
 ED4_naligner.o: $(ARBHOME)/INCLUDE/arbdb.h
 ED4_naligner.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -873,6 +875,7 @@ ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/arb_core.h
 ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/arb_error.h
 ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/arb_msg.h
+ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/arb_string.h
 ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/arbdb.h
 ED4_visualizeSAI.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -938,6 +941,7 @@ EDB_root_bact.o: $(ARBHOME)/INCLUDE/arb_core.h
 EDB_root_bact.o: $(ARBHOME)/INCLUDE/arb_error.h
 EDB_root_bact.o: $(ARBHOME)/INCLUDE/arb_msg.h
 EDB_root_bact.o: $(ARBHOME)/INCLUDE/arb_progress.h
+EDB_root_bact.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 EDB_root_bact.o: $(ARBHOME)/INCLUDE/arb_string.h
 EDB_root_bact.o: $(ARBHOME)/INCLUDE/arbdb.h
 EDB_root_bact.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -966,6 +970,7 @@ graph_aligner_gui.o: $(ARBHOME)/INCLUDE/arb_assert.h
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/arb_core.h
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/arb_error.h
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/arb_msg.h
+graph_aligner_gui.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/arb_string.h
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/arbdb.h
 graph_aligner_gui.o: $(ARBHOME)/INCLUDE/arbdb_base.h

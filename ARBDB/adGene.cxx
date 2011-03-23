@@ -9,9 +9,11 @@
 //                                                                 //
 // =============================================================== //
 
+#include "gb_local.h"
+
 #include <adGene.h>
 #include <arbdbt.h>
-#include "gb_local.h"
+#include <arb_strbuf.h>
 
 
 bool GEN_is_genome_db(GBDATA *gb_main, int default_value) {

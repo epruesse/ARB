@@ -53,6 +53,7 @@
 #include <aw_msg.hxx>
 #include <aw_awar.hxx>
 #include <arbdbt.h>
+#include <arb_strbuf.h>
 
 #define AWAR_MAX_FREQ   "tmp/CON_MAX_FREQ/"
 

@@ -7,7 +7,7 @@
 #include <struct_man.h>
 #include "ptpan.h"
 #include "pt_prototypes.h"
-#include <arbdbt.h>
+#include <arb_strbuf.h>
 #include <math.h>
 
 /* /// "SearchPartition()" */

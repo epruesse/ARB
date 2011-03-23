@@ -115,41 +115,6 @@ NOT4PERL void *GB_calloc(unsigned int nelem, unsigned int elsize)
     return mem;
 }
 
-char *GB_strpartdup(const char *start, const char *end) {
-    /* strdup of a part of a string (including 'start' and 'end')
-     * 'end' may point behind end of string -> copy only till zero byte
-     * if 'end'=('start'-1) -> return ""
-     * if 'end'<('start'-1) -> return 0
-     * if 'end' == NULL -> copy whole string
-     */
-
-    char *result;
-    if (end) {
-        int len = end-start+1;
-
-        if (len >= 0) {
-            const char *eos = (const char *)memchr(start, 0, len);
-
-            if (eos) len = eos-start;
-            result = (char*)malloc(len+1);
-            memcpy(result, start, len);
-            result[len] = 0;
-        }
-        else {
-            result = 0;
-        }
-    }
-    else { // end = 0 -> return copy of complete string
-        result = nulldup(start);
-    }
-
-    return result;
-}
-
-char *GB_strndup(const char *start, int len) {
-    return GB_strpartdup(start, start+len-1);
-}
-
 NOT4PERL void *GB_recalloc(void *ptr, unsigned int oelem, unsigned int nelem, unsigned int elsize)
 {
     size_t nsize = nelem*elsize;

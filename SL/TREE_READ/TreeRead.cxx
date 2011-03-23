@@ -11,7 +11,7 @@
 #include "TreeRead.h"
 
 #include <arbdbt.h>
-
+#include <arb_strbuf.h>
 
 #define tree_assert(cond) arb_assert(cond)
 

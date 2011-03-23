@@ -8,13 +8,15 @@
 //                                                                 //
 // =============================================================== //
 
-#include <cctype>
-
 #include "gb_undo.h"
 #include "gb_index.h"
 #include "gb_hashindex.h"
 #include "gb_ts.h"
 #include "gb_storage.h"
+
+#include <arb_strbuf.h>
+
+#include <cctype>
 
 #define GB_INDEX_FIND(gbf, ifs, quark)                                  \
     for (ifs = GBCONTAINER_IFS(gbf);                                    \

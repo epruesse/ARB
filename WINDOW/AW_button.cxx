@@ -23,6 +23,7 @@
 #include <arbdbt.h>
 
 #include <arb_str.h>
+#include <arb_strbuf.h>
 
 #include <Xm/Frame.h>
 #include <Xm/MenuShell.h>

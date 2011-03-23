@@ -10,12 +10,13 @@
 
 #include "awtc_next_neighbours.hxx"
 
-#include <arbdbt.h>
 #include <servercntrl.h>
 #include <PT_com.h>
 #include <client.h>
 #include <aw_window.hxx>
 #include <aw_root.hxx>
+#include <arbdbt.h>
+#include <arb_strbuf.h>
 
 #include <climits>
 

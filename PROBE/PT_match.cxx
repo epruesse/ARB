@@ -15,7 +15,7 @@
 #include "probe_tree.h"
 #include "pt_prototypes.h"
 
-#include <arbdbt.h>
+#include <arb_strbuf.h>
 #include <arb_defs.h>
 
 // overloaded functions to avoid problems with type-punning:

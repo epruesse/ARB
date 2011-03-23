@@ -21,6 +21,7 @@
 #include <aw_root.hxx>
 
 #include <arb_str.h>
+#include <arb_strbuf.h>
 
 #include <unistd.h>
 #include <ctime>
