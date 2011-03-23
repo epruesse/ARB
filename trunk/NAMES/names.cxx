@@ -494,6 +494,7 @@ static char *an_get_short(AN_shorts *IF_ASSERTION_USED(shorts), dll_public *pare
     }
     else {
         printf("ARB_name_server: Failed to make a short-name for '%s'\n", full);
+        result = "";
     }
 
     free(full3);
@@ -984,7 +985,7 @@ static void check_for_case_error(AN_main *main) {
             list<string>::const_iterator end = idents_to_recreate.end();
             for (list<string>::const_iterator i = idents_to_recreate.begin(); i != end; ++i) {
                 const char *ident = i->c_str();
-                an_get_short(main->shorts1, &(main->pshorts1), ident);
+                free(an_get_short(main->shorts1, &(main->pshorts1), ident));
                 regen_name_parts++;
             }
         }
