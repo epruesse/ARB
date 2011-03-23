@@ -20,6 +20,7 @@
 #include <ad_config.h>
 
 #include <arbdbt.h>
+#include <arb_strbuf.h>
 
 #include <list>
 

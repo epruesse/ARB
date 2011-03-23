@@ -15,6 +15,7 @@
 #include "aw_status.hxx"
 
 #include <arbdbt.h>
+#include <arb_strbuf.h>
 #include <SigHandler.h>
 
 #include <cerrno>

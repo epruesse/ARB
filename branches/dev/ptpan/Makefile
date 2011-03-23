@@ -368,16 +368,15 @@ PTP_match.o: pt_prototypes.h
 PTP_match.o: ptpan.h
 PTP_match.o: types.h
 PTP_match.o: $(ARBHOME)/INCLUDE/ad_prot.h
-PTP_match.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 PTP_match.o: $(ARBHOME)/INCLUDE/aisc_global.h
 PTP_match.o: $(ARBHOME)/INCLUDE/arb_assert.h
 PTP_match.o: $(ARBHOME)/INCLUDE/arb_core.h
 PTP_match.o: $(ARBHOME)/INCLUDE/arb_error.h
 PTP_match.o: $(ARBHOME)/INCLUDE/arb_msg.h
+PTP_match.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 PTP_match.o: $(ARBHOME)/INCLUDE/arb_string.h
 PTP_match.o: $(ARBHOME)/INCLUDE/arbdb.h
 PTP_match.o: $(ARBHOME)/INCLUDE/arbdb_base.h
-PTP_match.o: $(ARBHOME)/INCLUDE/arbdbt.h
 PTP_match.o: $(ARBHOME)/INCLUDE/arbtools.h
 PTP_match.o: $(ARBHOME)/INCLUDE/attributes.h
 PTP_match.o: $(ARBHOME)/INCLUDE/bytestring.h

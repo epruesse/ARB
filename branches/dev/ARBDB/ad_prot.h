@@ -102,8 +102,6 @@ GB_ERROR GB_install_link_follower(GBDATA *gb_main, const char *link_type, GB_Lin
 
 /* admalloc.cxx */
 NOT4PERL void *GB_calloc(unsigned int nelem, unsigned int elsize);
-char *GB_strpartdup(const char *start, const char *end);
-char *GB_strndup(const char *start, int len);
 NOT4PERL void *GB_recalloc(void *ptr, unsigned int oelem, unsigned int nelem, unsigned int elsize);
 void GB_memerr(void);
 
@@ -147,19 +145,6 @@ GB_ERROR GB_check_hkey(const char *key) __ATTR__USERESULT;
 char *GBS_remove_escape(char *com);
 char *GBS_escape_string(const char *str, const char *chars_to_escape, char escape_char);
 char *GBS_unescape_string(const char *str, const char *escaped_chars, char escape_char);
-GBS_strstruct *GBS_stropen(long init_size);
-char *GBS_strclose(GBS_strstruct *strstr);
-void GBS_strforget(GBS_strstruct *strstr);
-GB_BUFFER GBS_mempntr(GBS_strstruct *strstr);
-long GBS_memoffset(GBS_strstruct *strstr);
-void GBS_str_cut_tail(GBS_strstruct *strstr, size_t byte_count);
-void GBS_strncat(GBS_strstruct *strstr, const char *ptr, size_t len);
-void GBS_strcat(GBS_strstruct *strstr, const char *ptr);
-void GBS_strnprintf(GBS_strstruct *strstr, long maxlen, const char *templat, ...) __ATTR__FORMAT(3);
-void GBS_chrcat(GBS_strstruct *strstr, char ch);
-void GBS_chrncat(GBS_strstruct *strstr, char ch, size_t n);
-void GBS_intcat(GBS_strstruct *strstr, long val);
-void GBS_floatcat(GBS_strstruct *strstr, double val);
 char *GBS_eval_env(GB_CSTR p);
 long GBS_gcgchecksum(const char *seq);
 uint32_t GB_checksum(const char *seq, long length, int ignore_case, const char *exclude);
@@ -428,6 +413,7 @@ long GB_number_of_marked_subentries(GBDATA *gbd);
 GBDATA *GB_first_marked(GBDATA *gbd, const char *keystring);
 GBDATA *GB_following_marked(GBDATA *gbd, const char *keystring, size_t skip_over);
 GBDATA *GB_next_marked(GBDATA *gbd, const char *keystring);
+char *GBS_apply_ACI(GBDATA *gb_main, const char *commands, const char *str, GBDATA *gbd, const char *default_tree_name);
 char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *commands, GBDATA *gbd, const char *default_tree_name);
 
 /* adsocket.cxx */

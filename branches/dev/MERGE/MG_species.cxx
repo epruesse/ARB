@@ -20,6 +20,7 @@
 #include <arb_progress.h>
 #include <aw_root.hxx>
 #include <arb_str.h>
+#include <arb_strbuf.h>
 
 #define AWAR1 "tmp/merge1/"
 #define AWAR2 "tmp/merge2/"

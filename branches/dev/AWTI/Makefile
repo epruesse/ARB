@@ -72,6 +72,7 @@ AWTI_import.o: $(ARBHOME)/INCLUDE/arb_core.h
 AWTI_import.o: $(ARBHOME)/INCLUDE/arb_error.h
 AWTI_import.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AWTI_import.o: $(ARBHOME)/INCLUDE/arb_progress.h
+AWTI_import.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 AWTI_import.o: $(ARBHOME)/INCLUDE/arb_string.h
 AWTI_import.o: $(ARBHOME)/INCLUDE/arbdb.h
 AWTI_import.o: $(ARBHOME)/INCLUDE/arbdb_base.h

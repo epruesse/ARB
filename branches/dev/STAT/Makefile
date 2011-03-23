@@ -76,6 +76,7 @@ ST_quality.o: $(ARBHOME)/INCLUDE/arb_core.h
 ST_quality.o: $(ARBHOME)/INCLUDE/arb_error.h
 ST_quality.o: $(ARBHOME)/INCLUDE/arb_msg.h
 ST_quality.o: $(ARBHOME)/INCLUDE/arb_progress.h
+ST_quality.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 ST_quality.o: $(ARBHOME)/INCLUDE/arb_string.h
 ST_quality.o: $(ARBHOME)/INCLUDE/arbdb.h
 ST_quality.o: $(ARBHOME)/INCLUDE/arbdb_base.h

@@ -18,6 +18,7 @@
 #include <aw_awar.hxx>
 #include <aw_msg.hxx>
 #include <arbdbt.h>
+#include <arb_strbuf.h>
 
 #define AWAR_COLSTAT_NAME         "/name=/name"
 #define AWAR_COLSTAT_ALIGNMENT    "/name=/alignment"

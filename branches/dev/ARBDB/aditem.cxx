@@ -9,8 +9,10 @@
 //                                                                 //
 // =============================================================== //
 
-#include <arbdbt.h>
 #include "gb_local.h"
+
+#include <arbdbt.h>
+#include <arb_strbuf.h>
 
 
 GBDATA *GBT_find_or_create_item_rel_item_data(GBDATA *gb_item_data, const char *itemname, const char *id_field, const char *id, bool markCreated) {

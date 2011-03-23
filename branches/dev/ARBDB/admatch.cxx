@@ -12,6 +12,8 @@
 
 #include "gb_local.h"
 
+#include <arb_strbuf.h>
+
 #include <cctype>
 #include <regex.h>
 

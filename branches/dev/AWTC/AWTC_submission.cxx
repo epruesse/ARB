@@ -16,6 +16,7 @@
 #include <aw_msg.hxx>
 
 #include <arbdbt.h>
+#include <arb_strbuf.h>
 
 #define awtc_assert(bed) arb_assert(bed)
 

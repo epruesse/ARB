@@ -8,14 +8,17 @@
 //                                                                 //
 // =============================================================== //
 
-#include <climits>
-#include <cfloat>
-#include <cctype>
-
 #include "gb_main.h"
 #include "gb_data.h"
 #include "gb_tune.h"
 #include "gb_hashindex.h"
+
+#include <arb_strbuf.h>
+
+#include <climits>
+#include <cfloat>
+#include <cctype>
+
 
 struct gbs_hash_entry {
     char           *key;

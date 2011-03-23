@@ -41,6 +41,7 @@ probe_design.o: $(ARBHOME)/INCLUDE/arb_core.h
 probe_design.o: $(ARBHOME)/INCLUDE/arb_error.h
 probe_design.o: $(ARBHOME)/INCLUDE/arb_msg.h
 probe_design.o: $(ARBHOME)/INCLUDE/arb_progress.h
+probe_design.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 probe_design.o: $(ARBHOME)/INCLUDE/arb_string.h
 probe_design.o: $(ARBHOME)/INCLUDE/ARB_Tree.hxx
 probe_design.o: $(ARBHOME)/INCLUDE/arbdb.h
