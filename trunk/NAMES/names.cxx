@@ -332,11 +332,9 @@ static char *an_get_short(AN_shorts *IF_ASSERTION_USED(shorts), dll_public *pare
     na_assert(full);
     na_assert(shorts == aisc_main->shorts1); // otherwise prefix_hash does not work!
 
-    if (full[0]==0) {
-        return strdup("Xxx");
-    }
+    if (full[0]==0) return strdup("ZZZ");
 
-    char *result = 0;
+    const char *result = 0;
     char *full1  = strdup(full);
     an_autocaps(full1);
 
@@ -432,8 +430,6 @@ static char *an_get_short(AN_shorts *IF_ASSERTION_USED(shorts), dll_public *pare
         const char *allowed = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
         const int   len     = 36;
 
-        na_assert(strlen(allowed) == len);
-
         for (p1='A'; p1<='Z'; p1++) { // first character has to be alpha
             shrt[0] = p1;
             for (p2 = 0; p2<len; p2++) {
@@ -450,11 +446,12 @@ static char *an_get_short(AN_shorts *IF_ASSERTION_USED(shorts), dll_public *pare
         }
     }
 
-    shrt = NULL;
+    shrt[0] = 0; // erase result
+    
  found_short :
     result = shrt;
 
-    if (result) {
+    if (result && result[0]) {
 #if defined(DUMP_NAME_CREATION)
         if (isdigit(result[0]) || isdigit(result[1])) {
             printf("generated new short-name '%s' for full-name '%s' full2='%s' full3='%s'\n", shrt, full, full2, full3);
@@ -564,8 +561,22 @@ NameInformation::NameInformation(AN_local *locs) {
                                   "sp.=species:spec.=species:SP.=SPECIES:SPEC.=SPECIES:" // replace common abbreviations of 'species'
                                   ".= :" // replace dots by spaces
                                   "  = :" // multiple spaces -> 1 space
-                                  "* * *=*1 *2" // skip all beyond 2nd word
                                   , 0);
+
+    {
+        int leading_spaces = strspn(parsed_name, " ");
+        int len            = strlen(parsed_name)-leading_spaces;
+        memmove(parsed_name, parsed_name+leading_spaces, len);
+
+        char *first_space = strchr(parsed_name, ' ');
+        if (first_space) {
+            char *second_space = strchr(first_space, ' ');
+            if (second_space) {
+                second_space[0] = 0; // skip all beyond 2nd word 
+            }
+        }
+    }
+
     an_autocaps(parsed_name);
 
     parsed_sym = GBS_string_eval(full_name, "\t= :* * *sym*=S", 0);
@@ -671,8 +682,8 @@ extern "C" aisc_string get_short(AN_local *locs)
             }
         }
 
-        if (!first_advice) first_advice = strdup("Xxx");
-        if (!second_advice) second_advice = strdup("Yyyyy");
+        if (!first_advice) first_advice = strdup("ZZZ");
+        if (!second_advice) second_advice = strdup("ZZZZZ");
 
         char *first_short;
         int   first_len;
@@ -684,7 +695,7 @@ extern "C" aisc_string get_short(AN_local *locs)
 
             na_assert(first_short);
             if (first_short[0] == 0) { // empty?
-                freedup(first_short, "Xxx");
+                freedup(first_short, "ZZZ");
             }
             first_len = strlen(first_short);
         }
@@ -699,7 +710,7 @@ extern "C" aisc_string get_short(AN_local *locs)
                 rest_of_name = second_advice;
                 restlen      = strlen(rest_of_name);
                 if (!restlen) {
-                    rest_of_name = "Yyyyy";
+                    rest_of_name = "ZZZZZ";
                     restlen      = 5;
                 }
             }
