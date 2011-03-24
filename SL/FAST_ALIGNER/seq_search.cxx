@@ -315,18 +315,27 @@ struct bind_css {
     }
 };
 
+#define TEST_ASSERT_CSS_SELF_REFLEXIVE(css) do {    \
+        for (int b = 0; b<css.length(); ++b) {  \
+            int x = css.expdPosition(b);        \
+            int c = css.compPosition(x);        \
+            TEST_ASSERT_EQUAL(c,b);             \
+        }                                       \
+    } while(0)
+
 #define TEST_CS_START(in)                                               \
-        int len  = strlen(in);                                          \
-        fprintf(stderr, "in='%s'\n", in);                               \
-        CompactedSubSequence css(in, len, "noname", 0);                 \
-        bind_css bound_css(css);                                        \
-        char *comp = collectIntFunResults(bound_css, 0, css.expdLength()-1, 3, 0, 1); \
-        bound_css.test_comp = false;                                    \
-        char *expd = collectIntFunResults(bound_css, 0, css.length(), 3, 0, 0);
+    int len  = strlen(in);                                              \
+    fprintf(stderr, "in='%s'\n", in);                                   \
+    CompactedSubSequence css(in, len, "noname", 0);                     \
+    TEST_ASSERT_CSS_SELF_REFLEXIVE(css);                                \
+    bind_css bound_css(css);                                            \
+    char *comp = collectIntFunResults(bound_css, 0, css.expdLength()-1, 3, 0, 1); \
+    bound_css.test_comp = false;                                        \
+    char *expd = collectIntFunResults(bound_css, 0, css.length(), 3, 0, 0);
     
 #define TEST_CS_END()                                                   \
-        free(expd);                                                     \
-        free(comp);
+    free(expd);                                                         \
+    free(comp);
     
 #define TEST_CS_EQUALS(in,exp_comp,exp_expd) do {                       \
         TEST_CS_START(in);                                              \
