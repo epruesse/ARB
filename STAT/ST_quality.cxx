@@ -18,6 +18,7 @@
 #include <aw_awars.hxx>
 #include <arb_progress.h>
 #include <arbdbt.h>
+#include <arb_strbuf.h>
 
 #include <cctype>
 #include <cmath>

@@ -102,6 +102,7 @@ PT_etc.o: $(ARBHOME)/INCLUDE/arb_assert.h
 PT_etc.o: $(ARBHOME)/INCLUDE/arb_core.h
 PT_etc.o: $(ARBHOME)/INCLUDE/arb_error.h
 PT_etc.o: $(ARBHOME)/INCLUDE/arb_msg.h
+PT_etc.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 PT_etc.o: $(ARBHOME)/INCLUDE/arb_string.h
 PT_etc.o: $(ARBHOME)/INCLUDE/arbdb.h
 PT_etc.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -152,6 +153,7 @@ PT_findEx.o: $(ARBHOME)/INCLUDE/arb_assert.h
 PT_findEx.o: $(ARBHOME)/INCLUDE/arb_core.h
 PT_findEx.o: $(ARBHOME)/INCLUDE/arb_error.h
 PT_findEx.o: $(ARBHOME)/INCLUDE/arb_msg.h
+PT_findEx.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 PT_findEx.o: $(ARBHOME)/INCLUDE/arb_string.h
 PT_findEx.o: $(ARBHOME)/INCLUDE/arbdb.h
 PT_findEx.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -226,17 +228,16 @@ PT_match.o: probe.h
 PT_match.o: probe_tree.h
 PT_match.o: pt_prototypes.h
 PT_match.o: $(ARBHOME)/INCLUDE/ad_prot.h
-PT_match.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 PT_match.o: $(ARBHOME)/INCLUDE/aisc_global.h
 PT_match.o: $(ARBHOME)/INCLUDE/arb_assert.h
 PT_match.o: $(ARBHOME)/INCLUDE/arb_core.h
 PT_match.o: $(ARBHOME)/INCLUDE/arb_defs.h
 PT_match.o: $(ARBHOME)/INCLUDE/arb_error.h
 PT_match.o: $(ARBHOME)/INCLUDE/arb_msg.h
+PT_match.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 PT_match.o: $(ARBHOME)/INCLUDE/arb_string.h
 PT_match.o: $(ARBHOME)/INCLUDE/arbdb.h
 PT_match.o: $(ARBHOME)/INCLUDE/arbdb_base.h
-PT_match.o: $(ARBHOME)/INCLUDE/arbdbt.h
 PT_match.o: $(ARBHOME)/INCLUDE/arbtools.h
 PT_match.o: $(ARBHOME)/INCLUDE/attributes.h
 PT_match.o: $(ARBHOME)/INCLUDE/bytestring.h

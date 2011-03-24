@@ -15,6 +15,7 @@
 #include <awt.hxx>
 #include <awt_sel_boxes.hxx>
 #include <arbdbt.h>
+#include <arb_strbuf.h>
 
 #include <iostream>
 

@@ -8,11 +8,11 @@
 //                                                                 //
 // =============================================================== //
 
-
 #include "probe.h"
 #include <PT_server_prototypes.h>
 #include "probe_tree.h"
 #include "pt_prototypes.h"
+#include <arb_strbuf.h>
 
 static bool findLeftmostProbe(POS_TREE *node, char *probe, int restlen, int height) {
     if (restlen==0) return true;

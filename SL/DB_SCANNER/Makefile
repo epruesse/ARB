@@ -44,6 +44,7 @@ db_scanner.o: $(ARBHOME)/INCLUDE/arb_error.h
 db_scanner.o: $(ARBHOME)/INCLUDE/arb_msg.h
 db_scanner.o: $(ARBHOME)/INCLUDE/arb_progress.h
 db_scanner.o: $(ARBHOME)/INCLUDE/arb_str.h
+db_scanner.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 db_scanner.o: $(ARBHOME)/INCLUDE/arb_string.h
 db_scanner.o: $(ARBHOME)/INCLUDE/arbdb.h
 db_scanner.o: $(ARBHOME)/INCLUDE/arbdb_base.h

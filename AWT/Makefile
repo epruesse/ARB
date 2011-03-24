@@ -360,6 +360,7 @@ AWT_query_and_functions.o: $(ARBHOME)/INCLUDE/arb_core.h
 AWT_query_and_functions.o: $(ARBHOME)/INCLUDE/arb_error.h
 AWT_query_and_functions.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AWT_query_and_functions.o: $(ARBHOME)/INCLUDE/arb_progress.h
+AWT_query_and_functions.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 AWT_query_and_functions.o: $(ARBHOME)/INCLUDE/arb_string.h
 AWT_query_and_functions.o: $(ARBHOME)/INCLUDE/arbdb.h
 AWT_query_and_functions.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -392,6 +393,7 @@ AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/arb_core.h
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/arb_error.h
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/arb_msg.h
+AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/arb_string.h
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/arbdb.h
 AWT_sel_boxes.o: $(ARBHOME)/INCLUDE/arbdb_base.h

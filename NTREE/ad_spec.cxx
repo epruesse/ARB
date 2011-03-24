@@ -25,6 +25,7 @@
 #include <aw_msg.hxx>
 #include <arb_progress.h>
 #include <arb_str.h>
+#include <arb_strbuf.h>
 #include <arb_defs.h>
 #include <probe_design.hxx>
 

@@ -18,6 +18,7 @@
 #include "ed4_ProteinViewer.hxx"
 
 #include <arb_str.h>
+#include <arb_strbuf.h>
 #include <arb_defs.h>
 
 /* --------------------------------------------------------------------------------
@@ -1661,6 +1662,7 @@ void ED4_change_cursor(AW_window * /* aww */, AW_CL /* cd1 */, AW_CL /* cd2 */) 
 
 #ifdef UNIT_TESTS
 #include <test_unit.h>
+#include <test_helpers.h>
 
 class fake_man_4test : public ED4_species_manager {
 public:
@@ -1714,27 +1716,18 @@ struct test_absrel {
     int gen(int i) const { return torel ? a2r(i) : r2a(i); }
     int get_size() const { return torel ? abs_size()+1 : rel_size(); }
 
-    char *genResult() const {
-        const int  BUFFERSIZE = 1024;
-        char       buffer[BUFFERSIZE];
-        char      *cursor     = buffer;
-        int        size       = get_size();
-
-        for (int i = -1; i<size+1; ++i) {
-            int o = gen(i);
-
-            if (i<0 || i >= size) {
-                const char *br = GBS_global_string("[%i]", o);
-                cursor += sprintf(cursor, "%5s", br);
-            }
-            else {
-                cursor += sprintf(cursor, "%3i", o);
-            }
-        }
-        TEST_ASSERT((cursor-buffer)<BUFFERSIZE);
-        return strdup(buffer);
-    }
+    char *genResult() const;
 };
+
+struct membind {
+    const test_absrel& me;
+    membind(const test_absrel& ta) : me(ta) {}
+    int operator()(int i) const { return me.gen(i); }
+};
+
+char *test_absrel::genResult() const {
+    return collectIntFunResults(membind(*this), 0, get_size()-1, 3, 1, 1);
+}
 
 struct test_ecoli : public test_absrel {
     BI_ecoli_ref& eref;
@@ -1822,4 +1815,5 @@ void TEST_ED4_base_position() {
 }
 
 #endif // UNIT_TESTS
+
 

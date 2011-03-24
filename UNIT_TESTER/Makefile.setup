@@ -20,7 +20,7 @@ VALGRIND=# do not valgrind anything
 
 # ---------- Leak checking needs VALGRIND!=0
 CHECK_LEAKS=0# check no leaks
-#CHECK_LEAKS=1# check definite leaks
+CHECK_LEAKS=1# check definite leaks
 #CHECK_LEAKS=2# check reachable leaks
 
 # ---------- restrict tests to modules matching regexpr 'RESTRICT_MODULE': 
@@ -48,6 +48,7 @@ RESTRICT_LIB=# run all tests
 #RESTRICT_LIB=arb_test
 #RESTRICT_LIB=EDIT4
 
+#RESTRICT_LIB=AWTC:FAST_ALIGNER
 #RESTRICT_LIB=SEQIO:CONVERTALN
 #RESTRICT_LIB=client:arb_probe:AWTC
 #RESTRICT_LIB=ARBDB:WINDOW:SEQIO

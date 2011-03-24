@@ -8,11 +8,13 @@
 //                                                                 //
 // =============================================================== //
 
-#include <arb_str.h>
-#include <arbdbt.h>
-
 #include "gb_data.h"
 #include "gb_main.h"
+
+#include <arbdbt.h>
+
+#include <arb_str.h>
+#include <arb_strbuf.h>
 
 GBDATA *GBT_find_or_create(GBDATA *Main, const char *key, long delete_level)
 {

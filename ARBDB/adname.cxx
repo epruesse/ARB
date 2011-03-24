@@ -8,13 +8,15 @@
 //                                                                 //
 // =============================================================== //
 
-#include <cctype>
-
-#include <arbdbt.h>
-#include <arb_progress.h>
-#include <ad_config.h>
-
 #include "gb_local.h"
+
+#include <ad_config.h>
+#include <arbdbt.h>
+
+#include <arb_progress.h>
+#include <arb_strbuf.h>
+
+#include <cctype>
 
 struct gbt_renamed {
     int     used_by;

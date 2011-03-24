@@ -124,6 +124,7 @@ AW_button.o: $(ARBHOME)/INCLUDE/arb_core.h
 AW_button.o: $(ARBHOME)/INCLUDE/arb_error.h
 AW_button.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AW_button.o: $(ARBHOME)/INCLUDE/arb_str.h
+AW_button.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 AW_button.o: $(ARBHOME)/INCLUDE/arb_string.h
 AW_button.o: $(ARBHOME)/INCLUDE/arbdb.h
 AW_button.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -227,6 +228,7 @@ AW_file_selection.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_file_selection.o: $(ARBHOME)/INCLUDE/arb_core.h
 AW_file_selection.o: $(ARBHOME)/INCLUDE/arb_error.h
 AW_file_selection.o: $(ARBHOME)/INCLUDE/arb_msg.h
+AW_file_selection.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 AW_file_selection.o: $(ARBHOME)/INCLUDE/arb_string.h
 AW_file_selection.o: $(ARBHOME)/INCLUDE/arbdb.h
 AW_file_selection.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -459,6 +461,7 @@ AW_status.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_status.o: $(ARBHOME)/INCLUDE/arb_core.h
 AW_status.o: $(ARBHOME)/INCLUDE/arb_error.h
 AW_status.o: $(ARBHOME)/INCLUDE/arb_msg.h
+AW_status.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 AW_status.o: $(ARBHOME)/INCLUDE/arb_string.h
 AW_status.o: $(ARBHOME)/INCLUDE/arbdb.h
 AW_status.o: $(ARBHOME)/INCLUDE/arbdb_base.h

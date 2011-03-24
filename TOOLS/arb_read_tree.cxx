@@ -10,6 +10,7 @@
 
 #include <TreeRead.h>
 #include <arbdbt.h>
+#include <arb_strbuf.h>
 #include <arb_defs.h>
 #include <ctime>
 

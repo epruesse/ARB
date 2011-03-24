@@ -173,6 +173,7 @@ SEC_helix.o: $(ARBHOME)/INCLUDE/arb_assert.h
 SEC_helix.o: $(ARBHOME)/INCLUDE/arb_core.h
 SEC_helix.o: $(ARBHOME)/INCLUDE/arb_error.h
 SEC_helix.o: $(ARBHOME)/INCLUDE/arb_msg.h
+SEC_helix.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 SEC_helix.o: $(ARBHOME)/INCLUDE/arb_string.h
 SEC_helix.o: $(ARBHOME)/INCLUDE/arbdb.h
 SEC_helix.o: $(ARBHOME)/INCLUDE/arbdb_base.h

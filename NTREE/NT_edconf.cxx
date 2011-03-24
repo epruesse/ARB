@@ -18,6 +18,7 @@
 #include <aw_msg.hxx>
 #include <ad_config.h>
 #include <arbdbt.h>
+#include <arb_strbuf.h>
 
 #define nt_assert(bed) arb_assert(bed)
 

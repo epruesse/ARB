@@ -264,6 +264,7 @@ arb_probe.o: $(ARBHOME)/INCLUDE/arb_core.h
 arb_probe.o: $(ARBHOME)/INCLUDE/arb_defs.h
 arb_probe.o: $(ARBHOME)/INCLUDE/arb_error.h
 arb_probe.o: $(ARBHOME)/INCLUDE/arb_msg.h
+arb_probe.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 arb_probe.o: $(ARBHOME)/INCLUDE/arb_string.h
 arb_probe.o: $(ARBHOME)/INCLUDE/arbdb.h
 arb_probe.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -284,6 +285,7 @@ arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/arb_assert.h
 arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/arb_core.h
 arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/arb_error.h
 arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/arb_msg.h
+arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/arb_string.h
 arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/arbdb.h
 arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -301,6 +303,7 @@ arb_read_tree.o: $(ARBHOME)/INCLUDE/arb_core.h
 arb_read_tree.o: $(ARBHOME)/INCLUDE/arb_defs.h
 arb_read_tree.o: $(ARBHOME)/INCLUDE/arb_error.h
 arb_read_tree.o: $(ARBHOME)/INCLUDE/arb_msg.h
+arb_read_tree.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 arb_read_tree.o: $(ARBHOME)/INCLUDE/arb_string.h
 arb_read_tree.o: $(ARBHOME)/INCLUDE/arbdb.h
 arb_read_tree.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -317,6 +320,7 @@ arb_replace.o: $(ARBHOME)/INCLUDE/arb_assert.h
 arb_replace.o: $(ARBHOME)/INCLUDE/arb_core.h
 arb_replace.o: $(ARBHOME)/INCLUDE/arb_error.h
 arb_replace.o: $(ARBHOME)/INCLUDE/arb_msg.h
+arb_replace.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 arb_replace.o: $(ARBHOME)/INCLUDE/arb_string.h
 arb_replace.o: $(ARBHOME)/INCLUDE/arbdb.h
 arb_replace.o: $(ARBHOME)/INCLUDE/arbdb_base.h

@@ -126,6 +126,7 @@ ad_config.o: gb_prot.h
 ad_config.o: $(ARBHOME)/INCLUDE/arb_core.h
 ad_config.o: $(ARBHOME)/INCLUDE/arb_error.h
 ad_config.o: $(ARBHOME)/INCLUDE/arb_msg.h
+ad_config.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 ad_config.o: $(ARBHOME)/INCLUDE/arb_string.h
 ad_config.o: $(ARBHOME)/INCLUDE/arbtools.h
 ad_config.o: $(ARBHOME)/INCLUDE/attributes.h
@@ -398,6 +399,7 @@ adGene.o: gb_prot.h
 adGene.o: $(ARBHOME)/INCLUDE/arb_core.h
 adGene.o: $(ARBHOME)/INCLUDE/arb_error.h
 adGene.o: $(ARBHOME)/INCLUDE/arb_msg.h
+adGene.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 adGene.o: $(ARBHOME)/INCLUDE/arb_string.h
 adGene.o: $(ARBHOME)/INCLUDE/arbtools.h
 adGene.o: $(ARBHOME)/INCLUDE/attributes.h
@@ -419,6 +421,7 @@ adhash.o: gb_tune.h
 adhash.o: $(ARBHOME)/INCLUDE/arb_core.h
 adhash.o: $(ARBHOME)/INCLUDE/arb_error.h
 adhash.o: $(ARBHOME)/INCLUDE/arb_msg.h
+adhash.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 adhash.o: $(ARBHOME)/INCLUDE/arb_string.h
 adhash.o: $(ARBHOME)/INCLUDE/arbtools.h
 adhash.o: $(ARBHOME)/INCLUDE/attributes.h
@@ -465,6 +468,7 @@ adindex.o: gb_undo.h
 adindex.o: $(ARBHOME)/INCLUDE/arb_core.h
 adindex.o: $(ARBHOME)/INCLUDE/arb_error.h
 adindex.o: $(ARBHOME)/INCLUDE/arb_msg.h
+adindex.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 adindex.o: $(ARBHOME)/INCLUDE/arb_string.h
 adindex.o: $(ARBHOME)/INCLUDE/arbtools.h
 adindex.o: $(ARBHOME)/INCLUDE/attributes.h
@@ -483,6 +487,7 @@ aditem.o: gb_prot.h
 aditem.o: $(ARBHOME)/INCLUDE/arb_core.h
 aditem.o: $(ARBHOME)/INCLUDE/arb_error.h
 aditem.o: $(ARBHOME)/INCLUDE/arb_msg.h
+aditem.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 aditem.o: $(ARBHOME)/INCLUDE/arb_string.h
 aditem.o: $(ARBHOME)/INCLUDE/arbtools.h
 aditem.o: $(ARBHOME)/INCLUDE/attributes.h
@@ -512,6 +517,7 @@ adlang1.o: $(ARBHOME)/INCLUDE/arb_defs.h
 adlang1.o: $(ARBHOME)/INCLUDE/arb_error.h
 adlang1.o: $(ARBHOME)/INCLUDE/arb_msg.h
 adlang1.o: $(ARBHOME)/INCLUDE/arb_str.h
+adlang1.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 adlang1.o: $(ARBHOME)/INCLUDE/arb_string.h
 adlang1.o: $(ARBHOME)/INCLUDE/arbtools.h
 adlang1.o: $(ARBHOME)/INCLUDE/attributes.h
@@ -597,6 +603,7 @@ admatch.o: gb_prot.h
 admatch.o: $(ARBHOME)/INCLUDE/arb_core.h
 admatch.o: $(ARBHOME)/INCLUDE/arb_error.h
 admatch.o: $(ARBHOME)/INCLUDE/arb_msg.h
+admatch.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 admatch.o: $(ARBHOME)/INCLUDE/arb_string.h
 admatch.o: $(ARBHOME)/INCLUDE/arbtools.h
 admatch.o: $(ARBHOME)/INCLUDE/attributes.h
@@ -633,6 +640,7 @@ adname.o: $(ARBHOME)/INCLUDE/arb_core.h
 adname.o: $(ARBHOME)/INCLUDE/arb_error.h
 adname.o: $(ARBHOME)/INCLUDE/arb_msg.h
 adname.o: $(ARBHOME)/INCLUDE/arb_progress.h
+adname.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 adname.o: $(ARBHOME)/INCLUDE/arb_string.h
 adname.o: $(ARBHOME)/INCLUDE/arbtools.h
 adname.o: $(ARBHOME)/INCLUDE/attributes.h
@@ -704,6 +712,7 @@ adquery.o: gb_tune.h
 adquery.o: $(ARBHOME)/INCLUDE/arb_core.h
 adquery.o: $(ARBHOME)/INCLUDE/arb_error.h
 adquery.o: $(ARBHOME)/INCLUDE/arb_msg.h
+adquery.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 adquery.o: $(ARBHOME)/INCLUDE/arb_string.h
 adquery.o: $(ARBHOME)/INCLUDE/arbtools.h
 adquery.o: $(ARBHOME)/INCLUDE/attributes.h
@@ -768,6 +777,7 @@ adsocket.o: $(ARBHOME)/INCLUDE/arb_cs.h
 adsocket.o: $(ARBHOME)/INCLUDE/arb_error.h
 adsocket.o: $(ARBHOME)/INCLUDE/arb_msg.h
 adsocket.o: $(ARBHOME)/INCLUDE/arb_str.h
+adsocket.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 adsocket.o: $(ARBHOME)/INCLUDE/arb_string.h
 adsocket.o: $(ARBHOME)/INCLUDE/arbtools.h
 adsocket.o: $(ARBHOME)/INCLUDE/attributes.h
@@ -807,6 +817,7 @@ adstring.o: $(ARBHOME)/INCLUDE/arb_backtrace.h
 adstring.o: $(ARBHOME)/INCLUDE/arb_core.h
 adstring.o: $(ARBHOME)/INCLUDE/arb_error.h
 adstring.o: $(ARBHOME)/INCLUDE/arb_msg.h
+adstring.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 adstring.o: $(ARBHOME)/INCLUDE/arb_string.h
 adstring.o: $(ARBHOME)/INCLUDE/arbtools.h
 adstring.o: $(ARBHOME)/INCLUDE/attributes.h
@@ -921,6 +932,7 @@ adtools.o: $(ARBHOME)/INCLUDE/arb_core.h
 adtools.o: $(ARBHOME)/INCLUDE/arb_error.h
 adtools.o: $(ARBHOME)/INCLUDE/arb_msg.h
 adtools.o: $(ARBHOME)/INCLUDE/arb_str.h
+adtools.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 adtools.o: $(ARBHOME)/INCLUDE/arb_string.h
 adtools.o: $(ARBHOME)/INCLUDE/arbtools.h
 adtools.o: $(ARBHOME)/INCLUDE/attributes.h

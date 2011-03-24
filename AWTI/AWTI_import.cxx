@@ -18,11 +18,13 @@
 #include <aw_awar.hxx>
 #include <AW_rename.hxx>
 #include <aw_msg.hxx>
-#include <arb_progress.h>
 #include <aw_root.hxx>
 #include <GenomeImport.h>
 #include <GEN.hxx>
 #include <adGene.h>
+
+#include <arb_progress.h>
+#include <arb_strbuf.h>
 
 #include <climits>
 
