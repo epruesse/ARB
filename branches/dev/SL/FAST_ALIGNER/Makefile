@@ -48,28 +48,6 @@ ClustalV.o: $(ARBHOME)/INCLUDE/dupstr.h
 ClustalV.o: $(ARBHOME)/INCLUDE/smartptr.h
 ClustalV.o: $(ARBHOME)/INCLUDE/test_global.h
 
-constructSequence.o: constructSequence.hxx
-constructSequence.o: seq_search.hxx
-constructSequence.o: $(ARBHOME)/INCLUDE/ad_prot.h
-constructSequence.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
-constructSequence.o: $(ARBHOME)/INCLUDE/arb_assert.h
-constructSequence.o: $(ARBHOME)/INCLUDE/arb_core.h
-constructSequence.o: $(ARBHOME)/INCLUDE/arb_error.h
-constructSequence.o: $(ARBHOME)/INCLUDE/arb_msg.h
-constructSequence.o: $(ARBHOME)/INCLUDE/arb_string.h
-constructSequence.o: $(ARBHOME)/INCLUDE/arbdb.h
-constructSequence.o: $(ARBHOME)/INCLUDE/arbdb_base.h
-constructSequence.o: $(ARBHOME)/INCLUDE/arbdbt.h
-constructSequence.o: $(ARBHOME)/INCLUDE/arbtools.h
-constructSequence.o: $(ARBHOME)/INCLUDE/attributes.h
-constructSequence.o: $(ARBHOME)/INCLUDE/aw_base.hxx
-constructSequence.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
-constructSequence.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
-constructSequence.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-constructSequence.o: $(ARBHOME)/INCLUDE/dupstr.h
-constructSequence.o: $(ARBHOME)/INCLUDE/smartptr.h
-constructSequence.o: $(ARBHOME)/INCLUDE/test_global.h
-
 fast_aligner.o: ClustalV.hxx
 fast_aligner.o: fast_aligner.hxx
 fast_aligner.o: seq_search.hxx
@@ -111,6 +89,7 @@ seq_search.o: $(ARBHOME)/INCLUDE/arb_assert.h
 seq_search.o: $(ARBHOME)/INCLUDE/arb_core.h
 seq_search.o: $(ARBHOME)/INCLUDE/arb_error.h
 seq_search.o: $(ARBHOME)/INCLUDE/arb_msg.h
+seq_search.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 seq_search.o: $(ARBHOME)/INCLUDE/arb_string.h
 seq_search.o: $(ARBHOME)/INCLUDE/arbdb.h
 seq_search.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -122,3 +101,5 @@ seq_search.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 seq_search.o: $(ARBHOME)/INCLUDE/dupstr.h
 seq_search.o: $(ARBHOME)/INCLUDE/smartptr.h
 seq_search.o: $(ARBHOME)/INCLUDE/test_global.h
+seq_search.o: $(ARBHOME)/INCLUDE/test_helpers.h
+seq_search.o: $(ARBHOME)/INCLUDE/test_unit.h
