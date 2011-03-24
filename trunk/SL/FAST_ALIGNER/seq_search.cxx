@@ -41,6 +41,9 @@ CompactedSequence::CompactedSequence(const char *Text, int Length, const char *n
 {
     long cPos;
     long xPos;
+
+    fa_assert(Length>0);
+    
     long *compPositionTab = new long[Length];
     myLength = 0;
     int lastWasPoint = 0;
@@ -144,8 +147,9 @@ CompactedSequence::~CompactedSequence()
     delete points;
 }
 
-int CompactedSequence::compPosition(int xPos) const
-{
+int CompactedSequence::compPosition(int xPos) const {
+    // returns the number of bases left of 'xPos' (not including bases at 'xPos')
+
     int l = 0,
         h = length();
 
@@ -158,14 +162,14 @@ int CompactedSequence::compPosition(int xPos) const
         }
 
         if (cmp<0) { // xPos < expdPosition(m)
-            h = m-1;
+            h = m;
         }
         else { // xPos > expdPosition(m)
             l = m+1;
         }
     }
 
-    fa_assert(l==h);
+    fa_assert(l == h);
     return l;
 }
 
@@ -199,19 +203,21 @@ FastSearchSequence::~FastSearchSequence() {
 
 void AlignBuffer::correctUnalignedPositions()
 {
-    long off = 0;
+    long off  = 0;
     long rest = used;
 
-    while (rest)
-    {
-        char *found = (char*)memchr(myQuality+off, '?', rest);  // search for next '?' in myQuality
-        if (!found || (found-myQuality)>=rest) break;
+    while (rest) {
+        const char *qual  = quality();
+        char       *found = (char*)memchr(qual+off, '?', rest); // search for next '?' in myQuality
+        
+        if (!found || (found-qual) >= rest) break;
 
         long cnt;
-        for (cnt=0; found[cnt]=='?'; cnt++) found[cnt]='+';     // count # of unaligned positions and change them to '+'
+        for (cnt=0; found[cnt]=='?'; cnt++) found[cnt] = '+';   // count # of unaligned positions and change them to '+'
+
         long from  = found-myQuality;
-        long b_off = from-1;                                    // position before unaligned positions
-        long a_off = from+cnt;                                  // positions after unaligned positions
+        long b_off = from-1;   // position before unaligned positions
+        long a_off = from+cnt; // positions after unaligned positions
 
         long before, after;
         for (before=0; b_off>=0 && isGlobalGap(b_off); before++, b_off--) ;             // count free positions before unaligned positions
@@ -288,3 +294,108 @@ void AlignBuffer::point_ends_of()
         myBuffer[i] = '.';
     }
 }
+
+// --------------------------------------------------------------------------------
+
+#ifdef UNIT_TESTS
+#include <test_unit.h>
+#include <test_helpers.h>
+
+struct bind_css {
+    CompactedSubSequence& css;
+    bool test_comp;
+    bind_css(CompactedSubSequence& css_) : css(css_), test_comp(true) {}
+
+    int operator()(int i) const {
+        if (test_comp) return css.compPosition(i);
+        return css.expdPosition(i);
+    }
+};
+
+#define TEST_ASSERT_CSS_SELF_REFLEXIVE(css) do {    \
+        for (int b = 0; b<css.length(); ++b) {  \
+            int x = css.expdPosition(b);        \
+            int c = css.compPosition(x);        \
+            TEST_ASSERT_EQUAL(c,b);             \
+        }                                       \
+    } while(0)
+
+#define TEST_CS_START(in)                                               \
+    int len  = strlen(in);                                              \
+    fprintf(stderr, "in='%s'\n", in);                                   \
+    CompactedSubSequence css(in, len, "noname", 0);                     \
+    TEST_ASSERT_CSS_SELF_REFLEXIVE(css);                                \
+    bind_css bound_css(css);                                            \
+    char *comp = collectIntFunResults(bound_css, 0, css.expdLength()-1, 3, 0, 1); \
+    bound_css.test_comp = false;                                        \
+    char *expd = collectIntFunResults(bound_css, 0, css.length(), 3, 0, 0);
+    
+#define TEST_CS_END()                                                   \
+    free(expd);                                                         \
+    free(comp);
+    
+#define TEST_CS_EQUALS(in,exp_comp,exp_expd) do {                       \
+        TEST_CS_START(in);                                              \
+        TEST_ASSERT_EQUAL(comp, exp_comp);                              \
+        TEST_ASSERT_EQUAL(expd, exp_expd);                              \
+        TEST_CS_END();                                                  \
+} while(0)
+
+#define TEST_CS_CBROKN(in,exp_comp,exp_expd) do {                       \
+        TEST_CS_START(in);                                              \
+        TEST_ASSERT_EQUAL__BROKEN(comp, exp_comp);                      \
+        TEST_ASSERT_EQUAL(expd, exp_expd);                              \
+        TEST_CS_END();                                                  \
+} while(0)
+
+void TEST_CompactedSequence() {
+    // reproduce a bug in compPosition
+
+    // no base
+    TEST_CS_EQUALS("----------", "  0  0  0  0  0  0  0  0  0  0  [0]", " 10");
+
+    // one base
+    TEST_CS_EQUALS("A---------", "  0  1  1  1  1  1  1  1  1  1  [1]", "  0 10");
+    TEST_CS_EQUALS("-A--------", "  0  0  1  1  1  1  1  1  1  1  [1]", "  1 10"); 
+    TEST_CS_EQUALS("---A------", "  0  0  0  0  1  1  1  1  1  1  [1]", "  3 10"); 
+    TEST_CS_EQUALS("-----A----", "  0  0  0  0  0  0  1  1  1  1  [1]", "  5 10"); 
+    TEST_CS_EQUALS("-------A--", "  0  0  0  0  0  0  0  0  1  1  [1]", "  7 10"); 
+    TEST_CS_EQUALS("---------A", "  0  0  0  0  0  0  0  0  0  0  [1]", "  9 10"); 
+
+    // two bases
+    TEST_CS_EQUALS("AC--------", "  0  1  2  2  2  2  2  2  2  2  [2]", "  0  1 10");
+
+    TEST_CS_EQUALS("A-C-------", "  0  1  1  2  2  2  2  2  2  2  [2]", "  0  2 10");
+    TEST_CS_EQUALS("A--------C", "  0  1  1  1  1  1  1  1  1  1  [2]", "  0  9 10");
+    TEST_CS_EQUALS("-AC-------", "  0  0  1  2  2  2  2  2  2  2  [2]", "  1  2 10");
+    TEST_CS_EQUALS("-A------C-", "  0  0  1  1  1  1  1  1  1  2  [2]", "  1  8 10");
+    TEST_CS_EQUALS("-A-------C", "  0  0  1  1  1  1  1  1  1  1  [2]", "  1  9 10");
+    TEST_CS_EQUALS("-------A-C", "  0  0  0  0  0  0  0  0  1  1  [2]", "  7  9 10");
+    TEST_CS_EQUALS("--------AC", "  0  0  0  0  0  0  0  0  0  1  [2]", "  8  9 10");
+
+    // 3 bases
+    TEST_CS_EQUALS("ACG-------", "  0  1  2  3  3  3  3  3  3  3  [3]", "  0  1  2 10");
+    TEST_CS_EQUALS("AC---G----", "  0  1  2  2  2  2  3  3  3  3  [3]", "  0  1  5 10"); 
+    TEST_CS_EQUALS("A-C--G----", "  0  1  1  2  2  2  3  3  3  3  [3]", "  0  2  5 10"); 
+    TEST_CS_EQUALS("A-C--G----", "  0  1  1  2  2  2  3  3  3  3  [3]", "  0  2  5 10"); 
+    TEST_CS_EQUALS("A--C-G----", "  0  1  1  1  2  2  3  3  3  3  [3]", "  0  3  5 10"); 
+    TEST_CS_EQUALS("A---CG----", "  0  1  1  1  1  2  3  3  3  3  [3]", "  0  4  5 10");
+
+    TEST_CS_EQUALS("A---C---G-", "  0  1  1  1  1  2  2  2  2  3  [3]", "  0  4  8 10");
+    TEST_CS_EQUALS("A---C----G", "  0  1  1  1  1  2  2  2  2  2  [3]", "  0  4  9 10");
+
+    // 4 bases
+    TEST_CS_EQUALS("-AC-G--T--", "  0  0  1  2  2  3  3  3  4  4  [4]", "  1  2  4  7 10"); 
+
+    // 9 bases
+    TEST_CS_EQUALS("-CGTACGTAC", "  0  0  1  2  3  4  5  6  7  8  [9]", "  1  2  3  4  5  6  7  8  9 10");
+    TEST_CS_EQUALS("A-GTACGTAC", "  0  1  1  2  3  4  5  6  7  8  [9]", "  0  2  3  4  5  6  7  8  9 10");
+    TEST_CS_EQUALS("ACGTA-GTAC", "  0  1  2  3  4  5  5  6  7  8  [9]", "  0  1  2  3  4  6  7  8  9 10");
+    TEST_CS_EQUALS("ACGTACGT-C", "  0  1  2  3  4  5  6  7  8  8  [9]", "  0  1  2  3  4  5  6  7  9 10");
+    TEST_CS_EQUALS("ACGTACGTA-", "  0  1  2  3  4  5  6  7  8  9  [9]", "  0  1  2  3  4  5  6  7  8 10");
+
+    // all 10 bases
+    TEST_CS_EQUALS("ACGTACGTAC", "  0  1  2  3  4  5  6  7  8  9 [10]", "  0  1  2  3  4  5  6  7  8  9 10");
+}
+
+#endif // UNIT_TESTS

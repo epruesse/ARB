@@ -941,17 +941,8 @@ static TargetRange get_nn_range_from_awars(AW_root *aw_root) {
     return TargetRange(start, end);
 }
 
-static char *read_sequence_region(GBDATA *gb_data, TargetRange& range) {
-    const char *cdata  = GB_read_char_pntr(gb_data);
-    int         seqlen = GB_read_count(gb_data);
-    range.fit(seqlen);
-    int   len  = range.length();
-    char *part = (char*)malloc(len+1);
-
-    memcpy(part, cdata+range.first_pos(), len);
-    part[len] = 0;
-
-    return part;
+inline char *read_sequence_region(GBDATA *gb_data, const TargetRange& range) {
+    return range.dup_corresponding_part(GB_read_char_pntr(gb_data), GB_read_count(gb_data));
 }
 
 static void awtc_nn_search_all_listed(AW_window *aww, AW_CL _cbs) {
