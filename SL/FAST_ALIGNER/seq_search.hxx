@@ -153,13 +153,12 @@ public:
     int no_of_gaps_after(int cPos) const        { return mySequence->no_of_gaps_after(myPos+cPos); }
 
     int expdStartPosition() const               { return mySequence->expdPosition(myPos); }
-    int expdPosition(int cPos) const
-    {
+    int expdPosition(int cPos) const {
         fa_assert(cPos>=0 && cPos<=myLength);                 // allowed for all positions plus follower
         return mySequence->expdPosition(myPos+cPos);
     }
     int compPosition(int xPos) const            { return mySequence->compPosition(xPos)-myPos; }
-    int expdLength() const                      { return expdPosition(length()-1); }
+    int expdLength() const                      { return expdPosition(length()); }
     const int *gapsBefore(int offset=0) const   { return mySequence->gapsBeforePosition + myPos + offset; }
 
     int thisPointPosition() {
