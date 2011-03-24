@@ -41,6 +41,9 @@ CompactedSequence::CompactedSequence(const char *Text, int Length, const char *n
 {
     long cPos;
     long xPos;
+
+    fa_assert(Length>0);
+    
     long *compPositionTab = new long[Length];
     myLength = 0;
     int lastWasPoint = 0;
@@ -144,6 +147,8 @@ CompactedSequence::~CompactedSequence()
     delete points;
 }
 
+#define TEST_ASSERTION_FAILURES
+    
 int CompactedSequence::compPosition(int xPos) const
 {
     int l = 0,
@@ -165,7 +170,9 @@ int CompactedSequence::compPosition(int xPos) const
         }
     }
 
+#if !defined(TEST_ASSERTION_FAILURES)
     fa_assert(l==h);
+#endif
     return l;
 }
 
@@ -290,3 +297,117 @@ void AlignBuffer::point_ends_of()
         myBuffer[i] = '.';
     }
 }
+
+// --------------------------------------------------------------------------------
+
+#ifdef UNIT_TESTS
+#include <test_unit.h>
+#include <test_helpers.h>
+
+struct bind_css {
+    CompactedSubSequence& css;
+    bool test_comp;
+    bind_css(CompactedSubSequence& css_) : css(css_), test_comp(true) {}
+
+    int operator()(int i) const {
+        if (test_comp) return css.compPosition(i);
+        return css.expdPosition(i);
+    }
+};
+
+#define TEST_CS_START(in)                                               \
+        int len  = strlen(in);                                          \
+        fprintf(stderr, "in='%s'\n", in);                               \
+        CompactedSubSequence css(in, len, "noname", 0);                 \
+        bind_css bound_css(css);                                        \
+        char *comp = collectIntFunResults(bound_css, 0, css.expdLength()-1, 3, 0, 1); \
+        bound_css.test_comp = false;                                    \
+        char *expd = collectIntFunResults(bound_css, 0, css.length(), 3, 0, 0);
+    
+#define TEST_CS_END()                                                   \
+        free(expd);                                                     \
+        free(comp);
+    
+#define TEST_CS_EQUALS(in,exp_comp,exp_expd) do {                       \
+        TEST_CS_START(in);                                              \
+        TEST_ASSERT_EQUAL(comp, exp_comp);                              \
+        TEST_ASSERT_EQUAL(expd, exp_expd);                              \
+        TEST_CS_END();                                                  \
+} while(0)
+
+#define TEST_CS_CBROKN(in,exp_comp,exp_expd) do {                       \
+        TEST_CS_START(in);                                              \
+        TEST_ASSERT_EQUAL__BROKEN(comp, exp_comp);                      \
+        TEST_ASSERT_EQUAL(expd, exp_expd);                              \
+        TEST_CS_END();                                                  \
+} while(0)
+
+void TEST_CompactedSequence() {
+    // reproduce a bug in compPosition
+
+    // no base
+    TEST_CS_EQUALS("----------", "  0  0  0  0  0  0  0  0  0  0  [0]", " 10");
+
+    // one base
+    TEST_CS_EQUALS("A---------", "  0  1  1  1  1  1  1  1  1  1  [1]", "  0 10");
+#if defined(TEST_ASSERTION_FAILURES)
+    TEST_CS_EQUALS("-A--------", "  0  0  1  1  1  1  1  1  1  1  [1]", "  1 10"); // assertion fails
+    TEST_CS_EQUALS("---A------", "  0  0  0  0  1  1  1  1  1  1  [1]", "  3 10"); // assertion fails
+    TEST_CS_EQUALS("-----A----", "  0  0  0  0  0  0  1  1  1  1  [1]", "  5 10"); // assertion fails
+    TEST_CS_EQUALS("-------A--", "  0  0  0  0  0  0  0  0  1  1  [1]", "  7 10"); // assertion fails
+    TEST_CS_EQUALS("---------A", "  0  0  0  0  0  0  0  0  0  0  [1]", "  9 10"); // assertion fails
+#endif
+
+    // two bases
+    TEST_CS_EQUALS("AC--------", "  0  1  2  2  2  2  2  2  2  2  [2]", "  0  1 10");
+
+    TEST_CS_EQUALS("A-C-------", "  0  0  1  2  2  2  2  2  2  2  [2]", "  0  2 10"); // @@@ comp_wrong
+    TEST_CS_CBROKN("A-C-------", "  0  1  1  2  2  2  2  2  2  2  [2]", "  0  2 10"); // @@@ would_be_correct
+
+    TEST_CS_EQUALS("A--------C", "  0  0  0  0  0  0  0  0  0  1  [2]", "  0  9 10"); // @@@ comp_wrong
+    TEST_CS_CBROKN("A--------C", "  0  1  1  1  1  1  1  1  1  1  [2]", "  0  9 10"); // @@@ would_be_correct
+
+    TEST_CS_EQUALS("-AC-------", "  0  0  1  2  2  2  2  2  2  2  [2]", "  1  2 10");
+
+    TEST_CS_EQUALS("-A------C-", "  0  0  0  0  0  0  0  0  1  2  [2]", "  1  8 10"); // @@@ comp_wrong
+    TEST_CS_CBROKN("-A------C-", "  0  0  1  1  1  1  1  1  1  2  [2]", "  1  8 10"); // @@@ would_be_correct
+
+    TEST_CS_EQUALS("-A-------C", "  0  0  0  0  0  0  0  0  0  1  [2]", "  1  9 10"); // @@@ comp_wrong
+    TEST_CS_CBROKN("-A-------C", "  0  0  1  1  1  1  1  1  1  1  [2]", "  1  9 10"); // @@@ would_be_correct
+
+    TEST_CS_EQUALS("-------A-C", "  0  0  0  0  0  0  0  0  0  1  [2]", "  7  9 10"); // @@@ comp_wrong
+    TEST_CS_CBROKN("-------A-C", "  0  0  0  0  0  0  0  0  1  1  [2]", "  7  9 10"); // @@@ would_be_correct
+
+    TEST_CS_EQUALS("--------AC", "  0  0  0  0  0  0  0  0  0  1  [2]", "  8  9 10");
+
+    // 3 bases
+    TEST_CS_EQUALS("ACG-------", "  0  1  2  3  3  3  3  3  3  3  [3]", "  0  1  2 10");
+#if defined(TEST_ASSERTION_FAILURES)
+    TEST_CS_EQUALS("AC---G----", "  0  1  2  2  2  2  3  3  3  3  [3]", "  0  1  5 10"); // assertion fails
+    
+    TEST_CS_EQUALS("A-C--G----", "  0  0  1  2  2  2  3  3  3  3  [3]", "  0  2  5 10"); // assertion fails @@@ comp_wrong
+    TEST_CS_CBROKN("A-C--G----", "  0  1  1  2  2  2  3  3  3  3  [3]", "  0  2  5 10"); // assertion fails @@@ would_be_correct
+
+    TEST_CS_EQUALS("A-C--G----", "  0  0  1  2  2  2  3  3  3  3  [3]", "  0  2  5 10"); // assertion fails @@@ comp_wrong
+    TEST_CS_CBROKN("A-C--G----", "  0  1  1  2  2  2  3  3  3  3  [3]", "  0  2  5 10"); // assertion fails @@@ would_be_correct
+    
+    TEST_CS_EQUALS("A--C-G----", "  0  0  0  1  2  2  3  3  3  3  [3]", "  0  3  5 10"); // assertion fails @@@ comp_wrong
+    TEST_CS_CBROKN("A--C-G----", "  0  1  1  1  2  2  3  3  3  3  [3]", "  0  3  5 10"); // assertion fails @@@ would_be_correct
+#endif
+    TEST_CS_EQUALS("A---CG----", "  0  0  0  0  1  2  3  3  3  3  [3]", "  0  4  5 10"); // @@@ comp_wrong
+    TEST_CS_CBROKN("A---CG----", "  0  1  1  1  1  2  3  3  3  3  [3]", "  0  4  5 10"); // @@@ would_be_correct
+
+#if defined(TEST_ASSERTION_FAILURES)
+    TEST_CS_EQUALS("A---C---G-", "  0  0  0  0  1  2  2  2  2  3  [3]", "  0  4  8 10"); // @@@ comp_wrong
+    TEST_CS_CBROKN("A---C---G-", "  0  1  1  1  1  2  2  2  2  3  [3]", "  0  4  8 10"); // @@@ would_be_correct
+
+    TEST_CS_EQUALS("A---C----G", "  0  0  0  0  1  2  2  2  2  2  [3]", "  0  4  9 10"); // @@@ comp_wrong
+    TEST_CS_CBROKN("A---C----G", "  0  1  1  1  1  2  2  2  2  2  [3]", "  0  4  9 10"); // @@@ would_be_correct
+
+    // 4 bases
+    TEST_CS_EQUALS("-AC-G--T--", "  0  0  1  1  2  3  3  3  4  4  [4]", "  1  2  4  7 10"); // assertion fails @@@ comp_wrong
+    TEST_CS_CBROKN("-AC-G--T--", "  0  0  1  2  2  3  3  3  4  4  [4]", "  1  2  4  7 10"); // assertion fails @@@ would_be_correct
+#endif
+}
+
+#endif // UNIT_TESTS
