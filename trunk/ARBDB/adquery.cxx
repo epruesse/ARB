@@ -8,8 +8,6 @@
 //                                                                 //
 // =============================================================== //
 
-#include <cctype>
-
 #include "gb_aci.h"
 #include "gb_comm.h"
 #include "gb_index.h"
@@ -17,6 +15,9 @@
 #include "gb_localdata.h"
 #include "gb_ta.h"
 
+#include <arb_strbuf.h>
+
+#include <cctype>
 
 #define GB_PATH_MAX 1024
 

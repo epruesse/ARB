@@ -13,7 +13,7 @@
 #include <PT_server_prototypes.h>
 #include "pt_prototypes.h"
 #include <struct_man.h>
-
+#include <arb_strbuf.h>
 
 void set_table_for_PT_N_mis()
 {

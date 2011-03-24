@@ -10,6 +10,7 @@
 // ================================================================ //
 
 #include <arbdb.h>
+#include <arb_strbuf.h>
 #include <FileBuffer.h>
 
 #include <string>

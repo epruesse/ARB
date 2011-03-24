@@ -26,6 +26,7 @@
 
 #include <arb_cs.h>
 #include <arb_str.h>
+#include <arb_strbuf.h>
 
 #include "gb_comm.h"
 #include "gb_data.h"

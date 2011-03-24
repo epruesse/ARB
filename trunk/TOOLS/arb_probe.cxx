@@ -8,11 +8,14 @@
 //                                                                 //
 // =============================================================== //
 
-#include <arbdb.h>
 #include <PT_com.h>
+#include <arbdb.h>
+
 #include <client.h>
 #include <servercntrl.h>
+
 #include <arb_defs.h>
+#include <arb_strbuf.h>
 
 struct apd_sequence {
     apd_sequence *next;

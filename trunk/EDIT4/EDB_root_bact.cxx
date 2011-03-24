@@ -14,6 +14,7 @@
 #include <aw_msg.hxx>
 #include <arb_progress.h>
 #include <arbdbt.h>
+#include <arb_strbuf.h>
 #include <ad_config.h>
 
 #define NAME_BUFFERSIZE 100

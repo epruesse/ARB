@@ -231,6 +231,7 @@ symlink_file ../CORE/arb_core.h INCLUDE/arb_core.h &&
 symlink_file ../CORE/arb_cs.h INCLUDE/arb_cs.h &&
 symlink_file ../CORE/arb_msg.h INCLUDE/arb_msg.h &&
 symlink_file ../CORE/arb_signal.h INCLUDE/arb_signal.h &&
+symlink_file ../CORE/arb_strbuf.h INCLUDE/arb_strbuf.h &&
 symlink_file ../CORE/arb_string.h INCLUDE/arb_string.h &&
 symlink_file ../CORE/arb_handlers.h INCLUDE/arb_handlers.h &&
 symlink_file ../CORE/arb_progress.h INCLUDE/arb_progress.h &&
@@ -283,6 +284,7 @@ symlink_file ../SL/TREE_WRITE/TreeWrite.h INCLUDE/TreeWrite.h &&
 symlink_file ../STAT/st_window.hxx INCLUDE/st_window.hxx &&
 symlink_file ../UNIT_TESTER/test_unit.h INCLUDE/test_unit.h &&
 symlink_file ../UNIT_TESTER/test_global.h INCLUDE/test_global.h &&
+symlink_file ../UNIT_TESTER/test_helpers.h INCLUDE/test_helpers.h &&
 symlink_file ../WINDOW/aw_advice.hxx INCLUDE/aw_advice.hxx &&
 symlink_file ../WINDOW/aw_awar.hxx INCLUDE/aw_awar.hxx &&
 symlink_file ../WINDOW/aw_awars.hxx INCLUDE/aw_awars.hxx &&

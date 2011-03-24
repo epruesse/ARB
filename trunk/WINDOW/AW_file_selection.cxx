@@ -16,6 +16,7 @@
 #include "aw_root.hxx"
 
 #include <arbdbt.h>
+#include <arb_strbuf.h>
 
 #include <dirent.h>
 #include <sys/types.h>

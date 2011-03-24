@@ -8,18 +8,20 @@
 //                                                                 //
 // =============================================================== //
 
-#include <cctype>
-
-#include <adGene.h>
-#include <arbdbt.h>
-
 #include "gb_aci.h"
 #include "gb_key.h"
 #include "gb_localdata.h"
 
+#include <adGene.h>
+#include <arbdbt.h>
+
 #include <static_assert.h>
 #include <arb_defs.h>
 #include <arb_str.h>
+#include <arb_strbuf.h>
+
+#include <cctype>
+
 
 #define AWAR_TREE_REFRESH "tmp/focus/tree_refresh" // touch this awar to refresh the tree display
 

@@ -8,9 +8,9 @@
 //                                                                 //
 // =============================================================== //
 
-
 #include <TreeWrite.h>
 #include <arbdbt.h>
+#include <arb_strbuf.h>
 #include <xml.hxx>
 
 using namespace std;

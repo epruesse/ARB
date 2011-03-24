@@ -9,9 +9,12 @@
 //                                                                 //
 // =============================================================== //
 
-#include "arbdbt.h"
-#include "ad_config.h"
 #include "gb_local.h"
+
+#include <ad_config.h>
+#include <arbdbt.h>
+
+#include <arb_strbuf.h>
 
 char **GBT_get_configuration_names_and_count(GBDATA *gb_main, int *countPtr) {
     /* returns existing configurations (as null terminated array of char* (heap-copies))

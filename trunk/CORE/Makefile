@@ -91,6 +91,14 @@ arb_signal.o: $(ARBHOME)/INCLUDE/SuppressOutput.h
 arb_signal.o: $(ARBHOME)/INCLUDE/test_global.h
 arb_signal.o: $(ARBHOME)/INCLUDE/valgrind.h
 
+arb_strbuf.o: arb_core.h
+arb_strbuf.o: arb_strbuf.h
+arb_strbuf.o: $(ARBHOME)/INCLUDE/arb_assert.h
+arb_strbuf.o: $(ARBHOME)/INCLUDE/arbtools.h
+arb_strbuf.o: $(ARBHOME)/INCLUDE/attributes.h
+arb_strbuf.o: $(ARBHOME)/INCLUDE/dupstr.h
+arb_strbuf.o: $(ARBHOME)/INCLUDE/test_global.h
+
 arb_string.o: arb_core.h
 arb_string.o: arb_string.h
 arb_string.o: $(ARBHOME)/INCLUDE/arb_assert.h
