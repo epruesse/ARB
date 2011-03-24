@@ -3050,8 +3050,8 @@ struct arb_unit_test::test_alignment_data TestAlignmentData_TargetAndReferenceHa
     { 0, "s1", ".........A--UCU-C------C-U-AAACC-CA-A-C-C-G-UAG-UUC--------GAA-U-UGAGG-AC--U-GUAA-CU-C..........." }, // reference
     { 0, "s2", "AUCUCCUAAACCCAACCGUAGUUCGAAUUGAGGACUGUAACUC......................................................" }, // align single sequence (same data as reference)
     { 1, "m1", "UAGAGGAUUUGGGUUGGCAUCAAGCUUAACUCCUGACAUUGAG......................................................" }, // align marked sequences.. (complement of reference)
-    { 1, "m2", "...UCCUAAACCCAACCGUAGUUCGAAUUGAGGACUGUAA........................................................." },
-    { 1, "m3", "AUC---UAAACCCAACCGUAGUUCGAAUUGAGGACUG---CUC......................................................" },
+    { 1, "m2", "...UCCUAAACCAACCCGUAGUUCGAAUUGAGGACUGUAA........................................................." },
+    { 1, "m3", "AUC---UAAACCAACCCGUAGUUCGAAUUGAGGACUG---CUC......................................................" },
     { 0, "c1", "AUCUCCUAAACCCAACC--------AAUUGAGGACUGUAACUC......................................................" },  // align selected sequences..
     { 0, "c2", "AUCUCCU------AACCGUAGUUCCCCGAA------ACUGUAACUC..................................................." },
     { 0, "r1", "GAGUUACAGUCCUCAAUUCGGGGAACUACGGUUGGGUUUAGGAGAU..................................................." },  // align by faked pt_server
@@ -3161,8 +3161,8 @@ void TEST_Aligner_TargetAndReferenceHandling() {
     TEST_ASSERT_EQUAL(ALIGNED_DATA_OF("s2"), ".........A--UCU-C------C-U-AAACC-CA-A-C-C-G-UAG-UUC--------GAA-U-UGAGG-AC--U-GUAA-CU-C...........");
 
     TEST_ASSERT_EQUAL(ALIGNED_DATA_OF("m1"), ".......UAG--AGG-A------U-U-UGGGU-UG-G-C-A-U-CAA-GCU--------UAA-C-UCCUG-AC--A-UUGAG...............");
-    TEST_ASSERT_EQUAL(ALIGNED_DATA_OF("m2"), "..............U-C------C-U-AAACC-CA-A-C-C-G-UAG-UUC--------GAA-U-UGAGG-AC--U-GUAA................");
-    TEST_ASSERT_EQUAL(ALIGNED_DATA_OF("m3"), "..............A-U------C-U-AAACC-CA-A-C-C-G-UAG-UUC--------GAA-U-UGAGG-AC--U-G----CU-C...........");
+    TEST_ASSERT_EQUAL(ALIGNED_DATA_OF("m2"), "..............U-C------C-U-AAACC-AA-C-C-C-G-UAG-UUC--------GAA-U-UGAGG-AC--U-GUAA................");
+    TEST_ASSERT_EQUAL(ALIGNED_DATA_OF("m3"), ".........A--U----------C-U-AAACC-AA-C-C-C-G-UAG-UUC--------GAA-U-UGAGG-AC--U-G----CU-C...........");
 
     TEST_ASSERT_EQUAL(ALIGNED_DATA_OF("c1"), ".........A--UCU-C------C-U-AAACC-CA-A-C-C-------------------AA-U-UGAGG-AC--U-GUAA-CU-C...........");
     TEST_ASSERT_EQUAL(ALIGNED_DATA_OF("c2"), ".........A--UCU-C------C-U-AA---------C-C-G-UAG-UUC------------C-CCGAA-AC--U-GUAA-CU-C...........");
@@ -3207,7 +3207,7 @@ void TEST_Aligner_TargetAndReferenceHandling() {
     TEST_ASSERT_EQUAL(USED_RELS_FOR("s1"), "s2");
     TEST_ASSERT_EQUAL(USED_RELS_FOR("s2"), "s1"); // same as done manually
     TEST_ASSERT_EQUAL(USED_RELS_FOR("m1"), "r1:42");
-    TEST_ASSERT_EQUAL(USED_RELS_FOR("m2"), "s2");
+    TEST_ASSERT_EQUAL(USED_RELS_FOR("m2"), "m3");
     TEST_ASSERT_EQUAL(USED_RELS_FOR("m3"), "m2");
     TEST_ASSERT_EQUAL(USED_RELS_FOR("c1"), "r1");
     TEST_ASSERT_EQUAL(USED_RELS_FOR("c2"), "r1");
@@ -3218,8 +3218,9 @@ void TEST_Aligner_TargetAndReferenceHandling() {
     TEST_ASSERT_EQUAL(ALIGNED_DATA_OF("s2"), ".........A--UCU-C------C-U-AAACC-CA-A-C-C-G-UAG-UUC--------GAA-U-UGAGG-AC--U-GUAA-CU-C..........."); // same_as_above (again aligned vs 's1')
 
     TEST_ASSERT_EQUAL(ALIGNED_DATA_OF("m1"), ".........U--AGA-G------G---AUUUG-GG-U-U-G-G-CAU-CAAGCU-----UAA-C-UCCUG-AC--A-UUGAG---------------"); // changed; @@@ bug: no dots at end
-    TEST_ASSERT_EQUAL(ALIGNED_DATA_OF("m2"), "..............U-C------C-U-AAACC-CA-A-C-C-G-UAG-UUC--------GAA-U-UGAGG-AC--U-GUAA................"); // same_as_above (1st align vs 's1', 2nd align vs 's2' which is same)
-    TEST_ASSERT_EQUAL(ALIGNED_DATA_OF("m3"), "..............A-U------C-U-AAACC-CA-A-C-C-G-UAG-UUC--------GAA-U-UGAGG-AC--U-GCUC................"); // changed
+ 
+    TEST_ASSERT_EQUAL(ALIGNED_DATA_OF("m2"), ".........U--C----------C-U-AAACC-AA-C-C-C-G-UAG-UUC--------GAA-U-UGAGG-AC--U-G----UA-A..........."); // changed (1st align vs 's1', this align vs 'm3')
+    TEST_ASSERT_EQUAL(ALIGNED_DATA_OF("m3"), ".........A--U----------C-U-AAACC-AA-C-C-C-G-UAG-UUC--------GAA-U-UGAGG-AC--U-G----CU-C..........."); // same_as_above (1st align vs 's1', this align vs 'm2')
 
     TEST_ASSERT_EQUAL(ALIGNED_DATA_OF("c1"), ".........A--UCU-C------C-U-AAACC-CA-A-C-C-------------------AA-U-UGAGG-AC--U-GUAA-CU-C..........."); // same_as_above
     TEST_ASSERT_EQUAL(ALIGNED_DATA_OF("c2"), ".........A--UCU-C------C-U--------A-A-C-C-G-UAG-UUCCCC-----GA--------A-AC--U-GUAA-CU-C..........."); // changed
@@ -3254,14 +3255,14 @@ void TEST_Aligner_TargetAndReferenceHandling() {
         TEST_ASSERT(!cont_on_err || GBT_count_marked_species(gb_main) == 1);
     }
 
-    TEST_ASSERT_EQUAL(USED_RELS_FOR("s1"), "m3");
-    TEST_ASSERT_EQUAL(USED_RELS_FOR("s2"), "m3");
+    TEST_ASSERT_EQUAL(USED_RELS_FOR("s1"), "s2");
+    TEST_ASSERT_EQUAL(USED_RELS_FOR("s2"), "s1");
     TEST_ASSERT_EQUAL(USED_RELS_FOR("m1"), "r1"); // differs
     TEST_ASSERT_EQUAL(USED_RELS_FOR("m2"), "m3");
     TEST_ASSERT_EQUAL(USED_RELS_FOR("m3"), "m2");
     TEST_ASSERT_EQUAL(USED_RELS_FOR("c1"), "r1");
     TEST_ASSERT_EQUAL(USED_RELS_FOR("c2"), "r1");
-    TEST_ASSERT_EQUAL(USED_RELS_FOR("r1"), "m3:20, c2:3");
+    TEST_ASSERT_EQUAL(USED_RELS_FOR("r1"), "s2:20, c2:3");
 
     //                                       aligned range (see test_ali_params_partial)
     //                                       "-------------------------XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX------------------------------------"
@@ -3270,8 +3271,8 @@ void TEST_Aligner_TargetAndReferenceHandling() {
 
     // T_ASSERT_EQUAL(ALIGNED_DATA_OF("m1"), ".........U--AGA-G------G---AUUUG-GG-U-U-G-G-CAU-CAAGCU-----UAA-C-UCCUG-AC--A-UUGAG---------------"); // prev_result
     TEST_ASSERT_EQUAL(ALIGNED_DATA_OF("m1"), ".........U--AGA-G------G-A-UU-UG-GG-U-U-G-G-CAU-CAAGCU-----UAA-C-UCCUG-AC--A-UUGAG---------------"); // changed 
-    TEST_ASSERT_EQUAL(ALIGNED_DATA_OF("m2"), "..............U-C------C-U-AAACC-CA-A-C-C-G-UAG-UUC--------GAA-U-UGAGG-AC--U-GUAA................"); // same_as_above
-    TEST_ASSERT_EQUAL(ALIGNED_DATA_OF("m3"), "..............A-U------C-U-AAACC-CA-A-C-C-G-UAG-UUC--------GAA-U-UGAGG-AC--U-GCUC................"); // same_as_above
+    TEST_ASSERT_EQUAL(ALIGNED_DATA_OF("m2"), ".........U--C----------C-U-AAACC-AA-C-C-C-G-UAG-UUC--------GAA-U-UGAGG-AC--U-G----UA-A..........."); // same_as_above
+    TEST_ASSERT_EQUAL(ALIGNED_DATA_OF("m3"), ".........A--U----------C-U-AAACC-AA-C-C-C-G-UAG-UUC--------GAA-U-UGAGG-AC--U-G----CU-C..........."); // same_as_above
 
     TEST_ASSERT_EQUAL(ALIGNED_DATA_OF("c1"), ".........A--UCU-C------C-U-AAACC-CA-A-C-C-------------------AA-U-UGAGG-AC--U-GUAA-CU-C..........."); // same_as_above
     // T_ASSERT_EQUAL(ALIGNED_DATA_OF("c2"), ".........A--UCU-C------C-U--------A-A-C-C-G-UAG-UUCCCC-----GA--------A-AC--U-GUAA-CU-C..........."); // prev_result
