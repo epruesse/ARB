@@ -134,6 +134,7 @@ struct SearchRelativeParams {
 #define FA_AWAR_ACTION_ON_ERROR     FA_AWAR_ROOT "action_on_error"
 #define FA_AWAR_USE_SECONDARY       FA_AWAR_ROOT "use_secondary"
 #define FA_AWAR_NEXT_RELATIVES      FA_AWAR_ROOT "next_relatives"
+#define FA_AWAR_RELATIVE_RANGE      FA_AWAR_ROOT "relrange"
 #define FA_AWAR_PT_SERVER_ALIGNMENT "tmp/" FA_AWAR_ROOT "relative_ali"
 
 #define FA_AWAR_ISLAND_HOPPING_ROOT  "island_hopping/"
@@ -1028,6 +1029,10 @@ inline long calcSequenceChecksum(const char *data, long length) {
     return GB_checksum(data, length, 1, GAP_CHARS);
 }
 
+#if defined(DEVEL_RALF)
+#warning firstColumn + lastColumn -> TargetRange
+#endif
+
 static CompactedSubSequence *readCompactedSequence(GBDATA      *gb_species,
                                                    const char  *ali,
                                                    ARB_ERROR   *errorPtr,
@@ -1057,7 +1062,7 @@ static CompactedSubSequence *readCompactedSequence(GBDATA      *gb_species,
             fa_assert(firstColumn>=0);
             fa_assert(firstColumn<=lastColumn);
 
-            // include all surrounding gaps
+            // include all surrounding gaps (@@@ this might cause problems with partial alignment)
             while (firstColumn>0 && is_gap(data[firstColumn-1])) {
                 firstColumn--;
             }
@@ -1442,7 +1447,6 @@ static ARB_ERROR alignToNextRelative(SearchRelativeParams&  relSearch,
 
     ARB_ERROR   error;
     long        chksum;
-    int         restart         = 1;
     int         relativesToTest = relSearch.maxRelatives*2; // get more relatives from pt-server (needed when use_different_pt_server_alignment == true)
     char      **nearestRelative = new char*[relativesToTest+1];
     int         next_relatives;
@@ -1458,11 +1462,11 @@ static ARB_ERROR alignToNextRelative(SearchRelativeParams&  relSearch,
     }
     next_relatives = 0;
 
+    bool restart = true;
     while (restart) {
-        char *toAlignExpSequence = 0;
+        restart = false;
 
-        restart = 0;
-
+        char *findRelsBySeq = 0;
         if (use_different_pt_server_alignment) {
             toAlignSequence = readCompactedSequence(gb_toAlign, alignment, &error, 0, &chksum, ali_params.firstColumn, ali_params.lastColumn);
 
@@ -1471,15 +1475,15 @@ static ARB_ERROR alignToNextRelative(SearchRelativeParams&  relSearch,
                 error = GBS_global_string("Species '%s' has no data in alignment '%s'", GBT_read_name(gb_toAlign), relSearch.pt_server_alignment);
             }
             else {
-                toAlignExpSequence = GB_read_string(gbd);
+                findRelsBySeq = GB_read_string(gbd);
             }
         }
         else {
-            toAlignSequence = readCompactedSequence(gb_toAlign, alignment, &error, &toAlignExpSequence, &chksum, ali_params.firstColumn, ali_params.lastColumn);
+            toAlignSequence = readCompactedSequence(gb_toAlign, alignment, &error, &findRelsBySeq, &chksum, ali_params.firstColumn, ali_params.lastColumn);
         }
 
         if (error) {
-            return error;
+            return error; // @@@ leaks ? 
         }
 
         while (next_relatives) {
@@ -1489,11 +1493,15 @@ static ARB_ERROR alignToNextRelative(SearchRelativeParams&  relSearch,
 
         {
             // find relatives
-            FamilyFinder *familyFinder = relSearch.getFamilyFinder();
+            FamilyFinder       *familyFinder = relSearch.getFamilyFinder();
+            const TargetRange&  range        = familyFinder->get_TargetRange();
 
-            // @@@ restrict to TargetRange of FamilyFinder
-            
-            error = familyFinder->searchFamily(toAlignExpSequence, FF_FORWARD, relativesToTest+1);
+            if (range.is_restricted()) {
+                range.copy_corresponding_part(findRelsBySeq, findRelsBySeq, strlen(findRelsBySeq));
+                turnAllowed = FA_TURN_NEVER; // makes no sense if we're using partial relative search
+            }
+
+            error = familyFinder->searchFamily(findRelsBySeq, FF_FORWARD, relativesToTest+1);
 
             double bestScore = 0;
             if (!error) {
@@ -1525,10 +1533,8 @@ static ARB_ERROR alignToNextRelative(SearchRelativeParams&  relSearch,
                 }
             }
 
-            if (!error && turnAllowed != FA_TURN_NEVER) {               // test if mirrored sequence has better relatives
-                // @@@ does not make sense when using TargetRange!!!
-                
-                char   *mirroredSequence  = strdup(toAlignExpSequence);
+            if (!error && turnAllowed != FA_TURN_NEVER) { // test if mirrored sequence has better relatives
+                char   *mirroredSequence  = strdup(findRelsBySeq);
                 long    length            = strlen(mirroredSequence);
                 double  bestMirroredScore = 0;
 
@@ -1592,14 +1598,14 @@ static ARB_ERROR alignToNextRelative(SearchRelativeParams&  relSearch,
                     GB_pop_my_security(gbd);
                     if (!error) {
                         delete toAlignSequence;
-                        restart = 1; // continue while loop
+                        restart = true; // continue while loop
                     }
                 }
 
                 free(mirroredSequence);
             }
         }
-        free(toAlignExpSequence);
+        free(findRelsBySeq);
     }
 
     if (!error) {
@@ -1720,7 +1726,17 @@ static ARB_ERROR alignToNextRelative(SearchRelativeParams&  relSearch,
                                     int start, end;
                                     ubl.recall(&start, &end);
 
-                                    fa_assert(ali_params.firstColumn<=start && start<=end && (end<=ali_params.lastColumn || ali_params.lastColumn==-1));
+                                    // restrict recalled-range by ali_params-range:
+                                    fa_assert(start <= end);
+                                    if (ali_params.lastColumn != -1) {
+                                        fa_assert(start <= ali_params.lastColumn); // range completely outside range-to-align (why have that range ?)
+                                        if (end>ali_params.lastColumn) end = ali_params.lastColumn; // correct range
+                                    }
+
+                                    fa_assert(end >= ali_params.firstColumn); // range completely outside range-to-align (why have that range ?)
+                                    if (start<ali_params.firstColumn) start = ali_params.firstColumn; // correct range
+
+                                    fa_assert(ali_params.firstColumn<=start && (end<=ali_params.lastColumn || ali_params.lastColumn==-1)); // now redundant by code above
 
                                     CompactedSubSequence *alignToPart = readCompactedSequence(gb_reference[i], alignment, &error, 0, 0, start, end);
 
@@ -2131,6 +2147,7 @@ ARB_ERROR Aligner::alignToConsensus(GBDATA *gb_species_data, int max_seq_length)
 }
 
 ARB_ERROR Aligner::alignToRelatives(GBDATA *gb_species_data, int max_seq_length) {
+    
     return alignTargetsToReference(SearchRelativesReference(relSearch, max_seq_length, turnAllowed, alignment, ali_params),
                                    gb_species_data);
 }
@@ -2310,13 +2327,16 @@ void FastAligner_start(AW_window *aw, AW_CL cl_AlignDataAccess) {
         }
     }
 
-    int firstColumn = 0;
-    int lastColumn  = -1;
+    int  firstColumn         = 0;
+    int  lastColumn          = -1;
+    bool mayRestrictRelRange = true;
 
     if (!error) {
         switch (static_cast<FA_range>(root->awar(FA_AWAR_RANGE)->read_int())) {
             case FA_WHOLE_SEQUENCE:
+                mayRestrictRelRange = false;
                 break;
+
             case FA_AROUND_CURSOR: {
                 int curpos = root->awar(AWAR_CURSOR_POSITION_LOCAL)->read_int();
                 int size = root->awar(FA_AWAR_AROUND)->read_int();
@@ -2350,7 +2370,23 @@ void FastAligner_start(AW_window *aw, AW_CL cl_AlignDataAccess) {
             editor_alignment = root->awar_string(AWAR_EDITOR_ALIGNMENT, default_alignment)->read_string();
             free(default_alignment);
         }
-        char *pt_server_alignment = root->awar(FA_AWAR_PT_SERVER_ALIGNMENT)->read_string();
+
+        char        *pt_server_alignment = root->awar(FA_AWAR_PT_SERVER_ALIGNMENT)->read_string();
+        TargetRange  relRange; // unrestricted!
+
+        if (mayRestrictRelRange) {
+            AW_awar    *awar_relrange = root->awar(FA_AWAR_RELATIVE_RANGE);
+            const char *relrange      = awar_relrange->read_char_pntr();
+            if (relrange[0]) {
+                int region_plus = atoi(relrange);
+
+                fa_assert(firstColumn >= 0);
+                fa_assert(lastColumn >= 0);
+
+                relRange = TargetRange(firstColumn-region_plus, lastColumn+region_plus); // restricted
+                awar_relrange->write_as_string(GBS_global_string("%i", region_plus)); // set awar to detected value (avoid misbehavior when it contains ' ' or similar)
+            }
+        }
 
         if (island_hopper) {
             island_hopper->set_range(firstColumn, lastColumn);
@@ -2366,6 +2402,8 @@ void FastAligner_start(AW_window *aw, AW_CL cl_AlignDataAccess) {
                                                            root->awar(AWAR_NN_REL_MATCHES)->read_int()),
                                        pt_server_alignment,
                                        root->awar(FA_AWAR_NEXT_RELATIVES)->read_int());
+
+        relSearch.getFamilyFinder()->restrict_2_region(relRange);
 
         struct AlignParams ali_params = {
             static_cast<FA_report>(root->awar(FA_AWAR_REPORT)->read_int()),
@@ -2437,6 +2475,7 @@ void FastAligner_create_variables(AW_root *root, AW_default db1)
     root->awar_int(AWAR_PT_SERVER,             0,                   db1);
     root->awar_int(FA_AWAR_NEXT_RELATIVES,     1,                   db1)->set_minmax(1, 100);
 
+    root->awar_string(FA_AWAR_RELATIVE_RANGE, "", db1);
     root->awar_string(FA_AWAR_PT_SERVER_ALIGNMENT, root->awar(AWAR_DEFAULT_ALIGNMENT)->read_char_pntr(), db1);
 
     // island hopping:
@@ -2661,16 +2700,21 @@ AW_window *FastAligner_create_window(AW_root *root, const AlignDataAccess *data_
     aws->at("pt_server");
     awt_create_selection_list_on_pt_servers(aws, AWAR_PT_SERVER, true);
 
+    aws->at("relrange");
+    aws->label("Data from range only, plus");
+    aws->create_input_field(FA_AWAR_RELATIVE_RANGE, 3);
+    
     aws->at("use_ali");
-    aws->create_input_field(FA_AWAR_PT_SERVER_ALIGNMENT, 15);
+    aws->label("Alignment");
+    aws->create_input_field(FA_AWAR_PT_SERVER_ALIGNMENT, 12);
 
     aws->at("relatives");
-    aws->label("Number of relatives to use:");
+    aws->label("Number of relatives to use");
     aws->create_input_field(FA_AWAR_NEXT_RELATIVES, 3);
 
     aws->at("relSett");
     aws->callback(AW_POPUP, (AW_CL)create_family_settings_window, (AW_CL)root);
-    aws->create_button("Settings", "Settings", "");
+    aws->create_autosize_button("Settings", "More settings", "");
 
     // Range
 
@@ -3191,7 +3235,7 @@ void TEST_Aligner_TargetAndReferenceHandling() {
                             NULL,                       // reference species
                             NULL,                       // get_consensus
                             search_relative_params,     // relative search
-                            FA_TURN_NEVER,
+                            FA_TURN_ALWAYS,
                             test_ali_params,
                             0,
                             cont_on_err,
@@ -3221,7 +3265,6 @@ void TEST_Aligner_TargetAndReferenceHandling() {
  
     TEST_ASSERT_EQUAL(ALIGNED_DATA_OF("m2"), ".........U--C----------C-U-AAACC-AA-C-C-C-G-UAG-UUC--------GAA-U-UGAGG-AC--U-G----UA-A..........."); // changed (1st align vs 's1', this align vs 'm3')
     TEST_ASSERT_EQUAL(ALIGNED_DATA_OF("m3"), ".........A--U----------C-U-AAACC-AA-C-C-C-G-UAG-UUC--------GAA-U-UGAGG-AC--U-G----CU-C..........."); // same_as_above (1st align vs 's1', this align vs 'm2')
-
     TEST_ASSERT_EQUAL(ALIGNED_DATA_OF("c1"), ".........A--UCU-C------C-U-AAACC-CA-A-C-C-------------------AA-U-UGAGG-AC--U-GUAA-CU-C..........."); // same_as_above
     TEST_ASSERT_EQUAL(ALIGNED_DATA_OF("c2"), ".........A--UCU-C------C-U--------A-A-C-C-G-UAG-UUCCCC-----GA--------A-AC--U-GUAA-CU-C..........."); // changed
 
@@ -3257,7 +3300,7 @@ void TEST_Aligner_TargetAndReferenceHandling() {
 
     TEST_ASSERT_EQUAL(USED_RELS_FOR("s1"), "s2");
     TEST_ASSERT_EQUAL(USED_RELS_FOR("s2"), "s1");
-    TEST_ASSERT_EQUAL(USED_RELS_FOR("m1"), "r1"); // differs
+    TEST_ASSERT_EQUAL(USED_RELS_FOR("m1"), "r1"); // (not really differs)
     TEST_ASSERT_EQUAL(USED_RELS_FOR("m2"), "m3");
     TEST_ASSERT_EQUAL(USED_RELS_FOR("m3"), "m2");
     TEST_ASSERT_EQUAL(USED_RELS_FOR("c1"), "r1");
@@ -3269,13 +3312,11 @@ void TEST_Aligner_TargetAndReferenceHandling() {
     TEST_ASSERT_EQUAL(ALIGNED_DATA_OF("s1"), ".........A--UCU-C------C-U-AAACC-CA-A-C-C-G-UAG-UUC--------GAA-U-UGAGG-AC--U-GUAA-CU-C..........."); // same_as_above
     TEST_ASSERT_EQUAL(ALIGNED_DATA_OF("s2"), ".........A--UCU-C------C-U-AAACC-CA-A-C-C-G-UAG-UUC--------GAA-U-UGAGG-AC--U-GUAA-CU-C..........."); // same_as_above
 
-    // T_ASSERT_EQUAL(ALIGNED_DATA_OF("m1"), ".........U--AGA-G------G---AUUUG-GG-U-U-G-G-CAU-CAAGCU-----UAA-C-UCCUG-AC--A-UUGAG---------------"); // prev_result
     TEST_ASSERT_EQUAL(ALIGNED_DATA_OF("m1"), ".........U--AGA-G------G-A-UU-UG-GG-U-U-G-G-CAU-CAAGCU-----UAA-C-UCCUG-AC--A-UUGAG---------------"); // changed 
     TEST_ASSERT_EQUAL(ALIGNED_DATA_OF("m2"), ".........U--C----------C-U-AAACC-AA-C-C-C-G-UAG-UUC--------GAA-U-UGAGG-AC--U-G----UA-A..........."); // same_as_above
     TEST_ASSERT_EQUAL(ALIGNED_DATA_OF("m3"), ".........A--U----------C-U-AAACC-AA-C-C-C-G-UAG-UUC--------GAA-U-UGAGG-AC--U-G----CU-C..........."); // same_as_above
 
     TEST_ASSERT_EQUAL(ALIGNED_DATA_OF("c1"), ".........A--UCU-C------C-U-AAACC-CA-A-C-C-------------------AA-U-UGAGG-AC--U-GUAA-CU-C..........."); // same_as_above
-    // T_ASSERT_EQUAL(ALIGNED_DATA_OF("c2"), ".........A--UCU-C------C-U--------A-A-C-C-G-UAG-UUCCCC-----GA--------A-AC--U-GUAA-CU-C..........."); // prev_result
     TEST_ASSERT_EQUAL(ALIGNED_DATA_OF("c2"), ".........A--UCU-C------C---------UA-A-C-C-G-UAG-UUCCCC-----GA--------A-AC--U-GUAA-CU-C..........."); // changed 
 
     TEST_ASSERT_EQUAL(ALIGNED_DATA_OF("r1"), ".........A--UCU-C------C-U-AAACC-CA-A-C-C-G-UAG-UUCCCC-----GAA-U-UGAGG-AC--U-GUAA-CU-C..........."); // same_as_above

@@ -38,11 +38,11 @@ SECTION         ADJUSTMENTS
                                 The aligner needs a sequence as reference.
 				You can either select a fixed species, the
 				consensus of the group containing the species
-				or the next relative found by the selected
+				or the next relative(s) found by the selected
 				PT-Server.
 
 				If you choose 'Auto search by pt_server', the
-				aligner will use the next relative to align.
+				aligner will use the next relative(s) as reference.
 				If the nearest relative has gaps where the sequence
 				to align has bases, the aligner will use the 2nd nearest
 				relative or if that one has gaps too, the 3rd nearest, etc.
@@ -51,7 +51,13 @@ SECTION         ADJUSTMENTS
                                 All used relatives and the number of base positions used from each relative,
                                 will be written into the field 'used_rels'.
 
-                                Press 'Settings' to define how relative search works
+                                If you enter '0' in 'Data from range only, plus', relative
+                                search only uses data from the aligned range. If you enter
+                                a value different from '0' the used range will be
+                                expanded (positive values) or limited (negative values).
+                                When the input field is empty, the complete sequence will be used.
+
+                                Press 'More settings' to define how relative search works
                                 in detail. See LINK{next_neighbours_common.hlp}
 
 		Range
