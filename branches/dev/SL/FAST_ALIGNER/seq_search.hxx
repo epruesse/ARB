@@ -82,7 +82,7 @@ class CompactedSequence                             // compacts a string (gaps r
     int length() const          { return myLength; }
     const char *text(int i=0) const     { return myText+i; }
 
-    char operator[](int i) const        { if (i<0 || i>=length()) i = 0; else i = text()[i]; return i; } // HP compiler does not allow two returns
+    char operator[](int i) const        { if (i<0 || i>=length()) i = 0; else i = text()[i]; return i; } 
 
     int expdPosition(int cPos) const {
         fa_assert(cPos>=0 && cPos<=myLength); // allowed for all positions plus one following element
@@ -166,14 +166,13 @@ public:
 
         if (pos>(myLength+1)) {
             points = NULL;
-            pos = -1;   // HP Compiler !!
+            pos = -1;
         }
 
         return pos;
     }
 
-    int firstPointPosition()     // HP Compiler needs res
-    {
+    int firstPointPosition() {
         points = mySequence->getPointlist();
         int res = -1;
 
@@ -187,8 +186,7 @@ public:
         return res;
     }
 
-    int nextPointPosition()     // HP Compiler !!!
-    {
+    int nextPointPosition() {
         int res = -1;
         if (points) {
             points = points->next();
