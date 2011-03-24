@@ -89,7 +89,6 @@ seq_search.o: $(ARBHOME)/INCLUDE/arb_assert.h
 seq_search.o: $(ARBHOME)/INCLUDE/arb_core.h
 seq_search.o: $(ARBHOME)/INCLUDE/arb_error.h
 seq_search.o: $(ARBHOME)/INCLUDE/arb_msg.h
-seq_search.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 seq_search.o: $(ARBHOME)/INCLUDE/arb_string.h
 seq_search.o: $(ARBHOME)/INCLUDE/arbdb.h
 seq_search.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -101,5 +100,3 @@ seq_search.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 seq_search.o: $(ARBHOME)/INCLUDE/dupstr.h
 seq_search.o: $(ARBHOME)/INCLUDE/smartptr.h
 seq_search.o: $(ARBHOME)/INCLUDE/test_global.h
-seq_search.o: $(ARBHOME)/INCLUDE/test_helpers.h
-seq_search.o: $(ARBHOME)/INCLUDE/test_unit.h
