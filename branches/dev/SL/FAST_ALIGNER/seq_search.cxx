@@ -417,6 +417,19 @@ void TEST_CompactedSequence() {
     TEST_CS_EQUALS("-AC-G--T--", "  0  0  1  1  2  3  3  3  4  4  [4]", "  1  2  4  7 10"); // assertion fails @@@ comp_wrong
     TEST_CS_CBROKN("-AC-G--T--", "  0  0  1  2  2  3  3  3  4  4  [4]", "  1  2  4  7 10"); // assertion fails @@@ would_be_correct
 #endif
+
+    // 9 bases
+    TEST_CS_EQUALS("-CGTACGTAC", "  0  0  1  2  3  4  5  6  7  8  [9]", "  1  2  3  4  5  6  7  8  9 10");
+    
+    TEST_CS_EQUALS("A-GTACGTAC", "  0  0  1  2  3  4  5  6  7  8  [9]", "  0  2  3  4  5  6  7  8  9 10"); // @@@ comp_wrong
+    TEST_CS_CBROKN("A-GTACGTAC", "  0  1  1  2  3  4  5  6  7  8  [9]", "  0  2  3  4  5  6  7  8  9 10"); // @@@ would_be_correct
+
+    TEST_CS_EQUALS("ACGTA-GTAC", "  0  1  2  3  4  5  5  6  7  8  [9]", "  0  1  2  3  4  6  7  8  9 10");
+    TEST_CS_EQUALS("ACGTACGT-C", "  0  1  2  3  4  5  6  7  8  8  [9]", "  0  1  2  3  4  5  6  7  9 10");
+    TEST_CS_EQUALS("ACGTACGTA-", "  0  1  2  3  4  5  6  7  8  9  [9]", "  0  1  2  3  4  5  6  7  8 10");
+
+    // all 10 bases
+    TEST_CS_EQUALS("ACGTACGTAC", "  0  1  2  3  4  5  6  7  8  9 [10]", "  0  1  2  3  4  5  6  7  8  9 10");
 }
 
 #endif // UNIT_TESTS
