@@ -311,6 +311,8 @@ struct bind_css {
             case 0: return css.compPosition(i);
             case 1: return css.expdPosition(i);
             case 2: return css[i];
+            case 3: return css.no_of_gaps_before(i);
+            case 4: return css.no_of_gaps_after(i);
         }
         fa_assert(0);
         return -666;
@@ -342,32 +344,55 @@ struct bind_css {
     bound_css.test_mode = 2;                                            \
     char *text = collectIntFunResults(bound_css, 0, css.length()-1, 3, 0, 0)
     
+#define GEN_GAPS()                                                      \
+    bound_css.test_mode = 3;                                            \
+    char *gaps_before = collectIntFunResults(bound_css, 0, css.length()-1, 3, 0, 0); \
+    bound_css.test_mode = 4;                                            \
+    char *gaps_after = collectIntFunResults(bound_css, 0, css.length()-1, 3, 0, 0)
+
 #define FREE_COMP_EXPD()                                                \
     free(expd);                                                         \
     free(comp)
     
-#define COMP_EXPD_CHECK(exp_comp,exp_expd)                              \
-        GEN_COMP_EXPD();                                                \
-        TEST_ASSERT_EQUAL(comp, exp_comp);                              \
-        TEST_ASSERT_EQUAL(expd, exp_expd);                              \
-        FREE_COMP_EXPD()
+#define FREE_GAPS()                                                     \
+    free(gaps_before);                                                  \
+    free(gaps_after)
     
+#define COMP_EXPD_CHECK(exp_comp,exp_expd)                              \
+    GEN_COMP_EXPD();                                                    \
+    TEST_ASSERT_EQUAL(comp, exp_comp);                                  \
+    TEST_ASSERT_EQUAL(expd, exp_expd);                                  \
+    FREE_COMP_EXPD()
+
+#define GAPS_CHECK(exp_before,exp_after)                                \
+    GEN_GAPS();                                                         \
+    TEST_ASSERT_EQUAL(gaps_before, exp_before);                         \
+    TEST_ASSERT_EQUAL(gaps_after, exp_after);                           \
+    FREE_GAPS()
+
+// ------------------------------------------------------------
+        
 #define TEST_CS_EQUALS(in,exp_comp,exp_expd) do {                       \
         CSS_COMMON(in, 0);                                              \
         COMP_EXPD_CHECK(exp_comp,exp_expd);                             \
-} while(0)
+    } while(0)
 
 #define TEST_CS_EQUALS_OFFSET(in,offset,exp_comp,exp_expd) do {         \
         CSS_COMMON(in, offset);                                         \
         COMP_EXPD_CHECK(exp_comp,exp_expd);                             \
-} while(0)
+    } while(0)
+        
+#define TEST_GAPS_EQUALS_OFFSET(in,offset,exp_before,exp_after) do {    \
+        CSS_COMMON(in, offset);                                         \
+        GAPS_CHECK(exp_before,exp_after);                               \
+    } while(0)
 
 #define TEST_CS_TEXT(in,exp_text) do {                                  \
         CSS_COMMON(in, 0);                                              \
         GEN_TEXT(in);                                                   \
         TEST_ASSERT_EQUAL(text, exp_text);                              \
         free(text);                                                     \
-} while(0)
+    } while(0)
 
 #define TEST_CS_CBROKN(in,exp_comp,exp_expd) do {                       \
         CSS_COMMON(in, 0);                                              \
@@ -375,7 +400,7 @@ struct bind_css {
         TEST_ASSERT_EQUAL__BROKEN(comp, exp_comp);                      \
         TEST_ASSERT_EQUAL(expd, exp_expd);                              \
         FREE_COMP_EXPD();                                               \
-} while(0)
+    } while(0)
 
 void TEST_CompactedSequence() {
     // reproduce a bug in compPosition
@@ -438,7 +463,11 @@ void TEST_CompactedSequence() {
     TEST_CS_EQUALS_OFFSET("A--C-G-", 2, "  0  0  0  1  1  1  2  2  3  [3]",       "  2  5  7  9");
     TEST_CS_EQUALS_OFFSET("A--C-G-", 3, "  0  0  0  0  1  1  1  2  2  3  [3]",    "  3  6  8 10");
     TEST_CS_EQUALS_OFFSET("A--C-G-", 4, "  0  0  0  0  0  1  1  1  2  2  3  [3]", "  4  7  9 11");
-    
+
+    // test no_of_gaps_before() and no_of_gaps_after() 
+    TEST_GAPS_EQUALS_OFFSET("-AC---G",  0, "  1  0  3", "  0  3  0");
+    TEST_GAPS_EQUALS_OFFSET("A--C-G-",  0, "  0  2  1", "  2  1  1");
+    TEST_GAPS_EQUALS_OFFSET("A--C-G-",  1000, "  0  2  1", "  2  1  1"); // is independent from offset
 }
 
 #endif // UNIT_TESTS
