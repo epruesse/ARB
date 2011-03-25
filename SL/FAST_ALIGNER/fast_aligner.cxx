@@ -2617,7 +2617,7 @@ static AW_window *create_family_settings_window(AW_root *root) {
     if (!aws) {
         aws = new AW_window_simple;
 
-        aws->init(root, "FAMILY_PARAMS", "Family search paramaters");
+        aws->init(root, "FAMILY_PARAMS", "Family search parameters");
         aws->load_xfig("faligner/family_settings.fig");
 
         aws->at("close");
