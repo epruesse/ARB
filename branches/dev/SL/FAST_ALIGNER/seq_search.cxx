@@ -325,50 +325,56 @@ struct bind_css {
         }                                               \
     } while(0)
 
-#define TEST_CS_START_COMMON(in)                                        \
+#define CSS_COMMON(in,offset)                                           \
     int len  = strlen(in);                                              \
     fprintf(stderr, "in='%s'\n", in);                                   \
-    CompactedSubSequence css(in, len, "noname", 0);                     \
+    CompactedSubSequence css(in, len, "noname", offset);                \
     TEST_ASSERT_CSS_SELF_REFLEXIVE(css);                                \
-    bind_css bound_css(css);
+    bind_css bound_css(css)
 
-#define TEST_CS_START(in)                                               \
-    TEST_CS_START_COMMON(in);                                           \
+#define GEN_COMP_EXPD()                                                 \
     bound_css.test_mode = 0;                                            \
     char *comp = collectIntFunResults(bound_css, 0, css.expdLength()-1, 3, 0, 1); \
     bound_css.test_mode = 1;                                            \
-    char *expd = collectIntFunResults(bound_css, 0, css.length(), 3, 0, 0);
+    char *expd = collectIntFunResults(bound_css, 0, css.length(), 3, 0, 0)
 
-#define TEST_CS_END()                                                   \
-    free(expd);                                                         \
-    free(comp);
-    
-#define TEST_CS_START_TEXT(in)                                          \
-    TEST_CS_START_COMMON(in);                                           \
+#define GEN_TEXT(in)                                                    \
     bound_css.test_mode = 2;                                            \
-    char *text = collectIntFunResults(bound_css, 0, css.length()-1, 3, 0, 0);
+    char *text = collectIntFunResults(bound_css, 0, css.length()-1, 3, 0, 0)
     
-#define TEST_CS_END_TEXT()                                              \
-    free(text);
+#define FREE_COMP_EXPD()                                                \
+    free(expd);                                                         \
+    free(comp)
     
-#define TEST_CS_EQUALS(in,exp_comp,exp_expd) do {                       \
-        TEST_CS_START(in);                                              \
+#define COMP_EXPD_CHECK(exp_comp,exp_expd)                              \
+        GEN_COMP_EXPD();                                                \
         TEST_ASSERT_EQUAL(comp, exp_comp);                              \
         TEST_ASSERT_EQUAL(expd, exp_expd);                              \
-        TEST_CS_END();                                                  \
+        FREE_COMP_EXPD()
+    
+#define TEST_CS_EQUALS(in,exp_comp,exp_expd) do {                       \
+        CSS_COMMON(in, 0);                                              \
+        COMP_EXPD_CHECK(exp_comp,exp_expd);                             \
+} while(0)
+
+#define TEST_CS_EQUALS_OFFSET(in,offset,exp_comp,exp_expd) do {         \
+        CSS_COMMON(in, offset);                                         \
+        COMP_EXPD_CHECK(exp_comp,exp_expd);                             \
 } while(0)
 
 #define TEST_CS_TEXT(in,exp_text) do {                                  \
-        TEST_CS_START_TEXT(in);                                         \
+        CSS_COMMON(in, 0);                                              \
+        GEN_TEXT(in);                                                   \
         TEST_ASSERT_EQUAL(text, exp_text);                              \
-        TEST_CS_END_TEXT();                                             \
+        free(text);                                                     \
 } while(0)
 
 #define TEST_CS_CBROKN(in,exp_comp,exp_expd) do {                       \
-        TEST_CS_START(in);                                              \
+        CSS_COMMON(in, 0);                                              \
+        GEN_COMP_EXPD();                                                \
         TEST_ASSERT_EQUAL__BROKEN(comp, exp_comp);                      \
         TEST_ASSERT_EQUAL(expd, exp_expd);                              \
-        TEST_CS_END();                                                  \
+        FREE_COMP_EXPD();                                               \
 } while(0)
 
 void TEST_CompactedSequence() {
@@ -427,6 +433,12 @@ void TEST_CompactedSequence() {
 
     // all 10 bases
     TEST_CS_EQUALS("ACGTACGTAC", "  0  1  2  3  4  5  6  7  8  9 [10]", "  0  1  2  3  4  5  6  7  8  9 10");
+
+    TEST_CS_EQUALS_OFFSET("A--C-G-", 0, "  0  1  1  1  2  2  3  [3]",             "  0  3  5  7");
+    TEST_CS_EQUALS_OFFSET("A--C-G-", 2, "  0  0  0  1  1  1  2  2  3  [3]",       "  2  5  7  9");
+    TEST_CS_EQUALS_OFFSET("A--C-G-", 3, "  0  0  0  0  1  1  1  2  2  3  [3]",    "  3  6  8 10");
+    TEST_CS_EQUALS_OFFSET("A--C-G-", 4, "  0  0  0  0  0  1  1  1  2  2  3  [3]", "  4  7  9 11");
+    
 }
 
 #endif // UNIT_TESTS
