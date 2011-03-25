@@ -20,7 +20,7 @@ int Range::calc_max_abs_pos() const {
 
     int   size;
     char *data = probe_read_alignment(curr_match->name, &size);
-    int   pos  = end;
+    int   pos  = min(end, size-1);
     int   skip = probe_len; // bases to skip
 
     pt_assert(skip);
