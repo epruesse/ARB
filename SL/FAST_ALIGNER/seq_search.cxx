@@ -303,42 +303,65 @@ void AlignBuffer::point_ends_of()
 
 struct bind_css {
     CompactedSubSequence& css;
-    bool test_comp;
-    bind_css(CompactedSubSequence& css_) : css(css_), test_comp(true) {}
+    int test_mode;
+    bind_css(CompactedSubSequence& css_) : css(css_), test_mode(-1) {}
 
     int operator()(int i) const {
-        if (test_comp) return css.compPosition(i);
-        return css.expdPosition(i);
+        switch (test_mode) {
+            case 0: return css.compPosition(i);
+            case 1: return css.expdPosition(i);
+            case 2: return css[i];
+        }
+        fa_assert(0);
+        return -666;
     }
 };
 
-#define TEST_ASSERT_CSS_SELF_REFLEXIVE(css) do {    \
-        for (int b = 0; b<css.length(); ++b) {  \
-            int x = css.expdPosition(b);        \
-            int c = css.compPosition(x);        \
-            TEST_ASSERT_EQUAL(c,b);             \
-        }                                       \
+#define TEST_ASSERT_CSS_SELF_REFLEXIVE(css) do {        \
+        for (int b = 0; b<css.length(); ++b) {          \
+            int x = css.expdPosition(b);                \
+            int c = css.compPosition(x);                \
+            TEST_ASSERT_EQUAL(c,b);                     \
+        }                                               \
     } while(0)
 
-#define TEST_CS_START(in)                                               \
+#define TEST_CS_START_COMMON(in)                                        \
     int len  = strlen(in);                                              \
     fprintf(stderr, "in='%s'\n", in);                                   \
     CompactedSubSequence css(in, len, "noname", 0);                     \
     TEST_ASSERT_CSS_SELF_REFLEXIVE(css);                                \
-    bind_css bound_css(css);                                            \
+    bind_css bound_css(css);
+
+#define TEST_CS_START(in)                                               \
+    TEST_CS_START_COMMON(in);                                           \
+    bound_css.test_mode = 0;                                            \
     char *comp = collectIntFunResults(bound_css, 0, css.expdLength()-1, 3, 0, 1); \
-    bound_css.test_comp = false;                                        \
+    bound_css.test_mode = 1;                                            \
     char *expd = collectIntFunResults(bound_css, 0, css.length(), 3, 0, 0);
-    
+
 #define TEST_CS_END()                                                   \
     free(expd);                                                         \
     free(comp);
+    
+#define TEST_CS_START_TEXT(in)                                          \
+    TEST_CS_START_COMMON(in);                                           \
+    bound_css.test_mode = 2;                                            \
+    char *text = collectIntFunResults(bound_css, 0, css.length()-1, 3, 0, 0);
+    
+#define TEST_CS_END_TEXT()                                              \
+    free(text);
     
 #define TEST_CS_EQUALS(in,exp_comp,exp_expd) do {                       \
         TEST_CS_START(in);                                              \
         TEST_ASSERT_EQUAL(comp, exp_comp);                              \
         TEST_ASSERT_EQUAL(expd, exp_expd);                              \
         TEST_CS_END();                                                  \
+} while(0)
+
+#define TEST_CS_TEXT(in,exp_text) do {                                  \
+        TEST_CS_START_TEXT(in);                                         \
+        TEST_ASSERT_EQUAL(text, exp_text);                              \
+        TEST_CS_END_TEXT();                                             \
 } while(0)
 
 #define TEST_CS_CBROKN(in,exp_comp,exp_expd) do {                       \
@@ -355,7 +378,11 @@ void TEST_CompactedSequence() {
     TEST_CS_EQUALS("-",          "  0  [0]",       "  1");
     TEST_CS_EQUALS("--",         "  0  0  [0]",    "  2");
     TEST_CS_EQUALS("---",        "  0  0  0  [0]", "  3");
-    
+
+    TEST_CS_TEXT("---", "");
+    TEST_CS_TEXT("-A-", " 65");    // "A"
+    TEST_CS_TEXT("A-C", " 65 67"); // "AC"
+
     TEST_CS_EQUALS("----------", "  0  0  0  0  0  0  0  0  0  0  [0]", " 10");
 
     // one base
