@@ -348,7 +348,7 @@ struct bind_css {
     bound_css.test_mode = 3;                                            \
     char *gaps_before = collectIntFunResults(bound_css, 0, css.length(), 3, 0, 0); \
     bound_css.test_mode = 4;                                            \
-    char *gaps_after = collectIntFunResults(bound_css, 0, css.length()-1, 3, 1, 1)
+    char *gaps_after = collectIntFunResults(bound_css, 0, css.length()-1, 3, 0, 1)
 
 #define FREE_COMP_EXPD()                                                \
     free(expd);                                                         \
@@ -402,7 +402,7 @@ struct bind_css {
         FREE_COMP_EXPD();                                               \
     } while(0)
 
-void TEST_CompactedSequence() {
+void TEST_EARLY_CompactedSequence() {
     // reproduce a bug in compPosition
 
     // no base
@@ -466,6 +466,7 @@ void TEST_CompactedSequence() {
 
     // test no_of_gaps_before() and no_of_gaps_after() 
     TEST_GAPS_EQUALS_OFFSET("-AC---G",     0, "  1  0  3  0", "  0  3  0 [-1]");
+    TEST_GAPS_EQUALS_OFFSET(".AC..-G",     0, "  1  0  3  0", "  0  3  0 [-1]");
     TEST_GAPS_EQUALS_OFFSET("A--C-G-",     0, "  0  2  1  1", "  2  1  1 [-1]");
     TEST_GAPS_EQUALS_OFFSET("A--C-G-",  1000, "  0  2  1  1", "  2  1  1 [-1]"); // is independent from offset
 }
