@@ -25,11 +25,11 @@
 typedef bool (*is_gap_fun)(char);
 
 class BasePosition {
-    size_t absLen;
-    size_t baseCount;
+    int absLen;
+    int baseCount;
 
-    size_t *abs2rel;
-    size_t *rel2abs;
+    int *abs2rel;
+    int *rel2abs;
 
     void setup() {
         absLen    = 0;
@@ -44,39 +44,41 @@ class BasePosition {
     }
 
 public:
-    void initialize(const char *seq, size_t size);
-    void initialize(const char *seq, size_t size, is_gap_fun is_gap);
+    void initialize(const char *seq, int size);
+    void initialize(const char *seq, int size, is_gap_fun is_gap);
 
     BasePosition() { setup(); }
-    BasePosition(const char *seq, size_t size) { setup(); initialize(seq, size); }
+    BasePosition(const char *seq, int size) { setup(); initialize(seq, size); }
     ~BasePosition() { cleanup(); }
 
     bool gotData() const { return abs2rel != 0; }
 
-    size_t abs_2_rel(size_t abs) const {
+    int abs_2_rel(int abs) const {
         // returns the number of base characters in range [0..abs-1]!
         // (i.e. result is in [0..bases])
         // 'abs' has to be in range [0..abs_count()]
 
         bi_assert(gotData());
+        if (abs<0) return 0;
         if (abs > absLen) abs = absLen;
         return abs2rel[abs];
     }
 
-    size_t rel_2_abs(size_t rel) const {
+    int rel_2_abs(int rel) const {
         // 'rel' is [0..N-1] (0 = 1st base, 1 = 2nd base)
         // returns abs. position of that base
 
         bi_assert(gotData());
         if (rel >= baseCount) rel = baseCount-1;
+        if (rel<0) return 0;
         return rel2abs[rel];
     }
 
-    size_t first_base_abspos() const { return rel_2_abs(0); }
-    size_t last_base_abspos() const { return rel_2_abs(baseCount-1); }
+    int first_base_abspos() const { return rel_2_abs(0); }
+    int last_base_abspos() const { return rel_2_abs(baseCount-1); }
 
-    size_t base_count() const { return baseCount; }
-    size_t abs_count() const { return absLen; }
+    int base_count() const { return baseCount; }
+    int abs_count() const { return absLen; }
 };
 
 
@@ -85,7 +87,7 @@ class BI_ecoli_ref : public BasePosition {
 public: 
     BI_ecoli_ref() {}
 
-    void init(const char *seq, size_t size) { initialize(seq, size); }
+    void init(const char *seq, int size) { initialize(seq, size); }
     GB_ERROR init(GBDATA *gb_main);
     GB_ERROR init(GBDATA *gb_main, char *alignment_name, char *ref_name);
 };
