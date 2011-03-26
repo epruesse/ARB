@@ -301,6 +301,24 @@ void AlignBuffer::point_ends_of()
 #include <test_unit.h>
 #include <test_helpers.h>
 
+int get_point_position(const CompactedSubSequence& css, int i) {
+    int pos = css.firstPointPosition();
+    while (i) {
+        --i;
+        pos = css.nextPointPosition();
+    }
+    return pos;
+}
+int count_point_positions(const CompactedSubSequence& css) {
+    int pos   = css.firstPointPosition();
+    int count = 0;
+    while (pos != -1) {
+        ++count;
+        pos = css.nextPointPosition();
+    }
+    return count;
+}
+
 struct bind_css {
     CompactedSubSequence& css;
     int test_mode;
@@ -313,6 +331,7 @@ struct bind_css {
             case 2: return css[i];
             case 3: return css.no_of_gaps_before(i);
             case 4: return css.no_of_gaps_after(i);
+            case 5: return get_point_position(css, i);
         }
         fa_assert(0);
         return -666;
@@ -350,6 +369,10 @@ struct bind_css {
     bound_css.test_mode = 4;                                            \
     char *gaps_after = collectIntFunResults(bound_css, 0, css.length()-1, 3, 0, 1)
 
+#define GEN_DOTS(in)                                                    \
+    bound_css.test_mode = 5;                                            \
+    char *dots = collectIntFunResults(bound_css, 0, count_point_positions(css)-1, 3, 0, 1)
+    
 #define FREE_COMP_EXPD()                                                \
     free(expd);                                                         \
     free(comp)
@@ -370,6 +393,11 @@ struct bind_css {
     TEST_ASSERT_EQUAL(gaps_after, exp_after);                           \
     FREE_GAPS()
 
+#define DOTS_CHECK(exp_dots)                                            \
+    GEN_DOTS();                                                         \
+    TEST_ASSERT_EQUAL(dots, exp_dots);                                  \
+    free(dots)
+
 // ------------------------------------------------------------
         
 #define TEST_CS_EQUALS(in,exp_comp,exp_expd) do {                       \
@@ -385,6 +413,11 @@ struct bind_css {
 #define TEST_GAPS_EQUALS_OFFSET(in,offset,exp_before,exp_after) do {    \
         CSS_COMMON(in, offset);                                         \
         GAPS_CHECK(exp_before,exp_after);                               \
+    } while(0)
+
+#define TEST_DOTS_EQUALS_OFFSET(in,offset,exp_dots) do {                \
+        CSS_COMMON(in, offset);                                         \
+        DOTS_CHECK(exp_dots);                                           \
     } while(0)
 
 #define TEST_CS_TEXT(in,exp_text) do {                                  \
@@ -464,11 +497,23 @@ void TEST_EARLY_CompactedSequence() {
     TEST_CS_EQUALS_OFFSET("A--C-G-", 3, "  0  0  0  0  1  1  1  2  2  3  [3]",    "  3  6  8 10");
     TEST_CS_EQUALS_OFFSET("A--C-G-", 4, "  0  0  0  0  0  1  1  1  2  2  3  [3]", "  4  7  9 11");
 
-    // test no_of_gaps_before() and no_of_gaps_after() 
+    // test no_of_gaps_before() and no_of_gaps_after()
     TEST_GAPS_EQUALS_OFFSET("-AC---G",     0, "  1  0  3  0", "  0  3  0 [-1]");
     TEST_GAPS_EQUALS_OFFSET(".AC..-G",     0, "  1  0  3  0", "  0  3  0 [-1]");
     TEST_GAPS_EQUALS_OFFSET("A--C-G-",     0, "  0  2  1  1", "  2  1  1 [-1]");
     TEST_GAPS_EQUALS_OFFSET("A--C-G-",  1000, "  0  2  1  1", "  2  1  1 [-1]"); // is independent from offset
+
+    // test dots
+    TEST_DOTS_EQUALS_OFFSET("----ACG--T--A-C--GT----", 0, " [-1]");    // no dots
+    TEST_DOTS_EQUALS_OFFSET("....ACG--T--A-C--GT....", 0, " [-1]");    // no extraordinary dots
+    TEST_DOTS_EQUALS_OFFSET("....ACG--T..A-C--GT....", 0, "  4 [-1]"); // i.e. "before base number 4"
+    TEST_DOTS_EQUALS_OFFSET("....ACG..T--A.C--GT....", 0, "  3  5 [-1]");
+
+    TEST_DOTS_EQUALS_OFFSET("AC-----GTA-----CGT", 0, " [-1]");
+    // just care THAT dots occur in a gap, dont care how many
+    TEST_DOTS_EQUALS_OFFSET("A-.-G-...-C...T", 0, "  1  2  3 [-1]");
+    TEST_DOTS_EQUALS_OFFSET("A.--G...--C...T", 0, "  1  2  3 [-1]");
+    TEST_DOTS_EQUALS_OFFSET("A--.G--...C...T", 0, "  1  2  3 [-1]");
 }
 
 #endif // UNIT_TESTS

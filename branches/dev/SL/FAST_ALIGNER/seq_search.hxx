@@ -126,11 +126,22 @@ public:
 
 class CompactedSubSequence // smart pointer and substring class for CompactedSequence
 {
-    CompactedSequence *mySequence;
-    int                myPos;                       // offset into mySequence->myText
-    int                myLength;                    // number of base positions
-    const char        *myText;                      // only for speed-up
-    const Points      *points;                      // just a reference
+    CompactedSequence    *mySequence;
+    int                   myPos;                    // offset into mySequence->myText
+    int                   myLength;                 // number of base positions
+    const char           *myText;                   // only for speed-up
+    mutable const Points *points;                   // just a reference
+
+    int currentPointPosition() const {
+        int pos = points->beforeBase()-myPos;
+
+        if (pos>(myLength+1)) {
+            points = NULL;
+            pos = -1;
+        }
+
+        return pos;
+    }
 
 public:
 
@@ -161,18 +172,7 @@ public:
     int expdLength() const                      { return expdPosition(length()); }
     const int *gapsBefore(int offset=0) const   { return mySequence->gapsBeforePosition + myPos + offset; }
 
-    int thisPointPosition() {
-        int pos = points->beforeBase()-myPos;
-
-        if (pos>(myLength+1)) {
-            points = NULL;
-            pos = -1;
-        }
-
-        return pos;
-    }
-
-    int firstPointPosition() {
+    int firstPointPosition() const {
         points = mySequence->getPointlist();
         int res = -1;
 
@@ -180,19 +180,19 @@ public:
             points = points->next();
         }
         if (points) {
-            res = thisPointPosition();
+            res = currentPointPosition();
         }
 
         return res;
     }
 
-    int nextPointPosition() {
+    int nextPointPosition() const {
         int res = -1;
         if (points) {
             points = points->next();
         }
         if (points) {
-            res = thisPointPosition();
+            res = currentPointPosition();
         }
         return res;
     }
