@@ -32,7 +32,7 @@ void messagef(const char *format, ...)
     GB_warning(buffer);
 }
 
-void Points::append(Points *neu) {
+void Dots::append(Dots *neu) {
     if (Next) Next->append(neu);
     else Next = neu;
 }
@@ -46,20 +46,20 @@ CompactedSequence::CompactedSequence(const char *Text, int Length, const char *n
     
     long *compPositionTab = new long[Length];
     myLength = 0;
-    int lastWasPoint = 0;
+    int lastWasDot = 0;
 
     myStartOffset = start_offset;
     myEndOffset = start_offset+Length-1;
 
     fa_assert(name);
 
-    points = NULL;
+    dots = NULL;
     myName = strdup(name);
 
     long firstBase = 0;
     long lastBase = Length-1;
 
-    for (xPos=0; xPos<Length; xPos++) {         // convert point gaps at beginning to dash gaps
+    for (xPos=0; xPos<Length; xPos++) {         // convert dot gaps at beginning to dash gaps
         char c = Text[xPos];
         if (!is_gap(c)) {
             firstBase = xPos;
@@ -82,14 +82,14 @@ CompactedSequence::CompactedSequence(const char *Text, int Length, const char *n
         if (is_gap(c)) {
             if (c=='-' || xPos<firstBase || xPos>lastBase) {
                 compPositionTab[xPos] = -1;                     // a illegal index
-                lastWasPoint = 0;
+                lastWasDot = 0;
             }
             else {
                 fa_assert(c=='.');
 
-                if (!lastWasPoint) {
-                    lastWasPoint = 1;
-                    storePoints(myLength);
+                if (!lastWasDot) {
+                    lastWasDot = 1;
+                    storeDots(myLength);
                 }
 
                 compPositionTab[xPos] = -1;
@@ -98,7 +98,7 @@ CompactedSequence::CompactedSequence(const char *Text, int Length, const char *n
         }
         else {
             compPositionTab[xPos] = myLength++;
-            lastWasPoint = 0;
+            lastWasDot = 0;
         }
     }
 
@@ -144,7 +144,7 @@ CompactedSequence::~CompactedSequence()
 
     free(myName);
     
-    delete points;
+    delete dots;
 }
 
 int CompactedSequence::compPosition(int xPos) const {
@@ -250,30 +250,30 @@ void AlignBuffer::correctUnalignedPositions()
     }
 }
 
-void AlignBuffer::expandPoints(CompactedSubSequence& slaveSequence)
+void AlignBuffer::restoreDots(CompactedSubSequence& slaveSequence)
 {
     long rest = used;
     long off = 0;               // real position in sequence
     long count = 0;             // # of bases left of this position
-    long nextPoint = slaveSequence.firstPointPosition();
+    long nextDot = slaveSequence.firstDotPosition();
 
-    while (nextPoint!=-1 && rest)
+    while (nextDot!=-1 && rest)
     {
         unsigned char gap = myBuffer[off];
         if (gap=='-' || gap=='.') {
-            if (nextPoint==count) {
+            if (nextDot==count) {
                 myBuffer[off] = '.';
             }
         }
         else
         {
             count++;
-            if (nextPoint==count) {
-                messagef("Couldn't insert point-gap at offset %li of '%s' (gap removed by aligner)",
+            if (nextDot==count) {
+                messagef("Couldn't restore dots at offset %li of '%s' (gap removed by aligner)",
                          off, slaveSequence.name());
             }
-            if (nextPoint<count) {
-                nextPoint = slaveSequence.nextPointPosition();
+            if (nextDot<count) {
+                nextDot = slaveSequence.nextDotPosition();
             }
         }
 
@@ -282,10 +282,8 @@ void AlignBuffer::expandPoints(CompactedSubSequence& slaveSequence)
     }
 }
 
-void AlignBuffer::point_ends_of()
-{
-    int i;
-
+void AlignBuffer::setDotsAtEOSequence() {
+    int i; 
     for (i=0; (myBuffer[i]=='.' || myBuffer[i]=='-') && i<used; i++) {
         myBuffer[i] = '.';
     }
@@ -301,20 +299,20 @@ void AlignBuffer::point_ends_of()
 #include <test_unit.h>
 #include <test_helpers.h>
 
-int get_point_position(const CompactedSubSequence& css, int i) {
-    int pos = css.firstPointPosition();
+static int get_dotpos(const CompactedSubSequence& css, int i) {
+    int pos = css.firstDotPosition();
     while (i) {
         --i;
-        pos = css.nextPointPosition();
+        pos = css.nextDotPosition();
     }
     return pos;
 }
-int count_point_positions(const CompactedSubSequence& css) {
-    int pos   = css.firstPointPosition();
+static int count_dotpos(const CompactedSubSequence& css) {
+    int pos   = css.firstDotPosition();
     int count = 0;
     while (pos != -1) {
         ++count;
-        pos = css.nextPointPosition();
+        pos = css.nextDotPosition();
     }
     return count;
 }
@@ -331,7 +329,7 @@ struct bind_css {
             case 2: return css[i];
             case 3: return css.no_of_gaps_before(i);
             case 4: return css.no_of_gaps_after(i);
-            case 5: return get_point_position(css, i);
+            case 5: return get_dotpos(css, i);
         }
         fa_assert(0);
         return -666;
@@ -371,7 +369,7 @@ struct bind_css {
 
 #define GEN_DOTS(in)                                                    \
     bound_css.test_mode = 5;                                            \
-    char *dots = collectIntFunResults(bound_css, 0, count_point_positions(css)-1, 3, 0, 1)
+    char *dots = collectIntFunResults(bound_css, 0, count_dotpos(css)-1, 3, 0, 1)
     
 #define FREE_COMP_EXPD()                                                \
     free(expd);                                                         \

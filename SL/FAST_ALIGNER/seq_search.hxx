@@ -38,24 +38,24 @@ static inline int is_gap(int c)  { return strchr(GAP_CHARS, c)!=0; }
 
 class CompactedSubSequence;
 
-class Points                                        // here we store points ('.') which were deleted when compacting sequences
-{
-    long    BeforeBase;                             // this position is the "compressed" position
-    Points *Next;
+class Dots {
+    // here we store dots ('.') which were deleted when compacting sequences
+    long  BeforeBase; // this position is the "compressed" position
+    Dots *Next;
 
 public:
 
-    Points(long before_base) {
+    Dots(long before_base) {
         BeforeBase = before_base;
         Next       = NULL;
     }
-    ~Points() {
+    ~Dots() {
         delete Next;
     }
 
-    void append(Points *neu);
+    void append(Dots *neu);
     long beforeBase() const { return BeforeBase; }
-    const Points *next() const { return Next; }
+    const Dots *next() const { return Next; }
 };
 
 class CompactedSequence                             // compacts a string (gaps removed, all chars upper)
@@ -72,7 +72,7 @@ class CompactedSequence                             // compacts a string (gaps r
 
     char *myName;                                   // sequence name
 
-    Points *points;                                 // Points which were deleted from the sequence are store here
+    Dots *dots;                                 // Dots which were deleted from the sequence are store here
 
     // -----------------------------------------
 
@@ -113,16 +113,16 @@ class CompactedSequence                             // compacts a string (gaps r
         return rightMostGap-expdPosition(cPos);
     }
 
-    void storePoints(int beforePos) {
-        if (points)     points->append(new Points(beforePos));
-        else            points = new Points(beforePos);
+    void storeDots(int beforePos) {
+        if (dots)     dots->append(new Dots(beforePos));
+        else            dots = new Dots(beforePos);
     }
 
     friend class CompactedSubSequence;
 
 public:
 
-    const Points *getPointlist() const { return points; }
+    const Dots *getDotlist() const { return dots; }
 };
 
 class CompactedSubSequence // smart pointer and substring class for CompactedSequence
@@ -131,13 +131,13 @@ class CompactedSubSequence // smart pointer and substring class for CompactedSeq
     int                   myPos;                    // offset into mySequence->myText
     int                   myLength;                 // number of base positions
     const char           *myText;                   // only for speed-up
-    mutable const Points *points;                   // just a reference
+    mutable const Dots *dots;                   // just a reference
 
-    int currentPointPosition() const {
-        int pos = points->beforeBase()-myPos;
+    int currentDotPosition() const {
+        int pos = dots->beforeBase()-myPos;
 
         if (pos>(myLength+1)) {
-            points = NULL;
+            dots = NULL;
             pos = -1;
         }
 
@@ -175,27 +175,27 @@ public:
     int expdLength() const                      { return expdPosition(length()); }
     const int *gapsBefore(int offset=0) const   { return mySequence->gapsBeforePosition + myPos + offset; }
 
-    int firstPointPosition() const {
-        points = mySequence->getPointlist();
+    int firstDotPosition() const {
+        dots = mySequence->getDotlist();
         int res = -1;
 
-        while (points && points->beforeBase()<myPos) {
-            points = points->next();
+        while (dots && dots->beforeBase()<myPos) {
+            dots = dots->next();
         }
-        if (points) {
-            res = currentPointPosition();
+        if (dots) {
+            res = currentDotPosition();
         }
 
         return res;
     }
 
-    int nextPointPosition() const {
+    int nextDotPosition() const {
         int res = -1;
-        if (points) {
-            points = points->next();
+        if (dots) {
+            dots = dots->next();
         }
-        if (points) {
-            res = currentPointPosition();
+        if (dots) {
+            res = currentDotPosition();
         }
         return res;
     }
@@ -338,8 +338,8 @@ public:
 
     void correctUnalignedPositions();
 
-    void expandPoints(CompactedSubSequence& slaveSequence);
-    void point_ends_of();
+    void restoreDots(CompactedSubSequence& slaveSequence);
+    void setDotsAtEOSequence();
 };
 
 
