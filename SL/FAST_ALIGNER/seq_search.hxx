@@ -82,11 +82,12 @@ class CompactedSequence                             // compacts a string (gaps r
     int length() const          { return myLength; }
     const char *text(int i=0) const     { return myText+i; }
 
-    char operator[](int i) const        { if (i<0 || i>=length()) i = 0; else i = text()[i]; return i; } 
+    char operator[](int i) const        { return i<0 || i>=length() ? 0 : text()[i]; }
 
     int expdPosition(int cPos) const {
-        fa_assert(cPos>=0 && cPos<=myLength); // allowed for all positions plus one following element
-        ;                                       // (which contains the total length of the original sequence)
+        // cPos is [0..N]
+        // for cPos == N this returns the total length of the original sequence
+        fa_assert(cPos>=0 && cPos<=myLength);
         return expdPositionTab[cPos]+myStartOffset;
     }
     int compPosition(int xPos) const;
@@ -151,14 +152,14 @@ public:
     ~CompactedSubSequence();                                                               // d-tor
     CompactedSubSequence& operator=(const CompactedSubSequence& other);               // =-c-tor
 
-    int length() const                  { return myLength; }
+    int length() const { return myLength; }
 
-    const char *text() const                    { return myText; }
-    const char *text(int i) const               { return text()+i; }
+    const char *text() const      { return myText; }
+    const char *text(int i) const { return text()+i; }
 
-    const char *name() const                    { return mySequence->myName; }
+    const char *name() const { return mySequence->myName; }
 
-    char operator[](int i) const                { if (i<0 || i>=length()) { i = 0; } else { i = text()[i]; } return i; }
+    char operator[](int i) const                { return i<0 || i>=length() ? 0 : text()[i]; }
 
     int no_of_gaps_before(int cPos) const       { return mySequence->no_of_gaps_before(myPos+cPos); }
     int no_of_gaps_after(int cPos) const        { return mySequence->no_of_gaps_after(myPos+cPos); }
@@ -168,7 +169,9 @@ public:
         fa_assert(cPos>=0 && cPos<=myLength);                 // allowed for all positions plus follower
         return mySequence->expdPosition(myPos+cPos);
     }
+
     int compPosition(int xPos) const            { return mySequence->compPosition(xPos)-myPos; }
+
     int expdLength() const                      { return expdPosition(length()); }
     const int *gapsBefore(int offset=0) const   { return mySequence->gapsBeforePosition + myPos + offset; }
 
@@ -494,16 +497,15 @@ public:
 //      INLINE-Functions:
 // -----------------------------
 
-inline CompactedSubSequence::CompactedSubSequence(const char *seq, int len, const char *Name, int start_offset) // normal c-tor
-{
+inline CompactedSubSequence::CompactedSubSequence(const char *seq, int len, const char *Name, int start_offset) {
+    // normal c-tor
     mySequence = new CompactedSequence(seq, len, Name, start_offset);
     myPos      = 0;
     myLength   = mySequence->length();
     myText     = mySequence->text()+myPos;
 }
 
-inline CompactedSubSequence::CompactedSubSequence(const CompactedSubSequence& other)
-{
+inline CompactedSubSequence::CompactedSubSequence(const CompactedSubSequence& other) {
     mySequence = other.mySequence;
     mySequence->referred++;
 
@@ -512,8 +514,7 @@ inline CompactedSubSequence::CompactedSubSequence(const CompactedSubSequence& ot
     myText   = other.myText;
 }
 
-inline CompactedSubSequence::CompactedSubSequence(const CompactedSubSequence& other, int rel_pos, int Length)
-{
+inline CompactedSubSequence::CompactedSubSequence(const CompactedSubSequence& other, int rel_pos, int Length) {
     mySequence = other.mySequence;
     mySequence->referred++;
 
@@ -525,8 +526,7 @@ inline CompactedSubSequence::CompactedSubSequence(const CompactedSubSequence& ot
     fa_assert(rel_pos>=0);
 }
 
-inline CompactedSubSequence::~CompactedSubSequence()
-{
+inline CompactedSubSequence::~CompactedSubSequence() {
     if (mySequence->referred-- == 1) // last reference
         delete mySequence;
 }
