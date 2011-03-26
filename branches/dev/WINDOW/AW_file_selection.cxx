@@ -714,7 +714,7 @@ void AW_refresh_fileselection(AW_root *awr, const char *awar_prefix) {
         TEST_ASSERT_EQUAL(s1 = (cs1), s2 = (cs2));                      \
         free(s1);                                                       \
         free(s2);                                                       \
-    } while(0)                                                          \
+    } while(0)
 
 void TEST_path_unfolding() {
     const char *currDir = GB_getcwd();
@@ -722,16 +722,16 @@ void TEST_path_unfolding() {
         gb_getenv_hook old = GB_install_getenv_hook(expand_symbolic_directories);
 
         TEST_ASSERT_EQUAL(GB_getenv("PWD"), currDir);
-        TEST_ASSERT_EQUAL(GB_getenv("PT_SERVER_HOME"), GB_path_in_ARBLIB("pts"));
+        TEST_ASSERT_EQUAL_DUPPED(strdup(GB_getenv("PT_SERVER_HOME")), strdup(GB_path_in_ARBLIB("pts"))); // need to dup here - otherwise temp buffers get overwritten
         TEST_ASSERT_EQUAL(GB_getenv("ARBHOME"), GB_getenvARBHOME());
         TEST_ASSERT_EQUAL(GB_getenv("ARB_NONEXISTING_ENVAR"), NULL);
 
         GB_install_getenv_hook(old);
     }
 
-    TEST_ASSERT_EQUAL_DUPPED(AW_unfold_path("PWD", "/bin"), strdup("/bin"));
-    TEST_ASSERT_EQUAL_DUPPED(AW_unfold_path("PWD", "../tests"), strdup(GB_path_in_ARBHOME("UNIT_TESTER/tests")));
-    TEST_ASSERT_EQUAL_DUPPED(AW_unfold_path("PT_SERVER_HOME", "../arb_tcp.dat"), strdup(GB_path_in_ARBLIB("arb_tcp.dat")));
+    TEST_ASSERT_EQUAL_DUPPED(AW_unfold_path("PWD", "/bin"),                strdup("/bin"));
+    TEST_ASSERT_EQUAL_DUPPED(AW_unfold_path("PWD", "../tests"),            strdup(GB_path_in_ARBHOME("UNIT_TESTER/tests")));
+    TEST_ASSERT_EQUAL_DUPPED(AW_unfold_path("PT_SERVER_HOME", "."),        strdup(GB_path_in_ARBLIB("pts")));
     TEST_ASSERT_EQUAL_DUPPED(AW_unfold_path("ARB_NONEXISTING_ENVAR", "."), strdup(currDir));
 }
 
