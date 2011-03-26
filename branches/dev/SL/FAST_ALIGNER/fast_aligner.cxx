@@ -1194,7 +1194,7 @@ static ARB_ERROR alignCompactedTo(CompactedSubSequence     *toAlignSequence,
         if (alignBuffer.free()) {
             alignBuffer.set('-', alignQuality(GAP_CHAR, GAP_CHAR), alignBuffer.free()); // rest of alignBuffer is set to '-'
         }
-        alignBuffer.expandPoints(*toAlignSequence);
+        alignBuffer.restoreDots(*toAlignSequence);
     }
 
 #ifdef TRACE_COMPRESSED_ALIGNMENT
@@ -1255,7 +1255,7 @@ static ARB_ERROR alignCompactedTo(CompactedSubSequence     *toAlignSequence,
                         free(buffer);
                     }
                     else {
-                        alignBuffer.point_ends_of();
+                        alignBuffer.setDotsAtEOSequence();
                         error = GBT_write_sequence(gbd, alignment, max_seq_length, alignBuffer.text()); // aligned all -> write all
                     }
                 }
@@ -1267,7 +1267,7 @@ static ARB_ERROR alignCompactedTo(CompactedSubSequence     *toAlignSequence,
 
                 error = writeStringToAlignment(gb_toAlign, alignment, QUALITY_NAME, alignBuffer.quality(), ali_params.report==FA_TEMP_REPORT);
                 if (!error) {
-                    // create temp-entry for master containing insert points:
+                    // create temp-entry for master containing insert dots:
 
                     int   buflen    = max_seq_length*2;
                     char *buffer    = (char*)malloc(buflen+1);
