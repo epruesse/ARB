@@ -40,7 +40,7 @@ extern char AW_ERROR_BUFFER[1024];
 
 void aw_set_local_message(); // no message window, AWAR_ERROR_MESSAGES instead (used by EDIT4)
 
-void aw_errorbuffer_message() __ATTR__DEPRECATED;               // prints AW_ERROR_BUFFER
+void aw_errorbuffer_message() __ATTR__DEPRECATED("will be removed"); // prints AW_ERROR_BUFFER
 void aw_macro_message(const char *temp, ...) __ATTR__FORMAT(1); // gives control to the user
 
 // Read a string from the user :

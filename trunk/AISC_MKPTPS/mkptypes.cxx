@@ -1743,9 +1743,9 @@ void TEST_attribute_parser() {
     TEST_both("", NULL);
     TEST_both("nothing here", NULL);
 
-    TEST_attribute("bla bla __attribute__(whatever) more content", "__attribute__(whatever)");
-    TEST_ATTR_____("bla bla __ATTR__DEPRECATED more content",      "__ATTR__DEPRECATED");
-    TEST_ATTR_____("bla bla __ATTR__FORMAT(pos) more content",     "__ATTR__FORMAT(pos)");
+    TEST_attribute("bla bla __attribute__(whatever) more content",             "__attribute__(whatever)");
+    TEST_ATTR_____("bla bla __ATTR__DEPRECATED(\" my reason \") more content", "__ATTR__DEPRECATED(\" my reason \")");
+    TEST_ATTR_____("bla bla __ATTR__FORMAT(pos) more content",                 "__ATTR__FORMAT(pos)");
     
     TEST_ATTR_____("__ATTR__DEPRECATED",       "__ATTR__DEPRECATED");
     TEST_ATTR_____("__ATTR__FORMAT(pos)",      "__ATTR__FORMAT(pos)");
