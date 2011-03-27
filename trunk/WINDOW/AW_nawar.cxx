@@ -643,20 +643,6 @@ GB_ERROR AW_root::save_properties(const char *filename) {
     return error;
 }
 
-
-AW_default AW_root::get_gbdata(const char *varname) {
-    GBDATA      *gbd;
-    AW_awar *vs;
-    if ((vs = this->awar(varname))) {
-        gbd = vs->gb_var;
-        return (AW_default)gbd;
-    }
-    else {
-        AW_ERROR("AW_root::get_gbdata: Variable %s not defined", varname);
-    }
-    return 0;
-}
-
 AW_awar *AW_root::label_is_awar(const char *label) {
     AW_awar *awar_exists = NULL;
     size_t   off         = strcspn(label, "/ ");
