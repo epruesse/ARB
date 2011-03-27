@@ -43,9 +43,9 @@
 #endif
 
 #if defined(DEBUG)
-#if defined(DEVEL_RALF)
 #define CHECK_ERROR_DROP
-#define EXTRA_ERROR_INFO
+#if defined(DEVEL_RALF)
+// #define EXTRA_ERROR_INFO
 #endif // DEVEL_RALF
 #endif // DEBUG
 
