@@ -37,7 +37,9 @@ public:
     const Macke&   to_macke(const Seq& seq) const;
 };
 
+#if defined(DEVEL_RALF)
 #warning refactor below
+#endif
 
 const Embl& ConvertibleData::to_embl(const Seq& seq) const {
     Format inType = in.format();

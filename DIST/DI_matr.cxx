@@ -500,7 +500,7 @@ GB_ERROR DI_MATRIX::calculate_rates(DI_MUT_MATR &hrates, DI_MUT_MATR &nrates, DI
 // ----------------------------------------------------------------
 //      Some test functions to check correlated base correction
 
-GB_ERROR DI_MATRIX::haeschoe(const char *path, bool update_status) {
+GB_ERROR DI_MATRIX::haeschoe(const char *path) {
     static BI_helix *helix = 0;
     if (!helix) helix      = new BI_helix();
 
@@ -629,10 +629,10 @@ double DI_MATRIX::corr(double dist, double b, double & sigma) {
     return - b * log(1-dist/b);
 }
 
-GB_ERROR DI_MATRIX::calculate(AW_root *awr, char *cancel, double /* alpha */, DI_TRANSFORMATION transformation, bool *aborted_flag, bool update_status)
+GB_ERROR DI_MATRIX::calculate(AW_root *awr, char *cancel, double /* alpha */, DI_TRANSFORMATION transformation, bool *aborted_flag)
 {
     if (transformation == DI_TRANSFORMATION_HAESCH) {
-        GB_ERROR error = haeschoe("outfile", update_status);
+        GB_ERROR error = haeschoe("outfile");
         if (error) return error;
         return "Your matrices have been written to 'outfile'\nSorry I can not make a tree";
     }
@@ -921,7 +921,7 @@ STATIC_ATTRIBUTED(__ATTR__USERESULT, GB_ERROR di_calculate_matrix(AW_window *aww
             DI_TRANSFORMATION trans = (DI_TRANSFORMATION)aw_root->awar(AWAR_DIST_CORR_TRANS)->read_int();
 
             if (phm->is_AA) error = phm->calculate_pro(trans, &aborted);
-            else error            = phm->calculate(aw_root, cancel, 0.0, trans, &aborted, !bootstrap_flag);
+            else error            = phm->calculate(aw_root, cancel, 0.0, trans, &aborted);
         }
         delete DI_MATRIX::ROOT;
 
@@ -1006,7 +1006,7 @@ static void di_mark_by_distance(AW_window *aww, AW_CL cl_weightedFilter) {
                             error = phm->calculate_pro(trans, NULL);
                         }
                         else {
-                            error = phm->calculate(aw_root, cancel, 0.0, trans, NULL, false);
+                            error = phm->calculate(aw_root, cancel, 0.0, trans, NULL);
                         }
 
                         double dist_value = phm->matrix->get(0, 1);                         // distance or conformance

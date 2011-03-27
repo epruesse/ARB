@@ -146,7 +146,9 @@ const char *ED4_terminal::resolve_pointer_to_char_pntr(int *str_len) const
     const char *copy_of = 0; // if set, return a copy of this string
 
     gb_type = GB_read_type(gbd);
+#if defined(DEVEL_RALF)
 #warning temporary workaround - gb_type GB_INT and GB_FLOAT in the switch directive must not be displayed but ignored
+#endif
     switch (gb_type)
     {
         case GB_STRING:

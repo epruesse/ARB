@@ -75,7 +75,7 @@ argchoice:marked species:--marked-only
 arg:MARK
 argtype:choice_menu
 arglabel:Mark
-argchoice:don't change:
+argchoice:dont change:
 argchoice:species when writing field (unmark rest):--mark
 
 arg:ASINT
