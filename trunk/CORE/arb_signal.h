@@ -17,7 +17,7 @@
 #include <arb_core.h>
 #endif
 
-void sigsegv_handler(int sig);
+void sigsegv_handler(int sig) __ATTR__NORETURN;
 void GBK_install_SIGSEGV_handler(bool dump_backtrace);
 GB_ERROR GBK_test_address(long *address, long key);
 bool GBK_running_on_valgrind(void);

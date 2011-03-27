@@ -1260,6 +1260,7 @@ proto: proto_tools
 		AISC/AISC.proto \
 		ARBDB/ARBDB.proto \
 		ARB_GDE/ARB_GDE.proto \
+		CORE/CORE.proto \
 		CONVERTALN/CONVERTALN.proto \
 		NTREE/NTREE.proto \
 		$(ARCHS_PT_SERVER:.a=.proto) \
