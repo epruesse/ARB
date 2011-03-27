@@ -112,9 +112,9 @@ long awt_count_queried_items(DbQuery *cbs, AWT_QUERY_RANGE range) {
     return count;
 }
 
-#if defined(DEVEL_RALF)
+#if defined(WARN_TODO)
 #warning replace awt_count_items by "method" of selector
-#endif // DEVEL_RALF
+#endif
 
 static int awt_count_items(DbQuery *cbs, AWT_QUERY_RANGE range, AWT_QUERY_MODES mode) {
     int                     count    = 0;

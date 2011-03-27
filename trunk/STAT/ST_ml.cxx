@@ -301,9 +301,9 @@ void MostLikelySeq::calc_out(const MostLikelySeq *next_branch, double dist) {
         st_ml->get_matrix_for(distl).transform(*lefts, *out);
 
         // correct frequencies
-#if defined(DEVEL_RALF)
+#if defined(WARN_TODO)
 #warning check if st_ml->get_base_frequency_at(pos).lik is 1 - if so, use vec-mult here
-#endif // DEVEL_RALF
+#endif
         for (int i = ST_A; i < ST_MAX_BASE; i++) {
             out->b[i] *= st_ml->get_base_frequency_at(pos).b[i];
         }

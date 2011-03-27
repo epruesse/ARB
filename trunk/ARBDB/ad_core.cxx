@@ -785,9 +785,9 @@ void gb_free_all_keys(GB_MAIN_TYPE *Main) {
     }
 }
 
-#if defined(DEVEL_RALF)
+#if defined(WARN_TODO)
 #warning useless return value - always 0
-#endif // DEVEL_RALF
+#endif
 char *gb_abort_entry(GBDATA *gbd) {
     int type = GB_TYPE(gbd);
 
@@ -808,10 +808,10 @@ char *gb_abort_entry(GBDATA *gbd) {
 // ---------------------
 //      Transactions
 
-#if defined(DEVEL_RALF)
+#if defined(WARN_TODO)
 #warning change param for gb_abort_transaction_local_rek to GBDATA **
 #warning remove param 'mode' (unused!)
-#endif // DEVEL_RALF
+#endif
 
 int gb_abort_transaction_local_rek(GBDATA *gbd, long mode) {
     // delete created, undo changed

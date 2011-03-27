@@ -389,7 +389,7 @@ static void export_tree_rek(GBT_TREE *tree, FILE *out, bool export_branchlens, b
     }
 }
 
-#if defined(DEVEL_RALF)
+#if defined(WARN_TODO)
 #warning maybe replace TREE_export_tree by TREE_write_Newick
 /* need some additional parameters (no comment, trifurcation) */
 #endif

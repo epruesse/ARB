@@ -24,9 +24,9 @@
 #ifdef DEBUG
 // #define TEST_MEMBLKS
 // #define TRACE_ALLOCS
-#if defined(DEVEL_RALF)
+#if defined(WARN_TODO)
 #warning unit tests fail when TRACE_ALLOCS is defined (due to wrong sized block during load(?). cant fix atm. see [6672])
-#endif // DEVEL_RALF
+#endif
 #endif
 
 #define GBM_MAGIC 0x74732876

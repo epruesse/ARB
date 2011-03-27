@@ -90,7 +90,7 @@ void ED4_expose_recalculations() {
     ED4_ROOT->recalc_font_group();
     ED4_calc_terminal_extentions();
 
-#if defined(DEVEL_RALF)
+#if defined(WARN_TODO)
 #warning below calculations have to be done at startup as well - maybe call expose_cb once after create_hierarchy.
 #endif
 

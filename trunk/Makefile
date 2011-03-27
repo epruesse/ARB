@@ -135,9 +135,20 @@ endif
 #---------------------- developer 
 
 ifneq ($(DEVELOPER),ANY) # ANY=default setting (skip all developer specific code)
-ifdef dflags
+ ifdef dflags
 	dflags += -DDEVEL_$(DEVELOPER)# activate developer/release specific code
+ endif
 endif
+
+ifndef SHOWTODO
+ ifeq ($(DEVELOPER),RALF)
+	SHOWTODO:=1
+ else
+	SHOWTODO:=0
+ endif
+endif
+ifeq ($(SHOWTODO),1)
+	dflags += -DWARN_TODO# activate "TODO" warnings
 endif
 
 #---------------------- 32 or 64 bit

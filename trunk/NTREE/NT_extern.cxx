@@ -268,9 +268,9 @@ void nt_exit(AW_window *aws) {
         GLOBAL_gb_main  = NULL;                     // avoid further usage
 
         AW_root *aw_root = aws->get_root();
-#if defined(DEVEL_RALF)
+#if defined(WARN_TODO)
 #warning instead of directly calling the following functions, try to add them as GB_atclose-callbacks
-#endif // DEVEL_RALF
+#endif
         aw_root->unlink_awars_from_DB(gb_main);
         AWT_destroy_input_masks();
 #if defined(DEBUG)

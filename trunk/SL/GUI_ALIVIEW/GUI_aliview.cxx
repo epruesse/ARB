@@ -17,10 +17,10 @@
 #include <AP_filter.hxx>
 
 WeightedFilter::WeightedFilter(GBDATA *gb_main, AW_root *aw_root, const char *awar_filter_name, const char *awar_columnStat_name, AW_awar *awar_default_alignment) {
-#if defined(DEVEL_RALF)
+#if defined(WARN_TODO)
 #warning let awt_create_select_filter create filter awars and automatically map it to awar_default_alignment \
     // (see [6476] for changes done for ColumnStat)
-#endif // DEVEL_RALF
+#endif
     adfilter    = awt_create_select_filter(aw_root, gb_main, awar_filter_name);
     column_stat = awar_columnStat_name ? new ColumnStat(gb_main, aw_root, awar_columnStat_name, awar_default_alignment) : NULL;
 }

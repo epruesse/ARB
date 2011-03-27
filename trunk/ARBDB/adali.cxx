@@ -24,9 +24,9 @@ static long check_for_species_without_data(const char *species_name, long value,
     return value; // new hash value
 }
 
-#if defined(DEVEL_RALF)
+#if defined(WARN_TODO)
 #warning GBT_check_data ignores given 'alignment_name' if we have a default alignment. seems wrong!
-#endif // DEVEL_RALF
+#endif
 
 int GBT_count_alignments(GBDATA *gb_main) {
     int     count      = 0;
@@ -702,9 +702,9 @@ int GBT_is_partial(GBDATA *gb_species, int default_value, int define_if_undef) {
     return result;
 }
 
-#if defined(DEVEL_RALF)
+#if defined(WARN_TODO)
 #warning rename GBT_read_sequence - it does not read the sequence itself
-#endif // DEVEL_RALF
+#endif
 GBDATA *GBT_read_sequence(GBDATA *gb_species, const char *aliname) {
     GBDATA *gb_ali = GB_entry(gb_species, aliname);
     return gb_ali ? GB_entry(gb_ali, "data") : 0;
@@ -729,9 +729,9 @@ GBDATA *GBT_get_alignment(GBDATA *gb_main, const char *aliname) {
     return GB_get_father(gb_alignment_name);
 }
 
-#if defined(DEVEL_RALF)
+#if defined(WARN_TODO)
 #warning recode and change result type to long* ?
-#endif // DEVEL_RALF
+#endif
 long GBT_get_alignment_len(GBDATA *gb_main, const char *aliname) {
     GBDATA *gb_alignment = GBT_get_alignment(gb_main, aliname);
     return gb_alignment ? *GBT_read_int(gb_alignment, "alignment_len") : -1;

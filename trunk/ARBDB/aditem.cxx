@@ -435,9 +435,9 @@ GB_ERROR GBT_restore_marked_species(GBDATA *gb_main, const char *stored_marked) 
 // ---------------------------------
 //      read species information
 
-#if defined(DEVEL_RALF)
+#if defined(WARN_TODO)
 #warning rename the following functions to make the difference more obvious??
-#endif // DEVEL_RALF
+#endif
 GB_CSTR GBT_read_name(GBDATA *gb_item) {
     GB_CSTR result      = GBT_read_char_pntr(gb_item, "name");
     if (!result) result = GBS_global_string("<unnamed_%s>", GB_read_key_pntr(gb_item));

@@ -331,9 +331,9 @@ AW_window *create_mg_check_fields(AW_root *aw_root) {
     awt_create_selection_list_on_itemfields(GLOBAL_gb_dest, aws, AWAR_DEST_FIELD,
                                             (1<<GB_STRING)|(1<<GB_INT), "dest", 0, &AWT_species_selector, 20, 10);
 
-#if defined(DEVEL_RALF)
+#if defined(WARN_TODO)
 #warning check code above. Maybe one call has to get GLOBAL_gb_merge ?
-#endif // DEVEL_RALF
+#endif
 
 
     aws->at("go");

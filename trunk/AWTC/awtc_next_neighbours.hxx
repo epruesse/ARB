@@ -97,9 +97,9 @@ protected:
 
     bool hits_truncated;
 
-#if defined(DEVEL_RALF)
+#if defined(WARN_TODO)
 #warning change real_hits back to int when aisc_get() has been made failsafe
-#endif // DEVEL_RALF
+#endif 
     long real_hits;
 
     TargetRange range;

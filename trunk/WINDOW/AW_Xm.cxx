@@ -11,7 +11,7 @@
 #include "aw_commn.hxx"
 #include <aw_Xm.hxx>
 
-#if defined(DEVEL_RALF)
+#if defined(WARN_TODO)
 #warning change implementation of draw functions (read more)
 // * cd1 and cd2 shall not be passed to real draw functions (only to click device)
 // * filter has to be checked early (in AW_device)
@@ -21,7 +21,7 @@
 // * expect parameters 'AW_bitset filteri, AW_CL cd1, AW_CL cd2' (as in the past)
 // * they are really implemented, check the filter, save cd's into AW_device and
 //   call virtual private methods w/o above parameters
-#endif // DEVEL_RALF
+#endif
 
 
 // ---------------------

@@ -43,9 +43,9 @@ AW_HEADER_MAIN
 
 GBDATA *GLOBAL_gb_main;                             // global gb_main for arb_pars
 
-#if defined(DEVEL_RALF)
+#if defined(WARN_TODO)
 #warning make GLOBAL_PARS static!
-#endif // DEVEL_RALF
+#endif
 PARS_global *GLOBAL_PARS;
 
 // waaah more globals :(
@@ -146,10 +146,10 @@ static long insert_species_in_tree_test(const char *key, long val, void *cd_isit
 
     GBDATA  *gb_node = (GBDATA *)val;
 
-#if defined(DEVEL_RALF)
+#if defined(WARN_TODO)
 #warning following code could be a method ..
     // ARB_tree *ARB_tree_root::create_linked_leaf(GBDATA *gb_species, const char *name)
-#endif // DEVEL_RALF
+#endif
 
     AP_tree *tree = rootNode();
     AP_tree *leaf = tree->dup();
@@ -316,9 +316,9 @@ static int sort_sequences_by_length(const char*, long leaf0_ptr, const char*, lo
 static long transform_gbd_to_leaf(const char *key, long val, void *) {
     if (!val) return val;
 
-#if defined(DEVEL_RALF)
+#if defined(WARN_TODO)
 #warning use create_linked_leaf() when impl
-#endif // DEVEL_RALF
+#endif
 
     GBDATA       *gb_node = (GBDATA *)val;
     AP_tree_root *troot   = ap_main->get_tree_root()->tree_static;

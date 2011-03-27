@@ -75,9 +75,9 @@ static GEN_remove_state remove_redundant_translation(GBDATA *gb_gene, bool ignor
     // (errornousCodon has to be a buffer with size == 4)
     //
     // If another code or codonstart translates fine, a hint shall be written to field 'translation_hint'
-#if defined(DEVEL_RALF)
+#if defined(WARN_TODO)
 #warning TODO: If another code or codonstart translates fine, a hint shall be written to field 'translation_hint'
-#endif // DEVEL_RALF
+#endif
 
     GEN_remove_state  result   = GRS_NO_CHANGE;
     error                      = 0;

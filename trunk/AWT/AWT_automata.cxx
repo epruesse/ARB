@@ -41,8 +41,8 @@ void AWT_automata::get_fwd(char *str, int pos) {
 }
 
 char *AWT_automata::insert(char *str, AW_CL value) {
-#if defined(DEVEL_RALF)
+#if defined(WARN_TODO)
 #warning missing implementation
-#endif // DEVEL_RALF
+#endif
 };
 

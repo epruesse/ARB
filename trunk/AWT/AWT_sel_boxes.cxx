@@ -291,9 +291,9 @@ void awt_create_selection_list_on_pt_servers(AW_window *aws, const char *varname
 //      selection boxes on tables
 
 
-#if defined(DEVEL_RALF)
+#if defined(WARN_TODO)
 #warning derive awt_sel_list_for_tables from AW_DB_selection
-#endif // DEVEL_RALF
+#endif
 
 struct awt_sel_list_for_tables {
     AW_window         *aws;
@@ -448,9 +448,9 @@ char *awt_create_string_on_configurations(GBDATA *gb_main) {
 //      SAI selection
 
 
-#if defined(DEVEL_RALF)
+#if defined(WARN_TODO)
 #warning derive awt_sel_list_for_sai from AW_DB_selection
-#endif // DEVEL_RALF
+#endif
 
 
 struct awt_sel_list_for_sai {

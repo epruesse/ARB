@@ -83,9 +83,9 @@ bool SEC_root::perform_autoscroll() {
                 nailedAbsPos = -1;
                 autoscroll   = 0;
 
-#if defined(DEVEL_RALF)
+#if defined(WARN_TODO)
 #warning make the refresh invisible
-#endif // DEVEL_RALF
+#endif
                 canvas->refresh();
 
                 nailedAbsPos = absPos;
@@ -702,9 +702,9 @@ static AW_window *SEC_create_display_window(AW_root *awr) {
     return aws;
 }
 
-#if defined(DEVEL_RALF)
+#if defined(WARN_TODO)
 #warning use popdown callback for SEC_exit and valgrind open/close/open secedit 
-#endif // DEVEL_RALF
+#endif
 
 static void SEC_exit(GBDATA *, void *cl_sec_root) {
     SEC_root *sec_root = static_cast<SEC_root*>(cl_sec_root);

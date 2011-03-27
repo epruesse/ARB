@@ -77,9 +77,9 @@ void gbs_uppercase(char *str)
     }
 }
 
-#if defined(DEVEL_RALF)
+#if defined(WARN_TODO)
 #warning replace/implement gbs_memcopy by memmove
-#endif // DEVEL_RALF
+#endif
 void gbs_memcopy(char *dest, const char *source, long len)
 {
     long        i;

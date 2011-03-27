@@ -472,9 +472,7 @@ static AW_window *CreateDisplayHelices_window(AW_root *aw_root) {
         {
             const char *helixRange;
             Structure3D *s;
-#if defined(DEVEL_RALF)
 #warning s is not initialized here
-#endif // DEVEL_RALF
             int rnaType = s->FindTypeOfRNA();
 
             switch (rnaType) {

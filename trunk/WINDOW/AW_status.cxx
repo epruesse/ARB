@@ -955,9 +955,9 @@ void aw_message(const char *msg) {
     }
 }
 
-#if defined(DEVEL_RALF)
+#if defined(WARN_TODO)
 #warning remove AW_ERROR_BUFFER
-#endif // DEVEL_RALF
+#endif
 char AW_ERROR_BUFFER[1024];
 
 void aw_errorbuffer_message() { aw_message(AW_ERROR_BUFFER); }
@@ -969,9 +969,9 @@ void aw_error(const char *text, const char *text2) {
 }
 
 
-#if defined(DEVEL_RALF)
+#if defined(WARN_TODO)
 #warning Check where AW_ERROR is used and maybe use one of the GB_error/terminate functions
-#endif // DEVEL_RALF
+#endif
 
 void AW_ERROR(const char *templat, ...) {
     char buffer[10000];

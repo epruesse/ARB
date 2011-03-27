@@ -318,10 +318,10 @@ static void primer_design_event_init(AW_window *aww, AW_CL cl_gb_main, AW_CL cl_
             else {
                 length     = gene_length;
                 add_offset = genPos->start_pos[0];
-#if defined(DEVEL_RALF)
+#if defined(WARN_TODO)
 #warning does this work with splitted genes ?
 #warning warn about uncertainties ?
-#endif // DEVEL_RALF
+#endif
             }
         }
         else {

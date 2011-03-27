@@ -138,9 +138,9 @@ static char *gbs_vglobal_string_copy(const char *templat, va_list parg) {
 const char *GBS_global_string_to_buffer(char *buffer, size_t bufsize, const char *templat, ...) {
     // goes to header: __ATTR__FORMAT(3)
 
-#if defined(DEVEL_RALF)
+#if defined(WARN_TODO)
 #warning search for '\b(sprintf)\b\s*\(' and replace by GBS_global_string_to_buffer
-#endif // DEVEL_RALF
+#endif
 
     va_list parg;
     int     psize;
@@ -207,7 +207,7 @@ GB_ERROR GBK_assert_msg(const char *assertion, const char *file, int linenr) {
 //      Error "handling"
 
 
-#if defined(DEVEL_RALF)
+#if defined(WARN_TODO)
 #warning redesign GB_export_error et al
 /* To clearly distinguish between the two ways of error handling
  * (which are: return GB_ERROR
@@ -226,7 +226,7 @@ GB_ERROR GBK_assert_msg(const char *assertion, const char *file, int linenr) {
  *
  * use GB_get_error() to import AND clear the error
  */
-#endif // DEVEL_RALF
+#endif
 
 static char *GB_error_buffer = 0;
 
@@ -248,9 +248,9 @@ GB_ERROR GB_export_errorf(const char *templat, ...) {
 
     memset(buffer, 0, 1000);
 
-#if defined(DEVEL_RALF)
-#warning dont prepend error here
-#endif // DEVEL_RALF
+#if defined(WARN_TODO)
+#warning dont prepend ARB ERROR here
+#endif
 
     p += sprintf(buffer, "ARB ERROR: ");
     va_start(parg, templat);
@@ -261,9 +261,9 @@ GB_ERROR GB_export_errorf(const char *templat, ...) {
     return GB_error_buffer;
 }
 
-#if defined(DEVEL_RALF)
+#if defined(WARN_TODO)
 #warning replace GB_export_IO_error() by GB_IO_error() and then export it if really needed 
-#endif // DEVEL_RALF
+#endif
 
 GB_ERROR GB_IO_error(const char *action, const char *filename) {
     /*! creates error message from current 'errno'
@@ -302,9 +302,9 @@ GB_ERROR GB_export_IO_error(const char *action, const char *filename) {
     return GB_export_error(GB_IO_error(action, filename));
 }
 
-#if defined(DEVEL_RALF)
-#warning reactivate deprecation below
-#endif // DEVEL_RALF
+#if defined(WARN_TODO)
+#warning reactivate deprecations below
+#endif
 
 
 GB_ERROR GB_print_error() {
@@ -341,9 +341,9 @@ void GB_clear_error() {         // clears the error buffer
     freenull(GB_error_buffer);
 }
 
-#if defined(DEVEL_RALF)
+#if defined(WARN_TODO)
 #warning search for 'GBS_global_string.*error' and replace with GB_failedTo_error or GB_append_exportedError
-#endif // DEVEL_RALF
+#endif
 GB_ERROR GB_failedTo_error(const char *do_something, const char *special, GB_ERROR error) {
     if (error) {
         if (special) {
