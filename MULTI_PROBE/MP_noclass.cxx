@@ -976,17 +976,17 @@ void TEST_MP_get_comment_and_probes() {
     MP_GET_COMMENT_EQUAL(2, probes_comment, "val2");
     MP_GET_COMMENT_EQUAL(3, probes_comment, "val3");
 
-    MP_GET_COMMENT_EQUAL(1, probes_only, NULL);
-    MP_GET_COMMENT_EQUAL(2, probes_only, NULL);
-    MP_GET_COMMENT_EQUAL(3, probes_only, NULL);
+    MP_GET_COMMENT_EQUAL(1, probes_only, (const char *)NULL);
+    MP_GET_COMMENT_EQUAL(2, probes_only, (const char *)NULL);
+    MP_GET_COMMENT_EQUAL(3, probes_only, (const char *)NULL);
 
     MP_GET_COMMENT_EQUAL(1, probes_1, "one");
-    MP_GET_COMMENT_EQUAL(2, probes_1, NULL);
-    MP_GET_COMMENT_EQUAL(3, probes_1, NULL);
+    MP_GET_COMMENT_EQUAL(2, probes_1, (const char *)NULL);
+    MP_GET_COMMENT_EQUAL(3, probes_1, (const char *)NULL);
     
     MP_GET_COMMENT_EQUAL(1, probes_2, "one");
     MP_GET_COMMENT_EQUAL(2, probes_2, "two");
-    MP_GET_COMMENT_EQUAL(3, probes_2, NULL);
+    MP_GET_COMMENT_EQUAL(3, probes_2, (const char *)NULL);
 
     free(probes_2);
     free(probes_1);

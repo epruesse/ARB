@@ -3006,8 +3006,8 @@ static const char *get_aligned_data_of(GBDATA *gb_main, const char *species_name
         }
     }
 
-    TEST_ASSERT_EQUAL(error.deliver(), NULL);
-
+    TEST_ASSERT_NULL(error.deliver());
+    
     return data;
 }
 
@@ -3108,7 +3108,7 @@ void TEST_Aligner_TargetAndReferenceHandling() {
     ARB_ERROR  error;
     GBDATA    *gb_main = TEST_CREATE_DB(error, test_aliname, TestAlignmentData_TargetAndReferenceHandling, false);
 
-    TEST_ASSERT_EQUAL(error.deliver(), NULL);
+    TEST_ASSERT_NULL(error.deliver());
 
     SearchRelativeParams search_relative_params(new FakeFamilyFinder(gb_main, test_aliname, false, 8),
                                                 test_aliname,
@@ -3137,7 +3137,7 @@ void TEST_Aligner_TargetAndReferenceHandling() {
                         cont_on_err,
                         FA_NO_ACTION);
         error = aligner.run();
-        TEST_ASSERT_EQUAL(error.deliver(), NULL);
+        TEST_ASSERT_NULL(error.deliver());
     }
     TEST_ASSERT_EQUAL(GBT_count_marked_species(gb_main), 3); // we still got 3 marked species
     {
@@ -3156,7 +3156,7 @@ void TEST_Aligner_TargetAndReferenceHandling() {
                         cont_on_err,
                         FA_MARK_FAILED);
         error = aligner.run();
-        TEST_ASSERT_EQUAL(error.deliver(), NULL);
+        TEST_ASSERT_NULL(error.deliver());
 
         TEST_ASSERT(!cont_on_err || GBT_count_marked_species(gb_main) == 0); // FA_MARK_FAILED (none failed -> none marked)
     }
@@ -3176,7 +3176,7 @@ void TEST_Aligner_TargetAndReferenceHandling() {
                         cont_on_err,
                         FA_MARK_ALIGNED);
         error = aligner.run();
-        TEST_ASSERT_EQUAL(error.deliver(), NULL);
+        TEST_ASSERT_NULL(error.deliver());
         
         TEST_ASSERT(!cont_on_err || GBT_count_marked_species(gb_main) == 2); // FA_MARK_ALIGNED (2 selected were aligned)
     }
@@ -3197,7 +3197,7 @@ void TEST_Aligner_TargetAndReferenceHandling() {
                         FA_MARK_ALIGNED);
 
         error = aligner.run();
-        TEST_ASSERT_EQUAL(error.deliver(), NULL);
+        TEST_ASSERT_NULL(error.deliver());
 
         TEST_ASSERT(!cont_on_err || GBT_count_marked_species(gb_main) == 1);
     }
@@ -3242,7 +3242,7 @@ void TEST_Aligner_TargetAndReferenceHandling() {
                             FA_MARK_ALIGNED);
 
             error = aligner.run();
-            TEST_ASSERT_EQUAL(error.deliver(), NULL);
+            TEST_ASSERT_NULL(error.deliver());
 
             TEST_ASSERT(!cont_on_err || GBT_count_marked_species(gb_main) == 1);
         }
@@ -3293,7 +3293,7 @@ void TEST_Aligner_TargetAndReferenceHandling() {
                         FA_MARK_ALIGNED);
 
         error = aligner.run();
-        TEST_ASSERT_EQUAL(error.deliver(), NULL);
+        TEST_ASSERT_NULL(error.deliver());
 
         TEST_ASSERT(!cont_on_err || GBT_count_marked_species(gb_main) == 1);
     }
@@ -3370,7 +3370,7 @@ void TEST_SLOW_Aligner_checksumError() {
 
         error = aligner.run();
     }
-    TEST_ASSERT_EQUAL__BROKEN(error.deliver(), NULL);
+    TEST_ASSERT_NULL__BROKEN(error.deliver());
     TEST_ASSERT_EQUAL__BROKEN(USED_RELS_FOR("MtnK1722"), "???");
     
     GB_close(gb_main);

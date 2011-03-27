@@ -1143,7 +1143,7 @@ void TEST_GBT_split_join_names() {
         TEST_ASSERT_EQUAL(names[4], "b");
         TEST_ASSERT_EQUAL(names[5], "c");
         TEST_ASSERT_EQUAL(names[6], "");
-        TEST_ASSERT_EQUAL(names[7], NULL);
+        TEST_ASSERT_NULL(names[7]);
 
         GBT_free_names(names);
     }

@@ -1169,7 +1169,7 @@ void TEST_numhash() {
     // erase by overwrite:
     for (long key = LOW; key <= HIGH; key += STEP) {
         GBS_write_numhash(numhash2, key, GBS_read_numhash(numhash, key)); // copy numhash->numhash2
-        GBS_write_numhash(numhash, key, NULL);
+        GBS_write_numhash(numhash, key, (long)NULL);
     }
     TEST_ASSERT(GBS_numhash_count_elems(numhash2) == added);
     TEST_ASSERT(GBS_numhash_count_elems(numhash) == 0);
@@ -1265,7 +1265,7 @@ void TEST_GBS_hash_next_element_that() {
         GBS_write_hash(hash, "barfoo", 3);
 
 #define READ_REVERSE(value) GBS_hash_next_element_that(hash, NULL, has_value, (void*)value)
-#define ASSERT_READ_REVERSE_RETURNS(value, expected) TEST_ASSERT_EQUAL(expected, READ_REVERSE(value));
+#define ASSERT_READ_REVERSE_RETURNS(value, expected) TEST_ASSERT_EQUAL((const char *)expected, READ_REVERSE(value));
 
         ASSERT_READ_REVERSE_RETURNS(0, NULL);
         ASSERT_READ_REVERSE_RETURNS(1, "bar");

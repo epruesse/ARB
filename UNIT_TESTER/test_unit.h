@@ -523,8 +523,11 @@ namespace arb_test {
 
 // --------------------------------------------------------------------------------
 
-#define TEST_ASSERT_EQUAL(e1,t2)           TEST_ASSERT(arb_test::test_equal(e1, t2))
-#define TEST_ASSERT_EQUAL__BROKEN(e1,t2)   TEST_ASSERT__BROKEN(arb_test::test_equal(e1, t2))
+#define TEST_ASSERT_NULL(n)         TEST_ASSERT(arb_test::test_equal(n, (typeof(n))NULL))
+#define TEST_ASSERT_NULL__BROKEN(n) TEST_ASSERT__BROKEN(arb_test::test_equal(n, (typeof(n))NULL))
+
+#define TEST_ASSERT_EQUAL(e1,t2)         TEST_ASSERT(arb_test::test_equal(e1, t2))
+#define TEST_ASSERT_EQUAL__BROKEN(e1,t2) TEST_ASSERT__BROKEN(arb_test::test_equal(e1, t2))
 
 #define TEST_ASSERT_SIMILAR(e1,t2,epsilon)         TEST_ASSERT(arb_test::test_similar(e1, t2, epsilon))
 #define TEST_ASSERT_SIMILAR__BROKEN(e1,t2,epsilon) TEST_ASSERT__BROKEN(arb_test::test_similar(e1, t2, epsilon))
