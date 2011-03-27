@@ -151,7 +151,7 @@ static void p_err(const char *io, const char *error) {
 #endif
 
 #define ERRBUFFERSIZE 1024
-static void p_errf(const char *io, const char *formatString, ...) {
+STATIC_ATTRIBUTED(__ATTR__FORMAT(2), void p_errf(const char *io, const char *formatString, ...)) {
     static char buf[ERRBUFFERSIZE+1];
     int         printed;
     va_list     varArgs;

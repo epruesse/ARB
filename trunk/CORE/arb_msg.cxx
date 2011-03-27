@@ -42,9 +42,9 @@ static size_t last_global_string_size = 0;
 #endif
 
 #ifdef HAVE_VSNPRINTF
-# define PRINT2BUFFER(buffer, bufsize, templat, parg) vsnprintf(buffer, bufsize, templat, parg);
+# define PRINT2BUFFER(buffer, bufsize, templat, parg) vsnprintf(buffer, bufsize, templat, parg)
 #else
-# define PRINT2BUFFER(buffer, bufsize, templat, parg) vsprintf(buffer, templat, parg);
+# define PRINT2BUFFER(buffer, bufsize, templat, parg) vsprintf(buffer, templat, parg)
 #endif
 
 #define PRINT2BUFFER_CHECKED(printed, buffer, bufsize, templat, parg)   \
@@ -56,8 +56,7 @@ static size_t last_global_string_size = 0;
 
 // --------------------------------------------------------------------------------
 
-static const char *gbs_vglobal_string(const char *templat, va_list parg, int allow_reuse)
-{
+STATIC_ATTRIBUTED(__ATTR__VFORMAT(1), const char *gbs_vglobal_string(const char *templat, va_list parg, int allow_reuse)) {
     static char buffer[GLOBAL_STRING_BUFFERS][GBS_GLOBAL_STRING_SIZE+2]; // several buffers - used alternately
     static int  idx                             = 0;
     static char lifetime[GLOBAL_STRING_BUFFERS] = {};
@@ -130,7 +129,7 @@ static const char *gbs_vglobal_string(const char *templat, va_list parg, int all
     return buffer[my_idx];
 }
 
-static char *gbs_vglobal_string_copy(const char *templat, va_list parg) {
+STATIC_ATTRIBUTED(__ATTR__VFORMAT(1), char *gbs_vglobal_string_copy(const char *templat, va_list parg)) {
     const char *gstr = gbs_vglobal_string(templat, parg, 1);
     return GB_strduplen(gstr, last_global_string_size);
 }
@@ -158,7 +157,7 @@ size_t GBS_last_global_string_size() {
 }
 void GBS_reuse_buffer(const char *global_buffer) {
     // If you've just shortely used a buffer, you can put it back here
-    gbs_vglobal_string(global_buffer, 0, -1);
+    gbs_vglobal_string(global_buffer, 0, -1); // omg hax
 }
 
 char *GBS_global_string_copy(const char *templat, ...) {

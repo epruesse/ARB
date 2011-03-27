@@ -42,7 +42,7 @@
 namespace arb_test {
 
     class StaticCode {
-        static void vcompiler_msg(const char *filename, int lineno, const char *message_type, const char *format, va_list parg) {
+        static void vcompiler_msg(const char *filename, int lineno, const char *message_type, const char *format, va_list parg) __attribute__((format(__printf__, 4, 0))) {
             fprintf(stderr, "%s:%i: ", filename, lineno);
             if (message_type) fprintf(stderr, "%s: ", message_type);
             vfprintf(stderr, format, parg);
