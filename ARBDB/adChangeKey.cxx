@@ -14,9 +14,9 @@
 
 // get the container of a species key description
 GBDATA *GBT_get_changekey(GBDATA *gb_main, const char *key, const char *change_key_path) {
-#if defined(DEVEL_RALF)
+#if defined(WARN_TODO)
 #warning check if search for CHANGEKEY_NAME should be case-sensitive!
-#endif // DEVEL_RALF
+#endif
     GBDATA *gb_key      = 0;
     GBDATA *gb_key_data = GB_search(gb_main, change_key_path,
                                     GB_CREATE_CONTAINER);

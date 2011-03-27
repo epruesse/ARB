@@ -318,10 +318,10 @@ void SEC_db_interface::cursor_changed(const SEC_dbcb *) {
 }
 
 void SEC_db_interface::alilen_changed(const SEC_dbcb *) {
-#if defined(DEVEL_RALF)
+#if defined(WARN_TODO)
 #warning @@@reread alilen
 #warning test changing ali length!
-#endif // DEVEL_RALF
+#endif
     gfx->request_update(SEC_UPDATE_RELOAD);
     if (perform_refresh) ntw->refresh();
 }

@@ -243,7 +243,7 @@ static const char *aisc_get_object_attribute(long i, long j)
     return aisc_attribute_names_list[i][j];
 }
 
-#if defined(DEVEL_RALF)
+#if defined(WARN_TODO)
 #warning DRY client.c vs server.c (->clientserver.c).
 /* e.g. aisc_get_m_id and aisc_client_get_m_id
  * aisc_open_socket() / aisc_client_open_socket()

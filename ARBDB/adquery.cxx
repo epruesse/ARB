@@ -857,9 +857,9 @@ static const char *shortenLongString(const char *str, size_t wanted_len) {
     return result;
 }
 
-#if defined(DEVEL_RALF)
+#if defined(WARN_TODO)
 #warning rewrite GB_command_interpreter (error+ressource handling)
-#endif // DEVEL_RALF
+#endif
 
 char *GB_command_interpreter(GBDATA *gb_main, const char *str, const char *commands, GBDATA *gbd, const char *default_tree_name) {
     /* simple command interpreter returns NULL on error (which should be exported in that case)

@@ -1029,7 +1029,7 @@ inline long calcSequenceChecksum(const char *data, long length) {
     return GB_checksum(data, length, 1, GAP_CHARS);
 }
 
-#if defined(DEVEL_RALF)
+#if defined(WARN_TODO)
 #warning firstColumn + lastColumn -> TargetRange
 #endif
 
@@ -1827,10 +1827,10 @@ public:
 };
 
 
-#if defined(DEVEL_RALF)
+#if defined(WARN_TODO)
 #warning make alignTo a member of ExplicitReference (or of AlignmentReference)
 #warning let alignToGroupConsensus and alignToNextRelative use ExplicitReference
-#endif // DEVEL_RALF
+#endif
 
 class ExplicitReference: public AlignmentReference {
     const FastSearchSequence *targetSequence;
@@ -1852,9 +1852,9 @@ public:
     }
 };
 
-#if defined(DEVEL_RALF)
+#if defined(WARN_TODO)
 #warning make alignToGroupConsensus a member of ConsensusReference
-#endif // DEVEL_RALF
+#endif
 
 class ConsensusReference: public AlignmentReference {
     Aligner_get_consensus_func  get_consensus;
@@ -1873,9 +1873,9 @@ public:
     }
 };
 
-#if defined(DEVEL_RALF)
+#if defined(WARN_TODO)
 #warning make alignToNextRelative a member of SearchRelativesReference
-#endif // DEVEL_RALF
+#endif
 
 class SearchRelativesReference: public AlignmentReference {
     SearchRelativeParams&  relSearch;
@@ -1951,9 +1951,9 @@ class Aligner {
 
 public:
 
-#if defined(DEVEL_RALF)
+#if defined(WARN_TODO)
 #warning pass AlignmentReference from caller (replacing reference parameters)
-#endif // DEVEL_RALF
+#endif
 
     Aligner(GBDATA *gb_main_,
 
@@ -2111,9 +2111,9 @@ ARB_ERROR Aligner::alignToExplicitReference(GBDATA *gb_species_data, int max_seq
         CompactedSubSequence *referenceSeq = readCompactedSequence(gb_reference, alignment, &error, NULL, &referenceChksum, ali_params.firstColumn, ali_params.lastColumn);
 
         if (island_hopper) {
-#if defined(DEVEL_RALF)
+#if defined(WARN_TODO)
 #warning setting island_hopper reference has to be done in called function (seems that it is NOT done for alignToConsensus and alignToRelatives). First get tests in place!
-#endif // DEVEL_RALF
+#endif
             GBDATA *gb_seq = GBT_read_sequence(gb_reference, alignment);        // get sequence
             if (gb_seq) {
                 long        length = GB_read_string_count(gb_seq);
@@ -2126,9 +2126,9 @@ ARB_ERROR Aligner::alignToExplicitReference(GBDATA *gb_species_data, int max_seq
 
 
         if (!error) {
-#if defined(DEVEL_RALF)
+#if defined(WARN_TODO)
 #warning do not pass FastSearchSequence to ExplicitReference, instead pass sequence and length (ExplicitReference shall create it itself)
-#endif // DEVEL_RALF
+#endif
 
             FastSearchSequence referenceFastSeq(*referenceSeq);
             ExplicitReference  target(alignment, &referenceFastSeq, gb_reference, max_seq_length, ali_params);

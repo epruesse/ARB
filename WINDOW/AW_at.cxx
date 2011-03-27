@@ -76,9 +76,6 @@ void AW_window::help_text(const char *help_id) {
 }
 
 void AW_window::sens_mask(AW_active Mask) {
-#if defined(DEVEL_RALF)
-#warning enable assertion below for all developers when tested
-#endif // DEVEL_RALF
     aw_assert(legal_mask(Mask));
     _at->widget_mask = Mask;
 }

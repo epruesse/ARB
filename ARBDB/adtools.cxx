@@ -276,10 +276,10 @@ void GBT_message(GBDATA *gb_main, const char *msg) {
  *   (e.g. "name1,name2,name3")
  */
 
-#if defined(DEVEL_RALF)
+#if defined(WARN_TODO)
 #warning search for code which is splitting strings and use GBT_split_string there
 #warning rename to GBS_split_string and move to string functions
-#endif // DEVEL_RALF
+#endif
 
 char **GBT_split_string(const char *namelist, const char *separator, bool dropEmptyTokens, size_t *countPtr) {
     /*! Split 'namelist' into an array of substrings at each member of 'separator'.

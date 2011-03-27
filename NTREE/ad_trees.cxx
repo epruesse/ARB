@@ -414,9 +414,9 @@ char *readXmlTree(char *fname) {
         char *path = GBS_strclose(buf);
 
         // linking arb_tree.dtd file to the Path from where xml file is loaded
-#if defined(DEVEL_RALF)
+#if defined(WARN_TODO)
 #warning fix hack
-#endif // DEVEL_RALF
+#endif
         char *command = GBS_global_string_copy("ln -s %s/lib/dtd/arb_tree.dtd %s/.", GB_getenvARBHOME(), path);
         GB_xcmd(command, false, true);
 
@@ -807,9 +807,9 @@ AW_window *create_trees_window(AW_root *aw_root) {
         aws->button_length(0);
 
 #if defined(DEBUG)
-#if defined(DEVEL_RALF)
+#if defined(WARN_TODO)
 #warning implement tree move buttons
-#endif // DEVEL_RALF
+#endif
         aws->at("upall");
         aws->callback(move_tree_pos, (AW_CL)-9999);
         aws->create_button("moveUpAll", "#moveUpAll.bitmap", 0);

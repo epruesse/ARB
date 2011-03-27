@@ -141,9 +141,9 @@ static int gbl_param_bit(const char *param_name, int def, const char *help_text,
         }                                       \
     } while (0)
 
-#if defined(DEVEL_RALF)
+#if defined(WARN_TODO)
 #warning remove GBL_MAX_ARGUMENTS - instead allocate dynamic
-#endif // DEVEL_RALF
+#endif
 
 
 static GB_ERROR trace_params(int argc, const GBL *argv, gbl_param *ppara, const char *com) {

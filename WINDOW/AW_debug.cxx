@@ -94,7 +94,7 @@ static void build_dontCallHash() {
     GBS_write_hash(dontCallHash, "save_props",   3);
 
 #if 1
-#if defined(DEVEL_RALF)
+#if defined(WARN_TODO)
 #warning crashing - fix later
 #endif
     GBS_write_hash(dontCallHash, "ARB_NT/mark_duplicates",         4);
@@ -103,7 +103,7 @@ static void build_dontCallHash() {
 #endif
 
 #if 1
-#if defined(DEVEL_RALF)
+#if defined(WARN_TODO)
 #warning test callbacks asking questions again later
 #endif
     GBS_write_hash(dontCallHash, "ARB_NT/mark_deep_branches",                            5);

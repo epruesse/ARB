@@ -37,7 +37,7 @@ public:
     const Macke&   to_macke(const Seq& seq) const;
 };
 
-#if defined(DEVEL_RALF)
+#if defined(WARN_TODO)
 #warning refactor below
 #endif
 

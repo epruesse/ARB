@@ -718,9 +718,9 @@ void GBS_hash_do_loop(GB_HASH *hs, gb_hash_loop_type func, void *client_data) {
     }
 }
 
-#if defined(DEVEL_RALF)
+#if defined(WARN_TODO)
 #warning rename GBS_hash_count_elems -> GBS_hash_elements
-#endif // DEVEL_RALF
+#endif
 
 size_t GBS_hash_count_elems(GB_HASH *hs) {
 #if defined(DEBUG)

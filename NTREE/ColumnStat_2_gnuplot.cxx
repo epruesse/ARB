@@ -95,9 +95,9 @@ static char * get_overlay_files(AW_root *awr, const char *fname, GB_ERROR& error
         if (overlay_prefix || overlay_postfix) {
             char *mask = GBS_global_string_copy("%s.*_gnu", name_prefix);
             if (overlay_prefix) {
-#if defined(DEVEL_RALF)
+#if defined(WARN_TODO)
 #warning change error handling for GB_find_all_files() - globally!
-#endif // DEVEL_RALF
+#endif
                 found_prefix_files             = GB_find_all_files(dir, mask, false);
                 if (!found_prefix_files) error = GB_get_error();
             }

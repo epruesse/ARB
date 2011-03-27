@@ -685,9 +685,9 @@ void gb_check_in_undo_modify(GB_MAIN_TYPE *Main, GBDATA *gbd) {
     }
 }
 
-#if defined(DEVEL_RALF)
+#if defined(WARN_TODO)
 #warning change param for gb_check_in_undo_delete to GBDATA **
-#endif // DEVEL_RALF
+#endif
 
 void gb_check_in_undo_delete(GB_MAIN_TYPE *Main, GBDATA *gbd, int deep) {
     long            type = GB_TYPE(gbd);

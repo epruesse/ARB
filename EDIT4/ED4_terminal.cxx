@@ -146,7 +146,7 @@ const char *ED4_terminal::resolve_pointer_to_char_pntr(int *str_len) const
     const char *copy_of = 0; // if set, return a copy of this string
 
     gb_type = GB_read_type(gbd);
-#if defined(DEVEL_RALF)
+#if defined(WARN_TODO)
 #warning temporary workaround - gb_type GB_INT and GB_FLOAT in the switch directive must not be displayed but ignored
 #endif
     switch (gb_type)
@@ -1377,9 +1377,9 @@ GB_CSTR ED4_columnStat_terminal::build_probe_match_string(int start_pos, int end
 
 ED4_returncode ED4_columnStat_terminal::draw(int /* only_text */)
 {
-#if defined(DEVEL_RALF)
+#if defined(WARN_TODO)
 #warning test drawing of ED4_columnStat_terminal
-#endif // DEVEL_RALF
+#endif
     if (!update_likelihood()) {
         aw_popup_ok("Can't calculate likelihood.");
         return ED4_R_IMPOSSIBLE;

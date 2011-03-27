@@ -35,9 +35,9 @@
 
 using namespace std;
 
-#if defined(DEVEL_RALF)
+#if defined(WARN_TODO)
 #warning derive File_selection from AW_selection
-#endif // DEVEL_RALF
+#endif
 
 struct File_selection {                            // for fileselection
     AW_window         *aws;

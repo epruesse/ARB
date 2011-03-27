@@ -86,9 +86,9 @@ inline GB_ERROR error_with_dbentry(const char *action, GBDATA *gbd, GB_ERROR err
     } while(0)                                                          \
 
 
-#if defined(DEVEL_RALF)
+#if defined(WARN_TODO)
 #warning replace GB_TEST_READ / GB_TEST_READ by new names later
-#endif // DEVEL_RALF
+#endif
 
 #define GB_TEST_READ(gbd, type, ignored) EXPORT_ERROR_AND_RETURN_0_IF_NOT_READABLE_AS_TYPE(gbd, type)
 #define GB_TEST_WRITE(gbd, type, ignored) RETURN_ERROR_IF_NOT_WRITEABLE_AS_TYPE(gbd, type)
@@ -907,10 +907,10 @@ GB_ERROR GB_write_byte(GBDATA *gbd, int i)
 
 GB_ERROR GB_write_int(GBDATA *gbd, long i) {
 #if defined(ARB64)
-#if defined(DEVEL_RALF)
+#if defined(WARN_TODO)
 #warning GB_write_int should be GB_ERROR GB_write_int(GBDATA *gbd,int32_t i)
-#endif // DEVEL_RALF
-#endif // ARB64
+#endif
+#endif
 
     GB_TEST_WRITE(gbd, GB_INT, "GB_write_int");
     if ((long)((int32_t)i) != i) {
@@ -945,9 +945,9 @@ GB_ERROR GB_write_float(GBDATA *gbd, double f)
 
     GB_TEST_WRITE(gbd, GB_FLOAT, "GB_write_float");
 
-#if defined(DEVEL_RALF)
+#if defined(WARN_TODO)
 #warning call GB_read_float here!
-#endif // DEVEL_RALF
+#endif
     GB_TEST_READ(gbd, GB_FLOAT, "GB_read_float");
 
     xdrmem_create(&xdrs, &gbd->info.in.data[0], SIZOFINTERN, XDR_DECODE);
@@ -1325,9 +1325,9 @@ GBQUARK GB_key_2_quark(GBDATA *gbd, const char *key) {
     return quark;
 }
 
-#if defined(DEVEL_RALF)
+#if defined(WARN_TODO)
 #warning add gb_NULLkey_2_quark allowing NULL as key
-#endif // DEVEL_RALF
+#endif
 
 GBQUARK gb_key_2_quark(GB_MAIN_TYPE *Main, const char *key) {
     // similar to GB_key_2_quark, 
@@ -1565,9 +1565,9 @@ GBDATA *GB_create_container(GBDATA *father, const char *key) {
     return (GBDATA *)gbd;
 }
 
-#if defined(DEVEL_RALF)
+#if defined(WARN_TODO)
 #warning change param for GB_delete to GBDATA **
-#endif // DEVEL_RALF
+#endif
 
 GB_ERROR GB_delete(GBDATA *source) {
     GBDATA *gb_main;
@@ -1608,9 +1608,9 @@ GB_ERROR gb_delete_force(GBDATA *source)    // delete always
 // ------------------
 //      Copy data
 
-#if defined(DEVEL_RALF)
+#if defined(WARN_TODO)
 #warning replace GB_copy with GB_copy_with_protection after release
-#endif // DEVEL_RALF
+#endif
 
 GB_ERROR GB_copy(GBDATA *dest, GBDATA *source) {
     return GB_copy_with_protection(dest, source, false);
@@ -1783,9 +1783,9 @@ char* GB_get_subfields(GBDATA *gbd) {
 // ----------------------
 //      recompression
 
-#if defined(DEVEL_RALF)
+#if defined(WARN_TODO)
 #warning rename gb_set_compression into gb_recompress (misleading name)
-#endif // DEVEL_RALF
+#endif
 
 GB_ERROR gb_set_compression(GBDATA *source)
 {
@@ -2154,9 +2154,9 @@ int GB_get_transaction_level(GBDATA *gbd) {
     return Main->transaction;
 }
 
-#if defined(DEVEL_RALF)
+#if defined(WARN_TODO)
 #warning GB_update_server should be ARBDB-local!
-#endif // DEVEL_RALF
+#endif
 
 GB_ERROR GB_update_server(GBDATA *gbd) {
     //! Send updated data to server

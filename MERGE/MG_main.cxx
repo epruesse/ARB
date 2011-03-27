@@ -312,10 +312,10 @@ void MG_start_cb(AW_window *aww)
         else {
             arb_progress progress("Loading databases");
 
-#if defined(DEVEL_RALF)
+#if defined(WARN_TODO)
 #warning where are GLOBAL_gb_merge / GLOBAL_gb_dest closed ?
 #warning when closing them, call AWT_browser_forget_db as well
-#endif // DEVEL_RALF
+#endif
             progress.subtitle("DATABASE I");
             GLOBAL_gb_merge             = GBT_open(merge, "rw", "$(ARBHOME)/lib/pts/*");
             if (!GLOBAL_gb_merge) error = GB_await_error();

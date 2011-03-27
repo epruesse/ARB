@@ -213,9 +213,9 @@ void AW_variable_update_callback(Widget /*wgt*/, XtPointer variable_update_struc
                 case AW_STRING: error = vus->awar->write_string(vus->variable_value);        break;
                 case AW_INT:    error = vus->awar->write_int(vus->variable_int_value);       break;
                 case AW_FLOAT:  error = vus->awar->write_float(vus->variable_float_value); break;
-#if defined(DEVEL_RALF)
+#if defined(WARN_TODO)
 #warning missing implementation for AW_POINTER
-#endif // DEVEL_RALF
+#endif
                 default:
                     aw_assert(0);
                     GB_warning("Unknown AWAR type");
@@ -1563,9 +1563,9 @@ const char *AW_window::get_element_at_index(AW_selection_list *selection_list, i
     return element;
 }
 
-#if defined(DEVEL_RALF)
+#if defined(WARN_TODO)
 #warning design of delete_selection_from_list is broken - shall use 'associated value' not 'displayed value'!
-#endif // DEVEL_RALF
+#endif
 
 void AW_window::delete_selection_from_list(AW_selection_list *selection_list, const char *disp_string)
 {
@@ -1637,9 +1637,9 @@ void AW_window::insert_default_selection(AW_selection_list *selection_list, cons
     selection_list->default_select = new AW_select_table_struct(displayed, value);
 }
 
-#if defined(DEVEL_RALF)
+#if defined(WARN_TODO)
 #warning parameter value must be int32_t
-#endif // DEVEL_RALF
+#endif
 void AW_window::insert_selection(AW_selection_list *selection_list, const char *displayed, long value) {
 
     if (selection_list->variable_type != AW_INT) {
@@ -1656,9 +1656,9 @@ void AW_window::insert_selection(AW_selection_list *selection_list, const char *
     }
 }
 
-#if defined(DEVEL_RALF)
+#if defined(WARN_TODO)
 #warning parameter value must be int32_t
-#endif // DEVEL_RALF
+#endif
 void AW_window::insert_default_selection(AW_selection_list *selection_list, const char *displayed, long value) {
     if (selection_list->variable_type != AW_INT) {
         selection_type_mismatch("int");
@@ -2375,9 +2375,9 @@ void AW_window::update_option_menu(AW_option_menu_struct *oms) {
             float  global_var_float_value = 0;
             char  *var_name               = oms->variable_name;
 
-#if defined(DEVEL_RALF)
+#if defined(WARN_TODO)
 #warning missing implementation for AW_POINTER
-#endif // DEVEL_RALF
+#endif
 
             switch (oms->variable_type) {
                 case AW_STRING: global_var_value       = root->awar(var_name)->read_string(); break;
@@ -2649,9 +2649,9 @@ void AW_window::update_toggle_field(int toggle_field_number) {
             long   global_var_int_value   = 0;
             float  global_var_float_value = 0;
 
-#if defined(DEVEL_RALF)
+#if defined(WARN_TODO)
 #warning missing implementation for AW_POINTER
-#endif // DEVEL_RALF
+#endif
 
             switch (toggle_field_list->variable_type) {
                 case AW_STRING: global_var_value       = root->awar(toggle_field_list->variable_name)->read_string(); break;

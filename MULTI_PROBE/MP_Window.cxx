@@ -342,9 +342,9 @@ void MP_Window::build_pt_server_list()
     int     i;
     char    *choice;
 
-#if defined(DEVEL_RALF)
+#if defined(WARN_TODO)
 #warning why option_menu ? better use selection list ( awt_create_selection_list_on_pt_servers )
-#endif // DEVEL_RALF
+#endif
 
     aws->at("PTServer");
     aws->callback(MP_cache_sonden);

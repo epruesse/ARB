@@ -240,9 +240,9 @@ GB_ERROR st_ml_check_sequence_quality(GBDATA     *gb_main, const char *tree_name
                                       const char *alignment_name, ColumnStat *colstat, const WeightedFilter *weighted_filter, int bucket_size,
                                       int         marked_only, st_report_enum report, const char *dest_field)
 {
-#if defined(DEVEL_RALF)
+#if defined(WARN_TODO)
 #warning parameter 'alignment_name' can be retrieved from WeightedFilter (as soon as automatic mapping works for filters)    
-#endif // DEVEL_RALF
+#endif
     ST_ML    st_ml(gb_main);
     GB_ERROR error = st_ml.init_st_ml(tree_name, alignment_name, 0, marked_only, colstat, weighted_filter);
     arb_progress glob_progress("Sequence Quality Check");

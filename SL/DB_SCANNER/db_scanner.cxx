@@ -32,9 +32,9 @@
         the gbdata pointer can be read
 ***************************************************************************/
 
-#if defined(DEVEL_RALF)
+#if defined(WARN_TODO)
 #warning derive db_scanner_data from AW_DB_selection
-#endif // DEVEL_RALF
+#endif
 
 struct db_scanner_data {
     AW_window         *aws;

@@ -34,11 +34,11 @@
 
 using namespace std;
 
-#if defined(DEVEL_RALF)
+#if defined(WARN_TODO)
 #warning the whole fix mechanism should be part of some lower-level-library
 // meanwhile DB checks are only performed by ARB_NTREE
 // ad_item_selector should go to same library as this module
-#endif // DEVEL_RALF
+#endif
 
 // --------------------------------------------------------------------------------
 // CheckedConsistencies provides an easy way to automatically correct flues in the database

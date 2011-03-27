@@ -155,9 +155,9 @@ struct AW_select_table_struct {
 
     char *displayed;
 
-#if defined(DEVEL_RALF)
+#if defined(WARN_TODO)
 #warning make the following variables a union
-#endif // DEVEL_RALF
+#endif
     char  *char_value;
     long   int_value;
     float  float_value;
