@@ -28,6 +28,7 @@
 //      error handling
 
 void GB_raise_critical_error(const char *msg) {
+    // goes to header: __ATTR__NORETURN
     fprintf(stderr, "------------------------------------------------------------\n");
     fprintf(stderr, "A critical error occurred in ARB\nError-Message: %s\n", msg);
 #if defined(DEBUG)

@@ -135,7 +135,7 @@ void GB_sort(void **array, size_t first, size_t behind_last, gb_compare_function
 int GB_string_comparator(const void *v0, const void *v1, void *);
 
 /* adstring.cxx */
-void GB_raise_critical_error(const char *msg);
+void GB_raise_critical_error(const char *msg) __ATTR__NORETURN;
 char *GBS_string_2_key_with_exclusions(const char *str, const char *additional);
 char *GBS_string_2_key(const char *str);
 char *GB_memdup(const char *source, size_t len);

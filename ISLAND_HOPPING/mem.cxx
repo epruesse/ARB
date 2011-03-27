@@ -10,6 +10,7 @@
 
 #include "mem.h"
 #include <stdio.h>
+#include <attributes.h>
 
 #define MINSIZE 72 /* >= sizeof(Node) */
 
@@ -25,7 +26,7 @@ void clearUp(void) { void *v;
 
 /* ========================================================================== */
 
-static void outOfMemory(void) {
+STATIC_ATTRIBUTED(__ATTR__NORETURN, void outOfMemory(void)) {
     fprintf(stdout,"\n!!! Out of Memory\n");
     clearUp();
     exit(EXIT_FAILURE);

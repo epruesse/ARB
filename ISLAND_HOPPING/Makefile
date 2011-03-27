@@ -49,6 +49,7 @@ island_hopping.o: $(ARBHOME)/INCLUDE/dupstr.h
 island_hopping.o: $(ARBHOME)/INCLUDE/test_global.h
 
 mem.o: mem.h
+mem.o: $(ARBHOME)/INCLUDE/attributes.h
 
 trnsprob.o: defs.h
 trnsprob.o: mem.h

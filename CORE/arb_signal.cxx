@@ -31,7 +31,7 @@ static bool    dump_backtrace_on_sigsegv = false;
 static bool    suppress_sigsegv          = false;
 static jmp_buf return_after_segv;
 
-void sigsegv_handler(int sig) {
+void sigsegv_handler(int sig) { // goes to header __ATTR__NORETURN
     // Note: sigsegv_handler is intentionally global, to show it in backtrace!
 
     if (suppress_sigsegv) {

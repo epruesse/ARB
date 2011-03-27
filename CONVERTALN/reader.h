@@ -95,7 +95,7 @@ public:
     virtual void out(char ch)        = 0;
     virtual const char *name() const = 0;
 
-    virtual void throw_write_error() const;
+    virtual void throw_write_error() const __ATTR__NORETURN;
     virtual int out(const char *text);
     virtual int outf(const char *format, ...) __ATTR__FORMAT(2);
 
