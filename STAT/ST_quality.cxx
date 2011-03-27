@@ -106,7 +106,9 @@ ColumnQualityInfo::ColumnQualityInfo(int seq_len, int bucket_size)
     , stat_cons(2)
 {}
 
+#if defined(WARN_TODO)
 #warning stat_cons unused - implement
+#endif
 
 static void st_ml_add_sequence_part_to_stat(ST_ML *st_ml, ColumnStat */* awt_csp */,
                                             const char *species_name, int seq_len, int bucket_size,
