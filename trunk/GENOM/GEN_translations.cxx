@@ -22,9 +22,9 @@ using namespace std;
 // -------------------------------------------------
 //      remove redundant translations from genes
 
-#if defined(DEVEL_RALF)
+#if defined(WARN_TODO)
 # warning add menu-entry to genome-NTREE ("Remove reproduceable translations")
-#endif // DEVEL_RALF
+#endif
 
 static char *translate_gene_sequence(GBDATA *gb_gene, GB_ERROR& error, int& translated_length, char *startCodon) {
     // return translation of gene sequence
