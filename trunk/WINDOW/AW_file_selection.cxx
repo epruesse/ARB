@@ -724,7 +724,7 @@ void TEST_path_unfolding() {
         TEST_ASSERT_EQUAL(GB_getenv("PWD"), currDir);
         TEST_ASSERT_EQUAL_DUPPED(strdup(GB_getenv("PT_SERVER_HOME")), strdup(GB_path_in_ARBLIB("pts"))); // need to dup here - otherwise temp buffers get overwritten
         TEST_ASSERT_EQUAL(GB_getenv("ARBHOME"), GB_getenvARBHOME());
-        TEST_ASSERT_EQUAL(GB_getenv("ARB_NONEXISTING_ENVAR"), NULL);
+        TEST_ASSERT_NULL(GB_getenv("ARB_NONEXISTING_ENVAR"));
 
         GB_install_getenv_hook(old);
     }

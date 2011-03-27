@@ -86,9 +86,9 @@ AP_tree_root::AP_tree_root(AliView *aliView, const AP_tree& tree_proto, AP_seque
     , root_changed_cb(NULL), root_changed_cd(NULL)
     , node_deleted_cb(NULL), node_deleted_cd(NULL)
     , gb_tree_gone(NULL)
-    , tree_timer(NULL)
-    , species_timer(NULL)
-    , table_timer(NULL)
+    , tree_timer(0)
+    , species_timer(0)
+    , table_timer(0)
     , rates(NULL)
 {
     GBDATA         *gb_main = get_gb_main();
