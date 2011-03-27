@@ -67,7 +67,7 @@ static Globals GLOBAL;
 // #define TRACE_PREFIX "UnitTester:0: "
 #define TRACE_PREFIX "UnitTester: "
 
-static void trace(const char *format, ...) {
+STATIC_ATTRIBUTED(__ATTR__FORMAT(1), void trace(const char *format, ...)) {
     va_list parg;
 
     fflush(stdout);
@@ -451,9 +451,9 @@ UnitTester::UnitTester(const char *libname, const UnitTest_simple *simple_tests,
             }
         }
 
-        trace(generateReport(libname,
-                             tests+skippedTests, skippedTests, passed,
-                             duration_ms, global.warnings));
+        trace("%s", generateReport(libname,
+                                   tests+skippedTests, skippedTests, passed,
+                                   duration_ms, global.warnings));
     }
 
     arb_test::GlobalTestData::erase_instance();
