@@ -161,9 +161,6 @@ public:
 
     GB_ERROR save_properties(const char *filename = NULL) __ATTR__USERESULT;
 
-    AW_default get_gbdata(const char *varname) __ATTR__DEPRECATED; // replace by awar + gb_var
-
-
     // Control sensitivity of buttons etc.:
     void apply_sensitivity(AW_active mask);
     void make_sensitive(Widget w, AW_active mask);
