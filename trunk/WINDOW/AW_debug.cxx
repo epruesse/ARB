@@ -94,14 +94,18 @@ static void build_dontCallHash() {
     GBS_write_hash(dontCallHash, "save_props",   3);
 
 #if 1
+#if defined(DEVEL_RALF)
 #warning crashing - fix later
+#endif
     GBS_write_hash(dontCallHash, "ARB_NT/mark_duplicates",         4);
     GBS_write_hash(dontCallHash, "ARB_NT/view_probe_group_result", 4);
     GBS_write_hash(dontCallHash, "PT_SERVER_ADMIN/CHECK_SERVER",   4);
 #endif
 
 #if 1
+#if defined(DEVEL_RALF)
 #warning test callbacks asking questions again later
+#endif
     GBS_write_hash(dontCallHash, "ARB_NT/mark_deep_branches",                            5);
     GBS_write_hash(dontCallHash, "ARB_NT/mark_degen_branches",                           5);
     GBS_write_hash(dontCallHash, "ARB_NT/mark_long_branches",                            5);

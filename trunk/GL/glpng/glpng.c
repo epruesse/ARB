@@ -497,23 +497,23 @@ int APIENTRY pngLoadF(FILE *fp, int mipmap, int trans, pngInfo *pinfo) {
         if (PalettedTextures && mipmap >= 0 && trans == PNG_SOLID && color == PNG_COLOR_TYPE_PALETTE) {
             png_colorp pal;
             int cols;
-            GLint intf;
+            GLint internalFormat;
 
             if (pinfo != NULL) pinfo->Alpha = 0;
             png_get_PLTE(png, info, &pal, &cols);
 
             switch (cols) {
-                case 1<<1:  intf = GL_COLOR_INDEX1_EXT;  break;
-                case 1<<2:  intf = GL_COLOR_INDEX2_EXT;  break;
-                case 1<<4:  intf = GL_COLOR_INDEX4_EXT;  break;
-                case 1<<8:  intf = GL_COLOR_INDEX8_EXT;  break;
-                case 1<<12: intf = GL_COLOR_INDEX12_EXT; break;
-                case 1<<16: intf = GL_COLOR_INDEX16_EXT; break;
+                case 1<<1:  internalFormat = GL_COLOR_INDEX1_EXT;  break;
+                case 1<<2:  internalFormat = GL_COLOR_INDEX2_EXT;  break;
+                case 1<<4:  internalFormat = GL_COLOR_INDEX4_EXT;  break;
+                case 1<<8:  internalFormat = GL_COLOR_INDEX8_EXT;  break;
+                case 1<<12: internalFormat = GL_COLOR_INDEX12_EXT; break;
+                case 1<<16: internalFormat = GL_COLOR_INDEX16_EXT; break;
                 default:
                     return 0;
             }
             glColorTableEXT(GL_TEXTURE_2D, GL_RGB8, cols, GL_RGB, GL_UNSIGNED_BYTE, pal);
-            glTexImage2D(GL_TEXTURE_2D, mipmap, intf, width, height, 0, GL_COLOR_INDEX, GL_UNSIGNED_BYTE, data);
+            glTexImage2D(GL_TEXTURE_2D, mipmap, internalFormat, width, height, 0, GL_COLOR_INDEX, GL_UNSIGNED_BYTE, data);
         }
         else
 #endif

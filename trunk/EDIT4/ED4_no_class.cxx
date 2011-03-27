@@ -90,9 +90,9 @@ void ED4_expose_recalculations() {
     ED4_ROOT->recalc_font_group();
     ED4_calc_terminal_extentions();
 
-#if defined(DEBUG)
+#if defined(DEVEL_RALF)
 #warning below calculations have to be done at startup as well - maybe call expose_cb once after create_hierarchy.
-#endif // DEBUG
+#endif
 
     ED4_ROOT->ref_terminals.get_ref_sequence_info()->extension.size[HEIGHT] = TERMINALHEIGHT;
     ED4_ROOT->ref_terminals.get_ref_sequence()->extension.size[HEIGHT]      = TERMINALHEIGHT;

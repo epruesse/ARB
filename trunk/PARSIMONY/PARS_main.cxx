@@ -1281,7 +1281,7 @@ static void pars_start_cb(AW_window *aw_parent, AW_CL cd_weightedFilter, AW_CL c
                                                         "Tree vanished", aliname);
             }
             else if (removed) {
-                aw_message(GBS_global_string("Removed %i leafs (zombies or species w/o data in alignment)", removed));
+                aw_message(GBS_global_string("Removed %li leafs (zombies or species w/o data in alignment)", removed));
             }
 
             error = GB_end_transaction(ntw->gb_main, error);

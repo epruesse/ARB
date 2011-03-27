@@ -389,10 +389,10 @@ static void export_tree_rek(GBT_TREE *tree, FILE *out, bool export_branchlens, b
     }
 }
 
-#if defined(DEBUG)
+#if defined(DEVEL_RALF)
 #warning maybe replace TREE_export_tree by TREE_write_Newick
 /* need some additional parameters (no comment, trifurcation) */
-#endif /* DEBUG */
+#endif
 
 GB_ERROR TREE_export_tree(GBDATA *, FILE *out, GBT_TREE *tree, bool triple_root, bool export_branchlens, bool dquot) {
     if (triple_root) {
