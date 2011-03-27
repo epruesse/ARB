@@ -38,8 +38,11 @@
 #endif
 
 #if (__GNUC__ >= 4) // gcc 4.x and above
-# define __ATTR__SENTINEL __attribute__((sentinel))
+# define __ATTR__SENTINEL   __attribute__((sentinel))
 # define HAS_FUNCTION_TYPE_ATTRIBUTES
+# if (__GNUC_MINOR__ > 5 || (__GNUC_MINOR__ == 5 && __GNUC_PATCHLEVEL__ >= 2)) // gcc 4.5.2 and higher
+#  define __ATTR__DEPRECATED(reason) __attribute__((deprecated(reason)))
+# endif
 # if (__GNUC_MINOR__ >= 2)
 #  define __ATTR__USERESULT __attribute__((warn_unused_result))
 # endif
@@ -80,9 +83,12 @@
 // ------------------------------------------------------------
 // valid for any gcc above 3.xx
 
+#ifndef __ATTR__DEPRECATED
+# define __ATTR__DEPRECATED(reason) __attribute__((deprecated))
+#endif
+#define __ATTR__DEPRECATED_LATER(reason)
+
 #define __ATTR__PURE       __attribute__((pure))
-#define __ATTR__DEPRECATED __attribute__((deprecated))
-#define __ATTR__DEPRECATED_LATER
 #define __ATTR__CONST      __attribute__((const))
 #define __ATTR__NORETURN   __attribute__((noreturn))
 

@@ -572,10 +572,12 @@ GB_ERROR GBT_rename_alignment(GBDATA *gbMain, const char *source, const char *de
 //      alignment related item functions
 
 NOT4PERL GBDATA *GBT_add_data(GBDATA *species, const char *ali_name, const char *key, GB_TYPES type) {
-    // goes to header: __ATTR__DEPRECATED_LATER
+    // goes to header: __ATTR__DEPRECATED_LATER("better use GBT_create_sequence_data()")
 
     /* replace this function by GBT_create_sequence_data
      * the same as GB_search(species, 'ali_name/key', GB_CREATE)
+     *
+     * Note: The behavior is weird, cause it does sth special for GB_STRING (write default content "...")
      */
 
     GBDATA *gb_gb;

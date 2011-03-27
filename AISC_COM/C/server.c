@@ -1429,7 +1429,7 @@ void aisc_server_shutdown(Hs_struct *hs) {
 void aisc_server_shutdown_and_exit(Hs_struct *hs, int exitcode) {
     /* goes to header:
      * __ATTR__NORETURN
-     * __ATTR__DEPRECATED cause it hides a call to exit() inside a library
+     * __ATTR__DEPRECATED("cause it hides a call to exit() inside a library")
      */
 
     aisc_server_shutdown(hs);
