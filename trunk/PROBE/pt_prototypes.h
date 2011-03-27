@@ -62,7 +62,7 @@ extern "C" int server_shutdown P_((PT_main *pm, aisc_string passwd));
 extern "C" int broadcast P_((PT_main *main, int dummy_1x));
 void PT_init_psg P_((void));
 void PT_exit_psg P_((void));
-void PT_exit P_((int exitcode));
+void PT_exit P_((int exitcode)) __ATTR__NORETURN;
 GB_ERROR PT_init_map P_((void)) __ATTR__USERESULT;
 
 /* PT_match.cxx */

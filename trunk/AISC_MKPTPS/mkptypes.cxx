@@ -24,6 +24,7 @@
 #include <cstdarg>
 
 #define SIMPLE_ARB_ASSERT
+#include <attributes.h>
 #include <arb_assert.h>
 
 #define mp_assert(cond) arb_assert(cond)
@@ -1437,7 +1438,7 @@ static void getdecl(FILE *f, const char *header) {
     }
 }
 
-static void Usage() {
+STATIC_ATTRIBUTED(__ATTR__NORETURN, void Usage()) {
     fprintf(stderr, "Usage: %s [flags] [files ...]", ourname);
     fputs("\nSupported flags:"
           "\n   -a               make a function list for aisc_includes (default: generate C prototypes)"

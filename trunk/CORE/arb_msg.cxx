@@ -426,8 +426,7 @@ void GB_internal_errorf(const char *templat, ...) {
     GB_internal_error(message);
 }
 
-void GBK_terminate(const char *error) {
-
+void GBK_terminate(const char *error) { // goes to header __ATTR__NORETURN
     /* GBK_terminate is the emergency exit!
      * only used if no other way to recover
      */
@@ -442,7 +441,7 @@ void GBK_terminate(const char *error) {
 }
 
 void GBK_terminatef(const char *templat, ...) {
-    // goes to header: __ATTR__FORMAT(1)
+    // goes to header: __ATTR__FORMAT(1) __ATTR__NORETURN
     va_list parg;
 
     va_start(parg, templat);
