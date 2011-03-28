@@ -155,10 +155,6 @@ const char *GBS_global_string_to_buffer(char *buffer, size_t bufsize, const char
 size_t GBS_last_global_string_size() {
     return last_global_string_size;
 }
-void GBS_reuse_buffer(const char *global_buffer) {
-    // If you've just shortely used a buffer, you can put it back here
-    gbs_vglobal_string(global_buffer, 0, -1); // omg hax
-}
 
 char *GBS_global_string_copy(const char *templat, ...) {
     // goes to header: __ATTR__FORMAT(1)
@@ -487,5 +483,13 @@ void GB_informationf(const char *templat, ...) {
 
     GB_information(message);
     free(message);
+}
+
+
+#pragma GCC diagnostic ignored "-Wmissing-format-attribute"
+
+void GBS_reuse_buffer(const char *global_buffer) {
+    // If you've just shortely used a buffer, you can put it back here
+    gbs_vglobal_string(global_buffer, 0, -1); // omg hax
 }
 

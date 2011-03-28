@@ -22,7 +22,6 @@
 
 const char *GBS_global_string_to_buffer(char *buffer, size_t bufsize, const char *templat, ...) __ATTR__FORMAT(3);
 size_t GBS_last_global_string_size(void);
-void GBS_reuse_buffer(const char *global_buffer);
 char *GBS_global_string_copy(const char *templat, ...) __ATTR__FORMAT(1);
 const char *GBS_global_string(const char *templat, ...) __ATTR__FORMAT(1);
 GB_ERROR GBK_assert_msg(const char *assertion, const char *file, int linenr);
@@ -49,6 +48,7 @@ void GB_warning(const char *message);
 void GB_warningf(const char *templat, ...) __ATTR__FORMAT(1);
 void GB_information(const char *message);
 void GB_informationf(const char *templat, ...) __ATTR__FORMAT(1);
+void GBS_reuse_buffer(const char *global_buffer);
 
 #else
 #error arb_msg.h included twice
