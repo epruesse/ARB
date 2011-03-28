@@ -147,6 +147,7 @@ ifeq ($(DEBUG),1)
  ifneq ($(USE_GCC_4_OR_HIGHER),'')
 	extended_cpp_warnings += -Wmissing-noreturn# gcc 3.0.2
 	extended_cpp_warnings += -Winit-self# gcc 3.4.0
+	extended_cpp_warnings += -Wstrict-aliasing# gcc 3.4
 	extended_cpp_warnings += -Wextra# gcc 3.4.0
   ifneq ($(USE_GCC_45_OR_HIGHER),'')
    ifneq ($(USE_GCC_452_OR_HIGHER),'')
@@ -274,6 +275,10 @@ cflags += -pipe
 cflags += -fmessage-length=0# don't wrap compiler output
 cflags += -funit-at-a-time
 cflags += -fPIC
+
+ifneq ($(USE_GCC_4_OR_HIGHER),'')
+cflags += -fstrict-aliasing# gcc 3.4
+endif
 
 #---------------------- X11 location
 

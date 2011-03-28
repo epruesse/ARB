@@ -252,7 +252,6 @@ static int aw_status_read_int(int fd, int poll_flag) {
      * if poll ==1 then don't wait for any data, but return EOF */
 
     int erg;
-    unsigned char buffer[sizeof(int)+1];
 
     if (poll_flag) {
         fd_set set;
@@ -266,13 +265,17 @@ static int aw_status_read_int(int fd, int poll_flag) {
         erg = select(FD_SETSIZE, FD_SET_TYPE &set, NULL, NULL, &timeout);
         if (erg == 0) return EOF;
     }
-    erg = read(fd, (char *)buffer, sizeof(int));
-    if (erg<=0) {
-        //      process died
+    union {
+        unsigned char buffer[sizeof(int)+1];
+        int as_int;
+    } input;
+
+    erg = read(fd, input.buffer, sizeof(int));
+    if (erg<=0) { // process died
         fprintf(stderr, "father died, now i kill myself\n");
         exit(EXIT_FAILURE);
     }
-    return *(int*)buffer;
+    return input.as_int;
 }
 
 static int aw_status_read_command(int fd, int poll_flag, char*& str, int *gaugePtr = 0)
