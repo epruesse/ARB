@@ -132,15 +132,22 @@ ifeq ($(DEBUG),1)
 #	POST_COMPILE := 2>&1 | $(ARBHOME)/SOURCE_TOOLS/postcompile.pl --no-warnings --only-first-error
 
 # Enable extra warnings
-#
-	extended_warnings     := -Wwrite-strings -Wunused -Wno-aggregate-return -Wshadow
-	extended_cpp_warnings := -Wnon-virtual-dtor -Wreorder -Wpointer-arith
-#       gcc 3.x.x warnings here:
-	extended_cpp_warnings += -Wdisabled-optimization# gcc 3.0
-	extended_cpp_warnings += -Wmissing-format-attribute# gcc 3.0
-	extended_cpp_warnings += -Wmissing-noreturn# gcc 3.0.2
+	extended_warnings :=
+	extended_cpp_warnings :=
+
+#       C and C++ 
+	extended_warnings     += -Wwrite-strings -Wunused -Wno-aggregate-return -Wshadow
+
+#       C++ only 
+	extended_cpp_warnings += -Wnon-virtual-dtor -Wreorder -Wpointer-arith -Wdisabled-optimization -Wmissing-format-attribute
 # 	extended_cpp_warnings += -Wfloat-equal# gcc 3.0
+
+# ------- above only warnings available in 3.0
+
  ifneq ($(USE_GCC_4_OR_HIGHER),'')
+	extended_cpp_warnings += -Wmissing-noreturn# gcc 3.0.2
+	extended_cpp_warnings += -Winit-self# gcc 3.4.0
+	extended_cpp_warnings += -Wextra# gcc 3.4.0
   ifneq ($(USE_GCC_45_OR_HIGHER),'')
    ifneq ($(USE_GCC_452_OR_HIGHER),'')
 	extended_cpp_warnings += -Wlogical-op# gcc 4.5.2
