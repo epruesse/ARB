@@ -1,7 +1,6 @@
 
-# no-strict-aliasing is important - starting with gcc 4.1.1 code doesn't work without!
-# (problems are caused by type-punning w/o using union which is used widely here)
-FORCED_FLAGS=-fno-strict-aliasing -Wno-unused
+# dont warn about unused functions (@@@ fix)
+FORCED_FLAGS=-Wno-unused
 
 .SUFFIXES: .o .c .h .aisc
 
