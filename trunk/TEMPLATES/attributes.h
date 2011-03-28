@@ -71,16 +71,6 @@
 #define INLINE_ATTRIBUTED(attribute, proto) inline proto attribute; inline proto
 
 // ------------------------------------------------------------
-// now define undefined attributes empty :
-
-#ifndef __ATTR__SENTINEL
-# define __ATTR__SENTINEL
-#endif
-#ifndef __ATTR__USERESULT
-# define __ATTR__USERESULT
-#endif
-
-// ------------------------------------------------------------
 // valid for any gcc above 3.xx
 
 #ifndef __ATTR__DEPRECATED
@@ -97,9 +87,27 @@
 #define __ATTR__FORMAT_MEMBER(pos)  __attribute__((format(__printf__, (pos)+1, (pos)+2)))
 #define __ATTR__VFORMAT_MEMBER(pos) __attribute__((format(__printf__, (pos)+1, 0)))
 // when used for member functions, start with pos+1 (pos = 1 seems to be the this-pointer!?)
+
 // ------------------------------------------------------------
-//
-//
+//  temporary disable
+
+// #undef __ATTR__DEPRECATED
+// #undef __ATTR__USERESULT
+// #undef __ATTR__SENTINEL
+
+// ------------------------------------------------------------
+// now define undefined attributes empty :
+
+#ifndef __ATTR__SENTINEL
+# define __ATTR__SENTINEL
+#endif
+#ifndef __ATTR__USERESULT
+# define __ATTR__USERESULT
+#endif
+#ifndef __ATTR__DEPRECATED
+# define __ATTR__DEPRECATED(reason)
+#endif
+
 
 #else
 #error attributes.h included twice
