@@ -68,8 +68,23 @@ ALLOWED_GCC_VERSIONS=$(ALLOWED_GCC_3xx_VERSIONS) $(ALLOWED_GCC_4xx_VERSIONS)
 GCC_VERSION_FOUND=$(shell $(GCC) -dumpversion)
 GCC_VERSION_ALLOWED=$(strip $(subst ___,,$(foreach version,$(ALLOWED_GCC_VERSIONS),$(findstring ___$(version)___,___$(GCC_VERSION_FOUND)___))))
 
-USING_GCC_3XX=$(strip $(foreach version,$(ALLOWED_GCC_3xx_VERSIONS),$(findstring $(version),$(GCC_VERSION_ALLOWED))))
-USING_GCC_4XX=$(strip $(foreach version,$(ALLOWED_GCC_4xx_VERSIONS),$(findstring $(version),$(GCC_VERSION_ALLOWED))))
+#---------------------- split gcc version 
+
+SPLITTED_VERSION:=$(subst ., ,$(GCC_VERSION_FOUND))
+
+USE_GCC_MAJOR:=$(word 1,$(SPLITTED_VERSION))
+USE_GCC_MINOR:=$(word 2,$(SPLITTED_VERSION))
+USE_GCC_PATCHLEVEL:=$(word 3,$(SPLITTED_VERSION))
+
+USE_GCC_4_OR_HIGHER:=$(findstring $(USE_GCC_MAJOR),456789)
+USE_GCC_45_OR_HIGHER:=
+USE_GCC_452_OR_HIGHER:=
+ifeq ($(USE_GCC_MAJOR),4)
+ USE_GCC_45_OR_HIGHER:=$(findstring $(USE_GCC_MINOR),56789)
+ ifeq ($(USE_GCC_MINOR),5)
+  USE_GCC_452_OR_HIGHER:=$(findstring $(USE_GCC_PATCHLEVEL),23456789)
+ endif
+endif
 
 #---------------------- define special directories for non standard builds
 
@@ -116,15 +131,21 @@ ifeq ($(DEBUG),1)
 #	POST_COMPILE := 2>&1 | $(ARBHOME)/SOURCE_TOOLS/postcompile.pl --only-first-error
 #	POST_COMPILE := 2>&1 | $(ARBHOME)/SOURCE_TOOLS/postcompile.pl --no-warnings --only-first-error
 
-# Enable several warnings
+# Enable extra warnings
+#
 	extended_warnings     := -Wwrite-strings -Wunused -Wno-aggregate-return -Wshadow
-	extended_cpp_warnings := -Wnon-virtual-dtor -Wreorder -Wpointer-arith 
- ifneq ('$(USING_GCC_3XX)','')
-	extended_cpp_warnings += -Wdisabled-optimization -Wmissing-format-attribute
-	extended_cpp_warnings += -Wmissing-noreturn # -Wfloat-equal 
- endif
- ifneq ('$(USING_GCC_4XX)','')
-#	extended_cpp_warnings += -Wwhatever
+	extended_cpp_warnings := -Wnon-virtual-dtor -Wreorder -Wpointer-arith
+#       gcc 3.x.x warnings here:
+	extended_cpp_warnings += -Wdisabled-optimization# gcc 3.0
+	extended_cpp_warnings += -Wmissing-format-attribute# gcc 3.0
+	extended_cpp_warnings += -Wmissing-noreturn# gcc 3.0.2
+# 	extended_cpp_warnings += -Wfloat-equal# gcc 3.0
+ ifneq ($(USE_GCC_4_OR_HIGHER),'')
+  ifneq ($(USE_GCC_45_OR_HIGHER),'')
+   ifneq ($(USE_GCC_452_OR_HIGHER),'')
+	extended_cpp_warnings += -Wlogical-op# gcc 4.5.2
+   endif
+  endif
  endif
 
  ifeq ($(DEBUG_GRAPHICS),1)
