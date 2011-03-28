@@ -34,6 +34,7 @@
 #include <arb_assert.h>
 #include <SigHandler.h>
 #include <arb_cs.h>
+#include <static_assert.h>
 
 
 #define aisc_assert(cond) arb_assert(cond)
@@ -483,10 +484,16 @@ static long aisc_talking_get(long *in_buf, int size, long *out_buf, int max_size
     aisc_talking_func_long   *functions;
     aisc_talking_func_double  dfunction;
 
-    long          len;
-    long          erg = 0;
-    static double derg;
-    long          object;
+    long len;
+    long erg = 0;
+    
+    union {
+        double as_double;
+        int    as_int[2];
+    } derg;
+    COMPILE_ASSERT(sizeof(derg.as_double) <= sizeof(derg.as_int));
+
+    long object;
 
     in_pos = out_pos = 0;
     aisc_server_error = NULL;
@@ -540,7 +547,7 @@ static long aisc_talking_get(long *in_buf, int size, long *out_buf, int max_size
 
         if (type == AISC_TYPE_DOUBLE) {
             dfunction = (aisc_talking_func_double) function;
-            derg = dfunction(object);
+            derg.as_double = dfunction(object);
         }
         else {
             erg = function(object);
@@ -556,9 +563,9 @@ static long aisc_talking_get(long *in_buf, int size, long *out_buf, int max_size
                 break;
 
             case AISC_TYPE_DOUBLE:
-                AISC_DUMP(aisc_talking_get, double, derg);
-                out_buf[out_pos++] = ((int *) &derg)[0];
-                out_buf[out_pos++] = ((int *) &derg)[1];
+                AISC_DUMP(aisc_talking_get, double, derg.as_double);
+                out_buf[out_pos++] = derg.as_int[0];
+                out_buf[out_pos++] = derg.as_int[1];
                 break;
 
             case AISC_TYPE_STRING:
