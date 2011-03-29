@@ -332,11 +332,9 @@ static char *an_get_short(AN_shorts *IF_ASSERTION_USED(shorts), dll_public *pare
     na_assert(full);
     na_assert(shorts == aisc_main->shorts1); // otherwise prefix_hash does not work!
 
-    if (full[0]==0) {
-        return strdup("Xxx");
-    }
+    if (full[0]==0) return strdup("ZZZ");
 
-    char *result = 0;
+    const char *result = 0;
     char *full1  = strdup(full);
     an_autocaps(full1);
 
@@ -384,7 +382,7 @@ static char *an_get_short(AN_shorts *IF_ASSERTION_USED(shorts), dll_public *pare
         }
     }
 
-    // generate names from first char + all characters:
+    // generate names from first char + rest characters:
 
     len2 = strlen(full2);
     for (p1=1; p1<(len2-1); p1++) {
@@ -399,7 +397,7 @@ static char *an_get_short(AN_shorts *IF_ASSERTION_USED(shorts), dll_public *pare
         }
     }
 
-    // generate names containing first char + characters from name + one digit:
+    // generate names containing first char + character from name + one digit:
 
     for (p1=1; p1<len2; p1++) {
         shrt[1] = full2[p1];
@@ -425,60 +423,35 @@ static char *an_get_short(AN_shorts *IF_ASSERTION_USED(shorts), dll_public *pare
         }
     }
 
-    // generate names containing 1 random character + 2 digits:
+    // failed to produce sth with given name, generate something random now
 
-    for (p1='A'; p1<='Z'; p1++) {
-        shrt[0] = p1;
-        for (p2=0; p2<=99; p2++) {
-            shrt[1] = '0'+(p2/10);
-            shrt[2] = '0'+(p2%10);
-            look = an_find_shrt_prefix(shrt);
-            if (!look) {
-                an_complete_shrt(shrt, full2);
-                goto found_short;
-            }
-        }
-    }
+    {
+        // use digits first, then use upper-case alpha (methods above use lower-case alpha)
+        const char *allowed = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+        const int   len     = 36;
 
-    // generate names containing 2 random characters + 1 digit:
-
-    for (p1='A'; p1<='Z'; p1++) {
-        shrt[0] = p1;
-        for (p2='a'; p2<='z'; p2++) {
-            shrt[1] = p2;
-            for (p3=0; p3<=9; p3++) {
-                shrt[2] = '0'+p3;
-                look = an_find_shrt_prefix(shrt);
-                if (!look) {
-                    an_complete_shrt(shrt, full2);
-                    goto found_short;
+        for (p1='A'; p1<='Z'; p1++) { // first character has to be alpha
+            shrt[0] = p1;
+            for (p2 = 0; p2<len; p2++) {
+                shrt[1] = allowed[p2];
+                for (p3 = 0; p3<len; p3++) {
+                    shrt[2] = allowed[p3];
+                    look = an_find_shrt_prefix(shrt);
+                    if (!look) {
+                        an_complete_shrt(shrt, full2);
+                        goto found_short;
+                    }
                 }
             }
         }
     }
 
-    // generate names containing 3 random characters:
+    shrt[0] = 0; // erase result
+    
+ found_short :
+    result = shrt;
 
-    for (p1='A'; p1<='Z'; p1++) {
-        shrt[0] = p1;
-        for (p2='a'; p2<='z'; p2++) {
-            shrt[1] = p2;
-            for (p3='a'; p3<='z'; p3++) {
-                shrt[2] = p3;
-                look = an_find_shrt_prefix(shrt);
-                if (!look) {
-                    an_complete_shrt(shrt, full2);
-                found_short :
-                    result = shrt;
-                    goto done;
-                }
-            }
-        }
-    }
-
- done :
-
-    if (result) {
+    if (result && result[0]) {
 #if defined(DUMP_NAME_CREATION)
         if (isdigit(result[0]) || isdigit(result[1])) {
             printf("generated new short-name '%s' for full-name '%s' full2='%s' full3='%s'\n", shrt, full, full2, full3);
@@ -494,6 +467,7 @@ static char *an_get_short(AN_shorts *IF_ASSERTION_USED(shorts), dll_public *pare
     }
     else {
         printf("ARB_name_server: Failed to make a short-name for '%s'\n", full);
+        result = "ZZZ";
     }
 
     free(full3);
@@ -587,8 +561,22 @@ NameInformation::NameInformation(AN_local *locs) {
                                   "sp.=species:spec.=species:SP.=SPECIES:SPEC.=SPECIES:" // replace common abbreviations of 'species'
                                   ".= :" // replace dots by spaces
                                   "  = :" // multiple spaces -> 1 space
-                                  "* * *=*1 *2" // skip all beyond 2nd word
                                   , 0);
+
+    {
+        int leading_spaces = strspn(parsed_name, " ");
+        int len            = strlen(parsed_name)-leading_spaces;
+        memmove(parsed_name, parsed_name+leading_spaces, len);
+
+        char *first_space = strchr(parsed_name, ' ');
+        if (first_space) {
+            char *second_space = strchr(first_space, ' ');
+            if (second_space) {
+                second_space[0] = 0; // skip all beyond 2nd word 
+            }
+        }
+    }
+
     an_autocaps(parsed_name);
 
     parsed_sym = GBS_string_eval(full_name, "\t= :* * *sym*=S", 0);
@@ -694,8 +682,8 @@ extern "C" aisc_string get_short(AN_local *locs)
             }
         }
 
-        if (!first_advice) first_advice = strdup("Xxx");
-        if (!second_advice) second_advice = strdup("Yyyyy");
+        if (!first_advice) first_advice = strdup("ZZZ");
+        if (!second_advice) second_advice = strdup("ZZZZZ");
 
         char *first_short;
         int   first_len;
@@ -707,7 +695,7 @@ extern "C" aisc_string get_short(AN_local *locs)
 
             na_assert(first_short);
             if (first_short[0] == 0) { // empty?
-                freedup(first_short, "Xxx");
+                freedup(first_short, "ZZZ");
             }
             first_len = strlen(first_short);
         }
@@ -722,7 +710,7 @@ extern "C" aisc_string get_short(AN_local *locs)
                 rest_of_name = second_advice;
                 restlen      = strlen(rest_of_name);
                 if (!restlen) {
-                    rest_of_name = "Yyyyy";
+                    rest_of_name = "ZZZZZ";
                     restlen      = 5;
                 }
             }
@@ -984,7 +972,7 @@ static void check_for_case_error(AN_main *main) {
             list<string>::const_iterator end = idents_to_recreate.end();
             for (list<string>::const_iterator i = idents_to_recreate.begin(); i != end; ++i) {
                 const char *ident = i->c_str();
-                an_get_short(main->shorts1, &(main->pshorts1), ident);
+                free(an_get_short(main->shorts1, &(main->pshorts1), ident));
                 regen_name_parts++;
             }
         }

@@ -1848,7 +1848,7 @@ inline bool nameIsUnique(const char *short_name, GBDATA *gb_species_data) {
 
 static void create_new_species(AW_window * /* aww */, AW_CL cl_creation_mode) {
     // creation_mode == 0 -> create new species
-    //                  1 -> create new species from group konsensus
+    //                  1 -> create new species from group consensus
     //                  2 -> copy current species
 
     enum e_creation_mode { CREATE_NEW_SPECIES, CREATE_FROM_CONSENSUS, COPY_SPECIES } creation_mode = (enum e_creation_mode)(cl_creation_mode);
@@ -2211,7 +2211,7 @@ static void create_new_species(AW_window * /* aww */, AW_CL cl_creation_mode) {
 
 AW_window *ED4_create_new_seq_window(AW_root *root, AW_CL cl_creation_mode) {
     // creation_mode == 0 -> create new species
-    //                  1 -> create new species from group konsensus
+    //                  1 -> create new species from group consensus
     //                  2 -> copy current species
 
     int creation_mode = int(cl_creation_mode);

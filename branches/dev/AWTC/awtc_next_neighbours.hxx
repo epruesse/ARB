@@ -28,7 +28,7 @@
 
 class FamilyList {
     // list is sorted either by 'matches' or 'rel_matches' (descending)
-    // depending on 'rel_matches' paramater to PT_FamilyFinder::searchFamily()
+    // depending on 'rel_matches' parameter to PT_FamilyFinder::searchFamily()
 public:
     FamilyList *next;
 
