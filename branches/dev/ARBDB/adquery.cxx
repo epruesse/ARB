@@ -84,7 +84,7 @@ static bool gb_find_value_equal(GBDATA *gb, GB_TYPES type, const char *val, GB_C
         }
         case GB_FLOAT: {
             double d                      = GB_read_float(gb);
-            if (d == *(double*)val) equal = true;
+            if (d == *(double*)val) equal = true; // (no aliasing problem here; char* -> double* ok)
             break;
         }
         default: {
