@@ -18,6 +18,13 @@
 #ifndef DUPSTR_H
 #include <dupstr.h>
 #endif
+#ifndef _UNISTD_H
+#include <unistd.h>
+#endif
+#ifndef ATTRIBUTES_H
+#include <attributes.h>
+#endif
+
 
 #define aisc_assert(cond) arb_assert(cond)
 
@@ -237,6 +244,59 @@ struct stack {
     stack       *next;
 };
 
+class Output {
+    FILE *fp;
+    char *id;   // internal name used in AISC
+    char *name; // file-system name
+
+    bool wasOpened() const { return fp && !name; }
+
+    void close_file() {
+        if (wasOpened()) fclose(fp);
+        fp = NULL;
+    }
+    
+    void setup() { fp = NULL; id = NULL; name = NULL; }
+    void cleanup() { close_file(); free(id); free(name); }
+    void reuse() { cleanup(); setup(); }
+
+public:
+
+    Output() { setup(); }
+    ~Output() { cleanup(); }
+
+    bool inUse() const { return fp; }
+
+    void assign(FILE *fp_, const char *id_, const char *name_) {
+        aisc_assert(!inUse());
+        fp   = fp_;
+        id   = strdup(id_);
+        name = strdup(name_);
+    }
+    void assign_stdout(const char *id_) {
+        aisc_assert(!inUse());
+        fp   = stdout;
+        id   = strdup(id_);
+        name = NULL;
+    }
+
+    void close_and_unlink() {
+        close_file();
+        if (name) {
+            fprintf(stderr, "Unlinking %s\n", name);
+            unlink(name);
+        }
+        reuse();
+    }
+    void close() { reuse(); }
+
+    bool hasID(const char *Name) const { return id && strcmp(id, Name) == 0; }
+
+    void putchar(char c) {
+        putc(c, fp);
+    }
+};
+
 struct global {
     int             error_flag;
     char            outtab[256];
@@ -254,10 +314,10 @@ struct global {
     char           *linebuf;
     int             bufsize;
     int             s_pos;
-    FILE           *out;
-    FILE           *outs[OPENFILES];
-    char           *fouts[OPENFILES];               // type of file
-    char           *fouts_name[OPENFILES];          // file-system-name of file
+
+    Output  output[OPENFILES];
+    Output *current_output; // pointer to one element of 'output'
+
 
     int   tabstop;
     int   tabs[10];
