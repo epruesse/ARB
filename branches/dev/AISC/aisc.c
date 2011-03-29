@@ -67,14 +67,15 @@ static void aisc_init() {
     gl->error_flag      = 0;
     gl->lastchar        = ' ';
     gl->bufsize         = linebufsize;
-    gl->out             = stdout;
-    gl->outs[0]         = stdout;
-    gl->fouts[0]        = strdup("stdout");
-    gl->outs[1]         = stdout;
-    gl->fouts[1]        = strdup("*");
-    gl->tabstop         = 8;
 
-    do_com_push("");
+    gl->output[0].assign_stdout("stdout");
+    gl->output[1].assign_stdout("*");
+
+    gl->current_output = &gl->output[0];
+
+    gl->tabstop = 8;
+
+    ASSERT_RESULT(int, 0, do_com_push(""));
     gl->fns = create_hash(HASHSIZE);
 
     for (int i = 0; i < 256; i++) {
@@ -97,13 +98,6 @@ static void aisc_init() {
 }
 static void aisc_exit() {
     delete gl->root;
-    for (int i = 0; i<OPENFILES; i++) {
-        free(gl->fouts[i]);
-        free(gl->fouts_name[i]);
-        if (gl->outs[i] && gl->outs[i] != stdout) {
-            fclose(gl->outs[i]);
-        }
-    }
     free_CL(gl->prg);
     free_stack();               // frees gl->st
     free_hash(gl->fns);

@@ -305,7 +305,7 @@ STATIC_ATTRIBUTED(__ATTR__USERESULT, int do_com_data(char *str)) {
     return 0;
 }
 
-STATIC_ATTRIBUTED(__ATTR__USERESULT, int do_com_write(FILE * out, char *str)) {
+STATIC_ATTRIBUTED(__ATTR__USERESULT, int do_com_write(Output& out, char *str)) {
     char *p;
     char  c;
     int   no_nl = 0;
@@ -330,14 +330,14 @@ STATIC_ATTRIBUTED(__ATTR__USERESULT, int do_com_write(FILE * out, char *str)) {
                     lt = gl->tabpos / gl->tabstop;
                     rt = pos / gl->tabstop;
                     while (lt < rt) {
-                        putc('\t', out);
+                        out.putchar('\t');
                         lt++;
                         gl->tabpos /= gl->tabstop;
                         gl->tabpos++;
                         gl->tabpos *= gl->tabstop;
                     }
                     while (gl->tabpos < pos) {
-                        putc(' ', out);
+                        out.putchar(' ');
                         gl->tabpos++;
                     }
 
@@ -350,7 +350,7 @@ STATIC_ATTRIBUTED(__ATTR__USERESULT, int do_com_write(FILE * out, char *str)) {
             }
         }
         if (c == '\t') {
-            putc(c, out);
+            out.putchar(c);
             gl->tabpos /= gl->tabstop;
             gl->tabpos++;
             gl->tabpos *= gl->tabstop;
@@ -360,7 +360,7 @@ STATIC_ATTRIBUTED(__ATTR__USERESULT, int do_com_write(FILE * out, char *str)) {
                 no_nl = 0;
             }
             else {
-                putc(c, out);
+                out.putchar(c);
                 gl->tabpos = 0;
             }
         }
@@ -374,24 +374,24 @@ STATIC_ATTRIBUTED(__ATTR__USERESULT, int do_com_write(FILE * out, char *str)) {
                 p++;
             }
             else {
-                putc(c, out);
+                out.putchar(c);
                 gl->tabpos++;
             }
         }
         else {
-            putc(c, out);
+            out.putchar(c);
             gl->tabpos++;
         }
     }
     if (!no_nl) {
-        putc('\n', out);
+        out.putchar('\n');
         gl->tabpos = 0;
     }
     return 0;
 }
 
-INLINE_ATTRIBUTED(__ATTR__USERESULT, int do_com_print(char *str)) { return do_com_write(gl->out, str); }
-INLINE_ATTRIBUTED(__ATTR__USERESULT, int do_com_print2(char *str)) { return do_com_write(stdout, str); }
+INLINE_ATTRIBUTED(__ATTR__USERESULT, int do_com_print(char *str))  { return do_com_write(*gl->current_output, str); }
+INLINE_ATTRIBUTED(__ATTR__USERESULT, int do_com_print2(char *str)) { return do_com_write(gl->output[0], str); }
 
 STATIC_ATTRIBUTED(__ATTR__USERESULT, int do_com_tabstop(char *str)) {
     int             ts, i;
@@ -453,15 +453,13 @@ STATIC_ATTRIBUTED(__ATTR__USERESULT, int do_com_open(char *str)) {
         return 1;
     }
     for (i = 0; i < OPENFILES; i++) {
-        if (gl->fouts[i]) {
-            if (strcmp(gl->fouts[i], str) == 0) {
-                printf_error("File '%s' already opened", str);
-                return 1;
-            }
+        if (gl->output[i].hasID(str)) {
+            printf_error("File '%s' already opened", str);
+            return 1;
         }
     }
     for (i = 0; i < OPENFILES; i++) {
-        if (!gl->fouts[i]) {
+        if (!gl->output[i].inUse()) {
             break;
         }
     }
@@ -475,22 +473,13 @@ STATIC_ATTRIBUTED(__ATTR__USERESULT, int do_com_open(char *str)) {
         return 1;
     }
 
-    gl->fouts[i]      = strdup(str);
-    gl->fouts_name[i] = strdup(fn);
-    gl->outs[i] = file;
+    gl->output[i].assign(file, str, fn);
 
     return 0;
 }
 void aisc_remove_files() {
     for (int i = 0; i < OPENFILES; i++) {
-        if (gl->fouts[i]) {
-            fclose(gl->outs[i]);
-            gl->outs[i] = NULL;
-            if (gl->fouts_name[i]) {
-                fprintf(stderr, "Unlinking %s\n", gl->fouts_name[i]);
-                unlink(gl->fouts_name[i]);
-            }
-        }
+        gl->output[i].close_and_unlink();
     }
 }
 
@@ -503,22 +492,12 @@ STATIC_ATTRIBUTED(__ATTR__USERESULT, int do_com_close(char *str)) {
         return 1;
     }
     for (i = 0; i < OPENFILES; i++) {
-        if (gl->fouts[i]) {
-            if (!strcmp(gl->fouts[i], str)) {
-                fclose(gl->outs[i]);
-                gl->outs[i] = NULL;
-
-                free(gl->fouts[i]);
-                free(gl->fouts_name[i]);
-                gl->fouts[i]      = 0;
-                gl->fouts_name[i] = 0;
-                if (gl->outs[i] == gl->out) {
-                    gl->out = stdout;
-                }
-                return 0;
-            }
+        if (gl->output[i].hasID(str)) {
+            gl->output[i].close();
+            return 0;
         }
     }
+    printf_error("File '%s' not open or already closed", str);
     return 0;
 }
 
@@ -531,11 +510,9 @@ STATIC_ATTRIBUTED(__ATTR__USERESULT, int do_com_out(char *str)) {
         return 1;
     }
     for (i = 0; i < OPENFILES; i++) {
-        if (gl->fouts[i]) {
-            if (!strcmp(gl->fouts[i], str)) {
-                gl->out = gl->outs[i];
-                return 0;
-            }
+        if (gl->output[i].hasID(str)) {
+            gl->current_output = &gl->output[i];
+            return 0;
         }
     }
     printf_error("File '%s' not opened for OUT command", str);
@@ -1063,6 +1040,9 @@ int run_prg() {
         return -1;
     }
 
-    aisc_assert(error_count == 0);
-    return 0;
+    if (error_count) {
+        fputs("AISC reports errors\n", stderr);
+        return EXIT_FAILURE;
+    }
+    return EXIT_SUCCESS;
 }
