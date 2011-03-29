@@ -556,7 +556,7 @@ int aisc_get(aisc_com *link, int o_type, long object, ...)
                     arg_pntr[i][0] = link->aisc_mes_buffer[mes_cnt++];
                     break;
                 case AISC_TYPE_DOUBLE:
-                    AISC_DUMP(aisc_get, double, *(double*)&(link->aisc_mes_buffer[mes_cnt]));
+                    AISC_DUMP(aisc_get, double, *(double*)(char*)/*avoid aliasing problems*/&(link->aisc_mes_buffer[mes_cnt]));
                     ((int*)arg_pntr[i])[0] = (int)(link->aisc_mes_buffer[mes_cnt++]);
                     ((int*)arg_pntr[i])[1] = (int)(link->aisc_mes_buffer[mes_cnt++]);
                     break;
