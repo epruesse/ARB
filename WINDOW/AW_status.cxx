@@ -252,7 +252,6 @@ static int aw_status_read_int(int fd, int poll_flag) {
      * if poll ==1 then don't wait for any data, but return EOF */
 
     int erg;
-    unsigned char buffer[sizeof(int)+1];
 
     if (poll_flag) {
         fd_set set;
@@ -266,13 +265,17 @@ static int aw_status_read_int(int fd, int poll_flag) {
         erg = select(FD_SETSIZE, FD_SET_TYPE &set, NULL, NULL, &timeout);
         if (erg == 0) return EOF;
     }
-    erg = read(fd, (char *)buffer, sizeof(int));
-    if (erg<=0) {
-        //      process died
+    union {
+        unsigned char buffer[sizeof(int)+1];
+        int as_int;
+    } input;
+
+    erg = read(fd, input.buffer, sizeof(int));
+    if (erg<=0) { // process died
         fprintf(stderr, "father died, now i kill myself\n");
         exit(EXIT_FAILURE);
     }
-    return *(int*)buffer;
+    return input.as_int;
 }
 
 static int aw_status_read_command(int fd, int poll_flag, char*& str, int *gaugePtr = 0)
@@ -955,9 +958,9 @@ void aw_message(const char *msg) {
     }
 }
 
-#if defined(DEVEL_RALF)
+#if defined(WARN_TODO)
 #warning remove AW_ERROR_BUFFER
-#endif // DEVEL_RALF
+#endif
 char AW_ERROR_BUFFER[1024];
 
 void aw_errorbuffer_message() { aw_message(AW_ERROR_BUFFER); }
@@ -969,9 +972,9 @@ void aw_error(const char *text, const char *text2) {
 }
 
 
-#if defined(DEVEL_RALF)
+#if defined(WARN_TODO)
 #warning Check where AW_ERROR is used and maybe use one of the GB_error/terminate functions
-#endif // DEVEL_RALF
+#endif
 
 void AW_ERROR(const char *templat, ...) {
     char buffer[10000];

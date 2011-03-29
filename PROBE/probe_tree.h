@@ -224,12 +224,14 @@ static inline unsigned long long bswap_64(unsigned long long x) {
 
 #define PT_READ_INT(ptr, my_int_i)                                      \
     do {                                                                \
-        (my_int_i)=(unsigned int)bswap_32(*(unsigned int*)(ptr));       \
+        unsigned int *uiptr = (unsigned int*)(ptr);                     \
+        (my_int_i)=(unsigned int)bswap_32(*uiptr);                      \
     } while (0)
 
 #define PT_WRITE_INT(ptr, my_int_i)                                     \
     do {                                                                \
-        *(unsigned int*)(ptr) = bswap_32((unsigned int)(my_int_i));     \
+        unsigned int *uiptr = (unsigned int*)(ptr);                     \
+        *uiptr              = bswap_32((unsigned int)(my_int_i));       \
     } while (0)
 
 #define PT_READ_SHORT(ptr, my_int_i)                    \
@@ -239,7 +241,8 @@ static inline unsigned long long bswap_64(unsigned long long x) {
 
 #define PT_WRITE_SHORT(ptr, my_int_i)                                   \
     do {                                                                \
-        *(unsigned short*)(ptr) = bswap_16((unsigned short)(my_int_i)); \
+        unsigned short *usptr = (unsigned short*)(ptr);                 \
+        *usptr                = bswap_16((unsigned short)(my_int_i));   \
     } while (0)
 
 #define PT_WRITE_CHAR(ptr, my_int_i) do { *(unsigned char *)(ptr) = my_int_i; } while (0)
@@ -252,15 +255,18 @@ static inline unsigned long long bswap_64(unsigned long long x) {
 
 COMPILE_ASSERT(sizeof(void*) == sizeof(unsigned long));
 
-# define PT_READ_PNTR(ptr, my_int_i)                                    \
-    do {                                                                \
-        pt_assert(sizeof(my_int_i)==8);                                 \
-        (my_int_i) = (unsigned long)bswap_64(*(unsigned long*)(ptr));   \
+# define PT_READ_PNTR(ptr, my_int_i)                            \
+    do {                                                        \
+        pt_assert(sizeof(my_int_i) == 8);                       \
+        unsigned long *ulptr = (unsigned long*)(ptr);           \
+        (my_int_i)           = (unsigned long)bswap_64(*ulptr); \
     } while (0)
+
 
 # define PT_WRITE_PNTR(ptr, my_int_i)                                   \
     do {                                                                \
-        *(unsigned long*)(ptr)=bswap_64((unsigned long)(my_int_i));     \
+        unsigned long *ulptr = (unsigned long*)(ptr);                   \
+        *ulptr               = bswap_64((unsigned long)(my_int_i));     \
     } while (0)
 
 

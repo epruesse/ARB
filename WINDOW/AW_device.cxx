@@ -591,9 +591,9 @@ int AW_device::generic_box(int gc, bool /* filled */, AW_pos x0, AW_pos y0, AW_p
     return erg;
 }
 
-#if defined(DEVEL_RALF)
+#if defined(WARN_TODO)
 #warning draw in 45-degree-steps (8-cornered-polygones instead of circles)
-#endif // DEVEL_RALF
+#endif
 
 int AW_device::generic_circle(int gc, bool /* filled has no effect here */, AW_pos x0, AW_pos y0, AW_pos width, AW_pos height, AW_bitset filteri, AW_CL cd1, AW_CL cd2)
 {

@@ -22,16 +22,15 @@
 
 const char *GBS_global_string_to_buffer(char *buffer, size_t bufsize, const char *templat, ...) __ATTR__FORMAT(3);
 size_t GBS_last_global_string_size(void);
-void GBS_reuse_buffer(const char *global_buffer);
 char *GBS_global_string_copy(const char *templat, ...) __ATTR__FORMAT(1);
 const char *GBS_global_string(const char *templat, ...) __ATTR__FORMAT(1);
 GB_ERROR GBK_assert_msg(const char *assertion, const char *file, int linenr);
 GB_ERROR GB_export_error(const char *error);
-GB_ERROR GB_export_errorf(const char *templat, ...) __ATTR__FORMAT(1) __ATTR__DEPRECATED_LATER;
+GB_ERROR GB_export_errorf(const char *templat, ...) __ATTR__FORMAT(1) __ATTR__DEPRECATED_LATER("use GB_export_error(GBS_global_string(...))");
 GB_ERROR GB_IO_error(const char *action, const char *filename);
-GB_ERROR GB_export_IO_error(const char *action, const char *filename) __ATTR__DEPRECATED_LATER;
-GB_ERROR GB_print_error(void) __ATTR__DEPRECATED_LATER;
-GB_ERROR GB_get_error(void) __ATTR__DEPRECATED_LATER;
+GB_ERROR GB_export_IO_error(const char *action, const char *filename) __ATTR__DEPRECATED_LATER("use GB_export_error(GB_IO_error(...))");
+GB_ERROR GB_print_error(void) __ATTR__DEPRECATED_LATER("will be removed completely");
+GB_ERROR GB_get_error(void) __ATTR__DEPRECATED_LATER("consider using either GB_have_error() or GB_await_error()");
 bool GB_have_error(void);
 GB_ERROR GB_await_error(void);
 void GB_clear_error(void);
@@ -43,12 +42,13 @@ void GBK_free_backtrace(class BackTraceInfo *trace);
 void GBK_dump_backtrace(FILE *out, const char *message);
 void GB_internal_error(const char *message);
 void GB_internal_errorf(const char *templat, ...) __ATTR__FORMAT(1);
-void GBK_terminate(const char *error);
-void GBK_terminatef(const char *templat, ...) __ATTR__FORMAT(1);
+void GBK_terminate(const char *error) __ATTR__NORETURN;
+void GBK_terminatef(const char *templat, ...) __ATTR__FORMAT(1) __ATTR__NORETURN;
 void GB_warning(const char *message);
 void GB_warningf(const char *templat, ...) __ATTR__FORMAT(1);
 void GB_information(const char *message);
 void GB_informationf(const char *templat, ...) __ATTR__FORMAT(1);
+void GBS_reuse_buffer(const char *global_buffer);
 
 #else
 #error arb_msg.h included twice

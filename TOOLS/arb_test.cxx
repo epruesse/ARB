@@ -272,8 +272,8 @@ static bool test_strcontains(const char *str, const char *part)  {
         TEST_ASSERT_EQUAL(css^cse, uint32_t(checksum));                 \
     } while(0)
 
-#define TEST_STDOUT_EQUALS(cmd, expected_std) TEST_OUTPUT_EQUALS(cmd, expected_std, NULL)
-#define TEST_STDERR_EQUALS(cmd, expected_err) TEST_OUTPUT_EQUALS(cmd, NULL, expected_err)
+#define TEST_STDOUT_EQUALS(cmd, expected_std) TEST_OUTPUT_EQUALS(cmd, expected_std, (const char *)NULL)
+#define TEST_STDERR_EQUALS(cmd, expected_err) TEST_OUTPUT_EQUALS(cmd, (const char *)NULL, expected_err)
 
 #define TEST_STDOUT_CONTAINS(cmd, part) TEST_OUTPUT_CONTAINS(cmd, part, "")
 

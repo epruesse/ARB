@@ -141,11 +141,11 @@ public:
     // transform a Position
     AW::Position transform (const AW::Position& pos) const { return transform(AW::Vector(pos+offset)).endpoint(); }
     AW::Position rtransform(const AW::Position& pos) const { return rtransform(AW::Vector(pos)).endpoint()-offset; }
-#if defined(DEVEL_RALF) && 0
+#if defined(WARN_TODO) && 0
 #warning fix transformations
     // @@@ I think this calculation is wrong, cause offset is already scaled
     //     (same applies to old-style transform/rtransform below)
-#endif // DEVEL_RALF
+#endif
 
     AW::LineVector transform (const AW::LineVector& lvec) const { return AW::LineVector(transform(lvec.start()), transform(lvec.line_vector())); }
     AW::LineVector rtransform(const AW::LineVector& lvec) const { return AW::LineVector(rtransform(lvec.start()), rtransform(lvec.line_vector())); }

@@ -282,9 +282,9 @@ GB_ERROR gbcm_open_socket(const char *path, long delay2, long do_connect, int *p
     }
 }
 
-#if defined(DEVEL_RALF)
+#if defined(WARN_TODO)
 #warning gbcms_close is unused
-#endif // DEVEL_RALF
+#endif
 long gbcms_close(gbcmc_comm *link)
 {
     if (link->socket) {
@@ -718,9 +718,9 @@ GB_ERROR GB_textprint(const char *path) {
     return GB_failedTo_error("print textfile", fpath, error);
 }
 
-#if defined(DEVEL_RALF)
+#if defined(WARN_TODO)
 #warning search for '\b(system)\b\s*\(' and use GB_system instead
-#endif // DEVEL_RALF
+#endif
 GB_ERROR GB_system(const char *system_command) {
     // goes to header: __ATTR__USERESULT
     fprintf(stderr, "[Action: '%s']\n", system_command);

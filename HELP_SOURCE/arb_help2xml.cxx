@@ -41,8 +41,7 @@ static const char *knownSections[] = { "OCCURRENCE", "DESCRIPTION", "NOTES", "EX
                                        "QUESTION", "ANSWER", "SECTION",
                                        0 };
 
-static string vstrf(const char *format, va_list argPtr) __ATTR__VFORMAT(1);
-static string vstrf(const char *format, va_list argPtr) {
+STATIC_ATTRIBUTED(__ATTR__VFORMAT(1), string vstrf(const char *format, va_list argPtr)) {
     static size_t  buf_size = 256;
     static char   *buffer   = new char[buf_size];
 
@@ -65,8 +64,7 @@ static string vstrf(const char *format, va_list argPtr) {
     return string(buffer, length);
 }
 
-string strf(const char *format, ...) __ATTR__FORMAT(1);
-string strf(const char *format, ...) {
+STATIC_ATTRIBUTED(__ATTR__FORMAT(1), string strf(const char *format, ...)) {
     va_list argPtr;
     va_start(argPtr, format);
     string result = vstrf(format, argPtr);
@@ -391,26 +389,6 @@ static void parseSection(Section& sec, const char *line, int indentation, Reader
 
         *p = string("\n")+spaces+*p;
     }
-}
-string cutoff_hlp_extension(const string& s) __ATTR__DEPRECATED;
-inline string cutoff_hlp_extension(const string& s) {
-    // cuts off the '.hlp'
-    size_t pos   = s.find(".hlp");
-    if ((pos+4) == s.length()) {
-        return string(s, 0, s.length()-4);
-    }
-
-    pos = s.find(".ps");
-    if ((pos+3) == s.length()) {
-        return s; // accept .ps
-    }
-
-    pos = s.find(".pdf");
-    if ((pos+4) == s.length()) {
-        return s; // accept .pdf
-    }
-
-    throw string("Expected extension .hlp, .ps or .pdf");
 }
 inline void check_duplicates(const string& link, const char * /* where */, const Links& existing, bool add_warnings) {
     for (Links::const_iterator ex = existing.begin(); ex != existing.end(); ++ex) {

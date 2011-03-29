@@ -235,9 +235,9 @@ void GBCMS_shutdown(GBDATA *gbd) {
     }
 }
 
-#if defined(DEVEL_RALF)
+#if defined(WARN_TODO)
 #warning rewrite gbcm_write_bin (error handling - do not export)
-#endif // DEVEL_RALF
+#endif
 
 static GB_ERROR gbcm_write_bin(int socket, GBDATA *gbd, long *buffer, long mode, long deep, int send_headera) {
      /* send a database item to client/server
@@ -1371,9 +1371,9 @@ GB_ERROR gbcm_unfold_client(GBCONTAINER *gbd, long deep, long index_pos) {
 // -------------------------
 //      Client functions
 
-#if defined(DEVEL_RALF)
+#if defined(WARN_TODO)
 #warning rewrite gbcmc_... (error handling - do not export)
-#endif // DEVEL_RALF
+#endif
 
 GB_ERROR gbcmc_begin_sendupdate(GBDATA *gbd)
 {
@@ -1780,9 +1780,9 @@ long gbcmc_key_alloc(GBDATA *gbd, const char *key) {
     return gb_result[0];
 }
 
-#if defined(DEVEL_RALF)
+#if defined(WARN_TODO)
 #warning GBCMC_system should return GB_ERROR!
-#endif // DEVEL_RALF
+#endif
 
 int GBCMC_system(GBDATA *gbd, const char *ss) { // goes to header: __ATTR__USERESULT
     int           socket;

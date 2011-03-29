@@ -86,9 +86,9 @@ AP_tree_root::AP_tree_root(AliView *aliView, const AP_tree& tree_proto, AP_seque
     , root_changed_cb(NULL), root_changed_cd(NULL)
     , node_deleted_cb(NULL), node_deleted_cd(NULL)
     , gb_tree_gone(NULL)
-    , tree_timer(NULL)
-    , species_timer(NULL)
-    , table_timer(NULL)
+    , tree_timer(0)
+    , species_timer(0)
+    , table_timer(0)
     , rates(NULL)
 {
     GBDATA         *gb_main = get_gb_main();
@@ -162,9 +162,9 @@ AP_tree *AP_tree::dup() const {
     return new AP_tree(const_cast<AP_tree_root*>(get_tree_root()));
 }
 
-#if defined(DEVEL_RALF)
+#if defined(WARN_TODO)
 #warning move to ARB_tree ?
-#endif // DEVEL_RALF
+#endif
 void AP_tree::replace_self(AP_tree *new_son) {
     ap_assert(father);
     if (father) {
@@ -172,9 +172,9 @@ void AP_tree::replace_self(AP_tree *new_son) {
         else                    father->rightson = new_son;
     }
 }
-#if defined(DEVEL_RALF)
+#if defined(WARN_TODO)
 #warning move to ARB_tree ?
-#endif // DEVEL_RALF
+#endif
 void AP_tree::set_brother(AP_tree *new_son) {
     ap_assert(father);
     if (father) {
@@ -232,9 +232,9 @@ void AP_tree::insert(AP_tree *new_brother) {
     }
 }
 
-#if defined(DEVEL_RALF)
+#if defined(WARN_TODO)
 #warning move to ARB_tree ?
-#endif // DEVEL_RALF
+#endif
 void AP_tree_root::change_root(AP_tree *oldroot, AP_tree *newroot) {
     if (root_changed_cb) root_changed_cb(root_changed_cd, oldroot, newroot);
     if (!oldroot) {
@@ -947,9 +947,9 @@ AP_UPDATE_FLAGS AP_tree::check_update() {
     }
 }
 
-#if defined(DEVEL_RALF)
+#if defined(WARN_TODO)
 #warning buildLeafList, buildNodeList and buildBranchList should return a AP_tree_list (new class!)
-#endif // DEVEL_RALF
+#endif
 
 void AP_tree::buildLeafList_rek(AP_tree **list, long& num) {
     // builds a list of all species

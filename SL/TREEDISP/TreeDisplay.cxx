@@ -1806,13 +1806,13 @@ GB_ERROR AWT_graphic_tree::save(GBDATA * /* dummy */, const char * /* name */, A
 
             if (!error) {
                 aw_message(GBS_global_string("Tree '%s' lost all leaves and has been deleted", tree_static->get_tree_name()));
-#if defined(DEVEL_RALF)
+#if defined(WARN_TODO)
 #warning somehow update selected tree
 
                 // solution: currently selected tree (in NTREE, maybe also in PARSIMONY)
                 // needs to add a delete callback on treedata in DB
 
-#endif // DEVEL_RALF
+#endif
             }
 
             tree_static->gb_tree_gone = 0; // do not delete twice

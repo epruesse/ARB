@@ -278,7 +278,7 @@ void concatenateAlignments(AW_window *aws) {
 
     size_t no_of_sel_alignments = con_alignment_list->size();
     int found[no_of_sel_alignments], missing[no_of_sel_alignments];
-    for (int j = 0; j<no_of_sel_alignments; j++) { found[j] = 0; missing[j] = 0; }  // initializing found and missing alis
+    for (size_t j = 0; j<no_of_sel_alignments; j++) { found[j] = 0; missing[j] = 0; }  // initializing found and missing alis
 
     const char *const_ali_name = con_alignment_list->first_element();
     long new_alignment_len     = 0;

@@ -30,9 +30,11 @@ static const char *entities =
 "  <!ENTITY semi \"&#59;\">\n"
 ;
 
-static string encodeEntities(const string& str, bool quotedText = false) {
+static string encodeEntities(const string& str, bool quotedText) {
     // if quotedText is true the string is encoded for usage in quotes
     // currently it makes no difference, but this might change
+    quotedText = quotedText; // don't warn
+
     string neu;
     neu.reserve(str.length()*4);
 
@@ -207,7 +209,7 @@ void XML_Text::open(FILE *) {}
 
 void XML_Text::close(FILE *out) {
     if (father && !father->Opened()) father->open(out);
-    fputs(encodeEntities(content).c_str(), out);
+    fputs(encodeEntities(content, false).c_str(), out);
 }
 
 // --------------------
@@ -231,7 +233,7 @@ void XML_Comment::open(FILE *) {}
 void XML_Comment::close(FILE *out) {
     fputc('\n', out); to_indent(out, Indent());
     fputs("<!--", out);
-    fputs(encodeEntities(content).c_str(), out);
+    fputs(encodeEntities(content, false).c_str(), out);
     fputs("-->", out);
 }
 

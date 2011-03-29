@@ -285,9 +285,9 @@ void GEN_create_nds_vars(AW_root *aw_root, AW_default awdef, GBDATA *gb_main, GB
 //  ---------------------------------------------------------------------------------------
 void GEN_create_select_nds_window(AW_window *aww, char *key_text, AW_CL cgb_main)
 {
-#if defined(DEVEL_RALF)
+#if defined(WARN_TODO)
 #warning make this function more general like AWT_popup_select_species_field_window
-#endif // DEVEL_RALF
+#endif
 
     static AW_window *win = 0;
     AW_root *aw_root = aww->get_root();

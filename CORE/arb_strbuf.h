@@ -129,7 +129,7 @@ public:
     }
     void cat(const char *from) { ncat(from, strlen(from)); }
 
-    void vprintf(size_t maxlen, const char *templat, va_list& parg);
+    void vprintf(size_t maxlen, const char *templat, va_list& parg) __ATTR__VFORMAT_MEMBER(2);
 };
 
 // old interface

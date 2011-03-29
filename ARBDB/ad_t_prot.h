@@ -180,7 +180,7 @@ GB_ERROR GBT_check_alignment_name(const char *alignment_name);
 GBDATA *GBT_create_alignment(GBDATA *gbd, const char *name, long len, long aligned, long security, const char *type);
 NOT4PERL GB_ERROR GBT_check_alignment(GBDATA *gb_main, GBDATA *preset_alignment, GB_HASH *species_name_hash);
 GB_ERROR GBT_rename_alignment(GBDATA *gbMain, const char *source, const char *dest, int copy, int dele);
-NOT4PERL GBDATA *GBT_add_data(GBDATA *species, const char *ali_name, const char *key, GB_TYPES type) __ATTR__DEPRECATED_LATER;
+NOT4PERL GBDATA *GBT_add_data(GBDATA *species, const char *ali_name, const char *key, GB_TYPES type) __ATTR__DEPRECATED_LATER("better use GBT_create_sequence_data()");
 NOT4PERL GBDATA *GBT_create_sequence_data(GBDATA *species, const char *ali_name, const char *key, GB_TYPES type, int security_write);
 GB_ERROR GBT_write_sequence(GBDATA *gb_data, const char *ali_name, long ali_len, const char *sequence);
 GBDATA *GBT_gen_accession_number(GBDATA *gb_species, const char *ali_name);

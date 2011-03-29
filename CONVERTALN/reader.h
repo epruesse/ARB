@@ -95,9 +95,9 @@ public:
     virtual void out(char ch)        = 0;
     virtual const char *name() const = 0;
 
-    virtual void throw_write_error() const;
+    virtual void throw_write_error() const __ATTR__NORETURN;
     virtual int out(const char *text);
-    virtual int outf(const char *format, ...) __ATTR__FORMAT(2);
+    virtual int outf(const char *format, ...) __ATTR__FORMAT_MEMBER(1);
 
     void repeated(char ch, int repeat) { while (repeat--) out(ch); }
 };
@@ -118,7 +118,7 @@ public:
     const char *name() const { return filename; }
 
     int out(const char *text) { return Writer::out(text); }
-    int outf(const char *format, ...) __ATTR__FORMAT(2);
+    int outf(const char *format, ...) __ATTR__FORMAT_MEMBER(1);
 
     void seq_done() { ++written; }
     void seq_done(int count) { ca_assert(count >= 0); written += count; }

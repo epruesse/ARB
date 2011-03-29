@@ -28,9 +28,9 @@ using namespace std;
 
 // --------------------------------------------------------------------------------
 
-#if defined(DEVEL_RALF)
+#if defined(WARN_TODO)
 #warning replace all occurrences of AD_F_ALL by AWM_ALL
-#endif // DEVEL_RALF
+#endif
 
 #define AD_F_ALL AWM_ALL
 

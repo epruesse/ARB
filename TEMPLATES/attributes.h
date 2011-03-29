@@ -38,8 +38,11 @@
 #endif
 
 #if (__GNUC__ >= 4) // gcc 4.x and above
-# define __ATTR__SENTINEL __attribute__((sentinel))
+# define __ATTR__SENTINEL   __attribute__((sentinel))
 # define HAS_FUNCTION_TYPE_ATTRIBUTES
+# if (__GNUC_MINOR__ > 5 || (__GNUC_MINOR__ == 5 && __GNUC_PATCHLEVEL__ >= 2)) // gcc 4.5.2 and higher
+#  define __ATTR__DEPRECATED(reason) __attribute__((deprecated(reason)))
+# endif
 # if (__GNUC_MINOR__ >= 2)
 #  define __ATTR__USERESULT __attribute__((warn_unused_result))
 # endif
@@ -68,21 +71,14 @@
 #define INLINE_ATTRIBUTED(attribute, proto) inline proto attribute; inline proto
 
 // ------------------------------------------------------------
-// now define undefined attributes empty :
-
-#ifndef __ATTR__SENTINEL
-# define __ATTR__SENTINEL
-#endif
-#ifndef __ATTR__USERESULT
-# define __ATTR__USERESULT
-#endif
-
-// ------------------------------------------------------------
 // valid for any gcc above 3.xx
 
+#ifndef __ATTR__DEPRECATED
+# define __ATTR__DEPRECATED(reason) __attribute__((deprecated))
+#endif
+#define __ATTR__DEPRECATED_LATER(reason)
+
 #define __ATTR__PURE       __attribute__((pure))
-#define __ATTR__DEPRECATED __attribute__((deprecated))
-#define __ATTR__DEPRECATED_LATER
 #define __ATTR__CONST      __attribute__((const))
 #define __ATTR__NORETURN   __attribute__((noreturn))
 
@@ -91,9 +87,27 @@
 #define __ATTR__FORMAT_MEMBER(pos)  __attribute__((format(__printf__, (pos)+1, (pos)+2)))
 #define __ATTR__VFORMAT_MEMBER(pos) __attribute__((format(__printf__, (pos)+1, 0)))
 // when used for member functions, start with pos+1 (pos = 1 seems to be the this-pointer!?)
+
 // ------------------------------------------------------------
-//
-//
+//  temporary disable
+
+// #undef __ATTR__DEPRECATED
+// #undef __ATTR__USERESULT
+// #undef __ATTR__SENTINEL
+
+// ------------------------------------------------------------
+// now define undefined attributes empty :
+
+#ifndef __ATTR__SENTINEL
+# define __ATTR__SENTINEL
+#endif
+#ifndef __ATTR__USERESULT
+# define __ATTR__USERESULT
+#endif
+#ifndef __ATTR__DEPRECATED
+# define __ATTR__DEPRECATED(reason)
+#endif
+
 
 #else
 #error attributes.h included twice
