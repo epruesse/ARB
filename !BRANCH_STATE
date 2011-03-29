@@ -6,11 +6,15 @@ performed merges in this branch
         FullSync @ 7281 sync with trunk using:
                 svn diff --old=svn+ssh://westram@menuett.mikro.biologie.tu-muenchen.de/menuett1/repository/ARB/branches/dev --new=svn+ssh://westram@menuett.mikro.biologie.tu-muenchen.de/menuett1/repository/ARB/trunk | patch -p0 --force
 
-    HEAD->BRANCH
+HEAD->BRANCH
 
                 7223 -> 7224
+                7302 7303 7304 7317 7318 7319 -> 7349 
+                7331 7332 7333 7334 7335 7336 7337 7338 7339 7340 7341 7342 7343 7344 7345 7346 7347 7348 -> 7350
 
-    BRANCH->HEAD
+    not reviewed: 7351:HEAD
+
+BRANCH->HEAD
 
                 7227 7228 -> 7246
                 7225 7226 7233 7229 7230 7231 7232 7234 7235 7236 7237 7238 7239 7240 7241 -> 7247
@@ -19,14 +23,38 @@ performed merges in this branch
                 7262 7264 -> 7274
                 7265 7266 7267 7268 -> 7275
                 7263 7269 7270 7273 -> 7276
+                7282 7284 7286 7287 -> 7293
+                7300 7301 7309 7310 -> 7314, 7315
+                7283 7285 7297 7298 7299 7305 7306 7307 7308 7311 7312 7313 -> 7316
+                7328 -> 7330
 
     skipped patches (depends, already there, this file, ...)
 
-                7249 this file
-                7256 depends
+                this file:      7249 7277 
+                depends:        7256 
+                crap:           7278 7280 
+                sync 2 trunk:   7281 
 
     not merged yet:
 
         --- current try above
 
-    not reviewed: 7277:HEAD
+                7288 GB_command_interpreter unittests
+                7289 GB_command_interpreter refactor
+                7290 GB_command_interpreter fix escaping
+                7291 GB_command_interpreter leaks
+                7294 added ACI tests
+                7295 GBL_reference
+                7296 ACI refactoring
+
+                7320 BasePosition
+                7321 CompactedSequence
+                7322 CompactedSequence
+                7323 CompactedSequence
+                7324 CompactedSequence
+                7325 CompactedSequence
+                7326 CompactedSequence
+                7327 CompactedSequence
+                7329 CompactedSequence
+
+    not reviewed: 7351:HEAD
