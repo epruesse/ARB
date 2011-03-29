@@ -60,15 +60,31 @@ ALLOWED_GCC_4xx_VERSIONS=\
 	4.1.1 4.1.2 4.1.3 \
 	4.2.0 4.2.1 4.2.3 4.2.4 \
 	4.3 4.3.1 4.3.2 4.3.3 4.3.4 \
-	4.4 4.4.1 4.4.3 4.4.5
+	4.4 4.4.1 4.4.3 4.4.5 \
+	4.5.2
 
 ALLOWED_GCC_VERSIONS=$(ALLOWED_GCC_3xx_VERSIONS) $(ALLOWED_GCC_4xx_VERSIONS)
 
 GCC_VERSION_FOUND=$(shell $(GCC) -dumpversion)
 GCC_VERSION_ALLOWED=$(strip $(subst ___,,$(foreach version,$(ALLOWED_GCC_VERSIONS),$(findstring ___$(version)___,___$(GCC_VERSION_FOUND)___))))
 
-USING_GCC_3XX=$(strip $(foreach version,$(ALLOWED_GCC_3xx_VERSIONS),$(findstring $(version),$(GCC_VERSION_ALLOWED))))
-USING_GCC_4XX=$(strip $(foreach version,$(ALLOWED_GCC_4xx_VERSIONS),$(findstring $(version),$(GCC_VERSION_ALLOWED))))
+#---------------------- split gcc version 
+
+SPLITTED_VERSION:=$(subst ., ,$(GCC_VERSION_FOUND))
+
+USE_GCC_MAJOR:=$(word 1,$(SPLITTED_VERSION))
+USE_GCC_MINOR:=$(word 2,$(SPLITTED_VERSION))
+USE_GCC_PATCHLEVEL:=$(word 3,$(SPLITTED_VERSION))
+
+USE_GCC_4_OR_HIGHER:=$(findstring $(USE_GCC_MAJOR),456789)
+USE_GCC_45_OR_HIGHER:=
+USE_GCC_452_OR_HIGHER:=
+ifeq ($(USE_GCC_MAJOR),4)
+ USE_GCC_45_OR_HIGHER:=$(findstring $(USE_GCC_MINOR),56789)
+ ifeq ($(USE_GCC_MINOR),5)
+  USE_GCC_452_OR_HIGHER:=$(findstring $(USE_GCC_PATCHLEVEL),23456789)
+ endif
+endif
 
 #---------------------- define special directories for non standard builds
 
@@ -115,15 +131,29 @@ ifeq ($(DEBUG),1)
 #	POST_COMPILE := 2>&1 | $(ARBHOME)/SOURCE_TOOLS/postcompile.pl --only-first-error
 #	POST_COMPILE := 2>&1 | $(ARBHOME)/SOURCE_TOOLS/postcompile.pl --no-warnings --only-first-error
 
-# Enable several warnings
-	extended_warnings     := -Wwrite-strings -Wunused -Wno-aggregate-return -Wshadow
-	extended_cpp_warnings := -Wnon-virtual-dtor -Wreorder -Wpointer-arith 
- ifneq ('$(USING_GCC_3XX)','')
-	extended_cpp_warnings += -Wdisabled-optimization -Wmissing-format-attribute
-	extended_cpp_warnings += -Wmissing-noreturn # -Wfloat-equal 
- endif
- ifneq ('$(USING_GCC_4XX)','')
-#	extended_cpp_warnings += -Wwhatever
+# Enable extra warnings
+	extended_warnings :=
+	extended_cpp_warnings :=
+
+#       C and C++ 
+	extended_warnings     += -Wwrite-strings -Wunused -Wno-aggregate-return -Wshadow
+
+#       C++ only 
+	extended_cpp_warnings += -Wnon-virtual-dtor -Wreorder -Wpointer-arith -Wdisabled-optimization -Wmissing-format-attribute
+# 	extended_cpp_warnings += -Wfloat-equal# gcc 3.0
+
+# ------- above only warnings available in 3.0
+
+ ifneq ($(USE_GCC_4_OR_HIGHER),'')
+	extended_cpp_warnings += -Wmissing-noreturn# gcc 3.0.2
+	extended_cpp_warnings += -Winit-self# gcc 3.4.0
+	extended_cpp_warnings += -Wstrict-aliasing# gcc 3.4
+	extended_cpp_warnings += -Wextra# gcc 3.4.0
+  ifneq ($(USE_GCC_45_OR_HIGHER),'')
+   ifneq ($(USE_GCC_452_OR_HIGHER),'')
+	extended_cpp_warnings += -Wlogical-op# gcc 4.5.2
+   endif
+  endif
  endif
 
  ifeq ($(DEBUG_GRAPHICS),1)
@@ -134,9 +164,20 @@ endif
 #---------------------- developer 
 
 ifneq ($(DEVELOPER),ANY) # ANY=default setting (skip all developer specific code)
-ifdef dflags
+ ifdef dflags
 	dflags += -DDEVEL_$(DEVELOPER)# activate developer/release specific code
+ endif
 endif
+
+ifndef SHOWTODO
+ ifeq ($(DEVELOPER),RALF)
+	SHOWTODO:=1
+ else
+	SHOWTODO:=0
+ endif
+endif
+ifeq ($(SHOWTODO),1)
+	dflags += -DWARN_TODO# activate "TODO" warnings
 endif
 
 #---------------------- 32 or 64 bit
@@ -234,6 +275,10 @@ cflags += -pipe
 cflags += -fmessage-length=0# don't wrap compiler output
 cflags += -funit-at-a-time
 cflags += -fPIC
+
+ifneq ($(USE_GCC_4_OR_HIGHER),'')
+cflags += -fstrict-aliasing# gcc 3.4
+endif
 
 #---------------------- X11 location
 
@@ -1248,6 +1293,7 @@ proto: proto_tools
 		AISC/AISC.proto \
 		ARBDB/ARBDB.proto \
 		ARB_GDE/ARB_GDE.proto \
+		CORE/CORE.proto \
 		CONVERTALN/CONVERTALN.proto \
 		NTREE/NTREE.proto \
 		$(ARCHS_PT_SERVER:.a=.proto) \

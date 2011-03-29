@@ -24,6 +24,7 @@
 #include <cstdarg>
 
 #define SIMPLE_ARB_ASSERT
+#include <attributes.h>
 #include <arb_assert.h>
 
 #define mp_assert(cond) arb_assert(cond)
@@ -1437,7 +1438,7 @@ static void getdecl(FILE *f, const char *header) {
     }
 }
 
-static void Usage() {
+STATIC_ATTRIBUTED(__ATTR__NORETURN, void Usage()) {
     fprintf(stderr, "Usage: %s [flags] [files ...]", ourname);
     fputs("\nSupported flags:"
           "\n   -a               make a function list for aisc_includes (default: generate C prototypes)"
@@ -1740,12 +1741,12 @@ inline const char *test_extract(bool ATTR, const char *str) {
 #define TEST_both(c,e) do { TEST_attribute(c,e); TEST_ATTR_____(c,e); } while(0)
 
 void TEST_attribute_parser() {
-    TEST_both("", NULL);
-    TEST_both("nothing here", NULL);
+    TEST_both("",             (const char*)NULL);
+    TEST_both("nothing here", (const char*)NULL);
 
-    TEST_attribute("bla bla __attribute__(whatever) more content", "__attribute__(whatever)");
-    TEST_ATTR_____("bla bla __ATTR__DEPRECATED more content",      "__ATTR__DEPRECATED");
-    TEST_ATTR_____("bla bla __ATTR__FORMAT(pos) more content",     "__ATTR__FORMAT(pos)");
+    TEST_attribute("bla bla __attribute__(whatever) more content",             "__attribute__(whatever)");
+    TEST_ATTR_____("bla bla __ATTR__DEPRECATED(\" my reason \") more content", "__ATTR__DEPRECATED(\" my reason \")");
+    TEST_ATTR_____("bla bla __ATTR__FORMAT(pos) more content",                 "__ATTR__FORMAT(pos)");
     
     TEST_ATTR_____("__ATTR__DEPRECATED",       "__ATTR__DEPRECATED");
     TEST_ATTR_____("__ATTR__FORMAT(pos)",      "__ATTR__FORMAT(pos)");
@@ -1753,8 +1754,8 @@ void TEST_attribute_parser() {
     TEST_ATTR_____("__ATTR__FORMAT(pos) bla",  "__ATTR__FORMAT(pos)");
     TEST_ATTR_____("    __ATTR__FORMAT(pos) ", "__ATTR__FORMAT(pos)");
     
-    TEST_ATTR_____("__ATTR__FORMAT((pos)",           NULL);
-    TEST_ATTR_____("__attribute__(pos",              NULL);
+    TEST_ATTR_____("__ATTR__FORMAT((pos)",           (const char*)NULL);
+    TEST_ATTR_____("__attribute__(pos",              (const char*)NULL);
     TEST_ATTR_____("__ATTR__FORMAT(pos))",           "__ATTR__FORMAT(pos)");
     TEST_ATTR_____("__ATTR__FORMAT((pos))",          "__ATTR__FORMAT((pos))");
     TEST_ATTR_____("__ATTR__FORMAT((pos)+((sop)))",  "__ATTR__FORMAT((pos)+((sop)))");

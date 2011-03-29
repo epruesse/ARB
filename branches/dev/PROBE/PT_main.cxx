@@ -130,7 +130,7 @@ void PT_exit_psg() {
     }
 }
 
-void PT_exit(int exitcode) {
+void PT_exit(int exitcode) { // goes to header: __ATTR__NORETURN
     // unique exit point to ensure cleanup
     if (aisc_main) destroy_PT_main(aisc_main);
     if (psg_initialized) PT_exit_psg();

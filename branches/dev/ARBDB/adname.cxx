@@ -31,9 +31,9 @@ static struct {
     int      all_flag;
 } NameSession;
 
-#if defined(DEVEL_RALF)
+#if defined(WARN_TODO)
 #warning change all_flag into estimated number of renames ( == 0 shall mean all)
-#endif // DEVEL_RALF
+#endif
 
 GB_ERROR GBT_begin_rename_session(GBDATA *gb_main, int all_flag) {
     /* Starts a rename session (to rename one or many species)

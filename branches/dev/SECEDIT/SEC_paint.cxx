@@ -366,9 +366,9 @@ void SEC_loop::paint_constraints(AW_device *device) {
 //      Background colors
 // --------------------------
 
-#if defined(DEVEL_RALF)
+#if defined(WARN_TODO)
 #warning move to SEC_db_interface
-#endif // DEVEL_RALF
+#endif
 void SEC_root::cacheBackgroundColor() {
     freenull(bg_color);
 

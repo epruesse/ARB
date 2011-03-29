@@ -1,51 +1,92 @@
 
-Update: Support for gcc < 3.2 has been dropped.
-The instructions below work with all version when adapted appropriately.
+ARB will compile with several versions of gcc.
 
-*********************
+Compilation is frequently tested with
 
-ARB will compile with several versions of gcc. Compilation was tested
-with gcc 2.95.3 and gcc versions higher or equal to gcc 3.3.3 (for
-most up-to-date details see the main Makefile).
+            gcc version   used in ubuntu
 
-If you encounter problems compiling ARB (e.g. if Makefile reports a
-version as not supported or compilation simply does not work) you may
-want to install a different version of gcc.
+            gcc 4.2.4      8.04 LTS hardy
+            gcc 4.3.3      9.04     jaunty
+            gcc 4.4.3     10.04     lucid
+
+The main Makefile in the ARB directory lists all supported versions
+(currently starting with gcc 3.2) and complains if you try to use
+an untested gcc version.
+
+You may try to simply add the untested version number to the Makefile
+and try compilation. Especially if the version lays somewhere inbetween
+the listed versions your chances are good that it will work.
+
+If you encounter compilation problems with any of the versions listed
+in the Makefile, please report to devel@arb-home.de
 
 
-Here a short howto (using gcc.2.95.3 as example):
+If your gcc version refuses to compile ARB, you need to install an
+additional gcc. 
 
-- download (i.e.)
 
-        - ftp://ftp.leo.org/pub/comp/os/unix/gnu/gcc/gcc-2.95.3/gcc-core-2.95.3.tar.gz  (8.5 Mb)
-        - ftp://ftp.leo.org/pub/comp/os/unix/gnu/gcc/gcc-2.95.3/gcc-g++-2.95.3.tar.gz   (1.5 Mb)
+Here a short howto (using gcc 4.5.2 as example):
 
-        or
+- download (e.g.)
 
-        - http://gd.tuwien.ac.at/gnu/sourceware/gcc/releases/gcc-2.95.3/gcc-core-2.95.3.tar.gz
-        - http://gd.tuwien.ac.at/gnu/sourceware/gcc/releases/gcc-2.95.3/gcc-g++-2.95.3.tar.gz
+      mkdir new-dir
+      cd new-dir
+      wget 'http://gcc.cybermirror.org/releases/gcc-4.5.2/gcc-core-4.5.2.tar.bz2'
+      wget 'http://gcc.cybermirror.org/releases/gcc-4.5.2/gcc-g++-4.5.2.tar.bz2'
 
-- unpack into directory 'your-gcc-source'
-- create directory 'your-gcc-objects'
+- unpack into directory 'src':
+
+      mkdir src
+      cd src
+      tar -jxvf ../gcc-core-4.5.2.tar.bz2
+      tar -jxvf ../gcc-g++-4.5.2.tar.bz2
+
+- create directory 'objs'
+
+      cd ..
+      mkdir objs
+
+- use bash:
+
+      bash
 
 - configure gcc:
 
-        cd your-gcc-objects
-        ../your-gcc-source/configure --prefix=/opt/gcc-2.95
-
-        [If you'd like to see english error messages use '--disable-nls' ]
+      cd objs
+      ../src/gcc-4.5.2/configure --prefix=/opt/gcc-4.5.2 --disable-nls
 
 - build gcc:
 
-        make bootstrap
+      make bootstrap
 
-        su
-        make install
+- install gcc:
+
+      su
+      make install
 
 - prefix
-        /opt/gcc-2.95/bin
+      /opt/gcc-4.5.2/bin
   to your PATH environment variable.
 
 - compile ARB
 
 
+-------------------------------------------
+problems that may occur while compiling gcc
+-------------------------------------------
+
+ - configure is complaining about wrong libmfc
+
+   - download, compile and install recent version
+     (further assuming it was installed into /usr/local)
+   - before configuring gcc set
+
+     LD_OPTIONS='-L/usr/local/lib -R/usr/local/lib'
+     export LD_OPTIONS
+     LDFLAGS='-L/usr/local/lib -R/usr/local/lib'
+     export LDFLAGS
+
+   - run configure with
+         --with-mpfr=/usr/local
+     option
+   - continue with 'make bootstrap' like above

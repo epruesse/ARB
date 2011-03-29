@@ -28,6 +28,7 @@
 //      error handling
 
 void GB_raise_critical_error(const char *msg) {
+    // goes to header: __ATTR__NORETURN
     fprintf(stderr, "------------------------------------------------------------\n");
     fprintf(stderr, "A critical error occurred in ARB\nError-Message: %s\n", msg);
 #if defined(DEBUG)
@@ -77,9 +78,9 @@ void gbs_uppercase(char *str)
     }
 }
 
-#if defined(DEVEL_RALF)
+#if defined(WARN_TODO)
 #warning replace/implement gbs_memcopy by memmove
-#endif // DEVEL_RALF
+#endif
 void gbs_memcopy(char *dest, const char *source, long len)
 {
     long        i;

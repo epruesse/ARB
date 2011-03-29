@@ -1029,7 +1029,7 @@ inline long calcSequenceChecksum(const char *data, long length) {
     return GB_checksum(data, length, 1, GAP_CHARS);
 }
 
-#if defined(DEVEL_RALF)
+#if defined(WARN_TODO)
 #warning firstColumn + lastColumn -> TargetRange
 #endif
 
@@ -1827,10 +1827,10 @@ public:
 };
 
 
-#if defined(DEVEL_RALF)
+#if defined(WARN_TODO)
 #warning make alignTo a member of ExplicitReference (or of AlignmentReference)
 #warning let alignToGroupConsensus and alignToNextRelative use ExplicitReference
-#endif // DEVEL_RALF
+#endif
 
 class ExplicitReference: public AlignmentReference {
     const FastSearchSequence *targetSequence;
@@ -1852,9 +1852,9 @@ public:
     }
 };
 
-#if defined(DEVEL_RALF)
+#if defined(WARN_TODO)
 #warning make alignToGroupConsensus a member of ConsensusReference
-#endif // DEVEL_RALF
+#endif
 
 class ConsensusReference: public AlignmentReference {
     Aligner_get_consensus_func  get_consensus;
@@ -1873,9 +1873,9 @@ public:
     }
 };
 
-#if defined(DEVEL_RALF)
+#if defined(WARN_TODO)
 #warning make alignToNextRelative a member of SearchRelativesReference
-#endif // DEVEL_RALF
+#endif
 
 class SearchRelativesReference: public AlignmentReference {
     SearchRelativeParams&  relSearch;
@@ -1951,9 +1951,9 @@ class Aligner {
 
 public:
 
-#if defined(DEVEL_RALF)
+#if defined(WARN_TODO)
 #warning pass AlignmentReference from caller (replacing reference parameters)
-#endif // DEVEL_RALF
+#endif
 
     Aligner(GBDATA *gb_main_,
 
@@ -2111,9 +2111,9 @@ ARB_ERROR Aligner::alignToExplicitReference(GBDATA *gb_species_data, int max_seq
         CompactedSubSequence *referenceSeq = readCompactedSequence(gb_reference, alignment, &error, NULL, &referenceChksum, ali_params.firstColumn, ali_params.lastColumn);
 
         if (island_hopper) {
-#if defined(DEVEL_RALF)
+#if defined(WARN_TODO)
 #warning setting island_hopper reference has to be done in called function (seems that it is NOT done for alignToConsensus and alignToRelatives). First get tests in place!
-#endif // DEVEL_RALF
+#endif
             GBDATA *gb_seq = GBT_read_sequence(gb_reference, alignment);        // get sequence
             if (gb_seq) {
                 long        length = GB_read_string_count(gb_seq);
@@ -2126,9 +2126,9 @@ ARB_ERROR Aligner::alignToExplicitReference(GBDATA *gb_species_data, int max_seq
 
 
         if (!error) {
-#if defined(DEVEL_RALF)
+#if defined(WARN_TODO)
 #warning do not pass FastSearchSequence to ExplicitReference, instead pass sequence and length (ExplicitReference shall create it itself)
-#endif // DEVEL_RALF
+#endif
 
             FastSearchSequence referenceFastSeq(*referenceSeq);
             ExplicitReference  target(alignment, &referenceFastSeq, gb_reference, max_seq_length, ali_params);
@@ -3006,8 +3006,8 @@ static const char *get_aligned_data_of(GBDATA *gb_main, const char *species_name
         }
     }
 
-    TEST_ASSERT_EQUAL(error.deliver(), NULL);
-
+    TEST_ASSERT_NULL(error.deliver());
+    
     return data;
 }
 
@@ -3108,7 +3108,7 @@ void TEST_Aligner_TargetAndReferenceHandling() {
     ARB_ERROR  error;
     GBDATA    *gb_main = TEST_CREATE_DB(error, test_aliname, TestAlignmentData_TargetAndReferenceHandling, false);
 
-    TEST_ASSERT_EQUAL(error.deliver(), NULL);
+    TEST_ASSERT_NULL(error.deliver());
 
     SearchRelativeParams search_relative_params(new FakeFamilyFinder(gb_main, test_aliname, false, 8),
                                                 test_aliname,
@@ -3137,7 +3137,7 @@ void TEST_Aligner_TargetAndReferenceHandling() {
                         cont_on_err,
                         FA_NO_ACTION);
         error = aligner.run();
-        TEST_ASSERT_EQUAL(error.deliver(), NULL);
+        TEST_ASSERT_NULL(error.deliver());
     }
     TEST_ASSERT_EQUAL(GBT_count_marked_species(gb_main), 3); // we still got 3 marked species
     {
@@ -3156,7 +3156,7 @@ void TEST_Aligner_TargetAndReferenceHandling() {
                         cont_on_err,
                         FA_MARK_FAILED);
         error = aligner.run();
-        TEST_ASSERT_EQUAL(error.deliver(), NULL);
+        TEST_ASSERT_NULL(error.deliver());
 
         TEST_ASSERT(!cont_on_err || GBT_count_marked_species(gb_main) == 0); // FA_MARK_FAILED (none failed -> none marked)
     }
@@ -3176,7 +3176,7 @@ void TEST_Aligner_TargetAndReferenceHandling() {
                         cont_on_err,
                         FA_MARK_ALIGNED);
         error = aligner.run();
-        TEST_ASSERT_EQUAL(error.deliver(), NULL);
+        TEST_ASSERT_NULL(error.deliver());
         
         TEST_ASSERT(!cont_on_err || GBT_count_marked_species(gb_main) == 2); // FA_MARK_ALIGNED (2 selected were aligned)
     }
@@ -3197,7 +3197,7 @@ void TEST_Aligner_TargetAndReferenceHandling() {
                         FA_MARK_ALIGNED);
 
         error = aligner.run();
-        TEST_ASSERT_EQUAL(error.deliver(), NULL);
+        TEST_ASSERT_NULL(error.deliver());
 
         TEST_ASSERT(!cont_on_err || GBT_count_marked_species(gb_main) == 1);
     }
@@ -3242,7 +3242,7 @@ void TEST_Aligner_TargetAndReferenceHandling() {
                             FA_MARK_ALIGNED);
 
             error = aligner.run();
-            TEST_ASSERT_EQUAL(error.deliver(), NULL);
+            TEST_ASSERT_NULL(error.deliver());
 
             TEST_ASSERT(!cont_on_err || GBT_count_marked_species(gb_main) == 1);
         }
@@ -3293,7 +3293,7 @@ void TEST_Aligner_TargetAndReferenceHandling() {
                         FA_MARK_ALIGNED);
 
         error = aligner.run();
-        TEST_ASSERT_EQUAL(error.deliver(), NULL);
+        TEST_ASSERT_NULL(error.deliver());
 
         TEST_ASSERT(!cont_on_err || GBT_count_marked_species(gb_main) == 1);
     }
@@ -3370,7 +3370,7 @@ void TEST_SLOW_Aligner_checksumError() {
 
         error = aligner.run();
     }
-    TEST_ASSERT_EQUAL__BROKEN(error.deliver(), NULL);
+    TEST_ASSERT_NULL__BROKEN(error.deliver());
     TEST_ASSERT_EQUAL__BROKEN(USED_RELS_FOR("MtnK1722"), "???");
     
     GB_close(gb_main);

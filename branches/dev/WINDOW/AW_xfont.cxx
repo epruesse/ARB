@@ -25,11 +25,10 @@
 #define FONT_EXAMINE_MAX   5000
 #define KNOWN_ISO_VERSIONS 3
 
-#if defined(DEVEL_RALF)
-// #warning font debugging is active in release
-#endif // DEVEL_RALF
+#if !defined(DEVEL_RELEASE)
 // #define DUMP_FONT_LOOKUP
 // #define DUMP_FONT_DETAILS
+#endif
 
 // --------------------------------------------------------------------------------
 
@@ -392,10 +391,10 @@ static bool lookfont(Display *tool_d, int f, int s, int& found_size, bool verboo
     bool   found;
     xfont *newfont, *nf, *oldnf;
 
-#if defined(DEVEL_RALF)
+#if defined(WARN_TODO)
 #warning scalability shall be checked for each font -- not only for first
 #warning fontdetection is called for each GC -- do some caching ?
-#endif // DEVEL_RALF
+#endif
 
     found_size = -1;
 

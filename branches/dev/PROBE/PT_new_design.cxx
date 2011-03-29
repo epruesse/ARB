@@ -337,9 +337,9 @@ extern "C" char *get_design_info(PT_tprobes  *tprobe)
     return buffer;
 }
 
-#if defined(DEVEL_RALF)
+#if defined(WARN_TODO)
 #warning fix usage of strlen in get_design_info and add assertion vs buffer overflow
-#endif // DEVEL_RALF
+#endif
 
 extern "C" char *get_design_hinfo(PT_tprobes  *tprobe) {
     char   *buffer = (char *)GB_give_buffer(2000);

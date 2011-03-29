@@ -51,7 +51,6 @@ static int InsertDatainGDE(NA_Alignment *dataset, GBDATA **the_species, unsigned
                            unsigned long maxalignlen, const AP_filter *filter, GapCompression compress,
                            bool cutoff_stop_codon)
 {
-    GBDATA      *gb_name;
     GBDATA      *gb_species;
     GBDATA      *gbd;
     NA_Sequence *this_elem;

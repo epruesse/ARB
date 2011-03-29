@@ -30,7 +30,7 @@ enum UnitTestResult {
 };
 
 struct UnitTester {
-    UnitTester(const char *libname, const UnitTest_simple *simple_tests, int warn_level, size_t skippedTests);
+    UnitTester(const char *libname, const UnitTest_simple *simple_tests, int warn_level, size_t skippedTests) __attribute__((noreturn));
 };
 
 UnitTestResult execute_guarded(UnitTest_function fun, long *duration_usec, long max_allowed_duration_ms, bool detect_environment_calls);

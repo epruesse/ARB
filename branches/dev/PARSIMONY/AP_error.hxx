@@ -1,6 +1,11 @@
 #ifndef _AP_ERROR_INC
 #define _AP_ERROR_INC
 
+#ifndef ATTRIBUTES_H
+#include <attributes.h>
+#endif
+
+
 class AP_ERR
 {
     static int  mode;                               // output mode 0 = no warnings, 1 = warnings
@@ -9,8 +14,8 @@ class AP_ERR
 
 public:
     AP_ERR(const char *errorstring);                // sets error
-    AP_ERR(const char *, const int core);
-    AP_ERR(const char *, const char *, const int core);
+    AP_ERR(const char *, const int core) __ATTR__NORETURN;
+    AP_ERR(const char *, const char *, const int core) __ATTR__NORETURN;
     AP_ERR(const char *, const char *);
     ~AP_ERR();
 

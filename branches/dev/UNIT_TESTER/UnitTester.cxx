@@ -67,7 +67,7 @@ static Globals GLOBAL;
 // #define TRACE_PREFIX "UnitTester:0: "
 #define TRACE_PREFIX "UnitTester: "
 
-static void trace(const char *format, ...) {
+STATIC_ATTRIBUTED(__ATTR__FORMAT(1), void trace(const char *format, ...)) {
     va_list parg;
 
     fflush(stdout);
@@ -99,7 +99,7 @@ enum TrapCode {
     TRAP_TERM,
 };
 
-static void UNITTEST_sigsegv_handler(int sig) {
+STATIC_ATTRIBUTED(__ATTR__NORETURN, void UNITTEST_sigsegv_handler(int sig)) {
     if (GLOBAL.inside_test) {
         int  trap_code;
         const char *backtrace_cause = NULL;
@@ -243,7 +243,7 @@ void sleepms(long ms) {
 }
 
 #if (DEADLOCKGUARD == 1)
-static void deadlockguard(long max_allowed_duration_ms, bool detect_environment_calls) {
+STATIC_ATTRIBUTED(__ATTR__NORETURN, void deadlockguard(long max_allowed_duration_ms, bool detect_environment_calls)) {
     // this function is completely incompatible with debuggers
     sleepms(max_allowed_duration_ms);
 
@@ -451,9 +451,9 @@ UnitTester::UnitTester(const char *libname, const UnitTest_simple *simple_tests,
             }
         }
 
-        trace(generateReport(libname,
-                             tests+skippedTests, skippedTests, passed,
-                             duration_ms, global.warnings));
+        trace("%s", generateReport(libname,
+                                   tests+skippedTests, skippedTests, passed,
+                                   duration_ms, global.warnings));
     }
 
     arb_test::GlobalTestData::erase_instance();

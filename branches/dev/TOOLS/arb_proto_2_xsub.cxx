@@ -72,7 +72,7 @@ class CommentSkippingFileBuffer : public FileBuffer {
     string close_comment;
     string eol_comment;
 
-    void throw_error(const char *message) { throw InputFileError(*this, message); }
+    void throw_error(const char *message) __ATTR__NORETURN { throw InputFileError(*this, message); }
 
     string read_till_close_comment(string curr_line, size_t comment_startLineNumber) {
         bool seen_end = false;

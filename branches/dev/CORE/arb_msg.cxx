@@ -42,9 +42,9 @@ static size_t last_global_string_size = 0;
 #endif
 
 #ifdef HAVE_VSNPRINTF
-# define PRINT2BUFFER(buffer, bufsize, templat, parg) vsnprintf(buffer, bufsize, templat, parg);
+# define PRINT2BUFFER(buffer, bufsize, templat, parg) vsnprintf(buffer, bufsize, templat, parg)
 #else
-# define PRINT2BUFFER(buffer, bufsize, templat, parg) vsprintf(buffer, templat, parg);
+# define PRINT2BUFFER(buffer, bufsize, templat, parg) vsprintf(buffer, templat, parg)
 #endif
 
 #define PRINT2BUFFER_CHECKED(printed, buffer, bufsize, templat, parg)   \
@@ -56,8 +56,7 @@ static size_t last_global_string_size = 0;
 
 // --------------------------------------------------------------------------------
 
-static const char *gbs_vglobal_string(const char *templat, va_list parg, int allow_reuse)
-{
+STATIC_ATTRIBUTED(__ATTR__VFORMAT(1), const char *gbs_vglobal_string(const char *templat, va_list parg, int allow_reuse)) {
     static char buffer[GLOBAL_STRING_BUFFERS][GBS_GLOBAL_STRING_SIZE+2]; // several buffers - used alternately
     static int  idx                             = 0;
     static char lifetime[GLOBAL_STRING_BUFFERS] = {};
@@ -130,7 +129,7 @@ static const char *gbs_vglobal_string(const char *templat, va_list parg, int all
     return buffer[my_idx];
 }
 
-static char *gbs_vglobal_string_copy(const char *templat, va_list parg) {
+STATIC_ATTRIBUTED(__ATTR__VFORMAT(1), char *gbs_vglobal_string_copy(const char *templat, va_list parg)) {
     const char *gstr = gbs_vglobal_string(templat, parg, 1);
     return GB_strduplen(gstr, last_global_string_size);
 }
@@ -138,9 +137,9 @@ static char *gbs_vglobal_string_copy(const char *templat, va_list parg) {
 const char *GBS_global_string_to_buffer(char *buffer, size_t bufsize, const char *templat, ...) {
     // goes to header: __ATTR__FORMAT(3)
 
-#if defined(DEVEL_RALF)
+#if defined(WARN_TODO)
 #warning search for '\b(sprintf)\b\s*\(' and replace by GBS_global_string_to_buffer
-#endif // DEVEL_RALF
+#endif
 
     va_list parg;
     int     psize;
@@ -155,10 +154,6 @@ const char *GBS_global_string_to_buffer(char *buffer, size_t bufsize, const char
 
 size_t GBS_last_global_string_size() {
     return last_global_string_size;
-}
-void GBS_reuse_buffer(const char *global_buffer) {
-    // If you've just shortely used a buffer, you can put it back here
-    gbs_vglobal_string(global_buffer, 0, -1);
 }
 
 char *GBS_global_string_copy(const char *templat, ...) {
@@ -207,7 +202,7 @@ GB_ERROR GBK_assert_msg(const char *assertion, const char *file, int linenr) {
 //      Error "handling"
 
 
-#if defined(DEVEL_RALF)
+#if defined(WARN_TODO)
 #warning redesign GB_export_error et al
 /* To clearly distinguish between the two ways of error handling
  * (which are: return GB_ERROR
@@ -226,7 +221,7 @@ GB_ERROR GBK_assert_msg(const char *assertion, const char *file, int linenr) {
  *
  * use GB_get_error() to import AND clear the error
  */
-#endif // DEVEL_RALF
+#endif
 
 static char *GB_error_buffer = 0;
 
@@ -237,7 +232,7 @@ GB_ERROR GB_export_error(const char *error) { // just a temp hack around format-
 GB_ERROR GB_export_errorf(const char *templat, ...) {
     /* goes to header:
      * __ATTR__FORMAT(1)
-     * __ATTR__DEPRECATED_LATER
+     * __ATTR__DEPRECATED_LATER("use GB_export_error(GBS_global_string(...))")
      *          because it's misused (where GBS_global_string should be used)
      *          old functionality will remain available via 'GB_export_error(GBS_global_string(...))' 
      */
@@ -248,9 +243,9 @@ GB_ERROR GB_export_errorf(const char *templat, ...) {
 
     memset(buffer, 0, 1000);
 
-#if defined(DEVEL_RALF)
-#warning dont prepend error here
-#endif // DEVEL_RALF
+#if defined(WARN_TODO)
+#warning dont prepend ARB ERROR here
+#endif
 
     p += sprintf(buffer, "ARB ERROR: ");
     va_start(parg, templat);
@@ -261,9 +256,9 @@ GB_ERROR GB_export_errorf(const char *templat, ...) {
     return GB_error_buffer;
 }
 
-#if defined(DEVEL_RALF)
+#if defined(WARN_TODO)
 #warning replace GB_export_IO_error() by GB_IO_error() and then export it if really needed 
-#endif // DEVEL_RALF
+#endif
 
 GB_ERROR GB_IO_error(const char *action, const char *filename) {
     /*! creates error message from current 'errno'
@@ -298,17 +293,17 @@ GB_ERROR GB_IO_error(const char *action, const char *filename) {
 }
 
 GB_ERROR GB_export_IO_error(const char *action, const char *filename) {
-    // goes to header: __ATTR__DEPRECATED_LATER
+    // goes to header: __ATTR__DEPRECATED_LATER("use GB_export_error(GB_IO_error(...))")
     return GB_export_error(GB_IO_error(action, filename));
 }
 
-#if defined(DEVEL_RALF)
-#warning reactivate deprecation below
-#endif // DEVEL_RALF
+#if defined(WARN_TODO)
+#warning reactivate deprecations below
+#endif
 
 
 GB_ERROR GB_print_error() {
-    // goes to header: __ATTR__DEPRECATED_LATER
+    // goes to header: __ATTR__DEPRECATED_LATER("will be removed completely")
     if (GB_error_buffer) {
         fflush(stdout);
         fprintf(stderr, "%s\n", GB_error_buffer);
@@ -317,14 +312,7 @@ GB_ERROR GB_print_error() {
 }
 
 GB_ERROR GB_get_error() {
-    // goes to header: __ATTR__DEPRECATED_LATER
-
-    /* This function is deprecated.
-     * Instead use either
-     * - GB_have_error() or
-     * - GB_await_error()
-     */
-
+    // goes to header: __ATTR__DEPRECATED_LATER("consider using either GB_have_error() or GB_await_error()")
     return GB_error_buffer;
 }
 
@@ -348,9 +336,9 @@ void GB_clear_error() {         // clears the error buffer
     freenull(GB_error_buffer);
 }
 
-#if defined(DEVEL_RALF)
+#if defined(WARN_TODO)
 #warning search for 'GBS_global_string.*error' and replace with GB_failedTo_error or GB_append_exportedError
-#endif // DEVEL_RALF
+#endif
 GB_ERROR GB_failedTo_error(const char *do_something, const char *special, GB_ERROR error) {
     if (error) {
         if (special) {
@@ -433,8 +421,7 @@ void GB_internal_errorf(const char *templat, ...) {
     GB_internal_error(message);
 }
 
-void GBK_terminate(const char *error) {
-
+void GBK_terminate(const char *error) { // goes to header __ATTR__NORETURN
     /* GBK_terminate is the emergency exit!
      * only used if no other way to recover
      */
@@ -449,7 +436,7 @@ void GBK_terminate(const char *error) {
 }
 
 void GBK_terminatef(const char *templat, ...) {
-    // goes to header: __ATTR__FORMAT(1)
+    // goes to header: __ATTR__FORMAT(1) __ATTR__NORETURN
     va_list parg;
 
     va_start(parg, templat);
@@ -496,5 +483,13 @@ void GB_informationf(const char *templat, ...) {
 
     GB_information(message);
     free(message);
+}
+
+
+#pragma GCC diagnostic ignored "-Wmissing-format-attribute"
+
+void GBS_reuse_buffer(const char *global_buffer) {
+    // If you've just shortely used a buffer, you can put it back here
+    gbs_vglobal_string(global_buffer, 0, -1); // omg hax
 }
 
