@@ -34,9 +34,50 @@ AISC_SERVER_EXTERN = GENH/aisc_server_extern.aisc
 
 DUMPDIR=DUMP
 
-all: $(CLIENT) $(SERVER)
+LINK_TO_OTHER_ARB=~/ARB.aisc_regression_test_vs# create this as symlink to other ARB checkout to activate regression test 
+FAIL_ON_CHANGE=1# 0=continue on change, 1=fail on change
 
-pregenerate: $(GEN_INCLUDES) $(GEN_SERVER_PROTO) $(GEN_SERVER_OBJECTS:.o=.c) 
+# ----------------------------------------
+
+COMPARE_WITH_OTHER_ARB:=$(shell readlink $(LINK_TO_OTHER_ARB))
+ifneq ($(COMPARE_WITH_OTHER_ARB),)
+THIS__COMDIR=$(shell pwd)
+COMDIRNAME=$(subst $(ARBHOME),,$(THIS__COMDIR))
+OTHER_COMDIR=$(subst //,/,$(COMPARE_WITH_OTHER_ARB)/$(COMDIRNAME))
+ifeq ($(FAIL_ON_CHANGE),0)
+REGR_FAILURE=(echo "AISC/Makefile:40: Warning: regression on generated code (ignored)" || true)
+else
+REGR_FAILURE=(	echo "AISC/Makefile:39: Error: regression on generated AISC code"; \
+		rm $(SERVER) $(CLIENT); \
+		false) 
+endif
+endif
+
+# ----------------------------------------
+
+all: $(CLIENT) $(SERVER) Makefile AISC/Makefile
+ifeq ($(COMPARE_WITH_OTHER_ARB),)
+	@echo "AISC regression tests are disabled ($(LINK_TO_OTHER_ARB) not found from AISC_COM/AISC/Makefile)"
+else
+ ifeq ($(THIS__COMDIR),$(OTHER_COMDIR))
+	@echo "AISC/Makefile:63: Warning: Skipping AISC regression tests (test versus self always ok)"
+	@echo "THIS__COMDIR='$(THIS__COMDIR)'"
+	@echo "OTHER_COMDIR='$(OTHER_COMDIR)'"
+ else
+	@echo "Running AISC regression tests (versus $(COMPARE_WITH_OTHER_ARB))"
+	@echo "THIS__COMDIR='$(THIS__COMDIR)'"
+	@echo "OTHER_COMDIR='$(OTHER_COMDIR)'"
+#       compare generated code using ../../SOURCE_TOOLS/check_dirs_equal.sh
+	@( \
+		../SOURCE_TOOLS/check_dirs_equal.sh $(THIS__COMDIR)/GENC $(OTHER_COMDIR)/GENC c && \
+		../SOURCE_TOOLS/check_dirs_equal.sh $(THIS__COMDIR)/GENH $(OTHER_COMDIR)/GENH h && \
+		../SOURCE_TOOLS/check_dirs_equal.sh $(THIS__COMDIR)/DUMP $(OTHER_COMDIR)/DUMP dump && \
+		echo "No change in generated code" \
+	) || $(REGR_FAILURE)
+ endif
+endif
+
+pregenerate: $(GEN_INCLUDES) $(GEN_SERVER_PROTO) $(GEN_SERVER_OBJECTS:.o=.c)
 
 $(SERVER):	$(SERVER_OBJECTS) $(GEN_SERVER_OBJECTS) $(PRIVATE_SERVER_OBJECTS)
 	$(LINK_STATIC_LIB) $@ $^
@@ -92,7 +133,10 @@ clean:
 	rm -f .depends
 
 .depends:
-	$(MAKEDEPEND) C/*.c GENC/*.c -I GENH -I C -f- -w1 | grep -v ' /usr' | sed -e 's/^C/O/ig' > .depends_new
+	$(MAKEDEPEND) $(MAKEDEPENDFLAGS) C/*.c GENC/*.c -I GENH -I C -f- -w1 2>/dev/null \
+		| grep -v ' /usr' \
+		| sed -e 's/^C/O/ig' \
+		> .depends_new
 	$(ARBHOME)/SOURCE_TOOLS/mv_if_diff .depends_new .depends
 
 ifeq ($(AUTODEPENDS),1)
