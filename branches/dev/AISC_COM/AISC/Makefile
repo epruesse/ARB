@@ -62,7 +62,15 @@ endif
 
 # ----------------------------------------
 
-all: $(CLIENT) $(SERVER) Makefile $(THIS)
+ifeq ($(AUTODEPENDS),1)
+all:
+	test -f .depends || $(MAKETHIS) "AUTODEPENDS=0" .depends
+	$(MAKETHIS) "AUTODEPENDS=2" all
+else
+all: realall
+endif
+
+realall: $(CLIENT) $(SERVER) Makefile $(THIS)
 ifeq ($(COMPARE_WITH_OTHER_ARB),)
 	@echo "AISC regression tests are disabled ($(LINK_TO_OTHER_ARB) not found from AISC_COM/$(THIS))"
 else
@@ -144,6 +152,6 @@ clean:
 		> .depends_new
 	$(ARBHOME)/SOURCE_TOOLS/mv_if_diff .depends_new .depends
 
-ifeq ($(AUTODEPENDS),1)
+ifeq ($(AUTODEPENDS),2)
 include .depends
 endif
