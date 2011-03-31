@@ -1407,6 +1407,10 @@ perl_clean:
 		"AUTODEPENDS=0" \
 		clean
 
+PERL2ARB/PERL2ARB.clean:
+	$(MAKE) perl_clean
+
+
 # ----------------------------------------
 
 CLOC=cloc-1.08.pl
