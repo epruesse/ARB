@@ -76,12 +76,12 @@ ifeq ($(COMPARE_WITH_OTHER_ARB),)
 else
  ifeq ($(THIS__COMDIR),$(OTHER_COMDIR))
 	@echo "$(THIS):63: Warning: Skipping AISC regression tests (test versus self always ok)"
-	@echo "THIS__COMDIR='$(THIS__COMDIR)'"
-	@echo "OTHER_COMDIR='$(OTHER_COMDIR)'"
+#	@echo "THIS__COMDIR='$(THIS__COMDIR)'"
+#	@echo "OTHER_COMDIR='$(OTHER_COMDIR)'"
  else
 	@echo "Running AISC regression tests (versus $(COMPARE_WITH_OTHER_ARB))"
-	@echo "THIS__COMDIR='$(THIS__COMDIR)'"
-	@echo "OTHER_COMDIR='$(OTHER_COMDIR)'"
+#	@echo "THIS__COMDIR='$(THIS__COMDIR)'"
+#	@echo "OTHER_COMDIR='$(OTHER_COMDIR)'"
 #       compare generated code using ../../SOURCE_TOOLS/check_dirs_equal.sh
 	@( \
 		../SOURCE_TOOLS/check_dirs_equal.sh $(THIS__COMDIR)/GENC $(OTHER_COMDIR)/GENC c && \
