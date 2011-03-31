@@ -453,7 +453,6 @@ first_target:
 		@echo ' depends      - create or update dependencies ("SUBDIR/SUBDIR.depends" to update only SUBDIR)'
 		@echo ' proto        - create or update prototypes ("SUBDIR/SUBDIR.proto" to update only SUBDIR)'
 		@echo ' tags         - create tags for xemacs'
-		@echo ' rmbak        - remove all "*%" and cores'
 		@echo ' show         - show available shortcuts (AKA subtargets)'
 		@echo ' up           - shortcut for depends+proto+tags'
 ifeq ($(UNIT_TESTS),1)
@@ -1346,9 +1345,12 @@ $(LINKSTAMP): SOURCE_TOOLS/generate_all_links.sh
 	SOURCE_TOOLS/generate_all_links.sh
 	touch $(LINKSTAMP)
 
-redo_links:
+clean_links:
+#       avoid to delete linked pts, nas or arb_tcp.dat:
 	find . -path './lib' -prune -o -type l -exec rm {} \;
-	@-rm $(LINKSTAMP)
+	@rm -f $(LINKSTAMP) lib/inputMasks/format.readme
+
+redo_links: clean_links
 	$(MAKE) links
 
 gde:		GDE/GDE.dummy
@@ -1440,16 +1442,22 @@ check_res:
 
 rmbak:
 	@echo "Cleanup:"
-	@find . \( -name '*%' -o -name '*.bak' -o -name 'core' \
-		   -o -name 'infile' -o -name treefile -o -name outfile \
-		   -o -name 'gde*_?' -o -name '*~' \) \
+	@find . \(	-name '*%' \
+			-o -name '*.bak' \
+			-o -name '*~' \) \
+			-o -name 'core' \
 	        -exec rm -v {} \;
 
-binclean:
-	@echo Cleaning bin directory
-	find bin -type l -exec rm {} \;
-	find bin -type f \! \( -name ".cvsignore" -o -name "Makefile" -o -path "bin/CVS/*" -o -path "bin/.svn/*" \) -exec rm {} \;
-	cd bin;make all
+bin_reinit:
+	$(MAKE) bin/bin.clean
+	(cd bin; make all)
+
+clean_directories:
+	rm -rf \
+		$(ARBHOME)/PROBE_SET/bin \
+		$(ARBHOME)/MAKEBIN \
+		$(ARBHOME)/INCLUDE \
+		$(ARBHOME)/LIBLINK \
 
 libclean:
 	find $(ARBHOME) -type f \( -name '*.a' ! -type l \) -exec rm -f {} \;
@@ -1458,18 +1466,25 @@ objclean:
 	find $(ARBHOME) -type f \( -name '*.o' ! -type l \) -exec rm -f {} \;
 
 clean2: $(ARCHS:.a=.clean) \
+		rmbak \
+		libclean \
+		objclean \
+		bin/bin.clean \
+		lib/lib.clean \
 		GDEHELP/GDEHELP.clean \
 		HELP_SOURCE/HELP_SOURCE.clean \
 		SOURCE_TOOLS/SOURCE_TOOLS.clean \
 		UNIT_TESTER/UNIT_TESTER.clean \
-		bin/bin.clean \
-		perl_clean
-	rm -f *.last_gcc
+		TEMPLATES/TEMPLATES.clean \
+		perl_clean \
+		clean_directories \
+
+	rm -f *.last_gcc config.makefile.bak TAGS
 
 # links are needed for cleanup
 clean: redo_links
 	$(MAKE) clean2
-	$(MAKE) clean_coverage
+	$(MAKE) clean_coverage clean_links
 
 # 'relocated' is about 50% faster than 'rebuild'
 reloc_clean: links
