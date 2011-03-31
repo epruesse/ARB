@@ -1,12 +1,19 @@
 
+THIS=AISC/Makefile
+MAKETHIS=$(MAKE) -f $(THIS)
+#MAKETHIS=$(MAKE) -d -f $(THIS)
+
 # dont warn about unused functions (@@@ fix)
 FORCED_FLAGS=-Wno-unused
 
 .SUFFIXES: .o .c .h .aisc
 
 #where to find the creator files
-AISC = ../MAKEBIN/aisc
+AISC=../MAKEBIN/aisc
 AISC_MKPT = ../MAKEBIN/aisc_mkpt
+
+RUN_AISC=$(AISC)
+#RUN_AISC=arb_valgrind -c 15 $(AISC)# buggy!
 
 GEN_INCLUDES = GENH/aisc.h GENH/aisc_com.h
 INCLUDE_INCLUDES = aisc_include.header
@@ -45,9 +52,9 @@ THIS__COMDIR=$(shell pwd)
 COMDIRNAME=$(subst $(ARBHOME),,$(THIS__COMDIR))
 OTHER_COMDIR=$(subst //,/,$(COMPARE_WITH_OTHER_ARB)/$(COMDIRNAME))
 ifeq ($(FAIL_ON_CHANGE),0)
-REGR_FAILURE=(echo "AISC/Makefile:40: Warning: regression on generated code (ignored)" || true)
+REGR_FAILURE=(echo "$(THIS):40: Warning: regression on generated code (ignored)" || true)
 else
-REGR_FAILURE=(	echo "AISC/Makefile:39: Error: regression on generated AISC code"; \
+REGR_FAILURE=(	echo "$(THIS):39: Error: regression on generated AISC code"; \
 		rm $(SERVER) $(CLIENT); \
 		false) 
 endif
@@ -55,12 +62,12 @@ endif
 
 # ----------------------------------------
 
-all: $(CLIENT) $(SERVER) Makefile AISC/Makefile
+all: $(CLIENT) $(SERVER) Makefile $(THIS)
 ifeq ($(COMPARE_WITH_OTHER_ARB),)
-	@echo "AISC regression tests are disabled ($(LINK_TO_OTHER_ARB) not found from AISC_COM/AISC/Makefile)"
+	@echo "AISC regression tests are disabled ($(LINK_TO_OTHER_ARB) not found from AISC_COM/$(THIS))"
 else
  ifeq ($(THIS__COMDIR),$(OTHER_COMDIR))
-	@echo "AISC/Makefile:63: Warning: Skipping AISC regression tests (test versus self always ok)"
+	@echo "$(THIS):63: Warning: Skipping AISC regression tests (test versus self always ok)"
 	@echo "THIS__COMDIR='$(THIS__COMDIR)'"
 	@echo "OTHER_COMDIR='$(OTHER_COMDIR)'"
  else
@@ -105,10 +112,10 @@ $(DUMPDIR):
 	mkdir -p $(DUMPDIR)
 
 GENH/%.h: AISC/%.pa AISC/*.pa $(MAIN_SOURCE) $(INCLUDE_INCLUDES) $(AISC) $(DUMPDIR) 
-	$(AISC) $< $(MAIN_SOURCE) $@
+	$(RUN_AISC) $< $(MAIN_SOURCE) $@
 
 GENC/%.c: AISC/%.pa AISC/*.pa $(MAIN_SOURCE) $(AISC_SERVER_EXTERN) $(AISC) $(DUMPDIR) $(GEN_SERVER_INCLUDES)
-	$(AISC) $< $(MAIN_SOURCE) $@ $(AISC_SERVER_EXTERN) $(IMPORT_PROTO)
+	$(RUN_AISC) $< $(MAIN_SOURCE) $@ $(AISC_SERVER_EXTERN) $(IMPORT_PROTO)
 
 $(IMPORT_PROTO): GENC/aisc_server.c
 	echo $@
