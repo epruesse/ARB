@@ -33,7 +33,7 @@ else
                     touch $FAKEPATCH
                     echo "No patch generated (no diff)"
                 else
-                    DIFF=0
+                    DIFF=1
                     if [ -e $RECENT_PATCH ]; then
                         DIFF=`diff $PATCH $RECENT_PATCH | wc -l`
                     fi

@@ -3,7 +3,7 @@ all:
 		@echo "use make clean"
 
 clean:
-		rm -f generate_all_links.stamp
+		rm -f *.stamp valgrind2grep.lst
 
 valgrind_update:
 		./arb_valgrind update

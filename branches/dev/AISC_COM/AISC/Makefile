@@ -142,7 +142,7 @@ $(GEN_SERVER_PROTO): $(S_GEN_SERVER_PROTO) $(AISC_MKPT)
 
 clean:
 	@rm -f *.[ao] */*.[ao]
-	@rm -f GENH/* GENC/*
+	@rm -rf GENH GENC DUMP O
 	@rm -f .depends
 
 .depends:

@@ -30,7 +30,8 @@ test_environment: $(ENVIRONMENT_OBJECTS) $(TESTER_OBJECTS) $(TEST_ENVIRONMENT_LI
 	$(CPP) $(cflags) -c $< -DDEADLOCKGUARD=$(DEADLOCKGUARD) $(CPPINCLUDES) $(POST_COMPILE)
 
 clean:
-	rm -f $(CPP_OBJECTS) *.a test_environment 
+	rm -f $(CPP_OBJECTS) *.a test_environment skipslow.stamp
+	rm -rf logs tests
 	$(MAKE) -f Makefile.test clean
 
 
