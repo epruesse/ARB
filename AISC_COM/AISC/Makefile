@@ -133,11 +133,9 @@ $(GEN_SERVER_PROTO): $(S_GEN_SERVER_PROTO) $(AISC_MKPT)
 	$(AISC_MKPT) -C $(S_GEN_SERVER_PROTO) >$@
 
 clean:
-	rm -f *.[ao]
-	rm -f */*.[ao]
-	rm -f GENH/*
-	rm -f GENC/*
-	rm -f .depends
+	@rm -f *.[ao] */*.[ao]
+	@rm -f GENH/* GENC/*
+	@rm -f .depends
 
 .depends:
 	$(MAKEDEPEND) $(MAKEDEPENDFLAGS) C/*.c GENC/*.c -I GENH -I C -f- -w1 2>/dev/null \
