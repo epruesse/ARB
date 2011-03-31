@@ -1126,7 +1126,16 @@ com_probe: PROBE_COM/PROBE_COM.dummy
 com_names: NAMES_COM/NAMES_COM.dummy
 com_all: com_probe com_names
 
-TOOLS/TOOLS.dummy : shared_libs SERVERCNTRL/SERVERCNTRL.dummy com_probe
+TOOLS/TOOLS.dummy : \
+	core \
+	db \
+	com_probe \
+	SERVERCNTRL/SERVERCNTRL.dummy \
+	SL/TREE_WRITE/TREE_WRITE.dummy \
+	SL/TREE_READ/TREE_READ.dummy \
+	SL/FILE_BUFFER/FILE_BUFFER.dummy \
+	XML/XML.dummy \
+
 
 AWTC/AWTC.dummy :   			com_names com_probe
 
@@ -1356,7 +1365,7 @@ redo_links: clean_links
 gde:		GDE/GDE.dummy
 GDE:		gde
 agde: 		ARB_GDE/ARB_GDE.dummy
-tools:		shared_libs SL/SL.dummy TOOLS/TOOLS.dummy
+tools:		TOOLS/TOOLS.dummy
 
 convert:	$(CONVERT_ALN)
 readseq:	READSEQ/READSEQ.dummy
@@ -1500,21 +1509,42 @@ reloc_clean: links
 relocated: links
 	$(MAKE) reloc_clean
 	@echo "---------------------------------------- and remake"
-	$(MAKE) all
+	$(MAKE) build
+
+# -----------------------------------
+# some stress tests:
+
+rebuild4ever: rebuild
+	$(MAKE) rebuild4ever
+
+build4ever: build
+	$(MAKE) build4ever
+
+clean4ever: clean
+	$(MAKE) clean4ever
+
+test4ever: ut
+	$(MAKE) test4ever
+
+perl4ever: clean 
+	$(MAKE) links
+	$(MAKE) perl
+	$(MAKE) perl4ever
+
 
 # -----------------------------------
 
 rebuild: clean
-	$(MAKE) all
+	$(MAKE) build
 
 relink: binclean libclean
-	$(MAKE) all
+	$(MAKE) build
 
 tarfile: rebuild
 	$(MAKE) addlibs 
 	util/arb_compress
 
-tarfile_quick: all
+tarfile_quick: build
 	$(MAKE) addlibs 
 	util/arb_compress
 
