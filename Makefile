@@ -1203,8 +1203,6 @@ source_doc:
 	doxygen
 	$(MAKE) forcelinks
 
-mbin:	$(ARCHS_MAKEBIN:.a=.dummy)
-
 com:	$(ARCHS_COMMUNICATION:.a=.dummy)
 
 help:   HELP_SOURCE/HELP_SOURCE.dummy
@@ -1596,7 +1594,7 @@ release_quick:
 arbbasic: links preplib
 		$(MAKE) arbbasic2
 
-arbbasic2: templ mbin com sl $(GL)
+arbbasic2: templ comtools com sl $(GL)
 
 # needed arb applications
 arbapplications: nt pa e4 wetc pt na nal di ph ds pgt
@@ -1767,6 +1765,11 @@ aut:
 TIMELOG=$(ARBHOME)/arb_time.log
 TIMEARGS=--append --output=$(TIMELOG) --format=" %E(%S+%U) %P [%C]"
 TIMECMD=/usr/bin/time $(TIMEARGS)
+
+setup_after_clean: checks
+	$(MAKE) links 
+	$(MAKE) templ preplib binlink
+	$(MAKE) comtools 
 
 build:
 	$(MAKE) links
