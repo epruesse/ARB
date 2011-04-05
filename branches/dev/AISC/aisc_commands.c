@@ -163,6 +163,20 @@ int Interpreter::do_data(const char *str) {
     return 0;
 }
 
+int Interpreter::do_indent(const char *str) {
+    int diff       = atoi(str);
+    int indent     = formatter.get_indent();
+    int new_indent = indent+diff;
+
+    if (new_indent<0) {
+        printf_error(at(), "invalid resulting indentation %i", new_indent);
+        return 1;
+    }
+
+    formatter.set_indent(new_indent);
+    return 0;
+}
+
 int Interpreter::do_tabstop(const char *str) {
     int ts = atoi(str);
     if ((ts < 1) || (ts > 1024)) {
@@ -800,6 +814,7 @@ void Interpreter::command_table_setup(bool setup) {
         command_table[i++] = new ArgCommand("CLOSE",    &Interpreter::do_close);
         command_table[i++] = new ArgCommand("OUT",      &Interpreter::do_out,          TERMINATED_ON_ERROR);
 
+        command_table[i++] = new ArgCommand("INDENT",   &Interpreter::do_indent);
         command_table[i++] = new ArgCommand("TABSTOP",  &Interpreter::do_tabstop);
         command_table[i++] = new ArgCommand("TAB",      &Interpreter::do_tab);
         command_table[i++] = new ArgCommand("PP",       &Interpreter::do_write_stdout);
