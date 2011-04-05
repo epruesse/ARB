@@ -4,11 +4,12 @@
 /*   Purpose   : ARB integrated source compiler                     */
 /*                                                                  */
 /*   Institute of Microbiology (Technical University Munich)        */
-/*   http://www.arb-home.de/                                        */
+/*   http://www.arb-home.de                                         */
 /*                                                                  */
 /* ================================================================ */
 
 #include "aisc_interpreter.h"
+#include <cctype>
 
 // AISC_MKPT_PROMOTE:#ifndef AISC_DEF_H
 // AISC_MKPT_PROMOTE:#include "aisc_def.h"
@@ -47,9 +48,12 @@ char *read_aisc_file(const char *path, const Location *loc) {
     return buffer;
 }
 
-Formatter::Formatter() {
-    tabstop = 8;
-    tabpos  = 0;
+Formatter::Formatter()
+    : tabstop(4),
+      column(0),
+      indent(0),
+      printed_sth(false)
+{
     set_tabstop(4);
 
     for (int i = 0; i < 256; i++) {
@@ -86,32 +90,14 @@ int Formatter::write(Output& out, const char *str) {
             c = *(p++);
             if (!c)
                 break;
+
             if (!outtab[(unsigned)(c)]) {
                 if (c == '\\') {
                     no_nl = 1;
-                    continue;
                 }
-                if ((c >= '0') && (c <= '9')) {
+                else if (isdigit(c)) {
                     int pos = tabs[c - '0'];
-                    if (pos < tabpos)
-                        continue;
-
-                    int lt = tabpos / tabstop;
-                    int rt = pos / tabstop;
-
-                    while (lt < rt) {
-                        out.putchar('\t');
-                        lt++;
-                        tabpos /= tabstop;
-                        tabpos++;
-                        tabpos *= tabstop;
-                    }
-                    while (tabpos < pos) {
-                        out.putchar(' ');
-                        tabpos++;
-                    }
-
-                    continue;
+                    tab_to_pos(pos, out);
                 }
                 continue;
             }
@@ -120,11 +106,8 @@ int Formatter::write(Output& out, const char *str) {
             }
         }
         if (c == '\t') {
-            out.putchar(c);
-
-            tabpos /= tabstop;
-            tabpos++;
-            tabpos *= tabstop;
+            int pos = ((column/tabstop)+1)*tabstop;
+            tab_to_pos(pos, out);
         }
         else if (c == '\n') {
             if (no_nl) {
@@ -132,7 +115,8 @@ int Formatter::write(Output& out, const char *str) {
             }
             else {
                 out.putchar(c);
-                tabpos = 0;
+                column      = 0;
+                printed_sth = false;
             }
         }
         else if (c == '@') {
@@ -145,18 +129,17 @@ int Formatter::write(Output& out, const char *str) {
                 p++;
             }
             else {
-                out.putchar(c);
-                tabpos++;
+                print_char(c, out);
             }
         }
         else {
-            out.putchar(c);
-            tabpos++;
+            print_char(c, out);
         }
     }
     if (!no_nl) {
         out.putchar('\n');
-        tabpos = 0;
+        column      = 0;
+        printed_sth = false;
     }
     return 0;
 }

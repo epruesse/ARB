@@ -144,15 +144,43 @@ public:
     bool hasID(const char *Name) const { return id && strcmp(id, Name) == 0; }
 
     void putchar(char c) { aisc_assert(fp); putc(c, fp); }
-    void putstring(const char *s) { for (char c = *s; *s; ++s) { putchar(c); } }
+    void putstring(const char *s) { for (; *s; ++s) { putchar(*s); } }
 };
 
 class Formatter {
-    char outtab[256];
-    int  tabstop;
-    int  tabpos;
-    int  tabs[10];
-public: 
+    char outtab[256]; // decode table for $x (0 = handle special, character to print otherwise)
+    int  tabstop;     // normal tabstop (for $t)
+    int  tabs[10];    // predefined tabs ($0..$9) - default to multiples of 'tabstop' if not overridden
+    int  column;      // position in line during printing
+    int  indent;      // extra indentation
+
+    bool printed_sth;
+
+    void print_char(char c, Output& out) {
+        if (!printed_sth && (indent || column)) {
+            int ipos = indent*tabstop + column;
+            for (int i = 0; i<ipos; ++i) out.putchar(' ');
+        }
+        out.putchar(c);
+        column++;
+        printed_sth = true;
+    }
+
+    void tab_to_pos(int pos, Output& out) {
+        if (pos>column) {
+            if (printed_sth) {
+                while (column < pos) {
+                    out.putchar(' ');
+                    column++;
+                }
+            }
+            else {
+                column = pos;
+            }
+        }
+    }
+    
+public:
 
     Formatter();
 
@@ -162,10 +190,13 @@ public:
             tabs[i] = i * ts;
         }
     }
-    void set_tab(int idx, int indent) {
+    void set_tab(int idx, int pos) {
         aisc_assert(idx >= 0 && idx<10);
-        tabs[idx] = indent;
+        tabs[idx] = pos;
     }
+
+    int get_indent() const { return indent; }
+    void set_indent(int indent_) { indent = indent_; }
 
     int write(Output& out, const char *str);
 };
@@ -264,6 +295,7 @@ class Interpreter {
     int do_set(const char *str);
     int do_tab(const char *str);
     int do_tabstop(const char *str);
+    int do_indent(const char *str);
     int do_warning(const char *str) { print_warning(at(), str); return 0; }
     int do_write_current(const char *str) { return formatter.write(*current_output, str); }
     int do_write_stdout(const char *str) { return formatter.write(output[0], str); }
