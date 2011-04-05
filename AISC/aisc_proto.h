@@ -10,43 +10,20 @@
 # include <attributes.h>
 #endif
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 
 /* aisc.c */
-char *read_aisc_file(char *path);
-TokenListBlock *parse_aisc_TokenListBlock(const char *&in);
-CL *calloc_CL(void);
-void free_CL(CL *cl);
+
+#ifndef AISC_DEF_H
+#include "aisc_def.h"
+#endif
+
+char *read_aisc_file(const char *path, const Location *loc);
 
 /* aisc_commands.c */
-void print_error_internal(const char *err, const char *launcher_file, int launcher_line);
-void print_warning_internal(const char *err, const char *launcher_file, int launcher_line);
 const char *formatted(const char *format, ...) __ATTR__FORMAT(1);
-void aisc_remove_files(void);
-int do_com_push(const char *) __ATTR__USERESULT;
-void free_stack(void);
-int run_prg(void);
-
-/* aisc_mix.c */
-CL *aisc_calc_blocks(CL *co, CL *afor, CL *aif, int up);
-int aisc_calc_special_commands(void);
-hash *create_hash(int size);
-char *read_hash_local(char *key, hash **hs);
-char *read_hash(hash *hs, char *key);
-void write_hash(hash *hs, const char *key, const char *val);
-int free_hash(hash *hs);
 
 /* aisc_var_ref.c */
-const Token *aisc_find_var(const Token *cursor, char *str, LookupScope scope);
-const Token *aisc_find_var_hier(const Token *cursor, char *str, LookupScope scope);
-char *get_var_string(char *var);
-
-#ifdef __cplusplus
-}
-#endif
+char *get_var_string(const Data &data, char *var, bool allow_missing_var);
 
 #else
 #error aisc_proto.h included twice
