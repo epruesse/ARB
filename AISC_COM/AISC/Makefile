@@ -12,8 +12,11 @@ FORCED_FLAGS=-Wno-unused
 AISC=../MAKEBIN/aisc
 AISC_MKPT = ../MAKEBIN/aisc_mkpt
 
-RUN_AISC=$(AISC)
-#RUN_AISC=arb_valgrind -c 15 $(AISC)# buggy!
+RUN_AISC:=$(AISC)
+# valgrinding like this breaks the build process (due to wrong exitcode)
+#RUN_AISC:=arb_valgrind -c 15 $(AISC)
+#RUN_AISC:=arb_valgrind -c 15 -l $(AISC)
+#RUN_AISC:=arb_valgrind -c 15 -l -r $(AISC)
 
 GEN_INCLUDES = GENH/aisc.h GENH/aisc_com.h
 INCLUDE_INCLUDES = aisc_include.header
@@ -67,7 +70,9 @@ all:
 	test -f .depends || $(MAKETHIS) "AUTODEPENDS=0" .depends
 	$(MAKETHIS) "AUTODEPENDS=2" all
 else
-all: realall
+all: directories
+	$(MAKETHIS) realall
+
 endif
 
 realall: $(CLIENT) $(SERVER) Makefile $(THIS)
@@ -94,10 +99,13 @@ endif
 
 pregenerate: $(GEN_INCLUDES) $(GEN_SERVER_PROTO) $(GEN_SERVER_OBJECTS:.o=.c)
 
-$(SERVER):	$(SERVER_OBJECTS) $(GEN_SERVER_OBJECTS) $(PRIVATE_SERVER_OBJECTS)
+directories:
+	@mkdir -p GENH GENC O DUMP
+
+$(SERVER): $(SERVER_OBJECTS) $(GEN_SERVER_OBJECTS) $(PRIVATE_SERVER_OBJECTS)
 	$(LINK_STATIC_LIB) $@ $^
 
-$(CLIENT):	$(CLIENT_OBJECTS) $(GEN_CLIENT_OBJECTS)
+$(CLIENT): $(CLIENT_OBJECTS) $(GEN_CLIENT_OBJECTS)
 	$(LINK_STATIC_LIB) $@ $^
 
 $(GEN_SERVER_OBJECTS) $(PRIVATE_SERVER_OBJECTS): \
