@@ -47,7 +47,7 @@ char *Expression::evalPart(int start, int end, int& resLen) {
         resLen = 0;
     }
     else if (part[0] == '+' || part[0] == '*') {
-        res = eval_math(part+1, '+');
+        res = eval_math(part+1, part[0]);
     }
     else if (part[0] == '#') {
         if (strncmp(part, "#FILE", 5) == 0) {
