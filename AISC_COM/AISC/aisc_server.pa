@@ -1,7 +1,7 @@
 
 IF $(argc) = 6
 ELSE
-        ERROR   Falsche Parameteranzahl: Syntax aisc xxx.pa xxx.aisc externfile.aisc outfile import_proto
+        ERROR   Falsche Parameteranzahl: Syntax aisc aisc_server.pa xxx.aisc externfile.aisc outfile import_proto
 ENDIF
 
 DATA AISC { $(#FILE $(argv[2])) }, EXTERN { $(#FILE $(argv[4])) };
@@ -229,7 +229,9 @@ FOR $(STRUCT)
                 ENDIF
         ENDIF
 ENDFOR
+
 CLOSE save
+CLOSE import
 EXIT
 
 

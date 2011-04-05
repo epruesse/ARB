@@ -1,7 +1,7 @@
 
 IF $(argc) = 4
 ELSE
-        ERROR   Falsche Parameteranzahl: Syntax aisc xxx.pa xxx.aisc outfile
+        ERROR   Falsche Parameteranzahl: Syntax aisc aisc_com.pa xxx.aisc outfile
 ENDIF
 
 DATA AISC { $(#FILE $(argv[2])) };
