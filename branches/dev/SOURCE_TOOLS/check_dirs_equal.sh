@@ -6,7 +6,6 @@ check_existance_in() {
     local RESULT=true
 
     while [ ! -z "$FILE" ]; do
-        # local NAME=`basename $FILE`
         if [ ! -e $OTHER/$FILE ]; then
             echo "$OTHER/$FILE:0: Error: has not been generated"
             RESULT=false
@@ -17,42 +16,40 @@ check_existance_in() {
     $RESULT
 }
 
-diff_as_grep() {
-    local OLDFILE=$1
-    local NEWFILE=$2
-
-    local OPTIONS=
-    OPTIONS="$OPTIONS --unified=3"
-    OPTIONS="$OPTIONS --ignore-tab-expansion"
-    OPTIONS="$OPTIONS --ignore-space-change"
-    OPTIONS="$OPTIONS --ignore-blank-lines"
-    OPTIONS="$OPTIONS"
-
-    echo "-------------------- diff start"
-    diff $OPTIONS $OLDFILE $NEWFILE | $ARBHOME/SOURCE_TOOLS/diff2grep.pl
-    echo "-------------------- diff end"
-}
-
 check_equality() {
     local OLDDIR=$1
-    local NEWFILE=$2
+    local NEWDIR=$2
+    local NAME=$3
     local RESULT=true
 
-    while [ ! -z "$NEWFILE" ]; do
-        # local NAME=`basename $NEWFILE`
-        local OLDFILE=$OLDDIR/$NEWFILE
+    while [ ! -z "$NAME" ]; do
+        local OLDFILE=$OLDDIR/$NAME
+        local NEWFILE=$NEWDIR/$NAME
 
         if [ ! -d $OLDFILE -a ! -d $NEWFILE ]; then
-            local ISDIFF=`diff $NEWFILE $OLDFILE | wc -l`
+            local OPTIONS=
+            OPTIONS="$OPTIONS --unified=3"
+            OPTIONS="$OPTIONS --ignore-tab-expansion"
+            OPTIONS="$OPTIONS --ignore-space-change"
+            OPTIONS="$OPTIONS --ignore-blank-lines"
+            OPTIONS="$OPTIONS"
+
+            local TMPFILE=/tmp/check_dirs_equal.$$
+
+            diff $OPTIONS $OLDFILE $NEWFILE > $TMPFILE
+
+            local ISDIFF=`wc -l <$TMPFILE`
             if [ "$ISDIFF" != "0" ]; then
-                diff_as_grep $OLDFILE $NEWFILE
+                echo "-------------------- diff start"
+                $ARBHOME/SOURCE_TOOLS/diff2grep.pl < $TMPFILE 
+                echo "-------------------- diff end"
                 RESULT=false
-            # else
-                # echo "equal $NEWFILE"
             fi
+
+            rm $TMPFILE
         fi
         shift
-        NEWFILE=$2
+        NAME=$3
     done
     $RESULT
 }
@@ -61,8 +58,6 @@ get_files() {
     # returns relative paths of files matching WILDCARD 
     local DIR=$1
     local WILDCARD=$2
-    # echo "DIR='$DIR'" 1>&2
-    # echo "WILDCARD='$WILDCARD'" 1>&2
     ( \
         cd $DIR || exit; \
         find -P . -name "$WILDCARD" \
@@ -92,14 +87,13 @@ compare_dirs() {
     local NEWDIR=$1
     local OLDDIR=$2
     local WILDCARD="$3"
-    local RECURSE=$4
 
     local NEWFILES=`get_files $NEWDIR "$WILDCARD"`
 
     local RESULT=true
     
     check_missing $NEWDIR $OLDDIR "$WILDCARD" || RESULT=false
-    check_equality $OLDDIR $NEWFILES || RESULT=false
+    check_equality $OLDDIR $NEWDIR $NEWFILES || RESULT=false
 
     $RESULT
 }

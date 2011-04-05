@@ -89,9 +89,9 @@ else
 #	@echo "OTHER_COMDIR='$(OTHER_COMDIR)'"
 #       compare generated code using ../../SOURCE_TOOLS/check_dirs_equal.sh
 	@( \
-		../SOURCE_TOOLS/check_dirs_equal.sh $(THIS__COMDIR)/GENC $(OTHER_COMDIR)/GENC c && \
-		../SOURCE_TOOLS/check_dirs_equal.sh $(THIS__COMDIR)/GENH $(OTHER_COMDIR)/GENH h && \
-		../SOURCE_TOOLS/check_dirs_equal.sh $(THIS__COMDIR)/DUMP $(OTHER_COMDIR)/DUMP dump && \
+		../SOURCE_TOOLS/check_dirs_equal.sh $(THIS__COMDIR)/GENC $(OTHER_COMDIR)/GENC '*.c' && \
+		../SOURCE_TOOLS/check_dirs_equal.sh $(THIS__COMDIR)/GENH $(OTHER_COMDIR)/GENH '*.h' && \
+		../SOURCE_TOOLS/check_dirs_equal.sh $(THIS__COMDIR)/DUMP $(OTHER_COMDIR)/DUMP '*.dump' && \
 		echo "No change in generated code" \
 	) || $(REGR_FAILURE)
  endif
