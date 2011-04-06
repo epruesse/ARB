@@ -656,8 +656,8 @@ void CalcProbeQuality(struct DesignQuery *dq)
                 tprobe->perc[cnt] = dh->dh_NonGroupHitsPerc[cnt];
             }
 
-            aisc_link((struct_dllpublic_ext *) &(dq->dq_PDC->ptprobes),
-            (struct_dllheader_ext *) tprobe);
+            aisc_link((dllpublic_ext *) &(dq->dq_PDC->ptprobes),
+            (dllheader_ext *) tprobe);
         }
 
         dh = (struct DesignHit *) dh->dh_Node.ln_Succ;

@@ -46,7 +46,7 @@ extern "C" STRPTR virt_fullname(PT_probematch *ml)
 /* called by:
    AISC
 */
-extern "C" bytestring *PT_unknown_names(struct_PT_pdc *pdc)
+extern "C" bytestring *PT_unknown_names(PT_pdc *pdc)
 {
   struct PTPanGlobal *pg = PTPanGlobalPtr;
   STRPTR specnames;
