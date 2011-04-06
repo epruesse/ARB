@@ -165,7 +165,7 @@ int Interpreter::do_data(const char *str) {
 
 int Interpreter::do_indent(const char *str) {
     int diff       = atoi(str);
-    int indent     = formatter.get_indent();
+    int indent     = current_formatter().get_indent();
     int new_indent = indent+diff;
 
     if (new_indent<0) {
@@ -173,7 +173,7 @@ int Interpreter::do_indent(const char *str) {
         return 1;
     }
 
-    formatter.set_indent(new_indent);
+    current_formatter().set_indent(new_indent);
     return 0;
 }
 
@@ -184,7 +184,7 @@ int Interpreter::do_tabstop(const char *str) {
         return 1;
     }
 
-    formatter.set_tabstop(ts);
+    current_formatter().set_tabstop(ts);
     return 0;
 }
 
@@ -220,7 +220,7 @@ int Interpreter::do_tab(const char *str) {
                 int val = atoi(s2);
                 if ((val < 0) || (val > 1000)) print_error(at(), "wrong TABVALUE");
                 else {
-                    formatter.set_tab(ts, val);
+                    current_formatter().set_tab(ts, val);
                     return 0;
                 }
             }

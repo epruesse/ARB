@@ -48,6 +48,64 @@ char *read_aisc_file(const char *path, const Location *loc) {
     return buffer;
 }
 
+inline int max(int i, int j) { return i<j ? j : i; }
+
+void LineQueue::alignInto(LineQueue& dest) {
+    int offset = 0;
+    int len[count];
+
+    for (int i = 0; i<count; ++i) len[i] = strlen(queue[i]);
+
+    while (1) {
+        int max_mark_pos = -1;
+        int mark_pos[count];
+        for (int i = 0; i<count; ++i) {
+            char *line   = queue[i];
+            char *mark   = len[i]>offset ? strchr(line+offset, ALIGN_MARKER) : NULL;
+            mark_pos[i]  = mark ? mark-line : -1;
+            max_mark_pos = max(max_mark_pos, mark_pos[i]);
+        }
+        if (max_mark_pos == -1) break;
+
+        for (int i = 0; i<count; ++i) {
+            if (mark_pos[i] >= 0) {
+                int insert = max_mark_pos-mark_pos[i];
+                aisc_assert(insert >= 0);
+                if (insert >= 0) {
+                    int   new_len  = len[i]+insert;
+                    char *new_line = (char*)malloc(new_len+1);
+
+                    memcpy(new_line, queue[i], mark_pos[i]);
+                    memset(new_line+mark_pos[i], ' ', insert);
+                    strcpy(new_line+max_mark_pos, queue[i]+mark_pos[i]+1);
+
+                    len[i] = new_len;
+                    freeset(queue[i], new_line);
+                }
+            }
+        }
+
+        offset = max_mark_pos;
+    }
+
+    for (int i = 0; i<count; ++i) {
+        dest.add(queue[i]);
+        queue[i] = NULL;
+    }
+    count = 0;
+}
+
+int Output::write(const char *line) {
+    if (!inUse()) {
+        print_error(Interpreter::instance->at(), "Fatal: attempt to write to unused file");
+        return -1;
+    }
+
+    int res = formatter.write(line);
+    formatter.flush(fp);
+    return res;
+}
+
 Formatter::Formatter()
     : tabstop(4),
       column(0),
@@ -62,6 +120,7 @@ Formatter::Formatter()
 
     outtab[(unsigned char)'n']  = '\n';
     outtab[(unsigned char)'t']  = '\t';
+    outtab[(unsigned char)'|']  = ALIGN_MARKER;
     outtab[(unsigned char)'0']  = 0;
     outtab[(unsigned char)'1']  = 0;
     outtab[(unsigned char)'2']  = 0;
@@ -75,12 +134,7 @@ Formatter::Formatter()
     outtab[(unsigned char)'\\'] = 0;
 }
 
-int Formatter::write(Output& out, const char *str) {
-    if (!out.inUse()) {
-        print_error(Interpreter::instance->at(), "Fatal: attempt to write to unused file");
-        return -1;
-    }
-
+int Formatter::write(const char *str) {
     int         no_nl = 0;
     const char *p     = str;
     char        c;
@@ -97,7 +151,7 @@ int Formatter::write(Output& out, const char *str) {
                 }
                 else if (isdigit(c)) {
                     int pos = tabs[c - '0'];
-                    tab_to_pos(pos, out);
+                    tab_to_pos(pos);
                 }
                 continue;
             }
@@ -107,16 +161,14 @@ int Formatter::write(Output& out, const char *str) {
         }
         if (c == '\t') {
             int pos = ((column/tabstop)+1)*tabstop;
-            tab_to_pos(pos, out);
+            tab_to_pos(pos);
         }
         else if (c == '\n') {
             if (no_nl) {
                 no_nl = 0;
             }
             else {
-                out.putchar(c);
-                column      = 0;
-                printed_sth = false;
+                finish_line();
             }
         }
         else if (c == '@') {
@@ -129,17 +181,15 @@ int Formatter::write(Output& out, const char *str) {
                 p++;
             }
             else {
-                print_char(c, out);
+                print_char(c);
             }
         }
         else {
-            print_char(c, out);
+            print_char(c);
         }
     }
     if (!no_nl) {
-        out.putchar('\n');
-        column      = 0;
-        printed_sth = false;
+        finish_line();
     }
     return 0;
 }

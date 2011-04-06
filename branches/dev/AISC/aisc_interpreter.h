@@ -68,8 +68,167 @@ public:
 
 // ------------------------------------------------------------
 
-class HeaderList;
+static const int LINEBUFSIZE = 250;
+static const char ALIGN_MARKER = '\1';
 
+class LineBuf {
+    int   size;
+    int   used;
+    char *buf;
+    int   markers;
+
+    void clear() {
+        size    = 0;
+        used    = 0;
+        buf     = NULL;
+        markers = 0;
+    }
+
+public:
+    LineBuf() { clear(); }
+    ~LineBuf() { free(buf); }
+
+    void put(char c) {
+        if (used >= size) {
+            size = size*3/2+1;
+            if (size<LINEBUFSIZE) { size = LINEBUFSIZE; }
+            buf = (char*)realloc(buf, size);
+        }
+        buf[used++] = c;
+        if (c == ALIGN_MARKER) ++markers;
+    }
+
+    int length() const { return used; }
+    char *take() {
+        put(0);
+        char *b = buf;
+        clear();
+        return b;
+    }
+
+    bool needsAlignment() const { return markers; }
+};
+
+class LineQueue {
+    int    count;
+    int    size;
+    char **queue;
+
+    void clear() {
+        for (int i = 0; i<count; ++i) freenull(queue[i]);
+        count = 0;
+    }
+public:
+    LineQueue()
+        : count(0),
+          size(10),
+          queue((char**)malloc(size*sizeof(*queue)))
+    {}
+    ~LineQueue() {
+        clear();
+        free(queue);
+    }
+
+    bool empty() const { return count == 0; }
+
+    void add(char *line) {
+        if (count >= size) {
+            size  = size*3/2+1;
+            queue = (char**)realloc(queue, size*sizeof(*queue));
+        }
+        aisc_assert(line[strlen(line)-1] == '\n');
+        
+        queue[count++] = line;
+    }
+
+    void alignInto(LineQueue& dest);
+
+    void flush(FILE *out) {
+        for (int i = 0; i<count; ++i) {
+            fputs(queue[i], out);
+        }
+        clear();
+    }
+};
+
+class Formatter {
+    char outtab[256]; // decode table for $x (0 = handle special, character to print otherwise)
+    int  tabstop;     // normal tabstop (for $t)
+    int  tabs[10];    // predefined tabs ($0..$9) - default to multiples of 'tabstop' if not overridden
+    int  column;      // position in line during printing
+    int  indent;      // extra indentation
+    bool printed_sth;
+
+    LineBuf currentLine;
+    LineQueue toAlign; 
+    LineQueue spool; 
+
+    void outputchar(char c) {
+        currentLine.put(c);
+    }
+
+    void print_char(char c) {
+        if (!printed_sth && (indent || column)) {
+            int ipos = indent*tabstop + column;
+            for (int i = 0; i<ipos; ++i) outputchar(' ');
+        }
+        outputchar(c);
+        column++;
+        printed_sth = true;
+    }
+
+    void tab_to_pos(int pos) {
+        if (pos>column) {
+            if (printed_sth) {
+                while (column < pos) {
+                    outputchar(' ');
+                    column++;
+                }
+            }
+            else {
+                column = pos;
+            }
+        }
+    }
+
+    void align() { if (!toAlign.empty()) toAlign.alignInto(spool); }
+    
+    void finish_line() {
+        outputchar('\n');
+        column      = 0;
+        printed_sth = false;
+
+        if (currentLine.needsAlignment()) {
+            toAlign.add(currentLine.take());
+        }
+        else {
+            align();
+            spool.add(currentLine.take());
+        }
+    }
+
+public:
+
+    Formatter();
+
+    void set_tabstop(int ts) {
+        tabstop = ts;
+        for (int i = 0; i <= 9; i++) {
+            tabs[i] = i * ts;
+        }
+    }
+    void set_tab(int idx, int pos) {
+        aisc_assert(idx >= 0 && idx<10);
+        tabs[idx] = pos;
+    }
+
+    int get_indent() const { return indent; }
+    void set_indent(int indent_) { indent = indent_; }
+
+    int write(const char *str);
+    void flush(FILE *out) { spool.flush(out); }
+    void final_flush(FILE *out) { align(); flush(out); }
+};
 
 class Output {
     FILE *fp;
@@ -81,10 +240,13 @@ class Output {
     
     bool terminating;
 
+    Formatter  formatter;
+    
     bool wasOpened() const { return fp && name; }
 
     void close_file() {
         if (wasOpened()) {
+            formatter.final_flush(fp);
             if (have_open_loc && terminating) {
                 print_error(&open_loc, "file opened here");
                 print_error(&Location::guess_pc(), "is still open on exit");
@@ -143,62 +305,8 @@ public:
 
     bool hasID(const char *Name) const { return id && strcmp(id, Name) == 0; }
 
-    void putchar(char c) { aisc_assert(fp); putc(c, fp); }
-    void putstring(const char *s) { for (; *s; ++s) { putchar(*s); } }
-};
-
-class Formatter {
-    char outtab[256]; // decode table for $x (0 = handle special, character to print otherwise)
-    int  tabstop;     // normal tabstop (for $t)
-    int  tabs[10];    // predefined tabs ($0..$9) - default to multiples of 'tabstop' if not overridden
-    int  column;      // position in line during printing
-    int  indent;      // extra indentation
-
-    bool printed_sth;
-
-    void print_char(char c, Output& out) {
-        if (!printed_sth && (indent || column)) {
-            int ipos = indent*tabstop + column;
-            for (int i = 0; i<ipos; ++i) out.putchar(' ');
-        }
-        out.putchar(c);
-        column++;
-        printed_sth = true;
-    }
-
-    void tab_to_pos(int pos, Output& out) {
-        if (pos>column) {
-            if (printed_sth) {
-                while (column < pos) {
-                    out.putchar(' ');
-                    column++;
-                }
-            }
-            else {
-                column = pos;
-            }
-        }
-    }
-    
-public:
-
-    Formatter();
-
-    void set_tabstop(int ts) {
-        tabstop = ts;
-        for (int i = 0; i < 9; i++) {
-            tabs[i] = i * ts;
-        }
-    }
-    void set_tab(int idx, int pos) {
-        aisc_assert(idx >= 0 && idx<10);
-        tabs[idx] = pos;
-    }
-
-    int get_indent() const { return indent; }
-    void set_indent(int indent_) { indent = indent_; }
-
-    int write(Output& out, const char *str);
+    int write(const char *line);
+    Formatter& get_formatter() { return formatter; }
 };
 
 struct Stack {
@@ -246,9 +354,8 @@ class Interpreter {
     Stack *stack;
     hash  *functions;      // and labels
 
-    Formatter  formatter;
-    Output     output[OPENFILES]; // open files
-    Output    *current_output;    // pointer to one element of 'output'
+    Output  output[OPENFILES];    // open files
+    Output *current_output;       // pointer to one element of 'output'
 
     static const int MAX_COMMANDS = 30;
     class Command **command_table;
@@ -264,6 +371,7 @@ class Interpreter {
         }
         return NULL;
     }
+    Formatter& current_formatter() { return current_output->get_formatter(); }
 
     void write_var(const char *name, const char *val) { stack->hs->write(name, val); }
     const char *read_var(const char *name) { return stack->hs->read(name); }
@@ -297,8 +405,8 @@ class Interpreter {
     int do_tabstop(const char *str);
     int do_indent(const char *str);
     int do_warning(const char *str) { print_warning(at(), str); return 0; }
-    int do_write_current(const char *str) { return formatter.write(*current_output, str); }
-    int do_write_stdout(const char *str) { return formatter.write(output[0], str); }
+    int do_write_current(const char *str) { return current_output->write(str); }
+    int do_write_stdout(const char *str) { return output[0].write(str); }
 
     int            compile_program();
     const Command *find_command(const Code *co);

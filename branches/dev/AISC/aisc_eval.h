@@ -15,8 +15,6 @@
 #include <arbtools.h>
 #endif
 
-const int LINEBUFSIZE = 200000;
-
 class Expression : Noncopyable {
     const Data&     data;
     const Location& loc;
