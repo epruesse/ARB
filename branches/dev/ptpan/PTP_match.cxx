@@ -621,7 +621,7 @@ if (strcmp(ps->ps_Name, "BclSp114") == 0)
         ml->sequence = seqout; /* warning! potentional memory leak -- FIX destroy_PT_probematch(ml) */
         ml->reversed = (qh->qh_Flags & QHF_REVERSED) ? 1 : 0;
 
-        aisc_link((struct_dllpublic_ext *) &(pg->pg_SearchPrefs->ppm), (struct_dllheader_ext *) ml);
+        aisc_link((dllpublic_ext *) &(pg->pg_SearchPrefs->ppm), (dllheader_ext *) ml);
         numhits++;
 
         if (PTPanGlobalPtr->pg_verbose >0) printf("SeqOut: '%s'\n", seqout);

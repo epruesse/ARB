@@ -227,7 +227,7 @@ char *ptpd_read_names(PT_local *locs, const char *names_list, const char *checks
     return result;
 }
 
-extern "C" bytestring *PT_unknown_names(struct_PT_pdc *pdc) {
+extern "C" bytestring *PT_unknown_names(PT_pdc *pdc) {
     static bytestring un = { 0, 0 };
     PT_local *locs = (PT_local*)pdc->mh.parent->parent;
     delete un.data;
