@@ -39,7 +39,11 @@ ENDFOR
 # generate object names struct
 FOR $(STRUCT)
     IF $(SKEY)
-        SET $(obj[$(SKEYC)]) = "$(pre)$(SKEY)",
+        IF $(obj[$(SKEYC)])
+            SET $(obj[$(SKEYC)]) = "$(pre)$(SKEY)",
+        ELSE
+            ERROR Increase definition of MAX_OBJECT to $(SKEYC)
+        ENDIF
     ENDIF
 ENDFOR
 
