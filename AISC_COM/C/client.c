@@ -817,6 +817,7 @@ int aisc_create(aisc_com *link, int father_type, long father,
                 int attribute,  int object_type, long *object, ...)
 {
     /* goes to header: __ATTR__SENTINEL  */
+    // arguments in '...' set elements of CREATED object (not of father)
     int mes_cnt;
     int len;
     va_list parg;

@@ -106,23 +106,21 @@ static char *AP_probe_design_event(ARB_ERROR& error) {
     bs.data = (char*)(P.DESIGNNAMES);
     bs.size = strlen(bs.data)+1;
 
-    aisc_create(pd_gl.link, PT_LOCS, pd_gl.locs,
-                LOCS_PROBE_DESIGN_CONFIG, PT_PDC,   &pdc,
-                PDC_PROBELENGTH, (long)P.DESIGNPROBELENGTH,
-                PDC_MINTEMP,     (double)P.MINTEMP,
-                PDC_MAXTEMP,     (double)P.MAXTEMP,
-                PDC_MINGC,       P.MINGC/100.0,
-                PDC_MAXGC,       P.MAXGC/100.0,
-                PDC_MAXBOND,     (double)P.MAXBOND,
-                NULL);
-
-    if (aisc_put(pd_gl.link, PT_PDC, pdc,
-                 PDC_MIN_ECOLIPOS,  (long)P.MINPOS,
-                 PDC_MAX_ECOLIPOS,  (long)P.MAXPOS,
-                 PDC_MISHIT,        (long)P.MISHIT,
-                 PDC_MINTARGETS,    P.MINTARGETS/100.0,
-                 PDC_CLIPRESULT,    (long)P.DESIGNCLIPOUTPUT, 
-                 NULL) != 0) {
+    if (aisc_create(pd_gl.link, PT_LOCS, pd_gl.locs,
+                    LOCS_PROBE_DESIGN_CONFIG, PT_PDC, &pdc,
+                    PDC_PROBELENGTH,  (long)P.DESIGNPROBELENGTH,
+                    PDC_MINTEMP,      (double)P.MINTEMP,
+                    PDC_MAXTEMP,      (double)P.MAXTEMP,
+                    PDC_MINGC,        P.MINGC/100.0,
+                    PDC_MAXGC,        P.MAXGC/100.0,
+                    PDC_MAXBOND,      (double)P.MAXBOND,
+                    PDC_MIN_ECOLIPOS, (long)P.MINPOS,
+                    PDC_MAX_ECOLIPOS, (long)P.MAXPOS,
+                    PDC_MISHIT,       (long)P.MISHIT,
+                    PDC_MINTARGETS,   P.MINTARGETS/100.0,
+                    PDC_CLIPRESULT,   (long)P.DESIGNCLIPOUTPUT,
+                    NULL))
+    {
         error = "Connection to PT_SERVER lost (1)";
         return NULL;
     }
@@ -147,8 +145,8 @@ static char *AP_probe_design_event(ARB_ERROR& error) {
     {
         char *locs_error = 0;
         if (aisc_get(pd_gl.link, PT_LOCS, pd_gl.locs,
-                      LOCS_ERROR,    &locs_error,
-                      NULL)) {
+                     LOCS_ERROR, &locs_error,
+                     NULL)) {
             aw_message ("Connection to PT_SERVER lost (1)");
             return NULL;
         }
@@ -159,7 +157,7 @@ static char *AP_probe_design_event(ARB_ERROR& error) {
     }
 
     aisc_get(pd_gl.link, PT_PDC, pdc,
-              PDC_TPROBE, &tprobe,
+             PDC_TPROBE, &tprobe,
              NULL);
 
 
@@ -420,7 +418,9 @@ void TEST_SLOW_variable_defaults_in_server() {
     aisc_com *link = aisc_open(servername, &com, AISC_MAGIC_NUMBER);
     TEST_ASSERT(link);
 
-    TEST_ASSERT_ZERO(aisc_create(link, PT_MAIN, com, MAIN_LOCS, PT_LOCS, &locs, NULL));
+    TEST_ASSERT_ZERO(aisc_create(link, PT_MAIN, com,
+                                 MAIN_LOCS, PT_LOCS, &locs,
+                                 NULL));
 
     {
 #define LOCAL(rvar) (prev_read_##rvar)
@@ -453,7 +453,7 @@ void TEST_SLOW_variable_defaults_in_server() {
             TEST_CHANGE(type, remote_variable, DEFAULT_VALUE);          \
         } while(0)
 
-        TEST_DEFAULT_CHANGE(const long, long, LOCS_FF_PROBE_LEN, 12, 67);
+        TEST_DEFAULT_CHANGE(const long, long, LOCS_MATCH_REVERSED, 1, 67);
         typedef char *charp;
         typedef const char *ccharp;
         TEST_DEFAULT_CHANGE(ccharp, charp, LOCS_LOGINTIME, "notime", "sometime");
