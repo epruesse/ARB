@@ -41,7 +41,7 @@ void PT_init_base_string_counter P_((char *str, char initval, int size));
 void PT_inc_base_string_count P_((char *str, char initval, char maxval, int size));
 
 /* PT_family.cxx */
-extern "C" int ff_find_family P_((PT_family *locs, bytestring *species));
+extern "C" int find_family P_((PT_family *ffinder, bytestring *species));
 
 /* PT_findEx.cxx */
 extern "C" int PT_find_exProb P_((PT_exProb *pep));
