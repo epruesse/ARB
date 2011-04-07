@@ -45,6 +45,7 @@ aisc.o: aisc_parser.h
 aisc.o: aisc_proto.h
 aisc.o: aisc_token.h
 aisc.o: $(ARBHOME)/INCLUDE/arb_assert.h
+aisc.o: $(ARBHOME)/INCLUDE/arbtools.h
 aisc.o: $(ARBHOME)/INCLUDE/attributes.h
 aisc.o: $(ARBHOME)/INCLUDE/dupstr.h
 aisc.o: $(ARBHOME)/INCLUDE/test_global.h

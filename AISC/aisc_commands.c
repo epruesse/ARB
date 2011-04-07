@@ -800,7 +800,11 @@ void Interpreter::command_table_setup(bool setup) {
 
         command_table[i++] = new ArgCommand("PRINT",    &Interpreter::do_write_current, EVAL_PLAIN);
         command_table[i++] = new ArgCommand("P ",       &Interpreter::do_write_current, EVAL_PLAIN);
-        command_table[i++] = new ArgCommand("P\t",      &Interpreter::do_write_current, EVAL_PLAIN);
+        command_table[i++] = new ArgCommand("PP",       &Interpreter::do_write_stdout);
+        command_table[i++] = new SimpleCmmd("--",       &Interpreter::do_newline);
+        command_table[i++] = new SimpleCmmd("PMSTART",  &Interpreter::do_write_maybe_start);
+        command_table[i++] = new SimpleCmmd("PMEND",    &Interpreter::do_write_maybe_end);
+        command_table[i++] = new ArgCommand("PM",       &Interpreter::do_write_maybe);
 
         command_table[i++] = new ArgCommand("GOSUB",    &Interpreter::do_gosub);
         command_table[i++] = new ArgCommand("CALL",     &Interpreter::do_gosub);
@@ -817,7 +821,6 @@ void Interpreter::command_table_setup(bool setup) {
         command_table[i++] = new ArgCommand("INDENT",   &Interpreter::do_indent);
         command_table[i++] = new ArgCommand("TABSTOP",  &Interpreter::do_tabstop);
         command_table[i++] = new ArgCommand("TAB",      &Interpreter::do_tab);
-        command_table[i++] = new ArgCommand("PP",       &Interpreter::do_write_stdout);
         command_table[i++] = new SimpleCmmd("EXIT",     &Interpreter::do_exit);
 
         command_table[i++] = new ArgCommand("DATA",     &Interpreter::do_data,         TERMINATED_ON_ERROR);
