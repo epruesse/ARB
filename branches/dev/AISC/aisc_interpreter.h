@@ -237,11 +237,13 @@ class Output {
 
     bool     have_open_loc; // opened from user code ?
     Location open_loc;
-    
+
     bool terminating;
 
-    Formatter  formatter;
-    
+    Formatter formatter;
+
+    class PrintMaybe *maybe;
+
     bool wasOpened() const { return fp && name; }
 
     void close_file() {
@@ -255,10 +257,9 @@ class Output {
         }
         fp = NULL;
     }
-    
-    void setup() { fp = NULL; id = NULL; name = NULL; }
 
-    void cleanup() { close_file(); free(id); free(name); }
+    void setup();
+    void cleanup();
     void reuse() { cleanup(); setup(); }
 
 public:
@@ -307,6 +308,10 @@ public:
 
     int write(const char *line);
     Formatter& get_formatter() { return formatter; }
+
+    void maybe_start();
+    int maybe_write(const char *line);
+    int maybe_end();
 };
 
 struct Stack {
@@ -405,9 +410,15 @@ class Interpreter {
     int do_tabstop(const char *str);
     int do_indent(const char *str);
     int do_warning(const char *str) { print_warning(at(), str); return 0; }
+
     int do_write_current(const char *str) { return current_output->write(str); }
+    int do_newline() { return current_output->write(""); }
     int do_write_stdout(const char *str) { return output[0].write(str); }
 
+    int do_write_maybe_start() { current_output->maybe_start(); return 0; }
+    int do_write_maybe(const char *str) { return current_output->maybe_write(str); }
+    int do_write_maybe_end() { return current_output->maybe_end(); }
+    
     int            compile_program();
     const Command *find_command(const Code *co);
 

@@ -9,7 +9,12 @@
 /* ================================================================ */
 
 #include "aisc_interpreter.h"
+#include <arbtools.h>
 #include <cctype>
+#include <list>
+#include <string>
+
+using namespace std;
 
 // AISC_MKPT_PROMOTE:#ifndef AISC_DEF_H
 // AISC_MKPT_PROMOTE:#include "aisc_def.h"
@@ -95,11 +100,119 @@ void LineQueue::alignInto(LineQueue& dest) {
     count = 0;
 }
 
+struct queued_line {
+    string line;
+    int    indentation;
+    queued_line(const char *line_, int indent) : line(line_), indentation(indent) { }
+};
+
+typedef list<queued_line> PrintQueue;
+
+class PrintMaybe : Noncopyable {
+    Output&          out;
+    const Location&  started_at;
+    bool             printed_sth;
+    PrintMaybe      *next;
+    PrintQueue       queue;
+
+public:
+    PrintMaybe(PrintMaybe *head, Output& out_, const Location& loc)
+        : out(out_),
+          started_at(loc), 
+          printed_sth(false),
+          next(head)
+    {
+    }
+    ~PrintMaybe() {
+    }
+
+    void add(const char *line) {
+        if (printed_sth) {
+            out.write(line);
+        }
+        else {
+            queue.push_back(queued_line(line, out.get_formatter().get_indent()));
+        }
+    }
+    void spool() {
+        aisc_assert(!printed_sth);
+        printed_sth = true;
+        if (!queue.empty()) {
+            Formatter& formatter  = out.get_formatter();
+            int        old_indent = formatter.get_indent();
+            for (PrintQueue::iterator i = queue.begin(); i != queue.end(); ++i) {
+                queued_line& ql = *i;
+                formatter.set_indent(ql.indentation);
+                out.write(ql.line.c_str());
+            }
+            formatter.set_indent(old_indent);
+            queue.clear();
+        }
+    }
+
+    void will_print() {
+        if (next) next->will_print();
+        if (!printed_sth) {
+            spool();
+        }
+    }
+
+    void not_destroyed_error() {
+        print_error(&started_at, "P?START without matching P?END");
+        if (next) next->not_destroyed_error();
+    }
+
+    static void pop(PrintMaybe*& head) {
+        PrintMaybe *next = head->next;
+        head->next       = NULL;
+        delete head;
+        head             = next;
+    }
+};
+
+void Output::setup() {
+    fp    = NULL;
+    id    = NULL;
+    name  = NULL;
+    maybe = NULL;
+}
+void Output::cleanup() {
+    close_file();
+    free(id);
+    free(name);
+    if (maybe) {
+        maybe->not_destroyed_error();
+        delete maybe;
+    }
+}
+
+void Output::maybe_start() {
+    maybe = new PrintMaybe(maybe, *this, Interpreter::instance->at()->source);
+}
+int Output::maybe_write(const char *line) {
+    if (!maybe) {
+        print_error(Interpreter::instance->at(), "no P?START before P?");
+        return -1;
+    }
+    maybe->add(line);
+    return 0;
+}
+int Output::maybe_end() {
+    if (!maybe) {
+        print_error(Interpreter::instance->at(), "no P?START before P?END");
+        return -1;
+    }
+    PrintMaybe::pop(maybe);
+    return 0;
+}
+
 int Output::write(const char *line) {
     if (!inUse()) {
         print_error(Interpreter::instance->at(), "Fatal: attempt to write to unused file");
         return -1;
     }
+
+    if (maybe) maybe->will_print();
 
     int res = formatter.write(line);
     formatter.flush(fp);
