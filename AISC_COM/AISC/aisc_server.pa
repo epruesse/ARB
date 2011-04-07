@@ -314,9 +314,13 @@ FUNCTION rec_structure
             IF $(ACC) !~ c
             ELSE
                 # CREATE FUNCTIONS
-                IF $(create_list[$(+ $(a)+$(KEYC))]) ~ 0
+                IF $(create_list[$(+ $(a)+$(KEYC))]) 
+                    IF $(create_list[$(+ $(a)+$(KEYC))]) ~ 0
+                    ELSE
+                        ERROR Number for 'create_$(func):$(KEYC)' already in use: '$(create_list[$(+ $(a)+$(KEYC))])'
+                    ENDIF
                 ELSE
-                    ERROR Number for 'create_$(func):$(KEYC)' already in use: '$(create_list[$(+ $(a)+$(KEYC))])'
+                    ERROR Invalid number for 'create_$(func):$(KEYC)'. Increase MAX_KEY to $(+ $(a)+$(KEYC))'
                 ENDIF
                 SET $(create_list[$(+ $(a)+$(KEYC))])   create_$(func),
                 P $(TYPE) $1*create_$(func)($(maintype) *THIS)$\
@@ -397,9 +401,13 @@ FUNCTION rec_structure
             ENDIF
             # CNT FUNCTION
             IF $(REF) ~ d
-                IF $(get_list[$(+ 1 +$(+ $(a)+$(KEYC)))]) ~ 0
+                IF $(get_list[$(+ 1 +$(+ $(a)+$(KEYC)))])
+                    IF $(get_list[$(+ 1 +$(+ $(a)+$(KEYC)))]) ~ 0
+                    ELSE
+                        ERROR Number for get_$(func)_CNT:$(KEYC) already in use: '$(get_list[$(+ 1 +$(+ $(a)+$(KEYC)))])'
+                    ENDIF
                 ELSE
-                    ERROR Number for get_$(func)_CNT:$(KEYC) already in use: '$(get_list[$(+ 1 +$(+ $(a)+$(KEYC)))])'
+                    ERROR Invalid number for get_$(func)_CNT:$(KEYC). Increase definition of MAX_KEY to $(+ 1 +$(+ $(a)+$(KEYC)))
                 ENDIF
                 SET $(get_list[$(+ 1 +$(+ $(a)+$(KEYC)))])      get_$(func)_CNT,
                 IF $(extern_get_$(func)_CNT)
@@ -414,9 +422,13 @@ FUNCTION rec_structure
             ENDIF
         ELSE
             # SET FUNCTIONS
-            IF $(set_list[$(+ $(a)+$(KEYC))]) ~ 0
+            IF $(set_list[$(+ $(a)+$(KEYC))])
+                IF $(set_list[$(+ $(a)+$(KEYC))]) ~ 0
+                ELSE
+                    ERROR Number for set_$(func):$(KEYC) already in use: '$(set_list[$(+ $(a)+$(KEYC))])'
+                ENDIF
             ELSE
-                ERROR Number for set $(KEY):$(KEYC) already in use: '$(set_list[$(+ $(a)+$(KEYC))])'
+                ERROR Invalid number for set_$(func):$(KEYC). Increase definition of MAX_KEY to $(+ $(a)+$(KEYC))
             ENDIF
 
             IF $(ACC) !~ w
