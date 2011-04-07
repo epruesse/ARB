@@ -27,84 +27,108 @@ P  * ----------------------------------------------------------------- */$n
 P #ifndef AISC_GEN_SERVER_INCLUDED
 P #define AISC_GEN_SERVER_INCLUDED$n
 
-P typedef int   hash;
-P typedef char *aisc_string;
+P typedef int         hash;
+P typedef char       *aisc_string;
 P typedef const char *aisc_cstring;
 
-P #include <aisc_global.h>
+P $n#include <aisc_global.h>
 
 P $(INCLUDE_INCLUDES)
 
-P /******************* SOME CONSTANTS *******************/
-FOR $(CONST)
-    P #define $(CONST) $(VALUE) /* $(DOCU) */
-ENDFOR
+IF $(CONST)
+    P $n// some constants
+    FOR $(CONST)
+        P #define $(CONST) $|$(VALUE) $|// $(DOCU)
+    ENDFOR
+ENDIF
 
-P $n/******************* THE ENUMS *******************/
-FOR $(ENUM)
-    P $n$1/************** $(SDOCU|$(ENUM)) **************/
-    P typedef enum enum_$(ENUM) {
-    FOR $({/VAR)
-        IF $(VAL)
-            P $2$(VAR)$3=$4 $(VAL),$\
-        ELSE
-            P $2$(VAR),$\
-        ENDIF
-        IF $(DOCU)
-            P $6/* $(DOCU)$8*/
-        ELSE
-            P 
+IF $(ENUM)
+    ERROR never used before - please check generated code
+    P $n// the enums
+    FOR $(ENUM)
+        P $n// $(SDOCU|$(ENUM))
+        P typedef enum enum_$(ENUM) {
+        INDENT +1
+            FOR $({/VAR)
+                IF $(VAL)
+                    P $(VAR)$| = $|$(VAL),$\
+                ELSE
+                    P $(VAR),$|$\
+                ENDIF
+                IF $(DOCU)
+                    P $|// $(DOCU)
+                ELSE
+                    P 
+                ENDIF
+            ENDFOR
+        INDENT -1
+        P } $(ENUM);
+    ENDFOR
+ENDIF
+
+P $n// the keys
+P typedef enum enum_t_key {
+INDENT +1
+    FOR $(STRUCT)
+        IF $(JOINED)
+        ELSEIF $(SKEY)
+            P KEY_$(OBJECT_KEY)_$(SKEY)$| = $|0x10000*$(SKEYC),
         ENDIF
     ENDFOR
-    P       } $(ENUM);$n
+    P KEY_MAX
+INDENT -1
+P } t_key;
+
+P $n// forward decls
+FOR $(STRUCT)
+    P struct $(STRUCT);
 ENDFOR
 
-P /******************* THE KEYS *******************/
-P       typedef enum enum_t_key {
-FOR $(STRUCT)
-    IF $(JOINED)
-    ELSEIF $(SKEY)
-        P $1KEY_$(OBJECT_KEY)_$(SKEY) = $(SKEYC)*0x10000,
-    ENDIF
-ENDFOR
-P       $1KEY_MAX$n} t_key;
 CREATE $(pre)
 CREATE $(suf)
 
-FOR $(STRUCT)
-    P $n$1/************** $(SDOCU|$(STRUCT)) **************/
-    CALL pre_structh
-    P       typedef struct struct_$(STRUCT) {
-    SET $(replace)
-    CALL structh
-    P } $(STRUCT);
-ENDFOR
-    P $n/************************** some privat structures **************/
+P struct dllpublic_ext;
+P struct dllheader_ext;
+
+P $n// private structures$n
 FOR $(STRUCT.dll_public)
-    CALL pre_structh
-    P typedef struct struct_dllpublic_ext {
-    SET $(replace) :dll_header=dllheader_ext:dll_public=dllpublic_ext
-    CALL structh
-    P $2struct struct_dllheader_ext $5*first;
-    P }$1dllpublic_ext;
+    P struct dllpublic_ext {
+    INDENT +1
+        SET $(replace) :dll_header=dllheader_ext:dll_public=dllpublic_ext
+        CALL structh
+        P dllheader_ext$| *first;
+    INDENT -1
+    P };
 NEXT
     ERROR struct dll_public is missing
 ENDFOR
 
+P 
 FOR $(STRUCT.dll_header)
-    CALL pre_structh
-    P       typedef struct struct_dllheader_ext {
-    SET $(replace) :dll_header=dllheader_ext:dll_public=dllpublic_ext
-    CALL structh
-    P       $2struct struct_dllheader_ext $5*previous, *next;
-    P } dllheader_ext;
+    P struct dllheader_ext {
+    INDENT +1
+        SET $(replace) :dll_header=dllheader_ext:dll_public=dllpublic_ext
+        CALL structh
+        P dllheader_ext$| *previous, *next;
+    INDENT -1
+    P };
 NEXT
     ERROR struct dll_header is missing
 ENDFOR
 
-P extern const char *aisc_server_error;
+P $n// public structures
+FOR $(STRUCT)
+    P $nstruct $(STRUCT) { // $(SDOCU|$(STRUCT))
+    INDENT +1
+        SET $(replace)
+        CALL structh
+    INDENT -1
+    P };
+ENDFOR
 
-P #else 
+P $nextern const char *aisc_server_error;
+
+P $n#else 
 P #error header included twice 
 P #endif /* AISC_GEN_SERVER_INCLUDED */
 CLOSE save
@@ -113,43 +137,38 @@ GOTO harmless_test_code
 
 FUNCTION structh
     FOR $({/TYPE)
-        SET $(pre)
-        SET $(suf)
         IF $(TYPE) = dllh
-            P $2dll_header $4mh;
-            P $2struct struct_$(STRUCT)$4*previous, *next;
+            P dll_header$|  mh;
+            P $(STRUCT)$| *previous, *next;$n
         ELSEIF $(REF) ~ %
         ELSE
+            SET $(pre)
+            SET $(suf)
             IF $(REF) ~ *
                 SET $(pre) *
             ELSEIF $(REF) ~ v
                 SET $(suf) [$(SIZE|NO SIZE DEFINED)]
             ENDIF
             IF $(REF) ~ d
-                P $2dll_public $4p$(IDENT);
+                P dll_public$|  p$(IDENT);
             ENDIF
             IF $(REF) ~ d,r,l,o
                 SET $(pre) $(pre)*
             ENDIF
             IF $(REF) ~ f
-                P $2struct struct_$(TYPE|NO TYPE FOUND$(replace)) $4$\
+                P $(TYPE|NO TYPE FOUND$(replace))$\
             ELSE
-                P $2$(TYPE|NO TYPE FOUND$(replace)) $4$\
+                P $(TYPE|NO TYPE FOUND$(replace))$\
             ENDIF
-            P $(pre)$(IDENT)$(suf)$\
-            P ;$6/* $(DOCU| *** )$8*/
-        ENDIF
-    ENDFOR
-RETURN
 
-FUNCTION pre_structh
-    FOR $({/TYPE)
-        IF $(TYPE) = dllh
-        ELSEIF $(REF) ~ %
-        ELSE
-            IF $(REF) ~ f
-                P struct struct_$(TYPE|NO TYPE FOUND$(replace));
-            ENDIF
+            # align
+            #   name
+            #  *name
+            # **name
+
+            SET $(pre) '$(pre)'
+            P $|$(pre:''=  :'*'= *:'**'=**:'=)$(IDENT)$(suf);$\
+            P $| // $(DOCU| *** )
         ENDIF
     ENDFOR
 RETURN
