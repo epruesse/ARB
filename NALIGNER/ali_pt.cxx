@@ -13,7 +13,11 @@
 int ALI_PT::init_communication() {
     // Initialize the communication with the pt server
     const char *user = GB_getenvUSER();
-    if (aisc_create(link, PT_MAIN, com, MAIN_LOCS, PT_LOCS, &locs, LOCS_USER, user, NULL)) {
+    if (aisc_create(link, PT_MAIN, com,
+                    MAIN_LOCS, PT_LOCS, &locs,
+                    LOCS_USER, user,
+                    NULL))
+    {
         return 1;
     }
     return 0;
@@ -198,17 +202,19 @@ int ALI_PT::find_family(ALI_SEQUENCE *sequence, int find_type)
          * first member is big enought
          */
 
-        if (aisc_put(link, PT_LOCS, locs,
-                     LOCS_FF_FIND_TYPE,   find_type,
-                     LOCS_FF_FIND_FAMILY, &bs,
-                     NULL))
+        T_PT_FAMILYFINDER ffinder;
+        if (aisc_create(link, PT_LOCS, locs,
+                        LOCS_FFINDER, PT_FAMILYFINDER, &ffinder, 
+                        FAMILYFINDER_FIND_TYPE,   find_type,
+                        FAMILYFINDER_FIND_FAMILY, &bs,
+                        NULL))
         {
             ali_message ("Communication Error (2)");
             return -1;
         }
 
         // Read family list
-        aisc_get(link, PT_LOCS, locs, LOCS_FF_FAMILY_LIST, &f_list, NULL);
+        aisc_get(link, PT_FAMILYFINDER, ffinder, FAMILYFINDER_FAMILY_LIST, &f_list, NULL);
         if (f_list == 0)
             ali_error("Family not found in PT Server");
 
