@@ -1,7 +1,7 @@
 PROJECT         pb_com
 OBJECT_KEY      PT,             # MAIN PREFIX
-MAX_KEY         42,             # MAX NUMBER OF AN ATTRIBUTE
-MAX_OBJECT      11,             # MAX DIFFERENT USER STRUCTURES
+MAX_KEY         33,             # MAX NUMBER OF AN ATTRIBUTE
+MAX_OBJECT      12,             # MAX DIFFERENT USER STRUCTURES
 MAX_STRING_LEN  1024,
 MAX_PAR_CNT     16,
 MAGIC_NUMBER    0x415054,       # MAGIC_NUMBER 6 HEX DIGITS
@@ -157,6 +157,22 @@ PT_family_list, FAMILYLIST,     5,      (~the family list~), {
     double,      rel_matches, t,      r,      ,       REL_MATCHES,    10,     ,               (~MATCHES / (SEQ_LEN - PROBE_LEN + 1)~);
 };
 
+PT_family, FAMILYFINDER, 12, (~next relative search~), {
+    @TYPE,          @IDENT,               @REF, @ACC,   @SAVE,  @KEY,              @KEYC,  @INIT,                @DOCU;
+    dllh,           mh,                   t,    ,       ,       (~~),              0,      ,                     (~Header~);
+    bytestring,     find_family,          %,    w,      ,       FIND_FAMILY,       8,      ,                     (~Searches the family~);
+    int,            pr_len,               t,    rw,     ,       PROBE_LEN,         9,      12,                   (~Length of probes~);
+    int,            mis_nr,               t,    rw,     ,       MISMATCH_NUMBER,   10,     0,                    (~Number of mismatches~);
+    int,            find_type,            t,    rw,     ,       FIND_TYPE,         11,     0,                    (~Type of find 0 = search all, 1 = a*~);
+    int,            complement,           t,    rw,     ,       COMPLEMENT,        12,     1,                    (~Search for complement? (combination of: fwd=1, rev=2, rev.compl=4, compl=8)~);
+    PT_family_list, fl,                   d,    r,      ,       FAMILY_LIST,       13,     ,                     (~Sorted List of family~);     # note: This uses 80 AND 81!
+    int,            list_size,            t,    r,      ,       FAMILY_LIST_SIZE,  15,     ,                     (~size of result list~);
+    int,            sort_type,            t,    rw,     ,       SORT_TYPE,         16,     0,                    (~Type of sorting 0 = MATCHES, 1 = REL_MATCHES~);
+    int,            sort_max,             t,    rw,     ,       SORT_MAX,          17,     0,                    (~Sort only best FF_SORT_MAX sequences~);
+    int,            range_start,          t,    rw,     ,       RANGE_STARTPOS,    18,     -1,                   (~if != -1 -> ignore matches starting left of that position [0..N-1]~);
+    int,            range_end,            t,    rw,     ,       RANGE_ENDPOS,      19,     -1,                   (~if != -1 -> ignore matches ending right  of that position [0..N-1]~);
+};
+
 # used below in LOCS/MATCH_STRING
 
 PT_probematch, MATCHLIST,       4,      (~the probe match list~), {
@@ -215,23 +231,11 @@ PT_local, LOCS,         2,      (~local communication buffer~), {
     PT_pdc,         pdc,                  d,    ,       ,       PROBE_DESIGN_CONFIG,  24,     ,                     (~The new probe design~);
     PT_exProb,      ep,                   d,    ,       ,       PROBE_FIND_CONFIG,    26,     ,                     (~Find all existing probes~);
 
-    aisc_string,    user,                 t,    rw,     ,       USER,                 28,     "unknown",            (~the username~);
-    aisc_string,    address,              t,    rw,     ,       ADDRESS,              29,     "unknown",            (~the useraddress~);
-    aisc_string,    login,                t,    rw,     ,       LOGINTIME,            30,     "notime",             (~the date the user logged in~);
+    PT_family,      ffinder,              d,    ,       ,       FFINDER,              28,     ,                     (~next relative search~);
 
-    bytestring,     ff_find_family,       %,    w,      ,       FF_FIND_FAMILY,       31,     ,                     (~Searches the family~);
-    int,            ff_pr_len,            t,    rw,     ,       FF_PROBE_LEN,         32,     12,                   (~Length of probes~);
-    int,            ff_mis_nr,            t,    rw,     ,       FF_MISMATCH_NUMBER,   33,     0,                    (~Number of mismatches~);
-    int,            ff_find_type,         t,    rw,     ,       FF_FIND_TYPE,         34,     0,                    (~Type of find 0 = search all, 1 = a*~);
-    int,            ff_compl,             t,    rw,     ,       FF_COMPLEMENT,        35,     1,                    (~Search for complement? (combination of: fwd=1, rev=2, rev.compl=4, compl=8)~);
-    PT_family_list, ff_fl,                d,    r,      ,       FF_FAMILY_LIST,       36,     ,                     (~Sorted List of family~);     # note: This uses 80 AND 81!
-    int,            ff_list_size,         t,    r,      ,       FF_FAMILY_LIST_SIZE,  38,     ,                     (~size of result list~);
-    int,            ff_sort_type,         t,    rw,     ,       FF_SORT_TYPE,         39,     0,                    (~Type of sorting 0 = MATCHES, 1 = REL_MATCHES~);
-    int,            ff_sort_max,          t,    rw,     ,       FF_SORT_MAX,          40,     0,                    (~Sort only best FF_SORT_MAX sequences~);
-
-    # match-range (affects family search)
-    int,            range_start,          t,    rw,     ,       RANGE_STARTPOS,       41,     -1,                   (~if != -1 -> ignore matches starting left of that position [0..N-1]~);
-    int,            range_end,            t,    rw,     ,       RANGE_ENDPOS,         42,     -1,                   (~if != -1 -> ignore matches ending right  of that position [0..N-1]~);
+    aisc_string,    user,                 t,    rw,     ,       USER,                 30,     "unknown",            (~the username~);
+    aisc_string,    address,              t,    rw,     ,       ADDRESS,              31,     "unknown",            (~the useraddress~);
+    aisc_string,    login,                t,    rw,     ,       LOGINTIME,            32,     "notime",             (~the date the user logged in~);
 };
 
 PT_main, MAIN, 1, (~global data~), {

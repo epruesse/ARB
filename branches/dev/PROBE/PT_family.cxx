@@ -168,7 +168,7 @@ struct cmp_probe_rel {
     }
 };
 
-static int make_PT_family_list(PT_local *locs) {
+static int make_PT_family_list(PT_family *ffinder) {
     /*!  Make sorted list of family members */
 
     // Sort the data
@@ -177,14 +177,14 @@ static int make_PT_family_list(PT_local *locs) {
         my_list[i] = &psg.data[i];
     }
 
-    bool sort_all = locs->ff_sort_max == 0 || locs->ff_sort_max >= psg.data_count;
+    bool sort_all = ffinder->sort_max == 0 || ffinder->sort_max >= psg.data_count;
 
-    if (locs->ff_sort_type == 0) {
+    if (ffinder->sort_type == 0) {
         if (sort_all) {
             std::sort(my_list, my_list + psg.data_count, cmp_probe_abs());
         }
         else {
-            std::partial_sort(my_list, my_list + locs->ff_sort_max, my_list + psg.data_count, cmp_probe_abs());
+            std::partial_sort(my_list, my_list + ffinder->sort_max, my_list + psg.data_count, cmp_probe_abs());
         }
     }
     else {
@@ -192,17 +192,17 @@ static int make_PT_family_list(PT_local *locs) {
             std::sort(my_list, my_list + psg.data_count, cmp_probe_rel());
         }
         else {
-            std::partial_sort(my_list, my_list + locs->ff_sort_max, my_list + psg.data_count, cmp_probe_rel());
+            std::partial_sort(my_list, my_list + ffinder->sort_max, my_list + psg.data_count, cmp_probe_rel());
         }
     }
 
     // destroy old list
-    while (locs->ff_fl) destroy_PT_family_list(locs->ff_fl);
+    while (ffinder->fl) destroy_PT_family_list(ffinder->fl);
 
     // build new list
     int real_hits = 0;
 
-    int end = (sort_all) ? psg.data_count : locs->ff_sort_max;
+    int end = (sort_all) ? psg.data_count : ffinder->sort_max;
     for (int i = 0; i < end; i++) {
         if (my_list[i]->stat.match_count != 0) {
             PT_family_list *fl = create_PT_family_list();
@@ -211,12 +211,12 @@ static int make_PT_family_list(PT_local *locs) {
             fl->matches     = my_list[i]->stat.match_count;
             fl->rel_matches = my_list[i]->stat.rel_match_count;
 
-            aisc_link(&locs->pff_fl, fl);
+            aisc_link(&ffinder->pfl, fl);
             real_hits++;
         }
     }
 
-    locs->ff_list_size = real_hits;
+    ffinder->list_size = real_hits;
 
     return 0;
 }
@@ -249,22 +249,22 @@ inline void complement_sequence(char *seq, int len) {
     for (int i = 0; i<len; i++) seq[i] = complement[int(seq[i])];
 }
 
-extern "C" int ff_find_family(PT_local *locs, bytestring *species) {
+extern "C" int find_family(PT_family *ffinder, bytestring *species) {
     /*! make sorted list of family members of species */
 
-    int probe_len   = locs->ff_pr_len;
-    int mismatch_nr = locs->ff_mis_nr;
-    int complement  = locs->ff_compl; // any combination of: 1 = forward, 2 = reverse, 4 = reverse-complement, 8 = complement
+    int probe_len   = ffinder->pr_len;
+    int mismatch_nr = ffinder->mis_nr;
+    int complement  = ffinder->complement; // any combination of: 1 = forward, 2 = reverse, 4 = reverse-complement, 8 = complement
 
     char *sequence     = species->data; // sequence data passed by caller
     int   sequence_len = probe_compress_sequence(sequence, species->size);
 
     clear_statistic();
 
-    // if ff_find_type > 0 -> search only probes starting with 'A' (quick but less accurate)
-    char last_first_c = locs->ff_find_type ? PT_A : PT_T;
+    // if find_type > 0 -> search only probes starting with 'A' (quick but less accurate)
+    char last_first_c = ffinder->find_type ? PT_A : PT_T;
 
-    ProbeTraversal::restrictMatchesToRegion(locs->range_start, locs->range_end, probe_len);
+    ProbeTraversal::restrictMatchesToRegion(ffinder->range_start, ffinder->range_end, probe_len);
 
     // Note: code depends on order of ../AWTC/awtc_next_neighbours.hxx@FF_complement_dep
     for (int cmode = 1; cmode <= 8; cmode *= 2) {
@@ -294,8 +294,8 @@ extern "C" int ff_find_family(PT_local *locs, bytestring *species) {
         }
     }
 
-    make_match_statistic(locs->ff_pr_len, sequence_len);
-    make_PT_family_list(locs);
+    make_match_statistic(ffinder->pr_len, sequence_len);
+    make_PT_family_list(ffinder);
 
     ProbeTraversal::unrestrictMatchesToRegion();
     
