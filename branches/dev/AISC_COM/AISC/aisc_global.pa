@@ -1,6 +1,5 @@
-IF $(argc) = 5,6
-ELSE
-    ERROR Wrong number of parameters[$(argc)]. Usage: aisc aisc_global.pa xxx.aisc outfile extern_file [ignored]
+IF $(argc) < 5
+    ERROR Wrong number of parameters[$(argc)]. Usage: aisc aisc_global.pa xxx.aisc outfile extern_file
 ENDIF
 
 DATA AISC { $(#FILE $(argv[2])) };

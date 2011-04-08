@@ -38,6 +38,12 @@ void Location::print_internal(const char *msg, const char *msg_type, const char 
 
     if (msg) {
         fputs(msg, stderr);
+        const Data& data = Interpreter::instance->get_data();
+        if (data.get_cursor()) {
+            fputs(" (cursor ", stderr);
+            data.dump_cursor_pos(stderr);
+            fputs(")", stderr);
+        }
         fputc('\n', stderr);
     }
 
@@ -370,55 +376,67 @@ int Interpreter::do_create(const char *str) {
     return result;
 }
 
-int Interpreter::do_if(char *str) {
-    if (str) { // !str => ELSE
-        char *equ;
-        char *kom;
-        char *la;
-        char *kom2;
+int Interpreter::do_if(const char *str) {
+    int  err       = 0;
+    bool condition = false;
 
-        int op = 0;                                     /* 0=   1~ 2< 3> !+8 */
-        for (equ = str; *equ; equ++) {
-            if (*equ == '=') { op = 0; break; }
-            if (*equ == '~') { op = 1; break; }
-        }
-        la = equ;
-        if (!*la) { // no operator found -> assume condition true, even if empty or undefined
-            return 0;
-        }
+    if (str) { // expression is not undefined
+        const char *cursor     = strpbrk(str, "=~<");
+        if (!cursor) condition = true; // if no operator found -> assume condition true (even if empty)
+        else {
+            char op = *cursor;
+            aisc_assert(cursor>str);
+            bool negate = cursor[-1] == '!';
 
-        aisc_assert(equ>str);
-        if (equ[-1] == '!') op += 8;
+            const char *la = cursor - negate;
+            --la;
+            SKIP_SPACE_LF_BACKWARD(la);
 
-        --la;
-        SKIP_SPACE_LF_BACKWARD(la);
-        *(++la) = 0;
-        equ++;
-        while (equ) {
-            SKIP_SPACE_LF(equ);
-            kom2 = kom = strchr(equ, ',');
-            if (kom) {
-                kom2++;
-                --kom;
-                SKIP_SPACE_LF_BACKWARD(kom);
-                *(++kom) = 0;
+            char *left = copy_string_part(str, la);
+            cursor++;
+
+            char        right_buffer[strlen(cursor)+1];
+            const char *right = right_buffer;
+
+            while (cursor && !condition) {
+                SKIP_SPACE_LF(cursor);
+                const char *kom  = strchr(cursor, ',');
+                const char *next = kom;
+
+                if (kom) {
+                    next++;
+                    --kom;
+                    SKIP_SPACE_LF_BACKWARD(kom);
+
+                    int len    = kom-cursor+1;
+                    memcpy(right_buffer, cursor, len);
+                    right_buffer[len] = 0;
+                }
+                else {
+                    right = cursor;
+                }
+
+                switch (op) {
+                    case '=': condition = strcmp(left, right) == 0; break;
+                    case '~': condition = strstr(left, right) != 0; break;
+                    case '<': condition = atoi(left) < atoi(right); break;
+                    default:
+                        print_error(at(), formatted("Unhandled operator (op='%c') applied to '%s'", op, str));
+                        err = 1;
+                        break;
+                }
+
+                if (err) break;
+                if (negate) condition = !condition;
+                cursor = next;
             }
-            switch (op) {
-                case 0:     if (!strcmp(str, equ)) return 0; break;
-                case 8:     if (strcmp(str, equ)) return 0; break;
-                case 1:     if (strstr(str, equ)) return 0; break;
-                case 9:     if (!strstr(str, equ)) return 0; break;
-                default:
-                    printf_error(at(), "Unhandled operator (op=%i)", op);
-                    return 1;
-            }
-            equ = kom2;
+
+            free(left);
         }
     }
-
-    // condition wrong -> goto else
-    jump(at()->ELSE->next);
-    return 0;
+    
+    if (!err && !condition) jump(at()->ELSE->next);
+    return err;
 }
 
 struct for_data {
@@ -860,7 +878,7 @@ int Interpreter::run_program() {
                 bool        eval_failed;
                 char       *val = expr.evaluate(eval_failed);
                 int         err = eval_failed;
-                if (!err) err   = do_if(val); // execute even with val == NULL!
+                if (!err) err = do_if(val);   // execute even with val == NULL!
                 free(val);
                 if  (err) return err;
                 break;

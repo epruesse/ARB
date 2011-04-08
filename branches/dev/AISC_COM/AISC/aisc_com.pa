@@ -1,6 +1,4 @@
-
-IF $(argc) = 4
-ELSE
+IF $(argc) != 4
     ERROR Wrong number of parameters[$(argc)]. Usage: aisc aisc_com.pa xxx.aisc outfile
 ENDIF
 
