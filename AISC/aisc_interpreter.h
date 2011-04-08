@@ -344,6 +344,8 @@ public:
 
     const Token *find_token(const Token *curs, const char *str, LookupScope scope) const;
     const Token *find_qualified_token(const char *str, LookupScope scope) const;
+
+    void dump_cursor_pos(FILE *out) const;
 };
 
 class Interpreter {
@@ -397,7 +399,7 @@ class Interpreter {
     int do_for(const char *str);
     int do_gosub(const char *str);
     int do_goto(const char *str);
-    int do_if(char *str);
+    int do_if(const char *str);
     int do_moveto(const char *str);
     int do_next();
     int do_open(const char *str);
@@ -473,4 +475,5 @@ public:
 #else
 #error aisc.h included twice
 #endif // AISC_H
+
 

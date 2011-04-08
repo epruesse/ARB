@@ -158,7 +158,7 @@ public:
     }
 
     void not_destroyed_error() {
-        print_error(&started_at, "P?START without matching P?END");
+        print_error(&started_at, "PMSTART without matching PMEND");
         if (next) next->not_destroyed_error();
     }
 
@@ -191,7 +191,7 @@ void Output::maybe_start() {
 }
 int Output::maybe_write(const char *line) {
     if (!maybe) {
-        print_error(Interpreter::instance->at(), "no P?START before P?");
+        print_error(Interpreter::instance->at(), "no PMSTART before PM");
         return -1;
     }
     maybe->add(line);
@@ -199,7 +199,7 @@ int Output::maybe_write(const char *line) {
 }
 int Output::maybe_end() {
     if (!maybe) {
-        print_error(Interpreter::instance->at(), "no P?START before P?END");
+        print_error(Interpreter::instance->at(), "no PMSTART before PMEND");
         return -1;
     }
     PrintMaybe::pop(maybe);

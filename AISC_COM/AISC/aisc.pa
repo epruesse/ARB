@@ -1,7 +1,4 @@
-# It is very important, that you set the TABSTOP to the correct tabsize of your editor,
-# overwise the PRINT Command will probably make some errors
-IF $(argc) = 4
-ELSE
+IF $(argc) != 4
     ERROR Wrong number of parameters[$(argc)]. Usage: aisc aisc.pa xxx.aisc outfile
 ENDIF
 
@@ -11,7 +8,7 @@ DUMPDATA DUMP/aisc.pa__$(argv[2]).dump
 MOVETO $(AISC/PROJECT)
 
 OPEN save $(argv[3])
-# *********************************** IDENTS ***************
+
 CREATE $(i)
 CREATE $(replace)
 
