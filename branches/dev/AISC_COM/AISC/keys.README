@@ -1,25 +1,29 @@
-PROJECT         Hauptname des Programms
-OBJECT_KEY      Prefixkey fuer Objekte
-MAX_KEY         Maximale Attribute Nummer
-MAX_OBJECT      Maximale Anzahl der Objekte
-DATA {          Die Beschreibung der Daten
 
-@CONST,         @VALUE,         @DOCU;          //Konstanten
+format of .aisc-files used for client/server interfaces 
+-------------------------------------------------------
 
+PROJECT      string   // main name of program
+OBJECT_KEY   string   // prefix key for objects
+MAX_KEY      num      // maximum attribute number
+MAX_OBJECT   num      // maximum object number
 
+DATA {          
 
-@ENUM;
+@CONST, @VALUE, @DOCU; // constants
+
+@ENUM;                  // enum is unused and obsolete
 ..., {;
-        @VAR,   @VAL,   @DOCU;
-        }
+        @VAR, @VAL, @DOCU;
+};
 
 @STRUCT, @SKEY, @SKEYC, @DOCU;
 
 my_struxt, MYKEY, 4711, (~ This is the docu ~), [SAVEDIRECTION VERTICAL,] {
-        @TYPE,  @IDENT, @REF,   @ACC,   @SAVE,  @KEY,   @KEYC,  @DOCU;
-}
+        @TYPE,  @IDENT, @REF, @ACC, @SAVE, @KEY, @KEYC, @INIT, @DOCU;
+        ...;
+};
 
-@TYPE,          @IDENT,         @REF,           @SAVE   ,@DOCU;
+};
 
 
 
@@ -27,14 +31,16 @@ TYPE can be:
 
         int,char,double,float
 
-        dllh    Header fuer DoubledLinkedList
-        func    Funktion        Auch fuer C++
+        dllh            header of DoubledLinkedList
+        aisc_string     string
+        bytestring      string
+
+        // [func    function ]
 
         or any user defined type
 
-
 REF can be:
-        %               virtuell 
+        %               virtual (aka callback) 
 
                         unspecified ( double char .... )
 eor     i               or owner by insertion
@@ -65,13 +71,15 @@ ACC             Accessiongrants
         privat,
         public,
 
-SAVE            Gibt die Versionsnummer beim Speichern und Laden an
+SAVE    version number for load/save (if AISC_SAVE=YES)
 
-COND            Abfrage auf Bedingung
-                        'index' ist die Nummer beim Zugriff auf indizierte Objekte
-                        'THIS'  ist die Eingabestruktur (Achtung:
-                        Die Zeichern '->' oder '.' sind schon enthalten
-                        Also falls in einer Struktur x und y exestieren
-                        und x soll groesser als y sein dann
-                        COND (~THISx>THISy~)
-CONDE           Der Fehlertext
+KEY     key name
+
+KEYC    key number
+
+        Has to be unique inside each STRUCT.
+        Keys w/o keynumbers exist, but are not accessible via interface.
+        Several types use multiple KEYs (e.g. 'd' uses 2 keys (KEY and KEY+1)).
+
+INIT    default value or call to init-funtion
+        'THIS' is replaced by pointer to STRUCT 
