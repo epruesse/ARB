@@ -31,17 +31,43 @@ struct hash_entry {
 
 class var_ref {
     hash_entry *e;
+
+    void const_violation();
+
 public:
     var_ref() : e(NULL) {}
     var_ref(hash_entry *e_) : e(e_) {}
 
-    operator bool() const { return e; } // refer to existing variable ? 
+    operator bool() const { return e; } // refer to existing variable ?
+
+    bool write_protected() const {
+        hash_entry *prot = e->next;
+        return prot && strcmp(prot->key, e->key) == 0 && prot->val == NULL;
+    }
+    void write_protect() {
+        if (!write_protected()) {
+            hash_entry *prot = (hash_entry *)calloc(sizeof(hash_entry), 1);
+
+            prot->key  = strdup(e->key);
+            prot->val  = NULL;
+            prot->next = e->next;
+
+            e->next = prot;
+        }
+    }
 
     const char *read() const { return e ? e->val : NULL; }
-    void write(const char *val) {
+    int write(const char *val) __ATTR__USERESULT {
         aisc_assert(e);
+
+        if (write_protected()) {
+            const_violation();
+            return -1;
+        }
         freeset(e->val, nulldup(val));
+        return 0;
     }
+
 };
 
 class hash {
@@ -68,7 +94,7 @@ public:
 
 // ------------------------------------------------------------
 
-static const int LINEBUFSIZE = 250;
+static const int  LINEBUFSIZE  = 250;
 static const char ALIGN_MARKER = '\1';
 
 class LineBuf {
@@ -408,6 +434,7 @@ class Interpreter {
     int do_push();
     int do_return();
     int do_set(const char *str);
+    int do_makeconst(const char *str);
     int do_tab(const char *str);
     int do_tabstop(const char *str);
     int do_indent(const char *str);
@@ -475,5 +502,6 @@ public:
 #else
 #error aisc.h included twice
 #endif // AISC_H
+
 
 
