@@ -89,7 +89,7 @@ static void ptnd_sort_probes_by(PT_pdc *pdc, int mode)  // mode 0 quality, mode 
     int          i;
 
     if (!pdc->tprobes) return;
-    list_len = get_TPROBE_CNT(pdc->tprobes);
+    list_len = pdc->tprobes->get_count();
     if (list_len <= 1) return;
     my_list = (PT_tprobes **)calloc(sizeof(void *), list_len);
     for (i=0, tprobe = pdc->tprobes;
@@ -590,7 +590,7 @@ static void ptnd_sort_parts(PT_pdc *pdc) {
     int             i;
 
     if (!pdc->parts) return;
-    list_len = get_TPROBEPARTS_CNT(pdc->parts);
+    list_len = pdc->parts->get_count();
     if (list_len <= 1) return;
     my_list = (PT_probeparts **)calloc(sizeof(void *), list_len);
     for (i=0,           tprobe = pdc->parts;
