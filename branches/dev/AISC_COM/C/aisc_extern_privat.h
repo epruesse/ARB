@@ -27,7 +27,7 @@ extern "C" {
 
 /* aisc_extern.c */
 dll_public *create_dll_public P_((void));
-int move_dll_header P_((dll_header *sobj, dll_header *dobj));
+int move_dll_header P_((const dll_header *sobj, dll_header *dobj));
 int get_COMMON_CNT P_((dll_header *THIS));
 dllheader_ext *get_COMMON_PARENT P_((dll_header *THIS));
 dllheader_ext *get_COMMON_LAST P_((dll_header *THIS));

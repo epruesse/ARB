@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include <dupstr.h>
 #include <aisc.h>
 #include <aisc_com.h>
 
@@ -23,10 +24,6 @@ extern "C" {
 
 #ifdef __cplusplus
 }
-#endif
-
-#ifdef AISC_SAVE_YES
-#include <math.h>
 #endif
 
 // end ../../AISC_COM/C/aisc_server.h

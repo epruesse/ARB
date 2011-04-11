@@ -832,29 +832,24 @@ extern "C" aisc_string get_short(AN_local *locs)
     return shrt;
 }
 
-extern "C" int server_save(AN_main *main, int dummy)
-{
-    FILE        *file;
-    int error;
-    char        *sec_name;
-    dummy = dummy;
+extern "C" int server_save(AN_main *main, int) {
     if (main->touched) {
         int server_date = GB_time_of_file(main->server_file);
         if (server_date>main->server_filedate) {
             printf("Another nameserver changed '%s' - your changes are lost.\n", main->server_file);
         }
         else {
-            sec_name = (char *)calloc(sizeof(char), strlen(main->server_file)+2);
+            char *sec_name = (char *)calloc(sizeof(char), strlen(main->server_file)+2);
             sprintf(sec_name, "%s%%", main->server_file);
             printf("Saving '%s'..\n", main->server_file);
-            file     = fopen(sec_name, "w");
+
+            FILE *file = fopen(sec_name, "w");
             if (!file) {
                 fprintf(stderr, "ERROR cannot save file '%s'\n", sec_name);
             }
             else {
-                error = save_AN_main(main, file);
-                fclose(file);
-                if (!error) {
+                save_AN_main(main, file);
+                if (fclose(file) != 0) {
                     GB_ERROR mv_error = GB_rename_file(sec_name, main->server_file);
                     if (mv_error) GB_warning(mv_error);
                     else main->touched = 0;
@@ -1296,6 +1291,7 @@ int main(int argc, char **argv)
     bool isTimeout         = true;
 
     if (!error && aisc_main->touched) server_save(aisc_main, 0);
+
 
     while (!error && accept_calls>0) {
         aisc_accept_calls(so);
