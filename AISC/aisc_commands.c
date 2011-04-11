@@ -335,6 +335,28 @@ int Interpreter::do_moveto(const char *str) {
     return err;
 }
 
+void var_ref::const_violation() {
+    printf_error(Interpreter::instance->at(),
+                 "Attempt to modify write-protected variable '%s'", e->key);
+}
+
+int Interpreter::do_makeconst(const char *str) {
+    int   err   = 1;
+    char *ident = get_ident(str, at());
+
+    if (ident) {
+        var_ref var = get_local(ident);
+        if (!var) {
+            printf_error(at(), "undefined Ident '%s' in CONST (use CREATE first)", ident);
+        }
+        else {
+            var.write_protect();
+        }
+    }
+
+    return err;
+}
+
 int Interpreter::do_set(const char *str) {
     int   err   = 1;
     char *ident = get_ident(str, at());
@@ -349,8 +371,7 @@ int Interpreter::do_set(const char *str) {
                 ++str;
                 SKIP_SPACE_LF(str);
             }
-            var.write(str);
-            err = 0;
+            err = var.write(str);
         }
         free(ident);
     }
@@ -544,7 +565,7 @@ int Interpreter::do_gosub(const char *str) {
                     printf_error(at(), "Too many Parameters '%s'", para);
                     printf_error(fun, "in call to '%s'", fun_name);
 
-                    err = 1;
+                    err = -1;
                 }
                 else {
                     {
@@ -568,7 +589,7 @@ int Interpreter::do_gosub(const char *str) {
                             printf_error(at(), "duplicated formal parameter '%s'", para);
                             printf_error(fun, "in call to '%s'", fun_name);
                             print_error(stack->pc, "which was called from here?");
-                            err = 1;
+                            err = -1;
                         }
                         else {
                             write_var(fpara_name, para);
@@ -581,7 +602,7 @@ int Interpreter::do_gosub(const char *str) {
             if (!err && *fpara) {
                 printf_error(at(), "Missing parameter '%s'", fpara);
                 printf_error(fun, "in call to '%s'", fun_name);
-                err = 1;
+                err = -1;
             }
 
             if (!err) {
@@ -641,9 +662,8 @@ int Interpreter::do_for(const char *str) {
                         printf_error(at(), "Undefined Ident '%s' in FOR (use CREATE first)", ident);
                     }
                     else {
-                        var.write(formatted("%li", fd.forval));
+                        err       = var.write(formatted("%li", fd.forval));
                         fd.forstr = strdup(ident);
-                        err = 0;
                     }
                 }
             }
@@ -685,8 +705,7 @@ int Interpreter::do_next() {
         if (fd.forval < fd.forend) {
             fd.forval++;
             nextpc = pc->FOR->next;
-            get_local(fd.forstr).write(formatted("%li", fd.forval));
-            return 0;
+            return get_local(fd.forstr).write(formatted("%li", fd.forval));
         }
 
     }
@@ -814,6 +833,7 @@ void Interpreter::command_table_setup(bool setup) {
         
         command_table[i++] = new ArgCommand("MOVETO",   &Interpreter::do_moveto,        EVAL_VAR_DECL);
         command_table[i++] = new ArgCommand("SET",      &Interpreter::do_set,           EVAL_VAR_DECL);
+        command_table[i++] = new ArgCommand("CONST",    &Interpreter::do_makeconst,     EVAL_VAR_DECL);
         command_table[i++] = new ArgCommand("CREATE",   &Interpreter::do_create,        EVAL_VAR_DECL);
 
         command_table[i++] = new ArgCommand("PRINT",    &Interpreter::do_write_current, EVAL_PLAIN);
