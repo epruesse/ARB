@@ -254,7 +254,6 @@ const char *aisc_client_get_m_id(const char *path, char **m_name, int *id) {
 }
 
 static const char *aisc_client_open_socket(const char *path, int delay, int do_connect, int *psocket, char **unix_name) {
-    char            buffer[128];
     struct in_addr  addr;                                     /* union -> u_long  */
     struct hostent *he;
     const char     *err;

@@ -3,9 +3,6 @@ THIS=AISC/Makefile
 MAKETHIS=$(MAKE) -f $(THIS)
 #MAKETHIS=$(MAKE) -d -f $(THIS)
 
-# dont warn about unused functions (@@@ fix)
-FORCED_FLAGS=-Wno-unused
-
 .SUFFIXES: .o .c .h .aisc
 
 #where to find the creator files
@@ -116,16 +113,16 @@ $(GEN_SERVER_OBJECTS) $(PRIVATE_SERVER_OBJECTS): \
 					$(GEN_SERVER_EXTERN_PROTO) $(IMPORT_PROTO) \
 					$(GEN_SERVER_OBJECTS:.o=.c) \
 					$(PRIVATE_SERVER_OBJECTS:.o=.c)
-	$(COMPILER) $(FORCED_FLAGS) -c -o $@ $(@:.o=.c) -IGENH -I. -IC -DAISC_SAVE_$(AISC_SAVE)
+	$(COMPILER) -c -o $@ $(@:.o=.c) -IGENH -I. -IC -DAISC_SAVE_$(AISC_SAVE)
 
 $(GEN_CLIENT_OBJECTS): $(GEN_INCLUDES) $(GEN_CLIENT_OBJECTS:.o=.c)
-	$(CLIENTCOMPILER) $(FORCED_FLAGS) -c -o $@ $(@:.o=.c) -IGENH -I. -IC
+	$(CLIENTCOMPILER) -c -o $@ $(@:.o=.c) -IGENH -I. -IC
 
 O/%.o: C/%.c $(GEN_INCLUDES) $(CLIENT_INCLUDES) C/server.h
-	$(COMPILER) $(FORCED_FLAGS) -c -o $@ $< -IGENH -I. -IC
+	$(COMPILER) -c -o $@ $< -IGENH -I. -IC
 
 $(CLIENT_OBJECTS):	$(CLIENT_OBJECTS:O/%.o=C/%.c) $(GEN_INCLUDES) $(CLIENT_INCLUDES)
-	$(CLIENTCOMPILER) $(FORCED_FLAGS) -c -o $@ C/$(@F:.o=.c) -IGENH -I. -IC
+	$(CLIENTCOMPILER) -c -o $@ C/$(@F:.o=.c) -IGENH -I. -IC
 
 $(DUMPDIR): 
 	mkdir -p $(DUMPDIR)
