@@ -44,7 +44,7 @@ aisc_string, ident,              t,    ,     1,     IDENT,     5,     ,      (~T
 
 AN_revers,  REVERS, 4,  (~revers mapping for shorts~), {
     @TYPE,       @IDENT,    @REF, @ACC, @SAVE, @KEY,       @KEYC,  @INIT,  @DOCU;
-    dllh,        mh,        t,    ,     1,     (~~),       0,      ,       (~Header~);
+    dllh,        mh,        t,    ,     ,      (~~),       0,      ,       (~Header~);
     aisc_string, full_name, t,    rw,   ,      ,           ,       ,       (~the full name of a species~);
     aisc_string, acc,       t,    rw,   ,      ,           ,       ,       (~accession number~);
     aisc_string, add_id,    t,    rw,   ,      ,           ,       ,       (~additional id data~);
