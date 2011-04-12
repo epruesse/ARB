@@ -140,8 +140,10 @@ PT_FamilyFinder::~PT_FamilyFinder() {
 }
 
 GB_ERROR PT_FamilyFinder::init_communication() {
-    const char *user = "Find Family";
+    const char *user = "PT_FamilyFinder";
 
+    ff_assert(!locs);
+    
     // connect PT server
     if (aisc_create(link, PT_MAIN, com,
                     MAIN_LOCS, PT_LOCS, &locs,
@@ -180,6 +182,7 @@ void PT_FamilyFinder::close() {
     if (link) aisc_close(link);
     link = 0;
     com  = 0;
+    locs = 0;
 }
 
 GB_ERROR PT_FamilyFinder::retrieve_family(const char *sequence, FF_complement compl_mode, int max_results) {
@@ -271,12 +274,7 @@ GB_ERROR PT_FamilyFinder::searchFamily(const char *sequence, FF_complement compl
     // When using restrict_2_region(), only pass the corresponding part via 'sequence' (not the full alignment)
 
     GB_ERROR error = open(GBS_ptserver_tag(server_id));
-    if (!error) {
-        error = init_communication();
-        if (!error) {
-            error = retrieve_family(sequence, compl_mode, max_results);
-        }
-    }
+    if (!error) error = retrieve_family(sequence, compl_mode, max_results);
     close();
     return error;
 }

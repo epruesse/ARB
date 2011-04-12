@@ -1430,7 +1430,13 @@ int aisc_add_destroy_callback(aisc_destroy_callback callback, long clientdata) {
         return socket;
     for (si = hs->soci; si; si = si->next) {
         if (si->socket == socket) {
-            si->destroy_callback = callback;
+            if (si->destroy_callback) {
+                fputs("Error: destroy_callback already bound (did you open two connections in client?)\n", stderr);
+                fputs("Note: calling bound and installing new destroy_callback\n", stderr);
+                si->destroy_callback(si->destroy_clientdata);
+            }
+
+            si->destroy_callback   = callback;
             si->destroy_clientdata = clientdata;
         }
     }
