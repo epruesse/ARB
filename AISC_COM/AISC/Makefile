@@ -128,10 +128,10 @@ $(DUMPDIR):
 	mkdir -p $(DUMPDIR)
 
 $(GLOBALS_AISC).tmp: 
-	echo "AISC_SAVE $(AISC_SAVE);" > $@
+	@echo "AISC_SAVE $(AISC_SAVE);" > $@
 
 $(GLOBALS_AISC): $(GLOBALS_AISC).tmp
-	mv_if_diff $(GLOBALS_AISC).tmp $(GLOBALS_AISC)
+	$(ARBHOME)/SOURCE_TOOLS/mv_if_diff $(GLOBALS_AISC).tmp $(GLOBALS_AISC)
 
 GENH/%.h: AISC/%.pa $(AISC_DEPENDS) $(INCLUDE_INCLUDES) 
 	$(RUN_AISC) $< $(MAIN_SOURCE) $@
