@@ -847,10 +847,15 @@ int server_save(AN_main *main, int) {
             }
             else {
                 save_AN_main(main, file);
-                if (fclose(file) != 0) {
+                if (fclose(file) == 0) {
                     GB_ERROR mv_error = GB_rename_file(sec_name, main->server_file);
                     if (mv_error) GB_warning(mv_error);
                     else main->touched = 0;
+                }
+                else {
+                    GB_ERROR save_error = GB_IO_error("saving", sec_name);
+                    fprintf(stderr, "Error: %s\n", save_error);
+                    unlink(sec_name);
                 }
             }
             free(sec_name);
