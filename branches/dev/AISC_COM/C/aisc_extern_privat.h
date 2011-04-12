@@ -5,40 +5,20 @@
 #ifndef AISC_EXTERN_PRIVAT_H
 #define AISC_EXTERN_PRIVAT_H
 
-#ifndef P_
-# if defined(__STDC__) || defined(__cplusplus)
-#  define P_(s) s
-# else
-#  define P_(s) ()
-# endif
-#else
-# error P_ already defined elsewhere
-#endif
-
 /* define ARB attributes: */
 #ifndef ATTRIBUTES_H
 # include <attributes.h>
 #endif
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
 
 /* aisc_extern.c */
-dll_public *create_dll_public P_((void));
-int move_dll_header P_((const dll_header *sobj, dll_header *dobj));
-int get_COMMON_CNT P_((dll_header *THIS));
-dllheader_ext *get_COMMON_PARENT P_((dll_header *THIS));
-dllheader_ext *get_COMMON_LAST P_((dll_header *THIS));
-char *aisc_get_keystring P_((int *obj));
-char *aisc_get_keystring_dll_header P_((dll_header *x));
-
-#ifdef __cplusplus
-}
-#endif
-
-#undef P_
+dll_public *create_dll_public(void);
+int move_dll_header(const dll_header *sobj, dll_header *dobj);
+int get_COMMON_CNT(dll_header *THIS);
+dllheader_ext *get_COMMON_PARENT(dll_header *THIS);
+dllheader_ext *get_COMMON_LAST(dll_header *THIS);
+aisc_cstring aisc_get_keystring(int *obj);
+aisc_cstring aisc_get_keystring_dll_header(dll_header *x);
 
 #else
 #error aisc_extern_privat.h included twice

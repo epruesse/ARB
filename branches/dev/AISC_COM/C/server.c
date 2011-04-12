@@ -56,11 +56,11 @@ extern "C" {
 #endif
 
     struct Socinf {
-        Socinf             *next;
-        int                 socket;
-        aisc_callback_func  destroy_callback;
-        long                destroy_clientdata;
-        int                 lasttime;
+        Socinf                *next;
+        int                    socket;
+        aisc_destroy_callback  destroy_callback;
+        long                   destroy_clientdata;
+        int                    lasttime;
     };
 
 #ifdef __cplusplus
@@ -1422,7 +1422,7 @@ void aisc_server_shutdown_and_exit(Hs_struct *hs, int exitcode) {
 /*      special functions      */
 
 
-extern "C" int aisc_add_destroy_callback(aisc_callback_func callback, long clientdata) {        /* call from server function */
+int aisc_add_destroy_callback(aisc_destroy_callback callback, long clientdata) {        /* call from server function */
     Socinf    *si;
     int        socket = aisc_server_con;
     Hs_struct *hs     = aisc_server_hs;

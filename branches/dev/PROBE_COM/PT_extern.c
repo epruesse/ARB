@@ -37,7 +37,7 @@ extern "C" {
 #endif
 
 int pt_init_socket(PT_local *THIS) {
-    return aisc_add_destroy_callback((aisc_callback_func)pt_destroy_locs, (long)THIS);
+    return aisc_add_destroy_callback((aisc_destroy_callback)pt_destroy_locs, (long)THIS);
 }
 
 void  pt_destroy_socket(PT_local *THIS) {

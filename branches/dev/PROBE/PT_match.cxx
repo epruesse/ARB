@@ -368,7 +368,7 @@ void pt_build_pos_to_weight(PT_MATCH_TYPE type, const char *sequence) {
     psg.pos_to_weight[slen] = 0;
 }
 
-extern "C" int probe_match(PT_local * locs, aisc_string probestring) {
+int probe_match(PT_local * locs, aisc_string probestring) {
     /*! find out where a given probe matches */
 
     PT_probematch *ml;
@@ -536,7 +536,7 @@ inline void cat_spaced_right(GBS_strstruct *memfile, const char *text, int width
 inline void cat_dashed_left (GBS_strstruct *memfile, const char *text, int width) { cat_internal(memfile, strlen(text), text, width, '-', true); }
 inline void cat_dashed_right(GBS_strstruct *memfile, const char *text, int width) { cat_internal(memfile, strlen(text), text, width, '-', false); }
 
-extern "C" char *get_match_overlay(PT_probematch *ml)
+char *get_match_overlay(PT_probematch *ml)
 {
     int    pr_len = strlen(ml->sequence);
 
@@ -684,7 +684,7 @@ static void gene_rel_2_abs(PT_probematch *ml) {
     }
 }
 
-extern "C" bytestring *match_string(PT_local *locs) {
+bytestring *match_string(PT_local *locs) {
     /*! Create list of species where probe matches.
      *
      * header^1name^1info^1name^1info....^0
@@ -726,7 +726,7 @@ extern "C" bytestring *match_string(PT_local *locs) {
 
 
 
-extern "C" bytestring *MP_match_string(PT_local *locs) {
+bytestring *MP_match_string(PT_local *locs) {
     /*! Create list of species where probe matches and #mismatches (for multiprobe)
      *
      * Format: header^1name^1#mismatch^1name^1#mismatch....^0
@@ -762,7 +762,7 @@ extern "C" bytestring *MP_match_string(PT_local *locs) {
 }
 
 
-extern "C" bytestring *MP_all_species_string(PT_local *) {
+bytestring *MP_all_species_string(PT_local *) {
     /*! Create list of all species known to PT server
      *
      * Format: ^1name^1name....^0
@@ -790,7 +790,7 @@ extern "C" bytestring *MP_all_species_string(PT_local *) {
     return &bs;
 }
 
-extern "C" int MP_count_all_species(PT_local *)
+int MP_count_all_species(PT_local *)
 {
     return psg.data_count;
 }

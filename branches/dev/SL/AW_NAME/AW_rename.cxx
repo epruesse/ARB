@@ -213,7 +213,7 @@ public:
                 const char *ipport = GBS_read_arb_tcp(server_id);
                 if (!ipport) err = GB_await_error();
                 else {
-                    link     = (aisc_com *)aisc_open(ipport, &com, AISC_MAGIC_NUMBER);
+                    link     = aisc_open(ipport, &com, AISC_MAGIC_NUMBER);
                     linktime = time(0);
 
                     if (init_local_com_names()) {

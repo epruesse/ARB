@@ -165,7 +165,7 @@ GB_ERROR PT_FamilyFinder::open(const char *servername) {
         const char *socketid = GBS_read_arb_tcp(servername);
         if (!socketid) error = GB_await_error();
         else {
-            link = (aisc_com *)aisc_open(socketid, &com, AISC_MAGIC_NUMBER);
+            link = aisc_open(socketid, &com, AISC_MAGIC_NUMBER);
             if (!link) error = "Cannot contact PT server [1]";
             else if (init_communication()) error = "Cannot contact PT server [2]";
         }
