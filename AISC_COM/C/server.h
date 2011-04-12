@@ -5,23 +5,9 @@
 #ifndef SERVER_H
 #define SERVER_H
 
-#ifndef P_
-# if defined(__STDC__) || defined(__cplusplus)
-#  define P_(s) s
-# else
-#  define P_(s) ()
-# endif
-#else
-# error P_ already defined elsewhere
-#endif
-
 /* define ARB attributes: */
 #ifndef ATTRIBUTES_H
 # include <attributes.h>
-#endif
-
-#ifdef __cplusplus
-extern "C" {
 #endif
 
 
@@ -32,25 +18,19 @@ extern "C" {
 #include <stdio.h>
 #endif
 
-void aisc_server_errorf P_((const char *templat, ...)) __ATTR__FORMAT(1);
-const char *aisc_get_object_names P_((long i));
-Hs_struct *open_aisc_server P_((const char *path, int timeout, int fork));
-int aisc_talking_get_index P_((int u, int o));
-long aisc_make_sets P_((long *obj));
-int aisc_broadcast P_((Hs_struct *hs, int message_type, const char *message));
-Hs_struct *aisc_accept_calls P_((Hs_struct *hs));
-void aisc_server_shutdown P_((Hs_struct *hs));
-void aisc_server_shutdown_and_exit P_((Hs_struct *hs, int exitcode)) __ATTR__NORETURN __ATTR__DEPRECATED("cause it hides a call to exit() inside a library");
-extern "C" int aisc_add_destroy_callback P_((aisc_callback_func callback, long clientdata));
-void aisc_remove_destroy_callback P_((void));
-int aisc_server_save_token P_((FILE *fd, const char *buffer, int maxsize));
-int aisc_server_load_token P_((FILE *fd, char *buffer, int maxsize));
-
-#ifdef __cplusplus
-}
-#endif
-
-#undef P_
+void aisc_server_errorf(const char *templat, ...) __ATTR__FORMAT(1);
+const char *aisc_get_object_names(long i);
+Hs_struct *open_aisc_server(const char *path, int timeout, int fork);
+int aisc_talking_get_index(int u, int o);
+long aisc_make_sets(long *obj);
+int aisc_broadcast(Hs_struct *hs, int message_type, const char *message);
+Hs_struct *aisc_accept_calls(Hs_struct *hs);
+void aisc_server_shutdown(Hs_struct *hs);
+void aisc_server_shutdown_and_exit(Hs_struct *hs, int exitcode) __ATTR__NORETURN __ATTR__DEPRECATED("cause it hides a call to exit() inside a library");
+int aisc_add_destroy_callback(aisc_destroy_callback callback, long clientdata);
+void aisc_remove_destroy_callback(void);
+int aisc_server_save_token(FILE *fd, const char *buffer, int maxsize);
+int aisc_server_load_token(FILE *fd, char *buffer, int maxsize);
 
 #else
 #error server.h included twice

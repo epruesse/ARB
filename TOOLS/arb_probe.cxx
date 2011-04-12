@@ -91,7 +91,7 @@ static char *AP_probe_design_event(ARB_ERROR& error) {
         const char *servername = AP_probe_pt_look_for_server(error);
         if (!servername) return NULL;
 
-        pd_gl.link = (aisc_com *)aisc_open(servername, &pd_gl.com, AISC_MAGIC_NUMBER);
+        pd_gl.link = aisc_open(servername, &pd_gl.com, AISC_MAGIC_NUMBER);
     }
 
     if (!pd_gl.link) {
@@ -196,7 +196,7 @@ static char *AP_probe_match_event(ARB_ERROR& error) {
         const char *servername = AP_probe_pt_look_for_server(error);
         if (!servername) return NULL;
 
-        pd_gl.link = (aisc_com *)aisc_open(servername, &pd_gl.com, AISC_MAGIC_NUMBER);
+        pd_gl.link = aisc_open(servername, &pd_gl.com, AISC_MAGIC_NUMBER);
     }
 
     if (!pd_gl.link) {

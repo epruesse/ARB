@@ -33,7 +33,7 @@ $(OBJECTS): Makefile
 .cxx.o:
 	$(CPP) $(pan_cflags) -c $<  $(CPPINCLUDES) -I./../probe_bank/COM $(POST_COMPILE)
 proto:
-	../MAKEBIN/aisc_mkpt -E -w pt_prototypes.h $(OBJECTS:.o=.cxx) >pt_prototypes.h.tmp
+	../MAKEBIN/aisc_mkpt -E -z -A -w pt_prototypes.h $(OBJECTS:.o=.cxx) >pt_prototypes.h.tmp
 	../SOURCE_TOOLS/mv_if_diff pt_prototypes.h.tmp pt_prototypes.h
 
 clean:
@@ -63,7 +63,6 @@ dlist.o: types.h
 PT_cachehandler.o: dlist.h
 PT_cachehandler.o: globalprefs.h
 PT_cachehandler.o: hooks.h
-PT_cachehandler.o: pt_manualprotos.h
 PT_cachehandler.o: pt_prototypes.h
 PT_cachehandler.o: ptpan.h
 PT_cachehandler.o: types.h
@@ -89,7 +88,6 @@ PT_cachehandler.o: $(ARBHOME)/INCLUDE/test_global.h
 PT_hashing.o: dlist.h
 PT_hashing.o: globalprefs.h
 PT_hashing.o: hooks.h
-PT_hashing.o: pt_manualprotos.h
 PT_hashing.o: pt_prototypes.h
 PT_hashing.o: ptpan.h
 PT_hashing.o: types.h
@@ -115,7 +113,6 @@ PT_hashing.o: $(ARBHOME)/INCLUDE/test_global.h
 PT_huffman.o: dlist.h
 PT_huffman.o: globalprefs.h
 PT_huffman.o: hooks.h
-PT_huffman.o: pt_manualprotos.h
 PT_huffman.o: pt_prototypes.h
 PT_huffman.o: ptpan.h
 PT_huffman.o: types.h
@@ -141,7 +138,6 @@ PT_huffman.o: $(ARBHOME)/INCLUDE/test_global.h
 PT_lowlevel.o: dlist.h
 PT_lowlevel.o: globalprefs.h
 PT_lowlevel.o: hooks.h
-PT_lowlevel.o: pt_manualprotos.h
 PT_lowlevel.o: pt_prototypes.h
 PT_lowlevel.o: ptpan.h
 PT_lowlevel.o: types.h
@@ -167,7 +163,6 @@ PT_lowlevel.o: $(ARBHOME)/INCLUDE/test_global.h
 PT_treepack.o: dlist.h
 PT_treepack.o: globalprefs.h
 PT_treepack.o: hooks.h
-PT_treepack.o: pt_manualprotos.h
 PT_treepack.o: pt_prototypes.h
 PT_treepack.o: ptpan.h
 PT_treepack.o: types.h
@@ -193,7 +188,6 @@ PT_treepack.o: $(ARBHOME)/INCLUDE/test_global.h
 PTP_buildtree.o: dlist.h
 PTP_buildtree.o: globalprefs.h
 PTP_buildtree.o: hooks.h
-PTP_buildtree.o: pt_manualprotos.h
 PTP_buildtree.o: pt_prototypes.h
 PTP_buildtree.o: ptpan.h
 PTP_buildtree.o: types.h
@@ -219,7 +213,6 @@ PTP_buildtree.o: $(ARBHOME)/INCLUDE/test_global.h
 PTP_etc.o: dlist.h
 PTP_etc.o: globalprefs.h
 PTP_etc.o: hooks.h
-PTP_etc.o: pt_manualprotos.h
 PTP_etc.o: pt_prototypes.h
 PTP_etc.o: ptpan.h
 PTP_etc.o: types.h
@@ -246,7 +239,6 @@ PTP_etc.o: $(ARBHOME)/INCLUDE/test_global.h
 PTP_family.o: dlist.h
 PTP_family.o: globalprefs.h
 PTP_family.o: hooks.h
-PTP_family.o: pt_manualprotos.h
 PTP_family.o: pt_prototypes.h
 PTP_family.o: ptpan.h
 PTP_family.o: types.h
@@ -275,7 +267,6 @@ PTP_family.o: $(ARBHOME)/INCLUDE/test_global.h
 PTP_findEx.o: dlist.h
 PTP_findEx.o: globalprefs.h
 PTP_findEx.o: hooks.h
-PTP_findEx.o: pt_manualprotos.h
 PTP_findEx.o: pt_prototypes.h
 PTP_findEx.o: ptpan.h
 PTP_findEx.o: types.h
@@ -301,7 +292,6 @@ PTP_findEx.o: $(ARBHOME)/INCLUDE/test_global.h
 PTP_io.o: dlist.h
 PTP_io.o: globalprefs.h
 PTP_io.o: hooks.h
-PTP_io.o: pt_manualprotos.h
 PTP_io.o: pt_prototypes.h
 PTP_io.o: ptpan.h
 PTP_io.o: types.h
@@ -329,7 +319,6 @@ PTP_io.o: $(ARBHOME)/INCLUDE/test_global.h
 PTP_main.o: dlist.h
 PTP_main.o: globalprefs.h
 PTP_main.o: hooks.h
-PTP_main.o: pt_manualprotos.h
 PTP_main.o: pt_prototypes.h
 PTP_main.o: ptpan.h
 PTP_main.o: types.h
@@ -363,7 +352,6 @@ PTP_main.o: $(ARBHOME)/INCLUDE/test_global.h
 PTP_match.o: dlist.h
 PTP_match.o: globalprefs.h
 PTP_match.o: hooks.h
-PTP_match.o: pt_manualprotos.h
 PTP_match.o: pt_prototypes.h
 PTP_match.o: ptpan.h
 PTP_match.o: types.h
@@ -391,7 +379,6 @@ PTP_match.o: $(ARBHOME)/INCLUDE/test_global.h
 PTP_new_design.o: dlist.h
 PTP_new_design.o: globalprefs.h
 PTP_new_design.o: hooks.h
-PTP_new_design.o: pt_manualprotos.h
 PTP_new_design.o: pt_prototypes.h
 PTP_new_design.o: ptpan.h
 PTP_new_design.o: types.h

@@ -5,16 +5,6 @@
 #ifndef PT_PROTOTYPES_H
 #define PT_PROTOTYPES_H
 
-#ifndef P_
-# if defined(__STDC__) || defined(__cplusplus)
-#  define P_(s) s
-# else
-#  define P_(s) ()
-# endif
-#else
-# error P_ already defined elsewhere
-#endif
-
 /* define ARB attributes: */
 #ifndef ATTRIBUTES_H
 # include <attributes.h>
@@ -22,110 +12,108 @@
 
 
 /* PT_buildtree.cxx */
-POS_TREE *build_pos_tree P_((POS_TREE *pt, int anfangs_pos, int apos, int RNS_nr, unsigned int end));
-long PTD_save_partial_tree P_((FILE *out, PTM2 *ptmain, POS_TREE *node, char *partstring, int partsize, long pos, long *ppos, ARB_ERROR &error));
-ARB_ERROR enter_stage_1_build_tree P_((PT_main *, char *tname)) __ATTR__USERESULT;
-ARB_ERROR enter_stage_3_load_tree P_((PT_main *, const char *tname)) __ATTR__USERESULT;
+POS_TREE *build_pos_tree(POS_TREE *pt, int anfangs_pos, int apos, int RNS_nr, unsigned int end);
+long PTD_save_partial_tree(FILE *out, PTM2 *ptmain, POS_TREE *node, char *partstring, int partsize, long pos, long *ppos, ARB_ERROR &error);
+ARB_ERROR enter_stage_1_build_tree(PT_main *, char *tname) __ATTR__USERESULT;
+ARB_ERROR enter_stage_3_load_tree(PT_main *, const char *tname) __ATTR__USERESULT;
 
 /* PT_etc.cxx */
-void set_table_for_PT_N_mis P_((void));
-void pt_export_error P_((PT_local *locs, const char *error));
-extern "C" const char *virt_name P_((PT_probematch *ml));
-extern "C" const char *virt_fullname P_((PT_probematch *ml));
-int *table_copy P_((int *mis_table, int length));
-void table_add P_((int *mis_tabled, int *mis_tables, int length));
-char *ptpd_read_names P_((PT_local *locs, const char *names_list, const char *checksums, const char *&error));
-extern "C" bytestring *PT_unknown_names P_((PT_pdc *pdc));
-int get_clip_max_from_length P_((int length));
-void PT_init_base_string_counter P_((char *str, char initval, int size));
-void PT_inc_base_string_count P_((char *str, char initval, char maxval, int size));
+void set_table_for_PT_N_mis(void);
+void pt_export_error(PT_local *locs, const char *error);
+const char *virt_name(PT_probematch *ml);
+const char *virt_fullname(PT_probematch *ml);
+int *table_copy(int *mis_table, int length);
+void table_add(int *mis_tabled, int *mis_tables, int length);
+char *ptpd_read_names(PT_local *locs, const char *names_list, const char *checksums, const char *&error);
+bytestring *PT_unknown_names(PT_pdc *pdc);
+int get_clip_max_from_length(int length);
+void PT_init_base_string_counter(char *str, char initval, int size);
+void PT_inc_base_string_count(char *str, char initval, char maxval, int size);
 
 /* PT_family.cxx */
-extern "C" int find_family P_((PT_family *ffinder, bytestring *species));
+int find_family(PT_family *ffinder, bytestring *species);
 
 /* PT_findEx.cxx */
-extern "C" int PT_find_exProb P_((PT_exProb *pep));
+int PT_find_exProb(PT_exProb *pep, int dummy_1x);
 
 /* PT_io.cxx */
-int compress_data P_((char *probestring));
-void PT_base_2_string P_((char *id_string, long len));
-ARB_ERROR probe_read_data_base P_((const char *name)) __ATTR__USERESULT;
-int probe_compress_sequence P_((char *seq, int seqsize));
-char *probe_read_alignment P_((int j, int *psize));
-void probe_read_alignments P_((void));
-void PT_build_species_hash P_((void));
-long PT_abs_2_rel P_((long pos));
+int compress_data(char *probestring);
+void PT_base_2_string(char *id_string, long len);
+ARB_ERROR probe_read_data_base(const char *name) __ATTR__USERESULT;
+int probe_compress_sequence(char *seq, int seqsize);
+char *probe_read_alignment(int j, int *psize);
+void probe_read_alignments(void);
+void PT_build_species_hash(void);
+long PT_abs_2_rel(long pos);
 
 /* PT_main.cxx */
-ARB_ERROR pt_init_main_struct P_((PT_main *, const char *filename)) __ATTR__USERESULT;
-extern "C" int server_shutdown P_((PT_main *pm, aisc_string passwd));
-extern "C" int broadcast P_((PT_main *main, int dummy_1x));
-void PT_init_psg P_((void));
-void PT_exit_psg P_((void));
-void PT_exit P_((int exitcode)) __ATTR__NORETURN;
-GB_ERROR PT_init_map P_((void)) __ATTR__USERESULT;
+ARB_ERROR pt_init_main_struct(PT_main *, const char *filename) __ATTR__USERESULT;
+int server_shutdown(PT_main *pm, aisc_string passwd);
+int broadcast(PT_main *main, int dummy_1x);
+void PT_init_psg(void);
+void PT_exit_psg(void);
+void PT_exit(int exitcode) __ATTR__NORETURN;
+GB_ERROR PT_init_map(void) __ATTR__USERESULT;
 
 /* PT_match.cxx */
-int read_names_and_pos P_((PT_local *locs, POS_TREE *pt));
-int get_info_about_probe P_((PT_local *locs, char *probe, POS_TREE *pt, int mismatches, double wmismatches, int N_mismatches, int height));
-void pt_sort_match_list P_((PT_local *locs));
-char *reverse_probe P_((char *probe, int probe_length));
-int PT_complement P_((int base));
-void complement_probe P_((char *probe, int probe_length));
-void pt_build_pos_to_weight P_((PT_MATCH_TYPE type, const char *sequence));
-extern "C" int probe_match P_((PT_local *locs, aisc_string probestring));
-extern "C" char *get_match_overlay P_((PT_probematch *ml));
-extern "C" bytestring *match_string P_((PT_local *locs));
-extern "C" bytestring *MP_match_string P_((PT_local *locs));
-extern "C" bytestring *MP_all_species_string P_((PT_local *));
-extern "C" int MP_count_all_species P_((PT_local *));
+int read_names_and_pos(PT_local *locs, POS_TREE *pt);
+int get_info_about_probe(PT_local *locs, char *probe, POS_TREE *pt, int mismatches, double wmismatches, int N_mismatches, int height);
+void pt_sort_match_list(PT_local *locs);
+char *reverse_probe(char *probe, int probe_length);
+int PT_complement(int base);
+void complement_probe(char *probe, int probe_length);
+void pt_build_pos_to_weight(PT_MATCH_TYPE type, const char *sequence);
+int probe_match(PT_local *locs, aisc_string probestring);
+char *get_match_overlay(PT_probematch *ml);
+bytestring *match_string(PT_local *locs);
+bytestring *MP_match_string(PT_local *locs);
+bytestring *MP_all_species_string(PT_local *);
+int MP_count_all_species(PT_local *);
 
 /* PT_new_design.cxx */
-double ptnd_check_split P_((PT_pdc *pdc, char *probe, int pos, char ref));
-extern "C" char *get_design_info P_((PT_tprobes *tprobe));
-extern "C" char *get_design_hinfo P_((PT_tprobes *tprobe));
-extern "C" int PT_start_design P_((PT_pdc *pdc, int dummy_1x));
-void ptnd_new_match P_((PT_local *locs, char *probestring));
+double ptnd_check_split(PT_pdc *pdc, char *probe, int pos, char ref);
+char *get_design_info(PT_tprobes *tprobe);
+char *get_design_hinfo(PT_tprobes *tprobe);
+int PT_start_design(PT_pdc *pdc, int dummy_1x);
+void ptnd_new_match(PT_local *locs, char *probestring);
 
 /* PT_prefixtree.cxx */
-void PT_init_count_bits P_((void));
-void PTM_add_alloc P_((void *ptr));
-void PTM_finally_free_all_mem P_((void));
-char *PTM_get_mem P_((int size));
-int PTM_destroy_mem P_((void));
-void PTM_free_mem P_((char *data, int size));
-void PTM_debug_mem P_((void));
-PTM2 *PT_init P_((void));
-void PT_change_father P_((POS_TREE *father, POS_TREE *source, POS_TREE *dest));
-POS_TREE *PT_add_to_chain P_((PTM2 *ptmain, POS_TREE *node, int name, int apos, int rpos));
-POS_TREE *PT_change_leaf_to_node P_((PTM2 *, POS_TREE *node));
-POS_TREE *PT_leaf_to_chain P_((PTM2 *ptmain, POS_TREE *node));
-POS_TREE *PT_create_leaf P_((PTM2 *ptmain, POS_TREE **pfather, PT_BASES base, int rpos, int apos, int name));
-void PTD_clear_fathers P_((PTM2 *ptmain, POS_TREE *node));
-void PTD_put_longlong P_((FILE *out, ULONG i));
-void PTD_put_int P_((FILE *out, ULONG i));
-void PTD_put_short P_((FILE *out, ULONG i));
-void PTD_set_object_to_saved_status P_((POS_TREE *node, long pos, int size));
-long PTD_write_tip_to_disk P_((FILE *out, PTM2 *, POS_TREE *node, long pos));
-int ptd_count_chain_entries P_((char *entry));
-void ptd_set_chain_references P_((char *entry, char **entry_tab));
-ARB_ERROR ptd_write_chain_entries P_((FILE *out, long *ppos, PTM2 *, char **entry_tab, int n_entries, int mainapos)) __ATTR__USERESULT;
-long PTD_write_chain_to_disk P_((FILE *out, PTM2 *ptmain, POS_TREE *node, long pos, ARB_ERROR &error));
-void PTD_debug_nodes P_((void));
-long PTD_write_node_to_disk P_((FILE *out, PTM2 *ptmain, POS_TREE *node, long *r_poss, long pos));
-long PTD_write_leafs_to_disk P_((FILE *out, PTM2 *ptmain, POS_TREE *node, long pos, long *pnodepos, int *pblock, ARB_ERROR &error));
-ARB_ERROR PTD_read_leafs_from_disk P_((const char *fname, PTM2 *ptmain, POS_TREE **pnode)) __ATTR__USERESULT;
+void PT_init_count_bits(void);
+void PTM_add_alloc(void *ptr);
+void PTM_finally_free_all_mem(void);
+char *PTM_get_mem(int size);
+int PTM_destroy_mem(void);
+void PTM_free_mem(char *data, int size);
+void PTM_debug_mem(void);
+PTM2 *PT_init(void);
+void PT_change_father(POS_TREE *father, POS_TREE *source, POS_TREE *dest);
+POS_TREE *PT_add_to_chain(PTM2 *ptmain, POS_TREE *node, int name, int apos, int rpos);
+POS_TREE *PT_change_leaf_to_node(PTM2 *, POS_TREE *node);
+POS_TREE *PT_leaf_to_chain(PTM2 *ptmain, POS_TREE *node);
+POS_TREE *PT_create_leaf(PTM2 *ptmain, POS_TREE **pfather, PT_BASES base, int rpos, int apos, int name);
+void PTD_clear_fathers(PTM2 *ptmain, POS_TREE *node);
+void PTD_put_longlong(FILE *out, ULONG i);
+void PTD_put_int(FILE *out, ULONG i);
+void PTD_put_short(FILE *out, ULONG i);
+void PTD_set_object_to_saved_status(POS_TREE *node, long pos, int size);
+long PTD_write_tip_to_disk(FILE *out, PTM2 *, POS_TREE *node, long pos);
+int ptd_count_chain_entries(char *entry);
+void ptd_set_chain_references(char *entry, char **entry_tab);
+ARB_ERROR ptd_write_chain_entries(FILE *out, long *ppos, PTM2 *, char **entry_tab, int n_entries, int mainapos) __ATTR__USERESULT;
+long PTD_write_chain_to_disk(FILE *out, PTM2 *ptmain, POS_TREE *node, long pos, ARB_ERROR &error);
+void PTD_debug_nodes(void);
+long PTD_write_node_to_disk(FILE *out, PTM2 *ptmain, POS_TREE *node, long *r_poss, long pos);
+long PTD_write_leafs_to_disk(FILE *out, PTM2 *ptmain, POS_TREE *node, long pos, long *pnodepos, int *pblock, ARB_ERROR &error);
+ARB_ERROR PTD_read_leafs_from_disk(const char *fname, PTM2 *ptmain, POS_TREE **pnode) __ATTR__USERESULT;
 
 /* PT_debug.cxx */
-void PT_dump_tree_statistics P_((void));
-void PT_dump_POS_TREE_recursive P_((POS_TREE *pt, const char *prefix));
-void PT_dump_POS_TREE P_((POS_TREE *IF_DEBUG (node)));
+void PT_dump_tree_statistics(void);
+void PT_dump_POS_TREE_recursive(POS_TREE *pt, const char *prefix);
+void PT_dump_POS_TREE(POS_TREE *IF_DEBUG (node));
 
 /* probe_tree.h */
-template <typename T >int PT_forwhole_chain P_((PTM2 *ptmain, POS_TREE *node, T func));
-template <typename T >int PT_withall_tips P_((PTM2 *ptmain, POS_TREE *node, T func));
-
-#undef P_
+template <typename T >int PT_forwhole_chain(PTM2 *ptmain, POS_TREE *node, T func);
+template <typename T >int PT_withall_tips(PTM2 *ptmain, POS_TREE *node, T func);
 
 #else
 #error pt_prototypes.h included twice
