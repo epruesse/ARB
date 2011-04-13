@@ -30,6 +30,7 @@ depends:
 	@$(MAKE) -r -f AISC/Makefile pregenerate
 
 clean:
+	@rm -f .depends
 	@$(MAKE) -r -f AISC/Makefile clean
 
 # DO NOT DELETE

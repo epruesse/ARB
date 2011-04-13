@@ -11,3 +11,5 @@ names.dat: names.dat.template
 		rm -f $@
 		cp $< $@
 
+clean:
+	rm -f names.dat
