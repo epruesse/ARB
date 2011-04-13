@@ -827,7 +827,7 @@ public:
 
 void Interpreter::command_table_setup(bool setup) {
     if (setup) {
-        command_table = new Command*[MAX_COMMANDS];
+        command_table = new Command*[MAX_COMMANDS+1];
 
         int i = 0;
         
@@ -868,6 +868,8 @@ void Interpreter::command_table_setup(bool setup) {
 
         command_table[i++] = new NoSuchCommand(); // should be last!
         command_table[i++] = NULL;
+
+        aisc_assert(i<MAX_COMMANDS);
     }
     else { // cleanup
         for (int i = 0; command_table[i]; ++i) delete command_table[i];
