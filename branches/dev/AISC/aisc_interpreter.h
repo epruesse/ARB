@@ -390,7 +390,7 @@ class Interpreter {
     Output  output[OPENFILES];    // open files
     Output *current_output;       // pointer to one element of 'output'
 
-    static const int MAX_COMMANDS = 30;
+    static const int MAX_COMMANDS = 32;
     class Command **command_table;
     void command_table_setup(bool setup);
 
