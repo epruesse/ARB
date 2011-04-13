@@ -411,7 +411,7 @@ int Interpreter::do_if(const char *str) {
 
             const char *la = cursor - negate;
             --la;
-            SKIP_SPACE_LF_BACKWARD(la);
+            SKIP_SPACE_LF_BACKWARD(la, str);
 
             char *left = copy_string_part(str, la);
             cursor++;
@@ -427,7 +427,7 @@ int Interpreter::do_if(const char *str) {
                 if (kom) {
                     next++;
                     --kom;
-                    SKIP_SPACE_LF_BACKWARD(kom);
+                    SKIP_SPACE_LF_BACKWARD(kom, str);
 
                     int len    = kom-cursor+1;
                     memcpy(right_buffer, cursor, len);
