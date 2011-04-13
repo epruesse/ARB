@@ -1,3 +1,6 @@
+THIS=AISC/Makefile
+MAKETHIS=$(MAKE) -f $(THIS)
+#MAKETHIS=$(MAKE) -d -f $(THIS)
 
 # dont warn about unused functions (@@@ fix)
 FORCED_FLAGS=-Wno-unused
@@ -5,8 +8,14 @@ FORCED_FLAGS=-Wno-unused
 .SUFFIXES: .o .c .h .aisc
 
 #where to find the creator files
-AISC = ../MAKEBIN/aisc
+AISC=../MAKEBIN/aisc
 AISC_MKPT = ../MAKEBIN/aisc_mkpt
+
+RUN_AISC:=$(AISC)
+# valgrinding like this breaks the build process (due to wrong exitcode)
+#RUN_AISC:=arb_valgrind -c 15 $(AISC)
+#RUN_AISC:=arb_valgrind -c 15 -l $(AISC)
+#RUN_AISC:=arb_valgrind -c 15 -l -r $(AISC)
 
 GEN_INCLUDES = GENH/aisc.h GENH/aisc_com.h
 INCLUDE_INCLUDES = aisc_include.header
@@ -34,7 +43,46 @@ AISC_SERVER_EXTERN = GENH/aisc_server_extern.aisc
 
 DUMPDIR=DUMP
 
-all: $(CLIENT) $(SERVER)
+LINK_TO_OTHER_ARB=~/ARB.aisc_regression_test_vs# create this as symlink to other ARB checkout to activate regression test 
+FAIL_ON_CHANGE=1# 0=continue on change, 1=fail on change
+
+# ----------------------------------------
+
+COMPARE_WITH_OTHER_ARB:=$(shell readlink $(LINK_TO_OTHER_ARB))
+ifneq ($(COMPARE_WITH_OTHER_ARB),)
+THIS__COMDIR=$(shell pwd)
+COMDIRNAME=$(subst $(ARBHOME),,$(THIS__COMDIR))
+OTHER_COMDIR=$(subst //,/,$(COMPARE_WITH_OTHER_ARB)/$(COMDIRNAME))
+ifeq ($(FAIL_ON_CHANGE),0)
+REGR_FAILURE=(echo "$(THIS):57: Warning: regression on generated code (ignored)" || true)
+else
+REGR_FAILURE=(	echo "$(THIS):59: Error: regression on generated AISC code"; \
+		rm $(SERVER) $(CLIENT); \
+		false) 
+endif
+endif
+
+# ----------------------------------------
+
+all: realall
+
+realall: $(CLIENT) $(SERVER) Makefile $(THIS)
+ifeq ($(COMPARE_WITH_OTHER_ARB),)
+	@echo "AISC regression tests are disabled ($(LINK_TO_OTHER_ARB) not found from AISC_COM/$(THIS))"
+else
+ ifeq ($(THIS__COMDIR),$(OTHER_COMDIR))
+	@echo "$(THIS):63: Warning: Skipping AISC regression tests (test versus self always ok)"
+ else
+	@echo "Running AISC regression tests (versus $(COMPARE_WITH_OTHER_ARB))"
+#       compare generated code using ../../SOURCE_TOOLS/check_dirs_equal.sh
+	@( \
+		../SOURCE_TOOLS/check_dirs_equal.sh $(THIS__COMDIR)/GENC $(OTHER_COMDIR)/GENC '*.c' && \
+		../SOURCE_TOOLS/check_dirs_equal.sh $(THIS__COMDIR)/GENH $(OTHER_COMDIR)/GENH '*.h' && \
+		../SOURCE_TOOLS/check_dirs_equal.sh $(THIS__COMDIR)/DUMP $(OTHER_COMDIR)/DUMP '*.dump' && \
+		echo "No change in generated code" \
+	) || $(REGR_FAILURE)
+ endif
+endif
 
 pregenerate: $(GEN_INCLUDES) $(GEN_SERVER_PROTO) $(GEN_SERVER_OBJECTS:.o=.c) 
 
@@ -64,10 +112,10 @@ $(DUMPDIR):
 	mkdir -p $(DUMPDIR)
 
 GENH/%.h: AISC/%.pa AISC/*.pa $(MAIN_SOURCE) $(INCLUDE_INCLUDES) $(AISC) $(DUMPDIR) 
-	$(AISC) $< $(MAIN_SOURCE) $@
+	$(RUN_AISC) $< $(MAIN_SOURCE) $@
 
 GENC/%.c: AISC/%.pa AISC/*.pa $(MAIN_SOURCE) $(AISC_SERVER_EXTERN) $(AISC) $(DUMPDIR) $(GEN_SERVER_INCLUDES)
-	$(AISC) $< $(MAIN_SOURCE) $@ $(AISC_SERVER_EXTERN) $(IMPORT_PROTO)
+	$(RUN_AISC) $< $(MAIN_SOURCE) $@ $(AISC_SERVER_EXTERN) $(IMPORT_PROTO)
 
 $(IMPORT_PROTO): GENC/aisc_server.c
 	echo $@
