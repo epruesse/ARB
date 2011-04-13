@@ -1,10 +1,6 @@
 
-# no-strict-aliasing is important - starting with gcc 4.1.1 code doesn't work without!
-# - fixed several type-punning problems.
-# nevertheless unittests (arb_probe + arb_test) fail, but only if compiled with NDEBUG :(
-# 
 # dont warn about unused functions (@@@ fix)
-FORCED_FLAGS=-fno-strict-aliasing -Wno-unused
+FORCED_FLAGS=-Wno-unused
 
 .SUFFIXES: .o .c .h .aisc
 
