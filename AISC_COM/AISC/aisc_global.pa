@@ -135,7 +135,7 @@ EXIT
 #     FUNCTIONS     
 
 FUNCTION print_talking_table,name
-    CALL print_talking_table_casted,$(name),,
+    CALL print_talking_table_casted,$(name),
 RETURN
 
 FUNCTION print_talking_table_casted,name,cast

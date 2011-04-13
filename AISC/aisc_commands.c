@@ -543,7 +543,7 @@ int Interpreter::do_gosub(const char *str) {
                 params = strdup(s);
             }
             else {
-                params = strdup("");
+                params = NULL;
             }
         }
 
@@ -554,15 +554,17 @@ int Interpreter::do_gosub(const char *str) {
         else {
             bool        eval_failed;
             char       *fpara_eval = Expression(data, fun->source, fun->str, false).evaluate(eval_failed);
-            const char *fpara      = fpara_eval;
+
+            const char *fpara  = fpara_eval;
             SKIP_SPACE_LF(fpara);
+            if (!*fpara) fpara = 0;
 
             char       *npara  = 0;
             const char *nfpara = 0;
 
             int err = eval_failed;
-            for (char *para = params; !err && *para; para=npara, fpara=nfpara) {
-                if (!*fpara) {
+            for (char *para = params; !err && para; para=npara, fpara=nfpara) {
+                if (!fpara) {
                     printf_error(at(), "Too many Parameters '%s'", para);
                     printf_error(fun, "in call to '%s'", fun_name);
 
@@ -572,8 +574,12 @@ int Interpreter::do_gosub(const char *str) {
                     {
                         char *s;
                         for (s = para; !is_SEP_LF_EOS(*s); s++) ;
-                        if (*s) { npara = s+1; SKIP_SPACE_LF(npara); } else npara = s;
-                        *s = 0;
+                        if (*s) {
+                            *s = 0;
+                            npara = s+1;
+                            SKIP_SPACE_LF(npara);
+                        }
+                        else npara = NULL;
                     }
 
                     char *fpara_name;
@@ -581,35 +587,41 @@ int Interpreter::do_gosub(const char *str) {
                         const char *s;
                         for (s = fpara; !is_SEP_LF_EOS(*s); s++) ;
                         fpara_name = copy_string_part(fpara, s-1);
-                        if (*s) { nfpara = s+1; SKIP_SPACE_LF(nfpara); } else nfpara = s;
+                        if (*s) {
+                            nfpara = s+1;
+                            SKIP_SPACE_LF(nfpara);
+                        }
+                        else nfpara = NULL;
                     }
 
-                    {
-                        const char *s = read_var(para);
+                    char *para_eval = Expression(data, at()->source, para, false).evaluate(eval_failed);
+
+                    if (eval_failed) {
+                        print_error(at(), formatted("Could not evaluate expression '%s' for parameter '%s'", para, fpara_name));
+                    }
+                    else {
+                        const char *s = read_var(fpara_name);
                         if (s) {
-                            printf_error(at(), "duplicated formal parameter '%s'", para);
-                            printf_error(fun, "in call to '%s'", fun_name);
-                            print_error(stack->pc, "which was called from here?");
+                            print_error(fun, formatted("duplicated formal parameter '%s' in definition of function '%s'", fpara_name, fun_name));
                             err = -1;
                         }
                         else {
-                            write_var(fpara_name, para);
+                            write_var(fpara_name, para_eval);
                         }
                     }
+                    free(para_eval);
                     free(fpara_name);
                 }
             }
 
-            if (!err && *fpara) {
+            if (!err && fpara) {
                 printf_error(at(), "Missing parameter '%s'", fpara);
                 printf_error(fun, "in call to '%s'", fun_name);
                 err = -1;
             }
 
-            if (!err) {
-                jump(fun->next);
-                result     = 0;
-            }
+            if (!err) jump(fun->next);
+            result = err;
             free(fpara_eval);
         }
         free(fun_name);
@@ -722,10 +734,13 @@ typedef int (Interpreter::*NoArgFun)();
 typedef int (Interpreter::*ArgFun)(const char *);
 
 enum CallMode {
-    STANDARD_CALL       = 0,
-    EVAL_VAR_DECL     = 1,
-    EVAL_PLAIN          = 2,
-    TERMINATED_ON_ERROR = 4,
+    STANDARD_CALL = 0,
+
+    // bit values:
+    DONT_EVAL           = 1,
+    EVAL_VAR_DECL       = 2,
+    EVAL_PLAIN          = 4,
+    TERMINATED_ON_ERROR = 8,
 };
 
 const int DISPATCH_LIMIT = 5000000; // abort after 5mio dispatches to one command-type (DEBUG only)
@@ -788,12 +803,17 @@ public:
 };
 
 class ArgCommand : public NamedCommand {
-    ArgFun fun;
-    CallMode    emode;
+    ArgFun   fun;
+    CallMode emode;
 
     char *eval(Interpreter& interpret, bool& failed) const {
         int offset = length();
         if (!(emode&EVAL_PLAIN)) offset++;
+
+        if (emode & DONT_EVAL) {
+            failed = false;
+            return strdup(interpret.at()->str+offset);
+        }
 
         Expression expr(interpret.get_data(), interpret.at()->source, interpret.at()->str+offset, false);
         return (emode&EVAL_VAR_DECL)
@@ -845,8 +865,8 @@ void Interpreter::command_table_setup(bool setup) {
         command_table[i++] = new SimpleCmmd("PMEND",    &Interpreter::do_write_maybe_end);
         command_table[i++] = new ArgCommand("PM",       &Interpreter::do_write_maybe);
 
-        command_table[i++] = new ArgCommand("GOSUB",    &Interpreter::do_gosub);
-        command_table[i++] = new ArgCommand("CALL",     &Interpreter::do_gosub);
+        command_table[i++] = new ArgCommand("GOSUB",    &Interpreter::do_gosub,         DONT_EVAL);
+        command_table[i++] = new ArgCommand("CALL",     &Interpreter::do_gosub,         DONT_EVAL);
         command_table[i++] = new ArgCommand("GOTO",     &Interpreter::do_goto);
         command_table[i++] = new SimpleCmmd("RETURN",   &Interpreter::do_return);
         command_table[i++] = new SimpleCmmd("PUSH",     &Interpreter::do_push);
