@@ -296,6 +296,7 @@ while (not $in->eof) {
     else {                      # no location found
       if ($content =~ /^TRANSLATE: / or
           $content =~ /^Reading syms from/ or
+          $content =~ /unhandled CFI instruction/ or # happens since gcc 5.4.2
           $content =~ /object doesn.t have a/) {
         $ignore_curr_line = 1;
       }
