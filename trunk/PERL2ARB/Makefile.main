@@ -43,7 +43,15 @@ export MYEXTLIB PASTHRU_INC PASTHRU_DEFINE dflags
 
 # ------------------------------------------------------------
 
-all: perlmain.c $(TARGETS)
+ifeq ($(AUTODEPENDS),1)
+all:
+	test -f .depends || $(MAKETHIS) "AUTODEPENDS=0" .depends
+	$(MAKETHIS) "AUTODEPENDS=2" all
+else
+all: realall
+endif
+
+realall: perlmain.c $(TARGETS)
 
 perlmain.c: perlmain_source.c
 	cp $< $@
@@ -118,7 +126,7 @@ clean:
 depends.stamp:
 	touch $@
 
-ifeq ($(AUTODEPENDS),1) 
+ifeq ($(AUTODEPENDS),2) 
 include .depends
 endif
 

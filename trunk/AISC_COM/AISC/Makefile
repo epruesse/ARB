@@ -64,7 +64,15 @@ endif
 
 # ----------------------------------------
 
-all: realall
+ifeq ($(AUTODEPENDS),1)
+all:
+	test -f .depends || $(MAKETHIS) "AUTODEPENDS=0" .depends
+	$(MAKETHIS) "AUTODEPENDS=2" all
+else
+all: directories
+	$(MAKETHIS) realall
+
+endif
 
 realall: $(CLIENT) $(SERVER) Makefile $(THIS)
 ifeq ($(COMPARE_WITH_OTHER_ARB),)
@@ -84,12 +92,15 @@ else
  endif
 endif
 
-pregenerate: $(GEN_INCLUDES) $(GEN_SERVER_PROTO) $(GEN_SERVER_OBJECTS:.o=.c) 
+pregenerate: $(GEN_INCLUDES) $(GEN_SERVER_PROTO) $(GEN_SERVER_OBJECTS:.o=.c)
 
-$(SERVER):	$(SERVER_OBJECTS) $(GEN_SERVER_OBJECTS) $(PRIVATE_SERVER_OBJECTS)
+directories:
+	@mkdir -p GENH GENC O DUMP
+
+$(SERVER): $(SERVER_OBJECTS) $(GEN_SERVER_OBJECTS) $(PRIVATE_SERVER_OBJECTS)
 	$(LINK_STATIC_LIB) $@ $^
 
-$(CLIENT):	$(CLIENT_OBJECTS) $(GEN_CLIENT_OBJECTS)
+$(CLIENT): $(CLIENT_OBJECTS) $(GEN_CLIENT_OBJECTS)
 	$(LINK_STATIC_LIB) $@ $^
 
 $(GEN_SERVER_OBJECTS) $(PRIVATE_SERVER_OBJECTS): \
@@ -133,16 +144,17 @@ $(GEN_SERVER_PROTO): $(S_GEN_SERVER_PROTO) $(AISC_MKPT)
 	$(AISC_MKPT) -C $(S_GEN_SERVER_PROTO) >$@
 
 clean:
-	rm -f *.[ao]
-	rm -f */*.[ao]
-	rm -f GENH/*
-	rm -f GENC/*
-	rm -f .depends
+	@rm -f *.[ao] */*.[ao]
+	@rm -rf GENH GENC DUMP O
+	@rm -f .depends
 
 .depends:
-	$(MAKEDEPEND) C/*.c GENC/*.c -I GENH -I C -f- -w1 | grep -v ' /usr' | sed -e 's/^C/O/ig' > .depends_new
+	$(MAKEDEPEND) $(MAKEDEPENDFLAGS) C/*.c GENC/*.c -I GENH -I C -f- -w1 2>/dev/null \
+		| grep -v ' /usr' \
+		| sed -e 's/^C/O/ig' \
+		> .depends_new
 	$(ARBHOME)/SOURCE_TOOLS/mv_if_diff .depends_new .depends
 
-ifeq ($(AUTODEPENDS),1)
+ifeq ($(AUTODEPENDS),2)
 include .depends
 endif
