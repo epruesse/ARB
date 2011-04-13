@@ -352,6 +352,7 @@ int Interpreter::do_makeconst(const char *str) {
         else {
             var.write_protect();
         }
+        free(ident);
     }
 
     return err;
