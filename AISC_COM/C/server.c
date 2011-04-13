@@ -476,6 +476,11 @@ static void test_test_address_valid() {
 }
 #endif /* DEVEL_RALF */
 
+union double_xfer {
+    double as_double;
+    int    as_int[2];
+};
+
 static long aisc_talking_get(long *in_buf, int size, long *out_buf, int max_size) {
     long in_pos, out_pos;
     long code, object_type, attribute, type;
@@ -486,11 +491,8 @@ static long aisc_talking_get(long *in_buf, int size, long *out_buf, int max_size
 
     long len;
     long erg = 0;
-    
-    union {
-        double as_double;
-        int    as_int[2];
-    } derg;
+
+    double_xfer derg;
     COMPILE_ASSERT(sizeof(derg.as_double) <= sizeof(derg.as_int));
 
     long object;
@@ -707,15 +709,13 @@ static long aisc_talking_sets(long *in_buf, int size, long *out_buf, long *objec
                 break;
             case AISC_TYPE_DOUBLE:
                 {
-                    double dummy;
-                    int *ptr;
-                    ptr = (int*)&dummy;
-                    *ptr++ = (int)in_buf[in_pos++];
-                    *ptr++ = (int)in_buf[in_pos++];
+                    double_xfer derg;
+                    derg.as_int[0] = in_buf[in_pos++];
+                    derg.as_int[1] = in_buf[in_pos++];
+                    
+                    AISC_DUMP(aisc_talking_sets, double, derg.as_double);
 
-                    AISC_DUMP(aisc_talking_sets, double, dummy);
-
-                    function((long)object, dummy);
+                    function((long)object, derg.as_double);
                     break;
                 }
             case AISC_TYPE_STRING:

@@ -71,7 +71,7 @@ static void GDE_slide_awar_int_cb(AW_window *aws, AW_CL cl_awar_name, AW_CL cd_d
 }
 static void GDE_slide_awar_float_cb(AW_window *aws, AW_CL cl_awar_name, AW_CL cd_diff)
 {
-    double   diff    = *(double*)cd_diff;
+    double   diff    = *(double*)(char*)/*avoid aliasing problems*/cd_diff; 
     AW_awar *awar    = aws->get_root()->awar((const char *)cl_awar_name);
     double   new_val = awar->read_float()+diff;
 
