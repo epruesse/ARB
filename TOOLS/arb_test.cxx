@@ -41,7 +41,7 @@ inline GB_ERROR valgrinded_system(const char *cmdline) {
 #define TEST_RUN_TOOL(cmdline)                TEST_ASSERT_NO_ERROR(RUN_TOOL(cmdline))
 #define TEST_RUN_TOOL_NEVER_VALGRIND(cmdline) TEST_ASSERT_NO_ERROR(RUN_TOOL_NEVER_VALGRIND(cmdline))
 
-void TEST_ascii_2_bin_2_ascii() {
+void TEST_SLOW_ascii_2_bin_2_ascii() {
     const char *ascii_ORG = "TEST_loadsave_ascii.arb";
     const char *ascii     = "bin2ascii.arb";
     const char *binary    = "ascii2bin.arb";

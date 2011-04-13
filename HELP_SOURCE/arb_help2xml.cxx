@@ -29,7 +29,7 @@ using namespace std;
 #define h2x_assert(bed) arb_assert(bed)
 
 #if defined(DEBUG)
-#define WARN_TODO
+#define WARN_MISSING_HELP
 #endif // DEBUG
 
 
@@ -202,14 +202,14 @@ public:
 };
 
 
-#if defined(WARN_TODO)
+#if defined(WARN_MISSING_HELP)
 void check_TODO(const char *line, const Reader& reader) {
     if (strstr(line, "@@@") != NULL || strstr(line, "TODO") != NULL) {
         string warn = strf("TODO: %s", line);
         add_warning(warn.c_str(), reader.getLineNo());
     }
 }
-#endif // WARN_TODO
+#endif // WARN_MISSING_HELP
 
 //  ---------------------------
 //      class NamedSection
@@ -357,9 +357,9 @@ static void parseSection(Section& sec, const char *line, int indentation, Reader
                 break;
             }
 
-#if defined(WARN_TODO)
+#if defined(WARN_MISSING_HELP)
             check_TODO(line, reader);
-#endif // WARN_TODO
+#endif // WARN_MISSING_HELP
         
             string Line = line;
             const char *first = firstChar(line);
@@ -423,9 +423,9 @@ void Helpfile::readHelp(istream& in, const string& filename) {
                 continue;
             }
 
-#if defined(WARN_TODO)
+#if defined(WARN_MISSING_HELP)
             check_TODO(line, read);
-#endif // WARN_TODO
+#endif // WARN_MISSING_HELP
 
             string      keyword;
             const char *rest = extractKeyword(line, keyword);
