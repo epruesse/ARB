@@ -92,7 +92,7 @@ char *Expression::evalPart(int start, int end, int& resLen) {
     return res;
 }
 
-bool Expression::evalRest(int offset) {
+bool Expression::evalRest(const int offset) {
     // evaluate content of 'ebuffer' starting at offset
     // return true on success
     // may reallocate ebuffer - so old pointers might get invalidated
@@ -174,7 +174,24 @@ bool Expression::evalRest(int offset) {
 
     char *ld = strstr(ebuffer+offset, "$(");
     if (ld) {
-        return evalRest(ld-ebuffer);
+        int next_offset = ld-ebuffer;
+        if (next_offset == offset) { // infinite loop in evaluation
+            static int deadlock_offset;
+            static int deadlock_count;
+
+            if (next_offset == deadlock_offset) {
+                ++deadlock_count;
+                if (deadlock_count > 50) { // more than 50 evals at same offset in expression
+                    printf_error(&loc, "detected (endless?) recursive evaluation in expression '%s'", ld);
+                    return false;
+                }
+            }
+            else {
+                deadlock_offset = next_offset;
+                deadlock_count  = 1;
+            }
+        }
+        return evalRest(next_offset);
     }
 
     return true;
