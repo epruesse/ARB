@@ -5,7 +5,6 @@
 
 #include <PT_com.h>
 #include <arbdb.h>
-#include "pt_manualprotos.h"
 
 #define FILESTRUCTVERSION 0x0105 /* version<<8 and revision */
 

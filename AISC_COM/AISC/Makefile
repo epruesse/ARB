@@ -2,9 +2,6 @@ THIS=AISC/Makefile
 MAKETHIS=$(MAKE) -f $(THIS)
 #MAKETHIS=$(MAKE) -d -f $(THIS)
 
-# dont warn about unused functions (@@@ fix)
-FORCED_FLAGS=-Wno-unused
-
 .SUFFIXES: .o .c .h .aisc
 
 #where to find the creator files
@@ -111,25 +108,25 @@ $(GEN_SERVER_OBJECTS) $(PRIVATE_SERVER_OBJECTS): \
 					$(GEN_SERVER_EXTERN_PROTO) $(IMPORT_PROTO) \
 					$(GEN_SERVER_OBJECTS:.o=.c) \
 					$(PRIVATE_SERVER_OBJECTS:.o=.c)
-	$(COMPILER) $(FORCED_FLAGS) -c -o $@ $(@:.o=.c) -IGENH -I. -IC -DAISC_SAVE_$(AISC_SAVE)
+	$(COMPILER) -c -o $@ $(@:.o=.c) -IGENH -I. -IC -DAISC_SAVE_$(AISC_SAVE)
 
 $(GEN_CLIENT_OBJECTS): $(GEN_INCLUDES) $(GEN_CLIENT_OBJECTS:.o=.c)
-	$(CLIENTCOMPILER) $(FORCED_FLAGS) -c -o $@ $(@:.o=.c) -IGENH -I. -IC
+	$(CLIENTCOMPILER) -c -o $@ $(@:.o=.c) -IGENH -I. -IC
 
 O/%.o: C/%.c $(GEN_INCLUDES) $(CLIENT_INCLUDES) C/server.h
-	$(COMPILER) $(FORCED_FLAGS) -c -o $@ $< -IGENH -I. -IC
+	$(COMPILER) -c -o $@ $< -IGENH -I. -IC
 
 $(CLIENT_OBJECTS):	$(CLIENT_OBJECTS:O/%.o=C/%.c) $(GEN_INCLUDES) $(CLIENT_INCLUDES)
-	$(CLIENTCOMPILER) $(FORCED_FLAGS) -c -o $@ C/$(@F:.o=.c) -IGENH -I. -IC
+	$(CLIENTCOMPILER) -c -o $@ C/$(@F:.o=.c) -IGENH -I. -IC
 
 $(DUMPDIR): 
 	mkdir -p $(DUMPDIR)
 
 $(GLOBALS_AISC).tmp: 
-	echo "AISC_SAVE $(AISC_SAVE);" > $@
+	@echo "AISC_SAVE $(AISC_SAVE);" > $@
 
 $(GLOBALS_AISC): $(GLOBALS_AISC).tmp
-	mv_if_diff $(GLOBALS_AISC).tmp $(GLOBALS_AISC)
+	$(ARBHOME)/SOURCE_TOOLS/mv_if_diff $(GLOBALS_AISC).tmp $(GLOBALS_AISC)
 
 GENH/%.h: AISC/%.pa $(AISC_DEPENDS) $(INCLUDE_INCLUDES) 
 	$(RUN_AISC) $< $(MAIN_SOURCE) $@
@@ -140,17 +137,17 @@ GENC/%.c: AISC/%.pa $(AISC_DEPENDS) $(AISC_SERVER_EXTERN) $(GEN_SERVER_INCLUDES)
 $(IMPORT_PROTO): GENC/aisc_server.c
 	echo $@
 
-$(AISC_SERVER_EXTERN): $(AISC_EXTERNALS) $(AISC_MKPT) 
+$(AISC_SERVER_EXTERN): $(AISC_EXTERNALS) $(AISC_MKPT) $(THIS) 
 	rm -f $(AISC_SERVER_EXTERN)
 	$(AISC_MKPT) -a $(AISC_EXTERNALS) >$@
 
-$(GEN_SERVER_EXTERN_PROTO): $(AISC_EXTERNALS) $(AISC_MKPT)
+$(GEN_SERVER_EXTERN_PROTO): $(AISC_EXTERNALS) $(AISC_MKPT) $(THIS)
 	rm -f $(GEN_SERVER_EXTERN_PROTO)
-	$(AISC_MKPT) -C $(AISC_EXTERNALS) >$@
+	$(AISC_MKPT) -z -A -w $(subst GENH/,,$@) $(AISC_EXTERNALS) >$@
 
-$(GEN_SERVER_PROTO): $(S_GEN_SERVER_PROTO) $(AISC_MKPT)
+$(GEN_SERVER_PROTO): $(S_GEN_SERVER_PROTO) $(AISC_MKPT) $(THIS)
 	rm -f $@
-	$(AISC_MKPT) -C $(S_GEN_SERVER_PROTO) >$@
+	$(AISC_MKPT) -z -A -w $(subst GENH/,,$@) $(S_GEN_SERVER_PROTO) >$@
 
 clean:
 	@rm -f *.[ao] */*.[ao]

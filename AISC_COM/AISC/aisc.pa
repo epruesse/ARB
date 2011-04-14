@@ -67,19 +67,6 @@ FUNCTION datatypes
     ENDFOR
     --
 
-    # ***ANOTHEROLIHACK** 
-    # WARNING: be sure not to introduce any virtual functions
-    #          in dll<USERTYPE> and dllheader_ext (or any base-class)
-    #
-    # 'mh' has to be the first element of dll<USERTYPE>, which produces
-    # the same bit layout as deriving from dll_header.
-    #
-    # Deriving dll<> from dll_header is no option, since the member is needed
-    # for automatic expansion of dll-accessors.
-    #
-    # Deriving dllheader_ext from dll<dllheader_ext> would work, but need
-    # several changes in aisc_link() etc.
-
     P template <typename USERTYPE>
     P struct dll {
     INDENT +1
@@ -96,13 +83,8 @@ FUNCTION datatypes
         P dllheader_ext$| *first; 
     INDENT -1
     P };
-    P // pseudo-base-class of dll<USERTYPE> (bit-equal atm)
-    P struct dllheader_ext : public dll_header { // ***ANOTHEROLIHACK**
-    INDENT +1
-        P dllheader_ext$| *previous; 
-        P dllheader_ext$| *next;
-    INDENT -1
-    P };
+    P // pseudo-base-class of dll<USERTYPE> (bit-equal)
+    P struct dllheader_ext : dll<dllheader_ext> {}; // pseudo-base-class of dll<USERTYPE> (bit-equal)
     --
 
     P // forward decl user datatypes

@@ -9,15 +9,7 @@
 //#include "probe_tree.hxx"
 #include "pt_prototypes.h"
 
-//  ------------------------------------------------------
-//      extern "C" int PT_find_exProb(PT_exProb *pep)
-//  ------------------------------------------------------
-
-/* called by AISC */
-
-/* /// "PT_find_exProb()" */
-extern "C" int PT_find_exProb(PT_exProb *pep)
-{
+int PT_find_exProb(PT_exProb *pep, int) {
   struct PTPanGlobal *pg = PTPanGlobalPtr;
   struct PTPanPartition *pp;
   struct TreeNode *tn;

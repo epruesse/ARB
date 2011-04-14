@@ -55,7 +55,7 @@ ARB_ERROR pt_init_main_struct(PT_main *, const char *filename) { // __ATTR__USER
 
 PT_main *aisc_main; // muss so heissen
 
-extern "C" int server_shutdown(PT_main *pm, aisc_string passwd) {
+int server_shutdown(PT_main *pm, aisc_string passwd) {
     // password check
     pm = pm;
     if (strcmp(passwd, "47@#34543df43%&3667gh")) return 1;
@@ -70,7 +70,7 @@ extern "C" int server_shutdown(PT_main *pm, aisc_string passwd) {
     return 0;
 }
 
-extern "C" int broadcast(PT_main *main, int) {
+int broadcast(PT_main *main, int) {
     aisc_broadcast(psg.com_so, main->m_type, main->m_text);
     return 0;
 }
@@ -399,7 +399,7 @@ STATIC_ATTRIBUTED(__ATTR__USERESULT, ARB_ERROR run_command(const char *exename, 
             }
         }
         else {
-            psg.link = (aisc_com *) aisc_open(socket_name, &psg.main, AISC_MAGIC_NUMBER);
+            psg.link = aisc_open(socket_name, &psg.main, AISC_MAGIC_NUMBER);
 
             bool running = psg.link;
             bool kill    = false;

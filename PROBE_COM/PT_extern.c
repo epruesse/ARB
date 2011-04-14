@@ -24,24 +24,16 @@ int init_bond_matrix(PT_pdc *THIS) {
     return 0;
 }
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-    void pt_destroy_locs(PT_local *THIS) {
-        destroy_PT_local(THIS);
-    }
-
-#ifdef __cplusplus
+void pt_destroy_locs(PT_local *THIS) {
+    destroy_PT_local(THIS);
 }
-#endif
 
 int pt_init_socket(PT_local *THIS) {
-    return aisc_add_destroy_callback((aisc_callback_func)pt_destroy_locs, (long)THIS);
+    aisc_add_destroy_callback((aisc_destroy_callback)pt_destroy_locs, (long)THIS);
+    return 0;
 }
 
-void  pt_destroy_socket(PT_local *THIS) {
-    THIS = THIS;
+void pt_destroy_socket(PT_local *) {
     aisc_remove_destroy_callback();
 }
 
