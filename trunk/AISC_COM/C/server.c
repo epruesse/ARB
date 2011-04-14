@@ -56,11 +56,11 @@ extern "C" {
 #endif
 
     struct Socinf {
-        Socinf             *next;
-        int                 socket;
-        aisc_callback_func  destroy_callback;
-        long                destroy_clientdata;
-        int                 lasttime;
+        Socinf                *next;
+        int                    socket;
+        aisc_destroy_callback  destroy_callback;
+        long                   destroy_clientdata;
+        int                    lasttime;
     };
 
 #ifdef __cplusplus
@@ -185,7 +185,7 @@ static const char *test_address_valid(void *address, long key)
     return result;
 }
 
-static void aisc_server_sigsegv(int sig) {
+static void aisc_server_sigsegv(int /*sig*/) {
     sigsegv_occurred = true;
 
     if (catch_sigsegv) {
@@ -328,7 +328,6 @@ static const char *aisc_get_m_id(const char *path, char **m_name, int *id) {
 
 
 static const char *aisc_open_socket(const char *path, int delay, int do_connect, int *psocket, char **unix_name) {
-    char            buffer[128];
     struct in_addr  addr;       /* union -> u_long  */
     struct hostent *he;
     const char     *err;
@@ -487,25 +486,6 @@ static int aisc_s_send_bytes_queue(int socket) {
     return 0;
 }
 
-#if defined(DEVEL_RALF)
-static void test_test_address_valid() {
-    // code to test if test_address_valid() works
-#if 0
-    /* test test_address_valid with illegal memory */
-    aisc_server_error = test_address_valid((void*)7, 13);
-    printf("aisc_server_error='%s'\n", aisc_server_error);
-#endif
-#if 0
-    {
-        char mem[]        = "some_object";
-        /* test test_address_valid with illegal obj key */
-        aisc_server_error = test_address_valid((void*)mem, 13);
-        printf("aisc_server_error='%s'\n", aisc_server_error);
-    }
-#endif
-}
-#endif /* DEVEL_RALF */
-
 union double_xfer {
     double as_double;
     int    as_int[2];
@@ -542,10 +522,6 @@ static long aisc_talking_get(long *in_buf, int size, long *out_buf, int max_size
         aisc_server_error = test_address_valid((void *)object, object_type);
     }
     object_type = object_type >> (16);
-
-#if defined(DEVEL_RALF) && 0
-    test_test_address_valid();
-#endif /* DEVEL_RALF */
 
     AISC_DUMP_SEP();
     AISC_DUMP(aisc_talking_get, int, object_type);
@@ -1224,39 +1200,6 @@ int aisc_broadcast(Hs_struct *hs, int message_type, const char *message)
     return 0;
 }
 
-static int aisc_private_message(int socket, int message_type, char *message) {
-    int   len;
-    int   size;
-    long *out_buf;
-
-    len = 1;
-
-    if (!message) size = 0;
-    else size          = strlen(message);
-
-    out_buf = (long *)malloc(size+64);
-    if (!message) {
-        out_buf[3] = 0;
-        len += 1;
-    }
-    else {
-        sprintf((char *) (out_buf+3), "%s", message);
-        len += (size + 1) / sizeof(long) + 1;
-    }
-    out_buf[0] = len;
-    out_buf[1] = AISC_CCOM_MESSAGE;
-    out_buf[2] = message_type;
-
-    if (aisc_s_write(socket, (char *)out_buf, (len + 2) * sizeof(long))) {
-        aisc_server_error = "Pipe broken";
-        return 0;
-    }
-    free(out_buf);
-    return 0;
-}
-
-
-
 int aisc_talking_count;
 
 #ifdef __cplusplus
@@ -1479,11 +1422,7 @@ void aisc_server_shutdown_and_exit(Hs_struct *hs, int exitcode) {
 /*      special functions      */
 
 
-static int aisc_get_key(int *obj) {
-    return *obj;
-}
-
-extern "C" int aisc_add_destroy_callback(aisc_callback_func callback, long clientdata) {        /* call from server function */
+int aisc_add_destroy_callback(aisc_destroy_callback callback, long clientdata) {        /* call from server function */
     Socinf    *si;
     int        socket = aisc_server_con;
     Hs_struct *hs     = aisc_server_hs;
@@ -1491,7 +1430,13 @@ extern "C" int aisc_add_destroy_callback(aisc_callback_func callback, long clien
         return socket;
     for (si = hs->soci; si; si = si->next) {
         if (si->socket == socket) {
-            si->destroy_callback = callback;
+            if (si->destroy_callback) {
+                fputs("Error: destroy_callback already bound (did you open two connections in client?)\n", stderr);
+                fputs("Note: calling bound and installing new destroy_callback\n", stderr);
+                si->destroy_callback(si->destroy_clientdata);
+            }
+
+            si->destroy_callback   = callback;
             si->destroy_clientdata = clientdata;
         }
     }

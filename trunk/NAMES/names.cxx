@@ -619,9 +619,8 @@ NameInformation::~NameInformation() {
 // --------------------------------------------------------------------------------
 // AISC functions
 
-extern "C" int del_short(AN_local *locs)
-/* forget about a short name */
-{
+int del_short(AN_local *locs) {
+    // forget about a short name
     NameInformation  info(locs);
     int              removed   = 0;
     AN_shorts       *an_shorts = lookup_an_shorts(aisc_main, info.get_id());
@@ -636,9 +635,8 @@ extern "C" int del_short(AN_local *locs)
 
 static GB_HASH *nameModHash = 0; // key = default name; value = max. counter tested
 
-extern "C" aisc_string get_short(AN_local *locs)
-/* get the short name from the previously set names */
-{
+aisc_string get_short(AN_local *locs) {
+    // get the short name from the previously set names
     static char *shrt = 0;
 
     freenull(shrt);
@@ -832,7 +830,7 @@ extern "C" aisc_string get_short(AN_local *locs)
     return shrt;
 }
 
-extern "C" int server_save(AN_main *main, int) {
+int server_save(AN_main *main, int) {
     if (main->touched) {
         int server_date = GB_time_of_file(main->server_file);
         if (server_date>main->server_filedate) {
@@ -849,10 +847,15 @@ extern "C" int server_save(AN_main *main, int) {
             }
             else {
                 save_AN_main(main, file);
-                if (fclose(file) != 0) {
+                if (fclose(file) == 0) {
                     GB_ERROR mv_error = GB_rename_file(sec_name, main->server_file);
                     if (mv_error) GB_warning(mv_error);
                     else main->touched = 0;
+                }
+                else {
+                    GB_ERROR save_error = GB_IO_error("saving", sec_name);
+                    fprintf(stderr, "Error: %s\n", save_error);
+                    unlink(sec_name);
                 }
             }
             free(sec_name);
@@ -1129,7 +1132,7 @@ int names_server_save() {
     return 0;
 }
 
-extern "C" int server_shutdown(AN_main *pm, aisc_string passwd) {
+int server_shutdown(AN_main *pm, aisc_string passwd) {
     // password check
     if (strcmp(passwd, "ldfiojkherjkh")) return 1;
     printf("\narb_name_server: I got the shutdown message.\n");
@@ -1194,7 +1197,7 @@ int main(int argc, char **argv)
         name = strdup(cname);
     }
 
-    AN_global.cl_link = (aisc_com *)aisc_open(name, (long *)&AN_global.cl_main, AISC_MAGIC_NUMBER);
+    AN_global.cl_link = aisc_open(name, &AN_global.cl_main, AISC_MAGIC_NUMBER);
 
     if (AN_global.cl_link) {
         if (!strcmp(argv[1], "-look")) {

@@ -256,7 +256,7 @@ inline char hitgroup_idx2char(int idx) {
     return c;
 }
 
-extern "C" char *get_design_info(PT_tprobes  *tprobe)
+char *get_design_info(PT_tprobes  *tprobe)
 {
     char   *buffer = (char *)GB_give_buffer(2000);
     char   *probe  = (char *)GB_give_buffer2(tprobe->seq_len + 10);
@@ -341,7 +341,7 @@ extern "C" char *get_design_info(PT_tprobes  *tprobe)
 #warning fix usage of strlen in get_design_info and add assertion vs buffer overflow
 #endif
 
-extern "C" char *get_design_hinfo(PT_tprobes  *tprobe) {
+char *get_design_hinfo(PT_tprobes  *tprobe) {
     char   *buffer = (char *)GB_give_buffer(2000);
     char   *s      = buffer;
     PT_pdc *pdc;
@@ -1044,7 +1044,7 @@ static void ptnd_build_tprobes(PT_pdc *pdc, int group_count) {
 #endif // DEBUG
 }
 
-extern "C" int PT_start_design(PT_pdc *pdc, int /* dummy */) {
+int PT_start_design(PT_pdc *pdc, int /* dummy */) {
 
     //  IDP probe design
 

@@ -269,7 +269,7 @@ FUNCTION accessors struct,a,c
                         ERROR UNKNOWN REF '$(REF|)' in $(STRUCT).$(TYPE)
                     ENDIF
                     INDENT +1
-                        CALL index_or_return $(index),,
+                        CALL index_or_return $(index),
                         P $(setup)$\
                         IF $(TYPE) = aisc_string
                             P freeset($(access), x);

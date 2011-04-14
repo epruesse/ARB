@@ -280,7 +280,7 @@ GB_ERROR arb_look_and_kill_server(int magic_number, const char *arb_tcp_env) {
     else {
         const char *server = strchr(tcp_id, 0)+1;
 
-        glservercntrl.link = (aisc_com *) aisc_open(tcp_id, &glservercntrl.com, magic_number);
+        glservercntrl.link = aisc_open(tcp_id, &glservercntrl.com, magic_number);
         if (glservercntrl.link) {
             aisc_close(glservercntrl.link);
             glservercntrl.link = 0;

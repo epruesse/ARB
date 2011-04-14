@@ -98,7 +98,7 @@ static bool findNextProbe(POS_TREE *node, char *probe, int restlen, int height) 
     return false;
 }
 
-extern "C" int PT_find_exProb(PT_exProb *pep) {
+int PT_find_exProb(PT_exProb *pep, int) {
     POS_TREE      *pt      = psg.pt; // start search at root
     GBS_strstruct *gbs_str = GBS_stropen(pep->numget*(pep->plength+1)+1);
     bool           first   = true;

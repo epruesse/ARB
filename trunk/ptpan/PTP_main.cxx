@@ -283,8 +283,7 @@ struct PTPanGlobal *PTPanGlobalPtr = NULL;
 
 PT_main *aisc_main; /* muss so heissen */
 
-extern "C" int server_shutdown(PT_main *, aisc_string passwd)
-{
+int server_shutdown(PT_main *, aisc_string passwd) {
   struct PTPanGlobal *pg = PTPanGlobalPtr;
 
   printf("EXTERN: server_shutdown\n");
@@ -381,7 +380,7 @@ int main(int argc, char *argv[])
   {
     aisc_com *ptlink;
     T_PT_MAIN ptmain;
-    ptlink = (aisc_com *) aisc_open(pg->pg_DBName, &ptmain, AISC_MAGIC_NUMBER);
+    ptlink = aisc_open(pg->pg_DBName, &ptmain, AISC_MAGIC_NUMBER);
     if(ptlink)
     {
       if(!strcasecmp(commandflag, "-look"))

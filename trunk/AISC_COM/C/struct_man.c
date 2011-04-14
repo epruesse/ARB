@@ -138,100 +138,99 @@ long aisc_read_hash(aisc_hash_node **table, const char *key) {
 /* ---------------------- */
 /*      link control      */
 
-const char *aisc_link(dllpublic_ext * parent, dllheader_ext * mh) {
-    if (!mh) {
+const char *aisc_link(dllpublic_ext *father, dllheader_ext *object) {
+    if (!object) {
         CORE;
         return "Object is (NULL)";
     }
-    if (mh->parent) {
+    if (object->mh.parent) {
         CORE;
         return "Object already linked";
     }
-    if (!parent) {
+    if (!father) {
         CORE;
         return "Parent is (NULL)";
     }
-    if (parent->key != mh->key) {
+    if (father->key != object->mh.key) {
         CORE;
         return "Parent key doesn't match Object key";
     }
-    if (mh->ident) {
-        if (strlen(mh->ident) <= 0) {
+    if (object->mh.ident) {
+        if (strlen(object->mh.ident) <= 0) {
             CORE;
             return "Too short ident";
         }
-        if (parent->hash) {
-            if (aisc_read_hash((aisc_hash_node **)parent->hash, mh->ident)) {
+        if (father->hash) {
+            if (aisc_read_hash((aisc_hash_node **)father->hash, object->mh.ident)) {
                 CORE;
                 return "Object already in list";
             }
             else {
-                aisc_insert_hash((aisc_hash_node **)parent->hash, mh->ident, (long)mh);
+                aisc_insert_hash((aisc_hash_node **)father->hash, object->mh.ident, (long)object);
             }
         }
         else {
-            parent->hash = (long)aisc_init_hash(HASH_SIZE);
-            aisc_insert_hash((aisc_hash_node **)parent->hash, mh->ident, (long)mh);
+            father->hash = (long)aisc_init_hash(HASH_SIZE);
+            aisc_insert_hash((aisc_hash_node **)father->hash, object->mh.ident, (long)object);
         }
     }
-    mh->next = mh->previous = NULL;
-    if (!parent->first) {
-        parent->cnt = 1;
-        parent->first = mh;
-        parent->last = mh;
+    object->next = object->previous = NULL;
+    if (!father->first) {
+        father->cnt   = 1;
+        father->first = object;
+        father->last  = object;
     }
     else {
-        parent->cnt++;
-        mh->previous = parent->last;
-        parent->last->next = mh;
-        parent->last = mh;
+        father->cnt++;
+        object->previous   = father->last;
+        father->last->next = object;
+        father->last       = object;
     }
-    mh->parent = parent;
+    object->mh.parent = father;
     return 0;
 }
 
 
 
-const char *aisc_unlink(dllheader_ext * mh)
-{
-    dllpublic_ext        *parent;
+const char *aisc_unlink(dllheader_ext *object) {
+    dllpublic_ext *father = (dllpublic_ext *)object->mh.parent;
 
-    if (!(parent = (dllpublic_ext *)mh->parent)) {
+    if (!father) {
         CORE;
         return "Object not linked";
     }
-    if (parent->hash) {
-        aisc_free_key((aisc_hash_node **)parent->hash, mh->ident);
+    if (father->hash) {
+        aisc_free_key((aisc_hash_node **)father->hash, object->mh.ident);
     }
-    if (parent->cnt <= 0) {
+    if (father->cnt <= 0) {
         CORE;
         return "Parent count is 0";
     }
-    if (mh->previous) {
-        if (mh->previous->next != mh) {
+    if (object->previous) {
+        if (object->previous->next != object) {
             CORE;
             return "Fatal Error: Object is a copy, not original";
         }
-        mh->previous->next = mh->next;
+        object->previous->next = object->next;
     }
     else {
-        parent->first = mh->next;
+        father->first = object->next;
     }
-    if (mh->next) {
-        mh->next->previous = mh->previous;
+    if (object->next) {
+        object->next->previous = object->previous;
     }
     else {
-        parent->last = mh->previous;
+        father->last = object->previous;
     }
-    mh->parent = NULL;
-    mh->previous = NULL;
-    mh->next = NULL;
+    object->mh.parent = NULL;
+    object->previous  = NULL;
+    object->next      = NULL;
 
-    parent->cnt--;
-    if (! parent->cnt) {
-        if (parent->hash) {
-            aisc_free_hash((aisc_hash_node **)parent->hash);
-            parent->hash = 0;
+    father->cnt--;
+    if (!father->cnt) {
+        if (father->hash) {
+            aisc_free_hash((aisc_hash_node **)father->hash);
+            father->hash = 0;
         }
     }
     return 0;

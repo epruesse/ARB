@@ -249,7 +249,7 @@ inline void complement_sequence(char *seq, int len) {
     for (int i = 0; i<len; i++) seq[i] = complement[int(seq[i])];
 }
 
-extern "C" int find_family(PT_family *ffinder, bytestring *species) {
+int find_family(PT_family *ffinder, bytestring *species) {
     /*! make sorted list of family members of species */
 
     int probe_len   = ffinder->pr_len;

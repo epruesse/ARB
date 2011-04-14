@@ -1470,7 +1470,7 @@ STATIC_ATTRIBUTED(__ATTR__NORETURN, void Usage()) {
           "\n"
           "\n   -P               promote /*AISC_MKPT_PROMOTE:forHeader*/ to header"
           "\n"
-          "\n   -w               add standard include wrapper"
+          "\n   -w gen.h         add standard include wrapper (needs name of generated header)"
           "\n"
           "\n   -c \"text\"      add text as comment into header"
           "\n"
