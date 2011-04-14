@@ -28,7 +28,11 @@ extern "C" {
 /* server.c */
 
 #include <aisc_func_types.h>
+#ifndef _STDIO_H
+#include <stdio.h>
+#endif
 
+void aisc_server_errorf P_((const char *templat, ...)) __ATTR__FORMAT(1);
 const char *aisc_get_object_names P_((long i));
 Hs_struct *open_aisc_server P_((const char *path, int timeout, int fork));
 int aisc_talking_get_index P_((int u, int o));
@@ -39,6 +43,8 @@ void aisc_server_shutdown P_((Hs_struct *hs));
 void aisc_server_shutdown_and_exit P_((Hs_struct *hs, int exitcode)) __ATTR__NORETURN __ATTR__DEPRECATED("cause it hides a call to exit() inside a library");
 extern "C" int aisc_add_destroy_callback P_((aisc_callback_func callback, long clientdata));
 void aisc_remove_destroy_callback P_((void));
+int aisc_server_save_token P_((FILE *fd, const char *buffer, int maxsize));
+int aisc_server_load_token P_((FILE *fd, char *buffer, int maxsize));
 
 #ifdef __cplusplus
 }

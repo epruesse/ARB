@@ -89,7 +89,7 @@ static void ptnd_sort_probes_by(PT_pdc *pdc, int mode)  // mode 0 quality, mode 
     int          i;
 
     if (!pdc->tprobes) return;
-    list_len = get_TPROBE_CNT(pdc->tprobes);
+    list_len = pdc->tprobes->get_count();
     if (list_len <= 1) return;
     my_list = (PT_tprobes **)calloc(sizeof(void *), list_len);
     for (i=0, tprobe = pdc->tprobes;
@@ -569,7 +569,7 @@ static void ptnd_duplicate_probepart(PT_pdc *pdc)
 
     while ((parts = pdc->dparts))
     {
-        aisc_unlink((struct_dllheader_ext*)parts);
+        aisc_unlink((dllheader_ext*)parts);
         aisc_link(&pdc->pparts, parts);
     }
 }
@@ -590,7 +590,7 @@ static void ptnd_sort_parts(PT_pdc *pdc) {
     int             i;
 
     if (!pdc->parts) return;
-    list_len = get_TPROBEPARTS_CNT(pdc->parts);
+    list_len = pdc->parts->get_count();
     if (list_len <= 1) return;
     my_list = (PT_probeparts **)calloc(sizeof(void *), list_len);
     for (i=0,           tprobe = pdc->parts;
@@ -601,7 +601,7 @@ static void ptnd_sort_parts(PT_pdc *pdc) {
     GB_sort((void **)my_list, 0, list_len, ptnd_compare_parts, 0);
 
     for (i=0; i<list_len; i++) {
-        aisc_unlink((struct_dllheader_ext*)my_list[i]);
+        aisc_unlink((dllheader_ext*)my_list[i]);
         aisc_link(&pdc->pparts, my_list[i]);
     }
     free(my_list);

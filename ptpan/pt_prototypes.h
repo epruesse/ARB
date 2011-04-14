@@ -69,7 +69,7 @@ void FreeAllPartitions P_((struct PTPanGlobal *pg));
 void SetARBErrorMsg P_((PT_local *locs, const STRPTR error));
 extern "C" STRPTR virt_name P_((PT_probematch *ml));
 extern "C" STRPTR virt_fullname P_((PT_probematch *ml));
-extern "C" bytestring *PT_unknown_names P_((struct_PT_pdc *pdc));
+extern "C" bytestring *PT_unknown_names P_((PT_pdc *pdc));
 
 /* PTP_family.cxx */
 extern "C" int ff_find_family P_((PT_local *locs, bytestring *species));

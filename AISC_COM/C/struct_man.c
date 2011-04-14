@@ -42,8 +42,7 @@ aisc_hash_node **aisc_init_hash(int size) {
     return tab;
 }
 
-int aisc_hash(char *key, int size)
-{
+int aisc_hash(const char *key, int size) {
     unsigned int i, len, x;
     len = strlen(key);
     x = 0;
@@ -122,8 +121,7 @@ void aisc_insert_hash(aisc_hash_node **table, char *key, long data)
     }
 }
 
-long aisc_read_hash(aisc_hash_node **table, char *key)
-{
+long aisc_read_hash(aisc_hash_node **table, const char *key) {
     long            i, size;
     aisc_hash_node *hn;
 
@@ -267,12 +265,11 @@ int trf_hash(long p)
 static int trf_level = 0;
 static struct trf_struct **trf_sp = 0;
 
-long trf_create(long old, long new_item)
-{
+void trf_create(long old, long new_item) {
     long i;
     struct trf_struct *ts;
     struct trf_dest_struct *tds, *ntds;
-    if (!trf_sp) return 0;
+    if (!trf_sp) return;
     i = trf_hash(old);
     for (ts = trf_sp[i]; ts; ts = ts->next) {
         if (ts->old == old) {
@@ -288,7 +285,7 @@ long trf_create(long old, long new_item)
                     free(tds);
                 }
             }
-            return 0;
+            return;
         }
     }
     ts = (struct trf_struct *)calloc(sizeof(struct trf_struct), 1);
@@ -296,7 +293,6 @@ long trf_create(long old, long new_item)
     trf_sp[i] = ts;
     ts->new_item = new_item;
     ts->old = old;
-    return 0;
 }
 
 void trf_link(long old, long *dest)
@@ -323,17 +319,15 @@ void trf_link(long old, long *dest)
     tds->dest = dest;
 }
 
-int trf_begin()
-{
+void trf_begin() {
     if (trf_level==0) {
         trf_sp = (struct trf_struct **)calloc(sizeof(struct trf_struct *), TRF_HASH_SIZE);
     }
     trf_level ++;
-    return 0;
 }
 
-int trf_commit(int errors)      /* if errors == 1 then print errors and CORE */
-{
+void trf_commit(int errors) {
+    /* if errors == 1 then print errors and CORE */
     int i;
     struct trf_dest_struct *tds, *ntds;
     struct trf_struct *ts, *nts;
@@ -360,7 +354,6 @@ int trf_commit(int errors)      /* if errors == 1 then print errors and CORE */
         free(trf_sp);
         trf_sp = 0;
     }
-    return 0;
 }
 
 /* ------------------------------ */

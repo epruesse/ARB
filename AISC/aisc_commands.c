@@ -38,6 +38,12 @@ void Location::print_internal(const char *msg, const char *msg_type, const char 
 
     if (msg) {
         fputs(msg, stderr);
+        const Data& data = Interpreter::instance->get_data();
+        if (data.get_cursor()) {
+            fputs(" (cursor ", stderr);
+            data.dump_cursor_pos(stderr);
+            fputs(")", stderr);
+        }
         fputc('\n', stderr);
     }
 
@@ -163,6 +169,20 @@ int Interpreter::do_data(const char *str) {
     return 0;
 }
 
+int Interpreter::do_indent(const char *str) {
+    int diff       = atoi(str);
+    int indent     = current_formatter().get_indent();
+    int new_indent = indent+diff;
+
+    if (new_indent<0) {
+        printf_error(at(), "invalid resulting indentation %i", new_indent);
+        return 1;
+    }
+
+    current_formatter().set_indent(new_indent);
+    return 0;
+}
+
 int Interpreter::do_tabstop(const char *str) {
     int ts = atoi(str);
     if ((ts < 1) || (ts > 1024)) {
@@ -170,7 +190,7 @@ int Interpreter::do_tabstop(const char *str) {
         return 1;
     }
 
-    formatter.set_tabstop(ts);
+    current_formatter().set_tabstop(ts);
     return 0;
 }
 
@@ -206,7 +226,7 @@ int Interpreter::do_tab(const char *str) {
                 int val = atoi(s2);
                 if ((val < 0) || (val > 1000)) print_error(at(), "wrong TABVALUE");
                 else {
-                    formatter.set_tab(ts, val);
+                    current_formatter().set_tab(ts, val);
                     return 0;
                 }
             }
@@ -315,6 +335,28 @@ int Interpreter::do_moveto(const char *str) {
     return err;
 }
 
+void var_ref::const_violation() {
+    printf_error(Interpreter::instance->at(),
+                 "Attempt to modify write-protected variable '%s'", e->key);
+}
+
+int Interpreter::do_makeconst(const char *str) {
+    int   err   = 1;
+    char *ident = get_ident(str, at());
+
+    if (ident) {
+        var_ref var = get_local(ident);
+        if (!var) {
+            printf_error(at(), "undefined Ident '%s' in CONST (use CREATE first)", ident);
+        }
+        else {
+            var.write_protect();
+        }
+    }
+
+    return err;
+}
+
 int Interpreter::do_set(const char *str) {
     int   err   = 1;
     char *ident = get_ident(str, at());
@@ -329,8 +371,7 @@ int Interpreter::do_set(const char *str) {
                 ++str;
                 SKIP_SPACE_LF(str);
             }
-            var.write(str);
-            err = 0;
+            err = var.write(str);
         }
         free(ident);
     }
@@ -356,55 +397,67 @@ int Interpreter::do_create(const char *str) {
     return result;
 }
 
-int Interpreter::do_if(char *str) {
-    if (str) { // !str => ELSE
-        char *equ;
-        char *kom;
-        char *la;
-        char *kom2;
+int Interpreter::do_if(const char *str) {
+    int  err       = 0;
+    bool condition = false;
 
-        int op = 0;                                     /* 0=   1~ 2< 3> !+8 */
-        for (equ = str; *equ; equ++) {
-            if (*equ == '=') { op = 0; break; }
-            if (*equ == '~') { op = 1; break; }
-        }
-        la = equ;
-        if (!*la) { // no operator found -> assume condition true, even if empty or undefined
-            return 0;
-        }
+    if (str) { // expression is not undefined
+        const char *cursor     = strpbrk(str, "=~<");
+        if (!cursor) condition = true; // if no operator found -> assume condition true (even if empty)
+        else {
+            char op = *cursor;
+            aisc_assert(cursor>str);
+            bool negate = cursor[-1] == '!';
 
-        aisc_assert(equ>str);
-        if (equ[-1] == '!') op += 8;
+            const char *la = cursor - negate;
+            --la;
+            SKIP_SPACE_LF_BACKWARD(la);
 
-        --la;
-        SKIP_SPACE_LF_BACKWARD(la);
-        *(++la) = 0;
-        equ++;
-        while (equ) {
-            SKIP_SPACE_LF(equ);
-            kom2 = kom = strchr(equ, ',');
-            if (kom) {
-                kom2++;
-                --kom;
-                SKIP_SPACE_LF_BACKWARD(kom);
-                *(++kom) = 0;
+            char *left = copy_string_part(str, la);
+            cursor++;
+
+            char        right_buffer[strlen(cursor)+1];
+            const char *right = right_buffer;
+
+            while (cursor && !condition) {
+                SKIP_SPACE_LF(cursor);
+                const char *kom  = strchr(cursor, ',');
+                const char *next = kom;
+
+                if (kom) {
+                    next++;
+                    --kom;
+                    SKIP_SPACE_LF_BACKWARD(kom);
+
+                    int len    = kom-cursor+1;
+                    memcpy(right_buffer, cursor, len);
+                    right_buffer[len] = 0;
+                }
+                else {
+                    right = cursor;
+                }
+
+                switch (op) {
+                    case '=': condition = strcmp(left, right) == 0; break;
+                    case '~': condition = strstr(left, right) != 0; break;
+                    case '<': condition = atoi(left) < atoi(right); break;
+                    default:
+                        print_error(at(), formatted("Unhandled operator (op='%c') applied to '%s'", op, str));
+                        err = 1;
+                        break;
+                }
+
+                if (err) break;
+                if (negate) condition = !condition;
+                cursor = next;
             }
-            switch (op) {
-                case 0:     if (!strcmp(str, equ)) return 0; break;
-                case 8:     if (strcmp(str, equ)) return 0; break;
-                case 1:     if (strstr(str, equ)) return 0; break;
-                case 9:     if (!strstr(str, equ)) return 0; break;
-                default:
-                    printf_error(at(), "Unhandled operator (op=%i)", op);
-                    return 1;
-            }
-            equ = kom2;
+
+            free(left);
         }
     }
-
-    // condition wrong -> goto else
-    jump(at()->ELSE->next);
-    return 0;
+    
+    if (!err && !condition) jump(at()->ELSE->next);
+    return err;
 }
 
 struct for_data {
@@ -512,7 +565,7 @@ int Interpreter::do_gosub(const char *str) {
                     printf_error(at(), "Too many Parameters '%s'", para);
                     printf_error(fun, "in call to '%s'", fun_name);
 
-                    err = 1;
+                    err = -1;
                 }
                 else {
                     {
@@ -536,7 +589,7 @@ int Interpreter::do_gosub(const char *str) {
                             printf_error(at(), "duplicated formal parameter '%s'", para);
                             printf_error(fun, "in call to '%s'", fun_name);
                             print_error(stack->pc, "which was called from here?");
-                            err = 1;
+                            err = -1;
                         }
                         else {
                             write_var(fpara_name, para);
@@ -549,7 +602,7 @@ int Interpreter::do_gosub(const char *str) {
             if (!err && *fpara) {
                 printf_error(at(), "Missing parameter '%s'", fpara);
                 printf_error(fun, "in call to '%s'", fun_name);
-                err = 1;
+                err = -1;
             }
 
             if (!err) {
@@ -609,9 +662,8 @@ int Interpreter::do_for(const char *str) {
                         printf_error(at(), "Undefined Ident '%s' in FOR (use CREATE first)", ident);
                     }
                     else {
-                        var.write(formatted("%li", fd.forval));
+                        err       = var.write(formatted("%li", fd.forval));
                         fd.forstr = strdup(ident);
-                        err = 0;
                     }
                 }
             }
@@ -653,8 +705,7 @@ int Interpreter::do_next() {
         if (fd.forval < fd.forend) {
             fd.forval++;
             nextpc = pc->FOR->next;
-            get_local(fd.forstr).write(formatted("%li", fd.forval));
-            return 0;
+            return get_local(fd.forstr).write(formatted("%li", fd.forval));
         }
 
     }
@@ -782,11 +833,16 @@ void Interpreter::command_table_setup(bool setup) {
         
         command_table[i++] = new ArgCommand("MOVETO",   &Interpreter::do_moveto,        EVAL_VAR_DECL);
         command_table[i++] = new ArgCommand("SET",      &Interpreter::do_set,           EVAL_VAR_DECL);
+        command_table[i++] = new ArgCommand("CONST",    &Interpreter::do_makeconst,     EVAL_VAR_DECL);
         command_table[i++] = new ArgCommand("CREATE",   &Interpreter::do_create,        EVAL_VAR_DECL);
 
         command_table[i++] = new ArgCommand("PRINT",    &Interpreter::do_write_current, EVAL_PLAIN);
         command_table[i++] = new ArgCommand("P ",       &Interpreter::do_write_current, EVAL_PLAIN);
-        command_table[i++] = new ArgCommand("P\t",      &Interpreter::do_write_current, EVAL_PLAIN);
+        command_table[i++] = new ArgCommand("PP",       &Interpreter::do_write_stdout);
+        command_table[i++] = new SimpleCmmd("--",       &Interpreter::do_newline);
+        command_table[i++] = new SimpleCmmd("PMSTART",  &Interpreter::do_write_maybe_start);
+        command_table[i++] = new SimpleCmmd("PMEND",    &Interpreter::do_write_maybe_end);
+        command_table[i++] = new ArgCommand("PM",       &Interpreter::do_write_maybe);
 
         command_table[i++] = new ArgCommand("GOSUB",    &Interpreter::do_gosub);
         command_table[i++] = new ArgCommand("CALL",     &Interpreter::do_gosub);
@@ -800,9 +856,9 @@ void Interpreter::command_table_setup(bool setup) {
         command_table[i++] = new ArgCommand("CLOSE",    &Interpreter::do_close);
         command_table[i++] = new ArgCommand("OUT",      &Interpreter::do_out,          TERMINATED_ON_ERROR);
 
+        command_table[i++] = new ArgCommand("INDENT",   &Interpreter::do_indent);
         command_table[i++] = new ArgCommand("TABSTOP",  &Interpreter::do_tabstop);
         command_table[i++] = new ArgCommand("TAB",      &Interpreter::do_tab);
-        command_table[i++] = new ArgCommand("PP",       &Interpreter::do_write_stdout);
         command_table[i++] = new SimpleCmmd("EXIT",     &Interpreter::do_exit);
 
         command_table[i++] = new ArgCommand("DATA",     &Interpreter::do_data,         TERMINATED_ON_ERROR);
@@ -842,7 +898,7 @@ int Interpreter::run_program() {
                 bool        eval_failed;
                 char       *val = expr.evaluate(eval_failed);
                 int         err = eval_failed;
-                if (!err) err   = do_if(val); // execute even with val == NULL!
+                if (!err) err = do_if(val);   // execute even with val == NULL!
                 free(val);
                 if  (err) return err;
                 break;

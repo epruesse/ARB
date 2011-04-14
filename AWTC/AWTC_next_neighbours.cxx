@@ -202,26 +202,30 @@ GB_ERROR PT_FamilyFinder::retrieve_family(const char *sequence, FF_complement co
          * first member is big enough
          */
 
-        if (aisc_put(link, PT_LOCS, locs,
-                     LOCS_FF_PROBE_LEN,       long(oligo_len),        // oligo length (12 hardcoded till July 2008)
-                     LOCS_FF_MISMATCH_NUMBER, long(mismatches),       // number of mismatches (0 hardcoded till July 2008)
-                     LOCS_FF_FIND_TYPE,       long(fast_flag),   // 0: complete search, 1: quick search (only search oligos starting with 'A')
-                     LOCS_FF_SORT_TYPE,       long(uses_rel_matches()), // 0: matches, 1: relative matches (0 hardcoded till July 2008)
-                     LOCS_FF_SORT_MAX,        long(max_results),      // speed up family sorting (only sort retrieved results)
-                     LOCS_FF_COMPLEMENT,      long(compl_mode),       // any combination of: 1 = forward, 2 = reverse, 4 = reverse-complement, 8 = complement (1 hardcoded in PT-Server till July 2008)
-                     LOCS_RANGE_STARTPOS,     long(range.get_start()),
-                     LOCS_RANGE_ENDPOS,       long(range.get_end()),
-                     LOCS_FF_FIND_FAMILY,     &bs, // RPC (has to be last parameter!)
-                     NULL))
+        // create and init family finder object
+        T_PT_FAMILYFINDER ffinder;
+        if (aisc_create(link, PT_LOCS, locs,
+                        LOCS_FFINDER, PT_FAMILYFINDER, &ffinder,
+                        FAMILYFINDER_PROBE_LEN,       long(oligo_len),          // oligo length (12 hardcoded till July 2008)
+                        FAMILYFINDER_MISMATCH_NUMBER, long(mismatches),         // number of mismatches (0 hardcoded till July 2008)
+                        FAMILYFINDER_FIND_TYPE,       long(fast_flag),          // 0: complete search, 1: quick search (only search oligos starting with 'A')
+                        FAMILYFINDER_SORT_TYPE,       long(uses_rel_matches()), // 0: matches, 1: relative matches (0 hardcoded till July 2008)
+                        FAMILYFINDER_SORT_MAX,        long(max_results),        // speed up family sorting (only sort retrieved results)
+                        FAMILYFINDER_COMPLEMENT,      long(compl_mode),         // any combination of: 1 = forward, 2 = reverse, 4 = reverse-complement, 8 = complement (1 hardcoded in PT-Server till July 2008)
+                        FAMILYFINDER_RANGE_STARTPOS,  long(range.get_start()),
+                        FAMILYFINDER_RANGE_ENDPOS,    long(range.get_end()),
+                        FAMILYFINDER_FIND_FAMILY,     &bs,                      // RPC (has to be last parameter!)
+                        NULL))
         {
             error = "Communication error with PT server ('retrieve_family')";
         }
         else {
+            
             // Read family list
             T_PT_FAMILYLIST f_list;
-            aisc_get(link, PT_LOCS, locs,
-                     LOCS_FF_FAMILY_LIST,      &f_list,
-                     LOCS_FF_FAMILY_LIST_SIZE, &real_hits,
+            aisc_get(link, PT_FAMILYFINDER, ffinder,
+                     FAMILYFINDER_FAMILY_LIST,      &f_list,
+                     FAMILYFINDER_FAMILY_LIST_SIZE, &real_hits,
                      NULL);
 
             hits_truncated = false;
@@ -249,6 +253,7 @@ GB_ERROR PT_FamilyFinder::retrieve_family(const char *sequence, FF_complement co
                          NULL);
             }
         }
+
         free(compressed_sequence);
     }
     return error;

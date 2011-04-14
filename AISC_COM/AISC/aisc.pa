@@ -1,189 +1,223 @@
-# It is very important, that you set the TABSTOP to the correct tabsize of your editor,
-# overwise the PRINT Command will probably make some errors
-IF $(argc) = 4
-ELSE
-        ERROR Wrong number of parameters[$(argc)]. Usage: aisc aisc.pa xxx.aisc outfile
+GOTO main
+
+FUNCTION struct_contents
+    CREATE $(pre)
+    CREATE $(suf)
+
+    FOR $({/TYPE)
+        IF $(TYPE) = dllh
+            # dllh is "added" as base class by caller  
+        ELSEIF $(REF) ~ %
+        ELSE
+            SET $(pre)
+            SET $(suf)
+            IF $(REF) ~ *
+                SET $(pre) *
+            ELSEIF $(REF) ~ v
+                SET $(suf) [$(SIZE|NO SIZE DEFINED)]
+            ENDIF
+            IF $(REF) ~ d
+                P dll_public$|  p$(IDENT);
+            ENDIF
+            IF $(REF) ~ d,r,l,o
+                SET $(pre) $(pre)*
+            ENDIF
+            P $(TYPE|NO TYPE FOUND)$\
+            # align '  name' ' *name' '**name'
+            SET $(pre) '$(pre)'
+            P $|$(pre:''=  :'*'= *:'**'=**:'=)$(IDENT)$(suf);$\
+            P $| // $(DOCU| *** )
+        ENDIF
+    ENDFOR
+RETURN
+
+FUNCTION define_type
+    P struct $(STRUCT) $\
+    FOR $({/TYPE.dllh)
+        P : public dll<$(STRUCT)> $\
+    ENDFOR
+    P { // $(SDOCU|$(STRUCT))
+    INDENT +1
+        CALL struct_contents
+    INDENT -1
+    P };
+RETURN
+
+FUNCTION datatypes
+    P // forward decl dll types
+    P struct dllpublic_ext;
+    P struct dllheader_ext;
+    --
+
+    FOR $(STRUCT.dll_public)
+    NEXT
+        ERROR mandatory STRUCT 'dll_public' is missing
+    ENDFOR
+    FOR $(STRUCT.dll_header)
+    NEXT
+        ERROR mandatory STRUCT 'dll_header' is missing
+    ENDFOR
+
+    P // "public" version of dll
+    FOR $(STRUCT.dll_public)
+        CALL define_type
+    ENDFOR
+    FOR $(STRUCT.dll_header)
+        CALL define_type
+    ENDFOR
+    --
+
+    # ***ANOTHEROLIHACK** 
+    # WARNING: be sure not to introduce any virtual functions
+    #          in dll<USERTYPE> and dllheader_ext (or any base-class)
+    #
+    # 'mh' has to be the first element of dll<USERTYPE>, which produces
+    # the same bit layout as deriving from dll_header.
+    #
+    # Deriving dll<> from dll_header is no option, since the member is needed
+    # for automatic expansion of dll-accessors.
+    #
+    # Deriving dllheader_ext from dll<dllheader_ext> would work, but need
+    # several changes in aisc_link() etc.
+
+    P template <typename USERTYPE>
+    P struct dll {
+    INDENT +1
+        P dll_header  mh; // ***ANOTHEROLIHACK**
+        P USERTYPE   *previous, *next;
+        P int get_count() const { return mh.parent ? mh.parent->cnt : 0; }
+    INDENT -1
+    P };
+    --
+
+    P // "private" (i.e. real) version of dll (DoubledLinkedList)
+    P struct dllpublic_ext : public dll_public { 
+    INDENT +1
+        P dllheader_ext$| *first; 
+    INDENT -1
+    P };
+    P // pseudo-base-class of dll<USERTYPE> (bit-equal atm)
+    P struct dllheader_ext : public dll_header { // ***ANOTHEROLIHACK**
+    INDENT +1
+        P dllheader_ext$| *previous; 
+        P dllheader_ext$| *next;
+    INDENT -1
+    P };
+    --
+
+    P // forward decl user datatypes
+    FOR $(STRUCT)
+        IF $(STRUCT) ~ dll_header,dll_public
+        ELSE
+            P struct $(STRUCT);
+        ENDIF
+    ENDFOR
+    --
+
+    P // user defined datatypes
+    FOR $(STRUCT)
+        IF $(STRUCT) ~ dll_header,dll_public
+        ELSE
+            CALL define_type
+        ENDIF
+    ENDFOR
+    --
+
+RETURN
+
+FUNCTION constants
+    IF $(CONST)
+        P // some constants
+        FOR $(CONST)
+            P #define $(CONST) $|$(VALUE) $|// $(DOCU)
+        ENDFOR
+        --
+    ENDIF
+RETURN
+
+FUNCTION enums
+    IF $(ENUM)
+        ERROR never used before - please check generated code
+        P // the enums
+        FOR $(ENUM)
+            P $n// $(SDOCU|$(ENUM))
+            P typedef enum enum_$(ENUM) {
+            INDENT +1
+                FOR $({/VAR)
+                    IF $(VAL)
+                        P $(VAR)$| = $|$(VAL),$\
+                    ELSE
+                        P $(VAR),$|$\
+                    ENDIF
+                    IF $(DOCU)
+                        P $|// $(DOCU)
+                    ELSE
+                        P 
+                    ENDIF
+                ENDFOR
+            INDENT -1
+            P } $(ENUM);
+        ENDFOR
+        --
+    ENDIF
+RETURN
+
+FUNCTION keys
+    P // the keys
+    P typedef enum enum_t_key {
+    INDENT +1
+        FOR $(STRUCT)
+            IF $(JOINED)
+            ELSEIF $(SKEY)
+                P KEY_$(OBJECT_KEY)_$(SKEY)$| = $|0x10000*$(SKEYC),
+            ENDIF
+        ENDFOR
+        P KEY_MAX
+    INDENT -1
+    P } t_key;
+    --
+RETURN
+
+# --------------------------------------------------------------------------------
+
+LABEL main
+IF $(argc) != 4
+    ERROR Wrong number of parameters[$(argc)]. Usage: aisc aisc.pa xxx.aisc outfile
 ENDIF
 
 DATA AISC { $(#FILE $(argv[2])) };
 DUMPDATA DUMP/aisc.pa__$(argv[2]).dump
-
-MOVETO $(AISC/PROJECT)
+MOVETO $(/AISC/DATA/.)
 
 OPEN save $(argv[3])
-# *********************************** IDENTS ***************
-CREATE $(i)
-CREATE $(replace)
-IF $(MYTABSTOP)
-        TABSTOP $(MYTABSTOP)
-ELSE
-        TABSTOP 8
-ENDIF
-TAB     0       0
-TAB     1       8
-TAB     2       16
-TAB     3       24
-TAB     4       32
-TAB     5       40
-TAB     6       48
-TAB     7       56
-TAB     8       64
-TAB     9       72
-
-
 OUT save
-MOVETO $(DATA/.)
 
-P /* -----------------------------------------------------------------
-P  * Created automagically from ../$(argv[2])
-P  * using aisc-script '../AISC/aisc.pa'
-P  * DO NOT EDIT THIS FILE!!!
-P  * ----------------------------------------------------------------- */$n
-
+P // -----------------------------------------------------------------
+P // Created automagically from ../$(argv[2])
+P // using aisc-script '../AISC/aisc.pa'
+P // DO NOT EDIT THIS FILE!!!
+P // -----------------------------------------------------------------
+--
 P #ifndef AISC_GEN_SERVER_INCLUDED
-P #define AISC_GEN_SERVER_INCLUDED$n
-
-P typedef int   hash;
-P typedef char *aisc_string;
+P #define AISC_GEN_SERVER_INCLUDED
+--
+P typedef int         hash;
+P typedef char       *aisc_string;
 P typedef const char *aisc_cstring;
-
+--
 P #include <aisc_global.h>
-
 P $(INCLUDE_INCLUDES)
-
-P /******************* SOME CONSTANTS *******************/
-FOR $(CONST)
-        P       #define $(CONST) $3$(VALUE) $6/* $(DOCU) $8*/
-ENDFOR
-        P       
-P /******************* THE ENUMS *******************/
-FOR $(ENUM)
-        P $n$1/************** $(SDOCU|$(ENUM)) **************/
-        P       typedef enum enum_$(ENUM) {
-        FOR $({/VAR)
-                IF $(VAL)
-                        P $2$(VAR)$3=$4 $(VAL),$\
-                ELSE
-                        P $2$(VAR),$\
-                ENDIF
-                IF $(DOCU)
-                        P $6/* $(DOCU)$8*/
-                ELSE
-                        P 
-                ENDIF
-        ENDFOR
-        P       } $(ENUM);$n
-ENDFOR
-P /******************* THE KEYS *******************/
-        P       typedef enum enum_t_key {
-FOR $(STRUCT)
-        IF $(JOINED)
-        ELSEIF $(SKEY)
-                P $1KEY_$(OBJECT_KEY)_$(SKEY) = $(SKEYC)*0x10000,
-        ENDIF
-ENDFOR
-        P       $1KEY_MAX$n} t_key;
-CREATE $(pre)
-CREATE $(suf)
-
-FOR $(STRUCT)
-        P $n$1/************** $(SDOCU|$(STRUCT)) **************/
-        CALL pre_structh
-        P       typedef struct struct_$(STRUCT) {
-        SET $(replace)
-        CALL structh
-        P } $(STRUCT);
-ENDFOR
-        P $n/************************** some privat structures **************/
-FOR $(STRUCT.dll_public)
-        CALL pre_structh
-        P typedef struct struct_dllpublic_ext {
-        SET $(replace) :dll_header=dllheader_ext:dll_public=dllpublic_ext
-        CALL structh
-        P $2struct struct_dllheader_ext $5*first;
-        P }$1dllpublic_ext;
-NEXT
-        ERROR struct dll_public is missing
-ENDFOR
-
-FOR $(STRUCT.dll_header)
-        CALL pre_structh
-        P       typedef struct struct_dllheader_ext {
-        SET $(replace) :dll_header=dllheader_ext:dll_public=dllpublic_ext
-        CALL structh
-        P       $2struct struct_dllheader_ext $5*previous, *next;
-        P } dllheader_ext;
-NEXT
-        ERROR struct dll_header is missing
-ENDFOR
-
+--
+CALL constants
+CALL enums
+CALL keys
+CALL datatypes
 P extern const char *aisc_server_error;
+--
 
 P #else 
 P #error header included twice 
 P #endif /* AISC_GEN_SERVER_INCLUDED */
 CLOSE save
-GOTO harmless_test_code
-#EXIT
-
-FUNCTION structh
-        FOR $({/TYPE)
-                SET $(pre)
-                SET $(suf)
-                IF $(TYPE) = dllh
-                        P $2dll_header$4mh;
-                        P $2struct struct_$(STRUCT)$4*previous, *next;
-                ELSEIF $(REF) ~ %
-                ELSE
-                        IF $(REF) ~ *
-                                SET $(pre) *
-                        ELSEIF $(REF) ~ v
-                                SET $(suf) [$(SIZE|NO SIZE DEFINED)]
-                        ENDIF
-                        IF $(REF) ~ d
-                                P $2dll_public$4p$(IDENT);
-                        ENDIF
-                        IF $(REF) ~ d,r,l,o
-                                SET $(pre) $(pre)*
-                        ENDIF
-                        IF $(REF) ~ f
-                                P $2struct struct_$(TYPE|NO TYPE FOUND$(replace)) $4$\
-                        ELSE
-                                P $2$(TYPE|NO TYPE FOUND$(replace)) $4$\
-                        ENDIF
-                        P $(pre)$(IDENT)$(suf)$\
-                        P ;$6/* $(DOCU| *** )$8*/
-                ENDIF
-        ENDFOR
-RETURN
-
-FUNCTION pre_structh
-        FOR $({/TYPE)
-                IF $(TYPE) = dllh
-                ELSEIF $(REF) ~ %
-                ELSE
-                        IF $(REF) ~ f
-                                P struct struct_$(TYPE|NO TYPE FOUND$(replace));
-                        ENDIF
-                ENDIF
-        ENDFOR
-RETURN
-
-# ---------------------------------
-# testing GOTO (not used elsewhere)
-
-LABEL harmless_test_code
-
-GOTO test_goto_label
-ERROR never reached
-LABEL test_goto_label
-
-#ERROR reached
-
-# test deadlock (should print a )
-#GOTO test_goto_label
-
 EXIT
-
-# ---------------------------------
 

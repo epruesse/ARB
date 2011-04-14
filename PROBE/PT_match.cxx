@@ -301,7 +301,7 @@ void pt_sort_match_list(PT_local * locs)
 
     if (!locs->pm) return;
     psg.sort_by = locs->sort_by;
-    list_len = get_MATCHLIST_CNT(locs->pm);
+    list_len = locs->pm->get_count();
     if (list_len <= 1) return;
     my_list = (PT_probematch **)calloc(sizeof(void *), list_len);
     for (i=0, match = locs->pm; match; i++, match=match->next) {
@@ -309,9 +309,8 @@ void pt_sort_match_list(PT_local * locs)
     }
     GB_sort((void **)my_list, 0, list_len, pt_sort_compare_match, 0);
     for (i=0; i<list_len; i++) {
-        aisc_unlink((struct_dllheader_ext*)my_list[i]);
+        aisc_unlink((dllheader_ext*)my_list[i]);
         aisc_link(&locs->ppm, my_list[i]);
-    //        printf("%i\t%i\t%s\n",my_list[i]->name,my_list[i]->b_pos,virt_name(my_list[i]));
     }
     free(my_list);
 }
