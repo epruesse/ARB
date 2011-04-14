@@ -35,13 +35,13 @@ extern "C" const char *virt_fullname P_((PT_probematch *ml));
 int *table_copy P_((int *mis_table, int length));
 void table_add P_((int *mis_tabled, int *mis_tables, int length));
 char *ptpd_read_names P_((PT_local *locs, const char *names_list, const char *checksums, const char *&error));
-extern "C" bytestring *PT_unknown_names P_((struct_PT_pdc *pdc));
+extern "C" bytestring *PT_unknown_names P_((PT_pdc *pdc));
 int get_clip_max_from_length P_((int length));
 void PT_init_base_string_counter P_((char *str, char initval, int size));
 void PT_inc_base_string_count P_((char *str, char initval, char maxval, int size));
 
 /* PT_family.cxx */
-extern "C" int ff_find_family P_((PT_local *locs, bytestring *species));
+extern "C" int find_family P_((PT_family *ffinder, bytestring *species));
 
 /* PT_findEx.cxx */
 extern "C" int PT_find_exProb P_((PT_exProb *pep));

@@ -20,7 +20,7 @@ dll_public *create_dll_public()
     return 0;
 }
 
-int move_dll_header(dll_header *sobj, dll_header *dobj) {
+int move_dll_header(const dll_header *sobj, dll_header *dobj) {
     dobj->ident = (char *)strdup(sobj->ident);
     return 0;
 }

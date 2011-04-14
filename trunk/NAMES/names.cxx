@@ -206,7 +206,7 @@ static void an_remove_short(AN_shorts *an_shorts) {
     AN_revers *an_revers = lookup_an_revers(aisc_main, an_shorts->shrt);
 
     if (an_revers) {
-        aisc_unlink((struct_dllheader_ext*)an_revers);
+        aisc_unlink((dllheader_ext*)an_revers);
 
         free(an_revers->mh.ident);
         free(an_revers->full_name);
@@ -214,7 +214,7 @@ static void an_remove_short(AN_shorts *an_shorts) {
         free(an_revers);
     }
 
-    aisc_unlink((struct_dllheader_ext*)an_shorts);
+    aisc_unlink((dllheader_ext*)an_shorts);
 
     free(an_shorts->mh.ident);
     free(an_shorts->shrt);
@@ -340,7 +340,7 @@ static char *an_get_short(AN_shorts *IF_ASSERTION_USED(shorts), dll_public *pare
 
     char *full2 = nas_string_2_name(full1);
 
-    look = (AN_shorts *)aisc_find_lib((struct_dllpublic_ext*)parent, full2);
+    look = (AN_shorts *)aisc_find_lib((dllpublic_ext*)parent, full2);
     if (look) {                 /* name is already known */
         free(full2);
         free(full1);
@@ -461,7 +461,7 @@ static char *an_get_short(AN_shorts *IF_ASSERTION_USED(shorts), dll_public *pare
         look           = create_AN_shorts();
         look->mh.ident = strdup(full2);
         look->shrt     = strdup(result);
-        aisc_link((struct_dllpublic_ext*)parent, (struct_dllheader_ext*)look);
+        aisc_link((dllpublic_ext*)parent, (dllheader_ext*)look);
 
         aisc_main->touched = 1;
     }
@@ -832,29 +832,24 @@ extern "C" aisc_string get_short(AN_local *locs)
     return shrt;
 }
 
-extern "C" int server_save(AN_main *main, int dummy)
-{
-    FILE        *file;
-    int error;
-    char        *sec_name;
-    dummy = dummy;
+extern "C" int server_save(AN_main *main, int) {
     if (main->touched) {
         int server_date = GB_time_of_file(main->server_file);
         if (server_date>main->server_filedate) {
             printf("Another nameserver changed '%s' - your changes are lost.\n", main->server_file);
         }
         else {
-            sec_name = (char *)calloc(sizeof(char), strlen(main->server_file)+2);
+            char *sec_name = (char *)calloc(sizeof(char), strlen(main->server_file)+2);
             sprintf(sec_name, "%s%%", main->server_file);
             printf("Saving '%s'..\n", main->server_file);
-            file     = fopen(sec_name, "w");
+
+            FILE *file = fopen(sec_name, "w");
             if (!file) {
                 fprintf(stderr, "ERROR cannot save file '%s'\n", sec_name);
             }
             else {
-                error = save_AN_main(main, file);
-                fclose(file);
-                if (!error) {
+                save_AN_main(main, file);
+                if (fclose(file) != 0) {
                     GB_ERROR mv_error = GB_rename_file(sec_name, main->server_file);
                     if (mv_error) GB_warning(mv_error);
                     else main->touched = 0;
@@ -928,7 +923,7 @@ static void check_for_case_error(AN_main *main) {
         else {
             AN_shorts *self_find = lookup_an_shorts(main, shrt->mh.ident);
             if (!self_find) { // stored with wrong key (not lowercase)
-                aisc_unlink((struct_dllheader_ext*)shrt);
+                aisc_unlink((dllheader_ext*)shrt);
                 an_strlwr(shrt->mh.ident);
                 aisc_link(&main->pnames, shrt);
                 main->touched = 1;
@@ -1040,7 +1035,7 @@ static void set_empty_addids(AN_main *main) {
         for (AN_shorts *shrt = main->names; shrt;) {
             AN_shorts *next  = shrt->next;
             if (!shrt->add_id[0]) {
-                aisc_unlink((struct_dllheader_ext*)shrt);
+                aisc_unlink((dllheader_ext*)shrt);
 
                 freedup(shrt->add_id, main->add_field_default);
                 na_assert(strchr(shrt->mh.ident, 0)[-1] == '*');
@@ -1296,6 +1291,7 @@ int main(int argc, char **argv)
     bool isTimeout         = true;
 
     if (!error && aisc_main->touched) server_save(aisc_main, 0);
+
 
     while (!error && accept_calls>0) {
         aisc_accept_calls(so);

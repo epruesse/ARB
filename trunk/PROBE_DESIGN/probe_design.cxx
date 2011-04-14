@@ -433,22 +433,24 @@ void probe_design_event(AW_window *aww, AW_CL cl_gb_main) {
 
     progress.subtitle("probe design running");
 
-    aisc_create(pd_gl.link, PT_LOCS, pd_gl.locs,
-                LOCS_PROBE_DESIGN_CONFIG, PT_PDC,   &pdc,
-                PDC_PROBELENGTH,    root->awar(AWAR_PD_DESIGN_PROBELENGTH)->read_int(),
-                PDC_MINTEMP,    (double)root->awar(AWAR_PD_DESIGN_MIN_TEMP)->read_float(),
-                PDC_MAXTEMP,    (double)root->awar(AWAR_PD_DESIGN_MAX_TEMP)->read_float(),
-                PDC_MINGC,          (double)root->awar(AWAR_PD_DESIGN_MIN_GC)->read_float()/100.0,
-                PDC_MAXGC,          (double)root->awar(AWAR_PD_DESIGN_MAX_GC)->read_float()/100.0,
-                PDC_MAXBOND,    (double)root->awar(AWAR_PD_DESIGN_MAXBOND)->read_int(),
-                NULL);
-    aisc_put(pd_gl.link, PT_PDC, pdc,
-             PDC_MIN_ECOLIPOS,  (long)ecolipos2int(root->awar(AWAR_PD_DESIGN_MIN_ECOLIPOS)->read_char_pntr()),
-             PDC_MAX_ECOLIPOS,  (long)ecolipos2int(root->awar(AWAR_PD_DESIGN_MAX_ECOLIPOS)->read_char_pntr()),
-             PDC_MISHIT,        root->awar(AWAR_PD_DESIGN_MISHIT)->read_int(),
-             PDC_MINTARGETS,    (double)root->awar(AWAR_PD_DESIGN_MINTARGETS)->read_float()/100.0,
-             NULL);
-
+    if (aisc_create(pd_gl.link, PT_LOCS, pd_gl.locs,
+                    LOCS_PROBE_DESIGN_CONFIG, PT_PDC,   &pdc,
+                    PDC_PROBELENGTH,  root->awar(AWAR_PD_DESIGN_PROBELENGTH)->read_int(),
+                    PDC_MINTEMP,      (double)root->awar(AWAR_PD_DESIGN_MIN_TEMP)->read_float(),
+                    PDC_MAXTEMP,      (double)root->awar(AWAR_PD_DESIGN_MAX_TEMP)->read_float(),
+                    PDC_MINGC,        (double)root->awar(AWAR_PD_DESIGN_MIN_GC)->read_float()/100.0,
+                    PDC_MAXGC,        (double)root->awar(AWAR_PD_DESIGN_MAX_GC)->read_float()/100.0,
+                    PDC_MAXBOND,      (double)root->awar(AWAR_PD_DESIGN_MAXBOND)->read_int(),
+                    PDC_MIN_ECOLIPOS, (long)ecolipos2int(root->awar(AWAR_PD_DESIGN_MIN_ECOLIPOS)->read_char_pntr()),
+                    PDC_MAX_ECOLIPOS, (long)ecolipos2int(root->awar(AWAR_PD_DESIGN_MAX_ECOLIPOS)->read_char_pntr()),
+                    PDC_MISHIT,       root->awar(AWAR_PD_DESIGN_MISHIT)->read_int(),
+                    PDC_MINTARGETS,   (double)root->awar(AWAR_PD_DESIGN_MINTARGETS)->read_float()/100.0,
+                    NULL))
+    {
+        aw_message ("Connection to PT_SERVER lost (1)");
+        return;
+    }
+    
     if (probe_design_send_data(root, pdc)) {
         aw_message ("Connection to PT_SERVER lost (1)");
         return;
@@ -514,8 +516,8 @@ void probe_design_event(AW_window *aww, AW_CL cl_gb_main) {
                         bytestring    bs_seq;
                         bs_seq.data = (char*)GB_read_char_pntr(data);
                         bs_seq.size = GB_read_string_count(data)+1;
-                        aisc_create(pd_gl.link, PT_PDC, pdc, PDC_SEQUENCE,
-                                    PT_SEQUENCE, &pts,
+                        aisc_create(pd_gl.link, PT_PDC, pdc,
+                                    PDC_SEQUENCE, PT_SEQUENCE, &pts,
                                     SEQUENCE_SEQUENCE, &bs_seq,
                                     NULL);
                     }
@@ -688,7 +690,9 @@ void probe_match_event(AW_window *aww, AW_CL cl_ProbeMatchEventParam) {
             if (init_local_com_struct()) error = "Cannot contact PT-server (2)";
 
             if (!error) {
-                aisc_create(pd_gl.link, PT_LOCS, pd_gl.locs, LOCS_PROBE_DESIGN_CONFIG, PT_PDC, &pdc, NULL);
+                aisc_create(pd_gl.link, PT_LOCS, pd_gl.locs,
+                            LOCS_PROBE_DESIGN_CONFIG, PT_PDC, &pdc,
+                            NULL);
                 if (probe_design_send_data(root, pdc)) error = "Connection to PT_SERVER lost (2)";
             }
         }

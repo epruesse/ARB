@@ -36,6 +36,9 @@
 #include <arb_cs.h>
 #include <static_assert.h>
 
+// AISC_MKPT_PROMOTE:#ifndef _STDIO_H
+// AISC_MKPT_PROMOTE:#include <stdio.h>
+// AISC_MKPT_PROMOTE:#endif
 
 #define aisc_assert(cond) arb_assert(cond)
 
@@ -96,9 +99,36 @@ extern aisc_talking_func_long   aisc_talking_functions_delete[];
 const char *aisc_server_error;
 int         mdba_make_core = 1;
 
-static char       error_buf[256];
+const int   ERRORBUFSIZE = 256;
+static char error_buf[ERRORBUFSIZE];
+
 static int        aisc_server_con;
 static Hs_struct *aisc_server_hs;
+
+// -----------------------
+//      error handling
+
+void aisc_server_errorf(const char *templat, ...) {
+    // goes to header: __ATTR__FORMAT(1)
+    va_list parg;
+
+    va_start(parg, templat);
+    int printed = vsprintf(error_buf, templat, parg);
+
+    if (printed >= ERRORBUFSIZE) {
+        fprintf(stderr,
+                "Fatal: buffer overflow in aisc_server_errorf\n"
+                "Error was: ");
+        vfprintf(stderr, templat, parg);
+        fputs("\nTerminating..\n", stderr);
+        fflush(stderr);
+        exit(EXIT_FAILURE);
+    }
+    va_end(parg);
+
+    aisc_server_error = error_buf;
+}
+
 
 /* ----------------------------- */
 /*      valid memory tester      */
@@ -1480,4 +1510,68 @@ void aisc_remove_destroy_callback() {   /* call from server function */
             si->destroy_clientdata = 0;
         }
     }
+}
+
+int aisc_server_save_token(FILE *fd, const char *buffer, int maxsize) {
+    putc('{',fd);
+    const char *p = buffer;
+    while (maxsize-->0) {
+        int c = *(p++);
+        if (!c) break;
+        if (c=='}' || c == '\\') putc('\\',fd);
+        putc(c,fd);
+    }
+    putc('}',fd);
+    return 0;
+}
+
+int aisc_server_load_token(FILE *fd, char *buffer, int maxsize) {
+    int   in_brackets = 0;
+    char *p           = buffer;
+    int   result      = EOF;
+
+    while (maxsize-- > 0) {
+        int c = getc(fd);
+        if (c==EOF) break;
+        if (in_brackets) {
+            if (c=='\\') {
+                c = getc(fd);
+                *(p++) = c;
+            }
+            else if (c!='}') {
+                *(p++) = c;
+            }
+            else {
+                result = 0;
+                break;
+            }
+        }
+        else if (c=='{') { 
+            if (p!=buffer) {
+                *(p++) = '{';
+                *p=0;
+                return 0;
+            }
+            else {
+                in_brackets = 1; 
+            }
+        }
+        else if (c==' ' || c=='\n') {
+            if (p!=buffer) {
+                result = 0;
+                break;
+            }
+        }
+        else if (c=='}') {
+            *(p++) = '}';
+            result = 0;
+            break;
+        }
+        else {
+            *(p++) = c;
+        }
+    }
+    
+    *p = 0;
+    return result; /* read error maxsize reached */
 }

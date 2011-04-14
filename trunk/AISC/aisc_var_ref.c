@@ -255,3 +255,29 @@ char *get_var_string(const Data& data, char *var, bool allow_missing_var) {
     }
     return in;
 }
+
+static void dump_token_recursive(const Token *tok, FILE *out) {
+    const Token *block = tok->parent_block_token();
+    if (block) {
+        const TokenList *parent = block->parent_list();
+        if (parent) {
+            const Token *first = parent->first_token();
+            if (first) {
+                dump_token_recursive(first, out);
+                fputc('/', out);
+            }
+        }
+    }
+
+    fputc('@', out);
+    fputs(tok->get_key(), out);
+
+    if (tok->has_value()) {
+        fputc('=', out);
+        fputs(tok->get_value(), out);
+    }
+}
+
+void Data::dump_cursor_pos(FILE *out) const {
+    dump_token_recursive(cursor, out);
+}
