@@ -8,10 +8,10 @@
  /*                                                                  */
  /* ================================================================ */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include "aisc.h"
+#include "aisc_token.h"
+#include "aisc_inline.h"
+#include "aisc_interpreter.h"
+
 
 class TokenMatcher {
     char *key;                  // NULL matches "any key"
@@ -78,75 +78,74 @@ static const Token *nextTokenMatching(const Token *tok, const TokenMatcher& want
     return tok;
 }
 
-const Token *aisc_find_var(const Token *cursor, char *str, LookupScope scope) {
+const Token *Data::find_token(const Token *curs, const char *str, LookupScope scope) const {
+    if (!curs) {
+        const TokenListBlock *tokens = get_tokens();
+        if (!tokens) return NULL;
+        curs = tokens->first_token();
+    }
+
     TokenMatcher  wanted(str);
-    const Token  *line  = cursor ? cursor : gl->root->first_token();
     const Token  *found = NULL;
 
-    while (line && !found) {
+    while (curs && !found) {
         bool cont_in_next_list = false;
         switch (scope) {
             case LOOKUP_LIST_OR_PARENT_LIST:
             case LOOKUP_LIST:
-                line              = line->parent_list()->first_token();
+                curs              = curs->parent_list()->first_token();
                 break;
             case LOOKUP_BLOCK:
-                line              = line->parent_list()->parent_block()->first_token();
+                curs              = curs->parent_list()->parent_block()->first_token();
                 cont_in_next_list = true;
                 break;
             case LOOKUP_BLOCK_REST:
-                line              = nextToken(line, true);
+                curs              = nextToken(curs, true);
                 cont_in_next_list = true;
                 break;
         }
 
-        found = nextTokenMatching(line, wanted, cont_in_next_list);
+        found = nextTokenMatching(curs, wanted, cont_in_next_list);
 
         if (scope == LOOKUP_LIST_OR_PARENT_LIST) {
-            line = line->parent_block_token();
+            curs = curs->parent_block_token();
         }
         else {
-            line = 0;
+            curs = 0;
         }
     }
 
     return found;
 }
 
-const Token *aisc_find_var_hier(const Token *cursor, char *str, LookupScope scope) {
-    char        *slash;
-    const Token *found;
-
+const Token *Data::find_qualified_token(const char *str, LookupScope scope) const {
+    const Token *at = cursor;
     if (*str == '/') {
-        cursor = 0;
+        at = 0;
         str++;
     }
-    slash = strchr(str, '/');
-    found = 0;
+
+    const char *slash = strchr(str, '/');
     while (slash) {
-        *(slash++) = 0;
+        char        *name  = copy_string_part(str, slash-1);
+        const Token *found = find_token(at, name, scope);
+        free(name);
 
-        found = aisc_find_var(cursor, str, scope);
-        if (!found) return 0;
-        if (!found->is_block()) return 0;
+        if (!found || !found->is_block()) return 0;
 
-        cursor = found->get_content()->first_token();
+        at = found->get_content()->first_token();
 
-        str   = slash;
+        str   = slash+1;
         slash = strchr(str, '/');
         scope = LOOKUP_BLOCK;
     }
-    found = aisc_find_var(cursor, str, scope);
-    return found;
-
+    
+    return find_token(at, str, scope);
 }
 
 
-char *get_var_string(char *var) {
+char *get_var_string(const Data& data, char *var, bool allow_missing_var) { 
     /* Calculates result for an expression like '$(IDENT:fdg|"sdfg")' */
-    ;
-    ;
-
     SKIP_SPACE_LF(var);
     int use_path = 0;
     while (var[0] == '&') {
@@ -158,18 +157,19 @@ char *get_var_string(char *var) {
     char *doppelpunkt = strchr(var, ':'); if (doppelpunkt) *(doppelpunkt++) = 0;
     char *bar         = strchr(var, '|'); if (bar) *(bar++) = 0;
 
-    char *in = read_hash_local(var, 0);
-    if (in) {
-        in = strdup(in);
+    const char *val = Interpreter::instance->read_local(var);
+    char       *in  = NULL;
+    if (val) {
+        in = strdup(val);
     }
     else {
-        const Token *cur = aisc_find_var_hier(gl->cursor, var, LOOKUP_LIST_OR_PARENT_LIST);
+        const Token *cur = data.find_qualified_token(var, LOOKUP_LIST_OR_PARENT_LIST);
         if (!cur) {
             if (!bar) {
-                if (gl->pc->command == IF) {
-                    return 0;
+                if (!allow_missing_var) {
+                    const Code *at = Interpreter::instance->at();
+                    printf_error(at, "Ident '%s' not found", var);
                 }
-                printf_error("Ident '%s' not found", var);
                 return 0;
             }
             return strdup(bar);
@@ -194,7 +194,7 @@ char *get_var_string(char *var) {
         }
         else {
             if (cur->is_block()) {
-                printf_error("Ident '%s' is a hierarchical type", var);
+                printf_error(Interpreter::instance->at(), "Ident '%s' is a hierarchical type", var);
                 return 0;
             }
             else {
@@ -212,13 +212,13 @@ char *get_var_string(char *var) {
             char *nextdp            = strchr(doppelpunkt, ':');
             if (nextdp) *(nextdp++) = 0;
             if (!doppelpunkt[0]) {
-                print_error("Ident replacement is missing an ':'");
+                print_error(Interpreter::instance->at(), "Ident replacement is missing an ':'");
                 err = true;
             }
             else {
                 bar = strchr(doppelpunkt+1, '=');
                 if (!bar) {
-                    print_error("Ident replacement is missing an '='");
+                    print_error(Interpreter::instance->at(), "Ident replacement is missing an '='");
                     err = true;
                 }
                 else {
