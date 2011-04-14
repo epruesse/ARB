@@ -32,6 +32,7 @@ check_equality() {
             OPTIONS="$OPTIONS --ignore-tab-expansion"
             OPTIONS="$OPTIONS --ignore-space-change"
             OPTIONS="$OPTIONS --ignore-blank-lines"
+            OPTIONS="$OPTIONS --ignore-all-space"
             OPTIONS="$OPTIONS"
 
             local TMPFILE=/tmp/check_dirs_equal.$$
