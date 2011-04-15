@@ -104,13 +104,13 @@ a3_ptree1.o: a3_basen.h
 a3_ptree1.o: a3_ptree.hxx
 a3_ptree1.o: a3_seq.hxx
 a3_ptree1.o: a3_types.h
-a3_ptree1.o: $(ARBHOME)/INCLUDE/arb_str.h
+a3_ptree1.o: $(ARBHOME)/INCLUDE/dupstr.h
 
 a3_ptree2.o: a3_basen.h
 a3_ptree2.o: a3_ptree.hxx
 a3_ptree2.o: a3_seq.hxx
 a3_ptree2.o: a3_types.h
-a3_ptree2.o: $(ARBHOME)/INCLUDE/arb_str.h
+a3_ptree2.o: $(ARBHOME)/INCLUDE/dupstr.h
 
 a3_seq.o: a3_basen.h
 a3_seq.o: a3_seq.hxx
@@ -120,7 +120,6 @@ a3_seq.o: $(ARBHOME)/INCLUDE/arb_assert.h
 a3_seq.o: $(ARBHOME)/INCLUDE/arb_core.h
 a3_seq.o: $(ARBHOME)/INCLUDE/arb_error.h
 a3_seq.o: $(ARBHOME)/INCLUDE/arb_msg.h
-a3_seq.o: $(ARBHOME)/INCLUDE/arb_str.h
 a3_seq.o: $(ARBHOME)/INCLUDE/arb_string.h
 a3_seq.o: $(ARBHOME)/INCLUDE/arbdb.h
 a3_seq.o: $(ARBHOME)/INCLUDE/arbdb_base.h

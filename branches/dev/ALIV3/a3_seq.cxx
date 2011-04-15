@@ -12,7 +12,6 @@
 #include "a3_seq.hxx"
 
 #include <arbdb.h>
-#include <arb_str.h>
 
 #include <iostream>
 #include <fstream>
