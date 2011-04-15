@@ -80,7 +80,7 @@ CompactedSequence::CompactedSequence(const char *Text, int Length, const char *n
         char c = toupper(Text[xPos]);
 
         if (is_gap(c)) {
-            if (c=='-' || xPos<firstBase || xPos>lastBase) {
+            if (c!='.' || xPos<firstBase || xPos>lastBase) {
                 compPositionTab[xPos] = -1;                     // a illegal index
                 lastWasDot = 0;
             }
@@ -442,6 +442,7 @@ void TEST_EARLY_CompactedSequence() {
     TEST_CS_EQUALS("---",        "  0  0  0  [0]", "  3");
 
     TEST_CS_TEXT("---", "");
+    TEST_CS_TEXT("-?~", "");
     TEST_CS_TEXT("-A-", " 65");    // "A"
     TEST_CS_TEXT("A-C", " 65 67"); // "AC"
 
@@ -476,6 +477,7 @@ void TEST_EARLY_CompactedSequence() {
 
     TEST_CS_EQUALS("A---C---G-", "  0  1  1  1  1  2  2  2  2  3  [3]", "  0  4  8 10");
     TEST_CS_EQUALS("A---C----G", "  0  1  1  1  1  2  2  2  2  2  [3]", "  0  4  9 10");
+    TEST_CS_EQUALS("A~~~C????G", "  0  1  1  1  1  2  2  2  2  2  [3]", "  0  4  9 10");
 
     // 4 bases
     TEST_CS_EQUALS("-AC-G--T--", "  0  0  1  2  2  3  3  3  4  4  [4]", "  1  2  4  7 10"); 
@@ -498,6 +500,7 @@ void TEST_EARLY_CompactedSequence() {
     // test no_of_gaps_before() and no_of_gaps_after()
     TEST_GAPS_EQUALS_OFFSET("-AC---G",     0, "  1  0  3  0", "  0  3  0 [-1]");
     TEST_GAPS_EQUALS_OFFSET(".AC..-G",     0, "  1  0  3  0", "  0  3  0 [-1]");
+    TEST_GAPS_EQUALS_OFFSET("~AC?\?-G",     0, "  1  0  3  0", "  0  3  0 [-1]");
     TEST_GAPS_EQUALS_OFFSET("A--C-G-",     0, "  0  2  1  1", "  2  1  1 [-1]");
     TEST_GAPS_EQUALS_OFFSET("A--C-G-",  1000, "  0  2  1  1", "  2  1  1 [-1]"); // is independent from offset
 
@@ -506,6 +509,7 @@ void TEST_EARLY_CompactedSequence() {
     TEST_DOTS_EQUALS_OFFSET("....ACG--T--A-C--GT....", 0, " [-1]");    // no extraordinary dots
     TEST_DOTS_EQUALS_OFFSET("....ACG--T..A-C--GT....", 0, "  4 [-1]"); // i.e. "before base number 4"
     TEST_DOTS_EQUALS_OFFSET("....ACG..T--A.C--GT....", 0, "  3  5 [-1]");
+    TEST_DOTS_EQUALS_OFFSET("....ACG..T~~A.C??GT....", 0, "  3  5 [-1]");
 
     TEST_DOTS_EQUALS_OFFSET("AC-----GTA-----CGT", 0, " [-1]");
     // just care THAT dots occur in a gap, dont care how many
@@ -515,3 +519,4 @@ void TEST_EARLY_CompactedSequence() {
 }
 
 #endif // UNIT_TESTS
+
