@@ -433,7 +433,7 @@ static void dump_n_compare_one(const char *seq1, const char *seq2, long len, lon
     char compare[BUFLEN+1];
 
     for (long l=0; l<len; l++)
-        compare[l] = (is_gap(seq1[l]) && is_gap(seq2[l])) ? ' ' : compareChar(seq1[l], seq2[l]);
+        compare[l] = (is_ali_gap(seq1[l]) && is_ali_gap(seq2[l])) ? ' ' : compareChar(seq1[l], seq2[l]);
 
     compare[len] = 0;
 
@@ -757,11 +757,11 @@ static ARB_ERROR cannot_fast_align(const CompactedSubSequence& master, long moff
 
             if (!error) {
                 error = ClustalV_align(is_dna,
-                                            1,
-                                            mtext, mlength, stext, slength,
-                                            master.gapsBefore(moffset),
-                                            max_seq_length,
-                                            &maligned, &saligned, &len, &score);
+                                       1,
+                                       mtext, mlength, stext, slength,
+                                       master.gapsBefore(moffset), 
+                                       max_seq_length,
+                                       &maligned, &saligned, &len, &score);
             }
 
             if (!error) {
@@ -1063,11 +1063,11 @@ static CompactedSubSequence *readCompactedSequence(GBDATA      *gb_species,
             fa_assert(firstColumn<=lastColumn);
 
             // include all surrounding gaps (@@@ this might cause problems with partial alignment)
-            while (firstColumn>0 && is_gap(data[firstColumn-1])) {
+            while (firstColumn>0 && is_ali_gap(data[firstColumn-1])) {
                 firstColumn--;
             }
             if (lastColumn!=-1) {
-                while (lastColumn<(length-1) && is_gap(data[lastColumn+1])) lastColumn++;
+                while (lastColumn<(length-1) && is_ali_gap(data[lastColumn+1])) lastColumn++;
                 fa_assert(lastColumn<length);
             }
 
@@ -3177,7 +3177,7 @@ void TEST_Aligner_TargetAndReferenceHandling() {
                         FA_MARK_ALIGNED);
         error = aligner.run();
         TEST_ASSERT_NULL(error.deliver());
-        
+
         TEST_ASSERT(!cont_on_err || GBT_count_marked_species(gb_main) == 2); // FA_MARK_ALIGNED (2 selected were aligned)
     }
     {
@@ -3372,7 +3372,7 @@ void TEST_SLOW_Aligner_checksumError() {
     }
     TEST_ASSERT_NULL__BROKEN(error.deliver());
     TEST_ASSERT_EQUAL__BROKEN(USED_RELS_FOR("MtnK1722"), "???");
-    
+
     GB_close(gb_main);
 }
 

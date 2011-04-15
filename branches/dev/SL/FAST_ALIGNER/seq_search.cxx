@@ -18,6 +18,17 @@
 
 #define MESSAGE_BUFFERSIZE 300
 
+#if defined(DEBUG)
+inline int check_equal(int o, int n) {
+    if (o != n) {
+        fprintf(stderr, "o=%i\nn=%i\n", o, n);
+        fflush(stderr);
+    }
+    fa_assert(o == n);
+    return n;
+}
+#endif
+
 void messagef(const char *format, ...)
 {
     va_list argp;
@@ -37,140 +48,57 @@ void Dots::append(Dots *neu) {
     else Next = neu;
 }
 
+static CharPredicate pred_is_ali_gap(is_ali_gap);
+
 CompactedSequence::CompactedSequence(const char *Text, int Length, const char *name, int start_offset)
+    : basepos(Text, Length, pred_is_ali_gap),
+      myName(strdup(name)),
+      myStartOffset(0),  // corrected at end of ctor (otherwise calculations below go wrong)
+      dots(NULL),
+      referred(1)
 {
-    long cPos;
-    long xPos;
-
     fa_assert(Length>0);
-    
-    long *compPositionTab = new long[Length];
-    myLength = 0;
-    int lastWasDot = 0;
 
-    myStartOffset = start_offset;
-    myEndOffset = start_offset+Length-1;
-
-    fa_assert(name);
-
-    dots = NULL;
-    myName = strdup(name);
-
-    long firstBase = 0;
-    long lastBase = Length-1;
-
-    for (xPos=0; xPos<Length; xPos++) {         // convert dot gaps at beginning to dash gaps
-        char c = Text[xPos];
-        if (!is_gap(c)) {
-            firstBase = xPos;
-            break;
-        }
-    }
-
-    for (xPos=Length-1; xPos>=0; xPos--)        // same for end of sequence
     {
-        char c = Text[xPos];
-        if (!is_gap(c)) {
-            lastBase = xPos;
-            break;
+        long firstBase = basepos.first_base_abspos();
+        long lastBase  = basepos.last_base_abspos();
+        int  dotOffset = firstBase + strcspn(Text+firstBase, "."); // skip non-dots
+
+        while (dotOffset <= lastBase) {
+            fa_assert(Text[dotOffset] == '.');
+            storeDots(basepos.abs_2_rel(dotOffset));
+            dotOffset += strspn(Text+dotOffset, ".");  // skip dots
+            dotOffset += strcspn(Text+dotOffset, "."); // skip non-dots
         }
     }
 
-    for (xPos=0; xPos<Length; xPos++) {
-        char c = toupper(Text[xPos]);
+    int cLen     = length();
+    myText       = new char[cLen+1];
+    myText[cLen] = 0;
 
-        if (is_gap(c)) {
-            if (c!='.' || xPos<firstBase || xPos>lastBase) {
-                compPositionTab[xPos] = -1;                     // a illegal index
-                lastWasDot = 0;
-            }
-            else {
-                fa_assert(c=='.');
+    gapsBeforePosition = new int[cLen+1];
 
-                if (!lastWasDot) {
-                    lastWasDot = 1;
-                    storeDots(myLength);
-                }
-
-                compPositionTab[xPos] = -1;
-            }
-
-        }
-        else {
-            compPositionTab[xPos] = myLength++;
-            lastWasDot = 0;
-        }
+    for (int cPos = 0; cPos<cLen; ++cPos) {
+        int xPos                 = basepos.rel_2_abs(cPos);
+        myText[cPos]             = toupper(Text[xPos]);
+        gapsBeforePosition[cPos] = no_of_gaps_before(cPos);
+    }
+    if (cLen>0) {
+        gapsBeforePosition[cLen] = Length - expdPosition(cLen-1);    // gaps before end of sequence
+#if defined(DEBUG)
+        check_equal(gapsBeforePosition[cLen], no_of_gaps_before(cLen)+1); // @@@ strange, why+1? 
+#endif
     }
 
-    myText           = new char[myLength+1];
-    myText[myLength] = 0;
-
-    expdPositionTab = new int[myLength+1];      // plus one extra element
-    expdPositionTab[myLength] = Length;         // which is the original length
-
-    gapsBeforePosition = new int[myLength+1];
-
-    for (xPos=0; xPos<Length; xPos++) {
-        cPos = compPositionTab[xPos];
-        fa_assert(cPos<myLength);
-
-        if (cPos>=0) {
-            myText[cPos] = toupper(Text[xPos]);
-            expdPositionTab[cPos] = xPos;
-            gapsBeforePosition[cPos] =
-                cPos
-                ? xPos-expdPositionTab[cPos-1]-1
-                : xPos;
-        }
-    }
-
-    if (myLength>0) {
-        gapsBeforePosition[myLength] = Length - expdPositionTab[myLength-1]; // gaps before end of sequence
-    }
-
-    referred = 1;
-
-    delete [] compPositionTab;
+    myStartOffset += start_offset;
 }
 
-CompactedSequence::~CompactedSequence()
-{
+CompactedSequence::~CompactedSequence() {
     fa_assert(referred==0);
-
     delete [] myText;
-
-    delete[] expdPositionTab;
     delete[] gapsBeforePosition;
-
     free(myName);
-    
     delete dots;
-}
-
-int CompactedSequence::compPosition(int xPos) const {
-    // returns the number of bases left of 'xPos' (not including bases at 'xPos')
-
-    int l = 0,
-        h = length();
-
-    while (l<h) {
-        int m = (l+h)/2;
-        int cmp = xPos-expdPosition(m);
-
-        if (cmp==0) {
-            return m; // found!
-        }
-
-        if (cmp<0) { // xPos < expdPosition(m)
-            h = m;
-        }
-        else { // xPos > expdPosition(m)
-            l = m+1;
-        }
-    }
-
-    fa_assert(l == h);
-    return l;
 }
 
 FastAlignInsertion::~FastAlignInsertion()
