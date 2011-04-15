@@ -84,10 +84,7 @@ CompactedSequence::CompactedSequence(const char *Text, int Length, const char *n
         gapsBeforePosition[cPos] = no_of_gaps_before(cPos);
     }
     if (cLen>0) {
-        gapsBeforePosition[cLen] = Length - expdPosition(cLen-1);    // gaps before end of sequence
-#if defined(DEBUG)
-        check_equal(gapsBeforePosition[cLen], no_of_gaps_before(cLen)+1); // @@@ strange, why+1? 
-#endif
+        gapsBeforePosition[cLen] = no_of_gaps_before(cLen);    // gaps before end of sequence
     }
 
     myStartOffset += start_offset;
