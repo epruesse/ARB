@@ -1515,7 +1515,11 @@ void ED4_base_position::calc4base(const ED4_base *base)
 
     e4_assert(seq);
 
-    initialize(seq, len, is_gap_fun);
+#if defined(WARN_TODO)
+#warning ED4_is_align_character is kinda CharPredicate - refactor
+#endif
+    CharPredicate pred_is_gap(is_gap_fun);
+    initialize(seq, len, pred_is_gap);
     calced4base = base;
 
     free(seq);

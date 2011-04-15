@@ -18,11 +18,28 @@
 #include <arb_assert.h>
 #endif
 
+
 #ifndef bi_assert
 #define bi_assert(bed) arb_assert(bed)
 #endif
 
-typedef bool (*is_gap_fun)(char);
+typedef bool (*char_predicate_fun)(char);
+
+class CharPredicate { // general predicate for char
+    bool isTrue[256];
+public:
+    explicit CharPredicate(char_predicate_fun is_true) {
+        for (int i = 0; i<256; ++i) {
+            isTrue[i] = is_true(safeCharIndex((unsigned char)i));
+        }
+    }
+
+    bool applies(char c) const { return isTrue[safeCharIndex(c)]; }
+    bool applies(unsigned char c) const { return isTrue[c]; }
+    bool applies(int i) const { bi_assert(i == (unsigned char)i); return isTrue[i]; }
+};
+
+typedef char_predicate_fun is_gap_fun;
 
 class BasePosition {
     int absLen;
@@ -45,10 +62,11 @@ class BasePosition {
 
 public:
     void initialize(const char *seq, int size);
-    void initialize(const char *seq, int size, is_gap_fun is_gap);
+    void initialize(const char *seq, int size, const CharPredicate& is_gap);
 
     BasePosition() { setup(); }
     BasePosition(const char *seq, int size) { setup(); initialize(seq, size); }
+    BasePosition(const char *seq, int size, const CharPredicate& is_gap) { setup(); initialize(seq, size, is_gap); }
     ~BasePosition() { cleanup(); }
 
     bool gotData() const { return abs2rel != 0; }
