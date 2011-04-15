@@ -14,15 +14,16 @@
 
 
 static bool is_Gap(char c) { return c == '-' || c == '.'; }
+static CharPredicate pred_is_gap(is_Gap);
 
 // ---------------------
 //      BasePosition
 
 void BasePosition::initialize(const char *seq, int size) {
-    initialize(seq, size, is_Gap);
+    initialize(seq, size, pred_is_gap);
 }
 
-void BasePosition::initialize(const char *seq, int size, is_gap_fun is_gap) {
+void BasePosition::initialize(const char *seq, int size, const CharPredicate& is_gap) {
     cleanup();
 
     bi_assert(size >= 0);
@@ -30,13 +31,10 @@ void BasePosition::initialize(const char *seq, int size, is_gap_fun is_gap) {
     absLen  = size;
     abs2rel = new int[absLen+1];
 
-    bool isGap[256];
-    for (int c = 0; c<256; ++c) isGap[c] = is_gap(c);
-
     int i;
     for (i = 0; seq[i] && i<size; ++i) {
         abs2rel[i] = baseCount;
-        if (!isGap[safeCharIndex(seq[i])]) ++baseCount;
+        if (!is_gap.applies(seq[i])) ++baseCount;
     }
     bi_assert(baseCount >= 0);
 
