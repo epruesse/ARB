@@ -10,7 +10,6 @@
 
 #include "AP_filter.hxx"
 #include <arbdb.h>
-#include <arb_str.h>
 
 
 // ------------------

@@ -11,7 +11,6 @@
 #include "iupac.h"
 
 #include <arb_assert.h>
-#include <arb_str.h>
 
 #include <cctype>
 

@@ -17,7 +17,6 @@
 #include "ed4_awars.hxx"
 #include "ed4_ProteinViewer.hxx"
 
-#include <arb_str.h>
 #include <arb_strbuf.h>
 #include <arb_defs.h>
 

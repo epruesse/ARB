@@ -61,6 +61,9 @@ inline void reassign(char *& dstvar, char *& srcvar) {
 
 #endif // __cplusplus
 
+// helper to use char as array index:
+inline unsigned char safeCharIndex(char c) { return static_cast<unsigned char>(c); }
+
 #else
 #error dupstr.h included twice
 #endif // DUPSTR_H

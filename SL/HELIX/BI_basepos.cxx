@@ -11,7 +11,6 @@
 #include "BI_basepos.hxx"
 
 #include <arbdbt.h>
-#include <arb_str.h>
 
 
 static bool is_Gap(char c) { return c == '-' || c == '.'; }

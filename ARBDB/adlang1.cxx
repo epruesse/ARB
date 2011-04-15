@@ -16,7 +16,6 @@
 
 #include <static_assert.h>
 #include <arb_defs.h>
-#include <arb_str.h>
 #include <arb_strbuf.h>
 
 #include <cctype>

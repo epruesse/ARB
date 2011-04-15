@@ -5,7 +5,6 @@
 #include <AP_filter.hxx>
 #include <ARB_Tree.hxx>
 
-#include <arb_str.h>
 
 char *AP_sequence_parsimony::table;
 

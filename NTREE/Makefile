@@ -133,7 +133,6 @@ ad_spec.o: $(ARBHOME)/INCLUDE/arb_defs.h
 ad_spec.o: $(ARBHOME)/INCLUDE/arb_error.h
 ad_spec.o: $(ARBHOME)/INCLUDE/arb_msg.h
 ad_spec.o: $(ARBHOME)/INCLUDE/arb_progress.h
-ad_spec.o: $(ARBHOME)/INCLUDE/arb_str.h
 ad_spec.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 ad_spec.o: $(ARBHOME)/INCLUDE/arb_string.h
 ad_spec.o: $(ARBHOME)/INCLUDE/ARB_Tree.hxx
