@@ -18,6 +18,17 @@
 
 #define MESSAGE_BUFFERSIZE 300
 
+#if defined(DEBUG)
+inline int check_equal(int o, int n) {
+    if (o != n) {
+        fprintf(stderr, "o=%i\nn=%i\n", o, n);
+        fflush(stderr);
+    }
+    fa_assert(o == n);
+    return n;
+}
+#endif
+
 void messagef(const char *format, ...)
 {
     va_list argp;
@@ -32,145 +43,59 @@ void messagef(const char *format, ...)
     GB_warning(buffer);
 }
 
-void Points::append(Points *neu) {
+void Dots::append(Dots *neu) {
     if (Next) Next->append(neu);
     else Next = neu;
 }
 
+static CharPredicate pred_is_ali_gap(is_ali_gap);
+
 CompactedSequence::CompactedSequence(const char *Text, int Length, const char *name, int start_offset)
+    : basepos(Text, Length, pred_is_ali_gap),
+      myName(strdup(name)),
+      myStartOffset(0),  // corrected at end of ctor (otherwise calculations below go wrong)
+      dots(NULL),
+      referred(1)
 {
-    long cPos;
-    long xPos;
-
     fa_assert(Length>0);
-    
-    long *compPositionTab = new long[Length];
-    myLength = 0;
-    int lastWasPoint = 0;
 
-    myStartOffset = start_offset;
-    myEndOffset = start_offset+Length-1;
-
-    fa_assert(name);
-
-    points = NULL;
-    myName = strdup(name);
-
-    long firstBase = 0;
-    long lastBase = Length-1;
-
-    for (xPos=0; xPos<Length; xPos++) {         // convert point gaps at beginning to dash gaps
-        char c = Text[xPos];
-        if (!is_gap(c)) {
-            firstBase = xPos;
-            break;
-        }
-    }
-
-    for (xPos=Length-1; xPos>=0; xPos--)        // same for end of sequence
     {
-        char c = Text[xPos];
-        if (!is_gap(c)) {
-            lastBase = xPos;
-            break;
+        long firstBase = basepos.first_base_abspos();
+        long lastBase  = basepos.last_base_abspos();
+        int  dotOffset = firstBase + strcspn(Text+firstBase, "."); // skip non-dots
+
+        while (dotOffset <= lastBase) {
+            fa_assert(Text[dotOffset] == '.');
+            storeDots(basepos.abs_2_rel(dotOffset));
+            dotOffset += strspn(Text+dotOffset, ".");  // skip dots
+            dotOffset += strcspn(Text+dotOffset, "."); // skip non-dots
         }
     }
 
-    for (xPos=0; xPos<Length; xPos++) {
-        char c = toupper(Text[xPos]);
+    int cLen     = length();
+    myText       = new char[cLen+1];
+    myText[cLen] = 0;
 
-        if (is_gap(c)) {
-            if (c=='-' || xPos<firstBase || xPos>lastBase) {
-                compPositionTab[xPos] = -1;                     // a illegal index
-                lastWasPoint = 0;
-            }
-            else {
-                fa_assert(c=='.');
+    gapsBeforePosition = new int[cLen+1];
 
-                if (!lastWasPoint) {
-                    lastWasPoint = 1;
-                    storePoints(myLength);
-                }
-
-                compPositionTab[xPos] = -1;
-            }
-
-        }
-        else {
-            compPositionTab[xPos] = myLength++;
-            lastWasPoint = 0;
-        }
+    for (int cPos = 0; cPos<cLen; ++cPos) {
+        int xPos                 = basepos.rel_2_abs(cPos);
+        myText[cPos]             = toupper(Text[xPos]);
+        gapsBeforePosition[cPos] = no_of_gaps_before(cPos);
+    }
+    if (cLen>0) {
+        gapsBeforePosition[cLen] = no_of_gaps_before(cLen);    // gaps before end of sequence
     }
 
-    myText           = new char[myLength+1];
-    myText[myLength] = 0;
-
-    expdPositionTab = new int[myLength+1];      // plus one extra element
-    expdPositionTab[myLength] = Length;         // which is the original length
-
-    gapsBeforePosition = new int[myLength+1];
-
-    for (xPos=0; xPos<Length; xPos++) {
-        cPos = compPositionTab[xPos];
-        fa_assert(cPos<myLength);
-
-        if (cPos>=0) {
-            myText[cPos] = toupper(Text[xPos]);
-            expdPositionTab[cPos] = xPos;
-            gapsBeforePosition[cPos] =
-                cPos
-                ? xPos-expdPositionTab[cPos-1]-1
-                : xPos;
-        }
-    }
-
-    if (myLength>0) {
-        gapsBeforePosition[myLength] = Length - expdPositionTab[myLength-1]; // gaps before end of sequence
-    }
-
-    referred = 1;
-
-    delete [] compPositionTab;
+    myStartOffset += start_offset;
 }
 
-CompactedSequence::~CompactedSequence()
-{
+CompactedSequence::~CompactedSequence() {
     fa_assert(referred==0);
-
     delete [] myText;
-
-    delete[] expdPositionTab;
     delete[] gapsBeforePosition;
-
     free(myName);
-    
-    delete points;
-}
-
-int CompactedSequence::compPosition(int xPos) const {
-    // returns the number of bases left of 'xPos' (not including bases at 'xPos')
-
-    int l = 0,
-        h = length();
-
-    while (l<h) {
-        int m = (l+h)/2;
-        int cmp = xPos-expdPosition(m);
-
-        if (cmp==0) {
-            return m; // found!
-        }
-
-        if (cmp<0) { // xPos < expdPosition(m)
-            h = m;
-        }
-        else { // xPos > expdPosition(m)
-            l = m+1;
-        }
-    }
-
-    fa_assert(l == h);
-    return l;
+    delete dots;
 }
 
 FastAlignInsertion::~FastAlignInsertion()
@@ -250,30 +175,30 @@ void AlignBuffer::correctUnalignedPositions()
     }
 }
 
-void AlignBuffer::expandPoints(CompactedSubSequence& slaveSequence)
+void AlignBuffer::restoreDots(CompactedSubSequence& slaveSequence)
 {
     long rest = used;
     long off = 0;               // real position in sequence
     long count = 0;             // # of bases left of this position
-    long nextPoint = slaveSequence.firstPointPosition();
+    long nextDot = slaveSequence.firstDotPosition();
 
-    while (nextPoint!=-1 && rest)
+    while (nextDot!=-1 && rest)
     {
         unsigned char gap = myBuffer[off];
         if (gap=='-' || gap=='.') {
-            if (nextPoint==count) {
+            if (nextDot==count) {
                 myBuffer[off] = '.';
             }
         }
         else
         {
             count++;
-            if (nextPoint==count) {
-                messagef("Couldn't insert point-gap at offset %li of '%s' (gap removed by aligner)",
+            if (nextDot==count) {
+                messagef("Couldn't restore dots at offset %li of '%s' (gap removed by aligner)",
                          off, slaveSequence.name());
             }
-            if (nextPoint<count) {
-                nextPoint = slaveSequence.nextPointPosition();
+            if (nextDot<count) {
+                nextDot = slaveSequence.nextDotPosition();
             }
         }
 
@@ -282,10 +207,8 @@ void AlignBuffer::expandPoints(CompactedSubSequence& slaveSequence)
     }
 }
 
-void AlignBuffer::point_ends_of()
-{
-    int i;
-
+void AlignBuffer::setDotsAtEOSequence() {
+    int i; 
     for (i=0; (myBuffer[i]=='.' || myBuffer[i]=='-') && i<used; i++) {
         myBuffer[i] = '.';
     }
@@ -301,61 +224,153 @@ void AlignBuffer::point_ends_of()
 #include <test_unit.h>
 #include <test_helpers.h>
 
+static int get_dotpos(const CompactedSubSequence& css, int i) {
+    int pos = css.firstDotPosition();
+    while (i) {
+        --i;
+        pos = css.nextDotPosition();
+    }
+    return pos;
+}
+static int count_dotpos(const CompactedSubSequence& css) {
+    int pos   = css.firstDotPosition();
+    int count = 0;
+    while (pos != -1) {
+        ++count;
+        pos = css.nextDotPosition();
+    }
+    return count;
+}
+
 struct bind_css {
     CompactedSubSequence& css;
-    bool test_comp;
-    bind_css(CompactedSubSequence& css_) : css(css_), test_comp(true) {}
+    int test_mode;
+    bind_css(CompactedSubSequence& css_) : css(css_), test_mode(-1) {}
 
     int operator()(int i) const {
-        if (test_comp) return css.compPosition(i);
-        return css.expdPosition(i);
+        switch (test_mode) {
+            case 0: return css.compPosition(i);
+            case 1: return css.expdPosition(i);
+            case 2: return css[i];
+            case 3: return css.no_of_gaps_before(i);
+            case 4: return css.no_of_gaps_after(i);
+            case 5: return get_dotpos(css, i);
+        }
+        fa_assert(0);
+        return -666;
     }
 };
 
-#define TEST_ASSERT_CSS_SELF_REFLEXIVE(css) do {    \
-        for (int b = 0; b<css.length(); ++b) {  \
-            int x = css.expdPosition(b);        \
-            int c = css.compPosition(x);        \
-            TEST_ASSERT_EQUAL(c,b);             \
-        }                                       \
+#define TEST_ASSERT_CSS_SELF_REFLEXIVE(css) do {        \
+        for (int b = 0; b<css.length(); ++b) {          \
+            int x = css.expdPosition(b);                \
+            int c = css.compPosition(x);                \
+            TEST_ASSERT_EQUAL(c,b);                     \
+        }                                               \
     } while(0)
 
-#define TEST_CS_START(in)                                               \
+#define CSS_COMMON(in,offset)                                           \
     int len  = strlen(in);                                              \
     fprintf(stderr, "in='%s'\n", in);                                   \
-    CompactedSubSequence css(in, len, "noname", 0);                     \
+    CompactedSubSequence css(in, len, "noname", offset);                \
     TEST_ASSERT_CSS_SELF_REFLEXIVE(css);                                \
-    bind_css bound_css(css);                                            \
+    bind_css bound_css(css)
+
+#define GEN_COMP_EXPD()                                                 \
+    bound_css.test_mode = 0;                                            \
     char *comp = collectIntFunResults(bound_css, 0, css.expdLength()-1, 3, 0, 1); \
-    bound_css.test_comp = false;                                        \
-    char *expd = collectIntFunResults(bound_css, 0, css.length(), 3, 0, 0);
+    bound_css.test_mode = 1;                                            \
+    char *expd = collectIntFunResults(bound_css, 0, css.length(), 3, 0, 0)
+
+#define GEN_TEXT(in)                                                    \
+    bound_css.test_mode = 2;                                            \
+    char *text = collectIntFunResults(bound_css, 0, css.length()-1, 3, 0, 0)
     
-#define TEST_CS_END()                                                   \
+#define GEN_GAPS()                                                      \
+    bound_css.test_mode = 3;                                            \
+    char *gaps_before = collectIntFunResults(bound_css, 0, css.length(), 3, 0, 0); \
+    bound_css.test_mode = 4;                                            \
+    char *gaps_after = collectIntFunResults(bound_css, 0, css.length()-1, 3, 0, 1)
+
+#define GEN_DOTS(in)                                                    \
+    bound_css.test_mode = 5;                                            \
+    char *dots = collectIntFunResults(bound_css, 0, count_dotpos(css)-1, 3, 0, 1)
+    
+#define FREE_COMP_EXPD()                                                \
     free(expd);                                                         \
-    free(comp);
+    free(comp)
     
+#define FREE_GAPS()                                                     \
+    free(gaps_before);                                                  \
+    free(gaps_after)
+    
+#define COMP_EXPD_CHECK(exp_comp,exp_expd)                              \
+    GEN_COMP_EXPD();                                                    \
+    TEST_ASSERT_EQUAL(comp, exp_comp);                                  \
+    TEST_ASSERT_EQUAL(expd, exp_expd);                                  \
+    FREE_COMP_EXPD()
+
+#define GAPS_CHECK(exp_before,exp_after)                                \
+    GEN_GAPS();                                                         \
+    TEST_ASSERT_EQUAL(gaps_before, exp_before);                         \
+    TEST_ASSERT_EQUAL(gaps_after, exp_after);                           \
+    FREE_GAPS()
+
+#define DOTS_CHECK(exp_dots)                                            \
+    GEN_DOTS();                                                         \
+    TEST_ASSERT_EQUAL(dots, exp_dots);                                  \
+    free(dots)
+
+// ------------------------------------------------------------
+        
 #define TEST_CS_EQUALS(in,exp_comp,exp_expd) do {                       \
-        TEST_CS_START(in);                                              \
-        TEST_ASSERT_EQUAL(comp, exp_comp);                              \
-        TEST_ASSERT_EQUAL(expd, exp_expd);                              \
-        TEST_CS_END();                                                  \
-} while(0)
+        CSS_COMMON(in, 0);                                              \
+        COMP_EXPD_CHECK(exp_comp,exp_expd);                             \
+    } while(0)
+
+#define TEST_CS_EQUALS_OFFSET(in,offset,exp_comp,exp_expd) do {         \
+        CSS_COMMON(in, offset);                                         \
+        COMP_EXPD_CHECK(exp_comp,exp_expd);                             \
+    } while(0)
+        
+#define TEST_GAPS_EQUALS_OFFSET(in,offset,exp_before,exp_after) do {    \
+        CSS_COMMON(in, offset);                                         \
+        GAPS_CHECK(exp_before,exp_after);                               \
+    } while(0)
+
+#define TEST_DOTS_EQUALS_OFFSET(in,offset,exp_dots) do {                \
+        CSS_COMMON(in, offset);                                         \
+        DOTS_CHECK(exp_dots);                                           \
+    } while(0)
+
+#define TEST_CS_TEXT(in,exp_text) do {                                  \
+        CSS_COMMON(in, 0);                                              \
+        GEN_TEXT(in);                                                   \
+        TEST_ASSERT_EQUAL(text, exp_text);                              \
+        free(text);                                                     \
+    } while(0)
 
 #define TEST_CS_CBROKN(in,exp_comp,exp_expd) do {                       \
-        TEST_CS_START(in);                                              \
+        CSS_COMMON(in, 0);                                              \
+        GEN_COMP_EXPD();                                                \
         TEST_ASSERT_EQUAL__BROKEN(comp, exp_comp);                      \
         TEST_ASSERT_EQUAL(expd, exp_expd);                              \
-        TEST_CS_END();                                                  \
-} while(0)
+        FREE_COMP_EXPD();                                               \
+    } while(0)
 
-void TEST_CompactedSequence() {
+void TEST_EARLY_CompactedSequence() {
     // reproduce a bug in compPosition
 
     // no base
     TEST_CS_EQUALS("-",          "  0  [0]",       "  1");
     TEST_CS_EQUALS("--",         "  0  0  [0]",    "  2");
     TEST_CS_EQUALS("---",        "  0  0  0  [0]", "  3");
-    
+
+    TEST_CS_TEXT("---", "");
+    TEST_CS_TEXT("-?~", "");
+    TEST_CS_TEXT("-A-", " 65");    // "A"
+    TEST_CS_TEXT("A-C", " 65 67"); // "AC"
+
     TEST_CS_EQUALS("----------", "  0  0  0  0  0  0  0  0  0  0  [0]", " 10");
 
     // one base
@@ -387,6 +402,7 @@ void TEST_CompactedSequence() {
 
     TEST_CS_EQUALS("A---C---G-", "  0  1  1  1  1  2  2  2  2  3  [3]", "  0  4  8 10");
     TEST_CS_EQUALS("A---C----G", "  0  1  1  1  1  2  2  2  2  2  [3]", "  0  4  9 10");
+    TEST_CS_EQUALS("A~~~C????G", "  0  1  1  1  1  2  2  2  2  2  [3]", "  0  4  9 10");
 
     // 4 bases
     TEST_CS_EQUALS("-AC-G--T--", "  0  0  1  2  2  3  3  3  4  4  [4]", "  1  2  4  7 10"); 
@@ -400,6 +416,32 @@ void TEST_CompactedSequence() {
 
     // all 10 bases
     TEST_CS_EQUALS("ACGTACGTAC", "  0  1  2  3  4  5  6  7  8  9 [10]", "  0  1  2  3  4  5  6  7  8  9 10");
+
+    TEST_CS_EQUALS_OFFSET("A--C-G-", 0, "  0  1  1  1  2  2  3  [3]",             "  0  3  5  7");
+    TEST_CS_EQUALS_OFFSET("A--C-G-", 2, "  0  0  0  1  1  1  2  2  3  [3]",       "  2  5  7  9");
+    TEST_CS_EQUALS_OFFSET("A--C-G-", 3, "  0  0  0  0  1  1  1  2  2  3  [3]",    "  3  6  8 10");
+    TEST_CS_EQUALS_OFFSET("A--C-G-", 4, "  0  0  0  0  0  1  1  1  2  2  3  [3]", "  4  7  9 11");
+
+    // test no_of_gaps_before() and no_of_gaps_after()
+    TEST_GAPS_EQUALS_OFFSET("-AC---G",     0, "  1  0  3  0", "  0  3  0 [-1]");
+    TEST_GAPS_EQUALS_OFFSET(".AC..-G",     0, "  1  0  3  0", "  0  3  0 [-1]");
+    TEST_GAPS_EQUALS_OFFSET("~AC?\?-G",     0, "  1  0  3  0", "  0  3  0 [-1]");
+    TEST_GAPS_EQUALS_OFFSET("A--C-G-",     0, "  0  2  1  1", "  2  1  1 [-1]");
+    TEST_GAPS_EQUALS_OFFSET("A--C-G-",  1000, "  0  2  1  1", "  2  1  1 [-1]"); // is independent from offset
+
+    // test dots
+    TEST_DOTS_EQUALS_OFFSET("----ACG--T--A-C--GT----", 0, " [-1]");    // no dots
+    TEST_DOTS_EQUALS_OFFSET("....ACG--T--A-C--GT....", 0, " [-1]");    // no extraordinary dots
+    TEST_DOTS_EQUALS_OFFSET("....ACG--T..A-C--GT....", 0, "  4 [-1]"); // i.e. "before base number 4"
+    TEST_DOTS_EQUALS_OFFSET("....ACG..T--A.C--GT....", 0, "  3  5 [-1]");
+    TEST_DOTS_EQUALS_OFFSET("....ACG..T~~A.C??GT....", 0, "  3  5 [-1]");
+
+    TEST_DOTS_EQUALS_OFFSET("AC-----GTA-----CGT", 0, " [-1]");
+    // just care THAT dots occur in a gap, dont care how many
+    TEST_DOTS_EQUALS_OFFSET("A-.-G-...-C...T", 0, "  1  2  3 [-1]");
+    TEST_DOTS_EQUALS_OFFSET("A.--G...--C...T", 0, "  1  2  3 [-1]");
+    TEST_DOTS_EQUALS_OFFSET("A--.G--...C...T", 0, "  1  2  3 [-1]");
 }
 
 #endif // UNIT_TESTS
+
