@@ -1,5 +1,8 @@
 #!/usr/bin/perl
 
+use strict;
+use warnings;
+
 # create/update build info into
 # $ARBHOME/TEMPLATES/arb_build.h and
 # $ARBHOME/TEMPLATES/svn_revision.h
@@ -182,4 +185,5 @@ else {
   }
   # use revision info as in source tarball
 }
+
 

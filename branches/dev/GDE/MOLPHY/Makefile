@@ -50,10 +50,6 @@ SOURCES_TML = $(OBJML:.o=.c) $(OBJPML:.o=.c)
 
 all : prot_tml.h $(PRGS:%=../../bin/%)
 
-prot_tml.h: $(SOURCES_TML) Makefile
-	rm -f $@
-	../../MAKEBIN/aisc_mkpt -w $@ $(SOURCES_TML) >$@
-
 $(INSTALLDIR)/protml : $(OBJML) $(OBJPML)
 	$(CC) $(CFLAGS) $(DEFINE) -o $@ $(OBJML) $(OBJPML) $(LIBS)
 
@@ -174,8 +170,15 @@ Ndmlproc.o : Ndmlproc.c protdml.h molphy.h optimtpm.c abratio.c
 
 # others
 
+prot_tml.h: $(SOURCES_TML) Makefile
+	rm -f $@
+	../../MAKEBIN/aisc_mkpt -w $@ $(SOURCES_TML) >$@.tmp
+	$(ARBHOME)/SOURCE_TOOLS/mv_if_diff $@.tmp $@
+
+proto: prot_tml.h
+
 clean :
-	rm -f $(OBJECTS) $(PRGS) prot_tml.h
+	rm -f $(OBJECTS) $(PRGS) 
 
 DEPENDS = $(SOURCES_TML:.c=.depend)
 depends: $(DEPENDS)

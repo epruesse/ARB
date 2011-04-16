@@ -53,8 +53,7 @@ ifeq ('$(RAISE_WARNINGS)','0')
 	@echo ----------------- warnings enabled again
 endif
 
-proto:
-	@echo "Nothing to be done for proto"
+proto: MOLPHY/MOLPHY.proto
 
 depends: $(ARCHS:.dummy=.depend)
 
@@ -82,6 +81,10 @@ clean: $(ARCHS:.dummy=.clean)
 	@$(MAKE) -C $(@D) \
 		"ARB  = yes" \
 		clean
+
+%.proto:
+	@$(MAKE) -C $(@D) \
+		proto
 
 # the end of the above command avoids that the output of parallel make calls gets mixed up 
 
