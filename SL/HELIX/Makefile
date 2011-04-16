@@ -42,7 +42,6 @@ BI_basepos.o: $(ARBHOME)/INCLUDE/arb_assert.h
 BI_basepos.o: $(ARBHOME)/INCLUDE/arb_core.h
 BI_basepos.o: $(ARBHOME)/INCLUDE/arb_error.h
 BI_basepos.o: $(ARBHOME)/INCLUDE/arb_msg.h
-BI_basepos.o: $(ARBHOME)/INCLUDE/arb_str.h
 BI_basepos.o: $(ARBHOME)/INCLUDE/arb_string.h
 BI_basepos.o: $(ARBHOME)/INCLUDE/arbdb.h
 BI_basepos.o: $(ARBHOME)/INCLUDE/arbdb_base.h

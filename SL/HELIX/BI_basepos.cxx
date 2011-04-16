@@ -11,42 +11,40 @@
 #include "BI_basepos.hxx"
 
 #include <arbdbt.h>
-#include <arb_str.h>
 
 
 static bool is_Gap(char c) { return c == '-' || c == '.'; }
+static CharPredicate pred_is_gap(is_Gap);
 
 // ---------------------
 //      BasePosition
 
-void BasePosition::initialize(const char *seq, size_t size) {
-    initialize(seq, size, is_Gap);
+void BasePosition::initialize(const char *seq, int size) {
+    initialize(seq, size, pred_is_gap);
 }
 
-void BasePosition::initialize(const char *seq, size_t size, is_gap_fun is_gap) {
+void BasePosition::initialize(const char *seq, int size, const CharPredicate& is_gap) {
     cleanup();
 
+    bi_assert(size >= 0);
+
     absLen  = size;
-    abs2rel = new size_t[absLen+1];
+    abs2rel = new int[absLen+1];
 
-    bool isGap[256];
-    for (int c = 0; c<256; ++c) isGap[c] = is_gap(c);
-
-    size_t i;
+    int i;
     for (i = 0; seq[i] && i<size; ++i) {
         abs2rel[i] = baseCount;
-        if (!isGap[safeCharIndex(seq[i])]) ++baseCount;
+        if (!is_gap.applies(seq[i])) ++baseCount;
     }
-    bi_assert(!seq[i]); // strlen(seq) > size (illegal)
-    bi_assert(baseCount);
+    bi_assert(baseCount >= 0);
 
     for (; i <= size; ++i) {
         abs2rel[i] = baseCount;
     }
 
-    rel2abs = new size_t[baseCount+1];
+    rel2abs = new int[baseCount+1];
     for (i = size; i>0; --i) {
-        size_t rel = abs2rel[i];
+        int rel = abs2rel[i];
         if (rel) {
             rel2abs[rel-1] = i-1;
         }

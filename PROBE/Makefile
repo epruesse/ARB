@@ -178,7 +178,6 @@ PT_io.o: $(ARBHOME)/INCLUDE/arb_core.h
 PT_io.o: $(ARBHOME)/INCLUDE/arb_error.h
 PT_io.o: $(ARBHOME)/INCLUDE/arb_msg.h
 PT_io.o: $(ARBHOME)/INCLUDE/arb_progress.h
-PT_io.o: $(ARBHOME)/INCLUDE/arb_str.h
 PT_io.o: $(ARBHOME)/INCLUDE/arb_string.h
 PT_io.o: $(ARBHOME)/INCLUDE/arbdb.h
 PT_io.o: $(ARBHOME)/INCLUDE/arbdb_base.h

@@ -352,6 +352,10 @@ void TEST_CompactedSequence() {
     // reproduce a bug in compPosition
 
     // no base
+    TEST_CS_EQUALS("-",          "  0  [0]",       "  1");
+    TEST_CS_EQUALS("--",         "  0  0  [0]",    "  2");
+    TEST_CS_EQUALS("---",        "  0  0  0  [0]", "  3");
+    
     TEST_CS_EQUALS("----------", "  0  0  0  0  0  0  0  0  0  0  [0]", " 10");
 
     // one base

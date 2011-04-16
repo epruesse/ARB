@@ -516,7 +516,6 @@ adlang1.o: $(ARBHOME)/INCLUDE/arb_core.h
 adlang1.o: $(ARBHOME)/INCLUDE/arb_defs.h
 adlang1.o: $(ARBHOME)/INCLUDE/arb_error.h
 adlang1.o: $(ARBHOME)/INCLUDE/arb_msg.h
-adlang1.o: $(ARBHOME)/INCLUDE/arb_str.h
 adlang1.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 adlang1.o: $(ARBHOME)/INCLUDE/arb_string.h
 adlang1.o: $(ARBHOME)/INCLUDE/arbtools.h

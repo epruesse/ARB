@@ -18,7 +18,6 @@
 
 template<typename FUN>
 inline void streamIntFunResults(GBS_strstruct *out, FUN fun, int start, int end, int width) {
-    arb_assert(start <= end);
     for (int i = start; i <= end; ++i) {
         int res = fun(i);
         GBS_strnprintf(out, 20, "%*i", width, res);
@@ -26,7 +25,6 @@ inline void streamIntFunResults(GBS_strstruct *out, FUN fun, int start, int end,
 }
 template<typename FUN>
 inline void streamIntFunResultsInBrackets(GBS_strstruct *out, FUN fun, int start, int end, int width) {
-    arb_assert(start <= end);
     for (int i = start; i <= end; ++i) {
         int  res = fun(i);
         char buffer[30];

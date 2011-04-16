@@ -14,7 +14,6 @@
 
 #include <arbdbt.h>
 #include <BI_basepos.hxx>
-#include <arb_str.h>
 #include <arb_progress.h>
 
 int compress_data(char *probestring) {
