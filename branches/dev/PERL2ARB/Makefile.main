@@ -87,11 +87,8 @@ Makefile : $(MACH).PL typemap Makefile.main
 	  perl ${MACH}.PL "$(cross_cflags)" "$(cross_lflags)" )
 
 Makefile.PL : $(MACH).PL
-	@( \
-		echo "# --------------------------------------------------"; \
-		echo "# This file is a copy of $<"; \
-		echo "# --------------------------------------------------"; \
-		cat $< \
+	( \
+		echo "system('perl $< \"$(cross_cflags)\" \"$(cross_lflags)\"');" \
 	) > $@
 
 ARB.xs : $(ARB_PROTO_2_XSUB) proto.h ARB.default.xs perlmain_source.c typemap
