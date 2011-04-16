@@ -182,7 +182,6 @@ AW_device.o: aw_window.hxx
 AW_device.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_device.o: $(ARBHOME)/INCLUDE/arb_core.h
 AW_device.o: $(ARBHOME)/INCLUDE/arb_error.h
-AW_device.o: $(ARBHOME)/INCLUDE/arb_str.h
 AW_device.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AW_device.o: $(ARBHOME)/INCLUDE/arbtools.h
 AW_device.o: $(ARBHOME)/INCLUDE/attributes.h

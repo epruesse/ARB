@@ -56,7 +56,7 @@ void TEST_SLOW_ascii_2_bin_2_ascii() {
     TEST_ASSERT_ZERO_OR_SHOW_ERRNO(GB_unlink("ascii2bin.ARF"));
 }
 
-void TEST_arb_gene_probe() {
+void TEST_SLOW_arb_gene_probe() {
     const char *genome   = "tools/gene_probe.arb";
     const char *out      = "tools/gene_probe_out.arb";
     const char *expected = "tools/gene_probe_expected.arb";

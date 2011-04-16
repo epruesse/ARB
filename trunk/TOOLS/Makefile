@@ -142,7 +142,6 @@ arb_export_rates.o: $(ARBHOME)/INCLUDE/arb_assert.h
 arb_export_rates.o: $(ARBHOME)/INCLUDE/arb_core.h
 arb_export_rates.o: $(ARBHOME)/INCLUDE/arb_error.h
 arb_export_rates.o: $(ARBHOME)/INCLUDE/arb_msg.h
-arb_export_rates.o: $(ARBHOME)/INCLUDE/arb_str.h
 arb_export_rates.o: $(ARBHOME)/INCLUDE/arb_string.h
 arb_export_rates.o: $(ARBHOME)/INCLUDE/arbdb.h
 arb_export_rates.o: $(ARBHOME)/INCLUDE/arbdb_base.h

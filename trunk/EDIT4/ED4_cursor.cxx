@@ -17,7 +17,6 @@
 #include "ed4_awars.hxx"
 #include "ed4_ProteinViewer.hxx"
 
-#include <arb_str.h>
 #include <arb_strbuf.h>
 #include <arb_defs.h>
 
@@ -1516,7 +1515,11 @@ void ED4_base_position::calc4base(const ED4_base *base)
 
     e4_assert(seq);
 
-    initialize(seq, len, is_gap_fun);
+#if defined(WARN_TODO)
+#warning ED4_is_align_character is kinda CharPredicate - refactor
+#endif
+    CharPredicate pred_is_gap(is_gap_fun);
+    initialize(seq, len, pred_is_gap);
     calced4base = base;
 
     free(seq);
@@ -1775,18 +1778,24 @@ struct test_basepos : public test_absrel {
 
 void TEST_BI_ecoli_ref() {
     TEST_ECOLIREF_EQUALS("-.AC-G-T-.", 10,
-                         "  [4]  0  0  0  1  2  2  3  3  4  4  4  [4]", // abs -> rel
-                         "  [7]  2  3  5  7  [7]");                     // rel -> abs
+                         "  [0]  0  0  0  1  2  2  3  3  4  4  4  [4]", // abs -> rel
+                         "  [0]  2  3  5  7  [7]");                     // rel -> abs
 
-    TEST_ECOLIREF_EQUALS("A",   1, "  [1]  0  1  [1]",       "  [0]  0  [0]");
-    TEST_ECOLIREF_EQUALS("A",   2, "  [1]  0  1  1  [1]",    "  [0]  0  [0]");
+    TEST_ECOLIREF_EQUALS("-",   1, "  [0]  0  0  [0]",       "  [0]  [0]");
+    TEST_ECOLIREF_EQUALS("--A", 1, "  [0]  0  0  [0]",       "  [0]  [0]"); // part of sequence
+    TEST_ECOLIREF_EQUALS("--",  2, "  [0]  0  0  0  [0]",    "  [0]  [0]");
+    TEST_ECOLIREF_EQUALS("---", 3, "  [0]  0  0  0  0  [0]", "  [0]  [0]");
+    
+    TEST_ECOLIREF_EQUALS("A",   1, "  [0]  0  1  [1]",       "  [0]  0  [0]");
+    TEST_ECOLIREF_EQUALS("A",   2, "  [0]  0  1  1  [1]",    "  [0]  0  [0]");
 
-    TEST_ECOLIREF_EQUALS("A-",  2, "  [1]  0  1  1  [1]",    "  [0]  0  [0]");
-    TEST_ECOLIREF_EQUALS("-A",  2, "  [1]  0  0  1  [1]",    "  [1]  1  [1]");
+    TEST_ECOLIREF_EQUALS("A-",  2, "  [0]  0  1  1  [1]",    "  [0]  0  [0]");
+    TEST_ECOLIREF_EQUALS("-A",  2, "  [0]  0  0  1  [1]",    "  [0]  1  [1]");
 
-    TEST_ECOLIREF_EQUALS("A--", 3, "  [1]  0  1  1  1  [1]", "  [0]  0  [0]");
-    TEST_ECOLIREF_EQUALS("-A-", 3, "  [1]  0  0  1  1  [1]", "  [1]  1  [1]");
-    TEST_ECOLIREF_EQUALS("--A", 3, "  [1]  0  0  0  1  [1]", "  [2]  2  [2]");
+    TEST_ECOLIREF_EQUALS("A",   3, "  [0]  0  1  1  1  [1]", "  [0]  0  [0]"); // more than sequence
+    TEST_ECOLIREF_EQUALS("A--", 3, "  [0]  0  1  1  1  [1]", "  [0]  0  [0]");
+    TEST_ECOLIREF_EQUALS("-A-", 3, "  [0]  0  0  1  1  [1]", "  [0]  1  [1]");
+    TEST_ECOLIREF_EQUALS("--A", 3, "  [0]  0  0  0  1  [1]", "  [0]  2  [2]");
 }
 
 void TEST_ED4_base_position() {
@@ -1794,24 +1803,28 @@ void TEST_ED4_base_position() {
     ED4_init_is_align_character("-"); // count '.' as base
 
     TEST_BASE_POS_EQUALS("-.AC-G-T-.",
-                         "  [6]  0  0  1  2  3  3  4  4  5  5  6  [6]", // abs -> rel
-                         "  [9]  1  2  3  5  7  9  [9]");               // rel -> abs
+                         "  [0]  0  0  1  2  3  3  4  4  5  5  6  [6]", // abs -> rel
+                         "  [0]  1  2  3  5  7  9  [9]");               // rel -> abs
 
     // ------------------------------
     ED4_init_is_align_character(".-");
 
     TEST_BASE_POS_EQUALS("-.AC-G-T-.",
-                         "  [4]  0  0  0  1  2  2  3  3  4  4  4  [4]", // abs -> rel
-                         "  [7]  2  3  5  7  [7]");                     // rel -> abs
-    
-    TEST_BASE_POS_EQUALS("A",   "  [1]  0  1  [1]",       "  [0]  0  [0]");
+                         "  [0]  0  0  0  1  2  2  3  3  4  4  4  [4]", // abs -> rel
+                         "  [0]  2  3  5  7  [7]");                     // rel -> abs
 
-    TEST_BASE_POS_EQUALS("A-",  "  [1]  0  1  1  [1]",    "  [0]  0  [0]");
-    TEST_BASE_POS_EQUALS("-A",  "  [1]  0  0  1  [1]",    "  [1]  1  [1]");
+    TEST_BASE_POS_EQUALS("-",   "  [0]  0  0  [0]",       "  [0]  [0]");
+    TEST_BASE_POS_EQUALS("--",  "  [0]  0  0  0  [0]",    "  [0]  [0]");
+    TEST_BASE_POS_EQUALS("---", "  [0]  0  0  0  0  [0]", "  [0]  [0]");
+
+    TEST_BASE_POS_EQUALS("A",   "  [0]  0  1  [1]",       "  [0]  0  [0]");
+
+    TEST_BASE_POS_EQUALS("A-",  "  [0]  0  1  1  [1]",    "  [0]  0  [0]");
+    TEST_BASE_POS_EQUALS("-A",  "  [0]  0  0  1  [1]",    "  [0]  1  [1]");
     
-    TEST_BASE_POS_EQUALS("A--", "  [1]  0  1  1  1  [1]", "  [0]  0  [0]");
-    TEST_BASE_POS_EQUALS("-A-", "  [1]  0  0  1  1  [1]", "  [1]  1  [1]");
-    TEST_BASE_POS_EQUALS("--A", "  [1]  0  0  0  1  [1]", "  [2]  2  [2]");
+    TEST_BASE_POS_EQUALS("A--", "  [0]  0  1  1  1  [1]", "  [0]  0  [0]");
+    TEST_BASE_POS_EQUALS("-A-", "  [0]  0  0  1  1  [1]", "  [0]  1  [1]");
+    TEST_BASE_POS_EQUALS("--A", "  [0]  0  0  0  1  [1]", "  [0]  2  [2]");
 }
 
 #endif // UNIT_TESTS
