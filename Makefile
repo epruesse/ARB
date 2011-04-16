@@ -1274,8 +1274,8 @@ modified: touch
 
 #********************************************************************************
 
-depends:
-	$(MAKE) comtools 
+depends: templ 
+	$(MAKE) comtools
 	@echo "$(SEP) Partially build com interface"
 	-rm PROBE_COM/.depends
 	-rm NAMES_COM/.depends
