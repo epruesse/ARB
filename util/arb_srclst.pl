@@ -181,7 +181,6 @@ my @used_when_matchesFull = (
 # skipped_when_matchesFull and forced_when_matchesFull are always tested! (@3)
 
 my @skipped_when_matchesFull = (
-                                qr/\/MOLPHY\/prot_tml\.h$/o,
                                 qr/date\.xsl$/o,
                                 qr/\/genhelp\/.*\.hlp$/o,
                                 qr/^\.\/GDE\/CORE\/functions.h$/o,

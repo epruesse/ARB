@@ -1500,7 +1500,7 @@ reloc_clean: links
 		perl_clean \
 		GDEHELP/GDEHELP.clean \
 		HELP_SOURCE/genhelp/genhelp.clean \
-		binclean \
+		bin/bin.clean \
 		libclean \
 		objclean
 
@@ -1535,7 +1535,7 @@ perl4ever: clean
 rebuild: clean
 	$(MAKE) build
 
-relink: binclean libclean
+relink: bin/bin.clean libclean
 	$(MAKE) build
 
 tarfile: rebuild
