@@ -11,8 +11,17 @@ HEAD->BRANCH
                 7223 -> 7224
                 7302 7303 7304 7317 7318 7319 -> 7349 
                 7331 7332 7333 7334 7335 7336 7337 7338 7339 7340 7341 7342 7343 7344 7345 7346 7347 7348 -> 7350
+                7411 -> 7425
 
-    not reviewed: 7351:HEAD
+    skipped patches (depends, already there, ...)
+
+        merged from dev: 7352 7407 7408 7409 7410 7412 7413 7414 7415 7423 7424
+
+    not merged yet:
+
+        --- current try above
+
+    not reviewed: 7427:HEAD
 
 BRANCH->HEAD
 
@@ -35,10 +44,12 @@ BRANCH->HEAD
                 7355 7369 7370 -> 7413
                 7373 7375 7376 7377 7378 7379 7380 7381 7382 7383 7384 7385 7386 7387 7388 7389 7390 7391 7392 7393 7394 -> 7414
                 7395 7396 7397 7398 7399 7400 7401 7402 7403 7404 7405 -> 7415
+                7320 7418 7419 7420 -> 7423
+                7321 7322 7323 7324 7325 7326 7327 7329 7417 7421 7422 -> 7424
 
     skipped patches (depends, already there, this file, ...)
 
-                this file:      7249 7277 7351 7416
+                this file:      7249 7277 7351 7416 7426
                 depends:        7256 
                 crap:           7278 7280 
                 sync 2 trunk:   7281 
@@ -55,14 +66,4 @@ BRANCH->HEAD
                 7295 GBL_reference
                 7296 ACI refactoring
 
-                7320 BasePosition
-                7321 CompactedSequence
-                7322 CompactedSequence
-                7323 CompactedSequence
-                7324 CompactedSequence
-                7325 CompactedSequence
-                7326 CompactedSequence
-                7327 CompactedSequence
-                7329 CompactedSequence
-
-    not reviewed: 7417:HEAD
+    not reviewed: 7427:HEAD
