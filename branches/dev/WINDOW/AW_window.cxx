@@ -13,9 +13,6 @@
 #include "aw_nawar.hxx"
 #include "aw_xfig.hxx"
 #include "aw_Xm.hxx"
-#include "aw_click.hxx"
-#include "aw_size.hxx"
-#include "aw_print.hxx"
 #include "aw_window_Xm.hxx"
 #include "aw_xkey.hxx"
 #include "aw_select.hxx"
@@ -3101,7 +3098,7 @@ AW_device *AW_window::get_device(AW_area area) {
     return (AW_device *)(aram->device);
 }
 
-AW_device *AW_window::get_size_device(AW_area area) {
+AW_device_size *AW_window::get_size_device(AW_area area) {
     AW_area_management *aram = MAP_ARAM(area);
     if (!aram)
         return 0;
@@ -3109,20 +3106,20 @@ AW_device *AW_window::get_size_device(AW_area area) {
         aram->size_device = new AW_device_size(aram->common);
     aram->size_device->init();
     aram->size_device->reset();
-    return (AW_device *)(aram->size_device);
+    return aram->size_device;
 }
 
-AW_device *AW_window::get_print_device(AW_area area) {
+AW_device_print *AW_window::get_print_device(AW_area area) {
     AW_area_management *aram = MAP_ARAM(area);
     if (!aram)
         return 0;
     if (!aram->print_device)
         aram->print_device = new AW_device_print(aram->common);
     aram->print_device->init();
-    return (AW_device *)(aram->print_device);
+    return aram->print_device;
 }
 
-AW_device *AW_window::get_click_device(AW_area area, int mousex, int mousey,
+AW_device_click *AW_window::get_click_device(AW_area area, int mousex, int mousey,
         AW_pos max_distance_linei, AW_pos max_distance_texti, AW_pos radi) {
     AW_area_management *aram = MAP_ARAM(area);
     if (!aram)
@@ -3131,7 +3128,7 @@ AW_device *AW_window::get_click_device(AW_area area, int mousex, int mousey,
         aram->click_device = new AW_device_click(aram->common);
     aram->click_device->init(mousex, mousey, max_distance_linei,
                              max_distance_texti, radi, (AW_bitset)-1);
-    return (AW_device *)(aram->click_device);
+    return aram->click_device;
 }
 
 void AW_window::wm_activate() {

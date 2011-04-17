@@ -633,6 +633,10 @@ int AW_device::generic_filled_area(int gc, int npoints, AW_pos *points, AW_bitse
     return erg;
 }
 
+#if defined(WARN_TODO)
+#warning make functions below pure virtual
+#endif
+
 
 void AW_device::clear(AW_bitset /* filteri */) {}
 void AW_device::clear_part(AW_pos /* x */, AW_pos /* y */, AW_pos /* width */, AW_pos /* height */, AW_bitset /* filteri */) {}
@@ -641,15 +645,6 @@ void AW_device::move_region(AW_pos /* src_x */, AW_pos /* src_y */, AW_pos /* wi
 void AW_device::fast() {}
 void AW_device::slow() {}
 void AW_device::flush() {}
-
-// forbidden operations:
-INLINE_ATTRIBUTED(__ATTR__NORETURN, void forbidden(const char *toUse)) { GBK_terminatef("It's not allowed to use '%s' with this device", toUse); }
-const char *AW_device::open(const char * /* path */) { forbidden("open"); }
-void AW_device::close() { forbidden("close"); }
-void AW_device::set_color_mode(bool /* mode */) { forbidden("set_color_mode"); }
-void AW_device::get_clicked_line(AW_clicked_line * /* ptr */) { forbidden("get_clicked_line"); }
-void AW_device::get_clicked_text(AW_clicked_text * /* ptr */) { forbidden("get_clicked_text"); }
-void AW_device::get_size_information(AW_world * /* ptr */) { forbidden("get_size_information"); }
 
 int AW_device::cursor(int gc, AW_pos x0, AW_pos y0, AW_cursor_type cur_type, AW_bitset filteri, AW_CL clientdata1, AW_CL clientdata2) {
     class AW_GC_Xm *gcm = AW_MAP_GC(gc);

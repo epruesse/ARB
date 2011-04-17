@@ -8,7 +8,6 @@
 //                                                                 //
 // =============================================================== //
 
-#include <aw_click.hxx>
 #include "aw_commn.hxx"
 
 using namespace AW;

@@ -8,7 +8,6 @@
 //                                                                 //
 // =============================================================== //
 
-#include <aw_size.hxx>
 #include "aw_commn.hxx"
 
 #include <algorithm>
