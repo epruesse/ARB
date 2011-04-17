@@ -17,6 +17,7 @@
 #include <aw_root.hxx>
 #include <arbdbt.h>
 
+
 #define awt_assert(cond) arb_assert(cond)
 
 // --------------------------------------------------------------------------------
@@ -35,7 +36,7 @@ static void awt_print_tree_check_size(void *, AW_CL cl_ntw) {
     AW_world        size;
     long            what = ntw->aww->get_root()->awar(AWAR_PRINT_TREE_CLIP)->read_int();
 
-    AW_device *size_device = ntw->aww->get_size_device(AW_MIDDLE_AREA);
+    AW_device_size *size_device = ntw->aww->get_size_device(AW_MIDDLE_AREA);
 
     if (what) {
         size_device->reset();
@@ -220,8 +221,8 @@ const char *AWT_print_tree_to_file(AW_window *aww, AWT_canvas * ntw) {
         long handles   = awr->awar(AWAR_PRINT_TREE_HANDLES)->read_int();
         int  use_color = awr->awar(AWAR_PRINT_TREE_COLOR)->read_int();
 
-        AW_device *device      = ntw->aww->get_print_device(AW_MIDDLE_AREA);
-        AW_device *size_device = ntw->aww->get_size_device(AW_MIDDLE_AREA);
+        AW_device_print *device      = ntw->aww->get_print_device(AW_MIDDLE_AREA);
+        AW_device_size  *size_device = ntw->aww->get_size_device(AW_MIDDLE_AREA);
 
         device->reset();
         device->set_color_mode(use_color==1);
@@ -401,7 +402,7 @@ void AWT_print_tree_to_printer(AW_window *aww, AW_CL cl_ntw) {
     }
 
     if (!error) {
-        AW_device *device = ntw->aww->get_print_device(AW_MIDDLE_AREA);
+        AW_device_print *device = ntw->aww->get_print_device(AW_MIDDLE_AREA);
 
         char *xfig;
         {
@@ -428,12 +429,13 @@ void AWT_print_tree_to_printer(AW_window *aww, AW_CL cl_ntw) {
             device->line(0, 0, 0, 1, -1); // dummy point upper left corner
 
             if (awr->awar(AWAR_PRINT_TREE_CLIP)->read_int()) { // draw all
-                AW_world size;
-                AW_device *size_device = ntw->aww->get_size_device(AW_MIDDLE_AREA);
+                AW_device_size *size_device = ntw->aww->get_size_device(AW_MIDDLE_AREA);
                 size_device->reset();
                 size_device->zoom(ntw->trans_to_fit);
                 size_device->set_filter(AW_SCREEN);
                 ntw->tree_disp->show(size_device);
+
+                AW_world size;
                 size_device->get_size_information(&size);
                 size.l -= 50;
                 size.t -= 40;       // expand pic

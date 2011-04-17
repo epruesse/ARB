@@ -16,6 +16,9 @@
 
 class AW_window;
 class AW_device;
+class AW_device_click;
+class AW_device_print;
+class AW_device_size;
 class AW_rectangle;
 struct GB_HASH;
 
@@ -337,11 +340,11 @@ public:
     void force_expose(); // forces the window to expose instantly
 
     // ******************* Get the devices **********************
-    AW_device *get_device (AW_area area);
-    AW_device *get_click_device(AW_area area, int mousex, int mousey, AW_pos max_distance_linei,
-                                AW_pos max_distance_texti, AW_pos radi);
-    AW_device *get_size_device  (AW_area area);
-    AW_device *get_print_device (AW_area area);
+    AW_device *get_device(AW_area area);
+    AW_device_click *get_click_device(AW_area area, int mousex, int mousey, AW_pos max_distance_linei,
+                                      AW_pos max_distance_texti, AW_pos radi);
+    AW_device_size *get_size_device(AW_area area);
+    AW_device_print *get_print_device(AW_area area);
 
     // ************** Create the menu buttons *********
     void create_menu(AW_label name, const char *mnemonic, AW_active mask = AWM_ALL);

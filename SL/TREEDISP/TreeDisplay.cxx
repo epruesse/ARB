@@ -2359,7 +2359,7 @@ const char *AWT_graphic_tree::show_ruler(AW_device *device, int gc) {
         if (!GB_search(gb_tree, awar, GB_FIND)) {
             if (device->type() == AW_DEVICE_SIZE) {
                 AW_world world;
-                device ->get_size_information(&world);
+                DOWNCAST(AW_device_size*, device)->get_size_information(&world);
                 ruler_y = world.b * 1.3;
             }
         }

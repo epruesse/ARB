@@ -203,7 +203,7 @@ static void input_cb(AW_window *aww, AW_CL cl_dmatrix, AW_CL) {
         dmatrix->handle_move(event);
     }
     else {
-        AW_device *click_device = aww->get_click_device(AW_MIDDLE_AREA, event.x, event.y, 20, 20, 0);
+        AW_device_click *click_device = aww->get_click_device(AW_MIDDLE_AREA, event.x, event.y, 20, 20, 0);
 
         click_device->set_filter(AW_CLICK);
         click_device->reset();
