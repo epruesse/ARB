@@ -2254,7 +2254,7 @@ void *AW_window::_create_option_entry(AW_VARIABLE_TYPE type, const char *name, c
     Widget                 entry;
     AW_option_menu_struct *oms = p_global->current_option_menu;
 
-    aw_assert(oms->variable_type != type); // adding wrong entry type
+    aw_assert(oms->variable_type == type); // adding wrong entry type
 
     TuneOrSetBackground(oms->menu_widget, name_of_color, TUNE_BUTTON); // set background color for radio button entries
     entry = XtVaCreateManagedWidget("optionMenu_entry",
