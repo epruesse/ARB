@@ -166,12 +166,10 @@ static long insert_species_in_tree_test(const char *key, long val, void *cd_isit
     }
 
     if (leaf->get_seq()->weighted_base_count() < MIN_SEQUENCE_LENGTH) {
-        sprintf(AW_ERROR_BUFFER,
-                "Species %s has too short sequence (%f, minimum is %i)",
-                key,
-                leaf->get_seq()->weighted_base_count(),
-                MIN_SEQUENCE_LENGTH);
-        aw_errorbuffer_message();
+        aw_message(GBS_global_string("Species %s has too short sequence (%f, minimum is %i)",
+                                     key,
+                                     leaf->get_seq()->weighted_base_count(),
+                                     MIN_SEQUENCE_LENGTH));
         delete leaf;
         return val;
     }
@@ -344,13 +342,10 @@ static AP_tree_nlen *insert_species_in_tree(const char *key, AP_tree_nlen *leaf,
     AP_tree_nlen *tree = rootNode();
 
     if (leaf->get_seq()->weighted_base_count() < MIN_SEQUENCE_LENGTH) {
-        sprintf(AW_ERROR_BUFFER,
-                "Species %s has too short sequence (%f, minimum is %i)",
-                key,
-                leaf->get_seq()->weighted_base_count(),
-                MIN_SEQUENCE_LENGTH);
-
-        aw_errorbuffer_message();
+        aw_message(GBS_global_string("Species %s has too short sequence (%f, minimum is %i)",
+                                     key,
+                                     leaf->get_seq()->weighted_base_count(),
+                                     MIN_SEQUENCE_LENGTH));
         delete leaf;
         return 0;
     }

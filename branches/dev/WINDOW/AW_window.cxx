@@ -1322,20 +1322,6 @@ void AW_root::exit_variables() {
     }
 }
 
-void *AW_root::get_aw_var_struct(char *awar_name) {
-    long vs;
-    vs = (long)GBS_read_hash(hash_table_for_variables, awar_name);
-    if (!vs) {
-        AW_ERROR("AW_root::get_aw_var_struct: Variable %s not defined", awar_name);
-    }
-    return (void *)vs;
-}
-void *AW_root::get_aw_var_struct_no_error(char *awar_name) {
-    long vs;
-    vs = (long)GBS_read_hash(hash_table_for_variables, awar_name);
-    return (void*)vs;
-}
-
 static void aw_root_create_color_map(AW_root *root) {
     int i;
     XColor xcolor_returned, xcolor_exakt;
@@ -1681,10 +1667,8 @@ AW_color AW_window::alloc_named_data_color(int colnum, char *colorname) {
         if (color_table[colnum] != (unsigned long)-1) {
             XFreeColors(p_global->display, p_global->colormap, &color_table[colnum], 1, 0);
         }
-        if (XAllocNamedColor(p_global->display, p_global->colormap, colorname,
-        &xcolor_returned, &xcolor_exakt) == 0) {
-            sprintf(AW_ERROR_BUFFER, "XAllocColor failed: %s\n", colorname);
-            aw_errorbuffer_message();
+        if (XAllocNamedColor(p_global->display, p_global->colormap, colorname, &xcolor_returned, &xcolor_exakt) == 0) {
+            aw_message(GBS_global_string("XAllocColor failed: %s\n", colorname));
             color_table[colnum] = (unsigned long)-1;
         }
         else {
@@ -1775,7 +1759,7 @@ void AW_label_in_awar_list(AW_window *aww, Widget widget, const char *str) {
             aww->update_label(widget, var_value);
         }
         else {
-            AW_ERROR("AW_label_in_awar_list:: AWAR %s not found\n", str);
+            aw_assert(0); // awar not found
             aww->update_label(widget, str);
         }
         free(var_value);
@@ -1976,10 +1960,10 @@ Widget aw_create_shell(AW_window *aww, bool allow_resize, bool allow_close, int 
     }
 
     if (!icon_pixmap) {
-        AW_ERROR("Error: Missing icon pixmap for window '%s'\n", aww->window_defaults_name);
+        GBK_terminatef("Missing icon pixmap for window '%s'\n", aww->window_defaults_name);
     }
     else if (icon_pixmap == XmUNSPECIFIED_PIXMAP) {
-        AW_ERROR("Error: Failed to load icon pixmap for window '%s'\n", aww->window_defaults_name);
+        GBK_terminatef("Failed to load icon pixmap for window '%s'\n", aww->window_defaults_name);
     }
 
 #if defined(DEBUG) && 0
