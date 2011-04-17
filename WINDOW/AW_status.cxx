@@ -958,36 +958,3 @@ void aw_message(const char *msg) {
     }
 }
 
-#if defined(WARN_TODO)
-#warning remove AW_ERROR_BUFFER
-#endif
-char AW_ERROR_BUFFER[1024];
-
-void aw_errorbuffer_message() { aw_message(AW_ERROR_BUFFER); }
-
-void aw_error(const char *text, const char *text2) {
-    char    buffer[1024];
-    sprintf(buffer, "An internal error occur:\n\n%s %s\n\nYou may:", text, text2);
-    aw_question(buffer, "Continue,EXIT");
-}
-
-
-#if defined(WARN_TODO)
-#warning Check where AW_ERROR is used and maybe use one of the GB_error/terminate functions
-#endif
-
-void AW_ERROR(const char *templat, ...) {
-    char buffer[10000];
-    va_list parg;
-    char *p;
-    sprintf(buffer, "Internal ARB Error [AW]: ");
-    p = buffer + strlen(buffer);
-
-    va_start(parg, templat);
-
-    vsprintf(p, templat, parg);
-    fprintf(stderr, "%s\n", buffer);
-
-    aw_message(buffer);
-    aw_assert(0);
-}

@@ -202,6 +202,7 @@ SEC_io.o: $(ARBHOME)/INCLUDE/arb_assert.h
 SEC_io.o: $(ARBHOME)/INCLUDE/arb_core.h
 SEC_io.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 SEC_io.o: $(ARBHOME)/INCLUDE/arbtools.h
+SEC_io.o: $(ARBHOME)/INCLUDE/attributes.h
 SEC_io.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 SEC_io.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 SEC_io.o: $(ARBHOME)/INCLUDE/aw_font_group.hxx
@@ -223,6 +224,7 @@ SEC_layout.o: $(ARBHOME)/INCLUDE/arb_assert.h
 SEC_layout.o: $(ARBHOME)/INCLUDE/arb_core.h
 SEC_layout.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 SEC_layout.o: $(ARBHOME)/INCLUDE/arbtools.h
+SEC_layout.o: $(ARBHOME)/INCLUDE/attributes.h
 SEC_layout.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 SEC_layout.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 SEC_layout.o: $(ARBHOME)/INCLUDE/aw_font_group.hxx
@@ -374,6 +376,7 @@ SEC_structure.o: $(ARBHOME)/INCLUDE/arb_assert.h
 SEC_structure.o: $(ARBHOME)/INCLUDE/arb_core.h
 SEC_structure.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 SEC_structure.o: $(ARBHOME)/INCLUDE/arbtools.h
+SEC_structure.o: $(ARBHOME)/INCLUDE/attributes.h
 SEC_structure.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 SEC_structure.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 SEC_structure.o: $(ARBHOME)/INCLUDE/aw_font_group.hxx

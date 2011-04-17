@@ -67,15 +67,12 @@ void PARS_tree_init(AWT_graphic_tree *agt) {
     agt->tree_static->set_root_changed_callback(AWT_graphic_parsimony_root_changed, agt);
 }
 
-double funktion_quadratisch(double x, double *param_list, int param_anz) {
-    AP_FLOAT ergebnis;
-    double wert = (double)x;
+double funktion_quadratisch(double wert, double *param_list, int param_anz) {
     if (param_anz != 3) {
-        AW_ERROR("funktion_quadratisch: Falsche Parameteranzahl !");
-        return (AP_FLOAT)0;
+        ap_assert(0); // wrong number of parameters
+        return 0;
     }
-    ergebnis = wert * wert * param_list[0] + wert * param_list[1] + param_list[2];
-    return ergebnis;
+    return wert * wert * param_list[0] + wert * param_list[1] + param_list[2];
 }
 
 
