@@ -320,7 +320,7 @@ ED4_returncode ED4_AA_sequence_terminal::draw(int /* only_text */)
                     if ((gcChar>=0) && (gcChar<ED4_G_DRAG)) {
                         color = gcChar;
                         if (iDisplayMode == PV_AA_BOX) {
-                            device->box(color, true, x1, y1, width*3, height, AW_ALL_DEVICES);
+                            device->box(color, true, x1, y1, width*3, height);
                         }
                         else {
                             double    rad_x    = width*1.5;
@@ -328,8 +328,8 @@ ED4_returncode ED4_AA_sequence_terminal::draw(int /* only_text */)
                             double    center_x = x1+rad_x;
                             const int DRAW_DEG = 62;
 
-                            device->arc(ED4_G_SEQUENCES, false, center_x, y1, rad_x, rad_y,   0, -DRAW_DEG, AW_ALL_DEVICES);
-                            device->arc(ED4_G_SEQUENCES, false, center_x, y1, rad_x, rad_y, 180,  DRAW_DEG, AW_ALL_DEVICES);
+                            device->arc(ED4_G_SEQUENCES, false, center_x, y1, rad_x, rad_y,   0, -DRAW_DEG);
+                            device->arc(ED4_G_SEQUENCES, false, center_x, y1, rad_x, rad_y, 180,  DRAW_DEG);
                         }
                     }
                 }
@@ -530,7 +530,7 @@ ED4_returncode ED4_sequence_terminal::draw(int /* only_text */)
                 if (color != old_color) {   // draw till oldcolor
                     if (x2>old_x) {
                         if (old_color!=ED4_G_STANDARD) {
-                            device->box(old_color, true, old_x, y1, x2-old_x, height, AW_ALL_DEVICES); // paints the search pattern background
+                            device->box(old_color, true, old_x, y1, x2-old_x, height); // paints the search pattern background
                         }
                     }
                     old_x = x2;
@@ -540,7 +540,7 @@ ED4_returncode ED4_sequence_terminal::draw(int /* only_text */)
 
             if (x2>old_x) {
                 if (color!=ED4_G_STANDARD) {
-                    device->box(color, true, old_x, y1, x2-old_x, height, AW_ALL_DEVICES);
+                    device->box(color, true, old_x, y1, x2-old_x, height);
                 }
             }
         }
@@ -632,7 +632,7 @@ ED4_returncode ED4_sequence_info_terminal::draw(int /* only_text */)
 
     ED4_species_name_terminal *name_term = corresponding_species_name_terminal();
     if (name_term->flag.selected) {
-        ED4_ROOT->get_device()->box(ED4_G_SELECTED, true, x, y, extension.size[WIDTH], text_y-y+1, AW_ALL_DEVICES);
+        ED4_ROOT->get_device()->box(ED4_G_SELECTED, true, x, y, extension.size[WIDTH], text_y-y+1);
     }
 
     ED4_ROOT->get_device()->top_font_overlap    = 1;
@@ -714,7 +714,7 @@ ED4_returncode ED4_text_terminal::draw(int /* only_text */)
         }
 
         if (flag.selected) {
-            ED4_ROOT->get_device()->box(ED4_G_SELECTED, true, x, y, extension.size[WIDTH], text_y-y+1, AW_ALL_DEVICES);
+            ED4_ROOT->get_device()->box(ED4_G_SELECTED, true, x, y, extension.size[WIDTH], text_y-y+1);
         }
         ED4_ROOT->get_device()->text(ED4_G_STANDARD, real_name, text_x+width_of_char, text_y, 0, AW_SCREEN, 0);
 
@@ -726,7 +726,7 @@ ED4_returncode ED4_text_terminal::draw(int /* only_text */)
             int bx    = int(text_x+xoff);
             int by    = int(text_y-(yoff+ysize));
 
-            ED4_ROOT->get_device()->box(ED4_G_STANDARD, true, bx, by, xsize, ysize, AW_ALL_DEVICES);
+            ED4_ROOT->get_device()->box(ED4_G_STANDARD, true, bx, by, xsize, ysize);
             if (!is_marked && xsize>2 && ysize>2) {
                 ED4_ROOT->get_device()->clear_part(bx+1, by+1, xsize-2, ysize-2, AW_ALL_DEVICES);
             }

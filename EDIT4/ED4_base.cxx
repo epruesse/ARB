@@ -1442,7 +1442,7 @@ ED4_returncode ED4_base::clear_background(int color) {
             }
             else {
                 // fill range with color for debugging
-                ED4_ROOT->get_device()->box(color, true, x, y, extension.size[WIDTH], extension.size[HEIGHT], AW_ALL_DEVICES);
+                ED4_ROOT->get_device()->box(color, true, x, y, extension.size[WIDTH], extension.size[HEIGHT]);
             }
         }
         ED4_ROOT->get_device()->pop_clip_scale();
@@ -1469,7 +1469,7 @@ void ED4_base::draw_bb(int color)
             AW_pos x1, y1;
             calc_world_coords(&x1, &y1);
             ED4_ROOT->world_to_win_coords(ED4_ROOT->get_aww(), &x1, &y1);
-            ED4_ROOT->get_device()->box(color, false, x1, y1, extension.size[WIDTH]-1, extension.size[HEIGHT]-1, AW_ALL_DEVICES);
+            ED4_ROOT->get_device()->box(color, false, x1, y1, extension.size[WIDTH]-1, extension.size[HEIGHT]-1);
         }
         ED4_ROOT->get_device()->pop_clip_scale();
     }

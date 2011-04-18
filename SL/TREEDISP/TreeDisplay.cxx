@@ -2625,8 +2625,8 @@ void AWT_graphic_tree::show_nds_list(GBDATA *, bool use_nds) {
         delete [] row;
     }
 
-    disp_device->invisible(AWT_GC_CURSOR, 0, 0, AW_ALL_DEVICES);
-    disp_device->invisible(AWT_GC_CURSOR, max_x, y_position+scaled_branch_distance, AW_ALL_DEVICES);
+    disp_device->invisible(AWT_GC_CURSOR, 0, 0);
+    disp_device->invisible(AWT_GC_CURSOR, max_x, y_position+scaled_branch_distance);
 }
 
 void AWT_graphic_tree::show(AW_device *device) {

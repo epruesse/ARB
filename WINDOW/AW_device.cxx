@@ -579,8 +579,7 @@ bool AW_device::ready_to_draw(int gc) {
     return AW_GC_MAPABLE(common, gc);
 }
 
-int AW_device::generic_box(int gc, bool /* filled */, AW_pos x0, AW_pos y0, AW_pos width, AW_pos height, AW_bitset filteri)
-{
+int AW_device::generic_box(int gc, bool /* filled */, AW_pos x0, AW_pos y0, AW_pos width, AW_pos height, AW_bitset filteri) {
     int erg = 0;
     if (filteri & filter) {
         erg |= line(gc, x0, y0, x0+width, y0, filteri);
@@ -595,8 +594,7 @@ int AW_device::generic_box(int gc, bool /* filled */, AW_pos x0, AW_pos y0, AW_p
 #warning draw in 45-degree-steps (8-cornered-polygones instead of circles)
 #endif
 
-int AW_device::generic_circle(int gc, bool /* filled has no effect here */, AW_pos x0, AW_pos y0, AW_pos width, AW_pos height, AW_bitset filteri)
-{
+int AW_device::generic_circle(int gc, bool /* filled has no effect here */, AW_pos x0, AW_pos y0, AW_pos width, AW_pos height, AW_bitset filteri) {
     int erg = 0;
     if (filteri & filter) {
         erg |= line(gc, x0, y0+height, x0+width, y0, filteri);
@@ -607,8 +605,7 @@ int AW_device::generic_circle(int gc, bool /* filled has no effect here */, AW_p
     return erg;
 }
 
-int AW_device::generic_arc(int gc, bool /* filled has no effect here */, AW_pos x0, AW_pos y0, AW_pos width, AW_pos height, int /* start_degrees */, int /* arc_degrees */, AW_bitset filteri)
-{
+int AW_device::generic_arc(int gc, bool /* filled has no effect here */, AW_pos x0, AW_pos y0, AW_pos width, AW_pos height, int /* start_degrees */, int /* arc_degrees */, AW_bitset filteri) {
     int erg = 0;
     if (filteri & filter) {
         erg |= line(gc, x0, y0+height, x0+width, y0, filteri);
