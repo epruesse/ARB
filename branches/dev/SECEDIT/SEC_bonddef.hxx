@@ -40,7 +40,7 @@ class SEC_bond_def {
     char      get_bond(char base1, char base2) const;
     char     *get_pair_string(char pair_char);
 
-    void paint(AW_device *device, int gc, char bond, const Position& p1, const Position& p2, const Vector& toNextBase, const double& char_radius, AW_CL cd1, AW_CL cd2) const;
+    void paint(AW_device *device, int gc, char bond, const Position& p1, const Position& p2, const Vector& toNextBase, const double& char_radius) const;
 
 public:
 
@@ -48,7 +48,7 @@ public:
 
     GB_ERROR update(AW_root *awr, const char *changed_awar_name);
 
-    void paint(AW_device *device, char base1, char base2, const Position& p1, const Position& p2, const Vector& toNextBase, const double& char_radius, AW_CL cd1, AW_CL cd2) const;
+    void paint(AW_device *device, char base1, char base2, const Position& p1, const Position& p2, const Vector& toNextBase, const double& char_radius) const;
 };
 
 

@@ -3127,7 +3127,7 @@ AW_device_click *AW_window::get_click_device(AW_area area, int mousex, int mouse
     if (!aram->click_device)
         aram->click_device = new AW_device_click(aram->common);
     aram->click_device->init(mousex, mousey, max_distance_linei,
-                             max_distance_texti, radi, (AW_bitset)-1);
+                             max_distance_texti, radi, AW_ALL_DEVICES);
     return aram->click_device;
 }
 

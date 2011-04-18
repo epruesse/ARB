@@ -39,7 +39,7 @@ void AW_device_Xm::init() {
 AW_DEVICE_TYPE AW_device_Xm::type() { return AW_DEVICE_SCREEN; }
 
 
-int AW_device_Xm::line_impl(int gc, AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW_bitset filteri, AW_CL /*cd1*/, AW_CL /*cd2*/) {
+int AW_device_Xm::line_impl(int gc, AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW_bitset filteri) {
     class AW_GC_Xm *gcm      = AW_MAP_GC(gc);
     AW_pos          X0, Y0, X1, Y1; // Transformed pos
     AW_pos          CX0, CY0, CX1, CY1; // Clipped line
@@ -60,9 +60,8 @@ int AW_device_Xm::line_impl(int gc, AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, 
     return drawflag;
 }
 
-int AW_draw_string_on_screen(AW_device *device, int gc, const  char *str, size_t /* opt_str_len */, size_t start, size_t size,
-                             AW_pos x, AW_pos y, AW_pos /*opt_ascent*/, AW_pos /*opt_descent*/,
-                             AW_CL /*cduser*/, AW_CL /*cd1*/, AW_CL /*cd2*/)
+static int AW_draw_string_on_screen(AW_device *device, int gc, const  char *str, size_t /* opt_str_len */, size_t start, size_t size,
+                                    AW_pos x, AW_pos y, AW_pos /*opt_ascent*/, AW_pos /*opt_descent*/, AW_CL /*cduser*/)
 {
     AW_pos X, Y;
     device->transform(x, y, X, Y);
@@ -76,11 +75,11 @@ int AW_draw_string_on_screen(AW_device *device, int gc, const  char *str, size_t
 }
 
 
-int AW_device_Xm::text_impl(int gc, const char *str, AW_pos x, AW_pos y, AW_pos alignment, AW_bitset filteri, AW_CL cd1, AW_CL cd2, long opt_strlen) {
-    return text_overlay(gc, str, opt_strlen, x, y, alignment, filteri, (AW_CL)this, cd1, cd2, 0.0, 0.0, AW_draw_string_on_screen);
+int AW_device_Xm::text_impl(int gc, const char *str, AW_pos x, AW_pos y, AW_pos alignment, AW_bitset filteri, long opt_strlen) {
+    return text_overlay(gc, str, opt_strlen, x, y, alignment, filteri, (AW_CL)this, 0.0, 0.0, AW_draw_string_on_screen);
 }
 
-int AW_device_Xm::box_impl(int gc, bool filled, AW_pos x0, AW_pos y0, AW_pos width, AW_pos height, AW_bitset filteri, AW_CL cd1, AW_CL cd2) {
+int AW_device_Xm::box_impl(int gc, bool filled, AW_pos x0, AW_pos y0, AW_pos width, AW_pos height, AW_bitset filteri) {
     AW_pos x1, y1;
 
     if (filteri & filter) {
@@ -106,21 +105,21 @@ int AW_device_Xm::box_impl(int gc, bool filled, AW_pos x0, AW_pos y0, AW_pos wid
             }
         }
         else {
-            line(gc, x0, y0, x1, y0, filteri, cd1, cd2);
-            line(gc, x0, y0, x0, y1, filteri, cd1, cd2);
-            line(gc, x0, y1, x1, y1, filteri, cd1, cd2);
-            line(gc, x1, y0, x1, y1, filteri, cd1, cd2);
+            line(gc, x0, y0, x1, y0, filteri);
+            line(gc, x0, y0, x0, y1, filteri);
+            line(gc, x0, y1, x1, y1, filteri);
+            line(gc, x1, y0, x1, y1, filteri);
         }
     }
 
     return 0;
 }
 
-int AW_device_Xm::circle_impl(int gc, bool filled, AW_pos x0, AW_pos y0, AW_pos width, AW_pos height, AW_bitset filteri, AW_CL cd1, AW_CL cd2) {
-    return arc(gc, filled, x0, y0, width, height, 0, 360, filteri, cd1, cd2);
+int AW_device_Xm::circle_impl(int gc, bool filled, AW_pos x0, AW_pos y0, AW_pos width, AW_pos height, AW_bitset filteri) {
+    return arc(gc, filled, x0, y0, width, height, 0, 360, filteri);
 }
 
-int AW_device_Xm::arc_impl(int gc, bool filled, AW_pos x0, AW_pos y0, AW_pos width, AW_pos height, int start_degrees, int arc_degrees, AW_bitset filteri, AW_CL /*cd1*/, AW_CL /*cd2*/) {
+int AW_device_Xm::arc_impl(int gc, bool filled, AW_pos x0, AW_pos y0, AW_pos width, AW_pos height, int start_degrees, int arc_degrees, AW_bitset filteri) {
     class AW_GC_Xm *gcm = AW_MAP_GC(gc);
     AW_pos X0, Y0, X1, Y1;                          // Transformed pos
     AW_pos XL, YL;                                  // Left edge of circle pos
