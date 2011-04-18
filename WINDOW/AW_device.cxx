@@ -565,7 +565,7 @@ AW_device::AW_device(class AW_common *commoni) : AW_gc() {
 
 AW_gc::AW_gc() : AW_clip() {}
 
-bool AW_device::invisible(int /*gc*/, AW_pos x, AW_pos y, AW_bitset filteri) {
+bool AW_device::invisible_impl(int /*gc*/, AW_pos x, AW_pos y, AW_bitset filteri) {
     if (filteri & filter) {
         AW_pos X, Y;            // Transformed pos
         transform(x, y, X, Y);

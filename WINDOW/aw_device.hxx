@@ -382,6 +382,8 @@ public:
 
     virtual AW_DEVICE_TYPE type() = 0;
 
+    bool ready_to_draw(int gc); // unused atm
+
     // * functions below return 1 if any pixel is drawn, 0 otherwise
     // * primary functions (always virtual)
 
@@ -393,13 +395,10 @@ private:
     virtual int circle_impl(int gc, bool filled, AW_pos x0, AW_pos y0, AW_pos width, AW_pos heigth, AW_bitset filteri)                                  = 0;
     virtual int arc_impl(int gc, bool filled, AW_pos x0, AW_pos y0, AW_pos width, AW_pos heigth, int start_degrees, int arc_degrees, AW_bitset filteri) = 0;
 
-public:
-    virtual bool ready_to_draw(int gc);
+protected:
+    virtual bool invisible_impl(int gc, AW_pos x, AW_pos y, AW_bitset filteri); // returns true if x/y is outside viewport (or if it would now be drawn undrawn)
 
     // * second level functions (maybe non virtual)
-
-    virtual bool invisible(int gc, AW_pos x, AW_pos y, AW_bitset filteri); // returns true if x/y is outside viewport (or if it would now be drawn undrawn)
-    virtual int cursor(int gc, AW_pos x0, AW_pos y0, AW_cursor_type type, AW_bitset filteri);
 
 protected:
     int generic_box(int gc, bool filled, AW_pos x0, AW_pos y0, AW_pos width, AW_pos heigth, AW_bitset filteri);
@@ -409,6 +408,8 @@ protected:
 
 public:
     // * third level functions (never virtual)
+
+    int cursor(int gc, AW_pos x0, AW_pos y0, AW_cursor_type type, AW_bitset filteri);
 
     // convenience functions
 
@@ -439,9 +440,14 @@ public:
              long                 opt_strlen = 0) {
         return text_impl(gc, string, pos.xpos(), pos.ypos(), alignment, filteri, opt_strlen);
     }
-    bool invisible(int gc, AW::Position pos, AW_bitset filteri) {
-        return invisible(gc, pos.xpos(), pos.ypos(), filteri);
+    
+    bool invisible(int gc, AW_pos x, AW_pos y, AW_bitset filteri) {
+        return invisible_impl(gc, x, y, filteri);
     }
+    bool invisible(int gc, AW::Position pos, AW_bitset filteri) {
+        return invisible_impl(gc, pos.xpos(), pos.ypos(), filteri);
+    }
+    
     int box(int gc, bool filled, AW_pos x0, AW_pos y0, AW_pos width, AW_pos heigth, AW_bitset filteri) {
         return box_impl(gc, filled, x0, y0, width, heigth, filteri);
     }
@@ -468,6 +474,7 @@ public:
     int arc(int gc, bool filled, const AW::Position& pos, AW_pos width, AW_pos heigth, int start_degrees, int arc_degrees, AW_bitset filteri) {
         return arc(gc, filled, pos.xpos(), pos.ypos(), width, heigth, start_degrees, arc_degrees, filteri);
     }
+    
     int filled_area(int gc, int npoints, AW_pos *points, AW_bitset filteri)  {
         return filled_area_impl(gc, npoints, points, filteri);
     }
@@ -557,6 +564,7 @@ class AW_device_size : public AW_simple_device {
 
     int line_impl(int gc, AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW_bitset filteri);
     int text_impl(int gc, const  char *string, AW_pos x, AW_pos y, AW_pos alignment, AW_bitset filteri, long opt_strlen);
+    bool invisible_impl(int gc, AW_pos x, AW_pos y, AW_bitset filteri);
 
 public:
     AW_device_size(AW_common *commoni) : AW_simple_device(commoni) {}
@@ -564,7 +572,6 @@ public:
     void           init();
     AW_DEVICE_TYPE type();
 
-    bool invisible(int gc, AW_pos x, AW_pos y, AW_bitset filteri);
     void get_size_information(AW_world *ptr);
 };
 
