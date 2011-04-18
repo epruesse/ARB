@@ -48,7 +48,7 @@ inline bool valid_cb_params(AW_device *device) {
 
 static void paintDebugInfo(AW_device *device, int color, const Position& pos, const char *txt) {
     sec_assert(valid_cb_params(device));
-    device->circle(color, true, pos.xpos(), pos.ypos(), 0.06, 0.06, AW_ALL_DEVICES);
+    device->circle(color, true, pos.xpos(), pos.ypos(), 0.06, 0.06);
     device->text(SEC_GC_DEFAULT, txt, pos.xpos(), pos.ypos(), 0, AW_SCREEN, 0);
 }
 static void paintStrandDebugInfo(AW_device *device, int color, SEC_helix_strand *strand) {
@@ -215,7 +215,7 @@ void SEC_root::paintAnnotation(AW_device *device, int gc,
         Rectangle box(note_center+center_corner, -2*center_corner);
 
         device->clear_part(box, -1);
-        device->box(gc, false, box, AW_ALL_DEVICES);
+        device->box(gc, false, box);
     }
 
     device->text(gc, text, textcorner);
@@ -304,7 +304,7 @@ void SEC_root::showSomeAbsolutePositions(AW_device *device) {
         Rectangle showInside(screen.upper_left_corner()+diag3*1.85, diag3);
 
         AW_click_cd cd(device, 0, -1);
-        device->box(SEC_GC_DEFAULT, false, showInside, AW_ALL_DEVICES);
+        device->box(SEC_GC_DEFAULT, false, showInside);
 
         PosMap::const_iterator end = drawnPositions->end();
         for (PosMap::const_iterator pos = drawnPositions->begin(); pos != end; ++pos) {
@@ -363,8 +363,8 @@ void SEC_loop::paint_constraints(AW_device *device) {
     if (minS>0 || maxS>0) {
         AW_click_cd cd(device, self(), abspos);
         
-        if (minS>0) device->circle(SEC_GC_DEFAULT, false, center, minS, minS, AW_ALL_DEVICES);
-        if (maxS>0) device->circle(SEC_GC_DEFAULT, false, center, maxS, maxS, AW_ALL_DEVICES);
+        if (minS>0) device->circle(SEC_GC_DEFAULT, false, center, minS, minS);
+        if (maxS>0) device->circle(SEC_GC_DEFAULT, false, center, maxS, maxS);
 
         device->text(SEC_GC_DEFAULT, GBS_global_string("%.1f-%.1f", minS, maxS), center+Vector(0, max(minS, maxS)/2), 0.5, AW_ALL_DEVICES);
     }
@@ -437,11 +437,11 @@ void SEC_root::paintBackgroundColor(AW_device *device, SEC_bgpaint_mode mode, co
         }
 
         if (mode & BG_PAINT_FIRST && color1 >= 0) { // paint first circle ?
-            device->circle(color1, true, p1, radius1, radius1, AW_ALL_DEVICES);
+            device->circle(color1, true, p1, radius1, radius1);
         }
 
         if (mode & BG_PAINT_SECOND && color2 >= 0) { // paint second circle ?
-            device->circle(color2, true, p2, radius1, radius1, AW_ALL_DEVICES);
+            device->circle(color2, true, p2, radius1, radius1);
         }
 
         if (color1 == color2 && color1 >= 0) { // colors are equal -> paint background between points
@@ -585,8 +585,8 @@ void SEC_bond_def::paint(AW_device *device, int GC, char bondChar, const Positio
             Angle angle(outside);
             int   deg = int(angle.degrees()+0.5);
 
-            device->arc(GC, false, c1, radius, radius, deg+180-1, 180+30, AW_ALL_DEVICES);
-            device->arc(GC, false, c2, radius, radius, deg-1,     180+30, AW_ALL_DEVICES);
+            device->arc(GC, false, c1, radius, radius, deg+180-1, 180+30);
+            device->arc(GC, false, c2, radius, radius, deg-1,     180+30);
             break;
         }
 
@@ -606,7 +606,7 @@ void SEC_bond_def::paint(AW_device *device, int GC, char bondChar, const Positio
         case '.': {             // circles
             double radius            = aside.length();
             if (bondChar == 'o') radius *= 2;
-            device->circle(GC, false, center, radius, radius, AW_ALL_DEVICES);
+            device->circle(GC, false, center, radius, radius);
             break;
         }
 
@@ -1037,7 +1037,7 @@ GB_ERROR SEC_root::paint(AW_device *device) {
 
             Position textPos(loop_center.xpos(), upperleft_corner.ypos());
 
-            device->box(SEC_GC_DEFAULT, false, upperleft_corner, diagonal, AW_ALL_DEVICES);
+            device->box(SEC_GC_DEFAULT, false, upperleft_corner, diagonal);
             device->text(SEC_GC_DEFAULT, structId, textPos, 0.5, AW_ALL_DEVICES, 0);
         }
 

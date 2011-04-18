@@ -150,7 +150,7 @@ int AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, int x_offset) {
             irs_gl.device->line(gc, x_offset, boty, rx,       boty);
 
             irs_gl.device->box(node->gr.gc, true, x_offset - (tipBoxSize>>1), topy - (tipBoxSize>>1), tipBoxSize, tipBoxSize, mark_filter);
-            irs_gl.device->box(node->gr.gc, true, x_offset+2,                 irs_gl.y+irs_gl.step_y, vsize,      vsize,      AW_ALL_DEVICES);
+            irs_gl.device->box(node->gr.gc, true, x_offset+2,                 irs_gl.y+irs_gl.step_y, vsize,      vsize);
 
             irs_gl.y += vsize + 2*irs_gl.step_y;
             if (node_string) { //  a node name should be displayed

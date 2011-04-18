@@ -440,42 +440,42 @@ public:
              long                 opt_strlen = 0) {
         return text_impl(gc, string, pos.xpos(), pos.ypos(), alignment, filteri, opt_strlen);
     }
-    
-    bool invisible(int gc, AW_pos x, AW_pos y, AW_bitset filteri) {
+
+    bool invisible(int gc, AW_pos x, AW_pos y, AW_bitset filteri = AW_ALL_DEVICES) {
         return invisible_impl(gc, x, y, filteri);
     }
-    bool invisible(int gc, AW::Position pos, AW_bitset filteri) {
+    bool invisible(int gc, AW::Position pos, AW_bitset filteri = AW_ALL_DEVICES) {
         return invisible_impl(gc, pos.xpos(), pos.ypos(), filteri);
     }
-    
-    int box(int gc, bool filled, AW_pos x0, AW_pos y0, AW_pos width, AW_pos heigth, AW_bitset filteri) {
+
+    int box(int gc, bool filled, AW_pos x0, AW_pos y0, AW_pos width, AW_pos heigth, AW_bitset filteri = AW_ALL_DEVICES) {
         return box_impl(gc, filled, x0, y0, width, heigth, filteri);
     }
-    int box(int gc, bool filled, const AW::Position& pos, const AW::Vector& size, AW_bitset filteri) {
+    int box(int gc, bool filled, const AW::Position& pos, const AW::Vector& size, AW_bitset filteri = AW_ALL_DEVICES) {
         return box(gc, filled, pos.xpos(), pos.ypos(), size.x(), size.y(), filteri);
     }
-    int box(int gc, bool filled, const AW::Rectangle& rect, AW_bitset filteri) {
+    int box(int gc, bool filled, const AW::Rectangle& rect, AW_bitset filteri = AW_ALL_DEVICES) {
         return box(gc, filled, rect.upper_left_corner(), rect.diagonal(), filteri);
     }
 
-    int circle(int gc, bool filled, AW_pos x0, AW_pos y0, AW_pos width, AW_pos heigth, AW_bitset filteri)  {
+    int circle(int gc, bool filled, AW_pos x0, AW_pos y0, AW_pos width, AW_pos heigth, AW_bitset filteri = AW_ALL_DEVICES)  {
         return circle_impl(gc, filled, x0, y0, width, heigth, filteri);
     }
-    int circle(int gc, bool filled, const AW::Position& pos, AW_pos width, AW_pos heigth, AW_bitset filteri) {
+    int circle(int gc, bool filled, const AW::Position& pos, AW_pos width, AW_pos heigth, AW_bitset filteri = AW_ALL_DEVICES) {
         return circle(gc, filled, pos.xpos(), pos.ypos(), width, heigth, filteri);
     }
-    int circle(int gc, bool filled, const AW::Rectangle& rect, AW_bitset filteri) { // paint a circle/ellipsoid into a rectangle
+    int circle(int gc, bool filled, const AW::Rectangle& rect, AW_bitset filteri = AW_ALL_DEVICES) {
         return circle(gc, filled, rect.centroid(), rect.width(), rect.height(), filteri);
     }
 
-    int arc(int gc, bool filled, AW_pos x0, AW_pos y0, AW_pos width, AW_pos heigth, int start_degrees, int arc_degrees, AW_bitset filteri)  {
+    int arc(int gc, bool filled, AW_pos x0, AW_pos y0, AW_pos width, AW_pos heigth, int start_degrees, int arc_degrees, AW_bitset filteri = AW_ALL_DEVICES)  {
         return arc_impl(gc, filled, x0, y0, width, heigth, start_degrees, arc_degrees, filteri);
     }
-    int arc(int gc, bool filled, const AW::Position& pos, AW_pos width, AW_pos heigth, int start_degrees, int arc_degrees, AW_bitset filteri) {
+    int arc(int gc, bool filled, const AW::Position& pos, AW_pos width, AW_pos heigth, int start_degrees, int arc_degrees, AW_bitset filteri = AW_ALL_DEVICES) {
         return arc(gc, filled, pos.xpos(), pos.ypos(), width, heigth, start_degrees, arc_degrees, filteri);
     }
-    
-    int filled_area(int gc, int npoints, AW_pos *points, AW_bitset filteri)  {
+
+    int filled_area(int gc, int npoints, AW_pos *points, AW_bitset filteri = AW_ALL_DEVICES)  {
         return filled_area_impl(gc, npoints, points, filteri);
     }
 

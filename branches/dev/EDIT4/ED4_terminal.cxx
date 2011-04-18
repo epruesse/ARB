@@ -944,7 +944,7 @@ ED4_returncode ED4_bracket_terminal::draw(int /* only_text */)                  
     ED4_group_manager *group_man = get_parent(ED4_L_GROUP)->to_group_manager();
     ED4_multi_species_manager *multi_man = group_man->get_defined_level(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
     if (multi_man->get_no_of_selected_species()) {  // if multi_species_manager contains selected species
-        ED4_ROOT->get_device()->box(ED4_G_SELECTED, true, x, y, extension.size[WIDTH], extension.size[HEIGHT], AW_ALL_DEVICES);
+        ED4_ROOT->get_device()->box(ED4_G_SELECTED, true, x, y, extension.size[WIDTH], extension.size[HEIGHT]);
     }
 
     if (dynamic_prop & ED4_P_IS_FOLDED) { // paint triangle for folded group
@@ -1236,7 +1236,7 @@ ED4_returncode ED4_line_terminal::draw(int /* only_text */)      // draws boundi
 
     device->line(ED4_G_STANDARD, x1, y1, x2, y1);
 #if defined(DEBUG)
-    device->box(ED4_G_MARKED, true, x1, y1+1, x2-x1+1, y2-y1-1, AW_ALL_DEVICES);
+    device->box(ED4_G_MARKED, true, x1, y1+1, x2-x1+1, y2-y1-1);
 #else
     device->clear_part(x1, y1+1, x2-x1+1, y2-y1-1, AW_ALL_DEVICES);
 #endif // DEBUG
@@ -1446,14 +1446,14 @@ ED4_returncode ED4_columnStat_terminal::draw(int /* only_text */)
 
             if (color!=old_color) {
                 if (x2>old_x2 && old_color!=ED4_G_STANDARD) {
-                    device->box(old_color, true, old_x2, y, x2-old_x2, term_height, AW_ALL_DEVICES);
+                    device->box(old_color, true, old_x2, y, x2-old_x2, term_height);
                 }
                 old_color = color;
                 old_x2 = x2;
             }
         }
         if (x2>old_x2 && old_color!=ED4_G_STANDARD) {
-            device->box(old_color, true, old_x2, y, x2-old_x2, term_height, AW_ALL_DEVICES);
+            device->box(old_color, true, old_x2, y, x2-old_x2, term_height);
         }
 
         color = ED4_G_STANDARD;
@@ -1481,7 +1481,7 @@ ED4_returncode ED4_columnStat_terminal::draw(int /* only_text */)
                      r--, y2-=COLUMN_STAT_ROW_HEIGHT(font_height), bit>>=1)
                 {
                     if (found&bit) {
-                        device->box(color, true, x2, y2-2*font_height+1, font_width, 2*font_height, AW_ALL_DEVICES);
+                        device->box(color, true, x2, y2-2*font_height+1, font_width, 2*font_height);
                     }
                 }
             }
