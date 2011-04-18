@@ -15,9 +15,6 @@ using namespace AW;
 // ------------------------
 //      AW_device_click
 
-AW_device_click::AW_device_click(AW_common *commoni) : AW_device(commoni) {
-}
-
 void AW_device_click::init(AW_pos mousex, AW_pos mousey, AW_pos max_distance_linei, AW_pos max_distance_texti, AW_pos /*radi*/, AW_bitset filteri) {
     mouse_x           = mousex;
     mouse_y           = mousey;
@@ -36,7 +33,7 @@ AW_DEVICE_TYPE AW_device_click::type() {
 }
 
 
-int AW_device_click::line(int /*gc*/, AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW_bitset filteri, AW_CL clientdata1, AW_CL clientdata2) {
+int AW_device_click::line_impl(int /*gc*/, AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW_bitset filteri, AW_CL clientdata1, AW_CL clientdata2) {
     AW_pos X0, Y0, X1, Y1;                          // Transformed pos
     AW_pos CX0, CY0, CX1, CY1;                      // Clipped line
     int    drawflag;                                // is line visible on screen
@@ -119,7 +116,7 @@ int AW_device_click::line(int /*gc*/, AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1
 }
 
 
-int AW_device_click::text(int gc, const char *str, AW_pos x, AW_pos y, AW_pos alignment, AW_bitset filteri, AW_CL clientdata1, AW_CL clientdata2, long opt_strlen) {
+int AW_device_click::text_impl(int gc, const char *str, AW_pos x, AW_pos y, AW_pos alignment, AW_bitset filteri, AW_CL clientdata1, AW_CL clientdata2, long opt_strlen) {
     if (filteri & filter) {
         AW_pos X0, Y0;          // Transformed pos
         this->transform(x, y, X0, Y0);
