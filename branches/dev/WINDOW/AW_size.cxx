@@ -53,9 +53,9 @@ inline void AW_device_size::dot(AW_pos x, AW_pos y) {
     dot_transformed(X, Y);
 }
 
-bool AW_device_size::invisible(int gc, AW_pos x, AW_pos y, AW_bitset filteri) {
+bool AW_device_size::invisible_impl(int gc, AW_pos x, AW_pos y, AW_bitset filteri) {
     if (filteri & filter) dot(x, y);
-    return AW_device::invisible(gc, x, y, filteri);
+    return AW_device::invisible_impl(gc, x, y, filteri);
 }
 
 
