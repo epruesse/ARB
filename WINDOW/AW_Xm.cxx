@@ -39,7 +39,7 @@ void AW_device_Xm::init() {
 AW_DEVICE_TYPE AW_device_Xm::type() { return AW_DEVICE_SCREEN; }
 
 
-int AW_device_Xm::line(int gc, AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW_bitset filteri, AW_CL /*cd1*/, AW_CL /*cd2*/) {
+int AW_device_Xm::line_impl(int gc, AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW_bitset filteri, AW_CL /*cd1*/, AW_CL /*cd2*/) {
     class AW_GC_Xm *gcm      = AW_MAP_GC(gc);
     AW_pos          X0, Y0, X1, Y1; // Transformed pos
     AW_pos          CX0, CY0, CX1, CY1; // Clipped line
@@ -76,31 +76,30 @@ int AW_draw_string_on_screen(AW_device *device, int gc, const  char *str, size_t
 }
 
 
-int AW_device_Xm::text(int gc, const char *str, AW_pos x, AW_pos y, AW_pos alignment, AW_bitset filteri, AW_CL cd1, AW_CL cd2, long opt_strlen) {
+int AW_device_Xm::text_impl(int gc, const char *str, AW_pos x, AW_pos y, AW_pos alignment, AW_bitset filteri, AW_CL cd1, AW_CL cd2, long opt_strlen) {
     return text_overlay(gc, str, opt_strlen, x, y, alignment, filteri, (AW_CL)this, cd1, cd2, 0.0, 0.0, AW_draw_string_on_screen);
 }
 
-int AW_device_Xm::box(int gc, bool filled, AW_pos x0, AW_pos y0, AW_pos width, AW_pos height, AW_bitset filteri, AW_CL cd1, AW_CL cd2) {
-    class AW_GC_Xm *gcm = AW_MAP_GC(gc);
+int AW_device_Xm::box_impl(int gc, bool filled, AW_pos x0, AW_pos y0, AW_pos width, AW_pos height, AW_bitset filteri, AW_CL cd1, AW_CL cd2) {
     AW_pos x1, y1;
-    AW_pos X0, Y0, X1, Y1;                          // Transformed pos
-    AW_pos CX0, CY0, CX1, CY1;                      // Clipped line
-    int    drawflag = 0;
 
     if (filteri & filter) {
         x1 = x0 + width;
         y1 = y0 + height;
-        this->transform(x0, y0, X0, Y0);
-        this->transform(x1, y1, X1, Y1);
-
         if (filled) {
-            drawflag = this->box_clip(X0, Y0, X1, Y1, CX0, CY0, CX1, CY1);
+            AW_pos X0, Y0, X1, Y1; // Transformed pos
+            this->transform(x0, y0, X0, Y0);
+            this->transform(x1, y1, X1, Y1);
+
+            AW_pos CX0, CY0, CX1, CY1; // Clipped line
+            int drawflag = this->box_clip(X0, Y0, X1, Y1, CX0, CY0, CX1, CY1);
             if (drawflag) {
                 int cx0 = AW_INT(CX0);
                 int cx1 = AW_INT(CX1);
                 int cy0 = AW_INT(CY0);
                 int cy1 = AW_INT(CY1);
 
+                class AW_GC_Xm *gcm = AW_MAP_GC(gc);
                 XFillRectangle(common->display, common->window_id, gcm->gc,
                                cx0, cy0, cx1-cx0+1, cy1-cy0+1);
                 AUTO_FLUSH(this);
@@ -117,11 +116,11 @@ int AW_device_Xm::box(int gc, bool filled, AW_pos x0, AW_pos y0, AW_pos width, A
     return 0;
 }
 
-int AW_device_Xm::circle(int gc, bool filled, AW_pos x0, AW_pos y0, AW_pos width, AW_pos height, AW_bitset filteri, AW_CL cd1, AW_CL cd2) {
+int AW_device_Xm::circle_impl(int gc, bool filled, AW_pos x0, AW_pos y0, AW_pos width, AW_pos height, AW_bitset filteri, AW_CL cd1, AW_CL cd2) {
     return arc(gc, filled, x0, y0, width, height, 0, 360, filteri, cd1, cd2);
 }
 
-int AW_device_Xm::arc(int gc, bool filled, AW_pos x0, AW_pos y0, AW_pos width, AW_pos height, int start_degrees, int arc_degrees, AW_bitset filteri, AW_CL /*cd1*/, AW_CL /*cd2*/) {
+int AW_device_Xm::arc_impl(int gc, bool filled, AW_pos x0, AW_pos y0, AW_pos width, AW_pos height, int start_degrees, int arc_degrees, AW_bitset filteri, AW_CL /*cd1*/, AW_CL /*cd2*/) {
     class AW_GC_Xm *gcm = AW_MAP_GC(gc);
     AW_pos X0, Y0, X1, Y1;                          // Transformed pos
     AW_pos XL, YL;                                  // Left edge of circle pos
