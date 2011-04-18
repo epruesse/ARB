@@ -53,13 +53,13 @@ inline void AW_device_size::dot(AW_pos x, AW_pos y) {
     dot_transformed(X, Y);
 }
 
-bool AW_device_size::invisible(int gc, AW_pos x, AW_pos y, AW_bitset filteri, AW_CL clientdata1, AW_CL clientdata2) {
+bool AW_device_size::invisible(int gc, AW_pos x, AW_pos y, AW_bitset filteri) {
     if (filteri & filter) dot(x, y);
-    return AW_device::invisible(gc, x, y, filteri, clientdata1, clientdata2);
+    return AW_device::invisible(gc, x, y, filteri);
 }
 
 
-int AW_device_size::line_impl(int /*gc*/, AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW_bitset filteri, AW_CL /*clientdata1*/, AW_CL /*clientdata2*/) {
+int AW_device_size::line_impl(int /*gc*/, AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW_bitset filteri) {
     if (filteri & filter) {
         dot(x0, y0);
         dot(x1, y1);
@@ -68,7 +68,7 @@ int AW_device_size::line_impl(int /*gc*/, AW_pos x0, AW_pos y0, AW_pos x1, AW_po
     return false;
 }
 
-int AW_device_size::text_impl(int gc, const char *str, AW_pos x, AW_pos y, AW_pos alignment, AW_bitset filteri, AW_CL /*clientdata1*/, AW_CL /*clientdata2*/, long opt_strlen) {
+int AW_device_size::text_impl(int gc, const char *str, AW_pos x, AW_pos y, AW_pos alignment, AW_bitset filteri, long opt_strlen) {
     if (filteri & filter) {
         XFontStruct *xfs = &(common->gcs[gc]->curfont);
 

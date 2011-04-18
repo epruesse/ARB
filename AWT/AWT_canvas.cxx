@@ -310,7 +310,7 @@ void AWT_canvas::zoom(AW_device *device, bool zoomIn, const Rectangle& wanted_pa
 }
 
 inline void nt_draw_zoom_box(AW_device *device, int gc, AW_pos x1, AW_pos y1, AW_pos x2, AW_pos y2) {
-    device->box(gc, false, x1, y1, x2-x1, y2-y1, AWT_F_ALL, 0, 0);
+    device->box(gc, false, x1, y1, x2-x1, y2-y1, AW_ALL_DEVICES);
 }
 inline void nt_draw_zoom_box(AW_device *device, AWT_canvas *ntw) {
     nt_draw_zoom_box(device, ntw->drag_gc,

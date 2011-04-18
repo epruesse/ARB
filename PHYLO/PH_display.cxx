@@ -220,21 +220,16 @@ void PH_display::display()       // draw area
         case species_dpy:
             device->shift(AW::Vector(off_dx, off_dy));
             ypos=0;
-            for (y=vert_page_start; y<(vert_page_start+vert_page_size) &&
-                    (y<total_cells_vert); y++)
-            {
-                device->text(0, PHDATA::ROOT->hash_elements[y]->name, -off_dx,
-                             ypos*cell_height-cell_offset,
-                             0.0, -1, 0, 0);                       // species names
+            for (y=vert_page_start; y<(vert_page_start+vert_page_size) && (y<total_cells_vert); y++) {
+                // species names
+                device->text(0, PHDATA::ROOT->hash_elements[y]->name, -off_dx, ypos*cell_height-cell_offset);
 
+                // alignment
                 GBDATA     *gb_seq_data = PHDATA::ROOT->hash_elements[y]->gb_species_data_ptr;
                 const char *seq_data    = GB_read_char_pntr(gb_seq_data);
                 long        seq_len     = GB_read_count(gb_seq_data);
 
-                device->text(0,
-                             (horiz_page_start >= seq_len) ? "" : (seq_data+horiz_page_start),
-                             0, ypos*cell_height-cell_offset,
-                             0.0, -1, 0, 0);                       // alignment
+                device->text(0, (horiz_page_start >= seq_len) ? "" : (seq_data+horiz_page_start), 0, ypos*cell_height-cell_offset);
                 ypos++;
             }
             device->shift(-AW::Vector(off_dx, off_dy));
@@ -251,13 +246,11 @@ void PH_display::display()       // draw area
                         (y<total_cells_vert); y++)
                 {
                     sprintf(buf, "%3.4f", PHDATA::ROOT->matrix->get(x, y));
-                    device->text(0, buf, xpos*cell_width, ypos*cell_height-cell_offset,
-                                 0.0, -1, 0, 0);
+                    device->text(0, buf, xpos*cell_width, ypos*cell_height-cell_offset);
                     ypos++;
                 }
                 // display horizontal speciesnames :
-                device->text(0, PHDATA::ROOT->hash_elements[x]->name,
-                             xpos*cell_width, cell_height-off_dy-cell_offset, 0.0, -1, 0, 0);
+                device->text(0, PHDATA::ROOT->hash_elements[x]->name, xpos*cell_width, cell_height-off_dy-cell_offset);
                 xpos++;
             }
             device->shift(AW::Vector(-off_dx, 0));
@@ -265,8 +258,7 @@ void PH_display::display()       // draw area
             ypos=0;
             for (y=vert_page_start; y<vert_page_start+vert_page_size; y++)
             {
-                device->text(0, PHDATA::ROOT->hash_elements[y]->name,
-                             0, ypos*cell_height-cell_offset, 0.0, -1, 0, 0);
+                device->text(0, PHDATA::ROOT->hash_elements[y]->name, 0, ypos*cell_height-cell_offset);
                 ypos++;
             }
             device->shift(AW::Vector(0, -off_dy));
@@ -278,21 +270,16 @@ void PH_display::display()       // draw area
         case filter_dpy: {
             device->shift(AW::Vector(off_dx, off_dy));
             ypos=0;
-            for (y=vert_page_start; y<(vert_page_start+vert_page_size) &&
-                    (y<total_cells_vert); y++)
-            {
-                device->text(0, PHDATA::ROOT->hash_elements[y]->name, -off_dx,
-                             ypos*cell_height-cell_offset,
-                             0.0, -1, 0, 0);                       // species names
+            for (y=vert_page_start; y<(vert_page_start+vert_page_size) && (y<total_cells_vert); y++) {
+                // species names
+                device->text(0, PHDATA::ROOT->hash_elements[y]->name, -off_dx, ypos*cell_height-cell_offset);
 
+                // alignment
                 GBDATA     *gb_seq_data = PHDATA::ROOT->hash_elements[y]->gb_species_data_ptr;
                 const char *seq_data    = GB_read_char_pntr(gb_seq_data);
                 long        seq_len     = GB_read_count(gb_seq_data);
 
-                device->text(0,
-                             (horiz_page_start >= seq_len) ? "" : (seq_data+horiz_page_start),
-                             0, ypos*cell_height-cell_offset,
-                             0.0, -1, 0, 0); // alignment
+                device->text(0, (horiz_page_start >= seq_len) ? "" : (seq_data+horiz_page_start), 0, ypos*cell_height-cell_offset);
                 ypos++;
             }
             xpos=0;
@@ -322,10 +309,7 @@ void PH_display::display()       // draw area
 
                 for (y = 0; y < 3; y++) {
                     strncpy(cbuf, buf + y, 1);
-                    device->text(gc, cbuf, xpos * cell_width + 1,
-                                 vert_page_size * cell_height +
-                                 y * aw_fi->max_letter.height,
-                                 0.0, -1, 0, 0);
+                    device->text(gc, cbuf, xpos * cell_width + 1, vert_page_size * cell_height + y * aw_fi->max_letter.height);
                 }
                 xpos++;
             }
@@ -450,13 +434,13 @@ PH_display_status::PH_display_status(AW_device *awd)
 
 void PH_display_status::write(const char *text)
 {
-    device->text(0, text, x_pos*font_width, y_pos*font_height, 0.0, -1, 0, 0);
+    device->text(0, text, x_pos*font_width, y_pos*font_height);
     x_pos+=strlen(text);
 }
 
 void PH_display_status::writePadded(const char *text, size_t len)
 {
-    device->text(0, text, x_pos*font_width, y_pos*font_height, 0.0, -1, 0, 0);
+    device->text(0, text, x_pos*font_width, y_pos*font_height);
     x_pos += len;
 }
 

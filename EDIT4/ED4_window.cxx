@@ -366,10 +366,10 @@ static inline void clear_and_update_rectangle(AW_pos x1, AW_pos y1, AW_pos x2, A
 
 #if defined(DEBUG) && 0
     static int toggle = 0;
-    ED4_ROOT->get_device()->box(ED4_G_COLOR_2+toggle, x1, y1, x2-x1+1, y2-y1+1, (AW_bitset)-1, 0, 0);    // fill range with color (for testing)
+    ED4_ROOT->get_device()->box(ED4_G_COLOR_2+toggle, x1, y1, x2-x1+1, y2-y1+1, AW_ALL_DEVICES, 0, 0);    // fill range with color (for testing)
     toggle = (toggle+1)&7;
 #else
-    ED4_ROOT->get_device()->clear_part(x1, y1, x2-x1+1, y2-y1+1, (AW_bitset)-1);
+    ED4_ROOT->get_device()->clear_part(x1, y1, x2-x1+1, y2-y1+1, AW_ALL_DEVICES);
 #endif
 
     ED4_ROOT->main_manager->to_manager()->Show(1, 1);

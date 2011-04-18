@@ -119,7 +119,6 @@ public:
 
 
 #define EPS               0.0001 /* div zero check */
-#define AWT_F_ALL         ((AW_active)-1)
 #define CLIP_OVERLAP      15
 #define AWT_CATCH_LINE    50    /* pixel */
 #define AWT_CATCH_TEXT    5     /* pixel */

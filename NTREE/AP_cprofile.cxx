@@ -827,7 +827,7 @@ void CPRO_getfromstatistic(float &equal, float &ingroup, long res, long column, 
 }
 
 void CPRO_box(AW_device *device, int gc, float l, float t, float width, float high) {
-    device->box(gc, false, l, t, width, high, 1, (AW_CL)0, (AW_CL)0);
+    device->box(gc, false, l, t, width, high, 1);
 }
 
 float CPRO_confidinterval(long res, long column, unsigned char which_statistic, char mode)
@@ -888,40 +888,38 @@ void CPRO_drawstatistic (AW_device *device, unsigned char which_statistic)
     CPRO_box(device, GC_black, leftsecond-1, topsecond-1,
              widthsecond+2, highsecond+2);
 
-    device->text(GC_black, "column", leftdistance+82, 14, 0, 1, 0, 0);
+    device->text(GC_black, "column", leftdistance+82, 14, 0, 1, 0);
 
     /* draw grid and inscribe axes */
     char buf[30];
     long gridx, gridy;
     float xpos=leftdistance, ypos;
     sprintf(buf, " character difference");
-    device->text(GC_black, buf, leftdistance-40, topdistance-7, 0, 1, 0, 0);
-    device->text(GC_black, "  0%",
-                 leftdistance-26, topdistance+4+highfirst, 0, 1, 0, 0);
+    device->text(GC_black, buf, leftdistance-40, topdistance-7, 0, 1, 0);
+    device->text(GC_black, "  0%", leftdistance-26, topdistance+4+highfirst, 0, 1, 0);
 
     for (gridy=CPRO.gridhorizontal; gridy<100; gridy+=CPRO.gridhorizontal)
     {
         ypos=topdistance+1+(1.0-(float)gridy*0.01)*(highfirst-1);
-        device->line(GC_grid, xpos, ypos, xpos+widthfirst, ypos, 1, 0, 0);
+        device->line(GC_grid, xpos, ypos, xpos+widthfirst, ypos, AW_SCREEN);
         sprintf(buf, "%3ld%%", gridy);
-        device->text(GC_black, buf, xpos-27, ypos+4, 0, 1, 0, 0);
+        device->text(GC_black, buf, xpos-27, ypos+4, 0, 1, 0);
     }
-    device->text(GC_black, "100%", leftdistance-26, topdistance+5, 0, 1, 0, 0);
+    device->text(GC_black, "100%", leftdistance-26, topdistance+5, 0, 1, 0);
 
-    device->text(GC_black, "sequence distance",
-                 leftdistance+widthfirst-95, topdistance+highfirst+25, 0, 1, 0, 0);
-    device->text(GC_black, "  0%",
-                 leftdistance-11, topdistance+14+highfirst, 0, 1, 0, 0);
+    device->text(GC_black, "sequence distance", leftdistance+widthfirst-95, topdistance+highfirst+25, 0, 1, 0);
+    device->text(GC_black, "  0%", leftdistance-11, topdistance+14+highfirst, 0, 1, 0);
     ypos=topdistance+1;
 
     for (gridx=CPRO.gridvertical; (float)gridx<=100.0*CPRO.maxdistance;
         gridx+=CPRO.gridvertical)
     {
         xpos=leftdistance+1+(float)gridx*0.01/CPRO.maxdistance*widthfirst;
-        if ((float)gridx*0.01<1.0*CPRO.maxdistance)
-            device->line(GC_grid, xpos, ypos, xpos, ypos+highfirst, 1, 0, 0);
+        if ((float)gridx*0.01<1.0*CPRO.maxdistance) {
+            device->line(GC_grid, xpos, ypos, xpos, ypos+highfirst, AW_SCREEN);
+        }
         sprintf(buf, "%3ld%%", gridx);
-        device->text(GC_black, buf, xpos-12, ypos+13+highfirst, 0, 1, 0, 0);
+        device->text(GC_black, buf, xpos-12, ypos+13+highfirst, 0, 1, 0);
     }
 
     if (!CPRO.result[which_statistic].statisticexists) return;
@@ -950,47 +948,42 @@ void CPRO_drawstatistic (AW_device *device, unsigned char which_statistic)
 
             confidinterval = highfirst * CPRO_confidinterval(firstx, bio2info(CPRO.column), which_statistic, mode);
 
-            ytop=ypos-confidinterval;
-            if (ytop>=topfirst) {
-                device->line(GC_blue, xpos, ytop, xpos+linelength, ytop, 1, 0, 0); }
-            else { ytop=topfirst; }
-            device->line(GC_blue, xpos+linelength/2, ytop, xpos+linelength/2, ypos, 1, 0, 0);
+            ytop      = ypos-confidinterval;
+            if (ytop>=topfirst) device->line(GC_blue, xpos, ytop, xpos+linelength, ytop, AW_SCREEN);
+            else ytop = topfirst;
+            device->line(GC_blue, xpos+linelength/2, ytop, xpos+linelength/2, ypos, AW_SCREEN);
 
-            ybottom=ypos+confidinterval;
-            if (ybottom<topfirst+highfirst) {
-                device->line(GC_blue, xpos, ybottom, xpos+linelength, ybottom, 1, 0, 0); }
-            else { ybottom=topfirst+highfirst-1; }
-            device->line(GC_blue, xpos+linelength/2, ybottom, xpos+linelength/2, ypos, 1, 0, 0);
+            ybottom      = ypos+confidinterval;
+            if (ybottom<topfirst+highfirst) device->line(GC_blue, xpos, ybottom, xpos+linelength, ybottom, AW_SCREEN);
+            else ybottom = topfirst+highfirst-1;
+            device->line(GC_blue, xpos+linelength/2, ybottom, xpos+linelength/2, ypos, AW_SCREEN);
 
-            ypos=topfirst+ingroup*highfirst;
-            ytop=ypos-confidinterval;
-            if (ytop>=topfirst) {
-                device->line(GC_green, xpos, ytop, xpos+linelength, ytop, 1, 0, 0); }
-            else { ytop=topfirst; }
-            device->line(GC_green, xpos+linelength/2, ytop, xpos+linelength/2, ypos, 1, 0, 0);
+            ypos      = topfirst+ingroup*highfirst;
+            ytop      = ypos-confidinterval;
+            if (ytop>=topfirst) device->line(GC_green, xpos, ytop, xpos+linelength, ytop, AW_SCREEN);
+            else ytop = topfirst;
+            device->line(GC_green, xpos+linelength/2, ytop, xpos+linelength/2, ypos, AW_SCREEN);
 
-            ybottom=ypos+confidinterval;
-            if (ybottom<topfirst+highfirst) {
-                device->line(GC_green, xpos, ybottom, xpos+linelength, ybottom, 1, 0, 0); }
-            else { ybottom=topfirst+highfirst-1; }
-            device->line(GC_green, xpos+linelength/2, ybottom, xpos+linelength/2, ypos, 1, 0, 0);
-
+            ybottom      = ypos+confidinterval;
+            if (ybottom<topfirst+highfirst) device->line(GC_green, xpos, ybottom, xpos+linelength, ybottom, AW_SCREEN);
+            else ybottom = topfirst+highfirst-1;
+            device->line(GC_green, xpos+linelength/2, ybottom, xpos+linelength/2, ypos, AW_SCREEN);
         }
     }
 
     float resaccu;
     float rate;
     sprintf(buf, " %5ld", CPRO.result[which_statistic].maxaccu);
-    device->text(GC_black, "   max", leftsecond-50, topsecond, 0, 1, 0, 0);
-    device->text(GC_black, buf, leftsecond-43, topsecond+10*1, 0, 1, 0, 0);
-    device->text(GC_black, "  pairs", leftsecond-50, topsecond+10*3, 0, 1, 0, 0);
+    device->text(GC_black, "   max", leftsecond-50, topsecond, 0, 1, 0);
+    device->text(GC_black, buf, leftsecond-43, topsecond+10*1, 0, 1, 0);
+    device->text(GC_black, "  pairs", leftsecond-50, topsecond+10*3, 0, 1, 0);
 
     /* fill second box */
     for (firstx=0; firstx<(long)widthsecond; firstx++) {
         long res = firstx*CPRO.result[which_statistic].resolution /widthsecond*CPRO.maxdistance;
         resaccu  = CPRO_statisticaccumulation(res, bio2info(CPRO.column), which_statistic);
         rate     = 1.0-(sqrt(resaccu)/sqrt(CPRO.result[which_statistic].maxaccu));
-        device->line(GC_black, firstx+leftsecond, topsecond+rate*highsecond, firstx+leftsecond, topsecond+highsecond, 1, 0, 0);
+        device->line(GC_black, firstx+leftsecond, topsecond+rate*highsecond, firstx+leftsecond, topsecond+highsecond, AW_SCREEN);
     }
 }
 

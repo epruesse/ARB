@@ -21,7 +21,7 @@ void AW_device_print::init() {}
 
 AW_DEVICE_TYPE AW_device_print::type() { return AW_DEVICE_PRINTER; }
 
-int AW_device_print::line_impl(int gc, AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW_bitset filteri, AW_CL /*cd1*/, AW_CL /*cd2*/) {
+int AW_device_print::line_impl(int gc, AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW_bitset filteri) {
     class AW_GC_Xm *gcm      = AW_MAP_GC(gc);
     AW_pos          X0, Y0, X1, Y1; // Transformed pos
     AW_pos          CX0, CY0, CX1, CY1; // Clipped line
@@ -49,9 +49,9 @@ int AW_device_print::line_impl(int gc, AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y
     return drawflag;
 }
 
-int AW_draw_string_on_printer(AW_device *devicei, int gc, const char *str, size_t /* opt_strlen */, size_t start, size_t size,
-                              AW_pos x, AW_pos y, AW_pos /*opt_ascent*/, AW_pos /*opt_descent*/,
-                              AW_CL /*cduser*/, AW_CL /*cd1*/, AW_CL /*cd2*/)
+static int AW_draw_string_on_printer(AW_device *devicei, int gc, const char *str, size_t /* opt_strlen */, size_t start, size_t size,
+                                     AW_pos x, AW_pos y, AW_pos /*opt_ascent*/, AW_pos /*opt_descent*/,
+                                     AW_CL /*cduser*/)
 {
     AW_pos           X, Y;
     AW_device_print *device = (AW_device_print *)devicei;
@@ -137,11 +137,11 @@ void AW_device_print::close() {
 }
 
 
-int AW_device_print::text_impl(int gc, const char *str, AW_pos x, AW_pos y, AW_pos alignment, AW_bitset filteri, AW_CL cd1, AW_CL cd2, long opt_strlen) {
-    return text_overlay(gc, str, opt_strlen, x, y, alignment, filteri, (AW_CL)this, cd1, cd2, 0.0, 0.0, AW_draw_string_on_printer);
+int AW_device_print::text_impl(int gc, const char *str, AW_pos x, AW_pos y, AW_pos alignment, AW_bitset filteri, long opt_strlen) {
+    return text_overlay(gc, str, opt_strlen, x, y, alignment, filteri, (AW_CL)this, 0.0, 0.0, AW_draw_string_on_printer);
 }
 
-int AW_device_print::box_impl(int gc, bool filled, AW_pos x0, AW_pos y0, AW_pos width, AW_pos height, AW_bitset filteri, AW_CL cd1, AW_CL cd2) {
+int AW_device_print::box_impl(int gc, bool filled, AW_pos x0, AW_pos y0, AW_pos width, AW_pos height, AW_bitset filteri) {
     int    res;
     AW_pos x1 = x0+width;
     AW_pos y1 = y0+height;
@@ -154,18 +154,18 @@ int AW_device_print::box_impl(int gc, bool filled, AW_pos x0, AW_pos y0, AW_pos 
         q[4] = x1;  q[5] = y1;
         q[6] = x0;  q[7] = y1;
 
-        res = filled_area(gc, 4, q, filteri, cd1, cd2);
+        res = filled_area(gc, 4, q, filteri);
     }
     else {
-        res  = line(gc, x0, y0, x1, y0, filteri, cd1, cd2);
-        res |= line(gc, x0, y0, x0, y1, filteri, cd1, cd2);
-        res |= line(gc, x0, y1, x1, y1, filteri, cd1, cd2);
-        res |= line(gc, x1, y0, x1, y1, filteri, cd1, cd2);
+        res  = line(gc, x0, y0, x1, y0, filteri);
+        res |= line(gc, x0, y0, x0, y1, filteri);
+        res |= line(gc, x0, y1, x1, y1, filteri);
+        res |= line(gc, x1, y0, x1, y1, filteri);
     }
     return res;
 }
 
-int AW_device_print::circle_impl(int gc, bool filled, AW_pos x0, AW_pos y0, AW_pos width, AW_pos height, AW_bitset filteri, AW_CL /*cd1*/, AW_CL /*cd2*/) {
+int AW_device_print::circle_impl(int gc, bool filled, AW_pos x0, AW_pos y0, AW_pos width, AW_pos height, AW_bitset filteri) {
     AW_GC_Xm *gcm = AW_MAP_GC(gc);
     AW_pos    x1, y1;
     AW_pos    X0, Y0, X1, Y1;   // Transformed pos
@@ -206,11 +206,11 @@ int AW_device_print::circle_impl(int gc, bool filled, AW_pos x0, AW_pos y0, AW_p
     return 0;
 }
 
-int AW_device_print::filled_area_impl(int gc, int npoints, AW_pos *points, AW_bitset filteri, AW_CL cd1, AW_CL cd2) {
+int AW_device_print::filled_area_impl(int gc, int npoints, AW_pos *points, AW_bitset filteri) {
     int erg = 0;
     int i;
     if (!(filteri & this->filter)) return 0;
-    erg |= generic_filled_area(gc, npoints, points, filteri, cd1, cd2);
+    erg |= generic_filled_area(gc, npoints, points, filteri);
     if (!erg) return 0;                         // no line visible -> no area fill
 
     AW_GC_Xm *gcm = AW_MAP_GC(gc);

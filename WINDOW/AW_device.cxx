@@ -560,12 +560,12 @@ void AW_device::reset() {
 AW_device::AW_device(class AW_common *commoni) : AW_gc() {
     common = commoni;
     clip_scale_stack = 0;
-    filter = (AW_bitset)-1;
+    filter = AW_ALL_DEVICES;
 }
 
 AW_gc::AW_gc() : AW_clip() {}
 
-bool AW_device::invisible(int /*gc*/, AW_pos x, AW_pos y, AW_bitset filteri, AW_CL /*clientdata1*/, AW_CL /*clientdata2*/) {
+bool AW_device::invisible(int /*gc*/, AW_pos x, AW_pos y, AW_bitset filteri) {
     if (filteri & filter) {
         AW_pos X, Y;            // Transformed pos
         transform(x, y, X, Y);
@@ -579,14 +579,14 @@ bool AW_device::ready_to_draw(int gc) {
     return AW_GC_MAPABLE(common, gc);
 }
 
-int AW_device::generic_box(int gc, bool /* filled */, AW_pos x0, AW_pos y0, AW_pos width, AW_pos height, AW_bitset filteri, AW_CL cd1, AW_CL cd2)
+int AW_device::generic_box(int gc, bool /* filled */, AW_pos x0, AW_pos y0, AW_pos width, AW_pos height, AW_bitset filteri)
 {
     int erg = 0;
     if (filteri & filter) {
-        erg |= line(gc, x0, y0, x0+width, y0, filteri, cd1, cd2);
-        erg |= line(gc, x0, y0, x0, y0+height, filteri, cd1, cd2);
-        erg |= line(gc, x0+width, y0+height, x0+width, y0+height, filteri, cd1, cd2);
-        erg |= line(gc, x0+width, y0+height, x0+width, y0+height, filteri, cd1, cd2);
+        erg |= line(gc, x0, y0, x0+width, y0, filteri);
+        erg |= line(gc, x0, y0, x0, y0+height, filteri);
+        erg |= line(gc, x0+width, y0+height, x0+width, y0+height, filteri);
+        erg |= line(gc, x0+width, y0+height, x0+width, y0+height, filteri);
     }
     return erg;
 }
@@ -595,38 +595,38 @@ int AW_device::generic_box(int gc, bool /* filled */, AW_pos x0, AW_pos y0, AW_p
 #warning draw in 45-degree-steps (8-cornered-polygones instead of circles)
 #endif
 
-int AW_device::generic_circle(int gc, bool /* filled has no effect here */, AW_pos x0, AW_pos y0, AW_pos width, AW_pos height, AW_bitset filteri, AW_CL cd1, AW_CL cd2)
+int AW_device::generic_circle(int gc, bool /* filled has no effect here */, AW_pos x0, AW_pos y0, AW_pos width, AW_pos height, AW_bitset filteri)
 {
     int erg = 0;
     if (filteri & filter) {
-        erg |= line(gc, x0, y0+height, x0+width, y0, filteri, cd1, cd2);
-        erg |= line(gc, x0, y0+height, x0-width, y0, filteri, cd1, cd2);
-        erg |= line(gc, x0, y0-height, x0+width, y0, filteri, cd1, cd2);
-        erg |= line(gc, x0, y0-height, x0-width, y0, filteri, cd1, cd2);
+        erg |= line(gc, x0, y0+height, x0+width, y0, filteri);
+        erg |= line(gc, x0, y0+height, x0-width, y0, filteri);
+        erg |= line(gc, x0, y0-height, x0+width, y0, filteri);
+        erg |= line(gc, x0, y0-height, x0-width, y0, filteri);
     }
     return erg;
 }
 
-int AW_device::generic_arc(int gc, bool /* filled has no effect here */, AW_pos x0, AW_pos y0, AW_pos width, AW_pos height, int /* start_degrees */, int /* arc_degrees */, AW_bitset filteri, AW_CL cd1, AW_CL cd2)
+int AW_device::generic_arc(int gc, bool /* filled has no effect here */, AW_pos x0, AW_pos y0, AW_pos width, AW_pos height, int /* start_degrees */, int /* arc_degrees */, AW_bitset filteri)
 {
     int erg = 0;
     if (filteri & filter) {
-        erg |= line(gc, x0, y0+height, x0+width, y0, filteri, cd1, cd2);
-        erg |= line(gc, x0, y0+height, x0-width, y0, filteri, cd1, cd2);
-        erg |= line(gc, x0, y0-height, x0+width, y0, filteri, cd1, cd2);
-        erg |= line(gc, x0, y0-height, x0-width, y0, filteri, cd1, cd2);
+        erg |= line(gc, x0, y0+height, x0+width, y0, filteri);
+        erg |= line(gc, x0, y0+height, x0-width, y0, filteri);
+        erg |= line(gc, x0, y0-height, x0+width, y0, filteri);
+        erg |= line(gc, x0, y0-height, x0-width, y0, filteri);
     }
     return erg;
 }
-int AW_device::generic_filled_area(int gc, int npoints, AW_pos *points, AW_bitset filteri, AW_CL cd1, AW_CL cd2) {
+int AW_device::generic_filled_area(int gc, int npoints, AW_pos *points, AW_bitset filteri) {
     int erg = 0;
     if (filteri & filter) {
         npoints--;
-        erg |= line(gc, points[0], points[1], points[npoints*2], points[npoints*2+1], filteri, cd1, cd2);
+        erg |= line(gc, points[0], points[1], points[npoints*2], points[npoints*2+1], filteri);
         while (npoints>0) {
             AW_pos x = *(points++);
             AW_pos y = *(points++);
-            erg |= line(gc, x, y, points[0], points[1], filteri, cd1, cd2);
+            erg |= line(gc, x, y, points[0], points[1], filteri);
             npoints--;
         }
     }
@@ -640,13 +640,13 @@ int AW_device::generic_filled_area(int gc, int npoints, AW_pos *points, AW_bitse
 
 void AW_device::clear(AW_bitset /* filteri */) {}
 void AW_device::clear_part(AW_pos /* x */, AW_pos /* y */, AW_pos /* width */, AW_pos /* height */, AW_bitset /* filteri */) {}
-void AW_device::clear_text(int /* gc */, const char * /* string */, AW_pos /* x */, AW_pos /* y */, AW_pos /* alignment */, AW_bitset /* filteri */, AW_CL /* cd1 */, AW_CL /* cd2 */) {}
+void AW_device::clear_text(int /* gc */, const char * /* string */, AW_pos /* x */, AW_pos /* y */, AW_pos /* alignment */, AW_bitset /* filteri */) {}
 void AW_device::move_region(AW_pos /* src_x */, AW_pos /* src_y */, AW_pos /* width */, AW_pos /* height */, AW_pos /* dest_x */, AW_pos /* dest_y */) {}
 void AW_device::fast() {}
 void AW_device::slow() {}
 void AW_device::flush() {}
 
-int AW_device::cursor(int gc, AW_pos x0, AW_pos y0, AW_cursor_type cur_type, AW_bitset filteri, AW_CL clientdata1, AW_CL clientdata2) {
+int AW_device::cursor(int gc, AW_pos x0, AW_pos y0, AW_cursor_type cur_type, AW_bitset filteri) {
     class AW_GC_Xm *gcm = AW_MAP_GC(gc);
     XFontStruct    *xfs = &gcm->curfont;
     AW_pos          x1, x2, y1, y2;
@@ -673,20 +673,18 @@ int AW_device::cursor(int gc, AW_pos x0, AW_pos y0, AW_cursor_type cur_type, AW_
             x2 = x0+4;
             y2 = y0+4;
 
-            line(gc, x1, y1, x0, y0, filteri, clientdata1, clientdata2);
-            line(gc, x2, y2, x0, y0, filteri, clientdata1, clientdata2);
-            line(gc, x1, y1, x2, y2, filteri, clientdata1, clientdata2);
+            line(gc, x1, y1, x0, y0, filteri);
+            line(gc, x2, y2, x0, y0, filteri);
+            line(gc, x1, y1, x2, y2, filteri);
         }
     }
     return 1;
 }
 
 int AW_device::text_overlay(int gc, const char *opt_str, long opt_len,  // either string or strlen != 0
-                             AW_pos x, AW_pos y, AW_pos alignment, AW_bitset filteri, AW_CL cduser, AW_CL cd1, AW_CL cd2,
+                             AW_pos x, AW_pos y, AW_pos alignment, AW_bitset filteri, AW_CL cduser, 
                              AW_pos opt_ascent, AW_pos opt_descent,             // optional height (if == 0 take font height)
-                             int (*f)(AW_device *device, int gc, const char *opt_string, size_t opt_string_len, size_t start, size_t size,
-                                      AW_pos x, AW_pos y, AW_pos opt_ascent, AW_pos opt_descent,
-                                      AW_CL cduser, AW_CL cd1, AW_CL cd2))
+                             int (*f)(AW_device *device, int gc, const char *opt_string, size_t opt_string_len, size_t start, size_t size, AW_pos x, AW_pos y, AW_pos opt_ascent, AW_pos opt_descent, AW_CL cduser))
 {
     long         textlen;
     AW_GC_Xm    *gcm           = AW_MAP_GC(gc);
@@ -823,7 +821,10 @@ int AW_device::text_overlay(int gc, const char *opt_str, long opt_len,  // eithe
     aw_assert(opt_len >= textlen);
     aw_assert(textlen >= 0 && int(strlen(opt_str)) >= textlen);
 
-    return f(this, gc, opt_str, opt_len, start, (size_t)textlen, x, y, opt_ascent, opt_descent, cduser, cd1, cd2);
+    return f(this, gc, opt_str, opt_len, start, (size_t)textlen, x, y, opt_ascent, opt_descent, cduser);
 }
 
 void AW_device::set_filter(AW_bitset filteri) { filter = filteri; }
+
+
+

@@ -8,13 +8,13 @@
 class AW_device_Xm : public AW_device {
     int fastflag;
 
-    int line_impl(int gc, AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW_bitset filter, AW_CL cd1, AW_CL cd2);
-    int text_impl(int gc, const char *string, AW_pos x, AW_pos y, AW_pos alignment, AW_bitset filteri, AW_CL cd1, AW_CL cd2, long opt_strlen);
-    int box_impl(int gc, bool filled, AW_pos x0, AW_pos y0, AW_pos width, AW_pos heigth, AW_bitset filter, AW_CL cd1, AW_CL cd2);
-    int circle_impl(int gc, bool filled, AW_pos x0, AW_pos y0, AW_pos width, AW_pos heigth, AW_bitset filter, AW_CL cd1, AW_CL cd2);
-    int arc_impl(int gc, bool filled, AW_pos x0, AW_pos y0, AW_pos width, AW_pos heigth, int start_degrees, int arc_degrees, AW_bitset filter, AW_CL cd1, AW_CL cd2);
-    int filled_area_impl(int gc, int npoints, AW_pos *points, AW_bitset filteri, AW_CL cd1, AW_CL cd2) {
-        return generic_filled_area(gc, npoints, points, filteri, cd1, cd2);
+    int line_impl(int gc, AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW_bitset filter);
+    int text_impl(int gc, const char *string, AW_pos x, AW_pos y, AW_pos alignment, AW_bitset filteri, long opt_strlen);
+    int box_impl(int gc, bool filled, AW_pos x0, AW_pos y0, AW_pos width, AW_pos heigth, AW_bitset filter);
+    int circle_impl(int gc, bool filled, AW_pos x0, AW_pos y0, AW_pos width, AW_pos heigth, AW_bitset filter);
+    int arc_impl(int gc, bool filled, AW_pos x0, AW_pos y0, AW_pos width, AW_pos heigth, int start_degrees, int arc_degrees, AW_bitset filter);
+    int filled_area_impl(int gc, int npoints, AW_pos *points, AW_bitset filteri) {
+        return generic_filled_area(gc, npoints, points, filteri);
     }
 
 public:

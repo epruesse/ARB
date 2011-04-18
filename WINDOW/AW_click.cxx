@@ -33,7 +33,7 @@ AW_DEVICE_TYPE AW_device_click::type() {
 }
 
 
-int AW_device_click::line_impl(int /*gc*/, AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW_bitset filteri, AW_CL clientdata1, AW_CL clientdata2) {
+int AW_device_click::line_impl(int /*gc*/, AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW_bitset filteri) {
     AW_pos X0, Y0, X1, Y1;                          // Transformed pos
     AW_pos CX0, CY0, CX1, CY1;                      // Clipped line
     int    drawflag;                                // is line visible on screen
@@ -100,15 +100,25 @@ int AW_device_click::line_impl(int /*gc*/, AW_pos x0, AW_pos y0, AW_pos x1, AW_p
             aw_assert(x0 == x0); aw_assert(x1 == x1); // not NAN
             aw_assert(y0 == y0); aw_assert(y1 == y1);
 
-            opt_line.x0           = x0;
-            opt_line.y0           = y0;
-            opt_line.x1           = x1;
-            opt_line.y1           = y1;
-            opt_line.height       = distance;
-            opt_line.length       = skalar;
-            opt_line.client_data1 = clientdata1;
-            opt_line.client_data2 = clientdata2;
-            opt_line.exists       = true;
+            opt_line.x0     = x0;
+            opt_line.y0     = y0;
+            opt_line.x1     = x1;
+            opt_line.y1     = y1;
+            opt_line.height = distance;
+            opt_line.length = skalar;
+
+            if (click_cd) {
+                opt_line.client_data1 = click_cd->get_cd1();
+                opt_line.client_data2 = click_cd->get_cd2();
+            }
+            else {
+                opt_line.client_data1 = 0;
+                opt_line.client_data2 = 0;
+            }
+            // opt_line.client_data1 = clientdata1;
+            // opt_line.client_data2 = clientdata2;
+
+            opt_line.exists = true;
         }
         return true;
     }
@@ -116,7 +126,7 @@ int AW_device_click::line_impl(int /*gc*/, AW_pos x0, AW_pos y0, AW_pos x1, AW_p
 }
 
 
-int AW_device_click::text_impl(int gc, const char *str, AW_pos x, AW_pos y, AW_pos alignment, AW_bitset filteri, AW_CL clientdata1, AW_CL clientdata2, long opt_strlen) {
+int AW_device_click::text_impl(int gc, const char *str, AW_pos x, AW_pos y, AW_pos alignment, AW_bitset filteri, long opt_strlen) {
     if (filteri & filter) {
         AW_pos X0, Y0;          // Transformed pos
         this->transform(x, y, X0, Y0);
@@ -204,8 +214,16 @@ int AW_device_click::text_impl(int gc, const char *str, AW_pos x, AW_pos y, AW_p
             opt_text.distance     = max_distance_text;
             opt_text.dist2center  = dist2center;
             opt_text.cursor       = position;
-            opt_text.client_data1 = clientdata1;
-            opt_text.client_data2 = clientdata2;
+            if (click_cd) {
+                opt_text.client_data1 = click_cd->get_cd1();
+                opt_text.client_data2 = click_cd->get_cd2();
+            }
+            else {
+                opt_text.client_data1 = 0;
+                opt_text.client_data2 = 0;
+            }
+            // opt_text.client_data1 = clientdata1;
+            // opt_text.client_data2 = clientdata2;
             opt_text.exists       = true;
             opt_text.exactHit     = exact;
         }
