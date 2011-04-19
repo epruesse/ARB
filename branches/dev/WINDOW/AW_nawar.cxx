@@ -141,9 +141,13 @@ WRITE_SKELETON(write_string, const char*, "%s", GB_write_string) // defines rewr
     GB_touch(gb_var);
 }
 
+AW_awar *AW_root::awar_no_error(const char *var_name) {
+    return (AW_awar *)GBS_read_hash(hash_table_for_variables, var_name);
+}
+
 // for string
 AW_awar *AW_root::awar_string(const char *var_name, const char *default_value, AW_default default_file) {
-    AW_awar *vs = (AW_awar *)GBS_read_hash(hash_table_for_variables, (char *)var_name);
+    AW_awar *vs = awar_no_error(var_name);
     if (!vs) {
         default_file = check_properties(default_file);
         vs           = new AW_awar(AW_STRING, var_name, default_value, 0, default_file, this);
@@ -155,7 +159,7 @@ AW_awar *AW_root::awar_string(const char *var_name, const char *default_value, A
 
 // for int
 AW_awar *AW_root::awar_int(const char *var_name, long default_value, AW_default default_file) {
-    AW_awar *vs = (AW_awar *)GBS_read_hash(hash_table_for_variables, (char *)var_name);
+    AW_awar *vs = awar_no_error(var_name);
     if (!vs) {
         default_file = check_properties(default_file);
         vs           = new AW_awar(AW_INT, var_name, (char *)default_value, 0, default_file, this);
@@ -167,7 +171,7 @@ AW_awar *AW_root::awar_int(const char *var_name, long default_value, AW_default 
 
 // for float
 AW_awar *AW_root::awar_float(const char *var_name, float default_value, AW_default default_file) {
-    AW_awar *vs = (AW_awar *)GBS_read_hash(hash_table_for_variables, (char *)var_name);
+    AW_awar *vs = awar_no_error(var_name);
     if (!vs) {
         default_file = check_properties(default_file);
         vs           = new AW_awar(AW_FLOAT, var_name, "", (double)default_value, default_file, this);
@@ -177,7 +181,7 @@ AW_awar *AW_root::awar_float(const char *var_name, float default_value, AW_defau
 }
 
 AW_awar *AW_root::awar_pointer(const char *var_name, void *default_value, AW_default default_file) {
-    AW_awar *vs = (AW_awar *)GBS_read_hash(hash_table_for_variables, (char *)var_name);
+    AW_awar *vs = awar_no_error(var_name);
     if (!vs) {
         default_file = check_properties(default_file);
         vs           = new AW_awar(AW_POINTER, var_name, (const char *)default_value, 0.0, default_file, this);
@@ -186,13 +190,8 @@ AW_awar *AW_root::awar_pointer(const char *var_name, void *default_value, AW_def
     return vs;
 }
 
-AW_awar *AW_root::awar_no_error(const char *var_name) {
-    AW_awar *vs = (AW_awar *)GBS_read_hash(hash_table_for_variables, (char *)var_name);
-    return vs;
-}
-
 AW_awar *AW_root::awar(const char *var_name) {
-    AW_awar *vs = (AW_awar *)GBS_read_hash(hash_table_for_variables, (char *)var_name);
+    AW_awar *vs = awar_no_error(var_name);
     if (!vs) GBK_terminatef("AWAR %s not defined", var_name);
     return vs;
 }
