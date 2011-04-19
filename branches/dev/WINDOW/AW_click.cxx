@@ -42,8 +42,8 @@ int AW_device_click::line_impl(int /*gc*/, const LineVector& Line, AW_bitset fil
 
     if (drawflag) {
         Position mouse(mouse_x, mouse_y);
-        double   skalar;
-        Position nearest  = nearest_linepoint(mouse, clippedLine, skalar);
+        double   nearest_rel_pos;
+        Position nearest  = nearest_linepoint(mouse, clippedLine, nearest_rel_pos);
         double   distance = Distance(mouse, nearest);
 
         if (distance < max_distance_line) {
@@ -54,8 +54,8 @@ int AW_device_click::line_impl(int /*gc*/, const LineVector& Line, AW_bitset fil
             opt_line.x1 = Line.head().xpos();
             opt_line.y1 = Line.head().ypos();
 
-            opt_line.height = distance;
-            opt_line.length = skalar;
+            opt_line.distance        = distance;
+            opt_line.nearest_rel_pos = nearest_rel_pos;
 
             if (click_cd) {
                 opt_line.client_data1 = click_cd->get_cd1();
@@ -188,15 +188,6 @@ void AW_device_click::get_clicked_text(class AW_clicked_text *ptr) {
     *ptr = opt_text;
 }
 
-double AW_clicked_line::distanceTo(const AW::Position& pos) {
-    // @@@ change (member 'height'[sic] already contains distance)
-    AW::LineVector cl(x0, y0, x1, y1);
-    if (cl.length() == 0) {
-        return AW::Distance(pos, cl.start());
-    }
-    return AW::Distance(pos, cl);
-}
-
 bool AW_getBestClick(const AW::Position& click, AW_clicked_line *cl, AW_clicked_text *ct, AW_CL *cd1, AW_CL *cd2) {
     // detect the nearest item next to 'click'
     // and return that items callback params.
@@ -206,7 +197,7 @@ bool AW_getBestClick(const AW::Position& click, AW_clicked_line *cl, AW_clicked_
 
     if (cl->exists) {
         if (ct->exists) {
-            if (cl->distanceTo(click) < ct->distance) {
+            if (cl->distance < ct->distance) {
                 bestClick = cl;
             }
             else {
