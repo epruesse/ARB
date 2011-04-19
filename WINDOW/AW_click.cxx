@@ -33,77 +33,27 @@ AW_DEVICE_TYPE AW_device_click::type() {
 }
 
 
-int AW_device_click::line_impl(int /*gc*/, AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW_bitset filteri) {
-    AW_pos X0, Y0, X1, Y1;                          // Transformed pos
-    AW_pos CX0, CY0, CX1, CY1;                      // Clipped line
-    int    drawflag;                                // is line visible on screen
-    AW_pos lx, ly;
-    AW_pos dx, dy;
-    AW_pos h1, h2;
-    AW_pos distance, skalar = 0;
-    bool   best_line        = false;             // is this line the best ?
-
+int AW_device_click::line_impl(int /*gc*/, const LineVector& Line, AW_bitset filteri) {
     if (!(filteri & filter)) return false;
 
-    this->transform(x0, y0, X0, Y0);
-    this->transform(x1, y1, X1, Y1);
-    drawflag = this->clip(X0, Y0, X1, Y1, CX0, CY0, CX1, CY1);
+    LineVector transLine = transform(Line);
+    LineVector clippedLine;
+    int        drawflag = clip(transLine, clippedLine);
 
     if (drawflag) {
-        // stimmen die Kreise um die Punkte ?
+        Position mouse(mouse_x, mouse_y);
+        double   skalar;
+        Position nearest  = nearest_linepoint(mouse, clippedLine, skalar);
+        double   distance = Distance(mouse, nearest);
 
-
-
-        // distance to the second point of the line
-        dx       = mouse_x - X1;
-        dy       = mouse_y - Y1;
-        distance = (dx*dx) + (dy*dy);
         if (distance < max_distance_line) {
-            best_line = true;
             max_distance_line = distance;
-            // add more comments
-            skalar = 0.0;
-        }
+            
+            opt_line.x0 = Line.xpos();
+            opt_line.y0 = Line.ypos();
+            opt_line.x1 = Line.head().xpos();
+            opt_line.y1 = Line.head().ypos();
 
-        // distance to the first point of the line
-        dx       = mouse_x - X0;
-        dy       = mouse_y - Y0;
-        distance = (dx*dx) + (dy*dy);
-        if (distance < max_distance_line) {
-            best_line = true;
-            max_distance_line = distance;
-            // add more comments
-            skalar = 1.0;
-        }
-
-        lx = X1 - X0;
-        ly = Y1 - Y0;
-        h2 = (lx*lx) + (ly*ly);
-
-        // Punkt darf nicht in der Verlaengerung der Linie liegen
-        if (h2 > 0.0000000001) {
-            skalar = (dx*lx+dy*ly)/h2;
-            if (0.0 <= skalar && skalar <= 1.0) {
-                // berechne Trefferpunkt auf Linie
-                // distance to the line
-                h1       = dx*ly - dy*lx;
-                distance = (h1*h1) / h2;
-                if (distance < max_distance_line) {
-                    best_line         = true;
-                    max_distance_line = distance;
-                    // add more comments
-                }
-            }
-        }
-
-        if (best_line) {
-            aw_assert(x0 == x0); aw_assert(x1 == x1); // not NAN
-            aw_assert(y0 == y0); aw_assert(y1 == y1);
-
-            opt_line.x0     = x0;
-            opt_line.y0     = y0;
-            opt_line.x1     = x1;
-            opt_line.y1     = y1;
             opt_line.height = distance;
             opt_line.length = skalar;
 
@@ -115,9 +65,6 @@ int AW_device_click::line_impl(int /*gc*/, AW_pos x0, AW_pos y0, AW_pos x1, AW_p
                 opt_line.client_data1 = 0;
                 opt_line.client_data2 = 0;
             }
-            // opt_line.client_data1 = clientdata1;
-            // opt_line.client_data2 = clientdata2;
-
             opt_line.exists = true;
         }
         return true;
@@ -126,17 +73,17 @@ int AW_device_click::line_impl(int /*gc*/, AW_pos x0, AW_pos y0, AW_pos x1, AW_p
 }
 
 
-int AW_device_click::text_impl(int gc, const char *str, AW_pos x, AW_pos y, AW_pos alignment, AW_bitset filteri, long opt_strlen) {
+int AW_device_click::text_impl(int gc, const char *str, const AW::Position& pos, AW_pos alignment, AW_bitset filteri, long opt_strlen) {
     if (filteri & filter) {
         AW_pos X0, Y0;          // Transformed pos
-        this->transform(x, y, X0, Y0);
+        this->transform(pos.xpos(), pos.ypos(), X0, Y0);
 
         XFontStruct *xfs = &common->gcs[gc]->curfont;
 
         AW_pos Y1 = Y0+(AW_pos)(xfs->max_bounds.descent);
         Y0        = Y0-(AW_pos)(xfs->max_bounds.ascent);
 
-        // Fast check text against top bottom clip
+        // Fast check text against top/bottom clip
 
         if (this->clip_rect.t == 0) {
             if (Y1 < this->clip_rect.t) return 0;
@@ -242,6 +189,7 @@ void AW_device_click::get_clicked_text(class AW_clicked_text *ptr) {
 }
 
 double AW_clicked_line::distanceTo(const AW::Position& pos) {
+    // @@@ change (member 'height'[sic] already contains distance)
     AW::LineVector cl(x0, y0, x1, y1);
     if (cl.length() == 0) {
         return AW::Distance(pos, cl.start());

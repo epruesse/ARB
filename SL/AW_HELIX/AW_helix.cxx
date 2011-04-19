@@ -132,10 +132,10 @@ static int BI_show_helix_on_device(AW_device *device, int gc, const char *opt_st
     return device->text(gc, buffer, x, y);
 }
 
-int AW_helix::show_helix(void *devicei, int gc1, char *sequence, AW_pos x, AW_pos y, AW_bitset filter) {
+int AW_helix::show_helix(void *devicei, int gc1, const char *sequence, AW_pos x, AW_pos y, AW_bitset filter) {
     if (!has_entries()) return 0;
     AW_device *device = (AW_device *)devicei;
-    return device->text_overlay(gc1, sequence, 0, x,  y, 0.0,  filter, (AW_CL)this, 1.0, 1.0, BI_show_helix_on_device);
+    return device->text_overlay(gc1, sequence, 0, AW::Position(x, y), 0.0,  filter, (AW_CL)this, 1.0, 1.0, BI_show_helix_on_device);
 }
 
 static void helix_pairs_changed_cb(AW_window *aww, AW_CL changed, AW_CL cl_cb_struct) {
