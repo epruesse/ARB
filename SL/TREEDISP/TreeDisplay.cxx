@@ -457,16 +457,12 @@ int AWT_graphic_tree::resort_tree(int mode, AP_tree *at)   // run on father !!!
 }
 
 
-void AWT_graphic_tree::rot_show_line(AW_device *device)
-{
-    double             sx, sy;
-    double             x, y;
-    sx = (this->old_rot_cl.x0+this->old_rot_cl.x1)*.5;
-    sy = (this->old_rot_cl.y0+this->old_rot_cl.y1)*.5;
-    x = this->rot_cl.x0 * (1.0-this->rot_cl.length) + this->rot_cl.x1 * this->rot_cl.length;
-    y = this->rot_cl.y0 * (1.0-this->rot_cl.length) + this->rot_cl.y1 * this->rot_cl.length;
-    int gc = this->drag_gc;
-    device->line(gc, sx, sy, x, y);
+void AWT_graphic_tree::rot_show_line(AW_device *device) {
+    double sx = (old_rot_cl.x0+old_rot_cl.x1)*.5;
+    double sy = (old_rot_cl.y0+old_rot_cl.y1)*.5;
+    double x  = rot_cl.x0 * (1.0-rot_cl.nearest_rel_pos) + rot_cl.x1 * rot_cl.nearest_rel_pos;
+    double y  = rot_cl.y0 * (1.0-rot_cl.nearest_rel_pos) + rot_cl.y1 * rot_cl.nearest_rel_pos;
+    device->line(drag_gc, sx, sy, x, y);
 }
 
 void AWT_graphic_tree::rot_show_triangle(AW_device *device)
@@ -1228,7 +1224,7 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
                         switch (button) {
                             case AWT_M_LEFT:
                                 error = source->cantMoveTo(dest);
-                                if (!error) source->moveTo(dest, cl->length);
+                                if (!error) source->moveTo(dest, cl->nearest_rel_pos);
                                 break;
 
                             case AWT_M_RIGHT:

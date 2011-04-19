@@ -92,11 +92,9 @@ public:
 
 class AW_clicked_line : public AW_clicked_element {
 public:
-    AW_pos x0, y0, x1, y1; // @@@ make this a LineVector
-    AW_pos height; // @@@ rename to 'distance'
-    AW_pos length; // @@@ rename to 'attach_factor' [0 = at x0/y0, 1 = at x1/y1]
-
-    double distanceTo(const AW::Position& click);
+    AW_pos x0, y0, x1, y1;  // @@@ make this a Rectangle
+    AW_pos distance;        // min. distance to line
+    AW_pos nearest_rel_pos; // 0 = at x0/y0, 1 = at x1/y1
 };
 
 class AW_clicked_text : public AW_clicked_element {
