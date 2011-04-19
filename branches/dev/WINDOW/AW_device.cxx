@@ -14,6 +14,8 @@
 
 #include <arb_msg.h>
 
+using namespace AW;
+
 void AW_clip::set_cliprect(AW_rectangle *rect, bool allow_oversize) {
     clip_rect = *rect;  // coordinates : (0,0) = top-left-corner
     if (!allow_oversize) {
@@ -139,6 +141,7 @@ int AW_clip::box_clip(AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW_pos& x0out,
     if (x1<clip_rect.l || x0>clip_rect.r) return 0;
     if (y1<clip_rect.t || y0>clip_rect.b) return 0;
 
+    // @@@ refactor into method
     if (clip_rect.l>clip_rect.r) return 0;
     if (clip_rect.t>clip_rect.b) return 0;
 
@@ -147,6 +150,30 @@ int AW_clip::box_clip(AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW_pos& x0out,
     y0out = clip_in_range(clip_rect.t, y0, clip_rect.b);
     y1out = clip_in_range(clip_rect.t, y1, clip_rect.b);
 
+    return 1;
+}
+
+int AW_clip::box_clip(const Rectangle& rect, Rectangle& clippedRect) {
+    if (rect.distinct_from(clip_rect))
+        return 0;
+    
+    // @@@ refactor into method
+    if (clip_rect.l>clip_rect.r) return 0;
+    if (clip_rect.t>clip_rect.b) return 0;
+
+    clippedRect = rect.intersect_with(clip_rect);
+    return 1;
+}
+
+int AW_clip::force_into_clipbox(const Position& pos, Position& forcedPos) {
+    // force 'pos' inside 'clip_rect'
+
+    // @@@ refactor into method
+    if (clip_rect.l>clip_rect.r) return 0;
+    if (clip_rect.t>clip_rect.b) return 0;
+
+    forcedPos.setx(clip_in_range(clip_rect.l, pos.xpos(), clip_rect.r));
+    forcedPos.sety(clip_in_range(clip_rect.t, pos.ypos(), clip_rect.b));
     return 1;
 }
 
@@ -209,6 +236,17 @@ int AW_clip::clip(AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW_pos& x0out, AW_
     return is_visible;
 }
 
+int AW_clip::clip(const LineVector& line, LineVector& clippedLine) {
+    AW_pos x0, y0, x1, y1;
+    if (clip(line.start().xpos(), line.start().ypos(),
+             line.head().xpos(), line.head().ypos(),
+             x0, y0, x1, y1)) {
+        clippedLine = LineVector(x0, y0, x1, y1);
+        return 1;
+    }
+    return 0;
+}
+
 void AW_matrix::zoom(AW_pos val) {
     scale   *= val;
     unscale  = 1.0/scale;
@@ -216,7 +254,7 @@ void AW_matrix::zoom(AW_pos val) {
 
 void AW_matrix::reset() {
     unscale = scale   = 1.0;
-    offset  = AW::Vector(0, 0);
+    offset  = Vector(0, 0);
 }
 
 // -----------------
@@ -457,7 +495,7 @@ class AW_clip_scale_stack {
     int left_font_overlap;
     int right_font_overlap;
 
-    AW::Vector offset;
+    Vector offset;
     AW_pos     scale;
 
     class AW_clip_scale_stack *next;
@@ -541,9 +579,9 @@ void AW_device::get_area_size(AW_world *rect) { // get the extends from the clas
     rect->r = common->screen.r;
 }
 
-AW::Rectangle AW_device::get_area_size() {
+Rectangle AW_device::get_area_size() {
     AW_rectangle& scr = common->screen;
-    return AW::Rectangle(scr.l, scr.t, scr.r, scr.b);
+    return Rectangle(scr.l, scr.t, scr.r, scr.b);
 }
 
 void AW_device::privat_reset() {}
@@ -558,9 +596,10 @@ void AW_device::reset() {
 }
 
 AW_device::AW_device(class AW_common *commoni) : AW_gc() {
-    common = commoni;
+    common           = commoni;
     clip_scale_stack = 0;
-    filter = AW_ALL_DEVICES;
+    filter           = AW_ALL_DEVICES;
+    click_cd         = 0;
 }
 
 AW_gc::AW_gc() : AW_clip() {}
@@ -579,52 +618,25 @@ bool AW_device::ready_to_draw(int gc) {
     return AW_GC_MAPABLE(common, gc);
 }
 
-int AW_device::generic_box(int gc, bool /* filled */, AW_pos x0, AW_pos y0, AW_pos width, AW_pos height, AW_bitset filteri) {
-    int erg = 0;
+int AW_device::generic_box(int gc, bool IF_DEBUG(filled), const Rectangle& rect, AW_bitset filteri) {
+    aw_assert(!filled); // not supported
+    int drawflag = 0;
     if (filteri & filter) {
-        erg |= line(gc, x0, y0, x0+width, y0, filteri);
-        erg |= line(gc, x0, y0, x0, y0+height, filteri);
-        erg |= line(gc, x0+width, y0+height, x0+width, y0+height, filteri);
-        erg |= line(gc, x0+width, y0+height, x0+width, y0+height, filteri);
+        drawflag |= line_impl(gc, rect.upper_edge(), filteri);
+        drawflag |= line_impl(gc, rect.lower_edge(), filteri);
+        drawflag |= line_impl(gc, rect.left_edge(),  filteri);
+        drawflag |= line_impl(gc, rect.right_edge(), filteri);
     }
-    return erg;
+    return drawflag;
 }
 
-#if defined(WARN_TODO)
-#warning draw in 45-degree-steps (8-cornered-polygones instead of circles)
-#endif
-
-int AW_device::generic_circle(int gc, bool /* filled has no effect here */, AW_pos x0, AW_pos y0, AW_pos width, AW_pos height, AW_bitset filteri) {
+int AW_device::generic_filled_area(int gc, int npos, const Position *pos, AW_bitset filteri) {
     int erg = 0;
     if (filteri & filter) {
-        erg |= line(gc, x0, y0+height, x0+width, y0, filteri);
-        erg |= line(gc, x0, y0+height, x0-width, y0, filteri);
-        erg |= line(gc, x0, y0-height, x0+width, y0, filteri);
-        erg |= line(gc, x0, y0-height, x0-width, y0, filteri);
-    }
-    return erg;
-}
-
-int AW_device::generic_arc(int gc, bool /* filled has no effect here */, AW_pos x0, AW_pos y0, AW_pos width, AW_pos height, int /* start_degrees */, int /* arc_degrees */, AW_bitset filteri) {
-    int erg = 0;
-    if (filteri & filter) {
-        erg |= line(gc, x0, y0+height, x0+width, y0, filteri);
-        erg |= line(gc, x0, y0+height, x0-width, y0, filteri);
-        erg |= line(gc, x0, y0-height, x0+width, y0, filteri);
-        erg |= line(gc, x0, y0-height, x0-width, y0, filteri);
-    }
-    return erg;
-}
-int AW_device::generic_filled_area(int gc, int npoints, AW_pos *points, AW_bitset filteri) {
-    int erg = 0;
-    if (filteri & filter) {
-        npoints--;
-        erg |= line(gc, points[0], points[1], points[npoints*2], points[npoints*2+1], filteri);
-        while (npoints>0) {
-            AW_pos x = *(points++);
-            AW_pos y = *(points++);
-            erg |= line(gc, x, y, points[0], points[1], filteri);
-            npoints--;
+        int p = npos-1;
+        for (int n = 0; n<npos; ++n) {
+            erg |= line(gc, pos[p], pos[n], filteri);
+            p    = n;
         }
     }
     return erg;
@@ -679,9 +691,9 @@ int AW_device::cursor(int gc, AW_pos x0, AW_pos y0, AW_cursor_type cur_type, AW_
 }
 
 int AW_device::text_overlay(int gc, const char *opt_str, long opt_len,  // either string or strlen != 0
-                             AW_pos x, AW_pos y, AW_pos alignment, AW_bitset filteri, AW_CL cduser, 
-                             AW_pos opt_ascent, AW_pos opt_descent,             // optional height (if == 0 take font height)
-                             int (*f)(AW_device *device, int gc, const char *opt_string, size_t opt_string_len, size_t start, size_t size, AW_pos x, AW_pos y, AW_pos opt_ascent, AW_pos opt_descent, AW_CL cduser))
+                            const Position& pos, AW_pos alignment, AW_bitset filteri, AW_CL cduser, 
+                            AW_pos opt_ascent, AW_pos opt_descent,             // optional height (if == 0 take font height)
+                            TextOverlayCallback toc)
 {
     long         textlen;
     AW_GC_Xm    *gcm           = AW_MAP_GC(gc);
@@ -714,7 +726,7 @@ int AW_device::text_overlay(int gc, const char *opt_str, long opt_len,  // eithe
         inside_clipping_right = false;
     }
 
-    transform(x, y, X0, Y0);
+    transform(pos.xpos(), pos.ypos(), X0, Y0);
 
 
     if (top_font_overlap || clip_rect.t == 0) {                                                 // check clip border inside screen
@@ -813,15 +825,15 @@ int AW_device::text_overlay(int gc, const char *opt_str, long opt_len,  // eithe
         aw_assert(int(strlen(opt_str)) >= textlen);
     }
     X0 = (AW_pos)xi;
-    rtransform(X0, Y0, x, y);
+
+    AW_pos corrx, corry;
+    rtransform(X0, Y0, corrx, corry);
 
     aw_assert(opt_len >= textlen);
     aw_assert(textlen >= 0 && int(strlen(opt_str)) >= textlen);
 
-    return f(this, gc, opt_str, opt_len, start, (size_t)textlen, x, y, opt_ascent, opt_descent, cduser);
+    return toc(this, gc, opt_str, opt_len, start, (size_t)textlen, corrx, corry, opt_ascent, opt_descent, cduser);
 }
 
 void AW_device::set_filter(AW_bitset filteri) { filter = filteri; }
-
-
 

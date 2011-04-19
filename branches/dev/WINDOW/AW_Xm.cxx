@@ -13,16 +13,11 @@
 
 #if defined(WARN_TODO)
 #warning change implementation of draw functions (read more)
-// * cd1 and cd2 shall not be passed to real draw functions (only to click device)
 // * filter has to be checked early (in AW_device)
 // * functions shall use Position/LineVector/Rectangle only
-// way to do :
-// AW_device-methods
-// * expect parameters 'AW_bitset filteri, AW_CL cd1, AW_CL cd2' (as in the past)
-// * they are really implemented, check the filter, save cd's into AW_device and
-//   call virtual private methods w/o above parameters
 #endif
 
+using namespace AW;
 
 // ---------------------
 //      AW_device_Xm
@@ -39,20 +34,17 @@ void AW_device_Xm::init() {
 AW_DEVICE_TYPE AW_device_Xm::type() { return AW_DEVICE_SCREEN; }
 
 
-int AW_device_Xm::line_impl(int gc, AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW_bitset filteri) {
-    class AW_GC_Xm *gcm      = AW_MAP_GC(gc);
-    AW_pos          X0, Y0, X1, Y1; // Transformed pos
-    AW_pos          CX0, CY0, CX1, CY1; // Clipped line
-    int             drawflag = 0;
-
+int AW_device_Xm::line_impl(int gc, const LineVector& Line, AW_bitset filteri) {
+    int drawflag = 0;
     if (filteri & filter) {
-        this->transform(x0, y0, X0, Y0);
-        this->transform(x1, y1, X1, Y1);
-        drawflag = this->clip(X0, Y0, X1, Y1, CX0, CY0, CX1, CY1);
+        LineVector transLine = transform(Line);
+        LineVector clippedLine;
+        drawflag = clip(transLine, clippedLine);
         if (drawflag) {
-            XDrawLine(common->display, common->window_id,
-                      gcm->gc, AW_INT(CX0), AW_INT(CY0), AW_INT(CX1), AW_INT(CY1));
-
+            AW_GC_Xm *gcm = AW_MAP_GC(gc);
+            XDrawLine(common->display, common->window_id, gcm->gc,
+                      AW_INT(clippedLine.start().xpos()), AW_INT(clippedLine.start().ypos()),
+                      AW_INT(clippedLine.head().xpos()), AW_INT(clippedLine.head().ypos()));
             AUTO_FLUSH(this);
         }
     }
@@ -75,51 +67,41 @@ static int AW_draw_string_on_screen(AW_device *device, int gc, const  char *str,
 }
 
 
-int AW_device_Xm::text_impl(int gc, const char *str, AW_pos x, AW_pos y, AW_pos alignment, AW_bitset filteri, long opt_strlen) {
-    return text_overlay(gc, str, opt_strlen, x, y, alignment, filteri, (AW_CL)this, 0.0, 0.0, AW_draw_string_on_screen);
+int AW_device_Xm::text_impl(int gc, const char *str, const Position& pos, AW_pos alignment, AW_bitset filteri, long opt_strlen) {
+    return text_overlay(gc, str, opt_strlen, pos, alignment, filteri, (AW_CL)this, 0.0, 0.0, AW_draw_string_on_screen);
 }
 
-int AW_device_Xm::box_impl(int gc, bool filled, AW_pos x0, AW_pos y0, AW_pos width, AW_pos height, AW_bitset filteri) {
-    AW_pos x1, y1;
-
+int AW_device_Xm::box_impl(int gc, bool filled, const Rectangle& rect, AW_bitset filteri) {
+    int drawflag = 0;
     if (filteri & filter) {
-        x1 = x0 + width;
-        y1 = y0 + height;
         if (filled) {
-            AW_pos X0, Y0, X1, Y1; // Transformed pos
-            this->transform(x0, y0, X0, Y0);
-            this->transform(x1, y1, X1, Y1);
-
-            AW_pos CX0, CY0, CX1, CY1; // Clipped line
-            int drawflag = this->box_clip(X0, Y0, X1, Y1, CX0, CY0, CX1, CY1);
+            Rectangle transRect = transform(rect);
+            Rectangle clippedRect;
+            drawflag = box_clip(transRect, clippedRect);
             if (drawflag) {
-                int cx0 = AW_INT(CX0);
-                int cx1 = AW_INT(CX1);
-                int cy0 = AW_INT(CY0);
-                int cy1 = AW_INT(CY1);
-
                 class AW_GC_Xm *gcm = AW_MAP_GC(gc);
                 XFillRectangle(common->display, common->window_id, gcm->gc,
-                               cx0, cy0, cx1-cx0+1, cy1-cy0+1);
+                               AW_INT(clippedRect.left()), 
+                               AW_INT(clippedRect.top()), 
+                               AW_INT(clippedRect.width()), 
+                               AW_INT(clippedRect.height()) 
+                               );
                 AUTO_FLUSH(this);
             }
         }
         else {
-            line(gc, x0, y0, x1, y0, filteri);
-            line(gc, x0, y0, x0, y1, filteri);
-            line(gc, x0, y1, x1, y1, filteri);
-            line(gc, x1, y0, x1, y1, filteri);
+            drawflag = generic_box(gc, false, rect, filteri);
         }
     }
 
-    return 0;
+    return drawflag;
 }
 
-int AW_device_Xm::circle_impl(int gc, bool filled, AW_pos x0, AW_pos y0, AW_pos width, AW_pos height, AW_bitset filteri) {
-    return arc(gc, filled, x0, y0, width, height, 0, 360, filteri);
+int AW_device_Xm::circle_impl(int gc, bool filled, const AW::Position& center, AW_pos xradius, AW_pos yradius, AW_bitset filteri) {
+    return arc(gc, filled, center.xpos(), center.ypos(), xradius, yradius, 0, 360, filteri);
 }
 
-int AW_device_Xm::arc_impl(int gc, bool filled, AW_pos x0, AW_pos y0, AW_pos width, AW_pos height, int start_degrees, int arc_degrees, AW_bitset filteri) {
+int AW_device_Xm::arc_impl(int gc, bool filled, const AW::Position& center, AW_pos xradius, AW_pos yradius, int start_degrees, int arc_degrees, AW_bitset filteri) {
     class AW_GC_Xm *gcm = AW_MAP_GC(gc);
     AW_pos X0, Y0, X1, Y1;                          // Transformed pos
     AW_pos XL, YL;                                  // Left edge of circle pos
@@ -127,19 +109,21 @@ int AW_device_Xm::arc_impl(int gc, bool filled, AW_pos x0, AW_pos y0, AW_pos wid
     int    drawflag = 0;
 
     if (filteri & filter) {
+        AW_pos x0 = center.xpos();
+        AW_pos y0 = center.ypos();
 
         this->transform(x0, y0, X0, Y0); // center
 
-        x0 -= width;
-        y0 -= height;
+        x0 -= xradius;
+        y0 -= yradius;
         this->transform(x0, y0, XL, YL);
 
         X1 = X0 + 2.0; Y1 = Y0 + 2.0;
         X0 -= 2.0; Y0 -= 2.0;
         drawflag = this->box_clip(X0, Y0, X1, Y1, CX0, CY0, CX1, CY1);
         if (drawflag) {
-            width  *= 2.0 * this->get_scale();
-            height *= 2.0 * this->get_scale();
+            AW_pos width  = xradius*2.0 * this->get_scale();
+            AW_pos height = yradius*2.0 * this->get_scale();
 
             start_degrees = -start_degrees;
             while (start_degrees<0) start_degrees += 360;

@@ -87,36 +87,40 @@ namespace AW {
         const Vector& s = l1.line_vector();
         const Vector& t = l2.line_vector();
 
+        aw_assert(s.has_length() && t.has_length());
+
         factor_l1 = (t.x()*(p1.ypos()-p2.ypos()) + t.y()*(p2.xpos()-p1.xpos()))
             / (s.x()*t.y() - s.y()*t.x());
 
         factor_l2 = (p1.ypos()-p2.ypos()+s.y()*factor_l1) / t.y();
 
-        return p1 + factor_l1*s;
+        return p1 + factor_l1*s; 
     }
 
-    double Distance(const AW::Position pos, const AW::LineVector line) {
+    Position nearest_linepoint(const Position& pos, const LineVector& line, double& factor) {
+        // returns the Position on 'line' with minimum distance to 'pos'
+        // factor is set to [0.0 .. 1.0],
+        //    where 0.0 means "at line.start()"
+        //    and   1.0 means "at line.head()"
+
+        if (!line.has_length()) return line.start();
+
         Vector upright(line.line_vector());
         upright.rotate90deg();
 
         LineVector pos2line(pos, upright);
 
-        double f1, f2;
-        Position cross = crosspoint(line, pos2line, f1, f2);
+        double   unused;
+        Position nearest = crosspoint(line, pos2line, factor, unused);
 
-        double dist;
-        if (f1 >= 0 && f1 <= 1) { // 'cross' is at 'line'
-            dist = Distance(pos, cross);
+        if (factor<0) {
+            nearest = line.start();
+            factor  = 0;
         }
-        else if (f1<0) {
-            dist = Distance(pos, line.start());
+        else if (factor>1) {
+            nearest = line.head();
+            factor  = 1;
         }
-        else {
-            aw_assert(f1>1);
-            dist = Distance(pos, line.head());
-        }
-
-        return dist;
+        return nearest;
     }
-
 };

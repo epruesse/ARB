@@ -92,9 +92,9 @@ public:
 
 class AW_clicked_line : public AW_clicked_element {
 public:
-    AW_pos  x0, y0, x1, y1;
-    AW_pos  height;
-    AW_pos  length;
+    AW_pos x0, y0, x1, y1; // @@@ make this a LineVector
+    AW_pos height; // @@@ rename to 'distance'
+    AW_pos length; // @@@ rename to 'attach_factor' [0 = at x0/y0, 1 = at x1/y1]
 
     double distanceTo(const AW::Position& click);
 };
@@ -154,6 +154,9 @@ public:
     AW::LineVector transform (const AW::LineVector& lvec) const { return AW::LineVector(transform(lvec.start()), transform(lvec.line_vector())); }
     AW::LineVector rtransform(const AW::LineVector& lvec) const { return AW::LineVector(rtransform(lvec.start()), rtransform(lvec.line_vector())); }
 
+    AW::Rectangle transform (const AW::Rectangle& rect) const { return AW::Rectangle(transform(static_cast<const AW::LineVector&>(rect))); }
+    AW::Rectangle rtransform(const AW::Rectangle& rect) const { return AW::Rectangle(rtransform(static_cast<const AW::LineVector&>(rect))); }
+    
     // old style functions, not preferred:
     void transform(int x, int y, int& xout, int& yout) const {
         xout = int((x+offset.x())*scale);
@@ -190,7 +193,7 @@ protected:
         return (code);
     };
 public:
-    class AW_common *common;
+    AW_common *common;
 
     // ****** read only section
     AW_rectangle clip_rect;     // holds the clipping rectangle coordinates
@@ -201,7 +204,11 @@ public:
 
     // ****** real public
     int clip(AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW_pos& x0out, AW_pos& y0out, AW_pos& x1out, AW_pos& y1out);
+    int clip(const AW::LineVector& line, AW::LineVector& clippedLine);
+
     int box_clip(AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW_pos& x0out, AW_pos& y0out, AW_pos& x1out, AW_pos& y1out);
+    int box_clip(const AW::Rectangle& rect, AW::Rectangle& clippedRect);
+    int force_into_clipbox(const AW::Position& pos, AW::Position& forcedPos);
 
     void set_top_clip_border(int top, bool allow_oversize = false);
     void set_bottom_clip_border(int bottom, bool allow_oversize = false); // absolute
@@ -349,6 +356,7 @@ public:
     void set_cd2(AW_CL cd) { cd2 = cd; }
 };
 
+typedef int (*TextOverlayCallback)(AW_device *device, int gc, const char *opt_string, size_t opt_string_len, size_t start, size_t size, AW_pos x, AW_pos y, AW_pos opt_ascent, AW_pos opt_descent, AW_CL cduser);
 
 class AW_device : public AW_matrix, public AW_gc {
     AW_device(const AW_device& other);
@@ -388,12 +396,13 @@ public:
     // * primary functions (always virtual)
 
 private:
-    virtual int line_impl(int gc, AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW_bitset filteri)                                                        = 0;
-    virtual int text_impl(int gc, const char *string, AW_pos x, AW_pos y, AW_pos alignment, AW_bitset filteri, long opt_strlen)                         = 0;
-    virtual int box_impl(int gc, bool filled, AW_pos x0, AW_pos y0, AW_pos width, AW_pos heigth, AW_bitset filteri)                                     = 0;
-    virtual int filled_area_impl(int gc, int npoints, AW_pos *points, AW_bitset filteri)                                                                = 0;
-    virtual int circle_impl(int gc, bool filled, AW_pos x0, AW_pos y0, AW_pos width, AW_pos heigth, AW_bitset filteri)                                  = 0;
-    virtual int arc_impl(int gc, bool filled, AW_pos x0, AW_pos y0, AW_pos width, AW_pos heigth, int start_degrees, int arc_degrees, AW_bitset filteri) = 0;
+    virtual int line_impl(int gc, const AW::LineVector& Line, AW_bitset filteri)                                                  = 0;
+    virtual int text_impl(int gc, const char *str, const AW::Position& pos, AW_pos alignment, AW_bitset filteri, long opt_strlen) = 0;
+    virtual int box_impl(int gc, bool filled, const AW::Rectangle& rect, AW_bitset filteri)                                       = 0;
+    virtual int filled_area_impl(int gc, int npos, const AW::Position *pos, AW_bitset filteri)                                    = 0;
+
+    virtual int circle_impl(int gc, bool filled, const AW::Position& center, AW_pos xradius, AW_pos yradius, AW_bitset filteri)                                  = 0;
+    virtual int arc_impl(int gc, bool filled, const AW::Position& center, AW_pos xradius, AW_pos yradius, int start_degrees, int arc_degrees, AW_bitset filteri) = 0;
 
 protected:
     virtual bool invisible_impl(int gc, AW_pos x, AW_pos y, AW_bitset filteri); // returns true if x/y is outside viewport (or if it would now be drawn undrawn)
@@ -401,10 +410,15 @@ protected:
     // * second level functions (maybe non virtual)
 
 protected:
-    int generic_box(int gc, bool filled, AW_pos x0, AW_pos y0, AW_pos width, AW_pos heigth, AW_bitset filteri);
-    int generic_circle(int gc, bool filled, AW_pos x0, AW_pos y0, AW_pos width, AW_pos heigth, AW_bitset filteri);
-    int generic_arc(int gc, bool filled, AW_pos x0, AW_pos y0, AW_pos width, AW_pos heigth, int start_degrees, int arc_degrees, AW_bitset filteri);
-    int generic_filled_area(int gc, int npoints, AW_pos *points, AW_bitset filteri);
+    int generic_box(int gc, bool filled, const AW::Rectangle& rect, AW_bitset filteri);
+    int generic_circle(int gc, bool filled, const AW::Position& center, AW_pos xradius, AW_pos yradius, AW_bitset filteri) {
+        AW::Vector toCorner(xradius, yradius);
+        return generic_box(gc, filled, AW::Rectangle(center+toCorner, center-toCorner), filteri);
+    }
+    int generic_arc(int gc, bool filled, const AW::Position& center, AW_pos xradius, AW_pos yradius, int /*start_degrees*/, int /*arc_degrees*/, AW_bitset filteri) {
+        return generic_circle(gc, filled, center, xradius, yradius, filteri);
+    }
+    int generic_filled_area(int gc, int npos, const AW::Position *pos, AW_bitset filteri);
 
 public:
     // * third level functions (never virtual)
@@ -413,14 +427,14 @@ public:
 
     // convenience functions
 
-    int line(int gc, AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW_bitset filteri = AW_ALL_DEVICES) {
-        return line_impl(gc, x0, y0, x1, y1, filteri);
+    int line(int gc, const AW::LineVector& Line, AW_bitset filteri = AW_ALL_DEVICES) {
+        return line_impl(gc, Line, filteri);
     }
     int line(int gc, const AW::Position& pos1, const AW::Position& pos2, AW_bitset filteri = AW_ALL_DEVICES) {
-        return line_impl(gc, pos1.xpos(), pos1.ypos(), pos2.xpos(), pos2.ypos(), filteri);
+        return line(gc, AW::LineVector(pos1, pos2), filteri);
     }
-    int line(int gc, const AW::LineVector& Line, AW_bitset filteri = AW_ALL_DEVICES) {
-        return line(gc, Line.start(), Line.head(), filteri);
+    int line(int gc, AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW_bitset filteri = AW_ALL_DEVICES) {
+        return line(gc, AW::LineVector(x0, y0, x1, y1), filteri);
     }
 
     int text(int         gc,
@@ -430,7 +444,7 @@ public:
              AW_pos      alignment  = 0.0, // 0.0 alignment left 0.5 centered 1.0 right justified
              AW_bitset   filteri    = AW_ALL_DEVICES,
              long        opt_strlen = 0) {
-        return text_impl(gc, string, x, y, alignment, filteri, opt_strlen);
+        return text_impl(gc, string, AW::Position(x, y), alignment, filteri, opt_strlen);
     }
     int text(int                  gc,
              const char          *string,
@@ -438,7 +452,7 @@ public:
              AW_pos               alignment  = 0.0, // 0.0 alignment left 0.5 centered 1.0 right justified
              AW_bitset            filteri    = AW_ALL_DEVICES,
              long                 opt_strlen = 0) {
-        return text_impl(gc, string, pos.xpos(), pos.ypos(), alignment, filteri, opt_strlen);
+        return text_impl(gc, string, pos, alignment, filteri, opt_strlen);
     }
 
     bool invisible(int gc, AW_pos x, AW_pos y, AW_bitset filteri = AW_ALL_DEVICES) {
@@ -448,42 +462,51 @@ public:
         return invisible_impl(gc, pos.xpos(), pos.ypos(), filteri);
     }
 
-    int box(int gc, bool filled, AW_pos x0, AW_pos y0, AW_pos width, AW_pos heigth, AW_bitset filteri = AW_ALL_DEVICES) {
-        return box_impl(gc, filled, x0, y0, width, heigth, filteri);
+    int box(int gc, bool filled, const AW::Rectangle& rect, AW_bitset filteri = AW_ALL_DEVICES) {
+        return box_impl(gc, filled, rect, filteri);
     }
     int box(int gc, bool filled, const AW::Position& pos, const AW::Vector& size, AW_bitset filteri = AW_ALL_DEVICES) {
-        return box(gc, filled, pos.xpos(), pos.ypos(), size.x(), size.y(), filteri);
+        return box(gc, filled, AW::Rectangle(pos, size), filteri);
     }
-    int box(int gc, bool filled, const AW::Rectangle& rect, AW_bitset filteri = AW_ALL_DEVICES) {
-        return box(gc, filled, rect.upper_left_corner(), rect.diagonal(), filteri);
+    int box(int gc, bool filled, AW_pos x0, AW_pos y0, AW_pos width, AW_pos height, AW_bitset filteri = AW_ALL_DEVICES) {
+        return box(gc, filled, AW::Position(x0, y0), AW::Vector(width, height), filteri);
     }
 
-    int circle(int gc, bool filled, AW_pos x0, AW_pos y0, AW_pos width, AW_pos heigth, AW_bitset filteri = AW_ALL_DEVICES)  {
-        return circle_impl(gc, filled, x0, y0, width, heigth, filteri);
+    int circle(int gc, bool filled, const AW::Position& center, AW_pos xradius, AW_pos yradius, AW_bitset filteri = AW_ALL_DEVICES) {
+        return circle_impl(gc, filled, center, xradius, yradius, filteri);
     }
-    int circle(int gc, bool filled, const AW::Position& pos, AW_pos width, AW_pos heigth, AW_bitset filteri = AW_ALL_DEVICES) {
-        return circle(gc, filled, pos.xpos(), pos.ypos(), width, heigth, filteri);
+    int circle(int gc, bool filled, AW_pos x0, AW_pos y0, AW_pos xradius, AW_pos yradius, AW_bitset filteri = AW_ALL_DEVICES)  {
+        return circle_impl(gc, filled, AW::Position(x0, y0), xradius, yradius, filteri);
     }
     int circle(int gc, bool filled, const AW::Rectangle& rect, AW_bitset filteri = AW_ALL_DEVICES) {
-        return circle(gc, filled, rect.centroid(), rect.width(), rect.height(), filteri);
+        // draw ellipse into Rectangle
+        return circle_impl(gc, filled, rect.centroid(), rect.width()/2, rect.height()/2, filteri);
     }
 
-    int arc(int gc, bool filled, AW_pos x0, AW_pos y0, AW_pos width, AW_pos heigth, int start_degrees, int arc_degrees, AW_bitset filteri = AW_ALL_DEVICES)  {
-        return arc_impl(gc, filled, x0, y0, width, heigth, start_degrees, arc_degrees, filteri);
+    int arc(int gc, bool filled, AW_pos x0, AW_pos y0, AW_pos xradius, AW_pos yradius, int start_degrees, int arc_degrees, AW_bitset filteri = AW_ALL_DEVICES)  {
+        return arc_impl(gc, filled, AW::Position(x0, y0), xradius, yradius, start_degrees, arc_degrees, filteri);
     }
-    int arc(int gc, bool filled, const AW::Position& pos, AW_pos width, AW_pos heigth, int start_degrees, int arc_degrees, AW_bitset filteri = AW_ALL_DEVICES) {
-        return arc(gc, filled, pos.xpos(), pos.ypos(), width, heigth, start_degrees, arc_degrees, filteri);
+    int arc(int gc, bool filled, const AW::Position& pos, AW_pos xradius, AW_pos yradius, int start_degrees, int arc_degrees, AW_bitset filteri = AW_ALL_DEVICES) {
+        return arc_impl(gc, filled, pos, xradius, yradius, start_degrees, arc_degrees, filteri);
     }
 
-    int filled_area(int gc, int npoints, AW_pos *points, AW_bitset filteri = AW_ALL_DEVICES)  {
-        return filled_area_impl(gc, npoints, points, filteri);
+    int filled_area(int gc, int npoints, const AW_pos *points, AW_bitset filteri = AW_ALL_DEVICES)  {
+        AW::Position pos[npoints];
+        for (int n = 0; n<npoints; ++n) {
+            pos[n].setx(points[n*2]);
+            pos[n].sety(points[n*2+1]);
+        }
+        return filled_area_impl(gc, npoints, pos, filteri);
+    }
+    int filled_area(int gc, int npos, const AW::Position *pos, AW_bitset filteri = AW_ALL_DEVICES)  {
+        return filled_area_impl(gc, npos, pos, filteri);
     }
 
     // reduces any string (or virtual string) to its actual drawn size and calls the function f with the result
-    int     text_overlay(int gc, const char *opt_string, long opt_strlen,   // either string or strlen != 0
-                          AW_pos x, AW_pos y, AW_pos alignment, AW_bitset filteri, AW_CL cduser, 
-                          AW_pos opt_ascent, AW_pos opt_descent,  // optional height (if == 0 take font height)
-                          int (*f)(AW_device *device, int gc, const char *opt_string, size_t opt_string_len, size_t start, size_t size, AW_pos x, AW_pos y, AW_pos opt_ascent, AW_pos opt_descent, AW_CL cduser));
+    int text_overlay(int gc, const char *opt_string, long opt_strlen,   // either string or strlen != 0
+                     const AW::Position& pos, AW_pos alignment, AW_bitset filteri, AW_CL cduser, 
+                     AW_pos opt_ascent, AW_pos opt_descent,  // optional height (if == 0 take font height)
+                     TextOverlayCallback toc);
 
 
     // ********* X11 Device only ********
@@ -512,14 +535,14 @@ class AW_device_print : public AW_device {
     FILE *out;
     bool  color_mode;
 
-    int line_impl(int gc, AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW_bitset filteri);
-    int text_impl(int gc, const char *string, AW_pos x, AW_pos y, AW_pos alignment, AW_bitset filteri, long opt_strlen);
-    int box_impl(int gc, bool filled, AW_pos x0, AW_pos y0, AW_pos width, AW_pos heigth, AW_bitset filter);
-    int circle_impl(int gc, bool filled, AW_pos x0, AW_pos y0, AW_pos width, AW_pos heigth, AW_bitset filter);
-    int arc_impl(int gc, bool filled, AW_pos x0, AW_pos y0, AW_pos width, AW_pos heigth, int start_degrees, int arc_degrees, AW_bitset filteri) {
-        return generic_arc(gc, filled, x0, y0, width, heigth, start_degrees, arc_degrees, filteri);
+    int line_impl(int gc, const AW::LineVector& Line, AW_bitset filteri);
+    int text_impl(int gc, const char *str, const AW::Position& pos, AW_pos alignment, AW_bitset filteri, long opt_strlen);
+    int box_impl(int gc, bool filled, const AW::Rectangle& rect, AW_bitset filteri);
+    int circle_impl(int gc, bool filled, const AW::Position& center, AW_pos xradius, AW_pos yradius, AW_bitset filteri);
+    int arc_impl(int gc, bool filled, const AW::Position& center, AW_pos xradius, AW_pos yradius, int start_degrees, int arc_degrees, AW_bitset filteri) {
+        return generic_arc(gc, filled, center, xradius, yradius, start_degrees, arc_degrees, filteri);
     }
-    int filled_area_impl(int gc, int npoints, AW_pos *points, AW_bitset filteri);
+    int filled_area_impl(int gc, int npos, const AW::Position *pos, AW_bitset filteri);
 public:
     AW_device_print(AW_common *commoni);
 
@@ -538,17 +561,17 @@ public:
 };
 
 class AW_simple_device : public AW_device {
-    int box_impl(int gc, bool filled, AW_pos x0, AW_pos y0, AW_pos width, AW_pos heigth, AW_bitset filteri) {
-        return generic_box(gc, filled, x0, y0, width, heigth, filteri);
+    int box_impl(int gc, bool /*filled*/, const AW::Rectangle& rect, AW_bitset filteri) {
+        return generic_box(gc, false, rect, filteri);
     }
-    int filled_area_impl(int gc, int npoints, AW_pos *points, AW_bitset filteri) {
-        return generic_filled_area(gc, npoints, points, filteri);
+    int filled_area_impl(int gc, int npos, const AW::Position *pos, AW_bitset filteri) {
+        return generic_filled_area(gc, npos, pos, filteri);
     }
-    int circle_impl(int gc, bool filled, AW_pos x0, AW_pos y0, AW_pos width, AW_pos heigth, AW_bitset filteri) {
-        return generic_circle(gc, filled, x0, y0, width, heigth, filteri);
+    int circle_impl(int gc, bool filled, const AW::Position& center, AW_pos xradius, AW_pos yradius, AW_bitset filteri) {
+        return generic_circle(gc, filled, center, xradius, yradius, filteri);
     }
-    int arc_impl(int gc, bool filled, AW_pos x0, AW_pos y0, AW_pos width, AW_pos heigth, int start_degrees, int arc_degrees, AW_bitset filteri) {
-        return generic_arc(gc, filled, x0, y0, width, heigth, start_degrees, arc_degrees, filteri);
+    int arc_impl(int gc, bool filled, const AW::Position& center, AW_pos xradius, AW_pos yradius, int start_degrees, int arc_degrees, AW_bitset filteri) {
+        return generic_arc(gc, filled, center, xradius, yradius, start_degrees, arc_degrees, filteri);
     }
 public:
     AW_simple_device(AW_common *commoni) : AW_device(commoni) {}
@@ -559,11 +582,14 @@ class AW_device_size : public AW_simple_device {
     AW_world size_information;
     void     privat_reset();
 
-    void dot(AW_pos x, AW_pos y);
     void dot_transformed(AW_pos X, AW_pos Y);
+    void dot_transformed(const AW::Position& p) { dot_transformed(p.xpos(), p.ypos()); }
 
-    int line_impl(int gc, AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW_bitset filteri);
-    int text_impl(int gc, const  char *string, AW_pos x, AW_pos y, AW_pos alignment, AW_bitset filteri, long opt_strlen);
+    void dot(AW_pos x, AW_pos y) { dot(AW::Position(x, y)); }
+    void dot(const AW::Position& p) { dot_transformed(transform(p)); }
+
+    int line_impl(int gc, const AW::LineVector& Line, AW_bitset filteri);
+    int text_impl(int gc, const char *str, const AW::Position& pos, AW_pos alignment, AW_bitset filteri, long opt_strlen);
     bool invisible_impl(int gc, AW_pos x, AW_pos y, AW_bitset filteri);
 
 public:
@@ -580,8 +606,8 @@ class AW_device_click : public AW_simple_device {
     AW_pos          max_distance_line;
     AW_pos          max_distance_text;
 
-    int line_impl(int gc, AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW_bitset filteri);
-    int text_impl(int gc, const char *string, AW_pos x, AW_pos y, AW_pos alignment, AW_bitset filteri, long opt_strlen);
+    int line_impl(int gc, const AW::LineVector& Line, AW_bitset filteri);
+    int text_impl(int gc, const char *str, const AW::Position& pos, AW_pos alignment, AW_bitset filteri, long opt_strlen);
 
 public:
     AW_clicked_line opt_line;
