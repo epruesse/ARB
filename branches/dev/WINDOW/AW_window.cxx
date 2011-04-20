@@ -1573,8 +1573,8 @@ void AW_window::create_window_variables() {
 
 void AW_area_management::create_devices(AW_window *aww, AW_area ar) {
     AW_root *root = aww->get_root();
-    common = new AW_common(aww, ar, XtDisplay(area), XtWindow(area),
-                           p_global->color_table, aww->color_table, aww->color_table_size);
+    common = new AW_common(XtDisplay(area), XtWindow(area), p_global->color_table, aww->color_table, aww->color_table_size);
+    common->install_common_extends_cb(aww, ar);
 }
 
 const char *AW_window::GC_to_RGB(AW_device *device, int gc, int& red, int& green, int& blue) {

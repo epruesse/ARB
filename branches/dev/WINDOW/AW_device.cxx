@@ -411,11 +411,12 @@ void AW_gc::set_background_color(int gc, AW_color color) {
     common->map_mod_gc(gc)->set_background_color(common->get_color(color));
 }
 
-void AW_get_common_extends_cb(AW_window */*aww*/, AW_common *common) {
-    Window       root;
-    unsigned int width, height;
-    unsigned int depth, borderwidth; // unused
-    int          x_offset, y_offset; // unused
+void AW_get_common_extends_cb(AW_window */*aww*/, AW_CL cl_common, AW_CL) {
+    AW_common    *common = (AW_common*)cl_common;
+    Window        root;
+    unsigned int  width, height;
+    unsigned int  depth, borderwidth; // unused
+    int           x_offset, y_offset; // unused
 
     XGetGeometry(common->get_display(), common->get_window_id(),
                  &root,
@@ -429,26 +430,30 @@ void AW_get_common_extends_cb(AW_window */*aww*/, AW_common *common) {
     common->set_screen_size(width, height);
 }
 
-AW_common::AW_common(AW_window       *aww,
-                     AW_area          area,
-                     Display         *display_in,
+AW_common::AW_common(Display         *display_in,
                      XID              window_id_in,
                      unsigned long*&  fcolors,
                      unsigned long*&  dcolors,
                      long&            dcolors_count)
     : display(display_in),
-      window_id(window_id_in), 
+      window_id(window_id_in),
       frame_colors(fcolors),
       data_colors(dcolors),
       data_colors_size(dcolors_count)
 {
-    ngcs             = 8;
-    gcs              = (AW_GC_Xm **)malloc(sizeof(void *)*ngcs);
+    ngcs = 8;
+    gcs  = (AW_GC_Xm **)malloc(sizeof(void *)*ngcs);
     memset((char *)gcs, 0, sizeof(void *)*ngcs);
 
-    // @@@ move rest into member function and call after ctor
-    aww->set_resize_callback(area, (AW_CB2)AW_get_common_extends_cb, (AW_CL)this, 0);
-    AW_get_common_extends_cb(aww, this);
+    screen.t = 0; 
+    screen.b = -1;
+    screen.l = 0;
+    screen.r = -1;
+}
+
+void AW_common::install_common_extends_cb(AW_window *aww, AW_area area) {
+    aww->set_resize_callback(area, AW_get_common_extends_cb, (AW_CL)this);
+    AW_get_common_extends_cb(aww, (AW_CL)this, 0);
 }
 
 #if defined(DEBUG)
