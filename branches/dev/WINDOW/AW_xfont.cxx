@@ -571,7 +571,7 @@ static char *caps(char *sentence) {
 }
 
 
-const char *AW_root::font_2_ascii(AW_font font_nr) {
+const char *AW_font_2_ascii(AW_font font_nr) {
     //! converts fontnr to string
     //
     // @return 0 if font is not available
@@ -619,7 +619,7 @@ const char *AW_root::font_2_ascii(AW_font font_nr) {
     return readable_fontname;
 }
 
-int AW_root::font_2_xfig(AW_font font_nr) {
+int AW_font_2_xfig(AW_font font_nr) {
     //! converts fontnr to xfigid
     //
     // negative values indicate monospaced f.
@@ -713,10 +713,10 @@ void AW_GC_Xm::set_font(AW_font font_nr, int size, int *found_size)
 
     {
         int  found_font_size;
-        ASSERT_TRUE(lookfont(common->display, font_nr, size, found_font_size, true, false, &xfs)); // lookfont should do fallback
+        ASSERT_TRUE(lookfont(common->get_display(), font_nr, size, found_font_size, true, false, &xfs)); // lookfont should do fallback
         if (found_size) *found_size = found_font_size;
     }
-    XSetFont(common->display, gc, xfs->fid);
+    XSetFont(common->get_display(), gc, xfs->fid);
     curfont = *xfs;
 
     const XCharStruct *cs;
@@ -770,6 +770,6 @@ void AW_GC_Xm::set_font(AW_font font_nr, int size, int *found_size)
     this->fontsize = size;
 }
 
-int AW_GC_Xm::get_available_fontsizes(AW_font font_nr, int *available_sizes) {
-    return ::get_available_fontsizes(common->display, font_nr, available_sizes);
+int AW_GC_Xm::get_available_fontsizes(AW_font font_nr, int *available_sizes) const {
+    return ::get_available_fontsizes(common->get_display(), font_nr, available_sizes);
 }

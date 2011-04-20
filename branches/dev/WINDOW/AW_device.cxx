@@ -17,12 +17,14 @@
 using namespace AW;
 
 void AW_clip::set_cliprect(AW_rectangle *rect, bool allow_oversize) {
-    clip_rect = *rect;  // coordinates : (0,0) = top-left-corner
+    clip_rect = *rect;                  // coordinates : (0,0) = top-left-corner
+    
+    const AW_rectangle& screen = common->get_screen();
     if (!allow_oversize) {
-        if (clip_rect.t < common->screen.t) clip_rect.t = common->screen.t;
-        if (clip_rect.b > common->screen.b) clip_rect.b = common->screen.b;
-        if (clip_rect.l < common->screen.l) clip_rect.l = common->screen.l;
-        if (clip_rect.r > common->screen.r) clip_rect.r = common->screen.r;
+        if (clip_rect.t < screen.t) clip_rect.t = screen.t;
+        if (clip_rect.b > screen.b) clip_rect.b = screen.b;
+        if (clip_rect.l < screen.l) clip_rect.l = screen.l;
+        if (clip_rect.r > screen.r) clip_rect.r = screen.r;
     }
 
     top_font_overlap    = 0;
@@ -31,10 +33,10 @@ void AW_clip::set_cliprect(AW_rectangle *rect, bool allow_oversize) {
     right_font_overlap  = 0;
 
     if (allow_oversize) { // added 21.6.02 --ralf
-        if (clip_rect.t < common->screen.t) set_top_font_overlap(true);
-        if (clip_rect.b > common->screen.b) set_bottom_font_overlap(true);
-        if (clip_rect.l < common->screen.l) set_left_font_overlap(true);
-        if (clip_rect.r > common->screen.r) set_right_font_overlap(true);
+        if (clip_rect.t < screen.t) set_top_font_overlap(true);
+        if (clip_rect.b > screen.b) set_bottom_font_overlap(true);
+        if (clip_rect.l < screen.l) set_left_font_overlap(true);
+        if (clip_rect.r > screen.r) set_right_font_overlap(true);
     }
 }
 
@@ -55,7 +57,7 @@ void AW_clip::reduce_top_clip_border(int top) {
 void AW_clip::set_top_clip_border(int top, bool allow_oversize) {
     clip_rect.t = top;
     if (!allow_oversize) {
-        if (clip_rect.t < common->screen.t) clip_rect.t = common->screen.t;
+        if (clip_rect.t < common->get_screen().t) clip_rect.t = common->get_screen().t;
     }
     else {
         set_top_font_overlap(true); // added 21.6.02 --ralf
@@ -69,7 +71,7 @@ void AW_clip::reduce_bottom_clip_border(int bottom) {
 void AW_clip::set_bottom_clip_border(int bottom, bool allow_oversize) {
     clip_rect.b = bottom;
     if (!allow_oversize) {
-        if (clip_rect.b > common->screen.b) clip_rect.b = common->screen.b;
+        if (clip_rect.b > common->get_screen().b) clip_rect.b = common->get_screen().b;
     }
     else {
         set_bottom_font_overlap(true); // added 21.6.02 --ralf
@@ -79,7 +81,7 @@ void AW_clip::set_bottom_clip_border(int bottom, bool allow_oversize) {
 void AW_clip::set_bottom_clip_margin(int bottom, bool allow_oversize) {
     clip_rect.b -= bottom;
     if (!allow_oversize) {
-        if (clip_rect.b > common->screen.b) clip_rect.b = common->screen.b;
+        if (clip_rect.b > common->get_screen().b) clip_rect.b = common->get_screen().b;
     }
     else {
         set_bottom_font_overlap(true); // added 21.6.02 --ralf
@@ -91,7 +93,7 @@ void AW_clip::reduce_left_clip_border(int left) {
 void AW_clip::set_left_clip_border(int left, bool allow_oversize) {
     clip_rect.l = left;
     if (!allow_oversize) {
-        if (clip_rect.l < common->screen.l) clip_rect.l = common->screen.l;
+        if (clip_rect.l < common->get_screen().l) clip_rect.l = common->get_screen().l;
     }
     else {
         set_left_font_overlap(true); // added 21.6.02 --ralf
@@ -105,7 +107,7 @@ void AW_clip::reduce_right_clip_border(int right) {
 void AW_clip::set_right_clip_border(int right, bool allow_oversize) {
     clip_rect.r = right;
     if (!allow_oversize) {
-        if (clip_rect.r > common->screen.r) clip_rect.r = common->screen.r;
+        if (clip_rect.r > common->get_screen().r) clip_rect.r = common->get_screen().r;
     }
     else {
         set_right_font_overlap(true); // added to correct problem with last char skipped (added 21.6.02 --ralf)
@@ -272,12 +274,12 @@ AW_GC_Xm::AW_GC_Xm(AW_common *commoni) {
     val.line_width = 1;
     unsigned long value_mask = GCLineWidth;
 
-    gc = XCreateGC(common->display, common->window_id, value_mask, &val);
+    gc = XCreateGC(common->get_display(), common->get_window_id(), value_mask, &val);
 }
 
 
 AW_GC_Xm::~AW_GC_Xm() {
-    if (gc) XFreeGC(common->display, gc);
+    if (gc) XFreeGC(common->get_display(), gc);
 }
 
 
@@ -292,10 +294,10 @@ void AW_GC_Xm::set_lineattributes(AW_pos width, AW_linestyle stylei) {
 
     switch (style) {
         case AW_SOLID:
-            XSetLineAttributes(common->display, gc, lwidth, LineSolid, CapButt, JoinBevel);
+            XSetLineAttributes(common->get_display(), gc, lwidth, LineSolid, CapButt, JoinBevel);
             break;
         case AW_DOTTED:
-            XSetLineAttributes(common->display, gc, lwidth, LineOnOffDash, CapButt, JoinBevel);
+            XSetLineAttributes(common->get_display(), gc, lwidth, LineOnOffDash, CapButt, JoinBevel);
             break;
         default:
             break;
@@ -310,10 +312,10 @@ void AW_GC_Xm::set_function(AW_function mode)
     if (function != mode) {
         switch (mode) {
             case AW_XOR:
-                XSetFunction(common->display, gc, GXxor);
+                XSetFunction(common->get_display(), gc, GXxor);
                 break;
             case AW_COPY:
-                XSetFunction(common->display, gc, GXcopy);
+                XSetFunction(common->get_display(), gc, GXcopy);
                 break;
         }
         function = mode;
@@ -323,159 +325,128 @@ void AW_GC_Xm::set_function(AW_function mode)
 
 void AW_GC_Xm::set_foreground_color(unsigned long col) {
     color = (short)col;
-    if (function == AW_XOR) {
-        if (common->data_colors[0]) {
-            col ^= common->data_colors[0][AW_DATA_BG];
-        }
-        else {
-            col ^= common->frame_colors[AW_WINDOW_BG];
-        }
-    }
-    XSetForeground(common->display, gc, col);
+    if (function == AW_XOR) col ^= common->get_XOR_color();
+    XSetForeground(common->get_display(), gc, col);
     last_fg_color =  col;
 }
 
 void AW_GC_Xm::set_background_color(unsigned long colori) {
-    XSetBackground(common->display, gc, colori);
+    XSetBackground(common->get_display(), gc, colori);
     last_bg_color = colori;
 }
 
-const AW_font_information *AW_gc::get_font_information(int gc, unsigned char c) {
-    AW_GC_Xm            *gcm = (common->gcs[gc]);
-    AW_font_information *ptr = &common->gcs[gc]->fontinfo;
+const AW_font_information *AW_common::get_font_information(int gc, unsigned char c) {
+    // @@@ result should be 'const AW_font_limits&'
 
-    ptr->this_letter.ascent  = gcm->ascent_of_chars[c];
-    ptr->this_letter.descent = gcm->descent_of_chars[c];
-    ptr->this_letter.width   = gcm->width_of_chars[c];
-    ptr->this_letter.calc_height();
-    return ptr;
+    AW_GC_Xm&        gcm = *gcs[gc];
+    AW_font_limits&  lim = gcm.fontinfo.this_letter;
+
+    lim.ascent  = gcm.ascent_of_chars[c];
+    lim.descent = gcm.descent_of_chars[c];
+    lim.width   = gcm.width_of_chars[c];
+    lim.calc_height();
+    
+    return &gcm.fontinfo;
+}
+
+const AW_font_information *AW_gc::get_font_information(int gc, unsigned char c) {
+    return common->get_font_information(gc, c);
 }
 
 // --------------
 //      AW_gc
 
-int AW_gc::get_string_size(int gc, const char *str, long textlen) {
-    // get the size of the string
-    XFontStruct *xfs           = &common->gcs[gc]->curfont;
-    short       *size_per_char = common->gcs[gc]->width_of_chars;
+int AW_GC_Xm::get_string_size(const char *str, long textlen) const {
+    // calculate display size of 'str'
     if (!textlen) {
         if (!str) return 0;
         textlen = strlen(str);
     }
-    int  c;
-    long l_width;
 
-    if (xfs->max_bounds.width == xfs->min_bounds.width || !str) {
-        // monospaced font
-        l_width = textlen * xfs->max_bounds.width;
+    long l_width;
+    if (curfont.max_bounds.width == curfont.min_bounds.width || !str) { // monospaced font
+        l_width = textlen * curfont.max_bounds.width;
     }
-    else {             // non-monospaced font
+    else { // non-monospaced font
         l_width = 0;
-        for (c = *(str++); c; c = *(str++)) {
-            l_width += size_per_char[c];
+        for (int c = *(str++); c; c = *(str++)) {
+            l_width += width_of_chars[c];
         }
     }
     return (int)l_width;
 }
-void AW_gc::new_gc(int gc) {
-    if (gc >= common->ngcs) {
-        common->gcs = (AW_GC_Xm **)realloc((char *)common->gcs, sizeof(void *)*(gc+10));
-        memset(&common->gcs[common->ngcs], 0, sizeof(void *) * (gc-common->ngcs+10));
-        common->ngcs = gc+10;
+
+void AW_common::new_gc(int gc) {
+    if (gc >= ngcs) {
+        gcs = (AW_GC_Xm **)realloc((char *)gcs, sizeof(*gcs)*(gc+10));
+        memset(&gcs[ngcs], 0, sizeof(*gcs) * (gc-ngcs+10));
+        ngcs = gc+10;
     }
-    if (common->gcs[gc])delete (common->gcs[gc]);
-    common->gcs[gc] = new AW_GC_Xm(common);
+    if (gcs[gc]) delete gcs[gc];
+    gcs[gc] = new AW_GC_Xm(this);
 }
 
-
-void AW_gc::set_fill(int gc, AW_grey_level grey_level) {
-    aw_assert(common->gcs[gc]);
-    common->gcs[gc]->set_fill(grey_level); }
-
-
+int AW_gc::get_string_size(int gc, const char *str, long textlen) const {
+    return common->map_gc(gc)->get_string_size(str, textlen);
+}
+void AW_gc::new_gc(int gc) { common->new_gc(gc); }
+void AW_gc::set_fill(int gc, AW_grey_level grey_level) { common->map_mod_gc(gc)->set_fill(grey_level); }
 void AW_gc::set_font(int gc, AW_font font_nr, int size, int *found_size) {
     // if found_size != 0 -> return value for used font size
-    aw_assert(common->gcs[gc]);
-    common->gcs[gc]->set_font(font_nr, size, found_size);
+    common->map_mod_gc(gc)->set_font(font_nr, size, found_size);
 }
-
 int AW_gc::get_available_fontsizes(int gc, AW_font font_nr, int *available_sizes) {
-    aw_assert(common->gcs[gc]);
-    return common->gcs[gc]->get_available_fontsizes(font_nr, available_sizes);
+    return common->map_gc(gc)->get_available_fontsizes(font_nr, available_sizes);
 }
-
-
 void AW_gc::set_line_attributes(int gc, AW_pos width, AW_linestyle style) {
-    aw_assert(common->gcs[gc]);
-    common->gcs[gc]->set_lineattributes(width, style);
+    common->map_mod_gc(gc)->set_lineattributes(width, style);
 }
-
-
 void AW_gc::set_function(int gc, AW_function function) {
-    aw_assert(common->gcs[gc]);
-    common->gcs[gc]->set_function(function);
+    common->map_mod_gc(gc)->set_function(function);
 }
-
-
 void AW_gc::set_foreground_color(int gc, AW_color color) {
-    unsigned long col;
-    if (color>=AW_DATA_BG) {
-        col = common->data_colors[0][color];
-    }
-    else {
-        col = common->frame_colors[color];
-    }
-    common->gcs[gc]->set_foreground_color(col);
+    common->map_mod_gc(gc)->set_foreground_color(common->get_color(color));
 }
-
-
 void AW_gc::set_background_color(int gc, AW_color color) {
-    unsigned long col;
-    if (color>=AW_DATA_BG) {
-        col = common->data_colors[0][color];
-    }
-    else {
-        col = common->frame_colors[color];
-    }
-    common->gcs[gc]->set_background_color(col);
+    common->map_mod_gc(gc)->set_background_color(common->get_color(color));
 }
 
 void AW_get_common_extends_cb(AW_window */*aww*/, AW_common *common) {
     Window       root;
     unsigned int width, height;
-    unsigned int depth, borderwidth;
+    unsigned int depth, borderwidth; // unused
+    int          x_offset, y_offset; // unused
 
-    XGetGeometry(common->display, common->window_id,
+    XGetGeometry(common->get_display(), common->get_window_id(),
                  &root,
-                 &common->screen_x_offset, // xoffset
-                 &common->screen_y_offset, // yoffset
+                 &x_offset, 
+                 &y_offset, 
                  &width,
                  &height,
                  &borderwidth,  // border width
                  &depth);       // depth of display
 
-    common->screen.t = 0;               // set clipping coordinates
-    common->screen.b = height;
-    common->screen.l = 0;
-    common->screen.r = width;
+    common->set_screen_size(width, height);
 }
 
-AW_common::AW_common(AW_window *aww, AW_area area, Display *display_in,
-                     XID window_id_in, unsigned long *fcolors,
-                     unsigned int **dcolors, long *data_colors_size_in)
+AW_common::AW_common(AW_window       *aww,
+                     AW_area          area,
+                     Display         *display_in,
+                     XID              window_id_in,
+                     unsigned long*&  fcolors,
+                     unsigned long*&  dcolors,
+                     long&            dcolors_count)
+    : display(display_in),
+      window_id(window_id_in), 
+      frame_colors(fcolors),
+      data_colors(dcolors),
+      data_colors_size(dcolors_count)
 {
-    memset((char *)this, 0, sizeof(AW_common));
-
-    root             = aww->get_root();
-    window_id        = window_id_in;
-    display          = display_in;
-    frame_colors     = fcolors;
-    data_colors      = (unsigned long **)dcolors;
-    data_colors_size = data_colors_size_in;
     ngcs             = 8;
     gcs              = (AW_GC_Xm **)malloc(sizeof(void *)*ngcs);
-
     memset((char *)gcs, 0, sizeof(void *)*ngcs);
+
+    // @@@ move rest into member function and call after ctor
     aww->set_resize_callback(area, (AW_CB2)AW_get_common_extends_cb, (AW_CL)this, 0);
     AW_get_common_extends_cb(aww, this);
 }
@@ -569,19 +540,20 @@ void AW_device::pop_clip_scale() {
 // --------------------------------------------------------------------------------
 
 void AW_device::get_area_size(AW_rectangle *rect) {     // get the extends from the class AW_device
-    *rect = common->screen;
+    *rect = common->get_screen();
 }
 
 void AW_device::get_area_size(AW_world *rect) { // get the extends from the class AW_device
-    rect->t = common->screen.t;
-    rect->b = common->screen.b;
-    rect->l = common->screen.l;
-    rect->r = common->screen.r;
+    const AW_rectangle& screen = common->get_screen();
+    
+    rect->t = screen.t;
+    rect->b = screen.b;
+    rect->l = screen.l;
+    rect->r = screen.r;
 }
 
 Rectangle AW_device::get_area_size() {
-    AW_rectangle& scr = common->screen;
-    return Rectangle(scr.l, scr.t, scr.r, scr.b);
+    return Rectangle(common->get_screen());
 }
 
 void AW_device::privat_reset() {}
@@ -615,7 +587,7 @@ bool AW_device::invisible_impl(int /*gc*/, AW_pos x, AW_pos y, AW_bitset filteri
 }
 
 bool AW_device::ready_to_draw(int gc) {
-    return AW_GC_MAPABLE(common, gc);
+    return common->gc_mapable(gc);
 }
 
 int AW_device::generic_box(int gc, bool IF_DEBUG(filled), const Rectangle& rect, AW_bitset filteri) {
@@ -656,10 +628,10 @@ void AW_device::slow() {}
 void AW_device::flush() {}
 
 int AW_device::cursor(int gc, AW_pos x0, AW_pos y0, AW_cursor_type cur_type, AW_bitset filteri) {
-    class AW_GC_Xm *gcm = AW_MAP_GC(gc);
-    XFontStruct    *xfs = &gcm->curfont;
-    AW_pos          x1, x2, y1, y2;
-    AW_pos          X0, Y0;     // Transformed pos
+    const AW_GC_Xm    *gcm = common->map_gc(gc);
+    const XFontStruct *xfs = &gcm->curfont;
+    AW_pos             x1, x2, y1, y2;
+    AW_pos             X0, Y0;  // Transformed pos
 
     //  cursor insert         cursor overwrite
     //     (X0,Y0)
@@ -695,16 +667,16 @@ int AW_device::text_overlay(int gc, const char *opt_str, long opt_len,  // eithe
                             AW_pos opt_ascent, AW_pos opt_descent,             // optional height (if == 0 take font height)
                             TextOverlayCallback toc)
 {
-    long         textlen;
-    AW_GC_Xm    *gcm           = AW_MAP_GC(gc);
-    XFontStruct *xfs           = &gcm->curfont;
-    short       *size_per_char = common->gcs[gc]->width_of_chars;
-    int          xi, yi;
-    int          h;
-    int          start;
-    int          l;
-    int          c             = 0;
-    AW_pos       X0, Y0;        // Transformed pos
+    long               textlen;
+    const AW_GC_Xm    *gcm           = common->map_gc(gc);
+    const XFontStruct *xfs           = &gcm->curfont;
+    const short       *size_per_char = gcm->width_of_chars;
+    int                xi, yi;
+    int                h;
+    int                start;
+    int                l;
+    int                c             = 0;
+    AW_pos             X0, Y0;  // Transformed pos
 
     bool inside_clipping_left  = true; // clipping at the left edge of the screen is different from clipping right of the left edge.
     bool inside_clipping_right = true;
@@ -717,11 +689,13 @@ int AW_device::text_overlay(int gc, const char *opt_str, long opt_len,  // eithe
 
     if (!(filter & filteri)) return 0;
 
-    if (left_font_overlap || common->screen.l == clip_rect.l) { // was : clip_rect.l == 0
+    const AW_rectangle& screen = common->get_screen();
+
+    if (left_font_overlap || screen.l == clip_rect.l) { // was : clip_rect.l == 0
         inside_clipping_left = false;
     }
 
-    if (right_font_overlap || clip_rect.r == common->screen.r) { // was : clip_rect.r == common->screen.r
+    if (right_font_overlap || clip_rect.r == screen.r) { // was : clip_rect.r == screen.r
 
         inside_clipping_right = false;
     }
@@ -736,7 +710,7 @@ int AW_device::text_overlay(int gc, const char *opt_str, long opt_len,  // eithe
         if (Y0-(AW_pos)(xfs->max_bounds.ascent) < clip_rect.t) return 0; // don't cross the clip border
     }
 
-    if (bottom_font_overlap || clip_rect.b == common->screen.b) {                               // check clip border inside screen drucken
+    if (bottom_font_overlap || clip_rect.b == screen.b) {                               // check clip border inside screen drucken
         if (Y0-(AW_pos)(xfs->max_bounds.ascent) > clip_rect.b) return 0;             // draw outside screen
     }
     else {

@@ -1076,7 +1076,7 @@ void cleanupResizeEvents(Display *display) {
 
 static void AW_resizeCB_draw_area(Widget /*wgt*/, XtPointer aw_cb_struct, XtPointer /*call_data*/) {
     AW_area_management *aram = (AW_area_management *) aw_cb_struct;
-    cleanupResizeEvents(aram->common->display);
+    cleanupResizeEvents(aram->common->get_display());
     if (aram->resize_cb)
         aram->resize_cb->run_callback();
 }
@@ -1483,7 +1483,7 @@ void AW_root::exit_root() {
 
 void AW_window::_get_area_size(AW_area area, AW_rectangle *square) {
     AW_area_management *aram = MAP_ARAM(area);
-    *square = aram->common->screen;
+    *square = aram->common->get_screen();
 }
 
 static void horizontal_scrollbar_redefinition_cb(class AW_root */*aw_root*/, AW_CL cd1, AW_CL cd2) {
@@ -1573,18 +1573,18 @@ void AW_window::create_window_variables() {
 
 void AW_area_management::create_devices(AW_window *aww, AW_area ar) {
     AW_root *root = aww->get_root();
-    common = new AW_common(aww, ar, XtDisplay(area), XtWindow(area), p_global->color_table,
-            (unsigned int **)&aww->color_table, &aww->color_table_size);
+    common = new AW_common(aww, ar, XtDisplay(area), XtWindow(area),
+                           p_global->color_table, aww->color_table, aww->color_table_size);
 }
 
-const char *AW_window::GC_to_RGB(AW_device *device, int gc, int& red,
-        int& green, int& blue) {
-    AW_common *common = device->common;
-    AW_GC_Xm *gcm = AW_MAP_GC(gc);
+const char *AW_window::GC_to_RGB(AW_device *device, int gc, int& red, int& green, int& blue) {
+    AW_common      *common = device->common;
+    const AW_GC_Xm *gcm    = common->map_gc(gc);
     aw_assert(gcm);
+    
     unsigned pixel = (unsigned short)(gcm->color);
     GB_ERROR error = 0;
-    XColor query_color;
+    XColor   query_color;
 
     query_color.pixel = pixel;
     XQueryColor(p_global->display, p_global->colormap, &query_color);
@@ -1601,14 +1601,14 @@ const char *AW_window::GC_to_RGB(AW_device *device, int gc, int& red,
 }
 
 // Converts GC to RGB float values to the range (0 - 1.0)
-const char *AW_window::GC_to_RGB_float(AW_device *device, int gc, float& red,
-        float& green, float& blue) {
-    AW_common *common = device->common;
-    AW_GC_Xm *gcm = AW_MAP_GC(gc);
+const char *AW_window::GC_to_RGB_float(AW_device *device, int gc, float& red, float& green, float& blue) {
+    AW_common      *common = device->common;
+    const AW_GC_Xm *gcm    = common->map_gc(gc);
     aw_assert(gcm);
+
     unsigned pixel = (unsigned short)(gcm->color);
     GB_ERROR error = 0;
-    XColor query_color;
+    XColor   query_color;
 
     query_color.pixel = pixel;
 

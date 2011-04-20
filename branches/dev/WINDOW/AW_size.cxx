@@ -54,7 +54,7 @@ bool AW_device_size::invisible_impl(int gc, AW_pos x, AW_pos y, AW_bitset filter
 }
 
 
-int AW_device_size::line_impl(int gc, const LineVector& Line, AW_bitset filteri) {
+int AW_device_size::line_impl(int /*gc*/, const LineVector& Line, AW_bitset filteri) {
     if (filteri & filter) {
         dot(Line.start());
         dot(Line.head());
@@ -65,14 +65,13 @@ int AW_device_size::line_impl(int gc, const LineVector& Line, AW_bitset filteri)
 
 int AW_device_size::text_impl(int gc, const char *str, const Position& pos, AW_pos alignment, AW_bitset filteri, long opt_strlen) {
     if (filteri & filter) {
-        Position transPos = transform(pos);
+        Position           transPos  = transform(pos);
+        const XFontStruct *xfs       = common->get_xfont(gc);
+        AW_pos             l_ascent  = xfs->max_bounds.ascent;
+        AW_pos             l_descent = xfs->max_bounds.descent;
+        AW_pos             l_width   = get_string_size(gc, str, opt_strlen);
 
-        XFontStruct *xfs       = &(common->gcs[gc]->curfont);
-        AW_pos       l_ascent  = xfs->max_bounds.ascent;
-        AW_pos       l_descent = xfs->max_bounds.descent;
-        AW_pos       l_width   = get_string_size(gc, str, opt_strlen);
-
-        Position upperLeft(common->x_alignment(transPos.xpos(), l_width, alignment),
+        Position upperLeft(x_alignment(transPos.xpos(), l_width, alignment),
                            transPos.ypos()-l_ascent);
         
         dot_transformed(upperLeft);

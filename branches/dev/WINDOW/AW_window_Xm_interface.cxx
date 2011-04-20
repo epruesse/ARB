@@ -24,8 +24,8 @@ Widget AW_get_AreaWidget(AW_window *aww, AW_area area) {
 }
 
 GC AW_map_AreaGC(AW_window *aww, AW_area area, int gc) {
-    AW_common *common = aww->p_w->areas[area]->common;
-    AW_GC_Xm  *gcm    = AW_MAP_GC(gc);
+    AW_common      *common = aww->p_w->areas[area]->common;
+    const AW_GC_Xm *gcm    = common->map_gc(gc);
 
     return gcm->gc;
 }

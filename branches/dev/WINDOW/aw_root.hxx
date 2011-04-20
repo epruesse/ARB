@@ -167,25 +167,18 @@ public:
     void define_remote_command(struct AW_cb_struct *cbs);
     GB_ERROR check_for_remote_command(AW_default gb_main, const char *rm_base);
 
-    // --------------
-    //      Fonts
-
-    const char *font_2_ascii(AW_font font_nr);
-    int         font_2_xfig(AW_font font_nr);
-
 #if defined(DEBUG)
     size_t callallcallbacks(int mode);
 #endif // DEBUG
 };
 
+const char *AW_font_2_ascii(AW_font font_nr);
+int         AW_font_2_xfig(AW_font font_nr);
 
 bool ARB_global_awars_initialized();
 GB_ERROR ARB_init_global_awars(AW_root *aw_root, AW_default aw_def, GBDATA *gb_main) __ATTR__USERESULT;
 
-// #define AW_ROOT_DEFAULT AW_root::SINGLETON->check_properties(NULL)
-inline AW_default get_AW_ROOT_DEFAULT() {
-    return AW_root::SINGLETON->check_properties(NULL);
-}
+inline AW_default get_AW_ROOT_DEFAULT() { return AW_root::SINGLETON->check_properties(NULL); }
 
 
 #else
