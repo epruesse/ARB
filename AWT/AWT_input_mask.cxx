@@ -943,17 +943,18 @@ inline string inputMaskFullname(const string& mask_name, bool local) {
 #define ARB_INPUT_MASK_ID "ARB-Input-Mask"
 
 static awt_input_mask_descriptor *quick_scan_input_mask(const string& mask_name, const string& filename, bool local) {
-    FILE     *in     = fopen(filename.c_str(), "rt");
-    size_t    lineNo = 0;
-    GB_ERROR  error  = 0;
-    int       hidden = 0; // defaults to 'not hidden'
+    awt_input_mask_descriptor *res = 0;
+    FILE     *in    = fopen(filename.c_str(), "rt");
+    GB_ERROR  error = 0;
 
     if (in) {
         string   line;
+        size_t   lineNo = 0;
         error = readLine(in, line, lineNo);
 
         if (!error && line == ARB_INPUT_MASK_ID) {
-            bool   done = false;
+            bool   done   = false;
+            int    hidden = 0; // 0 = 'not hidden'
             string title;
             string itemtype;
 
@@ -986,10 +987,11 @@ static awt_input_mask_descriptor *quick_scan_input_mask(const string& mask_name,
                 }
                 else {
                     if (title == "") title = mask_name;
-                    return new awt_input_mask_descriptor(title.c_str(), mask_name.c_str(), itemtype.c_str(), local, hidden);
+                    res = new awt_input_mask_descriptor(title.c_str(), mask_name.c_str(), itemtype.c_str(), local, hidden);
                 }
             }
         }
+        fclose(in);
     }
 
     if (error) {
@@ -999,7 +1001,7 @@ static awt_input_mask_descriptor *quick_scan_input_mask(const string& mask_name,
 #if defined(DEBUG)
     printf("Skipping '%s' (not a input mask)\n", filename.c_str());
 #endif // DEBUG
-    return 0;
+    return res;
 }
 
 static void AWT_edit_input_mask(AW_window *, AW_CL cl_mask_name, AW_CL cl_local) {
