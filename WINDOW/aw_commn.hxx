@@ -66,17 +66,17 @@ class AW_common {
     AW_rectangle screen;
 
 public:
-    AW_common(AW_window       *aww,
-              AW_area          area,
-              Display         *display_in,
+    AW_common(Display         *display_in,
               XID              window_id_in,
               unsigned long*&  fcolors,
               unsigned long*&  dcolors,
               long&            dcolors_count);
 
+    void install_common_extends_cb(AW_window *aww, AW_area area); // call early
+
     Display *get_display() const { return display; }
     XID get_window_id() const { return window_id; }
-              
+
     const AW_rectangle& get_screen() const { return screen; }
     void set_screen_size(unsigned int width, unsigned int height) {
         screen.t = 0;               // set clipping coordinates
