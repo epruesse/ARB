@@ -31,8 +31,7 @@ static int getline(FILE *file, char *string)
   Changed to fit into ARB by ARB development team.
 */
 
-void ParseMenu()
-{
+void ParseMenu() {
     int           j, curmenu  = -1, curitem = 0;
     int           curchoice  = 0, curarg = 0, curinput = 0, curoutput = 0;
     char          in_line[GBUFSIZ], temp[GBUFSIZ], head[GBUFSIZ];
@@ -43,7 +42,6 @@ void ParseMenu()
     GmenuItemArg *thisarg    = NULL;
     GfileFormat  *thisinput  = NULL;
     GfileFormat  *thisoutput = NULL;
-    FILE         *file;
     char         *resize;
 
     /*  Open the menu configuration file "$ARBHOME/GDEHELP/ARB_GDEmenus"
@@ -54,7 +52,8 @@ void ParseMenu()
 
     strcpy(temp, home);
     strcat(temp, "/GDEHELP/ARB_GDEmenus");
-    file=fopen(temp, "r");
+    
+    FILE *file = fopen(temp, "r");
     if (file == NULL) Error("ARB_GDEmenus file not in the home, local, or $ARBHOME/GDEHELP directory");
 
     /*  Read the ARB_GDEmenus file, and assemble an internal representation
@@ -416,8 +415,8 @@ void ParseMenu()
         }
     }
 
+    fclose(file);
     gde_assert(num_menus>0); // if this fails, the file ARB_GDEmenus contained no menus (maybe file has zero size)
-
     return;
 }
 
