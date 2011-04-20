@@ -735,7 +735,13 @@ ARCHS_COMMUNICATION =	NAMES_COM/server.a \
 			PROBE_COM/server.a
 
 # communication libs need aisc and aisc_mkpts:
-$(ARCHS_COMMUNICATION:.a=.dummy) : $(ARCHS_MAKEBIN:.a=.dummy)
+
+aisc: proto_tools
+	$(MAKE) AISC/AISC.dummy
+
+comtools: proto_tools aisc
+
+$(ARCHS_COMMUNICATION:.a=.dummy) : comtools
 
 ARCHS_SEQUENCE = \
 		SL/SEQUENCE/SEQUENCE.a \
@@ -1111,8 +1117,6 @@ include SOURCE_TOOLS/export2sub
 	) >$(@D).$$ID.log 2>&1 && (cat $(@D).$$ID.log;rm $(@D).$$ID.log)) || (cat $(@D).$$ID.log;rm $(@D).$$ID.log;false))
 
 # Additional dependencies for subtargets:
-
-comtools: $(ARCHS_MAKEBIN:.a=.dummy)
 
 PROBE_COM/PROBE_COM.dummy : comtools
 PROBE_COM/server.dummy : comtools
