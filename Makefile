@@ -140,6 +140,8 @@ ifeq ($(DEBUG),1)
 
 #       C++ only 
 	extended_cpp_warnings += -Wnon-virtual-dtor -Wreorder -Wpointer-arith -Wdisabled-optimization -Wmissing-format-attribute
+	extended_cpp_warnings += -Wctor-dtor-privacy# gcc @@@
+	extended_cpp_warnings += -Wno-non-template-friend# gcc @@@
 # 	extended_cpp_warnings += -Wfloat-equal# gcc 3.0
 
 # ------- above only warnings available in 3.0
@@ -275,6 +277,7 @@ cflags += -pipe
 cflags += -fmessage-length=0# don't wrap compiler output
 cflags += -funit-at-a-time
 cflags += -fPIC
+cflags += -fno-common# link all global data into one namespace
 
 ifneq ($(USE_GCC_4_OR_HIGHER),'')
 cflags += -fstrict-aliasing# gcc 3.4
