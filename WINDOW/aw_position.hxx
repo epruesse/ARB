@@ -269,10 +269,10 @@ namespace AW {
         Position upper_right_corner()       const { return Position(start().xpos()+line_vector().x(), start().ypos()); }
         Position lower_right_corner()       const { return head(); }
 
-        const double& left()   const { return upper_left_corner().xpos(); }
-        const double& top()    const { return upper_left_corner().ypos(); }
-        const double& right()  const { return lower_right_corner().xpos(); }
-        const double& bottom() const { return lower_right_corner().ypos(); }
+        double left()   const { return upper_left_corner().xpos(); }
+        double top()    const { return upper_left_corner().ypos(); }
+        double right()  const { return lower_right_corner().xpos(); }
+        double bottom() const { return lower_right_corner().ypos(); }
 
         double width() const { return diagonal().x(); }
         double height() const { return diagonal().y(); }
