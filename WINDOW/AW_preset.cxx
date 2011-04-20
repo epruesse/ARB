@@ -830,9 +830,9 @@ static bool aw_insert_gcs(AW_root *aw_root, AW_window_simple *aws, aw_gc_manager
                     const char *font_string;
 
                     for (font_nr = 0; ; font_nr++) {
-                        font_string = aw_root->font_2_ascii((AW_font) font_nr);
+                        font_string = AW_font_2_ascii((AW_font) font_nr);
                         if (!font_string) break;
-                        if (flag_fixed_fonts_only && aw_root->font_2_xfig((AW_font) font_nr) >= 0) continue;
+                        if (flag_fixed_fonts_only && AW_font_2_xfig((AW_font) font_nr) >= 0) continue;
                         aws->insert_option(font_string, 0, (int) font_nr);
                     }
                     aws->update_option_menu();

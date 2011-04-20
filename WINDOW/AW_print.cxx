@@ -31,8 +31,8 @@ int AW_device_print::line_impl(int gc, const LineVector& Line, AW_bitset filteri
         drawflag = clip(transLine, clippedLine);
 
         if (drawflag) {
-            AW_GC_Xm *gcm                 = AW_MAP_GC(gc);
-            int       line_width          = gcm->line_width;
+            const AW_GC_Xm *gcm           = common->map_gc(gc);
+            int             line_width    = gcm->line_width;
             if (line_width<=0) line_width = 1;
 
             aw_assert(out);     // file has to be good!
@@ -59,7 +59,7 @@ static int AW_draw_string_on_printer(AW_device *devicei, int gc, const char *str
     AW_pos           X, Y;
     AW_device_print *device = (AW_device_print *)devicei;
     AW_common       *common = device->common;
-    class AW_GC_Xm  *gcm    = AW_MAP_GC(gc);
+    const AW_GC_Xm  *gcm    = common->map_gc(gc);
 
     device->transform(x, y, X, Y);
     char *pstr = strdup(str+start);
@@ -69,7 +69,7 @@ static int AW_draw_string_on_printer(AW_device *devicei, int gc, const char *str
     for (i=0; i<size; i++) {
         if (pstr[i] < ' ') pstr[i] = '?';
     }
-    int fontnr = common->root->font_2_xfig(gcm->fontnr);
+    int fontnr = AW_font_2_xfig(gcm->fontnr);
     if (fontnr<0) fontnr = - fontnr;
     if (str[0]) {
         // 4=string 0=left color depth penstyle font font_size angle
@@ -93,6 +93,8 @@ static int AW_draw_string_on_printer(AW_device *devicei, int gc, const char *str
     return 1;
 }
 
+#define DATA_COLOR_OFFSET 32
+
 GB_ERROR AW_device_print::open(const char *path) {
     if (out) return "You cannot reopen a device";
 
@@ -111,23 +113,30 @@ GB_ERROR AW_device_print::open(const char *path) {
           , out);
 
     if (color_mode) {
-        for (int i=0; i<*common->data_colors_size; i++) {
-            fprintf(out, "0 %d #%06lx\n", i+32, common->data_colors[0][i]);
+        for (int i=0; i<common->get_data_color_size(); i++) {
+            fprintf(out, "0 %d #%06lx\n", i+DATA_COLOR_OFFSET, common->get_data_color(i));
         }
     }
 
     return 0;
 }
 
-int AW_device_print::find_color_idx(unsigned long color) {
-    if (color_mode) {
-        for (int i=0; i<*common->data_colors_size; i++) {
-            if (color == common->data_colors[0][i]) {
-                return i+32;
-            }
+int AW_common::find_data_color_idx(unsigned long color) const {
+    for (int i=0; i<data_colors_size; i++) {
+        if (color == data_colors[i]) {
+            return i;
         }
     }
     return -1;
+}
+
+int AW_device_print::find_color_idx(unsigned long color) {
+    int idx = -1;
+    if (color_mode) {
+        idx = common->find_data_color_idx(color);
+        if (idx >= 0) idx += DATA_COLOR_OFFSET;
+    }
+    return idx;
 }
 
 void AW_device_print::set_color_mode(bool mode) {
@@ -162,10 +171,9 @@ int AW_device_print::box_impl(int gc, bool filled, const Rectangle& rect, AW_bit
 }
 
 int AW_device_print::circle_impl(int gc, bool filled, const AW::Position& center, AW_pos xradius, AW_pos yradius, AW_bitset filteri) {
-    AW_GC_Xm *gcm = AW_MAP_GC(gc);
-    AW_pos    x1, y1;
-    AW_pos    X0, Y0, X1, Y1;   // Transformed pos
-    AW_pos    CX0, CY0, CX1, CY1; // Clipped line
+    AW_pos x1, y1;
+    AW_pos X0, Y0, X1, Y1;              // Transformed pos
+    AW_pos CX0, CY0, CX1, CY1;          // Clipped line
 
     if (filteri & filter) {
         xradius *= get_scale();
@@ -185,7 +193,9 @@ int AW_device_print::circle_impl(int gc, bool filled, const AW::Position& center
             // short greylevel             = (short)(gcm->grey_level*22);
             // if (greylevel>21) greylevel = 21;
 
-            int line_width = gcm->line_width;
+            const AW_GC_Xm *gcm = common->map_gc(gc);
+            
+            int line_width                = gcm->line_width;
             if (line_width<=0) line_width = 1;
 
             int colorIdx = find_color_idx(gcm->last_fg_color);
@@ -212,8 +222,8 @@ int AW_device_print::filled_area_impl(int gc, int npos, const Position *pos, AW_
     int erg = generic_filled_area(gc, npos, pos, filteri);
     if (!erg) return 0;                         // no line visible -> no area fill needed
 
-    AW_GC_Xm *gcm = AW_MAP_GC(gc);
-    short greylevel             = (short)(gcm->grey_level*22);
+    const AW_GC_Xm *gcm         = common->map_gc(gc);
+    short           greylevel   = (short)(gcm->grey_level*22);
     if (greylevel>21) greylevel = 21;
 
     int line_width = gcm->line_width;

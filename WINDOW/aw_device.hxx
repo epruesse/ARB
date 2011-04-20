@@ -309,7 +309,7 @@ public:
     void set_function(int gc, AW_function function);
     void set_foreground_color(int gc, AW_color color); // lines ....
     void set_background_color(int gc, AW_color color); // for box
-    int  get_string_size(int gc, const  char *string, long textlen); // get the size of the string
+    int  get_string_size(int gc, const  char *string, long textlen) const; // get the size of the string
 
     const AW_font_information *get_font_information(int gc, unsigned char c);
 
