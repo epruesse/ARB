@@ -113,7 +113,6 @@ AWT_canio.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 AWT_canio.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWT_canio.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 AWT_canio.o: $(ARBHOME)/INCLUDE/cb.h
-AWT_canio.o: $(ARBHOME)/INCLUDE/downcast.h
 AWT_canio.o: $(ARBHOME)/INCLUDE/dupstr.h
 AWT_canio.o: $(ARBHOME)/INCLUDE/smartptr.h
 AWT_canio.o: $(ARBHOME)/INCLUDE/test_global.h
