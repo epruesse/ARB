@@ -1783,7 +1783,7 @@ setup_after_clean: checks
 	$(MAKE) templ preplib binlink
 	$(MAKE) comtools 
 
-build:
+build: checks
 	$(MAKE) links
 	$(MAKE) com
 	$(MAKE) arb
@@ -1796,7 +1796,7 @@ ifeq ("$(DEVELOPER)","SAVETEST")
 	$(MAKE) save_test
 endif
 
-all: checks
+all: 
 	@echo "Build time" > $(TIMELOG)
 	@echo $(MAKE) build
 	@$(TIMECMD) $(MAKE) build
