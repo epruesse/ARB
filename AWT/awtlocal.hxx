@@ -67,7 +67,7 @@ struct DbQuery {
 #define AWAR_TABLE_FIELD_NEW_TYPE_TEMPLATE      "tmp/table/%s/new_type"
 #define AWAR_TABLE_SELECTED_FIELD_TEMPLATE      "tmp/table/%s/selected_field"
 
-struct awt_table {
+struct awt_table : virtual Noncopyable {
     GBDATA *gb_main;
     char   *table_name;
     char   *awar_field_reorder_source;

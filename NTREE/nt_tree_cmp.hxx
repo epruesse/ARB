@@ -14,12 +14,16 @@
 #ifndef ARBDB_BASE_H
 #include <arbdb_base.h>
 #endif
+#ifndef ARBTOOLS_H
+#include <arbtools.h>
+#endif
+
 
 class AP_tree;
 class AWT_species_set;
 class arb_progress;
 
-class AWT_species_set_root {
+class AWT_species_set_root : virtual Noncopyable {
     long              species_counter;
     long              nsets;
     AWT_species_set **sets;
@@ -48,7 +52,7 @@ public:
 };
 
 
-class AWT_species_set {
+class AWT_species_set : virtual Noncopyable {
 public:
     unsigned char *bitstring;
     int            unfound_species_count;

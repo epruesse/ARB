@@ -20,10 +20,7 @@
 # define bs_assert(bed)
 #endif /* NDEBUG */
 
-//  ############################################################
-//  # PS_BitSet
-//  ############################################################
-class PS_BitSet {
+class PS_BitSet : virtual Noncopyable {
 protected:
 
     unsigned char *data;

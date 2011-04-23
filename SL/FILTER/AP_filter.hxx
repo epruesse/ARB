@@ -17,6 +17,9 @@
 #ifndef ARB_ASSERT_H
 #include <arb_assert.h>
 #endif
+#ifndef ARBTOOLS_H
+#include <arbtools.h>
+#endif
 
 #define af_assert(cond) arb_assert(cond)
 
@@ -54,6 +57,7 @@ public:
     AP_filter(const char *filter, const char *zerobases, size_t size);
     AP_filter(const AP_filter& other);
     ~AP_filter();
+    DECLARE_ASSIGNMENT_OPERATOR(AP_filter);
 
     long get_timestamp() const { return update; }
     size_t get_filtered_length() const { return real_len; }
@@ -101,6 +105,7 @@ public:
     AP_weights(const GB_UINT4 *w, size_t wlen, const AP_filter *fil);
     AP_weights(const AP_weights& other);
     ~AP_weights();
+    DECLARE_ASSIGNMENT_OPERATOR(AP_weights);
 
     GB_UINT4 weight(size_t idx) const {
         af_assert(idx<len);

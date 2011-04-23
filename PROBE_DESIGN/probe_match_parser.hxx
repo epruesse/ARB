@@ -23,7 +23,7 @@
 
 class ProbeMatch_impl;
 
-class ProbeMatchParser : Noncopyable {
+class ProbeMatchParser : virtual Noncopyable {
     ProbeMatch_impl *pimpl;
     char            *init_error;
 
@@ -40,7 +40,7 @@ public:
     friend class ParsedProbeMatch;
 };
 
-class ParsedProbeMatch : Noncopyable {
+class ParsedProbeMatch : virtual Noncopyable {
     const ProbeMatchParser&  parser;
     char                    *match;
     mutable const char      *error;

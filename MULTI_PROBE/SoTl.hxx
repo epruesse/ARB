@@ -32,7 +32,12 @@
   The User has only have to work with the List class.
 */
 
+#ifndef _GLIBCXX_CSTDIO
 #include <cstdio>
+#endif
+#ifndef ARBTOOLS_H
+#include <arbtools.h>
+#endif
 
 typedef unsigned long positiontype;
 
@@ -40,17 +45,15 @@ typedef unsigned long positiontype;
 #define RELATION_LESS    2
 
 
-template <class Type> class list_elem
-{
-private:
-    positiontype                pos;
-
+template <class Type>
+class list_elem : virtual Noncopyable {
+    positiontype pos;
 
 public:
-    list_elem<Type>             *next;
-    list_elem<Type>             *prev;
-    Type                        *elem;
-    bool                        isolate_list_elem();            // set next and prev links to NULL
+    list_elem<Type> *next;
+    list_elem<Type> *prev;
+    Type            *elem;
+    bool             isolate_list_elem();                       // set next and prev links to NULL
     // true if isolation has taken place,
     // else false(for example if we're the
     // only element
@@ -70,9 +73,8 @@ public:
 };
 
 
-template <class Type> class List
-{
-private:
+template <class Type>
+class List : virtual Noncopyable {
     list_elem<Type>     *first;
     list_elem<Type>     *last;
     list_elem<Type>     *last_asked_list_elem;

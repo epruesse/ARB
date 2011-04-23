@@ -26,8 +26,11 @@
 #ifndef ARB_ASSERT_H
 #include <arb_assert.h>
 #endif
+#ifndef ARBTOOLS_H
+#include "arbtools.h"
+#endif
 
-class BackTraceInfo {
+class BackTraceInfo : virtual Noncopyable {
     void   **array;
     size_t   size;
 

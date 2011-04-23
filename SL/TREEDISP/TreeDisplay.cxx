@@ -2411,7 +2411,7 @@ const char *AWT_graphic_tree::show_ruler(AW_device *device, int gc) {
     return tree_awar;
 }
 
-struct Column {
+struct Column : virtual Noncopyable {
     char   *text;
     size_t  len;
     double  print_width;
@@ -2429,7 +2429,7 @@ struct Column {
     }
 };
 
-class ListDisplayRow {
+class ListDisplayRow : virtual Noncopyable {
     GBDATA *gb_species;
     AW_pos  y_position;
     int     gc;

@@ -16,10 +16,7 @@
 #include "PRD_Item.hxx"
 #endif
 
-class Pair {
-
-public:
-
+struct Pair : virtual Noncopyable {
   Item   *one;
   Item   *two;
   double  rating;

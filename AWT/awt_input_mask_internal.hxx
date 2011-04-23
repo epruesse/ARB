@@ -73,7 +73,7 @@ public:
 //      class awt_input_mask_global
 //
 // data global to one input mask
-class awt_input_mask_global {
+class awt_input_mask_global : virtual Noncopyable {
 private:
     mutable AW_root *awr;
     mutable GBDATA  *gb_main;
@@ -161,13 +161,12 @@ public:
 //  ----------------------------
 //      class awt_mask_item
 //
-// works as base class for all elements of a input-mask
-class awt_mask_item {
-private:
+class awt_mask_item { // @@@ define copy-ctor and op=
+    // works as base class for all elements of a input-mask
 
     // basic item members
-    awt_input_mask_global *global; // reference
-    SmartPtr<std::string>       name; // name of this item (optional -- caused i.e. by script command 'ID')
+    awt_input_mask_global *global;    // reference  // @@@ make ref to make class copyable
+    SmartPtr<std::string>  name;      // name of this item (optional -- caused i.e. by script command 'ID')
 
 public:
     awt_mask_item(awt_input_mask_global *global_); // awar_base has to be unique (in every mask)
@@ -298,7 +297,7 @@ public:
 //  ---------------------------------
 //      class awt_linked_to_item
 //
-class awt_linked_to_item {
+class awt_linked_to_item : virtual Noncopyable {
 private:
     GBDATA                *gb_item; // item this handler is linked to
     // if gb_item == 0 then no callbacks are installed
@@ -334,7 +333,7 @@ public:
 //  ---------------------------------
 //      class awt_script_viewport
 //
-class awt_script_viewport : public awt_viewport, public awt_linked_to_item {
+class awt_script_viewport : public awt_viewport, public awt_linked_to_item { // derived from a Noncopyable
 private:
     const awt_script *script;
     int               field_width;
@@ -361,7 +360,7 @@ public:
 //      class awt_input_handler
 //
 // an awt_input_handler is an awt_viewport bound to a database element
-class awt_input_handler : public awt_viewport, public awt_linked_to_item {
+class awt_input_handler : public awt_viewport, public awt_linked_to_item { // derived from a Noncopyable
 private:
     GBDATA   *gbd;              // link to database
     std::string    child_path;       // path in database from item to handled child
@@ -543,7 +542,7 @@ public:
 // awt_input_mask holds the description of an input mask.
 // an input mask is an i/o-interface to a database entry.
 
-class awt_input_mask {
+class awt_input_mask : virtual Noncopyable {
 private:
     awt_input_mask_global  global;
     awt_mask_item_list     handlers;

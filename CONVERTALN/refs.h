@@ -9,7 +9,7 @@
 #endif
 
 template <typename REF>
-class Refs : Noncopyable {
+class Refs : virtual Noncopyable {
     REF   *ref;
     int  size;
 public:

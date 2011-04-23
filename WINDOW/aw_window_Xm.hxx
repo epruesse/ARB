@@ -58,7 +58,7 @@
     }
 
 
-struct AW_timer_cb_struct {
+struct AW_timer_cb_struct : virtual Noncopyable {
     AW_timer_cb_struct(AW_root *ari, AW_RCB cb, AW_CL cd1i, AW_CL cd2i);
     ~AW_timer_cb_struct();
 
@@ -68,7 +68,7 @@ struct AW_timer_cb_struct {
     AW_CL    cd2;
 };
 
-struct AW_buttons_struct {
+struct AW_buttons_struct : virtual Noncopyable {
     AW_buttons_struct(AW_active maski, Widget w, AW_buttons_struct *next);
     ~AW_buttons_struct();
 
@@ -77,7 +77,7 @@ struct AW_buttons_struct {
     AW_buttons_struct *next;
 };
 
-struct AW_option_struct {
+struct AW_option_struct : virtual Noncopyable {
     AW_option_struct(const char *variable_valuei, Widget choice_widgeti);
     AW_option_struct(int variable_valuei, Widget choice_widgeti);
     AW_option_struct(float variable_valuei, Widget choice_widgeti);
@@ -142,7 +142,7 @@ struct AW_toggle_field_struct {
 };
 
 
-struct AW_select_table_struct {
+struct AW_select_table_struct : virtual Noncopyable {
 
     AW_select_table_struct(const char *displayedi, const char *value);
     AW_select_table_struct(const char *displayedi, long value);
@@ -221,7 +221,7 @@ public:
 
 class AW_selection_list;
 
-class AW_root_Motif {
+class AW_root_Motif : virtual Noncopyable {
     Widget           last_widget;                   // last created (sensitive) widget
 public:
     Display         *display;
@@ -277,7 +277,7 @@ public:
 const int AW_NUMBER_OF_F_KEYS = 20;
 #define AW_FIX_POS_ON_EXPOSE -12345
 
-class AW_window_Motif {
+class AW_window_Motif : virtual Noncopyable {
 public:
 
     Widget shell;               // for show, hide

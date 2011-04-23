@@ -46,7 +46,7 @@ struct ali_aligner_cell {
 };
 
 // Structure of a column of the distance matrix
-struct ali_aligner_column {
+struct ali_aligner_column : virtual Noncopyable {
     unsigned long column_length;
     ali_aligner_cell **cells;
 
@@ -90,7 +90,7 @@ struct ali_aligner_dellist_elem {
 };
 
 // Structure of the list of LONG deletions in the distance matrix
-struct ali_aligner_dellist {
+struct ali_aligner_dellist : virtual Noncopyable {
     ALI_PROFILE *profile;
     ALI_TLIST<ali_aligner_dellist_elem *> list_of_dels;
 
@@ -162,7 +162,7 @@ struct ali_aligner_dellist {
 
 
 // Structure of the virtual cell at the left buttom
-struct ali_aligner_last_cell {
+struct ali_aligner_last_cell : virtual Noncopyable {
     ALI_PROFILE *profile;
     float d1, d2, d3;
     ALI_TLIST<ali_pathmap_up_pointer> left_starts;
@@ -282,7 +282,7 @@ struct ali_aligner_last_cell {
 
 
 // Structure for collecting all possible solution
-struct ali_aligner_result {
+struct ali_aligner_result : virtual Noncopyable {
     ALI_TLIST<ALI_MAP *> *map_list;
 
     ali_aligner_result() {
@@ -309,7 +309,7 @@ struct ali_aligner_result {
 
 
 // Class of the extended aligner
-class ALI_ALIGNER {
+class ALI_ALIGNER : virtual Noncopyable {
     ALI_PROFILE *profile;
     ALI_PATHMAP *path_map[3];
     ali_aligner_last_cell *last_cell;

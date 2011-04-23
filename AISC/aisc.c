@@ -9,7 +9,6 @@
 /* ================================================================ */
 
 #include "aisc_interpreter.h"
-#include <arbtools.h>
 #include <cctype>
 #include <list>
 #include <string>
@@ -19,6 +18,7 @@ using namespace std;
 // AISC_MKPT_PROMOTE:#ifndef AISC_DEF_H
 // AISC_MKPT_PROMOTE:#include "aisc_def.h"
 // AISC_MKPT_PROMOTE:#endif
+
 
 char string_buf[256];
 
@@ -108,7 +108,7 @@ struct queued_line {
 
 typedef list<queued_line> PrintQueue;
 
-class PrintMaybe : Noncopyable {
+class PrintMaybe : virtual Noncopyable {
     Output&          out;
     const Location&  started_at;
     bool             printed_sth;

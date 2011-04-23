@@ -30,7 +30,7 @@
 #endif
 
 
-class SQ_helix {
+class SQ_helix : virtual Noncopyable {
 public:
     SQ_helix(int size);
     ~SQ_helix();

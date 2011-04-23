@@ -20,8 +20,7 @@
 #include "arb_interface.hxx"
 
 
-class configDialog : public MDialog
-{
+class configDialog : public MDialog { // derived from a Noncopyable
     public:
         configDialog(MDialog*);
         ~configDialog();

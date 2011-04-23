@@ -13,7 +13,7 @@
 #endif
 
 
-class Parser : Noncopyable {
+class Parser : virtual Noncopyable {
 protected:
     EntryState state;
     Seq&       seq;

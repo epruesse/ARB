@@ -23,7 +23,7 @@ using namespace AW;
 
 typedef std::map<size_t, Position> PosMap;
 
-class SEC_drawn_positions : Noncopyable {
+class SEC_drawn_positions : virtual Noncopyable {
     PosMap drawnAt;
 
 public:

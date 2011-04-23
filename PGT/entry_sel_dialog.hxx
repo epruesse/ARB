@@ -19,8 +19,7 @@
 #include "dialog.hxx"
 
 
-class entrySelectionDialog : public MDialog
-{
+class entrySelectionDialog : public MDialog { // derived from a Noncopyable
     public:
         entrySelectionDialog(MDialog*);
         ~entrySelectionDialog();

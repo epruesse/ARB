@@ -16,7 +16,7 @@
 #endif
 
 template<class T>
-class ALI_TARRAY {
+class ALI_TARRAY : virtual Noncopyable {
     T **array;
     unsigned long size_of_array;
 

@@ -51,7 +51,7 @@
 
 #if defined(CHECK_ERROR_DROP)
 
-class ARB_undropable_error {
+class ARB_undropable_error : virtual Noncopyable {
     GB_ERROR    gberr;
     bool        delivered;
 #if defined(EXTRA_ERROR_INFO)

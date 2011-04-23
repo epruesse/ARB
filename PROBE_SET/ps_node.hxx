@@ -60,9 +60,7 @@ typedef PS_NodeMap::reverse_iterator PS_NodeMapRIterator;
 typedef PS_NodeMap::const_iterator         PS_NodeMapConstIterator;
 typedef PS_NodeMap::const_reverse_iterator PS_NodeMapConstRIterator;
 
-class PS_Node {
-private:
-
+class PS_Node : virtual Noncopyable {
     SpeciesID      num;
     PS_NodeMap     children;
     PS_ProbeSetPtr probes;

@@ -7,6 +7,9 @@
 #ifndef ARB_ASSERT_H
 #include <arb_assert.h>
 #endif
+#ifndef ARBTOOLS_H
+#include <arbtools.h>
+#endif
 
 #define prd_assert(cond) arb_assert(cond)
 

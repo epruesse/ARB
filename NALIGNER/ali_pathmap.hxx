@@ -27,7 +27,7 @@ struct ali_pathmap_up_pointer {
     unsigned char operation;
 };
 
-class ALI_PATHMAP {
+class ALI_PATHMAP : virtual Noncopyable {
     unsigned long width, height;
     unsigned long height_real;
     unsigned char **pathmap;

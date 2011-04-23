@@ -65,8 +65,8 @@ inline int ED4_encodeSearchDescriptor(int direction, ED4_SearchPositionType patt
 
 
 
-class ED4_SearchPosition // one found position
-{
+class ED4_SearchPosition {
+    // one found position
     int start_pos, end_pos;
     int mismatch[MAX_MISMATCHES]; // contains positions of mismatches (or -1)
     ED4_SearchPositionType whatsFound;
@@ -88,6 +88,7 @@ public:
     ~ED4_SearchPosition() { delete next; }
 
     ED4_SearchPosition(const ED4_SearchPosition& other); // copy-ctor ('next' is always zero)
+    DECLARE_ASSIGNMENT_OPERATOR(ED4_SearchPosition);
 
     ED4_SearchPosition *insert(ED4_SearchPosition *toAdd);
     ED4_SearchPosition *remove(ED4_SearchPositionType typeToRemove);
@@ -111,8 +112,9 @@ public:
 
 class ED4_sequence_terminal;
 
-class ED4_SearchResults // list head
-{
+class ED4_SearchResults : virtual Noncopyable {
+    // list head
+
     int arraySize;              // ==0 -> 'first' is a list
     // >0 -> 'array' is an array of 'ED4_SearchPosition*' with 'arraySize' elements
 
@@ -126,8 +128,6 @@ class ED4_SearchResults // list head
     static int bufferSize;
     static char *buffer; // buffer for buildColorString
     static int initialized;
-
-    ED4_SearchResults(const ED4_SearchResults&) { e4_assert(0); }
 
     int is_list() const { return arraySize==0; }
     int is_array() const { return arraySize>0; }

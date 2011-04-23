@@ -54,7 +54,7 @@ struct PARS_commands {
 class AP_tree_nlen;
 class AWT_graphic_tree;
 
-class AP_main {
+class AP_main : virtual Noncopyable {
     AP_main_stack    *stack;
     AP_main_list      list;
     unsigned long     stack_level;

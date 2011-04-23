@@ -17,7 +17,9 @@
 #ifndef ARB_ASSERT_H
 #include <arb_assert.h>
 #endif
-
+#ifndef ARBTOOLS_H
+#include <arbtools.h>
+#endif
 
 #ifndef bi_assert
 #define bi_assert(bed) arb_assert(bed)
@@ -41,7 +43,7 @@ public:
 
 typedef char_predicate_fun is_gap_fun;
 
-class BasePosition {
+class BasePosition : virtual Noncopyable {
     int absLen;
     int baseCount;
 

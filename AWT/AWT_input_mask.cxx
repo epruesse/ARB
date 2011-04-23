@@ -2166,14 +2166,11 @@ awt_item_type AWT_getItemType(const string& itemtype_name) {
 
 // -----------------------------
 //      Registered Itemtypes
-// -----------------------------
 
-//  --------------------------------------
-//      class AWT_registered_itemtype
-//  --------------------------------------
-// stores information about so-far-used item types
-class AWT_registered_itemtype {
+class AWT_registered_itemtype { // @@@ define copy-ctor and op=
+    // stores information about so-far-used item types
 private:
+    // @@@ make ref to make class copyable
     AW_window_menu_modes       *awm;                // the main window responsible for opening windows
     AWT_OpenMaskWindowCallback  open_window_cb;     // callback to open the window
     AW_CL                       cl_user;

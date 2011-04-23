@@ -29,7 +29,7 @@
 
 // --------------------
 
-class Convaln_exception {
+class Convaln_exception { // @@@ define copy-ctor and op=
     static Convaln_exception *thrown;
 
     int           code;
@@ -63,7 +63,7 @@ public:
 
 // --------------------
 
-class Warnings : Noncopyable {
+class Warnings : virtual Noncopyable {
     static bool show_warnings;
     bool        old_state;
 public:
@@ -130,24 +130,6 @@ inline bool copy_content(char*& entry, const char *content) {
 }
 
 // --------------------
-
-#define INPLACE_RECONSTRUCT(type,this)          \
-    do {                                        \
-        (this)->~type();                        \
-        new(this) type();                       \
-    } while(0)
-
-#define INPLACE_COPY_RECONSTRUCT(type,this,other)       \
-    do {                                                \
-        (this)->~type();                                \
-        new(this) type(other);                          \
-    } while(0)
-
-#define DECLARE_ASSIGNMENT_OPERATOR(T)                  \
-    T& operator = (const T& other) {                    \
-        INPLACE_COPY_RECONSTRUCT(T, this, other);       \
-        return *this;                                   \
-    }
 
 // --------------------
 

@@ -236,9 +236,9 @@ GBDATA *GB_search_numbered(GBDATA *gbd, const char *str, GB_TYPES create) {
 
 // -----------------------
 //      class KnownDB
-// -----------------------
-class KnownDB {
-    GBDATA *gb_main;
+
+class KnownDB { // @@@ define copy-ctor and op=
+    GBDATA *gb_main; // @@@ make ref to make class copyable
     string  description;
     string  current_path;
 
@@ -266,7 +266,6 @@ public:
 
 // --------------------------
 //      class DB_browser
-// --------------------------
 
 class DB_browser;
 static DB_browser *get_the_browser(bool autocreate);

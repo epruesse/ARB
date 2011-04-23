@@ -18,6 +18,9 @@
 #ifndef AW_BASE_HXX
 #include <aw_base.hxx>
 #endif
+#ifndef ARBTOOLS_H
+#include <arbtools.h>
+#endif
 
 #ifndef _GLIBCXX_SET
 #include <set>
@@ -34,10 +37,9 @@ class  GEN_root;
 class  GEN_graphic;
 struct GEN_position;
 
-class GEN_gene {
-private:
-    GBDATA              *gb_gene;
-    GEN_root            *root;
+class GEN_gene { // @@@ define copy-ctor and op=
+    GBDATA              *gb_gene; // @@@ make ref to make class copyable
+    GEN_root            *root; // @@@ make ref to make class copyable
     std::string          name;
     mutable std::string  nodeInfo;
     long                 pos1;
@@ -77,7 +79,7 @@ typedef GEN_gene_set::iterator GEN_iterator;
 
 class AW_device;
 
-class GEN_root {
+class GEN_root : virtual Noncopyable {
 private:
     GBDATA      *gb_main;
     GEN_graphic *gen_graphic;

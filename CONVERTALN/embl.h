@@ -35,7 +35,7 @@ struct Emblref {
     DECLARE_ASSIGNMENT_OPERATOR(Emblref);
 };
 
-class Embl : public InputFormat, public RefContainer<Emblref> {
+class Embl : public InputFormat, public RefContainer<Emblref> { // derived from a Noncopyable
     char *create_id() const {
         char buf[TOKENSIZE];
         embl_key_word(ID, 0, buf);

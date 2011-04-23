@@ -27,11 +27,13 @@
 #ifndef ATTRIBUTES_H
 #include <attributes.h>
 #endif
-
-
 #ifndef ARB_ASSERT_H
 #include <arb_assert.h>
 #endif
+#ifndef ARBTOOLS_H
+#include <arbtools.h>
+#endif
+
 #define xml_assert(bed) arb_assert(bed)
 
 
@@ -45,10 +47,10 @@ extern XML_Document *the_XML_Document; // there can only be one at a time
 //  ----------------------------
 //      class XML_Attribute
 //  ----------------------------
-class XML_Attribute {
+class XML_Attribute : virtual Noncopyable {
 private:
-    std::string         name;
-    std::string         content;
+    std::string    name;
+    std::string    content;
     XML_Attribute *next;
 
 public:
@@ -64,7 +66,7 @@ public:
 //  -----------------------
 //      class XML_Node
 //  -----------------------
-class XML_Node {
+class XML_Node : virtual Noncopyable {
 protected:
     XML_Node *father;
     bool      opened;
@@ -88,7 +90,7 @@ public:
 //  ----------------------------------------
 
 //! xml element
-class XML_Tag : public XML_Node {
+class XML_Tag : public XML_Node {  // derived from a Noncopyable
 private:
     std::string    name;
     XML_Node      *son;
@@ -148,7 +150,7 @@ public:
 };
 
 //! an entire xml document
-class XML_Document {
+class XML_Document : virtual Noncopyable {
 private:
     std::string  dtd;
     XML_Tag     *root;

@@ -53,7 +53,7 @@ typedef enum {
 
 class AP_tree_edge;
 
-class AP_tree_nlen : public AP_tree {
+class AP_tree_nlen : public AP_tree { // derived from a Noncopyable
     /* tree that is independent of branch lengths and root */
 
     AP_TREE_SIDE kernighan;     // Flag zum markieren
@@ -168,8 +168,7 @@ public:
 
 class MutationsPerSite;
 
-class AP_tree_edge
-{
+class AP_tree_edge : virtual Noncopyable {
     // the following members are stored/restored by
     // AP_tree_nlen::push/pop:
 

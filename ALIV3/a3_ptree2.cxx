@@ -152,7 +152,7 @@ static int int_compare ( const void *a,
 // -----------------------------------------------------------------------------
 //  Kopierkonstruktor
 // -----------------------------------------------------------------------------
-    Postree::Postree ( Postree &postree ) : sequence ( postree.sequence )
+    Postree::Postree ( const Postree &postree ) : sequence ( postree.sequence )
 // -----------------------------------------------------------------------------
 {
     cout << "\nKopierkonstruktor(Postree)\n";

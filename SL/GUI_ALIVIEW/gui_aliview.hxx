@@ -15,6 +15,9 @@
 #ifndef ARBDB_BASE_H
 #include <arbdb_base.h>
 #endif
+#ifndef ARBTOOLS_H
+#include <arbtools.h>
+#endif
 
 struct adfiltercbstruct;
 class  ColumnStat;
@@ -24,7 +27,7 @@ class  AP_filter;
 class  AP_weights;
 class  AliView;
 
-class WeightedFilter {
+class WeightedFilter : virtual Noncopyable {
     adfiltercbstruct *adfilter;
     ColumnStat       *column_stat;
 

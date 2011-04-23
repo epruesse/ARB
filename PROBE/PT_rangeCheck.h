@@ -22,7 +22,7 @@
 typedef std::map<int, int>   apos_cache;
 typedef apos_cache::iterator apos_iter;
 
-class Range {
+class Range { // @@@ define copy-ctor and op=
     int start; // -1 or minimum absolute position
     int end;   // -1 or maximum absolute position
     int probe_len; // length of checked probe

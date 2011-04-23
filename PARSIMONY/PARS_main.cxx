@@ -577,7 +577,7 @@ static void nt_add(AW_window *, AWT_canvas *ntw, AddWhat what, bool quick, int t
 //      Adding partial sequences to tree
 // -----------------------------------------
 
-class PartialSequence {
+class PartialSequence { // @@@ define copy-ctor and op=
     GBDATA               *gb_species;
     mutable AP_tree_nlen *self;                     // self converted to leaf (ready for insertion)
     const AP_tree_nlen   *best_full_match;          // full sequence position which matched best

@@ -113,7 +113,7 @@ typedef const char *(*gb_getenv_hook)(const char *varname);
 // -----------------------
 //      GB_transaction
 
-class GB_transaction : Noncopyable {
+class GB_transaction : virtual Noncopyable {
     GBDATA *ta_main;
     bool      ta_open;          // is transaction open ?
     GB_ERROR  ta_err;

@@ -55,7 +55,7 @@ typedef SmartPtr<Feature>      FeaturePtr;
 typedef SmartPtr<FeatureLine>  FeatureLinePtr;
 typedef vector<FeatureLinePtr> FeatureLines;
 
-class Importer : public Noncopyable {
+class Importer : virtual Noncopyable {
 protected:
     DBwriter&         db_writer;
     FileBuffer&       flatfile;

@@ -7,7 +7,9 @@
 #ifndef ARB_ASSERT_H
 #include <arb_assert.h>
 #endif
-
+#ifndef ARBTOOLS_H
+#include <arbtools.h>
+#endif
 
 #ifndef bi_assert
 #define bi_assert(bed) arb_assert(bed)
@@ -50,7 +52,7 @@ struct BI_helix_entry {
     bool allocated;
 };
 
-class BI_helix {
+class BI_helix : virtual Noncopyable {
     BI_helix_entry *entries;
     size_t          Size;
 

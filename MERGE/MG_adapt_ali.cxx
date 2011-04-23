@@ -52,7 +52,7 @@ typedef std::list<softbase>          softbaselist;
 typedef softbaselist::iterator       softbaseiter;
 typedef softbaselist::const_iterator const_softbaseiter;
 
-class MG_remap {
+class MG_remap : virtual Noncopyable {
     int  in_length;
     int  out_length;
     int *remap_tab;                                 // fixed mapping (targetPosition or NO_POSITION)

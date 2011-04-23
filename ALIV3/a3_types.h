@@ -11,6 +11,10 @@
 #ifndef A3_TYPES_H
 #define A3_TYPES_H
 
+#ifndef ARBTOOLS_H
+#include <arbtools.h>
+#endif
+
 typedef char            *str;
 
 typedef unsigned short   ushort;

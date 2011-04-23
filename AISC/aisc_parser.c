@@ -183,7 +183,7 @@ char *Parser::parse_token(const char *& in, enum TOKEN& foundTokenType) {
     return result;
 }
 
-class Header {
+class Header : virtual Noncopyable {
     char   *key;
     Header *next;
  public:
@@ -196,7 +196,7 @@ class Header {
     const Header *next_header() const { return next; }
 };
 
-class HeaderList {
+class HeaderList : virtual Noncopyable {
     Header *head;
     Header *tail;
 

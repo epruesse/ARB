@@ -62,18 +62,11 @@ typedef std::map<ID2IDPair, IDSet>     IDID2IDSetMap;
 typedef IDID2IDSetMap::iterator       IDID2IDSetMapIter;
 typedef IDID2IDSetMap::const_iterator IDID2IDSetMapCIter;
 
-// ----------------------------------------------------------------
-// classes
-// ----------------------------------------------------------------
-class PS_Callback {
-public:
+struct PS_Callback {
     virtual ~PS_Callback() {}
     virtual void callback(void *_caller) = 0;
 };
 
-// ----------------------------------------------------------------
-// functions
-// ----------------------------------------------------------------
 #ifndef NDEBUG
 # define ps_assert(bed) do { if (!(bed)) *(int *)0=0; } while (0)
 # ifndef DEBUG

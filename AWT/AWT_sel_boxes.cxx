@@ -30,7 +30,7 @@ using namespace std;
 // --------------------------------------
 //      selection boxes on alignments
 
-class AWT_alignment_selection : public AW_DB_selection {
+class AWT_alignment_selection : public AW_DB_selection { // derived from a Noncopyable
     char *ali_type_match;                           // filter for wanted alignments (GBS_string_eval command)
 public:
     AWT_alignment_selection(AW_window *win_, AW_selection_list *sellist_, GBDATA *gb_presets, const char *ali_type_match_)

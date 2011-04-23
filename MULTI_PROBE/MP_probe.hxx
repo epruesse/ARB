@@ -16,6 +16,10 @@ class GenerationDuplicates;
 class probe_statistic;
 class probe_combi_statistic;
 
+#if defined(WARN_TODO)
+#warning remove old-style typedefs
+#endif
+
 typedef struct
 {
     int probe_index;
@@ -31,9 +35,7 @@ typedef struct
 
 
 
-class probe_tabs
-{
-private:
+class probe_tabs : virtual Noncopyable {
     int             *group_tab;
     int             *non_group_tab;
     int             length_of_group_tabs;
@@ -50,9 +52,8 @@ public:
 
 
 
-class probe_combi_statistic     // die Sondenkombis werden in dieser Klasse gespeichert
-{
-private:
+class probe_combi_statistic : virtual Noncopyable {
+    // die Sondenkombis werden in dieser Klasse gespeichert
     probe       **probe_combi;
     probe_tabs      *probe_tab;
 
@@ -107,9 +108,7 @@ public:
     ~probe_combi_statistic();
 };
 
-class Generation
-{
-private:
+class Generation : virtual Noncopyable {
     probe_combi_statistic   **probe_combi_stat_array;       // Liste von Sondenkombinationen, auf denen der genetische Algorithmus aus-
     // gefuehrt wird.
     int             probe_combi_array_length;
@@ -161,10 +160,7 @@ public:
     ~Generation();
 };
 
-class ProbeValuation
-{
-
-private:
+class ProbeValuation : virtual Noncopyable {
     char            **sondenarray;
     int             *bewertungarray;
     int             *mismatch_array;
@@ -195,9 +191,8 @@ public:
     ~ProbeValuation();
 };
 
-class GenerationDuplicates      // Fuer eine Generation muss ueberprueft werden, ob es doppelte Sondenkombinationen
-{                   // gibt.
-private:
+class GenerationDuplicates : virtual Noncopyable {
+    // Fuer eine Generation muss ueberprueft werden, ob es doppelte Sondenkombinationen  gibt. (aha)
     int             intern_size;    // enthaelt size aus dem Konstruktor (size entspricht muss der groesse von sondenarray entsprechen
     GenerationDuplicates    **next;     // die laenge dieses arrays entspricht der laenge des sondenarrays in ProbeValuation
     int             *next_mism; // zu jedem next eintrag merkt man sich wieviele Mismatche schon aufgetreten sind

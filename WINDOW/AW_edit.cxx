@@ -18,7 +18,7 @@
 #include <sys/stat.h>
 
 
-struct fileChanged_cb_data {
+struct fileChanged_cb_data : virtual Noncopyable {
     char              *fpath;                       // full name of edited file
     int                lastModtime;                 // last known modification time of 'fpath'
     bool               editorTerminated;            // do not free before this has been set to 'true'

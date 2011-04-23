@@ -13,7 +13,7 @@
 #include "aisc_interpreter.h"
 
 
-class TokenMatcher {
+class TokenMatcher : virtual Noncopyable {
     char *key;                  // NULL matches "any key"
     char *value;                // NULL matches "any value"
 

@@ -25,9 +25,7 @@ struct SearchParameter {
     SearchParameter  *previous;
 };
 
-class SearchFIFO {
-private:
-
+class SearchFIFO : virtual Noncopyable {
     SearchParameter *begin;     // start of list of positions in tree
     SearchParameter *end;       // end of list of positions in tree
     SearchParameter *current;   // points to the currently examined position in the list

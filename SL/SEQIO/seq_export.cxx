@@ -49,7 +49,7 @@ EXPORT_CMD check_internal(const char *command) {
 // ----------------------
 //      export_format
 
-struct export_format {
+struct export_format : virtual Noncopyable {
     char *system;
     char *new_format;
     char *suffix;
@@ -163,7 +163,7 @@ char *SEQIO_exportFormat_get_outfile_default_suffix(const char *formname, GB_ERR
 
 typedef GBDATA *(*FindSpeciesFunction)(GBDATA *);
 
-class export_sequence_data {
+class export_sequence_data : virtual Noncopyable {
     GBDATA *last_species_read;
     char   *seq;
     size_t  len;
