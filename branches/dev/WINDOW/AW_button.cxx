@@ -39,7 +39,7 @@
 // #define DUMP_BUTTON_CREATION
 #endif // DEBUG
 
-struct AW_widget_refresh_cb {
+struct AW_widget_refresh_cb : virtual Noncopyable {
     AW_widget_refresh_cb(AW_widget_refresh_cb *previous, AW_awar *vs, AW_CL cd1, Widget w, AW_widget_type type, AW_window *awi);
     ~AW_widget_refresh_cb();
 

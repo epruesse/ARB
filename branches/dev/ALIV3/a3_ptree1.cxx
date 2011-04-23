@@ -196,7 +196,7 @@ static void CountAppearances ( str  seq,
 // -----------------------------------------------------------------------------
 //  Kopierkonstruktor
 // -----------------------------------------------------------------------------
-    PtNode::PtNode ( PtNode &node )
+    PtNode::PtNode ( const PtNode &node )
 // -----------------------------------------------------------------------------
 {
     cout << "\nKopierkonstruktor(PtNode)\n";
@@ -245,7 +245,7 @@ static void CountAppearances ( str  seq,
 // -----------------------------------------------------------------------------
 //  Anzahl der vorhandenen Positionen
 // -----------------------------------------------------------------------------
-    int PtNode::NumOfPos ( void )
+    int PtNode::NumOfPos ( void ) const
 // -----------------------------------------------------------------------------
 {
     int anz  = 0,
@@ -291,7 +291,7 @@ static void CountAppearances ( str  seq,
 // -----------------------------------------------------------------------------
 //  Anzahl der vorhandenen Verzweigungen
 // -----------------------------------------------------------------------------
-    int PtNode::NumOfNext ( void )
+    int PtNode::NumOfNext ( void ) const
 // -----------------------------------------------------------------------------
 {
     int anz  = 0,

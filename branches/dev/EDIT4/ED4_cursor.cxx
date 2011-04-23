@@ -1539,8 +1539,7 @@ int ED4_base_position::get_sequence_position(const ED4_base *base, int base_pos)
    Store/Restore Cursorpositions
    -------------------------------------------------------------------------------- */
 
-class CursorPos
-{
+class CursorPos : virtual Noncopyable {
     ED4_terminal *terminal;
     int seq_pos;
 
@@ -1674,7 +1673,7 @@ public:
     {
     }
 };
-class fake_base_4test : public ED4_base {
+class fake_base_4test : public ED4_base {  // derived from a Noncopyable
     const char *seq;
     int         size;
 public:

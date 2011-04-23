@@ -84,7 +84,7 @@ struct DendroSubtreeLimits {
     double x_right;                                 // rightmost xpos of whole subtree
 };
 
-class AWT_graphic_tree : public AWT_graphic {
+class AWT_graphic_tree : public AWT_graphic, virtual Noncopyable {
     char  *species_name;
     int    baselinewidth;
     int    show_brackets;

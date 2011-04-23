@@ -61,7 +61,7 @@
 struct SEC_dbcb;
 class  SEC_db_interface;
 
-class SEC_seq_data { // represents a sequence (or SAI)
+class SEC_seq_data : virtual Noncopyable { // represents a sequence (or SAI)
     GBDATA         *gb_name;
     GBDATA         *gb_data;
     const SEC_dbcb *change_cb;
@@ -92,7 +92,7 @@ class SEC_bond_def;
 class SEC_root;
 class SEC_structure_toggler;
 
-class SEC_db_interface : Noncopyable {
+class SEC_db_interface : virtual Noncopyable {
     SEC_seq_data          *sequence;       // 0 = no sequence selected
     ED4_plugin_host&  Host;
 

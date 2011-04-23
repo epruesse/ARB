@@ -82,7 +82,9 @@ namespace arb_test {
         ~GlobalTestData() {
             unannotate();
         }
-
+        GlobalTestData(const GlobalTestData&); // do not synthesize
+        GlobalTestData& operator=(const GlobalTestData&); // do not synthesize
+        
         static GlobalTestData *instance(bool erase) {
             static GlobalTestData *data = 0;             // singleton
             if (erase) {

@@ -2718,7 +2718,7 @@ static char *TD_menu_name = 0;
 static char  TD_mnemonics[MAX_DEEP_TO_TEST][MAX_MENU_ITEMS_TO_TEST];
 static int   TD_topics[MAX_DEEP_TO_TEST];
 
-struct SearchPossibilities {
+struct SearchPossibilities : virtual Noncopyable {
     char *menu_topic;
     SearchPossibilities *next;
 

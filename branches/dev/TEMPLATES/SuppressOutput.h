@@ -15,9 +15,12 @@
 #ifndef _GLIBCXX_CSTDIO
 #include <cstdio>
 #endif
+#ifndef ARBTOOLS_H
+#include "arbtools.h"
+#endif
 
 
-class SuppressOutput {
+class SuppressOutput : virtual Noncopyable {
     // temporarily redirect stdout and stderr to /dev/null
     FILE *devnull;
     FILE *org_stdout;

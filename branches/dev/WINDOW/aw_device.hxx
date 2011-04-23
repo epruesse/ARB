@@ -7,6 +7,9 @@
 #ifndef ATTRIBUTES_H
 #include <attributes.h>
 #endif
+#ifndef ARBTOOLS_H
+#include <arbtools.h>
+#endif
 
 
 #if defined(DEBUG) && defined(DEBUG_GRAPHICS)
@@ -177,7 +180,7 @@ public:
 
 class AW_common;
 
-class AW_clip {
+class AW_clip : virtual Noncopyable {
     friend class AW_device;
 protected:
     int compoutcode(AW_pos xx, AW_pos yy) {
@@ -323,7 +326,7 @@ class  AW_clip_scale_stack;
 struct AW_world;
 class  AW_device;
 
-class AW_click_cd {
+class AW_click_cd : virtual Noncopyable {
     AW_CL              cd1;
     AW_CL              cd2;
     AW_device         *my_device;
@@ -529,7 +532,7 @@ inline AW_click_cd::~AW_click_cd() { my_device->click_cd = previous; }
 inline void AW_click_cd::disable() { my_device->click_cd = NULL; }
 inline void AW_click_cd::enable() { my_device->click_cd = this; }
 
-class AW_device_print : public AW_device {
+class AW_device_print : public AW_device { // derived from a Noncopyable
     FILE *out;
     bool  color_mode;
 

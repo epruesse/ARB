@@ -29,10 +29,10 @@ enum CommandType {
     ELSEIF,
     FUNCTION,
     LABEL,
-    OTHER_CMD, 
+    OTHER_CMD,
 };
 
-struct Code {
+struct Code { // @@@ define copy-ctor and op=
     Code *next;
     char *str;
 
@@ -73,7 +73,7 @@ struct Code {
 };
 
 
-class Parser {
+class Parser : virtual Noncopyable {
     // used to parse 'Data' and 'Code'
     
     int         lastchar;

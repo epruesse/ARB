@@ -40,7 +40,7 @@ using std::string;
 
 const size_t BUFFERSIZE = 64*1024;
 
-class FileBuffer : Noncopyable {
+class FileBuffer : virtual Noncopyable {
 private:
     char buf[BUFFERSIZE];
     size_t read; // chars in buf

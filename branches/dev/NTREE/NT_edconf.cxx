@@ -33,8 +33,7 @@ static void init_config_awars(AW_root *root) {
 //  ---------------------------
 // stores a amount of species:
 
-class Store_species
-{
+class Store_species : virtual Noncopyable {
     GBT_TREE *node;
     Store_species *next;
 public:

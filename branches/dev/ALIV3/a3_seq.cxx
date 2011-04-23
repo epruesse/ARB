@@ -251,7 +251,7 @@ using std::cout;
 // -----------------------------------------------------------------------------
 //  Kopierkonstruktor der Klasse Sequenz
 // -----------------------------------------------------------------------------
-    Sequence::Sequence ( Sequence &sequence )
+    Sequence::Sequence ( const Sequence &sequence )
 // -----------------------------------------------------------------------------
 {
     if (sequence.original) original = strdup(sequence.original);

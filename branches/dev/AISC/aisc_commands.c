@@ -194,7 +194,7 @@ int Interpreter::do_tabstop(const char *str) {
     return 0;
 }
 
-class ArgParser : Noncopyable {
+class ArgParser : virtual Noncopyable {
     char            *args;
     char            *strtok_arg;
     const Location&  loc;
@@ -762,7 +762,7 @@ struct NoSuchCommand : public Command {
         return -1; // bail out
     }
 };
-class NamedCommand : public Command {
+class NamedCommand : public Command, virtual Noncopyable {
     const char *name;
     int         len;
     mutable int dispatched;

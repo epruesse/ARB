@@ -481,7 +481,7 @@ static char *an_get_short(AN_shorts *IF_ASSERTION_USED(shorts), dll_public *pare
 
 static const char *default_full_name = "No name";
 
-class NameInformation {
+class NameInformation : virtual Noncopyable {
     const char *full_name;
 
     char *parsed_name;

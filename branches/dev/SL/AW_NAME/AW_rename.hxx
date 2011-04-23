@@ -49,7 +49,7 @@ const char *AW_get_nameserver_addid(GBDATA *gb_main);
 
 GB_ERROR AW_test_nameserver(GBDATA *gb_main); // create a test link to the nameserver
 
-class UniqueNameDetector {
+class UniqueNameDetector : virtual Noncopyable {
     // Note: If you add new items to the DB while one instance of this class exists,
     //       you have to call add_name() for these new species!
 

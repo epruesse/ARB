@@ -32,7 +32,7 @@ static int has_species_name(ED4_base *base, AW_CL cl_species_name) {
 // -----------------
 //      ED4_host
 
-class ED4_host : public ED4_plugin_host {
+class ED4_host : public ED4_plugin_host, virtual Noncopyable {
     AW_root *aw_root;
     GBDATA  *gb_main;
 
@@ -77,7 +77,7 @@ public:
 // ---------------
 //      PlugIn
 
-class PlugIn {
+class PlugIn { // @@@ make this copyable!
     char              *name;
     ED4_plugin        *start_plugin;
     mutable AW_window *window;

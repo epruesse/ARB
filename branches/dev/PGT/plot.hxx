@@ -22,9 +22,11 @@
 #include <math.h>
 #include <unistd.h>
 
+#ifndef ARBTOOLS_H
+#include <arbtools.h>
+#endif
 
-class Plot
-{
+class Plot : virtual Noncopyable {
     public:
         Plot(Display *, Window);
         ~Plot();

@@ -55,8 +55,7 @@ typedef ID2IndexSetSet::const_iterator          ID2IndexSetSetCIter;
 typedef ID2IndexSetSet::reverse_iterator        ID2IndexSetSetRIter;
 typedef ID2IndexSetSet::const_reverse_iterator  ID2IndexSetSetCRIter;
 
-class PS_Candidate {
-private:
+class PS_Candidate : virtual Noncopyable {
     PS_Candidate();
     PS_Candidate(const PS_Candidate&);
     explicit PS_Candidate(float _distance, unsigned long _gain, const PS_NodePtr _ps_node, IDSet &_path, PS_CandidatePtr _parent) {

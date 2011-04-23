@@ -11,7 +11,7 @@
 // -------------------------------
 //      RDP-defined comments (Embl+GenBank)
 
-struct OrgInfo : Noncopyable {
+struct OrgInfo : virtual Noncopyable {
     char *source;
     char *cultcoll;
     char *formname;
@@ -55,7 +55,7 @@ struct OrgInfo : Noncopyable {
     }
 };
 
-struct SeqInfo : Noncopyable {
+struct SeqInfo : virtual Noncopyable {
     char comp3;  // yes or no, y/n
     char comp5;  // yes or no, y/n
 
@@ -92,7 +92,7 @@ struct SeqInfo : Noncopyable {
     }
 };
 
-struct RDP_comments {
+struct RDP_comments : virtual Noncopyable {
     OrgInfo  orginf;
     SeqInfo  seqinf;
     char    *others;

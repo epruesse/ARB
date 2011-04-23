@@ -1,6 +1,10 @@
 #ifndef FUN_H
 #define FUN_H
 
+#ifndef ARBTOOLS_H
+#include <arbtools.h>
+#endif
+
 // forward decls for prototypes
 
 enum Format {
@@ -44,7 +48,7 @@ struct SeqInfo;
 
 typedef void (*RDP_comment_parser)(char*& datastring, int start_index, Reader& reader);
 
-class FormattedFile {
+class FormattedFile : virtual Noncopyable {
     char   *name_;
     Format  type_;
 public:

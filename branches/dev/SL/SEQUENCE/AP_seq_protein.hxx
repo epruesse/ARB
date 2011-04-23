@@ -48,7 +48,7 @@ enum AP_PROTEINS {
     APP_Z = APP_E | APP_Q,      // Glx ( = Glu | Gln )
 };
 
-class AP_sequence_protein : public AP_sequence {
+class AP_sequence_protein : public AP_sequence { // derived from a Noncopyable
     AP_PROTEINS *seq_prot;
 
     AP_FLOAT count_weighted_bases() const;

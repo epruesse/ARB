@@ -23,10 +23,13 @@
 #ifndef _GLIBCXX_ALGORITHM
 #include <algorithm>
 #endif
+#ifndef ARBTOOLS_H
+#include <arbtools.h>
+#endif
 
 #define ff_assert(bed) arb_assert(bed)
 
-class FamilyList {
+class FamilyList : virtual Noncopyable {
     // list is sorted either by 'matches' or 'rel_matches' (descending)
     // depending on 'rel_matches' parameter to PT_FamilyFinder::searchFamily()
 public:
@@ -89,7 +92,7 @@ public:
 };
 
 
-class FamilyFinder {
+class FamilyFinder : virtual Noncopyable {
     bool rel_matches;
     
 protected:
@@ -128,7 +131,7 @@ public:
     int getRealHits() const { return real_hits; }
 };
 
-class PT_FamilyFinder : public FamilyFinder {
+class PT_FamilyFinder : public FamilyFinder { // derived from a Noncopyable
     GBDATA *gb_main;
     int     server_id;
     int     oligo_len;

@@ -15,8 +15,8 @@
 #include "a3_darray.hxx"
 #endif
 
-class A3Matrix              // Matrix fuer beliebige Elemente
-{
+class A3Matrix {
+    // Matrix fuer beliebige Elemente
     private:
 
     int      width,         // Spalten der Matrix
@@ -35,7 +35,8 @@ class A3Matrix              // Matrix fuer beliebige Elemente
              A3Matrix       ( int        xlen,
                               int        ylen,
                               int        del );
-             A3Matrix       ( A3Matrix  &other );
+             A3Matrix       ( const A3Matrix  &other );
+    DECLARE_ASSIGNMENT_OPERATOR(A3Matrix);
             ~A3Matrix       ( void );
 
     int      Set            ( int        xpos,

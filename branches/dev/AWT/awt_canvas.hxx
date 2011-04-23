@@ -104,8 +104,8 @@ public:
     virtual void text(AW_device *device, char *text);
 };
 
-// a partly implementation of AWT_graphic
 class AWT_nonDB_graphic : public AWT_graphic {
+    // a partly implementation of AWT_graphic
 public:
     AWT_nonDB_graphic() {}
     virtual ~AWT_nonDB_graphic();
@@ -134,7 +134,7 @@ enum {
     AWT_d_screen = 1
 };
 
-class AWT_canvas {
+class AWT_canvas : virtual Noncopyable {
 public:
     // too many callbacks -> public
     // in fact: private

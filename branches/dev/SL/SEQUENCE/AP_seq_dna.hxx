@@ -15,7 +15,7 @@
 #include <AP_sequence.hxx>
 #endif
 
-class AP_sequence_parsimony : public AP_sequence {
+class AP_sequence_parsimony : public AP_sequence { // derived from a Noncopyable
     void build_table();
     AP_FLOAT count_weighted_bases() const;
 

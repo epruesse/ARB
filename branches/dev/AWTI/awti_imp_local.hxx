@@ -35,7 +35,7 @@
 #define AWTC_IMPORT_CHECK_BUFFER_SIZE 10000
 
 
-struct input_format_per_line {
+struct input_format_per_line : virtual Noncopyable {
     char *match;
     char *aci;
     char *srt;
@@ -80,7 +80,7 @@ public:
 };
 
 
-struct input_format_struct {
+struct input_format_struct : virtual Noncopyable {
     char   *autodetect;
     char   *system;
     char   *new_format;

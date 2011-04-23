@@ -45,7 +45,7 @@ enum {
 
 // global data for interaction with probe match result list:
 
-class saiProbeData {
+class saiProbeData : virtual Noncopyable {
     char   *probeTarget;
     size_t  probeTargetLen;
     char   *headline;           // needed for ProbeMatchParser
@@ -87,7 +87,7 @@ public:
     }
 };
 
-class SAI_graphic : public AWT_nonDB_graphic {
+class SAI_graphic : public AWT_nonDB_graphic, virtual Noncopyable {
 public:
     GBDATA     *gb_main;
     AW_root    *aw_root;

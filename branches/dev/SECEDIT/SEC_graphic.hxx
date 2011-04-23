@@ -37,7 +37,7 @@ enum SEC_update_request {
 
 class SEC_base;
 
-class SEC_graphic : public AWT_graphic {
+class SEC_graphic : public AWT_graphic, virtual Noncopyable {
     SEC_update_request  update_requested;
     char               *load_error; // error occurred during load()
 

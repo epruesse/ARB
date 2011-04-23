@@ -77,7 +77,7 @@ void genbank_source(GenBank& gbk, Reader& reader) {
     }
 }
 
-class startsWithBlanks : Noncopyable {
+class startsWithBlanks : virtual Noncopyable {
     int blanks;
 
 public:

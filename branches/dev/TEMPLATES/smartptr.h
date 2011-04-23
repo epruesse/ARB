@@ -21,6 +21,10 @@
 #ifndef ARB_ASSERT_H
 #include <arb_assert.h>
 #endif
+#ifndef ARBTOOLS_H
+#include "arbtools.h"
+#endif
+
 #define tpl_assert(bed) arb_assert(bed)
 
 // --------------------------------------------------------------------------------
@@ -76,7 +80,7 @@
 // -----------------------------------------------------------------
 
 template<class T, void (*DEALLOC)(T*)>
-class custom_dealloc_ptr {
+class custom_dealloc_ptr : virtual Noncopyable {
     T *const thePointer;
 public:
     custom_dealloc_ptr(T *p) : thePointer(p) {
@@ -92,7 +96,7 @@ public:
 };
 
 template <class T>
-class auto_free_ptr {
+class auto_free_ptr : virtual Noncopyable {
     T *const thePointer;
 public:
     auto_free_ptr(T *p) : thePointer(p) {
@@ -108,7 +112,7 @@ public:
 };
 
 template <class T>
-class auto_delete_ptr {
+class auto_delete_ptr : virtual Noncopyable {
     T *const thePointer;
 public:
     auto_delete_ptr(T *p) : thePointer(p) {

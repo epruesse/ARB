@@ -65,7 +65,7 @@ enum ClusterOrder {
 
 class DescriptionFormat;
 
-class Cluster {
+class Cluster : virtual Noncopyable {
     double min_dist;                                // min. distance between species inside Cluster
     double max_dist;                                // dito, but max.
     double mean_dist;                               // dito, but mean
@@ -158,7 +158,7 @@ enum ClusterSubset {
     SHOWN_CLUSTERS,
 };
 
-struct ClustersData {
+struct ClustersData : virtual Noncopyable {
     WeightedFilter    &weighted_filter;
     AW_selection_list *clusterList;
     KnownClusters      known_clusters;              // contains all known clusters

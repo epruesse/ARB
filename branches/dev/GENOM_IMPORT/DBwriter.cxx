@@ -293,8 +293,8 @@ inline bool operator<(const GEN_positionPtr& A, const GEN_positionPtr& B) {
     return cmp<0;
 }
 
-class PosGene {
-    GBDATA                  *gb_Gene;
+class PosGene { // @@@ define copy-ctor and op=
+    GBDATA                  *gb_Gene; // @@@ make this a reference to make PosGene copyable
     mutable GEN_positionPtr  pos;
 
 public:

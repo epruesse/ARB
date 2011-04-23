@@ -1,3 +1,21 @@
+// ============================================================= //
+//                                                               //
+//   File      : RNA3D_Global.hxx                                //
+//   Purpose   :                                                 //
+//                                                               //
+//   Institute of Microbiology (Technical University Munich)     //
+//   http://www.arb-home.de/                                     //
+//                                                               //
+// ============================================================= //
+
+#ifndef RNA3D_GLOBAL_HXX
+#define RNA3D_GLOBAL_HXX
+
+#ifndef ARBTOOLS_H
+#include <arbtools.h>
+#endif
+
+
 #ifndef M_PI
 #define M_PI 3.14159265358979323846
 #endif
@@ -88,7 +106,7 @@ class AW_root;
 class AWT_canvas;
 struct ED4_plugin_host;
 
-class RNA3D_Global {
+class RNA3D_Global : virtual Noncopyable {
 public:
     Widget      glw;
     AW_root    *root;
@@ -130,3 +148,7 @@ extern RNA3D_Global *RNA3D;
 extern char          globalComment[1000];
 
 void RNA3D_init_global_data(ED4_plugin_host& host);
+
+#else
+#error RNA3D_Global.hxx included twice
+#endif // RNA3D_GLOBAL_HXX

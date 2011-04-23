@@ -55,7 +55,7 @@ typedef GB_ERROR (*item_check_fun)(GBDATA *gb_item, const ad_item_selector *sel)
 typedef map<string, item_check_fun>    item_check_map;
 typedef item_check_map::const_iterator item_check_iter;
 
-class CheckedConsistencies {
+class CheckedConsistencies : virtual Noncopyable {
     GBDATA         *gb_main;
     size_t          species_count;
     size_t          sai_count;
@@ -583,7 +583,7 @@ class                  Dict;
 typedef SmartPtr<Dict> DictPtr;
 
 
-class KeyInfo : Noncopyable {
+class KeyInfo : virtual Noncopyable {
     string  name;               // keyname
     DictPtr original;
 
@@ -614,7 +614,7 @@ public:
 };
 
 
-class Dict : Noncopyable {
+class Dict : virtual Noncopyable {
     string    group;            // lowercase keyname
     string    orgkey;
     DictData *data;

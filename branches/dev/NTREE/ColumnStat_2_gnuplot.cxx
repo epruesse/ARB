@@ -231,7 +231,7 @@ static const char *makeTitle(const char *fname) {
 // -------------------
 //      SortedFreq
 
-class SortedFreq {
+class SortedFreq : virtual Noncopyable {
     float *freq[4];
 
 public:

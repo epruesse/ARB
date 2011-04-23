@@ -63,7 +63,7 @@ public:
     double get_variance() const { return get_variance(get_median()); }
 };
 
-class LikelihoodRanges {
+class LikelihoodRanges : virtual Noncopyable {
     /*! The alignment is splitted into multiple, similar-sized column ranges.
      * For each range the likelihoods get summarized
      */

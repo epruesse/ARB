@@ -12,7 +12,7 @@
 #include "reader.h"
 #endif
 
-class Macke : public InputFormat {
+class Macke : public InputFormat { // derived from a Noncopyable
     int    numofrem;            // num. of remarks
     char **remarks;             // remarks
     int    allocated;
@@ -137,7 +137,7 @@ public:
 // --------------------
 //      MackeReader
 
-class MackeReader : public FormatReader {
+class MackeReader : public FormatReader, virtual Noncopyable {
     Macke data;
 
     char   *inName;

@@ -67,7 +67,7 @@ public:
     }
 };
 
-class SequenceBuffer : public Noncopyable {
+class SequenceBuffer : virtual Noncopyable {
     stringVector  lines;        // stores input lines
     BaseCounter   baseCounter;
     mutable char *seq;

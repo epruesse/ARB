@@ -33,7 +33,7 @@ const int LD_BUCKET_SIZE = 4;                       // log dualis of ST_BUCKET_S
 
 class ST_ML;
 
-class MostLikelySeq : public AP_sequence {
+class MostLikelySeq : public AP_sequence { // derived from a Noncopyable
     /*! contains existing sequence or ancestor sequence
      * as max. likelihood vectors
      */

@@ -16,7 +16,7 @@
 
 class AW_common;
 
-class AW_GC_Xm {
+class AW_GC_Xm : virtual Noncopyable {
 public:
     GC                   gc;
     AW_common           *common;

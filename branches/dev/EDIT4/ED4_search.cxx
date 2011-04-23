@@ -61,8 +61,7 @@ typedef struct S_SearchAwarList // contains names of awars
 
 } *SearchAwarList;
 
-class SearchSettings
-{
+class SearchSettings : virtual Noncopyable {
     char            *pattern;
     int              min_mismatches;
     int              max_mismatches;
@@ -75,8 +74,6 @@ class SearchSettings
     int              exact;
     int              open_folded;
     int              autoJump;
-
-    SearchSettings(const SearchSettings&) { e4_assert(0); } // forbidden
 
 public:
 
@@ -129,8 +126,7 @@ public:
 class SearchTree;
 typedef void (*reportMatch)(int start, int end, GB_CSTR comment, int mismatches[MAX_MISMATCHES]);
 
-class SearchTreeNode
-{
+class SearchTreeNode : virtual Noncopyable {
     char            c;          // character
     SearchTreeNode *son;        // son != 0 (exception: FOUND)
     SearchTreeNode *brother;
@@ -142,8 +138,6 @@ class SearchTreeNode
     static int             min_mismatches;
     static int             max_mismatches;
     static int            *uni2real; // transform unified positions to real sequence positions
-
-    SearchTreeNode(const SearchTreeNode &) { e4_assert(0); } // forbidden
 
 public:
 
@@ -304,8 +298,7 @@ void SearchTreeNode::findMatches(int off, GB_CSTR seq, int len, int mismatches, 
 
 // --------------------------------------------------------------------------------
 
-class SearchTree
-{
+class SearchTree : virtual Noncopyable {
     const SearchSettings *sett;
     SearchTreeNode *root;
     unsigned char unified[256];

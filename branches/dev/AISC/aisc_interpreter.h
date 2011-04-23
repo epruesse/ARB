@@ -70,7 +70,7 @@ public:
 
 };
 
-class hash {
+class hash : virtual Noncopyable {
     int          size;
     hash_entry **entries;
 
@@ -97,7 +97,7 @@ public:
 static const int  LINEBUFSIZE  = 250;
 static const char ALIGN_MARKER = '\1';
 
-class LineBuf {
+class LineBuf : virtual Noncopyable {
     int   size;
     int   used;
     char *buf;
@@ -135,7 +135,7 @@ public:
     bool needsAlignment() const { return markers; }
 };
 
-class LineQueue {
+class LineQueue : virtual Noncopyable {
     int    count;
     int    size;
     char **queue;
@@ -256,7 +256,7 @@ public:
     void final_flush(FILE *out) { align(); flush(out); }
 };
 
-class Output {
+class Output : virtual Noncopyable {
     FILE *fp;
     char *id;   // internal name used in AISC
     char *name; // file-system name
@@ -348,7 +348,7 @@ struct Stack {
     Stack *next;
 };
 
-class Data {
+class Data : virtual Noncopyable {
     TokenListBlock *rootBlock;
     const Token    *cursor;
 public:
@@ -374,7 +374,7 @@ public:
     void dump_cursor_pos(FILE *out) const;
 };
 
-class Interpreter {
+class Interpreter : virtual Noncopyable {
     Parser parser;
 
     Data data;             // currently loaded data
