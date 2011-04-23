@@ -103,5 +103,6 @@ GUI_aliview.o: $(ARBHOME)/INCLUDE/AP_filter.hxx
 GUI_aliview.o: $(ARBHOME)/INCLUDE/arb_assert.h
 GUI_aliview.o: $(ARBHOME)/INCLUDE/arb_core.h
 GUI_aliview.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+GUI_aliview.o: $(ARBHOME)/INCLUDE/arbtools.h
 GUI_aliview.o: $(ARBHOME)/INCLUDE/dupstr.h
 GUI_aliview.o: $(ARBHOME)/INCLUDE/test_global.h

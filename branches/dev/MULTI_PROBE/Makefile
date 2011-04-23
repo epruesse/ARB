@@ -75,6 +75,7 @@ MP_GenerationDuplicates.o: SoTl.hxx
 MP_GenerationDuplicates.o: $(ARBHOME)/INCLUDE/arb_assert.h
 MP_GenerationDuplicates.o: $(ARBHOME)/INCLUDE/arb_core.h
 MP_GenerationDuplicates.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+MP_GenerationDuplicates.o: $(ARBHOME)/INCLUDE/arbtools.h
 MP_GenerationDuplicates.o: $(ARBHOME)/INCLUDE/attributes.h
 MP_GenerationDuplicates.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 MP_GenerationDuplicates.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
@@ -198,6 +199,7 @@ MP_permute.o: SoTl.hxx
 MP_permute.o: $(ARBHOME)/INCLUDE/arb_assert.h
 MP_permute.o: $(ARBHOME)/INCLUDE/arb_core.h
 MP_permute.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+MP_permute.o: $(ARBHOME)/INCLUDE/arbtools.h
 MP_permute.o: $(ARBHOME)/INCLUDE/attributes.h
 MP_permute.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 MP_permute.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
@@ -238,6 +240,7 @@ MP_probe_combi_statistic.o: SoTl.hxx
 MP_probe_combi_statistic.o: $(ARBHOME)/INCLUDE/arb_assert.h
 MP_probe_combi_statistic.o: $(ARBHOME)/INCLUDE/arb_core.h
 MP_probe_combi_statistic.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+MP_probe_combi_statistic.o: $(ARBHOME)/INCLUDE/arbtools.h
 MP_probe_combi_statistic.o: $(ARBHOME)/INCLUDE/attributes.h
 MP_probe_combi_statistic.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 MP_probe_combi_statistic.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
@@ -254,6 +257,7 @@ MP_probe_tabs.o: SoTl.hxx
 MP_probe_tabs.o: $(ARBHOME)/INCLUDE/arb_assert.h
 MP_probe_tabs.o: $(ARBHOME)/INCLUDE/arb_core.h
 MP_probe_tabs.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+MP_probe_tabs.o: $(ARBHOME)/INCLUDE/arbtools.h
 MP_probe_tabs.o: $(ARBHOME)/INCLUDE/attributes.h
 MP_probe_tabs.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 MP_probe_tabs.o: $(ARBHOME)/INCLUDE/aw_awars.hxx
