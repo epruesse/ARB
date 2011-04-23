@@ -146,13 +146,13 @@ void awt_input_mask_global::no_item_selected() const {
 
 GB_ERROR awt_input_mask_id_list::add(const string& name, awt_mask_item *item) {
     awt_mask_item *existing = lookup(name);
-    if (existing) return GB_export_errorf("ID '%s' already exists", name.c_str());
+    if (existing) return GBS_global_string("ID '%s' already exists", name.c_str());
 
     id[name] = item;
     return 0;
 }
 GB_ERROR awt_input_mask_id_list::remove(const string& name) {
-    if (!lookup(name)) return GB_export_errorf("ID '%s' does not exist", name.c_str());
+    if (!lookup(name)) return GBS_global_string("ID '%s' does not exist", name.c_str());
     id.erase(name);
     return 0;
 }
@@ -170,7 +170,7 @@ GB_ERROR awt_mask_item::set_name(const string& name_, bool is_global)
 {
     GB_ERROR error = 0;
     if (has_name()) {
-        error = GB_export_errorf("Element already has name (%s)", get_name().c_str());
+        error = GBS_global_string("Element already has name (%s)", get_name().c_str());
     }
     else {
         name = new string(name_);
@@ -1668,11 +1668,11 @@ static awt_input_mask_ptr awt_create_input_mask(AW_root *root, GBDATA *gb_main, 
                                     bool local_exists  = mask->mask_global()->has_local_id(id);
 
                                     if ((cmd == CMD_GLOBAL && local_exists) || (cmd == CMD_LOCAL && global_exists)) {
-                                        error = GB_export_errorf("ID '%s' already declared as %s ID (rename your local id)",
-                                                                 id.c_str(), cmd == CMD_LOCAL ? "global" : "local");
+                                        error = GBS_global_string("ID '%s' already declared as %s ID (rename your local id)",
+                                                                  id.c_str(), cmd == CMD_LOCAL ? "global" : "local");
                                     }
                                     else if (cmd == CMD_LOCAL && local_exists) {
-                                        error = GB_export_errorf("ID '%s' declared twice", id.c_str());
+                                        error = GBS_global_string("ID '%s' declared twice", id.c_str());
                                     }
 
                                     if (!error) def_value = scan_string_parameter(line, scan_pos, error);
@@ -1903,7 +1903,7 @@ static awt_input_mask_ptr awt_create_input_mask(AW_root *root, GBDATA *gb_main, 
             if (!error) {
                 for (map<string, size_t>::const_iterator r = referenced_ids.begin(); r != referenced_ids.end(); ++r) {
                     if (declared_ids.find(r->first) == declared_ids.end()) {
-                        error = GB_export_errorf("ID '%s' used in line #%zu was not declared", r->first.c_str(), r->second);
+                        error = GBS_global_string("ID '%s' used in line #%zu was not declared", r->first.c_str(), r->second);
                         aw_message(error);
                     }
                 }
