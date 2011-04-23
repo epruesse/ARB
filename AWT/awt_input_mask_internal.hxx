@@ -362,10 +362,10 @@ public:
 // an awt_input_handler is an awt_viewport bound to a database element
 class awt_input_handler : public awt_viewport, public awt_linked_to_item { // derived from a Noncopyable
 private:
-    GBDATA   *gbd;              // link to database
-    std::string    child_path;       // path in database from item to handled child
-    GB_TYPES  db_type;          // type of database field
-    bool      in_destructor;
+    GBDATA      *gbd;           // link to database
+    std::string  child_path;    // path in database from item to handled child
+    GB_TYPES     db_type;       // type of database field
+    bool         in_destructor;
 
     virtual GB_ERROR add_db_callbacks();
     virtual void     remove_db_callbacks();
@@ -396,10 +396,8 @@ public:
     virtual void db_changed()   = 0;
 };
 
-typedef SmartPtr<awt_input_handler> awt_input_handler_ptr;
-typedef std::list<awt_input_handler_ptr> awt_input_handler_list;
-typedef SmartPtr<awt_mask_item>     awt_mask_item_ptr;
-typedef std::list<awt_mask_item_ptr>     awt_mask_item_list;
+typedef SmartPtr<awt_mask_item>      awt_mask_item_ptr;
+typedef std::list<awt_mask_item_ptr> awt_mask_item_list;
 
 //  --------------------------------
 //      class awt_string_handler
@@ -549,6 +547,8 @@ private:
     AW_window_simple      *aws;
     bool                   shall_reload_on_reinit;
 
+    void link_to(GBDATA *gbitem);
+    
 public:
     awt_input_mask(AW_root *awr, GBDATA *gb_main, const std::string& mask_name_, awt_item_type itemtype_, bool local, const awt_item_type_selector *sel_, bool test_edit_enabled)
         : global(awr, gb_main, mask_name_, itemtype_, local, sel_, test_edit_enabled)
@@ -573,7 +573,8 @@ public:
 
     void add_handler(awt_mask_item_ptr handler) { handlers.push_back(handler); }
 
-    void relink(bool unlink = false); // if unlink is true -> mask is unlinked from database
+    void relink() { link_to(global.get_selected_item()); }
+    void unlink() { link_to(NULL); }
 };
 
 //  ----------------
