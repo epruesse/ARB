@@ -2165,10 +2165,9 @@ awt_item_type AWT_getItemType(const string& itemtype_name) {
 // -----------------------------
 //      Registered Itemtypes
 
-class AWT_registered_itemtype { // @@@ define copy-ctor and op=
+class AWT_registered_itemtype {
     // stores information about so-far-used item types
 private:
-    // @@@ make ref to make class copyable
     AW_window_menu_modes       *awm;                // the main window responsible for opening windows
     AWT_OpenMaskWindowCallback  open_window_cb;     // callback to open the window
     AW_CL                       cl_user;
@@ -2180,6 +2179,12 @@ public:
         , open_window_cb(open_window_cb_)
         , cl_user(cl_user_)
     {}
+    AWT_registered_itemtype(const AWT_registered_itemtype& other)
+        : awm(other.awm),
+          open_window_cb(other.open_window_cb),
+          cl_user(other.cl_user)
+    {}
+    DECLARE_ASSIGNMENT_OPERATOR(AWT_registered_itemtype);
     virtual ~AWT_registered_itemtype() {}
 
     AW_window_menu_modes *getWindow() const { return awm; }
