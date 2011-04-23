@@ -37,9 +37,9 @@ class  GEN_root;
 class  GEN_graphic;
 struct GEN_position;
 
-class GEN_gene { // @@@ define copy-ctor and op=
-    GBDATA              *gb_gene; // @@@ make ref to make class copyable
-    GEN_root            *root; // @@@ make ref to make class copyable
+class GEN_gene { 
+    GBDATA              *gb_gene; 
+    GEN_root            *root; 
     std::string          name;
     mutable std::string  nodeInfo;
     long                 pos1;
@@ -54,6 +54,16 @@ class GEN_gene { // @@@ define copy-ctor and op=
 public:
     GEN_gene(GBDATA *gb_gene_, GEN_root *root_, const GEN_position *location);
     GEN_gene(GBDATA *gb_gene_, GEN_root *root_, const GEN_position *location, int partNumber);
+    GEN_gene(const GEN_gene& other)
+        : gb_gene(other.gb_gene),
+          root(other.root),
+          name(other.name),
+          nodeInfo(other.nodeInfo),
+          pos1(other.pos1),
+          pos2(other.pos2),
+          complement(other.complement)
+    {}
+    DECLARE_ASSIGNMENT_OPERATOR(GEN_gene);
     ~GEN_gene() {}
 
     inline bool operator<(const GEN_gene& other) const {
