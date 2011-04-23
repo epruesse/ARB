@@ -1986,18 +1986,13 @@ GB_ERROR AWT_initialize_input_mask(AW_root *root, GBDATA *gb_main, const awt_ite
     awt_input_mask_ptr       old_mask;
     bool                     unlink_old = false;
 
-    static list<awt_input_mask_ptr> mask_collector; // here old (aka reloaded) masks are kept
-    // (freeing masks is not possible, because of too many nested callbacks)
-
-    // erase mask (so it loads again from scratch)
-    if (mask_iter != input_mask_list.end() && mask_iter->second->reload_on_reinit()) // reload wanted ?
-    {
-        old_mask  = mask_iter->second;
+    if (mask_iter != input_mask_list.end() && mask_iter->second->reload_on_reinit()) { // reload wanted ?
+        // erase mask (so it loads again from scratch)
+        old_mask = mask_iter->second;
         input_mask_list.erase(mask_iter);
         mask_iter = input_mask_list.end();
 
         old_mask->hide();
-        mask_collector.push_back(old_mask);
         unlink_old = true;
     }
 
