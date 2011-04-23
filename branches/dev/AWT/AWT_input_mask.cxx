@@ -2022,7 +2022,7 @@ GB_ERROR AWT_initialize_input_mask(AW_root *root, GBDATA *gb_main, const awt_ite
     }
 
     if (unlink_old) {
-        old_mask->relink(true); // unlink old mask from database ()
+        old_mask->unlink(); // unlink old mask from database ()
         unlink_mask_from_database(old_mask);
     }
 
@@ -2033,16 +2033,14 @@ GB_ERROR AWT_initialize_input_mask(AW_root *root, GBDATA *gb_main, const awt_ite
 // start of implementation of class awt_input_mask:
 
 awt_input_mask::~awt_input_mask() {
-    relink(true); // unlink from DB
+    unlink();
     for (awt_mask_item_list::iterator h = handlers.begin(); h != handlers.end(); ++h) {
         (*h)->remove_name();
     }
 }
 
-void awt_input_mask::relink(bool unlink) {
+void awt_input_mask::link_to(GBDATA *gb_item) {
     // this functions links/unlinks all registered item handlers to/from the database
-    GBDATA *gb_item = unlink ? 0 : global.get_selected_item();
-
     for (awt_mask_item_list::iterator h = handlers.begin(); h != handlers.end(); ++h) {
         if ((*h)->is_linked_item()) (*h)->to_linked_item()->link_to(gb_item);
     }
@@ -2406,6 +2404,14 @@ void AWT_create_mask_submenu(AW_window_menu_modes *awm, awt_item_type wanted_ite
 }
 
 void AWT_destroy_input_masks() {
+    // unlink from DB manually - there are too many smartptrs to
+    // get rid of all of them before DB gets destroyed on exit
+    for (InputMaskList::iterator i = input_mask_list.begin();
+         i != input_mask_list.end();
+         ++i)
+    {
+        i->second->unlink(); 
+    }
     input_mask_list.clear();
 }
 
