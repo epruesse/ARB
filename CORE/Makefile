@@ -42,6 +42,7 @@ arb_cs.o: arb_core.h
 arb_cs.o: arb_cs.h
 arb_cs.o: arb_msg.h
 arb_cs.o: $(ARBHOME)/INCLUDE/arb_assert.h
+arb_cs.o: $(ARBHOME)/INCLUDE/arbtools.h
 arb_cs.o: $(ARBHOME)/INCLUDE/attributes.h
 arb_cs.o: $(ARBHOME)/INCLUDE/dupstr.h
 arb_cs.o: $(ARBHOME)/INCLUDE/smartptr.h
@@ -51,6 +52,7 @@ arb_handlers.o: arb_core.h
 arb_handlers.o: arb_handlers.h
 arb_handlers.o: arb_msg.h
 arb_handlers.o: $(ARBHOME)/INCLUDE/arb_assert.h
+arb_handlers.o: $(ARBHOME)/INCLUDE/arbtools.h
 arb_handlers.o: $(ARBHOME)/INCLUDE/attributes.h
 arb_handlers.o: $(ARBHOME)/INCLUDE/dupstr.h
 arb_handlers.o: $(ARBHOME)/INCLUDE/smartptr.h
@@ -62,6 +64,7 @@ arb_msg.o: arb_msg.h
 arb_msg.o: arb_string.h
 arb_msg.o: $(ARBHOME)/INCLUDE/arb_assert.h
 arb_msg.o: $(ARBHOME)/INCLUDE/arb_backtrace.h
+arb_msg.o: $(ARBHOME)/INCLUDE/arbtools.h
 arb_msg.o: $(ARBHOME)/INCLUDE/attributes.h
 arb_msg.o: $(ARBHOME)/INCLUDE/dupstr.h
 arb_msg.o: $(ARBHOME)/INCLUDE/smartptr.h
@@ -84,6 +87,7 @@ arb_signal.o: arb_msg.h
 arb_signal.o: arb_signal.h
 arb_signal.o: $(ARBHOME)/INCLUDE/arb_assert.h
 arb_signal.o: $(ARBHOME)/INCLUDE/arb_backtrace.h
+arb_signal.o: $(ARBHOME)/INCLUDE/arbtools.h
 arb_signal.o: $(ARBHOME)/INCLUDE/attributes.h
 arb_signal.o: $(ARBHOME)/INCLUDE/dupstr.h
 arb_signal.o: $(ARBHOME)/INCLUDE/SigHandler.h

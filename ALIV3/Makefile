@@ -67,6 +67,7 @@ a3_ali.o: a3_helix.hxx
 a3_ali.o: a3_ptree.hxx
 a3_ali.o: a3_seq.hxx
 a3_ali.o: a3_types.h
+a3_ali.o: $(ARBHOME)/INCLUDE/arbtools.h
 
 a3_arbdb.o: a3_arbdb.hxx
 a3_arbdb.o: $(ARBHOME)/INCLUDE/ad_prot.h
@@ -88,6 +89,7 @@ a3_arbdb.o: $(ARBHOME)/INCLUDE/test_global.h
 a3_basen.o: a3_basen.h
 
 a3_darray.o: a3_darray.hxx
+a3_darray.o: $(ARBHOME)/INCLUDE/arbtools.h
 
 a3_helix.o: a3_ali.hxx
 a3_helix.o: a3_darray.hxx
@@ -96,20 +98,24 @@ a3_helix.o: a3_matrix.hxx
 a3_helix.o: a3_ptree.hxx
 a3_helix.o: a3_seq.hxx
 a3_helix.o: a3_types.h
+a3_helix.o: $(ARBHOME)/INCLUDE/arbtools.h
 
 a3_matrix.o: a3_darray.hxx
 a3_matrix.o: a3_matrix.hxx
+a3_matrix.o: $(ARBHOME)/INCLUDE/arbtools.h
 
 a3_ptree1.o: a3_basen.h
 a3_ptree1.o: a3_ptree.hxx
 a3_ptree1.o: a3_seq.hxx
 a3_ptree1.o: a3_types.h
+a3_ptree1.o: $(ARBHOME)/INCLUDE/arbtools.h
 a3_ptree1.o: $(ARBHOME)/INCLUDE/dupstr.h
 
 a3_ptree2.o: a3_basen.h
 a3_ptree2.o: a3_ptree.hxx
 a3_ptree2.o: a3_seq.hxx
 a3_ptree2.o: a3_types.h
+a3_ptree2.o: $(ARBHOME)/INCLUDE/arbtools.h
 a3_ptree2.o: $(ARBHOME)/INCLUDE/dupstr.h
 
 a3_seq.o: a3_basen.h

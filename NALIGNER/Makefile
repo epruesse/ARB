@@ -182,6 +182,7 @@ ali_pathmap.o: ali_misc.hxx
 ali_pathmap.o: ali_pathmap.hxx
 ali_pathmap.o: ali_tarray.hxx
 ali_pathmap.o: ali_tlist.hxx
+ali_pathmap.o: $(ARBHOME)/INCLUDE/arbtools.h
 ali_pathmap.o: $(ARBHOME)/INCLUDE/attributes.h
 
 ali_prealigner.o: ali_aligner.hxx
@@ -284,6 +285,7 @@ ali_pt.o: $(ARBHOME)/INCLUDE/test_global.h
 
 ali_sequence.o: ali_misc.hxx
 ali_sequence.o: ali_sequence.hxx
+ali_sequence.o: $(ARBHOME)/INCLUDE/arbtools.h
 ali_sequence.o: $(ARBHOME)/INCLUDE/attributes.h
 
 ali_solution.o: ali_arbdb.hxx
