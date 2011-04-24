@@ -305,6 +305,11 @@ public:
         }
         pos = pp;
     }
+    PosGene(const PosGene& other)
+        : gb_Gene(other.gb_Gene),
+          pos(other.pos)
+    {}
+    DECLARE_ASSIGNMENT_OPERATOR(PosGene);
 
     const GEN_positionPtr& getPosition() const { return pos; }
 
