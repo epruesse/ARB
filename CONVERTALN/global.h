@@ -29,7 +29,9 @@
 
 // --------------------
 
-class Convaln_exception { // @@@ define copy-ctor and op=
+class Convaln_exception
+// : virtual Noncopyable
+{
     static Convaln_exception *thrown;
 
     int           code;
@@ -43,6 +45,11 @@ public:
         ca_assert(!thrown); // 2 exceptions at the same time ? very exceptional! :)
         thrown = this;
     }
+    Convaln_exception(const Convaln_exception& other)
+        : code(other.code),
+          msg(strdup(other.msg))
+    {}
+    DECLARE_ASSIGNMENT_OPERATOR(Convaln_exception);
     ~Convaln_exception() {
         ca_assert(thrown);
         thrown = NULL;
