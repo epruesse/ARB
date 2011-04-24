@@ -22,7 +22,7 @@
 typedef std::map<int, int>   apos_cache;
 typedef apos_cache::iterator apos_iter;
 
-class Range { // @@@ define copy-ctor and op=
+class Range {
     int start; // -1 or minimum absolute position
     int end;   // -1 or maximum absolute position
     int probe_len; // length of checked probe
@@ -54,6 +54,13 @@ public:
           probe_len(probe_len_),
           curr_match(NULL)
     {}
+    Range(const Range& other)
+        : start(other.start),
+          end(other.end),
+          probe_len(other.probe_len),
+          curr_match(other.curr_match)
+    {}
+    DECLARE_ASSIGNMENT_OPERATOR(Range);
 
     bool contains(const DataLoc& match) const {
         // check if found 'match' of probe is inside the Range
