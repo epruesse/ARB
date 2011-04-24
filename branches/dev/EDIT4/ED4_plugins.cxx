@@ -77,7 +77,7 @@ public:
 // ---------------
 //      PlugIn
 
-class PlugIn { // @@@ make this copyable!
+class PlugIn {
     char              *name;
     ED4_plugin        *start_plugin;
     mutable AW_window *window;
@@ -87,6 +87,11 @@ public:
         : name(strdup(name_)),
           start_plugin(start_plugin_),
           window(NULL)
+    {}
+    PlugIn(const PlugIn& other)
+        : name(strdup(other.name)),
+          start_plugin(other.start_plugin),
+          window(other.window)
     {}
     ~PlugIn() { free(name); }
 
