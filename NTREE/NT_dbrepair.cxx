@@ -786,7 +786,7 @@ static GB_ERROR NT_fix_dict_compress(GBDATA *gb_main, size_t, size_t) {
             affectedKeys += kci->second;
         }
 
-        if (!error) {
+        if (!error && affectedKeys>0) {
             // check which keys are compressed
 
             {
