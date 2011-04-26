@@ -24,6 +24,7 @@ void alignment_vars_callback(AW_root *aw_root)
     char    *use = aw_root->awar("presets/use")->read_string();
     GBDATA *ali_cont = GBT_get_alignment(GLOBAL_gb_main, use);
     if (!ali_cont) {
+        GB_clear_error();
         aw_root->awar("presets/alignment_name")->unmap();
         aw_root->awar("presets/alignment_type")->unmap();
         aw_root->awar("presets/alignment_len")->unmap();
