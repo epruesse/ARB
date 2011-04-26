@@ -1794,7 +1794,7 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
     return awm;
 }
 
-GB_ERROR nt_create_main_window(AW_root *aw_root) {
+void nt_create_main_window(AW_root *aw_root) {
     GB_ERROR error = GB_request_undo_type(GLOBAL_gb_main, GB_UNDO_NONE);
     if (error) aw_message(error);
 
@@ -1805,8 +1805,4 @@ GB_ERROR nt_create_main_window(AW_root *aw_root) {
 
     error = GB_request_undo_type(GLOBAL_gb_main, GB_UNDO_UNDO);
     if (error) aw_message(error);
-
-    return error;
 }
-
-
