@@ -443,14 +443,13 @@ char *AWTC_create_numbered_suffix(GB_HASH *species_name_hash, const char *shortn
     return newshort;
 }
 
-GB_ERROR AWTC_pars_names(GBDATA *gb_main, bool *isWarningPtr)
-// rename species according to name_server
-// 'isWarning' is set to true, in case of duplicates-warning
-{
-    arb_progress gen_progress("Generating new names", 2);
-    GB_ERROR err = name_server.connect(gb_main);
-    bool     isWarning = false;
+GB_ERROR AWTC_pars_names(GBDATA *gb_main, bool *isWarningPtr) {
+    // rename species according to name_server
+    // 'isWarning' is set to true, in case of duplicates-warning
 
+    arb_progress gen_progress("Generating new names", 2);
+    GB_ERROR     err       = name_server.connect(gb_main);
+    bool         isWarning = false;
 
     if (!err) {
         err = GBT_begin_rename_session(gb_main, 1);
@@ -459,7 +458,8 @@ GB_ERROR AWTC_pars_names(GBDATA *gb_main, bool *isWarningPtr)
             long      spcount  = GBT_get_species_count(gb_main);
             GB_HASH  *hash     = GBS_create_hash(spcount, GB_IGNORE_CASE);
             GB_ERROR  warning  = 0;
-            {
+
+            if (spcount) {
                 arb_progress progress("Renaming species", spcount);
                 const char *add_field = AW_get_nameserver_addid(gb_main);
 
@@ -513,6 +513,9 @@ GB_ERROR AWTC_pars_names(GBDATA *gb_main, bool *isWarningPtr)
 
                     progress.inc_and_check_user_abort(err);
                 }
+            }
+            else {
+                gen_progress.sub_progress_skipped(); // trigger skipped subcounter
             }
 
             if (err) GBT_abort_rename_session();
