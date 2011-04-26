@@ -17,6 +17,7 @@
 #include <awti_import.hxx>
 
 #include <awt.hxx>
+#include <awt_macro.hxx>
 
 #include <aw_advice.hxx>
 #include <aw_question.hxx>
@@ -169,7 +170,37 @@ static void check_db_interrupt(AW_root *awr) {
     awr->add_timed_callback(NT_CHECK_DB_TIMER, (AW_RCB)check_db_interrupt, 0, 0);
 }
 
-static ARB_ERROR load_and_startup_main_window(AW_root *aw_root) {
+static GB_ERROR startup_mainwindow_and_dbserver(AW_root *aw_root, bool install_client_callback, const char *autorun_macro) {
+    GB_ERROR error = NULL;
+    nt_create_main_window(aw_root);
+
+    if (GB_read_clients(GLOBAL_gb_main) == 0) { // server
+        error = GBCMS_open(":", 0, GLOBAL_gb_main);
+        if (error) {
+            error = GBS_global_string("THIS PROGRAM HAS PROBLEMS TO OPEN INTERCLIENT COMMUNICATION:\n"
+                                      "Reason: %s\n"
+                                      "(maybe there is already another server running)\n"
+                                      "You cannot use any EDITOR or other external SOFTWARE from here.\n"
+                                      "Advice: Close ARB again, open a console, type 'arb_clean' and restart arb.\n"
+                                      "Caution: Any unsaved data in an eventually running ARB will be lost.\n",
+                                      error);
+        }
+        else {
+            aw_root->add_timed_callback(NT_SERVE_DB_TIMER, (AW_RCB)serve_db_interrupt, 0, 0);
+            error = nt_check_database_consistency();
+        }
+    }
+    else { // client
+        if (install_client_callback) {
+            aw_root->add_timed_callback(NT_CHECK_DB_TIMER, (AW_RCB)check_db_interrupt, 0, 0);
+        }
+    }
+
+    if (!error && autorun_macro) awt_execute_macro(aw_root, autorun_macro);
+    return error;
+}
+
+static ARB_ERROR load_and_startup_main_window(AW_root *aw_root, const char *autorun_macro) {
     char *db_server = aw_root->awar(AWAR_DB_PATH)->read_string();
     GLOBAL_gb_main  = GBT_open(db_server, "rw", "$(ARBHOME)/lib/pts/*");
 
@@ -197,27 +228,8 @@ static ARB_ERROR load_and_startup_main_window(AW_root *aw_root) {
         AWT_announce_db_to_browser(GLOBAL_gb_main, GBS_global_string("ARB database (%s)", db_server));
 #endif // DEBUG
 
-        nt_create_main_window(aw_root);
-
-        if (GB_read_clients(GLOBAL_gb_main)==0) { // server
-            GB_ERROR open_error = GBCMS_open(":", 0, GLOBAL_gb_main);
-            if (open_error) {
-                aw_message(GBS_global_string("THIS PROGRAM HAS PROBLEMS TO OPEN INTERCLIENT COMMUNICATION:\n"
-                                             "Reason: %s\n"
-                                             "(maybe there is already another server running)\n\n"
-                                             "You cannot use any EDITOR or other external SOFTWARE from here.\n\n"
-                                             "Advice: Close ARB again, open a console, type 'arb_clean' and restart arb.\n"
-                                             "Caution: Any unsaved data in an eventually running ARB will be lost.\n",
-                                             open_error));
-            }
-            else {
-                aw_root->add_timed_callback(NT_SERVE_DB_TIMER, (AW_RCB)serve_db_interrupt, 0, 0);
-                error = nt_check_database_consistency();
-            }
-        }
-        else { // client
-            aw_root->add_timed_callback(NT_CHECK_DB_TIMER, (AW_RCB)check_db_interrupt, 0, 0);
-        }
+        GB_ERROR problem = startup_mainwindow_and_dbserver(aw_root, true, autorun_macro);
+        aw_message_if(problem); // no need to terminate ARB
     }
 
     free(db_server);
@@ -247,26 +259,13 @@ static void nt_delete_database(AW_window *aww) {
 }
 
 static void start_main_window_after_import(AW_root *aw_root) {
-    GLOBAL_NT.awr = aw_root;
-    nt_create_main_window(aw_root);
-
-    if (GB_read_clients(GLOBAL_gb_main)==0) {
-        GB_ERROR error = GBCMS_open(":", 0, GLOBAL_gb_main);
-        if (error) {
-            aw_message("THIS PROGRAM IS NOT THE ONLY DB SERVER !!!\nDON'T USE ANY ARB PROGRAM !!!!");
-        }
-        else {
-            aw_root->add_timed_callback(NT_SERVE_DB_TIMER, (AW_RCB)serve_db_interrupt, 0, 0);
-            error = nt_check_database_consistency();
-            if (error) aw_message(error);
-        }
-    }
-    return;
+    GLOBAL_NT.awr  = aw_root;
+    aw_message_if(startup_mainwindow_and_dbserver(aw_root, false, NULL));
 }
 
 static void nt_intro_start_existing(AW_window *aw_intro) {
     aw_intro->hide();
-    ARB_ERROR error = load_and_startup_main_window(aw_intro->get_root());
+    ARB_ERROR error = load_and_startup_main_window(aw_intro->get_root(), NULL);
     if (error) {
         aw_intro->show();
         aw_popup_ok(error.deliver());
@@ -375,14 +374,19 @@ class NtreeCommandLine : virtual Noncopyable {
     bool do_import;
     bool do_export;
     
+    const char *macro_name;
+
 public:
     NtreeCommandLine(int argc_, char const*const* argv_)
         : arg_count(argc_-1),
           args(argv_+1),
           help_requested(false),
           do_import(false),
-          do_export(false)
+          do_export(false),
+          macro_name(NULL)
     {}
+
+    void shift() { ++args; --arg_count; }
 
     int free_args() const { return arg_count; }
     const char *get_arg(int num) const { return num<arg_count ? args[num] : NULL; }
@@ -392,10 +396,12 @@ public:
     bool wants_import() const { return do_import; }
     bool wants_merge() const { return arg_count == 2; }
 
+    const char *autorun_macro() const { return macro_name; }
+
     void print_help(FILE *out) const {
-            fprintf(out,
-                    "\n"
-                    "arb_ntree version " ARB_VERSION "\n"
+        fprintf(out,
+                "\n"
+                "arb_ntree version " ARB_VERSION "\n"
                     "(C) 1993-" ARB_BUILD_YEAR " Lehrstuhl fuer Mikrobiologie - TU Muenchen\n"
                     "http://www.arb-home.de/\n"
 #if defined(SHOW_WHERE_BUILD)
@@ -424,11 +430,11 @@ public:
             if (strcmp(opt, "help") == 0 || strcmp(opt, "h") == 0) { help_requested = true; }
             else if (strcmp(opt, "export") == 0) { do_export = true; }
             else if (strcmp(opt, "import") == 0) { do_import = true; }
+            else if (strcmp(opt, "execute") == 0) { shift(); macro_name = *args; }
             else {
                 error = GBS_global_string("Unknown switch '%s'", args[0]);
             }
-            ++args;
-            --arg_count;
+            shift();
         }
         // non-switch arguments remain in arg_count/args
         if (!error) {
@@ -590,7 +596,7 @@ int main(int argc, char **argv) {
                     }
                     else if (mode == NORMAL) {
                         aw_root->awar(AWAR_DB_PATH)->write_string(database);
-                        error = load_and_startup_main_window(aw_root);
+                        error = load_and_startup_main_window(aw_root, cl.autorun_macro());
                         if (!error) aw_root->main_loop();
                     }
                     else if (mode == BROWSE) {

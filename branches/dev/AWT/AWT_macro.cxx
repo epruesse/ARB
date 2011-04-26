@@ -117,6 +117,21 @@ AW_window *awt_open_macro_window(AW_root *aw_root, const char *application_id) {
     return aws;
 }
 
+inline char *find_macro_in(const char *dir, const char *macroname) {
+    char *full = GBS_global_string_copy("%s/%s.amc", dir, macroname);
+    if (!GB_is_readablefile(full)) freenull(full);
+    return full;
+}
 
+void awt_execute_macro(AW_root *root, const char *macroname) {
+    char *fullname          = find_macro_in(GB_getenvARBMACROHOME(), macroname);
+    if (!fullname) fullname = find_macro_in(GB_getenvARBMACRO(), macroname);
 
+    GB_ERROR error       = 0;
+    if (!fullname) error = "file not found";
+    else     error       = root->execute_macro(fullname);
 
+    if (error) {
+        aw_message(GBS_global_string("Can't execute macro '%s' (Reason: %s)", macroname, error));
+    }
+}
