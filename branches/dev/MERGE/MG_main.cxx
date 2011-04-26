@@ -35,6 +35,13 @@ STATIC_ATTRIBUTED(__ATTR__NORETURN, void MG_exit(AW_window *aww, AW_CL cl_reload
         if (result != 0) fprintf(stderr, "Error running '%s'\n", cmd);
         free(db2_name);
     }
+
+    aww->get_root()->unlink_awars_from_DB(GLOBAL_gb_merge);
+    aww->get_root()->unlink_awars_from_DB(GLOBAL_gb_dest);
+    
+    GB_close(GLOBAL_gb_merge);
+    GB_close(GLOBAL_gb_dest);
+    
     exit(EXIT_SUCCESS);
 }
 
@@ -170,8 +177,8 @@ static void MG_popup_if_renamed(AW_window *aww, AW_CL cl_create_window) {
     if (error) aw_message(error);
 }
 
-// uses gb_dest and gb_merge
 void MG_start_cb2(AW_window *aww, AW_root *aw_root, bool save_enabled, bool dest_is_new) {
+    // uses gb_dest and gb_merge
     mg_save_enabled = save_enabled;
 
     {
