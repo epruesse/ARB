@@ -154,7 +154,7 @@ static GB_ERROR nt_check_database_consistency() {
 }
 
 
-void serve_db_interrupt(AW_root *awr) {
+static void serve_db_interrupt(AW_root *awr) {
     bool success = GBCMS_accept_calls(GLOBAL_gb_main, false);
     while (success) {
         awr->check_for_remote_command((AW_default)GLOBAL_gb_main, AWAR_NT_REMOTE_BASE);
@@ -164,49 +164,12 @@ void serve_db_interrupt(AW_root *awr) {
     awr->add_timed_callback(NT_SERVE_DB_TIMER, (AW_RCB)serve_db_interrupt, 0, 0);
 }
 
-void check_db_interrupt(AW_root *awr) {
+static void check_db_interrupt(AW_root *awr) {
     awr->check_for_remote_command((AW_default)GLOBAL_gb_main, AWAR_NT_REMOTE_BASE);
     awr->add_timed_callback(NT_CHECK_DB_TIMER, (AW_RCB)check_db_interrupt, 0, 0);
 }
 
-GB_ERROR create_nt_window(AW_root *aw_root) {
-    AW_window *aww;
-    GB_ERROR error = GB_request_undo_type(GLOBAL_gb_main, GB_UNDO_NONE);
-    if (error) aw_message(error);
-    nt_create_all_awars(aw_root, AW_ROOT_DEFAULT);
-    aww = create_nt_main_window(aw_root, 0);
-    aww->show();
-    error = GB_request_undo_type(GLOBAL_gb_main, GB_UNDO_UNDO);
-    if (error) aw_message(error);
-    return error;
-}
-
-// after intro
-void nt_main_startup_main_window(AW_root *aw_root) {
-    create_nt_window(aw_root);
-
-    if (GB_read_clients(GLOBAL_gb_main)==0) { // i am the server
-        GB_ERROR error = GBCMS_open(":", 0, GLOBAL_gb_main);
-        if (error) {
-            aw_message(
-                       "THIS PROGRAM HAS PROBLEMS TO OPEN INTERCLIENT COMMUNICATION !!!\n"
-                       "(MAYBE THERE IS ALREADY ANOTHER SERVER RUNNING)\n\n"
-                       "You cannot use any EDITOR or other external SOFTWARE with this dataset!\n\n"
-                       "Advice: Close ARB again, open a console, type 'arb_clean' and restart arb.\n"
-                       "Caution: Any unsaved data in an eventually running ARB will be lost!\n");
-        }
-        else {
-            aw_root->add_timed_callback(NT_SERVE_DB_TIMER, (AW_RCB)serve_db_interrupt, 0, 0);
-            error = nt_check_database_consistency();
-            if (error) aw_message(error);
-        }
-    }
-    else {
-        aw_root->add_timed_callback(NT_CHECK_DB_TIMER, (AW_RCB)check_db_interrupt, 0, 0);
-    }
-}
-
-ARB_ERROR main_load_and_startup_main_window(AW_root *aw_root) {
+static ARB_ERROR load_and_startup_main_window(AW_root *aw_root) {
     char *db_server = aw_root->awar(AWAR_DB_PATH)->read_string();
     GLOBAL_gb_main  = GBT_open(db_server, "rw", "$(ARBHOME)/lib/pts/*");
 
@@ -234,13 +197,34 @@ ARB_ERROR main_load_and_startup_main_window(AW_root *aw_root) {
         AWT_announce_db_to_browser(GLOBAL_gb_main, GBS_global_string("ARB database (%s)", db_server));
 #endif // DEBUG
 
-        free(db_server);
-        nt_main_startup_main_window(aw_root);
+        nt_create_main_window(aw_root);
+
+        if (GB_read_clients(GLOBAL_gb_main)==0) { // server
+            GB_ERROR open_error = GBCMS_open(":", 0, GLOBAL_gb_main);
+            if (open_error) {
+                aw_message(GBS_global_string("THIS PROGRAM HAS PROBLEMS TO OPEN INTERCLIENT COMMUNICATION:\n"
+                                             "Reason: %s\n"
+                                             "(maybe there is already another server running)\n\n"
+                                             "You cannot use any EDITOR or other external SOFTWARE from here.\n\n"
+                                             "Advice: Close ARB again, open a console, type 'arb_clean' and restart arb.\n"
+                                             "Caution: Any unsaved data in an eventually running ARB will be lost.\n",
+                                             open_error));
+            }
+            else {
+                aw_root->add_timed_callback(NT_SERVE_DB_TIMER, (AW_RCB)serve_db_interrupt, 0, 0);
+                error = nt_check_database_consistency();
+            }
+        }
+        else { // client
+            aw_root->add_timed_callback(NT_CHECK_DB_TIMER, (AW_RCB)check_db_interrupt, 0, 0);
+        }
     }
+
+    free(db_server);
     return error;
 }
 
-void nt_delete_database(AW_window *aww) {
+static void nt_delete_database(AW_window *aww) {
     AW_root *aw_root   = aww->get_root();
     char    *db_server = aw_root->awar(AWAR_DB_PATH)->read_string();
 
@@ -262,12 +246,9 @@ void nt_delete_database(AW_window *aww) {
     free(db_server);
 }
 
-// after import !!!!!
-void main3(AW_root *aw_root)
-{
-
+static void start_main_window_after_import(AW_root *aw_root) {
     GLOBAL_NT.awr = aw_root;
-    create_nt_window(aw_root);
+    nt_create_main_window(aw_root);
 
     if (GB_read_clients(GLOBAL_gb_main)==0) {
         GB_ERROR error = GBCMS_open(":", 0, GLOBAL_gb_main);
@@ -285,7 +266,7 @@ void main3(AW_root *aw_root)
 
 static void nt_intro_start_existing(AW_window *aw_intro) {
     aw_intro->hide();
-    ARB_ERROR error = main_load_and_startup_main_window(aw_intro->get_root());
+    ARB_ERROR error = load_and_startup_main_window(aw_intro->get_root());
     if (error) {
         aw_intro->show();
         aw_popup_ok(error.deliver());
@@ -308,10 +289,10 @@ static void nt_intro_start_import(AW_window *aw_intro) {
     AW_root *aw_root = aw_intro->get_root();
     aw_root->awar_string(AWAR_DB_PATH)->write_string("noname.arb");
     aw_root->awar_int(AWAR_READ_GENOM_DB, IMP_PLAIN_SEQUENCE); // Default toggle  in window  "Create&import" is Non-Genom
-    GLOBAL_gb_main   = open_AWTC_import_window(aw_root, "", true, 0, (AW_RCB)main3, 0, 0);
+    GLOBAL_gb_main   = open_AWTC_import_window(aw_root, "", true, 0, (AW_RCB)start_main_window_after_import, 0, 0);
 }
 
-AW_window *nt_create_intro_window(AW_root *awr) {
+static AW_window *nt_create_intro_window(AW_root *awr) {
     AW_window_simple *aws = new AW_window_simple;
     aws->init(awr, "ARB_INTRO", "ARB INTRO");
     aws->load_xfig("arb_intro.fig");
@@ -462,7 +443,7 @@ public:
 
 enum RunMode { NORMAL, IMPORT, EXPORT, MERGE, BROWSE };
 
-ARB_ERROR check_argument_for_mode(const char *database, char *&browser_startdir, RunMode& mode) {
+static ARB_ERROR check_argument_for_mode(const char *database, char *&browser_startdir, RunMode& mode) {
     // Check whether 'database' is a
     // - ARB database
     // - directory name
@@ -604,12 +585,12 @@ int main(int argc, char **argv) {
                 if (!error) {
                     if (mode == IMPORT) {
                         aw_root->awar_int(AWAR_READ_GENOM_DB, IMP_PLAIN_SEQUENCE);
-                        GLOBAL_gb_main = open_AWTC_import_window(aw_root, database, true, 0, (AW_RCB)main3, 0, 0);
+                        GLOBAL_gb_main = open_AWTC_import_window(aw_root, database, true, 0, (AW_RCB)start_main_window_after_import, 0, 0);
                         aw_root->main_loop();
                     }
                     else if (mode == NORMAL) {
                         aw_root->awar(AWAR_DB_PATH)->write_string(database);
-                        error = main_load_and_startup_main_window(aw_root);
+                        error = load_and_startup_main_window(aw_root);
                         if (!error) aw_root->main_loop();
                     }
                     else if (mode == BROWSE) {
