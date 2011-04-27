@@ -16,9 +16,10 @@
 #include "arbdbt.h"
 #include "adGene.h"
 #include "ad_p_prot.h"
+#include "adperl.h"
 #include "ARB_ext.c"
 
-static GB_shell shell;
+static GB_shell4perl perl_shell;
 
 /* --------------------------------------------------------------------------------
  * if you get errors about undefined functions like

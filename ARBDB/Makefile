@@ -676,6 +676,7 @@ adoptimize.o: $(ARBHOME)/INCLUDE/smartptr.h
 adoptimize.o: $(ARBHOME)/INCLUDE/test_global.h
 
 adperl.o: ad_prot.h
+adperl.o: adperl.h
 adperl.o: arb_assert.h
 adperl.o: arbdb.h
 adperl.o: arbdb_base.h
