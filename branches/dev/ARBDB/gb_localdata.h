@@ -14,6 +14,9 @@
 #ifndef _GLIBCXX_CSTDDEF
 #include <cstddef>
 #endif
+#ifndef ARBTOOLS_H
+#include <arbtools.h>
+#endif
 
 struct GBDATA;
 struct GB_MAIN_TYPE;
@@ -33,10 +36,17 @@ enum ARB_TRANS_TYPE {
 
 struct gb_exitfun;
 
-struct gb_local_data {
+class gb_local_data : virtual Noncopyable {
     // global data structure used for all open databases
     // @@@ could be moved into GB_shell
 
+    GB_MAIN_TYPE **open_gb_mains;
+    int            open_gb_alloc;
+
+    int openedDBs;
+    int closedDBs;
+
+public:
     gb_buffer  buf1, buf2;
     char      *write_buffer;
     char      *write_ptr;
@@ -58,10 +68,16 @@ struct gb_local_data {
         GBDATA *gb_main;
     } gbl;
 
-    int openedDBs; 
-    int closedDBs;
-
     gb_exitfun *atgbexit;
+
+    gb_local_data();
+    ~gb_local_data();
+
+    int open_dbs() const { return openedDBs-closedDBs; }
+    
+    void announce_db_open(GB_MAIN_TYPE *Main);
+    void announce_db_close(GB_MAIN_TYPE *Main);
+    GB_MAIN_TYPE *get_any_open_db() { int idx = open_dbs(); return idx ? open_gb_mains[idx-1] : NULL; }
 };
 
 extern gb_local_data *gb_local;
@@ -69,3 +85,4 @@ extern gb_local_data *gb_local;
 #else
 #error gb_localdata.h included twice
 #endif // GB_LOCALDATA_H
+

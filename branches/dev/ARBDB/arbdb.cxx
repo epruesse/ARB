@@ -350,22 +350,25 @@ void GB_exit_gb() {
     GB_shell::ensure_inside();
 
     if (gb_local) {
-        gb_assert(gb_local->openedDBs == gb_local->closedDBs);
-
-        run_and_destroy_exit_functions(gb_local->atgbexit);
-
-        free(gb_local->bitcompress);
-        gb_free_compress_tree(gb_local->bituncompress);
-        free(gb_local->write_buffer);
-
-        free(check_out_buffer(&gb_local->buf2));
-        free(check_out_buffer(&gb_local->buf1));
-
+        gb_local->~gb_local_data(); // inplace-dtor
         gbm_free_mem(gb_local, sizeof(*gb_local), 0);
         gb_local = NULL;
-
         gbm_flush_mem();
     }
+}
+
+gb_local_data::~gb_local_data() {
+    gb_assert(openedDBs == closedDBs);
+
+    run_and_destroy_exit_functions(atgbexit);
+
+    free(bitcompress);
+    gb_free_compress_tree(bituncompress);
+    free(write_buffer);
+
+    free(check_out_buffer(&buf2));
+    free(check_out_buffer(&buf1));
+    free(open_gb_mains);
 }
 
 // -----------------
@@ -399,26 +402,9 @@ void GB_init_gb() {
 
     if (!gb_local) {
         GBK_install_SIGSEGV_handler(true);          // never uninstalled
-
         gbm_init_mem();
-
         gb_local = (gb_local_data *)gbm_get_mem(sizeof(gb_local_data), 0);
-
-        init_buffer(&gb_local->buf1, 4000);
-        init_buffer(&gb_local->buf2, 4000);
-
-        gb_local->write_bufsize = GBCM_BUFFER;
-        gb_local->write_buffer  = (char *)malloc((size_t)gb_local->write_bufsize);
-        gb_local->write_ptr     = gb_local->write_buffer;
-        gb_local->write_free    = gb_local->write_bufsize;
-
-        gb_local->bituncompress = gb_build_uncompress_tree(GB_BIT_compress_data, 1, 0);
-        gb_local->bitcompress   = gb_build_compress_list(GB_BIT_compress_data, 1, &(gb_local->bc_size));
-
-        gb_local->openedDBs = 0;
-        gb_local->closedDBs = 0;
-
-        gb_local->atgbexit = NULL;
+        ::new(gb_local) gb_local_data(); // inplace-ctor
 
 #ifdef ARBDB_SIZEDEBUG
         arbdb_stat = (long *)GB_calloc(sizeof(long), 1000);
@@ -427,8 +413,66 @@ void GB_init_gb() {
 
 }
 
-int GB_open_DBs() {
-    return gb_local ? gb_local->openedDBs-gb_local->closedDBs : 0;
+int GB_open_DBs() { return gb_local ? gb_local->open_dbs() : 0; }
+
+gb_local_data::gb_local_data()
+{
+    init_buffer(&buf1, 4000);
+    init_buffer(&buf2, 4000);
+
+    write_bufsize = GBCM_BUFFER;
+    write_buffer  = (char *)malloc((size_t)write_bufsize);
+    write_ptr     = write_buffer;
+    write_free    = write_bufsize;
+
+    bituncompress = gb_build_uncompress_tree(GB_BIT_compress_data, 1, 0);
+    bitcompress   = gb_build_compress_list(GB_BIT_compress_data, 1, &(bc_size));
+
+    openedDBs = 0;
+    closedDBs = 0;
+
+    open_gb_mains = NULL;
+    open_gb_alloc = 0;
+
+    atgbexit = NULL;
+}
+
+void gb_local_data::announce_db_open(GB_MAIN_TYPE *Main) {
+    gb_assert(Main);
+    int idx = open_dbs();
+    if (idx >= open_gb_alloc) {
+        int            new_alloc = open_gb_alloc+10;
+        GB_MAIN_TYPE **new_mains = (GB_MAIN_TYPE**)realloc(open_gb_mains, new_alloc*sizeof(*new_mains));
+        memset(new_mains+open_gb_alloc, 0, 10*sizeof(*new_mains));
+        open_gb_alloc            = new_alloc;
+        open_gb_mains            = new_mains;
+    }
+    open_gb_mains[idx] = Main;
+    openedDBs++;
+}
+
+void gb_local_data::announce_db_close(GB_MAIN_TYPE *Main) {
+    gb_assert(Main);
+    int open = open_dbs();
+    int idx;
+    for (idx = 0; idx<open; ++idx) if (open_gb_mains[idx] == Main) break;
+
+    gb_assert(idx<open); // passed gb_main is unknown
+    if (idx<open) {
+        if (idx<(open-1)) { // not last
+            open_gb_mains[idx] = open_gb_mains[open-1];
+        }
+        closedDBs++;
+    }
+    if (closedDBs == openedDBs) {
+        GB_exit_gb(); // free most memory allocated by ARBDB library
+        // Caution: calling GB_exit_gb() frees 'this'!
+    }
+}
+
+GBDATA *gb_remembered_db() {
+    GB_MAIN_TYPE *Main = gb_local ? gb_local->get_any_open_db() : NULL;
+    return Main ? (GBDATA*)Main->data : NULL;
 }
 
 GB_ERROR gb_unfold(GBCONTAINER *gbd, long deep, int index_pos) {
@@ -565,6 +609,12 @@ void GB_close(GBDATA *gbd) {
     }
 }
 
+void gb_close_unclosed_DBs() {
+    GBDATA *gb_main;
+    while ((gb_main = gb_remembered_db())) {
+        GB_close(gb_main);
+    }
+}
 
 // ------------------
 //      read data

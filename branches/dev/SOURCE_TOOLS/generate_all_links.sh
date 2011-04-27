@@ -199,6 +199,7 @@ symlink_file ../AISC_COM/C/struct_man.h INCLUDE/struct_man.h &&
 symlink_file ../ARBDB/adGene.h INCLUDE/adGene.h &&
 symlink_file ../ARBDB/ad_config.h INCLUDE/ad_config.h &&
 symlink_file ../ARBDB/ad_prot.h INCLUDE/ad_prot.h &&
+symlink_file ../ARBDB/adperl.h INCLUDE/adperl.h &&
 symlink_file ../ARBDB/ad_p_prot.h INCLUDE/ad_p_prot.h &&
 symlink_file ../ARBDB/ad_t_prot.h INCLUDE/ad_t_prot.h &&
 symlink_file ../ARBDB/arb_assert.h INCLUDE/arb_assert.h &&

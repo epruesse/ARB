@@ -10,6 +10,7 @@
 // =============================================================== //
 
 #include "gb_local.h"
+#include "adperl.h"
 
 // used by perl interface, see ../PERL2ARB/ARB_ext.c@GBP_croak_function
 void (*GBP_croak_function)(const char *message) = NULL;
@@ -24,6 +25,10 @@ static void die(const char *with_last_words) {
         fputs("Warning: GBP_croak_function undefined. terminating..\n", stderr);
         GBK_terminate(with_last_words);
     }
+}
+
+GB_shell4perl::~GB_shell4perl() {
+    gb_close_unclosed_DBs();
 }
 
 // -------------------------------------------
@@ -244,4 +249,5 @@ GB_alignment_type GBP_charPtr_2_GB_alignment_type(const char *ali_type) {
 GB_ERROR GBC_await_error() {
     return GB_await_error();
 }
+
 

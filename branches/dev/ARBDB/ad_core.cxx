@@ -255,7 +255,7 @@ GB_MAIN_TYPE *gb_make_gb_main_type(const char *path) {
     gb_init_cache(Main);
     gb_init_undo_stack(Main);
     gb_init_ctype_table();
-    gb_local->openedDBs++;
+    gb_local->announce_db_open(Main);
     return Main;
 }
 
@@ -285,11 +285,7 @@ char *gb_destroy_main(GB_MAIN_TYPE *Main) {
     free(Main->qs.quick_save_disabled);
 
     gbm_free_mem(Main, sizeof(*Main), 0);
-
-    gb_local->closedDBs++;
-    if (gb_local->closedDBs == gb_local->openedDBs) {
-        GB_exit_gb(); // free most memory allocated by ARBDB library
-    }
+    gb_local->announce_db_close(Main);
 
     return 0;
 }
