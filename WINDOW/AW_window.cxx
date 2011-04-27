@@ -686,8 +686,6 @@ static void aw_calculate_WM_offsets(AW_window *aww) {
 #endif // DEBUG
 }
 
-static void macro_message_cb(AW_window *aw, AW_CL);
-
 bool AW_cb_struct::is_equal(const AW_cb_struct& other) const {
     bool equal = false;
     if (f == other.f) {                             // same callback function
@@ -736,7 +734,6 @@ void AW_cb_struct::run_callback() {
         // the following callbacks are allowed even if disable_callbacks is true
 
         bool isModalCallback = (f == AW_CB(message_cb) ||
-                                f == AW_CB(macro_message_cb) ||
                                 f == AW_CB(input_history_cb) ||
                                 f == AW_CB(input_cb) ||
                                 f == AW_CB(file_selection_cb));
@@ -3456,71 +3453,6 @@ void AW_window::_set_activate_callback(void *widget) {
     _callback = NULL;
 }
 
-
-#define AW_MESSAGE_AWAR "tmp/message/macro"
-
-static void macro_message_cb(AW_window *aw, AW_CL) {
-    AW_root *root = aw->get_root();
-    aw->hide();
-
-    if (root->prvt->recording_macro_file) {
-        char *s = root->awar(AW_MESSAGE_AWAR)->read_string();
-        fprintf(root->prvt->recording_macro_file, "MESSAGE\t");
-        GBS_fwrite_string(s, root->prvt->recording_macro_file);
-        fprintf(root->prvt->recording_macro_file, "\n");
-        delete s;
-    }
-
-    if (root->prvt->executing_macro_file) {
-        // root->enable_execute_macro(); @@@@
-    }
-
-    return;
-}
-
-static void aw_clear_macro_message_cb(AW_window *aww) {
-    aww->get_root()->awar(AW_MESSAGE_AWAR)->write_string("");
-}
-
-void aw_macro_message(const char *templat, ...)
-// @@@ this function is unused.
-{
-
-    AW_root *root = AW_root::SINGLETON;
-    char buffer[10000];
-    {
-        va_list parg;
-        va_start(parg, templat);
-        vsprintf(buffer, templat, parg);
-    }
-    static AW_window_message *aw_msg = 0;
-
-    root->awar_string(AW_MESSAGE_AWAR)->write_string(buffer);
-
-    if (!aw_msg) {
-        aw_msg = new AW_window_message;
-
-        aw_msg->init(root, "MESSAGE", false);
-        aw_msg->load_xfig("macro_message.fig");
-
-        aw_msg->at("clear");
-        aw_msg->callback(aw_clear_macro_message_cb);
-        aw_msg->create_button("OK", "OK", "O");
-
-        aw_msg->at("Message");
-        aw_msg->create_text_field(AW_MESSAGE_AWAR);
-
-        aw_msg->at("hide");
-        aw_msg->callback(macro_message_cb, 0);
-        aw_msg->create_button("OK", "OK", "O");
-    }
-
-    aw_msg->show();
-    if (root->prvt->executing_macro_file) {
-        root->stop_execute_macro();
-    }
-}
-
 GB_ERROR AW_root::start_macro_recording(const char *file,
         const char *application_id, const char *stop_action_name) {
     if (prvt->recording_macro_file) {
@@ -3588,10 +3520,6 @@ GB_ERROR AW_root::execute_macro(const char *file) {
     }
     free(path);
     return 0;
-}
-
-void AW_root::stop_execute_macro() {
-
 }
 
 void AW_root::define_remote_command(AW_cb_struct *cbs) {
