@@ -189,8 +189,9 @@ static void sq_calc_seq_quality_cb(AW_window * aww, AW_CL res_from_awt_create_se
                 delete globalData;
             }
         }
+        awt_destroy_filter(filter);
     }
-    
+
     if (error) aw_message(error);
 
     SQ_clear_group_dictionary();

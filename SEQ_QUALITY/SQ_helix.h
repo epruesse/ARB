@@ -52,7 +52,7 @@ private:
     int count_no_helix;
     int size;
 
-    static BI_helix *helix;
+    static SmartPtr<BI_helix> helix;
     static GBDATA *helix_gb_main;
     static std::string helix_ali_name;
     static std::map<int, int> filterMap;
@@ -62,30 +62,34 @@ private:
 };
 
 // global data
-BI_helix *SQ_helix::helix = 0;
-GBDATA *SQ_helix::helix_gb_main = 0;
-std::string SQ_helix::helix_ali_name;
-std::map<int, int> SQ_helix::filterMap;
-bool SQ_helix::has_filterMap = false;
+SmartPtr<BI_helix>  SQ_helix::helix;
+GBDATA             *SQ_helix::helix_gb_main = 0;
+std::string         SQ_helix::helix_ali_name;
+std::map<int, int>  SQ_helix::filterMap;
+bool                SQ_helix::has_filterMap = false;
 
 // SQ_helix implementation
 BI_helix & SQ_helix::getHelix(GBDATA * gb_main, const char *ali_name) {
-    if (!helix || gb_main != helix_gb_main || strcmp(helix_ali_name.c_str(),
-            ali_name) != 0) {
-        delete helix;
+    if (helix.isNull() ||
+        gb_main != helix_gb_main ||
+        strcmp(helix_ali_name.c_str(), ali_name) != 0)
+    {
         helix = new BI_helix;
-
         helix->init(gb_main, ali_name);
 
-        helix_gb_main = gb_main;
+        helix_gb_main  = gb_main;
         helix_ali_name = ali_name;
     }
     return *helix;
 }
 
-SQ_helix::SQ_helix(int size_) :
-    sequence(0), count_strong_helix(0), count_weak_helix(0), count_no_helix(0),
-            size(size_) {
+SQ_helix::SQ_helix(int size_)
+    : sequence(0),
+      count_strong_helix(0),
+      count_weak_helix(0),
+      count_no_helix(0),
+      size(size_)
+{
 }
 
 SQ_helix::~SQ_helix() {
