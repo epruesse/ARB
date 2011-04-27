@@ -261,7 +261,6 @@ public:
     FILE    *recording_macro_file;
     char    *application_name_for_macros;
     char    *stop_action_name;
-    FILE    *executing_macro_file;
     GB_HASH *action_hash;
 
     AW_root_Motif();
