@@ -93,6 +93,7 @@ public:
           start_plugin(other.start_plugin),
           window(other.window)
     {}
+    DECLARE_ASSIGNMENT_OPERATOR(PlugIn);
     ~PlugIn() { free(name); }
 
     bool has_name(const char *Name) const { return strcmp(Name, name) == 0; }
