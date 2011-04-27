@@ -421,3 +421,6 @@ AP_filter *awt_get_filter(AW_root *aw_root, adfiltercbstruct *acbs) {
     return filter;
 }
 
+void awt_destroy_filter(AP_filter *filter) {
+    delete filter;
+}
