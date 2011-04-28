@@ -85,7 +85,7 @@ void PH_display::initialize (display_type dpyt)
         aw_message("could not get device !!");
         return;
     }
-    const AW_font_information *aw_fi=device->get_font_information(0, 0);
+    const AW_font_limits& lim = device->get_font_limits(0, 0);
     switch (display_what)
     {
         case NONE:
@@ -93,11 +93,11 @@ void PH_display::initialize (display_type dpyt)
 
         case species_dpy:
         case filter_dpy:
-            cell_width  = aw_fi->max_letter.width;
-            cell_height = aw_fi->max_letter.height+5;
+            cell_width  = lim.width;
+            cell_height = lim.height+5;
             cell_offset = 3;
 
-            off_dx = SPECIES_NAME_LEN*aw_fi->max_letter.width+20;
+            off_dx = SPECIES_NAME_LEN*lim.width+20;
             off_dy = cell_height*3;
 
             total_cells_horiz = PHDATA::ROOT->get_seq_len();
@@ -106,11 +106,11 @@ void PH_display::initialize (display_type dpyt)
             break;
 
         case matrix_dpy:
-            cell_width  = aw_fi->max_letter.width*SPECIES_NAME_LEN;
-            cell_height = aw_fi->max_letter.height*2;
+            cell_width  = lim.width*SPECIES_NAME_LEN;
+            cell_height = lim.height*2;
             cell_offset = 10;   // draw cell_offset pixels above cell base_line
 
-            off_dx = SPECIES_NAME_LEN*aw_fi->max_letter.width+20;
+            off_dx = SPECIES_NAME_LEN*lim.width+20;
             off_dy = 3*cell_height;
 
             total_cells_horiz = PHDATA::ROOT->nentries;
@@ -152,9 +152,9 @@ void PH_display::resized()
             break;
 
         case matrix_dpy: {
-            const AW_font_information *aw_fi = device->get_font_information(0, 0);
+            const AW_font_limits& lim = device->get_font_limits(0, 0);
 
-            horiz_paint_size = (squ.r-aw_fi->max_letter.width-off_dx)/cell_width;
+            horiz_paint_size = (squ.r-lim.width-off_dx)/cell_width;
             vert_paint_size  = (squ.b-off_dy)/cell_height;
             horiz_page_size  = (long(PHDATA::ROOT->nentries) > horiz_paint_size) ? horiz_paint_size : PHDATA::ROOT->nentries;
             vert_page_size   = (long(PHDATA::ROOT->nentries) > vert_paint_size) ? vert_paint_size : PHDATA::ROOT->nentries;
@@ -284,11 +284,14 @@ void PH_display::display()       // draw area
             }
             xpos=0;
             cbuf[0]='\0'; cbuf[1]='\0';
-            const AW_font_information *aw_fi=device->get_font_information(0, 0);
-            minhom = main_win->get_root()->awar("phyl/filter/minhom")->read_int();
-            maxhom = main_win->get_root()->awar("phyl/filter/maxhom")->read_int();
+
+            const AW_font_limits& lim = device->get_font_limits(0, 0);
+
+            minhom   = main_win->get_root()->awar("phyl/filter/minhom")->read_int();
+            maxhom   = main_win->get_root()->awar("phyl/filter/maxhom")->read_int();
             startcol = main_win->get_root()->awar("phyl/filter/startcol")->read_int();
-            stopcol = main_win->get_root()->awar("phyl/filter/stopcol")->read_int();
+            stopcol  = main_win->get_root()->awar("phyl/filter/stopcol")->read_int();
+
             for (x = horiz_page_start; x < horiz_page_start + horiz_page_size; x++) {
                 int             gc = 1;
                 float       ml = markerline[x];
@@ -309,7 +312,7 @@ void PH_display::display()       // draw area
 
                 for (y = 0; y < 3; y++) {
                     strncpy(cbuf, buf + y, 1);
-                    device->text(gc, cbuf, xpos * cell_width + 1, vert_page_size * cell_height + y * aw_fi->max_letter.height);
+                    device->text(gc, cbuf, xpos * cell_width + 1, vert_page_size * cell_height + y * lim.height);
                 }
                 xpos++;
             }
@@ -419,17 +422,20 @@ PH_display_status::PH_display_status(AW_device *awd)
     device=awd;
 
     if (!device) return;
-    const AW_font_information *aw_fi=device->get_font_information(0, 0);
-    font_width=aw_fi->max_letter.width;
-    font_height=aw_fi->max_letter.height;
+
+    const AW_font_limits& lim = device->get_font_limits(0, 0);
+
+    font_width  = lim.width;
+    font_height = lim.height;
+
     device->reset();
     device->get_area_size(&rect);
     device->set_foreground_color(0, AW_WINDOW_FG);
-    max_x=(rect.r-rect.l)/font_width;
-    max_y=(rect.b-rect.t)/font_height;
-    x_pos=0.0;
-    y_pos=0.0;
-    tab_pos=x_pos;
+    max_x   = (rect.r-rect.l)/font_width;
+    max_y   = (rect.b-rect.t)/font_height;
+    x_pos   = 0.0;
+    y_pos   = 0.0;
+    tab_pos = x_pos;
 }
 
 void PH_display_status::write(const char *text)
