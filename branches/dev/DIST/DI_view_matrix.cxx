@@ -53,17 +53,17 @@ void DI_dmatrix::init (DI_MATRIX *matrix) {
                 case DI_G_STANDARD:
                 case DI_G_BELOW_DIST:
                 case DI_G_ABOVE_DIST: {
-                    const AW_font_information *aw_fi = device->get_font_information(DI_G_STANDARD, 0);
+                    const AW_font_limits& lim = device->get_font_limits(DI_G_STANDARD, 0);
 
-                    width  = aw_fi->max_letter.width*6; // normal cell contain 6 characters (e.g.: '0.0162')
-                    height = aw_fi->max_letter.height*2;
+                    width  = lim.width*6; // normal cell contain 6 characters (e.g.: '0.0162')
+                    height = lim.height*2;
                     break;
                 }
                 case DI_G_NAMES: {
-                    const AW_font_information *aw_fi = device->get_font_information(DI_G_STANDARD, 0);
+                    const AW_font_limits& lim = device->get_font_limits(DI_G_STANDARD, 0);
 
-                    width  = aw_fi->max_letter.width*SPECIES_NAME_LEN; // normal cell contain 6 characters (e.g.: '0.0162')
-                    height = aw_fi->max_letter.height*2;
+                    width  = lim.width*SPECIES_NAME_LEN; // normal cell contain 6 characters (e.g.: '0.0162')
+                    height = lim.height*2;
                     break;
                 }
                 default: {
@@ -97,14 +97,15 @@ DI_MATRIX *DI_dmatrix::get_matrix() {
     return DI_MATRIX::ROOT;
 }
 
-void DI_dmatrix::resized()
-{
-    AW_rectangle               squ;
-    AW_rectangle               rect;
-    long                       horiz_paint_size, vert_paint_size;
-    const AW_font_information *aw_fi = device->get_font_information(DI_G_STANDARD, 0);
-    DI_MATRIX                  *m     = get_matrix();
-    long                       n     = 0;
+void DI_dmatrix::resized() {
+    AW_rectangle squ;
+    AW_rectangle rect;
+    long         horiz_paint_size, vert_paint_size;
+
+    const AW_font_limits& lim = device->get_font_limits(DI_G_STANDARD, 0);
+
+    DI_MATRIX *m = get_matrix();
+    long       n = 0;
 
     if (m) n = m->nentries;
     device->get_area_size(&squ);
@@ -113,7 +114,7 @@ void DI_dmatrix::resized()
     screen_height = squ.b-squ.t;
 
     if (m) {
-        horiz_paint_size = (squ.r-aw_fi->max_letter.width-off_dx)/cell_width;
+        horiz_paint_size = (squ.r-lim.width-off_dx)/cell_width;
         vert_paint_size  = (squ.b-off_dy)/cell_height;
         horiz_page_size  = (n > horiz_paint_size) ?  horiz_paint_size : n;
         vert_page_size   = (n > vert_paint_size) ? vert_paint_size : n;
@@ -284,8 +285,8 @@ void DI_dmatrix::display(bool clear)   // draw area
     if (awm) selSpecies = awm->get_root()->awar(AWAR_SPECIES_NAME)->read_string();
 
     int name_display_width; {
-        const AW_font_information *aw_fi = device->get_font_information(DI_G_NAMES, 0);
-        name_display_width = cell_width/aw_fi->max_letter.width;
+        const AW_font_limits& lim = device->get_font_limits(DI_G_NAMES, 0);
+        name_display_width        = cell_width/lim.width;
     }
     di_assert(name_display_width<BUFLEN);
 

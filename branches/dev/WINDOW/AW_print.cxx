@@ -80,7 +80,7 @@ static int AW_draw_string_on_printer(AW_device *devicei, int gc, const char *str
                 device->find_color_idx(gcm->last_fg_color),
                 fontnr,
                 gcm->fontsize,
-                (int)gcm->fontinfo.max_letter.height,
+                (int)gcm->get_font_limits().height,
                 (int)device->get_string_size(gc, str, 0),
                 AW_INT(X), AW_INT(Y));
         char *p;

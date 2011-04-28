@@ -240,6 +240,7 @@ AW_file_selection.o: $(ARBHOME)/INCLUDE/test_global.h
 AW_file_selection.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 AW_font_group.o: aw_base.hxx
+AW_font_group.o: aw_commn.hxx
 AW_font_group.o: aw_device.hxx
 AW_font_group.o: aw_font_group.hxx
 AW_font_group.o: aw_position.hxx

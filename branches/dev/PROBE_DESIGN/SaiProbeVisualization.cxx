@@ -421,15 +421,15 @@ void SAI_graphic::paint(AW_device *device) {
     double maxDescent   = 0;
     // detect x/y step to use
     {
-        const AW_font_information *fgFontInfo = device->get_font_information(SAI_GC_FOREGROUND_FONT, 0);
-        const AW_font_information *pbFontInfo = device->get_font_information(SAI_GC_PROBE_FONT, 0);
-        const AW_font_information *hlFontInfo = device->get_font_information(SAI_GC_HIGHLIGHT_FONT, 0);
+        const AW_font_limits& fgFontLim = device->get_font_limits(SAI_GC_FOREGROUND_FONT, 0);
+        const AW_font_limits& pbFontLim = device->get_font_limits(SAI_GC_PROBE_FONT, 0);
+        const AW_font_limits& hlFontLim = device->get_font_limits(SAI_GC_HIGHLIGHT_FONT, 0);
 
-        AW_font_limits target_font_limits(pbFontInfo->max_letter, hlFontInfo->max_letter);
-        AW_font_limits all_font_limits(fgFontInfo->max_letter, target_font_limits);
+        AW_font_limits target_font_limits(pbFontLim, hlFontLim);
+        AW_font_limits all_font_limits(fgFontLim, target_font_limits);
 
-        xStep_info   = fgFontInfo->max_letter.width;
-        xStep_border = pbFontInfo->max_letter.width;
+        xStep_info   = fgFontLim.width;
+        xStep_border = pbFontLim.width;
         xStep_target = target_font_limits.width;
 
         yStep      = all_font_limits.height;

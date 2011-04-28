@@ -1974,12 +1974,12 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, double x_son, DendroSubtreeL
 
         if (at->name && (disp_device->filter & text_filter)) {
             // display text
-            const char                *data     = make_node_text_nds(this->gb_main, at->gb_node, NDS_OUTPUT_LEAFTEXT, at->get_gbt_tree(), tree_static->get_tree_name());
-            const AW_font_information *fontinfo = disp_device->get_font_information(at->gr.gc, 'A');
+            const char            *data       = make_node_text_nds(this->gb_main, at->gb_node, NDS_OUTPUT_LEAFTEXT, at->get_gbt_tree(), tree_static->get_tree_name());
+            const AW_font_limits&  charLimits = disp_device->get_font_limits(at->gr.gc, 'A');
 
             double unscale = 1.0/disp_device->get_scale();
             double yoffset = scaled_font.ascent*.5;
-            double xoffset = ((fontinfo->max_letter.width * 0.5) + NT_BOX_WIDTH) * unscale;
+            double xoffset = ((charLimits.width * 0.5) + NT_BOX_WIDTH) * unscale;
 
             size_t data_len = strlen(data);
 
@@ -2023,8 +2023,8 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, double x_son, DendroSubtreeL
         disp_device->set_fill(at->gr.gc, grey_level);
         disp_device->filled_area(at->gr.gc, 4, &q[0], line_filter);
 
-        const AW_font_information *fontinfo    = disp_device->get_font_information(at->gr.gc, 'A');
-        double                     text_ascent = fontinfo->max_letter.ascent / disp_device->get_scale();
+        const AW_font_limits& charLimits  = disp_device->get_font_limits(at->gr.gc, 'A');
+        double                text_ascent = charLimits.ascent / disp_device->get_scale();
 
         double yoffset = (ny1-ny0+text_ascent)*.5;
         double xoffset = text_ascent*.5;
@@ -2077,9 +2077,9 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, double x_son, DendroSubtreeL
             NT_rotbox(at->gr.gc, x_son, ry, NT_BOX_WIDTH*2);
 
             if (show_brackets) {
-                double                     unscale          = 1.0/disp_device->get_scale();
-                const AW_font_information *fontinfo         = disp_device->get_font_information(at->gr.gc, 'A');
-                double                     half_text_ascent = fontinfo->max_letter.ascent * unscale * 0.5;
+                double                unscale          = 1.0/disp_device->get_scale();
+                const AW_font_limits& charLimits       = disp_device->get_font_limits(at->gr.gc, 'A');
+                double                half_text_ascent = charLimits.ascent * unscale * 0.5;
 
                 double x1 = limits.x_right + scaled_branch_distance*0.1;
                 double x2 = x1 + scaled_branch_distance * 0.3;
@@ -2160,11 +2160,10 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, double x_son, DendroSubtreeL
 }
 
 
-void AWT_graphic_tree::scale_text_koordinaten(AW_device *device, int gc, double& x, double& y, double orientation, int flag)
-{
-    const AW_font_information *fontinfo    = device->get_font_information(gc, 'A');
-    double                     text_height = fontinfo->max_letter.height / disp_device->get_scale();
-    double                     dist        = fontinfo->max_letter.height / disp_device->get_scale();
+void AWT_graphic_tree::scale_text_koordinaten(AW_device *device, int gc, double& x, double& y, double orientation, int flag) {
+    const AW_font_limits& charLimits  = device->get_font_limits(gc, 'A');
+    double                text_height = charLimits.height / disp_device->get_scale();
+    double                dist        = charLimits.height / disp_device->get_scale();
 
     if (flag==1) {
         dist += 1;
@@ -2632,9 +2631,9 @@ void AWT_graphic_tree::show(AW_device *device) {
 
     disp_device = device;
 
-    const AW_font_information *fontinfo = disp_device->get_font_information(AWT_GC_SELECTED, 0);
+    const AW_font_limits& charLimits = disp_device->get_font_limits(AWT_GC_SELECTED, 0);
 
-    scaled_font.init(fontinfo->max_letter, 1/device->get_scale());
+    scaled_font.init(charLimits, 1/device->get_scale());
     scaled_branch_distance = scaled_font.height * aw_root->awar(AWAR_DTREE_VERICAL_DIST)->read_float();
 
     make_node_text_init(gb_main);
@@ -2686,7 +2685,7 @@ void AWT_graphic_tree::show(AW_device *device) {
                 break;
 
             case AP_TREE_IRS:
-                show_irs_tree(tree_root_display, disp_device, fontinfo->max_letter.height);
+                show_irs_tree(tree_root_display, disp_device, charLimits.height);
                 list_tree_ruler_y = y_pos;
                 break;
 
