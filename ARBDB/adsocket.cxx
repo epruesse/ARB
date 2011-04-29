@@ -736,9 +736,7 @@ GB_ERROR GB_system(const char *system_command) {
 
 GB_ERROR GB_xterm() {
     // goes to header: __ATTR__USERESULT
-    const char *xt = GB_getenv("ARB_XTERM"); // doc in ../HELP_SOURCE/oldhelp/arb_envar.hlp@ARB_XTERM
-    if (!xt) xt = "xterm -sl 1000 -sb -geometry 120x40";
-
+    const char *xt      = GB_getenvARB_XTERM();
     const char *command = GBS_global_string("%s &", xt);
     return GB_system(command);
 }
@@ -751,14 +749,15 @@ GB_ERROR GB_xcmd(const char *cmd, bool background, bool wait_only_if_error) {
     // if 'wait_only_if_error' is true -> asynchronous does wait for keypress only if cmd fails
 
     GBS_strstruct *strstruct = GBS_stropen(1024);
-    const char    *xt        = GB_getenv("ARB_XCMD"); // doc in ../HELP_SOURCE/oldhelp/arb_envar.hlp@ARB_XCMD
-    if (!xt) xt              = "xterm -sl 1000 -sb -geometry 140x30 -e";
+    const char    *xcmd      = GB_getenvARB_XCMD();
+
     GBS_strcat(strstruct, "(");
-    GBS_strcat(strstruct, xt);
-    GBS_strcat(strstruct, " sh -c 'LD_LIBRARY_PATH=\"");
+    GBS_strcat(strstruct, xcmd);
+    GBS_strcat(strstruct, " bash -c 'LD_LIBRARY_PATH=\"");
     GBS_strcat(strstruct, GB_getenv("LD_LIBRARY_PATH"));
     GBS_strcat(strstruct, "\";export LD_LIBRARY_PATH; (");
     GBS_strcat(strstruct, cmd);
+
     if (background) {
         if (wait_only_if_error) {
             GBS_strcat(strstruct, ") || (echo; echo Press RETURN to close Window; read a)' ) &");
@@ -896,6 +895,35 @@ static char *getenv_existing_directory(GB_CSTR envvar) {
         }
     }
     return result;
+}
+
+void GB_setenv(const char *var, const char *value) {
+    if (setenv(var, value, 1) != 0) {
+        GB_warningf("Could not set environment variable '%s'. This might cause problems in subprocesses.\n"
+                    "(Reason: %s)", var, strerror(errno));
+    }
+}
+
+GB_CSTR GB_getenvARB_XTERM() {
+    static const char *xterm = 0;
+    if (!xterm) {
+        xterm = getenv_ignore_empty("ARB_XTERM"); // doc in ../HELP_SOURCE/oldhelp/arb_envar.hlp@ARB_XTERM
+        if (!xterm) xterm = "xterm -sl 1000 -sb -geometry 120x50";
+    }
+    return xterm;
+}
+
+GB_CSTR GB_getenvARB_XCMD() {
+    static const char *xcmd = 0;
+    if (!xcmd) {
+        xcmd = getenv_ignore_empty("ARB_XCMD"); // doc in ../HELP_SOURCE/oldhelp/arb_envar.hlp@ARB_XCMD
+        if (!xcmd) {
+            const char *xterm = GB_getenvARB_XTERM();
+            gb_assert(xterm);
+            xcmd = GBS_global_string_copy("%s -e", xterm);
+        }
+    }
+    return xcmd;
 }
 
 GB_CSTR GB_getenvUSER() {
@@ -1067,7 +1095,6 @@ GB_CSTR GB_getenv(const char *env) {
         if (result) return result;
     }
     if (strncmp(env, "ARB", 3) == 0) {
-
         // doc in ../HELP_SOURCE/oldhelp/arb_envar.hlp
 
         if (strcmp(env, "ARBCONFIG")    == 0) return GB_getenvARBCONFIG();
@@ -1078,6 +1105,8 @@ GB_CSTR GB_getenv(const char *env) {
         if (strcmp(env, "ARB_PDFVIEW")  == 0) return GB_getenvARB_PDFVIEW();
         if (strcmp(env, "ARB_DOC")      == 0) return GB_getenvDOCPATH();
         if (strcmp(env, "ARB_TEXTEDIT") == 0) return GB_getenvARB_TEXTEDIT();
+        if (strcmp(env, "ARB_XTERM") == 0)    return GB_getenvARB_XTERM();
+        if (strcmp(env, "ARB_XCMD") == 0)     return GB_getenvARB_XCMD();
     }
     else {
         if (strcmp(env, "HOME") == 0) return GB_getenvHOME();
@@ -1086,6 +1115,15 @@ GB_CSTR GB_getenv(const char *env) {
 
     return getenv_ignore_empty(env);
 }
+
+struct export_environment {
+    export_environment() {
+        // set all variables needed in ARB subprocesses
+        GB_setenv("ARB_XCMD", GB_getenvARB_XCMD());
+    }
+};
+
+static export_environment expenv; 
 
 bool GB_host_is_local(const char *hostname) {
     // returns true if host is local
