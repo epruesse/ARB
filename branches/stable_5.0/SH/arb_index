@@ -1,9 +1,0 @@
-#!/bin/sh
-cd $ARBHOME/lib/help
-rm -f index
-
-find . -name '*.hlp' -print -exec grep TITLE {} \;  -exec grep '^UP' {} \; -exec grep '^SUB' {} \;>index
-arb_replace 'TITLE\t=\t\t\tTITLE:UP=\t\t\t\tUP:SUB=\t\t\t\tSUB' index
-
-ls ../ps/*.ps >>index
-textedit index &

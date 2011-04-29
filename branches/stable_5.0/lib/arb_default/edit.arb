@@ -155,7 +155,7 @@ tools			%% (%
 	%) /*tools*/
 
 textedit		%% (%
-	command			"textedit * &"
+	command			"arb_textedit * &"
 	%) /*textedit*/
 
 submission		%% (%
