@@ -290,10 +290,10 @@ ifdef DARWIN
 endif
 
 ifdef DARWIN
-	XLIBS := -L/usr/OpenMotif/lib -lXm -L$(XHOME)/lib -lpng -lXt -lX11 -lXext -lXp -lc -lXmu -lXi
+	XLIBS := -L/usr/OpenMotif/lib -lXm -L$(XHOME)/lib -lpng -lXt -lX11 -lXext -lc -lXmu -lXi
 	XLIBS += -lGLU -lGL -Wl,-dylib_file,$(OSX_FW_OPENGL)/libGL.dylib:$(OSX_FW_OPENGL)/libGL.dylib
 else
-	XLIBS:=-L$(XHOME)/$(CROSS_LIB) -lXm -lXpm -lXp -lXt -lXext -lX11
+	XLIBS:=-L$(XHOME)/$(CROSS_LIB) -lXm -lXpm -lXt -lXext -lX11
 endif
 
 #---------------------- open GL

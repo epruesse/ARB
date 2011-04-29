@@ -60,7 +60,6 @@ else
                 libxaw7-dev \
                 libxext-dev \
                 libxml2-utils \
-                libxp-dev \
                 libxpm-dev \
                 libxt-dev \
                 lynx \
