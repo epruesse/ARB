@@ -1,4 +1,4 @@
-#!/bin/sh -x
+#!/bin/bash
 
 IS_X_EDITOR=0# no idea
 
@@ -37,7 +37,6 @@ if [ -z "$1" ]; then
     echo "Usage: arb_textedit filename"
     echo "Edits a file using $ARB_TEXTEDIT"
 else
-    echo "IS_X_EDITOR=$IS_X_EDITOR"
     if [ $IS_X_EDITOR = 1 ]; then
         $ARB_TEXTEDIT $1
     else

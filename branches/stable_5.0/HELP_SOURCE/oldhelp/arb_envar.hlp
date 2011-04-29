@@ -38,7 +38,7 @@ DESCRIPTION     Arb is aware of several environment variables:
                     ARB_XCMD
 
                             The call which is needed to create a xterm invoking external programs
-                            (default: \$ARB_XTERM -e ).
+                            (default: $ARB_XTERM -e ).
 
                     USER
 
