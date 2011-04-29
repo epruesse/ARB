@@ -3,7 +3,7 @@ itemmeta: I
 itemmethod:(GEN_INFILE(in1);\
             RUN_IN_WINDOW(($DPGM;\
                            mv -f outfile infile;\
-                           ${ARB_XCMD:-cmdtool} $PROGRAM;\
+                           ${ARB_XCMD} $PROGRAM;\
                            $DISPLAY_FUNC));\
             RM_LOCAL_FILES(in1))&
 itemhelp:phylip_distance.help
