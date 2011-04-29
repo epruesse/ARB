@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 nargs=$#
 args="$*"
@@ -129,8 +129,11 @@ if [ "X$GDE_HELP_DIR" = "X" ] ; then
   export GDE_HELP_DIR
 fi
 
-# Default Texteditor/CMDTOOL used by ARB
-. $ARBHOME/lib/config.`uname`
+# set default command-tool used by ARB
+ARB_XTERM=${ARB_XTERM:-xterm -sl 1000 -sb -geometry 120x50}
+export ARB_XTERM
+ARB_XCMD=${ARB_XCMD:-$ARB_XTERM -e}
+export ARB_XCMD
 
 # save LD_LIBRARY_PATH
 ARB_LIBRARY_PATH="${LD_LIBRARY_PATH}"

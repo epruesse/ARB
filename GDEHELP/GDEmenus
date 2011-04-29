@@ -93,7 +93,7 @@ informat:gde
 #
  
 item:Pretty Print
-itemmethod:readseq in1 -p -a -f=pretty $NAMELEFT $NAMERIGHT $NUMTOP $NUMBOT $NUMLEFT $NUMRIGHT -col=$COLS -width=$WIDTH $MATCH $GAPC > in1.pretty; (${ARB_TEXTEDIT:-textedit} in1.pretty; /bin/rm -f in1 in1.pretty)&
+itemmethod:readseq in1 -p -a -f=pretty $NAMELEFT $NAMERIGHT $NUMTOP $NUMBOT $NUMLEFT $NUMRIGHT -col=$COLS -width=$WIDTH $MATCH $GAPC > in1.pretty; (arb_textedit in1.pretty; /bin/rm -f in1 in1.pretty)&
 itemhelp:readseq.help
 in:in1
 informat:genbank
@@ -195,7 +195,7 @@ argtype:chooser
 argchoice:Lpr:lpr
 argchoice:Enscript Gaudy:enscript -G$LAND $FONT -P$PNTER
 argchoice:Enscript Two column:enscript -2rG -P$PNTER
-argchoice:View in a Texteditor:${ARB_TEXTEDIT:-textedit} 
+argchoice:View in a Texteditor:arb_textedit 
  
 arg:LAND
 arglabel:Landscape for Enscript Gaudy? 
@@ -355,7 +355,7 @@ arg:REPORT
 argtype:chooser
 arglabel:View assembly report?
 argchoice:No:
-argchoice:Yes:${ARB_TEXTEDIT:-textedit} in1.rpt&
+argchoice:Yes:arb_textedit in1.rpt&
 
  
 in:in1
@@ -470,7 +470,7 @@ outformat:gde
 
 
 item:MFOLD
-itemmethod:(tr 'a-z' 'A-Z' < seqGB > .GDE.tmp.caps; ZUKERGDE.sh .GDE.tmp.caps $CT $GDE_HELP_DIR/ZUKER/ > out1 && $METHOD < out1; Zuk_to_gen < $CT >file.gen; gde file.gen& ${ARB_TEXTEDIT:-textedit} RegionTable; /bin/rm -f RegionTable out1 seqGB* .GDE.tmp.caps)&
+itemmethod:(tr 'a-z' 'A-Z' < seqGB > .GDE.tmp.caps; ZUKERGDE.sh .GDE.tmp.caps $CT $GDE_HELP_DIR/ZUKER/ > out1 && $METHOD < out1; Zuk_to_gen < $CT >file.gen; gde file.gen&; arb_textedit RegionTable; /bin/rm -f RegionTable out1 seqGB* .GDE.tmp.caps)&
 itemhelp:MFOLD.help
 
 in:seqGB
@@ -517,7 +517,7 @@ outformat:colormask
 #Menu for DNA/RNA
 
 item:blastn
-itemmethod:(sed "s/[#%]/>/" <in1 > in1.f; blastn $BLASTDB in1.f W=$WORDLEN M=$MATCH N=$MMSCORE > in1.tmp; ${ARB_TEXTEDIT:-textedit} in1.tmp; rm in1*)&
+itemmethod:(sed "s/[#%]/>/" <in1 > in1.f; blastn $BLASTDB in1.f W=$WORDLEN M=$MATCH N=$MMSCORE > in1.tmp; arb_textedit in1.tmp; rm in1*)&
 itemhelp:blast.help
 
 in:in1
@@ -552,7 +552,7 @@ argmax:-1
 argvalue:-5
 
 item:blastx
-itemmethod:(sed "s/[#%]/>/" <in1 > in1.f; cp $GDE_HELP_DIR/BLAST/PAM??? .; blastx $BLASTDB in1.f W=$WORDLEN M=$Matrix C=$CODE> in1.tmp; ${ARB_TEXTEDIT:-textedit} in1.tmp; rm in1* PAM???)&
+itemmethod:(sed "s/[#%]/>/" <in1 > in1.f; cp $GDE_HELP_DIR/BLAST/PAM??? .; blastx $BLASTDB in1.f W=$WORDLEN M=$Matrix C=$CODE> in1.tmp; arb_textedit in1.tmp; rm in1* PAM???)&
 itemhelp:blast.help
 
 in:in1
@@ -593,7 +593,7 @@ argchoice:Echinodermate Mitochondrial:8
 
 
 item:FASTA (DNA/RNA)
-itemmethod:(sed "s/[#%]/>/"<in1 >in1.fasta;fasta -Q -d $NUMOFALN $MATRIX in1.fasta $DBASE > in1.out; ${ARB_TEXTEDIT:-textedit} in1.out;\rm in1*) &
+itemmethod:(sed "s/[#%]/>/"<in1 >in1.fasta;fasta -Q -d $NUMOFALN $MATRIX in1.fasta $DBASE > in1.out; arb_textedit in1.out;\rm in1*) &
 itemhelp:FASTA.help
 
 in:in1
@@ -677,7 +677,7 @@ arg:REPORT
 argtype:chooser
 arglabel:View assembly report?
 argchoice:No:
-argchoice:Yes:${ARB_TEXTEDIT:-textedit} in1.rpt&
+argchoice:Yes:arb_textedit in1.rpt&
  
 in:in1
 informat:flat
@@ -686,7 +686,7 @@ insave:
 #Menu for Protein
 
 item:blastp
-itemmethod:(sed "s/[#%]/>/" <in1 > in1.f; cp $GDE_HELP_DIR/BLAST/PAM??? .; blastp $BLASTDB in1.f W=$WORDLEN M=$Matrix > in1.tmp;${ARB_TEXTEDIT:-textedit} in1.tmp; rm in1* PAM???)&
+itemmethod:(sed "s/[#%]/>/" <in1 > in1.f; cp $GDE_HELP_DIR/BLAST/PAM??? .; blastp $BLASTDB in1.f W=$WORDLEN M=$Matrix > in1.tmp;arb_textedit in1.tmp; rm in1* PAM???)&
 itemhelp:blast.help
 
 in:in1
@@ -714,7 +714,7 @@ argmax:5
 argvalue:3
 
 item:tblastn
-itemmethod:(sed "s/[#%]/>/" <in1 > in1.f; cp $GDE_HELP_DIR/BLAST/PAM??? .; tblastn $BLASTDB in1.f W=$WORDLEN M=$Matrix C=$CODE > in1.tmp; ${ARB_TEXTEDIT:-textedit} in1.tmp; rm in1* PAM???)&
+itemmethod:(sed "s/[#%]/>/" <in1 > in1.f; cp $GDE_HELP_DIR/BLAST/PAM??? .; tblastn $BLASTDB in1.f W=$WORDLEN M=$Matrix C=$CODE > in1.tmp; arb_textedit in1.tmp; rm in1* PAM???)&
 itemhelp:blast.help
 
 in:in1
@@ -754,7 +754,7 @@ argchoice:Plant Mitochondrial:7
 argchoice:Echinodermate Mitochondrial:8
 
 item:blast3
-itemmethod:(sed "s/[#%]/>/" <in1 > in1.f; cp $GDE_HELP_DIR/BLAST/PAM??? .; blast3 $BLASTDB in1.f W=$WORDLEN M=$Matrix > in1.tmp;${ARB_TEXTEDIT:-textedit} in1.tmp; rm in1* PAM???)&
+itemmethod:(sed "s/[#%]/>/" <in1 > in1.f; cp $GDE_HELP_DIR/BLAST/PAM??? .; blast3 $BLASTDB in1.f W=$WORDLEN M=$Matrix > in1.tmp;arb_textedit in1.tmp; rm in1* PAM???)&
 itemhelp:blast3.help
 
 in:in1
@@ -781,7 +781,7 @@ argmax:5
 argvalue:3
 
 item:FASTA (Protein)
-itemmethod:(sed "s/[#%]/>/"<in1 >in1.fasta;fasta -Q -d $NUMOFALN $MATRIX in1.fasta $DBASE > in1.out; ${ARB_TEXTEDIT:-textedit} in1.out;\rm in1*) &
+itemmethod:(sed "s/[#%]/>/"<in1 >in1.fasta;fasta -Q -d $NUMOFALN $MATRIX in1.fasta $DBASE > in1.out; arb_textedit in1.out;\rm in1*) &
 itemhelp:FASTA.help
 
 in:in1
@@ -881,7 +881,7 @@ argtext:$GDE_HELP_DIR/DATA_FILES/enzymes
 arg:PRE_EDIT
 argtype:chooser
 arglabel:Edit enzyme file first?
-argchoice:Yes:${ARB_TEXTEDIT:-textedit} in1.tmp;
+argchoice:Yes:arb_textedit in1.tmp;
 argchoice:No: 
 
 in:in1
@@ -925,11 +925,11 @@ argvalue:12345
 arg:DISPLAY_FUNC
 argtype:chooser
 arglabel:View tree using
-argchoice:TextEdit:${ARB_TEXTEDIT:-textedit}
+argchoice:TextEdit:arb_textedit
 argchoice:Treetool:treetool 
 
 item:Phylip help
-itemmethod:(${ARB_TEXTEDIT:-textedit} $GDE_HELP_DIR/PHYLIP/$FILE)&
+itemmethod:(arb_textedit $GDE_HELP_DIR/PHYLIP/$FILE)&
 
 arg:FILE
 argtype:choice_menu
@@ -978,7 +978,7 @@ argchoice:sequence:sequence.doc
 
 item:Phylip 3.5
  
-itemmethod:(/bin/rm -f outfile infile treefile ; readseq -a -f12 in1 > infile;$PREEDIT $BOOTSTRP ${ARB_XCMD:-cmdtool} $PROGRAM; $CONS ${ARB_TEXTEDIT:-textedit} outfile $DISPLAY_FUNC; rm in1 )&
+itemmethod:(/bin/rm -f outfile infile treefile ; readseq -a -f12 in1 > infile;$PREEDIT $BOOTSTRP ${ARB_XCMD:-cmdtool} $PROGRAM; $CONS arb_textedit outfile $DISPLAY_FUNC; rm in1 )&
 
 arg:PROGRAM
 argtype:choice_menu
@@ -1015,7 +1015,7 @@ arg:PREEDIT
 argtype:chooser
 arglabel:Edit input before running?
 argchoice:No:
-argchoice:Yes:${ARB_TEXTEDIT:-textedit} infile;
+argchoice:Yes:arb_textedit infile;
  
 
  
@@ -1025,7 +1025,7 @@ inmask:
 insave:
  
 item:Phylip Distance methods
-itemmethod:(/bin/rm -f treefile infile outfile; readseq -a -f12 in1 > infile ; $PREEDIT ${ARB_XCMD:-cmdtool} $DPGM;mv -f outfile infile;$PROGRAM ${ARB_TEXTEDIT:-textedit} outfile & treetool treefile;/bin/rm -f in1 infile outfile)&
+itemmethod:(/bin/rm -f treefile infile outfile; readseq -a -f12 in1 > infile ; $PREEDIT ${ARB_XCMD:-cmdtool} $DPGM;mv -f outfile infile;$PROGRAM arb_textedit outfile & treetool treefile;/bin/rm -f in1 infile outfile)&
  
 arg:PROGRAM
 arglabel:Which method?
@@ -1046,7 +1046,7 @@ arg:PREEDIT
 argtype:chooser
 arglabel:Edit input before running?
 argchoice:No:
-argchoice:Yes:${ARB_TEXTEDIT:-textedit} infile;
+argchoice:Yes:arb_textedit infile;
  
 in:in1
 informat:genbank

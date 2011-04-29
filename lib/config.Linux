@@ -1,6 +1,0 @@
-ARB_XTERM='xterm -sl 1000 -sb'
-export ARB_XTERM
-ARB_XCMD='xterm -sl 1000 -sb -e'
-export ARB_XCMD
-ARB_GS=gv
-export ARB_GS

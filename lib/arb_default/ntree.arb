@@ -491,7 +491,7 @@ awt_rename	%% (%
 
 etc_check_gcg	%% (%
 	fetch		"fetch"
-	textedit		"textedit"
+	textedit        "arb_textedit"
 	minlen	%i 400
 	exclude_0		""
 	exclude_1		""

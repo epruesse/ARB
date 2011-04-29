@@ -28,17 +28,17 @@ DESCRIPTION     Arb is aware of several environment variables:
                     ARB_TEXTEDIT
 
                         The name of the editor you like to use when editing textlike files via ARB
-                        (default: arb_textedit)
+                        (default is to autodetect using arb_textedit)
 
                     ARB_XTERM
 
                             The call which is needed to create a normal xterm
-                            (default: xterm -sl 1000 -sb -geometry 120x40 )
+                            (default: xterm -sl 1000 -sb -geometry 120x50 )
 
                     ARB_XCMD
 
                             The call which is needed to create a xterm invoking external programs
-                            (default: xterm -sl 1000 -sb -geometry 140x30 -e ).
+                            (default: $ARB_XTERM -e ).
 
                     USER
 
