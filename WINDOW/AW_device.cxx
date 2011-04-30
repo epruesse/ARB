@@ -16,7 +16,7 @@
 
 using namespace AW;
 
-void AW_clip::set_cliprect(AW_rectangle *rect, bool allow_oversize) {
+void AW_clipable::set_cliprect(AW_rectangle *rect, bool allow_oversize) {
     clip_rect = *rect; // coordinates : (0,0) = top-left-corner
     
     const AW_rectangle& screen = get_screen();
@@ -40,7 +40,7 @@ void AW_clip::set_cliprect(AW_rectangle *rect, bool allow_oversize) {
     }
 }
 
-int AW_clip::reduceClipBorders(int top, int bottom, int left, int right) {
+int AW_clipable::reduceClipBorders(int top, int bottom, int left, int right) {
     // return 0 if no clipping area left
     if (top    > clip_rect.t) clip_rect.t = top;
     if (bottom < clip_rect.b) clip_rect.b = bottom;
@@ -50,11 +50,11 @@ int AW_clip::reduceClipBorders(int top, int bottom, int left, int right) {
     return !(clip_rect.b<clip_rect.t || clip_rect.r<clip_rect.l);
 }
 
-void AW_clip::reduce_top_clip_border(int top) {
+void AW_clipable::reduce_top_clip_border(int top) {
     if (top > clip_rect.t) clip_rect.t = top;
 }
 
-void AW_clip::set_top_clip_border(int top, bool allow_oversize) {
+void AW_clipable::set_top_clip_border(int top, bool allow_oversize) {
     clip_rect.t = top;
     if (!allow_oversize) {
         if (clip_rect.t < get_screen().t) clip_rect.t = get_screen().t;
@@ -64,11 +64,11 @@ void AW_clip::set_top_clip_border(int top, bool allow_oversize) {
     }
 }
 
-void AW_clip::reduce_bottom_clip_border(int bottom) {
+void AW_clipable::reduce_bottom_clip_border(int bottom) {
     if (bottom < clip_rect.b)     clip_rect.b = bottom;
 }
 
-void AW_clip::set_bottom_clip_border(int bottom, bool allow_oversize) {
+void AW_clipable::set_bottom_clip_border(int bottom, bool allow_oversize) {
     clip_rect.b = bottom;
     if (!allow_oversize) {
         if (clip_rect.b > get_screen().b) clip_rect.b = get_screen().b;
@@ -78,7 +78,7 @@ void AW_clip::set_bottom_clip_border(int bottom, bool allow_oversize) {
     }
 }
 
-void AW_clip::set_bottom_clip_margin(int bottom, bool allow_oversize) {
+void AW_clipable::set_bottom_clip_margin(int bottom, bool allow_oversize) {
     clip_rect.b -= bottom;
     if (!allow_oversize) {
         if (clip_rect.b > get_screen().b) clip_rect.b = get_screen().b;
@@ -87,10 +87,10 @@ void AW_clip::set_bottom_clip_margin(int bottom, bool allow_oversize) {
         set_bottom_font_overlap(true); // added 21.6.02 --ralf
     }
 }
-void AW_clip::reduce_left_clip_border(int left) {
+void AW_clipable::reduce_left_clip_border(int left) {
     if (left > clip_rect.l)clip_rect.l = left;
 }
-void AW_clip::set_left_clip_border(int left, bool allow_oversize) {
+void AW_clipable::set_left_clip_border(int left, bool allow_oversize) {
     clip_rect.l = left;
     if (!allow_oversize) {
         if (clip_rect.l < get_screen().l) clip_rect.l = get_screen().l;
@@ -100,11 +100,11 @@ void AW_clip::set_left_clip_border(int left, bool allow_oversize) {
     }
 }
 
-void AW_clip::reduce_right_clip_border(int right) {
+void AW_clipable::reduce_right_clip_border(int right) {
     if (right < clip_rect.r)    clip_rect.r = right;
 }
 
-void AW_clip::set_right_clip_border(int right, bool allow_oversize) {
+void AW_clipable::set_right_clip_border(int right, bool allow_oversize) {
     clip_rect.r = right;
     if (!allow_oversize) {
         if (clip_rect.r > get_screen().r) clip_rect.r = get_screen().r;
@@ -114,16 +114,16 @@ void AW_clip::set_right_clip_border(int right, bool allow_oversize) {
     }
 }
 
-void AW_clip::set_top_font_overlap(int val) {
+void AW_clipable::set_top_font_overlap(int val) {
     top_font_overlap = val;
 }
-void AW_clip::set_bottom_font_overlap(int val) {
+void AW_clipable::set_bottom_font_overlap(int val) {
     bottom_font_overlap = val;
 }
-void AW_clip::set_left_font_overlap(int val) {
+void AW_clipable::set_left_font_overlap(int val) {
     left_font_overlap = val;
 }
-void AW_clip::set_right_font_overlap(int val) {
+void AW_clipable::set_right_font_overlap(int val) {
     right_font_overlap = val;
 }
 
@@ -133,7 +133,7 @@ inline AW_pos clip_in_range(AW_pos low, AW_pos val, AW_pos high) {
     return val;
 }
 
-int AW_clip::box_clip(AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW_pos& x0out, AW_pos& y0out, AW_pos& x1out, AW_pos& y1out) {
+int AW_clipable::box_clip(AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW_pos& x0out, AW_pos& y0out, AW_pos& x1out, AW_pos& y1out) {
     // clip coordinates of a box
 
     if (x1<clip_rect.l || x0>clip_rect.r) return 0;
@@ -151,7 +151,7 @@ int AW_clip::box_clip(AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW_pos& x0out,
     return 1;
 }
 
-int AW_clip::box_clip(const Rectangle& rect, Rectangle& clippedRect) {
+int AW_clipable::box_clip(const Rectangle& rect, Rectangle& clippedRect) {
     if (rect.distinct_from(clip_rect))
         return 0;
     
@@ -163,7 +163,7 @@ int AW_clip::box_clip(const Rectangle& rect, Rectangle& clippedRect) {
     return 1;
 }
 
-int AW_clip::force_into_clipbox(const Position& pos, Position& forcedPos) {
+int AW_clipable::force_into_clipbox(const Position& pos, Position& forcedPos) {
     // force 'pos' inside 'clip_rect'
 
     // @@@ refactor into method
@@ -175,7 +175,7 @@ int AW_clip::force_into_clipbox(const Position& pos, Position& forcedPos) {
     return 1;
 }
 
-int AW_clip::clip(AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW_pos& x0out, AW_pos& y0out, AW_pos& x1out, AW_pos& y1out) {
+int AW_clipable::clip(AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW_pos& x0out, AW_pos& y0out, AW_pos& x1out, AW_pos& y1out) {
     // clip coordinates of a line
 
     int    outcodeout;
@@ -234,7 +234,7 @@ int AW_clip::clip(AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW_pos& x0out, AW_
     return is_visible;
 }
 
-int AW_clip::clip(const LineVector& line, LineVector& clippedLine) {
+int AW_clipable::clip(const LineVector& line, LineVector& clippedLine) {
     AW_pos x0, y0, x1, y1;
     if (clip(line.start().xpos(), line.start().ypos(),
              line.head().xpos(), line.head().ypos(),
@@ -245,12 +245,12 @@ int AW_clip::clip(const LineVector& line, LineVector& clippedLine) {
     return 0;
 }
 
-void AW_matrix::zoom(AW_pos val) {
+void AW_zoomable::zoom(AW_pos val) {
     scale   *= val;
     unscale  = 1.0/scale;
 }
 
-void AW_matrix::reset() {
+void AW_zoomable::reset() {
     unscale = scale   = 1.0;
     offset  = Vector(0, 0);
 }
@@ -326,7 +326,7 @@ void AW_GC_Xm::set_foreground_color(unsigned long col) {
     last_fg_color =  col;
 }
 
-const AW_font_limits& AW_gc::get_font_limits(int gc, char c) const {
+const AW_font_limits& AW_stylable::get_font_limits(int gc, char c) const {
     return get_common()->get_font_limits(gc, c);
 }
 
@@ -364,25 +364,25 @@ void AW_common::new_gc(int gc) {
     gcs[gc] = create_gc();
 }
 
-int AW_gc::get_string_size(int gc, const char *str, long textlen) const {
+int AW_stylable::get_string_size(int gc, const char *str, long textlen) const {
     return get_common()->map_gc(gc)->get_string_size(str, textlen);
 }
-void AW_gc::new_gc(int gc) { get_common()->new_gc(gc); }
-void AW_gc::set_fill(int gc, AW_grey_level grey_level) { get_common()->map_mod_gc(gc)->set_fill(grey_level); }
-void AW_gc::set_font(int gc, AW_font font_nr, int size, int *found_size) {
+void AW_stylable::new_gc(int gc) { get_common()->new_gc(gc); }
+void AW_stylable::set_fill(int gc, AW_grey_level grey_level) { get_common()->map_mod_gc(gc)->set_fill(grey_level); }
+void AW_stylable::set_font(int gc, AW_font font_nr, int size, int *found_size) {
     // if found_size != 0 -> return value for used font size
     get_common()->map_mod_gc(gc)->set_font(font_nr, size, found_size);
 }
-int AW_gc::get_available_fontsizes(int gc, AW_font font_nr, int *available_sizes) {
+int AW_stylable::get_available_fontsizes(int gc, AW_font font_nr, int *available_sizes) {
     return get_common()->map_gc(gc)->get_available_fontsizes(font_nr, available_sizes);
 }
-void AW_gc::set_line_attributes(int gc, AW_pos width, AW_linestyle style) {
+void AW_stylable::set_line_attributes(int gc, AW_pos width, AW_linestyle style) {
     get_common()->map_mod_gc(gc)->set_lineattributes(width, style);
 }
-void AW_gc::set_function(int gc, AW_function function) {
+void AW_stylable::set_function(int gc, AW_function function) {
     get_common()->map_mod_gc(gc)->set_function(function);
 }
-void AW_gc::set_foreground_color(int gc, AW_color color) {
+void AW_stylable::set_foreground_color(int gc, AW_color color) {
     get_common()->map_mod_gc(gc)->set_foreground_color(get_common()->get_color(color));
 }
 
@@ -543,7 +543,7 @@ void AW_device::reset() {
         pop_clip_scale();
     }
     get_area_size(&clip_rect);
-    AW_matrix::reset();
+    AW_zoomable::reset();
     privat_reset();
 }
 
