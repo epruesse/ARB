@@ -20,27 +20,33 @@ class AW_GC_Xm : virtual Noncopyable {
     mutable AW_font_limits one_letter;
     AW_font_limits         all_letters;
 
-public:
-    GC                   gc;
-    AW_common           *common;
-    XFontStruct          curfont;
-    short                width_of_chars[256];
-    short                ascent_of_chars[256];
-    short                descent_of_chars[256];
-    short                line_width;
-    AW_linestyle         style;
-    short                color;
-    unsigned long        last_fg_color;
-    unsigned long        last_bg_color;
+    GC           gc;
+    AW_common   *common;
+    XFontStruct  curfont;
+
+    short width_of_chars[256];
+    short ascent_of_chars[256];
+    short descent_of_chars[256];
+
+    short        line_width;
+    AW_linestyle style;
+    short        color;
+
+    unsigned long last_fg_color;
 
     short   fontsize;
     AW_font fontnr;
-
+    
     AW_function function;
     AW_pos      grey_level;
 
+public:
+
     AW_GC_Xm(AW_common *common);
     ~AW_GC_Xm();
+
+    GC get_gc() const { return gc; }
+    const XFontStruct *get_xfont() const { return &curfont; }
 
     const AW_font_limits& get_font_limits() const { return all_letters; }
     const AW_font_limits& get_font_limits(char c) const {
@@ -52,19 +58,30 @@ public:
         return one_letter;
     }
 
+    short get_width_of_char(char c) const { return width_of_chars[safeCharIndex(c)]; }
+    short get_ascent_of_char(char c) const { return ascent_of_chars[safeCharIndex(c)]; }
+    short get_descent_of_char(char c) const { return descent_of_chars[safeCharIndex(c)]; }
+
+    short get_line_width() const { return line_width>0 ? line_width : 1; }
+    short get_color() const { return color; }
+    short get_fontsize() const { return fontsize; }
+    AW_font get_fontnr() const { return fontnr; }
+    AW_pos get_grey_level() const { return grey_level; }
+    
+    unsigned long get_last_fg_color() const { return last_fg_color; }
+
     void set_fill(AW_grey_level grey_level); // <0 don't fill  0.0 white 1.0 black
     void set_font(AW_font font_nr, int size, int *found_size);
     void set_lineattributes(AW_pos width, AW_linestyle style);
     void set_function(AW_function function);
     void set_foreground_color(unsigned long color);
-    void set_background_color(unsigned long color);
 
     int get_available_fontsizes(AW_font font_nr, int *available_sizes) const;
     int get_string_size(const char *str, long textlen) const;
 };
 
 
-class AW_common {
+class AW_common : virtual Noncopyable {
     Display *display;
     XID      window_id;
     
@@ -77,12 +94,15 @@ class AW_common {
 
     AW_rectangle screen;
 
+    AW_GC_Xm *create_gc();
+
 public:
     AW_common(Display         *display_in,
               XID              window_id_in,
               unsigned long*&  fcolors,
               unsigned long*&  dcolors,
               long&            dcolors_count);
+    virtual ~AW_common() {}
 
     void install_common_extends_cb(AW_window *aww, AW_area area); // call early
 
@@ -120,8 +140,8 @@ public:
     const AW_GC_Xm *map_gc(int gc) const { aw_assert(gc_mapable(gc)); return gcs[gc]; }
     AW_GC_Xm *map_mod_gc(int gc) { aw_assert(gc_mapable(gc)); return gcs[gc]; }
 
-    GC get_GC(int gc) const { return map_gc(gc)->gc; }
-    const XFontStruct *get_xfont(int gc) const { return &map_gc(gc)->curfont; }
+    GC get_GC(int gc) const { return map_gc(gc)->get_gc(); }
+    const XFontStruct *get_xfont(int gc) const { return map_gc(gc)->get_xfont(); }
     const AW_font_limits& get_font_limits(int gc, char c) const {
         // for one characters (c == 0 -> for all characters)
         return c
@@ -135,3 +155,4 @@ inline AW_pos x_alignment(AW_pos x_pos, AW_pos x_size, AW_pos alignment) { retur
 #else
 #error aw_commn.hxx included twice
 #endif
+

@@ -32,8 +32,7 @@ int AW_device_print::line_impl(int gc, const LineVector& Line, AW_bitset filteri
 
         if (drawflag) {
             const AW_GC_Xm *gcm           = common->map_gc(gc);
-            int             line_width    = gcm->line_width;
-            if (line_width<=0) line_width = 1;
+            int             line_width    = gcm->get_line_width();
 
             aw_assert(out);     // file has to be good!
 
@@ -42,7 +41,7 @@ int AW_device_print::line_impl(int gc, const LineVector& Line, AW_bitset filteri
             // join_style(new), cap_style(new), radius, forward_arrow,
             // backward_arrow, npoints
             fprintf(out, "2 1 0 %d %d 0 0 0 0 0.000 0 0 0 0 0 2\n\t%d %d %d %d\n",
-                    (int)line_width, find_color_idx(gcm->last_fg_color),
+                    (int)line_width, find_color_idx(gcm->get_last_fg_color()),
                     (int)clippedLine.xpos(),
                     (int)clippedLine.ypos(),
                     (int)clippedLine.head().xpos(),
@@ -69,7 +68,7 @@ static int AW_draw_string_on_printer(AW_device *devicei, int gc, const char *str
     for (i=0; i<size; i++) {
         if (pstr[i] < ' ') pstr[i] = '?';
     }
-    int fontnr = AW_font_2_xfig(gcm->fontnr);
+    int fontnr = AW_font_2_xfig(gcm->get_fontnr());
     if (fontnr<0) fontnr = - fontnr;
     if (str[0]) {
         // 4=string 0=left color depth penstyle font font_size angle
@@ -77,9 +76,9 @@ static int AW_draw_string_on_printer(AW_device *devicei, int gc, const char *str
         // (font/fontsize and color/depth have been switched from format
         // 2.1 to 3.2
         fprintf(device->get_FILE(), "4 0 %d 0 0 %d %d 0.000 4 %d %d %d %d ",
-                device->find_color_idx(gcm->last_fg_color),
+                device->find_color_idx(gcm->get_last_fg_color()),
                 fontnr,
-                gcm->fontsize,
+                gcm->get_fontsize(),
                 (int)gcm->get_font_limits().height,
                 (int)device->get_string_size(gc, str, 0),
                 AW_INT(X), AW_INT(Y));
@@ -194,11 +193,10 @@ int AW_device_print::circle_impl(int gc, bool filled, const AW::Position& center
             // if (greylevel>21) greylevel = 21;
 
             const AW_GC_Xm *gcm = common->map_gc(gc);
-            
-            int line_width                = gcm->line_width;
-            if (line_width<=0) line_width = 1;
 
-            int colorIdx = find_color_idx(gcm->last_fg_color);
+            int line_width = gcm->get_line_width();
+
+            int colorIdx = find_color_idx(gcm->get_last_fg_color());
 
             // 1, 3, 0?, line_width?, pencolor, fill_color, 0?, 0?, fill_style(-1 = none, 20 = filled),
             // ?, ?, ?, coordinates+size (8 entries)
@@ -223,14 +221,13 @@ int AW_device_print::filled_area_impl(int gc, int npos, const Position *pos, AW_
     if (!erg) return 0;                         // no line visible -> no area fill needed
 
     const AW_GC_Xm *gcm         = common->map_gc(gc);
-    short           greylevel   = (short)(gcm->grey_level*22);
+    short           greylevel   = (short)(gcm->get_grey_level()*22);
     if (greylevel>21) greylevel = 21;
 
-    int line_width = gcm->line_width;
-    if (line_width<=0) line_width = 1;
+    int line_width = gcm->get_line_width();
 
     fprintf(out, "2 3 0 %d %d -1 0 0 %d 0.000 0 0 -1 0 0 %d\n",
-            line_width, find_color_idx(gcm->last_fg_color), greylevel, npos+1);
+            line_width, find_color_idx(gcm->get_last_fg_color()), greylevel, npos+1);
 
     // @@@ method used here for clipping leads to wrong results,
     // since group border (drawn by generic_filled_area() above) is clipped correctly,

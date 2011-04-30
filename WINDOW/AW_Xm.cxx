@@ -172,8 +172,7 @@ void AW_device_Xm::clear_part(AW_pos x0, AW_pos y0, AW_pos width, AW_pos height,
 
 
 void AW_device_Xm::clear_text(int gc, const char *string, AW_pos x, AW_pos y, AW_pos alignment, AW_bitset /*filteri*/, AW_CL /*cd1*/, AW_CL /*cd2*/) {
-    const AW_GC_Xm    *gcm     = common->map_gc(gc);
-    const XFontStruct *xfs     = &gcm->curfont;
+    const XFontStruct *xfs     = common->get_xfont(gc);
     AW_pos             X, Y;    // Transformed pos
     AW_pos             width, height;
     long               textlen = strlen(string);
