@@ -78,7 +78,7 @@ int AW_device_click::text_impl(int gc, const char *str, const AW::Position& pos,
         AW_pos X0, Y0;          // Transformed pos
         this->transform(pos.xpos(), pos.ypos(), X0, Y0);
 
-        const XFontStruct *xfs = common->get_xfont(gc);
+        const XFontStruct *xfs = get_common()->get_xfont(gc);
 
         AW_pos Y1 = Y0+(AW_pos)(xfs->max_bounds.descent);
         Y0        = Y0-(AW_pos)(xfs->max_bounds.ascent);
@@ -92,7 +92,7 @@ int AW_device_click::text_impl(int gc, const char *str, const AW::Position& pos,
             if (Y0 < this->clip_rect.t) return 0;
         }
 
-        if (this->clip_rect.b == common->get_screen().b) {
+        if (this->clip_rect.b == get_common()->get_screen().b) {
             if (Y0 > this->clip_rect.b) return 0;
         }
         else {
@@ -138,7 +138,7 @@ int AW_device_click::text_impl(int gc, const char *str, const AW::Position& pos,
             if (position>(len-1)) position = len-1;
         }
         else {                                 // non-monospaced font
-            const AW_GC_Xm *gcm = common->map_gc(gc);
+            const AW_GC_Xm *gcm = get_common()->map_gc(gc);
             position   = 0;
             int tmp_offset = 0;
             while (position<=len) {

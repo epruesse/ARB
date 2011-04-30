@@ -127,10 +127,6 @@ void AW_clip::set_right_font_overlap(int val) {
     right_font_overlap = val;
 }
 
-AW_clip::AW_clip() {
-    memset((char *)this, 0, sizeof(*this));
-}
-
 inline AW_pos clip_in_range(AW_pos low, AW_pos val, AW_pos high) {
     if (val <= low) return low;
     if (val >= high) return high;
@@ -331,11 +327,8 @@ void AW_GC_Xm::set_foreground_color(unsigned long col) {
 }
 
 const AW_font_limits& AW_gc::get_font_limits(int gc, char c) const {
-    return common->get_font_limits(gc, c);
+    return get_common()->get_font_limits(gc, c);
 }
-
-// --------------
-//      AW_gc
 
 int AW_GC_Xm::get_string_size(const char *str, long textlen) const {
     // calculate display size of 'str'
@@ -372,25 +365,25 @@ void AW_common::new_gc(int gc) {
 }
 
 int AW_gc::get_string_size(int gc, const char *str, long textlen) const {
-    return common->map_gc(gc)->get_string_size(str, textlen);
+    return get_common()->map_gc(gc)->get_string_size(str, textlen);
 }
-void AW_gc::new_gc(int gc) { common->new_gc(gc); }
-void AW_gc::set_fill(int gc, AW_grey_level grey_level) { common->map_mod_gc(gc)->set_fill(grey_level); }
+void AW_gc::new_gc(int gc) { get_common()->new_gc(gc); }
+void AW_gc::set_fill(int gc, AW_grey_level grey_level) { get_common()->map_mod_gc(gc)->set_fill(grey_level); }
 void AW_gc::set_font(int gc, AW_font font_nr, int size, int *found_size) {
     // if found_size != 0 -> return value for used font size
-    common->map_mod_gc(gc)->set_font(font_nr, size, found_size);
+    get_common()->map_mod_gc(gc)->set_font(font_nr, size, found_size);
 }
 int AW_gc::get_available_fontsizes(int gc, AW_font font_nr, int *available_sizes) {
-    return common->map_gc(gc)->get_available_fontsizes(font_nr, available_sizes);
+    return get_common()->map_gc(gc)->get_available_fontsizes(font_nr, available_sizes);
 }
 void AW_gc::set_line_attributes(int gc, AW_pos width, AW_linestyle style) {
-    common->map_mod_gc(gc)->set_lineattributes(width, style);
+    get_common()->map_mod_gc(gc)->set_lineattributes(width, style);
 }
 void AW_gc::set_function(int gc, AW_function function) {
-    common->map_mod_gc(gc)->set_function(function);
+    get_common()->map_mod_gc(gc)->set_function(function);
 }
 void AW_gc::set_foreground_color(int gc, AW_color color) {
-    common->map_mod_gc(gc)->set_foreground_color(common->get_color(color));
+    get_common()->map_mod_gc(gc)->set_foreground_color(get_common()->get_color(color));
 }
 
 void AW_get_common_extends_cb(AW_window */*aww*/, AW_CL cl_common, AW_CL) {
@@ -527,11 +520,11 @@ void AW_device::pop_clip_scale() {
 // --------------------------------------------------------------------------------
 
 void AW_device::get_area_size(AW_rectangle *rect) {     // get the extends from the class AW_device
-    *rect = common->get_screen();
+    *rect = get_common()->get_screen();
 }
 
 void AW_device::get_area_size(AW_world *rect) { // get the extends from the class AW_device
-    const AW_rectangle& screen = common->get_screen();
+    const AW_rectangle& screen = get_common()->get_screen();
     
     rect->t = screen.t;
     rect->b = screen.b;
@@ -540,7 +533,7 @@ void AW_device::get_area_size(AW_world *rect) { // get the extends from the clas
 }
 
 Rectangle AW_device::get_area_size() {
-    return Rectangle(common->get_screen());
+    return Rectangle(get_common()->get_screen());
 }
 
 void AW_device::privat_reset() {}
@@ -554,15 +547,6 @@ void AW_device::reset() {
     privat_reset();
 }
 
-AW_device::AW_device(class AW_common *commoni) : AW_gc() {
-    common           = commoni;
-    clip_scale_stack = 0;
-    filter           = AW_ALL_DEVICES;
-    click_cd         = 0;
-}
-
-AW_gc::AW_gc() : AW_clip() {}
-
 bool AW_device::invisible_impl(int /*gc*/, AW_pos x, AW_pos y, AW_bitset filteri) {
     if (filteri & filter) {
         AW_pos X, Y;            // Transformed pos
@@ -574,7 +558,7 @@ bool AW_device::invisible_impl(int /*gc*/, AW_pos x, AW_pos y, AW_bitset filteri
 }
 
 bool AW_device::ready_to_draw(int gc) {
-    return common->gc_mapable(gc);
+    return get_common()->gc_mapable(gc);
 }
 
 int AW_device::generic_box(int gc, bool IF_DEBUG(filled), const Rectangle& rect, AW_bitset filteri) {
@@ -615,7 +599,7 @@ void AW_device::slow() {}
 void AW_device::flush() {}
 
 int AW_device::cursor(int gc, AW_pos x0, AW_pos y0, AW_cursor_type cur_type, AW_bitset filteri) {
-    const XFontStruct *xfs = common->get_xfont(gc);
+    const XFontStruct *xfs = get_common()->get_xfont(gc);
     AW_pos             x1, x2, y1, y2;
     AW_pos             X0, Y0;  // Transformed pos
 
@@ -653,7 +637,7 @@ int AW_device::text_overlay(int gc, const char *opt_str, long opt_len,  // eithe
                             AW_pos opt_ascent, AW_pos opt_descent,             // optional height (if == 0 take font height)
                             TextOverlayCallback toc)
 {
-    const AW_GC_Xm    *gcm = common->map_gc(gc);
+    const AW_GC_Xm    *gcm = get_common()->map_gc(gc);
     const XFontStruct *xfs = gcm->get_xfont();
 
     long   textlen;
@@ -675,7 +659,7 @@ int AW_device::text_overlay(int gc, const char *opt_str, long opt_len,  // eithe
 
     if (!(filter & filteri)) return 0;
 
-    const AW_rectangle& screen = common->get_screen();
+    const AW_rectangle& screen = get_common()->get_screen();
 
     if (left_font_overlap || screen.l == clip_rect.l) { // was : clip_rect.l == 0
         inside_clipping_left = false;

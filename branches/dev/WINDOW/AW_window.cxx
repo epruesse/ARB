@@ -1575,7 +1575,7 @@ void AW_area_management::create_devices(AW_window *aww, AW_area ar) {
 }
 
 const char *AW_window::GC_to_RGB(AW_device *device, int gc, int& red, int& green, int& blue) {
-    const AW_GC_Xm *gcm = device->common->map_gc(gc);
+    const AW_GC_Xm *gcm = device->get_common()->map_gc(gc);
 
     unsigned pixel = (unsigned short)(gcm->get_color());
     GB_ERROR error = 0;
@@ -1597,7 +1597,7 @@ const char *AW_window::GC_to_RGB(AW_device *device, int gc, int& red, int& green
 
 // Converts GC to RGB float values to the range (0 - 1.0)
 const char *AW_window::GC_to_RGB_float(AW_device *device, int gc, float& red, float& green, float& blue) {
-    AW_common      *common = device->common;
+    AW_common      *common = device->get_common();
     const AW_GC_Xm *gcm    = common->map_gc(gc);
     aw_assert(gcm);
 

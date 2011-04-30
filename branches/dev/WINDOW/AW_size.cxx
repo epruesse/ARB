@@ -66,7 +66,7 @@ int AW_device_size::line_impl(int /*gc*/, const LineVector& Line, AW_bitset filt
 int AW_device_size::text_impl(int gc, const char *str, const Position& pos, AW_pos alignment, AW_bitset filteri, long opt_strlen) {
     if (filteri & filter) {
         Position           transPos  = transform(pos);
-        const XFontStruct *xfs       = common->get_xfont(gc);
+        const XFontStruct *xfs       = get_common()->get_xfont(gc);
         AW_pos             l_ascent  = xfs->max_bounds.ascent;
         AW_pos             l_descent = xfs->max_bounds.descent;
         AW_pos             l_width   = get_string_size(gc, str, opt_strlen);

@@ -181,7 +181,8 @@ public:
 class AW_common;
 
 class AW_clip : virtual Noncopyable {
-    friend class AW_device;
+    AW_common *common;
+
 protected:
     int compoutcode(AW_pos xx, AW_pos yy) {
         /* calculate outcode for clipping the current line */
@@ -193,8 +194,8 @@ protected:
         else if (xx - clip_rect.l < 0)  code |= 1;
         return (code);
     };
+    
 public:
-    AW_common *common;
 
     // ****** read only section
     AW_rectangle clip_rect;     // holds the clipping rectangle coordinates
@@ -204,6 +205,9 @@ public:
     int right_font_overlap;
 
     // ****** real public
+
+    AW_common *get_common() const { return common; }
+
     int clip(AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW_pos& x0out, AW_pos& y0out, AW_pos& x1out, AW_pos& y1out);
     int clip(const AW::LineVector& line, AW::LineVector& clippedLine);
 
@@ -238,7 +242,16 @@ public:
 
     int reduceClipBorders(int top, int bottom, int left, int right);
 
-    AW_clip();
+    AW_clip(AW_common *common_)
+        : common(common_),
+          top_font_overlap(0),
+          bottom_font_overlap(0),
+          left_font_overlap(0),
+          right_font_overlap(0)
+    {
+        clip_rect.clear();
+    }
+
     virtual ~AW_clip() {}
 };
 
@@ -288,10 +301,8 @@ typedef enum {
     AW_XOR
 } AW_function;
 
-class AW_gc : public AW_clip {
-public:
+struct AW_gc : public AW_clip {
     void new_gc(int gc);
-    int  new_gc();
     void set_fill(int gc, AW_grey_level grey_level); // <0 don't fill  0.0 white 1.0 black
     void set_font(int gc, AW_font fontnr, int size, int *found_size);
     void set_line_attributes(int gc, AW_pos width, AW_linestyle style);
@@ -303,7 +314,7 @@ public:
 
     int get_available_fontsizes(int gc, AW_font font_nr, int *available_sizes);
 
-    AW_gc();
+    AW_gc(AW_common *common_) : AW_clip(common_) {}
     virtual ~AW_gc() {};
 };
 
@@ -355,13 +366,19 @@ protected:
     const AW_click_cd *click_cd;
     friend class       AW_click_cd;
 
+    AW_bitset filter;
+
 public:
-    AW_device(AW_common *common);
+    AW_device(class AW_common *common_)
+        : AW_gc(common_),
+          clip_scale_stack(NULL),
+          click_cd(NULL), 
+          filter(AW_ALL_DEVICES) 
+    {}
     virtual ~AW_device() {}
 
     const AW_click_cd *get_click_cd() const { return click_cd; }
-
-    AW_bitset filter; // read-only (@@@ should go private!)
+    AW_bitset get_filter() const { return filter; }
 
     void reset();
 
