@@ -142,7 +142,7 @@ int AW_device_click::text_impl(int gc, const char *str, const AW::Position& pos,
             position   = 0;
             int tmp_offset = 0;
             while (position<=len) {
-                tmp_offset += gcm->width_of_chars[(unsigned char)str[position]];
+                tmp_offset += gcm->get_width_of_char(str[position]);
                 if (mouse_x <= X0+tmp_offset) break;
                 position++;
             }

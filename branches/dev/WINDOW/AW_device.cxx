@@ -288,27 +288,27 @@ void AW_GC_Xm::set_fill(AW_grey_level grey_leveli) {    // <0 don't fill  0.0 wh
 }
 
 
-void AW_GC_Xm::set_lineattributes(AW_pos width, AW_linestyle stylei) {
-    int lwidth = AW_INT(width);
-    if (stylei == style && line_width == lwidth) return;
+void AW_GC_Xm::set_lineattributes(AW_pos new_width_f, AW_linestyle new_style) {
+    int new_width = AW_INT(new_width_f);
+    if (new_style != style || new_width != line_width) {
+        line_width = new_width;
+        style      = new_style;
 
-    switch (style) {
-        case AW_SOLID:
-            XSetLineAttributes(common->get_display(), gc, lwidth, LineSolid, CapButt, JoinBevel);
-            break;
-        case AW_DOTTED:
-            XSetLineAttributes(common->get_display(), gc, lwidth, LineOnOffDash, CapButt, JoinBevel);
-            break;
-        default:
-            break;
+        switch (style) {
+            case AW_SOLID:
+                XSetLineAttributes(common->get_display(), gc, line_width, LineSolid, CapButt, JoinBevel);
+                break;
+            case AW_DOTTED:
+                XSetLineAttributes(common->get_display(), gc, line_width, LineOnOffDash, CapButt, JoinBevel);
+                break;
+            default:
+                break;
+        }
     }
-    line_width = lwidth;
-    style = style;
 }
 
 
-void AW_GC_Xm::set_function(AW_function mode)
-{
+void AW_GC_Xm::set_function(AW_function mode) {
     if (function != mode) {
         switch (mode) {
             case AW_XOR:
@@ -328,11 +328,6 @@ void AW_GC_Xm::set_foreground_color(unsigned long col) {
     if (function == AW_XOR) col ^= common->get_XOR_color();
     XSetForeground(common->get_display(), gc, col);
     last_fg_color =  col;
-}
-
-void AW_GC_Xm::set_background_color(unsigned long colori) {
-    XSetBackground(common->get_display(), gc, colori);
-    last_bg_color = colori;
 }
 
 const AW_font_limits& AW_gc::get_font_limits(int gc, char c) const {
@@ -362,6 +357,10 @@ int AW_GC_Xm::get_string_size(const char *str, long textlen) const {
     return (int)l_width;
 }
 
+AW_GC_Xm *AW_common::create_gc() {
+    return new AW_GC_Xm(this); 
+}
+
 void AW_common::new_gc(int gc) {
     if (gc >= ngcs) {
         gcs = (AW_GC_Xm **)realloc((char *)gcs, sizeof(*gcs)*(gc+10));
@@ -369,7 +368,7 @@ void AW_common::new_gc(int gc) {
         ngcs = gc+10;
     }
     if (gcs[gc]) delete gcs[gc];
-    gcs[gc] = new AW_GC_Xm(this);
+    gcs[gc] = create_gc();
 }
 
 int AW_gc::get_string_size(int gc, const char *str, long textlen) const {
@@ -392,9 +391,6 @@ void AW_gc::set_function(int gc, AW_function function) {
 }
 void AW_gc::set_foreground_color(int gc, AW_color color) {
     common->map_mod_gc(gc)->set_foreground_color(common->get_color(color));
-}
-void AW_gc::set_background_color(int gc, AW_color color) {
-    common->map_mod_gc(gc)->set_background_color(common->get_color(color));
 }
 
 void AW_get_common_extends_cb(AW_window */*aww*/, AW_CL cl_common, AW_CL) {
@@ -619,8 +615,7 @@ void AW_device::slow() {}
 void AW_device::flush() {}
 
 int AW_device::cursor(int gc, AW_pos x0, AW_pos y0, AW_cursor_type cur_type, AW_bitset filteri) {
-    const AW_GC_Xm    *gcm = common->map_gc(gc);
-    const XFontStruct *xfs = &gcm->curfont;
+    const XFontStruct *xfs = common->get_xfont(gc);
     AW_pos             x1, x2, y1, y2;
     AW_pos             X0, Y0;  // Transformed pos
 
@@ -658,16 +653,16 @@ int AW_device::text_overlay(int gc, const char *opt_str, long opt_len,  // eithe
                             AW_pos opt_ascent, AW_pos opt_descent,             // optional height (if == 0 take font height)
                             TextOverlayCallback toc)
 {
-    long               textlen;
-    const AW_GC_Xm    *gcm           = common->map_gc(gc);
-    const XFontStruct *xfs           = &gcm->curfont;
-    const short       *size_per_char = gcm->width_of_chars;
-    int                xi, yi;
-    int                h;
-    int                start;
-    int                l;
-    int                c             = 0;
-    AW_pos             X0, Y0;  // Transformed pos
+    const AW_GC_Xm    *gcm = common->map_gc(gc);
+    const XFontStruct *xfs = gcm->get_xfont();
+
+    long   textlen;
+    int    xi, yi;
+    int    h;
+    int    start;
+    int    l;
+    int    c = 0;
+    AW_pos X0, Y0;              // Transformed pos
 
     bool inside_clipping_left  = true; // clipping at the left edge of the screen is different from clipping right of the left edge.
     bool inside_clipping_right = true;
@@ -747,11 +742,11 @@ int AW_device::text_overlay(int gc, const char *opt_str, long opt_len,  // eithe
         else {                                                         // non-monospaced font
             for (h=0; xi < l; h++) {
                 if (!(c = opt_str[h])) return 0;
-                xi += size_per_char[c];
+                xi += gcm->get_width_of_char(c);
             }
             if (!inside_clipping_left) {
                 h-=1;
-                xi -= size_per_char[c];
+                xi -= gcm->get_width_of_char(c);
             }
             start    = h;
             textlen -= h;
@@ -779,7 +774,7 @@ int AW_device::text_overlay(int gc, const char *opt_str, long opt_len,  // eithe
     else {                                                                      // non-monospaced font
         l = (int)clip_rect.r - xi;
         for (h = start; l >= 0 && textlen > 0;  h++, textlen--) { // was textlen >= 0
-            l -= size_per_char[safeCharIndex(opt_str[h])];
+            l -= gcm->get_width_of_char(opt_str[h]);
         }
         textlen = h - start;
         if (l <= 0 && inside_clipping_right && textlen  > 0) {
