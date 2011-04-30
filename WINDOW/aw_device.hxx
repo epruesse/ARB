@@ -178,10 +178,9 @@ public:
     }
 };
 
-class AW_common;
-
-class AW_clip : virtual Noncopyable {
-    AW_common *common;
+class AW_clip {
+    const AW_rectangle& common_screen;
+    const AW_rectangle& get_screen() const { return common_screen; }
 
 protected:
     int compoutcode(AW_pos xx, AW_pos yy) {
@@ -205,8 +204,6 @@ public:
     int right_font_overlap;
 
     // ****** real public
-
-    AW_common *get_common() const { return common; }
 
     int clip(AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW_pos& x0out, AW_pos& y0out, AW_pos& x1out, AW_pos& y1out);
     int clip(const AW::LineVector& line, AW::LineVector& clippedLine);
@@ -242,8 +239,8 @@ public:
 
     int reduceClipBorders(int top, int bottom, int left, int right);
 
-    AW_clip(AW_common *common_)
-        : common(common_),
+    AW_clip(const AW_rectangle& screen)
+        : common_screen(screen),
           top_font_overlap(0),
           bottom_font_overlap(0),
           left_font_overlap(0),
@@ -301,7 +298,16 @@ typedef enum {
     AW_XOR
 } AW_function;
 
-struct AW_gc : public AW_clip {
+class AW_common;
+
+class AW_gc : virtual Noncopyable {
+    AW_common *common;
+public:
+    AW_gc(AW_common *common_) : common(common_) {}
+    virtual ~AW_gc() {};
+    
+    AW_common *get_common() const { return common; }
+
     void new_gc(int gc);
     void set_fill(int gc, AW_grey_level grey_level); // <0 don't fill  0.0 white 1.0 black
     void set_font(int gc, AW_font fontnr, int size, int *found_size);
@@ -313,9 +319,6 @@ struct AW_gc : public AW_clip {
     const AW_font_limits& get_font_limits(int gc, char c) const; // for one characters (c == 0 -> for all characters)
 
     int get_available_fontsizes(int gc, AW_font font_nr, int *available_sizes);
-
-    AW_gc(AW_common *common_) : AW_clip(common_) {}
-    virtual ~AW_gc() {};
 };
 
 class  AW_clip_scale_stack;
@@ -355,7 +358,7 @@ public:
 
 typedef int (*TextOverlayCallback)(AW_device *device, int gc, const char *opt_string, size_t opt_string_len, size_t start, size_t size, AW_pos x, AW_pos y, AW_pos opt_ascent, AW_pos opt_descent, AW_CL cduser);
 
-class AW_device : public AW_matrix, public AW_gc {
+class AW_device : public AW_matrix, public AW_gc, public AW_clip {
     AW_device(const AW_device& other);
     AW_device& operator=(const AW_device& other);
 
@@ -368,9 +371,12 @@ protected:
 
     AW_bitset filter;
 
+    static const AW_rectangle& get_common_screen(const AW_common *common_);
+    
 public:
     AW_device(class AW_common *common_)
         : AW_gc(common_),
+          AW_clip(get_common_screen(common_)),
           clip_scale_stack(NULL),
           click_cd(NULL), 
           filter(AW_ALL_DEVICES) 
@@ -547,9 +553,13 @@ class AW_device_print : public AW_device { // derived from a Noncopyable
     }
     int filled_area_impl(int gc, int npos, const AW::Position *pos, AW_bitset filteri);
 public:
-    AW_device_print(AW_common *commoni);
+    AW_device_print(AW_common *common_)
+        : AW_device(common_),
+          out(0),
+          color_mode(false)
+    {}
 
-    void init();
+    void init() {}
     GB_ERROR open(const char *path) __ATTR__USERESULT;
     void close();
 
@@ -577,7 +587,7 @@ class AW_simple_device : public AW_device {
         return generic_arc(gc, filled, center, xradius, yradius, start_degrees, arc_degrees, filteri);
     }
 public:
-    AW_simple_device(AW_common *commoni) : AW_device(commoni) {}
+    AW_simple_device(AW_common *common_) : AW_device(common_) {}
 };
     
 class AW_device_size : public AW_simple_device {
@@ -596,7 +606,7 @@ class AW_device_size : public AW_simple_device {
     bool invisible_impl(int gc, AW_pos x, AW_pos y, AW_bitset filteri);
 
 public:
-    AW_device_size(AW_common *commoni) : AW_simple_device(commoni) {}
+    AW_device_size(AW_common *common_) : AW_simple_device(common_) {}
 
     void           init();
     AW_DEVICE_TYPE type();
@@ -616,7 +626,7 @@ public:
     AW_clicked_line opt_line;
     AW_clicked_text opt_text;
 
-    AW_device_click(AW_common *commoni) : AW_simple_device(commoni) {}
+    AW_device_click(AW_common *common_) : AW_simple_device(common_) {}
 
     AW_DEVICE_TYPE type();
 

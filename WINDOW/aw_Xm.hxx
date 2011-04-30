@@ -18,9 +18,9 @@ class AW_device_Xm : public AW_device {
     }
 
 public:
-    AW_device_Xm(AW_common *commoni);
+    AW_device_Xm(AW_common *commoni) : AW_device(commoni) {}
 
-    void           init();
+    void           init() {}
     AW_DEVICE_TYPE type();
 
     void clear(AW_bitset filteri);
