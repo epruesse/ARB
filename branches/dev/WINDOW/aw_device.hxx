@@ -113,14 +113,14 @@ public:
 
 bool AW_getBestClick(const AW::Position& click, AW_clicked_line *cl, AW_clicked_text *ct, AW_CL *cd1, AW_CL *cd2);
 
-class AW_matrix {
+class AW_zoomable {
     AW::Vector offset;
     AW_pos     scale;
     AW_pos     unscale;         // = 1.0/scale
 
 public:
-    AW_matrix() { this->reset(); };
-    virtual ~AW_matrix() {}
+    AW_zoomable() { this->reset(); };
+    virtual ~AW_zoomable() {}
 
     void zoom(AW_pos scale);
 
@@ -178,7 +178,7 @@ public:
     }
 };
 
-class AW_clip {
+class AW_clipable {
     const AW_rectangle& common_screen;
     const AW_rectangle& get_screen() const { return common_screen; }
 
@@ -239,7 +239,7 @@ public:
 
     int reduceClipBorders(int top, int bottom, int left, int right);
 
-    AW_clip(const AW_rectangle& screen)
+    AW_clipable(const AW_rectangle& screen)
         : common_screen(screen),
           top_font_overlap(0),
           bottom_font_overlap(0),
@@ -249,7 +249,7 @@ public:
         clip_rect.clear();
     }
 
-    virtual ~AW_clip() {}
+    virtual ~AW_clipable() {}
 };
 
 struct AW_font_limits {
@@ -300,11 +300,11 @@ typedef enum {
 
 class AW_common;
 
-class AW_gc : virtual Noncopyable {
+class AW_stylable : virtual Noncopyable {
     AW_common *common;
 public:
-    AW_gc(AW_common *common_) : common(common_) {}
-    virtual ~AW_gc() {};
+    AW_stylable(AW_common *common_) : common(common_) {}
+    virtual ~AW_stylable() {};
     
     AW_common *get_common() const { return common; }
 
@@ -358,7 +358,7 @@ public:
 
 typedef int (*TextOverlayCallback)(AW_device *device, int gc, const char *opt_string, size_t opt_string_len, size_t start, size_t size, AW_pos x, AW_pos y, AW_pos opt_ascent, AW_pos opt_descent, AW_CL cduser);
 
-class AW_device : public AW_matrix, public AW_gc, public AW_clip {
+class AW_device : public AW_zoomable, public AW_stylable, public AW_clipable {
     AW_device(const AW_device& other);
     AW_device& operator=(const AW_device& other);
 
@@ -375,8 +375,8 @@ protected:
     
 public:
     AW_device(class AW_common *common_)
-        : AW_gc(common_),
-          AW_clip(get_common_screen(common_)),
+        : AW_stylable(common_),
+          AW_clipable(get_common_screen(common_)),
           clip_scale_stack(NULL),
           click_cd(NULL), 
           filter(AW_ALL_DEVICES) 
