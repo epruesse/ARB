@@ -15,12 +15,6 @@
 
 using namespace AW;
 
-AW_device_print::AW_device_print(AW_common *commoni) : AW_device(commoni) {
-    out = 0;
-}
-
-void AW_device_print::init() {}
-
 AW_DEVICE_TYPE AW_device_print::type() { return AW_DEVICE_PRINTER; }
 
 int AW_device_print::line_impl(int gc, const LineVector& Line, AW_bitset filteri) {

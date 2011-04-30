@@ -17,9 +17,9 @@
 using namespace AW;
 
 void AW_clip::set_cliprect(AW_rectangle *rect, bool allow_oversize) {
-    clip_rect = *rect;                  // coordinates : (0,0) = top-left-corner
+    clip_rect = *rect; // coordinates : (0,0) = top-left-corner
     
-    const AW_rectangle& screen = common->get_screen();
+    const AW_rectangle& screen = get_screen();
     if (!allow_oversize) {
         if (clip_rect.t < screen.t) clip_rect.t = screen.t;
         if (clip_rect.b > screen.b) clip_rect.b = screen.b;
@@ -57,7 +57,7 @@ void AW_clip::reduce_top_clip_border(int top) {
 void AW_clip::set_top_clip_border(int top, bool allow_oversize) {
     clip_rect.t = top;
     if (!allow_oversize) {
-        if (clip_rect.t < common->get_screen().t) clip_rect.t = common->get_screen().t;
+        if (clip_rect.t < get_screen().t) clip_rect.t = get_screen().t;
     }
     else {
         set_top_font_overlap(true); // added 21.6.02 --ralf
@@ -71,7 +71,7 @@ void AW_clip::reduce_bottom_clip_border(int bottom) {
 void AW_clip::set_bottom_clip_border(int bottom, bool allow_oversize) {
     clip_rect.b = bottom;
     if (!allow_oversize) {
-        if (clip_rect.b > common->get_screen().b) clip_rect.b = common->get_screen().b;
+        if (clip_rect.b > get_screen().b) clip_rect.b = get_screen().b;
     }
     else {
         set_bottom_font_overlap(true); // added 21.6.02 --ralf
@@ -81,7 +81,7 @@ void AW_clip::set_bottom_clip_border(int bottom, bool allow_oversize) {
 void AW_clip::set_bottom_clip_margin(int bottom, bool allow_oversize) {
     clip_rect.b -= bottom;
     if (!allow_oversize) {
-        if (clip_rect.b > common->get_screen().b) clip_rect.b = common->get_screen().b;
+        if (clip_rect.b > get_screen().b) clip_rect.b = get_screen().b;
     }
     else {
         set_bottom_font_overlap(true); // added 21.6.02 --ralf
@@ -93,7 +93,7 @@ void AW_clip::reduce_left_clip_border(int left) {
 void AW_clip::set_left_clip_border(int left, bool allow_oversize) {
     clip_rect.l = left;
     if (!allow_oversize) {
-        if (clip_rect.l < common->get_screen().l) clip_rect.l = common->get_screen().l;
+        if (clip_rect.l < get_screen().l) clip_rect.l = get_screen().l;
     }
     else {
         set_left_font_overlap(true); // added 21.6.02 --ralf
@@ -107,7 +107,7 @@ void AW_clip::reduce_right_clip_border(int right) {
 void AW_clip::set_right_clip_border(int right, bool allow_oversize) {
     clip_rect.r = right;
     if (!allow_oversize) {
-        if (clip_rect.r > common->get_screen().r) clip_rect.r = common->get_screen().r;
+        if (clip_rect.r > get_screen().r) clip_rect.r = get_screen().r;
     }
     else {
         set_right_font_overlap(true); // added to correct problem with last char skipped (added 21.6.02 --ralf)
@@ -780,4 +780,8 @@ int AW_device::text_overlay(int gc, const char *opt_str, long opt_len,  // eithe
 }
 
 void AW_device::set_filter(AW_bitset filteri) { filter = filteri; }
+
+const AW_rectangle& AW_device::get_common_screen(const AW_common *common_) {
+    return common_->get_screen();
+}
 

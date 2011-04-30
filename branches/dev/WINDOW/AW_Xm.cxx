@@ -22,15 +22,6 @@ using namespace AW;
 // ---------------------
 //      AW_device_Xm
 
-AW_device_Xm::AW_device_Xm(AW_common *commoni) : AW_device(commoni) {
-;
-}
-
-void AW_device_Xm::init() {
-;
-}
-
-
 AW_DEVICE_TYPE AW_device_Xm::type() { return AW_DEVICE_SCREEN; }
 
 #define XDRAW_PARAM2(common)    (common)->get_display(), (common)->get_window_id()
