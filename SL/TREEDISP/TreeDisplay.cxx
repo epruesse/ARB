@@ -1972,7 +1972,7 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, double x_son, DendroSubtreeL
             y_cursor = ny0;
         }
 
-        if (at->name && (disp_device->filter & text_filter)) {
+        if (at->name && (disp_device->get_filter() & text_filter)) {
             // display text
             const char            *data       = make_node_text_nds(this->gb_main, at->gb_node, NDS_OUTPUT_LEAFTEXT, at->get_gbt_tree(), tree_static->get_tree_name());
             const AW_font_limits&  charLimits = disp_device->get_font_limits(at->gr.gc, 'A');
@@ -2031,7 +2031,7 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, double x_son, DendroSubtreeL
 
         limits.x_right = nx0;
 
-        if (at->gb_node && (disp_device->filter & text_filter)) {
+        if (at->gb_node && (disp_device->get_filter() & text_filter)) {
             const char *data     = make_node_text_nds(this->gb_main, at->gb_node, NDS_OUTPUT_LEAFTEXT, at->get_gbt_tree(), tree_static->get_tree_name());
             size_t      data_len = strlen(data);
 
@@ -2095,7 +2095,7 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, double x_son, DendroSubtreeL
 
                 limits.x_right = x2;
             
-                if (at->gb_node && (disp_device->filter & text_filter)) {
+                if (at->gb_node && (disp_device->get_filter() & text_filter)) {
                     const char *data     = make_node_text_nds(this->gb_main, at->gb_node, NDS_OUTPUT_LEAFTEXT, at->get_gbt_tree(), tree_static->get_tree_name());
                     size_t      data_len = strlen(data);
 
@@ -2193,7 +2193,7 @@ void AWT_graphic_tree::show_radial_tree(AP_tree * at, double x_center,
     }
 
     if (at->is_leaf) {
-        if (at->name && (disp_device->filter & text_filter)) {
+        if (at->name && (disp_device->get_filter() & text_filter)) {
             if (at->name[0] == this->species_name[0] &&
                 !strcmp(at->name, this->species_name)) {
                 x_cursor = x_center; y_cursor = y_center;
@@ -2226,7 +2226,7 @@ void AWT_graphic_tree::show_radial_tree(AP_tree * at, double x_center,
         disp_device->set_fill(at->gr.gc, grey_level);
         disp_device->filled_area(at->gr.gc, 3, &q[0], line_filter);
 
-        if (at->gb_node && (disp_device->filter & text_filter)) {
+        if (at->gb_node && (disp_device->get_filter() & text_filter)) {
             w = tree_orientation + at->gr.right_angle;
             l_max = (l_max+l_min)*.5;
             x_center = x_center+l_max*cos(w);

@@ -31,7 +31,7 @@ int AW_device_print::line_impl(int gc, const LineVector& Line, AW_bitset filteri
         drawflag = clip(transLine, clippedLine);
 
         if (drawflag) {
-            const AW_GC_Xm *gcm           = common->map_gc(gc);
+            const AW_GC_Xm *gcm           = get_common()->map_gc(gc);
             int             line_width    = gcm->get_line_width();
 
             aw_assert(out);     // file has to be good!
@@ -57,7 +57,7 @@ static int AW_draw_string_on_printer(AW_device *devicei, int gc, const char *str
 {
     AW_pos           X, Y;
     AW_device_print *device = (AW_device_print *)devicei;
-    AW_common       *common = device->common;
+    AW_common       *common = device->get_common();
     const AW_GC_Xm  *gcm    = common->map_gc(gc);
 
     device->transform(x, y, X, Y);
@@ -112,8 +112,8 @@ GB_ERROR AW_device_print::open(const char *path) {
           , out);
 
     if (color_mode) {
-        for (int i=0; i<common->get_data_color_size(); i++) {
-            fprintf(out, "0 %d #%06lx\n", i+DATA_COLOR_OFFSET, common->get_data_color(i));
+        for (int i=0; i<get_common()->get_data_color_size(); i++) {
+            fprintf(out, "0 %d #%06lx\n", i+DATA_COLOR_OFFSET, get_common()->get_data_color(i));
         }
     }
 
@@ -132,7 +132,7 @@ int AW_common::find_data_color_idx(unsigned long color) const {
 int AW_device_print::find_color_idx(unsigned long color) {
     int idx = -1;
     if (color_mode) {
-        idx = common->find_data_color_idx(color);
+        idx = get_common()->find_data_color_idx(color);
         if (idx >= 0) idx += DATA_COLOR_OFFSET;
     }
     return idx;
@@ -192,7 +192,7 @@ int AW_device_print::circle_impl(int gc, bool filled, const AW::Position& center
             // short greylevel             = (short)(gcm->grey_level*22);
             // if (greylevel>21) greylevel = 21;
 
-            const AW_GC_Xm *gcm = common->map_gc(gc);
+            const AW_GC_Xm *gcm = get_common()->map_gc(gc);
 
             int line_width = gcm->get_line_width();
 
@@ -220,7 +220,7 @@ int AW_device_print::filled_area_impl(int gc, int npos, const Position *pos, AW_
     int erg = generic_filled_area(gc, npos, pos, filteri);
     if (!erg) return 0;                         // no line visible -> no area fill needed
 
-    const AW_GC_Xm *gcm         = common->map_gc(gc);
+    const AW_GC_Xm *gcm         = get_common()->map_gc(gc);
     short           greylevel   = (short)(gcm->get_grey_level()*22);
     if (greylevel>21) greylevel = 21;
 

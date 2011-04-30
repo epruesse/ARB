@@ -158,7 +158,7 @@ void SEC_root::paintAnnotation(AW_device *device, int gc,
 
     Position note_center = pos + pos2note.normal()*note_distance;
 
-    if (device->filter & AW_PRINTER) {
+    if (device->get_filter() & AW_PRINTER) {
         boxText = false; // don't print/xfig-export boxes
     }
 
@@ -298,7 +298,7 @@ void SEC_root::paintHelixNumbers(AW_device *device) {
 
 #if defined(PAINT_ABSOLUTE_POSITION)
 void SEC_root::showSomeAbsolutePositions(AW_device *device) {
-    if (device->filter != AW_SIZE) { // ignore for size calculation
+    if (device->get_filter() != AW_SIZE) { // ignore for size calculation
         Rectangle screen(device->rtransform(device->get_area_size()));
         Vector        diag3 = screen.diagonal()/3;
         Rectangle showInside(screen.upper_left_corner()+diag3*1.85, diag3);
@@ -1060,7 +1060,7 @@ GB_ERROR SEC_root::paint(AW_device *device) {
 
         // paint cursor:
         if (!drawnPositions->empty() &&
-            (device->filter&(AW_PRINTER|AW_PRINTER_EXT)) == 0) // don't print/xfig-export cursor
+            (device->get_filter()&(AW_PRINTER|AW_PRINTER_EXT)) == 0) // don't print/xfig-export cursor
         {
             size_t   abs1, abs2;
             Position pos1, pos2;
