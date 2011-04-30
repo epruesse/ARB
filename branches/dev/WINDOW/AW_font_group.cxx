@@ -37,7 +37,7 @@ void AW_font_group::registerFont(AW_device *device, int gc, const char *chars) {
 
     if (!chars) {
         // use complete ASCII-range for limits
-        max_letter_limits[gc] = gcm->get_font_limits(0);
+        max_letter_limits[gc] = gcm->get_font_limits();
     }
     else {
         aw_assert(chars[0]);
