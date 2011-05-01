@@ -33,7 +33,7 @@ inline void set_max(int val, int& max) { if (val>max) max = val; }
 void AW_font_group::registerFont(AW_device *device, int gc, const char *chars) {
     aw_assert(gc <= AW_FONT_GROUP_MAX_GC);
 
-    const AW_GC_Xm *gcm = device->get_common()->map_gc(gc);
+    const AW_GC *gcm = device->get_common()->map_gc(gc);
 
     if (!chars) {
         // use complete ASCII-range for limits

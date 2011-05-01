@@ -25,8 +25,8 @@ int AW_device_print::line_impl(int gc, const LineVector& Line, AW_bitset filteri
         drawflag = clip(transLine, clippedLine);
 
         if (drawflag) {
-            const AW_GC_Xm *gcm           = get_common()->map_gc(gc);
-            int             line_width    = gcm->get_line_width();
+            const AW_GC *gcm        = get_common()->map_gc(gc);
+            int          line_width = gcm->get_line_width();
 
             aw_assert(out);     // file has to be good!
 
@@ -52,7 +52,7 @@ static int AW_draw_string_on_printer(AW_device *devicei, int gc, const char *str
     AW_pos           X, Y;
     AW_device_print *device = (AW_device_print *)devicei;
     AW_common       *common = device->get_common();
-    const AW_GC_Xm  *gcm    = common->map_gc(gc);
+    const AW_GC     *gcm    = common->map_gc(gc);
 
     device->transform(x, y, X, Y);
     char *pstr = strdup(str+start);
@@ -186,11 +186,9 @@ int AW_device_print::circle_impl(int gc, bool filled, const AW::Position& center
             // short greylevel             = (short)(gcm->grey_level*22);
             // if (greylevel>21) greylevel = 21;
 
-            const AW_GC_Xm *gcm = get_common()->map_gc(gc);
-
-            int line_width = gcm->get_line_width();
-
-            int colorIdx = find_color_idx(gcm->get_last_fg_color());
+            const AW_GC *gcm        = get_common()->map_gc(gc);
+            int          line_width = gcm->get_line_width();
+            int          colorIdx   = find_color_idx(gcm->get_last_fg_color());
 
             // 1, 3, 0?, line_width?, pencolor, fill_color, 0?, 0?, fill_style(-1 = none, 20 = filled),
             // ?, ?, ?, coordinates+size (8 entries)
@@ -214,8 +212,9 @@ int AW_device_print::filled_area_impl(int gc, int npos, const Position *pos, AW_
     int erg = generic_filled_area(gc, npos, pos, filteri);
     if (!erg) return 0;                         // no line visible -> no area fill needed
 
-    const AW_GC_Xm *gcm         = get_common()->map_gc(gc);
-    short           greylevel   = (short)(gcm->get_grey_level()*22);
+    const AW_GC *gcm = get_common()->map_gc(gc);
+
+    short greylevel             = (short)(gcm->get_grey_level()*22);
     if (greylevel>21) greylevel = 21;
 
     int line_width = gcm->get_line_width();
