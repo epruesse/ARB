@@ -47,11 +47,11 @@ int AW_device_Xm::line_impl(int gc, const LineVector& Line, AW_bitset filteri) {
 static int AW_draw_string_on_screen(AW_device *device, int gc, const  char *str, size_t /* opt_str_len */, size_t start, size_t size,
                                     AW_pos x, AW_pos y, AW_pos /*opt_ascent*/, AW_pos /*opt_descent*/, AW_CL /*cduser*/)
 {
-    AW_pos     X, Y;
+    AW_pos        X, Y;
     device->transform(x, y, X, Y);
     aw_assert(size <= strlen(str));
-    AW_common *common = device->get_common();
-    XDrawString(XDRAW_PARAM3(common, gc), AW_INT(X), AW_INT(Y), str + start,  (int)size);
+    AW_device_Xm *device_xm = DOWNCAST(AW_device_Xm*, device);
+    XDrawString(XDRAW_PARAM3(device_xm->get_common(), gc), AW_INT(X), AW_INT(Y), str + start,  (int)size);
     AUTO_FLUSH(device);
 
     return 1;

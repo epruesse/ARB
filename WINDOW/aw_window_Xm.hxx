@@ -171,7 +171,7 @@ struct AW_select_table_struct : virtual Noncopyable {
 // -------------------------------------------
 //      area management: devices callbacks
 
-class AW_common;
+class AW_common_Xm;
 class AW_device_Xm;
 class AW_device_click;
 class AW_device_size;
@@ -189,7 +189,7 @@ class AW_area_management {
 public:
     Widget           form;      // for resizing
     Widget           area;      // for displaying additional information
-    AW_common       *common;
+    AW_common_Xm    *common;
     AW_device_Xm    *device;
     AW_device_click *click_device;
     AW_device_size  *size_device;

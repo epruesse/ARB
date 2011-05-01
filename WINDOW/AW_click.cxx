@@ -78,10 +78,11 @@ int AW_device_click::text_impl(int gc, const char *str, const AW::Position& pos,
         AW_pos X0, Y0;          // Transformed pos
         this->transform(pos.xpos(), pos.ypos(), X0, Y0);
 
-        const XFontStruct *xfs = get_common()->get_xfont(gc);
+        const AW_GC           *gcm         = get_common()->map_gc(gc);
+        const AW_font_limits&  font_limits = gcm->get_font_limits();
 
-        AW_pos Y1 = Y0+(AW_pos)(xfs->max_bounds.descent);
-        Y0        = Y0-(AW_pos)(xfs->max_bounds.ascent);
+        AW_pos Y1 = Y0+font_limits.descent;
+        Y0        = Y0-font_limits.ascent;
 
         // Fast check text against top/bottom clip
 
@@ -131,14 +132,13 @@ int AW_device_click::text_impl(int gc, const char *str, const AW::Position& pos,
         max_distance_text = best_dist; // exact hit -> distance = 0;
 
         int position;
-        if (xfs->max_bounds.width == xfs->min_bounds.width) {           // monospaced font
-            short letter_width = xfs->max_bounds.width;
+        if (font_limits.is_monospaced()) {
+            short letter_width = font_limits.width;
             position = (int)((mouse_x-X0)/letter_width);
             if (position<0) position = 0;
             if (position>(len-1)) position = len-1;
         }
-        else {                                 // non-monospaced font
-            const AW_GC_Xm *gcm = get_common()->map_gc(gc);
+        else { // proportional font
             position   = 0;
             int tmp_offset = 0;
             while (position<=len) {

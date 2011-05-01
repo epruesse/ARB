@@ -345,13 +345,13 @@ int AW_GC::get_string_size(const char *str, long textlen) const {
     return width;
 }
 
-AW_GC_Xm *AW_common::create_gc() {
+AW_GC *AW_common_Xm::create_gc() {
     return new AW_GC_Xm(this); 
 }
 
 void AW_common::new_gc(int gc) {
     if (gc >= ngcs) {
-        gcs = (AW_GC_Xm **)realloc((char *)gcs, sizeof(*gcs)*(gc+10));
+        gcs = (AW_GC **)realloc((char *)gcs, sizeof(*gcs)*(gc+10));
         memset(&gcs[ngcs], 0, sizeof(*gcs) * (gc-ngcs+10));
         ngcs = gc+10;
     }
@@ -384,8 +384,8 @@ void AW_stylable::set_foreground_color(int gc, AW_color color) {
     get_common()->map_mod_gc(gc)->set_foreground_color(get_common()->get_color(color));
 }
 
-void AW_get_common_extends_cb(AW_window */*aww*/, AW_CL cl_common, AW_CL) {
-    AW_common    *common = (AW_common*)cl_common;
+static void AW_get_common_extends_cb(AW_window */*aww*/, AW_CL cl_common_xm, AW_CL) {
+    AW_common_Xm *common = (AW_common_Xm*)cl_common_xm;
     Window        root;
     unsigned int  width, height;
     unsigned int  depth, borderwidth; // unused
@@ -403,28 +403,7 @@ void AW_get_common_extends_cb(AW_window */*aww*/, AW_CL cl_common, AW_CL) {
     common->set_screen_size(width, height);
 }
 
-AW_common::AW_common(Display         *display_in,
-                     XID              window_id_in,
-                     unsigned long*&  fcolors,
-                     unsigned long*&  dcolors,
-                     long&            dcolors_count)
-    : display(display_in),
-      window_id(window_id_in),
-      frame_colors(fcolors),
-      data_colors(dcolors),
-      data_colors_size(dcolors_count)
-{
-    ngcs = 8;
-    gcs  = (AW_GC_Xm **)malloc(sizeof(void *)*ngcs);
-    memset((char *)gcs, 0, sizeof(void *)*ngcs);
-
-    screen.t = 0; 
-    screen.b = -1;
-    screen.l = 0;
-    screen.r = -1;
-}
-
-void AW_common::install_common_extends_cb(AW_window *aww, AW_area area) {
+void AW_common_Xm::install_common_extends_cb(AW_window *aww, AW_area area) {
     aww->set_resize_callback(area, AW_get_common_extends_cb, (AW_CL)this);
     AW_get_common_extends_cb(aww, (AW_CL)this, 0);
 }
@@ -596,47 +575,13 @@ void AW_device::fast() {}
 void AW_device::slow() {}
 void AW_device::flush() {}
 
-int AW_device::cursor(int gc, AW_pos x0, AW_pos y0, AW_cursor_type cur_type, AW_bitset filteri) {
-    const XFontStruct *xfs = get_common()->get_xfont(gc);
-    AW_pos             x1, x2, y1, y2;
-    AW_pos             X0, Y0;  // Transformed pos
-
-    //  cursor insert         cursor overwrite
-    //     (X0,Y0)
-    //       /\                       .
-    //      /  \                      .
-    //      ----
-    // (X1,Y1)(X2,Y2)
-
-    if (filteri & filter) {
-        if (cur_type == AW_cursor_insert) {
-            transform(x0, y0, X0, Y0);
-
-            if (X0 > clip_rect.r) return 0;
-            if (X0 < clip_rect.l) return 0;
-            if (Y0+(AW_pos)(xfs->max_bounds.descent) < clip_rect.t) return 0;
-            if (Y0-(AW_pos)(xfs->max_bounds.ascent) > clip_rect.b) return 0;
-
-            x1 = x0-4;
-            y1 = y0+4;
-            x2 = x0+4;
-            y2 = y0+4;
-
-            line(gc, x1, y1, x0, y0, filteri);
-            line(gc, x2, y2, x0, y0, filteri);
-            line(gc, x1, y1, x2, y2, filteri);
-        }
-    }
-    return 1;
-}
-
 int AW_device::text_overlay(int gc, const char *opt_str, long opt_len,  // either string or strlen != 0
                             const Position& pos, AW_pos alignment, AW_bitset filteri, AW_CL cduser, 
                             AW_pos opt_ascent, AW_pos opt_descent,             // optional height (if == 0 take font height)
                             TextOverlayCallback toc)
 {
-    const AW_GC_Xm    *gcm = get_common()->map_gc(gc);
-    const XFontStruct *xfs = gcm->get_xfont();
+    const AW_GC           *gcm         = get_common()->map_gc(gc);
+    const AW_font_limits&  font_limits = gcm->get_font_limits();
 
     long   textlen;
     int    xi, yi;
@@ -672,17 +617,17 @@ int AW_device::text_overlay(int gc, const char *opt_str, long opt_len,  // eithe
 
 
     if (top_font_overlap || clip_rect.t == 0) {                                                 // check clip border inside screen
-        if (Y0+(AW_pos)(xfs->max_bounds.descent) < clip_rect.t) return 0; // draw outside screen
+        if (Y0+font_limits.descent < clip_rect.t) return 0; // draw outside screen
     }
     else {
-        if (Y0-(AW_pos)(xfs->max_bounds.ascent) < clip_rect.t) return 0; // don't cross the clip border
+        if (Y0-font_limits.ascent < clip_rect.t) return 0; // don't cross the clip border
     }
 
     if (bottom_font_overlap || clip_rect.b == screen.b) {                               // check clip border inside screen drucken
-        if (Y0-(AW_pos)(xfs->max_bounds.ascent) > clip_rect.b) return 0;             // draw outside screen
+        if (Y0-font_limits.ascent > clip_rect.b) return 0;             // draw outside screen
     }
     else {
-        if (Y0+(AW_pos)(xfs->max_bounds.descent)> clip_rect.b) return 0;             // don't cross the clip border
+        if (Y0+font_limits.descent> clip_rect.b) return 0;             // don't cross the clip border
     }
 
     if (!opt_len) {
@@ -701,27 +646,29 @@ int AW_device::text_overlay(int gc, const char *opt_str, long opt_len,  // eithe
     }
     xi = AW_INT(X0);
     yi = AW_INT(Y0);
-    if (X0 > clip_rect.r) return 0;                           // right of screen
+    if (X0 > clip_rect.r) return 0; // right of screen
 
     l = (int)clip_rect.l;
-    if (xi + textlen*xfs->max_bounds.width < l) return 0;               // left of screen
+    if (xi + textlen*font_limits.width < l) return 0; // left of screen
 
     start = 0;
-    if (xi < l) {                                                               // now clip left side
-        if (xfs->max_bounds.width == xfs->min_bounds.width) {           //  monospaced font
-            h = (l - xi)/xfs->max_bounds.width;
+
+    // now clip left side
+    if (xi < l) {
+        if (font_limits.is_monospaced()) {
+            h = (l - xi)/font_limits.width;
             if (inside_clipping_left) {
-                if ((l-xi)%xfs->max_bounds.width  >0) h += 1;
+                if ((l-xi)%font_limits.width  >0) h += 1;
             }
             if (h >= textlen) return 0;
             start    = h;
-            xi      += h*xfs->max_bounds.width;
+            xi      += h*font_limits.width;
             textlen -= h;
 
             if (textlen < 0) return 0;
             aw_assert(int(strlen(opt_str)) >= textlen);
         }
-        else {                                                         // non-monospaced font
+        else { // proportional font
             for (h=0; xi < l; h++) {
                 if (!(c = opt_str[h])) return 0;
                 xi += gcm->get_width_of_char(c);
@@ -738,9 +685,9 @@ int AW_device::text_overlay(int gc, const char *opt_str, long opt_len,  // eithe
         }
     }
 
-    // now clipp right side
-    if (xfs->max_bounds.width == xfs->min_bounds.width) {                       // monospaced font
-        h = ((int)clip_rect.r - xi) / xfs->max_bounds.width;
+    // now clip right side
+    if (font_limits.is_monospaced()) {
+        h = ((int)clip_rect.r - xi) / font_limits.width;
         if (h < textlen) {
             if (inside_clipping_right) {
                 textlen = h;
@@ -753,7 +700,7 @@ int AW_device::text_overlay(int gc, const char *opt_str, long opt_len,  // eithe
         if (textlen < 0) return 0;
         aw_assert(int(strlen(opt_str)) >= textlen);
     }
-    else {                                                                      // non-monospaced font
+    else { // proportional font
         l = (int)clip_rect.r - xi;
         for (h = start; l >= 0 && textlen > 0;  h++, textlen--) { // was textlen >= 0
             l -= gcm->get_width_of_char(opt_str[h]);

@@ -444,10 +444,6 @@ protected:
 public:
     // * third level functions (never virtual)
 
-    int cursor(int gc, AW_pos x0, AW_pos y0, AW_cursor_type type, AW_bitset filteri);
-
-    // convenience functions
-
     int line(int gc, const AW::LineVector& Line, AW_bitset filteri = AW_ALL_DEVICES) {
         return line_impl(gc, Line, filteri);
     }

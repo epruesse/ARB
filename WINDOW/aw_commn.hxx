@@ -11,10 +11,14 @@
 #ifndef _XLIB_H_
 #include <X11/Xlib.h>
 #endif
+#ifndef DOWNCAST_H
+#include <downcast.h>
+#endif
 
 #define AW_INT(x) (((x)>=0) ? (int) ((x)+.5) : (int)((x)-.5))
 
 class AW_common;
+class AW_common_Xm;
 
 class AW_GC : virtual Noncopyable {
     AW_common *common;
@@ -111,7 +115,6 @@ public:
 };
 
 class AW_GC_Xm : public AW_GC { // derived from Noncopyable
-    // motif-dependent
     GC          gc;
     XFontStruct curfont;
 
@@ -127,39 +130,42 @@ public:
     virtual void wm_set_font(AW_font font_nr, int size, int *found_size);
     virtual int get_available_fontsizes(AW_font font_nr, int *available_sizes) const;
 
-    // motif-dependent
+    inline AW_common_Xm *get_common() const;
+    
     GC get_gc() const { return gc; }
     const XFontStruct *get_xfont() const { return &curfont; }
 };
 
-
 class AW_common : virtual Noncopyable {
-    Display *display;
-    XID      window_id;
-    
     unsigned long*& frame_colors;
     unsigned long*& data_colors;
     long&           data_colors_size;
 
-    int        ngcs;
-    AW_GC_Xm **gcs;
+    int     ngcs;
+    AW_GC **gcs;
 
     AW_rectangle screen;
 
-    AW_GC_Xm *create_gc();
+    virtual AW_GC *create_gc() = 0;
 
 public:
-    AW_common(Display         *display_in,
-              XID              window_id_in,
-              unsigned long*&  fcolors,
+    AW_common(unsigned long*&  fcolors,
               unsigned long*&  dcolors,
-              long&            dcolors_count);
+              long&            dcolors_count)
+        : frame_colors(fcolors),
+          data_colors(dcolors),
+          data_colors_size(dcolors_count)
+    {
+        ngcs = 8;
+        gcs  = (AW_GC **)malloc(sizeof(void *)*ngcs);
+        memset((char *)gcs, 0, sizeof(void *)*ngcs);
+
+        screen.t = 0;
+        screen.b = -1;
+        screen.l = 0;
+        screen.r = -1;
+    }
     virtual ~AW_common() {}
-
-    void install_common_extends_cb(AW_window *aww, AW_area area); // call early
-
-    Display *get_display() const { return display; }
-    XID get_window_id() const { return window_id; }
 
     const AW_rectangle& get_screen() const { return screen; }
     void set_screen_size(unsigned int width, unsigned int height) {
@@ -189,11 +195,9 @@ public:
     void new_gc(int gc);
     
     bool gc_mapable(int gc) const { return gc<ngcs && gcs[gc]; }
-    const AW_GC_Xm *map_gc(int gc) const { aw_assert(gc_mapable(gc)); return gcs[gc]; }
-    AW_GC_Xm *map_mod_gc(int gc) { aw_assert(gc_mapable(gc)); return gcs[gc]; }
+    const AW_GC *map_gc(int gc) const { aw_assert(gc_mapable(gc)); return gcs[gc]; }
+    AW_GC *map_mod_gc(int gc) { aw_assert(gc_mapable(gc)); return gcs[gc]; }
 
-    GC get_GC(int gc) const { return map_gc(gc)->get_gc(); }
-    const XFontStruct *get_xfont(int gc) const { return map_gc(gc)->get_xfont(); }
     const AW_font_limits& get_font_limits(int gc, char c) const {
         // for one characters (c == 0 -> for all characters)
         return c
@@ -202,9 +206,47 @@ public:
     }
 };
 
+class AW_common_Xm: public AW_common { // derived from Noncopyable
+    Display *display;
+    XID      window_id;
+
+    void install_common_extends_cb(AW_window *aww, AW_area area); 
+
+public:
+    AW_common_Xm(Display         *display_in,
+                 XID              window_id_in,
+                 unsigned long*&  fcolors,
+                 unsigned long*&  dcolors,
+                 long&            dcolors_count,
+                 AW_window       *aww,
+                 AW_area          area)
+        : AW_common(fcolors, dcolors, dcolors_count),
+          display(display_in),
+          window_id(window_id_in)
+    {
+        install_common_extends_cb(aww, area);
+    }
+
+    virtual AW_GC *create_gc();
+
+    const AW_GC_Xm *map_gc(int gc) const { return DOWNCAST(const AW_GC_Xm*, AW_common::map_gc(gc)); }
+    AW_GC_Xm *map_mod_gc(int gc) { return DOWNCAST(AW_GC_Xm*, AW_common::map_mod_gc(gc)); }
+
+    Display *get_display() const { return display; }
+    XID get_window_id() const { return window_id; }
+
+    GC get_GC(int gc) const { return map_gc(gc)->get_gc(); }
+    const XFontStruct *get_xfont(int gc) const { return map_gc(gc)->get_xfont(); }
+};
+
+inline AW_common_Xm *AW_GC_Xm::get_common() const {
+    return DOWNCAST(AW_common_Xm*, AW_GC::get_common());
+}
+
 inline AW_pos x_alignment(AW_pos x_pos, AW_pos x_size, AW_pos alignment) { return x_pos - x_size*alignment; }
 
 #else
 #error aw_commn.hxx included twice
 #endif
+
 

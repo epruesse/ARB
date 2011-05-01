@@ -1570,16 +1570,14 @@ void AW_window::create_window_variables() {
 
 void AW_area_management::create_devices(AW_window *aww, AW_area ar) {
     AW_root *root = aww->get_root();
-    common = new AW_common(XtDisplay(area), XtWindow(area), p_global->color_table, aww->color_table, aww->color_table_size);
-    common->install_common_extends_cb(aww, ar);
+    common = new AW_common_Xm(XtDisplay(area), XtWindow(area), p_global->color_table, aww->color_table, aww->color_table_size, aww, ar);
 }
 
 const char *AW_window::GC_to_RGB(AW_device *device, int gc, int& red, int& green, int& blue) {
-    const AW_GC_Xm *gcm = device->get_common()->map_gc(gc);
-
-    unsigned pixel = (unsigned short)(gcm->get_color());
-    GB_ERROR error = 0;
-    XColor   query_color;
+    const AW_GC *gcm   = device->get_common()->map_gc(gc);
+    unsigned     pixel = (unsigned short)(gcm->get_color());
+    GB_ERROR     error = 0;
+    XColor       query_color;
 
     query_color.pixel = pixel;
     XQueryColor(p_global->display, p_global->colormap, &query_color);
@@ -1597,9 +1595,8 @@ const char *AW_window::GC_to_RGB(AW_device *device, int gc, int& red, int& green
 
 // Converts GC to RGB float values to the range (0 - 1.0)
 const char *AW_window::GC_to_RGB_float(AW_device *device, int gc, float& red, float& green, float& blue) {
-    AW_common      *common = device->get_common();
-    const AW_GC_Xm *gcm    = common->map_gc(gc);
-    aw_assert(gcm);
+    AW_common   *common = device->get_common();
+    const AW_GC *gcm    = common->map_gc(gc);
 
     unsigned pixel = (unsigned short)(gcm->get_color());
     GB_ERROR error = 0;

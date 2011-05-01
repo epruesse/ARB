@@ -4,6 +4,12 @@
 #ifndef AW_DEVICE_HXX
 #include <aw_device.hxx>
 #endif
+#ifndef DOWNCAST_H
+#include <downcast.h>
+#endif
+#ifndef AW_COMMN_HXX
+#include "aw_commn.hxx"
+#endif
 
 class AW_device_Xm : public AW_device {
     int fastflag;
@@ -19,6 +25,8 @@ class AW_device_Xm : public AW_device {
 
 public:
     AW_device_Xm(AW_common *commoni) : AW_device(commoni) {}
+
+    AW_common_Xm *get_common() const { return DOWNCAST(AW_common_Xm*, AW_device::get_common()); }
 
     void           init() {}
     AW_DEVICE_TYPE type();
