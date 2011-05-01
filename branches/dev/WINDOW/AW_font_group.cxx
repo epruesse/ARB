@@ -12,7 +12,7 @@
 // ==================================================================== //
 
 #include "aw_font_group.hxx"
-#include "aw_commn.hxx"
+#include "aw_common.hxx"
 
 AW_font_group::AW_font_group() {
     unregisterAll();

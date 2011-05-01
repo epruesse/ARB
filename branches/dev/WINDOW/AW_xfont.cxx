@@ -12,7 +12,7 @@
  * This software has been widely modified for usage inside ARB.
  */
 
-#include "aw_commn.hxx"
+#include "aw_common_xm.hxx"
 #include "aw_xfont.hxx"
 #include "aw_root.hxx"
 

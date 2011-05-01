@@ -12,7 +12,7 @@
 #include "aw_window_Xm_interface.hxx"
 #include <aw_window.hxx>
 #include <aw_window_Xm.hxx>
-#include <aw_commn.hxx>
+#include "aw_common_xm.hxx"
 #include <aw_root.hxx>
 
 XtAppContext AW_get_XtAppContext(AW_root *aw_root) {
