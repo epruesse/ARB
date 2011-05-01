@@ -116,7 +116,7 @@ public:
     bool          exactHit;     // true -> real click on text (not only near text)
 };
 
-bool AW_getBestClick(const AW::Position& click, AW_clicked_line *cl, AW_clicked_text *ct, AW_CL *cd1, AW_CL *cd2);
+bool AW_getBestClick(AW_clicked_line *cl, AW_clicked_text *ct, AW_CL *cd1, AW_CL *cd2);
 
 class AW_zoomable {
     AW::Vector offset;
