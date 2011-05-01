@@ -8,7 +8,6 @@
 //                                                                 //
 // =============================================================== //
 
-#include "aw_commn.hxx"
 #include "aw_at.hxx"
 #include "aw_nawar.hxx"
 #include "aw_xfig.hxx"

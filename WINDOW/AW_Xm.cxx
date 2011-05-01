@@ -8,7 +8,6 @@
 //                                                                 //
 // =============================================================== //
 
-#include "aw_commn.hxx"
 #include <aw_Xm.hxx>
 
 #if defined(WARN_TODO)

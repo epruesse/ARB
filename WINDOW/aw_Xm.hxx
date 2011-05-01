@@ -1,14 +1,8 @@
 #ifndef AW_XM_HXX
 #define AW_XM_HXX
 
-#ifndef AW_DEVICE_HXX
-#include <aw_device.hxx>
-#endif
-#ifndef DOWNCAST_H
-#include <downcast.h>
-#endif
-#ifndef AW_COMMN_HXX
-#include "aw_commn.hxx"
+#ifndef AW_COMMON_XM_HXX
+#include "aw_common_xm.hxx"
 #endif
 
 class AW_device_Xm : public AW_device {

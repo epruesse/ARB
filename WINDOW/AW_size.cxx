@@ -8,7 +8,7 @@
 //                                                                 //
 // =============================================================== //
 
-#include "aw_commn.hxx"
+#include "aw_common.hxx"
 
 #include <algorithm>
 
