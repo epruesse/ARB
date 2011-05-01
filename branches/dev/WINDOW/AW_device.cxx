@@ -258,96 +258,91 @@ void AW_zoomable::reset() {
 // -----------------
 //      AW_GC_Xm
 
-AW_GC_Xm::AW_GC_Xm(AW_common *commoni) {
-    common     = commoni;
-    line_width = 1;
-    style      = AW_SOLID;
-    function   = AW_COPY;
-    color      = 0;
-    grey_level = 0;
-
-    XGCValues val;
+AW_GC_Xm::AW_GC_Xm(AW_common *common_)
+    : AW_GC(common_)
+{
+     XGCValues val;
     val.line_width = 1;
     unsigned long value_mask = GCLineWidth;
 
-    gc = XCreateGC(common->get_display(), common->get_window_id(), value_mask, &val);
+    gc = XCreateGC(get_common()->get_display(), get_common()->get_window_id(), value_mask, &val);
 }
-
-
 AW_GC_Xm::~AW_GC_Xm() {
-    if (gc) XFreeGC(common->get_display(), gc);
+    if (gc) XFreeGC(get_common()->get_display(), gc);
+}
+void AW_GC_Xm::wm_set_lineattributes(short lwidth, AW_linestyle lstyle) {
+    switch (lstyle) {
+        case AW_SOLID:
+            XSetLineAttributes(get_common()->get_display(), gc, lwidth, LineSolid, CapButt, JoinBevel);
+            break;
+        case AW_DOTTED:
+            XSetLineAttributes(get_common()->get_display(), gc, lwidth, LineOnOffDash, CapButt, JoinBevel);
+            break;
+    }
+}
+void AW_GC_Xm::wm_set_function(AW_function mode) {
+    switch (mode) {
+        case AW_XOR:
+            XSetFunction(get_common()->get_display(), gc, GXxor);
+            break;
+        case AW_COPY:
+            XSetFunction(get_common()->get_display(), gc, GXcopy);
+            break;
+    }
+}
+void AW_GC_Xm::wm_set_foreground_color(unsigned long col) {
+    XSetForeground(get_common()->get_display(), gc, col);
 }
 
+// --------------
+//      AW_GC
 
-void AW_GC_Xm::set_fill(AW_grey_level grey_leveli) {    // <0 don't fill  0.0 white 1.0 black
+void AW_GC::set_fill(AW_grey_level grey_leveli) {
+    // <0 = don't fill, 0.0 = white, 1.0 = black
     grey_level = grey_leveli;
 }
-
-
-void AW_GC_Xm::set_lineattributes(AW_pos new_width_f, AW_linestyle new_style) {
+void AW_GC::set_lineattributes(AW_pos new_width_f, AW_linestyle new_style) {
     int new_width = AW_INT(new_width_f);
     if (new_style != style || new_width != line_width) {
         line_width = new_width;
         style      = new_style;
-
-        switch (style) {
-            case AW_SOLID:
-                XSetLineAttributes(common->get_display(), gc, line_width, LineSolid, CapButt, JoinBevel);
-                break;
-            case AW_DOTTED:
-                XSetLineAttributes(common->get_display(), gc, line_width, LineOnOffDash, CapButt, JoinBevel);
-                break;
-            default:
-                break;
-        }
+        wm_set_lineattributes(line_width, style);
     }
 }
-
-
-void AW_GC_Xm::set_function(AW_function mode) {
+void AW_GC::set_function(AW_function mode) {
     if (function != mode) {
-        switch (mode) {
-            case AW_XOR:
-                XSetFunction(common->get_display(), gc, GXxor);
-                break;
-            case AW_COPY:
-                XSetFunction(common->get_display(), gc, GXcopy);
-                break;
-        }
+        wm_set_function(mode);
         function = mode;
         set_foreground_color(color);
     }
 }
-
-void AW_GC_Xm::set_foreground_color(unsigned long col) {
+void AW_GC::set_foreground_color(unsigned long col) {
     color = (short)col;
     if (function == AW_XOR) col ^= common->get_XOR_color();
-    XSetForeground(common->get_display(), gc, col);
     last_fg_color =  col;
+    wm_set_foreground_color(col);
 }
 
 const AW_font_limits& AW_stylable::get_font_limits(int gc, char c) const {
     return get_common()->get_font_limits(gc, c);
 }
 
-int AW_GC_Xm::get_string_size(const char *str, long textlen) const {
+int AW_GC::get_string_size(const char *str, long textlen) const {
     // calculate display size of 'str'
-    if (!textlen) {
-        if (!str) return 0;
-        textlen = strlen(str);
-    }
+    // 'str' and/or 'textlen' may be 0
+    // 'str'     == 0 -> calculate max width of any text with length 'textlen'
+    // 'textlen' == 0 -> calls strlen when needed
+    // both 0 -> return 0
 
-    long l_width;
-    if (curfont.max_bounds.width == curfont.min_bounds.width || !str) { // monospaced font
-        l_width = textlen * curfont.max_bounds.width;
+    int width = 0;
+    if (font_limits.is_monospaced() || !str) {
+        if (!textlen && str) textlen = strlen(str);
+        width = textlen * font_limits.width;
     }
-    else { // non-monospaced font
-        l_width = 0;
-        for (int c = *(str++); c; c = *(str++)) {
-            l_width += width_of_chars[c];
-        }
+    else {
+        for (int c = *(str++); c; c = *(str++)) width += width_of_chars[c];
     }
-    return (int)l_width;
+    return width;
 }
 
 AW_GC_Xm *AW_common::create_gc() {
@@ -368,7 +363,10 @@ int AW_stylable::get_string_size(int gc, const char *str, long textlen) const {
     return get_common()->map_gc(gc)->get_string_size(str, textlen);
 }
 void AW_stylable::new_gc(int gc) { get_common()->new_gc(gc); }
-void AW_stylable::set_fill(int gc, AW_grey_level grey_level) { get_common()->map_mod_gc(gc)->set_fill(grey_level); }
+void AW_stylable::set_fill(int gc, AW_grey_level grey_level) {
+    // <0 = don't fill, 0.0 = white, 1.0 = black
+    get_common()->map_mod_gc(gc)->set_fill(grey_level);
+}
 void AW_stylable::set_font(int gc, AW_font font_nr, int size, int *found_size) {
     // if found_size != 0 -> return value for used font size
     get_common()->map_mod_gc(gc)->set_font(font_nr, size, found_size);

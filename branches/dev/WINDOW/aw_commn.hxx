@@ -16,39 +16,65 @@
 
 class AW_common;
 
-class AW_GC_Xm : virtual Noncopyable {
+class AW_GC : virtual Noncopyable {
+    AW_common *common;
+
+    // font
+    AW_font_limits         font_limits;
     mutable AW_font_limits one_letter;
-    AW_font_limits         all_letters;
+    short                  width_of_chars[256];
+    short                  ascent_of_chars[256];
+    short                  descent_of_chars[256];
 
-    GC           gc;
-    AW_common   *common;
-    XFontStruct  curfont;
+    // colors
+    short         color;
+    unsigned long last_fg_color; // effective color (as modified by 'function')
+    AW_pos        grey_level;
+    AW_function   function;
 
-    short width_of_chars[256];
-    short ascent_of_chars[256];
-    short descent_of_chars[256];
-
+    // lines
     short        line_width;
     AW_linestyle style;
-    short        color;
 
-    unsigned long last_fg_color;
-
+    // font
     short   fontsize;
     AW_font fontnr;
-    
-    AW_function function;
-    AW_pos      grey_level;
+
+protected:
+
+    void set_char_size(int i, int ascent, int descent, int width) {
+        ascent_of_chars[i]  = ascent;
+        descent_of_chars[i] = descent;
+        width_of_chars[i]   = width;
+        font_limits.notify_all(ascent, descent, width);
+    }
+    void set_no_char_size(int i) {
+        ascent_of_chars[i]  = 0;
+        descent_of_chars[i] = 0;
+        width_of_chars[i]   = 0;
+    }
 
 public:
+    AW_GC(AW_common *common_)
+        : common(common_),
+          color(0),
+          last_fg_color(0),
+          grey_level(0),
+          function(AW_COPY),
+          line_width(1),
+          style(AW_SOLID)
+    {}
+    virtual ~AW_GC() {}
 
-    AW_GC_Xm(AW_common *common);
-    ~AW_GC_Xm();
+    virtual void wm_set_foreground_color(unsigned long col)                          = 0;
+    virtual void wm_set_function(AW_function mode)                                   = 0;
+    virtual void wm_set_lineattributes(short lwidth, AW_linestyle lstyle)            = 0;
+    virtual void wm_set_font(AW_font font_nr, int size, int *found_size)             = 0;
+    virtual int get_available_fontsizes(AW_font font_nr, int *available_sizes) const = 0;
 
-    GC get_gc() const { return gc; }
-    const XFontStruct *get_xfont() const { return &curfont; }
+    AW_common *get_common() const { return common; }
 
-    const AW_font_limits& get_font_limits() const { return all_letters; }
+    const AW_font_limits& get_font_limits() const { return font_limits; }
     const AW_font_limits& get_font_limits(char c) const {
         aw_assert(c); // you want to use the version w/o parameter
         one_letter.ascent  = ascent_of_chars[safeCharIndex(c)];
@@ -62,22 +88,48 @@ public:
     short get_ascent_of_char(char c) const { return ascent_of_chars[safeCharIndex(c)]; }
     short get_descent_of_char(char c) const { return descent_of_chars[safeCharIndex(c)]; }
 
-    short get_line_width() const { return line_width>0 ? line_width : 1; }
+    int get_string_size(const char *str, long textlen) const;
+
+    // colors
+    void set_foreground_color(unsigned long color); 
     short get_color() const { return color; }
-    short get_fontsize() const { return fontsize; }
-    AW_font get_fontnr() const { return fontnr; }
-    AW_pos get_grey_level() const { return grey_level; }
     
     unsigned long get_last_fg_color() const { return last_fg_color; }
 
-    void set_fill(AW_grey_level grey_level); // <0 don't fill  0.0 white 1.0 black
-    void set_font(AW_font font_nr, int size, int *found_size);
-    void set_lineattributes(AW_pos width, AW_linestyle style);
+    AW_pos get_grey_level() const { return grey_level; }
+    void set_fill(AW_grey_level grey_level); 
     void set_function(AW_function function);
-    void set_foreground_color(unsigned long color);
 
-    int get_available_fontsizes(AW_font font_nr, int *available_sizes) const;
-    int get_string_size(const char *str, long textlen) const;
+    // lines
+    short get_line_width() const { return line_width>0 ? line_width : 1; }
+    void set_lineattributes(AW_pos width, AW_linestyle style);
+
+    // font
+    void set_font(AW_font font_nr, int size, int *found_size);
+    short get_fontsize() const { return fontsize; }
+    AW_font get_fontnr() const { return fontnr; }
+};
+
+class AW_GC_Xm : public AW_GC { // derived from Noncopyable
+    // motif-dependent
+    GC          gc;
+    XFontStruct curfont;
+
+public:
+
+    AW_GC_Xm(AW_common *common);
+    ~AW_GC_Xm();
+
+    // AW_GC interface (uses motif call)
+    virtual void wm_set_foreground_color(unsigned long col);
+    virtual void wm_set_function(AW_function mode);
+    virtual void wm_set_lineattributes(short lwidth, AW_linestyle lstyle);
+    virtual void wm_set_font(AW_font font_nr, int size, int *found_size);
+    virtual int get_available_fontsizes(AW_font font_nr, int *available_sizes) const;
+
+    // motif-dependent
+    GC get_gc() const { return gc; }
+    const XFontStruct *get_xfont() const { return &curfont; }
 };
 
 
