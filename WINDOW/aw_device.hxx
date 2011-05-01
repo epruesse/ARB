@@ -10,7 +10,12 @@
 #ifndef ARBTOOLS_H
 #include <arbtools.h>
 #endif
-
+#ifndef _GLIBCXX_ALGORITHM
+#include <algorithm>
+#endif
+#ifndef _LIMITS_H
+#include <limits.h>
+#endif
 
 #if defined(DEBUG) && defined(DEBUG_GRAPHICS)
 // if you want flush() to be called after every motif command :
@@ -257,14 +262,21 @@ struct AW_font_limits {
     short descent;
     short height;
     short width;
+    short min_width;
 
-    void reset() { ascent = descent = height = width = 0; }
+    void reset() {
+        ascent    = descent = height = width = 0;
+        min_width = SHRT_MAX;
+    }
 
-    void notify_ascent (int a_ascent) { if (a_ascent >ascent) ascent  = a_ascent; }
-    void notify_descent(int a_descent) { if (a_descent>descent) descent = a_descent; }
-    void notify_width  (int a_width) { if (a_width  >width) width   = a_width; }
+    void notify_ascent(short a) { ascent = std::max(a, ascent); }
+    void notify_descent(short d) { descent = std::max(d, descent); }
+    void notify_width(short w) {
+        width     = std::max(w, width);
+        min_width = std::min(w, min_width);
+    }
 
-    void notify_all(int a_ascent, int a_descent, int a_width) {
+    void notify_all(short a_ascent, short a_descent, short a_width) {
         notify_ascent (a_ascent);
         notify_descent(a_descent);
         notify_width  (a_width);
@@ -272,13 +284,13 @@ struct AW_font_limits {
 
     void calc_height() { height = ascent+descent+1; }
 
-    static int max(int i1, int i2) { return i1<i2 ? i2 : i1; }
+    bool is_monospaced() const { return width == min_width; }
 
     AW_font_limits() { reset(); }
     AW_font_limits(const AW_font_limits& lim1, const AW_font_limits& lim2)
-        : ascent(max(lim1.ascent, lim2.ascent))
-        , descent(max(lim1.descent, lim2.descent))
-        , width(max(lim1.width, lim2.width))
+        : ascent(std::max(lim1.ascent, lim2.ascent))
+        , descent(std::max(lim1.descent, lim2.descent))
+        , width(std::max(lim1.width, lim2.width))
     {
         calc_height();
     }
@@ -309,7 +321,7 @@ public:
     AW_common *get_common() const { return common; }
 
     void new_gc(int gc);
-    void set_fill(int gc, AW_grey_level grey_level); // <0 don't fill  0.0 white 1.0 black
+    void set_fill(int gc, AW_grey_level grey_level); 
     void set_font(int gc, AW_font fontnr, int size, int *found_size);
     void set_line_attributes(int gc, AW_pos width, AW_linestyle style);
     void set_function(int gc, AW_function function);
