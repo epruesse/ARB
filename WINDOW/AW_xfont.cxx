@@ -705,9 +705,6 @@ inline void CI_GetRowzeroCharInfo_2D(const XFontStruct *fs, unsigned col, const 
     }
 }
 
-#define AW_FONTINFO_CHAR_ASCII_MIN 32
-#define AW_FONTINFO_CHAR_ASCII_MAX 127
-
 void AW_GC_Xm::wm_set_font(const AW_font font_nr, const int size, int *found_size) {
     // if found_size != 0 -> return value for used font size
     XFontStruct *xfs;
