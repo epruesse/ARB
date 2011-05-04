@@ -302,7 +302,7 @@ void AW_GC::set_fill(AW_grey_level grey_leveli) {
     // <0 = don't fill, 0.0 = white, 1.0 = black
     grey_level = grey_leveli;
 }
-void AW_GC::set_lineattributes(AW_pos new_width_f, AW_linestyle new_style) {
+void AW_GC::set_line_attributes(AW_pos new_width_f, AW_linestyle new_style) {
     int new_width = AW_INT(new_width_f);
     if (new_style != style || new_width != line_width) {
         line_width = new_width;
@@ -376,7 +376,7 @@ int AW_stylable::get_available_fontsizes(int gc, AW_font font_nr, int *available
     return get_common()->map_gc(gc)->get_available_fontsizes(font_nr, available_sizes);
 }
 void AW_stylable::set_line_attributes(int gc, AW_pos width, AW_linestyle style) {
-    get_common()->map_mod_gc(gc)->set_lineattributes(width, style);
+    get_common()->map_mod_gc(gc)->set_line_attributes(width, style);
 }
 void AW_stylable::set_function(int gc, AW_function function) {
     get_common()->map_mod_gc(gc)->set_function(function);

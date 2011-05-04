@@ -135,7 +135,6 @@ public:
 
     void rotate(AW_pos angle);
 
-public:
     void set_offset(const AW::Vector& off) { offset = off*scale; }
     void shift(const AW::Vector& doff) { offset += doff*scale; }
 

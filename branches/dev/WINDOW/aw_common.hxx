@@ -21,6 +21,9 @@
 
 #define AW_INT(x) (((x)>=0) ? (int) ((x)+.5) : (int)((x)-.5))
 
+#define AW_FONTINFO_CHAR_ASCII_MIN 32
+#define AW_FONTINFO_CHAR_ASCII_MAX 127
+
 class AW_common;
 
 class AW_GC : virtual Noncopyable {
@@ -109,7 +112,7 @@ public:
 
     // lines
     short get_line_width() const { return line_width>0 ? line_width : 1; }
-    void set_lineattributes(AW_pos width, AW_linestyle style);
+    void set_line_attributes(AW_pos width, AW_linestyle style);
 
     // font
     void set_font(AW_font font_nr, int size, int *found_size);
@@ -146,7 +149,10 @@ public:
         screen.l = 0;
         screen.r = -1;
     }
-    virtual ~AW_common() {}
+    virtual ~AW_common() {
+        for (int i = 0; i<ngcs; ++i) delete gcs[i];
+        free(gcs);
+    }
 
     const AW_rectangle& get_screen() const { return screen; }
     void set_screen_size(unsigned int width, unsigned int height) {
@@ -154,6 +160,10 @@ public:
         screen.b = height;
         screen.l = 0;
         screen.r = width;
+    }
+    void set_screen(const AW_rectangle& screen_) {
+        // set clipping coordinates
+        screen = screen_;
     }
 
     unsigned long get_color(AW_color color) const {
