@@ -1533,7 +1533,7 @@ perl4ever: clean
 # -----------------------------------
 
 rebuild: clean
-	$(MAKE) build
+	$(MAKE) all
 
 relink: bin/bin.clean libclean
 	$(MAKE) build
