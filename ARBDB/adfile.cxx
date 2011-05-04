@@ -340,6 +340,8 @@ class difflineMode {
     int               count;
     mutable GB_ERROR  error;
 
+    static bool is_may;
+
     void add(const char *regEx, GB_CASE case_flag, const char *replacement) {
         if (!error) {
             gb_assert(count<MAX_REGS);
@@ -362,8 +364,8 @@ public:
             case 0: break;
             case 1:  {
                 add("[0-9]{2}:[0-9]{2}:[0-9]{2}", GB_MIND_CASE, "<TIME>");
-
                 add("(Mon|Tue|Wed|Thu|Fri|Sat|Sun)", GB_IGNORE_CASE, "<DOW>");
+
                 add("(January|February|March|April|May|June|July|August|September|October|November|December)", GB_IGNORE_CASE, "<Month>");
                 add("(Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)", GB_IGNORE_CASE, "<MON>");
 
@@ -377,8 +379,15 @@ public:
 
                 add("[0-9]{2}[ -]<MON>",   GB_IGNORE_CASE, "<DAY> <MON>");
                 add("[0-9]{2}[ -]<Month>", GB_IGNORE_CASE, "<DAY> <Month>");
-                
+
                 add("<DAY>, [0-9]{4}", GB_IGNORE_CASE, "<DAY> <YEAR>");
+
+                if (is_may) {
+                    // 'May' does not differ between short/long monthname
+                    // -> use less accurate tests in May
+                    add("<Month>", GB_MIND_CASE, "<MON>");
+                }
+
                 break;
             }
             default: gb_assert(0); break;
@@ -410,6 +419,8 @@ public:
     }
     void replaceAll(char*& str1, char*& str2) const { replaceAll(str1); replaceAll(str2); }
 };
+
+bool difflineMode::is_may = strstr(GB_date_string(), "May") != 0;
 
 static void cutEOL(char *s) {
     char *lf      = strchr(s, '\n');
