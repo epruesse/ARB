@@ -24,6 +24,8 @@
 #define AW_FONTINFO_CHAR_ASCII_MIN 32
 #define AW_FONTINFO_CHAR_ASCII_MAX 127
 
+#define AW_NO_COLOR (-1)
+
 class AW_common;
 
 class AW_GC : virtual Noncopyable {

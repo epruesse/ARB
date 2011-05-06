@@ -2743,8 +2743,10 @@ void awt_create_dtree_awars(AW_root *aw_root, AW_default def)
 
 static void fake_AD_map_viewer_cb(GBDATA *, AD_MAP_VIEWER_TYPE ) {}
 
+#define NO_COLOR ((unsigned long)AW_NO_COLOR)
+
 static unsigned long colors_def[] = {
-    -1UL, -1UL, -1UL, -1UL, -1UL, -1UL,
+    NO_COLOR, NO_COLOR, NO_COLOR, NO_COLOR, NO_COLOR, NO_COLOR,
     0x30b0e0,
     0xff8800, // 0xffffff, // cursor
     0xb6ffb6,
@@ -2775,7 +2777,7 @@ static unsigned long colors_def[] = {
     0x880088,
     0x000088,
     0x888800,
-    -1UL
+    NO_COLOR
 };
 static unsigned long *fcolors       = colors_def;
 static unsigned long *dcolors       = colors_def;
