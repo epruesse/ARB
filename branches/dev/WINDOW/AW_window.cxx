@@ -1619,18 +1619,15 @@ const char *AW_window::GC_to_RGB_float(AW_device *device, int gc, float& red, fl
 AW_color AW_window::alloc_named_data_color(int colnum, char *colorname) {
     if (!color_table_size) {
         color_table_size = AW_COLOR_MAX + colnum;
-        color_table = (unsigned long *)malloc(sizeof(unsigned long)
-                *color_table_size);
-        memset((char *)color_table, -1, (size_t)(color_table_size
-                *sizeof(unsigned long)));
+        color_table      = (unsigned long *)malloc(sizeof(unsigned long) *color_table_size);
+        for (int i = 0; i<color_table_size; ++i) color_table[i] = AW_NO_COLOR;
     }
     else {
         if (colnum>=color_table_size) {
-            color_table = (unsigned long *)realloc((char *)color_table, (8
-                    + colnum)*sizeof(long)); // valgrinders : never freed because AW_window never is freed
-            memset((char *)(color_table+color_table_size), -1, (int)(8
-                    + colnum - color_table_size) * sizeof(long));
-            color_table_size = 8+colnum;
+            long new_size = colnum+8;
+            color_table   = (unsigned long *)realloc((char *)color_table, new_size*sizeof(long)); // valgrinders : never freed because AW_window never is freed
+            for (int i = color_table_size; i<new_size; ++i) color_table[i] = AW_NO_COLOR;
+            color_table_size = new_size;
         }
     }
     XColor xcolor_returned, xcolor_exakt;
@@ -1652,20 +1649,19 @@ AW_color AW_window::alloc_named_data_color(int colnum, char *colorname) {
             col *= -1;
     }
     else { // Color monitor
-        if (color_table[colnum] != (unsigned long)-1) {
+        if (color_table[colnum] != (unsigned long)AW_NO_COLOR) {
             XFreeColors(p_global->display, p_global->colormap, &color_table[colnum], 1, 0);
         }
         if (XAllocNamedColor(p_global->display, p_global->colormap, colorname, &xcolor_returned, &xcolor_exakt) == 0) {
             aw_message(GBS_global_string("XAllocColor failed: %s\n", colorname));
-            color_table[colnum] = (unsigned long)-1;
+            color_table[colnum] = AW_NO_COLOR;
         }
         else {
             color_table[colnum] = xcolor_returned.pixel;
         }
     }
     if (colnum == AW_DATA_BG) {
-        XtVaSetValues(p_w->areas[AW_MIDDLE_AREA]->area,
-        XmNbackground, color_table[colnum], NULL);
+        XtVaSetValues(p_w->areas[AW_MIDDLE_AREA]->area, XmNbackground, color_table[colnum], NULL);
     }
     return (AW_color)colnum;
 }
@@ -1674,10 +1670,8 @@ void AW_window::create_devices() {
     unsigned long background_color;
     if (p_w->areas[AW_INFO_AREA]) {
         p_w->areas[AW_INFO_AREA]->create_devices(this, AW_INFO_AREA);
-        XtVaGetValues(p_w->areas[AW_INFO_AREA]->area,
-        XmNbackground, &background_color, NULL);
-        p_global->color_table[AW_WINDOW_DRAG] =
-        background_color ^ p_global->color_table[AW_WINDOW_FG];
+        XtVaGetValues(p_w->areas[AW_INFO_AREA]->area, XmNbackground, &background_color, NULL);
+        p_global->color_table[AW_WINDOW_DRAG] = background_color ^ p_global->color_table[AW_WINDOW_FG];
     }
     if (p_w->areas[AW_MIDDLE_AREA]) {
         p_w->areas[AW_MIDDLE_AREA]->create_devices(this, AW_MIDDLE_AREA);

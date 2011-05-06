@@ -7,12 +7,6 @@ A4
 Single
 -3
 80 2
-0 32 #ffffffffffffffff
-0 33 #ffffffffffffffff
-0 34 #ffffffffffffffff
-0 35 #ffffffffffffffff
-0 36 #ffffffffffffffff
-0 37 #ffffffffffffffff
 0 38 #30b0e0
 0 39 #ff8800
 0 40 #b6ffb6
@@ -43,7 +37,6 @@ Single
 0 65 #880088
 0 66 #000088
 0 67 #888800
-0 68 #ffffffffffffffff
 2 1 0 1 43 0 0 0 0 0.000 0 0 0 0 0 2
 	-25 0 1025 0
 2 1 0 1 43 0 0 0 0 0.000 0 0 0 0 0 2
