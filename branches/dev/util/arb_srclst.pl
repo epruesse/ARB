@@ -58,6 +58,7 @@ my %skipped_files = map { $_ => 1; } (
                                       'makeloc.here',
                                       'helpfiles.lst',
                                       'makeloc.here',
+                                      'postcompile.sav',
                                       'nt_date.h',
                                       'TAGS',
                                      );
@@ -92,6 +93,7 @@ my %skipped_extensions = map { $_ => 1; } (
                                            'stamp',
                                            'list',
                                            'log',
+                                           'rej',
                                            'swp',
                                            'bak',
                                            'old',
@@ -156,6 +158,7 @@ my @used_when_matchesFull = (
                              qr/\/UNIT_TESTER\/run\/.*\.inp$/o,
                              qr/\/UNIT_TESTER\/run\/.*\.in$/o,
                              qr/\/UNIT_TESTER\/run\/.*\.out$/o,
+                             qr/\/UNIT_TESTER\/run\/.*\.fig$/o,
                              qr/\/UNIT_TESTER\/run\/.*\.tree$/o,
                              qr/\/UNIT_TESTER\/valgrind\/arb_valgrind_logged$/o,
                              qr/^\.\/etc\//o,
