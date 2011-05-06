@@ -2891,7 +2891,7 @@ public:
     }
 
     void test_print_tree(AW_device_print *print_device, AP_tree_sort type, bool show_handles, int mode) {
-        const int      SCREENSIZE = 500;
+        const int      SCREENSIZE = 541; // use a prime as screensize to reduce rounding errors
         AW_device_size size_device(print_device->get_common());
 
         size_device.reset();
