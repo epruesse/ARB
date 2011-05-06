@@ -1656,7 +1656,6 @@ UNITS_WORKING = \
 	SL/REGEXPR/REGEXPR.test \
 	SL/SEQUENCE/SEQUENCE.test \
 	SL/TRANSLATE/TRANSLATE.test \
-	SL/TREEDISP/TREEDISP.test \
 	SL/TREE_READ/TREE_READ.test \
 	XML/XML.test \
 	SL/TREE_WRITE/TREE_WRITE.test \
@@ -1701,6 +1700,7 @@ UNITS_UNTESTABLE_ATM = \
 
 # for the moment, put all units containing tests into UNITS_TESTED:
 UNITS_TESTED = \
+	SL/TREEDISP/TREEDISP.test \
 	TOOLS/arb_test.test \
 	NTREE/NTREE.test \
 	AISC_MKPTPS/mkptypes.test \
