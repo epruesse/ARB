@@ -322,7 +322,7 @@ void AWT_popup_tree_export_window(AW_window *parent_win, AW_CL cl_canvas, AW_CL)
 
 
         aws->at("xfig"); aws->callback(AWT_print_tree_to_file_xfig, cl_canvas);
-        aws->create_button("START_XFIG", "GO XFIG", "X");
+        aws->create_button("START_XFIG", "EXPORT to XFIG", "X");
 
         aws->at("cancel"); aws->callback((AW_CB0)AW_POPDOWN);
         aws->create_button("CLOSE", "CANCEL", "C");
