@@ -34,7 +34,7 @@ int AW_device_print::line_impl(int gc, const LineVector& Line, AW_bitset filteri
             // fill_color(new), depth, pen_style, area_fill, style_val,
             // join_style(new), cap_style(new), radius, forward_arrow,
             // backward_arrow, npoints
-            fprintf(out, "2 1 0 %d %d 0 0 0 0 0.000 0 0 0 0 0 2\n\t%d %d %d %d\n",
+            fprintf(out, "2 1 0 %d %d 0 0 0 0 0.000 0 1 0 0 0 2\n\t%d %d %d %d\n",
                     AW_INT(line_width), find_color_idx(gcm->get_last_fg_color()),
                     AW_INT(clippedLine.xpos()),
                     AW_INT(clippedLine.ypos()),
