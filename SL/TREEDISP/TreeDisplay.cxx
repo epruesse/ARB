@@ -2827,10 +2827,10 @@ public:
 
 class fake_AWT_graphic_tree : public AWT_graphic_tree {
 public:
-    fake_AWT_graphic_tree(GBDATA *gbmain)
+    fake_AWT_graphic_tree(GBDATA *gbmain, const char *selected_species)
         : AWT_graphic_tree(NULL, gbmain, fake_AD_map_viewer_cb)
     {
-        species_name = strdup("VibFurni");
+        species_name = strdup(selected_species);
     }
 
     void test_show_tree(AW_device *device, AP_tree_sort type, int mode) {
@@ -2955,7 +2955,7 @@ void TEST_treeDisplay() {
     GB_shell  shell;
     GBDATA   *gb_main = GB_open("../../demo.arb", "r");
 
-    fake_AWT_graphic_tree agt(gb_main);
+    fake_AWT_graphic_tree agt(gb_main, "OctSprin");
     fake_AW_common        fake_common;
 
     AW_device_print print_dev(&fake_common);
