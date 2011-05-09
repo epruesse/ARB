@@ -2092,8 +2092,8 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, double x_son, DendroSubtreeL
                 disp_device->set_line_attributes(gc, get_linewidth(at)+baselinewidth, AW_SOLID);
 
                 disp_device->line(gc, x1, y1, x2, y1, group_bracket_filter);
-                disp_device->line(gc, x1, y2, x2, y2, group_bracket_filter);
-                disp_device->line(gc, x2, y1, x2, y2, group_bracket_filter);
+                disp_device->line(gc, x2, y2, x1, y2, group_bracket_filter);
+                disp_device->line(gc, x2, y2, x2, y1, group_bracket_filter);
 
                 limits.x_right = x2;
             
@@ -2139,7 +2139,7 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, double x_son, DendroSubtreeL
 
             disp_device->set_line_attributes(gc, lw, AW_SOLID);
             disp_device->line(gc, x_son, ny0, nx0,   ny0, line_filter);
-            disp_device->line(gc, x_son, ny0, x_son, ry,  vert_line_filter);
+            disp_device->line(gc, x_son, ry,  x_son, ny0, vert_line_filter);
         }
         {
             AW_click_cd cdr(disp_device, (AW_CL)at->rightson);
