@@ -40,10 +40,8 @@ namespace AW {
 
     const double EPSILON = 0.001; // how equal is nearly equal
 
-    inline bool nearlyEqual(const double& val1, const double& val2) {
-        return std::abs(val1-val2) < EPSILON;
-    }
-
+    inline bool nearlyEqual(const double& val1, const double& val2) { return std::abs(val1-val2) < EPSILON; }
+    inline double centroid(const double& val1, const double& val2) { return (val1+val2)*0.5; }
 
     // -------------------------------------------------------
     //      class Position represents 2-dimensional positions
@@ -204,10 +202,12 @@ namespace AW {
     inline Vector operator*(const double& f, const Vector& v) { return Vector(v) *= f; }
     inline Vector operator/(const Vector& v, const double& d) { return Vector(v) /= d; }
 
-    inline Position centroid(const Position& p1, const Position& p2) { return Position((p1.xpos()+p2.xpos())*0.5, (p1.ypos()+p2.ypos())*0.5); }
+    inline Position centroid(const Position& p1, const Position& p2) { return Position(centroid(p1.xpos(), p2.xpos()), centroid(p1.ypos(), p2.ypos())); }
 
     inline double Distance(const Position& from, const Position& to) { return Vector(from, to).length(); }
     inline double scalarProduct(const Vector& v1, const Vector& v2) { return v1.x()*v2.x() + v1.y()*v2.y(); }
+
+    inline bool are_distinct(const Position& p1, const Position& p2) { return Vector(p1, p2).has_length(); }
 
     // -------------------------------------------------
     //      a positioned vector, representing a line
@@ -248,6 +248,8 @@ namespace AW {
 
         void move(const Vector& movement) { Start += movement; }
         void moveTo(const Position& pos) { Start = pos; }
+
+        LineVector reverse() const { return LineVector(head(), Vector(ToEnd).neg()); }
     };
 
     Position crosspoint(const LineVector& l1, const LineVector& l2, double& factor_l1, double& factor_l2);

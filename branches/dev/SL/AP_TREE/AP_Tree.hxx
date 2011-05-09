@@ -299,6 +299,9 @@ public:
     void reset_rotation();
     void reset_line_width();
 
+    bool hasName(const char *Name) const {
+        return Name && name && Name[0] == name[0] && strcmp(Name, name) == 0;
+    }
 };
 
 #else

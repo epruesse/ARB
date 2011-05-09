@@ -506,6 +506,7 @@ public:
         return arc_impl(gc, filled, pos, xradius, yradius, start_degrees, arc_degrees, filteri);
     }
 
+    // @@@ rename to 'polygone' and pass 'filled' parameter
     int filled_area(int gc, int npoints, const AW_pos *points, AW_bitset filteri = AW_ALL_DEVICES)  {
         AW::Position pos[npoints];
         for (int n = 0; n<npoints; ++n) {
