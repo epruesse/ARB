@@ -13,6 +13,8 @@
 #include <awt_nds.hxx>
 #include <aw_awars.hxx>
 
+using namespace AW;
+
 /* *********************** paint sub tree ************************ */
 
 const int MAXSHOWNNODES = 5000;       // Something like max screen height/minimum font size
@@ -84,9 +86,8 @@ int AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, int x_offset) {
         int y = irs_gl.y + irs_gl.font_height_2;
         int gc = node->gr.gc;
 
-        if (node->name && node->name[0] == this->species_name[0] && !strcmp(node->name, this->species_name)) {
-            x_cursor = x;
-            y_cursor = irs_gl.y;
+        if (node->hasName(species_name)) {
+            cursor = Position(x, irs_gl.y);
 
             if (irs_gl.is_size_device) {
                 // hack to fix calculated cursor position:
@@ -98,8 +99,7 @@ int AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, int x_offset) {
                 
                 double correctionPerGroup = irs_gl.step_y * 2.22222; // was determined by measurements. depends on size of marked-species-font
                 double cursorCorrection   = -irs_gl.group_closed * correctionPerGroup;
-
-                y_cursor += cursorCorrection;
+                cursor.movey(cursorCorrection);
             }
         }
 
@@ -107,7 +107,7 @@ int AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, int x_offset) {
         if (!irs_gl.is_size_device) {
             AW_click_cd cd(irs_gl.device, (AW_CL)node);
             if (node->gb_node && GB_read_flag(node->gb_node)) {
-                NT_scalebox(gc, x, irs_gl.y, NT_BOX_WIDTH);
+                filled_box(gc, Position(x, irs_gl.y), NT_BOX_WIDTH);
             }
             str = make_node_text_nds(gb_main, node->gb_node, NDS_OUTPUT_LEAFTEXT, node->get_gbt_tree(), tree_static->get_tree_name());
             irs_gl.device->text(gc, str, x, y);
@@ -210,7 +210,7 @@ int AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, int x_offset) {
         if (left_y < irs_gl.max_y) { // clip y on top border
             AW_click_cd cd(irs_gl.device, (AW_CL)node->leftson);
             if (node->leftson->remark_branch) {
-                AWT_show_remark_branch(disp_device, node->leftson->remark_branch, node->leftson->is_leaf, left_x, left_y, 1, text_filter);
+                AWT_show_branch_remark(disp_device, node->leftson->remark_branch, node->leftson->is_leaf, left_x, left_y, 1, text_filter);
             }
             irs_gl.device->line(node->get_leftson()->gr.gc, x_offset, left_y, left_x,  left_y);
         }
@@ -224,7 +224,7 @@ int AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, int x_offset) {
     if (right_y > irs_gl.min_y && right_y < irs_gl.max_y) { // visible right branch in lower part of display
         AW_click_cd cd(irs_gl.device, (AW_CL)node->rightson);
         if (node->rightson->remark_branch) {
-            AWT_show_remark_branch(disp_device, node->rightson->remark_branch, node->rightson->is_leaf, right_x, right_y, 1, text_filter);
+            AWT_show_branch_remark(disp_device, node->rightson->remark_branch, node->rightson->is_leaf, right_x, right_y, 1, text_filter);
         }
         irs_gl.device->line(node->get_rightson()->gr.gc, x_offset, right_y, right_x,  right_y);
     }
@@ -310,8 +310,8 @@ void AWT_graphic_tree::show_irs_tree(AP_tree *at, AW_device *device, int height)
     paint_irs_sub_tree(at, 0);
 
     // provide some information for ruler:
-    y_pos                       = irs_gl.ruler_y;
+    list_tree_ruler_y           = irs_gl.ruler_y;
     irs_tree_ruler_scale_factor = irs_gl.x_scale;
-    
+
     device->pop_clip_scale();
 }
