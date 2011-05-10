@@ -330,6 +330,8 @@ public:
     const AW_font_limits& get_font_limits(int gc, char c) const; // for one characters (c == 0 -> for all characters)
 
     int get_available_fontsizes(int gc, AW_font font_nr, int *available_sizes);
+    
+    void reset_style();
 };
 
 class  AW_clip_scale_stack;
