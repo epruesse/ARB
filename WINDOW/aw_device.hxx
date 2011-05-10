@@ -320,7 +320,7 @@ public:
     AW_common *get_common() const { return common; }
 
     void new_gc(int gc);
-    void set_fill(int gc, AW_grey_level grey_level); 
+    void set_grey_level(int gc, AW_grey_level grey_level); 
     void set_font(int gc, AW_font fontnr, int size, int *found_size);
     void set_line_attributes(int gc, AW_pos width, AW_linestyle style);
     void set_function(int gc, AW_function function);

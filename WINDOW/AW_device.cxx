@@ -298,7 +298,7 @@ void AW_GC_Xm::wm_set_foreground_color(unsigned long col) {
 // --------------
 //      AW_GC
 
-void AW_GC::set_fill(AW_grey_level grey_leveli) {
+void AW_GC::set_grey_level(AW_grey_level grey_leveli) {
     // <0 = don't fill, 0.0 = white, 1.0 = black
     grey_level = grey_leveli;
 }
@@ -364,9 +364,9 @@ int AW_stylable::get_string_size(int gc, const char *str, long textlen) const {
     return get_common()->map_gc(gc)->get_string_size(str, textlen);
 }
 void AW_stylable::new_gc(int gc) { get_common()->new_gc(gc); }
-void AW_stylable::set_fill(int gc, AW_grey_level grey_level) {
+void AW_stylable::set_grey_level(int gc, AW_grey_level grey_level) {
     // <0 = don't fill, 0.0 = white, 1.0 = black
-    get_common()->map_mod_gc(gc)->set_fill(grey_level);
+    get_common()->map_mod_gc(gc)->set_grey_level(grey_level);
 }
 void AW_stylable::set_font(int gc, AW_font font_nr, int size, int *found_size) {
     // if found_size != 0 -> return value for used font size
