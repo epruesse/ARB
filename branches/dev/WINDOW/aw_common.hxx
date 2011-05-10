@@ -109,7 +109,7 @@ public:
     unsigned long get_last_fg_color() const { return last_fg_color; }
 
     AW_pos get_grey_level() const { return grey_level; }
-    void set_fill(AW_grey_level grey_level); 
+    void set_grey_level(AW_grey_level grey_level); 
     void set_function(AW_function function);
 
     // lines

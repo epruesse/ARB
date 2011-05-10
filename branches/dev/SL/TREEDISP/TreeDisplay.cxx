@@ -1863,7 +1863,7 @@ void AWT_graphic_tree::update(GBDATA *) {
 }
 
 void AWT_graphic_tree::filled_box(int gc, const Position& pos, double half_pixel_width) {
-    disp_device->set_fill(gc, this->grey_level);
+    disp_device->set_grey_level(gc, this->grey_level);
     double diam  = half_pixel_width*disp_device->get_unscale();
     double diam2 = diam+diam;
     disp_device->box(gc, true, pos.xpos()-diam, pos.ypos()-diam, diam2, diam2, mark_filter);
@@ -2006,7 +2006,7 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, Position& Pen, DendroSubtree
         Position group[4] = { s0, s1, n1, n0 };
 
         disp_device->set_line_attributes(at->gr.gc, get_linewidth(at)+baselinewidth, AW_SOLID);
-        disp_device->set_fill(at->gr.gc, grey_level);
+        disp_device->set_grey_level(at->gr.gc, grey_level);
         disp_device->filled_area(at->gr.gc, 4, group, line_filter);
 
         const AW_font_limits& charLimits  = disp_device->get_font_limits(at->gr.gc, 'A');
@@ -2203,7 +2203,7 @@ void AWT_graphic_tree::show_radial_tree(AP_tree * at, double x_center,
         q[4] = x_center+l_max*cos(w);
         q[5] = y_center+l_max*sin(w);
 
-        disp_device->set_fill(at->gr.gc, grey_level);
+        disp_device->set_grey_level(at->gr.gc, grey_level);
         disp_device->filled_area(at->gr.gc, 3, &q[0], line_filter);
 
         if (at->gb_node && (disp_device->get_filter() & text_filter)) {
