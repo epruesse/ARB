@@ -39,7 +39,7 @@ class AW_GC : virtual Noncopyable {
     short                  descent_of_chars[256];
 
     // colors
-    short         color;
+    unsigned long color;
     unsigned long last_fg_color; // effective color (as modified by 'function')
     AW_pos        grey_level;
     AW_function   function;
@@ -120,6 +120,12 @@ public:
     void set_font(AW_font font_nr, int size, int *found_size);
     short get_fontsize() const { return fontsize; }
     AW_font get_fontnr() const { return fontnr; }
+
+    void reset() {
+        set_line_attributes(0.0, AW_SOLID);
+        set_function(AW_COPY);
+        set_foreground_color(color); // undo effects from set_function()-calls
+    }
 };
 
 class AW_common : virtual Noncopyable {
@@ -154,6 +160,12 @@ public:
     virtual ~AW_common() {
         for (int i = 0; i<ngcs; ++i) delete gcs[i];
         free(gcs);
+    }
+
+    void reset_style() {
+        for (int i = 0; i<ngcs; ++i) {
+            if (gcs[i]) gcs[i]->reset();
+        }
     }
 
     const AW_rectangle& get_screen() const { return screen; }

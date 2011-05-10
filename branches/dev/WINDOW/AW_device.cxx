@@ -318,7 +318,7 @@ void AW_GC::set_function(AW_function mode) {
     }
 }
 void AW_GC::set_foreground_color(unsigned long col) {
-    color = (short)col;
+    color = col;
     if (function == AW_XOR) col ^= common->get_XOR_color();
     last_fg_color =  col;
     wm_set_foreground_color(col);
@@ -383,6 +383,9 @@ void AW_stylable::set_function(int gc, AW_function function) {
 }
 void AW_stylable::set_foreground_color(int gc, AW_color color) {
     get_common()->map_mod_gc(gc)->set_foreground_color(get_common()->get_color(color));
+}
+void AW_stylable::reset_style() {
+    return get_common()->reset_style();
 }
 
 static void AW_get_common_extends_cb(AW_window */*aww*/, AW_CL cl_common_xm, AW_CL) {
@@ -730,4 +733,5 @@ void AW_device::set_filter(AW_bitset filteri) { filter = filteri; }
 const AW_rectangle& AW_device::get_common_screen(const AW_common *common_) {
     return common_->get_screen();
 }
+
 
