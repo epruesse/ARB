@@ -149,6 +149,7 @@ int AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, int x_offset) {
             irs_gl.device->line(gc, x_offset, topy, x_offset, boty);
             irs_gl.device->line(gc, x_offset, boty, rx,       boty);
 
+            irs_gl.device->set_grey_level(node->gr.gc, grey_level);
             irs_gl.device->box(node->gr.gc, true, x_offset - (tipBoxSize>>1), topy - (tipBoxSize>>1), tipBoxSize, tipBoxSize, mark_filter);
             irs_gl.device->box(node->gr.gc, true, x_offset+2,                 irs_gl.y+irs_gl.step_y, vsize,      vsize);
 
@@ -189,6 +190,7 @@ int AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, int x_offset) {
         AW_click_cd cd(irs_gl.device, (AW_CL)node);
         irs_gl.device->line(gc, x_offset, last_y, x_offset+400, last_y);
 
+        irs_gl.device->set_grey_level(node->gr.gc, grey_level);
         irs_gl.device->box(node->gr.gc, true, x_offset- (tipBoxSize>>1), last_y- (tipBoxSize>>1), tipBoxSize, tipBoxSize, mark_filter);
         const char *s = GBS_global_string("%s (%i)", node_string, node->gr.leave_sum);
         irs_gl.device->text(node->gr.gc, s, x_offset + 10 + nodeBoxWidth, last_y + irs_gl.step_y + 1);
