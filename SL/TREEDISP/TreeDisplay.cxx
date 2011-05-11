@@ -912,24 +912,6 @@ inline double discrete_ruler_length(double analog_ruler_length, double min_lengt
     return drl;
 }
 
-inline int get_linewidth(AP_tree *at) {
-    int linewidth = 0;
-    if (at->father) {
-        AP_tree *at_fath = at->get_father();
-        if (at_fath->leftson == at) linewidth = at_fath->gr.left_linewidth;
-        else                        linewidth = at_fath->gr.right_linewidth;
-    }
-    return linewidth;
-}
-
-inline void set_linewidth(AP_tree *at, int linewidth) {
-    if (at->father) {
-        AP_tree *at_fath = at->get_father();
-        if (at_fath->leftson == at) at_fath->gr.left_linewidth  = linewidth;
-        else                        at_fath->gr.right_linewidth = linewidth;
-    }
-}
-
 static bool command_on_GBDATA(GBDATA *gbd, AWT_COMMAND_MODE cmd, AW_event_type type, int button, AD_map_viewer_cb map_viewer_cb) {
     // modes listed here are available in ALL tree-display-modes (i.e. as well in listmode)
 
@@ -1439,8 +1421,8 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
                         if (cl->exists) {
                             at = (AP_tree *)cl->client_data1;
                             if (at) {
-                                at->reset_line_width();
-                                set_linewidth(at, 0);
+                                at->reset_child_linewidths();
+                                at->set_linewidth(0);
                                 exports.save    = 1;
                                 exports.refresh = 1;
                             }
@@ -1870,7 +1852,7 @@ void AWT_graphic_tree::filled_box(int gc, const Position& pos, double half_pixel
 }
 
 void AWT_graphic_tree::empty_box(int gc, const AW::Position& pos, double half_pixel_width) {
-    disp_device->set_line_attributes(gc, 0.0, AW_SOLID);
+    disp_device->set_line_attributes(gc, 1.0, AW_SOLID);
     double diam  = half_pixel_width*disp_device->get_unscale();
     double diam2 = diam+diam;
     disp_device->box(gc, false, pos.xpos()-diam, pos.ypos()-diam, diam2, diam2, mark_filter);
@@ -1964,7 +1946,10 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, Position& Pen, DendroSubtree
 
     AW_click_cd cd(disp_device, (AW_CL)at);
     if (at->is_leaf) {
-        if (at->gb_node && GB_read_flag(at->gb_node)) filled_box(at->gr.gc, Pen, NT_BOX_WIDTH);
+        if (at->gb_node && GB_read_flag(at->gb_node)) {
+            set_line_attributes_for(at);
+            filled_box(at->gr.gc, Pen, NT_BOX_WIDTH);
+        }
         if (at->hasName(species_name)) cursor = Pen;
 
         if (at->name && (disp_device->get_filter() & text_filter)) {
@@ -2005,7 +1990,7 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, Position& Pen, DendroSubtree
 
         Position group[4] = { s0, s1, n1, n0 };
 
-        disp_device->set_line_attributes(at->gr.gc, get_linewidth(at)+baselinewidth, AW_SOLID);
+        set_line_attributes_for(at);
         disp_device->set_grey_level(at->gr.gc, grey_level);
         disp_device->filled_area(at->gr.gc, 4, group, line_filter);
 
@@ -2076,9 +2061,9 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, Position& Pen, DendroSubtree
 
                 Rectangle bracket(Position(x1, y1), Position(x2, y2));
 
-                unsigned int gc = at->gr.gc;
-                disp_device->set_line_attributes(gc, get_linewidth(at)+baselinewidth, AW_SOLID);
+                set_line_attributes_for(at);
 
+                unsigned int gc = at->gr.gc;
                 disp_device->line(gc, bracket.upper_edge(), group_bracket_filter);
                 disp_device->line(gc, bracket.lower_edge(), group_bracket_filter);
                 disp_device->line(gc, bracket.right_edge(), group_bracket_filter);
@@ -2106,23 +2091,20 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, Position& Pen, DendroSubtree
                 }
             }
         }
-        
+
         for (int right = 0; right<2; ++right) {
             AP_tree         *son;
             GBT_LEN          len;
-            int              lwidth;
             const Position&  n = right ? n1 : n0;
             const Position&  s = right ? s1 : s0;
 
             if (right) {
-                son    = at->get_rightson();
-                len    = at->rightlen;
-                lwidth = at->gr.right_linewidth+baselinewidth;
+                son = at->get_rightson();
+                len = at->rightlen;
             }
             else {
                 son = at->get_leftson();
                 len = at->leftlen;
-                lwidth = at->gr.left_linewidth+baselinewidth;
             }
 
             AW_click_cd cds(disp_device, (AW_CL)son);
@@ -2135,8 +2117,8 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, Position& Pen, DendroSubtree
                 }
             }
 
+            set_line_attributes_for(son);
             unsigned int gc = son->gr.gc;
-            disp_device->set_line_attributes(gc, lwidth, AW_SOLID);
             disp_device->line(gc, s, n, line_filter);
             disp_device->line(gc, attach, s, vert_line_filter);
         }
@@ -2162,12 +2144,12 @@ void AWT_graphic_tree::scale_text_koordinaten(AW_device *device, int gc, double&
 
 void AWT_graphic_tree::show_radial_tree(AP_tree * at, double x_center,
                                         double y_center, double tree_spread, double tree_orientation,
-                                        double x_root, double y_root, int linewidth)
+                                        double x_root, double y_root)
 {
     double l, r, w, z, l_min, l_max;
 
     AW_click_cd cd(disp_device, (AW_CL)at);
-    disp_device->set_line_attributes(at->gr.gc, linewidth+baselinewidth, AW_SOLID);
+    set_line_attributes_for(at);
     disp_device->line(at->gr.gc, x_root, y_root, x_center, y_center, line_filter);
 
     // draw mark box
@@ -2240,7 +2222,7 @@ void AWT_graphic_tree::show_radial_tree(AP_tree * at, double x_center,
                              y_center + z * sin(w),
                              (at->leftson->is_leaf) ? 1.0 : tree_spread * l * at_leftson->gr.spread,
                              w,
-                             x_center, y_center, at->gr.left_linewidth);
+                             x_center, y_center);
 
             /*!* right branch ***/
             w = tree_orientation - l*0.5*tree_spread + at->gr.right_angle;
@@ -2250,7 +2232,7 @@ void AWT_graphic_tree::show_radial_tree(AP_tree * at, double x_center,
                              y_center + z * sin(w),
                              (at->rightson->is_leaf) ? 1.0 : tree_spread * r * at_rightson->gr.spread,
                              w,
-                             x_center, y_center, at->gr.right_linewidth);
+                             x_center, y_center);
         }
         else {
             /*!* right branch ***/
@@ -2261,7 +2243,7 @@ void AWT_graphic_tree::show_radial_tree(AP_tree * at, double x_center,
                              y_center + z * sin(w),
                              (at->rightson->is_leaf) ? 1.0 : tree_spread * r * at_rightson->gr.spread,
                              w,
-                             x_center, y_center, at->gr.right_linewidth);
+                             x_center, y_center);
 
             /*!* left branch ***/
             w = r*0.5*tree_spread + tree_orientation + at->gr.left_angle;
@@ -2271,7 +2253,7 @@ void AWT_graphic_tree::show_radial_tree(AP_tree * at, double x_center,
                              y_center + z * sin(w),
                              (at->leftson->is_leaf) ? 1.0 : tree_spread * l * at_leftson->gr.spread,
                              w,
-                             x_center, y_center, at->gr.left_linewidth);
+                             x_center, y_center);
         }
     }
     if (show_circle) {
@@ -2525,7 +2507,10 @@ void AWT_graphic_tree::show_nds_list(GBDATA *, bool use_nds) {
                 if (y_position>y2) break;           // no need to examine rest of species
 
                 bool is_marked = nds_show_all ? GB_read_flag(gb_species) : true;
-                if (is_marked) filled_box(AWT_GC_SELECTED, Position(0, y_position), NT_BOX_WIDTH);
+                if (is_marked) {
+                    disp_device->set_line_attributes(AWT_GC_SELECTED, baselinewidth, AW_SOLID);
+                    filled_box(AWT_GC_SELECTED, Position(0, y_position), NT_BOX_WIDTH);
+                }
 
                 int gc                            = AWT_GC_NSELECTED;
                 if (nds_show_all && is_marked) gc = AWT_GC_SELECTED;
@@ -2608,6 +2593,7 @@ void AWT_graphic_tree::show(AW_device *device) {
     }
 
     disp_device = device;
+    disp_device->reset_style();
 
     const AW_font_limits& charLimits = disp_device->get_font_limits(AWT_GC_SELECTED, 0);
 
@@ -2657,7 +2643,7 @@ void AWT_graphic_tree::show(AW_device *device) {
             }
             case AP_TREE_RADIAL:
                 empty_box(tree_root_display->gr.gc, Origin, NT_ROOT_WIDTH);
-                show_radial_tree(tree_root_display, 0, 0, 2*M_PI, 0.0, 0, 0, tree_root_display->gr.left_linewidth);
+                show_radial_tree(tree_root_display, 0, 0, 2*M_PI, 0.0, 0, 0);
                 break;
 
             case AP_TREE_IRS:
@@ -2808,7 +2794,8 @@ public:
 
     void test_show_tree(AW_device *device, AP_tree_sort type, int mode) {
         disp_device = device;
-
+        disp_device->reset_style();
+        
         const AW_font_limits& charLimits = disp_device->get_font_limits(AWT_GC_SELECTED, 0);
 
         scaled_font.init(charLimits, disp_device->get_unscale());
@@ -2838,7 +2825,7 @@ public:
             }
             case AP_TREE_RADIAL: {
                 empty_box(tree_root_display->gr.gc, Origin, NT_ROOT_WIDTH);
-                show_radial_tree(tree_root_display, 0, 0, 2*M_PI, 0.0, 0, 0, tree_root_display->gr.left_linewidth);
+                show_radial_tree(tree_root_display, 0, 0, 2*M_PI, 0.0, 0, 0);
                 break;
             }
             case AP_TREE_IRS: {
@@ -2950,10 +2937,12 @@ void TEST_treeDisplay() {
         for (int color = 0; color <= 1; ++color) {
             print_dev.set_color_mode(color);
             for (AP_tree_sort type = AP_TREE_NORMAL; type <= AP_LIST_SIMPLE; type = AP_tree_sort(type+1)) {
+            // for (AP_tree_sort type = AP_LIST_SIMPLE; type >= AP_TREE_NORMAL; type = AP_tree_sort(type-1)) { // @@@ does not pass yet
                 if (spoolnameof[type]) {
                     char *spool_name     = GBS_global_string_copy("display/%s_%c%c", spoolnameof[type], "MC"[color], "NH"[show_handles]);
                     char *spool_file     = GBS_global_string_copy("%s_curr.fig", spool_name);
                     char *spool_expected = GBS_global_string_copy("%s.fig", spool_name);
+
 
 // #define TEST_AUTO_UPDATE // dont test, instead update expected results
 
@@ -2972,7 +2961,9 @@ void TEST_treeDisplay() {
                     print_dev.close();
 
 #if !defined(TEST_AUTO_UPDATE)
-                    TEST_ASSERT_TEXTFILES_EQUAL(spool_file, spool_expected);
+                    // if (strcmp(spool_expected, "display/irs_CH.fig") == 0) {
+                        TEST_ASSERT_TEXTFILES_EQUAL(spool_file, spool_expected);
+                    // }
                     TEST_ASSERT_ZERO_OR_SHOW_ERRNO(unlink(spool_file));
 #endif
                     free(spool_expected);

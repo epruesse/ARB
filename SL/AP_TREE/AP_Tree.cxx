@@ -1529,13 +1529,13 @@ void AP_tree::reset_rotation() {
     }
 }
 
-void AP_tree::reset_line_width() {
+void AP_tree::reset_child_linewidths() {
     if (!is_leaf) {
         gr.left_linewidth  = 0;
         gr.right_linewidth = 0;
 
-        get_leftson()->reset_line_width();
-        get_rightson()->reset_line_width();
+        get_leftson()->reset_child_linewidths();
+        get_rightson()->reset_child_linewidths();
     }
 }
 

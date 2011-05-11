@@ -146,8 +146,7 @@ class AWT_graphic_tree : public AWT_graphic, virtual Noncopyable {
                           double   tree_sprad,
                           double   tree_orientation,
                           double   x_root,
-                          double   y_root,
-                          int      linewidth);
+                          double   y_root);
 
     void show_nds_list(GBDATA * gb_main, bool use_nds);
     void show_irs_tree(AP_tree *at, AW_device *device, int height);
@@ -158,6 +157,10 @@ class AWT_graphic_tree : public AWT_graphic, virtual Noncopyable {
 
     const char *show_ruler(AW_device *device, int gc);
     void        rot_show_triangle(AW_device *device);
+
+    void set_line_attributes_for(AP_tree *at) const {
+        disp_device->set_line_attributes(at->gr.gc, at->get_linewidth()+baselinewidth, AW_SOLID);
+    }
 
 protected:
 
