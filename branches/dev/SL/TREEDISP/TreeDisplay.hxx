@@ -104,7 +104,6 @@ class AWT_graphic_tree : public AWT_graphic, virtual Noncopyable {
     int zombies; // # of zombies during last load()
     int duplicates; // # of duplicates during last load()
 
-    int draw_slot(int x_offset, bool draw_at_tips); // return max_x
     int paint_irs_sub_tree(AP_tree *node, int x_offset); // returns y pos
 
     void unload();
