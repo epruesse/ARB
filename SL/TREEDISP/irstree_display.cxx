@@ -35,12 +35,6 @@ static struct {
 
     AW_device *device;
 
-    int      nodes_xpos[MAXSHOWNNODES];   // needed for Query results drawing
-    int      nodes_ypos[MAXSHOWNNODES];
-    AP_tree *nodes_id[MAXSHOWNNODES];
-    int      nodes_ntip;                  // counts the tips stored in nodes_xx
-    int      nodes_nnnodes;               // counts the inner nodes (reverse counter !!!)
-
     int font_height_2;
     int is_size_device;
 } irs_gl;
@@ -254,41 +248,8 @@ int AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, int x_offset) {
         irs_gl.device->line(gc, x_offset-1, irs_gl.y, x_offset+400, irs_gl.y); // opened-group-frame
         irs_gl.device->line(gc, x_offset-1, last_y, x_offset-1,  irs_gl.y); // opened-group-frame
     }
-    if (0 &&  !irs_gl.is_size_device) { // @@@ wtf ? 
-        if (irs_gl.nodes_nnnodes>irs_gl.nodes_ntip+1) {
-            irs_gl.nodes_nnnodes--;
-            irs_gl.nodes_xpos[irs_gl.nodes_nnnodes] = x_offset;
-            irs_gl.nodes_ypos[irs_gl.nodes_nnnodes] = y_center;
-            irs_gl.nodes_id[irs_gl.nodes_nnnodes] = node;
-        }
-    }
-
     return y_center;
 }
-
-int AWT_graphic_tree::draw_slot(int x_offset, bool draw_at_tips) {
-    int      maxx     = x_offset;
-    NDS_Type nds_mode = draw_at_tips ? NDS_OUTPUT_LEAFTEXT : NDS_OUTPUT_SPACE_PADDED;
-
-    for (int i=0; i<irs_gl.nodes_ntip; i++) {
-        AP_tree *tip = irs_gl.nodes_id[i];
-        const char *str = make_node_text_nds(gb_main, tip->gb_node, nds_mode, tip->get_gbt_tree(), tree_static->get_tree_name());
-        int len = irs_gl.device->get_string_size(tip->gr.gc, str, 0);
-        int x = 0;
-        int y = irs_gl.nodes_ypos[i] + irs_gl.font_height_2;
-        AW_click_cd cd(irs_gl.device, (AW_CL)tip);
-        if (draw_at_tips) {
-            x = x_offset + irs_gl.nodes_xpos[i];
-        }
-        else {
-            irs_gl.device->text(tip->gr.gc, str, x, irs_gl.nodes_ypos[i]);
-        }
-        if (x + len > maxx) maxx = x+len;
-        irs_gl.device->text(tip->gr.gc, str, x, y);
-    }
-    return maxx;
-}
-
 
 void AWT_graphic_tree::show_irs_tree(AP_tree *at, AW_device *device, int height) {
     device->push_clip_scale();
@@ -301,8 +262,6 @@ void AWT_graphic_tree::show_irs_tree(AP_tree *at, AW_device *device, int height)
     device->rtransform(device->clip_rect.l, device->clip_rect.t, clipped_l, clipped_t);
     device->rtransform(device->clip_rect.r, device->clip_rect.b, clipped_r, clipped_b);
 
-    irs_gl.nodes_nnnodes  = MAXSHOWNNODES;
-    irs_gl.nodes_ntip     = 0;
     irs_gl.font_height_2  = limits.ascent/2;
     irs_gl.device         = device;
     irs_gl.ftrst_species  = true;
