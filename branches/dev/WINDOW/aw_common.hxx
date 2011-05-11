@@ -128,45 +128,56 @@ public:
     }
 };
 
-class AW_common : virtual Noncopyable {
+class AW_GC_set : virtual Noncopyable {
+    int     count;
+    AW_GC **gcs;
+
+public:
+    AW_GC_set() : count(0), gcs(NULL) {}
+    ~AW_GC_set() {
+        for (int i = 0; i<count; ++i) delete gcs[i];
+        free(gcs);
+    }
+    void reset_style() {
+        for (int i = 0; i<count; ++i) {
+            if (gcs[i]) gcs[i]->reset();
+        }
+    }
+    bool gc_mapable(int gc) const { return gc<count && gcs[gc]; }
+    const AW_GC *map_gc(int gc) const { aw_assert(gc_mapable(gc)); return gcs[gc]; }
+    AW_GC *map_mod_gc(int gc) { aw_assert(gc_mapable(gc)); return gcs[gc]; }
+
+    void add_gc(int gi, AW_GC *agc);
+};
+
+
+class AW_common {
     unsigned long*& frame_colors;
     unsigned long*& data_colors;
     long&           data_colors_size;
 
-    int     ngcs;
-    AW_GC **gcs;
-
+    AW_GC_set gcset;
+    
     AW_rectangle screen;
 
     virtual AW_GC *create_gc() = 0;
 
 public:
-    AW_common(unsigned long*&  fcolors,
-              unsigned long*&  dcolors,
-              long&            dcolors_count)
+    AW_common(unsigned long*& fcolors,
+              unsigned long*& dcolors,
+              long&           dcolors_count)
         : frame_colors(fcolors),
           data_colors(dcolors),
           data_colors_size(dcolors_count)
     {
-        ngcs = 8;
-        gcs  = (AW_GC **)malloc(sizeof(void *)*ngcs);
-        memset((char *)gcs, 0, sizeof(void *)*ngcs);
-
         screen.t = 0;
         screen.b = -1;
         screen.l = 0;
         screen.r = -1;
     }
-    virtual ~AW_common() {
-        for (int i = 0; i<ngcs; ++i) delete gcs[i];
-        free(gcs);
-    }
+    virtual ~AW_common() {}
 
-    void reset_style() {
-        for (int i = 0; i<ngcs; ++i) {
-            if (gcs[i]) gcs[i]->reset();
-        }
-    }
+    void reset_style() { gcset.reset_style(); }
 
     const AW_rectangle& get_screen() const { return screen; }
     void set_screen_size(unsigned int width, unsigned int height) {
@@ -197,11 +208,11 @@ public:
     unsigned long get_XOR_color() const {
         return data_colors ? data_colors[AW_DATA_BG] : frame_colors[AW_WINDOW_BG];
     }
-    void new_gc(int gc);
     
-    bool gc_mapable(int gc) const { return gc<ngcs && gcs[gc]; }
-    const AW_GC *map_gc(int gc) const { aw_assert(gc_mapable(gc)); return gcs[gc]; }
-    AW_GC *map_mod_gc(int gc) { aw_assert(gc_mapable(gc)); return gcs[gc]; }
+    void new_gc(int gc) { gcset.add_gc(gc, create_gc()); }
+    bool gc_mapable(int gc) const { return gcset.gc_mapable(gc); }
+    const AW_GC *map_gc(int gc) const { return gcset.map_gc(gc); }
+    AW_GC *map_mod_gc(int gc) { return gcset.map_mod_gc(gc); }
 
     const AW_font_limits& get_font_limits(int gc, char c) const {
         // for one characters (c == 0 -> for all characters)
@@ -217,3 +228,4 @@ inline AW_pos x_alignment(AW_pos x_pos, AW_pos x_size, AW_pos alignment) { retur
 #else
 #error aw_common.hxx included twice
 #endif // AW_COMMON_HXX
+
