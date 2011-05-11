@@ -2707,24 +2707,24 @@ static void fake_AD_map_viewer_cb(GBDATA *, AD_MAP_VIEWER_TYPE ) {}
 static unsigned long colors_def[] = {
     NO_COLOR, NO_COLOR, NO_COLOR, NO_COLOR, NO_COLOR, NO_COLOR,
     0x30b0e0,
-    0xff8800, // 0xffffff, // cursor
-    0xb6ffb6,
-    0x53d3ff,
-    0x808080, // 0xffffff,
-    0x000000,
-    0xf0c000, // 0xffe560, // marked
-    0xbb8833,
-    0x622300,
-    0x977a0e,
-    0x000000,
-    0xffff00,
-    0xff0000,
-    0xff00ff,
-    0x00ff00,
-    0x00ffff,
-    0x0000ff,
-    0x808080, // 0xffffff,
-    0xd50000,
+    0xff8800, // AWT_GC_CURSOR
+    0xa3b3cf, // AWT_GC_BRANCH_REMARK
+    0x53d3ff, // AWT_GC_BOOTSTRAP
+    0x808080, // AWT_GC_BOOTSTRAP_LIMITED
+    0x000000, // AWT_GC_GROUPS
+    0xf0c000, // AWT_GC_SELECTED
+    0xbb8833, // AWT_GC_UNDIFF
+    0x622300, // AWT_GC_NSELECTED
+    0x977a0e, // AWT_GC_SOME_MISMATCHES
+    0x000000, // AWT_GC_BLACK
+    0xffff00, // AWT_GC_YELLOW
+    0xff0000, // AWT_GC_RED
+    0xff00ff, // AWT_GC_MAGENTA
+    0x00ff00, // AWT_GC_GREEN
+    0x00ffff, // AWT_GC_CYAN
+    0x0000ff, // AWT_GC_BLUE
+    0x808080, // AWT_GC_WHITE
+    0xd50000, // AWT_GC_FIRST_COLOR_GROUP
     0x00c0a0, 
     0x00ff77,
     0xc700c7,
