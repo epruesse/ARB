@@ -148,7 +148,7 @@ class AWT_graphic_tree : public AWT_graphic, virtual Noncopyable {
                           double   y_root);
 
     void show_nds_list(GBDATA * gb_main, bool use_nds);
-    void show_irs_tree(AP_tree *at, AW_device *device, int height);
+    void show_irs_tree(AP_tree *at, int height);
 
     void filled_box(int gc, const AW::Position& pos, double width);
     void empty_box(int gc, const AW::Position& pos, double width);
