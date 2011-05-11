@@ -33,26 +33,22 @@ static struct {
     int    group_closed;
     double x_scale;
 
-    AW_device *device;
-
     int font_height_2;
     int is_size_device;
-} irs_gl;
 
-void draw_top_separator() {
-    int gc = AWT_GC_GROUPS;
-    int y;
-    irs_gl.ftrst_species = false;
-    if (!irs_gl.is_size_device) {
-        for (y = irs_gl.min_y; y< irs_gl.min_y+4; y++) {
-            irs_gl.device->line(gc, -10000, y, 10000, y);
+    void draw_top_separator(AW_device *device) {
+        ftrst_species = false;
+        if (!is_size_device) {
+            for (int yy = min_y; yy< min_y+4; yy++) {
+                device->line(AWT_GC_GROUPS, -10000, yy, 10000, yy);
+            }
         }
     }
-}
+
+    
+} irs_gl;
 
 int AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, int x_offset) {
-    // @@@ paint_irs_sub_tree looks like it would like to be a member of irs_gl
-
     int left_y;
     int left_x;
     int right_y;
@@ -74,7 +70,7 @@ int AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, int x_offset) {
     if (node->is_leaf) {
         irs_gl.y+=irs_gl.step_y;
         if (irs_gl.ftrst_species) {
-            draw_top_separator();
+            irs_gl.draw_top_separator(disp_device);
         }
         int x = x_offset;
         int y = irs_gl.y + irs_gl.font_height_2;
@@ -99,13 +95,13 @@ int AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, int x_offset) {
 
         const char *str = 0;
         if (!irs_gl.is_size_device) {
-            AW_click_cd cd(irs_gl.device, (AW_CL)node);
+            AW_click_cd cd(disp_device, (AW_CL)node);
             if (node->gb_node && GB_read_flag(node->gb_node)) {
                 set_line_attributes_for(node);
                 filled_box(gc, Position(x, irs_gl.y), NT_BOX_WIDTH);
             }
             str = make_node_text_nds(gb_main, node->gb_node, NDS_OUTPUT_LEAFTEXT, node->get_gbt_tree(), tree_static->get_tree_name());
-            irs_gl.device->text(gc, str, x, y);
+            disp_device->text(gc, str, x, y);
         }
         return irs_gl.y;
     }
@@ -131,7 +127,7 @@ int AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, int x_offset) {
         int y_center = irs_gl.y + (vsize>>1) + irs_gl.step_y;
         if (irs_gl.y >= irs_gl.min_y) {
             if (irs_gl.ftrst_species) { // A name of a group just under the separator
-                draw_top_separator();
+                irs_gl.draw_top_separator(disp_device);
             }
             int topy = irs_gl.y+irs_gl.step_y - 2;
             int boty = irs_gl.y+irs_gl.step_y + vsize + 2;
@@ -139,21 +135,21 @@ int AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, int x_offset) {
             int gc   = AWT_GC_GROUPS;
 
             // draw group box (unclosed on right hand):
-            AW_click_cd cd(irs_gl.device, (AW_CL)node);
-            irs_gl.device->set_line_attributes(gc, 1.0, AW_SOLID);
-            irs_gl.device->line(gc, x_offset, topy, rx,       topy);
-            irs_gl.device->line(gc, x_offset, topy, x_offset, boty);
-            irs_gl.device->line(gc, x_offset, boty, rx,       boty);
+            AW_click_cd cd(disp_device, (AW_CL)node);
+            disp_device->set_line_attributes(gc, 1.0, AW_SOLID);
+            disp_device->line(gc, x_offset, topy, rx,       topy);
+            disp_device->line(gc, x_offset, topy, x_offset, boty);
+            disp_device->line(gc, x_offset, boty, rx,       boty);
 
-            irs_gl.device->set_grey_level(node->gr.gc, grey_level);
+            disp_device->set_grey_level(node->gr.gc, grey_level);
             set_line_attributes_for(node);
-            irs_gl.device->box(node->gr.gc, true, x_offset - (tipBoxSize>>1), topy - (tipBoxSize>>1), tipBoxSize, tipBoxSize, mark_filter);
-            irs_gl.device->box(node->gr.gc, true, x_offset+2,                 irs_gl.y+irs_gl.step_y, vsize,      vsize);
+            disp_device->box(node->gr.gc, true, x_offset - (tipBoxSize>>1), topy - (tipBoxSize>>1), tipBoxSize, tipBoxSize, mark_filter);
+            disp_device->box(node->gr.gc, true, x_offset+2,                 irs_gl.y+irs_gl.step_y, vsize,      vsize);
 
             irs_gl.y += vsize + 2*irs_gl.step_y;
             if (node_string) { //  a node name should be displayed
                 const char *s = GBS_global_string("%s (%i)", node_string, node->gr.leave_sum);
-                irs_gl.device->text(node->gr.gc, s, x_offset + vsize + 10 + nodeBoxWidth, y_center + (irs_gl.step_y>>1));
+                disp_device->text(node->gr.gc, s, x_offset + vsize + 10 + nodeBoxWidth, y_center + (irs_gl.step_y>>1));
             }
         }
         else {
@@ -174,7 +170,7 @@ int AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, int x_offset) {
     if (node_string != NULL) {          //  A node name should be displayed
         if (last_y >= irs_gl.min_y) {
             if (irs_gl.ftrst_species) { // A name of a group just under the separator
-                draw_top_separator();
+                irs_gl.draw_top_separator(disp_device);
             }
             last_y = irs_gl.y + irs_gl.step_y;
         }
@@ -184,15 +180,15 @@ int AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, int x_offset) {
         }
         irs_gl.y+=int(irs_gl.step_y * 1.8);
         int gc = AWT_GC_GROUPS;
-        AW_click_cd cd(irs_gl.device, (AW_CL)node);
-        irs_gl.device->set_line_attributes(gc, 1.0, AW_SOLID);
-        irs_gl.device->line(gc, x_offset, last_y, x_offset+400, last_y); // opened-group-frame
+        AW_click_cd cd(disp_device, (AW_CL)node);
+        disp_device->set_line_attributes(gc, 1.0, AW_SOLID);
+        disp_device->line(gc, x_offset, last_y, x_offset+400, last_y); // opened-group-frame
 
-        irs_gl.device->set_grey_level(node->gr.gc, grey_level);
+        disp_device->set_grey_level(node->gr.gc, grey_level);
         set_line_attributes_for(node); 
-        irs_gl.device->box(node->gr.gc, true, x_offset- (tipBoxSize>>1), last_y- (tipBoxSize>>1), tipBoxSize, tipBoxSize, mark_filter);
+        disp_device->box(node->gr.gc, true, x_offset- (tipBoxSize>>1), last_y- (tipBoxSize>>1), tipBoxSize, tipBoxSize, mark_filter);
         const char *s = GBS_global_string("%s (%i)", node_string, node->gr.leave_sum);
-        irs_gl.device->text(node->gr.gc, s, x_offset + 10 + nodeBoxWidth, last_y + irs_gl.step_y + 1);
+        disp_device->text(node->gr.gc, s, x_offset + 10 + nodeBoxWidth, last_y + irs_gl.step_y + 1);
     }
 
     /* *********************** connect two nodes == draw branches ************************ */
@@ -209,12 +205,12 @@ int AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, int x_offset) {
 
     if (left_y > irs_gl.min_y) {
         if (left_y < irs_gl.max_y) { // clip y on top border
-            AW_click_cd cd(irs_gl.device, (AW_CL)node->leftson);
+            AW_click_cd cd(disp_device, (AW_CL)node->leftson);
             if (node->leftson->remark_branch) {
                 AWT_show_branch_remark(disp_device, node->leftson->remark_branch, node->leftson->is_leaf, left_x, left_y, 1, text_filter);
             }
             set_line_attributes_for(node->get_leftson()); 
-            irs_gl.device->line(node->get_leftson()->gr.gc, x_offset, left_y, left_x,  left_y);
+            disp_device->line(node->get_leftson()->gr.gc, x_offset, left_y, left_x,  left_y);
         }
     }
     else {
@@ -224,46 +220,48 @@ int AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, int x_offset) {
     int y_center = (left_y + right_y) / 2; // clip center(?) on bottom border
 
     if (right_y > irs_gl.min_y && right_y < irs_gl.max_y) { // visible right branch in lower part of display
-        AW_click_cd cd(irs_gl.device, (AW_CL)node->rightson);
+        AW_click_cd cd(disp_device, (AW_CL)node->rightson);
         if (node->rightson->remark_branch) {
             AWT_show_branch_remark(disp_device, node->rightson->remark_branch, node->rightson->is_leaf, right_x, right_y, 1, text_filter);
         }
         set_line_attributes_for(node->get_rightson()); 
-        irs_gl.device->line(node->get_rightson()->gr.gc, x_offset, right_y, right_x,  right_y);
+        disp_device->line(node->get_rightson()->gr.gc, x_offset, right_y, right_x,  right_y);
     }
 
-    AW_click_cd cd(irs_gl.device, (AW_CL)node);
+    AW_click_cd cd(disp_device, (AW_CL)node);
     set_line_attributes_for(node->get_leftson());
-    irs_gl.device->line(node->get_leftson()->gr.gc, x_offset, y_center, x_offset, left_y);
+    disp_device->line(node->get_leftson()->gr.gc, x_offset, y_center, x_offset, left_y);
 
     set_line_attributes_for(node->get_rightson());
-    irs_gl.device->line(node->get_rightson()->gr.gc, x_offset, y_center, x_offset, right_y);
+    disp_device->line(node->get_rightson()->gr.gc, x_offset, y_center, x_offset, right_y);
 
     irs_gl.ruler_y = y_center;
 
     if (node_string != 0) {             //  A node name should be displayed
         irs_gl.y+=irs_gl.step_y / 2;
         int gc = AWT_GC_GROUPS;
-        irs_gl.device->set_line_attributes(gc, 1.0, AW_SOLID);
-        irs_gl.device->line(gc, x_offset-1, irs_gl.y, x_offset+400, irs_gl.y); // opened-group-frame
-        irs_gl.device->line(gc, x_offset-1, last_y, x_offset-1,  irs_gl.y); // opened-group-frame
+        disp_device->set_line_attributes(gc, 1.0, AW_SOLID);
+        disp_device->line(gc, x_offset-1, irs_gl.y, x_offset+400, irs_gl.y); // opened-group-frame
+        disp_device->line(gc, x_offset-1, last_y, x_offset-1,  irs_gl.y); // opened-group-frame
     }
     return y_center;
 }
 
-void AWT_graphic_tree::show_irs_tree(AP_tree *at, AW_device *device, int height) {
-    device->push_clip_scale();
+void AWT_graphic_tree::show_irs_tree(AP_tree *at, int height) {
+    disp_device->push_clip_scale();
+    const AW_font_limits& limits = disp_device->get_font_limits(AWT_GC_SELECTED, 0);
+
     int x;
     int y;
-    const AW_font_limits& limits = device->get_font_limits(AWT_GC_SELECTED, 0);
-    device->rtransform(0, 0, x, y); // calculate real world coordinates of left/upper screen border
+    disp_device->rtransform(0, 0, x, y); // calculate real world coordinates of left/upper screen border
+    
     int clipped_l, clipped_t;
     int clipped_r, clipped_b;
-    device->rtransform(device->clip_rect.l, device->clip_rect.t, clipped_l, clipped_t);
-    device->rtransform(device->clip_rect.r, device->clip_rect.b, clipped_r, clipped_b);
+    disp_device->rtransform(disp_device->clip_rect.l, disp_device->clip_rect.t, clipped_l, clipped_t);
+    disp_device->rtransform(disp_device->clip_rect.r, disp_device->clip_rect.b, clipped_r, clipped_b);
 
     irs_gl.font_height_2  = limits.ascent/2;
-    irs_gl.device         = device;
+    disp_device         = disp_device;
     irs_gl.ftrst_species  = true;
     irs_gl.y              = 0;
     irs_gl.min_x          = x;
@@ -274,11 +272,7 @@ void AWT_graphic_tree::show_irs_tree(AP_tree *at, AW_device *device, int height)
     irs_gl.step_y         = height;
     irs_gl.x_scale        = (clipped_r-clipped_l)*0.8 / at->gr.tree_depth;
     irs_gl.group_closed   = 0;
-    irs_gl.is_size_device = 0;
-
-    if (irs_gl.device->type() == AW_DEVICE_SIZE) {
-        irs_gl.is_size_device = 1;
-    }
+    irs_gl.is_size_device = disp_device->type() == AW_DEVICE_SIZE;
 
     paint_irs_sub_tree(at, 0);
 
@@ -286,5 +280,5 @@ void AWT_graphic_tree::show_irs_tree(AP_tree *at, AW_device *device, int height)
     list_tree_ruler_y           = irs_gl.ruler_y;
     irs_tree_ruler_scale_factor = irs_gl.x_scale;
 
-    device->pop_clip_scale();
+    disp_device->pop_clip_scale();
 }
