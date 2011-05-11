@@ -107,6 +107,7 @@ int AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, int x_offset) {
         if (!irs_gl.is_size_device) {
             AW_click_cd cd(irs_gl.device, (AW_CL)node);
             if (node->gb_node && GB_read_flag(node->gb_node)) {
+                set_line_attributes_for(node);
                 filled_box(gc, Position(x, irs_gl.y), NT_BOX_WIDTH);
             }
             str = make_node_text_nds(gb_main, node->gb_node, NDS_OUTPUT_LEAFTEXT, node->get_gbt_tree(), tree_static->get_tree_name());
@@ -145,11 +146,13 @@ int AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, int x_offset) {
 
             // draw group box (unclosed on right hand):
             AW_click_cd cd(irs_gl.device, (AW_CL)node);
+            irs_gl.device->set_line_attributes(gc, 1.0, AW_SOLID);
             irs_gl.device->line(gc, x_offset, topy, rx,       topy);
             irs_gl.device->line(gc, x_offset, topy, x_offset, boty);
             irs_gl.device->line(gc, x_offset, boty, rx,       boty);
 
             irs_gl.device->set_grey_level(node->gr.gc, grey_level);
+            set_line_attributes_for(node);
             irs_gl.device->box(node->gr.gc, true, x_offset - (tipBoxSize>>1), topy - (tipBoxSize>>1), tipBoxSize, tipBoxSize, mark_filter);
             irs_gl.device->box(node->gr.gc, true, x_offset+2,                 irs_gl.y+irs_gl.step_y, vsize,      vsize);
 
@@ -188,9 +191,11 @@ int AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, int x_offset) {
         irs_gl.y+=int(irs_gl.step_y * 1.8);
         int gc = AWT_GC_GROUPS;
         AW_click_cd cd(irs_gl.device, (AW_CL)node);
-        irs_gl.device->line(gc, x_offset, last_y, x_offset+400, last_y);
+        irs_gl.device->set_line_attributes(gc, 1.0, AW_SOLID);
+        irs_gl.device->line(gc, x_offset, last_y, x_offset+400, last_y); // opened-group-frame
 
         irs_gl.device->set_grey_level(node->gr.gc, grey_level);
+        set_line_attributes_for(node); 
         irs_gl.device->box(node->gr.gc, true, x_offset- (tipBoxSize>>1), last_y- (tipBoxSize>>1), tipBoxSize, tipBoxSize, mark_filter);
         const char *s = GBS_global_string("%s (%i)", node_string, node->gr.leave_sum);
         irs_gl.device->text(node->gr.gc, s, x_offset + 10 + nodeBoxWidth, last_y + irs_gl.step_y + 1);
@@ -214,6 +219,7 @@ int AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, int x_offset) {
             if (node->leftson->remark_branch) {
                 AWT_show_branch_remark(disp_device, node->leftson->remark_branch, node->leftson->is_leaf, left_x, left_y, 1, text_filter);
             }
+            set_line_attributes_for(node->get_leftson()); 
             irs_gl.device->line(node->get_leftson()->gr.gc, x_offset, left_y, left_x,  left_y);
         }
     }
@@ -228,21 +234,27 @@ int AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, int x_offset) {
         if (node->rightson->remark_branch) {
             AWT_show_branch_remark(disp_device, node->rightson->remark_branch, node->rightson->is_leaf, right_x, right_y, 1, text_filter);
         }
+        set_line_attributes_for(node->get_rightson()); 
         irs_gl.device->line(node->get_rightson()->gr.gc, x_offset, right_y, right_x,  right_y);
     }
 
     AW_click_cd cd(irs_gl.device, (AW_CL)node);
+    set_line_attributes_for(node->get_leftson());
     irs_gl.device->line(node->get_leftson()->gr.gc, x_offset, y_center, x_offset, left_y);
+
+    set_line_attributes_for(node->get_rightson());
     irs_gl.device->line(node->get_rightson()->gr.gc, x_offset, y_center, x_offset, right_y);
+
     irs_gl.ruler_y = y_center;
 
     if (node_string != 0) {             //  A node name should be displayed
         irs_gl.y+=irs_gl.step_y / 2;
         int gc = AWT_GC_GROUPS;
-        irs_gl.device->line(gc, x_offset-1, irs_gl.y, x_offset+400, irs_gl.y);
-        irs_gl.device->line(gc, x_offset-1, last_y, x_offset-1,  irs_gl.y);
+        irs_gl.device->set_line_attributes(gc, 1.0, AW_SOLID);
+        irs_gl.device->line(gc, x_offset-1, irs_gl.y, x_offset+400, irs_gl.y); // opened-group-frame
+        irs_gl.device->line(gc, x_offset-1, last_y, x_offset-1,  irs_gl.y); // opened-group-frame
     }
-    if (0 &&  !irs_gl.is_size_device) {
+    if (0 &&  !irs_gl.is_size_device) { // @@@ wtf ? 
         if (irs_gl.nodes_nnnodes>irs_gl.nodes_ntip+1) {
             irs_gl.nodes_nnnodes--;
             irs_gl.nodes_xpos[irs_gl.nodes_nnnodes] = x_offset;
