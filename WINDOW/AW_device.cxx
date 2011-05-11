@@ -350,14 +350,15 @@ AW_GC *AW_common_Xm::create_gc() {
     return new AW_GC_Xm(this); 
 }
 
-void AW_common::new_gc(int gc) {
-    if (gc >= ngcs) {
-        gcs = (AW_GC **)realloc((char *)gcs, sizeof(*gcs)*(gc+10));
-        memset(&gcs[ngcs], 0, sizeof(*gcs) * (gc-ngcs+10));
-        ngcs = gc+10;
+void AW_GC_set::add_gc(int gi, AW_GC *agc) {
+    if (gi >= count) {
+        int new_count = gi+10;
+        gcs           = (AW_GC **)realloc((char *)gcs, sizeof(*gcs)*new_count);
+        memset(&gcs[count], 0, sizeof(*gcs)*(new_count-count));
+        count         = new_count;
     }
-    if (gcs[gc]) delete gcs[gc];
-    gcs[gc] = create_gc();
+    if (gcs[gi]) delete gcs[gi];
+    gcs[gi] = agc;
 }
 
 int AW_stylable::get_string_size(int gc, const char *str, long textlen) const {
