@@ -706,8 +706,7 @@ void NT_jump_cb(AW_window *, AWT_canvas *ntw, AW_CL auto_expand_groups) {
                 ntw->init_device(device);
                 ntw->tree_disp->show(device);
 
-                AW_screen_area screen;
-                device->get_area_size(&screen);
+                const AW_screen_area& screen = device->get_area_size();
 
                 const Position& cursor = gtree->get_cursor();
                 if (are_distinct(Origin, cursor)) {

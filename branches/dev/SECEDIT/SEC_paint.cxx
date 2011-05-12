@@ -299,7 +299,7 @@ void SEC_root::paintHelixNumbers(AW_device *device) {
 #if defined(PAINT_ABSOLUTE_POSITION)
 void SEC_root::showSomeAbsolutePositions(AW_device *device) {
     if (device->get_filter() != AW_SIZE) { // ignore for size calculation
-        Rectangle screen(device->rtransform(device->get_area_size()));
+        Rectangle screen(device->rtransform(Rectangle(device->get_area_size()))); // @@@ compile fix - maybe wrong
         Vector        diag3 = screen.diagonal()/3;
         Rectangle showInside(screen.upper_left_corner()+diag3*1.85, diag3);
 

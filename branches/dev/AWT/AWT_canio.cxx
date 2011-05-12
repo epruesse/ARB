@@ -46,7 +46,12 @@ static void awt_print_tree_check_size(void *, AW_CL cl_ntw) {
         size_device->get_size_information(&size);
     }
     else {
-        size_device->get_area_size(&size);
+        const AW_screen_area& screen = size_device->get_area_size();
+        
+        size.t = screen.t;
+        size.b = screen.b;
+        size.l = screen.l;
+        size.r = screen.r;
     }
 
     ntw->aww->get_root()->awar(AWAR_PRINT_TREE_GSIZEX)->write_float((size.r-size.l + 30)/80);

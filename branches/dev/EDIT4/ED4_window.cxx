@@ -241,14 +241,13 @@ ED4_returncode ED4_window::update_scrolled_rectangle()
     aww->tell_scrolled_picture_size(rect);
     aww->calculate_scrollbars();
 
-    AW_screen_area area_size;
     {
         int delta = aww->slider_pos_horizontal - slider_pos_horizontal;     // update dimension and window position of folding lines at
         scrolled_rect.scroll_left->dimension += delta;                  // the borders of scrolled rectangle
         delta = aww->slider_pos_vertical - slider_pos_vertical;
         scrolled_rect.scroll_top->dimension += delta;
-        ED4_ROOT->get_device()->get_area_size(&area_size);
     }
+    const AW_screen_area& area_size = ED4_ROOT->get_device()->get_area_size();
 
     if (scrolled_rect.height_link != NULL) slider_pos_vertical   = aww->slider_pos_vertical;
     if (scrolled_rect.width_link  != NULL) slider_pos_horizontal = aww->slider_pos_horizontal;
@@ -289,10 +288,9 @@ ED4_returncode ED4_window::update_scrolled_rectangle()
 }
 
 ED4_returncode ED4_window::set_scrolled_rectangle(AW_pos world_x, AW_pos world_y, AW_pos width, AW_pos height,
-                                                   ED4_base *x_link, ED4_base *y_link, ED4_base *width_link, ED4_base *height_link)
+                                                  ED4_base *x_link, ED4_base *y_link, ED4_base *width_link, ED4_base *height_link)
 {
-    AW_pos         x, y, dim;
-    AW_screen_area   area_size;
+    AW_pos x, y, dim;
 
     // first of all remove existing scrolled rectangle
     if (scrolled_rect.scroll_top    != NULL) delete_folding_line(scrolled_rect.scroll_top,    ED4_P_HORIZONTAL);
@@ -322,7 +320,7 @@ ED4_returncode ED4_window::set_scrolled_rectangle(AW_pos world_x, AW_pos world_y
         height = height_link->extension.size[HEIGHT];
     }
 
-    ED4_ROOT->get_device()->get_area_size(&area_size);
+    const AW_screen_area& area_size = ED4_ROOT->get_device()->get_area_size();
 
     if ((area_size.r <= world_x) || (area_size.b <= world_y)) {
         return ED4_R_IMPOSSIBLE;
