@@ -62,7 +62,7 @@ void ED4_window::reset_all_for_new_config()
 void ED4_window::update_window_coords()
 {
     AW_pos       x, y;
-    AW_rectangle area_size;
+    AW_screen_area area_size;
 
     ED4_ROOT->top_area_man->calc_world_coords(&x, &y);
 
@@ -241,7 +241,7 @@ ED4_returncode ED4_window::update_scrolled_rectangle()
     aww->tell_scrolled_picture_size(rect);
     aww->calculate_scrollbars();
 
-    AW_rectangle area_size;
+    AW_screen_area area_size;
     {
         int delta = aww->slider_pos_horizontal - slider_pos_horizontal;     // update dimension and window position of folding lines at
         scrolled_rect.scroll_left->dimension += delta;                  // the borders of scrolled rectangle
@@ -292,7 +292,7 @@ ED4_returncode ED4_window::set_scrolled_rectangle(AW_pos world_x, AW_pos world_y
                                                    ED4_base *x_link, ED4_base *y_link, ED4_base *width_link, ED4_base *height_link)
 {
     AW_pos         x, y, dim;
-    AW_rectangle   area_size;
+    AW_screen_area   area_size;
 
     // first of all remove existing scrolled rectangle
     if (scrolled_rect.scroll_top    != NULL) delete_folding_line(scrolled_rect.scroll_top,    ED4_P_HORIZONTAL);
@@ -356,7 +356,7 @@ static inline void clear_and_update_rectangle(AW_pos x1, AW_pos y1, AW_pos x2, A
 // clears and updates any range of the screen (in win coordinates)
 // clipping range should be set correctly
 {
-    AW_rectangle rect;
+    AW_screen_area rect;
 
     rect.t = int(y1);
     rect.b = int(y2);
@@ -388,7 +388,7 @@ static inline void move_and_update_rectangle(AW_pos x1, AW_pos y1, AW_pos x2, AW
     int ys = int(y2-y1-abs(dy));
 
     {
-        AW_rectangle rect;
+        AW_screen_area rect;
         rect.t = int(ty);
         rect.b = int(ty+ys-1);
         rect.l = int(tx);
@@ -425,7 +425,7 @@ static inline void move_and_update_rectangle(AW_pos x1, AW_pos y1, AW_pos x2, AW
 
 static inline void update_rectangle(AW_pos x1, AW_pos y1, AW_pos x2, AW_pos y2) // x1/y1=upper-left-corner x2/y2=lower-right-corner
 {
-    AW_rectangle rect;
+    AW_screen_area rect;
     rect.t = int(y1);
     rect.b = int(y2);
     rect.l = int(x1);

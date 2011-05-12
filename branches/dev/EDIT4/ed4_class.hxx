@@ -1147,7 +1147,7 @@ public:
     // functions concerning coordinate transformation
     ED4_returncode world_to_win_coords(AW_window *aww, AW_pos *x, AW_pos *y);
     ED4_returncode win_to_world_coords(AW_window *aww, AW_pos *x, AW_pos *y);
-    ED4_returncode get_area_rectangle(AW_rectangle *rect, AW_pos x, AW_pos y);
+    ED4_returncode get_area_rectangle(AW_screen_area *rect, AW_pos x, AW_pos y);
 
     ED4_index pixel2pos(AW_pos click_x);
 
@@ -1532,7 +1532,7 @@ public:
     ED4_species_name_terminal *corresponding_species_name_terminal() const {
         return get_parent(ED4_L_SPECIES)->search_spec_child_rek(ED4_L_SPECIES_NAME)->to_species_name_terminal();
     }
-    void calc_intervall_displayed_in_rectangle(AW_rectangle *area_rect, long *left_index, long *right_index);
+    void calc_intervall_displayed_in_rectangle(AW_screen_area *area_rect, long *left_index, long *right_index);
     void calc_update_intervall(long *left_index, long *right_index);
 
 };

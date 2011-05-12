@@ -98,8 +98,8 @@ DI_MATRIX *DI_dmatrix::get_matrix() {
 }
 
 void DI_dmatrix::resized() {
-    AW_rectangle squ;
-    AW_rectangle rect;
+    AW_screen_area squ;
+    AW_screen_area rect;
     long         horiz_paint_size, vert_paint_size;
 
     const AW_font_limits& lim = device->get_font_limits(DI_G_STANDARD, 0);

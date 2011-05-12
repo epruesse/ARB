@@ -863,7 +863,7 @@ void CPRO_drawstatistic (AW_device *device, unsigned char which_statistic)
     float equal, ingroup;
     char mode=CPRO.result[which_statistic].drawmode;
 
-    AW_rectangle rect;
+    AW_screen_area rect;
     device->get_area_size(&rect);
     device->reset();
     device->clear(-1);

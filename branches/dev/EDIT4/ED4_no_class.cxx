@@ -466,7 +466,7 @@ void ED4_input_cb(AW_window *aww, AW_CL /* cd1 */, AW_CL /* cd2 */)
 }
 
 static int get_max_slider_xpos() {
-    AW_rectangle rect;
+    AW_screen_area rect;
     ED4_ROOT->get_device()->get_area_size(&rect); // screensize
 
     AW_pos x, y;
@@ -481,7 +481,7 @@ static int get_max_slider_xpos() {
 }
 
 static int get_max_slider_ypos() {
-    AW_rectangle rect;
+    AW_screen_area rect;
     ED4_ROOT->get_device()->get_area_size(&rect); // screensize
 
     AW_pos x, y;

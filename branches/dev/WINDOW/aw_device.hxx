@@ -183,8 +183,8 @@ public:
 };
 
 class AW_clipable {
-    const AW_rectangle& common_screen;
-    const AW_rectangle& get_screen() const { return common_screen; }
+    const AW_screen_area& common_screen;
+    const AW_screen_area& get_screen() const { return common_screen; }
 
 protected:
     int compoutcode(AW_pos xx, AW_pos yy) {
@@ -201,7 +201,7 @@ protected:
 public:
 
     // ****** read only section
-    AW_rectangle clip_rect;     // holds the clipping rectangle coordinates
+    AW_screen_area clip_rect;     // holds the clipping rectangle coordinates
     int top_font_overlap;
     int bottom_font_overlap;
     int left_font_overlap;
@@ -221,9 +221,9 @@ public:
     void set_bottom_clip_margin(int bottom, bool allow_oversize = false); // relative
     void set_left_clip_border(int left, bool allow_oversize = false);
     void set_right_clip_border(int right, bool allow_oversize = false);
-    void set_cliprect(AW_rectangle *rect, bool allow_oversize = false);
+    void set_cliprect(AW_screen_area *rect, bool allow_oversize = false);
     void set_clipall() {
-        AW_rectangle rect;
+        AW_screen_area rect;
         rect.t = rect.b = rect.l = rect.r = 0;
         set_cliprect(&rect);     // clip all -> nothing drawn afterwards
     }
@@ -243,7 +243,7 @@ public:
 
     int reduceClipBorders(int top, int bottom, int left, int right);
 
-    AW_clipable(const AW_rectangle& screen)
+    AW_clipable(const AW_screen_area& screen)
         : common_screen(screen),
           top_font_overlap(0),
           bottom_font_overlap(0),
@@ -384,7 +384,7 @@ protected:
 
     AW_bitset filter;
 
-    static const AW_rectangle& get_common_screen(const AW_common *common_);
+    static const AW_screen_area& get_common_screen(const AW_common *common_);
     
 public:
     AW_device(class AW_common *common_)
@@ -401,7 +401,7 @@ public:
 
     void reset();
 
-    void          get_area_size(AW_rectangle *rect); // read the frame size
+    void          get_area_size(AW_screen_area *rect); // read the frame size
     void          get_area_size(AW_world *rect); // read the frame size
     AW::Rectangle get_area_size();
 
