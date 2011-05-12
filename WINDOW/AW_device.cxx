@@ -501,21 +501,8 @@ void AW_device::pop_clip_scale() {
 
 // --------------------------------------------------------------------------------
 
-void AW_device::get_area_size(AW_screen_area *rect) {     // get the extends from the class AW_device
-    *rect = get_common()->get_screen();
-}
-
-void AW_device::get_area_size(AW_world *rect) { // get the extends from the class AW_device
-    const AW_screen_area& screen = get_common()->get_screen();
-    
-    rect->t = screen.t;
-    rect->b = screen.b;
-    rect->l = screen.l;
-    rect->r = screen.r;
-}
-
-Rectangle AW_device::get_area_size() {
-    return Rectangle(get_common()->get_screen());
+const AW_screen_area& AW_device::get_area_size() {
+    return get_common()->get_screen();
 }
 
 void AW_device::privat_reset() {}
@@ -524,7 +511,7 @@ void AW_device::reset() {
     while (clip_scale_stack) {
         pop_clip_scale();
     }
-    get_area_size(&clip_rect);
+    clip_rect = get_area_size();
     AW_zoomable::reset();
     privat_reset();
 }

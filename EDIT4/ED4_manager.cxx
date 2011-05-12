@@ -983,8 +983,7 @@ ED4_returncode ED4_main_manager::Show(int refresh_all, int is_cleared) {
         }
     }
     else if (refresh_all || update_info.refresh) {
-        AW_screen_area area_rect;
-        device->get_area_size(&area_rect);
+        const AW_screen_area& area_rect = device->get_area_size();
 
         // if update all -> clear_background
 
