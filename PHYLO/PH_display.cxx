@@ -128,8 +128,8 @@ void PH_display::initialize (display_type dpyt)
 
 void PH_display::resized()
 {
-    AW_rectangle squ;
-    AW_rectangle rect =  { 0, 0, 0, 0 };
+    AW_screen_area squ;
+    AW_screen_area rect =  { 0, 0, 0, 0 };
     long         horiz_paint_size, vert_paint_size;
 
     PH_used_windows::windowList->phylo_main_window->get_device(AW_MIDDLE_AREA)-> get_area_size(&squ);
@@ -418,7 +418,7 @@ void PH_display::monitor_horizontal_scroll_cb(AW_window *aww)  // draw area
 
 PH_display_status::PH_display_status(AW_device *awd)
 {
-    AW_rectangle rect;
+    AW_screen_area rect;
     device=awd;
 
     if (!device) return;

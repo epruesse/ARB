@@ -295,7 +295,7 @@ AW_window::AW_window() {
     memset((char *)this, 0, sizeof(AW_window));
     p_w = new AW_window_Motif;
     _at = new AW_at; // Note to valgrinders : the whole AW_window memory management suffers because Windows are NEVER deleted
-    picture = new AW_rectangle;
+    picture = new AW_screen_area;
     reset_scrolled_picture_size();
     slider_pos_vertical = 0;
     slider_pos_horizontal = 0;
@@ -428,7 +428,7 @@ void AW_window::set_vertical_change_callback(void (*f)(AW_window*, AW_CL, AW_CL)
             (XtPointer) new AW_cb_struct(this, f, cd1, cd2, ""));
 }
 
-void AW_window::tell_scrolled_picture_size(AW_rectangle rectangle) {
+void AW_window::tell_scrolled_picture_size(AW_screen_area rectangle) {
     picture->l = rectangle.l;
     picture->r = rectangle.r;
     picture->t = rectangle.t;
@@ -456,7 +456,7 @@ AW_pos AW_window::get_scrolled_picture_height() {
 }
 
 void AW_window::calculate_scrollbars() {
-    AW_rectangle screen;
+    AW_screen_area screen;
 
     int  slider_size_horizontal;
     int  slider_size_vertical;
@@ -1477,13 +1477,13 @@ void AW_root::exit_root() {
     aw_uninstall_xkeys();
 }
 
-void AW_window::_get_area_size(AW_area area, AW_rectangle *square) {
+void AW_window::_get_area_size(AW_area area, AW_screen_area *square) {
     AW_area_management *aram = MAP_ARAM(area);
     *square = aram->common->get_screen();
 }
 
 static void horizontal_scrollbar_redefinition_cb(class AW_root */*aw_root*/, AW_CL cd1, AW_CL cd2) {
-    AW_rectangle screen;
+    AW_screen_area screen;
 
     char buffer[200];
     AW_window *aw = (AW_window *)cd1;
@@ -1507,7 +1507,7 @@ static void horizontal_scrollbar_redefinition_cb(class AW_root */*aw_root*/, AW_
 }
 
 static void vertical_scrollbar_redefinition_cb(class AW_root */*aw_root*/, AW_CL cd1, AW_CL cd2) {
-    AW_rectangle screen;
+    AW_screen_area screen;
 
     char buffer[200];
     AW_window *aw = (AW_window *)cd1;

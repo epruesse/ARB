@@ -468,7 +468,7 @@ AW_xfig::~AW_xfig()
 void AW_xfig::print(AW_device *device)
 {
     int i;
-    AW_rectangle ws;    // window size
+    AW_screen_area ws;    // window size
     device->get_area_size(&ws);
     device->clear(-1);
     struct AW_xfig_text *xtext;

@@ -510,7 +510,7 @@ void ED4_setColumnblockCorner(AW_event *event, ED4_sequence_terminal *seq_term) 
                 }
 
                 long scr_col1, scr_col2;
-                AW_rectangle area_rect;
+                AW_screen_area area_rect;
                 {
                     AW_pos ex = event->x;
                     AW_pos ey = event->y;

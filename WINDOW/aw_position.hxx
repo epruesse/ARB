@@ -226,7 +226,7 @@ namespace AW {
         LineVector(const Position& startpos, const Position& end) : Start(startpos), ToEnd(startpos, end) { ISVALID(*this); }
         LineVector(const Position& startpos, const Vector& to_end) : Start(startpos), ToEnd(to_end) { ISVALID(*this); }
         LineVector(double X1, double Y1, double X2, double Y2) : Start(X1, Y1), ToEnd(X2-X1, Y2-Y1) { ISVALID(*this); }
-        explicit LineVector(const AW_rectangle& r)
+        explicit LineVector(const AW_screen_area& r)
             : Start(r.l, r.t),
               ToEnd(r.r-r.l-1, r.b-r.t-1) // @@@ -1 is really strange
         {
@@ -267,7 +267,7 @@ namespace AW {
         Rectangle(const Position& corner, const Position& opposite_corner) : LineVector(corner, opposite_corner) { standardize(); }
         Rectangle(const Position& corner, const Vector& to_opposite_corner) : LineVector(corner, to_opposite_corner) { standardize(); }
         Rectangle(double X1, double Y1, double X2, double Y2) : LineVector(X1, Y1, X2, Y2) { standardize(); }
-        explicit Rectangle(const AW_rectangle& r) : LineVector(r) { standardize(); }
+        explicit Rectangle(const AW_screen_area& r) : LineVector(r) { standardize(); }
         explicit Rectangle(const AW_world& r) : LineVector(r) { standardize(); }
         Rectangle() {};
 

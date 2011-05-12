@@ -66,7 +66,7 @@ public:
 class AWT_graphic {
     friend class AWT_canvas;
 protected:
-    AW_rectangle extends;
+    AW_screen_area extends;
     int drag_gc;
 public:
     AWT_graphic_exports exports;
@@ -148,7 +148,7 @@ public:
 
     int old_hor_scroll_pos;
     int old_vert_scroll_pos;
-    AW_rectangle rect;  // screen coordinates
+    AW_screen_area rect;  // screen coordinates
     AW_world worldinfo; // real coordinates without transform.
     AW_world worldsize;
     int zoom_drag_sx;

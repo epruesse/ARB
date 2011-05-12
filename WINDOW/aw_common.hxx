@@ -158,7 +158,7 @@ class AW_common {
 
     AW_GC_set gcset;
     
-    AW_rectangle screen;
+    AW_screen_area screen;
 
     virtual AW_GC *create_gc() = 0;
 
@@ -179,14 +179,14 @@ public:
 
     void reset_style() { gcset.reset_style(); }
 
-    const AW_rectangle& get_screen() const { return screen; }
+    const AW_screen_area& get_screen() const { return screen; }
     void set_screen_size(unsigned int width, unsigned int height) {
         screen.t = 0;               // set clipping coordinates
         screen.b = height;
         screen.l = 0;
         screen.r = width;
     }
-    void set_screen(const AW_rectangle& screen_) {
+    void set_screen(const AW_screen_area& screen_) {
         // set clipping coordinates
         screen = screen_;
     }

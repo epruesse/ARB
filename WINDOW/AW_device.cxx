@@ -16,10 +16,10 @@
 
 using namespace AW;
 
-void AW_clipable::set_cliprect(AW_rectangle *rect, bool allow_oversize) {
+void AW_clipable::set_cliprect(AW_screen_area *rect, bool allow_oversize) {
     clip_rect = *rect; // coordinates : (0,0) = top-left-corner
     
-    const AW_rectangle& screen = get_screen();
+    const AW_screen_area& screen = get_screen();
     if (!allow_oversize) {
         if (clip_rect.t < screen.t) clip_rect.t = screen.t;
         if (clip_rect.b > screen.b) clip_rect.b = screen.b;
@@ -421,7 +421,7 @@ class AW_clip_scale_stack {
     // completely private, but accessible by AW_device
     friend class AW_device;
 
-    AW_rectangle clip_rect;
+    AW_screen_area clip_rect;
 
     int top_font_overlap;
     int bottom_font_overlap;
@@ -437,7 +437,7 @@ class AW_clip_scale_stack {
 #if defined(SHOW_CLIP_STACK_CHANGES)
 static const char *clipstatestr(AW_device *device) {
     static char   buffer[1024];
-    AW_rectangle& clip_rect = device->clip_rect;
+    AW_screen_area& clip_rect = device->clip_rect;
 
     sprintf(buffer, "clip_rect={t=%i, b=%i, l=%i, r=%i}",
             clip_rect.t, clip_rect.b, clip_rect.l, clip_rect.r);
@@ -501,12 +501,12 @@ void AW_device::pop_clip_scale() {
 
 // --------------------------------------------------------------------------------
 
-void AW_device::get_area_size(AW_rectangle *rect) {     // get the extends from the class AW_device
+void AW_device::get_area_size(AW_screen_area *rect) {     // get the extends from the class AW_device
     *rect = get_common()->get_screen();
 }
 
 void AW_device::get_area_size(AW_world *rect) { // get the extends from the class AW_device
-    const AW_rectangle& screen = get_common()->get_screen();
+    const AW_screen_area& screen = get_common()->get_screen();
     
     rect->t = screen.t;
     rect->b = screen.b;
@@ -607,7 +607,7 @@ int AW_device::text_overlay(int gc, const char *opt_str, long opt_len,  // eithe
 
     if (!(filter & filteri)) return 0;
 
-    const AW_rectangle& screen = get_common()->get_screen();
+    const AW_screen_area& screen = get_common()->get_screen();
 
     if (left_font_overlap || screen.l == clip_rect.l) { // was : clip_rect.l == 0
         inside_clipping_left = false;
@@ -731,7 +731,7 @@ int AW_device::text_overlay(int gc, const char *opt_str, long opt_len,  // eithe
 
 void AW_device::set_filter(AW_bitset filteri) { filter = filteri; }
 
-const AW_rectangle& AW_device::get_common_screen(const AW_common *common_) {
+const AW_screen_area& AW_device::get_common_screen(const AW_common *common_) {
     return common_->get_screen();
 }
 

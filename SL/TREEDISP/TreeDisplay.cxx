@@ -2882,7 +2882,7 @@ public:
                 break;
         }
 
-        AW_rectangle clipping;
+        AW_screen_area clipping;
         int EXTRA = SCREENSIZE*0.05;
         clipping.t = 0 - EXTRA; clipping.b = 2*SCREENSIZE + EXTRA;
         clipping.l = 0 - EXTRA; clipping.r = 2*SCREENSIZE + EXTRA;
