@@ -295,35 +295,6 @@ void AW_GC_Xm::wm_set_foreground_color(unsigned long col) {
     XSetForeground(get_common()->get_display(), gc, col);
 }
 
-// --------------
-//      AW_GC
-
-void AW_GC::set_grey_level(AW_grey_level grey_leveli) {
-    // <0 = don't fill, 0.0 = white, 1.0 = black
-    grey_level = grey_leveli;
-}
-void AW_GC::set_line_attributes(AW_pos new_width_f, AW_linestyle new_style) {
-    int new_width = AW_INT(new_width_f);
-    if (new_style != style || new_width != line_width) {
-        line_width = new_width;
-        style      = new_style;
-        wm_set_lineattributes(line_width, style);
-    }
-}
-void AW_GC::set_function(AW_function mode) {
-    if (function != mode) {
-        wm_set_function(mode);
-        function = mode;
-        set_foreground_color(color);
-    }
-}
-void AW_GC::set_foreground_color(unsigned long col) {
-    color = col;
-    if (function == AW_XOR) col ^= common->get_XOR_color();
-    last_fg_color =  col;
-    wm_set_foreground_color(col);
-}
-
 const AW_font_limits& AW_stylable::get_font_limits(int gc, char c) const {
     return get_common()->get_font_limits(gc, c);
 }
@@ -383,10 +354,13 @@ void AW_stylable::set_function(int gc, AW_function function) {
     get_common()->map_mod_gc(gc)->set_function(function);
 }
 void AW_stylable::set_foreground_color(int gc, AW_color color) {
-    get_common()->map_mod_gc(gc)->set_foreground_color(get_common()->get_color(color));
+    get_common()->map_mod_gc(gc)->set_fg_color(get_common()->get_color(color));
+}
+void AW_stylable::establish_default(int gc) {
+    get_common()->map_mod_gc(gc)->establish_default();
 }
 void AW_stylable::reset_style() {
-    return get_common()->reset_style();
+    get_common()->reset_style();
 }
 
 static void AW_get_common_extends_cb(AW_window */*aww*/, AW_CL cl_common_xm, AW_CL) {

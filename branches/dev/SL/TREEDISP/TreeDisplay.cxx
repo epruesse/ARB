@@ -2774,7 +2774,7 @@ public:
             gcm->set_function(AW_COPY);
             gcm->set_font(1, 8, NULL);
 
-            gcm->set_foreground_color(colors_def[gc+7]); // i have no idea why '+7' ()
+            gcm->set_fg_color(colors_def[gc+7]); // i have no idea why '+7' 
         }
     }
     virtual ~fake_AW_common() {}
