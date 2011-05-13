@@ -165,18 +165,9 @@ public:
     AW::Rectangle rtransform(const AW::Rectangle& rect) const { return AW::Rectangle(rtransform(static_cast<const AW::LineVector&>(rect))); }
     
     // old style functions, not preferred:
-    void transform(int x, int y, int& xout, int& yout) const {
-        xout = int((x+offset.x())*scale);
-        yout = int((y+offset.y())*scale);
-    }
     void transform(AW_pos x, AW_pos y, AW_pos& xout, AW_pos& yout) const {
         xout = (x+offset.x())*scale;
         yout = (y+offset.y())*scale;
-    }
-
-    void rtransform(int x, int y, int& xout, int& yout) const {
-        xout = int(x*unscale - offset.x());
-        yout = int(y*unscale - offset.y());
     }
     void rtransform(AW_pos x, AW_pos y, AW_pos& xout, AW_pos& yout) const {
         xout = x*unscale - offset.x();
