@@ -24,6 +24,8 @@
 #define AUTO_FLUSH(device)
 #endif
 
+#define AW_INT(x) ((int)(((x)>=0.0) ? ((float)(x)+.5) : ((float)(x)-.5)))
+
 // #define AW_PIXELS_PER_MM 1.0001 // stupid and wrong
 
 const AW_bitset AW_ALL_DEVICES = (AW_bitset)-1;
