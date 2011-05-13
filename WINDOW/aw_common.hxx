@@ -28,30 +28,64 @@
 
 class AW_common;
 
-class AW_GC : virtual Noncopyable {
-    AW_common *common;
+class AW_GC_config { // variable part of AW_GC
+protected:
+    AW_function   function;
+    AW_grey_level grey_level;
+    short         line_width;
+    AW_linestyle  style;
+
+public:
+    AW_GC_config()
+        : function(AW_COPY),
+          grey_level(0),
+          line_width(1),
+          style(AW_SOLID)
+    {}
+
+    AW_function get_function() const { return function; }
+
+    // fill style
+    AW_grey_level get_grey_level() const { return grey_level; }
+    void set_grey_level(AW_grey_level grey_level_) {
+        // <0 = don't fill, 0.0 = white, 1.0 = black
+        grey_level = grey_level_;
+    }
+
+    // lines
+    short get_line_width() const { return line_width>0 ? line_width : 1; }
+    AW_linestyle get_line_style() const { return style; }
+
+    bool operator == (const AW_GC_config& other) const {
+        return
+            function == other.function &&
+            grey_level == other.grey_level &&
+            line_width == other.line_width &&
+            style == other.style;
+    }
+};
+
+class AW_GC : public AW_GC_config, virtual Noncopyable {
+    AW_common    *common;
+    AW_GC_config *default_config; // NULL means "no special default"
+
+    // foreground color
+    unsigned long color;
+    unsigned long last_fg_color; // effective color (as modified by 'function')
 
     // font
     AW_font_limits         font_limits;
     mutable AW_font_limits one_letter;
-    short                  width_of_chars[256];
-    short                  ascent_of_chars[256];
-    short                  descent_of_chars[256];
 
-    // colors
-    unsigned long color;
-    unsigned long last_fg_color; // effective color (as modified by 'function')
-    AW_pos        grey_level;
-    AW_function   function;
+    short width_of_chars[256];
+    short ascent_of_chars[256];
+    short descent_of_chars[256];
 
-    // lines
-    short        line_width;
-    AW_linestyle style;
-
-    // font
     short   fontsize;
     AW_font fontnr;
 
+    void set_effective_color();
+    
 protected:
 
     void set_char_size(int i, int ascent, int descent, int width) {
@@ -69,14 +103,11 @@ protected:
 public:
     AW_GC(AW_common *common_)
         : common(common_),
+          default_config(NULL), 
           color(0),
-          last_fg_color(0),
-          grey_level(0),
-          function(AW_COPY),
-          line_width(1),
-          style(AW_SOLID)
+          last_fg_color(0)
     {}
-    virtual ~AW_GC() {}
+    virtual ~AW_GC() { delete default_config; }
 
     virtual void wm_set_foreground_color(unsigned long col)                          = 0;
     virtual void wm_set_function(AW_function mode)                                   = 0;
@@ -102,30 +133,45 @@ public:
 
     int get_string_size(const char *str, long textlen) const;
 
-    // colors
-    void set_foreground_color(unsigned long color); 
-    short get_color() const { return color; }
-    
+    // foreground color
+    unsigned long get_fg_color() const { return color; }
     unsigned long get_last_fg_color() const { return last_fg_color; }
+    void set_fg_color(unsigned long col) { color = col; set_effective_color(); }
 
-    AW_pos get_grey_level() const { return grey_level; }
-    void set_grey_level(AW_grey_level grey_level); 
-    void set_function(AW_function function);
+    void set_function(AW_function mode) {
+        if (function != mode) {
+            wm_set_function(mode);
+            function = mode;
+            set_effective_color();
+        }
+    }
 
     // lines
-    short get_line_width() const { return line_width>0 ? line_width : 1; }
-    void set_line_attributes(AW_pos width, AW_linestyle style);
+    void set_line_attributes(AW_pos new_width_f, AW_linestyle new_style) {
+        int new_width = AW_INT(new_width_f);
+        if (new_style != style || new_width != line_width) {
+            line_width = new_width;
+            style      = new_style;
+            wm_set_lineattributes(line_width, style);
+        }
+    }
 
     // font
     void set_font(AW_font font_nr, int size, int *found_size);
     short get_fontsize() const { return fontsize; }
     AW_font get_fontnr() const { return fontnr; }
 
-    void reset() {
-        set_line_attributes(0.0, AW_SOLID);
-        set_function(AW_COPY);
-        set_foreground_color(color); // undo effects from set_function()-calls
+    void establish_default() {
+        aw_assert(!default_config); // can't establish twice
+        default_config = new AW_GC_config(*this);
+        aw_assert(!(*default_config == AW_GC_config())); // you are trying to store the general default
     }
+    void apply_config(const AW_GC_config& conf) {
+        set_line_attributes(conf.get_line_width(), conf.get_line_style());
+        set_grey_level(conf.get_grey_level());
+        set_function(conf.get_function());
+    }
+    void reset() { apply_config(default_config ? *default_config : AW_GC_config()); }
 };
 
 class AW_GC_set : virtual Noncopyable {
@@ -224,6 +270,13 @@ public:
 
 inline AW_pos x_alignment(AW_pos x_pos, AW_pos x_size, AW_pos alignment) { return x_pos - x_size*alignment; }
 
+inline void AW_GC::set_effective_color() {
+    unsigned long col = color^(function == AW_XOR ? common->get_XOR_color(): 0);
+    if (col != last_fg_color) {
+        last_fg_color = col;
+        wm_set_foreground_color(col);
+    }
+}
 
 #else
 #error aw_common.hxx included twice
