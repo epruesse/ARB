@@ -151,12 +151,12 @@ int AW_clipable::box_clip(AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW_pos& x0
     return 1;
 }
 
-int AW_clipable::box_clip(const Rectangle& rect, Rectangle& clippedRect) {
+int AW_clipable::box_clip(const Rectangle& rect, Rectangle& clippedRect) { // @@@ maybe return clippedRect as AW_screen_area
     // @@@ refactor into method
     if (clip_rect.l>clip_rect.r) return 0;
     if (clip_rect.t>clip_rect.b) return 0;
 
-    Rectangle clipRect(clip_rect);
+    Rectangle clipRect(clip_rect, FAULTY_OLD_CONVERSION); // @@@ fix
     if (rect.distinct_from(clipRect))
         return 0;
 
