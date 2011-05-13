@@ -130,6 +130,7 @@ GEN_gene.o: $(ARBHOME)/INCLUDE/attributes.h
 GEN_gene.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
 GEN_gene.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 GEN_gene.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
+GEN_gene.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 GEN_gene.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 GEN_gene.o: $(ARBHOME)/INCLUDE/cb.h
 GEN_gene.o: $(ARBHOME)/INCLUDE/dupstr.h
