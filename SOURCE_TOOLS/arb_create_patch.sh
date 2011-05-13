@@ -44,12 +44,12 @@ else
                     if [ $DIFF = 0 ]; then
                         echo "No patch generated (same as last patch)"
                         rm $PATCH
-                        rm $INTERDIFF_PATCH
+                        rm -f $INTERDIFF_PATCH
                     else
                         if [ $INTER != 0 ]; then
                             interdiff $RECENT_PATCH $PATCH > $INTERDIFF_PATCH
                         else
-                            rm $INTERDIFF_PATCH
+                            rm -f $INTERDIFF_PATCH
                         fi
                         ln --force $PATCH $RECENT_PATCH
                         ls -hog $PATCH $RECENT_PATCH
