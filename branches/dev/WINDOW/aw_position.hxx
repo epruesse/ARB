@@ -324,7 +324,27 @@ namespace AW {
             return Rectangle(Rectangle(upper_left_corner(), rect.upper_left_corner()).upper_left_corner(),
                              Rectangle(lower_right_corner(), rect.lower_right_corner()).lower_right_corner());
         }
+        Rectangle bounding_box(const Position& pos) const {
+            return Rectangle(Rectangle(upper_left_corner(), pos).upper_left_corner(),
+                             Rectangle(lower_right_corner(), pos).lower_right_corner());
+        }
     };
+
+    inline Rectangle bounding_box(const Rectangle& r1, const Rectangle& r2) { return r1.bounding_box(r2); }
+
+    inline Rectangle bounding_box(const Rectangle& rect, const LineVector& line) { return rect.bounding_box(Rectangle(line)); }
+    inline Rectangle bounding_box(const LineVector& line, const Rectangle& rect) { return rect.bounding_box(Rectangle(line)); }
+
+    inline Rectangle bounding_box(const LineVector& l1, const LineVector& l2) { return Rectangle(l1).bounding_box(Rectangle(l2)); }
+
+    inline Rectangle bounding_box(const Rectangle& rect, const Position& pos) { return rect.bounding_box(pos); }
+    inline Rectangle bounding_box(const Position& pos, const Rectangle& rect) { return rect.bounding_box(pos); }
+
+    inline Rectangle bounding_box(const LineVector& line, const Position& pos) { return Rectangle(line).bounding_box(pos); }
+    inline Rectangle bounding_box(const Position& pos, const LineVector& line) { return Rectangle(line).bounding_box(pos); }
+    
+    inline Rectangle bounding_box(const Position& p1, const Position& p2) { return Rectangle(p1, p2); }
+
 
     // ------------------------------------------------------------------
     //      class angle represents an angle using a normalized vector
