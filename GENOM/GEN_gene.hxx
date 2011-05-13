@@ -21,6 +21,9 @@
 #ifndef ARBTOOLS_H
 #include <arbtools.h>
 #endif
+#ifndef AW_POSITION_HXX
+#include <aw_position.hxx>
+#endif
 
 #ifndef _GLIBCXX_SET
 #include <set>
@@ -90,7 +93,6 @@ typedef GEN_gene_set::iterator GEN_iterator;
 class AW_device;
 
 class GEN_root : virtual Noncopyable {
-private:
     GBDATA      *gb_main;
     GEN_graphic *gen_graphic;
     std::string  organism_name; // name1 of current species
@@ -103,8 +105,19 @@ private:
 
     GBDATA *gb_gene_data;       // i am build upon this
 
-    AW_world selected_range; // draw-range of selected gene (set by paint, used by GEN_jump_cb)
+    AW::Rectangle gene_range;
 
+    
+    void clear_selected_range() { gene_range = AW::Rectangle(); }
+    void increase_selected_range(AW::Position pos) {
+        gene_range = gene_range.valid() ? bounding_box(gene_range, pos) : AW::Rectangle(pos, pos);
+    }
+    void increase_selected_range(AW::Rectangle rect) {
+        gene_range = gene_range.valid() ? bounding_box(gene_range, rect) : rect;
+    }
+
+    int smart_text(AW_device *device, int gc, const char *str, AW_pos x, AW_pos y);
+    int smart_line(AW_device *device, int gc, AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1);
 
 public:
     GEN_root(const char *organism_name_, const char *gene_name_, GBDATA *gb_main_, AW_root *aw_root, GEN_graphic *gen_graphic_);
@@ -121,7 +134,7 @@ public:
 
     void reinit_NDS() const;
 
-    const AW_world& get_selected_range() const { return selected_range; }
+    const AW::Rectangle& get_selected_range() const { return gene_range; }
 };
 
 #else
