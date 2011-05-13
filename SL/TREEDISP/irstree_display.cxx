@@ -251,26 +251,20 @@ void AWT_graphic_tree::show_irs_tree(AP_tree *at, int height) {
     disp_device->push_clip_scale();
     const AW_font_limits& limits = disp_device->get_font_limits(AWT_GC_SELECTED, 0);
 
-    int x;
-    int y;
-    disp_device->rtransform(0, 0, x, y); // calculate real world coordinates of left/upper screen border
-    
-    int clipped_l, clipped_t;
-    int clipped_r, clipped_b;
-    disp_device->rtransform(disp_device->clip_rect.l, disp_device->clip_rect.t, clipped_l, clipped_t);
-    disp_device->rtransform(disp_device->clip_rect.r, disp_device->clip_rect.b, clipped_r, clipped_b);
+    Position  corner = disp_device->rtransform(Origin); // real world coordinates of left/upper screen corner
+    Rectangle rclip  = disp_device->rtransform(Rectangle(disp_device->clip_rect, INCLUSIVE_OUTLINE));
 
     IRS.font_height_2  = limits.ascent/2;
     disp_device         = disp_device;
     IRS.ftrst_species  = true;
     IRS.y              = 0;
-    IRS.min_x          = x;
+    IRS.min_x          = corner.xpos();
     IRS.max_x          = 100;
-    IRS.min_y          = y;
-    IRS.max_y          = clipped_b;
+    IRS.min_y          = corner.ypos();
+    IRS.max_y          = rclip.bottom();
     IRS.ruler_y        = 0;
     IRS.step_y         = height;
-    IRS.x_scale        = (clipped_r-clipped_l)*0.8 / at->gr.tree_depth;
+    IRS.x_scale        = rclip.width()*0.8 / at->gr.tree_depth;
     IRS.group_closed   = 0;
     IRS.is_size_device = disp_device->type() == AW_DEVICE_SIZE;
 
