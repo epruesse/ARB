@@ -19,8 +19,6 @@
 #include <downcast.h>
 #endif
 
-#define AW_INT(x) ((int)(((x)>=0.0) ? ((float)(x)+.5) : ((float)(x)-.5)))
-
 #define AW_FONTINFO_CHAR_ASCII_MIN 32
 #define AW_FONTINFO_CHAR_ASCII_MAX 127
 
