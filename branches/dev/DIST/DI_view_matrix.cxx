@@ -348,7 +348,7 @@ void DI_dmatrix::display(bool clear)   // draw area
 
     device->set_offset(AW::Vector(off_dx, 0));
 
-    AW::Rectangle area(device->get_area_size());
+    AW::Rectangle area(device->get_area_size(), AW::INCLUSIVE_OUTLINE);
 
     // highlight selected species (vertically)
     if (sel_x_pos != -1) {

@@ -405,7 +405,7 @@ static bool handleZoomEvent(AW_window *aww, AWT_canvas *ntw, AW_device *device, 
             nt_draw_zoom_box(device, ntw);
             ntw->drag = 0;
 
-            Rectangle screen(ntw->rect);
+            Rectangle screen(ntw->rect, INCLUSIVE_OUTLINE);
             Rectangle drag(ntw->zoom_drag_sx, ntw->zoom_drag_sy, ntw->zoom_drag_ex, ntw->zoom_drag_ey);
 
             ntw->zoom(device, zoomIn, drag, screen);
