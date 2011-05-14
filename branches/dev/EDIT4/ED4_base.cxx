@@ -903,10 +903,12 @@ void ED4_sequence_terminal_basic::calc_update_intervall(long *left_index, long *
     AW_device *dev = ED4_ROOT->get_device();
     ED4_coords *coords = &ED4_ROOT->get_ed4w()->coords;
 
-    int rel_left_x =  (int)((dev->clip_rect.l-x)  // Abstand vom linken Terminalrand zum Anfang des Clipping rectangles
-                             + (coords->window_left_clip_point-x)); // Verschiebung der Sequenz (durch Scrollen) == slider Position
+    const AW_screen_area& clip_rect = dev->get_cliprect();
 
-    int rel_right_x = (int)((dev->clip_rect.r-x) + (coords->window_left_clip_point-x));
+    int rel_left_x =  (int)((clip_rect.l-x)  // Abstand vom linken Terminalrand zum Anfang des Clipping rectangles
+                            + (coords->window_left_clip_point-x)); // Verschiebung der Sequenz (durch Scrollen) == slider Position
+
+    int rel_right_x = (int)((clip_rect.r-x) + (coords->window_left_clip_point-x));
 
     *left_index  = (int)((rel_left_x-CHARACTEROFFSET)/length_of_char);
     *right_index = (int)((rel_right_x-CHARACTEROFFSET)/length_of_char) + 1;
