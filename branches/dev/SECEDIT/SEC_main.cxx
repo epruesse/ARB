@@ -128,7 +128,7 @@ bool SEC_root::perform_autoscroll() {
 
 void SEC_root::position_cursor(bool toCenter, bool evenIfVisible) {
     // centers the cursor in display (or scrolls it into view)
-    // if 'evenIfVisible' is true, always do it, otherwise only if not fully visible
+    // if 'evenIfVisible' is true, always do it, otherwise only if not (fully) visible
 
     const LineVector& cursorLine = get_last_drawed_cursor_position();
     sec_assert(cursorLine.valid());

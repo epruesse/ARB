@@ -1109,16 +1109,16 @@ ED4_returncode ED4_manager::Show(int refresh_all, int is_cleared) {
         }
     }
     if (!flag.hidden && (refresh_all || update_info.refresh)) {
-        ED4_index i = 0;
-        const AW_screen_area &clip_rect = ED4_ROOT->get_device()->get_cliprect();      // clipped rectangle in win coordinates
-        AW_screen_area rect; // clipped rectangle in world coordinates
-
         if (update_info.clear_at_refresh && !is_cleared) {
             clear_background();
             is_cleared = 1;
         }
 
+        AW_screen_area rect; // clipped rectangle in world coordinates
+
         {
+            const AW_screen_area &clip_rect = ED4_ROOT->get_device()->get_cliprect();      // clipped rectangle in win coordinates
+            
             double x, y;
             x = clip_rect.l;
             y = clip_rect.t;
@@ -1127,6 +1127,8 @@ ED4_returncode ED4_manager::Show(int refresh_all, int is_cleared) {
 
             rect.l = int(x);
             rect.t = int(y);
+
+            e4_assert(AW::nearlyEqual(ED4_ROOT->get_device()->get_scale(), 1.0)); // assumed by calculation below
             rect.r = rect.l+(clip_rect.r-clip_rect.l);
             rect.b = rect.t+(clip_rect.b-clip_rect.t);
         }
@@ -1196,7 +1198,7 @@ ED4_returncode ED4_manager::Show(int refresh_all, int is_cleared) {
 
     no_visible_child_found :
 
-        i = 0;
+        ED4_index i = 0;
 
         while (1) {
             ED4_base *child = children->member(i++);
