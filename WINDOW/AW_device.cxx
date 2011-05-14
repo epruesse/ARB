@@ -379,15 +379,11 @@ class AW_clip_scale_stack {
     // completely private, but accessible by AW_device
     friend class AW_device;
 
-    AW_screen_area clip_rect;
-
-    int top_font_overlap;
-    int bottom_font_overlap;
-    int left_font_overlap;
-    int right_font_overlap;
+    AW_screen_area  clip_rect;
+    AW_font_overlap font_overlap;
 
     Vector offset;
-    AW_pos     scale;
+    AW_pos scale;
 
     class AW_clip_scale_stack *next;
 };
@@ -406,22 +402,16 @@ static const char *clipstatestr(AW_device *device) {
 
 
 
-void AW_device::push_clip_scale()
-{
+void AW_device::push_clip_scale() {
     AW_clip_scale_stack *stack = new AW_clip_scale_stack;
 
     stack->next      = clip_scale_stack;
     clip_scale_stack = stack;
 
-    stack->scale  = get_scale();
-    stack->offset = get_offset();
-
-    stack->top_font_overlap    = get_top_font_overlap();
-    stack->bottom_font_overlap = get_bottom_font_overlap();
-    stack->left_font_overlap   = get_left_font_overlap();
-    stack->right_font_overlap  = get_right_font_overlap();
-
-    stack->clip_rect = get_cliprect();
+    stack->scale        = get_scale();
+    stack->offset       = get_offset();
+    stack->font_overlap = get_font_overlap();
+    stack->clip_rect    = get_cliprect();
 
 #if defined(SHOW_CLIP_STACK_CHANGES)
     printf("push_clip_scale: %s\n", clipstatestr(this));
@@ -439,13 +429,8 @@ void AW_device::pop_clip_scale() {
 
     zoom(clip_scale_stack->scale);
     set_offset(clip_scale_stack->offset);
-
     set_cliprect(clip_scale_stack->clip_rect);
-
-    set_top_font_overlap(clip_scale_stack->top_font_overlap);
-    set_bottom_font_overlap(clip_scale_stack->bottom_font_overlap);
-    set_left_font_overlap(clip_scale_stack->left_font_overlap);
-    set_right_font_overlap(clip_scale_stack->right_font_overlap);
+    set_font_overlap(clip_scale_stack->font_overlap);
 
     AW_clip_scale_stack *oldstack = clip_scale_stack;
     clip_scale_stack              = clip_scale_stack->next;
@@ -554,19 +539,19 @@ int AW_device::text_overlay(int gc, const char *opt_str, long opt_len,  // eithe
     const AW_screen_area& screen   = get_common()->get_screen();
     const AW_screen_area& clipRect = get_cliprect();
 
-    if (get_left_font_overlap() || screen.l == clipRect.l) inside_clipping_left = false;
-    if (get_right_font_overlap() || clipRect.r == screen.r) inside_clipping_right = false;
+    if (allow_left_font_overlap() || screen.l == clipRect.l) inside_clipping_left = false;
+    if (allow_right_font_overlap() || clipRect.r == screen.r) inside_clipping_right = false;
 
     transform(pos.xpos(), pos.ypos(), X0, Y0);
 
-    if (get_top_font_overlap() || clipRect.t == 0) {             // check clip border inside screen
+    if (allow_top_font_overlap() || clipRect.t == 0) {             // check clip border inside screen
         if (Y0+font_limits.descent < clipRect.t) return 0; // draw outside screen
     }
     else {
         if (Y0-font_limits.ascent < clipRect.t) return 0;  // don't cross the clip border
     }
 
-    if (get_bottom_font_overlap() || clipRect.b == screen.b) {   // check clip border inside screen drucken
+    if (allow_bottom_font_overlap() || clipRect.b == screen.b) {   // check clip border inside screen drucken
         if (Y0-font_limits.ascent > clipRect.b) return 0;  // draw outside screen
     }
     else {
