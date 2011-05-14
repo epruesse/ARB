@@ -2741,10 +2741,6 @@ static unsigned long *dcolors       = colors_def;
 static long           dcolors_count = ARRAY_ELEMS(colors_def); 
 
 class fake_AW_GC : public AW_GC {
-public:
-    fake_AW_GC(AW_common *common_) : AW_GC(common_) {}
-
-    // AW_GC interface
     virtual void wm_set_foreground_color(unsigned long /*col*/) {  }
     virtual void wm_set_function(AW_function /*mode*/) { awt_assert(0); }
     virtual void wm_set_lineattributes(short /*lwidth*/, AW_linestyle /*lstyle*/) {}
@@ -2754,6 +2750,8 @@ public:
             set_char_size(i, size, 0, size);
         }
     }
+public:
+    fake_AW_GC(AW_common *common_) : AW_GC(common_) {}
     virtual int get_available_fontsizes(AW_font /*font_nr*/, int */*available_sizes*/) const {
         awt_assert(0);
         return 0;

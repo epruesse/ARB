@@ -28,16 +28,17 @@ class AW_GC_Xm : public AW_GC { // derived from Noncopyable
     GC          gc;
     XFontStruct curfont;
 
+    virtual void wm_set_foreground_color(unsigned long col);
+    virtual void wm_set_function(AW_function mode);
+    virtual void wm_set_lineattributes(short lwidth, AW_linestyle lstyle);
+    virtual void wm_set_font(AW_font font_nr, int size, int *found_size);
+
 public:
 
     AW_GC_Xm(AW_common *common);
     ~AW_GC_Xm();
 
     // AW_GC interface (uses motif call)
-    virtual void wm_set_foreground_color(unsigned long col);
-    virtual void wm_set_function(AW_function mode);
-    virtual void wm_set_lineattributes(short lwidth, AW_linestyle lstyle);
-    virtual void wm_set_font(AW_font font_nr, int size, int *found_size);
     virtual int get_available_fontsizes(AW_font font_nr, int *available_sizes) const;
 
     inline AW_common_Xm *get_common() const;

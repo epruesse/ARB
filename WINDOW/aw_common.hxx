@@ -86,6 +86,11 @@ class AW_GC : public AW_GC_config, virtual Noncopyable {
     AW_font fontnr;
 
     void set_effective_color();
+
+    virtual void wm_set_foreground_color(unsigned long col)               = 0;
+    virtual void wm_set_function(AW_function mode)                        = 0;
+    virtual void wm_set_lineattributes(short lwidth, AW_linestyle lstyle) = 0;
+    virtual void wm_set_font(AW_font font_nr, int size, int *found_size)  = 0;
     
 protected:
 
@@ -110,10 +115,6 @@ public:
     {}
     virtual ~AW_GC() { delete default_config; }
 
-    virtual void wm_set_foreground_color(unsigned long col)                          = 0;
-    virtual void wm_set_function(AW_function mode)                                   = 0;
-    virtual void wm_set_lineattributes(short lwidth, AW_linestyle lstyle)            = 0;
-    virtual void wm_set_font(AW_font font_nr, int size, int *found_size)             = 0;
     virtual int get_available_fontsizes(AW_font font_nr, int *available_sizes) const = 0;
 
     AW_common *get_common() const { return common; }
