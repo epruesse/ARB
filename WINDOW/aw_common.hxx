@@ -252,7 +252,7 @@ public:
         screen = screen_;
     }
 
-    unsigned long get_color(AW_color color) const {
+    unsigned long get_color(AW_color_idx color) const {
         unsigned long col;
         if (color>=AW_DATA_BG) {
             col = data_colors[color];

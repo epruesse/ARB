@@ -372,7 +372,7 @@ void aw_gc_color_changed_cb(AW_root *root, AW_MGC_awar_cb_struct *cbs, long mode
 
     sprintf(awar_name, AWP_COLORNAME_TEMPLATE, cbs->cbs->window_awar_name, cbs->colorbasename);
     colorname = root->awar(awar_name)->read_string();
-    AW_color color = (AW_color)cbs->colorindex;
+    AW_color_idx color = (AW_color_idx)cbs->colorindex;
     cbs->cbs->aw->alloc_named_data_color(color, colorname);
     if (color != AW_DATA_BG) {
         cbs->cbs->device->set_foreground_color(cbs->gc, color);
@@ -381,7 +381,7 @@ void aw_gc_color_changed_cb(AW_root *root, AW_MGC_awar_cb_struct *cbs, long mode
     else {
         struct AW_MGC_awar_cb_struct *acbs;
         for (acbs = cbs->cbs->next_drag; acbs; acbs=acbs->next) {
-            cbs->cbs->device->set_foreground_color(acbs->gc_drag, (AW_color)acbs->colorindex);
+            cbs->cbs->device->set_foreground_color(acbs->gc_drag, (AW_color_idx)acbs->colorindex);
         }
     }
     if (mode != -1) {

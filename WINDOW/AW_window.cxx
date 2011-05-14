@@ -1319,14 +1319,14 @@ static void aw_root_create_color_map(AW_root *root) {
     int i;
     XColor xcolor_returned, xcolor_exakt;
     GBDATA *gbd = root->check_properties(NULL);
-    p_global->color_table = (unsigned long *)GB_calloc(sizeof(unsigned long), AW_COLOR_MAX);
+    p_global->color_table = (unsigned long *)GB_calloc(sizeof(unsigned long), AW_STD_COLOR_IDX_MAX);
 
     if (p_global->screen_depth == 1) { // Black and White Monitor
         unsigned long white = WhitePixelOfScreen(XtScreen(p_global->toplevel_widget));
         unsigned long black = BlackPixelOfScreen(XtScreen(p_global->toplevel_widget));
         p_global->foreground = black;
         p_global->background = white;
-        for (i=0; i< AW_COLOR_MAX; i++) {
+        for (i=0; i< AW_STD_COLOR_IDX_MAX; i++) {
             p_global->color_table[i] = black;
         }
         p_global->color_table[AW_WINDOW_FG] = white;
@@ -1616,9 +1616,9 @@ const char *AW_window::GC_to_RGB_float(AW_device *device, int gc, float& red, fl
     return error;
 }
 
-AW_color AW_window::alloc_named_data_color(int colnum, char *colorname) {
+AW_color_idx AW_window::alloc_named_data_color(int colnum, char *colorname) {
     if (!color_table_size) {
-        color_table_size = AW_COLOR_MAX + colnum;
+        color_table_size = AW_STD_COLOR_IDX_MAX + colnum;
         color_table      = (unsigned long *)malloc(sizeof(unsigned long) *color_table_size);
         for (int i = 0; i<color_table_size; ++i) color_table[i] = AW_NO_COLOR;
     }
@@ -1663,7 +1663,7 @@ AW_color AW_window::alloc_named_data_color(int colnum, char *colorname) {
     if (colnum == AW_DATA_BG) {
         XtVaSetValues(p_w->areas[AW_MIDDLE_AREA]->area, XmNbackground, color_table[colnum], NULL);
     }
-    return (AW_color)colnum;
+    return (AW_color_idx)colnum;
 }
 
 void AW_window::create_devices() {

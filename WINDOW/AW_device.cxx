@@ -337,7 +337,7 @@ void AW_stylable::set_line_attributes(int gc, AW_pos width, AW_linestyle style) 
 void AW_stylable::set_function(int gc, AW_function function) {
     get_common()->map_mod_gc(gc)->set_function(function);
 }
-void AW_stylable::set_foreground_color(int gc, AW_color color) {
+void AW_stylable::set_foreground_color(int gc, AW_color_idx color) {
     get_common()->map_mod_gc(gc)->set_fg_color(get_common()->get_color(color));
 }
 void AW_stylable::establish_default(int gc) {
