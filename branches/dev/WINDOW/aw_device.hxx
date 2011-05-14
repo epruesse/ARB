@@ -175,16 +175,14 @@ public:
     }
 };
 
+struct AW_font_overlap { bool top, bottom, left, right; };
+
 class AW_clipable {
     const AW_screen_area& common_screen;
     const AW_screen_area& get_screen() const { return common_screen; }
 
-    AW_screen_area clip_rect;     // holds the clipping rectangle coordinates
-
-    bool top_font_overlap;
-    bool bottom_font_overlap;
-    bool left_font_overlap;
-    bool right_font_overlap;
+    AW_screen_area  clip_rect;    // holds the clipping rectangle coordinates
+    AW_font_overlap font_overlap;
 
     void set_cliprect_oversize(AW_screen_area *rect, bool allow_oversize);
 protected:
@@ -242,19 +240,21 @@ public:
         set_cliprect_oversize(&rect, false);     // clip all -> nothing drawn afterwards
     }
 
-    bool get_top_font_overlap() const { return top_font_overlap; }
-    bool get_bottom_font_overlap() const { return bottom_font_overlap; }
-    bool get_left_font_overlap() const { return left_font_overlap; }
-    bool get_right_font_overlap() const { return right_font_overlap; }
+    bool allow_top_font_overlap() const { return font_overlap.top; }
+    bool allow_bottom_font_overlap() const { return font_overlap.bottom; }
+    bool allow_left_font_overlap() const { return font_overlap.left; }
+    bool allow_right_font_overlap() const { return font_overlap.right; }
+    const AW_font_overlap& get_font_overlap() const { return font_overlap; }
     
-    void set_top_font_overlap(bool allow) { top_font_overlap = allow; }
-    void set_bottom_font_overlap(bool allow) { bottom_font_overlap = allow; }
-    void set_left_font_overlap(bool allow) { left_font_overlap = allow; }
-    void set_right_font_overlap(bool allow) { right_font_overlap = allow; }
+    void set_top_font_overlap(bool allow) { font_overlap.top = allow; }
+    void set_bottom_font_overlap(bool allow) { font_overlap.bottom = allow; }
+    void set_left_font_overlap(bool allow) { font_overlap.left = allow; }
+    void set_right_font_overlap(bool allow) { font_overlap.right = allow; }
 
-    void set_vertical_font_overlap(bool allow) { top_font_overlap = bottom_font_overlap = allow; }
-    void set_horizontal_font_overlap(bool allow) { left_font_overlap = right_font_overlap = allow; }
+    void set_vertical_font_overlap(bool allow) { font_overlap.top = font_overlap.bottom = allow; }
+    void set_horizontal_font_overlap(bool allow) { font_overlap.left = font_overlap.right = allow; }
     void set_font_overlap(bool allow) { set_vertical_font_overlap(allow); set_horizontal_font_overlap(allow); }
+    void set_font_overlap(const AW_font_overlap& fo) { font_overlap = fo; }
 
     // like set_xxx_clip_border but make window only smaller:
 
