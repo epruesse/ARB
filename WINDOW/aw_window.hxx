@@ -85,13 +85,13 @@ typedef const char *AW_label;       // label for buttons menus etc
 // "#file.bitmap"   // bitmap in $ARBHOME/lib/pixmaps/file.bitmap
 
 
-typedef enum {
+enum AW_event_type {
     AW_Keyboard_Press   = 1,
     AW_Keyboard_Release = 2,
     AW_Mouse_Press      = 3,
     AW_Mouse_Release    = 4,
     AW_Mouse_Drag       = 5
-} AW_event_type;
+};
 
 struct AW_event {
     AW_event_type       type;       /* AW_Keyboard or AW_Mouse */
