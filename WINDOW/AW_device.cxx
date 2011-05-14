@@ -275,7 +275,7 @@ void AW_GC_Xm::wm_set_function(AW_function mode) {
             break;
     }
 }
-void AW_GC_Xm::wm_set_foreground_color(unsigned long col) {
+void AW_GC_Xm::wm_set_foreground_color(AW_rgb col) {
     XSetForeground(get_common()->get_display(), gc, col);
 }
 

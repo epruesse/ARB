@@ -588,7 +588,7 @@ public:
     // AW_device interface:
     AW_DEVICE_TYPE type();
 
-    int find_color_idx(unsigned long color);
+    int find_color_idx(AW_rgb color);
     void set_color_mode(bool mode);
 
 };

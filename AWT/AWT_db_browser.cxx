@@ -912,19 +912,6 @@ AW_window *DB_browser::get_window(AW_root *aw_root) {
     return aww;
 }
 
-static void dump_gcs(AW_window *aww, AW_CL, AW_CL) {
-    for (int gc = int(AWT_GC_CURSOR); gc <= AWT_GC_MAX;  ++gc) {
-        int   r, g, b;
-        const char *err = aww->GC_to_RGB(aww->get_device(AW_MIDDLE_AREA), gc, r, g, b);
-        if (err) {
-            printf("Error retrieving RGB values for GC #%i: %s\n", gc, err);
-        }
-        else {
-            printf("GC #%i RGB values: r=%i g=%i b=%i\n", gc, r, g, b);
-        }
-    }
-}
-
 static void callallcallbacks(AW_window *aww, AW_CL mode, AW_CL) {
     static bool running = false; // avoid deadlock
     if (!running) {
@@ -940,7 +927,6 @@ void AWT_create_debug_menu(AW_window *awmm) {
     awmm->create_menu("4debug", "4", AWM_ALL);
 
     awmm->insert_menu_topic("-db_browser", "Browse loaded database(s)", "B", "db_browser.hlp", AWM_ALL, AW_POPUP, (AW_CL)create_db_browser, 0);
-    awmm->insert_menu_topic("-dump_gcs",   "Dump GCs",                  "G", "",               AWM_ALL, dump_gcs, 0,                        0);
 
     awmm->insert_separator();
     {

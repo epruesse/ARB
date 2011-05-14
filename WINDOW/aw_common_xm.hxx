@@ -28,7 +28,7 @@ class AW_GC_Xm : public AW_GC { // derived from Noncopyable
     GC          gc;
     XFontStruct curfont;
 
-    virtual void wm_set_foreground_color(unsigned long col);
+    virtual void wm_set_foreground_color(AW_rgb col);
     virtual void wm_set_function(AW_function mode);
     virtual void wm_set_lineattributes(short lwidth, AW_linestyle lstyle);
     virtual void wm_set_font(AW_font font_nr, int size, int *found_size);
@@ -55,17 +55,17 @@ class AW_common_Xm: public AW_common { // derived from Noncopyable
 
     AW_common_Xm(const AW_common_Xm& other)
         : AW_common(other),
-          display(other.display), 
-          window_id(other.window_id) 
+          display(other.display),
+          window_id(other.window_id)
     {}
 public:
-    AW_common_Xm(Display         *display_in,
-                 XID              window_id_in,
-                 unsigned long*&  fcolors,
-                 unsigned long*&  dcolors,
-                 long&            dcolors_count,
-                 AW_window       *aww,
-                 AW_area          area)
+    AW_common_Xm(Display   *display_in,
+                 XID        window_id_in,
+                 AW_rgb*&   fcolors,
+                 AW_rgb*&   dcolors,
+                 long&      dcolors_count,
+                 AW_window *aww,
+                 AW_area    area)
         : AW_common(fcolors, dcolors, dcolors_count),
           display(display_in),
           window_id(window_id_in)

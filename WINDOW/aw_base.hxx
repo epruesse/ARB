@@ -41,6 +41,9 @@ typedef struct _WidgetRec *Widget;
 
 typedef const char *AWAR;
 
+#define AW_NO_COLOR (-1UL)
+typedef unsigned long AW_rgb;
+
 typedef enum {
     AW_NONE    = 0,
     AW_BIT     = 1,

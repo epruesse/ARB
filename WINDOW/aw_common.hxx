@@ -25,8 +25,6 @@
 #define AW_FONTINFO_CHAR_ASCII_MIN 32
 #define AW_FONTINFO_CHAR_ASCII_MAX 127
 
-#define AW_NO_COLOR (-1)
-
 class AW_common;
 
 class AW_GC_config { // variable part of AW_GC
@@ -71,8 +69,8 @@ class AW_GC : public AW_GC_config, virtual Noncopyable {
     AW_GC_config *default_config; // NULL means "no special default"
 
     // foreground color
-    unsigned long color;
-    unsigned long last_fg_color; // effective color (as modified by 'function')
+    AW_rgb color;
+    AW_rgb last_fg_color; // effective color (as modified by 'function')
 
     // font
     AW_font_limits         font_limits;
@@ -87,11 +85,11 @@ class AW_GC : public AW_GC_config, virtual Noncopyable {
 
     void set_effective_color();
 
-    virtual void wm_set_foreground_color(unsigned long col)               = 0;
+    virtual void wm_set_foreground_color(AW_rgb col)                      = 0;
     virtual void wm_set_function(AW_function mode)                        = 0;
     virtual void wm_set_lineattributes(short lwidth, AW_linestyle lstyle) = 0;
     virtual void wm_set_font(AW_font font_nr, int size, int *found_size)  = 0;
-    
+
 protected:
 
     void set_char_size(int i, int ascent, int descent, int width) {
@@ -136,9 +134,9 @@ public:
     int get_string_size(const char *str, long textlen) const;
 
     // foreground color
-    unsigned long get_fg_color() const { return color; }
-    unsigned long get_last_fg_color() const { return last_fg_color; }
-    void set_fg_color(unsigned long col) { color = col; set_effective_color(); }
+    AW_rgb get_fg_color() const { return color; }
+    AW_rgb get_last_fg_color() const { return last_fg_color; }
+    void set_fg_color(AW_rgb col) { color = col; set_effective_color(); }
 
     void set_function(AW_function mode) {
         if (function != mode) {
@@ -200,12 +198,12 @@ public:
 
 
 class AW_common {
-    unsigned long*& frame_colors;
-    unsigned long*& data_colors;
-    long&           data_colors_size;
+    AW_rgb*& frame_colors;
+    AW_rgb*& data_colors;
+    long&    data_colors_size;
 
     SmartPtr<AW_GC_set> gcset;
-    
+
     AW_screen_area screen;
 
     virtual AW_GC *create_gc() = 0;
@@ -221,9 +219,9 @@ protected:
     }
 
 public:
-    AW_common(unsigned long*& fcolors,
-              unsigned long*& dcolors,
-              long&           dcolors_count)
+    AW_common(AW_rgb*& fcolors,
+              AW_rgb*& dcolors,
+              long&    dcolors_count)
         : frame_colors(fcolors),
           data_colors(dcolors),
           data_colors_size(dcolors_count),
@@ -252,21 +250,14 @@ public:
         screen = screen_;
     }
 
-    unsigned long get_color(AW_color_idx color) const {
-        unsigned long col;
-        if (color>=AW_DATA_BG) {
-            col = data_colors[color];
-        }
-        else {
-            col = frame_colors[color];
-        }
-        return col;
+    AW_rgb get_color(AW_color_idx color) const {
+        return color>=AW_DATA_BG ? data_colors[color] : frame_colors[color];
     }
-    unsigned long get_data_color(int i) const { return data_colors[i]; }
-    int find_data_color_idx(unsigned long color) const;
+    AW_rgb get_data_color(int i) const { return data_colors[i]; }
+    int find_data_color_idx(AW_rgb color) const;
     int get_data_color_size() const { return data_colors_size; }
 
-    unsigned long get_XOR_color() const {
+    AW_rgb get_XOR_color() const {
         return data_colors ? data_colors[AW_DATA_BG] : frame_colors[AW_WINDOW_BG];
     }
     
@@ -286,7 +277,7 @@ public:
 inline AW_pos x_alignment(AW_pos x_pos, AW_pos x_size, AW_pos alignment) { return x_pos - x_size*alignment; }
 
 inline void AW_GC::set_effective_color() {
-    unsigned long col = color^(function == AW_XOR ? common->get_XOR_color(): 0);
+    AW_rgb col = color^(function == AW_XOR ? common->get_XOR_color(): AW_rgb(0));
     if (col != last_fg_color) {
         last_fg_color = col;
         wm_set_foreground_color(col);

@@ -1319,7 +1319,7 @@ static void aw_root_create_color_map(AW_root *root) {
     int i;
     XColor xcolor_returned, xcolor_exakt;
     GBDATA *gbd = root->check_properties(NULL);
-    p_global->color_table = (unsigned long *)GB_calloc(sizeof(unsigned long), AW_STD_COLOR_IDX_MAX);
+    p_global->color_table = (AW_rgb*)GB_calloc(sizeof(AW_rgb), AW_STD_COLOR_IDX_MAX);
 
     if (p_global->screen_depth == 1) { // Black and White Monitor
         unsigned long white = WhitePixelOfScreen(XtScreen(p_global->toplevel_widget));
@@ -1572,60 +1572,16 @@ void AW_area_management::create_devices(AW_window *aww, AW_area ar) {
     common = new AW_common_Xm(XtDisplay(area), XtWindow(area), p_global->color_table, aww->color_table, aww->color_table_size, aww, ar);
 }
 
-const char *AW_window::GC_to_RGB(AW_device *device, int gc, int& red, int& green, int& blue) {
-    const AW_GC *gcm   = device->get_common()->map_gc(gc);
-    unsigned     pixel = (unsigned short)(gcm->get_fg_color());
-    GB_ERROR     error = 0;
-    XColor       query_color;
-
-    query_color.pixel = pixel;
-    XQueryColor(p_global->display, p_global->colormap, &query_color);
-    // @@@ FIXME: error handling!
-
-    red = query_color.red;
-    green = query_color.green;
-    blue = query_color.blue;
-
-    if (error) {
-        red = green = blue = -1;
-    }
-    return error;
-}
-
-// Converts GC to RGB float values to the range (0 - 1.0)
-const char *AW_window::GC_to_RGB_float(AW_device *device, int gc, float& red, float& green, float& blue) {
-    AW_common   *common = device->get_common();
-    const AW_GC *gcm    = common->map_gc(gc);
-
-    unsigned pixel = (unsigned short)(gcm->get_fg_color()); 
-    GB_ERROR error = 0;
-    XColor   query_color;
-
-    query_color.pixel = pixel;
-
-    XQueryColor(p_global->display, p_global->colormap, &query_color);
-    // @@@ FIXME: error handling!
-
-    red = query_color.red/65535.0;
-    green = query_color.green/65535.0;
-    blue = query_color.blue/65535.0;
-
-    if (error) {
-        red = green = blue = 1.0f;
-    }
-    return error;
-}
-
 AW_color_idx AW_window::alloc_named_data_color(int colnum, char *colorname) {
     if (!color_table_size) {
         color_table_size = AW_STD_COLOR_IDX_MAX + colnum;
-        color_table      = (unsigned long *)malloc(sizeof(unsigned long) *color_table_size);
+        color_table      = (AW_rgb*)malloc(sizeof(AW_rgb) *color_table_size);
         for (int i = 0; i<color_table_size; ++i) color_table[i] = AW_NO_COLOR;
     }
     else {
         if (colnum>=color_table_size) {
             long new_size = colnum+8;
-            color_table   = (unsigned long *)realloc((char *)color_table, new_size*sizeof(long)); // valgrinders : never freed because AW_window never is freed
+            color_table   = (AW_rgb*)realloc(color_table, new_size*sizeof(AW_rgb)); // valgrinders : never freed because AW_window never is freed
             for (int i = color_table_size; i<new_size; ++i) color_table[i] = AW_NO_COLOR;
             color_table_size = new_size;
         }
@@ -1649,8 +1605,9 @@ AW_color_idx AW_window::alloc_named_data_color(int colnum, char *colorname) {
             col *= -1;
     }
     else { // Color monitor
-        if (color_table[colnum] != (unsigned long)AW_NO_COLOR) {
-            XFreeColors(p_global->display, p_global->colormap, &color_table[colnum], 1, 0);
+        if (color_table[colnum] != AW_NO_COLOR) {
+            unsigned long color = color_table[colnum];
+            XFreeColors(p_global->display, p_global->colormap, &color, 1, 0);
         }
         if (XAllocNamedColor(p_global->display, p_global->colormap, colorname, &xcolor_returned, &xcolor_exakt) == 0) {
             aw_message(GBS_global_string("XAllocColor failed: %s\n", colorname));

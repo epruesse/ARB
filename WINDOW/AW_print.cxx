@@ -115,7 +115,7 @@ GB_ERROR AW_device_print::open(const char *path) {
     return 0;
 }
 
-int AW_common::find_data_color_idx(unsigned long color) const {
+int AW_common::find_data_color_idx(AW_rgb color) const {
     for (int i=0; i<data_colors_size; i++) {
         if (color == data_colors[i]) {
             return i;
@@ -124,7 +124,7 @@ int AW_common::find_data_color_idx(unsigned long color) const {
     return -1;
 }
 
-int AW_device_print::find_color_idx(unsigned long color) {
+int AW_device_print::find_color_idx(AW_rgb color) {
     int idx = -1;
     if (color_mode) {
         idx = get_common()->find_data_color_idx(color);
