@@ -370,7 +370,7 @@ namespace AW {
         static const double rad2deg;
         static const double deg2rad;
 
-        Angle(double Radian_) : Radian(Radian_) { recalcNormal(); ISVALID(*this); }
+        explicit Angle(double Radian_) : Radian(Radian_) { recalcNormal(); ISVALID(*this); }
         Angle(double x, double y) : Normal(x, y) { Normal.normalize(); recalcRadian(); ISVALID(*this); }
         explicit Angle(const Vector& v) : Normal(v) { Normal.normalize(); recalcRadian(); ISVALID(*this); }
         Angle(const Vector& n, double r) : Normal(n), Radian(r) { aw_assert(n.is_normalized()); ISVALID(*this); }

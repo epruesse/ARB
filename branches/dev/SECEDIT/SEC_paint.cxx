@@ -903,8 +903,10 @@ void SEC_segment::paint(AW_device *device, SEC_helix_strand *previous_strand_poi
     Position currCenter = center1;
     double   currRadius = radius1;
 
+    Angle step_angle(step);
+    
     for (int i = -1; i<base_count; i++) { // for each segment position (plus one pre-loop)
-        current    += step;     // iterate over angles
+        current    += step_angle;     // iterate over angles
         currCenter += cstep;
         currRadius += radStep;
 
