@@ -36,12 +36,12 @@ const AW_bitset AW_SIZE        = 8;
 const AW_bitset AW_PRINTER     = 16; // print/xfig-export
 const AW_bitset AW_PRINTER_EXT = 32; // (+Handles) use combined with AW_PRINTER only
 
-typedef enum {
+enum AW_DEVICE_TYPE {
     AW_DEVICE_SCREEN  = 1,
     AW_DEVICE_CLICK   = 2,
     AW_DEVICE_SIZE    = 8,
     AW_DEVICE_PRINTER = 16
-} AW_DEVICE_TYPE;
+};
 
 enum {
     AW_FIXED             = -1,
@@ -82,13 +82,12 @@ enum {
     AW_DEFAULT_NORMAL_FONT = AW_LUCIDA_SANS,
     AW_DEFAULT_BOLD_FONT   = AW_LUCIDA_SANS_BOLD,
     AW_DEFAULT_FIXED_FONT  = AW_LUCIDA_SANS_TYPEWRITER,
+};
 
-};      // AW_font
-
-typedef enum {
+enum AW_cursor_type {
     AW_cursor_insert,
     AW_cursor_overwrite
-} AW_cursor_type;
+};
 
 
 // @@@ FIXME: elements of the following classes should go private!
@@ -308,16 +307,16 @@ struct AW_font_limits {
 // -----------------------------------------------
 //      Graphic context (linestyle, width ...)
 
-typedef enum {
+enum AW_linestyle {
     AW_SOLID,
     AW_DOTTED
-} AW_linestyle;
+};
 
 
-typedef enum {
+enum AW_function {
     AW_COPY,
     AW_XOR
-} AW_function;
+};
 
 class AW_common;
 
