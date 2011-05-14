@@ -52,7 +52,7 @@ public:
     }
 
     // lines
-    short get_line_width() const { return line_width>0 ? line_width : 1; }
+    short get_line_width() const { return line_width; }
     AW_linestyle get_line_style() const { return style; }
 
     bool operator == (const AW_GC_config& other) const {
@@ -147,8 +147,8 @@ public:
     }
 
     // lines
-    void set_line_attributes(AW_pos new_width_f, AW_linestyle new_style) {
-        int new_width = AW_INT(new_width_f);
+    void set_line_attributes(int new_width, AW_linestyle new_style) {
+        aw_assert(new_width >= 1);
         if (new_style != style || new_width != line_width) {
             line_width = new_width;
             style      = new_style;

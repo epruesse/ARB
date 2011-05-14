@@ -677,12 +677,11 @@ AW_gc_manager AW_manage_GC(AW_window   *aww,
 
             if ((area != AW_GCM_DATA_AREA) || !first) {
                 device->new_gc(base_gc);
-                device->set_line_attributes(base_gc, 0.0, AW_SOLID);
+                device->set_line_attributes(base_gc, 1, AW_SOLID);
                 device->set_function(base_gc, AW_COPY);
-                device->establish_default(base_gc);
 
                 device->new_gc(base_drag);
-                device->set_line_attributes(base_drag, 0.0, AW_SOLID);
+                device->set_line_attributes(base_drag, 1, AW_SOLID);
                 device->set_function(base_drag, AW_XOR);
                 device->establish_default(base_drag);
             }
