@@ -50,8 +50,13 @@ class AW_common_Xm: public AW_common { // derived from Noncopyable
     Display *display;
     XID      window_id;
 
-    void install_common_extends_cb(AW_window *aww, AW_area area); 
+    void install_common_extends_cb(AW_window *aww, AW_area area);
 
+    AW_common_Xm(const AW_common_Xm& other)
+        : AW_common(other),
+          display(other.display), 
+          window_id(other.window_id) 
+    {}
 public:
     AW_common_Xm(Display         *display_in,
                  XID              window_id_in,
@@ -68,6 +73,7 @@ public:
     }
 
     virtual AW_GC *create_gc();
+    virtual AW_common* clone() { return new AW_common_Xm(*this); }
 
     const AW_GC_Xm *map_gc(int gc) const { return DOWNCAST(const AW_GC_Xm*, AW_common::map_gc(gc)); }
     AW_GC_Xm *map_mod_gc(int gc) { return DOWNCAST(AW_GC_Xm*, AW_common::map_mod_gc(gc)); }

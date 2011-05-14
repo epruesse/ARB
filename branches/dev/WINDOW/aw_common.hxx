@@ -18,6 +18,9 @@
 #ifndef DOWNCAST_H
 #include <downcast.h>
 #endif
+#ifndef SMARTPTR_H
+#include <smartptr.h>
+#endif
 
 #define AW_FONTINFO_CHAR_ASCII_MIN 32
 #define AW_FONTINFO_CHAR_ASCII_MAX 127
@@ -200,11 +203,21 @@ class AW_common {
     unsigned long*& data_colors;
     long&           data_colors_size;
 
-    AW_GC_set gcset;
+    SmartPtr<AW_GC_set> gcset;
     
     AW_screen_area screen;
 
     virtual AW_GC *create_gc() = 0;
+
+protected:
+    AW_common(const AW_common& other)
+        : frame_colors(other.frame_colors),
+          data_colors(other.data_colors),
+          data_colors_size(other.data_colors_size),
+          gcset(other.gcset), // both commons use the same set of gcs!
+          screen(other.screen)
+    {
+    }
 
 public:
     AW_common(unsigned long*& fcolors,
@@ -212,7 +225,8 @@ public:
               long&           dcolors_count)
         : frame_colors(fcolors),
           data_colors(dcolors),
-          data_colors_size(dcolors_count)
+          data_colors_size(dcolors_count),
+          gcset(new AW_GC_set)
     {
         screen.t = 0;
         screen.b = -1;
@@ -221,7 +235,9 @@ public:
     }
     virtual ~AW_common() {}
 
-    void reset_style() { gcset.reset_style(); }
+    virtual AW_common *clone() = 0;
+
+    void reset_style() { gcset->reset_style(); }
 
     const AW_screen_area& get_screen() const { return screen; }
     void set_screen_size(unsigned int width, unsigned int height) {
@@ -253,10 +269,10 @@ public:
         return data_colors ? data_colors[AW_DATA_BG] : frame_colors[AW_WINDOW_BG];
     }
     
-    void new_gc(int gc) { gcset.add_gc(gc, create_gc()); }
-    bool gc_mapable(int gc) const { return gcset.gc_mapable(gc); }
-    const AW_GC *map_gc(int gc) const { return gcset.map_gc(gc); }
-    AW_GC *map_mod_gc(int gc) { return gcset.map_mod_gc(gc); }
+    void new_gc(int gc) { gcset->add_gc(gc, create_gc()); }
+    bool gc_mapable(int gc) const { return gcset->gc_mapable(gc); }
+    const AW_GC *map_gc(int gc) const { return gcset->map_gc(gc); }
+    AW_GC *map_mod_gc(int gc) { return gcset->map_mod_gc(gc); }
 
     const AW_font_limits& get_font_limits(int gc, char c) const {
         // for one characters (c == 0 -> for all characters)

@@ -2761,6 +2761,7 @@ public:
 };
 
 class fake_AW_common : public AW_common {
+    fake_AW_common(const fake_AW_common& other) : AW_common(other) {}
 public:
     fake_AW_common()
         : AW_common(fcolors, dcolors, dcolors_count)
@@ -2777,9 +2778,8 @@ public:
     }
     virtual ~fake_AW_common() {}
 
-    virtual AW_GC *create_gc() {
-        return new fake_AW_GC(this);
-    }
+    virtual AW_GC *create_gc() { return new fake_AW_GC(this); }
+    virtual AW_common* clone() { return new fake_AW_common(*this); }
 };
 
 class fake_AWT_graphic_tree : public AWT_graphic_tree {
