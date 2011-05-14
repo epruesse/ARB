@@ -41,6 +41,7 @@ namespace AW {
     const double EPSILON = 0.001; // how equal is nearly equal
 
     inline bool nearlyEqual(const double& val1, const double& val2) { return std::abs(val1-val2) < EPSILON; }
+    inline bool nearlyZero(const double& val) { return nearlyEqual(val, 0.0); }
     inline double centroid(const double& val1, const double& val2) { return (val1+val2)*0.5; }
 
     // -------------------------------------------------------
@@ -209,6 +210,9 @@ namespace AW {
 
     inline bool are_distinct(const Position& p1, const Position& p2) { return Vector(p1, p2).has_length(); }
 
+    inline bool is_vertical(const Vector& v) { return nearlyZero(v.x()) && !nearlyZero(v.y()); }
+    inline bool is_horizontal(const Vector& v) { return !nearlyZero(v.x()) && nearlyZero(v.y()); }
+
     // -------------------------------------------------
     //      a positioned vector, representing a line
     // -------------------------------------------------
@@ -265,6 +269,9 @@ namespace AW {
     Position nearest_linepoint(const Position& pos, const LineVector& line, double& factor);
     inline Position nearest_linepoint(const Position& pos, const LineVector& line) { double dummy; return nearest_linepoint(pos, line, dummy); }
     inline double Distance(const Position& pos, const LineVector& line) { return Distance(pos, nearest_linepoint(pos, line)); }
+
+    inline bool is_vertical(const LineVector& line) { return is_vertical(line.line_vector()); }
+    inline bool is_horizontal(const LineVector& line) { return is_horizontal(line.line_vector()); }
 
     // ---------------------
     //      a rectangle
