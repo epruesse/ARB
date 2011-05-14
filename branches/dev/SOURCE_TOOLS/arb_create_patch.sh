@@ -47,7 +47,7 @@ else
                         rm -f $INTERDIFF_PATCH
                     else
                         if [ $INTER != 0 ]; then
-                            interdiff $RECENT_PATCH $PATCH > $INTERDIFF_PATCH
+                            interdiff -w $RECENT_PATCH $PATCH > $INTERDIFF_PATCH
                         else
                             rm -f $INTERDIFF_PATCH
                         fi
