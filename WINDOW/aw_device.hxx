@@ -413,7 +413,8 @@ public:
     void reset();
 
     const AW_screen_area& get_area_size();
-    
+    AW::Rectangle get_rtransformed_cliprect() const { return rtransform(AW::Rectangle(get_cliprect(), AW::INCLUSIVE_OUTLINE)); }
+
     void set_filter(AW_bitset filteri);   // set the main filter mask
 
     void push_clip_scale();     // push clipping area and scale
