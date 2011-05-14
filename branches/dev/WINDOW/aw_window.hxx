@@ -268,7 +268,7 @@ public:
     void  increment_at_commands(int width, int height);
 
 
-    AW_color alloc_named_data_color(int colnum, char *colorname);
+    AW_color_idx alloc_named_data_color(int colnum, char *colorname);
     const char *GC_to_RGB(AW_device *device, int gc, int& red, int& green, int& blue); // returns colors in result-parameters or error message in return value
     // Converts GC to RGB float values to the range (0 - 1.0)
     const char *GC_to_RGB_float(AW_device *device, int gc, float& red, float& green, float& blue);

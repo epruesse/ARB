@@ -79,8 +79,8 @@ typedef enum {
     AW_WINDOW_C3,
     AW_WINDOW_DRAG,
     AW_DATA_BG,
-    AW_COLOR_MAX
-} AW_color;
+    AW_STD_COLOR_IDX_MAX
+} AW_color_idx;
 
 
 AW_default get_AW_ROOT_DEFAULT();
