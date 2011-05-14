@@ -2700,10 +2700,8 @@ void awt_create_dtree_awars(AW_root *aw_root, AW_default def)
 
 static void fake_AD_map_viewer_cb(GBDATA *, AD_MAP_VIEWER_TYPE ) {}
 
-#define NO_COLOR ((unsigned long)AW_NO_COLOR)
-
-static unsigned long colors_def[] = {
-    NO_COLOR, NO_COLOR, NO_COLOR, NO_COLOR, NO_COLOR, NO_COLOR,
+static AW_rgb colors_def[] = {
+    AW_NO_COLOR, AW_NO_COLOR, AW_NO_COLOR, AW_NO_COLOR, AW_NO_COLOR, AW_NO_COLOR,
     0x30b0e0,
     0xff8800, // AWT_GC_CURSOR
     0xa3b3cf, // AWT_GC_BRANCH_REMARK
@@ -2734,14 +2732,14 @@ static unsigned long colors_def[] = {
     0x880088,
     0x000088,
     0x888800,
-    NO_COLOR
+    AW_NO_COLOR
 };
-static unsigned long *fcolors       = colors_def;
-static unsigned long *dcolors       = colors_def;
-static long           dcolors_count = ARRAY_ELEMS(colors_def); 
+static AW_rgb *fcolors       = colors_def;
+static AW_rgb *dcolors       = colors_def;
+static long    dcolors_count = ARRAY_ELEMS(colors_def);
 
 class fake_AW_GC : public AW_GC {
-    virtual void wm_set_foreground_color(unsigned long /*col*/) {  }
+    virtual void wm_set_foreground_color(AW_rgb /*col*/) {  }
     virtual void wm_set_function(AW_function /*mode*/) { awt_assert(0); }
     virtual void wm_set_lineattributes(short /*lwidth*/, AW_linestyle /*lstyle*/) {}
     virtual void wm_set_font(AW_font /*font_nr*/, int size, int */*found_size*/) {

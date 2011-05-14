@@ -246,9 +246,9 @@ public:
     AW_selection_list *selection_list;
     AW_selection_list *last_selection_list;
 
-    int            screen_depth;
-    unsigned long *color_table;
-    Colormap       colormap;
+    int       screen_depth;
+    AW_rgb   *color_table;
+    Colormap  colormap;
 
     int      help_active;
     Cursor   clock_cursor;
