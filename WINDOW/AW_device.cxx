@@ -16,7 +16,7 @@
 
 using namespace AW;
 
-void AW_clipable::set_cliprect(AW_screen_area *rect, bool allow_oversize) {
+void AW_clipable::set_cliprect_oversize(AW_screen_area *rect, bool allow_oversize) {
     clip_rect = *rect; // coordinates : (0,0) = top-left-corner
     
     const AW_screen_area& screen = get_screen();
@@ -27,10 +27,7 @@ void AW_clipable::set_cliprect(AW_screen_area *rect, bool allow_oversize) {
         if (clip_rect.r > screen.r) clip_rect.r = screen.r;
     }
 
-    top_font_overlap    = 0;
-    bottom_font_overlap = 0;
-    left_font_overlap   = 0;
-    right_font_overlap  = 0;
+    set_font_overlap(false);
 
     if (allow_oversize) { // added 21.6.02 --ralf
         if (clip_rect.t < screen.t) set_top_font_overlap(true);
@@ -112,19 +109,6 @@ void AW_clipable::set_right_clip_border(int right, bool allow_oversize) {
     else {
         set_right_font_overlap(true); // added to correct problem with last char skipped (added 21.6.02 --ralf)
     }
-}
-
-void AW_clipable::set_top_font_overlap(int val) {
-    top_font_overlap = val;
-}
-void AW_clipable::set_bottom_font_overlap(int val) {
-    bottom_font_overlap = val;
-}
-void AW_clipable::set_left_font_overlap(int val) {
-    left_font_overlap = val;
-}
-void AW_clipable::set_right_font_overlap(int val) {
-    right_font_overlap = val;
 }
 
 inline AW_pos clip_in_range(AW_pos low, AW_pos val, AW_pos high) {
@@ -432,12 +416,12 @@ void AW_device::push_clip_scale()
     stack->scale  = get_scale();
     stack->offset = get_offset();
 
-    stack->top_font_overlap    = top_font_overlap;
-    stack->bottom_font_overlap = bottom_font_overlap;
-    stack->left_font_overlap   = left_font_overlap;
-    stack->right_font_overlap  = right_font_overlap;
+    stack->top_font_overlap    = get_top_font_overlap();
+    stack->bottom_font_overlap = get_bottom_font_overlap();
+    stack->left_font_overlap   = get_left_font_overlap();
+    stack->right_font_overlap  = get_right_font_overlap();
 
-    stack->clip_rect = clip_rect;
+    stack->clip_rect = get_cliprect();
 
 #if defined(SHOW_CLIP_STACK_CHANGES)
     printf("push_clip_scale: %s\n", clipstatestr(this));
@@ -456,12 +440,12 @@ void AW_device::pop_clip_scale() {
     zoom(clip_scale_stack->scale);
     set_offset(clip_scale_stack->offset);
 
-    clip_rect = clip_scale_stack->clip_rect;
+    set_cliprect(clip_scale_stack->clip_rect);
 
-    top_font_overlap    = clip_scale_stack->top_font_overlap;
-    bottom_font_overlap = clip_scale_stack->bottom_font_overlap;
-    left_font_overlap   = clip_scale_stack->left_font_overlap;
-    right_font_overlap  = clip_scale_stack->right_font_overlap;
+    set_top_font_overlap(clip_scale_stack->top_font_overlap);
+    set_bottom_font_overlap(clip_scale_stack->bottom_font_overlap);
+    set_left_font_overlap(clip_scale_stack->left_font_overlap);
+    set_right_font_overlap(clip_scale_stack->right_font_overlap);
 
     AW_clip_scale_stack *oldstack = clip_scale_stack;
     clip_scale_stack              = clip_scale_stack->next;
@@ -485,7 +469,7 @@ void AW_device::reset() {
     while (clip_scale_stack) {
         pop_clip_scale();
     }
-    clip_rect = get_area_size();
+    set_cliprect(get_area_size()); // @@@ or set_cliprect_oversize ? 
     AW_zoomable::reset();
     privat_reset();
 }
@@ -494,8 +478,7 @@ bool AW_device::invisible_impl(int /*gc*/, AW_pos x, AW_pos y, AW_bitset filteri
     if (filteri & filter) {
         AW_pos X, Y;            // Transformed pos
         transform(x, y, X, Y);
-        return ! (X<clip_rect.l || X>clip_rect.r ||
-                  Y<clip_rect.t || Y>clip_rect.b);
+        return !is_outside_clip(Position(X, Y));
     }
     return true;
 }
@@ -568,32 +551,26 @@ int AW_device::text_overlay(int gc, const char *opt_str, long opt_len,  // eithe
 
     if (!(filter & filteri)) return 0;
 
-    const AW_screen_area& screen = get_common()->get_screen();
+    const AW_screen_area& screen   = get_common()->get_screen();
+    const AW_screen_area& clipRect = get_cliprect();
 
-    if (left_font_overlap || screen.l == clip_rect.l) { // was : clip_rect.l == 0
-        inside_clipping_left = false;
-    }
-
-    if (right_font_overlap || clip_rect.r == screen.r) { // was : clip_rect.r == screen.r
-
-        inside_clipping_right = false;
-    }
+    if (get_left_font_overlap() || screen.l == clipRect.l) inside_clipping_left = false;
+    if (get_right_font_overlap() || clipRect.r == screen.r) inside_clipping_right = false;
 
     transform(pos.xpos(), pos.ypos(), X0, Y0);
 
-
-    if (top_font_overlap || clip_rect.t == 0) {                                                 // check clip border inside screen
-        if (Y0+font_limits.descent < clip_rect.t) return 0; // draw outside screen
+    if (get_top_font_overlap() || clipRect.t == 0) {             // check clip border inside screen
+        if (Y0+font_limits.descent < clipRect.t) return 0; // draw outside screen
     }
     else {
-        if (Y0-font_limits.ascent < clip_rect.t) return 0; // don't cross the clip border
+        if (Y0-font_limits.ascent < clipRect.t) return 0;  // don't cross the clip border
     }
 
-    if (bottom_font_overlap || clip_rect.b == screen.b) {                               // check clip border inside screen drucken
-        if (Y0-font_limits.ascent > clip_rect.b) return 0;             // draw outside screen
+    if (get_bottom_font_overlap() || clipRect.b == screen.b) {   // check clip border inside screen drucken
+        if (Y0-font_limits.ascent > clipRect.b) return 0;  // draw outside screen
     }
     else {
-        if (Y0+font_limits.descent> clip_rect.b) return 0;             // don't cross the clip border
+        if (Y0+font_limits.descent> clipRect.b) return 0;  // don't cross the clip border
     }
 
     if (!opt_len) {
@@ -612,9 +589,9 @@ int AW_device::text_overlay(int gc, const char *opt_str, long opt_len,  // eithe
     }
     xi = AW_INT(X0);
     yi = AW_INT(Y0);
-    if (X0 > clip_rect.r) return 0; // right of screen
+    if (X0 > clipRect.r) return 0; // right of screen
 
-    l = (int)clip_rect.l;
+    l = (int)clipRect.l;
     if (xi + textlen*font_limits.width < l) return 0; // left of screen
 
     start = 0;
@@ -653,7 +630,7 @@ int AW_device::text_overlay(int gc, const char *opt_str, long opt_len,  // eithe
 
     // now clip right side
     if (font_limits.is_monospaced()) {
-        h = ((int)clip_rect.r - xi) / font_limits.width;
+        h = ((int)clipRect.r - xi) / font_limits.width;
         if (h < textlen) {
             if (inside_clipping_right) {
                 textlen = h;
@@ -667,7 +644,7 @@ int AW_device::text_overlay(int gc, const char *opt_str, long opt_len,  // eithe
         aw_assert(int(strlen(opt_str)) >= textlen);
     }
     else { // proportional font
-        l = (int)clip_rect.r - xi;
+        l = (int)clipRect.r - xi;
         for (h = start; l >= 0 && textlen > 0;  h++, textlen--) { // was textlen >= 0
             l -= gcm->get_width_of_char(opt_str[h]);
         }

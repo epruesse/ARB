@@ -1921,7 +1921,7 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, Position& Pen, DendroSubtree
 
         bool   is_clipped = false;
         double offset     = 0.0;
-        if (s.ypos() > disp_device->clip_rect.b) {
+        if (disp_device->is_below_clip(s.ypos())) {
             offset     = scaled_branch_distance;
             is_clipped = true;
         }
@@ -1929,7 +1929,7 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, Position& Pen, DendroSubtree
             p.sety(Pen.ypos() + scaled_branch_distance * (at->gr.view_sum+2));
             s = disp_device->transform(p);;
 
-            if (s.ypos()  < disp_device->clip_rect.t) {
+            if (disp_device->is_above_clip(s.ypos())) {
                 offset     = scaled_branch_distance*at->gr.view_sum;
                 is_clipped = true;
             }
@@ -2075,12 +2075,8 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, Position& Pen, DendroSubtree
                     size_t      data_len = strlen(data);
 
                     LineVector worldBracket = disp_device->transform(bracket.right_edge());
-
-                    double X  = worldBracket.start().xpos();
-                    double Y1 = std::max(worldBracket.start().ypos(), (double)disp_device->clip_rect.t);
-                    double Y2 = std::min(worldBracket.head().ypos(), (double)disp_device->clip_rect.b);
-
-                    LineVector clippedWorldBracket(X, Y1, X, Y2);
+                    LineVector clippedWorldBracket;
+                    disp_device->clip(worldBracket, clippedWorldBracket);
                     LineVector clippedBracket = disp_device->rtransform(clippedWorldBracket);
 
                     Position textPos = clippedBracket.centroid()+Vector(half_text_ascent, half_text_ascent);
@@ -2472,8 +2468,10 @@ void AWT_graphic_tree::show_nds_list(GBDATA *, bool use_nds) {
 
         AW_pos y1, y2;
         {
-            AW_pos Y1 = disp_device->clip_rect.t;
-            AW_pos Y2 = disp_device->clip_rect.b;
+            const AW_screen_area& clip_rect = disp_device->get_cliprect();
+            
+            AW_pos Y1 = clip_rect.t;
+            AW_pos Y2 = clip_rect.b;
 
             AW_pos x;
             disp_device->rtransform(0, Y1, x, y1);

@@ -252,7 +252,7 @@ void AWT_graphic_tree::show_irs_tree(AP_tree *at, int height) {
     const AW_font_limits& limits = disp_device->get_font_limits(AWT_GC_SELECTED, 0);
 
     Position  corner = disp_device->rtransform(Origin); // real world coordinates of left/upper screen corner
-    Rectangle rclip  = disp_device->rtransform(Rectangle(disp_device->clip_rect, INCLUSIVE_OUTLINE));
+    Rectangle rclip  = disp_device->rtransform(Rectangle(disp_device->get_cliprect(), INCLUSIVE_OUTLINE));
 
     IRS.font_height_2  = limits.ascent/2;
     disp_device         = disp_device;

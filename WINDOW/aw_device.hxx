@@ -179,6 +179,14 @@ class AW_clipable {
     const AW_screen_area& common_screen;
     const AW_screen_area& get_screen() const { return common_screen; }
 
+    AW_screen_area clip_rect;     // holds the clipping rectangle coordinates
+
+    bool top_font_overlap;
+    bool bottom_font_overlap;
+    bool left_font_overlap;
+    bool right_font_overlap;
+
+    void set_cliprect_oversize(AW_screen_area *rect, bool allow_oversize);
 protected:
     int compoutcode(AW_pos xx, AW_pos yy) {
         /* calculate outcode for clipping the current line */
@@ -190,17 +198,29 @@ protected:
         else if (xx - clip_rect.l < 0)  code |= 1;
         return (code);
     };
-    
+
+    void set_cliprect(const AW_screen_area& rect) { clip_rect = rect; }
+
 public:
+    
+    AW_clipable(const AW_screen_area& screen)
+        : common_screen(screen)
+    {
+        clip_rect.clear();
+        set_font_overlap(false);
+    }
+    virtual ~AW_clipable() {}
 
-    // ****** read only section
-    AW_screen_area clip_rect;     // holds the clipping rectangle coordinates
-    int top_font_overlap;
-    int bottom_font_overlap;
-    int left_font_overlap;
-    int right_font_overlap;
+    bool is_below_clip(double ypos) const { return ypos > clip_rect.b; }
+    bool is_above_clip(double ypos) const { return ypos < clip_rect.t; }
+    bool is_leftof_clip(double xpos) const { return xpos < clip_rect.l; }
+    bool is_rightof_clip(double xpos) const { return xpos > clip_rect.r; }
 
-    // ****** real public
+    bool is_outside_clip(AW::Position pos) const {
+        return
+            is_below_clip(pos.ypos()) || is_above_clip(pos.ypos()) ||
+            is_leftof_clip(pos.xpos()) || is_rightof_clip(pos.xpos());
+    }
 
     int clip(AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW_pos& x0out, AW_pos& y0out, AW_pos& x1out, AW_pos& y1out);
     int clip(const AW::LineVector& line, AW::LineVector& clippedLine);
@@ -214,18 +234,27 @@ public:
     void set_bottom_clip_margin(int bottom, bool allow_oversize = false); // relative
     void set_left_clip_border(int left, bool allow_oversize = false);
     void set_right_clip_border(int right, bool allow_oversize = false);
-    void set_cliprect(AW_screen_area *rect, bool allow_oversize = false);
+    const AW_screen_area& get_cliprect() const { return clip_rect; }
+
     void set_clipall() {
         AW_screen_area rect;
         rect.t = rect.b = rect.l = rect.r = 0;
-        set_cliprect(&rect);     // clip all -> nothing drawn afterwards
+        set_cliprect_oversize(&rect, false);     // clip all -> nothing drawn afterwards
     }
 
+    bool get_top_font_overlap() const { return top_font_overlap; }
+    bool get_bottom_font_overlap() const { return bottom_font_overlap; }
+    bool get_left_font_overlap() const { return left_font_overlap; }
+    bool get_right_font_overlap() const { return right_font_overlap; }
+    
+    void set_top_font_overlap(bool allow) { top_font_overlap = allow; }
+    void set_bottom_font_overlap(bool allow) { bottom_font_overlap = allow; }
+    void set_left_font_overlap(bool allow) { left_font_overlap = allow; }
+    void set_right_font_overlap(bool allow) { right_font_overlap = allow; }
 
-    void set_top_font_overlap(int val=1);
-    void set_bottom_font_overlap(int val=1);
-    void set_left_font_overlap(int val=1);
-    void set_right_font_overlap(int val=1);
+    void set_vertical_font_overlap(bool allow) { top_font_overlap = bottom_font_overlap = allow; }
+    void set_horizontal_font_overlap(bool allow) { left_font_overlap = right_font_overlap = allow; }
+    void set_font_overlap(bool allow) { set_vertical_font_overlap(allow); set_horizontal_font_overlap(allow); }
 
     // like set_xxx_clip_border but make window only smaller:
 
@@ -235,18 +264,6 @@ public:
     void reduce_right_clip_border(int right);
 
     int reduceClipBorders(int top, int bottom, int left, int right);
-
-    AW_clipable(const AW_screen_area& screen)
-        : common_screen(screen),
-          top_font_overlap(0),
-          bottom_font_overlap(0),
-          left_font_overlap(0),
-          right_font_overlap(0)
-    {
-        clip_rect.clear();
-    }
-
-    virtual ~AW_clipable() {}
 };
 
 struct AW_font_limits {

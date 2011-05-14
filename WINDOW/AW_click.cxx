@@ -86,18 +86,19 @@ int AW_device_click::text_impl(int gc, const char *str, const AW::Position& pos,
 
         // Fast check text against top/bottom clip
 
-        if (this->clip_rect.t == 0) {
-            if (Y1 < this->clip_rect.t) return 0;
+        const AW_screen_area& clipRect = get_cliprect();
+        if (clipRect.t == 0) {
+            if (Y1 < clipRect.t) return 0;
         }
         else {
-            if (Y0 < this->clip_rect.t) return 0;
+            if (Y0 < clipRect.t) return 0;
         }
 
-        if (this->clip_rect.b == get_common()->get_screen().b) {
-            if (Y0 > this->clip_rect.b) return 0;
+        if (clipRect.b == get_common()->get_screen().b) {
+            if (Y0 > clipRect.b) return 0;
         }
         else {
-            if (Y1 > this->clip_rect.b) return 0;
+            if (Y1 > clipRect.b) return 0;
         }
 
         // vertical check mouse against textsurrounding
@@ -123,8 +124,8 @@ int AW_device_click::text_impl(int gc, const char *str, const AW::Position& pos,
         AW_pos X1 = X0+text_width;
 
         // check against left right clipping areas
-        if (X1 < this->clip_rect.l) return 0;
-        if (X0 > this->clip_rect.r) return 0;
+        if (X1 < clipRect.l) return 0;
+        if (X0 > clipRect.r) return 0;
 
         if (mouse_x < X0) return 0; // left of text
         if (mouse_x > X1) return 0; // right of text

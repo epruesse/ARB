@@ -172,18 +172,20 @@ void AW_device_Xm::clear_text(int gc, const char *string, AW_pos x, AW_pos y, AW
     height = xfs->max_bounds.ascent + xfs->max_bounds.descent;
     X      = x_alignment(X, width, alignment);
 
-    if (X > this->clip_rect.r) return;
-    if (X < this->clip_rect.l) {
-        width = width + X - this->clip_rect.l;
-        X = this->clip_rect.l;
+    const AW_screen_area& clipRect = get_cliprect();
+
+    if (X > clipRect.r) return;
+    if (X < clipRect.l) {
+        width = width + X - clipRect.l;
+        X = clipRect.l;
     }
 
-    if (X + width > this->clip_rect.r) {
-        width = this->clip_rect.r - X;
+    if (X + width > clipRect.r) {
+        width = clipRect.r - X;
     }
 
-    if (Y < this->clip_rect.t) return;
-    if (Y > this->clip_rect.b) return;
+    if (Y < clipRect.t) return;
+    if (Y > clipRect.b) return;
     if (width <= 0 || height <= 0) return;
 
     XClearArea(XDRAW_PARAM2(get_common()),
