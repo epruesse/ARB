@@ -136,7 +136,7 @@ int AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, int x_offset) {
 
             // draw group box (unclosed on right hand):
             AW_click_cd cd(disp_device, (AW_CL)node);
-            disp_device->set_line_attributes(gc, 1.0, AW_SOLID);
+            disp_device->set_line_attributes(gc, 1, AW_SOLID);
             disp_device->line(gc, x_offset, topy, rx,       topy);
             disp_device->line(gc, x_offset, topy, x_offset, boty);
             disp_device->line(gc, x_offset, boty, rx,       boty);
@@ -181,7 +181,7 @@ int AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, int x_offset) {
         IRS.y+=int(IRS.step_y * 1.8);
         int gc = AWT_GC_GROUPS;
         AW_click_cd cd(disp_device, (AW_CL)node);
-        disp_device->set_line_attributes(gc, 1.0, AW_SOLID);
+        disp_device->set_line_attributes(gc, 1, AW_SOLID);
         disp_device->line(gc, x_offset, last_y, x_offset+400, last_y); // opened-group-frame
 
         disp_device->set_grey_level(node->gr.gc, grey_level);
@@ -240,7 +240,7 @@ int AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, int x_offset) {
     if (node_string != 0) {             //  A node name should be displayed
         IRS.y+=IRS.step_y / 2;
         int gc = AWT_GC_GROUPS;
-        disp_device->set_line_attributes(gc, 1.0, AW_SOLID);
+        disp_device->set_line_attributes(gc, 1, AW_SOLID);
         disp_device->line(gc, x_offset-1, IRS.y, x_offset+400, IRS.y); // opened-group-frame
         disp_device->line(gc, x_offset-1, last_y, x_offset-1,  IRS.y); // opened-group-frame
     }

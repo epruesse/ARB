@@ -1852,7 +1852,7 @@ void AWT_graphic_tree::filled_box(int gc, const Position& pos, double half_pixel
 }
 
 void AWT_graphic_tree::empty_box(int gc, const AW::Position& pos, double half_pixel_width) {
-    disp_device->set_line_attributes(gc, 1.0, AW_SOLID);
+    disp_device->set_line_attributes(gc, 1, AW_SOLID);
     double diam  = half_pixel_width*disp_device->get_unscale();
     double diam2 = diam+diam;
     disp_device->box(gc, false, pos.xpos()-diam, pos.ypos()-diam, diam2, diam2, mark_filter);
@@ -2765,7 +2765,7 @@ public:
         for (int gc = 0; gc < dcolors_count; ++gc) { // gcs used in this example
             new_gc(gc);
             AW_GC *gcm = map_mod_gc(gc);
-            gcm->set_line_attributes(0.0, AW_SOLID);
+            gcm->set_line_attributes(1, AW_SOLID);
             gcm->set_function(AW_COPY);
             gcm->set_font(1, 8, NULL);
 

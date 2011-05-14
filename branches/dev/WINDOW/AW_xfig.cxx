@@ -17,7 +17,7 @@
 
 inline int scaleAndRound(int unscaled, double scaleFactor) {
     double scaled = double(unscaled)*scaleFactor;
-    return int(scaled);
+    return AW_INT(scaled);
 }
 
 inline void setMinMax(int value, int& min, int& max) {
@@ -500,7 +500,8 @@ void AW_xfig::print(AW_device *device) {
 
     struct AW_xfig_line *xline;
     for (int i=0; i<MAX_LINE_WIDTH; i++) {
-        device->set_line_attributes(0, (AW_pos)scaleAndRound(i, font_scale), AW_SOLID);
+        int line_width = std::max(1, scaleAndRound(i, font_scale));
+        device->set_line_attributes(0, line_width, AW_SOLID);
         for (xline = line[i]; xline; xline=xline->next) {
             device->line(0, (AW_pos)xline->x0, (AW_pos)xline->y0, (AW_pos)xline->x1, (AW_pos)xline->y1);
         }
@@ -519,13 +520,13 @@ void AW_xfig::create_gcs(AW_device *device, int depth)
     device->new_gc(gc);   // create at least one gc ( 0 ) for the lines
     device->set_foreground_color(gc, AW_WINDOW_FG);
     if (depth<=1) device->set_function(gc, AW_XOR);
-    device->set_line_attributes(gc, 0.3, AW_SOLID);
+    device->set_line_attributes(gc, 1, AW_SOLID);
     gc = 1;         // create gc for texts
     for (xtext = text; xtext; xtext=xtext->next) {
         sprintf(fontstring, "%i-%i", xtext->font, scaleAndRound(xtext->fontsize, font_scale));
         if (!(xtext->gc = (int)GBS_read_hash(gchash, fontstring))) {
             device->new_gc(gc);
-            device->set_line_attributes(gc, 0.3, AW_SOLID);
+            device->set_line_attributes(gc, 1, AW_SOLID);
             device->set_font(gc, xtext->font, scaleAndRound(xtext->fontsize, font_scale), 0);
             device->set_foreground_color(gc, AW_WINDOW_FG);
             if (depth<=1) device->set_function(gc, AW_XOR);
