@@ -164,10 +164,9 @@ int AW_device_print::box_impl(int gc, bool filled, const Rectangle& rect, AW_bit
     return drawflag;
 }
 
-int AW_device_print::circle_impl(int gc, bool filled, const Position& center, AW_pos xradius, AW_pos yradius, AW_bitset filteri) {
+int AW_device_print::circle_impl(int gc, bool filled, const Position& center, const AW::Vector& radius, AW_bitset filteri) {
     if (filteri & filter) {
-        aw_assert(xradius>0 && yradius>0);
-        Vector    radius(xradius, yradius);
+        aw_assert(radius.x()>0 && radius.y()>0);
         Rectangle Box(center-radius, center+radius);
         Rectangle screen_box = transform(Box);
         Rectangle clipped_box;

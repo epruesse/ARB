@@ -86,9 +86,9 @@ int AW_device_Xm::box_impl(int gc, bool filled, const Rectangle& rect, AW_bitset
     return drawflag;
 }
 
-int AW_device_Xm::circle_impl(int gc, bool filled, const AW::Position& center, AW_pos xradius, AW_pos yradius, AW_bitset filteri) {
-    aw_assert(xradius>0 && yradius>0);
-    return arc(gc, filled, center.xpos(), center.ypos(), xradius, yradius, 0, 360, filteri);
+int AW_device_Xm::circle_impl(int gc, bool filled, const AW::Position& center, const AW::Vector& radius, AW_bitset filteri) {
+    aw_assert(radius.x()>0 && radius.y()>0);
+    return arc(gc, filled, center.xpos(), center.ypos(), radius.x(), radius.y(), 0, 360, filteri);
 }
 
 int AW_device_Xm::arc_impl(int gc, bool filled, const AW::Position& center, AW_pos xradius, AW_pos yradius, int start_degrees, int arc_degrees, AW_bitset filteri) {
