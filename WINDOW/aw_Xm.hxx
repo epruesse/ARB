@@ -11,7 +11,7 @@ class AW_device_Xm : public AW_device {
     int line_impl(int gc, const AW::LineVector& Line, AW_bitset filteri);
     int text_impl(int gc, const char *str, const AW::Position& pos, AW_pos alignment, AW_bitset filteri, long opt_strlen);
     int box_impl(int gc, bool filled, const AW::Rectangle& rect, AW_bitset filteri);
-    int circle_impl(int gc, bool filled, const AW::Position& center, AW_pos xradius, AW_pos yradius, AW_bitset filteri);
+    int circle_impl(int gc, bool filled, const AW::Position& center, const AW::Vector& radius, AW_bitset filteri);
     int arc_impl(int gc, bool filled, const AW::Position& center, AW_pos xradius, AW_pos yradius, int start_degrees, int arc_degrees, AW_bitset filter);
     int filled_area_impl(int gc, int npos, const AW::Position *pos, AW_bitset filteri) {
         return generic_filled_area(gc, npos, pos, filteri);

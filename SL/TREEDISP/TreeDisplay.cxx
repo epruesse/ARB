@@ -545,7 +545,7 @@ static void show_bootstrap_circle(AW_device *device, const char *bootstrap, doub
         radiusy = radiusx;
     }
 
-    device->circle(gc, false, center, radiusx, radiusy, filter);
+    device->circle(gc, false, center, Vector(radiusx, radiusy), filter);
 }
 
 double comp_rot_orientation(AW_clicked_line *cl)

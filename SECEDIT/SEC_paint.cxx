@@ -363,8 +363,8 @@ void SEC_loop::paint_constraints(AW_device *device) {
     if (minS>0 || maxS>0) {
         AW_click_cd cd(device, self(), abspos);
         
-        if (minS>0) device->circle(SEC_GC_DEFAULT, false, center, minS, minS);
-        if (maxS>0) device->circle(SEC_GC_DEFAULT, false, center, maxS, maxS);
+        if (minS>0) device->circle(SEC_GC_DEFAULT, false, center, Vector(minS, minS));
+        if (maxS>0) device->circle(SEC_GC_DEFAULT, false, center, Vector(maxS, maxS));
 
         device->text(SEC_GC_DEFAULT, GBS_global_string("%.1f-%.1f", minS, maxS), center+Vector(0, max(minS, maxS)/2), 0.5, AW_ALL_DEVICES);
     }
@@ -437,11 +437,11 @@ void SEC_root::paintBackgroundColor(AW_device *device, SEC_bgpaint_mode mode, co
         }
 
         if (mode & BG_PAINT_FIRST && color1 >= 0) { // paint first circle ?
-            device->circle(color1, true, p1, radius1, radius1);
+            device->circle(color1, true, p1, Vector(radius1, radius1));
         }
 
         if (mode & BG_PAINT_SECOND && color2 >= 0) { // paint second circle ?
-            device->circle(color2, true, p2, radius1, radius1);
+            device->circle(color2, true, p2, Vector(radius1, radius1));
         }
 
         if (color1 == color2 && color1 >= 0) { // colors are equal -> paint background between points
@@ -606,7 +606,7 @@ void SEC_bond_def::paint(AW_device *device, int GC, char bondChar, const Positio
         case '.': {             // circles
             double radius            = aside.length();
             if (bondChar == 'o') radius *= 2;
-            device->circle(GC, false, center, radius, radius);
+            device->circle(GC, false, center, Vector(radius, radius));
             break;
         }
 
