@@ -335,6 +335,8 @@ namespace AW {
             return Rectangle(Rectangle(upper_left_corner(), pos).upper_left_corner(),
                              Rectangle(lower_right_corner(), pos).lower_right_corner());
         }
+
+        double surface() const { return width()*height(); }
     };
 
     inline Rectangle bounding_box(const Rectangle& r1, const Rectangle& r2) { return r1.bounding_box(r2); }
