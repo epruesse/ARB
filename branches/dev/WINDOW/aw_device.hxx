@@ -218,6 +218,9 @@ public:
             is_below_clip(pos.ypos()) || is_above_clip(pos.ypos()) ||
             is_leftof_clip(pos.xpos()) || is_rightof_clip(pos.xpos());
     }
+    bool is_outside_clip(AW::Rectangle rect) const {
+        return !rect.overlaps_with(AW::Rectangle(get_cliprect(), AW::INCLUSIVE_OUTLINE));
+    }
 
     int clip(AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW_pos& x0out, AW_pos& y0out, AW_pos& x1out, AW_pos& y1out);
     int clip(const AW::LineVector& line, AW::LineVector& clippedLine);
