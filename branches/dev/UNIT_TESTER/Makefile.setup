@@ -32,7 +32,7 @@ RESTRICT_MODULE='.'
 #
 RESTRICT_LIB=# run all tests
 
-#RESTRICT_LIB=NOSUCHLIB# run no tests (useful to generates patch on successful compilation)
+#RESTRICT_LIB=NOSUCHLIB# run no tests (useful to generate patch on successful compilation)
 #RESTRICT_LIB=arb_help2xml
 #RESTRICT_LIB=ARBDB
 #RESTRICT_LIB=AWT
