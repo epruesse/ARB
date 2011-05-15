@@ -2076,14 +2076,16 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, Position& Pen, DendroSubtree
 
                     LineVector worldBracket = disp_device->transform(bracket.right_edge());
                     LineVector clippedWorldBracket;
-                    disp_device->clip(worldBracket, clippedWorldBracket);
-                    LineVector clippedBracket = disp_device->rtransform(clippedWorldBracket);
+                    bool       visible      = disp_device->clip(worldBracket, clippedWorldBracket);
+                    if (visible) {
+                        LineVector clippedBracket = disp_device->rtransform(clippedWorldBracket);
 
-                    Position textPos = clippedBracket.centroid()+Vector(half_text_ascent, half_text_ascent);
-                    disp_device->text(at->gr.gc, data, textPos, 0.0, text_filter, data_len);
+                        Position textPos = clippedBracket.centroid()+Vector(half_text_ascent, half_text_ascent);
+                        disp_device->text(at->gr.gc, data, textPos, 0.0, text_filter, data_len);
 
-                    double textsize = disp_device->get_string_size(at->gr.gc, data, data_len) * unscale;
-                    limits.x_right  = textPos.xpos()+textsize;
+                        double textsize = disp_device->get_string_size(at->gr.gc, data, data_len) * unscale;
+                        limits.x_right  = textPos.xpos()+textsize;
+                    }
                 }
             }
         }
