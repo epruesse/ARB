@@ -87,6 +87,7 @@ int AW_device_Xm::box_impl(int gc, bool filled, const Rectangle& rect, AW_bitset
 }
 
 int AW_device_Xm::circle_impl(int gc, bool filled, const AW::Position& center, AW_pos xradius, AW_pos yradius, AW_bitset filteri) {
+    aw_assert(xradius>0 && yradius>0);
     return arc(gc, filled, center.xpos(), center.ypos(), xradius, yradius, 0, 360, filteri);
 }
 

@@ -522,8 +522,6 @@ static void show_bootstrap_circle(AW_device *device, const char *bootstrap, doub
     radius -= 1.0;              // -> bootstrap->radius : 100% -> 0, 0% -> inf
     radius *= 2; // diameter ?
 
-    if (radius < 0) return;     // skip too small circles
-
     // Note : radius goes against infinite, if bootstrap values go against zero
     //        For this reason we do some limitation here:
 #define BOOTSTRAP_RADIUS_LIMIT max_radius
@@ -535,8 +533,10 @@ static void show_bootstrap_circle(AW_device *device, const char *bootstrap, doub
         gc     = AWT_GC_BOOTSTRAP_LIMITED;
     }
 
-    double     radiusx = radius * len * zoom_factor; // multiply with length of branch (and zoomfactor)
-    double     radiusy;
+    double radiusx = radius * len * zoom_factor;     // multiply with length of branch (and zoomfactor)
+    if (radiusx<0 || nearlyZero(radiusx)) return;    // skip too small circles
+
+    double radiusy;
     if (elipsoid) {
         radiusy = elip_ysize * zoom_factor;
         if (radiusy > radiusx) radiusy = radiusx;

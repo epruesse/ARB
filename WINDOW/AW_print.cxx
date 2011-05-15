@@ -166,10 +166,11 @@ int AW_device_print::box_impl(int gc, bool filled, const Rectangle& rect, AW_bit
 
 int AW_device_print::circle_impl(int gc, bool filled, const Position& center, AW_pos x_radius, AW_pos y_radius, AW_bitset filteri) {
     if (filteri & filter) {
+        aw_assert(x_radius>0 && y_radius>0);
         Vector    radius(x_radius, y_radius);
         Vector    screen_radius = transform(radius);
         Rectangle Box(center, center+screen_radius); // @@@ should use radius + should use complete bounding box (currently uses lower-right quadrant only)
-        Rectangle screen_box    = transform(Box); 
+        Rectangle screen_box    = transform(Box);
         Rectangle clipped_box;
         bool      drawflag      = box_clip(screen_box, clipped_box);
 
