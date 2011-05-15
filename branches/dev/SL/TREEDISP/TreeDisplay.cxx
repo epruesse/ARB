@@ -2587,30 +2587,35 @@ void AWT_graphic_tree::show_nds_list(GBDATA *, bool use_nds) {
     disp_device->invisible(AWT_GC_CURSOR, max_x, y_position+scaled_branch_distance);
 }
 
+void AWT_graphic_tree::read_tree_settings() {
+    scaled_branch_distance = aw_root->awar(AWAR_DTREE_VERICAL_DIST)->read_float(); // not final value!
+    grey_level             = aw_root->awar(AWAR_DTREE_GREY_LEVEL)->read_int()*.01;
+    baselinewidth          = aw_root->awar(AWAR_DTREE_BASELINEWIDTH)->read_int();
+    show_brackets          = aw_root->awar(AWAR_DTREE_SHOW_BRACKETS)->read_int();
+    show_circle            = aw_root->awar(AWAR_DTREE_SHOW_CIRCLE)->read_int();
+    circle_zoom_factor     = aw_root->awar(AWAR_DTREE_CIRCLE_ZOOM)->read_float();
+    circle_max_size        = aw_root->awar(AWAR_DTREE_CIRCLE_MAX_SIZE)->read_float();
+    use_ellipse            = aw_root->awar(AWAR_DTREE_USE_ELLIPSE)->read_int();
+    
+    freeset(species_name, aw_root->awar(AWAR_SPECIES_NAME)->read_string());
+}
+
 void AWT_graphic_tree::show(AW_device *device) {
     if (tree_static && tree_static->get_gb_tree()) {
         check_update(gb_main);
     }
 
+    read_tree_settings();
+    
     disp_device = device;
     disp_device->reset_style();
 
     const AW_font_limits& charLimits = disp_device->get_font_limits(AWT_GC_SELECTED, 0);
 
     scaled_font.init(charLimits, device->get_unscale());
-    scaled_branch_distance = scaled_font.height * aw_root->awar(AWAR_DTREE_VERICAL_DIST)->read_float();
+    scaled_branch_distance *= scaled_font.height;
 
     make_node_text_init(gb_main);
-
-    grey_level         = aw_root->awar(AWAR_DTREE_GREY_LEVEL)->read_int()*.01;
-    baselinewidth      = (int)aw_root->awar(AWAR_DTREE_BASELINEWIDTH)->read_int();
-    show_brackets      = (int)aw_root->awar(AWAR_DTREE_SHOW_BRACKETS)->read_int();
-    show_circle        = (int)aw_root->awar(AWAR_DTREE_SHOW_CIRCLE)->read_int();
-    circle_zoom_factor = aw_root->awar(AWAR_DTREE_CIRCLE_ZOOM)->read_float();
-    circle_max_size    = aw_root->awar(AWAR_DTREE_CIRCLE_MAX_SIZE)->read_float();
-    use_ellipse        = aw_root->awar(AWAR_DTREE_USE_ELLIPSE)->read_int();
-
-    freeset(species_name, aw_root->awar(AWAR_SPECIES_NAME)->read_string());
 
     cursor = Origin;
 
@@ -2658,13 +2663,11 @@ void AWT_graphic_tree::show(AW_device *device) {
                 show_nds_list(gb_main, false);
                 break;
         }
-        if (are_distinct(Origin, cursor)) {
-            empty_box(AWT_GC_CURSOR, cursor, NT_SELECTED_WIDTH);
-        }
-        if (sort_is_tree_style(tree_sort)) { // show rulers in tree-style display modes
-            show_ruler(device, AWT_GC_CURSOR);
-        }
+        if (are_distinct(Origin, cursor)) empty_box(AWT_GC_CURSOR, cursor, NT_SELECTED_WIDTH);
+        if (sort_is_tree_style(tree_sort)) show_ruler(disp_device, AWT_GC_CURSOR);
     }
+
+    disp_device = NULL;
 }
 
 void AWT_graphic_tree::info(AW_device */*device*/, AW_pos /*x*/, AW_pos /*y*/, AW_clicked_line */*cl*/, AW_clicked_text */*ct*/) {
@@ -2781,67 +2784,33 @@ public:
 };
 
 class fake_AWT_graphic_tree : public AWT_graphic_tree {
+    int var_mode;
+
+    virtual void read_tree_settings() {
+        scaled_branch_distance = 1.0; // not final value!
+        // var_mode is in range [0..3]
+        // it is used to vary tree settings such that many different combinations get tested
+        grey_level         = 20*.01;
+        baselinewidth      = (var_mode == 3)+1;
+        show_brackets      = (var_mode != 2);
+        show_circle        = var_mode%3;
+        use_ellipse        = var_mode%2;
+        circle_zoom_factor = 1.3;
+        circle_max_size    = 1.5;
+    }
+
 public:
     fake_AWT_graphic_tree(GBDATA *gbmain, const char *selected_species)
-        : AWT_graphic_tree(NULL, gbmain, fake_AD_map_viewer_cb)
+        : AWT_graphic_tree(NULL, gbmain, fake_AD_map_viewer_cb),
+          var_mode(0)
     {
         species_name = strdup(selected_species);
     }
 
-    void test_show_tree(AW_device *device, AP_tree_sort type, int mode) {
-        disp_device = device;
-        disp_device->reset_style();
-        
-        const AW_font_limits& charLimits = disp_device->get_font_limits(AWT_GC_SELECTED, 0);
+    void set_var_mode(int mode) { var_mode = mode; }
+    void test_show_tree(AW_device *device) { show(device); }
 
-        scaled_font.init(charLimits, disp_device->get_unscale());
-        scaled_branch_distance = scaled_font.height;
-
-        make_node_text_init(gb_main);
-
-        // mode is in range [0..3]
-        // it is used to vary tree settings such that many different combinations get tested 
-        grey_level         = 20*.01;
-        baselinewidth      = (mode == 3)+1;
-        show_brackets      = (mode != 2);
-        show_circle        = mode%3;
-        use_ellipse        = mode%2;
-        circle_zoom_factor = 1.3;
-        circle_max_size    = 1.5;
-
-        cursor = Origin;
-
-        switch (type) {
-            case AP_TREE_NORMAL: {
-                DendroSubtreeLimits limits;
-                Position pen(0, 0.05);
-                show_dendrogram(tree_static->get_root_node(), pen, limits);
-                list_tree_ruler_y = pen.ypos() + 2.0 * scaled_branch_distance;
-                break;
-            }
-            case AP_TREE_RADIAL: {
-                empty_box(tree_root_display->gr.gc, Origin, NT_ROOT_WIDTH);
-                show_radial_tree(tree_root_display, 0, 0, 2*M_PI, 0.0, 0, 0);
-                break;
-            }
-            case AP_TREE_IRS: {
-                show_irs_tree(tree_root_display, charLimits.height);
-                break;
-            }
-            case AP_LIST_NDS: {
-                show_nds_list(gb_main, true);
-                break;
-            }
-            case AP_LIST_SIMPLE: {
-                show_nds_list(gb_main, false);
-                break;
-            }
-        }
-        if (are_distinct(Origin, cursor)) empty_box(AWT_GC_CURSOR, cursor, NT_SELECTED_WIDTH);
-        if (sort_is_tree_style(type)) show_ruler(device, AWT_GC_CURSOR);
-    }
-
-    void test_print_tree(AW_device_print *print_device, AP_tree_sort type, bool show_handles, int mode) {
+    void test_print_tree(AW_device_print *print_device, AP_tree_sort type, bool show_handles) {
         const int      SCREENSIZE = 541; // use a prime as screensize to reduce rounding errors
         AW_device_size size_device(print_device->get_common());
 
@@ -2849,7 +2818,7 @@ public:
         size_device.zoom(1.0);
 
         size_device.set_filter(AW_SIZE);
-        test_show_tree(&size_device, type, mode);
+        test_show_tree(&size_device);
 
         AW_world  wsize;
         size_device.get_size_information(&wsize);
@@ -2893,7 +2862,7 @@ public:
         Vector offset(shift-Vector(drawn.upper_left_corner()));
 
         print_device->set_offset(offset*print_device->get_unscale());
-        test_show_tree(print_device, type, mode);
+        test_show_tree(print_device);
         print_device->box(AWT_GC_CURSOR, false, drawn);
     }
 };
@@ -2953,7 +2922,8 @@ void TEST_treeDisplay() {
 
                     {
                         GB_transaction ta(gb_main);
-                        agt.test_print_tree(&print_dev, type, show_handles, show_handles+2*color);
+                        agt.set_var_mode(show_handles+2*color);
+                        agt.test_print_tree(&print_dev, type, show_handles);
                     }
 
                     print_dev.close();
