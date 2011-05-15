@@ -164,24 +164,15 @@ int AW_device_print::box_impl(int gc, bool filled, const Rectangle& rect, AW_bit
     return drawflag;
 }
 
-int AW_device_print::circle_impl(int gc, bool filled, const AW::Position& center, AW_pos xradius, AW_pos yradius, AW_bitset filteri) {
-    AW_pos x1, y1;
-    AW_pos X0, Y0, X1, Y1;              // Transformed pos
-    AW_pos CX0, CY0, CX1, CY1;          // Clipped line
-
+int AW_device_print::circle_impl(int gc, bool filled, const Position& center, AW_pos x_radius, AW_pos y_radius, AW_bitset filteri) {
     if (filteri & filter) {
-        xradius *= get_scale();
-        yradius *= get_scale();
+        Vector    radius(x_radius, y_radius);
+        Vector    screen_radius = transform(radius);
+        Rectangle Box(center, center+screen_radius); // @@@ should use radius + should use complete bounding box (currently uses lower-right quadrant only)
+        Rectangle screen_box    = transform(Box); 
+        Rectangle clipped_box;
+        bool      drawflag      = box_clip(screen_box, clipped_box);
 
-        AW_pos x0 = center.xpos();
-        AW_pos y0 = center.ypos();
-
-        x1 = x0 + xradius;
-        y1 = y0 + yradius;
-
-        this->transform(x0, y0, X0, Y0);
-        this->transform(x1, y1, X1, Y1);
-        int drawflag = this->box_clip(X0, Y0, X1, Y1, CX0, CY0, CX1, CY1);
         if (drawflag) {
             // Don't know how to use greylevel --ralf
             // short greylevel             = (short)(gcm->grey_level*22);
@@ -193,15 +184,21 @@ int AW_device_print::circle_impl(int gc, bool filled, const AW::Position& center
 
             // 1, 3, 0?, line_width?, pencolor, fill_color, 0?, 0?, fill_style(-1 = none, 20 = filled),
             // ?, ?, ?, coordinates+size (8 entries)
+
+            Position Center = clipped_box.upper_left_corner();
+
+            int cx = AW_INT(Center.xpos());
+            int cy = AW_INT(Center.ypos());
+
             fprintf(out, "1 3  0 %d %d %d 0 0 %d 0.000 1 0.0000 %d %d %d %d %d %d %d %d\n",
                     line_width,
                     colorIdx, // before greylevel has been used here
                     filled ? colorIdx : -1,
                     filled ? 20 : -1,
-                    AW_INT(CX0), AW_INT(CY0),
-                    AW_INT(xradius), AW_INT(yradius),
-                    AW_INT(CX0), AW_INT(CY0),
-                    AW_INT(CX0+xradius), AW_INT(CY0));
+                    cx, cy, 
+                    AW_INT(screen_radius.x()), AW_INT(screen_radius.y()),
+                    cx, cy, 
+                    AW_INT(Center.xpos()+screen_radius.x()), cy);
         }
     }
     return 0;
