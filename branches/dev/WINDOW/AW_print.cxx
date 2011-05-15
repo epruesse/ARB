@@ -164,17 +164,18 @@ int AW_device_print::box_impl(int gc, bool filled, const Rectangle& rect, AW_bit
     return drawflag;
 }
 
-int AW_device_print::circle_impl(int gc, bool filled, const Position& center, AW_pos x_radius, AW_pos y_radius, AW_bitset filteri) {
+int AW_device_print::circle_impl(int gc, bool filled, const Position& center, AW_pos xradius, AW_pos yradius, AW_bitset filteri) {
     if (filteri & filter) {
-        aw_assert(x_radius>0 && y_radius>0);
-        Vector    radius(x_radius, y_radius);
-        Vector    screen_radius = transform(radius);
-        Rectangle Box(center, center+screen_radius); // @@@ should use radius + should use complete bounding box (currently uses lower-right quadrant only)
-        Rectangle screen_box    = transform(Box);
+        aw_assert(xradius>0 && yradius>0);
+        Vector    radius(xradius, yradius);
+        Rectangle Box(center-radius, center+radius);
+        Rectangle screen_box = transform(Box);
         Rectangle clipped_box;
-        bool      drawflag      = box_clip(screen_box, clipped_box);
+        bool      drawflag   = box_clip(screen_box, clipped_box);
 
-        if (drawflag) {
+        if (drawflag && (clipped_box.surface()*2) > screen_box.surface()) { // clip away if half of circle is visible
+            // @@@ correct behavior would be to draw an arc
+
             // Don't know how to use greylevel --ralf
             // short greylevel             = (short)(gcm->grey_level*22);
             // if (greylevel>21) greylevel = 21;
@@ -183,14 +184,14 @@ int AW_device_print::circle_impl(int gc, bool filled, const Position& center, AW
             int          line_width = gcm->get_line_width();
             int          colorIdx   = find_color_idx(gcm->get_last_fg_color());
 
-            // 1, 3, 0?, line_width?, pencolor, fill_color, 0?, 0?, fill_style(-1 = none, 20 = filled),
-            // ?, ?, ?, coordinates+size (8 entries)
-
-            Position Center = clipped_box.upper_left_corner();
+            Position Center        = clipped_box.centroid();
+            Vector   screen_radius = clipped_box.diagonal()/2;
 
             int cx = AW_INT(Center.xpos());
             int cy = AW_INT(Center.ypos());
 
+            // 1, 3, 0?, line_width?, pencolor, fill_color, 0?, 0?, fill_style(-1 = none, 20 = filled),
+            // ?, ?, ?, coordinates+size (8 entries)
             fprintf(out, "1 3  0 %d %d %d 0 0 %d 0.000 1 0.0000 %d %d %d %d %d %d %d %d\n",
                     line_width,
                     colorIdx, // before greylevel has been used here
@@ -198,7 +199,7 @@ int AW_device_print::circle_impl(int gc, bool filled, const Position& center, AW
                     filled ? 20 : -1,
                     cx, cy, 
                     AW_INT(screen_radius.x()), AW_INT(screen_radius.y()),
-                    cx, cy, 
+                    cx, cy,
                     AW_INT(Center.xpos()+screen_radius.x()), cy);
         }
     }
