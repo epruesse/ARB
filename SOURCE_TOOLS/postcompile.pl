@@ -270,11 +270,11 @@ sub parse_input(\@) {
           $_ = $file.':'.$line.': warning: '.$warn_text;
         }
         $is_error = 0;
-        $curr_out_r = \@errout;
+        $curr_out_r = \@out;
       }
       elsif ($msg =~ $reg_is_error) {
         $is_error = 1;
-        $curr_out_r = \@out;
+        $curr_out_r = \@errout;
       }
       elsif ($msg =~ $reg_is_instantiated) {
           push @related, $_;
