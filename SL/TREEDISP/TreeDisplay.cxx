@@ -546,6 +546,7 @@ static void show_bootstrap_circle(AW_device *device, const char *bootstrap, doub
     }
 
     device->circle(gc, false, center, Vector(radiusx, radiusy), filter);
+    // device->arc(gc, false, center, Vector(radiusx, radiusy), 45, -90, filter); // @@@ use to test AW_device_print::arc_impl
 }
 
 double comp_rot_orientation(AW_clicked_line *cl)

@@ -324,8 +324,8 @@ ED4_returncode ED4_AA_sequence_terminal::draw(int /* only_text */)
                             double    center_x = x1+rad_x;
                             const int DRAW_DEG = 62;
 
-                            device->arc(ED4_G_SEQUENCES, false, center_x, y1, rad_x, rad_y,   0, -DRAW_DEG);
-                            device->arc(ED4_G_SEQUENCES, false, center_x, y1, rad_x, rad_y, 180,  DRAW_DEG);
+                            device->arc(ED4_G_SEQUENCES, false, center_x, y1, rad_x, rad_y,   0,  DRAW_DEG);
+                            device->arc(ED4_G_SEQUENCES, false, center_x, y1, rad_x, rad_y, 180, -DRAW_DEG);
                         }
                     }
                 }

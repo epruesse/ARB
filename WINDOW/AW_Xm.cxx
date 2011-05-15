@@ -92,6 +92,9 @@ int AW_device_Xm::circle_impl(int gc, bool filled, const AW::Position& center, c
 }
 
 int AW_device_Xm::arc_impl(int gc, bool filled, const AW::Position& center, const AW::Vector& radius, int start_degrees, int arc_degrees, AW_bitset filteri) {
+    // degrees start at east side of unit circle,
+    // but orientation is clockwise (because ARBs y-coordinate grows downwards)
+    
     int drawflag = 0;
     if (filteri & filter) {
         Rectangle Box(center-radius, center+radius);
@@ -104,8 +107,12 @@ int AW_device_Xm::arc_impl(int gc, bool filled, const AW::Position& center, cons
             int             xl     = AW_INT(ulc.xpos());
             int             yl     = AW_INT(ulc.ypos());
 
+            // ARB -> X 
             start_degrees = -start_degrees;
+            arc_degrees   = -arc_degrees;
+
             while (start_degrees<0) start_degrees += 360;
+            while (arc_degrees<-180) arc_degrees  += 360;
 
             if (!filled) {
                 XDrawArc(XDRAW_PARAM3(get_common(), gc), xl, yl, width, height, 64*start_degrees, 64*arc_degrees);
