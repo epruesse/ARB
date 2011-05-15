@@ -161,6 +161,8 @@ class AWT_graphic_tree : public AWT_graphic, virtual Noncopyable {
         disp_device->set_line_attributes(at->gr.gc, at->get_linewidth()+baselinewidth, AW_SOLID);
     }
 
+    virtual void read_tree_settings();
+    
 protected:
 
     AW_clicked_line  old_rot_cl;
