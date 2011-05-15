@@ -91,7 +91,7 @@ int AW_device_Xm::circle_impl(int gc, bool filled, const AW::Position& center, c
     return arc(gc, filled, center.xpos(), center.ypos(), radius.x(), radius.y(), 0, 360, filteri);
 }
 
-int AW_device_Xm::arc_impl(int gc, bool filled, const AW::Position& center, AW_pos xradius, AW_pos yradius, int start_degrees, int arc_degrees, AW_bitset filteri) {
+int AW_device_Xm::arc_impl(int gc, bool filled, const AW::Position& center, const AW::Vector& radius, int start_degrees, int arc_degrees, AW_bitset filteri) {
     AW_pos X0, Y0, X1, Y1;                          // Transformed pos
     AW_pos XL, YL;                                  // Left edge of circle pos
     AW_pos CX0, CY0, CX1, CY1;                      // Clipped line
@@ -103,16 +103,16 @@ int AW_device_Xm::arc_impl(int gc, bool filled, const AW::Position& center, AW_p
 
         this->transform(x0, y0, X0, Y0); // center
 
-        x0 -= xradius;
-        y0 -= yradius;
+        x0 -= radius.x();
+        y0 -= radius.y();
         this->transform(x0, y0, XL, YL);
 
         X1 = X0 + 2.0; Y1 = Y0 + 2.0;
         X0 -= 2.0; Y0 -= 2.0;
         drawflag = this->box_clip(X0, Y0, X1, Y1, CX0, CY0, CX1, CY1);
         if (drawflag) {
-            AW_pos width  = xradius*2.0 * this->get_scale();
-            AW_pos height = yradius*2.0 * this->get_scale();
+            AW_pos width  = radius.x()*2.0 * this->get_scale();
+            AW_pos height = radius.y()*2.0 * this->get_scale();
 
             start_degrees = -start_degrees;
             while (start_degrees<0) start_degrees += 360;

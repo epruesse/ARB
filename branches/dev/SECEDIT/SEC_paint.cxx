@@ -585,8 +585,8 @@ void SEC_bond_def::paint(AW_device *device, int GC, char bondChar, const Positio
             Angle angle(outside);
             int   deg = int(angle.degrees()+0.5);
 
-            device->arc(GC, false, c1, radius, radius, deg+180-1, 180+30);
-            device->arc(GC, false, c2, radius, radius, deg-1,     180+30);
+            device->arc(GC, false, c1, Vector(radius, radius), deg+180-1, 180+30);
+            device->arc(GC, false, c2, Vector(radius, radius), deg-1,     180+30);
             break;
         }
 

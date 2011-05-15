@@ -433,7 +433,7 @@ private:
     virtual int filled_area_impl(int gc, int npos, const AW::Position *pos, AW_bitset filteri)                                    = 0;
 
     virtual int circle_impl(int gc, bool filled, const AW::Position& center, const AW::Vector& radius, AW_bitset filteri)                                  = 0;
-    virtual int arc_impl(int gc, bool filled, const AW::Position& center, AW_pos xradius, AW_pos yradius, int start_degrees, int arc_degrees, AW_bitset filteri) = 0;
+    virtual int arc_impl(int gc, bool filled, const AW::Position& center, const AW::Vector& radius, int start_degrees, int arc_degrees, AW_bitset filteri) = 0;
 
 protected:
     virtual bool invisible_impl(int gc, AW_pos x, AW_pos y, AW_bitset filteri); // returns true if x/y is outside viewport (or if it would now be drawn undrawn)
@@ -445,8 +445,8 @@ protected:
     int generic_circle(int gc, bool filled, const AW::Position& center, const AW::Vector& radius, AW_bitset filteri) {
         return generic_box(gc, filled, AW::Rectangle(center-radius, center+radius), filteri);
     }
-    int generic_arc(int gc, bool filled, const AW::Position& center, AW_pos xradius, AW_pos yradius, int /*start_degrees*/, int /*arc_degrees*/, AW_bitset filteri) {
-        return generic_circle(gc, filled, center, AW::Vector(xradius, yradius), filteri);
+    int generic_arc(int gc, bool filled, const AW::Position& center, const AW::Vector& radius, int /*start_degrees*/, int /*arc_degrees*/, AW_bitset filteri) {
+        return generic_circle(gc, filled, center, radius, filteri);
     }
     int generic_filled_area(int gc, int npos, const AW::Position *pos, AW_bitset filteri);
 
@@ -510,10 +510,10 @@ public:
     }
 
     int arc(int gc, bool filled, AW_pos x0, AW_pos y0, AW_pos xradius, AW_pos yradius, int start_degrees, int arc_degrees, AW_bitset filteri = AW_ALL_DEVICES)  {
-        return arc_impl(gc, filled, AW::Position(x0, y0), xradius, yradius, start_degrees, arc_degrees, filteri);
+        return arc_impl(gc, filled, AW::Position(x0, y0), AW::Vector(xradius, yradius), start_degrees, arc_degrees, filteri);
     }
-    int arc(int gc, bool filled, const AW::Position& pos, AW_pos xradius, AW_pos yradius, int start_degrees, int arc_degrees, AW_bitset filteri = AW_ALL_DEVICES) {
-        return arc_impl(gc, filled, pos, xradius, yradius, start_degrees, arc_degrees, filteri);
+    int arc(int gc, bool filled, const AW::Position& pos, const AW::Vector& radius, int start_degrees, int arc_degrees, AW_bitset filteri = AW_ALL_DEVICES) {
+        return arc_impl(gc, filled, pos, radius, start_degrees, arc_degrees, filteri);
     }
 
     // @@@ rename to 'polygone' and pass 'filled' parameter
@@ -566,8 +566,8 @@ class AW_device_print : public AW_device { // derived from a Noncopyable
     int text_impl(int gc, const char *str, const AW::Position& pos, AW_pos alignment, AW_bitset filteri, long opt_strlen);
     int box_impl(int gc, bool filled, const AW::Rectangle& rect, AW_bitset filteri);
     int circle_impl(int gc, bool filled, const AW::Position& center, const AW::Vector& radius, AW_bitset filteri);
-    int arc_impl(int gc, bool filled, const AW::Position& center, AW_pos xradius, AW_pos yradius, int start_degrees, int arc_degrees, AW_bitset filteri) {
-        return generic_arc(gc, filled, center, xradius, yradius, start_degrees, arc_degrees, filteri);
+    int arc_impl(int gc, bool filled, const AW::Position& center, const AW::Vector& radius, int start_degrees, int arc_degrees, AW_bitset filteri) {
+        return generic_arc(gc, filled, center, radius, start_degrees, arc_degrees, filteri);
     }
     int filled_area_impl(int gc, int npos, const AW::Position *pos, AW_bitset filteri);
 public:
@@ -601,8 +601,8 @@ class AW_simple_device : public AW_device {
     int circle_impl(int gc, bool filled, const AW::Position& center, const AW::Vector& radius, AW_bitset filteri) {
         return generic_circle(gc, filled, center, radius, filteri);
     }
-    int arc_impl(int gc, bool filled, const AW::Position& center, AW_pos xradius, AW_pos yradius, int start_degrees, int arc_degrees, AW_bitset filteri) {
-        return generic_arc(gc, filled, center, xradius, yradius, start_degrees, arc_degrees, filteri);
+    int arc_impl(int gc, bool filled, const AW::Position& center, const AW::Vector& radius, int start_degrees, int arc_degrees, AW_bitset filteri) {
+        return generic_arc(gc, filled, center, radius, start_degrees, arc_degrees, filteri);
     }
 public:
     AW_simple_device(AW_common *common_) : AW_device(common_) {}
