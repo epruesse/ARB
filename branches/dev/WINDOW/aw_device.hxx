@@ -222,12 +222,12 @@ public:
         return !rect.overlaps_with(AW::Rectangle(get_cliprect(), AW::INCLUSIVE_OUTLINE));
     }
 
-    int clip(AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW_pos& x0out, AW_pos& y0out, AW_pos& x1out, AW_pos& y1out);
-    int clip(const AW::LineVector& line, AW::LineVector& clippedLine);
+    bool clip(AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW_pos& x0out, AW_pos& y0out, AW_pos& x1out, AW_pos& y1out);
+    bool clip(const AW::LineVector& line, AW::LineVector& clippedLine);
 
-    int box_clip(AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW_pos& x0out, AW_pos& y0out, AW_pos& x1out, AW_pos& y1out);
-    int box_clip(const AW::Rectangle& rect, AW::Rectangle& clippedRect);
-    int force_into_clipbox(const AW::Position& pos, AW::Position& forcedPos);
+    bool box_clip(AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW_pos& x0out, AW_pos& y0out, AW_pos& x1out, AW_pos& y1out);
+    bool box_clip(const AW::Rectangle& rect, AW::Rectangle& clippedRect);
+    bool force_into_clipbox(const AW::Position& pos, AW::Position& forcedPos);
 
     void set_top_clip_border(int top, bool allow_oversize = false);
     void set_bottom_clip_border(int bottom, bool allow_oversize = false); // absolute

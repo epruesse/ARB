@@ -235,7 +235,7 @@ bool AW_device_print::filled_area_impl(int gc, int npos, const Position *pos, AW
 
                 Position transPos = transform(pos[j]);
                 Position clippedPos;
-                ASSERT_RESULT(int, 1, force_into_clipbox(transPos, clippedPos)); 
+                ASSERT_RESULT(bool, true, force_into_clipbox(transPos, clippedPos)); 
                 fprintf(out, "   %d %d\n", AW_INT(clippedPos.xpos()), AW_INT(clippedPos.ypos()));
             }
         }

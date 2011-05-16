@@ -144,7 +144,7 @@ void AW_device_Xm::clear_part(AW_pos x0, AW_pos y0, AW_pos width, AW_pos height,
         this->transform(x1, y1, X1, Y1);
 
         AW_pos CX0, CY0, CX1, CY1; // Clipped line
-        int    drawflag = this->box_clip(X0, Y0, X1, Y1, CX0, CY0, CX1, CY1);
+        bool   drawflag = box_clip(X0, Y0, X1, Y1, CX0, CY0, CX1, CY1);
         if (drawflag) {
             int cx0 = AW_INT(CX0);
             int cx1 = AW_INT(CX1);
