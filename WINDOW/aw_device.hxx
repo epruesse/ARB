@@ -238,10 +238,11 @@ public:
 
     void set_clipall() {
         // clip all -> nothing drawn afterwards
-        AW_screen_area rect;
-        rect.clear();
+        AW_screen_area rect = { 0, -1, 0, -1};
         set_cliprect_oversize(rect, false);
     }
+
+    bool completely_clipped() const { return clip_rect.l>clip_rect.r || clip_rect.t>clip_rect.b; }
 
     bool allow_top_font_overlap() const { return font_overlap.top; }
     bool allow_bottom_font_overlap() const { return font_overlap.bottom; }
