@@ -440,7 +440,7 @@ private:
     virtual int arc_impl(int gc, bool filled, const AW::Position& center, const AW::Vector& radius, int start_degrees, int arc_degrees, AW_bitset filteri) = 0;
 
 protected:
-    virtual bool invisible_impl(int gc, AW_pos x, AW_pos y, AW_bitset filteri); // returns true if x/y is outside viewport (or if it would now be drawn undrawn)
+    virtual bool invisible_impl(int gc, const AW::Position& pos, AW_bitset filteri);
 
     // * second level functions (maybe non virtual)
 
@@ -486,10 +486,10 @@ public:
     }
 
     bool invisible(int gc, AW_pos x, AW_pos y, AW_bitset filteri = AW_ALL_DEVICES) {
-        return invisible_impl(gc, x, y, filteri);
+        return invisible_impl(gc, AW::Position(x, y), filteri);
     }
-    bool invisible(int gc, AW::Position pos, AW_bitset filteri = AW_ALL_DEVICES) {
-        return invisible_impl(gc, pos.xpos(), pos.ypos(), filteri);
+    bool invisible(int gc, const AW::Position& pos, AW_bitset filteri = AW_ALL_DEVICES) {
+        return invisible_impl(gc, pos, filteri);
     }
 
     int box(int gc, bool filled, const AW::Rectangle& rect, AW_bitset filteri = AW_ALL_DEVICES) {
@@ -625,7 +625,7 @@ class AW_device_size : public AW_simple_device {
 
     int line_impl(int gc, const AW::LineVector& Line, AW_bitset filteri);
     int text_impl(int gc, const char *str, const AW::Position& pos, AW_pos alignment, AW_bitset filteri, long opt_strlen);
-    bool invisible_impl(int gc, AW_pos x, AW_pos y, AW_bitset filteri);
+    bool invisible_impl(int gc, const AW::Position& pos, AW_bitset filteri);
 
 public:
     AW_device_size(AW_common *common_) : AW_simple_device(common_) {}
