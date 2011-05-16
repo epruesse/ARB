@@ -117,50 +117,50 @@ inline AW_pos clip_in_range(AW_pos low, AW_pos val, AW_pos high) {
     return val;
 }
 
-int AW_clipable::box_clip(AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW_pos& x0out, AW_pos& y0out, AW_pos& x1out, AW_pos& y1out) {
+bool AW_clipable::box_clip(AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW_pos& x0out, AW_pos& y0out, AW_pos& x1out, AW_pos& y1out) {
     // clip coordinates of a box
 
-    if (x1<clip_rect.l || x0>clip_rect.r) return 0;
-    if (y1<clip_rect.t || y0>clip_rect.b) return 0;
+    if (x1<clip_rect.l || x0>clip_rect.r) return false;
+    if (y1<clip_rect.t || y0>clip_rect.b) return false;
 
     // @@@ refactor into method
-    if (clip_rect.l>clip_rect.r) return 0;
-    if (clip_rect.t>clip_rect.b) return 0;
+    if (clip_rect.l>clip_rect.r) return false;
+    if (clip_rect.t>clip_rect.b) return false;
 
     x0out = clip_in_range(clip_rect.l, x0, clip_rect.r);
     x1out = clip_in_range(clip_rect.l, x1, clip_rect.r);
     y0out = clip_in_range(clip_rect.t, y0, clip_rect.b);
     y1out = clip_in_range(clip_rect.t, y1, clip_rect.b);
 
-    return 1;
+    return true;
 }
 
-int AW_clipable::box_clip(const Rectangle& rect, Rectangle& clippedRect) { // @@@ maybe return clippedRect as AW_screen_area
+bool AW_clipable::box_clip(const Rectangle& rect, Rectangle& clippedRect) { // @@@ maybe return clippedRect as AW_screen_area
     // @@@ refactor into method
-    if (clip_rect.l>clip_rect.r) return 0;
-    if (clip_rect.t>clip_rect.b) return 0;
+    if (clip_rect.l>clip_rect.r) return false;
+    if (clip_rect.t>clip_rect.b) return false;
 
     Rectangle clipRect(clip_rect, FAULTY_OLD_CONVERSION); // @@@ fix
     if (rect.distinct_from(clipRect))
-        return 0;
+        return false;
 
     clippedRect = rect.intersect_with(clipRect);
-    return 1;
+    return true;
 }
 
-int AW_clipable::force_into_clipbox(const Position& pos, Position& forcedPos) {
+bool AW_clipable::force_into_clipbox(const Position& pos, Position& forcedPos) {
     // force 'pos' inside 'clip_rect'
 
     // @@@ refactor into method
-    if (clip_rect.l>clip_rect.r) return 0;
-    if (clip_rect.t>clip_rect.b) return 0;
+    if (clip_rect.l>clip_rect.r) return false;
+    if (clip_rect.t>clip_rect.b) return false;
 
     forcedPos.setx(clip_in_range(clip_rect.l, pos.xpos(), clip_rect.r));
     forcedPos.sety(clip_in_range(clip_rect.t, pos.ypos(), clip_rect.b));
-    return 1;
+    return true;
 }
 
-int AW_clipable::clip(AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW_pos& x0out, AW_pos& y0out, AW_pos& x1out, AW_pos& y1out) {
+bool AW_clipable::clip(AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW_pos& x0out, AW_pos& y0out, AW_pos& x1out, AW_pos& y1out) {
     // clip coordinates of a line
 
     int    outcodeout;
@@ -219,15 +219,12 @@ int AW_clipable::clip(AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW_pos& x0out,
     return is_visible;
 }
 
-int AW_clipable::clip(const LineVector& line, LineVector& clippedLine) {
+bool AW_clipable::clip(const LineVector& line, LineVector& clippedLine) {
     AW_pos x0, y0, x1, y1;
-    if (clip(line.start().xpos(), line.start().ypos(),
-             line.head().xpos(), line.head().ypos(),
-             x0, y0, x1, y1)) {
-        clippedLine = LineVector(x0, y0, x1, y1);
-        return 1;
-    }
-    return 0;
+    bool   drawflag = clip(line.start().xpos(), line.start().ypos(), line.head().xpos(), line.head().ypos(),
+                           x0, y0, x1, y1);
+    if (drawflag) clippedLine = LineVector(x0, y0, x1, y1);
+    return drawflag;
 }
 
 void AW_zoomable::zoom(AW_pos val) {

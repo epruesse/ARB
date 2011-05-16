@@ -38,7 +38,7 @@ bool AW_device_click::line_impl(int /*gc*/, const LineVector& Line, AW_bitset fi
 
     LineVector transLine = transform(Line);
     LineVector clippedLine;
-    int        drawflag = clip(transLine, clippedLine);
+    bool       drawflag  = clip(transLine, clippedLine);
 
     if (drawflag) {
         Position mouse(mouse_x, mouse_y);
@@ -67,9 +67,8 @@ bool AW_device_click::line_impl(int /*gc*/, const LineVector& Line, AW_bitset fi
             }
             opt_line.exists = true;
         }
-        return true;
     }
-    return false;
+    return drawflag;
 }
 
 
