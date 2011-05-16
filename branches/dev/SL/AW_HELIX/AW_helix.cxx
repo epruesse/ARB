@@ -108,8 +108,8 @@ char *AW_helix::seq_2_helix(char *sequence, char undefsymbol) {
     return helix;
 }
 
-static int BI_show_helix_on_device(AW_device *device, int gc, const char *opt_string, size_t opt_string_size, size_t start, size_t size,
-                                   AW_pos x, AW_pos y, AW_pos /*opt_ascent*/, AW_pos /*opt_descent*/, AW_CL cduser)
+static bool BI_show_helix_on_device(AW_device *device, int gc, const char *opt_string, size_t opt_string_size, size_t start, size_t size,
+                                    AW_pos x, AW_pos y, AW_pos /*opt_ascent*/, AW_pos /*opt_descent*/, AW_CL cduser)
 {
     AW_helix *helix = (AW_helix *)cduser;
     char *buffer = GB_give_buffer(size+1);
