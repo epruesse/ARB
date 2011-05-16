@@ -183,7 +183,7 @@ class AW_clipable {
     AW_screen_area  clip_rect;    // holds the clipping rectangle coordinates
     AW_font_overlap font_overlap;
 
-    void set_cliprect_oversize(AW_screen_area *rect, bool allow_oversize);
+    void set_cliprect_oversize(const AW_screen_area& rect, bool allow_oversize);
 protected:
     int compoutcode(AW_pos xx, AW_pos yy) {
         /* calculate outcode for clipping the current line */
@@ -237,9 +237,10 @@ public:
     const AW_screen_area& get_cliprect() const { return clip_rect; }
 
     void set_clipall() {
+        // clip all -> nothing drawn afterwards
         AW_screen_area rect;
-        rect.t = rect.b = rect.l = rect.r = 0;
-        set_cliprect_oversize(&rect, false);     // clip all -> nothing drawn afterwards
+        rect.clear();
+        set_cliprect_oversize(rect, false);
     }
 
     bool allow_top_font_overlap() const { return font_overlap.top; }
