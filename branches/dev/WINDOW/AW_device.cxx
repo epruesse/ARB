@@ -459,13 +459,8 @@ void AW_device::reset() {
     privat_reset();
 }
 
-bool AW_device::invisible_impl(int /*gc*/, AW_pos x, AW_pos y, AW_bitset filteri) {
-    if (filteri & filter) {
-        AW_pos X, Y;            // Transformed pos
-        transform(x, y, X, Y);
-        return !is_outside_clip(Position(X, Y));
-    }
-    return true;
+bool AW_device::invisible_impl(int /*gc*/, const AW::Position& pos, AW_bitset filteri) {
+    return (filter & filteri) ? !is_outside_clip(transform(pos)) : false;
 }
 
 bool AW_device::ready_to_draw(int gc) {
