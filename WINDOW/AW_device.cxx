@@ -467,7 +467,7 @@ bool AW_device::ready_to_draw(int gc) {
     return get_common()->gc_mapable(gc);
 }
 
-int AW_device::generic_box(int gc, bool IF_DEBUG(filled), const Rectangle& rect, AW_bitset filteri) {
+bool AW_device::generic_box(int gc, bool IF_DEBUG(filled), const Rectangle& rect, AW_bitset filteri) {
     aw_assert(!filled); // not supported
     int drawflag = 0;
     if (filteri & filter) {
@@ -479,16 +479,16 @@ int AW_device::generic_box(int gc, bool IF_DEBUG(filled), const Rectangle& rect,
     return drawflag;
 }
 
-int AW_device::generic_filled_area(int gc, int npos, const Position *pos, AW_bitset filteri) {
-    int erg = 0;
+bool AW_device::generic_filled_area(int gc, int npos, const Position *pos, AW_bitset filteri) {
+    bool drawflag = false;
     if (filteri & filter) {
         int p = npos-1;
         for (int n = 0; n<npos; ++n) {
-            erg |= line(gc, pos[p], pos[n], filteri);
-            p    = n;
+            drawflag |= line(gc, pos[p], pos[n], filteri);
+            p = n;
         }
     }
-    return erg;
+    return drawflag;
 }
 
 #if defined(WARN_TODO)
@@ -504,10 +504,10 @@ void AW_device::fast() {}
 void AW_device::slow() {}
 void AW_device::flush() {}
 
-int AW_device::text_overlay(int gc, const char *opt_str, long opt_len,  // either string or strlen != 0
-                            const Position& pos, AW_pos alignment, AW_bitset filteri, AW_CL cduser, 
-                            AW_pos opt_ascent, AW_pos opt_descent,             // optional height (if == 0 take font height)
-                            TextOverlayCallback toc)
+bool AW_device::text_overlay(int gc, const char *opt_str, long opt_len,  // either string or strlen != 0
+                             const Position& pos, AW_pos alignment, AW_bitset filteri, AW_CL cduser, 
+                             AW_pos opt_ascent, AW_pos opt_descent,             // optional height (if == 0 take font height)
+                             TextOverlayCallback toc)
 {
     const AW_GC           *gcm         = get_common()->map_gc(gc);
     const AW_font_limits&  font_limits = gcm->get_font_limits();

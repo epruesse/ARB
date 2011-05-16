@@ -33,7 +33,7 @@ AW_DEVICE_TYPE AW_device_click::type() {
 }
 
 
-int AW_device_click::line_impl(int /*gc*/, const LineVector& Line, AW_bitset filteri) {
+bool AW_device_click::line_impl(int /*gc*/, const LineVector& Line, AW_bitset filteri) {
     if (!(filteri & filter)) return false;
 
     LineVector transLine = transform(Line);
@@ -73,7 +73,8 @@ int AW_device_click::line_impl(int /*gc*/, const LineVector& Line, AW_bitset fil
 }
 
 
-int AW_device_click::text_impl(int gc, const char *str, const AW::Position& pos, AW_pos alignment, AW_bitset filteri, long opt_strlen) {
+bool AW_device_click::text_impl(int gc, const char *str, const AW::Position& pos, AW_pos alignment, AW_bitset filteri, long opt_strlen) {
+    bool drawflag = false;
     if (filteri & filter) {
         AW_pos X0, Y0;          // Transformed pos
         this->transform(pos.xpos(), pos.ypos(), X0, Y0);
@@ -85,33 +86,33 @@ int AW_device_click::text_impl(int gc, const char *str, const AW::Position& pos,
         Y0        = Y0-font_limits.ascent;
 
         // Fast check text against top/bottom clip
-
         const AW_screen_area& clipRect = get_cliprect();
         if (clipRect.t == 0) {
-            if (Y1 < clipRect.t) return 0;
+            if (Y1 < clipRect.t) return false;
         }
         else {
-            if (Y0 < clipRect.t) return 0;
+            if (Y0 < clipRect.t) return false;
         }
 
         if (clipRect.b == get_common()->get_screen().b) {
-            if (Y0 > clipRect.b) return 0;
+            if (Y0 > clipRect.b) return false;
         }
         else {
-            if (Y1 > clipRect.b) return 0;
+            if (Y1 > clipRect.b) return false;
         }
 
         // vertical check mouse against textsurrounding
         bool   exact     = true;
         double best_dist = 0;
 
+        // @@@ the following section produces wrong result 
         if (mouse_y > Y1) {     // outside text
-            if (mouse_y > Y1+max_distance_text) return 0; // too far above
+            if (mouse_y > Y1+max_distance_text) return false; // too far above
             exact = false;
             best_dist = mouse_y - Y1;
         }
         else if (mouse_y < Y0) {
-            if (mouse_y < Y0-max_distance_text) return 0; // too far below
+            if (mouse_y < Y0-max_distance_text) return false; // too far below
             exact = false;
             best_dist = Y0 - mouse_y;
         }
@@ -124,11 +125,11 @@ int AW_device_click::text_impl(int gc, const char *str, const AW::Position& pos,
         AW_pos X1 = X0+text_width;
 
         // check against left right clipping areas
-        if (X1 < clipRect.l) return 0;
-        if (X0 > clipRect.r) return 0;
+        if (X1 < clipRect.l) return false;
+        if (X0 > clipRect.r) return false;
 
-        if (mouse_x < X0) return 0; // left of text
-        if (mouse_x > X1) return 0; // right of text
+        if (mouse_x < X0) return false; // left of text
+        if (mouse_x > X1) return false; // right of text
 
         max_distance_text = best_dist; // exact hit -> distance = 0;
 
@@ -175,8 +176,9 @@ int AW_device_click::text_impl(int gc, const char *str, const AW::Position& pos,
             opt_text.exists       = true;
             opt_text.exactHit     = exact;
         }
+        drawflag = true;
     }
-    return 1;
+    return drawflag;
 }
 
 

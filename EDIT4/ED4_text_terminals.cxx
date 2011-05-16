@@ -132,9 +132,9 @@ struct ShowHelix_cd {
     int       real_sequence_length;
 };
 
-static int ED4_show_helix_on_device(AW_device *device, int gc, const char *opt_string, size_t /*opt_string_size*/, size_t start, size_t size,
-                                    AW_pos x, AW_pos y, AW_pos /*opt_ascent*/, AW_pos /*opt_descent*/,
-                                    AW_CL cduser) // , AW_CL real_sequence_length, AW_CL cd2)
+static bool ED4_show_helix_on_device(AW_device *device, int gc, const char *opt_string, size_t /*opt_string_size*/, size_t start, size_t size,
+                                     AW_pos x, AW_pos y, AW_pos /*opt_ascent*/, AW_pos /*opt_descent*/,
+                                     AW_CL cduser) // , AW_CL real_sequence_length, AW_CL cd2)
 {
     ShowHelix_cd    *cd     = (ShowHelix_cd*)cduser;
     AW_helix        *helix  = cd->helix;
@@ -159,9 +159,9 @@ static int ED4_show_helix_on_device(AW_device *device, int gc, const char *opt_s
     return device->text(gc, buffer, x, y);
 }
 
-static int ED4_show_protein_match_on_device(AW_device *device, int gc, const char *protstruct, size_t /* protstruct_len */, size_t start, size_t size,
-                                            AW_pos x, AW_pos y, AW_pos /* opt_ascent */, AW_pos /* opt_descent */,
-                                            AW_CL cl_protstruct) // , AW_CL /* real_sequence_length */, AW_CL cd2)
+static bool ED4_show_protein_match_on_device(AW_device *device, int gc, const char *protstruct, size_t /* protstruct_len */, size_t start, size_t size,
+                                             AW_pos x, AW_pos y, AW_pos /* opt_ascent */, AW_pos /* opt_descent */,
+                                             AW_CL cl_protstruct) // , AW_CL /* real_sequence_length */, AW_CL cd2)
 {
     /*! \brief Calls ED4_pfold_calculate_secstruct_match() for the visible area in the
      *         editor to compute the protein secondary structure match and outputs the
@@ -187,7 +187,7 @@ static int ED4_show_protein_match_on_device(AW_device *device, int gc, const cha
     }
     if (error) {
         aw_message(error);
-        return 0;
+        return false;
     }
     
     buffer[size] = 0;
