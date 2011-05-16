@@ -2840,16 +2840,20 @@ public:
             case AP_LIST_SIMPLE: 
             case AP_TREE_NORMAL: 
             case AP_TREE_RADIAL: 
-            case AP_TREE_IRS:
                 zoom = std::max(zoomx, zoomy);
+                break;
+            case AP_TREE_IRS:
+                zoom = 1.0; // no zoom possible in this mode
                 break;
             case AP_LIST_NDS: 
                 zoom = std::min(zoomx, zoomy);
+                // zoom = 1.0; // @@@ wanted
                 break;
         }
 
         AW_screen_area clipping;
-        int EXTRA = SCREENSIZE*0.05;
+
+        int EXTRA  = SCREENSIZE*0.05;
         clipping.t = 0 - EXTRA; clipping.b = 2*SCREENSIZE + EXTRA;
         clipping.l = 0 - EXTRA; clipping.r = 2*SCREENSIZE + EXTRA;
 
@@ -2859,7 +2863,7 @@ public:
 
         print_device->zoom(zoom);
 
-        Vector shift = Vector(EXTRA, EXTRA)/zoom;
+        Vector shift = (type == AP_TREE_IRS) ? Vector(0, 0) : Vector(EXTRA, EXTRA)/zoom;
         Vector offset(shift-Vector(drawn.upper_left_corner()));
 
         print_device->set_offset(offset*print_device->get_unscale());

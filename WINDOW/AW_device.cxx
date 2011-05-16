@@ -383,11 +383,21 @@ class AW_clip_scale_stack {
 
 #if defined(SHOW_CLIP_STACK_CHANGES)
 static const char *clipstatestr(AW_device *device) {
-    static char   buffer[1024];
-    AW_screen_area& clip_rect = device->clip_rect;
+    static char buffer[1024];
 
-    sprintf(buffer, "clip_rect={t=%i, b=%i, l=%i, r=%i}",
-            clip_rect.t, clip_rect.b, clip_rect.l, clip_rect.r);
+    const AW_screen_area&  clip_rect = device->get_cliprect();
+    const AW_font_overlap& fo        = device->get_font_overlap();
+    const Vector&          offset    = device->get_offset();
+
+    sprintf(buffer,
+            "clip_rect={t=%i, b=%i, l=%i, r=%i} "
+            "font_overlap={t=%i, b=%i, l=%i, r=%i} "
+            "scale=%f unscale=%f "
+            "offset={x=%f y=%f}" ,
+            clip_rect.t, clip_rect.b, clip_rect.l, clip_rect.r,
+            fo.top, fo.bottom, fo.left, fo.right,
+            device->get_scale(), device->get_unscale(), 
+            offset.x(), offset.y());
 
     return buffer;
 }
@@ -420,17 +430,21 @@ void AW_device::pop_clip_scale() {
     char *state_before_pop = strdup(clipstatestr(this));
 #endif // SHOW_CLIP_STACK_CHANGES
 
+    AW_zoomable::reset();
+    set_offset(clip_scale_stack->offset); // needs to be called before zoom()
     zoom(clip_scale_stack->scale);
-    set_offset(clip_scale_stack->offset);
     set_cliprect(clip_scale_stack->clip_rect);
     set_font_overlap(clip_scale_stack->font_overlap);
+
+    aw_assert(get_scale() == clip_scale_stack->scale);
 
     AW_clip_scale_stack *oldstack = clip_scale_stack;
     clip_scale_stack              = clip_scale_stack->next;
     delete oldstack;
 
 #if defined(SHOW_CLIP_STACK_CHANGES)
-    printf("pop_clip_scale: %s -> %s\n", state_before_pop, clipstatestr(this));
+    printf(" pop_clip_scale: %s\n", state_before_pop);
+    printf("    [after pop]: %s\n\n", clipstatestr(this));
     free(state_before_pop);
 #endif // SHOW_CLIP_STACK_CHANGES
 }
