@@ -107,12 +107,13 @@ int AW_device_Xm::arc_impl(int gc, bool filled, const AW::Position& center, cons
             int             xl     = AW_INT(ulc.xpos());
             int             yl     = AW_INT(ulc.ypos());
 
-            // ARB -> X 
+            aw_assert(arc_degrees >= -360 && arc_degrees <= 360);
+
+            // ARB -> X
             start_degrees = -start_degrees;
             arc_degrees   = -arc_degrees;
 
             while (start_degrees<0) start_degrees += 360;
-            while (arc_degrees<-180) arc_degrees  += 360;
 
             if (!filled) {
                 XDrawArc(XDRAW_PARAM3(get_common(), gc), xl, yl, width, height, 64*start_degrees, 64*arc_degrees);
