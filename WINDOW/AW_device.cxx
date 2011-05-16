@@ -16,8 +16,8 @@
 
 using namespace AW;
 
-void AW_clipable::set_cliprect_oversize(AW_screen_area *rect, bool allow_oversize) {
-    clip_rect = *rect; // coordinates : (0,0) = top-left-corner
+void AW_clipable::set_cliprect_oversize(const AW_screen_area& rect, bool allow_oversize) {
+    clip_rect = rect;
     
     const AW_screen_area& screen = get_screen();
     if (!allow_oversize) {
