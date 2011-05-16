@@ -255,7 +255,6 @@ void AWT_graphic_tree::show_irs_tree(AP_tree *at, int height) {
     Rectangle rclip  = disp_device->get_rtransformed_cliprect();
 
     IRS.font_height_2  = limits.ascent/2;
-    disp_device         = disp_device;
     IRS.ftrst_species  = true;
     IRS.y              = 0;
     IRS.min_x          = corner.xpos();
@@ -273,6 +272,9 @@ void AWT_graphic_tree::show_irs_tree(AP_tree *at, int height) {
     // provide some information for ruler:
     list_tree_ruler_y           = IRS.ruler_y;
     irs_tree_ruler_scale_factor = IRS.x_scale;
+
+    disp_device->invisible(AWT_GC_CURSOR, IRS.min_x, 0);
+    disp_device->invisible(AWT_GC_CURSOR, IRS.max_x, IRS.y+IRS.step_y);
 
     disp_device->pop_clip_scale();
 }
