@@ -20,10 +20,10 @@ XtAppContext AW_get_XtAppContext(AW_root *aw_root) {
 }
 
 Widget AW_get_AreaWidget(AW_window *aww, AW_area area) {
-    return aww->p_w->areas[area]->area;
+    return aww->p_w->areas[area]->get_area();
 }
 
 GC AW_map_AreaGC(AW_window *aww, AW_area area, int gc) {
-    return aww->p_w->areas[area]->common->get_GC(gc);
+    return aww->p_w->areas[area]->get_common()->get_GC(gc);
 }
 
