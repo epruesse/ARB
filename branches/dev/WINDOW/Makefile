@@ -146,6 +146,7 @@ AW_click.o: $(ARBHOME)/INCLUDE/arbtools.h
 AW_click.o: $(ARBHOME)/INCLUDE/attributes.h
 AW_click.o: $(ARBHOME)/INCLUDE/downcast.h
 AW_click.o: $(ARBHOME)/INCLUDE/dupstr.h
+AW_click.o: $(ARBHOME)/INCLUDE/smartptr.h
 AW_click.o: $(ARBHOME)/INCLUDE/test_global.h
 
 AW_debug.o: aw_base.hxx
@@ -259,6 +260,7 @@ AW_font_group.o: $(ARBHOME)/INCLUDE/arbtools.h
 AW_font_group.o: $(ARBHOME)/INCLUDE/attributes.h
 AW_font_group.o: $(ARBHOME)/INCLUDE/downcast.h
 AW_font_group.o: $(ARBHOME)/INCLUDE/dupstr.h
+AW_font_group.o: $(ARBHOME)/INCLUDE/smartptr.h
 AW_font_group.o: $(ARBHOME)/INCLUDE/test_global.h
 
 AW_global_awars.o: aw_awar.hxx
@@ -459,6 +461,7 @@ AW_size.o: $(ARBHOME)/INCLUDE/arbtools.h
 AW_size.o: $(ARBHOME)/INCLUDE/attributes.h
 AW_size.o: $(ARBHOME)/INCLUDE/downcast.h
 AW_size.o: $(ARBHOME)/INCLUDE/dupstr.h
+AW_size.o: $(ARBHOME)/INCLUDE/smartptr.h
 AW_size.o: $(ARBHOME)/INCLUDE/test_global.h
 
 AW_status.o: aw_awar.hxx
@@ -623,4 +626,5 @@ AW_Xm.o: $(ARBHOME)/INCLUDE/arbtools.h
 AW_Xm.o: $(ARBHOME)/INCLUDE/attributes.h
 AW_Xm.o: $(ARBHOME)/INCLUDE/downcast.h
 AW_Xm.o: $(ARBHOME)/INCLUDE/dupstr.h
+AW_Xm.o: $(ARBHOME)/INCLUDE/smartptr.h
 AW_Xm.o: $(ARBHOME)/INCLUDE/test_global.h
