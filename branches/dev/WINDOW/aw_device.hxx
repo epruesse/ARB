@@ -513,6 +513,7 @@ public:
         return circle_impl(gc, filled, rect.centroid(), AW::Vector(rect.width()/2, rect.height()/2), filteri);
     }
 
+    // draw arcs (Note: passed degrees are nagative compared to unit circle!)
     bool arc(int gc, bool filled, AW_pos x0, AW_pos y0, AW_pos xradius, AW_pos yradius, int start_degrees, int arc_degrees, AW_bitset filteri = AW_ALL_DEVICES)  {
         return arc_impl(gc, filled, AW::Position(x0, y0), AW::Vector(xradius, yradius), start_degrees, arc_degrees, filteri);
     }
@@ -570,9 +571,7 @@ class AW_device_print : public AW_device { // derived from a Noncopyable
     bool text_impl(int gc, const char *str, const AW::Position& pos, AW_pos alignment, AW_bitset filteri, long opt_strlen);
     bool box_impl(int gc, bool filled, const AW::Rectangle& rect, AW_bitset filteri);
     bool circle_impl(int gc, bool filled, const AW::Position& center, const AW::Vector& radius, AW_bitset filteri);
-    bool arc_impl(int gc, bool filled, const AW::Position& center, const AW::Vector& radius, int start_degrees, int arc_degrees, AW_bitset filteri) {
-        return generic_arc(gc, filled, center, radius, start_degrees, arc_degrees, filteri);
-    }
+    bool arc_impl(int gc, bool filled, const AW::Position& center, const AW::Vector& radius, int start_degrees, int arc_degrees, AW_bitset filteri);
     bool filled_area_impl(int gc, int npos, const AW::Position *pos, AW_bitset filteri);
 public:
     AW_device_print(AW_common *common_)
