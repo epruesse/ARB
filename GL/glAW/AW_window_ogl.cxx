@@ -275,7 +275,7 @@ void AW_window_menu_modes_opengl::init(AW_root *root_in, const char *wid,
     XtSetArg(args[n], XmNmarginHeight, 0); n++;
     XtSetArg(args[n], XmNbottomAttachment, XmATTACH_FORM); n++;
     XtSetArg(args[n], XmNtopAttachment, XmATTACH_WIDGET); n++;
-    XtSetArg(args[n], XmNtopWidget, p_w->areas[AW_INFO_AREA]->area); n++;
+    XtSetArg(args[n], XmNtopWidget, p_w->areas[AW_INFO_AREA]->get_area()); n++;
     XtSetArg(args[n], XmNleftAttachment, XmATTACH_FORM); n++;
     XtSetArg(args[n], XmNrightAttachment, XmATTACH_FORM); n++;
 
