@@ -108,7 +108,7 @@ ARB_ERROR PTD_read_leafs_from_disk(const char *fname, PTM2 *ptmain, POS_TREE **p
 
 /* PT_debug.cxx */
 void PT_dump_tree_statistics(void);
-void PT_dump_POS_TREE_recursive(POS_TREE *pt, const char *prefix);
+void PT_dump_POS_TREE_recursive(POS_TREE *IF_DEBUG (pt), const char *IF_DEBUG (prefix));
 void PT_dump_POS_TREE(POS_TREE *IF_DEBUG (node));
 
 /* probe_tree.h */
