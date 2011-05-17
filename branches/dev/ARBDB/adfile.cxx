@@ -549,8 +549,10 @@ bool GB_test_textfile_difflines(const char *file1, const char *file2, int expect
                 char *line = fgets(buffer, BUFSIZE, diffout);
                 if (!line) break;
 
+#if defined(ASSERTION_USED)
                 size_t len = strlen(line);
                 gb_assert(line && len<(BUFSIZE-1)); // increase BUFSIZE
+#endif
 
                 bool remove_now = true;
                 if (strncmp(line, "@@", 2) == 0) inHunk = true;

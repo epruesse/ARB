@@ -625,7 +625,8 @@ GB_ERROR gb_save_mapfile(GB_MAIN_TYPE *Main, GB_CSTR path) {
         gb_assert(ADMAP_ID_LEN <= strlen(ADMAP_ID));
 
         if (!writeError) {
-            long calcOffset = calcGbdOffsets(Main, gb_gbk);
+            IF_DEBUG(long calcOffset=)
+                calcGbdOffsets(Main, gb_gbk);
 
             gb_map_header mheader;
             memset(&mheader, 0, sizeof(mheader));
@@ -644,7 +645,8 @@ GB_ERROR gb_save_mapfile(GB_MAIN_TYPE *Main, GB_CSTR path) {
             gb_assert(GB_FATHER(Main->data) == Main->dummy_father);
             SET_GB_FATHER(Main->data, NULL);
     
-            long writeOffset = writeGbdByKey(Main, gb_gbk, out, main_idx_4_save);
+            IF_DEBUG(long writeOffset =)
+                writeGbdByKey(Main, gb_gbk, out, main_idx_4_save);
             SET_GB_FATHER(Main->data, Main->dummy_father);
 
             gb_assert(calcOffset==writeOffset);

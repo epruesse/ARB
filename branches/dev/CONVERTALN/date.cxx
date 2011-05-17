@@ -251,7 +251,8 @@ const char *gcg_date(const char *input) {
 
     char time[SIZE];
     int  day, year;
-    int  scanned = sscanf(input+DAY_POS, "%d %s %d", &day, time, &year);
+    IF_DEBUG(int  scanned = )
+        sscanf(input+DAY_POS, "%d %s %d", &day, time, &year);
     ca_assert(scanned == 3);
 
     sprintf(date, "%s %d, %d  %s", monthname, day, year, time);
