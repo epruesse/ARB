@@ -1088,13 +1088,15 @@ char *GBS_log_dated_action_to(const char *comment, const char *action) {
 #include <test_unit.h>
 
 #ifdef ENABLE_CRASH_TESTS
-static void failassertion() { gb_assert(0); }
 static void provokesegv() { *(int *)0 = 0; }
+#if defined(ASSERTION_USED)
+static void failassertion() { gb_assert(0); }
 static void provokesegv_does_not_fail_assertion() {
     // provokesegv does not raise assertion
     // -> the following assertion fails
     TEST_ASSERT_CODE_ASSERTION_FAILS(provokesegv);
 }
+#endif
 #endif
 
 void TEST_signal_tests() {
