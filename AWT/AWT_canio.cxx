@@ -712,7 +712,7 @@ void AWT_popup_print_window(AW_window *parent_win, AW_CL cl_canvas, AW_CL) {
 
         aws->at("best_fit");
         aws->callback(awt_calc_best_fit);
-        aws->create_autosize_button(0, "Fit on");
+        aws->create_autosize_button("fit_on", "Fit on");
 
         aws->at("pages");
         aws->create_input_field(AWAR_PRINT_TREE_PAGES, 3);
