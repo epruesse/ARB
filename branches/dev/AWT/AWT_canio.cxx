@@ -210,31 +210,21 @@ static void create_print_awars(AW_root *awr, AWT_canvas *ntw) {
 
 // --------------------------------------------------------------------------------
 
-
-
-// --------------------------------------------------------------------------------
-
-const char *canvas_to_xfig(AW_window *aww, AWT_canvas * ntw) {
-    // export to xfig
+static GB_ERROR canvas_to_xfig(AWT_canvas *ntw, const char *xfig_name) {
     GB_transaction ta(ntw->gb_main);
 
-    AW_root  *awr   = aww->get_root();
-    char     *dest  = AW_get_selected_fullname(awr, AWAR_PRINT_TREE_FILE_BASE);
-    GB_ERROR  error = 0;
+    AW_root *awr       = ntw->awr;
+    bool     draw_all  = awr->awar(AWAR_PRINT_TREE_CLIP)->read_int();
+    bool     handles   = awr->awar(AWAR_PRINT_TREE_HANDLES)->read_int();
+    bool     use_color = awr->awar(AWAR_PRINT_TREE_COLOR)->read_int();
 
-    if (dest[0] == 0) {
-        error = "Please enter a file name";
-    }
-    else {
-        bool draw_all  = awr->awar(AWAR_PRINT_TREE_CLIP)->read_int();
-        bool handles   = awr->awar(AWAR_PRINT_TREE_HANDLES)->read_int();
-        bool use_color = awr->awar(AWAR_PRINT_TREE_COLOR)->read_int();
+    AW_device_print *device = ntw->aww->get_print_device(AW_MIDDLE_AREA);
 
-        AW_device_print *device = ntw->aww->get_print_device(AW_MIDDLE_AREA);
-        device->reset();
-        device->set_color_mode(use_color==1);
-        error = device->open(dest);
+    device->reset();
+    device->set_color_mode(use_color);
+    GB_ERROR error = device->open(xfig_name);
 
+    if (!error) {
         device->line(0, 0, 0, 1, -1); // dummy point upper left corner
 
         if (draw_all) {
@@ -243,11 +233,12 @@ const char *canvas_to_xfig(AW_window *aww, AWT_canvas * ntw) {
             size_device->zoom(ntw->trans_to_fit);
             size_device->set_filter(AW_SCREEN);
             ntw->tree_disp->show(size_device);
-            
+
             AW_world size;
             size_device->get_size_information(&size);
+            // expand pic
             size.l -= 50;
-            size.t -= 40;           // expand pic
+            size.t -= 40;
             size.r += 20;
             size.b += 20;
             device->set_offset(AW::Vector(size.l, size.t) / -ntw->trans_to_fit);
@@ -259,30 +250,33 @@ const char *canvas_to_xfig(AW_window *aww, AWT_canvas * ntw) {
             ntw->init_device(device);   // draw screen
         }
 
-        if (!error) {
-            device->set_filter(handles ? AW_PRINTER|AW_PRINTER_EXT : AW_PRINTER);
-            ntw->tree_disp->show(device);
-            device->close();
-            awr->awar(AWAR_PRINT_TREE_FILE_DIR)->touch();   // reload dir !!!
-        }
+        device->set_filter(handles ? AW_PRINTER|AW_PRINTER_EXT : AW_PRINTER);
+        ntw->tree_disp->show(device);
+        device->close();
     }
-
-    if (error) aw_message(error);
-
-    free(dest);
-
     return error;
 }
 
+// --------------------------------------------------------------------------------
+
 static void canvas_to_xfig_and_run_xfig(AW_window *aww, AW_CL cl_ntw) {
-    AWT_canvas * ntw = (AWT_canvas*)cl_ntw;
-    AW_root *awr = aww->get_root();
-    const char *error = canvas_to_xfig(aww, ntw);
-    if (!error) {
-        char *dest = AW_get_selected_fullname(awr, AWAR_PRINT_TREE_FILE_BASE);
-        system(GBS_global_string("xfig %s &", dest));
-        free(dest);
+    AWT_canvas *ntw  = (AWT_canvas*)cl_ntw;
+    AW_root    *awr  = aww->get_root();
+    char       *xfig = AW_get_selected_fullname(awr, AWAR_PRINT_TREE_FILE_BASE);
+    
+    GB_ERROR error = NULL;
+    if (xfig[0] == 0) {
+        error = "Please enter a file name";
     }
+    else {
+        error = canvas_to_xfig(ntw, xfig);
+        if (!error) {
+            awr->awar(AWAR_PRINT_TREE_FILE_DIR)->touch(); // reload dir to show created xfig
+            error = GB_system(GBS_global_string("xfig %s &", xfig));
+        }
+    }
+    if (error) aw_message(error);
+    free(xfig);
 }
 
 
@@ -313,8 +307,6 @@ void canvas_to_printer(AW_window *aww, AW_CL cl_ntw) {
     }
 
     if (!error) {
-        AW_device_print *device = ntw->aww->get_print_device(AW_MIDDLE_AREA);
-
         char *xfig;
         {
             char *name = GB_unique_filename("arb_print", "xfig");
@@ -323,54 +315,12 @@ void canvas_to_printer(AW_window *aww, AW_CL cl_ntw) {
         }
 
         arb_progress progress("Printing");
+        progress.subtitle("Exporting Data");
 
         if (!xfig) error = GB_await_error();
-        else {
-            device->reset();
-            ntw->init_device(device);  // draw screen
-
-            progress.subtitle("Get Picture Size");
-            device->reset();
-
-            device->set_color_mode(awr->awar(AWAR_PRINT_TREE_COLOR)->read_int() == 1);
-            error = device->open(xfig);
-        }
-
-        bool draw_all = awr->awar(AWAR_PRINT_TREE_CLIP)->read_int();
-        bool handles  = awr->awar(AWAR_PRINT_TREE_HANDLES)->read_int();
+        if (!error) error = canvas_to_xfig(ntw, xfig);
 
         if (!error) {
-            device->line(0, 0, 0, 1, -1); // dummy point upper left corner
-
-            if (draw_all) { // draw all
-                AW_device_size *size_device = ntw->aww->get_size_device(AW_MIDDLE_AREA);
-                size_device->reset();
-                size_device->zoom(ntw->trans_to_fit);
-                size_device->set_filter(AW_SCREEN);
-                ntw->tree_disp->show(size_device);
-
-                AW_world size;
-                size_device->get_size_information(&size);
-                size.l -= 50;
-                size.t -= 40;       // expand pic
-                size.r += 20;
-                size.b += 20;
-                device->set_offset(AW::Vector(size.l, size.t) / -ntw->trans_to_fit);
-                device->set_bottom_clip_border((int)(size.b-size.t), true);
-                device->set_right_clip_border((int)(size.r-size.l), true);
-                device->zoom(ntw->trans_to_fit);
-            }
-            else {
-                ntw->init_device(device);   // draw screen
-            }
-
-            // ----------------------------------------
-            progress.subtitle("Exporting Data");
-
-            device->set_filter(handles ? AW_PRINTER|AW_PRINTER_EXT : AW_PRINTER);
-            ntw->tree_disp->show(device);
-            device->close();
-
             awt_assert(GB_is_privatefile(xfig, true));
 
             // ----------------------------------------
