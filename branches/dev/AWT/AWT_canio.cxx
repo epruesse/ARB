@@ -210,7 +210,11 @@ static void create_print_awars(AW_root *awr, AWT_canvas *ntw) {
 
 // --------------------------------------------------------------------------------
 
-const char *AWT_print_tree_to_file(AW_window *aww, AWT_canvas * ntw) {
+
+
+// --------------------------------------------------------------------------------
+
+const char *canvas_to_xfig(AW_window *aww, AWT_canvas * ntw) {
     // export to xfig
     GB_transaction ta(ntw->gb_main);
 
@@ -222,24 +226,25 @@ const char *AWT_print_tree_to_file(AW_window *aww, AWT_canvas * ntw) {
         error = "Please enter a file name";
     }
     else {
-        long draw_all  = awr->awar(AWAR_PRINT_TREE_CLIP)->read_int();
-        long handles   = awr->awar(AWAR_PRINT_TREE_HANDLES)->read_int();
-        int  use_color = awr->awar(AWAR_PRINT_TREE_COLOR)->read_int();
+        bool draw_all  = awr->awar(AWAR_PRINT_TREE_CLIP)->read_int();
+        bool handles   = awr->awar(AWAR_PRINT_TREE_HANDLES)->read_int();
+        bool use_color = awr->awar(AWAR_PRINT_TREE_COLOR)->read_int();
 
-        AW_device_print *device      = ntw->aww->get_print_device(AW_MIDDLE_AREA);
-        AW_device_size  *size_device = ntw->aww->get_size_device(AW_MIDDLE_AREA);
-
+        AW_device_print *device = ntw->aww->get_print_device(AW_MIDDLE_AREA);
         device->reset();
         device->set_color_mode(use_color==1);
         error = device->open(dest);
+
         device->line(0, 0, 0, 1, -1); // dummy point upper left corner
 
         if (draw_all) {
-            AW_world size;
+            AW_device_size *size_device = ntw->aww->get_size_device(AW_MIDDLE_AREA);
             size_device->reset();
             size_device->zoom(ntw->trans_to_fit);
             size_device->set_filter(AW_SCREEN);
             ntw->tree_disp->show(size_device);
+            
+            AW_world size;
             size_device->get_size_information(&size);
             size.l -= 50;
             size.t -= 40;           // expand pic
@@ -255,12 +260,7 @@ const char *AWT_print_tree_to_file(AW_window *aww, AWT_canvas * ntw) {
         }
 
         if (!error) {
-            if (handles) {
-                device->set_filter(AW_PRINTER | AW_PRINTER_EXT);
-            }
-            else {
-                device->set_filter(AW_PRINTER);
-            }
+            device->set_filter(handles ? AW_PRINTER|AW_PRINTER_EXT : AW_PRINTER);
             ntw->tree_disp->show(device);
             device->close();
             awr->awar(AWAR_PRINT_TREE_FILE_DIR)->touch();   // reload dir !!!
@@ -274,10 +274,10 @@ const char *AWT_print_tree_to_file(AW_window *aww, AWT_canvas * ntw) {
     return error;
 }
 
-void AWT_print_tree_to_file_xfig(AW_window *aww, AW_CL cl_ntw) {
+static void canvas_to_xfig_and_run_xfig(AW_window *aww, AW_CL cl_ntw) {
     AWT_canvas * ntw = (AWT_canvas*)cl_ntw;
     AW_root *awr = aww->get_root();
-    const char *error = AWT_print_tree_to_file(aww, ntw);
+    const char *error = canvas_to_xfig(aww, ntw);
     if (!error) {
         char *dest = AW_get_selected_fullname(awr, AWAR_PRINT_TREE_FILE_BASE);
         system(GBS_global_string("xfig %s &", dest));
@@ -285,102 +285,8 @@ void AWT_print_tree_to_file_xfig(AW_window *aww, AW_CL cl_ntw) {
     }
 }
 
-void AWT_popup_tree_export_window(AW_window *parent_win, AW_CL cl_canvas, AW_CL) {
-    static AW_window_simple *aws = 0;
 
-    AW_root *awr = parent_win->get_root();
-    create_export_awars(awr);
-    resetFiletype(awr, "fig", "print.fig");
-
-    if (!aws) {
-        aws = new AW_window_simple;
-        aws->init(awr, "EXPORT_TREE_AS_XFIG", "EXPORT TREE TO XFIG");
-        aws->load_xfig("awt/export.fig");
-
-        aws->at("close"); aws->callback((AW_CB0)AW_POPDOWN);
-        aws->create_button("CLOSE", "CLOSE", "C");
-
-        aws->at("help"); aws->callback(AW_POPUP_HELP, (AW_CL)"tree2file.hlp");
-        aws->create_button("HELP", "HELP", "H");
-
-        aws->label_length(15);
-
-        AW_create_fileselection(aws, AWAR_PRINT_TREE_FILE_BASE);
-
-        aws->at("what");
-        aws->label("Clip at Screen");
-        aws->create_toggle_field(AWAR_PRINT_TREE_CLIP, 1);
-        aws->insert_toggle("#print/clipscreen.bitmap", "S", 0);
-        aws->insert_toggle("#print/clipall.bitmap", "A", 1);
-        aws->update_toggle_field();
-
-        aws->at("remove_root");
-        aws->label("Show Handles");
-        aws->create_toggle_field(AWAR_PRINT_TREE_HANDLES, 1);
-        aws->insert_toggle("#print/nohandles.bitmap", "S", 0);
-        aws->insert_toggle("#print/handles.bitmap", "A", 1);
-        aws->update_toggle_field();
-
-        aws->at("color");
-        aws->label("Export colors");
-        aws->create_toggle(AWAR_PRINT_TREE_COLOR);
-
-
-        aws->at("xfig"); aws->callback(AWT_print_tree_to_file_xfig, cl_canvas);
-        aws->create_button("START_XFIG", "EXPORT to XFIG", "X");
-
-        aws->at("cancel"); aws->callback((AW_CB0)AW_POPDOWN);
-        aws->create_button("CLOSE", "CANCEL", "C");
-    }
-
-    aws->activate();
-}
-/* ------------------------------------- to export secondary structure to XFIG --------------------------------------------- */
-
-void AWT_popup_sec_export_window(AW_window *parent_win, AW_CL cl_canvas, AW_CL) {
-    static AW_window_simple *aws = 0;
-
-    AW_root *awr = parent_win->get_root();
-    create_export_awars(awr);
-    resetFiletype(awr, "fig", "print.fig");
-
-    if (!aws) {
-        aws = new AW_window_simple;
-        aws->init(awr, "EXPORT_TREE_AS_XFIG", "EXPORT STRUCTURE TO XFIG");
-        aws->load_xfig("awt/secExport.fig");
-
-        aws->at("help"); aws->callback(AW_POPUP_HELP, (AW_CL)"tree2file.hlp");
-        aws->create_button("HELP", "HELP", "H");
-
-        aws->label_length(15);
-        AW_create_fileselection(aws, AWAR_PRINT_TREE_FILE_BASE);
-
-        aws->at("what");
-        aws->label("Clip Options");
-        aws->create_option_menu(AWAR_PRINT_TREE_CLIP);
-        aws->insert_option("Export screen only", "s", 0);
-        aws->insert_default_option("Export complete structure", "c", 1);
-        aws->update_option_menu();
-
-        aws->at("color");
-        aws->label("Export colors");
-        aws->create_toggle(AWAR_PRINT_TREE_COLOR);
-
-        aws->at("xfig"); aws->callback(AWT_print_tree_to_file_xfig, cl_canvas);
-        aws->create_button("START_XFIG", "EXPORT to XFIG", "X");
-
-        aws->at("close"); aws->callback((AW_CB0)AW_POPDOWN);
-        aws->create_button("CLOSE", "CLOSE", "C");
-
-        aws->at("cancel"); aws->callback((AW_CB0)AW_POPDOWN);
-        aws->create_button("CLOSE", "CANCEL", "C");
-    }
-
-    aws->activate();
-}
-/* ------------------------------------------------------------------------------------------------------------------------------------------ */
-
-void AWT_print_tree_to_printer(AW_window *aww, AW_CL cl_ntw) {
+void canvas_to_printer(AW_window *aww, AW_CL cl_ntw) {
     AWT_canvas     *ntw       = (AWT_canvas*)cl_ntw;
     GB_transaction  ta(ntw->gb_main);
     AW_root        *awr       = aww->get_root();
@@ -430,10 +336,13 @@ void AWT_print_tree_to_printer(AW_window *aww, AW_CL cl_ntw) {
             error = device->open(xfig);
         }
 
+        bool draw_all = awr->awar(AWAR_PRINT_TREE_CLIP)->read_int();
+        bool handles  = awr->awar(AWAR_PRINT_TREE_HANDLES)->read_int();
+
         if (!error) {
             device->line(0, 0, 0, 1, -1); // dummy point upper left corner
 
-            if (awr->awar(AWAR_PRINT_TREE_CLIP)->read_int()) { // draw all
+            if (draw_all) { // draw all
                 AW_device_size *size_device = ntw->aww->get_size_device(AW_MIDDLE_AREA);
                 size_device->reset();
                 size_device->zoom(ntw->trans_to_fit);
@@ -458,10 +367,7 @@ void AWT_print_tree_to_printer(AW_window *aww, AW_CL cl_ntw) {
             // ----------------------------------------
             progress.subtitle("Exporting Data");
 
-            device->set_filter(awr->awar(AWAR_PRINT_TREE_HANDLES)->read_int()
-                               ? AW_PRINTER | AW_PRINTER_EXT
-                               : AW_PRINTER);
-
+            device->set_filter(handles ? AW_PRINTER|AW_PRINTER_EXT : AW_PRINTER);
             ntw->tree_disp->show(device);
             device->close();
 
@@ -523,6 +429,100 @@ void AWT_print_tree_to_printer(AW_window *aww, AW_CL cl_ntw) {
     if (error) aw_message(error);
 }
 
+// --------------------------------------------------------------------------------
+
+void AWT_popup_tree_export_window(AW_window *parent_win, AW_CL cl_canvas, AW_CL) {
+    static AW_window_simple *aws = 0;
+
+    AW_root *awr = parent_win->get_root();
+    create_export_awars(awr);
+    resetFiletype(awr, "fig", "print.fig");
+
+    if (!aws) {
+        aws = new AW_window_simple;
+        aws->init(awr, "EXPORT_TREE_AS_XFIG", "EXPORT TREE TO XFIG");
+        aws->load_xfig("awt/export.fig");
+
+        aws->at("close"); aws->callback((AW_CB0)AW_POPDOWN);
+        aws->create_button("CLOSE", "CLOSE", "C");
+
+        aws->at("help"); aws->callback(AW_POPUP_HELP, (AW_CL)"tree2file.hlp");
+        aws->create_button("HELP", "HELP", "H");
+
+        aws->label_length(15);
+
+        AW_create_fileselection(aws, AWAR_PRINT_TREE_FILE_BASE);
+
+        aws->at("what");
+        aws->label("Clip at Screen");
+        aws->create_toggle_field(AWAR_PRINT_TREE_CLIP, 1);
+        aws->insert_toggle("#print/clipscreen.bitmap", "S", 0);
+        aws->insert_toggle("#print/clipall.bitmap", "A", 1);
+        aws->update_toggle_field();
+
+        aws->at("remove_root");
+        aws->label("Show Handles");
+        aws->create_toggle_field(AWAR_PRINT_TREE_HANDLES, 1);
+        aws->insert_toggle("#print/nohandles.bitmap", "S", 0);
+        aws->insert_toggle("#print/handles.bitmap", "A", 1);
+        aws->update_toggle_field();
+
+        aws->at("color");
+        aws->label("Export colors");
+        aws->create_toggle(AWAR_PRINT_TREE_COLOR);
+
+
+        aws->at("xfig"); aws->callback(canvas_to_xfig_and_run_xfig, cl_canvas);
+        aws->create_button("START_XFIG", "EXPORT to XFIG", "X");
+
+        aws->at("cancel"); aws->callback((AW_CB0)AW_POPDOWN);
+        aws->create_button("CLOSE", "CANCEL", "C");
+    }
+
+    aws->activate();
+}
+
+void AWT_popup_sec_export_window(AW_window *parent_win, AW_CL cl_canvas, AW_CL) {
+    static AW_window_simple *aws = 0;
+
+    AW_root *awr = parent_win->get_root();
+    create_export_awars(awr);
+    resetFiletype(awr, "fig", "print.fig");
+
+    if (!aws) {
+        aws = new AW_window_simple;
+        aws->init(awr, "EXPORT_TREE_AS_XFIG", "EXPORT STRUCTURE TO XFIG");
+        aws->load_xfig("awt/secExport.fig");
+
+        aws->at("help"); aws->callback(AW_POPUP_HELP, (AW_CL)"tree2file.hlp");
+        aws->create_button("HELP", "HELP", "H");
+
+        aws->label_length(15);
+        AW_create_fileselection(aws, AWAR_PRINT_TREE_FILE_BASE);
+
+        aws->at("what");
+        aws->label("Clip Options");
+        aws->create_option_menu(AWAR_PRINT_TREE_CLIP);
+        aws->insert_option("Export screen only", "s", 0);
+        aws->insert_default_option("Export complete structure", "c", 1);
+        aws->update_option_menu();
+
+        aws->at("color");
+        aws->label("Export colors");
+        aws->create_toggle(AWAR_PRINT_TREE_COLOR);
+
+        aws->at("xfig"); aws->callback(canvas_to_xfig_and_run_xfig, cl_canvas);
+        aws->create_button("START_XFIG", "EXPORT to XFIG", "X");
+
+        aws->at("close"); aws->callback((AW_CB0)AW_POPDOWN);
+        aws->create_button("CLOSE", "CLOSE", "C");
+
+        aws->at("cancel"); aws->callback((AW_CB0)AW_POPDOWN);
+        aws->create_button("CLOSE", "CANCEL", "C");
+    }
+
+    aws->activate();
+}
 
 static long calc_mag_from_psize(AW_root *awr, double papersize, double gfxsize, double wantedpages) {
     bool   useOverlap = awr->awar(AWAR_PRINT_TREE_OVERLAP)->read_int();
@@ -740,7 +740,7 @@ void AWT_popup_print_window(AW_window *parent_win, AW_CL cl_canvas, AW_CL) {
 
         aws->at("go");
         aws->highlight();
-        aws->callback(AWT_print_tree_to_printer, (AW_CL)ntw);
+        aws->callback(canvas_to_printer, (AW_CL)ntw);
         aws->create_button("PRINT", "PRINT", "P");
 
         aws->button_length(0);
