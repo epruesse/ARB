@@ -15,6 +15,12 @@
 
 using namespace AW;
 
+#define DPI_SCREEN  80 // fixed
+#define DPI_PRINTER 1200
+
+inline double screen2printer(double val) { return (val*DPI_PRINTER)/DPI_SCREEN; }
+inline int print_pos(AW_pos screen_pos) { return AW_INT(screen2printer(screen_pos)); }
+
 AW_DEVICE_TYPE AW_device_print::type() { return AW_DEVICE_PRINTER; }
 
 bool AW_device_print::line_impl(int gc, const LineVector& Line, AW_bitset filteri) {
@@ -35,11 +41,12 @@ bool AW_device_print::line_impl(int gc, const LineVector& Line, AW_bitset filter
             // join_style(new), cap_style(new), radius, forward_arrow,
             // backward_arrow, npoints
             fprintf(out, "2 1 0 %d %d 0 0 0 0 0.000 0 1 0 0 0 2\n\t%d %d %d %d\n",
-                    AW_INT(line_width), find_color_idx(gcm->get_last_fg_color()),
-                    AW_INT(clippedLine.xpos()),
-                    AW_INT(clippedLine.ypos()),
-                    AW_INT(clippedLine.head().xpos()),
-                    AW_INT(clippedLine.head().ypos()));
+                    AW_INT(line_width),
+                    find_color_idx(gcm->get_last_fg_color()),
+                    print_pos(clippedLine.xpos()),
+                    print_pos(clippedLine.ypos()),
+                    print_pos(clippedLine.head().xpos()),
+                    print_pos(clippedLine.head().ypos()));
         }
     }
     return drawflag;
@@ -75,7 +82,8 @@ static bool AW_draw_string_on_printer(AW_device *devicei, int gc, const char *st
                 gcm->get_fontsize(),
                 (int)gcm->get_font_limits().height,
                 device->get_string_size(gc, str, 0),
-                AW_INT(X), AW_INT(Y));
+                print_pos(X),
+                print_pos(Y));
         char *p;
         for (p = pstr; *p; p++) {
             if (*p >= 32) putc(*p, device->get_FILE());
@@ -94,16 +102,17 @@ GB_ERROR AW_device_print::open(const char *path) {
     out = fopen(path, "w");
     if (!out) return GB_IO_error("writing", path);
 
-    fputs("#FIG 3.2\n"   // version
-          "Landscape\n"  // "Portrait"
-          "Center\n"     // "Flush Left"
-          "Metric\n"     // "Inches"
-          "A4\n"         // papersize
-          "100.0\n"      // export&print magnification %
-          "Single\n"     // Single/Multiple Pages
-          "-3\n"         // background = transparent for gif export
-          "80 2\n"       // 80 dpi, 2  = origin in upper left corner
-          , out);
+    fprintf(out,
+            "#FIG 3.2\n"   // version
+            "Landscape\n"  // "Portrait"
+            "Center\n"     // "Flush Left"
+            "Metric\n"     // "Inches"
+            "A4\n"         // papersize
+            "100.0\n"      // export&print magnification %
+            "Single\n"     // Single/Multiple Pages
+            "-3\n"         // background = transparent for gif export
+            "%i 2\n"       // dpi, 2  = origin in upper left corner
+            , DPI_PRINTER);
 
     if (color_mode) {
         for (int i=0; i<get_common()->get_data_color_size(); i++) {
@@ -186,10 +195,10 @@ bool AW_device_print::circle_impl(int gc, bool filled, const Position& center, c
             Position Center        = clipped_box.centroid();
             Vector   screen_radius = clipped_box.diagonal()/2;
 
-            int cx = AW_INT(Center.xpos());
-            int cy = AW_INT(Center.ypos());
-            int rx = AW_INT(screen_radius.x());
-            int ry = AW_INT(screen_radius.y());
+            int cx = print_pos(Center.xpos());
+            int cy = print_pos(Center.ypos());
+            int rx = print_pos(screen_radius.x());
+            int ry = print_pos(screen_radius.y());
 
             {
                 int subtype = (rx == ry) ? 3 : 1; // 3(circle) 1(ellipse)
@@ -218,7 +227,7 @@ bool AW_device_print::circle_impl(int gc, bool filled, const Position& center, c
             fprintf(out, "%d %d ", cx, cy); // center
             fprintf(out, "%d %d ", rx, ry); // radius
             fprintf(out, "%d %d ", cx, cy); // start 
-            fprintf(out, "%d %d\n", AW_INT(Center.xpos()+screen_radius.x()), cy); // end 
+            fprintf(out, "%d %d\n", print_pos(Center.xpos()+screen_radius.x()), cy); // end 
         }
     }
     return drawflag;
@@ -244,10 +253,10 @@ bool AW_device_print::arc_impl(int gc, bool filled, const AW::Position& center, 
             Position Center        = clipped_box.centroid();
             Vector   screen_radius = clipped_box.diagonal()/2;
 
-            int cx = AW_INT(Center.xpos());
-            int cy = AW_INT(Center.ypos());
-            int rx = AW_INT(screen_radius.x());
-            int ry = AW_INT(screen_radius.y());
+            int cx = print_pos(Center.xpos());
+            int cy = print_pos(Center.ypos());
+            int rx = print_pos(screen_radius.x());
+            int ry = print_pos(screen_radius.y());
 
             bool use_spline = (rx != ry); // draw interpolated spline for ellipsoid arcs
 
@@ -303,8 +312,8 @@ bool AW_device_print::arc_impl(int gc, bool filled, const AW::Position& center, 
                     Vector   toEllipse(toCircle.x()*x_factor, toCircle.y()*y_factor);
                     Position onEllipse = Center+toEllipse;
 
-                    int x = AW_INT(onEllipse.xpos());
-                    int y = AW_INT(onEllipse.ypos());
+                    int x = print_pos(onEllipse.xpos());
+                    int y = print_pos(onEllipse.ypos());
 
                     fprintf(out, " %d %d", x, y);
 
@@ -330,9 +339,9 @@ bool AW_device_print::arc_impl(int gc, bool filled, const AW::Position& center, 
                 Position pm = Center+am.normal()*r;
                 Position p1 = Center+a1.normal()*r;
 
-                fprintf(out, "%d %d ",  AW_INT(p0.xpos()), AW_INT(p0.ypos()));
-                fprintf(out, "%d %d ",  AW_INT(pm.xpos()), AW_INT(pm.ypos()));
-                fprintf(out, "%d %d\n", AW_INT(p1.xpos()), AW_INT(p1.ypos()));
+                fprintf(out, "%d %d ",  print_pos(p0.xpos()), print_pos(p0.ypos()));
+                fprintf(out, "%d %d ",  print_pos(pm.xpos()), print_pos(pm.ypos()));
+                fprintf(out, "%d %d\n", print_pos(p1.xpos()), print_pos(p1.ypos()));
             }
         }
     }
@@ -366,7 +375,7 @@ bool AW_device_print::filled_area_impl(int gc, int npos, const Position *pos, AW
                 Position transPos = transform(pos[j]);
                 Position clippedPos;
                 ASSERT_RESULT(bool, true, force_into_clipbox(transPos, clippedPos)); 
-                fprintf(out, "   %d %d\n", AW_INT(clippedPos.xpos()), AW_INT(clippedPos.ypos()));
+                fprintf(out, "   %d %d\n", print_pos(clippedPos.xpos()), print_pos(clippedPos.ypos()));
             }
         }
     }
