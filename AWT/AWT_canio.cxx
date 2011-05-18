@@ -16,6 +16,7 @@
 #include <arb_progress.h>
 #include <aw_root.hxx>
 #include <arbdbt.h>
+#include <arb_defs.h>
 
 
 #define awt_assert(cond) arb_assert(cond)
@@ -26,6 +27,79 @@ enum PrintDest {
     PDEST_PRINTER    = 0,
     PDEST_POSTSCRIPT = 1,
     PDEST_PREVIEW    = 2,
+};
+
+enum LengthUnit { INCH, MM };
+
+static const double mm_per_inch = 25.4;
+inline double inch2mm(double inches) { return inches*mm_per_inch; }
+inline double mm2inch(double mms) { return mms/mm_per_inch; }
+
+class PaperFormat {
+    const char *description;
+    const char *fig2dev_val;
+    LengthUnit  unit;
+    double      shortSide, longSide;
+
+public:
+    PaperFormat(const char *name, LengthUnit lu, double shortSide_, double longSide_)
+        : description(name),
+          fig2dev_val(name),
+          unit(lu),
+          shortSide(shortSide_),
+          longSide(longSide_)
+    {
+        awt_assert(shortSide<longSide);
+    }
+    PaperFormat(const char *aname, const char *fname, LengthUnit lu, double shortSide_, double longSide_)
+        : description(aname),
+          fig2dev_val(fname),
+          unit(lu),
+          shortSide(shortSide_),
+          longSide(longSide_)
+    {
+        awt_assert(shortSide<longSide);
+    }
+
+    double short_inch() const { return unit == INCH ? shortSide : mm2inch(shortSide); }
+    double long_inch() const { return unit == INCH ? longSide : mm2inch(longSide); }
+
+    const char *get_description() const { return description; }
+    const char *get_fig2dev_val() const { return fig2dev_val; }
+};
+
+// (c&p from fig2dev:)
+//  Available paper sizes are:
+//      "Letter" (8.5" x 11" also "A"),
+//      "Legal" (11" x 14")
+//      "Ledger" (11" x 17"),
+//      "Tabloid" (17" x 11", really Ledger in Landscape mode),
+//      "A" (8.5" x 11" also "Letter"),
+//      "B" (11" x 17" also "Ledger"),
+//      "C" (17" x 22"),
+//      "D" (22" x 34"),
+//      "E" (34" x 44"),
+//      "A4" (21  cm x  29.7cm),
+//      "A3" (29.7cm x  42  cm),
+//      "A2" (42  cm x  59.4cm),
+//      "A1" (59.4cm x  84.1cm),
+//      "A0" (84.1cm x 118.9cm),
+//      and "B5" (18.2cm x 25.7cm).
+
+static PaperFormat knownPaperFormat[] = {
+    PaperFormat("A4", MM, 210, 297), // first is the default
+    PaperFormat("A3", MM, 297, 420),
+    PaperFormat("A2", MM, 420, 594),
+    PaperFormat("A1", MM, 594, 841),
+    PaperFormat("A0", MM, 841, 1189),
+    PaperFormat("B5", MM, 182, 257),
+    
+    PaperFormat("A (Letter)", "A", INCH, 8.5, 11),
+    PaperFormat("Legal",           INCH, 11, 14),
+    PaperFormat("B (Ledger)", "B", INCH, 11, 17),
+    PaperFormat("C",          "C", INCH, 17, 22),
+    PaperFormat("D",          "D", INCH, 22, 34),
+    PaperFormat("E",          "E", INCH, 34, 44),
 };
 
 // --------------------------------------------------------------------------------
@@ -62,14 +136,27 @@ inline int xy2pages(double sx, double sy) {
     return (int(sx+0.99)*int(sy+0.99));
 }
 
-void awt_page_size_check_cb(AW_root *awr) {
+static bool allow_page_size_check_cb = true;
+
+inline void set_paper_size_xy(AW_root *awr, double px, double py) {
+    // modify papersize but perform only one callback
+
+    bool old_allow           = allow_page_size_check_cb;
+    allow_page_size_check_cb = false;
+    awr->awar(AWAR_PRINT_TREE_PSIZEX)->write_float(px);
+    allow_page_size_check_cb = old_allow;
+    awr->awar(AWAR_PRINT_TREE_PSIZEY)->write_float(py);
+}
+
+static void page_size_check_cb(AW_root *awr) {
+    if (!allow_page_size_check_cb) return;
+    
     bool   landscape = awr->awar(AWAR_PRINT_TREE_LANDSCAPE)->read_int();
     double px        = awr->awar(AWAR_PRINT_TREE_PSIZEX)->read_float();
     double py        = awr->awar(AWAR_PRINT_TREE_PSIZEY)->read_float();
 
     if (landscape != (px>py)) {
-        awr->awar(AWAR_PRINT_TREE_PSIZEX)->write_float(py);   // recalls this function
-        awr->awar(AWAR_PRINT_TREE_PSIZEY)->write_float(px);
+        set_paper_size_xy(awr, py, px); // recalls this function
         return;
     }
 
@@ -106,6 +193,21 @@ void awt_page_size_check_cb(AW_root *awr) {
     awr->awar(AWAR_PRINT_TREE_SIZEY)->write_float(sy);
 
     awr->awar(AWAR_PRINT_TREE_PAGES)->write_int(xy2pages(sx, sy));
+}
+
+inline double round_psize(double psize) { return AW_INT(psize*10)/10.0; }
+
+static void paper_changed_cb(AW_root *awr) {
+    int                paper     = awr->awar(AWAR_PRINT_TREE_PAPER)->read_int();
+    const PaperFormat& format    = knownPaperFormat[paper];
+    bool               landscape = awr->awar(AWAR_PRINT_TREE_LANDSCAPE)->read_int();
+
+    if (landscape) {
+        set_paper_size_xy(awr, format.long_inch(), format.short_inch());
+    }
+    else {
+        set_paper_size_xy(awr, format.short_inch(), format.long_inch());
+    }
 }
 
 // --------------------------------------------------------------------------------
@@ -160,10 +262,9 @@ static void create_print_awars(AW_root *awr, AWT_canvas *ntw) {
         awr->awar_float(AWAR_PRINT_TREE_GSIZEX);
         awr->awar_float(AWAR_PRINT_TREE_GSIZEY);
 
-        // default paper size (A4 =  8.27*11.69)
-        // using 'preview' determined the following values (fitting 1 page!):
-        awr->awar_float(AWAR_PRINT_TREE_PSIZEX, 7.5);
-        awr->awar_float(AWAR_PRINT_TREE_PSIZEY, 10.5);
+        awr->awar_float(AWAR_PRINT_TREE_PSIZEX, -1);
+        awr->awar_float(AWAR_PRINT_TREE_PSIZEY, -1);
+        awr->awar_int(AWAR_PRINT_TREE_PAPER, 0)->add_callback(paper_changed_cb); // sets first format (A4) 
 
         awr->awar_float(AWAR_PRINT_TREE_SIZEX);
         awr->awar_float(AWAR_PRINT_TREE_SIZEY);
@@ -198,12 +299,11 @@ static void create_print_awars(AW_root *awr, AWT_canvas *ntw) {
                 0
             };
             for (int ca = 0; checked_awars[ca]; ca++) {
-                awr->awar(checked_awars[ca])->add_callback(awt_page_size_check_cb);
+                awr->awar(checked_awars[ca])->add_callback(page_size_check_cb);
             }
         }
 
-        awt_page_size_check_cb(awr);
-
+        paper_changed_cb(awr); // also calls page_size_check_cb
         print_awars_created = true;
     }
 }
@@ -330,11 +430,15 @@ void canvas_to_printer(AW_window *aww, AW_CL cl_ntw) {
                 bool   landscape     = awr->awar(AWAR_PRINT_TREE_LANDSCAPE)->read_int();
                 bool   useOverlap    = awr->awar(AWAR_PRINT_TREE_OVERLAP)->read_int();
                 double magnification = awr->awar(AWAR_PRINT_TREE_MAGNIFICATION)->read_int() * 0.01;
+                int    paper         = awr->awar(AWAR_PRINT_TREE_PAPER)->read_int();
 
-                char *cmd_fig2ps = GBS_global_string_copy("fig2dev -L ps -M %s -m %f %s %s %s",
+                const PaperFormat& format = knownPaperFormat[paper];
+
+                char *cmd_fig2ps = GBS_global_string_copy("fig2dev -L ps -M %s -m %f %s -z %s %s %s",
                                                           (useOverlap ? "-O" : ""),
                                                           magnification,
                                                           (landscape ? "-l 0" : "-p 0"),
+                                                          format.get_fig2dev_val(), 
                                                           xfig,
                                                           dest);
 
@@ -503,8 +607,8 @@ static long calc_mag_from_psize(AW_root *awr, double papersize, double gfxsize, 
     return mag;
 }
 
-// called when resulting pages x-factor was changed by users
 void awt_calc_mag_from_psizex(AW_window *aww) {
+    // called when resulting pages x-factor was changed by users
     AW_root *awr         = aww->get_root();
     double   papersize   = awr->awar(AWAR_PRINT_TREE_PSIZEX)->read_float();
     double   gfxsize     = awr->awar(AWAR_PRINT_TREE_GSIZEX)->read_float();
@@ -514,8 +618,8 @@ void awt_calc_mag_from_psizex(AW_window *aww) {
     awr->awar(AWAR_PRINT_TREE_MAGNIFICATION)->write_int(mag);
 }
 
-// called when resulting pages y-factor was changed by users
 void awt_calc_mag_from_psizey(AW_window *aww) {
+    // called when resulting pages y-factor was changed by users
     AW_root *awr         = aww->get_root();
     double   papersize   = awr->awar(AWAR_PRINT_TREE_PSIZEY)->read_float();
     double   gfxsize     = awr->awar(AWAR_PRINT_TREE_GSIZEY)->read_float();
@@ -525,7 +629,7 @@ void awt_calc_mag_from_psizey(AW_window *aww) {
     awr->awar(AWAR_PRINT_TREE_MAGNIFICATION)->write_int(mag);
 }
 
-void awt_calc_best_fit(AW_window *aww) {
+void awt_calc_best_fit(AW_window *aww, AW_CL cl_pages) {
     int         best_orientation    = -1;
     const char *best_zoom_awar_name = 0;
     float       best_zoom           = 0;
@@ -534,8 +638,10 @@ void awt_calc_best_fit(AW_window *aww) {
     AW_root    *awr                 = aww->get_root();
     int         wanted_pages        = awr->awar(AWAR_PRINT_TREE_PAGES)->read_int();
 
+    if (cl_pages>0) wanted_pages = cl_pages;
+
     for (int o = 0; o <= 1; ++o) {
-        awr->awar(AWAR_PRINT_TREE_LANDSCAPE)->write_int(o); // set orientation (calls awt_page_size_check_cb)
+        awr->awar(AWAR_PRINT_TREE_LANDSCAPE)->write_int(o); // set orientation (calls page_size_check_cb)
 
         for (int xy = 0; xy <= 1; ++xy) {
             const char *awar_name = xy == 0 ? AWAR_PRINT_TREE_SIZEX : AWAR_PRINT_TREE_SIZEY;
@@ -653,6 +759,15 @@ void AWT_popup_print_window(AW_window *parent_win, AW_CL cl_canvas, AW_CL) {
         aws->at("psizex"); aws->create_input_field(AWAR_PRINT_TREE_PSIZEX, 4);
         aws->at("psizey"); aws->create_input_field(AWAR_PRINT_TREE_PSIZEY, 4);
 
+        aws->at("paper");
+        aws->create_option_menu(AWAR_PRINT_TREE_PAPER);
+        aws->insert_default_option(knownPaperFormat[0].get_description(), "", 0);
+        for (int f = 1; f<ARRAY_ELEMS(knownPaperFormat); ++f) {
+            const PaperFormat& format = knownPaperFormat[f];
+            aws->insert_option(format.get_description(), "", f);
+        }
+        aws->update_option_menu();
+
         aws->at("sizex");
         aws->callback(awt_calc_mag_from_psizex);
         aws->create_input_field(AWAR_PRINT_TREE_SIZEX, 4);
@@ -661,8 +776,12 @@ void AWT_popup_print_window(AW_window *parent_win, AW_CL cl_canvas, AW_CL) {
         aws->create_input_field(AWAR_PRINT_TREE_SIZEY, 4);
 
         aws->at("best_fit");
-        aws->callback(awt_calc_best_fit);
+        aws->callback(awt_calc_best_fit, 0);
         aws->create_autosize_button("fit_on", "Fit on");
+
+        aws->at("p1"); aws->callback(awt_calc_best_fit, 1); aws->create_autosize_button("p1", "1");
+        aws->at("p2"); aws->callback(awt_calc_best_fit, 2); aws->create_autosize_button("p2", "2");
+        aws->at("p4"); aws->callback(awt_calc_best_fit, 4); aws->create_autosize_button("p4", "4");
 
         aws->at("pages");
         aws->create_input_field(AWAR_PRINT_TREE_PAGES, 3);

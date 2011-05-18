@@ -208,6 +208,7 @@ void AWT_resize_cb(AW_window *dummy, AWT_canvas *ntw, AW_CL cl2);
 #define AWAR_PRINT_TREE_PRINTER        AWAR_PRINT_TREE "printer"
 #define AWAR_PRINT_TREE_OVERLAP        AWAR_PRINT_TREE "overlap"
 #define AWAR_PRINT_TREE_OVERLAP_AMOUNT AWAR_PRINT_TREE "amount"
+#define AWAR_PRINT_TREE_PAPER          AWAR_PRINT_TREE "paper"
 
 #define AWAR_PRINT_TREE_TMP    "tmp/" AWAR_PRINT_TREE
 #define AWAR_PRINT_TREE_GSIZEX AWAR_PRINT_TREE_TMP "gsizex" // graphic size
