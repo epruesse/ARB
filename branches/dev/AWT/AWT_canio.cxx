@@ -568,8 +568,8 @@ static GB_ERROR canvas_to_xfig(AWT_canvas *ntw, const char *xfig_name) {
             Vector offset     = device->rtransform(ulc2origin)/device->get_scale();
             device->set_offset(offset);
 
-            device->set_bottom_clip_border((int)(with_border.height()), true);
-            device->set_right_clip_border((int)(with_border.width()), true);
+            device->set_bottom_clip_border((int)(with_border.height()+1), true);
+            device->set_right_clip_border((int)(with_border.width()+1), true);
         }
         else {
             ntw->init_device(device);   // draw screen
