@@ -15,9 +15,6 @@
 
 using namespace AW;
 
-#define DPI_SCREEN  80 // fixed
-#define DPI_PRINTER 1200
-
 inline double screen2printer(double val) { return (val*DPI_PRINTER)/DPI_SCREEN; }
 inline int print_pos(AW_pos screen_pos) { return AW_INT(screen2printer(screen_pos)); }
 
