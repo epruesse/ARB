@@ -11,7 +11,7 @@
 #include "arb_strbuf.h"
 
 
-void GBS_strstruct::vprintf(size_t maxlen, const char *templat, va_list& parg) {
+void GBS_strstruct::vnprintf(size_t maxlen, const char *templat, va_list& parg) {
     ensure_mem(maxlen);
 
     char *buffer = data+pos;
@@ -25,6 +25,12 @@ void GBS_strstruct::vprintf(size_t maxlen, const char *templat, va_list& parg) {
 
     assert_or_exit(printed >= 0 && (size_t)printed <= maxlen);
     inc_pos(printed);
+}
+
+void GBS_strstruct::nprintf(size_t maxlen, const char *templat, ...) {
+    va_list parg;
+    va_start(parg, templat);
+    vnprintf(maxlen, templat, parg);
 }
 
 // old interface
@@ -113,7 +119,7 @@ void GBS_strcat(GBS_strstruct *strstr, const char *ptr) {
 void GBS_strnprintf(GBS_strstruct *strstr, long maxlen, const char *templat, ...) {
     va_list parg;
     va_start(parg, templat);
-    strstr->vprintf(maxlen+2, templat, parg);
+    strstr->vnprintf(maxlen+2, templat, parg);
 }
 
 void GBS_chrcat(GBS_strstruct *strstr, char ch) {
