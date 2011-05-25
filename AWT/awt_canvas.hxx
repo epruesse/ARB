@@ -198,40 +198,6 @@ public:
 void AWT_expose_cb(AW_window *dummy, AWT_canvas *ntw, AW_CL cl2);
 void AWT_resize_cb(AW_window *dummy, AWT_canvas *ntw, AW_CL cl2);
 
-#define AWAR_PRINT_TREE                 "NT/print/"
-#define AWAR_PRINT_TREE_LANDSCAPE       AWAR_PRINT_TREE "landscape"
-#define AWAR_PRINT_TREE_CLIP            AWAR_PRINT_TREE "clip"
-#define AWAR_PRINT_TREE_HANDLES         AWAR_PRINT_TREE "handles"
-#define AWAR_PRINT_TREE_COLOR           AWAR_PRINT_TREE "color"
-#define AWAR_PRINT_TREE_DEST            AWAR_PRINT_TREE "dest"
-#define AWAR_PRINT_TREE_PRINTER         AWAR_PRINT_TREE "printer"
-#define AWAR_PRINT_TREE_OVERLAP_WANTED  AWAR_PRINT_TREE "overlap"
-#define AWAR_PRINT_TREE_OVERLAP_PERCENT AWAR_PRINT_TREE "operc"
-#define AWAR_PRINT_TREE_BORDERSIZE      AWAR_PRINT_TREE "border"
-#define AWAR_PRINT_TREE_PAPER           AWAR_PRINT_TREE "paper"
-#define AWAR_PRINT_TREE_PAPER_USABLE    AWAR_PRINT_TREE "useable"
-#define AWAR_PRINT_TREE_F2DBUG          AWAR_PRINT_TREE "f2dbug"
-#define AWAR_PRINT_TREE_PAGES           AWAR_PRINT_TREE "pages"
-#define AWAR_PRINT_TREE_PAGELOCK        AWAR_PRINT_TREE "plock"
-
-#define AWAR_PRINT_TREE_TMP "tmp/" AWAR_PRINT_TREE
-
-#define AWAR_PRINT_TREE_MAGNIFICATION AWAR_PRINT_TREE_TMP "magnification"
-#define AWAR_PRINT_TREE_OVERLAP       AWAR_PRINT_TREE_TMP "overlap"
-#define AWAR_PRINT_TREE_GSIZEX        AWAR_PRINT_TREE_TMP "gsizex" // graphic size in inch
-#define AWAR_PRINT_TREE_GSIZEY        AWAR_PRINT_TREE_TMP "gsizey"
-#define AWAR_PRINT_TREE_OSIZEX        AWAR_PRINT_TREE_TMP "osizex" // output size in inch
-#define AWAR_PRINT_TREE_OSIZEY        AWAR_PRINT_TREE_TMP "osizey"
-#define AWAR_PRINT_TREE_PSIZEX        AWAR_PRINT_TREE_TMP "psizex" // paper size in inch
-#define AWAR_PRINT_TREE_PSIZEY        AWAR_PRINT_TREE_TMP "psizey"
-#define AWAR_PRINT_TREE_SIZEX         AWAR_PRINT_TREE_TMP "sizex" // size in pages
-#define AWAR_PRINT_TREE_SIZEY         AWAR_PRINT_TREE_TMP "sizey"
-
-#define AWAR_PRINT_TREE_FILE_BASE   AWAR_PRINT_TREE_TMP "file"
-#define AWAR_PRINT_TREE_FILE_NAME   AWAR_PRINT_TREE_FILE_BASE "/file_name"
-#define AWAR_PRINT_TREE_FILE_DIR    AWAR_PRINT_TREE_FILE_BASE "/directory"
-#define AWAR_PRINT_TREE_FILE_FILTER AWAR_PRINT_TREE_FILE_BASE "/filter"
-
 void AWT_popup_tree_export_window(AW_window *parent_win, AW_CL cl_canvas, AW_CL);
 void AWT_popup_sec_export_window (AW_window *parent_win, AW_CL cl_canvas, AW_CL);
 void AWT_popup_print_window      (AW_window *parent_win, AW_CL cl_canvas, AW_CL);

@@ -25,6 +25,42 @@ using namespace AW;
 
 // --------------------------------------------------------------------------------
 
+#define AWAR_CANIO                 "NT/print/"
+#define AWAR_CANIO_LANDSCAPE       AWAR_CANIO "landscape"
+#define AWAR_CANIO_CLIP            AWAR_CANIO "clip"
+#define AWAR_CANIO_HANDLES         AWAR_CANIO "handles"
+#define AWAR_CANIO_COLOR           AWAR_CANIO "color"
+#define AWAR_CANIO_DEST            AWAR_CANIO "dest"
+#define AWAR_CANIO_PRINTER         AWAR_CANIO "printer"
+#define AWAR_CANIO_OVERLAP_WANTED  AWAR_CANIO "overlap"
+#define AWAR_CANIO_OVERLAP_PERCENT AWAR_CANIO "operc"
+#define AWAR_CANIO_BORDERSIZE      AWAR_CANIO "border"
+#define AWAR_CANIO_PAPER           AWAR_CANIO "paper"
+#define AWAR_CANIO_PAPER_USABLE    AWAR_CANIO "useable"
+#define AWAR_CANIO_F2DBUG          AWAR_CANIO "f2dbug"
+#define AWAR_CANIO_PAGES           AWAR_CANIO "pages"
+#define AWAR_CANIO_PAGELOCK        AWAR_CANIO "plock"
+
+#define AWAR_CANIO_TMP "tmp/" AWAR_CANIO
+
+#define AWAR_CANIO_MAGNIFICATION AWAR_CANIO_TMP "magnification"
+#define AWAR_CANIO_OVERLAP       AWAR_CANIO_TMP "overlap"
+#define AWAR_CANIO_GFX_SX        AWAR_CANIO_TMP "gsizex" // graphic size in inch
+#define AWAR_CANIO_GFX_SY        AWAR_CANIO_TMP "gsizey"
+#define AWAR_CANIO_OUT_SX        AWAR_CANIO_TMP "osizex" // output size in inch
+#define AWAR_CANIO_OUT_SY        AWAR_CANIO_TMP "osizey"
+#define AWAR_CANIO_PAPER_SX      AWAR_CANIO_TMP "psizex" // paper size in inch
+#define AWAR_CANIO_PAPER_SY      AWAR_CANIO_TMP "psizey"
+#define AWAR_CANIO_PAGE_SX       AWAR_CANIO_TMP "sizex"  // size in pages
+#define AWAR_CANIO_PAGE_SY       AWAR_CANIO_TMP "sizey"
+
+#define AWAR_CANIO_FILE_BASE   AWAR_CANIO_TMP "file"
+#define AWAR_CANIO_FILE_NAME   AWAR_CANIO_FILE_BASE "/file_name"
+#define AWAR_CANIO_FILE_DIR    AWAR_CANIO_FILE_BASE "/directory"
+#define AWAR_CANIO_FILE_FILTER AWAR_CANIO_FILE_BASE "/filter"
+
+// --------------------------------------------------------------------------------
+
 enum PrintDest {
     PDEST_PRINTER    = 0,
     PDEST_POSTSCRIPT = 1,
@@ -139,13 +175,13 @@ static Rectangle add_border_to_drawsize(const Rectangle& drawsize, double border
 static void awt_print_tree_check_size(void *, AW_CL cl_ntw) {
     AWT_canvas *ntw         = (AWT_canvas*)cl_ntw;
     AW_root    *awr         = ntw->awr;
-    long        draw_all    = awr->awar(AWAR_PRINT_TREE_CLIP)->read_int();
-    double      border      = awr->awar(AWAR_PRINT_TREE_BORDERSIZE)->read_float();
+    long        draw_all    = awr->awar(AWAR_CANIO_CLIP)->read_int();
+    double      border      = awr->awar(AWAR_CANIO_BORDERSIZE)->read_float();
     Rectangle   drawsize    = get_drawsize(ntw, draw_all);
     Rectangle   with_border = add_border_to_drawsize(drawsize, border);
 
-    awr->awar(AWAR_PRINT_TREE_GSIZEX)->write_float((with_border.width())/DPI_SCREEN);
-    awr->awar(AWAR_PRINT_TREE_GSIZEY)->write_float((with_border.height())/DPI_SCREEN);
+    awr->awar(AWAR_CANIO_GFX_SX)->write_float((with_border.width())/DPI_SCREEN);
+    awr->awar(AWAR_CANIO_GFX_SY)->write_float((with_border.height())/DPI_SCREEN);
 }
 
 inline int xy2pages(double sx, double sy) {
@@ -160,30 +196,30 @@ inline void set_paper_size_xy(AW_root *awr, double px, double py) {
 
     bool old_allow           = allow_page_size_check_cb;
     allow_page_size_check_cb = false;
-    awr->awar(AWAR_PRINT_TREE_PSIZEX)->write_float(px);
+    awr->awar(AWAR_CANIO_PAPER_SX)->write_float(px);
     allow_page_size_check_cb = old_allow;
-    awr->awar(AWAR_PRINT_TREE_PSIZEY)->write_float(py);
+    awr->awar(AWAR_CANIO_PAPER_SY)->write_float(py);
 }
 
 static void overlap_toggled_cb(AW_root *awr) {
     if (allow_overlap_toggled_cb) {
-        int new_val = awr->awar(AWAR_PRINT_TREE_OVERLAP)->read_int();
-        awr->awar(AWAR_PRINT_TREE_OVERLAP_WANTED)->write_int(new_val);
+        int new_val = awr->awar(AWAR_CANIO_OVERLAP)->read_int();
+        awr->awar(AWAR_CANIO_OVERLAP_WANTED)->write_int(new_val);
     }
 }
 
 static long calc_mag_from_psize(AW_root *awr, double papersize, double gfxsize, double wantedpages, bool use_x) {
-    bool   wantOverlap = awr->awar(AWAR_PRINT_TREE_OVERLAP_WANTED)->read_int();
+    bool   wantOverlap = awr->awar(AWAR_CANIO_OVERLAP_WANTED)->read_int();
     double usableSize = 0;
 
     if (wantOverlap && wantedpages>1) {
-        double overlapPercent = awr->awar(AWAR_PRINT_TREE_OVERLAP_PERCENT)->read_float();
+        double overlapPercent = awr->awar(AWAR_CANIO_OVERLAP_PERCENT)->read_float();
         double usableRatio    = (100.0-overlapPercent)/100.0;
 
         // See also fig2devbug in page_size_check_cb() 
-        bool fig2devbug = !use_x && awr->awar(AWAR_PRINT_TREE_F2DBUG)->read_int();
+        bool fig2devbug = !use_x && awr->awar(AWAR_CANIO_F2DBUG)->read_int();
         if (fig2devbug) {
-            bool landscape = awr->awar(AWAR_PRINT_TREE_LANDSCAPE)->read_int();
+            bool landscape = awr->awar(AWAR_CANIO_LANDSCAPE)->read_int();
             fig2devbug     = fig2devbug && !landscape; // only occurs in portrait mode
         }
 
@@ -202,16 +238,16 @@ static long calc_mag_from_psize(AW_root *awr, double papersize, double gfxsize, 
 }
 
 static void set_mag_from_psize(AW_root *awr, bool use_x) {
-    const char *papersize_name   = use_x ? AWAR_PRINT_TREE_PSIZEX : AWAR_PRINT_TREE_PSIZEY;
-    const char *gfxsize_name     = use_x ? AWAR_PRINT_TREE_GSIZEX : AWAR_PRINT_TREE_GSIZEY;
-    const char *wantedpages_name = use_x ? AWAR_PRINT_TREE_SIZEX : AWAR_PRINT_TREE_SIZEY;
+    const char *papersize_name   = use_x ? AWAR_CANIO_PAPER_SX : AWAR_CANIO_PAPER_SY;
+    const char *gfxsize_name     = use_x ? AWAR_CANIO_GFX_SX : AWAR_CANIO_GFX_SY;
+    const char *wantedpages_name = use_x ? AWAR_CANIO_PAGE_SX : AWAR_CANIO_PAGE_SY;
 
     double   papersize   = awr->awar(papersize_name)->read_float();
     double   gfxsize     = awr->awar(gfxsize_name)->read_float();
     double   wantedpages = awr->awar(wantedpages_name)->read_float();
     long     mag         = calc_mag_from_psize(awr, papersize, gfxsize, wantedpages, use_x);
 
-    awr->awar(AWAR_PRINT_TREE_MAGNIFICATION)->write_int(mag);
+    awr->awar(AWAR_CANIO_MAGNIFICATION)->write_int(mag);
 }
 
 static void fit_pages(AW_root *awr, int wanted_pages, bool allow_orientation_change) {
@@ -221,20 +257,20 @@ static void fit_pages(AW_root *awr, int wanted_pages, bool allow_orientation_cha
     int         best_magnification  = 0;
     int         best_pages          = 0;
 
-    bool lockpages = awr->awar(AWAR_PRINT_TREE_PAGELOCK)->read_int();
-    awr->awar(AWAR_PRINT_TREE_PAGELOCK)->write_int(0);
+    bool lockpages = awr->awar(AWAR_CANIO_PAGELOCK)->read_int();
+    awr->awar(AWAR_CANIO_PAGELOCK)->write_int(0);
 
     if (!allow_orientation_change) {
-        best_orientation = awr->awar(AWAR_PRINT_TREE_LANDSCAPE)->read_int();
+        best_orientation = awr->awar(AWAR_CANIO_LANDSCAPE)->read_int();
     }
 
     for (int o = 0; o <= 1; ++o) {
         if (!allow_orientation_change && o != best_orientation) continue;
 
-        awr->awar(AWAR_PRINT_TREE_LANDSCAPE)->write_int(o); // set orientation (calls page_size_check_cb)
+        awr->awar(AWAR_CANIO_LANDSCAPE)->write_int(o); // set orientation (calls page_size_check_cb)
 
         for (int xy = 0; xy <= 1; ++xy) {
-            const char *awar_name = xy == 0 ? AWAR_PRINT_TREE_SIZEX : AWAR_PRINT_TREE_SIZEY;
+            const char *awar_name = xy == 0 ? AWAR_CANIO_PAGE_SX : AWAR_CANIO_PAGE_SY;
 
             for (int pcount = 1; pcount <= wanted_pages; pcount++) {
                 double zoom = pcount*1.0;
@@ -242,14 +278,14 @@ static void fit_pages(AW_root *awr, int wanted_pages, bool allow_orientation_cha
 
                 set_mag_from_psize(awr, xy == 0);
 
-                double sx            = awr->awar(AWAR_PRINT_TREE_SIZEX)->read_float();
-                double sy            = awr->awar(AWAR_PRINT_TREE_SIZEY)->read_float();
+                double sx            = awr->awar(AWAR_CANIO_PAGE_SX)->read_float();
+                double sy            = awr->awar(AWAR_CANIO_PAGE_SY)->read_float();
                 int    pages         = xy2pages(sx, sy);
 
                 if (pages>wanted_pages) break; // pcount-loop
 
                 if (pages <= wanted_pages && pages >= best_pages) {
-                    int magnification = awr->awar(AWAR_PRINT_TREE_MAGNIFICATION)->read_int();    // read calculated magnification
+                    int magnification = awr->awar(AWAR_CANIO_MAGNIFICATION)->read_int();    // read calculated magnification
                     if (magnification>best_magnification) {
                         // fits on wanted_pages and is best result yet
                         best_magnification  = magnification;
@@ -267,10 +303,10 @@ static void fit_pages(AW_root *awr, int wanted_pages, bool allow_orientation_cha
         awt_assert(best_zoom_awar_name);
 
         // take the best found values :
-        awr->awar(AWAR_PRINT_TREE_LANDSCAPE)->write_int(best_orientation);
+        awr->awar(AWAR_CANIO_LANDSCAPE)->write_int(best_orientation);
         awr->awar(best_zoom_awar_name)->write_float(best_zoom);
-        awr->awar(AWAR_PRINT_TREE_PAGES)->write_int(best_pages);
-        awr->awar(AWAR_PRINT_TREE_MAGNIFICATION)->write_int(best_magnification); 
+        awr->awar(AWAR_CANIO_PAGES)->write_int(best_pages);
+        awr->awar(AWAR_CANIO_MAGNIFICATION)->write_int(best_magnification); 
 
         if (best_pages != wanted_pages) {
             aw_message(GBS_global_string("That didn't fit on %i page(s) - using %i page(s)",
@@ -281,37 +317,37 @@ static void fit_pages(AW_root *awr, int wanted_pages, bool allow_orientation_cha
         aw_message(GBS_global_string("That didn't fit on %i page(s) - impossible settings", wanted_pages));
     }
     
-    awr->awar(AWAR_PRINT_TREE_PAGELOCK)->write_int(lockpages);
+    awr->awar(AWAR_CANIO_PAGELOCK)->write_int(lockpages);
 }
 
 static void page_size_check_cb(AW_root *awr) {
     if (!allow_page_size_check_cb) return;
 
-    bool landscape    = awr->awar(AWAR_PRINT_TREE_LANDSCAPE)->read_int();
-    bool lockpages    = awr->awar(AWAR_PRINT_TREE_PAGELOCK)->read_int();
-    int  locked_pages = awr->awar(AWAR_PRINT_TREE_PAGES)->read_int();
+    bool landscape    = awr->awar(AWAR_CANIO_LANDSCAPE)->read_int();
+    bool lockpages    = awr->awar(AWAR_CANIO_PAGELOCK)->read_int();
+    int  locked_pages = awr->awar(AWAR_CANIO_PAGES)->read_int();
 
-    double px = awr->awar(AWAR_PRINT_TREE_PSIZEX)->read_float(); // paper-size
-    double py = awr->awar(AWAR_PRINT_TREE_PSIZEY)->read_float();
+    double px = awr->awar(AWAR_CANIO_PAPER_SX)->read_float(); // paper-size
+    double py = awr->awar(AWAR_CANIO_PAPER_SY)->read_float();
 
     if (landscape != (px>py)) {
         set_paper_size_xy(awr, py, px); // recalls this function
         return;
     }
 
-    long magnification = awr->awar(AWAR_PRINT_TREE_MAGNIFICATION)->read_int();
+    long magnification = awr->awar(AWAR_CANIO_MAGNIFICATION)->read_int();
     
-    double gx = awr->awar(AWAR_PRINT_TREE_GSIZEX)->read_float(); // graphic size
-    double gy = awr->awar(AWAR_PRINT_TREE_GSIZEY)->read_float();
+    double gx = awr->awar(AWAR_CANIO_GFX_SX)->read_float(); // graphic size
+    double gy = awr->awar(AWAR_CANIO_GFX_SY)->read_float();
 
     // output size
     double ox = (gx*magnification)/100; // resulting size of output in inches
     double oy = (gy*magnification)/100;
-    awr->awar(AWAR_PRINT_TREE_OSIZEX)->write_float(ox);
-    awr->awar(AWAR_PRINT_TREE_OSIZEY)->write_float(oy);
+    awr->awar(AWAR_CANIO_OUT_SX)->write_float(ox);
+    awr->awar(AWAR_CANIO_OUT_SY)->write_float(oy);
 
-    bool wantOverlap = awr->awar(AWAR_PRINT_TREE_OVERLAP_WANTED)->read_int();
-    bool useOverlap  = awr->awar(AWAR_PRINT_TREE_OVERLAP)->read_int();
+    bool wantOverlap = awr->awar(AWAR_CANIO_OVERLAP_WANTED)->read_int();
+    bool useOverlap  = awr->awar(AWAR_CANIO_OVERLAP)->read_int();
 
     double sx = 0.0; // resulting pages
     double sy = 0.0;
@@ -319,7 +355,7 @@ static void page_size_check_cb(AW_root *awr) {
     bool fits_on_one_page = (ox <= px && oy <= py);
 
     if (wantOverlap && !fits_on_one_page) {
-        double overlapPercent = awr->awar(AWAR_PRINT_TREE_OVERLAP_PERCENT)->read_float();
+        double overlapPercent = awr->awar(AWAR_CANIO_OVERLAP_PERCENT)->read_float();
         double pageRatio      = (100.0-overlapPercent)/100.0;
 
         double rpx = px*pageRatio; // usable page-size (due to overlap)
@@ -329,7 +365,7 @@ static void page_size_check_cb(AW_root *awr) {
         sx += ox/px;
 
         bool fig2devbug = !landscape;
-        if (fig2devbug) fig2devbug = awr->awar(AWAR_PRINT_TREE_F2DBUG)->read_int();
+        if (fig2devbug) fig2devbug = awr->awar(AWAR_CANIO_F2DBUG)->read_int();
 
         if (fig2devbug) {
             // fig2dev has a bug with printing multiple portrait pages with overlap:
@@ -350,8 +386,8 @@ static void page_size_check_cb(AW_root *awr) {
     }
 
     // write amount of pages needed
-    awr->awar(AWAR_PRINT_TREE_SIZEX)->write_float(sx);
-    awr->awar(AWAR_PRINT_TREE_SIZEY)->write_float(sy);
+    awr->awar(AWAR_CANIO_PAGE_SX)->write_float(sx);
+    awr->awar(AWAR_CANIO_PAGE_SY)->write_float(sy);
 
     int pages = xy2pages(sx, sy);
     if (lockpages) {
@@ -359,7 +395,7 @@ static void page_size_check_cb(AW_root *awr) {
         return;
     }
 
-    awr->awar(AWAR_PRINT_TREE_PAGES)->write_int(pages);
+    awr->awar(AWAR_CANIO_PAGES)->write_int(pages);
 
     // correct DISPLAYED overlapping..
     bool willUseOverlap = wantOverlap && (pages != 1);
@@ -367,7 +403,7 @@ static void page_size_check_cb(AW_root *awr) {
         bool old_allow           = allow_overlap_toggled_cb;
         allow_overlap_toggled_cb = false; // ..but do not modify wanted overlapping
 
-        awr->awar(AWAR_PRINT_TREE_OVERLAP)->write_int(willUseOverlap);
+        awr->awar(AWAR_CANIO_OVERLAP)->write_int(willUseOverlap);
 
         allow_overlap_toggled_cb = old_allow;
     }
@@ -376,10 +412,10 @@ static void page_size_check_cb(AW_root *awr) {
 inline double round_psize(double psize) { return AW_INT(psize*10)/10.0; }
 
 static void paper_changed_cb(AW_root *awr) {
-    int                paper     = awr->awar(AWAR_PRINT_TREE_PAPER)->read_int();
+    int                paper     = awr->awar(AWAR_CANIO_PAPER)->read_int();
     const PaperFormat& format    = knownPaperFormat[paper];
-    bool               landscape = awr->awar(AWAR_PRINT_TREE_LANDSCAPE)->read_int();
-    double             useable   = awr->awar(AWAR_PRINT_TREE_PAPER_USABLE)->read_float()/100.0;
+    bool               landscape = awr->awar(AWAR_CANIO_LANDSCAPE)->read_int();
+    double             useable   = awr->awar(AWAR_CANIO_PAPER_USABLE)->read_float()/100.0;
 
     if (landscape) {
         set_paper_size_xy(awr, useable*format.long_inch(), useable*format.short_inch());
@@ -398,32 +434,32 @@ static void create_export_awars(AW_root *awr) {
     if (!export_awars_created) {
         AW_default def = AW_ROOT_DEFAULT;
 
-        awr->awar_int(AWAR_PRINT_TREE_CLIP, 0, def);
-        awr->awar_int(AWAR_PRINT_TREE_HANDLES, 1, def);
-        awr->awar_int(AWAR_PRINT_TREE_COLOR, 1, def);
+        awr->awar_int(AWAR_CANIO_CLIP, 0, def);
+        awr->awar_int(AWAR_CANIO_HANDLES, 1, def);
+        awr->awar_int(AWAR_CANIO_COLOR, 1, def);
 
-        awr->awar_string(AWAR_PRINT_TREE_FILE_NAME, "print.fig", def);
-        awr->awar_string(AWAR_PRINT_TREE_FILE_DIR, "", def);
-        awr->awar_string(AWAR_PRINT_TREE_FILE_FILTER, "fig", def);
+        awr->awar_string(AWAR_CANIO_FILE_NAME, "print.fig", def);
+        awr->awar_string(AWAR_CANIO_FILE_DIR, "", def);
+        awr->awar_string(AWAR_CANIO_FILE_FILTER, "fig", def);
 
-        awr->awar_int(AWAR_PRINT_TREE_LANDSCAPE, 0, def);
-        awr->awar_int(AWAR_PRINT_TREE_MAGNIFICATION, 100, def);
+        awr->awar_int(AWAR_CANIO_LANDSCAPE, 0, def);
+        awr->awar_int(AWAR_CANIO_MAGNIFICATION, 100, def);
 
         // constraints:
 
-        awr->awar(AWAR_PRINT_TREE_MAGNIFICATION)->set_minmax(1, 10000);
+        awr->awar(AWAR_CANIO_MAGNIFICATION)->set_minmax(1, 10000);
 
         export_awars_created = true;
     }
 }
 
 static void resetFiletype(AW_root *awr, const char *filter, const char *defaultFilename) {
-    AW_awar *awar_filter    = awr->awar(AWAR_PRINT_TREE_FILE_FILTER);
+    AW_awar *awar_filter    = awr->awar(AWAR_CANIO_FILE_FILTER);
     char    *current_filter = awar_filter->read_string();
 
     if (strcmp(current_filter, filter) != 0) {
         awar_filter->write_string(filter);
-        awr->awar(AWAR_PRINT_TREE_FILE_NAME)->write_string(defaultFilename);
+        awr->awar(AWAR_CANIO_FILE_NAME)->write_string(defaultFilename);
     }
     free(current_filter);
 }
@@ -434,33 +470,33 @@ static void create_print_awars(AW_root *awr, AWT_canvas *ntw) {
     if (!print_awars_created) {
         AW_default def = AW_ROOT_DEFAULT;
 
-        awr->awar_int(AWAR_PRINT_TREE_PAGES, 1, def);
-        awr->awar_int(AWAR_PRINT_TREE_PAGELOCK, 1, def);
+        awr->awar_int(AWAR_CANIO_PAGES, 1, def);
+        awr->awar_int(AWAR_CANIO_PAGELOCK, 1, def);
 
-        awr->awar_int(AWAR_PRINT_TREE_OVERLAP_WANTED, 1, def);
-        awr->awar_int(AWAR_PRINT_TREE_OVERLAP, 1, def)->add_callback(overlap_toggled_cb);
-        awr->awar_float(AWAR_PRINT_TREE_OVERLAP_PERCENT, 13.0, def); // determined
+        awr->awar_int(AWAR_CANIO_OVERLAP_WANTED, 1, def);
+        awr->awar_int(AWAR_CANIO_OVERLAP, 1, def)->add_callback(overlap_toggled_cb);
+        awr->awar_float(AWAR_CANIO_OVERLAP_PERCENT, 13.0, def); // determined
 
-        awr->awar_int(AWAR_PRINT_TREE_F2DBUG, 1, def); // bug still exists in most recent version (3.2 5d from July 23, 2010)
+        awr->awar_int(AWAR_CANIO_F2DBUG, 1, def); // bug still exists in most recent version (3.2 5d from July 23, 2010)
 
-        awr->awar_float(AWAR_PRINT_TREE_BORDERSIZE, 0.0, def);
+        awr->awar_float(AWAR_CANIO_BORDERSIZE, 0.0, def);
 
-        awr->awar_float(AWAR_PRINT_TREE_GSIZEX);
-        awr->awar_float(AWAR_PRINT_TREE_GSIZEY);
+        awr->awar_float(AWAR_CANIO_GFX_SX);
+        awr->awar_float(AWAR_CANIO_GFX_SY);
 
-        awr->awar_float(AWAR_PRINT_TREE_OSIZEX);
-        awr->awar_float(AWAR_PRINT_TREE_OSIZEY);
+        awr->awar_float(AWAR_CANIO_OUT_SX);
+        awr->awar_float(AWAR_CANIO_OUT_SY);
 
-        awr->awar_float(AWAR_PRINT_TREE_PSIZEX);
-        awr->awar_float(AWAR_PRINT_TREE_PSIZEY);
+        awr->awar_float(AWAR_CANIO_PAPER_SX);
+        awr->awar_float(AWAR_CANIO_PAPER_SY);
 
-        awr->awar_int(AWAR_PRINT_TREE_PAPER, 0)->add_callback(paper_changed_cb); // sets first format (A4)
-        awr->awar_float(AWAR_PRINT_TREE_PAPER_USABLE, 95)->add_callback(paper_changed_cb); // 95% of paper are usable
+        awr->awar_int(AWAR_CANIO_PAPER, 0)->add_callback(paper_changed_cb); // sets first format (A4)
+        awr->awar_float(AWAR_CANIO_PAPER_USABLE, 95)->add_callback(paper_changed_cb); // 95% of paper are usable
 
-        awr->awar_float(AWAR_PRINT_TREE_SIZEX);
-        awr->awar_float(AWAR_PRINT_TREE_SIZEY);
+        awr->awar_float(AWAR_CANIO_PAGE_SX);
+        awr->awar_float(AWAR_CANIO_PAGE_SY);
 
-        awr->awar_int(AWAR_PRINT_TREE_DEST);
+        awr->awar_int(AWAR_CANIO_DEST);
 
         {
             char *print_command;
@@ -468,29 +504,29 @@ static void create_print_awars(AW_root *awr, AWT_canvas *ntw) {
                 print_command = GBS_eval_env("lpr -h -P$(PRINTER)");
             } else   print_command = strdup("lpr -h");
 
-            awr->awar_string(AWAR_PRINT_TREE_PRINTER, print_command, def);
+            awr->awar_string(AWAR_CANIO_PRINTER, print_command, def);
             free(print_command);
         }
 
         // constraints and automatics:
 
-        awr->awar(AWAR_PRINT_TREE_PSIZEX)->set_minmax(0.1, 100);
-        awr->awar(AWAR_PRINT_TREE_PSIZEY)->set_minmax(0.1, 100);
+        awr->awar(AWAR_CANIO_PAPER_SX)->set_minmax(0.1, 100);
+        awr->awar(AWAR_CANIO_PAPER_SY)->set_minmax(0.1, 100);
 
         awt_print_tree_check_size(0, (AW_CL)ntw);
 
-        awr->awar(AWAR_PRINT_TREE_CLIP)->add_callback((AW_RCB1)awt_print_tree_check_size, (AW_CL)ntw);
-        awr->awar(AWAR_PRINT_TREE_BORDERSIZE)->add_callback((AW_RCB1)awt_print_tree_check_size, (AW_CL)ntw);
+        awr->awar(AWAR_CANIO_CLIP)->add_callback((AW_RCB1)awt_print_tree_check_size, (AW_CL)ntw);
+        awr->awar(AWAR_CANIO_BORDERSIZE)->add_callback((AW_RCB1)awt_print_tree_check_size, (AW_CL)ntw);
 
         { // add callbacks for page recalculation
             const char *checked_awars[] = {
-                AWAR_PRINT_TREE_MAGNIFICATION,
-                AWAR_PRINT_TREE_LANDSCAPE,
-                AWAR_PRINT_TREE_BORDERSIZE,
-                AWAR_PRINT_TREE_OVERLAP_WANTED, AWAR_PRINT_TREE_OVERLAP_PERCENT,
-                AWAR_PRINT_TREE_F2DBUG, 
-                AWAR_PRINT_TREE_PSIZEX,         AWAR_PRINT_TREE_PSIZEY,
-                AWAR_PRINT_TREE_GSIZEX,         AWAR_PRINT_TREE_GSIZEY,
+                AWAR_CANIO_MAGNIFICATION,
+                AWAR_CANIO_LANDSCAPE,
+                AWAR_CANIO_BORDERSIZE,
+                AWAR_CANIO_OVERLAP_WANTED, AWAR_CANIO_OVERLAP_PERCENT,
+                AWAR_CANIO_F2DBUG, 
+                AWAR_CANIO_PAPER_SX,         AWAR_CANIO_PAPER_SY,
+                AWAR_CANIO_GFX_SX,         AWAR_CANIO_GFX_SY,
                 0
             };
             for (int ca = 0; checked_awars[ca]; ca++) {
@@ -509,10 +545,10 @@ static GB_ERROR canvas_to_xfig(AWT_canvas *ntw, const char *xfig_name) {
     GB_transaction ta(ntw->gb_main);
 
     AW_root *awr       = ntw->awr;
-    bool     draw_all  = awr->awar(AWAR_PRINT_TREE_CLIP)->read_int();
-    bool     handles   = awr->awar(AWAR_PRINT_TREE_HANDLES)->read_int();
-    bool     use_color = awr->awar(AWAR_PRINT_TREE_COLOR)->read_int();
-    double   border    = awr->awar(AWAR_PRINT_TREE_BORDERSIZE)->read_float();
+    bool     draw_all  = awr->awar(AWAR_CANIO_CLIP)->read_int();
+    bool     handles   = awr->awar(AWAR_CANIO_HANDLES)->read_int();
+    bool     use_color = awr->awar(AWAR_CANIO_COLOR)->read_int();
+    double   border    = awr->awar(AWAR_CANIO_BORDERSIZE)->read_float();
 
     AW_device_print *device = ntw->aww->get_print_device(AW_MIDDLE_AREA);
 
@@ -551,7 +587,7 @@ static GB_ERROR canvas_to_xfig(AWT_canvas *ntw, const char *xfig_name) {
 static void canvas_to_xfig_and_run_xfig(AW_window *aww, AW_CL cl_ntw) {
     AWT_canvas *ntw  = (AWT_canvas*)cl_ntw;
     AW_root    *awr  = aww->get_root();
-    char       *xfig = AW_get_selected_fullname(awr, AWAR_PRINT_TREE_FILE_BASE);
+    char       *xfig = AW_get_selected_fullname(awr, AWAR_CANIO_FILE_BASE);
     
     GB_ERROR error = NULL;
     if (xfig[0] == 0) {
@@ -560,7 +596,7 @@ static void canvas_to_xfig_and_run_xfig(AW_window *aww, AW_CL cl_ntw) {
     else {
         error = canvas_to_xfig(ntw, xfig);
         if (!error) {
-            awr->awar(AWAR_PRINT_TREE_FILE_DIR)->touch(); // reload dir to show created xfig
+            awr->awar(AWAR_CANIO_FILE_DIR)->touch(); // reload dir to show created xfig
             error = GB_system(GBS_global_string("xfig %s &", xfig));
         }
     }
@@ -574,11 +610,11 @@ void canvas_to_printer(AW_window *aww, AW_CL cl_ntw) {
     AW_root        *awr       = aww->get_root();
     GB_ERROR        error     = 0;
     char           *dest      = 0;
-    PrintDest       printdest = (PrintDest)awr->awar(AWAR_PRINT_TREE_DEST)->read_int();
+    PrintDest       printdest = (PrintDest)awr->awar(AWAR_CANIO_DEST)->read_int();
 
     switch (printdest) {
         case PDEST_POSTSCRIPT: {
-            dest = AW_get_selected_fullname(awr, AWAR_PRINT_TREE_FILE_BASE);
+            dest = AW_get_selected_fullname(awr, AWAR_CANIO_FILE_BASE);
             FILE *out = fopen(dest, "w");
             if (!out) error = GB_export_IO_error("writing", dest);
             else fclose(out);
@@ -615,10 +651,10 @@ void canvas_to_printer(AW_window *aww, AW_CL cl_ntw) {
             progress.subtitle("Converting to Postscript");
 
             {
-                bool   landscape     = awr->awar(AWAR_PRINT_TREE_LANDSCAPE)->read_int();
-                bool   useOverlap    = awr->awar(AWAR_PRINT_TREE_OVERLAP)->read_int();
-                double magnification = awr->awar(AWAR_PRINT_TREE_MAGNIFICATION)->read_int() * 0.01;
-                int    paper         = awr->awar(AWAR_PRINT_TREE_PAPER)->read_int();
+                bool   landscape     = awr->awar(AWAR_CANIO_LANDSCAPE)->read_int();
+                bool   useOverlap    = awr->awar(AWAR_CANIO_OVERLAP)->read_int();
+                double magnification = awr->awar(AWAR_CANIO_MAGNIFICATION)->read_int() * 0.01;
+                int    paper         = awr->awar(AWAR_CANIO_PAPER)->read_int();
 
                 const PaperFormat& format = knownPaperFormat[paper];
 
@@ -657,7 +693,7 @@ void canvas_to_printer(AW_window *aww, AW_CL cl_ntw) {
                         break;
 
                     case PDEST_PRINTER: {
-                        char *prt = awr->awar(AWAR_PRINT_TREE_PRINTER)->read_string();
+                        char *prt = awr->awar(AWAR_CANIO_PRINTER)->read_string();
                         error     = GB_system(GBS_global_string("%s %s", prt, dest));
                         free(prt);
                         GB_unlink_or_warn(dest, &error);
@@ -699,25 +735,25 @@ void AWT_popup_tree_export_window(AW_window *parent_win, AW_CL cl_canvas, AW_CL)
 
         aws->label_length(15);
 
-        AW_create_fileselection(aws, AWAR_PRINT_TREE_FILE_BASE);
+        AW_create_fileselection(aws, AWAR_CANIO_FILE_BASE);
 
         aws->at("what");
         aws->label("Clip at Screen");
-        aws->create_toggle_field(AWAR_PRINT_TREE_CLIP, 1);
+        aws->create_toggle_field(AWAR_CANIO_CLIP, 1);
         aws->insert_toggle("#print/clipscreen.bitmap", "S", 0);
         aws->insert_toggle("#print/clipall.bitmap", "A", 1);
         aws->update_toggle_field();
 
         aws->at("remove_root");
         aws->label("Show Handles");
-        aws->create_toggle_field(AWAR_PRINT_TREE_HANDLES, 1);
+        aws->create_toggle_field(AWAR_CANIO_HANDLES, 1);
         aws->insert_toggle("#print/nohandles.bitmap", "S", 0);
         aws->insert_toggle("#print/handles.bitmap", "A", 1);
         aws->update_toggle_field();
 
         aws->at("color");
         aws->label("Export colors");
-        aws->create_toggle(AWAR_PRINT_TREE_COLOR);
+        aws->create_toggle(AWAR_CANIO_COLOR);
 
 
         aws->at("xfig"); aws->callback(canvas_to_xfig_and_run_xfig, cl_canvas);
@@ -746,18 +782,18 @@ void AWT_popup_sec_export_window(AW_window *parent_win, AW_CL cl_canvas, AW_CL) 
         aws->create_button("HELP", "HELP", "H");
 
         aws->label_length(15);
-        AW_create_fileselection(aws, AWAR_PRINT_TREE_FILE_BASE);
+        AW_create_fileselection(aws, AWAR_CANIO_FILE_BASE);
 
         aws->at("what");
         aws->label("Clip Options");
-        aws->create_option_menu(AWAR_PRINT_TREE_CLIP);
+        aws->create_option_menu(AWAR_CANIO_CLIP);
         aws->insert_option("Export screen only", "s", 0);
         aws->insert_default_option("Export complete structure", "c", 1);
         aws->update_option_menu();
 
         aws->at("color");
         aws->label("Export colors");
-        aws->create_toggle(AWAR_PRINT_TREE_COLOR);
+        aws->create_toggle(AWAR_CANIO_COLOR);
 
         aws->at("xfig"); aws->callback(canvas_to_xfig_and_run_xfig, cl_canvas);
         aws->create_button("START_XFIG", "EXPORT to XFIG", "X");
@@ -782,7 +818,7 @@ static void fit_pages_cb(AW_window *aww, AW_CL cl_pages) {
     if (cl_pages>0)
         wanted_pages = cl_pages;
     else {
-        wanted_pages = awr->awar(AWAR_PRINT_TREE_PAGES)->read_int();
+        wanted_pages = awr->awar(AWAR_CANIO_PAGES)->read_int();
     }
     fit_pages(awr, wanted_pages, true);
 }
@@ -813,21 +849,21 @@ void AWT_popup_print_window(AW_window *parent_win, AW_CL cl_canvas, AW_CL) {
 
         aws->at("what");
         aws->label("Clip at Screen");
-        aws->create_toggle_field(AWAR_PRINT_TREE_CLIP, 1);
+        aws->create_toggle_field(AWAR_CANIO_CLIP, 1);
         aws->insert_toggle("#print/clipscreen.bitmap", "S", 0);
         aws->insert_toggle("#print/clipall.bitmap", "A", 1);
         aws->update_toggle_field();
 
         aws->at("remove_root");
         aws->label("Show Handles");
-        aws->create_toggle_field(AWAR_PRINT_TREE_HANDLES, 1);
+        aws->create_toggle_field(AWAR_CANIO_HANDLES, 1);
         aws->insert_toggle("#print/nohandles.bitmap", "S", 0);
         aws->insert_toggle("#print/handles.bitmap", "A", 1);
         aws->update_toggle_field();
 
         aws->at("color");
         aws->label("Export colors");
-        aws->create_toggle(AWAR_PRINT_TREE_COLOR);
+        aws->create_toggle(AWAR_CANIO_COLOR);
 
         // --------------------
         //      page layout
@@ -837,31 +873,31 @@ void AWT_popup_print_window(AW_window *parent_win, AW_CL cl_canvas, AW_CL) {
         aws->create_autosize_button(0, "Get Graphic Size");
 
         aws->button_length(6);
-        aws->at("gsizex"); aws->create_button(0, AWAR_PRINT_TREE_GSIZEX);
-        aws->at("gsizey"); aws->create_button(0, AWAR_PRINT_TREE_GSIZEY);
-        aws->at("osizex"); aws->create_button(0, AWAR_PRINT_TREE_OSIZEX);
-        aws->at("osizey"); aws->create_button(0, AWAR_PRINT_TREE_OSIZEY);
+        aws->at("gsizex"); aws->create_button(0, AWAR_CANIO_GFX_SX);
+        aws->at("gsizey"); aws->create_button(0, AWAR_CANIO_GFX_SY);
+        aws->at("osizex"); aws->create_button(0, AWAR_CANIO_OUT_SX);
+        aws->at("osizey"); aws->create_button(0, AWAR_CANIO_OUT_SY);
 
         aws->at("magnification");
-        aws->create_input_field(AWAR_PRINT_TREE_MAGNIFICATION, 4);
+        aws->create_input_field(AWAR_CANIO_MAGNIFICATION, 4);
 
         aws->label_length(0);
         aws->at("orientation");
-        aws->create_toggle_field(AWAR_PRINT_TREE_LANDSCAPE, 1);
+        aws->create_toggle_field(AWAR_CANIO_LANDSCAPE, 1);
         aws->insert_toggle("#print/landscape.bitmap", "L", 1);
         aws->insert_toggle("#print/portrait.bitmap",  "P", 0);
         aws->update_toggle_field();
 
-        aws->at("bsize"); aws->create_input_field(AWAR_PRINT_TREE_BORDERSIZE, 4);
+        aws->at("bsize"); aws->create_input_field(AWAR_CANIO_BORDERSIZE, 4);
 
         // -------------------
         //      paper size
 
-        aws->at("psizex"); aws->create_input_field(AWAR_PRINT_TREE_PSIZEX, 5);
-        aws->at("psizey"); aws->create_input_field(AWAR_PRINT_TREE_PSIZEY, 5);
+        aws->at("psizex"); aws->create_input_field(AWAR_CANIO_PAPER_SX, 5);
+        aws->at("psizey"); aws->create_input_field(AWAR_CANIO_PAPER_SY, 5);
 
         aws->at("paper");
-        aws->create_option_menu(AWAR_PRINT_TREE_PAPER);
+        aws->create_option_menu(AWAR_CANIO_PAPER);
         aws->insert_default_option(knownPaperFormat[0].get_description(), "", 0);
         for (int f = 1; f<int(ARRAY_ELEMS(knownPaperFormat)); ++f) {
             const PaperFormat& format = knownPaperFormat[f];
@@ -869,7 +905,7 @@ void AWT_popup_print_window(AW_window *parent_win, AW_CL cl_canvas, AW_CL) {
         }
         aws->update_option_menu();
 
-        aws->at("usize"); aws->create_input_field(AWAR_PRINT_TREE_PAPER_USABLE, 4);
+        aws->at("usize"); aws->create_input_field(AWAR_CANIO_PAPER_USABLE, 4);
 
 
         // -----------------------
@@ -877,20 +913,20 @@ void AWT_popup_print_window(AW_window *parent_win, AW_CL cl_canvas, AW_CL) {
 
         aws->at("sizex");
         aws->callback(columns_changed_cb);
-        aws->create_input_field(AWAR_PRINT_TREE_SIZEX, 4);
+        aws->create_input_field(AWAR_CANIO_PAGE_SX, 4);
         aws->at("sizey");
         aws->callback(rows_changed_cb);
-        aws->create_input_field(AWAR_PRINT_TREE_SIZEY, 4);
+        aws->create_input_field(AWAR_CANIO_PAGE_SY, 4);
 
         aws->at("best_fit");
         aws->callback(fit_pages_cb, 0);
         aws->create_autosize_button("fit_on", "Fit on");
 
         aws->at("pages");
-        aws->create_input_field(AWAR_PRINT_TREE_PAGES, 3);
+        aws->create_input_field(AWAR_CANIO_PAGES, 3);
 
         aws->at("plock");
-        aws->create_toggle(AWAR_PRINT_TREE_PAGELOCK);
+        aws->create_toggle(AWAR_CANIO_PAGELOCK);
         
         aws->button_length(1);
         {
@@ -906,12 +942,12 @@ void AWT_popup_print_window(AW_window *parent_win, AW_CL cl_canvas, AW_CL) {
         }
 
         aws->at("overlap");
-        aws->create_toggle(AWAR_PRINT_TREE_OVERLAP);
+        aws->create_toggle(AWAR_CANIO_OVERLAP);
         aws->at("amount");
-        aws->create_input_field(AWAR_PRINT_TREE_OVERLAP_PERCENT, 4);
+        aws->create_input_field(AWAR_CANIO_OVERLAP_PERCENT, 4);
 
         aws->at("f2dbug");
-        aws->create_toggle(AWAR_PRINT_TREE_F2DBUG);
+        aws->create_toggle(AWAR_CANIO_F2DBUG);
 
         // --------------------
         //      destination
@@ -919,17 +955,17 @@ void AWT_popup_print_window(AW_window *parent_win, AW_CL cl_canvas, AW_CL) {
         aws->at("printto");
         aws->label_length(12);
         aws->label("Destination");
-        aws->create_toggle_field(AWAR_PRINT_TREE_DEST);
+        aws->create_toggle_field(AWAR_CANIO_DEST);
         aws->insert_toggle("Printer",           "P", PDEST_PRINTER);
         aws->insert_toggle("File (Postscript)", "F", PDEST_POSTSCRIPT);
         aws->insert_toggle("Preview",           "V", PDEST_PREVIEW);
         aws->update_toggle_field();
 
         aws->at("printer");
-        aws->create_input_field(AWAR_PRINT_TREE_PRINTER, 16);
+        aws->create_input_field(AWAR_CANIO_PRINTER, 16);
 
         aws->at("filename");
-        aws->create_input_field(AWAR_PRINT_TREE_FILE_NAME, 16);
+        aws->create_input_field(AWAR_CANIO_FILE_NAME, 16);
 
         aws->at("go");
         aws->highlight();
