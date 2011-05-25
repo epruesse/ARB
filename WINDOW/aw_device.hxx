@@ -28,6 +28,9 @@
 
 // #define AW_PIXELS_PER_MM 1.0001 // stupid and wrong
 
+#define DPI_SCREEN  80   // fixed
+#define DPI_PRINTER 1200 // default resolution of xfig 3.2
+
 const AW_bitset AW_ALL_DEVICES = (AW_bitset)-1;
 const AW_bitset AW_SCREEN      = 1;
 const AW_bitset AW_CLICK       = 2;
@@ -632,7 +635,11 @@ public:
     void           init();
     AW_DEVICE_TYPE type();
 
-    void get_size_information(AW_world *ptr);
+    void get_size_information(AW_world *ptr) __ATTR__DEPRECATED_LATER("whole AW_world is deprecated"); 
+    AW::Rectangle get_size_information() const {
+        return AW::Rectangle(AW::Position(size_information.l, size_information.t), 
+                             AW::Position(size_information.r, size_information.b));
+    }
 };
 
 class AW_device_click : public AW_simple_device {
