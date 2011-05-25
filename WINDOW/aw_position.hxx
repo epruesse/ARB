@@ -476,6 +476,29 @@ namespace AW {
         return p.xpos() == 0 && p.ypos() == 0;
     }
 
+#if defined(DEBUG)
+    inline void aw_dump(const double& p, const char *varname) {
+        fprintf(stderr, "%s=%f", varname, p);
+    }
+    inline void aw_dump(const Position& p, const char *varname) {
+        fprintf(stderr, "Position %s={ ", varname);
+        aw_dump(p.xpos(), "x"); fputs(", ", stderr);
+        aw_dump(p.ypos(), "y"); fputs(" }", stderr);
+    }
+    inline void aw_dump(const Vector& v, const char *varname) {
+        fprintf(stderr, "Vector %s={ ", varname);
+        aw_dump(v.x(), "x"); fputs(", ", stderr);
+        aw_dump(v.y(), "y"); fputs(" }", stderr);
+    }
+    inline void aw_dump(const Rectangle& r, const char *varname) {
+        fprintf(stderr, "Rectangle %s={ ", varname);
+        aw_dump(r.upper_left_corner(), "upper_left_corner"); fputs(", ", stderr);
+        aw_dump(r.lower_right_corner(), "lower_right_corner"); fputs(" }", stderr);
+    }
+
+#define AW_DUMP(x) do { aw_dump(x, #x); fputc('\n', stderr); } while(0)
+    
+#endif
 
 };
 
