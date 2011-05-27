@@ -1374,16 +1374,14 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
                         if (cl->exists) {
                             at = (AP_tree *)cl->client_data1;
                             if (at) {
-                                tree_root_display  = at;
-                                exports.zoom_reset = 1;
-                                exports.refresh    = 1;
+                                tree_root_display = at;
+                                exports.refresh   = 1;
                             }
                         }
                         break;
                     case AWT_M_RIGHT:
                         if (tree_root_display->father) {
                             tree_root_display  = tree_root_display->get_father();
-                            exports.refresh    = 1;
                             exports.zoom_reset = 1;
                         }
                         break;
