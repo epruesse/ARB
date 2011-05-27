@@ -95,15 +95,12 @@ public:
                 The function may return a pointer to a preset window */
 
     // implemented interface (most are dummies doing nothing):
-
-    virtual void push_transaction(GBDATA *gb_main);
-    virtual void pop_transaction(GBDATA *gb_main);
-
     virtual void command(AW_device *device, AWT_COMMAND_MODE cmd,
                          int button, AW_key_mod key_modifier, AW_key_code key_code, char key_char,
                          AW_event_type type, AW_pos x, AW_pos y,
                          AW_clicked_line *cl, AW_clicked_text *ct);
     virtual void text(AW_device *device, char *text);
+
 };
 
 class AWT_nonDB_graphic : public AWT_graphic {
@@ -183,6 +180,9 @@ public:
     // real public
 
     AWT_canvas(GBDATA *gb_main, AW_window *aww, AWT_graphic *awd, AW_gc_manager &gc_manager, const char *user_awar);
+
+    inline void push_transaction() const;
+    inline void pop_transaction() const;
 
     void refresh();
 
