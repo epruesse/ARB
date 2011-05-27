@@ -1454,8 +1454,12 @@ GBDATA *GB_login(const char *cpath, const char *opent, const char *user) {
         GB_informationf("ARB: Loading '%s'%s%s", path, quickFile ? " + Changes-File " : "", quickFile ? quickFile : "");
     }
 
-    if (GB_install_pid(1)) return 0;
-    
+    error = GB_install_pid(1);
+    if (error) {
+        GB_export_error(error);
+        return 0;
+    }
+
     GB_init_gb();
 
     Main = gb_make_gb_main_type(path);
