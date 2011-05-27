@@ -1415,7 +1415,11 @@ GBDATA *GB_login(const char *cpath,const char *opent,const char *user)
     gbm_init_mem();
     GB_init_gb();
 
-    if (GB_install_pid(1)) return 0;
+    error = GB_install_pid(1);
+    if (error) {
+        GB_export_error(error);
+        return 0;
+    }
 
     Main = gb_make_gb_main_type(path);
     Main->local_mode = GB_TRUE;
