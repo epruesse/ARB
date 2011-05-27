@@ -65,9 +65,11 @@ public:
 
 class AWT_graphic {
     friend class AWT_canvas;
+
+    void refresh_by_exports(AWT_canvas *ntw);
 protected:
-    AW_screen_area extends;
-    int drag_gc;
+    AW_screen_area      extends;
+    int                 drag_gc;
 public:
     AWT_graphic_exports exports;
 
@@ -183,8 +185,15 @@ public:
     AWT_canvas(GBDATA *gb_main, AW_window *aww, AWT_graphic *awd, AW_gc_manager &gc_manager, const char *user_awar);
 
     void refresh();
-    void recalc_size();         // Calculate the size of the sb
-    void zoom_reset();          // Calculate all
+
+    void recalc_size(bool adjust_scrollbars = true);
+    void recalc_size_and_refresh() { recalc_size(true); refresh(); }
+
+    void zoom_reset();
+    void zoom_reset_and_refresh() { zoom_reset(); refresh(); }
+
+    void refresh_by_exports() { tree_disp->refresh_by_exports(this); }
+
     void zoom(AW_device *device, bool zoomIn, const AW::Rectangle& wanted_part, const AW::Rectangle& current_part);
 
     void set_mode(AWT_COMMAND_MODE mo) { mode = mo; }
@@ -194,6 +203,13 @@ public:
         scroll(aw, int(delta.x()), int(delta.y()), dont_update_scrollbars);
     }
 };
+
+inline void AWT_graphic::refresh_by_exports(AWT_canvas *ntw) {
+    if (exports.zoom_reset)   ntw->zoom_reset_and_refresh();
+    else if (exports.resize)  ntw->recalc_size_and_refresh();
+    else if (exports.refresh) ntw->refresh();
+}
+
 
 void AWT_expose_cb(AW_window *dummy, AWT_canvas *ntw, AW_CL cl2);
 void AWT_resize_cb(AW_window *dummy, AWT_canvas *ntw, AW_CL cl2);
