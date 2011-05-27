@@ -36,6 +36,9 @@ void AWT_graphic_exports::init() {
     dont_scroll      = 0;
 }
 
+inline void AWT_canvas::push_transaction() const { if (gb_main) GB_push_transaction(gb_main); }
+inline void AWT_canvas::pop_transaction() const { if (gb_main) GB_pop_transaction(gb_main); }
+
 void AWT_canvas::set_horizontal_scrollbar_position(AW_window *, int pos) {
     int maxpos = int(worldsize.r-rect.r)-1;
     if (pos>maxpos) pos = maxpos;
@@ -366,14 +369,15 @@ void AWT_resize_cb(AW_window *, AWT_canvas *ntw, AW_CL) {
 }
 
 
-
 static void focus_cb(AW_window *, AWT_canvas *ntw) {
-    if (!ntw->gb_main) return;
-    ntw->tree_disp->push_transaction(ntw->gb_main);
+    if (ntw->gb_main) {
+        ntw->push_transaction();
 
-    int flags = ntw->tree_disp->check_update(ntw->gb_main);
-    if (flags) ntw->recalc_size_and_refresh();
-    ntw->tree_disp->pop_transaction(ntw->gb_main);
+        int flags = ntw->tree_disp->check_update(ntw->gb_main);
+        if (flags) ntw->recalc_size_and_refresh();
+
+        ntw->pop_transaction();
+    }
 }
 
 static bool handleZoomEvent(AW_window *aww, AWT_canvas *ntw, AW_device *device, const AW_event& event) {
@@ -413,7 +417,7 @@ static void input_event(AW_window *aww, AWT_canvas *ntw, AW_CL /*cd2*/) {
     device->reset();
 
     ntw->tree_disp->exports.clear();
-    if (ntw->gb_main) ntw->tree_disp->push_transaction(ntw->gb_main);
+    ntw->push_transaction();
 
     ntw->tree_disp->check_update(ntw->gb_main);
 
@@ -456,9 +460,7 @@ static void input_event(AW_window *aww, AWT_canvas *ntw, AW_CL /*cd2*/) {
 
     ntw->zoom_drag_ex = event.x;
     ntw->zoom_drag_ey = event.y;
-    if (ntw->gb_main) {
-        ntw->tree_disp->pop_transaction(ntw->gb_main);
-    }
+    ntw->pop_transaction();
 }
 
 
@@ -542,7 +544,7 @@ static void motion_event(AW_window *aww, AWT_canvas *ntw, AW_CL /*cd2*/) {
     device->reset();
     device->set_filter(AW_SCREEN);
 
-    if (ntw->gb_main) ntw->tree_disp->push_transaction(ntw->gb_main);
+    ntw->push_transaction();
 
     AW_event event;
     aww->get_event(&event);
@@ -606,7 +608,7 @@ static void motion_event(AW_window *aww, AWT_canvas *ntw, AW_CL /*cd2*/) {
     }
 
     ntw->refresh_by_exports();
-    if (ntw->gb_main) ntw->tree_disp->pop_transaction(ntw->gb_main);
+    ntw->pop_transaction();
 }
 
 void AWT_canvas::scroll(AW_window *, int dx, int dy, bool dont_update_scrollbars) {
@@ -750,13 +752,6 @@ AWT_graphic::AWT_graphic() {
     exports.init();
 }
 AWT_graphic::~AWT_graphic() {
-}
-
-void AWT_graphic::pop_transaction(GBDATA *gb_main) {
-    GB_pop_transaction(gb_main);
-}
-void AWT_graphic::push_transaction(GBDATA *gb_main) {
-    GB_push_transaction(gb_main);
 }
 
 void AWT_graphic::command(AW_device *, AWT_COMMAND_MODE, int, AW_key_mod, AW_key_code, char,
