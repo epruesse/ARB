@@ -133,9 +133,11 @@ void AW_device_Xm::clear(AW_bitset filteri) {
     }
 }
 
-void AW_device_Xm::clear_part(AW_pos x0, AW_pos y0, AW_pos width, AW_pos height, AW_bitset filteri)
-{
+void AW_device_Xm::clear_part(AW_pos x0, AW_pos y0, AW_pos width, AW_pos height, AW_bitset filteri) {
     if (filteri & filter) {
+        aw_assert(width >= 0);
+        aw_assert(height >= 0);
+
         AW_pos x1 = x0+width;
         AW_pos y1 = y0+height;
 
