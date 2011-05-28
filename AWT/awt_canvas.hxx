@@ -63,7 +63,7 @@ public:
         padding.t = t;
         padding.b = b;
         padding.l = l;
-        padding.t = r;
+        padding.r = r;
     }
 
     int get_x_padding() const { return padding.l+padding.r; }
