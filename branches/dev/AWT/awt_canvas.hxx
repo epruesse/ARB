@@ -43,6 +43,8 @@ typedef enum {
 } AWT_COMMAND_MODE;
 
 class AWT_graphic_exports {
+    AW_screen_area padding; // padding at borders
+
 public:
     unsigned int zoom_reset : 1;
     unsigned int resize : 1;
@@ -51,16 +53,23 @@ public:
     unsigned int structure_change : 1; // maybe useless
     unsigned int dont_fit_x : 1;
     unsigned int dont_fit_y : 1;
-    unsigned int dont_fit_larger : 1; // if xsize>ysize -> dont_fit_x (otherwise dont_fit_y)
+    unsigned int dont_fit_larger : 1;  // if xsize>ysize -> dont_fit_x (otherwise dont_fit_y)
     unsigned int dont_scroll : 1;
 
-    void init();     // like clear, but resets fit/scroll state
+    void init();     // like clear, but resets fit, scroll state and padding
     void clear();
 
-    short left_offset;
-    short right_offset;
-    short top_offset;
-    short bottom_offset;
+    void set_padding(int t, int b, int l, int r) {
+        padding.t = t;
+        padding.b = b;
+        padding.l = l;
+        padding.t = r;
+    }
+
+    int get_x_padding() const { return padding.l+padding.r; }
+    int get_y_padding() const { return padding.t+padding.b; }
+    int get_top_padding() const { return padding.t; }
+    int get_left_padding() const { return padding.l; }
 };
 
 class AWT_graphic {
@@ -73,9 +82,9 @@ protected:
 public:
     AWT_graphic_exports exports;
 
-    AWT_graphic();
-    virtual ~AWT_graphic();
-
+    AWT_graphic() { exports.init(); }
+    virtual ~AWT_graphic() {}
+    
     // pure virtual interface (methods implemented by AWT_nonDB_graphic)
 
     virtual GB_ERROR load(GBDATA *gb_main, const char *name, AW_CL cd1, AW_CL cd2) = 0;
@@ -107,7 +116,7 @@ class AWT_nonDB_graphic : public AWT_graphic {
     // a partly implementation of AWT_graphic
 public:
     AWT_nonDB_graphic() {}
-    virtual ~AWT_nonDB_graphic();
+    virtual ~AWT_nonDB_graphic() {}
 
     // dummy functions, only spittings out warnings:
     GB_ERROR load(GBDATA *gb_main, const char *name, AW_CL cd1, AW_CL cd2) __ATTR__USERESULT;

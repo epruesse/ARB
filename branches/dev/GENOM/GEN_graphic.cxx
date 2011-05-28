@@ -38,13 +38,10 @@ GEN_graphic::GEN_graphic(AW_root *aw_root_, GBDATA *gb_main_, GEN_graphic_cb_ins
     , gen_root(0)
     , want_zoom_reset(false)
 {
-    exports.dont_fit_x    = 0;
-    exports.dont_fit_y    = 0;
-    exports.left_offset   = 10;
-    exports.right_offset  = 30;
-    exports.top_offset    = 5;
-    exports.bottom_offset = 5;
-    exports.dont_scroll   = 0;
+    exports.dont_fit_x  = 0;
+    exports.dont_fit_y  = 0;
+    exports.dont_scroll = 0;
+    exports.set_padding(5, 5, 10, 30);
 
     rot_ct.exists = false;
     rot_cl.exists = false;
