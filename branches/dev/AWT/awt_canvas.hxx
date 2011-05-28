@@ -76,9 +76,10 @@ class AWT_graphic {
     friend class AWT_canvas;
 
     void refresh_by_exports(AWT_canvas *ntw);
+
 protected:
-    AW_screen_area      extends;
-    int                 drag_gc;
+    int drag_gc;
+
 public:
     AWT_graphic_exports exports;
 
