@@ -616,7 +616,7 @@ public:
     
 class AW_device_size : public AW_simple_device {
     bool     drawn;
-    AW_world size_information;
+    AW_world scaled_size;
     void     privat_reset();
 
     void dot_transformed(AW_pos X, AW_pos Y);
@@ -635,10 +635,12 @@ public:
     void           init();
     AW_DEVICE_TYPE type();
 
-    void get_size_information(AW_world *ptr) __ATTR__DEPRECATED_LATER("whole AW_world is deprecated"); 
+    void get_size_information(AW_world *ptr) __ATTR__DEPRECATED_LATER("whole AW_world is deprecated") {
+        *ptr = scaled_size;
+    }
     AW::Rectangle get_size_information() const {
-        return AW::Rectangle(AW::Position(size_information.l, size_information.t), 
-                             AW::Position(size_information.r, size_information.b));
+        return AW::Rectangle(AW::Position(scaled_size.l, scaled_size.t),
+                             AW::Position(scaled_size.r, scaled_size.b));
     }
 };
 

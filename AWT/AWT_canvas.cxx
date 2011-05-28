@@ -30,10 +30,12 @@ void AWT_graphic_exports::clear() {
 
 void AWT_graphic_exports::init() {
     clear();
-    dont_fit_x       = 0;
-    dont_fit_y       = 0;
-    dont_fit_larger  = 0;
-    dont_scroll      = 0;
+    padding.clear();
+
+    dont_fit_x      = 0;
+    dont_fit_y      = 0;
+    dont_fit_larger = 0;
+    dont_scroll     = 0;
 }
 
 inline void AWT_canvas::push_transaction() const { if (gb_main) GB_push_transaction(gb_main); }
@@ -58,14 +60,13 @@ void AWT_canvas::set_scrollbars() {
     AW_pos height = this->worldinfo.b - this->worldinfo.t;
 
     worldsize.l = 0;
-    worldsize.r = width*this->trans_to_fit +
-        tree_disp->exports.left_offset + tree_disp->exports.right_offset;
+    worldsize.r = width*this->trans_to_fit + tree_disp->exports.get_x_padding();
     worldsize.t = 0;
     AW_pos scale = this->trans_to_fit;
     if (tree_disp->exports.dont_fit_y) {
         scale = 1.0;
     }
-    worldsize.b = height*scale + tree_disp->exports.top_offset + tree_disp->exports.bottom_offset;
+    worldsize.b = height*scale + tree_disp->exports.get_y_padding();
 
     aww->tell_scrolled_picture_size(worldsize);
 
@@ -74,13 +75,13 @@ void AWT_canvas::set_scrollbars() {
     this->old_hor_scroll_pos = (int)((-this->worldinfo.l -
                                       this->shift_x_to_fit)*
                                      this->trans_to_fit +
-                                     tree_disp->exports.left_offset);
+                                     tree_disp->exports.get_left_padding());
     this->set_horizontal_scrollbar_position(this->aww, old_hor_scroll_pos);
 
     this->old_vert_scroll_pos = (int)((-this->worldinfo.t -
                                        this->shift_y_to_fit)*
                                       this->trans_to_fit+
-                                      tree_disp->exports.top_offset);
+                                      tree_disp->exports.get_top_padding());
 
     this->set_vertical_scrollbar_position(this->aww, old_vert_scroll_pos);
 }
@@ -113,8 +114,8 @@ void AWT_canvas::zoom_reset() {
     AW_pos height = this->worldinfo.b - this->worldinfo.t;
 
 
-    AW_pos net_window_width  = rect.r - rect.l - (tree_disp->exports.left_offset + tree_disp->exports.right_offset);
-    AW_pos net_window_height = rect.b - rect.t - (tree_disp->exports.top_offset + tree_disp->exports.bottom_offset);
+    AW_pos net_window_width  = rect.r - rect.l - tree_disp->exports.get_x_padding();
+    AW_pos net_window_height = rect.b - rect.t - tree_disp->exports.get_y_padding();
 
     if (net_window_width<AWT_MIN_WIDTH) net_window_width   = AWT_MIN_WIDTH;
     if (net_window_height<AWT_MIN_WIDTH) net_window_height = AWT_MIN_WIDTH;
@@ -154,8 +155,8 @@ void AWT_canvas::zoom_reset() {
     this->trans_to_fit = x_scale;
 
     // complete, upper left corner
-    this->shift_x_to_fit = - this->worldinfo.l + tree_disp->exports.left_offset/x_scale;
-    this->shift_y_to_fit = - this->worldinfo.t + tree_disp->exports.top_offset/x_scale;
+    this->shift_x_to_fit = - this->worldinfo.l + tree_disp->exports.get_left_padding()/x_scale;
+    this->shift_y_to_fit = - this->worldinfo.t + tree_disp->exports.get_top_padding()/x_scale;
 
     this->old_hor_scroll_pos  = 0;
     this->old_vert_scroll_pos = 0;
@@ -748,12 +749,6 @@ AWT_canvas::AWT_canvas(GBDATA *gb_maini, AW_window *awwi, AWT_graphic *awd, AW_g
 //      AWT_graphic
 // --------------------
 
-AWT_graphic::AWT_graphic() {
-    exports.init();
-}
-AWT_graphic::~AWT_graphic() {
-}
-
 void AWT_graphic::command(AW_device *, AWT_COMMAND_MODE, int, AW_key_mod, AW_key_code, char,
                           AW_event_type, AW_pos, AW_pos, AW_clicked_line *, AW_clicked_text *)
 {
@@ -765,8 +760,6 @@ void AWT_graphic::text(AW_device * /* device */, char * /* text */) {
 // --------------------------
 //      AWT_nonDB_graphic
 // --------------------------
-
-AWT_nonDB_graphic::~AWT_nonDB_graphic() {}
 
 GB_ERROR AWT_nonDB_graphic::load(GBDATA *, const char *, AW_CL, AW_CL) {
     return "AWT_nonDB_graphic cannot be loaded";

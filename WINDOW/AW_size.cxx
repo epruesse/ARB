@@ -22,10 +22,10 @@ using namespace AW;
 void AW_device_size::init() {
     drawn = false;
 
-    size_information.t = 0;
-    size_information.b = 0;
-    size_information.l = 0;
-    size_information.r = 0;
+    scaled_size.t = 0;
+    scaled_size.b = 0;
+    scaled_size.l = 0;
+    scaled_size.r = 0;
 }
 
 AW_DEVICE_TYPE AW_device_size::type() { return AW_DEVICE_SIZE; }
@@ -36,14 +36,14 @@ void AW_device_size::privat_reset() {
 
 inline void AW_device_size::dot_transformed(AW_pos X, AW_pos Y) {
     if (drawn) {
-        size_information.l = min(size_information.l, X);
-        size_information.r = max(size_information.r, X);
-        size_information.t = min(size_information.t, Y);
-        size_information.b = max(size_information.b, Y);
+        scaled_size.l = min(scaled_size.l, X);
+        scaled_size.r = max(scaled_size.r, X);
+        scaled_size.t = min(scaled_size.t, Y);
+        scaled_size.b = max(scaled_size.b, Y);
     }
     else {
-        size_information.l = size_information.r = X;
-        size_information.t = size_information.b = Y;
+        scaled_size.l = scaled_size.r = X;
+        scaled_size.t = scaled_size.b = Y;
         drawn              = true;
     }
 }
@@ -80,14 +80,12 @@ bool AW_device_size::text_impl(int gc, const char *str, const Position& pos, AW_
         dot_transformed(upperLeft);
         dot_transformed(upperLeft + Vector(l_width, l_ascent+l_descent));
 
+#if defined(DEBUG)
+        fprintf(stderr, "size device text_impl on '%s'\n", str);
+#endif
+
         return true;
     }
     return false;
-}
-
-
-
-void AW_device_size::get_size_information(AW_world *ptr) {
-    *ptr = size_information;
 }
 

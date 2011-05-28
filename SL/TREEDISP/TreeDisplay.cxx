@@ -1645,11 +1645,8 @@ void AWT_graphic_tree::set_tree_type(AP_tree_sort type)
             exports.dont_fit_x      = 0;
             exports.dont_fit_y      = 0;
             exports.dont_fit_larger = 0;
-            exports.left_offset     = 150;
-            exports.right_offset    = 150;
-            exports.top_offset      = 30;
-            exports.bottom_offset   = 30;
             exports.dont_scroll     = 0;
+            exports.set_padding(30, 30, 150, 150);
             break;
 
         case AP_LIST_SIMPLE:
@@ -1657,33 +1654,24 @@ void AWT_graphic_tree::set_tree_type(AP_tree_sort type)
             exports.dont_fit_x      = 1;
             exports.dont_fit_y      = 1;
             exports.dont_fit_larger = 0;
-            exports.left_offset     = short(2*NT_SELECTED_WIDTH+0.5);
-            exports.right_offset    = 300;
-            exports.top_offset      = 30;
-            exports.bottom_offset   = 30;
             exports.dont_scroll     = 0;
+            exports.set_padding(30, 30, short(2*NT_SELECTED_WIDTH+0.5), 300);
             break;
 
         case AP_TREE_IRS: // folded dendrogram
             exports.dont_fit_x      = 1;
             exports.dont_fit_y      = 1;
             exports.dont_fit_larger = 0;
-            exports.left_offset     = 0;
-            exports.right_offset    = 300;
-            exports.top_offset      = 30;
-            exports.bottom_offset   = 30;
             exports.dont_scroll     = 1;
+            exports.set_padding(30, 30, 0, 300);
             break;
 
         case AP_TREE_NORMAL: // normal dendrogram
             exports.dont_fit_x      = 0;
             exports.dont_fit_y      = 1;
             exports.dont_fit_larger = 0;
-            exports.left_offset     = 0;
-            exports.right_offset    = 300;
-            exports.top_offset      = 30;
-            exports.bottom_offset   = 30;
             exports.dont_scroll     = 0;
+            exports.set_padding(30, 30, 0, 300);
             break;
     }
 }
