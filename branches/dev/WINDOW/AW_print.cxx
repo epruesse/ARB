@@ -31,15 +31,25 @@ bool AW_device_print::line_impl(int gc, const LineVector& Line, AW_bitset filter
             const AW_GC *gcm        = get_common()->map_gc(gc);
             int          line_width = gcm->get_line_width();
 
+            int    line_mode = 0;
+            double gap_ratio = 0.0;
+            switch (gcm->get_line_style()) {
+                case AW_SOLID: /* use defaults from above*/ break;
+                case AW_DASHED:  line_mode = 1; gap_ratio = 4.0; break;
+                case AW_DOTTED:  line_mode = 2; gap_ratio = 2.0; break;
+            }
+
             aw_assert(out);     // file has to be good!
 
             // type, subtype, style, thickness, pen_color,
             // fill_color(new), depth, pen_style, area_fill, style_val,
             // join_style(new), cap_style(new), radius, forward_arrow,
             // backward_arrow, npoints
-            fprintf(out, "2 1 0 %d %d 0 0 0 0 0.000 0 1 0 0 0 2\n\t%d %d %d %d\n",
+            fprintf(out, "2 1 %d %d %d 0 0 0 0 %5.3f 0 1 0 0 0 2\n\t%d %d %d %d\n",
+                    line_mode,
                     AW_INT(line_width),
                     find_color_idx(gcm->get_last_fg_color()),
+                    gap_ratio, 
                     print_pos(clippedLine.xpos()),
                     print_pos(clippedLine.ypos()),
                     print_pos(clippedLine.head().xpos()),
