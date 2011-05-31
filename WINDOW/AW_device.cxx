@@ -249,13 +249,23 @@ AW_GC_Xm::~AW_GC_Xm() {
     if (gc) XFreeGC(get_common()->get_display(), gc);
 }
 void AW_GC_Xm::wm_set_lineattributes(short lwidth, AW_linestyle lstyle) {
+    Display *display = get_common()->get_display();
     switch (lstyle) {
         case AW_SOLID:
-            XSetLineAttributes(get_common()->get_display(), gc, lwidth, LineSolid, CapButt, JoinBevel);
+            XSetLineAttributes(display, gc, lwidth, LineSolid, CapButt, JoinBevel);
             break;
-        case AW_DOTTED:
-            XSetLineAttributes(get_common()->get_display(), gc, lwidth, LineOnOffDash, CapButt, JoinBevel);
+        case AW_DASHED: {
+            static char dashes[] = { 5, 2 };
+            XSetDashes(display, gc, 0, dashes, 2);
+            XSetLineAttributes(display, gc, lwidth, LineOnOffDash, CapButt, JoinBevel);
             break;
+        }
+        case AW_DOTTED: {
+            static char dots[] = { 1, 1 };
+            XSetDashes(display, gc, 0, dots, 2); 
+            XSetLineAttributes(display, gc, lwidth, LineOnOffDash, CapButt, JoinBevel);
+            break;
+        }
     }
 }
 void AW_GC_Xm::wm_set_function(AW_function mode) {

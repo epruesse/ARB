@@ -317,7 +317,8 @@ struct AW_font_limits {
 
 enum AW_linestyle {
     AW_SOLID,
-    AW_DOTTED
+    AW_DASHED,
+    AW_DOTTED, 
 };
 
 

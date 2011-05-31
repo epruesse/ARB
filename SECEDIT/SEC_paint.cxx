@@ -1086,7 +1086,7 @@ GB_ERROR SEC_root::paint(AW_device *device) {
             AW_click_cd cd(device, 0, curAbs);
 #if defined(DEBUG) && 1
             // draw a testline to see the baseline on that the cursor is positioned
-            device->set_line_attributes(SEC_GC_CURSOR, 1, AW_DOTTED);
+            device->set_line_attributes(SEC_GC_CURSOR, 1, AW_DASHED);
             device->line(SEC_GC_CURSOR, pos1, pos2);
 #endif
 
