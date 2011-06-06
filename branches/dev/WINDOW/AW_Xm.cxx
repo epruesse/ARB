@@ -33,7 +33,7 @@ bool AW_device_Xm::line_impl(int gc, const LineVector& Line, AW_bitset filteri) 
         LineVector clippedLine;
         drawflag = clip(transLine, clippedLine);
         if (drawflag) {
-            XDrawLine(XDRAW_PARAM3(get_common(), gc), 
+            XDrawLine(XDRAW_PARAM3(get_common(), gc),
                       AW_INT(clippedLine.start().xpos()), AW_INT(clippedLine.start().ypos()),
                       AW_INT(clippedLine.head().xpos()), AW_INT(clippedLine.head().ypos()));
             AUTO_FLUSH(this);
@@ -68,12 +68,11 @@ bool AW_device_Xm::box_impl(int gc, bool filled, const Rectangle& rect, AW_bitse
             Rectangle clippedRect;
             drawflag = box_clip(transRect, clippedRect);
             if (drawflag) {
-                XFillRectangle(XDRAW_PARAM3(get_common(), gc), 
-                               AW_INT(clippedRect.left()), 
-                               AW_INT(clippedRect.top()), 
-                               AW_INT(clippedRect.width()), 
-                               AW_INT(clippedRect.height()) 
-                               );
+                XFillRectangle(XDRAW_PARAM3(get_common(), gc),
+                               AW_INT(clippedRect.left()),
+                               AW_INT(clippedRect.top()),
+                               AW_INT(clippedRect.width())+1,
+                               AW_INT(clippedRect.height())+1);
                 AUTO_FLUSH(this);
             }
         }
