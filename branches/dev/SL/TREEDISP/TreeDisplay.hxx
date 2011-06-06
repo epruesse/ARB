@@ -108,11 +108,6 @@ class AWT_graphic_tree : public AWT_graphic, virtual Noncopyable {
 
     void unload();
 
-#define TEST_BOXES
-#if defined(TEST_BOXES)
-    void test_boxes();
-#endif
-
     // variables - tree compatibility
 
     AP_tree * tree_proto;
