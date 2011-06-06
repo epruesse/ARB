@@ -25,6 +25,8 @@
 #define AW_FONTINFO_CHAR_ASCII_MIN 32
 #define AW_FONTINFO_CHAR_ASCII_MAX 127
 
+#define GC_DEFAULT_LINE_WIDTH 1
+
 class AW_common;
 
 class AW_GC_config { // variable part of AW_GC
@@ -38,7 +40,7 @@ public:
     AW_GC_config()
         : function(AW_COPY),
           grey_level(0),
-          line_width(1),
+          line_width(GC_DEFAULT_LINE_WIDTH),
           style(AW_SOLID)
     {}
 
