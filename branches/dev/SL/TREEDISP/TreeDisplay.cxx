@@ -2127,10 +2127,94 @@ void AWT_graphic_tree::scale_text_koordinaten(AW_device *device, int gc, double&
     return;
 }
 
+#if defined(TEST_BOXES)
+void AWT_graphic_tree::test_boxes() {
+    disp_device->box(AWT_GC_BRANCH_REMARK, false, 1, 1, 10, 10);
+
+    Vector tobase(1.1, 1.1);
+    if (disp_device->type() != AW_DEVICE_SIZE) {
+        AW_pos pixsize = disp_device->rtransform_size(1.0);
+        int    y       = 0;
+
+        disp_device->set_grey_level(AWT_GC_SELECTED, this->grey_level);
+
+        for (int width = 1; width <= 1; ++width) { // if drawing with multiple widths, boxes are shown correct
+            disp_device->set_line_attributes(AWT_GC_SELECTED, width, AW_SOLID);
+            disp_device->set_line_attributes(AWT_GC_CURSOR, width, AW_SOLID);
+
+            for (int size = 0; size <= 5; ++size) {
+                // for (int size = 0; size <= 2; ++size) {
+                Position start = tobase+Position(0, y*pixsize);
+                AW_pos   wsize = size*pixsize;
+                AW_pos   xdist = (size+1+2*width)*pixsize;
+                Vector   diag(wsize, wsize);
+
+                for (int mode = 0; mode <= 10; ++mode) {
+                    // for (int mode = 3; mode <= 4; ++mode) {
+                    Rectangle rect(start, diag);
+                    switch (mode) {
+                        case 2:
+                            disp_device->box(AWT_GC_SELECTED, true, start, diag);
+                            // fall-through
+                        case 0:
+                            disp_device->box(AWT_GC_CURSOR, false, start, diag);
+                            break;
+                        case 1:
+                            disp_device->box(AWT_GC_SELECTED, true, start, diag);
+                            break;
+
+                        case 3:
+                            disp_device->line(AWT_GC_CURSOR, rect.left_edge());
+                            disp_device->line(AWT_GC_CURSOR, rect.right_edge());
+                            break;
+
+                        case 4:
+                            disp_device->line(AWT_GC_CURSOR, rect.upper_edge());
+                            disp_device->line(AWT_GC_CURSOR, rect.lower_edge());
+                            break;
+
+                        case 5:
+                            disp_device->line(AWT_GC_CURSOR, LineVector(rect.upper_left_corner(), rect.lower_right_corner()));
+                            break;
+                        
+                        case 6:
+                            disp_device->line(AWT_GC_CURSOR, LineVector(rect.lower_right_corner(), rect.upper_left_corner()));
+                            break;
+                        
+                        case 7:
+                            disp_device->line(AWT_GC_CURSOR, LineVector(rect.upper_right_corner(), rect.lower_left_corner()));
+                            break;
+                        
+                        case 8:
+                            disp_device->line(AWT_GC_CURSOR, LineVector(rect.lower_left_corner(), rect.upper_right_corner()));
+                            break;
+                        
+                        case 9:
+                            disp_device->line(AWT_GC_CURSOR, LineVector(rect.upper_left_corner(), ZeroVector));
+                            disp_device->line(AWT_GC_CURSOR, LineVector(rect.upper_right_corner(), ZeroVector));
+                            disp_device->line(AWT_GC_CURSOR, LineVector(rect.lower_right_corner(), ZeroVector));
+                            disp_device->line(AWT_GC_CURSOR, LineVector(rect.lower_left_corner(), ZeroVector));
+                            break;
+                    }
+
+                    start.movex(xdist);
+                }
+                y += size+1+width;
+            }
+        }
+    }
+}
+#endif
+
 void AWT_graphic_tree::show_radial_tree(AP_tree * at, double x_center,
                                         double y_center, double tree_spread, double tree_orientation,
                                         double x_root, double y_root)
 {
+#if defined(TEST_BOXES)
+    test_boxes();
+    return;
+#endif
+    
     double l, r, w, z, l_min, l_max;
 
     AW_click_cd cd(disp_device, (AW_CL)at);
@@ -2634,7 +2718,9 @@ void AWT_graphic_tree::show(AW_device *device) {
                 break;
             }
             case AP_TREE_RADIAL:
+#if !defined(TEST_BOXES)
                 empty_box(tree_root_display->gr.gc, Origin, NT_ROOT_WIDTH);
+#endif
                 show_radial_tree(tree_root_display, 0, 0, 2*M_PI, 0.0, 0, 0);
                 break;
 
@@ -2900,7 +2986,9 @@ void TEST_treeDisplay() {
                     char *spool_expected = GBS_global_string_copy("%s.fig", spool_name);
 
 
-// #define TEST_AUTO_UPDATE // dont test, instead update expected results
+#if defined(TEST_BOXES)
+#define TEST_AUTO_UPDATE // dont test, instead update expected results
+#endif
                     
                     agt.set_tree_type(type);
 
