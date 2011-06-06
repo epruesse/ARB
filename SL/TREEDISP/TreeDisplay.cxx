@@ -1692,7 +1692,7 @@ AWT_graphic_tree::AWT_graphic_tree(AW_root *aw_root_, GBDATA *gb_main_, AD_map_v
     tree_proto        = 0;
     link_to_database  = false;
     tree_static       = 0;
-    baselinewidth     = 0;
+    baselinewidth     = 1;
     species_name      = 0;
     aw_root           = aw_root_;
     gb_main           = gb_main_;
@@ -2422,7 +2422,7 @@ const char *AWT_graphic_tree::show_ruler(AW_device *device, int gc) {
         ruler_text_y = *GBT_readOrCreate_float(gb_tree, awar, ruler_text_y);
 
         sprintf(awar, "ruler/ruler_width");
-        double ruler_width = *GBT_readOrCreate_int(gb_tree, awar, 0);
+        int ruler_width = *GBT_readOrCreate_int(gb_tree, awar, 0);
 
         device->set_line_attributes(gc, ruler_width+baselinewidth, AW_SOLID);
 

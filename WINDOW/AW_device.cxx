@@ -334,7 +334,7 @@ void AW_stylable::set_font(int gc, AW_font font_nr, int size, int *found_size) {
 int AW_stylable::get_available_fontsizes(int gc, AW_font font_nr, int *available_sizes) {
     return get_common()->map_gc(gc)->get_available_fontsizes(font_nr, available_sizes);
 }
-void AW_stylable::set_line_attributes(int gc, AW_pos width, AW_linestyle style) {
+void AW_stylable::set_line_attributes(int gc, short width, AW_linestyle style) {
     get_common()->map_mod_gc(gc)->set_line_attributes(width, style);
 }
 void AW_stylable::set_function(int gc, AW_function function) {

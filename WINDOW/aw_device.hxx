@@ -340,7 +340,7 @@ public:
     void new_gc(int gc);
     void set_grey_level(int gc, AW_grey_level grey_level); 
     void set_font(int gc, AW_font fontnr, int size, int *found_size);
-    void set_line_attributes(int gc, AW_pos width, AW_linestyle style);
+    void set_line_attributes(int gc, short width, AW_linestyle style);
     void set_function(int gc, AW_function function);
     void establish_default(int gc);
     void set_foreground_color(int gc, AW_color_idx color); // lines ....
