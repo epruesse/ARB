@@ -2138,7 +2138,7 @@ void AWT_graphic_tree::test_boxes() {
 
         disp_device->set_grey_level(AWT_GC_SELECTED, this->grey_level);
 
-        for (int width = 1; width <= 1; ++width) { // if drawing with multiple widths, boxes are shown correct
+        for (int width = 1; width <= 3; ++width) { // if drawing with multiple widths, boxes are shown correct
             disp_device->set_line_attributes(AWT_GC_SELECTED, width, AW_SOLID);
             disp_device->set_line_attributes(AWT_GC_CURSOR, width, AW_SOLID);
 
@@ -2199,7 +2199,7 @@ void AWT_graphic_tree::test_boxes() {
 
                     start.movex(xdist);
                 }
-                y += size+1+width;
+                y += size+2+width;
             }
         }
     }
@@ -2988,8 +2988,10 @@ void TEST_treeDisplay() {
 
 #if defined(TEST_BOXES)
 #define TEST_AUTO_UPDATE // dont test, instead update expected results
+#else                    
+// #define TEST_AUTO_UPDATE // dont test, instead update expected results
 #endif
-                    
+
                     agt.set_tree_type(type);
 
 #if defined(TEST_AUTO_UPDATE)
