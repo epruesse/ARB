@@ -147,7 +147,7 @@ public:
     }
 
     // lines
-    void set_line_attributes(int new_width, AW_linestyle new_style) {
+    void set_line_attributes(short new_width, AW_linestyle new_style) {
         aw_assert(new_width >= 1);
         if (new_style != style || new_width != line_width) {
             line_width = new_width;
