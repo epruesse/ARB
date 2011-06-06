@@ -236,37 +236,49 @@ void AW_zoomable::reset() {
 // -----------------
 //      AW_GC_Xm
 
+const int GC_DEFAULT_LINE_STYLE = LineSolid;
+const int GC_CAP_STYLE          = CapRound;
+const int GC_JOIN_STYLE         = JoinRound;
+
 AW_GC_Xm::AW_GC_Xm(AW_common *common_)
     : AW_GC(common_)
 {
-     XGCValues val;
-    val.line_width = 1;
-    unsigned long value_mask = GCLineWidth;
+    XGCValues val;
+
+    val.line_width = GC_DEFAULT_LINE_WIDTH;
+    val.line_style = GC_DEFAULT_LINE_STYLE;
+    val.cap_style  = GC_CAP_STYLE;
+    val.join_style = GC_JOIN_STYLE;
+
+    unsigned long value_mask = GCLineWidth|GCLineStyle|GCCapStyle|GCJoinStyle;
 
     gc = XCreateGC(get_common()->get_display(), get_common()->get_window_id(), value_mask, &val);
+    wm_set_function(get_function());
 }
 AW_GC_Xm::~AW_GC_Xm() {
     if (gc) XFreeGC(get_common()->get_display(), gc);
 }
 void AW_GC_Xm::wm_set_lineattributes(short lwidth, AW_linestyle lstyle) {
-    Display *display = get_common()->get_display();
+    Display            *display = get_common()->get_display();
+    aw_assert(lwidth>0);
+
+    int line_style = LineOnOffDash;
     switch (lstyle) {
         case AW_SOLID:
-            XSetLineAttributes(display, gc, lwidth, LineSolid, CapButt, JoinBevel);
+            line_style = LineSolid;
             break;
         case AW_DASHED: {
             static char dashes[] = { 5, 2 };
             XSetDashes(display, gc, 0, dashes, 2);
-            XSetLineAttributes(display, gc, lwidth, LineOnOffDash, CapButt, JoinBevel);
             break;
         }
         case AW_DOTTED: {
             static char dots[] = { 1, 1 };
             XSetDashes(display, gc, 0, dots, 2); 
-            XSetLineAttributes(display, gc, lwidth, LineOnOffDash, CapButt, JoinBevel);
             break;
         }
     }
+    XSetLineAttributes(display, gc, lwidth, line_style, GC_CAP_STYLE, GC_JOIN_STYLE);
 }
 void AW_GC_Xm::wm_set_function(AW_function mode) {
     switch (mode) {
