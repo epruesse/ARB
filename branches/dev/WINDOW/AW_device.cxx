@@ -237,8 +237,8 @@ void AW_zoomable::reset() {
 //      AW_GC_Xm
 
 const int GC_DEFAULT_LINE_STYLE = LineSolid;
-const int GC_CAP_STYLE          = CapRound;
-const int GC_JOIN_STYLE         = JoinRound;
+const int GC_CAP_STYLE          = CapProjecting;
+const int GC_JOIN_STYLE         = JoinMiter;
 
 AW_GC_Xm::AW_GC_Xm(AW_common *common_)
     : AW_GC(common_)
