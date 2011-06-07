@@ -1655,7 +1655,7 @@ void AWT_graphic_tree::set_tree_type(AP_tree_sort type)
             exports.dont_fit_y      = 1;
             exports.dont_fit_larger = 0;
             exports.dont_scroll     = 0;
-            exports.set_padding(30, 30, short(2*NT_SELECTED_WIDTH+0.5), 300);
+            exports.set_padding(30, 30, NT_SELECTED_WIDTH, 300);
             break;
 
         case AP_TREE_IRS: // folded dendrogram
@@ -1831,28 +1831,25 @@ void AWT_graphic_tree::update(GBDATA *) {
     }
 }
 
-void AWT_graphic_tree::filled_box(int gc, const Position& pos, double half_pixel_width) {
-    disp_device->set_grey_level(gc, this->grey_level);
-    double diam  = half_pixel_width*disp_device->get_unscale();
-    double diam2 = diam+diam;
-    disp_device->box(gc, true, pos.xpos()-diam, pos.ypos()-diam, diam2, diam2, mark_filter);
+void AWT_graphic_tree::box(int gc, const AW::Position& pos, int pixel_width, bool filled) {
+    double diameter = disp_device->rtransform_pixelsize(pixel_width);
+    Vector diagonal(diameter, diameter);
+
+    if (filled) disp_device->set_grey_level(gc, grey_level);
+    else        disp_device->set_line_attributes(gc, 1, AW_SOLID);
+
+    disp_device->box(gc, filled, pos-0.5*diagonal, diagonal, mark_filter);
 }
 
-void AWT_graphic_tree::empty_box(int gc, const AW::Position& pos, double half_pixel_width) {
-    disp_device->set_line_attributes(gc, 1, AW_SOLID);
-    double diam  = half_pixel_width*disp_device->get_unscale();
-    double diam2 = diam+diam;
-    disp_device->box(gc, false, pos.xpos()-diam, pos.ypos()-diam, diam2, diam2, mark_filter);
-}
-
-void AWT_graphic_tree::diamond(int gc, const Position& pos, double half_pixel_width) {
+void AWT_graphic_tree::diamond(int gc, const Position& pos, int pixel_width) {
     // box with one corner down
-    double diam = half_pixel_width * disp_device->get_unscale();
+    double diameter = disp_device->rtransform_pixelsize(pixel_width);
+    double radius  = diameter*0.5;
     
-    Position t(pos.xpos(), pos.ypos()-diam);
-    Position b(pos.xpos(), pos.ypos()+diam);
-    Position l(pos.xpos()-diam, pos.ypos());
-    Position r(pos.xpos()+diam, pos.ypos());
+    Position t(pos.xpos(), pos.ypos()-radius);
+    Position b(pos.xpos(), pos.ypos()+radius);
+    Position l(pos.xpos()-radius, pos.ypos());
+    Position r(pos.xpos()+radius, pos.ypos());
 
     disp_device->line(gc, l, t, mark_filter);
     disp_device->line(gc, r, t, mark_filter);
@@ -1946,7 +1943,7 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, Position& Pen, DendroSubtree
 
             double   unscale  = disp_device->get_unscale();
             size_t   data_len = strlen(data);
-            Position textPos  = Pen + 0.5*Vector((charLimits.width+2*NT_BOX_WIDTH)*unscale, scaled_font.ascent);
+            Position textPos  = Pen + 0.5*Vector((charLimits.width+NT_BOX_WIDTH)*unscale, scaled_font.ascent);
             disp_device->text(at->gr.gc, data, textPos, 0.0, text_filter, data_len);
 
             double textsize = disp_device->get_string_size(at->gr.gc, data, data_len) * unscale;
@@ -2422,7 +2419,7 @@ public:
 
 void AWT_graphic_tree::show_nds_list(GBDATA *, bool use_nds) {
     AW_pos y_position = scaled_branch_distance;
-    AW_pos x_position = 2*NT_SELECTED_WIDTH * disp_device->get_unscale();
+    AW_pos x_position = NT_SELECTED_WIDTH * disp_device->get_unscale();
 
     disp_device->text(nds_show_all ? AWT_GC_CURSOR : AWT_GC_SELECTED,
                       GBS_global_string("%s of %s species", use_nds ? "NDS List" : "Simple list", nds_show_all ? "all" : "marked"),

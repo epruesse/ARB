@@ -71,7 +71,7 @@ bool AW_device_Xm::box_impl(int gc, bool filled, const Rectangle& rect, AW_bitse
                 XFillRectangle(XDRAW_PARAM3(get_common(), gc),
                                AW_INT(clippedRect.left()),
                                AW_INT(clippedRect.top()),
-                               AW_INT(clippedRect.width())+1,
+                               AW_INT(clippedRect.width())+1, // see aw_device.hxx@WORLD_vs_PIXEL
                                AW_INT(clippedRect.height())+1);
                 AUTO_FLUSH(this);
             }
