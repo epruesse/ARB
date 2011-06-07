@@ -575,7 +575,11 @@ static GB_ERROR canvas_to_xfig(AWT_canvas *ntw, const char *xfig_name) {
             ntw->init_device(device);   // draw screen
         }
 
-        device->set_filter(handles ? AW_PRINTER|AW_PRINTER_EXT : AW_PRINTER);
+        AW_bitset filter       = AW_PRINTER;
+        if (handles) filter   |= AW_PRINTER_EXT;
+        if (!draw_all) filter |= AW_PRINTER_CLIP;
+
+        device->set_filter(filter);
         ntw->tree_disp->show(device);
         device->close();
     }

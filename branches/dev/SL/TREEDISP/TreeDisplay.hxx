@@ -104,7 +104,7 @@ class AWT_graphic_tree : public AWT_graphic, virtual Noncopyable {
     int zombies; // # of zombies during last load()
     int duplicates; // # of duplicates during last load()
 
-    int paint_irs_sub_tree(AP_tree *node, int x_offset); // returns y pos
+    AW_pos paint_irs_sub_tree(AP_tree *node, AW_pos x_offset); // returns y pos
 
     void unload();
 
@@ -148,7 +148,7 @@ class AWT_graphic_tree : public AWT_graphic, virtual Noncopyable {
                           double   y_root);
 
     void show_nds_list(GBDATA * gb_main, bool use_nds);
-    void show_irs_tree(AP_tree *at, int height);
+    void show_irs_tree(AP_tree *at, double height);
 
     void box(int gc, const AW::Position& pos, int pixel_width, bool filled);
     void filled_box(int gc, const AW::Position& pos, int pixel_width) { box(gc, pos, pixel_width, true); }

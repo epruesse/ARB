@@ -31,13 +31,14 @@
 #define DPI_SCREEN  80   // fixed
 #define DPI_PRINTER 1200 // default resolution of xfig 3.2
 
-const AW_bitset AW_ALL_DEVICES = (AW_bitset)-1;
-const AW_bitset AW_SCREEN      = 1;
-const AW_bitset AW_CLICK       = 2;
-const AW_bitset AW_CLICK_DRAG  = 4;
-const AW_bitset AW_SIZE        = 8;
-const AW_bitset AW_PRINTER     = 16; // print/xfig-export
-const AW_bitset AW_PRINTER_EXT = 32; // (+Handles) use combined with AW_PRINTER only
+const AW_bitset AW_ALL_DEVICES  = (AW_bitset)-1;
+const AW_bitset AW_SCREEN       = 1;
+const AW_bitset AW_CLICK        = 2;
+const AW_bitset AW_CLICK_DRAG   = 4;
+const AW_bitset AW_SIZE         = 8;
+const AW_bitset AW_PRINTER      = 16; // print/xfig-export
+const AW_bitset AW_PRINTER_EXT  = 32; // (+Handles) use combined with AW_PRINTER only
+const AW_bitset AW_PRINTER_CLIP = 64; // print screen only
 
 enum AW_DEVICE_TYPE {
     AW_DEVICE_SCREEN  = 1,
