@@ -2636,7 +2636,7 @@ void AWT_graphic_tree::show(AW_device *device) {
                 break;
 
             case AP_TREE_IRS:
-                show_irs_tree(tree_root_display, charLimits.height);
+                show_irs_tree(tree_root_display, scaled_branch_distance);
                 break;
 
             case AP_LIST_NDS:       // this is the list all/marked species mode (no tree)
