@@ -122,6 +122,17 @@ public:
 
 bool AW_getBestClick(AW_clicked_line *cl, AW_clicked_text *ct, AW_CL *cd1, AW_CL *cd2);
 
+// --------------------------------------------------
+// general note on world- vs. pixel-positions:(WORLD_vs_PIXEL)
+// 
+// A position is interpreted as the center of the corresponding pixel
+// (pixel refers to screen; printer pixel are 15 times smaller!)
+// 
+// Hence, when scaling factor is 1.0, then
+// - any position inside [-0.5, 0.5[ will fall into the pixel 0, any inside [0.5, 1.5[ into pixel 1.
+// - a line from 0.0 to 2.0 will paint THREE pixels (0, 1 and 2). A line from -0.5 to 2.499 will to the same
+// - clipping to area [0, 100] should in fact clip to [-0.5, 100.5[ (@@@ check this)
+
 class AW_zoomable {
     AW::Vector offset;
     AW_pos     scale;
@@ -146,6 +157,11 @@ public:
 
     double transform_size(const double& size) const { return size*scale; }
     double rtransform_size(const double& size) const { return size*unscale; }
+
+    double rtransform_pixelsize(int pixelsize) const {
+        // return world-size needed to draw line/box with length/size == 'pixelsize'
+        return (pixelsize-1)*unscale;
+    }
 
     // transforming a Vector only scales the vector (a Vector has no position!)
     AW::Vector transform (const AW::Vector& vec) const { return vec*scale; }
