@@ -594,6 +594,7 @@ class AW_device_print : public AW_device { // derived from a Noncopyable
     bool circle_impl(int gc, bool filled, const AW::Position& center, const AW::Vector& radius, AW_bitset filteri);
     bool arc_impl(int gc, bool filled, const AW::Position& center, const AW::Vector& radius, int start_degrees, int arc_degrees, AW_bitset filteri);
     bool filled_area_impl(int gc, int npos, const AW::Position *pos, AW_bitset filteri);
+    bool invisible_impl(int gc, const AW::Position& pos, AW_bitset filteri);
 public:
     AW_device_print(AW_common *common_)
         : AW_device(common_),

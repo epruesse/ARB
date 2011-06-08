@@ -287,6 +287,6 @@ void AWT_graphic_tree::show_irs_tree(AP_tree *at, double height) {
 
     list_tree_ruler_y           = paint_irs_sub_tree(at, 0);
     irs_tree_ruler_scale_factor = IRS.x_scale;
-
-    disp_device->invisible(AWT_GC_CURSOR, corner);
+    
+    disp_device->invisible(AWT_GC_CURSOR, corner); // @@@ remove when size-dev works
 }
