@@ -15,7 +15,9 @@
 
 using namespace AW;
 
-inline double screen2printer(double val) { return (val*DPI_PRINTER)/DPI_SCREEN; }
+const double dpi_screen2printer = double(DPI_PRINTER)/DPI_SCREEN;
+
+inline double screen2printer(double val) { return val*dpi_screen2printer; }
 inline int print_pos(AW_pos screen_pos) { return AW_INT(screen2printer(screen_pos)); }
 
 AW_DEVICE_TYPE AW_device_print::type() { return AW_DEVICE_PRINTER; }
@@ -54,6 +56,21 @@ bool AW_device_print::line_impl(int gc, const LineVector& Line, AW_bitset filter
                     print_pos(clippedLine.ypos()),
                     print_pos(clippedLine.head().xpos()),
                     print_pos(clippedLine.head().ypos()));
+        }
+    }
+    return drawflag;
+}
+
+bool AW_device_print::invisible_impl(int /*gc*/, const AW::Position& pos, AW_bitset filteri) {
+    bool drawflag = false;
+    if (filteri & filter) {
+        Position trans = transform(pos);
+
+        drawflag = !is_outside_clip(trans);
+        if (drawflag) {
+            fprintf(out, "2 1 0 1 7 7 50 -1 -1 0.000 0 0 -1 0 0 1\n\t%d %d\n",
+                    print_pos(trans.xpos()),
+                    print_pos(trans.ypos()));
         }
     }
     return drawflag;
