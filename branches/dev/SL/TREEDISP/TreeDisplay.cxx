@@ -2734,7 +2734,7 @@ class fake_AW_GC : public AW_GC {
     virtual void wm_set_font(AW_font /*font_nr*/, int size, int */*found_size*/) {
         unsigned int i;
         for (i = AW_FONTINFO_CHAR_ASCII_MIN; i <= AW_FONTINFO_CHAR_ASCII_MAX; i++) {
-            set_char_size(i, size, 0, size);
+            set_char_size(i, size, 0, size-2); // good fake size for Courier 8pt
         }
     }
 public:
@@ -2756,7 +2756,7 @@ public:
             AW_GC *gcm = map_mod_gc(gc);
             gcm->set_line_attributes(1, AW_SOLID);
             gcm->set_function(AW_COPY);
-            gcm->set_font(1, 8, NULL);
+            gcm->set_font(12, 8, NULL); // 12 is Courier (use monospaced here, cause font limits are faked)
 
             gcm->set_fg_color(colors_def[gc+AW_STD_COLOR_IDX_MAX]);
         }
