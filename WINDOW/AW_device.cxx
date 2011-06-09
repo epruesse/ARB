@@ -470,6 +470,14 @@ void AW_device::pop_clip_scale() {
 
 // --------------------------------------------------------------------------------
 
+static const AW_screen_area& get_universe() {
+    // "unrestricted" area
+    const int UMIN = INT_MIN/10;
+    const int UMAX = INT_MAX/10;
+    static AW_screen_area universe = { UMIN, UMAX, UMIN, UMAX };
+    return universe;
+}
+
 const AW_screen_area& AW_device::get_area_size() {
     return get_common()->get_screen();
 }
@@ -480,7 +488,12 @@ void AW_device::reset() {
     while (clip_scale_stack) {
         pop_clip_scale();
     }
-    set_cliprect(get_area_size()); // @@@ or set_cliprect_oversize ? 
+    if (type() == AW_DEVICE_SIZE) {
+        set_cliprect(get_universe());
+    }
+    else {
+        set_cliprect(get_area_size());
+    }
     AW_zoomable::reset();
     privat_reset();
 }

@@ -42,8 +42,11 @@ typedef enum {
     AWT_MODE_STRETCH
 } AWT_COMMAND_MODE;
 
+#define STANDARD_PADDING 10
+
 class AWT_graphic_exports {
-    AW_screen_area padding; // padding at borders
+    AW_borders default_padding;
+    AW_borders padding;
 
 public:
     unsigned int zoom_reset : 1;
@@ -59,11 +62,23 @@ public:
     void init();     // like clear, but resets fit, scroll state and padding
     void clear();
 
-    void set_padding(int t, int b, int l, int r) {
-        padding.t = t;
-        padding.b = b;
-        padding.l = l;
-        padding.r = r;
+    void set_default_padding(int t, int b, int l, int r) {
+        default_padding.t = t;
+        default_padding.b = b;
+        default_padding.l = l;
+        default_padding.r = r;
+
+        padding = default_padding;
+    }
+
+    void set_equilateral_default_padding(int pad) { set_default_padding(pad, pad, pad, pad); }
+    void set_standard_default_padding() { set_equilateral_default_padding(STANDARD_PADDING); }
+
+    void set_extra_text_padding(const AW_borders& text_padding) {
+        padding.t = default_padding.t + text_padding.t;
+        padding.b = default_padding.b + text_padding.b;
+        padding.l = default_padding.l + text_padding.l;
+        padding.r = default_padding.r + text_padding.r;
     }
 
     int get_x_padding() const { return padding.l+padding.r; }

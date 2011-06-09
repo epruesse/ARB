@@ -41,7 +41,7 @@ GEN_graphic::GEN_graphic(AW_root *aw_root_, GBDATA *gb_main_, GEN_graphic_cb_ins
     exports.dont_fit_x  = 0;
     exports.dont_fit_y  = 0;
     exports.dont_scroll = 0;
-    exports.set_padding(5, 5, 10, 30);
+    exports.set_standard_default_padding();
 
     rot_ct.exists = false;
     rot_cl.exists = false;
