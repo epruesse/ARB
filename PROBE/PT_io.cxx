@@ -227,17 +227,17 @@ void probe_read_alignments() {
         free(def_ref);
     }
 
-    int count = GB_number_of_subentries(psg.gb_species_data);
+    int icount = GB_number_of_subentries(psg.gb_species_data);
     
-    psg.data       = (probe_input_data *)calloc(sizeof(probe_input_data), count);
+    psg.data       = (probe_input_data *)calloc(sizeof(probe_input_data), icount);
     psg.data_count = 0;
 
     int data_missing = 0;
 
-    printf("Database contains %i species\n", count);
+    printf("Database contains %i species\n", icount);
     {
-        arb_progress progress("Preparing sequence data", count);
-        count = 0;
+        arb_progress progress("Preparing sequence data", icount);
+        int count = 0;
 
         for (GBDATA *gb_species = GBT_first_species_rel_species_data(psg.gb_species_data);
              gb_species;
@@ -253,42 +253,44 @@ void probe_read_alignments() {
             pid.is_group = 1;
             pid.gbd      = gb_species;
 
-            GBDATA *gb_ali = GB_entry(gb_species, psg.alignment_name);
-            if (gb_ali) {
-                GBDATA *gb_data = GB_entry(gb_ali, "data");
-                if (!gb_data) {
-                    fprintf(stderr, "Species '%s' has no data in '%s'\n", pid.name, psg.alignment_name);
+            GBDATA *gb_ali  = GB_entry(gb_species, psg.alignment_name);
+            GBDATA *gb_data = gb_ali ? GB_entry(gb_ali, "data") : NULL;
+            if (!gb_data) {
+                fprintf(stderr, "Species '%s' has no data in '%s'\n", pid.name, psg.alignment_name);
+                data_missing++;
+            }
+            else {
+                int   hsize;
+                char *data = probe_read_string_append_point(gb_data, &hsize);
+
+                if (!data) {
+                    GB_ERROR error = GB_await_error();
+                    fprintf(stderr, "Could not read data in '%s' for species '%s'\n(Reason: %s)\n",
+                            psg.alignment_name, pid.name, error);
                     data_missing++;
                 }
                 else {
-                    int   hsize;
-                    char *data = probe_read_string_append_point(gb_data, &hsize);
+                    pid.checksum = GB_checksum(data, hsize, 1, ".-");
+                    int   size = probe_compress_sequence(data, hsize);
 
-                    if (!data) {
-                        GB_ERROR error = GB_await_error();
-                        fprintf(stderr, "Could not read data in '%s' for species '%s'\n(Reason: %s)\n",
-                                psg.alignment_name, pid.name, error);
-                        data_missing++;
-                    }
-                    else {
-                        pid.checksum = GB_checksum(data, hsize, 1, ".-");
-                        int   size = probe_compress_sequence(data, hsize);
+                    pid.data = GB_memdup(data, size);
+                    pid.size = size;
 
-                        pid.data = GB_memdup(data, size);
-                        pid.size = size;
-
-                        free(data);
-                    }
-                    
-                    count++;
-                    progress.inc();
+                    free(data);
                 }
+                    
+                count++;
             }
+            progress.inc();
         }
+
+        pt_assert((count+data_missing) == icount);
 
         psg.data_count = count;
         GB_commit_transaction(psg.gb_main);
     }
+
+    
 
     if (data_missing) {
         printf("\n%i species were ignored because of missing data.\n", data_missing);
