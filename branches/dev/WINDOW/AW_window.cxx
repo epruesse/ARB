@@ -3074,7 +3074,7 @@ AW_device_size *AW_window::get_size_device(AW_area area) {
 
     if (aram) {
         size_device = aram->get_size_device();
-        size_device->init();
+        size_device->clear();
         size_device->reset(); // @@@ hm
     }
     return size_device;
