@@ -697,7 +697,7 @@ void NT_jump_cb(AW_window *, AWT_canvas *ntw, AW_CL auto_expand_groups) {
             case AP_LIST_NDS: {
                 repeat_jump: 
                 AW_device_size *device = aww->get_size_device(AW_MIDDLE_AREA);
-                device->set_filter(AW_SIZE);
+                device->set_filter(AW_SIZE|AW_SIZE_UNSCALED);
                 device->reset();
                 ntw->init_device(device);
                 ntw->tree_disp->show(device);

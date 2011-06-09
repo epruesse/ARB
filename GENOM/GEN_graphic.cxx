@@ -131,7 +131,7 @@ void GEN_graphic::command(AW_device *device, AWT_COMMAND_MODE cmd, int button, A
 
 inline int GEN_root::smart_text(AW_device *device, int gc, const char *str, AW_pos x, AW_pos y) {
     int slen = strlen(str);
-    int res  = device->text(gc, str, x, y, 0.0, AW_ALL_DEVICES, slen);
+    int res  = device->text(gc, str, x, y, 0.0, AW_ALL_DEVICES_UNSCALED, slen);
     if (gc == GEN_GC_CURSOR) {
         int                   xsize = device->get_string_size(gc, str, slen);
         const AW_font_limits& lim   = device->get_font_limits(gc, 0);

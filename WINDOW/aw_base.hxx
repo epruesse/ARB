@@ -31,6 +31,8 @@ struct AW_screen_area {
     void clear() { t = b = l = r = 0; }
 };
 
+typedef AW_screen_area AW_borders; // not an area, but size spec at all borders
+
 typedef int AW_font;
 
 typedef long      AW_bitset;
