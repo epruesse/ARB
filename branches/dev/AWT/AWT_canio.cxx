@@ -145,6 +145,8 @@ static PaperFormat knownPaperFormat[] = {
 // --------------------------------------------------------------------------------
 
 static Rectangle get_drawsize(AWT_canvas *ntw, bool draw_all) {
+    // returns size of drawn graphic in screen-coordinates
+    
     Rectangle       drawsize;
     GB_transaction  ta(ntw->gb_main);
     AW_device_size *size_device = ntw->aww->get_size_device(AW_MIDDLE_AREA);
@@ -152,7 +154,7 @@ static Rectangle get_drawsize(AWT_canvas *ntw, bool draw_all) {
     if (draw_all) {
         size_device->reset();
         size_device->zoom(ntw->trans_to_fit);
-        size_device->set_filter(AW_SCREEN|AW_PRINTER|AW_PRINTER_EXT);
+        size_device->set_filter(AW_PRINTER|AW_PRINTER_EXT);
         ntw->tree_disp->show(size_device);
         drawsize = size_device->get_size_information();
     }
@@ -299,9 +301,7 @@ static void fit_pages(AW_root *awr, int wanted_pages, bool allow_orientation_cha
         }
     }
 
-    if (best_orientation != -1) {
-        awt_assert(best_zoom_awar_name);
-
+    if (best_zoom_awar_name) {
         // take the best found values :
         awr->awar(AWAR_CANIO_LANDSCAPE)->write_int(best_orientation);
         awr->awar(best_zoom_awar_name)->write_float(best_zoom);
@@ -541,7 +541,9 @@ static void create_print_awars(AW_root *awr, AWT_canvas *ntw) {
 
 // --------------------------------------------------------------------------------
 
-static GB_ERROR canvas_to_xfig(AWT_canvas *ntw, const char *xfig_name) {
+static GB_ERROR canvas_to_xfig(AWT_canvas *ntw, const char *xfig_name, bool add_invisibles) {
+    // if 'add_invisibles' is true => print 2 invisible dots to make fig2dev center correctly 
+
     GB_transaction ta(ntw->gb_main);
 
     AW_root *awr       = ntw->awr;
@@ -557,22 +559,28 @@ static GB_ERROR canvas_to_xfig(AWT_canvas *ntw, const char *xfig_name) {
     GB_ERROR error = device->open(xfig_name);
 
     if (!error) {
+        Rectangle drawsize = get_drawsize(ntw, draw_all);
+        Rectangle world_drawsize;
+
         if (draw_all) {
-            Rectangle drawsize    = get_drawsize(ntw, draw_all);
             Rectangle with_border = add_border_to_drawsize(drawsize, border);
 
             double zoom = ntw->trans_to_fit;
             device->zoom(zoom); // same zoom as used by get_drawsize above
 
+            world_drawsize = device->rtransform(drawsize);
+
             Vector ulc2origin = Origin-with_border.upper_left_corner();
-            Vector offset     = device->rtransform(ulc2origin)/device->get_scale();
+            Vector offset     = device->rtransform(ulc2origin)*device->get_unscale();
+
             device->set_offset(offset);
 
             device->set_bottom_clip_border((int)(with_border.height()+1), true);
             device->set_right_clip_border((int)(with_border.width()+1), true);
         }
         else {
-            ntw->init_device(device);   // draw screen
+            ntw->init_device(device);
+            world_drawsize = device->rtransform(drawsize);
         }
 
         AW_bitset filter       = AW_PRINTER;
@@ -581,6 +589,31 @@ static GB_ERROR canvas_to_xfig(AWT_canvas *ntw, const char *xfig_name) {
 
         device->set_filter(filter);
         ntw->tree_disp->show(device);
+
+        if (add_invisibles) {
+            Position ul = world_drawsize.upper_left_corner();
+            Position lr = world_drawsize.lower_right_corner();
+
+            // move invisible points towards center (in case they are clipped away)
+            Vector stepInside = device->rtransform(Vector(1, 1));
+            int maxloop = 10;
+
+            bool drawnUL = false;
+            bool drawnLR = false;
+
+            while (!(drawnLR && drawnUL) && maxloop-->0) {
+                if (!drawnUL) {
+                    drawnUL  = device->invisible(0, ul);
+                    ul      += stepInside;
+                }
+                if (!drawnLR) {
+                    drawnLR  = device->invisible(0, lr);
+                    lr      -= stepInside;
+                }
+            }
+            awt_assert(drawnLR && drawnUL);
+        }
+
         device->close();
     }
     return error;
@@ -598,7 +631,7 @@ static void canvas_to_xfig_and_run_xfig(AW_window *aww, AW_CL cl_ntw) {
         error = "Please enter a file name";
     }
     else {
-        error = canvas_to_xfig(ntw, xfig);
+        error = canvas_to_xfig(ntw, xfig, true);
         if (!error) {
             awr->awar(AWAR_CANIO_FILE_DIR)->touch(); // reload dir to show created xfig
             error = GB_system(GBS_global_string("xfig %s &", xfig));
@@ -646,7 +679,7 @@ void canvas_to_printer(AW_window *aww, AW_CL cl_ntw) {
         progress.subtitle("Exporting Data");
 
         if (!xfig) error = GB_await_error();
-        if (!error) error = canvas_to_xfig(ntw, xfig);
+        if (!error) error = canvas_to_xfig(ntw, xfig, true);
 
         if (!error) {
             awt_assert(GB_is_privatefile(xfig, true));
@@ -707,7 +740,12 @@ void canvas_to_printer(AW_window *aww, AW_CL cl_ntw) {
             }
         }
         if (xfig) {
+#if defined(DEBUG) && 0
+            // show intermediate xfig and unlink it
+            GB_system(GBS_global_string("( xfig %s; rm %s) &", xfig, xfig));
+#else // !defined(DEBUG)
             GB_unlink_or_warn(xfig, &error);
+#endif
             free(xfig);
         }
     }

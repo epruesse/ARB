@@ -527,7 +527,7 @@ SEC_graphic::SEC_graphic(AW_root *aw_rooti, GBDATA *gb_maini)
     exports.dont_fit_x  = 0;
     exports.dont_fit_y  = 0;
     exports.dont_scroll = 0;
-    exports.set_padding(20, 20, 20, 20);
+    exports.set_standard_default_padding();
 
     rot_ct.exists = false;
     rot_cl.exists = false;

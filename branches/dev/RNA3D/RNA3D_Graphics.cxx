@@ -50,7 +50,7 @@ RNA3D_Graphics::RNA3D_Graphics(AW_root *aw_root_, GBDATA *gb_main_) {
     exports.dont_fit_y      = 1;
     exports.dont_fit_larger = 0;
     exports.dont_scroll     = 0;
-    exports.set_padding(30, 30, 20, 200);
+    exports.set_standard_default_padding();
 
     this->aw_root = aw_root_;
     this->gb_main = gb_main_;

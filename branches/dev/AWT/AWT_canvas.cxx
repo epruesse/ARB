@@ -94,17 +94,18 @@ void AWT_canvas::init_device(AW_device *device) {
 
 void AWT_canvas::recalc_size(bool adjust_scrollbars) {
     GB_transaction  dummy(this->gb_main);
-    AW_device_size *device = aww->get_size_device(AW_MIDDLE_AREA);
+    AW_device_size *size_device = aww->get_size_device(AW_MIDDLE_AREA);
 
-    device->set_filter(AW_SIZE);
-    device->reset();
+    size_device->set_filter(AW_SIZE|AW_SIZE_UNSCALED);
+    size_device->reset();
 
-    this->tree_disp->show(device);
-    device->get_size_information(&(this->worldinfo));
+    tree_disp->show(size_device);
+    tree_disp->exports.set_extra_text_padding(size_device->get_unscaleable_overlap());
 
-    rect = device->get_area_size();   // real world size (no offset)
+    size_device->get_size_information(&(this->worldinfo));
+    rect = size_device->get_area_size();   // real world size (no offset)
 
-    if (adjust_scrollbars) this->set_scrollbars();
+    if (adjust_scrollbars) set_scrollbars();
 }
 
 void AWT_canvas::zoom_reset() {
@@ -113,17 +114,17 @@ void AWT_canvas::zoom_reset() {
     AW_pos width  = this->worldinfo.r - this->worldinfo.l;
     AW_pos height = this->worldinfo.b - this->worldinfo.t;
 
-
     AW_pos net_window_width  = rect.r - rect.l - tree_disp->exports.get_x_padding();
     AW_pos net_window_height = rect.b - rect.t - tree_disp->exports.get_y_padding();
-
+    
     if (net_window_width<AWT_MIN_WIDTH) net_window_width   = AWT_MIN_WIDTH;
     if (net_window_height<AWT_MIN_WIDTH) net_window_height = AWT_MIN_WIDTH;
 
     if (width <EPS) width   = EPS;
-    AW_pos x_scale          = net_window_width/width;
     if (height <EPS) height = EPS;
-    AW_pos y_scale          = net_window_height/height;
+
+    AW_pos x_scale = net_window_width/width;
+    AW_pos y_scale = net_window_height/height;
 
     if (tree_disp->exports.dont_fit_larger) {
         if (width>height) {     // like dont_fit_x = 1; dont_fit_y = 0;
