@@ -19,8 +19,7 @@
 #include "dialog.hxx"
 
 
-class helpDialog : public MDialog
-{
+class helpDialog : public MDialog { // derived from a Noncopyable
     public:
         helpDialog(MDialog*);
         ~helpDialog();

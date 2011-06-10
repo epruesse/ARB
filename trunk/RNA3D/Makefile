@@ -43,6 +43,7 @@ RNA3D_Graphics.o: $(ARBHOME)/INCLUDE/arb_assert.h
 RNA3D_Graphics.o: $(ARBHOME)/INCLUDE/arb_core.h
 RNA3D_Graphics.o: $(ARBHOME)/INCLUDE/arb_error.h
 RNA3D_Graphics.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+RNA3D_Graphics.o: $(ARBHOME)/INCLUDE/arbtools.h
 RNA3D_Graphics.o: $(ARBHOME)/INCLUDE/attributes.h
 RNA3D_Graphics.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 RNA3D_Graphics.o: $(ARBHOME)/INCLUDE/aw_device.hxx

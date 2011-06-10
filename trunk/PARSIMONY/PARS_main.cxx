@@ -577,7 +577,7 @@ static void nt_add(AW_window *, AWT_canvas *ntw, AddWhat what, bool quick, int t
 //      Adding partial sequences to tree
 // -----------------------------------------
 
-class PartialSequence {
+class PartialSequence { 
     GBDATA               *gb_species;
     mutable AP_tree_nlen *self;                     // self converted to leaf (ready for insertion)
     const AP_tree_nlen   *best_full_match;          // full sequence position which matched best
@@ -603,7 +603,19 @@ public:
         , overlap(0),  penalty(LONG_MAX), released(false), multi_match(false)
     {
     }
-
+    PartialSequence(const PartialSequence& other)
+        : gb_species(other.gb_species),
+          self(other.self),
+          best_full_match(other.best_full_match),
+          overlap(other.overlap),
+          penalty(other.penalty),
+          released(other.released),
+          multi_match(other.multi_match),
+          multi_list(other.multi_list)
+    {
+        ap_assert(self == 0); // copying self not implemented
+    }
+    DECLARE_ASSIGNMENT_OPERATOR(PartialSequence);
     ~PartialSequence() { ap_assert(self == 0); }
 
     GBDATA *get_species() const { return gb_species; }

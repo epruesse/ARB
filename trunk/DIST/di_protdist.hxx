@@ -37,7 +37,7 @@ typedef char   di_bool_matrix[di_max_paa][di_max_paa];
 class DI_ENTRY;
 class AP_smatrix;
 
-class di_protdist {
+class di_protdist : virtual Noncopyable {
     static double pameigs[20];
     static double pamprobs[20][20];
     di_codetype   whichcode;

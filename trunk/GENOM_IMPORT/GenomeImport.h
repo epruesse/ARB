@@ -18,7 +18,7 @@
 class UniqueNameDetector;
 class AW_repeated_question;
 
-struct ImportSession : Noncopyable { // valid during complete import of multiple files
+struct ImportSession : virtual Noncopyable { // valid during complete import of multiple files
     GBDATA               *gb_species_data;
     UniqueNameDetector   *und_species;                    // extended when creating new species
     AW_repeated_question *ok_to_ignore_wrong_start_codon;

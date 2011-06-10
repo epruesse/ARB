@@ -36,7 +36,7 @@ struct AP_STACK_ELEM {
     void *                 node;
 };
 
-class AP_STACK {
+class AP_STACK : virtual Noncopyable {
     struct AP_STACK_ELEM * first;
     struct AP_STACK_ELEM * pointer;
     unsigned long          stacksize;
@@ -64,7 +64,7 @@ struct AP_list_elem {
     void *         node;
 };
 
-class AP_LIST {
+class AP_LIST : virtual Noncopyable {
     unsigned int  list_len;
     unsigned int  akt;
     AP_list_elem *first, *last, *pointer;

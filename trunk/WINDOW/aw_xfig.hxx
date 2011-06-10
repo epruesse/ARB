@@ -17,6 +17,9 @@
 #ifndef ARBDB_BASE_H
 #include <arbdb_base.h>
 #endif
+#ifndef ARBTOOLS_H
+#include <arbtools.h>
+#endif
 
 
 const int XFIG_DEFAULT_FONT_WIDTH  = 8;
@@ -56,7 +59,7 @@ struct AW_xfig_pos {
     int   center;
 };
 
-class AW_xfig {
+class AW_xfig : virtual Noncopyable {
     void calc_scaling(int font_width, int font_height);
 
 public:

@@ -180,7 +180,7 @@ void TEST_arb_replace() {
 
 // --------------------------------------------------------------------------------
 
-class CommandOutput {
+class CommandOutput : virtual Noncopyable {
     char     *stdoutput; // output from command
     char     *stderrput;
     GB_ERROR  error;

@@ -18,17 +18,15 @@
 #include <cstring>
 #endif
 
-class Sequence              // Klasse fuer RNS-Sequenzen
-{
-    private:
-    
+class Sequence {
+    // Klasse fuer RNS-Sequenzen
     str     original;       // Originale Sequenz
     UINT    origlen;        // Laenge der originalen Sequenz
 
     str     compressed;     // Kompremiert Sequenz
     UINT    complen;        // Laenge der kompremierten Sequenz
 
-    public:
+public:
 
             Sequence        ( void );                   // Konstruktor fuer leere Sequenz
 
@@ -39,10 +37,11 @@ class Sequence              // Klasse fuer RNS-Sequenzen
             Sequence        ( str        file,          // Konstruktor fuer Sequenz aus Datei
                               UINT       line );
 
-            Sequence        ( Sequence  &sequence );    // Kopierkonstruktor
+            Sequence        ( const Sequence  &sequence );    // Kopierkonstruktor
+    DECLARE_ASSIGNMENT_OPERATOR(Sequence);
 
             ~Sequence       ( void );                   // Destruktor
-    
+            
     str     Original        ( void )    { return strdup(original); };   // Liefert Kopie der
                                                                         // originalen Sequenz
 

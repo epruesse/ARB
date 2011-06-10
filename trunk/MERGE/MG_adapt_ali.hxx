@@ -17,7 +17,7 @@
 
 class MG_remap;
 
-struct MG_remaps {
+struct MG_remaps : virtual Noncopyable {
     int        n_remaps;
     char     **alignment_names;
     MG_remap **remaps;

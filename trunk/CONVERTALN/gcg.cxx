@@ -89,7 +89,7 @@ public:
     const char *name() const { return "comment-writer"; }
 };
 
-class GcgWriter : public FileWriter {
+class GcgWriter : public FileWriter { // derived from a Noncopyable
     char *species_name;
     bool  seq_written;             // if true, any further sequences are ignored
 

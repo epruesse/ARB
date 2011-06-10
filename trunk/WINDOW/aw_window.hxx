@@ -13,6 +13,9 @@
 #ifndef AW_KEYSYM_HXX
 #include "aw_keysym.hxx"
 #endif
+#ifndef ARBTOOLS_H
+#include <arbtools.h>
+#endif
 
 class AW_window;
 class AW_device;
@@ -189,7 +192,7 @@ enum AW_PosRecalc {
 
 typedef void (*aw_hide_cb)(AW_window *aww);
 
-class AW_window {
+class AW_window : virtual Noncopyable {
     enum AW_SizeRecalc recalc_size_at_show;
     enum AW_PosRecalc  recalc_pos_at_show;
     aw_hide_cb         hide_cb;
@@ -571,7 +574,7 @@ public:
 };
 
 
-class AW_window_menu_modes : public AW_window {
+class AW_window_menu_modes : public AW_window { // derived from a Noncopyable
 private:
     void    *AW_window_menu_modes_private;    // Do not use !!!
 public:

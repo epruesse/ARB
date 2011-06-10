@@ -65,7 +65,7 @@ enum SEC_CHECK_TYPE {
 
 class SEC_root;
 
-class SEC_region {
+class SEC_region : virtual Noncopyable {
 private:
     /* non redundant values */
     int sequence_start, sequence_end; // sequence_end is exclusive
@@ -259,7 +259,7 @@ enum SEC_BASE_TYPE {
 //      SEC_base
 // -----------------
 
-class SEC_base : public SEC_constrainted, public SEC_oriented, Noncopyable { // loop or helix
+class SEC_base : public SEC_constrainted, public SEC_oriented, virtual Noncopyable { // loop or helix
     SEC_root *root;
 
     virtual SEC_base *get_parent() = 0;
@@ -278,7 +278,7 @@ public:
     SEC_root *get_root() const { return root; }
 };
 
-class SEC_base_part : Noncopyable { // segment or strand
+class SEC_base_part : virtual Noncopyable { // segment or strand
     SEC_region region;
 
     virtual SEC_base *get_parent()    = 0;
@@ -311,7 +311,7 @@ public:
 class SEC_helix_strand;
 class SEC_loop;
 
-class SEC_helix : public SEC_base {
+class SEC_helix : public SEC_base { // derived from a Noncopyable
 
     SEC_helix_strand *strand_to_root;
     size_t base_length; // max. # of bases in any strand
@@ -370,7 +370,7 @@ public:
 
 class SEC_segment;
 
-class SEC_helix_strand : public SEC_base_part {
+class SEC_helix_strand : public SEC_base_part { // derived from a Noncopyable
     friend class SEC_helix;
 
     SEC_loop         *origin_loop;     // Pointer to loop where strand comes from
@@ -468,7 +468,7 @@ public:
 //      SEC_segment
 // --------------------
 
-class SEC_segment : public SEC_base_part {
+class SEC_segment : public SEC_base_part { // derived from a Noncopyable
 private:
     double   alpha;             // angle of segment (i.e. how much of the loop is used by this segment)
     Position center1, center2; // segments are not circles, they are ellipsoids
@@ -549,7 +549,7 @@ public:
 //      SEC_loop
 // -----------------
 
-class SEC_loop : public SEC_base {
+class SEC_loop : public SEC_base { // derived from a Noncopyable
     double   Circumference;     // unit is in "segment-base-distances"
     Position center;            // center point of loop
     SEC_helix_strand *primary_strand; // primary strand of loop
@@ -675,7 +675,7 @@ enum SEC_bgpaint_mode {
     BG_PAINT_BOTH   = BG_PAINT_FIRST | BG_PAINT_SECOND,
 };
 
-class SEC_root {
+class SEC_root : virtual Noncopyable {
     SEC_loop *root_loop;
     int       cursorAbsPos;     // cursor position (-1 == unset)
     XString  *xString;

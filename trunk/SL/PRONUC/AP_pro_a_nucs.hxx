@@ -14,6 +14,9 @@
 #ifndef ARBDB_BASE_H
 #include <arbdb_base.h>
 #endif
+#ifndef ARBTOOLS_H
+#include <arbtools.h>
+#endif
 
 
 enum AP_BASES {
@@ -26,7 +29,7 @@ enum AP_BASES {
     AP_MAX = 32
 };
 
-struct arb_r2a_pro_2_nucs {
+struct arb_r2a_pro_2_nucs : virtual Noncopyable {
     struct arb_r2a_pro_2_nucs *next;
     char                       nucbits[3]; // bitsets of nucs
 
@@ -34,7 +37,7 @@ struct arb_r2a_pro_2_nucs {
     ~arb_r2a_pro_2_nucs();
 };
 
-struct arb_r2a_pro_2_nuc {
+struct arb_r2a_pro_2_nuc : virtual Noncopyable {
     char single_pro;
     char tri_pro[3];            // null terminated (because of index)
     int  index;                 // < 0x007fffff
@@ -59,7 +62,7 @@ typedef struct {
 
 class AWT_translator;
 
-class AWT_distance_meter {
+class AWT_distance_meter : virtual Noncopyable {
     AWT_PDP *dist_[64];         // sets of proteins with special distance [64 > max_aa
 
     long transform07[256];       // like dist.patd[1] but for bits 0-7
@@ -75,7 +78,7 @@ public:
 };
 
 
-class AWT_translator {
+class AWT_translator : virtual Noncopyable {
 private:
     mutable AWT_distance_meter *distance_meter; // (mutable to allow lazy-evaluation)
 

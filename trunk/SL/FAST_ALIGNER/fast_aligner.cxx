@@ -95,7 +95,7 @@ struct AlignParams {
     }
 };
 
-struct SearchRelativeParams {
+struct SearchRelativeParams : virtual Noncopyable {
     FamilyFinder *ff;
     char         *pt_server_alignment; // alignment used in pt_server (may differ from 'alignment')
     int           maxRelatives;        // max # of relatives to use
@@ -268,10 +268,9 @@ static void build_reverse_complement(AW_window *aw, AW_CL cl_AlignDataAccess) {
 // --------------------------------------------------------------------------------
 
 class UnalignedBasesList;
-class UnalignedBases
-{
-    int start,          // absolute positions
-        end;
+class UnalignedBases : virtual Noncopyable {
+    int             start; // absolute positions
+    int             end;
     UnalignedBases *next;
 
     friend class UnalignedBasesList;
@@ -284,8 +283,7 @@ public:
     int get_end() const { return end; }
 };
 
-class UnalignedBasesList
-{
+class UnalignedBasesList : virtual Noncopyable {
     UnalignedBases *head;
 public:
     UnalignedBasesList() { head = 0; }
@@ -1804,7 +1802,7 @@ static ARB_ERROR alignToNextRelative(SearchRelativeParams&  relSearch,
 // ------------------------
 //      AlignmentReference
 
-class AlignmentReference {
+class AlignmentReference : virtual Noncopyable {
     GB_CSTR            alignment;
     int                max_seq_length;
     const AlignParams& ali_params;
@@ -1832,7 +1830,7 @@ public:
 #warning let alignToGroupConsensus and alignToNextRelative use ExplicitReference
 #endif
 
-class ExplicitReference: public AlignmentReference {
+class ExplicitReference: public AlignmentReference { // derived from a Noncopyable
     const FastSearchSequence *targetSequence;
     GBDATA                   *gb_alignTo;
 
@@ -1901,7 +1899,7 @@ public:
 // ----------------
 //      Aligner
 
-class Aligner {
+class Aligner : virtual Noncopyable {
     GBDATA *gb_main;
 
     // define alignment target(s):
@@ -2897,7 +2895,7 @@ void TEST_OligoCounter() {
 // -------------------------
 //      FakeFamilyFinder
 
-class FakeFamilyFinder: public FamilyFinder {
+class FakeFamilyFinder: public FamilyFinder { // derived from a Noncopyable
     // used by unit tests to detect next relatives instead of asking the pt-server
 
     GBDATA                    *gb_main;

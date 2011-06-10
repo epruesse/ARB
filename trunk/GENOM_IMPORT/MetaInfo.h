@@ -28,7 +28,7 @@ public:
 };
 
 
-class References : public Noncopyable { // holds information of all reference sections
+class References : virtual Noncopyable { // holds information of all reference sections
     vector<Reference>  refs;
     Reference         *latest;
     int                ref_count;
@@ -52,7 +52,7 @@ public:
 #endif // DEBUG
 };
 
-class MetaInfo : public Noncopyable {
+class MetaInfo : virtual Noncopyable {
     stringMap  entries;         // key = arb_field, value = content
 
 public:

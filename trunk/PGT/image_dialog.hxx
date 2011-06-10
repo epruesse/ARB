@@ -55,8 +55,7 @@ typedef struct _RGB
 } RGB;
 
 
-class imageDialog : public MDialog
-{
+class imageDialog : public MDialog { // derived from a Noncopyable
     public:
         imageDialog(MDialog*);
         ~imageDialog();

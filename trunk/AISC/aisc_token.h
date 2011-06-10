@@ -8,6 +8,9 @@
 #ifndef AISC_DEF_H
 #include "aisc_def.h"
 #endif
+#ifndef ARBTOOLS_H
+#include <arbtools.h>
+#endif
 
 // ------------------------------------------------------------
 // structures holding data read from *.aisc files
@@ -32,7 +35,7 @@ class TokenListBlock;
 // --------------
 //      Token
 
-class Token {
+class Token : virtual Noncopyable {
     Token     *next;                                // (owned)
     TokenList *parent;
 
@@ -74,7 +77,7 @@ public:
 // ------------------
 //      TokenList
 
-class TokenList {
+class TokenList : virtual Noncopyable {
     Token          *head;                           // list of tokens (owned)
     Token          *tail;
     TokenList      *next;                           // owned
@@ -111,7 +114,7 @@ public:
 // -----------------------
 //      TokenListBlock
 
-class TokenListBlock {
+class TokenListBlock : virtual Noncopyable {
     TokenList   *head;                              // list of TokenLists (owned)
     TokenList   *tail;
     const Token *parent;

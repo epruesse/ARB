@@ -550,7 +550,7 @@ static GB_ERROR gbl_eval(GBL_command_arguments *args) {
     return error;
 }
 
-class DefinedCommands {
+class DefinedCommands : virtual Noncopyable {
     GB_HASH *cmds;
 public:
     DefinedCommands() { cmds = GBS_create_dynaval_hash(100, GB_MIND_CASE, GBS_dynaval_free); }

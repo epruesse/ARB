@@ -18,7 +18,7 @@
 
 using namespace std;
 
-class PS_Database : PS_Callback {
+class PS_Database : PS_Callback, virtual Noncopyable {
 private:
     string FILE_ID;
 

@@ -383,7 +383,7 @@ void GroupTree::update_tag_counters() {
 
 typedef map<GroupTree*, ClusterPtr> Group2Cluster;
 
-class GroupBuilder {
+class GroupBuilder : virtual Noncopyable {
     GBDATA         *gb_main;
     string          tree_name;
     ARB_tree_root  *tree_root;

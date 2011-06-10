@@ -38,7 +38,7 @@ class AP_weights;
 class AP_sequence;
 class AliView;
 
-class ARB_tree_root : public Noncopyable {
+class ARB_tree_root : virtual Noncopyable {
     AliView     *ali;
     ARB_tree    *rootNode;                          // root node of the tree
     ARB_tree    *nodeTemplate;
@@ -108,7 +108,7 @@ struct ARB_tree_info {
 };
 
 
-class ARB_tree {
+class ARB_tree : virtual Noncopyable {
 public:
     GBT_TREE_ELEMENTS(ARB_tree);                    // these MUST be the first data members! (see FAKE_VTAB_PTR for more info)
 private:

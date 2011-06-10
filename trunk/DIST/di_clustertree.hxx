@@ -117,7 +117,7 @@ typedef LeafRelations::const_iterator    LeafRelationCIter;
 #define TRACE_DIST_CALC
 #endif // DEBUG
 
-class ClusterTree : public ARB_countedTree {
+class ClusterTree : public ARB_countedTree { // derived from a Noncopyable
     ClusterState state;
 
     size_t   leaf_count;                            // number of leafs in subtree

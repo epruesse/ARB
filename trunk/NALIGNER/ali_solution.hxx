@@ -15,7 +15,7 @@
 #include "ali_profile.hxx"
 #endif
 
-class ALI_MAP {
+class ALI_MAP : virtual Noncopyable {
     unsigned long first_seq_base, last_seq_base;
     unsigned long first_ref_base, last_ref_base;
     long **mapping;
@@ -164,7 +164,7 @@ public:
     }
 };
 
-class ALI_SUB_SOLUTION {
+class ALI_SUB_SOLUTION : virtual Noncopyable {
     ALI_PROFILE *profile;
     ALI_TLIST<ALI_MAP *> map_list;
 

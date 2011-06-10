@@ -35,7 +35,7 @@ enum awt_selected_fields {
 
 struct ad_item_selector;
 
-class AWT_itemfield_selection : public AW_DB_selection {
+class AWT_itemfield_selection : public AW_DB_selection { // derived from a Noncopyable
     long                    type_filter;
     awt_selected_fields     field_filter;
     const ad_item_selector *selector;

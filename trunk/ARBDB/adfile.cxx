@@ -333,7 +333,7 @@ char **GBS_read_dir(const char *dir, const char *mask) {
 
 #define MAX_REGS 13
 
-class difflineMode {
+class difflineMode : virtual Noncopyable {
     int               mode;
     GBS_regex        *reg[MAX_REGS];
     const char       *replace[MAX_REGS];

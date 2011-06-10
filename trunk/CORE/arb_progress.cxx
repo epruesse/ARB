@@ -54,7 +54,7 @@ struct no_counter : public null_counter {
 #endif
 };
 
-class concrete_counter: public arb_progress_counter {
+class concrete_counter: public arb_progress_counter { // derived from a Noncopyable
     int     explicit_counter; // incremented by calls to inc() etc.
     int     implicit_counter; // incremented by child_done()
     int     maxcount;         // == 0 -> does not really count (just a wrapper for child progresses)
@@ -165,7 +165,7 @@ public:
 //      progress
 
 
-class child_progress : public arb_parent_progress {
+class child_progress : public arb_parent_progress { // derived from a Noncopyable
     arb_parent_progress *parent;
 
 public:

@@ -19,7 +19,7 @@
 #endif
 
 
-class ALI_SEQUENCE {
+class ALI_SEQUENCE : virtual Noncopyable {
     unsigned char *seq;
     char *seq_name;
     unsigned long seq_len;
@@ -59,7 +59,7 @@ public:
 };
 
 
-class ALI_NORM_SEQUENCE {
+class ALI_NORM_SEQUENCE : virtual Noncopyable {
     unsigned char *seq;
     char *seq_name;
     unsigned char **dots;

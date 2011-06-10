@@ -47,7 +47,7 @@ struct ltstr {
 
 typedef map<const char*, column, ltstr> ColumnMap;
 
-class ProbeMatch_impl {
+class ProbeMatch_impl : virtual Noncopyable {
     char      *headline;
     ColumnMap  columns;
     int probe_region_offset;    // left index of probe region

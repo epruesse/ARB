@@ -14,6 +14,9 @@
 #ifndef ARB_ASSERT_H
 #include <arb_assert.h>
 #endif
+#ifndef ARBTOOLS_H
+#include <arbtools.h>
+#endif
 
 #define ph_assert(cond) arb_assert(cond)
 
@@ -39,7 +42,7 @@ public:
     };
 };
 
-class PH_NEIGHBOURJOINING {
+class PH_NEIGHBOURJOINING : virtual Noncopyable {
     PH_NEIGHBOUR_DIST **dist_matrix;
     PH_NEIGHBOUR_DIST  *dist_list;   // array of dist_list lists
     long                dist_list_size;

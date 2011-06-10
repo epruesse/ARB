@@ -15,10 +15,12 @@
 #include <arbdbt.h>
 #endif
 
-class A3Arbdb
-{
-    private:
+#if defined(WARN_TODO)
+#warning reformat all code in this directory
+#endif
 
+
+class A3Arbdb : virtual Noncopyable {
         char   *alignment;
 
     public:

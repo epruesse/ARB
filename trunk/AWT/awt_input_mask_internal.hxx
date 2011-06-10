@@ -73,7 +73,7 @@ public:
 //      class awt_input_mask_global
 //
 // data global to one input mask
-class awt_input_mask_global {
+class awt_input_mask_global : virtual Noncopyable {
 private:
     mutable AW_root *awr;
     mutable GBDATA  *gb_main;
@@ -161,20 +161,20 @@ public:
 //  ----------------------------
 //      class awt_mask_item
 //
-// works as base class for all elements of a input-mask
 class awt_mask_item {
-private:
+    // works as base class for all elements of a input-mask
 
     // basic item members
-    awt_input_mask_global *global; // reference
-    SmartPtr<std::string>       name; // name of this item (optional -- caused i.e. by script command 'ID')
+    // awt_input_mask_global *global;    // reference  // @@@ make ref to make class copyable
+    awt_input_mask_global& global;
+    SmartPtr<std::string>  name;      // name of this item (optional -- caused i.e. by script command 'ID')
 
 public:
-    awt_mask_item(awt_input_mask_global *global_); // awar_base has to be unique (in every mask)
+    awt_mask_item(awt_input_mask_global& global_); // awar_base has to be unique (in every mask)
     virtual ~awt_mask_item();
 
-    const awt_input_mask_global *mask_global() const { return global; }
-    awt_input_mask_global *mask_global() { return global; }
+    const awt_input_mask_global& mask_global() const { return global; }
+    awt_input_mask_global& mask_global() { return global; }
 
     bool has_name() const { return !name.isNull(); }
     const std::string& get_name() const { awt_assert(has_name()); return *name; }
@@ -209,14 +209,14 @@ protected:
     void remove_awar_callbacks();
 
 public:
-    awt_mask_awar_item(awt_input_mask_global *global_, const std::string& awar_base, const std::string& default_value, bool saved_with_properties);
+    awt_mask_awar_item(awt_input_mask_global& global_, const std::string& awar_base, const std::string& default_value, bool saved_with_properties);
     virtual ~awt_mask_awar_item() { remove_awar_callbacks(); }
 
     virtual void awar_changed() = 0; // called when awar changes
 
     std::string awar_name() const  { return awarName; }
-    const AW_awar *awar() const { return mask_global()->get_root()->awar(awarName.c_str()); }
-    AW_awar *awar() { return mask_global()->get_root()->awar(awarName.c_str()); }
+    const AW_awar *awar() const { return mask_global().get_root()->awar(awarName.c_str()); }
+    AW_awar *awar() { return mask_global().get_root()->awar(awarName.c_str()); }
 
     virtual std::string get_value() const {  // reads the current value of the item
         return const_cast<AW_awar*>(awar())->read_string();
@@ -236,7 +236,7 @@ private:
     std::string label;               // label of viewport
 
 public:
-    awt_viewport(awt_input_mask_global *global_, const std::string& awar_base, const std::string& default_value, bool saved_with_properties, const std::string& label_)
+    awt_viewport(awt_input_mask_global& global_, const std::string& awar_base, const std::string& default_value, bool saved_with_properties, const std::string& label_)
         : awt_mask_awar_item(global_, awar_base, default_value, saved_with_properties)
         , label(label_)
     {}
@@ -258,16 +258,16 @@ class awt_variable : public awt_mask_awar_item {
 private:
     bool is_global;
 
-    static std::string generate_baseName(const awt_input_mask_global *global_, const std::string& id, bool is_global_) {
+    static std::string generate_baseName(const awt_input_mask_global& global_, const std::string& id, bool is_global_) {
         // the generated name is NOT enumerated, because any reference to a variable should
         // work on the same awar
         return
             is_global_
             ? std::string("global_")+id
-            : std::string(GBS_global_string("local_%s_%s", global_->get_maskid().c_str(), id.c_str()));
+            : std::string(GBS_global_string("local_%s_%s", global_.get_maskid().c_str(), id.c_str()));
     }
 public:
-    awt_variable(awt_input_mask_global *global_, const std::string& id, bool is_global_, const std::string& default_value, GB_ERROR& error);
+    awt_variable(awt_input_mask_global& global_, const std::string& id, bool is_global_, const std::string& default_value, GB_ERROR& error);
     virtual ~awt_variable();
     virtual void awar_changed() {
 #if defined(DEBUG)
@@ -285,7 +285,7 @@ private:
     std::string script;
 
 public:
-    awt_script(awt_input_mask_global *global_, const std::string& script_)
+    awt_script(awt_input_mask_global& global_, const std::string& script_)
         : awt_mask_item(global_)
         , script(script_)
     {}
@@ -298,7 +298,7 @@ public:
 //  ---------------------------------
 //      class awt_linked_to_item
 //
-class awt_linked_to_item {
+class awt_linked_to_item : virtual Noncopyable {
 private:
     GBDATA                *gb_item; // item this handler is linked to
     // if gb_item == 0 then no callbacks are installed
@@ -334,22 +334,22 @@ public:
 //  ---------------------------------
 //      class awt_script_viewport
 //
-class awt_script_viewport : public awt_viewport, public awt_linked_to_item {
+class awt_script_viewport : public awt_viewport, public awt_linked_to_item { // derived from a Noncopyable
 private:
     const awt_script *script;
     int               field_width;
 
-    static std::string generate_baseName(const awt_input_mask_global *global_) {
+    static std::string generate_baseName(const awt_input_mask_global& global_) {
         static int awar_counter = 0;
-        return GBS_global_string("%s/scriptview_%i", global_->get_maskid().c_str(), awar_counter++);
+        return GBS_global_string("%s/scriptview_%i", global_.get_maskid().c_str(), awar_counter++);
     }
 
 public:
-    awt_script_viewport(awt_input_mask_global *global_, const awt_script *script_, const std::string& label_, long field_width_);
+    awt_script_viewport(awt_input_mask_global& global_, const awt_script *script_, const std::string& label_, long field_width_);
     virtual ~awt_script_viewport();
 
     virtual GB_ERROR link_to(GBDATA *gb_new_item); // link to a new item
-    virtual GB_ERROR relink() { return link_to(mask_global()->get_selected_item()); }
+    virtual GB_ERROR relink() { return link_to(mask_global().get_selected_item()); }
 
     virtual void build_widget(AW_window *aws); // builds the widget at the current position
     virtual void awar_changed();
@@ -361,7 +361,7 @@ public:
 //      class awt_input_handler
 //
 // an awt_input_handler is an awt_viewport bound to a database element
-class awt_input_handler : public awt_viewport, public awt_linked_to_item {
+class awt_input_handler : public awt_viewport, public awt_linked_to_item { // derived from a Noncopyable
 private:
     GBDATA      *gbd;           // link to database
     std::string  child_path;    // path in database from item to handled child
@@ -371,20 +371,20 @@ private:
     virtual GB_ERROR add_db_callbacks();
     virtual void     remove_db_callbacks();
 
-    static std::string generate_baseName(const awt_input_mask_global *global_, const std::string& child_path) {
+    static std::string generate_baseName(const awt_input_mask_global& global_, const std::string& child_path) {
         // the generated name is enumerated to allow different awt_input_handler's to be linked
         // to the same child_path
         static int awar_counter = 0;
-        return GBS_global_string("%s/handler_%s_%i", global_->get_maskid().c_str(), child_path.c_str(), awar_counter++);
+        return GBS_global_string("%s/handler_%s_%i", global_.get_maskid().c_str(), child_path.c_str(), awar_counter++);
     }
 
 
 public:
-    awt_input_handler(awt_input_mask_global *global_, const std::string& child_path_, GB_TYPES type_, const std::string& label_);
+    awt_input_handler(awt_input_mask_global& global_, const std::string& child_path_, GB_TYPES type_, const std::string& label_);
     virtual ~awt_input_handler();
 
     virtual GB_ERROR link_to(GBDATA *gb_new_item); // link to a new item
-    virtual GB_ERROR relink() { return link_to(mask_global()->get_selected_item()); }
+    virtual GB_ERROR relink() { return link_to(mask_global().get_selected_item()); }
 
     GBDATA *data() { return gbd; }
 
@@ -409,7 +409,7 @@ private:
     std::string  default_value;      // default value for awar if no data present
 
 public:
-    awt_string_handler(awt_input_mask_global *global_, const std::string& child_path_, const std::string& default_awar_value_, GB_TYPES default_type, const std::string& label_)
+    awt_string_handler(awt_input_mask_global& global_, const std::string& child_path_, const std::string& default_awar_value_, GB_TYPES default_type, const std::string& label_)
         : awt_input_handler(global_, child_path_, default_type, label_)
         , default_value(default_awar_value_)
     {
@@ -434,7 +434,7 @@ private:
     int    field_width;
 
 public:
-    awt_input_field(awt_input_mask_global *global_, const std::string& child_path_, const std::string& label_, int field_width_, const std::string& default_value_, GB_TYPES default_type)
+    awt_input_field(awt_input_mask_global& global_, const std::string& child_path_, const std::string& label_, int field_width_, const std::string& default_value_, GB_TYPES default_type)
         : awt_string_handler(global_, child_path_, default_value_, default_type, label_)
         , field_width(field_width_)
     {}
@@ -474,7 +474,7 @@ private:
     long min, max;
 
 public:
-    awt_numeric_input_field(awt_input_mask_global *global_, const std::string& child_path_, const std::string& label_, int field_width_, long default_value_, long min_, long max_)
+    awt_numeric_input_field(awt_input_mask_global& global_, const std::string& child_path_, const std::string& label_, int field_width_, long default_value_, long min_, long max_)
         : awt_input_field(global_, child_path_, label_, field_width_, GBS_global_string("%li", default_value_), GB_FLOAT)
         , min(min_)
         , max(max_)
@@ -492,7 +492,7 @@ class awt_check_box : public awt_string_handler {
 private:
 
 public:
-    awt_check_box(awt_input_mask_global *global_, const std::string& child_path_, const std::string& label_, bool default_checked)
+    awt_check_box(awt_input_mask_global& global_, const std::string& child_path_, const std::string& label_, bool default_checked)
         : awt_string_handler(global_, child_path_, default_checked ? "yes" : "no", GB_BITS, label_)
     {}
     virtual ~awt_check_box() {}
@@ -514,7 +514,7 @@ private:
     std::vector<std::string> values; // the database contains the names of the values
 
 public:
-    awt_radio_button(awt_input_mask_global *global_, const std::string& child_path_, const std::string& label_, int default_position_, bool vertical_, const std::vector<std::string>& buttons_, const std::vector<std::string>& values_)
+    awt_radio_button(awt_input_mask_global& global_, const std::string& child_path_, const std::string& label_, int default_position_, bool vertical_, const std::vector<std::string>& buttons_, const std::vector<std::string>& values_)
         : awt_string_handler(global_, child_path_, buttons_[default_position_], GB_STRING, label_)
         , default_position(default_position_)
         , vertical(vertical_)
@@ -541,7 +541,7 @@ public:
 // awt_input_mask holds the description of an input mask.
 // an input mask is an i/o-interface to a database entry.
 
-class awt_input_mask {
+class awt_input_mask : virtual Noncopyable {
 private:
     awt_input_mask_global  global;
     awt_mask_item_list     handlers;
@@ -569,8 +569,8 @@ public:
 
     AW_window_simple*& get_window() { return aws; }
 
-    const awt_input_mask_global *mask_global() const { return &global; }
-    awt_input_mask_global *mask_global() { return &global; }
+    const awt_input_mask_global& mask_global() const { return global; }
+    awt_input_mask_global& mask_global() { return global; }
 
     void add_handler(awt_mask_item_ptr handler) { handlers.push_back(handler); }
 

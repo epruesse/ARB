@@ -15,6 +15,9 @@
 #ifndef ARBDB_BASE_H
 #include <arbdb_base.h>
 #endif
+#ifndef ARBTOOLS_H
+#include <arbtools.h>
+#endif
 
 class AP_filter;
 class AP_weights;
@@ -32,6 +35,7 @@ public:
     AliView(GBDATA *gb_main_, const AP_filter& filter_, const AP_weights& weights_, const char *aliname_);
     AliView(const AliView& other);
     ~AliView();
+    DECLARE_ASSIGNMENT_OPERATOR(AliView);
 
     const char *get_aliname() const { return aliname; }
 

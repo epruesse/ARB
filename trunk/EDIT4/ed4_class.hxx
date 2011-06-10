@@ -178,7 +178,7 @@ struct ED4_object_specification
 
 };                              // Manager coordinates Layout
 
-class ED4_folding_line {
+class ED4_folding_line : virtual Noncopyable {
     // properties of an object, i.e. concerning rectangles on screen showing sequences
     ED4_folding_line(const ED4_folding_line&);      // copy-constructor not allowed
 public:
@@ -221,7 +221,7 @@ struct ED4_scrolled_rectangle {
     }
 };
 
-class ED4_list_elem {
+class ED4_list_elem : virtual Noncopyable {
     void          *my_elem;
     ED4_list_elem *my_next;
 public:
@@ -235,7 +235,7 @@ public:
 };
 
 
-class ED4_list {
+class ED4_list : virtual Noncopyable {
     // class which implements a general purpose linked list of void*
 
     ED4_list_elem *my_first;
@@ -259,7 +259,7 @@ public:
     ~ED4_list();
 };
 
-class ED4_base_position : private BasePosition {
+class ED4_base_position : private BasePosition { // derived from a Noncopyable
     const ED4_base *calced4base;
 
     void calc4base(const ED4_base *base);
@@ -299,8 +299,7 @@ extern int ED4_update_global_cursor_awars_allowed;
 
 typedef bool (*ED4_TerminalTest)(ED4_base *terminal, int seqPos);
 
-class ED4_cursor
-{
+class ED4_cursor : virtual Noncopyable {
     ED4_index                  cursor_abs_x; // absolute (to terminal) x-position of cursor (absolute world coordinate of edit window)
     int                        screen_position; // number of displayed characters leading the cursor
     mutable ED4_base_position  base_position; // # of bases left of cursor
@@ -363,8 +362,7 @@ public:
 };
 
 
-class ED4_window
-{
+class ED4_window : virtual Noncopyable {
     ED4_window(const ED4_window&); // copy-constructor not allowed
 public:
     AW_window              *aww; // Points to Window
@@ -411,7 +409,7 @@ public:
     ~ED4_window();
 };
 
-class ED4_members {
+class ED4_members : virtual Noncopyable {
     // contains children related functions from members of a manager
     ED4_members(const ED4_members&);    // copy-constructor not allowed
 
@@ -546,7 +544,7 @@ typedef ED4_bases_table *ED4_bases_table_ptr;
 #endif // DEBUG
 
 
-class ED4_char_table {
+class ED4_char_table : virtual Noncopyable {
     ED4_bases_table_ptr *bases_table;
     int                  sequences; // # of sequences added to the table
     int                  ignore; // this table will be ignored when calculating tables higher in hierarchy
@@ -633,8 +631,9 @@ public:
 // ----------------------------
 //      ED4_species_pointer
 
-class ED4_species_pointer // @@@ shall be renamed into ED4_gbdata_pointer to reflect general usage
-{
+class ED4_species_pointer : virtual Noncopyable {
+    // @@@ shall be renamed into ED4_gbdata_pointer to reflect general usage
+
     GBDATA *species_pointer;    // points to database
 
     void add_callback(int *clientdata);
@@ -660,8 +659,9 @@ typedef ARB_ERROR (*ED4_cb)(ED4_base *, AW_CL, AW_CL);
 typedef ARB_ERROR (*ED4_cb1)(ED4_base *, AW_CL);
 typedef ARB_ERROR (*ED4_cb0)(ED4_base *);
 
-class ED4_base                                      // base object
-{
+class ED4_base : virtual Noncopyable {
+    // base object
+
     ED4_species_pointer my_species_pointer;
     ED4_base(const ED4_base&);  // copy-constructor not allowed
 
@@ -863,8 +863,7 @@ public:
     ED4_area_manager            *to_area_manager() const            { e4_assert(is_area_manager());     return (ED4_area_manager *)this; }
 };
 
-class ED4_manager : public ED4_base
-{
+class ED4_manager : public ED4_base { // derived from a Noncopyable
     ED4_manager(const ED4_manager&); // copy-constructor not allowed
 
 public:
@@ -957,8 +956,7 @@ public:
 };
 
 
-class ED4_terminal : public ED4_base
-{
+class ED4_terminal : public ED4_base { // derived from a Noncopyable
     ED4_terminal(const ED4_terminal&);              // copy-constructor not allowed
 public:
     struct {
@@ -1027,12 +1025,11 @@ typedef enum {
     ED4_SM_MARK
 } ED4_species_mode;
 
-class ED4_reference_terminals
-{
+class ED4_reference_terminals : virtual Noncopyable {
     ED4_sequence_info_terminal *ref_sequence_info;
     ED4_sequence_terminal      *ref_sequence;
     ED4_sequence_info_terminal *ref_column_stat_info;
-     ED4_columnStat_terminal    *ref_column_stat;
+    ED4_columnStat_terminal    *ref_column_stat;
 
     void null() { ref_sequence_info = 0; ref_sequence = 0; ref_column_stat = 0; ref_column_stat_info = 0; }
 public:
@@ -1049,7 +1046,7 @@ public:
 };
 
 
-class ED4_root {
+class ED4_root : virtual Noncopyable {
     int ED4_ROOT;
     ED4_root(const ED4_root&);                      // copy-constructor not allowed
 
@@ -1164,8 +1161,9 @@ public:
 // All manager classes only differ in their static properties.
 // This kind of construction was chosen for using a minimum of RAM
 
-class ED4_main_manager : public ED4_manager // first in hierarchy
-{
+class ED4_main_manager : public ED4_manager { // derived from a Noncopyable
+    // first in hierarchy
+    
     // these terminals are redrawn after refresh (with increase clipping area)
     // to revert text from middle area drawn into top area:
     ED4_terminal *top_middle_line;
@@ -1289,7 +1287,7 @@ typedef enum {
 
 } ED4_remap_mode;
 
-class ED4_remap {
+class ED4_remap : virtual Noncopyable {
 
     ED4_remap_mode mode;
     int show_above_percent;     // used only for ED4_RM_SHOW_ABOVE
@@ -1502,8 +1500,7 @@ public:
 #endif // IMPLEMENT_DUMP
 };
 
-class ED4_text_terminal : public ED4_terminal
-{
+class ED4_text_terminal : public ED4_terminal {
     ED4_text_terminal(const ED4_text_terminal&); // copy-constructor not allowed
 public:
     // functions concerning graphic output
@@ -1521,8 +1518,7 @@ public:
 #endif // IMPLEMENT_DUMP
 };
 
-class ED4_sequence_terminal_basic : public ED4_text_terminal
-{
+class ED4_sequence_terminal_basic : public ED4_text_terminal { // derived from a Noncopyable
 public:
 
     char *species_name;
@@ -1541,7 +1537,7 @@ public:
 
 };
 
-class ED4_AA_sequence_terminal : public ED4_sequence_terminal_basic {
+class ED4_AA_sequence_terminal : public ED4_sequence_terminal_basic { // derived from a Noncopyable
     // NOTE: ED4_AA_sequence_terminal is a separate terminal class used to display Open Reading Frames (ORFs)
     //       for the corresponding gene (DNA) sequence. It is used in ProteinViewer Module and should not be
     //       used for drawing aminoacid sequence alone as in protein alignment. Aminoacid sequences are
@@ -1568,8 +1564,7 @@ public:
     int GET_aaStrandType () { return aaStrandType; }
 };
 
-class ED4_sequence_terminal : public ED4_sequence_terminal_basic
-{
+class ED4_sequence_terminal : public ED4_sequence_terminal_basic { // derived from a Noncopyable
     mutable ED4_SearchResults searchResults;
 
     virtual ED4_returncode  draw(int only_text = 0);
@@ -1599,8 +1594,7 @@ public:
 #endif // IMPLEMENT_DUMP
 };
 
-class ED4_columnStat_terminal : public ED4_text_terminal
-{
+class ED4_columnStat_terminal : public ED4_text_terminal { // derived from a Noncopyable
     char *likelihood[4];        // likelihood-array for each base (ACGU) [length of array = alignment_length]
     int   latest_update;
 

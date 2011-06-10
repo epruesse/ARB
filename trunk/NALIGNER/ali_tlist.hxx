@@ -29,7 +29,7 @@ struct ALI_TLIST_ELEM {
 };
 
 template<class T>
-class ALI_TLIST {
+class ALI_TLIST : virtual Noncopyable {
     ALI_TLIST_ELEM<T> *first_elem, *last_elem;
     ALI_TLIST_ELEM<T> *current_elem;
     ALI_TLIST_ELEM<T> *marked_elem;

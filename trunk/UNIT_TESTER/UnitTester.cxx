@@ -36,7 +36,7 @@ using namespace std;
 
 // --------------------------------------------------------------------------------
 
-struct Globals {
+struct Globals : virtual Noncopyable {
     bool   inside_test;
     bool   running_on_valgrind;
     char  *runDir;

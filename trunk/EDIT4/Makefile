@@ -276,6 +276,7 @@ ED4_list.o: $(ARBHOME)/INCLUDE/arb_assert.h
 ED4_list.o: $(ARBHOME)/INCLUDE/arb_core.h
 ED4_list.o: $(ARBHOME)/INCLUDE/arb_error.h
 ED4_list.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+ED4_list.o: $(ARBHOME)/INCLUDE/arbtools.h
 ED4_list.o: $(ARBHOME)/INCLUDE/attributes.h
 ED4_list.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 ED4_list.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx

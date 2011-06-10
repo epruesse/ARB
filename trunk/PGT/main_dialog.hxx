@@ -18,8 +18,7 @@
 #include "image_dialog.hxx"
 
 
-class mainDialog : public MDialog
-{
+class mainDialog : public MDialog { // derived from a Noncopyable
     public:
         mainDialog(Widget);
         ~mainDialog();

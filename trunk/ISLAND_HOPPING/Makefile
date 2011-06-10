@@ -45,6 +45,7 @@ island_hopping.o: island_hopping.h
 island_hopping.o: mem.h
 island_hopping.o: $(ARBHOME)/INCLUDE/arb_assert.h
 island_hopping.o: $(ARBHOME)/INCLUDE/arb_core.h
+island_hopping.o: $(ARBHOME)/INCLUDE/arbtools.h
 island_hopping.o: $(ARBHOME)/INCLUDE/dupstr.h
 island_hopping.o: $(ARBHOME)/INCLUDE/test_global.h
 

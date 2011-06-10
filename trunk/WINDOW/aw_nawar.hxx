@@ -17,6 +17,9 @@
 #ifndef _GLIBCXX_CSTDDEF
 #include <cstddef>
 #endif
+#ifndef ARBTOOLS_H
+#include <arbtools.h>
+#endif
 
 class AW_root_callback {
     AW_RCB cb;
@@ -33,7 +36,7 @@ public:
 
 inline bool operator == (const AW_root_callback& cb1, const AW_root_callback& cb2) { return cb1.equals(cb2); }
 
-class AW_root_cblist {
+class AW_root_cblist : virtual Noncopyable {
     AW_root_callback  callback;
     AW_root_cblist   *next;
 

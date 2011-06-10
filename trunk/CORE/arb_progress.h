@@ -33,7 +33,7 @@
 class  arb_parent_progress;
 struct arb_status_implementation;
 
-class arb_progress_counter {
+class arb_progress_counter : virtual Noncopyable {
 protected:
     arb_parent_progress *progress;
 public:
@@ -61,7 +61,7 @@ public:
 const int LEVEL_TITLE    = 0;
 const int LEVEL_SUBTITLE = 1;
 
-class arb_parent_progress : Noncopyable {
+class arb_parent_progress : virtual Noncopyable {
     arb_parent_progress *prev_recent;
     bool                 reuse_allowed; // display may be reused by childs
 

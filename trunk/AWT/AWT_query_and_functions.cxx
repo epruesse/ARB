@@ -567,7 +567,7 @@ typedef enum {
     AQFT_ALL_FIELDS,                                // query should match all fields
 } awt_query_field_type;
 
-class awt_query {
+class awt_query : virtual Noncopyable {
     awt_query_operator  op;                         // operator (AND or OR)
     char               *key;                        // search key
     bool                Not;                        // true means "don't match"

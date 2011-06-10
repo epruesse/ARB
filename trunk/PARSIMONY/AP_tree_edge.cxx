@@ -458,7 +458,7 @@ void AP_tree_edge::countSpecies(int deep, const AP_tree_nlen *skip)
     }
 }
 
-class MutationsPerSite {
+class MutationsPerSite : virtual Noncopyable {
     char   *Data;
     size_t  length;
 

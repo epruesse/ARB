@@ -139,6 +139,7 @@ AW_click.o: aw_device.hxx
 AW_click.o: aw_position.hxx
 AW_click.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_click.o: $(ARBHOME)/INCLUDE/arb_core.h
+AW_click.o: $(ARBHOME)/INCLUDE/arbtools.h
 AW_click.o: $(ARBHOME)/INCLUDE/attributes.h
 AW_click.o: $(ARBHOME)/INCLUDE/dupstr.h
 AW_click.o: $(ARBHOME)/INCLUDE/test_global.h
@@ -244,6 +245,7 @@ AW_font_group.o: aw_font_group.hxx
 AW_font_group.o: aw_position.hxx
 AW_font_group.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_font_group.o: $(ARBHOME)/INCLUDE/arb_core.h
+AW_font_group.o: $(ARBHOME)/INCLUDE/arbtools.h
 AW_font_group.o: $(ARBHOME)/INCLUDE/attributes.h
 AW_font_group.o: $(ARBHOME)/INCLUDE/dupstr.h
 AW_font_group.o: $(ARBHOME)/INCLUDE/test_global.h
@@ -441,6 +443,7 @@ AW_size.o: aw_device.hxx
 AW_size.o: aw_position.hxx
 AW_size.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_size.o: $(ARBHOME)/INCLUDE/arb_core.h
+AW_size.o: $(ARBHOME)/INCLUDE/arbtools.h
 AW_size.o: $(ARBHOME)/INCLUDE/attributes.h
 AW_size.o: $(ARBHOME)/INCLUDE/dupstr.h
 AW_size.o: $(ARBHOME)/INCLUDE/test_global.h
@@ -596,6 +599,7 @@ AW_Xm.o: aw_position.hxx
 AW_Xm.o: aw_Xm.hxx
 AW_Xm.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_Xm.o: $(ARBHOME)/INCLUDE/arb_core.h
+AW_Xm.o: $(ARBHOME)/INCLUDE/arbtools.h
 AW_Xm.o: $(ARBHOME)/INCLUDE/attributes.h
 AW_Xm.o: $(ARBHOME)/INCLUDE/dupstr.h
 AW_Xm.o: $(ARBHOME)/INCLUDE/test_global.h

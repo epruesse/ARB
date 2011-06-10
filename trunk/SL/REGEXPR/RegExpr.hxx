@@ -55,7 +55,7 @@ public:
 };
 
 
-class RegExpr : Noncopyable {
+class RegExpr : virtual Noncopyable {
     std::string expression;                         // the regular expression
     bool        ignore_case;
 

@@ -50,7 +50,7 @@ public:
 typedef map<string, int> NameCounter;
 class Translator;
 
-class DBwriter : public Noncopyable {
+class DBwriter : virtual Noncopyable {
     const char     *ali_name;
     ImportSession&  session;
 

@@ -14,6 +14,9 @@
 #ifndef ARBDB_BASE_H
 #include <arbdb_base.h>
 #endif
+#ifndef ARBTOOLS_H
+#include <arbtools.h>
+#endif
 
 /* Create a window, that allows you to select a column statistic and 
  * get the weights from the selected SAI
@@ -31,7 +34,7 @@ class AW_awar;
 
 #define DIST_MIN_SEQ(seq_anz) (seq_anz / 10)
 
-class ColumnStat {
+class ColumnStat : virtual Noncopyable {
     GBDATA  *gb_main;
     AW_root *awr;
 

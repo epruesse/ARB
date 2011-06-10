@@ -29,7 +29,9 @@
 
 // --------------------
 
-class Convaln_exception {
+class Convaln_exception
+// : virtual Noncopyable
+{
     static Convaln_exception *thrown;
 
     int           code;
@@ -43,6 +45,11 @@ public:
         ca_assert(!thrown); // 2 exceptions at the same time ? very exceptional! :)
         thrown = this;
     }
+    Convaln_exception(const Convaln_exception& other)
+        : code(other.code),
+          msg(strdup(other.msg))
+    {}
+    DECLARE_ASSIGNMENT_OPERATOR(Convaln_exception);
     ~Convaln_exception() {
         ca_assert(thrown);
         thrown = NULL;
@@ -63,7 +70,7 @@ public:
 
 // --------------------
 
-class Warnings : Noncopyable {
+class Warnings : virtual Noncopyable {
     static bool show_warnings;
     bool        old_state;
 public:
@@ -130,24 +137,6 @@ inline bool copy_content(char*& entry, const char *content) {
 }
 
 // --------------------
-
-#define INPLACE_RECONSTRUCT(type,this)          \
-    do {                                        \
-        (this)->~type();                        \
-        new(this) type();                       \
-    } while(0)
-
-#define INPLACE_COPY_RECONSTRUCT(type,this,other)       \
-    do {                                                \
-        (this)->~type();                                \
-        new(this) type(other);                          \
-    } while(0)
-
-#define DECLARE_ASSIGNMENT_OPERATOR(T)                  \
-    T& operator = (const T& other) {                    \
-        INPLACE_COPY_RECONSTRUCT(T, this, other);       \
-        return *this;                                   \
-    }
 
 // --------------------
 

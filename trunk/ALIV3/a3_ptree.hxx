@@ -34,8 +34,8 @@ typedef enum
 }
 Mask;
 
-struct PtNode   // Struktur eines Baumknotens
-{
+struct PtNode {
+    // Struktur eines Baumknotens
     Mask        mask;           // Maske fuer die Positionen und Verweise
     int        *position;       // Positionsfeld
     PtNode    **next;           // Verweise auf darueberliegende Knoten
@@ -50,22 +50,21 @@ struct PtNode   // Struktur eines Baumknotens
                               int    *pos,      // Basenpositionen
                               int     num,      // Anzahl der Basenpositionen
                               int     rec );    // Rekursionsstufe
-                PtNode      ( PtNode &node );   // Kopierkonstruktor
+    PtNode      ( const PtNode &node );   // Kopierkonstruktor
+    DECLARE_ASSIGNMENT_OPERATOR(PtNode);
                ~PtNode      ( void );           // Destruktor
 
-    int         NumOfPos    ( void );           // Anzahl der Positionen
+    int         NumOfPos    ( void ) const;           // Anzahl der Positionen
     int         IndexOfPos  ( Mask   base );    // Index einer Position
-    int         NumOfNext   ( void );           // Anzahl der Verzweigungen
+    int         NumOfNext   ( void ) const;           // Anzahl der Verzweigungen
     int         IndexOfNext ( Mask   base );    // Index einer verzweigung
     void        Dump        ( void );           // Ausgabe des Baums elementeweise
     void        Show        ( int    rec,       // Ausgabe des Baums
                               int   *where );
 };
 
-class Postree   // Klasse fuer einen Positionsbaum einer RNS-Sequenzen
-{
-    private:
-
+class Postree {
+    // Klasse fuer einen Positionsbaum einer RNS-Sequenzen
     Sequence    sequence;   // Die zugehoerige Sequenz
     PtNode     *topnode;    // Oberster Knoten des Positionsbaumes
 
@@ -83,8 +82,8 @@ class Postree   // Klasse fuer einen Positionsbaum einer RNS-Sequenzen
                               UINT       line );        // einer Sequenz aus einer Datei
                                                         // mit vorgegebener Zeilennummer
 
-            Postree         ( Postree   &postree );     // Kopierkonstruktor
-
+    Postree         ( const Postree   &postree );     // Kopierkonstruktor
+    DECLARE_ASSIGNMENT_OPERATOR(Postree);
             ~Postree        ( void );                   // Destruktor
 
     int     SeqLen          ( void );                   // Liefert Laenge der kompremierten Sequenz

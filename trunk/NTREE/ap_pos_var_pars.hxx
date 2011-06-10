@@ -14,6 +14,9 @@
 #ifndef ARBDB_BASE_H
 #include <arbdb_base.h>
 #endif
+#ifndef ARBTOOLS_H
+#include <arbtools.h>
+#endif
 
 class AW_window;
 class AW_root;
@@ -25,7 +28,7 @@ AW_window *AP_open_pos_var_pars_window(AW_root *root);
 
 class arb_progress;
 
-class AP_pos_var {
+class AP_pos_var : virtual Noncopyable {
     GBDATA        *gb_main;
     long           treesize;         // max value for slider
     arb_progress  *progress;

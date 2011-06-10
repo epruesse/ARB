@@ -18,7 +18,7 @@
 #endif
 
 
-class Reader : Noncopyable {
+class Reader : virtual Noncopyable {
     FILE       *fp;
     FileBuffer *file;
     char        linebuf[LINESIZE];
@@ -102,7 +102,7 @@ public:
     void repeated(char ch, int repeat) { while (repeat--) out(ch); }
 };
 
-class FileWriter : public Writer {
+class FileWriter : public Writer, virtual Noncopyable {
     FILE *ofp;
     char *filename;
     int   written; // count written sequences

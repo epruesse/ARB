@@ -14,7 +14,7 @@
 #define PRM_BUFFERSIZE 256
 
 
-struct arb_prm_struct {
+struct arb_prm_struct : virtual Noncopyable {
     char    **alignment_names;
     int       al_len;
     int       max_name;

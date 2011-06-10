@@ -60,7 +60,7 @@ class AW_root;
 class AP_sequence_parsimony;
 class AP_sequence_simple_protein;
 
-class DI_ENTRY {
+class DI_ENTRY : virtual Noncopyable {
 public:
     DI_ENTRY(GBDATA *gbd, class DI_MATRIX *phmatri);
     DI_ENTRY(char *namei, class DI_MATRIX *phmatri);
@@ -89,7 +89,7 @@ class BI_helix;
 
 enum LoadWhat { DI_LOAD_ALL, DI_LOAD_MARKED, DI_LOAD_LIST };
 
-class DI_MATRIX : Noncopyable {
+class DI_MATRIX : virtual Noncopyable {
     friend class DI_ENTRY;
 
     GBDATA  *gb_species_data;

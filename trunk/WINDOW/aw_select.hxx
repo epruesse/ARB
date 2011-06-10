@@ -58,7 +58,7 @@ public:
 };
 
 
-class AW_selection {
+class AW_selection : virtual Noncopyable {
     AW_window         *win;                         // window containing the selection
     AW_selection_list *sellist;
 
@@ -82,7 +82,7 @@ public:
 };
 
 
-class AW_DB_selection : public AW_selection {
+class AW_DB_selection : public AW_selection { // derived from a Noncopyable
     GBDATA *gbd;                                    // root container of data displayed in selection list
 public:
     AW_DB_selection(AW_window *win_, AW_selection_list *sellist_, GBDATA *gbd_);

@@ -16,7 +16,7 @@
 class ALI_SEQUENCE;
 
 // Class for accessing the database
-class ALI_ARBDB {
+class ALI_ARBDB : virtual Noncopyable {
 private:
     char *alignment;
 

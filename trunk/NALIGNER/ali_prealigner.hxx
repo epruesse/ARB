@@ -48,7 +48,7 @@ struct ali_prealigner_cell {
 };
 
 // Structure for a column in the (simple) distance matrix
-struct ali_prealigner_column {
+struct ali_prealigner_column : virtual Noncopyable {
     unsigned long column_length;
     ali_prealigner_cell **cells;
 
@@ -87,7 +87,7 @@ struct ali_prealigner_mask {
 };
 
 // Structure for a approximation of a map
-struct ali_prealigner_approx_element {
+struct ali_prealigner_approx_element : virtual Noncopyable {
     ALI_MAP *map;
     char *ins_marker;
 
@@ -111,7 +111,7 @@ struct ali_prealigner_approx_element {
 };
 
 // Structure for a list of approximated maps
-struct ali_prealigner_approximation {
+struct ali_prealigner_approximation : virtual Noncopyable {
     ALI_TLIST<ali_prealigner_approx_element *> *approx_list;
     float cost_of_binding;
 
@@ -197,7 +197,7 @@ struct ali_prealigner_approximation {
 
 
 // Class of the prealigner
-class ALI_PREALIGNER {
+class ALI_PREALIGNER : virtual Noncopyable {
     ALI_PROFILE *profile;
     ALI_PATHMAP *path_map;
     ALI_SUB_SOLUTION *sub_solution;

@@ -30,7 +30,7 @@
 // Usage : 1. Create a new instance of AW_repeated_question outside the loop
 //         2. call get_answer() inside the loop
 
-class AW_repeated_question : Noncopyable {
+class AW_repeated_question : virtual Noncopyable {
 private:
     int   answer;
     bool  dont_ask_again;

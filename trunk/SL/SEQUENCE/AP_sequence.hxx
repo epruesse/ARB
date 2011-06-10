@@ -27,7 +27,7 @@ typedef double AP_FLOAT;
 
 long AP_timer();
 
-class AP_sequence : Noncopyable {
+class AP_sequence : virtual Noncopyable {
     mutable AP_FLOAT  cached_wbc;                   // result for weighted_base_count(); <0.0 means "not initialized"
     const AliView    *ali;
 
