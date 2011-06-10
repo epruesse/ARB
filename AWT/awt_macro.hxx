@@ -17,6 +17,7 @@ class AW_window;
 class AW_root;
 
 AW_window *awt_open_macro_window(AW_root *aw_root, const char *application_id);
+void awt_execute_macro(AW_root *root, const char *macroname);
 
 #else
 #error awt_macro.hxx included twice

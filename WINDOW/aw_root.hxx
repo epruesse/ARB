@@ -40,8 +40,6 @@ extern char AW_ERROR_BUFFER[1024];
 
 void aw_set_local_message(); // no message window, AWAR_ERROR_MESSAGES instead (used by EDIT4)
 
-void aw_macro_message(const char *temp, ...) __ATTR__FORMAT(1); // gives control to the user
-
 // Read a string from the user :
 char *aw_input(const char *title, const char *prompt, const char *default_input);
 char *aw_input(const char *prompt, const char *default_input);
@@ -161,8 +159,6 @@ public:
     GB_ERROR start_macro_recording(const char *file, const char *application_id, const char *stop_action_name);
     GB_ERROR stop_macro_recording();
     GB_ERROR execute_macro(const char *file);
-    void     stop_execute_macro(); // Starts macro window main loop, delayed return
-    GB_ERROR enable_execute_macro(FILE *mfile, const char *mname); // leave macro window main loop, returns stop_execute_macro
 
     void define_remote_command(struct AW_cb_struct *cbs);
     GB_ERROR check_for_remote_command(AW_default gb_main, const char *rm_base);

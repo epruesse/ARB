@@ -40,9 +40,9 @@ $(MAIN): $(CPP_OBJECTS)
 	)
 
 proto:
-	../MAKEBIN/aisc_mkpt -P -A -E -g -F ^NT_,^AP_ -w nt_internal.h $(CPP_SOURCES) >nt_internal.h.tmp
+	../MAKEBIN/aisc_mkpt -P -A -E -G -F ^NT_,^AP_ -w nt_internal.h $(CPP_SOURCES) >nt_internal.h.tmp
 	../SOURCE_TOOLS/mv_if_diff nt_internal.h.tmp nt_internal.h
-	../MAKEBIN/aisc_mkpt -P -A -E -g -w nt_cb.hxx NT_cb.cxx NT_extern.cxx >nt_cb.hxx.tmp
+	../MAKEBIN/aisc_mkpt -P -A -E -G -w nt_cb.hxx NT_cb.cxx NT_extern.cxx >nt_cb.hxx.tmp
 	../SOURCE_TOOLS/mv_if_diff nt_cb.hxx.tmp nt_cb.hxx
 
 .cxx.o:
@@ -691,6 +691,7 @@ NT_main.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/awt.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
+NT_main.o: $(ARBHOME)/INCLUDE/awt_macro.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/awti_import.hxx
 NT_main.o: $(ARBHOME)/INCLUDE/cb.h
 NT_main.o: $(ARBHOME)/INCLUDE/downcast.h
