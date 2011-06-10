@@ -147,6 +147,7 @@ namespace AW {
             return *this /= length();
         }
         bool is_normalized() const { return nearlyEqual(length(), 1); }
+        bool has_length() const { return !nearlyEqual(length(), 0); }
 
         Vector& set_length(double new_length) {
             double factor  = new_length/length();
@@ -234,6 +235,7 @@ namespace AW {
 
         Position centroid() const { return Start+ToEnd*0.5; }
         double length() const { return line_vector().length(); }
+        bool has_length() const { return line_vector().has_length(); }
 
         const double& xpos() const { return Start.xpos(); }
         const double& ypos() const { return Start.ypos(); }
@@ -243,7 +245,9 @@ namespace AW {
     };
 
     Position crosspoint(const LineVector& l1, const LineVector& l2, double& factor_l1, double& factor_l2);
-    double Distance(const Position pos, const LineVector line);
+    Position nearest_linepoint(const Position& pos, const LineVector& line, double& factor);
+    inline Position nearest_linepoint(const Position& pos, const LineVector& line) { double dummy; return nearest_linepoint(pos, line, dummy); }
+    inline double Distance(const Position& pos, const LineVector& line) { return Distance(pos, nearest_linepoint(pos, line)); }
 
     // ---------------------
     //      a rectangle
@@ -265,13 +269,43 @@ namespace AW {
         Position upper_right_corner()       const { return Position(start().xpos()+line_vector().x(), start().ypos()); }
         Position lower_right_corner()       const { return head(); }
 
+        double left()   const { return upper_left_corner().xpos(); }
+        double top()    const { return upper_left_corner().ypos(); }
+        double right()  const { return lower_right_corner().xpos(); }
+        double bottom() const { return lower_right_corner().ypos(); }
+
         double width() const { return diagonal().x(); }
         double height() const { return diagonal().y(); }
 
+        LineVector upper_edge() const { return LineVector(start(), Vector(line_vector().x(),  0)); }
+        LineVector left_edge()  const { return LineVector(start(), Vector(0,                  line_vector().y())); }
+        LineVector lower_edge() const { return LineVector(head(),  Vector(-line_vector().x(), 0)); }
+        LineVector right_edge() const { return LineVector(head(),  Vector(0,                  -line_vector().y())); }
+        
         void standardize() { LineVector::standardize(); }
 
         bool contains(const Position& pos) const { return pos.is_between(upper_left_corner(), lower_right_corner()); }
         bool contains(const LineVector& lvec) const { return contains(lvec.start()) && contains(lvec.head()); }
+
+        bool distinct_from(const Rectangle& rect) const {
+            return
+                top()       >= rect.bottom() ||
+                rect.top()  >= bottom()      ||
+                left()      >= rect.right()  ||
+                rect.left() >= right();
+        }
+        bool overlaps_with(const Rectangle& rect) const { return !distinct_from(rect); }
+
+        Rectangle intersect_with(const Rectangle& rect) const {
+            aw_assert(overlaps_with(rect));
+            return Rectangle(Rectangle(upper_left_corner(), rect.upper_left_corner()).lower_right_corner(),
+                             Rectangle(lower_right_corner(), rect.lower_right_corner()).upper_left_corner());
+        }
+
+        Rectangle bounding_box(const Rectangle& rect) const {
+            return Rectangle(Rectangle(upper_left_corner(), rect.upper_left_corner()).upper_left_corner(),
+                             Rectangle(lower_right_corner(), rect.lower_right_corner()).lower_right_corner());
+        }
     };
 
     // ------------------------------------------------------------------

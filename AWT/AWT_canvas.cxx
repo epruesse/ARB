@@ -91,11 +91,10 @@ void AWT_canvas::init_device(AW_device *device) {
     device->zoom(this->trans_to_fit);
 }
 
-void AWT_canvas::zoom_reset()
-{
+void AWT_canvas::zoom_reset() {
     GB_transaction dummy(this->gb_main);
 
-    AW_device *device = aww->get_size_device (AW_MIDDLE_AREA);
+    AW_device_size *device = aww->get_size_device(AW_MIDDLE_AREA);
     device->set_filter(AW_SIZE);
     device->reset();
     this->tree_disp->show(device);
@@ -161,7 +160,7 @@ void AWT_canvas::zoom_reset()
 void
 AWT_canvas::recalc_size() {
     GB_transaction dummy(this->gb_main);
-    AW_device *device = aww->get_size_device (AW_MIDDLE_AREA);
+    AW_device_size *device = aww->get_size_device(AW_MIDDLE_AREA);
     device->set_filter(AW_SIZE);
     device->reset();
 
@@ -311,7 +310,7 @@ void AWT_canvas::zoom(AW_device *device, bool zoomIn, const Rectangle& wanted_pa
 }
 
 inline void nt_draw_zoom_box(AW_device *device, int gc, AW_pos x1, AW_pos y1, AW_pos x2, AW_pos y2) {
-    device->box(gc, false, x1, y1, x2-x1, y2-y1, AWT_F_ALL, 0, 0);
+    device->box(gc, false, x1, y1, x2-x1, y2-y1);
 }
 inline void nt_draw_zoom_box(AW_device *device, AWT_canvas *ntw) {
     nt_draw_zoom_box(device, ntw->drag_gc,
@@ -419,11 +418,9 @@ static bool handleZoomEvent(AW_window *aww, AWT_canvas *ntw, AW_device *device, 
 
 static void input_event(AW_window *aww, AWT_canvas *ntw, AW_CL /*cd2*/) {
     AW_event event;
-    AW_device *device, *click_device;
-
     aww->get_event(&event);
-    device = aww->get_device (AW_MIDDLE_AREA);
-
+    
+    AW_device *device = aww->get_device(AW_MIDDLE_AREA);
     device->set_filter(AW_SCREEN);
     device->reset();
 
@@ -439,7 +436,7 @@ static void input_event(AW_window *aww, AWT_canvas *ntw, AW_CL /*cd2*/) {
     }
 
     if (!event_handled) {
-        click_device = aww->get_click_device (AW_MIDDLE_AREA, event.x, event.y, AWT_CATCH_LINE, AWT_CATCH_TEXT, 0);
+        AW_device_click *click_device = aww->get_click_device(AW_MIDDLE_AREA, event.x, event.y, AWT_CATCH_LINE, AWT_CATCH_TEXT, 0);
         click_device->set_filter(AW_CLICK);
         device->set_filter(AW_SCREEN);
 
@@ -563,17 +560,16 @@ void AWT_canvas::set_dragEndpoint(int dragx, int dragy) {
 }
 
 static void motion_event(AW_window *aww, AWT_canvas *ntw, AW_CL /*cd2*/) {
-    AW_event event;
-    AW_device *device, *click_device;
-    int dx, dy;
-
-    device = aww->get_device (AW_MIDDLE_AREA);
+    AW_device *device = aww->get_device(AW_MIDDLE_AREA);
     device->reset();
     device->set_filter(AW_SCREEN);
 
     if (ntw->gb_main) ntw->tree_disp->push_transaction(ntw->gb_main);
+
+    AW_event event;
     aww->get_event(&event);
 
+    int dx, dy;
     if (event.button == AWT_M_MIDDLE) {
         // shift display in ALL modes
         dx = event.x - ntw->zoom_drag_ex;
@@ -601,11 +597,11 @@ static void motion_event(AW_window *aww, AWT_canvas *ntw, AW_CL /*cd2*/) {
                 case AWT_MODE_SWAP2:
                     if (event.button == AWT_M_RIGHT) break;
                     // fall-through
-                case AWT_MODE_MOVE:
+                case AWT_MODE_MOVE: {
                     ntw->init_device(device);
-                    click_device = aww->get_click_device (AW_MIDDLE_AREA,
-                                                          event.x, event.y, AWT_CATCH_LINE,
-                                                          AWT_CATCH_TEXT, 0);
+                    AW_device_click *click_device = aww->get_click_device(AW_MIDDLE_AREA,
+                                                                          event.x, event.y, AWT_CATCH_LINE,
+                                                                          AWT_CATCH_TEXT, 0);
                     click_device->set_filter(AW_CLICK_DRAG);
                     ntw->init_device(click_device);
                     ntw->tree_disp->show(click_device);
@@ -613,7 +609,7 @@ static void motion_event(AW_window *aww, AWT_canvas *ntw, AW_CL /*cd2*/) {
                     click_device->get_clicked_text(&ntw->clicked_text);
                     run_command  = false;
                     break;
-
+                }
                 default:
                     break;
             }

@@ -10,9 +10,6 @@
 
 #include "aw_at.hxx"
 #include "aw_Xm.hxx"
-#include "aw_click.hxx"
-#include "aw_print.hxx"
-#include "aw_size.hxx"
 #include "aw_select.hxx"
 #include "aw_nawar.hxx"
 #include "aw_awar.hxx"

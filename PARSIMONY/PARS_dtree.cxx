@@ -346,7 +346,7 @@ void AWT_graphic_parsimony::command(AW_device *device, AWT_COMMAND_MODE cmd, int
                             case AWT_M_LEFT:
                                 error = source->cantMoveTo(dest);
                                 if (!error) {
-                                    source->moveTo(dest, cl->length);
+                                    source->moveTo(dest, cl->nearest_rel_pos);
                                     recalc_branch_lengths = true;
                                 }
                                 break;

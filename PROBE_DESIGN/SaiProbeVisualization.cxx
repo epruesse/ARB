@@ -341,18 +341,19 @@ static void paintBackgroundAndSAI (AW_device *device, size_t probeRegionLen, AW_
     // and also printing the values based on the options set by user
     for (size_t j = 0; j<probeRegionLen; j++) {
         if (saiCols[j] >= '0') {
-            device->box(saiCols[j]-'0'+SAI_GC_0, true, pbRgX1+j*pbMaxWidth, pbY-pbMaxHeight+1, pbMaxWidth, pbMaxHeight, -1, 0, 0);
+            device->box(saiCols[j]-'0'+SAI_GC_0, true, pbRgX1+j*pbMaxWidth, pbY-pbMaxHeight+1, pbMaxWidth, pbMaxHeight);
         }
         if (dispSai && saiValues[j]) {
             char saiVal[2];
             saiVal[0] = saiValues[j];
             saiVal[1] = 0;
-            device->text(SAI_GC_FOREGROUND, saiVal, (pbRgX1+(j*pbMaxWidth)), pbY+pbMaxHeight, 0, 1, 0, 0, 0);
+            device->text(SAI_GC_FOREGROUND, saiVal, (pbRgX1+(j*pbMaxWidth)), pbY+pbMaxHeight, 0, AW_SCREEN, 0);
         }
     }
 }
 
-static void paintProbeInfo(AW_device *device, const char *probe_info, AW_pos x, AW_pos y, AW_pos xoff, AW_pos yoff, AW_pos maxDescent, AW_CL clientdata, int textCOLOR) {
+// static void paintProbeInfo(AW_device *device, const char *probe_info, AW_pos x, AW_pos y, AW_pos xoff, AW_pos yoff, AW_pos maxDescent, AW_CL clientdata, int textCOLOR) {
+static void paintProbeInfo(AW_device *device, const char *probe_info, AW_pos x, AW_pos y, AW_pos xoff, AW_pos yoff, AW_pos maxDescent, int textCOLOR) {
     char probeChar[2];
     probeChar[1] = 0;
 
@@ -364,7 +365,8 @@ static void paintProbeInfo(AW_device *device, const char *probe_info, AW_pos x, 
         }
         else {
             probeChar[0] = probe_info[j];
-            device->text(textCOLOR, probeChar, x+j*xoff, y-maxDescent, 0, AW_SCREEN|AW_CLICK, clientdata, 0);
+            // device->text(textCOLOR, probeChar, x+j*xoff, y-maxDescent, 0, AW_SCREEN|AW_CLICK, clientdata, 0);
+            device->text(textCOLOR, probeChar, x+j*xoff, y-maxDescent, 0, AW_SCREEN|AW_CLICK);
         }
     }
 }
@@ -450,12 +452,12 @@ void SAI_graphic::paint(AW_device *device) {
     char buf[1024];
     if (strcmp(saiSelected, "")==0) sprintf(buf, "Selected SAI = Not Selected!");
     else sprintf(buf, "Selected SAI = %s", saiSelected);
-    device->text(SAI_GC_PROBE, buf, 100, -30, 0, 1, 0, 0);
+    device->text(SAI_GC_PROBE, buf, 100, -30, 0.0, AW_SCREEN);
 
     double yLineStep = dispSai ? yStep*2 : yStep;
 
     if (g_pbdata) {
-        device->text(SAI_GC_PROBE,  "Species INFO", 0, 8, 0, 1, 0, 0, 0);
+        device->text(SAI_GC_PROBE,  "Species INFO", 0, 8, 0.0, AW_SCREEN);
         if (!g_pbdata->probeSpecies.empty()) {
             char *default_tree  = aw_root->awar(AWAR_TREE)->read_string();
             char *selectedProbe = aw_root->awar(AWAR_SPV_SELECTED_PROBE)->read_string();
@@ -464,12 +466,13 @@ void SAI_graphic::paint(AW_device *device) {
                 const char *name        = g_pbdata->probeSpecies[j];
                 char       *displayInfo = GetDisplayInfo(aw_root, gb_main, name, displayWidth, default_tree);
 
+                AW_click_cd cd(device, j);
                 if (strcmp(selectedProbe, name) == 0) {
-                    device->box(SAI_GC_FOREGROUND, true, fgX, (fgY - (yStep * 0.9)), (displayWidth * xStep_info), yStep, -1, 0, 0);
-                    device->text(SAI_GC_HIGHLIGHT, displayInfo, fgX, fgY-1, 0, AW_SCREEN|AW_CLICK, (AW_CL)j, 0, 0);
+                    device->box(SAI_GC_FOREGROUND, true, fgX, (fgY - (yStep * 0.9)), (displayWidth * xStep_info), yStep);
+                    device->text(SAI_GC_HIGHLIGHT, displayInfo, fgX, fgY-1, 0, AW_SCREEN|AW_CLICK, 0);
                 }
                 else {
-                    device->text(SAI_GC_FOREGROUND, displayInfo, fgX, fgY, 0, AW_SCREEN|AW_CLICK, (AW_CL)j, 0, 0);
+                    device->text(SAI_GC_FOREGROUND, displayInfo, fgX, fgY, 0, AW_SCREEN|AW_CLICK, 0);
                 }
                 fgY += yLineStep;
 
@@ -488,23 +491,23 @@ void SAI_graphic::paint(AW_device *device) {
 
         int  probeLen = g_pbdata->getProbeTargetLen();
 
-        device->box(SAI_GC_FOREGROUND, true, pbX, 10-yStep, (probeLen * xStep_target), yStep, -1, 0, 0);
-        paintProbeInfo(device, g_pbdata->getProbeTarget(), pbX, 10, xStep_target, yStep, maxDescent, (AW_CL)0, SAI_GC_HIGHLIGHT);
+        device->box(SAI_GC_FOREGROUND, true, pbX, 10-yStep, (probeLen * xStep_target), yStep);
+        paintProbeInfo(device, g_pbdata->getProbeTarget(), pbX, 10, xStep_target, yStep, maxDescent, SAI_GC_HIGHLIGHT);
         device->set_line_attributes(SAI_GC_FOREGROUND, 2, AW_SOLID);
 
 
         ProbeMatchParser parser(g_pbdata->getProbeTarget(), g_pbdata->getHeadline());
         if (parser.get_error()) {
-            device->text(SAI_GC_PROBE, GBS_global_string("Error: %s", parser.get_error()), pbRgX2, pbY, 0, AW_SCREEN, (AW_CL)0, 0, 0);
+            device->text(SAI_GC_PROBE, GBS_global_string("Error: %s", parser.get_error()), pbRgX2, pbY, 0, AW_SCREEN, 0);
         }
         else {
             for (size_t i = 0;  i < g_pbdata->probeSeq.size(); ++i) { // loop over all matches
-                GB_ERROR    error;
-
+                GB_ERROR         error;
                 ParsedProbeMatch parsed(g_pbdata->probeSeq[i], parser);
+                AW_click_cd      cd(device, i);
 
                 if ((error = parsed.get_error())) {
-                    device->text(SAI_GC_PROBE, GBS_global_string("Error: %s", error), pbRgX2, pbY, 0, AW_SCREEN, (AW_CL)i, 0, 0);
+                    device->text(SAI_GC_PROBE, GBS_global_string("Error: %s", error), pbRgX2, pbY, 0, AW_SCREEN, 0);
                 }
                 else {
                     const char *probeRegion      = parsed.get_probe_region();
@@ -546,7 +549,7 @@ void SAI_graphic::paint(AW_device *device) {
                                     sai_assert(skipLeft >= 0);
                                     paintBackgroundAndSAI(device, positions, pbRgX1+skipLeft*xStep_border, pbY, xStep_border, yStep, saiCols, dispSai);
                                 }
-                                paintProbeInfo(device, tok_prefix, pbRgX1, pbY, xStep_border, yStep, maxDescent, (AW_CL)i, SAI_GC_PROBE);
+                                paintProbeInfo(device, tok_prefix, pbRgX1, pbY, xStep_border, yStep, maxDescent, SAI_GC_PROBE);
 
                                 // --------------------
                                 // probe region
@@ -556,7 +559,7 @@ void SAI_graphic::paint(AW_device *device) {
                                 saiCols = translateSAItoColors(aw_root, gb_main, startPos, endPos, i);
 
                                 paintBackgroundAndSAI(device, strlen(tok_infix), pbX, pbY, xStep_target, yStep, saiCols, dispSai);
-                                paintProbeInfo(device, tok_infix, pbX, pbY, xStep_target, yStep, maxDescent, (AW_CL)i, SAI_GC_PROBE);
+                                paintProbeInfo(device, tok_infix, pbX, pbY, xStep_target, yStep, maxDescent, SAI_GC_PROBE);
 
                                 // post-probe region - 9 bases
                                 size_t post_start_pos = endPos;
@@ -567,7 +570,7 @@ void SAI_graphic::paint(AW_device *device) {
 
                                 saiCols = translateSAItoColors(aw_root, gb_main, post_start_pos, endPos, i);
                                 if (saiCols) paintBackgroundAndSAI(device, strlen(tok_suffix), pbRgX2, pbY, xStep_border, yStep, saiCols, dispSai);
-                                paintProbeInfo(device, tok_suffix, pbRgX2, pbY, xStep_border, yStep, maxDescent, (AW_CL)i, SAI_GC_PROBE);
+                                paintProbeInfo(device, tok_suffix, pbRgX2, pbY, xStep_border, yStep, maxDescent, SAI_GC_PROBE);
                             }
                         }
                     }
@@ -575,7 +578,7 @@ void SAI_graphic::paint(AW_device *device) {
                         err = GBS_global_string("probe-region '%s' has invalid format", probeRegion);
                     }
 
-                    if (err) device->text(SAI_GC_PROBE, err, pbRgX2, pbY, 0, AW_SCREEN, (AW_CL)i, 0, 0);
+                    if (err) device->text(SAI_GC_PROBE, err, pbRgX2, pbY, 0, AW_SCREEN, 0);
                     free(probeRegion_copy);
                 }
                 pbY += yLineStep;

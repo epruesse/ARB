@@ -13,9 +13,6 @@
 #include "aw_nawar.hxx"
 #include "aw_xfig.hxx"
 #include "aw_Xm.hxx"
-#include "aw_click.hxx"
-#include "aw_size.hxx"
-#include "aw_print.hxx"
 #include "aw_window_Xm.hxx"
 #include "aw_xkey.hxx"
 #include "aw_select.hxx"
@@ -1079,7 +1076,7 @@ void cleanupResizeEvents(Display *display) {
 
 static void AW_resizeCB_draw_area(Widget /*wgt*/, XtPointer aw_cb_struct, XtPointer /*call_data*/) {
     AW_area_management *aram = (AW_area_management *) aw_cb_struct;
-    cleanupResizeEvents(aram->common->display);
+    cleanupResizeEvents(aram->common->get_display());
     if (aram->resize_cb)
         aram->resize_cb->run_callback();
 }
@@ -1486,7 +1483,7 @@ void AW_root::exit_root() {
 
 void AW_window::_get_area_size(AW_area area, AW_rectangle *square) {
     AW_area_management *aram = MAP_ARAM(area);
-    *square = aram->common->screen;
+    *square = aram->common->get_screen();
 }
 
 static void horizontal_scrollbar_redefinition_cb(class AW_root */*aw_root*/, AW_CL cd1, AW_CL cd2) {
@@ -1576,18 +1573,18 @@ void AW_window::create_window_variables() {
 
 void AW_area_management::create_devices(AW_window *aww, AW_area ar) {
     AW_root *root = aww->get_root();
-    common = new AW_common(aww, ar, XtDisplay(area), XtWindow(area), p_global->color_table,
-            (unsigned int **)&aww->color_table, &aww->color_table_size);
+    common = new AW_common(XtDisplay(area), XtWindow(area), p_global->color_table, aww->color_table, aww->color_table_size);
+    common->install_common_extends_cb(aww, ar);
 }
 
-const char *AW_window::GC_to_RGB(AW_device *device, int gc, int& red,
-        int& green, int& blue) {
-    AW_common *common = device->common;
-    AW_GC_Xm *gcm = AW_MAP_GC(gc);
+const char *AW_window::GC_to_RGB(AW_device *device, int gc, int& red, int& green, int& blue) {
+    AW_common      *common = device->common;
+    const AW_GC_Xm *gcm    = common->map_gc(gc);
     aw_assert(gcm);
+    
     unsigned pixel = (unsigned short)(gcm->color);
     GB_ERROR error = 0;
-    XColor query_color;
+    XColor   query_color;
 
     query_color.pixel = pixel;
     XQueryColor(p_global->display, p_global->colormap, &query_color);
@@ -1604,14 +1601,14 @@ const char *AW_window::GC_to_RGB(AW_device *device, int gc, int& red,
 }
 
 // Converts GC to RGB float values to the range (0 - 1.0)
-const char *AW_window::GC_to_RGB_float(AW_device *device, int gc, float& red,
-        float& green, float& blue) {
-    AW_common *common = device->common;
-    AW_GC_Xm *gcm = AW_MAP_GC(gc);
+const char *AW_window::GC_to_RGB_float(AW_device *device, int gc, float& red, float& green, float& blue) {
+    AW_common      *common = device->common;
+    const AW_GC_Xm *gcm    = common->map_gc(gc);
     aw_assert(gcm);
+
     unsigned pixel = (unsigned short)(gcm->color);
     GB_ERROR error = 0;
-    XColor query_color;
+    XColor   query_color;
 
     query_color.pixel = pixel;
 
@@ -3101,7 +3098,7 @@ AW_device *AW_window::get_device(AW_area area) {
     return (AW_device *)(aram->device);
 }
 
-AW_device *AW_window::get_size_device(AW_area area) {
+AW_device_size *AW_window::get_size_device(AW_area area) {
     AW_area_management *aram = MAP_ARAM(area);
     if (!aram)
         return 0;
@@ -3109,20 +3106,20 @@ AW_device *AW_window::get_size_device(AW_area area) {
         aram->size_device = new AW_device_size(aram->common);
     aram->size_device->init();
     aram->size_device->reset();
-    return (AW_device *)(aram->size_device);
+    return aram->size_device;
 }
 
-AW_device *AW_window::get_print_device(AW_area area) {
+AW_device_print *AW_window::get_print_device(AW_area area) {
     AW_area_management *aram = MAP_ARAM(area);
     if (!aram)
         return 0;
     if (!aram->print_device)
         aram->print_device = new AW_device_print(aram->common);
     aram->print_device->init();
-    return (AW_device *)(aram->print_device);
+    return aram->print_device;
 }
 
-AW_device *AW_window::get_click_device(AW_area area, int mousex, int mousey,
+AW_device_click *AW_window::get_click_device(AW_area area, int mousex, int mousey,
         AW_pos max_distance_linei, AW_pos max_distance_texti, AW_pos radi) {
     AW_area_management *aram = MAP_ARAM(area);
     if (!aram)
@@ -3130,8 +3127,8 @@ AW_device *AW_window::get_click_device(AW_area area, int mousex, int mousey,
     if (!aram->click_device)
         aram->click_device = new AW_device_click(aram->common);
     aram->click_device->init(mousex, mousey, max_distance_linei,
-                             max_distance_texti, radi, (AW_bitset)-1);
-    return (AW_device *)(aram->click_device);
+                             max_distance_texti, radi, AW_ALL_DEVICES);
+    return aram->click_device;
 }
 
 void AW_window::wm_activate() {

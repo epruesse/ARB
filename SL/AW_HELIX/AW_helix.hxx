@@ -30,11 +30,7 @@ public:
 
     char *seq_2_helix(char *sequence, char undefsymbol = ' ');
     char get_symbol(char left, char right, BI_PAIR_TYPE pair_type);
-    int show_helix(void *device, int gc1,   char *sequence,
-                    AW_pos x, AW_pos y,
-                    AW_bitset filter,
-                    AW_CL cd1, AW_CL cd2);
-
+    int show_helix(void *device, int gc1, const char *sequence, AW_pos x, AW_pos y, AW_bitset filter);
     bool is_enabled() const { return (enabled != 0) && (size()>0); }
 };
 

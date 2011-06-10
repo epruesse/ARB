@@ -33,8 +33,12 @@ using namespace std;
 
 #if defined(ASSERTION_USED)
 
-static bool valid_cb_params(AW_CL cd1, AW_CL cd2) {
+inline bool valid_cb_params(AW_CL cd1, AW_CL cd2) {
     return cd1 == 0 || cd2 != -1;
+}
+inline bool valid_cb_params(AW_device *device) {
+    const AW_click_cd *cd = device->get_click_cd();
+    return valid_cb_params(cd->get_cd1(), cd->get_cd2());
 }
 
 #endif
@@ -42,15 +46,15 @@ static bool valid_cb_params(AW_CL cd1, AW_CL cd2) {
 #if defined(DEBUG)
 // #define PAINT_REGION_INDEX // // paint region-internal index next to base
 
-static void paintDebugInfo(AW_device *device, int color, const Position& pos, const char *txt, AW_CL cd1, AW_CL cd2) {
-    sec_assert(valid_cb_params(cd1, cd2));
-    device->circle(color, true, pos.xpos(), pos.ypos(), 0.06, 0.06, -1, cd1, cd2);
-    device->text(SEC_GC_DEFAULT, txt, pos.xpos(), pos.ypos(), 0, 1, cd1, cd2, 0);
+static void paintDebugInfo(AW_device *device, int color, const Position& pos, const char *txt) {
+    sec_assert(valid_cb_params(device));
+    device->circle(color, true, pos.xpos(), pos.ypos(), 0.06, 0.06);
+    device->text(SEC_GC_DEFAULT, txt, pos.xpos(), pos.ypos(), 0, AW_SCREEN, 0);
 }
 static void paintStrandDebugInfo(AW_device *device, int color, SEC_helix_strand *strand) {
-    paintDebugInfo(device, color, strand->rightAttachPoint(), "RAP", strand->self(), strand->rightAttachAbspos());
-    paintDebugInfo(device, color, strand->leftAttachPoint(), "LAP", strand->self(), strand->leftAttachAbspos());
-    paintDebugInfo(device, color, strand->get_fixpoint(), strand->isRootsideFixpoint() ? "RFP" : "FP", strand->self(), strand->startAttachAbspos());
+    AW_click_cd cd(device, strand->self(), strand->rightAttachAbspos());        paintDebugInfo(device, color, strand->rightAttachPoint(), "RAP");
+    cd.set_cd2(strand->leftAttachAbspos());                                     paintDebugInfo(device, color, strand->leftAttachPoint(), "LAP");
+    cd.set_cd2(strand->startAttachAbspos());                                    paintDebugInfo(device, color, strand->get_fixpoint(), strand->isRootsideFixpoint() ? "RFP" : "FP");
 }
 
 #endif // DEBUG
@@ -125,8 +129,7 @@ static PaintData paintData;
 void SEC_root::paintAnnotation(AW_device *device, int gc,
                                const Position& pos, const Position& left, const Position& right,
                                double noteDistance, const char *text,
-                               bool lineToPos, bool linesToLeftRight, bool boxText,
-                               AW_CL cd1, AW_CL cd2)
+                               bool lineToPos, bool linesToLeftRight, bool boxText)
 {
     // draw annotation to explicit position 'pos' (annotation is drawn "above" the line left->right)
     // The distance between pos and note is determined by
@@ -136,10 +139,10 @@ void SEC_root::paintAnnotation(AW_device *device, int gc,
     // linesToLeftRight == true -> draw lines from text to 'left' and 'right'
     // boxText          == true -> draw a box around text
 
-    sec_assert(valid_cb_params(cd1, cd2));
+    sec_assert(valid_cb_params(device));
 
     Vector strand(left, right);
-    Angle  pos2note(strand);
+    Angle pos2note(strand);
     pos2note.rotate270deg();
 
     int    fontgc        = gc <= SEC_GC_LAST_FONT ? gc : SEC_GC_DEFAULT;
@@ -164,7 +167,7 @@ void SEC_root::paintAnnotation(AW_device *device, int gc,
 
         if (lineToPos) {
             Vector dist = pos2note.normal()*half_charSize;
-            device->line(gc, boxText ? note_center : note_center-dist, pos+dist, -1, cd1, cd2);
+            device->line(gc, boxText ? note_center : note_center-dist, pos+dist);
         }
         if (linesToLeftRight) {
             Vector out(pos, note_center);
@@ -174,9 +177,9 @@ void SEC_root::paintAnnotation(AW_device *device, int gc,
                 Vector toRight(note_center, right);
 
                 device->line(gc, boxText ? note_center : note_center+toLeft*(half_width/toLeft.length()),
-                             left-toLeft*(half_charSize/toLeft.length()), -1, cd1, cd2);
+                             left-toLeft*(half_charSize/toLeft.length()), AW_ALL_DEVICES);
                 device->line(gc, boxText ? note_center : note_center+toRight*(half_width/toRight.length()),
-                             right-toRight*(half_charSize/toRight.length()), -1, cd1, cd2);
+                             right-toRight*(half_charSize/toRight.length()), AW_ALL_DEVICES);
             }
             else {
                 Vector rightIndent = out;
@@ -186,19 +189,19 @@ void SEC_root::paintAnnotation(AW_device *device, int gc,
                 Position leftOut  = left+out-rightIndent;
 
                 Vector posPad = Vector(right, rightOut).set_length(half_charSize);
-                device->line(gc, right+posPad, rightOut, -1, cd1, cd2);
+                device->line(gc, right+posPad, rightOut);
                 posPad.rotate90deg();
-                device->line(gc, left+posPad, leftOut, -1, cd1, cd2);
+                device->line(gc, left+posPad, leftOut);
 
                 if (boxText) {
-                    device->line(gc, leftOut, rightOut, -1, cd1, cd2);
+                    device->line(gc, leftOut, rightOut);
                 }
                 else {
                     Vector rightTextPad(note_center, rightOut);
                     rightTextPad.set_length(half_width);
 
-                    device->line(gc, note_center+rightTextPad, rightOut, -1, cd1, cd2);
-                    device->line(gc, note_center-rightTextPad, leftOut, -1, cd1, cd2);
+                    device->line(gc, note_center+rightTextPad, rightOut);
+                    device->line(gc, note_center-rightTextPad, leftOut);
                 }
             }
         }
@@ -212,10 +215,10 @@ void SEC_root::paintAnnotation(AW_device *device, int gc,
         Rectangle box(note_center+center_corner, -2*center_corner);
 
         device->clear_part(box, -1);
-        device->box(gc, false, box, -1, cd1, cd2);
+        device->box(gc, false, box);
     }
 
-    device->text(gc, text, textcorner, 0, -1, cd1, cd2, 0);
+    device->text(gc, text, textcorner);
 }
 
 void SEC_root::paintPosAnnotation(AW_device *device, int gc, size_t absPos, const char *text, bool lineToBase, bool boxText) {
@@ -244,7 +247,8 @@ void SEC_root::paintPosAnnotation(AW_device *device, int gc, size_t absPos, cons
 
     if (!text) text = GBS_global_string("%zu", absPos);
 
-    paintAnnotation(device, gc, pos, pos1, pos2, vec12.length(), text, lineToBase, false, boxText, 0, absPos);
+    AW_click_cd cd(device, 0, absPos);
+    paintAnnotation(device, gc, pos, pos1, pos2, vec12.length(), text, lineToBase, false, boxText);
 }
 
 void SEC_root::paintEcoliPositions(AW_device *device) {
@@ -279,11 +283,12 @@ void SEC_root::paintHelixNumbers(AW_device *device) {
                     const Position& end   = strand->endAttachPoint();
                     Position helixCenter           = centroid(start, end);
 
+                    AW_click_cd cd(device, strand->self(), absPos);
                     paintAnnotation(device, SEC_GC_HELIX_NO,
                                     helixCenter, start, end,
                                     // displayParams.distance_between_strands*2,
                                     displayParams.distance_between_strands,
-                                    helixNr, false, true, true, strand->self(), absPos);
+                                    helixNr, false, true, true);
                 }
             }
         }
@@ -298,7 +303,8 @@ void SEC_root::showSomeAbsolutePositions(AW_device *device) {
         Vector        diag3 = screen.diagonal()/3;
         Rectangle showInside(screen.upper_left_corner()+diag3*1.85, diag3);
 
-        device->box(SEC_GC_DEFAULT, false, showInside, -1, 0, -1);
+        AW_click_cd cd(device, 0, -1);
+        device->box(SEC_GC_DEFAULT, false, showInside);
 
         PosMap::const_iterator end = drawnPositions->end();
         for (PosMap::const_iterator pos = drawnPositions->begin(); pos != end; ++pos) {
@@ -339,12 +345,12 @@ void SEC_helix_strand::paint_constraints(AW_device *device) {
         bool drawMidLine = minS>0 && maxS>0;
         Position minP = startP + Vector(startP, endP) * (drawMidLine ? minS/maxS : 0.5);
 
+        AW_click_cd cd(device, self(), startAttachAbspos());
         get_root()->paintAnnotation(device, SEC_GC_DEFAULT,
                                     minP, startP, endP,
                                     get_root()->display_params().distance_between_strands*2,
                                     GBS_global_string("%.1f-%.1f", minS, maxS),
-                                    drawMidLine, true, true,
-                                    self(), startAttachAbspos());
+                                    drawMidLine, true, true);
     }
 }
 
@@ -355,10 +361,12 @@ void SEC_loop::paint_constraints(AW_device *device) {
     double maxS = maxSize();
 
     if (minS>0 || maxS>0) {
-        if (minS>0) device->circle(SEC_GC_DEFAULT, false, center, minS, minS, -1, self(), abspos);
-        if (maxS>0) device->circle(SEC_GC_DEFAULT, false, center, maxS, maxS, -1, self(), abspos);
+        AW_click_cd cd(device, self(), abspos);
+        
+        if (minS>0) device->circle(SEC_GC_DEFAULT, false, center, minS, minS);
+        if (maxS>0) device->circle(SEC_GC_DEFAULT, false, center, maxS, maxS);
 
-        device->text(SEC_GC_DEFAULT, GBS_global_string("%.1f-%.1f", minS, maxS), center+Vector(0, max(minS, maxS)/2), 0.5, -1, self(), abspos);
+        device->text(SEC_GC_DEFAULT, GBS_global_string("%.1f-%.1f", minS, maxS), center+Vector(0, max(minS, maxS)/2), 0.5, AW_ALL_DEVICES);
     }
 }
 
@@ -395,13 +403,13 @@ void SEC_root::cacheBackgroundColor() {
     }
 }
 
-void SEC_root::paintBackgroundColor(AW_device *device, SEC_bgpaint_mode mode, const Position& p1, int color1, int gc1, const Position& p2, int color2, int gc2, int skel_gc, AW_CL cd1, AW_CL cd2) {
+void SEC_root::paintBackgroundColor(AW_device *device, SEC_bgpaint_mode mode, const Position& p1, int color1, int gc1, const Position& p2, int color2, int gc2, int skel_gc) {
     // paints background colors for p2 and connection between p1 and p2.
     // gc1/gc2 are foreground gc used to detect size of background regions
     //
     // Also paints skeleton
 
-    sec_assert(valid_cb_params(cd1, cd2));
+    sec_assert(valid_cb_params(device));
 
     color1 = paintData.convert_BackgroundGC(color1); // convert EDIT4-GCs into SECEDIT-GCs
     color2 = paintData.convert_BackgroundGC(color2);
@@ -429,16 +437,16 @@ void SEC_root::paintBackgroundColor(AW_device *device, SEC_bgpaint_mode mode, co
         }
 
         if (mode & BG_PAINT_FIRST && color1 >= 0) { // paint first circle ?
-            device->circle(color1, true, p1, radius1, radius1, -1, cd1, cd2);
+            device->circle(color1, true, p1, radius1, radius1);
         }
 
         if (mode & BG_PAINT_SECOND && color2 >= 0) { // paint second circle ?
-            device->circle(color2, true, p2, radius1, radius1, -1, cd1, cd2);
+            device->circle(color2, true, p2, radius1, radius1);
         }
 
         if (color1 == color2 && color1 >= 0) { // colors are equal -> paint background between points
             device->set_line_attributes(color1, bg_linewidth[paintData.get_linePropertyGC(gc1, gc2)], AW_SOLID);
-            device->line(color1, p1, p2, -1, cd1, cd2);
+            device->line(color1, p1, p2);
         }
 
         if (space) {
@@ -447,7 +455,7 @@ void SEC_root::paintBackgroundColor(AW_device *device, SEC_bgpaint_mode mode, co
 #if defined(DEBUG)
                 if (displayParams.show_debug) { s1 = p1; s2 = p2; } // in debug mode always show full skeleton
 #endif // DEBUG
-                device->line(skel_gc, s1, s2, -1, cd1, cd2);
+                device->line(skel_gc, s1, s2);
             }
         }
     }
@@ -469,7 +477,8 @@ void SEC_root::paintSearchPatternStrings(AW_device *device, int clickedPos, AW_p
             "Signature (global)",
         };
 
-        device->text(searchColor, text[searchColor-SEC_GC_SBACK_0], xPos, yPos, 0, 1, 0, clickedPos, 0);
+        AW_click_cd cd(device, 0, clickedPos);
+        device->text(searchColor, text[searchColor-SEC_GC_SBACK_0], xPos, yPos, 0, AW_SCREEN, 0);
     }
     else {
         aw_message("Please click on a search result");
@@ -481,7 +490,7 @@ void SEC_root::paintSearchPatternStrings(AW_device *device, int clickedPos, AW_p
 // --------------
 
 
-void SEC_bond_def::paint(AW_device *device, char base1, char base2, const Position& p1, const Position& p2, const Vector& toNextBase, const double& char_radius, AW_CL cd1, AW_CL cd2) const {
+void SEC_bond_def::paint(AW_device *device, char base1, char base2, const Position& p1, const Position& p2, const Vector& toNextBase, const double& char_radius) const {
     if (base1 && base2) {
         char Bond = get_bond(base1, base2);
         if (Bond == ' ') {
@@ -510,18 +519,18 @@ void SEC_bond_def::paint(AW_device *device, char base1, char base2, const Positi
             if (maxIdx >= 0) {
                 for (int i = 0; i<SEC_BOND_PAIR_CHARS; i++) {
                     if (useBond[i]) {
-                        paint(device, i == maxIdx ? SEC_GC_BONDS : SEC_GC_ERROR, SEC_BOND_PAIR_CHAR[i], p1, p2, toNextBase, char_radius, cd1, cd2);
+                        paint(device, i == maxIdx ? SEC_GC_BONDS : SEC_GC_ERROR, SEC_BOND_PAIR_CHAR[i], p1, p2, toNextBase, char_radius);
                     }
                 }
             }
         }
         else {
-            paint(device, SEC_GC_BONDS, Bond, p1, p2, toNextBase, char_radius, cd1, cd2);
+            paint(device, SEC_GC_BONDS, Bond, p1, p2, toNextBase, char_radius);
         }
     }
 }
 
-void SEC_bond_def::paint(AW_device *device, int GC, char bondChar, const Position& p1, const Position& p2, const Vector& toNextBase, const double& char_radius, AW_CL cd1, AW_CL cd2) const {
+void SEC_bond_def::paint(AW_device *device, int GC, char bondChar, const Position& p1, const Position& p2, const Vector& toNextBase, const double& char_radius) const {
     Vector v12(p1, p2);
     double oppoDist = v12.length();
     double bondLen  = oppoDist-2*char_radius;
@@ -539,13 +548,13 @@ void SEC_bond_def::paint(AW_device *device, int GC, char bondChar, const Positio
 
     switch (bondChar) {
         case '-':               // single line
-            device->line(GC, b1, b2, -1, cd1, cd2);
+            device->line(GC, b1, b2);
             break;
 
         case '#':               // double cross
         case '=':               // double line
-            device->line(GC, b1+aside, b2+aside, -1, cd1, cd2);
-            device->line(GC, b1-aside, b2-aside, -1, cd1, cd2);
+            device->line(GC, b1+aside, b2+aside);
+            device->line(GC, b1-aside, b2-aside);
 
             if (bondChar == '#') {
                 Vector   outside = v12*(bondLen/oppoDist/4);
@@ -554,8 +563,8 @@ void SEC_bond_def::paint(AW_device *device, int GC, char bondChar, const Positio
 
                 aside *= 2;
 
-                device->line(GC, c1-aside, c1+aside, -1, cd1, cd2);
-                device->line(GC, c2-aside, c2+aside, -1, cd1, cd2);
+                device->line(GC, c1-aside, c1+aside);
+                device->line(GC, c2-aside, c2+aside);
             }
             break;
 
@@ -576,20 +585,20 @@ void SEC_bond_def::paint(AW_device *device, int GC, char bondChar, const Positio
             Angle angle(outside);
             int   deg = int(angle.degrees()+0.5);
 
-            device->arc(GC, false, c1, radius, radius, deg+180-1, 180+30, -1, cd1, cd2);
-            device->arc(GC, false, c2, radius, radius, deg-1,     180+30, -1, cd1, cd2);
+            device->arc(GC, false, c1, radius, radius, deg+180-1, 180+30);
+            device->arc(GC, false, c2, radius, radius, deg-1,     180+30);
             break;
         }
 
         case '+':               // cross
             aside *= 2;
-            device->line(GC, center-aside, center+aside, -1, cd1, cd2);
+            device->line(GC, center-aside, center+aside);
             if (2*aside.length() < bondLen) {
                 aside.rotate90deg();
-                device->line(GC, center-aside, center+aside, -1, cd1, cd2);
+                device->line(GC, center-aside, center+aside);
             }
             else {
-                device->line(GC, b1, b2, -1, cd1, cd2);
+                device->line(GC, b1, b2);
             }
             break;
 
@@ -597,12 +606,12 @@ void SEC_bond_def::paint(AW_device *device, int GC, char bondChar, const Positio
         case '.': {             // circles
             double radius            = aside.length();
             if (bondChar == 'o') radius *= 2;
-            device->circle(GC, false, center, radius, radius, -1, cd1, cd2);
+            device->circle(GC, false, center, radius, radius);
             break;
         }
 
         case '@':  // error in bonddef
-            device->text(GC, "Err", center+Vector(0, char_radius), 0.5, -1, cd1, cd2);
+            device->text(GC, "Err", center+Vector(0, char_radius), 0.5, AW_ALL_DEVICES);
             break;
 
         default:
@@ -718,12 +727,12 @@ void SEC_helix_strand::paint_strands(AW_device *device, const Vector& strand_vec
                     ? max(prev->abs[strand], curr->abs[strand])
                     : min(prev->abs[strand], curr->abs[strand]);
 
+                AW_click_cd cd(device, self(), backAbs);
                 root->paintBackgroundColor(device,
                                            pos == base_count-1 ? BG_PAINT_NONE : BG_PAINT_SECOND,
                                            prev->realpos[strand], root->getBackgroundColor(prev->abs[strand]), pair2helixGC[prev->isPair],
                                            curr->realpos[strand], root->getBackgroundColor(curr->abs[strand]), pair2helixGC[curr->isPair],
-                                           pair2skelGC[curr->isPair && prev->isPair],
-                                           self(), backAbs);
+                                           pair2skelGC[curr->isPair && prev->isPair]);
             }
         }
     }
@@ -750,19 +759,20 @@ void SEC_helix_strand::paint_strands(AW_device *device, const Vector& strand_vec
                 if (!disp.hide_bases) {
                     baseBuf[0]        = base[strand];
                     Position base_pos = realPos + center_char; // center base at realpos
+                    AW_click_cd cd(device, self(), abs);
 #if defined(DEBUG)
-                    if (disp.show_debug) device->line(gc, realPos, base_pos, -1, self(), abs);
+                    if (disp.show_debug) device->line(gc, realPos, base_pos);
 #endif // DEBUG
 
-                    device->text(gc, baseBuf, base_pos, 0, -1, self(), abs, 0);
+                    device->text(gc, baseBuf, base_pos);
                 }
             }
         }
 
         if (disp.show_bonds == SHOW_NHELIX_BONDS || (disp.show_bonds == SHOW_HELIX_BONDS && curr->isPair)) {
+            AW_click_cd cd(device, self(), curr->abs[0]);
             db->bonds()->paint(device, base[0], base[1], curr->realpos[0], curr->realpos[1], vnext,
-                               root->get_char_radius(pair2helixGC[curr->isPair]),
-                               self(), curr->abs[0]);
+                               root->get_char_radius(pair2helixGC[curr->isPair]));
         }
     }
 }
@@ -798,10 +808,11 @@ void SEC_helix_strand::paint(AW_device *device) {
             strandArrow = LineVector(get_fixpoint()-fix2arrowStart, 2*fix2arrowStart);
         }
 
-        AW_CL cd1 = (AW_CL)get_helix()->self();
-        AW_CL cd2 = (AW_CL)startAttachAbspos();
+        AW_click_cd cd(device, get_helix()->self(), startAttachAbspos());
+        // AW_CL cd1 = (AW_CL)get_helix()->self();
+        // AW_CL cd2 = (AW_CL)startAttachAbspos();
 
-        device->line(SEC_GC_HELIX, strandArrow, -1, cd1, cd2);
+        device->line(SEC_GC_HELIX, strandArrow);
 
         Vector right = strandArrow.line_vector(); // left arrowhead vector
         right        = (right * (disp.distance_between_strands*0.35/right.length())).rotate135deg();
@@ -809,8 +820,8 @@ void SEC_helix_strand::paint(AW_device *device) {
         Vector left = Vector(right).rotate90deg();
 
         Position head = strandArrow.head();
-        device->line(SEC_GC_HELIX, LineVector(head, left), -1, cd1, cd2);
-        device->line(SEC_GC_HELIX, LineVector(head, right), -1, cd1, cd2);
+        device->line(SEC_GC_HELIX, LineVector(head, left));
+        device->line(SEC_GC_HELIX, LineVector(head, right));
     }
 
 #if defined(DEBUG)
@@ -871,11 +882,14 @@ void SEC_segment::paint(AW_device *device, SEC_helix_strand *previous_strand_poi
         int startAbsPos = previous_strand_pointer->rightAttachAbspos();
         int endAbsPos   = next_helix_strand->leftAttachAbspos();
 
-        paintDebugInfo(device, SEC_GC_LOOP, center1, GBS_global_string("SC1 (step=%5.3f)", step), self(), startAbsPos);
-        paintDebugInfo(device, SEC_GC_LOOP, center2, "SC2", self(), endAbsPos);
-        device->line(SEC_GC_LOOP, center1, startP, -1, self(), startAbsPos);
-        device->line(SEC_GC_LOOP, center2, endP, -1, self(), endAbsPos);
-        device->line(SEC_GC_LOOP, center1, center2, -1, self(), startAbsPos);
+        AW_click_cd cd(device, self(), startAbsPos);
+        paintDebugInfo(device, SEC_GC_LOOP, center1, GBS_global_string("SC1 (step=%5.3f)", step));
+        device->line(SEC_GC_LOOP, center1, startP);
+        device->line(SEC_GC_LOOP, center1, center2);
+
+        cd.set_cd2(endAbsPos);
+        paintDebugInfo(device, SEC_GC_LOOP, center2, "SC2");
+        device->line(SEC_GC_LOOP, center2, endP);
     }
 #endif // DEBUG
 
@@ -911,23 +925,24 @@ void SEC_segment::paint(AW_device *device, SEC_helix_strand *previous_strand_poi
         int nextBack = root->getBackgroundColor(nextAbs);
 
         // paint background (from pos to nextPos)
+        AW_click_cd cd(device, self(), disp.edit_direction ? nextAbs : abs);
         root->paintBackgroundColor(device, i == -1 ? BG_PAINT_BOTH : BG_PAINT_SECOND,
-                                   pos, back, gc, nextPos, nextBack, nextGc, SEC_SKELE_LOOP, self(),
-                                   disp.edit_direction ? nextAbs : abs);
+                                   pos, back, gc, nextPos, nextBack, nextGc, SEC_SKELE_LOOP);
 
         if (i >= 0) {
             // paint base char at pos
-            baseBuf[0] = abs>0 ? db->baseAt(abs) : '?';
+            baseBuf[0]           = abs>0 ? db->baseAt(abs) : '?';
             Vector   center_char = root->get_center_char_vector(gc);
             Position base_pos    = pos + center_char; // center base character at pos
 
+            cd.set_cd2(abs);
             if (!disp.hide_bases) {
 #if defined(DEBUG)
                 // show line from base paint pos to calculated center of char
                 // (which is currently calculated wrong!)
-                if (disp.show_debug) device->line(SEC_GC_LOOP, pos, base_pos, -1, self(), abs);
+                if (disp.show_debug) device->line(SEC_GC_LOOP, pos, base_pos);
 #endif // DEBUG
-                device->text(SEC_GC_LOOP, baseBuf, base_pos, 0, -1, self(), abs, 0);
+                device->text(SEC_GC_LOOP, baseBuf, base_pos);
             }
             root->announce_base_position(abs, pos);
         }
@@ -953,12 +968,13 @@ void SEC_loop::paint(AW_device *device) {
     if (sroot->display_params().show_debug) {
         SEC_helix_strand *fixpoint_strand = get_fixpoint_strand();
         int               abspos          = fixpoint_strand->startAttachAbspos();
+        AW_click_cd cd(device, self(), abspos);
 
         device->set_line_attributes(SEC_GC_CURSOR, 1, AW_SOLID);
-        device->line(SEC_GC_CURSOR, get_center(), fixpoint_strand->get_fixpoint(), self(), abspos);
+        device->line(SEC_GC_CURSOR, get_center(), fixpoint_strand->get_fixpoint());
 
         paintStrandDebugInfo(device, SEC_GC_CURSOR, fixpoint_strand);
-        paintDebugInfo(device, SEC_GC_CURSOR, get_center(), "LC", self(), abspos);
+        paintDebugInfo(device, SEC_GC_CURSOR, get_center(), "LC");
     }
 #endif // DEBUG
     if (sroot->get_show_constraints() & SEC_LOOP) paint_constraints(device);
@@ -1009,8 +1025,9 @@ GB_ERROR SEC_root::paint(AW_device *device) {
             const Position&  loop_center = rootLoop->get_center();
             const char      *structId    = db->structure()->name();
 
-            AW_CL cd1 = rootLoop->self();
-            AW_CL cd2 = -1;
+            AW_click_cd cd(device, rootLoop->self(), -1);
+            // AW_CL cd1 = rootLoop->self();
+            // AW_CL cd2 = -1;
 
             Vector center2corner(-1, -1);
             center2corner.set_length(rootLoop->drawnSize()*0.33);
@@ -1020,8 +1037,8 @@ GB_ERROR SEC_root::paint(AW_device *device) {
 
             Position textPos(loop_center.xpos(), upperleft_corner.ypos());
 
-            device->box(SEC_GC_DEFAULT, false, upperleft_corner, diagonal, -1, cd1, cd2);
-            device->text(SEC_GC_DEFAULT, structId, textPos, 0.5, -1, cd1, cd2, 0);
+            device->box(SEC_GC_DEFAULT, false, upperleft_corner, diagonal);
+            device->text(SEC_GC_DEFAULT, structId, textPos, 0.5, AW_ALL_DEVICES, 0);
         }
 
 #if defined(CHECK_INTEGRITY)
@@ -1060,10 +1077,11 @@ GB_ERROR SEC_root::paint(AW_device *device) {
                 curAbs = abs1;
             }
 
+            AW_click_cd cd(device, 0, curAbs);
 #if defined(DEBUG) && 1
             // draw a testline to see the baseline on that the cursor is positioned
             device->set_line_attributes(SEC_GC_CURSOR, 1, AW_DOTTED);
-            device->line(SEC_GC_CURSOR, pos1, pos2, -1, 0, curAbs);
+            device->line(SEC_GC_CURSOR, pos1, pos2);
 #endif
 
             Position mid = centroid(pos1, pos2);
@@ -1082,11 +1100,11 @@ GB_ERROR SEC_root::paint(AW_device *device) {
 
             LineVector cursor(mid+v, mid-v);
             device->set_line_attributes(SEC_GC_CURSOR, 3, AW_SOLID);
-            device->line(SEC_GC_CURSOR, cursor, -1, 0, curAbs);
+            device->line(SEC_GC_CURSOR, cursor);
             set_last_drawed_cursor_position(cursor);
 
             LineVector cursor_dir(cursor.head(), displayParams.edit_direction ? v.rotate270deg() : v.rotate90deg());
-            device->line(SEC_GC_CURSOR, cursor_dir, -1, 0, curAbs);
+            device->line(SEC_GC_CURSOR, cursor_dir);
 
 
             int cursor_gc  = -1;

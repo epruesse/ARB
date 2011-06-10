@@ -14,10 +14,12 @@
 
 #define AW_INT(x) (((x)>=0) ? (int) ((x)+.5) : (int)((x)-.5))
 
+class AW_common;
+
 class AW_GC_Xm {
 public:
     GC                   gc;
-    class AW_common     *common;
+    AW_common           *common;
     XFontStruct          curfont;
     short                width_of_chars[256];
     short                ascent_of_chars[256];
@@ -35,8 +37,9 @@ public:
     AW_function function;
     AW_pos      grey_level;
 
-    AW_GC_Xm(class AW_common *common);
+    AW_GC_Xm(AW_common *common);
     ~AW_GC_Xm();
+
     void set_fill(AW_grey_level grey_level); // <0 don't fill  0.0 white 1.0 black
     void set_font(AW_font font_nr, int size, int *found_size);
     void set_lineattributes(AW_pos width, AW_linestyle style);
@@ -44,43 +47,73 @@ public:
     void set_foreground_color(unsigned long color);
     void set_background_color(unsigned long color);
 
-    int get_available_fontsizes(AW_font font_nr, int *available_sizes);
+    int get_available_fontsizes(AW_font font_nr, int *available_sizes) const;
+    int get_string_size(const char *str, long textlen) const;
 };
 
 
 class AW_common {
+    Display *display;
+    XID      window_id;
+    
+    unsigned long*& frame_colors;
+    unsigned long*& data_colors;
+    long&           data_colors_size;
+
+    int        ngcs;
+    AW_GC_Xm **gcs;
+
+    AW_rectangle screen;
+
 public:
-    AW_common(AW_window *aww, AW_area area, Display *display_in,
-              XID window_id_in, unsigned long *fcolors,
-              unsigned int **dcolors, long *data_colors_size);
+    AW_common(Display         *display_in,
+              XID              window_id_in,
+              unsigned long*&  fcolors,
+              unsigned long*&  dcolors,
+              long&            dcolors_count);
 
-    unsigned long  *frame_colors;
-    unsigned long **data_colors;
-    long           *data_colors_size;
-    AW_root        *root;
-    AW_rectangle    screen;
-    int             screen_x_offset;
-    int             screen_y_offset;
-    AW_GC_Xm      **gcs;
-    int             ngcs;
-    Display        *display;
-    XID             window_id;
+    void install_common_extends_cb(AW_window *aww, AW_area area); // call early
 
-    AW_pos x_alignment(AW_pos x_pos, AW_pos x_size, AW_pos alignment) { return x_pos- x_size*alignment; };
+    Display *get_display() const { return display; }
+    XID get_window_id() const { return window_id; }
+
+    const AW_rectangle& get_screen() const { return screen; }
+    void set_screen_size(unsigned int width, unsigned int height) {
+        screen.t = 0;               // set clipping coordinates
+        screen.b = height;
+        screen.l = 0;
+        screen.r = width;
+    }
+
+    unsigned long get_color(AW_color color) const {
+        unsigned long col;
+        if (color>=AW_DATA_BG) {
+            col = data_colors[color];
+        }
+        else {
+            col = frame_colors[color];
+        }
+        return col;
+    }
+    unsigned long get_data_color(int i) const { return data_colors[i]; }
+    int find_data_color_idx(unsigned long color) const;
+    int get_data_color_size() const { return data_colors_size; }
+
+    unsigned long get_XOR_color() const {
+        return data_colors ? data_colors[AW_DATA_BG] : frame_colors[AW_WINDOW_BG];
+    }
+    void new_gc(int gc);
+    
+    bool gc_mapable(int gc) const { return gc<ngcs && gcs[gc]; }
+    const AW_GC_Xm *map_gc(int gc) const { aw_assert(gc_mapable(gc)); return gcs[gc]; }
+    AW_GC_Xm *map_mod_gc(int gc) { aw_assert(gc_mapable(gc)); return gcs[gc]; }
+
+    GC get_GC(int gc) const { return map_gc(gc)->gc; }
+    const XFontStruct *get_xfont(int gc) const { return &map_gc(gc)->curfont; }
+    const AW_font_information *get_font_information(int gc, unsigned char c);
 };
 
-
-// #define AW_MAP_GC(gc) (aw_assert(gc<common->ngcs), common->gcs[gc])
-
-inline bool AW_GC_MAPABLE(AW_common *common, int gc) {
-    return gc<common->ngcs && common->gcs[gc] != 0;
-}
-
-inline AW_GC_Xm *AW_MAP_GC_tested(AW_common *common, int gc) {
-    aw_assert(AW_GC_MAPABLE(common, gc));
-    return common->gcs[gc];
-}
-#define AW_MAP_GC(gc) AW_MAP_GC_tested(common, gc)
+inline AW_pos x_alignment(AW_pos x_pos, AW_pos x_size, AW_pos alignment) { return x_pos - x_size*alignment; }
 
 #else
 #error aw_commn.hxx included twice

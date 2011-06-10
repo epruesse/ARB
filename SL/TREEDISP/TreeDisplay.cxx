@@ -457,16 +457,12 @@ int AWT_graphic_tree::resort_tree(int mode, AP_tree *at)   // run on father !!!
 }
 
 
-void AWT_graphic_tree::rot_show_line(AW_device *device)
-{
-    double             sx, sy;
-    double             x, y;
-    sx = (this->old_rot_cl.x0+this->old_rot_cl.x1)*.5;
-    sy = (this->old_rot_cl.y0+this->old_rot_cl.y1)*.5;
-    x = this->rot_cl.x0 * (1.0-this->rot_cl.length) + this->rot_cl.x1 * this->rot_cl.length;
-    y = this->rot_cl.y0 * (1.0-this->rot_cl.length) + this->rot_cl.y1 * this->rot_cl.length;
-    int gc = this->drag_gc;
-    device->line(gc, sx, sy, x, y, AWT_F_ALL, 0, 0);
+void AWT_graphic_tree::rot_show_line(AW_device *device) {
+    double sx = (old_rot_cl.x0+old_rot_cl.x1)*.5;
+    double sy = (old_rot_cl.y0+old_rot_cl.y1)*.5;
+    double x  = rot_cl.x0 * (1.0-rot_cl.nearest_rel_pos) + rot_cl.x1 * rot_cl.nearest_rel_pos;
+    double y  = rot_cl.y0 * (1.0-rot_cl.nearest_rel_pos) + rot_cl.y1 * rot_cl.nearest_rel_pos;
+    device->line(drag_gc, sx, sy, x, y);
 }
 
 void AWT_graphic_tree::rot_show_triangle(AW_device *device)
@@ -498,7 +494,7 @@ void AWT_graphic_tree::rot_show_triangle(AW_device *device)
 
     int gc = this->drag_gc;
 
-    device->line(gc, sx, sy, x1, y1, AWT_F_ALL, 0, 0);
+    device->line(gc, sx, sy, x1, y1);
 
 
     if (!at->is_leaf) {
@@ -511,15 +507,13 @@ void AWT_graphic_tree::rot_show_triangle(AW_device *device)
         x2 = sx + cos(w) * len;
         y2 = sy + sin(w) * len;
 
-        device->line(gc, sx, sy, x1, y1, AWT_F_ALL, 0, 0);
-        device->line(gc, sx, sy, x2, y2, AWT_F_ALL, 0, 0);
-        device->line(gc, x2, y2, x1, y1, AWT_F_ALL, 0, 0);
-
+        device->line(gc, sx, sy, x1, y1);
+        device->line(gc, sx, sy, x2, y2);
+        device->line(gc, x2, y2, x1, y1);
     }
-
-
 }
-void AWT_show_bootstrap_circle(AW_device *device, const char *bootstrap, double zoom_factor, double max_radius, double len, double x, double y, bool elipsoid, double elip_ysize, int filter, AW_CL cd1, AW_CL cd2) {
+
+static void AWT_show_bootstrap_circle(AW_device *device, const char *bootstrap, double zoom_factor, double max_radius, double len, double x, double y, bool elipsoid, double elip_ysize, int filter) {
     double radius           = .01 * atoi(bootstrap); // bootstrap values are given in % (0..100)
     if (radius < .1) radius = .1;
 
@@ -550,7 +544,7 @@ void AWT_show_bootstrap_circle(AW_device *device, const char *bootstrap, double 
         radiusy = radiusx;
     }
 
-    device->circle(gc, false, x, y, radiusx, radiusy, filter, cd1, (AW_CL)cd2);
+    device->circle(gc, false, x, y, radiusx, radiusy, filter);
 }
 
 double comp_rot_orientation(AW_clicked_line *cl)
@@ -1230,7 +1224,7 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
                         switch (button) {
                             case AWT_M_LEFT:
                                 error = source->cantMoveTo(dest);
-                                if (!error) source->moveTo(dest, cl->length);
+                                if (!error) source->moveTo(dest, cl->nearest_rel_pos);
                                 break;
 
                             case AWT_M_RIGHT:
@@ -1867,37 +1861,35 @@ void AWT_graphic_tree::update(GBDATA *) {
     }
 }
 
-void AWT_graphic_tree::NT_scalebox(int gc, double x, double y, double width)
-{
+void AWT_graphic_tree::NT_scalebox(int gc, double x, double y, double width) {
     double diam  = width/disp_device->get_scale();
     double diam2 = diam+diam;
     disp_device->set_fill(gc, this->grey_level);
-    disp_device->box(gc, true, x-diam, y-diam, diam2, diam2, mark_filter, 0, 0);
+    disp_device->box(gc, true, x-diam, y-diam, diam2, diam2, mark_filter);
 }
 
-void AWT_graphic_tree::NT_emptybox(int gc, double x, double y, double width)
-{
+void AWT_graphic_tree::NT_emptybox(int gc, double x, double y, double width) {
     double diam  = width/disp_device->get_scale();
     double diam2 = diam+diam;
     disp_device->set_line_attributes(gc, 0.0, AW_SOLID);
-    disp_device->box(gc, false, x-diam, y-diam, diam2, diam2, mark_filter, 0, 0);
+    disp_device->box(gc, false, x-diam, y-diam, diam2, diam2, mark_filter);
 }
 
-void AWT_graphic_tree::NT_rotbox(int gc, double x, double y, double width) // box with one corner down
-{
+void AWT_graphic_tree::NT_rotbox(int gc, double x, double y, double width) {
+    // box with one corner down
     double diam = width / disp_device->get_scale();
     double x1   = x-diam;
     double x2   = x+diam;
     double y1   = y-diam;
     double y2   = y+diam;
 
-    disp_device->line(gc, x1, y, x, y1, mark_filter, 0, 0);
-    disp_device->line(gc, x2, y, x, y1, mark_filter, 0, 0);
-    disp_device->line(gc, x1, y, x, y2, mark_filter, 0, 0);
-    disp_device->line(gc, x2, y, x, y2, mark_filter, 0, 0);
+    disp_device->line(gc, x1, y, x, y1, mark_filter);
+    disp_device->line(gc, x2, y, x, y1, mark_filter);
+    disp_device->line(gc, x1, y, x, y2, mark_filter);
+    disp_device->line(gc, x2, y, x, y2, mark_filter);
 }
 
-bool AWT_show_remark_branch(AW_device *device, const char *remark_branch, bool is_leaf, AW_pos x, AW_pos y, AW_pos alignment, AW_bitset filteri, AW_CL cd1, AW_CL cd2) {
+bool AWT_show_remark_branch(AW_device *device, const char *remark_branch, bool is_leaf, AW_pos x, AW_pos y, AW_pos alignment, AW_bitset filteri) {
     // returns true if a bootstrap was DISPLAYED
     char       *end          = 0;
     int         bootstrap    = int(strtol(remark_branch, &end, 10));
@@ -1925,7 +1917,7 @@ bool AWT_show_remark_branch(AW_device *device, const char *remark_branch, bool i
 
     if (show) {
         awt_assert(text != 0);
-        device->text(AWT_GC_BRANCH_REMARK, text, x, y, alignment, filteri, cd1, cd2);
+        device->text(AWT_GC_BRANCH_REMARK, text, x, y, alignment, filteri);
     }
 
     return is_bootstrap && show;
@@ -1966,6 +1958,7 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, double x_son, DendroSubtreeL
         }
     }
 
+    AW_click_cd cd(disp_device, (AW_CL)at);
     if (at->is_leaf) {
         /* draw mark box */
         if (at->gb_node && GB_read_flag(at->gb_node)) {
@@ -1992,8 +1985,7 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, double x_son, DendroSubtreeL
 
             disp_device->text(at->gr.gc, data,
                               (AW_pos) x_son+xoffset, (AW_pos) ny0+yoffset,
-                              (AW_pos) 0,  text_filter,
-                              (AW_CL) at,  (AW_CL) 0, data_len);
+                              (AW_pos) 0,  text_filter, data_len);
 
             double textsize = disp_device->get_string_size(at->gr.gc, data, data_len) * unscale;
 
@@ -2029,7 +2021,7 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, double x_son, DendroSubtreeL
         q[6] = nx0;     q[7] = ny0;
 
         disp_device->set_fill(at->gr.gc, grey_level);
-        disp_device->filled_area(at->gr.gc, 4, &q[0], line_filter, (AW_CL)at, 0);
+        disp_device->filled_area(at->gr.gc, 4, &q[0], line_filter);
 
         const AW_font_information *fontinfo    = disp_device->get_font_information(at->gr.gc, 'A');
         double                     text_ascent = fontinfo->max_letter.ascent / disp_device->get_scale();
@@ -2045,8 +2037,7 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, double x_son, DendroSubtreeL
 
             disp_device->text(at->gr.gc, data,
                               (AW_pos) nx0+xoffset, (AW_pos) ny0+yoffset,
-                              (AW_pos) 0,  text_filter,
-                              (AW_CL) at,  (AW_CL) 0, data_len);
+                              (AW_pos) 0,  text_filter, data_len);
 
             double textsize  = disp_device->get_string_size(at->gr.gc, data, data_len) / disp_device->get_scale();
             limits.x_right  += textsize;
@@ -2054,7 +2045,7 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, double x_son, DendroSubtreeL
 
         disp_device->text(at->gr.gc, (char *)GBS_global_string(" %i", at->gr.leave_sum),
                           x_son+xoffset, ny0+yoffset,
-                          0, text_filter, (AW_CL)at, 0);
+                          0, text_filter);
 
         limits.y_bot    = y_pos;
         limits.y_branch = (ny0+ny1)*.5;
@@ -2098,9 +2089,9 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, double x_son, DendroSubtreeL
                 unsigned int gc = at->gr.gc;
                 disp_device->set_line_attributes(gc, get_linewidth(at)+baselinewidth, AW_SOLID);
 
-                disp_device->line(gc, x1, y1, x2, y1, group_bracket_filter, (AW_CL)at, 0);
-                disp_device->line(gc, x1, y2, x2, y2, group_bracket_filter, (AW_CL)at, 0);
-                disp_device->line(gc, x2, y1, x2, y2, group_bracket_filter, (AW_CL)at, 0);
+                disp_device->line(gc, x1, y1, x2, y1, group_bracket_filter);
+                disp_device->line(gc, x1, y2, x2, y2, group_bracket_filter);
+                disp_device->line(gc, x2, y1, x2, y2, group_bracket_filter);
 
                 limits.x_right = x2;
             
@@ -2122,8 +2113,7 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, double x_son, DendroSubtreeL
 
                     disp_device->text(at->gr.gc, data,
                                       textPos,
-                                      (AW_pos) 0,  text_filter,
-                                      (AW_CL) at,  (AW_CL) 0, data_len);
+                                      (AW_pos) 0,  text_filter, data_len);
 
                     double textsize = disp_device->get_string_size(at->gr.gc, data, data_len) * unscale;
                     limits.x_right  = textPos.xpos()+textsize;
@@ -2131,36 +2121,40 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, double x_son, DendroSubtreeL
             }
         }
 
-        if (at->leftson->remark_branch) {
-            bool bootstrap_shown = AWT_show_remark_branch(disp_device, at->leftson->remark_branch, at->leftson->is_leaf, nx0, ny0-scaled_font.ascent*0.1, 1, text_filter, (AW_CL)at, 0);
-
-            if (show_circle && bootstrap_shown) {
-                AWT_show_bootstrap_circle(disp_device, at->leftson->remark_branch, circle_zoom_factor, circle_max_size, at->leftlen, nx0, ny0, use_ellipse, scaled_branch_distance, text_filter, (AW_CL) at->leftson, (AW_CL) 0);
+        int          lw;
+        unsigned int gc;
+        {
+            AW_click_cd cdl(disp_device, (AW_CL)at->leftson);
+            if (at->leftson->remark_branch) {
+                bool bootstrap_shown = AWT_show_remark_branch(disp_device, at->leftson->remark_branch, at->leftson->is_leaf, nx0, ny0-scaled_font.ascent*0.1, 1, text_filter);
+                if (show_circle && bootstrap_shown) {
+                    AWT_show_bootstrap_circle(disp_device, at->leftson->remark_branch, circle_zoom_factor, circle_max_size, at->leftlen, nx0, ny0, use_ellipse, scaled_branch_distance, text_filter);
+                }
             }
+
+            lw = at->gr.left_linewidth+baselinewidth;
+            gc = at->get_leftson()->gr.gc;
+
+            disp_device->set_line_attributes(gc, lw, AW_SOLID);
+            disp_device->line(gc, x_son, ny0, nx0,   ny0, line_filter);
+            disp_device->line(gc, x_son, ny0, x_son, ry,  vert_line_filter);
         }
-
-        if (at->rightson->remark_branch) {
-            bool bootstrap_shown = AWT_show_remark_branch(disp_device, at->rightson->remark_branch, at->rightson->is_leaf, nx1, ny1-scaled_font.ascent*0.1, 1, text_filter, (AW_CL)at, 0);
-
-            if (show_circle && bootstrap_shown) {
-                AWT_show_bootstrap_circle(disp_device, at->rightson->remark_branch, circle_zoom_factor, circle_max_size, at->rightlen, nx1, ny1, use_ellipse, scaled_branch_distance, text_filter, (AW_CL) at->rightson, (AW_CL) 0);
+        {
+            AW_click_cd cdr(disp_device, (AW_CL)at->rightson);
+            if (at->rightson->remark_branch) {
+                bool bootstrap_shown = AWT_show_remark_branch(disp_device, at->rightson->remark_branch, at->rightson->is_leaf, nx1, ny1-scaled_font.ascent*0.1, 1, text_filter);
+                if (show_circle && bootstrap_shown) {
+                    AWT_show_bootstrap_circle(disp_device, at->rightson->remark_branch, circle_zoom_factor, circle_max_size, at->rightlen, nx1, ny1, use_ellipse, scaled_branch_distance, text_filter);
+                }
             }
+
+            lw = at->gr.right_linewidth+baselinewidth;
+            gc = at->get_rightson()->gr.gc;
+
+            disp_device->set_line_attributes(gc, lw, AW_SOLID);
+            disp_device->line(gc, x_son, ny1, nx1,   ny1, line_filter);
+            disp_device->line(gc, x_son, ry,  x_son, ny1, vert_line_filter);
         }
-
-        int          lw = at->gr.left_linewidth+baselinewidth;
-        unsigned int gc = at->get_leftson()->gr.gc;
-
-        disp_device->set_line_attributes(gc, lw, AW_SOLID);
-        disp_device->line(gc, x_son, ny0, nx0,   ny0, line_filter,      (AW_CL)at->leftson, 0);
-        disp_device->line(gc, x_son, ny0, x_son, ry,  vert_line_filter, (AW_CL)at,          0);
-
-        lw = at->gr.right_linewidth+baselinewidth;
-        gc = at->get_rightson()->gr.gc;
-
-        disp_device->set_line_attributes(gc, lw, AW_SOLID);
-        disp_device->line(gc, x_son, ny1, nx1,   ny1, line_filter,      (AW_CL)at->rightson, 0);
-        disp_device->line(gc, x_son, ry,  x_son, ny1, vert_line_filter, (AW_CL)at,           0);
-
         limits.y_branch = ry;
     }
 }
@@ -2190,8 +2184,9 @@ void AWT_graphic_tree::show_radial_tree(AP_tree * at, double x_center,
 {
     double l, r, w, z, l_min, l_max;
 
+    AW_click_cd cd(disp_device, (AW_CL)at);
     disp_device->set_line_attributes(at->gr.gc, linewidth+baselinewidth, AW_SOLID);
-    disp_device->line(at->gr.gc, x_root, y_root, x_center, y_center, line_filter, (AW_CL)at, 0);
+    disp_device->line(at->gr.gc, x_root, y_root, x_center, y_center, line_filter);
 
     // draw mark box
     if (at->gb_node && GB_read_flag(at->gb_node)) {
@@ -2209,7 +2204,7 @@ void AWT_graphic_tree::show_radial_tree(AP_tree * at, double x_center,
             disp_device->text(at->gr.gc, data,
                               (AW_pos)x_center, (AW_pos) y_center,
                               (AW_pos) .5 - .5 * cos(tree_orientation),
-                              text_filter,  (AW_CL) at,  (AW_CL) 0);
+                              text_filter);
         }
         return;
     }
@@ -2230,7 +2225,7 @@ void AWT_graphic_tree::show_radial_tree(AP_tree * at, double x_center,
         q[5] = y_center+l_max*sin(w);
 
         disp_device->set_fill(at->gr.gc, grey_level);
-        disp_device->filled_area(at->gr.gc, 3, &q[0], line_filter, (AW_CL)at, 0);
+        disp_device->filled_area(at->gr.gc, 3, &q[0], line_filter);
 
         if (at->gb_node && (disp_device->filter & text_filter)) {
             w = tree_orientation + at->gr.right_angle;
@@ -2244,8 +2239,7 @@ void AWT_graphic_tree::show_radial_tree(AP_tree * at, double x_center,
             disp_device->text(at->gr.gc, data,
                               (AW_pos)x_center, (AW_pos) y_center,
                               (AW_pos).5 - .5 * cos(tree_orientation),
-                              text_filter,
-                              (AW_CL) at,  (AW_CL) 0);
+                              text_filter);
         }
         return;
     }
@@ -2302,17 +2296,17 @@ void AWT_graphic_tree::show_radial_tree(AP_tree * at, double x_center,
         }
     }
     if (show_circle) {
-        /*!* left branch ***/
         if (at->leftson->remark_branch) {
+            AW_click_cd cdl(disp_device, (AW_CL)at->leftson);
             w = r*0.5*tree_spread + tree_orientation + at->gr.left_angle;
             z = at->leftlen * .5;
-            AWT_show_bootstrap_circle(disp_device, at->leftson->remark_branch, circle_zoom_factor, circle_max_size, at->leftlen, x_center + z * cos(w), y_center + z * sin(w), false, 0, text_filter, (AW_CL)at, 0);
+            AWT_show_bootstrap_circle(disp_device, at->leftson->remark_branch, circle_zoom_factor, circle_max_size, at->leftlen, x_center + z * cos(w), y_center + z * sin(w), false, 0, text_filter);
         }
         if (at->rightson->remark_branch) {
-            /*!* right branch ***/
+            AW_click_cd cdr(disp_device, (AW_CL)at->rightson);
             w = tree_orientation - l*0.5*tree_spread + at->gr.right_angle;
             z = at->rightlen * .5;
-            AWT_show_bootstrap_circle(disp_device, at->rightson->remark_branch, circle_zoom_factor, circle_max_size, at->rightlen, x_center + z * cos(w), y_center + z * sin(w), false, 0, text_filter, (AW_CL)at, 0);
+            AWT_show_bootstrap_circle(disp_device, at->rightson->remark_branch, circle_zoom_factor, circle_max_size, at->rightlen, x_center + z * cos(w), y_center + z * sin(w), false, 0, text_filter);
         }
     }
 }
@@ -2359,7 +2353,7 @@ const char *AWT_graphic_tree::show_ruler(AW_device *device, int gc) {
         if (!GB_search(gb_tree, awar, GB_FIND)) {
             if (device->type() == AW_DEVICE_SIZE) {
                 AW_world world;
-                device ->get_size_information(&world);
+                DOWNCAST(AW_device_size*, device)->get_size_information(&world);
                 ruler_y = world.b * 1.3;
             }
         }
@@ -2400,20 +2394,19 @@ const char *AWT_graphic_tree::show_ruler(AW_device *device, int gc) {
 
         device->set_line_attributes(gc, ruler_width+baselinewidth, AW_SOLID);
 
+        AW_click_cd cd(disp_device, 0, (AW_CL)"ruler");
         device->line(gc,
                      ruler_x - half_ruler_width, ruler_y,
                      ruler_x + half_ruler_width, ruler_y,
-                     this->ruler_filter,
-                     0, (AW_CL)"ruler");
+                     this->ruler_filter);
+        
         char ruler_text[20];
         sprintf(ruler_text, "%4.2f", ruler_size);
-
         device->text(gc, ruler_text,
                      ruler_x + ruler_text_x,
                      ruler_y + ruler_text_y,
                      0.5,
-                     this->ruler_filter & ~AW_SIZE,
-                     0, (AW_CL)"ruler");
+                     this->ruler_filter & ~AW_SIZE);
     }
     return tree_awar;
 }
@@ -2486,8 +2479,7 @@ void AWT_graphic_tree::show_nds_list(GBDATA *, bool use_nds) {
     disp_device->text(nds_show_all ? AWT_GC_CURSOR : AWT_GC_SELECTED,
                       GBS_global_string("%s of %s species", use_nds ? "NDS List" : "Simple list", nds_show_all ? "all" : "marked"),
                       (AW_pos) x_position, (AW_pos) 0,
-                      (AW_pos) 0, text_filter,
-                      (AW_CL) 0, (AW_CL) 0);
+                      (AW_pos) 0, text_filter);
 
     double max_x         = 0;
     double text_y_offset = scaled_font.ascent*.5;
@@ -2608,15 +2600,16 @@ void AWT_graphic_tree::show_nds_list(GBDATA *, bool use_nds) {
             int    gc    = Row.get_gc();
             AW_pos y     = Row.get_ypos();
 
-            GBDATA *gb_sp = Row.get_species();
+            GBDATA      *gb_sp = Row.get_species();
+            AW_click_cd  cd(disp_device, (AW_CL)gb_sp, (AW_CL)"species");
+
             for (size_t p = 0; p<parts; ++p) {
                 const Column& col = Row.get_column(p);
-                
+
                 AW_pos x               = part_x_pos[p];
                 if (align_right[p]) x += max_part_width[p] - col.print_width;
 
-                disp_device->text(gc, col.text, x, y, 0.0, text_filter,
-                                  (AW_CL)gb_sp, (AW_CL)"species", col.len);
+                disp_device->text(gc, col.text, x, y, 0.0, text_filter, col.len);
             }
         }
 
@@ -2628,8 +2621,8 @@ void AWT_graphic_tree::show_nds_list(GBDATA *, bool use_nds) {
         delete [] row;
     }
 
-    disp_device->invisible(AWT_GC_CURSOR, 0, 0, -1, 0, 0);
-    disp_device->invisible(AWT_GC_CURSOR, max_x, y_position+scaled_branch_distance, -1, 0, 0);
+    disp_device->invisible(AWT_GC_CURSOR, 0, 0);
+    disp_device->invisible(AWT_GC_CURSOR, max_x, y_position+scaled_branch_distance);
 }
 
 void AWT_graphic_tree::show(AW_device *device) {

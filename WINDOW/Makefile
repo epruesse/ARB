@@ -104,16 +104,13 @@ AW_at.o: $(ARBHOME)/INCLUDE/test_global.h
 AW_button.o: aw_at.hxx
 AW_button.o: aw_awar.hxx
 AW_button.o: aw_base.hxx
-AW_button.o: aw_click.hxx
 AW_button.o: aw_device.hxx
 AW_button.o: aw_keysym.hxx
 AW_button.o: aw_msg.hxx
 AW_button.o: aw_nawar.hxx
 AW_button.o: aw_position.hxx
-AW_button.o: aw_print.hxx
 AW_button.o: aw_root.hxx
 AW_button.o: aw_select.hxx
-AW_button.o: aw_size.hxx
 AW_button.o: aw_window.hxx
 AW_button.o: aw_window_Xm.hxx
 AW_button.o: aw_Xm.hxx
@@ -137,7 +134,6 @@ AW_button.o: $(ARBHOME)/INCLUDE/smartptr.h
 AW_button.o: $(ARBHOME)/INCLUDE/test_global.h
 
 AW_click.o: aw_base.hxx
-AW_click.o: aw_click.hxx
 AW_click.o: aw_commn.hxx
 AW_click.o: aw_device.hxx
 AW_click.o: aw_position.hxx
@@ -385,7 +381,6 @@ AW_print.o: aw_base.hxx
 AW_print.o: aw_commn.hxx
 AW_print.o: aw_device.hxx
 AW_print.o: aw_position.hxx
-AW_print.o: aw_print.hxx
 AW_print.o: aw_root.hxx
 AW_print.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_print.o: $(ARBHOME)/INCLUDE/arb_core.h
@@ -444,7 +439,6 @@ AW_size.o: aw_base.hxx
 AW_size.o: aw_commn.hxx
 AW_size.o: aw_device.hxx
 AW_size.o: aw_position.hxx
-AW_size.o: aw_size.hxx
 AW_size.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_size.o: $(ARBHOME)/INCLUDE/arb_core.h
 AW_size.o: $(ARBHOME)/INCLUDE/attributes.h
@@ -481,7 +475,6 @@ AW_status.o: $(ARBHOME)/INCLUDE/test_global.h
 AW_window.o: aw_at.hxx
 AW_window.o: aw_awar.hxx
 AW_window.o: aw_base.hxx
-AW_window.o: aw_click.hxx
 AW_window.o: aw_commn.hxx
 AW_window.o: aw_device.hxx
 AW_window.o: aw_global.hxx
@@ -489,10 +482,8 @@ AW_window.o: aw_keysym.hxx
 AW_window.o: aw_msg.hxx
 AW_window.o: aw_nawar.hxx
 AW_window.o: aw_position.hxx
-AW_window.o: aw_print.hxx
 AW_window.o: aw_root.hxx
 AW_window.o: aw_select.hxx
-AW_window.o: aw_size.hxx
 AW_window.o: aw_status.hxx
 AW_window.o: aw_window.hxx
 AW_window.o: aw_window_Xm.hxx

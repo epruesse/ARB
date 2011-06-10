@@ -145,8 +145,9 @@ inline void increase_selected_range(AW_world& selected_range, AW_pos x1, AW_pos 
     increase_selected_range(selected_range, x1, y1);
     increase_selected_range(selected_range, x2, y2);
 }
-inline int smart_text(AW_world& selected_range, AW_device *device, int gc, const char *str, AW_pos x, AW_pos y, AW_pos alignment, AW_bitset filteri, AW_CL cd1, AW_CL cd2, long opt_strlen) {
-    int res = device->text(gc, str, x, y, alignment, filteri, cd1, cd2, opt_strlen);
+
+inline int smart_text(AW_world& selected_range, AW_device *device, int gc, const char *str, AW_pos x, AW_pos y) {
+    int res = device->text(gc, str, x, y);
     if (gc == GEN_GC_CURSOR) {
 #if defined(WARN_TODO)
 #warning implementation missing
@@ -155,8 +156,9 @@ inline int smart_text(AW_world& selected_range, AW_device *device, int gc, const
     }
     return res;
 }
-inline int smart_line(AW_world& selected_range, AW_device *device, int gc, AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW_bitset filteri, AW_CL cd1, AW_CL cd2) {
-    int res = device->line(gc, x0, y0, x1, y1, filteri, cd1, cd2);
+
+inline int smart_line(AW_world& selected_range, AW_device *device, int gc, AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1) {
+    int res = device->line(gc, x0, y0, x1, y1);
     if (gc == GEN_GC_CURSOR) increase_selected_range(selected_range, x0, y0, x1, y1);
     return res;
 }
@@ -202,7 +204,7 @@ inline bool getDrawGcs(GEN_iterator& gene, PaintWhat what, const string& curr_ge
 
 void GEN_root::paint(AW_device *device) {
     if (error_reason.length()) {
-        device->text(GEN_GC_DEFAULT, error_reason.c_str(), 0, 0, 0.0, -1, 0, 0, 0);
+        device->text(GEN_GC_DEFAULT, error_reason.c_str(), 0, 0);
         return;
     }
 
@@ -236,10 +238,11 @@ void GEN_root::paint(AW_device *device) {
                         int xo = xi+int(cosw*outside*len+0.5);
                         int yo = yi+int(sinw*outside*len+0.5);
 
+                        AW_click_cd cd(device, (AW_CL)&*curr);
                         if (show_all_nds || text_gc != GEN_GC_DEFAULT) {
-                            smart_text(selected_range, device, text_gc, curr->NodeInfo().c_str(), xo+20, yo, 0.0, -1, (AW_CL)(&*curr), 0, 0);
+                            smart_text(selected_range, device, text_gc, curr->NodeInfo().c_str(), xo+20, yo);
                         }
-                        smart_line(selected_range, device, draw_gc, xi, yi, xo, yo, -1, (AW_CL)(&*curr), 0);
+                        smart_line(selected_range, device, draw_gc, xi, yi, xo, yo);
 
                         int sa = int(sinw*arrow_size+0.5);
                         int ca = int(cosw*arrow_size+0.5);
@@ -247,12 +250,12 @@ void GEN_root::paint(AW_device *device) {
                         if (curr->Complement()) {
                             int xa = xi-sa+ca;
                             int ya = yi+ca+sa;
-                            smart_line(selected_range, device, draw_gc, xi, yi, xa, ya, -1, (AW_CL)(&*curr), 0);
+                            smart_line(selected_range, device, draw_gc, xi, yi, xa, ya);
                         }
                         else {
                             int xa = xo+sa-ca;
                             int ya = yo-ca-sa;
-                            smart_line(selected_range, device, draw_gc, xo, yo, xa, ya, -1, (AW_CL)(&*curr), 0);
+                            smart_line(selected_range, device, draw_gc, xo, yo, xa, ya);
                         }
                     }
                     ++curr;
@@ -274,15 +277,16 @@ void GEN_root::paint(AW_device *device) {
                         int y         = int(curr->StartPos()*factor_y+0.5);
                         int x2        = int(curr->Length()*factor_x+0.5);
 
+                        AW_click_cd cd(device, (AW_CL)&*curr);
                         if (show_all_nds || text_gc != GEN_GC_DEFAULT) {
-                            smart_text(selected_range, device, text_gc, curr->NodeInfo().c_str(), x2+20, y, 0.0, -1, (AW_CL)(&*curr), 0, 0);
+                            smart_text(selected_range, device, text_gc, curr->NodeInfo().c_str(), x2+20, y);
                         }
-                        smart_line(selected_range, device, draw_gc, 0, y, x2, y, -1, (AW_CL)(&*curr), 0);
+                        smart_line(selected_range, device, draw_gc, 0, y, x2, y);
                         if (curr->Complement()) {
-                            smart_line(selected_range, device, draw_gc, 0, y, arrow_x, y-arrow_y, -1, (AW_CL)(&*curr), 0);
+                            smart_line(selected_range, device, draw_gc, 0, y, arrow_x, y-arrow_y);
                         }
                         else {
-                            smart_line(selected_range, device, draw_gc, x2, y, x2-arrow_x, y-arrow_y, -1, (AW_CL)(&*curr), 0);
+                            smart_line(selected_range, device, draw_gc, x2, y, x2-arrow_x, y-arrow_y);
                         }
                     }
                     ++curr;
@@ -312,20 +316,21 @@ void GEN_root::paint(AW_device *device) {
                         int y1    = line1*height_of_line;
                         int y1o   = y1-line_height;
 
+                        AW_click_cd cd(device, (AW_CL)&*curr);
                         if (line1 == line2) { // whole gene in one book-line
-                            smart_line(selected_range, device, draw_gc, x1, y1,  x1, y1o, -1, (AW_CL)(&*curr), 0);
-                            smart_line(selected_range, device, draw_gc, x2, y1,  x2, y1o, -1, (AW_CL)(&*curr), 0);
-                            smart_line(selected_range, device, draw_gc, x1, y1,  x2, y1,  -1, (AW_CL)(&*curr), 0);
-                            smart_line(selected_range, device, draw_gc, x1, y1o, x2, y1o, -1, (AW_CL)(&*curr), 0);
-                            if (show_all_nds || text_gc != GEN_GC_DEFAULT) smart_text(selected_range, device, text_gc, curr->NodeInfo().c_str(), x1+2, y1-2, 0.0, -1, (AW_CL)(&*curr), 0, 0);
+                            smart_line(selected_range, device, draw_gc, x1, y1,  x1, y1o);
+                            smart_line(selected_range, device, draw_gc, x2, y1,  x2, y1o);
+                            smart_line(selected_range, device, draw_gc, x1, y1,  x2, y1);
+                            smart_line(selected_range, device, draw_gc, x1, y1o, x2, y1o);
+                            if (show_all_nds || text_gc != GEN_GC_DEFAULT) smart_text(selected_range, device, text_gc, curr->NodeInfo().c_str(), x1+2, y1-2);
 
                             if (curr->Complement()) {
-                                smart_line(selected_range, device, draw_gc, x2, y1o, x2-arrowMid, y1o+arrowMid, -1, (AW_CL)(&*curr), 0);
-                                smart_line(selected_range, device, draw_gc, x2, y1,  x2-arrowMid, y1o+arrowMid, -1, (AW_CL)(&*curr), 0);
+                                smart_line(selected_range, device, draw_gc, x2, y1o, x2-arrowMid, y1o+arrowMid);
+                                smart_line(selected_range, device, draw_gc, x2, y1,  x2-arrowMid, y1o+arrowMid);
                             }
                             else {
-                                smart_line(selected_range, device, draw_gc, x1, y1o,  x1+arrowMid, y1o+arrowMid, -1, (AW_CL)(&*curr), 0);
-                                smart_line(selected_range, device, draw_gc, x1, y1,   x1+arrowMid, y1o+arrowMid, -1, (AW_CL)(&*curr), 0);
+                                smart_line(selected_range, device, draw_gc, x1, y1o,  x1+arrowMid, y1o+arrowMid);
+                                smart_line(selected_range, device, draw_gc, x1, y1,   x1+arrowMid, y1o+arrowMid);
                             }
                         }
                         else {
@@ -333,24 +338,24 @@ void GEN_root::paint(AW_device *device) {
                             int y2o = y2-line_height;
 
                             // upper line (don't draw right border)
-                            smart_line(selected_range, device, draw_gc, x1, y1,  x1,     y1o, -1, (AW_CL)(&*curr), 0);
-                            smart_line(selected_range, device, draw_gc, x1, y1,  xRight, y1,  -1, (AW_CL)(&*curr), 0);
-                            smart_line(selected_range, device, draw_gc, x1, y1o, xRight, y1o, -1, (AW_CL)(&*curr), 0);
-                            if (show_all_nds || text_gc != GEN_GC_DEFAULT) smart_text(selected_range, device, text_gc, curr->NodeInfo().c_str(), x1+2, y1-2, 0.0, -1, (AW_CL)(&*curr), 0, 0);
+                            smart_line(selected_range, device, draw_gc, x1, y1,  x1,     y1o);
+                            smart_line(selected_range, device, draw_gc, x1, y1,  xRight, y1);
+                            smart_line(selected_range, device, draw_gc, x1, y1o, xRight, y1o);
+                            if (show_all_nds || text_gc != GEN_GC_DEFAULT) smart_text(selected_range, device, text_gc, curr->NodeInfo().c_str(), x1+2, y1-2);
 
                             // lower line (don't draw left border)
-                            smart_line(selected_range, device, draw_gc, x2,    y2,  x2, y2o, -1, (AW_CL)(&*curr), 0);
-                            smart_line(selected_range, device, draw_gc, xLeft, y2,  x2, y2,  -1, (AW_CL)(&*curr), 0);
-                            smart_line(selected_range, device, draw_gc, xLeft, y2o, x2, y2o, -1, (AW_CL)(&*curr), 0);
-                            if (show_all_nds || text_gc != GEN_GC_DEFAULT) smart_text(selected_range, device, text_gc, curr->NodeInfo().c_str(), xLeft+2, y2-2, 0.0, -1, (AW_CL)(&*curr), 0, 0);
+                            smart_line(selected_range, device, draw_gc, x2,    y2,  x2, y2o);
+                            smart_line(selected_range, device, draw_gc, xLeft, y2,  x2, y2);
+                            smart_line(selected_range, device, draw_gc, xLeft, y2o, x2, y2o);
+                            if (show_all_nds || text_gc != GEN_GC_DEFAULT) smart_text(selected_range, device, text_gc, curr->NodeInfo().c_str(), xLeft+2, y2-2);
 
                             if (curr->Complement()) {
-                                smart_line(selected_range, device, draw_gc, x2, y2o, x2-arrowMid, y2o+arrowMid, -1, (AW_CL)(&*curr), 0);
-                                smart_line(selected_range, device, draw_gc, x2, y2,  x2-arrowMid, y2o+arrowMid, -1, (AW_CL)(&*curr), 0);
+                                smart_line(selected_range, device, draw_gc, x2, y2o, x2-arrowMid, y2o+arrowMid);
+                                smart_line(selected_range, device, draw_gc, x2, y2,  x2-arrowMid, y2o+arrowMid);
                             }
                             else {
-                                smart_line(selected_range, device, draw_gc, x1, y1o, x1+arrowMid, y1o+arrowMid, -1, (AW_CL)(&*curr), 0);
-                                smart_line(selected_range, device, draw_gc, x1, y1,  x1+arrowMid, y1o+arrowMid, -1, (AW_CL)(&*curr), 0);
+                                smart_line(selected_range, device, draw_gc, x1, y1o, x1+arrowMid, y1o+arrowMid);
+                                smart_line(selected_range, device, draw_gc, x1, y1,  x1+arrowMid, y1o+arrowMid);
                             }
                         }
                     }
