@@ -165,7 +165,7 @@ static void NT_toggle_expert_mode(AW_window *aww, AW_CL, AW_CL) {
     awar_expert->write_int(!awar_expert->read_int());
 }
 
-void nt_create_all_awars(AW_root *awr, AW_default def) {
+static void nt_create_all_awars(AW_root *awr, AW_default def) {
     // creates awars for all modules reachable from ARB_NT main window
 
     awr->awar_string(AWAR_FOOTER, "", def);
@@ -1074,7 +1074,7 @@ GBT_TREE *nt_get_current_tree_root() {
 #define AWMIMT awm->insert_menu_topic
 #define SEP________________________SEP() awm->insert_separator()
 
-AW_window * create_nt_main_window(AW_root *awr, AW_CL clone) {
+static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
     GB_push_transaction(GLOBAL_gb_main);
     AW_gc_manager  aw_gc_manager;
     char          *awar_tree;
@@ -1152,7 +1152,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone) {
 
     if (clone) {
         awm->create_menu("File", "F", AWM_ALL);
-        AWMIMT("new_window",   "New window", "N", "newwindow.hlp", AWM_ALL, AW_POPUP, (AW_CL)create_nt_main_window, clone+1);
+        AWMIMT("new_window",   "New window", "N", "newwindow.hlp", AWM_ALL, AW_POPUP, (AW_CL)popup_new_main_window, clone+1);
         AWMIMT("close", "Close", "C", 0, AWM_ALL, (AW_CB)AW_POPDOWN, 0, 0);
     }
     else {
@@ -1171,7 +1171,7 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone) {
             AWMIMT("save_changes", "Quicksave changes",          "s", "save.hlp",      AWM_ALL, (AW_CB)NT_save_quick_cb, 0, 0);
             AWMIMT("save_all_as",  "Save whole database as ...", "w", "save.hlp",      AWM_ALL, AW_POPUP, (AW_CL)NT_create_save_as, (AW_CL)"tmp/nt/arbdb");
             SEP________________________SEP();
-            AWMIMT("new_window",   "New window",                 "N", "newwindow.hlp", AWM_ALL, AW_POPUP, (AW_CL)create_nt_main_window, clone+1);
+            AWMIMT("new_window",   "New window",                 "N", "newwindow.hlp", AWM_ALL, AW_POPUP, (AW_CL)popup_new_main_window, clone+1);
             SEP________________________SEP();
             AWMIMT("optimize_db",  "Optimize database",          "O", "optimize.hlp",  AWM_ALL, AW_POPUP, (AW_CL)NT_create_database_optimization_window, 0);
             SEP________________________SEP();
@@ -1794,3 +1794,15 @@ AW_window * create_nt_main_window(AW_root *awr, AW_CL clone) {
     return awm;
 }
 
+void nt_create_main_window(AW_root *aw_root) {
+    GB_ERROR error = GB_request_undo_type(GLOBAL_gb_main, GB_UNDO_NONE);
+    if (error) aw_message(error);
+
+    nt_create_all_awars(aw_root, AW_ROOT_DEFAULT);
+
+    AW_window *aww = popup_new_main_window(aw_root, 0);
+    aww->show();
+
+    error = GB_request_undo_type(GLOBAL_gb_main, GB_UNDO_UNDO);
+    if (error) aw_message(error);
+}

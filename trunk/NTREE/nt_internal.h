@@ -5,11 +5,9 @@
 #ifndef NT_INTERNAL_H
 #define NT_INTERNAL_H
 
-/* hide __attribute__'s for non-gcc compilers: */
-#ifndef __GNUC__
-# ifndef __attribute__
-#  define __attribute__(x)
-# endif
+/* define ARB attributes: */
+#ifndef ATTRIBUTES_H
+# include <attributes.h>
 #endif
 
 

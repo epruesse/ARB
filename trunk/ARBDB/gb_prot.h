@@ -115,7 +115,9 @@ GB_ERROR gb_save_dictionary_data(GBDATA *gb_main, const char *key, const char *d
 GB_ERROR gb_load_key_data_and_dictionaries(GBDATA *gb_main);
 
 /* arbdb.cxx */
+GBDATA *gb_remembered_db(void);
 GB_ERROR gb_unfold(GBCONTAINER *gbd, long deep, int index_pos);
+void gb_close_unclosed_DBs(void);
 int gb_read_nr(GBDATA *gbd);
 GB_ERROR gb_write_compressed_pntr(GBDATA *gbd, const char *s, long memsize, long stored_size);
 int gb_get_compression_mask(GB_MAIN_TYPE *Main, GBQUARK key, int gb_type);

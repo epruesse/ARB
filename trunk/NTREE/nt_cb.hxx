@@ -5,11 +5,9 @@
 #ifndef NT_CB_HXX
 #define NT_CB_HXX
 
-/* hide __attribute__'s for non-gcc compilers: */
-#ifndef __GNUC__
-# ifndef __attribute__
-#  define __attribute__(x)
-# endif
+/* define ARB attributes: */
+#ifndef ATTRIBUTES_H
+# include <attributes.h>
 #endif
 
 
@@ -37,7 +35,6 @@ void nt_changesecurity(AW_root *aw_root);
 void export_nds_cb(AW_window *aww, AW_CL print_flag);
 AW_window *create_nds_export_window(AW_root *root);
 void create_export_nds_awars(AW_root *awr, AW_default def);
-void nt_create_all_awars(AW_root *awr, AW_default def);
 void nt_exit(AW_window *aws);
 void NT_save_cb(AW_window *aww);
 void NT_save_quick_cb(AW_window *aww);
@@ -66,7 +63,7 @@ void NT_update_marked_counter(AW_window *aww, long count);
 void NT_popup_species_window(AW_window *aww, AW_CL cl_gb_main, AW_CL dummy_1x);
 void NT_alltree_remove_leafs(AW_window *, AW_CL cl_mode, AW_CL cl_gb_main);
 GBT_TREE *nt_get_current_tree_root(void);
-AW_window *create_nt_main_window(AW_root *awr, AW_CL clone);
+void nt_create_main_window(AW_root *aw_root);
 
 #else
 #error nt_cb.hxx included twice
