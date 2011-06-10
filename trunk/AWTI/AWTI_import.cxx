@@ -1197,8 +1197,11 @@ static void genom_flag_changed(AW_root *awr) {
 }
 
 static void import_window_close_cb(AW_window *aww) {
-    if (awtcig.doExit) exit(EXIT_SUCCESS);
-    else AW_POPDOWN(aww);
+    if (awtcig.doExit) {
+        GB_close(awtcig.gb_main);
+        exit(EXIT_SUCCESS);
+    }
+    AW_POPDOWN(aww);
 }
 
 GBDATA *open_AWTC_import_window(AW_root *awr, const char *defname, bool do_exit, GBDATA *gb_main, AWTC_RCB(func), AW_CL cd1, AW_CL cd2)

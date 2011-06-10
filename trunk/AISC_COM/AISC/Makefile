@@ -108,16 +108,16 @@ $(GEN_SERVER_OBJECTS) $(PRIVATE_SERVER_OBJECTS): \
 					$(GEN_SERVER_EXTERN_PROTO) $(IMPORT_PROTO) \
 					$(GEN_SERVER_OBJECTS:.o=.c) \
 					$(PRIVATE_SERVER_OBJECTS:.o=.c)
-	$(COMPILER) -c -o $@ $(@:.o=.c) -IGENH -I. -IC -DAISC_SAVE_$(AISC_SAVE)
+	$(COMPILER) -c -o $@ $(@:.o=.c) -IGENH -I. -IC -DAISC_SAVE_$(AISC_SAVE) $(POST_COMPILE)
 
 $(GEN_CLIENT_OBJECTS): $(GEN_INCLUDES) $(GEN_CLIENT_OBJECTS:.o=.c)
-	$(CLIENTCOMPILER) -c -o $@ $(@:.o=.c) -IGENH -I. -IC
+	$(CLIENTCOMPILER) -c -o $@ $(@:.o=.c) -IGENH -I. -IC $(POST_COMPILE)
 
 O/%.o: C/%.c $(GEN_INCLUDES) $(CLIENT_INCLUDES) C/server.h
-	$(COMPILER) -c -o $@ $< -IGENH -I. -IC
+	$(COMPILER) -c -o $@ $< -IGENH -I. -IC $(POST_COMPILE)
 
 $(CLIENT_OBJECTS):	$(CLIENT_OBJECTS:O/%.o=C/%.c) $(GEN_INCLUDES) $(CLIENT_INCLUDES)
-	$(CLIENTCOMPILER) -c -o $@ C/$(@F:.o=.c) -IGENH -I. -IC
+	$(CLIENTCOMPILER) -c -o $@ C/$(@F:.o=.c) -IGENH -I. -IC $(POST_COMPILE)
 
 $(DUMPDIR): 
 	mkdir -p $(DUMPDIR)

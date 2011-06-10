@@ -140,6 +140,8 @@ ifeq ($(DEBUG),1)
 
 #       C++ only 
 	extended_cpp_warnings += -Wnon-virtual-dtor -Wreorder -Wpointer-arith -Wdisabled-optimization -Wmissing-format-attribute
+	extended_cpp_warnings += -Wctor-dtor-privacy# gcc @@@
+	extended_cpp_warnings += -Wno-non-template-friend# gcc @@@
 # 	extended_cpp_warnings += -Wfloat-equal# gcc 3.0
 
 # ------- above only warnings available in 3.0
@@ -275,6 +277,7 @@ cflags += -pipe
 cflags += -fmessage-length=0# don't wrap compiler output
 cflags += -funit-at-a-time
 cflags += -fPIC
+cflags += -fno-common# link all global data into one namespace
 
 ifneq ($(USE_GCC_4_OR_HIGHER),'')
 cflags += -fstrict-aliasing# gcc 3.4
@@ -735,7 +738,13 @@ ARCHS_COMMUNICATION =	NAMES_COM/server.a \
 			PROBE_COM/server.a
 
 # communication libs need aisc and aisc_mkpts:
-$(ARCHS_COMMUNICATION:.a=.dummy) : $(ARCHS_MAKEBIN:.a=.dummy)
+
+aisc: proto_tools
+	$(MAKE) AISC/AISC.dummy
+
+comtools: proto_tools aisc
+
+$(ARCHS_COMMUNICATION:.a=.dummy) : comtools
 
 ARCHS_SEQUENCE = \
 		SL/SEQUENCE/SEQUENCE.a \
@@ -1111,8 +1120,6 @@ include SOURCE_TOOLS/export2sub
 	) >$(@D).$$ID.log 2>&1 && (cat $(@D).$$ID.log;rm $(@D).$$ID.log)) || (cat $(@D).$$ID.log;rm $(@D).$$ID.log;false))
 
 # Additional dependencies for subtargets:
-
-comtools: $(ARCHS_MAKEBIN:.a=.dummy)
 
 PROBE_COM/PROBE_COM.dummy : comtools
 PROBE_COM/server.dummy : comtools
@@ -1771,7 +1778,7 @@ setup_after_clean: checks
 	$(MAKE) templ preplib binlink
 	$(MAKE) comtools 
 
-build:
+build: checks
 	$(MAKE) links
 	$(MAKE) com
 	$(MAKE) arb
@@ -1784,7 +1791,7 @@ ifeq ("$(DEVELOPER)","SAVETEST")
 	$(MAKE) save_test
 endif
 
-all: checks
+all: 
 	@echo "Build time" > $(TIMELOG)
 	@echo $(MAKE) build
 	@$(TIMECMD) $(MAKE) build
