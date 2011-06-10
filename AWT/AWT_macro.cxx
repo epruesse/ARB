@@ -134,4 +134,6 @@ void awt_execute_macro(AW_root *root, const char *macroname) {
     if (error) {
         aw_message(GBS_global_string("Can't execute macro '%s' (Reason: %s)", macroname, error));
     }
+
+    free(fullname);
 }

@@ -121,12 +121,12 @@ public:
         return value;
     }
 
-    bool operator = (bool b) {
+    PersistantFlag& operator = (bool b) {
         if (b != bool(*this)) {
             value = b;
             updateFlagFile();
         }
-        return value;
+        return *this;
     }
 };
 
