@@ -485,7 +485,7 @@ GB_ERROR SQ_pass1(SQ_GroupData * globalData, GBDATA * gb_main, GBT_TREE * node, 
                     globalData->SQ_add_sequence(rawSequence);
                 }
 
-                delete(rawSequence);
+                free(rawSequence);
             }
         }
     }
@@ -642,7 +642,7 @@ GB_ERROR SQ_pass2(const SQ_GroupData * globalData, GBDATA * gb_main,
                 double avg_gc = 0;
                 double gcp = 0;
 
-                const char *rawSequence = SQ_fetch_filtered_sequence(read_sequence, filter);
+                char *rawSequence = SQ_fetch_filtered_sequence(read_sequence, filter);
 
                 /*
                  calculate the average number of bases in group, and the difference of
@@ -794,7 +794,7 @@ GB_ERROR SQ_pass2(const SQ_GroupData * globalData, GBDATA * gb_main,
                 GB_write_int(gb_result5, evaluation);
                 // --------end cut this-------
 
-                delete(rawSequence);
+                free(rawSequence);
             }
         }
     }

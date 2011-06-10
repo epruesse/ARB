@@ -53,6 +53,7 @@ void awt_set_awar_to_valid_filter_good_for_tree_methods(GBDATA *gb_main, AW_root
 AW_window *awt_create_select_filter_win(AW_root *aw_root, AW_CL cd_adfiltercbstruct);
 
 AP_filter *awt_get_filter(AW_root *aw_root, adfiltercbstruct *acbs);
+void awt_destroy_filter(AP_filter *filter);
 
 char *AWT_get_combined_filter_name(AW_root *aw_root, GB_CSTR prefix);
 

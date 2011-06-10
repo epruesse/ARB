@@ -23,6 +23,9 @@
 # include <iostream>
 #endif
 
+#ifndef DOWNCAST_H
+#include <downcast.h>
+#endif
 #ifndef ARB_ASSERT_H
 # include <arb_assert.h>
 #endif
@@ -119,11 +122,14 @@ public:
     virtual ~SQ_GroupData_Impl();
 
     SQ_GroupData_Impl& operator=(const SQ_GroupData_Impl& other) {
-        seq_assert (other.size>0 && other.initialized);
-        if (!initialized)
-            SQ_init_consensus(other.size); seq_assert (size==other.size);
+        seq_assert(other.size>0 && other.initialized);
+
+        if (!initialized) SQ_init_consensus(other.size);
+        seq_assert(size==other.size);
+
         avg_bases = other.avg_bases;
-        gc_prop = other.gc_prop;
+        gc_prop   = other.gc_prop;
+        
         for (int s=0; s<size; ++s) {
             consensus[s] = other.consensus[s];
         }
@@ -141,6 +147,7 @@ protected:
 };
 
 class SQ_GroupData_RNA : public SQ_GroupData_Impl<6> {
+    typedef SQ_GroupData_Impl<6> Base;
     SQ_GroupData_RNA(const SQ_GroupData_RNA& other); // copying not allowed
 public:
     SQ_GroupData_RNA() {
@@ -149,9 +156,9 @@ public:
     SQ_GroupData_RNA *clone() const {
         return new SQ_GroupData_RNA;
     }
-    SQ_GroupData_RNA& operator=(const SQ_GroupData& other) {
-        return static_cast<SQ_GroupData_RNA&> (SQ_GroupData_Impl<6>::operator=
-        (static_cast<const SQ_GroupData_Impl<6>&> (other)));
+    SQ_GroupData_RNA& operator = (const SQ_GroupData& other) {
+        Base::operator=(*DOWNCAST(const Base*, &other));
+        return *this;
     }
 
     consensus_result SQ_calc_consensus (const char *sequence) const;
@@ -161,6 +168,7 @@ protected:
 };
 
 class SQ_GroupData_PRO : public SQ_GroupData_Impl<20> {
+    typedef SQ_GroupData_Impl<20> Base;
     SQ_GroupData_PRO(const SQ_GroupData_PRO& other); // copying not allowed
 public:
     SQ_GroupData_PRO() {
@@ -169,9 +177,9 @@ public:
     SQ_GroupData_PRO *clone() const {
         return new SQ_GroupData_PRO;
     }
-    SQ_GroupData_PRO& operator=(const SQ_GroupData& other) {
-        return static_cast<SQ_GroupData_PRO&> (SQ_GroupData_Impl<20>::operator=
-        (static_cast<const SQ_GroupData_Impl<20>&> (other)));
+    SQ_GroupData_PRO& operator = (const SQ_GroupData& other) {
+        Base::operator=(*DOWNCAST(const Base*, &other));
+        return *this;
     }
 
     consensus_result SQ_calc_consensus (const char *sequence) const;
