@@ -146,13 +146,13 @@ void awt_input_mask_global::no_item_selected() const {
 
 GB_ERROR awt_input_mask_id_list::add(const string& name, awt_mask_item *item) {
     awt_mask_item *existing = lookup(name);
-    if (existing) return GB_export_errorf("ID '%s' already exists", name.c_str());
+    if (existing) return GBS_global_string("ID '%s' already exists", name.c_str());
 
     id[name] = item;
     return 0;
 }
 GB_ERROR awt_input_mask_id_list::remove(const string& name) {
-    if (!lookup(name)) return GB_export_errorf("ID '%s' does not exist", name.c_str());
+    if (!lookup(name)) return GBS_global_string("ID '%s' does not exist", name.c_str());
     id.erase(name);
     return 0;
 }
@@ -170,7 +170,7 @@ GB_ERROR awt_mask_item::set_name(const string& name_, bool is_global)
 {
     GB_ERROR error = 0;
     if (has_name()) {
-        error = GB_export_errorf("Element already has name (%s)", get_name().c_str());
+        error = GBS_global_string("Element already has name (%s)", get_name().c_str());
     }
     else {
         name = new string(name_);
@@ -943,17 +943,18 @@ inline string inputMaskFullname(const string& mask_name, bool local) {
 #define ARB_INPUT_MASK_ID "ARB-Input-Mask"
 
 static awt_input_mask_descriptor *quick_scan_input_mask(const string& mask_name, const string& filename, bool local) {
-    FILE     *in     = fopen(filename.c_str(), "rt");
-    size_t    lineNo = 0;
-    GB_ERROR  error  = 0;
-    int       hidden = 0; // defaults to 'not hidden'
+    awt_input_mask_descriptor *res = 0;
+    FILE     *in    = fopen(filename.c_str(), "rt");
+    GB_ERROR  error = 0;
 
     if (in) {
         string   line;
+        size_t   lineNo = 0;
         error = readLine(in, line, lineNo);
 
         if (!error && line == ARB_INPUT_MASK_ID) {
-            bool   done = false;
+            bool   done   = false;
+            int    hidden = 0; // 0 = 'not hidden'
             string title;
             string itemtype;
 
@@ -986,10 +987,11 @@ static awt_input_mask_descriptor *quick_scan_input_mask(const string& mask_name,
                 }
                 else {
                     if (title == "") title = mask_name;
-                    return new awt_input_mask_descriptor(title.c_str(), mask_name.c_str(), itemtype.c_str(), local, hidden);
+                    res = new awt_input_mask_descriptor(title.c_str(), mask_name.c_str(), itemtype.c_str(), local, hidden);
                 }
             }
         }
+        fclose(in);
     }
 
     if (error) {
@@ -999,7 +1001,7 @@ static awt_input_mask_descriptor *quick_scan_input_mask(const string& mask_name,
 #if defined(DEBUG)
     printf("Skipping '%s' (not a input mask)\n", filename.c_str());
 #endif // DEBUG
-    return 0;
+    return res;
 }
 
 static void AWT_edit_input_mask(AW_window *, AW_CL cl_mask_name, AW_CL cl_local) {
@@ -1666,11 +1668,11 @@ static awt_input_mask_ptr awt_create_input_mask(AW_root *root, GBDATA *gb_main, 
                                     bool local_exists  = mask->mask_global()->has_local_id(id);
 
                                     if ((cmd == CMD_GLOBAL && local_exists) || (cmd == CMD_LOCAL && global_exists)) {
-                                        error = GB_export_errorf("ID '%s' already declared as %s ID (rename your local id)",
-                                                                 id.c_str(), cmd == CMD_LOCAL ? "global" : "local");
+                                        error = GBS_global_string("ID '%s' already declared as %s ID (rename your local id)",
+                                                                  id.c_str(), cmd == CMD_LOCAL ? "global" : "local");
                                     }
                                     else if (cmd == CMD_LOCAL && local_exists) {
-                                        error = GB_export_errorf("ID '%s' declared twice", id.c_str());
+                                        error = GBS_global_string("ID '%s' declared twice", id.c_str());
                                     }
 
                                     if (!error) def_value = scan_string_parameter(line, scan_pos, error);
@@ -1901,7 +1903,7 @@ static awt_input_mask_ptr awt_create_input_mask(AW_root *root, GBDATA *gb_main, 
             if (!error) {
                 for (map<string, size_t>::const_iterator r = referenced_ids.begin(); r != referenced_ids.end(); ++r) {
                     if (declared_ids.find(r->first) == declared_ids.end()) {
-                        error = GB_export_errorf("ID '%s' used in line #%zu was not declared", r->first.c_str(), r->second);
+                        error = GBS_global_string("ID '%s' used in line #%zu was not declared", r->first.c_str(), r->second);
                         aw_message(error);
                     }
                 }
@@ -2020,7 +2022,7 @@ GB_ERROR AWT_initialize_input_mask(AW_root *root, GBDATA *gb_main, const awt_ite
     }
 
     if (unlink_old) {
-        old_mask->relink(true); // unlink old mask from database ()
+        old_mask->unlink(); // unlink old mask from database ()
         unlink_mask_from_database(old_mask);
     }
 
@@ -2031,16 +2033,14 @@ GB_ERROR AWT_initialize_input_mask(AW_root *root, GBDATA *gb_main, const awt_ite
 // start of implementation of class awt_input_mask:
 
 awt_input_mask::~awt_input_mask() {
-    relink(true); // unlink from DB
+    unlink();
     for (awt_mask_item_list::iterator h = handlers.begin(); h != handlers.end(); ++h) {
         (*h)->remove_name();
     }
 }
 
-void awt_input_mask::relink(bool unlink) {
+void awt_input_mask::link_to(GBDATA *gb_item) {
     // this functions links/unlinks all registered item handlers to/from the database
-    GBDATA *gb_item = unlink ? 0 : global.get_selected_item();
-
     for (awt_mask_item_list::iterator h = handlers.begin(); h != handlers.end(); ++h) {
         if ((*h)->is_linked_item()) (*h)->to_linked_item()->link_to(gb_item);
     }
@@ -2407,6 +2407,14 @@ void AWT_create_mask_submenu(AW_window_menu_modes *awm, awt_item_type wanted_ite
 }
 
 void AWT_destroy_input_masks() {
+    // unlink from DB manually - there are too many smartptrs to
+    // get rid of all of them before DB gets destroyed on exit
+    for (InputMaskList::iterator i = input_mask_list.begin();
+         i != input_mask_list.end();
+         ++i)
+    {
+        i->second->unlink(); 
+    }
     input_mask_list.clear();
 }
 
