@@ -11,6 +11,10 @@
 #ifndef A3_DARRAY_HXX
 #define A3_DARRAY_HXX
 
+#ifndef ARBTOOLS_H
+#include <arbtools.h>
+#endif
+
 #define DARRAY_SIZE     10
 #define DARRAY_INC       2
 
@@ -48,7 +52,8 @@ class DArray        // Dynamisches Array fuer beliebige Elemente
              DArray         ( int        num,
                               int        inc,
                               int        del );
-             DArray         ( DArray    &other );
+             DArray         ( const DArray    &other );
+    DECLARE_ASSIGNMENT_OPERATOR(DArray);
             ~DArray         ( void );
 
     void     Free           ( int        del ) { free = !!del; };

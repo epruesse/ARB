@@ -624,7 +624,7 @@ void TypeMap::load(FileBuffer& typemap_reader) {
 // ----------------
 //      Package
 
-class Package {
+class Package : virtual Noncopyable {
     string         prefix;                          // e.g. 'P2A' or 'P2AT'
     string         name;                            // e.g. 'ARB' or 'BIO'
     GBS_strstruct *generated_code;

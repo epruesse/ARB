@@ -29,7 +29,7 @@ enum CommandType {
     ELSEIF,
     FUNCTION,
     LABEL,
-    OTHER_CMD, 
+    OTHER_CMD,
 };
 
 struct Code {
@@ -53,6 +53,21 @@ struct Code {
     Code() {
         memset(this, 0, sizeof(*this));
     }
+    Code(const Code& other)
+        : next(other.next),
+          str(nulldup(other.str)),
+          command(other.command),
+          cmd(other.cmd),
+          fd(other.fd),
+          IF(other.IF), 
+          ELSE(other.ELSE), 
+          ENDIF(other.ENDIF), 
+          FOR(other.FOR), 
+          NEXT(other.NEXT), 
+          ENDFOR(other.ENDFOR) 
+    {}
+    
+    DECLARE_ASSIGNMENT_OPERATOR(Code);
     ~Code() {
         delete next;
         free(str);
@@ -73,7 +88,7 @@ struct Code {
 };
 
 
-class Parser {
+class Parser : virtual Noncopyable {
     // used to parse 'Data' and 'Code'
     
     int         lastchar;

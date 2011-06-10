@@ -72,6 +72,7 @@ PRD_Item.o: PRD_Item.hxx
 PRD_Item.o: PRD_SequenceIterator.hxx
 PRD_Item.o: $(ARBHOME)/INCLUDE/arb_assert.h
 PRD_Item.o: $(ARBHOME)/INCLUDE/arb_core.h
+PRD_Item.o: $(ARBHOME)/INCLUDE/arbtools.h
 PRD_Item.o: $(ARBHOME)/INCLUDE/dupstr.h
 PRD_Item.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -79,6 +80,7 @@ PRD_Node.o: PRD_Globals.hxx
 PRD_Node.o: PRD_Node.hxx
 PRD_Node.o: $(ARBHOME)/INCLUDE/arb_assert.h
 PRD_Node.o: $(ARBHOME)/INCLUDE/arb_core.h
+PRD_Node.o: $(ARBHOME)/INCLUDE/arbtools.h
 PRD_Node.o: $(ARBHOME)/INCLUDE/dupstr.h
 PRD_Node.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -87,6 +89,7 @@ PRD_Pair.o: PRD_Item.hxx
 PRD_Pair.o: PRD_Pair.hxx
 PRD_Pair.o: $(ARBHOME)/INCLUDE/arb_assert.h
 PRD_Pair.o: $(ARBHOME)/INCLUDE/arb_core.h
+PRD_Pair.o: $(ARBHOME)/INCLUDE/arbtools.h
 PRD_Pair.o: $(ARBHOME)/INCLUDE/dupstr.h
 PRD_Pair.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -94,6 +97,7 @@ PRD_Range.o: PRD_Globals.hxx
 PRD_Range.o: PRD_Range.hxx
 PRD_Range.o: $(ARBHOME)/INCLUDE/arb_assert.h
 PRD_Range.o: $(ARBHOME)/INCLUDE/arb_core.h
+PRD_Range.o: $(ARBHOME)/INCLUDE/arbtools.h
 PRD_Range.o: $(ARBHOME)/INCLUDE/dupstr.h
 PRD_Range.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -103,6 +107,7 @@ PRD_SearchFIFO.o: PRD_Range.hxx
 PRD_SearchFIFO.o: PRD_SearchFIFO.hxx
 PRD_SearchFIFO.o: $(ARBHOME)/INCLUDE/arb_assert.h
 PRD_SearchFIFO.o: $(ARBHOME)/INCLUDE/arb_core.h
+PRD_SearchFIFO.o: $(ARBHOME)/INCLUDE/arbtools.h
 PRD_SearchFIFO.o: $(ARBHOME)/INCLUDE/dupstr.h
 PRD_SearchFIFO.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -110,6 +115,7 @@ PRD_SequenceIterator.o: PRD_Globals.hxx
 PRD_SequenceIterator.o: PRD_SequenceIterator.hxx
 PRD_SequenceIterator.o: $(ARBHOME)/INCLUDE/arb_assert.h
 PRD_SequenceIterator.o: $(ARBHOME)/INCLUDE/arb_core.h
+PRD_SequenceIterator.o: $(ARBHOME)/INCLUDE/arbtools.h
 PRD_SequenceIterator.o: $(ARBHOME)/INCLUDE/dupstr.h
 PRD_SequenceIterator.o: $(ARBHOME)/INCLUDE/test_global.h
 

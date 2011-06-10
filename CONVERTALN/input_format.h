@@ -17,7 +17,7 @@ public:
 };
 
 // all input formats have to be output formats:
-class InputFormat : public OutputFormat {
+class InputFormat : public OutputFormat, virtual Noncopyable {
     mutable char *id; // id of entry (=short-name)
 
     virtual char *create_id() const = 0;

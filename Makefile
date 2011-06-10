@@ -127,6 +127,9 @@ ifeq ($(DEBUG),1)
 
 # control how much you get spammed
 	POST_COMPILE := 2>&1 | $(ARBHOME)/SOURCE_TOOLS/postcompile.pl
+#	POST_COMPILE := 2>&1 | $(ARBHOME)/SOURCE_TOOLS/postcompile.pl --original# dont modify compiler output
+#	POST_COMPILE := 2>&1 | $(ARBHOME)/SOURCE_TOOLS/postcompile.pl --hide-Noncopyable-advices
+#	POST_COMPILE := 2>&1 | $(ARBHOME)/SOURCE_TOOLS/postcompile.pl --show-useless-Weff++
 #	POST_COMPILE := 2>&1 | $(ARBHOME)/SOURCE_TOOLS/postcompile.pl --no-warnings
 #	POST_COMPILE := 2>&1 | $(ARBHOME)/SOURCE_TOOLS/postcompile.pl --only-first-error
 #	POST_COMPILE := 2>&1 | $(ARBHOME)/SOURCE_TOOLS/postcompile.pl --no-warnings --only-first-error
@@ -140,14 +143,15 @@ ifeq ($(DEBUG),1)
 
 #       C++ only 
 	extended_cpp_warnings += -Wnon-virtual-dtor -Wreorder -Wpointer-arith -Wdisabled-optimization -Wmissing-format-attribute
-	extended_cpp_warnings += -Wctor-dtor-privacy# gcc @@@
-	extended_cpp_warnings += -Wno-non-template-friend# gcc @@@
+	extended_cpp_warnings += -Wctor-dtor-privacy# < gcc 3
 # 	extended_cpp_warnings += -Wfloat-equal# gcc 3.0
 
 # ------- above only warnings available in 3.0
 
  ifneq ($(USE_GCC_4_OR_HIGHER),'')
+	extended_cpp_warnings += -Weffc++# gcc 3.0.1
 	extended_cpp_warnings += -Wmissing-noreturn# gcc 3.0.2
+#	extended_cpp_warnings += -Wold-style-cast# gcc 3.0.4 (warn about 28405 old-style casts)
 	extended_cpp_warnings += -Winit-self# gcc 3.4.0
 	extended_cpp_warnings += -Wstrict-aliasing# gcc 3.4
 	extended_cpp_warnings += -Wextra# gcc 3.4.0
@@ -622,6 +626,7 @@ check_setup: check_ENVIRONMENT check_DEBUG check_ARB_64 check_DEVELOPER check_GC
 		@echo Your setup seems to be ok.
 
 checks: check_setup check_tabs
+	@rm -f SOURCE_TOOLS/postcompile.sav
 
 
 # end test section ------------------------------

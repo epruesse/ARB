@@ -39,7 +39,7 @@ typedef struct {
 } ALI_PT_CONTEXT;
 
 // class of family members
-class ali_pt_member {
+class ali_pt_member : virtual Noncopyable {
 public:
     char *name;
     int matches;
@@ -56,7 +56,7 @@ public:
 
 
 // Class for accessing the PT server
-class ALI_PT {
+class ALI_PT : virtual Noncopyable {
 private:
     ALI_PT_MODE mode;
 

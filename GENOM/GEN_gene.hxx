@@ -18,6 +18,9 @@
 #ifndef AW_BASE_HXX
 #include <aw_base.hxx>
 #endif
+#ifndef ARBTOOLS_H
+#include <arbtools.h>
+#endif
 
 #ifndef _GLIBCXX_SET
 #include <set>
@@ -34,10 +37,9 @@ class  GEN_root;
 class  GEN_graphic;
 struct GEN_position;
 
-class GEN_gene {
-private:
-    GBDATA              *gb_gene;
-    GEN_root            *root;
+class GEN_gene { 
+    GBDATA              *gb_gene; 
+    GEN_root            *root; 
     std::string          name;
     mutable std::string  nodeInfo;
     long                 pos1;
@@ -52,6 +54,16 @@ private:
 public:
     GEN_gene(GBDATA *gb_gene_, GEN_root *root_, const GEN_position *location);
     GEN_gene(GBDATA *gb_gene_, GEN_root *root_, const GEN_position *location, int partNumber);
+    GEN_gene(const GEN_gene& other)
+        : gb_gene(other.gb_gene),
+          root(other.root),
+          name(other.name),
+          nodeInfo(other.nodeInfo),
+          pos1(other.pos1),
+          pos2(other.pos2),
+          complement(other.complement)
+    {}
+    DECLARE_ASSIGNMENT_OPERATOR(GEN_gene);
     ~GEN_gene() {}
 
     inline bool operator<(const GEN_gene& other) const {
@@ -77,7 +89,7 @@ typedef GEN_gene_set::iterator GEN_iterator;
 
 class AW_device;
 
-class GEN_root {
+class GEN_root : virtual Noncopyable {
 private:
     GBDATA      *gb_main;
     GEN_graphic *gen_graphic;

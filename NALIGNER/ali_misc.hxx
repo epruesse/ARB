@@ -27,6 +27,9 @@
 #ifndef ATTRIBUTES_H
 #include <attributes.h>
 #endif
+#ifndef ARBTOOLS_H
+#include <arbtools.h>
+#endif
 
 #define ALI_A_CODE     0
 #define ALI_C_CODE     1

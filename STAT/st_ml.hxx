@@ -20,6 +20,9 @@
 #ifndef ATTRIBUTES_H
 #include <attributes.h>
 #endif
+#ifndef ARBTOOLS_H
+#include <arbtools.h>
+#endif
 
 #define st_assert(cond) arb_assert(cond)
 
@@ -103,7 +106,7 @@ public:
     void print();
 };
 
-class ST_ML {
+class ST_ML : virtual Noncopyable {
 
     /* Note: Because we have only limited memory we split the
      * sequence into several ST_MAX_SEQ_PART-sized parts during stat-calculation

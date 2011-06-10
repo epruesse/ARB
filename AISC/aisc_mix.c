@@ -68,15 +68,14 @@ static Code *aisc_calc_blocks(Code * co, Code * afor, Code * aif, int up) {
                     if (up) return co;
                 }
                 else if (co->command == ELSEIF) {
-                    Code *cod = new Code;
-                    *cod = *co;
-                    cod->command = IF; // when jumped to (from prev failed IF, act like IF)
-                    co->command = ELSE; // when running into, act like else
-                    co ->next = cod;
-                    co->str = NULL;
-                    aif->ELSE=co;
-                    aelse = co;
-                    co = aisc_calc_blocks(cod, afor, aif, 1);
+                    Code *co_if    = new Code(*co);
+                    co_if->command = IF;   // when jumped to (from prev failed IF, act like IF)
+                    co->command    = ELSE; // when running into, act like else
+                    co ->next      = co_if;
+                    freenull(co->str);
+                    aif->ELSE = co;
+                    aelse     = co;
+                    co        = aisc_calc_blocks(co_if, afor, aif, 1);
                     if (!co) {
                         print_error(aif->ELSE, "ELSEIF without ENDIF or ELSE");
                         return 0;
@@ -87,7 +86,7 @@ static Code *aisc_calc_blocks(Code * co, Code * afor, Code * aif, int up) {
                         return 0;
                     }
                     aif->ENDIF=co;
-                    cod->ENDIF=co;
+                    co_if->ENDIF=co;
                     aelse->ENDIF=co;
                     if (up) return co;
                 }

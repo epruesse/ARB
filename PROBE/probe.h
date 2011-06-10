@@ -160,7 +160,7 @@ struct probe_statistic_struct {
 
 class BI_ecoli_ref;
 
-class MostUsedPos {
+class MostUsedPos : virtual Noncopyable {
     int pos;
     int used;
 

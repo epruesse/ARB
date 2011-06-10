@@ -654,7 +654,7 @@ static size_t scanMinIndentation(const string& text) {
 //  ----------------------------
 //      class ParagraphTree
 //  ----------------------------
-class ParagraphTree {
+class ParagraphTree : virtual Noncopyable {
 private:
     ParagraphTree *brother;     // has same indentation as this
     ParagraphTree *son;         // indentation + 1

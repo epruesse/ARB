@@ -27,7 +27,7 @@ using namespace std;
 // --------------------------
 //      AWT_configuration
 
-class AWT_configuration {
+class AWT_configuration : virtual Noncopyable {
 private:
     string id;
 

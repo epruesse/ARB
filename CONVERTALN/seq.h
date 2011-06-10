@@ -37,7 +37,7 @@ struct BaseCounts {
     }
 };
 
-class Seq {
+class Seq : virtual Noncopyable {
     // - holds sequence data
 
     char *id;

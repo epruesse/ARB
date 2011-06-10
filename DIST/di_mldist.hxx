@@ -14,6 +14,9 @@
 #ifndef ARB_CORE_H
 #include <arb_core.h>
 #endif
+#ifndef ARBTOOLS_H
+#include <arbtools.h>
+#endif
 
 const int DI_ML_RESOLUTION   = 1000; // max res
 const int DI_ML_MAX_DIST     = 10; // max dist
@@ -27,7 +30,7 @@ typedef char   di_bool_matrix[DI_ML_MAX_MAT_SIZE][DI_ML_MAX_MAT_SIZE];
 class DI_ENTRY;
 class AP_smatrix;
 
-class di_mldist {
+class di_mldist : virtual Noncopyable {
     long spp;                   // number of species
     long chars;                 // number of characters
     long n_states;              // << DI_ML_MAX_MAT_SIZE

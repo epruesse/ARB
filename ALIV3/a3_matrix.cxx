@@ -48,7 +48,7 @@ void A3Matrix::Init ( int xlen,
 }
 
 // -----------------------------------------------------------------------------
-    A3Matrix::A3Matrix ( A3Matrix &other )
+    A3Matrix::A3Matrix ( const A3Matrix &other )
 // -----------------------------------------------------------------------------
 {
     Init(other.width,other.height,other.free);

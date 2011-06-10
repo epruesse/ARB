@@ -106,7 +106,7 @@ class ED4_sequence_terminal;
 class BI_ecoli_ref;
 struct ED4_plugin_host;
 
-class Structure3D {
+class Structure3D : virtual Noncopyable {
 public:
     Vector3 *strCen;
 

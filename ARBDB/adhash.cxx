@@ -616,7 +616,7 @@ struct gbs_hash_statistic_summary {
     }
 };
 
-class hash_statistic_manager {
+class hash_statistic_manager : virtual Noncopyable {
     GB_HASH *stat_hash;
 public:
     hash_statistic_manager() : stat_hash(NULL) { }
@@ -960,7 +960,7 @@ static bool hashes_are_equal(GB_HASH *h1, GB_HASH *h2) {
     return equal;
 }
 
-class TestData : public Noncopyable {
+class TestData : virtual Noncopyable {
 public:
     GB_HASH    *mind;
     GB_HASH    *ignore;

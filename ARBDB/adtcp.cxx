@@ -24,7 +24,7 @@
 // ------------------------------------------------------------
 // Data representing current content of arb_tcp.dat
 
-class ArbTcpDat {
+class ArbTcpDat : virtual Noncopyable {
     GB_ULONG  modtime;                              // modification time of read-in arb_tcp.dat
     char     *filename;                             // pathname of loaded arb_tcp.dat
 

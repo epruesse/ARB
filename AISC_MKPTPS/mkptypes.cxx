@@ -26,6 +26,7 @@
 #define SIMPLE_ARB_ASSERT
 #include <attributes.h>
 #include <arb_assert.h>
+#include <arbtools.h>
 
 #define mp_assert(cond) arb_assert(cond)
 
@@ -427,7 +428,7 @@ public:
 // ------------------
 //      PartQueue
 
-class PartQueue {
+class PartQueue : virtual Noncopyable {
     LinePart   first;
     PartQueue *next;
     size_t     size;

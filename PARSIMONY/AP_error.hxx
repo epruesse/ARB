@@ -4,10 +4,12 @@
 #ifndef ATTRIBUTES_H
 #include <attributes.h>
 #endif
+#ifndef ARBTOOLS_H
+#include <arbtools.h>
+#endif
 
 
-class AP_ERR
-{
+class AP_ERR : virtual Noncopyable {
     static int  mode;                               // output mode 0 = no warnings, 1 = warnings
     int         anzahl;                             // errortext count
     const char *text;                               // pointer to errortext

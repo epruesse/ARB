@@ -47,7 +47,7 @@ public:
     AWT_seq_colors(GBDATA *gb_default, int base_gc, AW_CB cb, AW_CL cd1, AW_CL cd2);
 };
 
-class AWT_reference {
+class AWT_reference : virtual Noncopyable {
     GBDATA *gb_main;
     int     ref_len;
     char   *reference;

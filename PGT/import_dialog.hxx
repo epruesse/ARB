@@ -20,8 +20,7 @@
 #include "file_import.hxx"
 
 
-class importDialog : public MDialog
-{
+class importDialog : public MDialog { // derived from a Noncopyable
     public:
         importDialog(MDialog*);
         ~importDialog();

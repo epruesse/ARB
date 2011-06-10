@@ -16,7 +16,7 @@
 #include "aw_root.hxx"
 #endif
 
-class Awar_Callback_Info {
+class Awar_Callback_Info : virtual Noncopyable {
     // this structure is used to store all information on an awar callback
     // and can be used to remove or remap awar callback w/o knowing anything else
 

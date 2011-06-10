@@ -23,8 +23,7 @@
 /****************************************************************************
 *  MAIN EVENT HANDLER CLASS
 ****************************************************************************/
-class CMain
-{
+class CMain : virtual Noncopyable {
     GB_shell shell;
     
     public:

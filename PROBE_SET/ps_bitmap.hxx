@@ -8,10 +8,7 @@
 #include "ps_bitset.hxx"
 #endif
 
-//  ############################################################
-//  # PS_BitMap
-//  ############################################################
-class PS_BitMap {
+class PS_BitMap : virtual Noncopyable {
 protected:
 
     PS_BitSet **data;                   // array of pointers to PS_BitSet
@@ -137,9 +134,7 @@ public:
 //   column of the same index.
 //   Only set() automatically updates count_true_per_index.
 //
-class PS_BitMap_Counted : public PS_BitMap {
-private:
-
+class PS_BitMap_Counted : public PS_BitMap { // derived from a Noncopyable
     long *count_true_per_index;
 
             bool copy(const PS_BitSet *_other_bitset);   // declared but not implemented because PS_BitSet has no count_true_per_index array

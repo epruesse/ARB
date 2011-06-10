@@ -119,7 +119,7 @@ public:
 
 struct elem;
 
-class PHDATA {
+class PHDATA : virtual Noncopyable {
     // connection to database
     // pointers to all elements and important values of the database
 

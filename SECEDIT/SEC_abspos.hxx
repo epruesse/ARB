@@ -24,7 +24,7 @@
 #endif
 
 
-class XString : Noncopyable {
+class XString : virtual Noncopyable {
     char   *x_string;
     size_t  x_string_len;
 

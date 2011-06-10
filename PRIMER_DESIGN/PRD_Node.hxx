@@ -6,13 +6,10 @@
 #include "PRD_Globals.hxx"
 #endif
 
-class Node {
-private:
-
+class Node : virtual Noncopyable {
     void init(Node* parent_, char base_, PRD_Sequence_Pos last_index_, PRD_Sequence_Pos offset_);
 
 public:
-
     Node            *parent;
     Node            *child[4];                          // 0=C 1=G 2=A 3=T/U
     unsigned char    base;

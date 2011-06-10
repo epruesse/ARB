@@ -11,22 +11,29 @@
 #ifndef AP_MATRIX_HXX
 #define AP_MATRIX_HXX
 
+#ifndef ARBTOOLS_H
+#include <arbtools.h>
+#endif
+
 typedef double AP_FLOAT;
 
 class AW_root;
 class AW_window;
 
-class AP_smatrix {      // Symmetrical Matrix (upper triangular matrix)
+class AP_smatrix : virtual Noncopyable {
+    // Symmetrical Matrix (upper triangular matrix)
 public:
-    AP_FLOAT **m;       // m[i][j]  i<= j !!!!
-    long    size;
+    AP_FLOAT **m;       // m[i][j]  i <= j !!!!
+    long       size;
+
     AP_smatrix(long si);
     ~AP_smatrix();
+
     void    set(long i, long j, AP_FLOAT val) { if (i>j) m[i][j] = val; else m[j][i] = val; };
     AP_FLOAT get(long i, long j) { if (i>j) return m[i][j]; else return m[j][i]; };
 };
 
-class AP_matrix {       // Matrix
+class AP_matrix : virtual Noncopyable {
 public:
     AP_FLOAT **m;
     char    **x_description; // optional description, strdupped

@@ -12,7 +12,7 @@
 #define ALI_TSTACK_HXX
 
 template<class T>
-class ALI_TSTACK {
+class ALI_TSTACK : virtual Noncopyable {
     T **array;
     unsigned long size_of_array;
     unsigned long next_elem;

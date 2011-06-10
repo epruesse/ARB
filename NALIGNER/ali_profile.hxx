@@ -67,7 +67,7 @@ public:
 
 
 // Class for the profiling
-class ALI_PROFILE {
+class ALI_PROFILE : virtual Noncopyable {
     ALI_NORM_SEQUENCE *norm_sequence;
     unsigned long prof_len;
 

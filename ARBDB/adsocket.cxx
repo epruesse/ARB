@@ -1483,7 +1483,7 @@ void GB_split_full_path(const char *fullpath, char **res_dir, char **res_fullnam
 
 static const char *ANY_NAME = "ANY_NAME";
 
-struct gbcm_get_m_id_TESTER {
+struct gbcm_get_m_id_TESTER : virtual Noncopyable {
     const char *path;
     GB_ERROR    error;
     char       *name;
@@ -1624,7 +1624,7 @@ void TEST_paths() {
 
 // ----------------------------------------
 
-class TestFile {
+class TestFile : virtual Noncopyable {
     const char *name;
     bool open(const char *mode) {
         FILE *out = fopen(name, mode);

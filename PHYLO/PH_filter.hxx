@@ -14,7 +14,7 @@ enum {
     OPT_COUNT = 8,
 };
 
-class PH_filter {
+class PH_filter : virtual Noncopyable {
 public:
     char *filter;                                   // 0 1
     long  filter_len;

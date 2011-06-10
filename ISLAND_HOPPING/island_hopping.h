@@ -12,12 +12,16 @@
 #ifndef ISLAND_HOPPING_H
 #define ISLAND_HOPPING_H
 
-typedef const char *GB_ERROR;
+#ifndef ARBTOOLS_H
+#include <arbtools.h>
+#endif
+#ifndef ARB_CORE_H
+#include <arb_core.h>
+#endif
 
 class IslandHopping;
 
 class IslandHoppingParameter {
-private:
     int    use_user_freqs;
     double fT;
     double fC;
@@ -47,15 +51,9 @@ public:
                            double dist_, double supp_, double gapA_, double gapB_, double gapC_, double thres_);
 
     virtual ~IslandHoppingParameter();
-
 };
 
-
-
-
-class IslandHopping {
-
-private:
+class IslandHopping : virtual Noncopyable {
     static IslandHoppingParameter *para;
 
     int alignment_length;

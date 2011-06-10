@@ -47,6 +47,7 @@ depend.init:
 analyze_window.o: analyze_window.hxx
 analyze_window.o: dialog.hxx
 analyze_window.o: plot.hxx
+analyze_window.o: $(ARBHOME)/INCLUDE/arbtools.h
 
 arb_interface.o: arb_interface.hxx
 arb_interface.o: xm_defs.hxx
@@ -143,6 +144,7 @@ file_import.o: $(ARBHOME)/INCLUDE/test_global.h
 
 help_dialog.o: dialog.hxx
 help_dialog.o: help_dialog.hxx
+help_dialog.o: $(ARBHOME)/INCLUDE/arbtools.h
 
 image_dialog.o: arb_interface.hxx
 image_dialog.o: config_dialog.hxx
@@ -242,8 +244,10 @@ main_dialog.o: $(ARBHOME)/INCLUDE/test_global.h
 msgbox.o: dialog.hxx
 msgbox.o: msgbox.hxx
 msgbox.o: xm_defs.hxx
+msgbox.o: $(ARBHOME)/INCLUDE/arbtools.h
 
 plot.o: plot.hxx
+plot.o: $(ARBHOME)/INCLUDE/arbtools.h
 
 selection_dialog.o: arb_interface.hxx
 selection_dialog.o: dialog.hxx
@@ -265,3 +269,4 @@ selection_dialog.o: $(ARBHOME)/INCLUDE/smartptr.h
 selection_dialog.o: $(ARBHOME)/INCLUDE/test_global.h
 
 tiff_image.o: tiff_image.hxx
+tiff_image.o: $(ARBHOME)/INCLUDE/arbtools.h

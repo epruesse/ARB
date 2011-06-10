@@ -40,10 +40,7 @@ struct HelixS       // Helixbereich
                               length = l; };
 };
 
-class A3Helix
-{
-    private:
-    
+class A3Helix : virtual Noncopyable {
     str      helix,         // Helix(klammer)struktur
              consensus;     // Haeufigste Familiensequenz
     int      length;        // Laenge von helix und consensus

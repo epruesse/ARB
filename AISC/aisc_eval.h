@@ -15,7 +15,7 @@
 #include <arbtools.h>
 #endif
 
-class Expression : Noncopyable {
+class Expression : virtual Noncopyable {
     const Data&     data;
     const Location& loc;
 

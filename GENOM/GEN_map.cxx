@@ -675,7 +675,7 @@ static GB_ERROR GEN_species_add_entry(GBDATA *gb_pseudo, const char *key, const 
 static AW_repeated_question *ask_about_existing_gene_species = 0;
 static AW_repeated_question *ask_to_overwrite_alignment      = 0;
 
-struct EG2PS_data {
+struct EG2PS_data : virtual Noncopyable {
     arb_progress        progress;
     GBDATA             *gb_species_data;
     char               *ali;

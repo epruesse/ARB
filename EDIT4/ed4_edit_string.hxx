@@ -25,7 +25,7 @@ const char SEQ_POINT = '.';
 
 class ED4_remap;
 
-class ED4_Edit_String {
+class ED4_Edit_String : virtual Noncopyable {
     GBDATA      *gbd;
     char        *seq;
     long        seq_len;

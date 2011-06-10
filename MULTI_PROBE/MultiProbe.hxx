@@ -138,18 +138,14 @@ extern awar_vars  mp_gl_awars;                      // globale Variable, die man
 
 
 
-class MP_Main
-{
-private:
+class MP_Main : virtual Noncopyable {
     MP_Window   *mp_window;
     AW_root *aw_root;
     AWT_canvas  *ntw;
     ST_Container *stc;
     ProbeValuation *p_eval;
-private:
+
     void    create_awars();
-
-
 
 public:
     MP_Window   *get_mp_window()    { return mp_window; };
@@ -168,14 +164,11 @@ public:
 
 
 
-class MP_Window
-{
-private:
+class MP_Window : virtual Noncopyable {
     AW_window_simple *aws;
     AW_window_simple *result_window;
 
-private:
-    void        build_pt_server_list();
+    void build_pt_server_list();
     // zeigt auf naechstes Zeichen
 
 public:
@@ -196,12 +189,9 @@ public:
 void MP_compute(AW_window *, AW_CL cl_gb_main);
 
 
-// ##################################### Bakt_Info ###########################
-class Bakt_Info
-{
-private:
-    char*       name;
-    long        hit_flag;
+class Bakt_Info : virtual Noncopyable {
+    char* name;
+    long  hit_flag;
 
 public:
     char*       get_name() { return name; };
@@ -212,11 +202,8 @@ public:
     Bakt_Info(const char* n);
     ~Bakt_Info();
 };
-// ##################################### Hit #####################################
-class Hit
-{
-    // nds
-private:
+
+class Hit : virtual Noncopyable {
     double  *mismatch;
     long    baktid;
 
@@ -230,12 +217,10 @@ public:
     ~Hit();
 };
 
-// ##################################### Sondentopf ##################################
+
 class probe_tabs;
 
-class Sondentopf
-{
-private:
+class Sondentopf : virtual Noncopyable {
     List<void*>     *Listenliste;
     GB_HASH     *color_hash;
     MO_Liste        *BaktList;
@@ -252,10 +237,8 @@ public:
     Sondentopf(MO_Liste *BL, MO_Liste *AL);
     ~Sondentopf();
 };
-// ##################################### Sonde #####################################
-class Sonde
-{
-private:
+
+class Sonde : virtual Noncopyable {
     char*       kennung;        // Nukleinsaeuren, z.B. "atgatgatg"
     Bitvector*      bitkennung;     // Sonde 1 Platz eins, ...zwei..., ... Analog zum Aufbau der Listenliste
     Hit         **hitliste;     // start bei index 0, letztes element enthaelt NULL
@@ -308,9 +291,7 @@ public:
 };
 // ##################################### Sondentopf Container  ###########################
 
-class ST_Container
-{
-public:
+struct ST_Container : virtual Noncopyable {
     MO_Liste        *Bakterienliste;
     MO_Liste        *Auswahlliste;
     Sondentopf      *sondentopf; // Wird einmal eine Sondentopfliste
@@ -335,8 +316,7 @@ public:
  Liste beginnt bei 1
 */
 
-class MO_Liste
-{
+class MO_Liste : virtual Noncopyable {
     Bakt_Info** mo_liste;
     long        laenge;
     long        current;                            // zeigt auf den ersten freien eintrag
@@ -366,10 +346,8 @@ public:
 };
 
 
-class Bitvector
-{
-    /* Bitpositionen sind 0 bis 7 !! */
-private:
+class Bitvector : virtual Noncopyable {
+    // Bitpositionen sind 0 bis 7 
     char*   vector;
     int     len;
     int     num_of_bits;

@@ -32,7 +32,7 @@ static int has_species_name(ED4_base *base, AW_CL cl_species_name) {
 // -----------------
 //      ED4_host
 
-class ED4_host : public ED4_plugin_host {
+class ED4_host : public ED4_plugin_host, virtual Noncopyable {
     AW_root *aw_root;
     GBDATA  *gb_main;
 
@@ -88,6 +88,12 @@ public:
           start_plugin(start_plugin_),
           window(NULL)
     {}
+    PlugIn(const PlugIn& other)
+        : name(strdup(other.name)),
+          start_plugin(other.start_plugin),
+          window(other.window)
+    {}
+    DECLARE_ASSIGNMENT_OPERATOR(PlugIn);
     ~PlugIn() { free(name); }
 
     bool has_name(const char *Name) const { return strcmp(Name, name) == 0; }

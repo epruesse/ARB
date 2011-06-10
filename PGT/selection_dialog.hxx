@@ -23,8 +23,7 @@
 #define SELECTION_DIALOG_RW    3
 
 
-class selectionDialog : public MDialog
-{
+class selectionDialog : public MDialog { // derived from a Noncopyable
     public:
         selectionDialog(MDialog*, int);
         ~selectionDialog();

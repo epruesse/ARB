@@ -27,8 +27,9 @@
 #ifndef ATTRIBUTES_H
 #include <attributes.h>
 #endif
-
-
+#ifndef ARBTOOLS_H
+#include <arbtools.h>
+#endif
 
 // --------------
 //      AWARS
@@ -53,7 +54,7 @@ typedef enum {
 } AW_widget_type;
 
 
-class AW_awar {
+class AW_awar : virtual Noncopyable {
     struct {
         struct {
             float min;

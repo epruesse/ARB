@@ -100,7 +100,7 @@ void DArray::Init ( int num,
 }
 
 // -----------------------------------------------------------------------------
-    DArray::DArray ( DArray &other )
+    DArray::DArray ( const DArray &other )
 // -----------------------------------------------------------------------------
 {
     Init(other.elements,other.increment,other.free);

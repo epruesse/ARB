@@ -50,7 +50,7 @@ typedef enum {
 
 typedef void (*GEN_graphic_cb_installer)(bool install, AWT_canvas*, GEN_graphic*);
 
-class GEN_graphic : public AWT_nonDB_graphic {
+class GEN_graphic : public AWT_nonDB_graphic, virtual Noncopyable {
     AW_root                  *aw_root;
     GBDATA                   *gb_main;
     GEN_graphic_cb_installer  callback_installer;

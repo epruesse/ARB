@@ -42,7 +42,7 @@ static inline bool is_ali_gap(char c)  { return strchr(GAP_CHARS, c)!=0; }
 
 class CompactedSubSequence;
 
-class Dots {
+class Dots : virtual Noncopyable {
     // here we store dots ('.') which were deleted when compacting sequences
     long  BeforeBase; // this position is the "compressed" position
     Dots *Next;
@@ -62,7 +62,7 @@ public:
     const Dots *next() const { return Next; }
 };
 
-class CompactedSequence { // compacts a string (gaps removed, all chars upper)
+class CompactedSequence : virtual Noncopyable { // compacts a string (gaps removed, all chars upper)
     // (private class - use CompactedSubSequence)
     BasePosition  basepos;            // relatice <-> absolute position
     char         *myName;             // sequence name
@@ -206,11 +206,11 @@ public:
     }
 };
 
-class SequencePosition                              // pointer to character position in CompactedSubSequence
-{
+class SequencePosition {
+    // pointer to character position in CompactedSubSequence
     const CompactedSubSequence *mySequence;
-    long myPos;
-    const char *myText;
+    long                        myPos;
+    const char                 *myText;
 
     int distanceTo(const SequencePosition& other) const    { fa_assert(mySequence==other.mySequence); return myPos-other.myPos; }
 
@@ -225,6 +225,7 @@ public:
           myPos(pos.myPos+offset),
           myText(pos.myText+offset) {}
     ~SequencePosition() {}
+    DECLARE_ASSIGNMENT_OPERATOR(SequencePosition);
 
     const char *text() const                     { return myText; }
     const CompactedSubSequence& sequence() const { return *mySequence; }
@@ -245,8 +246,8 @@ public:
     long rightOf() const { return mySequence->length()-myPos; }
 };
 
-class TripleOffset                                  // a list of offsets (used in FastSearchSequence)
-{
+class TripleOffset : virtual Noncopyable {
+    // a list of offsets (used in FastSearchSequence)
     long          myOffset;                         // compacted offset
     TripleOffset *myNext;
 
@@ -262,7 +263,8 @@ public:
 };
 
 
-class AlignBuffer {                                 // alignment result buffer
+class AlignBuffer : virtual Noncopyable {
+    // alignment result buffer
     char *myBuffer;
     char *myQuality;
 
@@ -348,7 +350,7 @@ public:
 };
 
 
-class FastAlignInsertion {
+class FastAlignInsertion : virtual Noncopyable {
     long insert_at_offset;
     long inserted_gaps;
 
@@ -379,8 +381,8 @@ public:
 };
 
 
-class FastAlignReport    // alignment report
-{
+class FastAlignReport : virtual Noncopyable {
+    // alignment report
     long  alignedBases;
     long  mismatchedBases;      // in aligned part
     long  unalignedBases;
@@ -474,8 +476,8 @@ public:
 };
 
 
-class FastSearchOccurrence                          // iterates through all occurrences of one character triple
-{
+class FastSearchOccurrence : virtual Noncopyable {
+    // iterates through all occurrences of one character triple
     const FastSearchSequence&  mySequence;
     const TripleOffset        *myOffset;
 

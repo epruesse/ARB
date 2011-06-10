@@ -19,10 +19,13 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
+#ifndef ARBTOOLS_H
+#include <arbtools.h>
+#endif
+
 using namespace std;
 
-class PS_FileBuffer {
-private:
+class PS_FileBuffer : virtual Noncopyable {
     // filehandling
     int   file_handle;
     char *file_name;

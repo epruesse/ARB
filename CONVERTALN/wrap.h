@@ -1,7 +1,7 @@
 #ifndef WRAP_H
 #define WRAP_H
 
-class WrapMode {
+class WrapMode : virtual Noncopyable {
     char *separators;
 
     bool allowed_to_wrap() const { return separators; }

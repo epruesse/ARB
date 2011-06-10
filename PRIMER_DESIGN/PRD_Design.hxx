@@ -22,9 +22,7 @@
 #include <arbdb.h>
 #endif
 
-class PrimerDesign {
-private:
-
+class PrimerDesign : virtual Noncopyable {
     // zu untersuchendes Genom
     // sequence of bases/spaces to be examined
 

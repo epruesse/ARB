@@ -13,13 +13,15 @@
 #define MOTIF_DIALOG_H
 
 #include <Xm/XmAll.h>
+#ifndef ARBTOOLS_H
+#include <arbtools.h>
+#endif
 
 using namespace std;
 #include <vector>
 
 
-class MDialog
-{
+class MDialog : virtual Noncopyable {
     public:
         MDialog(Widget);
         MDialog(MDialog *parent= NULL);

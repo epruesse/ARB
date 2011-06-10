@@ -20,8 +20,7 @@
 #include "plot.hxx"
 
 
-class analyzeWindow : public MDialog
-{
+class analyzeWindow : public MDialog { // derived from a Noncopyable
     public:
         analyzeWindow(MDialog*);
         ~analyzeWindow();

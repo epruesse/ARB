@@ -87,7 +87,7 @@ enum AWT_REMOVE_TYPE { // bit flags
     // see ../../ARBDB/arbdbt.h@sync_GBT_TREE_REMOVE_TYPE_AWT_REMOVE_TYPE
 };
 
-class AP_rates {
+class AP_rates : virtual Noncopyable {
 public:
     AP_FLOAT  *rates;
     long       rate_len;
@@ -109,7 +109,7 @@ class AP_tree;
 typedef void (*AP_rootChangedCb)(void *cd, AP_tree *old, AP_tree *newroot);
 typedef void (*AP_nodeDelCb)(void *cd, AP_tree *del);
 
-class AP_tree_root : public ARB_tree_root {
+class AP_tree_root : public ARB_tree_root { // derived from a Noncopyable
     AP_rootChangedCb  root_changed_cb;
     void             *root_changed_cd;
     AP_nodeDelCb      node_deleted_cb;
