@@ -4,6 +4,10 @@
 #ifndef AW_POSITION_HXX
 #include <aw_position.hxx>
 #endif
+#ifndef ATTRIBUTES_H
+#include <attributes.h>
+#endif
+
 
 #if defined(DEBUG) && defined(DEBUG_GRAPHICS)
 // if you want flush() to be called after every motif command :
@@ -430,14 +434,14 @@ public:
     virtual void    slow();
     virtual void    flush();                                        // empty X11 buffers
     // ********* click device only ********
-    virtual void    get_clicked_line(AW_clicked_line *ptr);
-    virtual void    get_clicked_text(AW_clicked_text *ptr);
+    virtual void    get_clicked_line(AW_clicked_line *ptr) __ATTR__NORETURN;
+    virtual void    get_clicked_text(AW_clicked_text *ptr) __ATTR__NORETURN;
     // ********* size device only ********
-    virtual void    get_size_information(AW_world *ptr);
+    virtual void    get_size_information(AW_world *ptr) __ATTR__NORETURN;
     // ********* print device only (xfig compatible) ********
-    virtual const char *open(const char *path);
-    virtual void    close();
-    virtual void    set_color_mode(bool mode);
+    virtual const char *open(const char *path) __ATTR__NORETURN;
+    virtual void    close() __ATTR__NORETURN;
+    virtual void    set_color_mode(bool mode) __ATTR__NORETURN;
 };
 
 #else

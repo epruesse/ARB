@@ -12,6 +12,8 @@
 #include "aw_commn.hxx"
 #include "aw_root.hxx"
 
+#include <arb_msg.h>
+
 AW_device_print::AW_device_print(AW_common *commoni) : AW_device(commoni) {
     out = 0;
 }
@@ -89,23 +91,26 @@ int AW_draw_string_on_printer(AW_device *devicei, int gc, const char *str, size_
     return 1;
 }
 
-const char *AW_device_print::open(const char *path)
-{
-    if (out) {
-        aw_error("You cannot reopen a device", 0);
-        fclose (out);
-    }
+#if defined(WARN_TODO)
+#warning AW_device_print::open: return GB_ERROR, force use result
+#endif
+
+const char *AW_device_print::open(const char *path) {
+    if (out) return "You cannot reopen a device";
+
     out = fopen(path, "w");
-    if (!out) return "Sorry, I cannot open the file";
-    fprintf(out, "#FIG 3.2\n"    // version
-            "Landscape\n"       // "Portrait"
-            "Center\n"          // "Flush Left"
-            "Metric\n"          // "Inches"
-            "A4\n"
-            "100.0\n"           // export&print magnification %
-            "Single\n"          // Single/Multiple Pages
-            "-3\n");            // background=transparent for gif export
-    fprintf(out, "80 2\n");      // 80dbi, 2: origin in upper left corner
+    if (!out) return GB_IO_error("writing", path);
+
+    fputs("#FIG 3.2\n"   // version
+          "Landscape\n"  // "Portrait"
+          "Center\n"     // "Flush Left"
+          "Metric\n"     // "Inches"
+          "A4\n"         // papersize
+          "100.0\n"      // export&print magnification %
+          "Single\n"     // Single/Multiple Pages
+          "-3\n"         // background = transparent for gif export
+          "80 2\n"       // 80 dpi, 2  = origin in upper left corner
+          , out);
 
     if (color_mode) {
         for (int i=0; i<*common->data_colors_size; i++) {

@@ -12,6 +12,7 @@
 #include "aw_commn.hxx"
 #include "aw_root.hxx"
 
+#include <arb_msg.h>
 
 void AW_clip::set_cliprect(AW_rectangle *rect, bool allow_oversize) {
     clip_rect = *rect;  // coordinates : (0,0) = top-left-corner
@@ -499,7 +500,7 @@ void AW_device::push_clip_scale()
 }
 void AW_device::pop_clip_scale() {
     if (!clip_scale_stack) {
-        AW_ERROR("Too many pop_clip_scale on that device");
+        aw_assert(0); // Too many pop_clip_scale on that device
         return;
     }
 
@@ -642,8 +643,8 @@ void AW_device::slow() {}
 void AW_device::flush() {}
 
 // forbidden operations:
-static void forbidden(const char *toUse) { AW_ERROR("It's not allowed to use '%s' with this device", toUse); }
-const char *AW_device::open(const char * /* path */) { forbidden("open"); return 0; }
+INLINE_ATTRIBUTED(__ATTR__NORETURN, void forbidden(const char *toUse)) { GBK_terminatef("It's not allowed to use '%s' with this device", toUse); }
+const char *AW_device::open(const char * /* path */) { forbidden("open"); }
 void AW_device::close() { forbidden("close"); }
 void AW_device::set_color_mode(bool /* mode */) { forbidden("set_color_mode"); }
 void AW_device::get_clicked_line(AW_clicked_line * /* ptr */) { forbidden("get_clicked_line"); }

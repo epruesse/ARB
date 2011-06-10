@@ -77,6 +77,8 @@ class AW_awar {
     friend long AW_unlink_awar_from_DB(const char *key, long cl_awar, void *cl_gb_main);
     friend void AW_var_gbdata_callback_delete_intern(GBDATA *gbd, int *cl);
 
+    void assert_var_type(AW_VARIABLE_TYPE target_var_type);
+    
 public:
     // read only
     class AW_root *root;
@@ -168,3 +170,4 @@ public:
 #else
 #error aw_awar.hxx included twice
 #endif // AW_AWAR_HXX
+
