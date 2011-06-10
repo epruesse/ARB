@@ -15,13 +15,19 @@ HEAD->BRANCH
 
     skipped patches (depends, already there, ...)
 
-        merged from dev: 7352 7407 7408 7409 7410 7412 7413 7414 7415 7423 7424
+        merged from dev: 7352 7407 7408 7409 7410 7412 7413 7414 7415 7423 7424 7428 7431 7508 7619
+        merged from stable: 7488 7591
 
     not merged yet:
 
         --- current try above
+                        
+                7489 libXp dependency 
+                7491 GDEmenus removed
+                7492 shell/term/envar
+                7504 build fix  
 
-    not reviewed: 7427:HEAD
+    not reviewed: 7620:HEAD
 
 BRANCH->HEAD
 
@@ -46,13 +52,25 @@ BRANCH->HEAD
                 7395 7396 7397 7398 7399 7400 7401 7402 7403 7404 7405 -> 7415
                 7320 7418 7419 7420 -> 7423
                 7321 7322 7323 7324 7325 7326 7327 7329 7417 7421 7422 -> 7424
+                7427 -> 7428
+                7429 7430 -> 7431
+                7506 -> 7508
+                7612 -> 7619 (missing 7614) @@@
+                7432 7433 -> 7620
+                7445 7446 7447 7449 7451 7454 7455 7462 7463 7470 7471 7472 -> 7621
+                7434 7435 7436 7437 7438 7439 7440 7441 7442 7443 7444 -> 7622
+                7450 7452 7456 7457 7458 7459 7460 7461 7464 7465 7466 7467 7468 7469 7482 -> 7623
+                7473 7474 7475 7476 7477 7478 7479 -> 7624
+                7480 7481 7483 -> 7625
+                7533 7534 7542 7551 -> 7626
 
     skipped patches (depends, already there, this file, ...)
 
                 this file:      7249 7277 7351 7416 7426
                 depends:        7256 
                 crap:           7278 7280 
-                sync 2 trunk:   7281 
+                sync 2 trunk:   7281
+                from trunk:     7505
 
     not merged yet:
 
@@ -66,4 +84,124 @@ BRANCH->HEAD
                 7295 GBL_reference
                 7296 ACI refactoring
 
-    not reviewed: 7427:HEAD
+                7485 AW_font_limits (remove AW_font_information)
+                7493 fix for 7485
+
+                7494 AW_GC
+                7495 AW_device
+                7496 AW_device 
+                7497 AW_device
+                7498 AW_common (gc/font)
+                7499 AW_device (click)
+                7500 AW_device AW_common
+                7501 AW_common 
+                7502 AW (LineVector/Rectangle)
+                7503 AW_common
+                  
+                7507 ---- unittest (reenable)
+
+                7509 POS_VAR_BY_PARSIMONY / bootstrap circles
+                7510 treedisptests 
+                7511 treedisptests (sourcelist)
+                7512 treedisptests (colors)
+                7513 AW_device_print (rounding)
+                7514 treedisptests (32bit fix)
+                7515 AW_device_print (capstyle)
+                7516 canio (cleanup/help)
+                7517 treedisptests (select species)
+                7518 treedisptests (draw order)
+                7519 AWT_graphic_tree (refactor)
+                7520 AWT_graphic_tree
+                7521 AWT_graphic_tree (IRS grey boxes)
+                7522 AW_GC
+                7523 treedisptests / AWT_graphic_tree / AP_Tree (see 7535)
+                7524 treedisptests (tests order independent)
+                7525 AWT_graphic_tree (deadcode)
+                7526 IRS refactor
+                7527 treedisptests (colors changed)
+                7528 IRS refactor
+                7529 AW_common
+                7530 AW_screen_area 
+                7531 canio (renames)
+                7532 AW_device (area size)
+
+                7535 fix for 7523 / AW_GC
+                7536 AW_screen_area 
+                7537 AW (bounding box)
+                7538 AW_INT (moved)
+                7539 GEN_root
+                7540 depends
+                7541 AW_device
+                7543 AW_device
+                7544 AW_device
+                7545 AW_common (obsolete?)
+                7546 AW (is_horizontal/vertical)
+                7547 AW (Angle)
+                7548 AW_device (cliprect)
+                7549 AW_GC
+                7550 AW_device (colors)
+                7552 AW_device (colors)
+                7553 AW_device (enums refactor)
+                7554 AW_common (line width) see 7602
+                7555 AWT_graphic_tree (clip brackets)
+                7556 AWT_graphic_tree / treedisptests (DRY)
+                7557 AW_device_print (circle)
+                7558 skip zerosize circles
+                7559 AW_device_print (circle clipping)
+                7560 postcompile (error/warnings were swapped)
+                7561 AW_device (circle/ellipse refactor)
+                7562 AW_device (arc refactor)
+                7563 AW_device (arc fix)
+                7564 AW_device (arc angle chaos)
+                7565 AW_device (cliprect fix)
+                7566 AW_device (fix for 7564)
+                7567 AW_device (invisible refactor)
+                7568 AW_device (return types)
+                7569 AW_device (return types)
+                7570 AW_device (clip refactor)
+                7571 AW_device (fix clip stack)
+                7572 AW_device_print (arc)
+                7573 depends
+                7574 AW_area_management (refactor)
+                7575 AW_area_management (oGL fix)
+                7576 NDEBUG warnings
+                7577 NDEBUG warnings
+                7578 canio (macro id)
+                7579 canio (refactor)
+                7580 AW_device_print (1200dpi)
+                7581 canio (refactor)
+                7582 canio (features)
+                7583 AW (debug fun)
+                7584 disabled debug trace (macros)
+                7585 AW_device (defs, get_size_info)
+                7586 GBS_strstruct (make useable as class)
+                7587 canio (canvas printing, fig2devbug)
+                7588 canio (renames)
+                7589 canio (clipping)
+                7592 AWT_canvas (DRY)
+                7593 AWT_canvas (transaction)
+                7594 AWT_graphic / AW_device (refactor)
+                7595 fix for 7594
+                7596 AW_device (clear assertion)
+                7597 AWT_graphic (dead code)
+                7598 svn props
+                7599 AW_device (line style)
+                7600 AW (debug fun)
+                7601 ---- (temp debug code)
+                7602 AW_device AW_common (line width)
+                7603 AW_device (fix pixelbased box/line size)
+                7604 AW_device (fix pixelbased filled-box size)
+                7605 ---- (temp debug code)
+                7606 AW_device (cap/join style)
+                7607 ---- (temp debug code removed)
+                7608 depends
+                7609 AW_device (fix usage of corrected pixelbased funs)
+                7610 AW_device (cap/join style fixed for non-solid lines)
+                7611 IRS (double rewrite)
+                7613 treedisptests (monospaced font)
+                7615 AW_device_print (invisible)
+                7616 AW_device_size (enhanced)
+                7617 fix progress (ptserver)
+                7618 AW_device (scaling/padding fixed for screen/printer/unittests)
+
+    not reviewed: 7619:HEAD
