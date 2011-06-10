@@ -108,9 +108,8 @@ char *AW_helix::seq_2_helix(char *sequence, char undefsymbol) {
     return helix;
 }
 
-int BI_show_helix_on_device(AW_device *device, int gc, const char *opt_string, size_t opt_string_size, size_t start, size_t size,
-                            AW_pos x, AW_pos y, AW_pos /*opt_ascent*/, AW_pos /*opt_descent*/,
-                            AW_CL cduser, AW_CL cd1, AW_CL cd2)
+static int BI_show_helix_on_device(AW_device *device, int gc, const char *opt_string, size_t opt_string_size, size_t start, size_t size,
+                                   AW_pos x, AW_pos y, AW_pos /*opt_ascent*/, AW_pos /*opt_descent*/, AW_CL cduser)
 {
     AW_helix *helix = (AW_helix *)cduser;
     char *buffer = GB_give_buffer(size+1);
@@ -130,18 +129,13 @@ int BI_show_helix_on_device(AW_device *device, int gc, const char *opt_string, s
         }
     }
     buffer[size] = 0;
-    return device->text(gc, buffer, x, y, 0.0, (AW_bitset)-1, cd1, cd2);
+    return device->text(gc, buffer, x, y);
 }
 
-int AW_helix::show_helix(void *devicei, int gc1,   char *sequence,
-                          AW_pos x, AW_pos y,
-                          AW_bitset filter,
-                          AW_CL cd1, AW_CL cd2) {
-
+int AW_helix::show_helix(void *devicei, int gc1, const char *sequence, AW_pos x, AW_pos y, AW_bitset filter) {
     if (!has_entries()) return 0;
     AW_device *device = (AW_device *)devicei;
-    return device->text_overlay(gc1, sequence, 0, x,  y, 0.0,  filter, (AW_CL)this, cd1, cd2,
-                                1.0, 1.0, BI_show_helix_on_device);
+    return device->text_overlay(gc1, sequence, 0, AW::Position(x, y), 0.0,  filter, (AW_CL)this, 1.0, 1.0, BI_show_helix_on_device);
 }
 
 static void helix_pairs_changed_cb(AW_window *aww, AW_CL changed, AW_CL cl_cb_struct) {

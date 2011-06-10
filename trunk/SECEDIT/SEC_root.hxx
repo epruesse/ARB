@@ -767,7 +767,7 @@ public:
 
     // ------------------------------
 
-    void paintBackgroundColor(AW_device *device, SEC_bgpaint_mode mode, const Position& p1, int color1, int gc1, const Position& p2, int color2, int gc2, int skel_gc, AW_CL cd1, AW_CL cd2);
+    void paintBackgroundColor(AW_device *device, SEC_bgpaint_mode mode, const Position& p1, int color1, int gc1, const Position& p2, int color2, int gc2, int skel_gc);
     void paintSearchPatternStrings(AW_device *device, int clickedPos,  AW_pos xPos,  AW_pos yPos);
 
     char *buildStructureString();
@@ -852,8 +852,7 @@ public:
     void paintAnnotation(AW_device *device, int gc,
                          const Position& annotate, const Position& left, const Position& right,
                          double noteDistance, const char *text,
-                         bool lineToAnnotated, bool linesToLeftRight, bool boxText,
-                         AW_CL cd1, AW_CL cd2);
+                         bool lineToAnnotated, bool linesToLeftRight, bool boxText);
 
     // draw a annotation next to a base (only works after paint())
     void paintPosAnnotation(AW_device *device, int gc, size_t absPos, const char *text, bool lineToBase, bool boxText);

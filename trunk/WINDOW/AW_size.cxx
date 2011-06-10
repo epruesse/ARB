@@ -8,20 +8,16 @@
 //                                                                 //
 // =============================================================== //
 
-#include <aw_size.hxx>
 #include "aw_commn.hxx"
 
 #include <algorithm>
 
 using namespace std;
+using namespace AW;
 
 // *****************************************************************************************
   //                                    size_device
   // *****************************************************************************************
-
-  AW_device_size::AW_device_size(AW_common *commoni) : AW_device(commoni) {
-      ;
-  }
 
 void AW_device_size::init() {
     drawn = false;
@@ -52,41 +48,35 @@ inline void AW_device_size::dot_transformed(AW_pos X, AW_pos Y) {
     }
 }
 
-inline void AW_device_size::dot(AW_pos x, AW_pos y) {
-    AW_pos X, Y;
-    transform(x, y, X, Y);
-    dot_transformed(X, Y);
-}
-
-bool AW_device_size::invisible(int gc, AW_pos x, AW_pos y, AW_bitset filteri, AW_CL clientdata1, AW_CL clientdata2) {
+bool AW_device_size::invisible_impl(int gc, AW_pos x, AW_pos y, AW_bitset filteri) {
     if (filteri & filter) dot(x, y);
-    return AW_device::invisible(gc, x, y, filteri, clientdata1, clientdata2);
+    return AW_device::invisible_impl(gc, x, y, filteri);
 }
 
 
-int AW_device_size::line(int /*gc*/, AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW_bitset filteri, AW_CL /*clientdata1*/, AW_CL /*clientdata2*/) {
+int AW_device_size::line_impl(int /*gc*/, const LineVector& Line, AW_bitset filteri) {
     if (filteri & filter) {
-        dot(x0, y0);
-        dot(x1, y1);
+        dot(Line.start());
+        dot(Line.head());
         return true;
     }
     return false;
 }
 
-int AW_device_size::text(int gc, const char *str, AW_pos x, AW_pos y, AW_pos alignment, AW_bitset filteri, AW_CL /*clientdata1*/, AW_CL /*clientdata2*/, long opt_strlen) {
+int AW_device_size::text_impl(int gc, const char *str, const Position& pos, AW_pos alignment, AW_bitset filteri, long opt_strlen) {
     if (filteri & filter) {
-        XFontStruct *xfs = &(common->gcs[gc]->curfont);
+        Position           transPos  = transform(pos);
+        const XFontStruct *xfs       = common->get_xfont(gc);
+        AW_pos             l_ascent  = xfs->max_bounds.ascent;
+        AW_pos             l_descent = xfs->max_bounds.descent;
+        AW_pos             l_width   = get_string_size(gc, str, opt_strlen);
 
-        AW_pos X0, Y0;          // Transformed pos
-        this->transform(x, y, X0, Y0);
+        Position upperLeft(x_alignment(transPos.xpos(), l_width, alignment),
+                           transPos.ypos()-l_ascent);
+        
+        dot_transformed(upperLeft);
+        dot_transformed(upperLeft + Vector(l_width, l_ascent+l_descent));
 
-        AW_pos l_ascent  = xfs->max_bounds.ascent;
-        AW_pos l_descent = xfs->max_bounds.descent;
-        AW_pos l_width   = get_string_size(gc, str, opt_strlen);
-        X0               = common->x_alignment(X0, l_width, alignment);
-
-        dot_transformed(X0, Y0-l_ascent);
-        dot_transformed(X0+l_width, Y0+l_descent);
         return 1;
     }
     return 0;

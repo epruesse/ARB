@@ -497,7 +497,7 @@ void AW_xfig::print(AW_device *device)
                 }
             }
 
-            device->text(xtext->gc, str, (AW_pos)x, (AW_pos)y, (AW_pos)xtext->center*.5, -1, 0, 0);
+            device->text(xtext->gc, str, (AW_pos)x, (AW_pos)y, (AW_pos)xtext->center*.5, AW_ALL_DEVICES);
         }
     }
 
@@ -505,9 +505,7 @@ void AW_xfig::print(AW_device *device)
     for (i=0; i<MAX_LINE_WIDTH; i++) {
         device->set_line_attributes(0, (AW_pos)scaleAndRound(i, font_scale), AW_SOLID);
         for (xline = line[i]; xline; xline=xline->next) {
-            device->line(0, (AW_pos)xline->x0, (AW_pos)xline->y0,
-                         (AW_pos)xline->x1, (AW_pos)xline->y1,
-                         -1, 0, 0);
+            device->line(0, (AW_pos)xline->x0, (AW_pos)xline->y0, (AW_pos)xline->x1, (AW_pos)xline->y1);
         }
     }
 }

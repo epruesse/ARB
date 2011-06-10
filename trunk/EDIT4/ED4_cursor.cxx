@@ -75,7 +75,7 @@ public:
         for (int l=0; l<lines; l++) {
             int p1 = start[l];
             int p2 = end[l];
-            device->line(ED4_G_CURSOR, xpos[p1]+x, ypos[p1]+y, xpos[p2]+x, ypos[p2]+y, 1, 0, 0);
+            device->line(ED4_G_CURSOR, xpos[p1]+x, ypos[p1]+y, xpos[p2]+x, ypos[p2]+y, AW_SCREEN);
         }
         device->flush();
     }
@@ -351,7 +351,7 @@ ED4_returncode ED4_cursor::delete_cursor(AW_pos del_mark, ED4_base *target_termi
     e4_assert(cursor_shape);
     cursor_shape->get_bounding_box(int(x), int(y), xmin, ymin, xmax, ymax);
 
-    dev->clear_part(xmin, ymin, xmax-xmin+1, ymax-ymin+1, (AW_bitset)-1);
+    dev->clear_part(xmin, ymin, xmax-xmin+1, ymax-ymin+1, AW_ALL_DEVICES);
 
 #if defined(DEBUG) && 0
     printf("delete_cursor(%i, %i)\n", int(x), int(y));

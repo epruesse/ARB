@@ -429,13 +429,13 @@ ED4_returncode ED4_terminal::draw_drag_box(AW_pos x, AW_pos y, GB_CSTR text, int
             drag_line_y1[2] = drag_line_y0[0];
 #undef ARROW_LENGTH
             for (i = 0; i <= 2; i++) {
-                ED4_ROOT->get_device()->line(ED4_G_DRAG, drag_line_x0[i], drag_line_y0[i], drag_line_x1[i], drag_line_y1[i], 1, 0, 0);
+                ED4_ROOT->get_device()->line(ED4_G_DRAG, drag_line_x0[i], drag_line_y0[i], drag_line_x1[i], drag_line_y1[i], AW_SCREEN);
             }
         }
     }
 
     if (text != NULL) {
-        ED4_ROOT->get_device()->text(ED4_G_DRAG, text, (x + 20), (y + INFO_TERM_TEXT_YOFFSET), 0, 1, 0, 0);
+        ED4_ROOT->get_device()->text(ED4_G_DRAG, text, (x + 20), (y + INFO_TERM_TEXT_YOFFSET), 0, AW_SCREEN);
     }
 
     return (ED4_R_OK);
@@ -878,7 +878,7 @@ ED4_returncode ED4_tree_terminal::draw(int /* only_text */)                  // 
     text_y = y + SEQ_TERM_TEXT_YOFFSET;
 
     db_pointer = resolve_pointer_to_string_copy();
-    ED4_ROOT->get_device()->text(ED4_G_STANDARD, db_pointer, text_x, text_y, 0, 1, 0, 0);
+    ED4_ROOT->get_device()->text(ED4_G_STANDARD, db_pointer, text_x, text_y, 0, AW_SCREEN);
     free(db_pointer);
 
     return (ED4_R_OK);
@@ -944,7 +944,7 @@ ED4_returncode ED4_bracket_terminal::draw(int /* only_text */)                  
     ED4_group_manager *group_man = get_parent(ED4_L_GROUP)->to_group_manager();
     ED4_multi_species_manager *multi_man = group_man->get_defined_level(ED4_L_MULTI_SPECIES)->to_multi_species_manager();
     if (multi_man->get_no_of_selected_species()) {  // if multi_species_manager contains selected species
-        ED4_ROOT->get_device()->box(ED4_G_SELECTED, true, x, y, extension.size[WIDTH], extension.size[HEIGHT], (AW_bitset)-1, 0, 0);
+        ED4_ROOT->get_device()->box(ED4_G_SELECTED, true, x, y, extension.size[WIDTH], extension.size[HEIGHT]);
     }
 
     if (dynamic_prop & ED4_P_IS_FOLDED) { // paint triangle for folded group
@@ -979,7 +979,7 @@ ED4_returncode ED4_bracket_terminal::draw(int /* only_text */)                  
         arrow_y1[5] = y + margin + 4 + 5;
 
         for (i = 0; i < 6; i++) {
-            ED4_ROOT->get_device()->line(ED4_G_STANDARD, arrow_x0[i], arrow_y0[i], arrow_x1[i], arrow_y1[i], 1, 0, 0);
+            ED4_ROOT->get_device()->line(ED4_G_STANDARD, arrow_x0[i], arrow_y0[i], arrow_x1[i], arrow_y1[i], AW_SCREEN);
         }
     }
     else {
@@ -1014,12 +1014,12 @@ ED4_returncode ED4_bracket_terminal::draw(int /* only_text */)                  
         arrow_y1[5] = y + margin + 9;
 
         for (i = 0; i < 6; i++) {
-            ED4_ROOT->get_device()->line(ED4_G_STANDARD, arrow_x0[i], arrow_y0[i], arrow_x1[i], arrow_y1[i], 1, 0, 0);
+            ED4_ROOT->get_device()->line(ED4_G_STANDARD, arrow_x0[i], arrow_y0[i], arrow_x1[i], arrow_y1[i], AW_SCREEN);
         }
     }
 
     for (i = 0; i <= 2; i++) {
-        ED4_ROOT->get_device()->line(ED4_G_STANDARD, line_x0[i], line_y0[i], line_x1[i], line_y1[i], 1, 0, 0);
+        ED4_ROOT->get_device()->line(ED4_G_STANDARD, line_x0[i], line_y0[i], line_x1[i], line_y1[i], AW_SCREEN);
     }
 
     return (ED4_R_OK);
@@ -1234,13 +1234,13 @@ ED4_returncode ED4_line_terminal::draw(int /* only_text */)      // draws boundi
 
     AW_device *device = ED4_ROOT->get_device();
 
-    device->line(ED4_G_STANDARD, x1, y1, x2, y1, -1, 0, 0);
+    device->line(ED4_G_STANDARD, x1, y1, x2, y1);
 #if defined(DEBUG)
-    device->box(ED4_G_MARKED, true, x1, y1+1, x2-x1+1, y2-y1-1, -1, 0, 0);
+    device->box(ED4_G_MARKED, true, x1, y1+1, x2-x1+1, y2-y1-1);
 #else
-    device->clear_part(x1, y1+1, x2-x1+1, y2-y1-1, -1);
+    device->clear_part(x1, y1+1, x2-x1+1, y2-y1-1, AW_ALL_DEVICES);
 #endif // DEBUG
-    device->line(ED4_G_STANDARD, x1, y2, x2, y2, -1, 0, 0);
+    device->line(ED4_G_STANDARD, x1, y2, x2, y2);
 
     return ED4_R_OK;
 }
@@ -1446,14 +1446,14 @@ ED4_returncode ED4_columnStat_terminal::draw(int /* only_text */)
 
             if (color!=old_color) {
                 if (x2>old_x2 && old_color!=ED4_G_STANDARD) {
-                    device->box(old_color, true, old_x2, y, x2-old_x2, term_height, -1, 0, 0);
+                    device->box(old_color, true, old_x2, y, x2-old_x2, term_height);
                 }
                 old_color = color;
                 old_x2 = x2;
             }
         }
         if (x2>old_x2 && old_color!=ED4_G_STANDARD) {
-            device->box(old_color, true, old_x2, y, x2-old_x2, term_height, -1, 0, 0);
+            device->box(old_color, true, old_x2, y, x2-old_x2, term_height);
         }
 
         color = ED4_G_STANDARD;
@@ -1481,7 +1481,7 @@ ED4_returncode ED4_columnStat_terminal::draw(int /* only_text */)
                      r--, y2-=COLUMN_STAT_ROW_HEIGHT(font_height), bit>>=1)
                 {
                     if (found&bit) {
-                        device->box(color, true, x2, y2-2*font_height+1, font_width, 2*font_height, -1, 0, 0);
+                        device->box(color, true, x2, y2-2*font_height+1, font_width, 2*font_height);
                     }
                 }
             }
@@ -1500,14 +1500,14 @@ ED4_returncode ED4_columnStat_terminal::draw(int /* only_text */)
             int val = likelihood[r][p];
             sbuffer[i] = stat2display(val, 0); // calc lower digit
         }
-        device->text(gc, sbuffer, text_x+font_width*0.2, y2, 0, 1, 0, 0, right); // draw lower-significant digit (shifted a bit to the right)
+        device->text(gc, sbuffer, text_x+font_width*0.2, y2, 0, AW_SCREEN, right); // draw lower-significant digit (shifted a bit to the right)
 
         for (i=left; i<=right; i++) {
             int p = rm->screen_to_sequence(i);
             int val = likelihood[r][p];
             sbuffer[i] = stat2display(val, 1); // calc upper digit
         }
-        device->text(gc, sbuffer, text_x, y2-font_height, 0, 1, 0, 0, right); // draw higher-significant digit
+        device->text(gc, sbuffer, text_x, y2-font_height, 0, AW_SCREEN, right); // draw higher-significant digit
     }
 
     free(sbuffer);

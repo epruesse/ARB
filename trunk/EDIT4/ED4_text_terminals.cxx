@@ -122,7 +122,7 @@ ED4_returncode ED4_consensus_sequence_terminal::draw(int /* only_text */)
         ED4_ROOT->get_device()->top_font_overlap    = 1;
         ED4_ROOT->get_device()->bottom_font_overlap = 1;
 
-        ED4_ROOT->get_device()->text(ED4_G_SEQUENCES, buffer, text_x, text_y, 0, 1, 0, 0, (long) right_index+1);
+        ED4_ROOT->get_device()->text(ED4_G_SEQUENCES, buffer, text_x, text_y, 0, AW_SCREEN, (long) right_index+1);
 
         ED4_ROOT->get_device()->top_font_overlap    = 0;
         ED4_ROOT->get_device()->bottom_font_overlap = 0;
@@ -131,11 +131,17 @@ ED4_returncode ED4_consensus_sequence_terminal::draw(int /* only_text */)
     return (ED4_R_OK);
 }
 
+struct ShowHelix_cd {
+    AW_helix *helix;
+    int       real_sequence_length;
+};
+
 static int ED4_show_helix_on_device(AW_device *device, int gc, const char *opt_string, size_t /*opt_string_size*/, size_t start, size_t size,
                                     AW_pos x, AW_pos y, AW_pos /*opt_ascent*/, AW_pos /*opt_descent*/,
-                                    AW_CL cduser, AW_CL real_sequence_length, AW_CL cd2)
+                                    AW_CL cduser) // , AW_CL real_sequence_length, AW_CL cd2)
 {
-    AW_helix        *helix  = (AW_helix *)cduser;
+    ShowHelix_cd    *cd     = (ShowHelix_cd*)cduser;
+    AW_helix        *helix  = cd->helix;
     const ED4_remap *rm     = ED4_ROOT->root_group_man->remap();
     char            *buffer = GB_give_buffer(size+1);
     long             i, j, k;
@@ -149,17 +155,17 @@ static int ED4_show_helix_on_device(AW_device *device, int gc, const char *opt_s
         }
         else {
             j             = helix->opposite_position(i);
-            char pairchar = j<real_sequence_length ? opt_string[j] : '.';
+            char pairchar = j<cd->real_sequence_length ? opt_string[j] : '.';
             buffer[k]     = helix->get_symbol(opt_string[i], pairchar, pairType);
         }
     }
     buffer[size] = 0;
-    return device->text(gc, buffer, x, y, 0.0, (AW_bitset)-1, 0, cd2);
+    return device->text(gc, buffer, x, y);
 }
 
 static int ED4_show_protein_match_on_device(AW_device *device, int gc, const char *protstruct, size_t /* protstruct_len */, size_t start, size_t size,
                                             AW_pos x, AW_pos y, AW_pos /* opt_ascent */, AW_pos /* opt_descent */,
-                                            AW_CL cl_protstruct, AW_CL /* real_sequence_length */, AW_CL cd2)
+                                            AW_CL cl_protstruct) // , AW_CL /* real_sequence_length */, AW_CL cd2)
 {
     /*! \brief Calls ED4_pfold_calculate_secstruct_match() for the visible area in the
      *         editor to compute the protein secondary structure match and outputs the
@@ -189,7 +195,7 @@ static int ED4_show_protein_match_on_device(AW_device *device, int gc, const cha
     }
     
     buffer[size] = 0;
-    return device->text(gc, buffer, x, y, 0.0, (AW_bitset)-1, 0, cd2);
+    return device->text(gc, buffer, x, y);
 }
 
 // ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -229,7 +235,7 @@ ED4_returncode ED4_AA_sequence_terminal::draw(int /* only_text */)
             const char *no_data = "No sequence data";
             size_t      len     = strlen(no_data);
 
-            device->text(ED4_G_STANDARD, no_data, text_x, text_y, 0, 1, 0, 0, len);
+            device->text(ED4_G_STANDARD, no_data, text_x, text_y, 0, AW_SCREEN, len);
             return ED4_R_OK;
         }
     }
@@ -314,7 +320,7 @@ ED4_returncode ED4_AA_sequence_terminal::draw(int /* only_text */)
                     if ((gcChar>=0) && (gcChar<ED4_G_DRAG)) {
                         color = gcChar;
                         if (iDisplayMode == PV_AA_BOX) {
-                            device->box(color, true, x1, y1, width*3, height, -1, 0, 0);
+                            device->box(color, true, x1, y1, width*3, height);
                         }
                         else {
                             double    rad_x    = width*1.5;
@@ -322,8 +328,8 @@ ED4_returncode ED4_AA_sequence_terminal::draw(int /* only_text */)
                             double    center_x = x1+rad_x;
                             const int DRAW_DEG = 62;
 
-                            device->arc(ED4_G_SEQUENCES, false, center_x, y1, rad_x, rad_y,   0, -DRAW_DEG, -1, 0, 0);
-                            device->arc(ED4_G_SEQUENCES, false, center_x, y1, rad_x, rad_y, 180,  DRAW_DEG, -1, 0, 0);
+                            device->arc(ED4_G_SEQUENCES, false, center_x, y1, rad_x, rad_y,   0, -DRAW_DEG);
+                            device->arc(ED4_G_SEQUENCES, false, center_x, y1, rad_x, rad_y, 180,  DRAW_DEG);
                         }
                     }
                 }
@@ -338,7 +344,7 @@ ED4_returncode ED4_AA_sequence_terminal::draw(int /* only_text */)
         // output strings
         for (int gc = 0; gc < ED4_G_DRAG; gc++) {
             if (color_is_used[gc] && (int)strlen(colored_strings[gc]) >= color_is_used[gc]) {
-                device->text(gc, colored_strings[gc], text_x, text_y, 0, 1, 0, 0, color_is_used [gc]);
+                device->text(gc, colored_strings[gc], text_x, text_y, 0, AW_SCREEN, color_is_used [gc]);
                 memset(colored_strings[gc] + left, ' ', right-left+1); // clear string
             }
         }
@@ -398,7 +404,7 @@ ED4_returncode ED4_sequence_terminal::draw(int /* only_text */)
             const char *no_data = "No sequence data";
             size_t      len     = strlen(no_data);
 
-            device->text(ED4_G_STANDARD, no_data, text_x, text_y, 0, 1, 0, 0, len);
+            device->text(ED4_G_STANDARD, no_data, text_x, text_y, 0, AW_SCREEN, len);
             return ED4_R_OK;
         }
     }
@@ -524,7 +530,7 @@ ED4_returncode ED4_sequence_terminal::draw(int /* only_text */)
                 if (color != old_color) {   // draw till oldcolor
                     if (x2>old_x) {
                         if (old_color!=ED4_G_STANDARD) {
-                            device->box(old_color, true, old_x, y1, x2-old_x, height, -1, 0, 0); // paints the search pattern background
+                            device->box(old_color, true, old_x, y1, x2-old_x, height); // paints the search pattern background
                         }
                     }
                     old_x = x2;
@@ -534,7 +540,7 @@ ED4_returncode ED4_sequence_terminal::draw(int /* only_text */)
 
             if (x2>old_x) {
                 if (color!=ED4_G_STANDARD) {
-                    device->box(color, true, old_x, y1, x2-old_x, height, -1, 0, 0);
+                    device->box(color, true, old_x, y1, x2-old_x, height);
                 }
             }
         }
@@ -550,12 +556,13 @@ ED4_returncode ED4_sequence_terminal::draw(int /* only_text */)
             screen_length = right+1;
         }
         if (screen_length) {
-            char *db_pointer = resolve_pointer_to_string_copy();
+            char         *db_pointer = resolve_pointer_to_string_copy();
+            // AW_click_cd cd(device, (AW_CL)max_seq_len);
+            ShowHelix_cd  cd         = { ED4_ROOT->helix, max_seq_len };
             device->text_overlay(ED4_G_HELIX,
-                                  (char *)db_pointer, screen_length,
-                                  text_x,  text_y + ED4_ROOT->helix_spacing,  0.0,  -1,
-                                  (AW_CL)ED4_ROOT->helix, (AW_CL)max_seq_len, 0,
-                                  1.0, 1.0, ED4_show_helix_on_device);
+                                 (char *)db_pointer, screen_length,
+                                 AW::Position(text_x,  text_y + ED4_ROOT->helix_spacing), 0.0,  AW_ALL_DEVICES,
+                                 (AW_CL)&cd, 1.0, 1.0, ED4_show_helix_on_device);
             free(db_pointer);
         }
     }
@@ -572,11 +579,11 @@ ED4_returncode ED4_sequence_terminal::draw(int /* only_text */)
             // get protein structure (primary or secondary) from the species
             char *protstruct = resolve_pointer_to_string_copy();
             if (protstruct) {
+                // AW_click_cd cd(device, (AW_CL)max_seq_len);
                 device->text_overlay(ED4_G_HELIX,
-                                      protstruct, screen_length,
-                                      text_x,  text_y + ED4_ROOT->helix_spacing,  0.0,  -1,
-                                      (AW_CL)ED4_ROOT->protstruct, (AW_CL)max_seq_len, 0,
-                                      1.0, 1.0, ED4_show_protein_match_on_device);
+                                     protstruct, screen_length,
+                                     AW::Position(text_x,  text_y + ED4_ROOT->helix_spacing),  0.0,  AW_ALL_DEVICES,
+                                     (AW_CL)ED4_ROOT->protstruct, 1.0, 1.0, ED4_show_protein_match_on_device);
                 free(protstruct);
             }
         }
@@ -587,7 +594,7 @@ ED4_returncode ED4_sequence_terminal::draw(int /* only_text */)
         int gc;
         for (gc = 0; gc < ED4_G_DRAG; gc++) {
             if (!color_is_used[gc]) continue;
-            device->text(gc, colored_strings[gc], text_x, text_y, 0, 1, 0, 0, color_is_used [gc]);
+            device->text(gc, colored_strings[gc], text_x, text_y, 0, AW_SCREEN, color_is_used[gc]);
             memset(colored_strings[gc] + left, ' ', right-left+1); // clear string
         }
     }
@@ -625,13 +632,13 @@ ED4_returncode ED4_sequence_info_terminal::draw(int /* only_text */)
 
     ED4_species_name_terminal *name_term = corresponding_species_name_terminal();
     if (name_term->flag.selected) {
-        ED4_ROOT->get_device()->box(ED4_G_SELECTED, true, x, y, extension.size[WIDTH], text_y-y+1, (AW_bitset)-1, 0, 0);
+        ED4_ROOT->get_device()->box(ED4_G_SELECTED, true, x, y, extension.size[WIDTH], text_y-y+1);
     }
 
     ED4_ROOT->get_device()->top_font_overlap    = 1;
     ED4_ROOT->get_device()->bottom_font_overlap = 1;
 
-    ED4_ROOT->get_device()->text(ED4_G_STANDARD, buffer, text_x, text_y, 0, 1, 0, 0, 0);
+    ED4_ROOT->get_device()->text(ED4_G_STANDARD, buffer, text_x, text_y, 0, AW_SCREEN, 0);
 
     ED4_ROOT->get_device()->top_font_overlap    = 0;
     ED4_ROOT->get_device()->bottom_font_overlap = 0;
@@ -707,9 +714,9 @@ ED4_returncode ED4_text_terminal::draw(int /* only_text */)
         }
 
         if (flag.selected) {
-            ED4_ROOT->get_device()->box(ED4_G_SELECTED, true, x, y, extension.size[WIDTH], text_y-y+1, (AW_bitset)-1, 0, 0);
+            ED4_ROOT->get_device()->box(ED4_G_SELECTED, true, x, y, extension.size[WIDTH], text_y-y+1);
         }
-        ED4_ROOT->get_device()->text(ED4_G_STANDARD, real_name, text_x+width_of_char, text_y, 0, 1, 0, 0, 0);
+        ED4_ROOT->get_device()->text(ED4_G_STANDARD, real_name, text_x+width_of_char, text_y, 0, AW_SCREEN, 0);
 
         if (paint_box) {
             int xsize = (width_of_char*6)/10;
@@ -719,9 +726,9 @@ ED4_returncode ED4_text_terminal::draw(int /* only_text */)
             int bx    = int(text_x+xoff);
             int by    = int(text_y-(yoff+ysize));
 
-            ED4_ROOT->get_device()->box(ED4_G_STANDARD, true, bx, by, xsize, ysize, (AW_bitset)-1, 0, 0);
+            ED4_ROOT->get_device()->box(ED4_G_STANDARD, true, bx, by, xsize, ysize);
             if (!is_marked && xsize>2 && ysize>2) {
-                ED4_ROOT->get_device()->clear_part(bx+1, by+1, xsize-2, ysize-2, (AW_bitset)-1);
+                ED4_ROOT->get_device()->clear_part(bx+1, by+1, xsize-2, ysize-2, AW_ALL_DEVICES);
             }
         }
     }
@@ -729,11 +736,11 @@ ED4_returncode ED4_text_terminal::draw(int /* only_text */)
         char *db_pointer = resolve_pointer_to_string_copy();
 
         if (is_sequence_info_terminal()) {
-            ED4_ROOT->get_device()->text(ED4_G_STANDARD, db_pointer, text_x, text_y, 0, 1, 0, 0, 4);
+            ED4_ROOT->get_device()->text(ED4_G_STANDARD, db_pointer, text_x, text_y, 0, AW_SCREEN, 4);
         }
         else if (is_pure_text_terminal()) { // normal text (i.e. remark)
             text_y += (SEQ_TERM_TEXT_YOFFSET-INFO_TERM_TEXT_YOFFSET);
-            ED4_ROOT->get_device()->text(ED4_G_SEQUENCES, db_pointer, text_x, text_y, 0, 1, 0, 0, 0);
+            ED4_ROOT->get_device()->text(ED4_G_SEQUENCES, db_pointer, text_x, text_y, 0, AW_SCREEN, 0);
         }
         else {
             e4_assert(0); // unknown terminal type

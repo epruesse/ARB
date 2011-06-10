@@ -1428,22 +1428,21 @@ void ED4_base::update_world_coords_cache() {
 }
 
 
-ED4_returncode ED4_base::clear_background(int color)
-{
+ED4_returncode ED4_base::clear_background(int color) {
     AW_pos x, y;
 
-    if (ED4_ROOT->get_device())
-    {
+    if (ED4_ROOT->get_device()) {
         calc_world_coords(&x, &y);
         ED4_ROOT->world_to_win_coords(ED4_ROOT->get_aww(), &x, &y);
 
         ED4_ROOT->get_device()->push_clip_scale();
         if (adjust_clipping_rectangle()) {
             if (!color) {
-                ED4_ROOT->get_device()->clear_part(x, y, extension.size[WIDTH], extension.size[HEIGHT], (AW_bitset)-1);
+                ED4_ROOT->get_device()->clear_part(x, y, extension.size[WIDTH], extension.size[HEIGHT], AW_ALL_DEVICES);
             }
             else {
-                ED4_ROOT->get_device()->box(color, true, x, y, extension.size[WIDTH], extension.size[HEIGHT], (AW_bitset)-1, 0, 0); // fill range with color for debugging
+                // fill range with color for debugging
+                ED4_ROOT->get_device()->box(color, true, x, y, extension.size[WIDTH], extension.size[HEIGHT]);
             }
         }
         ED4_ROOT->get_device()->pop_clip_scale();
@@ -1451,12 +1450,11 @@ ED4_returncode ED4_base::clear_background(int color)
     return (ED4_R_OK);
 }
 
-ED4_returncode ED4_base::clear_whole_background()       // clear AW_MIDDLE_AREA
-{
-    if (ED4_ROOT->get_device())
-    {
+ED4_returncode ED4_base::clear_whole_background() {
+    // clear AW_MIDDLE_AREA
+    if (ED4_ROOT->get_device()) {
         ED4_ROOT->get_device()->push_clip_scale();
-        ED4_ROOT->get_device()->clear((AW_bitset)-1);
+        ED4_ROOT->get_device()->clear(AW_ALL_DEVICES);
         ED4_ROOT->get_device()->pop_clip_scale();
     }
 
@@ -1471,7 +1469,7 @@ void ED4_base::draw_bb(int color)
             AW_pos x1, y1;
             calc_world_coords(&x1, &y1);
             ED4_ROOT->world_to_win_coords(ED4_ROOT->get_aww(), &x1, &y1);
-            ED4_ROOT->get_device()->box(color, false, x1, y1, extension.size[WIDTH]-1, extension.size[HEIGHT]-1, (AW_bitset)-1, 0, 0);
+            ED4_ROOT->get_device()->box(color, false, x1, y1, extension.size[WIDTH]-1, extension.size[HEIGHT]-1);
         }
         ED4_ROOT->get_device()->pop_clip_scale();
     }

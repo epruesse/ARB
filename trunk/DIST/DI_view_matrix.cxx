@@ -203,7 +203,7 @@ static void input_cb(AW_window *aww, AW_CL cl_dmatrix, AW_CL) {
         dmatrix->handle_move(event);
     }
     else {
-        AW_device *click_device = aww->get_click_device(AW_MIDDLE_AREA, event.x, event.y, 20, 20, 0);
+        AW_device_click *click_device = aww->get_click_device(AW_MIDDLE_AREA, event.x, event.y, 20, 20, 0);
 
         click_device->set_filter(AW_CLICK);
         click_device->reset();
@@ -301,7 +301,8 @@ void DI_dmatrix::display(bool clear)   // draw area
              y++)
         {
             double val2   = m->matrix->get(x, y);
-            AW_CL  cd_val = AW_CL(val2*MINMAX_GRANULARITY+1);
+            // AW_CL  cd_val = AW_CL(val2*MINMAX_GRANULARITY+1);
+            AW_click_cd cd(device, CLICK_SET_MINMAX, val2*MINMAX_GRANULARITY+1);
 
             if (val2>=min_view_dist && val2<=max_view_dist && val2>0.0) { // display ruler
                 int maxw = (int)(cell_width * .75);
@@ -310,16 +311,16 @@ void DI_dmatrix::display(bool clear)   // draw area
                 int x2 = xpos * cell_width;
                 double len = ((val2-min_view_dist)/(max_view_dist-min_view_dist)) * maxw;
                 if (len >= 0) {
-                    device->box(DI_G_RULER_DISPLAY, true, x2, y2, len, h*.8, -1, AW_CL(CLICK_SET_MINMAX), cd_val);
+                    device->box(DI_G_RULER_DISPLAY, true, x2, y2, len, h*.8);
                 }
                 else {
-                    device->text(DI_G_STANDARD, "????", xpos * cell_width, ypos * cell_height - cell_offset, 0.0, -1, AW_CL(CLICK_SET_MINMAX), cd_val);
+                    device->text(DI_G_STANDARD, "????", xpos * cell_width, ypos * cell_height - cell_offset);
                 }
                 double v;
                 for (v = x2; v < x2 + maxw; v += maxw * .1999) {
-                    device->line (DI_G_RULER, v, y2+h*.5, v, y2 + h, -1, AW_CL(CLICK_SET_MINMAX), cd_val);
+                    device->line(DI_G_RULER, v, y2+h*.5, v, y2 + h);
                 }
-                device->line(DI_G_RULER, x2, y2+h, x2+maxw-1, y2+h, -1, AW_CL(CLICK_SET_MINMAX), cd_val);
+                device->line(DI_G_RULER, x2, y2+h, x2+maxw-1, y2+h);
             }
             else {
                 DI_gc gc = val2<min_view_dist ? DI_G_BELOW_DIST : (val2>max_view_dist ? DI_G_ABOVE_DIST : DI_G_STANDARD);
@@ -331,7 +332,7 @@ void DI_dmatrix::display(bool clear)   // draw area
                 else {
                     sprintf(buf, "%6.4f", val2);
                 }
-                device->text(gc, buf, xpos * cell_width, ypos * cell_height - cell_offset, 0.0, -1, AW_CL(CLICK_SET_MINMAX), cd_val);
+                device->text(gc, buf, xpos * cell_width, ypos * cell_height - cell_offset);
             }
 
             ypos++;
@@ -341,7 +342,10 @@ void DI_dmatrix::display(bool clear)   // draw area
         strcpy(buf, m->entries[x]->name);
         if (selSpecies && strcmp(buf, selSpecies) == 0) sel_x_pos = xpos; // remember x-position for selected species
         buf[name_display_width] = 0; // cut group-names if too long
-        device->text(DI_G_NAMES, buf, xpos * cell_width, cell_height - off_dy - cell_offset, 0.0, -1, AW_CL(CLICK_SELECT_SPECIES), AW_CL(x));
+
+        AW_click_cd cd(device, CLICK_SELECT_SPECIES, x);
+        device->text(DI_G_NAMES, buf, xpos * cell_width, cell_height - off_dy - cell_offset);
+
         xpos++;
     }
 
@@ -354,8 +358,8 @@ void DI_dmatrix::display(bool clear)   // draw area
         AW_pos linex1 = sel_x_pos*cell_width - cell_offset;
         AW_pos linex2 = linex1+cell_width;
         AW_pos height = area.height();
-        device->line(DI_G_STANDARD, linex1, 0, linex1, height, -1, 0, 0);
-        device->line(DI_G_STANDARD, linex2, 0, linex2, height, -1, 0, 0);
+        device->line(DI_G_STANDARD, linex1, 0, linex1, height);
+        device->line(DI_G_STANDARD, linex2, 0, linex2, height);
     }
 
     device->set_offset(AW::Vector(0, off_dy));
@@ -367,7 +371,8 @@ void DI_dmatrix::display(bool clear)   // draw area
         strcpy(buf, m->entries[y]->name);
         if (selSpecies && strcmp(buf, selSpecies) == 0) sel_y_pos = ypos; // remember x-position for selected species
         buf[name_display_width] = 0; // cut group-names if too long
-        device->text(DI_G_NAMES, buf, 0, ypos * cell_height - cell_offset, 0.0, -1, AW_CL(CLICK_SELECT_SPECIES), AW_CL(y));
+        AW_click_cd cd(device, CLICK_SELECT_SPECIES, y);
+        device->text(DI_G_NAMES, buf, 0, ypos * cell_height - cell_offset);
         ypos++;
     }
 
@@ -376,8 +381,8 @@ void DI_dmatrix::display(bool clear)   // draw area
         AW_pos liney1 = (sel_y_pos-1)*cell_height;
         AW_pos liney2 = liney1+cell_height;
         AW_pos width = area.width();
-        device->line(DI_G_STANDARD, 0, liney1, width, liney1, -1, 0, 0);
-        device->line(DI_G_STANDARD, 0, liney2, width, liney2, -1, 0, 0);
+        device->line(DI_G_STANDARD, 0, liney1, width, liney1);
+        device->line(DI_G_STANDARD, 0, liney2, width, liney2);
     }
 
     device->set_offset(AW::Vector(0, 0));
