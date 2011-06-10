@@ -19,6 +19,7 @@ else
             PATCH=$PATCHDIR/$PATCHNAME.patch
             FAKEPATCH=$PATCHDIR/fake.patch
             RECENT_PATCH=./latest.patch
+            INTERDIFF_PATCH=./interdiff.patch
 
             svn diff > $PATCH
 
@@ -34,14 +35,22 @@ else
                     echo "No patch generated (no diff)"
                 else
                     DIFF=1
+                    INTER=0
                     if [ -e $RECENT_PATCH ]; then
                         DIFF=`diff $PATCH $RECENT_PATCH | wc -l`
+                        INTER=DIFF
                     fi
 
                     if [ $DIFF = 0 ]; then
                         echo "No patch generated (same as last patch)"
                         rm $PATCH
+                        rm -f $INTERDIFF_PATCH
                     else
+                        if [ $INTER != 0 ]; then
+                            interdiff -w $RECENT_PATCH $PATCH > $INTERDIFF_PATCH
+                        else
+                            rm -f $INTERDIFF_PATCH
+                        fi
                         ln --force $PATCH $RECENT_PATCH
                         ls -hog $PATCH $RECENT_PATCH
                     fi
