@@ -361,15 +361,16 @@ static void aw_help_helpfile_changed_cb(AW_root *awr) {
             free(helptext);
         }
         else {
-            sprintf(AW_ERROR_BUFFER, "I cannot find the help file '%s'\n\n"
-                    "Please help us to complete the ARB-Help by submitting\n"
-                    "this missing helplink via ARB_NT/File/About/SubmitBug\n"
-                    "Thank you.\n"
-                    "\n"
-                    "Details:\n"
-                    "%s",
-                    help_file, GB_await_error());
-            awr->awar(AWAR_HELPTEXT)->write_string(AW_ERROR_BUFFER);
+            char *msg = GBS_global_string_copy("I cannot find the help file '%s'\n\n"
+                                               "Please help us to complete the ARB-Help by submitting\n"
+                                               "this missing helplink via ARB_NT/File/About/SubmitBug\n"
+                                               "Thank you.\n"
+                                               "\n"
+                                               "Details:\n"
+                                               "%s",
+                                               help_file, GB_await_error());
+            awr->awar(AWAR_HELPTEXT)->write_string(msg);
+            free(msg);
         }
     }
     free(help_file);

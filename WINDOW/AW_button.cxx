@@ -172,7 +172,6 @@ void AW_variable_update_callback(Widget /*wgt*/, XtPointer variable_update_struc
     }
 
     switch (vus->widget_type) {
-
         case AW_WIDGET_INPUT_FIELD:
         case AW_WIDGET_TEXT_FIELD:
             if (!root->value_changed) return;
@@ -217,8 +216,7 @@ void AW_variable_update_callback(Widget /*wgt*/, XtPointer variable_update_struc
 #warning missing implementation for AW_POINTER
 #endif
                 default:
-                    aw_assert(0);
-                    GB_warning("Unknown AWAR type");
+                    GBK_terminatef("AWAR type %i unhandled for AW_WIDGET_CHOICE_MENU", vus->awar->variable_type);
                     break;
             }
             break;
@@ -245,10 +243,7 @@ void AW_variable_update_callback(Widget /*wgt*/, XtPointer variable_update_struc
             }
             if (!list_table) {   // test if default selection exists
                 list_table = selection_list->default_select;
-                if (!list_table) {
-                    AW_ERROR("no default for selection list specified");
-                    return;
-                }
+                if (!list_table) GBK_terminate("no default specified for selection list");
             }
             switch (vus->awar->variable_type) {
                 case AW_STRING:
@@ -264,8 +259,7 @@ void AW_variable_update_callback(Widget /*wgt*/, XtPointer variable_update_struc
                     error = vus->awar->write_pointer(list_table->pointer_value);
                     break;
                 default:
-                    aw_assert(0);
-                    error = GB_export_error("Unknown AWAR type");
+                    GBK_terminatef("AWAR type %i unhandled for AW_WIDGET_SELECTION_LIST", vus->awar->variable_type);
                     break;
             }
             XtFree(tmp);
@@ -274,8 +268,7 @@ void AW_variable_update_callback(Widget /*wgt*/, XtPointer variable_update_struc
         case AW_WIDGET_LABEL_FIELD:
             break;
         default:
-            aw_assert(0);
-            GB_warning("Unknown Widget Type");
+            GBK_terminatef("Unknown widget type %i in AW_variable_update_callback", vus->widget_type);
             break;
     }
 
@@ -1480,12 +1473,12 @@ const char *AW_window::get_list_entry_displayed() {
 }
 
 void AW_window::set_list_entry_char_value(const char *new_char_value) {
-    if (!current_list_table) AW_ERROR("No Selection List Iterator");
+    aw_assert(current_list_table);
     freeset(current_list_table->char_value, AW_select_table_struct::copy_string(new_char_value));
 }
 
 void AW_window::set_list_entry_displayed(const char *new_displayed) {
-    if (!current_list_table) AW_ERROR("No Selection List Iterator");
+    aw_assert(current_list_table);
     freeset(current_list_table->displayed, AW_select_table_struct::copy_string(new_displayed));
 }
 
@@ -1601,13 +1594,13 @@ void AW_window::delete_selection_from_list(AW_selection_list *selection_list, co
     }
 }
 
-static void type_mismatch(const char *triedType, const char *intoWhat) {
-    AW_ERROR("Cannot insert %s into %s which uses a non-%s AWAR", triedType, intoWhat, triedType);
+INLINE_ATTRIBUTED(__ATTR__NORETURN, void type_mismatch(const char *triedType, const char *intoWhat)) {
+    GBK_terminatef("Cannot insert %s into %s which uses a non-%s AWAR", triedType, intoWhat, triedType);
 }
 
-inline void selection_type_mismatch(const char *triedType) { type_mismatch(triedType, "selection-list"); }
-inline void option_type_mismatch(const char *triedType) { type_mismatch(triedType, "option-menu"); }
-inline void toggle_type_mismatch(const char *triedType) { type_mismatch(triedType, "toggle"); }
+INLINE_ATTRIBUTED(__ATTR__NORETURN, void selection_type_mismatch(const char *triedType)) { type_mismatch(triedType, "selection-list"); }
+INLINE_ATTRIBUTED(__ATTR__NORETURN, void option_type_mismatch(const char *triedType)) { type_mismatch(triedType, "option-menu"); }
+INLINE_ATTRIBUTED(__ATTR__NORETURN, void toggle_type_mismatch(const char *triedType)) { type_mismatch(triedType, "toggle"); }
 
 void AW_window::insert_selection(AW_selection_list *selection_list, const char *displayed, const char *value) {
     if (selection_list->variable_type != AW_STRING) {
@@ -1888,7 +1881,7 @@ void AW_window::update_selection_list_intern(AW_selection_list *selection_list) 
         }
     }
     else {
-        AW_ERROR("Selection list '%s' has no default selection", selection_list->variable_name);
+        GBK_terminatef("Selection list '%s' has no default selection", selection_list->variable_name);
     }
 }
 
@@ -2261,9 +2254,7 @@ void *AW_window::_create_option_entry(AW_VARIABLE_TYPE type, const char *name, c
     Widget                 entry;
     AW_option_menu_struct *oms = p_global->current_option_menu;
 
-    if (oms->variable_type != type) {
-        AW_ERROR("Option menu not defined for this type");
-    }
+    aw_assert(oms->variable_type == type); // adding wrong entry type
 
     TuneOrSetBackground(oms->menu_widget, name_of_color, TUNE_BUTTON); // set background color for radio button entries
     entry = XtVaCreateManagedWidget("optionMenu_entry",
@@ -2658,8 +2649,7 @@ void AW_window::update_toggle_field(int toggle_field_number) {
                 case AW_INT:    global_var_int_value   = root->awar(toggle_field_list->variable_name)->read_int();      break;
                 case AW_FLOAT:  global_var_float_value = root->awar(toggle_field_list->variable_name)->read_float();    break;
                 default:
-                    aw_assert(0);
-                    GB_warning("Unknown AWAR type");
+                    GBK_terminatef("AWAR type %i unhandled [1]", toggle_field_list->variable_type);
                     break;
             }
 
@@ -2670,8 +2660,7 @@ void AW_window::update_toggle_field(int toggle_field_number) {
                     case AW_INT:    found_toggle = (global_var_int_value == active_toggle->variable_int_value);       break;
                     case AW_FLOAT:  found_toggle = (global_var_float_value == active_toggle->variable_float_value);   break;
                     default:
-                        aw_assert(0);
-                        GB_warning("Unknown AWAR type");
+                        GBK_terminatef("AWAR type %i unhandled [2]", toggle_field_list->variable_type);
                         break;
                 }
                 if (found_toggle) break;
@@ -2721,7 +2710,7 @@ void AW_window::update_toggle_field(int toggle_field_number) {
         }
     }
     else {
-        AW_ERROR("update_toggle_field: toggle field %i does not exist", toggle_field_number);
+        GBK_terminatef("update_toggle_field: toggle field %i does not exist", toggle_field_number);
     }
 
 #if defined(DEBUG)

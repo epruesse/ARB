@@ -145,7 +145,6 @@ void AW_window::at_shift(int x, int y) {
 }
 
 void AW_window::at_newline() {
-
     if (_at->do_auto_increment) {
         at_y(_at->auto_increment_y + _at->y_for_next_button);
     }
@@ -154,7 +153,7 @@ void AW_window::at_newline() {
             at_y(_at->y_for_next_button + _at->auto_space_y + _at->biggest_height_of_buttons);
         }
         else {
-            AW_ERROR("neither auto_space nor auto_increment activated while using at_newline");
+            GBK_terminate("neither auto_space nor auto_increment activated while using at_newline");
         }
     }
     at_x(_at->x_for_newline);
@@ -168,11 +167,9 @@ void AW_window::at(const char *at_id) {
     _at->attach_any            = false;
     _at->correct_for_at_string = true;
 
-    if (!xfig_data) {
-        AW_ERROR("no xfig file loaded ");
-        return;
-    }
-    AW_xfig *xfig = (AW_xfig *)xfig_data;
+    if (!xfig_data) GBK_terminatef("no xfig-data loaded, can't position at(\"%s\")", at_id);
+
+    AW_xfig     *xfig = (AW_xfig *)xfig_data;
     AW_xfig_pos *pos;
 
     pos = (AW_xfig_pos*)GBS_read_hash(xfig->at_pos_hash, at_id);
@@ -192,10 +189,8 @@ void AW_window::at(const char *at_id) {
         pos = (AW_xfig_pos*)GBS_read_hash(xfig->at_pos_hash, to_position);
         if (pos) _at->attach_any = _at->attach_lx = _at->attach_ly = true;
     }
-    if (!pos) {
-        AW_ERROR(" ID '%s' does not exist in xfig file", at_id);
-        return;
-    }
+
+    if (!pos) GBK_terminatef("ID '%s' does not exist in xfig file", at_id);
 
     at((pos->x - xfig->minx), (pos->y - xfig->miny - this->get_root()->font_height - 9));
     _at->correct_for_at_center = pos->center;

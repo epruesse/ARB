@@ -463,17 +463,23 @@ void awt_delete_species_in_list(void *dummy, DbQuery *cbs)
     for (GBDATA *gb_item_container = cbs->selector->get_first_item_container(cbs->gb_main, cbs->aws->get_root(), AWT_QUERY_ALL_SPECIES);
          gb_item_container;
          gb_item_container = cbs->selector->get_next_item_container(gb_item_container, AWT_QUERY_ALL_SPECIES))
+    {
+        for (GBDATA *gb_item = cbs->selector->get_first_item(gb_item_container);
+             gb_item;
+             gb_item = cbs->selector->get_next_item(gb_item))
         {
-            for (GBDATA *gb_item = cbs->selector->get_first_item(gb_item_container);
-                 gb_item;
-                 gb_item = cbs->selector->get_next_item(gb_item))
-                {
-                    if (IS_QUERIED(gb_item, cbs)) cnt++;
-                }
+            if (IS_QUERIED(gb_item, cbs)) cnt++;
         }
+    }
 
-    sprintf(AW_ERROR_BUFFER, "Are you sure to delete %li %s", cnt, cbs->selector->items_name);
-    if (aw_question(AW_ERROR_BUFFER, "OK,CANCEL")) {
+    int cancel;
+    {
+        char *question = GBS_global_string_copy("Are you sure to delete %li %s", cnt, cbs->selector->items_name);
+        cancel         = aw_question(question, "OK,CANCEL");
+        free(question);
+    }
+
+    if (cancel) {
         GB_abort_transaction(cbs->gb_main);
         return;
     }

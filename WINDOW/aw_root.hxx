@@ -40,7 +40,6 @@ extern char AW_ERROR_BUFFER[1024];
 
 void aw_set_local_message(); // no message window, AWAR_ERROR_MESSAGES instead (used by EDIT4)
 
-void aw_errorbuffer_message() __ATTR__DEPRECATED("will be removed"); // prints AW_ERROR_BUFFER
 void aw_macro_message(const char *temp, ...) __ATTR__FORMAT(1); // gives control to the user
 
 // Read a string from the user :
@@ -57,10 +56,6 @@ char *aw_string_selection2awar(const char *title, const char *prompt, const char
 int aw_string_selection_button();   // returns index of last selected button (destroyed by aw_string_selection and aw_input)
 
 char *aw_file_selection(const char *title, const char *dir, const char *def_name, const char *suffix);
-
-void AW_ERROR(const char *templat, ...) __ATTR__FORMAT(1);
-
-void aw_error(const char *text, const char *text2);     // internal error: asks for core
 
 class  AW_root_Motif;
 class  AW_awar;
@@ -100,9 +95,6 @@ public:
     int            number_of_toggle_fields;
     int            number_of_option_menus;
     char          *program_name;
-
-    void            *get_aw_var_struct(char *awar);
-    void            *get_aw_var_struct_no_error(char *awar);
 
     bool            disable_callbacks;
     AW_root_cblist *focus_callback_list;

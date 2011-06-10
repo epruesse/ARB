@@ -253,8 +253,10 @@ void nt_exit(AW_window *aws) {
                 if (secs) {
                     secs = GB_time_of_day() - secs;
                     if (secs>10) {
-                        sprintf(AW_ERROR_BUFFER, "You last saved your data %li:%li minutes ago\nSure to quit ?", secs/60, secs%60);
-                        if (aw_question(AW_ERROR_BUFFER, "QUIT ARB,DO NOT QUIT")) return;
+                        char *question = GBS_global_string_copy("You last saved your data %li:%li minutes ago\nSure to quit ?", secs/60, secs%60);
+                        int   dontQuit = aw_question(question, "QUIT ARB,DO NOT QUIT");
+                        free(question);
+                        if (dontQuit) return;
                     }
                 }
                 else {

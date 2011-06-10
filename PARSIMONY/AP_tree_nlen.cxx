@@ -676,16 +676,13 @@ bool AP_tree_nlen::clear(unsigned long datum, unsigned long user_buffer_count) {
     // - false          if it is copied into the previous level
     // according if user_buffer is greater than datum (wot?)
 
-    AP_tree_buffer * buff;
-    bool             result;
-
-    if (!this->stack_level == datum)
-    {
-        AW_ERROR("AP_tree_nlen::clear: internal control number check failed");
+    if (!stack_level == datum) {
+        ap_assert(0); // internal control number check failed
         return false;
     }
 
-    buff = stack.pop();
+    AP_tree_buffer * buff = stack.pop();
+    bool             result;
 
     if (buff->controll == datum - 1 || user_buffer_count >= datum) {
         // previous node is buffered
@@ -769,14 +766,9 @@ bool AP_tree_nlen::push(AP_STACK_MODE mode, unsigned long datum) {
 }
 
 void AP_tree_nlen::pop(unsigned long datum) { /* pop old tree costs */
-    AP_tree_buffer *buff;
+    ap_assert(stack_level == datum); // error in node stack
 
-    if (stack_level != datum) {
-        AW_ERROR("AP_tree_nlen::pop(): Error in Node Stack");
-    }
-
-    buff = stack.pop();
-
+    AP_tree_buffer *buff = stack.pop();
     AP_STACK_MODE   mode = buff->mode;
 
     if (mode&STRUCTURE) {
@@ -1193,20 +1185,18 @@ void AP_tree_nlen::createListRekSide(AP_CO_LIST *list, int *cn) {
 
 
 AP_CO_LIST * AP_tree_nlen::createList(int *size) {
-    // returns an list with all tree combinations
+    // returns a list with all tree combinations
+    ap_assert(!father);
+    test_tree_rek();
 
-    AP_CO_LIST *list;
-    int number = 0;
-    if (father != 0) {
-        AW_ERROR("AP_tree_nlen::createList may be called with damaged tree");
-        return 0;
-    }
-    this->test_tree_rek();
     // 3*knotenvisited_subtrees +1 platz reservieren
-    list = (AP_CO_LIST *) calloc((gr.node_sum-gr.leaf_sum)*3+1, sizeof(AP_CO_LIST));
+    AP_CO_LIST *list = (AP_CO_LIST *) calloc((gr.node_sum-gr.leaf_sum)*3+1, sizeof(AP_CO_LIST));
+
+    int number = 0;
     createListRekUp(list, &number);
     createListRekSide(list, &number);
-    *size = number;
+    *size      = number;
+    
     return list;
 }
 
