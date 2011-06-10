@@ -1228,7 +1228,7 @@ GB_ERROR gb_check_saveable(GBDATA *gbd, const char *path, const char *flags) {
     GB_ERROR      error = NULL;
 
     if (!Main->local_mode) {
-        error = "You cannot save a remote database, please use save button in master program";
+        error = "You cannot save a remote database,\nplease use save button in master program";
     }
     else if (Main->opentype == gb_open_read_only_all) {
         error = "Database is read only";
@@ -1262,9 +1262,10 @@ GB_ERROR gb_check_saveable(GBDATA *gbd, const char *path, const char *flags) {
     if (!error && !strchr(flags, 'q')) {
         long mode = GB_mode_of_link(path);
         if (mode >= 0 && !(mode & S_IWUSR)) { // no write access -> looks like a master file
-            error = GBS_global_string("Your selected file '%s' already exists and is write protected\n"
-                                      "It looks like that your file is a master arb file which is\n"
-                                      "used by some quicksaved databases\n"
+            error = GBS_global_string("Your selected file '%s'\n"
+                                      "already exists and is write protected!\n"
+                                      "This happens e.g. if your file is a MASTER ARB FILE which is\n"
+                                      "used by multiple quicksaved databases.\n"
                                       "If you want to save it nevertheless, delete it first, but\n"
                                       "note that doing this will render all these quicksaves useless!",
                                       path);

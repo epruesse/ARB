@@ -408,8 +408,9 @@ void NT_save_as_cb(AW_window *aww) {
     char *filetype = aww->get_root()->awar(AWAR_DB_TYPE)->read_string();
 
     GB_ERROR error = GB_save(GLOBAL_gb_main, filename, filetype);
-    AW_refresh_fileselection(aww->get_root(), "tmp/nt/arbdb");
-
+    if (!error) {
+        AW_refresh_fileselection(aww->get_root(), "tmp/nt/arbdb");
+    }
     aww->hide_or_notify(error);
 
     free(filetype);
