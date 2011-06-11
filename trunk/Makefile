@@ -1219,7 +1219,9 @@ com:	$(ARCHS_COMMUNICATION:.a=.dummy)
 
 help:   HELP_SOURCE/HELP_SOURCE.dummy
 
-HELP_SOURCE/HELP_SOURCE.dummy: xml menus# need to create some files in GDE-subtree first
+HELP_SOURCE/HELP_SOURCE.dummy: shared_libs xml menus# need to create some files in GDE-subtree first
+CORE/libCORE.dummy: links
+ARBDB/libARBDB.dummy: links
 
 db:	ARBDB/libARBDB.dummy
 core:	CORE/libCORE.dummy
