@@ -1,0 +1,36 @@
+#Please insert up references in the next lines (line starts with keyword UP)
+UP	arb.hlp
+UP	glossary.hlp
+
+#Please insert subtopic references  (line starts with keyword SUB)
+#SUB	subtopic.hlp
+
+# Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
+
+#************* Title of helpfile !! and start of real helpfile ********
+TITLE		Matrix settings
+
+OCCURRENCE	ARB_DIST/View Matrix/Properties/Settings
+
+DESCRIPTION     Define layout of matrix display
+
+		Padding
+		    set padding between cells
+		
+		Show leading zero
+		    show or skip leading '0' in numerical display of distance
+		
+		Precision
+		    specify number of digits shown behind '.' (numerical display of distance)
+		
+		Min. namechars (top/left)
+		    set minimum chars to display in the two name-areas
+		
+NOTES		To visualize big parts of the matrix, you may use a small font, negative padding and
+		set all other parameters to low values. 
+
+EXAMPLES	None
+
+WARNINGS	None
+
+BUGS		No bugs known

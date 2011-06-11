@@ -1044,14 +1044,6 @@ static void di_mark_by_distance(AW_window *aww, AW_CL cl_weightedFilter) {
     }
 }
 
-static void selected_species_changed_cb(AW_root*,  AW_CL cl_viewer) {
-    if (di_dmatrix) {
-        AW_window *viewer = reinterpret_cast<AW_window*>(cl_viewer);
-        void       redisplay_needed(AW_window *, DI_dmatrix *dis);
-        redisplay_needed(viewer, di_dmatrix);
-    }
-}
-
 static void di_view_matrix_cb(AW_window *aww, AW_CL cl_sparam) {
     save_matrix_params *sparam = (save_matrix_params*)cl_sparam;
     GB_ERROR            error  = di_calculate_matrix(aww, sparam->weighted_filter, 0, true, NULL);
@@ -1060,13 +1052,7 @@ static void di_view_matrix_cb(AW_window *aww, AW_CL cl_sparam) {
     if (!di_dmatrix) di_dmatrix = new DI_dmatrix();
 
     static AW_window *viewer = 0;
-    if (!viewer) {
-        AW_root *aw_root = aww->get_root();
-        viewer           = DI_create_view_matrix_window(aw_root, di_dmatrix, sparam);
-
-        AW_awar *awar_sel = aw_root->awar(AWAR_SPECIES_NAME);
-        awar_sel->add_callback(selected_species_changed_cb, AW_CL(viewer));
-    }
+    if (!viewer) viewer = DI_create_view_matrix_window(aww->get_root(), di_dmatrix, sparam);
 
     di_dmatrix->init();
     di_dmatrix->display(false);
