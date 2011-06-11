@@ -104,7 +104,17 @@ DESCRIPTION	Reconstructs a tree for all or marked species by first
 			to the typed file name and defines the selection of
 			files listed in the 'Directories and Files' subwindow.
 
-		@@@ Calculate Compressed Matrix
+SECTION 	Calculate compressed matrix
+
+		You may select a tree to calculate a compressed matrix. A 
+		compressed matrix contains columns for all folded groups 
+		visible in the displayed tree (i.e. not for unfolded groups
+		and not for folded groups inside other folded groups).
+		
+		Species inside such groups are NOT listed as single entries.
+		
+		The distance shown for each group is the arithmetic average of 
+		of the distances of all contained species.
 
 NOTE		Read the NDS help text
 
