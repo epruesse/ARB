@@ -75,7 +75,7 @@ static void delete_matrix_cb(AW_root *)
 
 static AW_window *create_dna_matrix_window(AW_root *aw_root) {
     AW_window_simple *aws = 0;
-    aws = new AW_window_simple();
+    aws = new AW_window_simple;
     aws->init(aw_root, "SET_DNA_MATRIX", "SET MATRIX");
     aws->auto_increment(50, 50);
     aws->button_length(10);
