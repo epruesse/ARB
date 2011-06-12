@@ -234,9 +234,9 @@ lflags += $(cross_lflags)
 ifeq ('$(CROSS_LIB)','')
 # autodetect libdir
 	ifeq ($(ARB_64),1)
-		CROSS_LIB:=`(test -d /lib64 && echo lib64) || echo lib`
+		CROSS_LIB:=$(shell (test -d /lib64 && echo lib64) || echo lib)
 	else
-		CROSS_LIB:=`(test -d /lib32 && echo lib32) || echo lib`
+		CROSS_LIB:=$(shell (test -d /lib32 && echo lib32) || echo lib)
 	endif
 endif
 
@@ -478,6 +478,7 @@ endif
 		@echo ' source_doc  - create doxygen documentation'
 		@echo ' relocated   - rebuild partly (use when you have relocated ARBHOME)'
 		@echo ' check_res   - check ressource usage'
+		@echo ' dep_graph   - Build dependency graphs'
 		@echo ''
 		@echo $(SEP)
 		@echo ''
@@ -1214,6 +1215,10 @@ source_doc:
 	find . \( -name "AISC" -o -name "C" -o -name "GDEHELP" \) -type l -exec rm {} \;
 	doxygen
 	$(MAKE) forcelinks
+
+dep_graph:
+	@echo "Building some dependency graphs"
+	SOURCE_TOOLS/dependency_graphs.pl
 
 com:	$(ARCHS_COMMUNICATION:.a=.dummy)
 
