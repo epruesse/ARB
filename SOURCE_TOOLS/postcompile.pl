@@ -217,12 +217,12 @@ sub parse_input(\@) {
   my @related = ();
   my $location_info = undef;
 
-  my @out = ();
+  my @warnout = ();
   my @errout = ();
 
   my $did_show_previous = 0;
   my $is_error          = 0;
-  my $curr_out_r = $is_error==1 ? \@errout : \@out;
+  my $curr_out_r = \@warnout;
 
  LINE: while (defined($_=<>)) {
     chomp;
@@ -235,25 +235,25 @@ sub parse_input(\@) {
         my $warn_text = $';
         if ($warn_text =~ $reg_shadow_warning) {
           if (not $' =~ /this/) { # don't store this warnings (no location follows)
-            store_shadow($_,@out);
-            $_ = suppress($_,@out);
+            store_shadow($_,@warnout);
+            $_ = suppress($_,@warnout);
           }
         }
         elsif ($warn_text =~ $reg_shadow_location) {
-          if (not defined $shadow_warning) { warning('no shadow_warning seen',@out); }
+          if (not defined $shadow_warning) { warning('no shadow_warning seen',@warnout); }
           else {
             if ($file =~ $reg_user_include or $file eq '<built-in>') {
               # don't warn about /usr/include or <built-in> shadowing
-              $_ = suppress($_,@out);
+              $_ = suppress($_,@warnout);
               @related = ();
               $location_info = undef;
             }
             else {
               if (defined $location_info) {
-                push @out, $location_info;
+                push @warnout, $location_info;
                 $location_info = undef;
               }
-              push @out, $shadow_warning;
+              push @warnout, $shadow_warning;
             }
             $shadow_warning = undef;
           }
@@ -270,39 +270,39 @@ sub parse_input(\@) {
           $_ = $file.':'.$line.': warning: '.$warn_text;
         }
         $is_error = 0;
-        $curr_out_r = \@errout;
+        $curr_out_r = \@warnout;
       }
       elsif ($msg =~ $reg_is_error) {
         $is_error = 1;
-        $curr_out_r = \@out;
+        $curr_out_r = \@errout;
       }
       elsif ($msg =~ $reg_is_instantiated) {
-          push @related, $_;
-          $_ = suppress($_,@out);
+        push @related, $_;
+        $_ = suppress($_,@warnout);
       }
       elsif ($msg =~ $reg_is_note) {
         if ($did_show_previous==0) {
-          $_ = suppress($_,@out);
+          $_ = suppress($_,@warnout);
         }
         #else display normally
       }
     }
     elsif ($_ =~ $reg_location or $_ =~ $reg_location2) {
       $location_info = $_;
-      $_ = suppress($_,@out);
+      $_ = suppress($_,@warnout);
     }
     elsif ($_ =~ $reg_included) {
       push @related, included_from_here($1);
-      $_ = suppress($_,@out);
+      $_ = suppress($_,@warnout);
     }
     elsif ($_ =~ $reg_file_noline) {
       push @related, included_from_here($1);
-      $_ = suppress($_,@out);
+      $_ = suppress($_,@warnout);
     }
     elsif (@related) {
       if ($_ =~ $reg_included2) {
         push @related, included_from_here($1);
-        $_ = suppress($_,@out);
+        $_ = suppress($_,@warnout);
       }
     }
 
@@ -312,7 +312,7 @@ sub parse_input(\@) {
         $did_show_previous = 1;
 
         if (($is_error==1) and ($stop_after_first_error==1)) {
-          @out = (); # drop warnings
+          @warnout = (); # drop warnings
           last LINE;
         }
       }
@@ -326,7 +326,7 @@ sub parse_input(\@) {
   }
 
   @$out_r = @errout;
-  if ($hide_warnings==0) { push @$out_r, @out; }
+  if ($hide_warnings==0) { push @$out_r, @warnout; }
 }
 
 sub main() {
