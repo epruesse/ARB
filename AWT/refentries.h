@@ -40,6 +40,31 @@ namespace RefEntries {
 
     typedef ARB_ERROR (*referred_item_handler)(GBDATA *gb_main, const DBItemSet& referred);                // called with all referred items
 
+    class RefSelector {
+        char *field; // name of field containing references
+        char *aci;   // postprocess expression for field-content
+
+        bool error_if_field_missing;
+        bool error_if_ref_unknown;
+    public:
+        RefSelector(const char *field_, const char *aci_, bool error_if_field_missing_, bool error_if_ref_unknown_)
+            : field(strdup(field_)),
+              aci(strdup(aci_)),
+              error_if_field_missing(error_if_field_missing_),
+              error_if_ref_unknown(error_if_ref_unknown_)
+        {}
+        ~RefSelector() {
+            free(aci);
+            free(field);
+        }
+
+        const char *get_refs(const ad_item_selector& itemtype, GBDATA *gb_item) const;
+        char *filter_refs(const char *refs, GBDATA *gb_item) const;
+
+        bool ignore_unknown_refs() const { return !error_if_ref_unknown; }
+        const char *get_field() const { return field; }
+    };
+
     class ReferringEntriesHandler {
         GBDATA *gb_main;
         ad_item_selector itemtype;
@@ -55,8 +80,8 @@ namespace RefEntries {
         const ad_item_selector& get_referring_item() const { return itemtype; }
 
 
-        ARB_ERROR with_all_referred_items(GBDATA *gb_item, const char *refs_field, bool error_if_unknown_ref, referred_item_handler cb);
-        ARB_ERROR with_all_referred_items(AWT_QUERY_RANGE range, const char *refs_field, bool error_if_unknown_ref, referred_item_handler cb);
+        ARB_ERROR with_all_referred_items(GBDATA *gb_item, const RefSelector& refsel, referred_item_handler cb);
+        ARB_ERROR with_all_referred_items(AWT_QUERY_RANGE range, const RefSelector& refsel, referred_item_handler cb);
     };
 
     // --------------------------

@@ -13,6 +13,7 @@
 
 #include <aw_root.hxx>
 #include <aw_awar.hxx>
+#include <aw_awars.hxx>
 #include <aw_msg.hxx>
 #include <arb_msg.h>
 #include <arbdbt.h>
@@ -21,44 +22,75 @@
 
 namespace RefEntries {
 
-    static ARB_ERROR addRefsTo(DBItemSet& referred, const ad_item_selector& itemtype, GBDATA *gb_item, const char *refs_field, bool error_if_unknown_ref) {
-        ARB_ERROR       error;
-        GBDATA         *gb_main = GB_get_root(gb_item);
-        GB_transaction  ta(gb_main);
+    static ARB_ERROR generate_item_error(const char *format, const ad_item_selector& itemtype, GBDATA *gb_item) {
+        GBDATA *gb_main          = GB_get_root(gb_item);
+        char   *item_id          = itemtype.generate_item_id(gb_main, gb_item);
+        char   *item_description = GBS_global_string_copy("%s '%s'", itemtype.item_name, item_id);
 
-        GBDATA *gb_refs = GB_entry(gb_item, refs_field);
+        awt_assert(strstr(format, "%s"));
+        ARB_ERROR error = GBS_global_string(format, item_description);
+
+        free(item_description);
+        free(item_id);
+
+        return error;
+    }
+
+    const char *RefSelector::get_refs(const ad_item_selector& itemtype, GBDATA *gb_item) const {
+        const char *refs    = NULL;
+        GBDATA     *gb_refs = GB_entry(gb_item, field);
         if (gb_refs) {
-            const char *refs       = GB_read_char_pntr(gb_refs);
-            if (!refs) error = GB_await_error();
-            else {
-                size_t   refCount = 0;
-                char   **refNames = GBT_split_string(refs, ";, ", true, &refCount);
+            refs = GB_read_char_pntr(gb_refs);
+        }
+        else if (error_if_field_missing) {
+            GB_export_error(generate_item_error(GBS_global_string("%%s has no field '%s'", field), itemtype, gb_item).deliver());
+        }
+        return refs;
+    }
 
-                for (size_t r = 0; r<refCount && !error; ++r) {
-                    GBDATA *gb_referred = itemtype.find_item_by_id(gb_main, refNames[r]);
-                    if (gb_referred) {
-                        referred.insert(gb_referred);
-                    }
-                    else if (error_if_unknown_ref) {
-                        char *item_id = itemtype.generate_item_id(gb_main, gb_item);
+    char *RefSelector::filter_refs(const char *refs, GBDATA *gb_item) const {
+        return refs ? GB_command_interpreter(GB_get_root(gb_item), refs, aci, gb_item, NULL) : NULL;
+    }
 
-                        error = GBS_global_string("%s '%s' refers to unknown %s '%s' (in field '%s')",
-                                                  itemtype.item_name, item_id,
-                                                  itemtype.item_name, refNames[r],
-                                                  refs_field);
+    static ARB_ERROR addRefsTo(DBItemSet& referred, const ad_item_selector& itemtype, GBDATA *gb_item, const RefSelector& ref) {
+        ARB_ERROR   error;
+        const char *refs     = ref.get_refs(itemtype, gb_item);
+        char       *filtered = ref.filter_refs(refs, gb_item);
 
-                        free(item_id);
-                    }
+        if (!filtered) {
+            if (GB_have_error()) error = GB_await_error();
+        }
+        else {
+            size_t   refCount = 0;
+            char   **refNames = GBT_split_string(filtered, ";, ", true, &refCount);
+
+            for (size_t r = 0; r<refCount && !error; ++r) {
+                GBDATA *gb_main     = GB_get_root(gb_item);
+                GBDATA *gb_referred = itemtype.find_item_by_id(gb_main, refNames[r]);
+                if (gb_referred) {
+                    referred.insert(gb_referred);
                 }
-
-                GBT_free_names(refNames);
+                else if (!ref.ignore_unknown_refs()) {
+                    error = generate_item_error(GBS_global_string("%%s refers to unknown %s '%s'\n"
+                                                                  "in content of field '%s'\n"
+                                                                  "(content ='%s',\n"
+                                                                  " filtered='%s')\n",
+                                                                  itemtype.item_name, refNames[r],
+                                                                  ref.get_field(),
+                                                                  refs,
+                                                                  filtered),
+                                                itemtype, gb_item);
+                }
             }
+
+            GBT_free_names(refNames);
+            free(filtered);
         }
 
         return error;
     }
 
-    ARB_ERROR ReferringEntriesHandler::with_all_referred_items(AWT_QUERY_RANGE range, const char *refs_field, bool error_if_unknown_ref, referred_item_handler callback) {
+    ARB_ERROR ReferringEntriesHandler::with_all_referred_items(AWT_QUERY_RANGE range, const RefSelector& refsel, referred_item_handler callback) {
         awt_assert(range != QUERY_CURRENT_ITEM); // would need AW_root
 
         ARB_ERROR  error;
@@ -75,7 +107,7 @@ namespace RefEntries {
                      gb_item && !error;
                      gb_item = itemtype.get_next_item(gb_item, range))
                 {
-                    error = addRefsTo(referred, itemtype, gb_item, refs_field, error_if_unknown_ref);
+                    error = addRefsTo(referred, itemtype, gb_item, refsel);
                 }
             }
         }
@@ -84,9 +116,9 @@ namespace RefEntries {
         return error;
     }
 
-    ARB_ERROR ReferringEntriesHandler::with_all_referred_items(GBDATA *gb_item, const char *refs_field, bool error_if_unknown_ref, referred_item_handler callback) {
+    ARB_ERROR ReferringEntriesHandler::with_all_referred_items(GBDATA *gb_item, const RefSelector& refsel, referred_item_handler callback) {
         DBItemSet referred;
-        ARB_ERROR  error  = addRefsTo(referred, itemtype, gb_item, refs_field, error_if_unknown_ref);
+        ARB_ERROR  error  = addRefsTo(referred, itemtype, gb_item, refsel);
         if (!error) error = callback(gb_main, referred);
         return error;
     }
@@ -100,34 +132,106 @@ namespace RefEntries {
 #define AWAR_MARKBYREF                "awt/refs/"
 #define AWAR_MARKBYREF_ALL            AWAR_MARKBYREF "which"
 #define AWAR_MARKBYREF_FIELD          AWAR_MARKBYREF "field"
+#define AWAR_MARKBYREF_IGNORE_MISSING AWAR_MARKBYREF "ignore_missing"
 #define AWAR_MARKBYREF_IGNORE_UNKNOWN AWAR_MARKBYREF "ignore_unknown"
+#define AWAR_MARKBYREF_FILTER         AWAR_MARKBYREF "filter"
+
+#define AWAR_MARKBYREF_TEMP "tmp/awt/refs/"
+#define AWAR_MARKBYREF_SELECTED AWAR_MARKBYREF_TEMP "selected"
+#define AWAR_MARKBYREF_CONTENT  AWAR_MARKBYREF_TEMP "content"
+#define AWAR_MARKBYREF_RESULT   AWAR_MARKBYREF_TEMP "result"
 
     static void perform_refentries(AW_window *aww, AW_CL cl_reh, AW_CL cl_ricb) {
         ReferringEntriesHandler *reh  = (ReferringEntriesHandler*)cl_reh;
         referred_item_handler    ricb = (referred_item_handler)cl_ricb;
 
-        AW_root         *awr            = aww->get_root();
-        AWT_QUERY_RANGE  range          = awr->awar(AWAR_MARKBYREF_ALL)->read_int() ? QUERY_ALL_ITEMS : QUERY_MARKED_ITEMS;
-        char            *refs_field     = awr->awar(AWAR_MARKBYREF_FIELD)->read_string();
-        bool             ignore_unknown = awr->awar(AWAR_MARKBYREF_IGNORE_UNKNOWN)->read_int();
+        AW_root         *aw_root   = aww->get_root();
+        AWT_QUERY_RANGE  range = aw_root->awar(AWAR_MARKBYREF_ALL)->read_int() ? QUERY_ALL_ITEMS : QUERY_MARKED_ITEMS;
 
-        ARB_ERROR error = reh->with_all_referred_items(range, refs_field, !ignore_unknown, ricb);
+        RefSelector refsel(aw_root->awar(AWAR_MARKBYREF_FIELD)->read_char_pntr(),
+                           aw_root->awar(AWAR_MARKBYREF_FILTER)->read_char_pntr(),
+                           !aw_root->awar(AWAR_MARKBYREF_IGNORE_MISSING)->read_int(),
+                           !aw_root->awar(AWAR_MARKBYREF_IGNORE_UNKNOWN)->read_int());
+
+        ARB_ERROR error = reh->with_all_referred_items(range, refsel, ricb);
         aw_message_if(error);
+    }
 
-        free(refs_field);
+    static void refresh_result_cb(AW_root *aw_root, AW_CL cl_reh) {
+        ReferringEntriesHandler *reh      = (ReferringEntriesHandler*)cl_reh;
+        const ad_item_selector&  itemtype = reh->get_referring_item();
+        GBDATA                  *gb_main  = reh->get_gbmain();
+        GB_transaction           ta(gb_main);
+
+        GBDATA  *gb_item       = itemtype.get_selected_item(gb_main, aw_root);
+        AW_awar *awar_selected = aw_root->awar(AWAR_MARKBYREF_SELECTED);
+
+        if (!gb_item) {
+            awar_selected->write_string(GBS_global_string("<no %s selected>", itemtype.item_name));
+        }
+        else {
+            char *id = itemtype.generate_item_id(gb_main, gb_item);
+            if (!id) {
+                awar_selected->write_string(GB_await_error());
+            }
+            else {
+                awar_selected->write_string(id);
+
+                AW_awar *awar_content = aw_root->awar(AWAR_MARKBYREF_CONTENT);
+
+                RefSelector refsel(aw_root->awar(AWAR_MARKBYREF_FIELD)->read_char_pntr(),
+                                   aw_root->awar(AWAR_MARKBYREF_FILTER)->read_char_pntr(),
+                                   true, true);
+
+                const char *refs = refsel.get_refs(itemtype, gb_item);
+
+                if (!refs) awar_content->write_string(GB_await_error());
+                else {
+                    awar_content->write_string(refs);
+
+                    AW_awar *awar_result = aw_root->awar(AWAR_MARKBYREF_RESULT);
+                    char    *result      = refsel.filter_refs(refs, gb_item);
+
+                    if (result) {
+                        awar_result->write_string(result);
+                        free(result);
+                    }
+                    else {
+                        awar_result->write_string(GB_await_error());
+                    }
+                }
+
+                free(id);
+            }
+        }
+    }
+
+    static void bind_result_refresh_cbs(AW_root *aw_root, ReferringEntriesHandler *reh) {
+        aw_root->awar(AWAR_MARKBYREF_FIELD)->add_callback(refresh_result_cb, (AW_CL)reh);
+        aw_root->awar(AWAR_MARKBYREF_FILTER)->add_callback(refresh_result_cb, (AW_CL)reh);
+        aw_root->awar(AWAR_SPECIES_NAME)->add_callback(refresh_result_cb, (AW_CL)reh); // @@@ hack
     }
 
     void create_refentries_awars(AW_root *aw_root, AW_default aw_def) {
-        aw_root->awar_int   (AWAR_MARKBYREF_ALL,            0,           aw_def);
-        aw_root->awar_string(AWAR_MARKBYREF_FIELD,          "used_rels", aw_def);
-        aw_root->awar_int   (AWAR_MARKBYREF_IGNORE_UNKNOWN, 0,           aw_def);
+        aw_root->awar_string(AWAR_MARKBYREF_FIELD, "used_rels",       aw_def);
+        aw_root->awar_string(AWAR_MARKBYREF_FILTER,   "/[0-9.]+[%]*://", aw_def);
+        
+        aw_root->awar_string(AWAR_MARKBYREF_SELECTED, "a", aw_def);
+        aw_root->awar_string(AWAR_MARKBYREF_CONTENT,  "b", aw_def);
+        aw_root->awar_string(AWAR_MARKBYREF_RESULT,   "c", aw_def);
+
+        aw_root->awar_int(AWAR_MARKBYREF_ALL,            0, aw_def);
+        aw_root->awar_int(AWAR_MARKBYREF_IGNORE_MISSING, 0, aw_def);
+        aw_root->awar_int(AWAR_MARKBYREF_IGNORE_UNKNOWN, 0, aw_def);
     }
 
-    AW_window *create_refentries_window(AW_root *awr, ReferringEntriesHandler *reh, const char *window_id, const char *title, const char *help, client_area_builder build_client_area, const char *action, referred_item_handler action_cb) {
+    AW_window *create_refentries_window(AW_root *aw_root, ReferringEntriesHandler *reh, const char *window_id, const char *title, const char *help, client_area_builder build_client_area, const char *action, referred_item_handler action_cb) {
         AW_window_simple *aws = new AW_window_simple;
 
-        aws->init(awr, window_id, title);
+        aws->init(aw_root, window_id, title);
         aws->auto_space(10, 10);
+
+        bind_result_refresh_cbs(aw_root, reh);
 
         aws->callback((AW_CB0) AW_POPDOWN);
         aws->create_button("CLOSE", "CLOSE", "C");
@@ -135,39 +239,54 @@ namespace RefEntries {
         aws->callback(AW_POPUP_HELP, (AW_CL)help);
         aws->create_button("HELP", "HELP", "H");
 
-        aws->at_newline();
-        aws->label_length(27);
+        const int LABEL_LENGTH = 27;
+        aws->label_length(LABEL_LENGTH);
 
-        const ad_item_selector& referring = reh->get_referring_item();
-    
-        char *items_name = strdup(referring.items_name);
+        const ad_item_selector& itemtype = reh->get_referring_item();
+
+        char *items_name = strdup(itemtype.items_name);
         items_name[0]    = toupper(items_name[0]);
 
+        aws->at_newline();
         aws->create_option_menu(AWAR_MARKBYREF_ALL, GBS_global_string("%s to examine", items_name));
         aws->insert_option("Marked", "M", 0);
         aws->insert_option("All",    "A", 1);
         aws->update_option_menu();
 
         aws->at_newline();
-
         aws->label("Field containing references");
         aws->create_input_field(AWAR_MARKBYREF_FIELD, 10);
 
         aws->at_newline();
+        aws->label("Ignore if field missing?");
+        aws->create_toggle(AWAR_MARKBYREF_IGNORE_MISSING);
 
+        aws->at_newline();
+        aws->label("Filter content by ACI");
+        aws->create_input_field(AWAR_MARKBYREF_FILTER, 30);
+
+        aws->label_length(10);
+        aws->button_length(40);
+        aws->at_newline(); aws->label("Selected"); aws->create_button(NULL, AWAR_MARKBYREF_SELECTED);
+        aws->at_newline(); aws->label("Content");  aws->create_button(NULL, AWAR_MARKBYREF_CONTENT);
+        aws->at_newline(); aws->label("Result");   aws->create_button(NULL, AWAR_MARKBYREF_RESULT);
+        aws->label_length(LABEL_LENGTH);
+
+        aws->at_newline();
         aws->label("Ignore unknown references?");
         aws->create_toggle(AWAR_MARKBYREF_IGNORE_UNKNOWN);
 
         if (build_client_area) build_client_area(aws);
 
         aws->at_newline();
-
         aws->callback(perform_refentries, (AW_CL)reh, (AW_CL)action_cb);
         aws->create_autosize_button("ACTION", action, "");
 
         aws->window_fit();
 
         free(items_name);
+
+        refresh_result_cb(aw_root, (AW_CL)reh);
 
         return aws;
     }

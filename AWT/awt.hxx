@@ -60,7 +60,7 @@ struct ad_item_selector { // @@@ remove AW_root arguments!
     // - for species: AWAR_SPECIES_NAME is changed (item_name = 'species_name')
     // - for genes: AWAR_GENE_NAME and AWAR_SPECIES_NAME are changed (item_name = 'species_name/gene_name')
     void (*update_item_awars)(GBDATA* gb_main, AW_root *aw_root, const char *item_name);
-    char *(*generate_item_id)(GBDATA *gb_main, GBDATA *gb_item);
+    char *(*generate_item_id)(GBDATA *gb_main, GBDATA *gb_item); // @@@ remove parameter 'gb_main'
     GBDATA *(*find_item_by_id)(GBDATA *gb_main, const char *id);
     AW_CB selection_list_rescan_cb;
     int   item_name_length; // -1 means "unknown" (might be long)
