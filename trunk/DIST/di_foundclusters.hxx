@@ -35,6 +35,9 @@
 #ifndef _GLIBCXX_STRING
 #include <string>
 #endif
+#ifndef DBITEM_SET_H
+#include <dbitem_set.h>
+#endif
 
 #define cl_assert(cond) arb_assert(cond)
 
@@ -45,9 +48,6 @@ class AW_window;
 
 // ---------------------
 //      Cluster
-
-typedef std::set<GBDATA*>          SpeciesSet;
-typedef SpeciesSet::const_iterator SpeciesSetIter;
 
 typedef long ID;
 
@@ -74,7 +74,7 @@ class Cluster : virtual Noncopyable {
     double rel_tree_pos;                            // relative position in tree [0.0 .. 1.0]
 
     GBDATA     *representative;                     // cluster member with lowest mean distance
-    SpeciesSet  members;                            // all members (including representative)
+    DBItemSet  members;                            // all members (including representative)
 
     std::string  name;                              // cluster name
     std::string *next_name;                         // proposed new name (call accept_name() to accept it)
@@ -93,7 +93,7 @@ public:
     void scan_description_widths(DescriptionFormat& format) const;
     const char *description(const DescriptionFormat *format) const;
 
-    const SpeciesSet& get_members() const { return members; }
+    const DBItemSet& get_members() const { return members; }
 
     void mark_all_members(bool mark_representative) const;
     GBDATA *get_representative() const { return representative; }

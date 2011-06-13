@@ -550,6 +550,7 @@ NT_extern.o: $(ARBHOME)/INCLUDE/awt_www.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/awtc_submission.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/awti_export.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/cb.h
+NT_extern.o: $(ARBHOME)/INCLUDE/dbitem_set.h
 NT_extern.o: $(ARBHOME)/INCLUDE/downcast.h
 NT_extern.o: $(ARBHOME)/INCLUDE/dupstr.h
 NT_extern.o: $(ARBHOME)/INCLUDE/EXP.hxx
@@ -558,6 +559,7 @@ NT_extern.o: $(ARBHOME)/INCLUDE/GEN.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/multi_probe.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/primer_design.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/probe_design.hxx
+NT_extern.o: $(ARBHOME)/INCLUDE/refentries.h
 NT_extern.o: $(ARBHOME)/INCLUDE/seq_quality.h
 NT_extern.o: $(ARBHOME)/INCLUDE/smartptr.h
 NT_extern.o: $(ARBHOME)/INCLUDE/st_window.hxx
