@@ -2,25 +2,8 @@
 
 .SUFFIXES: .o .cxx .depend
 
-OBJECTS =	\
-		AWT_asciiprint.o \
-		AWT_attributes.o \
-		AWT_canio.o \
-		AWT_canvas.o \
-		AWT_changekey.o \
-		AWT_config_manager.o \
-		AWT_db_browser.o \
-		AWT_hotkeys.o \
-		AWT_input_mask.o \
-		AWT_item_sel_list.o \
-		AWT_macro.o \
-		AWT_map_key.o \
-		AWT_nds.o \
-		AWT_query_and_functions.o \
-		AWT_sel_boxes.o \
-		AWT_seq_colors.o \
-		AWT_tables.o \
-		AWT_www.o \
+CXX=$(wildcard *.cxx)
+OBJECTS=$(subst .cxx,.o,$(CXX))
 
 $(MAIN): $(OBJECTS)
 	$(LINK_SHARED_LIB) $(@:.a=).$(SHARED_LIB_SUFFIX) $(OBJECTS)
@@ -279,6 +262,14 @@ AWT_item_sel_list.o: $(ARBHOME)/INCLUDE/dupstr.h
 AWT_item_sel_list.o: $(ARBHOME)/INCLUDE/smartptr.h
 AWT_item_sel_list.o: $(ARBHOME)/INCLUDE/test_global.h
 
+AWT_iupac.o: awt_iupac.hxx
+AWT_iupac.o: $(ARBHOME)/INCLUDE/arb_assert.h
+AWT_iupac.o: $(ARBHOME)/INCLUDE/arb_core.h
+AWT_iupac.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+AWT_iupac.o: $(ARBHOME)/INCLUDE/dupstr.h
+AWT_iupac.o: $(ARBHOME)/INCLUDE/test_global.h
+AWT_iupac.o: $(ARBHOME)/INCLUDE/test_unit.h
+
 AWT_macro.o: awt_macro.hxx
 AWT_macro.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AWT_macro.o: $(ARBHOME)/INCLUDE/arb_assert.h
@@ -496,3 +487,29 @@ AWT_www.o: $(ARBHOME)/INCLUDE/dupstr.h
 AWT_www.o: $(ARBHOME)/INCLUDE/smartptr.h
 AWT_www.o: $(ARBHOME)/INCLUDE/static_assert.h
 AWT_www.o: $(ARBHOME)/INCLUDE/test_global.h
+
+refentries.o: awt.hxx
+refentries.o: refentries.h
+refentries.o: $(ARBHOME)/INCLUDE/ad_prot.h
+refentries.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
+refentries.o: $(ARBHOME)/INCLUDE/arb_assert.h
+refentries.o: $(ARBHOME)/INCLUDE/arb_core.h
+refentries.o: $(ARBHOME)/INCLUDE/arb_error.h
+refentries.o: $(ARBHOME)/INCLUDE/arb_msg.h
+refentries.o: $(ARBHOME)/INCLUDE/arb_string.h
+refentries.o: $(ARBHOME)/INCLUDE/arbdb.h
+refentries.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+refentries.o: $(ARBHOME)/INCLUDE/arbdbt.h
+refentries.o: $(ARBHOME)/INCLUDE/arbtools.h
+refentries.o: $(ARBHOME)/INCLUDE/attributes.h
+refentries.o: $(ARBHOME)/INCLUDE/aw_awar.hxx
+refentries.o: $(ARBHOME)/INCLUDE/aw_base.hxx
+refentries.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
+refentries.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
+refentries.o: $(ARBHOME)/INCLUDE/aw_root.hxx
+refentries.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+refentries.o: $(ARBHOME)/INCLUDE/cb.h
+refentries.o: $(ARBHOME)/INCLUDE/dbitem_set.h
+refentries.o: $(ARBHOME)/INCLUDE/dupstr.h
+refentries.o: $(ARBHOME)/INCLUDE/smartptr.h
+refentries.o: $(ARBHOME)/INCLUDE/test_global.h
