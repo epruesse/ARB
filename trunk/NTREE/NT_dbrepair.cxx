@@ -143,13 +143,13 @@ GB_ERROR CheckedConsistencies::perform_selected_item_checks(ad_item_selector *se
     GB_ERROR        error = NULL;
     item_check_iter end   = item_checks.end();
 
-    for (GBDATA *gb_cont = sel->get_first_item_container(gb_main, NULL, AWT_QUERY_ALL_SPECIES);
+    for (GBDATA *gb_cont = sel->get_first_item_container(gb_main, NULL, QUERY_ALL_ITEMS);
          gb_cont && !error;
-         gb_cont = sel->get_next_item_container(gb_cont, AWT_QUERY_ALL_SPECIES))
+         gb_cont = sel->get_next_item_container(gb_cont, QUERY_ALL_ITEMS))
     {
-        for (GBDATA *gb_item = sel->get_first_item(gb_cont);
+        for (GBDATA *gb_item = sel->get_first_item(gb_cont, QUERY_ALL_ITEMS);
              gb_item && !error;
-             gb_item = sel->get_next_item(gb_item))
+             gb_item = sel->get_next_item(gb_item, QUERY_ALL_ITEMS))
         {
             for (item_check_iter chk = item_checks.begin(); chk != end && !error; ++chk) {
                 error = chk->second(gb_item, sel);
