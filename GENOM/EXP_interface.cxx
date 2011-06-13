@@ -90,13 +90,13 @@ static GBDATA *EXP_get_first_experiment_data(GBDATA *gb_main, AW_root *aw_root, 
     exp_restore_old_species_marks(gb_main);
 
     switch (range) {
-        case AWT_QUERY_CURRENT_SPECIES: {
+        case QUERY_CURRENT_ITEM: {
             char *species_name = aw_root->awar(AWAR_ORGANISM_NAME)->read_string();
             gb_organism         = GBT_find_species(gb_main, species_name);
             free(species_name);
             break;
         }
-        case AWT_QUERY_MARKED_SPECIES: {
+        case QUERY_MARKED_ITEMS: {
             GBDATA *gb_pseudo = GEN_first_marked_pseudo_species(gb_main);
 
             if (gb_pseudo) {    // there are marked pseudo-species..
@@ -111,7 +111,7 @@ static GBDATA *EXP_get_first_experiment_data(GBDATA *gb_main, AW_root *aw_root, 
 
             break;
         }
-        case AWT_QUERY_ALL_SPECIES: {
+        case QUERY_ALL_ITEMS: {
             gb_organism = GBT_first_species(gb_main);
             break;
         }
@@ -128,10 +128,10 @@ static GBDATA *EXP_get_first_experiment_data(GBDATA *gb_main, AW_root *aw_root, 
 static GBDATA *EXP_get_next_experiment_data(GBDATA *gb_experiment_data, AWT_QUERY_RANGE range) {
     GBDATA *gb_organism = 0;
     switch (range) {
-        case AWT_QUERY_CURRENT_SPECIES: {
+        case QUERY_CURRENT_ITEM: {
             break;
         }
-        case AWT_QUERY_MARKED_SPECIES: {
+        case QUERY_MARKED_ITEMS: {
             GBDATA *gb_last_species = GB_get_father(gb_experiment_data);
             gb_organism             = GEN_next_marked_organism(gb_last_species);
 
@@ -139,7 +139,7 @@ static GBDATA *EXP_get_next_experiment_data(GBDATA *gb_experiment_data, AWT_QUER
 
             break;
         }
-        case AWT_QUERY_ALL_SPECIES: {
+        case QUERY_ALL_ITEMS: {
             GBDATA *gb_last_species = GB_get_father(gb_experiment_data);
             gb_organism             = GBT_next_species(gb_last_species);
             break;
@@ -151,6 +151,25 @@ static GBDATA *EXP_get_next_experiment_data(GBDATA *gb_experiment_data, AWT_QUER
     }
 
     return gb_organism ? EXP_get_experiment_data(gb_organism) : 0;
+}
+
+static GBDATA *first_experiment_in_range(GBDATA *gb_experiment_data, AWT_QUERY_RANGE range) {
+    GBDATA *gb_first = NULL;
+    switch (range) {
+        case QUERY_ALL_ITEMS:    gb_first = EXP_first_experiment_rel_exp_data(gb_experiment_data); break;
+        case QUERY_MARKED_ITEMS: gb_first = GB_first_marked(gb_experiment_data, "experiment"); break;
+        case QUERY_CURRENT_ITEM: gb_first = EXP_get_current_experiment(GB_get_root(gb_experiment_data), AW_root::SINGLETON); break;
+    }
+    return gb_first;
+}
+static GBDATA *next_experiment_in_range(GBDATA *gb_prev, AWT_QUERY_RANGE range) {
+    GBDATA *gb_next = NULL;
+    switch (range) {
+        case QUERY_ALL_ITEMS:    gb_next = EXP_next_experiment(gb_prev); break;
+        case QUERY_MARKED_ITEMS: gb_next = GB_next_marked(gb_prev, "experiment"); break;
+        case QUERY_CURRENT_ITEM: gb_next = NULL; break;
+    }
+    return gb_next;
 }
 
 struct ad_item_selector EXP_item_selector = {
@@ -166,8 +185,8 @@ struct ad_item_selector EXP_item_selector = {
     "name",
     EXP_get_first_experiment_data,
     EXP_get_next_experiment_data,
-    EXP_first_experiment_rel_exp_data,
-    EXP_next_experiment,
+    first_experiment_in_range,
+    next_experiment_in_range,
     EXP_get_current_experiment,
     &AWT_organism_selector, GB_get_grandfather,
 };
