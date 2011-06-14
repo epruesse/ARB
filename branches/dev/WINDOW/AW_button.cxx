@@ -145,10 +145,11 @@ AW_variable_update_struct::AW_variable_update_struct(Widget widgeti,
     else {
         variable_value = 0;
     }
-    variable_int_value = var_i_i; // used for toggles and selection menus
+    variable_int_value   = var_i_i; // used for toggles and selection menus
     variable_float_value = var_f_i;
-    cbs = cbsi;
 
+    cbs = cbsi;
+    id  = NULL;
 }
 
 
@@ -223,9 +224,8 @@ void AW_variable_update_callback(Widget /*wgt*/, XtPointer variable_update_struc
             char                   *ptr;
             AW_selection_list      *selection_list;
             AW_select_table_struct *list_table;
-            bool                    found;
-            found = false;
-            xml   = (XmListCallbackStruct*)call_data;
+
+            xml = (XmListCallbackStruct*)call_data;
 
             XmStringGetLtoR(xml->item, XmSTRING_DEFAULT_CHARSET, &tmp);
 
@@ -1450,7 +1450,7 @@ void AW_window::conc_list(AW_selection_list *from_list, AW_selection_list *to_li
 
 static AW_select_table_struct *current_list_table = 0;
 
-void AW_window::init_list_entry_iterator(AW_selection_list *selection_list) {
+void AW_window::init_list_entry_iterator(AW_selection_list *selection_list) const {
     current_list_table = selection_list->list_table;
 }
 
@@ -1461,11 +1461,11 @@ void AW_window::iterate_list_entry(int offset) {
     }
 }
 
-const char *AW_window::get_list_entry_char_value() {
+const char *AW_window::get_list_entry_char_value() const {
     return current_list_table ? current_list_table->char_value : 0;
 }
 
-const char *AW_window::get_list_entry_displayed() {
+const char *AW_window::get_list_entry_displayed() const {
     return current_list_table ? current_list_table->displayed : 0;
 }
 

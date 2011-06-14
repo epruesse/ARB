@@ -398,7 +398,7 @@ AW_awar *AW_awar::unmap() {
     return this->map(gb_origin);
 }
 
-AW_VARIABLE_TYPE AW_awar::get_type() {
+AW_VARIABLE_TYPE AW_awar::get_type() const {
     return this->variable_type;
 }
 

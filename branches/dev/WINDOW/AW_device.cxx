@@ -387,6 +387,7 @@ void AW_common_Xm::install_common_extends_cb(AW_window *aww, AW_area area) {
 // #define SHOW_CLIP_STACK_CHANGES
 #endif // DEBUG
 
+// cppcheck-suppress noConstructor
 class AW_clip_scale_stack {
     // completely private, but accessible by AW_device
     friend class AW_device;
@@ -478,7 +479,7 @@ static const AW_screen_area& get_universe() {
     return universe;
 }
 
-const AW_screen_area& AW_device::get_area_size() {
+const AW_screen_area& AW_device::get_area_size() const {
     return get_common()->get_screen();
 }
 
@@ -552,11 +553,10 @@ bool AW_device::text_overlay(int gc, const char *opt_str, long opt_len,  // eith
     const AW_font_limits&  font_limits = gcm->get_font_limits();
 
     long   textlen;
-    int    xi, yi;
+    int    xi;
     int    h;
     int    start;
     int    l;
-    int    c = 0;
     AW_pos X0, Y0;              // Transformed pos
 
     bool inside_clipping_left  = true; // clipping at the left edge of the screen is different from clipping right of the left edge.
@@ -607,7 +607,6 @@ bool AW_device::text_overlay(int gc, const char *opt_str, long opt_len,  // eith
         X0 = X0-alignment*width;
     }
     xi = AW_INT(X0);
-    yi = AW_INT(Y0);
     if (X0 > clipRect.r) return 0; // right of screen
 
     l = (int)clipRect.l;
@@ -631,6 +630,7 @@ bool AW_device::text_overlay(int gc, const char *opt_str, long opt_len,  // eith
             aw_assert(int(strlen(opt_str)) >= textlen);
         }
         else { // proportional font
+            int c = 0;
             for (h=0; xi < l; h++) {
                 if (!(c = opt_str[h])) return 0;
                 xi += gcm->get_width_of_char(c);

@@ -181,12 +181,12 @@ bool AW_device_click::text_impl(int gc, const char *str, const AW::Position& pos
 }
 
 
-void AW_device_click::get_clicked_line(class AW_clicked_line *ptr) {
+void AW_device_click::get_clicked_line(class AW_clicked_line *ptr) const {
     *ptr = opt_line;
 }
 
 
-void AW_device_click::get_clicked_text(class AW_clicked_text *ptr) {
+void AW_device_click::get_clicked_text(class AW_clicked_text *ptr) const {
     *ptr = opt_text;
 }
 
