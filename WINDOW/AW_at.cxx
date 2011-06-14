@@ -280,9 +280,9 @@ bool AW_window::at_ifdef(const  char *at_id) {
     return false;
 }
 
-void AW_window::get_at_position(int *x, int *y) { *x = _at->x_for_next_button; *y = _at->y_for_next_button; }
-int AW_window::get_at_xposition() { return _at->x_for_next_button; }
-int AW_window::get_at_yposition() { return _at->y_for_next_button; }
+void AW_window::get_at_position(int *x, int *y) const { *x = _at->x_for_next_button; *y = _at->y_for_next_button; }
+int AW_window::get_at_xposition() const { return _at->x_for_next_button; }
+int AW_window::get_at_yposition() const { return _at->y_for_next_button; }
 
 void AW_window::store_at_size_and_attach(AW_at_size *at_size) {
     at_size->store(_at);
@@ -332,7 +332,7 @@ void AW_window::increment_at_commands(int width, int height) {
     }
 }
 
-int AW_window::calculate_string_width(int columns) {
+int AW_window::calculate_string_width(int columns) const {
     if (xfig_data) {
         AW_xfig *xfig = (AW_xfig *)xfig_data;
         return (int)(columns * xfig->font_scale * XFIG_DEFAULT_FONT_WIDTH);   /* stdfont 8x13 */
@@ -342,7 +342,7 @@ int AW_window::calculate_string_width(int columns) {
     }
 }
 
-int AW_window::calculate_string_height(int rows,   int offset) {
+int AW_window::calculate_string_height(int rows, int offset) const {
     if (xfig_data) {
         AW_xfig *xfig = (AW_xfig *)xfig_data;
         return (int)((rows * XFIG_DEFAULT_FONT_HEIGHT + offset) * xfig->font_scale); /* stdfont 8x13 */
