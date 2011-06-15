@@ -16,7 +16,9 @@ include $(ARBHOME)/SOURCE_TOOLS/export2sub
 # --------------------------------------------------------------------------------
 
 $(MAIN):
-	@echo "Makefile:19: XML_IMPORT compile broken atm"
+ifeq ($(SHOWTODO),1)
+	@echo "Makefile:20: Warning: XML_IMPORT is unfinished work"
+endif
 	true
 
 #$(MAIN): $(ARCHS)
