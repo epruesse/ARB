@@ -128,6 +128,7 @@ struct AW_toggle_field_struct {
 };
 
 
+// cppcheck-suppress noConstructor
 class AW_selection_list_entry : virtual Noncopyable {
     char      *displayed;
 
