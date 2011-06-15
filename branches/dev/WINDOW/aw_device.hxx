@@ -715,7 +715,11 @@ public:
     AW_clicked_line opt_line;
     AW_clicked_text opt_text;
 
-    AW_device_click(AW_common *common_) : AW_simple_device(common_) {}
+    AW_device_click(AW_common *common_)
+        : AW_simple_device(common_)
+    {
+        init(0, 0, -1, -1, 0, AW_ALL_DEVICES);
+    }
 
     AW_DEVICE_TYPE type();
 

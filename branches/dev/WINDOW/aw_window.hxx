@@ -63,8 +63,18 @@ class AW_at_size {
     bool attach_ly;
     bool attach_any;
 
-
 public:
+    AW_at_size()
+        : to_offset_x(0),
+          to_offset_y(0),
+          to_position_exists(false),
+          attach_x(false), 
+          attach_y(false), 
+          attach_lx(false), 
+          attach_ly(false), 
+          attach_any(false) 
+    {}
+
     void store(const AW_at *at);
     void restore(AW_at *at) const;
 };
@@ -74,6 +84,11 @@ class AW_at_maxsize {
     int maxy;
 
 public:
+    AW_at_maxsize()
+        : maxx(0),
+          maxy(0)
+    {}
+    
     void store(const AW_at *at);
     void restore(AW_at *at) const;
 };
