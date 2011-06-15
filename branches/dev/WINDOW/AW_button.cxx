@@ -929,12 +929,12 @@ void AW_window::create_inverse_toggle(const char *var_name) {
 //      input fields
 
 void AW_window::create_input_field(const char *var_name,   int columns) {
-    Widget                     textField              = 0;
-    Widget                     tmp_label              = 0;
-    AW_cb_struct              *cbs;
+    Widget         textField              = 0;
+    Widget         tmp_label              = 0;
+    AW_cb_struct  *cbs;
     VarUpdateInfo *vui;
-    char                      *String;
-    int                        x_correcting_for_label = 0;
+    char          *String;
+    int            x_correcting_for_label = 0;
 
     if (!columns) columns = _at->length_of_buttons;
 
