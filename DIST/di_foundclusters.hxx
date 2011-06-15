@@ -49,7 +49,7 @@ class AW_window;
 typedef std::set<GBDATA*>          SpeciesSet;
 typedef SpeciesSet::const_iterator SpeciesSetIter;
 
-typedef long ID;
+typedef int32_t ID;
 
 enum ClusterOrder {
     UNSORTED             = 0, 

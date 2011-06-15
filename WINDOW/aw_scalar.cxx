@@ -23,3 +23,15 @@ AW_scalar::AW_scalar(AW_awar *awar) {
     }
 }
 
+GB_ERROR AW_scalar::write_to(class AW_awar *awar) {
+    GB_ERROR error = NULL;
+    switch (awar->get_type()) {
+        case AW_INT:     error = awar->write_int(get_int()); break;
+        case AW_FLOAT:   error = awar->write_float(get_float()); break;
+        case AW_STRING:  error = awar->write_string(get_string()); break;
+        case AW_POINTER: error = awar->write_pointer(get_pointer()); break;
+        default : GBK_terminatef("AWAR type %i unhandled", awar->get_type()); break;
+    }
+    return error;
+}
+

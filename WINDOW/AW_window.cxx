@@ -162,7 +162,7 @@ AW_toggle_field_struct::AW_toggle_field_struct(int toggle_field_numberi,
     correct_for_at_center_intern = correct;
 }
 
-char *AW_select_table_struct::copy_string(const char *str) {
+char *AW_selection_list_entry::copy_string_for_display(const char *str) {
     char *out = strdup(str);
     char *p   = out;
     int   ch;
@@ -174,31 +174,6 @@ char *AW_select_table_struct::copy_string(const char *str) {
             p[-1] = '#';
     }
     return out;
-}
-
-AW_select_table_struct::AW_select_table_struct(const char *displayedi, const char *valuei) {
-    memset((char *)this, 0, sizeof(AW_select_table_struct));
-    displayed = copy_string(displayedi);
-    char_value = strdup(valuei);
-}
-AW_select_table_struct::AW_select_table_struct(const char *displayedi, long valuei) {
-    memset((char *)this, 0, sizeof(AW_select_table_struct));
-    displayed = copy_string(displayedi);
-    int_value = valuei;
-}
-AW_select_table_struct::AW_select_table_struct(const char *displayedi, float valuei) {
-    memset((char *)this, 0, sizeof(AW_select_table_struct));
-    displayed = copy_string(displayedi);
-    float_value = valuei;
-}
-AW_select_table_struct::AW_select_table_struct(const char *displayedi, void *pointer) {
-    memset((char *)this, 0, sizeof(AW_select_table_struct));
-    displayed = copy_string(displayedi);
-    pointer_value = pointer;
-}
-AW_select_table_struct::~AW_select_table_struct() {
-    free(displayed);
-    free(char_value);
 }
 
 AW_selection_list::AW_selection_list(const char *variable_namei, int variable_typei, Widget select_list_widgeti) {

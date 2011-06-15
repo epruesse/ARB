@@ -21,7 +21,7 @@
 
 
 class AW_selection_list {
-    AW_select_table_struct *loop_pntr;
+    AW_selection_list_entry *loop_pntr; // @@@ better use some kind of selection-list iterator
 public:
     AW_selection_list(const char *variable_namei, int variable_typei, Widget select_list_widgeti);
 
@@ -30,9 +30,9 @@ public:
     Widget            select_list_widget;
     bool              value_equal_display; // set true to fix load/save of some selection lists
 
-    AW_select_table_struct *list_table;
-    AW_select_table_struct *last_of_list_table;
-    AW_select_table_struct *default_select;
+    AW_selection_list_entry *list_table;
+    AW_selection_list_entry *last_of_list_table;
+    AW_selection_list_entry *default_select;
     AW_selection_list      *next;
 
     // ******************** real public ***************
@@ -77,8 +77,8 @@ public:
     void insert_selection(const char *displayed, const char *value) { win->insert_selection(sellist, displayed, value); }
     void insert_default_selection(const char *displayed, const char *value) { win->insert_default_selection(sellist, displayed, value); }
     
-    void insert_selection(const char *displayed, long value) { win->insert_selection(sellist, displayed, value); }
-    void insert_default_selection(const char *displayed, long value) { win->insert_default_selection(sellist, displayed, value); }
+    void insert_selection(const char *displayed, int32_t value) { win->insert_selection(sellist, displayed, value); }
+    void insert_default_selection(const char *displayed, int32_t value) { win->insert_default_selection(sellist, displayed, value); }
 };
 
 

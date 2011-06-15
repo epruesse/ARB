@@ -128,29 +128,31 @@ struct AW_toggle_field_struct {
 };
 
 
-struct AW_select_table_struct : virtual Noncopyable {
-    AW_select_table_struct(const char *displayedi, const char *value);
-    AW_select_table_struct(const char *displayedi, long value);
-    AW_select_table_struct(const char *displayedi, float value);
-    AW_select_table_struct(const char *displayedi, void *pointer);
+class AW_selection_list_entry : virtual Noncopyable {
+    char      *displayed;
 
-    ~AW_select_table_struct();
+public:
+    // @@@ make members private
+    AW_scalar  value;
+    bool is_selected;                                // internal use only
+    AW_selection_list_entry *next;
 
-    static char *copy_string(const char *str);
+    template<typename T>
+    AW_selection_list_entry(const char *display, T val)
+        : displayed(copy_string_for_display(display)),
+          value(val),
+          is_selected(false),
+          next(NULL)
+    {}
+    ~AW_selection_list_entry() { free(displayed); }
 
-    char *displayed;
+    static char *copy_string_for_display(const char *str);
 
-#if defined(WARN_TODO)
-#warning make the following variables a union
-#endif
-    char  *char_value;
-    long   int_value;
-    float  float_value;
-    void  *pointer_value;
+    template<typename T>
+    void set_value(T val) { value = AW_scalar(val); }
 
-    int is_selected;                                // internal use only
-
-    AW_select_table_struct *next;
+    const char *get_displayed() const { return displayed; }
+    void set_displayed(const char *displayed_) { freeset(displayed, copy_string_for_display(displayed_)); }
 };
 
 // -------------------------------------------
