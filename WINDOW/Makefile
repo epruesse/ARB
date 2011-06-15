@@ -122,6 +122,7 @@ AW_button.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AW_button.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AW_button.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_button.o: $(ARBHOME)/INCLUDE/arb_core.h
+AW_button.o: $(ARBHOME)/INCLUDE/arb_defs.h
 AW_button.o: $(ARBHOME)/INCLUDE/arb_error.h
 AW_button.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AW_button.o: $(ARBHOME)/INCLUDE/arb_str.h
@@ -144,6 +145,7 @@ AW_click.o: aw_device.hxx
 AW_click.o: aw_position.hxx
 AW_click.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_click.o: $(ARBHOME)/INCLUDE/arb_core.h
+AW_click.o: $(ARBHOME)/INCLUDE/arb_defs.h
 AW_click.o: $(ARBHOME)/INCLUDE/arbtools.h
 AW_click.o: $(ARBHOME)/INCLUDE/attributes.h
 AW_click.o: $(ARBHOME)/INCLUDE/downcast.h
@@ -167,6 +169,7 @@ AW_debug.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AW_debug.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AW_debug.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_debug.o: $(ARBHOME)/INCLUDE/arb_core.h
+AW_debug.o: $(ARBHOME)/INCLUDE/arb_defs.h
 AW_debug.o: $(ARBHOME)/INCLUDE/arb_error.h
 AW_debug.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AW_debug.o: $(ARBHOME)/INCLUDE/arb_string.h
@@ -191,6 +194,7 @@ AW_device.o: aw_root.hxx
 AW_device.o: aw_window.hxx
 AW_device.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_device.o: $(ARBHOME)/INCLUDE/arb_core.h
+AW_device.o: $(ARBHOME)/INCLUDE/arb_defs.h
 AW_device.o: $(ARBHOME)/INCLUDE/arb_error.h
 AW_device.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AW_device.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -259,6 +263,7 @@ AW_font_group.o: aw_font_group.hxx
 AW_font_group.o: aw_position.hxx
 AW_font_group.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_font_group.o: $(ARBHOME)/INCLUDE/arb_core.h
+AW_font_group.o: $(ARBHOME)/INCLUDE/arb_defs.h
 AW_font_group.o: $(ARBHOME)/INCLUDE/arbtools.h
 AW_font_group.o: $(ARBHOME)/INCLUDE/attributes.h
 AW_font_group.o: $(ARBHOME)/INCLUDE/downcast.h
@@ -402,6 +407,7 @@ AW_print.o: aw_position.hxx
 AW_print.o: aw_root.hxx
 AW_print.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_print.o: $(ARBHOME)/INCLUDE/arb_core.h
+AW_print.o: $(ARBHOME)/INCLUDE/arb_defs.h
 AW_print.o: $(ARBHOME)/INCLUDE/arb_error.h
 AW_print.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AW_print.o: $(ARBHOME)/INCLUDE/arbtools.h
@@ -474,6 +480,7 @@ AW_size.o: aw_device.hxx
 AW_size.o: aw_position.hxx
 AW_size.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_size.o: $(ARBHOME)/INCLUDE/arb_core.h
+AW_size.o: $(ARBHOME)/INCLUDE/arb_defs.h
 AW_size.o: $(ARBHOME)/INCLUDE/arbtools.h
 AW_size.o: $(ARBHOME)/INCLUDE/attributes.h
 AW_size.o: $(ARBHOME)/INCLUDE/downcast.h
@@ -532,6 +539,7 @@ AW_window.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AW_window.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AW_window.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_window.o: $(ARBHOME)/INCLUDE/arb_core.h
+AW_window.o: $(ARBHOME)/INCLUDE/arb_defs.h
 AW_window.o: $(ARBHOME)/INCLUDE/arb_error.h
 AW_window.o: $(ARBHOME)/INCLUDE/arb_handlers.h
 AW_window.o: $(ARBHOME)/INCLUDE/arb_msg.h
@@ -560,6 +568,7 @@ AW_window_Xm_interface.o: aw_window_Xm.hxx
 AW_window_Xm_interface.o: aw_window_Xm_interface.hxx
 AW_window_Xm_interface.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_window_Xm_interface.o: $(ARBHOME)/INCLUDE/arb_core.h
+AW_window_Xm_interface.o: $(ARBHOME)/INCLUDE/arb_defs.h
 AW_window_Xm_interface.o: $(ARBHOME)/INCLUDE/arb_error.h
 AW_window_Xm_interface.o: $(ARBHOME)/INCLUDE/arbdb_base.h
 AW_window_Xm_interface.o: $(ARBHOME)/INCLUDE/arbtools.h
@@ -600,6 +609,7 @@ AW_xfont.o: aw_xfont.hxx
 AW_xfont.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AW_xfont.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_xfont.o: $(ARBHOME)/INCLUDE/arb_core.h
+AW_xfont.o: $(ARBHOME)/INCLUDE/arb_defs.h
 AW_xfont.o: $(ARBHOME)/INCLUDE/arb_error.h
 AW_xfont.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AW_xfont.o: $(ARBHOME)/INCLUDE/arb_string.h
@@ -641,6 +651,7 @@ AW_Xm.o: aw_position.hxx
 AW_Xm.o: aw_Xm.hxx
 AW_Xm.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AW_Xm.o: $(ARBHOME)/INCLUDE/arb_core.h
+AW_Xm.o: $(ARBHOME)/INCLUDE/arb_defs.h
 AW_Xm.o: $(ARBHOME)/INCLUDE/arbtools.h
 AW_Xm.o: $(ARBHOME)/INCLUDE/attributes.h
 AW_Xm.o: $(ARBHOME)/INCLUDE/downcast.h
