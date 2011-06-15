@@ -86,9 +86,6 @@
 
 // ------------------------------------------------------------
 
-// use ASSERTION_USED for code needed for assertions
-#define ASSERTION_USED
-
 #if defined(__cplusplus)
 inline void provoke_core_dump() {
     // cppcheck-suppress nullPointer
@@ -180,8 +177,9 @@ inline void provoke_core_dump() {
 // ------------------------------------------------------------
 
 #ifdef ASSERT_NONE
-# undef ASSERTION_USED
 # define arb_assert(cond)
+#else
+# define ASSERTION_USED
 #endif
 
 #undef ASSERT_CRASH
