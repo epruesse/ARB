@@ -185,7 +185,7 @@ enum {
 typedef char *AW_pixmap;
 
 class  AW_window_Motif;
-struct AW_select_table_struct;
+struct AW_selection_list_entry;
 class  AW_selection_list;
 struct AW_option_menu_struct;
 struct aw_toggle_data;
@@ -538,8 +538,8 @@ public:
     void insert_selection(AW_selection_list *selection_list, const char *displayed, const char *value);
     void insert_default_selection(AW_selection_list * selection_list, const char *displayed, const char *value);
     // for int
-    void insert_selection(AW_selection_list * selection_list, const char *displayed, long value);
-    void insert_default_selection(AW_selection_list * selection_list, const char *displayed, long value);
+    void insert_selection(AW_selection_list * selection_list, const char *displayed, int32_t value);
+    void insert_default_selection(AW_selection_list * selection_list, const char *displayed, int32_t value);
     // for float
     void insert_selection(AW_selection_list * selection_list, const char *displayed, float value);
     void insert_default_selection(AW_selection_list * selection_list, const char *displayed, float value);
