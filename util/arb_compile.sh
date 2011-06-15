@@ -14,29 +14,29 @@
 # svn co --username coder --password gimmeARBsource http://svn.mikro.biologie.tu-muenchen.de/svn/trunk myARB
 #
 # 3. link the included compile script, e.g.
-# ln -s myARB/util/compile_arb.sh .
+# ln -s myARB/util/arb_compile.sh compile_myARB.sh
 #
 # 4. call the script
-# ./compile_arb.sh
+# ./compile_myARB.sh
 #
 # 5. review the generated config
-# vi compile_arb.config
+# vi compile_myARB.config
 #
 # 6. call the script again (this will generate config.makefile and fail)
-# ./compile_arb.sh
+# ./compile_myARB.sh
 #
 # 7. edit the generated config.makefile
 # vi myARB/config.makefile
 #
 # 8. call the script again (this shall succeed)
-# ./compile_arb.sh
+# ./compile_myARB.sh
 #
 #
 # B. UPGRADE
 # -----------
 #
 # 1. simply call the script to upgrade ARB to newest revision
-# ./compile_arb.sh
+# ./compile_myARB.sh
 #
 #
 # C. Multiple versions (in one 'my_arb_compile' directory)
