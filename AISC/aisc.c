@@ -175,6 +175,8 @@ void Output::setup() {
     id    = NULL;
     name  = NULL;
     maybe = NULL;
+
+    have_open_loc = false;
 }
 void Output::cleanup() {
     close_file();
