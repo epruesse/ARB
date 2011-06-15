@@ -2222,16 +2222,16 @@ AW_option_menu_struct *AW_window::create_option_menu(const char *var_name, AW_la
     return p_global->current_option_menu;
 }
 
-static void remove_option_from_option_menu(AW_root *aw_root, AW_option_struct *os) {
-    aw_root->remove_button_from_sens_list(os->choice_widget);
-    XtDestroyWidget(os->choice_widget);
+static void remove_option_from_option_menu(AW_root *aw_root, AW_widget_value_pair *os) {
+    aw_root->remove_button_from_sens_list(os->widget);
+    XtDestroyWidget(os->widget);
 }
 
 void AW_window::clear_option_menu(AW_option_menu_struct *oms) {
     p_global->current_option_menu = oms; // define as current (for subsequent inserts)
 
-    AW_option_struct *next_os;
-    for (AW_option_struct *os = oms->first_choice; os; os = next_os) {
+    AW_widget_value_pair *next_os;
+    for (AW_widget_value_pair *os = oms->first_choice; os; os = next_os) {
         next_os  = os->next;
         os->next = 0;
         remove_option_from_option_menu(root, os);
@@ -2265,7 +2265,7 @@ void *AW_window::_create_option_entry(AW_VARIABLE_TYPE IF_DEBUG(type), const cha
     return (void *)entry;
 }
 
-inline void option_menu_add_option(AW_option_menu_struct *oms, AW_option_struct *os, bool default_option) {
+inline void option_menu_add_option(AW_option_menu_struct *oms, AW_widget_value_pair *os, bool default_option) {
     if (default_option) {
         oms->default_choice = os;
     }
@@ -2296,7 +2296,7 @@ void AW_window::insert_option_internal(AW_label option_name, const char *mnemoni
                       (XtCallbackProc) AW_variable_update_callback,
                       (XtPointer) new AW_variable_update_struct(NULL, AW_WIDGET_CHOICE_MENU, root->awar(oms->variable_name), var_value, 0, 0, cbs));
 
-        option_menu_add_option(p_global->current_option_menu, new AW_option_struct(var_value, entry), default_option);
+        option_menu_add_option(p_global->current_option_menu, new AW_widget_value_pair(var_value, entry), default_option);
         root->make_sensitive(entry, _at->widget_mask);
         this->unset_at_commands();
     }
@@ -2316,7 +2316,7 @@ void AW_window::insert_option_internal(AW_label option_name, const char *mnemoni
                       (XtCallbackProc) AW_variable_update_callback,
                       (XtPointer) new AW_variable_update_struct(NULL, AW_WIDGET_CHOICE_MENU, root->awar(oms->variable_name), 0, var_value, 0, cbs));
 
-        option_menu_add_option(p_global->current_option_menu, new AW_option_struct(var_value, entry), default_option);
+        option_menu_add_option(p_global->current_option_menu, new AW_widget_value_pair(var_value, entry), default_option);
         root->make_sensitive(entry, _at->widget_mask);
         this->unset_at_commands();
     }
@@ -2336,7 +2336,7 @@ void AW_window::insert_option_internal(AW_label option_name, const char *mnemoni
                       (XtCallbackProc) AW_variable_update_callback,
                       (XtPointer) new AW_variable_update_struct(NULL, AW_WIDGET_CHOICE_MENU, root->awar(oms->variable_name), 0, 0, var_value, cbs));
 
-        option_menu_add_option(p_global->current_option_menu, new AW_option_struct(var_value, entry), default_option);
+        option_menu_add_option(p_global->current_option_menu, new AW_widget_value_pair(var_value, entry), default_option);
         root->make_sensitive(entry, _at->widget_mask);
         this->unset_at_commands();
     }
@@ -2356,43 +2356,16 @@ void AW_window::update_option_menu() {
 
 void AW_window::update_option_menu(AW_option_menu_struct *oms) {
     if (get_root()->changer_of_variable != oms->label_widget) {
-        AW_option_struct *active_choice = oms->first_choice;
+        AW_widget_value_pair *active_choice = oms->first_choice;
         {
-            char  *global_var_value       = NULL;
-            long   global_var_int_value   = 0;
-            float  global_var_float_value = 0;
-            char  *var_name               = oms->variable_name;
-
-#if defined(WARN_TODO)
-#warning missing implementation for AW_POINTER
-#endif
-
-            switch (oms->variable_type) {
-                case AW_STRING: global_var_value       = root->awar(var_name)->read_string(); break;
-                case AW_INT:    global_var_int_value   = root->awar(var_name)->read_int(); break;
-                case AW_FLOAT:  global_var_float_value = root->awar(var_name)->read_float(); break;
-                default: break;
-            }
-
-            bool found_choice = false;
-            while (active_choice) {
-                switch (oms->variable_type) {
-                    case AW_STRING: found_choice = ((strcmp(global_var_value, active_choice->variable_value) == 0)); break;
-                    case AW_INT:    found_choice = (global_var_int_value   == active_choice->variable_int_value);       break;
-                    case AW_FLOAT:  found_choice = (global_var_float_value == active_choice->variable_float_value);     break;
-                    default:
-                        aw_assert(0);
-                        GB_warning("Unknown AWAR type");
-                        break;
-                }
-                if (found_choice) break;
+            AW_scalar global_var_value(root->awar(oms->variable_name));
+            while (active_choice && global_var_value != active_choice->value) {
                 active_choice = active_choice->next;
             }
-            free(global_var_value);
         }
 
         if (!active_choice) active_choice = oms->default_choice;
-        if (active_choice) XtVaSetValues(oms->label_widget, XmNmenuHistory, active_choice->choice_widget, NULL);
+        if (active_choice) XtVaSetValues(oms->label_widget, XmNmenuHistory, active_choice->widget, NULL);
 
         {
             short length;
@@ -2527,7 +2500,7 @@ void AW_window::create_toggle_field(const char *var_name, int orientation) {
 static Widget _aw_create_toggle_entry(AW_window *aww, Widget toggle_field,
                                       const char *label, const char *mnemonic,
                                       AW_variable_update_struct *awus,
-                                      AW_toggle_struct *toggle, bool default_toggle) {
+                                      AW_widget_value_pair *toggle, bool default_toggle) {
     AW_root *root = aww->get_root();
 
     Widget          toggleButton;
@@ -2541,7 +2514,7 @@ static Widget _aw_create_toggle_entry(AW_window *aww, Widget toggle_field,
                                            XmNfontList, p_global->fontlist,
 
                                            NULL);
-    toggle->toggle_widget = toggleButton;
+    toggle->widget = toggleButton;
     awus->widget = toggleButton;
     XtAddCallback(toggleButton, XmNvalueChangedCallback,
                   (XtCallbackProc) AW_variable_update_callback,
@@ -2574,7 +2547,7 @@ void AW_window::insert_toggle_internal(AW_label toggle_label, const char *mnemon
     else {
         _aw_create_toggle_entry(this, p_w->toggle_field, toggle_label, mnemonic,
                                 new AW_variable_update_struct(NULL, AW_WIDGET_TOGGLE_FIELD, root->awar(p_w->toggle_field_var_name), var_value, 0, 0, _callback),
-                                new AW_toggle_struct(var_value, 0),
+                                new AW_widget_value_pair(var_value, 0),
                                 default_toggle);
     }
 }
@@ -2585,7 +2558,7 @@ void AW_window::insert_toggle_internal(AW_label toggle_label, const char *mnemon
     else {
         _aw_create_toggle_entry(this, p_w->toggle_field, toggle_label, mnemonic,
                                 new AW_variable_update_struct(NULL, AW_WIDGET_TOGGLE_FIELD, root->awar(p_w->toggle_field_var_name), 0, var_value, 0, _callback),
-                                new AW_toggle_struct(var_value, 0),
+                                new AW_widget_value_pair(var_value, 0),
                                 default_toggle);
     }
 }
@@ -2596,7 +2569,7 @@ void AW_window::insert_toggle_internal(AW_label toggle_label, const char *mnemon
     else {
         _aw_create_toggle_entry(this, p_w->toggle_field, toggle_label, mnemonic,
                                 new AW_variable_update_struct(NULL, AW_WIDGET_TOGGLE_FIELD, root->awar(p_w->toggle_field_var_name), 0, 0, var_value, _callback),
-                                new AW_toggle_struct(var_value, 0),
+                                new AW_widget_value_pair(var_value, 0),
                                 default_toggle);
     }
 }
@@ -2631,45 +2604,18 @@ void AW_window::update_toggle_field(int toggle_field_number) {
     }
 
     if (toggle_field_list) {
-        AW_toggle_struct *active_toggle = toggle_field_list->first_toggle;
+        AW_widget_value_pair *active_toggle = toggle_field_list->first_toggle;
         {
-            char  *global_var_value       = NULL;
-            long   global_var_int_value   = 0;
-            float  global_var_float_value = 0;
-
-#if defined(WARN_TODO)
-#warning missing implementation for AW_POINTER
-#endif
-
-            switch (toggle_field_list->variable_type) {
-                case AW_STRING: global_var_value       = root->awar(toggle_field_list->variable_name)->read_string(); break;
-                case AW_INT:    global_var_int_value   = root->awar(toggle_field_list->variable_name)->read_int();      break;
-                case AW_FLOAT:  global_var_float_value = root->awar(toggle_field_list->variable_name)->read_float();    break;
-                default:
-                    GBK_terminatef("AWAR type %i unhandled [1]", toggle_field_list->variable_type);
-                    break;
-            }
-
-            bool found_toggle = false;
-            while (active_toggle) {
-                switch (toggle_field_list->variable_type) {
-                    case AW_STRING: found_toggle = (strcmp(global_var_value, active_toggle->variable_value) == 0);    break;
-                    case AW_INT:    found_toggle = (global_var_int_value == active_toggle->variable_int_value);       break;
-                    case AW_FLOAT:  found_toggle = (global_var_float_value == active_toggle->variable_float_value);   break;
-                    default:
-                        GBK_terminatef("AWAR type %i unhandled [2]", toggle_field_list->variable_type);
-                        break;
-                }
-                if (found_toggle) break;
+            AW_scalar global_value(root->awar(toggle_field_list->variable_name));
+            while (active_toggle && active_toggle->value != global_value) {
                 active_toggle = active_toggle->next;
             }
-            if (!found_toggle) active_toggle = toggle_field_list->default_toggle;
-            free(global_var_value);
+            if (!active_toggle) active_toggle = toggle_field_list->default_toggle;
         }
 
         // iterate over all toggles including default_toggle and set their state
-        for (AW_toggle_struct *toggle = toggle_field_list->first_toggle; toggle;) {
-            XmToggleButtonSetState(toggle->toggle_widget, toggle == active_toggle, False);
+        for (AW_widget_value_pair *toggle = toggle_field_list->first_toggle; toggle;) {
+            XmToggleButtonSetState(toggle->widget, toggle == active_toggle, False);
 
             if (toggle->next)                                     toggle = toggle->next;
             else if (toggle != toggle_field_list->default_toggle) toggle = toggle_field_list->default_toggle;
