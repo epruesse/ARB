@@ -27,6 +27,7 @@ OBJECTS = \
 		AW_xfig.o \
 		AW_xfont.o \
 		AW_xkey.o \
+		aw_scalar.o \
 
 
 $(MAIN): $(OBJECTS)
@@ -112,6 +113,7 @@ AW_button.o: aw_msg.hxx
 AW_button.o: aw_nawar.hxx
 AW_button.o: aw_position.hxx
 AW_button.o: aw_root.hxx
+AW_button.o: aw_scalar.hxx
 AW_button.o: aw_select.hxx
 AW_button.o: aw_window.hxx
 AW_button.o: aw_window_Xm.hxx
@@ -157,6 +159,7 @@ AW_debug.o: aw_keysym.hxx
 AW_debug.o: aw_msg.hxx
 AW_debug.o: aw_position.hxx
 AW_debug.o: aw_root.hxx
+AW_debug.o: aw_scalar.hxx
 AW_debug.o: aw_window.hxx
 AW_debug.o: aw_window_Xm.hxx
 AW_debug.o: aw_Xm.hxx
@@ -427,12 +430,26 @@ AW_question.o: $(ARBHOME)/INCLUDE/dupstr.h
 AW_question.o: $(ARBHOME)/INCLUDE/smartptr.h
 AW_question.o: $(ARBHOME)/INCLUDE/test_global.h
 
+aw_scalar.o: aw_awar.hxx
+aw_scalar.o: aw_base.hxx
+aw_scalar.o: aw_scalar.hxx
+aw_scalar.o: $(ARBHOME)/INCLUDE/arb_assert.h
+aw_scalar.o: $(ARBHOME)/INCLUDE/arb_core.h
+aw_scalar.o: $(ARBHOME)/INCLUDE/arb_msg.h
+aw_scalar.o: $(ARBHOME)/INCLUDE/arbdb_base.h
+aw_scalar.o: $(ARBHOME)/INCLUDE/arbtools.h
+aw_scalar.o: $(ARBHOME)/INCLUDE/attributes.h
+aw_scalar.o: $(ARBHOME)/INCLUDE/cb.h
+aw_scalar.o: $(ARBHOME)/INCLUDE/dupstr.h
+aw_scalar.o: $(ARBHOME)/INCLUDE/test_global.h
+
 AW_select.o: aw_awar.hxx
 AW_select.o: aw_base.hxx
 AW_select.o: aw_device.hxx
 AW_select.o: aw_keysym.hxx
 AW_select.o: aw_position.hxx
 AW_select.o: aw_root.hxx
+AW_select.o: aw_scalar.hxx
 AW_select.o: aw_select.hxx
 AW_select.o: aw_window.hxx
 AW_select.o: aw_window_Xm.hxx
@@ -503,6 +520,7 @@ AW_window.o: aw_msg.hxx
 AW_window.o: aw_nawar.hxx
 AW_window.o: aw_position.hxx
 AW_window.o: aw_root.hxx
+AW_window.o: aw_scalar.hxx
 AW_window.o: aw_select.hxx
 AW_window.o: aw_status.hxx
 AW_window.o: aw_window.hxx
@@ -536,6 +554,7 @@ AW_window_Xm_interface.o: aw_device.hxx
 AW_window_Xm_interface.o: aw_keysym.hxx
 AW_window_Xm_interface.o: aw_position.hxx
 AW_window_Xm_interface.o: aw_root.hxx
+AW_window_Xm_interface.o: aw_scalar.hxx
 AW_window_Xm_interface.o: aw_window.hxx
 AW_window_Xm_interface.o: aw_window_Xm.hxx
 AW_window_Xm_interface.o: aw_window_Xm_interface.hxx

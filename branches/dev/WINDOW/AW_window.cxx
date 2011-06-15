@@ -129,32 +129,6 @@ bool AW_root::remove_button_from_sens_list(Widget button) {
     return removed;
 }
 
-AW_option_struct::AW_option_struct(const char *variable_valuei, Widget choice_widgeti)
-    : variable_value(strdup(variable_valuei)),
-      choice_widget(choice_widgeti),
-      next(0)
-{
-}
-
-AW_option_struct::AW_option_struct(int variable_valuei, Widget choice_widgeti)
-    : variable_value(0),
-      variable_int_value(variable_valuei),
-      choice_widget(choice_widgeti),
-      next(0)
-{
-}
-
-AW_option_struct::AW_option_struct(float variable_valuei, Widget choice_widgeti) :
-    variable_value(0), variable_float_value(variable_valuei),
-            choice_widget(choice_widgeti), next(0) {
-}
-
-AW_option_struct::~AW_option_struct() {
-    aw_assert(next == 0);
-    // has to be unlinked from list BEFORE calling dtor
-    free(variable_value);
-}
-
 AW_option_menu_struct::AW_option_menu_struct(int numberi, const char *variable_namei,
                                              AW_VARIABLE_TYPE variable_typei, Widget label_widgeti,
                                              Widget menu_widgeti, AW_pos xi, AW_pos yi, int correct) {
@@ -187,28 +161,7 @@ AW_toggle_field_struct::AW_toggle_field_struct(int toggle_field_numberi,
     next = NULL;
     correct_for_at_center_intern = correct;
 }
-AW_toggle_struct::AW_toggle_struct(const char *variable_valuei,
-        Widget toggle_widgeti) {
 
-    variable_value = strdup(variable_valuei);
-    toggle_widget = toggle_widgeti;
-    next = NULL;
-
-}
-AW_toggle_struct::AW_toggle_struct(int variable_valuei, Widget toggle_widgeti) {
-
-    variable_int_value = variable_valuei;
-    toggle_widget = toggle_widgeti;
-    next = NULL;
-
-}
-AW_toggle_struct::AW_toggle_struct(float variable_valuei, Widget toggle_widgeti) {
-
-    variable_float_value = variable_valuei;
-    toggle_widget = toggle_widgeti;
-    next = NULL;
-
-}
 char *AW_select_table_struct::copy_string(const char *str) {
     char *out = strdup(str);
     char *p   = out;
