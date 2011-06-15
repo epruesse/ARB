@@ -25,7 +25,7 @@
 # 6. call the script again (this will generate config.makefile and fail)
 # ./compile_myARB.sh
 #
-# 7. edit the generated config.makefile
+# 7. edit the generated config.makefile (default builds a openGL/64bit/linux-ARB)
 # vi myARB/config.makefile
 #
 # 8. call the script again (this shall succeed)
@@ -86,7 +86,7 @@ upgrade() {
 
 arbshell() {
     echo "ARBHOME now is '$ARBHOME'"
-    $ARBHOME/bin/arb_ntree --help |& grep version
+    $ARBHOME/bin/arb_ntree --help 2>&1 | grep version
     tcsh
     ARBHOME=$OLDARBHOME
     echo "ARBHOME now is again '$ARBHOME'"
