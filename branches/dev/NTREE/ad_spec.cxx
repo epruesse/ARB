@@ -696,13 +696,13 @@ static void ad_field_delete(AW_window *aws, AW_CL cl_sel) {
         if (!gb_source) error = "Please select the field you want to delete";
         else error            = GB_delete(gb_source);
 
-        for (GBDATA *gb_item_container = selector->get_first_item_container(GLOBAL_gb_main, aws->get_root(), AWT_QUERY_ALL_SPECIES);
+        for (GBDATA *gb_item_container = selector->get_first_item_container(GLOBAL_gb_main, aws->get_root(), QUERY_ALL_ITEMS);
              !error && gb_item_container;
-             gb_item_container = selector->get_next_item_container(gb_item_container, AWT_QUERY_ALL_SPECIES))
+             gb_item_container = selector->get_next_item_container(gb_item_container, QUERY_ALL_ITEMS))
         {
-            for (GBDATA * gb_item = selector->get_first_item(gb_item_container);
+            for (GBDATA * gb_item = selector->get_first_item(gb_item_container, QUERY_ALL_ITEMS);
                  !error && gb_item;
-                 gb_item = selector->get_next_item(gb_item))
+                 gb_item = selector->get_next_item(gb_item, QUERY_ALL_ITEMS))
             {
                 GBDATA *gbd = GB_search(gb_item, source, GB_FIND);
 
@@ -969,7 +969,7 @@ static void awtc_nn_search_all_listed(AW_window *aww, AW_CL _cbs) {
         }
     }
 
-    long         max = awt_count_queried_items(cbs, AWT_QUERY_ALL_SPECIES);
+    long         max = awt_count_queried_items(cbs, QUERY_ALL_ITEMS);
     arb_progress progress("Searching next neighbours", max);
     progress.auto_subtitles("Species");
 

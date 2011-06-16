@@ -31,9 +31,9 @@ typedef enum {
 } AWT_QUERY_ITEM_TYPE;
 
 typedef enum {
-    AWT_QUERY_CURRENT_SPECIES,
-    AWT_QUERY_MARKED_SPECIES,
-    AWT_QUERY_ALL_SPECIES
+    QUERY_CURRENT_ITEM,
+    QUERY_MARKED_ITEMS,
+    QUERY_ALL_ITEMS
 } AWT_QUERY_RANGE;
 
 typedef enum {
@@ -52,7 +52,7 @@ typedef enum {
 #define AWT_QUERY_SORT_CRITERIA_BITS 6              // number of "real" sort criteria
 #define AWT_QUERY_SORT_CRITERIA_MASK ((1<<AWT_QUERY_SORT_CRITERIA_BITS)-1)
 
-struct ad_item_selector {
+struct ad_item_selector { // @@@ remove AW_root arguments!
     AWT_QUERY_ITEM_TYPE type;
 
     // if user selects an item in the result list,
@@ -60,7 +60,7 @@ struct ad_item_selector {
     // - for species: AWAR_SPECIES_NAME is changed (item_name = 'species_name')
     // - for genes: AWAR_GENE_NAME and AWAR_SPECIES_NAME are changed (item_name = 'species_name/gene_name')
     void (*update_item_awars)(GBDATA* gb_main, AW_root *aw_root, const char *item_name);
-    char *(*generate_item_id)(GBDATA *gb_main, GBDATA *gb_item);
+    char *(*generate_item_id)(GBDATA *gb_main, GBDATA *gb_item); // @@@ remove parameter 'gb_main'
     GBDATA *(*find_item_by_id)(GBDATA *gb_main, const char *id);
     AW_CB selection_list_rescan_cb;
     int   item_name_length; // -1 means "unknown" (might be long)
@@ -70,11 +70,11 @@ struct ad_item_selector {
     const char *items_name;                         // "species" or "genes" or "experiments" or "organisms"
     const char *id_field;                           // e.g. "name" for species, genes
 
-    GBDATA *(*get_first_item_container)(GBDATA *, AW_root *, AWT_QUERY_RANGE); // AW_root may be NULL for AWT_QUERY_ALL_SPECIES and AWT_QUERY_MARKED_SPECIES
+    GBDATA *(*get_first_item_container)(GBDATA *, AW_root *, AWT_QUERY_RANGE); // AW_root may be NULL for QUERY_ALL_ITEMS and QUERY_MARKED_ITEMS
     GBDATA *(*get_next_item_container)(GBDATA *, AWT_QUERY_RANGE); // use same AWT_QUERY_RANGE as in get_first_item_container()
 
-    GBDATA *(*get_first_item)(GBDATA *);
-    GBDATA *(*get_next_item)(GBDATA *);
+    GBDATA *(*get_first_item)(GBDATA *, AWT_QUERY_RANGE);
+    GBDATA *(*get_next_item)(GBDATA *, AWT_QUERY_RANGE);
 
     GBDATA *(*get_selected_item)(GBDATA *gb_main, AW_root *aw_root); // searches the currently selected item
 

@@ -186,9 +186,9 @@ static void editfield_value_changed(void *, db_scanner_data *cbs)
                         GBDATA *gb_exists    = 0;
                         GBDATA *gb_item_data = GB_get_father(cbs->gb_user);
 
-                        for (gb_exists = selector->get_first_item(gb_item_data);
+                        for (gb_exists = selector->get_first_item(gb_item_data, QUERY_ALL_ITEMS);
                              gb_exists;
-                             gb_exists = selector->get_next_item(gb_exists))
+                             gb_exists = selector->get_next_item(gb_exists, QUERY_ALL_ITEMS))
                         {
                             if (ARB_stricmp(GBT_read_name(gb_exists), value) == 0) break;
                         }
