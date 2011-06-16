@@ -435,6 +435,16 @@ void AW_init_color_groups(AW_root *awr, AW_default def) {
     }
 }
 
+#if defined(UNIT_TESTS)
+void fake_AW_init_color_groups() {
+    if (!color_groups_initialized) {
+        use_color_groups = true;
+    }
+    color_groups_initialized = true;
+}
+#endif
+
+
 // values optimized for ARB_NTREE :
 static const char *ARB_NTREE_color_group[AW_COLOR_GROUPS+1] = {
     "+-" AW_COLOR_GROUP_PREFIX  "1$#D50000", "-" AW_COLOR_GROUP_PREFIX  "2$#00ffff",

@@ -228,6 +228,10 @@ public:
 
     double get_irs_tree_ruler_scale_factor() const { return irs_tree_ruler_scale_factor; }
     void get_zombies_and_duplicates(int& zomb, int& dups) const { zomb = zombies; dups = duplicates; }
+    
+#if defined(UNIT_TESTS)
+    friend class fake_AWT_graphic_tree;
+#endif
 };
 
 AWT_graphic_tree *NT_generate_tree(AW_root *root, GBDATA *gb_main, AD_map_viewer_cb map_viewer_cb);
