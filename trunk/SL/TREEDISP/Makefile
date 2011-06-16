@@ -113,6 +113,7 @@ TreeCallbacks.o: $(ARBHOME)/INCLUDE/dupstr.h
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/smartptr.h
 TreeCallbacks.o: $(ARBHOME)/INCLUDE/test_global.h
 
+TreeDisplay.o: ../../WINDOW/aw_common.hxx
 TreeDisplay.o: TreeDisplay.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/ad_prot.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
@@ -151,3 +152,4 @@ TreeDisplay.o: $(ARBHOME)/INCLUDE/downcast.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/dupstr.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/smartptr.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/test_global.h
+TreeDisplay.o: $(ARBHOME)/INCLUDE/test_unit.h

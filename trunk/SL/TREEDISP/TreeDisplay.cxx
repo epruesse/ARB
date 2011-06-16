@@ -2694,5 +2694,290 @@ void awt_create_dtree_awars(AW_root *aw_root, AW_default def)
     aw_root->awar_int(AWAR_DTREE_REFRESH, 0, def);
 }
 
+// --------------------------------------------------------------------------------
+
+#ifdef UNIT_TESTS
+#include <test_unit.h>
+#include <../../WINDOW/aw_common.hxx>
+
+static void fake_AD_map_viewer_cb(GBDATA *, AD_MAP_VIEWER_TYPE ) {}
+
+#define NO_COLOR ((unsigned long)AW_NO_COLOR)
+
+static unsigned long colors_def[] = {
+    NO_COLOR, NO_COLOR, NO_COLOR, NO_COLOR, NO_COLOR, NO_COLOR,
+    0x30b0e0,
+    0xff8800, // AWT_GC_CURSOR
+    0xa3b3cf, // AWT_GC_BRANCH_REMARK
+    0x53d3ff, // AWT_GC_BOOTSTRAP
+    0x808080, // AWT_GC_BOOTSTRAP_LIMITED
+    0x000000, // AWT_GC_GROUPS
+    0xf0c000, // AWT_GC_SELECTED
+    0xbb8833, // AWT_GC_UNDIFF
+    0x622300, // AWT_GC_NSELECTED
+    0x977a0e, // AWT_GC_SOME_MISMATCHES
+    0x000000, // AWT_GC_BLACK
+    0xffff00, // AWT_GC_YELLOW
+    0xff0000, // AWT_GC_RED
+    0xff00ff, // AWT_GC_MAGENTA
+    0x00ff00, // AWT_GC_GREEN
+    0x00ffff, // AWT_GC_CYAN
+    0x0000ff, // AWT_GC_BLUE
+    0x808080, // AWT_GC_WHITE
+    0xd50000, // AWT_GC_FIRST_COLOR_GROUP
+    0x00c0a0, 
+    0x00ff77,
+    0xc700c7,
+    0x0000ff,
+    0xffce5b,
+    0xab2323,
+    0x008888,
+    0x008800,
+    0x880088,
+    0x000088,
+    0x888800,
+    NO_COLOR
+};
+static unsigned long *fcolors       = colors_def;
+static unsigned long *dcolors       = colors_def;
+static long           dcolors_count = ARRAY_ELEMS(colors_def); 
+
+class fake_AW_GC : public AW_GC {
+public:
+    fake_AW_GC(AW_common *common_) : AW_GC(common_) {}
+
+    // AW_GC interface
+    virtual void wm_set_foreground_color(unsigned long /*col*/) {  }
+    virtual void wm_set_function(AW_function /*mode*/) { awt_assert(0); }
+    virtual void wm_set_lineattributes(short /*lwidth*/, AW_linestyle /*lstyle*/) {}
+    virtual void wm_set_font(AW_font /*font_nr*/, int size, int */*found_size*/) {
+        unsigned int i;
+        for (i = AW_FONTINFO_CHAR_ASCII_MIN; i <= AW_FONTINFO_CHAR_ASCII_MAX; i++) {
+            set_char_size(i, size, 0, size);
+        }
+    }
+    virtual int get_available_fontsizes(AW_font /*font_nr*/, int */*available_sizes*/) const {
+        awt_assert(0);
+        return 0;
+    }
+};
+
+class fake_AW_common : public AW_common {
+public:
+    fake_AW_common()
+        : AW_common(fcolors, dcolors, dcolors_count)
+    {
+        for (int gc = 0; gc < dcolors_count; ++gc) { // gcs used in this example
+            new_gc(gc);
+            AW_GC *gcm = map_mod_gc(gc);
+            gcm->set_line_attributes(0.0, AW_SOLID);
+            gcm->set_function(AW_COPY);
+            gcm->set_font(1, 8, NULL);
+
+            gcm->set_fg_color(colors_def[gc+7]); // i have no idea why '+7' 
+        }
+    }
+    virtual ~fake_AW_common() {}
+
+    virtual AW_GC *create_gc() {
+        return new fake_AW_GC(this);
+    }
+};
+
+class fake_AWT_graphic_tree : public AWT_graphic_tree {
+public:
+    fake_AWT_graphic_tree(GBDATA *gbmain, const char *selected_species)
+        : AWT_graphic_tree(NULL, gbmain, fake_AD_map_viewer_cb)
+    {
+        species_name = strdup(selected_species);
+    }
+
+    void test_show_tree(AW_device *device, AP_tree_sort type, int mode) {
+        disp_device = device;
+        disp_device->reset_style();
+        
+        const AW_font_limits& charLimits = disp_device->get_font_limits(AWT_GC_SELECTED, 0);
+
+        scaled_font.init(charLimits, disp_device->get_unscale());
+        scaled_branch_distance = scaled_font.height;
+
+        make_node_text_init(gb_main);
+
+        // mode is in range [0..3]
+        // it is used to vary tree settings such that many different combinations get tested 
+        grey_level         = 20*.01;
+        baselinewidth      = (mode == 3)+1;
+        show_brackets      = (mode != 2);
+        show_circle        = mode%3;
+        use_ellipse        = mode%2;
+        circle_zoom_factor = 1.3;
+        circle_max_size    = 1.5;
+
+        cursor = Origin;
+
+        switch (type) {
+            case AP_TREE_NORMAL: {
+                DendroSubtreeLimits limits;
+                Position pen(0, 0.05);
+                show_dendrogram(tree_static->get_root_node(), pen, limits);
+                list_tree_ruler_y = pen.ypos() + 2.0 * scaled_branch_distance;
+                break;
+            }
+            case AP_TREE_RADIAL: {
+                empty_box(tree_root_display->gr.gc, Origin, NT_ROOT_WIDTH);
+                show_radial_tree(tree_root_display, 0, 0, 2*M_PI, 0.0, 0, 0);
+                break;
+            }
+            case AP_TREE_IRS: {
+                show_irs_tree(tree_root_display, charLimits.height);
+                break;
+            }
+            case AP_LIST_NDS: {
+                show_nds_list(gb_main, true);
+                break;
+            }
+            case AP_LIST_SIMPLE: {
+                show_nds_list(gb_main, false);
+                break;
+            }
+        }
+        if (are_distinct(Origin, cursor)) empty_box(AWT_GC_CURSOR, cursor, NT_SELECTED_WIDTH);
+        if (sort_is_tree_style(type)) show_ruler(device, AWT_GC_CURSOR);
+    }
+
+    void test_print_tree(AW_device_print *print_device, AP_tree_sort type, bool show_handles, int mode) {
+        const int      SCREENSIZE = 541; // use a prime as screensize to reduce rounding errors
+        AW_device_size size_device(print_device->get_common());
+
+        size_device.reset();
+        size_device.zoom(1.0);
+
+        size_device.set_filter(AW_SIZE);
+        test_show_tree(&size_device, type, mode);
+
+        AW_world  wsize;
+        size_device.get_size_information(&wsize);
+        Rectangle drawn(wsize);
+
+        double width  = drawn.width();
+        double height = drawn.height();
+
+        awt_assert(width >= 0.0);
+        awt_assert(height >= 0.0);
+
+        double zoomx = SCREENSIZE/width;
+        double zoomy = SCREENSIZE/height;
+
+        double zoom;
+
+        switch (type) {
+            case AP_LIST_SIMPLE: 
+            case AP_TREE_NORMAL: 
+            case AP_TREE_RADIAL: 
+            case AP_TREE_IRS:
+                zoom = std::max(zoomx, zoomy);
+                break;
+            case AP_LIST_NDS: 
+                zoom = std::min(zoomx, zoomy);
+                break;
+        }
+
+        AW_screen_area clipping;
+        int EXTRA = SCREENSIZE*0.05;
+        clipping.t = 0 - EXTRA; clipping.b = 2*SCREENSIZE + EXTRA;
+        clipping.l = 0 - EXTRA; clipping.r = 2*SCREENSIZE + EXTRA;
+
+        print_device->get_common()->set_screen(clipping);
+        print_device->set_filter(AW_PRINTER|(show_handles ? AW_PRINTER_EXT : 0));
+        print_device->reset();
+
+        print_device->zoom(zoom);
+
+        Vector shift = Vector(EXTRA, EXTRA)/zoom;
+        Vector offset(shift-Vector(drawn.upper_left_corner()));
+
+        print_device->set_offset(offset*print_device->get_unscale());
+        test_show_tree(print_device, type, mode);
+        print_device->box(AWT_GC_CURSOR, false, drawn);
+    }
+};
+
+void fake_AW_init_color_groups();
+void AW_init_color_groups(AW_root *awr, AW_default def);
 
 
+void TEST_treeDisplay() {
+    GB_shell  shell;
+    GBDATA   *gb_main = GB_open("../../demo.arb", "r");
+
+    fake_AWT_graphic_tree agt(gb_main, "OctSprin");
+    fake_AW_common        fake_common;
+
+    AW_device_print print_dev(&fake_common);
+    AW_init_color_group_defaults(NULL);
+    fake_AW_init_color_groups();
+
+    AP_tree proto(0);
+    agt.init(proto, new AliView(gb_main), NULL, true, false);
+
+    {
+        GB_transaction ta(gb_main);
+        ASSERT_RESULT(const char *, NULL, agt.load(NULL, "tree_test", 0, 0));
+    }
+
+    const char *spoolnameof[] = {
+        "dendro", 
+        "radial",
+        "irs", 
+        "nds",
+        NULL, // "simple", (too simple, need no test)
+    };
+
+    for (int show_handles = 0; show_handles <= 1; ++show_handles) {
+        for (int color = 0; color <= 1; ++color) {
+            print_dev.set_color_mode(color);
+            // for (AP_tree_sort type = AP_TREE_NORMAL; type <= AP_LIST_SIMPLE; type = AP_tree_sort(type+1)) {
+            for (AP_tree_sort type = AP_LIST_SIMPLE; type >= AP_TREE_NORMAL; type = AP_tree_sort(type-1)) { // now passes
+                if (spoolnameof[type]) {
+                    char *spool_name     = GBS_global_string_copy("display/%s_%c%c", spoolnameof[type], "MC"[color], "NH"[show_handles]);
+                    char *spool_file     = GBS_global_string_copy("%s_curr.fig", spool_name);
+                    char *spool_expected = GBS_global_string_copy("%s.fig", spool_name);
+
+
+// #define TEST_AUTO_UPDATE // dont test, instead update expected results
+                    
+                    agt.set_tree_type(type);
+
+#if defined(TEST_AUTO_UPDATE)
+#warning TEST_AUTO_UPDATE is active (non-default)
+                    TEST_ASSERT_NO_ERROR(print_dev.open(spool_expected));
+#else
+                    TEST_ASSERT_NO_ERROR(print_dev.open(spool_file));
+#endif
+
+                    {
+                        GB_transaction ta(gb_main);
+                        agt.test_print_tree(&print_dev, type, show_handles, show_handles+2*color);
+                    }
+
+                    print_dev.close();
+
+#if !defined(TEST_AUTO_UPDATE)
+                    // if (strcmp(spool_expected, "display/irs_CH.fig") == 0) {
+                        TEST_ASSERT_TEXTFILES_EQUAL(spool_file, spool_expected);
+                    // }
+                    TEST_ASSERT_ZERO_OR_SHOW_ERRNO(unlink(spool_file));
+#endif
+                    free(spool_expected);
+                    free(spool_file);
+                    free(spool_name);
+                }
+            }
+        }
+    }
+
+    GB_close(gb_main);
+}
+
+
+#endif // UNIT_TESTS
