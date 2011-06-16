@@ -1,8 +1,8 @@
 #ifndef AW_XM_HXX
 #define AW_XM_HXX
 
-#ifndef AW_DEVICE_HXX
-#include <aw_device.hxx>
+#ifndef AW_COMMON_XM_HXX
+#include "aw_common_xm.hxx"
 #endif
 
 class AW_device_Xm : public AW_device {
@@ -18,9 +18,11 @@ class AW_device_Xm : public AW_device {
     }
 
 public:
-    AW_device_Xm(AW_common *commoni);
+    AW_device_Xm(AW_common *commoni) : AW_device(commoni) {}
 
-    void           init();
+    AW_common_Xm *get_common() const { return DOWNCAST(AW_common_Xm*, AW_device::get_common()); }
+
+    void           init() {}
     AW_DEVICE_TYPE type();
 
     void clear(AW_bitset filteri);

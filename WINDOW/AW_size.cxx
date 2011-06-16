@@ -8,7 +8,7 @@
 //                                                                 //
 // =============================================================== //
 
-#include "aw_commn.hxx"
+#include "aw_common.hxx"
 
 #include <algorithm>
 
@@ -65,11 +65,11 @@ int AW_device_size::line_impl(int /*gc*/, const LineVector& Line, AW_bitset filt
 
 int AW_device_size::text_impl(int gc, const char *str, const Position& pos, AW_pos alignment, AW_bitset filteri, long opt_strlen) {
     if (filteri & filter) {
-        Position           transPos  = transform(pos);
-        const XFontStruct *xfs       = common->get_xfont(gc);
-        AW_pos             l_ascent  = xfs->max_bounds.ascent;
-        AW_pos             l_descent = xfs->max_bounds.descent;
-        AW_pos             l_width   = get_string_size(gc, str, opt_strlen);
+        Position              transPos    = transform(pos);
+        const AW_font_limits& font_limits = get_common()->map_gc(gc)->get_font_limits();
+        AW_pos                l_ascent    = font_limits.ascent;
+        AW_pos                l_descent   = font_limits.descent;
+        AW_pos                l_width     = get_string_size(gc, str, opt_strlen);
 
         Position upperLeft(x_alignment(transPos.xpos(), l_width, alignment),
                            transPos.ypos()-l_ascent);

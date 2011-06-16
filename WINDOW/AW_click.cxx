@@ -8,7 +8,7 @@
 //                                                                 //
 // =============================================================== //
 
-#include "aw_commn.hxx"
+#include "aw_common.hxx"
 
 using namespace AW;
 
@@ -78,10 +78,11 @@ int AW_device_click::text_impl(int gc, const char *str, const AW::Position& pos,
         AW_pos X0, Y0;          // Transformed pos
         this->transform(pos.xpos(), pos.ypos(), X0, Y0);
 
-        const XFontStruct *xfs = common->get_xfont(gc);
+        const AW_GC           *gcm         = get_common()->map_gc(gc);
+        const AW_font_limits&  font_limits = gcm->get_font_limits();
 
-        AW_pos Y1 = Y0+(AW_pos)(xfs->max_bounds.descent);
-        Y0        = Y0-(AW_pos)(xfs->max_bounds.ascent);
+        AW_pos Y1 = Y0+font_limits.descent;
+        Y0        = Y0-font_limits.ascent;
 
         // Fast check text against top/bottom clip
 
@@ -92,7 +93,7 @@ int AW_device_click::text_impl(int gc, const char *str, const AW::Position& pos,
             if (Y0 < this->clip_rect.t) return 0;
         }
 
-        if (this->clip_rect.b == common->get_screen().b) {
+        if (this->clip_rect.b == get_common()->get_screen().b) {
             if (Y0 > this->clip_rect.b) return 0;
         }
         else {
@@ -131,18 +132,17 @@ int AW_device_click::text_impl(int gc, const char *str, const AW::Position& pos,
         max_distance_text = best_dist; // exact hit -> distance = 0;
 
         int position;
-        if (xfs->max_bounds.width == xfs->min_bounds.width) {           // monospaced font
-            short letter_width = xfs->max_bounds.width;
+        if (font_limits.is_monospaced()) {
+            short letter_width = font_limits.width;
             position = (int)((mouse_x-X0)/letter_width);
             if (position<0) position = 0;
             if (position>(len-1)) position = len-1;
         }
-        else {                                 // non-monospaced font
-            const AW_GC_Xm *gcm = common->map_gc(gc);
+        else { // proportional font
             position   = 0;
             int tmp_offset = 0;
             while (position<=len) {
-                tmp_offset += gcm->width_of_chars[(unsigned char)str[position]];
+                tmp_offset += gcm->get_width_of_char(str[position]);
                 if (mouse_x <= X0+tmp_offset) break;
                 position++;
             }
@@ -188,7 +188,7 @@ void AW_device_click::get_clicked_text(class AW_clicked_text *ptr) {
     *ptr = opt_text;
 }
 
-bool AW_getBestClick(const AW::Position& click, AW_clicked_line *cl, AW_clicked_text *ct, AW_CL *cd1, AW_CL *cd2) {
+bool AW_getBestClick(AW_clicked_line *cl, AW_clicked_text *ct, AW_CL *cd1, AW_CL *cd2) {
     // detect the nearest item next to 'click'
     // and return that items callback params.
     // returns false, if nothing has been clicked

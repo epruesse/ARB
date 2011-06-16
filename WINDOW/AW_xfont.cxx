@@ -12,7 +12,7 @@
  * This software has been widely modified for usage inside ARB.
  */
 
-#include "aw_commn.hxx"
+#include "aw_common_xm.hxx"
 #include "aw_xfont.hxx"
 #include "aw_root.hxx"
 
@@ -705,20 +705,15 @@ inline void CI_GetRowzeroCharInfo_2D(const XFontStruct *fs, unsigned col, const 
     }
 }
 
-#define AW_FONTINFO_CHAR_ASCII_MIN 32
-#define AW_FONTINFO_CHAR_ASCII_MAX 127
-
-void AW_GC_Xm::set_font(AW_font font_nr, int size, int *found_size)
-// if found_size != 0 -> return value for used font size
-{
+void AW_GC_Xm::wm_set_font(const AW_font font_nr, const int size, int *found_size) {
+    // if found_size != 0 -> return value for used font size
     XFontStruct *xfs;
-
     {
         int  found_font_size;
-        ASSERT_TRUE(lookfont(common->get_display(), font_nr, size, found_font_size, true, false, &xfs)); // lookfont should do fallback
+        ASSERT_TRUE(lookfont(get_common()->get_display(), font_nr, size, found_font_size, true, false, &xfs)); // lookfont should do fallback
         if (found_size) *found_size = found_font_size;
     }
-    XSetFont(common->get_display(), gc, xfs->fid);
+    XSetFont(get_common()->get_display(), gc, xfs->fid);
     curfont = *xfs;
 
     const XCharStruct *cs;
@@ -732,37 +727,25 @@ void AW_GC_Xm::set_font(AW_font font_nr, int size, int *found_size)
         CI_GetDefaultInfo_2D(xfs, def);
     }
 
-    all_letters.reset();
-
     aw_assert(AW_FONTINFO_CHAR_ASCII_MIN < AW_FONTINFO_CHAR_ASCII_MAX);
 
     unsigned int i;
     for (i = AW_FONTINFO_CHAR_ASCII_MIN; i <= AW_FONTINFO_CHAR_ASCII_MAX; i++) {
-        if (singlerow) { /* optimization */
-            CI_GetCharInfo_1D(xfs, i, def, cs);
-        }
-        else {
-            CI_GetRowzeroCharInfo_2D(xfs, i, def, cs);
-        }
-        if (cs) {
-            ascent_of_chars[i]  = cs->ascent;
-            descent_of_chars[i] = cs->descent;
-            width_of_chars[i]   = cs->width;
-            all_letters.notify_all(cs->ascent, cs->descent, cs->width);
-        }
-        else {
-            width_of_chars[i]   = 0;
-            descent_of_chars[i] = 0;
-            ascent_of_chars[i]  = 0;
-        }
+        if (singlerow) CI_GetCharInfo_1D(xfs, i, def, cs); // optimization 
+        else           CI_GetRowzeroCharInfo_2D(xfs, i, def, cs);
+        if (cs) set_char_size(i, cs->ascent, cs->descent, cs->width);
+        else    set_no_char_size(i);
     }
+}
 
-    all_letters.calc_height();
-
-    this->fontnr   = font_nr;
-    this->fontsize = size;
+void AW_GC::set_font(const AW_font font_nr, const int size, int *found_size) {
+    font_limits.reset();
+    wm_set_font(font_nr, size, found_size);
+    font_limits.calc_height();
+    fontnr   = font_nr;
+    fontsize = size;
 }
 
 int AW_GC_Xm::get_available_fontsizes(AW_font font_nr, int *available_sizes) const {
-    return ::get_available_fontsizes(common->get_display(), font_nr, available_sizes);
+    return ::get_available_fontsizes(get_common()->get_display(), font_nr, available_sizes);
 }

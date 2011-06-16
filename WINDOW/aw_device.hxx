@@ -10,7 +10,12 @@
 #ifndef ARBTOOLS_H
 #include <arbtools.h>
 #endif
-
+#ifndef _GLIBCXX_ALGORITHM
+#include <algorithm>
+#endif
+#ifndef _LIMITS_H
+#include <limits.h>
+#endif
 
 #if defined(DEBUG) && defined(DEBUG_GRAPHICS)
 // if you want flush() to be called after every motif command :
@@ -111,16 +116,16 @@ public:
     bool          exactHit;     // true -> real click on text (not only near text)
 };
 
-bool AW_getBestClick(const AW::Position& click, AW_clicked_line *cl, AW_clicked_text *ct, AW_CL *cd1, AW_CL *cd2);
+bool AW_getBestClick(AW_clicked_line *cl, AW_clicked_text *ct, AW_CL *cd1, AW_CL *cd2);
 
-class AW_matrix {
+class AW_zoomable {
     AW::Vector offset;
     AW_pos     scale;
     AW_pos     unscale;         // = 1.0/scale
 
 public:
-    AW_matrix() { this->reset(); };
-    virtual ~AW_matrix() {}
+    AW_zoomable() { this->reset(); };
+    virtual ~AW_zoomable() {}
 
     void zoom(AW_pos scale);
 
@@ -130,7 +135,6 @@ public:
 
     void rotate(AW_pos angle);
 
-public:
     void set_offset(const AW::Vector& off) { offset = off*scale; }
     void shift(const AW::Vector& doff) { offset += doff*scale; }
 
@@ -178,10 +182,10 @@ public:
     }
 };
 
-class AW_common;
+class AW_clipable {
+    const AW_rectangle& common_screen;
+    const AW_rectangle& get_screen() const { return common_screen; }
 
-class AW_clip : virtual Noncopyable {
-    friend class AW_device;
 protected:
     int compoutcode(AW_pos xx, AW_pos yy) {
         /* calculate outcode for clipping the current line */
@@ -193,8 +197,8 @@ protected:
         else if (xx - clip_rect.l < 0)  code |= 1;
         return (code);
     };
+    
 public:
-    AW_common *common;
 
     // ****** read only section
     AW_rectangle clip_rect;     // holds the clipping rectangle coordinates
@@ -204,6 +208,7 @@ public:
     int right_font_overlap;
 
     // ****** real public
+
     int clip(AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW_pos& x0out, AW_pos& y0out, AW_pos& x1out, AW_pos& y1out);
     int clip(const AW::LineVector& line, AW::LineVector& clippedLine);
 
@@ -238,8 +243,17 @@ public:
 
     int reduceClipBorders(int top, int bottom, int left, int right);
 
-    AW_clip();
-    virtual ~AW_clip() {}
+    AW_clipable(const AW_rectangle& screen)
+        : common_screen(screen),
+          top_font_overlap(0),
+          bottom_font_overlap(0),
+          left_font_overlap(0),
+          right_font_overlap(0)
+    {
+        clip_rect.clear();
+    }
+
+    virtual ~AW_clipable() {}
 };
 
 struct AW_font_limits {
@@ -247,14 +261,21 @@ struct AW_font_limits {
     short descent;
     short height;
     short width;
+    short min_width;
 
-    void reset() { ascent = descent = height = width = 0; }
+    void reset() {
+        ascent    = descent = height = width = 0;
+        min_width = SHRT_MAX;
+    }
 
-    void notify_ascent (int a_ascent) { if (a_ascent >ascent) ascent  = a_ascent; }
-    void notify_descent(int a_descent) { if (a_descent>descent) descent = a_descent; }
-    void notify_width  (int a_width) { if (a_width  >width) width   = a_width; }
+    void notify_ascent(short a) { ascent = std::max(a, ascent); }
+    void notify_descent(short d) { descent = std::max(d, descent); }
+    void notify_width(short w) {
+        width     = std::max(w, width);
+        min_width = std::min(w, min_width);
+    }
 
-    void notify_all(int a_ascent, int a_descent, int a_width) {
+    void notify_all(short a_ascent, short a_descent, short a_width) {
         notify_ascent (a_ascent);
         notify_descent(a_descent);
         notify_width  (a_width);
@@ -262,13 +283,13 @@ struct AW_font_limits {
 
     void calc_height() { height = ascent+descent+1; }
 
-    static int max(int i1, int i2) { return i1<i2 ? i2 : i1; }
+    bool is_monospaced() const { return width == min_width; }
 
     AW_font_limits() { reset(); }
     AW_font_limits(const AW_font_limits& lim1, const AW_font_limits& lim2)
-        : ascent(max(lim1.ascent, lim2.ascent))
-        , descent(max(lim1.descent, lim2.descent))
-        , width(max(lim1.width, lim2.width))
+        : ascent(std::max(lim1.ascent, lim2.ascent))
+        , descent(std::max(lim1.descent, lim2.descent))
+        , width(std::max(lim1.width, lim2.width))
     {
         calc_height();
     }
@@ -288,24 +309,27 @@ typedef enum {
     AW_XOR
 } AW_function;
 
-class AW_gc : public AW_clip {
+class AW_common;
+
+class AW_stylable : virtual Noncopyable {
+    AW_common *common;
 public:
+    AW_stylable(AW_common *common_) : common(common_) {}
+    virtual ~AW_stylable() {};
+    
+    AW_common *get_common() const { return common; }
+
     void new_gc(int gc);
-    int  new_gc();
-    void set_fill(int gc, AW_grey_level grey_level); // <0 don't fill  0.0 white 1.0 black
+    void set_fill(int gc, AW_grey_level grey_level); 
     void set_font(int gc, AW_font fontnr, int size, int *found_size);
     void set_line_attributes(int gc, AW_pos width, AW_linestyle style);
     void set_function(int gc, AW_function function);
     void set_foreground_color(int gc, AW_color color); // lines ....
-    void set_background_color(int gc, AW_color color); // for box
     int  get_string_size(int gc, const  char *string, long textlen) const; // get the size of the string
 
     const AW_font_limits& get_font_limits(int gc, char c) const; // for one characters (c == 0 -> for all characters)
 
     int get_available_fontsizes(int gc, AW_font font_nr, int *available_sizes);
-
-    AW_gc();
-    virtual ~AW_gc() {};
 };
 
 class  AW_clip_scale_stack;
@@ -345,7 +369,7 @@ public:
 
 typedef int (*TextOverlayCallback)(AW_device *device, int gc, const char *opt_string, size_t opt_string_len, size_t start, size_t size, AW_pos x, AW_pos y, AW_pos opt_ascent, AW_pos opt_descent, AW_CL cduser);
 
-class AW_device : public AW_matrix, public AW_gc {
+class AW_device : public AW_zoomable, public AW_stylable, public AW_clipable {
     AW_device(const AW_device& other);
     AW_device& operator=(const AW_device& other);
 
@@ -356,13 +380,22 @@ protected:
     const AW_click_cd *click_cd;
     friend class       AW_click_cd;
 
+    AW_bitset filter;
+
+    static const AW_rectangle& get_common_screen(const AW_common *common_);
+    
 public:
-    AW_device(AW_common *common);
+    AW_device(class AW_common *common_)
+        : AW_stylable(common_),
+          AW_clipable(get_common_screen(common_)),
+          clip_scale_stack(NULL),
+          click_cd(NULL), 
+          filter(AW_ALL_DEVICES) 
+    {}
     virtual ~AW_device() {}
 
     const AW_click_cd *get_click_cd() const { return click_cd; }
-
-    AW_bitset filter; // read-only (@@@ should go private!)
+    AW_bitset get_filter() const { return filter; }
 
     void reset();
 
@@ -409,10 +442,6 @@ protected:
 
 public:
     // * third level functions (never virtual)
-
-    int cursor(int gc, AW_pos x0, AW_pos y0, AW_cursor_type type, AW_bitset filteri);
-
-    // convenience functions
 
     int line(int gc, const AW::LineVector& Line, AW_bitset filteri = AW_ALL_DEVICES) {
         return line_impl(gc, Line, filteri);
@@ -531,9 +560,13 @@ class AW_device_print : public AW_device { // derived from a Noncopyable
     }
     int filled_area_impl(int gc, int npos, const AW::Position *pos, AW_bitset filteri);
 public:
-    AW_device_print(AW_common *commoni);
+    AW_device_print(AW_common *common_)
+        : AW_device(common_),
+          out(0),
+          color_mode(false)
+    {}
 
-    void init();
+    void init() {}
     GB_ERROR open(const char *path) __ATTR__USERESULT;
     void close();
 
@@ -561,7 +594,7 @@ class AW_simple_device : public AW_device {
         return generic_arc(gc, filled, center, xradius, yradius, start_degrees, arc_degrees, filteri);
     }
 public:
-    AW_simple_device(AW_common *commoni) : AW_device(commoni) {}
+    AW_simple_device(AW_common *common_) : AW_device(common_) {}
 };
     
 class AW_device_size : public AW_simple_device {
@@ -580,7 +613,7 @@ class AW_device_size : public AW_simple_device {
     bool invisible_impl(int gc, AW_pos x, AW_pos y, AW_bitset filteri);
 
 public:
-    AW_device_size(AW_common *commoni) : AW_simple_device(commoni) {}
+    AW_device_size(AW_common *common_) : AW_simple_device(common_) {}
 
     void           init();
     AW_DEVICE_TYPE type();
@@ -600,7 +633,7 @@ public:
     AW_clicked_line opt_line;
     AW_clicked_text opt_text;
 
-    AW_device_click(AW_common *commoni) : AW_simple_device(commoni) {}
+    AW_device_click(AW_common *common_) : AW_simple_device(common_) {}
 
     AW_DEVICE_TYPE type();
 
