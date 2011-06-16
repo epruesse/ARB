@@ -82,10 +82,18 @@ struct DendroSubtreeLimits {
     double y_top;                                   // top ypos of whole subtree
     double y_bot;                                   // bottom ypos of whole subtree
     double x_right;                                 // rightmost xpos of whole subtree
+
+    void combine(const DendroSubtreeLimits& other) {
+        y_top   = std::min(y_top, other.y_top);
+        y_bot   = std::max(y_bot, other.y_bot);
+        x_right = std::max(x_right, other.x_right);
+    }
 };
 
 class AWT_graphic_tree : public AWT_graphic, virtual Noncopyable {
-    char  *species_name;
+    char         *species_name;
+    AW::Position  cursor;
+
     int    baselinewidth;
     int    show_brackets;
     int    show_circle;
@@ -96,7 +104,6 @@ class AWT_graphic_tree : public AWT_graphic, virtual Noncopyable {
     int zombies; // # of zombies during last load()
     int duplicates; // # of duplicates during last load()
 
-    int draw_slot(int x_offset, bool draw_at_tips); // return max_x
     int paint_irs_sub_tree(AP_tree *node, int x_offset); // returns y pos
 
     void unload();
@@ -106,7 +113,6 @@ class AWT_graphic_tree : public AWT_graphic, virtual Noncopyable {
     AP_tree * tree_proto;
     bool link_to_database; // link on load ?
 
-    double y_pos;
     double list_tree_ruler_y;
     double irs_tree_ruler_scale_factor;
 
@@ -131,7 +137,7 @@ class AWT_graphic_tree : public AWT_graphic, virtual Noncopyable {
 
     // functions to compute displayinformation
 
-    void show_dendrogram(AP_tree *at, double x_son, DendroSubtreeLimits& limits);
+    void show_dendrogram(AP_tree *at, AW::Position& pen, DendroSubtreeLimits& limits);
 
     void show_radial_tree(AP_tree *at,
                           double   x_center,
@@ -139,18 +145,21 @@ class AWT_graphic_tree : public AWT_graphic, virtual Noncopyable {
                           double   tree_sprad,
                           double   tree_orientation,
                           double   x_root,
-                          double   y_root,
-                          int      linewidth);
+                          double   y_root);
 
     void show_nds_list(GBDATA * gb_main, bool use_nds);
-    void show_irs_tree(AP_tree *at, AW_device *device, int height);
+    void show_irs_tree(AP_tree *at, int height);
 
-    void NT_scalebox(int gc, double x, double y, double width);
-    void NT_emptybox(int gc, double x, double y, double width);
-    void NT_rotbox(int gc, double x, double y, double width);
+    void filled_box(int gc, const AW::Position& pos, double width);
+    void empty_box(int gc, const AW::Position& pos, double width);
+    void diamond(int gc, const AW::Position& pos, double width);
 
     const char *show_ruler(AW_device *device, int gc);
     void        rot_show_triangle(AW_device *device);
+
+    void set_line_attributes_for(AP_tree *at) const {
+        disp_device->set_line_attributes(at->gr.gc, at->get_linewidth()+baselinewidth, AW_SOLID);
+    }
 
 protected:
 
@@ -169,8 +178,6 @@ public:
     AP_tree      *tree_root_display;                // @@@ what is this used for ?
     AP_tree_root *tree_static;
     GBDATA       *gb_main;
-    AP_FLOAT      x_cursor;
-    AP_FLOAT      y_cursor;
 
     // *********** public section
 
@@ -183,6 +190,7 @@ public:
     virtual AW_gc_manager init_devices(AW_window *, AW_device *, AWT_canvas *ntw, AW_CL);
 
     virtual void show(AW_device *device);
+    const AW::Position& get_cursor() const { return cursor; }
 
     virtual void info(AW_device *device, AW_pos x, AW_pos y,
                       AW_clicked_line *cl, AW_clicked_text *ct);
@@ -223,7 +231,7 @@ public:
 };
 
 AWT_graphic_tree *NT_generate_tree(AW_root *root, GBDATA *gb_main, AD_map_viewer_cb map_viewer_cb);
-bool AWT_show_remark_branch(AW_device *device, const char *remark_branch, bool is_leaf, AW_pos x, AW_pos y, AW_pos alignment, AW_bitset filteri);
+bool AWT_show_branch_remark(AW_device *device, const char *remark_branch, bool is_leaf, AW_pos x, AW_pos y, AW_pos alignment, AW_bitset filteri);
 
 #else
 #error TreeDisplay.hxx included twice
