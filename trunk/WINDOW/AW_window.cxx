@@ -3518,10 +3518,9 @@ void AW_root::define_remote_command(AW_cb_struct *cbs) {
 }
 
 #if defined(DEBUG)
-#if defined(DEVEL_RALF)
-#define DUMP_REMOTE_ACTIONS
-#endif // DEVEL_RALF
+// #define DUMP_REMOTE_ACTIONS
 #endif // DEBUG
+
 GB_ERROR AW_root::check_for_remote_command(AW_default gb_maind, const char *rm_base) {
     GBDATA *gb_main = (GBDATA *)gb_maind;
 

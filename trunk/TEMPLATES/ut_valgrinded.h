@@ -32,7 +32,8 @@ namespace utvg {
         const int   BUFSIZE = 200;
         static char buf[BUFSIZE];
 
-        int printed = snprintf(buf, BUFSIZE, "%s/UNIT_TESTER/valgrind/%s", ARBHOME, name);
+        IF_DEBUG(int printed =)
+            snprintf(buf, BUFSIZE, "%s/UNIT_TESTER/valgrind/%s", ARBHOME, name);
         arb_assert(printed<BUFSIZE);
 
         return buf;
