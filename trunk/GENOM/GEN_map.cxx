@@ -236,9 +236,8 @@ void GEN_jump_cb(AW_window *aww, AW_CL cl_force_center_if_fits) {
     bool            force_center_if_fits = (bool)cl_force_center_if_fits; // center gene if gene fits into display
     gen_assert(win);
 
-    AW_rectangle  screen;       // screen coordinates
-    AW_device    *device = win->get_graphic()->get_device();
-    device->get_area_size(&screen);
+    AW_device             *device = win->get_graphic()->get_device();
+    const AW_screen_area&  screen = device->get_area_size();
 #if defined(DEBUG)
     printf("Window %i: screen is: %i/%i -> %i/%i\n", win->get_nr(), screen.l, screen.t, screen.r, screen.b);
 #endif // DEBUG
@@ -250,7 +249,7 @@ void GEN_jump_cb(AW_window *aww, AW_CL cl_force_center_if_fits) {
         printf("Window %i: Draw world range of selected gene is: %f/%f -> %f/%f\n", win->get_nr(), wrange.l, wrange.t, wrange.r, wrange.b);
 #endif // DEBUG
 
-        AW_rectangle srange;
+        AW_screen_area srange;
         device->transform(int(wrange.l), int(wrange.t), srange.l, srange.t);
         device->transform(int(wrange.r), int(wrange.b), srange.r, srange.b);
 #if defined(DEBUG)

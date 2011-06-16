@@ -295,7 +295,7 @@ AW_window::AW_window() {
     memset((char *)this, 0, sizeof(AW_window));
     p_w = new AW_window_Motif;
     _at = new AW_at; // Note to valgrinders : the whole AW_window memory management suffers because Windows are NEVER deleted
-    picture = new AW_rectangle;
+    picture = new AW_screen_area;
     reset_scrolled_picture_size();
     slider_pos_vertical = 0;
     slider_pos_horizontal = 0;
@@ -428,7 +428,7 @@ void AW_window::set_vertical_change_callback(void (*f)(AW_window*, AW_CL, AW_CL)
             (XtPointer) new AW_cb_struct(this, f, cd1, cd2, ""));
 }
 
-void AW_window::tell_scrolled_picture_size(AW_rectangle rectangle) {
+void AW_window::tell_scrolled_picture_size(AW_screen_area rectangle) {
     picture->l = rectangle.l;
     picture->r = rectangle.r;
     picture->t = rectangle.t;
@@ -456,7 +456,7 @@ AW_pos AW_window::get_scrolled_picture_height() {
 }
 
 void AW_window::calculate_scrollbars() {
-    AW_rectangle screen;
+    AW_screen_area screen;
 
     int  slider_size_horizontal;
     int  slider_size_vertical;
@@ -1477,13 +1477,13 @@ void AW_root::exit_root() {
     aw_uninstall_xkeys();
 }
 
-void AW_window::_get_area_size(AW_area area, AW_rectangle *square) {
+void AW_window::_get_area_size(AW_area area, AW_screen_area *square) {
     AW_area_management *aram = MAP_ARAM(area);
     *square = aram->common->get_screen();
 }
 
 static void horizontal_scrollbar_redefinition_cb(class AW_root */*aw_root*/, AW_CL cd1, AW_CL cd2) {
-    AW_rectangle screen;
+    AW_screen_area screen;
 
     char buffer[200];
     AW_window *aw = (AW_window *)cd1;
@@ -1507,7 +1507,7 @@ static void horizontal_scrollbar_redefinition_cb(class AW_root */*aw_root*/, AW_
 }
 
 static void vertical_scrollbar_redefinition_cb(class AW_root */*aw_root*/, AW_CL cd1, AW_CL cd2) {
-    AW_rectangle screen;
+    AW_screen_area screen;
 
     char buffer[200];
     AW_window *aw = (AW_window *)cd1;
@@ -1574,7 +1574,7 @@ void AW_area_management::create_devices(AW_window *aww, AW_area ar) {
 
 const char *AW_window::GC_to_RGB(AW_device *device, int gc, int& red, int& green, int& blue) {
     const AW_GC *gcm   = device->get_common()->map_gc(gc);
-    unsigned     pixel = (unsigned short)(gcm->get_color());
+    unsigned     pixel = (unsigned short)(gcm->get_fg_color());
     GB_ERROR     error = 0;
     XColor       query_color;
 
@@ -1597,7 +1597,7 @@ const char *AW_window::GC_to_RGB_float(AW_device *device, int gc, float& red, fl
     AW_common   *common = device->get_common();
     const AW_GC *gcm    = common->map_gc(gc);
 
-    unsigned pixel = (unsigned short)(gcm->get_color());
+    unsigned pixel = (unsigned short)(gcm->get_fg_color()); 
     GB_ERROR error = 0;
     XColor   query_color;
 
@@ -1619,18 +1619,15 @@ const char *AW_window::GC_to_RGB_float(AW_device *device, int gc, float& red, fl
 AW_color AW_window::alloc_named_data_color(int colnum, char *colorname) {
     if (!color_table_size) {
         color_table_size = AW_COLOR_MAX + colnum;
-        color_table = (unsigned long *)malloc(sizeof(unsigned long)
-                *color_table_size);
-        memset((char *)color_table, -1, (size_t)(color_table_size
-                *sizeof(unsigned long)));
+        color_table      = (unsigned long *)malloc(sizeof(unsigned long) *color_table_size);
+        for (int i = 0; i<color_table_size; ++i) color_table[i] = AW_NO_COLOR;
     }
     else {
         if (colnum>=color_table_size) {
-            color_table = (unsigned long *)realloc((char *)color_table, (8
-                    + colnum)*sizeof(long)); // valgrinders : never freed because AW_window never is freed
-            memset((char *)(color_table+color_table_size), -1, (int)(8
-                    + colnum - color_table_size) * sizeof(long));
-            color_table_size = 8+colnum;
+            long new_size = colnum+8;
+            color_table   = (unsigned long *)realloc((char *)color_table, new_size*sizeof(long)); // valgrinders : never freed because AW_window never is freed
+            for (int i = color_table_size; i<new_size; ++i) color_table[i] = AW_NO_COLOR;
+            color_table_size = new_size;
         }
     }
     XColor xcolor_returned, xcolor_exakt;
@@ -1652,20 +1649,19 @@ AW_color AW_window::alloc_named_data_color(int colnum, char *colorname) {
             col *= -1;
     }
     else { // Color monitor
-        if (color_table[colnum] != (unsigned long)-1) {
+        if (color_table[colnum] != (unsigned long)AW_NO_COLOR) {
             XFreeColors(p_global->display, p_global->colormap, &color_table[colnum], 1, 0);
         }
         if (XAllocNamedColor(p_global->display, p_global->colormap, colorname, &xcolor_returned, &xcolor_exakt) == 0) {
             aw_message(GBS_global_string("XAllocColor failed: %s\n", colorname));
-            color_table[colnum] = (unsigned long)-1;
+            color_table[colnum] = AW_NO_COLOR;
         }
         else {
             color_table[colnum] = xcolor_returned.pixel;
         }
     }
     if (colnum == AW_DATA_BG) {
-        XtVaSetValues(p_w->areas[AW_MIDDLE_AREA]->area,
-        XmNbackground, color_table[colnum], NULL);
+        XtVaSetValues(p_w->areas[AW_MIDDLE_AREA]->area, XmNbackground, color_table[colnum], NULL);
     }
     return (AW_color)colnum;
 }
@@ -1674,10 +1670,8 @@ void AW_window::create_devices() {
     unsigned long background_color;
     if (p_w->areas[AW_INFO_AREA]) {
         p_w->areas[AW_INFO_AREA]->create_devices(this, AW_INFO_AREA);
-        XtVaGetValues(p_w->areas[AW_INFO_AREA]->area,
-        XmNbackground, &background_color, NULL);
-        p_global->color_table[AW_WINDOW_DRAG] =
-        background_color ^ p_global->color_table[AW_WINDOW_FG];
+        XtVaGetValues(p_w->areas[AW_INFO_AREA]->area, XmNbackground, &background_color, NULL);
+        p_global->color_table[AW_WINDOW_DRAG] = background_color ^ p_global->color_table[AW_WINDOW_FG];
     }
     if (p_w->areas[AW_MIDDLE_AREA]) {
         p_w->areas[AW_MIDDLE_AREA]->create_devices(this, AW_MIDDLE_AREA);

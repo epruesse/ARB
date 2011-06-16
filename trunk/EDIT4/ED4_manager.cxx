@@ -983,8 +983,7 @@ ED4_returncode ED4_main_manager::Show(int refresh_all, int is_cleared) {
         }
     }
     else if (refresh_all || update_info.refresh) {
-        AW_rectangle area_rect;
-        device->get_area_size(&area_rect);
+        const AW_screen_area& area_rect = device->get_area_size();
 
         // if update all -> clear_background
 
@@ -1070,7 +1069,7 @@ ED4_returncode ED4_main_manager::Show(int refresh_all, int is_cleared) {
     // to avoid text clipping problems between top and middle area we redraw the top-middle-spacer :
     {
         device->push_clip_scale();
-        const AW_rectangle& clip_rect = device->clip_rect;
+        const AW_screen_area& clip_rect = device->clip_rect;
         device->set_top_clip_border(clip_rect.t-TERMINALHEIGHT);
 
         int char_width = ED4_ROOT->font_group.get_max_width();
@@ -1111,8 +1110,8 @@ ED4_returncode ED4_manager::Show(int refresh_all, int is_cleared) {
     }
     if (!flag.hidden && (refresh_all || update_info.refresh)) {
         ED4_index i = 0;
-        const AW_rectangle &clip_rect = ED4_ROOT->get_device()->clip_rect;      // clipped rectangle in win coordinates
-        AW_rectangle rect; // clipped rectangle in world coordinates
+        const AW_screen_area &clip_rect = ED4_ROOT->get_device()->clip_rect;      // clipped rectangle in win coordinates
+        AW_screen_area rect; // clipped rectangle in world coordinates
 
         if (update_info.clear_at_refresh && !is_cleared) {
             clear_background();

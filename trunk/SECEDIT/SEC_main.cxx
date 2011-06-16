@@ -137,7 +137,7 @@ void SEC_root::position_cursor(bool toCenter, bool evenIfVisible) {
     AW_device  *device = ntw->aww->get_device(AW_MIDDLE_AREA);
 
     Rectangle cursor(device->transform(cursorLine));
-    Rectangle screen = device->get_area_size();
+    Rectangle screen(device->get_area_size(), INCLUSIVE_OUTLINE);
 
     if (evenIfVisible || !screen.contains(cursor)) {
         if (!toCenter) {

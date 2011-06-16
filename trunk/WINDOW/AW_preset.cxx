@@ -669,10 +669,12 @@ AW_gc_manager AW_manage_GC(AW_window   *aww,
                 device->new_gc(base_gc);
                 device->set_line_attributes(base_gc, 0.0, AW_SOLID);
                 device->set_function(base_gc, AW_COPY);
+                device->establish_default(base_gc);
 
                 device->new_gc(base_drag);
                 device->set_line_attributes(base_drag, 0.0, AW_SOLID);
                 device->set_function(base_drag, AW_XOR);
+                device->establish_default(base_drag);
             }
 
             char awar_name[256]; memset(awar_name, 0, 256);

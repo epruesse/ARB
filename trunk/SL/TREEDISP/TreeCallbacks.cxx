@@ -18,6 +18,8 @@
 
 #include <cctype>
 
+using namespace AW;
+
 /* AISC_MKPT_PROMOTE:#ifndef TREEDISPLAY_HXX */
 /* AISC_MKPT_PROMOTE:#include <TreeDisplay.hxx> */
 /* AISC_MKPT_PROMOTE:#endif */
@@ -704,8 +706,7 @@ void NT_jump_cb(AW_window *, AWT_canvas *ntw, AW_CL auto_expand_groups) {
                 ntw->init_device(device);
                 ntw->tree_disp->show(device);
 
-                AW_rectangle screen;
-                device->get_area_size(&screen);
+                const AW_screen_area& screen = device->get_area_size();
 
                 AW_pos ys = gtree->y_cursor;
                 AW_pos xs = gtree->x_cursor;

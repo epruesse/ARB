@@ -26,7 +26,7 @@ struct AW_world {
     AW_pos t, b, l, r;
     void clear() { t = b = l = r = 0.0; }
 };
-struct AW_rectangle {
+struct AW_screen_area {
     int t, b, l, r;
     void clear() { t = b = l = r = 0; }
 };

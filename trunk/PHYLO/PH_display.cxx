@@ -126,16 +126,13 @@ void PH_display::initialize (display_type dpyt)
 }
 
 
-void PH_display::resized()
-{
-    AW_rectangle squ;
-    AW_rectangle rect =  { 0, 0, 0, 0 };
+void PH_display::resized() {
+    const AW_screen_area& squ = PH_used_windows::windowList->phylo_main_window->get_device(AW_MIDDLE_AREA)-> get_area_size();
+    screen_width              = squ.r-squ.l;
+    screen_height             = squ.b-squ.t;
+
+    AW_screen_area rect =  { 0, 0, 0, 0 };
     long         horiz_paint_size, vert_paint_size;
-
-    PH_used_windows::windowList->phylo_main_window->get_device(AW_MIDDLE_AREA)-> get_area_size(&squ);
-    screen_width  = squ.r-squ.l;
-    screen_height = squ.b-squ.t;
-
     switch (display_what) {
         case NONE:
             return;
@@ -416,11 +413,8 @@ void PH_display::monitor_horizontal_scroll_cb(AW_window *aww)  // draw area
     if ((diff==1) || (diff==-1)) device->pop_clip_scale();
 }
 
-PH_display_status::PH_display_status(AW_device *awd)
-{
-    AW_rectangle rect;
-    device=awd;
-
+PH_display_status::PH_display_status(AW_device *awd) {
+    device = awd;
     if (!device) return;
 
     const AW_font_limits& lim = device->get_font_limits(0, 0);
@@ -429,7 +423,9 @@ PH_display_status::PH_display_status(AW_device *awd)
     font_height = lim.height;
 
     device->reset();
-    device->get_area_size(&rect);
+
+    const AW_screen_area& rect = device->get_area_size();
+
     device->set_foreground_color(0, AW_WINDOW_FG);
     max_x   = (rect.r-rect.l)/font_width;
     max_y   = (rect.b-rect.t)/font_height;

@@ -465,13 +465,10 @@ AW_xfig::~AW_xfig()
     }
 }
 
-void AW_xfig::print(AW_device *device)
-{
-    int i;
-    AW_rectangle ws;    // window size
-    device->get_area_size(&ws);
+void AW_xfig::print(AW_device *device) {
+    const AW_screen_area&  window_size = device->get_area_size();
     device->clear(-1);
-    struct AW_xfig_text *xtext;
+    struct AW_xfig_text   *xtext;
     for (xtext = text; xtext; xtext=xtext->next) {
         char *str = xtext->text;
 
@@ -482,17 +479,17 @@ void AW_xfig::print(AW_device *device)
             if (str[1]) {
                 if (str[1] == ':') {
                     if (str[0] == 'Y') {
-                        y   += (ws.b - ws.t)- size_y;
+                        y   += (window_size.b - window_size.t)- size_y;
                         str += 2;
                     }
                     else if (str[0] == 'X') {
-                        x   += (ws.r - ws.l)- size_x;
+                        x   += (window_size.r - window_size.l)- size_x;
                         str += 2;
                     }
                 }
                 else if (str[2] == ':' && str[0] == 'X' && str[1] == 'Y') {
-                    x   += (ws.r - ws.l)- size_x;
-                    y   += (ws.b - ws.t)- size_y;
+                    x   += (window_size.r - window_size.l)- size_x;
+                    y   += (window_size.b - window_size.t)- size_y;
                     str += 3;
                 }
             }
@@ -502,7 +499,7 @@ void AW_xfig::print(AW_device *device)
     }
 
     struct AW_xfig_line *xline;
-    for (i=0; i<MAX_LINE_WIDTH; i++) {
+    for (int i=0; i<MAX_LINE_WIDTH; i++) {
         device->set_line_attributes(0, (AW_pos)scaleAndRound(i, font_scale), AW_SOLID);
         for (xline = line[i]; xline; xline=xline->next) {
             device->line(0, (AW_pos)xline->x0, (AW_pos)xline->y0, (AW_pos)xline->x1, (AW_pos)xline->y1);

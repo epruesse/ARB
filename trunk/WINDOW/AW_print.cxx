@@ -107,7 +107,8 @@ GB_ERROR AW_device_print::open(const char *path) {
 
     if (color_mode) {
         for (int i=0; i<get_common()->get_data_color_size(); i++) {
-            fprintf(out, "0 %d #%06lx\n", i+DATA_COLOR_OFFSET, get_common()->get_data_color(i));
+            unsigned long col = get_common()->get_data_color(i);
+            if (col != (unsigned long)AW_NO_COLOR) fprintf(out, "0 %d #%06lx\n", i+DATA_COLOR_OFFSET, col);
         }
     }
 

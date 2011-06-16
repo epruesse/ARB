@@ -466,8 +466,7 @@ void ED4_input_cb(AW_window *aww, AW_CL /* cd1 */, AW_CL /* cd2 */)
 }
 
 static int get_max_slider_xpos() {
-    AW_rectangle rect;
-    ED4_ROOT->get_device()->get_area_size(&rect); // screensize
+    const AW_screen_area& rect = ED4_ROOT->get_device()->get_area_size(); 
 
     AW_pos x, y;
     ED4_base *horizontal_link = ED4_ROOT->scroll_links.link_for_hor_slider;
@@ -481,8 +480,7 @@ static int get_max_slider_xpos() {
 }
 
 static int get_max_slider_ypos() {
-    AW_rectangle rect;
-    ED4_ROOT->get_device()->get_area_size(&rect); // screensize
+    const AW_screen_area& rect = ED4_ROOT->get_device()->get_area_size(); 
 
     AW_pos x, y;
     ED4_base *vertical_link = ED4_ROOT->scroll_links.link_for_ver_slider;
