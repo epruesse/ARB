@@ -1,6 +1,6 @@
 // ================================================================ //
 //                                                                  //
-//   File      : AWT_iupac.cxx                                      //
+//   File      : iupac.cxx                                          //
 //   Purpose   :                                                    //
 //                                                                  //
 //   Institute of Microbiology (Technical University Munich)        //
@@ -9,9 +9,6 @@
 // ================================================================ //
 
 #include "iupac.h"
-
-#include <arb_assert.h>
-
 #include <cctype>
 
 #define awt_assert(bed) arb_assert(bed)

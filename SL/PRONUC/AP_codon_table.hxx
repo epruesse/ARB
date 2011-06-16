@@ -12,6 +12,12 @@
 #ifndef AP_CODON_TABLE_HXX
 #define AP_CODON_TABLE_HXX
 
+#ifndef ARB_ASSERT_H
+#include <arb_assert.h>
+#endif
+
+#define pn_assert(cond) arb_assert(cond)
+
 // --------------------------------------------------------------------------------
 
 struct AWT_Codon_Code_Definition {
@@ -43,11 +49,9 @@ class AWT_allowedCode {
             allowed[a] = val;
         }
     }
-    void legal(int nr) const {
-        if (nr<0 || nr>=AWT_CODON_TABLES) {
-            *((char*)0)=0; // throw exception
-        }
-    }
+
+    void legal(int nr) const { pn_assert(nr >= 0 && nr<AWT_CODON_TABLES); }
+
 public:
     AWT_allowedCode() { set(1); }
     AWT_allowedCode(const AWT_allowedCode& other) { copy(other); }
