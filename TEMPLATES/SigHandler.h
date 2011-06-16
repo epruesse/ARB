@@ -78,7 +78,7 @@ inline void uninstall_SigHandler(int sig, SigHandler handler, SigHandler old_han
 inline SigHandler install_SigHandler(int sig, SigHandler handler) {
     return signal(sig, handler);
 }
-inline void uninstall_SigHandler(int sig, SigHandler handler, SigHandler old_handler) {
+inline void uninstall_SigHandler(int sig, SigHandler IF_DEBUG(handler), SigHandler old_handler) {
     if (old_handler != SIG_ERR) {
         ASSERT_RESULT(SigHandler, handler, signal(sig, old_handler));
     }

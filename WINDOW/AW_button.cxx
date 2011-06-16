@@ -2247,7 +2247,7 @@ void AW_window::clear_option_menu(AW_option_menu_struct *oms) {
     oms->last_choice    = 0;
 }
 
-void *AW_window::_create_option_entry(AW_VARIABLE_TYPE type, const char *name, const char */*mnemonic*/, const char *name_of_color) {
+void *AW_window::_create_option_entry(AW_VARIABLE_TYPE IF_DEBUG(type), const char *name, const char */*mnemonic*/, const char *name_of_color) {
     Widget                 entry;
     AW_option_menu_struct *oms = p_global->current_option_menu;
 

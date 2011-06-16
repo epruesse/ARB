@@ -43,6 +43,13 @@ public:
         , buffer_size(0)
         , pos(0)
     {}
+    GBS_strstruct(size_t buffersize)
+        : data(NULL)
+        , buffer_size(0)
+        , pos(0)
+    {
+        alloc_mem(buffersize);
+    }
     ~GBS_strstruct() { free(data); }
 
     size_t get_buffer_size() const { return buffer_size; }
@@ -76,7 +83,6 @@ public:
 
         assign_mem(block, size);
     }
-
 
     void alloc_mem(size_t blocksize) {
         arb_assert(blocksize>0);
@@ -129,7 +135,8 @@ public:
     }
     void cat(const char *from) { ncat(from, strlen(from)); }
 
-    void vprintf(size_t maxlen, const char *templat, va_list& parg) __ATTR__VFORMAT_MEMBER(2);
+    void vnprintf(size_t maxlen, const char *templat, va_list& parg) __ATTR__VFORMAT_MEMBER(2);
+    void nprintf(size_t maxlen, const char *templat, ...) __ATTR__FORMAT_MEMBER(2);
 };
 
 // old interface

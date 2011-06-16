@@ -147,7 +147,7 @@ public:
 };
 #endif // DEBUG
 
-void PT_dump_POS_TREE_recursive(POS_TREE *pt, const char *prefix) {
+void PT_dump_POS_TREE_recursive(POS_TREE *IF_DEBUG(pt), const char *IF_DEBUG(prefix)) {
 #if defined(DEBUG)
     switch (PT_read_type(pt)) {
         case PT_NT_NODE:
