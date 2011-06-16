@@ -33,7 +33,7 @@ bool AW_device_Xm::line_impl(int gc, const LineVector& Line, AW_bitset filteri) 
         LineVector clippedLine;
         drawflag = clip(transLine, clippedLine);
         if (drawflag) {
-            XDrawLine(XDRAW_PARAM3(get_common(), gc), 
+            XDrawLine(XDRAW_PARAM3(get_common(), gc),
                       AW_INT(clippedLine.start().xpos()), AW_INT(clippedLine.start().ypos()),
                       AW_INT(clippedLine.head().xpos()), AW_INT(clippedLine.head().ypos()));
             AUTO_FLUSH(this);
@@ -68,12 +68,11 @@ bool AW_device_Xm::box_impl(int gc, bool filled, const Rectangle& rect, AW_bitse
             Rectangle clippedRect;
             drawflag = box_clip(transRect, clippedRect);
             if (drawflag) {
-                XFillRectangle(XDRAW_PARAM3(get_common(), gc), 
-                               AW_INT(clippedRect.left()), 
-                               AW_INT(clippedRect.top()), 
-                               AW_INT(clippedRect.width()), 
-                               AW_INT(clippedRect.height()) 
-                               );
+                XFillRectangle(XDRAW_PARAM3(get_common(), gc),
+                               AW_INT(clippedRect.left()),
+                               AW_INT(clippedRect.top()),
+                               AW_INT(clippedRect.width())+1, // see aw_device.hxx@WORLD_vs_PIXEL
+                               AW_INT(clippedRect.height())+1);
                 AUTO_FLUSH(this);
             }
         }
@@ -133,9 +132,11 @@ void AW_device_Xm::clear(AW_bitset filteri) {
     }
 }
 
-void AW_device_Xm::clear_part(AW_pos x0, AW_pos y0, AW_pos width, AW_pos height, AW_bitset filteri)
-{
+void AW_device_Xm::clear_part(AW_pos x0, AW_pos y0, AW_pos width, AW_pos height, AW_bitset filteri) {
     if (filteri & filter) {
+        aw_assert(width >= 0);
+        aw_assert(height >= 0);
+
         AW_pos x1 = x0+width;
         AW_pos y1 = y0+height;
 

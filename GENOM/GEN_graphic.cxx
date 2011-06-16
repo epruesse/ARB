@@ -38,13 +38,10 @@ GEN_graphic::GEN_graphic(AW_root *aw_root_, GBDATA *gb_main_, GEN_graphic_cb_ins
     , gen_root(0)
     , want_zoom_reset(false)
 {
-    exports.dont_fit_x    = 0;
-    exports.dont_fit_y    = 0;
-    exports.left_offset   = 10;
-    exports.right_offset  = 30;
-    exports.top_offset    = 5;
-    exports.bottom_offset = 5;
-    exports.dont_scroll   = 0;
+    exports.dont_fit_x  = 0;
+    exports.dont_fit_y  = 0;
+    exports.dont_scroll = 0;
+    exports.set_standard_default_padding();
 
     rot_ct.exists = false;
     rot_cl.exists = false;
@@ -134,7 +131,7 @@ void GEN_graphic::command(AW_device *device, AWT_COMMAND_MODE cmd, int button, A
 
 inline int GEN_root::smart_text(AW_device *device, int gc, const char *str, AW_pos x, AW_pos y) {
     int slen = strlen(str);
-    int res  = device->text(gc, str, x, y, 0.0, AW_ALL_DEVICES, slen);
+    int res  = device->text(gc, str, x, y, 0.0, AW_ALL_DEVICES_UNSCALED, slen);
     if (gc == GEN_GC_CURSOR) {
         int                   xsize = device->get_string_size(gc, str, slen);
         const AW_font_limits& lim   = device->get_font_limits(gc, 0);

@@ -17,68 +17,65 @@ using namespace AW;
 
 /* *********************** paint sub tree ************************ */
 
-const int MAXSHOWNNODES = 5000;       // Something like max screen height/minimum font size
-const int tipBoxSize    = 4;
-const int nodeBoxWidth  = 5;
+const int tipBoxSize = 3;
 
 static struct {
-    bool   ftrst_species;
-    int    y;
-    int    min_y;
-    int    max_y;
-    int    ruler_y;
-    int    min_x;
-    int    max_x;
-    int    step_y;
+    bool   draw_separator;
+    AW_pos y;
+    AW_pos min_y;    // ypos of folding line
+    AW_pos max_y;
+    AW_pos step_y;
+    AW_pos halfstep_y;
+    AW_pos onePixel;
+    AW_pos fold_x1, fold_x2;
+
     int    group_closed;
     double x_scale;
 
-    int font_height_2;
-    int is_size_device;
+    Vector adjust_text;
+    AW_pos tree_depth;
 
-    void draw_top_separator(AW_device *device) {
-        ftrst_species = false;
-        if (!is_size_device) {
-            for (int yy = min_y; yy< min_y+4; yy++) {
-                device->line(AWT_GC_GROUPS, -10000, yy, 10000, yy);
+    AW_pos gap; // between group frame and (box or text)
+    AW_pos openGroupExtra; // extra y-size of unfolded groups
+
+    AW_bitset sep_filter;
+    
+    bool is_size_device;
+
+    void draw_top_separator_once(AW_device *device) {
+        if (draw_separator) {
+            if (!is_size_device) {
+                device->set_line_attributes(AWT_GC_GROUPS, 4, AW_SOLID);
+                device->line(AWT_GC_GROUPS, fold_x1, min_y, fold_x2, min_y, sep_filter);
             }
+            draw_separator = false;
         }
     }
 
     
 } IRS;
 
-int AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, int x_offset) {
-    int left_y;
-    int left_x;
-    int right_y;
-    int right_x;
-
-    /* *********************** Check clipping rectangle ************************ */
+AW_pos AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, AW_pos x_offset) {
     if (!IRS.is_size_device) {
+        // check clipping rectangle
         if (IRS.y > IRS.max_y) {
             return IRS.max_y;
         }
-        int height_of_subtree = IRS.step_y*node->gr.view_sum;
+        AW_pos height_of_subtree = IRS.step_y*node->gr.view_sum;
         if (IRS.y + height_of_subtree < IRS.min_y) {
             IRS.y += height_of_subtree;
             return IRS.min_y;
         }
     }
 
-    /* *********************** i'm a leaf ************************ */
     if (node->is_leaf) {
         IRS.y+=IRS.step_y;
-        if (IRS.ftrst_species) {
-            IRS.draw_top_separator(disp_device);
-        }
-        int x = x_offset;
-        int y = IRS.y + IRS.font_height_2;
-        int gc = node->gr.gc;
+        IRS.draw_top_separator_once(disp_device);
+
+        Position leaf(x_offset, IRS.y);
 
         if (node->hasName(species_name)) {
-            cursor = Position(x, IRS.y);
-
+            cursor = leaf;
             if (IRS.is_size_device) {
                 // hack to fix calculated cursor position:
                 // - IRS tree reports different cursor positions in AW_SIZE and normal draw modes.
@@ -87,74 +84,91 @@ int AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, int x_offset) {
                 // - There is still some unhandled difference mostlikely caused by the number of
                 //   open groups on the screen, but in most cases the cursor position is inside view now.
                 
-                double correctionPerGroup = IRS.step_y * 2.22222; // was determined by measurements. depends on size of marked-species-font
+                double correctionPerGroup = IRS.openGroupExtra; // depends on size of marked-species-font
                 double cursorCorrection   = -IRS.group_closed * correctionPerGroup;
                 cursor.movey(cursorCorrection);
             }
         }
 
-        const char *str = 0;
-        if (!IRS.is_size_device) {
-            AW_click_cd cd(disp_device, (AW_CL)node);
-            if (node->gb_node && GB_read_flag(node->gb_node)) {
-                set_line_attributes_for(node);
-                filled_box(gc, Position(x, IRS.y), NT_BOX_WIDTH);
-            }
-            str = make_node_text_nds(gb_main, node->gb_node, NDS_OUTPUT_LEAFTEXT, node->get_gbt_tree(), tree_static->get_tree_name());
-            disp_device->text(gc, str, x, y);
+        AW_click_cd cd(disp_device, (AW_CL)node);
+        
+        int gc = node->gr.gc;
+        if (node->gb_node && GB_read_flag(node->gb_node)) {
+            set_line_attributes_for(node);
+            filled_box(gc, leaf, NT_BOX_WIDTH);
         }
+
+        Position    textpos  = leaf+IRS.adjust_text;
+        const char *specinfo = make_node_text_nds(gb_main, node->gb_node, NDS_OUTPUT_LEAFTEXT, node->get_gbt_tree(), tree_static->get_tree_name());
+        disp_device->text(gc, specinfo, textpos);
+
         return IRS.y;
     }
 
-    /* *********************** i'm a grouped subtree ************************ */
-    int last_y = IRS.y;
-    const char *node_string = 0;
+    const char *group_name  = NULL;
+    AW_pos      frame_width = -1;
+
     if (node->gb_node) {
-        if (!IRS.is_size_device) {
-            if (!node->father) { // root node - don't try to get taxonomy
-                node_string = tree_static->get_tree_name();
-            }
-            else {
-                node_string = make_node_text_nds(gb_main, node->gb_node, NDS_OUTPUT_LEAFTEXT, node->get_gbt_tree(), tree_static->get_tree_name());
-            }
+        if (!node->father) { // root node - don't try to get taxonomy
+            group_name = tree_static->get_tree_name();
         }
         else {
-            node_string = "0123456789";
+            group_name = make_node_text_nds(gb_main, node->gb_node, NDS_OUTPUT_LEAFTEXT, node->get_gbt_tree(), tree_static->get_tree_name());
         }
+        frame_width = node->gr.tree_depth * IRS.x_scale;
     }
-    if (node->gr.grouped) {                         // no recursion here    just a group symbol !!!
-        int vsize    = node->gr.view_sum * IRS.step_y;
-        int y_center = IRS.y + (vsize>>1) + IRS.step_y;
-        if (IRS.y >= IRS.min_y) {
-            if (IRS.ftrst_species) { // A name of a group just under the separator
-                IRS.draw_top_separator(disp_device);
-            }
-            int topy = IRS.y+IRS.step_y - 2;
-            int boty = IRS.y+IRS.step_y + vsize + 2;
-            int rx   = x_offset + vsize + vsize;
-            int gc   = AWT_GC_GROUPS;
 
-            // draw group box (unclosed on right hand):
+    if (node->gr.grouped) { // folded group
+        AW_pos y_center;
+
+        AW_pos frame_height = node->gr.view_sum * IRS.step_y;
+        AW_pos frame_y1     = IRS.y+IRS.halfstep_y+IRS.gap;
+        AW_pos frame_y2     = frame_y1 + frame_height;
+
+        if (frame_y2 >= IRS.min_y) {
+            if (frame_y1 < IRS.min_y) { // shift folded groups into the folding area (disappears when completely inside)
+                frame_y1  = IRS.min_y;
+                IRS.min_y += IRS.halfstep_y+IRS.gap;
+            }
+
+            AW_pos    visible_frame_height = frame_y2-frame_y1;
+            Rectangle frame(Position(x_offset, frame_y1), Vector(frame_width, visible_frame_height));
+
+            // draw group frame (unclosed on right hand):
             AW_click_cd cd(disp_device, (AW_CL)node);
+
+            int gc = AWT_GC_GROUPS;
             disp_device->set_line_attributes(gc, 1, AW_SOLID);
-            disp_device->line(gc, x_offset, topy, rx,       topy);
-            disp_device->line(gc, x_offset, topy, x_offset, boty);
-            disp_device->line(gc, x_offset, boty, rx,       boty);
+            disp_device->line(gc, frame.upper_edge());
+            disp_device->line(gc, frame.left_edge());
+            disp_device->line(gc, frame.lower_edge());
 
-            disp_device->set_grey_level(node->gr.gc, grey_level);
+            gc = node->gr.gc;
+            disp_device->set_grey_level(gc, grey_level);
             set_line_attributes_for(node);
-            disp_device->box(node->gr.gc, true, x_offset - (tipBoxSize>>1), topy - (tipBoxSize>>1), tipBoxSize, tipBoxSize, mark_filter);
-            disp_device->box(node->gr.gc, true, x_offset+2,                 IRS.y+IRS.step_y, vsize,      vsize);
+            filled_box(gc, frame.upper_left_corner(), tipBoxSize);
 
-            IRS.y += vsize + 2*IRS.step_y;
-            if (node_string) { //  a node name should be displayed
-                const char *s = GBS_global_string("%s (%i)", node_string, node->gr.leave_sum);
-                disp_device->text(node->gr.gc, s, x_offset + vsize + 10 + nodeBoxWidth, y_center + (IRS.step_y>>1));
+            Vector    frame2box(IRS.gap, IRS.gap);
+            Rectangle box(frame.upper_left_corner()+frame2box, Vector(frame.width()*.5, frame.height()-2*IRS.gap));
+
+            disp_device->box(gc, true, box);
+
+            Position box_rcenter = box.right_edge().centroid();
+
+            if (group_name) { //  a node name should be displayed
+                const char *groupinfo = GBS_global_string("%s (%i)", group_name, node->gr.leave_sum);
+                disp_device->text(gc, groupinfo, box_rcenter+IRS.adjust_text);
             }
+
+            IRS.draw_top_separator_once(disp_device);
+
+            IRS.y    += frame_height + 2*IRS.gap;
+            y_center  = box_rcenter.ypos();
         }
         else {
-            IRS.y += vsize;
-            y_center = IRS.min_y;
+            IRS.y    += frame_height + 2*IRS.gap;
+            y_center  = IRS.min_y;
+
             if (IRS.y > IRS.min_y) {
                 IRS.y = IRS.min_y;
             }
@@ -162,47 +176,38 @@ int AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, int x_offset) {
         return y_center;
     }
 
-    // ungrouped groups go here
+    AW_pos group_y1 = IRS.y;
 
-    /* *********************** i'm a labeled node ************************ */
-    /*  If I have only one child + pruneLevel != MAXPRUNE -> no labeling */
-
-    if (node_string != NULL) {          //  A node name should be displayed
-        if (last_y >= IRS.min_y) {
-            if (IRS.ftrst_species) { // A name of a group just under the separator
-                IRS.draw_top_separator(disp_device);
-            }
-            last_y = IRS.y + IRS.step_y;
+    if (group_name != NULL) { // unfolded group
+        if (group_y1 >= IRS.min_y) {
+            IRS.draw_top_separator_once(disp_device);
+            group_y1 = IRS.y + IRS.halfstep_y+IRS.gap;
         }
         else {
-            last_y = IRS.min_y;
-            IRS.min_y += int(IRS.step_y * 1.8);
+            group_y1   = IRS.min_y;
+            IRS.min_y += IRS.openGroupExtra;
         }
-        IRS.y+=int(IRS.step_y * 1.8);
-        int gc = AWT_GC_GROUPS;
-        AW_click_cd cd(disp_device, (AW_CL)node);
-        disp_device->set_line_attributes(gc, 1, AW_SOLID);
-        disp_device->line(gc, x_offset, last_y, x_offset+400, last_y); // opened-group-frame
+        IRS.y += IRS.openGroupExtra;
 
-        disp_device->set_grey_level(node->gr.gc, grey_level);
-        set_line_attributes_for(node); 
-        disp_device->box(node->gr.gc, true, x_offset- (tipBoxSize>>1), last_y- (tipBoxSize>>1), tipBoxSize, tipBoxSize, mark_filter);
-        const char *s = GBS_global_string("%s (%i)", node_string, node->gr.leave_sum);
-        disp_device->text(node->gr.gc, s, x_offset + 10 + nodeBoxWidth, last_y + IRS.step_y + 1);
+        int         gc = AWT_GC_GROUPS;
+        AW_click_cd cd(disp_device, (AW_CL)node);
+        disp_device->set_line_attributes(gc, 1, AW_DOTTED);
+        disp_device->line(gc, x_offset-IRS.onePixel, group_y1, x_offset+frame_width, group_y1); // opened-group-frame
+
+        const char *groupinfo = GBS_global_string("%s (%i)", group_name, node->gr.leave_sum);
+        disp_device->text(node->gr.gc, groupinfo, x_offset-IRS.onePixel + IRS.gap, group_y1 + 2*IRS.adjust_text.y() + IRS.gap);
     }
 
-    /* *********************** connect two nodes == draw branches ************************ */
+    // draw subtrees
+    AW_pos left_x = x_offset + IRS.x_scale * node->leftlen;
+    AW_pos left_y = paint_irs_sub_tree(node->get_leftson(), left_x);
 
-    left_x = (int)(x_offset + 0.9 + IRS.x_scale * node->leftlen);
-    left_y = paint_irs_sub_tree(node->get_leftson(), left_x);
+    AW_pos right_x = x_offset + IRS.x_scale * node->rightlen;
+    AW_pos right_y = paint_irs_sub_tree(node->get_rightson(), right_x);
 
-    right_x = int(x_offset + 0.9 + IRS.x_scale * node->rightlen);
-    right_y = paint_irs_sub_tree(node->get_rightson(), right_x);
+    if (group_name != NULL) IRS.group_closed++;
 
-    if (node_string != NULL) IRS.group_closed++;
-    
-    /* *********************** draw structure ************************ */
-
+    // draw structure
     if (left_y > IRS.min_y) {
         if (left_y < IRS.max_y) { // clip y on top border
             AW_click_cd cd(disp_device, (AW_CL)node->leftson);
@@ -217,7 +222,7 @@ int AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, int x_offset) {
         left_y = IRS.min_y;
     }
 
-    int y_center = (left_y + right_y) / 2; // clip center(?) on bottom border
+    AW_pos y_center = (left_y + right_y)*0.5;
 
     if (right_y > IRS.min_y && right_y < IRS.max_y) { // visible right branch in lower part of display
         AW_click_cd cd(disp_device, (AW_CL)node->rightson);
@@ -235,46 +240,53 @@ int AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, int x_offset) {
     set_line_attributes_for(node->get_rightson());
     disp_device->line(node->get_rightson()->gr.gc, x_offset, y_center, x_offset, right_y);
 
-    IRS.ruler_y = y_center;
+    if (group_name != NULL) { // close unfolded group brackets and draw tipbox
+        IRS.y  += IRS.halfstep_y+IRS.gap;
 
-    if (node_string != 0) {             //  A node name should be displayed
-        IRS.y+=IRS.step_y / 2;
         int gc = AWT_GC_GROUPS;
-        disp_device->set_line_attributes(gc, 1, AW_SOLID);
-        disp_device->line(gc, x_offset-1, IRS.y, x_offset+400, IRS.y); // opened-group-frame
-        disp_device->line(gc, x_offset-1, last_y, x_offset-1,  IRS.y); // opened-group-frame
+        disp_device->set_line_attributes(gc, 1, AW_DOTTED);
+        disp_device->line(gc, x_offset-IRS.onePixel, IRS.y, x_offset+frame_width, IRS.y); // opened-group-frame
+        disp_device->line(gc, x_offset-IRS.onePixel, group_y1, x_offset-IRS.onePixel,  IRS.y); // opened-group-frame
+        
+        gc = node->gr.gc;
+        disp_device->set_grey_level(gc, grey_level);
+        set_line_attributes_for(node);
+        filled_box(gc, Position(x_offset-IRS.onePixel, group_y1), tipBoxSize);
     }
     return y_center;
 }
 
-void AWT_graphic_tree::show_irs_tree(AP_tree *at, int height) {
-    disp_device->push_clip_scale();
+void AWT_graphic_tree::show_irs_tree(AP_tree *at, double height) {
+
+    IRS.draw_separator = true;
+    IRS.y              = 0;
+    IRS.step_y         = height;
+    IRS.halfstep_y     = IRS.step_y*0.5;
+    IRS.x_scale        = 200.0;      // @@@ should not have any effect, since display gets x-scaled. But if it's to low (e.g. 1.0) scaling on zoom-reset does not work
+
     const AW_font_limits& limits = disp_device->get_font_limits(AWT_GC_SELECTED, 0);
 
-    Position  corner = disp_device->rtransform(Origin); // real world coordinates of left/upper screen corner
-    Rectangle rclip  = disp_device->get_rtransformed_cliprect();
-
-    IRS.font_height_2  = limits.ascent/2;
-    IRS.ftrst_species  = true;
-    IRS.y              = 0;
-    IRS.min_x          = corner.xpos();
-    IRS.max_x          = 100;
-    IRS.min_y          = corner.ypos();
-    IRS.max_y          = rclip.bottom();
-    IRS.ruler_y        = 0;
-    IRS.step_y         = height;
-    IRS.x_scale        = rclip.width()*0.8 / at->gr.tree_depth;
+    IRS.adjust_text    = disp_device->rtransform(Vector(NT_BOX_WIDTH, limits.ascent*0.5));
+    IRS.onePixel       = disp_device->rtransform_size(1.0);
+    IRS.gap            = 3*IRS.onePixel;
     IRS.group_closed   = 0;
+    IRS.tree_depth     = at->gr.tree_depth;
+    IRS.openGroupExtra = IRS.step_y+IRS.gap;
+    IRS.sep_filter     = AW_SCREEN|AW_PRINTER_CLIP;
+
     IRS.is_size_device = disp_device->type() == AW_DEVICE_SIZE;
 
-    paint_irs_sub_tree(at, 0);
+    Position  corner = disp_device->rtransform(Origin);   // real world coordinates of left/upper screen corner
+    Rectangle rclip  = disp_device->get_rtransformed_cliprect();
 
-    // provide some information for ruler:
-    list_tree_ruler_y           = IRS.ruler_y;
+    // the following values currently contain nonsense for size device @@@
+    IRS.min_y   = corner.ypos();
+    IRS.max_y   = rclip.bottom();
+    IRS.fold_x1 = rclip.left();
+    IRS.fold_x2 = rclip.right();
+
+    list_tree_ruler_y           = paint_irs_sub_tree(at, 0);
     irs_tree_ruler_scale_factor = IRS.x_scale;
-
-    disp_device->invisible(AWT_GC_CURSOR, IRS.min_x, 0);
-    disp_device->invisible(AWT_GC_CURSOR, IRS.max_x, IRS.y+IRS.step_y);
-
-    disp_device->pop_clip_scale();
+    
+    disp_device->invisible(AWT_GC_CURSOR, corner); // @@@ remove when size-dev works
 }

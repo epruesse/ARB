@@ -494,7 +494,7 @@ void AW_xfig::print(AW_device *device) {
                 }
             }
 
-            device->text(xtext->gc, str, (AW_pos)x, (AW_pos)y, (AW_pos)xtext->center*.5, AW_ALL_DEVICES);
+            device->text(xtext->gc, str, (AW_pos)x, (AW_pos)y, (AW_pos)xtext->center*.5, AW_ALL_DEVICES_UNSCALED);
         }
     }
 

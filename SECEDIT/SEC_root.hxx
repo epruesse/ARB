@@ -640,7 +640,7 @@ struct SEC_displayParams {
     double distance_between_strands; // distance between strands (1.0 => strand distance == normal distance of bases in loop)
 
     ShowBonds show_bonds;       // which bonds to show
-    int       bond_thickness;   // linewidth for bonds
+    short     bond_thickness;   // linewidth for bonds
 
     bool hide_bases;            // hide bases?
 
@@ -650,8 +650,8 @@ struct SEC_displayParams {
     bool display_search;        // show search results
     bool display_sai;           // visualize SAIs
 
-    bool show_strSkeleton;      // display the skeleton?
-    int  skeleton_thickness;
+    bool  show_strSkeleton;     // display the skeleton?
+    short skeleton_thickness;
 
     bool edit_direction;        // true = 5'->3', false = 5'<-3'
 
@@ -696,7 +696,7 @@ class SEC_root : virtual Noncopyable {
     AW_font_group font_group;
 
     double char_radius[SEC_GC_DATA_COUNT]; // radius and..
-    double bg_linewidth[SEC_GC_DATA_COUNT]; // ..linewidth for drawing background (index = gc)
+    short  bg_linewidth[SEC_GC_DATA_COUNT]; // ..linewidth for drawing background (index = gc)
     Vector center_char[SEC_GC_FONT_COUNT]; // correction vector to center the base character at its position (world coordinates)
 
     char *bg_color;       // only valid after paint (contains EDIT4 GCs), may be NULL

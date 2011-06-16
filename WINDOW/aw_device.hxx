@@ -28,19 +28,27 @@
 
 // #define AW_PIXELS_PER_MM 1.0001 // stupid and wrong
 
-const AW_bitset AW_ALL_DEVICES = (AW_bitset)-1;
-const AW_bitset AW_SCREEN      = 1;
-const AW_bitset AW_CLICK       = 2;
-const AW_bitset AW_CLICK_DRAG  = 4;
-const AW_bitset AW_SIZE        = 8;
-const AW_bitset AW_PRINTER     = 16; // print/xfig-export
-const AW_bitset AW_PRINTER_EXT = 32; // (+Handles) use combined with AW_PRINTER only
+#define DPI_SCREEN  80   // fixed
+#define DPI_PRINTER 1200 // default resolution of xfig 3.2
+
+const AW_bitset AW_SCREEN        = 1;
+const AW_bitset AW_CLICK         = 2;
+const AW_bitset AW_CLICK_DRAG    = 4;
+const AW_bitset AW_SIZE          = 8;
+const AW_bitset AW_SIZE_UNSCALED = 16;  // for text and text-size dependant parts
+const AW_bitset AW_PRINTER       = 32;  // print/xfig-export
+const AW_bitset AW_PRINTER_EXT   = 64;  // (+Handles) use combined with AW_PRINTER only
+const AW_bitset AW_PRINTER_CLIP  = 128; // print screen only
+
+const AW_bitset AW_ALL_DEVICES          = (AW_bitset)-1; // @@@ allowed to used this ? 
+const AW_bitset AW_ALL_DEVICES_SCALED   = (AW_ALL_DEVICES & ~AW_SIZE_UNSCALED);
+const AW_bitset AW_ALL_DEVICES_UNSCALED = (AW_ALL_DEVICES & ~AW_SIZE);
 
 enum AW_DEVICE_TYPE {
-    AW_DEVICE_SCREEN  = 1,
-    AW_DEVICE_CLICK   = 2,
-    AW_DEVICE_SIZE    = 8,
-    AW_DEVICE_PRINTER = 16
+    AW_DEVICE_SCREEN  = AW_SCREEN,
+    AW_DEVICE_CLICK   = AW_CLICK,
+    AW_DEVICE_SIZE    = AW_SIZE,
+    AW_DEVICE_PRINTER = AW_PRINTER, 
 };
 
 enum {
@@ -119,6 +127,17 @@ public:
 
 bool AW_getBestClick(AW_clicked_line *cl, AW_clicked_text *ct, AW_CL *cd1, AW_CL *cd2);
 
+// --------------------------------------------------
+// general note on world- vs. pixel-positions:(WORLD_vs_PIXEL)
+// 
+// A position is interpreted as the center of the corresponding pixel
+// (pixel refers to screen; printer pixel are 15 times smaller!)
+// 
+// Hence, when scaling factor is 1.0, then
+// - any position inside [-0.5, 0.5[ will fall into the pixel 0, any inside [0.5, 1.5[ into pixel 1.
+// - a line from 0.0 to 2.0 will paint THREE pixels (0, 1 and 2). A line from -0.5 to 2.499 will to the same
+// - clipping to area [0, 100] should in fact clip to [-0.5, 100.5[ (@@@ check this)
+
 class AW_zoomable {
     AW::Vector offset;
     AW_pos     scale;
@@ -143,6 +162,11 @@ public:
 
     double transform_size(const double& size) const { return size*scale; }
     double rtransform_size(const double& size) const { return size*unscale; }
+
+    double rtransform_pixelsize(int pixelsize) const {
+        // return world-size needed to draw line/box with length/size == 'pixelsize'
+        return (pixelsize-1)*unscale;
+    }
 
     // transforming a Vector only scales the vector (a Vector has no position!)
     AW::Vector transform (const AW::Vector& vec) const { return vec*scale; }
@@ -314,7 +338,8 @@ struct AW_font_limits {
 
 enum AW_linestyle {
     AW_SOLID,
-    AW_DOTTED
+    AW_DASHED,
+    AW_DOTTED, 
 };
 
 
@@ -336,7 +361,7 @@ public:
     void new_gc(int gc);
     void set_grey_level(int gc, AW_grey_level grey_level); 
     void set_font(int gc, AW_font fontnr, int size, int *found_size);
-    void set_line_attributes(int gc, AW_pos width, AW_linestyle style);
+    void set_line_attributes(int gc, short width, AW_linestyle style);
     void set_function(int gc, AW_function function);
     void establish_default(int gc);
     void set_foreground_color(int gc, AW_color_idx color); // lines ....
@@ -457,13 +482,13 @@ protected:
 public:
     // * third level functions (never virtual)
 
-    bool line(int gc, const AW::LineVector& Line, AW_bitset filteri = AW_ALL_DEVICES) {
+    bool line(int gc, const AW::LineVector& Line, AW_bitset filteri = AW_ALL_DEVICES_SCALED) {
         return line_impl(gc, Line, filteri);
     }
-    bool line(int gc, const AW::Position& pos1, const AW::Position& pos2, AW_bitset filteri = AW_ALL_DEVICES) {
+    bool line(int gc, const AW::Position& pos1, const AW::Position& pos2, AW_bitset filteri = AW_ALL_DEVICES_SCALED) {
         return line_impl(gc, AW::LineVector(pos1, pos2), filteri);
     }
-    bool line(int gc, AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW_bitset filteri = AW_ALL_DEVICES) {
+    bool line(int gc, AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW_bitset filteri = AW_ALL_DEVICES_SCALED) {
         return line_impl(gc, AW::LineVector(x0, y0, x1, y1), filteri);
     }
 
@@ -472,7 +497,7 @@ public:
               AW_pos      x,
               AW_pos      y,
               AW_pos      alignment  = 0.0, // 0.0 alignment left 0.5 centered 1.0 right justified
-              AW_bitset   filteri    = AW_ALL_DEVICES,
+              AW_bitset   filteri    = AW_ALL_DEVICES_UNSCALED,
               long        opt_strlen = 0) {
         return text_impl(gc, string, AW::Position(x, y), alignment, filteri, opt_strlen);
     }
@@ -480,49 +505,49 @@ public:
               const char          *string,
               const AW::Position&  pos,
               AW_pos               alignment  = 0.0, // 0.0 alignment left 0.5 centered 1.0 right justified
-              AW_bitset            filteri    = AW_ALL_DEVICES,
+              AW_bitset            filteri    = AW_ALL_DEVICES_UNSCALED,
               long                 opt_strlen = 0) {
         return text_impl(gc, string, pos, alignment, filteri, opt_strlen);
     }
 
-    bool invisible(int gc, AW_pos x, AW_pos y, AW_bitset filteri = AW_ALL_DEVICES) {
+    bool invisible(int gc, AW_pos x, AW_pos y, AW_bitset filteri = AW_ALL_DEVICES_SCALED) {
         return invisible_impl(gc, AW::Position(x, y), filteri);
     }
-    bool invisible(int gc, const AW::Position& pos, AW_bitset filteri = AW_ALL_DEVICES) {
+    bool invisible(int gc, const AW::Position& pos, AW_bitset filteri = AW_ALL_DEVICES_SCALED) {
         return invisible_impl(gc, pos, filteri);
     }
 
-    bool box(int gc, bool filled, const AW::Rectangle& rect, AW_bitset filteri = AW_ALL_DEVICES) {
+    bool box(int gc, bool filled, const AW::Rectangle& rect, AW_bitset filteri = AW_ALL_DEVICES_SCALED) {
         return box_impl(gc, filled, rect, filteri);
     }
-    bool box(int gc, bool filled, const AW::Position& pos, const AW::Vector& size, AW_bitset filteri = AW_ALL_DEVICES) {
+    bool box(int gc, bool filled, const AW::Position& pos, const AW::Vector& size, AW_bitset filteri = AW_ALL_DEVICES_SCALED) {
         return box_impl(gc, filled, AW::Rectangle(pos, size), filteri);
     }
-    bool box(int gc, bool filled, AW_pos x0, AW_pos y0, AW_pos width, AW_pos height, AW_bitset filteri = AW_ALL_DEVICES) {
+    bool box(int gc, bool filled, AW_pos x0, AW_pos y0, AW_pos width, AW_pos height, AW_bitset filteri = AW_ALL_DEVICES_SCALED) {
         return box_impl(gc, filled, AW::Rectangle(AW::Position(x0, y0), AW::Vector(width, height)), filteri);
     }
 
-    bool circle(int gc, bool filled, const AW::Position& center, const AW::Vector& radius, AW_bitset filteri = AW_ALL_DEVICES) {
+    bool circle(int gc, bool filled, const AW::Position& center, const AW::Vector& radius, AW_bitset filteri = AW_ALL_DEVICES_SCALED) {
         return circle_impl(gc, filled, center, radius, filteri);
     }
-    bool circle(int gc, bool filled, AW_pos x0, AW_pos y0, AW_pos xradius, AW_pos yradius, AW_bitset filteri = AW_ALL_DEVICES)  {
+    bool circle(int gc, bool filled, AW_pos x0, AW_pos y0, AW_pos xradius, AW_pos yradius, AW_bitset filteri = AW_ALL_DEVICES_SCALED)  {
         return circle_impl(gc, filled, AW::Position(x0, y0), AW::Vector(xradius, yradius), filteri);
     }
-    bool circle(int gc, bool filled, const AW::Rectangle& rect, AW_bitset filteri = AW_ALL_DEVICES) {
+    bool circle(int gc, bool filled, const AW::Rectangle& rect, AW_bitset filteri = AW_ALL_DEVICES_SCALED) {
         // draw ellipse into Rectangle
         return circle_impl(gc, filled, rect.centroid(), AW::Vector(rect.width()/2, rect.height()/2), filteri);
     }
 
     // draw arcs (Note: passed degrees are nagative compared to unit circle!)
-    bool arc(int gc, bool filled, AW_pos x0, AW_pos y0, AW_pos xradius, AW_pos yradius, int start_degrees, int arc_degrees, AW_bitset filteri = AW_ALL_DEVICES)  {
+    bool arc(int gc, bool filled, AW_pos x0, AW_pos y0, AW_pos xradius, AW_pos yradius, int start_degrees, int arc_degrees, AW_bitset filteri = AW_ALL_DEVICES_SCALED)  {
         return arc_impl(gc, filled, AW::Position(x0, y0), AW::Vector(xradius, yradius), start_degrees, arc_degrees, filteri);
     }
-    bool arc(int gc, bool filled, const AW::Position& pos, const AW::Vector& radius, int start_degrees, int arc_degrees, AW_bitset filteri = AW_ALL_DEVICES) {
+    bool arc(int gc, bool filled, const AW::Position& pos, const AW::Vector& radius, int start_degrees, int arc_degrees, AW_bitset filteri = AW_ALL_DEVICES_SCALED) {
         return arc_impl(gc, filled, pos, radius, start_degrees, arc_degrees, filteri);
     }
 
     // @@@ rename to 'polygone' and pass 'filled' parameter
-    bool filled_area(int gc, int npoints, const AW_pos *points, AW_bitset filteri = AW_ALL_DEVICES)  {
+    bool filled_area(int gc, int npoints, const AW_pos *points, AW_bitset filteri = AW_ALL_DEVICES_SCALED)  {
         AW::Position pos[npoints];
         for (int n = 0; n<npoints; ++n) {
             pos[n].setx(points[n*2]);
@@ -530,7 +555,7 @@ public:
         }
         return filled_area_impl(gc, npoints, pos, filteri);
     }
-    bool filled_area(int gc, int npos, const AW::Position *pos, AW_bitset filteri = AW_ALL_DEVICES)  {
+    bool filled_area(int gc, int npos, const AW::Position *pos, AW_bitset filteri = AW_ALL_DEVICES_SCALED)  {
         return filled_area_impl(gc, npos, pos, filteri);
     }
 
@@ -573,6 +598,7 @@ class AW_device_print : public AW_device { // derived from a Noncopyable
     bool circle_impl(int gc, bool filled, const AW::Position& center, const AW::Vector& radius, AW_bitset filteri);
     bool arc_impl(int gc, bool filled, const AW::Position& center, const AW::Vector& radius, int start_degrees, int arc_degrees, AW_bitset filteri);
     bool filled_area_impl(int gc, int npos, const AW::Position *pos, AW_bitset filteri);
+    bool invisible_impl(int gc, const AW::Position& pos, AW_bitset filteri);
 public:
     AW_device_print(AW_common *common_)
         : AW_device(common_),
@@ -610,17 +636,51 @@ class AW_simple_device : public AW_device {
 public:
     AW_simple_device(AW_common *common_) : AW_device(common_) {}
 };
-    
-class AW_device_size : public AW_simple_device {
+
+class AW_size_tracker {
     bool     drawn;
-    AW_world size_information;
-    void     privat_reset();
+    AW_world size;
 
-    void dot_transformed(AW_pos X, AW_pos Y);
-    void dot_transformed(const AW::Position& p) { dot_transformed(p.xpos(), p.ypos()); }
+    void extend(AW_pos& low, AW_pos val, AW_pos& high) {
+        low = std::min(low, val);
+        high = std::max(high, val);
+    }
+public:
+    AW_size_tracker() { clear(); }
 
-    void dot(AW_pos x, AW_pos y) { dot(AW::Position(x, y)); }
-    void dot(const AW::Position& p) { dot_transformed(transform(p)); }
+    void clear() { drawn = false; size.clear(); }
+    void track(const AW::Position& pos) {
+        if (drawn) {
+            extend(size.l, pos.xpos(), size.r);
+            extend(size.t, pos.ypos(), size.b);
+        }
+        else {
+            size.l = size.r = pos.xpos();
+            size.t = size.b = pos.ypos();
+            drawn  = true;
+        }
+    }
+
+    bool was_drawn() const { return drawn; }
+    const AW_world& get_size() const { return size; }
+    AW::Rectangle get_size_as_Rectangle() const {
+        return AW::Rectangle(AW::Position(size.l, size.t), AW::Position(size.r, size.b));
+    }
+};
+
+class AW_device_size : public AW_simple_device {
+    AW_size_tracker scaled;   // all zoomable parts (e.g. tree skeleton)                        
+    AW_size_tracker unscaled; // all unzoomable parts (e.g. text at tree-tips or group-brackets)
+
+    mutable AW_borders unscalable_overlap;
+
+    void privat_reset();
+
+    void dot_transformed(const AW::Position& pos, AW_bitset filteri);
+    void dot_transformed(AW_pos X, AW_pos Y, AW_bitset filteri) { dot_transformed(AW::Position(X, Y), filteri); }
+
+    void dot(const AW::Position& p, AW_bitset filteri) { dot_transformed(transform(p), filteri); }
+    void dot(AW_pos x, AW_pos y, AW_bitset filteri) { dot(AW::Position(x, y), filteri); }
 
     bool line_impl(int gc, const AW::LineVector& Line, AW_bitset filteri);
     bool text_impl(int gc, const char *str, const AW::Position& pos, AW_pos alignment, AW_bitset filteri, long opt_strlen);
@@ -629,10 +689,20 @@ class AW_device_size : public AW_simple_device {
 public:
     AW_device_size(AW_common *common_) : AW_simple_device(common_) {}
 
-    void           init();
+    void clear();
+
     AW_DEVICE_TYPE type();
 
-    void get_size_information(AW_world *ptr);
+    void get_size_information(AW_world *ptr) __ATTR__DEPRECATED_LATER("whole AW_world is deprecated") const {
+        *ptr = scaled.get_size();
+    }
+    AW::Rectangle get_size_information() const { return scaled.get_size_as_Rectangle(); }
+    AW::Rectangle get_size_information_unscaled() const { return unscaled.get_size_as_Rectangle(); }
+    AW::Rectangle get_size_information_inclusive_text() const {
+        return get_size_information().bounding_box(get_size_information_unscaled());
+    }
+
+    const AW_borders& get_unscaleable_overlap() const;
 };
 
 class AW_device_click : public AW_simple_device {

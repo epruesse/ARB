@@ -236,26 +236,45 @@ void AW_zoomable::reset() {
 // -----------------
 //      AW_GC_Xm
 
+const int GC_DEFAULT_LINE_STYLE = LineSolid;
+const int GC_DEFAULT_CAP_STYLE  = CapProjecting;
+const int GC_JOIN_STYLE         = JoinMiter;
+
 AW_GC_Xm::AW_GC_Xm(AW_common *common_)
     : AW_GC(common_)
 {
-     XGCValues val;
-    val.line_width = 1;
-    unsigned long value_mask = GCLineWidth;
+    XGCValues val;
+
+    val.line_width = GC_DEFAULT_LINE_WIDTH;
+    val.line_style = GC_DEFAULT_LINE_STYLE;
+    val.cap_style  = GC_DEFAULT_CAP_STYLE;
+    val.join_style = GC_JOIN_STYLE;
+
+    unsigned long value_mask = GCLineWidth|GCLineStyle|GCCapStyle|GCJoinStyle;
 
     gc = XCreateGC(get_common()->get_display(), get_common()->get_window_id(), value_mask, &val);
+    wm_set_function(get_function());
 }
 AW_GC_Xm::~AW_GC_Xm() {
     if (gc) XFreeGC(get_common()->get_display(), gc);
 }
 void AW_GC_Xm::wm_set_lineattributes(short lwidth, AW_linestyle lstyle) {
+    Display            *display = get_common()->get_display();
+    aw_assert(lwidth>0);
+
     switch (lstyle) {
         case AW_SOLID:
-            XSetLineAttributes(get_common()->get_display(), gc, lwidth, LineSolid, CapButt, JoinBevel);
+            XSetLineAttributes(display, gc, lwidth, LineSolid, GC_DEFAULT_CAP_STYLE, GC_JOIN_STYLE);
             break;
+
         case AW_DOTTED:
-            XSetLineAttributes(get_common()->get_display(), gc, lwidth, LineOnOffDash, CapButt, JoinBevel);
+        case AW_DASHED: {
+            static char dashes[] = { 5, 2 };
+            static char dots[]   = { 1, 1 };
+            XSetDashes(display, gc, 0, lstyle == AW_DOTTED ? dots : dashes, 2);
+            XSetLineAttributes(display, gc, lwidth, LineOnOffDash, CapButt, GC_JOIN_STYLE);
             break;
+        }
     }
 }
 void AW_GC_Xm::wm_set_function(AW_function mode) {
@@ -324,7 +343,7 @@ void AW_stylable::set_font(int gc, AW_font font_nr, int size, int *found_size) {
 int AW_stylable::get_available_fontsizes(int gc, AW_font font_nr, int *available_sizes) {
     return get_common()->map_gc(gc)->get_available_fontsizes(font_nr, available_sizes);
 }
-void AW_stylable::set_line_attributes(int gc, AW_pos width, AW_linestyle style) {
+void AW_stylable::set_line_attributes(int gc, short width, AW_linestyle style) {
     get_common()->map_mod_gc(gc)->set_line_attributes(width, style);
 }
 void AW_stylable::set_function(int gc, AW_function function) {
@@ -451,6 +470,14 @@ void AW_device::pop_clip_scale() {
 
 // --------------------------------------------------------------------------------
 
+static const AW_screen_area& get_universe() {
+    // "unrestricted" area
+    const int UMIN = INT_MIN/10;
+    const int UMAX = INT_MAX/10;
+    static AW_screen_area universe = { UMIN, UMAX, UMIN, UMAX };
+    return universe;
+}
+
 const AW_screen_area& AW_device::get_area_size() {
     return get_common()->get_screen();
 }
@@ -461,7 +488,12 @@ void AW_device::reset() {
     while (clip_scale_stack) {
         pop_clip_scale();
     }
-    set_cliprect(get_area_size()); // @@@ or set_cliprect_oversize ? 
+    if (type() == AW_DEVICE_SIZE) {
+        set_cliprect(get_universe());
+    }
+    else {
+        set_cliprect(get_area_size());
+    }
     AW_zoomable::reset();
     privat_reset();
 }

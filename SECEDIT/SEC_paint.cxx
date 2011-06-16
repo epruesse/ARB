@@ -177,9 +177,9 @@ void SEC_root::paintAnnotation(AW_device *device, int gc,
                 Vector toRight(note_center, right);
 
                 device->line(gc, boxText ? note_center : note_center+toLeft*(half_width/toLeft.length()),
-                             left-toLeft*(half_charSize/toLeft.length()), AW_ALL_DEVICES);
+                             left-toLeft*(half_charSize/toLeft.length()), AW_ALL_DEVICES_SCALED);
                 device->line(gc, boxText ? note_center : note_center+toRight*(half_width/toRight.length()),
-                             right-toRight*(half_charSize/toRight.length()), AW_ALL_DEVICES);
+                             right-toRight*(half_charSize/toRight.length()), AW_ALL_DEVICES_SCALED);
             }
             else {
                 Vector rightIndent = out;
@@ -298,7 +298,7 @@ void SEC_root::paintHelixNumbers(AW_device *device) {
 
 #if defined(PAINT_ABSOLUTE_POSITION)
 void SEC_root::showSomeAbsolutePositions(AW_device *device) {
-    if (device->get_filter() != AW_SIZE) { // ignore for size calculation
+    if (device->get_filter() != AW_SIZE) { // ignore for size calculation (@@@)
         Rectangle screen = device->rtransform(Rectangle(device->get_area_size(), INCLUSIVE_OUTLINE));
         Vector    diag3  = screen.diagonal()/3;
         Rectangle showInside(screen.upper_left_corner()+diag3*1.85, diag3);
@@ -366,7 +366,7 @@ void SEC_loop::paint_constraints(AW_device *device) {
         if (minS>0) device->circle(SEC_GC_DEFAULT, false, center, Vector(minS, minS));
         if (maxS>0) device->circle(SEC_GC_DEFAULT, false, center, Vector(maxS, maxS));
 
-        device->text(SEC_GC_DEFAULT, GBS_global_string("%.1f-%.1f", minS, maxS), center+Vector(0, max(minS, maxS)/2), 0.5, AW_ALL_DEVICES);
+        device->text(SEC_GC_DEFAULT, GBS_global_string("%.1f-%.1f", minS, maxS), center+Vector(0, max(minS, maxS)/2), 0.5, AW_ALL_DEVICES_UNSCALED);
     }
 }
 
@@ -615,7 +615,7 @@ void SEC_bond_def::paint(AW_device *device, int GC, char bondChar, const Positio
         }
 
         case '@':  // error in bonddef
-            device->text(GC, "Err", center+Vector(0, char_radius), 0.5, AW_ALL_DEVICES);
+            device->text(GC, "Err", center+Vector(0, char_radius), 0.5, AW_ALL_DEVICES_UNSCALED);
             break;
 
         default:
@@ -1043,8 +1043,8 @@ GB_ERROR SEC_root::paint(AW_device *device) {
 
             Position textPos(loop_center.xpos(), upperleft_corner.ypos());
 
-            device->box(SEC_GC_DEFAULT, false, upperleft_corner, diagonal);
-            device->text(SEC_GC_DEFAULT, structId, textPos, 0.5, AW_ALL_DEVICES, 0);
+            device->box(SEC_GC_DEFAULT, false, upperleft_corner, diagonal, AW_ALL_DEVICES_UNSCALED);
+            device->text(SEC_GC_DEFAULT, structId, textPos, 0.5, AW_ALL_DEVICES_UNSCALED, 0);
         }
 
 #if defined(CHECK_INTEGRITY)
@@ -1086,7 +1086,7 @@ GB_ERROR SEC_root::paint(AW_device *device) {
             AW_click_cd cd(device, 0, curAbs);
 #if defined(DEBUG) && 1
             // draw a testline to see the baseline on that the cursor is positioned
-            device->set_line_attributes(SEC_GC_CURSOR, 1, AW_DOTTED);
+            device->set_line_attributes(SEC_GC_CURSOR, 1, AW_DASHED);
             device->line(SEC_GC_CURSOR, pos1, pos2);
 #endif
 

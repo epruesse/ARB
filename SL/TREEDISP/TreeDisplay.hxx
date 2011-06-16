@@ -32,9 +32,9 @@
 
 void awt_create_dtree_awars(AW_root *aw_root, AW_default def);
 
-#define NT_BOX_WIDTH       3.5  /* pixel/2 ! */
-#define NT_ROOT_WIDTH      4.5  /* pixel/2 ! */
-#define NT_SELECTED_WIDTH  5.5
+#define NT_BOX_WIDTH      7 // pixel
+#define NT_ROOT_WIDTH     9
+#define NT_SELECTED_WIDTH 11
 
 #define PH_CLICK_SPREAD   0.10
 
@@ -104,7 +104,7 @@ class AWT_graphic_tree : public AWT_graphic, virtual Noncopyable {
     int zombies; // # of zombies during last load()
     int duplicates; // # of duplicates during last load()
 
-    int paint_irs_sub_tree(AP_tree *node, int x_offset); // returns y pos
+    AW_pos paint_irs_sub_tree(AP_tree *node, AW_pos x_offset); // returns y pos
 
     void unload();
 
@@ -148,11 +148,12 @@ class AWT_graphic_tree : public AWT_graphic, virtual Noncopyable {
                           double   y_root);
 
     void show_nds_list(GBDATA * gb_main, bool use_nds);
-    void show_irs_tree(AP_tree *at, int height);
+    void show_irs_tree(AP_tree *at, double height);
 
-    void filled_box(int gc, const AW::Position& pos, double width);
-    void empty_box(int gc, const AW::Position& pos, double width);
-    void diamond(int gc, const AW::Position& pos, double width);
+    void box(int gc, const AW::Position& pos, int pixel_width, bool filled);
+    void filled_box(int gc, const AW::Position& pos, int pixel_width) { box(gc, pos, pixel_width, true); }
+    void empty_box(int gc, const AW::Position& pos, int pixel_width) { box(gc, pos, pixel_width, false); }
+    void diamond(int gc, const AW::Position& pos, int pixel_width);
 
     const char *show_ruler(AW_device *device, int gc);
     void        rot_show_triangle(AW_device *device);

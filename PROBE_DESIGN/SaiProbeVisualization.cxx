@@ -72,11 +72,8 @@ SAI_graphic::SAI_graphic(AW_root *aw_rooti, GBDATA *gb_maini) {
     exports.dont_fit_x      = 1;
     exports.dont_fit_y      = 1;
     exports.dont_fit_larger = 0;
-    exports.left_offset     = 20;
-    exports.right_offset    = 200;
-    exports.top_offset      = 30;
-    exports.bottom_offset   = 30;
     exports.dont_scroll     = 0;
+    exports.set_standard_default_padding();
 
     this->aw_root = aw_rooti;
     this->gb_main = gb_maini;

@@ -320,9 +320,7 @@ void GEN_local_organism_or_gene_name_changed_cb(AW_root *awr, AW_CL cl_win) {
 }
 
 static void GEN_map_window_zoom_reset_and_refresh(GEN_map_window *gmw) {
-    AWT_canvas *canvas = gmw->get_canvas();
-    canvas->zoom_reset();
-    canvas->refresh();
+    gmw->get_canvas()->zoom_reset_and_refresh();
 }
 
 #define DISPLAY_TYPE_BIT(disp_type) (1<<(disp_type))
@@ -1600,8 +1598,7 @@ void GEN_map_window::init(AW_root *awr, GBDATA *gb_main) {
         gen_graphic->reinit_gen_root(gen_canvas, false);
     }
 
-    gen_canvas->recalc_size();
-    gen_canvas->refresh();
+    gen_canvas->recalc_size_and_refresh();
     gen_canvas->set_mode(AWT_MODE_SELECT); // Default-Mode
 
     // --------------

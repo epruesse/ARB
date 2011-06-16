@@ -1495,7 +1495,7 @@ AW_window *CPRO_showstatistic_cb(AW_root *aw_root, AW_CL which_statistic)
     device->set_line_attributes(GC_green, 1, AW_SOLID);
     device->set_foreground_color(GC_green, AW_WINDOW_C2);
     device->new_gc(GC_grid);
-    device->set_line_attributes(GC_grid, 1, AW_DOTTED);
+    device->set_line_attributes(GC_grid, 1, AW_DASHED);
     device->set_foreground_color(GC_grid, AW_WINDOW_C3);
 
     return (AW_window *)aws;
