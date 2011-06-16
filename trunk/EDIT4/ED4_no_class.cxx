@@ -36,27 +36,30 @@
 
 
 void ED4_calc_terminal_extentions() {
-    const AW_font_information *seq_font_info  = ED4_ROOT->get_device()->get_font_information(ED4_G_SEQUENCES, '=');
-    const AW_font_information *info_font_info = ED4_ROOT->get_device()->get_font_information(ED4_G_STANDARD, '.');
+    AW_device *device = ED4_ROOT->get_device();
 
-    int info_char_width = info_font_info->max_letter.width;
+    const AW_font_limits& seq_font_limits  = device->get_font_limits(ED4_G_SEQUENCES, 0);
+    const AW_font_limits& seq_equal_limits = device->get_font_limits(ED4_G_SEQUENCES, '=');
+    const AW_font_limits& info_font_limits = device->get_font_limits(ED4_G_STANDARD, 0);
+
+    int info_char_width = info_font_limits.width;
     int seq_term_descent;
 
     if (ED4_ROOT->helix->is_enabled() || ED4_ROOT->protstruct) { // display helix ?
         ED4_ROOT->helix_spacing =
-            seq_font_info->this_letter.ascent // the ascent of '='
+            seq_equal_limits.ascent // the ascent of '='
             + ED4_ROOT->helix_add_spacing; // xtra user-defined spacing
 
         seq_term_descent = ED4_ROOT->helix_spacing;
     }
     else {
         ED4_ROOT->helix_spacing = 0;
-        seq_term_descent  = seq_font_info->max_letter.descent;
+        seq_term_descent  = seq_font_limits.descent;
     }
 
     // for wanted_seq_term_height ignore descent, because it additionally allocates 'ED4_ROOT->helix_spacing' space:
-    int wanted_seq_term_height = seq_font_info->max_letter.ascent + seq_term_descent + ED4_ROOT->terminal_add_spacing;
-    int wanted_seq_info_height = info_font_info->max_letter.height + ED4_ROOT->terminal_add_spacing;
+    int wanted_seq_term_height = seq_font_limits.ascent + seq_term_descent + ED4_ROOT->terminal_add_spacing;
+    int wanted_seq_info_height = info_font_limits.height + ED4_ROOT->terminal_add_spacing;
 
     TERMINALHEIGHT = (wanted_seq_term_height>wanted_seq_info_height) ? wanted_seq_term_height : wanted_seq_info_height;
 
@@ -71,8 +74,8 @@ void ED4_calc_terminal_extentions() {
     }
     MAXINFOWIDTH = CHARACTEROFFSET + info_char_width*ED4_ROOT->aw_root->awar(ED4_AWAR_NDS_INFO_WIDTH)->read_int() + 1;
 
-    INFO_TERM_TEXT_YOFFSET = info_font_info->max_letter.ascent - 1;
-    SEQ_TERM_TEXT_YOFFSET  = seq_font_info->max_letter.ascent - 1;
+    INFO_TERM_TEXT_YOFFSET = info_font_limits.ascent - 1;
+    SEQ_TERM_TEXT_YOFFSET  = seq_font_limits.ascent - 1;
 
     if (INFO_TERM_TEXT_YOFFSET<SEQ_TERM_TEXT_YOFFSET) INFO_TERM_TEXT_YOFFSET = SEQ_TERM_TEXT_YOFFSET;
 

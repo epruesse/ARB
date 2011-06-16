@@ -12,6 +12,7 @@
 // ==================================================================== //
 
 #include "aw_font_group.hxx"
+#include "aw_commn.hxx"
 
 AW_font_group::AW_font_group() {
     unregisterAll();
@@ -32,17 +33,19 @@ inline void set_max(int val, int& max) { if (val>max) max = val; }
 void AW_font_group::registerFont(AW_device *device, int gc, const char *chars) {
     aw_assert(gc <= AW_FONT_GROUP_MAX_GC);
 
+    const AW_GC_Xm *gcm = device->common->map_gc(gc);
+
     if (!chars) {
         // use complete ASCII-range for limits
-        max_letter_limits[gc] = device->get_font_information(gc, 0)->max_letter;
+        max_letter_limits[gc] = gcm->get_font_limits();
     }
     else {
         aw_assert(chars[0]);
-        max_letter_limits[gc] = device->get_font_information(gc, chars[0])->this_letter;
+        AW_font_limits limits = gcm->get_font_limits(chars[0]);
         for (int i = 1; chars[i]; ++i) {
-            max_letter_limits[gc] = AW_font_limits(max_letter_limits[gc],
-                                                   device->get_font_information(gc, chars[i])->this_letter);
+            limits = AW_font_limits(limits, gcm->get_font_limits(chars[i]));
         }
+        max_letter_limits[gc] = limits;
     }
 
     set_max(get_width(gc), max_width);

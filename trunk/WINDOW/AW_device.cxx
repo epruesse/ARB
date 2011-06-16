@@ -335,22 +335,8 @@ void AW_GC_Xm::set_background_color(unsigned long colori) {
     last_bg_color = colori;
 }
 
-const AW_font_information *AW_common::get_font_information(int gc, unsigned char c) {
-    // @@@ result should be 'const AW_font_limits&'
-
-    AW_GC_Xm&        gcm = *gcs[gc];
-    AW_font_limits&  lim = gcm.fontinfo.this_letter;
-
-    lim.ascent  = gcm.ascent_of_chars[c];
-    lim.descent = gcm.descent_of_chars[c];
-    lim.width   = gcm.width_of_chars[c];
-    lim.calc_height();
-    
-    return &gcm.fontinfo;
-}
-
-const AW_font_information *AW_gc::get_font_information(int gc, unsigned char c) {
-    return common->get_font_information(gc, c);
+const AW_font_limits& AW_gc::get_font_limits(int gc, char c) const {
+    return common->get_font_limits(gc, c);
 }
 
 // --------------

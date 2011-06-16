@@ -17,6 +17,9 @@
 class AW_common;
 
 class AW_GC_Xm : virtual Noncopyable {
+    mutable AW_font_limits one_letter;
+    AW_font_limits         all_letters;
+
 public:
     GC                   gc;
     AW_common           *common;
@@ -24,7 +27,6 @@ public:
     short                width_of_chars[256];
     short                ascent_of_chars[256];
     short                descent_of_chars[256];
-    AW_font_information  fontinfo;
     short                line_width;
     AW_linestyle         style;
     short                color;
@@ -39,6 +41,16 @@ public:
 
     AW_GC_Xm(AW_common *common);
     ~AW_GC_Xm();
+
+    const AW_font_limits& get_font_limits() const { return all_letters; }
+    const AW_font_limits& get_font_limits(char c) const {
+        aw_assert(c); // you want to use the version w/o parameter
+        one_letter.ascent  = ascent_of_chars[safeCharIndex(c)];
+        one_letter.descent = descent_of_chars[safeCharIndex(c)];
+        one_letter.width   = width_of_chars[safeCharIndex(c)];
+        one_letter.calc_height();
+        return one_letter;
+    }
 
     void set_fill(AW_grey_level grey_level); // <0 don't fill  0.0 white 1.0 black
     void set_font(AW_font font_nr, int size, int *found_size);
@@ -110,7 +122,12 @@ public:
 
     GC get_GC(int gc) const { return map_gc(gc)->gc; }
     const XFontStruct *get_xfont(int gc) const { return &map_gc(gc)->curfont; }
-    const AW_font_information *get_font_information(int gc, unsigned char c);
+    const AW_font_limits& get_font_limits(int gc, char c) const {
+        // for one characters (c == 0 -> for all characters)
+        return c
+            ? map_gc(gc)->get_font_limits(c)
+            : map_gc(gc)->get_font_limits();
+    }
 };
 
 inline AW_pos x_alignment(AW_pos x_pos, AW_pos x_size, AW_pos alignment) { return x_pos - x_size*alignment; }

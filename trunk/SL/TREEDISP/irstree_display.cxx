@@ -280,7 +280,7 @@ void AWT_graphic_tree::show_irs_tree(AP_tree *at, AW_device *device, int height)
     device->push_clip_scale();
     int x;
     int y;
-    const AW_font_information *font_info = device->get_font_information(AWT_GC_SELECTED, 0);
+    const AW_font_limits& limits = device->get_font_limits(AWT_GC_SELECTED, 0);
     device->rtransform(0, 0, x, y); // calculate real world coordinates of left/upper screen border
     int clipped_l, clipped_t;
     int clipped_r, clipped_b;
@@ -289,7 +289,7 @@ void AWT_graphic_tree::show_irs_tree(AP_tree *at, AW_device *device, int height)
 
     irs_gl.nodes_nnnodes  = MAXSHOWNNODES;
     irs_gl.nodes_ntip     = 0;
-    irs_gl.font_height_2  = font_info->max_letter.ascent/2;
+    irs_gl.font_height_2  = limits.ascent/2;
     irs_gl.device         = device;
     irs_gl.ftrst_species  = true;
     irs_gl.y              = 0;

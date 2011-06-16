@@ -274,20 +274,6 @@ struct AW_font_limits {
     }
 };
 
-#define AW_FONTINFO_CHAR_MIN       32
-#define AW_FONTINFO_CHAR_MAX       255
-
-#define AW_FONTINFO_CHAR_ASCII_MIN 32
-#define AW_FONTINFO_CHAR_ASCII_MAX 127
-
-class AW_font_information {
-public:
-    // maximas of ..
-    AW_font_limits this_letter;                     // letter specified in call to get_font_information()
-    AW_font_limits max_letter;                      // max of all ASCII characters (AW_FONTINFO_CHAR_ASCII_MIN..AW_FONTINFO_CHAR_ASCII_MAX)
-    AW_font_limits max_all_letter;                  // max of all characters (AW_FONTINFO_CHAR_MIN..AW_FONTINFO_CHAR_MAX)
-};
-
 // -----------------------------------------------
 //      Graphic context (linestyle, width ...)
 
@@ -314,7 +300,7 @@ public:
     void set_background_color(int gc, AW_color color); // for box
     int  get_string_size(int gc, const  char *string, long textlen) const; // get the size of the string
 
-    const AW_font_information *get_font_information(int gc, unsigned char c);
+    const AW_font_limits& get_font_limits(int gc, char c) const; // for one characters (c == 0 -> for all characters)
 
     int get_available_fontsizes(int gc, AW_font font_nr, int *available_sizes);
 
