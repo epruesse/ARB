@@ -679,7 +679,7 @@ static void popup_group_clusters_window(AW_window *aw_clusterList) {
     if (!aws) {
         AW_root *aw_root = aw_clusterList->get_root();
 
-        aws = new AW_window_simple();
+        aws = new AW_window_simple;
         aws->init(aw_root, "cluster_groups", "Cluster groups");
 
         aws->auto_space(10, 10);
