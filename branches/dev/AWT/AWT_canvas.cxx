@@ -551,11 +551,10 @@ static void motion_event(AW_window *aww, AWT_canvas *ntw, AW_CL /*cd2*/) {
     AW_event event;
     aww->get_event(&event);
 
-    int dx, dy;
     if (event.button == AWT_M_MIDDLE) {
         // shift display in ALL modes
-        dx = event.x - ntw->zoom_drag_ex;
-        dy = event.y - ntw->zoom_drag_ey;
+        int dx = event.x - ntw->zoom_drag_ex;
+        int dy = event.y - ntw->zoom_drag_ey;
 
         ntw->zoom_drag_ex = event.x;
         ntw->zoom_drag_ey = event.y;

@@ -292,7 +292,7 @@ class ARB_edge {
     ARB_tree      *from, *to;
     ARB_edge_type  type;
 
-    ARB_edge_type detectType() {
+    ARB_edge_type detectType() const {
         at_assert(to != from);
         at_assert(!from->is_root_node());                // edges cannot be at root - use edge between sons of root!
         at_assert(!to->is_root_node());
