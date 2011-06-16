@@ -49,7 +49,7 @@ class AW_window;
 // ---------------------
 //      Cluster
 
-typedef long ID;
+typedef int32_t ID;
 
 enum ClusterOrder {
     UNSORTED             = 0, 

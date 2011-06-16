@@ -21,7 +21,7 @@
 
 void AW_selection_list::selectAll() {
     int i;
-    AW_select_table_struct *lt;
+    AW_selection_list_entry *lt;
     for (i=0, lt = list_table; lt; i++, lt = lt->next) {
         XmListSelectPos(select_list_widget, i, False);
     }
@@ -36,13 +36,13 @@ void AW_selection_list::deselectAll() {
 
 
 const char *AW_selection_list::first_element() {
-    AW_select_table_struct *lt;
+    AW_selection_list_entry *lt;
     for (lt = list_table; lt; lt = lt->next) {
         lt->is_selected = 1;
     }
     loop_pntr = list_table;
     if (!loop_pntr) return 0;
-    return loop_pntr->char_value;
+    return loop_pntr->value.get_string();
 }
 
 const char *AW_selection_list::next_element() {
@@ -51,12 +51,12 @@ const char *AW_selection_list::next_element() {
     if (!loop_pntr) return 0;
     while (loop_pntr && !loop_pntr->is_selected) loop_pntr=loop_pntr->next;
     if (!loop_pntr) return 0;
-    return loop_pntr->char_value;
+    return loop_pntr->value.get_string();
 }
 
 const char *AW_selection_list::first_selected() {
     int i;
-    AW_select_table_struct *lt;
+    AW_selection_list_entry *lt;
     loop_pntr = 0;
     for (i=1, lt = list_table; lt; i++, lt = lt->next) {
         lt->is_selected = XmListPosSelected(select_list_widget, i);
@@ -66,7 +66,7 @@ const char *AW_selection_list::first_selected() {
         default_select->is_selected = XmListPosSelected(select_list_widget, i);
         if (default_select->is_selected && !loop_pntr) loop_pntr = default_select;
     }
-    return loop_pntr ? loop_pntr->char_value : NULL;
+    return loop_pntr ? loop_pntr->value.get_string() : NULL;
 }
 
 const char *AW_selection_list::get_awar_value(AW_root *aw_root) const {
@@ -78,11 +78,11 @@ void AW_selection_list::set_awar_value(AW_root *aw_root, const char *new_value) 
 }
 
 const char *AW_selection_list::get_default_value() const {
-    return default_select ? default_select->char_value : NULL;
+    return default_select ? default_select->value.get_string() : NULL;
 }
 
 size_t AW_selection_list::size() {
-    AW_select_table_struct *lt    = list_table;
+    AW_selection_list_entry *lt    = list_table;
     size_t                  count = 0;
 
     while (lt) {

@@ -13,7 +13,9 @@
 #ifndef CB_H
 #include <cb.h>
 #endif
-
+#ifndef AW_SCALAR_HXX
+#include "aw_scalar.hxx"
+#endif
 
 // macro definitions
 #define  p_r        prvt
@@ -77,17 +79,14 @@ struct AW_buttons_struct : virtual Noncopyable {
     AW_buttons_struct *next;
 };
 
-struct AW_option_struct : virtual Noncopyable {
-    AW_option_struct(const char *variable_valuei, Widget choice_widgeti);
-    AW_option_struct(int variable_valuei, Widget choice_widgeti);
-    AW_option_struct(float variable_valuei, Widget choice_widgeti);
-    ~AW_option_struct();
+struct AW_widget_value_pair : virtual Noncopyable {
+    template<typename T> explicit AW_widget_value_pair(T t, Widget w) : value(t), widget(w), next(NULL) {}
+    ~AW_widget_value_pair() { aw_assert(!next); } // has to be unlinked from list BEFORE calling dtor
 
-    char             *variable_value;
-    int               variable_int_value;
-    float             variable_float_value;
-    Widget            choice_widget;
-    AW_option_struct *next;
+    AW_scalar value;
+    Widget    widget;
+
+    AW_widget_value_pair *next;
 };
 
 struct AW_option_menu_struct {
@@ -98,74 +97,63 @@ struct AW_option_menu_struct {
     AW_VARIABLE_TYPE  variable_type;
     Widget            label_widget;
     Widget            menu_widget;
-    AW_option_struct *first_choice;
-    AW_option_struct *last_choice;
-    AW_option_struct *default_choice;
-    AW_pos            x;
-    AW_pos            y;
-    int               correct_for_at_center_intern; // needed for centered and right justified menus (former member of AW_at)
+
+    AW_widget_value_pair *first_choice;
+    AW_widget_value_pair *last_choice;
+    AW_widget_value_pair *default_choice;
+    
+    AW_pos x;
+    AW_pos y;
+    int    correct_for_at_center_intern;            // needed for centered and right justified menus (former member of AW_at)
 
     AW_option_menu_struct *next;
 };
 
 
-struct AW_toggle_struct {
-
-    AW_toggle_struct(const char *variable_valuei, Widget choice_widgeti);
-    AW_toggle_struct(int variable_valuei, Widget choice_widgeti);
-    AW_toggle_struct(float variable_valuei, Widget choice_widgeti);
-
-    char   *variable_value;
-    int     variable_int_value;
-    float   variable_float_value;
-    Widget  toggle_widget;
-
-    AW_toggle_struct *next;
-
-};
-
 struct AW_toggle_field_struct {
-
     AW_toggle_field_struct(int toggle_field_numberi, const char *variable_namei, AW_VARIABLE_TYPE variable_typei, Widget label_widgeti, int correct);
 
     int               toggle_field_number;
     char             *variable_name;
     AW_VARIABLE_TYPE  variable_type;
     Widget            label_widget;
-    AW_toggle_struct *first_toggle;
-    AW_toggle_struct *last_toggle;
-    AW_toggle_struct *default_toggle;
-    int               correct_for_at_center_intern; // needed for centered and right justified toggle fields (former member of AW_at)
+
+    AW_widget_value_pair *first_toggle;
+    AW_widget_value_pair *last_toggle;
+    AW_widget_value_pair *default_toggle;
+    
+    int correct_for_at_center_intern;                   // needed for centered and right justified toggle fields (former member of AW_at)
 
     AW_toggle_field_struct *next;
-
 };
 
 
-struct AW_select_table_struct : virtual Noncopyable {
+// cppcheck-suppress noConstructor
+class AW_selection_list_entry : virtual Noncopyable {
+    char      *displayed;
 
-    AW_select_table_struct(const char *displayedi, const char *value);
-    AW_select_table_struct(const char *displayedi, long value);
-    AW_select_table_struct(const char *displayedi, float value);
-    AW_select_table_struct(const char *displayedi, void *pointer);
+public:
+    // @@@ make members private
+    AW_scalar  value;
+    bool is_selected;                                // internal use only
+    AW_selection_list_entry *next;
 
-    ~AW_select_table_struct();
+    template<typename T>
+    AW_selection_list_entry(const char *display, T val)
+        : displayed(copy_string_for_display(display)),
+          value(val),
+          is_selected(false),
+          next(NULL)
+    {}
+    ~AW_selection_list_entry() { free(displayed); }
 
-    static char *copy_string(const char *str);
+    static char *copy_string_for_display(const char *str);
 
-    char *displayed;
+    template<typename T>
+    void set_value(T val) { value = AW_scalar(val); }
 
-#if defined(WARN_TODO)
-#warning make the following variables a union
-#endif
-    char  *char_value;
-    long   int_value;
-    float  float_value;
-    void  *pointer_value;
-
-    int is_selected;                                // internal use only
-
-    AW_select_table_struct *next;
+    const char *get_displayed() const { return displayed; }
+    void set_displayed(const char *displayed_) { freeset(displayed, copy_string_for_display(displayed_)); }
 };
 
 // -------------------------------------------
@@ -340,4 +328,5 @@ void   aw_create_help_entry(AW_window *aww);
 #else
 #error aw_window_Xm.hxx included twice
 #endif
+
 

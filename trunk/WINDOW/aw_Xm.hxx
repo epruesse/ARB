@@ -6,8 +6,6 @@
 #endif
 
 class AW_device_Xm : public AW_device {
-    int fastflag;
-
     bool line_impl(int gc, const AW::LineVector& Line, AW_bitset filteri);
     bool text_impl(int gc, const char *str, const AW::Position& pos, AW_pos alignment, AW_bitset filteri, long opt_strlen);
     bool box_impl(int gc, bool filled, const AW::Rectangle& rect, AW_bitset filteri);
@@ -18,19 +16,18 @@ class AW_device_Xm : public AW_device {
     }
 
 public:
-    AW_device_Xm(AW_common *commoni) : AW_device(commoni) {}
+    AW_device_Xm(AW_common *commoni)
+        : AW_device(commoni)
+    {}
 
     AW_common_Xm *get_common() const { return DOWNCAST(AW_common_Xm*, AW_device::get_common()); }
 
-    void           init() {}
     AW_DEVICE_TYPE type();
 
     void clear(AW_bitset filteri);
     void clear_part(AW_pos x, AW_pos y, AW_pos width, AW_pos height, AW_bitset filteri);
     void clear_text(int gc, const char *string, AW_pos x, AW_pos y, AW_pos alignment, AW_bitset filteri, AW_CL cd1, AW_CL cd2);
 
-    void fast();                // e.g. zoom linewidth off
-    void slow();
     void flush();
     void move_region(AW_pos src_x, AW_pos src_y, AW_pos width, AW_pos height, AW_pos dest_x, AW_pos dest_y);
 };

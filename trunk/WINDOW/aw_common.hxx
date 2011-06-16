@@ -18,6 +18,10 @@
 #ifndef DOWNCAST_H
 #include <downcast.h>
 #endif
+#ifndef ARB_DEFS_H
+#include <arb_defs.h>
+#endif
+
 
 #define AW_FONTINFO_CHAR_ASCII_MIN 32
 #define AW_FONTINFO_CHAR_ASCII_MAX 127
@@ -82,6 +86,12 @@ class AW_GC : public AW_GC_config, virtual Noncopyable {
     short   fontsize;
     AW_font fontnr;
 
+    void init_char_widths() {
+        memset(width_of_chars, 0, ARRAY_ELEMS(width_of_chars)*sizeof(*width_of_chars));
+        memset(ascent_of_chars, 0, ARRAY_ELEMS(ascent_of_chars)*sizeof(*ascent_of_chars));
+        memset(descent_of_chars, 0, ARRAY_ELEMS(descent_of_chars)*sizeof(*descent_of_chars));
+    }
+
     void set_effective_color();
 
     virtual void wm_set_foreground_color(AW_rgb col)                      = 0;
@@ -106,10 +116,14 @@ protected:
 public:
     AW_GC(AW_common *common_)
         : common(common_),
-          default_config(NULL), 
+          default_config(NULL),
           color(0),
-          last_fg_color(0)
-    {}
+          last_fg_color(0),
+          fontsize(-1), 
+          fontnr(-1) 
+    {
+        init_char_widths();
+    }
     virtual ~AW_GC() { delete default_config; }
 
     virtual int get_available_fontsizes(AW_font font_nr, int *available_sizes) const = 0;

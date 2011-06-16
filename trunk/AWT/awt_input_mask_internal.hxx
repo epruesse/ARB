@@ -565,7 +565,7 @@ public:
     void hide() { aws->hide(); }
 
     void set_reload_on_reinit(bool dest) { shall_reload_on_reinit = dest; }
-    bool reload_on_reinit() { return shall_reload_on_reinit; }
+    bool reload_on_reinit() const { return shall_reload_on_reinit; }
 
     AW_window_simple*& get_window() { return aws; }
 

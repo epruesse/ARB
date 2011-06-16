@@ -101,14 +101,6 @@ AW_xfig::AW_xfig(const char *filename, int font_width, int font_height)
     char     *buffer = (char *)calloc(sizeof(char), MAX_XFIG_LENGTH);
     FILE     *file   = 0;
 
-    enum {
-        XFIG_UNKNOWN,
-        XFIG_OLD_FORMAT, // XFIG 2.1 saves old format
-        XFIG_NEW_FORMAT, // XFIG 3.2 saves new format
-        XFIG_UNSUPPORTED
-
-    } version = XFIG_UNKNOWN;
-
     calc_scaling(font_width, font_height);
 
     if (filename[0]=='/') { // absolute file ?
@@ -129,8 +121,6 @@ AW_xfig::AW_xfig(const char *filename, int font_width, int font_height)
     }
     else {
         char *expanded_filename = strdup(buffer);
-        int   mainVersion       = 0;
-        int   subVersion        = 0;
         int   lineNumber        = 0;
 
         ret = fgets(buffer, MAX_XFIG_LENGTH, file); ++lineNumber;
@@ -138,11 +128,22 @@ AW_xfig::AW_xfig(const char *filename, int font_width, int font_height)
             error = "Expected XFIG format";
         }
         else {
+            enum {
+                XFIG_UNKNOWN,
+                XFIG_OLD_FORMAT, // XFIG 2.1 saves old format
+                XFIG_NEW_FORMAT, // XFIG 3.2 saves new format
+                XFIG_UNSUPPORTED
+
+            } version = XFIG_UNKNOWN;
+
             char *xfig_version = strchr(ret, ' ');
+            
             if (!xfig_version) {
                 error = "Missing version info";
             }
             else {
+                int   mainVersion  = 0;
+                int   subVersion   = 0;
                 *xfig_version++ = 0;
                 mainVersion = atoi(xfig_version);
 

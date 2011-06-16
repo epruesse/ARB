@@ -134,7 +134,7 @@ public:
     void get(double *p_double) { *p_double = read_float(); }
     void get(float *p_float)   { *p_float = read_float(); }
 
-    AW_VARIABLE_TYPE get_type();
+    AW_VARIABLE_TYPE get_type() const;
 
     char       *read_string();
     const char *read_char_pntr();

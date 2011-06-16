@@ -93,7 +93,8 @@ public:
     void realloc_mem(size_t newsize) {
         if (!data) alloc_mem(newsize);
         else {
-            data      = (char*)realloc(data, newsize);
+            // cppcheck-suppress memleakOnRealloc
+            data        = (char*)realloc(data, newsize);
             buffer_size = newsize;
 
             arb_assert(pos<newsize);

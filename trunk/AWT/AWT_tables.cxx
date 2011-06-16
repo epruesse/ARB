@@ -207,16 +207,18 @@ AW_window *create_ad_table_field_create_window(AW_root *root, awt_table *awtt) {
 }
 
 awt_table::awt_table(GBDATA *igb_main, AW_root *awr, const char *itable_name) {
-    gb_main = igb_main;
+    gb_main    = igb_main;
     GB_transaction tscope(gb_main);
     table_name = strdup(itable_name);
+
     char *tname = GBS_string_2_key(table_name);
-    this->awar_field_reorder_source = GBS_global_string_copy(AWAR_TABLE_FIELD_REORDER_SOURCE_TEMPLATE, tname);
-    this->awar_field_reorder_dest = GBS_global_string_copy(AWAR_TABLE_FIELD_REORDER_DEST_TEMPLATE, tname);
-    this->awar_field_rem = GBS_global_string_copy(AWAR_TABLE_FIELD_REM_TEMPLATE, tname);
-    this->awar_field_new_name = GBS_global_string_copy(AWAR_TABLE_FIELD_NEW_NAME_TEMPLATE, tname);
-    this->awar_field_new_type = GBS_global_string_copy(AWAR_TABLE_FIELD_NEW_TYPE_TEMPLATE, tname);
-    this->awar_selected_field = GBS_global_string_copy(AWAR_TABLE_SELECTED_FIELD_TEMPLATE, tname);
+    
+    awar_field_reorder_source = GBS_global_string_copy(AWAR_TABLE_FIELD_REORDER_SOURCE_TEMPLATE, tname);
+    awar_field_reorder_dest   = GBS_global_string_copy(AWAR_TABLE_FIELD_REORDER_DEST_TEMPLATE, tname);
+    awar_field_rem            = GBS_global_string_copy(AWAR_TABLE_FIELD_REM_TEMPLATE, tname);
+    awar_field_new_name       = GBS_global_string_copy(AWAR_TABLE_FIELD_NEW_NAME_TEMPLATE, tname);
+    awar_field_new_type       = GBS_global_string_copy(AWAR_TABLE_FIELD_NEW_TYPE_TEMPLATE, tname);
+    awar_selected_field       = GBS_global_string_copy(AWAR_TABLE_SELECTED_FIELD_TEMPLATE, tname);
 
     awr->awar_string(awar_field_reorder_source, "");
     awr->awar_string(awar_field_reorder_dest, "");
@@ -225,16 +227,16 @@ awt_table::awt_table(GBDATA *igb_main, AW_root *awr, const char *itable_name) {
     awr->awar_string(awar_field_rem, "No comment");
     awr->awar_string(awar_selected_field, "");
 
-    delete tname;
+    free(tname);
 }
 
 awt_table::~awt_table() {
-    delete table_name;
-    delete awar_field_reorder_source;
-    delete awar_field_reorder_dest;
-    delete awar_field_new_name;
-    delete awar_field_rem;
-    delete awar_selected_field;
+    free(table_name);
+    free(awar_field_reorder_source);
+    free(awar_field_reorder_dest);
+    free(awar_field_new_name);
+    free(awar_field_rem);
+    free(awar_selected_field);
 }
 
 void   awt_map_table_field_rem(AW_root *aw_root, awt_table *awtt) {

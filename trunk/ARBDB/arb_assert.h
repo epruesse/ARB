@@ -86,8 +86,14 @@
 
 // ------------------------------------------------------------
 
-// use ASSERTION_USED for code needed for assertions
-#define ASSERTION_USED
+#if defined(__cplusplus)
+inline void provoke_core_dump() {
+    // cppcheck-suppress nullPointer
+    *(int*)0 = 0;
+}
+#else // !defined(__cplusplus)
+#define provoke_core_dump() do { *(int*)0 = 0; } while(0)
+#endif
 
 // ------------------------------------------------------------
 
@@ -96,7 +102,7 @@
 // code here is independent from ARBDB!
 
 #define ARB_SIGSEGV(backtrace) do {                             \
-        *(int *)0 = 0;                                          \
+        provoke_core_dump();                                    \
     } while (0)
 
 #ifndef ASSERT_NONE
@@ -105,7 +111,7 @@
         if (!(cond)) {                                                  \
             fprintf(stderr, "Assertion '%s' failed in '%s' #%i\n",      \
                     #cond, __FILE__, __LINE__);                         \
-            *(int *)0 = 0;                                              \
+            provoke_core_dump();                                        \
         }                                                               \
     } while (0)
 #endif
@@ -127,7 +133,7 @@
 #define ARB_SIGSEGV(backtrace) do {                             \
         if (backtrace) GBK_dump_backtrace(NULL, "ARB_SIGSEGV"); \
         GBK_install_SIGSEGV_handler(false);                     \
-        *(int *)0 = 0;                                          \
+        provoke_core_dump();                                    \
     } while (0)
 
 
@@ -171,8 +177,9 @@
 // ------------------------------------------------------------
 
 #ifdef ASSERT_NONE
-# undef ASSERTION_USED
 # define arb_assert(cond)
+#else
+# define ASSERTION_USED
 #endif
 
 #undef ASSERT_CRASH

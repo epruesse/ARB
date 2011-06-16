@@ -40,7 +40,7 @@ class AWT_itemfield_selection : public AW_DB_selection { // derived from a Nonco
     awt_selected_fields     field_filter;
     const ad_item_selector *selector;
 
-    bool shall_display_type(int key_type) { return type_filter & (1 << key_type); }
+    bool shall_display_type(int key_type) const { return type_filter & (1 << key_type); }
 
 public:
     AWT_itemfield_selection(AW_window              *win_,
