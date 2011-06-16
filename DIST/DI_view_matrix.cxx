@@ -126,21 +126,19 @@ DI_MATRIX *DI_dmatrix::get_matrix() {
 }
 
 void DI_dmatrix::resized() {
-    AW_rectangle squ;
-    AW_rectangle rect;
-    long         horiz_paint_size, vert_paint_size;
-
     const AW_font_limits& lim = device->get_font_limits(DI_G_STANDARD, 0);
 
     DI_MATRIX *m = get_matrix();
     long       n = 0;
 
     if (m) n = m->nentries;
-    device->get_area_size(&squ);
 
+    const AW_screen_area& squ = device->get_area_size();
     screen_width  = squ.r-squ.l;
     screen_height = squ.b-squ.t;
 
+    long horiz_paint_size, vert_paint_size;
+    AW_screen_area rect; // @@@ used uninitialized if !m
     if (m) {
         horiz_paint_size = (squ.r-lim.width-off_dx)/cell_width;
         vert_paint_size  = (squ.b-off_dy)/cell_height;
@@ -420,7 +418,7 @@ void DI_dmatrix::display(bool clear) {
 
     device->set_offset(AW::Vector(off_dx, 0));
 
-    AW::Rectangle area = device->get_area_size();
+    AW::Rectangle area(device->get_area_size(), AW::INCLUSIVE_OUTLINE);
 
     // highlight selected species (vertically)
     if (sel_x_pos != -1) {

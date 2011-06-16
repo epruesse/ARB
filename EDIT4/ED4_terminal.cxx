@@ -807,13 +807,9 @@ ED4_base* ED4_terminal::search_ID(const char *temp_id)
 }
 
 
-int ED4_terminal::adjust_clipping_rectangle()                        // set scrolling area in AW_MIDDLE_AREA
-{
-    AW_pos              x, y;
-    AW_rectangle        area_size;
-
-    ED4_ROOT->get_device()->get_area_size(&area_size);
-
+int ED4_terminal::adjust_clipping_rectangle() {
+    // set scrolling area in AW_MIDDLE_AREA
+    AW_pos x, y;
     calc_world_coords(&x, &y);
     ED4_ROOT->world_to_win_coords(ED4_ROOT->get_aww(), &x, &y);
 

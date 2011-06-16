@@ -643,11 +643,11 @@ ED4_returncode ED4_root::create_hierarchy(char *area_string_middle, char *area_s
     return (ED4_R_OK);
 }
 
-ED4_returncode ED4_root::get_area_rectangle(AW_rectangle *rect, AW_pos x, AW_pos y) { // returns win-coordinates of area (defined by folding lines) which contains position x/y
-    ED4_folding_line *flv, *flh;
-    int x1, x2, y1, y2;
-    AW_rectangle area_rect;
-    get_device()->get_area_size(&area_rect);
+ED4_returncode ED4_root::get_area_rectangle(AW_screen_area *rect, AW_pos x, AW_pos y) {
+    // returns win-coordinates of area (defined by folding lines) which contains position x/y
+    ED4_folding_line      *flv, *flh;
+    int                    x1, x2, y1, y2;
+    const AW_screen_area&  area_rect = get_device()->get_area_size();
 
     x1 = area_rect.l;
     for (flv=get_ed4w()->vertical_fl; ; flv = flv->next) {

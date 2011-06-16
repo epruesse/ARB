@@ -16,10 +16,10 @@
 
 using namespace AW;
 
-void AW_clipable::set_cliprect(AW_rectangle *rect, bool allow_oversize) {
+void AW_clipable::set_cliprect(AW_screen_area *rect, bool allow_oversize) {
     clip_rect = *rect; // coordinates : (0,0) = top-left-corner
     
-    const AW_rectangle& screen = get_screen();
+    const AW_screen_area& screen = get_screen();
     if (!allow_oversize) {
         if (clip_rect.t < screen.t) clip_rect.t = screen.t;
         if (clip_rect.b > screen.b) clip_rect.b = screen.b;
@@ -151,12 +151,12 @@ int AW_clipable::box_clip(AW_pos x0, AW_pos y0, AW_pos x1, AW_pos y1, AW_pos& x0
     return 1;
 }
 
-int AW_clipable::box_clip(const Rectangle& rect, Rectangle& clippedRect) {
+int AW_clipable::box_clip(const Rectangle& rect, Rectangle& clippedRect) { // @@@ maybe return clippedRect as AW_screen_area
     // @@@ refactor into method
     if (clip_rect.l>clip_rect.r) return 0;
     if (clip_rect.t>clip_rect.b) return 0;
 
-    Rectangle clipRect(clip_rect);
+    Rectangle clipRect(clip_rect, FAULTY_OLD_CONVERSION); // @@@ fix
     if (rect.distinct_from(clipRect))
         return 0;
 
@@ -295,35 +295,6 @@ void AW_GC_Xm::wm_set_foreground_color(unsigned long col) {
     XSetForeground(get_common()->get_display(), gc, col);
 }
 
-// --------------
-//      AW_GC
-
-void AW_GC::set_fill(AW_grey_level grey_leveli) {
-    // <0 = don't fill, 0.0 = white, 1.0 = black
-    grey_level = grey_leveli;
-}
-void AW_GC::set_line_attributes(AW_pos new_width_f, AW_linestyle new_style) {
-    int new_width = AW_INT(new_width_f);
-    if (new_style != style || new_width != line_width) {
-        line_width = new_width;
-        style      = new_style;
-        wm_set_lineattributes(line_width, style);
-    }
-}
-void AW_GC::set_function(AW_function mode) {
-    if (function != mode) {
-        wm_set_function(mode);
-        function = mode;
-        set_foreground_color(color);
-    }
-}
-void AW_GC::set_foreground_color(unsigned long col) {
-    color = (short)col;
-    if (function == AW_XOR) col ^= common->get_XOR_color();
-    last_fg_color =  col;
-    wm_set_foreground_color(col);
-}
-
 const AW_font_limits& AW_stylable::get_font_limits(int gc, char c) const {
     return get_common()->get_font_limits(gc, c);
 }
@@ -350,23 +321,24 @@ AW_GC *AW_common_Xm::create_gc() {
     return new AW_GC_Xm(this); 
 }
 
-void AW_common::new_gc(int gc) {
-    if (gc >= ngcs) {
-        gcs = (AW_GC **)realloc((char *)gcs, sizeof(*gcs)*(gc+10));
-        memset(&gcs[ngcs], 0, sizeof(*gcs) * (gc-ngcs+10));
-        ngcs = gc+10;
+void AW_GC_set::add_gc(int gi, AW_GC *agc) {
+    if (gi >= count) {
+        int new_count = gi+10;
+        gcs           = (AW_GC **)realloc((char *)gcs, sizeof(*gcs)*new_count);
+        memset(&gcs[count], 0, sizeof(*gcs)*(new_count-count));
+        count         = new_count;
     }
-    if (gcs[gc]) delete gcs[gc];
-    gcs[gc] = create_gc();
+    if (gcs[gi]) delete gcs[gi];
+    gcs[gi] = agc;
 }
 
 int AW_stylable::get_string_size(int gc, const char *str, long textlen) const {
     return get_common()->map_gc(gc)->get_string_size(str, textlen);
 }
 void AW_stylable::new_gc(int gc) { get_common()->new_gc(gc); }
-void AW_stylable::set_fill(int gc, AW_grey_level grey_level) {
+void AW_stylable::set_grey_level(int gc, AW_grey_level grey_level) {
     // <0 = don't fill, 0.0 = white, 1.0 = black
-    get_common()->map_mod_gc(gc)->set_fill(grey_level);
+    get_common()->map_mod_gc(gc)->set_grey_level(grey_level);
 }
 void AW_stylable::set_font(int gc, AW_font font_nr, int size, int *found_size) {
     // if found_size != 0 -> return value for used font size
@@ -382,7 +354,13 @@ void AW_stylable::set_function(int gc, AW_function function) {
     get_common()->map_mod_gc(gc)->set_function(function);
 }
 void AW_stylable::set_foreground_color(int gc, AW_color color) {
-    get_common()->map_mod_gc(gc)->set_foreground_color(get_common()->get_color(color));
+    get_common()->map_mod_gc(gc)->set_fg_color(get_common()->get_color(color));
+}
+void AW_stylable::establish_default(int gc) {
+    get_common()->map_mod_gc(gc)->establish_default();
+}
+void AW_stylable::reset_style() {
+    get_common()->reset_style();
 }
 
 static void AW_get_common_extends_cb(AW_window */*aww*/, AW_CL cl_common_xm, AW_CL) {
@@ -417,7 +395,7 @@ class AW_clip_scale_stack {
     // completely private, but accessible by AW_device
     friend class AW_device;
 
-    AW_rectangle clip_rect;
+    AW_screen_area clip_rect;
 
     int top_font_overlap;
     int bottom_font_overlap;
@@ -433,7 +411,7 @@ class AW_clip_scale_stack {
 #if defined(SHOW_CLIP_STACK_CHANGES)
 static const char *clipstatestr(AW_device *device) {
     static char   buffer[1024];
-    AW_rectangle& clip_rect = device->clip_rect;
+    AW_screen_area& clip_rect = device->clip_rect;
 
     sprintf(buffer, "clip_rect={t=%i, b=%i, l=%i, r=%i}",
             clip_rect.t, clip_rect.b, clip_rect.l, clip_rect.r);
@@ -497,21 +475,8 @@ void AW_device::pop_clip_scale() {
 
 // --------------------------------------------------------------------------------
 
-void AW_device::get_area_size(AW_rectangle *rect) {     // get the extends from the class AW_device
-    *rect = get_common()->get_screen();
-}
-
-void AW_device::get_area_size(AW_world *rect) { // get the extends from the class AW_device
-    const AW_rectangle& screen = get_common()->get_screen();
-    
-    rect->t = screen.t;
-    rect->b = screen.b;
-    rect->l = screen.l;
-    rect->r = screen.r;
-}
-
-Rectangle AW_device::get_area_size() {
-    return Rectangle(get_common()->get_screen());
+const AW_screen_area& AW_device::get_area_size() {
+    return get_common()->get_screen();
 }
 
 void AW_device::privat_reset() {}
@@ -520,7 +485,7 @@ void AW_device::reset() {
     while (clip_scale_stack) {
         pop_clip_scale();
     }
-    get_area_size(&clip_rect);
+    clip_rect = get_area_size();
     AW_zoomable::reset();
     privat_reset();
 }
@@ -603,7 +568,7 @@ int AW_device::text_overlay(int gc, const char *opt_str, long opt_len,  // eithe
 
     if (!(filter & filteri)) return 0;
 
-    const AW_rectangle& screen = get_common()->get_screen();
+    const AW_screen_area& screen = get_common()->get_screen();
 
     if (left_font_overlap || screen.l == clip_rect.l) { // was : clip_rect.l == 0
         inside_clipping_left = false;
@@ -727,7 +692,8 @@ int AW_device::text_overlay(int gc, const char *opt_str, long opt_len,  // eithe
 
 void AW_device::set_filter(AW_bitset filteri) { filter = filteri; }
 
-const AW_rectangle& AW_device::get_common_screen(const AW_common *common_) {
+const AW_screen_area& AW_device::get_common_screen(const AW_common *common_) {
     return common_->get_screen();
 }
+
 

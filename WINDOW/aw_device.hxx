@@ -24,6 +24,8 @@
 #define AUTO_FLUSH(device)
 #endif
 
+#define AW_INT(x) ((int)(((x)>=0.0) ? ((float)(x)+.5) : ((float)(x)-.5)))
+
 // #define AW_PIXELS_PER_MM 1.0001 // stupid and wrong
 
 const AW_bitset AW_ALL_DEVICES = (AW_bitset)-1;
@@ -183,8 +185,8 @@ public:
 };
 
 class AW_clipable {
-    const AW_rectangle& common_screen;
-    const AW_rectangle& get_screen() const { return common_screen; }
+    const AW_screen_area& common_screen;
+    const AW_screen_area& get_screen() const { return common_screen; }
 
 protected:
     int compoutcode(AW_pos xx, AW_pos yy) {
@@ -201,7 +203,7 @@ protected:
 public:
 
     // ****** read only section
-    AW_rectangle clip_rect;     // holds the clipping rectangle coordinates
+    AW_screen_area clip_rect;     // holds the clipping rectangle coordinates
     int top_font_overlap;
     int bottom_font_overlap;
     int left_font_overlap;
@@ -221,9 +223,9 @@ public:
     void set_bottom_clip_margin(int bottom, bool allow_oversize = false); // relative
     void set_left_clip_border(int left, bool allow_oversize = false);
     void set_right_clip_border(int right, bool allow_oversize = false);
-    void set_cliprect(AW_rectangle *rect, bool allow_oversize = false);
+    void set_cliprect(AW_screen_area *rect, bool allow_oversize = false);
     void set_clipall() {
-        AW_rectangle rect;
+        AW_screen_area rect;
         rect.t = rect.b = rect.l = rect.r = 0;
         set_cliprect(&rect);     // clip all -> nothing drawn afterwards
     }
@@ -243,7 +245,7 @@ public:
 
     int reduceClipBorders(int top, int bottom, int left, int right);
 
-    AW_clipable(const AW_rectangle& screen)
+    AW_clipable(const AW_screen_area& screen)
         : common_screen(screen),
           top_font_overlap(0),
           bottom_font_overlap(0),
@@ -320,16 +322,19 @@ public:
     AW_common *get_common() const { return common; }
 
     void new_gc(int gc);
-    void set_fill(int gc, AW_grey_level grey_level); 
+    void set_grey_level(int gc, AW_grey_level grey_level); 
     void set_font(int gc, AW_font fontnr, int size, int *found_size);
     void set_line_attributes(int gc, AW_pos width, AW_linestyle style);
     void set_function(int gc, AW_function function);
+    void establish_default(int gc);
     void set_foreground_color(int gc, AW_color color); // lines ....
     int  get_string_size(int gc, const  char *string, long textlen) const; // get the size of the string
 
     const AW_font_limits& get_font_limits(int gc, char c) const; // for one characters (c == 0 -> for all characters)
 
     int get_available_fontsizes(int gc, AW_font font_nr, int *available_sizes);
+    
+    void reset_style();
 };
 
 class  AW_clip_scale_stack;
@@ -382,7 +387,7 @@ protected:
 
     AW_bitset filter;
 
-    static const AW_rectangle& get_common_screen(const AW_common *common_);
+    static const AW_screen_area& get_common_screen(const AW_common *common_);
     
 public:
     AW_device(class AW_common *common_)
@@ -399,10 +404,8 @@ public:
 
     void reset();
 
-    void          get_area_size(AW_rectangle *rect); // read the frame size
-    void          get_area_size(AW_world *rect); // read the frame size
-    AW::Rectangle get_area_size();
-
+    const AW_screen_area& get_area_size();
+    
     void set_filter(AW_bitset filteri);   // set the main filter mask
 
     void push_clip_scale();     // push clipping area and scale
@@ -506,6 +509,7 @@ public:
         return arc_impl(gc, filled, pos, xradius, yradius, start_degrees, arc_degrees, filteri);
     }
 
+    // @@@ rename to 'polygone' and pass 'filled' parameter
     int filled_area(int gc, int npoints, const AW_pos *points, AW_bitset filteri = AW_ALL_DEVICES)  {
         AW::Position pos[npoints];
         for (int n = 0; n<npoints; ++n) {

@@ -1864,7 +1864,7 @@ void AWT_graphic_tree::update(GBDATA *) {
 void AWT_graphic_tree::NT_scalebox(int gc, double x, double y, double width) {
     double diam  = width/disp_device->get_scale();
     double diam2 = diam+diam;
-    disp_device->set_fill(gc, this->grey_level);
+    disp_device->set_grey_level(gc, this->grey_level);
     disp_device->box(gc, true, x-diam, y-diam, diam2, diam2, mark_filter);
 }
 
@@ -2020,7 +2020,7 @@ void AWT_graphic_tree::show_dendrogram(AP_tree *at, double x_son, DendroSubtreeL
         q[4] = nx1;     q[5] = ny1;
         q[6] = nx0;     q[7] = ny0;
 
-        disp_device->set_fill(at->gr.gc, grey_level);
+        disp_device->set_grey_level(at->gr.gc, grey_level);
         disp_device->filled_area(at->gr.gc, 4, &q[0], line_filter);
 
         const AW_font_limits& charLimits  = disp_device->get_font_limits(at->gr.gc, 'A');
@@ -2223,7 +2223,7 @@ void AWT_graphic_tree::show_radial_tree(AP_tree * at, double x_center,
         q[4] = x_center+l_max*cos(w);
         q[5] = y_center+l_max*sin(w);
 
-        disp_device->set_fill(at->gr.gc, grey_level);
+        disp_device->set_grey_level(at->gr.gc, grey_level);
         disp_device->filled_area(at->gr.gc, 3, &q[0], line_filter);
 
         if (at->gb_node && (disp_device->get_filter() & text_filter)) {

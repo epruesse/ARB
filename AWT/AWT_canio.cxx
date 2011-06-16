@@ -31,14 +31,14 @@ enum PrintDest {
 // --------------------------------------------------------------------------------
 
 static void awt_print_tree_check_size(void *, AW_CL cl_ntw) {
-    AWT_canvas     *ntw  = (AWT_canvas*)cl_ntw;
+    AWT_canvas     *ntw      = (AWT_canvas*)cl_ntw;
     GB_transaction  dummy2(ntw->gb_main);
     AW_world        size;
-    long            what = ntw->aww->get_root()->awar(AWAR_PRINT_TREE_CLIP)->read_int();
+    long            draw_all = ntw->aww->get_root()->awar(AWAR_PRINT_TREE_CLIP)->read_int();
 
     AW_device_size *size_device = ntw->aww->get_size_device(AW_MIDDLE_AREA);
 
-    if (what) {
+    if (draw_all) {
         size_device->reset();
         size_device->zoom(ntw->trans_to_fit);
         size_device->set_filter(AW_SCREEN);
@@ -46,7 +46,12 @@ static void awt_print_tree_check_size(void *, AW_CL cl_ntw) {
         size_device->get_size_information(&size);
     }
     else {
-        size_device->get_area_size(&size);
+        const AW_screen_area& screen = size_device->get_area_size();
+        
+        size.t = screen.t;
+        size.b = screen.b;
+        size.l = screen.l;
+        size.r = screen.r;
     }
 
     ntw->aww->get_root()->awar(AWAR_PRINT_TREE_GSIZEX)->write_float((size.r-size.l + 30)/80);
@@ -217,7 +222,7 @@ const char *AWT_print_tree_to_file(AW_window *aww, AWT_canvas * ntw) {
         error = "Please enter a file name";
     }
     else {
-        long what      = awr->awar(AWAR_PRINT_TREE_CLIP)->read_int();
+        long draw_all  = awr->awar(AWAR_PRINT_TREE_CLIP)->read_int();
         long handles   = awr->awar(AWAR_PRINT_TREE_HANDLES)->read_int();
         int  use_color = awr->awar(AWAR_PRINT_TREE_COLOR)->read_int();
 
@@ -229,7 +234,7 @@ const char *AWT_print_tree_to_file(AW_window *aww, AWT_canvas * ntw) {
         error = device->open(dest);
         device->line(0, 0, 0, 1, -1); // dummy point upper left corner
 
-        if (what) {             // draw all
+        if (draw_all) {
             AW_world size;
             size_device->reset();
             size_device->zoom(ntw->trans_to_fit);
@@ -322,7 +327,7 @@ void AWT_popup_tree_export_window(AW_window *parent_win, AW_CL cl_canvas, AW_CL)
 
 
         aws->at("xfig"); aws->callback(AWT_print_tree_to_file_xfig, cl_canvas);
-        aws->create_button("START_XFIG", "GO XFIG", "X");
+        aws->create_button("START_XFIG", "EXPORT to XFIG", "X");
 
         aws->at("cancel"); aws->callback((AW_CB0)AW_POPDOWN);
         aws->create_button("CLOSE", "CANCEL", "C");

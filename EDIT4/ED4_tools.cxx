@@ -30,7 +30,7 @@ const char *ED4_decode_iupac(char iupac, GB_alignment_type ali) {
     return iupac::decode(iupac, ali, ED4_ROOT->aw_root->awar(ED4_AWAR_CONSENSUS_GROUP)->read_int()); // IUPAC shown in consensus!
 }
 
-void ED4_set_clipping_rectangle(AW_rectangle *rect)
+void ED4_set_clipping_rectangle(AW_screen_area *rect)
 {
     // The following can't be replaced by set_cliprect (set_cliprect clears font overlaps):
 

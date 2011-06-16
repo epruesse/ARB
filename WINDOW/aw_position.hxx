@@ -40,10 +40,8 @@ namespace AW {
 
     const double EPSILON = 0.001; // how equal is nearly equal
 
-    inline bool nearlyEqual(const double& val1, const double& val2) {
-        return std::abs(val1-val2) < EPSILON;
-    }
-
+    inline bool nearlyEqual(const double& val1, const double& val2) { return std::abs(val1-val2) < EPSILON; }
+    inline double centroid(const double& val1, const double& val2) { return (val1+val2)*0.5; }
 
     // -------------------------------------------------------
     //      class Position represents 2-dimensional positions
@@ -204,14 +202,18 @@ namespace AW {
     inline Vector operator*(const double& f, const Vector& v) { return Vector(v) *= f; }
     inline Vector operator/(const Vector& v, const double& d) { return Vector(v) /= d; }
 
-    inline Position centroid(const Position& p1, const Position& p2) { return Position((p1.xpos()+p2.xpos())*0.5, (p1.ypos()+p2.ypos())*0.5); }
+    inline Position centroid(const Position& p1, const Position& p2) { return Position(centroid(p1.xpos(), p2.xpos()), centroid(p1.ypos(), p2.ypos())); }
 
     inline double Distance(const Position& from, const Position& to) { return Vector(from, to).length(); }
     inline double scalarProduct(const Vector& v1, const Vector& v2) { return v1.x()*v2.x() + v1.y()*v2.y(); }
 
+    inline bool are_distinct(const Position& p1, const Position& p2) { return Vector(p1, p2).has_length(); }
+
     // -------------------------------------------------
     //      a positioned vector, representing a line
     // -------------------------------------------------
+
+    enum AW_screen_area_conversion_mode { FAULTY_OLD_CONVERSION, INCLUSIVE_OUTLINE };
 
     class LineVector {
         Position Start;         // start point
@@ -226,12 +228,19 @@ namespace AW {
         LineVector(const Position& startpos, const Position& end) : Start(startpos), ToEnd(startpos, end) { ISVALID(*this); }
         LineVector(const Position& startpos, const Vector& to_end) : Start(startpos), ToEnd(to_end) { ISVALID(*this); }
         LineVector(double X1, double Y1, double X2, double Y2) : Start(X1, Y1), ToEnd(X2-X1, Y2-Y1) { ISVALID(*this); }
-        explicit LineVector(const AW_rectangle& r)
-            : Start(r.l, r.t),
-              ToEnd(r.r-r.l-1, r.b-r.t-1) // @@@ -1 is really strange
-        {
+        explicit LineVector(const AW_screen_area& r, AW_screen_area_conversion_mode mode) {
+            switch (mode) {
+                case FAULTY_OLD_CONVERSION:
+                    Start = Position(r.l, r.t);
+                    ToEnd = Vector(r.r-r.l-1, r.b-r.t-1); // @@@ -1 is really strange
+                    break;
+                case INCLUSIVE_OUTLINE:
+                    Start = Position(r.l, r.t);
+                    ToEnd = Vector(r.r-r.l+1, r.b-r.t+1);
+                    break;
+            }
             ISVALID(*this);
-        } 
+        }
         explicit LineVector(const AW_world& r) : Start(r.l, r.t), ToEnd(r.r-r.l, r.b-r.t) { ISVALID(*this); }
         LineVector() {}
 
@@ -248,6 +257,8 @@ namespace AW {
 
         void move(const Vector& movement) { Start += movement; }
         void moveTo(const Position& pos) { Start = pos; }
+
+        LineVector reverse() const { return LineVector(head(), Vector(ToEnd).neg()); }
     };
 
     Position crosspoint(const LineVector& l1, const LineVector& l2, double& factor_l1, double& factor_l2);
@@ -265,7 +276,7 @@ namespace AW {
         Rectangle(const Position& corner, const Position& opposite_corner) : LineVector(corner, opposite_corner) { standardize(); }
         Rectangle(const Position& corner, const Vector& to_opposite_corner) : LineVector(corner, to_opposite_corner) { standardize(); }
         Rectangle(double X1, double Y1, double X2, double Y2) : LineVector(X1, Y1, X2, Y2) { standardize(); }
-        explicit Rectangle(const AW_rectangle& r) : LineVector(r) { standardize(); }
+        explicit Rectangle(const AW_screen_area& r, AW_screen_area_conversion_mode mode) : LineVector(r, mode) { standardize(); }
         explicit Rectangle(const AW_world& r) : LineVector(r) { standardize(); }
         Rectangle() {};
 
@@ -313,7 +324,27 @@ namespace AW {
             return Rectangle(Rectangle(upper_left_corner(), rect.upper_left_corner()).upper_left_corner(),
                              Rectangle(lower_right_corner(), rect.lower_right_corner()).lower_right_corner());
         }
+        Rectangle bounding_box(const Position& pos) const {
+            return Rectangle(Rectangle(upper_left_corner(), pos).upper_left_corner(),
+                             Rectangle(lower_right_corner(), pos).lower_right_corner());
+        }
     };
+
+    inline Rectangle bounding_box(const Rectangle& r1, const Rectangle& r2) { return r1.bounding_box(r2); }
+
+    inline Rectangle bounding_box(const Rectangle& rect, const LineVector& line) { return rect.bounding_box(Rectangle(line)); }
+    inline Rectangle bounding_box(const LineVector& line, const Rectangle& rect) { return rect.bounding_box(Rectangle(line)); }
+
+    inline Rectangle bounding_box(const LineVector& l1, const LineVector& l2) { return Rectangle(l1).bounding_box(Rectangle(l2)); }
+
+    inline Rectangle bounding_box(const Rectangle& rect, const Position& pos) { return rect.bounding_box(pos); }
+    inline Rectangle bounding_box(const Position& pos, const Rectangle& rect) { return rect.bounding_box(pos); }
+
+    inline Rectangle bounding_box(const LineVector& line, const Position& pos) { return Rectangle(line).bounding_box(pos); }
+    inline Rectangle bounding_box(const Position& pos, const LineVector& line) { return Rectangle(line).bounding_box(pos); }
+    
+    inline Rectangle bounding_box(const Position& p1, const Position& p2) { return Rectangle(p1, p2); }
+
 
     // ------------------------------------------------------------------
     //      class angle represents an angle using a normalized vector

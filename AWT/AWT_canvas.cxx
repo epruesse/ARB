@@ -103,7 +103,7 @@ void AWT_canvas::zoom_reset() {
     AW_pos width  = this->worldinfo.r - this->worldinfo.l;
     AW_pos height = this->worldinfo.b - this->worldinfo.t;
 
-    device->get_area_size(&(this->rect));   // real world size (no offset)
+    rect = device->get_area_size();   // real world size (no offset)
 
     AW_pos net_window_width  = rect.r - rect.l - (tree_disp->exports.left_offset + tree_disp->exports.right_offset);
     AW_pos net_window_height = rect.b - rect.t - (tree_disp->exports.top_offset + tree_disp->exports.bottom_offset);
@@ -157,8 +157,7 @@ void AWT_canvas::zoom_reset() {
     this->set_scrollbars();
 }
 
-void
-AWT_canvas::recalc_size() {
+void AWT_canvas::recalc_size() {
     GB_transaction dummy(this->gb_main);
     AW_device_size *device = aww->get_size_device(AW_MIDDLE_AREA);
     device->set_filter(AW_SIZE);
@@ -167,7 +166,7 @@ AWT_canvas::recalc_size() {
     this->tree_disp->show(device);
     device->get_size_information(&(this->worldinfo));
 
-    device->get_area_size(&(this->rect));   // real world size (no offset)
+    rect = device->get_area_size();   // real world size (no offset)
     this->set_scrollbars();
 }
 
@@ -406,7 +405,7 @@ static bool handleZoomEvent(AW_window *aww, AWT_canvas *ntw, AW_device *device, 
             nt_draw_zoom_box(device, ntw);
             ntw->drag = 0;
 
-            Rectangle screen(ntw->rect);
+            Rectangle screen(ntw->rect, INCLUSIVE_OUTLINE);
             Rectangle drag(ntw->zoom_drag_sx, ntw->zoom_drag_sy, ntw->zoom_drag_ex, ntw->zoom_drag_ey);
 
             ntw->zoom(device, zoomIn, drag, screen);

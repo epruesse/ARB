@@ -22,7 +22,7 @@ class AW_device;
 class AW_device_click;
 class AW_device_print;
 class AW_device_size;
-class AW_rectangle;
+class AW_screen_area;
 struct GB_HASH;
 
 typedef void (*AW_CB)(AW_window*, AW_CL, AW_CL);
@@ -272,7 +272,7 @@ public:
     const char *GC_to_RGB(AW_device *device, int gc, int& red, int& green, int& blue); // returns colors in result-parameters or error message in return value
     // Converts GC to RGB float values to the range (0 - 1.0)
     const char *GC_to_RGB_float(AW_device *device, int gc, float& red, float& green, float& blue);
-    void        _get_area_size(AW_area area, AW_rectangle *square);
+    void        _get_area_size(AW_area area, AW_screen_area *square);
     int         label_widget(void *wgt, AW_label str, char *mnemonic=0, int width = 0, int alignment = 0);
 
     // ------------------------------
@@ -290,7 +290,7 @@ public:
     int slider_pos_horizontal;
     int main_drag_gc;
 
-    AW_rectangle *picture;      // the result of tell scrolled
+    AW_screen_area *picture;      // the result of tell scrolled
                                 // picture size
 
     // --------------------------------
@@ -364,7 +364,7 @@ public:
 
 
     // ************** Control the size of the main drawing area + scrollbars  *********
-    void tell_scrolled_picture_size(AW_rectangle rectangle);
+    void tell_scrolled_picture_size(AW_screen_area rectangle);
     void tell_scrolled_picture_size(AW_world rectangle);
     AW_pos get_scrolled_picture_width();
     AW_pos get_scrolled_picture_height();
