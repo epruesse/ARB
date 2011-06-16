@@ -165,7 +165,7 @@ void SEC_loop::calculate_loop_coordinates() {
         SEC_segment      *next_seg = 0;
 
         if (strand != strand_away) {
-            current += seg->get_alpha()+angle_between_strands;
+            current += Angle(seg->get_alpha()+angle_between_strands);
             strand->setFixpoint(center + current.normal()*drawnSize());
             strand->get_helix()->calculate_helix_coordinates();
 

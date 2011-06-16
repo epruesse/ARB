@@ -237,6 +237,10 @@ public:
         }
         invalidate_sub_angles();
     }
+    
+    void set_rel_angle(const double& rel) { set_rel_angle(Angle(rel)); }
+    void set_abs_angle(const double& abs) { set_abs_angle(Angle(abs)); }
+
     void mark_angle_absolute() { abs_angle = rel_angle; abs_angle_valid = true; } // used for root-loop (rel == abs!!)
 
     SEC_base *parent() { return get_parent(); }

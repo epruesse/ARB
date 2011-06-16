@@ -41,6 +41,7 @@ namespace AW {
     const double EPSILON = 0.001; // how equal is nearly equal
 
     inline bool nearlyEqual(const double& val1, const double& val2) { return std::abs(val1-val2) < EPSILON; }
+    inline bool nearlyZero(const double& val) { return nearlyEqual(val, 0.0); }
     inline double centroid(const double& val1, const double& val2) { return (val1+val2)*0.5; }
 
     // -------------------------------------------------------
@@ -209,6 +210,9 @@ namespace AW {
 
     inline bool are_distinct(const Position& p1, const Position& p2) { return Vector(p1, p2).has_length(); }
 
+    inline bool is_vertical(const Vector& v) { return nearlyZero(v.x()) && !nearlyZero(v.y()); }
+    inline bool is_horizontal(const Vector& v) { return !nearlyZero(v.x()) && nearlyZero(v.y()); }
+
     // -------------------------------------------------
     //      a positioned vector, representing a line
     // -------------------------------------------------
@@ -265,6 +269,9 @@ namespace AW {
     Position nearest_linepoint(const Position& pos, const LineVector& line, double& factor);
     inline Position nearest_linepoint(const Position& pos, const LineVector& line) { double dummy; return nearest_linepoint(pos, line, dummy); }
     inline double Distance(const Position& pos, const LineVector& line) { return Distance(pos, nearest_linepoint(pos, line)); }
+
+    inline bool is_vertical(const LineVector& line) { return is_vertical(line.line_vector()); }
+    inline bool is_horizontal(const LineVector& line) { return is_horizontal(line.line_vector()); }
 
     // ---------------------
     //      a rectangle
@@ -328,6 +335,8 @@ namespace AW {
             return Rectangle(Rectangle(upper_left_corner(), pos).upper_left_corner(),
                              Rectangle(lower_right_corner(), pos).lower_right_corner());
         }
+
+        double surface() const { return width()*height(); }
     };
 
     inline Rectangle bounding_box(const Rectangle& r1, const Rectangle& r2) { return r1.bounding_box(r2); }
@@ -363,7 +372,7 @@ namespace AW {
         static const double rad2deg;
         static const double deg2rad;
 
-        Angle(double Radian_) : Radian(Radian_) { recalcNormal(); ISVALID(*this); }
+        explicit Angle(double Radian_) : Radian(Radian_) { recalcNormal(); ISVALID(*this); }
         Angle(double x, double y) : Normal(x, y) { Normal.normalize(); recalcRadian(); ISVALID(*this); }
         explicit Angle(const Vector& v) : Normal(v) { Normal.normalize(); recalcRadian(); ISVALID(*this); }
         Angle(const Vector& n, double r) : Normal(n), Radian(r) { aw_assert(n.is_normalized()); ISVALID(*this); }
@@ -467,6 +476,35 @@ namespace AW {
         return p.xpos() == 0 && p.ypos() == 0;
     }
 
+#if defined(DEBUG)
+    inline void aw_dump(const double& p, const char *varname) {
+        fprintf(stderr, "%s=%f", varname, p);
+    }
+    inline void aw_dump(const Position& p, const char *varname) {
+        fprintf(stderr, "Position %s={ ", varname);
+        aw_dump(p.xpos(), "x"); fputs(", ", stderr);
+        aw_dump(p.ypos(), "y"); fputs(" }", stderr);
+    }
+    inline void aw_dump(const Vector& v, const char *varname) {
+        fprintf(stderr, "Vector %s={ ", varname);
+        aw_dump(v.x(), "x"); fputs(", ", stderr);
+        aw_dump(v.y(), "y"); fputs(" }", stderr);
+    }
+    inline void aw_dump(const LineVector& v, const char *varname) {
+        fprintf(stderr, "LineVector %s={ ", varname);
+        aw_dump(v.start(), "start"); fputs(", ", stderr);
+        aw_dump(v.line_vector(), "line_vector"); fputs(" }", stderr);
+        
+    }
+    inline void aw_dump(const Rectangle& r, const char *varname) {
+        fprintf(stderr, "Rectangle %s={ ", varname);
+        aw_dump(r.upper_left_corner(), "upper_left_corner"); fputs(", ", stderr);
+        aw_dump(r.lower_right_corner(), "lower_right_corner"); fputs(" }", stderr);
+    }
+
+#define AW_DUMP(x) do { aw_dump(x, #x); fputc('\n', stderr); } while(0)
+    
+#endif
 
 };
 
