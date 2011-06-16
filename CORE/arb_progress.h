@@ -150,6 +150,7 @@ class arb_progress {
         used = arb_parent_progress::create(title, overall_count);
         used->initial_update();
     }
+    // cppcheck-suppress functionConst
     void accept_invalid_counters() {
 #if defined(TEST_COUNTERS)
         used->accept_invalid_counters = true;
