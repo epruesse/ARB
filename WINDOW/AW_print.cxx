@@ -34,12 +34,12 @@ int AW_device_print::line_impl(int gc, const LineVector& Line, AW_bitset filteri
             // fill_color(new), depth, pen_style, area_fill, style_val,
             // join_style(new), cap_style(new), radius, forward_arrow,
             // backward_arrow, npoints
-            fprintf(out, "2 1 0 %d %d 0 0 0 0 0.000 0 0 0 0 0 2\n\t%d %d %d %d\n",
-                    (int)line_width, find_color_idx(gcm->get_last_fg_color()),
-                    (int)clippedLine.xpos(),
-                    (int)clippedLine.ypos(),
-                    (int)clippedLine.head().xpos(),
-                    (int)clippedLine.head().ypos());
+            fprintf(out, "2 1 0 %d %d 0 0 0 0 0.000 0 1 0 0 0 2\n\t%d %d %d %d\n",
+                    AW_INT(line_width), find_color_idx(gcm->get_last_fg_color()),
+                    AW_INT(clippedLine.xpos()),
+                    AW_INT(clippedLine.ypos()),
+                    AW_INT(clippedLine.head().xpos()),
+                    AW_INT(clippedLine.head().ypos()));
         }
     }
     return drawflag;
@@ -74,7 +74,7 @@ static int AW_draw_string_on_printer(AW_device *devicei, int gc, const char *str
                 fontnr,
                 gcm->get_fontsize(),
                 (int)gcm->get_font_limits().height,
-                (int)device->get_string_size(gc, str, 0),
+                device->get_string_size(gc, str, 0),
                 AW_INT(X), AW_INT(Y));
         char *p;
         for (p = pstr; *p; p++) {
@@ -197,10 +197,10 @@ int AW_device_print::circle_impl(int gc, bool filled, const AW::Position& center
                     colorIdx, // before greylevel has been used here
                     filled ? colorIdx : -1,
                     filled ? 20 : -1,
-                    (int)CX0, (int)CY0,
-                    (int)xradius, (int)yradius,
-                    (int)CX0, (int)CY0,
-                    (int)(CX0+xradius), (int)CY0);
+                    AW_INT(CX0), AW_INT(CY0),
+                    AW_INT(xradius), AW_INT(yradius),
+                    AW_INT(CX0), AW_INT(CY0),
+                    AW_INT(CX0+xradius), AW_INT(CY0));
         }
     }
     return 0;
@@ -234,7 +234,7 @@ int AW_device_print::filled_area_impl(int gc, int npos, const Position *pos, AW_
         Position transPos = transform(pos[j]);
         Position clippedPos;
         ASSERT_RESULT(int, 1, force_into_clipbox(transPos, clippedPos)); 
-        fprintf(out, "   %d %d\n", (int)clippedPos.xpos(), (int)clippedPos.ypos());
+        fprintf(out, "   %d %d\n", AW_INT(clippedPos.xpos()), AW_INT(clippedPos.ypos()));
     }
     return 1;
 }
