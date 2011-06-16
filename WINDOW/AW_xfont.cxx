@@ -705,6 +705,8 @@ inline void CI_GetRowzeroCharInfo_2D(const XFontStruct *fs, unsigned col, const 
     }
 }
 
+#define AW_FONTINFO_CHAR_ASCII_MIN 32
+#define AW_FONTINFO_CHAR_ASCII_MAX 127
 
 void AW_GC_Xm::set_font(AW_font font_nr, int size, int *found_size)
 // if found_size != 0 -> return value for used font size
@@ -730,16 +732,12 @@ void AW_GC_Xm::set_font(AW_font font_nr, int size, int *found_size)
         CI_GetDefaultInfo_2D(xfs, def);
     }
 
-    fontinfo.max_letter.reset();
-    fontinfo.max_all_letter.reset();
+    all_letters.reset();
 
-    aw_assert(AW_FONTINFO_CHAR_MIN < AW_FONTINFO_CHAR_MAX);
     aw_assert(AW_FONTINFO_CHAR_ASCII_MIN < AW_FONTINFO_CHAR_ASCII_MAX);
-    aw_assert(AW_FONTINFO_CHAR_MIN <= AW_FONTINFO_CHAR_ASCII_MIN);
-    aw_assert(AW_FONTINFO_CHAR_ASCII_MAX <= AW_FONTINFO_CHAR_MAX);
 
     unsigned int i;
-    for (i = AW_FONTINFO_CHAR_MIN; i <= AW_FONTINFO_CHAR_MAX; i++) {
+    for (i = AW_FONTINFO_CHAR_ASCII_MIN; i <= AW_FONTINFO_CHAR_ASCII_MAX; i++) {
         if (singlerow) { /* optimization */
             CI_GetCharInfo_1D(xfs, i, def, cs);
         }
@@ -750,11 +748,7 @@ void AW_GC_Xm::set_font(AW_font font_nr, int size, int *found_size)
             ascent_of_chars[i]  = cs->ascent;
             descent_of_chars[i] = cs->descent;
             width_of_chars[i]   = cs->width;
-
-            if (i >= AW_FONTINFO_CHAR_ASCII_MIN && i <= AW_FONTINFO_CHAR_ASCII_MAX) {
-                fontinfo.max_letter.notify_all(cs->ascent, cs->descent, cs->width);
-            }
-            fontinfo.max_all_letter.notify_all(cs->ascent, cs->descent, cs->width);
+            all_letters.notify_all(cs->ascent, cs->descent, cs->width);
         }
         else {
             width_of_chars[i]   = 0;
@@ -763,8 +757,7 @@ void AW_GC_Xm::set_font(AW_font font_nr, int size, int *found_size)
         }
     }
 
-    fontinfo.max_letter.calc_height();
-    fontinfo.max_all_letter.calc_height();
+    all_letters.calc_height();
 
     this->fontnr   = font_nr;
     this->fontsize = size;
