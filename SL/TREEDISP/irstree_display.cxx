@@ -136,7 +136,7 @@ int AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, int x_offset) {
 
             // draw group box (unclosed on right hand):
             AW_click_cd cd(disp_device, (AW_CL)node);
-            disp_device->set_line_attributes(gc, 1.0, AW_SOLID);
+            disp_device->set_line_attributes(gc, 1, AW_SOLID);
             disp_device->line(gc, x_offset, topy, rx,       topy);
             disp_device->line(gc, x_offset, topy, x_offset, boty);
             disp_device->line(gc, x_offset, boty, rx,       boty);
@@ -181,7 +181,7 @@ int AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, int x_offset) {
         IRS.y+=int(IRS.step_y * 1.8);
         int gc = AWT_GC_GROUPS;
         AW_click_cd cd(disp_device, (AW_CL)node);
-        disp_device->set_line_attributes(gc, 1.0, AW_SOLID);
+        disp_device->set_line_attributes(gc, 1, AW_SOLID);
         disp_device->line(gc, x_offset, last_y, x_offset+400, last_y); // opened-group-frame
 
         disp_device->set_grey_level(node->gr.gc, grey_level);
@@ -240,7 +240,7 @@ int AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, int x_offset) {
     if (node_string != 0) {             //  A node name should be displayed
         IRS.y+=IRS.step_y / 2;
         int gc = AWT_GC_GROUPS;
-        disp_device->set_line_attributes(gc, 1.0, AW_SOLID);
+        disp_device->set_line_attributes(gc, 1, AW_SOLID);
         disp_device->line(gc, x_offset-1, IRS.y, x_offset+400, IRS.y); // opened-group-frame
         disp_device->line(gc, x_offset-1, last_y, x_offset-1,  IRS.y); // opened-group-frame
     }
@@ -251,26 +251,19 @@ void AWT_graphic_tree::show_irs_tree(AP_tree *at, int height) {
     disp_device->push_clip_scale();
     const AW_font_limits& limits = disp_device->get_font_limits(AWT_GC_SELECTED, 0);
 
-    int x;
-    int y;
-    disp_device->rtransform(0, 0, x, y); // calculate real world coordinates of left/upper screen border
-    
-    int clipped_l, clipped_t;
-    int clipped_r, clipped_b;
-    disp_device->rtransform(disp_device->clip_rect.l, disp_device->clip_rect.t, clipped_l, clipped_t);
-    disp_device->rtransform(disp_device->clip_rect.r, disp_device->clip_rect.b, clipped_r, clipped_b);
+    Position  corner = disp_device->rtransform(Origin); // real world coordinates of left/upper screen corner
+    Rectangle rclip  = disp_device->get_rtransformed_cliprect();
 
     IRS.font_height_2  = limits.ascent/2;
-    disp_device         = disp_device;
     IRS.ftrst_species  = true;
     IRS.y              = 0;
-    IRS.min_x          = x;
+    IRS.min_x          = corner.xpos();
     IRS.max_x          = 100;
-    IRS.min_y          = y;
-    IRS.max_y          = clipped_b;
+    IRS.min_y          = corner.ypos();
+    IRS.max_y          = rclip.bottom();
     IRS.ruler_y        = 0;
     IRS.step_y         = height;
-    IRS.x_scale        = (clipped_r-clipped_l)*0.8 / at->gr.tree_depth;
+    IRS.x_scale        = rclip.width()*0.8 / at->gr.tree_depth;
     IRS.group_closed   = 0;
     IRS.is_size_device = disp_device->type() == AW_DEVICE_SIZE;
 
@@ -279,6 +272,9 @@ void AWT_graphic_tree::show_irs_tree(AP_tree *at, int height) {
     // provide some information for ruler:
     list_tree_ruler_y           = IRS.ruler_y;
     irs_tree_ruler_scale_factor = IRS.x_scale;
+
+    disp_device->invisible(AWT_GC_CURSOR, IRS.min_x, 0);
+    disp_device->invisible(AWT_GC_CURSOR, IRS.max_x, IRS.y+IRS.step_y);
 
     disp_device->pop_clip_scale();
 }

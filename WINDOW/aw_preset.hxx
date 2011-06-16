@@ -27,10 +27,10 @@ void AW_save_specific_properties(AW_window *aw, const char *filename);
 
 AW_window *AW_preset_window(AW_root *root);
 
-typedef enum {
+enum AW_GCM_AREA {
     AW_GCM_DATA_AREA,
     AW_GCM_WINDOW_AREA
-} AW_GCM_AREA;
+};
 
 AW_gc_manager AW_manage_GC(AW_window                                       *aww,
                            AW_device                                       *device, int base_gc, int base_drag, AW_GCM_AREA area,

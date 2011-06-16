@@ -12,7 +12,7 @@
 #define AW_KEYSYM_HXX
 
 
-typedef enum {
+enum AW_key_code {
     AW_KEY_NONE,
     AW_KEY_ESCAPE,
     AW_KEY_F1,
@@ -40,17 +40,16 @@ typedef enum {
     AW_KEY_RETURN,
     AW_KEY_TAB,
     AW_KEY_ASCII
+};
 
-} AW_key_code;
 
-
-typedef enum {
+enum AW_key_mod {
     AW_KEYMODE_NONE    = 0,
     AW_KEYMODE_SHIFT   = 2,
     AW_KEYMODE_CONTROL = 4,
     AW_KEYMODE_ALT     = 8, // Alt or Meta key
     AW_KEYMODE_NUMLOCK = 16,
-} AW_key_mod;
+};
 
 
 #else

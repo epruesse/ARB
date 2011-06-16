@@ -936,12 +936,15 @@ void AW_window::set_focus_callback(void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd
 // ---------------
 //      expose
 
+inline void AW_area_management::run_expose_callback() {
+    if (expose_cb) expose_cb->run_callback();
+}
+
 static void AW_exposeCB(Widget /*wgt*/, XtPointer aw_cb_struct, XmDrawingAreaCallbackStruct *call_data) {
     XEvent *ev = call_data->event;
     AW_area_management *aram = (AW_area_management *) aw_cb_struct;
     if (ev->xexpose.count == 0) { // last expose cb
-        if (aram->expose_cb)
-            aram->expose_cb->run_callback();
+        aram->run_expose_callback();
     }
 }
 
@@ -1070,11 +1073,15 @@ void cleanupResizeEvents(Display *display) {
     }
 }
 
+
+inline void AW_area_management::run_resize_callback() {
+    if (resize_cb) resize_cb->run_callback();
+}
+
 static void AW_resizeCB_draw_area(Widget /*wgt*/, XtPointer aw_cb_struct, XtPointer /*call_data*/) {
     AW_area_management *aram = (AW_area_management *) aw_cb_struct;
-    cleanupResizeEvents(aram->common->get_display());
-    if (aram->resize_cb)
-        aram->resize_cb->run_callback();
+    cleanupResizeEvents(aram->get_common()->get_display());
+    aram->run_resize_callback();
 }
 
 void AW_area_management::set_resize_callback(AW_window *aww, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
@@ -1107,7 +1114,7 @@ static void AW_inputCB_draw_area(Widget wgt, XtPointer aw_cb_struct, XmDrawingAr
     {
         int i;
         for (i=0; i<AW_MAX_AREA; i++) {
-            if (p_aww(aww)->areas[i]->area == wgt) {
+            if (p_aww(aww)->areas[i]->get_area() == wgt) {
                 area = p_aww(aww)->areas[i];
                 break;
             }
@@ -1123,14 +1130,14 @@ static void AW_inputCB_draw_area(Widget wgt, XtPointer aw_cb_struct, XmDrawingAr
         aww->event.keymodifier = AW_KEYMODE_NONE;
         aww->event.character = '\0';
 
-        if (area && area->double_click_cb) {
-            if ((ev->xbutton.time - area->click_time) < 200) {
+        if (area && area->get_double_click_cb()) {
+            if ((ev->xbutton.time - area->get_click_time()) < 200) {
                 run_double_click_callback = true;
             }
             else {
                 run_callback = true;
             }
-            area->click_time = ev->xbutton.time;
+            area->set_click_time(ev->xbutton.time);
         }
         else {
             run_callback = true;
@@ -1191,7 +1198,7 @@ static void AW_inputCB_draw_area(Widget wgt, XtPointer aw_cb_struct, XmDrawingAr
         }
         else {
             if (area)
-                area->double_click_cb->run_callback();
+                area->get_double_click_cb()->run_callback();
         }
     }
 
@@ -1319,14 +1326,14 @@ static void aw_root_create_color_map(AW_root *root) {
     int i;
     XColor xcolor_returned, xcolor_exakt;
     GBDATA *gbd = root->check_properties(NULL);
-    p_global->color_table = (unsigned long *)GB_calloc(sizeof(unsigned long), AW_COLOR_MAX);
+    p_global->color_table = (AW_rgb*)GB_calloc(sizeof(AW_rgb), AW_STD_COLOR_IDX_MAX);
 
     if (p_global->screen_depth == 1) { // Black and White Monitor
         unsigned long white = WhitePixelOfScreen(XtScreen(p_global->toplevel_widget));
         unsigned long black = BlackPixelOfScreen(XtScreen(p_global->toplevel_widget));
         p_global->foreground = black;
         p_global->background = white;
-        for (i=0; i< AW_COLOR_MAX; i++) {
+        for (i=0; i< AW_STD_COLOR_IDX_MAX; i++) {
             p_global->color_table[i] = black;
         }
         p_global->color_table[AW_WINDOW_FG] = white;
@@ -1479,7 +1486,7 @@ void AW_root::exit_root() {
 
 void AW_window::_get_area_size(AW_area area, AW_screen_area *square) {
     AW_area_management *aram = MAP_ARAM(area);
-    *square = aram->common->get_screen();
+    *square = aram->get_common()->get_screen();
 }
 
 static void horizontal_scrollbar_redefinition_cb(class AW_root */*aw_root*/, AW_CL cd1, AW_CL cd2) {
@@ -1572,60 +1579,16 @@ void AW_area_management::create_devices(AW_window *aww, AW_area ar) {
     common = new AW_common_Xm(XtDisplay(area), XtWindow(area), p_global->color_table, aww->color_table, aww->color_table_size, aww, ar);
 }
 
-const char *AW_window::GC_to_RGB(AW_device *device, int gc, int& red, int& green, int& blue) {
-    const AW_GC *gcm   = device->get_common()->map_gc(gc);
-    unsigned     pixel = (unsigned short)(gcm->get_fg_color());
-    GB_ERROR     error = 0;
-    XColor       query_color;
-
-    query_color.pixel = pixel;
-    XQueryColor(p_global->display, p_global->colormap, &query_color);
-    // @@@ FIXME: error handling!
-
-    red = query_color.red;
-    green = query_color.green;
-    blue = query_color.blue;
-
-    if (error) {
-        red = green = blue = -1;
-    }
-    return error;
-}
-
-// Converts GC to RGB float values to the range (0 - 1.0)
-const char *AW_window::GC_to_RGB_float(AW_device *device, int gc, float& red, float& green, float& blue) {
-    AW_common   *common = device->get_common();
-    const AW_GC *gcm    = common->map_gc(gc);
-
-    unsigned pixel = (unsigned short)(gcm->get_fg_color()); 
-    GB_ERROR error = 0;
-    XColor   query_color;
-
-    query_color.pixel = pixel;
-
-    XQueryColor(p_global->display, p_global->colormap, &query_color);
-    // @@@ FIXME: error handling!
-
-    red = query_color.red/65535.0;
-    green = query_color.green/65535.0;
-    blue = query_color.blue/65535.0;
-
-    if (error) {
-        red = green = blue = 1.0f;
-    }
-    return error;
-}
-
-AW_color AW_window::alloc_named_data_color(int colnum, char *colorname) {
+AW_color_idx AW_window::alloc_named_data_color(int colnum, char *colorname) {
     if (!color_table_size) {
-        color_table_size = AW_COLOR_MAX + colnum;
-        color_table      = (unsigned long *)malloc(sizeof(unsigned long) *color_table_size);
+        color_table_size = AW_STD_COLOR_IDX_MAX + colnum;
+        color_table      = (AW_rgb*)malloc(sizeof(AW_rgb) *color_table_size);
         for (int i = 0; i<color_table_size; ++i) color_table[i] = AW_NO_COLOR;
     }
     else {
         if (colnum>=color_table_size) {
             long new_size = colnum+8;
-            color_table   = (unsigned long *)realloc((char *)color_table, new_size*sizeof(long)); // valgrinders : never freed because AW_window never is freed
+            color_table   = (AW_rgb*)realloc(color_table, new_size*sizeof(AW_rgb)); // valgrinders : never freed because AW_window never is freed
             for (int i = color_table_size; i<new_size; ++i) color_table[i] = AW_NO_COLOR;
             color_table_size = new_size;
         }
@@ -1649,8 +1612,9 @@ AW_color AW_window::alloc_named_data_color(int colnum, char *colorname) {
             col *= -1;
     }
     else { // Color monitor
-        if (color_table[colnum] != (unsigned long)AW_NO_COLOR) {
-            XFreeColors(p_global->display, p_global->colormap, &color_table[colnum], 1, 0);
+        if (color_table[colnum] != AW_NO_COLOR) {
+            unsigned long color = color_table[colnum];
+            XFreeColors(p_global->display, p_global->colormap, &color, 1, 0);
         }
         if (XAllocNamedColor(p_global->display, p_global->colormap, colorname, &xcolor_returned, &xcolor_exakt) == 0) {
             aw_message(GBS_global_string("XAllocColor failed: %s\n", colorname));
@@ -1661,16 +1625,16 @@ AW_color AW_window::alloc_named_data_color(int colnum, char *colorname) {
         }
     }
     if (colnum == AW_DATA_BG) {
-        XtVaSetValues(p_w->areas[AW_MIDDLE_AREA]->area, XmNbackground, color_table[colnum], NULL);
+        XtVaSetValues(p_w->areas[AW_MIDDLE_AREA]->get_area(), XmNbackground, color_table[colnum], NULL);
     }
-    return (AW_color)colnum;
+    return (AW_color_idx)colnum;
 }
 
 void AW_window::create_devices() {
     unsigned long background_color;
     if (p_w->areas[AW_INFO_AREA]) {
         p_w->areas[AW_INFO_AREA]->create_devices(this, AW_INFO_AREA);
-        XtVaGetValues(p_w->areas[AW_INFO_AREA]->area, XmNbackground, &background_color, NULL);
+        XtVaGetValues(p_w->areas[AW_INFO_AREA]->get_area(), XmNbackground, &background_color, NULL);
         p_global->color_table[AW_WINDOW_DRAG] = background_color ^ p_global->color_table[AW_WINDOW_FG];
     }
     if (p_w->areas[AW_MIDDLE_AREA]) {
@@ -2027,14 +1991,14 @@ Widget aw_create_shell(AW_window *aww, bool allow_resize, bool allow_close, int 
 
 
 void aw_realize_widget(AW_window *aww) {
-    if (p_aww(aww)->areas[AW_INFO_AREA] && p_aww(aww)->areas[AW_INFO_AREA]->form) {
-        XtManageChild(p_aww(aww)->areas[AW_INFO_AREA]->form);
+    if (p_aww(aww)->areas[AW_INFO_AREA] && p_aww(aww)->areas[AW_INFO_AREA]->get_form()) {
+        XtManageChild(p_aww(aww)->areas[AW_INFO_AREA]->get_form());
     }
-    if (p_aww(aww)->areas[AW_MIDDLE_AREA] && p_aww(aww)->areas[AW_MIDDLE_AREA]->form) {
-        XtManageChild(p_aww(aww)->areas[AW_MIDDLE_AREA]->form);
+    if (p_aww(aww)->areas[AW_MIDDLE_AREA] && p_aww(aww)->areas[AW_MIDDLE_AREA]->get_form()) {
+        XtManageChild(p_aww(aww)->areas[AW_MIDDLE_AREA]->get_form());
     }
-    if (p_aww(aww)->areas[AW_BOTTOM_AREA] && p_aww(aww)->areas[AW_BOTTOM_AREA]->form) {
-        XtManageChild(p_aww(aww)->areas[AW_BOTTOM_AREA]->form);
+    if (p_aww(aww)->areas[AW_BOTTOM_AREA] && p_aww(aww)->areas[AW_BOTTOM_AREA]->get_form()) {
+        XtManageChild(p_aww(aww)->areas[AW_BOTTOM_AREA]->get_form());
     }
     XtRealizeWidget(p_aww(aww)->shell);
     p_aww(aww)->WM_top_offset = AW_FIX_POS_ON_EXPOSE;
@@ -3073,47 +3037,71 @@ AW_area_management::AW_area_management(AW_root *awr, Widget formi, Widget widget
     XtAddEventHandler(area, EnterWindowMask, FALSE, AW_root_focusCB, (XtPointer)awr);
 }
 
-AW_device *AW_window::get_device(AW_area area) {
-    AW_area_management *aram = MAP_ARAM(area);
-    if (!aram)
-        return 0;
-    if (!aram->device)
-        aram->device = new AW_device_Xm(aram->common);
-    aram->device->init();
-    return (AW_device *)(aram->device);
+AW_device_Xm *AW_area_management::get_screen_device() {
+    if (!device) device = new AW_device_Xm(common);
+    return device;
+}
+
+AW_device_size *AW_area_management::get_size_device() {
+    if (!size_device) size_device = new AW_device_size(common);
+    return size_device;
+}
+
+AW_device_print *AW_area_management::get_print_device() {
+    if (!print_device) print_device = new AW_device_print(common);
+    return print_device;
+}
+
+AW_device_click *AW_area_management::get_click_device() {
+    if (!click_device) click_device = new AW_device_click(common);
+    return click_device;
+}
+
+AW_device *AW_window::get_device(AW_area area) { // @@@ rename to get_screen_device
+    AW_area_management *aram   = MAP_ARAM(area);
+    AW_device_Xm       *device = NULL;
+
+    if (aram) {
+        device = aram->get_screen_device();
+        device->init();
+    }
+    return device;
 }
 
 AW_device_size *AW_window::get_size_device(AW_area area) {
-    AW_area_management *aram = MAP_ARAM(area);
-    if (!aram)
-        return 0;
-    if (!aram->size_device)
-        aram->size_device = new AW_device_size(aram->common);
-    aram->size_device->init();
-    aram->size_device->reset();
-    return aram->size_device;
+    AW_area_management *aram        = MAP_ARAM(area);
+    AW_device_size     *size_device = NULL;
+
+    if (aram) {
+        size_device = aram->get_size_device();
+        size_device->init();
+        size_device->reset(); // @@@ hm
+    }
+    return size_device;
 }
 
 AW_device_print *AW_window::get_print_device(AW_area area) {
-    AW_area_management *aram = MAP_ARAM(area);
-    if (!aram)
-        return 0;
-    if (!aram->print_device)
-        aram->print_device = new AW_device_print(aram->common);
-    aram->print_device->init();
-    return aram->print_device;
+    AW_area_management *aram         = MAP_ARAM(area);
+    AW_device_print    *print_device = NULL;
+
+    if (aram) {
+        print_device = aram->get_print_device();
+        print_device->init();
+    }
+    return print_device;
 }
 
 AW_device_click *AW_window::get_click_device(AW_area area, int mousex, int mousey,
-        AW_pos max_distance_linei, AW_pos max_distance_texti, AW_pos radi) {
-    AW_area_management *aram = MAP_ARAM(area);
-    if (!aram)
-        return 0;
-    if (!aram->click_device)
-        aram->click_device = new AW_device_click(aram->common);
-    aram->click_device->init(mousex, mousey, max_distance_linei,
-                             max_distance_texti, radi, AW_ALL_DEVICES);
-    return aram->click_device;
+                                             AW_pos max_distance_linei, AW_pos max_distance_texti, AW_pos radi) {
+    AW_area_management *aram         = MAP_ARAM(area);
+    AW_device_click    *click_device = NULL;
+
+    if (aram) {
+        click_device = aram->get_click_device();
+        click_device->init(mousex, mousey, max_distance_linei,
+                           max_distance_texti, radi, AW_ALL_DEVICES);
+    }
+    return click_device;
 }
 
 void AW_window::wm_activate() {

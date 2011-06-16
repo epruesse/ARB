@@ -398,26 +398,26 @@ static inline void move_and_update_rectangle(AW_pos x1, AW_pos y1, AW_pos x2, AW
     device->move_region(fx, fy, xs, ys, tx, ty);
 
     if (dy<0) { // scroll to the top
-        device->set_top_font_overlap(1);
+        device->set_top_font_overlap(true);
         clear_and_update_rectangle(x1, y2+dy, x2, y2);
-        device->set_top_font_overlap(0);
+        device->set_top_font_overlap(false);
     }
     else if (dy>0) { // scroll to the bottom
-        device->set_bottom_font_overlap(1);
+        device->set_bottom_font_overlap(true);
         clear_and_update_rectangle(x1, y1, x2, y1+dy);
-        device->set_bottom_font_overlap(0);
+        device->set_bottom_font_overlap(false);
     }
 
     int char_width = ED4_ROOT->font_group.get_max_width() * 2;
     if (dx<0) { // scroll left
-        device->set_left_font_overlap(1);
+        device->set_left_font_overlap(true);
         clear_and_update_rectangle(x2+dx-char_width, y1, x2, y2);
-        device->set_left_font_overlap(0);
+        device->set_left_font_overlap(false);
     }
     else if (dx>0) { // scroll right
-        device->set_right_font_overlap(1);
+        device->set_right_font_overlap(true);
         clear_and_update_rectangle(x1, y1, x1+dx+char_width, y2);
-        device->set_right_font_overlap(0);
+        device->set_right_font_overlap(false);
     }
 }
 
