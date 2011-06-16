@@ -236,8 +236,8 @@ static int with_affected_clusters_do(AW_root *aw_root, AffectedClusters affected
 //      mark
 
 void Cluster::mark_all_members(bool mark_representative) const {
-    SpeciesSetIter sp_end = members.end();
-    for (SpeciesSetIter sp = members.begin(); sp != sp_end; ++sp) {
+    DBItemSetIter sp_end = members.end();
+    for (DBItemSetIter sp = members.begin(); sp != sp_end; ++sp) {
         if (mark_representative || (*sp != representative)) {
             GB_write_flag(*sp, 1);
         }
@@ -490,13 +490,13 @@ void GroupBuilder::update_group(ClusterPtr cluster) {
     if (!error) {
         if (!tree_root) load_tree();
         if (!error) {
-            const SpeciesSet& members = cluster->get_members();
+            const DBItemSet& members = cluster->get_members();
 
             // mark cluster members in tree
             {
                 GB_transaction ta(gb_main);
-                SpeciesSetIter sp_end = members.end();
-                for (SpeciesSetIter sp = members.begin(); sp != sp_end && !error; ++sp) {
+                DBItemSetIter sp_end = members.end();
+                for (DBItemSetIter sp = members.begin(); sp != sp_end && !error; ++sp) {
                     const char *name = GBT_get_name(*sp);
                     di_assert(name);
                     if (name) {

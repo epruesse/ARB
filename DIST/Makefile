@@ -72,6 +72,7 @@ DI_clusters.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 DI_clusters.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 DI_clusters.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 DI_clusters.o: $(ARBHOME)/INCLUDE/cb.h
+DI_clusters.o: $(ARBHOME)/INCLUDE/dbitem_set.h
 DI_clusters.o: $(ARBHOME)/INCLUDE/downcast.h
 DI_clusters.o: $(ARBHOME)/INCLUDE/dupstr.h
 DI_clusters.o: $(ARBHOME)/INCLUDE/gui_aliview.hxx
@@ -146,6 +147,7 @@ DI_foundclusters.o: $(ARBHOME)/INCLUDE/attributes.h
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/aw_window.hxx
+DI_foundclusters.o: $(ARBHOME)/INCLUDE/dbitem_set.h
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/downcast.h
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/dupstr.h
 DI_foundclusters.o: $(ARBHOME)/INCLUDE/gui_aliview.hxx

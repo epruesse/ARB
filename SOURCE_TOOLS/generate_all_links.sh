@@ -206,6 +206,7 @@ symlink_file ../ARBDB/arb_assert.h INCLUDE/arb_assert.h &&
 symlink_file ../ARBDB/arbdb.h INCLUDE/arbdb.h &&
 symlink_file ../ARBDB/arbdb_base.h INCLUDE/arbdb_base.h &&
 symlink_file ../ARBDB/arbdbt.h INCLUDE/arbdbt.h &&
+symlink_file ../ARBDB/dbitem_set.h INCLUDE/dbitem_set.h &&
 symlink_file ../ARB_GDE/gde.hxx INCLUDE/gde.hxx &&
 symlink_file ../AWT/awt.hxx INCLUDE/awt.hxx &&
 symlink_file ../AWT/awt_asciiprint.hxx INCLUDE/awt_asciiprint.hxx &&
@@ -222,6 +223,7 @@ symlink_file ../AWT/awt_sel_boxes.hxx INCLUDE/awt_sel_boxes.hxx &&
 symlink_file ../AWT/awt_seq_colors.hxx INCLUDE/awt_seq_colors.hxx &&
 symlink_file ../AWT/awt_www.hxx INCLUDE/awt_www.hxx &&
 symlink_file ../AWT/awtlocal.hxx INCLUDE/awtlocal.hxx &&
+symlink_file ../AWT/refentries.h INCLUDE/refentries.h &&
 symlink_file ../AWTC/awtc_next_neighbours.hxx INCLUDE/awtc_next_neighbours.hxx &&
 symlink_file ../AWTC/awtc_submission.hxx INCLUDE/awtc_submission.hxx &&
 symlink_file ../AWTI/awti_export.hxx INCLUDE/awti_export.hxx &&

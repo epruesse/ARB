@@ -113,13 +113,13 @@ static GBDATA *GEN_get_first_gene_data(GBDATA *gb_main, AW_root *aw_root, AWT_QU
     gen_restore_old_species_marks(gb_main);
 
     switch (range) {
-        case AWT_QUERY_CURRENT_SPECIES: {
+        case QUERY_CURRENT_ITEM: {
             char *species_name = aw_root->awar(AWAR_ORGANISM_NAME)->read_string();
             gb_organism         = GEN_find_organism(gb_main, species_name);
             free(species_name);
             break;
         }
-        case AWT_QUERY_MARKED_SPECIES: {
+        case QUERY_MARKED_ITEMS: {
             gb_organism = GEN_first_marked_organism(gb_main);
             GBDATA *gb_pseudo   = GEN_first_marked_pseudo_species(gb_main);
 
@@ -132,7 +132,7 @@ static GBDATA *GEN_get_first_gene_data(GBDATA *gb_main, AW_root *aw_root, AWT_QU
 
             break;
         }
-        case AWT_QUERY_ALL_SPECIES: {
+        case QUERY_ALL_ITEMS: {
             gb_organism = GEN_first_organism(gb_main);
             break;
         }
@@ -149,10 +149,10 @@ static GBDATA *GEN_get_first_gene_data(GBDATA *gb_main, AW_root *aw_root, AWT_QU
 static GBDATA *GEN_get_next_gene_data(GBDATA *gb_gene_data, AWT_QUERY_RANGE range) {
     GBDATA *gb_organism = 0;
     switch (range) {
-        case AWT_QUERY_CURRENT_SPECIES: {
+        case QUERY_CURRENT_ITEM: {
             break;
         }
-        case AWT_QUERY_MARKED_SPECIES: {
+        case QUERY_MARKED_ITEMS: {
             GBDATA *gb_last_organism = GB_get_father(gb_gene_data);
             gb_organism              = GEN_next_marked_organism(gb_last_organism);
 
@@ -160,7 +160,7 @@ static GBDATA *GEN_get_next_gene_data(GBDATA *gb_gene_data, AWT_QUERY_RANGE rang
 
             break;
         }
-        case AWT_QUERY_ALL_SPECIES: {
+        case QUERY_ALL_ITEMS: {
             GBDATA *gb_last_organism = GB_get_father(gb_gene_data);
             gb_organism              = GEN_next_organism(gb_last_organism);
             break;
@@ -172,6 +172,25 @@ static GBDATA *GEN_get_next_gene_data(GBDATA *gb_gene_data, AWT_QUERY_RANGE rang
     }
 
     return gb_organism ? GEN_expect_gene_data(gb_organism) : 0;
+}
+
+static GBDATA *first_gene_in_range(GBDATA *gb_gene_data, AWT_QUERY_RANGE range) {
+    GBDATA *gb_first = NULL;
+    switch (range) {
+        case QUERY_ALL_ITEMS:    gb_first = GEN_first_gene_rel_gene_data(gb_gene_data); break;
+        case QUERY_MARKED_ITEMS: gb_first = GB_first_marked(gb_gene_data, "gene"); break;
+        case QUERY_CURRENT_ITEM: gb_first = GEN_get_current_gene(GB_get_root(gb_gene_data), AW_root::SINGLETON); break;
+    }
+    return gb_first;
+}
+static GBDATA *next_gene_in_range(GBDATA *gb_prev, AWT_QUERY_RANGE range) {
+    GBDATA *gb_next = NULL;
+    switch (range) {
+        case QUERY_ALL_ITEMS:    gb_next = GEN_next_gene(gb_prev); break;
+        case QUERY_MARKED_ITEMS: gb_next = GEN_next_marked_gene(gb_prev); break;
+        case QUERY_CURRENT_ITEM: gb_next = NULL; break;
+    }
+    return gb_next;
 }
 
 // --------------------------
@@ -190,8 +209,8 @@ struct ad_item_selector GEN_item_selector = {
     "name",
     GEN_get_first_gene_data,
     GEN_get_next_gene_data,
-    GEN_first_gene_rel_gene_data,
-    GEN_next_gene,
+    first_gene_in_range,
+    next_gene_in_range,
     GEN_get_current_gene,
     &AWT_organism_selector, GB_get_grandfather,
 };

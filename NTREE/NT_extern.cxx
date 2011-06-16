@@ -48,6 +48,7 @@
 #include <arb_strbuf.h>
 
 #include <arb_version.h>
+#include <refentries.h>
 
 #define nt_assert(bed) arb_assert(bed)
 
@@ -225,6 +226,7 @@ static void nt_create_all_awars(AW_root *awr, AW_default def) {
     NT_createConcatenationAwars(awr, def);
     NT_createValidNamesAwars(awr, def); // lothar
     SQ_create_awars(awr, def);
+    RefEntries::create_refentries_awars(awr, def);
 
     GB_ERROR error = ARB_init_global_awars(awr, def, GLOBAL_gb_main);
     if (!error) {
@@ -1064,6 +1066,28 @@ GBT_TREE *nt_get_current_tree_root() {
 
 // --------------------------------------------------------------------------------------------------
 
+static ARB_ERROR mark_referred_species(GBDATA *gb_main, const DBItemSet& referred) {
+    GB_transaction ta(gb_main);
+    GBT_mark_all(gb_main, 0);
+
+    DBItemSetIter end = referred.end();
+    for (DBItemSetIter s = referred.begin(); s != end; ++s) {
+        GB_write_flag(*s, 1);
+    }
+    return ARB_ERROR();
+}
+
+static AW_window *create_mark_by_refentries_window(AW_root *awr, AW_CL cl_gbmain) {
+    static AW_window *aws = NULL;
+    if (!aws) {
+        static RefEntries::ReferringEntriesHandler reh((GBDATA*)cl_gbmain, AWT_species_selector);
+        aws = RefEntries::create_refentries_window(awr, &reh, "markbyref", "Mark by reference", "markbyref.hlp", NULL, "Mark referenced", mark_referred_species);
+    }
+    return aws;
+}
+
+// --------------------------------------------------------------------------------------------------
+
 // ##########################################
 // ##########################################
 // ###                                    ###
@@ -1228,8 +1252,9 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
             SEP________________________SEP();
 
             NT_insert_mark_submenus(awm, ntw, 1);
-            AWMIMT("species_colors",  "Set Colors",     "l", "mark_colors.hlp",   AWM_ALL, AW_POPUP,                     (AW_CL)NT_create_species_colorize_window, 0);
-            AWMIMT("selection_admin", "Configurations", "o", "configuration.hlp", AWM_ALL, NT_popup_configuration_admin, 0,                                        0);
+            AWMIMT("mark_by_ref",     "Mark by reference..", "r", "markbyref.hlp",     AWM_EXP, AW_POPUP,                     (AW_CL)create_mark_by_refentries_window,  (AW_CL)GLOBAL_gb_main);
+            AWMIMT("species_colors",  "Set Colors",          "l", "mark_colors.hlp",   AWM_ALL, AW_POPUP,                     (AW_CL)NT_create_species_colorize_window, 0);
+            AWMIMT("selection_admin", "Configurations",      "o", "configuration.hlp", AWM_ALL, NT_popup_configuration_admin, 0,                                        0);
 
             SEP________________________SEP();
 
