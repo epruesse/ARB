@@ -122,7 +122,7 @@ namespace AW {
 
         const double& x() const { return end.xpos(); }
         const double& y() const { return end.ypos(); }
-        const Position& endpoint() { return end; }
+        const Position& endpoint() const { return end; }
 
         Vector& set(const double& X, const double& Y, double Length = -1) { end = Position(X, Y); len = Length; return *this; }
         Vector& setx(const double& X) { end.setx(X); len = -1; return *this; }
@@ -150,7 +150,7 @@ namespace AW {
 
         Vector& set_length(double new_length) {
             double factor  = new_length/length();
-            return *this  *= factor;
+            return (*this  *= factor);
         }
 
         // length-constant members:

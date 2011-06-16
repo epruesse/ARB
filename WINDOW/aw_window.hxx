@@ -53,7 +53,6 @@ class AW_at;
 #endif
 
 class AW_at_size {
-
     int  to_offset_x;                               // here we use offsets (not positions like in AW_at)
     int  to_offset_y;
     bool to_position_exists;
@@ -64,8 +63,18 @@ class AW_at_size {
     bool attach_ly;
     bool attach_any;
 
-
 public:
+    AW_at_size()
+        : to_offset_x(0),
+          to_offset_y(0),
+          to_position_exists(false),
+          attach_x(false), 
+          attach_y(false), 
+          attach_lx(false), 
+          attach_ly(false), 
+          attach_any(false) 
+    {}
+
     void store(const AW_at *at);
     void restore(AW_at *at) const;
 };
@@ -75,6 +84,11 @@ class AW_at_maxsize {
     int maxy;
 
 public:
+    AW_at_maxsize()
+        : maxx(0),
+          maxy(0)
+    {}
+    
     void store(const AW_at *at);
     void restore(AW_at *at) const;
 };
@@ -171,7 +185,7 @@ enum {
 typedef char *AW_pixmap;
 
 class  AW_window_Motif;
-struct AW_select_table_struct;
+struct AW_selection_list_entry;
 class  AW_selection_list;
 struct AW_option_menu_struct;
 struct aw_toggle_data;
@@ -197,7 +211,7 @@ class AW_window : virtual Noncopyable {
     enum AW_PosRecalc  recalc_pos_at_show;
     aw_hide_cb         hide_cb;
 
-    void all_menus_created();
+    void all_menus_created() const;
     void create_toggle(const char *var_name, aw_toggle_data *tdata);
 
     void show_internal(void *grab);
@@ -250,8 +264,8 @@ public:
     void show_grabbed();
     void set_window_title_intern(char *title);
 
-    int calculate_string_width(int columns);
-    int calculate_string_height(int columns, int offset);
+    int calculate_string_width(int columns) const;
+    int calculate_string_height(int columns, int offset) const;
     char *align_string(const char *string, int columns);
 
     void update_label(Widget widget, const char *var_value);
@@ -298,12 +312,12 @@ public:
 
     // ******************* Global layout functions **********************
 
-    void show();                                    // show newly created window or unhide hidden window (aka closed window)
-    void hide();                                    // hide (don't destroy) a window (<->show)
+    void show(); // show newly created window or unhide hidden window (aka closed window)
+    void hide(); // hide (don't destroy) a window (<->show)
 
     void activate() { show(); wm_activate(); }      // make_visible, pop window to front and give it the focus
 
-    bool is_shown();                                // is window visible (== true) or hidden (== false). ?
+    bool is_shown() const;  // is window visible (== true) or hidden (== false). ?
 
     void hide_or_notify(const char *error);
 
@@ -335,7 +349,7 @@ public:
     bool is_motion_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL));
     bool is_double_click_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW_CL));
 
-    void get_event(AW_event *eventi);       // In an event callback get the events info
+    void get_event(AW_event *eventi) const;       // In an event callback get the events info
 
     void force_expose(); // forces the window to expose instantly
 
@@ -363,8 +377,8 @@ public:
     // ************** Control the size of the main drawing area + scrollbars  *********
     void tell_scrolled_picture_size(AW_screen_area rectangle);
     void tell_scrolled_picture_size(AW_world rectangle);
-    AW_pos get_scrolled_picture_width();
-    AW_pos get_scrolled_picture_height();
+    AW_pos get_scrolled_picture_width() const;
+    AW_pos get_scrolled_picture_height() const;
     void reset_scrolled_picture_size();
 
     void calculate_scrollbars();
@@ -431,9 +445,9 @@ public:
 
     void label(const char *label);   // Create a label before the button
 
-    void get_at_position(int *x, int *y);
-    int get_at_xposition();
-    int get_at_yposition();
+    void get_at_position(int *x, int *y) const;
+    int get_at_xposition() const;
+    int get_at_yposition() const;
 
     void dump_at_position(const char *debug_label) const; // for debugging (uses printf)
 
@@ -524,8 +538,8 @@ public:
     void insert_selection(AW_selection_list *selection_list, const char *displayed, const char *value);
     void insert_default_selection(AW_selection_list * selection_list, const char *displayed, const char *value);
     // for int
-    void insert_selection(AW_selection_list * selection_list, const char *displayed, long value);
-    void insert_default_selection(AW_selection_list * selection_list, const char *displayed, long value);
+    void insert_selection(AW_selection_list * selection_list, const char *displayed, int32_t value);
+    void insert_default_selection(AW_selection_list * selection_list, const char *displayed, int32_t value);
     // for float
     void insert_selection(AW_selection_list * selection_list, const char *displayed, float value);
     void insert_default_selection(AW_selection_list * selection_list, const char *displayed, float value);
@@ -537,11 +551,11 @@ public:
     void conc_list(AW_selection_list * from_list_id,   AW_selection_list * to_list_id);
 
     // --- selection list iterator:
-    void        init_list_entry_iterator(AW_selection_list *selection_list);
+    void        init_list_entry_iterator(AW_selection_list *selection_list) const;
     void        iterate_list_entry(int offset);
     // --- the following functions work on the currently iterated element:
-    const char *get_list_entry_char_value();
-    const char *get_list_entry_displayed();
+    const char *get_list_entry_char_value() const;
+    const char *get_list_entry_displayed() const;
     void        set_list_entry_char_value(const char *new_char_value);
     void        set_list_entry_displayed(const char *new_displayed);
     // ---------------------------------------------------------
@@ -572,8 +586,8 @@ public:
 
 
 class AW_window_menu_modes : public AW_window { // derived from a Noncopyable
-private:
-    void    *AW_window_menu_modes_private;    // Do not use !!!
+    void *AW_window_menu_modes_private;       // Do not use !!!
+    
 public:
     AW_window_menu_modes();
     ~AW_window_menu_modes();

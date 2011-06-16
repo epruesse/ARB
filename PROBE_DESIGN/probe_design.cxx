@@ -1972,7 +1972,7 @@ static void create_probe_group_result_sel_box(AW_root *aw_root, AW_window *aws, 
 
     if (pg_global.pg_main) {
         const char *reason = 0;
-        long i = 0;
+        int32_t i = 0;
         aws->insert_selection(selList, "members | probes | fitness | quality | mintarget | mishit | probelen | birth", i++);
 
         GB_transaction dummy(pg_global.pg_main);
@@ -2021,7 +2021,7 @@ static void create_probe_group_result_sel_box(AW_root *aw_root, AW_window *aws, 
 
         if (reason) {
             error = GB_export_errorf("Error in database format (reason: %s)", reason);
-            aws->insert_selection(selList, error, (long)0);
+            aws->insert_selection(selList, error, (int32_t)0);
         }
 
         aws->update_selection_list(selList);

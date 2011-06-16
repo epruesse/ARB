@@ -267,7 +267,8 @@ public:
         if (!father) return 0;
         return is_leftson(father) ? gr.left_linewidth : gr.right_linewidth;
     }
-    void set_linewidth(int width)  {
+    // cppcheck-suppress functionConst
+    void set_linewidth(int width) {
         ap_assert(width >= 1 && width < 128);
         if (father) {
             char& lw = is_leftson(father) ? gr.left_linewidth : gr.right_linewidth;

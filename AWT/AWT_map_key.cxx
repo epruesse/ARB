@@ -19,7 +19,7 @@ ed_key::ed_key()
     for (i=0; i<256; i++) map[i] = i;
 }
 
-char ed_key::map_key(char k) {
+char ed_key::map_key(char k) const {
     int i = k & 0xff;
     return map[i];
 }

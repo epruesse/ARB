@@ -1439,7 +1439,6 @@ static GB_ERROR writeDefaultMaskfile(const string& fullname, const string& maskn
 
 static awt_input_mask_ptr awt_create_input_mask(AW_root *root, GBDATA *gb_main, const awt_item_type_selector *sel,
                                                 const string& mask_name, bool local, GB_ERROR& error, bool reloading) {
-    size_t             lineNo = 0;
     awt_input_mask_ptr mask;
 
     error = 0;
@@ -1465,8 +1464,10 @@ static awt_input_mask_ptr awt_create_input_mask(AW_root *root, GBDATA *gb_main, 
         bool          show_marked = true;
 
         string line;
+        size_t lineNo  = 0;
         size_t err_pos = 0;     // 0 = unknown; string::npos = at end of line; else position+1;
-        error          = readLine(in, line, lineNo);
+
+        error = readLine(in, line, lineNo);
 
         if (!error && line != ARB_INPUT_MASK_ID) {
             error = "'" ARB_INPUT_MASK_ID "' expected";
@@ -2058,6 +2059,7 @@ awt_input_mask_descriptor::~awt_input_mask_descriptor() {
     free(internal_maskname);
     free(title);
 }
+// cppcheck-suppress publicAllocationError
 awt_input_mask_descriptor::awt_input_mask_descriptor(const awt_input_mask_descriptor& other) {
     title             = strdup(other.title);
     internal_maskname = strdup(other.internal_maskname);
@@ -2231,14 +2233,14 @@ static void create_new_mask_cb(AW_window *aww) {
     }
 
 
-    string       itemname     = awr->awar(AWAR_INPUT_MASK_ITEM)->read_char_pntr();
-    int          scope        = awr->awar(AWAR_INPUT_MASK_SCOPE)->read_int();
-    int          hidden       = awr->awar(AWAR_INPUT_MASK_HIDDEN)->read_int();
-    bool         local        = scope == AWT_SCOPE_LOCAL;
-    string       maskfullname = inputMaskFullname(maskname, local);
-    bool         openMask     = false;
-    bool         closeWindow  = false;
-    const char  *error        = 0;
+    string itemname     = awr->awar(AWAR_INPUT_MASK_ITEM)->read_char_pntr();
+    int    scope        = awr->awar(AWAR_INPUT_MASK_SCOPE)->read_int();
+    int    hidden       = awr->awar(AWAR_INPUT_MASK_HIDDEN)->read_int();
+    bool   local        = scope == AWT_SCOPE_LOCAL;
+    string maskfullname = inputMaskFullname(maskname, local);
+    bool   openMask     = false;
+
+    const char  *error = 0;
     struct stat  st;
 
     if (stat(maskfullname.c_str(), &st) == 0) { // file exists
@@ -2258,8 +2260,7 @@ static void create_new_mask_cb(AW_window *aww) {
         }
         if (!error) {
             add_new_input_mask(maskname, maskfullname, local);
-            openMask    = true;
-            closeWindow = true;
+            openMask = true;
         }
     }
 

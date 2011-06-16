@@ -35,7 +35,8 @@ inline int calc_overlap(AW_pos smaller, AW_pos bigger) {
     return 0;
 }
 
-const AW_borders& AW_device_size::get_unscaleable_overlap() const {
+AW_borders AW_device_size::get_unscaleable_overlap() const {
+    AW_borders unscalable_overlap;
     if (scaled.was_drawn() && unscaled.was_drawn()) {
         const AW_world& scaled_size   = scaled.get_size();
         const AW_world& unscaled_size = unscaled.get_size();

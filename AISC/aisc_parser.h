@@ -56,17 +56,18 @@ struct Code {
     Code(const Code& other)
         : next(other.next),
           str(nulldup(other.str)),
+          source(other.source), 
           command(other.command),
           cmd(other.cmd),
           fd(other.fd),
-          IF(other.IF), 
-          ELSE(other.ELSE), 
-          ENDIF(other.ENDIF), 
-          FOR(other.FOR), 
-          NEXT(other.NEXT), 
-          ENDFOR(other.ENDFOR) 
+          IF(other.IF),
+          ELSE(other.ELSE),
+          ENDIF(other.ENDIF),
+          FOR(other.FOR),
+          NEXT(other.NEXT),
+          ENDFOR(other.ENDFOR)
     {}
-    
+
     DECLARE_ASSIGNMENT_OPERATOR(Code);
     ~Code() {
         delete next;

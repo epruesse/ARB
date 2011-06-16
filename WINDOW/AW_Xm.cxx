@@ -192,14 +192,6 @@ void AW_device_Xm::clear_text(int gc, const char *string, AW_pos x, AW_pos y, AW
     AUTO_FLUSH(this);
 }
 
-void AW_device_Xm::fast() {
-    fastflag = 1;
-}
-
-void AW_device_Xm::slow() {
-    fastflag = 0;
-}
-
 void AW_device_Xm::flush() {
     XFlush(get_common()->get_display());
 }

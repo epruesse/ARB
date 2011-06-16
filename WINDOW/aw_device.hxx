@@ -149,8 +149,8 @@ public:
 
     void zoom(AW_pos scale);
 
-    AW_pos get_scale() { return scale; };
-    AW_pos get_unscale() { return unscale; };
+    AW_pos get_scale() const { return scale; };
+    AW_pos get_unscale() const { return unscale; };
     AW::Vector get_offset() const { return offset; }
 
     void rotate(AW_pos angle);
@@ -209,7 +209,7 @@ class AW_clipable {
 
     void set_cliprect_oversize(const AW_screen_area& rect, bool allow_oversize);
 protected:
-    int compoutcode(AW_pos xx, AW_pos yy) {
+    int compoutcode(AW_pos xx, AW_pos yy) const {
         /* calculate outcode for clipping the current line */
         /* order - top,bottom,right,left */
         int code = 0;
@@ -325,9 +325,10 @@ struct AW_font_limits {
 
     AW_font_limits() { reset(); }
     AW_font_limits(const AW_font_limits& lim1, const AW_font_limits& lim2)
-        : ascent(std::max(lim1.ascent, lim2.ascent))
-        , descent(std::max(lim1.descent, lim2.descent))
-        , width(std::max(lim1.width, lim2.width))
+        : ascent(std::max(lim1.ascent, lim2.ascent)),
+          descent(std::max(lim1.descent, lim2.descent)),
+          width(std::max(lim1.width, lim2.width)),
+          min_width(std::min(lim1.min_width, lim2.min_width))
     {
         calc_height();
     }
@@ -441,7 +442,7 @@ public:
 
     void reset();
 
-    const AW_screen_area& get_area_size();
+    const AW_screen_area& get_area_size() const;
     AW::Rectangle get_rtransformed_cliprect() const { return rtransform(AW::Rectangle(get_cliprect(), AW::INCLUSIVE_OUTLINE)); }
 
     void set_filter(AW_bitset filteri);   // set the main filter mask
@@ -606,7 +607,6 @@ public:
           color_mode(false)
     {}
 
-    void init() {}
     GB_ERROR open(const char *path) __ATTR__USERESULT;
     void close();
 
@@ -669,10 +669,8 @@ public:
 };
 
 class AW_device_size : public AW_simple_device {
-    AW_size_tracker scaled;   // all zoomable parts (e.g. tree skeleton)                        
+    AW_size_tracker scaled;   // all zoomable parts (e.g. tree skeleton)
     AW_size_tracker unscaled; // all unzoomable parts (e.g. text at tree-tips or group-brackets)
-
-    mutable AW_borders unscalable_overlap;
 
     void privat_reset();
 
@@ -702,7 +700,7 @@ public:
         return get_size_information().bounding_box(get_size_information_unscaled());
     }
 
-    const AW_borders& get_unscaleable_overlap() const;
+    AW_borders get_unscaleable_overlap() const;
 };
 
 class AW_device_click : public AW_simple_device {
@@ -717,14 +715,18 @@ public:
     AW_clicked_line opt_line;
     AW_clicked_text opt_text;
 
-    AW_device_click(AW_common *common_) : AW_simple_device(common_) {}
+    AW_device_click(AW_common *common_)
+        : AW_simple_device(common_)
+    {
+        init(0, 0, -1, -1, 0, AW_ALL_DEVICES);
+    }
 
     AW_DEVICE_TYPE type();
 
     void init(AW_pos mousex, AW_pos mousey, AW_pos max_distance_liniei, AW_pos max_distance_texti, AW_pos radi, AW_bitset filteri);
 
-    void get_clicked_line(class AW_clicked_line *ptr);
-    void get_clicked_text(class AW_clicked_text *ptr);
+    void get_clicked_line(class AW_clicked_line *ptr) const;
+    void get_clicked_text(class AW_clicked_text *ptr) const;
 };
 
 

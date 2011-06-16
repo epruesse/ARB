@@ -346,7 +346,7 @@ void AWT_create_ascii_print_window(AW_root *awr, const char *text_to_print, cons
             }
 
             awr->awar_string(AWAR_APRINT_PRINTER, print_command);
-            delete print_command;
+            free(print_command);
         }
         awr->awar_string(AWAR_APRINT_FILE, "print.ps");
 

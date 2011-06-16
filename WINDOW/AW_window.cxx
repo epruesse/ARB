@@ -52,15 +52,16 @@
 
 AW_root *AW_root::SINGLETON = NULL;
 
-AW_cb_struct::AW_cb_struct(AW_window *awi, void (*g)(AW_window*, AW_CL, AW_CL), AW_CL cd1i, AW_CL cd2i,
-        const char *help_texti, class AW_cb_struct *nexti) {
-    aw = awi;
-    f = g;
-    cd1 = cd1i;
-    cd2 = cd2i;
-    help_text = help_texti;
+AW_cb_struct::AW_cb_struct(AW_window *awi, void (*g)(AW_window*, AW_CL, AW_CL), AW_CL cd1i, AW_CL cd2i, const char *help_texti, class AW_cb_struct *nexti) {
+    aw            = awi;
+    f             = g;
+    cd1           = cd1i;
+    cd2           = cd2i;
+    help_text     = help_texti;
     pop_up_window = NULL;
     this->next = nexti;
+
+    id = NULL;
 }
 
 AW_timer_cb_struct::AW_timer_cb_struct(AW_root *ari, AW_RCB g, AW_CL cd1i, AW_CL cd2i) {
@@ -128,28 +129,6 @@ bool AW_root::remove_button_from_sens_list(Widget button) {
     return removed;
 }
 
-AW_option_struct::AW_option_struct(const char *variable_valuei,
-                                   Widget choice_widgeti) :
-    variable_value(strdup(variable_valuei)), choice_widget(choice_widgeti),
-            next(0) {
-}
-
-AW_option_struct::AW_option_struct(int variable_valuei, Widget choice_widgeti) :
-    variable_value(0), variable_int_value(variable_valuei),
-            choice_widget(choice_widgeti), next(0) {
-}
-
-AW_option_struct::AW_option_struct(float variable_valuei, Widget choice_widgeti) :
-    variable_value(0), variable_float_value(variable_valuei),
-            choice_widget(choice_widgeti), next(0) {
-}
-
-AW_option_struct::~AW_option_struct() {
-    aw_assert(next == 0);
-    // has to be unlinked from list BEFORE calling dtor
-    free(variable_value);
-}
-
 AW_option_menu_struct::AW_option_menu_struct(int numberi, const char *variable_namei,
                                              AW_VARIABLE_TYPE variable_typei, Widget label_widgeti,
                                              Widget menu_widgeti, AW_pos xi, AW_pos yi, int correct) {
@@ -182,29 +161,8 @@ AW_toggle_field_struct::AW_toggle_field_struct(int toggle_field_numberi,
     next = NULL;
     correct_for_at_center_intern = correct;
 }
-AW_toggle_struct::AW_toggle_struct(const char *variable_valuei,
-        Widget toggle_widgeti) {
 
-    variable_value = strdup(variable_valuei);
-    toggle_widget = toggle_widgeti;
-    next = NULL;
-
-}
-AW_toggle_struct::AW_toggle_struct(int variable_valuei, Widget toggle_widgeti) {
-
-    variable_int_value = variable_valuei;
-    toggle_widget = toggle_widgeti;
-    next = NULL;
-
-}
-AW_toggle_struct::AW_toggle_struct(float variable_valuei, Widget toggle_widgeti) {
-
-    variable_float_value = variable_valuei;
-    toggle_widget = toggle_widgeti;
-    next = NULL;
-
-}
-char *AW_select_table_struct::copy_string(const char *str) {
+char *AW_selection_list_entry::copy_string_for_display(const char *str) {
     char *out = strdup(str);
     char *p   = out;
     int   ch;
@@ -216,31 +174,6 @@ char *AW_select_table_struct::copy_string(const char *str) {
             p[-1] = '#';
     }
     return out;
-}
-
-AW_select_table_struct::AW_select_table_struct(const char *displayedi, const char *valuei) {
-    memset((char *)this, 0, sizeof(AW_select_table_struct));
-    displayed = copy_string(displayedi);
-    char_value = strdup(valuei);
-}
-AW_select_table_struct::AW_select_table_struct(const char *displayedi, long valuei) {
-    memset((char *)this, 0, sizeof(AW_select_table_struct));
-    displayed = copy_string(displayedi);
-    int_value = valuei;
-}
-AW_select_table_struct::AW_select_table_struct(const char *displayedi, float valuei) {
-    memset((char *)this, 0, sizeof(AW_select_table_struct));
-    displayed = copy_string(displayedi);
-    float_value = valuei;
-}
-AW_select_table_struct::AW_select_table_struct(const char *displayedi, void *pointer) {
-    memset((char *)this, 0, sizeof(AW_select_table_struct));
-    displayed = copy_string(displayedi);
-    pointer_value = pointer;
-}
-AW_select_table_struct::~AW_select_table_struct() {
-    free(displayed);
-    free(char_value);
 }
 
 AW_selection_list::AW_selection_list(const char *variable_namei, int variable_typei, Widget select_list_widgeti) {
@@ -358,7 +291,7 @@ static void dumpCloseAllSubMenus() {
 
 #endif // DUMP_MENU_LIST
 
-AW_window_menu_modes::AW_window_menu_modes() {}
+AW_window_menu_modes::AW_window_menu_modes() : AW_window_menu_modes_private(NULL) {}
 AW_window_menu_modes::~AW_window_menu_modes() {}
 
 AW_window_menu::AW_window_menu() {}
@@ -447,11 +380,11 @@ void AW_window::reset_scrolled_picture_size() {
     picture->t = 0;
     picture->b = 0;
 }
-AW_pos AW_window::get_scrolled_picture_width() {
+AW_pos AW_window::get_scrolled_picture_width() const {
     return (picture->r - picture->l);
 }
 
-AW_pos AW_window::get_scrolled_picture_height() {
+AW_pos AW_window::get_scrolled_picture_height() const {
     return (picture->b - picture->t);
 }
 
@@ -1220,6 +1153,7 @@ void AW_window::set_input_callback(AW_area area, void (*f)(AW_window*, AW_CL, AW
     aram->set_input_callback(this, f, cd1, cd2);
 }
 
+// cppcheck-suppress publicAllocationError
 void AW_area_management::set_double_click_callback(AW_window *aww, void (*f)(AW_window*, AW_CL, AW_CL), AW_CL cd1, AW_CL cd2) {
     double_click_cb = new AW_cb_struct(aww, f, cd1, cd2, (char*)0, double_click_cb);
 }
@@ -1231,7 +1165,7 @@ void AW_window::set_double_click_callback(AW_area area, void (*f)(AW_window*, AW
     aram->set_double_click_callback(this, f, cd1, cd2);
 }
 
-void AW_window::get_event(AW_event *eventi) {
+void AW_window::get_event(AW_event *eventi) const {
     *eventi = event;
 }
 
@@ -1323,7 +1257,6 @@ void AW_root::exit_variables() {
 }
 
 static void aw_root_create_color_map(AW_root *root) {
-    int i;
     XColor xcolor_returned, xcolor_exakt;
     GBDATA *gbd = root->check_properties(NULL);
     p_global->color_table = (AW_rgb*)GB_calloc(sizeof(AW_rgb), AW_STD_COLOR_IDX_MAX);
@@ -1333,7 +1266,7 @@ static void aw_root_create_color_map(AW_root *root) {
         unsigned long black = BlackPixelOfScreen(XtScreen(p_global->toplevel_widget));
         p_global->foreground = black;
         p_global->background = white;
-        for (i=0; i< AW_STD_COLOR_IDX_MAX; i++) {
+        for (int i=0; i< AW_STD_COLOR_IDX_MAX; i++) {
             p_global->color_table[i] = black;
         }
         p_global->color_table[AW_WINDOW_FG] = white;
@@ -2869,7 +2802,7 @@ void AW_window::create_menu(AW_label name, const char *mnemonic, AW_active Mask)
     insert_sub_menu(name, mnemonic, Mask);
 }
 
-void AW_window::all_menus_created() { // this is called by AW_window::show() (i.e. after all menus have been created)
+void AW_window::all_menus_created() const { // this is called by AW_window::show() (i.e. after all menus have been created)
 #if defined(DEBUG)
     if (p_w->menu_deep>0) { // window had menu
         aw_assert(p_w->menu_deep == 1);
@@ -3013,21 +2946,17 @@ void AW_window::insert_help_topic(AW_label name, const char *mnemonic, const cha
 }
 
 void AW_window::insert_separator() {
-    Widget separator;
-
     // create one help-sub-menu-point
-    separator = XtVaCreateManagedWidget("", xmSeparatorWidgetClass,
-            p_w->menu_bar[p_w->menu_deep],
-            NULL);
+    XtVaCreateManagedWidget("", xmSeparatorWidgetClass,
+                            p_w->menu_bar[p_w->menu_deep],
+                            NULL);
 }
 
 void AW_window::insert_separator_help() {
-    Widget separator;
-
     // create one help-sub-menu-point
-    separator = XtVaCreateManagedWidget("", xmSeparatorWidgetClass,
-            p_w->help_pull_down,
-            NULL);
+    XtVaCreateManagedWidget("", xmSeparatorWidgetClass,
+                            p_w->help_pull_down,
+                            NULL);
 }
 
 AW_area_management::AW_area_management(AW_root *awr, Widget formi, Widget widget) {
@@ -3061,10 +2990,7 @@ AW_device *AW_window::get_device(AW_area area) { // @@@ rename to get_screen_dev
     AW_area_management *aram   = MAP_ARAM(area);
     AW_device_Xm       *device = NULL;
 
-    if (aram) {
-        device = aram->get_screen_device();
-        device->init();
-    }
+    if (aram) device = aram->get_screen_device();
     return device;
 }
 
@@ -3084,10 +3010,7 @@ AW_device_print *AW_window::get_print_device(AW_area area) {
     AW_area_management *aram         = MAP_ARAM(area);
     AW_device_print    *print_device = NULL;
 
-    if (aram) {
-        print_device = aram->get_print_device();
-        print_device->init();
-    }
+    if (aram) print_device = aram->get_print_device();
     return print_device;
 }
 
@@ -3263,7 +3186,7 @@ void AW_window::hide() {
     XtPopdown(p_w->shell);
 }
 
-bool AW_window::is_shown() {
+bool AW_window::is_shown() const {
     // return true if window is shown ( = not invisible and already created)
     // Note: does return TRUE!, if window is only minimized by WM
     return window_is_shown;

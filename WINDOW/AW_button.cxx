@@ -119,172 +119,120 @@ void AW_awar::untie_all_widgets() {
 }
 
 
-struct AW_variable_update_struct { // used to refresh single items on change
-
-    AW_variable_update_struct(Widget widgeti, AW_widget_type widget_typei, AW_awar *awari, const char *var_s_i, int var_i_i, float var_f_i, AW_cb_struct *cbsi);
-    AW_awar        *awar;
+class VarUpdateInfo : virtual Noncopyable { // used to refresh single items on change
     Widget          widget;
     AW_widget_type  widget_type;
-    char           *variable_value;
-    long            variable_int_value;
-    float           variable_float_value;
+    AW_awar        *awar;
+    AW_scalar       value;
     AW_cb_struct   *cbs;
     void           *id;         // selection id etc ...
+    
+public:
+    VarUpdateInfo(Widget w, AW_widget_type wtype, AW_awar *a, AW_cb_struct *cbs_)
+        : widget(w), widget_type(wtype), awar(a),
+          value(a),
+          cbs(cbs_), id(NULL)
+    {
+    }
+    template<typename T>
+    VarUpdateInfo(Widget w, AW_widget_type wtype, AW_awar *a, T t, AW_cb_struct *cbs_)
+        : widget(w), widget_type(wtype), awar(a),
+          value(t),
+          cbs(cbs_), id(NULL)
+    {
+    }
+
+    void change_from_widget(XtPointer call_data);
+
+    void set_widget(Widget w) { widget = w; }
+    void set_id(void *ID) { id = ID; }
 };
 
-AW_variable_update_struct::AW_variable_update_struct(Widget widgeti,
-                                                     AW_widget_type widget_typei, AW_awar *awari, const char *var_s_i,
-                                                     int var_i_i, float var_f_i, AW_cb_struct *cbsi) {
+void AW_variable_update_callback(Widget /*wgt*/, XtPointer variable_update_struct, XtPointer call_data) {
+    VarUpdateInfo *vui = (VarUpdateInfo *) variable_update_struct;
+    aw_assert(vui);
 
-    widget = widgeti;
-    widget_type = widget_typei;
-    awar = awari;
-    if (var_s_i) {
-        variable_value = strdup(var_s_i);
-    }
-    else {
-        variable_value = 0;
-    }
-    variable_int_value = var_i_i; // used for toggles and selection menus
-    variable_float_value = var_f_i;
-    cbs = cbsi;
-
+    vui->change_from_widget(call_data);
 }
 
-
-void AW_variable_update_callback(Widget /*wgt*/, XtPointer variable_update_struct, XtPointer call_data) {
-    AW_variable_update_struct *vus = (AW_variable_update_struct *) variable_update_struct;
-
-    aw_assert(vus);
-
-    char                      *tmp   = 0;
-    long                       h_int;
-    float                      h_float;
-    GB_ERROR                   error = 0;
-    XmListCallbackStruct      *xml;
-    AW_root                   *root  = vus->awar->root;
+void VarUpdateInfo::change_from_widget(XtPointer call_data) {
+    GB_ERROR  error = NULL;
+    AW_root  *root  = awar->root;
 
     if (root->value_changed) {
-        root->changer_of_variable = vus->widget;
+        root->changer_of_variable = widget;
     }
 
-    switch (vus->widget_type) {
+    switch (widget_type) {
         case AW_WIDGET_INPUT_FIELD:
-        case AW_WIDGET_TEXT_FIELD:
+        case AW_WIDGET_TEXT_FIELD: {
             if (!root->value_changed) return;
-            tmp = XmTextGetString((vus->widget));
 
-            switch (vus->awar->variable_type) {
-                case AW_STRING:
-                    error   = vus->awar->write_string(tmp);
-                    break;
-                case AW_INT:
-                    h_int   = atoi(tmp);
-                    error   = vus->awar->write_int(h_int);
-                    break;
-                case AW_FLOAT:
-                    h_float = atof(tmp);
-                    error   = vus->awar->write_float(h_float);
-                    break;
-                default:
-                    aw_assert(0);
-                    error = GB_export_error("Unknown or incompatible AWAR type");
-            }
-            XtFree(tmp);
+            char *new_text = XmTextGetString((widget));
+            error          = awar->write_as_string(new_text);
+            XtFree(new_text);
             break;
-
+        }
         case AW_WIDGET_TOGGLE:
             root->changer_of_variable = 0;
-            error = vus->awar->toggle_toggle();
+            error = awar->toggle_toggle();
             break;
 
-        case AW_WIDGET_TOGGLE_FIELD:
-            int state;
-            state = XmToggleButtonGetState(vus->widget);
-            if (state != True) break;
+        case AW_WIDGET_TOGGLE_FIELD: {
+            if (XmToggleButtonGetState(widget) == False) break; // no toggle is selected (?)
             // fall-through
-
+        }
         case AW_WIDGET_CHOICE_MENU:
-            switch (vus->awar->variable_type) {
-                case AW_STRING: error = vus->awar->write_string(vus->variable_value);        break;
-                case AW_INT:    error = vus->awar->write_int(vus->variable_int_value);       break;
-                case AW_FLOAT:  error = vus->awar->write_float(vus->variable_float_value); break;
-#if defined(WARN_TODO)
-#warning missing implementation for AW_POINTER
-#endif
-                default:
-                    GBK_terminatef("AWAR type %i unhandled for AW_WIDGET_CHOICE_MENU", vus->awar->variable_type);
-                    break;
-            }
+            error = value.write_to(awar);
             break;
-
 
         case AW_WIDGET_SELECTION_LIST: {
-            char                   *ptr;
-            AW_selection_list      *selection_list;
-            AW_select_table_struct *list_table;
-            bool                    found;
-            found = false;
-            xml   = (XmListCallbackStruct*)call_data;
-
-            XmStringGetLtoR(xml->item, XmSTRING_DEFAULT_CHARSET, &tmp);
-
-
-            selection_list = ((AW_selection_list *)(vus->id));
-
-            for (list_table = selection_list->list_table; list_table; list_table = list_table->next) {
-                ptr = list_table->displayed;
-                if (strcmp(tmp, ptr) == 0) {
-                    break;
-                }
+            char *selected; {
+                XmListCallbackStruct *xml = (XmListCallbackStruct*)call_data;
+                XmStringGetLtoR(xml->item, XmSTRING_DEFAULT_CHARSET, &selected);
             }
-            if (!list_table) {   // test if default selection exists
-                list_table = selection_list->default_select;
-                if (!list_table) GBK_terminate("no default specified for selection list");
+
+            AW_selection_list       *list  = (AW_selection_list*)id;
+            AW_selection_list_entry *entry = list->list_table;
+
+            while (entry && strcmp(entry->get_displayed(), selected) != 0) {
+                entry = entry->next;
             }
-            switch (vus->awar->variable_type) {
-                case AW_STRING:
-                    error = vus->awar->write_string(list_table->char_value);
-                    break;
-                case AW_INT:
-                    error = vus->awar->write_int(list_table->int_value);
-                    break;
-                case AW_FLOAT:
-                    error = vus->awar->write_float(list_table->float_value);
-                    break;
-                case AW_POINTER:
-                    error = vus->awar->write_pointer(list_table->pointer_value);
-                    break;
-                default:
-                    GBK_terminatef("AWAR type %i unhandled for AW_WIDGET_SELECTION_LIST", vus->awar->variable_type);
-                    break;
+
+            if (!entry) {   
+                entry = list->default_select; // use default selection
+                if (!entry) GBK_terminate("no default specified for selection list"); // or die
             }
-            XtFree(tmp);
+            entry->value.write_to(awar);
+            XtFree(selected);
             break;
         }
         case AW_WIDGET_LABEL_FIELD:
             break;
+
         default:
-            GBK_terminatef("Unknown widget type %i in AW_variable_update_callback", vus->widget_type);
+            GBK_terminatef("Unknown widget type %i in AW_variable_update_callback", widget_type);
             break;
     }
 
     if (error) {
         root->changer_of_variable = 0;
-        vus->awar->update();
+        awar->update();
         aw_message(error);
     }
     else {
         if (root->prvt->recording_macro_file) {
             fprintf(root->prvt->recording_macro_file, "BIO::remote_awar($gb_main,\"%s\",", root->prvt->application_name_for_macros);
-            GBS_fwrite_string(vus->awar->awar_name, root->prvt->recording_macro_file);
+            GBS_fwrite_string(awar->awar_name, root->prvt->recording_macro_file);
             fprintf(root->prvt->recording_macro_file, ",");
-            char *value = vus->awar->read_as_string();
-            GBS_fwrite_string(value, root->prvt->recording_macro_file);
-            free(value);
+
+            char *svalue = awar->read_as_string();
+            GBS_fwrite_string(svalue, root->prvt->recording_macro_file);
+            free(svalue);
+
             fprintf(root->prvt->recording_macro_file, ");\n");
         }
-        if (vus->cbs) vus->cbs->run_callback();
+        if (cbs) cbs->run_callback();
         root->value_changed = false;
     }
 }
@@ -930,12 +878,12 @@ void AW_window::create_toggle(const char *var_name, aw_toggle_data *tdata) {
         free(var_value);
     }
 
-    AW_variable_update_struct *vus;
-    vus = new AW_variable_update_struct(p_w->toggle_field, AW_WIDGET_TOGGLE, vs, 0, 0, 0, cbs);
+    VarUpdateInfo *vui;
+    vui = new VarUpdateInfo(p_w->toggle_field, AW_WIDGET_TOGGLE, vs, cbs);
 
     XtAddCallback(p_w->toggle_field, XmNactivateCallback,
                   (XtCallbackProc) AW_variable_update_callback,
-                  (XtPointer) vus);
+                  (XtPointer) vui);
 
     vs->tie_widget((AW_CL)tdata, p_w->toggle_field, AW_WIDGET_TOGGLE, this);
 }
@@ -981,12 +929,12 @@ void AW_window::create_inverse_toggle(const char *var_name) {
 //      input fields
 
 void AW_window::create_input_field(const char *var_name,   int columns) {
-    Widget                     textField              = 0;
-    Widget                     tmp_label              = 0;
-    AW_cb_struct              *cbs;
-    AW_variable_update_struct *vus;
-    char                      *String;
-    int                        x_correcting_for_label = 0;
+    Widget         textField              = 0;
+    Widget         tmp_label              = 0;
+    AW_cb_struct  *cbs;
+    VarUpdateInfo *vui;
+    char          *String;
+    int            x_correcting_for_label = 0;
 
     if (!columns) columns = _at->length_of_buttons;
 
@@ -1051,11 +999,11 @@ void AW_window::create_input_field(const char *var_name,   int columns) {
     cbs = _callback;
 
     // callback for enter
-    vus = new AW_variable_update_struct(textField, AW_WIDGET_INPUT_FIELD, vs, 0, 0, 0, cbs);
+    vui = new VarUpdateInfo(textField, AW_WIDGET_INPUT_FIELD, vs, cbs);
 
     XtAddCallback(textField, XmNactivateCallback,
                   (XtCallbackProc) AW_variable_update_callback,
-                  (XtPointer) vus);
+                  (XtPointer) vui);
     if (_d_callback) {
         XtAddCallback(textField, XmNactivateCallback,
                       (XtCallbackProc) AW_server_callback,
@@ -1067,7 +1015,7 @@ void AW_window::create_input_field(const char *var_name,   int columns) {
     // callback for losing focus
     XtAddCallback(textField, XmNlosingFocusCallback,
                   (XtCallbackProc) AW_variable_update_callback,
-                  (XtPointer) vus);
+                  (XtPointer) vui);
     // callback for value changed
     XtAddCallback(textField, XmNvalueChangedCallback,
                   (XtCallbackProc) AW_value_changed_callback,
@@ -1110,7 +1058,7 @@ void AW_window::create_text_field(const char *var_name, int columns, int rows) {
     Widget scrolledText;
     Widget tmp_label = 0;
     AW_cb_struct *cbs;
-    AW_variable_update_struct *vus;
+    VarUpdateInfo *vui;
     char *String = NULL;
     short width_of_last_widget = 0;
     short height_of_last_widget = 0;
@@ -1224,10 +1172,10 @@ void AW_window::create_text_field(const char *var_name, int columns, int rows) {
     cbs = _callback;
 
     // callback for enter
-    vus = new AW_variable_update_struct(scrolledText, AW_WIDGET_TEXT_FIELD, vs, 0, 0, 0, cbs);
-    XtAddCallback(scrolledText, XmNactivateCallback, (XtCallbackProc) AW_variable_update_callback, (XtPointer) vus);
+    vui = new VarUpdateInfo(scrolledText, AW_WIDGET_TEXT_FIELD, vs, cbs);
+    XtAddCallback(scrolledText, XmNactivateCallback, (XtCallbackProc) AW_variable_update_callback, (XtPointer) vui);
     // callback for losing focus
-    XtAddCallback(scrolledText, XmNlosingFocusCallback, (XtCallbackProc) AW_variable_update_callback, (XtPointer) vus);
+    XtAddCallback(scrolledText, XmNlosingFocusCallback, (XtCallbackProc) AW_variable_update_callback, (XtPointer) vui);
     // callback for value changed
     XtAddCallback(scrolledText, XmNvalueChangedCallback, (XtCallbackProc) AW_value_changed_callback, (XtPointer) root);
 
@@ -1252,7 +1200,7 @@ AW_selection_list* AW_window::create_selection_list(const char *var_name, const 
     Widget scrolledList;
     Widget l = 0;
 
-    AW_variable_update_struct *vus;
+    VarUpdateInfo *vui;
     AW_cb_struct              *cbs;
 
     int width_of_label        = 0;
@@ -1394,12 +1342,12 @@ AW_selection_list* AW_window::create_selection_list(const char *var_name, const 
 
     // callback for enter
     if (vs) {
-        vus = new AW_variable_update_struct(scrolledList, AW_WIDGET_SELECTION_LIST, vs, 0, 0, 0, cbs);
-        vus->id = (void*)p_global->last_selection_list;
+        vui = new VarUpdateInfo(scrolledList, AW_WIDGET_SELECTION_LIST, vs, cbs);
+        vui->set_id((void*)p_global->last_selection_list);
 
         XtAddCallback(scrolledList, XmNsingleSelectionCallback,
                       (XtCallbackProc) AW_variable_update_callback,
-                      (XtPointer) vus);
+                      (XtPointer) vui);
 
         if (_d_callback) {
             XtAddCallback(scrolledList, XmNdefaultActionCallback,
@@ -1419,20 +1367,19 @@ AW_selection_list *AW_window::create_multi_selection_list(const char *tmp_label,
     return create_selection_list(0, tmp_label, mnemonic, columns, rows);
 }
 
-void AW_window::conc_list(AW_selection_list *from_list, AW_selection_list *to_list)
-{
-    AW_select_table_struct *from_list_table;
+void AW_window::conc_list(AW_selection_list *from_list, AW_selection_list *to_list) {
+    // @@@ conc_list is a bad name (it does move the entries)
+    // @@@ instead of COPYING, it could simply move the entries
+    AW_selection_list_entry *from_list_table;
 
     from_list_table = from_list->list_table;
-    while (from_list_table)
-    {
-        if (from_list->default_select != from_list_table)
-        {
-            if (! to_list->list_table)
-                to_list->last_of_list_table = to_list->list_table = new AW_select_table_struct(from_list_table->displayed, from_list_table->char_value);
-            else
-            {
-                to_list->last_of_list_table->next = new AW_select_table_struct(from_list_table->displayed, from_list_table->char_value);
+    while (from_list_table) {
+        if (from_list->default_select != from_list_table) {
+            if (! to_list->list_table) {
+                to_list->last_of_list_table = to_list->list_table = new AW_selection_list_entry(from_list_table->get_displayed(), from_list_table->value.get_string());
+            }
+            else {
+                to_list->last_of_list_table->next = new AW_selection_list_entry(from_list_table->get_displayed(), from_list_table->value.get_string());
                 to_list->last_of_list_table = to_list->last_of_list_table->next;
                 to_list->last_of_list_table->next = NULL;
             }
@@ -1448,9 +1395,9 @@ void AW_window::conc_list(AW_selection_list *from_list, AW_selection_list *to_li
 // -----------------------------------------
 //      iterator through selection list:
 
-static AW_select_table_struct *current_list_table = 0;
+static AW_selection_list_entry *current_list_table = 0;
 
-void AW_window::init_list_entry_iterator(AW_selection_list *selection_list) {
+void AW_window::init_list_entry_iterator(AW_selection_list *selection_list) const {
     current_list_table = selection_list->list_table;
 }
 
@@ -1461,22 +1408,22 @@ void AW_window::iterate_list_entry(int offset) {
     }
 }
 
-const char *AW_window::get_list_entry_char_value() {
-    return current_list_table ? current_list_table->char_value : 0;
+const char *AW_window::get_list_entry_char_value() const {
+    return current_list_table ? current_list_table->value.get_string() : 0;
 }
 
-const char *AW_window::get_list_entry_displayed() {
-    return current_list_table ? current_list_table->displayed : 0;
+const char *AW_window::get_list_entry_displayed() const {
+    return current_list_table ? current_list_table->get_displayed() : 0;
 }
 
 void AW_window::set_list_entry_char_value(const char *new_char_value) {
     aw_assert(current_list_table);
-    freeset(current_list_table->char_value, AW_select_table_struct::copy_string(new_char_value));
+    current_list_table->set_value(new_char_value);
 }
 
 void AW_window::set_list_entry_displayed(const char *new_displayed) {
     aw_assert(current_list_table);
-    freeset(current_list_table->displayed, AW_select_table_struct::copy_string(new_displayed));
+    current_list_table->set_displayed(new_displayed);
 }
 
 void AW_window::set_selection_list_suffix(AW_selection_list *selection_list, const char *suffix) {
@@ -1563,16 +1510,15 @@ void AW_window::delete_selection_from_list(AW_selection_list *selection_list, co
         clear_selection_list(selection_list);
     }
 
-    AW_select_table_struct *list_table;
-    AW_select_table_struct *next = NULL;
-    AW_select_table_struct *prev = NULL;
+    AW_selection_list_entry *list_table;
+    AW_selection_list_entry *next = NULL;
+    AW_selection_list_entry *prev = NULL;
 
     for (list_table = selection_list->list_table, next = selection_list->list_table;
          list_table;
          prev = next, list_table = list_table->next, next = list_table)
     {
-        const char *ptr = list_table->displayed;
-        if (strcmp(disp_string, ptr) == 0) {
+        if (strcmp(disp_string, list_table->get_displayed()) == 0) {
             next = list_table->next;
 
             if (prev) prev->next = next;
@@ -1606,12 +1552,12 @@ void AW_window::insert_selection(AW_selection_list *selection_list, const char *
     }
 
     if (selection_list->list_table) {
-        selection_list->last_of_list_table->next = new AW_select_table_struct(displayed, value);
+        selection_list->last_of_list_table->next = new AW_selection_list_entry(displayed, value);
         selection_list->last_of_list_table = selection_list->last_of_list_table->next;
         selection_list->last_of_list_table->next = NULL;
     }
     else {
-        selection_list->last_of_list_table = selection_list->list_table = new AW_select_table_struct(displayed, value);
+        selection_list->last_of_list_table = selection_list->list_table = new AW_selection_list_entry(displayed, value);
     }
 }
 
@@ -1624,32 +1570,32 @@ void AW_window::insert_default_selection(AW_selection_list *selection_list, cons
     if (selection_list->default_select) {
         delete selection_list->default_select;
     }
-    selection_list->default_select = new AW_select_table_struct(displayed, value);
+    selection_list->default_select = new AW_selection_list_entry(displayed, value);
 }
 
 #if defined(WARN_TODO)
 #warning parameter value must be int32_t
 #endif
-void AW_window::insert_selection(AW_selection_list *selection_list, const char *displayed, long value) {
+void AW_window::insert_selection(AW_selection_list *selection_list, const char *displayed, int32_t value) {
 
     if (selection_list->variable_type != AW_INT) {
         selection_type_mismatch("int");
         return;
     }
     if (selection_list->list_table) {
-        selection_list->last_of_list_table->next = new AW_select_table_struct(displayed, value);
+        selection_list->last_of_list_table->next = new AW_selection_list_entry(displayed, value);
         selection_list->last_of_list_table = selection_list->last_of_list_table->next;
         selection_list->last_of_list_table->next = NULL;
     }
     else {
-        selection_list->last_of_list_table = selection_list->list_table = new AW_select_table_struct(displayed, value);
+        selection_list->last_of_list_table = selection_list->list_table = new AW_selection_list_entry(displayed, value);
     }
 }
 
 #if defined(WARN_TODO)
 #warning parameter value must be int32_t
 #endif
-void AW_window::insert_default_selection(AW_selection_list *selection_list, const char *displayed, long value) {
+void AW_window::insert_default_selection(AW_selection_list *selection_list, const char *displayed, int32_t value) {
     if (selection_list->variable_type != AW_INT) {
         selection_type_mismatch("int");
         return;
@@ -1657,7 +1603,7 @@ void AW_window::insert_default_selection(AW_selection_list *selection_list, cons
     if (selection_list->default_select) {
         delete selection_list->default_select;
     }
-    selection_list->default_select = new AW_select_table_struct(displayed, value);
+    selection_list->default_select = new AW_selection_list_entry(displayed, value);
 }
 
 void AW_window::insert_selection(AW_selection_list * selection_list, const char *displayed, void *pointer) {
@@ -1666,12 +1612,12 @@ void AW_window::insert_selection(AW_selection_list * selection_list, const char 
         return;
     }
     if (selection_list->list_table) {
-        selection_list->last_of_list_table->next = new AW_select_table_struct(displayed, pointer);
+        selection_list->last_of_list_table->next = new AW_selection_list_entry(displayed, pointer);
         selection_list->last_of_list_table = selection_list->last_of_list_table->next;
         selection_list->last_of_list_table->next = NULL;
     }
     else {
-        selection_list->last_of_list_table = selection_list->list_table = new AW_select_table_struct(displayed, pointer);
+        selection_list->last_of_list_table = selection_list->list_table = new AW_selection_list_entry(displayed, pointer);
     }
 }
 
@@ -1683,12 +1629,12 @@ void AW_window::insert_default_selection(AW_selection_list * selection_list, con
     if (selection_list->default_select) {
         delete selection_list->default_select;
     }
-    selection_list->default_select = new AW_select_table_struct(displayed, pointer);
+    selection_list->default_select = new AW_selection_list_entry(displayed, pointer);
 }
 
 void AW_window::clear_selection_list(AW_selection_list *selection_list) {
-    AW_select_table_struct *list_table;
-    AW_select_table_struct *help;
+    AW_selection_list_entry *list_table;
+    AW_selection_list_entry *help;
 
 
     for (help = selection_list->list_table; help;) {
@@ -1722,15 +1668,15 @@ void AW_window::update_selection_list(AW_selection_list * selection_list) {
     XmString *strtab = new XmString[count];
 
     count = 0;
-    for (AW_select_table_struct *lt = selection_list->list_table; lt; lt = lt->next) {
-        const char *s2 = lt->displayed;
+    for (AW_selection_list_entry *lt = selection_list->list_table; lt; lt = lt->next) {
+        const char *s2 = lt->get_displayed();
         if (!strlen(s2)) s2 = "  ";
         strtab[count] = XmStringCreateSimple_wrapper(s2);
         count++;
     }
 
     if (selection_list->default_select) {
-        const char *s2 = selection_list->default_select->displayed;
+        const char *s2 = selection_list->default_select->get_displayed();
         if (!strlen(s2)) s2 = "  ";
         strtab[count] = XmStringCreateSimple_wrapper(s2);
         count++;
@@ -1789,8 +1735,8 @@ char **AW_window::selection_list_to_array(AW_selection_list *sel_list, bool valu
     char   **array = (char**)malloc((count+1)*sizeof(*array));
     size_t   idx   = 0;
 
-    for (AW_select_table_struct *lt = sel_list->list_table; lt; lt = lt->next) {
-        array[idx++] = strdup(values ? lt->char_value : lt->displayed);
+    for (AW_selection_list_entry *lt = sel_list->list_table; lt; lt = lt->next) {
+        array[idx++] = strdup(values ? lt->value.get_string() : lt->get_displayed());
     }
     array[idx] = NULL;
     aw_assert(idx == count);
@@ -1805,13 +1751,13 @@ void AW_window::update_selection_list_intern(AW_selection_list *selection_list) 
     int      pos   = 0;
     AW_awar *awar  = root->awar(selection_list->variable_name);
 
-    AW_select_table_struct *lt;
+    AW_selection_list_entry *lt;
 
     switch (selection_list->variable_type) {
         case AW_STRING: {
             char *var_value = awar->read_string();
             for (lt = selection_list->list_table; lt; lt = lt->next) {
-                if (strcmp(var_value, lt->char_value) == 0) {
+                if (strcmp(var_value, lt->value.get_string()) == 0) {
                     found = true;
                     break;
                 }
@@ -1823,7 +1769,7 @@ void AW_window::update_selection_list_intern(AW_selection_list *selection_list) 
         case AW_INT: {
             int var_value = awar->read_int();
             for (lt = selection_list->list_table; lt; lt = lt->next) {
-                if (var_value == lt->int_value) {
+                if (var_value == lt->value.get_int()) {
                     found = true;
                     break;
                 }
@@ -1834,7 +1780,7 @@ void AW_window::update_selection_list_intern(AW_selection_list *selection_list) 
         case AW_FLOAT: {
             float var_value = awar->read_float();
             for (lt = selection_list->list_table; lt; lt = lt->next) {
-                if (var_value == lt->float_value) {
+                if (var_value == lt->value.get_float()) {
                     found = true;
                     break;
                 }
@@ -1845,7 +1791,7 @@ void AW_window::update_selection_list_intern(AW_selection_list *selection_list) 
         case AW_POINTER: {
             void *var_value = awar->read_pointer();
             for (lt = selection_list->list_table; lt; lt = lt->next) {
-                if (var_value == lt->pointer_value) {
+                if (var_value == lt->value.get_pointer()) {
                     found = true;
                     break;
                 }
@@ -1885,12 +1831,12 @@ void AW_window::update_selection_list_intern(AW_selection_list *selection_list) 
 char *AW_window::get_selection_list_contents(AW_selection_list *selection_list, long number_of_lines) {
     // number_of_lines == 0     -> print all
 
-    AW_select_table_struct *lt;
+    AW_selection_list_entry *lt;
     GBS_strstruct          *fd = GBS_stropen(10000);
 
     for (lt = selection_list->list_table; lt; lt = lt->next) {
         number_of_lines--;
-        GBS_strcat(fd, lt->displayed);
+        GBS_strcat(fd, lt->get_displayed());
         GBS_chrcat(fd, '\n');
         if (!number_of_lines) break;
     }
@@ -1903,8 +1849,8 @@ GB_HASH *AW_window::selection_list_to_hash(AW_selection_list *sel_list, bool cas
     size_t   size = sel_list->size();
     GB_HASH *hash = GBS_create_hash(size, case_sens ? GB_MIND_CASE : GB_IGNORE_CASE);
 
-    for (AW_select_table_struct *lt = sel_list->list_table; lt; lt = lt->next) {
-        GBS_write_hash(hash, lt->char_value, (long)lt->displayed);
+    for (AW_selection_list_entry *lt = sel_list->list_table; lt; lt = lt->next) {
+        GBS_write_hash(hash, lt->value.get_string(), (long)lt->get_displayed());
     }
 
     return hash;
@@ -1912,20 +1858,20 @@ GB_HASH *AW_window::selection_list_to_hash(AW_selection_list *sel_list, bool cas
 
 extern "C" {
     int AW_sort_AW_select_table_struct(const void *t1, const void *t2, void *) {
-        return strcmp(static_cast<const AW_select_table_struct*>(t1)->displayed,
-                      static_cast<const AW_select_table_struct*>(t2)->displayed);
+        return strcmp(static_cast<const AW_selection_list_entry*>(t1)->get_displayed(),
+                      static_cast<const AW_selection_list_entry*>(t2)->get_displayed());
     }
     int AW_sort_AW_select_table_struct_backward(const void *t1, const void *t2, void *) {
-        return strcmp(static_cast<const AW_select_table_struct*>(t2)->displayed,
-                      static_cast<const AW_select_table_struct*>(t1)->displayed);
+        return strcmp(static_cast<const AW_selection_list_entry*>(t2)->get_displayed(),
+                      static_cast<const AW_selection_list_entry*>(t1)->get_displayed());
     }
     int AW_isort_AW_select_table_struct(const void *t1, const void *t2, void *) {
-        return ARB_stricmp(static_cast<const AW_select_table_struct*>(t1)->displayed,
-                           static_cast<const AW_select_table_struct*>(t2)->displayed);
+        return ARB_stricmp(static_cast<const AW_selection_list_entry*>(t1)->get_displayed(),
+                           static_cast<const AW_selection_list_entry*>(t2)->get_displayed());
     }
     int AW_isort_AW_select_table_struct_backward(const void *t1, const void *t2, void *) {
-        return ARB_stricmp(static_cast<const AW_select_table_struct*>(t2)->displayed,
-                           static_cast<const AW_select_table_struct*>(t1)->displayed);
+        return ARB_stricmp(static_cast<const AW_selection_list_entry*>(t2)->get_displayed(),
+                           static_cast<const AW_selection_list_entry*>(t1)->get_displayed());
     }
 }
 
@@ -1955,9 +1901,9 @@ AW_selection_list* AW_window::copySelectionList(AW_selection_list *sourceList, A
 void AW_window::sort_selection_list(AW_selection_list * selection_list, int backward, int case_sensitive) {
     size_t count = selection_list->size();
     if (count) {
-        AW_select_table_struct **tables = new AW_select_table_struct *[count];
+        AW_selection_list_entry **tables = new AW_selection_list_entry *[count];
         count = 0;
-        for (AW_select_table_struct *lt = selection_list->list_table; lt; lt = lt->next) {
+        for (AW_selection_list_entry *lt = selection_list->list_table; lt; lt = lt->next) {
             tables[count++] = lt;
         }
 
@@ -1995,24 +1941,24 @@ GB_ERROR AW_window::save_selection_list(AW_selection_list * selection_list, cons
         error = GB_IO_error("writing", filename);
     }
     else {
-        for (AW_select_table_struct *lt = selection_list->list_table; lt; lt = lt->next) {
-            char *sep = 0;
+        for (AW_selection_list_entry *lt = selection_list->list_table; lt; lt = lt->next) {
+            const char *displayed = lt->get_displayed();
+            const char *sep       = 0;
 
             if (!selection_list->value_equal_display) {
-                sep = strstr(lt->displayed, "#"); // interpret displayed as 'value#displayed' (old general behavior)
+                sep = strstr(displayed, "#"); // interpret displayed as 'value#displayed' (old general behavior)
             }
 
-            int res;
-            if (sep) { // replace first '#' with ','  (that's loaded different)
-                *sep = 0;
-                fprintf(fd, "%s,", lt->displayed);
-                *sep++ = '#';
-                res  = fprintf(fd, "%s\n", sep);
+            if (sep) {
+                char *disp = strdup(displayed);
+                disp[sep-displayed] = ','; // replace first '#' with ','  (that's loaded different)
+                fputs(disp, fd);
+                free(disp);
             }
             else {
-                res = fprintf(fd, "%s\n", lt->displayed);  // save plain (no interpretation)
+                fputs(displayed, fd); // save plain (no interpretation)
             }
-
+            int res = fputc('\n', fd);
             if (res<0) {
                 error = GB_IO_error("writing", filename);
                 break;
@@ -2222,16 +2168,16 @@ AW_option_menu_struct *AW_window::create_option_menu(const char *var_name, AW_la
     return p_global->current_option_menu;
 }
 
-static void remove_option_from_option_menu(AW_root *aw_root, AW_option_struct *os) {
-    aw_root->remove_button_from_sens_list(os->choice_widget);
-    XtDestroyWidget(os->choice_widget);
+static void remove_option_from_option_menu(AW_root *aw_root, AW_widget_value_pair *os) {
+    aw_root->remove_button_from_sens_list(os->widget);
+    XtDestroyWidget(os->widget);
 }
 
 void AW_window::clear_option_menu(AW_option_menu_struct *oms) {
     p_global->current_option_menu = oms; // define as current (for subsequent inserts)
 
-    AW_option_struct *next_os;
-    for (AW_option_struct *os = oms->first_choice; os; os = next_os) {
+    AW_widget_value_pair *next_os;
+    for (AW_widget_value_pair *os = oms->first_choice; os; os = next_os) {
         next_os  = os->next;
         os->next = 0;
         remove_option_from_option_menu(root, os);
@@ -2265,7 +2211,7 @@ void *AW_window::_create_option_entry(AW_VARIABLE_TYPE IF_DEBUG(type), const cha
     return (void *)entry;
 }
 
-inline void option_menu_add_option(AW_option_menu_struct *oms, AW_option_struct *os, bool default_option) {
+inline void option_menu_add_option(AW_option_menu_struct *oms, AW_widget_value_pair *os, bool default_option) {
     if (default_option) {
         oms->default_choice = os;
     }
@@ -2294,9 +2240,9 @@ void AW_window::insert_option_internal(AW_label option_name, const char *mnemoni
         // callback for new choice
         XtAddCallback(entry, XmNactivateCallback,
                       (XtCallbackProc) AW_variable_update_callback,
-                      (XtPointer) new AW_variable_update_struct(NULL, AW_WIDGET_CHOICE_MENU, root->awar(oms->variable_name), var_value, 0, 0, cbs));
+                      (XtPointer) new VarUpdateInfo(NULL, AW_WIDGET_CHOICE_MENU, root->awar(oms->variable_name), var_value, cbs));
 
-        option_menu_add_option(p_global->current_option_menu, new AW_option_struct(var_value, entry), default_option);
+        option_menu_add_option(p_global->current_option_menu, new AW_widget_value_pair(var_value, entry), default_option);
         root->make_sensitive(entry, _at->widget_mask);
         this->unset_at_commands();
     }
@@ -2314,9 +2260,9 @@ void AW_window::insert_option_internal(AW_label option_name, const char *mnemoni
         // callback for new choice
         XtAddCallback(entry, XmNactivateCallback,
                       (XtCallbackProc) AW_variable_update_callback,
-                      (XtPointer) new AW_variable_update_struct(NULL, AW_WIDGET_CHOICE_MENU, root->awar(oms->variable_name), 0, var_value, 0, cbs));
+                      (XtPointer) new VarUpdateInfo(NULL, AW_WIDGET_CHOICE_MENU, root->awar(oms->variable_name), var_value, cbs));
 
-        option_menu_add_option(p_global->current_option_menu, new AW_option_struct(var_value, entry), default_option);
+        option_menu_add_option(p_global->current_option_menu, new AW_widget_value_pair(var_value, entry), default_option);
         root->make_sensitive(entry, _at->widget_mask);
         this->unset_at_commands();
     }
@@ -2334,9 +2280,9 @@ void AW_window::insert_option_internal(AW_label option_name, const char *mnemoni
         // callback for new choice
         XtAddCallback(entry, XmNactivateCallback,
                       (XtCallbackProc) AW_variable_update_callback,
-                      (XtPointer) new AW_variable_update_struct(NULL, AW_WIDGET_CHOICE_MENU, root->awar(oms->variable_name), 0, 0, var_value, cbs));
+                      (XtPointer) new VarUpdateInfo(NULL, AW_WIDGET_CHOICE_MENU, root->awar(oms->variable_name), var_value, cbs));
 
-        option_menu_add_option(p_global->current_option_menu, new AW_option_struct(var_value, entry), default_option);
+        option_menu_add_option(p_global->current_option_menu, new AW_widget_value_pair(var_value, entry), default_option);
         root->make_sensitive(entry, _at->widget_mask);
         this->unset_at_commands();
     }
@@ -2356,43 +2302,16 @@ void AW_window::update_option_menu() {
 
 void AW_window::update_option_menu(AW_option_menu_struct *oms) {
     if (get_root()->changer_of_variable != oms->label_widget) {
-        AW_option_struct *active_choice = oms->first_choice;
+        AW_widget_value_pair *active_choice = oms->first_choice;
         {
-            char  *global_var_value       = NULL;
-            long   global_var_int_value   = 0;
-            float  global_var_float_value = 0;
-            char  *var_name               = oms->variable_name;
-
-#if defined(WARN_TODO)
-#warning missing implementation for AW_POINTER
-#endif
-
-            switch (oms->variable_type) {
-                case AW_STRING: global_var_value       = root->awar(var_name)->read_string(); break;
-                case AW_INT:    global_var_int_value   = root->awar(var_name)->read_int(); break;
-                case AW_FLOAT:  global_var_float_value = root->awar(var_name)->read_float(); break;
-                default: break;
-            }
-
-            bool found_choice = false;
-            while (active_choice) {
-                switch (oms->variable_type) {
-                    case AW_STRING: found_choice = ((strcmp(global_var_value, active_choice->variable_value) == 0)); break;
-                    case AW_INT:    found_choice = (global_var_int_value   == active_choice->variable_int_value);       break;
-                    case AW_FLOAT:  found_choice = (global_var_float_value == active_choice->variable_float_value);     break;
-                    default:
-                        aw_assert(0);
-                        GB_warning("Unknown AWAR type");
-                        break;
-                }
-                if (found_choice) break;
+            AW_scalar global_var_value(root->awar(oms->variable_name));
+            while (active_choice && global_var_value != active_choice->value) {
                 active_choice = active_choice->next;
             }
-            free(global_var_value);
         }
 
         if (!active_choice) active_choice = oms->default_choice;
-        if (active_choice) XtVaSetValues(oms->label_widget, XmNmenuHistory, active_choice->choice_widget, NULL);
+        if (active_choice) XtVaSetValues(oms->label_widget, XmNmenuHistory, active_choice->widget, NULL);
 
         {
             short length;
@@ -2526,8 +2445,8 @@ void AW_window::create_toggle_field(const char *var_name, int orientation) {
 
 static Widget _aw_create_toggle_entry(AW_window *aww, Widget toggle_field,
                                       const char *label, const char *mnemonic,
-                                      AW_variable_update_struct *awus,
-                                      AW_toggle_struct *toggle, bool default_toggle) {
+                                      VarUpdateInfo *awus,
+                                      AW_widget_value_pair *toggle, bool default_toggle) {
     AW_root *root = aww->get_root();
 
     Widget          toggleButton;
@@ -2541,8 +2460,8 @@ static Widget _aw_create_toggle_entry(AW_window *aww, Widget toggle_field,
                                            XmNfontList, p_global->fontlist,
 
                                            NULL);
-    toggle->toggle_widget = toggleButton;
-    awus->widget = toggleButton;
+    toggle->widget = toggleButton;
+    awus->set_widget(toggleButton);
     XtAddCallback(toggleButton, XmNvalueChangedCallback,
                   (XtCallbackProc) AW_variable_update_callback,
                   (XtPointer) awus);
@@ -2573,8 +2492,8 @@ void AW_window::insert_toggle_internal(AW_label toggle_label, const char *mnemon
     }
     else {
         _aw_create_toggle_entry(this, p_w->toggle_field, toggle_label, mnemonic,
-                                new AW_variable_update_struct(NULL, AW_WIDGET_TOGGLE_FIELD, root->awar(p_w->toggle_field_var_name), var_value, 0, 0, _callback),
-                                new AW_toggle_struct(var_value, 0),
+                                new VarUpdateInfo(NULL, AW_WIDGET_TOGGLE_FIELD, root->awar(p_w->toggle_field_var_name), var_value, _callback),
+                                new AW_widget_value_pair(var_value, 0),
                                 default_toggle);
     }
 }
@@ -2584,8 +2503,8 @@ void AW_window::insert_toggle_internal(AW_label toggle_label, const char *mnemon
     }
     else {
         _aw_create_toggle_entry(this, p_w->toggle_field, toggle_label, mnemonic,
-                                new AW_variable_update_struct(NULL, AW_WIDGET_TOGGLE_FIELD, root->awar(p_w->toggle_field_var_name), 0, var_value, 0, _callback),
-                                new AW_toggle_struct(var_value, 0),
+                                new VarUpdateInfo(NULL, AW_WIDGET_TOGGLE_FIELD, root->awar(p_w->toggle_field_var_name), var_value, _callback),
+                                new AW_widget_value_pair(var_value, 0),
                                 default_toggle);
     }
 }
@@ -2595,8 +2514,8 @@ void AW_window::insert_toggle_internal(AW_label toggle_label, const char *mnemon
     }
     else {
         _aw_create_toggle_entry(this, p_w->toggle_field, toggle_label, mnemonic,
-                                new AW_variable_update_struct(NULL, AW_WIDGET_TOGGLE_FIELD, root->awar(p_w->toggle_field_var_name), 0, 0, var_value, _callback),
-                                new AW_toggle_struct(var_value, 0),
+                                new VarUpdateInfo(NULL, AW_WIDGET_TOGGLE_FIELD, root->awar(p_w->toggle_field_var_name), var_value, _callback),
+                                new AW_widget_value_pair(var_value, 0),
                                 default_toggle);
     }
 }
@@ -2631,45 +2550,18 @@ void AW_window::update_toggle_field(int toggle_field_number) {
     }
 
     if (toggle_field_list) {
-        AW_toggle_struct *active_toggle = toggle_field_list->first_toggle;
+        AW_widget_value_pair *active_toggle = toggle_field_list->first_toggle;
         {
-            char  *global_var_value       = NULL;
-            long   global_var_int_value   = 0;
-            float  global_var_float_value = 0;
-
-#if defined(WARN_TODO)
-#warning missing implementation for AW_POINTER
-#endif
-
-            switch (toggle_field_list->variable_type) {
-                case AW_STRING: global_var_value       = root->awar(toggle_field_list->variable_name)->read_string(); break;
-                case AW_INT:    global_var_int_value   = root->awar(toggle_field_list->variable_name)->read_int();      break;
-                case AW_FLOAT:  global_var_float_value = root->awar(toggle_field_list->variable_name)->read_float();    break;
-                default:
-                    GBK_terminatef("AWAR type %i unhandled [1]", toggle_field_list->variable_type);
-                    break;
-            }
-
-            bool found_toggle = false;
-            while (active_toggle) {
-                switch (toggle_field_list->variable_type) {
-                    case AW_STRING: found_toggle = (strcmp(global_var_value, active_toggle->variable_value) == 0);    break;
-                    case AW_INT:    found_toggle = (global_var_int_value == active_toggle->variable_int_value);       break;
-                    case AW_FLOAT:  found_toggle = (global_var_float_value == active_toggle->variable_float_value);   break;
-                    default:
-                        GBK_terminatef("AWAR type %i unhandled [2]", toggle_field_list->variable_type);
-                        break;
-                }
-                if (found_toggle) break;
+            AW_scalar global_value(root->awar(toggle_field_list->variable_name));
+            while (active_toggle && active_toggle->value != global_value) {
                 active_toggle = active_toggle->next;
             }
-            if (!found_toggle) active_toggle = toggle_field_list->default_toggle;
-            free(global_var_value);
+            if (!active_toggle) active_toggle = toggle_field_list->default_toggle;
         }
 
         // iterate over all toggles including default_toggle and set their state
-        for (AW_toggle_struct *toggle = toggle_field_list->first_toggle; toggle;) {
-            XmToggleButtonSetState(toggle->toggle_widget, toggle == active_toggle, False);
+        for (AW_widget_value_pair *toggle = toggle_field_list->first_toggle; toggle;) {
+            XmToggleButtonSetState(toggle->widget, toggle == active_toggle, False);
 
             if (toggle->next)                                     toggle = toggle->next;
             else if (toggle != toggle_field_list->default_toggle) toggle = toggle_field_list->default_toggle;
