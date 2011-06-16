@@ -225,7 +225,8 @@ sub dynamic_name($) {
 
 sub assert_defined($) {
   my ($val) = @_;
-  defined $val || die "undef";
+  use Carp;
+  defined $val || Carp::confess("undef");
   return $val;
 }
 
@@ -471,6 +472,51 @@ sub find_dep_decl_files($\@) {
   foreach (@subdirs) { find_dep_decl_files($_,@$found_r); }
 }
 
+my %dep2lib = (
+               'ARBDB/needs_libs.libARBDB_so'   => 'ARBDB/libARBDB.so',
+               'AWT/needs_libs.libAWT_so'       => 'AWT/libAWT.so',
+               'CORE/needs_libs.libCORE_so'     => 'CORE/libCORE.so',
+               'WINDOW/needs_libs.libWINDOW_so' => 'WINDOW/libWINDOW.so',
+
+               'GL/glAW/needs_libs.libglAW_a'       => 'GL/glAW/libglAW.a',
+               'GL/glpng/needs_libs.libglpng_arb_a' => 'GL/glpng/libglpng_arb.a',
+
+               'AISC_MKPTPS/needs_libs.mkptypes_o'     => 'AISC_MKPTPS/mkptypes.o',
+               'HELP_SOURCE/needs_libs.arb_help2xml_o' => 'HELP_SOURCE/arb_help2xml.o',
+               'TOOLS/needs_libs.arb_probe_o'          => 'TOOLS/arb_probe.o',
+               'TOOLS/needs_libs.arb_test_o'           => 'TOOLS/arb_test.o',
+
+               'PROBE_COM/needs_libs.client_a' => 'PROBE_COM/client.a',
+               'PROBE_COM/needs_libs.server_a' => 'PROBE_COM/server.a',
+               'NAMES_COM/needs_libs.client_a' => 'NAMES_COM/client.a',
+               'NAMES_COM/needs_libs.server_a' => 'NAMES_COM/server.a',
+
+               'ptpan/needs_libs.PROBE_a' => 'ptpan/PROBE.a',
+              );
+
+sub libdepend_file_2_libname($) {
+  my ($dep) = @_;
+  if (defined $dep2lib{$dep}) {
+    $dep = $dep2lib{$dep};
+  }
+  elsif ($dep =~ /^(.*)\/([^\/]*)/) {
+    my ($dir,$name) = ($1,$2);
+    if ($name =~ $reg_is_libdepend_file) {
+      if ($dep =~ /BINDEP\/needs_libs\./) {
+        $dep = $';
+      }
+      elsif ($dir =~ /^(.*)\/([^\/]*)/) {
+        my ($path,$lastdir) = ($1,$2);
+        $path =~ s/^.\///;
+        $dep = $path.'/'.$lastdir.'/'.$lastdir.'.a';
+      }
+      else {
+        $dep = $dir.'/'.$dir.'.a';
+      }
+    }
+  }
+  return $dep;
+}
 
 sub declare_all_targets() {
   my @depfiles = ();
@@ -490,12 +536,14 @@ sub dot_label($) {
 }
 
 
-sub generateDependencyGraph(\@$) {
-  my ($depends_r,$givenTarget) = @_;
+sub generateDependencyGraph(\@\@) {
+  my ($depends_r,$targets_r) = @_;
 
   my $base    = $ARBHOME.'lib_dependency';
   my $dotfile = $base.'.dot';
   my $gif     = $base.'.gif';
+
+  my $maxsize = 17; # inch
 
   open(DOT,'>'.$dotfile) || die "can't write to '$dotfile' (Reason: $!)";
   print DOT "digraph ARBLIBDEP {\n";
@@ -503,6 +551,7 @@ sub generateDependencyGraph(\@$) {
   print DOT "  concentrate=true;\n";
   print DOT "  searchsize=1000;\n";
   print DOT "  Damping=2.0;\n";
+  print DOT "  size=\"$maxsize,$maxsize\";\n";
   print DOT "  orientation=portrait;\n";
   print DOT "\n";
 
@@ -523,11 +572,18 @@ sub generateDependencyGraph(\@$) {
     }
   }
 
+  my %is_target = map { $_ => 1; } @$targets_r; 
 
   foreach my $target (@$depends_r) {
     my $deps_r = $dependencies_of{$target};
-    my $dtarget = dot_label($target);
     my $type = $target_type{$target};
+
+    if (not defined $type) {
+      use Carp;
+      Carp::confess("no target_type for '$target'");
+    }
+
+    my $dtarget = dot_label($target);
 
     my $color = 'black';
     my $shape = 'box';
@@ -538,7 +594,7 @@ sub generateDependencyGraph(\@$) {
     if ($type==$STATIC_LIB)   { ; }
     if ($type==$EXTRA_PARAMS) { $color = 'red'; $shape = 'box'; }
 
-    if (defined $givenTarget and $givenTarget eq $target) {
+    if ($is_target{$target}) {
       $color = '"#ffbb66"';
       $style = 'style=filled';
     }
@@ -655,7 +711,7 @@ sub die_usage($) {
 
 
 sub main() {
-  my $target = undef;
+  my @targets = ();
 
   my $printDirs       = 0;
   my $printFiles      = 0;
@@ -688,16 +744,28 @@ sub main() {
       else { die "unknown switch '-$switch'"; }
     }
     else {
-      if ($_ ne '') {
-        if (defined $target) { die_usage("You may only specify ONE target!"); }
-        $target = $_;
-      }
+      if ($_ ne '') { push @targets, $_; }
     }
   }
-  if (defined $target) { $target = ARBHOME_relative($target); }
 
-  if ($trackDepends==1 and $trackInherits==0 and defined $target) {
-    detect_type_and_declare_initial_target($target);
+  my $targets = scalar(@targets);
+
+  if ($targets>0) {
+    if ($targets>1) {
+      if ($dependencyGraph==0) {
+        die_usage("You may only specify ONE target! (only with -G multiple targets are possible)");
+      }
+    }
+    @targets = map { $_ = libdepend_file_2_libname($_); } @targets;
+    @targets = map { $_ = ARBHOME_relative($_); } @targets;
+    if ($trackDepends==1 and $trackInherits==0) {
+      foreach (@targets) {
+        detect_type_and_declare_initial_target($_);
+      }
+    }
+    else {
+      declare_all_targets();
+    }
   }
   else {
     declare_all_targets();
@@ -709,21 +777,28 @@ sub main() {
 
   my %track = ();
   if ($trackDepends==1) {
-    if (defined $target) {
-      my $dep_r = $all_dependencies_of{$target};
+    foreach (@targets) {
+      my $dep_r = $all_dependencies_of{$_};
       foreach (keys %$dep_r) { $track{$_} = 1; }
     }
   }
   if ($trackInherits==1) {
-    if (defined $target) {
+    if ($targets>0) {
       foreach my $inheritant (keys %inheritants_of) {
         my $dep_r = $all_dependencies_of{$inheritant};
-        if (defined $$dep_r{$target}) { $track{$inheritant} = 1; }
+        foreach (@targets) {
+          if (defined $$dep_r{$_}) { $track{$inheritant} = 1; }
+        }
       }
     }
   }
-  if (defined $target) {
-    if ($includeSelf==1) { $track{$target} = 1; }
+
+  if ($targets>0) {
+    if ($includeSelf==1) {
+      foreach (@targets) {
+        $track{$_} = 1;
+      }
+    }
   }
   else {
     foreach (keys %inheritants_of) { $track{$_} = 1; }
@@ -731,11 +806,8 @@ sub main() {
 
   my @track = sort keys %track;
 
-  # print "track:\n"; foreach (@track) { print "- '$_'\n"; }
-
-  # if ($dump==1) { dump_dependencies(@track); }
   if ($dump==1) { dump_dependencies(); }
-  if ($dependencyGraph==1) { generateDependencyGraph(@track,$target); }
+  if ($dependencyGraph==1) { generateDependencyGraph(@track,@targets); }
 
   my @out = ();
   if ($printDirs==1) { pushDirsTo($pathPrefix,@track,@out); }

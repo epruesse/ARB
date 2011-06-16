@@ -234,9 +234,9 @@ lflags += $(cross_lflags)
 ifeq ('$(CROSS_LIB)','')
 # autodetect libdir
 	ifeq ($(ARB_64),1)
-		CROSS_LIB:=`(test -d /lib64 && echo lib64) || echo lib`
+		CROSS_LIB:=$(shell (test -d /lib64 && echo lib64) || echo lib)
 	else
-		CROSS_LIB:=`(test -d /lib32 && echo lib32) || echo lib`
+		CROSS_LIB:=$(shell (test -d /lib32 && echo lib32) || echo lib)
 	endif
 endif
 
@@ -297,10 +297,10 @@ ifdef DARWIN
 endif
 
 ifdef DARWIN
-	XLIBS := -L/usr/OpenMotif/lib -lXm -L$(XHOME)/lib -lpng -lXt -lX11 -lXext -lXp -lc -lXmu -lXi
+	XLIBS := -L/usr/OpenMotif/lib -lXm -L$(XHOME)/lib -lpng -lXt -lX11 -lXext -lc -lXmu -lXi
 	XLIBS += -lGLU -lGL -Wl,-dylib_file,$(OSX_FW_OPENGL)/libGL.dylib:$(OSX_FW_OPENGL)/libGL.dylib
 else
-	XLIBS:=-L$(XHOME)/$(CROSS_LIB) -lXm -lXpm -lXp -lXt -lXext -lX11
+	XLIBS:=-L$(XHOME)/$(CROSS_LIB) -lXm -lXpm -lXt -lXext -lX11
 endif
 
 #---------------------- open GL
@@ -478,6 +478,7 @@ endif
 		@echo ' source_doc  - create doxygen documentation'
 		@echo ' relocated   - rebuild partly (use when you have relocated ARBHOME)'
 		@echo ' check_res   - check ressource usage'
+		@echo ' dep_graph   - Build dependency graphs'
 		@echo ''
 		@echo $(SEP)
 		@echo ''
@@ -1215,11 +1216,17 @@ source_doc:
 	doxygen
 	$(MAKE) forcelinks
 
+dep_graph:
+	@echo "Building some dependency graphs"
+	SOURCE_TOOLS/dependency_graphs.pl
+
 com:	$(ARCHS_COMMUNICATION:.a=.dummy)
 
 help:   HELP_SOURCE/HELP_SOURCE.dummy
 
-HELP_SOURCE/HELP_SOURCE.dummy: xml menus# need to create some files in GDE-subtree first
+HELP_SOURCE/HELP_SOURCE.dummy: shared_libs xml menus# need to create some files in GDE-subtree first
+CORE/libCORE.dummy: links
+ARBDB/libARBDB.dummy: links
 
 db:	ARBDB/libARBDB.dummy
 core:	CORE/libCORE.dummy
