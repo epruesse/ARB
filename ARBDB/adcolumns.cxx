@@ -334,7 +334,7 @@ static GB_ERROR GBT_check_lengths(GBDATA *Main, const char *alignment_name) {
         GBDATA *gb_name = GB_find_string(gb_ali, "alignment_name", alignment_name, GB_IGNORE_CASE, SEARCH_CHILD);
 
         if (gb_name) {
-            arb_progress progress(3); // SAI, species and secstructs
+            arb_progress progress("Formatting alignment", 3); // SAI, species and secstructs
             GBDATA *gb_len = GB_entry(gb_ali, "alignment_len");
 
             params.ali_name = GB_read_string(gb_name);
