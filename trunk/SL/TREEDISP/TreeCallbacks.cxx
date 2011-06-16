@@ -708,25 +708,23 @@ void NT_jump_cb(AW_window *, AWT_canvas *ntw, AW_CL auto_expand_groups) {
 
                 const AW_screen_area& screen = device->get_area_size();
 
-                AW_pos ys = gtree->y_cursor;
-                AW_pos xs = gtree->x_cursor;
-                if (xs != 0.0 || ys != 0.0) {
-                    AW_pos x, y;
-                    device->transform(xs, ys, x, y);
+                const Position& cursor = gtree->get_cursor();
+                if (are_distinct(Origin, cursor)) {
+                    Position S = device->transform(cursor);
 
                     int scroll_x = 0;
                     int scroll_y = 0;
 
-                    if (x<0.0) scroll_x      = (int)(x - screen.r * .1);
-                    if (x>screen.r) scroll_x = (int)(x - screen.r * .5);
+                    if (S.xpos()<0.0) scroll_x      = (int)(S.xpos() - screen.r * .1);
+                    if (S.xpos()>screen.r) scroll_x = (int)(S.xpos() - screen.r * .5);
 
                     if (gtree->tree_sort == AP_TREE_IRS) {
                         // always scroll IRS tree
                         // position a bit below vertical center
-                        scroll_y = (int) (y - screen.b * .6);
+                        scroll_y = (int) (S.ypos() - screen.b * .6);
                     }
-                    else if (y<0.0 || y>screen.b) {
-                        scroll_y = (int) (y - screen.b * .5);
+                    else if (S.ypos()<0.0 || S.ypos()>screen.b) {
+                        scroll_y = (int) (S.ypos() - screen.b * .5);
                     }
 
                     if (scroll_x || scroll_y) {

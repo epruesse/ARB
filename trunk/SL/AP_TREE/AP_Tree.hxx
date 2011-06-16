@@ -263,6 +263,18 @@ public:
 
     virtual void update();
 
+    int get_linewidth() const {
+        if (!father) return 0;
+        return is_leftson(father) ? gr.left_linewidth : gr.right_linewidth;
+    }
+    void set_linewidth(int width)  {
+        ap_assert(width >= 1 && width < 128);
+        if (father) {
+            char& lw = is_leftson(father) ? gr.left_linewidth : gr.right_linewidth;
+            lw       = width;
+        }
+    }
+
 private:
     void buildLeafList_rek(AP_tree **list, long& num);
     void buildNodeList_rek(AP_tree **list, long& num);
@@ -297,8 +309,11 @@ public:
 
     void reset_spread();
     void reset_rotation();
-    void reset_line_width();
+    void reset_child_linewidths();
 
+    bool hasName(const char *Name) const {
+        return Name && name && Name[0] == name[0] && strcmp(Name, name) == 0;
+    }
 };
 
 #else
