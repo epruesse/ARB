@@ -22,8 +22,14 @@ typedef GBDATA *AW_default;
 
 typedef double AW_pos;
 
-struct AW_world { AW_pos t, b, l, r; };
-struct AW_rectangle { int t, b, l, r; };
+struct AW_world {
+    AW_pos t, b, l, r;
+    void clear() { t = b = l = r = 0.0; }
+};
+struct AW_rectangle {
+    int t, b, l, r;
+    void clear() { t = b = l = r = 0; }
+};
 
 typedef int AW_font;
 

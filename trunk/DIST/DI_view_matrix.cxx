@@ -251,10 +251,8 @@ static void input_cb(AW_window *aww, AW_CL cl_dmatrix, AW_CL) {
             click_device->get_clicked_text(&clicked_text);
             click_device->get_clicked_line(&clicked_line);
 
-            AW_CL        cd1, cd2;
-            AW::Position clickPos(event.x, event.y);
-
-            if (AW_getBestClick(clickPos, &clicked_line, &clicked_text, &cd1, &cd2)) {
+            AW_CL cd1, cd2;
+            if (AW_getBestClick(&clicked_line, &clicked_text, &cd1, &cd2)) {
                 ClickAction action = static_cast<ClickAction>(cd1);
 
                 if (action == CLICK_SELECT_SPECIES) {

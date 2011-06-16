@@ -493,9 +493,8 @@ void SEC_graphic::command(AW_device *device, AWT_COMMAND_MODE cmd,
     else {
         if (button != AWT_M_MIDDLE && cmd != AWT_MODE_ZOOM) { // don't handle scroll + zoom
             AW_CL    cd1, cd2;
-            Position world = device->rtransform(Position(screen_x, screen_y)); // current click position
 
-            if (AW_getBestClick(world, cl, ct, &cd1, &cd2)) {
+            if (AW_getBestClick(cl, ct, &cd1, &cd2)) {
                 SEC_base *elem   = reinterpret_cast<SEC_base*>(cd1);
                 int       abspos = cd2;
 
@@ -504,6 +503,7 @@ void SEC_graphic::command(AW_device *device, AWT_COMMAND_MODE cmd,
                 if (ct->exists) device->box(SEC_GC_CURSOR, false, ct->textArea, -1, 0, -1);
 #endif // DEBUG
 
+                Position world = device->rtransform(Position(screen_x, screen_y)); // current click position
                 error = handleMouse(device, event, button, cmd, world, elem, abspos);
             }
         }
