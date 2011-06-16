@@ -85,13 +85,13 @@ typedef const char *AW_label;       // label for buttons menus etc
 // "#file.bitmap"   // bitmap in $ARBHOME/lib/pixmaps/file.bitmap
 
 
-typedef enum {
+enum AW_event_type {
     AW_Keyboard_Press   = 1,
     AW_Keyboard_Release = 2,
     AW_Mouse_Press      = 3,
     AW_Mouse_Release    = 4,
     AW_Mouse_Drag       = 5
-} AW_event_type;
+};
 
 struct AW_event {
     AW_event_type       type;       /* AW_Keyboard or AW_Mouse */
@@ -226,7 +226,7 @@ public:
     AW_event       event;
     unsigned long  click_time;
     long           color_table_size;
-    unsigned long *color_table;
+    AW_rgb        *color_table;
 
     int number_of_timed_title_changes;
 
@@ -268,10 +268,7 @@ public:
     void  increment_at_commands(int width, int height);
 
 
-    AW_color alloc_named_data_color(int colnum, char *colorname);
-    const char *GC_to_RGB(AW_device *device, int gc, int& red, int& green, int& blue); // returns colors in result-parameters or error message in return value
-    // Converts GC to RGB float values to the range (0 - 1.0)
-    const char *GC_to_RGB_float(AW_device *device, int gc, float& red, float& green, float& blue);
+    AW_color_idx alloc_named_data_color(int colnum, char *colorname);
     void        _get_area_size(AW_area area, AW_screen_area *square);
     int         label_widget(void *wgt, AW_label str, char *mnemonic=0, int width = 0, int alignment = 0);
 

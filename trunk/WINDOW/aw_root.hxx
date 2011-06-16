@@ -61,11 +61,11 @@ struct AW_buttons_struct;
 class  AW_root_cblist;
 class  GB_HASH;
 
-typedef enum {
+enum AW_ProcessEventType {
     NO_EVENT     = 0,
     KEY_PRESSED  = 2,
     KEY_RELEASED = 3
-} AW_ProcessEventType;
+};
 
 void aw_initstatus(); 
 

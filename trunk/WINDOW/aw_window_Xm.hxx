@@ -22,10 +22,10 @@
 
 #define MAP_ARAM(ar) p_w->areas[ar]
 
-#define INFO_WIDGET p_w->areas[AW_INFO_AREA]->area
-#define INFO_FORM p_w->areas[AW_INFO_AREA]->form
-#define MIDDLE_WIDGET p_w->areas[AW_MIDDLE_AREA]->area
-#define BOTTOM_WIDGET p_w->areas[AW_BOTTOM_AREA]->area
+#define INFO_WIDGET p_w->areas[AW_INFO_AREA]->get_area()
+#define INFO_FORM p_w->areas[AW_INFO_AREA]->get_form()
+#define MIDDLE_WIDGET p_w->areas[AW_MIDDLE_AREA]->get_area()
+#define BOTTOM_WIDGET p_w->areas[AW_BOTTOM_AREA]->get_area()
 
 #define AW_SCROLL_MAX 100
 #define AW_MAX_MENU_DEEP 10
@@ -173,33 +173,37 @@ struct AW_select_table_struct : virtual Noncopyable {
 
 class AW_common_Xm;
 class AW_device_Xm;
-class AW_device_click;
-class AW_device_size;
-class AW_device_print;
 class AW_cb_struct;
 
 class AW_area_management {
-    friend class AW_window;
-    friend class AW_window_simple;
-    friend class AW_window_simple_menu;
-    friend class AW_window_menu;
-    friend class AW_window_menu_modes;
-    friend class AW_window_message;
+    Widget form; // for resizing
+    Widget area; // for displaying additional information
 
-public:
-    Widget           form;      // for resizing
-    Widget           area;      // for displaying additional information
-    AW_common_Xm    *common;
+    AW_common_Xm *common;
+
     AW_device_Xm    *device;
-    AW_device_click *click_device;
     AW_device_size  *size_device;
     AW_device_print *print_device;
+    AW_device_click *click_device;
 
     AW_cb_struct *expose_cb;
     AW_cb_struct *resize_cb;
-    int           do_resize_if_expose;
     AW_cb_struct *double_click_cb;
-    long          click_time;
+
+    long click_time;
+
+public:
+    AW_area_management(AW_root *awr, Widget form, Widget widget);
+
+    Widget get_form() const { return form; }
+    Widget get_area() const { return area; }
+
+    AW_common_Xm *get_common() const { return common; }
+
+    AW_device_Xm *get_screen_device();
+    AW_device_size *get_size_device();
+    AW_device_print *get_print_device();
+    AW_device_click *get_click_device();
 
     void create_devices(AW_window *aww, AW_area ar);
 
@@ -215,7 +219,12 @@ public:
     bool is_double_click_callback(AW_window *aww, void (*f)(AW_window*, AW_CL, AW_CL));
     bool is_motion_callback(AW_window *aww, void (*f)(AW_window*, AW_CL, AW_CL));
 
-    AW_area_management(AW_root *awr, Widget form, Widget widget);
+    void run_expose_callback();
+    void run_resize_callback();
+
+    AW_cb_struct *get_double_click_cb() { return double_click_cb; }
+    long get_click_time() const { return click_time; }
+    void set_click_time(long click_time_) { click_time = click_time_; }
 };
 
 
@@ -246,9 +255,9 @@ public:
     AW_selection_list *selection_list;
     AW_selection_list *last_selection_list;
 
-    int            screen_depth;
-    unsigned long *color_table;
-    Colormap       colormap;
+    int       screen_depth;
+    AW_rgb   *color_table;
+    Colormap  colormap;
 
     int      help_active;
     Cursor   clock_cursor;
@@ -331,3 +340,4 @@ void   aw_create_help_entry(AW_window *aww);
 #else
 #error aw_window_Xm.hxx included twice
 #endif
+

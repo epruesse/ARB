@@ -41,7 +41,10 @@ typedef struct _WidgetRec *Widget;
 
 typedef const char *AWAR;
 
-typedef enum {
+#define AW_NO_COLOR (-1UL)
+typedef unsigned long AW_rgb;
+
+enum AW_VARIABLE_TYPE {
     AW_NONE    = 0,
     AW_BIT     = 1,
     AW_BYTE    = 2,
@@ -62,16 +65,16 @@ typedef enum {
     // see ../ARBDB/arbdb.h@sync_GB_TYPES_AW_VARIABLE_TYPE
 
     AW_TYPE_MAX = 16
-} AW_VARIABLE_TYPE;
+};
 
-typedef enum {
+enum AW_area {
     AW_INFO_AREA,
     AW_MIDDLE_AREA,
     AW_BOTTOM_AREA,
     AW_MAX_AREA
-} AW_area;
+};
 
-typedef enum {
+enum AW_color_idx {
     AW_WINDOW_BG,
     AW_WINDOW_FG,
     AW_WINDOW_C1,
@@ -79,8 +82,8 @@ typedef enum {
     AW_WINDOW_C3,
     AW_WINDOW_DRAG,
     AW_DATA_BG,
-    AW_COLOR_MAX
-} AW_color;
+    AW_STD_COLOR_IDX_MAX
+};
 
 
 AW_default get_AW_ROOT_DEFAULT();

@@ -357,10 +357,7 @@ ED4_returncode ED4_cursor::delete_cursor(AW_pos del_mark, ED4_base *target_termi
     printf("delete_cursor(%i, %i)\n", int(x), int(y));
 #endif // DEBUG
 
-    dev->set_top_font_overlap(1);
-    dev->set_bottom_font_overlap(1);
-    dev->set_left_font_overlap(1);
-    dev->set_right_font_overlap(1);
+    dev->set_font_overlap(true);
 
 #define EXPAND_SIZE 0
     if (ED4_ROOT->get_device()->reduceClipBorders(ymin-EXPAND_SIZE, ymax+1+EXPAND_SIZE, xmin-EXPAND_SIZE, xmax+1+EXPAND_SIZE)) {

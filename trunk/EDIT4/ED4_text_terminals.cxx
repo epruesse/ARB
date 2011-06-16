@@ -119,13 +119,9 @@ ED4_returncode ED4_consensus_sequence_terminal::draw(int /* only_text */)
 
 
     if (buffer_size) {
-        ED4_ROOT->get_device()->top_font_overlap    = 1;
-        ED4_ROOT->get_device()->bottom_font_overlap = 1;
-
+        ED4_ROOT->get_device()->set_vertical_font_overlap(true);
         ED4_ROOT->get_device()->text(ED4_G_SEQUENCES, buffer, text_x, text_y, 0, AW_SCREEN, (long) right_index+1);
-
-        ED4_ROOT->get_device()->top_font_overlap    = 0;
-        ED4_ROOT->get_device()->bottom_font_overlap = 0;
+        ED4_ROOT->get_device()->set_vertical_font_overlap(false);
     }
 
     return (ED4_R_OK);
@@ -136,9 +132,9 @@ struct ShowHelix_cd {
     int       real_sequence_length;
 };
 
-static int ED4_show_helix_on_device(AW_device *device, int gc, const char *opt_string, size_t /*opt_string_size*/, size_t start, size_t size,
-                                    AW_pos x, AW_pos y, AW_pos /*opt_ascent*/, AW_pos /*opt_descent*/,
-                                    AW_CL cduser) // , AW_CL real_sequence_length, AW_CL cd2)
+static bool ED4_show_helix_on_device(AW_device *device, int gc, const char *opt_string, size_t /*opt_string_size*/, size_t start, size_t size,
+                                     AW_pos x, AW_pos y, AW_pos /*opt_ascent*/, AW_pos /*opt_descent*/,
+                                     AW_CL cduser) // , AW_CL real_sequence_length, AW_CL cd2)
 {
     ShowHelix_cd    *cd     = (ShowHelix_cd*)cduser;
     AW_helix        *helix  = cd->helix;
@@ -163,9 +159,9 @@ static int ED4_show_helix_on_device(AW_device *device, int gc, const char *opt_s
     return device->text(gc, buffer, x, y);
 }
 
-static int ED4_show_protein_match_on_device(AW_device *device, int gc, const char *protstruct, size_t /* protstruct_len */, size_t start, size_t size,
-                                            AW_pos x, AW_pos y, AW_pos /* opt_ascent */, AW_pos /* opt_descent */,
-                                            AW_CL cl_protstruct) // , AW_CL /* real_sequence_length */, AW_CL cd2)
+static bool ED4_show_protein_match_on_device(AW_device *device, int gc, const char *protstruct, size_t /* protstruct_len */, size_t start, size_t size,
+                                             AW_pos x, AW_pos y, AW_pos /* opt_ascent */, AW_pos /* opt_descent */,
+                                             AW_CL cl_protstruct) // , AW_CL /* real_sequence_length */, AW_CL cd2)
 {
     /*! \brief Calls ED4_pfold_calculate_secstruct_match() for the visible area in the
      *         editor to compute the protein secondary structure match and outputs the
@@ -191,7 +187,7 @@ static int ED4_show_protein_match_on_device(AW_device *device, int gc, const cha
     }
     if (error) {
         aw_message(error);
-        return 0;
+        return false;
     }
     
     buffer[size] = 0;
@@ -328,8 +324,8 @@ ED4_returncode ED4_AA_sequence_terminal::draw(int /* only_text */)
                             double    center_x = x1+rad_x;
                             const int DRAW_DEG = 62;
 
-                            device->arc(ED4_G_SEQUENCES, false, center_x, y1, rad_x, rad_y,   0, -DRAW_DEG);
-                            device->arc(ED4_G_SEQUENCES, false, center_x, y1, rad_x, rad_y, 180,  DRAW_DEG);
+                            device->arc(ED4_G_SEQUENCES, false, center_x, y1, rad_x, rad_y,   0,  DRAW_DEG);
+                            device->arc(ED4_G_SEQUENCES, false, center_x, y1, rad_x, rad_y, 180, -DRAW_DEG);
                         }
                     }
                 }
@@ -337,10 +333,8 @@ ED4_returncode ED4_AA_sequence_terminal::draw(int /* only_text */)
         }
     }
 
-    device->top_font_overlap    = 1;
-    device->bottom_font_overlap = 1;
-
     if ((iDisplayMode == PV_AA_NAME) || (iDisplayMode == PV_AA_CODE)) {
+        device->set_vertical_font_overlap(true);
         // output strings
         for (int gc = 0; gc < ED4_G_DRAG; gc++) {
             if (color_is_used[gc] && (int)strlen(colored_strings[gc]) >= color_is_used[gc]) {
@@ -348,9 +342,8 @@ ED4_returncode ED4_AA_sequence_terminal::draw(int /* only_text */)
                 memset(colored_strings[gc] + left, ' ', right-left+1); // clear string
             }
         }
+        device->set_vertical_font_overlap(false);
     }
-    device->top_font_overlap    = 0;
-    device->bottom_font_overlap = 0;
 
     return (ED4_R_OK);
 }
@@ -546,9 +539,8 @@ ED4_returncode ED4_sequence_terminal::draw(int /* only_text */)
         }
     }
 
-    device->top_font_overlap    = 1;
-    device->bottom_font_overlap = 1;
-
+    device->set_vertical_font_overlap(true);
+    
     // output helix
     if (ED4_ROOT->helix->is_enabled()) { // should do a remap
         int screen_length = rm->clipped_sequence_to_screen(ED4_ROOT->helix->size());
@@ -599,8 +591,7 @@ ED4_returncode ED4_sequence_terminal::draw(int /* only_text */)
         }
     }
 
-    device->top_font_overlap    = 0;
-    device->bottom_font_overlap = 0;
+    device->set_vertical_font_overlap(false);
 
     return (ED4_R_OK);
 }
@@ -635,13 +626,9 @@ ED4_returncode ED4_sequence_info_terminal::draw(int /* only_text */)
         ED4_ROOT->get_device()->box(ED4_G_SELECTED, true, x, y, extension.size[WIDTH], text_y-y+1);
     }
 
-    ED4_ROOT->get_device()->top_font_overlap    = 1;
-    ED4_ROOT->get_device()->bottom_font_overlap = 1;
-
+    ED4_ROOT->get_device()->set_vertical_font_overlap(true);
     ED4_ROOT->get_device()->text(ED4_G_STANDARD, buffer, text_x, text_y, 0, AW_SCREEN, 0);
-
-    ED4_ROOT->get_device()->top_font_overlap    = 0;
-    ED4_ROOT->get_device()->bottom_font_overlap = 0;
+    ED4_ROOT->get_device()->set_vertical_font_overlap(false);
 
     return (ED4_R_OK);
 
@@ -684,8 +671,7 @@ ED4_returncode ED4_text_terminal::draw(int /* only_text */)
     text_x = x + CHARACTEROFFSET; // don't change
     text_y = y + INFO_TERM_TEXT_YOFFSET;
 
-    ED4_ROOT->get_device()->top_font_overlap    = 1;
-    ED4_ROOT->get_device()->bottom_font_overlap = 1;
+    ED4_ROOT->get_device()->set_vertical_font_overlap(true);
 
     if (is_species_name_terminal()) {
         GB_CSTR real_name      = to_species_name_terminal()->get_displayed_text();
@@ -748,8 +734,7 @@ ED4_returncode ED4_text_terminal::draw(int /* only_text */)
 
         free(db_pointer);
     }
-    ED4_ROOT->get_device()->top_font_overlap    = 0;
-    ED4_ROOT->get_device()->bottom_font_overlap = 0;
+    ED4_ROOT->get_device()->set_vertical_font_overlap(false);
 
     return (ED4_R_OK);
 }

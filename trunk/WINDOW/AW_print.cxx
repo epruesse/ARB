@@ -17,8 +17,8 @@ using namespace AW;
 
 AW_DEVICE_TYPE AW_device_print::type() { return AW_DEVICE_PRINTER; }
 
-int AW_device_print::line_impl(int gc, const LineVector& Line, AW_bitset filteri) {
-    int drawflag = 0;
+bool AW_device_print::line_impl(int gc, const LineVector& Line, AW_bitset filteri) {
+    bool drawflag = false;
     if (filteri & filter) {
         LineVector transLine = transform(Line);
         LineVector clippedLine;
@@ -45,9 +45,9 @@ int AW_device_print::line_impl(int gc, const LineVector& Line, AW_bitset filteri
     return drawflag;
 }
 
-static int AW_draw_string_on_printer(AW_device *devicei, int gc, const char *str, size_t /* opt_strlen */, size_t start, size_t size,
-                                     AW_pos x, AW_pos y, AW_pos /*opt_ascent*/, AW_pos /*opt_descent*/,
-                                     AW_CL /*cduser*/)
+static bool AW_draw_string_on_printer(AW_device *devicei, int gc, const char *str, size_t /* opt_strlen */, size_t start, size_t size,
+                                      AW_pos x, AW_pos y, AW_pos /*opt_ascent*/, AW_pos /*opt_descent*/,
+                                      AW_CL /*cduser*/)
 {
     AW_pos           X, Y;
     AW_device_print *device = (AW_device_print *)devicei;
@@ -83,7 +83,7 @@ static int AW_draw_string_on_printer(AW_device *devicei, int gc, const char *str
         fprintf(device->get_FILE(), "\\001\n");
     }
     free(pstr);
-    return 1;
+    return true;
 }
 
 #define DATA_COLOR_OFFSET 32
@@ -115,7 +115,7 @@ GB_ERROR AW_device_print::open(const char *path) {
     return 0;
 }
 
-int AW_common::find_data_color_idx(unsigned long color) const {
+int AW_common::find_data_color_idx(AW_rgb color) const {
     for (int i=0; i<data_colors_size; i++) {
         if (color == data_colors[i]) {
             return i;
@@ -124,7 +124,7 @@ int AW_common::find_data_color_idx(unsigned long color) const {
     return -1;
 }
 
-int AW_device_print::find_color_idx(unsigned long color) {
+int AW_device_print::find_color_idx(AW_rgb color) {
     int idx = -1;
     if (color_mode) {
         idx = get_common()->find_data_color_idx(color);
@@ -143,99 +143,232 @@ void AW_device_print::close() {
 }
 
 
-int AW_device_print::text_impl(int gc, const char *str, const Position& pos, AW_pos alignment, AW_bitset filteri, long opt_strlen) {
+bool AW_device_print::text_impl(int gc, const char *str, const Position& pos, AW_pos alignment, AW_bitset filteri, long opt_strlen) {
     return text_overlay(gc, str, opt_strlen, pos, alignment, filteri, (AW_CL)this, 0.0, 0.0, AW_draw_string_on_printer);
 }
 
-int AW_device_print::box_impl(int gc, bool filled, const Rectangle& rect, AW_bitset filteri) {
-    int    drawflag;
-    if (filled) {
-        Position q[4];
-        q[0] = rect.upper_left_corner();
-        q[1] = rect.upper_right_corner();
-        q[2] = rect.lower_right_corner();
-        q[3] = rect.lower_left_corner();
+bool AW_device_print::box_impl(int gc, bool filled, const Rectangle& rect, AW_bitset filteri) {
+    bool drawflag = false;
+    if (filter & filteri) {
+        if (filled) {
+            Position q[4];
+            q[0] = rect.upper_left_corner();
+            q[1] = rect.upper_right_corner();
+            q[2] = rect.lower_right_corner();
+            q[3] = rect.lower_left_corner();
 
-        drawflag = filled_area(gc, 4, q, filteri);
-    }
-    else {
-        drawflag = generic_box(gc, false, rect, filteri);
+            drawflag = filled_area(gc, 4, q, filteri);
+        }
+        else {
+            drawflag = generic_box(gc, false, rect, filteri);
+        }
     }
     return drawflag;
 }
 
-int AW_device_print::circle_impl(int gc, bool filled, const AW::Position& center, AW_pos xradius, AW_pos yradius, AW_bitset filteri) {
-    AW_pos x1, y1;
-    AW_pos X0, Y0, X1, Y1;              // Transformed pos
-    AW_pos CX0, CY0, CX1, CY1;          // Clipped line
-
+bool AW_device_print::circle_impl(int gc, bool filled, const Position& center, const AW::Vector& radius, AW_bitset filteri) {
+    bool drawflag = false;
     if (filteri & filter) {
-        xradius *= get_scale();
-        yradius *= get_scale();
+        aw_assert(radius.x()>0 && radius.y()>0);
+        Rectangle Box(center-radius, center+radius);
+        Rectangle screen_box = transform(Box);
+        Rectangle clipped_box;
+        drawflag          = box_clip(screen_box, clipped_box);
+        bool half_visible = (clipped_box.surface()*2) > screen_box.surface();
 
-        AW_pos x0 = center.xpos();
-        AW_pos y0 = center.ypos();
+        drawflag = drawflag && half_visible;
+        // @@@ correct behavior would be to draw an arc if only partly visible
 
-        x1 = x0 + xradius;
-        y1 = y0 + yradius;
-
-        this->transform(x0, y0, X0, Y0);
-        this->transform(x1, y1, X1, Y1);
-        int drawflag = this->box_clip(X0, Y0, X1, Y1, CX0, CY0, CX1, CY1);
         if (drawflag) {
-            // Don't know how to use greylevel --ralf
-            // short greylevel             = (short)(gcm->grey_level*22);
-            // if (greylevel>21) greylevel = 21;
+            const AW_GC *gcm = get_common()->map_gc(gc);
 
-            const AW_GC *gcm        = get_common()->map_gc(gc);
-            int          line_width = gcm->get_line_width();
-            int          colorIdx   = find_color_idx(gcm->get_last_fg_color());
+            // force into clipped_box (hack):
+            Position Center        = clipped_box.centroid();
+            Vector   screen_radius = clipped_box.diagonal()/2;
 
-            // 1, 3, 0?, line_width?, pencolor, fill_color, 0?, 0?, fill_style(-1 = none, 20 = filled),
-            // ?, ?, ?, coordinates+size (8 entries)
-            fprintf(out, "1 3  0 %d %d %d 0 0 %d 0.000 1 0.0000 %d %d %d %d %d %d %d %d\n",
-                    line_width,
-                    colorIdx, // before greylevel has been used here
-                    filled ? colorIdx : -1,
-                    filled ? 20 : -1,
-                    AW_INT(CX0), AW_INT(CY0),
-                    AW_INT(xradius), AW_INT(yradius),
-                    AW_INT(CX0), AW_INT(CY0),
-                    AW_INT(CX0+xradius), AW_INT(CY0));
+            int cx = AW_INT(Center.xpos());
+            int cy = AW_INT(Center.ypos());
+            int rx = AW_INT(screen_radius.x());
+            int ry = AW_INT(screen_radius.y());
+
+            {
+                int subtype = (rx == ry) ? 3 : 1; // 3(circle) 1(ellipse)
+                subtype     = 3; // @@@ remove after refactoring
+                fprintf(out, "1 %d  ", subtype);  // type + subtype:
+            }
+
+            {
+                int colorIdx = find_color_idx(gcm->get_last_fg_color());
+                int fill_color, area_fill;
+                if (filled) {
+                    fill_color = colorIdx;
+                    area_fill  = AW_INT(20+20*gcm->get_grey_level());    // 20 = full saturation; 40 = white;
+                }
+                else {
+                    fill_color = area_fill = -1;
+                }
+                int line_width = gcm->get_line_width();
+
+                fprintf(out, "%d %d ", AW_SOLID, line_width);   // line_style + line_width
+                fprintf(out, "%d %d 0 ", colorIdx, fill_color); // pen_color + fill_color + depth
+                fprintf(out, "0 %d ", area_fill);               // pen_style + area_fill (20 = full color, 40 = white)
+                fputs("0.000 1 0.0000 ", out);                  // style_val + direction + angle (x-axis)
+            }
+
+            fprintf(out, "%d %d ", cx, cy); // center
+            fprintf(out, "%d %d ", rx, ry); // radius
+            fprintf(out, "%d %d ", cx, cy); // start 
+            fprintf(out, "%d %d\n", AW_INT(Center.xpos()+screen_radius.x()), cy); // end 
         }
     }
-    return 0;
+    return drawflag;
 }
 
-int AW_device_print::filled_area_impl(int gc, int npos, const Position *pos, AW_bitset filteri) {
-    if (!(filteri & this->filter)) return 0;
+bool AW_device_print::arc_impl(int gc, bool filled, const AW::Position& center, const AW::Vector& radius, int start_degrees, int arc_degrees, AW_bitset filteri) {
+    bool drawflag = false;
+    if (filteri && filter) {
+        aw_assert(radius.x()>0 && radius.y()>0);
+        Rectangle Box(center-radius, center+radius);
+        Rectangle screen_box = transform(Box);
+        Rectangle clipped_box;
+        drawflag          = box_clip(screen_box, clipped_box);
+        bool half_visible = (clipped_box.surface()*2) > screen_box.surface();
 
-    int erg = generic_filled_area(gc, npos, pos, filteri);
-    if (!erg) return 0;                         // no line visible -> no area fill needed
+        drawflag = drawflag && half_visible;
+        // @@@ correct behavior would be to draw an arc if only partly visible
 
-    const AW_GC *gcm = get_common()->map_gc(gc);
+        if (drawflag) {
+            const AW_GC *gcm = get_common()->map_gc(gc);
 
-    short greylevel             = (short)(gcm->get_grey_level()*22);
-    if (greylevel>21) greylevel = 21;
+            // force into clipped_box (hack):
+            Position Center        = clipped_box.centroid();
+            Vector   screen_radius = clipped_box.diagonal()/2;
 
-    int line_width = gcm->get_line_width();
+            int cx = AW_INT(Center.xpos());
+            int cy = AW_INT(Center.ypos());
+            int rx = AW_INT(screen_radius.x());
+            int ry = AW_INT(screen_radius.y());
 
-    fprintf(out, "2 3 0 %d %d -1 0 0 %d 0.000 0 0 -1 0 0 %d\n",
-            line_width, find_color_idx(gcm->get_last_fg_color()), greylevel, npos+1);
+            bool use_spline = (rx != ry); // draw interpolated spline for ellipsoid arcs
 
-    // @@@ method used here for clipping leads to wrong results,
-    // since group border (drawn by generic_filled_area() above) is clipped correctly,
-    // but filled content is clipped different.
-    //
-    // fix: clip the whole polygon before drawing border
+            // fputs(use_spline ? "3 2 " : "5 1 ", out);  // type + subtype:
+            fputs(use_spline ? "3 4 " : "5 1 ", out);  // type + subtype:
 
-    for (int i=0; i <= npos; i++) {
-        int j = i == npos ? 0 : i; // print pos[0] after pos[n-1]
+            {
+                int colorIdx = find_color_idx(gcm->get_last_fg_color());
+                int fill_color, area_fill;
 
-        Position transPos = transform(pos[j]);
-        Position clippedPos;
-        ASSERT_RESULT(int, 1, force_into_clipbox(transPos, clippedPos)); 
-        fprintf(out, "   %d %d\n", AW_INT(clippedPos.xpos()), AW_INT(clippedPos.ypos()));
+                if (filled) {
+                    fill_color = colorIdx;
+                    area_fill  = AW_INT(20+20*gcm->get_grey_level());    // 20 = full saturation; 40 = white;
+                }
+                else {
+                    fill_color = area_fill = -1;
+                }
+                int line_width = gcm->get_line_width();
+
+                fprintf(out, "%d %d ", AW_SOLID, line_width);   // line_style + line_width
+                fprintf(out, "%d %d 0 ", colorIdx, fill_color); // pen_color + fill_color + depth
+                fprintf(out, "0 %d ", area_fill);               // pen_style + area_fill (20 = full color, 40 = white)
+                fputs("0.000 1 ", out);                         // style_val + cap_style
+                if (!use_spline) fputs("1 ", out);              // direction
+                fputs("0 0 ", out);                             // 2 arrows
+            }
+
+            Angle a0(Angle::deg2rad*start_degrees);
+            Angle a1(Angle::deg2rad*(start_degrees+arc_degrees));
+
+            if (use_spline) {
+                const int MAX_ANGLE_STEP = 45; // degrees
+
+                int steps = (abs(arc_degrees)-1)/MAX_ANGLE_STEP+1;
+                Angle step(Angle::deg2rad*double(arc_degrees)/steps);
+
+                fprintf(out, "%d\n\t", steps+1); // npoints
+
+                double rmax, x_factor, y_factor;
+                if (rx>ry) {
+                    rmax     = rx;
+                    x_factor = 1.0;
+                    y_factor = double(ry)/rx;
+                }
+                else {
+                    rmax     = ry;
+                    x_factor = double(rx)/ry;
+                    y_factor = 1.0;
+                }
+
+                for (int n = 0; n <= steps; ++n) {
+                    Vector   toCircle  = a0.normal()*rmax;
+                    Vector   toEllipse(toCircle.x()*x_factor, toCircle.y()*y_factor);
+                    Position onEllipse = Center+toEllipse;
+
+                    int x = AW_INT(onEllipse.xpos());
+                    int y = AW_INT(onEllipse.ypos());
+
+                    fprintf(out, " %d %d", x, y);
+
+                    if (n<steps) {
+                        if (n == steps-1) a0 = a1;
+                        else              a0 += step;
+                    }
+                }
+                fputs("\n\t", out);
+                for (int n = 0; n <= steps; ++n) {
+                    // -1 = interpolate; 0 = discontinuity; 1 = approximate
+                    fprintf(out, " %d", (n == 0 || n == steps) ? 0 : -1);
+                }
+                fputc('\n', out);
+            }
+            else {
+                fprintf(out, "%d %d ", cx, cy); // center
+
+                Angle am(Angle::deg2rad*(start_degrees+arc_degrees*0.5));
+
+                double   r  = screen_radius.x();
+                Position p0 = Center+a0.normal()*r;
+                Position pm = Center+am.normal()*r;
+                Position p1 = Center+a1.normal()*r;
+
+                fprintf(out, "%d %d ",  AW_INT(p0.xpos()), AW_INT(p0.ypos()));
+                fprintf(out, "%d %d ",  AW_INT(pm.xpos()), AW_INT(pm.ypos()));
+                fprintf(out, "%d %d\n", AW_INT(p1.xpos()), AW_INT(p1.ypos()));
+            }
+        }
     }
-    return 1;
+    return drawflag;
+}
+
+bool AW_device_print::filled_area_impl(int gc, int npos, const Position *pos, AW_bitset filteri) {
+    bool drawflag = false;
+    if (filter & filteri) {
+        drawflag = generic_filled_area(gc, npos, pos, filteri);
+        if (drawflag) { // line visible -> area fill needed
+            const AW_GC *gcm = get_common()->map_gc(gc);
+
+            short greylevel             = (short)(gcm->get_grey_level()*22);
+            if (greylevel>21) greylevel = 21;
+
+            int line_width = gcm->get_line_width();
+
+            fprintf(out, "2 3 0 %d %d -1 0 0 %d 0.000 0 0 -1 0 0 %d\n",
+                    line_width, find_color_idx(gcm->get_last_fg_color()), greylevel, npos+1);
+
+            // @@@ method used here for clipping leads to wrong results,
+            // since group border (drawn by generic_filled_area() above) is clipped correctly,
+            // but filled content is clipped different.
+            //
+            // fix: clip the whole polygon before drawing border
+
+            for (int i=0; i <= npos; i++) {
+                int j = i == npos ? 0 : i; // print pos[0] after pos[n-1]
+
+                Position transPos = transform(pos[j]);
+                Position clippedPos;
+                ASSERT_RESULT(bool, true, force_into_clipbox(transPos, clippedPos)); 
+                fprintf(out, "   %d %d\n", AW_INT(clippedPos.xpos()), AW_INT(clippedPos.ypos()));
+            }
+        }
+    }
+    return drawflag;
 }

@@ -244,59 +244,62 @@ void GEN_jump_cb(AW_window *aww, AW_CL cl_force_center_if_fits) {
 
     const GEN_root *gen_root = win->get_graphic()->get_gen_root();
     if (gen_root) {
-        const AW_world& wrange = gen_root->get_selected_range();
+        const AW::Rectangle& wrange = gen_root->get_selected_range();
+
+        if (wrange.valid()) {
 #if defined(DEBUG)
-        printf("Window %i: Draw world range of selected gene is: %f/%f -> %f/%f\n", win->get_nr(), wrange.l, wrange.t, wrange.r, wrange.b);
+            printf("Window %i: Draw world range of selected gene is: %f/%f -> %f/%f\n",
+                   win->get_nr(), wrange.left(), wrange.top(), wrange.right(), wrange.bottom());
 #endif // DEBUG
 
-        AW_screen_area srange;
-        device->transform(int(wrange.l), int(wrange.t), srange.l, srange.t);
-        device->transform(int(wrange.r), int(wrange.b), srange.r, srange.b);
+            AW::Rectangle srange = device->transform(wrange);
 #if defined(DEBUG)
-        printf("Window %i: Draw screen range of selected gene is: %i/%i -> %i/%i\n", win->get_nr(), srange.l, srange.t, srange.r, srange.b);
+            printf("Window %i: Draw screen range of selected gene is: %f/%f -> %f/%f\n",
+                   win->get_nr(), srange.left(), srange.top(), srange.right(), srange.bottom());
 #endif // DEBUG
 
-        AWT_canvas *canvas  = win->get_canvas();
-        int         scrollx = 0;
-        int         scrolly = 0;
+            AWT_canvas *canvas  = win->get_canvas();
+            int         scrollx = 0;
+            int         scrolly = 0;
 
-        if (srange.t < 0) {
-            scrolly = srange.t-2;
-        }
-        else if (srange.b > screen.b) {
-            scrolly = (srange.b-screen.b)+2;
-        }
-        if (srange.l < 0) {
-            scrollx = srange.l-2;
-        }
-        else if (srange.r > screen.r) {
-            scrollx = srange.r-screen.r+2;
-        }
-
-        if (force_center_if_fits) {
-            if (!scrollx) { // no scrolling needed, i.e. gene fits onto display horizontally
-                int gene_center_x   = (srange.l+srange.r)/2;
-                int screen_center_x = (screen.l+screen.r)/2;
-                scrollx             = gene_center_x-screen_center_x;
-#if defined(DEBUG)
-                printf("center x\n");
-#endif // DEBUG
+            if (srange.top() < 0) {
+                scrolly = AW_INT(srange.top())-2;
             }
-            if (!scrolly) { // no scrolling needed, i.e. gene fits onto display vertically
-                int gene_center_y   = (srange.t+srange.b)/2;
-                int screen_center_y = (screen.t+screen.b)/2;
-                scrolly             = gene_center_y-screen_center_y;
-#if defined(DEBUG)
-                printf("center y\n");
-#endif // DEBUG
+            else if (srange.bottom() > screen.b) {
+                scrolly = AW_INT(srange.bottom())-screen.b+2;
             }
-        }
+            if (srange.left() < 0) {
+                scrollx = AW_INT(srange.left())-2;
+            }
+            else if (srange.right() > screen.r) {
+                scrollx = AW_INT(srange.right())-screen.r+2;
+            }
+
+            if (force_center_if_fits) {
+                if (!scrollx) { // no scrolling needed, i.e. gene fits onto display horizontally
+                    int gene_center_x   = AW_INT((srange.left()+srange.right())/2);
+                    int screen_center_x = (screen.l+screen.r)/2;
+                    scrollx             = gene_center_x-screen_center_x;
+#if defined(DEBUG)
+                    printf("center x\n");
+#endif // DEBUG
+                }
+                if (!scrolly) { // no scrolling needed, i.e. gene fits onto display vertically
+                    int gene_center_y   = AW_INT((srange.top()+srange.bottom())/2);
+                    int screen_center_y = (screen.t+screen.b)/2;
+                    scrolly             = gene_center_y-screen_center_y;
+#if defined(DEBUG)
+                    printf("center y\n");
+#endif // DEBUG
+                }
+            }
 
 #if defined(DEBUG)
-        printf("scroll %i/%i\n", scrollx, scrolly);
+            printf("scroll %i/%i\n", scrollx, scrolly);
 #endif // DEBUG
 
-        canvas->scroll(aww, scrollx, scrolly);
+            canvas->scroll(aww, scrollx, scrolly);
+        }
     }
     win->get_canvas()->refresh();
 }

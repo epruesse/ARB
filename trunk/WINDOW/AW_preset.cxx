@@ -372,7 +372,7 @@ void aw_gc_color_changed_cb(AW_root *root, AW_MGC_awar_cb_struct *cbs, long mode
 
     sprintf(awar_name, AWP_COLORNAME_TEMPLATE, cbs->cbs->window_awar_name, cbs->colorbasename);
     colorname = root->awar(awar_name)->read_string();
-    AW_color color = (AW_color)cbs->colorindex;
+    AW_color_idx color = (AW_color_idx)cbs->colorindex;
     cbs->cbs->aw->alloc_named_data_color(color, colorname);
     if (color != AW_DATA_BG) {
         cbs->cbs->device->set_foreground_color(cbs->gc, color);
@@ -381,7 +381,7 @@ void aw_gc_color_changed_cb(AW_root *root, AW_MGC_awar_cb_struct *cbs, long mode
     else {
         struct AW_MGC_awar_cb_struct *acbs;
         for (acbs = cbs->cbs->next_drag; acbs; acbs=acbs->next) {
-            cbs->cbs->device->set_foreground_color(acbs->gc_drag, (AW_color)acbs->colorindex);
+            cbs->cbs->device->set_foreground_color(acbs->gc_drag, (AW_color_idx)acbs->colorindex);
         }
     }
     if (mode != -1) {
@@ -677,12 +677,11 @@ AW_gc_manager AW_manage_GC(AW_window   *aww,
 
             if ((area != AW_GCM_DATA_AREA) || !first) {
                 device->new_gc(base_gc);
-                device->set_line_attributes(base_gc, 0.0, AW_SOLID);
+                device->set_line_attributes(base_gc, 1, AW_SOLID);
                 device->set_function(base_gc, AW_COPY);
-                device->establish_default(base_gc);
 
                 device->new_gc(base_drag);
-                device->set_line_attributes(base_drag, 0.0, AW_SOLID);
+                device->set_line_attributes(base_drag, 1, AW_SOLID);
                 device->set_function(base_drag, AW_XOR);
                 device->establish_default(base_drag);
             }

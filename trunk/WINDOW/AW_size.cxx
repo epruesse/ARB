@@ -48,13 +48,16 @@ inline void AW_device_size::dot_transformed(AW_pos X, AW_pos Y) {
     }
 }
 
-bool AW_device_size::invisible_impl(int gc, AW_pos x, AW_pos y, AW_bitset filteri) {
-    if (filteri & filter) dot(x, y);
-    return AW_device::invisible_impl(gc, x, y, filteri);
+bool AW_device_size::invisible_impl(int /*gc*/, const AW::Position& pos, AW_bitset filteri) {
+    if (filteri & filter) {
+        dot(pos);
+        return true;
+    }
+    return false;
 }
 
 
-int AW_device_size::line_impl(int /*gc*/, const LineVector& Line, AW_bitset filteri) {
+bool AW_device_size::line_impl(int /*gc*/, const LineVector& Line, AW_bitset filteri) {
     if (filteri & filter) {
         dot(Line.start());
         dot(Line.head());
@@ -63,7 +66,7 @@ int AW_device_size::line_impl(int /*gc*/, const LineVector& Line, AW_bitset filt
     return false;
 }
 
-int AW_device_size::text_impl(int gc, const char *str, const Position& pos, AW_pos alignment, AW_bitset filteri, long opt_strlen) {
+bool AW_device_size::text_impl(int gc, const char *str, const Position& pos, AW_pos alignment, AW_bitset filteri, long opt_strlen) {
     if (filteri & filter) {
         Position              transPos    = transform(pos);
         const AW_font_limits& font_limits = get_common()->map_gc(gc)->get_font_limits();
@@ -73,13 +76,13 @@ int AW_device_size::text_impl(int gc, const char *str, const Position& pos, AW_p
 
         Position upperLeft(x_alignment(transPos.xpos(), l_width, alignment),
                            transPos.ypos()-l_ascent);
-        
+
         dot_transformed(upperLeft);
         dot_transformed(upperLeft + Vector(l_width, l_ascent+l_descent));
 
-        return 1;
+        return true;
     }
-    return 0;
+    return false;
 }
 
 
