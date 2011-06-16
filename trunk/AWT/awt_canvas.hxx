@@ -42,7 +42,12 @@ typedef enum {
     AWT_MODE_STRETCH
 } AWT_COMMAND_MODE;
 
+#define STANDARD_PADDING 10
+
 class AWT_graphic_exports {
+    AW_borders default_padding;
+    AW_borders padding;
+
 public:
     unsigned int zoom_reset : 1;
     unsigned int resize : 1;
@@ -51,29 +56,51 @@ public:
     unsigned int structure_change : 1; // maybe useless
     unsigned int dont_fit_x : 1;
     unsigned int dont_fit_y : 1;
-    unsigned int dont_fit_larger : 1; // if xsize>ysize -> dont_fit_x (otherwise dont_fit_y)
+    unsigned int dont_fit_larger : 1;  // if xsize>ysize -> dont_fit_x (otherwise dont_fit_y)
     unsigned int dont_scroll : 1;
 
-    void init();     // like clear, but resets fit/scroll state
+    void init();     // like clear, but resets fit, scroll state and padding
     void clear();
 
-    short left_offset;
-    short right_offset;
-    short top_offset;
-    short bottom_offset;
+    void set_default_padding(int t, int b, int l, int r) {
+        default_padding.t = t;
+        default_padding.b = b;
+        default_padding.l = l;
+        default_padding.r = r;
+
+        padding = default_padding;
+    }
+
+    void set_equilateral_default_padding(int pad) { set_default_padding(pad, pad, pad, pad); }
+    void set_standard_default_padding() { set_equilateral_default_padding(STANDARD_PADDING); }
+
+    void set_extra_text_padding(const AW_borders& text_padding) {
+        padding.t = default_padding.t + text_padding.t;
+        padding.b = default_padding.b + text_padding.b;
+        padding.l = default_padding.l + text_padding.l;
+        padding.r = default_padding.r + text_padding.r;
+    }
+
+    int get_x_padding() const { return padding.l+padding.r; }
+    int get_y_padding() const { return padding.t+padding.b; }
+    int get_top_padding() const { return padding.t; }
+    int get_left_padding() const { return padding.l; }
 };
 
 class AWT_graphic {
     friend class AWT_canvas;
+
+    void refresh_by_exports(AWT_canvas *ntw);
+
 protected:
-    AW_screen_area extends;
     int drag_gc;
+
 public:
     AWT_graphic_exports exports;
 
-    AWT_graphic();
-    virtual ~AWT_graphic();
-
+    AWT_graphic() { exports.init(); }
+    virtual ~AWT_graphic() {}
+    
     // pure virtual interface (methods implemented by AWT_nonDB_graphic)
 
     virtual GB_ERROR load(GBDATA *gb_main, const char *name, AW_CL cd1, AW_CL cd2) = 0;
@@ -93,22 +120,19 @@ public:
                 The function may return a pointer to a preset window */
 
     // implemented interface (most are dummies doing nothing):
-
-    virtual void push_transaction(GBDATA *gb_main);
-    virtual void pop_transaction(GBDATA *gb_main);
-
     virtual void command(AW_device *device, AWT_COMMAND_MODE cmd,
                          int button, AW_key_mod key_modifier, AW_key_code key_code, char key_char,
                          AW_event_type type, AW_pos x, AW_pos y,
                          AW_clicked_line *cl, AW_clicked_text *ct);
     virtual void text(AW_device *device, char *text);
+
 };
 
 class AWT_nonDB_graphic : public AWT_graphic {
     // a partly implementation of AWT_graphic
 public:
     AWT_nonDB_graphic() {}
-    virtual ~AWT_nonDB_graphic();
+    virtual ~AWT_nonDB_graphic() {}
 
     // dummy functions, only spittings out warnings:
     GB_ERROR load(GBDATA *gb_main, const char *name, AW_CL cd1, AW_CL cd2) __ATTR__USERESULT;
@@ -182,9 +206,19 @@ public:
 
     AWT_canvas(GBDATA *gb_main, AW_window *aww, AWT_graphic *awd, AW_gc_manager &gc_manager, const char *user_awar);
 
+    inline void push_transaction() const;
+    inline void pop_transaction() const;
+
     void refresh();
-    void recalc_size();         // Calculate the size of the sb
-    void zoom_reset();          // Calculate all
+
+    void recalc_size(bool adjust_scrollbars = true);
+    void recalc_size_and_refresh() { recalc_size(true); refresh(); }
+
+    void zoom_reset();
+    void zoom_reset_and_refresh() { zoom_reset(); refresh(); }
+
+    void refresh_by_exports() { tree_disp->refresh_by_exports(this); }
+
     void zoom(AW_device *device, bool zoomIn, const AW::Rectangle& wanted_part, const AW::Rectangle& current_part);
 
     void set_mode(AWT_COMMAND_MODE mo) { mode = mo; }
@@ -195,33 +229,15 @@ public:
     }
 };
 
+inline void AWT_graphic::refresh_by_exports(AWT_canvas *ntw) {
+    if (exports.zoom_reset)   ntw->zoom_reset_and_refresh();
+    else if (exports.resize)  ntw->recalc_size_and_refresh();
+    else if (exports.refresh) ntw->refresh();
+}
+
+
 void AWT_expose_cb(AW_window *dummy, AWT_canvas *ntw, AW_CL cl2);
 void AWT_resize_cb(AW_window *dummy, AWT_canvas *ntw, AW_CL cl2);
-
-#define AWAR_PRINT_TREE                "NT/print/"
-#define AWAR_PRINT_TREE_LANDSCAPE      AWAR_PRINT_TREE "landscape"
-#define AWAR_PRINT_TREE_MAGNIFICATION  AWAR_PRINT_TREE "magnification"
-#define AWAR_PRINT_TREE_CLIP           AWAR_PRINT_TREE "clip"
-#define AWAR_PRINT_TREE_HANDLES        AWAR_PRINT_TREE "handles"
-#define AWAR_PRINT_TREE_COLOR          AWAR_PRINT_TREE "color"
-#define AWAR_PRINT_TREE_DEST           AWAR_PRINT_TREE "dest"
-#define AWAR_PRINT_TREE_PRINTER        AWAR_PRINT_TREE "printer"
-#define AWAR_PRINT_TREE_OVERLAP        AWAR_PRINT_TREE "overlap"
-#define AWAR_PRINT_TREE_OVERLAP_AMOUNT AWAR_PRINT_TREE "amount"
-
-#define AWAR_PRINT_TREE_TMP    "tmp/" AWAR_PRINT_TREE
-#define AWAR_PRINT_TREE_GSIZEX AWAR_PRINT_TREE_TMP "gsizex" // graphic size
-#define AWAR_PRINT_TREE_GSIZEY AWAR_PRINT_TREE_TMP "gsizey"
-#define AWAR_PRINT_TREE_PSIZEX AWAR_PRINT_TREE_TMP "psizex" // print size
-#define AWAR_PRINT_TREE_PSIZEY AWAR_PRINT_TREE_TMP "psizey"
-#define AWAR_PRINT_TREE_SIZEX  AWAR_PRINT_TREE_TMP "sizex" // size in pages
-#define AWAR_PRINT_TREE_SIZEY  AWAR_PRINT_TREE_TMP "sizey"
-#define AWAR_PRINT_TREE_PAGES  AWAR_PRINT_TREE_TMP "pages"
-
-#define AWAR_PRINT_TREE_FILE_BASE   AWAR_PRINT_TREE_TMP "file"
-#define AWAR_PRINT_TREE_FILE_NAME   AWAR_PRINT_TREE_FILE_BASE "/file_name"
-#define AWAR_PRINT_TREE_FILE_DIR    AWAR_PRINT_TREE_FILE_BASE "/directory"
-#define AWAR_PRINT_TREE_FILE_FILTER AWAR_PRINT_TREE_FILE_BASE "/filter"
 
 void AWT_popup_tree_export_window(AW_window *parent_win, AW_CL cl_canvas, AW_CL);
 void AWT_popup_sec_export_window (AW_window *parent_win, AW_CL cl_canvas, AW_CL);

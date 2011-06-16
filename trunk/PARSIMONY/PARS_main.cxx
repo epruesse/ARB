@@ -57,8 +57,7 @@ static void pars_saveNrefresh_changed_tree(AWT_canvas *ntw) {
     GB_ERROR error = GLOBAL_PARS->tree->save(ntw->gb_main, 0, 0, 0);
     if (error) aw_message(error);
 
-    ntw->zoom_reset();
-    ntw->refresh();
+    ntw->zoom_reset_and_refresh();
 }
 
 static void pars_export_tree() {
@@ -1100,8 +1099,7 @@ static void refreshTree(AWT_canvas *ntw) {
     AWT_TREE(ntw)->check_update(ntw->gb_main);
     GB_ERROR error = AWT_TREE(ntw)->save(ntw->gb_main, 0, 0, 0);
     if (error) aw_message(error);
-    ntw->zoom_reset();
-    ntw->refresh();
+    ntw->zoom_reset_and_refresh();
 }
 #endif // TESTMENU
 

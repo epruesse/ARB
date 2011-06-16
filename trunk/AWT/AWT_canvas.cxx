@@ -30,11 +30,16 @@ void AWT_graphic_exports::clear() {
 
 void AWT_graphic_exports::init() {
     clear();
-    dont_fit_x       = 0;
-    dont_fit_y       = 0;
-    dont_fit_larger  = 0;
-    dont_scroll      = 0;
+    padding.clear();
+
+    dont_fit_x      = 0;
+    dont_fit_y      = 0;
+    dont_fit_larger = 0;
+    dont_scroll     = 0;
 }
+
+inline void AWT_canvas::push_transaction() const { if (gb_main) GB_push_transaction(gb_main); }
+inline void AWT_canvas::pop_transaction() const { if (gb_main) GB_pop_transaction(gb_main); }
 
 void AWT_canvas::set_horizontal_scrollbar_position(AW_window *, int pos) {
     int maxpos = int(worldsize.r-rect.r)-1;
@@ -50,22 +55,18 @@ void AWT_canvas::set_vertical_scrollbar_position(AW_window *, int pos) {
     aww->set_vertical_scrollbar_position(pos);
 }
 
-void
-AWT_canvas::set_scrollbars()
-    //
-{
+void AWT_canvas::set_scrollbars() {
     AW_pos width = this->worldinfo.r - this->worldinfo.l;
     AW_pos height = this->worldinfo.b - this->worldinfo.t;
 
     worldsize.l = 0;
-    worldsize.r = width*this->trans_to_fit +
-        tree_disp->exports.left_offset + tree_disp->exports.right_offset;
+    worldsize.r = width*this->trans_to_fit + tree_disp->exports.get_x_padding();
     worldsize.t = 0;
     AW_pos scale = this->trans_to_fit;
     if (tree_disp->exports.dont_fit_y) {
         scale = 1.0;
     }
-    worldsize.b = height*scale + tree_disp->exports.top_offset + tree_disp->exports.bottom_offset;
+    worldsize.b = height*scale + tree_disp->exports.get_y_padding();
 
     aww->tell_scrolled_picture_size(worldsize);
 
@@ -74,13 +75,13 @@ AWT_canvas::set_scrollbars()
     this->old_hor_scroll_pos = (int)((-this->worldinfo.l -
                                       this->shift_x_to_fit)*
                                      this->trans_to_fit +
-                                     tree_disp->exports.left_offset);
+                                     tree_disp->exports.get_left_padding());
     this->set_horizontal_scrollbar_position(this->aww, old_hor_scroll_pos);
 
     this->old_vert_scroll_pos = (int)((-this->worldinfo.t -
                                        this->shift_y_to_fit)*
                                       this->trans_to_fit+
-                                      tree_disp->exports.top_offset);
+                                      tree_disp->exports.get_top_padding());
 
     this->set_vertical_scrollbar_position(this->aww, old_vert_scroll_pos);
 }
@@ -91,30 +92,39 @@ void AWT_canvas::init_device(AW_device *device) {
     device->zoom(this->trans_to_fit);
 }
 
-void AWT_canvas::zoom_reset() {
-    GB_transaction dummy(this->gb_main);
+void AWT_canvas::recalc_size(bool adjust_scrollbars) {
+    GB_transaction  dummy(this->gb_main);
+    AW_device_size *size_device = aww->get_size_device(AW_MIDDLE_AREA);
 
-    AW_device_size *device = aww->get_size_device(AW_MIDDLE_AREA);
-    device->set_filter(AW_SIZE);
-    device->reset();
-    this->tree_disp->show(device);
-    device->get_size_information(&(this->worldinfo));
+    size_device->set_filter(AW_SIZE|AW_SIZE_UNSCALED);
+    size_device->reset();
+
+    tree_disp->show(size_device);
+    tree_disp->exports.set_extra_text_padding(size_device->get_unscaleable_overlap());
+
+    size_device->get_size_information(&(this->worldinfo));
+    rect = size_device->get_area_size();   // real world size (no offset)
+
+    if (adjust_scrollbars) set_scrollbars();
+}
+
+void AWT_canvas::zoom_reset() {
+    recalc_size(false);
 
     AW_pos width  = this->worldinfo.r - this->worldinfo.l;
     AW_pos height = this->worldinfo.b - this->worldinfo.t;
 
-    rect = device->get_area_size();   // real world size (no offset)
-
-    AW_pos net_window_width  = rect.r - rect.l - (tree_disp->exports.left_offset + tree_disp->exports.right_offset);
-    AW_pos net_window_height = rect.b - rect.t - (tree_disp->exports.top_offset + tree_disp->exports.bottom_offset);
-
+    AW_pos net_window_width  = rect.r - rect.l - tree_disp->exports.get_x_padding();
+    AW_pos net_window_height = rect.b - rect.t - tree_disp->exports.get_y_padding();
+    
     if (net_window_width<AWT_MIN_WIDTH) net_window_width   = AWT_MIN_WIDTH;
     if (net_window_height<AWT_MIN_WIDTH) net_window_height = AWT_MIN_WIDTH;
 
     if (width <EPS) width   = EPS;
-    AW_pos x_scale          = net_window_width/width;
     if (height <EPS) height = EPS;
-    AW_pos y_scale          = net_window_height/height;
+
+    AW_pos x_scale = net_window_width/width;
+    AW_pos y_scale = net_window_height/height;
 
     if (tree_disp->exports.dont_fit_larger) {
         if (width>height) {     // like dont_fit_x = 1; dont_fit_y = 0;
@@ -146,27 +156,14 @@ void AWT_canvas::zoom_reset() {
     this->trans_to_fit = x_scale;
 
     // complete, upper left corner
-    this->shift_x_to_fit = - this->worldinfo.l + tree_disp->exports.left_offset/x_scale;
-    this->shift_y_to_fit = - this->worldinfo.t + tree_disp->exports.top_offset/x_scale;
+    this->shift_x_to_fit = - this->worldinfo.l + tree_disp->exports.get_left_padding()/x_scale;
+    this->shift_y_to_fit = - this->worldinfo.t + tree_disp->exports.get_top_padding()/x_scale;
 
     this->old_hor_scroll_pos  = 0;
     this->old_vert_scroll_pos = 0;
 
     // scale
 
-    this->set_scrollbars();
-}
-
-void AWT_canvas::recalc_size() {
-    GB_transaction dummy(this->gb_main);
-    AW_device_size *device = aww->get_size_device(AW_MIDDLE_AREA);
-    device->set_filter(AW_SIZE);
-    device->reset();
-
-    this->tree_disp->show(device);
-    device->get_size_information(&(this->worldinfo));
-
-    rect = device->get_area_size();   // real world size (no offset)
     this->set_scrollbars();
 }
 
@@ -374,17 +371,15 @@ void AWT_resize_cb(AW_window *, AWT_canvas *ntw, AW_CL) {
 }
 
 
-
 static void focus_cb(AW_window *, AWT_canvas *ntw) {
-    if (!ntw->gb_main) return;
-    ntw->tree_disp->push_transaction(ntw->gb_main);
+    if (ntw->gb_main) {
+        ntw->push_transaction();
 
-    int flags = ntw->tree_disp->check_update(ntw->gb_main);
-    if (flags) {
-        ntw->recalc_size();
-        ntw->refresh();
+        int flags = ntw->tree_disp->check_update(ntw->gb_main);
+        if (flags) ntw->recalc_size_and_refresh();
+
+        ntw->pop_transaction();
     }
-    ntw->tree_disp->pop_transaction(ntw->gb_main);
 }
 
 static bool handleZoomEvent(AW_window *aww, AWT_canvas *ntw, AW_device *device, const AW_event& event) {
@@ -424,7 +419,7 @@ static void input_event(AW_window *aww, AWT_canvas *ntw, AW_CL /*cd2*/) {
     device->reset();
 
     ntw->tree_disp->exports.clear();
-    if (ntw->gb_main) ntw->tree_disp->push_transaction(ntw->gb_main);
+    ntw->push_transaction();
 
     ntw->tree_disp->check_update(ntw->gb_main);
 
@@ -462,24 +457,12 @@ static void input_event(AW_window *aww, AWT_canvas *ntw, AW_CL /*cd2*/) {
         if (ntw->gb_main) {
             ntw->tree_disp->update(ntw->gb_main);
         }
-        if (ntw->tree_disp->exports.zoom_reset) {
-            ntw->zoom_reset();
-            ntw->refresh();
-        }
-        else if (ntw->tree_disp->exports.resize) {
-            ntw->recalc_size();
-            ntw->refresh();
-        }
-        else if (ntw->tree_disp->exports.refresh) {
-            ntw->refresh();
-        }
+        ntw->refresh_by_exports();
     }
 
     ntw->zoom_drag_ex = event.x;
     ntw->zoom_drag_ey = event.y;
-    if (ntw->gb_main) {
-        ntw->tree_disp->pop_transaction(ntw->gb_main);
-    }
+    ntw->pop_transaction();
 }
 
 
@@ -563,7 +546,7 @@ static void motion_event(AW_window *aww, AWT_canvas *ntw, AW_CL /*cd2*/) {
     device->reset();
     device->set_filter(AW_SCREEN);
 
-    if (ntw->gb_main) ntw->tree_disp->push_transaction(ntw->gb_main);
+    ntw->push_transaction();
 
     AW_event event;
     aww->get_event(&event);
@@ -626,19 +609,8 @@ static void motion_event(AW_window *aww, AWT_canvas *ntw, AW_CL /*cd2*/) {
         }
     }
 
-    if (ntw->tree_disp->exports.zoom_reset) {
-        ntw->zoom_reset();
-        ntw->refresh();
-    }
-    else if (ntw->tree_disp->exports.resize) {
-        ntw->recalc_size();
-        ntw->refresh();
-    }
-    else if (ntw->tree_disp->exports.refresh) {
-        ntw->refresh();
-    }
-
-    if (ntw->gb_main) ntw->tree_disp->pop_transaction(ntw->gb_main);
+    ntw->refresh_by_exports();
+    ntw->pop_transaction();
 }
 
 void AWT_canvas::scroll(AW_window *, int dx, int dy, bool dont_update_scrollbars) {
@@ -778,19 +750,6 @@ AWT_canvas::AWT_canvas(GBDATA *gb_maini, AW_window *awwi, AWT_graphic *awd, AW_g
 //      AWT_graphic
 // --------------------
 
-AWT_graphic::AWT_graphic() {
-    exports.init();
-}
-AWT_graphic::~AWT_graphic() {
-}
-
-void AWT_graphic::pop_transaction(GBDATA *gb_main) {
-    GB_pop_transaction(gb_main);
-}
-void AWT_graphic::push_transaction(GBDATA *gb_main) {
-    GB_push_transaction(gb_main);
-}
-
 void AWT_graphic::command(AW_device *, AWT_COMMAND_MODE, int, AW_key_mod, AW_key_code, char,
                           AW_event_type, AW_pos, AW_pos, AW_clicked_line *, AW_clicked_text *)
 {
@@ -802,8 +761,6 @@ void AWT_graphic::text(AW_device * /* device */, char * /* text */) {
 // --------------------------
 //      AWT_nonDB_graphic
 // --------------------------
-
-AWT_nonDB_graphic::~AWT_nonDB_graphic() {}
 
 GB_ERROR AWT_nonDB_graphic::load(GBDATA *, const char *, AW_CL, AW_CL) {
     return "AWT_nonDB_graphic cannot be loaded";

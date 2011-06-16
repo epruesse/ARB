@@ -49,11 +49,8 @@ RNA3D_Graphics::RNA3D_Graphics(AW_root *aw_root_, GBDATA *gb_main_) {
     exports.dont_fit_x      = 1;
     exports.dont_fit_y      = 1;
     exports.dont_fit_larger = 0;
-    exports.left_offset     = 20;
-    exports.right_offset    = 200;
-    exports.top_offset      = 30;
-    exports.bottom_offset   = 30;
     exports.dont_scroll     = 0;
+    exports.set_standard_default_padding();
 
     this->aw_root = aw_root_;
     this->gb_main = gb_main_;

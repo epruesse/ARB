@@ -19,38 +19,57 @@ using namespace AW;
   //                                    size_device
   // *****************************************************************************************
 
-void AW_device_size::init() {
-    drawn = false;
-
-    size_information.t = 0;
-    size_information.b = 0;
-    size_information.l = 0;
-    size_information.r = 0;
+void AW_device_size::clear() {
+    scaled.clear();
+    unscaled.clear();
 }
 
 AW_DEVICE_TYPE AW_device_size::type() { return AW_DEVICE_SIZE; }
 
 void AW_device_size::privat_reset() {
-    this->init();
+    clear();
 }
 
-inline void AW_device_size::dot_transformed(AW_pos X, AW_pos Y) {
-    if (drawn) {
-        size_information.l = min(size_information.l, X);
-        size_information.r = max(size_information.r, X);
-        size_information.t = min(size_information.t, Y);
-        size_information.b = max(size_information.b, Y);
+inline int calc_overlap(AW_pos smaller, AW_pos bigger) {
+    if (smaller<bigger) return AW_INT(bigger-smaller);
+    return 0;
+}
+
+const AW_borders& AW_device_size::get_unscaleable_overlap() const {
+    if (scaled.was_drawn() && unscaled.was_drawn()) {
+        const AW_world& scaled_size   = scaled.get_size();
+        const AW_world& unscaled_size = unscaled.get_size();
+
+        unscalable_overlap.t = calc_overlap(unscaled_size.t, scaled_size.t);
+        unscalable_overlap.l = calc_overlap(unscaled_size.l, scaled_size.l);
+        unscalable_overlap.b = calc_overlap(scaled_size.b, unscaled_size.b);
+        unscalable_overlap.r = calc_overlap(scaled_size.r, unscaled_size.r);
     }
     else {
-        size_information.l = size_information.r = X;
-        size_information.t = size_information.b = Y;
-        drawn              = true;
+        unscalable_overlap.clear();
+    }
+    return unscalable_overlap;
+}
+
+inline void AW_device_size::dot_transformed(const AW::Position& pos, AW_bitset filteri) {
+    if (filter == (AW_PRINTER|AW_PRINTER_EXT)) { // detect graphic size for print-scaling
+        scaled.track(pos);
+    }
+    else {
+        if (filteri&AW_SIZE) {
+            aw_assert((filteri&AW_SIZE_UNSCALED) == 0);
+            scaled.track(pos);
+        }
+        else {
+            aw_assert((filteri&AW_SIZE) == 0);
+            unscaled.track(pos);
+        }
     }
 }
 
 bool AW_device_size::invisible_impl(int /*gc*/, const AW::Position& pos, AW_bitset filteri) {
     if (filteri & filter) {
-        dot(pos);
+        dot(pos, filteri);
         return true;
     }
     return false;
@@ -59,8 +78,8 @@ bool AW_device_size::invisible_impl(int /*gc*/, const AW::Position& pos, AW_bits
 
 bool AW_device_size::line_impl(int /*gc*/, const LineVector& Line, AW_bitset filteri) {
     if (filteri & filter) {
-        dot(Line.start());
-        dot(Line.head());
+        dot(Line.start(), filteri);
+        dot(Line.head(), filteri);
         return true;
     }
     return false;
@@ -77,17 +96,11 @@ bool AW_device_size::text_impl(int gc, const char *str, const Position& pos, AW_
         Position upperLeft(x_alignment(transPos.xpos(), l_width, alignment),
                            transPos.ypos()-l_ascent);
 
-        dot_transformed(upperLeft);
-        dot_transformed(upperLeft + Vector(l_width, l_ascent+l_descent));
+        dot_transformed(upperLeft, filteri);
+        dot_transformed(upperLeft + Vector(l_width, l_ascent+l_descent), filteri);
 
         return true;
     }
     return false;
-}
-
-
-
-void AW_device_size::get_size_information(AW_world *ptr) {
-    *ptr = size_information;
 }
 

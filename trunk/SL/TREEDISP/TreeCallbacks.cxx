@@ -458,8 +458,7 @@ void NT_insert_mark_submenus(AW_window_menu_modes *awm, AWT_canvas *ntw, int ins
 static void nt_save_changed_tree(AWT_canvas *ntw) {
     GB_ERROR error = AWT_TREE(ntw)->save(ntw->gb_main, 0, 0, 0);
     if (error) aw_message(error);
-    ntw->zoom_reset();
-    ntw->refresh();
+    ntw->zoom_reset_and_refresh();
 }
 
 // ---------------------------------------
@@ -547,23 +546,20 @@ void NT_reset_lzoom_cb(void *, AWT_canvas *ntw) {
     GB_transaction gb_dummy(ntw->gb_main);
     AWT_TREE(ntw)->check_update(ntw->gb_main);
     AWT_TREE(ntw)->tree_root_display = AWT_TREE(ntw)->get_root_node();
-    ntw->zoom_reset();
-    ntw->refresh();
+    ntw->zoom_reset_and_refresh();
 }
 
 void NT_reset_pzoom_cb(void *, AWT_canvas *ntw) {
     GB_transaction gb_dummy(ntw->gb_main);
     AWT_TREE(ntw)->check_update(ntw->gb_main);
-    ntw->zoom_reset();
-    ntw->refresh();
+    ntw->zoom_reset_and_refresh();
 }
 
 void NT_set_tree_style(void *, AWT_canvas *ntw, AP_tree_sort type) {
     GB_transaction gb_dummy(ntw->gb_main);
     AWT_TREE(ntw)->check_update(ntw->gb_main);
     AWT_TREE(ntw)->set_tree_type(type);
-    ntw->zoom_reset();
-    ntw->refresh();
+    ntw->zoom_reset_and_refresh();
 }
 
 void NT_remove_leafs(void *, AWT_canvas *ntw, long mode) {
@@ -701,7 +697,7 @@ void NT_jump_cb(AW_window *, AWT_canvas *ntw, AW_CL auto_expand_groups) {
             case AP_LIST_NDS: {
                 repeat_jump: 
                 AW_device_size *device = aww->get_size_device(AW_MIDDLE_AREA);
-                device->set_filter(AW_SIZE);
+                device->set_filter(AW_SIZE|AW_SIZE_UNSCALED);
                 device->reset();
                 ntw->init_device(device);
                 ntw->tree_disp->show(device);
@@ -755,8 +751,7 @@ void NT_jump_cb(AW_window *, AWT_canvas *ntw, AW_CL auto_expand_groups) {
                     aw_message(GBS_global_string("Sorry, I didn't find the species '%s' in this tree", name));
                     gtree->tree_root_display = gtree->get_root_node();
                 }
-                ntw->zoom_reset();
-                ntw->refresh();
+                ntw->zoom_reset_and_refresh();
                 break;
             }
             default: awt_assert(0); break;

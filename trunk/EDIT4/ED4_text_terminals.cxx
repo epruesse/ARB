@@ -553,7 +553,7 @@ ED4_returncode ED4_sequence_terminal::draw(int /* only_text */)
             ShowHelix_cd  cd         = { ED4_ROOT->helix, max_seq_len };
             device->text_overlay(ED4_G_HELIX,
                                  (char *)db_pointer, screen_length,
-                                 AW::Position(text_x,  text_y + ED4_ROOT->helix_spacing), 0.0,  AW_ALL_DEVICES,
+                                 AW::Position(text_x,  text_y + ED4_ROOT->helix_spacing), 0.0,  AW_ALL_DEVICES_UNSCALED,
                                  (AW_CL)&cd, 1.0, 1.0, ED4_show_helix_on_device);
             free(db_pointer);
         }
@@ -574,7 +574,7 @@ ED4_returncode ED4_sequence_terminal::draw(int /* only_text */)
                 // AW_click_cd cd(device, (AW_CL)max_seq_len);
                 device->text_overlay(ED4_G_HELIX,
                                      protstruct, screen_length,
-                                     AW::Position(text_x,  text_y + ED4_ROOT->helix_spacing),  0.0,  AW_ALL_DEVICES,
+                                     AW::Position(text_x,  text_y + ED4_ROOT->helix_spacing),  0.0,  AW_ALL_DEVICES_UNSCALED,
                                      (AW_CL)ED4_ROOT->protstruct, 1.0, 1.0, ED4_show_protein_match_on_device);
                 free(protstruct);
             }
