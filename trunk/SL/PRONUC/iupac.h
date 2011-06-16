@@ -14,6 +14,10 @@
 #ifndef ARBDB_BASE_H
 #include <arbdb_base.h>
 #endif
+#ifndef ARB_ASSERT_H
+#include <arb_assert.h>
+#endif
+
 
 namespace iupac {
     // --------------
@@ -42,12 +46,14 @@ namespace iupac {
         const char * const members; // contains members of nuc IUPAC group (NULL if no members)
         size_t const       count;   // no of members (1 for 'N'!)
     };
+
     extern const Nuc_Group nuc_group[26][2]; // second index: [0] uses T, [1] uses U
+
     inline int to_index(char c) { // calculate index for nuc_group
-        if (c>='A' && c<='Z') return c-'A';
-        return *(char*)0; // exception
+        arb_assert(c>='A' && c<='Z');
+        return c-'A';
     }
-    // @@@ create accessor and hide nuc_group 
+    // @@@ create accessor and hide nuc_group
 
     char combine(char c1, char c2, GB_alignment_type ali); // nucleotides only
     char encode(const char bases[], GB_alignment_type aliType);
