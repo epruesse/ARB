@@ -61,7 +61,7 @@ bool AW_device_print::line_impl(int gc, const LineVector& Line, AW_bitset filter
     return drawflag;
 }
 
-bool AW_device_print::invisible_impl(int /*gc*/, const AW::Position& pos, AW_bitset filteri) {
+bool AW_device_print::invisible_impl(const AW::Position& pos, AW_bitset filteri) {
     bool drawflag = false;
     if (filteri & filter) {
         Position trans = transform(pos);

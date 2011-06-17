@@ -149,11 +149,11 @@ AW_pos AWT_graphic_tree::paint_irs_sub_tree(AP_tree *node, AW_pos x_offset) {
             filled_box(gc, frame.upper_left_corner(), tipBoxSize);
 
             Vector    frame2box(IRS.gap, IRS.gap);
-            Rectangle box(frame.upper_left_corner()+frame2box, Vector(frame.width()*.5, frame.height()-2*IRS.gap));
+            Rectangle gbox(frame.upper_left_corner()+frame2box, Vector(frame.width()*.5, frame.height()-2*IRS.gap));
 
-            disp_device->box(gc, true, box);
+            disp_device->box(gc, true, gbox);
 
-            Position box_rcenter = box.right_edge().centroid();
+            Position box_rcenter = gbox.right_edge().centroid();
 
             if (group_name) { //  a node name should be displayed
                 const char *groupinfo = GBS_global_string("%s (%i)", group_name, node->gr.leave_sum);
@@ -288,5 +288,5 @@ void AWT_graphic_tree::show_irs_tree(AP_tree *at, double height) {
     list_tree_ruler_y           = paint_irs_sub_tree(at, 0);
     irs_tree_ruler_scale_factor = IRS.x_scale;
     
-    disp_device->invisible(AWT_GC_CURSOR, corner); // @@@ remove when size-dev works
+    disp_device->invisible(corner); // @@@ remove when size-dev works
 }
