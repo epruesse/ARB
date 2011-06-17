@@ -418,7 +418,6 @@ class AW_device : public AW_zoomable, public AW_stylable, public AW_clipable {
 
 protected:
     AW_clip_scale_stack *clip_scale_stack;
-    virtual         void  privat_reset();
 
     const AW_click_cd *click_cd;
     friend class       AW_click_cd;
@@ -468,6 +467,7 @@ private:
 
     virtual bool invisible_impl(const AW::Position& pos, AW_bitset filteri) = 0;
 
+    virtual void specific_reset() = 0;
 
 protected:
 
@@ -601,6 +601,9 @@ class AW_device_print : public AW_device { // derived from a Noncopyable
     bool arc_impl(int gc, bool filled, const AW::Position& center, const AW::Vector& radius, int start_degrees, int arc_degrees, AW_bitset filteri);
     bool filled_area_impl(int gc, int npos, const AW::Position *pos, AW_bitset filteri);
     bool invisible_impl(const AW::Position& pos, AW_bitset filteri);
+
+    void specific_reset() {}
+
 public:
     AW_device_print(AW_common *common_)
         : AW_device(common_),
@@ -673,8 +676,6 @@ class AW_device_size : public AW_simple_device {
     AW_size_tracker scaled;   // all zoomable parts (e.g. tree skeleton)
     AW_size_tracker unscaled; // all unzoomable parts (e.g. text at tree-tips or group-brackets)
 
-    void privat_reset();
-
     void dot_transformed(const AW::Position& pos, AW_bitset filteri);
     void dot_transformed(AW_pos X, AW_pos Y, AW_bitset filteri) { dot_transformed(AW::Position(X, Y), filteri); }
 
@@ -685,12 +686,16 @@ class AW_device_size : public AW_simple_device {
     bool text_impl(int gc, const char *str, const AW::Position& pos, AW_pos alignment, AW_bitset filteri, long opt_strlen);
     bool invisible_impl(const AW::Position& pos, AW_bitset filteri);
 
+    void specific_reset();
+    
 public:
     AW_device_size(AW_common *common_) : AW_simple_device(common_) {}
 
     void clear();
 
     AW_DEVICE_TYPE type();
+
+    // all get_size_information...() return screen coordinates
 
     void get_size_information(AW_world *ptr) __ATTR__DEPRECATED_LATER("whole AW_world is deprecated") const {
         *ptr = scaled.get_size();
@@ -712,6 +717,9 @@ class AW_device_click : public AW_simple_device {
     bool line_impl(int gc, const AW::LineVector& Line, AW_bitset filteri);
     bool text_impl(int gc, const char *str, const AW::Position& pos, AW_pos alignment, AW_bitset filteri, long opt_strlen);
     bool invisible_impl(const AW::Position& pos, AW_bitset filteri) { return generic_invisible(pos, filteri); }
+
+    void specific_reset() {}
+    
 public:
     AW_clicked_line opt_line;
     AW_clicked_text opt_text;

@@ -26,7 +26,7 @@ void AW_device_size::clear() {
 
 AW_DEVICE_TYPE AW_device_size::type() { return AW_DEVICE_SIZE; }
 
-void AW_device_size::privat_reset() {
+void AW_device_size::specific_reset() {
     clear();
 }
 
