@@ -14,6 +14,7 @@ class AW_device_Xm : public AW_device {
     bool filled_area_impl(int gc, int npos, const AW::Position *pos, AW_bitset filteri) {
         return generic_filled_area(gc, npos, pos, filteri);
     }
+    bool invisible_impl(const AW::Position& pos, AW_bitset filteri) { return generic_invisible(pos, filteri); }
 
 public:
     AW_device_Xm(AW_common *commoni)

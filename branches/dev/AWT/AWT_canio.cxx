@@ -603,11 +603,11 @@ static GB_ERROR canvas_to_xfig(AWT_canvas *ntw, const char *xfig_name, bool add_
 
             while (!(drawnLR && drawnUL) && maxloop-->0) {
                 if (!drawnUL) {
-                    drawnUL  = device->invisible(0, ul);
+                    drawnUL  = device->invisible(ul);
                     ul      += stepInside;
                 }
                 if (!drawnLR) {
-                    drawnLR  = device->invisible(0, lr);
+                    drawnLR  = device->invisible(lr);
                     lr      -= stepInside;
                 }
             }

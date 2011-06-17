@@ -68,7 +68,7 @@ inline void AW_device_size::dot_transformed(const AW::Position& pos, AW_bitset f
     }
 }
 
-bool AW_device_size::invisible_impl(int /*gc*/, const AW::Position& pos, AW_bitset filteri) {
+bool AW_device_size::invisible_impl(const AW::Position& pos, AW_bitset filteri) {
     if (filteri & filter) {
         dot(pos, filteri);
         return true;

@@ -499,7 +499,7 @@ void AW_device::reset() {
     privat_reset();
 }
 
-bool AW_device::invisible_impl(int /*gc*/, const AW::Position& pos, AW_bitset filteri) {
+bool AW_device::generic_invisible(const AW::Position& pos, AW_bitset filteri) {
     return (filter & filteri) ? !is_outside_clip(transform(pos)) : false;
 }
 
