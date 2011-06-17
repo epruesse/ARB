@@ -16,6 +16,8 @@ class AW_device_Xm : public AW_device {
     }
     bool invisible_impl(const AW::Position& pos, AW_bitset filteri) { return generic_invisible(pos, filteri); }
 
+    void specific_reset() {}
+    
 public:
     AW_device_Xm(AW_common *commoni)
         : AW_device(commoni)
