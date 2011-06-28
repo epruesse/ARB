@@ -1479,7 +1479,7 @@ bin_reinit:
 	(cd bin; make all)
 
 clean_directories:
-	rm -rf \
+	-rm -rf \
 		$(ARBHOME)/PROBE_SET/bin \
 		$(ARBHOME)/MAKEBIN \
 		$(ARBHOME)/INCLUDE \
