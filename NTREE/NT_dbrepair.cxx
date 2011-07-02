@@ -23,6 +23,7 @@
 #include <aw_root.hxx>
 
 #include <arb_str.h>
+#include <arb_strarray.h>
 
 #include <map>
 #include <set>

@@ -21,6 +21,7 @@
 #include <aw_root.hxx>
 #include <arb_str.h>
 #include <arb_strbuf.h>
+#include <arb_strarray.h>
 
 #define AWAR1 "tmp/merge1/"
 #define AWAR2 "tmp/merge2/"

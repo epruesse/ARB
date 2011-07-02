@@ -22,6 +22,7 @@
 #include <aw_root.hxx>
 #include <arb_progress.h>
 #include <arb_strbuf.h>
+#include <arb_strarray.h>
 
 #define nt_assert(bed) arb_assert(bed)
 

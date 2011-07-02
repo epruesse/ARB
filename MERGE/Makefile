@@ -49,6 +49,7 @@ MG_adapt_ali.o: $(ARBHOME)/INCLUDE/arb_assert.h
 MG_adapt_ali.o: $(ARBHOME)/INCLUDE/arb_core.h
 MG_adapt_ali.o: $(ARBHOME)/INCLUDE/arb_error.h
 MG_adapt_ali.o: $(ARBHOME)/INCLUDE/arb_msg.h
+MG_adapt_ali.o: $(ARBHOME)/INCLUDE/arb_strarray.h
 MG_adapt_ali.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 MG_adapt_ali.o: $(ARBHOME)/INCLUDE/arb_string.h
 MG_adapt_ali.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -73,6 +74,7 @@ MG_alignment.o: $(ARBHOME)/INCLUDE/arb_assert.h
 MG_alignment.o: $(ARBHOME)/INCLUDE/arb_core.h
 MG_alignment.o: $(ARBHOME)/INCLUDE/arb_error.h
 MG_alignment.o: $(ARBHOME)/INCLUDE/arb_msg.h
+MG_alignment.o: $(ARBHOME)/INCLUDE/arb_strarray.h
 MG_alignment.o: $(ARBHOME)/INCLUDE/arb_string.h
 MG_alignment.o: $(ARBHOME)/INCLUDE/arbdb.h
 MG_alignment.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -276,6 +278,7 @@ MG_preserves.o: $(ARBHOME)/INCLUDE/arb_core.h
 MG_preserves.o: $(ARBHOME)/INCLUDE/arb_error.h
 MG_preserves.o: $(ARBHOME)/INCLUDE/arb_msg.h
 MG_preserves.o: $(ARBHOME)/INCLUDE/arb_progress.h
+MG_preserves.o: $(ARBHOME)/INCLUDE/arb_strarray.h
 MG_preserves.o: $(ARBHOME)/INCLUDE/arb_string.h
 MG_preserves.o: $(ARBHOME)/INCLUDE/arbdb.h
 MG_preserves.o: $(ARBHOME)/INCLUDE/arbdb_base.h
@@ -306,6 +309,7 @@ MG_species.o: $(ARBHOME)/INCLUDE/arb_error.h
 MG_species.o: $(ARBHOME)/INCLUDE/arb_msg.h
 MG_species.o: $(ARBHOME)/INCLUDE/arb_progress.h
 MG_species.o: $(ARBHOME)/INCLUDE/arb_str.h
+MG_species.o: $(ARBHOME)/INCLUDE/arb_strarray.h
 MG_species.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 MG_species.o: $(ARBHOME)/INCLUDE/arb_string.h
 MG_species.o: $(ARBHOME)/INCLUDE/arbdb.h

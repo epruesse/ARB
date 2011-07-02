@@ -21,6 +21,7 @@
 #include <aw_msg.hxx>
 #include <arb_progress.h>
 #include <arbdbt.h>
+#include <arb_strarray.h>
 
 #include <set>
 #include <string>

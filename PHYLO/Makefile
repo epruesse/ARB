@@ -123,6 +123,7 @@ PH_main.o: $(ARBHOME)/INCLUDE/arb_assert.h
 PH_main.o: $(ARBHOME)/INCLUDE/arb_core.h
 PH_main.o: $(ARBHOME)/INCLUDE/arb_error.h
 PH_main.o: $(ARBHOME)/INCLUDE/arb_msg.h
+PH_main.o: $(ARBHOME)/INCLUDE/arb_strarray.h
 PH_main.o: $(ARBHOME)/INCLUDE/arb_string.h
 PH_main.o: $(ARBHOME)/INCLUDE/arbdb.h
 PH_main.o: $(ARBHOME)/INCLUDE/arbdb_base.h

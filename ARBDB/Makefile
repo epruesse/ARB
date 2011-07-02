@@ -642,6 +642,7 @@ adname.o: $(ARBHOME)/INCLUDE/arb_core.h
 adname.o: $(ARBHOME)/INCLUDE/arb_error.h
 adname.o: $(ARBHOME)/INCLUDE/arb_msg.h
 adname.o: $(ARBHOME)/INCLUDE/arb_progress.h
+adname.o: $(ARBHOME)/INCLUDE/arb_strarray.h
 adname.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 adname.o: $(ARBHOME)/INCLUDE/arb_string.h
 adname.o: $(ARBHOME)/INCLUDE/arbtools.h
@@ -938,14 +939,13 @@ adtools.o: $(ARBHOME)/INCLUDE/arb_core.h
 adtools.o: $(ARBHOME)/INCLUDE/arb_error.h
 adtools.o: $(ARBHOME)/INCLUDE/arb_msg.h
 adtools.o: $(ARBHOME)/INCLUDE/arb_str.h
-adtools.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
+adtools.o: $(ARBHOME)/INCLUDE/arb_strarray.h
 adtools.o: $(ARBHOME)/INCLUDE/arb_string.h
 adtools.o: $(ARBHOME)/INCLUDE/arbtools.h
 adtools.o: $(ARBHOME)/INCLUDE/attributes.h
 adtools.o: $(ARBHOME)/INCLUDE/dupstr.h
 adtools.o: $(ARBHOME)/INCLUDE/smartptr.h
 adtools.o: $(ARBHOME)/INCLUDE/test_global.h
-adtools.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 adtree.o: ad_prot.h
 adtree.o: ad_t_prot.h
@@ -959,6 +959,7 @@ adtree.o: $(ARBHOME)/INCLUDE/arb_core.h
 adtree.o: $(ARBHOME)/INCLUDE/arb_error.h
 adtree.o: $(ARBHOME)/INCLUDE/arb_msg.h
 adtree.o: $(ARBHOME)/INCLUDE/arb_progress.h
+adtree.o: $(ARBHOME)/INCLUDE/arb_strarray.h
 adtree.o: $(ARBHOME)/INCLUDE/arb_string.h
 adtree.o: $(ARBHOME)/INCLUDE/arbtools.h
 adtree.o: $(ARBHOME)/INCLUDE/attributes.h
