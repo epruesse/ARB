@@ -15,6 +15,7 @@
 #include <aw_awar.hxx>
 #include <aw_msg.hxx>
 #include <arbdbt.h>
+#include <arb_strarray.h>
 
 #include <unistd.h>
 

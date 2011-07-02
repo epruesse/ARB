@@ -11,6 +11,7 @@
 #include <arbdbt.h>
 #include <arb_progress.h>
 #include "gb_local.h"
+#include <arb_strarray.h>
 
 #define GBT_PUT_DATA 1
 #define GBT_GET_SIZE 0

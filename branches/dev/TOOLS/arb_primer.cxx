@@ -9,6 +9,7 @@
 // =============================================================== //
 
 #include <arbdbt.h>
+#include <arb_strarray.h>
 
 #define ADD_LEN        10
 #define PRM_BUFFERSIZE 256

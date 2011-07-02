@@ -64,6 +64,7 @@ AWTC_submission.o: $(ARBHOME)/INCLUDE/arb_assert.h
 AWTC_submission.o: $(ARBHOME)/INCLUDE/arb_core.h
 AWTC_submission.o: $(ARBHOME)/INCLUDE/arb_error.h
 AWTC_submission.o: $(ARBHOME)/INCLUDE/arb_msg.h
+AWTC_submission.o: $(ARBHOME)/INCLUDE/arb_strarray.h
 AWTC_submission.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 AWTC_submission.o: $(ARBHOME)/INCLUDE/arb_string.h
 AWTC_submission.o: $(ARBHOME)/INCLUDE/arbdb.h

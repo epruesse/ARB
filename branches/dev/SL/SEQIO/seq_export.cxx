@@ -12,6 +12,7 @@
 
 #include <AP_filter.hxx>
 #include <arbdbt.h>
+#include <arb_strarray.h>
 #include <xml.hxx>
 #include <arb_progress.h>
 
