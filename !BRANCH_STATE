@@ -16,18 +16,20 @@ HEAD->BRANCH
                 7629 7631 7632 -> 7656
                 7635 7636 7637 7653 -> 7657
                 7641 7642 7643 7644 -> 7658
+                7673 7674 7675 7676 7677 -> 7678
 
     skipped patches (depends, already there, ...)
 
         merged from dev: 7352 7407 7408 7409 7410 7412 7413 7414 7415 7423 7424 7428 7431 7508 7619
-                         7620 7621 7622 7623 7624 7625 7626 7655 
+                         7620 7621 7622 7623 7624 7625 7626 7655 7659 7660 7661 7662 7663 7664 7665
+                         7666 7667 7668 7669
         merged from stable: 7488 7591
 
     not merged yet:
 
         --- current try above
 
-    not reviewed: 7656:HEAD
+    not reviewed: 7679:HEAD
 
 BRANCH->HEAD
 
@@ -78,12 +80,12 @@ BRANCH->HEAD
 
     skipped patches (depends, already there, this file, ...)
 
-                this file:      7249 7277 7351 7416 7627
+                this file:      7249 7277 7351 7416 7627 7670
                 depends:        7256 7540 7573
                 not needed:     7507 7560
                 crap:           7278 7280 7545 
                 sync 2 trunk:   7281
-                from trunk:     7505 7654 7656 7657 7658
+                from trunk:     7505 7654 7656 7657 7658 7678
 
     not merged yet:
 
@@ -101,5 +103,7 @@ BRANCH->HEAD
 
         --- current try above
 
+                7671 device (invisible)
+                7672 device (reset)
 
-    not reviewed: 7659:HEAD
+    not reviewed: 7679:HEAD

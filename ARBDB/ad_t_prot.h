@@ -122,7 +122,6 @@ void GBT_names_erase(char **names, int index);
 void GBT_names_add(char **&names, int insert_before, const char *name);
 void GBT_names_move(char **names, int old_index, int new_index);
 void GBT_free_names(char **names);
-size_t GBT_count_names(const char **names);
 char *GBT_read_string(GBDATA *gb_container, const char *fieldpath);
 char *GBT_read_as_string(GBDATA *gb_container, const char *fieldpath);
 const char *GBT_read_char_pntr(GBDATA *gb_container, const char *fieldpath);

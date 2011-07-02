@@ -397,15 +397,18 @@ adGene.o: arbdbt.h
 adGene.o: gb_local.h
 adGene.o: gb_prot.h
 adGene.o: $(ARBHOME)/INCLUDE/arb_core.h
+adGene.o: $(ARBHOME)/INCLUDE/arb_defs.h
 adGene.o: $(ARBHOME)/INCLUDE/arb_error.h
 adGene.o: $(ARBHOME)/INCLUDE/arb_msg.h
 adGene.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 adGene.o: $(ARBHOME)/INCLUDE/arb_string.h
+adGene.o: $(ARBHOME)/INCLUDE/arb_unit_test.h
 adGene.o: $(ARBHOME)/INCLUDE/arbtools.h
 adGene.o: $(ARBHOME)/INCLUDE/attributes.h
 adGene.o: $(ARBHOME)/INCLUDE/dupstr.h
 adGene.o: $(ARBHOME)/INCLUDE/smartptr.h
 adGene.o: $(ARBHOME)/INCLUDE/test_global.h
+adGene.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 adhash.o: ad_prot.h
 adhash.o: arb_assert.h
