@@ -504,9 +504,7 @@ public:
     const char *get_rest_of_name() const { return rest_of_name; }
 
     void add_short(AN_local *locs, const char *shrt) const {
-        if (strlen(parsed_name)>3) {
-            an_add_short(locs, id, parsed_name, parsed_sym, shrt, parsed_acc, parsed_add_id);
-        }
+        an_add_short(locs, id, parsed_name, parsed_sym, shrt, parsed_acc, parsed_add_id);
     }
 };
 
@@ -570,9 +568,9 @@ NameInformation::NameInformation(AN_local *locs) {
 
         char *first_space = strchr(parsed_name, ' ');
         if (first_space) {
-            char *second_space = strchr(first_space, ' ');
+            char *second_space = strchr(first_space+1, ' ');
             if (second_space) {
-                second_space[0] = 0; // skip all beyond 2nd word 
+                second_space[0] = 0; // skip all beyond 2nd word
             }
         }
     }
