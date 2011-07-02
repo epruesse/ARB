@@ -797,3 +797,141 @@ char *GEN_global_gene_identifier(GBDATA *gb_gene, GBDATA *gb_organism) {
 
     return GBS_global_string_copy("%s/%s", GBT_read_name(gb_organism), GBT_read_name(gb_gene));
 }
+
+// --------------------------------------------------------------------------------
+
+#ifdef UNIT_TESTS
+#include <test_unit.h>
+#include <arb_unit_test.h>
+#include <arb_defs.h>
+
+struct arb_unit_test::test_alignment_data TestAlignmentData_Genome[] = {
+    { 0, "spec", "AUCUCCUAAACCCAACCGUAGUUCGAAUUGAG" },
+};
+
+#define TEST_ASSERT_MEMBER_EQUAL(s1,s2,member) TEST_ASSERT_EQUAL((s1)->member, (s2)->member)
+
+#define TEST_ASSERT_GENPOS_EQUAL(p1,p2) do {                            \
+        TEST_ASSERT_MEMBER_EQUAL(p1, p2, parts);                        \
+        TEST_ASSERT_MEMBER_EQUAL(p1, p2, joinable);                     \
+        for (int p = 0; p<(p1)->parts; ++p) {                           \
+            TEST_ASSERT_MEMBER_EQUAL(p1, p2, start_pos[p]);             \
+            TEST_ASSERT_MEMBER_EQUAL(p1, p2, stop_pos[p]);              \
+            TEST_ASSERT_MEMBER_EQUAL(p1, p2, complement[p]);            \
+            if ((p1)->start_uncertain) {                                \
+                TEST_ASSERT_MEMBER_EQUAL(p1, p2, start_uncertain[p]);   \
+                TEST_ASSERT_MEMBER_EQUAL(p1, p2, stop_uncertain[p]);    \
+            }                                                           \
+        }                                                               \
+    } while(0)
+
+#define TEST_WRITE_READ_GEN_POSITION(pos)                               \
+    do {                                                                \
+        error = GEN_write_position(gb_gene, (pos));                     \
+        if (!error) {                                                   \
+            GEN_position *rpos = GEN_read_position(gb_gene);            \
+            if (!rpos) {                                                \
+                error = GB_await_error();                               \
+            }                                                           \
+            else {                                                      \
+                TEST_ASSERT_GENPOS_EQUAL((pos), rpos);                  \
+                GEN_free_position(rpos);                                \
+            }                                                           \
+        }                                                               \
+        TEST_ASSERT_NULL(error.deliver());                              \
+    } while(0)
+
+#define TEST_GENPOS_FIELD(field,value) do {                             \
+        GBDATA *gb_field = GB_entry(gb_gene, (field));                  \
+        if ((value)) {                                                  \
+            TEST_ASSERT(gb_field);                                      \
+            TEST_ASSERT_EQUAL(GB_read_char_pntr(gb_field), (value));    \
+        }                                                               \
+        else {                                                          \
+            TEST_ASSERT(!gb_field);                                     \
+        }                                                               \
+    } while(0)
+
+#define TEST_GENPOS_FIELDS(start,stop,complement,certain) do {          \
+        TEST_GENPOS_FIELD("pos_start", start);                          \
+        TEST_GENPOS_FIELD("pos_stop", stop);                            \
+        TEST_GENPOS_FIELD("pos_complement", complement);                \
+        TEST_GENPOS_FIELD("pos_certain", certain);                      \
+    } while(0)
+
+#define TEST_GENE_SEQ_AND_LENGTH(werr,wseq,wlen) do {                   \
+        size_t len;                                                     \
+        char *seq = GBT_read_gene_sequence_and_length(gb_gene, true, '-', &len); \
+        TEST_ASSERT_EQUAL(GB_have_error(), werr);                       \
+        if (seq) {                                                      \
+            TEST_ASSERT_EQUAL(len, (size_t)(wlen));                     \
+            TEST_ASSERT_EQUAL(seq, (wseq));                             \
+            free(seq);                                                  \
+        }                                                               \
+        else {                                                          \
+            GB_clear_error();                                           \
+        }                                                               \
+    } while(0)
+    
+void TEST_GEN_position() {
+    GB_shell   shell;
+    ARB_ERROR  error;
+    GBDATA    *gb_main = TEST_CREATE_DB(error, "ali_genom", TestAlignmentData_Genome, false);
+
+    TEST_ASSERT_NULL(error.deliver());
+
+    {
+        GB_transaction ta(gb_main);
+
+        GBDATA *gb_organism  = GBT_find_species(gb_main, "spec"); TEST_ASSERT(gb_organism);
+        GBDATA *gb_gene_data = GEN_findOrCreate_gene_data(gb_organism); TEST_ASSERT(gb_gene_data);
+        GBDATA *gb_gene      = GEN_create_nonexisting_gene_rel_gene_data(gb_gene_data, "gene"); TEST_ASSERT(gb_gene);
+
+        typedef SmartCustomPtr(GEN_position, GEN_free_position) GEN_position_Ptr;
+        GEN_position_Ptr pos;
+
+        pos = GEN_new_position(1, false);
+
+        TEST_WRITE_READ_GEN_POSITION(&*pos);
+        TEST_GENPOS_FIELDS("0", "0", "0", NULL);
+
+        TEST_GENE_SEQ_AND_LENGTH(true, NULL, 0); // expect error (ill. positions)
+        
+        pos->start_pos[0]  = 5;
+        pos->stop_pos[0]   = 10;
+        pos->complement[0] = 1;
+
+        GEN_use_uncertainties(&*pos);
+
+        TEST_WRITE_READ_GEN_POSITION(&*pos);
+        TEST_GENPOS_FIELDS("5", "10", "1", "==");
+
+        TEST_GENE_SEQ_AND_LENGTH(false, "TTTAGG", 6);
+
+        // ----------
+
+        pos = GEN_new_position(3, false);
+
+        TEST_WRITE_READ_GEN_POSITION(&*pos);
+        TEST_GENPOS_FIELDS("0,0,0", "0,0,0", "0,0,0", NULL);
+
+        GEN_use_uncertainties(&*pos);
+
+        pos->start_pos[0]  = 5;   pos->start_pos[1]  = 10;  pos->start_pos[2]  = 25;
+        pos->stop_pos[0]   = 15;  pos->stop_pos[1]   = 20;  pos->stop_pos[2]   = 25;
+        pos->complement[0] = 0;   pos->complement[1] = 1;   pos->complement[2] = 0;
+
+        pos->start_uncertain[0] = '<';
+        pos->stop_uncertain[2] = '>';
+
+        TEST_WRITE_READ_GEN_POSITION(&*pos);
+        TEST_GENPOS_FIELDS("5,10,25", "15,20,25", "0,1,0", "<=,==,=>");
+
+        TEST_GENE_SEQ_AND_LENGTH(false, "CCUAAACCCAA-TACGGTTGGGT-G", 25);
+    }
+
+    GB_close(gb_main);
+}
+
+#endif // UNIT_TESTS
+
