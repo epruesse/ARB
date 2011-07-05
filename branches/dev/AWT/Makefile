@@ -346,6 +346,7 @@ AWT_query_and_functions.o: $(ARBHOME)/INCLUDE/arb_core.h
 AWT_query_and_functions.o: $(ARBHOME)/INCLUDE/arb_error.h
 AWT_query_and_functions.o: $(ARBHOME)/INCLUDE/arb_msg.h
 AWT_query_and_functions.o: $(ARBHOME)/INCLUDE/arb_progress.h
+AWT_query_and_functions.o: $(ARBHOME)/INCLUDE/arb_sort.h
 AWT_query_and_functions.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 AWT_query_and_functions.o: $(ARBHOME)/INCLUDE/arb_string.h
 AWT_query_and_functions.o: $(ARBHOME)/INCLUDE/arbdb.h

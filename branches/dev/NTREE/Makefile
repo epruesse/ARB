@@ -716,6 +716,7 @@ NT_sort.o: $(ARBHOME)/INCLUDE/arb_core.h
 NT_sort.o: $(ARBHOME)/INCLUDE/arb_error.h
 NT_sort.o: $(ARBHOME)/INCLUDE/arb_msg.h
 NT_sort.o: $(ARBHOME)/INCLUDE/arb_progress.h
+NT_sort.o: $(ARBHOME)/INCLUDE/arb_sort.h
 NT_sort.o: $(ARBHOME)/INCLUDE/arb_string.h
 NT_sort.o: $(ARBHOME)/INCLUDE/arbdb.h
 NT_sort.o: $(ARBHOME)/INCLUDE/arbdb_base.h

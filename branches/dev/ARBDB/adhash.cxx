@@ -14,6 +14,7 @@
 #include "gb_hashindex.h"
 
 #include <arb_strbuf.h>
+#include <arb_sort.h>
 
 #include <climits>
 #include <cfloat>

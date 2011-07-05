@@ -95,6 +95,8 @@ arb_signal.o: $(ARBHOME)/INCLUDE/SuppressOutput.h
 arb_signal.o: $(ARBHOME)/INCLUDE/test_global.h
 arb_signal.o: $(ARBHOME)/INCLUDE/valgrind.h
 
+arb_sort.o: arb_sort.h
+
 arb_strarray.o: arb_core.h
 arb_strarray.o: arb_strarray.h
 arb_strarray.o: arb_strbuf.h

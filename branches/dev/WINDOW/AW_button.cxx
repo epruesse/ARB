@@ -20,6 +20,7 @@
 #include <arb_str.h>
 #include <arb_strbuf.h>
 #include <arb_strarray.h>
+#include <arb_sort.h>
 
 #include <Xm/Frame.h>
 #include <Xm/MenuShell.h>

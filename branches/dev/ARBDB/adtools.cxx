@@ -13,6 +13,7 @@
 
 #include <arbdbt.h>
 
+#include <arb_sort.h>
 #include <arb_str.h>
 #include <arb_strarray.h>
 
