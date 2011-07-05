@@ -124,6 +124,7 @@ AW_button.o: $(ARBHOME)/INCLUDE/arb_core.h
 AW_button.o: $(ARBHOME)/INCLUDE/arb_defs.h
 AW_button.o: $(ARBHOME)/INCLUDE/arb_error.h
 AW_button.o: $(ARBHOME)/INCLUDE/arb_msg.h
+AW_button.o: $(ARBHOME)/INCLUDE/arb_sort.h
 AW_button.o: $(ARBHOME)/INCLUDE/arb_str.h
 AW_button.o: $(ARBHOME)/INCLUDE/arb_strarray.h
 AW_button.o: $(ARBHOME)/INCLUDE/arb_strbuf.h

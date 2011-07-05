@@ -23,6 +23,7 @@
 
 #include <arbdbt.h>
 #include <arb_strbuf.h>
+#include <arb_sort.h>
 
 #include <list>
 #include <string>

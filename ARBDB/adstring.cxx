@@ -10,6 +10,8 @@
 
 #include <arb_backtrace.h>
 #include <arb_strbuf.h>
+#include <arb_sort.h>
+
 #include "gb_key.h"
 
 #include <SigHandler.h>

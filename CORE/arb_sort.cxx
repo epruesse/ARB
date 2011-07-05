@@ -1,6 +1,6 @@
 // =============================================================== //
 //                                                                 //
-//   File      : adsort.cxx                                        //
+//   File      : arb_sort.cxx                                      //
 //   Purpose   :                                                   //
 //                                                                 //
 //   Institute of Microbiology (Technical University Munich)       //
@@ -8,7 +8,9 @@
 //                                                                 //
 // =============================================================== //
 
-#include <arbdb.h>
+#include "arb_sort.h"
+#include <cstring>
+
 
 struct comparator {
     gb_compare_function  compare;
