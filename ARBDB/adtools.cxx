@@ -923,3 +923,37 @@ GB_ERROR GB_notify(GBDATA *gb_main, int id, const char *message) {
     return error;
 }
 
+// --------------------------------------------------------------------------------
+
+#ifdef UNIT_TESTS
+#include <test_unit.h>
+
+#define TEST_ASSERT_SCANNED_EQUALS(path,expected) do {  \
+        GB_transaction ta(gb_main);                     \
+        char **fields = GBT_scan_db(gb_main, path);     \
+        char  *joined = GBT_join_names(fields, ',');    \
+        TEST_ASSERT_EQUAL(joined, expected);            \
+        free(joined);                                   \
+        GBT_free_names(fields);                         \
+    } while (0)
+
+void TEST_scan_db() {
+    GB_shell  shell;
+    GBDATA   *gb_main = GB_open("TEST_loadsave.arb", "r");
+
+
+    TEST_ASSERT_SCANNED_EQUALS(NULL, 
+                               "alignment/aligned,alignment/alignment_len,alignment/alignment_name,alignment/alignment_rem,alignment/alignment_type,alignment/alignment_write_security,alignment/auto_format,"
+                               "byte,bytes,bytes,bytes,"
+                               "extended/acc,extended/ali_16s/data,extended/aligned,extended/errors,extended/full_name,extended/name,"
+                               "\nfloats,\tints,\tints_empty,"
+                               "key_data/key/key_hidden,key_data/key/key_name,key_data/key/key_type,"
+                               "species/AL,species/ARB_color,species/acc,species/ali_16s/data,species/bits_test,species/float_test,species/full_name,species/name,species/seqcheck,species/tax,"
+                               "str,str_percent,use");
+
+    TEST_ASSERT_SCANNED_EQUALS("species", "/AL,/ARB_color,/acc,/ali_16s/data,/bits_test,/float_test,/full_name,/name,/seqcheck,/tax");
+                               
+    GB_close(gb_main);
+}
+
+#endif // UNIT_TESTS
