@@ -25,6 +25,7 @@
 
 #define AWAR_FIELD_REORDER_SOURCE "tmp/ad_reorder/source"
 #define AWAR_FIELD_REORDER_DEST   "tmp/ad_reorder/dest"
+#define AWAR_FIELD_REORDER_ORDER  "tmp/ad_reorder/order"
 
 #ifndef AWT_HXX
 #include <awt.hxx>

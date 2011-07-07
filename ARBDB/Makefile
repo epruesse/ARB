@@ -935,6 +935,7 @@ adtools.o: $(ARBHOME)/INCLUDE/attributes.h
 adtools.o: $(ARBHOME)/INCLUDE/dupstr.h
 adtools.o: $(ARBHOME)/INCLUDE/smartptr.h
 adtools.o: $(ARBHOME)/INCLUDE/test_global.h
+adtools.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 adtree.o: ad_prot.h
 adtree.o: ad_t_prot.h
