@@ -21,7 +21,6 @@
 #include <aw_root.hxx>
 #include <arb_str.h>
 #include <arb_strbuf.h>
-#include <arb_strarray.h>
 
 #define AWAR1 "tmp/merge1/"
 #define AWAR2 "tmp/merge2/"
@@ -631,10 +630,13 @@ AW_window *create_mg_merge_tagged_fields(AW_root *aw_root)
 
 GB_ERROR MG_equal_alignments(bool autoselect_equal_alignment_name) {
     /*! Make the alignment names equal */
-    char **   M_alignment_names = GBT_get_alignment_names(GLOBAL_gb_merge);
-    char **   D_alignment_names = GBT_get_alignment_names(GLOBAL_gb_dest);
-    GB_ERROR  error             = 0;
-    char     *dest              = 0;
+    StrArray M_alignment_names;
+    StrArray D_alignment_names;
+    GBT_get_alignment_names(M_alignment_names, GLOBAL_gb_merge);
+    GBT_get_alignment_names(D_alignment_names, GLOBAL_gb_dest);
+
+    GB_ERROR  error = 0;
+    char     *dest  = 0;
 
     if (M_alignment_names[0] == 0) {
         error =  GB_export_error("No source sequences found");
@@ -714,8 +716,6 @@ GB_ERROR MG_equal_alignments(bool autoselect_equal_alignment_name) {
         }
         free(type);
     }
-    GBT_free_names(M_alignment_names);
-    GBT_free_names(D_alignment_names);
 
     return error;
 }

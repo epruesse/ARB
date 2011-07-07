@@ -14,6 +14,11 @@
 #include <arb_str.h>
 #include <arb_string.h>
 #include <arb_strbuf.h>
+#include <arb_sort.h>
+
+void StrArray::sort(StrArray_compare_fun compare, void *client_data) {
+    GB_sort((void**)str, 0, elems(), compare, client_data);
+}
 
 /* ----------------------------------------
  * conversion between
@@ -28,17 +33,15 @@
 #warning rename to GBS_split_string and move to string functions
 #endif
 
-char **GBT_split_string(const char *namelist, const char *separator, bool dropEmptyTokens, size_t *countPtr) {
+void GBT_split_string(StrArray& names, const char *namelist, const char *separator, bool dropEmptyTokens, size_t *countPtr) {
     /*! Split 'namelist' into an array of substrings at each member of 'separator'.
      *
-     * @result NULL-terminated array of heap-copies
-     * Use GBT_free_names() to free it.
-     *
+     * @param names heap-copies of splitted parts
      * @param dropEmptyTokens if true, empty tokens will be skipped
      * @param countPtr if != NULL it is set to the number of substrings found
      */
 
-    char **names = NULL;
+    names.erase();
 
     for (int pass = 1; pass <= 2; ++pass) {
         const char *sep        = namelist;
@@ -69,24 +72,22 @@ char **GBT_split_string(const char *namelist, const char *separator, bool dropEm
         }
 
         if (pass == 1) {
-            names = (char**)malloc((tokenCount+1)*sizeof(*names));
+            names.reserve(tokenCount);
         }
         else {
             names[tokenCount]       = NULL;
             if (countPtr) *countPtr = tokenCount;
         }
     }
-
-    return names;
 }
 
-char **GBT_split_string(const char *namelist, char separator, size_t *countPtr) {
+void GBT_split_string(StrArray& dest, const char *namelist, char separator, size_t *countPtr) {
     char separator_string[] = "x";
     separator_string[0]   = separator;
-    return GBT_split_string(namelist, separator_string, false, countPtr);
+    GBT_split_string(dest, namelist, separator_string, false, countPtr);
 }
 
-char *GBT_join_names(const char *const *names, char separator) {
+char *GBT_join_names(const StrArray& names, char separator) {
     /*! Joins a NULL-terminated array of 'char*' into one string
      *
      * @param separator is put between the concatenated strings
@@ -111,13 +112,13 @@ char *GBT_join_names(const char *const *names, char separator) {
     return GBS_strclose(out);
 }
 
-size_t GBT_count_names(const char *const *names) {
+size_t GBT_count_names(const StrArray& names) {
     size_t count = 0;
-    if (names) while (names[count]) ++count;
+    if (!names.empty()) while (names[count]) ++count;
     return count;
 }
 
-int GBT_names_index_of(const char *const *names, const char *search_for) {
+int GBT_names_index_of(const StrArray& names, const char *search_for) {
     // return index of 'search_for' or -1 if not found or given
     int index = -1;
     if (search_for) {
@@ -131,7 +132,7 @@ int GBT_names_index_of(const char *const *names, const char *search_for) {
     return index;
 }
 
-void GBT_names_erase(char **names, int index) {
+void GBT_names_erase(StrArray& names, int index) {
     if (index >= 0) {
         int i;
         for (i = 0; names[i] && i<index; ++i) {}
@@ -140,14 +141,14 @@ void GBT_names_erase(char **names, int index) {
     }
 }
 
-void GBT_names_add(char**& names, int insert_before, const char *name) {
+void GBT_names_add(StrArray& names, int insert_before, const char *name) {
     // insert a new 'name' before position 'insert_before'
     // if 'insert_before' == -1 (or bigger than array size) -> append at end
 
     size_t old_count = GBT_count_names(names);
     size_t new_count = old_count+1;
 
-    names              = (char**)realloc(names, (new_count+2)*sizeof(*names));
+    names.reserve(new_count);
     names[new_count-1] = strdup(name);
     names[new_count]   = NULL;
 
@@ -156,7 +157,7 @@ void GBT_names_add(char**& names, int insert_before, const char *name) {
     }
 }
 
-void GBT_names_move(char **names, int old_index, int new_index) {
+void GBT_names_move(StrArray& names, int old_index, int new_index) {
     /*! moves array-entry from 'old_index' to 'new_index' 
      * -1 means "last entry"
      * if new_index is out of bounds, it'll be moved to start of array
@@ -179,13 +180,6 @@ void GBT_names_move(char **names, int old_index, int new_index) {
     }
 }
 
-void GBT_free_names(char **names) {
-    if (names) {
-        for (char **pn = names; *pn; pn++) free(*pn);
-        free(names);
-    }
-}
-
 // --------------------------------------------------------------------------------
 
 #ifdef UNIT_TESTS
@@ -195,30 +189,30 @@ void GBT_free_names(char **names) {
 #define TEST_SPLIT_JOIN(str, sep)                               \
     do {                                                        \
         size_t count;                                           \
-        char **names  = GBT_split_string(str, sep, &count);     \
+        StrArray names;                                         \
+        GBT_split_string(names, str, sep, &count);              \
         char  *joined = GBT_join_names(names, sep);             \
         TEST_ASSERT_EQUAL(count, GBT_count_names(names));       \
         TEST_ASSERT_EQUAL(str, joined);                         \
         free(joined);                                           \
-        GBT_free_names(names);                                  \
     } while(0)
 
 void TEST_GBT_split_join_names() {
     {                                               // simple split
         size_t   count;
-        char   **names = GBT_split_string("a*b*c", '*', &count);
+        StrArray names;
+        GBT_split_string(names, "a*b*c", '*', &count);
 
         TEST_ASSERT_EQUAL(count, 3U);
         TEST_ASSERT_EQUAL(count, GBT_count_names(names));
         TEST_ASSERT_EQUAL(names[0], "a");
         TEST_ASSERT_EQUAL(names[1], "b");
         TEST_ASSERT_EQUAL(names[2], "c");
-
-        GBT_free_names(names);
     }
     {                                               // split string containing empty tokens
         size_t   count;
-        char   **names = GBT_split_string("**a**b*c*", '*', &count);
+        StrArray names;
+        GBT_split_string(names, "**a**b*c*", '*', &count);
 
         TEST_ASSERT_EQUAL(count, 7U);
         TEST_ASSERT_EQUAL(count, GBT_count_names(names));
@@ -230,8 +224,6 @@ void TEST_GBT_split_join_names() {
         TEST_ASSERT_EQUAL(names[5], "c");
         TEST_ASSERT_EQUAL(names[6], "");
         TEST_ASSERT_NULL(names[7]);
-
-        GBT_free_names(names);
     }
 
     TEST_SPLIT_JOIN("a.b.c", '.');
@@ -245,15 +237,14 @@ void TEST_GBT_split_join_names() {
 }
 
 void TEST_GBT_names_index_of() {
-    char **names = GBT_split_string("**a**b*c*", '*', NULL);
+    StrArray names;
+    GBT_split_string(names, "**a**b*c*", '*', NULL);
 
     TEST_ASSERT_EQUAL(GBT_names_index_of(names, "a"), 2);
     TEST_ASSERT_EQUAL(GBT_names_index_of(names, "b"), 4);
     TEST_ASSERT_EQUAL(GBT_names_index_of(names, "c"), 5);
     TEST_ASSERT_EQUAL(GBT_names_index_of(names, ""), 0);
     TEST_ASSERT_EQUAL(GBT_names_index_of(names, "no"), -1);
-
-    GBT_free_names(names);
 }
 
 #define TEST_ASSERT_NAMES_JOIN_TO(names, sep, expected) \
@@ -264,7 +255,8 @@ void TEST_GBT_names_index_of() {
     } while(0)                                          \
     
 void TEST_GBT_names_erase() {
-    char **names = GBT_split_string("a*b*c*d*e", '*', NULL);
+    StrArray names;
+    GBT_split_string(names, "a*b*c*d*e", '*', NULL);
 
     TEST_ASSERT_EQUAL(GBT_count_names(names), 5U);
 
@@ -282,12 +274,11 @@ void TEST_GBT_names_erase() {
 
     GBT_names_erase(names, 1);
     TEST_ASSERT_NAMES_JOIN_TO(names, '*', "b*d");
-    
-    GBT_free_names(names);
 }
 
 void TEST_GBT_names_move() {
-    char **names = GBT_split_string("a*b*c*dee", '*', NULL);
+    StrArray names;
+    GBT_split_string(names, "a*b*c*dee", '*', NULL);
 
     GBT_names_move(names, 0, -1); // -1 means last
     TEST_ASSERT_NAMES_JOIN_TO(names, '*', "b*c*dee*a");
@@ -303,12 +294,11 @@ void TEST_GBT_names_move() {
     TEST_ASSERT_NAMES_JOIN_TO(names, '*', "dee*b*c*a");
     GBT_names_move(names, -1, 99999);
     TEST_ASSERT_NAMES_JOIN_TO(names, '*', "a*dee*b*c");
-    
-    GBT_free_names(names);
 }
 
 void TEST_GBT_names_add() { // test after GBT_names_move (cause add depends on move)
-    char **names = GBT_split_string("a", '*', NULL);
+    StrArray names;
+    GBT_split_string(names, "a", '*', NULL);
 
     GBT_names_add(names, -1, "b");                  // append at end
     TEST_ASSERT_NAMES_JOIN_TO(names, '*', "a*b");
@@ -327,11 +317,7 @@ void TEST_GBT_names_add() { // test after GBT_names_move (cause add depends on m
 
     GBT_names_add(names, 5, "d0");                  // insert before last
     TEST_ASSERT_NAMES_JOIN_TO(names, '*', "a0*a*b*b2*c*d0*d");
-    
-    GBT_free_names(names);
 }
 
 #endif
-
-
 

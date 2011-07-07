@@ -1694,7 +1694,6 @@ UNITS_WORKING = \
 	$(RNA3D_TEST) \
 	SERVERCNTRL/SERVERCNTRL.test \
 	AWT/AWT.test \
-	CORE/CORE.test \
 
 # untestable units
 
@@ -1711,6 +1710,7 @@ UNITS_UNTESTABLE_ATM = \
 
 # for the moment, put all units containing tests into UNITS_TESTED:
 UNITS_TESTED = \
+	CORE/CORE.test \
 	SL/TREEDISP/TREEDISP.test \
 	TOOLS/arb_test.test \
 	NTREE/NTREE.test \

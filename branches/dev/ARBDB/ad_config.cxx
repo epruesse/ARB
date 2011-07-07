@@ -15,8 +15,10 @@
 #include <arbdbt.h>
 
 #include <arb_strbuf.h>
+#include <arb_strarray.h>
 
-char **GBT_get_configuration_names_and_count(GBDATA *gb_main, int *countPtr) {
+// @@@ remove GBT_get_configuration_names when StrArray contains count
+void GBT_get_configuration_names_and_count(StrArray& configNames, GBDATA *gb_main, int *countPtr) {
     /* returns existing configurations (as null terminated array of char* (heap-copies))
      * Use GBT_free_names() to free the array.
      *
@@ -24,9 +26,8 @@ char **GBT_get_configuration_names_and_count(GBDATA *gb_main, int *countPtr) {
      *
      * Note: automatically names configs w/o legal name.
      */
-    GBDATA  *gb_configuration_data;
-    int      count       = 0;
-    char   **configNames = NULL;
+    GBDATA *gb_configuration_data;
+    int     count = 0;
 
     GB_push_transaction(gb_main);
 
@@ -42,7 +43,6 @@ char **GBT_get_configuration_names_and_count(GBDATA *gb_main, int *countPtr) {
         }
 
         if (count) {
-            configNames       = (char **)GB_calloc(sizeof(char *), (size_t)count+1);
             count             = 0;
             int unnamed_count = 0;
 
@@ -70,13 +70,11 @@ char **GBT_get_configuration_names_and_count(GBDATA *gb_main, int *countPtr) {
 
     GB_pop_transaction(gb_main);
     *countPtr = count;
-
-    return configNames;
 }
 
-char **GBT_get_configuration_names(GBDATA *gb_main) {
+void GBT_get_configuration_names(StrArray& configNames, GBDATA *gb_main) {
     int dummy;
-    return GBT_get_configuration_names_and_count(gb_main, &dummy);
+    return GBT_get_configuration_names_and_count(configNames, gb_main, &dummy);
 }
 
 GBDATA *GBT_find_configuration(GBDATA *gb_main, const char *name) {
@@ -263,8 +261,9 @@ void GBT_free_config_parser(GBT_config_parser *parser) {
 
 #if defined(DEBUG) && 0
 void GBT_test_config_parser(GBDATA *gb_main) {
-    char **config_names = GBT_get_configuration_names(gb_main);
-    if (config_names) {
+    StrArray config_names;
+    GBT_get_configuration_names(config_names, gb_main);
+    if (!config_names.empty()) {
         int count;
         for (count = 0; config_names[count]; ++count) {
             char       *config_name = config_names[count];
@@ -288,7 +287,7 @@ void GBT_test_config_parser(GBDATA *gb_main) {
                     const char        *area_config_def = area ? config->middle_area : config->top_area;
                     GBT_config_parser *parser          = GBT_start_config_parser(area_config_def);
                     GBT_config_item   *item            = GBT_create_config_item();
-                    void              *new_config      = GBS_stropen(1000);
+                    GBS_strstruct     *new_config      = GBS_stropen(1000);
                     char              *new_config_str;
 
                     gb_assert(parser);
@@ -325,7 +324,6 @@ void GBT_test_config_parser(GBDATA *gb_main) {
             }
             GBT_free_configuration_data(config);
         }
-        GBT_free_names(config_names);
     }
 }
 #endif // DEBUG

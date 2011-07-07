@@ -2385,12 +2385,14 @@ public:
             ? make_node_text_nds(gb_main, gb_species, NDS_OUTPUT_TAB_SEPARATED, 0, tree_name)
             : GBT_read_name(gb_species);
 
-        char **parts = GBT_split_string(nds, "\t", false, &part_count);
+        StrArray parts;
+        GBT_split_string(parts, nds, "\t", false, &part_count);
 
         column = new Column[part_count];
-        for (size_t i = 0; i<part_count; ++i) column[i].init(parts[i], device, gc);
-
-        free(parts);
+        for (size_t i = 0; i<part_count; ++i) {
+            column[i].init(parts[i], device, gc);
+            parts[i] = NULL; // freed by Column
+        }
     }
 
     ~ListDisplayRow() { delete [] column; }

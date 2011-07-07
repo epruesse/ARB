@@ -169,10 +169,11 @@ GB_ERROR GBT_commit_rename_session() { // goes to header: __ATTR__USERESULT
 
     // rename species in trees
     {
-        int tree_count;
-        char **tree_names = GBT_get_tree_names_and_count(NameSession.gb_main, &tree_count);
+        int      tree_count;
+        StrArray tree_names;
+        GBT_get_tree_names_and_count(tree_names, NameSession.gb_main, &tree_count);
 
-        if (tree_names) {
+        if (!tree_names.empty()) {
             int count;
             gb_assert(tree_count); // otherwise tree_names should be zero
 
@@ -201,16 +202,16 @@ GB_ERROR GBT_commit_rename_session() { // goes to header: __ATTR__USERESULT
                     ++progress;
                 }
             }
-            GBT_free_names(tree_names);
         }
         commit_progress.inc_and_check_user_abort(error);
     }
     // rename configurations
     if (!error) {
-        int config_count;
-        char **config_names = GBT_get_configuration_names_and_count(NameSession.gb_main, &config_count);
+        int      config_count;
+        StrArray config_names;
+        GBT_get_configuration_names_and_count(config_names, NameSession.gb_main, &config_count);
 
-        if (config_names) {
+        if (!config_names.empty()) {
             int count;
             gb_assert(config_count); // otherwise config_names should be zero
 
@@ -256,7 +257,6 @@ GB_ERROR GBT_commit_rename_session() { // goes to header: __ATTR__USERESULT
                 }
                 progress.inc_and_check_user_abort(error);
             }
-            GBT_free_names(config_names);
         }
     }
     commit_progress.inc_and_check_user_abort(error);
