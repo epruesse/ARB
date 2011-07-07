@@ -98,6 +98,7 @@ arb_signal.o: $(ARBHOME)/INCLUDE/valgrind.h
 arb_sort.o: arb_sort.h
 
 arb_strarray.o: arb_core.h
+arb_strarray.o: arb_sort.h
 arb_strarray.o: arb_strarray.h
 arb_strarray.o: arb_strbuf.h
 arb_strarray.o: arb_string.h

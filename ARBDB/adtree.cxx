@@ -716,14 +716,11 @@ char *GBT_find_largest_tree(GBDATA *gb_main) {
 }
 
 char *GBT_find_latest_tree(GBDATA *gb_main) {
-    char **names = GBT_get_tree_names(gb_main);
-    char *name = 0;
-    char **pname;
-    if (!names) return NULL;
-    for (pname = names; *pname; pname++) name = *pname;
-    if (name) name = strdup(name);
-    GBT_free_names(names);
-    return name;
+    StrArray names;
+    int      count;
+    GBT_get_tree_names_and_count(names, gb_main, &count);
+
+    return count ? strdup(names[count-1]) : NULL;
 }
 
 const char *GBT_tree_info_string(GBDATA *gb_main, const char *tree_name, int maxTreeNameLen) {
@@ -779,45 +776,31 @@ GB_ERROR GBT_check_tree_name(const char *tree_name)
     return 0;
 }
 
-char **GBT_get_tree_names_and_count(GBDATA *Main, int *countPtr) {
+// @@@ remove GBT_get_tree_names_and_count when StrArray contains counter
+void GBT_get_tree_names_and_count(StrArray& names, GBDATA *Main, int *countPtr) {
     // returns an null terminated array of string pointers
 
     int      count       = 0;
     GBDATA  *gb_treedata = GB_entry(Main, "tree_data");
-    char   **erg         = 0;
 
     if (gb_treedata) {
-        GBDATA *gb_tree;
-        count = 0;
-
-        for (gb_tree = GB_child(gb_treedata);
-             gb_tree;
-             gb_tree = GB_nextChild(gb_tree))
-        {
-            count ++;
-        }
+        for (GBDATA *gb_tree = GB_child(gb_treedata); gb_tree; gb_tree = GB_nextChild(gb_tree)) count ++;
 
         if (count) {
-            erg   = (char **)GB_calloc(sizeof(char *), (size_t)count+1);
+            names.reserve(count);
             count = 0;
-
-            for (gb_tree = GB_child(gb_treedata);
-                 gb_tree;
-                 gb_tree = GB_nextChild(gb_tree))
-            {
-                erg[count] = GB_read_key(gb_tree);
-                count ++;
+            for (GBDATA *gb_tree = GB_child(gb_treedata); gb_tree; gb_tree = GB_nextChild(gb_tree)) {
+                names[count++] = GB_read_key(gb_tree);
             }
         }
     }
 
     *countPtr = count;
-    return erg;
 }
 
-char **GBT_get_tree_names(GBDATA *Main) {
+void GBT_get_tree_names(StrArray& names, GBDATA *Main) {
     int dummy;
-    return GBT_get_tree_names_and_count(Main, &dummy);
+    GBT_get_tree_names_and_count(names, Main, &dummy);
 }
 
 char *GBT_get_name_of_next_tree(GBDATA *gb_main, const char *tree_name) {

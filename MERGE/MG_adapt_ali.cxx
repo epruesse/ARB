@@ -14,7 +14,6 @@
 #include <aw_msg.hxx>
 #include <arbdbt.h>
 #include <arb_strbuf.h>
-#include <arb_strarray.h>
 
 #include <algorithm>
 #include <list>
@@ -663,12 +662,11 @@ MG_remap *MG_create_remap(GBDATA *gb_left, GBDATA *gb_right, const char *referen
 // --------------------------------------------------------------------------------
 
 MG_remaps::MG_remaps(GBDATA *gb_left, GBDATA *gb_right, bool enable, const char *reference_species_names)
-    : n_remaps(0)
-    , alignment_names(NULL)
-    , remaps(NULL)
+    : n_remaps(0), 
+      remaps(NULL)
 {
     if (enable) { // otherwise nothing will be remapped!
-        alignment_names = GBT_get_alignment_names(gb_left);
+        GBT_get_alignment_names(alignment_names, gb_left);
         for (n_remaps = 0; alignment_names[n_remaps]; n_remaps++) {} // count alignments
 
         remaps = (MG_remap**)GB_calloc(sizeof(*remaps), n_remaps);
@@ -680,7 +678,6 @@ MG_remaps::MG_remaps(GBDATA *gb_left, GBDATA *gb_right, bool enable, const char 
 
 MG_remaps::~MG_remaps() {
     for (int i=0; i<n_remaps; i++) delete remaps[i];
-    GBT_free_names(alignment_names);
     free(remaps);
 }
 

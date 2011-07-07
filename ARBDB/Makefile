@@ -125,6 +125,7 @@ ad_config.o: gb_prot.h
 ad_config.o: $(ARBHOME)/INCLUDE/arb_core.h
 ad_config.o: $(ARBHOME)/INCLUDE/arb_error.h
 ad_config.o: $(ARBHOME)/INCLUDE/arb_msg.h
+ad_config.o: $(ARBHOME)/INCLUDE/arb_strarray.h
 ad_config.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 ad_config.o: $(ARBHOME)/INCLUDE/arb_string.h
 ad_config.o: $(ARBHOME)/INCLUDE/arbtools.h
@@ -226,6 +227,7 @@ adali.o: gb_prot.h
 adali.o: $(ARBHOME)/INCLUDE/arb_core.h
 adali.o: $(ARBHOME)/INCLUDE/arb_error.h
 adali.o: $(ARBHOME)/INCLUDE/arb_msg.h
+adali.o: $(ARBHOME)/INCLUDE/arb_strarray.h
 adali.o: $(ARBHOME)/INCLUDE/arb_string.h
 adali.o: $(ARBHOME)/INCLUDE/arbtools.h
 adali.o: $(ARBHOME)/INCLUDE/attributes.h
@@ -379,6 +381,7 @@ adfile.o: $(ARBHOME)/INCLUDE/arb_core.h
 adfile.o: $(ARBHOME)/INCLUDE/arb_error.h
 adfile.o: $(ARBHOME)/INCLUDE/arb_msg.h
 adfile.o: $(ARBHOME)/INCLUDE/arb_sort.h
+adfile.o: $(ARBHOME)/INCLUDE/arb_strarray.h
 adfile.o: $(ARBHOME)/INCLUDE/arb_string.h
 adfile.o: $(ARBHOME)/INCLUDE/arbtools.h
 adfile.o: $(ARBHOME)/INCLUDE/attributes.h

@@ -21,14 +21,13 @@
 #define CONFIG_DATA_PATH "configuration_data"
 #define CONFIG_ITEM      "configuration"
 
-    GBDATA *GBT_find_configuration(GBDATA *gb_main, const char *name);
-    GBDATA *GBT_create_configuration(GBDATA *gb_main, const char *name);
+GBDATA *GBT_find_configuration(GBDATA *gb_main, const char *name);
+GBDATA *GBT_create_configuration(GBDATA *gb_main, const char *name);
 
-    char **GBT_get_configuration_names(GBDATA *gb_main);
-    char **GBT_get_configuration_names_and_count(GBDATA *gb_main, int *countPtr);
+void GBT_get_configuration_names(StrArray& configNames, GBDATA *gb_main);
+void GBT_get_configuration_names_and_count(StrArray& configNames, GBDATA *gb_main, int *countPtr);
 
-
-    struct GBT_config {
+struct GBT_config {
         char *top_area;
         char *middle_area;
     };

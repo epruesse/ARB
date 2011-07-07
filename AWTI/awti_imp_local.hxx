@@ -21,6 +21,9 @@
 #ifndef AWTI_IMPORT_HXX
 #include <awti_import.hxx>
 #endif
+#ifndef ARB_STRARRAY_H
+#include <arb_strarray.h>
+#endif
 
 #define awti_assert(cond) arb_assert(cond)
 
@@ -115,16 +118,19 @@ struct input_format_struct : virtual Noncopyable {
 };
 
 struct awtcig_struct {
-    struct input_format_struct  *ifo; // main input format
-    struct input_format_struct  *ifo2; // symlink to input format
-    GBDATA                      *gb_main; // import database
-    AW_CL                        cd1, cd2;
+    struct input_format_struct *ifo;      // main input format
+    struct input_format_struct *ifo2;     // symlink to input format
+    
+    GBDATA *gb_main;                      // import database
+    AW_CL   cd1, cd2;
     AWTC_RCB(func);
-    char                       **filenames;
-    char                       **current_file;
-    FILE                        *in;
-    bool                         doExit; // whether import window 'close' does exit
-    GBDATA                      *gb_other_main; // main DB
+
+    StrArray filenames;
+    int      current_file_idx;
+
+    FILE   *in;
+    bool    doExit;                             // whether import window 'close' does exit
+    GBDATA *gb_other_main;                      // main DB
 };
 
 

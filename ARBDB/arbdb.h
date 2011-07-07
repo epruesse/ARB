@@ -39,6 +39,7 @@ struct GBS_string_matcher;
 struct GBS_strstruct;
 struct GEN_position;
 struct DictData;
+struct StrArray;
 
 // --------------
 //      enums

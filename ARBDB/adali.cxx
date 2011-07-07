@@ -10,6 +10,7 @@
 
 #include <arbdbt.h>
 #include <adGene.h>
+#include <arb_strarray.h>
 
 #include "gb_local.h"
 
@@ -127,37 +128,31 @@ GB_ERROR GBT_check_data(GBDATA *Main, const char *alignment_name) {
     return error;
 }
 
-char **GBT_get_alignment_names(GBDATA *gbd) {
+void GBT_get_alignment_names(StrArray& names, GBDATA *gbd) {
     /* Get names of existing alignments from database.
      *
      * Returns: array of strings, the last element is NULL
      * (Note: use GBT_free_names() to free result)
      */
 
-    GBDATA *presets;
-    GBDATA *ali;
-    GBDATA *name;
-    long size;
+    GBDATA *presets = GB_search(gbd, "presets", GB_CREATE_CONTAINER);
 
-    char **erg;
-    presets = GB_search(gbd, "presets", GB_CREATE_CONTAINER);
-    size = 0;
-    for (ali = GB_entry(presets, "alignment"); ali; ali = GB_nextEntry(ali)) {
+    long size = 0;
+    for (GBDATA *ali = GB_entry(presets, "alignment"); ali; ali = GB_nextEntry(ali)) {
         size ++;
     }
-    erg = (char **)GB_calloc(sizeof(char *), (size_t)size+1);
+
     size = 0;
-    for (ali = GB_entry(presets, "alignment"); ali; ali = GB_nextEntry(ali)) {
-        name = GB_entry(ali, "alignment_name");
+    for (GBDATA *ali = GB_entry(presets, "alignment"); ali; ali = GB_nextEntry(ali)) {
+        GBDATA *name = GB_entry(ali, "alignment_name");
         if (!name) {
-            erg[size] = strdup("alignment_name ???");
+            names[size] = strdup("alignment_name ???");
         }
         else {
-            erg[size] = GB_read_string(name);
+            names[size] = GB_read_string(name);
         }
         size ++;
     }
-    return erg;
 }
 
 static char *gbt_nonexisting_alignment(GBDATA *gbMain) {

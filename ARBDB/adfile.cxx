@@ -19,6 +19,7 @@
 #include <string>
 
 #include <arb_sort.h>
+#include <arb_strarray.h>
 
 #include "gb_local.h"
 #include "gb_load.h"
@@ -234,7 +235,7 @@ char *GBS_find_lib_file(const char *filename, const char *libprefix, bool warn_w
     return result;
 }
 
-char **GBS_read_dir(const char *dir, const char *mask) {
+void GBS_read_dir(StrArray& names, const char *dir, const char *mask) {
     /* Return names of files in directory 'dir'.
      * Filter through 'mask':
      * - mask == NULL -> return all files
@@ -251,13 +252,11 @@ char **GBS_read_dir(const char *dir, const char *mask) {
 
     gb_assert(dir);             // dir == NULL was allowed before 12/2008, forbidden now!
 
-    char  *fulldir   = strdup(GB_canonical_path(dir));
-    DIR   *dirstream = opendir(fulldir);
-    char **names     = NULL;
+    char *fulldir   = strdup(GB_canonical_path(dir));
+    DIR  *dirstream = opendir(fulldir);
 
     if (!dirstream) {
         if (GB_is_readablefile(fulldir)) {
-            names    = (char**)malloc(2*sizeof(*names));
             names[0] = strdup(fulldir);
             names[1] = NULL;
         }
@@ -265,16 +264,15 @@ char **GBS_read_dir(const char *dir, const char *mask) {
             char *lslash = strrchr(fulldir, '/');
 
             if (lslash) {
-                char *name;
-                lslash[0] = 0;
-                name      = lslash+1;
+                lslash[0]  = 0;
+                char *name = lslash+1;
                 if (GB_is_directory(fulldir)) {
-                    names = GBS_read_dir(fulldir, name);
+                    GBS_read_dir(names, fulldir, name);
                 }
                 lslash[0] = '/';
             }
 
-            if (!names) GB_export_errorf("can't read directory '%s'", fulldir);
+            if (names.empty()) GB_export_errorf("can't read directory '%s'", fulldir);
         }
     }
     else {
@@ -282,10 +280,7 @@ char **GBS_read_dir(const char *dir, const char *mask) {
 
         GBS_string_matcher *matcher = GBS_compile_matcher(mask, GB_MIND_CASE);
         if (matcher) {
-            int allocated = 100;
-            int entries   = 0;
-            names         = (char**)malloc(100*sizeof(*names));
-
+            int     entries = 0;
             dirent *entry;
             while ((entry = readdir(dirstream)) != 0) {
                 const char *name = entry->d_name;
@@ -297,20 +292,15 @@ char **GBS_read_dir(const char *dir, const char *mask) {
                     if (GBS_string_matches_regexp(name, matcher)) {
                         const char *full = GB_concat_path(fulldir, name);
                         if (!GB_is_directory(full)) { // skip directories
-                            if (entries == allocated) {
-                                allocated += allocated>>1; // * 1.5
-                                names      = (char**)realloc(names, allocated*sizeof(*names));
-                            }
+                            names.reserve(entries);
                             names[entries++] = strdup(full);
                         }
                     }
                 }
             }
 
-            names          = (char**)realloc(names, (entries+1)*sizeof(*names));
             names[entries] = NULL;
-
-            GB_sort((void**)names, 0, entries, GB_string_comparator, 0);
+            names.sort(GB_string_comparator, 0);
 
             GBS_free_matcher(matcher);
         }
@@ -319,8 +309,6 @@ char **GBS_read_dir(const char *dir, const char *mask) {
     }
 
     free(fulldir);
-
-    return names;
 }
 
 // --------------------------------------------------------------------------------
