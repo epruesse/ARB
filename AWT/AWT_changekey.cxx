@@ -110,7 +110,6 @@ void awt_selection_list_rescan(GBDATA *gb_main, long bitfilter, awt_rescan_mode 
         GBT_add_new_changekey(gb_main, "name", GB_STRING);
         GBT_add_new_changekey(gb_main, "acc", GB_STRING);
         GBT_add_new_changekey(gb_main, "full_name", GB_STRING);
-        GBT_add_new_changekey(gb_main, "group_name", GB_STRING);
         GBT_add_new_changekey(gb_main, "tmp", GB_STRING);
 
         for (name = names; *name; name++) {
