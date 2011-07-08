@@ -166,6 +166,7 @@ char *GBS_find_lib_file(const char *filename, const char *libprefix, bool warn_w
 void GBS_read_dir(StrArray &names, const char *dir, const char *mask);
 bool GB_test_textfile_difflines(const char *file1, const char *file2, int expected_difflines, int special_mode);
 bool GB_test_files_equal(const char *file1, const char *file2);
+void GBT_transform_names(StrArray &dest, const StrArray &source, char *transform (const char *, void *), void *client_data);
 
 /* adsystem.cxx */
 DictData *GB_get_dictionary(GBDATA *gb_main, const char *key);

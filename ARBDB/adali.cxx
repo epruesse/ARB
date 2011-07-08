@@ -943,3 +943,51 @@ NOT4PERL char *GBT_read_gene_sequence_and_length(GBDATA *gb_gene, bool use_revCo
 char *GBT_read_gene_sequence(GBDATA *gb_gene, bool use_revComplement, char partSeparator) {
     return GBT_read_gene_sequence_and_length(gb_gene, use_revComplement, partSeparator, 0);
 }
+
+// --------------------------------------------------------------------------------
+
+#ifdef UNIT_TESTS
+#include <test_unit.h>
+
+void TEST_alignment() {
+    GB_shell  shell;
+    GBDATA   *gb_main = GB_open("TEST_prot.arb", "r");
+
+    {
+        GB_transaction ta(gb_main);
+
+        TEST_ASSERT_EQUAL(GBT_count_alignments(gb_main), 2);
+
+        char *def_ali_name = GBT_get_default_alignment(gb_main);
+        TEST_ASSERT_EQUAL(def_ali_name, "ali_tuf_dna");
+
+        {
+            StrArray names;
+            GBT_get_alignment_names(names, gb_main);
+            {
+                char *joined = GBT_join_names(names, '*');
+                TEST_ASSERT_EQUAL(joined, "ali_tuf_pro*ali_tuf_dna");
+                free(joined);
+            }
+
+            for (int i = 0; names[i]; ++i) {
+                long len = GBT_get_alignment_len(gb_main, names[i]);
+                TEST_ASSERT_EQUAL(len, !i ? 473 : 1426);
+
+                char *type_name = GBT_get_alignment_type_string(gb_main, names[i]);
+                TEST_ASSERT_EQUAL(type_name, !i ? "ami" : "dna");
+                free(type_name);
+
+                GB_alignment_type type = GBT_get_alignment_type(gb_main, names[i]);
+                TEST_ASSERT_EQUAL(type, !i ? GB_AT_AA : GB_AT_DNA);
+                TEST_ASSERT(!i == GBT_is_alignment_protein(gb_main, names[i]));
+            }
+        }
+
+        free(def_ali_name);
+    }
+
+    GB_close(gb_main);
+}
+
+#endif // UNIT_TESTS

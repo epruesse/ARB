@@ -19,6 +19,7 @@
 #include <string>
 
 #include <arb_sort.h>
+#include <arb_str.h>
 #include <arb_strarray.h>
 
 #include "gb_local.h"
@@ -680,6 +681,33 @@ void TEST_diff_files() {
     
     TEST_ASSERT(GB_test_textfile_difflines(file_date_swapped, file_date_changed, 6, 0));
     TEST_ASSERT(GB_test_textfile_difflines(file_date_swapped, file_date_changed, 0, 1));
+}
+
+static char *remove_path(const char *fullname, void *cl_path) {
+    const char *path   = (const char *)cl_path;
+    return strdup(fullname+(ARB_strscmp(fullname, path) == 0 ? strlen(path) : 0));
+}
+
+void GBT_transform_names(StrArray& dest, const StrArray& source, char *transform(const char *, void *), void *client_data) {
+    for (int i = 0; source[i]; ++i) dest[i] = transform(source[i], client_data);
+}
+
+#define TEST_JOINED_DIR_CONTENT_EQUALS(subdir,mask,expected) do {       \
+        char     *fulldir = strdup(GB_path_in_ARBHOME(subdir));         \
+        StrArray  contents;                                             \
+        GBS_read_dir(contents, fulldir, mask);                          \
+        StrArray  contents_no_path;                                     \
+        GBT_transform_names(contents_no_path, contents, remove_path, (void*)fulldir); \
+        char     *joined  = GBT_join_names(contents_no_path, '!');      \
+        TEST_ASSERT_EQUAL(joined, expected);                            \
+        free(joined);                                                   \
+        free(fulldir);                                                  \
+    } while(0)
+
+void TEST_GBS_read_dir() {
+    TEST_JOINED_DIR_CONTENT_EQUALS("GDE/CLUSTAL", "*.c",       "/amenu.c!/clustalv.c!/gcgcheck.c!/myers.c!/sequence.c!/showpair.c!/trees.c!/upgma.c!/util.c");
+    TEST_JOINED_DIR_CONTENT_EQUALS("GDE/CLUSTAL", "/s.*\\.c/", "/clustalv.c!/myers.c!/sequence.c!/showpair.c!/trees.c");
+    TEST_JOINED_DIR_CONTENT_EQUALS("GDE",         NULL,        "/Makefile!/README");
 }
 
 // --------------------------------------------------------------------------------

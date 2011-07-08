@@ -123,6 +123,7 @@ ad_config.o: arbdbt.h
 ad_config.o: gb_local.h
 ad_config.o: gb_prot.h
 ad_config.o: $(ARBHOME)/INCLUDE/arb_core.h
+ad_config.o: $(ARBHOME)/INCLUDE/arb_defs.h
 ad_config.o: $(ARBHOME)/INCLUDE/arb_error.h
 ad_config.o: $(ARBHOME)/INCLUDE/arb_msg.h
 ad_config.o: $(ARBHOME)/INCLUDE/arb_strarray.h
@@ -133,6 +134,7 @@ ad_config.o: $(ARBHOME)/INCLUDE/attributes.h
 ad_config.o: $(ARBHOME)/INCLUDE/dupstr.h
 ad_config.o: $(ARBHOME)/INCLUDE/smartptr.h
 ad_config.o: $(ARBHOME)/INCLUDE/test_global.h
+ad_config.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 ad_core.o: ad_prot.h
 ad_core.o: arb_assert.h
@@ -234,6 +236,7 @@ adali.o: $(ARBHOME)/INCLUDE/attributes.h
 adali.o: $(ARBHOME)/INCLUDE/dupstr.h
 adali.o: $(ARBHOME)/INCLUDE/smartptr.h
 adali.o: $(ARBHOME)/INCLUDE/test_global.h
+adali.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 adcache.o: ad_prot.h
 adcache.o: arb_assert.h
@@ -381,6 +384,7 @@ adfile.o: $(ARBHOME)/INCLUDE/arb_core.h
 adfile.o: $(ARBHOME)/INCLUDE/arb_error.h
 adfile.o: $(ARBHOME)/INCLUDE/arb_msg.h
 adfile.o: $(ARBHOME)/INCLUDE/arb_sort.h
+adfile.o: $(ARBHOME)/INCLUDE/arb_str.h
 adfile.o: $(ARBHOME)/INCLUDE/arb_strarray.h
 adfile.o: $(ARBHOME)/INCLUDE/arb_string.h
 adfile.o: $(ARBHOME)/INCLUDE/arbtools.h
@@ -959,6 +963,7 @@ adtree.o: $(ARBHOME)/INCLUDE/attributes.h
 adtree.o: $(ARBHOME)/INCLUDE/dupstr.h
 adtree.o: $(ARBHOME)/INCLUDE/smartptr.h
 adtree.o: $(ARBHOME)/INCLUDE/test_global.h
+adtree.o: $(ARBHOME)/INCLUDE/test_unit.h
 
 adtune.o: gb_tune.h
 
