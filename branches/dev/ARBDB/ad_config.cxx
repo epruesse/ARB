@@ -15,6 +15,7 @@
 #include <arbdbt.h>
 
 #include <arb_strbuf.h>
+#include <arb_defs.h>
 #include <arb_strarray.h>
 
 // @@@ remove GBT_get_configuration_names when StrArray contains count
@@ -328,3 +329,35 @@ void GBT_test_config_parser(GBDATA *gb_main) {
 }
 #endif // DEBUG
 
+// --------------------------------------------------------------------------------
+
+#ifdef UNIT_TESTS
+#include <test_unit.h>
+
+void TEST_GBT_get_configuration_names() {
+    GB_shell  shell;
+    GBDATA   *gb_main = GB_open("nosuch.arb", "c");
+
+    {
+        GB_transaction ta(gb_main);
+
+        const char *configs[] = { "arb", "BASIC", "Check it", "dummy" };
+        for (int i = 0; i<ARRAY_ELEMS(configs); ++i) {
+            TEST_ASSERT_RESULT__NOERROREXPORTED(GBT_create_configuration(gb_main, configs[i]));
+        }
+
+        int count;
+        StrArray cnames;
+        GBT_get_configuration_names_and_count(cnames, gb_main, &count);
+        char  *joined = GBT_join_names(cnames, '*');
+
+        TEST_ASSERT_EQUAL(count, 4);
+        TEST_ASSERT_EQUAL(joined, "arb*BASIC*Check it*dummy");
+
+        free(joined);
+    }
+
+    GB_close(gb_main);
+}
+
+#endif // UNIT_TESTS
