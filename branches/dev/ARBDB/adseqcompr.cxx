@@ -608,7 +608,9 @@ static GB_ERROR compress_sequence_tree(GBDATA *gb_main, CompressionTree *tree, c
                         }
                         if (pass == 1) {
                             speciesNotInTree = count;
-                            progress = new arb_progress("Compressing sequences NOT in tree", speciesNotInTree);
+                            if (speciesNotInTree>0) {
+                                progress = new arb_progress("Compressing sequences NOT in tree", speciesNotInTree);
+                            }
                         }
                     }
                 }
@@ -653,6 +655,8 @@ static GB_ERROR compress_sequence_tree(GBDATA *gb_main, CompressionTree *tree, c
                         else { // count size of top master
                             GBDATA *gbd  = masters[si]->gbd;
                             sumnew      += GB_read_memuse(gbd);
+
+                            progress.inc_and_check_user_abort(error);
                         }
                     }
 
