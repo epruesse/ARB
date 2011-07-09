@@ -323,7 +323,7 @@ void TEST_GBT_get_configuration_names() {
         StrArray cnames;
         GBT_get_configuration_names(cnames, gb_main);
 
-        TEST_ASSERT_EQUAL(cnames.size(), 4);
+        TEST_ASSERT_EQUAL(cnames.size(), 4U);
 
         char *joined = GBT_join_names(cnames, '*');
         TEST_ASSERT_EQUAL(joined, "arb*BASIC*Check it*dummy");
