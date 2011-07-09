@@ -358,7 +358,7 @@ void NT_database_optimization(AW_window *aww) {
     GB_push_my_security(GLOBAL_gb_main);
     GB_ERROR error = GB_begin_transaction(GLOBAL_gb_main);
     if (!error) {
-        StrArray ali_names;
+        ConstStrArray ali_names;
         GBT_get_alignment_names(ali_names, GLOBAL_gb_main);
 
         arb_progress ali_progress("Optimizing sequence data", ali_names.size());
@@ -1003,7 +1003,7 @@ void NT_alltree_remove_leafs(AW_window *, AW_CL cl_mode, AW_CL cl_gb_main) {
     GB_ERROR       error = 0;
     GB_transaction ta(gb_main);
 
-    StrArray tree_names;
+    ConstStrArray tree_names;
     GBT_get_tree_names(tree_names, gb_main);
 
     if (!tree_names.empty()) {

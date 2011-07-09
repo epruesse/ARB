@@ -19,9 +19,9 @@
 
 #define RMSTRLEN 81
 
-static const StrArray *name_tbl = NULL;
+static const CharPtrArray *name_tbl = NULL;
 
-void rb_init(const StrArray& names) {
+void rb_init(const CharPtrArray& names) {
     /* Initialize the module */
     name_tbl = &names; // @@@ use a copy for safety ? 
 }

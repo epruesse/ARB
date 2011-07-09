@@ -477,8 +477,8 @@ static GB_ERROR NT_del_mark_move_REF(GBDATA *gb_main, size_t species_count, size
 
     // delete 'mark' entries from all alignments of species/SAIs
 
-    arb_progress progress(all);
-    StrArray     ali_names;
+    arb_progress  progress(all);
+    ConstStrArray ali_names;
     GBT_get_alignment_names(ali_names, gb_main);
 
     for (int pass = 0; pass < 2 && !error; ++pass) {

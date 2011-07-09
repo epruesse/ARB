@@ -88,7 +88,7 @@ struct AWT_tree_selection: public AW_DB_selection {
         GBDATA         *gb_main = get_gb_main();
         GB_transaction  ta(gb_main);
 
-        StrArray tree_names;
+        ConstStrArray tree_names;
         GBT_get_tree_names(tree_names, gb_main);
 
         if (!tree_names.empty()) {
@@ -403,7 +403,7 @@ public:
     {}
 
     void fill() {
-        StrArray config;
+        ConstStrArray config;
         GBT_get_configuration_names(config, get_gb_main());
 
         if (!config.empty()) {
@@ -429,7 +429,7 @@ char *awt_create_string_on_configurations(GBDATA *gb_main) {
 
     GB_push_transaction(gb_main);
 
-    StrArray config;
+    ConstStrArray config;
     GBT_get_configuration_names(config, gb_main);
 
     char *result = 0;

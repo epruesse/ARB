@@ -95,9 +95,10 @@ int MG_copy_and_check_alignments(AW_window */*aww*/) {
     GB_begin_transaction(GLOBAL_gb_dest);
     GB_begin_transaction(GLOBAL_gb_merge);
 
-    StrArray names;
+    ConstStrArray names;
     GBT_get_alignment_names(names, GLOBAL_gb_merge);
-    GBDATA  *gb_presets2 = NULL;
+
+    GBDATA *gb_presets2 = NULL;
 
     for (int i = 0; names[i] && !error; ++i) {
         const char *name    = names[i];

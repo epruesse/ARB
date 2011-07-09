@@ -40,7 +40,7 @@ struct preserve_para {
     AW_selection_list *ref_id;                      // used references
 };
 
-static void get_global_alignments(StrArray& ali_names) {
+static void get_global_alignments(ConstStrArray& ali_names) {
     // get all alignment names available in both databases
     GBT_get_alignment_names(ali_names, GLOBAL_gb_merge);
     GBDATA *gb_presets = GB_search(GLOBAL_gb_dest, "presets", GB_CREATE_CONTAINER);
@@ -54,7 +54,7 @@ static void get_global_alignments(StrArray& ali_names) {
 
 static void init_alignments(preserve_para *para) {
     // initialize the alignment selection list
-    StrArray ali_names;
+    ConstStrArray ali_names;
     get_global_alignments(ali_names);
     para->window->init_selection_list_from_array(para->ali_id, ali_names, "All");
 }
@@ -112,7 +112,7 @@ class Candidate {
     long   base_count_diff;
 
 public:
-    Candidate(bool is_species, const char *name_, GBDATA *gb_src, GBDATA *gb_dst, const StrArray& ali_names)
+    Candidate(bool is_species, const char *name_, GBDATA *gb_src, GBDATA *gb_dst, const CharPtrArray& ali_names)
         : name(is_species ? name_ : string("SAI:")+name_)
     {
         found_alignments = 0;
@@ -168,7 +168,7 @@ static bool operator < (const SmartPtr<Candidate>& c1, const SmartPtr<Candidate>
 }
 typedef set< SmartPtr<Candidate> > Candidates;
 
-static void find_species_candidates(Candidates& candidates, const StrArray& ali_names) {
+static void find_species_candidates(Candidates& candidates, const CharPtrArray& ali_names) {
     // collect names of all species in source database
     GB_HASH      *src_species = GBT_create_species_hash(GLOBAL_gb_merge);
     long          src_count   = GBS_hash_count_elems(src_species);
@@ -203,7 +203,7 @@ static void find_species_candidates(Candidates& candidates, const StrArray& ali_
     GBS_free_hash(src_species);
 }
 
-static void find_SAI_candidates(Candidates& candidates, const StrArray& ali_names) {
+static void find_SAI_candidates(Candidates& candidates, const CharPtrArray& ali_names) {
     // add all candidate SAIs to 'candidates'
     GB_HASH      *src_SAIs  = GBT_create_SAI_hash(GLOBAL_gb_merge);
     long          src_count = GBS_hash_count_elems(src_SAIs);
@@ -247,19 +247,19 @@ static void calculate_preserves_cb(AW_window *, AW_CL cl_para) {
 
     AW_window  *aww     = para->window;
     AW_root    *aw_root = aww->get_root();
-    char       *ali     = aw_root->awar(AWAR_REMAP_ALIGNMENT)->read_string();
+    const char *ali     = aw_root->awar(AWAR_REMAP_ALIGNMENT)->read_char_pntr();
     Candidates  candidates;
 
     arb_progress("Searching candidates");
 
     // add candidates
     {
-        StrArray ali_names;
+        ConstStrArray ali_names;
         if (0 == strcmp(ali, "All")) {
             get_global_alignments(ali_names);
         }
         else {
-            ali_names.put(strdup(ali));
+            ali_names.put(ali);
         }
         find_SAI_candidates(candidates, ali_names);
         find_species_candidates(candidates, ali_names);
@@ -278,7 +278,6 @@ static void calculate_preserves_cb(AW_window *, AW_CL cl_para) {
 
         aww->insert_selection(id, shown.c_str(), name.c_str());
     }
-    free(ali);
 
     aww->update_selection_list(id);
 }
@@ -290,7 +289,7 @@ static void read_references(StrArray& refs, AW_root *aw_root)  {
     GBT_split_string(refs, ref_string, " \n,;", true);
     free(ref_string);
 }
-static void write_references(AW_root *aw_root, const StrArray& ref_array) {
+static void write_references(AW_root *aw_root, const CharPtrArray& ref_array) {
     char *ref_string = GBT_join_names(ref_array, '\n');
     aw_root->awar(AWAR_REMAP_SPECIES_LIST)->write_string(ref_string);
     aw_root->awar(AWAR_REMAP_ENABLE)->write_int(ref_string[0] != 0);

@@ -562,7 +562,7 @@ public:
 
     void clear_selection_list(AW_selection_list *selection_list);
     void update_selection_list(AW_selection_list *selection_list);
-    void init_selection_list_from_array(AW_selection_list *selection_list, const class StrArray& entries, const char *defaultEntry);
+    void init_selection_list_from_array(AW_selection_list *selection_list, const class CharPtrArray& entries, const char *defaultEntry);
 
     int         get_index_of_element(AW_selection_list *selection_list, const char *selected_element);
     const char *get_element_at_index(AW_selection_list *selection_list, int index);

@@ -21,7 +21,7 @@ GB_HASH *Name_hash;
 
 /*  node_count  number of different leafs
     names       name of each leaf   */
-void ctree_init(int node_count, const StrArray& names) {
+void ctree_init(int node_count, const CharPtrArray& names) {
     int i;
 
     Name_hash = GBS_create_hash(node_count, GB_MIND_CASE);

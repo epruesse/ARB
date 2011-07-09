@@ -21,9 +21,9 @@
 class MG_remap;
 
 struct MG_remaps : virtual Noncopyable {
-    int        n_remaps;
-    StrArray   alignment_names;
-    MG_remap **remaps;
+    int             n_remaps;
+    ConstStrArray   alignment_names;
+    MG_remap      **remaps;
 
     MG_remaps(GBDATA *gb_left, GBDATA *gb_right, bool enable, const char *reference_species_names);
     ~MG_remaps();

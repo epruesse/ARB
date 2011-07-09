@@ -26,11 +26,13 @@
 #endif
 
 
-typedef int (*StrArray_compare_fun)(const void *p0, const void *p1, void *client_data); // same as arb_sort.h@gb_compare_function 
+typedef int (*CharPtrArray_compare_fun)(const void *p0, const void *p1, void *client_data); // same as arb_sort.h@gb_compare_function
 
-class StrArray : virtual Noncopyable {
+class CharPtrArray : virtual Noncopyable {
+    size_t allocated;
+
+protected:
     char   **str;
-    size_t   allocated;
     size_t   elems;
 
     bool ok() const {
@@ -61,18 +63,61 @@ class StrArray : virtual Noncopyable {
         }
     }
 
-public:
-    StrArray() : str(NULL), allocated(0), elems(0) {}
-    ~StrArray() { erase(); free(str); }
+    CharPtrArray() : allocated(0), str(NULL), elems(0) {}
+    virtual ~CharPtrArray() { free(str); }
 
+    virtual void free_elem(int i) = 0;
+
+public:
     void erase() {
         arb_assert(ok());
-        if (str) for (size_t i = 0; i<allocated; ++i) freenull(str[i]);
+        if (str) for (size_t i = 0; i<elems; ++i) free_elem(i);
         arb_assert(ok());
     }
 
     void reserve(size_t forElems) { reserve_space(forElems, false); }
     void optimize_space() { set_space(elems+1); }
+
+    size_t size() const { return elems; }
+    bool empty() const { return elems == 0; }
+
+    const char *operator[](int i) const {
+        arb_assert(ok());
+        arb_assert(i >= 0 && size_t(i) <= elems); // allow sentinel access
+        return str[i];
+    }
+    
+    void swap(int i1, int i2) {
+        arb_assert(ok());
+        arb_assert(elem_index(i1));
+        arb_assert(elem_index(i2));
+        std::swap(str[i1], str[i2]);
+        arb_assert(ok());
+    }
+
+    void remove(int i) {
+        arb_assert(ok());
+        arb_assert(elem_index(i));
+        free_elem(i);
+        while (size_t(i) < elems) { // move elems incl. sentinel
+            str[i] = str[i+1];
+            ++i;
+        }
+        elems--;
+        arb_assert(ok());
+    }
+
+    void sort(CharPtrArray_compare_fun compare, void *client_data);
+};
+
+class StrArray : public CharPtrArray {
+    virtual void free_elem(int i) {
+        freenull(str[i]);
+    }
+
+public:
+    StrArray() {}
+    virtual ~StrArray() { erase(); }
 
     void put(char *elem) { // tranfers ownership!
         int i    = elems;
@@ -92,46 +137,36 @@ public:
         arb_assert(ok());
         return elem;
     }
-
-    void remove(int i) {
-        arb_assert(ok());
-        arb_assert(elem_index(i));
-        free(str[i]);
-        while (size_t(i) < elems) { // move elems incl. sentinel
-            str[i] = str[i+1];
-            ++i;
-        }
-        elems--;
-        arb_assert(ok());
-    }
-
-    void swap(int i1, int i2) {
-        arb_assert(ok());
-        arb_assert(elem_index(i1));
-        arb_assert(elem_index(i2));
-        std::swap(str[i1], str[i2]);
-        arb_assert(ok());
-    }
-
-    const char *operator[](int i) const {
-        arb_assert(ok());
-        arb_assert(i >= 0 && size_t(i) <= elems); // allow sentinel access
-        return str[i];
-    }
-
-    size_t size() const { return elems; }
-    bool empty() const { return elems == 0; }
-
-    void sort(StrArray_compare_fun compare, void *client_data);
 };
+
+class ConstStrArray : public CharPtrArray {
+    virtual void free_elem(int) {}
+
+    void put(char *) {}
+
+public:
+    ConstStrArray() {}
+    virtual ~ConstStrArray() {}
+
+    void put(const char *elem) {
+        int i    = elems;
+        reserve_space(i+1, true);
+        arb_assert(allocated_index(i));
+        str[i]   = const_cast<char*>(elem);
+        str[i+1] = NULL; // sentinel
+        elems++;
+        arb_assert(ok());
+    }
+};
+
 
 void  GBT_split_string(StrArray& dest, const char *namelist, const char *separator, bool dropEmptyTokens);
 void  GBT_split_string(StrArray& dest, const char *namelist, char separator);
-char *GBT_join_names(const StrArray& names, char separator);
-int   GBT_names_index_of(const StrArray& names, const char *search_for);
-void  GBT_names_erase(StrArray& names, int index);
+char *GBT_join_names(const CharPtrArray& names, char separator);
+int   GBT_names_index_of(const CharPtrArray& names, const char *search_for);
+void  GBT_names_erase(CharPtrArray& names, int index);
 void  GBT_names_add(StrArray& names, int insert_before, const char *name);
-void  GBT_names_move(StrArray& names, int old_index, int new_index);
+void  GBT_names_move(CharPtrArray& names, int old_index, int new_index);
 
 #else
 #error arb_strarray.h included twice

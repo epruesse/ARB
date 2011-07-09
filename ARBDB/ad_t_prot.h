@@ -156,7 +156,7 @@ char *GBT_find_largest_tree(GBDATA *gb_main);
 char *GBT_find_latest_tree(GBDATA *gb_main);
 const char *GBT_tree_info_string(GBDATA *gb_main, const char *tree_name, int maxTreeNameLen);
 GB_ERROR GBT_check_tree_name(const char *tree_name);
-void GBT_get_tree_names(StrArray &names, GBDATA *Main);
+void GBT_get_tree_names(ConstStrArray &names, GBDATA *Main);
 char *GBT_get_name_of_next_tree(GBDATA *gb_main, const char *tree_name);
 GB_CSTR *GBT_get_names_of_species_in_tree(const GBT_TREE *tree, size_t *count);
 char *GBT_existing_tree(GBDATA *gb_main, const char *tree_name);
@@ -164,7 +164,7 @@ char *GBT_existing_tree(GBDATA *gb_main, const char *tree_name);
 /* adali.cxx */
 int GBT_count_alignments(GBDATA *gb_main);
 GB_ERROR GBT_check_data(GBDATA *Main, const char *alignment_name);
-void GBT_get_alignment_names(StrArray &names, GBDATA *gbd);
+void GBT_get_alignment_names(ConstStrArray &names, GBDATA *gbd);
 GB_ERROR GBT_check_alignment_name(const char *alignment_name);
 GBDATA *GBT_create_alignment(GBDATA *gbd, const char *name, long len, long aligned, long security, const char *type);
 NOT4PERL GB_ERROR GBT_check_alignment(GBDATA *gb_main, GBDATA *preset_alignment, GB_HASH *species_name_hash);

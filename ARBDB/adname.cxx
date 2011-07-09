@@ -169,7 +169,7 @@ GB_ERROR GBT_commit_rename_session() { // goes to header: __ATTR__USERESULT
 
     // rename species in trees
     {
-        StrArray tree_names;
+        ConstStrArray tree_names;
         GBT_get_tree_names(tree_names, NameSession.gb_main);
 
         if (!tree_names.empty()) {
@@ -204,7 +204,7 @@ GB_ERROR GBT_commit_rename_session() { // goes to header: __ATTR__USERESULT
     }
     // rename configurations
     if (!error) {
-        StrArray config_names;
+        ConstStrArray config_names;
         GBT_get_configuration_names(config_names, NameSession.gb_main);
 
         if (!config_names.empty()) {

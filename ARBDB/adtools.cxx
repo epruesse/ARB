@@ -75,7 +75,7 @@ GB_ERROR GBT_check_arb_file(const char *name) {
 
 #define GBT_SUM_LEN 4096                            // maximum length of path
 
-struct DbScanner {
+struct DbScanner : virtual Noncopyable {
     GB_HASH   *hash_table;
     StrArray&  result; // not owned!
     GB_TYPES   type;

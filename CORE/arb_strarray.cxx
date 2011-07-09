@@ -16,7 +16,7 @@
 #include <arb_strbuf.h>
 #include <arb_sort.h>
 
-void StrArray::sort(StrArray_compare_fun compare, void *client_data) {
+void CharPtrArray::sort(CharPtrArray_compare_fun compare, void *client_data) {
     GB_sort((void**)str, 0, size(), compare, client_data);
 }
 
@@ -66,7 +66,7 @@ void GBT_split_string(StrArray& dest, const char *namelist, char separator) {
     GBT_split_string(dest, namelist, separator_string, false);
 }
 
-char *GBT_join_names(const StrArray& names, char separator) {
+char *GBT_join_names(const CharPtrArray& names, char separator) {
     /*! Joins a NULL-terminated array of 'char*' into one string
      *
      * @param separator is put between the concatenated strings
@@ -91,7 +91,7 @@ char *GBT_join_names(const StrArray& names, char separator) {
     return GBS_strclose(out);
 }
 
-int GBT_names_index_of(const StrArray& names, const char *search_for) {
+int GBT_names_index_of(const CharPtrArray& names, const char *search_for) {
     // return index of 'search_for' or -1 if not found or given
     int index = -1;
     if (search_for) {
@@ -105,7 +105,7 @@ int GBT_names_index_of(const StrArray& names, const char *search_for) {
     return index;
 }
 
-void GBT_names_erase(StrArray& names, int index) {
+void GBT_names_erase(CharPtrArray& names, int index) {
     if (index >= 0 && size_t(index)<names.size()) {
         names.remove(index);
     }
@@ -123,7 +123,7 @@ void GBT_names_add(StrArray& names, int insert_before, const char *name) {
     }
 }
 
-void GBT_names_move(StrArray& names, int old_index, int new_index) {
+void GBT_names_move(CharPtrArray& names, int old_index, int new_index) {
     /*! moves array-entry from 'old_index' to 'new_index' 
      * -1 means "last entry"
      * if new_index is out of bounds, it'll be moved to start of array
@@ -150,13 +150,13 @@ void GBT_names_move(StrArray& names, int old_index, int new_index) {
 
 #include <test_unit.h>
 
-#define TEST_SPLIT_JOIN(str, sep)                                       \
-    do {                                                                \
-        StrArray names;                                                 \
-        GBT_split_string(names, str, sep);                              \
-        char  *joined = GBT_join_names(names, sep);                     \
-        TEST_ASSERT_EQUAL(str, joined);                                 \
-        free(joined);                                                   \
+#define TEST_SPLIT_JOIN(str, sep)                       \
+    do {                                                \
+        StrArray names;                                 \
+        GBT_split_string(names, str, sep);              \
+        char  *joined = GBT_join_names(names, sep);     \
+        TEST_ASSERT_EQUAL(str, joined);                 \
+        free(joined);                                   \
     } while(0)
 
 void TEST_GBT_split_join_names() {
