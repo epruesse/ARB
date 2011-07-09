@@ -136,22 +136,9 @@ void GBT_get_alignment_names(StrArray& names, GBDATA *gbd) {
      */
 
     GBDATA *presets = GB_search(gbd, "presets", GB_CREATE_CONTAINER);
-
-    long size = 0;
-    for (GBDATA *ali = GB_entry(presets, "alignment"); ali; ali = GB_nextEntry(ali)) {
-        size ++;
-    }
-
-    size = 0;
     for (GBDATA *ali = GB_entry(presets, "alignment"); ali; ali = GB_nextEntry(ali)) {
         GBDATA *name = GB_entry(ali, "alignment_name");
-        if (!name) {
-            names[size] = strdup("alignment_name ???");
-        }
-        else {
-            names[size] = GB_read_string(name);
-        }
-        size ++;
+        names.put(name ? GB_read_string(name) : strdup("<unnamed alignment>"));
     }
 }
 

@@ -48,18 +48,7 @@ static void get_global_alignments(StrArray& ali_names) {
     int i;
     for (i = 0; ali_names[i]; ++i) {
         GBDATA *gb_ali_name = GB_find_string(gb_presets, "alignment_name", ali_names[i], GB_IGNORE_CASE, SEARCH_GRANDCHILD);
-        if (!gb_ali_name) freenull(ali_names[i]);
-    }
-
-    int k = 0;
-    for (int j = 0; j<i; ++j) {
-        if (ali_names[j]) {
-            if (j != k) {
-                ali_names[k] = ali_names[j];
-                ali_names[j] = 0;
-            }
-            ++k;
-        }
+        if (!gb_ali_name) ali_names.remove(i--);
     }
 }
 
@@ -270,8 +259,7 @@ static void calculate_preserves_cb(AW_window *, AW_CL cl_para) {
             get_global_alignments(ali_names);
         }
         else {
-            ali_names[0] = strdup(ali);
-            ali_names[1] = NULL;
+            ali_names.put(strdup(ali));
         }
         find_SAI_candidates(candidates, ali_names);
         find_species_candidates(candidates, ali_names);
@@ -299,7 +287,7 @@ static void calculate_preserves_cb(AW_window *, AW_CL cl_para) {
 
 static void read_references(StrArray& refs, AW_root *aw_root)  {
     char *ref_string = aw_root->awar(AWAR_REMAP_SPECIES_LIST)->read_string();
-    GBT_split_string(refs, ref_string, " \n,;", true, NULL);
+    GBT_split_string(refs, ref_string, " \n,;", true);
     free(ref_string);
 }
 static void write_references(AW_root *aw_root, const StrArray& ref_array) {

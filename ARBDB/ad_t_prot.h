@@ -156,7 +156,6 @@ char *GBT_find_largest_tree(GBDATA *gb_main);
 char *GBT_find_latest_tree(GBDATA *gb_main);
 const char *GBT_tree_info_string(GBDATA *gb_main, const char *tree_name, int maxTreeNameLen);
 GB_ERROR GBT_check_tree_name(const char *tree_name);
-void GBT_get_tree_names_and_count(StrArray &names, GBDATA *Main, int *countPtr);
 void GBT_get_tree_names(StrArray &names, GBDATA *Main);
 char *GBT_get_name_of_next_tree(GBDATA *gb_main, const char *tree_name);
 GB_CSTR *GBT_get_names_of_species_in_tree(const GBT_TREE *tree, size_t *count);

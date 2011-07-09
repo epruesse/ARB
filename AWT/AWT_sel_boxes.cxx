@@ -403,12 +403,11 @@ public:
     {}
 
     void fill() {
-        int      config_count;
         StrArray config;
-        GBT_get_configuration_names_and_count(config, get_gb_main(), &config_count);
+        GBT_get_configuration_names(config, get_gb_main());
 
         if (!config.empty()) {
-            for (int c = 0; c<config_count; c++) insert_selection(config[c], config[c]);
+            for (int c = 0; config[c]; c++) insert_selection(config[c], config[c]);
         }
         insert_default_selection("????", "????");
     }
@@ -430,15 +429,14 @@ char *awt_create_string_on_configurations(GBDATA *gb_main) {
 
     GB_push_transaction(gb_main);
 
-    int      config_count;
     StrArray config;
-    GBT_get_configuration_names_and_count(config, gb_main, &config_count);
+    GBT_get_configuration_names(config, gb_main);
 
     char *result = 0;
 
     if (!config.empty()) {
         GBS_strstruct *out = GBS_stropen(1000);
-        for (int c = 0; c<config_count; c++) {
+        for (int c = 0; config[c]; c++) {
             if (c>0) GBS_chrcat(out, ';');
             GBS_strcat(out, config[c]);
         }

@@ -276,7 +276,7 @@ void awtc_check_input_format(AW_window *aww) {
     char    *prev_selected = awar_filter->read_string();
 
     for (int idx = 0; files[idx] && !error; ++idx) {
-        char *filtername = files[idx];
+        const char *filtername = files[idx];
         awar_filter->write_string(filtername);
 
         GB_ERROR form_err = awtc_read_import_format(filtername);
@@ -556,23 +556,32 @@ char *awtc_read_line(int tab, char *sequencestart, char *sequenceend) {
     return ifo->b2;
 }
 
-static void awtc_write_entry(GBDATA *gbd, const char *key, char *str, const char *tag, int append, GB_TYPES type = GB_STRING)
-{
-    GBDATA *gbk;
-    int len, taglen;
-    char *buf;
+static void awtc_write_entry(GBDATA *gbd, const char *key, const char *str, const char *tag, int append, GB_TYPES type = GB_STRING) {
     if (!gbd) return;
-    while (str[0] == ' ' || str[0] == '\t' || str[0] == '|') str++;
-    len = strlen(str) -1;
-    while (len >= 0 &&
-           (str[len] == ' ' || str[len] == '\t' || str[len] == '|' || str[len] == 13))
-    {
-        len--;
-    }
-    str[len+1] = 0;
-    if (!str[0]) return;
 
-    gbk = GB_entry(gbd, key);
+    {
+        while (str[0] == ' ' || str[0] == '\t' || str[0] == '|') str++;
+        int i = strlen(str)-1;
+        while (i >= 0 && (str[i] == ' ' || str[i] == '\t' || str[i] == '|' || str[i] == 13)) {
+            i--;
+        }
+
+        if (i<0) return;
+
+        i++;
+        if (str[i]) { // need to cut trailing whitespace?
+            char *copy = (char*)malloc(i+1);
+            memcpy(copy, str, i);
+            copy[i]    = 0;
+
+            awtc_write_entry(gbd, key, copy, tag, append, type);
+
+            free(copy);
+            return;
+        }
+    }
+
+    GBDATA *gbk = GB_entry(gbd, key);
 
     if (type != GB_STRING) {
         if (!gbk) gbk=GB_create(gbd, key, type);
@@ -616,10 +625,11 @@ static void awtc_write_entry(GBDATA *gbd, const char *key, char *str, const char
         return;
     }
 
-    const char *strin  = GB_read_char_pntr(gbk);
-    len    = strlen(str) + strlen(strin);
-    taglen = tag ? (strlen(tag)+2) : 0;
-    buf    = (char *)GB_calloc(sizeof(char), len+2+taglen+1);
+    const char *strin = GB_read_char_pntr(gbk);
+
+    int   len    = strlen(str) + strlen(strin);
+    int   taglen = tag ? (strlen(tag)+2) : 0;
+    char *buf    = (char *)GB_calloc(sizeof(char), len+2+taglen+1);
 
     if (tag) {
         char *regexp = (char*)GB_calloc(sizeof(char), taglen+3);
@@ -716,7 +726,7 @@ GB_ERROR awtc_read_data(char *ali_name, int security_write)
         sprintf(text, "spec%i", counter);
         GBT_readOrCreate_char_pntr(gb_species, "name", text); // set default if missing
         if (awtcig.filenames[1]) {      // multiple files !!!
-            char *f = strrchr(awtcig.filenames[awtcig.current_file_idx-1], '/');
+            const char *f = strrchr(awtcig.filenames[awtcig.current_file_idx-1], '/');
             if (!f) f = awtcig.filenames[awtcig.current_file_idx-1];
             else f++;
             awtc_write_entry(gb_species, "file", f, ifo->filetag, 0);
@@ -728,7 +738,7 @@ GB_ERROR awtc_read_data(char *ali_name, int security_write)
         for (line=0; line<=max_line; line++) {
             sprintf(num, "%i  ", line);
             if (line == max_line) {
-                char *file = 0;
+                const char *file = NULL;
                 if (awtcig.filenames[awtcig.current_file_idx]) file = awtcig.filenames[awtcig.current_file_idx];
                 GB_ERROR msg = GB_export_errorf("A database entry in file '%s' is longer than %i lines.\n"
                                                 "    This might be the result of a wrong input format\n"

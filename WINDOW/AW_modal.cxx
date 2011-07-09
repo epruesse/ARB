@@ -387,7 +387,8 @@ static AW_window_message *new_input_window(AW_root *root, const char *title, con
     int      maxlen   = 6;                          // use as min.length for buttons (for 'CANCEL')
 
     if (buttons) {
-        GBT_split_string(button_names, buttons, ',', &butCount);
+        GBT_split_string(button_names, buttons, ',');
+        butCount = button_names.size();
 
         for (size_t b = 0; b<butCount; b++) {
             int len = strlen(button_names[b]);

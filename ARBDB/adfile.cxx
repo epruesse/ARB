@@ -258,8 +258,7 @@ void GBS_read_dir(StrArray& names, const char *dir, const char *mask) {
 
     if (!dirstream) {
         if (GB_is_readablefile(fulldir)) {
-            names[0] = strdup(fulldir);
-            names[1] = NULL;
+            names.put(strdup(fulldir));
         }
         else {
             char *lslash = strrchr(fulldir, '/');
@@ -281,7 +280,6 @@ void GBS_read_dir(StrArray& names, const char *dir, const char *mask) {
 
         GBS_string_matcher *matcher = GBS_compile_matcher(mask, GB_MIND_CASE);
         if (matcher) {
-            int     entries = 0;
             dirent *entry;
             while ((entry = readdir(dirstream)) != 0) {
                 const char *name = entry->d_name;
@@ -293,14 +291,12 @@ void GBS_read_dir(StrArray& names, const char *dir, const char *mask) {
                     if (GBS_string_matches_regexp(name, matcher)) {
                         const char *full = GB_concat_path(fulldir, name);
                         if (!GB_is_directory(full)) { // skip directories
-                            names.reserve(entries);
-                            names[entries++] = strdup(full);
+                            names.put(strdup(full));
                         }
                     }
                 }
             }
 
-            names[entries] = NULL;
             names.sort(GB_string_comparator, 0);
 
             GBS_free_matcher(matcher);
@@ -689,7 +685,7 @@ static char *remove_path(const char *fullname, void *cl_path) {
 }
 
 void GBT_transform_names(StrArray& dest, const StrArray& source, char *transform(const char *, void *), void *client_data) {
-    for (int i = 0; source[i]; ++i) dest[i] = transform(source[i], client_data);
+    for (int i = 0; source[i]; ++i) dest.put(transform(source[i], client_data));
 }
 
 #define TEST_JOINED_DIR_CONTENT_EQUALS(subdir,mask,expected) do {       \

@@ -1734,12 +1734,10 @@ void AW_window::selection_list_to_array(StrArray& array, AW_selection_list *sel_
     size_t count = sel_list->size();
     array.reserve(count);
     
-    size_t idx = 0;
     for (AW_selection_list_entry *lt = sel_list->list_table; lt; lt = lt->next) {
-        array[idx++] = strdup(values ? lt->value.get_string() : lt->get_displayed());
+        array.put(strdup(values ? lt->value.get_string() : lt->get_displayed()));
     }
-    array[idx] = NULL;
-    aw_assert(idx == count);
+    aw_assert(array.size() == count);
 }
 
 void AW_window::update_selection_list_intern(AW_selection_list *selection_list) {
@@ -1979,8 +1977,8 @@ GB_ERROR AW_window::load_selection_list(AW_selection_list *selection_list, const
     GBS_read_dir(fnames, filename, NULL);
 
     for (int i = 0; fnames[i]; ++i) {
-        char *fname = fnames[i];
-        char *data  = GB_read_file(fname);
+        const char *fname = fnames[i];
+        char       *data  = GB_read_file(fname);
         if (!data) {
             GB_print_error();
             continue;

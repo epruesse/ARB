@@ -77,14 +77,12 @@ GB_ERROR GBT_check_arb_file(const char *name) {
 
 struct DbScanner {
     GB_HASH   *hash_table;
-    int        count; // @@@ superfluous when StrArray does count
     StrArray&  result; // not owned!
     GB_TYPES   type;
     char      *buffer;
 
     DbScanner(StrArray& result_)
-        : count(0),
-          result(result_)
+        : result(result_)
     {
         hash_table = GBS_create_hash(1024, GB_MIND_CASE);
         buffer     = (char*)malloc(GBT_SUM_LEN);
@@ -128,12 +126,6 @@ static void gbt_scan_db_rek(GBDATA *gbd, char *prefix, int deep, DbScanner *scan
     }
 }
 
-static long gbs_scan_db_count(const char */*key*/, long val, void *cd_scanner) {
-    DbScanner *scanner = (DbScanner*)cd_scanner;
-    scanner->count++;
-    return val;
-}
-
 struct scan_db_insert {
     DbScanner  *scanner;
     const char *datapath;
@@ -155,7 +147,7 @@ static long gbs_scan_db_insert(const char *key, long val, void *cd_insert_data) 
 
     if (to_insert) {
         DbScanner *scanner = insert->scanner;
-        scanner->result[scanner->count++] = to_insert;
+        scanner->result.put(to_insert);
     }
 
     return val;
@@ -186,7 +178,6 @@ void GBT_scan_db(StrArray& fieldNames, GBDATA *gbd, const char *datapath) {
     {
         DbScanner scanner(fieldNames);
         gbt_scan_db_rek(gbd, scanner.buffer, 0, &scanner);
-        scanner.count = 0;
         scan_db_insert insert = { &scanner, datapath, };
         GBS_hash_do_loop(scanner.hash_table, gbs_scan_db_insert, &insert);
     }
