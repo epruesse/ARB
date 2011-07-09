@@ -168,7 +168,9 @@ sub print_summary($) {
   push @summary, sprintf(" Passed  : %5i =%s", $passed, percent($passed,$tests));
   push @summary, sprintf(" Failed  : %5i =%s", $failed, percent($failed,$tests));
   push @summary, sprintf(" Sum.dur.: %5i ms", $elapsed);
-  push @summary, sprintf(" Max.dur.: %5i ms (%s)", $max_dur, $max_dur_unit);
+  if (defined $max_dur_unit) {
+    push @summary, sprintf(" Max.dur.: %5i ms (%s)", $max_dur, $max_dur_unit);
+  }
   push @summary, sprintf(" Crashed : %5i units", $crashed);
   push @summary, sprintf(" Warnings: %5i", $warnings);
 
