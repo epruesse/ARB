@@ -912,7 +912,7 @@ void TEST_tree() {
             GBT_get_tree_names(names, gb_main);
             char  *joined = GBT_join_names(names, '*');
             TEST_ASSERT_EQUAL(joined, "tree_test*tree_tree2*tree_nj*tree_nj_bs");
-            TEST_ASSERT_EQUAL(names.size(), 4);
+            TEST_ASSERT_EQUAL(names.size(), 4U);
             free(joined);
         }
     }
