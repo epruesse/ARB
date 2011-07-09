@@ -599,7 +599,7 @@ GBDATA *concatenateFieldsCreateNewSpecies(AW_window *, GBDATA *gb_species, speci
     }
 
     if (!error) {
-        StrArray ali_names;
+        ConstStrArray ali_names;
         GBT_get_alignment_names(ali_names, GLOBAL_gb_main);
 
         long id = 0;

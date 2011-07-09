@@ -580,7 +580,7 @@ int main(int argc, char **argv) {
     // loading database
     GB_push_transaction(GLOBAL_gb_main);
 
-    StrArray alignment_names;
+    ConstStrArray alignment_names;
     GBT_get_alignment_names(alignment_names, GLOBAL_gb_main);
 
     int num_alignments;

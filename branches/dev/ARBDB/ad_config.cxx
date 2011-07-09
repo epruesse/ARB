@@ -18,7 +18,7 @@
 #include <arb_defs.h>
 #include <arb_strarray.h>
 
-void GBT_get_configuration_names(StrArray& configNames, GBDATA *gb_main) {
+void GBT_get_configuration_names(ConstStrArray& configNames, GBDATA *gb_main) {
     /* returns existing configurations in 'configNames'
      * Note: automatically generates names for configs w/o legal name.
      */
@@ -35,7 +35,7 @@ void GBT_get_configuration_names(StrArray& configNames, GBDATA *gb_main) {
              gb_config;
              gb_config = GB_nextEntry(gb_config))
         {
-            char *name = GBT_read_string(gb_config, "name");
+            const char *name = GBT_read_char_pntr(gb_config, "name");
 
             if (!name || name[0] == 0) { // no name or empty name
                 char     *new_name = GBS_global_string_copy("<unnamed%i>", ++unnamed_count);
@@ -44,8 +44,11 @@ void GBT_get_configuration_names(StrArray& configNames, GBDATA *gb_main) {
                 if (error) {
                     GB_warningf("Failed to rename unnamed configuration to '%s'", new_name);
                     freenull(new_name);
+                    name = NULL;
                 }
-                freeset(name, new_name);
+                else {
+                    name = GBT_read_char_pntr(gb_config, "name");
+                }
             }
 
             if (name) configNames.put(name);
@@ -234,14 +237,14 @@ void GBT_free_config_parser(GBT_config_parser *parser) {
     free(parser);
 }
 
-#if defined(DEBUG) && 0
+#if defined(DEBUG) 
 void GBT_test_config_parser(GBDATA *gb_main) {
-    StrArray config_names;
+    ConstStrArray config_names;
     GBT_get_configuration_names(config_names, gb_main);
     if (!config_names.empty()) {
         int count;
         for (count = 0; config_names[count]; ++count) {
-            char       *config_name = config_names[count];
+            const char *config_name = config_names[count];
             GBT_config *config;
             GB_ERROR    error       = 0;
 
@@ -320,7 +323,7 @@ void TEST_GBT_get_configuration_names() {
             TEST_ASSERT_RESULT__NOERROREXPORTED(GBT_create_configuration(gb_main, configs[i]));
         }
 
-        StrArray cnames;
+        ConstStrArray cnames;
         GBT_get_configuration_names(cnames, gb_main);
 
         TEST_ASSERT_EQUAL(cnames.size(), 4U);

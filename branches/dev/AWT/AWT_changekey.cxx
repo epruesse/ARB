@@ -36,7 +36,7 @@ inline bool is_in_reserved_path(const char *fieldpath) {
 // --------------------------------------------------------------------------------
 
 
-static void awt_delete_unused_changekeys(GBDATA *gb_main, const StrArray& names, const char *change_key_path) {
+static void awt_delete_unused_changekeys(GBDATA *gb_main, const CharPtrArray& names, const char *change_key_path) {
     // deletes all keys from 'change_key_path' which are not listed in 'names'
     GBDATA *gb_key_data = GB_search(gb_main, change_key_path, GB_CREATE_CONTAINER);
     GBDATA *gb_key      = gb_key_data ? GB_entry(gb_key_data, CHANGEKEY) : 0;

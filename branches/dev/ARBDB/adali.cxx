@@ -128,7 +128,7 @@ GB_ERROR GBT_check_data(GBDATA *Main, const char *alignment_name) {
     return error;
 }
 
-void GBT_get_alignment_names(StrArray& names, GBDATA *gbd) {
+void GBT_get_alignment_names(ConstStrArray& names, GBDATA *gbd) {
     /* Get names of existing alignments from database.
      *
      * Returns: array of strings, the last element is NULL
@@ -138,7 +138,7 @@ void GBT_get_alignment_names(StrArray& names, GBDATA *gbd) {
     GBDATA *presets = GB_search(gbd, "presets", GB_CREATE_CONTAINER);
     for (GBDATA *ali = GB_entry(presets, "alignment"); ali; ali = GB_nextEntry(ali)) {
         GBDATA *name = GB_entry(ali, "alignment_name");
-        names.put(name ? GB_read_string(name) : strdup("<unnamed alignment>"));
+        names.put(name ? GB_read_char_pntr(name) : "<unnamed alignment>");
     }
 }
 
@@ -949,7 +949,7 @@ void TEST_alignment() {
         TEST_ASSERT_EQUAL(def_ali_name, "ali_tuf_dna");
 
         {
-            StrArray names;
+            ConstStrArray names;
             GBT_get_alignment_names(names, gb_main);
             {
                 char *joined = GBT_join_names(names, '*');

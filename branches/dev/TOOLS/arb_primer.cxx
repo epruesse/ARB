@@ -16,22 +16,22 @@
 
 
 struct arb_prm_struct : virtual Noncopyable {
-    StrArray     alignment_names;
-    int          al_len;
-    int          max_name;
-    GBDATA      *gb_main;
-    char         buffer[PRM_BUFFERSIZE];
-    const char  *source;
-    int          prmanz;
-    int          prmlen;
-    int          prmsmin;
-    char       **data;
-    int          sp_count;
-    int          key_cnt;
-    int          one_key_cnt;
-    int          reduce;
-    FILE        *out;
-    char        *outname;
+    ConstStrArray   alignment_names;
+    int             al_len;
+    int             max_name;
+    GBDATA         *gb_main;
+    char            buffer[PRM_BUFFERSIZE];
+    const char     *source;
+    int             prmanz;
+    int             prmlen;
+    int             prmsmin;
+    char          **data;
+    int             sp_count;
+    int             key_cnt;
+    int             one_key_cnt;
+    int             reduce;
+    FILE           *out;
+    char           *outname;
 
     arb_prm_struct() {
         memset(this, 0, sizeof(*this));

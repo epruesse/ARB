@@ -630,8 +630,8 @@ AW_window *create_mg_merge_tagged_fields(AW_root *aw_root)
 
 GB_ERROR MG_equal_alignments(bool autoselect_equal_alignment_name) {
     /*! Make the alignment names equal */
-    StrArray M_alignment_names;
-    StrArray D_alignment_names;
+    ConstStrArray M_alignment_names;
+    ConstStrArray D_alignment_names;
     GBT_get_alignment_names(M_alignment_names, GLOBAL_gb_merge);
     GBT_get_alignment_names(D_alignment_names, GLOBAL_gb_dest);
 

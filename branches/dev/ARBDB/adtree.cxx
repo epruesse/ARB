@@ -716,7 +716,7 @@ char *GBT_find_largest_tree(GBDATA *gb_main) {
 }
 
 char *GBT_find_latest_tree(GBDATA *gb_main) {
-    StrArray names;
+    ConstStrArray names;
     GBT_get_tree_names(names, gb_main);
     
     int count = names.size();
@@ -776,13 +776,13 @@ GB_ERROR GBT_check_tree_name(const char *tree_name)
     return 0;
 }
 
-void GBT_get_tree_names(StrArray& names, GBDATA *Main) {
+void GBT_get_tree_names(ConstStrArray& names, GBDATA *Main) {
     // stores tree names in 'names'
     GBDATA *gb_treedata = GB_entry(Main, "tree_data");
     if (gb_treedata) {
         names.reserve(GB_number_of_subentries(gb_treedata));
         for (GBDATA *gb_tree = GB_child(gb_treedata); gb_tree; gb_tree = GB_nextChild(gb_tree)) {
-            names.put(GB_read_key(gb_tree));
+            names.put(GB_read_key_pntr(gb_tree));
         }
     }
 }
@@ -908,7 +908,7 @@ void TEST_tree() {
         }
 
         {
-            StrArray names;
+            ConstStrArray names;
             GBT_get_tree_names(names, gb_main);
             char  *joined = GBT_join_names(names, '*');
             TEST_ASSERT_EQUAL(joined, "tree_test*tree_tree2*tree_nj*tree_nj_bs");

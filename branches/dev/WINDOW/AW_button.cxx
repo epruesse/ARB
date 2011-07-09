@@ -1694,7 +1694,7 @@ void AW_window::update_selection_list(AW_selection_list * selection_list) {
     delete [] strtab;
 }
 
-void AW_window::init_selection_list_from_array(AW_selection_list *selection_list, const StrArray& entries, const char *defaultEntry) {
+void AW_window::init_selection_list_from_array(AW_selection_list *selection_list, const CharPtrArray& entries, const char *defaultEntry) {
     // update selection list with contents of NULL-terminated array 'entries'
     // 'defaultEntry' is used as default selection
     // awar value will be changed to 'defaultEntry' if it does not match any other entry
