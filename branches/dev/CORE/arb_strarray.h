@@ -43,45 +43,40 @@ class StrArray : virtual Noncopyable {
     bool elem_index(int i) const { return i >= 0 && size_t(i)<elems; }
     bool allocated_index(int i) const { return i >= 0 && size_t(i)<allocated; }
 
+    void set_space(size_t new_allocated) {
+        if (new_allocated != allocated) {
+            arb_assert(ok());
+            size_t memsize = new_allocated*sizeof(*str);
+            str = (char**)(str ? realloc(str, memsize) : malloc(memsize));
+            if (new_allocated>allocated) memset(str+allocated, 0, (new_allocated-allocated)*sizeof(*str));
+            allocated = new_allocated;
+            arb_assert(ok());
+        }
+    }
+
+    void reserve_space(size_t forElems, bool alloc_ahead) {
+        if (allocated <= forElems) {
+            forElems = alloc_ahead ? (forElems>7 ? forElems*3/2 : 10) : forElems;
+            set_space(forElems+1); // always allocate one element more (sentinel element)
+        }
+    }
+
 public:
     StrArray() : str(NULL), allocated(0), elems(0) {}
     ~StrArray() { erase(); free(str); }
 
     void erase() {
         arb_assert(ok());
-        if (str) {
-            for (size_t i = 0; i<allocated; ++i) {
-                freenull(str[i]);
-            }
-        }
+        if (str) for (size_t i = 0; i<allocated; ++i) freenull(str[i]);
         arb_assert(ok());
     }
 
-    void reserve(size_t forElems) {
-        arb_assert(ok());
-        ++forElems; // always allocate one element more (sentinel element)
-        if (allocated<forElems) {
-            size_t new_allocated                = forElems*3/2;
-            if (new_allocated<10) new_allocated = 10;
-
-            if (str) {
-                arb_assert(allocated);
-                str = (char**)realloc(str, new_allocated*sizeof(*str));
-            }
-            else {
-                arb_assert(!allocated);
-                str = (char**)malloc(new_allocated*sizeof(*str));
-            }
-            memset(str+allocated, 0, (new_allocated-allocated)*sizeof(*str));
-            allocated = new_allocated;
-        }
-        arb_assert(ok());
-    }
+    void reserve(size_t forElems) { reserve_space(forElems, false); }
+    void optimize_space() { set_space(elems+1); }
 
     void put(char *elem) { // tranfers ownership!
-        arb_assert(ok());
         int i    = elems;
-        reserve(i+1);
+        reserve_space(i+1, true);
         arb_assert(allocated_index(i));
         str[i]   = elem;
         str[i+1] = NULL; // sentinel
