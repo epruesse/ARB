@@ -361,8 +361,7 @@ void NT_database_optimization(AW_window *aww) {
         StrArray ali_names;
         GBT_get_alignment_names(ali_names, GLOBAL_gb_main);
 
-        arb_progress ali_progress("Optimizing sequence data", GBT_count_names(ali_names));
-
+        arb_progress ali_progress("Optimizing sequence data", ali_names.size());
         ali_progress.allow_title_reuse();
 
         error = GBT_check_data(GLOBAL_gb_main, 0);
@@ -1004,11 +1003,11 @@ void NT_alltree_remove_leafs(AW_window *, AW_CL cl_mode, AW_CL cl_gb_main) {
     GB_ERROR       error = 0;
     GB_transaction ta(gb_main);
 
-    int      treeCount;
     StrArray tree_names;
-    GBT_get_tree_names_and_count(tree_names, gb_main, &treeCount);
+    GBT_get_tree_names(tree_names, gb_main);
 
     if (!tree_names.empty()) {
+        int           treeCount    = tree_names.size();
         arb_progress  progress("Deleting from trees", treeCount);
         GB_HASH      *species_hash = GBT_create_species_hash(gb_main);
 

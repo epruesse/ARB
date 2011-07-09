@@ -1191,7 +1191,7 @@ static void di_calculate_tree_cb(AW_window *aww, AW_CL cl_weightedFilter, AW_CL 
                     all_names->reserve(matr->nentries+2);
 
                     for (long i=0; i<matr->nentries; i++) {
-                        (*all_names)[i] = strdup(matr->entries[i]->name);
+                        all_names->put(strdup(matr->entries[i]->name));
                     }
                     ctree_init(matr->nentries, *all_names);
                 }

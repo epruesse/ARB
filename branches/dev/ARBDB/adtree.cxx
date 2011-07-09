@@ -717,9 +717,9 @@ char *GBT_find_largest_tree(GBDATA *gb_main) {
 
 char *GBT_find_latest_tree(GBDATA *gb_main) {
     StrArray names;
-    int      count;
-    GBT_get_tree_names_and_count(names, gb_main, &count);
-
+    GBT_get_tree_names(names, gb_main);
+    
+    int count = names.size();
     return count ? strdup(names[count-1]) : NULL;
 }
 
@@ -776,31 +776,15 @@ GB_ERROR GBT_check_tree_name(const char *tree_name)
     return 0;
 }
 
-// @@@ remove GBT_get_tree_names_and_count when StrArray contains counter
-void GBT_get_tree_names_and_count(StrArray& names, GBDATA *Main, int *countPtr) {
-    // returns an null terminated array of string pointers
-
-    int      count       = 0;
-    GBDATA  *gb_treedata = GB_entry(Main, "tree_data");
-
+void GBT_get_tree_names(StrArray& names, GBDATA *Main) {
+    // stores tree names in 'names'
+    GBDATA *gb_treedata = GB_entry(Main, "tree_data");
     if (gb_treedata) {
-        for (GBDATA *gb_tree = GB_child(gb_treedata); gb_tree; gb_tree = GB_nextChild(gb_tree)) count ++;
-
-        if (count) {
-            names.reserve(count);
-            count = 0;
-            for (GBDATA *gb_tree = GB_child(gb_treedata); gb_tree; gb_tree = GB_nextChild(gb_tree)) {
-                names[count++] = GB_read_key(gb_tree);
-            }
+        names.reserve(GB_number_of_subentries(gb_treedata));
+        for (GBDATA *gb_tree = GB_child(gb_treedata); gb_tree; gb_tree = GB_nextChild(gb_tree)) {
+            names.put(GB_read_key(gb_tree));
         }
     }
-
-    *countPtr = count;
-}
-
-void GBT_get_tree_names(StrArray& names, GBDATA *Main) {
-    int dummy;
-    GBT_get_tree_names_and_count(names, Main, &dummy);
 }
 
 char *GBT_get_name_of_next_tree(GBDATA *gb_main, const char *tree_name) {
@@ -900,7 +884,7 @@ void TEST_tree() {
                 GB_CSTR  *species = GBT_get_names_of_species_in_tree(tree, &count);
                 StrArray  species2;
 
-                for (int i = 0; species[i]; ++i) species2[i] = strdup(species[i]);
+                for (int i = 0; species[i]; ++i) species2.put(strdup(species[i]));
 
                 TEST_ASSERT_EQUAL(count, count2);
                 TEST_ASSERT_EQUAL__BROKEN(long(count), nodes); // @@@ why differ?
@@ -924,12 +908,11 @@ void TEST_tree() {
         }
 
         {
-            int count;
             StrArray names;
-            GBT_get_tree_names_and_count(names, gb_main, &count);
+            GBT_get_tree_names(names, gb_main);
             char  *joined = GBT_join_names(names, '*');
             TEST_ASSERT_EQUAL(joined, "tree_test*tree_tree2*tree_nj*tree_nj_bs");
-            TEST_ASSERT_EQUAL(count, 4);
+            TEST_ASSERT_EQUAL(names.size(), 4);
             free(joined);
         }
     }

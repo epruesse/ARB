@@ -2386,12 +2386,12 @@ public:
             : GBT_read_name(gb_species);
 
         StrArray parts;
-        GBT_split_string(parts, nds, "\t", false, &part_count);
+        GBT_split_string(parts, nds, "\t", false);
+        part_count = parts.size();
 
         column = new Column[part_count];
         for (size_t i = 0; i<part_count; ++i) {
-            column[i].init(parts[i], device, gc);
-            parts[i] = NULL; // freed by Column
+            column[i].init(parts.grab(i), device, gc);
         }
     }
 
