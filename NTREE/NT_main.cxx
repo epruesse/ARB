@@ -537,12 +537,14 @@ int main(int argc, char **argv) {
     aw_root->awar(AWAR_DB_PATH)->add_callback(AWAR_DB_PATH_changed_cb);
 
     aw_root->awar_int(AWAR_EXPERT, 0);
-    
+
     init_Advisor(aw_root);
     AWT_install_cb_guards();
 
     NtreeCommandLine cl(argc, argv);
     ARB_ERROR        error = cl.parse();
+
+    ARB_declare_global_awars(aw_root, AW_ROOT_DEFAULT);
 
     if (!error) {
         if (cl.wants_help()) {

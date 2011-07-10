@@ -1848,6 +1848,9 @@ Widget aw_create_shell(AW_window *aww, bool allow_resize, bool allow_close, int 
 #if defined(DEBUG) && 0
     printf("aw_create_shell: pos=%i/%i size=%i%i\n", posx, posy, width, height);
 #endif // DEBUG
+
+    int focusPolicy = root->focus_follows_mouse ? XmPOINTER : XmEXPLICIT;
+
     if (!p_global->main_widget || !p_global->main_aww->is_shown()) {
         shell = XtVaCreatePopupShell("editor", applicationShellWidgetClass,
                                      father,
@@ -1857,7 +1860,7 @@ Widget aw_create_shell(AW_window *aww, bool allow_resize, bool allow_close, int 
                                      XmNy, posy,
                                      XmNtitle, aww->window_name,
                                      XmNiconName, aww->window_name,
-                                     XmNkeyboardFocusPolicy, XmEXPLICIT,
+                                     XmNkeyboardFocusPolicy, focusPolicy,
                                      XmNdeleteResponse, XmDO_NOTHING,
                                      XtNiconPixmap, icon_pixmap,
                                      NULL);
@@ -1871,7 +1874,7 @@ Widget aw_create_shell(AW_window *aww, bool allow_resize, bool allow_close, int 
                                      XmNy, posy,
                                      XmNtitle, aww->window_name,
                                      XmNiconName, aww->window_name,
-                                     XmNkeyboardFocusPolicy, XmEXPLICIT,
+                                     XmNkeyboardFocusPolicy, focusPolicy,
                                      XmNdeleteResponse, XmDO_NOTHING,
                                      XtNiconPixmap, icon_pixmap,
                                      NULL);
@@ -2496,8 +2499,7 @@ void AW_window::set_info_area_height(int height) {
 
 void AW_window::set_bottom_area_height(int height) {
     XtVaSetValues(BOTTOM_WIDGET, XmNheight, height, NULL);
-    XtVaSetValues(p_w->scroll_bar_horizontal, XmNbottomOffset, (int)height,
-            NULL);
+    XtVaSetValues(p_w->scroll_bar_horizontal, XmNbottomOffset, (int)height, NULL);
 }
 
 void AW_window::set_vertical_scrollbar_top_indent(int indent) {
@@ -2506,8 +2508,7 @@ void AW_window::set_vertical_scrollbar_top_indent(int indent) {
 }
 
 void AW_window::set_vertical_scrollbar_bottom_indent(int indent) {
-    XtVaSetValues(p_w->scroll_bar_vertical, XmNbottomOffset, (int)(3+indent),
-            NULL);
+    XtVaSetValues(p_w->scroll_bar_vertical, XmNbottomOffset, (int)(3+indent), NULL);
     bottom_indent_of_vertical_scrollbar = indent;
 }
 
@@ -2519,6 +2520,21 @@ void AW_root::apply_sensitivity(AW_active mask) {
     for (list = button_sens_list; list; list = list->next) {
         XtSetSensitive(list->button, (list->mask & mask) ? True : False);
     }
+}
+
+void AW_window::set_focus_policy(bool follow_mouse) {
+    int focusPolicy = follow_mouse ? XmPOINTER : XmEXPLICIT;
+    XtVaSetValues(p_w->shell, XmNkeyboardFocusPolicy, focusPolicy, NULL);
+}
+
+static long set_focus_policy(const char *, long cl_aww, void *) {
+    AW_window *aww = (AW_window*)cl_aww;
+    aww->set_focus_policy(aww->get_root()->focus_follows_mouse);
+    return cl_aww;
+}
+void AW_root::apply_focus_policy(bool follow_mouse) {
+    focus_follows_mouse = follow_mouse;
+    GBS_hash_do_loop(hash_for_windows, set_focus_policy, 0);
 }
 
 void AW_window::select_mode(int mode) {

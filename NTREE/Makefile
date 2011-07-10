@@ -535,6 +535,7 @@ NT_extern.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/aw_device.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/aw_file.hxx
+NT_extern.o: $(ARBHOME)/INCLUDE/aw_global_awars.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 NT_extern.o: $(ARBHOME)/INCLUDE/aw_position.hxx
