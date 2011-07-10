@@ -88,6 +88,7 @@ public:
     Widget         changer_of_variable;
     int            y_correction_for_input_labels;
     AW_active      global_mask;
+    bool           focus_follows_mouse;
     GB_HASH       *hash_table_for_variables;
     bool           variable_set_by_toggle_field;
     int            number_of_toggle_fields;
@@ -153,6 +154,7 @@ public:
 
     // Control sensitivity of buttons etc.:
     void apply_sensitivity(AW_active mask);
+    void apply_focus_policy(bool follow_mouse);
     void make_sensitive(Widget w, AW_active mask);
     bool remove_button_from_sens_list(Widget button);
 
@@ -172,7 +174,14 @@ const char *AW_font_2_ascii(AW_font font_nr);
 int         AW_font_2_xfig(AW_font font_nr);
 
 bool ARB_global_awars_initialized();
-GB_ERROR ARB_init_global_awars(AW_root *aw_root, AW_default aw_def, GBDATA *gb_main) __ATTR__USERESULT;
+
+void ARB_declare_global_awars(AW_root *aw_root, AW_default aw_def);
+GB_ERROR ARB_bind_global_awars(GBDATA *gb_main) __ATTR__USERESULT;
+
+INLINE_ATTRIBUTED(__ATTR__USERESULT, GB_ERROR ARB_init_global_awars(AW_root *aw_root, AW_default aw_def, GBDATA *gb_main)) {
+    ARB_declare_global_awars(aw_root, aw_def);
+    return ARB_bind_global_awars(gb_main);
+}
 
 inline AW_default get_AW_ROOT_DEFAULT() { return AW_root::SINGLETON->check_properties(NULL); }
 
@@ -180,3 +189,4 @@ inline AW_default get_AW_ROOT_DEFAULT() { return AW_root::SINGLETON->check_prope
 #else
 #error aw_root.hxx included twice
 #endif
+
