@@ -734,15 +734,11 @@ GB_ERROR ED4_Edit_String::command(AW_key_mod keymod, AW_key_code keycode, char k
                             break;
                         }
                         case 'E': { // CTRL-E = Toggle Edit/Align-Mode
-                            AW_awar *edit_mode = ED4_ROOT->aw_root->awar(AWAR_EDIT_MODE);
-
-                            edit_mode->write_int(edit_mode->read_int()==0);
+                            ED4_ROOT->aw_root->awar(AWAR_EDIT_MODE)->toggle_toggle();
                             break;
                         }
                         case 'I': { // CTRL-I = Toggle Insert/Replace-Mode
-                            AW_awar *insert_mode = ED4_ROOT->aw_root->awar(AWAR_INSERT_MODE);
-
-                            insert_mode->write_int(insert_mode->read_int()==0);
+                            ED4_ROOT->aw_root->awar(AWAR_INSERT_MODE)->toggle_toggle();
                             break;
                         }
                         case 'J': { // CTRL-J = Jump to opposite helix position
