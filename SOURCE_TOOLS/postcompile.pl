@@ -46,7 +46,7 @@ my @reg_Weffpp = (
                  );
 
 my $filter_Weffpp_copyable = 0; # 1 = filter copy-ctor/op=-warning, 0 = check for Noncopyable and warn
-my $reg_Weffpp_copyable = qr/'(class|struct)\s([A-Za-z_0-9]+).*'\shas\spointer\sdata\smembers/; # occurs also if derived from 'Noncopyable'
+my $reg_Weffpp_copyable = qr/'(class|struct)\s([A-Za-z_0-9:]+).*'\shas\spointer\sdata\smembers/; # occurs also if derived from 'Noncopyable'
 
 # regexps for files:
 my $reg_user_include = qr/^\/usr\/include\//;
@@ -124,13 +124,17 @@ sub advice_derived_from_Noncopyable($$$) {
   if (not -f $file) {
     die "no such file '$file'";
   }
+
+  my $uq_classname = $classname;
+  while ($uq_classname =~ /::/o) { $uq_classname = $'; } # skip namespace prefixes
+
   open(FILE,'<'.$file) || die "can't read '$file' (Reason: $!)";
   my $line;
   my $line_count = 0;
  LINE: while (defined($line=<FILE>)) {
     $line_count++;
     if ($line_count==$linenr) {
-      if ($line =~ /(class|struct)\s+$classname(.*)Noncopyable/) {
+      if ($line =~ /(class|struct)\s+$uq_classname(.*)Noncopyable/) {
         my $prefix = $2;
         if (not $prefix =~ /\/\//) { # if we have a comment, assume it mentions that the class is derived from a Noncopyable
           if (not $prefix =~ /virtual/) {
