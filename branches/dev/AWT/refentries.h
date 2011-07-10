@@ -40,7 +40,7 @@ namespace RefEntries {
 
     typedef ARB_ERROR (*referred_item_handler)(GBDATA *gb_main, const DBItemSet& referred);                // called with all referred items
 
-    class RefSelector {
+    class RefSelector : virtual Noncopyable {
         char *field; // name of field containing references
         char *aci;   // postprocess expression for field-content
 
