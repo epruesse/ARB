@@ -435,8 +435,10 @@ inline POS_TREE *PT_read_son(PTM2 *ptmain, POS_TREE *node, PT_BASES base)
                               "       this combination of both flags is not implemented\n");
             }
             else {                                                // long/int
+#ifdef DEBUG
                 printf("Warning: A search tree of this size is not tested.\n");
                 printf("         (sec & LONG_SON) == true\n");
+#endif
                 offset = 4 * i;
                 if ((1<<base) & sec) {              // long
                     COMPILE_ASSERT(sizeof(PT_PNTR) == 8); // 64-bit necessary
