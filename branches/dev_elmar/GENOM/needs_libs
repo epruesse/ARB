@@ -1,0 +1,8 @@
+# libraries needed to link against GENOM/GENOM.a
+
+# depends on NTREE/NTREE.a # fix this
+
+SL/DB_SCANNER/DB_SCANNER.a
+SL/TRANSLATE/TRANSLATE.a
+
+

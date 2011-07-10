@@ -1,0 +1,207 @@
+#NEXUS
+[! RDP - the Ribosomal Database Project, (Mon Oct 25 12:26:33 2010).]
+[! To get started, send HELP to rdp@info.mcs.anl.gov ]
+BEGIN DATA;
+   DIMENSIONS
+      NTAX =      5
+      NCHAR =   1546
+      ;
+   FORMAT
+      LABELPOS = LEFT
+      MISSING = .
+      EQUATE = "~=.|><"
+      INTERLEAVE
+      DATATYPE = RNA
+      GAP = -
+      ;
+   OPTIONS
+      GAPMODE = MISSING
+      ;
+   MATRIX
+      'AF375552; cattgtcgcg catgaactgc aactgctgag ggatcaggat aatcatccgc [1 - 50]
+      A1MVRNA2   gtttttatct tttcgcgatt gaaaagataa gtttttcagt ttaatctttt
+      'ER781674_ tggcgccgta gatgcagcgc gactggcccg gcttctcggc gtcgaggtac
+      'AY704744_ gcatcgatga agaacgcagc gaaatgcgat aagtaatgtg aattgcagaa
+      'Y15714;'  agagtttgat nngggctcag gatgaacgct ggcggcgtgc ctaatacatg
+
+      'AF375552; agataaatat aactgctaaa aataatacac aaacttacgc aatggcagcc [51 - 100]
+      A1MVRNA2   caatatgttc actcttttga gatgtctcgg attcggtgtt aatgaaccta
+      'ER781674_ tgcgccacgg ccttggcgct ggccacgtcc gggcagacca cgatgctctt
+      'AY704744_ ttcagtgaat catcgaatct ttgaacgcac attgcgccca ttagtattct
+      'Y15714;'  caagtcgagc ggacagacga ggtgcttgca cctctgaagt cagcggcgga
+
+      'AF375552; taaacagcac catgcgtgcc tgatttttgc tcactgatgg caatttgacg [101 - 150]
+      A1MVRNA2   ctaacacttc ctcatcagag tatgttcccg agtattccgt tgaagagatt
+      'ER781674_ gcgtgagccg gcgacgtgga cgatgccctt ggccagttcg atcatcgtct
+      'AY704744_ agtgggcatg cctgttcgag cgtcatttca acccttaagc ttagcttagt
+      'Y15714;'  cgggtgagta acacgtgggt aacctacctg taagactggg ataacttcgg
+
+      'AF375552; gcctaaactt ttagtcagat acgttgttgt ggaggcttga cgcagcaaaa [151 - 200]
+      A1MVRNA2   tccaacgaag tcgctgaact cgattcagtg gatccattat tccaatgtta
+      'ER781674_ ggtcgttggt gatccgggcg gcgatctcgg cgtcggaata gtccttctcg
+      'AY704744_ attgggaatc tgcttaaccg cagctcctta aatctagttg gcagagcaca
+      'Y15714;'  gaaaccggag ctaataccgg ataatatttt ccacctcatg gtggaatagt
+
+      'AF375552; gagatttaaa gccccgcaaa atgtcgctgt ttgagactgg ctttggcatt [201 - 250]
+      A1MVRNA2   caaacatgtt tttgtatcat tgatgctcgt aagaaagatg actcaagctg
+      'ER781674_ ccggcctcgt tctccgccac ggtcagcgtg gagaagtcga tggagacgcg
+      'AY704744_ gctgtactct gagcgtagta attcattatc tcgctttctg aagacagtcg
+      'Y15714;'  gaaagacggt tttgctgtca cttacagatg gacccgcggc gcattagcta
+
+      'AF375552; ttgttaaatt tgagaaagtc ctatggttgt agacgttgat gtagcaaggt [251 - 300]
+      A1MVRNA2   ccgaagactt cctcgagagt tttgggggag a
+      'ER781674_ gacgaacgcc tgcttggcgg ggcagagcca taccgttggc catgcctcac
+      'AY704744_ tacgatagcc acaaactttg catcttgcaa actttttaat ggttgacctc
+      'Y15714;'  gttggtgagg taacggctca ccaaggcgac gatgcgtagc cgacctgaga
+
+      'AF375552; gtttggacag [301 - 310]
+      A1MVRNA2
+      'ER781674_ aggatgtcgc ggttgaaggc gaggccctgg aacaggttgg ccatcgccac
+      'AY704744_ ggatcaggta ggaatacccg ctgaacttaa gcatatcaat aagcggagga
+      'Y15714;'  gggtgatcgg ccacactggg actgagacac ggcccagact cctacgggag
+
+      'AF375552;
+      A1MVRNA2
+      'ER781674_
+      'AY704744_
+      'Y15714;'  gcagcagtag ggaatcttcc gcaatggacg aaagtctgac ggagcaacgc [351 - 400]
+
+      'AF375552;
+      A1MVRNA2
+      'ER781674_
+      'AY704744_
+      'Y15714;'  cgcgtgagtg aagaaggtct tcggatcgta aaactctgtt gtaagggaag [401 - 450]
+
+      'AF375552;
+      A1MVRNA2
+      'ER781674_
+      'AY704744_
+      'Y15714;'  aacaagtacg ttagtaactg aacgtacctt gacggtacct taccagaaag [451 - 500]
+
+      'AF375552;
+      A1MVRNA2
+      'ER781674_
+      'AY704744_
+      'Y15714;'  ccacggctaa ctacgtgcca gcagccgcgg taatacgtag gtggcaagcg [501 - 550]
+
+      'AF375552;
+      A1MVRNA2
+      'ER781674_
+      'AY704744_
+      'Y15714;'  ttatccggaa ttattgggcg taaagcgcgc gtaggcggtt tcttaagtct [551 - 600]
+
+      'AF375552;
+      A1MVRNA2
+      'ER781674_
+      'AY704744_
+      'Y15714;'  gatgtgaaag cccccggctc aaccggggag ggtcattgga aactgggaga [601 - 650]
+
+      'AF375552;
+      A1MVRNA2
+      'ER781674_
+      'AY704744_
+      'Y15714;'  cttgagtgca gaagaggaga gtggaattcc atgtgtagcg gtgaaatgcg [651 - 700]
+
+      'AF375552;
+      A1MVRNA2
+      'ER781674_
+      'AY704744_
+      'Y15714;'  cagagatatg gaggaacacc agtggcgaag gcggctctct ggtctgtaac [701 - 750]
+
+      'AF375552;
+      A1MVRNA2
+      'ER781674_
+      'AY704744_
+      'Y15714;'  tgacgctgag gtgcgaaagc gtggggatca aacaggatta gataccctgg [751 - 800]
+
+      'AF375552;
+      A1MVRNA2
+      'ER781674_
+      'AY704744_
+      'Y15714;'  tagtccacgc cgtaaacgat gagtgctaag tgttgggggg tttccgcccc [801 - 850]
+
+      'AF375552;
+      A1MVRNA2
+      'ER781674_
+      'AY704744_
+      'Y15714;'  tcagtgctgc agctaacgca ttaagcactc cgcctgggga gtacggtcgc [851 - 900]
+
+      'AF375552;
+      A1MVRNA2
+      'ER781674_
+      'AY704744_
+      'Y15714;'  aagactgaaa ctcaaaggaa ttgacgggga cccgcacaag cggtggagca [901 - 950]
+
+      'AF375552;
+      A1MVRNA2
+      'ER781674_
+      'AY704744_
+      'Y15714;'  tgtggtttaa ttcgaagcaa cgcgaagaac cttaccaaat cttgacatcc [951 - 1000]
+
+      'AF375552;
+      A1MVRNA2
+      'ER781674_
+      'AY704744_
+      'Y15714;'  tctgacaact ctggagacag agcgttcccc ttcgggggac agagtgacag [1001 - 1050]
+
+      'AF375552;
+      A1MVRNA2
+      'ER781674_
+      'AY704744_
+      'Y15714;'  gtggtgcatg gttgtcgtca gctcgtgtcg tgagatgttg ggttaagtcc [1051 - 1100]
+
+      'AF375552;
+      A1MVRNA2
+      'ER781674_
+      'AY704744_
+      'Y15714;'  cgcaacgagc gcaaccctta tctttagttg ccatcattca gttgggcact [1101 - 1150]
+
+      'AF375552;
+      A1MVRNA2
+      'ER781674_
+      'AY704744_
+      'Y15714;'  ctagagagac tgccggtgac aaaccggagg aaggtgggga tgacgtcaaa [1151 - 1200]
+
+      'AF375552;
+      A1MVRNA2
+      'ER781674_
+      'AY704744_
+      'Y15714;'  tcatcatgcc ccttatgatt tgggctacac acgtgctaca atggatggta [1201 - 1250]
+
+      'AF375552;
+      A1MVRNA2
+      'ER781674_
+      'AY704744_
+      'Y15714;'  caaagggcag caaaaccgcg aggtcaagca aatcccataa aaccattctc [1251 - 1300]
+
+      'AF375552;
+      A1MVRNA2
+      'ER781674_
+      'AY704744_
+      'Y15714;'  agttcggatt gtagtctgca actcgactac atgaagctgg aatcgctagt [1301 - 1350]
+
+      'AF375552;
+      A1MVRNA2
+      'ER781674_
+      'AY704744_
+      'Y15714;'  aatcgtagat cagcatgcta cggtgaatac gttcccgggt cttgtacaca [1351 - 1400]
+
+      'AF375552;
+      A1MVRNA2
+      'ER781674_
+      'AY704744_
+      'Y15714;'  ccgcccgtca caccacgaga gtttgtaaca cccgaagccg gtggagtaac [1401 - 1450]
+
+      'AF375552;
+      A1MVRNA2
+      'ER781674_
+      'AY704744_
+      'Y15714;'  ctttacagga gctagccgtc gaaggtggga cagatgattg gggtgaagtc [1451 - 1500]
+
+      'AF375552;
+      A1MVRNA2
+      'ER781674_
+      'AY704744_
+      'Y15714;'  gtaacaaggt agccgtatcg gaaggtgcgg ctggatcacc tccttt [1501 - 1546]
+      ;
+ENDBLOCK;
