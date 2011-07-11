@@ -128,25 +128,22 @@ public:
         elems++;
         arb_assert(ok());
     }
-
-    char *grab(int i) { // transfers ownership!
-        arb_assert(ok());
-        arb_assert(elem_index(i));
-        char *elem = str[i];
-        str[i]     = NULL;
-        arb_assert(ok());
-        return elem;
-    }
 };
 
-class ConstStrArray : public CharPtrArray {
+class ConstStrArray : public CharPtrArray { // derived from a Noncopyable
+    char *memblock;
+    
     virtual void free_elem(int) {}
 
-    void put(char *) {}
-
 public:
-    ConstStrArray() {}
-    virtual ~ConstStrArray() {}
+    ConstStrArray() : memblock(NULL) {}
+    virtual ~ConstStrArray() { free(memblock); }
+
+    void set_memblock(char *block) {
+        // hold one memblock until destruction
+        arb_assert(!memblock);
+        memblock = block;
+    }
 
     void put(const char *elem) {
         int i    = elems;
@@ -160,12 +157,23 @@ public:
 };
 
 
-void  GBT_split_string(StrArray& dest, const char *namelist, const char *separator, bool dropEmptyTokens);
-void  GBT_split_string(StrArray& dest, const char *namelist, char separator);
+void GBT_splitNdestroy_string(ConstStrArray& names, char*& namelist, const char *separator, bool dropEmptyTokens);
+void GBT_splitNdestroy_string(ConstStrArray& dest, char*& namelist, char separator);
+
+inline void GBT_split_string(ConstStrArray& dest, const char *namelist, const char *separator, bool dropEmptyTokens) {
+    char *dup = strdup(namelist);
+    GBT_splitNdestroy_string(dest, dup, separator, dropEmptyTokens);
+}
+inline void GBT_split_string(ConstStrArray& dest, const char *namelist, char separator) {
+    char *dup = strdup(namelist);
+    GBT_splitNdestroy_string(dest, dup, separator);
+}
+
 char *GBT_join_names(const CharPtrArray& names, char separator);
 int   GBT_names_index_of(const CharPtrArray& names, const char *search_for);
 void  GBT_names_erase(CharPtrArray& names, int index);
 void  GBT_names_add(StrArray& names, int insert_before, const char *name);
+void  GBT_names_add(ConstStrArray& names, int insert_before, const char *name);
 void  GBT_names_move(CharPtrArray& names, int old_index, int new_index);
 
 #else

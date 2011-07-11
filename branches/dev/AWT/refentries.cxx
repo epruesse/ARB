@@ -62,7 +62,7 @@ namespace RefEntries {
             if (GB_have_error()) error = GB_await_error();
         }
         else {
-            StrArray refNames;
+            ConstStrArray refNames;
             GBT_split_string(refNames, filtered, ";, ", true);
             size_t   refCount = refNames.size();
 

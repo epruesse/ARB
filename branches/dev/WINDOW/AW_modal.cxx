@@ -382,9 +382,9 @@ static AW_window_message *new_input_window(AW_root *root, const char *title, con
     aw_msg->at_newline();
     aw_msg->create_input_field(AW_INPUT_AWAR, INPUT_SIZE);
 
-    size_t   butCount = 2;                          // ok and cancel
-    StrArray button_names;
-    int      maxlen   = 6;                          // use as min.length for buttons (for 'CANCEL')
+    size_t        butCount = 2;                     // ok and cancel
+    ConstStrArray button_names;
+    int           maxlen   = 6;                     // use as min.length for buttons (for 'CANCEL')
 
     if (buttons) {
         GBT_split_string(button_names, buttons, ',');
