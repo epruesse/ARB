@@ -68,13 +68,16 @@ protected:
 
     virtual void free_elem(int i) = 0;
 
-public:
-    void erase() {
+    void erase_elems() {
         arb_assert(ok());
-        if (str) for (size_t i = 0; i<elems; ++i) free_elem(i);
-        arb_assert(ok());
+        if (!empty()) {
+            for (size_t i = 0; i<elems; ++i) free_elem(i);
+            elems = 0;
+            arb_assert(ok());
+        }
     }
-
+    
+public:
     void reserve(size_t forElems) { reserve_space(forElems, false); }
     void optimize_space() { set_space(elems+1); }
 
@@ -119,6 +122,8 @@ public:
     StrArray() {}
     virtual ~StrArray() { erase(); }
 
+    void erase() { erase_elems(); }
+
     void put(char *elem) { // tranfers ownership!
         int i    = elems;
         reserve_space(i+1, true);
@@ -132,8 +137,8 @@ public:
 
 class ConstStrArray : public CharPtrArray { // derived from a Noncopyable
     char *memblock;
-    
-    virtual void free_elem(int) {}
+
+    virtual void free_elem(int i) { str[i] = NULL; }
 
 public:
     ConstStrArray() : memblock(NULL) {}
@@ -143,6 +148,11 @@ public:
         // hold one memblock until destruction
         arb_assert(!memblock);
         memblock = block;
+    }
+
+    void erase() {
+        erase_elems();
+        freenull(memblock);
     }
 
     void put(const char *elem) {
