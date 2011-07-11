@@ -284,10 +284,9 @@ static void calculate_preserves_cb(AW_window *, AW_CL cl_para) {
 
 
 
-static void read_references(StrArray& refs, AW_root *aw_root)  {
+static void read_references(ConstStrArray& refs, AW_root *aw_root)  {
     char *ref_string = aw_root->awar(AWAR_REMAP_SPECIES_LIST)->read_string();
-    GBT_split_string(refs, ref_string, " \n,;", true);
-    free(ref_string);
+    GBT_splitNdestroy_string(refs, ref_string, " \n,;", true);
 }
 static void write_references(AW_root *aw_root, const CharPtrArray& ref_array) {
     char *ref_string = GBT_join_names(ref_array, '\n');
@@ -304,7 +303,7 @@ static char *get_selected_reference(AW_root *aw_root) {
 
 static void refresh_reference_list_cb(AW_root *aw_root, AW_CL cl_para) {
     preserve_para *para = (preserve_para*)cl_para;
-    StrArray       refs;
+    ConstStrArray  refs;
     read_references(refs, aw_root);
     para->window->init_selection_list_from_array(para->ref_id, refs, "");
 }
@@ -314,8 +313,7 @@ static void add_selected_cb(AW_window *, AW_CL cl_para) {
 
     preserve_para *para    = (preserve_para*)cl_para;
     AW_root       *aw_root = para->window->get_root();
-
-    StrArray refs;
+    ConstStrArray  refs;
     read_references(refs, aw_root);
 
     char *candidate  = aw_root->awar(AWAR_REMAP_CANDIDATE)->read_string();
@@ -341,8 +339,8 @@ static void clear_references_cb(AW_window *aww) {
 }
 
 static void del_reference_cb(AW_window *aww) {
-    AW_root  *aw_root = aww->get_root();
-    StrArray  refs;
+    AW_root       *aw_root = aww->get_root();
+    ConstStrArray  refs;
     read_references(refs, aw_root);
 
     char *selected  = get_selected_reference(aw_root);
@@ -358,8 +356,8 @@ static void del_reference_cb(AW_window *aww) {
 }
 
 static void lower_reference_cb(AW_window *aww) {
-    AW_root  *aw_root = aww->get_root();
-    StrArray  refs;
+    AW_root       *aw_root = aww->get_root();
+    ConstStrArray  refs;
     read_references(refs, aw_root);
 
     char *selected  = get_selected_reference(aw_root);
@@ -373,8 +371,8 @@ static void lower_reference_cb(AW_window *aww) {
     free(selected);
 }
 static void raise_reference_cb(AW_window *aww) {
-    AW_root  *aw_root = aww->get_root();
-    StrArray  refs;
+    AW_root       *aw_root = aww->get_root();
+    ConstStrArray  refs;
     read_references(refs, aw_root);
 
     char *selected  = get_selected_reference(aw_root);
