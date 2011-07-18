@@ -407,6 +407,7 @@ adGene.o: $(ARBHOME)/INCLUDE/arb_core.h
 adGene.o: $(ARBHOME)/INCLUDE/arb_defs.h
 adGene.o: $(ARBHOME)/INCLUDE/arb_error.h
 adGene.o: $(ARBHOME)/INCLUDE/arb_msg.h
+adGene.o: $(ARBHOME)/INCLUDE/arb_strarray.h
 adGene.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 adGene.o: $(ARBHOME)/INCLUDE/arb_string.h
 adGene.o: $(ARBHOME)/INCLUDE/arb_unit_test.h
