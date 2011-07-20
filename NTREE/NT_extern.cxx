@@ -209,7 +209,7 @@ static void nt_create_all_awars(AW_root *awr, AW_default def) {
     create_probe_design_variables(awr, def, GLOBAL_gb_main);
     create_primer_design_variables(awr, def, GLOBAL_gb_main);
     create_trees_var(awr, def);
-    DBUI::NT_create_species_var(awr, def);
+    DBUI::create_dbui_awars(awr, def);
     create_consensus_var(awr, def);
     GDE_create_var(awr, def, GLOBAL_gb_main);
     create_cprofile_var(awr, def);
@@ -791,7 +791,7 @@ void NT_focus_cb(AW_window */*aww*/) {
 void NT_modify_cb(AW_window *aww, AW_CL cd1, AW_CL cd2)
 {
     AWT_canvas *canvas = (AWT_canvas*)cd1;
-    AW_window  *aws    = DBUI::NT_create_species_window(aww->get_root(), (AW_CL)canvas->gb_main);
+    AW_window  *aws    = DBUI::create_species_info_window(aww->get_root(), (AW_CL)canvas->gb_main);
     aws->activate();
     nt_mode_event(aww, canvas, (AWT_COMMAND_MODE)cd2);
 }
@@ -994,7 +994,7 @@ static void nt_auto_count_marked_species(GBDATA*, int* cl_aww, GB_CB_TYPE) {
 
 void NT_popup_species_window(AW_window *aww, AW_CL cl_gb_main, AW_CL) {
     // used to avoid that the species info window is stored in a menu (or with a button)
-    DBUI::NT_create_species_window(aww->get_root(), cl_gb_main)->activate();
+    DBUI::create_species_info_window(aww->get_root(), cl_gb_main)->activate();
 }
 
 // --------------------------------------------------------------------------------------------------
@@ -1245,7 +1245,7 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
         // ----------------
         awm->create_menu("Species", "c", AWM_ALL);
         {
-            AWMIMT("species_search", "Search and query",    "q", "sp_search.hlp", AWM_ALL, AW_POPUP,                (AW_CL)DBUI::NTX_create_query_window, (AW_CL)GLOBAL_gb_main);
+            AWMIMT("species_search", "Search and query",    "q", "sp_search.hlp", AWM_ALL, AW_POPUP,                (AW_CL)DBUI::create_species_query_window, (AW_CL)GLOBAL_gb_main);
             AWMIMT("species_info",   "Species information", "i", "sp_info.hlp",   AWM_ALL, NT_popup_species_window, (AW_CL)GLOBAL_gb_main,         0);
 
             SEP________________________SEP();
@@ -1258,7 +1258,7 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
             SEP________________________SEP();
 
             awm->insert_sub_menu("Database fields admin", "f");
-            DBUI::NT_spec_create_field_items(awm, GLOBAL_gb_main);
+            DBUI::insert_field_admin_menuitems(awm, GLOBAL_gb_main);
             awm->close_sub_menu();
             NT_create_mask_submenu(awm);
 
@@ -1774,7 +1774,7 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
     awm->button_length(7);
 
     awm->at(db_searchx, first_liney);
-    awm->callback(AW_POPUP, (AW_CL)DBUI::NTX_create_query_window, (AW_CL)GLOBAL_gb_main);
+    awm->callback(AW_POPUP, (AW_CL)DBUI::create_species_query_window, (AW_CL)GLOBAL_gb_main);
     awm->help_text("sp_search.hlp");
     awm->create_button("SEARCH",  "Search");
 
