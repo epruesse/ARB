@@ -279,6 +279,7 @@ endif
 
 cflags += -pipe
 cflags += -fmessage-length=0# don't wrap compiler output
+cflags += -fshow-column# show columns
 cflags += -funit-at-a-time
 cflags += -fPIC
 cflags += -fno-common# link all global data into one namespace
