@@ -93,7 +93,7 @@ namespace RefEntries {
         return error;
     }
 
-    ARB_ERROR ReferringEntriesHandler::with_all_referred_items(AWT_QUERY_RANGE range, const RefSelector& refsel, referred_item_handler callback) {
+    ARB_ERROR ReferringEntriesHandler::with_all_referred_items(QUERY_RANGE range, const RefSelector& refsel, referred_item_handler callback) {
         re_assert(range != QUERY_CURRENT_ITEM); // would need AW_root
 
         ARB_ERROR  error;
@@ -149,7 +149,7 @@ namespace RefEntries {
         referred_item_handler    ricb = (referred_item_handler)cl_ricb;
 
         AW_root         *aw_root   = aww->get_root();
-        AWT_QUERY_RANGE  range = aw_root->awar(AWAR_MARKBYREF_ALL)->read_int() ? QUERY_ALL_ITEMS : QUERY_MARKED_ITEMS;
+        QUERY_RANGE  range = aw_root->awar(AWAR_MARKBYREF_ALL)->read_int() ? QUERY_ALL_ITEMS : QUERY_MARKED_ITEMS;
 
         RefSelector refsel(aw_root->awar(AWAR_MARKBYREF_FIELD)->read_char_pntr(),
                            aw_root->awar(AWAR_MARKBYREF_FILTER)->read_char_pntr(),

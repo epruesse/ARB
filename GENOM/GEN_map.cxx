@@ -1435,12 +1435,12 @@ static void GEN_create_mask_submenu(AW_window_menu_modes *awm, GBDATA *gb_main) 
     AWT_create_mask_submenu(awm, AWT_IT_GENE, GEN_open_mask_window, (AW_CL)gb_main);
 }
 
-static AW_window *GEN_create_gene_colorize_window(AW_root *aw_root, AW_CL cl_gb_main) {
-    return awt_create_item_colorizer(aw_root, (GBDATA*)cl_gb_main, &GEN_item_selector);
+static AW_window *create_colorize_genes_window(AW_root *aw_root, AW_CL cl_gb_main) {
+    return QUERY::create_colorize_items_window(aw_root, (GBDATA*)cl_gb_main, &GEN_item_selector);
 }
 
-static AW_window *GEN_create_organism_colorize_window(AW_root *aw_root, AW_CL cl_gb_main) {
-    return awt_create_item_colorizer(aw_root, (GBDATA*)cl_gb_main, &AWT_organism_selector);
+static AW_window *create_colorize_organisms_window(AW_root *aw_root, AW_CL cl_gb_main) {
+    return QUERY::create_colorize_items_window(aw_root, (GBDATA*)cl_gb_main, &AWT_organism_selector);
 }
 
 void GEN_popup_organism_window(AW_window *aww, AW_CL cl_gb_main, AW_CL) {
@@ -1468,7 +1468,7 @@ static void GEN_create_organism_submenu(AW_window_menu_modes *awm, GBDATA *gb_ma
         awm->insert_separator();
         AWMIMT("mark_organisms_with_marked_genes", "Mark organisms with marked Genes", "G", "organism_mark.hlp", AWM_ALL, mark_organisms_with_marked_genes, (AW_CL)gb_main, 0);
         awm->insert_separator();
-        AWMIMT("organism_colors",   "Colors ...",           "C",    "mark_colors.hlp", AWM_ALL, AW_POPUP,  (AW_CL)GEN_create_organism_colorize_window, (AW_CL)gb_main);
+        AWMIMT("organism_colors",   "Colors ...",           "C",    "mark_colors.hlp", AWM_ALL, AW_POPUP,  (AW_CL)create_colorize_organisms_window, (AW_CL)gb_main);
     }
     if (submenu) awm->close_sub_menu();
 }
@@ -1528,7 +1528,7 @@ void GEN_create_genes_submenu(AW_window_menu_modes *awm, GBDATA *gb_main, bool f
         GEN_insert_mark_submenu(awm, gb_main, "gene_invert_marked", "Invert marked genes", "v", "gene_mark.hlp", GEN_INVERT_MARKED);
         GEN_insert_mark_submenu(awm, gb_main, "gene_count_marked",  "Count marked genes",  "C", "gene_mark.hlp", GEN_COUNT_MARKED);
 
-        AWMIMT("gene_colors", "Colors ...", "l", "mark_colors.hlp", AWM_ALL, AW_POPUP, (AW_CL)GEN_create_gene_colorize_window, (AW_CL)gb_main);
+        AWMIMT("gene_colors", "Colors ...", "l", "mark_colors.hlp", AWM_ALL, AW_POPUP, (AW_CL)create_colorize_genes_window, (AW_CL)gb_main);
 
         awm->insert_separator();
 

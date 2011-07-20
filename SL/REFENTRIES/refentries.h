@@ -77,7 +77,7 @@ namespace RefEntries {
 
 
         ARB_ERROR with_all_referred_items(GBDATA *gb_item, const RefSelector& refsel, referred_item_handler cb);
-        ARB_ERROR with_all_referred_items(AWT_QUERY_RANGE range, const RefSelector& refsel, referred_item_handler cb);
+        ARB_ERROR with_all_referred_items(QUERY_RANGE range, const RefSelector& refsel, referred_item_handler cb);
     };
 
     // --------------------------

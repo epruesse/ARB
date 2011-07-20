@@ -15,10 +15,10 @@
 #include <aw_awars.hxx>
 
 
-static GBDATA *awt_get_first_species_data(GBDATA *gb_main, AW_root *, AWT_QUERY_RANGE) {
+static GBDATA *awt_get_first_species_data(GBDATA *gb_main, AW_root *, QUERY_RANGE) {
     return GBT_get_species_data(gb_main);
 }
-static GBDATA *awt_get_next_species_data(GBDATA *, AWT_QUERY_RANGE) {
+static GBDATA *awt_get_next_species_data(GBDATA *, QUERY_RANGE) {
     return 0; // there is only ONE species_data
 }
 
@@ -47,7 +47,7 @@ static GBDATA *awt_find_species_by_id(GBDATA *gb_main, const char *id) {
     return GBT_find_species(gb_main, id); // id is 'name' field
 }
 
-static GBDATA *awt_get_first_species(GBDATA *gb_species_data, AWT_QUERY_RANGE range) {
+static GBDATA *awt_get_first_species(GBDATA *gb_species_data, QUERY_RANGE range) {
     GBDATA *gb_first = NULL;
     switch (range) {
         case QUERY_ALL_ITEMS:    gb_first = GBT_first_species_rel_species_data(gb_species_data); break;
@@ -56,7 +56,7 @@ static GBDATA *awt_get_first_species(GBDATA *gb_species_data, AWT_QUERY_RANGE ra
     }
     return gb_first;
 }
-static GBDATA *awt_get_next_species(GBDATA *gb_prev, AWT_QUERY_RANGE range) {
+static GBDATA *awt_get_next_species(GBDATA *gb_prev, QUERY_RANGE range) {
     GBDATA *gb_next = NULL;
     switch (range) {
         case QUERY_ALL_ITEMS:    gb_next = GBT_next_species(gb_prev); break;
@@ -67,7 +67,7 @@ static GBDATA *awt_get_next_species(GBDATA *gb_prev, AWT_QUERY_RANGE range) {
 }
 
 struct ad_item_selector AWT_species_selector = {
-    AWT_QUERY_ITEM_SPECIES,
+    QUERY_ITEM_SPECIES,
     awt_select_species,
     awt_get_species_id,
     awt_find_species_by_id,
@@ -86,7 +86,7 @@ struct ad_item_selector AWT_species_selector = {
 };
 
 struct ad_item_selector AWT_organism_selector = {
-    AWT_QUERY_ITEM_SPECIES,
+    QUERY_ITEM_SPECIES,
     awt_select_species,
     awt_get_species_id,
     awt_find_species_by_id,
