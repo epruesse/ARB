@@ -18,22 +18,22 @@
 #define it_assert(cond) arb_assert(cond)
 
 typedef enum {
-    AWT_QUERY_ITEM_SPECIES,
-    AWT_QUERY_ITEM_GENES,
-    AWT_QUERY_ITEM_EXPERIMENTS,
+    QUERY_ITEM_SPECIES,
+    QUERY_ITEM_GENES,
+    QUERY_ITEM_EXPERIMENTS,
 
-    AWT_QUERY_ITEM_TYPES // how many different types do we have
+    QUERY_ITEM_TYPES // how many different types do we have
 
-} AWT_QUERY_ITEM_TYPE;
+} QUERY_ITEM_TYPE;
 
 typedef enum {
     QUERY_CURRENT_ITEM,
     QUERY_MARKED_ITEMS,
     QUERY_ALL_ITEMS
-} AWT_QUERY_RANGE;
+} QUERY_RANGE;
 
 struct ad_item_selector { // @@@ remove AW_root arguments!
-    AWT_QUERY_ITEM_TYPE type;
+    QUERY_ITEM_TYPE type;
 
     // if user selects an item in the result list,
     // this callback sets the appropriate AWARs
@@ -50,20 +50,17 @@ struct ad_item_selector { // @@@ remove AW_root arguments!
     const char *items_name;                         // "species" or "genes" or "experiments" or "organisms"
     const char *id_field;                           // e.g. "name" for species, genes
 
-    GBDATA *(*get_first_item_container)(GBDATA *, AW_root *, AWT_QUERY_RANGE); // AW_root may be NULL for QUERY_ALL_ITEMS and QUERY_MARKED_ITEMS
-    GBDATA *(*get_next_item_container)(GBDATA *, AWT_QUERY_RANGE); // use same AWT_QUERY_RANGE as in get_first_item_container()
+    GBDATA *(*get_first_item_container)(GBDATA *, AW_root *, QUERY_RANGE); // AW_root may be NULL for QUERY_ALL_ITEMS and QUERY_MARKED_ITEMS
+    GBDATA *(*get_next_item_container)(GBDATA *, QUERY_RANGE); // use same QUERY_RANGE as in get_first_item_container()
 
-    GBDATA *(*get_first_item)(GBDATA *, AWT_QUERY_RANGE);
-    GBDATA *(*get_next_item)(GBDATA *, AWT_QUERY_RANGE);
+    GBDATA *(*get_first_item)(GBDATA *, QUERY_RANGE);
+    GBDATA *(*get_next_item)(GBDATA *, QUERY_RANGE);
 
     GBDATA *(*get_selected_item)(GBDATA *gb_main, AW_root *aw_root); // searches the currently selected item
 
     struct ad_item_selector *parent_selector;       // selector of parent item (or NULL if item has no parents)
     GBDATA *(*get_parent)(GBDATA *gb_item);         // if 'parent_selector' is defined, this function returns the parent of the item
 };
-
-char   *AWT_get_item_id(GBDATA *gb_main, const ad_item_selector *sel, GBDATA *gb_item);
-GBDATA *AWT_get_item_with_id(GBDATA *gb_main, const ad_item_selector *sel, const char *id);
 
 extern ad_item_selector AWT_species_selector;
 extern ad_item_selector AWT_organism_selector;

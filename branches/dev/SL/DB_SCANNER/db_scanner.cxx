@@ -162,7 +162,7 @@ static void editfield_value_changed(void *, db_scanner_data *cbs)
             if (GB_get_father(gbd) == cbs->gb_user && strcmp(key_name, "name") == 0) { // This is a real rename !!!
                 const ad_item_selector *selector = cbs->selector;
 
-                if (selector->type == AWT_QUERY_ITEM_SPECIES) { // species
+                if (selector->type == QUERY_ITEM_SPECIES) { // species
                     arb_progress progress("Renaming species");
                     char *name = nulldup(GBT_read_name(cbs->gb_user));
 

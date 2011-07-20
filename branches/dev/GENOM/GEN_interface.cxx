@@ -104,7 +104,7 @@ inline void gen_restore_old_species_marks(GBDATA *gb_main) {
     }
 }
 
-static GBDATA *GEN_get_first_gene_data(GBDATA *gb_main, AW_root *aw_root, AWT_QUERY_RANGE range) {
+static GBDATA *GEN_get_first_gene_data(GBDATA *gb_main, AW_root *aw_root, QUERY_RANGE range) {
     GBDATA   *gb_organism = 0;
     GB_ERROR  error      = 0;
 
@@ -144,7 +144,7 @@ static GBDATA *GEN_get_first_gene_data(GBDATA *gb_main, AW_root *aw_root, AWT_QU
     return gb_organism ? GEN_expect_gene_data(gb_organism) : 0;
 }
 
-static GBDATA *GEN_get_next_gene_data(GBDATA *gb_gene_data, AWT_QUERY_RANGE range) {
+static GBDATA *GEN_get_next_gene_data(GBDATA *gb_gene_data, QUERY_RANGE range) {
     GBDATA *gb_organism = 0;
     switch (range) {
         case QUERY_CURRENT_ITEM: {
@@ -172,7 +172,7 @@ static GBDATA *GEN_get_next_gene_data(GBDATA *gb_gene_data, AWT_QUERY_RANGE rang
     return gb_organism ? GEN_expect_gene_data(gb_organism) : 0;
 }
 
-static GBDATA *first_gene_in_range(GBDATA *gb_gene_data, AWT_QUERY_RANGE range) {
+static GBDATA *first_gene_in_range(GBDATA *gb_gene_data, QUERY_RANGE range) {
     GBDATA *gb_first = NULL;
     switch (range) {
         case QUERY_ALL_ITEMS:    gb_first = GEN_first_gene_rel_gene_data(gb_gene_data); break;
@@ -181,7 +181,7 @@ static GBDATA *first_gene_in_range(GBDATA *gb_gene_data, AWT_QUERY_RANGE range) 
     }
     return gb_first;
 }
-static GBDATA *next_gene_in_range(GBDATA *gb_prev, AWT_QUERY_RANGE range) {
+static GBDATA *next_gene_in_range(GBDATA *gb_prev, QUERY_RANGE range) {
     GBDATA *gb_next = NULL;
     switch (range) {
         case QUERY_ALL_ITEMS:    gb_next = GEN_next_gene(gb_prev); break;
@@ -195,7 +195,7 @@ static GBDATA *next_gene_in_range(GBDATA *gb_prev, AWT_QUERY_RANGE range) {
 //      GEN_item_selector
 
 struct ad_item_selector GEN_item_selector = {
-    AWT_QUERY_ITEM_GENES,
+    QUERY_ITEM_GENES,
     GEN_select_gene,
     gen_get_gene_id,
     gen_find_gene_by_id,
@@ -362,9 +362,9 @@ GBDATA *GEN_get_current_gene(GBDATA *gb_main, AW_root *aw_root) {
 }
 
 
-static AW_CL    GEN_global_scannerid   = 0;
-static AW_root *GEN_global_scannerroot = 0;
-static DbQuery *GLOBAL_gene_query      = 0;
+static AW_CL           GEN_global_scannerid   = 0;
+static AW_root        *GEN_global_scannerroot = 0;
+static QUERY::DbQuery *GLOBAL_gene_query      = 0;
 
 static void gene_rename_cb(AW_window *aww, AW_CL cl_gb_main) {
     AW_root *aw_root = aww->get_root();
@@ -678,7 +678,7 @@ AW_window *GEN_create_gene_query_window(AW_root *aw_root, AW_CL cl_gb_main) {
         aws->create_menu("More functions", "f");
         aws->load_xfig("ad_query.fig");
 
-        awt_query_struct awtqs;
+        QUERY::query_spec awtqs;
 
         awtqs.gb_main             = (GBDATA*)cl_gb_main;
         awtqs.species_name        = AWAR_SPECIES_NAME;
@@ -705,12 +705,12 @@ AW_window *GEN_create_gene_query_window(AW_root *aw_root, AW_CL cl_gb_main) {
         awtqs.create_view_window  = GEN_create_gene_window;
         awtqs.selector            = &GEN_item_selector;
 
-        DbQuery *query    = awt_create_query_box(aws, &awtqs, "gen");
-        GLOBAL_gene_query = query;
+        QUERY::DbQuery *query = create_query_box(aws, &awtqs, "gen");
+        GLOBAL_gene_query     = query;
 
         aws->create_menu("More search",     "s");
-        aws->insert_menu_topic("gen_search_equal_fields_within_db", "Search For Equal Fields and Mark Duplicates",               "E", "search_duplicates.hlp", AWM_ALL, (AW_CB)awt_search_equal_entries, (AW_CL)query, 0);
-        aws->insert_menu_topic("gen_search_equal_words_within_db",  "Search For Equal Words Between Fields and Mark Duplicates", "W", "search_duplicates.hlp", AWM_ALL, (AW_CB)awt_search_equal_entries, (AW_CL)query, 1);
+        aws->insert_menu_topic("gen_search_equal_fields_within_db", "Search For Equal Fields and Mark Duplicates",               "E", "search_duplicates.hlp", AWM_ALL, (AW_CB)QUERY::search_duplicated_field_content, (AW_CL)query, 0);
+        aws->insert_menu_topic("gen_search_equal_words_within_db",  "Search For Equal Words Between Fields and Mark Duplicates", "W", "search_duplicates.hlp", AWM_ALL, (AW_CB)QUERY::search_duplicated_field_content, (AW_CL)query, 1);
 
         aws->button_length(7);
 

@@ -974,8 +974,8 @@ static void NT_open_mask_window(AW_window *aww, AW_CL cl_id, AW_CL) {
 static void NT_create_mask_submenu(AW_window_menu_modes *awm) {
     AWT_create_mask_submenu(awm, AWT_IT_SPECIES, NT_open_mask_window, 0);
 }
-static AW_window *NT_create_species_colorize_window(AW_root *aw_root) {
-    return awt_create_item_colorizer(aw_root, GLOBAL_gb_main, &AWT_species_selector);
+static AW_window *create_colorize_species_window(AW_root *aw_root) {
+    return QUERY::create_colorize_items_window(aw_root, GLOBAL_gb_main, &AWT_species_selector);
 }
 
 void NT_update_marked_counter(AW_window *aww, long count) {
@@ -1252,7 +1252,7 @@ static AW_window *popup_new_main_window(AW_root *awr, AW_CL clone) {
 
             NT_insert_mark_submenus(awm, ntw, 1);
             AWMIMT("mark_by_ref",     "Mark by reference..", "r", "markbyref.hlp",     AWM_EXP, AW_POPUP,                     (AW_CL)create_mark_by_refentries_window,  (AW_CL)GLOBAL_gb_main);
-            AWMIMT("species_colors",  "Set Colors",          "l", "mark_colors.hlp",   AWM_ALL, AW_POPUP,                     (AW_CL)NT_create_species_colorize_window, 0);
+            AWMIMT("species_colors",  "Set Colors",          "l", "mark_colors.hlp",   AWM_ALL, AW_POPUP,                     (AW_CL)create_colorize_species_window, 0);
             AWMIMT("selection_admin", "Configurations",      "o", "configuration.hlp", AWM_ALL, NT_popup_configuration_admin, 0,                                        0);
 
             SEP________________________SEP();

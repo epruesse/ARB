@@ -83,7 +83,7 @@ inline void exp_restore_old_species_marks(GBDATA *gb_main) {
     }
 }
 
-static GBDATA *EXP_get_first_experiment_data(GBDATA *gb_main, AW_root *aw_root, AWT_QUERY_RANGE range) {
+static GBDATA *EXP_get_first_experiment_data(GBDATA *gb_main, AW_root *aw_root, QUERY_RANGE range) {
     GBDATA   *gb_organism = 0;
     GB_ERROR  error      = 0;
 
@@ -125,7 +125,7 @@ static GBDATA *EXP_get_first_experiment_data(GBDATA *gb_main, AW_root *aw_root, 
     return gb_organism ? EXP_get_experiment_data(gb_organism) : 0;
 }
 
-static GBDATA *EXP_get_next_experiment_data(GBDATA *gb_experiment_data, AWT_QUERY_RANGE range) {
+static GBDATA *EXP_get_next_experiment_data(GBDATA *gb_experiment_data, QUERY_RANGE range) {
     GBDATA *gb_organism = 0;
     switch (range) {
         case QUERY_CURRENT_ITEM: {
@@ -153,7 +153,7 @@ static GBDATA *EXP_get_next_experiment_data(GBDATA *gb_experiment_data, AWT_QUER
     return gb_organism ? EXP_get_experiment_data(gb_organism) : 0;
 }
 
-static GBDATA *first_experiment_in_range(GBDATA *gb_experiment_data, AWT_QUERY_RANGE range) {
+static GBDATA *first_experiment_in_range(GBDATA *gb_experiment_data, QUERY_RANGE range) {
     GBDATA *gb_first = NULL;
     switch (range) {
         case QUERY_ALL_ITEMS:    gb_first = EXP_first_experiment_rel_exp_data(gb_experiment_data); break;
@@ -162,7 +162,7 @@ static GBDATA *first_experiment_in_range(GBDATA *gb_experiment_data, AWT_QUERY_R
     }
     return gb_first;
 }
-static GBDATA *next_experiment_in_range(GBDATA *gb_prev, AWT_QUERY_RANGE range) {
+static GBDATA *next_experiment_in_range(GBDATA *gb_prev, QUERY_RANGE range) {
     GBDATA *gb_next = NULL;
     switch (range) {
         case QUERY_ALL_ITEMS:    gb_next = EXP_next_experiment(gb_prev); break;
@@ -173,7 +173,7 @@ static GBDATA *next_experiment_in_range(GBDATA *gb_prev, AWT_QUERY_RANGE range) 
 }
 
 struct ad_item_selector EXP_item_selector = {
-    AWT_QUERY_ITEM_EXPERIMENTS,
+    QUERY_ITEM_EXPERIMENTS,
     EXP_select_experiment,
     EXP_get_experiment_id,
     EXP_find_experiment_by_id,
@@ -206,9 +206,9 @@ GBDATA *EXP_get_current_experiment(GBDATA *gb_main, AW_root *aw_root) {
     return gb_experiment;
 }
 
-static AW_CL    EXP_global_scannerid    = 0;
-static AW_root *EXP_global_scannerroot  = 0;
-static DbQuery *GLOBAL_experiment_query = 0;
+static AW_CL           EXP_global_scannerid    = 0;
+static AW_root        *EXP_global_scannerroot  = 0;
+static QUERY::DbQuery *GLOBAL_experiment_query = 0;
 
 AW_window *EXP_create_experiment_query_window(AW_root *aw_root, AW_CL cl_gb_main) {
     static AW_window_simple_menu *aws = 0;
@@ -220,7 +220,7 @@ AW_window *EXP_create_experiment_query_window(AW_root *aw_root, AW_CL cl_gb_main
         aws->create_menu("More functions", "f");
         aws->load_xfig("ad_query.fig");
 
-        awt_query_struct awtqs;
+        QUERY::query_spec awtqs;
 
         awtqs.gb_main             = gb_main;
         awtqs.species_name        = AWAR_SPECIES_NAME;
@@ -247,12 +247,12 @@ AW_window *EXP_create_experiment_query_window(AW_root *aw_root, AW_CL cl_gb_main
         awtqs.create_view_window  = EXP_create_experiment_window;
         awtqs.selector            = &EXP_item_selector;
 
-        DbQuery *query          = awt_create_query_box(aws, &awtqs, "exp");
+        QUERY::DbQuery *query   = create_query_box(aws, &awtqs, "exp");
         GLOBAL_experiment_query = query;
 
         aws->create_menu("More search",     "s");
-        aws->insert_menu_topic("exp_search_equal_fields_within_db", "Search For Equal Fields and Mark Duplicates",              "E", "search_duplicates.hlp", AWM_ALL, (AW_CB)awt_search_equal_entries, (AW_CL)query, 0);
-        aws->insert_menu_topic("exp_search_equal_words_within_db", "Search For Equal Words Between Fields and Mark Duplicates", "W", "search_duplicates.hlp", AWM_ALL, (AW_CB)awt_search_equal_entries, (AW_CL)query, 1);
+        aws->insert_menu_topic("exp_search_equal_fields_within_db", "Search For Equal Fields and Mark Duplicates",              "E", "search_duplicates.hlp", AWM_ALL, (AW_CB)QUERY::search_duplicated_field_content, (AW_CL)query, 0);
+        aws->insert_menu_topic("exp_search_equal_words_within_db", "Search For Equal Words Between Fields and Mark Duplicates", "W", "search_duplicates.hlp", AWM_ALL, (AW_CB)QUERY::search_duplicated_field_content, (AW_CL)query, 1);
 
         aws->button_length(7);
 

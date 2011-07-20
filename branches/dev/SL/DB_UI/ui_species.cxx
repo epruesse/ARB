@@ -27,6 +27,7 @@
 #include <item_sel_list.h>
 
 using namespace DBUI;
+using namespace QUERY;
 
 #define ui_assert(cond) arb_assert(cond)
 
@@ -280,7 +281,7 @@ static void map_species(AW_root *aw_root, AW_CL scannerid, AW_CL mapOrganism) {
 }
 
 static long count_field_occurrance(const bound_item_selector *bsel, const char *field_name) {
-    AWT_QUERY_RANGE         RANGE = QUERY_ALL_ITEMS;
+    QUERY_RANGE         RANGE = QUERY_ALL_ITEMS;
     long                    count = 0;
     const ad_item_selector& sel   = bsel->selector;
 
@@ -586,7 +587,7 @@ AW_window *DBUI::create_fields_reorder_window(AW_root *root, AW_CL cl_bound_item
     const bound_item_selector *bound_selector = (const bound_item_selector*)cl_bound_item_selector;
     const ad_item_selector&    selector       = bound_selector->selector;
 
-    static AW_window_simple *awsa[AWT_QUERY_ITEM_TYPES];
+    static AW_window_simple *awsa[QUERY_ITEM_TYPES];
     if (!awsa[selector.type]) {
         AW_window_simple *aws = new AW_window_simple;
         awsa[selector.type]  = aws;
@@ -719,7 +720,7 @@ AW_window *DBUI::create_field_delete_window(AW_root *root, AW_CL cl_bound_item_s
     const bound_item_selector *bound_selector = (const bound_item_selector*)cl_bound_item_selector;
     const ad_item_selector&    selector       = bound_selector->selector;
 
-    static AW_window_simple *awsa[AWT_QUERY_ITEM_TYPES];
+    static AW_window_simple *awsa[QUERY_ITEM_TYPES];
     if (!awsa[selector.type]) {
         AW_window_simple *aws = new AW_window_simple;
         awsa[selector.type]  = aws;
@@ -787,7 +788,7 @@ AW_window *DBUI::create_field_create_window(AW_root *root, AW_CL cl_bound_item_s
     const bound_item_selector *bound_selector = (const bound_item_selector*)cl_bound_item_selector;
     const ad_item_selector&    selector       = bound_selector->selector;
 
-    static AW_window_simple *awsa[AWT_QUERY_ITEM_TYPES];
+    static AW_window_simple *awsa[QUERY_ITEM_TYPES];
     if (awsa[selector.type]) return (AW_window *)awsa[selector.type];
 
     AW_window_simple *aws = new AW_window_simple;
@@ -859,7 +860,7 @@ static AW_window *create_field_convert_window(AW_root *root, AW_CL cl_bound_item
     const bound_item_selector *bound_selector = (const bound_item_selector*)cl_bound_item_selector;
     const ad_item_selector&    selector       = bound_selector->selector;
 
-    static AW_window_simple *awsa[AWT_QUERY_ITEM_TYPES];
+    static AW_window_simple *awsa[QUERY_ITEM_TYPES];
     if (awsa[selector.type]) return (AW_window *)awsa[selector.type];
 
     AW_window_simple *aws = new AW_window_simple;
@@ -956,7 +957,7 @@ static void awtc_nn_search_all_listed(AW_window *aww, AW_CL cl_query) {
     DbQuery *query   = (DbQuery *)cl_query;
     GBDATA  *gb_main = query_get_gb_main(query);
 
-    ui_assert(get_queried_itemtype(query)->type == AWT_QUERY_ITEM_SPECIES);
+    ui_assert(get_queried_itemtype(query)->type == QUERY_ITEM_SPECIES);
 
     GB_begin_transaction(gb_main);
 
@@ -978,7 +979,7 @@ static void awtc_nn_search_all_listed(AW_window *aww, AW_CL cl_query) {
         }
     }
 
-    long         max = awt_count_queried_items(query, QUERY_ALL_ITEMS);
+    long         max = count_queried_items(query, QUERY_ALL_ITEMS);
     arb_progress progress("Searching next neighbours", max);
     progress.auto_subtitles("Species");
 
@@ -1159,7 +1160,7 @@ static void awtc_move_hits(AW_window *aww, AW_CL id, AW_CL cl_query) {
 
     char *hit_description = GBS_global_string_copy("<neighbour of %s: %%s>", current_species);
 
-    awt_copy_selection_list_2_queried_species((DbQuery *)cl_query, (AW_selection_list *)id, hit_description);
+    copy_selection_list_2_query_box((DbQuery *)cl_query, (AW_selection_list *)id, hit_description);
 
     free(hit_description);
     free(current_species);
@@ -1397,7 +1398,7 @@ AW_window *DBUI::create_organism_info_window(AW_root *aw_root, AW_CL cl_gb_main)
 static DbQuery *GLOBAL_species_query = NULL; // @@@ fix design
 
 void DBUI::unquery_all() {
-    awt_unquery_all(0, GLOBAL_species_query);
+    QUERY::unquery_all(0, GLOBAL_species_query);
 }
 
 void DBUI::query_update_list() {
@@ -1413,7 +1414,7 @@ AW_window *DBUI::create_species_query_window(AW_root *aw_root, AW_CL cl_gb_main)
         aws->load_xfig("ad_query.fig");
 
 
-        awt_query_struct awtqs;
+        query_spec awtqs;
 
         awtqs.gb_main             = (GBDATA*)cl_gb_main;
         awtqs.species_name        = AWAR_SPECIES_NAME;
@@ -1439,12 +1440,12 @@ AW_window *DBUI::create_species_query_window(AW_root *aw_root, AW_CL cl_gb_main)
         awtqs.create_view_window  = create_species_info_window;
         awtqs.selector            = &AWT_species_selector;
 
-        DbQuery *query           = awt_create_query_box(aws, &awtqs, "spec");
+        DbQuery *query           = create_query_box(aws, &awtqs, "spec");
         GLOBAL_species_query = query;
 
         aws->create_menu("More search",     "s");
-        aws->insert_menu_topic("spec_search_equal_fields_within_db", "Search For Equal Fields and Mark Duplicates",                "E", "search_duplicates.hlp", AWM_ALL, (AW_CB)awt_search_equal_entries, (AW_CL)query,                                  0);
-        aws->insert_menu_topic("spec_search_equal_words_within_db",  "Search For Equal Words Between Fields and Mark Duplicates",  "W", "search_duplicates.hlp", AWM_ALL, (AW_CB)awt_search_equal_entries, (AW_CL)query,                                  1);
+        aws->insert_menu_topic("spec_search_equal_fields_within_db", "Search For Equal Fields and Mark Duplicates",                "E", "search_duplicates.hlp", AWM_ALL, (AW_CB)search_duplicated_field_content, (AW_CL)query,                                  0);
+        aws->insert_menu_topic("spec_search_equal_words_within_db",  "Search For Equal Words Between Fields and Mark Duplicates",  "W", "search_duplicates.hlp", AWM_ALL, (AW_CB)search_duplicated_field_content, (AW_CL)query,                                  1);
         aws->insert_menu_topic("spec_search_next_relativ_of_sel",    "Search Next Relatives of SELECTED Species in PT_Server ...", "R", 0,                       AWM_ALL, (AW_CB)AW_POPUP,                 (AW_CL)create_next_neighbours_selected_window, (AW_CL)query);
         aws->insert_menu_topic("spec_search_next_relativ_of_listed", "Search Next Relatives of LISTED Species in PT_Server ...",   "L", 0,                       AWM_ALL, (AW_CB)AW_POPUP,                 (AW_CL)create_next_neighbours_listed_window,   (AW_CL)query);
 

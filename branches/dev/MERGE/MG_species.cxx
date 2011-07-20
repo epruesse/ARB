@@ -853,10 +853,10 @@ static void mg_select_species2(GBDATA*,  AW_root *aw_root, const char *item_name
     aw_root->awar(AWAR_SPECIES2)->write_string(item_name);
 }
 
-static GBDATA *mg_get_first_species_data1(GBDATA *, AW_root *, AWT_QUERY_RANGE) {
+static GBDATA *mg_get_first_species_data1(GBDATA *, AW_root *, QUERY_RANGE) {
     return GBT_get_species_data(GLOBAL_gb_merge);
 }
-static GBDATA *mg_get_first_species_data2(GBDATA *, AW_root *, AWT_QUERY_RANGE) {
+static GBDATA *mg_get_first_species_data2(GBDATA *, AW_root *, QUERY_RANGE) {
     return GBT_get_species_data(GLOBAL_gb_dest);
 }
 
@@ -915,7 +915,7 @@ AW_window *MG_merge_species_cb(AW_root *awr) {
     aws->callback(AW_POPUP_HELP, (AW_CL)"mg_species.hlp");
     aws->create_button("HELP", "HELP", "H");
 
-    awt_query_struct awtqs;
+    QUERY::query_spec awtqs;
     aws->create_menu("DB_I_Expert", "D");
 
     awtqs.gb_main                = GLOBAL_gb_merge;
@@ -945,7 +945,7 @@ AW_window *MG_merge_species_cb(AW_root *awr) {
     mg_initialize_species_selectors();
     awtqs.selector = &(MG_species_selector[0]);
 
-    awt_create_query_box(aws, &awtqs, "db1");
+    create_query_box(aws, &awtqs, "db1");
 
     AW_CL scannerid      = create_db_scanner(GLOBAL_gb_merge, aws, "box1", 0, 0, 0, DB_SCANNER, 0, 0, AWT_NDS_FILTER, awtqs.selector);
     ad_global_scannerid1 = scannerid;
@@ -977,7 +977,7 @@ AW_window *MG_merge_species_cb(AW_root *awr) {
 
     awtqs.selector = &(MG_species_selector[1]);
 
-    awt_create_query_box(aws, &awtqs, "db2");
+    create_query_box(aws, &awtqs, "db2");
 
     scannerid            = create_db_scanner(GLOBAL_gb_dest, aws, "box2", 0, 0, 0, DB_SCANNER, 0, 0, AWT_NDS_FILTER, awtqs.selector);
     ad_global_scannerid2 = scannerid;
