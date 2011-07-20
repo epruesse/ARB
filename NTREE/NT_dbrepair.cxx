@@ -14,7 +14,7 @@
 #include <arbdbt.h>
 #include <adGene.h>
 
-#include <awt.hxx>                                  // for ad_item_selector only
+#include <items.h>
 #include <GEN.hxx>
 #include <EXP.hxx>
 #include <aw_color_groups.hxx>

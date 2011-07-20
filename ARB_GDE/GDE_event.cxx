@@ -486,7 +486,7 @@ void GDE_startaction_cb(AW_window *aw, GmenuItem *gmenuitem, AW_CL /*cd*/) {
     AW_root *aw_root=aw->get_root();
 
     GapCompression  compress          = static_cast<GapCompression>(aw_root->awar(AWAR_GDE_COMPRESSION)->read_int());
-    AP_filter      *filter2           = awt_get_filter(aw_root, agde_filtercd);
+    AP_filter      *filter2           = awt_get_filter(agde_filtercd);
     char           *filter_name       = 0; /* aw_root->awar(AWAR_GDE_FILTER_NAME)->read_string() */
     char           *alignment_name    = strdup("ali_unknown");
     bool            marked            = (aw_root->awar(AWAR_GDE_SPECIES)->read_int() != 0);

@@ -8,8 +8,7 @@
 //                                                                 //
 // =============================================================== //
 
-#include <awt.hxx>
-#include <awt_item_sel_list.hxx>
+#include <item_sel_list.h>
 #include <awt_sel_boxes.hxx>
 #include <aw_awars.hxx>
 #include <aw_root.hxx>

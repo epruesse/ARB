@@ -40,6 +40,7 @@ depend.init:
 # For formatting issues see SOURCE_TOOLS/fix_depends.pl
 
 AWT_filter.o: awt_filter.hxx
+AWT_filter.o: ga_local.h
 AWT_filter.o: $(ARBHOME)/INCLUDE/ad_prot.h
 AWT_filter.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 AWT_filter.o: $(ARBHOME)/INCLUDE/AP_filter.hxx
@@ -60,7 +61,6 @@ AWT_filter.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 AWT_filter.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AWT_filter.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWT_filter.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-AWT_filter.o: $(ARBHOME)/INCLUDE/awt.hxx
 AWT_filter.o: $(ARBHOME)/INCLUDE/awt_sel_boxes.hxx
 AWT_filter.o: $(ARBHOME)/INCLUDE/cb.h
 AWT_filter.o: $(ARBHOME)/INCLUDE/dupstr.h
@@ -68,6 +68,7 @@ AWT_filter.o: $(ARBHOME)/INCLUDE/smartptr.h
 AWT_filter.o: $(ARBHOME)/INCLUDE/test_global.h
 
 ColumnStat.o: ColumnStat.hxx
+ColumnStat.o: ga_local.h
 ColumnStat.o: $(ARBHOME)/INCLUDE/ad_prot.h
 ColumnStat.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 ColumnStat.o: $(ARBHOME)/INCLUDE/AP_filter.hxx

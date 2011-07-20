@@ -12,6 +12,9 @@
 #ifndef AW_DETACH_HXX
 #define AW_DETACH_HXX
 
+#ifndef AW_AWAR_HXX
+#include "aw_awar.hxx"
+#endif
 #ifndef AW_ROOT_HXX
 #include "aw_root.hxx"
 #endif

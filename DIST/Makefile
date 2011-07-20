@@ -315,9 +315,9 @@ DI_save_matr.o: $(ARBHOME)/INCLUDE/arbtools.h
 DI_save_matr.o: $(ARBHOME)/INCLUDE/attributes.h
 DI_save_matr.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 DI_save_matr.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
-DI_save_matr.o: $(ARBHOME)/INCLUDE/awt_nds.hxx
 DI_save_matr.o: $(ARBHOME)/INCLUDE/downcast.h
 DI_save_matr.o: $(ARBHOME)/INCLUDE/dupstr.h
+DI_save_matr.o: $(ARBHOME)/INCLUDE/nds.h
 DI_save_matr.o: $(ARBHOME)/INCLUDE/smartptr.h
 DI_save_matr.o: $(ARBHOME)/INCLUDE/test_global.h
 

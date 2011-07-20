@@ -80,7 +80,6 @@ AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 AWTC_submission.o: $(ARBHOME)/INCLUDE/aw_window.hxx
-AWTC_submission.o: $(ARBHOME)/INCLUDE/awt.hxx
 AWTC_submission.o: $(ARBHOME)/INCLUDE/cb.h
 AWTC_submission.o: $(ARBHOME)/INCLUDE/dupstr.h
 AWTC_submission.o: $(ARBHOME)/INCLUDE/smartptr.h

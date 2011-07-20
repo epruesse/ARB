@@ -1,6 +1,6 @@
 // ==================================================================== //
 //                                                                      //
-//   File      : AWT_changekey.cxx                                      //
+//   File      : changekey.cxx                                          //
 //   Purpose   : changekey management                                   //
 //                                                                      //
 //                                                                      //
@@ -11,8 +11,7 @@
 //                                                                      //
 // ==================================================================== //
 
-#include "awt_item_sel_list.hxx"
-#include "awt.hxx"
+#include "item_sel_list.h"
 
 #include <aw_awars.hxx>
 #include <arbdbt.h>
@@ -57,7 +56,7 @@ static void awt_delete_unused_changekeys(GBDATA *gb_main, const CharPtrArray& na
             }
         }
 
-        awt_assert(GB_has_key(gb_key, CHANGEKEY));
+        it_assert(GB_has_key(gb_key, CHANGEKEY));
         GBDATA *gb_next_key = GB_nextEntry(gb_key);
 
         if (!found) {

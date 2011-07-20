@@ -16,7 +16,6 @@
 #include <TreeDisplay.hxx>
 #endif
 
-void MapViewer_set_default_root(AW_root *aw_root);
 void launch_MapViewer_cb(GBDATA *gbd, enum AD_MAP_VIEWER_TYPE type);
 
 #else

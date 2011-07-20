@@ -9,7 +9,7 @@
 // =============================================================== //
 
 #include "di_matr.hxx"
-#include <awt_nds.hxx>
+#include <nds.h>
 
 const char *DI_MATRIX::save(char *filename, enum DI_SAVE_TYPE type)
 {

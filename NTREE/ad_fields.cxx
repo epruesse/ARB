@@ -9,7 +9,6 @@
 // =============================================================== //
 
 #include <arbdbt.h>
-#include <awt.hxx>
 
 extern GBDATA *GLOBAL_gb_main;
 

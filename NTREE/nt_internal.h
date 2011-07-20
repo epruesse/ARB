@@ -27,7 +27,7 @@ void NT_delete_mark_all_cb(void *, AWT_canvas *ntw);
 AW_window *NT_open_select_tree_window(AW_root *awr, char *awar_tree);
 void NT_select_last_tree(AW_window *aww, char *awar_tree);
 AW_window *NT_open_select_alignment_window(AW_root *awr);
-void NT_system_cb(AW_window *aww, AW_CL command, AW_CL auto_help_file);
+void NT_system_cb(AW_window *aww, AW_CL cl_command, AW_CL cl_auto_help_file);
 
 /* AP_consensus.cxx */
 AW_window *AP_open_con_expert_window(AW_root *aw_root);
@@ -125,18 +125,8 @@ AW_window *NT_create_alignment_window(AW_root *root, AW_CL popmedown);
 AW_window *NT_create_extendeds_window(AW_root *aw_root);
 
 /* ad_spec.cxx */
-void NT_create_species_var(AW_root *aw_root, AW_default aw_def);
 void NT_count_different_chars(AW_window *, AW_CL cl_gb_main, AW_CL dummy_1x);
 void NT_create_sai_from_pfold(AW_window *aww, AW_CL ntw, AW_CL dummy_1x);
-AW_window *NT_create_ad_list_reorder(AW_root *root, AW_CL cl_item_selector);
-AW_window *NT_create_ad_field_delete(AW_root *root, AW_CL cl_item_selector);
-AW_window *NT_create_ad_field_create(AW_root *root, AW_CL cl_item_selector);
-AW_window *NT_create_ad_field_convert(AW_root *root, AW_CL cl_item_selector);
-void NT_spec_create_field_items(AW_window *aws);
-void NT_detach_information_window(AW_window *aww, AW_CL cl_pointer_to_aww, AW_CL cl_AW_detach_information);
-AW_window *NT_create_species_window(AW_root *aw_root, AW_CL cl_gb_main);
-void NT_unquery_all(void);
-void NT_query_update_list(void);
 
 /* ad_transpro.cxx */
 AW_window *NT_create_dna_2_pro_window(AW_root *root);

@@ -15,7 +15,6 @@
 #include "merge.hxx"
 
 #include <ad_config.h>
-#include <awt.hxx>
 #include <awt_sel_boxes.hxx>
 #include <aw_root.hxx>
 #include <aw_awar.hxx>

@@ -10,8 +10,6 @@
 #include <aw_device.hxx>
 #include <aw_window.hxx>
 #include <aw_display.hxx>
-#include <awt.hxx>
-// #include <malloc.h>
 #include "AP_buffer.hxx"
 #include "ap_main.hxx"
 #include "ap_tree_nlen.hxx"

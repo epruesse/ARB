@@ -16,8 +16,6 @@
 
 #include <FileBuffer.h>
 
-#include <awt.hxx>
-
 #include <aw_awars.hxx>
 #include <aw_preset.hxx>
 #include <aw_file.hxx>

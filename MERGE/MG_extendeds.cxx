@@ -9,13 +9,14 @@
 // =============================================================== //
 
 #include "merge.hxx"
+
 #include <db_scanner.hxx>
-#include <awt.hxx>
 #include <awt_sel_boxes.hxx>
 #include <aw_awars.hxx>
 #include <aw_msg.hxx>
 #include <aw_root.hxx>
 #include <arbdbt.h>
+#include <items.h>
 
 #define AWAR_EX_NAME1 "tmp/merge1/extended_name"
 #define AWAR_EX_DEST1 "tmp/merge1/extended_dest"

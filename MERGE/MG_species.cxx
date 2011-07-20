@@ -12,9 +12,9 @@
 #include "MG_adapt_ali.hxx"
 
 #include <AW_rename.hxx>
+#include <db_query.h>
 #include <db_scanner.hxx>
-#include <awt.hxx>
-#include <awt_item_sel_list.hxx>
+#include <item_sel_list.h>
 #include <aw_awars.hxx>
 #include <aw_msg.hxx>
 #include <arb_progress.h>
