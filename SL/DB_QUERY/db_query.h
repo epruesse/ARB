@@ -67,22 +67,22 @@ public:
     bool is_queried(GBDATA *gb_item) const;
 };
 
-void     awt_copy_selection_list_2_queried_species(DbQuery *cbs, AW_selection_list *id, const char *hit_description);
+void     awt_copy_selection_list_2_queried_species(DbQuery *query, AW_selection_list *id, const char *hit_description);
 DbQuery *awt_create_query_box(AW_window *aws, awt_query_struct *awtqs, const char *query_id); // create the query box
-void     awt_search_equal_entries(AW_window *dummy, DbQuery *cbs, bool tokenize);
-long     awt_count_queried_items(DbQuery *cbs, AWT_QUERY_RANGE range);
-void     awt_unquery_all(void *dummy, DbQuery *cbs);
+void     awt_search_equal_entries(AW_window *dummy, DbQuery *query, bool tokenize);
+long     awt_count_queried_items(DbQuery *query, AWT_QUERY_RANGE range);
+void     awt_unquery_all(void *dummy, DbQuery *query);
 
 const struct ad_item_selector *get_queried_itemtype(DbQuery *query);
 
 inline bool IS_QUERIED(GBDATA *gb_item, const awt_query_struct *aqs) { return aqs->is_queried(gb_item); }
-bool IS_QUERIED(GBDATA *gb_item, const DbQuery *dq);
+bool IS_QUERIED(GBDATA *gb_item, const DbQuery *query);
 
-long awt_query_update_list(void *dummy, DbQuery *cbs);
+long awt_query_update_list(void *dummy, DbQuery *query);
 
 AW_window *awt_create_item_colorizer(AW_root *aw_root, GBDATA *gb_main, const ad_item_selector *sel);
 
-GBDATA *query_get_gb_main(DbQuery *cbs);
+GBDATA *query_get_gb_main(DbQuery *query);
 
 #else
 #error db_query.h included twice

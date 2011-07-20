@@ -952,11 +952,11 @@ inline char *read_sequence_region(GBDATA *gb_data, const TargetRange& range) {
     return range.dup_corresponding_part(GB_read_char_pntr(gb_data), GB_read_count(gb_data));
 }
 
-static void awtc_nn_search_all_listed(AW_window *aww, AW_CL _cbs) {
-    DbQuery *cbs     = (DbQuery *)_cbs;
-    GBDATA  *gb_main = query_get_gb_main(cbs);
+static void awtc_nn_search_all_listed(AW_window *aww, AW_CL cl_query) {
+    DbQuery *query   = (DbQuery *)cl_query;
+    GBDATA  *gb_main = query_get_gb_main(query);
 
-    ui_assert(get_queried_itemtype(cbs)->type == AWT_QUERY_ITEM_SPECIES);
+    ui_assert(get_queried_itemtype(query)->type == AWT_QUERY_ITEM_SPECIES);
 
     GB_begin_transaction(gb_main);
 
@@ -978,7 +978,7 @@ static void awtc_nn_search_all_listed(AW_window *aww, AW_CL _cbs) {
         }
     }
 
-    long         max = awt_count_queried_items(cbs, QUERY_ALL_ITEMS);
+    long         max = awt_count_queried_items(query, QUERY_ALL_ITEMS);
     arb_progress progress("Searching next neighbours", max);
     progress.auto_subtitles("Species");
 
@@ -999,7 +999,7 @@ static void awtc_nn_search_all_listed(AW_window *aww, AW_CL _cbs) {
          !error && gb_species;
          gb_species = GBT_next_species(gb_species))
     {
-        if (!IS_QUERIED(gb_species, cbs)) continue;
+        if (!IS_QUERIED(gb_species, query)) continue;
 
         GBDATA *gb_data = GBT_read_sequence(gb_species, ali_name);
         if (gb_data) {
@@ -1151,7 +1151,7 @@ static void awtc_nn_search(AW_window *aww, AW_CL id, AW_CL cl_gb_main) {
     free(sequence);
 }
 
-static void awtc_move_hits(AW_window *aww, AW_CL id, AW_CL cbs) {
+static void awtc_move_hits(AW_window *aww, AW_CL id, AW_CL cl_query) {
     AW_root *aw_root         = aww->get_root();
     char    *current_species = aw_root->awar(AWAR_SPECIES_NAME)->read_string();
 
@@ -1159,7 +1159,7 @@ static void awtc_move_hits(AW_window *aww, AW_CL id, AW_CL cbs) {
 
     char *hit_description = GBS_global_string_copy("<neighbour of %s: %%s>", current_species);
 
-    awt_copy_selection_list_2_queried_species((DbQuery *)cbs, (AW_selection_list *)id, hit_description);
+    awt_copy_selection_list_2_queried_species((DbQuery *)cl_query, (AW_selection_list *)id, hit_description);
 
     free(hit_description);
     free(current_species);
@@ -1213,7 +1213,7 @@ static void create_common_next_neighbour_fields(AW_window *aws) {
     aws->update_option_menu();
 }
 
-static AW_window *create_next_neighbours_listed_window(AW_root *aw_root, AW_CL cbs) {
+static AW_window *create_next_neighbours_listed_window(AW_root *aw_root, AW_CL cl_query) {
     static AW_window_simple *aws = 0;
     if (!aws) {
         create_next_neighbours_vars(aw_root);
@@ -1242,19 +1242,19 @@ static AW_window *create_next_neighbours_listed_window(AW_root *aw_root, AW_CL c
         aws->create_input_field(AWAR_NN_MIN_SCORE, 5);
 
         aws->at("field");
-        awt_create_selection_list_on_itemfields(query_get_gb_main((DbQuery*)cbs),
+        awt_create_selection_list_on_itemfields(query_get_gb_main((DbQuery*)cl_query),
                                                 aws, AWAR_NN_DEST_FIELD,
                                                 (1<<GB_INT) | (1<<GB_STRING), "field", 0,
                                                 &AWT_species_selector, 20, 10);
 
         aws->at("go");
-        aws->callback(awtc_nn_search_all_listed, cbs);
+        aws->callback(awtc_nn_search_all_listed, cl_query);
         aws->create_button("WRITE_FIELDS", "Write to field");
     }
     return aws;
 }
 
-static AW_window *create_next_neighbours_selected_window(AW_root *aw_root, AW_CL cbs) {
+static AW_window *create_next_neighbours_selected_window(AW_root *aw_root, AW_CL cl_query) {
     static AW_window_simple *aws = 0;
     if (!aws) {
         create_next_neighbours_vars(aw_root);
@@ -1285,11 +1285,11 @@ static AW_window *create_next_neighbours_selected_window(AW_root *aw_root, AW_CL
         aws->update_selection_list(id);
 
         aws->at("go");
-        aws->callback(awtc_nn_search, (AW_CL)id, (AW_CL)query_get_gb_main((DbQuery*)cbs));
+        aws->callback(awtc_nn_search, (AW_CL)id, (AW_CL)query_get_gb_main((DbQuery*)cl_query));
         aws->create_button("SEARCH", "SEARCH");
 
         aws->at("move");
-        aws->callback(awtc_move_hits, (AW_CL)id, cbs);
+        aws->callback(awtc_move_hits, (AW_CL)id, cl_query);
         aws->create_button("MOVE_TO_HITLIST", "MOVE TO HITLIST");
 
     }
@@ -1394,14 +1394,14 @@ AW_window *DBUI::create_organism_info_window(AW_root *aw_root, AW_CL cl_gb_main)
     return create_speciesOrganismWindow(aw_root, (GBDATA*)cl_gb_main, true);
 }
 
-static AW_CL GLOBAL_species_query_box = 0; // @@@ fix design
+static DbQuery *GLOBAL_species_query = NULL; // @@@ fix design
 
 void DBUI::unquery_all() {
-    awt_unquery_all(0, (DbQuery *)GLOBAL_species_query_box);
+    awt_unquery_all(0, GLOBAL_species_query);
 }
 
 void DBUI::query_update_list() {
-    awt_query_update_list(NULL, (DbQuery *)GLOBAL_species_query_box);
+    awt_query_update_list(NULL, GLOBAL_species_query);
 }
 
 AW_window *DBUI::create_species_query_window(AW_root *aw_root, AW_CL cl_gb_main) {
@@ -1439,14 +1439,14 @@ AW_window *DBUI::create_species_query_window(AW_root *aw_root, AW_CL cl_gb_main)
         awtqs.create_view_window  = create_species_info_window;
         awtqs.selector            = &AWT_species_selector;
 
-        AW_CL cbs           = (AW_CL)awt_create_query_box(aws, &awtqs, "spec");
-        GLOBAL_species_query_box = cbs;
+        DbQuery *query           = awt_create_query_box(aws, &awtqs, "spec");
+        GLOBAL_species_query = query;
 
         aws->create_menu("More search",     "s");
-        aws->insert_menu_topic("spec_search_equal_fields_within_db", "Search For Equal Fields and Mark Duplicates",                "E", "search_duplicates.hlp", AWM_ALL, (AW_CB)awt_search_equal_entries, cbs,                                          0);
-        aws->insert_menu_topic("spec_search_equal_words_within_db",  "Search For Equal Words Between Fields and Mark Duplicates",  "W", "search_duplicates.hlp", AWM_ALL, (AW_CB)awt_search_equal_entries, cbs,                                          1);
-        aws->insert_menu_topic("spec_search_next_relativ_of_sel",    "Search Next Relatives of SELECTED Species in PT_Server ...", "R", 0,                       AWM_ALL, (AW_CB)AW_POPUP,                 (AW_CL)create_next_neighbours_selected_window,        cbs);
-        aws->insert_menu_topic("spec_search_next_relativ_of_listed", "Search Next Relatives of LISTED Species in PT_Server ...",   "L", 0,                       AWM_ALL, (AW_CB)AW_POPUP,                 (AW_CL)create_next_neighbours_listed_window, cbs);
+        aws->insert_menu_topic("spec_search_equal_fields_within_db", "Search For Equal Fields and Mark Duplicates",                "E", "search_duplicates.hlp", AWM_ALL, (AW_CB)awt_search_equal_entries, (AW_CL)query,                                  0);
+        aws->insert_menu_topic("spec_search_equal_words_within_db",  "Search For Equal Words Between Fields and Mark Duplicates",  "W", "search_duplicates.hlp", AWM_ALL, (AW_CB)awt_search_equal_entries, (AW_CL)query,                                  1);
+        aws->insert_menu_topic("spec_search_next_relativ_of_sel",    "Search Next Relatives of SELECTED Species in PT_Server ...", "R", 0,                       AWM_ALL, (AW_CB)AW_POPUP,                 (AW_CL)create_next_neighbours_selected_window, (AW_CL)query);
+        aws->insert_menu_topic("spec_search_next_relativ_of_listed", "Search Next Relatives of LISTED Species in PT_Server ...",   "L", 0,                       AWM_ALL, (AW_CB)AW_POPUP,                 (AW_CL)create_next_neighbours_listed_window,   (AW_CL)query);
 
         aws->button_length(7);
 
