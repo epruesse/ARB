@@ -78,7 +78,7 @@ const struct ad_item_selector *get_queried_itemtype(DbQuery *query);
 inline bool IS_QUERIED(GBDATA *gb_item, const awt_query_struct *aqs) { return aqs->is_queried(gb_item); }
 bool IS_QUERIED(GBDATA *gb_item, const DbQuery *query);
 
-long awt_query_update_list(void *dummy, DbQuery *query);
+void DbQuery_update_list(DbQuery *query);
 
 AW_window *awt_create_item_colorizer(AW_root *aw_root, GBDATA *gb_main, const ad_item_selector *sel);
 

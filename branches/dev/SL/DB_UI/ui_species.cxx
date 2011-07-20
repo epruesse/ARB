@@ -1401,7 +1401,7 @@ void DBUI::unquery_all() {
 }
 
 void DBUI::query_update_list() {
-    awt_query_update_list(NULL, GLOBAL_species_query);
+    DbQuery_update_list(GLOBAL_species_query);
 }
 
 AW_window *DBUI::create_species_query_window(AW_root *aw_root, AW_CL cl_gb_main) {
