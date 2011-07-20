@@ -193,7 +193,7 @@ static void awt_first_searchkey_changed_cb(AW_root *, AW_CL cl_query) {
     AWT_QUERY_RESULT_ORDER first = split_sort_mask(query->sort_mask, order);
 
     if (first != AWT_QUERY_SORT_BY_HIT_DESCRIPTION) { // do we display values?
-        awt_query_update_list(NULL, query);
+        DbQuery_update_list(query);
     }
 }
 
@@ -235,7 +235,7 @@ static void awt_sort_order_changed_cb(AW_root *aw_root, AW_CL cl_query) {
         }
         query->sort_mask = (new_sort_mask<<AWT_QUERY_SORT_CRITERIA_BITS)|new_criteria; // add new primary key
     }
-    awt_query_update_list(NULL, query);
+    DbQuery_update_list(query);
 }
 
 struct awt_sort_query_hits_param {
@@ -333,7 +333,7 @@ static long detectMaxNameLength(const char *key, long val, void *cl_len) {
     return val;
 }
 
-long awt_query_update_list(void *, DbQuery *query) {
+void DbQuery_update_list(DbQuery *query) {
     GB_push_transaction(query->gb_main);
 
     // clear
@@ -432,13 +432,14 @@ long awt_query_update_list(void *, DbQuery *query) {
     query->aws->update_selection_list(query->result_id);
     query->aws->get_root()->awar(query->awar_count)->write_int((long)count);
     GB_pop_transaction(query->gb_main);
-
-    return count;
 }
-void awt_do_mark_list(void *, DbQuery *query, long mark) {
+
+static void mark_queried_cb(AW_window*, AW_CL cl_query, AW_CL mark) {
     // Mark listed species
     // mark = 1 -> mark listed
     // mark | 8 -> don't change rest
+
+    DbQuery *query = (DbQuery*)cl_query;
     GB_push_transaction(query->gb_main);
 
     for (GBDATA *gb_item_container = query->selector->get_first_item_container(query->gb_main, query->aws->get_root(), QUERY_ALL_ITEMS);
@@ -458,7 +459,7 @@ void awt_do_mark_list(void *, DbQuery *query, long mark) {
                 }
         }
 
-    awt_query_update_list(0, query);
+    DbQuery_update_list(query);
     GB_pop_transaction(query->gb_main);
 }
 
@@ -470,14 +471,14 @@ void awt_unquery_all(void *, DbQuery *query) {
                 gb_species = GBT_next_species(gb_species)) {
         CLEAR_QUERIED(gb_species, query);
     }
-    awt_query_update_list(0, query);
+    DbQuery_update_list(query);
     GB_pop_transaction(query->gb_main);
 }
 
-void awt_delete_species_in_list(void *dummy, DbQuery *query)
-{
+static void delete_queried_species(AW_window*, AW_CL cl_query) {
+    DbQuery *query = (DbQuery*)cl_query;
     GB_begin_transaction(query->gb_main);
-    long cnt = 0;
+    long     cnt   = 0;
 
     for (GBDATA *gb_item_container = query->selector->get_first_item_container(query->gb_main, query->aws->get_root(), QUERY_ALL_ITEMS);
          gb_item_container;
@@ -524,7 +525,7 @@ void awt_delete_species_in_list(void *dummy, DbQuery *query)
         aw_message(error);
     }
     else {
-        awt_query_update_list(dummy, query);
+        DbQuery_update_list(query);
         GB_commit_transaction(query->gb_main);
     }
 }
@@ -1006,7 +1007,8 @@ bool awt_query::matches(const char *data, GBDATA *gb_item) const {
     return applyNot(hit);
 }
 
-static void awt_do_query(void *, DbQuery *query, AW_CL cl_ext_query) {
+static void perform_query_cb(AW_window*, AW_CL cl_query, AW_CL cl_ext_query) {
+    DbQuery *query = (DbQuery*)cl_query;
     GB_push_transaction(query->gb_main);
 
     AWT_EXT_QUERY_TYPES  ext_query = (AWT_EXT_QUERY_TYPES)cl_ext_query;
@@ -1293,7 +1295,7 @@ static void awt_do_query(void *, DbQuery *query, AW_CL cl_ext_query) {
     if (!error) error = qinfo.getError(); // check for query error
 
     if (error) aw_message(error);
-    else awt_query_update_list(0, query);
+    else DbQuery_update_list(query);
 
     GB_pop_transaction(query->gb_main);
 }
@@ -1362,7 +1364,7 @@ void awt_copy_selection_list_2_queried_species(DbQuery *query, AW_selection_list
 
     GBS_free_hash(list_hash);
     if (error) aw_message(error);
-    awt_query_update_list(0, query);
+    DbQuery_update_list(query);
 }
 
 
@@ -1511,10 +1513,11 @@ void awt_search_equal_entries(AW_window *, DbQuery *query, bool tokenize) {
     free(key);
 
     if (error) aw_message(error);
-    awt_query_update_list(0, query);
+    DbQuery_update_list(query);
 }
 
-void awt_do_pars_list(void *, DbQuery *query) {
+static void modify_fields_of_queried_cb(AW_window*, AW_CL cl_query) {
+    DbQuery  *query = (DbQuery*)cl_query;
     GB_ERROR  error = 0;
     char     *key   = query->aws->get_root()->awar(query->awar_parskey)->read_string();
 
@@ -2047,7 +2050,7 @@ static AW_window *awt_create_loadsave_colored_window(AW_root *aw_root, AW_CL cl_
         aws->load_xfig("color_loadsave.fig");
 
         aws->at("close");
-        aws->callback((AW_CB0) AW_POPDOWN);
+        aws->callback(AW_POPDOWN);
         aws->create_button("CLOSE", "CLOSE", "C");
 
         aws->at("help");
@@ -2148,7 +2151,7 @@ static AW_window *create_awt_colorizer_window(AW_root *aw_root, GBDATA *gb_main,
     aws->auto_space(10, 10);
 
     aws->at("close");
-    aws->callback((AW_CB0) AW_POPDOWN);
+    aws->callback(AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("help");
@@ -2216,10 +2219,8 @@ AW_window *awt_create_item_colorizer(AW_root *aw_root, GBDATA *gb_main, const ad
     return create_awt_colorizer_window(aw_root, gb_main, 0, sel);
 }
 
-AW_window *create_awt_open_parser(AW_root *aw_root, DbQuery *query)
-{
-    AW_window_simple *aws = 0;
-    aws                   = new AW_window_simple;
+static AW_window *create_modify_fields_window(AW_root *aw_root, DbQuery *query) {
+    AW_window_simple *aws = new AW_window_simple;
 
     {
         char *macro_name = GBS_global_string_copy("MODIFY_DATABASE_FIELD_%s", query->selector->items_name);
@@ -2234,7 +2235,7 @@ AW_window *create_awt_open_parser(AW_root *aw_root, DbQuery *query)
     aws->load_xfig("awt/parser.fig");
 
     aws->at("close");
-    aws->callback((AW_CB0)AW_POPDOWN);
+    aws->callback(AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("help");
@@ -2254,7 +2255,7 @@ AW_window *create_awt_open_parser(AW_root *aw_root, DbQuery *query)
     awt_create_selection_list_on_itemfields(query->gb_main, aws, query->awar_parskey, AWT_PARS_FILTER, "field", 0, query->selector, 20, 10);
 
     aws->at("go");
-    aws->callback((AW_CB1)awt_do_pars_list, (AW_CL)query);
+    aws->callback(modify_fields_of_queried_cb, (AW_CL)query);
     aws->create_button("GO", "GO", "G");
 
     aws->at("parser");
@@ -2284,8 +2285,9 @@ AW_window *create_awt_open_parser(AW_root *aw_root, DbQuery *query)
     return aws;
 }
 
-void awt_do_set_list(void *, DbQuery *query, long append) {
+static void set_field_of_queried_cb(AW_window*, AW_CL cl_query, AW_CL append) {
     // set fields of listed items
+    DbQuery  *query = (DbQuery*)cl_query;
     GB_ERROR  error = 0;
     char     *key   = query->aws->get_root()->awar(query->awar_setkey)->read_string();
     if (strcmp(key, "name") == 0) {
@@ -2374,7 +2376,7 @@ AW_window *create_awt_do_set_list(AW_root *aw_root, DbQuery *query)
     aws->load_xfig("ad_mset.fig");
 
     aws->at("close");
-    aws->callback((AW_CB0)AW_POPDOWN);
+    aws->callback(AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("help");
@@ -2383,10 +2385,10 @@ AW_window *create_awt_do_set_list(AW_root *aw_root, DbQuery *query)
 
     awt_create_selection_list_on_itemfields(query->gb_main, aws, query->awar_setkey, AWT_NDS_FILTER, "box", 0, query->selector, 20, 10);
     aws->at("create");
-    aws->callback((AW_CB)awt_do_set_list, (AW_CL)query, 0);
+    aws->callback(set_field_of_queried_cb, (AW_CL)query, 0);
     aws->create_button("SET_SINGLE_FIELD_OF_LISTED", "WRITE");
     aws->at("do");
-    aws->callback((AW_CB)awt_do_set_list, (AW_CL)query, 1);
+    aws->callback(set_field_of_queried_cb, (AW_CL)query, 1);
     aws->create_button("APPEND_SINGLE_FIELD_OF_LISTED", "APPEND");
 
     aws->at("val");
@@ -2395,8 +2397,9 @@ AW_window *create_awt_do_set_list(AW_root *aw_root, DbQuery *query)
 
 }
 
-void awt_do_set_protection(void *, DbQuery *query) {
+static void set_protection_of_queried_cb(AW_window*, AW_CL cl_query) {
     // set protection of listed items
+    DbQuery  *query = (DbQuery*)cl_query;
     GB_ERROR  error = 0;
     char     *key   = query->aws->get_root()->awar(query->awar_setkey)->read_string();
 
@@ -2434,15 +2437,14 @@ void awt_do_set_protection(void *, DbQuery *query) {
     free(key);
 }
 
-AW_window *create_awt_set_protection(AW_root *aw_root, DbQuery *query)
-{
+static AW_window *create_set_protection_window(AW_root *aw_root, DbQuery *query) {
     AW_window_simple *aws = 0;
     aws = new AW_window_simple;
     aws->init(aw_root, "SET_PROTECTION_OF_FIELD_OF_LISTED", "SET PROTECTIONS OF FIELDS");
     aws->load_xfig("awt/set_protection.fig");
 
     aws->at("close");
-    aws->callback((AW_CB0)AW_POPDOWN);
+    aws->callback(AW_POPDOWN);
     aws->create_button("CLOSE", "CLOSE", "C");
 
     aws->at("help");
@@ -2463,7 +2465,7 @@ AW_window *create_awt_set_protection(AW_root *aw_root, DbQuery *query)
     awt_create_selection_list_on_itemfields(query->gb_main, aws, query->awar_setkey, AWT_NDS_FILTER, "list", 0, query->selector, 20, 10);
 
     aws->at("go");
-    aws->callback((AW_CB1)awt_do_set_protection, (AW_CL)query);
+    aws->callback(set_protection_of_queried_cb, (AW_CL)query);
     aws->create_button("SET_PROTECTION_OF_FIELD_OF_LISTED", "SET PROTECTION");
 
     return (AW_window *)aws;
@@ -2476,7 +2478,7 @@ void awt_toggle_flag(AW_window *aww, DbQuery *query) {
         long flag = GB_read_flag(gb_item);
         GB_write_flag(gb_item, 1-flag);
     }
-    awt_query_update_list(aww, query);
+    DbQuery_update_list(query);
 }
 
 static void awt_new_selection_made(AW_root *aw_root, AW_CL cl_awar_selection, AW_CL cl_query) {
@@ -2680,7 +2682,7 @@ DbQuery *awt_create_query_box(AW_window *aws, awt_query_struct *awtqs, const cha
         for (int key = 0; key<AWT_QUERY_SEARCHES; ++key) {
             aws->at(xpos_calc[2], ypos+key*KEY_Y_OFFSET);
             aws->restore_at_size_and_attach(&at_size);
-            aws->d_callback((AW_CB)awt_do_query, (AW_CL)query, AWT_EXT_QUERY_NONE); // enable ENTER in searchfield to start search
+            aws->d_callback(perform_query_cb, (AW_CL)query, AWT_EXT_QUERY_NONE); // enable ENTER in searchfield to start search
             aws->create_input_field(query->awar_queries[key], 12);
         }
     }
@@ -2721,7 +2723,7 @@ DbQuery *awt_create_query_box(AW_window *aws, awt_query_struct *awtqs, const cha
     aws->button_length(18);
     if (awtqs->do_query_pos_fig) {
         aws->at(awtqs->do_query_pos_fig);
-        aws->callback((AW_CB)awt_do_query, (AW_CL)query, AWT_EXT_QUERY_NONE);
+        aws->callback(perform_query_cb, (AW_CL)query, AWT_EXT_QUERY_NONE);
         char *macro_id = GBS_global_string_copy("SEARCH_%s", query_id);
         aws->create_button(macro_id, "Search");
         free(macro_id);
@@ -2747,19 +2749,19 @@ DbQuery *awt_create_query_box(AW_window *aws, awt_query_struct *awtqs, const cha
     if (awtqs->do_mark_pos_fig) {
         aws->at(awtqs->do_mark_pos_fig);
         aws->help_text("mark_list.hlp");
-        aws->callback((AW_CB)awt_do_mark_list, (AW_CL)query, 1);
+        aws->callback(mark_queried_cb, (AW_CL)query, 1);
         aws->create_button("MARK_LISTED_UNMARK_REST", "Mark Listed\nUnmark Rest", "M");
     }
     if (awtqs->do_unmark_pos_fig) {
         aws->at(awtqs->do_unmark_pos_fig);
         aws->help_text("unmark_list.hlp");
-        aws->callback((AW_CB)awt_do_mark_list, (AW_CL)query, 0);
+        aws->callback(mark_queried_cb, (AW_CL)query, 0);
         aws->create_button("UNMARK_LISTED_MARK_REST", "Unmark Listed\nMark Rest", "U");
     }
     if (awtqs->do_delete_pos_fig) {
         aws->at(awtqs->do_delete_pos_fig);
         aws->help_text("del_list.hlp");
-        aws->callback((AW_CB)awt_delete_species_in_list, (AW_CL)query, 0);
+        aws->callback(delete_queried_species, (AW_CL)query);
         char *macro_id = GBS_global_string_copy("DELETE_LISTED_%s", query_id);
         aws->create_button(macro_id, "Delete Listed", "D");
         free(macro_id);
@@ -2798,21 +2800,21 @@ DbQuery *awt_create_query_box(AW_window *aws, awt_query_struct *awtqs, const cha
         sprintf(buffer, "tmp/dbquery_%s/awar_parspredefined", query_id); query->awar_parspredefined = strdup(buffer); aw_root->awar_string(query->awar_parspredefined);
 
         if (awtqs->use_menu) {
-            sprintf(buffer, "Modify Fields of Listed %s", Items); query_rel_menu_entry(aws, "mod_fields_of_listed", query_id, buffer, "F", "mod_field_list.hlp", AWM_ALL, AW_POPUP, (AW_CL)create_awt_open_parser, (AW_CL)query);
+            sprintf(buffer, "Modify Fields of Listed %s", Items); query_rel_menu_entry(aws, "mod_fields_of_listed", query_id, buffer, "F", "mod_field_list.hlp", AWM_ALL, AW_POPUP, (AW_CL)create_modify_fields_window, (AW_CL)query);
         }
         else {
             aws->at(awtqs->open_parser_pos_fig);
-            aws->callback(AW_POPUP, (AW_CL)create_awt_open_parser, (AW_CL)query);
+            aws->callback(AW_POPUP, (AW_CL)create_modify_fields_window, (AW_CL)query);
             aws->create_button("MODIFY_FIELDS_OF_LISTED", "MODIFY FIELDS\nOF LISTED", "F");
         }
     }
     if (awtqs->use_menu) {
-        sprintf(buffer, "Set Protection of Fields of Listed %s", Items); query_rel_menu_entry(aws, "s_prot_of_listed", query_id, buffer, "P", "set_protection.hlp", AWM_ALL, AW_POPUP, (AW_CL)create_awt_set_protection, (AW_CL)query);
+        sprintf(buffer, "Set Protection of Fields of Listed %s", Items); query_rel_menu_entry(aws, "s_prot_of_listed", query_id, buffer, "P", "set_protection.hlp", AWM_ALL, AW_POPUP, (AW_CL)create_set_protection_window, (AW_CL)query);
         aws->insert_separator();
-        sprintf(buffer, "Mark Listed %s, don't Change Rest",   Items); query_rel_menu_entry(aws, "mark_listed",             query_id, buffer, "M", "mark.hlp", AWM_ALL, (AW_CB)awt_do_mark_list, (AW_CL)query, (AW_CL)1 | 8);
-        sprintf(buffer, "Mark Listed %s, Unmark Rest",         Items); query_rel_menu_entry(aws, "mark_listed_unmark_rest", query_id, buffer, "L", "mark.hlp", AWM_ALL, (AW_CB)awt_do_mark_list, (AW_CL)query, (AW_CL)1);
-        sprintf(buffer, "Unmark Listed %s, don't Change Rest", Items); query_rel_menu_entry(aws, "unmark_listed",           query_id, buffer, "U", "mark.hlp", AWM_ALL, (AW_CB)awt_do_mark_list, (AW_CL)query, (AW_CL)0 | 8);
-        sprintf(buffer, "Unmark Listed %s, Mark Rest",         Items); query_rel_menu_entry(aws, "unmark_listed_mark_rest", query_id, buffer, "R", "mark.hlp", AWM_ALL, (AW_CB)awt_do_mark_list, (AW_CL)query, (AW_CL)0);
+        sprintf(buffer, "Mark Listed %s, don't Change Rest",   Items); query_rel_menu_entry(aws, "mark_listed",             query_id, buffer, "M", "mark.hlp", AWM_ALL, mark_queried_cb, (AW_CL)query, (AW_CL)1 | 8);
+        sprintf(buffer, "Mark Listed %s, Unmark Rest",         Items); query_rel_menu_entry(aws, "mark_listed_unmark_rest", query_id, buffer, "L", "mark.hlp", AWM_ALL, mark_queried_cb, (AW_CL)query, (AW_CL)1);
+        sprintf(buffer, "Unmark Listed %s, don't Change Rest", Items); query_rel_menu_entry(aws, "unmark_listed",           query_id, buffer, "U", "mark.hlp", AWM_ALL, mark_queried_cb, (AW_CL)query, (AW_CL)0 | 8);
+        sprintf(buffer, "Unmark Listed %s, Mark Rest",         Items); query_rel_menu_entry(aws, "unmark_listed_mark_rest", query_id, buffer, "R", "mark.hlp", AWM_ALL, mark_queried_cb, (AW_CL)query, (AW_CL)0);
         aws->insert_separator();
 
 
@@ -2823,15 +2825,15 @@ DbQuery *awt_create_query_box(AW_window *aws, awt_query_struct *awtqs, const cha
             aws->insert_separator();
             if (query->expect_hit_in_ref_list) {
                 aws->insert_menu_topic("search_equal_fields_and_listed_in_I", "Search entries existing in both DBs and listed in the DB I hitlist", "S",
-                                       "search_equal_fields.hlp", AWM_ALL, (AW_CB)awt_do_query, (AW_CL)query, AWT_EXT_QUERY_COMPARE_LINES);
+                                       "search_equal_fields.hlp", AWM_ALL, perform_query_cb, (AW_CL)query, AWT_EXT_QUERY_COMPARE_LINES);
                 aws->insert_menu_topic("search_equal_words_and_listed_in_I",  "Search words existing in entries of both DBs and listed in the DB I hitlist", "W",
-                                       "search_equal_fields.hlp", AWM_ALL, (AW_CB)awt_do_query, (AW_CL)query, AWT_EXT_QUERY_COMPARE_WORDS);
+                                       "search_equal_fields.hlp", AWM_ALL, perform_query_cb, (AW_CL)query, AWT_EXT_QUERY_COMPARE_WORDS);
             }
             else {
                 aws->insert_menu_topic("search_equal_field_in_both_db", "Search entries existing in both DBs", "S",
-                                       "search_equal_fields.hlp", AWM_ALL, (AW_CB)awt_do_query, (AW_CL)query, AWT_EXT_QUERY_COMPARE_LINES);
+                                       "search_equal_fields.hlp", AWM_ALL, perform_query_cb, (AW_CL)query, AWT_EXT_QUERY_COMPARE_LINES);
                 aws->insert_menu_topic("search_equal_word_in_both_db", "Search words existing in entries of both DBs", "W",
-                                       "search_equal_fields.hlp", AWM_ALL, (AW_CB)awt_do_query, (AW_CL)query, AWT_EXT_QUERY_COMPARE_WORDS);
+                                       "search_equal_fields.hlp", AWM_ALL, perform_query_cb, (AW_CL)query, AWT_EXT_QUERY_COMPARE_WORDS);
             }
         }
     }
