@@ -70,7 +70,7 @@ enum ReorderMode {
     REVERSE_ORDER,
 };
 
-void DBUI::NT_create_species_var(AW_root *aw_root, AW_default aw_def) {
+void DBUI::create_dbui_awars(AW_root *aw_root, AW_default aw_def) {
     aw_root->awar_string(AWAR_SPECIES_DEST,         "",          aw_def);
     aw_root->awar_string(AWAR_SPECIES_INFO,         "",          aw_def);
     aw_root->awar_string(AWAR_SPECIES_KEY,          "",          aw_def);
@@ -582,7 +582,7 @@ static void reorder_up_down(AW_window *aws, AW_CL cl_selright, AW_CL cl_dir) {
     if (warning) aw_message(warning);
 }
 
-AW_window *DBUI::NT_create_ad_list_reorder(AW_root *root, AW_CL cl_bound_item_selector) {
+AW_window *DBUI::create_fields_reorder_window(AW_root *root, AW_CL cl_bound_item_selector) {
     const bound_item_selector *bound_selector = (const bound_item_selector*)cl_bound_item_selector;
     const ad_item_selector&    selector       = bound_selector->selector;
 
@@ -715,7 +715,7 @@ static void ad_field_delete(AW_window *aws, AW_CL cl_sel) {
 }
 
 
-AW_window *DBUI::NT_create_ad_field_delete(AW_root *root, AW_CL cl_bound_item_selector) {
+AW_window *DBUI::create_field_delete_window(AW_root *root, AW_CL cl_bound_item_selector) {
     const bound_item_selector *bound_selector = (const bound_item_selector*)cl_bound_item_selector;
     const ad_item_selector&    selector       = bound_selector->selector;
 
@@ -783,7 +783,7 @@ static void ad_field_create_cb(AW_window *aws, AW_CL cl_bound_item_selector) {
     GB_pop_transaction(bound_selector->gb_main);
 }
 
-AW_window *DBUI::NT_create_ad_field_create(AW_root *root, AW_CL cl_bound_item_selector) {
+AW_window *DBUI::create_field_create_window(AW_root *root, AW_CL cl_bound_item_selector) {
     const bound_item_selector *bound_selector = (const bound_item_selector*)cl_bound_item_selector;
     const ad_item_selector&    selector       = bound_selector->selector;
 
@@ -903,7 +903,7 @@ static AW_window *NT_create_ad_field_convert(AW_root *root, AW_CL cl_bound_item_
     return (AW_window*)aws;
 }
 
-void DBUI::NT_spec_create_field_items(AW_window *aws, GBDATA *gb_main) {
+void DBUI::insert_field_admin_menuitems(AW_window *aws, GBDATA *gb_main) {
     static bound_item_selector *bis = 0;
 
     if (bis) {
@@ -913,9 +913,9 @@ void DBUI::NT_spec_create_field_items(AW_window *aws, GBDATA *gb_main) {
         bis = new bound_item_selector(gb_main, AWT_species_selector);
     }
     
-    aws->insert_menu_topic("spec_reorder_fields", "Reorder fields ...",     "R", "spaf_reorder.hlp", AWM_ALL, AW_POPUP, (AW_CL)NT_create_ad_list_reorder,  (AW_CL)bis);
-    aws->insert_menu_topic("spec_delete_field",   "Delete/Hide fields ...", "D", "spaf_delete.hlp",  AWM_EXP, AW_POPUP, (AW_CL)NT_create_ad_field_delete,  (AW_CL)bis);
-    aws->insert_menu_topic("spec_create_field",   "Create fields ...",      "C", "spaf_create.hlp",  AWM_ALL, AW_POPUP, (AW_CL)NT_create_ad_field_create,  (AW_CL)bis);
+    aws->insert_menu_topic("spec_reorder_fields", "Reorder fields ...",     "R", "spaf_reorder.hlp", AWM_ALL, AW_POPUP, (AW_CL)create_fields_reorder_window,  (AW_CL)bis);
+    aws->insert_menu_topic("spec_delete_field",   "Delete/Hide fields ...", "D", "spaf_delete.hlp",  AWM_EXP, AW_POPUP, (AW_CL)create_field_delete_window,  (AW_CL)bis);
+    aws->insert_menu_topic("spec_create_field",   "Create fields ...",      "C", "spaf_create.hlp",  AWM_ALL, AW_POPUP, (AW_CL)create_field_create_window,  (AW_CL)bis);
     aws->insert_menu_topic("spec_convert_field",  "Convert fields ...",     "t", "spaf_convert.hlp", AWM_EXP, AW_POPUP, (AW_CL)NT_create_ad_field_convert, (AW_CL)bis);
     aws->insert_separator();
     aws->insert_menu_topic("spec_unhide_fields", "Show all hidden fields", "S", "scandb.hlp", AWM_ALL, (AW_CB)awt_selection_list_unhide_all_cb, (AW_CL)gb_main, AWT_NDS_FILTER);
@@ -1297,7 +1297,7 @@ static AW_window *ad_spec_next_neighbours_create(AW_root *aw_root, AW_CL cbs) {
 }
 
 
-void DBUI::NT_detach_information_window(AW_window *aww, AW_CL cl_pointer_to_aww, AW_CL cl_AW_detach_information) {
+void DBUI::detach_info_window(AW_window *aww, AW_CL cl_pointer_to_aww, AW_CL cl_AW_detach_information) {
     AW_window **aww_pointer = (AW_window**)cl_pointer_to_aww;
 
     AW_detach_information *di           = (AW_detach_information*)cl_AW_detach_information;
@@ -1346,7 +1346,7 @@ static AW_window *create_speciesOrganismWindow(AW_root *aw_root, GBDATA *gb_main
         aws->create_button("CLOSE", "CLOSE", "C");
 
         aws->at("search");
-        aws->callback(AW_POPUP, (AW_CL)DBUI::NTX_create_query_window, (AW_CL)gb_main);
+        aws->callback(AW_POPUP, (AW_CL)DBUI::create_species_query_window, (AW_CL)gb_main);
         aws->create_button("SEARCH", "SEARCH", "S");
 
         aws->at("help");
@@ -1368,7 +1368,7 @@ static AW_window *create_speciesOrganismWindow(AW_root *aw_root, GBDATA *gb_main
         aws->insert_separator();
 
         aws->create_menu("FIELDS", "F", AWM_ALL);
-        NT_spec_create_field_items(aws, gb_main);
+        insert_field_admin_menuitems(aws, gb_main);
 
         {
             const char         *awar_name = (bool)organismWindow ? AWAR_ORGANISM_NAME : AWAR_SPECIES_NAME;
@@ -1379,7 +1379,7 @@ static AW_window *create_speciesOrganismWindow(AW_root *aw_root, GBDATA *gb_main
             AW_detach_information *detach_info = new AW_detach_information(cb_info); // do not delete!
 
             aws->at("detach");
-            aws->callback(NT_detach_information_window, (AW_CL)&aws, (AW_CL)detach_info);
+            aws->callback(detach_info_window, (AW_CL)&aws, (AW_CL)detach_info);
             aws->create_button("DETACH", "DETACH", "D");
 
             detach_info->set_detach_button(aws->get_last_widget());
@@ -1391,24 +1391,24 @@ static AW_window *create_speciesOrganismWindow(AW_root *aw_root, GBDATA *gb_main
     return AWS[windowIdx]; // already created (and not detached)
 }
 
-AW_window *DBUI::NT_create_species_window(AW_root *aw_root, AW_CL cl_gb_main) {
+AW_window *DBUI::create_species_info_window(AW_root *aw_root, AW_CL cl_gb_main) {
     return create_speciesOrganismWindow(aw_root, (GBDATA*)cl_gb_main, false);
 }
-AW_window *DBUI::NTX_create_organism_window(AW_root *aw_root, AW_CL cl_gb_main) {
+AW_window *DBUI::create_organism_info_window(AW_root *aw_root, AW_CL cl_gb_main) {
     return create_speciesOrganismWindow(aw_root, (GBDATA*)cl_gb_main, true);
 }
 
 static AW_CL ad_query_global_cbs = 0;
 
-void DBUI::NT_unquery_all() {
+void DBUI::unquery_all() {
     awt_unquery_all(0, (DbQuery *)ad_query_global_cbs);
 }
 
-void DBUI::NT_query_update_list() {
+void DBUI::query_update_list() {
     awt_query_update_list(NULL, (DbQuery *)ad_query_global_cbs);
 }
 
-AW_window *DBUI::NTX_create_query_window(AW_root *aw_root, AW_CL cl_gb_main) {
+AW_window *DBUI::create_species_query_window(AW_root *aw_root, AW_CL cl_gb_main) {
     static AW_window_simple_menu *aws = 0;
     if (!aws) {
         aws = new AW_window_simple_menu;
@@ -1440,7 +1440,7 @@ AW_window *DBUI::NTX_create_query_window(AW_root *aw_root, AW_CL cl_gb_main) {
         awtqs.do_set_pos_fig      = "doset";
         awtqs.do_refresh_pos_fig  = "dorefresh";
         awtqs.open_parser_pos_fig = "openparser";
-        awtqs.create_view_window  = NT_create_species_window;
+        awtqs.create_view_window  = create_species_info_window;
         awtqs.selector            = &AWT_species_selector;
 
         AW_CL cbs           = (AW_CL)awt_create_query_box(aws, &awtqs, "spec");

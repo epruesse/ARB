@@ -21,22 +21,22 @@
 
 namespace DBUI {
 
-    AW_window *NT_create_ad_list_reorder(AW_root *root, AW_CL cl_bound_item_selector);
-    AW_window *NT_create_ad_field_delete(AW_root *root, AW_CL cl_bound_item_selector);
-    AW_window *NT_create_ad_field_create(AW_root *root, AW_CL cl_bound_item_selector);
+    AW_window *create_fields_reorder_window(AW_root *root, AW_CL cl_bound_item_selector);
+    AW_window *create_field_delete_window(AW_root *root, AW_CL cl_bound_item_selector);
+    AW_window *create_field_create_window(AW_root *root, AW_CL cl_bound_item_selector);
 
-    AW_window *NTX_create_query_window(AW_root *aw_root, AW_CL cl_gb_main);
+    AW_window *create_species_query_window(AW_root *aw_root, AW_CL cl_gb_main);
 
-    AW_window *NT_create_species_window(AW_root *aw_root, AW_CL cl_gb_main);
-    AW_window *NTX_create_organism_window(AW_root *aw_root, AW_CL cl_gb_main);
-    void       NT_detach_information_window(AW_window *aww, AW_CL cl_pointer_to_aww, AW_CL cl_AW_detach_information);
+    AW_window *create_species_info_window(AW_root *aw_root, AW_CL cl_gb_main);
+    AW_window *create_organism_info_window(AW_root *aw_root, AW_CL cl_gb_main);
+    void       detach_info_window(AW_window *aww, AW_CL cl_pointer_to_aww, AW_CL cl_AW_detach_information);
 
-    void NT_spec_create_field_items(AW_window *aws, GBDATA *gb_main);
+    void insert_field_admin_menuitems(AW_window *aws, GBDATA *gb_main);
 
-    void NT_create_species_var(AW_root *aw_root, AW_default aw_def);
+    void create_dbui_awars(AW_root *aw_root, AW_default aw_def);
 
-    void NT_unquery_all();
-    void NT_query_update_list();
+    void unquery_all();
+    void query_update_list();
 
 };
 

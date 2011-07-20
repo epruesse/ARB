@@ -592,9 +592,9 @@ static void GEN_create_field_items(AW_window *aws, GBDATA *gb_main) {
     gen_assert(!bis);
     bis = new bound_item_selector(gb_main, GEN_item_selector);
 
-    aws->insert_menu_topic("gen_reorder_fields", "Reorder fields ...",    "R", "spaf_reorder.hlp", AD_F_ALL, AW_POPUP, (AW_CL)DBUI::NT_create_ad_list_reorder, (AW_CL)&bis);
-    aws->insert_menu_topic("gen_delete_field",   "Delete/Hide field ...", "D", "spaf_delete.hlp",  AD_F_ALL, AW_POPUP, (AW_CL)DBUI::NT_create_ad_field_delete, (AW_CL)&bis);
-    aws->insert_menu_topic("gen_create_field",   "Create fields ...",     "C", "spaf_create.hlp",  AD_F_ALL, AW_POPUP, (AW_CL)DBUI::NT_create_ad_field_create, (AW_CL)&bis);
+    aws->insert_menu_topic("gen_reorder_fields", "Reorder fields ...",    "R", "spaf_reorder.hlp", AD_F_ALL, AW_POPUP, (AW_CL)DBUI::create_fields_reorder_window, (AW_CL)&bis);
+    aws->insert_menu_topic("gen_delete_field",   "Delete/Hide field ...", "D", "spaf_delete.hlp",  AD_F_ALL, AW_POPUP, (AW_CL)DBUI::create_field_delete_window, (AW_CL)&bis);
+    aws->insert_menu_topic("gen_create_field",   "Create fields ...",     "C", "spaf_create.hlp",  AD_F_ALL, AW_POPUP, (AW_CL)DBUI::create_field_create_window, (AW_CL)&bis);
     aws->insert_separator();
     aws->insert_menu_topic("gen_unhide_fields", "Show all hidden fields", "S", "scandb.hlp", AD_F_ALL, (AW_CB)awt_gene_field_selection_list_unhide_all_cb, (AW_CL)gb_main, AWT_NDS_FILTER);
     aws->insert_separator();
@@ -648,7 +648,7 @@ AW_window *GEN_create_gene_window(AW_root *aw_root, AW_CL cl_gb_main) {
             cb_info->add_callback();
 
             aws->at("detach");
-            aws->callback(DBUI::NT_detach_information_window, (AW_CL)&aws, (AW_CL)detach_info);
+            aws->callback(DBUI::detach_info_window, (AW_CL)&aws, (AW_CL)detach_info);
             aws->create_button("DETACH", "DETACH", "D");
 
             detach_info->set_detach_button(aws->get_last_widget());
