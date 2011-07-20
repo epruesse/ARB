@@ -364,7 +364,7 @@ GBDATA *GEN_get_current_gene(GBDATA *gb_main, AW_root *aw_root) {
 
 static AW_CL    GEN_global_scannerid   = 0;
 static AW_root *GEN_global_scannerroot = 0;
-AW_CL           gene_query_global_cbs = 0;
+static DbQuery *GLOBAL_gene_query      = 0;
 
 static void gene_rename_cb(AW_window *aww, AW_CL cl_gb_main) {
     AW_root *aw_root = aww->get_root();
@@ -705,12 +705,12 @@ AW_window *GEN_create_gene_query_window(AW_root *aw_root, AW_CL cl_gb_main) {
         awtqs.create_view_window  = GEN_create_gene_window;
         awtqs.selector            = &GEN_item_selector;
 
-        AW_CL cbs             = (AW_CL)awt_create_query_box(aws, &awtqs, "gen");
-        gene_query_global_cbs = cbs;
+        DbQuery *query    = awt_create_query_box(aws, &awtqs, "gen");
+        GLOBAL_gene_query = query;
 
         aws->create_menu("More search",     "s");
-        aws->insert_menu_topic("gen_search_equal_fields_within_db", "Search For Equal Fields and Mark Duplicates",               "E", "search_duplicates.hlp", AWM_ALL, (AW_CB)awt_search_equal_entries, cbs, 0);
-        aws->insert_menu_topic("gen_search_equal_words_within_db",  "Search For Equal Words Between Fields and Mark Duplicates", "W", "search_duplicates.hlp", AWM_ALL, (AW_CB)awt_search_equal_entries, cbs, 1);
+        aws->insert_menu_topic("gen_search_equal_fields_within_db", "Search For Equal Fields and Mark Duplicates",               "E", "search_duplicates.hlp", AWM_ALL, (AW_CB)awt_search_equal_entries, (AW_CL)query, 0);
+        aws->insert_menu_topic("gen_search_equal_words_within_db",  "Search For Equal Words Between Fields and Mark Duplicates", "W", "search_duplicates.hlp", AWM_ALL, (AW_CB)awt_search_equal_entries, (AW_CL)query, 1);
 
         aws->button_length(7);
 

@@ -206,9 +206,9 @@ GBDATA *EXP_get_current_experiment(GBDATA *gb_main, AW_root *aw_root) {
     return gb_experiment;
 }
 
-static AW_CL    EXP_global_scannerid        = 0;
-static AW_root *EXP_global_scannerroot      = 0;
-AW_CL           experiment_query_global_cbs = 0;
+static AW_CL    EXP_global_scannerid    = 0;
+static AW_root *EXP_global_scannerroot  = 0;
+static DbQuery *GLOBAL_experiment_query = 0;
 
 AW_window *EXP_create_experiment_query_window(AW_root *aw_root, AW_CL cl_gb_main) {
     static AW_window_simple_menu *aws = 0;
@@ -247,12 +247,12 @@ AW_window *EXP_create_experiment_query_window(AW_root *aw_root, AW_CL cl_gb_main
         awtqs.create_view_window  = EXP_create_experiment_window;
         awtqs.selector            = &EXP_item_selector;
 
-        AW_CL cbs                   = (AW_CL)awt_create_query_box((AW_window*)aws, &awtqs, "exp");
-        experiment_query_global_cbs = cbs;
+        DbQuery *query          = awt_create_query_box(aws, &awtqs, "exp");
+        GLOBAL_experiment_query = query;
 
         aws->create_menu("More search",     "s");
-        aws->insert_menu_topic("exp_search_equal_fields_within_db", "Search For Equal Fields and Mark Duplicates",              "E", "search_duplicates.hlp", AWM_ALL, (AW_CB)awt_search_equal_entries, cbs, 0);
-        aws->insert_menu_topic("exp_search_equal_words_within_db", "Search For Equal Words Between Fields and Mark Duplicates", "W", "search_duplicates.hlp", AWM_ALL, (AW_CB)awt_search_equal_entries, cbs, 1);
+        aws->insert_menu_topic("exp_search_equal_fields_within_db", "Search For Equal Fields and Mark Duplicates",              "E", "search_duplicates.hlp", AWM_ALL, (AW_CB)awt_search_equal_entries, (AW_CL)query, 0);
+        aws->insert_menu_topic("exp_search_equal_words_within_db", "Search For Equal Words Between Fields and Mark Duplicates", "W", "search_duplicates.hlp", AWM_ALL, (AW_CB)awt_search_equal_entries, (AW_CL)query, 1);
 
         aws->button_length(7);
 
