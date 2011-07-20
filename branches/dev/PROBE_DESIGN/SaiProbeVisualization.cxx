@@ -11,8 +11,8 @@
 #include "SaiProbeVisualization.hxx"
 #include "probe_match_parser.hxx"
 
-#include <awt.hxx>
-#include <awt_nds.hxx>
+#include <nds.h>
+#include <items.h>
 #include <awt_sel_boxes.hxx>
 #include <awt_config_manager.hxx>
 #include <aw_awars.hxx>

@@ -16,17 +16,19 @@
 #include "GEN_interface.hxx"
 #include "EXP_interface.hxx"
 #include "EXP_local.hxx"
-#include "../NTREE/ad_spec.hxx" // needed for species query window
 
+#include <dbui.h>
 #include <aw_preset.hxx>
 #include <aw_awars.hxx>
 #include <aw_question.hxx>
 #include <AW_rename.hxx>
+#include <awt.hxx>
 #include <awt_input_mask.hxx>
 #include <aw_msg.hxx>
 #include <arb_progress.h>
 #include <aw_root.hxx>
 #include <adGene.h>
+#include <db_query.h>
 
 #include <map>
 
@@ -1443,7 +1445,7 @@ static AW_window *GEN_create_organism_colorize_window(AW_root *aw_root, AW_CL cl
 
 void GEN_popup_organism_window(AW_window *aww, AW_CL cl_gb_main, AW_CL) {
     // used to avoid that the organisms info window is stored in a menu (or with a button)
-    AW_window *aws = NTX_create_organism_window(aww->get_root(), cl_gb_main);
+    AW_window *aws = DBUI::NTX_create_organism_window(aww->get_root(), cl_gb_main);
     aws->activate();
 }
 
@@ -1681,7 +1683,7 @@ void GEN_map_window::init(AW_root *awr, GBDATA *gb_main) {
 
     at(gene_x, first_line_y);
     help_text("organism_search.hlp");
-    callback(AW_POPUP, (AW_CL)NTX_create_query_window, 0);  // @@@ hier sollte eine Art "Organism-Search" verwendet werden (AWT_organism_selector anpassen)
+    callback(AW_POPUP, (AW_CL)DBUI::NTX_create_query_window, (AW_CL)gb_main); // @@@ should use an organism search (using AWT_organism_selector) 
     create_button("SEARCH_ORGANISM", AWAR_LOCAL_ORGANISM_NAME(window_nr));
 
     at(gene_x, second_line_y);

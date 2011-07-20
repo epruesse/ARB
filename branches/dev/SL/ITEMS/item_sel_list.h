@@ -17,6 +17,9 @@
 #ifndef AW_SELECT_HXX
 #include <aw_select.hxx>
 #endif
+#ifndef ITEMS_H
+#include "items.h"
+#endif
 
 #define PSEUDO_FIELD_ANY_FIELD  "[any field]"
 #define PSEUDO_FIELD_ALL_FIELDS "[all fields]"

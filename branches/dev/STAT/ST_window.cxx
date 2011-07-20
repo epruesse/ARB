@@ -17,8 +17,7 @@
 #include <aw_awars.hxx>
 #include <aw_root.hxx>
 #include <aw_msg.hxx>
-#include <awt.hxx>
-#include <awt_item_sel_list.hxx>
+#include <item_sel_list.h>
 #include <awt_filter.hxx>
 
 #define ST_ML_AWAR "tmp/st_ml/"

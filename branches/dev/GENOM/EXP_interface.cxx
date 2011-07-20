@@ -16,12 +16,12 @@
 #include "EXP_interface.hxx"
 #include "GEN_local.hxx"
 #include "GEN_interface.hxx"
-#include "../NTREE/ad_spec.hxx"
-#include <../NTREE/nt_internal.h>
 
+#include <db_query.h>
 #include <db_scanner.hxx>
+#include <dbui.h>
 #include <awt_sel_boxes.hxx>
-#include <awt_item_sel_list.hxx>
+#include <item_sel_list.h>
 #include <aw_awars.hxx>
 #include <aw_detach.hxx>
 #include <aw_msg.hxx>
@@ -206,8 +206,8 @@ GBDATA *EXP_get_current_experiment(GBDATA *gb_main, AW_root *aw_root) {
     return gb_experiment;
 }
 
-static AW_CL    ad_global_scannerid   = 0;
-static AW_root *ad_global_scannerroot = 0;
+static AW_CL    EXP_global_scannerid        = 0;
+static AW_root *EXP_global_scannerroot      = 0;
 AW_CL           experiment_query_global_cbs = 0;
 
 AW_window *EXP_create_experiment_query_window(AW_root *aw_root, AW_CL cl_gb_main) {
@@ -457,9 +457,14 @@ static void EXP_map_experiment(AW_root *aw_root, AW_CL scannerid, AW_CL cl_gb_ma
 }
 
 static void EXP_create_field_items(AW_window *aws, GBDATA *gb_main) {
-    aws->insert_menu_topic("exp_reorder_fields", "Reorder fields ...",    "R", "spaf_reorder.hlp", AD_F_ALL, AW_POPUP, (AW_CL)NT_create_ad_list_reorder, (AW_CL)&EXP_item_selector);
-    aws->insert_menu_topic("exp_delete_field",   "Delete/Hide Field ...", "D", "spaf_delete.hlp",  AD_F_ALL, AW_POPUP, (AW_CL)NT_create_ad_field_delete, (AW_CL)&EXP_item_selector);
-    aws->insert_menu_topic("exp_create_field",   "Create fields ...",     "C", "spaf_create.hlp",  AD_F_ALL, AW_POPUP, (AW_CL)NT_create_ad_field_create, (AW_CL)&EXP_item_selector);
+    static bound_item_selector *bis = 0;
+
+    exp_assert(!bis);
+    bis = new bound_item_selector(gb_main, EXP_item_selector);
+
+    aws->insert_menu_topic("exp_reorder_fields", "Reorder fields ...",    "R", "spaf_reorder.hlp", AD_F_ALL, AW_POPUP, (AW_CL)DBUI::NT_create_ad_list_reorder, (AW_CL)&bis);
+    aws->insert_menu_topic("exp_delete_field",   "Delete/Hide Field ...", "D", "spaf_delete.hlp",  AD_F_ALL, AW_POPUP, (AW_CL)DBUI::NT_create_ad_field_delete, (AW_CL)&bis);
+    aws->insert_menu_topic("exp_create_field",   "Create fields ...",     "C", "spaf_create.hlp",  AD_F_ALL, AW_POPUP, (AW_CL)DBUI::NT_create_ad_field_create, (AW_CL)&bis);
     aws->insert_separator();
     aws->insert_menu_topic("exp_unhide_fields", "Show all hidden fields", "S", "scandb.hlp", AD_F_ALL, (AW_CB)awt_experiment_field_selection_list_unhide_all_cb, (AW_CL)gb_main, AWT_NDS_FILTER);
     aws->insert_separator();
@@ -493,9 +498,9 @@ AW_window *EXP_create_experiment_window(AW_root *aw_root, AW_CL cl_gb_main) {
         aws->create_button("HELP", "HELP", "H");
 
 
-        AW_CL scannerid       = create_db_scanner(gb_main, aws, "box", 0, "field", "enable", DB_VIEWER, 0, "mark", AWT_NDS_FILTER, &EXP_item_selector);
-        ad_global_scannerid   = scannerid;
-        ad_global_scannerroot = aws->get_root();
+        AW_CL scannerid        = create_db_scanner(gb_main, aws, "box", 0, "field", "enable", DB_VIEWER, 0, "mark", AWT_NDS_FILTER, &EXP_item_selector);
+        EXP_global_scannerid   = scannerid;
+        EXP_global_scannerroot = aws->get_root();
 
         aws->create_menu("EXPERIMENT", "E", AD_F_ALL);
         aws->insert_menu_topic("experiment_delete", "Delete",     "D", "spa_delete.hlp", AD_F_ALL, (AW_CB)experiment_delete_cb, (AW_CL)gb_main,                         0);
@@ -513,7 +518,7 @@ AW_window *EXP_create_experiment_window(AW_root *aw_root, AW_CL cl_gb_main) {
             cb_info->add_callback();
 
             aws->at("detach");
-            aws->callback(NT_detach_information_window, (AW_CL)&aws, (AW_CL)cb_info);
+            aws->callback(DBUI::NT_detach_information_window, (AW_CL)&aws, (AW_CL)cb_info);
             aws->create_button("DETACH", "DETACH", "D");
 
             detach_info->set_detach_button(aws->get_last_widget());

@@ -21,6 +21,8 @@
 
 #include <cctype>
 
+#define re_assert(cond) arb_assert(cond)
+
 namespace RefEntries {
 
     static ARB_ERROR generate_item_error(const char *format, const ad_item_selector& itemtype, GBDATA *gb_item) {
@@ -28,7 +30,7 @@ namespace RefEntries {
         char   *item_id          = itemtype.generate_item_id(gb_main, gb_item);
         char   *item_description = GBS_global_string_copy("%s '%s'", itemtype.item_name, item_id);
 
-        awt_assert(strstr(format, "%s"));
+        re_assert(strstr(format, "%s"));
         ARB_ERROR error = GBS_global_string(format, item_description);
 
         free(item_description);
@@ -92,7 +94,7 @@ namespace RefEntries {
     }
 
     ARB_ERROR ReferringEntriesHandler::with_all_referred_items(AWT_QUERY_RANGE range, const RefSelector& refsel, referred_item_handler callback) {
-        awt_assert(range != QUERY_CURRENT_ITEM); // would need AW_root
+        re_assert(range != QUERY_CURRENT_ITEM); // would need AW_root
 
         ARB_ERROR  error;
         DBItemSet referred;

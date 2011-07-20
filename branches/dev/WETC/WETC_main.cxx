@@ -9,6 +9,7 @@
 // ================================================================ //
 
 #include <awt.hxx>
+#include <aw_window.hxx>
 #include <aw_root.hxx>
 #include <arbdb.h>
 

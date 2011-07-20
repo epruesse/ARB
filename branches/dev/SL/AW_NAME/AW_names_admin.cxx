@@ -10,7 +10,7 @@
 
 #include "AW_rename.hxx"
 
-#include <awt.hxx>
+#include <aw_window.hxx>
 #include <aw_advice.hxx>
 #include <aw_edit.hxx>
 #include <aw_awar.hxx>

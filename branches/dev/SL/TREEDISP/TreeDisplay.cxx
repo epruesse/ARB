@@ -10,8 +10,7 @@
 
 #include "TreeDisplay.hxx"
 
-#include <awt.hxx>
-#include <awt_nds.hxx>
+#include <nds.h>
 #include <aw_preset.hxx>
 #include <aw_awars.hxx>
 #include <aw_msg.hxx>
@@ -114,7 +113,7 @@ void AWT_graphic_tree::mark_species_in_tree(AP_tree *at, int mark_mode) {
                 case 0: GB_write_flag(at->gb_node, 0); break;
                 case 1: GB_write_flag(at->gb_node, 1); break;
                 case 2: GB_write_flag(at->gb_node, !GB_read_flag(at->gb_node)); break;
-                default: awt_assert(0);
+                default: td_assert(0);
             }
         }
     }
@@ -145,7 +144,7 @@ void AWT_graphic_tree::mark_species_in_tree_that(AP_tree *at, int mark_mode, int
                     case 0: GB_write_flag(at->gb_node, 0); break;
                     case 1: GB_write_flag(at->gb_node, 1); break;
                     case 2: GB_write_flag(at->gb_node, !oldMark); break;
-                    default: awt_assert(0);
+                    default: td_assert(0);
                 }
             }
         }
@@ -429,14 +428,14 @@ int AWT_graphic_tree::resort_tree(int mode, AP_tree *at)   // run on father !!!
     }
 
     resort_tree(lmode, at->get_leftson());
-    awt_assert(leafname);
+    td_assert(leafname);
     const char *leftleafname = leafname;
 
     resort_tree(rmode, at->get_rightson());
-    awt_assert(leafname);
+    td_assert(leafname);
     const char *rightleafname = leafname;
 
-    awt_assert(leftleafname && rightleafname);
+    td_assert(leftleafname && rightleafname);
 
     if (leftleafname && rightleafname) {
         int name_cmp = strcmp(leftleafname, rightleafname);
@@ -582,7 +581,7 @@ double comp_rot_spread(AP_tree *at, AWT_graphic_tree *ntw)
             zw *= 2*M_PI;
             break;
         default:
-            awt_assert(0);
+            td_assert(0);
     }
 
     return zw;
@@ -748,7 +747,7 @@ void AWT_graphic_tree::key_command(AWT_COMMAND_MODE /* cmd */, AW_key_mod key_mo
                 gb_species = (GBDATA *)ct->client_data1;
             }
             else {
-                awt_assert(0);
+                td_assert(0);
             }
 
             // ------------------------------------
@@ -849,7 +848,7 @@ void AWT_graphic_tree::key_command(AWT_COMMAND_MODE /* cmd */, AW_key_mod key_mo
                         AP_tree *root_node                  = at;
                         while (root_node->father) root_node = root_node->get_father(); // search father
 
-                        awt_assert(root_node);
+                        td_assert(root_node);
 
                         AWT_graphic_tree_group_state state;
                         detect_group_state(root_node, &state, at);
@@ -1705,7 +1704,7 @@ AWT_graphic_tree::~AWT_graphic_tree() {
 void AWT_graphic_tree::init(const AP_tree& tree_prototype, AliView *aliview, AP_sequence *seq_prototype, bool link_to_database_, bool insert_delete_cbs) {
     tree_static = new AP_tree_root(aliview, tree_prototype, seq_prototype, insert_delete_cbs);
 
-    awt_assert(!insert_delete_cbs || link_to_database); // inserting delete callbacks w/o linking to DB has no effect!
+    td_assert(!insert_delete_cbs || link_to_database); // inserting delete callbacks w/o linking to DB has no effect!
     link_to_database = link_to_database_;
 }
 
@@ -1878,7 +1877,7 @@ bool AWT_show_branch_remark(AW_device *device, const char *remark_branch, bool i
     }
 
     if (show) {
-        awt_assert(text != 0);
+        td_assert(text != 0);
         device->text(AWT_GC_BRANCH_REMARK, text, pos, alignment, filteri);
     }
 
@@ -2282,7 +2281,7 @@ const char *AWT_graphic_tree::show_ruler(AW_device *device, int gc) {
         case AP_LIST_SIMPLE:
         case AP_LIST_NDS:
             // rulers not allowed in these display modes
-            awt_assert(0);
+            td_assert(0);
             tree_awar = 0;
             break;
     }
@@ -2398,7 +2397,7 @@ public:
 
     size_t get_part_count() const { return part_count; }
     const Column& get_column(size_t p) const {
-        awt_assert(p<part_count);
+        td_assert(p<part_count);
         return column[p];
     }
     double get_print_width(size_t p) const { return get_column(p).print_width; }
@@ -2488,7 +2487,7 @@ void AWT_graphic_tree::show_nds_list(GBDATA *, bool use_nds) {
         }
     }
 
-    awt_assert(species_count <= displayed_rows);
+    td_assert(species_count <= displayed_rows);
 
     // calculate column offsets and detect column alignment
     double *max_part_width = new double[max_parts];
@@ -2708,7 +2707,7 @@ static long    dcolors_count = ARRAY_ELEMS(colors_def);
 
 class fake_AW_GC : public AW_GC {
     virtual void wm_set_foreground_color(AW_rgb /*col*/) {  }
-    virtual void wm_set_function(AW_function /*mode*/) { awt_assert(0); }
+    virtual void wm_set_function(AW_function /*mode*/) { td_assert(0); }
     virtual void wm_set_lineattributes(short /*lwidth*/, AW_linestyle /*lstyle*/) {}
     virtual void wm_set_font(AW_font /*font_nr*/, int size, int */*found_size*/) {
         unsigned int i;
@@ -2719,7 +2718,7 @@ class fake_AW_GC : public AW_GC {
 public:
     fake_AW_GC(AW_common *common_) : AW_GC(common_) {}
     virtual int get_available_fontsizes(AW_font /*font_nr*/, int */*available_sizes*/) const {
-        awt_assert(0);
+        td_assert(0);
         return 0;
     }
 };
@@ -2784,7 +2783,7 @@ public:
 
         Rectangle drawn = size_device.get_size_information();
 
-        awt_assert(drawn.surface() >= 0.0);
+        td_assert(drawn.surface() >= 0.0);
 
         double zoomx = SCREENSIZE/drawn.width();
         double zoomy = SCREENSIZE/drawn.height();

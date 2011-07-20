@@ -8,8 +8,7 @@
 //                                                                  //
 // ================================================================ //
 
-#include <awt.hxx>
-
+#include <aw_window.hxx>
 #include <aw_awars.hxx>
 #include <aw_edit.hxx>
 #include <aw_root.hxx>

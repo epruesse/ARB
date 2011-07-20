@@ -47,8 +47,6 @@ char *awt_create_string_on_configurations(GBDATA *gb_main);
 AW_window *awt_create_load_box(AW_root *aw_root, const char *load_what, const char *file_extension, char **set_file_name_awar,
                                void (*callback)(AW_window*), AW_window* (*create_popup)(AW_root *, AW_default));
 
-void AWT_popup_select_species_field_window(AW_window *aww, AW_CL cl_awar_name, AW_CL cl_gb_main);
-
 // -------------------------------
 
 AW_window *create_save_box_for_selection_lists(AW_root *aw_root, AW_CL selid);

@@ -10,7 +10,8 @@
 
 #include "awt.hxx"
 #include "awt_sel_boxes.hxx"
-#include "awt_item_sel_list.hxx"
+
+#include <item_sel_list.h>
 
 #include <aw_awars.hxx>
 #include <aw_file.hxx>
@@ -762,34 +763,5 @@ void awt_write_string(AW_window *aws, AW_CL varname, AW_CL value)   // set an aw
     aws->get_root()->awar((char *)varname)->write_string((char *)value);
 }
 
-void AWT_popup_select_species_field_window(AW_window *aww, AW_CL cl_awar_name, AW_CL cl_gb_main)
-{
-    static AW_window_simple *aws = 0;
-
-    // everytime map selection awar to latest user awar:
-    AW_root    *aw_root   = aww->get_root();
-    const char *awar_name = (const char *)cl_awar_name;
-    aw_root->awar("tmp/viewkeys/key_text_select")->map(awar_name);
-
-    if (!aws) {
-        aws = new AW_window_simple;
-
-        aws->init(aw_root, "SELECT_SPECIES_FIELD", "Select species field");
-        aws->load_xfig("awt/nds_sel.fig");
-        aws->button_length(13);
-
-        aws->callback(AW_POPDOWN);
-        aws->at("close");
-        aws->create_button("CLOSE", "CLOSE", "C");
-
-        awt_create_selection_list_on_itemfields((GBDATA *)cl_gb_main,
-                                                aws,
-                                                "tmp/viewkeys/key_text_select",
-                                                AWT_NDS_FILTER,
-                                                "scandb", "rescandb", &AWT_species_selector, 20, 10);
-        aws->recalc_pos_atShow(AW_REPOS_TO_MOUSE);
-    }
-    aws->activate();
-}
 
 

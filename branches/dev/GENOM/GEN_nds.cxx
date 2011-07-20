@@ -11,9 +11,8 @@
 
 #include "GEN_interface.hxx"
 
-#include <awt.hxx>
-#include <awt_nds.hxx>
-#include <awt_item_sel_list.hxx>
+#include <nds.h>
+#include <item_sel_list.h>
 #include <awt_sel_boxes.hxx>
 #include <aw_msg.hxx>
 #include <aw_root.hxx>

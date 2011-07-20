@@ -15,11 +15,13 @@
 #include "EXP_local.hxx"
 #include "EXP_interface.hxx"
 
+#include <awt.hxx>
 #include <awt_input_mask.hxx>
 #include <aw_awars.hxx>
 #include <aw_root.hxx>
 #include <arbdbt.h>
 #include <ntree.hxx>
+#include <db_query.h>
 
 class AWT_canvas;
 #include <../NTREE/nt_cb.hxx>
@@ -112,6 +114,10 @@ static AW_window *EXP_create_experiment_colorize_window(AW_root *aw_root, AW_CL 
     return awt_create_item_colorizer(aw_root, gb_main, &EXP_item_selector);
 }
 
+static void EXP_run_pgt(AW_window *aww, AW_CL cl_gb_main, AW_CL) {
+    AW_system(aww, (GBDATA*)cl_gb_main, "arb_pgt &", 0);
+}
+
 #define AWMIMT awm->insert_menu_topic
 
 void EXP_create_experiments_submenu(AW_window_menu_modes *awm, GBDATA *gb_main, bool submenu) {
@@ -130,10 +136,8 @@ void EXP_create_experiments_submenu(AW_window_menu_modes *awm, GBDATA *gb_main, 
         awm->insert_separator();
         AWMIMT("experiment_colors",     "Colors ...",           "C",    "mark_colors.hlp", AWM_ALL, AW_POPUP,  (AW_CL)EXP_create_experiment_colorize_window, (AW_CL)gb_main);
 
-#if defined(DEBUG)
         awm->insert_separator();
-        AWMIMT("pgt", "[debug-only] Proteom Genome Toolkit (PGT)", "P", "pgt.hlp", AWM_ALL, NT_system_cb, (AW_CL)"arb_pgt &", 0);
-#endif // DEVEL_KAI
+        AWMIMT("pgt", "Proteom Genome Toolkit (PGT)", "P", "pgt.hlp", AWM_ALL, EXP_run_pgt, (AW_CL)gb_main, 0);
     }
     if (submenu) awm->close_sub_menu();
 }

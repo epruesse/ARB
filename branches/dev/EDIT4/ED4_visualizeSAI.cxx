@@ -15,7 +15,6 @@
 #include "ed4_visualizeSAI.hxx"
 
 #include <aw_awars.hxx>
-#include <awt.hxx>
 #include <awt_canvas.hxx>
 #include <awt_sel_boxes.hxx>
 #include <aw_preset.hxx>

@@ -9,7 +9,7 @@
 // =============================================================== //
 
 #include <db_scanner.hxx>
-#include <awt.hxx>
+#include <items.h>
 #include <awt_sel_boxes.hxx>
 #include <aw_awars.hxx>
 #include <aw_msg.hxx>
