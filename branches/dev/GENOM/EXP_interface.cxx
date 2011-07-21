@@ -455,10 +455,8 @@ static void EXP_map_experiment(AW_root *aw_root, AW_CL scannerid, AW_CL cl_gb_ma
 }
 
 static void EXP_create_field_items(AW_window *aws, GBDATA *gb_main) {
-    static BoundItemSel *bis = 0;
-
-    exp_assert(!bis);
-    bis = new BoundItemSel(gb_main, *EXP_get_selector());
+    static BoundItemSel *bis = new BoundItemSel(gb_main, *EXP_get_selector());
+    exp_assert(bis->gb_main == gb_main);
 
     aws->insert_menu_topic("exp_reorder_fields", "Reorder fields ...",    "R", "spaf_reorder.hlp", AD_F_ALL, AW_POPUP, (AW_CL)DBUI::create_fields_reorder_window, (AW_CL)&bis);
     aws->insert_menu_topic("exp_delete_field",   "Delete/Hide Field ...", "D", "spaf_delete.hlp",  AD_F_ALL, AW_POPUP, (AW_CL)DBUI::create_field_delete_window, (AW_CL)&bis);
