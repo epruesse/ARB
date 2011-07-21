@@ -1732,27 +1732,22 @@ static void colorize_queried_cb(AW_window *, AW_CL cl_query) {
     if (error) GB_export_error(error);
 }
 
-struct color_mark_data { // @@@ this is a BoundItemSel
-    ItemSelector *sel;
-    GBDATA       *gb_main;
-};
-
 static void colorize_marked_cb(AW_window *aww, AW_CL cl_cmd) {
-    const color_mark_data *cmd         = (color_mark_data *)cl_cmd;
-    ItemSelector          *sel         = cmd->sel;
+    const BoundItemSel *cmd         = (BoundItemSel *)cl_cmd;
+    ItemSelector&          sel         = cmd->selector;
     GB_transaction         trans_dummy(cmd->gb_main);
     GB_ERROR               error       = 0;
     AW_root               *aw_root     = aww->get_root();
     int                    color_group = aw_root->awar(AWAR_COLORIZE)->read_int();
     QUERY_RANGE            range       = QUERY_ALL_ITEMS;  // @@@ FIXME: make customizable
 
-    for (GBDATA *gb_item_container = sel->get_first_item_container(cmd->gb_main, aw_root, range);
+    for (GBDATA *gb_item_container = sel.get_first_item_container(cmd->gb_main, aw_root, range);
          !error && gb_item_container;
-         gb_item_container = sel->get_next_item_container(gb_item_container, range))
+         gb_item_container = sel.get_next_item_container(gb_item_container, range))
     {
-        for (GBDATA *gb_item = sel->get_first_item(gb_item_container, QUERY_ALL_ITEMS);
+        for (GBDATA *gb_item = sel.get_first_item(gb_item_container, QUERY_ALL_ITEMS);
              !error && gb_item;
-             gb_item       = sel->get_next_item(gb_item, QUERY_ALL_ITEMS))
+             gb_item       = sel.get_next_item(gb_item, QUERY_ALL_ITEMS))
         {
             if (GB_read_flag(gb_item)) {
                 error = AW_set_color_group(gb_item, color_group);
@@ -1765,8 +1760,8 @@ static void colorize_marked_cb(AW_window *aww, AW_CL cl_cmd) {
 
 // @@@ mark_colored_cb is obsolete! (will be replaced by dynamic coloring in the future)
 static void mark_colored_cb(AW_window *aww, AW_CL cl_cmd, AW_CL cl_mode) {
-    const color_mark_data *cmd         = (color_mark_data *)cl_cmd;
-    ItemSelector          *sel         = cmd->sel;
+    const BoundItemSel *cmd         = (BoundItemSel *)cl_cmd;
+    ItemSelector&          sel         = cmd->selector;
     int                    mode        = int(cl_mode);     // 0 = unmark 1 = mark 2 = invert
     AW_root               *aw_root     = aww->get_root();
     int                    color_group = aw_root->awar(AWAR_COLORIZE)->read_int();
@@ -1774,13 +1769,13 @@ static void mark_colored_cb(AW_window *aww, AW_CL cl_cmd, AW_CL cl_mode) {
 
     GB_transaction trans_dummy(cmd->gb_main);
 
-    for (GBDATA *gb_item_container = sel->get_first_item_container(cmd->gb_main, aw_root, range);
+    for (GBDATA *gb_item_container = sel.get_first_item_container(cmd->gb_main, aw_root, range);
          gb_item_container;
-         gb_item_container = sel->get_next_item_container(gb_item_container, range))
+         gb_item_container = sel.get_next_item_container(gb_item_container, range))
     {
-        for (GBDATA *gb_item = sel->get_first_item(gb_item_container, QUERY_ALL_ITEMS);
+        for (GBDATA *gb_item = sel.get_first_item(gb_item_container, QUERY_ALL_ITEMS);
              gb_item;
-             gb_item = sel->get_next_item(gb_item, QUERY_ALL_ITEMS))
+             gb_item = sel.get_next_item(gb_item, QUERY_ALL_ITEMS))
         {
             long my_color = AW_find_color_group(gb_item, true);
             if (my_color == color_group) {
@@ -1804,7 +1799,7 @@ static void mark_colored_cb(AW_window *aww, AW_CL cl_cmd, AW_CL cl_mode) {
 // color sets
 
 struct color_save_data {
-    color_mark_data   *cmd;
+    BoundItemSel   *cmd;
     const char        *items_name;
     AW_window         *aww; // window of selection list
     AW_selection_list *sel_id;
@@ -1848,8 +1843,8 @@ static void colorset_changed_cb(GBDATA*, int *cl_csd, GB_CB_TYPE cbt) {
 }
 
 static char *create_colorset_representation(const color_save_data *csd, GB_ERROR& error) {
-    const color_mark_data *cmd     = csd->cmd;
-    ItemSelector          *sel     = cmd->sel;
+    const BoundItemSel *cmd     = csd->cmd;
+    ItemSelector&          sel     = cmd->selector;
     QUERY_RANGE            range   = QUERY_ALL_ITEMS;
     AW_root               *aw_root = csd->aww->get_root();
     GBDATA                *gb_main = cmd->gb_main;
@@ -1857,16 +1852,16 @@ static char *create_colorset_representation(const color_save_data *csd, GB_ERROR
     typedef list<string> ColorList;
     ColorList             cl;
 
-    for (GBDATA *gb_item_container = sel->get_first_item_container(cmd->gb_main, aw_root, range);
+    for (GBDATA *gb_item_container = sel.get_first_item_container(cmd->gb_main, aw_root, range);
          !error && gb_item_container;
-         gb_item_container = sel->get_next_item_container(gb_item_container, range))
+         gb_item_container = sel.get_next_item_container(gb_item_container, range))
     {
-        for (GBDATA *gb_item = sel->get_first_item(gb_item_container, QUERY_ALL_ITEMS);
+        for (GBDATA *gb_item = sel.get_first_item(gb_item_container, QUERY_ALL_ITEMS);
              !error && gb_item;
-             gb_item = sel->get_next_item(gb_item, QUERY_ALL_ITEMS))
+             gb_item = sel.get_next_item(gb_item, QUERY_ALL_ITEMS))
         {
             long        color     = AW_find_color_group(gb_item, true);
-            char       *id        = sel->generate_item_id(gb_main, gb_item);
+            char       *id        = sel.generate_item_id(gb_main, gb_item);
             const char *color_def = GBS_global_string("%s=%li", id, color);
             cl.push_front(color_def);
             free(id);
@@ -1875,7 +1870,7 @@ static char *create_colorset_representation(const color_save_data *csd, GB_ERROR
 
     char *result = 0;
     if (cl.empty()) {
-        error = GBS_global_string("Could not find any %s", sel->items_name);
+        error = GBS_global_string("Could not find any %s", sel.items_name);
     }
     else {
         string res;
@@ -1891,19 +1886,19 @@ static char *create_colorset_representation(const color_save_data *csd, GB_ERROR
 }
 
 static GB_ERROR clear_all_colors(const color_save_data *csd) {
-    const color_mark_data *cmd     = csd->cmd;
-    ItemSelector          *sel     = cmd->sel;
+    const BoundItemSel *cmd     = csd->cmd;
+    ItemSelector&          sel     = cmd->selector;
     QUERY_RANGE            range   = QUERY_ALL_ITEMS;
     AW_root               *aw_root = csd->aww->get_root();
     GB_ERROR               error   = 0;
 
-    for (GBDATA *gb_item_container = sel->get_first_item_container(cmd->gb_main, aw_root, range);
+    for (GBDATA *gb_item_container = sel.get_first_item_container(cmd->gb_main, aw_root, range);
          !error && gb_item_container;
-         gb_item_container = sel->get_next_item_container(gb_item_container, range))
+         gb_item_container = sel.get_next_item_container(gb_item_container, range))
     {
-        for (GBDATA *gb_item = sel->get_first_item(gb_item_container, QUERY_ALL_ITEMS);
+        for (GBDATA *gb_item = sel.get_first_item(gb_item_container, QUERY_ALL_ITEMS);
              !error && gb_item;
-             gb_item = sel->get_next_item(gb_item, QUERY_ALL_ITEMS))
+             gb_item = sel.get_next_item(gb_item, QUERY_ALL_ITEMS))
         {
             error = AW_set_color_group(gb_item, 0); // clear colors
         }
@@ -1924,8 +1919,8 @@ static void clear_all_colors_cb(AW_window *, AW_CL cl_csd) {
 }
 
 static GB_ERROR restore_colorset_representation(const color_save_data *csd, const char *colorset) {
-    const color_mark_data *cmd     = csd->cmd;
-    ItemSelector          *sel     = cmd->sel;
+    const BoundItemSel *cmd     = csd->cmd;
+    ItemSelector&          sel     = cmd->selector;
     GBDATA                *gb_main = cmd->gb_main;
 
     int   buffersize = 200;
@@ -1946,9 +1941,9 @@ static GB_ERROR restore_colorset_representation(const color_save_data *csd, cons
         memcpy(buffer, colorset, size);
         buffer[size] = 0;       // now buffer contains the item id
 
-        GBDATA *gb_item = sel->find_item_by_id(gb_main, buffer);
+        GBDATA *gb_item = sel.find_item_by_id(gb_main, buffer);
         if (!gb_item) {
-            aw_message(GBS_global_string("No such %s: '%s'", sel->item_name, buffer));
+            aw_message(GBS_global_string("No such %s: '%s'", sel.item_name, buffer));
         }
         else {
             int color_group = atoi(equal+1);
@@ -2040,7 +2035,7 @@ static AW_window *create_loadsave_colored_window(AW_root *aw_root, AW_CL cl_csd)
     }
 
     color_save_data *csd  = (color_save_data*)cl_csd;
-    QUERY_ITEM_TYPE  type = csd->cmd->sel->type;
+    QUERY_ITEM_TYPE  type = csd->cmd->selector.type;
 
     dbq_assert(type<QUERY_ITEM_TYPES);
 
@@ -2167,9 +2162,7 @@ static AW_window *create_colorize_window(AW_root *aw_root, GBDATA *gb_main, DbQu
 
     aws->at("colorize");
 
-    color_mark_data *cmd = new color_mark_data; // do not free!
-    cmd->sel             = (mode == COLORIZE_MARKED) ? sel : query->selector;
-    cmd->gb_main = gb_main;
+    BoundItemSel *cmd = new BoundItemSel(gb_main, *((mode == COLORIZE_MARKED) ? sel : query->selector));
 
     if (mode == COLORIZE_LISTED)    aws->callback(colorize_queried_cb, (AW_CL)query);
     else                                    aws->callback(colorize_marked_cb, (AW_CL)cmd);
