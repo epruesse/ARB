@@ -170,6 +170,10 @@ static GBDATA *next_experiment_in_range(GBDATA *gb_prev, QUERY_RANGE range) {
     return gb_next;
 }
 
+#if defined(WARN_TODO)
+#warning move EXP_item_selector to SL/ITEMS
+#endif
+
 static struct MutableItemSelector EXP_item_selector = {
     QUERY_ITEM_EXPERIMENTS,
     EXP_select_experiment,
@@ -205,6 +209,11 @@ GBDATA *EXP_get_current_experiment(GBDATA *gb_main, AW_root *aw_root) {
 }
 
 static QUERY::DbQuery *GLOBAL_experiment_query = 0;
+
+
+#if defined(WARN_TODO)
+#warning move EXP_create_experiment_query_window to SL/DB_UI
+#endif
 
 AW_window *EXP_create_experiment_query_window(AW_root *aw_root, AW_CL cl_gb_main) {
     static AW_window_simple_menu *aws = 0;
@@ -465,6 +474,11 @@ static void EXP_create_field_items(AW_window *aws, GBDATA *gb_main) {
     aws->insert_menu_topic("exp_del_unused_fields",   "Remove unused fields",  "e", "scandb.hlp", AD_F_ALL, (AW_CB)experiment_field_selection_list_delete_unused_cb, (AW_CL)gb_main, FIELD_FILTER_NDS);
     aws->insert_menu_topic("exp_refresh_fields",      "Refresh fields (both)", "f", "scandb.hlp", AD_F_ALL, (AW_CB)experiment_field_selection_list_update_cb,        (AW_CL)gb_main, FIELD_FILTER_NDS);
 }
+
+#if defined(WARN_TODO)
+#warning move EXP_create_experiment_window to SL/DB_UI
+#endif
+
 
 AW_window *EXP_create_experiment_window(AW_root *aw_root, AW_CL cl_gb_main) {
     static AW_window_simple_menu *aws = 0;
