@@ -1,7 +1,7 @@
 // ==================================================================== //
 //                                                                      //
 //   File      : item_sel_list.cxx                                      //
-//   Purpose   : selection lists for items (ad_item_selector)           //
+//   Purpose   : selection lists for items (ItemSelector)               //
 //                                                                      //
 //                                                                      //
 // Coded by Ralf Westram (coder@reallysoft.de) in May 2005              //
@@ -16,24 +16,24 @@
 #include <aw_awars.hxx>
 #include <arbdbt.h>
 
-static AW_window *awt_existing_window(AW_window *, AW_CL cl1, AW_CL) {
+static AW_window *existing_window_creator(AW_window *, AW_CL cl1, AW_CL) {
     return (AW_window*)cl1;
 }
 
-AWT_itemfield_selection::AWT_itemfield_selection(AW_window              *win_,
-                                                 AW_selection_list      *sellist_,
-                                                 GBDATA                 *gb_key_data,
-                                                 long                    type_filter_,
-                                                 awt_selected_fields     field_filter_,
-                                                 const ad_item_selector *selector_)
+Itemfield_Selection::Itemfield_Selection(AW_window          *win_,
+                                         AW_selection_list  *sellist_,
+                                         GBDATA             *gb_key_data,
+                                         long                type_filter_,
+                                         SelectedFields      field_filter_,
+                                         const ItemSelector *selector_)
     : AW_DB_selection(win_, sellist_, gb_key_data)
     , type_filter(type_filter_)
     , field_filter(field_filter_)
     , selector(selector_)
 {}
 
-void AWT_itemfield_selection::fill() {
-    if (field_filter & AWT_SF_PSEUDO) {
+void Itemfield_Selection::fill() {
+    if (field_filter & SF_PSEUDO) {
         insert_selection(PSEUDO_FIELD_ANY_FIELD, PSEUDO_FIELD_ANY_FIELD);
         insert_selection(PSEUDO_FIELD_ALL_FIELDS, PSEUDO_FIELD_ALL_FIELDS);
     }
@@ -66,7 +66,7 @@ void AWT_itemfield_selection::fill() {
                 }
 
                 if (*hiddenPtr) {               // hidden ?
-                    if (field_filter & AWT_SF_HIDDEN) { // show hidden fields ?
+                    if (field_filter & SF_HIDDEN) { // show hidden fields ?
                         display = GBS_global_string("[hidden] %s", name);
                     }
                 }
@@ -80,17 +80,17 @@ void AWT_itemfield_selection::fill() {
 }
 
 
-AWT_itemfield_selection *awt_create_selection_list_on_itemfields(GBDATA                 *gb_main,
-                                                                 AW_window              *aws,
-                                                                 const char             *varname,
-                                                                 long                    type_filter,
-                                                                 const char             *scan_xfig_label,
-                                                                 const char             *rescan_xfig_label,
-                                                                 const ad_item_selector *selector,
-                                                                 size_t                  columns,
-                                                                 size_t                  visible_rows,
-                                                                 awt_selected_fields     field_filter,
-                                                                 const char             *popup_button_id)
+Itemfield_Selection *create_selection_list_on_itemfields(GBDATA             *gb_main,
+                                                         AW_window          *aws,
+                                                         const char         *varname,
+                                                         long                type_filter,
+                                                         const char         *scan_xfig_label,
+                                                         const char         *rescan_xfig_label,
+                                                         const ItemSelector *selector,
+                                                         size_t              columns,
+                                                         size_t              visible_rows,
+                                                         SelectedFields      field_filter,
+                                                         const char         *popup_button_id)
 {
     /* show fields of a item (e.g. species, SAI, gene)
      * 'varname'                is the awar set by the selection list
@@ -140,7 +140,7 @@ AWT_itemfield_selection *awt_create_selection_list_on_itemfields(GBDATA         
 
         // and bind hidden window popup to button
         aws->button_length(columns);
-        aws->callback((AW_CB2)AW_POPUP, (AW_CL)awt_existing_window, (AW_CL)win_for_sellist);
+        aws->callback((AW_CB2)AW_POPUP, (AW_CL)existing_window_creator, (AW_CL)win_for_sellist);
         aws->create_button(popup_button_id, varname);
 
     }
@@ -159,8 +159,8 @@ AWT_itemfield_selection *awt_create_selection_list_on_itemfields(GBDATA         
         if (popup_button_id) aws->at(x, y); // restore 'at' position if popup_list_in_window
     }
 
-    AWT_itemfield_selection *selection = 
-        new AWT_itemfield_selection(win_for_sellist, sellist, gb_key_data,
+    Itemfield_Selection *selection = 
+        new Itemfield_Selection(win_for_sellist, sellist, gb_key_data,
                                     type_filter, field_filter, selector);
     selection->refresh();
     return selection;

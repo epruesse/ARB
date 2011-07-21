@@ -89,7 +89,7 @@ GBDATA *QUERY::query_get_gb_main(DbQuery *query) {
     return query->gb_main;
 }
 
-const struct ad_item_selector *QUERY::get_queried_itemtype(DbQuery *query) {
+const struct ItemSelector *QUERY::get_queried_itemtype(DbQuery *query) {
     return query->selector;
 }
 
@@ -113,8 +113,8 @@ bool QUERY::IS_QUERIED(GBDATA *gb_item, const DbQuery *query) {
 }
 
 long QUERY::count_queried_items(DbQuery *query, QUERY_RANGE range) {
-    GBDATA                 *gb_main  = query->gb_main;
-    const ad_item_selector *selector = query->selector;
+    GBDATA             *gb_main  = query->gb_main;
+    const ItemSelector *selector = query->selector;
 
     long count = 0;
 
@@ -137,10 +137,10 @@ long QUERY::count_queried_items(DbQuery *query, QUERY_RANGE range) {
 #endif
 
 static int query_count_items(DbQuery *query, QUERY_RANGE range, QUERY_MODES mode) {
-    int                     count    = 0;
-    GBDATA                 *gb_main  = query->gb_main;
-    const ad_item_selector *selector = query->selector;
-    GB_transaction          ta(gb_main);
+    int                 count    = 0;
+    GBDATA             *gb_main  = query->gb_main;
+    const ItemSelector *selector = query->selector;
+    GB_transaction      ta(gb_main);
 
     for (GBDATA *gb_item_container = selector->get_first_item_container(gb_main, query->aws->get_root(), range);
          gb_item_container;
@@ -258,8 +258,8 @@ static int compare_hits(const void *cl_item1, const void *cl_item2, void *cl_par
     GBDATA *gb_item1 = (GBDATA*)cl_item1;
     GBDATA *gb_item2 = (GBDATA*)cl_item2;
 
-    DbQuery                *query      = param->query;
-    const ad_item_selector *selector = query->selector;
+    DbQuery            *query    = param->query;
+    const ItemSelector *selector = query->selector;
 
     int cmp = 0;
 
@@ -1721,18 +1721,18 @@ static void colorize_queried_cb(AW_window *, AW_CL cl_query) {
 }
 
 struct color_mark_data {
-    const ad_item_selector *sel;
-    GBDATA                 *gb_main;
+    const ItemSelector *sel;
+    GBDATA             *gb_main;
 };
 
 static void colorize_marked_cb(AW_window *aww, AW_CL cl_cmd) {
-    const color_mark_data  *cmd         = (color_mark_data *)cl_cmd;
-    const ad_item_selector *sel         = cmd->sel;
-    GB_transaction          trans_dummy(cmd->gb_main);
-    GB_ERROR                error       = 0;
-    AW_root                *aw_root     = aww->get_root();
-    int                     color_group = aw_root->awar(AWAR_COLORIZE)->read_int();
-    QUERY_RANGE             range       = QUERY_ALL_ITEMS; // @@@ FIXME: make customizable
+    const color_mark_data *cmd         = (color_mark_data *)cl_cmd;
+    const ItemSelector    *sel         = cmd->sel;
+    GB_transaction         trans_dummy(cmd->gb_main);
+    GB_ERROR               error       = 0;
+    AW_root               *aw_root     = aww->get_root();
+    int                    color_group = aw_root->awar(AWAR_COLORIZE)->read_int();
+    QUERY_RANGE            range       = QUERY_ALL_ITEMS;  // @@@ FIXME: make customizable
 
     for (GBDATA *gb_item_container = sel->get_first_item_container(cmd->gb_main, aw_root, range);
          !error && gb_item_container;
@@ -1753,12 +1753,12 @@ static void colorize_marked_cb(AW_window *aww, AW_CL cl_cmd) {
 
 // @@@ mark_colored_cb is obsolete! (will be replaced by dynamic coloring in the future)
 static void mark_colored_cb(AW_window *aww, AW_CL cl_cmd, AW_CL cl_mode) {
-    const color_mark_data  *cmd         = (color_mark_data *)cl_cmd;
-    const ad_item_selector *sel         = cmd->sel;
-    int                     mode        = int(cl_mode); // 0 = unmark 1 = mark 2 = invert
-    AW_root                *aw_root     = aww->get_root();
-    int                     color_group = aw_root->awar(AWAR_COLORIZE)->read_int();
-    QUERY_RANGE             range       = QUERY_ALL_ITEMS; // @@@ FIXME: make customizable
+    const color_mark_data *cmd         = (color_mark_data *)cl_cmd;
+    const ItemSelector    *sel         = cmd->sel;
+    int                    mode        = int(cl_mode);     // 0 = unmark 1 = mark 2 = invert
+    AW_root               *aw_root     = aww->get_root();
+    int                    color_group = aw_root->awar(AWAR_COLORIZE)->read_int();
+    QUERY_RANGE            range       = QUERY_ALL_ITEMS;  // @@@ FIXME: make customizable
 
     GB_transaction trans_dummy(cmd->gb_main);
 
@@ -1836,11 +1836,11 @@ static void colorset_changed_cb(GBDATA*, int *cl_csd, GB_CB_TYPE cbt) {
 }
 
 static char *create_colorset_representation(const color_save_data *csd, GB_ERROR& error) {
-    const color_mark_data  *cmd     = csd->cmd;
-    const ad_item_selector *sel     = cmd->sel;
-    QUERY_RANGE         range   = QUERY_ALL_ITEMS;
-    AW_root                *aw_root = csd->aww->get_root();
-    GBDATA                 *gb_main = cmd->gb_main;
+    const color_mark_data *cmd     = csd->cmd;
+    const ItemSelector    *sel     = cmd->sel;
+    QUERY_RANGE            range   = QUERY_ALL_ITEMS;
+    AW_root               *aw_root = csd->aww->get_root();
+    GBDATA                *gb_main = cmd->gb_main;
 
     typedef list<string> ColorList;
     ColorList             cl;
@@ -1879,11 +1879,11 @@ static char *create_colorset_representation(const color_save_data *csd, GB_ERROR
 }
 
 static GB_ERROR clear_all_colors(const color_save_data *csd) {
-    const color_mark_data  *cmd     = csd->cmd;
-    const ad_item_selector *sel     = cmd->sel;
-    QUERY_RANGE         range   = QUERY_ALL_ITEMS;
-    AW_root                *aw_root = csd->aww->get_root();
-    GB_ERROR                error   = 0;
+    const color_mark_data *cmd     = csd->cmd;
+    const ItemSelector    *sel     = cmd->sel;
+    QUERY_RANGE            range   = QUERY_ALL_ITEMS;
+    AW_root               *aw_root = csd->aww->get_root();
+    GB_ERROR               error   = 0;
 
     for (GBDATA *gb_item_container = sel->get_first_item_container(cmd->gb_main, aw_root, range);
          !error && gb_item_container;
@@ -1912,9 +1912,9 @@ static void clear_all_colors_cb(AW_window *, AW_CL cl_csd) {
 }
 
 static GB_ERROR restore_colorset_representation(const color_save_data *csd, const char *colorset) {
-    const color_mark_data  *cmd     = csd->cmd;
-    const ad_item_selector *sel     = cmd->sel;
-    GBDATA                 *gb_main = cmd->gb_main;
+    const color_mark_data *cmd     = csd->cmd;
+    const ItemSelector    *sel     = cmd->sel;
+    GBDATA                *gb_main = cmd->gb_main;
 
     int   buffersize = 200;
     char *buffer     = (char*)malloc(buffersize);
@@ -2107,7 +2107,7 @@ static const char *color_group_name(int color_group) {
     return buf;
 }
 
-static AW_window *create_colorize_window(AW_root *aw_root, GBDATA *gb_main, DbQuery *query, const ad_item_selector *sel) {
+static AW_window *create_colorize_window(AW_root *aw_root, GBDATA *gb_main, DbQuery *query, const ItemSelector *sel) {
     // invoked by   'colorize listed'                   (sel != 0)
     // and          'colorize marked/mark colored'      (cbs != 0)
 
@@ -2127,8 +2127,8 @@ static AW_window *create_colorize_window(AW_root *aw_root, GBDATA *gb_main, DbQu
     }
     dbq_assert(!(mode == COLORIZE_INVALID));
 
-    const ad_item_selector *Sel  = mode == COLORIZE_LISTED ? query->selector : sel;
-    const char             *what = mode == COLORIZE_LISTED ? "listed" : "marked";
+    const ItemSelector *Sel  = mode == COLORIZE_LISTED ? query->selector : sel;
+    const char         *what = mode == COLORIZE_LISTED ? "listed" : "marked";
 
     {
         char *macro_name  = GBS_global_string_copy("COLORIZE_%s_%s", what, Sel->items_name);
@@ -2209,7 +2209,7 @@ static AW_window *create_colorize_queried_window(AW_root *aw_root, DbQuery *quer
     return create_colorize_window(aw_root, query->gb_main, query, 0);
 }
 
-AW_window *QUERY::create_colorize_items_window(AW_root *aw_root, GBDATA *gb_main, const ad_item_selector *sel) {
+AW_window *QUERY::create_colorize_items_window(AW_root *aw_root, GBDATA *gb_main, const ItemSelector *sel) {
     return create_colorize_window(aw_root, gb_main, 0, sel);
 }
 
@@ -2246,7 +2246,7 @@ static AW_window *create_modify_fields_window(AW_root *aw_root, DbQuery *query) 
 
     aws->at("double");  aws->create_toggle(query->awar_double_pars);
 
-    awt_create_selection_list_on_itemfields(query->gb_main, aws, query->awar_parskey, AWT_PARS_FILTER, "field", 0, query->selector, 20, 10);
+    create_selection_list_on_itemfields(query->gb_main, aws, query->awar_parskey, FIELD_FILTER_PARS, "field", 0, query->selector, 20, 10);
 
     aws->at("go");
     aws->callback(modify_fields_of_queried_cb, (AW_CL)query);
@@ -2377,7 +2377,7 @@ AW_window *create_awt_do_set_list(AW_root *aw_root, DbQuery *query)
     aws->callback(AW_POPUP_HELP, (AW_CL)"write_field_list.hlp");
     aws->create_button("HELP", "HELP", "H");
 
-    awt_create_selection_list_on_itemfields(query->gb_main, aws, query->awar_setkey, AWT_NDS_FILTER, "box", 0, query->selector, 20, 10);
+    create_selection_list_on_itemfields(query->gb_main, aws, query->awar_setkey, FIELD_FILTER_NDS, "box", 0, query->selector, 20, 10);
     aws->at("create");
     aws->callback(set_field_of_queried_cb, (AW_CL)query, 0);
     aws->create_button("SET_SINGLE_FIELD_OF_LISTED", "WRITE");
@@ -2456,7 +2456,7 @@ static AW_window *create_set_protection_window(AW_root *aw_root, DbQuery *query)
     aws->insert_toggle("5 ", "5", 5);
     aws->insert_toggle("6 the truth", "5", 6);
 
-    awt_create_selection_list_on_itemfields(query->gb_main, aws, query->awar_setkey, AWT_NDS_FILTER, "list", 0, query->selector, 20, 10);
+    create_selection_list_on_itemfields(query->gb_main, aws, query->awar_setkey, FIELD_FILTER_NDS, "list", 0, query->selector, 20, 10);
 
     aws->at("go");
     aws->callback(set_protection_of_queried_cb, (AW_CL)query);
@@ -2647,9 +2647,9 @@ DbQuery *QUERY::create_query_box(AW_window *aws, query_spec *awtqs, const char *
 
             {
                 char *button_id = GBS_global_string_copy("field_sel_%s_%i", query_id, key);
-                awt_create_selection_list_on_itemfields(gb_main, aws, query->awar_keys[key], AWT_NDS_FILTER,
+                create_selection_list_on_itemfields(gb_main, aws, query->awar_keys[key], FIELD_FILTER_NDS,
                                                         0, awtqs->rescan_pos_fig,
-                                                        awtqs->selector, 22, 20, AWT_SF_PSEUDO, button_id);
+                                                        awtqs->selector, 22, 20, SF_PSEUDO, button_id);
                 free(button_id);
             }
 

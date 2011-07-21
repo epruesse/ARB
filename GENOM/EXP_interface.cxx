@@ -172,12 +172,12 @@ static GBDATA *next_experiment_in_range(GBDATA *gb_prev, QUERY_RANGE range) {
     return gb_next;
 }
 
-struct ad_item_selector EXP_item_selector = {
+struct ItemSelector EXP_item_selector = {
     QUERY_ITEM_EXPERIMENTS,
     EXP_select_experiment,
     EXP_get_experiment_id,
     EXP_find_experiment_by_id,
-    (AW_CB)awt_experiment_field_selection_list_update_cb,
+    (AW_CB)experiment_field_selection_list_update_cb,
     -1, // unknown
     CHANGE_KEY_PATH_EXPERIMENTS,
     "experiment",
@@ -188,10 +188,10 @@ struct ad_item_selector EXP_item_selector = {
     first_experiment_in_range,
     next_experiment_in_range,
     EXP_get_current_experiment,
-    &AWT_organism_selector, GB_get_grandfather,
+    &ITEM_organism, GB_get_grandfather,
 };
 
-ad_item_selector *EXP_get_selector() { return &EXP_item_selector; }
+ItemSelector *EXP_get_selector() { return &EXP_item_selector; }
 
 GBDATA *EXP_get_current_experiment(GBDATA *gb_main, AW_root *aw_root) {
     GBDATA *gb_organism    = GEN_get_current_organism(gb_main, aw_root);
@@ -457,20 +457,20 @@ static void EXP_map_experiment(AW_root *aw_root, AW_CL scannerid, AW_CL cl_gb_ma
 }
 
 static void EXP_create_field_items(AW_window *aws, GBDATA *gb_main) {
-    static bound_item_selector *bis = 0;
+    static BoundItemSel *bis = 0;
 
     exp_assert(!bis);
-    bis = new bound_item_selector(gb_main, EXP_item_selector);
+    bis = new BoundItemSel(gb_main, EXP_item_selector);
 
     aws->insert_menu_topic("exp_reorder_fields", "Reorder fields ...",    "R", "spaf_reorder.hlp", AD_F_ALL, AW_POPUP, (AW_CL)DBUI::create_fields_reorder_window, (AW_CL)&bis);
     aws->insert_menu_topic("exp_delete_field",   "Delete/Hide Field ...", "D", "spaf_delete.hlp",  AD_F_ALL, AW_POPUP, (AW_CL)DBUI::create_field_delete_window, (AW_CL)&bis);
     aws->insert_menu_topic("exp_create_field",   "Create fields ...",     "C", "spaf_create.hlp",  AD_F_ALL, AW_POPUP, (AW_CL)DBUI::create_field_create_window, (AW_CL)&bis);
     aws->insert_separator();
-    aws->insert_menu_topic("exp_unhide_fields", "Show all hidden fields", "S", "scandb.hlp", AD_F_ALL, (AW_CB)awt_experiment_field_selection_list_unhide_all_cb, (AW_CL)gb_main, AWT_NDS_FILTER);
+    aws->insert_menu_topic("exp_unhide_fields", "Show all hidden fields", "S", "scandb.hlp", AD_F_ALL, (AW_CB)experiment_field_selection_list_unhide_all_cb, (AW_CL)gb_main, FIELD_FILTER_NDS);
     aws->insert_separator();
-    aws->insert_menu_topic("exp_scan_unknown_fields", "Scan unknown fields",   "u", "scandb.hlp", AD_F_ALL, (AW_CB)awt_experiment_field_selection_list_scan_unknown_cb,  (AW_CL)gb_main, AWT_NDS_FILTER);
-    aws->insert_menu_topic("exp_del_unused_fields",   "Remove unused fields",  "e", "scandb.hlp", AD_F_ALL, (AW_CB)awt_experiment_field_selection_list_delete_unused_cb, (AW_CL)gb_main, AWT_NDS_FILTER);
-    aws->insert_menu_topic("exp_refresh_fields",      "Refresh fields (both)", "f", "scandb.hlp", AD_F_ALL, (AW_CB)awt_experiment_field_selection_list_update_cb,        (AW_CL)gb_main, AWT_NDS_FILTER);
+    aws->insert_menu_topic("exp_scan_unknown_fields", "Scan unknown fields",   "u", "scandb.hlp", AD_F_ALL, (AW_CB)experiment_field_selection_list_scan_unknown_cb,  (AW_CL)gb_main, FIELD_FILTER_NDS);
+    aws->insert_menu_topic("exp_del_unused_fields",   "Remove unused fields",  "e", "scandb.hlp", AD_F_ALL, (AW_CB)experiment_field_selection_list_delete_unused_cb, (AW_CL)gb_main, FIELD_FILTER_NDS);
+    aws->insert_menu_topic("exp_refresh_fields",      "Refresh fields (both)", "f", "scandb.hlp", AD_F_ALL, (AW_CB)experiment_field_selection_list_update_cb,        (AW_CL)gb_main, FIELD_FILTER_NDS);
 }
 
 AW_window *EXP_create_experiment_window(AW_root *aw_root, AW_CL cl_gb_main) {
@@ -498,7 +498,7 @@ AW_window *EXP_create_experiment_window(AW_root *aw_root, AW_CL cl_gb_main) {
         aws->create_button("HELP", "HELP", "H");
 
 
-        AW_CL scannerid        = create_db_scanner(gb_main, aws, "box", 0, "field", "enable", DB_VIEWER, 0, "mark", AWT_NDS_FILTER, &EXP_item_selector);
+        AW_CL scannerid        = create_db_scanner(gb_main, aws, "box", 0, "field", "enable", DB_VIEWER, 0, "mark", FIELD_FILTER_NDS, &EXP_item_selector);
         EXP_global_scannerid   = scannerid;
         EXP_global_scannerroot = aws->get_root();
 

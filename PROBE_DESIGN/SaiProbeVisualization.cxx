@@ -684,7 +684,7 @@ static AW_window *createDisplayField_window(AW_root *aw_root, AW_CL cl_gb_main) 
 
         aws->at("dbField");
         aws->button_length(20);
-        aws->callback(AWT_popup_select_species_field_window, (AW_CL)AWAR_SPV_DB_FIELD_NAME, cl_gb_main);
+        aws->callback(popup_select_species_field_window, (AW_CL)AWAR_SPV_DB_FIELD_NAME, cl_gb_main);
         aws->create_button("SELECT_DB_FIELD", AWAR_SPV_DB_FIELD_NAME);
 
         aws->at("aciSelect");

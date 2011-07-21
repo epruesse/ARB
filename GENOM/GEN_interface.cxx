@@ -194,12 +194,12 @@ static GBDATA *next_gene_in_range(GBDATA *gb_prev, QUERY_RANGE range) {
 // --------------------------
 //      GEN_item_selector
 
-struct ad_item_selector GEN_item_selector = {
+struct ItemSelector GEN_item_selector = {
     QUERY_ITEM_GENES,
     GEN_select_gene,
     gen_get_gene_id,
     gen_find_gene_by_id,
-    (AW_CB)awt_gene_field_selection_list_update_cb,
+    (AW_CB)gene_field_selection_list_update_cb,
     -1, // unknown
     CHANGE_KEY_PATH_GENES,
     "gene",
@@ -210,10 +210,10 @@ struct ad_item_selector GEN_item_selector = {
     first_gene_in_range,
     next_gene_in_range,
     GEN_get_current_gene,
-    &AWT_organism_selector, GB_get_grandfather,
+    &ITEM_organism, GB_get_grandfather,
 };
 
-ad_item_selector *GEN_get_selector() { return &GEN_item_selector; }
+ItemSelector *GEN_get_selector() { return &GEN_item_selector; }
 
 void GEN_species_name_changed_cb(AW_root *awr, AW_CL cl_gb_main) {
     char           *species_name = awr->awar(AWAR_SPECIES_NAME)->read_string();
@@ -587,20 +587,20 @@ static void GEN_map_gene(AW_root *aw_root, AW_CL scannerid, AW_CL cl_gb_main) {
 }
 
 static void GEN_create_field_items(AW_window *aws, GBDATA *gb_main) {
-    static bound_item_selector *bis = 0;
+    static BoundItemSel *bis = 0;
 
     gen_assert(!bis);
-    bis = new bound_item_selector(gb_main, GEN_item_selector);
+    bis = new BoundItemSel(gb_main, GEN_item_selector);
 
     aws->insert_menu_topic("gen_reorder_fields", "Reorder fields ...",    "R", "spaf_reorder.hlp", AD_F_ALL, AW_POPUP, (AW_CL)DBUI::create_fields_reorder_window, (AW_CL)&bis);
     aws->insert_menu_topic("gen_delete_field",   "Delete/Hide field ...", "D", "spaf_delete.hlp",  AD_F_ALL, AW_POPUP, (AW_CL)DBUI::create_field_delete_window, (AW_CL)&bis);
     aws->insert_menu_topic("gen_create_field",   "Create fields ...",     "C", "spaf_create.hlp",  AD_F_ALL, AW_POPUP, (AW_CL)DBUI::create_field_create_window, (AW_CL)&bis);
     aws->insert_separator();
-    aws->insert_menu_topic("gen_unhide_fields", "Show all hidden fields", "S", "scandb.hlp", AD_F_ALL, (AW_CB)awt_gene_field_selection_list_unhide_all_cb, (AW_CL)gb_main, AWT_NDS_FILTER);
+    aws->insert_menu_topic("gen_unhide_fields", "Show all hidden fields", "S", "scandb.hlp", AD_F_ALL, (AW_CB)gene_field_selection_list_unhide_all_cb, (AW_CL)gb_main, FIELD_FILTER_NDS);
     aws->insert_separator();
-    aws->insert_menu_topic("gen_scan_unknown_fields", "Scan unknown fields",   "u", "scandb.hlp", AD_F_ALL, (AW_CB)awt_gene_field_selection_list_scan_unknown_cb,  (AW_CL)gb_main, AWT_NDS_FILTER);
-    aws->insert_menu_topic("gen_del_unused_fields",   "Remove unused fields",  "e", "scandb.hlp", AD_F_ALL, (AW_CB)awt_gene_field_selection_list_delete_unused_cb, (AW_CL)gb_main, AWT_NDS_FILTER);
-    aws->insert_menu_topic("gen_refresh_fields",      "Refresh fields (both)", "f", "scandb.hlp", AD_F_ALL, (AW_CB)awt_gene_field_selection_list_update_cb,        (AW_CL)gb_main, AWT_NDS_FILTER);
+    aws->insert_menu_topic("gen_scan_unknown_fields", "Scan unknown fields",   "u", "scandb.hlp", AD_F_ALL, (AW_CB)gene_field_selection_list_scan_unknown_cb,  (AW_CL)gb_main, FIELD_FILTER_NDS);
+    aws->insert_menu_topic("gen_del_unused_fields",   "Remove unused fields",  "e", "scandb.hlp", AD_F_ALL, (AW_CB)gene_field_selection_list_delete_unused_cb, (AW_CL)gb_main, FIELD_FILTER_NDS);
+    aws->insert_menu_topic("gen_refresh_fields",      "Refresh fields (both)", "f", "scandb.hlp", AD_F_ALL, (AW_CB)gene_field_selection_list_update_cb,        (AW_CL)gb_main, FIELD_FILTER_NDS);
 }
 
 AW_window *GEN_create_gene_window(AW_root *aw_root, AW_CL cl_gb_main) {
@@ -627,7 +627,7 @@ AW_window *GEN_create_gene_window(AW_root *aw_root, AW_CL cl_gb_main) {
         aws->create_button("HELP", "HELP", "H");
 
 
-        AW_CL scannerid        = create_db_scanner(gb_main, aws, "box", 0, "field", "enable", DB_VIEWER, 0, "mark", AWT_NDS_FILTER, &GEN_item_selector);
+        AW_CL scannerid        = create_db_scanner(gb_main, aws, "box", 0, "field", "enable", DB_VIEWER, 0, "mark", FIELD_FILTER_NDS, &GEN_item_selector);
         GEN_global_scannerid   = scannerid;
         GEN_global_scannerroot = aws->get_root();
 

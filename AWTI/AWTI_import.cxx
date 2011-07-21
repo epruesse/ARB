@@ -1110,8 +1110,8 @@ void AWTC_import_go_cb(AW_window *aww) // Import sequences into new or existing 
         progress.subtitle("Pass 1: Check entries");
 
         // scan for hidden/unknown fields :
-        awt_selection_list_rescan(GB_MAIN, AWT_NDS_FILTER, AWT_RS_UPDATE_FIELDS);
-        if (is_genom_db) awt_gene_field_selection_list_rescan(GB_MAIN, AWT_NDS_FILTER, AWT_RS_UPDATE_FIELDS);
+        species_field_selection_list_rescan(GB_MAIN, FIELD_FILTER_NDS, RESCAN_REFRESH);
+        if (is_genom_db) gene_field_selection_list_rescan(GB_MAIN, FIELD_FILTER_NDS, RESCAN_REFRESH);
 
         GBT_mark_all(GB_MAIN, 1);
         progress.inc();

@@ -16,7 +16,7 @@
 #include <arbdb_base.h>
 #endif
 
-extern struct ad_item_selector GEN_item_selector;
+extern struct ItemSelector GEN_item_selector;
 
 // internal helpers :
 extern "C" GB_ERROR GEN_mark_organism_or_corresponding_organism(GBDATA *gb_species, int *client_data);

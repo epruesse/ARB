@@ -15,7 +15,7 @@
 #ifndef EXP_INTERFACE_HXX
 #define EXP_INTERFACE_HXX
 
-extern struct ad_item_selector EXP_item_selector;
+extern struct ItemSelector EXP_item_selector;
 
 #else
 #error EXP_interface.hxx included twice

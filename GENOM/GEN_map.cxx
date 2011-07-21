@@ -1440,7 +1440,7 @@ static AW_window *create_colorize_genes_window(AW_root *aw_root, AW_CL cl_gb_mai
 }
 
 static AW_window *create_colorize_organisms_window(AW_root *aw_root, AW_CL cl_gb_main) {
-    return QUERY::create_colorize_items_window(aw_root, (GBDATA*)cl_gb_main, &AWT_organism_selector);
+    return QUERY::create_colorize_items_window(aw_root, (GBDATA*)cl_gb_main, &ITEM_organism);
 }
 
 void GEN_popup_organism_window(AW_window *aww, AW_CL cl_gb_main, AW_CL) {
@@ -1683,7 +1683,7 @@ void GEN_map_window::init(AW_root *awr, GBDATA *gb_main) {
 
     at(gene_x, first_line_y);
     help_text("organism_search.hlp");
-    callback(AW_POPUP, (AW_CL)DBUI::create_species_query_window, (AW_CL)gb_main); // @@@ should use an organism search (using AWT_organism_selector) 
+    callback(AW_POPUP, (AW_CL)DBUI::create_species_query_window, (AW_CL)gb_main); // @@@ should use an organism search (using ITEM_organism) 
     create_button("SEARCH_ORGANISM", AWAR_LOCAL_ORGANISM_NAME(window_nr));
 
     at(gene_x, second_line_y);

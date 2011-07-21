@@ -77,7 +77,7 @@ namespace QUERY {
         AW_selection_list *result_id;
         int                select_bit;                  // one of 1 2 4 8 .. 128 (one for each query box)
 
-        const ad_item_selector *selector;
+        const ItemSelector *selector;
 
         GB_HASH *hit_description; // key = char* (hit item name), value = char* (description of hit - allocated!)
 
