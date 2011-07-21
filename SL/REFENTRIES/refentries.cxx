@@ -22,8 +22,6 @@
 
 #include <cctype>
 
-#define re_assert(cond) arb_assert(cond)
-
 namespace RefEntries {
 
     static ARB_ERROR generate_item_error(const char *format, ItemSelector& itemtype, GBDATA *gb_item) {

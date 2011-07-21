@@ -75,13 +75,13 @@ GB_ERROR GBT_check_arb_file(const char *name) {
 
 #define GBT_SUM_LEN 4096                            // maximum length of path
 
-struct DbScanner : virtual Noncopyable {
+struct GB_DbScanner : virtual Noncopyable {
     GB_HASH   *hash_table;
     StrArray&  result; // not owned!
     GB_TYPES   type;
     char      *buffer;
 
-    DbScanner(StrArray& result_)
+    GB_DbScanner(StrArray& result_)
         : result(result_)
     {
         hash_table = GBS_create_hash(1024, GB_MIND_CASE);
@@ -89,13 +89,13 @@ struct DbScanner : virtual Noncopyable {
         buffer[0]  = 0;
     }
 
-    ~DbScanner() {
+    ~GB_DbScanner() {
         GBS_free_hash(hash_table);
         free(buffer);
     }
 };
 
-static void gbt_scan_db_rek(GBDATA *gbd, char *prefix, int deep, DbScanner *scanner) {
+static void gbt_scan_db_rek(GBDATA *gbd, char *prefix, int deep, GB_DbScanner *scanner) {
     GB_TYPES type = GB_read_type(gbd);
     GBDATA *gb2;
     const char *key;
@@ -127,8 +127,8 @@ static void gbt_scan_db_rek(GBDATA *gbd, char *prefix, int deep, DbScanner *scan
 }
 
 struct scan_db_insert {
-    DbScanner  *scanner;
-    const char *datapath;
+    GB_DbScanner *scanner;
+    const char   *datapath;
 };
 
 static long gbs_scan_db_insert(const char *key, long val, void *cd_insert_data) {
@@ -146,7 +146,7 @@ static long gbs_scan_db_insert(const char *key, long val, void *cd_insert_data) 
     }
 
     if (to_insert) {
-        DbScanner *scanner = insert->scanner;
+        GB_DbScanner *scanner = insert->scanner;
         scanner->result.put(to_insert);
     }
 
@@ -176,7 +176,7 @@ void GBT_scan_db(StrArray& fieldNames, GBDATA *gbd, const char *datapath) {
      */
 
     {
-        DbScanner scanner(fieldNames);
+        GB_DbScanner scanner(fieldNames);
         gbt_scan_db_rek(gbd, scanner.buffer, 0, &scanner);
         scan_db_insert insert = { &scanner, datapath, };
         GBS_hash_do_loop(scanner.hash_table, gbs_scan_db_insert, &insert);

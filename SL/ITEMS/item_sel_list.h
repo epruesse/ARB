@@ -39,7 +39,7 @@ enum SelectedFields {
 class Itemfield_Selection : public AW_DB_selection { // derived from a Noncopyable
     long            type_filter;
     SelectedFields  field_filter;
-    ItemSelector   *selector;
+    ItemSelector&   selector;
 
     bool shall_display_type(int key_type) const { return type_filter & (1 << key_type); }
 
@@ -49,11 +49,11 @@ public:
                         GBDATA            *gb_key_data,
                         long               type_filter_,
                         SelectedFields     field_filter_,
-                        ItemSelector      *selector_);
+                        ItemSelector&      selector_);
 
     void fill();
 
-    ItemSelector *get_selector() const { return selector; }
+    ItemSelector& get_selector() const { return selector; }
 };
 
 Itemfield_Selection *create_selection_list_on_itemfields(GBDATA         *gb_main,
@@ -62,7 +62,7 @@ Itemfield_Selection *create_selection_list_on_itemfields(GBDATA         *gb_main
                                                          long            type_filter,
                                                          const char     *scan_xfig_label,
                                                          const char     *rescan_xfig_label,
-                                                         ItemSelector   *selector,
+                                                         ItemSelector&   selector,
                                                          size_t          columns,
                                                          size_t          visible_rows,
                                                          SelectedFields  field_filter       = SF_STANDARD,
