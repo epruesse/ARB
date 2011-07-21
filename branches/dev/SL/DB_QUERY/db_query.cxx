@@ -1733,13 +1733,13 @@ static void colorize_queried_cb(AW_window *, AW_CL cl_query) {
 }
 
 static void colorize_marked_cb(AW_window *aww, AW_CL cl_cmd) {
-    const BoundItemSel *cmd         = (BoundItemSel *)cl_cmd;
-    ItemSelector&          sel         = cmd->selector;
-    GB_transaction         trans_dummy(cmd->gb_main);
-    GB_ERROR               error       = 0;
-    AW_root               *aw_root     = aww->get_root();
-    int                    color_group = aw_root->awar(AWAR_COLORIZE)->read_int();
-    QUERY_RANGE            range       = QUERY_ALL_ITEMS;  // @@@ FIXME: make customizable
+    BoundItemSel   *cmd         = (BoundItemSel *)cl_cmd;
+    ItemSelector&   sel         = cmd->selector;
+    GB_transaction  trans_dummy(cmd->gb_main);
+    GB_ERROR        error       = 0;
+    AW_root        *aw_root     = aww->get_root();
+    int             color_group = aw_root->awar(AWAR_COLORIZE)->read_int();
+    QUERY_RANGE     range       = QUERY_ALL_ITEMS;         // @@@ FIXME: make customizable
 
     for (GBDATA *gb_item_container = sel.get_first_item_container(cmd->gb_main, aw_root, range);
          !error && gb_item_container;
@@ -1760,12 +1760,12 @@ static void colorize_marked_cb(AW_window *aww, AW_CL cl_cmd) {
 
 // @@@ mark_colored_cb is obsolete! (will be replaced by dynamic coloring in the future)
 static void mark_colored_cb(AW_window *aww, AW_CL cl_cmd, AW_CL cl_mode) {
-    const BoundItemSel *cmd         = (BoundItemSel *)cl_cmd;
-    ItemSelector&          sel         = cmd->selector;
-    int                    mode        = int(cl_mode);     // 0 = unmark 1 = mark 2 = invert
-    AW_root               *aw_root     = aww->get_root();
-    int                    color_group = aw_root->awar(AWAR_COLORIZE)->read_int();
-    QUERY_RANGE            range       = QUERY_ALL_ITEMS;  // @@@ FIXME: make customizable
+    BoundItemSel  *cmd         = (BoundItemSel *)cl_cmd;
+    ItemSelector&  sel         = cmd->selector;
+    int            mode        = int(cl_mode);             // 0 = unmark 1 = mark 2 = invert
+    AW_root       *aw_root     = aww->get_root();
+    int            color_group = aw_root->awar(AWAR_COLORIZE)->read_int();
+    QUERY_RANGE    range       = QUERY_ALL_ITEMS;          // @@@ FIXME: make customizable
 
     GB_transaction trans_dummy(cmd->gb_main);
 
@@ -1799,7 +1799,7 @@ static void mark_colored_cb(AW_window *aww, AW_CL cl_cmd, AW_CL cl_mode) {
 // color sets
 
 struct color_save_data {
-    BoundItemSel   *cmd;
+    BoundItemSel      *cmd;
     const char        *items_name;
     AW_window         *aww; // window of selection list
     AW_selection_list *sel_id;
@@ -1843,11 +1843,11 @@ static void colorset_changed_cb(GBDATA*, int *cl_csd, GB_CB_TYPE cbt) {
 }
 
 static char *create_colorset_representation(const color_save_data *csd, GB_ERROR& error) {
-    const BoundItemSel *cmd     = csd->cmd;
-    ItemSelector&          sel     = cmd->selector;
-    QUERY_RANGE            range   = QUERY_ALL_ITEMS;
-    AW_root               *aw_root = csd->aww->get_root();
-    GBDATA                *gb_main = cmd->gb_main;
+    BoundItemSel  *cmd     = csd->cmd;
+    ItemSelector&  sel     = cmd->selector;
+    QUERY_RANGE    range   = QUERY_ALL_ITEMS;
+    AW_root       *aw_root = csd->aww->get_root();
+    GBDATA        *gb_main = cmd->gb_main;
 
     typedef list<string> ColorList;
     ColorList             cl;
@@ -1886,11 +1886,11 @@ static char *create_colorset_representation(const color_save_data *csd, GB_ERROR
 }
 
 static GB_ERROR clear_all_colors(const color_save_data *csd) {
-    const BoundItemSel *cmd     = csd->cmd;
-    ItemSelector&          sel     = cmd->selector;
-    QUERY_RANGE            range   = QUERY_ALL_ITEMS;
-    AW_root               *aw_root = csd->aww->get_root();
-    GB_ERROR               error   = 0;
+    BoundItemSel  *cmd     = csd->cmd;
+    ItemSelector&  sel     = cmd->selector;
+    QUERY_RANGE    range   = QUERY_ALL_ITEMS;
+    AW_root       *aw_root = csd->aww->get_root();
+    GB_ERROR       error   = 0;
 
     for (GBDATA *gb_item_container = sel.get_first_item_container(cmd->gb_main, aw_root, range);
          !error && gb_item_container;
@@ -1919,9 +1919,9 @@ static void clear_all_colors_cb(AW_window *, AW_CL cl_csd) {
 }
 
 static GB_ERROR restore_colorset_representation(const color_save_data *csd, const char *colorset) {
-    const BoundItemSel *cmd     = csd->cmd;
-    ItemSelector&          sel     = cmd->selector;
-    GBDATA                *gb_main = cmd->gb_main;
+    BoundItemSel  *cmd     = csd->cmd;
+    ItemSelector&  sel     = cmd->selector;
+    GBDATA        *gb_main = cmd->gb_main;
 
     int   buffersize = 200;
     char *buffer     = (char*)malloc(buffersize);
@@ -2164,8 +2164,8 @@ static AW_window *create_colorize_window(AW_root *aw_root, GBDATA *gb_main, DbQu
 
     BoundItemSel *cmd = new BoundItemSel(gb_main, *((mode == COLORIZE_MARKED) ? sel : query->selector));
 
-    if (mode == COLORIZE_LISTED)    aws->callback(colorize_queried_cb, (AW_CL)query);
-    else                                    aws->callback(colorize_marked_cb, (AW_CL)cmd);
+    if (mode == COLORIZE_LISTED) aws->callback(colorize_queried_cb, (AW_CL)query);
+    else                         aws->callback(colorize_marked_cb, (AW_CL)cmd);
 
     aws->create_autosize_button("COLORIZE", GBS_global_string_copy("Set color of %s %s to ...", what, Sel->items_name), "S", 2);
 

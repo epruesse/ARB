@@ -280,7 +280,7 @@ static void map_species(AW_root *aw_root, AW_CL scannerid, AW_CL mapOrganism) {
     free(source);
 }
 
-static long count_field_occurrance(const BoundItemSel *bsel, const char *field_name) {
+static long count_field_occurrance(BoundItemSel *bsel, const char *field_name) {
     QUERY_RANGE   RANGE = QUERY_ALL_ITEMS;
     long          count = 0;
     ItemSelector& sel   = bsel->selector;
@@ -309,9 +309,9 @@ class KeySorter : virtual Noncopyable {
     bool order_changed;
 
     // helper variables for sorting
-    static GB_HASH            *order_hash;
-    static const BoundItemSel *bitem_selector;
-    static arb_progress       *sort_progress;
+    static GB_HASH      *order_hash;
+    static BoundItemSel *bitem_selector;
+    static arb_progress *sort_progress;
 
     bool legal_pos(int p) { return p >= 0 && p<key_count; }
     bool legal_field_pos(int p) const { return p >= 0 && p<field_count; }
@@ -402,7 +402,7 @@ public:
 
     int get_field_count() const { return field_count; }
 
-    void bubble_sort(int p1, int p2, ReorderMode mode, const BoundItemSel *selector) {
+    void bubble_sort(int p1, int p2, ReorderMode mode, BoundItemSel *selector) {
         if (p1>p2) std::swap(p1, p2);
         if (legal_field_pos(p1, p2)) {
             if (mode == ORDER_FREQ) {
@@ -476,9 +476,9 @@ public:
     }
 };
 
-GB_HASH            *KeySorter::order_hash     = NULL;
-const BoundItemSel *KeySorter::bitem_selector = NULL;
-arb_progress       *KeySorter::sort_progress  = NULL;
+GB_HASH      *KeySorter::order_hash     = NULL;
+BoundItemSel *KeySorter::bitem_selector = NULL;
+arb_progress *KeySorter::sort_progress  = NULL;
 
 static void reorder_keys(AW_window *aws, ReorderMode mode, Itemfield_Selection *sel_left, Itemfield_Selection *sel_right) {
     ItemSelector *selector = sel_left->get_selector();
@@ -585,8 +585,8 @@ static void reorder_up_down(AW_window *aws, AW_CL cl_selright, AW_CL cl_dir) {
 }
 
 AW_window *DBUI::create_fields_reorder_window(AW_root *root, AW_CL cl_bound_item_selector) {
-    const BoundItemSel *bound_selector = (const BoundItemSel*)cl_bound_item_selector;
-    ItemSelector&       selector       = bound_selector->selector;
+    BoundItemSel  *bound_selector = (BoundItemSel*)cl_bound_item_selector;
+    ItemSelector&  selector       = bound_selector->selector;
 
     static AW_window_simple *awsa[QUERY_ITEM_TYPES];
     if (!awsa[selector.type]) {
@@ -719,8 +719,8 @@ static void field_delete_cb(AW_window *aws, AW_CL cl_sel) {
 
 
 AW_window *DBUI::create_field_delete_window(AW_root *root, AW_CL cl_bound_item_selector) {
-    const BoundItemSel *bound_selector = (const BoundItemSel*)cl_bound_item_selector;
-    ItemSelector&       selector       = bound_selector->selector;
+    BoundItemSel  *bound_selector = (BoundItemSel*)cl_bound_item_selector;
+    ItemSelector&  selector       = bound_selector->selector;
 
     static AW_window_simple *awsa[QUERY_ITEM_TYPES];
     if (!awsa[selector.type]) {
@@ -765,8 +765,8 @@ AW_window *DBUI::create_field_delete_window(AW_root *root, AW_CL cl_bound_item_s
 }
 
 static void field_create_cb(AW_window *aws, AW_CL cl_bound_item_selector) {
-    const BoundItemSel *bound_selector = (const BoundItemSel*)cl_bound_item_selector;
-    ItemSelector&       selector       = bound_selector->selector;
+    BoundItemSel  *bound_selector = (BoundItemSel*)cl_bound_item_selector;
+    ItemSelector&  selector       = bound_selector->selector;
 
     GB_push_transaction(bound_selector->gb_main);
     char     *name   = aws->get_root()->awar(AWAR_FIELD_CREATE_NAME)->read_string();
@@ -787,8 +787,8 @@ static void field_create_cb(AW_window *aws, AW_CL cl_bound_item_selector) {
 }
 
 AW_window *DBUI::create_field_create_window(AW_root *root, AW_CL cl_bound_item_selector) {
-    const BoundItemSel *bound_selector = (const BoundItemSel*)cl_bound_item_selector;
-    ItemSelector&       selector       = bound_selector->selector;
+    BoundItemSel  *bound_selector = (BoundItemSel*)cl_bound_item_selector;
+    ItemSelector&  selector       = bound_selector->selector;
 
     static AW_window_simple *awsa[QUERY_ITEM_TYPES];
     if (awsa[selector.type]) return (AW_window *)awsa[selector.type];
@@ -828,7 +828,7 @@ AW_window *DBUI::create_field_create_window(AW_root *root, AW_CL cl_bound_item_s
 #endif
 
 static void field_convert_commit_cb(AW_window *aws, AW_CL cl_bound_item_selector) {
-    const BoundItemSel *bound_selector = (const BoundItemSel*)cl_bound_item_selector;
+    BoundItemSel *bound_selector = (BoundItemSel*)cl_bound_item_selector;
 
     AW_root  *root    = aws->get_root();
     GBDATA   *gb_main = bound_selector->gb_main;
@@ -843,8 +843,8 @@ static void field_convert_commit_cb(AW_window *aws, AW_CL cl_bound_item_selector
 }
 
 static void field_convert_update_typesel_cb(AW_window *aws, AW_CL cl_bound_item_selector) {
-    const BoundItemSel *bound_selector = (const BoundItemSel*)cl_bound_item_selector;
-    ItemSelector&       selector       = bound_selector->selector;
+    BoundItemSel  *bound_selector = (BoundItemSel*)cl_bound_item_selector;
+    ItemSelector&  selector       = bound_selector->selector;
 
     AW_root *root    = aws->get_root();
     GBDATA  *gb_main = bound_selector->gb_main;
@@ -859,8 +859,8 @@ static void field_convert_update_typesel_cb(AW_window *aws, AW_CL cl_bound_item_
 }
 
 static AW_window *create_field_convert_window(AW_root *root, AW_CL cl_bound_item_selector) {
-    const BoundItemSel *bound_selector = (const BoundItemSel*)cl_bound_item_selector;
-    ItemSelector&       selector       = bound_selector->selector;
+    BoundItemSel  *bound_selector = (BoundItemSel*)cl_bound_item_selector;
+    ItemSelector&  selector       = bound_selector->selector;
 
     static AW_window_simple *awsa[QUERY_ITEM_TYPES];
     if (awsa[selector.type]) return (AW_window *)awsa[selector.type];
