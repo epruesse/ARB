@@ -76,7 +76,7 @@ static GBDATA *gen_find_gene_by_id(GBDATA *gb_main, const char *id) {
 }
 
 
-extern "C" GB_ERROR GEN_mark_organism_or_corresponding_organism(GBDATA *gb_species, int */*client_data*/) {
+GB_ERROR GEN_mark_organism_or_corresponding_organism(GBDATA *gb_species, int */*client_data*/) {
     GB_ERROR error = 0;
 
     if (GEN_is_pseudo_gene_species(gb_species)) {
@@ -194,7 +194,7 @@ static GBDATA *next_gene_in_range(GBDATA *gb_prev, QUERY_RANGE range) {
 // --------------------------
 //      GEN_item_selector
 
-struct ItemSelector GEN_item_selector = {
+static struct MutableItemSelector GEN_item_selector = {
     QUERY_ITEM_GENES,
     GEN_select_gene,
     gen_get_gene_id,
@@ -210,7 +210,7 @@ struct ItemSelector GEN_item_selector = {
     first_gene_in_range,
     next_gene_in_range,
     GEN_get_current_gene,
-    &ITEM_organism, GB_get_grandfather,
+    ORGANISM_get_selector(), GB_get_grandfather,
 };
 
 ItemSelector *GEN_get_selector() { return &GEN_item_selector; }

@@ -13,9 +13,7 @@
 //  ==================================================================== //
 
 #include "EXP_local.hxx"
-#include "EXP_interface.hxx"
 #include "GEN_local.hxx"
-#include "GEN_interface.hxx"
 
 #include <db_query.h>
 #include <db_scanner.hxx>
@@ -172,7 +170,7 @@ static GBDATA *next_experiment_in_range(GBDATA *gb_prev, QUERY_RANGE range) {
     return gb_next;
 }
 
-struct ItemSelector EXP_item_selector = {
+static struct MutableItemSelector EXP_item_selector = {
     QUERY_ITEM_EXPERIMENTS,
     EXP_select_experiment,
     EXP_get_experiment_id,
@@ -188,7 +186,7 @@ struct ItemSelector EXP_item_selector = {
     first_experiment_in_range,
     next_experiment_in_range,
     EXP_get_current_experiment,
-    &ITEM_organism, GB_get_grandfather,
+    ORGANISM_get_selector(), GB_get_grandfather,
 };
 
 ItemSelector *EXP_get_selector() { return &EXP_item_selector; }
@@ -245,7 +243,7 @@ AW_window *EXP_create_experiment_query_window(AW_root *aw_root, AW_CL cl_gb_main
         awtqs.do_refresh_pos_fig  = "dorefresh";
         awtqs.open_parser_pos_fig = "openparser";
         awtqs.create_view_window  = EXP_create_experiment_window;
-        awtqs.selector            = &EXP_item_selector;
+        awtqs.selector            = EXP_get_selector();
 
         QUERY::DbQuery *query   = create_query_box(aws, &awtqs, "exp");
         GLOBAL_experiment_query = query;
@@ -460,7 +458,7 @@ static void EXP_create_field_items(AW_window *aws, GBDATA *gb_main) {
     static BoundItemSel *bis = 0;
 
     exp_assert(!bis);
-    bis = new BoundItemSel(gb_main, EXP_item_selector);
+    bis = new BoundItemSel(gb_main, *EXP_get_selector());
 
     aws->insert_menu_topic("exp_reorder_fields", "Reorder fields ...",    "R", "spaf_reorder.hlp", AD_F_ALL, AW_POPUP, (AW_CL)DBUI::create_fields_reorder_window, (AW_CL)&bis);
     aws->insert_menu_topic("exp_delete_field",   "Delete/Hide Field ...", "D", "spaf_delete.hlp",  AD_F_ALL, AW_POPUP, (AW_CL)DBUI::create_field_delete_window, (AW_CL)&bis);
@@ -498,7 +496,7 @@ AW_window *EXP_create_experiment_window(AW_root *aw_root, AW_CL cl_gb_main) {
         aws->create_button("HELP", "HELP", "H");
 
 
-        AW_CL scannerid        = create_db_scanner(gb_main, aws, "box", 0, "field", "enable", DB_VIEWER, 0, "mark", FIELD_FILTER_NDS, &EXP_item_selector);
+        AW_CL scannerid        = create_db_scanner(gb_main, aws, "box", 0, "field", "enable", DB_VIEWER, 0, "mark", FIELD_FILTER_NDS, EXP_get_selector());
         EXP_global_scannerid   = scannerid;
         EXP_global_scannerroot = aws->get_root();
 

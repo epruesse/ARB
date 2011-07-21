@@ -9,7 +9,7 @@
 //                                                                 //
 // =============================================================== //
 
-#include "GEN_interface.hxx"
+#include "GEN.hxx"
 
 #include <nds.h>
 #include <item_sel_list.h>
@@ -304,7 +304,7 @@ void GEN_create_select_nds_window(AW_window *aww, char *key_text, AW_CL cgb_main
         create_selection_list_on_itemfields((GBDATA *)cgb_main,
                                                 aws, "tmp/gene_viewkey/key_text",
                                                 FIELD_FILTER_NDS,
-                                                "scandb", "rescandb", &GEN_item_selector, 20, 10);
+                                                "scandb", "rescandb", GEN_get_selector(), 20, 10);
 
         win =  (AW_window*)aws;
     }

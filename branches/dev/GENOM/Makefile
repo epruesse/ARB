@@ -43,10 +43,8 @@ depend.init:
 # For formatting issues see SOURCE_TOOLS/fix_depends.pl
 
 EXP_interface.o: EXP.hxx
-EXP_interface.o: EXP_interface.hxx
 EXP_interface.o: EXP_local.hxx
 EXP_interface.o: GEN.hxx
-EXP_interface.o: GEN_interface.hxx
 EXP_interface.o: GEN_local.hxx
 EXP_interface.o: $(ARBHOME)/INCLUDE/ad_prot.h
 EXP_interface.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
@@ -82,7 +80,6 @@ EXP_interface.o: $(ARBHOME)/INCLUDE/test_global.h
 
 EXP_main.o: ../NTREE/nt_cb.hxx
 EXP_main.o: EXP.hxx
-EXP_main.o: EXP_interface.hxx
 EXP_main.o: EXP_local.hxx
 EXP_main.o: $(ARBHOME)/INCLUDE/ad_prot.h
 EXP_main.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
@@ -136,6 +133,7 @@ GEN_gene.o: $(ARBHOME)/INCLUDE/aw_position.hxx
 GEN_gene.o: $(ARBHOME)/INCLUDE/aw_root.hxx
 GEN_gene.o: $(ARBHOME)/INCLUDE/cb.h
 GEN_gene.o: $(ARBHOME)/INCLUDE/dupstr.h
+GEN_gene.o: $(ARBHOME)/INCLUDE/items.h
 GEN_gene.o: $(ARBHOME)/INCLUDE/smartptr.h
 GEN_gene.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -170,6 +168,7 @@ GEN_graphic.o: $(ARBHOME)/INCLUDE/awt_attributes.hxx
 GEN_graphic.o: $(ARBHOME)/INCLUDE/awt_canvas.hxx
 GEN_graphic.o: $(ARBHOME)/INCLUDE/cb.h
 GEN_graphic.o: $(ARBHOME)/INCLUDE/dupstr.h
+GEN_graphic.o: $(ARBHOME)/INCLUDE/items.h
 GEN_graphic.o: $(ARBHOME)/INCLUDE/smartptr.h
 GEN_graphic.o: $(ARBHOME)/INCLUDE/test_global.h
 
@@ -209,12 +208,10 @@ GEN_interface.o: $(ARBHOME)/INCLUDE/smartptr.h
 GEN_interface.o: $(ARBHOME)/INCLUDE/test_global.h
 
 GEN_map.o: EXP.hxx
-GEN_map.o: EXP_interface.hxx
 GEN_map.o: EXP_local.hxx
 GEN_map.o: GEN.hxx
 GEN_map.o: GEN_gene.hxx
 GEN_map.o: GEN_graphic.hxx
-GEN_map.o: GEN_interface.hxx
 GEN_map.o: GEN_local.hxx
 GEN_map.o: GEN_nds.hxx
 GEN_map.o: $(ARBHOME)/INCLUDE/ad_prot.h
@@ -255,7 +252,7 @@ GEN_map.o: $(ARBHOME)/INCLUDE/items.h
 GEN_map.o: $(ARBHOME)/INCLUDE/smartptr.h
 GEN_map.o: $(ARBHOME)/INCLUDE/test_global.h
 
-GEN_nds.o: GEN_interface.hxx
+GEN_nds.o: GEN.hxx
 GEN_nds.o: $(ARBHOME)/INCLUDE/ad_prot.h
 GEN_nds.o: $(ARBHOME)/INCLUDE/arb_assert.h
 GEN_nds.o: $(ARBHOME)/INCLUDE/arb_core.h
@@ -300,6 +297,7 @@ GEN_translations.o: $(ARBHOME)/INCLUDE/attributes.h
 GEN_translations.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 GEN_translations.o: $(ARBHOME)/INCLUDE/aw_question.hxx
 GEN_translations.o: $(ARBHOME)/INCLUDE/dupstr.h
+GEN_translations.o: $(ARBHOME)/INCLUDE/items.h
 GEN_translations.o: $(ARBHOME)/INCLUDE/smartptr.h
 GEN_translations.o: $(ARBHOME)/INCLUDE/test_global.h
 GEN_translations.o: $(ARBHOME)/INCLUDE/Translate.hxx

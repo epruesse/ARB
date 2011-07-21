@@ -184,17 +184,17 @@ AW_window *NT_build_resort_window(AW_root *awr) {
     create_selection_list_on_itemfields(GLOBAL_gb_main,
                                             aws, "ad_tree/sort_1",
                                             NT_RESORT_FILTER,
-                                            "key1", 0, &ITEM_species, 20, 10);
+                                            "key1", 0, SPECIES_get_selector(), 20, 10);
 
     create_selection_list_on_itemfields(GLOBAL_gb_main,
                                             aws, "ad_tree/sort_2",
                                             NT_RESORT_FILTER,
-                                            "key2", 0, &ITEM_species, 20, 10);
+                                            "key2", 0, SPECIES_get_selector(), 20, 10);
 
     create_selection_list_on_itemfields(GLOBAL_gb_main,
                                             aws, "ad_tree/sort_3",
                                             NT_RESORT_FILTER,
-                                            "key3", 0, &ITEM_species, 20, 10);
+                                            "key3", 0, SPECIES_get_selector(), 20, 10);
 
     return (AW_window *)aws;
 
