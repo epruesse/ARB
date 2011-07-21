@@ -907,14 +907,8 @@ static AW_window *create_field_convert_window(AW_root *root, AW_CL cl_bound_item
 }
 
 void DBUI::insert_field_admin_menuitems(AW_window *aws, GBDATA *gb_main) {
-    static BoundItemSel *bis = 0;
-
-    if (bis) {
-        ui_assert(bis->gb_main == gb_main);
-    }
-    else {
-        bis = new BoundItemSel(gb_main, *SPECIES_get_selector());
-    }
+    static BoundItemSel *bis = new BoundItemSel(gb_main, *SPECIES_get_selector());
+    ui_assert(bis->gb_main == gb_main);
     
     aws->insert_menu_topic("spec_reorder_fields", "Reorder fields ...",     "R", "spaf_reorder.hlp", AWM_ALL, AW_POPUP, (AW_CL)create_fields_reorder_window,  (AW_CL)bis);
     aws->insert_menu_topic("spec_delete_field",   "Delete/Hide fields ...", "D", "spaf_delete.hlp",  AWM_EXP, AW_POPUP, (AW_CL)create_field_delete_window,  (AW_CL)bis);
