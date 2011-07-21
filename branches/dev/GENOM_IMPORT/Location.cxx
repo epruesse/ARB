@@ -31,6 +31,12 @@ class SimpleLocation : public Location {
     char uncertain1;
     char uncertain2;
 
+    static inline string one_pos_as_string(char uc, long p) {
+        string s;
+        if (uc != '=') s += uc;
+        return s += GBS_global_string("%li", p);
+    }
+
 public:
     SimpleLocation(long p1, long p2, char u1, char u2)
         : pos1(p1), pos2(p2), uncertain1(u1), uncertain2(u2) {}
@@ -56,6 +62,19 @@ public:
         pos->stop_uncertain[p]  = uncertain2;
 
         ++pos->parts;
+    }
+
+    virtual string as_string() const {
+        if (uncertain1 == '+') {
+            if (uncertain2 != '-' || pos2 != (pos1+1)) throw "Invalid uncertainties";
+            return GBS_global_string("%li^%li", pos1, pos2);
+        }
+
+        string s = one_pos_as_string(uncertain1, pos1);
+        if (pos1 != pos2) {
+            s += ".."+one_pos_as_string(uncertain2, pos2);
+        }
+        return s;
     }
 };
 
@@ -109,6 +128,25 @@ public:
             }
         }
     }
+    virtual string as_string() const {
+        string joined;
+        switch (joinType) {
+            case LJT_JOIN: joined  = "join"; break;
+            case LJT_ORDER: joined = "order"; break;
+            default: throw "Unhandled join type"; break;
+        }
+        joined += '(';
+
+        LocationVectorCIter e  = locations.end();
+        LocationVectorCIter i  = locations.begin();
+        joined                += (*i++)->as_string();
+        for (; i != e; ++i) {
+            joined += ',';
+            joined += (*i)->as_string();
+        }
+        joined += ')';
+        return joined;
+    }
 };
 
 class ComplementLocation : public Location {
@@ -120,6 +158,7 @@ public:
     virtual bool isInRange(long p1, long p2) const { return location->isInRange(p1, p2); }
     virtual void save(GEN_position *pos, bool complementary) const { location->save(pos, !complementary); }
     virtual LocationJoinType getJoinType() const { return location->getJoinType(); }
+    virtual string as_string() const { return string("complement(")+location->as_string()+')'; }
 };
 
 // --------------------------------------------------------------------------------
@@ -204,12 +243,14 @@ LocationPtr parseLocation(const string& source) {
             LocationVector locvec;
             parseLocationList(infix, 0, locvec);
 
-            JoinedLocation      *join = new JoinedLocation(joinType);
-            LocationVectorCIter  e    = locvec.end();
+            JoinedLocation *join = new JoinedLocation(joinType);
+            LocationPtr     res  = join;
+
+            LocationVectorCIter e = locvec.end();
             for (LocationVectorCIter i = locvec.begin(); i != e; ++i) {
                 join->push_back(*i);
             }
-            return join;
+            return res;
         }
     }
     else if (isdigit(first) || strchr("<>", first) != 0) {
@@ -241,9 +282,6 @@ LocationPtr parseLocation(const string& source) {
         }
     }
 
-#if defined(DEVEL_RALF)
-    arb_assert(0);
-#endif // DEVEL_RALF
     throw string("Unparsable location '"+source+"'");
 }
 
@@ -269,8 +307,84 @@ GEN_position *Location::create_GEN_position() const {
 #ifdef UNIT_TESTS
 #include <test_unit.h>
 
+static GB_ERROR str2loc2str(const string& in, string& out) {
+    GB_ERROR error = NULL;
+    try {
+        LocationPtr loc = parseLocation(in);
+        out             = loc->as_string();
+
+        GEN_position *pos = loc->create_GEN_position();
+        TEST_ASSERT(pos);
+        // @@@ add function to convert GEN_position into Location and check as_string-result of conversion
+        
+        GEN_free_position(pos);
+    }
+    catch (std::string& err) { error = GBS_global_string("%s", err.c_str()); }
+    catch (const char *&err) { error = GBS_global_string("%s", err); }
+    return error;
+}
+
+#define DO_LOCONV_NOERR(str) string reverse; TEST_ASSERT_NO_ERROR(str2loc2str(str, reverse));
+
+#define TEST_ASSERT_LOCONV_IDENT(str) do {              \
+        DO_LOCONV_NOERR(str);                           \
+        TEST_ASSERT_EQUAL(str, reverse.c_str());        \
+    } while(0)
+
+#define TEST_ASSERT_LOCONV_IDENT__BROKEN(str) do {              \
+        DO_LOCONV_NOERR(str);                                   \
+        TEST_ASSERT_EQUAL__BROKEN(str, reverse.c_str());        \
+    } while(0)
+
+#define TEST_ASSERT_LOCONV__INTO(str,res) do {          \
+        DO_LOCONV_NOERR(str);                           \
+        TEST_ASSERT_EQUAL(res, reverse.c_str());        \
+    } while(0)
+
+#define TEST_ASSERT__PARSE_ERROR(str,err) do {                  \
+        string reverse;                                         \
+        TEST_ASSERT_EQUAL(str2loc2str(str, reverse), err);      \
+    } while(0)
+
 void TEST_gene_location() {
-    // TEST_ASSERT(0); // @@@ works - keep it
+    TEST_ASSERT_LOCONV_IDENT("1725");
+    TEST_ASSERT__PARSE_ERROR("3-77", "Unexpected char '-' in '3-77'");
+    TEST_ASSERT_LOCONV_IDENT("3..77");
+    TEST_ASSERT_LOCONV_IDENT("77..3"); // @@@ wtf -> maybe back-conversion via GEN_position will fix that
+
+    TEST_ASSERT_LOCONV_IDENT("<3..77");
+    TEST_ASSERT_LOCONV_IDENT("3..>77");
+    TEST_ASSERT_LOCONV_IDENT(">3..<77");
+    
+    TEST_ASSERT_LOCONV_IDENT("7^8");
+    TEST_ASSERT__PARSE_ERROR("7^9", "Can only handle 'pos^pos+1'. Can't parse location '7^9'");
+
+    TEST_ASSERT_LOCONV_IDENT("complement(3..77)");
+    TEST_ASSERT_LOCONV_IDENT("complement(77..3)");
+    TEST_ASSERT_LOCONV_IDENT("complement(77)");
+
+    TEST_ASSERT_LOCONV_IDENT("join(3..77,100..200)");
+    TEST_ASSERT_LOCONV_IDENT("join(3..77)");
+    TEST_ASSERT_LOCONV_IDENT("join(3..77,100,130..177)");
+    TEST_ASSERT__PARSE_ERROR("join(3..77,100..200, 130..177)", "Unparsable location ' 130..177'");
+
+    TEST_ASSERT_LOCONV_IDENT("order(1)");
+    TEST_ASSERT_LOCONV_IDENT("order(0,8,15)");
+
+    TEST_ASSERT__PARSE_ERROR("join(order(0,8,15),order(3,2,1))", "order() and join() cannot be mixed");
+
+    TEST_ASSERT_LOCONV_IDENT("complement(join(3..77,100..200))");
+    TEST_ASSERT_LOCONV_IDENT("join(complement(3..77),complement(100..200))");
+    TEST_ASSERT_LOCONV_IDENT("join(complement(join(3..77,74..83)),complement(100..200))");
+    TEST_ASSERT_LOCONV_IDENT("complement(complement(complement(100..200)))");
+
+    // cover errors
+    TEST_ASSERT__PARSE_ERROR("join(abc()", "Expected 1 closing parenthesis in 'abc('");
+
+    // strange behavior
+    TEST_ASSERT_LOCONV__INTO("", "0");
+    TEST_ASSERT_LOCONV__INTO("join()", "join(0)");
+    TEST_ASSERT_LOCONV__INTO("complement()", "complement(0)");
 }
 
 #endif // UNIT_TESTS
