@@ -191,8 +191,9 @@ static GBDATA *next_gene_in_range(GBDATA *gb_prev, QUERY_RANGE range) {
     return gb_next;
 }
 
-// --------------------------
-//      GEN_item_selector
+#if defined(WARN_TODO)
+#warning move GEN_item_selector to SL/ITEMS
+#endif
 
 static struct MutableItemSelector GEN_item_selector = {
     QUERY_ITEM_GENES,
@@ -599,6 +600,10 @@ static void GEN_create_field_items(AW_window *aws, GBDATA *gb_main) {
     aws->insert_menu_topic("gen_refresh_fields",      "Refresh fields (both)", "f", "scandb.hlp", AD_F_ALL, (AW_CB)gene_field_selection_list_update_cb,        (AW_CL)gb_main, FIELD_FILTER_NDS);
 }
 
+#if defined(WARN_TODO)
+#warning move GEN_create_gene_window to SL/DB_UI
+#endif
+
 AW_window *GEN_create_gene_window(AW_root *aw_root, AW_CL cl_gb_main) {
     static AW_window_simple_menu *aws = 0;
     if (!aws) {
@@ -657,10 +662,9 @@ AW_window *GEN_create_gene_window(AW_root *aw_root, AW_CL cl_gb_main) {
     return aws;
 }
 
-// void GEN_popup_gene_window(AW_window *aww, AW_CL, AW_CL) { // w/o this DETACH does not work (@@@ really? seems unused)
-    // AW_window *aws = GEN_create_gene_window(aww->get_root(), (AW_CL)gb_main);
-    // aws->activate();
-// }
+#if defined(WARN_TODO)
+#warning move GEN_create_gene_query_window to SL/DB_UI
+#endif
 
 AW_window *GEN_create_gene_query_window(AW_root *aw_root, AW_CL cl_gb_main) {
     static AW_window_simple_menu *aws = 0;
