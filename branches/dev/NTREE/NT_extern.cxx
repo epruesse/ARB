@@ -1078,7 +1078,7 @@ static ARB_ERROR mark_referred_species(GBDATA *gb_main, const DBItemSet& referre
 static AW_window *create_mark_by_refentries_window(AW_root *awr, AW_CL cl_gbmain) {
     static AW_window *aws = NULL;
     if (!aws) {
-        static RefEntries::ReferringEntriesHandler reh((GBDATA*)cl_gbmain, *SPECIES_get_selector());
+        static RefEntries::ReferringEntriesHandler reh((GBDATA*)cl_gbmain, SPECIES_get_selector());
         aws = RefEntries::create_refentries_window(awr, &reh, "markbyref", "Mark by reference", "markbyref.hlp", NULL, "Mark referenced", mark_referred_species);
     }
     return aws;

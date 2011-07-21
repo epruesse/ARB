@@ -32,6 +32,9 @@
 #include <items.h>
 #endif
 
+#define re_assert(cond) arb_assert(cond)
+
+
 namespace RefEntries {
 
     typedef ARB_ERROR (*referred_item_handler)(GBDATA *gb_main, const DBItemSet& referred);                // called with all referred items
@@ -62,14 +65,15 @@ namespace RefEntries {
     };
 
     class ReferringEntriesHandler {
-        GBDATA       *gb_main;
-        ItemSelector  itemtype;
+        GBDATA        *gb_main;
+        ItemSelector&  itemtype;
 
     public:
         ReferringEntriesHandler(GBDATA *gb_main_, ItemSelector& itemtype_)
-            : gb_main(gb_main_), 
+            : gb_main(gb_main_),
               itemtype(itemtype_)
         {
+            re_assert(&itemtype);
         }
 
         GBDATA *get_gbmain() const { return gb_main; }

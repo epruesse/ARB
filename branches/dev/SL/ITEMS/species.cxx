@@ -103,8 +103,8 @@ static struct MutableItemSelector ITEM_organism = {
     0, 0,
 };
 
-ItemSelector *SPECIES_get_selector() { return &ITEM_species; }
-ItemSelector *ORGANISM_get_selector() { return &ITEM_organism; }
+ItemSelector& SPECIES_get_selector() { return ITEM_species; }
+ItemSelector& ORGANISM_get_selector() { return ITEM_organism; }
 
 void popup_select_species_field_window(AW_window *aww, AW_CL cl_awar_name, AW_CL cl_gb_main) {
     static AW_window_simple *aws = 0;

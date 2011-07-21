@@ -66,7 +66,7 @@ struct MutableItemSelector { // @@@ remove AW_root arguments!
 
     GBDATA *(*get_selected_item)(GBDATA *gb_main, AW_root *aw_root); // searches the currently selected item
 
-    ItemSelector *parent_selector;       // selector of parent item (or NULL if item has no parents)
+    ItemSelector *parent_selector;              // selector of parent item (or NULL if item has no parents)
     GBDATA *(*get_parent)(GBDATA *gb_item);     // if 'parent_selector' is defined, this function returns the parent of the item
 };
 
@@ -87,8 +87,8 @@ struct MutableBoundItemSel {
 
 typedef const MutableBoundItemSel BoundItemSel;
 
-ItemSelector *SPECIES_get_selector();
-ItemSelector *ORGANISM_get_selector();
+ItemSelector& SPECIES_get_selector();
+ItemSelector& ORGANISM_get_selector();
 
 #else
 #error items.h included twice

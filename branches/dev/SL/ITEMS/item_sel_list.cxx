@@ -25,12 +25,14 @@ Itemfield_Selection::Itemfield_Selection(AW_window         *win_,
                                          GBDATA            *gb_key_data,
                                          long               type_filter_,
                                          SelectedFields     field_filter_,
-                                         ItemSelector      *selector_)
+                                         ItemSelector&      selector_)
     : AW_DB_selection(win_, sellist_, gb_key_data)
     , type_filter(type_filter_)
     , field_filter(field_filter_)
     , selector(selector_)
-{}
+{
+    it_assert(&selector);
+}
 
 void Itemfield_Selection::fill() {
     if (field_filter & SF_PSEUDO) {
@@ -86,7 +88,7 @@ Itemfield_Selection *create_selection_list_on_itemfields(GBDATA         *gb_main
                                                          long            type_filter,
                                                          const char     *scan_xfig_label,
                                                          const char     *rescan_xfig_label,
-                                                         ItemSelector   *selector,
+                                                         ItemSelector&   selector,
                                                          size_t          columns,
                                                          size_t          visible_rows,
                                                          SelectedFields  field_filter,
@@ -108,7 +110,7 @@ Itemfield_Selection *create_selection_list_on_itemfields(GBDATA         *gb_main
     GBDATA *gb_key_data;
     {
         GB_transaction ta(gb_main);
-        gb_key_data = GB_search(gb_main, selector->change_key_path, GB_CREATE_CONTAINER);
+        gb_key_data = GB_search(gb_main, selector.change_key_path, GB_CREATE_CONTAINER);
     }
 
     AW_selection_list *sellist         = 0;
@@ -153,7 +155,7 @@ Itemfield_Selection *create_selection_list_on_itemfields(GBDATA         *gb_main
         aws->get_at_position(&x, &y);
 
         aws->at(rescan_xfig_label);
-        aws->callback(selector->selection_list_rescan_cb, (AW_CL)gb_main, (AW_CL)-1);
+        aws->callback(selector.selection_list_rescan_cb, (AW_CL)gb_main, (AW_CL)-1);
         aws->create_button(rescan_xfig_label, "RESCAN", "R");
 
         if (popup_button_id) aws->at(x, y); // restore 'at' position if popup_list_in_window

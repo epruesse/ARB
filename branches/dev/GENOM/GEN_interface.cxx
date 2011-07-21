@@ -210,10 +210,10 @@ static struct MutableItemSelector GEN_item_selector = {
     first_gene_in_range,
     next_gene_in_range,
     GEN_get_current_gene,
-    ORGANISM_get_selector(), GB_get_grandfather,
+    &ORGANISM_get_selector(), GB_get_grandfather,
 };
 
-ItemSelector *GEN_get_selector() { return &GEN_item_selector; }
+ItemSelector& GEN_get_selector() { return GEN_item_selector; }
 
 void GEN_species_name_changed_cb(AW_root *awr, AW_CL cl_gb_main) {
     char           *species_name = awr->awar(AWAR_SPECIES_NAME)->read_string();
@@ -362,8 +362,6 @@ GBDATA *GEN_get_current_gene(GBDATA *gb_main, AW_root *aw_root) {
 }
 
 
-static AW_CL           GEN_global_scannerid   = 0;
-static AW_root        *GEN_global_scannerroot = 0;
 static QUERY::DbQuery *GLOBAL_gene_query      = 0;
 
 static void gene_rename_cb(AW_window *aww, AW_CL cl_gb_main) {
@@ -578,21 +576,21 @@ static void gene_delete_cb(AW_window *aww, AW_CL cl_gb_main) {
     }
 }
 
-static void GEN_map_gene(AW_root *aw_root, AW_CL scannerid, AW_CL cl_gb_main) {
+static void GEN_map_gene(AW_root *aw_root, AW_CL cl_scanner, AW_CL cl_gb_main) {
     GBDATA         *gb_main = (GBDATA*)cl_gb_main;
     GB_transaction  dummy(gb_main);
     GBDATA         *gb_gene = GEN_get_current_gene(gb_main, aw_root);
 
-    if (gb_gene) map_db_scanner(scannerid, gb_gene, CHANGE_KEY_PATH_GENES);
+    if (gb_gene) map_db_scanner((DbScanner*)cl_scanner, gb_gene, CHANGE_KEY_PATH_GENES);
 }
 
 static void GEN_create_field_items(AW_window *aws, GBDATA *gb_main) {
-    static BoundItemSel *bis = new BoundItemSel(gb_main, *GEN_get_selector());
+    static BoundItemSel *bis = new BoundItemSel(gb_main, GEN_get_selector());
     gen_assert(bis->gb_main == gb_main);
 
-    aws->insert_menu_topic("gen_reorder_fields", "Reorder fields ...",    "R", "spaf_reorder.hlp", AD_F_ALL, AW_POPUP, (AW_CL)DBUI::create_fields_reorder_window, (AW_CL)&bis);
-    aws->insert_menu_topic("gen_delete_field",   "Delete/Hide field ...", "D", "spaf_delete.hlp",  AD_F_ALL, AW_POPUP, (AW_CL)DBUI::create_field_delete_window, (AW_CL)&bis);
-    aws->insert_menu_topic("gen_create_field",   "Create fields ...",     "C", "spaf_create.hlp",  AD_F_ALL, AW_POPUP, (AW_CL)DBUI::create_field_create_window, (AW_CL)&bis);
+    aws->insert_menu_topic("gen_reorder_fields", "Reorder fields ...",    "R", "spaf_reorder.hlp", AD_F_ALL, AW_POPUP, (AW_CL)DBUI::create_fields_reorder_window, (AW_CL)bis);
+    aws->insert_menu_topic("gen_delete_field",   "Delete/Hide field ...", "D", "spaf_delete.hlp",  AD_F_ALL, AW_POPUP, (AW_CL)DBUI::create_field_delete_window, (AW_CL)bis);
+    aws->insert_menu_topic("gen_create_field",   "Create fields ...",     "C", "spaf_create.hlp",  AD_F_ALL, AW_POPUP, (AW_CL)DBUI::create_field_create_window, (AW_CL)bis);
     aws->insert_separator();
     aws->insert_menu_topic("gen_unhide_fields", "Show all hidden fields", "S", "scandb.hlp", AD_F_ALL, (AW_CB)gene_field_selection_list_unhide_all_cb, (AW_CL)gb_main, FIELD_FILTER_NDS);
     aws->insert_separator();
@@ -624,10 +622,7 @@ AW_window *GEN_create_gene_window(AW_root *aw_root, AW_CL cl_gb_main) {
         aws->callback(AW_POPUP_HELP, (AW_CL)"gene_info.hlp");
         aws->create_button("HELP", "HELP", "H");
 
-
-        AW_CL scannerid        = create_db_scanner(gb_main, aws, "box", 0, "field", "enable", DB_VIEWER, 0, "mark", FIELD_FILTER_NDS, &GEN_item_selector);
-        GEN_global_scannerid   = scannerid;
-        GEN_global_scannerroot = aws->get_root();
+        DbScanner *scanner = create_db_scanner(gb_main, aws, "box", 0, "field", "enable", DB_VIEWER, 0, "mark", FIELD_FILTER_NDS, GEN_get_selector());
 
         aws->create_menu("GENE", "G", AD_F_ALL);
         aws->insert_menu_topic("gene_delete", "Delete",     "D", "spa_delete.hlp", AD_F_ALL, (AW_CB)gene_delete_cb, (AW_CL)gb_main, 0);
@@ -640,7 +635,7 @@ AW_window *GEN_create_gene_window(AW_root *aw_root, AW_CL cl_gb_main) {
         GEN_create_field_items(aws, gb_main);
 
         {
-            Awar_Callback_Info    *cb_info     = new Awar_Callback_Info(aws->get_root(), AWAR_GENE_NAME, GEN_map_gene, scannerid, (AW_CL)gb_main); // do not delete!
+            Awar_Callback_Info    *cb_info     = new Awar_Callback_Info(aws->get_root(), AWAR_GENE_NAME, GEN_map_gene, (AW_CL)scanner, (AW_CL)gb_main); // do not delete!
             AW_detach_information *detach_info = new AW_detach_information(cb_info); // do not delete!
 
             cb_info->add_callback();
@@ -652,8 +647,8 @@ AW_window *GEN_create_gene_window(AW_root *aw_root, AW_CL cl_gb_main) {
             detach_info->set_detach_button(aws->get_last_widget());
         }
 
-        GEN_map_gene(aws->get_root(), scannerid, (AW_CL)gb_main);
         aws->show();
+        GEN_map_gene(aws->get_root(), (AW_CL)scanner, (AW_CL)gb_main);
     }
     else {
         aws->show();
@@ -676,7 +671,7 @@ AW_window *GEN_create_gene_query_window(AW_root *aw_root, AW_CL cl_gb_main) {
         aws->create_menu("More functions", "f");
         aws->load_xfig("ad_query.fig");
 
-        QUERY::query_spec awtqs;
+        QUERY::query_spec awtqs(GEN_get_selector());
 
         awtqs.gb_main             = (GBDATA*)cl_gb_main;
         awtqs.species_name        = AWAR_SPECIES_NAME;
@@ -701,7 +696,6 @@ AW_window *GEN_create_gene_query_window(AW_root *aw_root, AW_CL cl_gb_main) {
         awtqs.do_refresh_pos_fig  = "dorefresh";
         awtqs.open_parser_pos_fig = "openparser";
         awtqs.create_view_window  = GEN_create_gene_window;
-        awtqs.selector            = &GEN_item_selector;
 
         QUERY::DbQuery *query = create_query_box(aws, &awtqs, "gen");
         GLOBAL_gene_query     = query;
