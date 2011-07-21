@@ -177,6 +177,7 @@ sub collect_gcov_data($$) {
         $line = $last;
       }
 
+      print "Summary $source_name: lines=$lines covered=$covered (coverage=$percent%)\n";
       rename($gcov,$cov) || die "Failed to rename '$gcov' -> '$cov' (Reason: $!)";
     }
   }
