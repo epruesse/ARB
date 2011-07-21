@@ -72,11 +72,11 @@ struct MutableItemSelector { // @@@ remove AW_root arguments!
 
 void popup_select_species_field_window(AW_window *aww, AW_CL cl_awar_name, AW_CL cl_gb_main);
 
-struct BoundItemSel {
+struct MutableBoundItemSel {
     GBDATA        *gb_main;
     ItemSelector&  selector;
 
-    BoundItemSel(GBDATA *gb_main_, ItemSelector& selector_)
+    MutableBoundItemSel(GBDATA *gb_main_, ItemSelector& selector_)
         : gb_main(gb_main_),
           selector(selector_)
     {
@@ -84,6 +84,8 @@ struct BoundItemSel {
         it_assert(&selector);
     }
 };
+
+typedef const MutableBoundItemSel BoundItemSel;
 
 ItemSelector *SPECIES_get_selector();
 ItemSelector *ORGANISM_get_selector();
