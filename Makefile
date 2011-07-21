@@ -1784,6 +1784,7 @@ unit_tests: test_base clean_coverage_results
 	$(MAKE) $(NODIR) $(TESTED_UNITS)
 	@echo "fake[1]: Leaving directory \`$(ARBHOME)/UNIT_TESTER'"
 	+@$(TEST_RUN_SUITE) cleanup
+	$(MAKE) clean_coverage
 
 ut:
 ifeq ($(UNIT_TESTS),1)
