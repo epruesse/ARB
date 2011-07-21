@@ -1041,262 +1041,264 @@ static void perform_query_cb(AW_window*, AW_CL cl_query, AW_CL cl_ext_query) {
     GB_ERROR error = qinfo.getError();
 
     if (!error) {
-        size_t       item_count = query_count_items(query, range, mode);
-        arb_progress progress("Searching", item_count);
+        size_t item_count = query_count_items(query, range, mode);
+        if (item_count) {
+            arb_progress progress("Searching", item_count);
 
-        if (query->gb_ref && // merge tool only
-            (ext_query == EXT_QUERY_COMPARE_LINES || ext_query == EXT_QUERY_COMPARE_WORDS))
-        {
-            GB_push_transaction(query->gb_ref);
-            const char *first_key = qinfo.getKey();
-            GB_HASH    *ref_hash  = create_ref_hash(query, first_key, ext_query == EXT_QUERY_COMPARE_WORDS);
+            if (query->gb_ref && // merge tool only
+                (ext_query == EXT_QUERY_COMPARE_LINES || ext_query == EXT_QUERY_COMPARE_WORDS))
+            {
+                GB_push_transaction(query->gb_ref);
+                const char *first_key = qinfo.getKey();
+                GB_HASH    *ref_hash  = create_ref_hash(query, first_key, ext_query == EXT_QUERY_COMPARE_WORDS);
 
 #if defined(DEBUG)
-            printf("query: search identical %s in field %s%s\n",
-                   (ext_query == EXT_QUERY_COMPARE_WORDS ? "words" : "values"),
-                   first_key,
-                   query->expect_hit_in_ref_list ? " of species listed in other hitlist" : "");
+                printf("query: search identical %s in field %s%s\n",
+                       (ext_query == EXT_QUERY_COMPARE_WORDS ? "words" : "values"),
+                       first_key,
+                       query->expect_hit_in_ref_list ? " of species listed in other hitlist" : "");
 #endif // DEBUG
 
-            for (GBDATA *gb_item_container = selector->get_first_item_container(query->gb_main, aw_root, range);
-                 gb_item_container && !error;
-                 gb_item_container = selector->get_next_item_container(gb_item_container, range))
-            {
-                for (GBDATA *gb_item = selector->get_first_item(gb_item_container, QUERY_ALL_ITEMS);
-                     gb_item && !error;
-                     gb_item = selector->get_next_item(gb_item, QUERY_ALL_ITEMS))
+                for (GBDATA *gb_item_container = selector->get_first_item_container(query->gb_main, aw_root, range);
+                     gb_item_container && !error;
+                     gb_item_container = selector->get_next_item_container(gb_item_container, range))
                 {
-                    switch (mode) {
-                        case QUERY_GENERATE: CLEAR_QUERIED(gb_item, query); break;
-                        case QUERY_ENLARGE:  if (IS_QUERIED(gb_item, query)) continue; break;
-                        case QUERY_REDUCE:   if (!IS_QUERIED(gb_item, query)) continue; break;
-                    }
+                    for (GBDATA *gb_item = selector->get_first_item(gb_item_container, QUERY_ALL_ITEMS);
+                         gb_item && !error;
+                         gb_item = selector->get_next_item(gb_item, QUERY_ALL_ITEMS))
+                    {
+                        switch (mode) {
+                            case QUERY_GENERATE: CLEAR_QUERIED(gb_item, query); break;
+                            case QUERY_ENLARGE:  if (IS_QUERIED(gb_item, query)) continue; break;
+                            case QUERY_REDUCE:   if (!IS_QUERIED(gb_item, query)) continue; break;
+                        }
 
-                    GBDATA *gb_key = qinfo.get_first_key(gb_item);
+                        GBDATA *gb_key = qinfo.get_first_key(gb_item);
 
-                    if (gb_key) {
-                        char   *data        = GB_read_as_string(gb_key);
-                        GBDATA *gb_ref_pntr = 0;
+                        if (gb_key) {
+                            char   *data        = GB_read_as_string(gb_key);
+                            GBDATA *gb_ref_pntr = 0;
 
-                        if (data && data[0]) {
-                            string hit_reason;
-                            bool   this_hit = false;
+                            if (data && data[0]) {
+                                string hit_reason;
+                                bool   this_hit = false;
 
-                            if (ext_query == EXT_QUERY_COMPARE_WORDS) {
-                                for (char *t = strtok(data, " "); t; t = strtok(0, " ")) {
-                                    gb_ref_pntr = (GBDATA *)GBS_read_hash(ref_hash, t);
-                                    if (gb_ref_pntr) { // found item in other DB, with 'first_key' containing word from 'gb_key'
+                                if (ext_query == EXT_QUERY_COMPARE_WORDS) {
+                                    for (char *t = strtok(data, " "); t; t = strtok(0, " ")) {
+                                        gb_ref_pntr = (GBDATA *)GBS_read_hash(ref_hash, t);
+                                        if (gb_ref_pntr) { // found item in other DB, with 'first_key' containing word from 'gb_key'
+                                            this_hit   = true;
+                                            hit_reason = GBS_global_string("%s%s has word '%s' in %s",
+                                                                           query->expect_hit_in_ref_list ? "Hit " : "",
+                                                                           selector->generate_item_id(query->gb_ref, gb_ref_pntr),
+                                                                           t, first_key);
+                                        }
+                                    }
+                                }
+                                else {
+                                    gb_ref_pntr = (GBDATA *)GBS_read_hash(ref_hash, data);
+                                    if (gb_ref_pntr) { // found item in other DB, with identical 'first_key'
                                         this_hit   = true;
-                                        hit_reason = GBS_global_string("%s%s has word '%s' in %s",
+                                        hit_reason = GBS_global_string("%s%s matches %s",
                                                                        query->expect_hit_in_ref_list ? "Hit " : "",
                                                                        selector->generate_item_id(query->gb_ref, gb_ref_pntr),
-                                                                       t, first_key);
-                                    }
-                                }
-                            }
-                            else {
-                                gb_ref_pntr = (GBDATA *)GBS_read_hash(ref_hash, data);
-                                if (gb_ref_pntr) { // found item in other DB, with identical 'first_key'
-                                    this_hit   = true;
-                                    hit_reason = GBS_global_string("%s%s matches %s",
-                                                                   query->expect_hit_in_ref_list ? "Hit " : "",
-                                                                   selector->generate_item_id(query->gb_ref, gb_ref_pntr),
-                                                                   first_key);
-                                }
-                            }
-
-                            if (type == QUERY_DONT_MATCH) {
-                                this_hit = !this_hit;
-                                if (this_hit) hit_reason = "<no matching entry>";
-                            }
-
-                            if (this_hit) {
-                                dbq_assert(!hit_reason.empty());
-                                SET_QUERIED(gb_item, query, hit_reason.c_str(), hit_reason.length());
-                            }
-                            else CLEAR_QUERIED(gb_item, query);
-                        }
-                        free(data);
-                    }
-
-                    progress.inc_and_check_user_abort(error);
-                }
-            }
-
-            GBS_free_hash(ref_hash);
-            GB_pop_transaction(query->gb_ref);
-        }
-        else {                                          // "normal" query
-            if (type == QUERY_DONT_MATCH) {
-#if defined(DEBUG)
-                fputs("query: !(", stdout); qinfo.dump();
-#endif // DEBUG
-
-                qinfo.negate();
-                type = QUERY_MATCH;
-
-#if defined(DEBUG)
-                fputs(") => query: ", stdout); qinfo.dump(); fputc('\n', stdout);
-#endif // DEBUG
-            }
-#if defined(DEBUG)
-            else { fputs("query: ", stdout); qinfo.dump(); fputc('\n', stdout); }
-#endif // DEBUG
-
-            if (qinfo.prefers_sort_by_hit()) {
-                // automatically switch to sorting 'by hit' if 'any field' or 'all fields' is selected
-                aw_root->awar(query->awar_sort)->write_int(QUERY_SORT_BY_HIT_DESCRIPTION);
-            }
-
-            for (GBDATA *gb_item_container = selector->get_first_item_container(query->gb_main, aw_root, range);
-                 gb_item_container && !error;
-                 gb_item_container = selector->get_next_item_container(gb_item_container, range))
-            {
-                for (GBDATA *gb_item = selector->get_first_item(gb_item_container, QUERY_ALL_ITEMS);
-                     gb_item && !error;
-                     gb_item = selector->get_next_item(gb_item, QUERY_ALL_ITEMS))
-                {
-                    string hit_reason;
-
-                    switch (mode) {
-                        case QUERY_GENERATE: CLEAR_QUERIED(gb_item, query); break;
-                        case QUERY_ENLARGE:  if (IS_QUERIED(gb_item, query)) continue; break;
-                        case QUERY_REDUCE:   if (!IS_QUERIED(gb_item, query)) continue; break;
-                    }
-
-                    bool hit = false;
-
-                    switch (type) {
-                        case QUERY_MARKED: {
-                            hit        = GB_read_flag(gb_item);
-                            hit_reason = "<marked>";
-                            break;
-                        }
-                        case QUERY_MATCH: {
-                            for (query_info *this_qinfo = &qinfo; this_qinfo;  this_qinfo = this_qinfo ? this_qinfo->getNext() : 0) { // iterate over all single queries
-                                query_operator this_op = this_qinfo->getOperator();
-
-                                if ((this_op == OR) == hit) {
-                                    continue; // skip query Q for '1 OR Q' and for '0 AND Q' (result can't change)
-                                }
-
-                                string this_hit_reason;
-
-                                GBDATA               *gb_key      = this_qinfo->get_first_key(gb_item);
-                                query_field_type  match_field = this_qinfo->get_match_field();
-                                bool                  this_hit    = (match_field == AQFT_ALL_FIELDS);
-
-                                char *data       = gb_key ? GB_read_as_string(gb_key) : strdup(""); // assume "" for explicit fields that don't exist
-                                if (!data) error = GB_await_error();
-
-                                while (data) {
-                                    dbq_assert(ext_query == EXT_QUERY_NONE);
-                                    bool        matched    = this_qinfo->matches(data, gb_item); // includes not-op
-                                    const char *reason_key = 0;
-
-                                    switch (match_field) {
-                                        case AQFT_EXPLICIT:
-                                            this_hit   = matched;
-                                            reason_key = this_qinfo->getKey();
-                                            break;
-
-                                        case AQFT_ANY_FIELD:
-                                            if (matched) {
-                                                this_hit   = true;
-                                                reason_key = GB_read_key_pntr(gb_key);
-                                            }
-                                            break;
-
-                                        case AQFT_ALL_FIELDS:
-                                            if (!matched) {
-                                                this_hit   = false;
-                                                reason_key = GB_read_key_pntr(gb_key);
-                                            }
-                                            break;
-                                    }
-
-                                    if (reason_key) {
-                                        if (strlen(data)>MAX_SHOWN_DATA_SIZE) {
-                                            size_t shortened_len = GBS_shorten_repeated_data(data);
-                                            if (shortened_len>MAX_SHOWN_DATA_SIZE) {
-                                                strcpy(data+MAX_SHOWN_DATA_SIZE-5, "[...]");
-                                            }
-                                        }
-                                        this_hit_reason       = string(reason_key)+"="+data;
-                                        const char *ACIresult = this_qinfo->get_last_ACI_result();
-                                        if (ACIresult) {
-                                            this_hit_reason = string("[ACI=")+ACIresult+"] "+this_hit_reason;
-                                        }
-                                        gb_key = NULL; // stop!
-                                    }
-
-                                    freenull(data);
-                                    if (gb_key) {
-                                        do { gb_key = GB_nextChild(gb_key); }
-                                        while (gb_key && GB_read_type(gb_key) == GB_DB);
-
-                                        if (gb_key) {
-                                            data = GB_read_as_string(gb_key);
-                                            dbq_assert(data);
-                                        }
+                                                                       first_key);
                                     }
                                 }
 
-                                if (this_hit && match_field == AQFT_ALL_FIELDS) {
-                                    dbq_assert(this_hit_reason.empty());
-                                    this_hit_reason = this_qinfo->shallMatch() ? "<matched all fields>" : "<matched no field>";
+                                if (type == QUERY_DONT_MATCH) {
+                                    this_hit = !this_hit;
+                                    if (this_hit) hit_reason = "<no matching entry>";
                                 }
-
 
                                 if (this_hit) {
-                                    dbq_assert(!this_hit_reason.empty()); // if we got a hit, we also need a reason
-                                    const char *prefix = GBS_global_string("%c%c", '1'+this_qinfo->getIndex(), this_qinfo->shallMatch() ? ' ' : '!');
-                                    this_hit_reason    = string(prefix)+this_hit_reason;
+                                    dbq_assert(!hit_reason.empty());
+                                    SET_QUERIED(gb_item, query, hit_reason.c_str(), hit_reason.length());
                                 }
-
-                                // calculate result
-                                // (Note: the operator of the 1st query is always OR)
-                                switch (this_op) {
-                                    case AND: {
-                                        dbq_assert(hit); // otherwise there was no need to run this sub-query
-                                        hit        = this_hit;
-                                        hit_reason = hit_reason.empty() ? this_hit_reason : hit_reason+" & "+this_hit_reason;
-                                        break;
-                                    }
-                                    case OR: {
-                                        dbq_assert(!hit); // otherwise there was no need to run this sub-query
-                                        hit        = this_hit;
-                                        hit_reason = this_hit_reason;
-                                        break;
-                                    }
-                                    default:
-                                        dbq_assert(0);
-                                        break;
-                                }
-                                dbq_assert(!hit || !hit_reason.empty()); // if we got a hit, we also need a reason
+                                else CLEAR_QUERIED(gb_item, query);
                             }
-                            break;
-                        }
-                        default: dbq_assert(0); break;
-                    }
-
-                    if (hit) {
-                        dbq_assert(!hit_reason.empty());
-
-                        if (mode == QUERY_REDUCE) {
-                            string prev_info = getHitInfo(gb_item, query);
-                            hit_reason = prev_info+" (kept cause "+hit_reason+")";
+                            free(data);
                         }
 
-                        SET_QUERIED(gb_item, query, hit_reason.c_str(), hit_reason.length());
-                    }
-                    else CLEAR_QUERIED(gb_item, query);
-
-                    if (error) {
-                        error = GB_failedTo_error("query", GBT_get_name(gb_item), error);
-                    }
-                    else {
                         progress.inc_and_check_user_abort(error);
+                    }
+                }
+
+                GBS_free_hash(ref_hash);
+                GB_pop_transaction(query->gb_ref);
+            }
+            else {                                          // "normal" query
+                if (type == QUERY_DONT_MATCH) {
+#if defined(DEBUG)
+                    fputs("query: !(", stdout); qinfo.dump();
+#endif // DEBUG
+
+                    qinfo.negate();
+                    type = QUERY_MATCH;
+
+#if defined(DEBUG)
+                    fputs(") => query: ", stdout); qinfo.dump(); fputc('\n', stdout);
+#endif // DEBUG
+                }
+#if defined(DEBUG)
+                else { fputs("query: ", stdout); qinfo.dump(); fputc('\n', stdout); }
+#endif // DEBUG
+
+                if (qinfo.prefers_sort_by_hit()) {
+                    // automatically switch to sorting 'by hit' if 'any field' or 'all fields' is selected
+                    aw_root->awar(query->awar_sort)->write_int(QUERY_SORT_BY_HIT_DESCRIPTION);
+                }
+
+                for (GBDATA *gb_item_container = selector->get_first_item_container(query->gb_main, aw_root, range);
+                     gb_item_container && !error;
+                     gb_item_container = selector->get_next_item_container(gb_item_container, range))
+                {
+                    for (GBDATA *gb_item = selector->get_first_item(gb_item_container, QUERY_ALL_ITEMS);
+                         gb_item && !error;
+                         gb_item = selector->get_next_item(gb_item, QUERY_ALL_ITEMS))
+                    {
+                        string hit_reason;
+
+                        switch (mode) {
+                            case QUERY_GENERATE: CLEAR_QUERIED(gb_item, query); break;
+                            case QUERY_ENLARGE:  if (IS_QUERIED(gb_item, query)) continue; break;
+                            case QUERY_REDUCE:   if (!IS_QUERIED(gb_item, query)) continue; break;
+                        }
+
+                        bool hit = false;
+
+                        switch (type) {
+                            case QUERY_MARKED: {
+                                hit        = GB_read_flag(gb_item);
+                                hit_reason = "<marked>";
+                                break;
+                            }
+                            case QUERY_MATCH: {
+                                for (query_info *this_qinfo = &qinfo; this_qinfo;  this_qinfo = this_qinfo ? this_qinfo->getNext() : 0) { // iterate over all single queries
+                                    query_operator this_op = this_qinfo->getOperator();
+
+                                    if ((this_op == OR) == hit) {
+                                        continue; // skip query Q for '1 OR Q' and for '0 AND Q' (result can't change)
+                                    }
+
+                                    string this_hit_reason;
+
+                                    GBDATA               *gb_key      = this_qinfo->get_first_key(gb_item);
+                                    query_field_type  match_field = this_qinfo->get_match_field();
+                                    bool                  this_hit    = (match_field == AQFT_ALL_FIELDS);
+
+                                    char *data       = gb_key ? GB_read_as_string(gb_key) : strdup(""); // assume "" for explicit fields that don't exist
+                                    if (!data) error = GB_await_error();
+
+                                    while (data) {
+                                        dbq_assert(ext_query == EXT_QUERY_NONE);
+                                        bool        matched    = this_qinfo->matches(data, gb_item); // includes not-op
+                                        const char *reason_key = 0;
+
+                                        switch (match_field) {
+                                            case AQFT_EXPLICIT:
+                                                this_hit   = matched;
+                                                reason_key = this_qinfo->getKey();
+                                                break;
+
+                                            case AQFT_ANY_FIELD:
+                                                if (matched) {
+                                                    this_hit   = true;
+                                                    reason_key = GB_read_key_pntr(gb_key);
+                                                }
+                                                break;
+
+                                            case AQFT_ALL_FIELDS:
+                                                if (!matched) {
+                                                    this_hit   = false;
+                                                    reason_key = GB_read_key_pntr(gb_key);
+                                                }
+                                                break;
+                                        }
+
+                                        if (reason_key) {
+                                            if (strlen(data)>MAX_SHOWN_DATA_SIZE) {
+                                                size_t shortened_len = GBS_shorten_repeated_data(data);
+                                                if (shortened_len>MAX_SHOWN_DATA_SIZE) {
+                                                    strcpy(data+MAX_SHOWN_DATA_SIZE-5, "[...]");
+                                                }
+                                            }
+                                            this_hit_reason       = string(reason_key)+"="+data;
+                                            const char *ACIresult = this_qinfo->get_last_ACI_result();
+                                            if (ACIresult) {
+                                                this_hit_reason = string("[ACI=")+ACIresult+"] "+this_hit_reason;
+                                            }
+                                            gb_key = NULL; // stop!
+                                        }
+
+                                        freenull(data);
+                                        if (gb_key) {
+                                            do { gb_key = GB_nextChild(gb_key); }
+                                            while (gb_key && GB_read_type(gb_key) == GB_DB);
+
+                                            if (gb_key) {
+                                                data = GB_read_as_string(gb_key);
+                                                dbq_assert(data);
+                                            }
+                                        }
+                                    }
+
+                                    if (this_hit && match_field == AQFT_ALL_FIELDS) {
+                                        dbq_assert(this_hit_reason.empty());
+                                        this_hit_reason = this_qinfo->shallMatch() ? "<matched all fields>" : "<matched no field>";
+                                    }
+
+
+                                    if (this_hit) {
+                                        dbq_assert(!this_hit_reason.empty()); // if we got a hit, we also need a reason
+                                        const char *prefix = GBS_global_string("%c%c", '1'+this_qinfo->getIndex(), this_qinfo->shallMatch() ? ' ' : '!');
+                                        this_hit_reason    = string(prefix)+this_hit_reason;
+                                    }
+
+                                    // calculate result
+                                    // (Note: the operator of the 1st query is always OR)
+                                    switch (this_op) {
+                                        case AND: {
+                                            dbq_assert(hit); // otherwise there was no need to run this sub-query
+                                            hit        = this_hit;
+                                            hit_reason = hit_reason.empty() ? this_hit_reason : hit_reason+" & "+this_hit_reason;
+                                            break;
+                                        }
+                                        case OR: {
+                                            dbq_assert(!hit); // otherwise there was no need to run this sub-query
+                                            hit        = this_hit;
+                                            hit_reason = this_hit_reason;
+                                            break;
+                                        }
+                                        default:
+                                            dbq_assert(0);
+                                            break;
+                                    }
+                                    dbq_assert(!hit || !hit_reason.empty()); // if we got a hit, we also need a reason
+                                }
+                                break;
+                            }
+                            default: dbq_assert(0); break;
+                        }
+
+                        if (hit) {
+                            dbq_assert(!hit_reason.empty());
+
+                            if (mode == QUERY_REDUCE) {
+                                string prev_info = getHitInfo(gb_item, query);
+                                hit_reason = prev_info+" (kept cause "+hit_reason+")";
+                            }
+
+                            SET_QUERIED(gb_item, query, hit_reason.c_str(), hit_reason.length());
+                        }
+                        else CLEAR_QUERIED(gb_item, query);
+
+                        if (error) {
+                            error = GB_failedTo_error("query", GBT_get_name(gb_item), error);
+                        }
+                        else {
+                            progress.inc_and_check_user_abort(error);
+                        }
                     }
                 }
             }
