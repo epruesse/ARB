@@ -333,7 +333,7 @@ AW_window *NT_create_extendeds_window(AW_root *aw_root)
         aws->at("list");
         awt_create_selection_list_on_extendeds(GLOBAL_gb_main, (AW_window *)aws, AWAR_SAI_NAME);
 
-        AW_CL scannerid = create_db_scanner(GLOBAL_gb_main, aws, "info", 0, 0, 0, DB_SCANNER, 0, 0, 0, &AWT_species_selector);
+        AW_CL scannerid = create_db_scanner(GLOBAL_gb_main, aws, "info", 0, 0, 0, DB_SCANNER, 0, 0, 0, &ITEM_species);
         aws->get_root()->awar(AWAR_SAI_NAME)->add_callback(map_SAI_to_scanner, scannerid);
     }
     aws->show();

@@ -31,7 +31,7 @@ namespace QUERY {
         AWAR    species_name;                           // AWAR containing current species name
         AWAR    tree_name;                              // AWAR containing current tree name
 
-        const struct ad_item_selector *selector;               // which kind of item do we handle?
+        const struct ItemSelector *selector;               // which kind of item do we handle?
 
         int select_bit;                                 // one of 1 2 4 8 .. 128 (one for each query box)
         int use_menu;                                   // put additional commands in menu
@@ -71,14 +71,14 @@ namespace QUERY {
     long     count_queried_items(DbQuery *query, QUERY_RANGE range);
     void     unquery_all(void *dummy, DbQuery *query);
 
-    const struct ad_item_selector *get_queried_itemtype(DbQuery *query);
+    const struct ItemSelector *get_queried_itemtype(DbQuery *query);
 
     inline bool IS_QUERIED(GBDATA *gb_item, const query_spec *aqs) { return aqs->is_queried(gb_item); }
     bool IS_QUERIED(GBDATA *gb_item, const DbQuery *query);
 
     void DbQuery_update_list(DbQuery *query);
 
-    AW_window *create_colorize_items_window(AW_root *aw_root, GBDATA *gb_main, const ad_item_selector *sel);
+    AW_window *create_colorize_items_window(AW_root *aw_root, GBDATA *gb_main, const ItemSelector *sel);
 
     GBDATA *query_get_gb_main(DbQuery *query);
     

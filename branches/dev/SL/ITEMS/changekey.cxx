@@ -35,7 +35,7 @@ inline bool is_in_reserved_path(const char *fieldpath) {
 // --------------------------------------------------------------------------------
 
 
-static void awt_delete_unused_changekeys(GBDATA *gb_main, const CharPtrArray& names, const char *change_key_path) {
+static void delete_unused_changekeys(GBDATA *gb_main, const CharPtrArray& names, const char *change_key_path) {
     // deletes all keys from 'change_key_path' which are not listed in 'names'
     GBDATA *gb_key_data = GB_search(gb_main, change_key_path, GB_CREATE_CONTAINER);
     GBDATA *gb_key      = gb_key_data ? GB_entry(gb_key_data, CHANGEKEY) : 0;
@@ -82,7 +82,7 @@ static void awt_delete_unused_changekeys(GBDATA *gb_main, const CharPtrArray& na
     }
 }
 
-static void awt_show_all_changekeys(GBDATA *gb_main, const char *change_key_path) {
+static void show_all_changekeys(GBDATA *gb_main, const char *change_key_path) {
     GBDATA *gb_key_data = GB_search(gb_main, change_key_path, GB_CREATE_CONTAINER);
     for (GBDATA *gb_key = gb_key_data ? GB_entry(gb_key_data, CHANGEKEY) : 0;
          gb_key;
@@ -95,17 +95,17 @@ static void awt_show_all_changekeys(GBDATA *gb_main, const char *change_key_path
     }
 }
 
-void awt_selection_list_rescan(GBDATA *gb_main, long bitfilter, awt_rescan_mode mode) {
+void species_field_selection_list_rescan(GBDATA *gb_main, long bitfilter, RescanMode mode) {
     GB_push_transaction(gb_main);
     GBDATA *gb_species_data = GB_search(gb_main, "species_data", GB_CREATE_CONTAINER);
 
     StrArray names;
     GBT_scan_db(names, gb_species_data, 0);
 
-    if (mode & AWT_RS_DELETE_UNUSED_FIELDS) awt_delete_unused_changekeys(gb_main, names, CHANGE_KEY_PATH);
-    if (mode & AWT_RS_SHOW_ALL) awt_show_all_changekeys(gb_main, CHANGE_KEY_PATH);
+    if (mode & RESCAN_DEL_UNUSED) delete_unused_changekeys(gb_main, names, CHANGE_KEY_PATH);
+    if (mode & RESCAN_SHOW_ALL)   show_all_changekeys(gb_main, CHANGE_KEY_PATH);
 
-    if (mode & AWT_RS_SCAN_UNKNOWN_FIELDS) {
+    if (mode & RESCAN_UNKNOWN) {
         GBT_add_new_changekey(gb_main, "name", GB_STRING);
         GBT_add_new_changekey(gb_main, "acc", GB_STRING);
         GBT_add_new_changekey(gb_main, "full_name", GB_STRING);
@@ -126,17 +126,17 @@ void awt_selection_list_rescan(GBDATA *gb_main, long bitfilter, awt_rescan_mode 
 
 
 
-void awt_gene_field_selection_list_rescan(GBDATA *gb_main, long bitfilter, awt_rescan_mode mode) {
+void gene_field_selection_list_rescan(GBDATA *gb_main, long bitfilter, RescanMode mode) {
     GB_push_transaction(gb_main);
     GBDATA *gb_species_data = GB_search(gb_main, "species_data", GB_CREATE_CONTAINER);
 
     StrArray names;
     GBT_scan_db(names, gb_species_data, GENE_DATA_PATH);
 
-    if (mode & AWT_RS_DELETE_UNUSED_FIELDS) awt_delete_unused_changekeys(gb_main, names, CHANGE_KEY_PATH_GENES);
-    if (mode & AWT_RS_SHOW_ALL) awt_show_all_changekeys(gb_main, CHANGE_KEY_PATH_GENES);
+    if (mode & RESCAN_DEL_UNUSED) delete_unused_changekeys(gb_main, names, CHANGE_KEY_PATH_GENES);
+    if (mode & RESCAN_SHOW_ALL)   show_all_changekeys(gb_main, CHANGE_KEY_PATH_GENES);
 
-    if (mode & AWT_RS_SCAN_UNKNOWN_FIELDS) {
+    if (mode & RESCAN_UNKNOWN) {
         GBT_add_new_gene_changekey(gb_main, "name", GB_STRING);
 
         GBT_add_new_gene_changekey(gb_main, "pos_start", GB_STRING);
@@ -157,17 +157,17 @@ void awt_gene_field_selection_list_rescan(GBDATA *gb_main, long bitfilter, awt_r
     GB_pop_transaction(gb_main);
 }
 
-void awt_experiment_field_selection_list_rescan(GBDATA *gb_main, long bitfilter, awt_rescan_mode mode) {
+void experiment_field_selection_list_rescan(GBDATA *gb_main, long bitfilter, RescanMode mode) {
     GB_push_transaction(gb_main);
     GBDATA *gb_species_data = GB_search(gb_main, "species_data", GB_CREATE_CONTAINER);
 
     StrArray names;
     GBT_scan_db(names, gb_species_data, EXPERIMENT_DATA_PATH);
 
-    if (mode & AWT_RS_DELETE_UNUSED_FIELDS) awt_delete_unused_changekeys(gb_main, names, CHANGE_KEY_PATH_EXPERIMENTS);
-    if (mode & AWT_RS_SHOW_ALL) awt_show_all_changekeys(gb_main, CHANGE_KEY_PATH_EXPERIMENTS);
+    if (mode & RESCAN_DEL_UNUSED) delete_unused_changekeys(gb_main, names, CHANGE_KEY_PATH_EXPERIMENTS);
+    if (mode & RESCAN_SHOW_ALL)   show_all_changekeys(gb_main, CHANGE_KEY_PATH_EXPERIMENTS);
 
-    if (mode & AWT_RS_SCAN_UNKNOWN_FIELDS) {
+    if (mode & RESCAN_UNKNOWN) {
         GBT_add_new_experiment_changekey(gb_main, "name", GB_STRING);
 
         for (int i = 0; names[i]; ++i) {
@@ -183,17 +183,17 @@ void awt_experiment_field_selection_list_rescan(GBDATA *gb_main, long bitfilter,
     GB_pop_transaction(gb_main);
 }
 
-void awt_selection_list_scan_unknown_cb(AW_window *, GBDATA *gb_main, long bitfilter)   { awt_selection_list_rescan(gb_main, bitfilter, AWT_RS_SCAN_UNKNOWN_FIELDS); }
-void awt_selection_list_delete_unused_cb(AW_window *, GBDATA *gb_main, long bitfilter)  { awt_selection_list_rescan(gb_main, bitfilter, AWT_RS_DELETE_UNUSED_FIELDS); }
-void awt_selection_list_unhide_all_cb(AW_window *, GBDATA *gb_main, long bitfilter)     { awt_selection_list_rescan(gb_main, bitfilter, AWT_RS_SHOW_ALL); }
-void awt_selection_list_update_cb(AW_window *, GBDATA *gb_main, long bitfilter)         { awt_selection_list_rescan(gb_main, bitfilter, AWT_RS_UPDATE_FIELDS); }
+void species_field_selection_list_scan_unknown_cb (AW_window *, GBDATA *gb_main, long bitfilter) { species_field_selection_list_rescan(gb_main, bitfilter, RESCAN_UNKNOWN);    }
+void species_field_selection_list_delete_unused_cb(AW_window *, GBDATA *gb_main, long bitfilter) { species_field_selection_list_rescan(gb_main, bitfilter, RESCAN_DEL_UNUSED); }
+void species_field_selection_list_unhide_all_cb   (AW_window *, GBDATA *gb_main, long bitfilter) { species_field_selection_list_rescan(gb_main, bitfilter, RESCAN_SHOW_ALL);   }
+void species_field_selection_list_update_cb       (AW_window *, GBDATA *gb_main, long bitfilter) { species_field_selection_list_rescan(gb_main, bitfilter, RESCAN_REFRESH);    }
 
-void awt_gene_field_selection_list_scan_unknown_cb(AW_window *, GBDATA *gb_main, long bitfilter)    { awt_gene_field_selection_list_rescan(gb_main, bitfilter, AWT_RS_SCAN_UNKNOWN_FIELDS); }
-void awt_gene_field_selection_list_delete_unused_cb(AW_window *, GBDATA *gb_main, long bitfilter)   { awt_gene_field_selection_list_rescan(gb_main, bitfilter, AWT_RS_DELETE_UNUSED_FIELDS); }
-void awt_gene_field_selection_list_unhide_all_cb(AW_window *, GBDATA *gb_main, long bitfilter)   { awt_gene_field_selection_list_rescan(gb_main, bitfilter, AWT_RS_SHOW_ALL); }
-void awt_gene_field_selection_list_update_cb(AW_window *, GBDATA *gb_main, long bitfilter)          { awt_gene_field_selection_list_rescan(gb_main, bitfilter, AWT_RS_UPDATE_FIELDS); }
+void gene_field_selection_list_scan_unknown_cb (AW_window *, GBDATA *gb_main, long bitfilter) { gene_field_selection_list_rescan(gb_main, bitfilter, RESCAN_UNKNOWN);    }
+void gene_field_selection_list_delete_unused_cb(AW_window *, GBDATA *gb_main, long bitfilter) { gene_field_selection_list_rescan(gb_main, bitfilter, RESCAN_DEL_UNUSED); }
+void gene_field_selection_list_unhide_all_cb   (AW_window *, GBDATA *gb_main, long bitfilter) { gene_field_selection_list_rescan(gb_main, bitfilter, RESCAN_SHOW_ALL);   }
+void gene_field_selection_list_update_cb       (AW_window *, GBDATA *gb_main, long bitfilter) { gene_field_selection_list_rescan(gb_main, bitfilter, RESCAN_REFRESH);    }
 
-void awt_experiment_field_selection_list_scan_unknown_cb(AW_window *, GBDATA *gb_main, long bitfilter)  { awt_experiment_field_selection_list_rescan(gb_main, bitfilter, AWT_RS_SCAN_UNKNOWN_FIELDS); }
-void awt_experiment_field_selection_list_delete_unused_cb(AW_window *, GBDATA *gb_main, long bitfilter) { awt_experiment_field_selection_list_rescan(gb_main, bitfilter, AWT_RS_DELETE_UNUSED_FIELDS); }
-void awt_experiment_field_selection_list_unhide_all_cb(AW_window *, GBDATA *gb_main, long bitfilter) { awt_experiment_field_selection_list_rescan(gb_main, bitfilter, AWT_RS_SHOW_ALL); }
-void awt_experiment_field_selection_list_update_cb(AW_window *, GBDATA *gb_main, long bitfilter)        { awt_experiment_field_selection_list_rescan(gb_main, bitfilter, AWT_RS_UPDATE_FIELDS); }
+void experiment_field_selection_list_scan_unknown_cb (AW_window *, GBDATA *gb_main, long bitfilter) { experiment_field_selection_list_rescan(gb_main, bitfilter, RESCAN_UNKNOWN);    }
+void experiment_field_selection_list_delete_unused_cb(AW_window *, GBDATA *gb_main, long bitfilter) { experiment_field_selection_list_rescan(gb_main, bitfilter, RESCAN_DEL_UNUSED); }
+void experiment_field_selection_list_unhide_all_cb   (AW_window *, GBDATA *gb_main, long bitfilter) { experiment_field_selection_list_rescan(gb_main, bitfilter, RESCAN_SHOW_ALL);   }
+void experiment_field_selection_list_update_cb       (AW_window *, GBDATA *gb_main, long bitfilter) { experiment_field_selection_list_rescan(gb_main, bitfilter, RESCAN_REFRESH);    }
