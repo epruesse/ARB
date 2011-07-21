@@ -62,7 +62,7 @@ namespace QUERY {
         AWAR               awar_parsvalue;
         AWAR               awar_parspredefined;
         AWAR               awar_queries[QUERY_SEARCHES];
-        AWAR               awar_not[QUERY_SEARCHES]; // not flags for queries
+        AWAR               awar_not[QUERY_SEARCHES];    // not flags for queries
         AWAR               awar_operator[QUERY_SEARCHES]; // not flags for queries
         AWAR               awar_ere;
         AWAR               awar_where;
@@ -76,10 +76,8 @@ namespace QUERY {
         unsigned long      sort_mask;                   // contains several cascading sort criteria (QUERY_SORT_CRITERIA_BITS each)
         AW_selection_list *result_id;
         int                select_bit;                  // one of 1 2 4 8 .. 128 (one for each query box)
-
-        const ItemSelector *selector;
-
-        GB_HASH *hit_description; // key = char* (hit item name), value = char* (description of hit - allocated!)
+        ItemSelector      *selector;
+        GB_HASH           *hit_description;             // key = char* (hit item name), value = char* (description of hit - allocated!)
 
         bool is_queried(GBDATA *gb_item) const {
             return select_bit & GB_read_usr_private(gb_item);

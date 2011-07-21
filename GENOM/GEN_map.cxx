@@ -13,8 +13,6 @@
 #include "GEN_gene.hxx"
 #include "GEN_graphic.hxx"
 #include "GEN_nds.hxx"
-#include "GEN_interface.hxx"
-#include "EXP_interface.hxx"
 #include "EXP_local.hxx"
 
 #include <dbui.h>
@@ -1436,11 +1434,11 @@ static void GEN_create_mask_submenu(AW_window_menu_modes *awm, GBDATA *gb_main) 
 }
 
 static AW_window *create_colorize_genes_window(AW_root *aw_root, AW_CL cl_gb_main) {
-    return QUERY::create_colorize_items_window(aw_root, (GBDATA*)cl_gb_main, &GEN_item_selector);
+    return QUERY::create_colorize_items_window(aw_root, (GBDATA*)cl_gb_main, GEN_get_selector());
 }
 
 static AW_window *create_colorize_organisms_window(AW_root *aw_root, AW_CL cl_gb_main) {
-    return QUERY::create_colorize_items_window(aw_root, (GBDATA*)cl_gb_main, &ITEM_organism);
+    return QUERY::create_colorize_items_window(aw_root, (GBDATA*)cl_gb_main, ORGANISM_get_selector());
 }
 
 void GEN_popup_organism_window(AW_window *aww, AW_CL cl_gb_main, AW_CL) {

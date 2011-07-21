@@ -25,12 +25,6 @@ class AW_device_size;
 class AW_screen_area;
 struct GB_HASH;
 
-typedef void (*AW_CB)(AW_window*, AW_CL, AW_CL);
-typedef void (*AW_CB0)(AW_window*);
-typedef void (*AW_CB1)(AW_window*, AW_CL);
-typedef void (*AW_CB2)(AW_window*, AW_CL, AW_CL);
-typedef AW_window *(*AW_Window_Creator)(AW_root*, AW_CL);
-
 // --------------------------------------------------------------------------------
 
 #define AW_POPUP  ((AW_CB)(-1))

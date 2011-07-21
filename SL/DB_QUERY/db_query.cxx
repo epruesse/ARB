@@ -89,7 +89,7 @@ GBDATA *QUERY::query_get_gb_main(DbQuery *query) {
     return query->gb_main;
 }
 
-const struct ItemSelector *QUERY::get_queried_itemtype(DbQuery *query) {
+const ItemSelector *QUERY::get_queried_itemtype(DbQuery *query) {
     return query->selector;
 }
 
@@ -113,8 +113,8 @@ bool QUERY::IS_QUERIED(GBDATA *gb_item, const DbQuery *query) {
 }
 
 long QUERY::count_queried_items(DbQuery *query, QUERY_RANGE range) {
-    GBDATA             *gb_main  = query->gb_main;
-    const ItemSelector *selector = query->selector;
+    GBDATA       *gb_main  = query->gb_main;
+    ItemSelector *selector = query->selector;
 
     long count = 0;
 
@@ -137,10 +137,10 @@ long QUERY::count_queried_items(DbQuery *query, QUERY_RANGE range) {
 #endif
 
 static int query_count_items(DbQuery *query, QUERY_RANGE range, QUERY_MODES mode) {
-    int                 count    = 0;
-    GBDATA             *gb_main  = query->gb_main;
-    const ItemSelector *selector = query->selector;
-    GB_transaction      ta(gb_main);
+    int             count    = 0;
+    GBDATA         *gb_main  = query->gb_main;
+    ItemSelector   *selector = query->selector;
+    GB_transaction  ta(gb_main);
 
     for (GBDATA *gb_item_container = selector->get_first_item_container(gb_main, query->aws->get_root(), range);
          gb_item_container;
@@ -258,8 +258,8 @@ static int compare_hits(const void *cl_item1, const void *cl_item2, void *cl_par
     GBDATA *gb_item1 = (GBDATA*)cl_item1;
     GBDATA *gb_item2 = (GBDATA*)cl_item2;
 
-    DbQuery            *query    = param->query;
-    const ItemSelector *selector = query->selector;
+    DbQuery      *query    = param->query;
+    ItemSelector *selector = query->selector;
 
     int cmp = 0;
 
@@ -345,7 +345,7 @@ void QUERY::DbQuery_update_list(DbQuery *query) {
     AW_root     *aw_root = aww->get_root();
     QUERY_RANGE  range   = (QUERY_RANGE)aw_root->awar(query->awar_where)->read_int();
 
-    const ItemSelector *selector = query->selector;
+    ItemSelector *selector = query->selector;
 
     // create array of hits
     long     count  = count_queried_items(query, range);
@@ -444,8 +444,8 @@ static void mark_queried_cb(AW_window*, AW_CL cl_query, AW_CL mark) {
     // mark = 1 -> mark listed
     // mark | 8 -> don't change rest
 
-    DbQuery            *query    = (DbQuery*)cl_query;
-    const ItemSelector *selector = query->selector;
+    DbQuery      *query    = (DbQuery*)cl_query;
+    ItemSelector *selector = query->selector;
 
     GB_push_transaction(query->gb_main);
 
@@ -483,9 +483,9 @@ void QUERY::unquery_all(void *, DbQuery *query) {
 }
 
 static void delete_queried_species_cb(AW_window*, AW_CL cl_query) {
-    DbQuery            *query    = (DbQuery*)cl_query;
-    const ItemSelector *selector = query->selector;
-    
+    DbQuery      *query    = (DbQuery*)cl_query;
+    ItemSelector *selector = query->selector;
+
     GB_begin_transaction(query->gb_main);
 
     long cnt = 0;
@@ -1017,8 +1017,8 @@ bool query_info::matches(const char *data, GBDATA *gb_item) const {
 }
 
 static void perform_query_cb(AW_window*, AW_CL cl_query, AW_CL cl_ext_query) {
-    DbQuery            *query    = (DbQuery*)cl_query;
-    const ItemSelector *selector = query->selector;
+    DbQuery      *query    = (DbQuery*)cl_query;
+    ItemSelector *selector = query->selector;
 
     GB_push_transaction(query->gb_main);
 
@@ -1388,8 +1388,8 @@ void QUERY::search_duplicated_field_content(AW_window *, DbQuery *query, bool to
         error = "Please select a key (in the first query expression)";
     }
     else {
-        GB_transaction      dumy(query->gb_main);
-        const ItemSelector *selector = query->selector;
+        GB_transaction  dumy(query->gb_main);
+        ItemSelector   *selector = query->selector;
 
         GBDATA      *gb_species_data = GB_search(query->gb_main, "species_data", GB_CREATE_CONTAINER);
         long         hashsize;
@@ -1529,11 +1529,11 @@ void QUERY::search_duplicated_field_content(AW_window *, DbQuery *query, bool to
 }
 
 static void modify_fields_of_queried_cb(AW_window*, AW_CL cl_query) {
-    DbQuery            *query    = (DbQuery*)cl_query;
-    const ItemSelector *selector = query->selector;
-    AW_root            *aw_root  = query->aws->get_root();
-    GB_ERROR            error    = 0;
-    char               *key      = aw_root->awar(query->awar_parskey)->read_string();
+    DbQuery      *query    = (DbQuery*)cl_query;
+    ItemSelector *selector = query->selector;
+    AW_root      *aw_root  = query->aws->get_root();
+    GB_ERROR      error    = 0;
+    char         *key      = aw_root->awar(query->awar_parskey)->read_string();
 
     if (!strcmp(key, "name")) {
         bool abort = false;
@@ -1707,13 +1707,13 @@ static void predef_prg(AW_root *aw_root, DbQuery *query) {
 }
 
 static void colorize_queried_cb(AW_window *, AW_CL cl_query) {
-    DbQuery            *query       = (DbQuery *)cl_query;
-    const ItemSelector *selector    = query->selector;
-    GB_transaction      trans_dummy(query->gb_main);
-    GB_ERROR            error       = 0;
-    AW_root            *aw_root     = query->aws->get_root();
-    int                 color_group = aw_root->awar(AWAR_COLORIZE)->read_int();
-    QUERY_RANGE         range       = (QUERY_RANGE)aw_root->awar(query->awar_where)->read_int();
+    DbQuery        *query       = (DbQuery *)cl_query;
+    ItemSelector   *selector    = query->selector;
+    GB_transaction  trans_dummy(query->gb_main);
+    GB_ERROR        error       = 0;
+    AW_root        *aw_root     = query->aws->get_root();
+    int             color_group = aw_root->awar(AWAR_COLORIZE)->read_int();
+    QUERY_RANGE     range       = (QUERY_RANGE)aw_root->awar(query->awar_where)->read_int();
 
     for (GBDATA *gb_item_container = selector->get_first_item_container(query->gb_main, aw_root, range);
          !error && gb_item_container;
@@ -1732,14 +1732,14 @@ static void colorize_queried_cb(AW_window *, AW_CL cl_query) {
     if (error) GB_export_error(error);
 }
 
-struct color_mark_data {
-    const ItemSelector *sel;
-    GBDATA             *gb_main;
+struct color_mark_data { // @@@ this is a BoundItemSel
+    ItemSelector *sel;
+    GBDATA       *gb_main;
 };
 
 static void colorize_marked_cb(AW_window *aww, AW_CL cl_cmd) {
     const color_mark_data *cmd         = (color_mark_data *)cl_cmd;
-    const ItemSelector    *sel         = cmd->sel;
+    ItemSelector          *sel         = cmd->sel;
     GB_transaction         trans_dummy(cmd->gb_main);
     GB_ERROR               error       = 0;
     AW_root               *aw_root     = aww->get_root();
@@ -1766,7 +1766,7 @@ static void colorize_marked_cb(AW_window *aww, AW_CL cl_cmd) {
 // @@@ mark_colored_cb is obsolete! (will be replaced by dynamic coloring in the future)
 static void mark_colored_cb(AW_window *aww, AW_CL cl_cmd, AW_CL cl_mode) {
     const color_mark_data *cmd         = (color_mark_data *)cl_cmd;
-    const ItemSelector    *sel         = cmd->sel;
+    ItemSelector          *sel         = cmd->sel;
     int                    mode        = int(cl_mode);     // 0 = unmark 1 = mark 2 = invert
     AW_root               *aw_root     = aww->get_root();
     int                    color_group = aw_root->awar(AWAR_COLORIZE)->read_int();
@@ -1849,7 +1849,7 @@ static void colorset_changed_cb(GBDATA*, int *cl_csd, GB_CB_TYPE cbt) {
 
 static char *create_colorset_representation(const color_save_data *csd, GB_ERROR& error) {
     const color_mark_data *cmd     = csd->cmd;
-    const ItemSelector    *sel     = cmd->sel;
+    ItemSelector          *sel     = cmd->sel;
     QUERY_RANGE            range   = QUERY_ALL_ITEMS;
     AW_root               *aw_root = csd->aww->get_root();
     GBDATA                *gb_main = cmd->gb_main;
@@ -1892,7 +1892,7 @@ static char *create_colorset_representation(const color_save_data *csd, GB_ERROR
 
 static GB_ERROR clear_all_colors(const color_save_data *csd) {
     const color_mark_data *cmd     = csd->cmd;
-    const ItemSelector    *sel     = cmd->sel;
+    ItemSelector          *sel     = cmd->sel;
     QUERY_RANGE            range   = QUERY_ALL_ITEMS;
     AW_root               *aw_root = csd->aww->get_root();
     GB_ERROR               error   = 0;
@@ -1925,7 +1925,7 @@ static void clear_all_colors_cb(AW_window *, AW_CL cl_csd) {
 
 static GB_ERROR restore_colorset_representation(const color_save_data *csd, const char *colorset) {
     const color_mark_data *cmd     = csd->cmd;
-    const ItemSelector    *sel     = cmd->sel;
+    ItemSelector          *sel     = cmd->sel;
     GBDATA                *gb_main = cmd->gb_main;
 
     int   buffersize = 200;
@@ -2119,7 +2119,7 @@ static const char *color_group_name(int color_group) {
     return buf;
 }
 
-static AW_window *create_colorize_window(AW_root *aw_root, GBDATA *gb_main, DbQuery *query, const ItemSelector *sel) {
+static AW_window *create_colorize_window(AW_root *aw_root, GBDATA *gb_main, DbQuery *query, ItemSelector *sel) {
     // invoked by   'colorize listed'                   (sel != 0)
     // and          'colorize marked/mark colored'      (cbs != 0)
 
@@ -2139,8 +2139,8 @@ static AW_window *create_colorize_window(AW_root *aw_root, GBDATA *gb_main, DbQu
     }
     dbq_assert(!(mode == COLORIZE_INVALID));
 
-    const ItemSelector *Sel  = mode == COLORIZE_LISTED ? query->selector : sel;
-    const char         *what = mode == COLORIZE_LISTED ? "listed" : "marked";
+    ItemSelector *Sel  = mode == COLORIZE_LISTED ? query->selector : sel;
+    const char   *what = mode == COLORIZE_LISTED ? "listed" : "marked";
 
     {
         char *macro_name  = GBS_global_string_copy("COLORIZE_%s_%s", what, Sel->items_name);
@@ -2221,7 +2221,7 @@ static AW_window *create_colorize_queried_window(AW_root *aw_root, DbQuery *quer
     return create_colorize_window(aw_root, query->gb_main, query, 0);
 }
 
-AW_window *QUERY::create_colorize_items_window(AW_root *aw_root, GBDATA *gb_main, const ItemSelector *sel) {
+AW_window *QUERY::create_colorize_items_window(AW_root *aw_root, GBDATA *gb_main, ItemSelector *sel) {
     return create_colorize_window(aw_root, gb_main, 0, sel);
 }
 
@@ -2293,11 +2293,11 @@ static AW_window *create_modify_fields_window(AW_root *aw_root, DbQuery *query) 
 
 static void set_field_of_queried_cb(AW_window*, AW_CL cl_query, AW_CL append) {
     // set fields of listed items
-    DbQuery            *query    = (DbQuery*)cl_query;
-    const ItemSelector *selector = query->selector;
-    GB_ERROR            error    = 0;
-    AW_root            *aw_root  = query->aws->get_root();
-    char               *key      = aw_root->awar(query->awar_setkey)->read_string();
+    DbQuery      *query    = (DbQuery*)cl_query;
+    ItemSelector *selector = query->selector;
+    GB_ERROR      error    = 0;
+    AW_root      *aw_root  = query->aws->get_root();
+    char         *key      = aw_root->awar(query->awar_setkey)->read_string();
 
     if (strcmp(key, "name") == 0) {
         error = "You cannot set the name field";
@@ -2408,11 +2408,11 @@ AW_window *create_awt_do_set_list(AW_root *aw_root, DbQuery *query)
 
 static void set_protection_of_queried_cb(AW_window*, AW_CL cl_query) {
     // set protection of listed items
-    DbQuery            *query    = (DbQuery*)cl_query;
-    const ItemSelector *selector = query->selector;
-    AW_root            *aw_root  = query->aws->get_root();
-    GB_ERROR            error    = 0;
-    char               *key      = aw_root->awar(query->awar_setkey)->read_string();
+    DbQuery      *query    = (DbQuery*)cl_query;
+    ItemSelector *selector = query->selector;
+    AW_root      *aw_root  = query->aws->get_root();
+    GB_ERROR      error    = 0;
+    char         *key      = aw_root->awar(query->awar_setkey)->read_string();
 
     GB_begin_transaction(query->gb_main);
     GBDATA *gb_key_data = GB_search(query->gb_main, selector->change_key_path, GB_CREATE_CONTAINER);

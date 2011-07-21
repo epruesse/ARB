@@ -79,6 +79,7 @@ DBwriter.o: $(ARBHOME)/INCLUDE/AW_rename.hxx
 DBwriter.o: $(ARBHOME)/INCLUDE/dupstr.h
 DBwriter.o: $(ARBHOME)/INCLUDE/FileBuffer.h
 DBwriter.o: $(ARBHOME)/INCLUDE/GEN.hxx
+DBwriter.o: $(ARBHOME)/INCLUDE/items.h
 DBwriter.o: $(ARBHOME)/INCLUDE/smartptr.h
 DBwriter.o: $(ARBHOME)/INCLUDE/test_global.h
 DBwriter.o: $(ARBHOME)/INCLUDE/Translate.hxx

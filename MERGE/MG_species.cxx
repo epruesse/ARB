@@ -419,7 +419,7 @@ AW_window *MG_transfer_fields(AW_root *aw_root)
     create_selection_list_on_itemfields(GLOBAL_gb_merge,
                                             aws, AWAR_FIELD1,
                                             FIELD_FILTER_NDS,
-                                            "scandb", "rescandb", &ITEM_species, 20, 10);
+                                            "scandb", "rescandb", SPECIES_get_selector(), 20, 10);
 
     return (AW_window*)aws;
 }
@@ -524,7 +524,7 @@ AW_window *create_mg_move_fields(AW_root *aw_root)
     create_selection_list_on_itemfields(GLOBAL_gb_merge,
                                             aws, AWAR_FIELD1,
                                             FIELD_FILTER_NDS,
-                                            "scandb", "rescandb", &ITEM_species, 20, 10);
+                                            "scandb", "rescandb", SPECIES_get_selector(), 20, 10);
 
     return (AW_window*)aws;
 }
@@ -622,8 +622,8 @@ AW_window *create_mg_merge_tagged_fields(AW_root *aw_root)
 
     aws->at("del1");    aws->create_input_field(AWAR_TAG_DEL1, 5);
 
-    create_selection_list_on_itemfields(GLOBAL_gb_merge, aws, AWAR_FIELD1, FIELD_FILTER_NDS, "fields1", 0, &ITEM_species, 20, 10);
-    create_selection_list_on_itemfields(GLOBAL_gb_dest,  aws, AWAR_FIELD2, FIELD_FILTER_NDS, "fields2", 0, &ITEM_species, 20, 10);
+    create_selection_list_on_itemfields(GLOBAL_gb_merge, aws, AWAR_FIELD1, FIELD_FILTER_NDS, "fields1", 0, SPECIES_get_selector(), 20, 10);
+    create_selection_list_on_itemfields(GLOBAL_gb_dest,  aws, AWAR_FIELD2, FIELD_FILTER_NDS, "fields2", 0, SPECIES_get_selector(), 20, 10);
 
     return (AW_window*)aws;
 }
@@ -877,16 +877,15 @@ static GBDATA *mg_get_selected_species2(GBDATA * /* gb_main */, AW_root *aw_root
     return gb_species;
 }
 
-static struct ItemSelector MG_species_selector[2];
+static MutableItemSelector MG_species_selector[2];
 
 static void mg_initialize_species_selectors() {
     static int initialized = 0;
     if (!initialized) {
-        MG_species_selector[0] = ITEM_species;
-        MG_species_selector[1] = ITEM_species;
+        MG_species_selector[0] = MG_species_selector[1] = *SPECIES_get_selector();
 
         for (int s = 0; s <= 1; ++s) {
-            ItemSelector& sel = MG_species_selector[s];
+            MutableItemSelector& sel = MG_species_selector[s];
 
             sel.update_item_awars        = s ? mg_select_species2 : mg_select_species1;
             sel.get_first_item_container = s ? mg_get_first_species_data2 : mg_get_first_species_data1;

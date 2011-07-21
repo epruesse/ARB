@@ -448,10 +448,8 @@ NT_dbrepair.o: $(ARBHOME)/INCLUDE/arbtools.h
 NT_dbrepair.o: $(ARBHOME)/INCLUDE/attributes.h
 NT_dbrepair.o: $(ARBHOME)/INCLUDE/aw_base.hxx
 NT_dbrepair.o: $(ARBHOME)/INCLUDE/aw_color_groups.hxx
-NT_dbrepair.o: $(ARBHOME)/INCLUDE/aw_keysym.hxx
 NT_dbrepair.o: $(ARBHOME)/INCLUDE/aw_msg.hxx
 NT_dbrepair.o: $(ARBHOME)/INCLUDE/aw_root.hxx
-NT_dbrepair.o: $(ARBHOME)/INCLUDE/aw_window.hxx
 NT_dbrepair.o: $(ARBHOME)/INCLUDE/cb.h
 NT_dbrepair.o: $(ARBHOME)/INCLUDE/dupstr.h
 NT_dbrepair.o: $(ARBHOME)/INCLUDE/EXP.hxx
@@ -590,6 +588,7 @@ NT_import.o: $(ARBHOME)/INCLUDE/cb.h
 NT_import.o: $(ARBHOME)/INCLUDE/dbui.h
 NT_import.o: $(ARBHOME)/INCLUDE/dupstr.h
 NT_import.o: $(ARBHOME)/INCLUDE/GEN.hxx
+NT_import.o: $(ARBHOME)/INCLUDE/items.h
 NT_import.o: $(ARBHOME)/INCLUDE/mg_merge.hxx
 NT_import.o: $(ARBHOME)/INCLUDE/smartptr.h
 NT_import.o: $(ARBHOME)/INCLUDE/test_global.h

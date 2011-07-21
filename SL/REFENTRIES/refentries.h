@@ -54,7 +54,7 @@ namespace RefEntries {
             free(field);
         }
 
-        const char *get_refs(const ItemSelector& itemtype, GBDATA *gb_item) const;
+        const char *get_refs(ItemSelector& itemtype, GBDATA *gb_item) const;
         char *filter_refs(const char *refs, GBDATA *gb_item) const;
 
         bool ignore_unknown_refs() const { return !error_if_ref_unknown; }
@@ -66,14 +66,14 @@ namespace RefEntries {
         ItemSelector  itemtype;
 
     public:
-        ReferringEntriesHandler(GBDATA *gb_main_, const ItemSelector& itemtype_)
+        ReferringEntriesHandler(GBDATA *gb_main_, ItemSelector& itemtype_)
             : gb_main(gb_main_), 
               itemtype(itemtype_)
         {
         }
 
         GBDATA *get_gbmain() const { return gb_main; }
-        const ItemSelector& get_referring_item() const { return itemtype; }
+        ItemSelector& get_referring_item() const { return itemtype; }
 
 
         ARB_ERROR with_all_referred_items(GBDATA *gb_item, const RefSelector& refsel, referred_item_handler cb);

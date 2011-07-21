@@ -51,7 +51,7 @@ using namespace std;
 // fixed flues a put into DB again.
 // see http://bugs.arb-home.de/ticket/143
 
-typedef GB_ERROR (*item_check_fun)(GBDATA *gb_item, const ItemSelector *sel);
+typedef GB_ERROR (*item_check_fun)(GBDATA *gb_item, ItemSelector *sel);
 
 typedef map<string, item_check_fun>    item_check_map;
 typedef item_check_map::const_iterator item_check_iter;
@@ -167,7 +167,7 @@ void CheckedConsistencies::perform_item_checks(GB_ERROR& error) {
             GB_transaction ta(gb_main);
             bool           is_genome_db = GEN_is_genome_db(gb_main, -1);
 
-            error = perform_selected_item_checks(&ITEM_species);
+            error = perform_selected_item_checks(SPECIES_get_selector());
             if (!error && is_genome_db) {
                 error             = perform_selected_item_checks(GEN_get_selector());
                 if (!error) error = perform_selected_item_checks(EXP_get_selector());
@@ -981,7 +981,7 @@ static GB_ERROR NT_fix_dict_compress(GBDATA *gb_main, size_t, size_t) {
 
 // --------------------------------------------------------------------------------
 
-static GB_ERROR remove_dup_colors(GBDATA *gb_item, const ItemSelector *sel) {
+static GB_ERROR remove_dup_colors(GBDATA *gb_item, ItemSelector *sel) {
     // Databases out there may contain multiple 'ARB_color' entries.
     // Due to some already fixed bug - maybe introduced in r5309 and fixed in r5825
 

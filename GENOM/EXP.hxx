@@ -18,6 +18,9 @@
 #ifndef AW_BASE_HXX
 #include <aw_base.hxx>
 #endif
+#ifndef ITEMS_H
+#include <items.h>
+#endif
 
 class AW_window_menu_modes;
 
@@ -39,7 +42,6 @@ void EXP_create_experiments_submenu(AW_window_menu_modes *awm, GBDATA *gb_main, 
 // windows:
 AW_window *EXP_create_experiment_query_window(AW_root *aw_root, AW_CL cl_gb_main);
 
-struct ItemSelector;
 ItemSelector *EXP_get_selector(); // return EXP_item_selector
 
 #else

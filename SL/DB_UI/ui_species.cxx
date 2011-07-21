@@ -281,9 +281,9 @@ static void map_species(AW_root *aw_root, AW_CL scannerid, AW_CL mapOrganism) {
 }
 
 static long count_field_occurrance(const BoundItemSel *bsel, const char *field_name) {
-    QUERY_RANGE         RANGE = QUERY_ALL_ITEMS;
-    long                count = 0;
-    const ItemSelector& sel   = bsel->selector;
+    QUERY_RANGE   RANGE = QUERY_ALL_ITEMS;
+    long          count = 0;
+    ItemSelector& sel   = bsel->selector;
 
     for (GBDATA *gb_container = sel.get_first_item_container(bsel->gb_main, NULL, RANGE);
          gb_container;
@@ -481,7 +481,7 @@ const BoundItemSel *KeySorter::bitem_selector = NULL;
 arb_progress       *KeySorter::sort_progress  = NULL;
 
 static void reorder_keys(AW_window *aws, ReorderMode mode, Itemfield_Selection *sel_left, Itemfield_Selection *sel_right) {
-    const ItemSelector *selector = sel_left->get_selector();
+    ItemSelector *selector = sel_left->get_selector();
     ui_assert(selector == sel_right->get_selector());
     
     int left_index  = aws->get_index_of_selected_element(sel_left->get_sellist());
@@ -550,8 +550,8 @@ static void reorder_up_down(AW_window *aws, AW_CL cl_selright, AW_CL cl_dir) {
     GBDATA              *gb_main   = sel_right->get_gb_main();
 
     GB_begin_transaction(gb_main);
-    const ItemSelector *selector   = sel_right->get_selector();
-    int                 list_index = aws->get_index_of_selected_element(sel_right->get_sellist());
+    ItemSelector *selector   = sel_right->get_selector();
+    int           list_index = aws->get_index_of_selected_element(sel_right->get_sellist());
 
     const char *field_name = aws->get_root()->awar(AWAR_FIELD_REORDER_DEST)->read_char_pntr();
     GBDATA     *gb_field   = GBT_get_changekey(gb_main, field_name, selector->change_key_path);
@@ -585,8 +585,8 @@ static void reorder_up_down(AW_window *aws, AW_CL cl_selright, AW_CL cl_dir) {
 }
 
 AW_window *DBUI::create_fields_reorder_window(AW_root *root, AW_CL cl_bound_item_selector) {
-    const BoundItemSel  *bound_selector = (const BoundItemSel*)cl_bound_item_selector;
-    const ItemSelector&  selector       = bound_selector->selector;
+    const BoundItemSel *bound_selector = (const BoundItemSel*)cl_bound_item_selector;
+    ItemSelector&       selector       = bound_selector->selector;
 
     static AW_window_simple *awsa[QUERY_ITEM_TYPES];
     if (!awsa[selector.type]) {
@@ -662,9 +662,9 @@ static void hide_field_cb(AW_window *aws, AW_CL cl_sel, AW_CL cl_hide) {
     GB_ERROR  error   = GB_begin_transaction(gb_main);
 
     if (!error) {
-        char               *source    = aws->get_root()->awar(AWAR_FIELD_DELETE)->read_string();
-        const ItemSelector *selector  = item_sel->get_selector();
-        GBDATA             *gb_source = GBT_get_changekey(gb_main, source, selector->change_key_path);
+        char         *source    = aws->get_root()->awar(AWAR_FIELD_DELETE)->read_string();
+        ItemSelector *selector  = item_sel->get_selector();
+        GBDATA       *gb_source = GBT_get_changekey(gb_main, source, selector->change_key_path);
 
         if (!gb_source) error = "Please select the field you want to (un)hide";
         else error            = GBT_write_int(gb_source, CHANGEKEY_HIDDEN, int(cl_hide));
@@ -682,11 +682,11 @@ static void field_delete_cb(AW_window *aws, AW_CL cl_sel) {
     GB_ERROR  error   = GB_begin_transaction(gb_main);
 
     if (!error) {
-        char               *source     = aws->get_root()->awar(AWAR_FIELD_DELETE)->read_string();
-        const ItemSelector *selector   = item_sel->get_selector();
-        AW_selection_list  *sellist    = item_sel->get_sellist();
-        int                 curr_index = aws->get_index_of_selected_element(sellist);
-        GBDATA             *gb_source  = GBT_get_changekey(gb_main, source, selector->change_key_path);
+        char              *source     = aws->get_root()->awar(AWAR_FIELD_DELETE)->read_string();
+        ItemSelector      *selector   = item_sel->get_selector();
+        AW_selection_list *sellist    = item_sel->get_sellist();
+        int                curr_index = aws->get_index_of_selected_element(sellist);
+        GBDATA            *gb_source  = GBT_get_changekey(gb_main, source, selector->change_key_path);
 
         if (!gb_source) error = "Please select the field you want to delete";
         else error            = GB_delete(gb_source);
@@ -719,8 +719,8 @@ static void field_delete_cb(AW_window *aws, AW_CL cl_sel) {
 
 
 AW_window *DBUI::create_field_delete_window(AW_root *root, AW_CL cl_bound_item_selector) {
-    const BoundItemSel  *bound_selector = (const BoundItemSel*)cl_bound_item_selector;
-    const ItemSelector&  selector       = bound_selector->selector;
+    const BoundItemSel *bound_selector = (const BoundItemSel*)cl_bound_item_selector;
+    ItemSelector&       selector       = bound_selector->selector;
 
     static AW_window_simple *awsa[QUERY_ITEM_TYPES];
     if (!awsa[selector.type]) {
@@ -765,8 +765,8 @@ AW_window *DBUI::create_field_delete_window(AW_root *root, AW_CL cl_bound_item_s
 }
 
 static void field_create_cb(AW_window *aws, AW_CL cl_bound_item_selector) {
-    const BoundItemSel  *bound_selector = (const BoundItemSel*)cl_bound_item_selector;
-    const ItemSelector&  selector       = bound_selector->selector;
+    const BoundItemSel *bound_selector = (const BoundItemSel*)cl_bound_item_selector;
+    ItemSelector&       selector       = bound_selector->selector;
 
     GB_push_transaction(bound_selector->gb_main);
     char     *name   = aws->get_root()->awar(AWAR_FIELD_CREATE_NAME)->read_string();
@@ -787,8 +787,8 @@ static void field_create_cb(AW_window *aws, AW_CL cl_bound_item_selector) {
 }
 
 AW_window *DBUI::create_field_create_window(AW_root *root, AW_CL cl_bound_item_selector) {
-    const BoundItemSel  *bound_selector = (const BoundItemSel*)cl_bound_item_selector;
-    const ItemSelector&  selector       = bound_selector->selector;
+    const BoundItemSel *bound_selector = (const BoundItemSel*)cl_bound_item_selector;
+    ItemSelector&       selector       = bound_selector->selector;
 
     static AW_window_simple *awsa[QUERY_ITEM_TYPES];
     if (awsa[selector.type]) return (AW_window *)awsa[selector.type];
@@ -843,8 +843,8 @@ static void field_convert_commit_cb(AW_window *aws, AW_CL cl_bound_item_selector
 }
 
 static void field_convert_update_typesel_cb(AW_window *aws, AW_CL cl_bound_item_selector) {
-    const BoundItemSel  *bound_selector = (const BoundItemSel*)cl_bound_item_selector;
-    const ItemSelector&  selector       = bound_selector->selector;
+    const BoundItemSel *bound_selector = (const BoundItemSel*)cl_bound_item_selector;
+    ItemSelector&       selector       = bound_selector->selector;
 
     AW_root *root    = aws->get_root();
     GBDATA  *gb_main = bound_selector->gb_main;
@@ -859,8 +859,8 @@ static void field_convert_update_typesel_cb(AW_window *aws, AW_CL cl_bound_item_
 }
 
 static AW_window *create_field_convert_window(AW_root *root, AW_CL cl_bound_item_selector) {
-    const BoundItemSel  *bound_selector = (const BoundItemSel*)cl_bound_item_selector;
-    const ItemSelector&  selector       = bound_selector->selector;
+    const BoundItemSel *bound_selector = (const BoundItemSel*)cl_bound_item_selector;
+    ItemSelector&       selector       = bound_selector->selector;
 
     static AW_window_simple *awsa[QUERY_ITEM_TYPES];
     if (awsa[selector.type]) return (AW_window *)awsa[selector.type];
@@ -913,7 +913,7 @@ void DBUI::insert_field_admin_menuitems(AW_window *aws, GBDATA *gb_main) {
         ui_assert(bis->gb_main == gb_main);
     }
     else {
-        bis = new BoundItemSel(gb_main, ITEM_species);
+        bis = new BoundItemSel(gb_main, *SPECIES_get_selector());
     }
     
     aws->insert_menu_topic("spec_reorder_fields", "Reorder fields ...",     "R", "spaf_reorder.hlp", AWM_ALL, AW_POPUP, (AW_CL)create_fields_reorder_window,  (AW_CL)bis);
@@ -1248,7 +1248,7 @@ static AW_window *create_next_neighbours_listed_window(AW_root *aw_root, AW_CL c
         create_selection_list_on_itemfields(query_get_gb_main((DbQuery*)cl_query),
                                                 aws, AWAR_NN_DEST_FIELD,
                                                 (1<<GB_INT) | (1<<GB_STRING), "field", 0,
-                                                &ITEM_species, 20, 10);
+                                                SPECIES_get_selector(), 20, 10);
 
         aws->at("go");
         aws->callback(awtc_nn_search_all_listed, cl_query);
@@ -1354,7 +1354,7 @@ static AW_window *create_speciesOrganismWindow(AW_root *aw_root, GBDATA *gb_main
         aws->create_button("HELP", "HELP", "H");
 
         AW_CL scannerid = create_db_scanner(gb_main, aws, "box", 0, "field", "enable", DB_VIEWER, 0, "mark", FIELD_FILTER_NDS,
-                                            organismWindow ? &ITEM_organism : &ITEM_organism);
+                                            organismWindow ? ORGANISM_get_selector() : ORGANISM_get_selector());
 
         if (organismWindow) aws->create_menu("ORGANISM",    "O", AWM_ALL);
         else                aws->create_menu("SPECIES",     "S", AWM_ALL);
@@ -1440,7 +1440,7 @@ AW_window *DBUI::create_species_query_window(AW_root *aw_root, AW_CL cl_gb_main)
         awtqs.do_refresh_pos_fig  = "dorefresh";
         awtqs.open_parser_pos_fig = "openparser";
         awtqs.create_view_window  = create_species_info_window;
-        awtqs.selector            = &ITEM_species;
+        awtqs.selector            = SPECIES_get_selector();
 
         DbQuery *query           = create_query_box(aws, &awtqs, "spec");
         GLOBAL_species_query = query;

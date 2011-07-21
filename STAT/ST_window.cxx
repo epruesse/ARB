@@ -220,7 +220,7 @@ AW_window *STAT_create_quality_check_window(AW_root *root, GBDATA *gb_main) {
                                                 1 << GB_STRING,
                                                 "dest",
                                                 0,
-                                                &ITEM_species,
+                                                SPECIES_get_selector(),
                                                 20, 10,
                                                 SF_STANDARD,
                                                 "SELECT_REPORT_FIELD");
