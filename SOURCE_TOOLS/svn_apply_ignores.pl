@@ -107,10 +107,10 @@ sub propedit_dir($$$) {
   my @unwanted = (
                   # '', # empty lines
                   # 'Makefile.bak',
-                  # '*.gcda',
+                  '*.gcda',
                  );
 
-  # if (not $creates_gcov) { push @unwanted, '*.gcno'; }
+  if (not $creates_gcov) { push @unwanted, '*.gcno'; }
   # if (not $creates_bak) { push @unwanted, '*.bak'; }
   # if (not $is_root) { push @unwanted, 'ChangeLog'; }
 
@@ -131,7 +131,7 @@ sub propedit_dir($$$) {
   # ---------------------------------------- add ignores
 
   # if ($creates_bak) { add_missing('*.bak'); }
-  # if ($creates_gcov) { add_missing('*.gcno'); }
+  if ($creates_gcov) { add_missing('*.gcno'); }
 
   # ---------------------------------------- add ignores
 
