@@ -41,7 +41,7 @@ my %used_files = map { $_ => 1; } (
                                    'Makefile',
                                    'Makefile.org',
                                    'Makefile.test',
-                                   'Makefile.setup',
+                                   'Makefile.setup.template',
                                    'Makefile.suite',
                                    '!BRANCH_STATE',
                                    'AUTHORS',
