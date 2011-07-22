@@ -86,7 +86,7 @@ sub update_lib($$$) {
       if ($doCopy==1) {
         $command = "cp -p '$source' '$dest'";
         print "Updating $dest\n";
-        system($command)==0 || die "Failed to execute '$command' (Reason: $!)";
+        system($command)==0 || die "Failed to execute '$command' (Reason: $?)";
       }
 
       if (not -f $dest) { die "oops .. where is $dest?"; }
