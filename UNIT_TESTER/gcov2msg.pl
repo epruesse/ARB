@@ -177,7 +177,12 @@ sub collect_gcov_data($$) {
         $line = $last;
       }
 
-      print "Summary $source_name: lines=$lines covered=$covered (coverage=$percent%)\n";
+      if ($percent<90) {
+        print "$source_name:0: Warning: Summary lines=$lines covered=$covered (coverage=$percent%)\n";
+      }
+      else {
+        print "Summary $source_name: lines=$lines covered=$covered (coverage=$percent%)\n";
+      }
       rename($gcov,$cov) || die "Failed to rename '$gcov' -> '$cov' (Reason: $!)";
     }
   }
