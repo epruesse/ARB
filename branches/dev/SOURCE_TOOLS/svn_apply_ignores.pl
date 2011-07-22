@@ -105,14 +105,13 @@ sub propedit_dir($$$) {
   # ---------------------------------------- remove ignores
 
   my @unwanted = (
-                  # '', # empty lines
                   'Makefile.bak',
                   '*.gcda',
                  );
 
   if (not $creates_gcov) { push @unwanted, '*.gcno'; }
   if (not $creates_bak) { push @unwanted, '*.bak'; }
-  # if (not $is_root) { push @unwanted, 'ChangeLog'; }
+  if (not $is_root) { push @unwanted, 'ChangeLog'; }
 
   # ---------------------------------------- remove ignores
 
