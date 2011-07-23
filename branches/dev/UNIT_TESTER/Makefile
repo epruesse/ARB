@@ -1,7 +1,9 @@
 # INCLUDE und GLOBALS MAIN CC cflags werden von aussen uebergeben
 .SUFFIXES: .o .cxx .depend .setup
 
-include Makefile.setup.local
+first: $(MAIN)
+
+include Makefile.setup.include
 
 TESTER_OBJECTS = \
 	UnitTester.o \

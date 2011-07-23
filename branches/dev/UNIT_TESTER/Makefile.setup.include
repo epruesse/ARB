@@ -1,0 +1,8 @@
+
+include Makefile.setup.local
+
+Makefile.setup.local : Makefile.setup.template
+	@echo "Generating $@ from $<"
+	@(test -f $@ && mv $@ $@.last) || true
+	@cp $< $@
+

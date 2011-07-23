@@ -12,7 +12,7 @@
 dummy:
 	false
 
-include Makefile.setup.local
+include Makefile.setup.include
 
 
 RELUNITDIR=../$(UNITDIR)
