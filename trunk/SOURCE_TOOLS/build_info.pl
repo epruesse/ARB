@@ -173,7 +173,7 @@ update($arb_build_h,@arb_build);
 # update revision info?
 if ($in_SVN) {
   # in SVN checkout -> update revision info
-  my $revision = `svnversion -n $ARBHOME`;
+  my $revision = `svnversion -c -n $ARBHOME`;
   my @svn_revision = (
                       '#define ARB_SVN_REVISION "'.$revision.'"',
                      );
