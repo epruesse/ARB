@@ -174,6 +174,10 @@ update($arb_build_h,@arb_build);
 if ($in_SVN) {
   # in SVN checkout -> update revision info
   my $revision = `svnversion -c -n $ARBHOME`;
+  if ($revision =~ /^2:/) {
+    # for some reason -c a "2:" prefix
+    $revision = $';
+  }
   my @svn_revision = (
                       '#define ARB_SVN_REVISION "'.$revision.'"',
                      );
