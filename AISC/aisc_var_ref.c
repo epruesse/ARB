@@ -1,12 +1,12 @@
-/* ================================================================ */
+// ================================================================
 /*                                                                  */
-/*   File      : aisc_var_ref.c                                     */
-/*   Purpose   :                                                    */
+//   File      : aisc_var_ref.c
+//   Purpose   :
 /*                                                                  */
-/*   Institute of Microbiology (Technical University Munich)        */
-/*   http://www.arb-home.de/                                        */
+//   Institute of Microbiology (Technical University Munich)
+//   http://www.arb-home.de/
  /*                                                                  */
- /* ================================================================ */
+ // ================================================================
 
 #include "aisc_token.h"
 #include "aisc_inline.h"
@@ -145,7 +145,7 @@ const Token *Data::find_qualified_token(const char *str, LookupScope scope) cons
 
 
 char *get_var_string(const Data& data, char *var, bool allow_missing_var) { 
-    /* Calculates result for an expression like '$(IDENT:fdg|"sdfg")' */
+    // Calculates result for an expression like '$(IDENT:fdg|"sdfg")'
     SKIP_SPACE_LF(var);
     int use_path = 0;
     while (var[0] == '&') {

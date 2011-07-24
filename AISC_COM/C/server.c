@@ -1,6 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
-/* #include <malloc.h> */
+// #include <malloc.h>
 #include <unistd.h>
 #include <errno.h>
 #include <string.h>
@@ -18,8 +18,8 @@
 #define FD_SET_TYPE
 
 #if defined(DEBUG)
-/* #define SERVER_TERMINATE_ON_CONNECTION_CLOSE */
-#endif /* DEBUG */
+// #define SERVER_TERMINATE_ON_CONNECTION_CLOSE
+#endif // DEBUG
 
 #include <signal.h>
 #include <sys/time.h>
@@ -27,7 +27,7 @@
 #include <setjmp.h>
 
 #include "aisc_com.h"
-/* AISC_MKPT_PROMOTE:#include <aisc_func_types.h> */
+// AISC_MKPT_PROMOTE:#include <aisc_func_types.h>
 #include "server.h"
 #include "aisc_global.h"
 
@@ -48,8 +48,8 @@
 
 #define AISC_MAGIC_NUMBER_FILTER 0xffffff00
 
-/* ------------------------- */
-/*      some structures      */
+// -------------------------
+//      some structures
 
 #ifdef __cplusplus
 extern "C" {
@@ -130,8 +130,8 @@ void aisc_server_errorf(const char *templat, ...) {
 }
 
 
-/* ----------------------------- */
-/*      valid memory tester      */
+// -----------------------------
+//      valid memory tester
 
 static bool    sigsegv_occurred = false;
 static bool    catch_sigsegv    = 0;
@@ -195,8 +195,8 @@ static void aisc_server_sigsegv(int /*sig*/) {
     UNINSTALL_SIGHANDLER(SIGSEGV, aisc_server_sigsegv, SIG_DFL, "aisc_server_sigsegv");
 }
 
-/* ----------------------------- */
-/*      broken pipe handler      */
+// -----------------------------
+//      broken pipe handler
 
 static int pipe_broken;
 
@@ -206,8 +206,8 @@ static void aisc_server_sigpipe(int)
     pipe_broken = 1;
 }
 
-/* -------------------------- */
-/*      new read command      */
+// --------------------------
+//      new read command
 
 static int aisc_s_read(int socket, char *ptr, int size)
 {
@@ -223,7 +223,7 @@ static int aisc_s_read(int socket, char *ptr, int size)
 
 #if defined(DUMP_COMMUNICATION)
     aisc_dump_hex("aisc_s_read: ", ptr-size, size);
-#endif /* DUMP_COMMUNICATION */
+#endif // DUMP_COMMUNICATION
 
     return size;
 }
@@ -245,14 +245,14 @@ static int aisc_s_write(int socket, char *ptr, int size)
 
 #if defined(DUMP_COMMUNICATION)
     aisc_dump_hex("aisc_s_write: ", ptr-size, size);
-#endif /* DUMP_COMMUNICATION */
+#endif // DUMP_COMMUNICATION
 
     return 0;
 }
 
 
-/* ---------------------------------------------- */
-/*      object+attr_names for error messages      */
+// ----------------------------------------------
+//      object+attr_names for error messages
 
 
 const char *aisc_get_object_names(long i)
@@ -293,7 +293,7 @@ static const char *aisc_get_m_id(const char *path, char **m_name, int *id) {
     }
     
     const char *p = strchr(path, ':');
-    if (path[0] == '*' || path[0] == ':') {     /* UNIX MODE */
+    if (path[0] == '*' || path[0] == ':') {     // UNIX MODE
         char buffer[128];
         if (!p) {
             return "OPEN_ARB_DB_CLIENT ERROR: missing ':' in *:socketid";
@@ -328,7 +328,7 @@ static const char *aisc_get_m_id(const char *path, char **m_name, int *id) {
 
 
 static const char *aisc_open_socket(const char *path, int delay, int do_connect, int *psocket, char **unix_name) {
-    struct in_addr  addr;       /* union -> u_long  */
+    struct in_addr  addr;       // union -> u_long
     struct hostent *he;
     const char     *err;
     static int      socket_id;
@@ -345,7 +345,7 @@ static const char *aisc_open_socket(const char *path, int delay, int do_connect,
     if (err) {
         return err;
     }
-    if (socket_id >= 0) {       /* UNIX */
+    if (socket_id >= 0) {       // UNIX
         sockaddr_in so_ad;
         memset((char *)&so_ad, 0, sizeof(sockaddr_in));
         *psocket = socket(PF_INET, SOCK_STREAM, 0);
@@ -356,11 +356,11 @@ static const char *aisc_open_socket(const char *path, int delay, int do_connect,
         arb_gethostbyname(mach_name, he, err);
         if (err) return err;
 
-        /* simply take first address */
+        // simply take first address
         addr.s_addr = *(int *) (he->h_addr);
         so_ad.sin_addr = addr;
         so_ad.sin_family = AF_INET;
-        so_ad.sin_port = htons(socket_id);      /* @@@ = pb_socket  */
+        so_ad.sin_port = htons(socket_id);      // @@@ = pb_socket
         if (do_connect) {
             if (connect(*psocket, (struct sockaddr*)&so_ad, 16)) {
                 return "";
@@ -449,7 +449,7 @@ Hs_struct *open_aisc_server(const char *path, int timeout, int fork) {
 
     aisc_server_bytes_first = 0;
     aisc_server_bytes_last  = 0;
-    /* simply take first address */
+    // simply take first address
     if (listen(so, MAX_QUEUE_LEN) < 0) {
         printf("Error in open_aisc_server: could not listen (errno=%i)\n", errno);
         return NULL;
@@ -600,11 +600,11 @@ static long aisc_talking_get(long *in_buf, int size, long *out_buf, int max_size
                     AISC_DUMP(aisc_talking_get, int, bs->size);
 #if defined(DUMP_COMMUNICATION)
                     aisc_dump_hex("aisc_talking_get bytestring: ", bs->data, bs->size);
-#endif /* DUMP_COMMUNICATION */
+#endif // DUMP_COMMUNICATION
 
                     if (bs->data && bs->size)
                         aisc_s_add_to_bytes_queue(bs->data, bs->size);
-                    out_buf[out_pos++] = bs->size;              /* size */
+                    out_buf[out_pos++] = bs->size;              // size
                     break;
                 }
             default:
@@ -753,7 +753,7 @@ static long aisc_talking_sets(long *in_buf, int size, long *out_buf, long *objec
 
 #if defined(DUMP_COMMUNICATION)
                         aisc_dump_hex("aisc_talking_sets bytestring: ", (char*)ptr, bsize);
-#endif /* DUMP_COMMUNICATION */
+#endif // DUMP_COMMUNICATION
 
                         function((long)object, &bs);
                     }
@@ -1041,7 +1041,7 @@ static long aisc_fork_server(long *in_buf, int size, long *out_buf, int max_size
     max_size = max_size;
     pid      = fork();
 
-    if (pid<0) return 0;                            /* return OK because fork does not work */
+    if (pid<0) return 0;                            // return OK because fork does not work
     return pid;
 }
 
@@ -1323,10 +1323,10 @@ Hs_struct *aisc_accept_calls(Hs_struct *hs)
             printf("ERROR: poll in aisc_accept_calls\n");
             return 0;
         }
-        if (!anz) { /* timed out */
+        if (!anz) { // timed out
             return hs;
         }
-        /* an event has occurred */
+        // an event has occurred
         if ((timeout.tv_usec>=0)&&(timeout.tv_usec<100000)) timeout.tv_usec = 100000;
 
         if (FD_ISSET(hs->hso, &set)) {
@@ -1366,7 +1366,7 @@ Hs_struct *aisc_accept_calls(Hs_struct *hs)
                 }
 
                 hs->nsoc--;
-                if (si == hs->soci) {   /* first one */
+                if (si == hs->soci) {   // first one
                     hs->soci = si->next;
                 }
                 else {
@@ -1377,19 +1377,19 @@ Hs_struct *aisc_accept_calls(Hs_struct *hs)
                 }
                 free(si);
 #ifdef SERVER_TERMINATE_ON_CONNECTION_CLOSE
-                if (hs->nsoc == 0) { /* no clients left */
-                    if (hs->fork) exit(0); /* child exits */
-                    return hs; /* parent exits */
+                if (hs->nsoc == 0) { // no clients left
+                    if (hs->fork) exit(0); // child exits
+                    return hs; // parent exits
                 }
                 break;
 #else
-                /* normal behavior */
+                // normal behavior
                 if (hs->nsoc == 0 && hs->fork) exit(0);
                 break;
 #endif
             }
         }
-    } /* while main loop */
+    } // while main loop
 
     return hs;
 }
@@ -1418,11 +1418,11 @@ void aisc_server_shutdown_and_exit(Hs_struct *hs, int exitcode) {
 }
 
 
-/* --------------------------- */
-/*      special functions      */
+// ---------------------------
+//      special functions
 
 
-int aisc_add_destroy_callback(aisc_destroy_callback callback, long clientdata) {        /* call from server function */
+int aisc_add_destroy_callback(aisc_destroy_callback callback, long clientdata) {        // call from server function
     Socinf    *si;
     int        socket = aisc_server_con;
     Hs_struct *hs     = aisc_server_hs;
@@ -1443,7 +1443,7 @@ int aisc_add_destroy_callback(aisc_destroy_callback callback, long clientdata) {
     return socket;
 }
 
-void aisc_remove_destroy_callback() {   /* call from server function */
+void aisc_remove_destroy_callback() {   // call from server function
     Socinf    *si;
     int        socket = aisc_server_con;
     Hs_struct *hs     = aisc_server_hs;
@@ -1518,5 +1518,5 @@ int aisc_server_load_token(FILE *fd, char *buffer, int maxsize) {
     }
     
     *p = 0;
-    return result; /* read error maxsize reached */
+    return result; // read error maxsize reached
 }

@@ -107,7 +107,7 @@ ST_ML_Color *STAT_get_color_string(ST_ML *st_ml, char *species_name, AP_tree *no
 }
 
 bool STAT_update_ml_likelihood(ST_ML *st_ml, char *result[4], int& latest_update, const char *species_name, AP_tree *node) {
-    /*! @see ST_ML::update_ml_likelihood() */
+    //! @see ST_ML::update_ml_likelihood()
     return st_ml->update_ml_likelihood(result, latest_update, species_name, node);
 }
 

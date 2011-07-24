@@ -9,7 +9,7 @@
 #include <arbdbt.h>
 #include <arb_strbuf.h>
 
-/*! recalc filter */
+//! recalc filter
 void awt_create_select_filter_window_aw_cb(void *, struct adfiltercbstruct *cbs)
 {       // update the variables
     AW_root *aw_root = cbs->awr;
@@ -324,7 +324,7 @@ char *AWT_get_combined_filter_name(AW_root *aw_root, GB_CSTR prefix) {
 }
 
 AW_window *awt_create_select_filter_win(AW_root *aw_root, AW_CL res_of_create_select_filter) {
-    /*! Create a filter selection window */
+    //! Create a filter selection window
 
     struct adfiltercbstruct *acbs = (struct adfiltercbstruct *)res_of_create_select_filter;
 

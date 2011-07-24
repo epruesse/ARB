@@ -16,7 +16,7 @@
 
 #define di_assert(cond) arb_assert(cond)
 
-#define epsilon 0.000001        /* a small number */
+#define epsilon 0.000001        // a small number
 
 double di_protdist::pameigs[20] = {
     -0.022091252, -0.019297602, 0.000004760, -0.017477817,
@@ -151,10 +151,10 @@ double di_protdist::pamprobs[20][20] = {
 
 void di_protdist::cats(di_cattype      wcat)
 {
-    /* define categories of amino acids */
+    // define categories of amino acids
     aas             b;
 
-    /* fundamental subgroups */
+    // fundamental subgroups
     cat[(long) cys - (long) ala] = 1;
     cat[(long) met - (long) ala] = 2;
     cat[(long) val - (long) ala] = 3;
@@ -198,7 +198,7 @@ void di_protdist::cats(di_cattype      wcat)
                 cat[(long) b - (long) ala] = 3;
         }
     }
-    /* Ben Hall's personal opinion */
+    // Ben Hall's personal opinion
     if (wcat != hall)
         return;
     for (b = ala; (long) b <= (long) val; b = (aas) ((long) b + 1)) {
@@ -285,12 +285,12 @@ void di_protdist::maketrans() {
         for (j = 0; j <= 19; j++)
             prob[i][j] /= sqrt(pi[i] * pi[j]);
     }
-    /* computes pi^(1/2)*B*pi^(-1/2)  */
+    // computes pi^(1/2)*B*pi^(-1/2)
 }
 
 void di_protdist::code()
 {
-    /* make up table of the code 0 = u, 1 = c, 2 = a, 3 = g */
+    // make up table of the code 0 = u, 1 = c, 2 = a, 3 = g
 
     trans[0][0][0] = phe;
     trans[0][0][1] = phe;
@@ -378,7 +378,7 @@ void di_protdist::code()
 
 void di_protdist::transition()
 {
-    /* calculations related to transition-transversion ratio */
+    // calculations related to transition-transversion ratio
     double          aa, bb, freqr, freqy, freqgr, freqty;
 
     freqr = freqa + freqg;
@@ -400,7 +400,7 @@ void di_protdist::transition()
 
 void di_protdist::givens(di_aa_matrix a, long i, long j, long n, double ctheta, double stheta, bool left)
 {
-    /* Givens transform at i,j for 1..n with angle theta */
+    // Givens transform at i,j for 1..n with angle theta
     long            k;
     double          d;
 
@@ -420,7 +420,7 @@ void di_protdist::givens(di_aa_matrix a, long i, long j, long n, double ctheta, 
 
 void di_protdist::coeffs(double x, double y, double *c, double *s, double accuracy)
 {
-    /* compute cosine and sine of theta */
+    // compute cosine and sine of theta
     double          root;
 
     root = sqrt(x * x + y * y);
@@ -436,7 +436,7 @@ void di_protdist::coeffs(double x, double y, double *c, double *s, double accura
 
 void di_protdist::tridiag(di_aa_matrix a, long n, double accuracy)
 {
-    /* Givens tridiagonalization */
+    // Givens tridiagonalization
     long            i, j;
     double          s, c;
 
@@ -452,7 +452,7 @@ void di_protdist::tridiag(di_aa_matrix a, long n, double accuracy)
 
 void di_protdist::shiftqr(di_aa_matrix a, long n, double accuracy)
 {
-    /* QR eigenvalue-finder */
+    // QR eigenvalue-finder
     long            i, j;
     double          approx, s, c, d, TEMP, TEMP1;
 
@@ -483,7 +483,7 @@ void di_protdist::shiftqr(di_aa_matrix a, long n, double accuracy)
 
 void di_protdist::qreigen(di_aa_matrix proba, long n)
 {
-    /* QR eigenvector/eigenvalue method for symmetric matrix */
+    // QR eigenvector/eigenvalue method for symmetric matrix
     double          accuracy;
     long            i, j;
 
@@ -501,13 +501,13 @@ void di_protdist::qreigen(di_aa_matrix proba, long n)
         for (j = 0; j <= 19; j++)
             proba[i][j] = sqrt(pi[j]) * eigvecs[i][j];
     }
-    /* proba[i][j] is the value of U' times pi^(1/2) */
+    // proba[i][j] is the value of U' times pi^(1/2)
 }
 
 
 void di_protdist::pameigen()
 {
-    /* eigenanalysis for PAM matrix, precomputed */
+    // eigenanalysis for PAM matrix, precomputed
     memcpy(prob, pamprobs, sizeof(pamprobs));
     memcpy(eig, pameigs, sizeof(pameigs));
     fracchange = 0.01;
@@ -522,7 +522,7 @@ void di_protdist::build_exptteig(double tt) {
 
 void di_protdist::predict(double /* tt */, long nb1, long  nb2)
 {
-    /* make contribution to prediction of this aa pair */
+    // make contribution to prediction of this aa pair
     long            m;
     double          q;
     double          TEMP;
@@ -644,7 +644,7 @@ double di_protdist::pos_2_tt(int pos) {
 
 void di_protdist::build_akt_predikt(double tt)
 {
-    /* take an actual slope from the hash table, else calculate a new one */
+    // take an actual slope from the hash table, else calculate a new one
     int             pos = tt_2_pos(tt);
     if (!slopes[pos]) {
         build_predikt_table(pos);
@@ -672,7 +672,7 @@ GB_ERROR di_protdist::makedists(bool *aborted_flag) {
     for (i = 0; i < spp; i++) {
         matrix->set(i, i, 0.0);
         {
-            /* move all unknown characters to del */
+            // move all unknown characters to del
             ap_pro *seq1 = entries[i]->sequence_protein->get_sequence();
             for (k = 0; k <chars;  k++) {
                 b1 = seq1[k];

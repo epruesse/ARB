@@ -121,15 +121,15 @@ public:
     AW_awar *set_srt(const char *srt);
 
     AW_awar *map(const char *awarn);
-    AW_awar *map(AW_default dest); /* map to new address */
-    AW_awar *map(AW_awar *dest); /* map to new address */
-    AW_awar *unmap();           /* map to original address */
+    AW_awar *map(AW_default dest); // map to new address
+    AW_awar *map(AW_awar *dest); // map to new address
+    AW_awar *unmap();           // map to original address
 
 #if defined(ASSERTION_USED)
     bool is_valid() const { return correlated(gb_var, gb_origin); } // both or none NULL
 #endif // ASSERTION_USED
 
-    void get(char **p_string)  { freeset(*p_string, read_string()); } /* deletes existing targets !!! */
+    void get(char **p_string)  { freeset(*p_string, read_string()); } // deletes existing targets !!!
     void get(long *p_int)      { *p_int = (long)read_int(); }
     void get(double *p_double) { *p_double = read_float(); }
     void get(float *p_float)   { *p_float = read_float(); }
@@ -160,7 +160,7 @@ public:
 
     GB_ERROR rewrite_as(char *aw_value) { return rewrite_as_string(aw_value); };
 
-    GB_ERROR toggle_toggle();   /* switches between 1/0 */
+    GB_ERROR toggle_toggle();   // switches between 1/0
     void     touch();
 
     GB_ERROR make_global() __ATTR__USERESULT;       // should be used by ARB_init_global_awars only

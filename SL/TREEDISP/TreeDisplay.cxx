@@ -834,7 +834,7 @@ void AWT_graphic_tree::key_command(AWT_COMMAND_MODE /* cmd */, AW_key_mod key_mo
                                 next_group_mode = state.next_collapse_mode();
                             }
 
-                            /* int result = */
+                            // int result =
                             group_tree(at, next_group_mode, 0);
 
                             Save    = true;
@@ -861,7 +861,7 @@ void AWT_graphic_tree::key_command(AWT_COMMAND_MODE /* cmd */, AW_key_mod key_mo
                             next_group_mode = state.next_collapse_mode();
                         }
 
-                        /* int result = */
+                        // int result =
                         group_rest_tree(at, next_group_mode, 0);
 
                         Save    = true;
@@ -1167,7 +1167,7 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
                         break;
                     }
 
-                    /*!* check security level @@@ ***/
+                    //!* check security level @@@ **
                     at = (AP_tree *)cl->client_data1;
                     if (at && at->father) {
                         bl_drag_flag = 1;
@@ -1394,7 +1394,7 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
             if (type==AW_Mouse_Press) {
                 switch (button) {
                     case AWT_M_LEFT:
-                        /*! reset rotation **/
+                        //! reset rotation *
                         if (cl->exists) {
                             at = (AP_tree *)cl->client_data1;
                             if (at) {
@@ -1405,7 +1405,7 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
                         }
                         break;
                     case AWT_M_MIDDLE:
-                        /*! reset spread **/
+                        //! reset spread *
                         if (cl->exists) {
                             at = (AP_tree *)cl->client_data1;
                             if (at) {
@@ -1416,7 +1416,7 @@ void AWT_graphic_tree::command(AW_device *device, AWT_COMMAND_MODE cmd,
                         }
                         break;
                     case AWT_M_RIGHT:
-                        /*! reset linewidth **/
+                        //! reset linewidth *
                         if (cl->exists) {
                             at = (AP_tree *)cl->client_data1;
                             if (at) {
@@ -2170,7 +2170,7 @@ void AWT_graphic_tree::show_radial_tree(AP_tree * at, double x_center,
             y_center = y_center+l_max*sin(w);
             scale_text_koordinaten(disp_device, at->gr.gc, x_center, y_center, w, 0);
 
-            /* insert text (e.g. name of group) */
+            // insert text (e.g. name of group)
             const char *data = make_node_text_nds(this->gb_main, at->gb_node, NDS_OUTPUT_LEAFTEXT, at->get_gbt_tree(), tree_static->get_tree_name());
             disp_device->text(at->gr.gc, data,
                               (AW_pos)x_center, (AW_pos) y_center,
@@ -2189,7 +2189,7 @@ void AWT_graphic_tree::show_radial_tree(AP_tree * at, double x_center,
         if (at_leftson->gr.gc > at_rightson->gr.gc) {
             // bring selected gc to front
 
-            /*!* left branch ***/
+            //!* left branch **
             w = r*0.5*tree_spread + tree_orientation + at->gr.left_angle;
             z = at->leftlen;
             show_radial_tree(at_leftson,
@@ -2199,7 +2199,7 @@ void AWT_graphic_tree::show_radial_tree(AP_tree * at, double x_center,
                              w,
                              x_center, y_center);
 
-            /*!* right branch ***/
+            //!* right branch **
             w = tree_orientation - l*0.5*tree_spread + at->gr.right_angle;
             z = at->rightlen;
             show_radial_tree(at_rightson,
@@ -2210,7 +2210,7 @@ void AWT_graphic_tree::show_radial_tree(AP_tree * at, double x_center,
                              x_center, y_center);
         }
         else {
-            /*!* right branch ***/
+            //!* right branch **
             w = tree_orientation - l*0.5*tree_spread + at->gr.right_angle;
             z = at->rightlen;
             show_radial_tree(at_rightson,
@@ -2220,7 +2220,7 @@ void AWT_graphic_tree::show_radial_tree(AP_tree * at, double x_center,
                              w,
                              x_center, y_center);
 
-            /*!* left branch ***/
+            //!* left branch **
             w = r*0.5*tree_spread + tree_orientation + at->gr.left_angle;
             z = at->leftlen;
             show_radial_tree(at_leftson,

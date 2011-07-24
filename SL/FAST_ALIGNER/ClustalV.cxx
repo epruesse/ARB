@@ -16,7 +16,7 @@
 #include <climits>
 
 
-/* ---------------------------------------------------------------- */
+// ----------------------------------------------------------------
 
 #define MASTER_GAP_OPEN                 50
 #define CHEAP_GAP_OPEN                  20      // penalty for creating a gap (if we have gaps in master)
@@ -33,12 +33,12 @@
 
 #define DYNAMIC_PENALTIES                       // otherwise you get FIXED PENALTIES    (=no cheap penalties)
 
-/* ---------------------------------------------------------------- */
+// ----------------------------------------------------------------
 
 #define MAX_GAP_OPEN_DISCOUNT           (DEFAULT_GAP_OPEN-CHEAP_GAP_OPEN)       // maximum subtracted from DEFAULT_GAP_OPEN
 #define MAX_GAP_EXTEND_DISCOUNT         (DEFAULT_GAP_EXTEND-CHEAP_GAP_EXTEND)   // maximum subtracted from DEFAULT_GAP_EXTEND
 
-#define MAXN    2       /* Maximum number of sequences (both groups) */
+#define MAXN    2       // Maximum number of sequences (both groups)
 
 #if (MAXN==2)
 #define MAXN_2(xxx)             xxx
@@ -296,7 +296,7 @@ int baseMatch(char c1, char c2)    // c1,c2 == ACGUTRS...
     return -1;
 }
 
-static int getPenalty(char c1, char c2) /* c1,c2 = A=0,C=1,... s.o. */
+static int getPenalty(char c1, char c2) // c1,c2 = A=0,C=1,... s.o.
 {
     switch (baseCmp(c1, c2))
     {
@@ -685,7 +685,7 @@ static int diff(int v1, int v2, int v3, int v4, int st, int en)
             if (st>en)
                 st=en;
 
-            /*!*************if(!v4)*********BUG********************************/
+            //!*************if(!v4)*********BUG*******************************
 
             ctrc = slave_gapAtWithOpenPenalty(v2, v4, st);
             ctrj = 0;
@@ -869,9 +869,9 @@ static int diff(int v1, int v2, int v3, int v4, int st, int en)
         dumpMatrix(v1, v2, v3, v4, ctri);
 #endif
 
-    /* Conquer recursively around midpoint  */
+    // Conquer recursively around midpoint
 
-    if (flag==1)                /* Type 1 gaps  */
+    if (flag==1)                // Type 1 gaps
     {
         diff(v1, v2, ctri, ctrj, st, master_gap_open(v1+ctri));                 // includes midpoint ctri and ctrj
         diff(v1+ctri, v2+ctrj, v3-ctri, v4-ctrj, master_gap_open(v1+ctri), en);
@@ -880,7 +880,7 @@ static int diff(int v1, int v2, int v3, int v4, int st, int en)
     {
         diff(v1, v2, ctri-1, ctrj, st, 0);                                      // includes midpoint ctrj
 
-        if (last_print<0 && print_ptr>0) /* Delete 2 */
+        if (last_print<0 && print_ptr>0) // Delete 2
             last_print = decr_displ(print_ptr-1, 2);
         else
             last_print = set_displ(print_ptr++, -2);
@@ -889,7 +889,7 @@ static int diff(int v1, int v2, int v3, int v4, int st, int en)
     }
 
     deep--;
-    return ctrc;       /* Return the score of the best alignment */
+    return ctrc;       // Return the score of the best alignment
 }
 
 static void do_align( /* int v1, */ int *score, long act_seq_length)
@@ -975,7 +975,7 @@ static void do_align( /* int v1, */ int *score, long act_seq_length)
 #endif
     }
 
-    *score=diff(1, 1, l1, l2, master_gap_open(1), master_gap_open(l1+1)); /* Myers and Miller alignment now */
+    *score=diff(1, 1, l1, l2, master_gap_open(1), master_gap_open(l1+1)); // Myers and Miller alignment now
 }
 
 static int add_ggaps(long /* max_seq_length */)
@@ -1061,7 +1061,7 @@ static void p_encode(const unsigned char *seq, unsigned char *naseq, int l) /* c
 }
 
 static void n_encode(const unsigned char *seq, unsigned char *naseq, int l)
-{                                       /* code seq as ints .. use -2 for gap */
+{                                       // code seq as ints .. use -2 for gap
     int i;
     int warned = 0;
 

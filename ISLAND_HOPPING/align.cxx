@@ -1,12 +1,12 @@
-/* ============================================================= */
+// =============================================================
 /*                                                               */
-/*   File      : align.c                                         */
-/*   Purpose   :                                                 */
+//   File      : align.c
+//   Purpose   :
 /*                                                               */
-/*   Institute of Microbiology (Technical University Munich)     */
-/*   http://www.arb-home.de/                                     */
+//   Institute of Microbiology (Technical University Munich)
+//   http://www.arb-home.de/
 /*                                                               */
-/* ============================================================= */
+// =============================================================
 
 #include "mem.h"
 #include "trnsprob.h"
@@ -20,7 +20,7 @@
 #define MSIZE          512
 #define ESIZE          36
 
-/*============================================================================*/
+//============================================================================
 
 #define MINDIST        0.001
 #define MAXDIST        1.000
@@ -51,7 +51,7 @@ typedef struct island {
 
 static double **GP,**GS;
 
-/* #define TEST */
+// #define TEST
 
 #ifdef TEST
 
@@ -68,7 +68,7 @@ static double Thres,LogThres,Supp,GapA,GapB,GapC,expectedScore,**GE;
 
 static Island *Z,**ZB,**ZE;
 
-/*============================================================================*/
+//============================================================================
 
 static void initScore(double ***pP,double ***pS) {
 
@@ -77,7 +77,7 @@ static void initScore(double ***pP,double ***pS) {
 
 }
 
-/*............................................................................*/
+//............................................................................
 
 static void uninitScore(double ***pP,double ***pS) {
 
@@ -86,7 +86,7 @@ static void uninitScore(double ***pP,double ***pS) {
 
 }
 
-/*............................................................................*/
+//............................................................................
 
 static void updateScore(
                  double **P,double **S,
@@ -131,19 +131,19 @@ static void updateScore(
 
 }
 
-/*============================================================================*/
+//============================================================================
 
 static void initEntropy(double ***EE) {
     *EE=newDoubleMatrix(ESIZE+1,MSIZE);
 }
 
-/*............................................................................*/
+//............................................................................
 
 static void uninitEntropy(double ***EE) {
     freeMatrix(EE);
 }
 
-/*............................................................................*/
+//............................................................................
 
 static double getEntropy(double **E,double m,int l) {
     int k,ia,ib,ja,jb;
@@ -204,7 +204,7 @@ static double getEntropy(double **E,double m,int l) {
 
 }
 
-/*............................................................................*/
+//............................................................................
 
 static void updateEntropy(double **P,double **S,double **E) {
     int i,j,k,l,ll,lll;
@@ -316,7 +316,7 @@ static void updateEntropy(double **P,double **S,double **E) {
 
 }
 
-/*============================================================================*/
+//============================================================================
 
 static Island *newIsland(char *X,char *Y,int i,int j,int d) {
     Island *p; Fragment *f,**ff,*L; int k,ii,jj,iii,jjj,l; double s;
@@ -368,7 +368,7 @@ static Island *newIsland(char *X,char *Y,int i,int j,int d) {
     return(p);
 }
 
-/*............................................................................*/
+//............................................................................
 
 static void freeIsland(Island **pp) {
     Island *p; Fragment *q;
@@ -381,7 +381,7 @@ static void freeIsland(Island **pp) {
 
 }
 
-/*............................................................................*/
+//............................................................................
 
 static void registerIsland(Island *f) {
     Island **pli;
@@ -396,7 +396,7 @@ static void registerIsland(Island *f) {
 
 }
 
-/*............................................................................*/
+//............................................................................
 
 static Island *selectUpperIslands(Island *f,int nX,int nY,int *incomplete) {
     int i,j; Island *l,*g;
@@ -415,7 +415,7 @@ static Island *selectUpperIslands(Island *f,int nX,int nY,int *incomplete) {
     return(l);
 }
 
-/*............................................................................*/
+//............................................................................
 
 static Island *selectLowerIslands(Island *f,int *incomplete) {
     int i; Island *l,*g;
@@ -434,7 +434,7 @@ static Island *selectLowerIslands(Island *f,int *incomplete) {
     return(l);
 }
 
-/*............................................................................*/
+//............................................................................
 
 static int areEqual(Island *a,Island *b) {
     Fragment *fa,*fb;
@@ -456,7 +456,7 @@ static int areEqual(Island *a,Island *b) {
     return(TRUE);
 }
 
-/*............................................................................*/
+//............................................................................
 
 static int isUnique(Island *f) {
     Island *v;
@@ -467,7 +467,7 @@ static int isUnique(Island *f) {
     return(TRUE);
 }
 
-/*............................................................................*/
+//............................................................................
 
 static int isSignificant(Island *f) {
     int l;
@@ -482,11 +482,11 @@ static int isSignificant(Island *f) {
     return(FALSE);
 }
 
-/*............................................................................*/
+//............................................................................
 
 int I,J,K;
 
-/*....*/
+//....
 
 static void drawLowerPath(Island *f,int nX,char *X,char *XX,int nY,char *Y,char *YY) {
     int k;
@@ -503,7 +503,7 @@ static void drawLowerPath(Island *f,int nX,char *X,char *XX,int nY,char *Y,char 
 
 }
 
-/*....*/
+//....
 
 static void drawPath(Island *f,int nX,char *X,char *XX,int nY,char *Y,char *YY) {
     int k;
@@ -530,7 +530,7 @@ static void drawPath(Island *f,int nX,char *X,char *XX,int nY,char *Y,char *YY) 
 
 }
 
-/*............................................................................*/
+//............................................................................
 
 static void drawIsland(Island *f) {
     int i,j,k;
@@ -546,7 +546,7 @@ static void drawIsland(Island *f) {
 
 #ifdef TEST
             if(
-               i>=0&&i<TELEN&&j>=0&&j<TELEN /* &&score>TE[i][j] */
+               i>=0&&i<TELEN&&j>=0&&j<TELEN // &&score>TE[i][j]
                ) {
                 TE[i][j]=score;
             }
@@ -557,7 +557,7 @@ static void drawIsland(Island *f) {
 
 }
 
-/*============================================================================*/
+//============================================================================
 
 static double secS(int i,int j,char X[],int secX[],char Y[],int secY[]) {
 
@@ -569,7 +569,7 @@ static double secS(int i,int j,char X[],int secX[],char Y[],int secY[]) {
     return(GS[(int)X[i]][(int)Y[j]]);
 }
 
-/*============================================================================*/
+//============================================================================
 
 static void AlignTwo(
               int nX,char X[],int secX[],char XX[],int nY,char Y[],int secY[],char YY[]
@@ -578,7 +578,7 @@ static void AlignTwo(
     double s,ss;
     Island *z,*zz,*zzz,*best;
 
-    /*OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO*/
+    //OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO
 
     Z=NULL; for(i=nX+nY-2;i>=0;i--) {ZB[i]=NULL; ZE[i]=NULL;}
 
@@ -628,7 +628,7 @@ static void AlignTwo(
         }
     }
 
-    /*----*/
+    //----
 
     startx=nX-1; stopx=0;
     for(i=startx,ii=i+1;i>=stopx;i--,ii--) {
@@ -676,7 +676,7 @@ static void AlignTwo(
         }
     }
 
-    /*******************/
+    //*****************
 
     for(z=Z;z;z=z->next) {z->hasUpper=FALSE; z->upper=NULL; z->upperScore=0.;}
     do { changed=FALSE;
@@ -712,7 +712,7 @@ static void AlignTwo(
         }
     } while(changed);
 
-    /*******************/
+    //*****************
 
     s=0.; best=NULL;
     for(z=Z;z;z=z->next) {
@@ -730,7 +730,7 @@ static void AlignTwo(
         for(z=best->lower;z;z=z->lower) drawIsland(z);
     }
 
-    /*OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO*/
+    //OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO
 
 #ifdef TEST
 
@@ -786,13 +786,13 @@ static void AlignTwo(
 
 #endif
 
-    /*OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO*/
+    //OOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOOO
 
     while(Z) {z=Z; Z=Z->next; freeIsland(&z);}
 
 }
 
-/*............................................................................*/
+//............................................................................
 
 void Align(
            int nX,char X[],int secX[],char **XX,int nY,char Y[],int secY[],char **YY,

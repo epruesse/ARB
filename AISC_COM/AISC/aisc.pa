@@ -199,7 +199,7 @@ P extern const char *aisc_server_error;
 
 P #else 
 P #error header included twice 
-P #endif /* AISC_GEN_SERVER_INCLUDED */
+P #endif // AISC_GEN_SERVER_INCLUDED
 CLOSE save
 EXIT
 

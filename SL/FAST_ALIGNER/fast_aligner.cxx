@@ -515,7 +515,7 @@ static inline void dumpSeq(const char *seq, long len, long pos)
     }                                                                   \
     while (0)
 
-#endif /*DEBUG*/
+#endif //DEBUG
 
 
 // --------------------------------------------------------------------------------

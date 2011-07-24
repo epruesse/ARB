@@ -115,7 +115,7 @@ public:
             akt->print();
         printf("\n\n");
     }
-    /* clear the list */
+    // clear the list
 
     void make_empty() {
         while (first_elem != 0) {
@@ -127,25 +127,25 @@ public:
         cardinal = 0;
     }
 
-    /* append at end or front of _list_ */
+    // append at end or front of _list_
 
     void append_end(T &a);
     void append_end(ALI_TLIST<T> &a);
     void append_front(T &a);
     void append_front(ALI_TLIST<T> &a);
 
-    /* insert after or bevore _current_ element */
+    // insert after or bevore _current_ element
 
     void insert_after(T &a);
     void insert_after(ALI_TLIST<T> &a);
     void insert_bevor(T &a);
     void insert_bevor(ALI_TLIST<T> &a);
 
-    /* delete _current_ element and goto _next_ element */
+    // delete _current_ element and goto _next_ element
 
     void delete_element();
 
-    /* Mark a unique element */
+    // Mark a unique element
 
     void mark_element() {
         marked_elem = current_elem;
@@ -157,12 +157,12 @@ public:
         marked_elem = 0;
     }
 
-    /* Overwrite */
+    // Overwrite
     void overwrite_element(T new_elem) {
         if (current_elem != 0)
             (current_elem->info) = new_elem;
     }
-    /* For navigation through the list */
+    // For navigation through the list
     int cardinality() {
         return cardinal;
     }
@@ -373,7 +373,7 @@ void ALI_TLIST<T>::delete_element()
             ali_warning("Delete marked element");
             marked_elem = 0;
         }
-        /*   prev_elem <--> current <--> next_elem   */
+        //   prev_elem <--> current <--> next_elem
         if (current_elem->prev_elem != 0 && current_elem->next_elem != 0) {
             elem = current_elem;
             current_elem->prev_elem->next_elem = current_elem->next_elem;
@@ -382,7 +382,7 @@ void ALI_TLIST<T>::delete_element()
             delete elem;
         }
         else {
-            /*   prev_elem <--> current -|   */
+            //   prev_elem <--> current -|
             if (current_elem->prev_elem != 0) {
                 elem = current_elem;
                 current_elem->prev_elem->next_elem = 0;
@@ -391,7 +391,7 @@ void ALI_TLIST<T>::delete_element()
                 delete elem;
             }
             else {
-                /*   |- current <--> next_elem   */
+                //   |- current <--> next_elem
                 if (current_elem->next_elem != 0) {
                     elem = current_elem;
                     current_elem->next_elem->prev_elem = 0;
@@ -400,7 +400,7 @@ void ALI_TLIST<T>::delete_element()
                     delete elem;
                 }
                 else {
-                    /*   |- current -|   */
+                    //   |- current -|
                     elem = current_elem;
                     delete elem;
                     first_elem = last_elem = current_elem = 0;

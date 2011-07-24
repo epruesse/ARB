@@ -110,21 +110,21 @@ void OpenGLGraphics::init_font(GLuint base, char* f)
     int first;
     int last;
 
-    /* Need an X Display before calling any Xlib routines. */
+    // Need an X Display before calling any Xlib routines.
     display = glXGetCurrentDisplay();
     if (display == 0) {
         fprintf(stderr, "XOpenDisplay() failed.  Exiting.\n");
         exit(-1);
     }
     else {
-        /* Load the font. */
+        // Load the font.
         font_info = XLoadQueryFont(display, f);
         if (!font_info) {
             fprintf(stderr, "XLoadQueryFont() failed - Exiting.\n");
             exit(-1);
         }
         else {
-            /* Tell GLX which font & glyphs to use. */
+            // Tell GLX which font & glyphs to use.
             first = font_info->min_char_or_byte2;
             last  = font_info->max_char_or_byte2;
             glXUseXFont(font_info->fid, first, last-first+1, base+first);

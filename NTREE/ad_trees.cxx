@@ -74,7 +74,7 @@ void tree_vars_callback(AW_root *aw_root) // Map tree vars to display objects
         free(treename);
     }
 }
-/*  update import tree name depending on file name */
+//  update import tree name depending on file name
 void tree_import_callback(AW_root *aw_root) {
     GB_transaction  dummy(GLOBAL_gb_main);
     char           *treename        = aw_root->awar(AWAR_TREE_IMPORT "/file_name")->read_string();

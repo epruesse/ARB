@@ -55,7 +55,7 @@ struct DbScanner;
 
 DbScanner *create_db_scanner(GBDATA         *gb_main,
                              AW_window      *aws,
-                             const char     *box_pos_fig,            /* the position for the box in the xfig file */
+                             const char     *box_pos_fig,            // the position for the box in the xfig file
                              const char     *delete_pos_fig,
                              const char     *edit_pos_fig,
                              const char     *edit_enable_pos_fig,

@@ -653,13 +653,13 @@ void ED4_get_and_jump_to_species(GB_CSTR species_name)
 
         name_term = ED4_find_species_name_terminal(species_name);
         if (name_term) {
-            /* new AAseqTerminals should be created if it is in ProtView mode */
+            // new AAseqTerminals should be created if it is in ProtView mode
             if (ED4_ROOT->alignment_type == GB_AT_DNA) {
                 PV_AddCorrespondingAAseqTerminals(name_term);
             }
             ED4_ROOT->main_manager->update_info.set_resize(1);
             ED4_ROOT->main_manager->resize_requested_by_parent();
-            /* it should create new AA Sequence terminals if the protein viewer is enabled */
+            // it should create new AA Sequence terminals if the protein viewer is enabled
         }
         delete string;
     }
@@ -767,7 +767,7 @@ void ED4_get_marked_from_menu(AW_window *, AW_CL, AW_CL) {
         ED4_finish_and_show_notFoundMessage();
 
         if (inserted) {
-            /* new AAseqTerminals should be created if it is in ProtView mode */
+            // new AAseqTerminals should be created if it is in ProtView mode
             if (ED4_ROOT->alignment_type == GB_AT_DNA) {
                 PV_AddAAseqTerminalsToLoadedSpecies();
             }

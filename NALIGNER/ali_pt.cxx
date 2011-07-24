@@ -232,9 +232,9 @@ int ALI_PT::find_family(ALI_SEQUENCE *sequence, int find_type)
                      FAMILYLIST_MATCHES, &matches,
                      FAMILYLIST_NEXT, &f_list, NULL);
         }
-        /* found the first element */
+        // found the first element
 
-        /* make the family list */
+        // make the family list
         max_matches = matches;
         number = 0;
         do {
@@ -254,7 +254,7 @@ int ALI_PT::find_family(ALI_SEQUENCE *sequence, int find_type)
         } while (number < fam_list_max &&
                  (float) matches / (float) max_matches > percent_min);
 
-        /* make the extension list */
+        // make the extension list
         number = 0;
         while (number < ext_list_max) {
             pt_member = new ali_pt_member(seq_name, matches);

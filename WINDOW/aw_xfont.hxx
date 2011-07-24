@@ -7,26 +7,26 @@
 
 
 struct xfont {
-    int          size;          /* size in points */
-    Font         fid;           /* X font id */
-    char        *fname;         /* actual name of X font found */
-    XFontStruct *fstruct;       /* X font structure */
-    xfont       *next;          /* next in the list */
+    int          size;          // size in points
+    Font         fid;           // X font id
+    char        *fname;         // actual name of X font found
+    XFontStruct *fstruct;       // X font structure
+    xfont       *next;          // next in the list
 };
 
 struct _fstruct {
-    const char     *name;       /* Postscript font name */
-    int             xfontnum;   /* template for locating X fonts */
+    const char     *name;       // Postscript font name
+    int             xfontnum;   // template for locating X fonts
 };
 
 struct _xfstruct {
-    const char *templat;        /* templat for locating X fonts */
-    xfont      *xfontlist;      /* linked list of X fonts for different point sizes */
+    const char *templat;        // templat for locating X fonts
+    xfont      *xfontlist;      // linked list of X fonts for different point sizes
 };
 
 typedef struct _appres {
-    bool     SCALABLEFONTS;     /* hns 5 Nov 91 */
-    bool     debug;             /* hns 5 Nov 91 */
+    bool     SCALABLEFONTS;     // hns 5 Nov 91
+    bool     debug;             // hns 5 Nov 91
     Display *display;
 } appresStruct, *appresPtr;
 extern appresStruct appres;

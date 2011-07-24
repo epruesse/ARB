@@ -20,9 +20,9 @@
 ********************************************************************************************/
 
 
-/* -------------------- */
-/*      TreeReader      */
-/* -------------------- */
+// --------------------
+//      TreeReader
+// --------------------
 
 enum tr_lfmode { LF_UNKNOWN, LF_N, LF_R, LF_NR, LF_RN, };
 
@@ -146,7 +146,7 @@ static void freeTreeReader(TreeReader *reader) {
 }
 
 static char *getTreeComment(TreeReader *reader) {
-    /* can only be called once. Deletes the comment from TreeReader! */
+    // can only be called once. Deletes the comment from TreeReader!
     char *comment = 0;
     if (reader->tree_comment) {
         comment = GBS_strclose(reader->tree_comment);
@@ -232,8 +232,8 @@ static char *gbt_read_quoted_string(TreeReader *reader) {
 }
 
 static void setBranchName(TreeReader *reader, GBT_TREE *node, char *name) {
-    /* detect bootstrap values */
-    /* name has to be stored in node or must be freed */
+    // detect bootstrap values
+    // name has to be stored in node or must be freed
 
     char   *end       = 0;
     double  bootstrap = strtod(name, &end);
@@ -276,7 +276,7 @@ static bool gbt_readNameAndLength(TreeReader *reader, GBT_TREE *node, GBT_LEN *l
                 done = true;
                 break;
             case ':':
-                gbt_read_char(reader);      /* drop ':' */
+                gbt_read_char(reader);      // drop ':'
                 *len = gbt_read_number(reader);
                 if (*len>reader->max_found_branchlen) {
                     reader->max_found_branchlen = *len;
@@ -326,7 +326,7 @@ static GBT_TREE *gbt_load_tree_rek(TreeReader *reader, int structuresize, GBT_LE
         if (left) {
             if (gbt_readNameAndLength(reader, left, &leftLen)) {
                 switch (reader->last_character) {
-                    case ')':               /* single node */
+                    case ')':               // single node
                         *nodeLen = leftLen;
                         node     = left;
                         left     = 0;
@@ -337,14 +337,14 @@ static GBT_TREE *gbt_load_tree_rek(TreeReader *reader, int structuresize, GBT_LE
                         GBT_TREE *right    = 0;
 
                         while (reader->last_character == ',' && !reader->error) {
-                            if (right) { /* multi-branch */
+                            if (right) { // multi-branch
                                 GBT_TREE *pair = gbt_linkedTreeNode(left, leftLen, right, rightLen, structuresize);
 
                                 left  = pair; leftLen = 0;
                                 right = 0; rightLen = TREE_DEFLEN_MARKER;
                             }
 
-                            gbt_read_char(reader); /* drop ',' */
+                            gbt_read_char(reader); // drop ','
                             right = gbt_load_tree_rek(reader, structuresize, &rightLen);
                             if (right) gbt_readNameAndLength(reader, right, &rightLen);
                         }
@@ -356,7 +356,7 @@ static GBT_TREE *gbt_load_tree_rek(TreeReader *reader, int structuresize, GBT_LE
                             left = 0;
                             right  = 0;
 
-                            gbt_read_char(reader); /* drop ')' */
+                            gbt_read_char(reader); // drop ')'
                         }
                         else {
                             setReaderError(reader, "Expected one of ',)'");
@@ -379,7 +379,7 @@ static GBT_TREE *gbt_load_tree_rek(TreeReader *reader, int structuresize, GBT_LE
             free(left);
         }
     }
-    else {                      /* single node */
+    else {                      // single node
         gbt_eat_white(reader);
         char *name = gbt_read_quoted_string(reader);
         if (name) {
@@ -418,7 +418,7 @@ GBT_TREE *TREE_load(const char *path, int structuresize, char **commentPtr, int 
         else        name_only = path;
 
         TreeReader *reader      = newTreeReader(input, name_only);
-        GBT_LEN     rootNodeLen = TREE_DEFLEN_MARKER; /* root node has no length. only used as input to gbt_load_tree_rek */
+        GBT_LEN     rootNodeLen = TREE_DEFLEN_MARKER; // root node has no length. only used as input to gbt_load_tree_rek
         tree                    = gbt_load_tree_rek(reader, structuresize, &rootNodeLen);
         fclose(input);
 

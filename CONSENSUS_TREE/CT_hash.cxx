@@ -14,27 +14,27 @@
 
 #include <arbdbt.h>
 
-/* Hashtabelle fuer parts */
+// Hashtabelle fuer parts
 
 int Hash_max_count=0;
 HNODE *Hashlist[HASH_MAX];
 HNODE *Sortedlist = NULL;
 
 void hash_init() {
-    /*! initialize Hashtable and free old data */
+    //! initialize Hashtable and free old data
     Hash_max_count = 0;
     hash_free();
 }
 
 
 void hash_settreecount(int tree_count) {
-    /*! set number of trees */
+    //! set number of trees
     Tree_count = tree_count;
 }
 
 
 void hash_free() {
-    /*! free Hashtable and Sortedlist */
+    //! free Hashtable and Sortedlist
     int i;
     HNODE *hnp, *hnp_help;
 
@@ -98,8 +98,8 @@ void hash_insert(PART *part, int weight) {
 
     if (Hashlist[key]) {
         for (hp=Hashlist[key]; hp; hp=hp->next) {
-            if (part_cmp(hp->part, part)) { /* if in list */
-                /* tree-add tree-id */
+            if (part_cmp(hp->part, part)) { // if in list
+                // tree-add tree-id
                 hp->part->percent += weight;
                 hp->part->len += ((float) weight) * part->len;
                 part_free(part);
@@ -110,7 +110,7 @@ void hash_insert(PART *part, int weight) {
         }
     }
 
-    /* Not yet in list -> insert */
+    // Not yet in list -> insert
     hp = (HNODE *) getmem(sizeof(HNODE));
     part->percent = weight;
     part->len *= ((float) weight);
@@ -141,7 +141,7 @@ void build_sorted_list() {
     heads = (HNODE **) getmem(Hash_max_count*sizeof(HNODE *));
     tails = (HNODE**)  getmem(Hash_max_count*sizeof(HNODE *));
 
-    /* build one list for each countvalue */
+    // build one list for each countvalue
 
     for (i=0; i< HASH_MAX; i++) {
         hnp = Hashlist[i];
@@ -164,7 +164,7 @@ void build_sorted_list() {
 
     head = NULL;
     tail = NULL;
-    /* concatenate lists */
+    // concatenate lists
     for (i=Hash_max_count-1; i>=0; i--) {
         if (heads[i]) {
             if (!head) {
@@ -186,7 +186,7 @@ void build_sorted_list() {
 
 
 void hash_print() {
-    /*! testfunction to print the hashtable */
+    //! testfunction to print the hashtable
     int i;
     HNODE *hnp;
 
@@ -205,7 +205,7 @@ void hash_print() {
 
 
 void sorted_print() {
-    /*! testfunction to print the sorted linear list */
+    //! testfunction to print the sorted linear list
     HNODE *hnp;
 
     printf("\n sorted HASHlist \n");

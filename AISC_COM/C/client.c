@@ -1,12 +1,12 @@
-/* =============================================================== */
+// ===============================================================
 /*                                                                 */
-/*   File      : client.c                                          */
-/*   Purpose   :                                                   */
+//   File      : client.c
+//   Purpose   :
 /*                                                                 */
-/*   Institute of Microbiology (Technical University Munich)       */
-/*   http://www.arb-home.de/                                       */
+//   Institute of Microbiology (Technical University Munich)
+//   http://www.arb-home.de/
 /*                                                                 */
-/* =============================================================== */
+// ===============================================================
 
 #include <netdb.h>
 #include <netinet/tcp.h>
@@ -25,7 +25,7 @@
 
 #define aisc_assert(cond) arb_assert(cond)
 
-/* AISC_MKPT_PROMOTE:#include <client_types.h> */
+// AISC_MKPT_PROMOTE:#include <client_types.h>
 
 #define AISC_MAGIC_NUMBER_FILTER 0xffffff00
 
@@ -76,15 +76,15 @@ int aisc_c_write(int socket, const char *ptr, int size) {
     return size;
 }
 
-/* ----------------------------- */
-/*      bytestring handling      */
+// -----------------------------
+//      bytestring handling
 
 
 static void aisc_c_add_to_bytes_queue(aisc_com *link, char *data, int size)
 {
     aisc_bytes_list *bl = (aisc_bytes_list *)calloc(sizeof(*bl), 1);
 #ifndef NDEBUG
-    memset(bl, 0, sizeof(*bl)); /* @@@ clear mem needed to avoid (rui's) */
+    memset(bl, 0, sizeof(*bl)); // @@@ clear mem needed to avoid (rui's)
 #endif
     bl->data = data;
     bl->size = size;
@@ -112,8 +112,8 @@ int aisc_c_send_bytes_queue(aisc_com *link) {
     return 0;
 }
 
-/* -------------------------- */
-/*      message handling      */
+// --------------------------
+//      message handling
 
 struct client_msg_queue {
     client_msg_queue *next;
@@ -155,7 +155,7 @@ int aisc_check_error(aisc_com * link)
 
  aisc_check_next :
 
-    link->error = 0; /* @@@ avoid (rui) */
+    link->error = 0; // @@@ avoid (rui)
     len = aisc_c_read(link->socket, (char *)(link->aisc_mes_buffer), 2*sizeof(long));
     if (len != 2*sizeof(long)) {
         link->error = err_connection_problems;
@@ -215,7 +215,7 @@ const char *aisc_client_get_m_id(const char *path, char **m_name, int *id) {
         if (!path) return "environment socket not found";
     }
     p = (char *)strchr(path, ':');
-    if (path[0] == '*' || path[0] == ':') {     /* UNIX MODE */
+    if (path[0] == '*' || path[0] == ':') {     // UNIX MODE
         char buffer[128];
         if (!p) {
             return "AISC_CLIENT_OPEN ERROR: missing ':' in *:socketid";
@@ -252,7 +252,7 @@ const char *aisc_client_get_m_id(const char *path, char **m_name, int *id) {
 }
 
 static const char *aisc_client_open_socket(const char *path, int delay, int do_connect, int *psocket, char **unix_name) {
-    struct in_addr  addr;                                     /* union -> u_long  */
+    struct in_addr  addr;                                     // union -> u_long
     struct hostent *he;
     const char     *err;
     int             socket_id;
@@ -269,7 +269,7 @@ static const char *aisc_client_open_socket(const char *path, int delay, int do_c
         if (mach_name) free(mach_name);
         return err;
     }
-    if (socket_id >= 0) {       /* UNIX */
+    if (socket_id >= 0) {       // UNIX
         sockaddr_in so_ad;
         memset((char *)&so_ad, 0, sizeof(sockaddr_in));
         *psocket = socket(PF_INET, SOCK_STREAM, 0);
@@ -281,12 +281,12 @@ static const char *aisc_client_open_socket(const char *path, int delay, int do_c
             free(mach_name);
             return err;
         }
-        /* simply take first address  */
+        // simply take first address
         free(mach_name); mach_name = 0;
         addr.s_addr = *(int *) (he->h_addr);
         so_ad.sin_addr = addr;
         so_ad.sin_family = AF_INET;
-        so_ad.sin_port = htons(socket_id);      /* @@@ = pb_socket  */
+        so_ad.sin_port = htons(socket_id);      // @@@ = pb_socket
         if (do_connect) {
             if (connect(*psocket, (struct sockaddr *)&so_ad, 16)) {
                 return "";
@@ -480,7 +480,7 @@ int aisc_get_message(aisc_com *link)
 
 int aisc_get(aisc_com *link, int o_type, long object, ...)
 {
-    /* goes to header: __ATTR__SENTINEL  */
+    // goes to header: __ATTR__SENTINEL
     long    *arg_pntr[MAX_AISC_SET_GET];
     long     arg_types[MAX_AISC_SET_GET];
     long     mes_cnt;
@@ -575,7 +575,7 @@ int aisc_get(aisc_com *link, int o_type, long object, ...)
                         }
 #if defined(DUMP_COMMUNICATION)
                         aisc_dump_hex("aisc_get bytestring: ", (char *)(arg_pntr[i][0]), size);
-#endif /* DUMP_COMMUNICATION */
+#endif // DUMP_COMMUNICATION
                     }
                     else {
                         arg_pntr[i][0] = 0;
@@ -726,9 +726,9 @@ static int aisc_collect_sets(aisc_com *link, int mes_cnt, va_list parg, int o_ty
                         aisc_c_add_to_bytes_queue(link, bs->data, bs->size);
 #if defined(DUMP_COMMUNICATION)
                         aisc_dump_hex("aisc_collect_sets bytestring: ", bs->data, bs->size);
-#endif /* DUMP_COMMUNICATION */
+#endif // DUMP_COMMUNICATION
                     }
-                    link->aisc_mes_buffer[mes_cnt++] = bs->size;              /* size */
+                    link->aisc_mes_buffer[mes_cnt++] = bs->size;              // size
                     break;
                 }
             default:
@@ -752,7 +752,7 @@ static int aisc_collect_sets(aisc_com *link, int mes_cnt, va_list parg, int o_ty
 
 int     aisc_put(aisc_com        *link, int o_type, long object, ...)
 {
-    /* goes to header: __ATTR__SENTINEL  */
+    // goes to header: __ATTR__SENTINEL
     int mes_cnt, arg_cnt;
     va_list     parg;
     int len;
@@ -780,7 +780,7 @@ int     aisc_put(aisc_com        *link, int o_type, long object, ...)
 
 int     aisc_nput(aisc_com        *link, int o_type, long object, ...)
 {
-    /* goes to header: __ATTR__SENTINEL  */
+    // goes to header: __ATTR__SENTINEL
     int mes_cnt, arg_cnt;
     va_list     parg;
     int len;
@@ -812,7 +812,7 @@ int     aisc_nput(aisc_com        *link, int o_type, long object, ...)
 int aisc_create(aisc_com *link, int father_type, long father,
                 int attribute,  int object_type, long *object, ...)
 {
-    /* goes to header: __ATTR__SENTINEL  */
+    // goes to header: __ATTR__SENTINEL
     // arguments in '...' set elements of CREATED object (not of father)
     int mes_cnt;
     int len;
@@ -860,7 +860,7 @@ int aisc_create(aisc_com *link, int father_type, long father,
 int aisc_copy(aisc_com *link, int s_type, long source, int father_type,
                 long father, int attribute, int object_type, long *object, ...)
 {
-    /* goes to header: __ATTR__SENTINEL  */
+    // goes to header: __ATTR__SENTINEL
     int mes_cnt;
     int len;
     va_list parg;

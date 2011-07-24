@@ -68,7 +68,7 @@ class di_protdist : virtual Noncopyable {
     double          weight[2];  // weight akt slope 1 -> linear interpolation
     AP_smatrix     *matrix;     // link to output matrix
 
-    /* Local variables for makedists, propagated globally for c version: */
+    // Local variables for makedists, propagated globally for c version:
     double p, dp, d2p;
 
 

@@ -166,7 +166,7 @@ static void ptnd_calc_quality(PT_pdc *pdc) {
 }
 
 static double ptnd_check_max_bond(PT_pdc *pdc, char base) {
-    /*! check the bond val for a probe */
+    //! check the bond val for a probe
 
     int complement = PT_complement(base);
     return pdc->bond[(complement-(int)PT_A)*4 + base-(int)PT_A].val;
@@ -213,7 +213,7 @@ struct ptnd_chain_count_mishits {
 };
 
 static int ptnd_count_mishits2(POS_TREE *pt) {
-    /*! go down the tree to chains and leafs; count the species that are in the non member group */
+    //! go down the tree to chains and leafs; count the species that are in the non member group
     int base;
     int name;
     int mishits = 0;
@@ -407,7 +407,7 @@ char *get_design_hinfo(PT_tprobes  *tprobe) {
 }
 
 static int ptnd_count_mishits(char *probe, POS_TREE *pt, int height) {
-    /*! search down the tree to find matching species for the given probe */
+    //! search down the tree to find matching species for the given probe
     int       name;
     int       i;
     POS_TREE *pthelp;
@@ -450,7 +450,7 @@ static int ptnd_count_mishits(char *probe, POS_TREE *pt, int height) {
 }
 
 static void ptnd_first_check(PT_pdc *pdc) {
-    /*! Check for direct mishits */
+    //! Check for direct mishits
 
     PT_tprobes *tprobe, *tprobe_next;
     for (tprobe = pdc->tprobes;
@@ -468,7 +468,7 @@ static void ptnd_first_check(PT_pdc *pdc) {
 }
 
 static void ptnd_check_position(PT_pdc *pdc) {
-    /*! Check the probes position. */
+    //! Check the probes position.
     PT_tprobes *tprobe, *tprobe_next;
     // if (pdc->min_ecolipos == pdc->max_ecolipos) return; // @@@ wtf was this for?  
 
@@ -504,7 +504,7 @@ static void ptnd_check_bonds(PT_pdc *pdc, int match) {
 }
 
 static void ptnd_cp_tprobe_2_probepart(PT_pdc *pdc) {
-    /*! split the probes into probeparts */
+    //! split the probes into probeparts
     PT_tprobes    *tprobe;
     PT_probeparts *parts;
     int            pos;
@@ -582,7 +582,7 @@ static int ptnd_compare_parts(const void *PT_probeparts_ptr1, const void *PT_pro
 }
 
 static void ptnd_sort_parts(PT_pdc *pdc) {
-    /*! sort the parts and check for duplicated parts */
+    //! sort the parts and check for duplicated parts
 
     PT_probeparts **my_list;
     int             list_len;
@@ -631,7 +631,7 @@ static void ptnd_check_part_inc_dt(PT_pdc *pdc, PT_probeparts *parts,
                                    const DataLoc& matchLoc,
                                    double dt, double sum_bonds)
 {
-    /*! test the probe parts, search the longest non mismatch string */
+    //! test the probe parts, search the longest non mismatch string
 
     PT_tprobes *tprobe = parts->source;
     double      ndt;
@@ -763,7 +763,7 @@ static void ptnd_check_part_all(POS_TREE *pt, double dt, double sum_bonds) {
     }
 }
 static void ptnd_check_part(char *probe, POS_TREE *pt, int  height, double dt, double sum_bonds, int split) {
-    /*! search down the tree to find matching species for the given probe */
+    //! search down the tree to find matching species for the given probe
     int       name;
     int       i;
     POS_TREE *pthelp;

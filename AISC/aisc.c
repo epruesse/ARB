@@ -1,12 +1,12 @@
-/* ================================================================ */
+// ================================================================
 /*                                                                  */
-/*   File      : aisc.c                                             */
-/*   Purpose   : ARB integrated source compiler                     */
+//   File      : aisc.c
+//   Purpose   : ARB integrated source compiler
 /*                                                                  */
-/*   Institute of Microbiology (Technical University Munich)        */
-/*   http://www.arb-home.de                                         */
+//   Institute of Microbiology (Technical University Munich)
+//   http://www.arb-home.de
 /*                                                                  */
-/* ================================================================ */
+// ================================================================
 
 #include "aisc_interpreter.h"
 #include <cctype>
@@ -287,7 +287,7 @@ int Formatter::write(const char *str) {
             }
         }
         else if (c == '@') {
-            if (strncmp(p, "SETSOURCE", 9) == 0) { /* skip '@SETSOURCE file, line@' */
+            if (strncmp(p, "SETSOURCE", 9) == 0) { // skip '@SETSOURCE file, line@'
                 p = strchr(p, '@');
                 if (!p) {
                     print_error(Interpreter::instance->at(), "expected '@' after '@SETSOURCE' (injected code)");

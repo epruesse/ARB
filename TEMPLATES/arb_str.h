@@ -20,7 +20,7 @@
 #endif
 
 inline int ARB_stricmp(const char *s1, const char *s2) {
-    /*! Like strcmp but ignoring case */
+    //! Like strcmp but ignoring case
 
     int    cmp = 0;
     size_t idx = 0;

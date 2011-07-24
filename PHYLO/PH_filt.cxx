@@ -180,7 +180,7 @@ float *PH_filter::calculate_column_homology() {
 
     // rna or dna sequence: set synonyms
     if (isNUC) {
-        reference_table[(unsigned char)'U'] = reference_table[(unsigned char)'T']; /* T=U */
+        reference_table[(unsigned char)'U'] = reference_table[(unsigned char)'T']; // T=U
         reference_table[(unsigned char)'u'] = reference_table[(unsigned char)'t'];
         reference_table[(unsigned char)'N'] = reference_table[(unsigned char)'X'];
         reference_table[(unsigned char)'n'] = reference_table[(unsigned char)'x'];

@@ -101,7 +101,7 @@ FOR $(STRUCT)
                 SET $(i) = 1
             ENDIF
         ENDFOR
-        SET $(key[$(SKEYC)]) = $(i),$6/* $(SKEY) */
+        SET $(key[$(SKEYC)]) = $(i),$6// $(SKEY)
     ENDIF
 ENDFOR
 GOSUB printkeylist

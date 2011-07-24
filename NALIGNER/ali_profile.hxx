@@ -21,7 +21,7 @@
 #define ALI_PROFILE_BORDER_LEFT '['
 #define ALI_PROFILE_BORDER_RIGHT ']'
 
-typedef void ALI_MAP_; /* make module independent */
+typedef void ALI_MAP_; // make module independent
 
 
 typedef struct {
@@ -45,8 +45,8 @@ typedef struct {
     float insert_factor;
     float multi_insert_factor;
 
-    double substitute_matrix[5][5]; /* a c g u - */
-    double binding_matrix[5][5]; /* a c g u - */
+    double substitute_matrix[5][5]; // a c g u -
+    double binding_matrix[5][5]; // a c g u -
 
 } ALI_PROFILE_CONTEXT;
 
@@ -71,12 +71,12 @@ class ALI_PROFILE : virtual Noncopyable {
     ALI_NORM_SEQUENCE *norm_sequence;
     unsigned long prof_len;
 
-    long **helix;                    /* base to base connection */
-    char **helix_borders;            /* borders of the helix '[' and ']' */
+    long **helix;                    // base to base connection
+    char **helix_borders;            // borders of the helix '[' and ']'
     unsigned long helix_len;
 
-    float (**base_weights)[4];         /* relative weight of base i */
-    float (**sub_costs)[6];            /* costs to substitute with base i */
+    float (**base_weights)[4];         // relative weight of base i
+    float (**sub_costs)[6];            // costs to substitute with base i
     float sub_costs_maximum;
 
     float insert_cost;
@@ -84,7 +84,7 @@ class ALI_PROFILE : virtual Noncopyable {
 
     float multi_gap_factor;
 
-    float (*binding_costs)[5][5];       /* Matrix for binding costs a c g u - */
+    float (*binding_costs)[5][5];       // Matrix for binding costs a c g u -
     float w_bind_maximum;
 
     unsigned long *lmin, *lmax;

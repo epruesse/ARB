@@ -35,9 +35,9 @@
 #include <X11/IntrinsicP.h>
 #include <X11/StringDefs.h>
 
-#include "GLwMDrawA.h" /** Provides a special motif widget class */
+#include "GLwMDrawA.h" //* Provides a special motif widget class
 
-/* defined here by Yadhu in order to make it more General */
+// defined here by Yadhu in order to make it more General
 bool AW_alpha_Size_Supported = false;
 
 
