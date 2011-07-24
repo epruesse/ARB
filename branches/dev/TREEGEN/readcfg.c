@@ -7,18 +7,13 @@
 #define COMMENT     ';'
 #define MAXLEN  2048
 
-static cstr error_message;   /* Kann von decode gesetzt werden */
-                             /* und wird dann als Fehlermeldung */
-                             /* ausgegeben */
+static cstr error_message;   // Kann von decode gesetzt werden
+                             // und wird dann als Fehlermeldung
+                             // ausgegeben
 
-/* -------------------------------------------------------------------------- */
-/*      static void scanKeywords(struct S_cfgLine line[], int *lineanz, int... */
-/* ------------------------------------------------------ 18.05.95 02.10 ---- */
-/* */
-/*  Anzahl und maximale L„nge der Keywords bestimmen */
-/* */
 static void scanKeywords(struct S_cfgLine line[], int *lineanz, int *maxlen)
 {
+    //  Anzahl und maximale Laenge der Keywords bestimmen
     while (1)
     {
         cstr keyword    = line[*lineanz].keyword;
@@ -30,25 +25,17 @@ static void scanKeywords(struct S_cfgLine line[], int *lineanz, int *maxlen)
         (*lineanz)++;
     }
 }
-/* -------------------------------------------------------------------------- */
-/*      static void cfgReadWarning(cstr fname, int lineno) */
-/* ------------------------------------------------------ 18.05.95 02.23 ---- */
 static void cfgReadWarning(cstr fname, int lineno)
 {
     warningf("Error in line %i of '%s'", lineno, fname);
 }
-/* -------------------------------------------------------------------------- */
-/*      int readCfg(cstr fname, struct S_cfgLine line[]) */
-/* ------------------------------------------------------ 17.05.95 21:23 ---- */
-/* */
-/*  liest und dekodiert CFG-Datei */
-/* */
 int readCfg(cstr fname, struct S_cfgLine line[])
 {
+    //  liest und dekodiert CFG-Datei
     FILE *in = fopen(fname, "r");
     int   ok = in!=NULL;
 
-    if (!ok && errno==ENOENT)                              /* Datei nicht vorhanden */
+    if (!ok && errno==ENOENT)                              // Datei nicht vorhanden
     {
         FILE *out = fopen(fname, "w");
 
@@ -67,11 +54,11 @@ int readCfg(cstr fname, struct S_cfgLine line[])
     if (ok)
     {
         char  linebuf[MAXLEN];
-        int   readLines        = 0,                        /* Anzahl gelesener Zeilen */
-              keywords         = 0,                        /* Anzahl keywords */
-              maxKeywordlen    = 0,                        /* Laenge des laengsten keywords */
-              lineno           = 0,                        /* fortlaufende Zeilennummer */
-             *wordRead,                                    /* welche Worte wurden in welcher Zeile gelesen */
+        int   readLines        = 0,                        // Anzahl gelesener Zeilen
+              keywords         = 0,                        // Anzahl keywords
+              maxKeywordlen    = 0,                        // Laenge des laengsten keywords
+              lineno           = 0,                        // fortlaufende Zeilennummer
+             *wordRead,                                    // welche Worte wurden in welcher Zeile gelesen
               x;
 
         scanKeywords(line, &keywords, &maxKeywordlen);
@@ -79,9 +66,8 @@ int readCfg(cstr fname, struct S_cfgLine line[])
         wordRead = (int*)malloc(keywords*sizeof(int));
         for (x = 0; x<keywords; x++) wordRead[x] = 0;
 
-        /* /----------------------------\ */
-        /* |  CFG lesen und decodieren  | */
-        /* \----------------------------/ */
+        // ---------------------------------
+        //      CFG lesen und decodieren
 
         while (1)
         {
@@ -115,16 +101,16 @@ int readCfg(cstr fname, struct S_cfgLine line[])
                         }
                         else
                         {
-                            if (wordRead[search])          /* schonmal gelesen? */
+                            if (wordRead[search])          // schonmal gelesen?
                             {
-                                if (decoded!=2)            /* mehrfache Verwendung erlaubt? */
+                                if (decoded!=2)            // mehrfache Verwendung erlaubt?
                                 {
                                     cfgReadWarning(fname, lineno);
                                     warningf("Keyword '%s' duplicated (already specified in line %i)", firstWord, wordRead[search]);
                                     ok = 0;
                                 }
                             }
-                            else                           /* nein, dann merken! */
+                            else                           // nein, dann merken!
                             {
                                 wordRead[search] = lineno;
                                 readLines++;
@@ -135,7 +121,7 @@ int readCfg(cstr fname, struct S_cfgLine line[])
                     }
                 }
 
-                if (search==keywords)                      /* keyword nicht gefunden! */
+                if (search==keywords)                      // keyword nicht gefunden!
                 {
                     cfgReadWarning(fname, lineno);
                     warningf("Unknown Keyword '%s'", firstWord);
@@ -146,11 +132,10 @@ int readCfg(cstr fname, struct S_cfgLine line[])
 
         fclose(in);
 
-        /* /----------------------------------------------\ */
-        /* |  Waren alle keywords im CFG-File vorhanden?  | */
-        /* \----------------------------------------------/ */
+        // ---------------------------------------------------
+        //      Waren alle keywords im CFG-File vorhanden?
 
-        if (ok && readLines<keywords)                      /* nein :-( */
+        if (ok && readLines<keywords)                      // nein :-(
         {
             FILE *out = fopen(fname, "a");
 
@@ -183,9 +168,6 @@ int readCfg(cstr fname, struct S_cfgLine line[])
 
     return ok;
 }
-/* -------------------------------------------------------------------------- */
-/*      void setCfgError(cstr message) */
-/* ------------------------------------------------------ 17.05.95 22.01 ---- */
 void setCfgError(cstr message)
 {
     error_message = message;

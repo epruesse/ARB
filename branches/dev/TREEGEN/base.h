@@ -19,7 +19,7 @@ typedef enum
 #define BASECHARS           (BASETYPES+1)
 #define BASEQUAD            (BASETYPES*BASETYPES)
 
-#define MAXBASECHAR         ((int)'t')    /* vom ASCII-Wert her gr”átes Zeichen */
+#define MAXBASECHAR         ((int)'t')    // vom ASCII-Wert her groesstes Zeichen
 #define PROB_NOT_DEF        (-1.0)
 
 #define isDeleted(b)        (charIsDelete[(int)(b)])
@@ -28,7 +28,7 @@ typedef enum
 
 extern char helixBaseChar[BASECHARS],
             loopBaseChar[BASECHARS];
-extern int  basesArePairing[BASECHARS][BASECHARS], /* Kombination paarend? */
+extern int  basesArePairing[BASECHARS][BASECHARS], // Kombination paarend?
             baseCharType[],
             charIsDelete[],
             charIsHelical[];
