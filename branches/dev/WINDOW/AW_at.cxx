@@ -335,20 +335,20 @@ void AW_window::increment_at_commands(int width, int height) {
 int AW_window::calculate_string_width(int columns) const {
     if (xfig_data) {
         AW_xfig *xfig = (AW_xfig *)xfig_data;
-        return (int)(columns * xfig->font_scale * XFIG_DEFAULT_FONT_WIDTH);   /* stdfont 8x13 */
+        return (int)(columns * xfig->font_scale * XFIG_DEFAULT_FONT_WIDTH);   // stdfont 8x13
     }
     else {
-        return columns * XFIG_DEFAULT_FONT_WIDTH; /* stdfont 8x13 */
+        return columns * XFIG_DEFAULT_FONT_WIDTH; // stdfont 8x13
     }
 }
 
 int AW_window::calculate_string_height(int rows, int offset) const {
     if (xfig_data) {
         AW_xfig *xfig = (AW_xfig *)xfig_data;
-        return (int)((rows * XFIG_DEFAULT_FONT_HEIGHT + offset) * xfig->font_scale); /* stdfont 8x13 */
+        return (int)((rows * XFIG_DEFAULT_FONT_HEIGHT + offset) * xfig->font_scale); // stdfont 8x13
     }
     else {
-        return (rows * XFIG_DEFAULT_FONT_HEIGHT + offset);    /* stdfont 8x13 */
+        return (rows * XFIG_DEFAULT_FONT_HEIGHT + offset);    // stdfont 8x13
     }
 }
 

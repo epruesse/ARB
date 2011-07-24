@@ -606,7 +606,7 @@ inline float tree_read_float(GBDATA *tree, const char *key, double init) {
 
 
 
-/*! moves all node/leaf information from struct GBT_TREE to AP_tree */
+//! moves all node/leaf information from struct GBT_TREE to AP_tree
 void AP_tree::load_node_info() {
     gr.spread          = tree_read_float(gb_node, "spread",          1.0);
     gr.left_angle      = tree_read_float(gb_node, "left_angle",      0.0);
@@ -734,7 +734,7 @@ GB_ERROR AP_tree::move_group_info(AP_tree *new_group) {
             if (!new_group->gb_node) {
                 error = GB_export_error("Internal Error: Target node has a database entry (but no name)");
             }
-            else { /* exchange information of two groups */
+            else { // exchange information of two groups
                 GBDATA *tmp_node   = new_group->gb_node;
                 char   *tmp_name   = new_group->name;
                 new_group->gb_node = gb_node;
@@ -743,7 +743,7 @@ GB_ERROR AP_tree::move_group_info(AP_tree *new_group) {
                 gb_node            = tmp_node;
             }
         }
-        else { /* move group info */
+        else { // move group info
             new_group->gb_node = this->gb_node;
             new_group->name    = this->name;
             this->name         = 0;

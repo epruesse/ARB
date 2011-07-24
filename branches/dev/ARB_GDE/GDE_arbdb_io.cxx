@@ -7,9 +7,9 @@
 #include <AP_filter.hxx>
 #include <aw_awars.hxx>
 
-/* AISC_MKPT_PROMOTE:#ifndef GDE_EXTGLOB_H */
-/* AISC_MKPT_PROMOTE:#include "GDE_extglob.h" */
-/* AISC_MKPT_PROMOTE:#endif */
+// AISC_MKPT_PROMOTE:#ifndef GDE_EXTGLOB_H
+// AISC_MKPT_PROMOTE:#include "GDE_extglob.h"
+// AISC_MKPT_PROMOTE:#endif
 
 typedef unsigned int UINT;
 
@@ -331,10 +331,10 @@ int ReadArbdb(NA_Alignment *dataset, bool marked, AP_filter *filter, GapCompress
     GBDATA *gb_species_data;
     GBDATA *gb_species;
 
-    /* ARB_NT END */
+    // ARB_NT END
     dataset->gb_main = db_access.gb_main;
 
-    /* Alignment choosen ? */
+    // Alignment choosen ?
 
     gb_species_data = GB_entry(dataset->gb_main, "species_data");
     ErrorOut5(gb_species_data!=0, "species_data not found");

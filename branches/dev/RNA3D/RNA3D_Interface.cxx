@@ -38,7 +38,7 @@ static XtWorkProcId                 workId   = 0;
 Boolean SpinMolecule(XtPointer /* clientData */) {
     RNA3D->ROTATION_SPEED = 0.05;
     RefreshOpenGLDisplay();
-    return false; /* leave work proc active */
+    return false; // leave work proc active
 }
 
 // ========== RotateMoleculeStateChanged(void)==================================//
@@ -282,7 +282,7 @@ static void DisplayMoleculeMask(AW_root * /* awr */) {
 }
 
 
-/* ---------------------------- Creating WINDOWS ------------------------------ */
+// ---------------------------- Creating WINDOWS ------------------------------
 static void AddCallBacks(AW_root *awr) {
     // adding callbacks to the awars to refresh the display if received any changes
 

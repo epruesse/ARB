@@ -1,12 +1,12 @@
-/* ================================================================ */
+// ================================================================
 /*                                                                  */
-/*   File      : aisc_commands.c                                    */
-/*   Purpose   :                                                    */
+//   File      : aisc_commands.c
+//   Purpose   :
 /*                                                                  */
-/*   Institute of Microbiology (Technical University Munich)        */
-/*   http://www.arb-home.de/                                        */
+//   Institute of Microbiology (Technical University Munich)
+//   http://www.arb-home.de/
 /*                                                                  */
-/* ================================================================ */
+// ================================================================
 
 #include "aisc_interpreter.h"
 #include "aisc_eval.h"
@@ -59,7 +59,7 @@ void Location::print_internal(const char *msg, const char *msg_type, const char 
 
 #define ERRBUFSIZE 500
 const char *formatted(const char *format, ...) {
-    /* goes to header:  __ATTR__FORMAT(1) */
+    // goes to header:  __ATTR__FORMAT(1)
 
     static char *errbuf = 0;
     if (!errbuf) { errbuf = (char*)malloc(ERRBUFSIZE+1); }

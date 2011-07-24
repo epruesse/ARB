@@ -40,7 +40,7 @@ extern "C" {
 #endif
 #endif
 
-    /* XXX This is from Win32's <windef.h> */
+    // XXX This is from Win32's <windef.h>
 #ifndef APIENTRY
 #if (_MSC_VER >= 800) || defined(_STDCALL_SUPPORTED)
 #define APIENTRY    __stdcall
@@ -49,29 +49,29 @@ extern "C" {
 #endif
 #endif
 
-    /* Mipmapping parameters */
-#define PNG_NOMIPMAPS      0 /* No mipmapping                        */
-#define PNG_BUILDMIPMAPS  -1 /* Calls a clone of gluBuild2DMipmaps() */
-#define PNG_SIMPLEMIPMAPS -2 /* Generates mipmaps without filtering  */
+    // Mipmapping parameters
+#define PNG_NOMIPMAPS      0 // No mipmapping
+#define PNG_BUILDMIPMAPS  -1 // Calls a clone of gluBuild2DMipmaps()
+#define PNG_SIMPLEMIPMAPS -2 // Generates mipmaps without filtering
 
-    /* Who needs an "S" anyway? */
+    // Who needs an "S" anyway?
 #define PNG_NOMIPMAP     PNG_NOMIPMAPS
 #define PNG_BUILDMIPMAP  PNG_BUILDMIPMAPS
 #define PNG_SIMPLEMIPMAP PNG_SIMPLEMIPMAPS
 
-    /* Transparency parameters */
-#define PNG_CALLBACK  -3 /* Call the callback function to generate alpha   */
-#define PNG_ALPHA     -2 /* Use alpha channel in PNG file, if there is one */
-#define PNG_SOLID     -1 /* No transparency                                */
-#define PNG_STENCIL    0 /* Sets alpha to 0 for r=g=b=0, 1 otherwise       */
-#define PNG_BLEND1     1 /* a = r+g+b                                      */
-#define PNG_BLEND2     2 /* a = (r+g+b)/2                                  */
-#define PNG_BLEND3     3 /* a = (r+g+b)/3                                  */
-#define PNG_BLEND4     4 /* a = r*r+g*g+b*b                                */
-#define PNG_BLEND5     5 /* a = (r*r+g*g+b*b)/2                            */
-#define PNG_BLEND6     6 /* a = (r*r+g*g+b*b)/3                            */
-#define PNG_BLEND7     7 /* a = (r*r+g*g+b*b)/4                            */
-#define PNG_BLEND8     8 /* a = sqrt(r*r+g*g+b*b)                          */
+    // Transparency parameters
+#define PNG_CALLBACK  -3 // Call the callback function to generate alpha
+#define PNG_ALPHA     -2 // Use alpha channel in PNG file, if there is one
+#define PNG_SOLID     -1 // No transparency
+#define PNG_STENCIL    0 // Sets alpha to 0 for r=g=b=0, 1 otherwise
+#define PNG_BLEND1     1 // a = r+g+b
+#define PNG_BLEND2     2 // a = (r+g+b)/2
+#define PNG_BLEND3     3 // a = (r+g+b)/3
+#define PNG_BLEND4     4 // a = r*r+g*g+b*b
+#define PNG_BLEND5     5 // a = (r*r+g*g+b*b)/2
+#define PNG_BLEND6     6 // a = (r*r+g*g+b*b)/3
+#define PNG_BLEND7     7 // a = (r*r+g*g+b*b)/4
+#define PNG_BLEND8     8 // a = sqrt(r*r+g*g+b*b)
 
     typedef struct {
         unsigned int Width;

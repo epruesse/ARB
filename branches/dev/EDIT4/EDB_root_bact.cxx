@@ -326,7 +326,7 @@ ED4_returncode  EDB_root_bact::fill_species(ED4_multi_species_manager  *multi_sp
                                             int                        *index,
                                             ED4_index                  *y,
                                             ED4_index                   actual_local_position,
-                                            ED4_index                  *length_of_terminals, /* height of terminals is meant */
+                                            ED4_index                  *length_of_terminals, // height of terminals is meant
                                             int                         group_depth,
                                             arb_progress               *progress)
 {

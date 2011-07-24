@@ -602,7 +602,7 @@ void transferProbeData(saiProbeData *spd) {
 
 }
 
-/* ---------------------------------- Creating WINDOWS ------------------------------------------------ */
+// ---------------------------------- Creating WINDOWS ------------------------------------------------
 
 static void saiColorDefs_init_config(AWT_config_definition& cdef) {
     for (int i = 0; i < 10; i++) {

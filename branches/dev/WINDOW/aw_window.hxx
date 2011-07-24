@@ -102,15 +102,15 @@ enum AW_event_type {
 };
 
 struct AW_event {
-    AW_event_type       type;       /* AW_Keyboard or AW_Mouse */
-    unsigned long       time;       /* time in msec, when event occurred */
+    AW_event_type       type;       // AW_Keyboard or AW_Mouse
+    unsigned long       time;       // time in msec, when event occurred
     // ***** button fields
-    unsigned int        button;     /* which mouse button was pressed 1,2,3 */
-    int         x, y;       /* pointer x,y coordinates in the event window */
+    unsigned int        button;     // which mouse button was pressed 1,2,3
+    int         x, y;       // pointer x,y coordinates in the event window
     // ****** key fields
-    AW_key_mod      keymodifier;    /* control alt meta .... */
-    AW_key_code     keycode;    /* which key type was pressed */
-    char            character;  /* the c character */
+    AW_key_mod      keymodifier;    // control alt meta ....
+    AW_key_code     keycode;    // which key type was pressed
+    char            character;  // the c character
 };
 
 void AW_POPDOWN(AW_window *);

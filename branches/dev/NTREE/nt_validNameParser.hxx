@@ -76,7 +76,7 @@ namespace validNames {
     Desco determineType(const std::string& descriptionString);
 
     bool isUpperCase(const std::string& input);
-}; /* end namespace */
+}; // end namespace
 
 #else
 #error nt_validNameParser.hxx included twice

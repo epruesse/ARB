@@ -30,7 +30,7 @@ void ctree_init(int node_count, const CharPtrArray& names) {
         GBS_write_hash(Name_hash, names[i], (long) i);
     }
 
-    part_init(node_count);  /* Amount of Bits used */
+    part_init(node_count);  // Amount of Bits used
     hash_init();
     destree_init(Name_hash);
     rb_init(names);
@@ -39,8 +39,8 @@ void ctree_init(int node_count, const CharPtrArray& names) {
 }
 
 
-/* Insert a GBT-tree in the Hash-Table */
-/* The GBT-tree is destructed afterwards! */
+// Insert a GBT-tree in the Hash-Table
+// The GBT-tree is destructed afterwards!
 void insert_ctree(GBT_TREE *tree, int weight)
 {
     Tree_count += weight;
@@ -48,7 +48,7 @@ void insert_ctree(GBT_TREE *tree, int weight)
 }
 
 
-/* Get new consensus-tree -> GBT-tree */
+// Get new consensus-tree -> GBT-tree
 /* This function is little bit tricky:
    the root-partition consist of 111....111 so it must have two sons
    that represent the same partition son1 == ~son2 to do this we must split
@@ -68,7 +68,7 @@ GBT_TREE *get_ctree()
         p = hash_getpart();
     }
     n = ntree_get();
-    if (n->son_list->next == NULL) { /* if father has only one son */
+    if (n->son_list->next == NULL) { // if father has only one son
         p  = part_new();
         n->son_list->node->part->len /= 2;
         part_copy(n->son_list->node->part, p);
@@ -76,8 +76,8 @@ GBT_TREE *get_ctree()
         insert_ntree(p);
         n = ntree_get();
     }
-    else {  /* if father has tree sons */
-        arb_assert(0); /* this case should happen nerver! */
+    else {  // if father has tree sons
+        arb_assert(0); // this case should happen nerver!
     }
 
     return rb_gettree(n);

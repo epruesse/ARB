@@ -555,7 +555,7 @@ void make_node_text_init(GBDATA *gb_main) {
     count                  = 0;
 
     for (gbz = GB_entry(gb_arb_presets, "viewkey"); gbz; gbz  = GB_nextEntry(gbz)) {
-        /* toggle set ? */
+        // toggle set ?
         bool at_leaf  = *GBT_read_int(gbz, "leaf");
         bool at_group = *GBT_read_int(gbz, "group");
 
@@ -614,10 +614,10 @@ const char *make_node_text_nds(GBDATA *gb_main, GBDATA * gbd, NDS_Type mode, GBT
             }
             else { // non-empty field_name
                 GBDATA *gbe;
-                if (awt_nds_ms->rek[i]) {       /* hierarchical key */
+                if (awt_nds_ms->rek[i]) {       // hierarchical key
                     gbe = GB_search(gbd, awt_nds_ms->dkeys[i], GB_FIND);
                 }
-                else {              /* flat entry */
+                else {              // flat entry
                     gbe = GB_entry(gbd, awt_nds_ms->dkeys[i]);
                 }
                 // silently ignore missing fields (and leave apply_aci false!)
@@ -755,7 +755,7 @@ const char *make_node_text_nds(GBDATA *gb_main, GBDATA * gbd, NDS_Type mode, GBT
 
 char *make_node_text_list(GBDATA * gbd, FILE *fp)
 {
-    /* if mode==0 screen else file */
+    // if mode==0 screen else file
     char       *bp;
     const char *p;
     GBDATA     *gbe;
@@ -773,10 +773,10 @@ char *make_node_text_list(GBDATA * gbd, FILE *fp)
     fprintf(fp, "\n------------------- %s\n", GBT_read_name(gbd));
 
     for (i = 0; i < awt_nds_ms->count; i++) {
-        if (awt_nds_ms->rek[i]) {       /* hierarchical key */
+        if (awt_nds_ms->rek[i]) {       // hierarchical key
             gbe = GB_search(gbd, awt_nds_ms->dkeys[i], GB_FIND);
         }
-        else {              /* flat entry */
+        else {              // flat entry
             gbe = GB_entry(gbd, awt_nds_ms->dkeys[i]);
         }
         if (!gbe) continue;

@@ -2344,7 +2344,7 @@ void AW_window::create_toggle_field(const char *var_name, AW_label labeli, const
 
 
 void AW_window::create_toggle_field(const char *var_name, int orientation) {
-    /* orientation = 0 -> vertical else horizontal layout */
+    // orientation = 0 -> vertical else horizontal layout
 
     Widget label_for_toggle;
     Widget toggle_field;

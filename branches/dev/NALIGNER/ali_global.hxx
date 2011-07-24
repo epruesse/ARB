@@ -19,31 +19,31 @@ class ALI_GLOBAL {
 private:
 public:
 
-    /* misc */
+    // misc
     char        *prog_name;
     char        *species_name;
     char        *default_file;
     char        *db_server;
     char        *pt_server;
 
-    /* other classes */
+    // other classes
     ALI_ARBDB       arbdb;
     ALI_PT          *pt;
 
-    /* flags */
+    // flags
     int                  mark_species_flag;
 
-    /* limits */
+    // limits
     float       cost_low;
     float       cost_middle;
     float       cost_high;
 
-    /* Contexts */
+    // Contexts
     ALI_PT_CONTEXT       pt_context;
     ALI_PROFILE_CONTEXT prof_context;
     ALI_PREALIGNER_CONTEXT preali_context;
 
-    /* functions */
+    // functions
     void init(int *argc, char *argv[]);
 };
 

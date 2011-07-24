@@ -10,8 +10,8 @@
 
 /* This module is designed to organize the data structure partitions
    partitions represent the edges of a tree */
-/* the partitions are implemented as an array of longs */
-/* Each leaf in a GBT-Tree is represented as one Bit in the Partition */
+// the partitions are implemented as an array of longs
+// Each leaf in a GBT-Tree is represented as one Bit in the Partition
 
 #include "CT_part.hxx"
 #include "CT_mem.hxx"
@@ -31,7 +31,7 @@ void part_init(int len) {
      */
     int i, j;
 
-    /* cutmask is necessary to cut unused bits */
+    // cutmask is necessary to cut unused bits
     j = 8 * sizeof(PELEM);
     j = len % j;
     if (!j) j += 8 * sizeof(PELEM);
@@ -181,19 +181,19 @@ int part_key(PART *p) {
 
 
 void part_setlen(PART *p, GBT_LEN len) {
-    /*! set the len of this edge (this part) */
+    //! set the len of this edge (this part)
     p->len = len;
 }
 
 
 void part_setperc(PART *p, int perc) {
-    /*! set the percentaged appearance of this part in "entrytrees" */
+    //! set the percentaged appearance of this part in "entrytrees"
     p->percent = perc;
 }
 
 
 void part_addperc(PART *p, int perc) {
-    /*! add 'perc' on percent of p */
+    //! add 'perc' on percent of p
     p->percent += perc;
 }
 

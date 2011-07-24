@@ -56,7 +56,7 @@ void GEN_make_node_text_init(GBDATA *gb_main) {
     count                  = 0;
 
     for (gbz = GB_entry(gb_arb_presets, "gene_viewkey"); gbz; gbz  = GB_nextEntry(gbz)) {
-        /* toggle set ? */
+        // toggle set ?
         if (GB_read_int(GB_entry(gbz, sf))) {
             freeset(gen_nds_ms->dkeys[count], GB_read_string(GB_entry(gbz, "key_text")));
             if (GB_first_non_key_char(gen_nds_ms->dkeys[count])) {
@@ -81,7 +81,7 @@ void GEN_make_node_text_init(GBDATA *gb_main) {
 //  -----------------------------------------------------------------------------
 char *GEN_make_node_text_nds(GBDATA *gb_main, GBDATA * gbd, int mode)
 {
-    /* if mode ==0 compress info else format info */
+    // if mode ==0 compress info else format info
     char   *bp;
     GBDATA *gbe;
     long    i, j;
@@ -92,10 +92,10 @@ char *GEN_make_node_text_nds(GBDATA *gb_main, GBDATA * gbd, int mode)
 
     first = 0;
     for (i = 0; i < gen_nds_ms->count; i++) {
-        if (gen_nds_ms->rek[i]) { /* hierarchical key */
+        if (gen_nds_ms->rek[i]) { // hierarchical key
             gbe = GB_search(gbd, gen_nds_ms->dkeys[i], GB_FIND);
         }
-        else {                  /* flat entry */
+        else {                  // flat entry
             gbe = GB_entry(gbd, gen_nds_ms->dkeys[i]);
         }
 

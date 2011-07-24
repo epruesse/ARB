@@ -834,7 +834,7 @@ GB_ERROR DI_MATRIX::calculate(AW_root *awr, char *cancel, double /* alpha */, DI
                     break;
                 }
                 default:;
-            }   /* switch */
+            }   // switch
             progress.inc_and_check_user_abort(error);
         }
     }

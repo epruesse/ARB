@@ -11,8 +11,8 @@
 #include <arbdb.h>
 #include <servercntrl.h>
 
-#define TIMEOUT 1000*60*2       /* save every 2 minutes */
-#define LOOPS   30              /* wait 30*TIMEOUT (1 hour) till shutdown */
+#define TIMEOUT 1000*60*2       // save every 2 minutes
+#define LOOPS   30              // wait 30*TIMEOUT (1 hour) till shutdown
 
 int main(int argc, char **argv)
 {
@@ -62,7 +62,7 @@ int main(int argc, char **argv)
 
     printf("Database is saved after every transaction (one . one save)\n");
 
-    for (timer = LOOPS; timer>0; timer--) { /* the server ends */
+    for (timer = LOOPS; timer>0; timer--) { // the server ends
         GB_begin_transaction(gb_main);
         clock = GB_read_clock(gb_main);
         if (GB_read_clients(gb_main) >0) {

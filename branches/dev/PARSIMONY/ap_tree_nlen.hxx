@@ -54,7 +54,7 @@ typedef enum {
 class AP_tree_edge;
 
 class AP_tree_nlen : public AP_tree { // derived from a Noncopyable
-    /* tree that is independent of branch lengths and root */
+    // tree that is independent of branch lengths and root
 
     AP_TREE_SIDE kernighan;     // Flag zum markieren
     int          distance;      // distance to tree border (0=leaf, INT_MAX=UNKNOWN)
@@ -81,10 +81,10 @@ public:
     // ARB_tree interface (end)
 
     void     unhash_sequence();
-    AP_FLOAT costs(char *mutPerSite = NULL);        /* cost of a tree (number of changes ..) */
+    AP_FLOAT costs(char *mutPerSite = NULL);        // cost of a tree (number of changes ..)
 
-    bool push(AP_STACK_MODE, unsigned long); /* push state of costs */
-    void pop(unsigned long);    /* pop old tree costs */
+    bool push(AP_STACK_MODE, unsigned long); // push state of costs
+    void pop(unsigned long);    // pop old tree costs
     bool clear(unsigned long stack_update, unsigned long user_push_counter);
 
     virtual AP_UPDATE_FLAGS check_update(); // disable  load !!!!
@@ -129,7 +129,7 @@ public:
     // ancestors in it
     AP_CO_LIST * createList(int *size);
 
-    class AP_tree_stack stack;  /* tree stack */
+    class AP_tree_stack stack;  // tree stack
 
     // misc stuff:
 

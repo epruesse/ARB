@@ -200,7 +200,7 @@ private:
         object = 0;
     }
 public:
-    /*! build Smart-NULL-Ptr */
+    //! build Smart-NULL-Ptr
     SmartPtr() : object(0) {}
 
     /*! build normal SmartPtr
@@ -239,16 +239,16 @@ public:
     const T& operator*() const { tpl_assert(object); return *(object->getPointer()); }
     T& operator*() { tpl_assert(object); return *(object->getPointer()); } // Note: to deref a NULL-SmartPtr, use SmartPtr::content()
 
-    /*! test if SmartPtr is NULL */
+    //! test if SmartPtr is NULL
     bool isNull() const { return object == 0; }
 
-    /*! test if SmartPtr is not NULL */
+    //! test if SmartPtr is not NULL
     bool isSet() const { return !isNull(); }
 
-    /*! set SmartPtr to NULL */
+    //! set SmartPtr to NULL
     void SetNull() { Unbind(); }
 
-    /*! set SmartPtr to new content or NULL */
+    //! set SmartPtr to new content or NULL
     void assign(T *p) {
         Unbind();
         if (p) {
@@ -257,7 +257,7 @@ public:
         }
     }
 
-    /*! convert SmartPtr to plain old pointer (also works if isNull()) */
+    //! convert SmartPtr to plain old pointer (also works if isNull())
     const T* content() const {
         return object ? object->getPointer() : NULL;
     }
