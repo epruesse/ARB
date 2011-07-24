@@ -416,7 +416,7 @@ void setuptree(tree *tr, int numSp) {
         tr->nodep[i] = p;
     }
 
-    for (i = numSp+1; i <= 2*numSp-1 && ! anerror; i++) { /* Internal nodes */  /* was : 2*numSp-2 (ralf) */
+    for (i = numSp+1; i <= 2*numSp-1 && ! anerror; i++) { /* Internal nodes    **  was : 2*numSp-2 (ralf) */
         q = (node *) NULL;
         for (j = 1; j <= 3; j++) {
             if ((anerror = !(p = (nodeptr) malloc((unsigned) sizeof(node))))) break;
