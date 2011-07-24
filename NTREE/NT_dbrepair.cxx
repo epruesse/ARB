@@ -981,7 +981,7 @@ static GB_ERROR NT_fix_dict_compress(GBDATA *gb_main, size_t, size_t) {
 
 // --------------------------------------------------------------------------------
 
-static GB_ERROR remove_dup_colors(GBDATA *gb_item, ItemSelector& sel) {
+static GB_ERROR remove_dup_colors(GBDATA *gb_item, ItemSelector& IF_DEBUG(sel)) {
     // Databases out there may contain multiple 'ARB_color' entries.
     // Due to some already fixed bug - maybe introduced in r5309 and fixed in r5825
 
@@ -1012,8 +1012,6 @@ static GB_ERROR remove_dup_colors(GBDATA *gb_item, ItemSelector& sel) {
                            del_count,
                            sel.item_name,
                            sel.generate_item_id(GB_get_root(gb_item), gb_item));
-#else
-    sel = sel;                                      // no warning
 #endif // DEBUG
 
     return error;
