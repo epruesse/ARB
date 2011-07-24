@@ -7,22 +7,19 @@ char helixBaseChar[BASECHARS] = { 'A', 'C', 'G', 'T', '=' },
 int basesArePairing[BASECHARS][BASECHARS] =
 {
 
-/*    A  C  G  T  - */
+//    A  C  G  T  -
 
-    { 0, 0, 0, 1, 0 }, /* A */
-    { 0, 0, 1, 0, 0 }, /* C */
-    { 0, 1, 0, 0, 0 }, /* G */
-    { 1, 0, 0, 0, 0 }, /* T */
-    { 0, 0, 0, 0, 0 }, /* - */
+    { 0, 0, 0, 1, 0 }, // A
+    { 0, 0, 1, 0, 0 }, // C
+    { 0, 1, 0, 0, 0 }, // G
+    { 1, 0, 0, 0, 0 }, // T
+    { 0, 0, 0, 0, 0 }, // -
 };
 
 int baseCharType[MAXBASECHAR+1],
     charIsDelete[MAXBASECHAR+1],
     charIsHelical[MAXBASECHAR+1];
 
-/* -------------------------------------------------------------------------- */
-/*      void initBaseLookups(void) */
-/* ------------------------------------------------------ 25.05.95 02.07 ---- */
 void initBaseLookups()
 {
     int b;
