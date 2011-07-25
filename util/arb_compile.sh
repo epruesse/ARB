@@ -70,7 +70,7 @@ update() {
         svn up --force $UPDATE_ARGS
 }
 build() {
-    make -j$CORES tarfile
+    make -j$CORES "CTARGET=tarfile" build_CTARGET
 }
 
 upgrade() {
