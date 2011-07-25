@@ -33,7 +33,7 @@ enum {
 
     GEN_GC_MAX = GEN_GC_FIRST_COLOR_GROUP+AW_COLOR_GROUPS
 
-};                              // AW_gc
+};
 
 enum GEN_DisplayStyle {
     GEN_DISPLAY_STYLE_RADIAL,
