@@ -1627,17 +1627,11 @@ release_quick:
 
 MAKE_IF_COMMITTED=$(MAKE) -C SOURCE_TOOLS -f Makefile.commitbuild
 
+build_CTARGET:
+	+$(MAKE_IF_COMMITTED) "CTARGET=$(CTARGET)" build_CTARGET
+
 reset_committed_build:
 	+$(MAKE_IF_COMMITTED) reset
-
-rebuild_if_committed:
-	+$(MAKE_IF_COMMITTED) "CTARGET=rebuild" all
-
-build_if_committed:
-	+$(MAKE_IF_COMMITTED) "CTARGET=build" all
-
-all_if_committed:
-	+$(MAKE_IF_COMMITTED) "CTARGET=all" all
 
 # --------------------------------------------------------------------------------
 

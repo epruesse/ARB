@@ -13,9 +13,9 @@ UPTODATE=0
 endif
 
 
-all:
+build_CTARGET:
 ifeq ($(CTARGET),)
-	@echo "Error: You have to pass CTARGET to Makefile.commitbuild"
+	@echo "Error: You have to pass CTARGET to Makefile"
 	false
 else
 	@echo "Last success: '$(SUCCEEDED_REVISION)'"
