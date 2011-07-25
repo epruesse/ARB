@@ -1,7 +1,7 @@
 #include <MultiProbe.hxx>
 #include <cmath>
 
-typedef enum {
+enum Bitpos {
     bit1 = 1,
     bit2 = 2,
     bit3 = 4,
@@ -10,7 +10,7 @@ typedef enum {
     bit6 = 32,
     bit7 = 64,
     bit8 = 128
-} Bitpos;
+};
 
 Bitvector::Bitvector(int bits)
 {

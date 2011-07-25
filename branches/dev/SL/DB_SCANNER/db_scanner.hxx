@@ -46,10 +46,10 @@
  *              author:
  */
 
-typedef enum {
+enum DB_SCANNERMODE {
     DB_SCANNER,
     DB_VIEWER
-} DB_SCANNERMODE;
+};
 
 struct DbScanner;
 

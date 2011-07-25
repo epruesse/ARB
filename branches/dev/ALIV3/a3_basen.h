@@ -18,20 +18,18 @@
 #define INVALID     -1
 #define INSERT      -2
 
-typedef enum
-{
+enum Base {
     ADENIN  =  0,
     CYTOSIN =  1,
     GUANIN  =  2,
     URACIL  =  3,
     ONE     =  4,
     ANY     =  5
-}
-Base;
+};
 
-extern const int    BCharacter [BASEN];
-extern const double BComplement[BASEN][BASEN];
-extern const Base   BIndex     [CHARS];
+extern const int       BCharacter [BASEN];
+extern const double    BComplement[BASEN][BASEN];
+extern const enum Base BIndex     [CHARS];
 
 #else
 #error a3_basen.h included twice

@@ -32,43 +32,46 @@
 #define aint(x)   ((double) ((int) (x)))
 
 
-typedef  double  xtype;
+typedef double  xtype;
+struct          node;
+typedef node   *nodeptr;
 
-typedef  struct  xmantyp {
-    struct xmantyp  *prev;
-    struct xmantyp  *next;
-    struct noderec  *owner;
-    xtype           *a, *c, *g, *t;
-    } xarray;
+struct xarray {
+    xarray  *prev;
+    xarray  *next;
+    nodeptr  owner;
+    xtype   *a, *c, *g, *t;
+};
 
-typedef  struct noderec {
-    double           z;
-    struct noderec  *next;
-    struct noderec  *back;
-    int              number;
-    xarray          *x;
-    int              xcoord, ycoord, ymin, ymax;
-    char             name[nmlngth+1];     //  Space for null termination
-    char            *tip;                 //  Pointer to sequence data
-} node, *nodeptr;
+struct node {
+    double   z;
+    nodeptr  next;
+    nodeptr  back;
+    int      number;
+    xarray  *x;
+    int      xcoord, ycoord, ymin, ymax;
+    char     name[nmlngth+1];             //  Space for null termination
+    char    *tip;                         //  Pointer to sequence data
+};
 
-typedef  struct {
+
+struct tree {
     double  likelihood;
     double  log_f[maxpatterns];
-    node   *nodep[2*maxsp-1];
-    node   *start;
+    nodeptr nodep[2*maxsp-1];
+    nodeptr start;
     int     mxtips;
     int     ntips;
     int     nextnode;
     int     opt_level;
     bool    smoothed;
     bool    rooted;
-} tree;
+};
 
-typedef  struct {
+struct drawdata {
     double tipmax;
     int    tipy;
-} drawdata;
+};
 
 
 

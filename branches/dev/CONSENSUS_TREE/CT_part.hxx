@@ -17,12 +17,12 @@
 
 typedef unsigned int PELEM;
 
-typedef struct {
+struct PART {
     PELEM   *p;
     GBT_LEN  len;               // Length between two knots
     int      percent;           // Count how often this partion appears
     char    *source;            // From which tree comes the partition
-} PART;
+};
 
 void  part_init(int len);
 void  part_print(PART *p);

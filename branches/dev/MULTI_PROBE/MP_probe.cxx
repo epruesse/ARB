@@ -76,17 +76,18 @@ void ProbeValuation::evolution()
 
 void ProbeValuation::insert_in_result_list(probe_combi_statistic *pcs)      // pcs darf nur eingetragen werden, wenn es nicht schon vorhanden ist
 {
-    char    *new_list_string,
-        *misms,
-        *probe_string,
-        temp_misms[3];
-    int     probe_len = 0;
-    char      buf[25];
-    char    ecoli_pos[40], temp_ecol[10];
-    int buf_len, i;
-    result_struct *rs = new result_struct,
-        *elem;
-    AW_window   *aww = mp_main->get_mp_window()->get_result_window();
+    char *new_list_string;
+    char *misms;
+    char *probe_string;
+    char  temp_misms[3];
+    int   probe_len = 0;
+    char  buf[25];
+    char  ecoli_pos[40], temp_ecol[10];
+    int   buf_len, i;
+
+    result_struct *rs  = new result_struct;
+    result_struct *elem;
+    AW_window     *aww = mp_main->get_mp_window()->get_result_window();
 
     memset(rs, 0, sizeof(result_struct));
     memset(ecoli_pos, 0, 40);

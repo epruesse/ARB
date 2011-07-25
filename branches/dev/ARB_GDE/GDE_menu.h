@@ -15,14 +15,12 @@
 #include "GDE_def.h"
 #endif
 
-typedef struct GargChoicetype
-{
+struct GargChoice {
     char *label;                // name for display in dialog box
     char *method;               // value (if null, return choice number)
-} GargChoice;
+};
 
-typedef struct GmenuItemArgtype
-{
+struct GmenuItemArg {
     int         optional;       // is this optional?
     int         type;           // TEXT, SLIDER, CHOOSER, etc.
     int         ivalue;
@@ -37,10 +35,9 @@ typedef struct GmenuItemArgtype
     char       *method;         // commandline interpretation
     GargChoice *choice;         // choices
     // ARB BEGIN
-} GmenuItemArg;
+};
 
-typedef struct GfileFormattype
-{
+struct GfileFormat {
     int   save;                 // how should file be saved
     int   overwrite;            // how should file be loaded
     int   format;               // what format is each field
@@ -48,36 +45,34 @@ typedef struct GfileFormattype
     int   select;               // what type of selection
     char *symbol;               // internal symbol table mapping
     char *name;                 // file name
-} GfileFormat;
+};
 
 class AW_window;
 
-typedef struct GmenuItemtype
-{
-    int               numargs;  // number of agruments to cmnd
-    int               numoutputs; // number of outputs from cmnd
-    int               numinputs; // number of input files to cmnd
-    char             *label;    // item name
-    char             *method;   // commandline produced
-    GfileFormat      *input;    // input definitions
-    GfileFormat      *output;   // output definitions
-    GmenuItemArg     *arg;      // argument definitions
-    char              meta;     // Meta character for function
-    char              seqtype;  // A -> amino, N -> nucleotide, '-' -> no sequence, otherwise both
-    char             *help;     // commandline help
+struct GmenuItem {
+    int           numargs;        // number of agruments to cmnd
+    int           numoutputs;     // number of outputs from cmnd
+    int           numinputs;      // number of input files to cmnd
+    char         *label;          // item name
+    char         *method;         // commandline produced
+    GfileFormat  *input;          // input definitions
+    GfileFormat  *output;         // output definitions
+    GmenuItemArg *arg;            // argument definitions
+    char          meta;           // Meta character for function
+    char          seqtype;        // A -> amino, N -> nucleotide, '-' -> no sequence, otherwise both
+    char         *help;           // commandline help
     // ARB BEGIN
-    struct Gmenutype *parent_menu;
-    AW_window        *aws;      // opened window
-} GmenuItem;
+    struct Gmenu *parent_menu;
+    AW_window    *aws;            // opened window
+};
 
-typedef struct Gmenutype
-{
+struct Gmenu {
     int        numitems;        // number of items in menu
     char      *label;           // menu heading
     GmenuItem *item;            // menu items
     // ARB BEGIN
     char       meta;            // Meta character for menu
-} Gmenu;
+};
 
 typedef unsigned char uchar;
 

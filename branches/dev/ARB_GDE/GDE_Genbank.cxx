@@ -33,15 +33,14 @@ static int CheckType(char *seq, int len) {
 }
 
 // ARB
-typedef struct ARB_TIME_STRUCT
-{
+struct ARB_TIME {
     int yy;
     int mm;
     int dd;
     int hr;
     int mn;
     int sc;
-} ARB_TIME;
+};
 
 static void AsciiTime(void *b, char *asciitime)
 {

@@ -4,22 +4,22 @@
 #define GB_read_APfloat (AP_FLOAT)GB_read_float
 #define GB_write_APfloat GB_write_float
 
-typedef enum {
+enum AP_init_status {
     INIT_NONE = 0,
     INIT_MAIN = 1,
     INIT_START = 2,
     INIT_OPT  = 4,
     INIT_JOB  = 8,
     INIT_ALL = 15
-} AP_init_status;
+};
 
-typedef enum {
+enum GA_JOB_MODE {
     GA_CROSSOVER,
     GA_KERNIGHAN,
     GA_CREATEJOBS,
     GA_NNI,
     GA_NONE
-} GA_JOB_MODE;
+};
 
 class GA_tree {
 public:

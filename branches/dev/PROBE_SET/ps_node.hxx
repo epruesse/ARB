@@ -13,11 +13,11 @@
 
 using namespace std;
 
-typedef struct {
-      short int quality;                      // negative quality <=> matches inverse path
-      unsigned short int length;
-      unsigned short int GC_content;
-  } PS_Probe;
+struct PS_Probe {
+    short int          quality;             // negative quality <=> matches inverse path
+    unsigned short int length;
+    unsigned short int GC_content;
+};
 
 typedef SmartPtr<PS_Probe> PS_ProbePtr;
 

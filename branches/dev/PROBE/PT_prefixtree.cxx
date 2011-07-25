@@ -385,7 +385,7 @@ void PTD_clear_fathers(PTM2 *ptmain, POS_TREE * node)       // stage 1
     PT_WRITE_PNTR((&node->data), NULL);
     if (type == PT_NT_NODE) {
         for (i = PT_QU; i < PT_B_MAX; i++) {
-            sons = PT_read_son(ptmain, node, (enum PT_bases_enum)i);
+            sons = PT_read_son(ptmain, node, (PT_BASES)i);
             if (sons)
                 PTD_clear_fathers(ptmain, sons);
         }
@@ -605,7 +605,7 @@ long PTD_write_node_to_disk(FILE * out, PTM2 *ptmain, POS_TREE * node, long *r_p
     mysize = PT_EMPTY_NODE_SIZE;
 
     for (i = PT_QU; i < PT_B_MAX; i++) {    // free all sons
-        sons = PT_read_son(ptmain, node, (enum PT_bases_enum)i);
+        sons = PT_read_son(ptmain, node, (PT_BASES)i);
         if (sons) {
             int memsize;
             long   diff = pos - r_poss[i];
@@ -787,7 +787,7 @@ long PTD_write_leafs_to_disk(FILE * out, PTM2 *ptmain, POS_TREE * node, long pos
         block[0] = 0;
         o_pos = pos;
         for (i = PT_QU; i < PT_B_MAX && !error; i++) {    // save all sons
-            sons = PT_read_son(ptmain, node, (enum PT_bases_enum)i);
+            sons = PT_read_son(ptmain, node, (PT_BASES)i);
             r_poss[i] = 0;
             if (sons) {
                 r_pos = PTD_write_leafs_to_disk(out, ptmain, sons, pos, &(r_poss[i]), &(block[0]), error);

@@ -24,11 +24,11 @@ struct _xfstruct {
     xfont      *xfontlist;      // linked list of X fonts for different point sizes
 };
 
-typedef struct _appres {
+struct appresStruct {
     bool     SCALABLEFONTS;     // hns 5 Nov 91
     bool     debug;             // hns 5 Nov 91
     Display *display;
-} appresStruct, *appresPtr;
+};
 extern appresStruct appres;
 
 #define DEFAULT      (-1)

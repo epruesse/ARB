@@ -33,23 +33,23 @@ struct AP_CO_LIST {     // liste fuer crossover
     class AP_tree_nlen *pntr;
 };
 
-typedef enum {  // flags fuer die Rekursionsart bei Kernighan Lin
+enum AP_KL_FLAG {  // flags fuer die Rekursionsart bei Kernighan Lin
     AP_DYNAMIK       = 1,
     AP_STATIC        = 2,
     AP_BETTER        = 4,
     // Funktionstyp der Schwellwertfunktion
     AP_QUADRAT_START = 5,
     AP_QUADRAT_MAX   = 6
-} AP_KL_FLAG;
+};
 
-typedef enum {
+enum AP_BL_MODE {
     APBL_NONE                = 0,
     AP_BL_NNI_ONLY           = 1, // try te find a better tree only
     AP_BL_BL_ONLY            = 2, // try to calculate the branch lengths
     AP_BL_NNI_BL             = 3, // better tree & branch lengths
     AP_BL_BOOTSTRAP_LIMIT    = 4, // calculate upper bootstrap limits
     AP_BL_BOOTSTRAP_ESTIMATE = 12 // calculate estimate of bootstrap (includes AP_BL_BOOTSTRAP_LIMIT)
-} AP_BL_MODE;
+};
 
 class AP_tree_edge;
 

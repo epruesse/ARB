@@ -23,7 +23,7 @@
 #endif
 
 
-typedef enum {
+enum awt_item_type {
     AWT_IT_UNKNOWN,
     AWT_IT_SPECIES,
     AWT_IT_ORGANISM,
@@ -31,7 +31,7 @@ typedef enum {
     AWT_IT_EXPERIMENT,
 
     AWT_IT_TYPES
-} awt_item_type;
+};
 
 //  -------------------------------------
 //      class awt_item_type_selector
