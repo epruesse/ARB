@@ -20,24 +20,24 @@
 
 namespace QUERY {
 
-    typedef enum {
+    enum QUERY_MODES {
         QUERY_GENERATE,
         QUERY_ENLARGE,
         QUERY_REDUCE
-    } QUERY_MODES;
+    };
 
-    typedef enum {
+    enum QUERY_TYPES {
         QUERY_MARKED,
         QUERY_MATCH,
         QUERY_DONT_MATCH
-    } QUERY_TYPES;
+    };
 
 #define QUERY_SEARCHES 3 // no of search-lines in search tool
 
 #define QUERY_SORT_CRITERIA_BITS 6              // number of "real" sort criteria
 #define QUERY_SORT_CRITERIA_MASK ((1<<QUERY_SORT_CRITERIA_BITS)-1)
 
-    typedef enum {
+    enum QUERY_RESULT_ORDER {
         QUERY_SORT_NONE = 0,
 
         // "real" criteria:
@@ -48,7 +48,7 @@ namespace QUERY {
         QUERY_SORT_BY_HIT_DESCRIPTION  = 16,        // by hit description
         QUERY_SORT_REVERSE             = 32,        // revert following (may occur multiple times)
 
-    } QUERY_RESULT_ORDER;
+    };
 
     struct DbQuery {
         AW_window         *aws;

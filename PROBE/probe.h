@@ -59,13 +59,13 @@ enum PT_MATCH_TYPE {
 extern ULONG physical_memory;
 struct Hs_struct;
 
-typedef enum type_types_type {
+enum type_types {
     t_int    = 1,
     t_string = 0,
     t_float  = 2
-} type_types;
+};
 
-typedef enum PT_bases_enum {
+enum PT_BASES {
     PT_QU = 0,
     PT_N  = 1,
     PT_A,
@@ -74,32 +74,32 @@ typedef enum PT_bases_enum {
     PT_T,
     PT_B_MAX,
     PT_B_UNDEF,
-} PT_BASES;
+};
 
 // -----------------
 //      POS TREE
 
-typedef enum enum_PT_NODE_TYPE {
+enum PT_NODE_TYPE {
     PT_NT_LEAF        = 0,
     PT_NT_CHAIN       = 1,
     PT_NT_NODE        = 2,
     PT_NT_SINGLE_NODE = 3,                          // stage 3
     PT_NT_SAVED       = 3,                          // stage 1+2
     PT_NT_UNDEF       = 4
-} PT_NODE_TYPE;
+};
 
-typedef struct POS_TREE_struct {
+struct POS_TREE {
     uchar flags;
     char  data;
-} POS_TREE;
+};
 
-typedef struct PTMM_struct {
+struct PTM2 {
     char *data_start;                               // points to start of data
     int   stage1;
     int   stage2;
     int   stage3;
     int   mode;
-} PTM2;
+};
 
 
 

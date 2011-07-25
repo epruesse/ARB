@@ -15,10 +15,10 @@
 #include "CT_part.hxx"
 #endif
 
-typedef struct hnode {
-    PART         *part;
-    struct hnode *next;
-} HNODE;
+struct HNODE {
+    PART  *part;
+    HNODE *next;
+};
 
 extern int      Tree_count;
 extern GB_HASH *Name_hash;

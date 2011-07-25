@@ -15,7 +15,7 @@
 #define bi_assert(bed) arb_assert(bed)
 #endif
 
-typedef enum {
+enum BI_PAIR_TYPE {
     HELIX_NONE,                                     // used in entries
     HELIX_STRONG_PAIR,
     HELIX_PAIR,                                     // used in entries
@@ -38,7 +38,7 @@ typedef enum {
     HELIX_NON_STANDARD9,                            // used in entries
     HELIX_NO_MATCH,
     HELIX_MAX
-} BI_PAIR_TYPE;
+};
 
 struct BI_helix_entry {
     long          pair_pos;

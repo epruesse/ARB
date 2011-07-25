@@ -1126,7 +1126,7 @@ void ED4_set_protection(AW_window * /* aww */, AW_CL cd1, AW_CL /* cd2 */) {
     if (error) aw_message(error);
 }
 
-typedef enum {
+enum MenuSelectType {
     ED4_MS_NONE,
     ED4_MS_ALL,
     ED4_MS_INVERT,
@@ -1137,8 +1137,7 @@ typedef enum {
     ED4_MS_SELECT_MARKED,
     ED4_MS_DESELECT_MARKED,
     ED4_MS_TOGGLE_BLOCKTYPE
-
-} MenuSelectType;
+};
 
 static void ED4_menu_select(AW_window *aww, AW_CL type, AW_CL) {
     GB_transaction dummy(GLOBAL_gb_main);

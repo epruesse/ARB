@@ -37,7 +37,7 @@ const double BComplement[BASEN][BASEN] =
       { 0.0, 0.0, 0.0, 0.0, 0.0, 0.0 }
 };
 
-const Base BIndex[CHARS] =
+const enum Base BIndex[CHARS] =
 {
     // 00       01       02       03       04       05       06       07
        INVALID, INVALID, INVALID, INVALID, INVALID, INVALID, INVALID, INVALID,

@@ -119,12 +119,12 @@
 
 // Data types
 
-typedef struct {
+struct NumList {
     int *valu;
-} NumList;
+};
 
 
-typedef struct {
+struct TimeStamp {
     struct {
         int yy;
         int mm;
@@ -133,17 +133,17 @@ typedef struct {
         int mn;
         int sc;
     } origin, modify;
-} TimeStamp;
+};
 
 typedef unsigned char NA_Base;
 
-typedef struct {
+struct GMask {
     char    *name;
     int      type;
     NumList *list;
     int      listlen;
     int      maxlen;
-} GMask;
+};
 
 
 // sizes for fields (including terminating zero byte)
@@ -154,8 +154,7 @@ typedef struct {
 #define SIZE_DESCRIPTION   SIZE_FIELD_GENBANK
 #define SIZE_AUTHORITY     SIZE_FIELD_GENBANK
 
-typedef struct NA_SeqStruct
-{
+struct NA_Sequence {
     char  id[SIZE_ID];                  // sequence id (ACCESSION)
     char  seq_name[SIZE_SEQ_NAME];      // Sequence name (ORGANISM)
     char  short_name[SIZE_SHORT_NAME];  // Name (LOCUS)
@@ -178,8 +177,8 @@ typedef struct NA_SeqStruct
     size_t        groupid;      // group id
     int          *col_lut;      // character to color LUT
 
-    struct NA_SeqStruct *groupb; // Group link backward
-    struct NA_SeqStruct *groupf; // Group link forward
+    NA_Sequence *groupb;        // Group link backward
+    NA_Sequence *groupf;        // Group link forward
 
     int  *cmask;                // color mask
     int   selected;             // Selection flag
@@ -192,10 +191,9 @@ typedef struct NA_SeqStruct
     int  *rmatrix;              // reverse translation matrix (char->code)
 
     GBDATA  *gb_species;
-} NA_Sequence;
+};
 
-typedef struct
-{
+struct NA_Alignment {
     char         *id;           // Alignment ID
     char         *description;  // Description of the alignment
     char         *authority;    // Who generated the alignment
@@ -223,7 +221,7 @@ typedef struct
     GBDATA *gb_main;
     char   *alignment_name;
 
-} NA_Alignment;
+};
 
 extern NA_Alignment *DataSet;
 

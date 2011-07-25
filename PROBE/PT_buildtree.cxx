@@ -146,7 +146,7 @@ inline void get_abs_align_pos(char *seq, int &pos)
 
 long PTD_save_partial_tree(FILE *out, PTM2 *ptmain, POS_TREE * node, char *partstring, int partsize, long pos, long *ppos, ARB_ERROR& error) {
     if (partsize) {
-        POS_TREE *son = PT_read_son(ptmain, node, (enum PT_bases_enum)partstring[0]);
+        POS_TREE *son = PT_read_son(ptmain, node, (PT_BASES)partstring[0]);
         if (son) {
             pos = PTD_save_partial_tree(out, ptmain, son, partstring+1, partsize-1, pos, ppos, error);
         }

@@ -14,7 +14,7 @@
 #include <aw_base.hxx>
 #endif
 
-typedef enum {
+enum DI_gc {
     DI_G_STANDARD,
     DI_G_NAMES,
     DI_G_RULER,
@@ -22,7 +22,7 @@ typedef enum {
     DI_G_BELOW_DIST,
     DI_G_ABOVE_DIST,
     DI_G_LAST                   // must be last
-} DI_gc;
+};
 
 class AW_device;
 class AW_event;
