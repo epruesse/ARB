@@ -101,7 +101,7 @@ extern bool         last_window_reached;            // only needed for refreshin
 #define CHARACTEROFFSET 5       // spacer-width left of text-terminal
 #define CONSENSUS       "Consensusfunktion"
 
-#define ED4_index   long
+typedef long ED4_index;
 
 inline int max(int x, int y)    { return x>y ? x : y; }
 inline int min(int x, int y)    { return x<y ? x : y; }

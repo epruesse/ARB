@@ -50,7 +50,7 @@ enum {
 
     AWT_GC_FIRST_COLOR_GROUP,
     AWT_GC_MAX = AWT_GC_FIRST_COLOR_GROUP+AW_COLOR_GROUPS
-}; // AW_gc
+};
 
 enum AP_STACK_MODE {
     NOTHING   = 0,                                                      // nothing to buffer in AP_tree node
