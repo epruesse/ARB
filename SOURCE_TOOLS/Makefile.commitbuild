@@ -23,7 +23,7 @@ else
 #	@echo "Uptodate:     '$(UPTODATE)'"
 ifeq ($(UPTODATE),0)
 	@echo "Need to make '$(CTARGET)'"
-	$(MAIN_MAKE) $(CTARGET)
+	+$(MAIN_MAKE) $(CTARGET)
 	$(REV_CHECK) set_succeeded
 else
 	@echo "Already did a successful '$(CTARGET)' for [$(SUCCEEDED_REVISION)]"
