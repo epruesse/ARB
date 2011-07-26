@@ -210,7 +210,7 @@ static sint check_param(char **args,char *params[], char *param_arg[])
 		Boolean 	name1 = FALSE;
 		sint ajb;
 
-	if(args[0]==NULL) return;
+	if(args[0]==NULL) return 0;
 
 
 
