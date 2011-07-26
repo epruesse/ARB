@@ -255,7 +255,7 @@ int a,b,*num,*denom;
 	}
 	if(special)
 		(*num) = *denom - (int)fnum;
-	return;
+	return 0;
 }
 
 
@@ -317,7 +317,7 @@ int ndx;
 			aval[i] = c;
 		aval[i] = '\0';
 	}
-	return;
+	return 0;
 }
 
 SetPart()
@@ -369,7 +369,7 @@ SetPart()
 		partg[j] = (float)g / (float)tot;
 		partu[j] = (float)u / (float)tot;
 	}
-	return;
+	return 0;
 }
 
 
@@ -394,7 +394,7 @@ Report()
 		printf("\n");
 		jj++;
 	}
-	return;
+	return 0;
 }
 
 

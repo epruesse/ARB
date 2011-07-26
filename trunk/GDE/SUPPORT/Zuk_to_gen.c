@@ -99,6 +99,6 @@ int numseq;
                 }
                 fprintf(file,"\n//\n");
         }
-        return;
+        return 0;
 }
 
