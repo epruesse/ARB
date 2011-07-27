@@ -39,7 +39,10 @@ class SimpleLocation : public Location {
 
 public:
     SimpleLocation(long p1, long p2, char u1, char u2)
-        : pos1(p1), pos2(p2), uncertain1(u1), uncertain2(u2) {}
+        : pos1(p1), pos2(p2), uncertain1(u1), uncertain2(u2)
+    {
+        arb_assert(u1 && u2);
+    }
     SimpleLocation(long p, char u)
         : pos1(p), pos2(p), uncertain1(u), uncertain2(u)
     {
@@ -280,6 +283,7 @@ LocationPtr parseLocation(const string& source) {
             // single base position
             char   uncertain;
             size_t single_pos = parsePosition(source, uncertain);
+            if (uncertain != '=') throw "No uncertainty allowed for single positions";
             return new SimpleLocation(single_pos, uncertain);
         }
     }
@@ -303,7 +307,7 @@ GEN_position *Location::create_GEN_position() const {
     return pos;
 }
 
-inline LocationPtr part2SimpleLocation(GEN_position *pos, int i) {
+inline LocationPtr part2SimpleLocation(const GEN_position *pos, int i) {
     LocationPtr res = new SimpleLocation(pos->start_pos[i], pos->stop_pos[i], pos->start_uncertain[i], pos->stop_uncertain[i]);
     if (pos->complement[i]) {
         res = new ComplementLocation(res);
@@ -311,7 +315,7 @@ inline LocationPtr part2SimpleLocation(GEN_position *pos, int i) {
     return res;
 }
 
-LocationPtr to_Location(GEN_position *gp) {
+LocationPtr to_Location(const GEN_position *gp) {
     arb_assert(gp->start_uncertain);
     arb_assert(gp->stop_uncertain);
 
