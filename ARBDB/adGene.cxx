@@ -193,12 +193,14 @@ void GEN_use_uncertainties(GEN_position *pos) {
 }
 
 void GEN_free_position(GEN_position *pos) {
-    if (lastFreedPosition) {
-        free(lastFreedPosition->start_pos); // rest is allocated together with start_pos
-        free(lastFreedPosition);
-    }
+    if (pos) {
+        if (lastFreedPosition) {
+            free(lastFreedPosition->start_pos); // rest is allocated together with start_pos
+            free(lastFreedPosition);
+        }
 
-    lastFreedPosition = pos;
+        lastFreedPosition = pos;
+    }
 }
 
 static struct GEN_position_mem_handler {
@@ -358,21 +360,43 @@ GB_ERROR GEN_write_position(GBDATA *gb_gene, const GEN_position *pos) {
         }
     }
 
-#if defined(DEBUG)
     // test data
     if (!error) {
-        for (p = 0; p<pos->parts; ++p) {
+        for (p = 0; p<pos->parts && !error; ++p) {
             char c;
 
             c = pos->complement[p]; gb_assert(c == 0 || c == 1);
-            gb_assert(pos->start_pos[p] <= pos->stop_pos[p]);
-            if (pos->start_uncertain) {
-                c = pos->start_uncertain[p]; gb_assert(strchr("<=>+", c) != 0);
-                c = pos->stop_uncertain[p]; gb_assert(strchr("<=>-", c) != 0);
+            if (c<0 || c>1) {
+                error = GBS_global_string("Illegal value %i in complement", int(c));
+            }
+            else {
+                if (pos->start_pos[p]>pos->stop_pos[p]) {
+                    error = GBS_global_string("Illegal positions (%li>%li)", pos->start_pos[p], pos->stop_pos[p]);
+                }
+                else {
+                    if (pos->start_uncertain) {
+                        c       = pos->start_uncertain[p];
+                        char c2 = pos->stop_uncertain[p];
+
+                        if      (!c  || strchr("<=>+", c)  == 0) error = GBS_global_string("Invalid uncertainty '%c'", c);
+                        else if (!c2 || strchr("<=>-", c2) == 0) error = GBS_global_string("Invalid uncertainty '%c'", c2);
+                        else {
+                            if (c == '+' || c2 == '-') {
+                                if (c == '+' && c2 == '-') {
+                                    if (pos->start_pos[p] != pos->stop_pos[p]-1) {
+                                        error = GBS_global_string("Invalid positions %li^%li for uncertainties +-", pos->start_pos[p], pos->stop_pos[p]);
+                                    }
+                                }
+                                else {
+                                    error = "uncertainties '+' and '-' can only be used together";
+                                }
+                            }
+                        }
+                    }
+                }
             }
         }
     }
-#endif // DEBUG
 
     if (!error) {
         if (pos->parts == 1) {
@@ -811,6 +835,11 @@ struct arb_unit_test::test_alignment_data TestAlignmentData_Genome[] = {
         TEST_ASSERT_NULL(error.deliver());                              \
     } while(0)
 
+#define TEST_WRITE_GEN_POSITION_ERROR(pos,exp_error) do {               \
+        error = GEN_write_position(gb_gene, &*(pos));                   \
+        TEST_ASSERT_EQUAL(error.deliver(), exp_error);                  \
+    } while(0)
+    
 #define TEST_GENPOS_FIELD(field,value) do {                             \
         GBDATA *gb_field = GB_entry(gb_gene, (field));                  \
         if ((value)) {                                                  \
@@ -900,6 +929,19 @@ void TEST_GEN_position() {
         TEST_GENPOS_FIELDS("5,10,25", "15,20,25", "0,1,0", "<=,==,=>");
 
         TEST_GENE_SEQ_AND_LENGTH(false, "CCUAAACCCAA-TACGGTTGGGT-G", 25);
+
+        pos->stop_uncertain[2] = 'x';
+        TEST_WRITE_GEN_POSITION_ERROR(pos, "Invalid uncertainty 'x'"); 
+
+        pos->stop_uncertain[2] = '+';
+        TEST_WRITE_GEN_POSITION_ERROR(pos, "Invalid uncertainty '+'"); // invalid for stop
+        
+        pos->start_uncertain[2] = '+';
+        pos->stop_uncertain[2]  = '-';
+        TEST_WRITE_GEN_POSITION_ERROR(pos, "Invalid positions 25^25 for uncertainties +-"); 
+
+        pos->stop_pos[2] = 26;
+        TEST_WRITE_GEN_POSITION_ERROR(pos, NULL); 
     }
 
     GB_close(gb_main);
