@@ -57,6 +57,7 @@ my %skipped_files = map { $_ => 1; } (
                                       'ChangeLog',
                                       'config.makefile',
                                       'helpfiles.lst',
+                                      'last.success',
                                       'Makefile.setup.local',
                                       'makeloc.here',
                                       'makeloc.here',
