@@ -49,6 +49,7 @@ struct Location : public Noncopyable {
 typedef SmartPtr<Location> LocationPtr;
 
 LocationPtr parseLocation(const string& source);
+LocationPtr to_Location(const GEN_position *gp);
 
 #else
 #error Location.h included twice

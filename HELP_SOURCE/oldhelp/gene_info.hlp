@@ -12,7 +12,7 @@ SUB	spaf_scandb.hlp
 SUB	spa_delete.hlp
 SUB	spa_rename.hlp
 SUB	spa_copy.hlp
-SUB	spa_create.hlp
+SUB	gen_create.hlp
 
 # Hypertext links in helptext can be added like this: LINK{ref.hlp|http://add|bla@domain}
 
