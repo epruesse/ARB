@@ -362,6 +362,14 @@ GB_ERROR GEN_write_position(GBDATA *gb_gene, const GEN_position *pos) {
 
     // test data
     if (!error) {
+        size_t length;
+        {
+            GBDATA *gb_organism = GB_get_grandfather(gb_gene);
+            GBDATA *gb_genome   = GBT_read_sequence(gb_organism, GENOM_ALIGNMENT);
+            
+            length = GB_read_count(gb_genome);
+        }
+
         for (p = 0; p<pos->parts && !error; ++p) {
             char c;
 
@@ -372,6 +380,12 @@ GB_ERROR GEN_write_position(GBDATA *gb_gene, const GEN_position *pos) {
             else {
                 if (pos->start_pos[p]>pos->stop_pos[p]) {
                     error = GBS_global_string("Illegal positions (%li>%li)", pos->start_pos[p], pos->stop_pos[p]);
+                }
+                else if (pos->start_pos[p] == 0) {
+                    error = GBS_global_string("Illegal start position %li", pos->start_pos[p]);
+                }
+                else if (pos->stop_pos[p] > length) {
+                    error = GBS_global_string("Illegal stop position %li (>length(=%li))", pos->stop_pos[p], length);
                 }
                 else {
                     if (pos->start_uncertain) {
@@ -893,11 +907,8 @@ void TEST_GEN_position() {
 
         pos = GEN_new_position(1, false);
 
-        TEST_WRITE_READ_GEN_POSITION(&*pos);
-        TEST_GENPOS_FIELDS("0", "0", "0", NULL);
+        TEST_WRITE_GEN_POSITION_ERROR(pos, "Illegal start position 0");
 
-        TEST_GENE_SEQ_AND_LENGTH(true, NULL, 0); // expect error (ill. positions)
-        
         pos->start_pos[0]  = 5;
         pos->stop_pos[0]   = 10;
         pos->complement[0] = 1;
@@ -913,8 +924,7 @@ void TEST_GEN_position() {
 
         pos = GEN_new_position(3, false);
 
-        TEST_WRITE_READ_GEN_POSITION(&*pos);
-        TEST_GENPOS_FIELDS("0,0,0", "0,0,0", "0,0,0", NULL);
+        TEST_WRITE_GEN_POSITION_ERROR(pos, "Illegal start position 0");
 
         GEN_use_uncertainties(&*pos);
 
@@ -938,10 +948,13 @@ void TEST_GEN_position() {
         
         pos->start_uncertain[2] = '+';
         pos->stop_uncertain[2]  = '-';
-        TEST_WRITE_GEN_POSITION_ERROR(pos, "Invalid positions 25^25 for uncertainties +-"); 
+        TEST_WRITE_GEN_POSITION_ERROR(pos, "Invalid positions 25^25 for uncertainties +-");
 
         pos->stop_pos[2] = 26;
-        TEST_WRITE_GEN_POSITION_ERROR(pos, NULL); 
+        TEST_WRITE_GEN_POSITION_ERROR(pos, NULL);
+        
+        pos->stop_pos[0] = 100;
+        TEST_WRITE_GEN_POSITION_ERROR(pos, "Illegal stop position 100 (>length(=32))");
     }
 
     GB_close(gb_main);
