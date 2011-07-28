@@ -17,6 +17,7 @@
 
 #include <arbdbt.h>
 #include <arb_strbuf.h>
+#include <arb_strarray.h>
 
 #define awtc_assert(bed) arb_assert(bed)
 

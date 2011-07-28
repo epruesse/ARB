@@ -50,18 +50,30 @@ extern GBDATA *GLOBAL_gb_main;
 #define AWAR_NN_RANGE_START    AWAR_NN_BASE "range_start"
 #define AWAR_NN_RANGE_END      AWAR_NN_BASE "range_end"
 
+enum ReorderMode {
+    // real orders
+    ORDER_ALPHA,
+    ORDER_TYPE,
+    ORDER_FREQ,
+    
+    // special modes
+    RIGHT_BEHIND_LEFT,
+    REVERSE_ORDER,
+};
+
 void NT_create_species_var(AW_root *aw_root, AW_default aw_def) {
-    aw_root->awar_string(AWAR_SPECIES_DEST,         "",        aw_def);
-    aw_root->awar_string(AWAR_SPECIES_INFO,         "",        aw_def);
-    aw_root->awar_string(AWAR_SPECIES_KEY,          "",        aw_def);
-    aw_root->awar_string(AWAR_FIELD_REORDER_SOURCE, "",        aw_def);
-    aw_root->awar_string(AWAR_FIELD_REORDER_DEST,   "",        aw_def);
-    aw_root->awar_string(AWAR_FIELD_CREATE_NAME,    "",        aw_def);
-    aw_root->awar_int   (AWAR_FIELD_CREATE_TYPE,    GB_STRING, aw_def);
-    aw_root->awar_string(AWAR_FIELD_DELETE,         "",        aw_def);
-    aw_root->awar_string(AWAR_FIELD_CONVERT_SOURCE, "",        aw_def);
-    aw_root->awar_int   (AWAR_FIELD_CONVERT_TYPE,   GB_STRING, aw_def);
-    aw_root->awar_string(AWAR_FIELD_CONVERT_NAME,   "",        aw_def);
+    aw_root->awar_string(AWAR_SPECIES_DEST,         "",          aw_def);
+    aw_root->awar_string(AWAR_SPECIES_INFO,         "",          aw_def);
+    aw_root->awar_string(AWAR_SPECIES_KEY,          "",          aw_def);
+    aw_root->awar_string(AWAR_FIELD_REORDER_SOURCE, "",          aw_def);
+    aw_root->awar_string(AWAR_FIELD_REORDER_DEST,   "",          aw_def);
+    aw_root->awar_int   (AWAR_FIELD_REORDER_ORDER,  ORDER_ALPHA, aw_def);
+    aw_root->awar_string(AWAR_FIELD_CREATE_NAME,    "",          aw_def);
+    aw_root->awar_int   (AWAR_FIELD_CREATE_TYPE,    GB_STRING,   aw_def);
+    aw_root->awar_string(AWAR_FIELD_DELETE,         "",          aw_def);
+    aw_root->awar_string(AWAR_FIELD_CONVERT_SOURCE, "",          aw_def);
+    aw_root->awar_int   (AWAR_FIELD_CONVERT_TYPE,   GB_STRING,   aw_def);
+    aw_root->awar_string(AWAR_FIELD_CONVERT_NAME,   "",          aw_def);
 }
 
 static void move_species_to_extended(AW_window *aww) {
@@ -504,64 +516,246 @@ void launch_MapViewer_cb(GBDATA *gbd, AD_MAP_VIEWER_TYPE type) {
     if (error) aw_message(error);
 }
 
-static int count_key_data_elements(GBDATA *gb_key_data) {
-    int nitems  = 0;
-    for (GBDATA *gb_cnt = GB_child(gb_key_data); gb_cnt; gb_cnt = GB_nextChild(gb_cnt)) {
-        ++nitems;
-    }
+static long count_field_occurrance(const ad_item_selector *sel, const char *field_name) {
+    AWT_QUERY_RANGE RANGE = QUERY_ALL_ITEMS;
+    long            count = 0;
 
-    return nitems;
+    for (GBDATA *gb_container = sel->get_first_item_container(GLOBAL_gb_main, NULL, RANGE);
+         gb_container;
+         gb_container = sel->get_next_item_container(gb_container, RANGE))
+    {
+        for (GBDATA *gb_item = sel->get_first_item(gb_container, RANGE);
+             gb_item;
+             gb_item = sel->get_next_item(gb_item, RANGE))
+        {
+            GBDATA *gb_field = GB_entry(gb_item, field_name);
+            if (gb_field) ++count;
+        }
+    }
+    return count;
 }
 
-static void reorder_left_behind_right(AW_window *aws, AW_CL cl_selleft, AW_CL cl_selright) {
-    GB_begin_transaction(GLOBAL_gb_main);
-    char     *source  = aws->get_root()->awar(AWAR_FIELD_REORDER_SOURCE)->read_string();
-    char     *dest    = aws->get_root()->awar(AWAR_FIELD_REORDER_DEST)->read_string();
-    GB_ERROR  warning = 0;
+class KeySorter : virtual Noncopyable {
+    int      key_count;
+    GBDATA **key;
 
-    AWT_itemfield_selection *sel_left  = (AWT_itemfield_selection*)cl_selleft;
-    AWT_itemfield_selection *sel_right = (AWT_itemfield_selection*)cl_selright;
+    int field_count; // = key_count - container_count
 
+    bool order_changed;
+
+    // helper variables for sorting
+    static GB_HASH                *order_hash;
+    static const ad_item_selector *item_selector;
+    static arb_progress           *sort_progress;
+
+    bool legal_pos(int p) { return p >= 0 && p<key_count; }
+    bool legal_field_pos(int p) const { return p >= 0 && p<field_count; }
+    bool legal_field_pos(int p1, int p2) const { return legal_field_pos(p1) && legal_field_pos(p2); }
+
+    void swap(int p1, int p2) {
+        nt_assert(legal_pos(p1));
+        nt_assert(legal_pos(p2));
+
+        GBDATA *k = key[p1];
+        key[p1]   = key[p2];
+        key[p2]   = k;
+
+        order_changed = true;
+    }
+
+    const char *field_name(int p) const {
+        GBDATA *gb_key_name = GB_entry(key[p], "key_name");
+        if (gb_key_name) return GB_read_char_pntr(gb_key_name);
+        return NULL;
+    }
+    GB_TYPES field_type(int p) const {
+        GBDATA *gb_key_type = GB_entry(key[p], "key_type");
+        if (gb_key_type) return GB_TYPES(GB_read_int(gb_key_type));
+        return GB_NONE;
+    }
+    int field_freq(int p) const {
+        const char *name            = field_name(p);
+        if (!order_hash) order_hash = GBS_create_hash(key_count, GB_IGNORE_CASE);
+
+        long freq = GBS_read_hash(order_hash, name);
+        if (!freq) {
+            freq = 1+count_field_occurrance(item_selector, name);
+            GBS_write_hash(order_hash, name, freq);
+            if (sort_progress) sort_progress->inc();
+        }
+        return freq;
+    }
+
+    int compare(int p1, int p2, ReorderMode mode) {
+        switch (mode) {
+            case RIGHT_BEHIND_LEFT:
+            case REVERSE_ORDER: 
+                nt_assert(0); // illegal ReorderMode
+                break;
+
+            case ORDER_TYPE:  return field_type(p2)-field_type(p1);
+            case ORDER_ALPHA: return strcasecmp(field_name(p1), field_name(p2));
+            case ORDER_FREQ:  return field_freq(p2)-field_freq(p1);
+        }
+        return p2-p1; // keep order
+    }
+
+public:
+    KeySorter(GBDATA *gb_key_data) {
+        key_count   = 0;
+        field_count = 0;
+        key         = NULL;
+
+        for (GBDATA *gb_key = GB_child(gb_key_data); gb_key; gb_key = GB_nextChild(gb_key)) {
+            key_count++;
+        }
+
+        if (key_count) {
+            key = (GBDATA**)malloc(key_count*sizeof(*key));
+            
+            int container_count = 0;
+            for (GBDATA *gb_key = GB_child(gb_key_data); gb_key; gb_key = GB_nextChild(gb_key)) {
+                GBDATA   *gb_type = GB_entry(gb_key, CHANGEKEY_TYPE);
+                GB_TYPES  type    = GB_TYPES(GB_read_int(gb_type));
+
+                if (type == GB_DB) { // move containers behind fields
+                    key[key_count-1-container_count++] = gb_key;
+                }
+                else {
+                    key[field_count++] = gb_key;
+                }
+            }
+            nt_assert((container_count+field_count) == key_count);
+            reverse_order(field_count, key_count-1); // of containers
+        }
+        order_changed = false;
+    }
+    ~KeySorter() {
+        nt_assert(!order_changed); // order changed but not written
+        free(key);
+    }
+
+    int get_field_count() const { return field_count; }
+
+    void bubble_sort(int p1, int p2, ReorderMode mode, const ad_item_selector *selector) {
+        if (p1>p2) std::swap(p1, p2);
+        if (legal_field_pos(p1, p2)) {
+            if (mode == ORDER_FREQ) {
+                sort_progress = new arb_progress("Calculating field frequencies", p2-p1+1);
+            }
+            item_selector = selector;
+            while (p1<p2) {
+                bool changed = false;
+
+                int i = p2;
+                while (i>p1) {
+                    if (compare(i-1, i, mode)>0) {
+                        swap(i-1, i);
+                        changed = true;
+                    }
+                    --i;
+                }
+                if (!changed) break;
+                ++p1;
+            }
+            if (order_hash) {
+                GBS_free_hash(order_hash);
+                order_hash = NULL;
+            }
+            if (sort_progress) {
+                delete sort_progress;
+                sort_progress = NULL;
+            }
+        }
+    }
+    void reverse_order(int p1, int p2) {
+        if (p1>p2) std::swap(p1, p2);
+        if (legal_field_pos(p1, p2)) while (p1<p2) swap(p1++, p2--);
+    }
+
+    int index_of(GBDATA *gb_key) {
+        int i;
+        for (i = 0; i<key_count; i++) {
+            if (gb_key == key[i]) break;
+        }
+        if (i == key_count) {
+            nt_assert(0);
+            i = -1;
+        }
+        return i;
+    }
+
+    void move_to(int to_move, int wanted_position) {
+        if (legal_field_pos(to_move, wanted_position)) {
+            while (to_move<wanted_position) {
+                swap(to_move, to_move+1);
+                to_move++;
+            }
+            while (to_move>wanted_position) {
+                swap(to_move, to_move-1);
+                to_move--;
+            }
+        }
+    }
+
+    GB_ERROR save_changes() {
+        GB_ERROR warning = NULL;
+        if (order_changed) {
+            if (key_count) {
+                GBDATA *gb_main = GB_get_root(key[0]);
+                warning         = GB_resort_data_base(gb_main, key, key_count);
+            }
+            order_changed = false;
+        }
+        return warning;
+    }
+};
+
+GB_HASH                *KeySorter::order_hash    = NULL;
+const ad_item_selector *KeySorter::item_selector = NULL;
+arb_progress           *KeySorter::sort_progress = NULL;
+
+static void reorder_keys(AW_window *aws, ReorderMode mode, AWT_itemfield_selection *sel_left, AWT_itemfield_selection *sel_right) {
     const ad_item_selector *selector = sel_left->get_selector();
     nt_assert(selector == sel_right->get_selector());
-
-    GBDATA *gb_source = GBT_get_changekey(GLOBAL_gb_main, source, selector->change_key_path);
-    GBDATA *gb_dest   = GBT_get_changekey(GLOBAL_gb_main, dest, selector->change_key_path);
-
+    
     int left_index  = aws->get_index_of_selected_element(sel_left->get_sellist());
     int right_index = aws->get_index_of_selected_element(sel_right->get_sellist());
 
-    if (!gb_source) {
-        aw_message("Please select an item you want to move (left box)");
+    GB_ERROR warning = 0;
+
+    GB_begin_transaction(GLOBAL_gb_main);
+
+    AW_root *awr            = aws->get_root();
+    GBDATA  *gb_left_field  = GBT_get_changekey(GLOBAL_gb_main, awr->awar(AWAR_FIELD_REORDER_SOURCE)->read_char_pntr(), selector->change_key_path);
+    GBDATA  *gb_right_field = GBT_get_changekey(GLOBAL_gb_main, awr->awar(AWAR_FIELD_REORDER_DEST)->read_char_pntr(), selector->change_key_path);
+
+    if (!gb_left_field || !gb_right_field || gb_left_field == gb_right_field) {
+        warning = "Please select different fields in both list";
     }
-    else if (!gb_dest) {
-        aw_message("Please select a destination where to place your item (right box)");
-    }
-    else if (gb_dest != gb_source) {
-        nt_assert(left_index != right_index);
+    else {
+        GBDATA    *gb_key_data = GB_search(GLOBAL_gb_main, selector->change_key_path, GB_CREATE_CONTAINER);
+        KeySorter  sorter(gb_key_data);
 
-        GBDATA  *gb_key_data = GB_search(GLOBAL_gb_main, selector->change_key_path, GB_CREATE_CONTAINER);
-        int      nitems      = count_key_data_elements(gb_key_data);
-        GBDATA **new_order   = new GBDATA *[nitems];
+        int left_key_idx  = sorter.index_of(gb_left_field);
+        int right_key_idx = sorter.index_of(gb_right_field);
 
-        nitems = 0;
-
-        for (GBDATA *gb_key = GB_child(gb_key_data); gb_key; gb_key = GB_nextChild(gb_key)) {
-            if (gb_key == gb_source) continue;
-            new_order[nitems++] = gb_key;
-            if (gb_key == gb_dest) {
-                new_order[nitems++] = gb_source;
-            }
+        switch (mode) {
+            case RIGHT_BEHIND_LEFT:
+                sorter.move_to(right_key_idx, left_key_idx+(left_key_idx<right_key_idx));
+                if (right_index>left_index) { left_index++; right_index++; } // make it simple to move several consecutive keys
+                break;
+            case REVERSE_ORDER:
+                sorter.reverse_order(left_key_idx, right_key_idx);
+                std::swap(left_index, right_index);
+                break;
+            default: 
+                sorter.bubble_sort(left_key_idx, right_key_idx, mode, selector);
+                break;
         }
-        warning = GB_resort_data_base(GLOBAL_gb_main, new_order, nitems);
-        delete [] new_order;
 
-        if (left_index>right_index) { left_index++; right_index++; } // in one case increment indices
+        sorter.save_changes();
     }
-
-    free(source);
-    free(dest);
-
     GB_commit_transaction(GLOBAL_gb_main);
 
     if (warning) {
@@ -573,59 +767,53 @@ static void reorder_left_behind_right(AW_window *aws, AW_CL cl_selleft, AW_CL cl
     }
 }
 
-static void reorder_up_down(AW_window *aws, AW_CL cl_selector, AW_CL cl_dir) {
+static void reorder_right_behind_left(AW_window *aws, AW_CL cl_selleft, AW_CL cl_selright) { reorder_keys(aws, RIGHT_BEHIND_LEFT, (AWT_itemfield_selection*)cl_selleft, (AWT_itemfield_selection*)cl_selright); }
+static void reverse_key_order        (AW_window *aws, AW_CL cl_selleft, AW_CL cl_selright) { reorder_keys(aws, REVERSE_ORDER,      (AWT_itemfield_selection*)cl_selleft, (AWT_itemfield_selection*)cl_selright); }
+static void sort_keys(AW_window *aws, AW_CL cl_selleft, AW_CL cl_selright) {
+    ReorderMode mode = ReorderMode(aws->get_root()->awar(AWAR_FIELD_REORDER_ORDER)->read_int());
+    reorder_keys(aws, mode, (AWT_itemfield_selection*)cl_selleft, (AWT_itemfield_selection*)cl_selright);
+}
+
+static void reorder_up_down(AW_window *aws, AW_CL cl_selright, AW_CL cl_dir) {
     GB_begin_transaction(GLOBAL_gb_main);
-    int                     dir      = (int)cl_dir;
-    const ad_item_selector *selector = (const ad_item_selector*)cl_selector;
-    
-    char     *field_name = aws->get_root()->awar(AWAR_FIELD_REORDER_DEST)->read_string(); // use the list on the right side
-    GBDATA   *gb_field   = GBT_get_changekey(GLOBAL_gb_main, field_name, selector->change_key_path);
-    GB_ERROR  warning    = 0;
+
+    int                      dir        = (int)cl_dir;
+    AWT_itemfield_selection *sel_right  = (AWT_itemfield_selection*)cl_selright;
+    const ad_item_selector  *selector   = sel_right->get_selector();
+    int                      list_index = aws->get_index_of_selected_element(sel_right->get_sellist());
+
+    const char *field_name = aws->get_root()->awar(AWAR_FIELD_REORDER_DEST)->read_char_pntr();
+    GBDATA     *gb_field   = GBT_get_changekey(GLOBAL_gb_main, field_name, selector->change_key_path);
+    GB_ERROR    warning    = 0;
 
     if (!gb_field) {
-        warning = "Please select an item to move (right box)";
+        warning = "Please select the item to move in the right box";
     }
     else {
-        GBDATA  *gb_key_data = GB_search(GLOBAL_gb_main, selector->change_key_path, GB_CREATE_CONTAINER);
-        int      nitems      = count_key_data_elements(gb_key_data);
-        GBDATA **new_order   = new GBDATA *[nitems];
+        GBDATA    *gb_key_data = GB_search(GLOBAL_gb_main, selector->change_key_path, GB_CREATE_CONTAINER);
+        KeySorter  sorter(gb_key_data);
 
-        nitems         = 0;
-        int curr_index = -1;
-
-        for (GBDATA *gb_key = GB_child(gb_key_data); gb_key; gb_key = GB_nextChild(gb_key)) {
-            if (gb_key == gb_field) curr_index = nitems;
-            new_order[nitems++] = gb_key;
-        }
-
-        nt_assert(curr_index != -1);
-        int new_index = curr_index+dir;
-
-        if (new_index<0 || new_index > nitems) {
-            warning = GBS_global_string("Illegal target index '%i'", new_index);
+        int curr_index = sorter.index_of(gb_field);
+        int dest_index = -1;
+        if (abs(dir) == 1) {
+            dest_index = curr_index+dir;
+            list_index = -1;
         }
         else {
-            if (new_index<curr_index) {
-                for (int i = curr_index; i>new_index; --i) new_order[i] = new_order[i-1];
-                new_order[new_index] = gb_field;
-            }
-            else if (new_index>curr_index) {
-                for (int i = curr_index; i<new_index; ++i) new_order[i] = new_order[i+1];
-                new_order[new_index] = gb_field;
-            }
-
-            warning = GB_resort_data_base(GLOBAL_gb_main, new_order, nitems);
+            dest_index = dir<0 ? 0 : sorter.get_field_count()-1;
         }
 
-        delete [] new_order;
+        sorter.move_to(curr_index, dest_index);
+        warning = sorter.save_changes();
+
     }
 
     GB_commit_transaction(GLOBAL_gb_main);
+    if (list_index >= 0) aws->select_element_at_index(sel_right->get_sellist(), list_index);
     if (warning) aw_message(warning);
 }
 
-AW_window *NT_create_ad_list_reorder(AW_root *root, AW_CL cl_item_selector)
-{
+AW_window *NT_create_ad_list_reorder(AW_root *root, AW_CL cl_item_selector) {
     const ad_item_selector *selector = (const ad_item_selector*)cl_item_selector;
     
     static AW_window_simple *awsa[AWT_QUERY_ITEM_TYPES];
@@ -640,25 +828,56 @@ AW_window *NT_create_ad_list_reorder(AW_root *root, AW_CL cl_item_selector)
         aws->at("close");
         aws->create_button("CLOSE", "CLOSE", "C");
 
+        const char *HELPFILE = "spaf_reorder.hlp";
+        aws->callback(AW_POPUP_HELP, (AW_CL)HELPFILE);
+        aws->at("help");
+        aws->create_button("HELP", "HELP", "H");
+
         AWT_itemfield_selection *sel1 = awt_create_selection_list_on_itemfields(GLOBAL_gb_main, aws, AWAR_FIELD_REORDER_SOURCE, AWT_NDS_FILTER, "source", 0, selector, 20, 10);
         AWT_itemfield_selection *sel2 = awt_create_selection_list_on_itemfields(GLOBAL_gb_main, aws, AWAR_FIELD_REORDER_DEST,   AWT_NDS_FILTER, "dest",   0, selector, 20, 10);
 
-        aws->button_length(0);
+        aws->button_length(8);
 
-        aws->at("doit");
-        aws->callback(reorder_left_behind_right, (AW_CL)sel1, (AW_CL)sel2);
-        aws->help_text("spaf_reorder.hlp");
-        aws->create_button("MOVE_LEFT_BEHIND_RIGHT", "MOVE LEFT\nBEHIND RIGHT", "L");
+        aws->at("sort");
+        aws->callback(sort_keys, (AW_CL)sel1, (AW_CL)sel2);
+        aws->help_text(HELPFILE);
+        aws->create_button("SORT", "Sort by");
 
-        aws->at("doit2");
-        aws->callback(reorder_up_down, (AW_CL)selector, -1);
-        aws->help_text("spaf_reorder.hlp");
-        aws->create_button("MOVE_UP_RIGHT", "MOVE RIGHT\nUP", "U");
+        aws->at("sorttype");
+        aws->create_option_menu(AWAR_FIELD_REORDER_ORDER);
+        aws->insert_option("name",      "a", ORDER_ALPHA);
+        aws->insert_option("type",      "t", ORDER_TYPE);
+        aws->insert_option("frequency", "f", ORDER_FREQ);
+        aws->update_option_menu();
 
-        aws->at("doit3");
-        aws->callback(reorder_up_down, (AW_CL)selector, 1);
-        aws->help_text("spaf_reorder.hlp");
-        aws->create_button("MOVE_DOWN_RIGHT", "MOVE RIGHT\nDOWN", "U");
+        aws->at("leftright");
+        aws->callback(reorder_right_behind_left, (AW_CL)sel1, (AW_CL)sel2);
+        aws->help_text(HELPFILE);
+        aws->create_autosize_button("MOVE_RIGHT_BEHIND_LEFT", "Move right\nbehind left");
+
+        aws->at("reverse");
+        aws->callback(reverse_key_order, (AW_CL)sel1, (AW_CL)sel2);
+        aws->help_text(HELPFILE);
+        aws->create_autosize_button("REVERSE", "Reverse");
+        
+        aws->button_length(6);
+        struct {
+            const char *tag;
+            const char *macro;
+            int         dir;
+        } reorder[4] = {
+            { "Top",    "MOVE_TOP_RIGHT",  -2 },
+            { "Up",     "MOVE_UP_RIGHT",   -1 },
+            { "Down",   "MOVE_DOWN_RIGHT", +1 },
+            { "Bottom", "MOVE_BOT_RIGHT",  +2 },
+        };
+
+        for (int i = 0; i<4; ++i) {
+            aws->at(reorder[i].tag);
+            aws->callback(reorder_up_down, (AW_CL)sel2, reorder[i].dir);
+            aws->help_text(HELPFILE);
+            aws->create_button(reorder[i].macro, reorder[i].tag);
+        }
     }
     
     return awsa[selector->type];

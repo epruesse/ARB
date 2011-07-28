@@ -16,6 +16,7 @@
 
 #include <aw_awars.hxx>
 #include <arbdbt.h>
+#include <arb_strarray.h>
 
 static const char GENE_DATA_PATH[]       = "gene_data/gene/";
 static const char EXPERIMENT_DATA_PATH[] = "experiment_data/experiment/";
@@ -109,7 +110,6 @@ void awt_selection_list_rescan(GBDATA *gb_main, long bitfilter, awt_rescan_mode 
         GBT_add_new_changekey(gb_main, "name", GB_STRING);
         GBT_add_new_changekey(gb_main, "acc", GB_STRING);
         GBT_add_new_changekey(gb_main, "full_name", GB_STRING);
-        GBT_add_new_changekey(gb_main, "group_name", GB_STRING);
         GBT_add_new_changekey(gb_main, "tmp", GB_STRING);
 
         for (name = names; *name; name++) {

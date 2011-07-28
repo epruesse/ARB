@@ -19,6 +19,7 @@
 #include <awt.hxx>
 #include <aw_root.hxx>
 #include <arbdbt.h>
+#include <arb_strarray.h>
 
 #include <iostream>
 

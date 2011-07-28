@@ -18,6 +18,8 @@
 #include <list>
 #include <string>
 
+#include <arb_sort.h>
+
 #include "gb_local.h"
 #include "gb_load.h"
 

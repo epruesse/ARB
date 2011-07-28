@@ -17,6 +17,7 @@
 
 #include <arb_strbuf.h>
 #include <arb_defs.h>
+#include <arb_sort.h>
 
 // overloaded functions to avoid problems with type-punning:
 inline void aisc_link(dll_public *dll, PT_probematch *match)   { aisc_link(reinterpret_cast<dllpublic_ext*>(dll), reinterpret_cast<dllheader_ext*>(match)); }

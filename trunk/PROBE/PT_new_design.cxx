@@ -13,9 +13,9 @@
 #include <PT_server_prototypes.h>
 #include <struct_man.h>
 #include "probe_tree.h"
-#include <arbdbt.h>
 #include <arb_str.h>
 #include <arb_defs.h>
+#include <arb_sort.h>
 
 #ifdef P_
 #error P_ already defined

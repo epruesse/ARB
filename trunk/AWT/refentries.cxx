@@ -17,6 +17,7 @@
 #include <aw_msg.hxx>
 #include <arb_msg.h>
 #include <arbdbt.h>
+#include <arb_strarray.h>
 
 #include <cctype>
 

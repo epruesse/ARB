@@ -25,6 +25,7 @@
 
 #include <arb_progress.h>
 #include <arb_strbuf.h>
+#include <arb_strarray.h>
 
 #include <climits>
 
