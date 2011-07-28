@@ -1268,17 +1268,12 @@ void Helpfile::extractInternalLinks() {
                     {
                         try {
                             check_duplicates(link_target, "SUB", references, true); // check only sublinks here
-                            try {
-                                check_duplicates(link_target, "UP", uplinks, false); // check only sublinks here
-                                check_duplicates(link_target, "AUTO-SUB", auto_references, false); // check only sublinks here
-                            }
-                            catch (string& err) {
-                                ; // ignore duplicated link in text
-                            }
+                            check_duplicates(link_target, "UP", uplinks, false); // check only sublinks here
+                            check_duplicates(link_target, "AUTO-SUB", auto_references, false); // check only sublinks here
                             auto_references.push_back(Link(link_target, sec.StartLineno()));
                         }
                         catch (string& err) {
-                            preadd_warning(strf("%s", err.c_str()), sec.StartLineno());
+                            ; // silently ignore inlined 
                         }
                     }
                     start = close+1;
