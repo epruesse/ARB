@@ -204,9 +204,9 @@ help : $(HELP)
 # --------------------------------------------------------------------------------
 
 clean:
-	rm -f $(TOOL_OBJECTS) $(BINARIES)
-	rm -f $(XML_DEPEND) dummy date.xsl
-	rm -rf $(XML_LOCATION) $(HLP_DEST) $(HTML_LOCATION)
+	-rm -f $(TOOL_OBJECTS) $(BINARIES)
+	-rm -f $(XML_DEPEND) dummy date.xsl
+	-rm -rf $(XML_LOCATION) $(HLP_DEST) $(HTML_LOCATION)
 	$(MAKE) -C $(HLP_GENERATED) clean
 
 # --------------------------------------------------------------------------------
