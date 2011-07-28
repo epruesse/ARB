@@ -1368,7 +1368,7 @@ forcelinks:
 	$(MAKE) links
 
 $(LINKSTAMP): SOURCE_TOOLS/generate_all_links.sh
-	SOURCE_TOOLS/generate_all_links.sh
+	+SOURCE_TOOLS/generate_all_links.sh
 	touch $(LINKSTAMP)
 
 clean_links:
@@ -1476,7 +1476,7 @@ rmbak:
 
 bin_reinit:
 	$(MAKE) bin/bin.clean
-	(cd bin; make all)
+	$(MAKE) -C "bin" all
 
 clean_directories:
 	-rm -rf \
@@ -1486,19 +1486,23 @@ clean_directories:
 		$(ARBHOME)/LIBLINK \
 
 libclean:
-	find $(ARBHOME) -type f \( -name '*.a' ! -type l \) -exec rm -f {} \;
+	-find $(ARBHOME) -type f \( -name '*.a' ! -type l \) -exec rm -f {} \;
 
 objclean:
-	find $(ARBHOME) -type f \( -name '*.o' ! -type l \) -exec rm -f {} \;
+	-find $(ARBHOME) -type f \( -name '*.o' ! -type l \) -exec rm -f {} \;
+
+# bin.clean and HELP_SOURCE.clean interfere
+clean3:
+	$(MAKE) bin/bin.clean
+	$(MAKE) HELP_SOURCE/HELP_SOURCE.clean
 
 clean2: $(ARCHS:.a=.clean) \
+		clean3 \
 		rmbak \
 		libclean \
 		objclean \
-		bin/bin.clean \
 		lib/lib.clean \
 		GDEHELP/GDEHELP.clean \
-		HELP_SOURCE/HELP_SOURCE.clean \
 		SOURCE_TOOLS/SOURCE_TOOLS.clean \
 		UNIT_TESTER/UNIT_TESTER.clean \
 		TEMPLATES/TEMPLATES.clean \
@@ -1760,11 +1764,11 @@ clean_coverage: clean_coverage_results
 
 
 unit_tests: test_base clean_coverage_results
-	@$(TEST_RUN_SUITE) init
+	+@$(TEST_RUN_SUITE) init
 	@echo "fake[1]: Entering directory \`$(ARBHOME)/UNIT_TESTER'"
 	$(MAKE) $(NODIR) $(TESTED_UNITS)
 	@echo "fake[1]: Leaving directory \`$(ARBHOME)/UNIT_TESTER'"
-	@$(TEST_RUN_SUITE) cleanup
+	+@$(TEST_RUN_SUITE) cleanup
 
 ut:
 ifeq ($(UNIT_TESTS),1)
@@ -1776,7 +1780,7 @@ endif
 
 
 aut:
-	@$(TEST_RUN_SUITE) unskip
+	+@$(TEST_RUN_SUITE) unskip
 	$(MAKE) ut
 
 # --------------------------------------------------------------------------------

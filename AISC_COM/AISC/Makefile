@@ -66,11 +66,11 @@ endif
 
 ifeq ($(AUTODEPENDS),1)
 all:
-	test -f .depends || $(MAKETHIS) "AUTODEPENDS=0" .depends
-	$(MAKETHIS) "AUTODEPENDS=2" all
+	+test -f .depends || $(MAKETHIS) "AUTODEPENDS=0" .depends
+	+$(MAKETHIS) "AUTODEPENDS=2" all
 else
 all: directories
-	$(MAKETHIS) realall
+	+$(MAKETHIS) realall
 
 endif
 
