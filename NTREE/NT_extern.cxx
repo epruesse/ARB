@@ -46,6 +46,7 @@
 #include <arb_progress.h>
 #include <aw_root.hxx>
 #include <arb_strbuf.h>
+#include <arb_strarray.h>
 
 #include <arb_version.h>
 #include <refentries.h>

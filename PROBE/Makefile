@@ -233,6 +233,7 @@ PT_match.o: $(ARBHOME)/INCLUDE/arb_core.h
 PT_match.o: $(ARBHOME)/INCLUDE/arb_defs.h
 PT_match.o: $(ARBHOME)/INCLUDE/arb_error.h
 PT_match.o: $(ARBHOME)/INCLUDE/arb_msg.h
+PT_match.o: $(ARBHOME)/INCLUDE/arb_sort.h
 PT_match.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 PT_match.o: $(ARBHOME)/INCLUDE/arb_string.h
 PT_match.o: $(ARBHOME)/INCLUDE/arbdb.h
@@ -253,18 +254,17 @@ PT_new_design.o: probe.h
 PT_new_design.o: probe_tree.h
 PT_new_design.o: pt_prototypes.h
 PT_new_design.o: $(ARBHOME)/INCLUDE/ad_prot.h
-PT_new_design.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
 PT_new_design.o: $(ARBHOME)/INCLUDE/aisc_global.h
 PT_new_design.o: $(ARBHOME)/INCLUDE/arb_assert.h
 PT_new_design.o: $(ARBHOME)/INCLUDE/arb_core.h
 PT_new_design.o: $(ARBHOME)/INCLUDE/arb_defs.h
 PT_new_design.o: $(ARBHOME)/INCLUDE/arb_error.h
 PT_new_design.o: $(ARBHOME)/INCLUDE/arb_msg.h
+PT_new_design.o: $(ARBHOME)/INCLUDE/arb_sort.h
 PT_new_design.o: $(ARBHOME)/INCLUDE/arb_str.h
 PT_new_design.o: $(ARBHOME)/INCLUDE/arb_string.h
 PT_new_design.o: $(ARBHOME)/INCLUDE/arbdb.h
 PT_new_design.o: $(ARBHOME)/INCLUDE/arbdb_base.h
-PT_new_design.o: $(ARBHOME)/INCLUDE/arbdbt.h
 PT_new_design.o: $(ARBHOME)/INCLUDE/arbtools.h
 PT_new_design.o: $(ARBHOME)/INCLUDE/attributes.h
 PT_new_design.o: $(ARBHOME)/INCLUDE/bytestring.h

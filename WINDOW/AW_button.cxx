@@ -17,10 +17,10 @@
 #include "aw_msg.hxx"
 #include "aw_root.hxx"
 
-#include <arbdbt.h>
-
 #include <arb_str.h>
 #include <arb_strbuf.h>
+#include <arb_strarray.h>
+#include <arb_sort.h>
 
 #include <Xm/Frame.h>
 #include <Xm/MenuShell.h>

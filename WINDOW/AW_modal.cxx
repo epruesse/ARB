@@ -15,6 +15,7 @@
 #include "aw_root.hxx"
 
 #include <arbdbt.h>
+#include <arb_strarray.h>
 
 #include <deque>
 #include <string>

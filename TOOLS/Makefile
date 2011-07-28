@@ -246,6 +246,7 @@ arb_primer.o: $(ARBHOME)/INCLUDE/arb_assert.h
 arb_primer.o: $(ARBHOME)/INCLUDE/arb_core.h
 arb_primer.o: $(ARBHOME)/INCLUDE/arb_error.h
 arb_primer.o: $(ARBHOME)/INCLUDE/arb_msg.h
+arb_primer.o: $(ARBHOME)/INCLUDE/arb_strarray.h
 arb_primer.o: $(ARBHOME)/INCLUDE/arb_string.h
 arb_primer.o: $(ARBHOME)/INCLUDE/arbdb.h
 arb_primer.o: $(ARBHOME)/INCLUDE/arbdb_base.h

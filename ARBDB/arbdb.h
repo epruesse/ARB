@@ -106,8 +106,6 @@ typedef const char* (*gb_export_sequence_cb)(GBDATA *gb_species, size_t *seq_len
 
 typedef GBDATA* (*GB_Link_Follower)(GBDATA *GB_root, GBDATA *GB_elem, const char *link);
 
-typedef int (*gb_compare_function)(const void *p0, const void *p1, void *client_data);
-
 typedef const char *(*gb_getenv_hook)(const char *varname);
 
 // -----------------------

@@ -19,6 +19,7 @@
 
 #include <awt_attributes.hxx>
 #include <arb_defs.h>
+#include <arb_strarray.h>
 
 #include <iostream>
 

@@ -125,6 +125,7 @@ TreeDisplay.o: $(ARBHOME)/INCLUDE/arb_core.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/arb_defs.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/arb_error.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/arb_msg.h
+TreeDisplay.o: $(ARBHOME)/INCLUDE/arb_strarray.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/arb_string.h
 TreeDisplay.o: $(ARBHOME)/INCLUDE/ARB_Tree.hxx
 TreeDisplay.o: $(ARBHOME)/INCLUDE/arbdb.h
