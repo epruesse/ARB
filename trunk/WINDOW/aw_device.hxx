@@ -418,7 +418,6 @@ class AW_device : public AW_zoomable, public AW_stylable, public AW_clipable {
 
 protected:
     AW_clip_scale_stack *clip_scale_stack;
-    virtual         void  privat_reset();
 
     const AW_click_cd *click_cd;
     friend class       AW_click_cd;
@@ -454,10 +453,10 @@ public:
 
     bool ready_to_draw(int gc); // unused atm
 
-    // * functions below return 1 if any pixel is drawn, 0 otherwise
-    // * primary functions (always virtual)
-
 private:
+    // * functions below return 1 if any pixel is drawn, 0 otherwise
+    // * primary functions (always virtual; pure virtual in all devices used as baseclass)
+
     virtual bool line_impl(int gc, const AW::LineVector& Line, AW_bitset filteri)                                                  = 0;
     virtual bool text_impl(int gc, const char *str, const AW::Position& pos, AW_pos alignment, AW_bitset filteri, long opt_strlen) = 0;
     virtual bool box_impl(int gc, bool filled, const AW::Rectangle& rect, AW_bitset filteri)                                       = 0;
@@ -466,11 +465,15 @@ private:
     virtual bool circle_impl(int gc, bool filled, const AW::Position& center, const AW::Vector& radius, AW_bitset filteri)                                  = 0;
     virtual bool arc_impl(int gc, bool filled, const AW::Position& center, const AW::Vector& radius, int start_degrees, int arc_degrees, AW_bitset filteri) = 0;
 
-    virtual bool invisible_impl(int gc, const AW::Position& pos, AW_bitset filteri);
+    virtual bool invisible_impl(const AW::Position& pos, AW_bitset filteri) = 0;
 
-    // * second level functions (maybe non virtual)
+    virtual void specific_reset() = 0;
 
 protected:
+
+    // * second level functions
+    // generic implementations which may be used by primary functions of derived classes 
+    
     bool generic_box(int gc, bool filled, const AW::Rectangle& rect, AW_bitset filteri);
     bool generic_circle(int gc, bool filled, const AW::Position& center, const AW::Vector& radius, AW_bitset filteri) {
         return generic_box(gc, filled, AW::Rectangle(center-radius, center+radius), filteri);
@@ -479,9 +482,10 @@ protected:
         return generic_circle(gc, filled, center, radius, filteri);
     }
     bool generic_filled_area(int gc, int npos, const AW::Position *pos, AW_bitset filteri);
+    bool generic_invisible(const AW::Position& pos, AW_bitset filteri);
 
 public:
-    // * third level functions (never virtual)
+    // * third level functions (never virtual/overloaded by derived classes)
 
     bool line(int gc, const AW::LineVector& Line, AW_bitset filteri = AW_ALL_DEVICES_SCALED) {
         return line_impl(gc, Line, filteri);
@@ -511,11 +515,8 @@ public:
         return text_impl(gc, string, pos, alignment, filteri, opt_strlen);
     }
 
-    bool invisible(int gc, AW_pos x, AW_pos y, AW_bitset filteri = AW_ALL_DEVICES_SCALED) {
-        return invisible_impl(gc, AW::Position(x, y), filteri);
-    }
-    bool invisible(int gc, const AW::Position& pos, AW_bitset filteri = AW_ALL_DEVICES_SCALED) {
-        return invisible_impl(gc, pos, filteri);
+    bool invisible(const AW::Position& pos, AW_bitset filteri = AW_ALL_DEVICES_SCALED) {
+        return invisible_impl(pos, filteri);
     }
 
     bool box(int gc, bool filled, const AW::Rectangle& rect, AW_bitset filteri = AW_ALL_DEVICES_SCALED) {
@@ -599,7 +600,10 @@ class AW_device_print : public AW_device { // derived from a Noncopyable
     bool circle_impl(int gc, bool filled, const AW::Position& center, const AW::Vector& radius, AW_bitset filteri);
     bool arc_impl(int gc, bool filled, const AW::Position& center, const AW::Vector& radius, int start_degrees, int arc_degrees, AW_bitset filteri);
     bool filled_area_impl(int gc, int npos, const AW::Position *pos, AW_bitset filteri);
-    bool invisible_impl(int gc, const AW::Position& pos, AW_bitset filteri);
+    bool invisible_impl(const AW::Position& pos, AW_bitset filteri);
+
+    void specific_reset() {}
+
 public:
     AW_device_print(AW_common *common_)
         : AW_device(common_),
@@ -672,8 +676,6 @@ class AW_device_size : public AW_simple_device {
     AW_size_tracker scaled;   // all zoomable parts (e.g. tree skeleton)
     AW_size_tracker unscaled; // all unzoomable parts (e.g. text at tree-tips or group-brackets)
 
-    void privat_reset();
-
     void dot_transformed(const AW::Position& pos, AW_bitset filteri);
     void dot_transformed(AW_pos X, AW_pos Y, AW_bitset filteri) { dot_transformed(AW::Position(X, Y), filteri); }
 
@@ -682,14 +684,18 @@ class AW_device_size : public AW_simple_device {
 
     bool line_impl(int gc, const AW::LineVector& Line, AW_bitset filteri);
     bool text_impl(int gc, const char *str, const AW::Position& pos, AW_pos alignment, AW_bitset filteri, long opt_strlen);
-    bool invisible_impl(int gc, const AW::Position& pos, AW_bitset filteri);
+    bool invisible_impl(const AW::Position& pos, AW_bitset filteri);
 
+    void specific_reset();
+    
 public:
     AW_device_size(AW_common *common_) : AW_simple_device(common_) {}
 
     void clear();
 
     AW_DEVICE_TYPE type();
+
+    // all get_size_information...() return screen coordinates
 
     void get_size_information(AW_world *ptr) __ATTR__DEPRECATED_LATER("whole AW_world is deprecated") const {
         *ptr = scaled.get_size();
@@ -710,7 +716,10 @@ class AW_device_click : public AW_simple_device {
 
     bool line_impl(int gc, const AW::LineVector& Line, AW_bitset filteri);
     bool text_impl(int gc, const char *str, const AW::Position& pos, AW_pos alignment, AW_bitset filteri, long opt_strlen);
+    bool invisible_impl(const AW::Position& pos, AW_bitset filteri) { return generic_invisible(pos, filteri); }
 
+    void specific_reset() {}
+    
 public:
     AW_clicked_line opt_line;
     AW_clicked_text opt_text;

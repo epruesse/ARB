@@ -2544,8 +2544,8 @@ void AWT_graphic_tree::show_nds_list(GBDATA *, bool use_nds) {
     for (size_t s = 0; s<species_count; ++s) delete row[s];
     delete [] row;
 
-    disp_device->invisible(AWT_GC_CURSOR, 0, 0);  // @@@ remove when size-dev works
-    disp_device->invisible(AWT_GC_CURSOR, max_x, y_position+scaled_branch_distance);  // @@@ remove when size-dev works
+    disp_device->invisible(Origin);  // @@@ remove when size-dev works
+    disp_device->invisible(Position(max_x, y_position+scaled_branch_distance));  // @@@ remove when size-dev works
 }
 
 void AWT_graphic_tree::read_tree_settings() {
@@ -2909,7 +2909,7 @@ void TEST_treeDisplay() {
 
 #if !defined(TEST_AUTO_UPDATE)
                     // if (strcmp(spool_expected, "display/irs_CH.fig") == 0) {
-                        TEST_ASSERT_TEXTFILES_EQUAL(spool_file, spool_expected);
+                        TEST_ASSERT_TEXTFILES_EQUAL(spool_expected, spool_file);
                     // }
                     TEST_ASSERT_ZERO_OR_SHOW_ERRNO(unlink(spool_file));
 #endif
