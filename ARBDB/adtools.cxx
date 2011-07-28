@@ -105,7 +105,7 @@ static void gbt_scan_db_rek(GBDATA *gbd, char *prefix, int deep, DbScanner *scan
     }
     else {
         if (GB_check_hkey(prefix+1)) {
-            prefix = prefix;        // for debugging purpose
+            GB_clear_error(); // occurs with internal keys (e.g. '@name'). @@@ should be handled in advance
         }
         else {
             prefix[0] = (char)type;
@@ -952,7 +952,9 @@ void TEST_scan_db() {
                                "str,str_percent,use");
 
     TEST_ASSERT_SCANNED_EQUALS("species", "/AL,/ARB_color,/acc,/ali_16s/data,/bits_test,/float_test,/full_name,/name,/seqcheck,/tax");
-                               
+
+    TEST_ASSERT(!GB_have_error());
+    
     GB_close(gb_main);
 }
 

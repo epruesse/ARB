@@ -67,10 +67,10 @@ void NT_start_editor_on_tree(AW_window *, AW_CL cl_use_species_aside, AW_CL dumm
 void NT_save_cb(AW_window *aww);
 void NT_save_quick_cb(AW_window *aww);
 void NT_save_quick_as_cb(AW_window *aww);
+void NT_save_as_cb(AW_window *aww);
 AW_window *NT_create_save_quick_as(AW_root *aw_root, char *base_name);
 void NT_database_optimization(AW_window *aww);
 AW_window *NT_create_database_optimization_window(AW_root *aw_root);
-void NT_save_as_cb(AW_window *aww);
 AW_window *NT_create_save_as(AW_root *aw_root, const char *base_name);
 void NT_undo_cb(AW_window *, AW_CL undo_type, AW_CL ntw);
 void NT_undo_info_cb(AW_window *, AW_CL undo_type);

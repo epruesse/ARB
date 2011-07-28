@@ -305,15 +305,25 @@ void NT_save_quick_cb(AW_window *aww) {
 }
 
 void NT_save_quick_as_cb(AW_window *aww) {
-    char     *filename = aww->get_root()->awar(AWAR_DB_PATH)->read_string();
-    GB_ERROR  error    = GB_save_quick_as(GLOBAL_gb_main, filename);
+    char *filename = aww->get_root()->awar(AWAR_DB_PATH)->read_string();
 
-    AW_refresh_fileselection(aww->get_root(), "tmp/nt/arbdb");
+    GB_ERROR error = GB_save_quick_as(GLOBAL_gb_main, filename);
+    if (!error) AW_refresh_fileselection(aww->get_root(), "tmp/nt/arbdb");
     aww->hide_or_notify(error);
 
     free(filename);
 }
+void NT_save_as_cb(AW_window *aww) {
+    char *filename = aww->get_root()->awar(AWAR_DB_PATH)->read_string();
+    char *filetype = aww->get_root()->awar(AWAR_DB_TYPE)->read_string();
 
+    GB_ERROR error = GB_save(GLOBAL_gb_main, filename, filetype);
+    if (!error) AW_refresh_fileselection(aww->get_root(), "tmp/nt/arbdb");
+    aww->hide_or_notify(error);
+
+    free(filetype);
+    free(filename);
+}
 
 AW_window *NT_create_save_quick_as(AW_root *aw_root, char *base_name)
 {
@@ -405,21 +415,6 @@ AW_window *NT_create_database_optimization_window(AW_root *aw_root) {
     aws->create_button("GO", "GO");
     return aws;
 }
-
-void NT_save_as_cb(AW_window *aww) {
-    char *filename = aww->get_root()->awar(AWAR_DB_PATH)->read_string();
-    char *filetype = aww->get_root()->awar(AWAR_DB_TYPE)->read_string();
-
-    GB_ERROR error = GB_save(GLOBAL_gb_main, filename, filetype);
-    if (!error) {
-        AW_refresh_fileselection(aww->get_root(), "tmp/nt/arbdb");
-    }
-    aww->hide_or_notify(error);
-
-    free(filetype);
-    free(filename);
-}
-
 
 AW_window *NT_create_save_as(AW_root *aw_root, const char *base_name)
 {

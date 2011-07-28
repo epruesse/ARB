@@ -2428,7 +2428,7 @@ GB_ERROR gb_create_dictionaries(GB_MAIN_TYPE *Main, long maxmem) {
         // only create dictionary for index selected above (no loop)
 #else
         // create dictionaries for all indices (this is the normal operation)
-        arb_progress progress("Optimizing key data", gbdByKey_cnt);
+        arb_progress progress("Optimizing key data", gbdByKey_cnt-1);
         for (idx = gbdByKey_cnt-1; idx >= 1 && !error; --idx, progress.inc_and_check_user_abort(error))
 #endif
 
