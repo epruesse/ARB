@@ -20,7 +20,7 @@ $(MAIN): $(OBJECTS)
 	$(ACC) $(cflags) -c $< $(AINCLUDES) $(POST_COMPILE)
 
 proto:
-	../../MAKEBIN/aisc_mkpt -P -w TreeCallbacks.hxx TreeCallbacks.cxx >TreeCallbacks.hxx.tmp
+	../../AISC_MKPTPS/aisc_mkpt -P -w TreeCallbacks.hxx TreeCallbacks.cxx >TreeCallbacks.hxx.tmp
 	../../SOURCE_TOOLS/mv_if_diff TreeCallbacks.hxx.tmp TreeCallbacks.hxx
 
 clean:

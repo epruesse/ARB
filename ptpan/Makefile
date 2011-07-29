@@ -33,7 +33,7 @@ $(OBJECTS): Makefile
 .cxx.o:
 	$(CPP) $(pan_cflags) -c $<  $(CPPINCLUDES) -I./../probe_bank/COM $(POST_COMPILE)
 proto:
-	../MAKEBIN/aisc_mkpt -E -z -A -w pt_prototypes.h $(OBJECTS:.o=.cxx) >pt_prototypes.h.tmp
+	../AISC_MKPTPS/aisc_mkpt -E -z -A -w pt_prototypes.h $(OBJECTS:.o=.cxx) >pt_prototypes.h.tmp
 	../SOURCE_TOOLS/mv_if_diff pt_prototypes.h.tmp pt_prototypes.h
 
 clean:
