@@ -117,7 +117,6 @@ makedir PROBE_COM/GENH &&
 makedir PROBE_COM/O &&
 
 makedir LIBLINK &&
-makedir MAKEBIN &&
 makedir lib/help &&
 
 (test -d lib/pts || makedir lib/pts) &&
@@ -320,11 +319,6 @@ symlink_file ../XML/xml.hxx INCLUDE/xml.hxx &&
 # gl stuff
 symlink_file ../../GL/glpng/glpng.h INCLUDE/GL/glpng.h &&
 symlink_file ../../GL/glAW/aw_window_ogl.hxx INCLUDE/GL/aw_window_ogl.hxx &&
-
-# small dirs
-
-symlink_maybe_no_target ../AISC/aisc             MAKEBIN/aisc &&
-symlink_maybe_no_target ../AISC_MKPTPS/aisc_mkpt MAKEBIN/aisc_mkpt &&
 
 # help files (make sure the file is present in user distribution!)
 
