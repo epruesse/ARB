@@ -706,6 +706,7 @@ sub die_usage($) {
   print "  -I          Invert (print inheritants instead of dependencies)\n";
   print "  -B          Both (print inheritants and dependencies)\n";
   print "  -S          Include self (lib/exe given on command line)\n";
+  print "  -T          only show terminals (=those w/o dependencies and/or inheritants)\n";
   die "Error: $err\n";
 }
 
@@ -723,6 +724,7 @@ sub main() {
   my $trackDepends    = 1;
   my $trackInherits   = 0;
   my $includeSelf     = 0;
+  my $onlyTerminals   = 0;
 
   while (scalar(@ARGV)) {
     $_ = shift @ARGV;
@@ -740,6 +742,7 @@ sub main() {
       elsif ($switch eq 'I') { $trackInherits = 1; $trackDepends = 0; }
       elsif ($switch eq 'B') { $trackInherits = 1; }
       elsif ($switch eq 'S') { $includeSelf = 1; }
+      elsif ($switch eq 'T') { $onlyTerminals = 1; }
       elsif ($switch eq '?' or $switch eq 'help' or $switch eq 'h') { die_usage('help requested'); }
       else { die "unknown switch '-$switch'"; }
     }
@@ -802,6 +805,27 @@ sub main() {
   }
   else {
     foreach (keys %inheritants_of) { $track{$_} = 1; }
+  }
+
+  if ($onlyTerminals==1) {
+    if ($trackInherits==1) {
+      # untrack all which have inheritants
+      foreach (keys %track) {
+        my $hash_r = $inheritants_of{$_};
+        if ((defined $hash_r) and (scalar(keys %$hash_r)>0)) {
+          delete $track{$_};
+        }
+      }
+    }
+    if ($trackDepends==1) {
+      # untrack all which have dependencies
+      foreach (keys %track) {
+        my $hash_r = $dependencies_of{$_};
+        if ((defined $hash_r) and (scalar(keys %$hash_r)>0)) {
+          delete $track{$_};
+        }
+      }
+    }
   }
 
   my @track = sort keys %track;
