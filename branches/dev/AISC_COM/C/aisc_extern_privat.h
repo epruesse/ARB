@@ -5,13 +5,13 @@
 #ifndef AISC_EXTERN_PRIVAT_H
 #define AISC_EXTERN_PRIVAT_H
 
-// define ARB attributes:
+/* define ARB attributes: */
 #ifndef ATTRIBUTES_H
 # include <attributes.h>
 #endif
 
 
-// aisc_extern.c
+/* aisc_extern.c */
 dll_public *create_dll_public(void);
 int move_dll_header(const dll_header *sobj, dll_header *dobj);
 int get_COMMON_CNT(dll_header *THIS);
@@ -22,4 +22,4 @@ aisc_cstring aisc_get_keystring_dll_header(dll_header *x);
 
 #else
 #error aisc_extern_privat.h included twice
-#endif // AISC_EXTERN_PRIVAT_H
+#endif /* AISC_EXTERN_PRIVAT_H */
