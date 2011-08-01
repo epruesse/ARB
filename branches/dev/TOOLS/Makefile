@@ -12,7 +12,6 @@ TOOLS := \
 	arb_notify \
 	arb_primer \
 	arb_probe \
-	arb_proto_2_xsub \
 	arb_read_tree \
 	arb_replace \
 
@@ -30,7 +29,6 @@ LIB_ARBDB            := $(LIBPATH) $(ARBDB_LIB)
 LIBS_ARB_PROBE       := ../SERVERCNTRL/SERVERCNTRL.a ../PROBE_COM/client.a
 LIBS_ARB_READ_TREE   := ../SL/TREE_READ/TREE_READ.a
 LIBS_ARB_EXPORT_TREE := ../SL/TREE_WRITE/TREE_WRITE.a ../XML/XML.a $(LIBS_ARB_READ_TREE)
-LIBS_ARB_PROTO_2_XSUB:= ../SL/FILE_BUFFER/FILE_BUFFER.a
 
 OBJECTS:=$(addsuffix .o,$(TOOLS))
 BINARIES:=$(addprefix $(ARBHOME)/bin/,$(TOOLS))
@@ -51,9 +49,6 @@ $(ARBHOME)/bin/arb_read_tree: arb_read_tree.o  $(LIBS_ARB_READ_TREE)
 
 $(ARBHOME)/bin/arb_export_tree: arb_export_tree.o  $(LIBS_ARB_EXPORT_TREE)
 	$(LINK_EXECUTABLE) $@ $< $(LIBS_ARB_EXPORT_TREE) $(LIB_ARBDB) $(EXECLIBS) 
-
-$(ARBHOME)/bin/arb_proto_2_xsub: arb_proto_2_xsub.o  $(LIBS_ARB_PROTO_2_XSUB)
-	$(LINK_EXECUTABLE) $@ $< $(LIBS_ARB_PROTO_2_XSUB) $(LIB_ARBDB) $(EXECLIBS)
 
 $(ARBHOME)/bin/%: %.o
 	$(LINK_EXECUTABLE) $@ $< $(LIB_ARBDB) $(EXECLIBS)
@@ -279,22 +274,6 @@ arb_probe.o: $(ARBHOME)/INCLUDE/servercntrl.h
 arb_probe.o: $(ARBHOME)/INCLUDE/smartptr.h
 arb_probe.o: $(ARBHOME)/INCLUDE/test_global.h
 arb_probe.o: $(ARBHOME)/INCLUDE/test_unit.h
-
-arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/ad_prot.h
-arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/arb_assert.h
-arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/arb_core.h
-arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/arb_error.h
-arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/arb_msg.h
-arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
-arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/arb_string.h
-arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/arbdb.h
-arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/arbdb_base.h
-arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/arbtools.h
-arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/attributes.h
-arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/dupstr.h
-arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/FileBuffer.h
-arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/smartptr.h
-arb_proto_2_xsub.o: $(ARBHOME)/INCLUDE/test_global.h
 
 arb_read_tree.o: $(ARBHOME)/INCLUDE/ad_prot.h
 arb_read_tree.o: $(ARBHOME)/INCLUDE/ad_t_prot.h
