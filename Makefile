@@ -715,6 +715,7 @@ ARCHS = \
 			NAMES_COM/server.a \
 			NTREE/NTREE.a \
 			PARSIMONY/PARSIMONY.a \
+			PERLTOOLS/PERLTOOLS.a \
 			PGT/PGT.a \
 			PHYLO/PHYLO.a \
 			PRIMER_DESIGN/PRIMER_DESIGN.a \
@@ -1151,10 +1152,17 @@ com_probe: PROBE_COM/PROBE_COM.dummy
 com_names: NAMES_COM/NAMES_COM.dummy
 com_all: com_probe com_names
 
+SL/FILE_BUFFER/FILE_BUFFER.dummy: setup_after_clean
+
+PERLTOOLS/PERLTOOLS.dummy : \
+	core \
+	db \
+	SL/FILE_BUFFER/FILE_BUFFER.dummy \
+
 TOOLS/TOOLS.dummy : \
 	core \
 	db \
-	com_probe \
+	com \
 	SERVERCNTRL/SERVERCNTRL.dummy \
 	SL/TREE_WRITE/TREE_WRITE.dummy \
 	SL/TREE_READ/TREE_READ.dummy \
@@ -1394,6 +1402,8 @@ redo_links: clean_links
 gde:		GDE/GDE.dummy
 GDE:		gde
 agde: 		ARB_GDE/ARB_GDE.dummy
+
+perltools:	PERLTOOLS/PERLTOOLS.dummy
 tools:		TOOLS/TOOLS.dummy
 
 convert:	$(CONVERT_ALN)
@@ -1430,7 +1440,7 @@ preplib:
 
 # ---------------------------------------- perl
 
-perl: tools
+perl: perltools
 	@echo $(SEP) Make everything in PERL2ARB
 	@$(MAKE) -C PERL2ARB -r -f Makefile.main \
 		"AUTODEPENDS=1" \
