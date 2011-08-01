@@ -172,6 +172,9 @@ GEN_graphic.o: $(ARBHOME)/INCLUDE/items.h
 GEN_graphic.o: $(ARBHOME)/INCLUDE/smartptr.h
 GEN_graphic.o: $(ARBHOME)/INCLUDE/test_global.h
 
+GEN_interface.o: ../GENOM_IMPORT/defs.h
+GEN_interface.o: ../GENOM_IMPORT/Location.h
+GEN_interface.o: ../GENOM_IMPORT/types.h
 GEN_interface.o: GEN.hxx
 GEN_interface.o: GEN_local.hxx
 GEN_interface.o: $(ARBHOME)/INCLUDE/ad_prot.h
@@ -181,6 +184,8 @@ GEN_interface.o: $(ARBHOME)/INCLUDE/arb_assert.h
 GEN_interface.o: $(ARBHOME)/INCLUDE/arb_core.h
 GEN_interface.o: $(ARBHOME)/INCLUDE/arb_error.h
 GEN_interface.o: $(ARBHOME)/INCLUDE/arb_msg.h
+GEN_interface.o: $(ARBHOME)/INCLUDE/arb_strarray.h
+GEN_interface.o: $(ARBHOME)/INCLUDE/arb_strbuf.h
 GEN_interface.o: $(ARBHOME)/INCLUDE/arb_string.h
 GEN_interface.o: $(ARBHOME)/INCLUDE/arbdb.h
 GEN_interface.o: $(ARBHOME)/INCLUDE/arbdb_base.h
