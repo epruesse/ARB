@@ -29,6 +29,8 @@ VALIDATE = $(QUIETLY) XMLLINT
 
 # --------------------------------------------------------------------------------
 
+$(MAIN) : all
+
 all: date generated dirs tools nonhlp_formats delzerohtml
 		@echo --------------------------------------------------- [old hlp 2 xml]
 		time $(MAKE) xml
