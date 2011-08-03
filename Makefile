@@ -427,7 +427,13 @@ MAKEDEPEND_PLAIN = makedepend
 
 MAKEDEPEND = $(FORCEMASK);$(MAKEDEPEND_PLAIN)
 
-SEP:=--------------------------------------------------------------------------------
+#SEP:=--------------------------------------------------------------------------------
+SEP=[`date +%M:%S.%N`] ------------------------------------------------
+# to analyse timings run
+# make -j9 clean; make -j9 all  | grep '^\[' | sort
+# make -j9 "TIMED_TARGET=perl" clean_timed_target | grep '^\[' | sort
+
+
 
 # delete variables unused below
 
@@ -671,7 +677,7 @@ ifeq ($(PTPAN),2)
 ARCHS_PT_SERVER = \
 	ptpan/PROBE.a \
 	PROBE/PROBE.a
-ARCHS_PT_SERVER_LINK = PROBE/PROBE.a # default to old ptserver
+ARCHS_PT_SERVER_LINK = PROBE/PROBE.a# default to old ptserver
 else
 # PT-server only libs
 ARCHS_PT_SERVER = \
@@ -684,12 +690,17 @@ ARCHS_PT_SERVER_LINK = $(ARCHS_PT_SERVER)
 endif
 
 # ---------------------------------------
-#     List of all top level directories
+# List of standard top level directories
+#
+# sub-makefiles have to define the targets
+# - 'depends' and
+# - 'clean'
+#
 
 ARCHS = \
 			$(ARCHS_PT_SERVER) \
-			AISC/dummy.a \
-			AISC_MKPTPS/dummy.a \
+			AISC/AISC.a \
+			AISC_MKPTPS/AISC_MKPTPS.a \
 			ALIV3/ALIV3.a \
 			ARBDB/libARBDB.a \
 			CORE/libCORE.a \
@@ -741,19 +752,13 @@ ARCHS = \
 
 ARCHS_CLIENT_PROBE = PROBE_COM/client.a
 ARCHS_CLIENT_NAMES = NAMES_COM/client.a
-ARCHS_MAKEBIN = AISC_MKPTPS/dummy.a AISC/dummy.a
-
-ARCHS_COMMUNICATION =	NAMES_COM/server.a \
-			PROBE_COM/server.a
+ARCHS_MAKEBIN = AISC_MKPTPS/AISC_MKPTPS.a AISC/AISC.a
 
 # communication libs need aisc and aisc_mkpts:
 
-aisc: proto_tools
-	$(MAKE) AISC/AISC.dummy
+AISC/AISC.dummy: proto_tools
 
-comtools: proto_tools aisc
-
-$(ARCHS_COMMUNICATION:.a=.dummy) : comtools
+comtools: AISC/AISC.dummy
 
 ARCHS_SEQUENCE = \
 		SL/SEQUENCE/SEQUENCE.a \
@@ -770,6 +775,14 @@ ARCHS_AP_TREE = \
 		$(ARCHS_TREE) \
 		SL/AP_TREE/AP_TREE.a \
 
+# --------------------------------------------------------------------------------
+# dependencies for linking shared libs
+
+link_core:	core
+link_db:	db link_core
+link_aw:	aw link_db
+link_awt:	awt link_aw
+
 #***************************************************************************************
 #		Individual Programs Section
 #***************************************************************************************
@@ -778,7 +791,6 @@ ARCHS_AP_TREE = \
 NTREE = bin/arb_ntree
 ARCHS_NTREE = \
 		NTREE/NTREE.a \
-		$(ARCHS_CLIENT_PROBE) \
 		$(ARCHS_AP_TREE) \
 		ARB_GDE/ARB_GDE.a \
 		AWTC/AWTC.a \
@@ -810,21 +822,13 @@ ARCHS_NTREE = \
 		STAT/STAT.a \
 		XML/XML.a \
 
-$(NTREE): $(ARCHS_NTREE:.a=.dummy) NAMES_COM/server.dummy shared_libs
+$(NTREE): $(ARCHS_NTREE:.a=.dummy) link_awt
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_NTREE) $(GUI_LIBS) || ( \
-		echo Link $@ ; \
-		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_NTREE) $(GUI_LIBS) $(EXECLIBS)" ; \
-		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_NTREE) $(GUI_LIBS) $(EXECLIBS)  \
+		echo "$(SEP) Link $@"; \
+		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_NTREE) $(ARCHS_CLIENT_PROBE) $(GUI_LIBS) $(EXECLIBS)" ; \
+		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_NTREE) $(ARCHS_CLIENT_PROBE) $(GUI_LIBS) $(EXECLIBS) && \
+		echo "$(SEP) Link $@ [done]"; \
 		)
-
-#*********************************** arb_rna3d **************************************
-RNA3D = bin/arb_rna3d
-ARCHS_RNA3D = \
-		RNA3D/RNA3D.a \
-
-$(RNA3D): $(ARCHS_RNA3D:.a=.dummy) shared_libs
-	@echo $@ currently does not work as standalone application
-	false
 
 #***********************************	arb_edit4 **************************************
 EDIT4 = bin/arb_edit4
@@ -835,7 +839,6 @@ ARCHS_EDIT4 := \
 		ARB_GDE/ARB_GDE.a \
 		AWTC/AWTC.a \
 		ISLAND_HOPPING/ISLAND_HOPPING.a \
-		$(ARCHS_CLIENT_NAMES) \
 		SECEDIT/SECEDIT.a \
 		SERVERCNTRL/SERVERCNTRL.a \
 		SL/AW_HELIX/AW_HELIX.a \
@@ -851,14 +854,17 @@ ARCHS_EDIT4 := \
 
 ifeq ($(OPENGL),1)
 ARCHS_EDIT4 += RNA3D/RNA3D.a
+RNA3D/RNA3D.dummy: gl
 endif
+
 LIBS_EDIT4 := $(GL_LIBS)
 
-$(EDIT4): $(ARCHS_EDIT4:.a=.dummy) shared_libs $(GL)
+$(EDIT4): $(ARCHS_EDIT4:.a=.dummy) link_awt 
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_EDIT4) $(GUI_LIBS) || ( \
-		echo Link $@ ; \
-		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_EDIT4) $(GUI_LIBS) $(LIBS_EDIT4) $(EXECLIBS)" ; \
-		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_EDIT4) $(GUI_LIBS) $(LIBS_EDIT4) $(EXECLIBS) \
+		echo "$(SEP) Link $@"; \
+		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_EDIT4) $(ARCHS_CLIENT_NAMES) $(GUI_LIBS) $(LIBS_EDIT4) $(EXECLIBS)" ; \
+		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_EDIT4) $(ARCHS_CLIENT_NAMES) $(GUI_LIBS) $(LIBS_EDIT4) $(EXECLIBS) && \
+		echo "$(SEP) Link $@ [done]"; \
 		)
 
 #***********************************	arb_pgt **************************************
@@ -869,11 +875,12 @@ ARCHS_PGT = \
 
 PGT_SYS_LIBS=$(XLIBS) $(TIFFLIBS) $(LIBS)
 
-$(PGT) : $(ARCHS_PGT:.a=.dummy) shared_libs
+$(PGT) : $(ARCHS_PGT:.a=.dummy) link_db
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_PGT) || ( \
-		echo Link $@ ; \
+		echo "$(SEP) Link $@"; \
 		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_PGT) $(PGT_SYS_LIBS) $(EXECLIBS)"; \
-		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_PGT) $(PGT_SYS_LIBS) $(EXECLIBS); \
+		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_PGT) $(PGT_SYS_LIBS) $(EXECLIBS) && \
+		echo "$(SEP) Link $@ [done]"; \
 		)
 
 
@@ -885,17 +892,17 @@ ARCHS_WETC = \
 		SL/FILTER/FILTER.a \
 		XML/XML.a \
 
-$(WETC): $(ARCHS_WETC:.a=.dummy) shared_libs
+$(WETC): $(ARCHS_WETC:.a=.dummy) link_awt
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_WETC) $(GUI_LIBS) || ( \
-		echo Link $@ ; \
+		echo "$(SEP) Link $@"; \
 		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_WETC) $(GUI_LIBS) $(EXECLIBS)" ; \
-		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_WETC) $(GUI_LIBS) $(EXECLIBS) ; \
+		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_WETC) $(GUI_LIBS) $(EXECLIBS) && \
+		echo "$(SEP) Link $@ [done]"; \
 		)
 
 #***********************************	arb_dist **************************************
 DIST = bin/arb_dist
 ARCHS_DIST = \
-		$(ARCHS_CLIENT_PROBE) \
 		$(ARCHS_AP_TREE) \
 		CONSENSUS_TREE/CONSENSUS_TREE.a \
 		DIST/DIST.a \
@@ -909,18 +916,18 @@ ARCHS_DIST = \
 		SL/NEIGHBOURJOIN/NEIGHBOURJOIN.a \
 		XML/XML.a \
 
-$(DIST): $(ARCHS_DIST:.a=.dummy) shared_libs
+$(DIST): $(ARCHS_DIST:.a=.dummy) link_awt
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_DIST) $(GUI_LIBS) || ( \
-		echo Link $@ ; \
-		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_DIST) $(GUI_LIBS) $(EXECLIBS)" ; \
-		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_DIST) $(GUI_LIBS) $(EXECLIBS) ; \
+		echo "$(SEP) Link $@"; \
+		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_DIST) $(ARCHS_CLIENT_PROBE) $(GUI_LIBS) $(EXECLIBS)" ; \
+		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_DIST) $(ARCHS_CLIENT_PROBE) $(GUI_LIBS) $(EXECLIBS) && \
+		echo "$(SEP) Link $@ [done]"; \
 		)
 
 #***********************************	arb_pars **************************************
 PARSIMONY = bin/arb_pars
 ARCHS_PARSIMONY = \
 		$(ARCHS_AP_TREE) \
-		$(ARCHS_CLIENT_NAMES) \
 		PARSIMONY/PARSIMONY.a \
 		SERVERCNTRL/SERVERCNTRL.a \
 		SL/AW_NAME/AW_NAME.a \
@@ -932,11 +939,12 @@ ARCHS_PARSIMONY = \
 		SL/TREEDISP/TREEDISP.a \
 		XML/XML.a \
 
-$(PARSIMONY): $(ARCHS_PARSIMONY:.a=.dummy) shared_libs
+$(PARSIMONY): $(ARCHS_PARSIMONY:.a=.dummy) link_awt
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_PARSIMONY) $(GUI_LIBS) || ( \
-		echo Link $@ ; \
-		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_PARSIMONY) $(GUI_LIBS) $(EXECLIBS)" ; \
-		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_PARSIMONY) $(GUI_LIBS) $(EXECLIBS) ; \
+		echo "$(SEP) Link $@"; \
+		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_PARSIMONY) $(ARCHS_CLIENT_NAMES) $(GUI_LIBS) $(EXECLIBS)" ; \
+		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_PARSIMONY) $(ARCHS_CLIENT_NAMES) $(GUI_LIBS) $(EXECLIBS) && \
+		echo "$(SEP) Link $@ [done]"; \
 		)
 
 #*********************************** arb_convert_aln **************************************
@@ -946,11 +954,12 @@ ARCHS_CONVERT_ALN =	\
 		SL/FILE_BUFFER/FILE_BUFFER.a \
 
 
-$(CONVERT_ALN) :  $(ARCHS_CONVERT_ALN:.a=.dummy)
+$(CONVERT_ALN) :  $(ARCHS_CONVERT_ALN:.a=.dummy) link_db
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_CONVERT_ALN) || ( \
-		echo Link $@ ; \
+		echo "$(SEP) Link $@"; \
 		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_CONVERT_ALN) $(EXECLIBS)" ; \
-		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARBDB_LIB) $(ARCHS_CONVERT_ALN) $(EXECLIBS) ; \
+		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARBDB_LIB) $(ARCHS_CONVERT_ALN) $(EXECLIBS) && \
+		echo "$(SEP) Link $@ [done]"; \
 		)
 
 #*********************************** arb_treegen **************************************
@@ -960,36 +969,26 @@ ARCHS_TREEGEN =	\
 
 $(TREEGEN) :  $(ARCHS_TREEGEN:.a=.dummy)
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_TREEGEN) || ( \
-		echo Link $@ ; \
+		echo "$(SEP) Link $@"; \
 		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_TREEGEN) $(EXECLIBS)" ; \
-		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_TREEGEN) $(EXECLIBS) ; \
+		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_TREEGEN) $(EXECLIBS) && \
+		echo "$(SEP) Link $@ [done]"; \
 		)
 
 #***********************************	arb_naligner **************************************
 NALIGNER = bin/arb_naligner
 ARCHS_NALIGNER = \
-		$(ARCHS_CLIENT_PROBE) \
 		NALIGNER/NALIGNER.a \
 		SERVERCNTRL/SERVERCNTRL.a \
 		SL/HELIX/HELIX.a \
 
-$(NALIGNER): $(ARCHS_NALIGNER:.a=.dummy) shared_libs
+$(NALIGNER): $(ARCHS_NALIGNER:.a=.dummy) link_db
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_NALIGNER) || ( \
-		echo Link $@ ; \
-		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_NALIGNER) $(LIBS) $(EXECLIBS)" ; \
-		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_NALIGNER) $(LIBS) $(EXECLIBS) \
+		echo "$(SEP) Link $@"; \
+		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_NALIGNER) $(ARCHS_CLIENT_PROBE) $(LIBS) $(EXECLIBS)" ; \
+		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_NALIGNER) $(ARCHS_CLIENT_PROBE) $(LIBS) $(EXECLIBS) && \
+		echo "$(SEP) Link $@ [done]"; \
 		)
-
-#***********************************	arb_secedit **************************************
-SECEDIT = bin/arb_secedit
-ARCHS_SECEDIT = \
-		SECEDIT/SECEDIT.a \
-		XML/XML.a \
-
-$(SECEDIT):	$(ARCHS_SECEDIT:.a=.dummy) shared_libs
-	@echo $@ currently does not work as standalone application
-	false
-
 
 #***********************************	arb_phylo **************************************
 PHYLO = bin/arb_phylo
@@ -1000,11 +999,12 @@ ARCHS_PHYLO = \
 		SL/MATRIX/MATRIX.a \
 		XML/XML.a \
 
-$(PHYLO): $(ARCHS_PHYLO:.a=.dummy) shared_libs
+$(PHYLO): $(ARCHS_PHYLO:.a=.dummy) link_awt
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_PHYLO) $(GUI_LIBS) || ( \
-		echo Link $@ ; \
+		echo "$(SEP) Link $@"; \
 		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_PHYLO) $(GUI_LIBS) $(EXECLIBS)" ; \
-		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_PHYLO) $(GUI_LIBS) $(EXECLIBS) ; \
+		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_PHYLO) $(GUI_LIBS) $(EXECLIBS) && \
+		echo "$(SEP) Link $@ [done]"; \
 		)
 
 #***************************************************************************************
@@ -1016,19 +1016,18 @@ DBSERVER = bin/arb_db_server
 ARCHS_DBSERVER = \
 		DBSERVER/DBSERVER.a \
 		SERVERCNTRL/SERVERCNTRL.a \
-		PROBE_COM/client.a \
 
-$(DBSERVER): $(ARCHS_DBSERVER:.a=.dummy) shared_libs
+$(DBSERVER): $(ARCHS_DBSERVER:.a=.dummy) link_db
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_DBSERVER) $(ARBDB_LIB) || ( \
-		echo Link $@ ; \
-		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_DBSERVER) $(ARBDB_LIB) $(SYSLIBS) $(EXECLIBS)" ; \
-		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_DBSERVER) $(ARBDB_LIB) $(SYSLIBS) $(EXECLIBS) ; \
+		echo "$(SEP) Link $@"; \
+		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_DBSERVER) $(ARBDB_LIB) $(SYSLIBS) $(EXECLIBS) PROBE_COM/client.a" ; \
+		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_DBSERVER) $(ARBDB_LIB) $(SYSLIBS) $(EXECLIBS) PROBE_COM/client.a && \
+		echo "$(SEP) Link $@ [done]"; \
 		)
 
 #***********************************	arb_pt_server **************************************
 PROBE = bin/arb_pt_server
 ARCHS_PROBE_COMMON = \
-		PROBE_COM/server.a \
 		SERVERCNTRL/SERVERCNTRL.a \
 		SL/HELIX/HELIX.a \
 
@@ -1040,25 +1039,26 @@ ARCHS_PROBE_DEPEND = \
 		$(ARCHS_PROBE_COMMON) \
 		$(ARCHS_PT_SERVER) \
 
-$(PROBE): $(ARCHS_PROBE_DEPEND:.a=.dummy) shared_libs 
-	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_PROBE_LINK) $(ARBDB_LIB) $(ARCHS_CLIENT_PROBE) || ( \
-		echo Link $@ ; \
-		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_PROBE_LINK) $(ARBDB_LIB) $(ARCHS_CLIENT_PROBE) $(SYSLIBS) $(EXECLIBS)" ; \
-		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_PROBE_LINK) $(ARBDB_LIB) $(ARCHS_CLIENT_PROBE) $(SYSLIBS) $(EXECLIBS) ; \
+$(PROBE): $(ARCHS_PROBE_DEPEND:.a=.dummy) link_db 
+	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_PROBE_LINK) $(ARBDB_LIB) $(ARCHS_CLIENT_PROBE) config.makefile || ( \
+		echo "$(SEP) Link $@"; \
+		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_PROBE_LINK) $(ARBDB_LIB) $(ARCHS_CLIENT_PROBE) $(SYSLIBS) $(EXECLIBS) PROBE_COM/server.a" ; \
+		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_PROBE_LINK) $(ARBDB_LIB) $(ARCHS_CLIENT_PROBE) $(SYSLIBS) $(EXECLIBS) PROBE_COM/server.a && \
+		echo "$(SEP) Link $@ [done]"; \
 		)
 
 #***********************************	arb_name_server **************************************
 NAMES = bin/arb_name_server
 ARCHS_NAMES = \
-		NAMES_COM/server.a \
 		NAMES/NAMES.a \
 		SERVERCNTRL/SERVERCNTRL.a \
 
-$(NAMES): $(ARCHS_NAMES:.a=.dummy) shared_libs
+$(NAMES): $(ARCHS_NAMES:.a=.dummy) link_db
 	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_NAMES) $(ARBDB_LIB) $(ARCHS_CLIENT_NAMES) || ( \
-		echo Link $@ ; \
-		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_NAMES) $(ARBDB_LIB) $(ARCHS_CLIENT_NAMES) $(SYSLIBS) $(EXECLIBS)" ; \
-		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_NAMES) $(ARBDB_LIB) $(ARCHS_CLIENT_NAMES) $(SYSLIBS) $(EXECLIBS) ; \
+		echo "$(SEP) Link $@"; \
+		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_NAMES) $(ARBDB_LIB) $(ARCHS_CLIENT_NAMES) $(SYSLIBS) $(EXECLIBS) NAMES_COM/server.a" ; \
+		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_NAMES) $(ARBDB_LIB) $(ARCHS_CLIENT_NAMES) $(SYSLIBS) $(EXECLIBS) NAMES_COM/server.a && \
+		echo "$(SEP) Link $@ [done]"; \
 		)
 
 #***********************************	OTHER EXECUTABLES   ********************************************
@@ -1068,15 +1068,20 @@ ARCHS_ALIV3 = \
 		ALIV3/ALIV3.a \
 		SL/HELIX/HELIX.a \
 
-$(ALIV3): $(ARCHS_ALIV3:.a=.dummy) shared_libs
-	@echo $(SEP) Link $@
-	$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_ALIV3) $(ARBDB_LIB) $(SYSLIBS) $(EXECLIBS)
+$(ALIV3): $(ARCHS_ALIV3:.a=.dummy) link_db
+	@SOURCE_TOOLS/binuptodate.pl $@ $(ARCHS_ALIV3) $(ARBDB_LIB) || ( \
+		echo "$(SEP) Link $@"; \
+		echo "$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_ALIV3) $(ARBDB_LIB) $(SYSLIBS) $(EXECLIBS)"; \
+		$(LINK_EXECUTABLE) $@ $(LIBPATH) $(ARCHS_ALIV3) $(ARBDB_LIB) $(SYSLIBS) $(EXECLIBS) && \
+		echo "$(SEP) Link $@ [done]"; \
+		)
 
 #***********************************	SHARED LIBRARIES SECTION  **************************************
 
+# @@@ remove shared_libs 
 shared_libs: core db aw awt
-		@echo -------------------- Updating shared libraries
-		$(MAKE) libs
+
+prepare_libdir: libs addlibs
 
 addlibs:
 	(perl $(ARBHOME)/SOURCE_TOOLS/provide_libs.pl \
@@ -1084,6 +1089,11 @@ addlibs:
 				"opengl=$(OPENGL)" \
 				"link_static=$(LINK_STATIC)" \
 	)
+
+lib/libCORE.$(SHARED_LIB_SUFFIX):	core
+lib/libARBDB.$(SHARED_LIB_SUFFIX):	db
+lib/libWINDOW.$(SHARED_LIB_SUFFIX):	aw
+lib/libAWT.$(SHARED_LIB_SUFFIX):	awt
 
 libs:   lib/libCORE.$(SHARED_LIB_SUFFIX) \
 	lib/libARBDB.$(SHARED_LIB_SUFFIX) \
@@ -1131,54 +1141,115 @@ include SOURCE_TOOLS/export2sub
 %.dummy:
 	@( export ID=$$$$; LANG=C; \
 	(( \
-	    echo "$(SEP) Make everything in $(@D)"; \
+	    echo "$(SEP) Make $(@D)"; \
 	    $(MAKE) -C $(@D) -r \
 		"AUTODEPENDS=1" \
 		"MAIN = $(@F:.dummy=.a)" \
-		"cflags = $(cflags) -DIN_ARB_$(subst /,_,$(@D))" \
+		"cflags = $(cflags) -DIN_ARB_$(subst /,_,$(@D))" ; \
+	    echo "$(SEP) Make $(@D) [done]"; \
 	) >$(@D).$$ID.log 2>&1 && (cat $(@D).$$ID.log;rm $(@D).$$ID.log)) || (cat $(@D).$$ID.log;rm $(@D).$$ID.log;false))
 
 # Additional dependencies for subtargets:
 
 PROBE_COM/PROBE_COM.dummy : comtools
-PROBE_COM/server.dummy : comtools
-PROBE_COM/client.dummy : comtools
-
 NAMES_COM/NAMES_COM.dummy : comtools
-NAMES_COM/server.dummy : comtools
-NAMES_COM/client.dummy : comtools
 
-com_probe: PROBE_COM/PROBE_COM.dummy 
-com_names: NAMES_COM/NAMES_COM.dummy
-com_all: com_probe com_names
+com: PROBE_COM/PROBE_COM.dummy NAMES_COM/NAMES_COM.dummy
 
-SL/FILE_BUFFER/FILE_BUFFER.dummy: setup_after_clean
+PROBE_COM/server.dummy:
+	@echo Unwanted request to make target $<
+	false
 
-PERLTOOLS/PERLTOOLS.dummy : \
-	core \
-	db \
+PROBE_COM/client.dummy:
+	@echo Unwanted request to make target $<
+	false
+
+NAMES_COM/server.dummy: 
+	@echo Unwanted request to make target $<
+	false
+
+NAMES_COM/client.dummy:
+	@echo Unwanted request to make target $<
+	false
+
+
+ARBDB/libARBDB.dummy:			links
+CORE/libCORE.dummy:			links
+SL/FILE_BUFFER/FILE_BUFFER.dummy:	links
+PERLTOOLS/PERLTOOLS.dummy:		core db SL/FILE_BUFFER/FILE_BUFFER.dummy
+
+# all subdirs perl not depends on go here:
+AWT/libAWT.dummy:			links_non_perl
+AWTI/AWTI.dummy:			links_non_perl
+ALIV3/ALIV3.dummy:			links_non_perl
+CONSENSUS_TREE/CONSENSUS_TREE.dummy:	links_non_perl
+DBSERVER/DBSERVER.dummy:		links_non_perl
+DIST/DIST.dummy:			links_non_perl
+EDIT4/EDIT4.dummy:			links_non_perl templ com
+GDE/GDE.dummy:				links_non_perl
+GENOM/GENOM.dummy:			links_non_perl
+GL/GL.dummy:				links_non_perl
+ISLAND_HOPPING/ISLAND_HOPPING.dummy:	links_non_perl
+GENOM_IMPORT/GENOM_IMPORT.dummy:	links_non_perl
+PARSIMONY/PARSIMONY.dummy:		links_non_perl
+SEQ_QUALITY/SEQ_QUALITY.dummy:		links_non_perl
+PHYLO/PHYLO.dummy:			links_non_perl
+PRIMER_DESIGN/PRIMER_DESIGN.dummy:	links_non_perl
+PROBE_SET/PROBE_SET.dummy:		links_non_perl
+READSEQ/READSEQ.dummy:			links_non_perl
+SECEDIT/SECEDIT.dummy:			links_non_perl
+SL/ALIVIEW/ALIVIEW.dummy:		links_non_perl
+SL/AP_TREE/AP_TREE.dummy:		links_non_perl
+SL/DB_UI/DB_UI.dummy:			links_non_perl
+SL/ARB_TREE/ARB_TREE.dummy:		links_non_perl
+SL/AW_HELIX/AW_HELIX.dummy:		links_non_perl
+SL/FAST_ALIGNER/FAST_ALIGNER.dummy:	links_non_perl
+SL/FILTER/FILTER.dummy:			links_non_perl
+SL/DB_SCANNER/DB_SCANNER.dummy:		links_non_perl
+SL/GUI_ALIVIEW/GUI_ALIVIEW.dummy:	links_non_perl
+SL/HELIX/HELIX.dummy:			links_non_perl
+SL/ITEMS/ITEMS.dummy:			links_non_perl
+SL/MATRIX/MATRIX.dummy:			links_non_perl
+SL/NDS/NDS.dummy:			links_non_perl
+SL/NEIGHBOURJOIN/NEIGHBOURJOIN.dummy:	links_non_perl
+SL/PRONUC/PRONUC.dummy:			links_non_perl
+SL/SEQUENCE/SEQUENCE.dummy:		links_non_perl
+SL/TRANSLATE/TRANSLATE.dummy:		links_non_perl
+SL/SEQIO/SEQIO.dummy:			links_non_perl
+SL/REGEXPR/REGEXPR.dummy:		links_non_perl
+SL/REFENTRIES/REFENTRIES.dummy:		links_non_perl
+SL/TREE_READ/TREE_READ.dummy:		links_non_perl
+SL/TREE_WRITE/TREE_WRITE.dummy:		links_non_perl
+SL/TREEDISP/TREEDISP.dummy:		links_non_perl
+SL/DB_QUERY/DB_QUERY.dummy:		links_non_perl
+STAT/STAT.dummy:			links_non_perl
+TREEGEN/TREEGEN.dummy:			links_non_perl
+WINDOW/libWINDOW.dummy:			links_non_perl
+XML/XML.dummy:				links_non_perl
+WETC/WETC.dummy:			links_non_perl
+CONVERTALN/CONVERTALN.dummy:		links_non_perl
+MERGE/MERGE.dummy:			links_non_perl
+PGT/PGT.dummy:				links_non_perl
+NTREE/NTREE.dummy:			links_non_perl templ
+SERVERCNTRL/SERVERCNTRL.dummy:		links_non_perl com
+
+TOOLS/TOOLS.dummy : core db com \
 	SL/FILE_BUFFER/FILE_BUFFER.dummy \
-
-TOOLS/TOOLS.dummy : \
-	core \
-	db \
-	com \
 	SERVERCNTRL/SERVERCNTRL.dummy \
 	SL/TREE_WRITE/TREE_WRITE.dummy \
 	SL/TREE_READ/TREE_READ.dummy \
-	SL/FILE_BUFFER/FILE_BUFFER.dummy \
-	XML/XML.dummy \
+	XML/XML.dummy
 
+AWTC/AWTC.dummy :   			com
 
-AWTC/AWTC.dummy :   			com_names com_probe
+NAMES/NAMES.dummy : 			com
+SL/AW_NAME/AW_NAME.dummy : 		com
 
-NAMES/NAMES.dummy : 			com_names
-SL/AW_NAME/AW_NAME.dummy : 		com_names
-
-PROBE/PROBE.dummy : 			com_probe
-MULTI_PROBE/MULTI_PROBE.dummy : 	com_probe
-PROBE_DESIGN/PROBE_DESIGN.dummy : 	com_probe
-NALIGNER/NALIGNER.dummy : 		com_probe
+PROBE/PROBE.dummy : 			com
+ptpan/PROBE.dummy : 			com
+MULTI_PROBE/MULTI_PROBE.dummy : 	com
+PROBE_DESIGN/PROBE_DESIGN.dummy : 	com
+NALIGNER/NALIGNER.dummy : 		com
 
 ARB_GDE/ARB_GDE.dummy : 		proto_tools
 
@@ -1240,13 +1311,9 @@ dep_graph:
 	@echo "Building some dependency graphs"
 	SOURCE_TOOLS/dependency_graphs.pl
 
-com:	$(ARCHS_COMMUNICATION:.a=.dummy)
-
 help:   HELP_SOURCE/HELP_SOURCE.dummy
 
-HELP_SOURCE/HELP_SOURCE.dummy: shared_libs xml menus# need to create some files in GDE-subtree first
-CORE/libCORE.dummy: links
-ARBDB/libARBDB.dummy: links
+HELP_SOURCE/HELP_SOURCE.dummy: shared_libs xml menus
 
 db:	ARBDB/libARBDB.dummy
 core:	CORE/libCORE.dummy
@@ -1272,8 +1339,8 @@ tg:	$(TREEGEN)
 
 3d:	RNA3D/RNA3D.dummy
 gl:	GL/GL.dummy
-sl:	NAMES_COM/NAMES_COM.dummy
-	$(MAKE) SL/SL.dummy
+
+SL/SL.dummy: com
 
 ds:	$(DBSERVER)
 pt:	$(PROBE)
@@ -1284,7 +1351,8 @@ sq:	SEQ_QUALITY/SEQ_QUALITY.dummy
 
 sec:	SECEDIT/SECEDIT.dummy
 
-e4:	$(EDIT4) wetc help readseq menus 
+e4:	$(EDIT4) readseq menus
+
 gi:	GENOM_IMPORT/GENOM_IMPORT.dummy
 wetc:	$(WETC)
 
@@ -1313,8 +1381,7 @@ modified: touch
 
 #********************************************************************************
 
-depends: templ 
-	$(MAKE) comtools
+depends: templ comtools
 	@echo "$(SEP) Partially build com interface"
 	-rm PROBE_COM/.depends
 	-rm NAMES_COM/.depends
@@ -1327,11 +1394,10 @@ depends: templ
 
 depend: depends
 
-proto_tools:
-	@echo $(SEP) Building prototyper 
-	$(MAKE) AISC_MKPTPS/AISC_MKPTPS.dummy
+AISC_MKPTPS/AISC_MKPTPS.dummy: links
 
-#proto: proto_tools TOOLS/TOOLS.dummy 
+proto_tools: AISC_MKPTPS/AISC_MKPTPS.dummy
+
 proto: proto_tools
 	@echo $(SEP) Updating prototypes
 	$(MAKE) \
@@ -1381,7 +1447,7 @@ tags_ctags:
 
 LINKSTAMP=SOURCE_TOOLS/generate_all_links.stamp
 
-links: $(LINKSTAMP)
+links: checks $(LINKSTAMP)
 
 forcelinks:
 	-rm $(LINKSTAMP)
@@ -1403,7 +1469,6 @@ gde:		GDE/GDE.dummy
 GDE:		gde
 agde: 		ARB_GDE/ARB_GDE.dummy
 
-perltools:	PERLTOOLS/PERLTOOLS.dummy
 tools:		TOOLS/TOOLS.dummy
 
 convert:	$(CONVERT_ALN)
@@ -1415,8 +1480,9 @@ readseq:	READSEQ/READSEQ.dummy
 
 menus: binlink
 	@(( \
-		echo $(SEP) Make everything in GDEHELP; \
-		$(MAKE) -C GDEHELP -r "PP=$(PP)" all \
+		echo "$(SEP) Make GDEHELP"; \
+		$(MAKE) -C GDEHELP -r "PP=$(PP)" all; \
+		echo "$(SEP) Make GDEHELP [done]"; \
 	) > GDEHELP.log 2>&1 && (cat GDEHELP.log;rm GDEHELP.log)) || (cat GDEHELP.log;rm GDEHELP.log;false)
 
 ifeq ($(DEBUG),1)
@@ -1438,16 +1504,42 @@ bin/%:	DEPOT2/%
 preplib:
 	(cd lib;$(MAKE) all)
 
+# --------------------------------------------------------------------------------
+# This section is quite tricky:
+#
+# make 'perl' is a BIG target, so when it has to be made, it has to be started
+# as early as possible to reduce overall compile time. Since 'make' does not
+# provide any priotities, i force it to build all 'perl'-prerequisites early, by
+# adding  artificial dependencies to these prerequisites 
+#
+# That behavior is likely to be system-dependent.
+# My goal was only to make it work on my current development system,
+# where this saves about 20% of overall build time.
+
+ifeq ($(WITHPERL),1)
+links_non_perl:	PERLTOOLS/PERLTOOLS.dummy
+perltools:	links_non_perl
+perl:		realperl
+else
+links_non_perl:	links
+perl:
+	$(MAKE) "WITHPERL=1" perl
+endif
+
 # ---------------------------------------- perl
 
-perl: perltools
-	@echo $(SEP) Make everything in PERL2ARB
-	@$(MAKE) -C PERL2ARB -r -f Makefile.main \
-		"AUTODEPENDS=1" \
-		"dflags=$(dflags)" \
-		"cross_cflags=$(cross_cflags) $(dflags)" \
-		"cross_lflags=$(cross_lflags)" \
-		all
+realperl: perltools
+	@(( \
+		echo "$(SEP) Make PERL2ARB" ; \
+		time $(MAKE) -C PERL2ARB -r -f Makefile.main \
+			"AUTODEPENDS=1" \
+			"dflags=$(dflags)" \
+			"cross_cflags=$(cross_cflags) $(dflags)" \
+			"cross_lflags=$(cross_lflags)" \
+			all ; \
+		echo "$(SEP) Make PERL2ARB [done]" ; \
+	) > PERL2ARB.log 2>&1 && (cat PERL2ARB.log;rm PERL2ARB.log)) || (cat PERL2ARB.log;rm PERL2ARB.log;false)
+
 
 testperlscripts: perl 
 	@$(MAKE) -C PERL_SCRIPTS/test test
@@ -1583,11 +1675,11 @@ relink: bin/bin.clean libclean
 	$(MAKE) build
 
 tarfile: rebuild
-	$(MAKE) addlibs 
+	$(MAKE) prepare_libdir 
 	util/arb_compress
 
 tarfile_quick: build
-	$(MAKE) addlibs 
+	$(MAKE) prepare_libdir 
 	util/arb_compress
 
 save: sourcetarfile 
@@ -1644,27 +1736,32 @@ reset_committed_build:
 
 # --------------------------------------------------------------------------------
 
-# basic arb libraries
-arbbasic: links preplib
-		$(MAKE) arbbasic2
+arbapplications: nt pa e4 wetc pt na nal di ph ds pgt wetc
 
-arbbasic2: templ comtools com sl $(GL)
+arb_external: convert tools gde readseq tg pst a3 xmlin
 
-# needed arb applications
-arbapplications: nt pa e4 wetc pt na nal di ph ds pgt
+arb_no_perl: arbapplications help arb_external
 
-# optionally things (no real harm for ARB if any of them fails):
-arbxtras: tg pst a3 xmlin 
+arb:
+	$(MAKE) "WITHPERL=1" perl arb_no_perl
 
-tryxtras:
-	@echo $(SEP)
-	@( $(MAKE) arbxtras || ( \
-		echo $(SEP) ;\
-		echo "One of the optional tools failed to build (see error somewhere above)" ;\
-		echo "ARB will work nevertheless!" ) )
+# --------------------------------------------------------------------------------
+# special targets for SOURCE_TOOLS/remake_after_change.pl
 
-arb: arbbasic
-	$(MAKE) shared_libs arbapplications help
+rac_arb_dist:		di
+rac_arb_edit4:		e4
+rac_arb_ntree:		nt
+rac_arb_pars:		pa
+rac_arb_phylo:		ph
+rac_arb_wetc:		wetc
+rac_arb_naligner:	nal
+rac_arb_pt_server:	pt
+rac_arb_db_server:	ds
+rac_arb_name_server:	na
+rac_aliv3:		a3
+rac_arb_pgt:		pgt
+rac_arb_convert_aln:	convert
+rac_arb_treegen:	tg
 
 # --------------------------------------------------------------------------------
 # unit testing 
@@ -1833,27 +1930,50 @@ TIMELOG=$(ARBHOME)/arb_time.log
 TIMEARGS=--append --output=$(TIMELOG) --format=" %E(%S+%U) %P [%C]"
 TIMECMD=/usr/bin/time $(TIMEARGS)
 
-setup_after_clean: checks
-	$(MAKE) links 
-	$(MAKE) templ preplib binlink
-	$(MAKE) comtools 
+time_one:
+ifeq ($(ONE_TIMED_TARGET),)
+	@echo "Error: You have to pass ONE_TIMED_TARGET to $@"
+	false
+else
+	@echo "$(SEP) $(MAKE) $(ONE_TIMED_TARGET)"
+	@$(TIMECMD) $(MAKE) $(ONE_TIMED_TARGET)
+	@echo "$(SEP) $(MAKE) $(ONE_TIMED_TARGET) [done]"
+endif
 
-build: checks
-	$(MAKE) links
-	$(MAKE) com
-	$(MAKE) arb
-	$(MAKE) libs
-	$(MAKE) convert tools gde readseq
-	$(MAKE) binlink
-	$(MAKE) perl
-	-$(MAKE) tryxtras
+timed_target:
+ifeq ($(TIMED_TARGET),)
+	@echo "Error: You have to pass TIMED_TARGET to $@"
+	false
+else
+	@echo "Build time:" > $(TIMELOG)
+	$(MAKE) "ONE_TIMED_TARGET=$(TIMED_TARGET)" time_one
+	@cat $(TIMELOG)
+	@rm $(TIMELOG)	
+endif
+
+clean_timed_target:
+ifeq ($(TIMED_TARGET),)
+	@echo "Error: You have to pass TIMED_TARGET to $@"
+	false
+else
+	@echo "Build time:" > $(TIMELOG)
+	$(MAKE) "ONE_TIMED_TARGET=clean" time_one
+	$(MAKE) "ONE_TIMED_TARGET=$(TIMED_TARGET)" time_one
+	@cat $(TIMELOG)
+	@rm $(TIMELOG)	
+endif
+
+# --------------------------------------------------------------------------------
+
+build: arb
+	$(MAKE) binlink preplib
 ifeq ("$(DEVELOPER)","SAVETEST")
 	$(MAKE) save_test
 endif
 
 all: 
 	@echo "Build time" > $(TIMELOG)
-	@echo $(MAKE) build
+	@echo "$(SEP) $(MAKE) build"
 	@$(TIMECMD) $(MAKE) build
 	@echo $(SEP)
 	@echo "made 'all' with success."
@@ -1862,5 +1982,8 @@ ifeq ($(UNIT_TESTS),1)
 	@echo $(MAKE) unit_tests
 	@$(TIMECMD) $(MAKE) unit_tests
 endif
+	@echo "$(SEP) $(MAKE) build [done]"
 	@cat $(TIMELOG)
 	@rm $(TIMELOG)
+
+
