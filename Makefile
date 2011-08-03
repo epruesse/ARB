@@ -1078,9 +1078,6 @@ $(ALIV3): $(ARCHS_ALIV3:.a=.dummy) link_db
 
 #***********************************	SHARED LIBRARIES SECTION  **************************************
 
-# @@@ remove shared_libs 
-shared_libs: core db aw awt
-
 prepare_libdir: libs addlibs
 
 addlibs:
@@ -1313,7 +1310,8 @@ dep_graph:
 
 help:   HELP_SOURCE/HELP_SOURCE.dummy
 
-HELP_SOURCE/HELP_SOURCE.dummy: shared_libs xml menus
+# @@@ when backtracing code is in libCORE, link vs ARBDB is no longer needed 
+HELP_SOURCE/HELP_SOURCE.dummy: link_db xml menus
 
 db:	ARBDB/libARBDB.dummy
 core:	CORE/libCORE.dummy
