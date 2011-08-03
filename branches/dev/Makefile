@@ -1363,11 +1363,7 @@ fa:	SL/FAST_ALIGNER/FAST_ALIGNER.dummy
 
 #********************************************************************************
 
-up: checks
-	$(MAKE) links
-	$(MAKE) -k up_internal
-
-up_internal: depends proto tags valgrind_update
+up: depends proto tags valgrind_update
 
 #********************************************************************************
 
@@ -1413,7 +1409,7 @@ proto: proto_tools
 
 #********************************************************************************
 
-valgrind_update:
+valgrind_update: links
 	@echo $(SEP) Updating for valgrind
 	$(MAKE) -C SOURCE_TOOLS valgrind_update
 
@@ -1422,24 +1418,35 @@ valgrind_update:
 TAGFILE=TAGS
 TAGFILE_TMP=TAGS.tmp
 
-tags:
-	@echo $(SEP) Updating tags
-	$(MAKE) tags_$(MACH)
+TAG_SOURCE_HEADERS=TAGS.headers
+TAG_SOURCE_CODE=TAGS.codefiles
+
+TAG_SOURCE_LISTS=$(TAG_SOURCE_HEADERS) $(TAG_SOURCE_CODE)
+
+ETAGS=ctags -e -f $(TAGFILE_TMP) --sort=no --if0=no --extra=q
+ETAGS_TYPES=--C-kinds=cgnsut --C++-kinds=cgnsut
+ETAGS_FUN  =--C-kinds=fm     --C++-kinds=fm
+ETAGS_REST =--C-kinds=dev    --C++-kinds=dev
+
+$(TAG_SOURCE_HEADERS): links
+#	find . \( -name '*.[ch]xx' -o -name "*.[ch]" \) -type f | grep -v -i perl5 > $@
+#	workaround a bug in ctags 5.8:
+	find . \( -name '*.hxx' -o -name "*.h" \) -type f | grep -v -i perl5 | sed -e 's/^.\///g' > $@
+
+$(TAG_SOURCE_CODE): links
+#	find . \( -name '*.[ch]xx' -o -name "*.[ch]" \) -type f | grep -v -i perl5 > $@
+#	workaround a bug in ctags 5.8:
+	find . \( -name '*.cxx' -o -name "*.c" \) -type f | grep -v -i perl5 | sed -e 's/^.\///g' > $@
+
+tags: $(TAG_SOURCE_LISTS)
+	$(ETAGS)    $(ETAGS_TYPES) -L $(TAG_SOURCE_HEADERS)
+	$(ETAGS) -a $(ETAGS_FUN)   -L $(TAG_SOURCE_HEADERS)
+	$(ETAGS) -a $(ETAGS_REST)  -L $(TAG_SOURCE_HEADERS)
+	$(ETAGS) -a $(ETAGS_TYPES) -L $(TAG_SOURCE_CODE)
+	$(ETAGS) -a $(ETAGS_FUN)   -L $(TAG_SOURCE_CODE)
+	$(ETAGS) -a $(ETAGS_REST)  -L $(TAG_SOURCE_CODE)
 	mv $(TAGFILE_TMP) $(TAGFILE)
-
-tags_LINUX: tags_ctags
-
-tags_etags:
-# first search class definitions
-	etags -f $(TAGFILE_TMP)          --language=none "--regex=/^[ \t]*class[ \t]+\([^ \t]+\)/" `find . -name '*.[ch]xx' -type f`
-	etags -f $(TAGFILE_TMP) --append --language=none "--regex=/\([^ \t]+\)::/" `find . -name '*.[ch]xx' -type f`
-# then append normal tags (headers first)
-	etags -f $(TAGFILE_TMP) --append --members ARBDB/*.h `find . -name '*.[h]xx' -type f`
-	etags -f $(TAGFILE_TMP) --append ARBDB/*.c `find . -name '*.[c]xx' -type f`
-
-tags_ctags:
-	ctags -f $(TAGFILE_TMP)    -e --c-types=cdt --sort=no `find . \( -name '*.[ch]xx' -o -name "*.[ch]" \) -type f | grep -v -i perl5`
-	ctags -f $(TAGFILE_TMP) -a -e --c-types=f-tvx --sort=no `find . \( -name '*.[ch]xx' -o -name "*.[ch]" \) -type f | grep -v -i perl5`
+	rm $(TAG_SOURCE_LISTS)
 
 #********************************************************************************
 
