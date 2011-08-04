@@ -163,6 +163,14 @@ sub dirs2targets($) {
 
 sub config2env() {
   my $conf = $ARBHOME.'/config.makefile';
+
+  if (not -f $conf) {
+    print "$conf not found.. generating\n";
+    my $cmd = "cd $ARBHOME;make";
+    system($cmd);
+    exit(1);
+  }
+  
   open(CONF,'<'.$conf) || die "can't read '$conf' (Reason: $!)";
 
   my $OPENGL = 0;
