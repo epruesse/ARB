@@ -1193,7 +1193,7 @@ PARSIMONY/PARSIMONY.dummy:		links_non_perl
 SEQ_QUALITY/SEQ_QUALITY.dummy:		links_non_perl
 PHYLO/PHYLO.dummy:			links_non_perl
 PRIMER_DESIGN/PRIMER_DESIGN.dummy:	links_non_perl
-PROBE_SET/PROBE_SET.dummy:		links_non_perl
+PROBE_SET/PROBE_SET.dummy:		links_non_perl link_db
 READSEQ/READSEQ.dummy:			links_non_perl
 SECEDIT/SECEDIT.dummy:			links_non_perl
 SL/ALIVIEW/ALIVIEW.dummy:		links_non_perl
