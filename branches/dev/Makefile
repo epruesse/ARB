@@ -1142,7 +1142,7 @@ include SOURCE_TOOLS/export2sub
 	    $(MAKE) -C $(@D) -r \
 		"AUTODEPENDS=1" \
 		"MAIN = $(@F:.dummy=.a)" \
-		"cflags = $(cflags) -DIN_ARB_$(subst /,_,$(@D))" ; \
+		"cflags = $(cflags) -DIN_ARB_$(subst /,_,$(@D))" && \
 	    echo "$(SEP) Make $(@D) [done]"; \
 	) >$(@D).$$ID.log 2>&1 && (cat $(@D).$$ID.log;rm $(@D).$$ID.log)) || (cat $(@D).$$ID.log;rm $(@D).$$ID.log;false))
 
@@ -1183,6 +1183,7 @@ CONSENSUS_TREE/CONSENSUS_TREE.dummy:	links_non_perl
 DBSERVER/DBSERVER.dummy:		links_non_perl
 DIST/DIST.dummy:			links_non_perl
 EDIT4/EDIT4.dummy:			links_non_perl templ com
+EISPACK/EISPACK.dummy:			links_non_perl
 GDE/GDE.dummy:				links_non_perl
 GENOM/GENOM.dummy:			links_non_perl
 GL/GL.dummy:				links_non_perl
@@ -1486,7 +1487,7 @@ readseq:	READSEQ/READSEQ.dummy
 menus: binlink
 	@(( \
 		echo "$(SEP) Make GDEHELP"; \
-		$(MAKE) -C GDEHELP -r "PP=$(PP)" all; \
+		$(MAKE) -C GDEHELP -r "PP=$(PP)" all && \
 		echo "$(SEP) Make GDEHELP [done]"; \
 	) > GDEHELP.log 2>&1 && (cat GDEHELP.log;rm GDEHELP.log)) || (cat GDEHELP.log;rm GDEHELP.log;false)
 
@@ -1541,7 +1542,7 @@ realperl: perltools
 			"dflags=$(dflags)" \
 			"cross_cflags=$(cross_cflags) $(dflags)" \
 			"cross_lflags=$(cross_lflags)" \
-			all ; \
+			all && \
 		echo "$(SEP) Make PERL2ARB [done]" ; \
 	) > PERL2ARB.log 2>&1 && (cat PERL2ARB.log;rm PERL2ARB.log)) || (cat PERL2ARB.log;rm PERL2ARB.log;false)
 
@@ -1953,7 +1954,7 @@ else
 	@echo "Build time:" > $(TIMELOG)
 	$(MAKE) "ONE_TIMED_TARGET=$(TIMED_TARGET)" time_one
 	@cat $(TIMELOG)
-	@rm $(TIMELOG)	
+	@rm $(TIMELOG)
 endif
 
 clean_timed_target:
@@ -1965,7 +1966,7 @@ else
 	$(MAKE) "ONE_TIMED_TARGET=clean" time_one
 	$(MAKE) "ONE_TIMED_TARGET=$(TIMED_TARGET)" time_one
 	@cat $(TIMELOG)
-	@rm $(TIMELOG)	
+	@rm $(TIMELOG)
 endif
 
 # --------------------------------------------------------------------------------
