@@ -470,7 +470,7 @@ first_target:
 		@echo ' show         - show available shortcuts (AKA subtargets)'
 		@echo ' up           - shortcut for depends+proto+tags'
 ifeq ($(UNIT_TESTS),1)
-		@echo ' unit_tests   - only run tests'
+		@echo ' ut           - only run tests'
 endif
 		@echo ' modified     - rebuild files modified in svn checkout (does touch)'
 		@echo ' touch        - touch files modified in svn checkout'
@@ -1909,7 +1909,10 @@ clean_cov:
 clean_cov_all: clean_cov
 	find . \( -name "*.gcno" \) -exec rm {} \;
 
-unit_tests: test_base clean_cov
+run_tests: test_base clean_cov
+	$(MAKE) "ARB_PID=$$" run_tests_faked_arbpid
+
+run_tests_faked_arbpid:
 	+@$(TEST_RUN_SUITE) init
 	@echo "fake[1]: Entering directory \`$(ARBHOME)/UNIT_TESTER'"
 	$(MAKE) $(TEST_MAKE_FLAGS) $(NODIR) $(TESTED_UNITS)
@@ -1919,8 +1922,8 @@ unit_tests: test_base clean_cov
 
 ut:
 ifeq ($(UNIT_TESTS),1)
-	@echo $(MAKE) unit_tests
-	@$(MAKE) unit_tests
+	@echo $(MAKE) run_tests
+	@$(MAKE) run_tests
 else
 	@echo "Not compiled with unit tests"
 endif
@@ -1985,8 +1988,8 @@ all:
 	@echo "made 'all' with success."
 	@echo "to start arb enter 'arb'"
 ifeq ($(UNIT_TESTS),1)
-	@echo $(MAKE) unit_tests
-	@$(TIMECMD) $(MAKE) unit_tests
+	@echo $(MAKE) run_tests
+	@$(TIMECMD) $(MAKE) run_tests
 endif
 	@echo "$(SEP) $(MAKE) build [done]"
 	@cat $(TIMELOG)
