@@ -22,7 +22,11 @@
 #include "UnitTester.hxx"
 
 #include <string>
+#include <set>
 #include <unistd.h>
+
+#include <sys/stat.h>
+
 
 #define env_assert(cond) arb_assert(cond)
 
@@ -54,9 +58,86 @@ static const char *flagDir() {
 static const char *runDir() {
     RETURN_ONETIME_ALLOC(strdup(GB_concat_full_path(unitTesterDir(), "run")));
 }
+static char *mutexDir(const char *name) {
+    return strdup(GB_concat_full_path(flagDir(), GBS_global_string("mutex_%s", name)));
+}
+
+class Mutex : virtual Noncopyable {
+    string name;
+    string mutexdir;
+
+    bool mutexdir_exists() const { return GB_is_directory(mutexdir.c_str()); }
+
+    static set<string> known_mutexes;
+
+public:
+    Mutex(const char *mutex_name)
+        : name(mutex_name)
+    {
+        mutexdir = mutexDir(mutex_name);
+
+        bool gotMutex = false;
+        int  maxwait  = MAX_EXEC_MS_SLOW-5; // seconds
+        int  wait     = 0;
+
+        arb_assert(maxwait>0);
+
+        while (!gotMutex) {
+            if (mutexdir_exists()) {
+                if (wait>maxwait && mutexdir_exists()) {
+                    GBK_terminatef("Failed to get mutex for more than %i seconds", maxwait);
+                }
+                printf("mutex '%s' exists.. sleeping\n", name.c_str());
+                sleep(1);
+                wait++;
+            }
+            else {
+                int res = mkdir(mutexdir.c_str(), S_IRWXU);
+                if (res == 0) {
+                    printf("allocated mutex '%s'\n", name.c_str());
+                    gotMutex = true;
+                }
+                else {
+                    wait = 0; // reset timeout
+                    printf("lost race for mutex '%s'\n", name.c_str());
+                }
+            }
+        }
+        known_mutexes.insert(name);
+    }
+    ~Mutex() {
+        if (!mutexdir_exists()) {
+            printf("Strange - mutex '%s' has vanished\n", name.c_str());
+        }
+        else {
+            if (rmdir(mutexdir.c_str()) != 0) {
+                const char *error = GB_IO_error("remove", mutexdir.c_str());
+                GBK_terminatef("Failed to release mutex dir (%s)", error);
+            }
+            else {
+                printf("released mutex '%s'\n", mutexdir.c_str());
+            }
+        }
+        known_mutexes.erase(name);
+    }
+
+    static bool owned(const char *mutex_name) {
+        return known_mutexes.find(mutex_name) != known_mutexes.end();
+    }
+
+    static void own_or_terminate(const char *mutex_name) {
+        if (!Mutex::owned(mutex_name)) {
+            GBK_terminatef("Expected to own mutex '%s'", mutex_name);
+        }
+    }
+};
+
+set<string> Mutex::known_mutexes;
 
 // -----------------------
 //      PersistantFlag
+
+static const char *FLAG_MUTEX = "flag_access";
 
 class PersistantFlag {
     // persistant flags keep their value even if the program is restarted(!)
@@ -69,9 +150,13 @@ class PersistantFlag {
         return GB_concat_full_path(flagDir(), GBS_global_string("%s." FLAGS_EXT, name.c_str()));
     }
 
-    bool flagFileExists() const { return GB_is_regularfile(flagFileName()); }
+    bool flagFileExists() const {
+        Mutex::own_or_terminate(FLAG_MUTEX);
+        return GB_is_regularfile(flagFileName());
+    }
 
     void createFlagFile() const {
+        Mutex::own_or_terminate(FLAG_MUTEX);
         const char *flagfile = flagFileName();
         FILE       *fp       = fopen(flagfile, "w");
         if (!fp) {
@@ -100,12 +185,12 @@ class PersistantFlag {
     }
 
 public:
-    PersistantFlag(const char *name_)
+    PersistantFlag(const string& name_)
         : name(name_),
           value(flagFileExists()), 
           is_volatile(false)
     {}
-    PersistantFlag(const char *name_, bool is_volatile_)
+    PersistantFlag(const string& name_, bool is_volatile_)
         : name(name_),
           value(flagFileExists()),
           is_volatile(is_volatile_)
@@ -129,6 +214,42 @@ public:
         return *this;
     }
 };
+
+class LazyPersistantFlag {
+    // wrapper for PersistantFlag - instanciates on r/w access
+
+    SmartPtr<PersistantFlag> flag;
+
+    string name;
+    bool   will_be_volatile;
+
+    void instanciate() {
+        flag = new PersistantFlag(name, will_be_volatile);
+    }
+    void instanciate_on_demand() const {
+        if (flag.isNull()) {
+            const_cast<LazyPersistantFlag*>(this)->instanciate();
+        }
+    }
+
+public:
+    LazyPersistantFlag(const char *name_) : name(strdup(name_)), will_be_volatile(false) {}
+    LazyPersistantFlag(const char *name_, bool is_volatile_) : name(strdup(name_)), will_be_volatile(is_volatile_) {}
+
+    operator bool() const {
+        instanciate_on_demand();
+        return *flag;
+    }
+
+    LazyPersistantFlag& operator = (bool b) {
+        instanciate_on_demand();
+        *flag = b;
+        return *this;
+    }
+
+    void get_lazy_again() { flag.SetNull(); }
+};
+
 
 // --------------------------------------------------------------------------------
 // add environment setup/cleanup functions here (and add name to environments[] below)
@@ -197,12 +318,12 @@ static Mode            wrapped_mode  = UNKNOWN;
 static const char     *wrapped_error = NULL;
 void wrapped() { wrapped_error = wrapped_cb(wrapped_mode); }
 
-static PersistantFlag any_setup(ANY_SETUP, true); // tested and removed by UnitTester.cxx@ANY_SETUP
+static LazyPersistantFlag any_setup(ANY_SETUP, true);
 
 class FunInfo {
-    Environment_cb cb;
-    string         name;
-    PersistantFlag is_setup;
+    Environment_cb     cb;
+    string             name;
+    LazyPersistantFlag is_setup;
 
     Error set_to(Mode mode) {
         StaticCode::printf("[%s environment '%s' START]\n", mode_command[mode], get_name());
@@ -278,6 +399,9 @@ public:
         else {
             error = set_to(mode);
         }
+
+        is_setup.get_lazy_again();
+
         return error;
     }
 
@@ -304,7 +428,11 @@ static FunInfo *find_module(const char *moduleName) {
 
 static Error set_all_modules_to(Mode mode) {
     Error error = NULL;
+
     for (size_t e = 0; !error && e<MODULES; ++e) error = modules[e].switch_to(mode);
+
+    
+
     return error;
 }
 
@@ -329,6 +457,7 @@ static const char *known_modes(char separator) {
     return modes;
 }
 
+
 int main(int argc, char* argv[]) {
     Error error = NULL;
     if (argc<2 || argc>3) error = "Wrong number of arguments";
@@ -345,8 +474,11 @@ int main(int argc, char* argv[]) {
         }
         else {
             if (argc == 2) {
-                error = set_all_modules_to(mode);
-                if (mode == CLEAN) any_setup = false; // reset during final environment cleanup
+                Mutex m(FLAG_MUTEX);
+
+                error                        = set_all_modules_to(mode);
+                if (mode == CLEAN) any_setup = false;    // reset during final environment cleanup
+                any_setup.get_lazy_again();
             }
             else {
                 const char *modulearg = argv[2];
@@ -356,7 +488,9 @@ int main(int argc, char* argv[]) {
                     error = GBS_global_string("unknown argument '%s' (known modules are: %s)", modulearg, known_modules(' '));
                 }
                 else {
+                    Mutex m(FLAG_MUTEX);
                     error = module->switch_to(mode);
+                    any_setup.get_lazy_again();
                 }
             }
         }
