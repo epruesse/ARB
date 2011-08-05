@@ -1845,23 +1845,26 @@ UNITS_UNTESTABLE_ATM = \
 	PROBE_SET/PROBE_SET.test \
 	XML_IMPORT/XML_IMPORT.test \
 
-# for the moment, put all units containing tests into UNITS_TESTED:
+# for the moment, put all units containing tests into UNITS_TESTED or UNITS_TESTED_FIRST
+
+UNITS_TESTED_FIRST = \
+	ARBDB/ARBDB.test \
+	TOOLS/arb_test.test \
+	TOOLS/arb_probe.test \
+	AWTC/AWTC.test \
+
 UNITS_TESTED = \
 	GENOM_IMPORT/GENOM_IMPORT.test \
 	CORE/CORE.test \
 	SL/TREEDISP/TREEDISP.test \
-	TOOLS/arb_test.test \
 	NTREE/NTREE.test \
 	AISC_MKPTPS/mkptypes.test \
-	ARBDB/ARBDB.test \
-	AWTC/AWTC.test \
 	EDIT4/EDIT4.test \
 	MERGE/MERGE.test \
 	MULTI_PROBE/MULTI_PROBE.test \
 	SERVERCNTRL/SERVERCNTRL.test \
 	SL/FAST_ALIGNER/FAST_ALIGNER.test \
 	SL/PRONUC/PRONUC.test \
-	TOOLS/arb_probe.test \
 	WINDOW/WINDOW.test \
 	HELP_SOURCE/arb_help2xml.test \
 	CONVERTALN/CONVERTALN.test \
@@ -1869,6 +1872,7 @@ UNITS_TESTED = \
 
 TESTED_UNITS_MANUAL = \
 	$(UNITS_TRY_FIX) \
+	$(UNITS_TESTED_FIRST) \
 	$(UNITS_TESTED) \
 
 #	$(UNITS_WORKING)
@@ -1896,6 +1900,7 @@ endif
 		"UNITLIBNAME=$(@F:.test=)" \
 		"COVERAGE=$(COVERAGE)" \
 		"cflags=$(cflags)" \
+		"ARB_PID=$(ARB_PID)_$(@F)" \
 		runtest; \
 	    $(TEST_POST_CLEAN) \
 	) >$(TEST_LOG_DIR)/$(@F).log 2>&1 ; cat $(TEST_LOG_DIR)/$(@F).log)
@@ -1910,7 +1915,7 @@ clean_cov_all: clean_cov
 	find . \( -name "*.gcno" \) -exec rm {} \;
 
 run_tests: test_base clean_cov
-	$(MAKE) "ARB_PID=$$" run_tests_faked_arbpid
+	$(MAKE) "ARB_PID=UT_$$$$" run_tests_faked_arbpid
 
 run_tests_faked_arbpid:
 	+@$(TEST_RUN_SUITE) init
