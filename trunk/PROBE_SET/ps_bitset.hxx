@@ -18,7 +18,7 @@
 #  error DEBUG is defined - but it should not!
 # endif
 # define bs_assert(bed)
-#endif /* NDEBUG */
+#endif // NDEBUG
 
 class PS_BitSet : virtual Noncopyable {
 protected:

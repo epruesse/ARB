@@ -11,9 +11,9 @@
 
 #include <cmath>
 
-/* AISC_MKPT_PROMOTE:#ifndef GDE_MENU_H */
-/* AISC_MKPT_PROMOTE:#include "GDE_menu.h" */
-/* AISC_MKPT_PROMOTE:#endif */
+// AISC_MKPT_PROMOTE:#ifndef GDE_MENU_H
+// AISC_MKPT_PROMOTE:#include "GDE_menu.h"
+// AISC_MKPT_PROMOTE:#endif
 
 adfiltercbstruct *agde_filtercd = 0;
 
@@ -365,7 +365,7 @@ static AW_window *GDE_menuitem_cb(AW_root *aw_root, GmenuItem *gmenuitem) {
                 char *newawar = GDE_makeawarname(gmenuitem, i);
                 aw_root->awar_string(newawar, defopt, AW_ROOT_DEFAULT);
                 aws->label(itemarg.label);
-                aws->create_input_field(newawar, itemarg.textwidth);  /* TEXTFIELDWIDTH */
+                aws->create_input_field(newawar, itemarg.textwidth);  // TEXTFIELDWIDTH
                 free(newawar);
             }
             else if (itemarg.type==FILE_SELECTOR) {

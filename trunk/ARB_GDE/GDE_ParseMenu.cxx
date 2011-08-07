@@ -132,7 +132,7 @@ void ParseMenu() {
 
                 do {
                     c = *from++;
-                    if (c!=last || c!='\'') { /* replace '' with ' */
+                    if (c!=last || c!='\'') { // replace '' with '
                         *to++ = c;
                         last = c;
                     }
@@ -464,7 +464,7 @@ int Find2(const char *target, const char *key) {
 
 
 void Error(const char *msg) {
-    /* goes to header: __ATTR__NORETURN  */
+    // goes to header: __ATTR__NORETURN
     (void)fprintf(stderr, "Error in ARB_GDE: %s\n", msg);
     fflush(stderr);
     gde_assert(0);

@@ -1,12 +1,12 @@
-/* =============================================================== */
+// ===============================================================
 /*                                                                 */
-/*   File      : debug.c                                           */
-/*   Purpose   :                                                   */
+//   File      : debug.c
+//   Purpose   :
 /*                                                                 */
-/*   Institute of Microbiology (Technical University Munich)       */
-/*   http://www.arb-home.de/                                       */
+//   Institute of Microbiology (Technical University Munich)
+//   http://www.arb-home.de/
 /*                                                                 */
-/* =============================================================== */
+// ===============================================================
 
 #include <aisc_com.h>
 #include "client.h"

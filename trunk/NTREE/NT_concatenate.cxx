@@ -1,14 +1,14 @@
-/* ======================================================================================= */
+// =======================================================================================
 /*                                                                                       */
-/*    File       : NT_concatenate.cxx                                                    */
-/*    Purpose    : 1.Concatenatenation of sequences or alignments                        */
-/*                 2.Merging the fields of similar species and creating a new species    */
-/*    Author     : Yadhu Kumar (yadhu@mikro.biologie.tu-muenchen.de)                     */
-/*    web site   : http://www.arb-home.de/                                               */
+//    File       : NT_concatenate.cxx
+//    Purpose    : 1.Concatenatenation of sequences or alignments
+//                 2.Merging the fields of similar species and creating a new species
+//    Author     : Yadhu Kumar (yadhu@mikro.biologie.tu-muenchen.de)
+//    web site   : http://www.arb-home.de/
 /*                                                                                       */
-/*        Copyright Department of Microbiology (Technical University Munich)             */
+//        Copyright Department of Microbiology (Technical University Munich)
 /*                                                                                       */
-/* ======================================================================================= */
+// =======================================================================================
 
 #include "nt_internal.h"
 
@@ -60,7 +60,7 @@ extern GBDATA               *GLOBAL_gb_main;
 static AW_selection_list    *con_alignment_list;
 static AW_selection_list    *db_alignment_list;
 
-/* --------------------------creating and initializing AWARS---------------------------------------- */
+// --------------------------creating and initializing AWARS----------------------------------------
 void NT_createConcatenationAwars(AW_root *aw_root, AW_default aw_def) {
     aw_root->awar_string(AWAR_CON_SEQUENCE_TYPE,       "ami",                         aw_def);
     aw_root->awar_string(AWAR_CON_NEW_ALIGNMENT_NAME, "ali_concat",                   aw_def);
@@ -71,7 +71,7 @@ void NT_createConcatenationAwars(AW_root *aw_root, AW_default aw_def) {
     aw_root->awar_string(AWAR_CON_CONCAT_ALIGNS,       "",                            aw_def);
 }
 
-/* ------------------------Selecting alignments from the database for concatenation---------------------- */
+// ------------------------Selecting alignments from the database for concatenation----------------------
 void createSelectionList_callBack(conAlignStruct *cas) {
     GBDATA *gb_alignment;
     GBDATA *gb_alignment_name;
@@ -244,7 +244,7 @@ void shiftAlignment(AW_window *aws, long direction) {
     free(selected_alignment);
 }
 
-/* ----------  Create SAI to display alignments that were concatenated -------------- */
+// ----------  Create SAI to display alignments that were concatenated --------------
 
 GB_ERROR displayAlignmentInfo(GBDATA *gb_main, GB_ERROR error, char *new_ali_name, char *alignment_separator) {
     GBDATA        *gb_extended    = GBT_find_or_create_SAI(gb_main, "Alignment Information");
@@ -271,7 +271,7 @@ GB_ERROR displayAlignmentInfo(GBDATA *gb_main, GB_ERROR error, char *new_ali_nam
     return error;
 }
 
-/* ---------------------------------------- Concatenation function ---------------------------------- */
+// ---------------------------------------- Concatenation function ----------------------------------
 void concatenateAlignments(AW_window *aws) {
     GB_push_transaction(GLOBAL_gb_main);
     arb_progress progress("Concatenating alignments", GBT_count_marked_species(GLOBAL_gb_main));
@@ -324,7 +324,7 @@ void concatenateAlignments(AW_window *aws) {
                  gb_species && !error;
                  gb_species = GBT_next_marked_species(gb_species))
             {
-                GBS_strstruct *str_seq = GBS_stropen(new_alignment_len+1000); /* create output stream */
+                GBS_strstruct *str_seq = GBS_stropen(new_alignment_len+1000); // create output stream
                 int            ali_len = 0;
                 int            ali_ctr = 0;
 
@@ -364,7 +364,7 @@ void concatenateAlignments(AW_window *aws) {
             }
 
             if (!error) {
-                /* ............. print missing alignments........... */
+                // ............. print missing alignments...........
                 aw_message(GBS_global_string("Concatenation of Alignments was performed for %ld species.", GBT_count_marked_species(GLOBAL_gb_main)));
                 const_ali_name = con_alignment_list->first_element(); int i = 0;
                 while (const_ali_name) {
@@ -578,7 +578,7 @@ GBDATA *concatenateFieldsCreateNewSpecies(AW_window *, GBDATA *gb_species, speci
     char *full_name = 0;
     char *acc       = 0;
 
-    /* --------------------getting the species related data -------------------- */
+    // --------------------getting the species related data --------------------
 
     GBDATA *gb_new_species = 0;
 
@@ -776,7 +776,7 @@ static void mergeSimilarSpecies(AW_window *aws, AW_CL cl_mergeSimilarConcatenate
 }
 
 
-/* ----------------------------Creating concatenation window----------------------------------------- */
+// ----------------------------Creating concatenation window-----------------------------------------
 AW_window *NT_createConcatenationWindow(AW_root *aw_root) {
     AW_window_simple *aws = new AW_window_simple;
 
@@ -918,4 +918,4 @@ AW_window *NT_createMergeSimilarSpeciesAndConcatenateWindow(AW_root *aw_root) {
     return aw;
 }
 
-/* ------------------------------------------------------------------------------------------------------- */
+// -------------------------------------------------------------------------------------------------------

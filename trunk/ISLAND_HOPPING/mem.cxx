@@ -1,30 +1,30 @@
-/* ============================================================= */
+// =============================================================
 /*                                                               */
-/*   File      : mem.c                                           */
-/*   Purpose   :                                                 */
+//   File      : mem.c
+//   Purpose   :
 /*                                                               */
-/*   Institute of Microbiology (Technical University Munich)     */
-/*   http://www.arb-home.de/                                     */
+//   Institute of Microbiology (Technical University Munich)
+//   http://www.arb-home.de/
 /*                                                               */
-/* ============================================================= */
+// =============================================================
 
 #include "mem.h"
 #include <stdio.h>
 #include <attributes.h>
 
-#define MINSIZE 72 /* >= sizeof(Node) */
+#define MINSIZE 72 // >= sizeof(Node)
 
 static void *M=NULL,*D=NULL;
 static size_t A=0;
 
-/* ========================================================================== */
+// ==========================================================================
 
 void clearUp(void) { void *v;
     while(D) {v=D; D=((void **)v)[0]; free(v);}
     while(M) {v=M; M=((void **)v)[0]; free(v);}
 }
 
-/* ========================================================================== */
+// ==========================================================================
 
 STATIC_ATTRIBUTED(__ATTR__NORETURN, void outOfMemory(void)) {
     fprintf(stdout,"\n!!! Out of Memory\n");
@@ -32,7 +32,7 @@ STATIC_ATTRIBUTED(__ATTR__NORETURN, void outOfMemory(void)) {
     exit(EXIT_FAILURE);
 }
 
-/* ========================================================================== */
+// ==========================================================================
 
 
 void *newBlock(size_t s) {
@@ -57,7 +57,7 @@ void *newBlock(size_t s) {
     return(((void **)v)+3);
 }
 
-/*........*/
+//........
 
 void freeBlock_(void **vv) {
     void *v; size_t s;
@@ -81,7 +81,7 @@ void freeBlock_(void **vv) {
     *vv=NULL;
 }
 
-/* ========================================================================== */
+// ==========================================================================
 
 void **newMatrix(size_t nrow,size_t ncol,size_t s) {
     size_t i,p;
@@ -94,7 +94,7 @@ void **newMatrix(size_t nrow,size_t ncol,size_t s) {
     return(m);
 }
 
-/*........*/
+//........
 
 void freeMatrix_(void ***mm) {
     void **m; size_t i,rows;

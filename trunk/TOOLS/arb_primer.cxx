@@ -252,13 +252,13 @@ void arb_prm_primer(int /* prmanz */)
         pspecies = 0;
         if (pos % 50 == 0) printf("Pos. %i (%i)\n", pos, aprm.al_len);
         cutoff_cnt = aprm.prmanz+1;
-        for (sp = 0; sp < aprm.sp_count; sp++) {    /* build initial hash table */
+        for (sp = 0; sp < aprm.sp_count; sp++) {    // build initial hash table
             if (!primer_print(buffer, aprm.data[sp] + pos, prmlen)) {
                 GBS_incr_hash(mhash, buffer);
                 pspecies++;
             }
         }
-        if (pspecies*100 >= aprm.prmsmin * aprm.sp_count) {     /* reduce primer length */
+        if (pspecies*100 >= aprm.prmsmin * aprm.sp_count) {     // reduce primer length
             for (hash = mhash; prmlen >= aprm.prmlen; prmlen-=aprm.reduce) {
                 hash = GBS_create_hash(aprm.prmanz, GB_MIND_CASE);
 

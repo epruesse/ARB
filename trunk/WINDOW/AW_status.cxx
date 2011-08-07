@@ -789,7 +789,7 @@ void aw_initstatus() {
     GB_install_pid(1);
     pid_t clientid = fork();
 
-    if (clientid) { /* i am the father */
+    if (clientid) { // i am the father
 #if defined(TRACE_STATUS)
         fprintf(stderr, "Forked status! (i am the father)\n"); fflush(stderr);
 #endif // TRACE_STATUS

@@ -6,67 +6,57 @@
 #include "spreadin.h"
 
 
-/* /------------------------\ */
-/* |  Erzeugung der Ur-RNS  | */
-/* \------------------------/ */
+// -----------------------------
+//      Erzeugung der Ur-RNS
 
-int        orgLen;         /* L„nge der Ur-RNS */
-double     orgHelixPart;   /* Anteil Helix-Bereich */
-static int rnsCreated; /* Anzahl bisher erzeugter RNS-Sequenzen */
+int        orgLen;         // Laenge der Ur-RNS
+double     orgHelixPart;   // Anteil Helix-Bereich
+static int rnsCreated; // Anzahl bisher erzeugter RNS-Sequenzen
 
-/* /------------\ */
-/* |  Mutation  | */
-/* \------------/ */
+// -----------------
+//      Mutation
 
-int    timeSteps;        /* Anzahl Zeitschritte */
-Frand  mrpb_Init,        /* Initialisierungsfunktion fr 'mutationRatePerBase' */
-       l2hrpb_Init,      /* Initialisierungsfunktion fr 'loop2helixRatePerBase' */
-       pairPart,         /* Anteil paarender Helix-Bindungen */
-       mutationRate,     /* Mutationsrate */
-       splitRate,        /* Spaltungsrate */
-       helixGcDruck,     /* G-C-Druck       im Helix-Bereich */
-       helixGcRate,      /* Verh„ltnis G:C  im Helix-Bereich */
-       helixAtRate,      /* Verh„ltnis A:T  im Helix-Bereich */
-       loopGcDruck,      /* G-C-Druck       im Loop-Bereich */
-       loopGcRate,       /* Verh„ltnis G:C  im Loop-Bereich */
-       loopAtRate;       /* Verh„ltnis A:T  im Loop-Bereich */
-double transitionRate,   /* Transition-Rate */
-       transversionRate; /* Transversion-Rate */
+int    timeSteps;        // Anzahl Zeitschritte
+Frand  mrpb_Init,        // Initialisierungsfunktion fuer 'mutationRatePerBase'
+       l2hrpb_Init,      // Initialisierungsfunktion fuer 'loop2helixRatePerBase'
+       pairPart,         // Anteil paarender Helix-Bindungen
+       mutationRate,     // Mutationsrate
+       splitRate,        // Spaltungsrate
+       helixGcDruck,     // G-C-Druck       im Helix-Bereich
+       helixGcRate,      // Verhaeltnis G:C  im Helix-Bereich
+       helixAtRate,      // Verhaeltnis A:T  im Helix-Bereich
+       loopGcDruck,      // G-C-Druck       im Loop-Bereich
+       loopGcRate,       // Verhaeltnis G:C  im Loop-Bereich
+       loopAtRate;       // Verhaeltnis A:T  im Loop-Bereich
+double transitionRate,   // Transition-Rate
+       transversionRate; // Transversion-Rate
 
-static double     *mutationRatePerBase,   /* positionsspez. Mutationsrate (wird nur einmal bestimmt und bleibt dann konstant) */
-                  *loop2helixRatePerBase; /* positionsspez. Rate fr Wechsel Loop-Base in Helix-Base und vv. (wird nur einmal bestimmt und bleibt dann konstant) */
-static int         mrpb_anz,              /* Anzahl Positionen */
-                   mrpb_allocated,        /* wirklich Gr”áe des Arrays */
-                   l2hrpb_anz,            /* Anzahl Positionen */
-                   l2hrpb_allocated;      /* wirklich Gr”áe des Arrays */
-static DoubleProb  helixMutationMatrix,   /* Mutationsmatrix fr Helix-Bereiche */
-                   loopMutationMatrix;    /* Mutationsmatrix fr Loop-Bereiche */
+static double     *mutationRatePerBase,   // positionsspez. Mutationsrate (wird nur einmal bestimmt und bleibt dann konstant)
+                  *loop2helixRatePerBase; // positionsspez. Rate fuer Wechsel Loop-Base in Helix-Base und vv. (wird nur einmal bestimmt und bleibt dann konstant)
+static int         mrpb_anz,              // Anzahl Positionen
+                   mrpb_allocated,        // wirklich Groesse des Arrays
+                   l2hrpb_anz,            // Anzahl Positionen
+                   l2hrpb_allocated;      // wirklich Groesse des Arrays
+static DoubleProb  helixMutationMatrix,   // Mutationsmatrix fuer Helix-Bereiche
+                   loopMutationMatrix;    // Mutationsmatrix fuer Loop-Bereiche
 
-/* /----------------------\ */
-/* |  Ausgabefilepointer  | */
-/* \----------------------/ */
+// ---------------------------
+//      Ausgabefilepointer
 
-FILE *topo, /* Topologie */
-     *seq;  /* Sequenzen */
+FILE *topo, // Topologie
+     *seq;  // Sequenzen
 
-/* /-------------\ */
-/* |  Sonstiges  | */
-/* \-------------/ */
+// ------------------
+//      Sonstiges
 
-static int minDepth = INT_MAX, /* minimale Tiefe (Astanzahl) der Blattspitzen */
-           maxDepth = INT_MIN; /* maximale Tiefe der Blattspitzen */
+static int minDepth = INT_MAX, // minimale Tiefe (Astanzahl) der Blattspitzen
+           maxDepth = INT_MIN; // maximale Tiefe der Blattspitzen
 
-/* -------------------------------------------------------------------------- */
-/*      void dumpDepths(void) */
-/* ------------------------------------------------------ 24.05.95 22.27 ---- */
 void dumpDepths()
 {
     printf("Minimale Baumtiefe = %i\n", minDepth);
     printf("Maximale Baumtiefe = %i\n", maxDepth);
 }
-/* -------------------------------------------------------------------------- */
-/*      static void dumpRNS(RNS rns) */
-/* ------------------------------------------------------ 26.05.95 11.29 ---- */
 static void dumpRNS(RNS rns)
 {
     int        b,
@@ -143,9 +133,6 @@ static void dumpRNS(RNS rns)
         printf("\n");
     }
 }
-/* -------------------------------------------------------------------------- */
-/*      static void initBaseSpecificProbs(int bases) */
-/* ------------------------------------------------------ 24.05.95 12.51 ---- */
 static void initBaseSpecificProbs(int bases)
 {
     int b;
@@ -166,9 +153,6 @@ static void initBaseSpecificProbs(int bases)
         loop2helixRatePerBase[b] = getFrand(l2hrpb_Init);
     }
 }
-/* -------------------------------------------------------------------------- */
-/*      static RNS allocRNS(int len) */
-/* ------------------------------------------------------ 20.05.95 16.04 ---- */
 static RNS allocRNS(int len)
 {
     RNS rns = malloc(sizeof(*rns));
@@ -182,14 +166,9 @@ static RNS allocRNS(int len)
 
     return rns;
 }
-/* -------------------------------------------------------------------------- */
-/*      RNS createOriginRNS(void) */
-/* ------------------------------------------------------ 14.05.95 14:54 ---- */
-/* */
-/*  Erzeugt eine Ur-RNS */
-/* */
 RNS createOriginRNS()
 {
+    //  Erzeugt eine Ur-RNS
     RNS rns      = allocRNS(orgLen);
     int helixLen = orgLen*orgHelixPart,
         l;
@@ -201,11 +180,10 @@ RNS createOriginRNS()
 
     rns->laufNr = rnsCreated++;
 
-    /* /------------------\ */
-    /* |  Helix erzeugen  |                                                             im Loop-Bereich */
-    /* \------------------/ */
+    // -----------------------------------------
+    //      Helix erzeugen (im Loop-Bereich)
 
-    if (helixLen%1) helixLen--;                            /* muá gerade L„nge haben, da nur Paare! */
+    if (helixLen%1) helixLen--;                            // muss gerade Laenge haben, da nur Paare!
 
     assert(helixLen<=orgLen);
 
@@ -250,7 +228,7 @@ RNS createOriginRNS()
                     double prob = nonPairProb;
                     int    b    = b1;
 
-                    while (1)                              /* wird je einmal mit b1 und b2 ausgefhrt */
+                    while (1)                              // wird je einmal mit b1 und b2 ausgefuehrt
                     {
                         switch (b)
                         {
@@ -302,9 +280,8 @@ RNS createOriginRNS()
         freeSpreading(s);
     }
 
-    /* /-----------------\ */
-    /* |  Loop erzeugen  | */
-    /* \-----------------/ */
+    // ----------------------
+    //      Loop erzeugen
 
     {
         SingleProb orgLoopProb;
@@ -325,17 +302,11 @@ RNS createOriginRNS()
 
     return rns;
 }
-/* -------------------------------------------------------------------------- */
-/*      void freeRNS(RNS rns) */
-/* ------------------------------------------------------ 20.05.95 19.45 ---- */
 void freeRNS(RNS rns)
 {
     free(rns->base);
     free(rns);
 }
-/* -------------------------------------------------------------------------- */
-/*      static RNS dupRNS(RNS rns) */
-/* ------------------------------------------------------ 20.05.95 20.32 ---- */
 static RNS dupRNS(RNS rns)
 {
     RNS neu = malloc(sizeof(*rns));
@@ -351,9 +322,6 @@ static RNS dupRNS(RNS rns)
 
     return neu;
 }
-/* -------------------------------------------------------------------------- */
-/*      static void calcMutationMatrix(DoubleProb mutationMatrix, double mu... */
-/* ------------------------------------------------------ 24.05.95 13.58 ---- */
 static void calcMutationMatrix(DoubleProb mutationMatrix, double muteRate, double gcDruck, double gcRate, double atRate, double *pairProb)
 {
     double k = transitionRate/transversionRate,
@@ -368,7 +336,7 @@ static void calcMutationMatrix(DoubleProb mutationMatrix, double muteRate, doubl
         kag  = k/(fa+fg),
         kct  = k/(fc+ft);
 
-    /* Matrix besetzen */
+    // Matrix besetzen
 
     mutationMatrix[BASE_A][BASE_A] = 1.0-(kag+3.0)*bfa;
     mutationMatrix[BASE_C][BASE_A] = bfa;
@@ -390,10 +358,10 @@ static void calcMutationMatrix(DoubleProb mutationMatrix, double muteRate, doubl
     mutationMatrix[BASE_G][BASE_T] = bft;
     mutationMatrix[BASE_T][BASE_T] = 1.0-(kct+3.0)*bft;
 
-    if (pairProb)                                          /* soll pairProb berechnet werden? */
+    if (pairProb)                                          // soll pairProb berechnet werden?
     {
         double mutatesTo[BASETYPES],
-               freq[BASETYPES];                            /* H„ufigkeit der einzelnen Basen */
+               freq[BASETYPES];                            // Haeufigkeit der einzelnen Basen
         int    von,
                nach;
 
@@ -412,17 +380,12 @@ static void calcMutationMatrix(DoubleProb mutationMatrix, double muteRate, doubl
         *pairProb = 2.0*mutatesTo[BASE_A]*mutatesTo[BASE_T] + 2.0*mutatesTo[BASE_C]*mutatesTo[BASE_G];
     }
 }
-/* -------------------------------------------------------------------------- */
-/*      static int calcPairTrials(double pairProb, double actPairPart) */
-/* ------------------------------------------------------ 25.05.95 13.31 ---- */
-/* */
-/*  Berechnet die Anzahl Mutations-Wiederholungen, die notwendig sind, um */
-/*  mindestens 'actPairPart' Prozent paarende Bindungen zu erhalten, falls */
-/*  die Wahrscheinlichkeit eine paarende Bindung zu erzeugen gleich */
-/*  'pairProb' ist. */
-/* */
 static int calcPairTrials(double pairProb, double actPairPart)
 {
+    //  Berechnet die Anzahl Mutations-Wiederholungen, die notwendig sind, um
+    //  mindestens 'actPairPart' Prozent paarende Bindungen zu erhalten, falls
+    //  die Wahrscheinlichkeit eine paarende Bindung zu erzeugen gleich
+    //  'pairProb' ist.
     int    trials   = 1;
     double failProb = 1.0-pairProb,
            succProb = pairProb;
@@ -436,23 +399,16 @@ static int calcPairTrials(double pairProb, double actPairPart)
 
     return trials;
 }
-/* -------------------------------------------------------------------------- */
-/*      static void mutateRNS(RNS rns, int steps, int depth) */
-/* ------------------------------------------------------ 20.05.95 19.50 ---- */
-/* */
-/*  Mutiert eine RNS bis zur n„chsten Spaltung */
-/* */
-/*  'steps'     Anzahl noch zu durchlaufender Zeitschritte */
-/* */
 static void mutateRNS(int no_of_father, RNS rns, int steps, int depth)
 {
+    //  Mutiert eine RNS bis zur naechsten Spaltung
+    //  'steps'     Anzahl noch zu durchlaufender Zeitschritte
     int    splitInSteps,
            s;
     double mutationTime = 0.0;
 
-    /* /---------------------------------------\ */
-    /* |  Schritte bis zur Spaltung berechnen  | */
-    /* \---------------------------------------/ */
+    // --------------------------------------------
+    //      Schritte bis zur Spaltung berechnen
 
     {
         double actualSplitRate = getFrand(splitRate);
@@ -465,21 +421,20 @@ static void mutateRNS(int no_of_father, RNS rns, int steps, int depth)
         assert(splitInSteps>=1);
     }
 
-    /* /----------------------------\ */
-    /* |  Zeitschritte durchlaufen  | */
-    /* \----------------------------/ */
+    // ---------------------------------
+    //      Zeitschritte durchlaufen
 
     for (s = 0; s<splitInSteps; s++)
     {
         int       b,
-                  pairTrials;                              /* Anzahl Versuche eine paarende Helixbindung herzustellen */
+                  pairTrials;                              // Anzahl Versuche eine paarende Helixbindung herzustellen
         double    actMutationRate    = getFrand(mutationRate),
                   actPairPart        = getFrand(pairPart);
         Spreading s_helix[BASETYPES],
                   s_loop[BASETYPES];
 
         {
-            double pairProb;                               /* Wahrscheinlichkeit, daá ein Paar im helikalen Bereich entsteht */
+            double pairProb;                               // Wahrscheinlichkeit, dass ein Paar im helikalen Bereich entsteht
 
             calcMutationMatrix(helixMutationMatrix, 1.0, getFrand(helixGcDruck), getFrand(helixGcRate), getFrand(helixAtRate), &pairProb);
             calcMutationMatrix(loopMutationMatrix, actMutationRate, getFrand(loopGcDruck), getFrand(loopGcRate), getFrand(loopAtRate), NULL);
@@ -493,21 +448,19 @@ static void mutateRNS(int no_of_father, RNS rns, int steps, int depth)
             s_loop[b]  = newSpreading(&(loopMutationMatrix[b][0]), BASETYPES);
         }
 
-        mutationTime += actMutationRate;                   /* Mutationszeit aufaddieren (Einheit ist Mutationsrate*Zeitschritte) */
+        mutationTime += actMutationRate;                   // Mutationszeit aufaddieren (Einheit ist Mutationsrate*Zeitschritte)
 
-        /* /----------------------------------\ */
-        /* |  Alle Basen(-paare) durchlaufen  | */
-        /* \----------------------------------/ */
+        // ---------------------------------------
+        //      Alle Basen(-paare) durchlaufen
 
         for (b = 0; b<(rns->bases);)
         {
             char base = rns->base[b];
 
-            if (!isDeleted(base))                          /* Deletes ignorieren */
+            if (!isDeleted(base))                          // Deletes ignorieren
             {
-                /* /---------------------\ */
-                /* |  Helicale Bereiche  | */
-                /* \---------------------/ */
+                // --------------------------
+                //      Helicale Bereiche
 
                 if (isHelical(base))
                 {
@@ -532,22 +485,22 @@ static void mutateRNS(int no_of_father, RNS rns, int steps, int depth)
                         {
                             if (mut1)
                             {
-                                if (mut2)                  /* beide Basen mutieren */
+                                if (mut2)                  // beide Basen mutieren
                                 {
                                     bt1 = spreadRand(s_helix[bt1]);
                                     bt2 = spreadRand(s_helix[bt2]);
                                 }
-                                else                       /* nur 1.Base mutieren */
+                                else                       // nur 1.Base mutieren
                                 {
                                     bt1 = spreadRand(s_helix[bt1]);
                                 }
                             }
-                            else                           /* nur 2.Base mutieren */
+                            else                           // nur 2.Base mutieren
                             {
                                 bt2 = spreadRand(s_helix[bt2]);
                             }
 
-                            if (isPairing(bt1, bt2))       /* paarend? ja->abbrechen */
+                            if (isPairing(bt1, bt2))       // paarend? ja->abbrechen
                             {
                                 rns->pairing++;
                                 break;
@@ -561,9 +514,8 @@ static void mutateRNS(int no_of_father, RNS rns, int steps, int depth)
                     b++;
                 }
 
-                /* /-----------------\ */
-                /* |  Loop-Bereiche  | */
-                /* \-----------------/ */
+                // ----------------------
+                //      Loop-Bereiche
 
                 else
                 {
@@ -588,21 +540,15 @@ static void mutateRNS(int no_of_father, RNS rns, int steps, int depth)
 
     splitRNS(no_of_father, rns, mutationTime, steps-splitInSteps, depth+1);
 }
-/* -------------------------------------------------------------------------- */
-/*      void splitRNS(RNS origin, double age, int steps, int depth) */
-/* ------------------------------------------------------ 20.05.95 20.13 ---- */
-/* */
-/*  Spaltet eine RNS in zwei Species auf */
-/* */
 void splitRNS(int no_of_father, RNS origin, double age, int steps, int depth)
 {
+    //  Spaltet eine RNS in zwei Species auf
     int x;
 
     dumpRNS(origin);
 
-    /* /---------------------\ */
-    /* |  Sequenz schreiben  | */
-    /* \---------------------/ */
+    // --------------------------
+    //      Sequenz schreiben
 
     if (no_of_father != -1) {
         fprintf(seq, ">no%i son of no%i\n", origin->laufNr, no_of_father);
@@ -610,13 +556,13 @@ void splitRNS(int no_of_father, RNS origin, double age, int steps, int depth)
     else {
         fprintf(seq, ">no%i father of all species\n", origin->laufNr);
     }
-    no_of_father = origin->laufNr; /* now i'm the father */
+    no_of_father = origin->laufNr; // now i'm the father
     for (x = 0; x<(origin->bases); x++) fputc(origin->base[x], seq);
     fputc('\n', seq);
 
-    if (steps)                                             /* Species splitten! */
+    if (steps)                                             // Species splitten!
     {
-        double gcDruck_val      = helixGcDruck->val,       /* Frand-Werte merken */
+        double gcDruck_val      = helixGcDruck->val,       // Frand-Werte merken
                pairPart_val     = pairPart->val,
                mutationRate_val = mutationRate->val,
                splitRate_val    = splitRate->val;
@@ -624,7 +570,7 @@ void splitRNS(int no_of_father, RNS origin, double age, int steps, int depth)
         fprintf(topo, "(no%i:%f,\n", origin->laufNr, age);
 
         {
-            RNS left = dupRNS(origin);                     /* linker Sohn */
+            RNS left = dupRNS(origin);                     // linker Sohn
 
             mutateRNS(no_of_father, left, steps, depth);
             freeRNS(left);
@@ -632,13 +578,13 @@ void splitRNS(int no_of_father, RNS origin, double age, int steps, int depth)
 
         fputs(",\n", topo);
 
-        helixGcDruck->val = gcDruck_val;                   /* Frand-Werte wiederherstellen */
+        helixGcDruck->val = gcDruck_val;                   // Frand-Werte wiederherstellen
         pairPart->val     = pairPart_val;
         mutationRate->val = mutationRate_val;
         splitRate->val    = splitRate_val;
 
         {
-            RNS right = dupRNS(origin);                    /* rechter Sohn */
+            RNS right = dupRNS(origin);                    // rechter Sohn
 
             mutateRNS(no_of_father, right, steps, depth);
             freeRNS(right);
@@ -646,7 +592,7 @@ void splitRNS(int no_of_father, RNS origin, double age, int steps, int depth)
 
         fputc(')', topo);
     }
-    else                                                   /* Baumspitze */
+    else                                                   // Baumspitze
     {
         if      (depth>maxDepth) maxDepth = depth;
         else if (depth<minDepth) minDepth = depth;

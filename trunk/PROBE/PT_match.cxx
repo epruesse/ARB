@@ -109,7 +109,7 @@ struct PT_store_match_in {
 };
 
 int read_names_and_pos(PT_local *locs, POS_TREE *pt) {
-    /*! go down the tree to chains and leafs; copy names, positions and mismatches in locs structure */
+    //! go down the tree to chains and leafs; copy names, positions and mismatches in locs structure
 
     int            base;
     int            error;
@@ -165,7 +165,7 @@ int read_names_and_pos(PT_local *locs, POS_TREE *pt) {
 }
 
 int get_info_about_probe(PT_local *locs, char *probe, POS_TREE *pt, int mismatches, double wmismatches, int N_mismatches, int height) {
-    /*! search down the tree to find matching species for the given probe */
+    //! search down the tree to find matching species for the given probe
 
     int       name, pos;
     int       i;
@@ -316,7 +316,7 @@ void pt_sort_match_list(PT_local * locs)
     free(my_list);
 }
 char *reverse_probe(char *probe, int probe_length) {
-    /*! mirror a probe */
+    //! mirror a probe
 
     int   i, j;
     char *rev_probe;
@@ -339,7 +339,7 @@ int PT_complement(int base)
     }
 }
 void complement_probe(char *probe, int probe_length) {
-    /*! build the complement of a probe */
+    //! build the complement of a probe
 
     int i;
     if (!probe_length) probe_length = strlen(probe);
@@ -370,7 +370,7 @@ void pt_build_pos_to_weight(PT_MATCH_TYPE type, const char *sequence) {
 }
 
 int probe_match(PT_local * locs, aisc_string probestring) {
-    /*! find out where a given probe matches */
+    //! find out where a given probe matches
 
     PT_probematch *ml;
     char          *rev_pro;

@@ -5,21 +5,21 @@
 #include "defines.h"
 #endif
 
-/* Ein Spreading ist eine Tabelle von Integerwerten, welche den Bereich */
-/* 0 bis RAND_MAX-1 abdeckt. */
+// Ein Spreading ist eine Tabelle von Integerwerten, welche den Bereich
+// 0 bis RAND_MAX-1 abdeckt.
 /* */
-/* Aus einer Wahrscheinlichkeitstabelle (z.B. loopProb oder helixProb) */
-/* wird hier eine Integertabelle mit Grenzwerten erzeugt um Flieskommarechnung */
-/* zu umgehen. */
+// Aus einer Wahrscheinlichkeitstabelle (z.B. loopProb oder helixProb)
+// wird hier eine Integertabelle mit Grenzwerten erzeugt um Flieskommarechnung
+// zu umgehen.
 /* */
-/* Die Funktion spreadRand() liefert analog zu den Wahrscheinlichkeiten in */
-/* der Wahrscheinlichkeitstabelle verteilte Werte zwischen 0 und der */
-/* Anzahl der EIntr„ge in der Wahrscheinlichkeitstabelle. */
+// Die Funktion spreadRand() liefert analog zu den Wahrscheinlichkeiten in
+// der Wahrscheinlichkeitstabelle verteilte Werte zwischen 0 und der
+// Anzahl der EIntraege in der Wahrscheinlichkeitstabelle.
 
 typedef struct S_Spreading
 {
-    int  values, /* Anzahl Werte */
-        *border; /* Die Grenzwerte */
+    int  values, // Anzahl Werte
+        *border; // Die Grenzwerte
 
 } *Spreading;
 

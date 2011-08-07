@@ -112,7 +112,7 @@ public:
 
     virtual void show(AW_device *device) = 0;
 
-    virtual void info(AW_device *device, AW_pos x, AW_pos y, AW_clicked_line *cl, AW_clicked_text *ct) = 0;     /* double click */
+    virtual void info(AW_device *device, AW_pos x, AW_pos y, AW_clicked_line *cl, AW_clicked_text *ct) = 0;     // double click
     virtual AW_gc_manager init_devices(AW_window *, AW_device *, AWT_canvas *ntw, AW_CL cd2) = 0;
             /* init gcs, if any gc is changed you may call
                 AWT_expose_cb(aw_window, ntw, cd2);
@@ -142,12 +142,12 @@ public:
 };
 
 
-#define EPS               0.0001 /* div zero check */
+#define EPS               0.0001 // div zero check
 #define CLIP_OVERLAP      15
-#define AWT_CATCH_LINE    50    /* pixel */
-#define AWT_CATCH_TEXT    5     /* pixel */
-#define AWT_ZOOM_OUT_STEP 40    /* (pixel) rand um screen */
-#define AWT_MIN_WIDTH     100   /* Minimum center screen (= screen-offset) */
+#define AWT_CATCH_LINE    50    // pixel
+#define AWT_CATCH_TEXT    5     // pixel
+#define AWT_ZOOM_OUT_STEP 40    // (pixel) rand um screen
+#define AWT_MIN_WIDTH     100   // Minimum center screen (= screen-offset)
 enum {
     AWT_M_LEFT   = 1,
     AWT_M_MIDDLE = 2,

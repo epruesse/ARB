@@ -111,7 +111,7 @@ char *PTM_get_mem(int size) {
 }
 
 int PTM_destroy_mem() {
-    /*! destroys all leftover memory sources */
+    //! destroys all leftover memory sources
     int  pos;
     long i;
     int  sum;

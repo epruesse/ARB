@@ -1,12 +1,12 @@
-/* ================================================================ */
+// ================================================================
 /*                                                                  */
-/*   File      : aisc_mix.c                                         */
-/*   Purpose   :                                                    */
+//   File      : aisc_mix.c
+//   Purpose   :
 /*                                                                  */
-/*   Institute of Microbiology (Technical University Munich)        */
-/*   http://www.arb-home.de/                                        */
+//   Institute of Microbiology (Technical University Munich)
+//   http://www.arb-home.de/
 /*                                                                  */
-/* ================================================================ */
+// ================================================================
 
 #include "aisc_interpreter.h"
 

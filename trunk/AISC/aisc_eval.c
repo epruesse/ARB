@@ -67,7 +67,7 @@ char *Expression::evalPart(int start, int end, int& resLen) {
                 int buflen = fileLen+strlen(path)+strlen(sourcename)+100;
                 res        = (char *)malloc(buflen+1);
 
-                /* Inject code to restore correct code file and line (needed for proper error messages) */
+                // Inject code to restore correct code file and line (needed for proper error messages)
                 int printed = sprintf(res, "@SETSOURCE %s,%i@%s@SETSOURCE %s,%i@",
                                       path, 1,
                                       file,

@@ -307,7 +307,7 @@ static void GDE_export(NA_Alignment *dataset, char *align, long oldnumelements) 
         gde_assert(new_seq[sequ->seqlen] == 0);
         gde_assert((int)strlen(new_seq) == sequ->seqlen);
 
-        if (!issame) {          /* save as extended */
+        if (!issame) {          // save as extended
             GBDATA *gb_extended = GBT_find_or_create_SAI(db_access.gb_main, savename);
 
             if (!gb_extended) error = GB_await_error();
@@ -319,7 +319,7 @@ static void GDE_export(NA_Alignment *dataset, char *align, long oldnumelements) 
                 else error          = GBT_write_sequence(gb_data, align, maxalignlen, new_seq);
             }
         }
-        else {                  /* save as sequence */
+        else {                  // save as sequence
             GBDATA *gb_species_data     = GB_search(db_access.gb_main, "species_data", GB_CREATE_CONTAINER);
             if (!gb_species_data) error = GB_await_error();
             else {
@@ -327,7 +327,7 @@ static void GDE_export(NA_Alignment *dataset, char *align, long oldnumelements) 
 
                 GB_push_my_security(db_access.gb_main);
 
-                if (gb_species) {   /* new element that already exists !!!! */
+                if (gb_species) {   // new element that already exists !!!!
                     if (replace_mode != REPLACE_SPEC_ALL &&
                         replace_mode != REIMPORT_SEQ_ALL &&
                         replace_mode != SKIP_IMPORT_ALL)
@@ -421,7 +421,7 @@ static void GDE_export(NA_Alignment *dataset, char *align, long oldnumelements) 
         progress.inc_and_check_user_abort(error);
     }
 
-    /* colormasks */
+    // colormasks
     for (i = 0; !error && i < dataset->numelements; i++) {
         NA_Sequence *sequ = &(dataset->element[i]);
 
@@ -487,7 +487,7 @@ void GDE_startaction_cb(AW_window *aw, GmenuItem *gmenuitem, AW_CL /*cd*/) {
 
     GapCompression  compress          = static_cast<GapCompression>(aw_root->awar(AWAR_GDE_COMPRESSION)->read_int());
     AP_filter      *filter2           = awt_get_filter(agde_filtercd);
-    char           *filter_name       = 0; /* aw_root->awar(AWAR_GDE_FILTER_NAME)->read_string() */
+    char           *filter_name       = 0; // aw_root->awar(AWAR_GDE_FILTER_NAME)->read_string()
     char           *alignment_name    = strdup("ali_unknown");
     bool            marked            = (aw_root->awar(AWAR_GDE_SPECIES)->read_int() != 0);
     long            cutoff_stop_codon = aw_root->awar(AWAR_GDE_CUTOFF_STOPCODON)->read_int();

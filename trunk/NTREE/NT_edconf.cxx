@@ -275,7 +275,7 @@ static long nt_build_sai_string_by_hash(const char *key, long val, void *cd_sai_
 
 
 void nt_build_sai_string(GBS_strstruct *topfile, GBS_strstruct *middlefile) {
-    /*! collect all Sais, place some SAI in top area, rest in middle */
+    //! collect all Sais, place some SAI in top area, rest in middle
 
     GBDATA *gb_sai_data = GBT_get_SAI_data(GLOBAL_gb_main);
     if (gb_sai_data) {
