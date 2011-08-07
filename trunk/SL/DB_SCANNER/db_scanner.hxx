@@ -47,19 +47,19 @@ typedef enum {
     DB_VIEWER
 } DB_SCANNERMODE;
 
-struct ad_item_selector;
+struct ItemSelector;
 
-AW_CL create_db_scanner(GBDATA                 *gb_main,
-                        AW_window              *aws,
-                        const char             *box_pos_fig, /* the position for the box in the xfig file */
-                        const char             *delete_pos_fig,
-                        const char             *edit_pos_fig,
-                        const char             *edit_enable_pos_fig,
-                        DB_SCANNERMODE          scannermode,
-                        const char             *rescan_pos_fig, // DB_VIEWER
-                        const char             *mark_pos_fig,
-                        long                    type_filter,
-                        const ad_item_selector *selector);
+AW_CL create_db_scanner(GBDATA             *gb_main,
+                        AW_window          *aws,
+                        const char         *box_pos_fig,        /* the position for the box in the xfig file */
+                        const char         *delete_pos_fig,
+                        const char         *edit_pos_fig,
+                        const char         *edit_enable_pos_fig,
+                        DB_SCANNERMODE      scannermode,
+                        const char         *rescan_pos_fig,     // DB_VIEWER
+                        const char         *mark_pos_fig,
+                        long                type_filter,
+                        const ItemSelector *selector);
 
 void map_db_scanner(AW_CL arbdb_scanid, GBDATA *gb_pntr, const char *key_path);
 

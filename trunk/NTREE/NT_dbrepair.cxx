@@ -38,7 +38,7 @@ using namespace std;
 #if defined(WARN_TODO)
 #warning the whole fix mechanism should be part of some lower-level-library
 // meanwhile DB checks are only performed by ARB_NTREE
-// ad_item_selector should go to same library as this module
+// ItemSelector should go to same library as this module
 #endif
 
 // --------------------------------------------------------------------------------
@@ -51,7 +51,7 @@ using namespace std;
 // fixed flues a put into DB again.
 // see http://bugs.arb-home.de/ticket/143
 
-typedef GB_ERROR (*item_check_fun)(GBDATA *gb_item, const ad_item_selector *sel);
+typedef GB_ERROR (*item_check_fun)(GBDATA *gb_item, const ItemSelector *sel);
 
 typedef map<string, item_check_fun>    item_check_map;
 typedef item_check_map::const_iterator item_check_iter;
@@ -63,7 +63,7 @@ class CheckedConsistencies : virtual Noncopyable {
     set<string>     consistencies;
     item_check_map  item_checks;
 
-    GB_ERROR perform_selected_item_checks(ad_item_selector *sel);
+    GB_ERROR perform_selected_item_checks(ItemSelector *sel);
 
 public:
 
@@ -140,7 +140,7 @@ public:
     }
 };
 
-GB_ERROR CheckedConsistencies::perform_selected_item_checks(ad_item_selector *sel) {
+GB_ERROR CheckedConsistencies::perform_selected_item_checks(ItemSelector *sel) {
     GB_ERROR        error = NULL;
     item_check_iter end   = item_checks.end();
 
@@ -167,7 +167,7 @@ void CheckedConsistencies::perform_item_checks(GB_ERROR& error) {
             GB_transaction ta(gb_main);
             bool           is_genome_db = GEN_is_genome_db(gb_main, -1);
 
-            error = perform_selected_item_checks(&AWT_species_selector);
+            error = perform_selected_item_checks(&ITEM_species);
             if (!error && is_genome_db) {
                 error             = perform_selected_item_checks(GEN_get_selector());
                 if (!error) error = perform_selected_item_checks(EXP_get_selector());
@@ -981,7 +981,7 @@ static GB_ERROR NT_fix_dict_compress(GBDATA *gb_main, size_t, size_t) {
 
 // --------------------------------------------------------------------------------
 
-static GB_ERROR remove_dup_colors(GBDATA *gb_item, const ad_item_selector *sel) {
+static GB_ERROR remove_dup_colors(GBDATA *gb_item, const ItemSelector *sel) {
     // Databases out there may contain multiple 'ARB_color' entries.
     // Due to some already fixed bug - maybe introduced in r5309 and fixed in r5825
 

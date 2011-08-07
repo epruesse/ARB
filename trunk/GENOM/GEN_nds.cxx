@@ -285,7 +285,7 @@ void GEN_create_nds_vars(AW_root *aw_root, AW_default awdef, GBDATA *gb_main, GB
 void GEN_create_select_nds_window(AW_window *aww, char *key_text, AW_CL cgb_main)
 {
 #if defined(WARN_TODO)
-#warning make this function more general like AWT_popup_select_species_field_window
+#warning make this function more general like popup_select_species_field_window
 #endif
 
     static AW_window *win = 0;
@@ -301,9 +301,9 @@ void GEN_create_select_nds_window(AW_window *aww, char *key_text, AW_CL cgb_main
         aws->at("close");
         aws->create_button("CLOSE", "CLOSE", "C");
 
-        awt_create_selection_list_on_itemfields((GBDATA *)cgb_main,
+        create_selection_list_on_itemfields((GBDATA *)cgb_main,
                                                 aws, "tmp/gene_viewkey/key_text",
-                                                AWT_NDS_FILTER,
+                                                FIELD_FILTER_NDS,
                                                 "scandb", "rescandb", &GEN_item_selector, 20, 10);
 
         win =  (AW_window*)aws;

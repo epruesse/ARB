@@ -57,8 +57,8 @@ void GEN_select_gene(GBDATA* gb_main, AW_root *aw_root, const char *item_name);
 class AW_repeated_question;
 GB_ERROR GEN_testAndRemoveTranslations(GBDATA *gb_gene_data, void (*warn)(AW_CL cd, const char *msg), AW_CL cd, AW_repeated_question *ok_to_ignore_wrong_start_codon);
 
-struct ad_item_selector;
-ad_item_selector *GEN_get_selector(); // return GEN_item_selector
+struct ItemSelector;
+ItemSelector *GEN_get_selector(); // return GEN_item_selector
 
 #else
 #error GEN.hxx included twice
