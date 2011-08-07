@@ -14,14 +14,17 @@
 #ifndef ARBDB_BASE_H
 #include <arbdb_base.h>
 #endif
+#ifndef ARB_STRARRAY_H
+#include <arb_strarray.h>
+#endif
 
 class MG_remap;
 
 struct MG_remaps : virtual Noncopyable {
-    int        n_remaps;
-    char     **alignment_names;
-    MG_remap **remaps;
-    
+    int             n_remaps;
+    ConstStrArray   alignment_names;
+    MG_remap      **remaps;
+
     MG_remaps(GBDATA *gb_left, GBDATA *gb_right, bool enable, const char *reference_species_names);
     ~MG_remaps();
 };

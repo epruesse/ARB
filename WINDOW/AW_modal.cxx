@@ -382,12 +382,13 @@ static AW_window_message *new_input_window(AW_root *root, const char *title, con
     aw_msg->at_newline();
     aw_msg->create_input_field(AW_INPUT_AWAR, INPUT_SIZE);
 
-    size_t   butCount     = 2;                      // ok and cancel
-    char   **button_names = 0;
-    int      maxlen       = 6;                      // use as min.length for buttons (for 'CANCEL')
+    size_t        butCount = 2;                     // ok and cancel
+    ConstStrArray button_names;
+    int           maxlen   = 6;                     // use as min.length for buttons (for 'CANCEL')
 
     if (buttons) {
-        button_names = GBT_split_string(buttons, ',', &butCount);
+        GBT_split_string(button_names, buttons, ',');
+        butCount = button_names.size();
 
         for (size_t b = 0; b<butCount; b++) {
             int len = strlen(button_names[b]);
@@ -426,8 +427,6 @@ static AW_window_message *new_input_window(AW_root *root, const char *title, con
             aw_msg->create_button(name, name, "");
             thisLine++;
         }
-        GBT_free_names(button_names);
-        button_names = 0;
     }
     else {
         aw_msg->callback(input_cb,  0); aw_msg->create_button("OK", "OK", "O");

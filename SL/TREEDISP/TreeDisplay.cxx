@@ -2359,9 +2359,8 @@ struct Column : virtual Noncopyable {
     Column() : text(NULL) {}
     ~Column() { free(text); }
 
-    void init(char *text_, AW_device& device, int gc) {
-        // Caution: takes ownage of 'text_'!
-        text        = text_;
+    void init(const char *text_, AW_device& device, int gc) {
+        text        = strdup(text_);
         len         = strlen(text);
         print_width = device.get_string_size(gc, text, len);
         is_numeric  = (strspn(text, "0123456789.") == len);
@@ -2385,12 +2384,14 @@ public:
             ? make_node_text_nds(gb_main, gb_species, NDS_OUTPUT_TAB_SEPARATED, 0, tree_name)
             : GBT_read_name(gb_species);
 
-        char **parts = GBT_split_string(nds, "\t", false, &part_count);
+        ConstStrArray parts;
+        GBT_split_string(parts, nds, "\t", false);
+        part_count = parts.size();
 
         column = new Column[part_count];
-        for (size_t i = 0; i<part_count; ++i) column[i].init(parts[i], device, gc);
-
-        free(parts);
+        for (size_t i = 0; i<part_count; ++i) {
+            column[i].init(parts[i], device, gc);
+        }
     }
 
     ~ListDisplayRow() { delete [] column; }

@@ -346,6 +346,8 @@ class Type { // return- or parameter-type
         return
             strpbrk(type_decl.c_str(), "().*") != NULL         || // function-parameters, pointer-types not handled in ctor
             type_decl.find("GB_CB")            != string::npos || // some typedef'ed function-parameters
+            type_decl.find("CharPtrArray")     != string::npos ||
+            type_decl.find("StrArray")         != string::npos ||
             type_decl.find("GB_Link_Follower") != string::npos;
     }
 

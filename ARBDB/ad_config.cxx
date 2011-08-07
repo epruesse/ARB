@@ -15,105 +15,81 @@
 #include <arbdbt.h>
 
 #include <arb_strbuf.h>
+#include <arb_defs.h>
+#include <arb_strarray.h>
 
-char **GBT_get_configuration_names_and_count(GBDATA *gb_main, int *countPtr) {
-    /* returns existing configurations (as null terminated array of char* (heap-copies))
-     * Use GBT_free_names() to free the array.
-     *
-     * returns NULL if no configurations exist
-     *
-     * Note: automatically names configs w/o legal name.
+void GBT_get_configuration_names(ConstStrArray& configNames, GBDATA *gb_main) {
+    /* returns existing configurations in 'configNames'
+     * Note: automatically generates names for configs w/o legal name.
      */
-    GBDATA  *gb_configuration_data;
-    int      count       = 0;
-    char   **configNames = NULL;
 
-    GB_push_transaction(gb_main);
+    GB_transaction  ta(gb_main);
+    GBDATA         *gb_config_data = GB_search(gb_main, CONFIG_DATA_PATH, GB_CREATE_CONTAINER);
 
-    gb_configuration_data = GB_search(gb_main, CONFIG_DATA_PATH, GB_CREATE_CONTAINER);
-    if (gb_configuration_data) {
-        GBDATA *gb_config;
+    if (gb_config_data) {
+        int unnamed_count = 0;
 
-        for (gb_config = GB_entry(gb_configuration_data, CONFIG_ITEM);
+        configNames.reserve(GB_number_of_subentries(gb_config_data));
+        
+        for (GBDATA *gb_config = GB_entry(gb_config_data, CONFIG_ITEM);
              gb_config;
              gb_config = GB_nextEntry(gb_config))
         {
-            count++;
-        }
+            const char *name = GBT_read_char_pntr(gb_config, "name");
 
-        if (count) {
-            configNames       = (char **)GB_calloc(sizeof(char *), (size_t)count+1);
-            count             = 0;
-            int unnamed_count = 0;
+            if (!name || name[0] == 0) { // no name or empty name
+                char     *new_name = GBS_global_string_copy("<unnamed%i>", ++unnamed_count);
+                GB_ERROR  error    = GBT_write_string(gb_config, "name", new_name);
 
-            for (gb_config = GB_entry(gb_configuration_data, CONFIG_ITEM);
-                 gb_config;
-                 gb_config = GB_nextEntry(gb_config))
-            {
-                char *name = GBT_read_string(gb_config, "name");
-
-                if (!name || name[0] == 0) { // no name or empty name
-                    char     *new_name = GBS_global_string_copy("<unnamed%i>", ++unnamed_count);
-                    GB_ERROR  error    = GBT_write_string(gb_config, "name", new_name);
-
-                    if (error) {
-                        GB_warningf("Failed to rename unnamed configuration to '%s'", new_name);
-                        freenull(new_name);
-                    }
-                    freeset(name, new_name);
+                if (error) {
+                    GB_warningf("Failed to rename unnamed configuration to '%s'", new_name);
+                    freenull(new_name);
+                    name = NULL;
                 }
-
-                if (name) configNames[count++] = name;
+                else {
+                    name = GBT_read_char_pntr(gb_config, "name");
+                }
             }
+
+            if (name) configNames.put(name);
         }
     }
-
-    GB_pop_transaction(gb_main);
-    *countPtr = count;
-
-    return configNames;
-}
-
-char **GBT_get_configuration_names(GBDATA *gb_main) {
-    int dummy;
-    return GBT_get_configuration_names_and_count(gb_main, &dummy);
 }
 
 GBDATA *GBT_find_configuration(GBDATA *gb_main, const char *name) {
-    GBDATA *gb_configuration_data = GB_search(gb_main, CONFIG_DATA_PATH, GB_DB);
-    GBDATA *gb_configuration_name = GB_find_string(gb_configuration_data, "name", name, GB_IGNORE_CASE, SEARCH_GRANDCHILD);
-    return gb_configuration_name ? GB_get_father(gb_configuration_name) : 0;
+    GBDATA *gb_config_data = GB_search(gb_main, CONFIG_DATA_PATH, GB_DB);
+    GBDATA *gb_config_name = GB_find_string(gb_config_data, "name", name, GB_IGNORE_CASE, SEARCH_GRANDCHILD);
+    return gb_config_name ? GB_get_father(gb_config_name) : 0;
 }
 
 GBDATA *GBT_create_configuration(GBDATA *gb_main, const char *name) {
-    GBDATA *gb_configuration = GBT_find_configuration(gb_main, name);
-    if (!gb_configuration) {
-        GBDATA *gb_configuration_data = GB_search(gb_main, CONFIG_DATA_PATH, GB_DB);
+    GBDATA *gb_config = GBT_find_configuration(gb_main, name);
+    if (!gb_config) {
+        GBDATA *gb_config_data = GB_search(gb_main, CONFIG_DATA_PATH, GB_DB);
 
-        gb_configuration = GB_create_container(gb_configuration_data, CONFIG_ITEM); // create new container
-        if (gb_configuration) {
-            GB_ERROR error = GBT_write_string(gb_configuration, "name", name);
+        gb_config = GB_create_container(gb_config_data, CONFIG_ITEM); // create new container
+        if (gb_config) {
+            GB_ERROR error = GBT_write_string(gb_config, "name", name);
             if (error) GB_export_error(error);
         }
     }
-    return gb_configuration;
+    return gb_config;
 }
 
 
 GBT_config *GBT_load_configuration_data(GBDATA *gb_main, const char *name, GB_ERROR *error) {
     GBT_config *config = 0;
-    GBDATA     *gb_configuration;
 
-    *error           = GB_push_transaction(gb_main);
-    gb_configuration = GBT_find_configuration(gb_main, name);
+    *error            = GB_push_transaction(gb_main);
+    GBDATA *gb_config = GBT_find_configuration(gb_main, name);
 
-    if (!gb_configuration) {
+    if (!gb_config) {
         *error = GBS_global_string("No such configuration '%s'", name);
     }
     else {
         config              = (GBT_config*)GB_calloc(1, sizeof(*config));
-        config->top_area    = GBT_read_string(gb_configuration, "top_area");
-        config->middle_area = GBT_read_string(gb_configuration, "middle_area");
+        config->top_area    = GBT_read_string(gb_config, "top_area");
+        config->middle_area = GBT_read_string(gb_config, "middle_area");
 
         if (!config->top_area || !config->middle_area) {
             GBT_free_configuration_data(config);
@@ -129,17 +105,17 @@ GBT_config *GBT_load_configuration_data(GBDATA *gb_main, const char *name, GB_ER
 
 GB_ERROR GBT_save_configuration_data(GBT_config *config, GBDATA *gb_main, const char *name) {
     GB_ERROR  error = 0;
-    GBDATA   *gb_configuration;
+    GBDATA   *gb_config;
 
     GB_push_transaction(gb_main);
 
-    gb_configuration = GBT_create_configuration(gb_main, name);
-    if (!gb_configuration) {
+    gb_config = GBT_create_configuration(gb_main, name);
+    if (!gb_config) {
         error = GBS_global_string("Can't create configuration '%s' (Reason: %s)", name, GB_await_error());
     }
     else {
-        error             = GBT_write_string(gb_configuration, "top_area", config->top_area);
-        if (!error) error = GBT_write_string(gb_configuration, "middle_area", config->middle_area);
+        error             = GBT_write_string(gb_config, "top_area", config->top_area);
+        if (!error) error = GBT_write_string(gb_config, "middle_area", config->middle_area);
 
         if (error) error = GBS_global_string("%s (in configuration '%s')", error, name);
     }
@@ -261,13 +237,14 @@ void GBT_free_config_parser(GBT_config_parser *parser) {
     free(parser);
 }
 
-#if defined(DEBUG) && 0
+#if defined(DEBUG) 
 void GBT_test_config_parser(GBDATA *gb_main) {
-    char **config_names = GBT_get_configuration_names(gb_main);
-    if (config_names) {
+    ConstStrArray config_names;
+    GBT_get_configuration_names(config_names, gb_main);
+    if (!config_names.empty()) {
         int count;
         for (count = 0; config_names[count]; ++count) {
-            char       *config_name = config_names[count];
+            const char *config_name = config_names[count];
             GBT_config *config;
             GB_ERROR    error       = 0;
 
@@ -288,7 +265,7 @@ void GBT_test_config_parser(GBDATA *gb_main) {
                     const char        *area_config_def = area ? config->middle_area : config->top_area;
                     GBT_config_parser *parser          = GBT_start_config_parser(area_config_def);
                     GBT_config_item   *item            = GBT_create_config_item();
-                    void              *new_config      = GBS_stropen(1000);
+                    GBS_strstruct     *new_config      = GBS_stropen(1000);
                     char              *new_config_str;
 
                     gb_assert(parser);
@@ -325,8 +302,38 @@ void GBT_test_config_parser(GBDATA *gb_main) {
             }
             GBT_free_configuration_data(config);
         }
-        GBT_free_names(config_names);
     }
 }
 #endif // DEBUG
 
+// --------------------------------------------------------------------------------
+
+#ifdef UNIT_TESTS
+#include <test_unit.h>
+
+void TEST_GBT_get_configuration_names() {
+    GB_shell  shell;
+    GBDATA   *gb_main = GB_open("nosuch.arb", "c");
+
+    {
+        GB_transaction ta(gb_main);
+
+        const char *configs[] = { "arb", "BASIC", "Check it", "dummy" };
+        for (size_t i = 0; i<ARRAY_ELEMS(configs); ++i) {
+            TEST_ASSERT_RESULT__NOERROREXPORTED(GBT_create_configuration(gb_main, configs[i]));
+        }
+
+        ConstStrArray cnames;
+        GBT_get_configuration_names(cnames, gb_main);
+
+        TEST_ASSERT_EQUAL(cnames.size(), 4U);
+
+        char *joined = GBT_join_names(cnames, '*');
+        TEST_ASSERT_EQUAL(joined, "arb*BASIC*Check it*dummy");
+        free(joined);
+    }
+
+    GB_close(gb_main);
+}
+
+#endif // UNIT_TESTS

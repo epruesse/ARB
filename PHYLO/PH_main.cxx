@@ -580,8 +580,10 @@ int main(int argc, char **argv) {
     // loading database
     GB_push_transaction(GLOBAL_gb_main);
 
-    char **alignment_names = GBT_get_alignment_names(GLOBAL_gb_main);
-    int    num_alignments;
+    ConstStrArray alignment_names;
+    GBT_get_alignment_names(alignment_names, GLOBAL_gb_main);
+
+    int num_alignments;
     for (num_alignments = 0; alignment_names[num_alignments] != 0; num_alignments++) {}
 
     if (num_alignments > 1) {
@@ -592,7 +594,6 @@ int main(int argc, char **argv) {
         aw_root->awar("phyl/alignment")->write_string(alignment_names[0]);
         startup_sequence_cb(0, (AW_CL)aw_root, (AW_CL)puw->phylo_main_window);
     }
-    GBT_free_names(alignment_names);
     GB_pop_transaction(GLOBAL_gb_main);
 
     AWT_install_cb_guards();

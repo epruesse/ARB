@@ -716,14 +716,11 @@ char *GBT_find_largest_tree(GBDATA *gb_main) {
 }
 
 char *GBT_find_latest_tree(GBDATA *gb_main) {
-    char **names = GBT_get_tree_names(gb_main);
-    char *name = 0;
-    char **pname;
-    if (!names) return NULL;
-    for (pname = names; *pname; pname++) name = *pname;
-    if (name) name = strdup(name);
-    GBT_free_names(names);
-    return name;
+    ConstStrArray names;
+    GBT_get_tree_names(names, gb_main);
+    
+    int count = names.size();
+    return count ? strdup(names[count-1]) : NULL;
 }
 
 const char *GBT_tree_info_string(GBDATA *gb_main, const char *tree_name, int maxTreeNameLen) {
@@ -779,45 +776,15 @@ GB_ERROR GBT_check_tree_name(const char *tree_name)
     return 0;
 }
 
-char **GBT_get_tree_names_and_count(GBDATA *Main, int *countPtr) {
-    // returns an null terminated array of string pointers
-
-    int      count       = 0;
-    GBDATA  *gb_treedata = GB_entry(Main, "tree_data");
-    char   **erg         = 0;
-
+void GBT_get_tree_names(ConstStrArray& names, GBDATA *Main) {
+    // stores tree names in 'names'
+    GBDATA *gb_treedata = GB_entry(Main, "tree_data");
     if (gb_treedata) {
-        GBDATA *gb_tree;
-        count = 0;
-
-        for (gb_tree = GB_child(gb_treedata);
-             gb_tree;
-             gb_tree = GB_nextChild(gb_tree))
-        {
-            count ++;
-        }
-
-        if (count) {
-            erg   = (char **)GB_calloc(sizeof(char *), (size_t)count+1);
-            count = 0;
-
-            for (gb_tree = GB_child(gb_treedata);
-                 gb_tree;
-                 gb_tree = GB_nextChild(gb_tree))
-            {
-                erg[count] = GB_read_key(gb_tree);
-                count ++;
-            }
+        names.reserve(GB_number_of_subentries(gb_treedata));
+        for (GBDATA *gb_tree = GB_child(gb_treedata); gb_tree; gb_tree = GB_nextChild(gb_tree)) {
+            names.put(GB_read_key_pntr(gb_tree));
         }
     }
-
-    *countPtr = count;
-    return erg;
-}
-
-char **GBT_get_tree_names(GBDATA *Main) {
-    int dummy;
-    return GBT_get_tree_names_and_count(Main, &dummy);
 }
 
 char *GBT_get_name_of_next_tree(GBDATA *gb_main, const char *tree_name) {
@@ -877,3 +844,80 @@ char *GBT_existing_tree(GBDATA *gb_main, const char *tree_name) {
     return gb_tree ? GB_read_key(gb_tree) : NULL;
 }
 
+// --------------------------------------------------------------------------------
+
+#ifdef UNIT_TESTS
+#include <test_unit.h>
+
+void TEST_tree() {
+    GB_shell  shell;
+    GBDATA   *gb_main = GB_open("TEST_trees.arb", "r");
+
+    {
+        GB_transaction ta(gb_main);
+
+        {
+            char *tree_name = GBT_find_largest_tree(gb_main);
+            TEST_ASSERT_EQUAL(tree_name, "tree_test");
+            {
+                char *next_tree_name = GBT_get_name_of_next_tree(gb_main, tree_name);
+                TEST_ASSERT_EQUAL(next_tree_name, "tree_tree2");
+                freeset(next_tree_name, GBT_get_name_of_next_tree(gb_main, next_tree_name));
+                TEST_ASSERT_EQUAL(next_tree_name, "tree_nj");
+                free(next_tree_name);
+            }
+
+            freeset(tree_name, GBT_find_latest_tree(gb_main));
+            TEST_ASSERT_EQUAL(tree_name, "tree_nj_bs");
+            long nodes = GBT_size_of_tree(gb_main, tree_name);
+            TEST_ASSERT_EQUAL(nodes, 5);
+            TEST_ASSERT_EQUAL(GBT_tree_info_string(gb_main, tree_name, -1), "tree_nj_bs       (6:0)  PRG=dnadist CORR=none FILTER=none PKG=ARB");
+            TEST_ASSERT_EQUAL(GBT_tree_info_string(gb_main, tree_name, 20), "tree_nj_bs                 (6:0)  PRG=dnadist CORR=none FILTER=none PKG=ARB");
+
+            {
+                GBT_TREE *tree = GBT_read_tree(gb_main, tree_name, sizeof(GBT_TREE));
+
+                TEST_ASSERT(tree);
+
+                size_t    count;
+                size_t    count2  = GBT_count_leafs(tree);
+                GB_CSTR  *species = GBT_get_names_of_species_in_tree(tree, &count);
+                StrArray  species2;
+
+                for (int i = 0; species[i]; ++i) species2.put(strdup(species[i]));
+
+                TEST_ASSERT_EQUAL(count, count2);
+                TEST_ASSERT_EQUAL__BROKEN(long(count), nodes); // @@@ why differ?
+                char  *joined = GBT_join_names(species2, '*');
+                TEST_ASSERT_EQUAL(joined, "CloButyr*CloButy2*CorGluta*CorAquat*CurCitre*CytAquat");
+                free(joined);
+                free(species);
+
+                GBT_delete_tree(tree);
+            }
+
+            {
+                char *ex_tree_name = GBT_existing_tree(gb_main, tree_name);
+                TEST_ASSERT_EQUAL(ex_tree_name, tree_name);
+                freeset(ex_tree_name, GBT_existing_tree(gb_main, "tree_nosuch"));
+                TEST_ASSERT_EQUAL(ex_tree_name, "tree_test");
+                free(ex_tree_name);
+            }
+
+            free(tree_name);
+        }
+
+        {
+            ConstStrArray names;
+            GBT_get_tree_names(names, gb_main);
+            char  *joined = GBT_join_names(names, '*');
+            TEST_ASSERT_EQUAL(joined, "tree_test*tree_tree2*tree_nj*tree_nj_bs");
+            TEST_ASSERT_EQUAL(names.size(), 4U);
+            free(joined);
+        }
+    }
+
+    GB_close(gb_main);
+}
+
+#endif // UNIT_TESTS

@@ -233,12 +233,12 @@ void shiftAlignment(AW_window *aws, long direction) {
     char    *selected_alignment = aw_root->awar(AWAR_CON_CONCAT_ALIGNS)->read_string();
 
     if (selected_alignment && selected_alignment[0] && selected_alignment[0] != '?') {
-        char **listContent = aws->selection_list_to_array(con_alignment_list, true);
-        int    old_pos     = GBT_names_index_of(listContent, selected_alignment);
+        StrArray listContent;
+        aws->selection_list_to_array(listContent, con_alignment_list, true);
         
+        int old_pos = GBT_names_index_of(listContent, selected_alignment);
         GBT_names_move(listContent, old_pos, old_pos+direction);
         aws->init_selection_list_from_array(con_alignment_list, listContent, con_alignment_list->get_default_value());
-        GBT_free_names(listContent);
     }
 
     free(selected_alignment);
@@ -599,9 +599,10 @@ GBDATA *concatenateFieldsCreateNewSpecies(AW_window *, GBDATA *gb_species, speci
     }
 
     if (!error) {
-        char **ali_names = GBT_get_alignment_names(GLOBAL_gb_main);
-        long   id        = 0;
+        ConstStrArray ali_names;
+        GBT_get_alignment_names(ali_names, GLOBAL_gb_main);
 
+        long id = 0;
         for (speciesConcatenateList speciesList = scl; speciesList; speciesList = speciesList->next) {
             for (int no_of_alignments = 0; ali_names[no_of_alignments]!=0; no_of_alignments++) {
                 GBDATA *gb_seq_data = GBT_read_sequence(speciesList->species, ali_names[no_of_alignments]);
@@ -619,8 +620,6 @@ GBDATA *concatenateFieldsCreateNewSpecies(AW_window *, GBDATA *gb_species, speci
             acc   = GBS_global_string_copy("ARB_%lX", id); // create new accession number
             error = GBT_write_string(gb_new_species, "acc", acc);
         }
-
-        GBT_free_names(ali_names);
     }
 
     if (!error) error = checkAndMergeFields(gb_new_species, error, scl);

@@ -21,7 +21,6 @@
 #include <aw_msg.hxx>
 #include <arb_progress.h>
 #include <arbdbt.h>
-#include <arb_strarray.h>
 
 #include <set>
 #include <string>
@@ -41,36 +40,23 @@ struct preserve_para {
     AW_selection_list *ref_id;                      // used references
 };
 
-// get all alignment names available in both databases
-static char **get_global_alignments() {
-    char   **src_ali_names = GBT_get_alignment_names(GLOBAL_gb_merge);
-    GBDATA  *gb_presets    = GB_search(GLOBAL_gb_dest, "presets", GB_CREATE_CONTAINER);
-    int      i;
+static void get_global_alignments(ConstStrArray& ali_names) {
+    // get all alignment names available in both databases
+    GBT_get_alignment_names(ali_names, GLOBAL_gb_merge);
+    GBDATA *gb_presets = GB_search(GLOBAL_gb_dest, "presets", GB_CREATE_CONTAINER);
 
-    for (i = 0; src_ali_names[i]; ++i) {
-        GBDATA *gb_ali_name = GB_find_string(gb_presets, "alignment_name", src_ali_names[i], GB_IGNORE_CASE, SEARCH_GRANDCHILD);
-        if (!gb_ali_name) freenull(src_ali_names[i]);
+    int i;
+    for (i = 0; ali_names[i]; ++i) {
+        GBDATA *gb_ali_name = GB_find_string(gb_presets, "alignment_name", ali_names[i], GB_IGNORE_CASE, SEARCH_GRANDCHILD);
+        if (!gb_ali_name) ali_names.remove(i--);
     }
-
-    int k = 0;
-    for (int j = 0; j<i; ++j) {
-        if (src_ali_names[j]) {
-            if (j != k) {
-                src_ali_names[k] = src_ali_names[j];
-                src_ali_names[j] = 0;
-            }
-            ++k;
-        }
-    }
-
-    return src_ali_names;
 }
 
 static void init_alignments(preserve_para *para) {
     // initialize the alignment selection list
-    char **ali_names = get_global_alignments();
+    ConstStrArray ali_names;
+    get_global_alignments(ali_names);
     para->window->init_selection_list_from_array(para->ali_id, ali_names, "All");
-    GBT_free_names(ali_names);
 }
 
 static void clear_candidates(preserve_para *para) {
@@ -126,7 +112,7 @@ class Candidate {
     long   base_count_diff;
 
 public:
-    Candidate(bool is_species, const char *name_, GBDATA *gb_src, GBDATA *gb_dst, const char *const *ali_names)
+    Candidate(bool is_species, const char *name_, GBDATA *gb_src, GBDATA *gb_dst, const CharPtrArray& ali_names)
         : name(is_species ? name_ : string("SAI:")+name_)
     {
         found_alignments = 0;
@@ -182,8 +168,7 @@ static bool operator < (const SmartPtr<Candidate>& c1, const SmartPtr<Candidate>
 }
 typedef set< SmartPtr<Candidate> > Candidates;
 
-// add all candidate species to 'candidates'
-static void find_species_candidates(Candidates& candidates, const char *const *ali_names) {
+static void find_species_candidates(Candidates& candidates, const CharPtrArray& ali_names) {
     // collect names of all species in source database
     GB_HASH      *src_species = GBT_create_species_hash(GLOBAL_gb_merge);
     long          src_count   = GBS_hash_count_elems(src_species);
@@ -218,7 +203,7 @@ static void find_species_candidates(Candidates& candidates, const char *const *a
     GBS_free_hash(src_species);
 }
 
-static void find_SAI_candidates(Candidates& candidates, const char *const *ali_names) {
+static void find_SAI_candidates(Candidates& candidates, const CharPtrArray& ali_names) {
     // add all candidate SAIs to 'candidates'
     GB_HASH      *src_SAIs  = GBT_create_SAI_hash(GLOBAL_gb_merge);
     long          src_count = GBS_hash_count_elems(src_SAIs);
@@ -262,22 +247,20 @@ static void calculate_preserves_cb(AW_window *, AW_CL cl_para) {
 
     AW_window  *aww     = para->window;
     AW_root    *aw_root = aww->get_root();
-    char       *ali     = aw_root->awar(AWAR_REMAP_ALIGNMENT)->read_string();
+    const char *ali     = aw_root->awar(AWAR_REMAP_ALIGNMENT)->read_char_pntr();
     Candidates  candidates;
 
     arb_progress("Searching candidates");
 
     // add candidates
-    if (0 == strcmp(ali, "All")) {
-        char **ali_names = get_global_alignments();
-
-        find_SAI_candidates(candidates, ali_names);
-        find_species_candidates(candidates, ali_names);
-
-        GBT_free_names(ali_names);
-    }
-    else {
-        const char *ali_names[2] = { ali, 0 };
+    {
+        ConstStrArray ali_names;
+        if (0 == strcmp(ali, "All")) {
+            get_global_alignments(ali_names);
+        }
+        else {
+            ali_names.put(ali);
+        }
         find_SAI_candidates(candidates, ali_names);
         find_species_candidates(candidates, ali_names);
     }
@@ -295,21 +278,17 @@ static void calculate_preserves_cb(AW_window *, AW_CL cl_para) {
 
         aww->insert_selection(id, shown.c_str(), name.c_str());
     }
-    free(ali);
 
     aww->update_selection_list(id);
 }
 
 
 
-static char **read_references(AW_root *aw_root)  {
-    char  *ref_string = aw_root->awar(AWAR_REMAP_SPECIES_LIST)->read_string();
-    char **refs       = GBT_split_string(ref_string, " \n,;", true, NULL);
-
-    free(ref_string);
-    return refs;
+static void read_references(ConstStrArray& refs, AW_root *aw_root)  {
+    char *ref_string = aw_root->awar(AWAR_REMAP_SPECIES_LIST)->read_string();
+    GBT_splitNdestroy_string(refs, ref_string, " \n,;", true);
 }
-static void write_references(AW_root *aw_root, const char *const *ref_array) {
+static void write_references(AW_root *aw_root, const CharPtrArray& ref_array) {
     char *ref_string = GBT_join_names(ref_array, '\n');
     aw_root->awar(AWAR_REMAP_SPECIES_LIST)->write_string(ref_string);
     aw_root->awar(AWAR_REMAP_ENABLE)->write_int(ref_string[0] != 0);
@@ -323,10 +302,10 @@ static char *get_selected_reference(AW_root *aw_root) {
 }
 
 static void refresh_reference_list_cb(AW_root *aw_root, AW_CL cl_para) {
-    preserve_para  *para = (preserve_para*)cl_para;
-    char          **refs = read_references(aw_root);
+    preserve_para *para = (preserve_para*)cl_para;
+    ConstStrArray  refs;
+    read_references(refs, aw_root);
     para->window->init_selection_list_from_array(para->ref_id, refs, "");
-    GBT_free_names(refs);
 }
 
 static void add_selected_cb(AW_window *, AW_CL cl_para) {
@@ -334,12 +313,13 @@ static void add_selected_cb(AW_window *, AW_CL cl_para) {
 
     preserve_para *para    = (preserve_para*)cl_para;
     AW_root       *aw_root = para->window->get_root();
-    
-    char **refs       = read_references(aw_root);
-    char  *candidate  = aw_root->awar(AWAR_REMAP_CANDIDATE)->read_string();
-    char  *selected   = get_selected_reference(aw_root);
-    int    cand_index = GBT_names_index_of(refs, candidate);
-    int    sel_index  = GBT_names_index_of(refs, selected);
+    ConstStrArray  refs;
+    read_references(refs, aw_root);
+
+    char *candidate  = aw_root->awar(AWAR_REMAP_CANDIDATE)->read_string();
+    char *selected   = get_selected_reference(aw_root);
+    int   cand_index = GBT_names_index_of(refs, candidate);
+    int   sel_index  = GBT_names_index_of(refs, selected);
 
     if (cand_index == -1) GBT_names_add(refs, sel_index+1, candidate);
     else                  GBT_names_move(refs, cand_index, sel_index);
@@ -349,7 +329,6 @@ static void add_selected_cb(AW_window *, AW_CL cl_para) {
 
     free(selected);
     free(candidate);
-    GBT_free_names(refs);
 
     para->window->move_selection(para->cand_id, 1); 
 }
@@ -360,10 +339,12 @@ static void clear_references_cb(AW_window *aww) {
 }
 
 static void del_reference_cb(AW_window *aww) {
-    AW_root  *aw_root   = aww->get_root();
-    char    **refs      = read_references(aw_root);
-    char     *selected  = get_selected_reference(aw_root);
-    int       sel_index = GBT_names_index_of(refs, selected);
+    AW_root       *aw_root = aww->get_root();
+    ConstStrArray  refs;
+    read_references(refs, aw_root);
+
+    char *selected  = get_selected_reference(aw_root);
+    int   sel_index = GBT_names_index_of(refs, selected);
 
     if (sel_index >= 0) {
         select_reference(aw_root, refs[sel_index+1]);
@@ -372,14 +353,15 @@ static void del_reference_cb(AW_window *aww) {
     }
 
     free(selected);
-    GBT_free_names(refs);
 }
 
 static void lower_reference_cb(AW_window *aww) {
-    AW_root  *aw_root   = aww->get_root();
-    char    **refs      = read_references(aw_root);
-    char     *selected  = get_selected_reference(aw_root);
-    int       sel_index = GBT_names_index_of(refs, selected);
+    AW_root       *aw_root = aww->get_root();
+    ConstStrArray  refs;
+    read_references(refs, aw_root);
+
+    char *selected  = get_selected_reference(aw_root);
+    int   sel_index = GBT_names_index_of(refs, selected);
 
     if (sel_index >= 0) {
         GBT_names_move(refs, sel_index, sel_index+1);
@@ -387,13 +369,14 @@ static void lower_reference_cb(AW_window *aww) {
     }
 
     free(selected);
-    GBT_free_names(refs);
 }
 static void raise_reference_cb(AW_window *aww) {
-    AW_root  *aw_root   = aww->get_root();
-    char    **refs      = read_references(aw_root);
-    char     *selected  = get_selected_reference(aw_root);
-    int       sel_index = GBT_names_index_of(refs, selected);
+    AW_root       *aw_root = aww->get_root();
+    ConstStrArray  refs;
+    read_references(refs, aw_root);
+
+    char *selected  = get_selected_reference(aw_root);
+    int   sel_index = GBT_names_index_of(refs, selected);
 
     if (sel_index > 0) {
         GBT_names_move(refs, sel_index, sel_index-1);
@@ -401,7 +384,6 @@ static void raise_reference_cb(AW_window *aww) {
     }
 
     free(selected);
-    GBT_free_names(refs);
 }
 
 static void test_references_cb(AW_window *aww) {
